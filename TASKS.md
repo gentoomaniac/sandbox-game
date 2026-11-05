@@ -1051,7 +1051,7 @@ minutes are in data/energy.cfg `[signs]`.
 
 ## 48. Burning flames: an animated fire
 
-- [ ] Done
+- [x] Done
 
 The user, 2026-11-05: "the flames should also move, not only the light flicker". Task 45's
 fire shader only jumps the flame by a pixel and leans it, which reads as flicker. Give the
@@ -1059,6 +1059,17 @@ campfire and the hearth a real flame animation: generated frames (tools/art) of 
 tongues that rise, split and lick, played at a steady rate with a per-fire phase, leaning
 and stretching with the wind outdoors (the hearth doesn't lean). Sparks stay. Keep it on
 the art-pixel grid and cheap (one shared animation, no per-frame scripts per fire).
+
+Done: tools/art/fire.py draws a 6-frame flame loop from a heat field (a body and three tongues
+that grow, lick and fall back in turn, their tips breaking off), for the campfire (16×20 box)
+and the hearth (16×16). Each fire's strip (assets/fire/<type>.png) holds what is behind the
+flame, what is in front of it (the campfire's stones) and the frames; the atlas cell and the
+hearth's picture keep the first frame. fire.gdshader, already on the campfire tiles and the
+hearth sprite, draws the strip in the flame's box at 9 fps, the frame offset by a hash of the
+fire's place (the same as `AmbientMotion.fire_frame`), shears the flame downwind by
+`fire_lean_for` and makes it taller by `fire_stretch_for` (outdoors only). A shader rather than a
+TileSet tile animation: the hearth is a sprite, not a tile, and the lean needs a shader
+anyway, so one shader serves both. Sparks and the light flicker stay.
 
 ## 49. Crafting and the chest
 

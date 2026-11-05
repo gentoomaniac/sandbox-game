@@ -44,7 +44,105 @@ func test_water_gets_choppier_with_wind() -> void:
 func test_a_flame_leans_downwind_but_not_off_its_fire() -> void:
 	assert_eq(AmbientMotion.fire_lean_for(Vector2.ZERO), 0.0)
 	assert_gt(AmbientMotion.fire_lean_for(Vector2(5.0, 0.0)), 0.0)
+	assert_lt(
+		AmbientMotion.fire_lean_for(Vector2(5.0, 0.0)),
+		AmbientMotion.fire_lean_for(Vector2(12.0, 0.0))
+	)
 	assert_eq(AmbientMotion.fire_lean_for(Vector2(-100.0, 0.0)), -AmbientMotion.MAX_FIRE_LEAN)
+
+
+func test_a_flame_stretches_more_the_stronger_the_wind() -> void:
+	assert_eq(AmbientMotion.fire_stretch_for(Vector2.ZERO), 0.0)
+	assert_eq(
+		AmbientMotion.fire_stretch_for(Vector2(0.0, 12.0)), 0.0, "wind straight down the screen"
+	)
+	var breeze := AmbientMotion.fire_stretch_for(Vector2(-5.0, 0.0))
+	assert_gt(breeze, 0.0, "either way")
+	assert_lt(breeze, AmbientMotion.fire_stretch_for(Vector2(12.0, 0.0)))
+	assert_eq(
+		AmbientMotion.fire_stretch_for(Vector2(STORM * 2.0, 0.0)), AmbientMotion.MAX_FIRE_STRETCH
+	)
+
+
+func test_a_flame_plays_its_frames_at_a_steady_rate() -> void:
+	var origin := Vector2i(160, -48)
+	var step := 1.0 / AmbientMotion.FIRE_FRAMES_PER_SECOND
+	var first := AmbientMotion.fire_frame(0.0, origin)
+	assert_eq(AmbientMotion.fire_frame(step * 0.9, origin), first, "within a frame's time")
+	var shown := {}
+	for frame in AmbientMotion.FIRE_FRAMES:
+		var now := AmbientMotion.fire_frame(step * (frame + 0.5), origin)
+		assert_eq(now, (first + frame) % AmbientMotion.FIRE_FRAMES, "frame %d" % frame)
+		shown[now] = true
+	assert_eq(shown.size(), AmbientMotion.FIRE_FRAMES, "every frame once a loop")
+	assert_eq(AmbientMotion.fire_frame(step * (AmbientMotion.FIRE_FRAMES + 0.5), origin), first)
+
+
+func test_each_fire_burns_in_a_phase_of_its_own() -> void:
+	var origin := Vector2i(160, -48)
+	assert_eq(AmbientMotion.fire_frame(2.0, origin), AmbientMotion.fire_frame(2.0, origin))
+	var frames := {}
+	for x in 8:
+		frames[AmbientMotion.fire_frame(2.0, origin + Vector2i(x * 16, 0))] = true
+	assert_gt(frames.size(), 2, "fires side by side show different frames at once")
+
+
+func test_the_hearth_burns_but_does_not_lean() -> void:
+	var motion := AmbientMotion.new()
+	var hearth := AmbientMotion.fire_material(WorldObjectTypes.HEARTH)
+	motion.update(1.0, Vector2(STORM, 0.0), 0.0)
+	assert_eq(hearth.get_shader_parameter("frames"), AmbientMotion.FIRE_FRAMES)
+	assert_eq(hearth.get_shader_parameter("lean"), null, "the shader's default, 0")
+	assert_eq(hearth.get_shader_parameter("stretch"), null, "the shader's default, 0")
+
+
+## A flame's strip holds what is behind it, what is in front of it and its frames, all of the
+## same box; drawn over each other with the first frame they are the fire's picture (in every
+## look), so the shader can swap the flame without moving the logs and stones.
+func test_the_flame_strips_match_the_pictures() -> void:
+	var fireplace_row: int = WorldObjectTypes.TYPES[WorldObjectTypes.FIREPLACE]["atlas_row"]
+	var pictures := {
+		WorldObjectTypes.HEARTH:
+		[load(WorldObjectTypes.TYPES[WorldObjectTypes.HEARTH]["interior_sprite"]).get_image()],
+	}
+	pictures[WorldObjectTypes.FIREPLACE] = []
+	for look: SeasonBlend.Look in SeasonBlend.Look.values():
+		var atlas: Image = load(SeasonalArt.path(ObjectTileset.ATLAS_PATH, look)).get_image()
+		var cell_size := Vector2i(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT)
+		pictures[WorldObjectTypes.FIREPLACE].append(
+			atlas.get_region(Rect2i(Vector2i(0, fireplace_row) * cell_size, cell_size))
+		)
+	for type: StringName in AmbientMotion.FIRE_PROFILES:
+		var profile: Dictionary = AmbientMotion.FIRE_PROFILES[type]
+		var strip: Image = profile["flames"].get_image()
+		var cells := AmbientMotion.FIRE_FRAMES + 2
+		assert_eq(strip.get_width() % cells, 0, "%s: a whole number of cells" % type)
+		var box := Vector2i(strip.get_width() / cells, strip.get_height())
+		var box_position := Vector2i(profile["box_position"])
+		for picture: Image in pictures[type]:
+			assert_eq(picture.get_size(), Vector2i(profile["cell_size"]), type)
+			var differing := 0
+			for y in box.y:
+				for x in box.x:
+					var shown := _strip_pixel(strip, box, 1, x, y)
+					if shown.a == 0.0:
+						shown = _strip_pixel(strip, box, 2, x, y)
+					if shown.a == 0.0:
+						shown = _strip_pixel(strip, box, 0, x, y)
+					var drawn := picture.get_pixel(box_position.x + x, box_position.y + y)
+					# Clear pixels may differ in colour.
+					if drawn != shown and (drawn.a > 0.0 or shown.a > 0.0):
+						differing += 1
+			assert_eq(differing, 0, "%s: pixels of the box unlike the picture" % type)
+		assert_ne(
+			strip.get_region(Rect2i(Vector2i(2 * box.x, 0), box)).get_data(),
+			strip.get_region(Rect2i(Vector2i(3 * box.x, 0), box)).get_data(),
+			"%s: the flame changes from frame to frame" % type
+		)
+
+
+func _strip_pixel(strip: Image, box: Vector2i, cell: int, x: int, y: int) -> Color:
+	return strip.get_pixel(cell * box.x + x, y)
 
 
 func test_rain_splashes_more_the_heavier_it_rains() -> void:
@@ -66,6 +164,9 @@ func test_the_wind_reaches_every_material_that_moves_with_it() -> void:
 	var fireplace := motion.object_material(WorldObjectTypes.FIREPLACE)
 	assert_almost_eq(
 		fireplace.get_shader_parameter("lean"), AmbientMotion.fire_lean_for(wind), 0.001
+	)
+	assert_almost_eq(
+		fireplace.get_shader_parameter("stretch"), AmbientMotion.fire_stretch_for(wind), 0.001
 	)
 	assert_almost_eq(motion.splash_chance, AmbientMotion.splash_chance_for(0.6), 0.001)
 

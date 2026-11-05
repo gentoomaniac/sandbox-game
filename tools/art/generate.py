@@ -40,6 +40,11 @@ its footprint (16 px per tile) and as tall as the footprint plus the roof rising
 bottom edge is the footprint's bottom edge. <type>_lit.png is the same with lit windows, for the
 night. Sizes and door tiles are in data/buildings.cfg.
 
+assets/fire/<type>.png: the flame of the fireplace and of the hearth, burning (see fire.py and
+game/scenes/fire.gdshader). Cells the size of the box the flame burns in: what is behind the
+flame, what is in front of it, then the frames of the flame. The atlas cell and the hearth's
+picture show the first frame, for where the fire does not move.
+
 assets/wildlife/<kind>.png: one sheet per animal kind, one row per action and one column per frame
 (see animals.py and game/scenes/wildlife/wildlife_sprites.gd).
 
@@ -66,6 +71,7 @@ import animals
 import buildings
 import crop_icons
 import crops
+import fire
 import items
 import meadow
 import reeds
@@ -1171,37 +1177,36 @@ def fire_stone(canvas, x, y):
     fill_rect(canvas, x + 1, y, x + 1, y, "stone_dark")
 
 
-def fireplace():
-    rng = random.Random(121)
-    canvas = object_canvas()
+# The box of the fireplace's cell that its flame burns in (x, y, width, height; the flame stands
+# on its bottom row), and the flame's half width and height.
+FIREPLACE_FLAME = ((OBJECT_CENTRE - 8, 51, 16, 20), 5.5, 15)
+
+
+def fireplace_layers():
+    """The fireplace without its flame: what is behind the flame (the ash bed and three logs on
+    it, laid like the spokes of a wheel) and what is in front of it (the ring of stones)."""
+    behind, front = object_canvas(), object_canvas()
     centre, ground = OBJECT_CENTRE, 71
-    # Ash bed, with three logs on it, laid like the spokes of a wheel.
     for y in range(ground - 4, ground + 5):
         for x in range(centre - 10, centre + 10):
             if ((x - centre) / 9.5) ** 2 + ((y - ground) / 4.2) ** 2 <= 1:
-                canvas[y][x] = "soil_dark"
+                behind[y][x] = "soil_dark"
     for dx, dy, shades in ((-7, -2, ("soil_mid", "soil")), (7, -2, ("soil", "soil_dark")), (0, 3, ("soil_mid", "soil"))):
         for i in range(9):
             x, y = round(centre + dx * i / 8), round(ground + dy * i / 8)
-            canvas[y][x] = canvas[y + 1][x] = shades[0]
-            canvas[y + 2][x] = shades[1]
-    # Flame: a teardrop from the logs up into the tile north, jagged at the edges.
-    for y in range(58, ground):
-        tip = (ground - y) / 16.0
-        half_width = 5.5 * (1 - tip) ** 0.7
-        for colour, scale, lowest in (("flame", 1.0, ground), ("gold", 0.65, ground), ("cream", 0.3, ground - 1)):
-            reach = half_width * scale + rng.uniform(-0.4, 0.4)
-            for x in range(centre - int(reach + 1), centre + int(reach + 1)):
-                if abs(x + 0.5 - centre) <= reach and y <= lowest:
-                    canvas[y][x] = colour
-    # Ring of stones around the ash; those in front of the fire are drawn over it.
+            behind[y][x] = behind[y + 1][x] = shades[0]
+            behind[y + 2][x] = shades[1]
     ring = [
         (round(centre + 10.5 * math.cos(step / 14 * 2 * math.pi)), round(ground + 3 + 4 * math.sin(step / 14 * 2 * math.pi)), math.sin(step / 14 * 2 * math.pi))
         for step in range(14)
     ]
     for x, y, depth in sorted(ring, key=lambda stone: stone[2]):
-        fire_stone(canvas, x, y)
-    return canvas
+        fire_stone(front, x, y)
+    return behind, front
+
+
+def fireplace():
+    return fire.burning(*fireplace_layers(), *FIREPLACE_FLAME)
 
 
 def sleeping_bag():
@@ -1760,8 +1765,13 @@ def chest():
     return outline(canvas, "soil_dark", keep_bottom=True)
 
 
-def hearth():
-    """A stone hearth 2x2 tiles with a fire in it."""
+# The box of the hearth's picture that its flame burns in (x, y, width, height; the flame stands
+# on its bottom row, over the logs), and the flame's half width and height.
+HEARTH_FLAME = ((8, 10, 16, 16), 5.0, 12)
+
+
+def hearth_without_flame():
+    """A stone hearth 2x2 tiles with two logs in its firebox."""
     canvas = sprite_canvas(2 * TILE, 2 * TILE)
     fill_rect(canvas, 0, 0, 31, 29, "stone")
     for y in range(4, 30, 4):
@@ -1770,21 +1780,19 @@ def hearth():
             fill_rect(canvas, x, y - 3, x, y - 1, "stone_dark")
     fill_rect(canvas, 0, 0, 31, 2, "stone_light")
     fill_rect(canvas, 0, 3, 31, 3, "stone_dark")
-    # Firebox with two logs and a flame.
     fill_rect(canvas, 7, 9, 24, 28, "stone_dark")
     fill_rect(canvas, 8, 10, 23, 28, "soil_dark")
     fill_rect(canvas, 9, 25, 22, 27, "soil")
     fill_rect(canvas, 9, 25, 22, 25, "soil_mid")
-    for y in range(13, 26):
-        reach = 5.5 * (1 - (25 - y) / 14.0) ** 0.7
-        for colour, scale in (("flame", 1.0), ("gold", 0.65), ("cream", 0.3)):
-            for x in range(10, 22):
-                if abs(x + 0.5 - 16) <= reach * scale:
-                    canvas[y][x] = colour
     # Hearthstone in front.
     fill_rect(canvas, 2, 29, 29, 31, "stone_light")
     fill_rect(canvas, 2, 31, 29, 31, "stone")
     return outline(canvas, "soil_dark", keep_bottom=True)
+
+
+def hearth():
+    """A stone hearth 2x2 tiles with a fire in it."""
+    return fire.burning(hearth_without_flame(), sprite_canvas(2 * TILE, 2 * TILE), *HEARTH_FLAME)
 
 
 # Furniture by name: its picture and its footprint in tiles. The marker tiles and the files
@@ -2056,6 +2064,13 @@ def main():
     (ASSETS / "interior").mkdir(exist_ok=True)
     for name, (picture, _footprint) in FURNITURE.items():
         to_image([[picture]], len(picture[0]), len(picture)).save(ASSETS / "interior" / f"{name}.png")
+    (ASSETS / "fire").mkdir(exist_ok=True)
+    for name, (behind, front), (box, half_width, tall) in (
+        ("fireplace", fireplace_layers(), FIREPLACE_FLAME),
+        ("hearth", (hearth_without_flame(), sprite_canvas(2 * TILE, 2 * TILE)), HEARTH_FLAME),
+    ):
+        strip = fire.strip(behind, front, box, half_width, tall)
+        to_image([strip], box[2], box[3]).save(ASSETS / "fire" / f"{name}.png")
     (ASSETS / "wildlife").mkdir(exist_ok=True)
     for kind in animals.SHEETS:
         to_image(animals.sheet_rows(kind), *animals.cell_size(kind)).save(ASSETS / "wildlife" / f"{kind}.png")
@@ -2079,7 +2094,7 @@ def main():
     ui.write_ui_assets(ASSETS / "ui", PALETTE)
     write_palette()
     check_palette()
-    print("Wrote terrain*.png, decorations*.png, objects*.png (one per look), character/*.png, interior.png, interior/*.png, buildings/*.png, items/*.png, wildlife/*.png, crops/*.png, soil_wet.png, clay_hint.png, ui/*, palette.png and palette.gpl to assets/; palette check passed.")
+    print("Wrote terrain*.png, decorations*.png, objects*.png (one per look), character/*.png, interior.png, interior/*.png, fire/*.png, buildings/*.png, items/*.png, wildlife/*.png, crops/*.png, soil_wet.png, clay_hint.png, ui/*, palette.png and palette.gpl to assets/; palette check passed.")
 
 
 if __name__ == "__main__":

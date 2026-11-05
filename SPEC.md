@@ -413,16 +413,21 @@ Decided 2026-11-05. A text console for testing and cheats.
   - **Ambient motion** (decided 2026-11-05, view only): plants sway with the wind (tree
     crowns, bushes, tall grass, reeds, crops, ground tufts; gentle on calm days, hard with
     gusts in a storm, each plant with its own phase, in whole art pixels with the stems
-    fixed); water shimmers and ripples, choppier in wind; the campfire and hearth flames
-    flicker and lean downwind with drifting sparks; rain splatters small splashes on the
-    ground (more in heavy rain); lily pads drift and bob a little. It is all done by
-    shaders, with no nodes or scripts per plant: a pixel's sideways shift grows with its
+    fixed); water shimmers and ripples, choppier in wind; the campfire and hearth burn
+    (decided 2026-11-05, task 48): their flames are a short loop of drawn frames (tongues
+    that rise, split, lick sideways and fall back, tips that break off and go out), played
+    at about 9 frames a second, each fire starting its loop at a frame picked by its place
+    so neighbours don't burn in step; the logs and stones stay still and only the flame
+    moves. Outdoors the flames lean and stretch downwind, more in a strong wind, and
+    sparks drift with it; rain splatters small splashes on the ground (more in heavy
+    rain); lily pads drift and bob a little. It is all done by shaders, with no nodes or
+    scripts per plant or fire: a pixel's sideways shift grows with its
     height above the plant's foot (the trunk or stem stays put), plants lean downwind and
     gust fronts sweep across the world with the wind; only the wind across the screen
     leans them. At a light air (about 2 m/s) only the tips of the bendiest plants flick a
     pixel now and then; in a storm tree tops swing up to 3 pixels. Water ripples only
     change plain water pixels, so banks, foam and lily pads keep their shape. Splashes are
-    drawn under the objects and the player. The hearth's fire flickers indoors too, but
+    drawn under the objects and the player. The hearth's fire burns indoors too, but
     there is no wind inside, so it does not lean. Dead trees (bare snags), pebbles, fallen
     leaves, toadstools and puddles stay still; so does a tree while it is see-through or
     falling (it is a sprite then).

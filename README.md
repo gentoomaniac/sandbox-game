@@ -47,7 +47,8 @@ same weather.
 
 The world moves with the wind: trees, bushes, grass, reeds and crops sway, barely on a
 calm day and hard in the gusts of a storm; the water ripples and glints, choppier in wind;
-the campfire and the hearth flicker and throw sparks, and the campfire leans downwind;
+the campfire and the hearth burn, their flames licking up and falling back, and throw sparks;
+the campfire's flames lean and stretch downwind, more in a strong wind;
 rain splashes on the ground; lily pads drift and bob.
 
 ![Rain in autumn, snow in winter, morning fog and a thunderstorm](docs/screenshots/weather.png)
