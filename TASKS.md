@@ -450,7 +450,7 @@ fullscreen (`godot --path . -f -- --new-game --screenshot=... --at=...`).
 
 ### 16b. Character
 
-- [ ] Done
+- [x] Done
 
 - Figure 27–28 px tall in the 16×32 frame (head 9×8), feet on the bottom row.
 - Coloured inner lines (keep the outer outline), hoe in `soil_dark`, nose pixel and arm
