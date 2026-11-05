@@ -6,7 +6,7 @@ into exploration, and you can build anywhere you like. The weather, the seasons 
 light change the world as you play.
 
 > **Status:** early prototype, under active development. The core loop works: you can
-> walk, farm, forage, build a house and sleep through the seasons. There is no shop,
+> walk, farm, fell, mine, gather, build and sleep through the seasons. There is no shop,
 > combat or story yet, and the weather and animals are still silent.
 
 ![The starting camp on a summer morning](docs/screenshots/camp.png)
@@ -23,7 +23,7 @@ sound plays is in [data/sounds.cfg](data/sounds.cfg), so any sound can be swappe
 
 ### A world that changes with the seasons
 
-There are four seasons of 30 days each. The ground, the trees, the bushes and the house
+There are four seasons of 30 days each. The ground, the trees, the bushes and the buildings
 each have a look for every season: fresh green in spring, full summer foliage, red and
 gold autumn forests, and snow in winter. Ground cover thins and fills over the year, ferns
 die back in winter, and berry bushes only bear fruit in their season.
@@ -51,17 +51,33 @@ lets you shrink or switch off the change in day length.
 
 ### Farming
 
-You till the soil with the hoe, plant seeds, and harvest your crops. Crops grow day by day.
+You till the soil with the hoe, plant seeds, water them, and pick the crops by hand. There
+are twelve crops: turnips, potatoes, carrots, cabbage, onions, wheat, peas, beans, tomatoes,
+strawberries and pumpkins. Each grows in its own seasons, and the weather (warmth, rain,
+frost) speeds it up, slows it down or damages it. A ripe crop doesn't wait forever: left
+unpicked for as long as it took to ripen, it withers and gives nothing. The growing times,
+seasons and the withering are in [data/crops.cfg](data/crops.cfg).
 
 ![A small field with turnips in every growth stage](docs/screenshots/field.png)
 
-### Felling, mining and foraging
+### Felling, mining and gathering
 
 Use the axe on trees and the pickaxe on stones and boulders. A better tool needs fewer
-hits, and some resources need a better tool. A felled tree leaves a stump and a trunk
-to cut into logs; the stump rots away over about two weeks, and trees seed new saplings.
-Berry bushes bear fruit again a few days after picking, and shrubs and
-ferns give fibre.
+hits, and some resources need a better tool. Everything you hit trembles and throws
+leaves, snow or splinters. A felled tree topples away from you and leaves a stump and a
+trunk; cut both into logs. A stump left alone rots away over about two weeks and may sprout
+a sapling of its kind, and now and then a tree drops a seed (acorn or cone) you can plant on
+grassland. Big stones break into smaller ones.
+
+The scythe mows tall grass into hay and cuts reeds on river banks (reeds grow back in their
+season). The shovel digs clay, but only where the ground hints at it, and the hint is easy
+to miss. Berry bushes bear fruit again a few days after picking, and shrubs and ferns give
+fibre.
+
+What you gather hops out onto the ground: logs, stone, clay, hay, reeds, seeds and produce
+lie there until you walk over them and pick them up.
+
+![Two oaks felled from either side: the fall, the landing and the trunks they leave](docs/screenshots/harvest.png)
 
 ![A stump, a picked and a ripe berry bush and a sapling](docs/screenshots/forage.png)
 
@@ -73,10 +89,20 @@ logs, stone, clay and reeds it takes against what you carry; the spot is refused
 something is missing, and a click or Space builds it and takes the materials. The ghost
 shows where it fits, and the game tells you why a spot doesn't work, for example when it is
 unsafe wetland. Hold something else (or press Escape or right click) to stop building. You can
-walk inside a house, and the last bed you slept in becomes your home. The buildings, their
-sizes and costs are in `data/buildings.cfg`.
+walk inside every building, and each has its own room: a bare shack with a straw mat, the
+Kate's cottage room, the longhouse with a living end and an animal end, and the barn with
+stalls and hay. The last bed you slept in becomes your home. A new game starts at the camp
+with your tools and the hammer, so the materials for the first house have to be gathered
+first. The buildings, their sizes, costs and insides are in
+[data/buildings.cfg](data/buildings.cfg).
 
-![Placing a house in build mode](docs/screenshots/build.png)
+The buildings follow the reed-thatched farmhouses of Denmark and northern Germany: the Kate
+with white lime walls and teal shutters, the brick longhouse with its arched barn door, the
+half-timbered barn, and the plank shack.
+
+![The Kate, the longhouse, the barn and the shack in summer](docs/screenshots/buildings.png)
+
+![Build mode: the ghost of a Kate and what it costs](docs/screenshots/build.png)
 
 ### Character, inventory and equipment
 
@@ -171,7 +197,7 @@ fresh world, run `godot --path . -- --new-game`.
 - **Sound:** all sounds are synthesised by [tools/audio/generate.py](tools/audio/generate.py)
   into assets/sounds/; its docstring explains how to tune or replace one.
 - **Data files:** gameplay numbers you might want to tune live in
-  [data/](data/) (energy, weather, vegetation, sounds).
+  [data/](data/) (energy, crops, buildings, weather, seasons, vegetation, wildlife, sounds).
 - **Design:** the design is in [SPEC.md](SPEC.md).
 - **Debug flags:** command-line flags for screenshots and debugging (time, day, weather,
   position and more) are listed at the top of [game/scenes/main.gd](game/scenes/main.gd).
