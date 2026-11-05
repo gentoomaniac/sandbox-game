@@ -429,7 +429,9 @@ Split into three tasks that can run in parallel. Numbers and reasons:
 `docs/art-review-2026-11-05.md`. All follow SPEC.md "Art pipeline" style rules.
 
 Screenshots: the tiling window manager makes windowed screenshots portrait; take them
-fullscreen (`godot --path . -f -- --new-game --screenshot=... --at=...`).
+fullscreen (`godot --path . -f -- --new-game --save-path=<scratch> --settings-path=<scratch>
+--screenshot=... --at=...`; the scratch settings path keeps the player's stored display mode
+from overriding `-f`).
 
 ### 16a. Objects: trees, bushes, stones, camp, crops
 
@@ -519,7 +521,7 @@ See SPEC.md "Player" (inventory and equipment, tools).
 
 ## 19. Pause menu and settings with key bindings
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Menus and settings".
 

@@ -77,12 +77,13 @@ ZOOM ?=
 ARGS ?=
 OUT ?= $(CURDIR)/build/screenshot.png
 # Screenshots start a new game, so they never show the real save; KEEP_SAVE=1 loads it
-# (e.g. with ARGS="--save-path=...").
+# (e.g. with ARGS="--save-path=..."). They read build/settings.cfg instead of the player's
+# settings (a missing file means defaults), so stored keys or display mode don't apply.
 KEEP_SAVE ?=
 screenshot:
 	$(IMPORT)
 	mkdir -p $(dir $(OUT))
-	$(GODOT) --path . -- $(if $(KEEP_SAVE),,--new-game) $(if $(AT),--at=$(AT)) --screenshot=$(OUT) $(if $(TIME),--time=$(TIME)) $(if $(ZOOM),--zoom=$(ZOOM)) $(ARGS)
+	$(GODOT) --path . -- $(if $(KEEP_SAVE),,--new-game) $(if $(AT),--at=$(AT)) --settings-path=$(CURDIR)/build/settings.cfg --screenshot=$(OUT) $(if $(TIME),--time=$(TIME)) $(if $(ZOOM),--zoom=$(ZOOM)) $(ARGS)
 
 # On Godot builds without navigation (e.g. some Gentoo builds) GUT prints a harmless
 # 'Identifier "NavigationMeshGenerator" not declared' parse error. Tests still run.
