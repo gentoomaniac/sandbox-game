@@ -157,6 +157,14 @@ top of classic pixel art (details under "Lighting and look").
   - Better beds may fill the bar a little above 100 %. Better beds should feel like a
     bonus, not like escaping a penalty.
   - Other bed bonuses come later.
+- **Tile targeting with the mouse:** the tile highlight follows the mouse cursor.
+  - Within reach (the 3×3 tiles around the player for hand tools; later tools may reach
+    further), the highlight shows normally, and the action (left click or Space) works on
+    that tile.
+  - Out of reach, the highlight turns translucent red and the action does nothing.
+  - When the mouse hasn't moved for a few seconds, the highlight fades out. Then the
+    keyboard action (Space) works on the tile the player faces, as before, and the
+    highlight shows that tile again once the player moves.
 - **Inventory and equipment.** Carried items have weight (see Energy).
 - **Scale between character and world (to fix, 2026-11-05):** the character looks too big
   next to the other art. World art (trees, buildings, objects) gets bigger relative to the

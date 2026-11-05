@@ -430,6 +430,23 @@ See SPEC.md "Saving (first version)" and "World edits (architecture)".
 See SPEC.md "Player" (scale between character and world). Details follow from the art
 review (2026-11-05).
 
+## 17. Mouse tile targeting
+
+- [ ] Done
+
+See SPEC.md "Player" (tile targeting with the mouse).
+
+- The use highlight follows the tile under the mouse (through
+  `CameraController.mouse_world_position()`).
+- Reach: the 3×3 tiles around the player's tile (a constant; tools may change it later).
+  In reach: normal highlight, and left click or Space uses that tile. Out of reach:
+  translucent red highlight, no action.
+- Mouse idle for about 3 s: the highlight fades out over about 0.5 s and the target falls
+  back to the facing tile (keyboard play). Moving the mouse brings the mouse target back.
+- Build mode keeps its own mouse handling; no use action while it's active.
+- The targeting rule (which tile, in reach or not, which source) is a pure function with
+  tests.
+
 ## Later (not part of the prototype)
 
 Camera follow mode: task 12 left two modes for the user to compare by feel (F7):
