@@ -245,8 +245,8 @@ Decided 2026-11-05.
     another action moves to the new one, and the menu says so. "Reset to defaults" restores
     all keys.
   - **Display:** fullscreen or windowed.
-  - **Game:** UI scale (a slider from 0.5× to 2×, the UI only, not the world) and the
-    energy drain (Low, Normal, High).
+  - **Game:** UI scale (a slider from 0.5× to 2×, the UI only, not the world), the
+    energy drain (Low, Normal, High) and the day length variation (0–100 %).
   - Settings are saved in `user://settings.cfg`, separate from the save game.
   - Gamepads later.
 - **UI look:** a pixel font and a framed panel (9-slice) in palette colours, in one shared
@@ -299,6 +299,18 @@ Decided 2026-11-05. A text console for testing and cheats.
     overcast skies dimming daylight. Nothing in the game reacts yet (crops, floods,
     frozen rivers, energy and the like come later); the state is ready for it. No
     effects inside buildings.
+- **Day length follows the year** (decided 2026-11-05): the game is set in the Nordics.
+  Sunrise and sunset move smoothly over the year (a curve, no steps between seasons):
+  longest day in mid-summer (about 03:45–22:15), shortest in mid-winter (about
+  09:15–15:15), 12 hours in mid-spring and mid-autumn. Dawn and dusk tints follow
+  sunrise and sunset. A setting (Settings → Game, "Day length variation", 0–100 %,
+  default 100 %) scales the swing: 0 % gives 12-hour days all year.
+- **Weather blends across seasons and follows the sun** (decided 2026-11-05): the season
+  baselines are points on a smooth yearly curve, not plateaus, so late autumn already
+  leans towards winter; the random variation can bring a rare freezing night or a day
+  or two of snow in autumn, or a warm spell in late winter. Temperature rises while the
+  sun is up and falls at night, by how strong the sunlight is (clouds warm less by day
+  and cool less at night). Sunlight is 0 at night.
 - **Calendar** (decided 2026-11-05): four seasons of 30 days (Spring, Summer, Autumn,
   Winter), so a year has 120 days. The game starts on the 1st day of Spring, Year 1. The
   HUD shows "10th day of Spring Year 2 · 06:00".

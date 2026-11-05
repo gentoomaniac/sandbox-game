@@ -663,6 +663,11 @@ See SPEC.md "Time, seasons and weather" (weather state).
   The F3 display also shows the values. Debug flag `--weather=<condition>`.
 - Tests: determinism, season baselines (e.g. snow possible in winter, never in summer),
   the daily cycle, condition thresholds, the console command.
+- Added 2026-11-05: day length over the year (a Sun model: sunrise and sunset per day,
+  scaled by the "Day length variation" setting on the Game page) drives the day/night
+  tint and the weather's sunlight; season baselines as a smooth yearly curve with rare
+  out-of-season spells; temperature follows the sun (warmer while it's up, clouds damp
+  the swing).
 
 ## Later (not part of the prototype)
 
