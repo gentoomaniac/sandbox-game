@@ -688,7 +688,7 @@ Depends on: 25. See SPEC.md "Vegetation density follows the year".
 
 ## 28. Ambient wildlife
 
-- [ ] Done
+- [x] Done
 
 Depends on: 26 (weather), ideally 27 (flowers present by season). See SPEC.md
 "Ambient wildlife".
