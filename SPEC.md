@@ -250,7 +250,7 @@ Goal: prove the world, building and Tiled pipeline with the smallest playable th
 - The make targets from Tech, including `make setup`.
 
 Not in the prototype: combat, reputation, biomes beyond one, weather, energy, saving and
-loading, real art (placeholder tiles only).
+loading, final hand-made art (generated art only, see Art pipeline).
 
 Tasks: see [TASKS.md](TASKS.md).
 
