@@ -91,6 +91,11 @@ func _on_submitted(line: String) -> void:
 func _on_input_gui_input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed:
 		return
+	# The pause key closes the console here: a LineEdit that is editing would take it otherwise.
+	if event.is_action_pressed("pause"):
+		close()
+		_input.accept_event()
+		return
 	match event.keycode:
 		KEY_UP:
 			_browse_history(-1)
