@@ -246,7 +246,7 @@ Depends on: 7.
   give `World` an explicit mutation method that emits a change signal, and let
   `WorldView` redraw the tile from it (instead of callers remembering `redraw_tile`).
   Weather will use the same path later.
-- An action on a plantable tile Another action plants the crop on
+- Another action plants the crop on
   soil.
 - When a day begins, every crop advances by one day.
 - A fully grown crop can be harvested, which removes it. There's no inventory yet, so
