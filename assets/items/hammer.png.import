@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dcqjc124rcnrr"
-path="res://.godot/imported/small_house.png-0bcd0c4d3c21a693865145aa52ef569f.ctex"
+uid="uid://cd3hgkkdv0dc6"
+path="res://.godot/imported/hammer.png-31a4287370e43034375d9efb890266e1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/buildings/small_house.png"
-dest_files=["res://.godot/imported/small_house.png-0bcd0c4d3c21a693865145aa52ef569f.ctex"]
+source_file="res://assets/items/hammer.png"
+dest_files=["res://.godot/imported/hammer.png-31a4287370e43034375d9efb890266e1.ctex"]
 
 [params]
 

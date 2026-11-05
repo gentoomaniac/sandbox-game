@@ -2,7 +2,7 @@ class_name SeasonalArt
 extends RefCounted
 ## Which picture file shows a look (see SeasonBlend.Look). Summer is the plain file; the other
 ## looks add their name before the extension, as the art generator writes them
-## (tools/art/seasons.py): terrain_snow.png, small_house_lit_snow.png.
+## (tools/art/seasons.py): terrain_snow.png, kate_lit_snow.png.
 
 
 ## The file of `summer_path` as it looks in `look`.

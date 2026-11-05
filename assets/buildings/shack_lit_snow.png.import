@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://rkhcp7ifv85n"
-path="res://.godot/imported/small_house_snow.png-19a8f3381b5d075eacfe54b2fe05d9a2.ctex"
+uid="uid://b3nylg1my7twk"
+path="res://.godot/imported/shack_lit_snow.png-574e1cf381b435c57e54274390658a6e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/buildings/small_house_snow.png"
-dest_files=["res://.godot/imported/small_house_snow.png-19a8f3381b5d075eacfe54b2fe05d9a2.ctex"]
+source_file="res://assets/buildings/shack_lit_snow.png"
+dest_files=["res://.godot/imported/shack_lit_snow.png-574e1cf381b435c57e54274390658a6e.ctex"]
 
 [params]
 

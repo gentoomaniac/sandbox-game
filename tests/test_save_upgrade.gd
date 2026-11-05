@@ -59,3 +59,22 @@ func test_a_version_3_save_loads_with_its_saplings_as_acorns() -> void:
 
 	assert_eq(restored.player.inventory.count_of(ItemTypes.ACORN), 3)
 	assert_eq(restored.world.ground_count_of(ItemTypes.ACORN), 2)
+
+
+func test_a_version_4_save_loads_with_its_small_houses_as_kates() -> void:
+	var state := GameState.new_game(7)
+	for y in range(-12, 13):
+		for x in range(-12, 13):
+			var origin := state.player.tile() + Vector2i(x, y)
+			if state.world.place_building(BuildingTypes.KATE, origin) != null:
+				break
+		if not state.world.buildings().is_empty():
+			break
+	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
+	game["world"]["buildings"][0]["type"] = "small_house"
+	_write_save(4, game)
+
+	var restored := SaveFile.read(SAVE_PATH)
+
+	assert_eq(restored.world.buildings()[0].type, BuildingTypes.KATE)
+	assert_eq(restored.world.buildings()[0].origin, state.world.buildings()[0].origin)

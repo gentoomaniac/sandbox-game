@@ -56,7 +56,9 @@ const DEFAULT_DAY_LENGTH_VARIATION := 100
 const ACTION_LABELS := {
 	&"use": "Use",
 	&"use_click": "Use (mouse)",
-	&"toggle_build": "Build mode",
+	&"select_hammer": "Select hammer",
+	&"build_previous": "Previous building",
+	&"build_next": "Next building",
 	&"toggle_fast_forward": "Fast forward",
 	&"toggle_coordinates": "Show coordinates",
 	&"pause": "Pause menu",

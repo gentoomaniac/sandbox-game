@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bvrpdwfttspd0"
-path="res://.godot/imported/small_house_spring.png-eaa595966b5a08ace08bc0ffad4d0b16.ctex"
+uid="uid://1ciy5q8wk830"
+path="res://.godot/imported/kate_lit_snow.png-e227b9a96ea80062102327cabbdec057.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/buildings/small_house_spring.png"
-dest_files=["res://.godot/imported/small_house_spring.png-eaa595966b5a08ace08bc0ffad4d0b16.ctex"]
+source_file="res://assets/buildings/kate_lit_snow.png"
+dest_files=["res://.godot/imported/kate_lit_snow.png-e227b9a96ea80062102327cabbdec057.ctex"]
 
 [params]
 

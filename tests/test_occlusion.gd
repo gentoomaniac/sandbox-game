@@ -53,20 +53,20 @@ func test_low_object_does_not_occlude() -> void:
 
 
 func test_building_roof_in_front_occludes_player_behind_it() -> void:
-	var house := _world.place_building(BuildingTypes.SMALL_HOUSE, Vector2i(2, 5))
+	var house := _world.place_building(BuildingTypes.KATE, Vector2i(2, 5))
 	# Feet above the footprint's top edge (y 80), within the roof.
 	var behind_roof := Vector2(72, 70)
 	assert_eq(Occlusion.occluding_buildings(behind_roof, _world.buildings()), [house])
 
 
 func test_building_far_above_the_player_does_not_occlude() -> void:
-	_world.place_building(BuildingTypes.SMALL_HOUSE, Vector2i(2, 8))
+	_world.place_building(BuildingTypes.KATE, Vector2i(2, 8))
 	# The house is 96 px high, so its top edge is at y 80; the player's head reaches only y 24.
 	assert_true(Occlusion.occluding_buildings(FEET, _world.buildings()).is_empty())
 
 
 func test_player_beside_or_in_front_of_building_is_not_occluded() -> void:
-	var house := _world.place_building(BuildingTypes.SMALL_HOUSE, Vector2i(2, 2))
+	var house := _world.place_building(BuildingTypes.KATE, Vector2i(2, 2))
 	# Left of the 5-tile-wide footprint, and south of it (sorted after the house).
 	assert_true(Occlusion.occluding_buildings(Vector2(16, 60), [house]).is_empty())
 	assert_true(Occlusion.occluding_buildings(Vector2(72, 100), [house]).is_empty())

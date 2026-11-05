@@ -834,7 +834,7 @@ Depends on 33. See SPEC.md "Scythe and tall grass" and "Shovel and clay".
 
 ## 36. Buildings from a config, with costs and the hammer
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Building and land" (first buildings, costs, hammer, buildings.cfg).
 

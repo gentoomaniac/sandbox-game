@@ -4,10 +4,10 @@ extends GutTest
 
 func test_an_empty_hand_stays_empty_after_adding() -> void:
 	var inventory := Inventory.with_starting_items()
-	inventory.select(9)
+	inventory.select(8)
 	inventory.add(ItemTypes.BERRIES, 3)
 	assert_eq(inventory.held_item(), ItemTypes.NONE)
-	assert_eq(inventory.item_in(10), ItemTypes.BERRIES)
+	assert_eq(inventory.item_in(9), ItemTypes.BERRIES)
 
 
 func test_the_selected_slot_is_used_when_nothing_else_is_free() -> void:

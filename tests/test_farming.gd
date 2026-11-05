@@ -92,7 +92,7 @@ func test_a_tile_under_a_building_cannot_be_tilled() -> void:
 	var meadow := World.new(SEED)
 	meadow.add_chunk(Chunk.new(Vector2i.ZERO))
 	var origin := Vector2i(5, 5)
-	assert_not_null(meadow.place_building(BuildingTypes.SMALL_HOUSE, origin))
+	assert_not_null(meadow.place_building(BuildingTypes.KATE, origin))
 	assert_false(meadow.is_free_on(origin, Tile.Terrain.GRASS))
 
 

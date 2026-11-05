@@ -86,7 +86,7 @@ func _place_house() -> Building:
 	for x in range(-SEARCH, SEARCH):
 		for y in range(-SEARCH, SEARCH):
 			var house := _world.place_building(
-				BuildingTypes.SMALL_HOUSE, _state.player.tile() + Vector2i(x, y)
+				BuildingTypes.KATE, _state.player.tile() + Vector2i(x, y)
 			)
 			if house != null:
 				return house

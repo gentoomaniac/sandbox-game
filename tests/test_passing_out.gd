@@ -11,7 +11,7 @@ func _make_a_house_home() -> WorldObject:
 				house
 				if house != null
 				else _world.place_building(
-					BuildingTypes.SMALL_HOUSE, _state.player.tile() + Vector2i(x, y)
+					BuildingTypes.KATE, _state.player.tile() + Vector2i(x, y)
 				)
 			)
 	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)

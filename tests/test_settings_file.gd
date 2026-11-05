@@ -57,14 +57,14 @@ func _restart_with_saved_file() -> void:
 func test_bindings_survive_a_restart() -> void:
 	_settings.bind(&"interact", 0, _key(KEY_W))
 	_settings.bind(&"use", 1, _button(MOUSE_BUTTON_MIDDLE))
-	_settings.clear(&"toggle_build", 0)
+	_settings.clear(&"select_hammer", 0)
 	_settings.set_fullscreen(true)
 	_restart_with_saved_file()
 	assert_true(_settings.is_fullscreen)
 	assert_eq(_texts(&"interact"), ["W"])
 	assert_eq(_texts(&"move_up"), ["Up arrow"])
 	assert_eq(_texts(&"use"), ["Space", "Middle mouse"])
-	assert_eq(_texts(&"toggle_build"), [])
+	assert_eq(_texts(&"select_hammer"), [])
 
 
 func test_the_file_holds_only_what_differs_from_the_defaults() -> void:

@@ -29,7 +29,7 @@ sleeping bag 1x2) is centred on its footprint, with the cell's bottom on the foo
 
 Terrain, decorations and objects also exist per look (see seasons.py: spring, summer, autumn,
 bare, frost, snow), the house pictures in summer and snow: summer under the names above, the
-others with the look added, e.g. assets/terrain_snow.png and assets/buildings/small_house_lit_snow.png.
+others with the look added, e.g. assets/terrain_snow.png and assets/buildings/kate_lit_snow.png.
 
 assets/character/<slot>_<variant>.png: one sheet per layer of the player character, 16x32 cells
 with the feet on the bottom row. One row per facing (down, up, left, right), columns: idle,
@@ -38,7 +38,7 @@ walk 1 to 4 (see game/state/appearance.gd and game/scenes/player_view.gd).
 assets/buildings/<type>.png: one picture per building type, as wide as its footprint (16 px
 per tile) and as tall as the footprint plus the roof rising above it. The bottom edge is the
 footprint's bottom edge. <type>_lit.png is the same with lit windows, for the night. Sizes
-and door tiles are in game/state/building_types.gd.
+and door tiles are in data/buildings.cfg.
 
 assets/wildlife/<kind>.png: one sheet per animal kind, one row per action and one column per frame
 (see animals.py and game/scenes/wildlife/wildlife_sprites.gd).
@@ -62,6 +62,7 @@ from pathlib import Path
 from PIL import Image
 
 import animals
+import build_icons
 import crop_icons
 import crops
 import items
@@ -1706,32 +1707,37 @@ INTERIOR_TILES = list(INTERIOR_GROUND_TILES.values()) + [
 ]
 
 
-# The small house (assets/buildings/small_house.png, and small_house_lit.png with lit
-# windows for the night). 5x3 tiles plus the roof above: 80x96. Seen from the front in 3/4
-# view: a stone foundation, plaster walls with timber, a thatched roof whose eaves hang 3 px
-# past the walls, and a chimney. Light comes from the top left, so the right of the wall is
-# darker. The door is on the middle tile of the bottom row.
+# The houses (assets/buildings/<id>.png, and <id>_lit.png with lit windows for the night).
+# Placeholders until the art pass (task 38) replaces them: Kate, longhouse and barn are one
+# house drawn at different widths, the shack a small hut. Seen from the front in 3/4 view: a
+# stone foundation, plaster walls with timber, a thatched roof whose eaves hang 3 px past the
+# walls, and a chimney. Light comes from the top left, so the right of the wall is darker. The
+# bottom edge of a picture is the bottom edge of the footprint; the roof rises above it.
 
-HOUSE_WIDTH = 80
 HOUSE_HEIGHT = 96
 HOUSE_RIDGE_Y = 14
 HOUSE_EAVES_Y = 58
 HOUSE_WALL_LEFT = 3
-HOUSE_WALL_RIGHT = 76
-# Top left corner of the 10x10 frame of each window. The same places are in
-# game/state/building_types.gd, where each gets a light.
-HOUSE_WINDOWS = ((10, 70), (60, 70))
+# The top of the 10x10 window frames. A window light is the middle of its frame (see
+# data/buildings.cfg).
+HOUSE_WINDOW_TOP = 70
+PLASTER = ("sand_light", "sand")
+PLANKS = ("soil_light", "soil_mid")
 THATCH_DARKER = {"straw": "sand_light", "sand_light": "sand", "sand": "mud", "gold": "straw"}
+# Where the thatch ends at the ridge, in pixels from the left and right edge of the picture.
+ROOF_INSET = 18
 
 
-def thatch_roof(canvas, rng):
-    """A trapezoid of straw courses 4 rows high, with a dark line under each course."""
-    rows = HOUSE_EAVES_Y - HOUSE_RIDGE_Y + 1
-    for y in range(HOUSE_RIDGE_Y, HOUSE_EAVES_Y + 1):
-        reach = 1 - (y - HOUSE_RIDGE_Y) / (rows - 1)
-        left = round(18 * reach)
-        right = HOUSE_WIDTH - 1 - round(18 * reach)
-        line = (y - HOUSE_RIDGE_Y) % 4
+def thatch_roof(canvas, rng, ridge_y, eaves_y, shade_x):
+    """A trapezoid of straw courses 4 rows high, with a dark line under each course; the
+    part right of `shade_x` is darker."""
+    width = len(canvas[0])
+    rows = eaves_y - ridge_y + 1
+    for y in range(ridge_y, eaves_y + 1):
+        reach = 1 - (y - ridge_y) / (rows - 1)
+        left = round(ROOF_INSET * reach)
+        right = width - 1 - round(ROOF_INSET * reach)
+        line = (y - ridge_y) % 4
         for x in range(left, right + 1):
             colour = ("straw", "sand_light", "straw", "sand")[line]
             if line == 0 and rng.random() < 0.16:
@@ -1739,17 +1745,18 @@ def thatch_roof(canvas, rng):
             if line == 1 and rng.random() < 0.1:
                 colour = "dry_light"
             # Light from the left: the right of the roof is in shade, with a ragged edge.
-            if x > 50 + rng.random() * 12:
+            if x > shade_x + rng.random() * 12:
                 colour = THATCH_DARKER.get(colour, colour)
             canvas[y][x] = colour
-    for x in range(HOUSE_WIDTH):
-        if canvas[HOUSE_EAVES_Y][x] is not None:
-            canvas[HOUSE_EAVES_Y - 1][x] = "mud"
-            canvas[HOUSE_EAVES_Y][x] = "soil_dark"
+    for x in range(width):
+        if canvas[eaves_y][x] is not None:
+            canvas[eaves_y - 1][x] = "mud"
+            canvas[eaves_y][x] = "soil_dark"
     # The ridge: a cap of bundled straw.
-    fill_rect(canvas, 18, HOUSE_RIDGE_Y, 61, HOUSE_RIDGE_Y + 1, "gold")
-    fill_rect(canvas, 18, HOUSE_RIDGE_Y + 1, 61, HOUSE_RIDGE_Y + 1, "straw")
-    fill_rect(canvas, 18, HOUSE_RIDGE_Y + 2, 61, HOUSE_RIDGE_Y + 2, "sand")
+    ridge_right = width - ROOF_INSET - 1
+    fill_rect(canvas, ROOF_INSET, ridge_y, ridge_right, ridge_y + 1, "gold")
+    fill_rect(canvas, ROOF_INSET, ridge_y + 1, ridge_right, ridge_y + 1, "straw")
+    fill_rect(canvas, ROOF_INSET, ridge_y + 2, ridge_right, ridge_y + 2, "sand")
 
 
 def house_window(canvas, left, top, is_lit):
@@ -1768,70 +1775,144 @@ def house_window(canvas, left, top, is_lit):
     fill_rect(canvas, left - 1, top + 12, left + 10, top + 12, "mud")
 
 
-def small_house(is_lit=False):
+def house_door(canvas, left):
+    """A 14x26 plank door in a frame on the 16 px tile that starts at `left`: hinges, a
+    handle and a stone step."""
+    fill_rect(canvas, left, 63, left + 15, 90, "soil_dark")
+    fill_rect(canvas, left + 1, 65, left + 14, 90, "soil_mid")
+    fill_rect(canvas, left + 1, 65, left + 14, 65, "soil")
+    fill_rect(canvas, left + 1, 65, left + 1, 90, "soil_light")
+    for x in (5, 9, 13):
+        fill_rect(canvas, left + x, 66, left + x, 90, "soil")
+    for y in (69, 85):
+        fill_rect(canvas, left + 2, y, left + 7, y, "soil_dark")
+    fill_rect(canvas, left + 11, 78, left + 12, 79, "gold")
+    fill_rect(canvas, left - 2, 91, left + 17, 93, "stone")
+    fill_rect(canvas, left - 2, 91, left + 17, 91, "stone_light")
+    fill_rect(canvas, left - 2, 93, left + 17, 93, "stone_dark")
+
+
+def contact_shadow(canvas):
+    """A shadow on the ground in front of a building, on its bottom 2 rows."""
+    width, height = len(canvas[0]), len(canvas)
+    for x in range(1, width - 1):
+        canvas[height - 2][x] = "shadow"
+        if x % 2 == 0 and 2 < x < width - 3:
+            canvas[height - 1][x] = "shadow"
+
+
+def house(width_tiles, door_column, window_lefts, is_lit, walls=PLASTER, has_chimney=True):
+    """A house `width_tiles` wide, 3 tiles deep: the door on the tile `door_column`, a window
+    at each of `window_lefts`, walls in the two colours of `walls` (lit, shaded)."""
     rng = random.Random(121)
-    canvas = sprite_canvas(HOUSE_WIDTH, HOUSE_HEIGHT)
+    width = width_tiles * TILE
+    wall_right = width - 4
+    shade_left = width - 16
+    wall_light, wall_shade = walls
+    canvas = sprite_canvas(width, HOUSE_HEIGHT)
     wall_top = HOUSE_EAVES_Y + 1
     wall_bottom = 93
 
     # Chimney first, so the roof covers its foot: 8 px wide, 12 px above the ridge.
-    fill_rect(canvas, 52, 2, 59, 24, "stone")
-    fill_rect(canvas, 52, 4, 53, 24, "stone_light")
-    fill_rect(canvas, 58, 4, 59, 24, "stone_dark")
-    for y in range(6, 25, 4):
-        fill_rect(canvas, 52, y, 59, y, "stone_dark")
-    fill_rect(canvas, 51, 2, 60, 3, "stone_light")
-    fill_rect(canvas, 51, 3, 60, 3, "stone_dark")
+    if has_chimney:
+        left = width - 28
+        fill_rect(canvas, left, 2, left + 7, 24, "stone")
+        fill_rect(canvas, left, 4, left + 1, 24, "stone_light")
+        fill_rect(canvas, left + 6, 4, left + 7, 24, "stone_dark")
+        for y in range(6, 25, 4):
+            fill_rect(canvas, left, y, left + 7, y, "stone_dark")
+        fill_rect(canvas, left - 1, 2, left + 8, 3, "stone_light")
+        fill_rect(canvas, left - 1, 3, left + 8, 3, "stone_dark")
 
     # Walls: plaster between timber, the right side in shade, on a stone foundation.
-    fill_rect(canvas, HOUSE_WALL_LEFT, wall_top, HOUSE_WALL_RIGHT, wall_bottom, "sand_light")
+    fill_rect(canvas, HOUSE_WALL_LEFT, wall_top, wall_right, wall_bottom, wall_light)
     for _ in range(60):
-        x = rng.randrange(HOUSE_WALL_LEFT + 2, HOUSE_WALL_RIGHT - 1)
-        canvas[rng.randrange(wall_top + 4, 86)][x] = "sand"
-    fill_rect(canvas, 64, wall_top, HOUSE_WALL_RIGHT, wall_bottom, "sand")
+        x = rng.randrange(HOUSE_WALL_LEFT + 2, wall_right - 1)
+        canvas[rng.randrange(wall_top + 4, 86)][x] = wall_shade
+    fill_rect(canvas, shade_left, wall_top, wall_right, wall_bottom, wall_shade)
     for _ in range(14):
-        canvas[rng.randrange(wall_top + 4, 86)][rng.randrange(64, HOUSE_WALL_RIGHT - 1)] = "mud"
-    for left, colour in ((HOUSE_WALL_LEFT, "soil_mid"), (HOUSE_WALL_RIGHT - 1, "soil")):
+        canvas[rng.randrange(wall_top + 4, 86)][rng.randrange(shade_left, wall_right - 1)] = "mud"
+    for left, colour in ((HOUSE_WALL_LEFT, "soil_mid"), (wall_right - 1, "soil")):
         fill_rect(canvas, left, wall_top, left + 1, wall_bottom, colour)
-    fill_rect(canvas, HOUSE_WALL_LEFT, 84, HOUSE_WALL_RIGHT, 85, "soil")
-    fill_rect(canvas, HOUSE_WALL_LEFT, 84, HOUSE_WALL_RIGHT, 84, "soil_mid")
-    fill_rect(canvas, HOUSE_WALL_LEFT, 90, HOUSE_WALL_RIGHT, wall_bottom, "stone")
-    for x in range(HOUSE_WALL_LEFT, HOUSE_WALL_RIGHT + 1, 8):
-        fill_rect(canvas, x, 91, min(x + 3, HOUSE_WALL_RIGHT), 92, "stone_light")
-    fill_rect(canvas, HOUSE_WALL_LEFT, 90, HOUSE_WALL_RIGHT, 90, "stone_light")
-    fill_rect(canvas, HOUSE_WALL_LEFT, wall_bottom, HOUSE_WALL_RIGHT, wall_bottom, "stone_dark")
+    fill_rect(canvas, HOUSE_WALL_LEFT, 84, wall_right, 85, "soil")
+    fill_rect(canvas, HOUSE_WALL_LEFT, 84, wall_right, 84, "soil_mid")
+    fill_rect(canvas, HOUSE_WALL_LEFT, 90, wall_right, wall_bottom, "stone")
+    for x in range(HOUSE_WALL_LEFT, wall_right + 1, 8):
+        fill_rect(canvas, x, 91, min(x + 3, wall_right), 92, "stone_light")
+    fill_rect(canvas, HOUSE_WALL_LEFT, 90, wall_right, 90, "stone_light")
+    fill_rect(canvas, HOUSE_WALL_LEFT, wall_bottom, wall_right, wall_bottom, "stone_dark")
 
-    for left, top in HOUSE_WINDOWS:
-        house_window(canvas, left, top, is_lit)
-
-    # Door on the middle tile (x 32..47): frame, 14x26 planks, hinges, handle, stone step.
-    fill_rect(canvas, 32, 63, 47, 90, "soil_dark")
-    fill_rect(canvas, 33, 65, 46, 90, "soil_mid")
-    fill_rect(canvas, 33, 65, 46, 65, "soil")
-    fill_rect(canvas, 33, 65, 33, 90, "soil_light")
-    for x in (37, 41, 45):
-        fill_rect(canvas, x, 66, x, 90, "soil")
-    for y in (69, 85):
-        fill_rect(canvas, 34, y, 39, y, "soil_dark")
-    fill_rect(canvas, 43, 78, 44, 79, "gold")
-    fill_rect(canvas, 30, 91, 49, 93, "stone")
-    fill_rect(canvas, 30, 91, 49, 91, "stone_light")
-    fill_rect(canvas, 30, 93, 49, 93, "stone_dark")
+    for left in window_lefts:
+        house_window(canvas, left, HOUSE_WINDOW_TOP, is_lit)
+    house_door(canvas, door_column * TILE)
 
     # The shadow of the eaves on the wall, then the roof.
-    for y, colour in ((wall_top, "mud"), (wall_top + 1, "mud"), (wall_top + 2, "sand"), (wall_top + 3, "sand")):
-        for x in range(HOUSE_WALL_LEFT, HOUSE_WALL_RIGHT + 1):
-            if canvas[y][x] in ("sand_light", "sand"):
+    shadows = ((wall_top, "mud"), (wall_top + 1, "mud"), (wall_top + 2, wall_shade), (wall_top + 3, wall_shade))
+    for y, colour in shadows:
+        for x in range(HOUSE_WALL_LEFT, wall_right + 1):
+            if canvas[y][x] in walls:
                 canvas[y][x] = colour
-    thatch_roof(canvas, rng)
+    thatch_roof(canvas, rng, HOUSE_RIDGE_Y, HOUSE_EAVES_Y, width - 30)
     outline(canvas, "soil_dark")
-
-    # A contact shadow on the ground in front, on the bottom 2 rows.
-    for x in range(1, HOUSE_WIDTH - 1):
-        canvas[HOUSE_HEIGHT - 2][x] = "shadow"
-        if x % 2 == 0 and 2 < x < HOUSE_WIDTH - 3:
-            canvas[HOUSE_HEIGHT - 1][x] = "shadow"
+    contact_shadow(canvas)
     return canvas
+
+
+SHACK_WIDTH = 48
+SHACK_HEIGHT = 64
+SHACK_RIDGE_Y = 8
+SHACK_EAVES_Y = 30
+SHACK_WINDOW_LEFT = 35
+
+
+def shack(is_lit):
+    """A plank hut on a 3x2 footprint: a low thatched roof, the door on the middle tile and
+    a window on the right."""
+    rng = random.Random(122)
+    canvas = sprite_canvas(SHACK_WIDTH, SHACK_HEIGHT)
+    wall_top = SHACK_EAVES_Y + 1
+    wall_bottom = SHACK_HEIGHT - 3
+    wall_right = SHACK_WIDTH - 4
+    fill_rect(canvas, 3, wall_top, wall_right, wall_bottom, "soil_light")
+    for x in range(5, wall_right, 4):
+        fill_rect(canvas, x, wall_top, x, wall_bottom, "soil_mid")
+    fill_rect(canvas, SHACK_WIDTH - 12, wall_top, wall_right, wall_bottom, "soil_mid")
+    fill_rect(canvas, 3, wall_bottom - 3, wall_right, wall_bottom, "stone")
+    fill_rect(canvas, 3, wall_bottom - 3, wall_right, wall_bottom - 3, "stone_light")
+    fill_rect(canvas, 3, wall_bottom, wall_right, wall_bottom, "stone_dark")
+    house_window(canvas, SHACK_WINDOW_LEFT, wall_top + 8, is_lit)
+    # The door, on the tile from x 16 to 31: a frame and planks.
+    fill_rect(canvas, 16, wall_top + 7, 31, wall_bottom - 4, "soil_dark")
+    fill_rect(canvas, 17, wall_top + 9, 30, wall_bottom - 4, "soil_mid")
+    fill_rect(canvas, 17, wall_top + 9, 17, wall_bottom - 4, "soil_light")
+    fill_rect(canvas, 27, wall_top + 18, 28, wall_top + 19, "gold")
+    thatch_roof(canvas, rng, SHACK_RIDGE_Y, SHACK_EAVES_Y, SHACK_WIDTH - 30)
+    outline(canvas, "soil_dark")
+    contact_shadow(canvas)
+    return canvas
+
+
+# The placeholder pictures by building id (see data/buildings.cfg): how to draw one (is_lit to
+# picture), and where its thatch is, for the snow look (see seasons.house): the ridge row, the
+# eaves row, the x right of which the roof is in shade, and the x range of the chimney's top.
+BUILDING_PICTURES = {
+    "shack": (shack, SHACK_RIDGE_Y, SHACK_EAVES_Y, SHACK_WIDTH - 30, range(0)),
+    "kate": (lambda is_lit: house(5, 2, (10, 60), is_lit), HOUSE_RIDGE_Y, HOUSE_EAVES_Y, 50, range(51, 61)),
+    "longhouse": (
+        lambda is_lit: house(7, 3, (6, 26, 76, 96), is_lit),
+        HOUSE_RIDGE_Y,
+        HOUSE_EAVES_Y,
+        82,
+        range(83, 93),
+    ),
+    "barn": (
+        lambda is_lit: house(6, 2, (), is_lit, walls=PLANKS, has_chimney=False),
+        HOUSE_RIDGE_Y,
+        HOUSE_EAVES_Y,
+        66,
+        range(0),
+    ),
+}
 
 
 def to_image(rows, size=TILE, height=None):
@@ -1898,7 +1979,10 @@ def main():
         terrain_rows.append(tiles)
         decoration_rows.append(decorations)
     objects = object_atlas()
-    houses = {"small_house": small_house(is_lit=False), "small_house_lit": small_house(is_lit=True)}
+    houses = {}
+    for name, (draw, *roof) in BUILDING_PICTURES.items():
+        houses[name] = (draw(is_lit=False), roof)
+        houses[f"{name}_lit"] = (draw(is_lit=True), roof)
     redraws = {"oak": lambda variant: bare_oak(OAK_SEEDS[variant])}
     (ASSETS / "buildings").mkdir(exist_ok=True)
     # Summer keeps the plain names; the other looks add theirs, e.g. terrain_snow.png.
@@ -1913,9 +1997,9 @@ def main():
         ).save(ASSETS / f"objects{suffix}.png")
         # Houses only change under snow.
         if look in ("summer", "snow"):
-            for name, picture in houses.items():
-                seasonal = seasons.house(look, picture, HOUSE_RIDGE_Y, HOUSE_EAVES_Y)
-                to_image([[seasonal]], HOUSE_WIDTH, HOUSE_HEIGHT).save(ASSETS / "buildings" / f"{name}{suffix}.png")
+            for name, (picture, roof) in houses.items():
+                seasonal = seasons.house(look, picture, *roof)
+                to_image([[seasonal]], len(seasonal[0]), len(seasonal)).save(ASSETS / "buildings" / f"{name}{suffix}.png")
     (ASSETS / "character").mkdir(exist_ok=True)
     for name, rows in CHARACTER_SHEETS.items():
         to_image(rows, CHARACTER_WIDTH, CHARACTER_HEIGHT).save(ASSETS / "character" / f"{name}.png")
@@ -1932,7 +2016,7 @@ def main():
     to_image([crop_icons.soil_wet()]).save(ASSETS / "soil_wet.png")
     to_image([[meadow.clay_hint()]]).save(ASSETS / "clay_hint.png")
     for directory, pictures in (
-        ("items", items.ICONS | crop_icons.icons() | meadow.icons() | reeds.icons()),
+        ("items", items.ICONS | crop_icons.icons() | meadow.icons() | reeds.icons() | build_icons.icons()),
         ("ui", items.SLOTS | items.SLOT_HINTS),
     ):
         (ASSETS / directory).mkdir(exist_ok=True)

@@ -1,27 +1,39 @@
 class_name BuildingTypes
 extends RefCounted
-## The kinds of building, as data. Keyed by type name; each entry has:
-## - footprint: tiles covered, width x height;
-## - door_offset: the walkable tile of the footprint, relative to its top left tile;
-## - interior_map: the Tiled map of the inside (see InteriorLoader);
-## - sprite: its picture, made by tools/art/generate.py. It is as wide as the footprint
-##   and its bottom edge is the footprint's bottom edge; the roof rises above that;
-## - sprite_lit: the same with lit windows, shown at night;
-## - window_lights: the centre of each lit window, in pixels from the sprite's top left;
-## - window_light: what each of them shines, like a world object's `light` (see
-##   WorldObjectTypes).
+## The kinds of building, as data from data/buildings.cfg (see there and BuildingRules).
+## Keyed by type name; each entry has the keys of the file, and also:
+## - costs: the materials placing it takes, item id to count (only those that are not 0).
 
-const SMALL_HOUSE := &"small_house"
+const SHACK := &"shack"
+const KATE := &"kate"
+const LONGHOUSE := &"longhouse"
+const BARN := &"barn"
 
-const TYPES := {
-	SMALL_HOUSE:
-	{
-		"footprint": Vector2i(5, 3),
-		"door_offset": Vector2i(2, 2),
-		"interior_map": "res://maps/interiors/small_house.tmx",
-		"sprite": "res://assets/buildings/small_house.png",
-		"sprite_lit": "res://assets/buildings/small_house_lit.png",
-		"window_lights": [Vector2i(15, 75), Vector2i(65, 75)],
-		"window_light": {"color": Color(1.0, 0.62, 0.28), "energy": 0.9, "radius_tiles": 2.5},
-	},
+## The material of each `cost_<material>` key of the file.
+const COST_ITEMS := {
+	"cost_logs": ItemTypes.LOGS,
+	"cost_stone": ItemTypes.STONE,
+	"cost_clay": ItemTypes.CLAY,
+	"cost_reeds": ItemTypes.REEDS,
 }
+
+# The name is that of a constant, but the types are only known once the file is read.
+static var TYPES := _from_rules(BuildingRules.default_rules())  # gdlint: ignore=class-variable-name
+
+
+## The building ids, in the order of the file.
+static func ids() -> Array[StringName]:
+	return BuildingRules.default_rules().building_ids()
+
+
+static func _from_rules(rules: BuildingRules) -> Dictionary:
+	var types := {}
+	for building_id in rules.building_ids():
+		var building := rules.building(building_id).duplicate()
+		var costs := {}
+		for key: String in COST_ITEMS:
+			if building.get(key, 0) > 0:
+				costs[COST_ITEMS[key]] = building[key]
+		building["costs"] = costs
+		types[building_id] = building
+	return types

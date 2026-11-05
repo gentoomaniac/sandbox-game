@@ -59,7 +59,7 @@ func test_a_building_goes_up_over_tall_grass_and_clears_it() -> void:
 	var world := World.new(1)
 	world.clock.day = MIDSUMMER
 	world.add_chunk(Chunk.new(Vector2i.ZERO))
-	var house := BuildingTypes.SMALL_HOUSE
+	var house := BuildingTypes.KATE
 	var origin := Vector2i(2, 2)
 	var covered := Building.footprint_tiles(house, origin)
 	for pos in covered:

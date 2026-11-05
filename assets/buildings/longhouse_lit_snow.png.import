@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cxmar1sgomk4i"
-path="res://.godot/imported/small_house_lit_snow.png-db9fdde3dc969ecfe823ae1e58faccf5.ctex"
+uid="uid://dixxi8yk8y74d"
+path="res://.godot/imported/longhouse_lit_snow.png-65114ca4c636fddecdd2d845e085b36b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/buildings/small_house_lit_snow.png"
-dest_files=["res://.godot/imported/small_house_lit_snow.png-db9fdde3dc969ecfe823ae1e58faccf5.ctex"]
+source_file="res://assets/buildings/longhouse_lit_snow.png"
+dest_files=["res://.godot/imported/longhouse_lit_snow.png-65114ca4c636fddecdd2d845e085b36b.ctex"]
 
 [params]
 

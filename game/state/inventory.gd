@@ -22,6 +22,11 @@ const STARTING_ITEMS := [
 	[ItemTypes.TURNIP_SEEDS, 15],
 	[ItemTypes.SCYTHE, 1],
 	[ItemTypes.SHOVEL, 1],
+	[ItemTypes.HAMMER, 1],
+]
+## What a new game starts with in the backpack (from the slot after the hotbar), so the hotbar
+## keeps room for what the player picks up.
+const STARTING_BACKPACK := [
 	[ItemTypes.STRAW_HAT, 1],
 	[ItemTypes.SHIRT, 1],
 ]
@@ -40,6 +45,10 @@ static func with_starting_items() -> Inventory:
 	var inventory := Inventory.new()
 	for slot in STARTING_ITEMS.size():
 		inventory.slots[slot] = {"item": STARTING_ITEMS[slot][0], "count": STARTING_ITEMS[slot][1]}
+	for index in STARTING_BACKPACK.size():
+		inventory.slots[HOTBAR_SIZE + index] = {
+			"item": STARTING_BACKPACK[index][0], "count": STARTING_BACKPACK[index][1]
+		}
 	return inventory
 
 

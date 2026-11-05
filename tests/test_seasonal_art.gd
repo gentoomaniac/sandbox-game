@@ -29,11 +29,11 @@ func test_every_look_has_its_files() -> void:
 
 
 func test_a_house_only_has_a_plain_and_a_snowy_picture() -> void:
-	var lit: String = BuildingTypes.TYPES[BuildingTypes.SMALL_HOUSE]["sprite_lit"]
+	var lit: String = BuildingTypes.TYPES[BuildingTypes.KATE]["sprite_lit"]
 	assert_eq(SeasonalArt.house_path(lit, false), lit)
-	assert_eq(SeasonalArt.house_path(lit, true), "res://assets/buildings/small_house_lit_snow.png")
+	assert_eq(SeasonalArt.house_path(lit, true), "res://assets/buildings/kate_lit_snow.png")
 	for path: String in [
-		BuildingTypes.TYPES[BuildingTypes.SMALL_HOUSE]["sprite"],
+		BuildingTypes.TYPES[BuildingTypes.KATE]["sprite"],
 		lit,
 	]:
 		assert_true(ResourceLoader.exists(SeasonalArt.house_path(path, true)))

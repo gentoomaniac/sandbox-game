@@ -38,9 +38,7 @@ func _place_house() -> Building:
 	var around := _state.player.tile()
 	for y in range(-12, 13):
 		for x in range(-12, 13):
-			var house := _state.world.place_building(
-				BuildingTypes.SMALL_HOUSE, around + Vector2i(x, y)
-			)
+			var house := _state.world.place_building(BuildingTypes.KATE, around + Vector2i(x, y))
 			if house != null:
 				return house
 	fail_test("no room for a house")
@@ -149,7 +147,7 @@ func test_player_round_trip() -> void:
 
 func test_interior_round_trip() -> void:
 	var interior := InteriorLoader.load_interior(
-		BuildingTypes.TYPES[BuildingTypes.SMALL_HOUSE]["interior_map"]
+		BuildingTypes.TYPES[BuildingTypes.KATE]["interior_map"]
 	)
 	var restored := Interior.from_dict(_through_json(interior.to_dict()))
 	assert_eq(restored.to_dict(), interior.to_dict())
@@ -159,7 +157,7 @@ func test_interior_round_trip() -> void:
 
 
 func test_building_without_an_interior_round_trip() -> void:
-	var building := Building.new(BuildingTypes.SMALL_HOUSE, Vector2i(5, -6))
+	var building := Building.new(BuildingTypes.KATE, Vector2i(5, -6))
 	var restored := Building.from_dict(_through_json(building.to_dict()))
 	assert_eq(restored.origin, building.origin)
 	assert_eq(restored.type, building.type)

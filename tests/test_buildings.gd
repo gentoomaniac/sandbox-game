@@ -1,6 +1,6 @@
 extends GutTest
 
-const HOUSE := BuildingTypes.SMALL_HOUSE
+const HOUSE := BuildingTypes.KATE
 const ORIGIN := Vector2i(2, 2)
 
 var _world: World

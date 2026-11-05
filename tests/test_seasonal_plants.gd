@@ -59,7 +59,7 @@ func test_a_dormant_fern_does_not_stand_in_the_way_of_building() -> void:
 	assert_true(_world.is_buildable(_tile))
 	assert_true(_world.is_free_on(_tile, Tile.Terrain.GRASS))
 	assert_true(_world.is_walkable(_tile))
-	assert_false(_world.placement_blockers(BuildingTypes.SMALL_HOUSE, _tile).has(_tile))
+	assert_false(_world.placement_blockers(BuildingTypes.KATE, _tile).has(_tile))
 
 
 func test_walking_and_building_agree_on_woody_plants_all_year() -> void:

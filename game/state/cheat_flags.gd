@@ -6,6 +6,7 @@ extends RefCounted
 var is_god := false
 var is_drain_off := false
 var is_weight_off := false
+var is_cost_off := false
 
 
 ## The names of the cheats that are on, for the HUD.
@@ -18,3 +19,5 @@ func active_names() -> Array[String]:
 	if is_weight_off:
 		names.append("No weight")
 	return names
+	if is_cost_off:
+		names.append("No cost")

@@ -12,7 +12,7 @@ func before_each() -> void:
 	_state.world.add_chunk(Chunk.new(Vector2i.ZERO))
 	_state.current_map = _state.world
 	_state.player.home_map = _state.world
-	_house = _state.world.place_building(BuildingTypes.SMALL_HOUSE, Vector2i(2, 2))
+	_house = _state.world.place_building(BuildingTypes.KATE, Vector2i(2, 2))
 
 
 func _stand_on(tile: Vector2i) -> void:
@@ -115,9 +115,7 @@ func test_the_exit_leads_to_the_tile_south_of_the_door() -> void:
 
 
 func test_each_building_keeps_its_own_interior() -> void:
-	var second := _state.world.place_building(
-		BuildingTypes.SMALL_HOUSE, _house.origin + Vector2i(8, 0)
-	)
+	var second := _state.world.place_building(BuildingTypes.KATE, _house.origin + Vector2i(8, 0))
 	var first_interior := _enter_house()
 	first_interior.add_object(WorldObject.new(WorldObjectTypes.CHEST, Vector2i(3, 5)))
 	_stand_on(first_interior.exit_tile)

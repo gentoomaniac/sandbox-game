@@ -433,14 +433,14 @@ def snow_roof(canvas, rng, ridge_y, eaves_y, shade_x):
             canvas[y][x] = lit[min(shade + step, 3)]
 
 
-def house(look, canvas, ridge_y, eaves_y):
+def house(look, canvas, ridge_y, eaves_y, shade_x, chimney_xs):
     """A house picture in a look: snow on the thatch under snow, the plain house otherwise
-    (the game only asks for "snow" and the summer picture)."""
+    (the game only asks for "snow" and the summer picture). The roof is between the rows
+    `ridge_y` and `eaves_y` and in shade right of `shade_x`; the chimney's top is at row 2
+    over the columns `chimney_xs` (see `house` in generate.py)."""
     canvas = remap(canvas, {"shadow": _SHADOW_REMAPS[look]})
     if look == "snow":
-        # The roof's right of x 50 is in shade; the chimney's top is x 51 to 60 at row 2
-        # (see small_house in generate.py).
-        snow_roof(canvas, random.Random("house"), ridge_y, eaves_y, 50)
-        for x in range(51, 61):
+        snow_roof(canvas, random.Random("house"), ridge_y, eaves_y, shade_x)
+        for x in chimney_xs:
             canvas[2][x] = "snow_light"
     return canvas

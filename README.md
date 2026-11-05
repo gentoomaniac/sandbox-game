@@ -59,9 +59,14 @@ ferns give fibre.
 
 ### Build anywhere
 
-Pick a spot and place a house. The ghost shows where it fits, and the game tells you why a
-spot doesn't work, for example when it is unsafe wetland. You can walk inside a house, and
-the last bed you slept in becomes your home.
+Hold the hammer (press B to take it from the hotbar) and a ghost of a building follows the
+mouse. Q and E pick the building: shack, Kate, longhouse or barn. A small panel lists the
+logs, stone, clay and reeds it takes against what you carry; the spot is refused while
+something is missing, and a click or Space builds it and takes the materials. The ghost
+shows where it fits, and the game tells you why a spot doesn't work, for example when it is
+unsafe wetland. Hold something else (or press Escape or right click) to stop building. You can
+walk inside a house, and the last bed you slept in becomes your home. The buildings, their
+sizes and costs are in `data/buildings.cfg`.
 
 ![Placing a house in build mode](docs/screenshots/build.png)
 
@@ -93,7 +98,7 @@ Press `/` to open a console for testing and cheats. Tab completes commands and t
 | `help` | List the commands. |
 | `tp <x> <y>` | Teleport to a world tile outside (F3 shows your coordinates). |
 | `give <item> [count]` | Put items in the inventory. |
-| `god`, `nodrain`, `noweight` | Toggle invincibility, free actions, and weight costing nothing. |
+| `god`, `nodrain`, `noweight`, `nocost` | Toggle invincibility, free actions, weight costing nothing, and buildings needing no materials. |
 | `weather`, `weather <condition>`, `weather auto` | Show the weather, force a condition, or go back to the simulation. |
 | `snow`, `snow <0..1>`, `snow auto` | Show the snow cover, force it, or go back to the weather. |
 | `spawn <animal> [count]` | Put animals nearby. |
@@ -112,8 +117,9 @@ These are the default keys; all of them can be changed under Settings → Contro
 | Space or left click | Use the held item on the targeted tile |
 | 1–0 | Pick a hotbar slot |
 | Tab | Character screen and inventory |
-| E | Sleep (next to a bed) |
-| B | Build mode |
+| E | Sleep (next to a bed; with the hammer in hand it picks the next building) |
+| B | Take the hammer: build mode |
+| Q, E | Previous and next building (while holding the hammer) |
 | Mouse wheel | Zoom |
 | Escape | Pause menu |
 | `/` | Console |

@@ -627,10 +627,15 @@ atmosphere only: no player impact, not hunted, not saved.
     interiors predictable to generate and render.
 - **First buildings** (decided 2026-11-05), in the style of the Danish and North German
   countryside, each with its own inside:
-  - **Shack:** a small wooden hut, the cheapest shelter.
-  - **Kate:** a small cottage. It replaces the old small house (old saves map to it).
-  - **Longhouse:** a larger farmhouse with the big gable door of the Lower Saxon hall house.
-  - **Barn:** a work and storage building, no hearth or bed.
+  - **Shack:** a small wooden hut, the cheapest shelter. Footprint 3×2, door on the middle
+    tile.
+  - **Kate:** a small cottage, 5×3, door on the middle tile. It replaces the old small
+    house (old saves map to it).
+  - **Longhouse:** a larger farmhouse with the big gable door of the Lower Saxon hall house;
+    7×3, door on the middle tile.
+  - **Barn:** a work and storage building, no hearth or bed; 6×3, door on the third tile
+    from the left, no windows. Costs 30 logs, 15 stone, 5 clay, 25 reeds. The longhouse
+    costs 60 logs, 30 stone, 30 clay, 50 reeds.
   - The look: half-timbered walls (dark oak beams, red brick or lime-washed clay infill),
     a steep thick reed thatch with a turf ridge, small windows, a stone base; the shack is
     plank-built with a simple roof. Every building has a look per season and for snow, and
@@ -643,7 +648,10 @@ atmosphere only: no player impact, not hunted, not saved.
   Kate with less clay.
 - **The hammer builds:** holding the hammer is build mode (the ghost follows the cursor,
   use places the building); Q and E (rebindable) pick the building, and B selects the
-  hammer. The player starts with a hammer (later it is crafted); `give hammer` works too.
+  hammer. Escape or a right click dismisses build mode until something else is held or B is
+  pressed again. With the hammer in hand E picks buildings and does not put the player to
+  bed. The `nocost` console cheat waives the costs (`god` and `noweight` don't). The player
+  starts with a hammer (later it is crafted); `give hammer` works too.
   A new game starts at the camp: the materials for a first house have to be gathered.
 - **`data/buildings.cfg`** defines the buildings (required keys, the game refuses to start
   if one is missing): name, footprint, door tile, picture and lit picture (the season and

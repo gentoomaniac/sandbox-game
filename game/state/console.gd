@@ -11,6 +11,7 @@ const COMMANDS := {
 	"god": ["god", "Toggle invincibility: health never drops (energy still runs out)."],
 	"nodrain": ["nodrain", "Toggle: actions cost no energy."],
 	"noweight": ["noweight", "Toggle: carried weight doesn't raise costs."],
+	"nocost": ["nocost", "Toggle: buildings need no materials."],
 	"spawn":
 	[
 		"spawn <kind> [count]",
@@ -91,6 +92,9 @@ func run(line: String) -> Array[String]:
 		"noweight":
 			cheats.is_weight_off = not cheats.is_weight_off
 			output = [_toggle_message("No weight", cheats.is_weight_off)]
+		"nocost":
+			cheats.is_cost_off = not cheats.is_cost_off
+			output = [_toggle_message("No cost", cheats.is_cost_off)]
 		"spawn":
 			output = _spawn(arguments)
 		"weather":

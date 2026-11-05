@@ -20,6 +20,7 @@ const PICKAXE := &"pickaxe"
 const WATERING_CAN := &"watering_can"
 const SCYTHE := &"scythe"
 const SHOVEL := &"shovel"
+const HAMMER := &"hammer"
 const TURNIP_SEEDS := &"turnip_seeds"
 const TURNIP := &"turnip"
 const LOGS := &"logs"
@@ -97,6 +98,14 @@ const _OTHER_TYPES := {
 		"weight": 2.5,
 		"stack_limit": 1,
 		"tool": SHOVEL,
+		"level": 1,
+	},
+	HAMMER:
+	{
+		"name": "Hammer",
+		"weight": 2.0,
+		"stack_limit": 1,
+		"tool": HAMMER,
 		"level": 1,
 	},
 	HAY:

@@ -9,7 +9,8 @@ extends Node2D
 ## `--new-game` ignores the save; `--save-path=<file>` uses another save file;
 ## `--settings-path=<file>` uses another settings file (see GameSettings). Debug flags:
 ## `--at=<x>,<y>` puts the player on that world tile instead of at the camp;
-## `--energy=<n>` and `--health=<n>` start with that much (0 to 100);
+## `--ghost=<x>,<y>` holds the hammer (see BuildMode), `--building=<id>` picks the building it
+## places; `--energy=<n>` and `--health=<n>` start with that much (0 to 100);
 ## `--screenshot=<path>` saves one frame as PNG once streaming has settled, then quits;
 ## `--screenshot-delay=<s>` waits that many real seconds after that, with the clock running
 ## (to see what a midnight changes, e.g. `--day=30 --time=23:50 --screenshot-delay=10`);
@@ -61,6 +62,7 @@ const START_WILDLIFE_COUNT := 4
 const NO_TILE := Vector2i(1 << 30, 1 << 30)
 
 var _state: GameState
+var _builder: Builder
 var _settings: GameSettings
 var _menu: PauseMenu
 var _save_path := SaveFile.DEFAULT_PATH
@@ -72,6 +74,7 @@ var _harvest_hud := HarvestHud.new()
 var _ground_item_view := GroundItemView.new()
 var _coordinates_hud := CoordinatesHud.new()
 var _hotbar := HotbarHud.new()
+var _build_panel := BuildPanel.new()
 var _vitals := VitalsHud.new()
 var _character_screen := CharacterScreen.new()
 var _console_view := ConsoleView.new()
@@ -95,6 +98,8 @@ var _screenshot_delay := 0.0
 var _pending_minutes := 0.0
 var _camera_shift := Vector2.ZERO
 var _start_zoom := 1.0
+var _start_building := &""
+var _is_hammer_held_at_start := false
 
 @onready var _world: SubViewport = $WorldViewport
 @onready var _view: WorldView = $WorldViewport/WorldView
@@ -113,6 +118,7 @@ func _ready() -> void:
 		or not Vegetation.default_vegetation().is_valid()
 		or not WildlifeRules.default_rules().is_valid()
 		or not SeasonRules.default_rules().is_valid()
+		or not BuildingRules.default_rules().is_valid()
 	):
 		# The load has reported the missing rules, crops or curves. Nothing else runs before the quit.
 		set_process(false)
@@ -163,6 +169,10 @@ func _ready() -> void:
 		elif arg.begins_with("--drops="):
 			var tile := arg.trim_prefix("--drops=").split_floats(",")
 			DebugDrops.create(_state.world, Vector2i(int(tile[0]), int(tile[1])))
+		elif arg.begins_with("--building="):
+			_start_building = StringName(arg.trim_prefix("--building="))
+		elif arg.begins_with("--ghost="):
+			_is_hammer_held_at_start = true
 		elif arg.begins_with("--energy="):
 			_state.player.energy = float(arg.trim_prefix("--energy="))
 		elif arg.begins_with("--health="):
@@ -207,7 +217,18 @@ func _ready() -> void:
 	_ground_item_view.show_items(_state.world, _view.entities)
 	_view.add_child(_wildlife)
 	_wildlife.show_wildlife(_state, _view, _camera)
+	_builder = Builder.new(_state)
+	if _start_building != &"":
+		if BuildingTypes.TYPES.has(_start_building):
+			_builder.choice = _start_building
+		else:
+			push_error(
+				"--building expects one of %s, got '%s'" % [BuildingTypes.ids(), _start_building]
+			)
+	if _is_hammer_held_at_start:
+		_builder.select_hammer()
 	_build_mode.world = _state.world
+	_build_mode.builder = _builder
 	_build_mode.camera = _camera
 	_build_mode.message_changed.connect(_show_build_message)
 	_camera.rig.follow(_camera_target)
@@ -221,6 +242,8 @@ func _ready() -> void:
 	add_child(_coordinates_hud)
 	add_child(_hotbar)
 	_hotbar.show_inventory(_state.player.inventory)
+	add_child(_build_panel)
+	_build_panel.show_builder(_builder, _state.player.inventory)
 	add_child(_vitals)
 	_vitals.show_state(_state)
 	add_child(_character_screen)
@@ -266,27 +289,23 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("console") and _can_open_console():
 		# The key that opens it must not be typed into the input line.
 		get_viewport().set_input_as_handled()
-		# BuildMode would still get clicks meant for the console.
-		_build_mode.cancel()
 		_console_view.open()
 		return
 	if event.is_action_pressed("pause"):
-		# Escape closes the console, then the character screen, then leaves build mode, then opens
-		# the menu.
+		# Escape closes the console, then the character screen, then dismisses build mode (until
+		# the player holds the hammer again), then opens the menu.
 		if _console_view.is_open():
 			_console_view.close()
 		elif _character_screen.is_open():
 			_character_screen.toggle()
 		elif _build_mode.is_active():
-			_build_mode.cancel()
+			_builder.dismiss()
 		else:
 			_open_menu()
 		return
 	# The open console takes the input: the player neither walks nor acts.
 	if _console_view.is_open():
 		return
-	# Decided before BuildMode sees the event: the click that places a house ends build mode,
-	# and must not also be a use click.
 	var can_use := _can_use()
 	if event.is_action_pressed("inventory") and not _is_fading:
 		_character_screen.toggle()
@@ -304,7 +323,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		_fast_forward = not _fast_forward
 	elif hotbar_slot != -1:
 		_state.player.inventory.select(hotbar_slot)
-	elif event.is_action_pressed("interact") and not _is_fading:
+	elif event.is_action_pressed("select_hammer"):
+		_builder.select_hammer()
+	# E also picks the next building, so the hammer in hand doesn't put the player to bed.
+	elif event.is_action_pressed("interact") and not _is_fading and not _builder.is_building():
 		_try_sleep()
 	elif _is_use_event(event) and can_use and _eat_held():
 		pass  # Eating needs no target: a held food is eaten instead of used on a tile.
@@ -325,12 +347,13 @@ func _process(delta: float) -> void:
 	_coordinates_hud.show_position(
 		_state.player.tile(), _state.is_inside(), _weather_and_sun_text(_weather)
 	)
-	_use_highlight.is_enabled = (
-		not _build_mode.is_active()
-		and not _state.is_inside()
-		and not _character_screen.is_open()
-		and not _console_view.is_open()
+	var is_world_in_play := (
+		not _state.is_inside() and not _character_screen.is_open() and not _console_view.is_open()
 	)
+	_use_highlight.is_enabled = is_world_in_play and not _builder.is_building()
+	_build_mode.visible = is_world_in_play
+	_build_mode.process_mode = PROCESS_MODE_INHERIT if is_world_in_play else PROCESS_MODE_DISABLED
+	_build_panel.visible = _build_mode.is_active()
 	if not _is_fading:
 		var direction := Vector2.ZERO
 		if not _character_screen.is_open() and not _console_view.is_open():
@@ -401,7 +424,7 @@ func _can_open_console() -> bool:
 
 
 func _can_use() -> bool:
-	return not _is_fading and not _build_mode.is_active()
+	return not _is_fading and not _builder.is_building()
 
 
 ## The hotbar slot (0 to 9) whose key `event` presses, or -1.
@@ -492,8 +515,6 @@ func _pass_door() -> void:
 ## chunk streaming, leaving it as it is).
 func _show_current_map() -> void:
 	var is_inside := _state.is_inside()
-	_build_mode.cancel()
-	_build_mode.process_mode = PROCESS_MODE_DISABLED if is_inside else PROCESS_MODE_INHERIT
 	_view.visible = not is_inside
 	_weather_view.visible = not is_inside
 	_view.process_mode = PROCESS_MODE_DISABLED if is_inside else PROCESS_MODE_INHERIT

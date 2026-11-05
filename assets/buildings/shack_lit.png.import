@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dr0wbvxgd25t"
-path="res://.godot/imported/small_house_autumn.png-44a3b4ea391855b0cb72f6844ab84c93.ctex"
+uid="uid://bqcaint7oith5"
+path="res://.godot/imported/shack_lit.png-d38e6fca63509c2922248706d3d9ec5b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/buildings/small_house_autumn.png"
-dest_files=["res://.godot/imported/small_house_autumn.png-44a3b4ea391855b0cb72f6844ab84c93.ctex"]
+source_file="res://assets/buildings/shack_lit.png"
+dest_files=["res://.godot/imported/shack_lit.png-d38e6fca63509c2922248706d3d9ec5b.ctex"]
 
 [params]
 

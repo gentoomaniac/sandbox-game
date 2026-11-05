@@ -49,8 +49,8 @@ func _place_house() -> Building:
 	for y in range(-12, 13):
 		for x in range(-12, 13):
 			var origin := _state.player.tile() + Vector2i(x, y)
-			if _world.placement_blockers(BuildingTypes.SMALL_HOUSE, origin).is_empty():
-				return _world.place_building(BuildingTypes.SMALL_HOUSE, origin)
+			if _world.placement_blockers(BuildingTypes.KATE, origin).is_empty():
+				return _world.place_building(BuildingTypes.KATE, origin)
 	fail_test("no room for a house near the camp")
 	return null
 
