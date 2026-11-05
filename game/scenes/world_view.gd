@@ -11,6 +11,8 @@ extends Node2D
 ## that, an objects layer on the same grid draws the world's objects. It sits in the
 ## y-sorted `entities` node, where the player (and later creatures) stand among them, and
 ## keeps no decoration under an object. Objects that shine get an ObjectLight.
+## Buildings are sprites in that node too, so they sort with the objects and the player. They
+## belong to the world, not to a chunk, so they stay when chunks unload.
 
 const LOAD_RADIUS := 3
 const UNLOAD_RADIUS := 5
@@ -78,6 +80,7 @@ func _ready() -> void:
 func show_world(world_to_show: World) -> void:
 	world = world_to_show
 	world.objects_changed.connect(_on_objects_changed)
+	world.building_placed.connect(_draw_building)
 	_generator = WorldGenerator.new(world.world_seed)
 	_variety_noise.seed = world.world_seed + VARIETY_SEED_OFFSET
 	_variety_noise.frequency = VARIETY_FREQUENCY
@@ -232,6 +235,24 @@ func _remove_light(world_pos: Vector2i) -> void:
 	if light != null:
 		_lights.erase(world_pos)
 		light.queue_free()
+
+
+func _draw_building(building: Building) -> void:
+	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
+	var sprite := Sprite2D.new()
+	sprite.texture = load(building_type["sprite"])
+	sprite.centered = false
+	# The sprite is sorted by its position: the middle of its bottom footprint row, like an
+	# object standing on that row. Its bottom edge is the footprint's bottom edge.
+	var half_tile := TerrainTileset.TILE_SIZE / 2
+	var footprint_bottom: int = (
+		(building.origin.y + building_type["footprint"].y) * TerrainTileset.TILE_SIZE
+	)
+	sprite.position = Vector2(
+		building.origin.x * TerrainTileset.TILE_SIZE, footprint_bottom - half_tile
+	)
+	sprite.offset = Vector2(0, half_tile - sprite.texture.get_height())
+	entities.add_child(sprite)
 
 
 func _draw_decoration(world_pos: Vector2i, layer: int) -> void:

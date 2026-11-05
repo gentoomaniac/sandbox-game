@@ -5,7 +5,8 @@ extends Node2D
 ## Debug flags (after `--` on the Godot command line, see `make screenshot`):
 ## `--at=<x>,<y>` puts the player on that world tile instead of at the camp;
 ## `--screenshot=<path>` saves one frame as PNG once streaming has settled, then quits;
-## `--time=<hh:mm>` sets the time of day.
+## `--time=<hh:mm>` sets the time of day. BuildMode parses `--ghost=<x>,<y>` and
+## `--house=<x>,<y>` (see there).
 
 const WORLD_SEED := 1
 ## One game day lasts 16 real minutes (24 h * 60 min / 1.5 / 60 s).
@@ -27,6 +28,7 @@ var _pending_minutes := 0.0
 @onready var _tint: DayNightTint = $DayNightTint
 @onready var _hud: ClockHud = $ClockHud
 @onready var _fade: ColorRect = $FadeLayer/Fade
+@onready var _build_mode: BuildMode = $BuildMode
 
 
 func _ready() -> void:
@@ -39,6 +41,7 @@ func _ready() -> void:
 		elif arg.begins_with("--time="):
 			_set_start_time(arg.trim_prefix("--time="))
 	_view.show_world(_state.world)
+	_build_mode.world = _state.world
 	# Among the objects, so the player walks behind tree canopies.
 	_view.entities.add_child(_player_view)
 	_player_view.show_player(_state.player)

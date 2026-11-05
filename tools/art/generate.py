@@ -24,6 +24,10 @@ oak's canopy rises above that, over the tiles north of it.
 
 assets/player.png: the player character, 16x16 cells with the feet on the bottom row. One row
 per facing (down, up, left, right), columns: idle, walk 1, walk 2 (see game/scenes/player_view.gd).
+
+assets/buildings/<type>.png: one picture per building type, as wide as its footprint (16 px
+per tile) and as tall as the footprint plus the roof rising above it. The bottom edge is the
+footprint's bottom edge. Sizes and door tiles are in game/state/building_types.gd.
 """
 
 import math
@@ -759,6 +763,92 @@ def player_frame(facing, frame):
 PLAYER = [[player_frame(facing, frame) for frame in PLAYER_FRAMES] for facing in PLAYER_FACINGS]
 
 
+
+# The small house (assets/buildings/small_house.png).
+
+
+def small_house():
+    """A timber-framed cottage with a thatched roof, 4x3 tiles plus 1 tile of roof. The
+    door is on the bottom row, in the second tile from the left."""
+    rng = random.Random(121)
+    canvas = [[None] * 64 for _ in range(64)]
+
+    # Chimney first, so the roof covers its foot.
+    fill_rect(canvas, 44, 0, 51, 16, "stone")
+    fill_rect(canvas, 44, 0, 51, 1, "stone_dark")
+    fill_rect(canvas, 44, 2, 45, 16, "stone_light")
+    fill_rect(canvas, 50, 2, 51, 16, "stone_dark")
+    for y in range(5, 16, 4):
+        fill_rect(canvas, 44, y, 51, y, "stone_dark")
+
+    # Walls: plaster between a timber frame, on a stone foundation.
+    fill_rect(canvas, 4, 28, 59, 63, "sand_light")
+    for _ in range(40):
+        canvas[rng.randrange(32, 56)][rng.randrange(6, 58)] = "sand"
+    for x in (4, 5, 58, 59, 13, 14, 33, 34, 49, 50):
+        fill_rect(canvas, x, 28, x, 57, "soil_mid" if x % 2 else "soil")
+    fill_rect(canvas, 4, 42, 59, 43, "soil")
+    fill_rect(canvas, 4, 42, 59, 42, "soil_mid")
+    fill_rect(canvas, 4, 56, 59, 57, "soil")
+    fill_rect(canvas, 4, 58, 59, 63, "stone")
+    for y in (58, 61):
+        for x in range(4 + (y == 61) * 4, 60, 8):
+            fill_rect(canvas, x, y, min(x + 4, 59), y + 1, "stone_light")
+    fill_rect(canvas, 4, 63, 59, 63, "stone_dark")
+
+    # Windows: a frame, glass and a cross bar.
+    for left in (7, 52):
+        fill_rect(canvas, left, 33, left + 5, 40, "soil_dark")
+        fill_rect(canvas, left + 1, 34, left + 4, 39, "water")
+        fill_rect(canvas, left + 1, 34, left + 2, 35, "water_light")
+        fill_rect(canvas, left + 2, 34, left + 2, 39, "soil_dark")
+        fill_rect(canvas, left + 1, 37, left + 4, 37, "soil_dark")
+        fill_rect(canvas, left - 1, 41, left + 6, 41, "soil_mid")
+
+    # Door, on tile (1, 2): x 16..31, y 48..63.
+    fill_rect(canvas, 19, 46, 28, 63, "soil_dark")
+    fill_rect(canvas, 20, 47, 27, 63, "soil_mid")
+    for x in (22, 25):
+        fill_rect(canvas, x, 47, x, 63, "soil")
+    fill_rect(canvas, 20, 47, 20, 63, "soil_light")
+    canvas[56][26] = "gold"
+    fill_rect(canvas, 18, 62, 29, 63, "stone_light")
+
+    # Thatched roof: a trapezoid, shifted out a little on the sides as an overhang.
+    for y in range(6, 31):
+        left = round(10 - 10 * (y - 6) / 24)
+        for x in range(left, 64 - left):
+            canvas[y][x] = "straw" if (y // 2) % 2 == 0 else "dry_light"
+            if rng.random() < 0.12:
+                canvas[y][x] = "reed"
+        # Straw hangs unevenly along the eaves.
+        if y >= 28:
+            for x in range(left, 64 - left):
+                canvas[y][x] = rng.choice(("dry", "reed", "dry")) if y == 28 else "soil_dark"
+    for x in range(10, 54):
+        canvas[6][x] = "dry_light"
+    for y in range(7, 29):
+        left = round(10 - 10 * (y - 6) / 24)
+        canvas[y][left] = "reed"
+        canvas[y][63 - left] = "dry"
+    fill_rect(canvas, 0, 29, 63, 29, "soil_dark")
+    fill_rect(canvas, 0, 30, 63, 30, "soil")
+
+    # Outline. The bottom edge of the canvas is the ground, so it gets none.
+    outline = [
+        (x, y)
+        for y in range(63)
+        for x in range(64)
+        if canvas[y][x] is not None
+        and any(canvas[y + dy][x + dx] is None for dx, dy in NEIGHBOURS if 0 <= x + dx < 64)
+        or canvas[y][x] is not None
+        and x in (0, 63)
+    ]
+    for x, y in outline:
+        canvas[y][x] = "ink"
+    return canvas
+
+
 def to_image(rows, size=TILE):
     """Lays out rows of size x size tiles as one image."""
     width = max(1, max(len(row) for row in rows)) * size
@@ -822,9 +912,11 @@ def main():
     to_image(decoration_rows).save(ASSETS / "decorations.png")
     to_image(OBJECTS + CAMP_OBJECTS, OBJECT_CELL).save(ASSETS / "objects.png")
     to_image(PLAYER).save(ASSETS / "player.png")
+    (ASSETS / "buildings").mkdir(exist_ok=True)
+    to_image([[small_house()]], 64).save(ASSETS / "buildings" / "small_house.png")
     write_palette()
     check_palette()
-    print("Wrote terrain.png, decorations.png, objects.png, player.png, palette.png and palette.gpl to assets/; palette check passed.")
+    print("Wrote terrain.png, decorations.png, objects.png, player.png, buildings/small_house.png, palette.png and palette.gpl to assets/; palette check passed.")
 
 
 if __name__ == "__main__":

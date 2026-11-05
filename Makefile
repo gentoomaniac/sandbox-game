@@ -81,11 +81,13 @@ run:
 # day (default: game start).
 AT ?=
 TIME ?=
+# Further debug flags, e.g. ARGS="--ghost=3,-5" (see game/scenes/build_mode.gd).
+ARGS ?=
 OUT ?= $(CURDIR)/build/screenshot.png
 screenshot:
 	$(IMPORT)
 	mkdir -p $(dir $(OUT))
-	$(GODOT) --path . -- $(if $(AT),--at=$(AT)) --screenshot=$(OUT) $(if $(TIME),--time=$(TIME))
+	$(GODOT) --path . -- $(if $(AT),--at=$(AT)) --screenshot=$(OUT) $(if $(TIME),--time=$(TIME)) $(ARGS)
 
 # On Godot builds without navigation (e.g. some Gentoo builds) GUT prints a harmless
 # 'Identifier "NavigationMeshGenerator" not declared' parse error. Tests still run.

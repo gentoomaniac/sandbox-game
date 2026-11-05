@@ -1,0 +1,96 @@
+extends GutTest
+
+const HOUSE := BuildingTypes.SMALL_HOUSE
+const ORIGIN := Vector2i(2, 2)
+
+var _world: World
+
+
+func before_each() -> void:
+	_world = World.new(1)
+	_world.add_chunk(Chunk.new(Vector2i.ZERO))
+
+
+func _set_terrain(world_pos: Vector2i, terrain: Tile.Terrain) -> void:
+	_world.chunk_at(Vector2i.ZERO).set_terrain(Chunk.local_pos(world_pos), terrain)
+
+
+func test_placement_on_free_buildable_land() -> void:
+	assert_true(_world.placement_blockers(HOUSE, ORIGIN).is_empty())
+	var building := _world.place_building(HOUSE, ORIGIN)
+	assert_not_null(building)
+	assert_eq(_world.buildings(), [building])
+
+
+func test_rejected_on_unbuildable_terrain() -> void:
+	for terrain in [Tile.Terrain.WATER, Tile.Terrain.WETLAND, Tile.Terrain.FLOODPLAIN]:
+		# The last footprint tile, so every tile is checked.
+		var bad_tile := ORIGIN + Vector2i(3, 2)
+		_set_terrain(bad_tile, terrain)
+		assert_null(_world.place_building(HOUSE, ORIGIN), "terrain %s" % terrain)
+		assert_eq(_world.placement_blockers(HOUSE, ORIGIN), {bad_tile: World.Blocked.TERRAIN})
+		_set_terrain(bad_tile, Tile.Terrain.GRASS)
+	assert_true(_world.buildings().is_empty())
+
+
+func test_rejected_on_object() -> void:
+	var tree_pos := ORIGIN + Vector2i(1, 1)
+	_world.add_object(WorldObject.new(WorldObjectTypes.OAK, tree_pos))
+	assert_null(_world.place_building(HOUSE, ORIGIN))
+	assert_eq(_world.placement_blockers(HOUSE, ORIGIN), {tree_pos: World.Blocked.OCCUPIED})
+
+
+func test_rejected_on_overlap_with_another_building() -> void:
+	_world.place_building(HOUSE, ORIGIN)
+	var overlapping := ORIGIN + Vector2i(3, 2)
+	assert_null(_world.place_building(HOUSE, overlapping))
+	assert_eq(
+		_world.placement_blockers(HOUSE, overlapping),
+		{overlapping: World.Blocked.OCCUPIED},
+		"only the corner overlaps"
+	)
+	assert_eq(_world.buildings().size(), 1)
+	# Touching is fine.
+	assert_not_null(_world.place_building(HOUSE, ORIGIN + Vector2i(4, 0)))
+
+
+func test_rejected_when_a_chunk_is_not_loaded() -> void:
+	var size := Chunk.CHUNK_SIZE
+	# The right part of the footprint is in the chunk (1, 0), which is not loaded.
+	var crossing := Vector2i(size - 2, 2)
+	assert_null(_world.place_building(HOUSE, crossing))
+	_world.add_chunk(Chunk.new(Vector2i(1, 0)))
+	assert_not_null(_world.place_building(HOUSE, crossing), "fine once loaded")
+
+
+func test_footprint_is_occupied_and_only_the_door_is_walkable() -> void:
+	var building := _world.place_building(HOUSE, ORIGIN)
+	for pos in building.tiles():
+		assert_eq(_world.building_at(pos), building)
+		assert_false(_world.is_buildable(pos), "buildable %s" % pos)
+		assert_false(_world.is_plantable(pos), "plantable %s" % pos)
+		assert_eq(_world.is_walkable(pos), pos == building.door_tile(), "walkable %s" % pos)
+	assert_true(building.tiles().has(building.door_tile()))
+	assert_true(_world.is_walkable(ORIGIN + Vector2i(1, 3)), "the tile in front of the door")
+	assert_null(_world.building_at(ORIGIN + Vector2i(4, 0)))
+
+
+func test_placement_emits_the_signal() -> void:
+	watch_signals(_world)
+	assert_null(_world.place_building(HOUSE, Vector2i(-1000, 0)))
+	assert_signal_not_emitted(_world, "building_placed")
+	var building := _world.place_building(HOUSE, ORIGIN)
+	assert_signal_emitted_with_parameters(_world, "building_placed", [building])
+
+
+func test_building_outlives_its_chunks() -> void:
+	var size := Chunk.CHUNK_SIZE
+	var crossing := Vector2i(size - 2, 2)
+	_world.add_chunk(Chunk.new(Vector2i(1, 0)))
+	var building := _world.place_building(HOUSE, crossing)
+	_world.remove_chunk(Vector2i.ZERO)
+	_world.remove_chunk(Vector2i(1, 0))
+	assert_eq(_world.buildings(), [building])
+	assert_eq(_world.building_at(crossing), building)
+	_world.add_chunk(Chunk.new(Vector2i.ZERO))
+	assert_false(_world.is_buildable(crossing), "still occupied after reloading")

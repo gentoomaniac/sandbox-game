@@ -7,6 +7,16 @@ extends RefCounted
 
 ## An object was added or removed at this world tile position.
 signal objects_changed(world_pos: Vector2i)
+## A building was placed.
+signal building_placed(building: Building)
+
+## Why a footprint tile can't be built on.
+enum Blocked {
+	## Water, wetland or floodplain, or the tile is not loaded.
+	TERRAIN,
+	## A world object or a building is on it.
+	OCCUPIED,
+}
 
 ## The only place that defines the world size. Must be even so the world is centred.
 const MAX_SIZE_CHUNKS := 64
@@ -17,6 +27,10 @@ var _chunks: Dictionary[Vector2i, Chunk] = {}
 ## position the object that stands there now, or null where the generated object was
 ## removed. Together with the seed this is the whole world (the future save format).
 var _object_edits: Dictionary[Vector2i, WorldObject] = {}
+## Buildings are the player's work and must outlive the chunks they stand on, and one can
+## cross a chunk border, so they live here and not in chunks.
+var _buildings: Array[Building] = []
+var _building_by_tile: Dictionary[Vector2i, Building] = {}
 
 
 func _init(seed_value: int) -> void:
@@ -112,15 +126,67 @@ func is_walkable(world_pos: Vector2i) -> bool:
 	var tile := tile_at(world_pos)
 	if tile == null or not tile.is_walkable():
 		return false
+	var building := building_at(world_pos)
+	if building != null and building.door_tile() != world_pos:
+		return false
 	var object := object_at(world_pos)
 	return object == null or not object.blocks_walking()
 
 
 func is_buildable(world_pos: Vector2i) -> bool:
 	var tile := tile_at(world_pos)
-	return tile != null and tile.is_buildable() and object_at(world_pos) == null
+	return (
+		tile != null
+		and tile.is_buildable()
+		and object_at(world_pos) == null
+		and building_at(world_pos) == null
+	)
 
 
 func is_plantable(world_pos: Vector2i) -> bool:
 	var tile := tile_at(world_pos)
-	return tile != null and tile.is_plantable() and object_at(world_pos) == null
+	return (
+		tile != null
+		and tile.is_plantable()
+		and object_at(world_pos) == null
+		and building_at(world_pos) == null
+	)
+
+
+# --- Buildings ---
+
+
+func buildings() -> Array[Building]:
+	return _buildings
+
+
+## The building whose footprint covers a tile, or null.
+func building_at(world_pos: Vector2i) -> Building:
+	return _building_by_tile.get(world_pos)
+
+
+## The footprint tiles that stop a building from being placed, with the reason for each.
+## Empty if it can be placed.
+func placement_blockers(
+	building_type: StringName, origin: Vector2i
+) -> Dictionary[Vector2i, Blocked]:
+	var blockers: Dictionary[Vector2i, Blocked] = {}
+	for pos in Building.footprint_tiles(building_type, origin):
+		var tile := tile_at(pos)
+		if tile == null or not tile.is_buildable():
+			blockers[pos] = Blocked.TERRAIN
+		elif object_at(pos) != null or building_at(pos) != null:
+			blockers[pos] = Blocked.OCCUPIED
+	return blockers
+
+
+## Places a building and returns it, or returns null if any footprint tile is blocked.
+func place_building(building_type: StringName, origin: Vector2i) -> Building:
+	if not placement_blockers(building_type, origin).is_empty():
+		return null
+	var building := Building.new(building_type, origin)
+	_buildings.append(building)
+	for pos in building.tiles():
+		_building_by_tile[pos] = building
+	building_placed.emit(building)
+	return building
