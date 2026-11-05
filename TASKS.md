@@ -890,7 +890,7 @@ tests/test_interior.gd still builds its checks on that map under the old name.
 
 ## 40. Sound generator
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Sound". A script in tools/audio/ (run by `make assets`, deterministic) that
 writes every sound event of the list below as WAV files with 2–4 variants each, loops
