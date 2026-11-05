@@ -1,10 +1,12 @@
 class_name StorageScreen
 extends CanvasLayer
-## The storage screen over the game, for a chest: the player's inventory on the left (no
-## equipment) and the chest's slots on the right, each under a small icon. Click an item to pick
+## The storage screen over the game, for a chest: the player's backpack on the left (no
+## equipment) with the hotbar as a row below it, and the chest's slots on the right, each under
+## a small icon. Click an item to pick
 ## it up, then click a slot of either side to put it down: a different item swaps places, the
 ## same item stacks. Clicking the picked slot again, or outside the slots, drops the pick.
-## Shift+click sends a whole stack to the other side. Like the character screen, it takes the
+## Shift+click sends a whole stack to the other side (from the chest into the backpack first,
+## so the hotbar isn't flooded). Like the character screen, it takes the
 ## input while it is open (Main sees to that, and closes it on E and Escape).
 
 ## Which side of the screen a slot is on.
@@ -14,6 +16,10 @@ const CHEST := 1
 const SLOT_GAP := 2
 const PANEL_GAP := 16
 const COLUMNS := 5
+## The inventory side: backpack rows as wide as the hotbar row below them.
+const INVENTORY_COLUMNS := Inventory.HOTBAR_SIZE
+## Space between the backpack and the hotbar row below it.
+const HOTBAR_GAP := 8
 const PICKED_ALPHA := 0.4
 ## Palette colour ink (see tools/art/generate.py), see-through.
 const BACKDROP_COLOR := Color(0.114, 0.106, 0.149, 0.6)
@@ -23,7 +29,8 @@ const CHEST_ICON := preload("res://assets/ui/chest_icon.png")
 
 var _inventory: Inventory
 var _chest: ItemSlots
-var _views := {INVENTORY: [], CHEST: []}
+## The slot views of each side, by slot.
+var _views := {INVENTORY: {}, CHEST: {}}
 ## The slot that is picked up, as {side, slot}; empty for none.
 var _pick := {}
 var _backdrop := ColorRect.new()
@@ -41,12 +48,20 @@ func _init() -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", PANEL_GAP)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(_add_side(INVENTORY, BACKPACK_ICON, Inventory.SLOT_COUNT))
-	row.add_child(
-		_add_side(
-			CHEST, CHEST_ICON, WorldObjectTypes.TYPES[WorldObjectTypes.CHEST]["storage_slots"]
-		)
+	var inventory_column := _new_column(BACKPACK_ICON)
+	_add_grid(
+		inventory_column, INVENTORY, Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT, INVENTORY_COLUMNS
 	)
+	var hotbar_gap := Control.new()
+	hotbar_gap.custom_minimum_size.y = HOTBAR_GAP - SLOT_GAP
+	hotbar_gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	inventory_column.add_child(hotbar_gap)
+	_add_grid(inventory_column, INVENTORY, 0, Inventory.HOTBAR_SIZE, INVENTORY_COLUMNS)
+	row.add_child(inventory_column)
+	var chest_column := _new_column(CHEST_ICON)
+	var chest_slots: int = WorldObjectTypes.TYPES[WorldObjectTypes.CHEST]["storage_slots"]
+	_add_grid(chest_column, CHEST, 0, chest_slots, COLUMNS)
+	row.add_child(chest_column)
 	_panel.theme = THEME
 	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel.add_child(row)
@@ -87,8 +102,8 @@ func _process(_delta: float) -> void:
 		_picked_icon.position = (_backdrop.get_local_mouse_position() - icon_size / 2).round()
 
 
-## A column with the icon of a side above a grid of its slots.
-func _add_side(side: int, icon: Texture2D, slot_count: int) -> VBoxContainer:
+## A column with an icon at the top.
+func _new_column(icon: Texture2D) -> VBoxContainer:
 	var column := VBoxContainer.new()
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var header := TextureRect.new()
@@ -96,34 +111,37 @@ func _add_side(side: int, icon: Texture2D, slot_count: int) -> VBoxContainer:
 	header.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(header)
+	return column
+
+
+## Adds a grid of the slots `first` to `last` - 1 of a side to a column.
+func _add_grid(column: VBoxContainer, side: int, first: int, last: int, columns: int) -> void:
 	var grid := GridContainer.new()
-	grid.columns = COLUMNS
+	grid.columns = columns
 	grid.add_theme_constant_override("h_separation", SLOT_GAP)
 	grid.add_theme_constant_override("v_separation", SLOT_GAP)
 	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for slot in slot_count:
+	for slot in range(first, last):
 		var view := SlotView.new()
 		view.tooltip_id = "%s_%d" % ["inventory" if side == INVENTORY else "chest", slot]
 		view.pressed.connect(_on_slot_pressed.bind(side, slot))
 		grid.add_child(view)
-		_views[side].append(view)
+		_views[side][slot] = view
 	column.add_child(grid)
-	return column
 
 
 func _slots_of(side: int) -> ItemSlots:
 	return _inventory if side == INVENTORY else _chest
 
 
-func _other(side: int) -> int:
-	return CHEST if side == INVENTORY else INVENTORY
-
-
 func _on_slot_pressed(side: int, slot: int) -> void:
 	var slots := _slots_of(side)
 	if Input.is_key_pressed(KEY_SHIFT):
 		_pick = {}
-		slots.send(slot, _slots_of(_other(side)))
+		if side == CHEST:
+			slots.send(slot, _inventory, _inventory.backpack_first_order())
+		else:
+			slots.send(slot, _chest)
 	elif _pick.is_empty():
 		if not slots.slots[slot].is_empty():
 			_pick = {"side": side, "slot": slot}

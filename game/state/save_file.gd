@@ -1,9 +1,9 @@
 class_name SaveFile
 extends RefCounted
-## The save on disk: one JSON file per world, `{"version": 5, "game": <GameState.to_dict>}`.
+## The save on disk: one JSON file per world, `{"version": 6, "game": <GameState.to_dict>}`.
 ## Older saves still load, upgraded step by step (see `_upgrade_from_version_1` and so on).
 
-const VERSION := 5
+const VERSION := 6
 const DEFAULT_PATH := "user://saves/world.json"
 ## What a save we can't use is renamed to, so it is never overwritten silently.
 const BACKUP_SUFFIX := ".bak"
@@ -60,6 +60,8 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 		_upgrade_from_version_3(parsed["game"])
 	if version <= 4:
 		_upgrade_from_version_4(parsed["game"])
+	if version <= 5:
+		_upgrade_from_version_5(parsed["game"])
 	return GameState.from_dict(parsed["game"])
 
 
@@ -96,6 +98,13 @@ static func _upgrade_from_version_4(game: Dictionary) -> void:
 	for building: Dictionary in game["world"]["buildings"]:
 		if building["type"] == "small_house":
 			building["type"] = "kate"
+
+
+## Version 5 had 20 inventory slots, the first ten the hotbar: the backpack now has ten more,
+## after them, so every item keeps its slot.
+static func _upgrade_from_version_5(game: Dictionary) -> void:
+	var slots: Array = game["player"]["inventory"]["slots"]
+	slots.resize(Inventory.SLOT_COUNT)
 
 
 static func _reject(path: String, reason: String) -> void:

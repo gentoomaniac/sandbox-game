@@ -230,8 +230,9 @@ top of classic pixel art (details under "Lighting and look").
 - **Inventory and equipment** (decided 2026-11-05):
   - The **hotbar** (10 slots, shown at the bottom of the screen) and the **backpack** (20
     slots) are separate (changed 2026-11-05): what is on the hotbar takes no backpack
-    space, so the player carries 30 slots. Screens show the backpack grid with the hotbar
-    as its own row below. Picked-up items join a matching stack first, then take the first
+    space, so the player carries 30 slots. Screens show the backpack (two rows of ten,
+    as wide as the hotbar) with the hotbar as its own row below, set off by a small gap.
+    Shift+click from a chest sends a stack to the backpack first, then the hotbar. Picked-up items join a matching stack first, then take the first
     free slot, hotbar before backpack. Backpack upgrades later add rows to the backpack.
   - The selected hotbar slot is what the player holds: keys 1–0 pick a slot. The use
     action (left click or Space) acts with the held item.

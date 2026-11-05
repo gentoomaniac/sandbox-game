@@ -43,8 +43,8 @@ func is_empty() -> bool:
 
 
 ## Puts `count` of `item` in: first onto stacks of it that have room, then into free slots in
-## the order of `_free_slot_order`. Returns how many did not fit.
-func add(item: StringName, count: int) -> int:
+## the order of `free_slots` (default `_free_slot_order`). Returns how many did not fit.
+func add(item: StringName, count: int, free_slots: Array = []) -> int:
 	var limit: int = ItemTypes.TYPES[item]["stack_limit"]
 	var left := count
 	for slot in slots.size():
@@ -54,7 +54,7 @@ func add(item: StringName, count: int) -> int:
 			var moved := mini(left, limit - slots[slot]["count"])
 			slots[slot]["count"] += moved
 			left -= moved
-	for slot: int in _free_slot_order():
+	for slot: int in free_slots if not free_slots.is_empty() else _free_slot_order():
 		if left == 0:
 			break
 		if slots[slot].is_empty():
@@ -114,11 +114,12 @@ func move_to(from: int, target: ItemSlots, to: int) -> void:
 
 
 ## Moves the stack in slot `from` to `target`, as much of it as fits: onto stacks of the same
-## item first, then into free slots. The rest stays. Returns whether the whole stack went.
-func send(from: int, target: ItemSlots) -> bool:
+## item first, then into free slots (see `add` for `free_slots`). The rest stays. Returns
+## whether the whole stack went.
+func send(from: int, target: ItemSlots, free_slots: Array = []) -> bool:
 	if slots[from].is_empty():
 		return false
-	var left := target.add(slots[from]["item"], slots[from]["count"])
+	var left := target.add(slots[from]["item"], slots[from]["count"], free_slots)
 	slots[from]["count"] = left
 	if left == 0:
 		slots[from] = {}

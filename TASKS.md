@@ -1128,13 +1128,26 @@ tools/audio and added to sounds.cfg. Tests, tooltips, README and the Controls ta
 
 ## 50. Hotbar apart from the backpack
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Inventory and equipment" (changed 2026-11-05). The hotbar's 10 slots no longer
 count against the backpack: 10 hotbar + 20 backpack slots. The character screen and the
 storage screen show the backpack grid with the hotbar as a row below it; moving items works
 between hotbar, backpack, equipment and chest. Old saves keep every item where it is and
 gain the new empty backpack slots. Tests; README updated. Starts after task 49 is merged.
+
+Done: `Inventory` has `HOTBAR_SIZE` 10 + `BACKPACK_SIZE` 20 = `SLOT_COUNT` 30; slots 0-9 stay the
+hotbar, 10-29 are the backpack, so the starting items and slot ids (`inventory_<n>`) keep
+their meaning. `add` joins a stack first, then takes the first free slot (hotbar before
+backpack, the held slot last). Both screens show the backpack as two rows of ten (as wide as
+the hotbar, instead of a 5-wide grid that left the wider hotbar row hanging out) with the
+hotbar row below a small gap. Shift+click from a chest goes to the backpack first
+(`Inventory.backpack_first_order`, passed through `ItemSlots.add`/`send`); from the inventory
+to the chest as before. Save version 6: `_upgrade_from_version_5` pads the 20 saved slots
+with ten empty ones, so every item keeps its slot. Crafting and chest take-down check room
+across all 30 slots through `can_add`. Tests: layout and add order
+(test_inventory_backpack.gd), moving between hotbar, backpack and chest and the shift rule
+(test_storage_screen.gd), the version-5 save (test_save_upgrade.gd).
 
 ## 51. Quick season changes, spring leaf-out, Scots pines
 

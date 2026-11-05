@@ -78,3 +78,21 @@ func test_a_version_4_save_loads_with_its_small_houses_as_kates() -> void:
 
 	assert_eq(restored.world.buildings()[0].type, BuildingTypes.KATE)
 	assert_eq(restored.world.buildings()[0].origin, state.world.buildings()[0].origin)
+
+
+func test_a_version_5_save_loads_with_its_twenty_slots_in_place_and_ten_new_empty_ones() -> void:
+	var state := GameState.new_game(7)
+	state.player.inventory.slots[19] = {"item": ItemTypes.LOGS, "count": 9}
+	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
+	var slots: Array = game["player"]["inventory"]["slots"]
+	slots.resize(20)
+	_write_save(5, game)
+
+	var inventory := SaveFile.read(SAVE_PATH).player.inventory
+
+	assert_eq(inventory.slots.size(), Inventory.SLOT_COUNT)
+	assert_eq(inventory.item_in(0), ItemTypes.HOE)
+	assert_eq(inventory.item_in(10), ItemTypes.STRAW_HAT)
+	assert_eq(inventory.slots[19], {"item": ItemTypes.LOGS, "count": 9})
+	for slot in range(20, Inventory.SLOT_COUNT):
+		assert_true(inventory.slots[slot].is_empty())

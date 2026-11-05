@@ -1,11 +1,13 @@
 class_name Inventory
 extends ItemSlots
-## What the player carries: SLOT_COUNT slots, the first HOTBAR_SIZE of them the hotbar, one of
-## which is selected: that item is held. Plain state; the hotbar and the inventory screen only
+## What the player carries: the hotbar (slots 0 to HOTBAR_SIZE - 1), one of which is selected:
+## that item is held, and after it the backpack (BACKPACK_SIZE slots). The hotbar is extra room,
+## it takes nothing from the backpack. Plain state; the hotbar and the inventory screen only
 ## show it and send it actions. `changed` also tells of the selection changing.
 
-const SLOT_COUNT := 20
 const HOTBAR_SIZE := 10
+const BACKPACK_SIZE := 20
+const SLOT_COUNT := HOTBAR_SIZE + BACKPACK_SIZE
 
 ## What a new game starts with: item and count, in slot order.
 const STARTING_ITEMS := [
@@ -81,3 +83,12 @@ func _free_slot_order() -> Array:
 	order.erase(selected_slot)
 	order.append(selected_slot)
 	return order
+
+
+## The free slots for something coming out of a chest: the backpack before the hotbar, so the
+## hotbar isn't flooded.
+func backpack_first_order() -> Array:
+	var order := _free_slot_order()
+	var backpack := order.filter(func(slot: int) -> bool: return slot >= HOTBAR_SIZE)
+	var hotbar := order.filter(func(slot: int) -> bool: return slot < HOTBAR_SIZE)
+	return backpack + hotbar

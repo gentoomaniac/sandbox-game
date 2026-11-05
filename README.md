@@ -122,7 +122,10 @@ half-timbered barn, and the plank shack.
 
 The character is drawn in layers, so anything they wear shows in the world. Press Tab to
 open the character screen, where you move items between the inventory and the equipment
-slots. The hotbar holds your tools and seeds. Energy and health bars track how tired you
+slots. The hotbar (the ten slots at the bottom of the screen, keys 1 to 0) holds your tools
+and seeds and is extra room: it takes nothing from the backpack's 20 slots, so you carry 30
+stacks. The screen shows the backpack with the hotbar as its own row below it, and new
+items fill the hotbar first. Energy and health bars track how tired you
 are, and the more you carry, the more each action costs. Below 20 % energy the character
 sweats with every action, and below 10 % even more. A "zzz" thought bubble pops up over the
 head at midnight and again at half past, while you are still awake: you pass out an hour
@@ -155,8 +158,9 @@ missing. The first recipe is the chest, for 5 logs. The recipes are in
 Hold a chest and a ghost shows where it would go: green where it fits, red where it doesn't
 (not on water, wetland or floodplain, not on something else, not in front of a door). Use it
 to place the chest, outdoors or inside a house. Press E in front of a chest to open it: your
-inventory is on the left and the chest's 15 slots on the right. Click an item and click a
-slot to move it, or Shift+click to send a whole stack across. The axe takes a chest down: outdoors
+backpack and hotbar are on the left and the chest's 15 slots on the right. Click an item and click a
+slot to move it, or Shift+click to send a whole stack across (from the chest it goes to the backpack first, so
+the hotbar isn't flooded). The axe takes a chest down: outdoors
 what it held spills onto the ground, inside a house the chest and its contents go into your
 inventory (or you are told there is no room).
 

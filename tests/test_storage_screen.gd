@@ -40,7 +40,21 @@ func _open_screen() -> Array[SlotView]:
 	return views
 
 
-func test_the_screen_has_the_inventory_slots_and_then_the_five_by_three_of_the_chest() -> void:
+## The view of an inventory slot: the screen has the backpack's views, then the hotbar's.
+func _inventory_view(views: Array[SlotView], slot: int) -> SlotView:
+	return views[
+		slot - Inventory.HOTBAR_SIZE
+		if slot >= Inventory.HOTBAR_SIZE
+		else slot + Inventory.BACKPACK_SIZE
+	]
+
+
+func _chest_view(views: Array[SlotView], slot: int) -> SlotView:
+	return views[Inventory.SLOT_COUNT + slot]
+
+
+func test_the_screen_has_the_backpack_and_hotbar_slots_and_then_the_five_by_three_of_the_chest(
+) -> void:
 	var views := _open_screen()
 	assert_eq(views.size(), Inventory.SLOT_COUNT + 15)
 
@@ -48,8 +62,8 @@ func test_the_screen_has_the_inventory_slots_and_then_the_five_by_three_of_the_c
 func test_clicking_an_item_and_then_a_chest_slot_moves_it() -> void:
 	_inventory.add(ItemTypes.LOGS, 8)
 	var views := _open_screen()
-	views[0].pressed.emit()
-	views[Inventory.SLOT_COUNT + 2].pressed.emit()
+	_inventory_view(views, 0).pressed.emit()
+	_chest_view(views, 2).pressed.emit()
 	assert_true(_inventory.slots[0].is_empty())
 	assert_eq(_chest.slots[2], {"item": ItemTypes.LOGS, "count": 8})
 
@@ -57,8 +71,8 @@ func test_clicking_an_item_and_then_a_chest_slot_moves_it() -> void:
 func test_clicking_a_chest_item_and_then_an_inventory_slot_moves_it_back() -> void:
 	_chest.add(ItemTypes.STONE, 3)
 	var views := _open_screen()
-	views[Inventory.SLOT_COUNT].pressed.emit()
-	views[5].pressed.emit()
+	_chest_view(views, 0).pressed.emit()
+	_inventory_view(views, 5).pressed.emit()
 	assert_true(_chest.slots[0].is_empty())
 	assert_eq(_inventory.slots[5], {"item": ItemTypes.STONE, "count": 3})
 
@@ -66,9 +80,9 @@ func test_clicking_a_chest_item_and_then_an_inventory_slot_moves_it_back() -> vo
 func test_clicking_the_picked_slot_again_puts_it_back_where_it_was() -> void:
 	_inventory.add(ItemTypes.LOGS, 8)
 	var views := _open_screen()
-	views[0].pressed.emit()
-	views[0].pressed.emit()
-	views[1].pressed.emit()
+	_inventory_view(views, 0).pressed.emit()
+	_inventory_view(views, 0).pressed.emit()
+	_inventory_view(views, 1).pressed.emit()
 	assert_eq(_inventory.slots[0], {"item": ItemTypes.LOGS, "count": 8}, "nothing was picked")
 	assert_true(_inventory.slots[1].is_empty())
 
@@ -78,12 +92,30 @@ func test_shift_click_sends_the_whole_stack_to_the_other_side() -> void:
 	_chest.add(ItemTypes.STONE, 3)
 	var views := _open_screen()
 	_hold_shift()
-	views[0].pressed.emit()
+	_inventory_view(views, 0).pressed.emit()
 	assert_true(_inventory.slots[0].is_empty())
 	assert_eq(_chest.count_of(ItemTypes.LOGS), 8)
-	views[Inventory.SLOT_COUNT].pressed.emit()
+	_chest_view(views, 0).pressed.emit()
 	assert_eq(_inventory.count_of(ItemTypes.STONE), 3, "and back again")
 	assert_eq(_chest.count_of(ItemTypes.STONE), 0)
+
+
+func test_shift_click_from_the_chest_fills_the_backpack_before_the_hotbar() -> void:
+	_chest.add(ItemTypes.STONE, 3)
+	var views := _open_screen()
+	_hold_shift()
+	_chest_view(views, 0).pressed.emit()
+	assert_eq(_inventory.slots[Inventory.HOTBAR_SIZE], {"item": ItemTypes.STONE, "count": 3})
+	assert_true(_inventory.slots[0].is_empty())
+
+
+func test_items_move_between_the_hotbar_and_the_backpack() -> void:
+	_inventory.add(ItemTypes.LOGS, 8)
+	var views := _open_screen()
+	_inventory_view(views, 0).pressed.emit()
+	_inventory_view(views, 12).pressed.emit()
+	assert_true(_inventory.slots[0].is_empty())
+	assert_eq(_inventory.slots[12], {"item": ItemTypes.LOGS, "count": 8})
 
 
 func test_shift_click_into_a_full_chest_leaves_the_rest() -> void:
@@ -92,7 +124,7 @@ func test_shift_click_into_a_full_chest_leaves_the_rest() -> void:
 	_inventory.add(ItemTypes.LOGS, 8)
 	var views := _open_screen()
 	_hold_shift()
-	views[0].pressed.emit()
+	_inventory_view(views, 0).pressed.emit()
 	assert_eq(_inventory.slots[0], {"item": ItemTypes.LOGS, "count": 8})
 	assert_eq(_chest.count_of(ItemTypes.LOGS), 0)
 

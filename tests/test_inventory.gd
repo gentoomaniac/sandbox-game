@@ -16,8 +16,8 @@ func _fill_with_tools() -> void:
 		_inventory.add(ItemTypes.HOE, 1)
 
 
-func test_a_new_inventory_has_twenty_empty_slots() -> void:
-	assert_eq(_inventory.slots.size(), 20)
+func test_a_new_inventory_has_thirty_empty_slots() -> void:
+	assert_eq(_inventory.slots.size(), 30)
 	assert_true(_inventory.slots.all(func(stack: Dictionary) -> bool: return stack.is_empty()))
 	assert_eq(_inventory.held_item(), ItemTypes.NONE)
 

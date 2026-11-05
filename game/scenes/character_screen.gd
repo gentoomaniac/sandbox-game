@@ -1,7 +1,8 @@
 class_name CharacterScreen
 extends CanvasLayer
 ## The character screen over the game: the character with the equipment slots around it on
-## the left, the inventory slots and the carried weight on the right. Click an item to pick
+## the left, the backpack with the hotbar as a row below it and the carried weight on the
+## right. Click an item to pick
 ## it up, then click a slot to put it down: a different item swaps places, the same item
 ## stacks, and an equipment slot only takes an item that fits (those light up while an item
 ## is picked up). Clicking the picked slot again, or outside the slots, drops the pick.
@@ -10,7 +11,10 @@ extends CanvasLayer
 const SLOT_GAP := 2
 const COLUMN_GAP := 4
 const PANEL_GAP := 12
-const INVENTORY_COLUMNS := 5
+## Backpack rows as wide as the hotbar row below them.
+const BACKPACK_COLUMNS := Inventory.HOTBAR_SIZE
+## Space between the backpack and the hotbar row below it.
+const HOTBAR_GAP := 8
 const MAX_PREVIEW_SCALE := 4
 ## Kept free round the panel, and the panel's own frame and padding (see ui_theme.tres).
 const WINDOW_MARGIN := 8
@@ -57,24 +61,26 @@ func _init() -> void:
 	character_row.add_child(_preview)
 	_add_equipment_column(_right_column, RIGHT_SLOTS, character_row)
 
-	var grid := GridContainer.new()
-	grid.columns = INVENTORY_COLUMNS
-	grid.add_theme_constant_override("h_separation", SLOT_GAP)
-	grid.add_theme_constant_override("v_separation", SLOT_GAP)
-	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var backpack_grid := _new_slot_grid(BACKPACK_COLUMNS)
+	var hotbar_grid := _new_slot_grid(Inventory.HOTBAR_SIZE)
 	for slot in Inventory.SLOT_COUNT:
 		var view := SlotView.new()
 		view.tooltip_id = "inventory_%d" % slot
 		view.pressed.connect(_on_inventory_slot_pressed.bind(slot))
 		view.secondary_pressed.connect(_on_inventory_slot_secondary_pressed.bind(slot))
-		grid.add_child(view)
+		(hotbar_grid if slot < Inventory.HOTBAR_SIZE else backpack_grid).add_child(view)
 		_inventory_views.append(view)
 	var inventory_column := VBoxContainer.new()
 	inventory_column.add_theme_constant_override("separation", SLOT_GAP)
 	inventory_column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for label in [_weight_label, _note_label]:
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	inventory_column.add_child(grid)
+	inventory_column.add_child(backpack_grid)
+	var hotbar_gap := Control.new()
+	hotbar_gap.custom_minimum_size.y = HOTBAR_GAP - SLOT_GAP
+	hotbar_gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	inventory_column.add_child(hotbar_gap)
+	inventory_column.add_child(hotbar_grid)
 	inventory_column.add_child(_weight_label)
 	inventory_column.add_child(_note_label)
 
@@ -122,6 +128,15 @@ func _process(_delta: float) -> void:
 	if _picked_icon.visible:
 		var icon_size := _picked_icon.texture.get_size()
 		_picked_icon.position = (_backdrop.get_local_mouse_position() - icon_size / 2).round()
+
+
+func _new_slot_grid(columns: int) -> GridContainer:
+	var grid := GridContainer.new()
+	grid.columns = columns
+	grid.add_theme_constant_override("h_separation", SLOT_GAP)
+	grid.add_theme_constant_override("v_separation", SLOT_GAP)
+	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return grid
 
 
 func _add_equipment_column(column: VBoxContainer, slots: Array, parent: Container) -> void:

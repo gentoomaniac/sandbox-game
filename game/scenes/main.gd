@@ -45,8 +45,9 @@ extends Node2D
 ## page (with `--screenshot`, the shot is of the menu). The console's `snow <0..1>` forces the snow
 ## cover (`snow auto` ends it), and F3 shows the snow cover and the frost.
 ## `--tooltip=<id>` shows the tooltip of a control as if the mouse rested on it: `hotbar_<0..9>`,
-## `inventory_<n>` and `equipment_<slot>` (with `--inventory`), `recipe_<id>` (with `--crafting`),
-## `inventory_<n>` and `chest_<n>` (with `--storage`), `setting_ui_scale` and
+## `inventory_<0..29>` (0 to 9 the hotbar) and `equipment_<slot>` (with `--inventory`),
+## `recipe_<id>` (with `--crafting`),
+## `inventory_<0..29>` and `chest_<n>` (with `--storage`), `setting_ui_scale` and
 ## `setting_day_length` (with `--menu=game`), `setting_master_volume`, `setting_effects_volume`,
 ## `setting_ambience_volume` and `setting_sound_in_background` (with `--menu=audio`),
 ## `action_<action>` (with `--menu=controls`).
