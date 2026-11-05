@@ -406,7 +406,7 @@ See SPEC.md "Lighting and look" (see-through occluders).
 
 ## 15. Saving and loading
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Saving (first version)" and "World edits (architecture)".
 
