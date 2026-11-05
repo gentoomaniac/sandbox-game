@@ -207,3 +207,34 @@ func test_a_crop_is_drawn_from_its_own_sheet_in_every_look() -> void:
 		_show(look_day_snow[0], look_day_snow[1], look_day_snow[2])
 		assert_eq(_view._objects.get_cell_source_id(pos), source_id)
 		assert_eq(_view._object_state(crop), 0, "a look change does not redraw it")
+
+
+func test_wet_soil_is_drawn_under_the_look_overlays() -> void:
+	var wetness_index := _view._soil_wetness.get_index()
+	for overlay: TileMapLayer in _view._overlays.values():
+		assert_lt(wetness_index, overlay.get_index(), overlay.name)
+
+
+func test_soil_that_snow_lies_on_is_not_drawn_wet() -> void:
+	_view._load_chunk(RIGHT)
+	var tiles: Array[Vector2i] = []
+	for x in range(-20, -10):
+		var pos := Vector2i(x, -20)
+		_view.world.set_terrain(pos, Tile.Terrain.SOIL)
+		_view.world.set_moisture(pos, 1.0)
+		tiles.append(pos)
+	_show(SUMMER, 0.0)
+	for pos in tiles:
+		assert_eq(_view._soil_wetness.get_cell_atlas_coords(pos), Vector2i(1, 0), "wet in summer")
+	_show(WINTER, 1.0)
+	var snowed := 0
+	for pos in tiles:
+		var is_snowy: bool = (
+			_view._weather_look_at(pos) in [SeasonBlend.Look.SNOW, SeasonBlend.Look.DUSTING]
+		)
+		snowed += 1 if is_snowy else 0
+		assert_eq(_view._soil_wetness.get_cell_source_id(pos) == -1, is_snowy, str(pos))
+	assert_gt(snowed, 0, "some of the soil is under snow")
+	_show(SUMMER, 0.0)
+	for pos in tiles:
+		assert_eq(_view._soil_wetness.get_cell_atlas_coords(pos), Vector2i(1, 0), "wet again")

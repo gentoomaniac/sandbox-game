@@ -2,6 +2,8 @@
 seed bags and the produce, and the look of damp and wet soil.
 """
 
+import random
+
 import items
 from crops import KEYS, TILE, Surface
 
@@ -162,15 +164,17 @@ def icons():
 
 
 def soil_wet():
-    """The overlay of damp and of wet soil as two tiles: dark dither on the soil, in the middle
-    of the tile only, so the rounded edges of a field stay clear. Damp covers a quarter of it
-    and wet half, so wet soil reads as clearly darker."""
+    """The overlay of damp and of wet soil as two tiles: dashes of darker soil, in the middle of
+    the tile only, so the rounded edges of a field stay clear. Wet has more of them and a few of
+    the darkest, and they include all of the damp ones. The light bands of the soil texture
+    turn dark where they lie."""
+    rng = random.Random("soil-wet")
+    spots = [(x, y) for y in range(2, TILE - 2) for x in range(2, TILE - 3)]
+    rng.shuffle(spots)
     tiles = []
-    for is_wet in (False, True):
+    for count, darkest in ((14, 0), (36, 8)):
         tile = Surface(TILE, TILE, (0, 0))
-        for y in range(2, TILE - 2):
-            for x in range(2, TILE - 2):
-                if (x + y) % (2 if is_wet else 4) == 0:
-                    tile.pixel(x, y, "soil_dark")
+        for index, (x, y) in enumerate(spots[:count]):
+            tile.stamp(("bb" if index >= darkest else "ss",), x, y)
         tiles.append(tile.rows)
     return tiles

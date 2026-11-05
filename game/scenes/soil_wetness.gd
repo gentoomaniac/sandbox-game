@@ -1,8 +1,10 @@
 class_name SoilWetness
 extends TileMapLayer
-## Darkens tilled soil that is damp or wet (see World `moisture_at`): speckles of dark soil on
-## the plain tile grid, under the objects. It follows the world's moisture and tilling signals,
-## so it needs nothing from chunk streaming: tilled tiles are drawn wherever they are.
+## Darkens tilled soil that is damp or wet (see World `moisture_at`): dashes of dark soil on the
+## plain tile grid, over the soil terrain and under every look overlay and the objects. It
+## follows the world's moisture and tilling signals, so it needs nothing from chunk streaming:
+## tilled tiles are drawn wherever they are. Soil that snow lies on (see `show_world`) is not
+## drawn wet.
 
 const TEXTURE_PATH := "res://assets/soil_wet.png"
 const TILE_SIZE := TerrainTileset.TILE_SIZE
@@ -11,6 +13,7 @@ const DAMP_FROM := 0.35
 const WET_FROM := 0.7
 
 var _world: World
+var _is_covered: Callable
 
 
 func _init() -> void:
@@ -25,9 +28,11 @@ func _init() -> void:
 	source.create_tile(Vector2i(1, 0))
 
 
-## Draws the world's tilled soil and follows it from now on.
-func show_world(world: World) -> void:
+## Draws the world's tilled soil and follows it from now on. `is_covered` tells for a world tile
+## whether snow covers it, and then it is left out; call `redraw_tile` when that changes.
+func show_world(world: World, is_covered := func(_pos: Vector2i) -> bool: return false) -> void:
 	_world = world
+	_is_covered = is_covered
 	_world.soil_moisture_changed.connect(_draw_tile)
 	_world.tile_changed.connect(_draw_tile)
 	for pos in _world.tilled_tiles():
@@ -41,8 +46,14 @@ static func look_for(moisture: float) -> int:
 	return 0 if moisture >= DAMP_FROM else -1
 
 
+## Draws one tile again.
+func redraw_tile(world_pos: Vector2i) -> void:
+	_draw_tile(world_pos)
+
+
 func _draw_tile(world_pos: Vector2i) -> void:
-	var look := look_for(_world.moisture_at(world_pos)) if _world.is_tilled(world_pos) else -1
+	var is_wettable: bool = _world.is_tilled(world_pos) and not _is_covered.call(world_pos)
+	var look := look_for(_world.moisture_at(world_pos)) if is_wettable else -1
 	if look < 0:
 		erase_cell(world_pos)
 	else:

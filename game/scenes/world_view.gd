@@ -137,6 +137,8 @@ func _ready() -> void:
 		tile_map.position = -Vector2(TerrainTileset.TILE_SIZE, TerrainTileset.TILE_SIZE) / 2
 		add_child(tile_map)
 		_layers.append(tile_map)
+	# Wet soil lies right over the soil terrain, under the snow and the other looks.
+	add_child(_soil_wetness)
 	for look in TerrainTileset.OVERLAY_LOOKS:
 		var tile_map := TileMapLayer.new()
 		tile_map.name = "%sLook" % SeasonBlend.Look.keys()[look].capitalize()
@@ -147,7 +149,6 @@ func _ready() -> void:
 	_decorations.name = "Decorations"
 	_decorations.tile_set = _tileset.tile_set
 	add_child(_decorations)
-	add_child(_soil_wetness)
 	_objects.name = "Objects"
 	_objects.tile_set = _object_tileset.tile_set
 	_objects.y_sort_enabled = true
@@ -163,7 +164,7 @@ func show_world(world_to_show: World) -> void:
 	world.objects_changed.connect(_on_objects_changed)
 	world.tile_changed.connect(redraw_tile)
 	world.object_hit.connect(_shake_object)
-	_soil_wetness.show_world(world)
+	_soil_wetness.show_world(world, _is_snowed_over)
 	world.building_placed.connect(_draw_building)
 	_generator = WorldGenerator.new(world.world_seed)
 	_variety_noise.seed = world.world_seed + VARIETY_SEED_OFFSET
@@ -298,6 +299,10 @@ func _load_chunk(coords: Vector2i) -> void:
 	var chunk := _generator.generate_chunk(coords)
 	world.add_chunk(chunk)
 	_draw_chunk(chunk)
+	# The tilled soil of the chunk now knows whether snow lies on it.
+	for pos in world.tilled_tiles():
+		if Chunk.world_to_chunk(pos) == coords:
+			_soil_wetness.redraw_tile(pos)
 
 
 func _draw_chunk(chunk: Chunk) -> void:
@@ -427,6 +432,7 @@ func _refresh_chunk(coords: Vector2i) -> void:
 		):
 			chunk_looks.season_looks[index] = season_look
 			chunk_looks.weather_looks[index] = weather_look
+			_soil_wetness.redraw_tile(pos)
 			for offset: Vector2i in CORNER_OFFSETS:
 				changed_cells[pos - offset] = true
 		var spot: DecorationSpot = _decoration_spots.get(pos)
@@ -779,6 +785,12 @@ func _weather_look_at(world_pos: Vector2i) -> int:
 	if chunk_looks == null:
 		return TerrainTileset.MISSING
 	return chunk_looks.weather_looks[ChunkLooks.index_of(Chunk.local_pos(world_pos))]
+
+
+## Whether snow or a dusting of it lies on a tile, so soil under it doesn't look wet.
+func _is_snowed_over(world_pos: Vector2i) -> bool:
+	var look := _weather_look_at(world_pos)
+	return look == SeasonBlend.Look.SNOW or look == SeasonBlend.Look.DUSTING
 
 
 ## The layer a tile is drawn on, or MISSING if its chunk is not loaded.
