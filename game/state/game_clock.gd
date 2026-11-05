@@ -16,6 +16,7 @@ var minute_of_day := START_MINUTE
 
 
 func advance(minutes: int) -> void:
+	assert(minutes >= 0, "Time only moves forward")
 	var total := minute_of_day + minutes
 	var days_passed := total / MINUTES_PER_DAY
 	minute_of_day = total % MINUTES_PER_DAY
@@ -25,6 +26,7 @@ func advance(minutes: int) -> void:
 
 
 func set_time(hour: int, minute: int) -> void:
+	assert(hour >= 0 and hour < 24 and minute >= 0 and minute < 60, "Not a time of day")
 	minute_of_day = hour * MINUTES_PER_HOUR + minute
 
 

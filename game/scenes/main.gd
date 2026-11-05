@@ -34,8 +34,7 @@ func _ready() -> void:
 		elif arg.begins_with("--screenshot="):
 			_screenshot_path = arg.trim_prefix("--screenshot=")
 		elif arg.begins_with("--time="):
-			var time := arg.trim_prefix("--time=").split_floats(":")
-			clock.set_time(int(time[0]), int(time[1]))
+			_set_start_time(arg.trim_prefix("--time="))
 	_show_clock()
 
 
@@ -55,6 +54,9 @@ func _process(delta: float) -> void:
 
 ## Real time to whole game minutes; the fraction carries over to the next frame.
 func _tick_clock(delta: float) -> void:
+	# A screenshot with TIME=... must show exactly that time.
+	if _screenshot_path != "":
+		return
 	var rate := GAME_MINUTES_PER_REAL_SECOND * (FAST_FORWARD_FACTOR if _fast_forward else 1.0)
 	_pending_minutes += delta * rate
 	var whole_minutes := int(_pending_minutes)
@@ -62,6 +64,19 @@ func _tick_clock(delta: float) -> void:
 		_pending_minutes -= whole_minutes
 		clock.advance(whole_minutes)
 		_show_clock()
+
+
+func _set_start_time(text: String) -> void:
+	var parts := text.split(":")
+	if parts.size() != 2 or not parts[0].is_valid_int() or not parts[1].is_valid_int():
+		push_error("--time expects hh:mm, got '%s'" % text)
+		return
+	var hour := int(parts[0])
+	var minute := int(parts[1])
+	if hour < 0 or hour > 23 or minute < 0 or minute > 59:
+		push_error("--time out of range: '%s'" % text)
+		return
+	clock.set_time(hour, minute)
 
 
 func _show_clock() -> void:

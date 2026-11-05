@@ -49,3 +49,23 @@ func test_many_small_steps_match_one_big_step() -> void:
 	assert_eq(_clock.day, 3)
 	assert_eq(_clock.time_text(), "06:00")
 	assert_eq(_new_days, [2, 3])
+
+
+func test_set_time() -> void:
+	_clock.set_time(23, 5)
+	assert_eq(_clock.minute_of_day, 23 * 60 + 5)
+	assert_eq(_clock.day, 1)
+
+
+func test_advance_zero_changes_nothing() -> void:
+	_clock.advance(0)
+	assert_eq(_clock.day, 1)
+	assert_eq(_clock.minute_of_day, GameClock.START_MINUTE)
+	assert_eq(_new_days, [])
+
+
+func test_time_text_pads_digits() -> void:
+	_clock.set_time(0, 7)
+	assert_eq(_clock.time_text(), "00:07")
+	_clock.set_time(23, 59)
+	assert_eq(_clock.time_text(), "23:59")
