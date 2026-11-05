@@ -490,7 +490,7 @@ See SPEC.md "Player" (tile targeting with the mouse).
 - The targeting rule (which tile, in reach or not, which source) is a pure function with
   tests.
 
-Parallel plan for 18–22: 18 and 19 together; 20 after 18; 21 and 22 together after 20.
+Parallel plan for 18–22: 18 and 19 together; 20 after 18; 21 and 22 together after 20. 23 after 22.
 
 ## 18. Inventory, hotbar and starting tools
 
@@ -590,6 +590,26 @@ Depends on: 19. See SPEC.md "Menus and settings".
   High (×0.5 / ×1 / ×1.5), stored for task 21.
 - Both saved in `user://settings.cfg` like the other settings.
 - Tests: the settings round trip and defaults.
+
+## 23. Character screen with equipment
+
+- [ ] Done
+
+See SPEC.md "Player" (character screen).
+
+- State: equipment slots (head, body, legs, feet, back, main hand, off hand) on the
+  player, saved; wearable item types with a slot and a character layer variant; equip,
+  unequip and swap with the inventory, only into fitting slots; worn items in the total
+  weight. Older saves get the default outfit worn.
+- Appearance follows the equipment: each slot is a layer; an empty slot draws nothing.
+  The body layer must look decent with nothing worn.
+- Items: tunic and shirt (body, the two existing clothes sheets), trousers (legs), straw
+  hat (head, new layer art in all facings and frames). Icons for all four.
+- Screen: Tab opens it, replacing the inventory screen. Character preview (large, facing
+  the viewer) with the slots around it; the inventory grid beside it; empty slots show a
+  faint outline of what fits; click to pick up and put down, fitting slots light up,
+  right-click quick equip/unequip.
+- Tests: equip, unequip, swap, wrong slot refused, weight, save round trip, older save.
 
 ## Later (not part of the prototype)
 

@@ -204,6 +204,17 @@ top of classic pixel art (details under "Lighting and look").
   - Every item has a weight; the total carried weight raises how much energy actions use
     (see Energy).
   - An inventory screen shows all slots; items can be moved between slots.
+- **Character screen** (decided 2026-11-05): Tab opens one screen with the character and
+  their equipment on one side and the inventory on the other.
+  - Equipment slots: head, body, legs, feet, back, main hand, off hand. Clothes, armour
+    and later weapons, shields and backpacks are items with a slot; worn items show on the
+    character (each slot is a sprite layer).
+  - Items move between inventory slots and fitting equipment slots by clicking (pick up,
+    put down, swap); an item only goes into a slot it fits, and fitting slots light up
+    while an item is picked up. Right-click equips or unequips at once.
+  - Worn items count toward the carried weight.
+  - Hair and body are the character's look, not equipment.
+  - New game: tunic and trousers worn; a straw hat and a spare shirt in the inventory.
 - **Movement keys:** arrow keys and WASD (decided 2026-11-05). All keys can be changed in
   the settings (see Menus and settings).
 - **Scale between character and world:** character figure 27–28 px tall in its 16×32
