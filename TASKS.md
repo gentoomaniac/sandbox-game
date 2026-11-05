@@ -104,6 +104,10 @@ Depends on: 2.
 
 Depends on: 3.
 
+- Display setup per SPEC.md "Lighting and look": internal resolution 384×216, 16×16
+  tiles, scaled up by whole numbers only (Godot stretch mode `viewport`, integer scale
+  mode), pixel snapping on, nearest-neighbour filtering. The window starts at a size
+  that is a whole multiple, e.g. 1920×1080.
 - A world scene renders the loaded chunks with `TileMapLayer`, using a placeholder tileset
   with one colour per terrain.
 - How a tile looks is derived from its state. When a tile's state changes, its look
@@ -167,6 +171,8 @@ Depends on: 5.
   centre, with no world objects in the way. It places a camp site there: a fireplace and a sleeping bag, as world objects
   in game state.
 - The player starts at the camp site.
+- The fireplace has a warm point light with a slight flicker, and a subtle glow. Set up
+  glow once for the whole game (e.g. a `WorldEnvironment`), so later lights get it too.
 - GUT test: the start position is always on buildable land, for several seeds.
 
 ## 7. Day counter and sleeping
@@ -183,6 +189,9 @@ Depends on: 6.
   - a new day begins whenever midnight is crossed.
 - The bed last slept in is stored as the player's home.
 - A minimal on-screen display of day and time.
+- Day and night tint: the world's colour follows the time of day (warm morning, neutral
+  noon, orange dusk, blue night), e.g. with `CanvasModulate` and a colour gradient over
+  the day. Point lights from task 6 must still shine at night. The UI is not tinted.
 - GUT tests:
   - the clock advances correctly on sleep, including crossing midnight;
   - home is updated.

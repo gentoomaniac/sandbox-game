@@ -37,6 +37,21 @@ top of classic pixel art (details under "Lighting and look").
   out. In practice: game state (world, entities, reputation) is kept separate from
   rendering and input, and it changes only through explicit actions.
 
+### Lighting and look
+
+- **Render resolution:** 384×216 internal, **16×16 tiles** (24×13.5 tiles on screen).
+  The picture is scaled up by whole numbers only. Light and shadow fall on the same pixel
+  grid as the art, so lighting never looks smeared over sharp pixels.
+- **Standard effects:**
+  - **day and night tint:** the whole picture changes colour with the time of day (warm
+    morning, neutral noon, orange dusk, blue night);
+  - **point lights:** campfire, torches, lit windows at night, with a slight flicker.
+    Dark nights make light sources valuable, which ties in with keeping creatures away;
+  - **subtle glow/bloom** on bright light sources. Keep it subtle.
+- **Later: normal maps** on sprites and tiles, so light gives the pixel art relief. This
+  is mostly an art cost. Code should not rule it out.
+- **Left out for now:** shadows cast by objects.
+
 ### Tile state (architecture)
 
 - A tile is **state, not a fixed picture**: terrain type plus dynamic properties such as
@@ -226,8 +241,6 @@ Tasks: see [TASKS.md](TASKS.md).
 - **Reputation details:**
   - What does reputation unlock or block (prices, quests, hostility)?
   - Which NPCs in the territory are affected: everyone, or only those living closest?
-- **Lighting and look:** which effects, and at what render resolution (see the proposal
-  in the conversation of 2026-11-05; to be decided).
 - **Target platforms:** Linux only, or desktop in general? Web?
 - **Scope:** hobby, learning project or release target?
 
