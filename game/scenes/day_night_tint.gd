@@ -5,9 +5,9 @@ extends CanvasModulate
 ## Hour of day to tint colour. Blended linearly in between, and wraps around midnight.
 const STOPS := {
 	0.0: Color(0.40, 0.46, 0.74),
-	5.0: Color(0.40, 0.46, 0.74),
-	6.5: Color(1.00, 0.82, 0.70),
-	8.5: Color(1.00, 1.00, 1.00),
+	4.5: Color(0.40, 0.46, 0.74),
+	6.0: Color(1.00, 0.82, 0.70),
+	8.0: Color(1.00, 1.00, 1.00),
 	17.0: Color(1.00, 1.00, 1.00),
 	18.5: Color(1.00, 0.70, 0.52),
 	20.5: Color(0.62, 0.52, 0.72),
