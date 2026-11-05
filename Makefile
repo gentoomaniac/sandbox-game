@@ -12,7 +12,7 @@ GDFORMAT := $(VENV)/bin/gdformat
 GDSCRIPT_DIRS := game tests
 
 # Godot only finds addon classes (GUT) and new class_name scripts after an import
-# pass. It takes about 2 s, so setup and test simply run it every time instead of
+# pass. It takes about 2 s, so setup, run and test simply run it every time instead of
 # tracking when the cache is stale.
 IMPORT := $(GODOT) --headless --quiet --import
 
@@ -65,6 +65,7 @@ setup:
 	echo "Setup complete."
 
 run:
+	$(IMPORT)
 	$(GODOT) --path .
 
 # On Godot builds without navigation (e.g. some Gentoo builds) GUT prints a harmless
