@@ -914,6 +914,23 @@ after the flash with a delay; birds chirping from their nodes now and then, deer
 squirrel and bee sounds; frogs near water by season, time of day, temperature and
 distance.
 
+## 43. Harvest animations: falling trees, items hopping out
+
+- [ ] Done
+
+See SPEC.md "Harvest animations". View only. Depends on the season tiling fix being
+merged (both touch world_view.gd).
+
+- A felled tree topples away from the player onto its trunk's side, about 0.6 s, easing
+  in, with leaves or snow bursting on impact (HitParticles) and the stump shaking; the
+  trunk object is drawn only when the fall ends.
+- Ground items appear with a hop: from the source tile in an arc (a few pixels high) to
+  their landing spot, a small bounce, staggered a little when several drop at once. For
+  every harvest: trunk, stump, stone, boulder, tall grass, reeds, clay, crops, bushes.
+- Collecting during a hop still works; save/load and the state are untouched.
+- A debug flag to capture the fall and the hops; tests for the timing and that the state
+  is final at once.
+
 ## Later (not part of the prototype)
 
 - Season looks follow-ups (from the task 29 review): world_view.gd carries layer, season
@@ -939,7 +956,6 @@ distance.
 - Held art and use poses for axe, pickaxe, scythe and shovel.
 - A planted sapling can be picked up again by hand for free; decide whether that's fine.
 - The shovel could later dig up a young sapling to move it.
-- A felled tree could topple in an animation before the trunk lies there.
 
 - Floodplain farming: floodplain is the most fertile farmland, but only grass can be tilled
   now. Tilling it needs a "tilled" tile property that keeps the floodplain flag, so floods

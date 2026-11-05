@@ -500,6 +500,13 @@ Decided 2026-11-05. A text console for testing and cheats.
     its species and then that tree. The generic sapling item goes away.
   - **Stone:** a mined stone breaks into stone items scattered around its tile; a boulder
     (level 2) into more of them.
+  - **Harvest animations** (decided 2026-11-05; view only, the state changes at once):
+    a felled tree topples away from the player onto the side where its trunk will lie
+    (about 0.6 s, speeding up, leaves or snow burst on impact) before the trunk shows;
+    everything a harvest drops starts at its source and hops in a small arc, with a little
+    bounce, to where it lands: logs out of a cut trunk and a stump, stones out of a broken
+    stone, hay and reeds out of mown stands, clay out of a dug spot, and the same for crops
+    and bushes picked by hand. The tree rotates on the art grid.
   - **Hit feedback:** every hit shakes the object, the finishing one too. A tree with
     foliage drops a few leaves (needles for spruce and pine, all year), a snowy tree a
     puff of snow, a bare tree nothing. Stone and boulders throw a few small splinters
