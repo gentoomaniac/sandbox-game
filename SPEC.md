@@ -378,11 +378,15 @@ Decided 2026-11-05. A text console for testing and cheats.
     patches over 2–3 days. By the start of spring it is gone.
   - **Frost:** below 0 °C without snow, grass and plants get a frosty look (pale,
     rimed), stronger the colder it is, fading as it warms by day.
-  - **Foliage and grass blend:** spring to summer, summer to autumn and autumn to winter
-    change over several days around each boundary, tile by tile and tree by tree (each
-    has its own threshold), not on one morning. Autumn colours come in gradually; trees
-    drop their leaves one by one in late autumn and leaf out one by one in spring. Winter
-    without snow is bare and brown-grey, not white.
+  - **Foliage and grass blend** (changed 2026-11-06): every change of look takes 2 to 3
+    days from the first day of its season to the full look, tile by tile and tree by tree
+    (each has its own threshold), not on one morning and not over weeks. In spring the
+    trees and bushes leaf out in visible steps within those days: bare, buds, small leaves,
+    full leaves. Autumn colours and leaf fall come in the same way. Winter without snow is
+    bare and brown-grey, not white.
+  - **Pines look like pines** (decided 2026-11-06): a Scots pine with a tall bare reddish
+    trunk and a few flat dark blue-green needle clumps high up, so they don't read as
+    young leafy trees; evergreen like the spruce, which stays as the second conifer.
 - **Vegetation density follows the year** (decided 2026-11-05):
   - Ground cover (grass tufts, flowers, small plants, fallen leaves; the visual decoration
     layer) has a density per kind that follows a smooth yearly curve: grass tufts sparse

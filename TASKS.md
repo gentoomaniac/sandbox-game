@@ -1136,6 +1136,22 @@ storage screen show the backpack grid with the hotbar as a row below it; moving 
 between hotbar, backpack, equipment and chest. Old saves keep every item where it is and
 gain the new empty backpack slots. Tests; README updated. Starts after task 49 is merged.
 
+## 51. Quick season changes, spring leaf-out, Scots pines
+
+- [ ] Done
+
+See SPEC.md "Foliage and grass blend" and "Pines look like pines" (2026-11-06). The user:
+"the seasons take too long to change visually, it should only be 2-3 days from start to
+max"; "in spring trees should grow leaves until spring is in full bloom" (also within the
+2-3 days); the pines read like young trees that don't change with the seasons.
+
+- Blend windows in data/seasons.cfg: each change done 2-3 days after its season starts,
+  ground and foliage; the season blend tests rewritten for that.
+- Spring leaf-out in steps for the deciduous trees and bushes (bare, buds, small leaves,
+  full): new intermediate looks in tools/art and in the season look pipeline.
+- Redraw the pine as a Scots pine; keep the spruce. Season looks (snow, frost) for both.
+- Screenshots of a forest over the first days of spring and of autumn; README and SPEC.
+
 ## Later (not part of the prototype)
 
 - Season looks follow-ups (from the task 29 review): world_view.gd carries layer, season
