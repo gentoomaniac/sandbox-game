@@ -124,3 +124,9 @@ func test_the_bed_is_in_reach_from_beside_it_and_sleeping_sets_home_there() -> v
 func test_new_game_home_is_in_the_world() -> void:
 	var state := GameState.new_game(7)
 	assert_eq(state.player.home_map, state.world)
+
+
+func test_use_does_nothing_inside() -> void:
+	_enter_house()
+	for tile in [Vector2i(3, 3), Vector2i(3, 2), Vector2i(0, 0)]:
+		assert_eq(_state.use_at(tile), GameState.Use.NOTHING)
