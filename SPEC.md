@@ -269,13 +269,16 @@ Decided 2026-11-05. A text console for testing and cheats.
   [count]` (into the inventory); `god` (toggle invincibility:
   health doesn't drop); `nodrain` (toggle: actions cost no energy); `noweight` (toggle:
   carried weight doesn't raise costs). Later commands: `spawn`, `weather`, `snow`, `crop`
-  (see `help`).
+  (see `help`), and `skip <n>m|h|d` (let minutes, hours or days pass, at most a year; the
+  nights in between pass as when sleeping, so crops grow).
 - Tab completes command names and every argument with a fixed set of values: item ids,
   animal kinds, weather conditions, snow values. Each command lists its argument kinds in
   one table in the console code; numbers are not completed.
 - Cheat toggles last for the session; they are not saved. A line in the HUD shows which
   are on.
-- A history with up/down; output and errors in the console log.
+- A history with up/down; output and errors in the console log. The input line keeps the
+  focus while the console is open: clicks elsewhere don't take it, and it stays ready
+  after Enter.
 - Always available for now. Whether release builds lock it is decided later.
 
 ### Time, seasons and weather
@@ -338,7 +341,8 @@ Decided 2026-11-05. A text console for testing and cheats.
     fog drifting over the world, wind streaks and blowing leaves, lightning flashes, and
     overcast skies dimming daylight. Nothing in the game reacts yet (crops, floods,
     frozen rivers, energy and the like come later); the state is ready for it. No
-    effects inside buildings.
+    effects inside buildings. Rain, snow, streaks, leaves and fog are anchored to the
+    world, not the screen: they stay in place when the player walks.
 - **Day length follows the year** (decided 2026-11-05, made milder the same day for
   gameplay): the game is set in the Nordics, but moderately. Sunrise and sunset move
   smoothly over the year (a curve, no steps between seasons): longest day in mid-summer

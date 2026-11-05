@@ -96,6 +96,7 @@ Press `/` to open a console for testing and cheats. Tab completes commands and t
 | `weather`, `weather <condition>`, `weather auto` | Show the weather, force a condition, or go back to the simulation. |
 | `snow`, `snow <0..1>`, `snow auto` | Show the snow cover, force it, or go back to the weather. |
 | `spawn <animal> [count]` | Put animals nearby. |
+| `skip <n>m\|h\|d` | Let minutes, hours or days pass, e.g. `skip 2h` or `skip 3d`. |
 | `crop` | Show the growth, damage and needs of the nearest crop. |
 
 ![The console after a few commands](docs/screenshots/console.png)

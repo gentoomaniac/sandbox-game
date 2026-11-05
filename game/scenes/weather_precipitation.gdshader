@@ -3,9 +3,12 @@ shader_type canvas_item;
 // pixel: every effect is made of whole pixels (one pixel wide streaks, 1 or 2 pixel flakes),
 // so it stays crisp on the pixel grid. Nothing is stored: each pixel works out whether it is
 // part of a drop, flake, streak or leaf from its position and the distances (`*_scroll`) the
-// effects have moved so far, which WeatherView accumulates from the wind.
+// effects have moved so far, which WeatherView accumulates from the wind. Positions are in
+// world pixels (through `camera`), so the effects stay in place when the player walks.
 
 uniform vec2 view_size;
+// Where the camera looks, in world pixels (rounded to whole pixels).
+uniform vec2 camera;
 // The day tint, so that the effects darken at night like the world.
 uniform vec4 tint : source_color = vec4(1.0);
 uniform float time;
@@ -110,7 +113,7 @@ vec4 leaf(vec2 p) {
 }
 
 void fragment() {
-	vec2 p = floor(UV * view_size);
+	vec2 p = floor(UV * view_size) + camera - floor(view_size * 0.5);
 	vec4 result = vec4(0.0);
 
 	if (rain > 0.0) {

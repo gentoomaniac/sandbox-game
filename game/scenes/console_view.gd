@@ -36,8 +36,10 @@ func _init() -> void:
 	panel.add_child(box)
 	_log.clip_text = true
 	box.add_child(_log)
+	_input.keep_editing_on_text_submit = true
 	_input.text_submitted.connect(_on_submitted)
 	_input.gui_input.connect(_on_input_gui_input)
+	_input.focus_exited.connect(_on_input_focus_exited)
 	box.add_child(_input)
 
 
@@ -59,7 +61,7 @@ func open() -> void:
 	visible = true
 	_input.clear()
 	_history_index = _history.size()
-	_input.grab_focus()
+	_focus_input()
 
 
 func close() -> void:
@@ -100,6 +102,17 @@ func _on_input_gui_input(event: InputEvent) -> void:
 		_:
 			return
 	_input.accept_event()
+
+
+## The input never loses focus while the console is open, e.g. to a click elsewhere.
+func _on_input_focus_exited() -> void:
+	if visible:
+		_focus_input.call_deferred()
+
+
+func _focus_input() -> void:
+	_input.grab_focus()
+	_input.edit()
 
 
 func _browse_history(step: int) -> void:

@@ -26,6 +26,11 @@ const COMMANDS := {
 		"snow [0..1|auto]",
 		"Show the snow cover, force it (0 to 1) or return to the weather (auto).",
 	],
+	"skip":
+	[
+		"skip <n>m|h|d",
+		"Let time pass: minutes, hours or days (crops grow, the weather moves on).",
+	],
 	"crop":
 	[
 		"crop",
@@ -41,6 +46,9 @@ const ARGUMENTS := {
 	"weather": [&"weather"],
 	"snow": [&"snow"],
 }
+## Minutes per unit of the `skip` command, and the longest skip (a year).
+const SKIP_UNITS := {"m": 1, "h": GameClock.MINUTES_PER_HOUR, "d": GameClock.MINUTES_PER_DAY}
+const MAX_SKIP_MINUTES := GameClock.DAYS_PER_YEAR * GameClock.MINUTES_PER_DAY
 ## The snow values Tab offers; any number from 0 to 1 works.
 const SNOW_CANDIDATES: Array[String] = ["auto", "0", "0.5", "1"]
 ## How far (in tiles) the `crop` command looks for a crop when none is in front of the player.
@@ -89,6 +97,8 @@ func run(line: String) -> Array[String]:
 			output = _weather(arguments)
 		"snow":
 			output = _snow(arguments)
+		"skip":
+			output = _skip(arguments)
 		"crop":
 			output = _crop()
 		_:
@@ -263,6 +273,21 @@ func _snow(arguments: PackedStringArray) -> Array[String]:
 	if snow.forced >= 0.0:
 		lines.append("Forced: %s" % snow.forced)
 	return lines
+
+
+func _skip(arguments: PackedStringArray) -> Array[String]:
+	var usage: Array[String] = ["Usage: %s" % COMMANDS["skip"][0]]
+	if arguments.size() != 1 or arguments[0].length() < 2:
+		return usage
+	var amount := arguments[0].left(-1)
+	var unit := arguments[0].right(1)
+	if not SKIP_UNITS.has(unit) or not amount.is_valid_int() or int(amount) <= 0:
+		return usage
+	var minutes: int = int(amount) * SKIP_UNITS[unit]
+	if minutes > MAX_SKIP_MINUTES:
+		return ["At most a year (%dd) at once" % GameClock.DAYS_PER_YEAR]
+	_state.clock.advance(minutes)
+	return ["Skipped to %s, %s" % [_state.clock.date_text(), _state.clock.time_text()]]
 
 
 func _crop() -> Array[String]:

@@ -2,7 +2,8 @@ class_name WeatherView
 extends CanvasLayer
 ## The look of the weather, inside the world viewport so that it is drawn on the art pixel
 ## grid: rain, snow, wind streaks and leaves (one shader, see weather_precipitation.gdshader),
-## fog (weather_fog.gdshader) and the flash of lightning. They cover the whole viewport, which
+## fog (weather_fog.gdshader) and the flash of lightning. Rain, snow and fog are anchored to
+## the world, so they stay in place when the player walks. They cover the whole viewport, which
 ## is also all the window ever shows, at any zoom. The scene feeds it the weather every frame
 ## (`show_weather`); what is on screen follows with a fade, so changes in the weather are
 ## never abrupt. Hide the node to show no weather, e.g. inside a building.
@@ -136,6 +137,7 @@ func _show_effects(wind_x: float) -> void:
 	fog.set_shader_parameter("drift", _fog_drift)
 	var camera := get_viewport().get_camera_2d()
 	if camera != null:
+		precipitation.set_shader_parameter("camera", camera.position.round())
 		fog.set_shader_parameter("camera", camera.position.round())
 
 
