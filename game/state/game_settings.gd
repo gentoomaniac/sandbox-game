@@ -13,6 +13,9 @@ extends RefCounted
 ## Emitted when the player changes the energy drain; loading it does not, so whoever connects
 ## reads `energy_drain_factor()` once at start and then follows this.
 signal drain_changed
+## Emitted when the player changes the UI scale; loading it does not, so whoever applies the
+## scale does it once after `load_file()` and then on this.
+signal ui_scale_changed(scale: float)
 
 enum EnergyDrain { LOW, NORMAL, HIGH }
 
@@ -191,8 +194,13 @@ func set_fullscreen(value: bool) -> void:
 ## whatever the scale. The value is kept in range and on the slider's steps.
 func set_ui_scale(value: float) -> void:
 	ui_scale = clampf(snappedf(value, UI_SCALE_STEP), MIN_UI_SCALE, MAX_UI_SCALE)
-	_apply_ui_scale()
 	_save()
+	ui_scale_changed.emit(ui_scale)
+
+
+## The drain after `drain`, wrapping round: what a button that cycles through them sets next.
+static func next_drain(drain: EnergyDrain) -> EnergyDrain:
+	return ((drain + 1) % EnergyDrain.size()) as EnergyDrain
 
 
 func set_energy_drain(value: EnergyDrain) -> void:
@@ -236,7 +244,6 @@ func _load_game_section(file: ConfigFile) -> void:
 		var value: Variant = file.get_value(GAME_SECTION, UI_SCALE_KEY)
 		if (value is float or value is int) and value >= MIN_UI_SCALE and value <= MAX_UI_SCALE:
 			ui_scale = snappedf(value, UI_SCALE_STEP)
-			_apply_ui_scale()
 		else:
 			push_warning("Ignoring UI scale in %s: not a number from 0.5 to 2" % _path)
 	if file.has_section_key(GAME_SECTION, ENERGY_DRAIN_KEY):
@@ -334,10 +341,6 @@ func _apply_display() -> void:
 			else DisplayServer.WINDOW_MODE_WINDOWED
 		)
 	)
-
-
-func _apply_ui_scale() -> void:
-	(Engine.get_main_loop() as SceneTree).root.content_scale_factor = ui_scale
 
 
 static func _set_bindings(action: StringName, events: Array) -> void:

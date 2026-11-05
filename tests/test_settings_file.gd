@@ -15,7 +15,6 @@ func after_each() -> void:
 	# Puts the project's bindings back into the input map, which the tests share.
 	_settings.reset_bindings()
 	_settings.set_fullscreen(false)
-	_settings.set_ui_scale(GameSettings.DEFAULT_UI_SCALE)
 	for file_name in DirAccess.get_files_at(DIR):
 		DirAccess.remove_absolute(DIR.path_join(file_name))
 
@@ -158,7 +157,6 @@ func test_game_settings_survive_a_restart() -> void:
 	_settings.set_energy_drain(GameSettings.EnergyDrain.HIGH)
 	_restart_with_saved_file()
 	assert_eq(_settings.ui_scale, 1.25)
-	assert_eq(get_tree().root.content_scale_factor, 1.25)
 	assert_eq(_settings.energy_drain, GameSettings.EnergyDrain.HIGH)
 	assert_eq(_settings.energy_drain_factor(), 1.5)
 
@@ -166,12 +164,18 @@ func test_game_settings_survive_a_restart() -> void:
 func test_drain_factors() -> void:
 	_settings.set_energy_drain(GameSettings.EnergyDrain.LOW)
 	assert_eq(_settings.energy_drain_factor(), 0.5)
+	assert_eq(
+		GameSettings.next_drain(GameSettings.EnergyDrain.LOW), GameSettings.EnergyDrain.NORMAL
+	)
+	assert_eq(GameSettings.next_drain(GameSettings.EnergyDrain.HIGH), GameSettings.EnergyDrain.LOW)
 
 
-func test_changing_the_drain_is_announced() -> void:
+func test_changing_a_game_setting_is_announced() -> void:
 	watch_signals(_settings)
 	_settings.set_energy_drain(GameSettings.EnergyDrain.LOW)
 	assert_signal_emitted(_settings, "drain_changed")
+	_settings.set_ui_scale(1.5)
+	assert_signal_emitted_with_parameters(_settings, "ui_scale_changed", [1.5])
 
 
 func test_the_ui_scale_stays_on_the_steps_and_in_range() -> void:

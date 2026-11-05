@@ -5,6 +5,8 @@ Written to assets/ui/:
 - font.png and font.fnt: a BMFont that Godot imports as a font. Glyphs are 5 px wide, capitals
   and digits 7 px tall, with descenders reaching 2 px below the baseline;
 - panel.png: a 24x24 frame, 8 px corners (StyleBoxTexture margin 8);
+- slider_grabber.png and slider_grabber_highlight.png: 10x10 slider knobs (the highlight one
+  is used when hovered, focused or dragged);
 - button_normal.png, button_hover.png, button_pressed.png, button_focus.png: 12x12 frames,
   4 px corners (margin 4). The focus frame has no fill and is drawn over the others.
 The Theme that uses them is game/scenes/ui_theme.tres.
@@ -22,6 +24,7 @@ BASELINE = 7
 SPACE_ADVANCE = 3
 PANEL_SIZE = 24
 BUTTON_SIZE = 12
+GRABBER_SIZE = 10
 
 # One glyph per line: the character, an optional @row where its first pixel row sits, then
 # the pixel rows (# is ink). Without @row a glyph starts at row 0 if it has 7 or more rows
@@ -124,6 +127,7 @@ _ @7 #####
 } .##.. ...#. ...#. ....# ...#. ...#. .##..
 ~ @3 .##.# #.##.
 · @3 ##
+× @2 #...# .#.#. ..#.. .#.#. #...#
 """
 # fmt: on
 
@@ -218,6 +222,8 @@ def ui_images(palette):
         "button_normal.png": frame(palette, BUTTON_SIZE, "soil", "soil_light", "soil_dark"),
         "button_hover.png": frame(palette, BUTTON_SIZE, "soil_mid", "sand_light", "soil"),
         "button_pressed.png": frame(palette, BUTTON_SIZE, "soil_dark", "soil", "soil_mid"),
+        "slider_grabber.png": frame(palette, GRABBER_SIZE, "sand", "sand_light", "soil_mid"),
+        "slider_grabber_highlight.png": frame(palette, GRABBER_SIZE, "gold", "cream", "sand"),
         "button_focus.png": frame(palette, BUTTON_SIZE, None, "gold", "gold", border="gold"),
     }
 

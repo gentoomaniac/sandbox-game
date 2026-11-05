@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=14 format=3]
+[gd_resource type="Theme" load_steps=19 format=3]
 
 [ext_resource type="FontFile" path="res://assets/ui/font.fnt" id="1_font"]
 [ext_resource type="Texture2D" path="res://assets/ui/panel.png" id="2_panel"]
@@ -6,6 +6,8 @@
 [ext_resource type="Texture2D" path="res://assets/ui/button_hover.png" id="4_hover"]
 [ext_resource type="Texture2D" path="res://assets/ui/button_pressed.png" id="5_pressed"]
 [ext_resource type="Texture2D" path="res://assets/ui/button_focus.png" id="6_focus"]
+[ext_resource type="Texture2D" path="res://assets/ui/slider_grabber.png" id="7_grabber"]
+[ext_resource type="Texture2D" path="res://assets/ui/slider_grabber_highlight.png" id="8_grabber_highlight"]
 
 [sub_resource type="StyleBoxTexture" id="Panel"]
 content_margin_left = 10.0
@@ -74,6 +76,21 @@ content_margin_left = 4.0
 content_margin_right = 4.0
 bg_color = Color(0.702, 0.635, 0.486, 1)
 
+[sub_resource type="StyleBoxFlat" id="SliderTrack"]
+content_margin_top = 2.0
+content_margin_bottom = 2.0
+bg_color = Color(0.114, 0.106, 0.149, 1)
+
+[sub_resource type="StyleBoxFlat" id="SliderFill"]
+content_margin_top = 2.0
+content_margin_bottom = 2.0
+bg_color = Color(0.549, 0.416, 0.294, 1)
+
+[sub_resource type="StyleBoxFlat" id="SliderFillHighlight"]
+content_margin_top = 2.0
+content_margin_bottom = 2.0
+bg_color = Color(0.702, 0.635, 0.486, 1)
+
 [resource]
 default_font = ExtResource("1_font")
 default_font_size = 9
@@ -96,3 +113,9 @@ VScrollBar/styles/grabber = SubResource("ScrollGrabber")
 VScrollBar/styles/grabber_highlight = SubResource("ScrollGrabberHighlight")
 VScrollBar/styles/grabber_pressed = SubResource("ScrollGrabberHighlight")
 VScrollBar/styles/scroll = SubResource("ScrollTrack")
+HSlider/icons/grabber = ExtResource("7_grabber")
+HSlider/icons/grabber_disabled = ExtResource("7_grabber")
+HSlider/icons/grabber_highlight = ExtResource("8_grabber_highlight")
+HSlider/styles/grabber_area = SubResource("SliderFill")
+HSlider/styles/grabber_area_highlight = SubResource("SliderFillHighlight")
+HSlider/styles/slider = SubResource("SliderTrack")

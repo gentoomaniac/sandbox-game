@@ -170,7 +170,7 @@ func _show_game_settings() -> void:
 
 
 func _show_ui_scale(value: float) -> void:
-	_ui_scale_label.text = "UI scale %sx" % String.num(value)
+	_ui_scale_label.text = "UI scale %s\u00d7" % String.num(value)
 
 
 ## While the slider is being dragged only the label follows: scaling the UI under the mouse
@@ -187,7 +187,5 @@ func _on_slider_released(_value_changed: bool) -> void:
 
 
 func _cycle_energy_drain() -> void:
-	_settings.set_energy_drain(
-		((_settings.energy_drain + 1) % GameSettings.EnergyDrain.size()) as GameSettings.EnergyDrain
-	)
+	_settings.set_energy_drain(GameSettings.next_drain(_settings.energy_drain))
 	_show_game_settings()

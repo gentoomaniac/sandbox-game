@@ -66,6 +66,8 @@ var _start_zoom := 1.0
 
 func _ready() -> void:
 	_settings = _load_settings()
+	_apply_ui_scale(_settings.ui_scale)
+	_settings.ui_scale_changed.connect(_apply_ui_scale)
 	_state = _load_or_start_game()
 	# Quitting saves first (see _notification).
 	get_tree().auto_accept_quit = false
@@ -348,6 +350,12 @@ func _load_settings() -> GameSettings:
 	var settings := GameSettings.new(_settings_path)
 	settings.load_file()
 	return settings
+
+
+## Scales the whole window's 2D canvas, the UI included. The world screen is a full-rect
+## TextureRect drawn through UV, so it keeps filling the window and the world view is unchanged.
+func _apply_ui_scale(ui_scale: float) -> void:
+	get_tree().root.content_scale_factor = ui_scale
 
 
 func _save_game() -> void:
