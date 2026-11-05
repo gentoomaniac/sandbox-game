@@ -16,6 +16,9 @@ rivers freeze, swell or block the way.
 Art direction: 16-bit-era top-down pixel art, in the direction of Zelda: A Link to the
 Past. World, characters, art and names are original; nothing is taken from existing games.
 
+**Lighting** gives the pixel art a slightly modernised retro look: modern light effects on
+top of classic pixel art (details under "Lighting and look").
+
 ## Pillars
 
 1. **Home loop:** farming and life sim as the steady core.
@@ -215,6 +218,8 @@ Tasks: see [TASKS.md](TASKS.md).
     ones in unexplored areas)?
   - Can the player plant trees?
   - Does a stronger tool only unlock varieties, or also harvest faster?
+- **Lighting and look:** which effects, and at what render resolution (see the proposal
+  in the conversation of 2026-11-05; to be decided).
 - **Target platforms:** Linux only, or desktop in general? Web?
 - **Scope:** hobby, learning project or release target?
 
