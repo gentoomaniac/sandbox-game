@@ -6,6 +6,7 @@ extends CanvasLayer
 
 const BOTTOM_MARGIN := 4
 const SLOT_GAP := 2
+const WIDTH := Inventory.HOTBAR_SIZE * SlotView.SIZE + (Inventory.HOTBAR_SIZE - 1) * SLOT_GAP
 const THEME := preload("res://game/scenes/ui_theme.tres")
 
 var _inventory: Inventory

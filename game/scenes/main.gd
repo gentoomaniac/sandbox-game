@@ -9,6 +9,7 @@ extends Node2D
 ## `--new-game` ignores the save; `--save-path=<file>` uses another save file;
 ## `--settings-path=<file>` uses another settings file (see GameSettings). Debug flags:
 ## `--at=<x>,<y>` puts the player on that world tile instead of at the camp;
+## `--energy=<n>` and `--health=<n>` start with that much (0 to 100);
 ## `--screenshot=<path>` saves one frame as PNG once streaming has settled, then quits;
 ## `--time=<hh:mm>` sets the time of day; `--field=<x>,<y>` tills a small field there with
 ## crops in every growth stage (see DebugField); `--inside` walks into the first house as soon
@@ -42,6 +43,7 @@ var _player_view := PlayerView.new()
 var _use_highlight := UseHighlight.new()
 var _harvest_hud := HarvestHud.new()
 var _hotbar := HotbarHud.new()
+var _vitals := VitalsHud.new()
 var _inventory_screen := InventoryScreen.new()
 var _interior_view := InteriorView.new()
 var _screenshot_path := ""
@@ -85,6 +87,10 @@ func _ready() -> void:
 		elif arg.begins_with("--forage="):
 			var tile := arg.trim_prefix("--forage=").split_floats(",")
 			DebugForage.create(_state, Vector2i(int(tile[0]), int(tile[1])))
+		elif arg.begins_with("--energy="):
+			_state.player.energy = float(arg.trim_prefix("--energy="))
+		elif arg.begins_with("--health="):
+			_state.player.health = float(arg.trim_prefix("--health="))
 		elif arg == "--inside":
 			_enter_first_house = true
 		elif arg == "--inventory":
@@ -113,6 +119,8 @@ func _ready() -> void:
 	add_child(_harvest_hud)
 	add_child(_hotbar)
 	_hotbar.show_inventory(_state.player.inventory)
+	add_child(_vitals)
+	_vitals.show_state(_state)
 	add_child(_inventory_screen)
 	_inventory_screen.show_inventory(_state.player.inventory)
 	if _open_inventory_at_start:
@@ -183,7 +191,7 @@ func _process(delta: float) -> void:
 		var direction := Vector2.ZERO
 		if not _inventory_screen.is_open():
 			direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")
-		_state.player.move(_state.current_map, direction, delta)
+		_state.player.move(_state.current_map, direction, delta, _state.walk_speed_factor())
 		if _state.door_underfoot():
 			_fade_through(_pass_door)
 	if not _state.is_inside():
@@ -249,6 +257,19 @@ func _use_on(target: Targeting) -> void:
 			_harvest_hud.show_note("Needs a better %s." % tool_name.to_lower())
 		GameState.Use.INVENTORY_FULL:
 			_harvest_hud.show_note("Inventory full")
+	if _state.is_out_of_energy():
+		_pass_out()
+
+
+## Out of energy: fades out, and the player wakes in their home bed the next morning.
+func _pass_out() -> void:
+	_harvest_hud.show_note("You passed out")
+	_fade_through(
+		func() -> void:
+			_state.pass_out()
+			_show_current_map()
+			_save_game()
+	)
 
 
 ## Where the camera looks. The player is drawn on the art pixel grid (rounded), the camera

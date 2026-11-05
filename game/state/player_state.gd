@@ -4,6 +4,8 @@ extends RefCounted
 ## player's position; PlayerView only draws it, and `move` is the only thing that walks.
 
 const SPEED := 5.0  # tiles per second
+const MAX_ENERGY := 100.0
+const MAX_HEALTH := 100.0
 ## The player's body, as the area they occupy on the ground: this wide and this tall,
 ## measured up from the feet. Smaller than a tile, so they can pass between trees.
 const BODY_HALF_WIDTH := 0.3
@@ -21,6 +23,12 @@ var facing := Vector2i.DOWN
 ## `home_map` (the world, or the inside of a building).
 var home_map: GameMap
 var home_bed := Vector2i.ZERO
+
+## Both run from 0 to MAX_*. A player who passed out is `is_debuffed` until the next new day
+## (see GameState).
+var energy := MAX_ENERGY
+var health := MAX_HEALTH
+var is_debuffed := false
 
 ## What they carry; the selected hotbar slot is what they hold.
 var inventory := Inventory.new()
@@ -41,15 +49,15 @@ func facing_tile() -> Vector2i:
 
 
 ## Walks along `direction` for `delta` seconds. Each axis moves on its own, so the player
-## slides along a wall instead of stopping against it.
-func move(map: GameMap, direction: Vector2, delta: float) -> void:
+## slides along a wall instead of stopping against it. `speed_factor` scales SPEED.
+func move(map: GameMap, direction: Vector2, delta: float, speed_factor := 1.0) -> void:
 	if direction != Vector2.ZERO:
 		# The axis the player moves along most; a tie faces vertically.
 		if absf(direction.x) > absf(direction.y):
 			facing = Vector2i.RIGHT if direction.x > 0 else Vector2i.LEFT
 		else:
 			facing = Vector2i.DOWN if direction.y > 0 else Vector2i.UP
-	var velocity := direction.limit_length(1.0) * SPEED
+	var velocity := direction.limit_length(1.0) * SPEED * speed_factor
 	while delta > 0.0:
 		var step := velocity * minf(delta, MAX_STEP_SECONDS)
 		delta -= MAX_STEP_SECONDS
@@ -67,6 +75,9 @@ func to_dict() -> Dictionary:
 		"home_bed": SaveCodec.vector_to_json(home_bed),
 		"appearance": appearance.to_dict(),
 		"inventory": inventory.to_dict(),
+		"energy": energy,
+		"health": health,
+		"is_debuffed": is_debuffed,
 	}
 
 
@@ -79,6 +90,10 @@ static func from_dict(data: Dictionary, home_map: GameMap) -> PlayerState:
 	player.home_bed = SaveCodec.vector_from_json(data["home_bed"])
 	player.appearance = Appearance.from_dict(data["appearance"])
 	player.inventory = Inventory.from_dict(data["inventory"])
+	# Saves from before energy existed have none of these.
+	player.energy = data.get("energy", MAX_ENERGY)
+	player.health = data.get("health", MAX_HEALTH)
+	player.is_debuffed = data.get("is_debuffed", false)
 	return player
 
 

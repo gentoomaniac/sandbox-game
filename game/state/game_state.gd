@@ -8,20 +8,35 @@ extends RefCounted
 
 ## What the use action does on a tile. HARVEST is a ripe crop, FORAGE something a hand picks
 ## (a bush, a fern), HIT a tool cut or mined at an object, NEEDS_BETTER_TOOL a tool that is too
-## weak for the object.
-enum Use { NOTHING, TILL, PLANT, HARVEST, FORAGE, HIT, NEEDS_BETTER_TOOL, INVENTORY_FULL }
+## weak for the object, EAT a food item held.
+enum Use { NOTHING, TILL, PLANT, HARVEST, FORAGE, HIT, NEEDS_BETTER_TOOL, INVENTORY_FULL, EAT }
 
 ## The tools the use action has something to do with.
 const ACTIVE_TOOLS := [ItemTypes.HOE, ItemTypes.AXE, ItemTypes.PICKAXE]
 const CROP := WorldObjectTypes.TURNIP
 ## What harvesting a crop gives: the crop, and one seed back (until a shop sells seeds).
 const HARVEST_YIELD := {ItemTypes.TURNIP: 1, ItemTypes.TURNIP_SEEDS: 1}
+## The energy rule (see EnergyRules `cost_of`) for each use that costs energy. The others
+## (nothing done, too weak a tool, full inventory) cost nothing.
+const COST_KINDS := {
+	Use.TILL: &"till",
+	Use.PLANT: &"plant",
+	Use.HARVEST: &"pick",
+	Use.FORAGE: &"pick",
+	Use.HIT: &"hit",
+	Use.EAT: &"eat",
+}
+## Passing out wakes the player at this time of day, in the home bed.
+const WAKE_UP_MINUTE := 6 * GameClock.MINUTES_PER_HOUR
 ## How close (in tiles, diagonals included) the player must be to a bed to sleep in it.
 const BED_REACH := 1
 
 var world: World
 var clock := GameClock.new()
 var player := PlayerState.new()
+var energy_rules := EnergyRules.default_rules()
+## What every use costs is multiplied by this (the Game setting: 0.5, 1 or 1.5).
+var energy_drain := 1.0
 ## Where the player is: `world`, or the interior of `_building_inside`.
 var current_map: GameMap
 
@@ -91,12 +106,48 @@ func bed_in_reach() -> WorldObject:
 	return nearest
 
 
-## Sleeps through the bed's fixed sleep time, and makes it home.
+## Sleeps through the bed's fixed sleep time, makes it home and fills energy and health as
+## far as the bed does (and a debuff still allows).
 func sleep_in(bed: WorldObject) -> void:
 	assert(bed.sleep_minutes() > 0, "Not a bed: %s" % bed.type)
 	clock.advance(bed.sleep_minutes())
 	player.home_map = current_map
 	player.home_bed = bed.pos
+	var fill := energy_rules.sleep_fill(bed.type)
+	player.energy = minf(maxf(player.energy, fill), energy_cap())
+	player.health = maxf(player.health, fill)
+
+
+## The most energy the player can have now.
+func energy_cap() -> float:
+	return energy_rules.debuff_energy_max() if player.is_debuffed else PlayerState.MAX_ENERGY
+
+
+## How fast the player walks, as a fraction of full speed: the slowest of what low energy and
+## a debuff allow.
+func walk_speed_factor() -> float:
+	var factor := energy_rules.walk_factor(player.energy)
+	if player.is_debuffed:
+		factor = minf(factor, energy_rules.debuff_walk_factor())
+	return factor
+
+
+func is_out_of_energy() -> bool:
+	return player.energy <= 0.0
+
+
+## The player passes out: time jumps to the next 06:00, they wake in the home bed with the
+## debuff of that day (it ends at the next new day) and no items lost.
+func pass_out() -> void:
+	var minutes := posmod(WAKE_UP_MINUTE - clock.minute_of_day, GameClock.MINUTES_PER_DAY)
+	# Passing out at 06:00 sharp wakes at 06:00 the next day, not at once.
+	clock.advance(minutes if minutes > 0 else GameClock.MINUTES_PER_DAY)
+	current_map = player.home_map
+	_building_inside = _building_with_interior(current_map)
+	player.position = _tile_centre(_wake_up_tile())
+	player.is_debuffed = true
+	player.energy = energy_rules.debuff_energy_max()
+	player.health = energy_rules.debuff_health()
 
 
 ## What `use` would do on a tile of the world (nothing inside) with the held item: a hoe
@@ -109,16 +160,14 @@ func use_at(world_pos: Vector2i) -> Use:
 	var held := player.inventory.held_item()
 	if held == ItemTypes.NONE:
 		return _use_by_hand(object)
+	if energy_rules.is_food(held):
+		return Use.EAT if player.energy < energy_cap() else Use.NOTHING
 	var item: Dictionary = ItemTypes.TYPES[held]
 	if item.has("plants") and world.is_free_on(world_pos, item.get("plants_on", Tile.Terrain.SOIL)):
 		return Use.PLANT
 	if item.get("tool") == ItemTypes.HOE and world.is_free_on(world_pos, Tile.Terrain.GRASS):
 		return Use.TILL
-	if object == null or object.type_data().get("tool", ItemTypes.NONE) != item.get("tool"):
-		return Use.NOTHING
-	return (
-		Use.HIT if item["level"] >= object.type_data()["harvest_level"] else Use.NEEDS_BETTER_TOOL
-	)
+	return _use_tool(item, object)
 
 
 ## Whether the held item does anything anywhere, so it is worth highlighting a target.
@@ -127,12 +176,23 @@ func can_use_held_item() -> bool:
 	if held == ItemTypes.NONE:
 		return true
 	var item: Dictionary = ItemTypes.TYPES[held]
-	return item.has("plants") or ACTIVE_TOOLS.has(item.get("tool"))
+	return item.has("plants") or ACTIVE_TOOLS.has(item.get("tool")) or energy_rules.is_food(held)
 
 
-## Uses a tile (see `use_at`) and returns what was done. A harvest, pick or final hit whose
-## drops don't fit in the inventory is not done: INVENTORY_FULL.
+## Uses a tile (see `use_at`) and returns what was done, which costs energy (more the
+## heavier the load). A use with too little energy left still happens; the energy ends at 0
+## (see `is_out_of_energy`). A harvest, pick or final hit whose drops don't fit in the
+## inventory is not done: INVENTORY_FULL.
 func use_tile(target: Vector2i) -> Use:
+	var weight_factor := energy_rules.weight_factor(player.inventory.total_weight())
+	var use := _do_use(target)
+	if COST_KINDS.has(use):
+		var cost := energy_rules.cost_of(COST_KINDS[use]) * weight_factor * energy_drain
+		player.energy = maxf(0.0, player.energy - cost)
+	return use
+
+
+func _do_use(target: Vector2i) -> Use:
 	var use := use_at(target)
 	match use:
 		Use.TILL:
@@ -162,7 +222,19 @@ func use_tile(target: Vector2i) -> Use:
 				world.remove_object(target)
 		Use.HIT:
 			return _hit(world.object_at(target))
+		Use.EAT:
+			var food := player.inventory.held_item()
+			player.inventory.remove(food, 1)
+			player.energy = minf(player.energy + energy_rules.food_restore(food), energy_cap())
 	return use
+
+
+func _use_tool(tool_item: Dictionary, object: WorldObject) -> Use:
+	if object == null or object.type_data().get("tool", ItemTypes.NONE) != tool_item.get("tool"):
+		return Use.NOTHING
+	if tool_item["level"] >= object.type_data()["harvest_level"]:
+		return Use.HIT
+	return Use.NEEDS_BETTER_TOOL
 
 
 func _use_by_hand(object: WorldObject) -> Use:
@@ -269,11 +341,32 @@ func _building_of_ref(ref: Dictionary) -> Building:
 
 
 func _on_new_day(_day: int) -> void:
+	player.is_debuffed = false
 	# A stump or sapling doesn't grow into a tree under the player's feet.
 	var occupied: Array[Vector2i] = []
 	if not is_inside():
 		occupied.append(player.tile())
 	world.pass_night(occupied)
+
+
+## The building whose interior this is, or null for the world.
+func _building_with_interior(map: GameMap) -> Building:
+	for building in world.buildings():
+		if building.interior == map:
+			return building
+	return null
+
+
+## Where the player stands when they wake: on the bed, or beside it if the bed blocks walking.
+func _wake_up_tile() -> Vector2i:
+	var candidates: Array[Vector2i] = [player.home_bed]
+	for y in range(-1, 2):
+		for x in range(-1, 2):
+			candidates.append(player.home_bed + Vector2i(x, y))
+	for tile in candidates:
+		if PlayerState.can_stand_at(current_map, _tile_centre(tile)):
+			return tile
+	return player.home_bed
 
 
 func _tile_centre(tile: Vector2i) -> Vector2:

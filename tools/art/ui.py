@@ -8,7 +8,10 @@ Written to assets/ui/:
 - slider_grabber.png and slider_grabber_highlight.png: 10x10 slider knobs (the highlight one
   is used when hovered, focused or dragged);
 - button_normal.png, button_hover.png, button_pressed.png, button_focus.png: 12x12 frames,
-  4 px corners (margin 4). The focus frame has no fill and is drawn over the others.
+  4 px corners (margin 4). The focus frame has no fill and is drawn over the others;
+- energy_icon.png and health_icon.png: 12x12 icons for the bars next to the hotbar;
+- bar_frame.png (48x8) and energy_fill.png, health_fill.png (46x6, the frame's inside): the
+  bars. The game draws as much of a fill as the bar is full.
 The Theme that uses them is game/scenes/ui_theme.tres.
 """
 
@@ -25,6 +28,8 @@ SPACE_ADVANCE = 3
 PANEL_SIZE = 24
 BUTTON_SIZE = 12
 GRABBER_SIZE = 10
+BAR_WIDTH = 48
+BAR_HEIGHT = 8
 
 # One glyph per line: the character, an optional @row where its first pixel row sits, then
 # the pixel rows (# is ink). Without @row a glyph starts at row 0 if it has 7 or more rows
@@ -183,6 +188,79 @@ def font_files(palette):
     return image, "\n".join(header + lines) + "\n"
 
 
+# Icon pictures: one character per pixel, outlined in ink as pickups are.
+ICON_COLOURS = {"k": "ink", "c": "cream", "g": "gold", "f": "flame", "p": "petal", "e": "ember"}
+ICON_ROWS = {
+    "energy_icon": """
+.....kkkkk..
+....kcgggk..
+...kcggfk...
+..kcggfk....
+..kcgggkkk..
+...kkgggfk..
+.....kgfk...
+....kgfk....
+...kgfk.....
+...kfk......
+....kk......
+............
+""",
+    "health_icon": """
+............
+..kkkk.kkkk.
+.kppppkeeeek
+kppppeeeeeek
+kpppeeeeeeek
+keeeeeeeeeek
+keeeeeeeeeek
+.keeeeeeeek.
+..keeeeeek..
+...keeeek...
+....keek....
+.....kk.....
+""",
+}
+
+
+def rgba(palette, name):
+    return (*bytes.fromhex(palette[name]), 255)
+
+
+def icon(palette, rows):
+    """An image from rows of ICON_COLOURS characters; . is clear."""
+    lines = rows.split()
+    image = Image.new("RGBA", (len(lines[0]), len(lines)), (0, 0, 0, 0))
+    for y, line in enumerate(lines):
+        for x, character in enumerate(line):
+            if character != ".":
+                image.putpixel((x, y), rgba(palette, ICON_COLOURS[character]))
+    return image
+
+
+def bar_frame(palette):
+    """An ink border with its corner pixels cut, round a dark inside."""
+    image = Image.new("RGBA", (BAR_WIDTH, BAR_HEIGHT), rgba(palette, "soil_dark"))
+    last_x, last_y = BAR_WIDTH - 1, BAR_HEIGHT - 1
+    for x in range(BAR_WIDTH):
+        for y in range(BAR_HEIGHT):
+            if x in (0, last_x) and y in (0, last_y):
+                image.putpixel((x, y), (0, 0, 0, 0))
+            elif x in (0, last_x) or y in (0, last_y):
+                image.putpixel((x, y), rgba(palette, "ink"))
+    return image
+
+
+def bar_fill(palette, light, mid, shade):
+    """The inside of a bar: a light top row and a shaded bottom, as lit from above."""
+    width, height = BAR_WIDTH - 2, BAR_HEIGHT - 2
+    image = Image.new("RGBA", (width, height))
+    for y in range(height):
+        colour = light if y == 0 else shade if y >= height - 2 else mid
+        for x in range(width):
+            image.putpixel((x, y), rgba(palette, colour))
+    return image
+
+
 def frame(palette, size, fill, lit, shaded, border="ink", studs=None, inner=None):
     """A square frame: a 1 px border with its corner pixels cut, a 1 px bevel (`lit` on the
     top and left, `shaded` on the bottom and right), an optional second ring `inner`, then
@@ -214,8 +292,12 @@ def frame(palette, size, fill, lit, shaded, border="ink", studs=None, inner=None
 
 
 def ui_images(palette):
-    """Returns {file name: image} of the frames."""
-    return {
+    """Returns {file name: image} of the frames, icons and bars."""
+    icons = {f"{name}.png": icon(palette, rows) for name, rows in ICON_ROWS.items()}
+    return icons | {
+        "bar_frame.png": bar_frame(palette),
+        "energy_fill.png": bar_fill(palette, "cream", "gold", "flame"),
+        "health_fill.png": bar_fill(palette, "petal", "ember", "soil"),
         "panel.png": frame(
             palette, PANEL_SIZE, "soil_dark", "soil_light", "soil", inner="soil_mid", studs="gold"
         ),
