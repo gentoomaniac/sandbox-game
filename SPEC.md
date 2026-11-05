@@ -42,6 +42,7 @@ top of classic pixel art (details under "Lighting and look").
 ### Lighting and look
 
 - **Render resolution:** 384×216 internal, **16×16 tiles** (24×13.5 tiles on screen).
+  Confirmed after seeing the first real tiles (2026-11-05).
   The picture is scaled up by whole numbers only. Light and shadow fall on the same pixel
   grid as the art, so lighting never looks smeared over sharp pixels.
 - **Standard effects:**
@@ -64,6 +65,15 @@ top of classic pixel art (details under "Lighting and look").
   use only palette colours.
 - **Terrain transitions (autotiling)** from the first art pass, so terrains blend
   instead of meeting as hard squares.
+- **Variety:** the world must not look tiled.
+  - Large-scale colour variation: terrain colour shifts slowly across the world (e.g.
+    lusher, drier, yellower patches of grass), driven by low-frequency noise in world
+    coordinates.
+  - Many variants per terrain, including the edge shapes.
+  - A **visual-only decoration layer** (flowers, clover, pebbles, small plants) scattered
+    unevenly on top of terrain. It has no gameplay effect and is not a world object.
+- **Floodplain looks fertile:** lush, damp meadow, with a narrow muddy bank right at the
+  water. It must not read as barren sand.
 
 ### Tile state (architecture)
 
@@ -259,8 +269,6 @@ Tasks: see [TASKS.md](TASKS.md).
 - **Reputation details:**
   - What does reputation unlock or block (prices, quests, hostility)?
   - Which NPCs in the territory are affected: everyone, or only those living closest?
-- **On-screen scale:** 384×216 shows 24×13.5 tiles. Keep it, or show more of the world
-  (e.g. 480×270, 30×17 tiles)? Judge once real tiles exist.
 - **Target platforms:** Linux only, or desktop in general? Web?
 - **Scope:** hobby, learning project or release target?
 
