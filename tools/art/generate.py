@@ -19,7 +19,7 @@ drawn on top of world tiles of that layer. A row may be empty.
 assets/objects.png: world objects, 48x80 cells (OBJECT_CELL_WIDTH x OBJECT_CELL_HEIGHT). Row 0
 is the oak (3 variants), row 1 the stone (2 variants), then the camp site: row 2 the fireplace,
 row 3 the sleeping bag (1 variant each), then the vegetation rows from 4 (see vegetation()),
-row 11 the turnip crop (one variant per growth stage), row 12 the boulder and row 13 the stump. The rows and
+row 11 the boulder and row 12 the stump. The rows and
 counts are in game/state/world_object_types.gd.
 An object stands on one tile: the bottom centre 16x16 of its cell (x 16..31, y 64..79). A tree's
 crown rises above that, over the tiles around it. An object on several tiles (boulder 2x1,
@@ -41,8 +41,13 @@ and door tiles are in game/state/building_types.gd.
 assets/wildlife/<kind>.png: one sheet per animal kind, one row per action and one column per frame
 (see animals.py and game/scenes/wildlife/wildlife_sprites.gd).
 
+assets/crops/<crop>.png: one sheet per crop, its four growth stages and the dead one side by side, 16 px
+wide cells and as tall as the sheet (see crops.py and data/crops.cfg). They have no seasonal variants.
+
+assets/soil_wet.png: the damp and the wet look of tilled soil, two 16x16 tiles (see crop_icons.py).
+
 assets/items/<item id>.png (16x16) and assets/ui/slot.png, slot_selected.png (20x20): drawn in
-items.py.
+items.py, and for crops in crop_icons.py.
 """
 
 import math
@@ -52,6 +57,8 @@ from pathlib import Path
 from PIL import Image
 
 import animals
+import crop_icons
+import crops
 import items
 import seasons
 import ui
@@ -1091,90 +1098,6 @@ def sleeping_bag():
 CAMP_OBJECTS = [[fireplace()], [sleeping_bag()]]
 
 
-# The turnip crop (assets/objects.png row 11): one cell per growth stage, drawn on the tile.
-
-CROP_KEYS = {
-    "g": "green_bright",
-    "l": "green_light",
-    "d": "green",
-    "k": "green_dark",
-    "h": "soil_light",
-    "m": "soil_mid",
-    "s": "soil_dark",
-    "c": "cream",
-    "p": "petal",
-    "e": "sand_light",
-    "a": "arcane",
-}
-
-
-def crop_stage(*pictures):
-    """A crop cell: sprites given as (rows, x, y) stamped on the object's tile, the bottom
-    centre 16x16 of the cell."""
-    tile = blank()
-    for rows, x, y in pictures:
-        stamp(tile, sprite(CROP_KEYS, *rows), x, y)
-    canvas = object_canvas()
-    for y in range(TILE):
-        for x in range(TILE):
-            canvas[OBJECT_CELL_HEIGHT - TILE + y][OBJECT_CENTRE - TILE // 2 + x] = tile[y][x]
-    return canvas
-
-
-def turnip_stages():
-    # Seed mound 8x5 with a soil hump; sprout 10x8; leaf rosette 12x12; ripe 14x14 with
-    # the root showing.
-    mound = (("..ehhe..", ".ehhmhm.", "ehhmmmms", "hmmmmmss", ".ssssss."), 4, 11)
-    sprout = ((".gl....lg.", "..dgkkgd..", "....kk...."), 3, 8)
-    rosette = (
-        (
-            "....g..g....",
-            "..gl....lg..",
-            ".lgdl..ldgl.",
-            "lgddgllgddgl",
-            ".kdgdggdgdk.",
-            "..kdgddgdk..",
-            "...kkddkk...",
-        ),
-        2,
-        4,
-    )
-    leaves = (
-        (
-            "..gl..lg..gl..",
-            ".lgdl.gdl.ldgl",
-            "lgddgllgddgdgl",
-            ".kdgdkdgdgdkd.",
-            "..kkdkkdkkkk..",
-        ),
-        1,
-        2,
-    )
-    root = (
-        (
-            "..aaaaaa..",
-            ".appppppa.",
-            ".ppppccpp.",
-            ".cccccccc.",
-            "..cccccce.",
-            "...cccce..",
-            "....cce...",
-            ".....e....",
-        ),
-        3,
-        7,
-    )
-    return [
-        crop_stage(mound),
-        crop_stage(mound, sprout),
-        crop_stage(mound, rosette),
-        crop_stage(root, leaves),
-    ]
-
-
-TURNIP_STAGES = turnip_stages()
-
-
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -1191,7 +1114,6 @@ def object_atlas():
         ("shrub", shrubs),
         ("sapling", saplings),
         ("fern", ferns),
-        ("turnip", TURNIP_STAGES),
         ("boulder", BOULDERS[0]),
         ("stump", STUMPS[0]),
     ]
@@ -1995,14 +1917,21 @@ def main():
     (ASSETS / "wildlife").mkdir(exist_ok=True)
     for kind in animals.SHEETS:
         to_image(animals.sheet_rows(kind), *animals.cell_size(kind)).save(ASSETS / "wildlife" / f"{kind}.png")
-    for directory, pictures in (("items", items.ICONS), ("ui", items.SLOTS | items.SLOT_HINTS)):
+    (ASSETS / "crops").mkdir(exist_ok=True)
+    for crop, cells in crops.sheets().items():
+        to_image([cells], crops.TILE, len(cells[0])).save(ASSETS / "crops" / f"{crop}.png")
+    to_image([crop_icons.soil_wet()]).save(ASSETS / "soil_wet.png")
+    for directory, pictures in (
+        ("items", items.ICONS | crop_icons.icons()),
+        ("ui", items.SLOTS | items.SLOT_HINTS),
+    ):
         (ASSETS / directory).mkdir(exist_ok=True)
         for name, picture in pictures.items():
             to_image([[picture]], len(picture)).save(ASSETS / directory / f"{name}.png")
     ui.write_ui_assets(ASSETS / "ui", PALETTE)
     write_palette()
     check_palette()
-    print("Wrote terrain*.png, decorations*.png, objects*.png (one per look), character/*.png, interior.png, interior/*.png, buildings/*.png, items/*.png, wildlife/*.png, ui/*, palette.png and palette.gpl to assets/; palette check passed.")
+    print("Wrote terrain*.png, decorations*.png, objects*.png (one per look), character/*.png, interior.png, interior/*.png, buildings/*.png, items/*.png, wildlife/*.png, crops/*.png, soil_wet.png, ui/*, palette.png and palette.gpl to assets/; palette check passed.")
 
 
 if __name__ == "__main__":

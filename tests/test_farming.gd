@@ -4,6 +4,8 @@ extends GutTest
 const SEED := 7
 ## Tiles around the camp: grass most likely, checked by `_grass_tile`.
 const SEARCH := 6
+## A day in the middle of spring, when the weather suits the cool-weather crops.
+const MID_SPRING := 15
 
 var _state: GameState
 var _world: World
@@ -47,6 +49,10 @@ func _till_and_plant() -> void:
 	_hold(ItemTypes.TURNIP_SEEDS)
 	_state.use_facing_tile()
 	_hold(ItemTypes.NONE)
+
+
+func _ripen(crop: WorldObject) -> void:
+	crop.state["growth"] = 3.0 * crop.type_data()["growth_per_stage"]
 
 
 func _sleep_days(days: int) -> void:
@@ -95,8 +101,8 @@ func test_using_soil_plants_a_crop_at_its_first_stage() -> void:
 	_hold(ItemTypes.TURNIP_SEEDS)
 	assert_eq(_state.use_facing_tile(), GameState.Use.PLANT)
 	var crop := _world.object_at(_tile)
-	assert_eq(crop.type, GameState.CROP)
-	assert_eq(crop.growth_stage(), 0)
+	assert_eq(crop.type, WorldObjectTypes.TURNIP)
+	assert_eq(CropLife.stage(crop), 0)
 
 
 func test_a_crop_cannot_be_planted_on_grass() -> void:
@@ -113,25 +119,25 @@ func test_a_crop_does_not_block_walking() -> void:
 	assert_true(_world.is_walkable(_tile))
 
 
-func test_a_crop_grows_one_stage_per_day_to_ripe() -> void:
+func test_a_planted_crop_grows_on_a_good_night() -> void:
+	_state.clock.day = MID_SPRING
 	_till_and_plant()
+	_world.set_moisture(_tile, 1.0)
+	_sleep_days(1)
 	var crop := _world.object_at(_tile)
-	var stages: int = WorldObjectTypes.TYPES[GameState.CROP]["growth_stages"]
-	for stage in range(1, stages):
-		_sleep_days(1)
-		assert_eq(crop.growth_stage(), stage)
-	assert_true(crop.is_ripe())
-	_sleep_days(3)
-	assert_eq(crop.growth_stage(), stages - 1, "stops at the last stage")
+	assert_gt(CropLife.growth(crop), 0.0)
+	assert_eq(CropLife.damage(crop), 0.0)
 
 
-func test_a_crop_in_an_unloaded_chunk_keeps_growing() -> void:
+func test_a_crop_in_an_unloaded_chunk_keeps_living_through_the_days() -> void:
+	_state.clock.day = MID_SPRING
 	_till_and_plant()
+	_world.set_moisture(_tile, 1.0)
 	var coords := Chunk.world_to_chunk(_tile)
 	_world.remove_chunk(coords)
-	_sleep_days(3)
+	_sleep_days(1)
 	_world.add_chunk(WorldGenerator.new(SEED).generate_chunk(coords))
-	assert_true(_world.object_at(_tile).is_ripe())
+	assert_gt(CropLife.growth(_world.object_at(_tile)), 0.0)
 
 
 func test_an_unripe_crop_cannot_be_harvested() -> void:
@@ -143,7 +149,7 @@ func test_an_unripe_crop_cannot_be_harvested() -> void:
 
 func test_a_ripe_crop_is_harvested_and_the_soil_stays() -> void:
 	_till_and_plant()
-	_sleep_days(3)
+	_ripen(_world.object_at(_tile))
 	assert_eq(_state.use_facing_tile(), GameState.Use.HARVEST)
 	assert_null(_world.object_at(_tile))
 	assert_eq(_world.tile_at(_tile).terrain, Tile.Terrain.SOIL)
@@ -166,8 +172,12 @@ func test_tilled_soil_survives_a_chunk_reload() -> void:
 	assert_eq(_world.tile_at(_tile).terrain, Tile.Terrain.SOIL)
 
 
-func test_growth_emits_objects_changed_for_loaded_crops() -> void:
+func test_a_new_growth_stage_emits_objects_changed_for_loaded_crops() -> void:
+	_state.clock.day = MID_SPRING
 	_till_and_plant()
+	_world.set_moisture(_tile, 1.0)
+	var crop := _world.object_at(_tile)
+	crop.state["growth"] = crop.type_data()["growth_per_stage"] - 0.01
 	watch_signals(_world)
 	_sleep_days(1)
 	assert_signal_emitted_with_parameters(_world, "objects_changed", [_tile])

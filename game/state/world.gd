@@ -13,6 +13,8 @@ extends GameMap
 signal objects_changed(world_pos: Vector2i)
 ## A tile's terrain was changed (see `set_terrain`).
 signal tile_changed(world_pos: Vector2i)
+## The moisture of a tilled tile changed (see `set_moisture`).
+signal soil_moisture_changed(world_pos: Vector2i)
 ## A tool hit an object that is still standing (see `hit_object`).
 signal object_hit(object: WorldObject)
 ## A building was placed.
@@ -42,6 +44,9 @@ var _object_edits: Dictionary[Vector2i, WorldObject] = {}
 ## Terrain the player changed (e.g. grass tilled to soil), by world position. Replayed on
 ## chunks before the objects, which may depend on the ground.
 var _terrain_edits: Dictionary[Vector2i, Tile.Terrain] = {}
+## The moisture (0 to 1) of tilled tiles that differs from the default (see `moisture_at`), by
+## world position.
+var _soil_moisture: Dictionary[Vector2i, float] = {}
 ## Buildings are the player's work and must outlive the chunks they stand on, and one can
 ## cross a chunk border, so they live here and not in chunks.
 var _buildings: Array[Building] = []
@@ -170,6 +175,33 @@ func set_terrain(world_pos: Vector2i, terrain: Tile.Terrain) -> void:
 	tile_changed.emit(world_pos)
 
 
+## How wet the soil of a tile is, 0 (dry) to 1 (soaked). Tiles never wetted or dried have the
+## default of data/crops.cfg. Only tilled soil has moisture that means anything.
+func moisture_at(world_pos: Vector2i) -> float:
+	return _soil_moisture.get(world_pos, CropRules.default_rules().farming("default_moisture"))
+
+
+## Sets the moisture of a tilled tile (kept between 0 and 1) and remembers it, so it survives
+## the chunk unloading.
+func set_moisture(world_pos: Vector2i, moisture: float) -> void:
+	_soil_moisture[world_pos] = clampf(moisture, 0.0, 1.0)
+	soil_moisture_changed.emit(world_pos)
+
+
+## Whether the player tilled a tile: it is soil by their hand.
+func is_tilled(world_pos: Vector2i) -> bool:
+	return _terrain_edits.get(world_pos) == Tile.Terrain.SOIL
+
+
+## The tilled tiles, in loaded chunks or not.
+func tilled_tiles() -> Array[Vector2i]:
+	var tiles: Array[Vector2i] = []
+	for pos in _terrain_edits:
+		if is_tilled(pos):
+			tiles.append(pos)
+	return tiles
+
+
 ## Puts an object on its tiles. The chunk of its own tile must be loaded and its tiles free,
 ## except for dormant plants, which are gone for good.
 func add_object(object: WorldObject) -> void:
@@ -222,21 +254,43 @@ func change_object(object: WorldObject) -> void:
 	_emit_objects_changed(object)
 
 
-## Lets a night pass over everything the player changed, in unloaded chunks too: crops grow,
-## damage heals, picked bushes bear again, stumps and saplings grow back. Only edits change
-## like this (a hit or a planting makes one), so they are all in `_object_edits`. A stump or
-## sapling does not turn into something that blocks walking on a tile in `occupied_tiles`:
-## it waits a day.
-func pass_night(occupied_tiles: Array[Vector2i]) -> void:
+## Lets a night pass over everything the player changed, in unloaded chunks too: the soil
+## dries and rain wets it, crops live through the day that ended (in the weather of their
+## tile), damage heals, picked bushes bear again, stumps and saplings grow back. Only edits
+## change like this (a hit, a tilling or a planting makes one), so they are all in the edits.
+## A stump or sapling does not turn into something that blocks walking on a tile in
+## `occupied_tiles`: it waits a day.
+func pass_night(occupied_tiles: Array[Vector2i], weather: Weather) -> void:
+	_dry_and_wet_soil(weather)
 	for object: WorldObject in _object_edits.values():
 		if object == null:
 			continue
-		if object.pass_night():
+		var has_changed := false
+		if object.is_crop():
+			var day := weather.day_summary(object.pos, clock.day - 1)
+			has_changed = CropLife.live_through_day(object, day, moisture_at(object.pos))
+		else:
+			has_changed = object.pass_night()
+		if has_changed:
 			_emit_objects_changed(object)
 		if object.is_mature():
 			var next := object.matured()
 			if not (next.blocks_walking() and occupied_tiles.has(next.pos)):
 				replace_object(object, next)
+
+
+## Rain wets the tilled soil and the day dries it, as the weather of the day that ended says.
+func _dry_and_wet_soil(weather: Weather) -> void:
+	var rules := CropRules.default_rules()
+	for pos in tilled_tiles():
+		var day := weather.day_summary(pos, clock.day - 1)
+		var drying := (
+			rules.farming("drying_base")
+			+ rules.farming("drying_per_degree") * maxf(day.mean_temperature, 0.0)
+			+ rules.farming("drying_per_sun_hour") * day.sunlight_hours
+			+ rules.farming("drying_per_wind") * day.max_wind_speed
+		)
+		set_moisture(pos, moisture_at(pos) + rules.farming("rain_wets") * day.rain_hours - drying)
 
 
 func _take_off(object: WorldObject) -> void:
@@ -363,9 +417,13 @@ func to_dict() -> Dictionary:
 	var buildings_data: Array[Dictionary] = []
 	for building in _buildings:
 		buildings_data.append(building.to_dict())
+	var soil_moisture: Array[Array] = []
+	for pos in _soil_moisture:
+		soil_moisture.append(SaveCodec.vector_to_json(pos) + [_soil_moisture[pos]])
 	return {
 		"seed": world_seed,
 		"terrain_edits": terrain_edits,
+		"soil_moisture": soil_moisture,
 		"object_edits": object_edits,
 		"buildings": buildings_data,
 	}
@@ -378,6 +436,9 @@ static func from_dict(data: Dictionary) -> World:
 		world._terrain_edits[SaveCodec.vector_from_json(edit)] = SaveCodec.terrain_from_json(
 			edit[2]
 		)
+	# Saves from before moisture have none: all the soil is as default.
+	for entry: Array in data.get("soil_moisture", []):
+		world._soil_moisture[SaveCodec.vector_from_json(entry)] = float(entry[2])
 	for edit: Dictionary in data["object_edits"]:
 		var object_data: Variant = edit["object"]
 		world._object_edits[SaveCodec.vector_from_json(edit["pos"])] = (

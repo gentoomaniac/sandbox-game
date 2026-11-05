@@ -12,8 +12,9 @@ extends RefCounted
 ## assets/interior/) instead of atlas_row and variants. The picture is centred on the
 ## footprint, its bottom on the footprint's bottom edge. Optional:
 ## - sleep_minutes: the object is a bed, and sleeping in it takes this long;
-## - growth_stages, days_per_stage: the object is a crop. Its `days_grown` state sets its
-##   stage; the last stage is ripe. Its atlas variants are the stages.
+## - growth_stages: the object is a crop (all of them come from data/crops.cfg, see CropRules,
+##   which says what the other values of a crop type are). Its picture sheet is not in the
+##   object atlas but its own (`sheet`), with a picture per growth stage and a dead one;
 ## - hp, tool, drops: it can be cut down or mined: it has `hp` hit points, each hit of a `tool`
 ##   (an item's tool kind, as a plain name: ItemTypes can't be used here, it depends on this
 ##   file) of at least its harvest level takes off the tool's power, and when none are left it
@@ -63,7 +64,7 @@ const FRUIT := &"fruit"
 ## object that covers a tile.
 const MAX_FOOTPRINT := Vector2i(2, 2)
 
-const TYPES := {
+const _OTHER_TYPES := {
 	OAK:
 	{
 		"hp": 5,
@@ -193,16 +194,6 @@ const TYPES := {
 		"atlas_row": 10,
 		"variants": 3,
 	},
-	TURNIP:
-	{
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": false,
-		"harvest_level": 0,
-		"atlas_row": 11,
-		"variants": 4,
-		"growth_stages": 4,
-		"days_per_stage": 1,
-	},
 	BOULDER:
 	{
 		"hp": 6,
@@ -211,7 +202,7 @@ const TYPES := {
 		"footprint": Vector2i(2, 1),
 		"blocks_walking": true,
 		"harvest_level": 2,
-		"atlas_row": 12,
+		"atlas_row": 11,
 		"variants": 2,
 	},
 	STUMP:
@@ -219,7 +210,7 @@ const TYPES := {
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": true,
 		"harvest_level": 1,
-		"atlas_row": 13,
+		"atlas_row": 12,
 		"variants": 2,
 		"hp": 2,
 		"tool": &"axe",
@@ -273,3 +264,22 @@ const TYPES := {
 		"interior_sprite": "res://assets/interior/window.png",
 	},
 }
+
+## Every type: the fixed ones above and the crops of data/crops.cfg.
+# The name is that of a constant, but crop types are only known once the file is read.
+static var TYPES := _with_crops(_OTHER_TYPES)  # gdlint: ignore=class-variable-name
+
+
+static func _with_crops(other_types: Dictionary) -> Dictionary:
+	var types := other_types.duplicate()
+	var rules := CropRules.default_rules()
+	for crop_id in rules.crop_ids():
+		var crop_type := rules.crop(crop_id).duplicate()
+		crop_type["seed"] = StringName(crop_type["seed"])
+		crop_type["produce"] = StringName(crop_type["produce"])
+		crop_type["footprint"] = Vector2i(1, 1)
+		crop_type["blocks_walking"] = false
+		crop_type["harvest_level"] = 0
+		crop_type["growth_stages"] = CropRules.STAGES
+		types[crop_id] = crop_type
+	return types

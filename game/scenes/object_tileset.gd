@@ -6,17 +6,24 @@ extends RefCounted
 ## tiles around it. An object on several tiles is centred on its footprint, with the
 ## cell's bottom on the footprint's bottom, so it is drawn from its own (top left) tile
 ## shifted accordingly.
+##
+## Every crop has a sheet of its own, a source of its own in the same TileSet, built from the
+## crop's `sheet` in data/crops.cfg: a growth stage per cell and then the dead one, side by
+## side. Its cells are as tall as the sheet and as wide as the sheet is wide over the number of
+## cells, and stand with their bottom on the bottom of the crop's tile.
 
 const ATLAS_PATH := "res://assets/objects.png"
 const CELL_WIDTH := 48
 const CELL_HEIGHT := 80
 
 var tile_set := TileSet.new()
+## The source of each crop's sheet, by crop type.
+var _crop_sources: Dictionary[StringName, int] = {}
 
 
 ## One atlas source per look (see SeasonBlend.Look), with the same tiles: a source's id is its
-## look.
-func _init() -> void:
+## look. Then one source per crop, with the ids that follow.
+func _init(crop_rules := CropRules.default_rules()) -> void:
 	tile_set.tile_size = Vector2i(TerrainTileset.TILE_SIZE, TerrainTileset.TILE_SIZE)
 	for look: SeasonBlend.Look in SeasonBlend.Look.values():
 		var source := TileSetAtlasSource.new()
@@ -35,6 +42,29 @@ func _init() -> void:
 				tile_data.y_sort_origin = (
 					(object_type["footprint"].y - 1) * TerrainTileset.TILE_SIZE
 				)
+	for crop_id in crop_rules.crop_ids():
+		_add_crop_sheet(crop_id, crop_rules.crop(crop_id)["sheet"])
+
+
+## The source that has the sheet of a crop type. Everything else is drawn from the source of its
+## look (see SeasonBlend.Look).
+func crop_source_id(crop_type: StringName) -> int:
+	return _crop_sources[crop_type]
+
+
+## A crop's sheet is the same in every season.
+func _add_crop_sheet(crop_id: StringName, sheet_path: String) -> void:
+	var source := TileSetAtlasSource.new()
+	var sheet: Texture2D = load(sheet_path)
+	source.texture = sheet
+	var cell_size := Vector2i(sheet.get_width() / (CropRules.STAGES + 1), sheet.get_height())
+	source.texture_region_size = cell_size
+	_crop_sources[crop_id] = tile_set.add_source(source)
+	for look in CropRules.STAGES + 1:
+		source.create_tile(Vector2i(look, 0))
+		source.get_tile_data(Vector2i(look, 0), 0).texture_origin = Vector2i(
+			0, (cell_size.y - TerrainTileset.TILE_SIZE) / 2
+		)
 
 
 ## How many pictures a type has in its atlas row: its variants, and for a bush that can be
@@ -55,16 +85,15 @@ static func cell_origin(footprint: Vector2i) -> Vector2i:
 	)
 
 
-## The atlas cell for an object: a crop's variant is its growth stage; for the others it
-## comes from the position, so it is stable but neighbours differ. A picked bush has its
-## variant's picked look, and so does a bush that is `is_bare` (out of its fruit season).
+## The cell for an object in its source: a crop's is its growth stage, or the dead one; for the
+## others the variant comes from the position, so it is stable but neighbours differ. A picked
+## bush has its variant's picked look, and so does a bush that is `is_bare` (out of its fruit
+## season).
 static func atlas_cell(object: WorldObject, is_bare := false) -> Vector2i:
+	if object.is_crop():
+		return Vector2i(CropLife.look(object), 0)
 	var object_type: Dictionary = WorldObjectTypes.TYPES[object.type]
-	var variant: int = (
-		object.growth_stage()
-		if object.is_crop()
-		else PositionHash.of(object.pos) % int(object_type["variants"])
-	)
+	var variant: int = PositionHash.of(object.pos) % int(object_type["variants"])
 	if object.is_picked() or is_bare:
 		variant += object_type["variants"]
 	return Vector2i(variant, object_type["atlas_row"])

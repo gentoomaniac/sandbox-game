@@ -24,6 +24,7 @@ static func from_dict(data: Dictionary) -> WorldObject:
 	var object := WorldObject.new(StringName(data["type"]), SaveCodec.vector_from_json(data["pos"]))
 	# Left as parsed: JSON numbers are floats, so the typed accessors convert.
 	object.state = data["state"].duplicate()
+	CropLife.upgrade_old_state(object)
 	return object
 
 
@@ -56,27 +57,9 @@ func is_crop() -> bool:
 	return type_data().has("growth_stages")
 
 
-## The whole days this crop, or stump or sapling that grows back, has grown.
+## The whole days a stump or sapling that grows back has grown.
 func days_grown() -> int:
 	return int(state.get("days_grown", 0))
-
-
-func grow_one_day() -> void:
-	assert(is_crop(), "Not a crop: %s" % type)
-	state["days_grown"] = days_grown() + 1
-
-
-## Crops only: the growth stage, 0 for a freshly planted one, up to `growth_stages - 1`.
-func growth_stage() -> int:
-	assert(is_crop(), "Not a crop: %s" % type)
-	var crop_type: Dictionary = type_data()
-	return mini(
-		days_grown() / int(crop_type["days_per_stage"]), int(crop_type["growth_stages"]) - 1
-	)
-
-
-func is_ripe() -> bool:
-	return is_crop() and growth_stage() == type_data()["growth_stages"] - 1
 
 
 ## The light this object shines (see WorldObjectTypes), or an empty dictionary.
@@ -132,13 +115,13 @@ func matured() -> WorldObject:
 	return next
 
 
-## Lets one night pass: damage heals, a crop grows, a picked bush bears again soon, something
-## that grows back ages. Returns whether its look changed.
+## Lets one night pass: damage heals, a picked bush bears again soon, something that grows back
+## ages. Returns whether its look changed. A crop lives through the day's weather instead (see
+## CropLife).
 func pass_night() -> bool:
 	state.erase("damage")
 	if is_crop():
-		grow_one_day()
-		return true
+		return false
 	if is_picked():
 		var days_left := int(state["days_until_bears"]) - 1
 		if days_left > 0:

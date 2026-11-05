@@ -7,15 +7,24 @@ extends RefCounted
 ## stays as it is while they are inside.
 
 ## What the use action does on a tile. HARVEST is a ripe crop, FORAGE something a hand picks
-## (a bush, a fern), HIT a tool cut or mined at an object, NEEDS_BETTER_TOOL a tool that is too
-## weak for the object.
-enum Use { NOTHING, TILL, PLANT, HARVEST, FORAGE, HIT, NEEDS_BETTER_TOOL, INVENTORY_FULL }
+## (a bush, a fern), CLEAR a dead crop that a hand pulls up, WATER a watering can wetting tilled
+## soil, HIT a tool cut or mined at an object, NEEDS_BETTER_TOOL a tool that is too weak for the
+## object.
+enum Use {
+	NOTHING,
+	TILL,
+	PLANT,
+	HARVEST,
+	FORAGE,
+	HIT,
+	NEEDS_BETTER_TOOL,
+	INVENTORY_FULL,
+	CLEAR,
+	WATER,
+}
 
 ## The tools the use action has something to do with.
-const ACTIVE_TOOLS := [ItemTypes.HOE, ItemTypes.AXE, ItemTypes.PICKAXE]
-const CROP := WorldObjectTypes.TURNIP
-## What harvesting a crop gives: the crop, and one seed back (until a shop sells seeds).
-const HARVEST_YIELD := {ItemTypes.TURNIP: 1, ItemTypes.TURNIP_SEEDS: 1}
+const ACTIVE_TOOLS := [ItemTypes.HOE, ItemTypes.AXE, ItemTypes.PICKAXE, ItemTypes.WATERING_CAN]
 ## The energy rule (see EnergyRules `cost_of`) for each use that costs energy. The others
 ## (nothing done, too weak a tool, full inventory) cost nothing.
 const COST_KINDS := {
@@ -23,6 +32,8 @@ const COST_KINDS := {
 	Use.PLANT: &"plant",
 	Use.HARVEST: &"pick",
 	Use.FORAGE: &"pick",
+	Use.CLEAR: &"pick",
+	Use.WATER: &"water",
 	Use.HIT: &"hit",
 }
 ## Passing out wakes the player at this time of day, in the home bed.
@@ -205,8 +216,9 @@ func pass_out() -> void:
 
 
 ## What `use` would do on a tile of the world (nothing inside) with the held item: a hoe
-## tills grass, seeds plant on soil and a sapling on grass, an empty hand harvests a ripe crop
-## or picks a bush, an axe or pickaxe hits what it cuts or mines.
+## tills grass, seeds plant on soil and a sapling on grass, a watering can wets dry tilled soil,
+## an empty hand harvests a ripe crop, clears a dead one or picks a bush, an axe or pickaxe hits
+## what it cuts or mines.
 func use_at(world_pos: Vector2i) -> Use:
 	if is_inside():
 		return Use.NOTHING
@@ -219,6 +231,8 @@ func use_at(world_pos: Vector2i) -> Use:
 		return Use.PLANT
 	if item.get("tool") == ItemTypes.HOE and world.is_free_on(world_pos, Tile.Terrain.GRASS):
 		return Use.TILL
+	if item.get("tool") == ItemTypes.WATERING_CAN and _is_dry_soil(world_pos):
+		return Use.WATER
 	return _use_tool(item, object)
 
 
@@ -259,11 +273,20 @@ func _do_use(target: Vector2i) -> Use:
 			world.add_object(planted)
 			player.inventory.remove(seeds, 1)
 		Use.HARVEST:
-			if not player.inventory.can_add(HARVEST_YIELD):
+			var crop := world.object_at(target)
+			var harvest := CropLife.harvest_of(crop)
+			if not player.inventory.can_add(harvest):
 				return Use.INVENTORY_FULL
+			_take_drops(harvest)
+			if CropLife.regrows(crop):
+				CropLife.regrow(crop)
+				world.change_object(crop)
+			else:
+				world.remove_object(target)
+		Use.CLEAR:
 			world.remove_object(target)
-			for item: StringName in HARVEST_YIELD:
-				player.inventory.add(item, HARVEST_YIELD[item])
+		Use.WATER:
+			world.set_moisture(target, 1.0)
 		Use.FORAGE:
 			var plant := world.object_at(target)
 			var drops: Dictionary = plant.type_data()["drops"]
@@ -280,6 +303,12 @@ func _do_use(target: Vector2i) -> Use:
 	return use
 
 
+## Whether a tile is tilled soil that is not soaked yet. A crop may stand on it.
+func _is_dry_soil(world_pos: Vector2i) -> bool:
+	var tile := world.tile_at(world_pos)
+	return tile != null and tile.terrain == Tile.Terrain.SOIL and world.moisture_at(world_pos) < 1.0
+
+
 func _use_tool(tool_item: Dictionary, object: WorldObject) -> Use:
 	if object == null or object.type_data().get("tool", ItemTypes.NONE) != tool_item.get("tool"):
 		return Use.NOTHING
@@ -291,8 +320,10 @@ func _use_tool(tool_item: Dictionary, object: WorldObject) -> Use:
 func _use_by_hand(object: WorldObject) -> Use:
 	if object == null:
 		return Use.NOTHING
-	if object.is_ripe():
-		return Use.HARVEST
+	if object.is_crop():
+		if CropLife.is_dead(object):
+			return Use.CLEAR
+		return Use.HARVEST if CropLife.is_ripe(object) else Use.NOTHING
 	return Use.FORAGE if object.is_forageable() and not world.is_bare(object) else Use.NOTHING
 
 
@@ -400,7 +431,7 @@ func _on_new_day(_day: int) -> void:
 	var occupied: Array[Vector2i] = []
 	if not is_inside():
 		occupied.append(player.tile())
-	world.pass_night(occupied)
+	world.pass_night(occupied, weather)
 
 
 ## The building whose interior this is, or null for the world.

@@ -89,10 +89,10 @@ func test_a_sapling_is_not_planted_on_soil_and_seeds_not_on_grass() -> void:
 	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
 
 
-func test_the_highlight_shows_for_axe_and_pickaxe_but_not_for_the_can() -> void:
+func test_the_highlight_shows_for_axe_pickaxe_and_can() -> void:
 	_hold(ItemTypes.AXE)
 	assert_true(_state.can_use_held_item())
 	_hold(ItemTypes.PICKAXE)
 	assert_true(_state.can_use_held_item())
 	_hold(ItemTypes.WATERING_CAN)
-	assert_false(_state.can_use_held_item())
+	assert_true(_state.can_use_held_item())

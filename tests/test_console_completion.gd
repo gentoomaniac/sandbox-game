@@ -29,3 +29,19 @@ func test_complete_leaves_other_words_alone() -> void:
 	assert_eq(_console.complete("give wood 5"), "give wood 5")
 	assert_eq(_console.complete("tp 1"), "tp 1")
 	assert_eq(_console.complete("give zzz"), "give zzz")
+
+
+func test_complete_the_ids_of_the_crop_items() -> void:
+	assert_eq(_console.complete("give carrot_s"), "give carrot_seeds ")
+	assert_eq(_console.complete("give potato_"), "give potato_seeds ")
+	assert_eq(_console.complete("give pump"), "give pumpkin")
+	assert_eq(_console.complete("give tomatoes_"), "give tomatoes_seeds ")
+	assert_eq(_console.complete("give whe"), "give wheat")
+	assert_eq(_console.complete("give bea"), "give beans")
+
+
+func test_every_crop_item_is_a_candidate_after_give() -> void:
+	for crop_id in CropRules.default_rules().crop_ids():
+		var seeds: StringName = WorldObjectTypes.TYPES[crop_id]["seed"]
+		assert_true(ItemTypes.TYPES.has(seeds))
+		assert_eq(_console.complete("give %s" % seeds), "give %s " % seeds, str(seeds))

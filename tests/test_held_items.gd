@@ -42,8 +42,9 @@ func _hold(item: StringName) -> void:
 
 func _plant_and_ripen() -> void:
 	_world.set_terrain(_tile, Tile.Terrain.SOIL)
-	_world.add_object(WorldObject.new(GameState.CROP, _tile))
-	_state.clock.advance(5 * GameClock.MINUTES_PER_DAY)
+	var crop := WorldObject.new(WorldObjectTypes.TURNIP, _tile)
+	crop.state["growth"] = 3.0 * crop.type_data()["growth_per_stage"]
+	_world.add_object(crop)
 
 
 ## Every slot but the last hotbar slot holds a tool, so the hand is empty and nothing stacks.
@@ -74,7 +75,7 @@ func test_seeds_plant_on_soil_and_use_up_one_seed() -> void:
 	_world.set_terrain(_tile, Tile.Terrain.SOIL)
 	_hold(ItemTypes.TURNIP_SEEDS)
 	assert_eq(_state.use_facing_tile(), GameState.Use.PLANT)
-	assert_eq(_world.object_at(_tile).type, GameState.CROP)
+	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.TURNIP)
 	assert_eq(_state.player.inventory.count_of(ItemTypes.TURNIP_SEEDS), 14)
 
 
@@ -113,16 +114,20 @@ func test_a_harvest_that_does_not_fit_is_not_done() -> void:
 
 func test_an_empty_hand_does_not_harvest_an_unripe_crop() -> void:
 	_world.set_terrain(_tile, Tile.Terrain.SOIL)
-	_world.add_object(WorldObject.new(GameState.CROP, _tile))
+	_world.add_object(WorldObject.new(WorldObjectTypes.TURNIP, _tile))
 	_hold(ItemTypes.NONE)
 	assert_eq(_state.use_facing_tile(), GameState.Use.NOTHING)
 
 
-func test_the_watering_can_has_no_use_yet() -> void:
+func test_the_watering_can_waters_dry_soil_and_nothing_else() -> void:
 	_plant_and_ripen()
 	_hold(ItemTypes.WATERING_CAN)
-	assert_eq(_state.use_facing_tile(), GameState.Use.NOTHING)
-	assert_false(_state.can_use_held_item())
+	assert_eq(_state.use_facing_tile(), GameState.Use.WATER)
+	assert_eq(_world.moisture_at(_tile), 1.0)
+	assert_eq(_state.use_facing_tile(), GameState.Use.NOTHING, "soaked already")
+	_world.set_terrain(_tile, Tile.Terrain.GRASS)
+	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING, "grass is not watered")
+	assert_true(_state.can_use_held_item())
 	_hold(ItemTypes.HOE)
 	assert_true(_state.can_use_held_item())
 	_hold(ItemTypes.NONE)

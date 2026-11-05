@@ -59,6 +59,8 @@ const NOISE_GAIN := 1.8
 var _world_seed: int
 var _sun: Sun
 var _rules: WeatherRules
+## The day summaries asked for so far, by region and day.
+var _day_summaries: Dictionary[Vector3i, WeatherDay] = {}
 
 
 func _init(world_seed: int, sun := Sun.new(), rules := WeatherRules.default_rules()) -> void:
@@ -128,6 +130,28 @@ func at(position: Vector2i, day: int, minute: int) -> WeatherSample:
 	sample.temperature = _kept_above_frost_floor(sample.temperature, minutes)
 	_derive_conditions(sample, day, minute)
 	return sample
+
+
+## The weather of a whole day (as GameClock.day) at a world tile, from its 24 hourly samples.
+## Cached: asking again is free.
+func day_summary(position: Vector2i, day: int) -> WeatherDay:
+	var region := region_of(position)
+	var key := Vector3i(region.x, region.y, day)
+	if _day_summaries.has(key):
+		return _day_summaries[key]
+	var summary := WeatherDay.new()
+	summary.min_temperature = INF
+	summary.max_temperature = -INF
+	for hour in 24:
+		var sample := at(position, day, hour * GameClock.MINUTES_PER_HOUR)
+		summary.min_temperature = minf(summary.min_temperature, sample.temperature)
+		summary.max_temperature = maxf(summary.max_temperature, sample.temperature)
+		summary.mean_temperature += sample.temperature / 24.0
+		summary.sunlight_hours += sample.sunlight / 100.0
+		summary.rain_hours += sample.rain
+		summary.max_wind_speed = maxf(summary.max_wind_speed, sample.wind_speed)
+	_day_summaries[key] = summary
+	return summary
 
 
 ## The sample with the condition made true, for tests and screenshots: `condition` is one of

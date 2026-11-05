@@ -144,3 +144,31 @@ func test_give_names_an_unknown_item_and_guesses() -> void:
 func test_give_with_wrong_arguments_shows_the_usage() -> void:
 	for line in ["give", "give wood 0", "give wood -2", "give wood x", "give wood 1 2"]:
 		assert_eq(_console.run(line), ["Usage: give <item> [count]"] as Array[String], line)
+
+
+func test_give_puts_crop_seeds_and_produce_in_the_inventory() -> void:
+	_console.run("give carrot_seeds 5")
+	_console.run("give strawberries 2")
+	assert_eq(_state.player.inventory.count_of(&"carrot_seeds"), 5)
+	assert_eq(_state.player.inventory.count_of(&"strawberries"), 2)
+
+
+func test_crop_shows_the_crop_in_front_or_the_nearest_one() -> void:
+	assert_eq(_console.run("crop"), ["No crop near you"] as Array[String])
+	var tile := _tile_where(true)
+	_world.set_terrain(tile + Vector2i(2, 0), Tile.Terrain.SOIL)
+	var crop := WorldObject.new(&"peas", tile + Vector2i(2, 0))
+	crop.state["growth"] = 4.0
+	_world.add_object(crop)
+	_world.set_moisture(crop.pos, 0.55)
+	_state.player.position = Vector2(tile) + Vector2(0.5, 0.5)
+	var lines := _console.run("crop")
+	assert_true(lines[0].begins_with("Peas: stage 2"), lines[0])
+	assert_true("growth 4.0" in lines[0])
+	assert_eq(lines.size(), 4)
+	assert_eq(lines[3], "Soil moisture 0.55")
+
+
+func test_weather_shows_the_aggregate_of_the_day() -> void:
+	var lines := _console.run("weather")
+	assert_true(lines.any(func(line: String) -> bool: return line.begins_with("Today: ")))

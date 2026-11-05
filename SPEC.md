@@ -230,9 +230,9 @@ top of classic pixel art (details under "Lighting and look").
     all tools at level 1.
   - Upgrades later come from a smith in a settlement, in tiers (level 2 copper, level 3
     iron, as palette swaps of the same icon).
-  - The tool decides the action: hoe tills, seeds plant, axe fells, pickaxe mines, an
-    empty hand harvests crops and picks bushes. The watering can has no effect until
-    watering is designed.
+  - The tool decides the action: hoe tills, seeds plant, axe fells, pickaxe mines, the
+    watering can wets tilled soil, an empty hand harvests crops, clears dead ones and
+    picks bushes.
 
 ### Menus and settings
 

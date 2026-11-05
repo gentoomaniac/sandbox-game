@@ -98,11 +98,12 @@ var _start_zoom := 1.0
 func _ready() -> void:
 	if (
 		not EnergyRules.default_rules().is_valid()
+		or not CropRules.default_rules().is_valid()
 		or not Vegetation.default_vegetation().is_valid()
 		or not WildlifeRules.default_rules().is_valid()
 		or not SeasonRules.default_rules().is_valid()
 	):
-		# The load has reported the missing rules or curves. Nothing else runs before the quit.
+		# The load has reported the missing rules, crops or curves. Nothing else runs before the quit.
 		set_process(false)
 		set_process_unhandled_input(false)
 		get_tree().quit(1)
@@ -387,10 +388,12 @@ func _hotbar_slot_of(event: InputEvent) -> int:
 func _use_on(target: Targeting) -> void:
 	if not target.is_in_reach:
 		return
+	var object := _state.world.object_at(target.tile)
 	match _state.use_tile(target.tile):
 		GameState.Use.HARVEST:
-			var crop_name: String = ItemTypes.TYPES[ItemTypes.TURNIP]["name"]
-			_harvest_hud.show_note("+1 %s" % crop_name.to_lower())
+			var crop_type := object.type_data()
+			var produce_name: String = ItemTypes.TYPES[crop_type["produce"]]["name"]
+			_harvest_hud.show_note("+%d %s" % [crop_type["yield"], produce_name.to_lower()])
 		GameState.Use.NEEDS_BETTER_TOOL:
 			var tool_name: String = ItemTypes.TYPES[_state.player.inventory.held_item()]["name"]
 			_harvest_hud.show_note("Needs a better %s." % tool_name.to_lower())

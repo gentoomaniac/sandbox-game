@@ -8,9 +8,10 @@ extends Node2D
 ## bottom-right tile is its own, so loading or unloading it fills or erases those cells,
 ## with no nodes to create or free. On top, a decoration layer on the plain tile grid
 ## scatters flowers, pebbles and the like; they are only looks, not world objects. Above
-## that, an objects layer on the same grid draws the world's objects. It sits in the
-## y-sorted `entities` node, where the player (and later creatures) stand among them, and
-## keeps no decoration under an object. Objects that shine get an ObjectLight.
+## that, the damp or wet look of tilled soil (see SoilWetness), and an objects layer on the same
+## grid that draws the world's objects. It sits in the y-sorted `entities` node, where the
+## player (and later creatures) stand among them, and keeps no decoration under an object.
+## Objects that shine get an ObjectLight.
 ## Buildings are sprites in that node too, so they sort with the objects and the player. They
 ## belong to the world, not to a chunk, so they stay when chunks unload.
 ##
@@ -98,6 +99,7 @@ var _object_tileset := ObjectTileset.new()
 ## Indexed by TerrainTileset.Layer.
 var _layers: Array[TileMapLayer] = []
 var _decorations := TileMapLayer.new()
+var _soil_wetness := SoilWetness.new()
 var _objects := TileMapLayer.new()
 ## The light of each shining object, by tile.
 var _lights: Dictionary[Vector2i, ObjectLight] = {}
@@ -145,6 +147,7 @@ func _ready() -> void:
 	_decorations.name = "Decorations"
 	_decorations.tile_set = _tileset.tile_set
 	add_child(_decorations)
+	add_child(_soil_wetness)
 	_objects.name = "Objects"
 	_objects.tile_set = _object_tileset.tile_set
 	_objects.y_sort_enabled = true
@@ -160,6 +163,7 @@ func show_world(world_to_show: World) -> void:
 	world.objects_changed.connect(_on_objects_changed)
 	world.tile_changed.connect(redraw_tile)
 	world.object_hit.connect(_shake_object)
+	_soil_wetness.show_world(world)
 	world.building_placed.connect(_draw_building)
 	_generator = WorldGenerator.new(world.world_seed)
 	_variety_noise.seed = world.world_seed + VARIETY_SEED_OFFSET
@@ -565,9 +569,17 @@ func _draw_object(world_pos: Vector2i) -> void:
 
 func _set_object_cell(object: WorldObject) -> void:
 	_objects.set_cell(
-		object.pos, _object_look(object), ObjectTileset.atlas_cell(object, world.is_bare(object))
+		object.pos, _object_source(object), ObjectTileset.atlas_cell(object, world.is_bare(object))
 	)
 	_object_states[object.pos] = _object_state(object)
+
+
+## The source that an object is drawn from: its own sheet for a crop, else the object atlas in
+## its look.
+func _object_source(object: WorldObject) -> int:
+	if object.is_crop():
+		return _object_tileset.crop_source_id(object.type)
+	return _object_look(object)
 
 
 ## The look of an object: of the foliage of its season, or snowy or frosty with its tile's
@@ -578,8 +590,11 @@ func _object_look(object: WorldObject) -> SeasonBlend.Look:
 
 
 ## What an object is drawn as: its look, with a flag if it is out of its fruit season, or
-## DORMANT if it is not drawn. A change of the state means the cell must be drawn again.
+## DORMANT if it is not drawn. A change of the state means the cell must be drawn again. A crop
+## has the same look all year; its growth comes through `objects_changed`.
 func _object_state(object: WorldObject) -> int:
+	if object.is_crop():
+		return 0
 	if world.is_dormant(object):
 		return DORMANT
 	return _object_look(object) + (BARE_OF_FRUIT_FLAG if world.is_bare(object) else 0)

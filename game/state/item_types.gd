@@ -40,7 +40,7 @@ const POWER_OF_LEVEL := [0, 1, 2, 3]
 
 const ICON_PATH := "res://assets/items/%s.png"
 
-const TYPES := {
+const _OTHER_TYPES := {
 	HOE:
 	{
 		"name": "Hoe",
@@ -73,19 +73,6 @@ const TYPES := {
 		"stack_limit": 1,
 		"tool": WATERING_CAN,
 		"level": 1,
-	},
-	TURNIP_SEEDS:
-	{
-		"name": "Turnip seeds",
-		"weight": 0.02,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-		"plants": WorldObjectTypes.TURNIP,
-	},
-	TURNIP:
-	{
-		"name": "Turnip",
-		"weight": 0.4,
-		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 	WOOD:
 	{
@@ -154,6 +141,10 @@ const TYPES := {
 	},
 }
 
+## Every type: the fixed ones above and the seeds and produce of the crops in data/crops.cfg.
+# The name is that of a constant, but the crop items are only known once the file is read.
+static var TYPES := _with_crop_items(_OTHER_TYPES)  # gdlint: ignore=class-variable-name
+
 
 ## The item's 16x16 picture (see tools/art/items.py).
 static func icon_path(item: StringName) -> String:
@@ -163,3 +154,22 @@ static func icon_path(item: StringName) -> String:
 ## How many hit points one hit of this tool takes off.
 static func tool_power(tool_item: StringName) -> int:
 	return POWER_OF_LEVEL[TYPES[tool_item]["level"]]
+
+
+static func _with_crop_items(other_types: Dictionary) -> Dictionary:
+	var types := other_types.duplicate()
+	var rules := CropRules.default_rules()
+	for crop_id in rules.crop_ids():
+		var crop := rules.crop(crop_id)
+		types[StringName(crop["seed"])] = {
+			"name": crop["seed_name"],
+			"weight": crop["seed_weight"],
+			"stack_limit": DEFAULT_STACK_LIMIT,
+			"plants": crop_id,
+		}
+		types[StringName(crop["produce"])] = {
+			"name": crop["name"],
+			"weight": crop["produce_weight"],
+			"stack_limit": DEFAULT_STACK_LIMIT,
+		}
+	return types

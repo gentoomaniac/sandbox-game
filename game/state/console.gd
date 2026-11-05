@@ -26,7 +26,14 @@ const COMMANDS := {
 		"snow [0..1|auto]",
 		"Show the snow cover, force it (0 to 1) or return to the weather (auto).",
 	],
+	"crop":
+	[
+		"crop",
+		"Show the growth, damage and needs of the crop in front of you or the nearest one.",
+	],
 }
+## How far (in tiles) the `crop` command looks for a crop when none is in front of the player.
+const CROP_SEARCH_RADIUS := 4
 ## Item ids this similar to a misspelt one (see String.similarity) are offered as a guess.
 const CLOSE_MATCH_SIMILARITY := 0.4
 
@@ -71,6 +78,8 @@ func run(line: String) -> Array[String]:
 			output = _weather(arguments)
 		"snow":
 			output = _snow(arguments)
+		"crop":
+			output = _crop()
 		_:
 			output = ["Unknown command: %s (try help)" % words[0]]
 	return output
@@ -201,6 +210,7 @@ func _weather(arguments: PackedStringArray) -> Array[String]:
 			% [Sun.time_text(_state.sun.sunrise(day)), Sun.time_text(_state.sun.sunset(day))]
 		)
 	)
+	lines.append("Today: " + _state.weather.day_summary(_state.player.tile(), day).text())
 	if _state.weather_override != &"":
 		lines.append("Forced: %s" % _state.weather_override)
 	return lines
@@ -231,6 +241,38 @@ func _snow(arguments: PackedStringArray) -> Array[String]:
 	if snow.forced >= 0.0:
 		lines.append("Forced: %s" % snow.forced)
 	return lines
+
+
+func _crop() -> Array[String]:
+	var crop := _nearest_crop()
+	if crop == null:
+		return ["No crop near you"]
+	var lines: Array[String] = []
+	lines.assign(CropLife.describe(crop))
+	lines.append("Soil moisture %.2f" % _state.world.moisture_at(crop.pos))
+	return lines
+
+
+## The crop in front of the player, else the nearest one within CROP_SEARCH_RADIUS.
+func _nearest_crop() -> WorldObject:
+	if _state.is_inside():
+		return null
+	var in_front := _state.world.object_at(_state.player.facing_tile())
+	if in_front != null and in_front.is_crop():
+		return in_front
+	var nearest: WorldObject = null
+	var player_tile := _state.player.tile()
+	for y in range(-CROP_SEARCH_RADIUS, CROP_SEARCH_RADIUS + 1):
+		for x in range(-CROP_SEARCH_RADIUS, CROP_SEARCH_RADIUS + 1):
+			var object := _state.world.object_at(player_tile + Vector2i(x, y))
+			if object == null or not object.is_crop():
+				continue
+			if (
+				nearest == null
+				or Vector2i(x, y).length_squared() < (nearest.pos - player_tile).length_squared()
+			):
+				nearest = object
+	return nearest
 
 
 func _unknown_item(typed: String) -> Array[String]:

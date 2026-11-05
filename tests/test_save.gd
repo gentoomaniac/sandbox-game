@@ -54,7 +54,10 @@ func _lived_in_state() -> GameState:
 	_tilled_tile = tiles[0]
 	_state.world.set_terrain(tiles[0], Tile.Terrain.SOIL)
 	_state.world.set_terrain(tiles[1], Tile.Terrain.SOIL)
-	_state.world.add_object(WorldObject.new(GameState.CROP, tiles[1]))
+	var crop := WorldObject.new(WorldObjectTypes.TURNIP, tiles[1])
+	crop.state["growth"] = 4.0
+	_state.world.add_object(crop)
+	_state.world.set_moisture(tiles[1], 0.9)
 	_state.clock.advance(GameClock.MINUTES_PER_DAY)
 	_state.player.inventory.add(ItemTypes.TURNIP, 3)
 	_state.player.inventory.select(4)
@@ -100,12 +103,21 @@ func _remove_a_tree() -> Vector2i:
 
 
 func test_world_object_round_trip_keeps_its_growth() -> void:
-	var crop := WorldObject.new(GameState.CROP, Vector2i(-3, 4))
-	crop.grow_one_day()
+	var crop := WorldObject.new(WorldObjectTypes.TURNIP, Vector2i(-3, 4))
+	crop.state["growth"] = 4.5
+	crop.state["crop_damage"] = 0.25
 	var restored := WorldObject.from_dict(_through_json(crop.to_dict()))
 	assert_eq(restored.type, crop.type)
 	assert_eq(restored.pos, Vector2i(-3, 4))
-	assert_eq(restored.days_grown(), 1)
+	assert_eq(CropLife.growth(restored), 4.5)
+	assert_eq(CropLife.damage(restored), 0.25)
+
+
+func test_a_crop_from_a_save_that_counted_days_has_that_many_stages_of_growth() -> void:
+	var old_crop := {"type": "turnip", "pos": [1, 1], "state": {"days_grown": 2}}
+	var crop := WorldObject.from_dict(old_crop)
+	assert_eq(CropLife.growth(crop), 2 * WorldObjectTypes.TYPES[crop.type]["growth_per_stage"])
+	assert_false(crop.state.has("days_grown"))
 
 
 func test_clock_round_trip() -> void:
@@ -185,7 +197,10 @@ func test_a_lived_in_game_round_trip() -> void:
 	assert_null(restored.world.object_at(removed_tree))
 	var crop := _crop_in(restored.world)
 	assert_not_null(crop)
-	assert_eq(crop.days_grown(), 1)
+	assert_almost_eq(CropLife.growth(crop), CropLife.growth(_crop_in(_state.world)), 0.0001)
+	assert_almost_eq(
+		restored.world.moisture_at(crop.pos), _state.world.moisture_at(crop.pos), 0.0001
+	)
 	assert_eq(restored.world.tile_at(crop.pos).terrain, Tile.Terrain.SOIL)
 	assert_eq(restored.world.tile_at(_tilled_tile).terrain, Tile.Terrain.SOIL)
 
@@ -209,10 +224,12 @@ func test_the_restored_game_carries_on() -> void:
 	restored.player.position = Vector2(restored.current_map.exit_tile) + Vector2(0.5, 0.5)
 	restored.pass_door()
 	assert_false(restored.is_inside())
-	# The new day still grows the crops of the restored world.
-	restored.clock.advance(GameClock.MINUTES_PER_DAY)
+	# The new day still weathers the crops of the restored world, as it does the original's.
 	_load_chunks_like(_state.world, restored.world)
-	assert_eq(_crop_in(restored.world).days_grown(), 2)
+	var crop := _crop_in(restored.world)
+	var growth_before := CropLife.growth(crop)
+	restored.clock.advance(GameClock.MINUTES_PER_DAY)
+	assert_true(CropLife.growth(crop) != growth_before or CropLife.damage(crop) > 0.0)
 
 
 func test_enums_are_saved_by_name() -> void:
