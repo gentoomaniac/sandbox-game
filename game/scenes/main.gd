@@ -1,53 +1,64 @@
 extends Node2D
-## Debug scene: a world with a camera moved by the arrow keys. The player replaces it.
+## The game scene: owns the GameState, turns real time into game minutes and feeds the
+## player's input to the state. The camera and chunk streaming follow the player.
 ##
 ## Debug flags (after `--` on the Godot command line, see `make screenshot`):
-## `--at=<x>,<y>` starts the camera at that world tile; `--screenshot=<path>` saves one
-## frame as PNG once streaming has settled, then quits; `--time=<hh:mm>` sets the time of
-## day.
+## `--at=<x>,<y>` puts the player on that world tile instead of at the camp;
+## `--screenshot=<path>` saves one frame as PNG once streaming has settled, then quits;
+## `--time=<hh:mm>` sets the time of day.
 
 const WORLD_SEED := 1
-const CAMERA_SPEED := 240.0  # pixels per second
 ## One game day lasts 16 real minutes (24 h * 60 min / 1.5 / 60 s).
 const GAME_MINUTES_PER_REAL_SECOND := 1.5
 ## Debug speed-up, toggled with F2: a game day in 16 real seconds.
 const FAST_FORWARD_FACTOR := 60.0
+## Fading out and back in around sleep.
+const SLEEP_FADE_SECONDS := 0.5
 
-var clock := GameClock.new()
-
+var _state := GameState.new_game(WORLD_SEED)
+var _player_view := PlayerView.new()
 var _screenshot_path := ""
 var _fast_forward := false
+var _is_sleeping := false
 var _pending_minutes := 0.0
 
 @onready var _view: WorldView = $WorldView
 @onready var _camera: Camera2D = $Camera2D
 @onready var _tint: DayNightTint = $DayNightTint
 @onready var _hud: ClockHud = $ClockHud
+@onready var _fade: ColorRect = $FadeLayer/Fade
 
 
 func _ready() -> void:
-	_view.show_world(World.new(WORLD_SEED))
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--at="):
 			var tile := arg.trim_prefix("--at=").split_floats(",")
-			_camera.position = Vector2(tile[0], tile[1]) * TerrainTileset.TILE_SIZE
+			_state.player.position = Vector2(tile[0], tile[1]) + Vector2(0.5, 0.5)
 		elif arg.begins_with("--screenshot="):
 			_screenshot_path = arg.trim_prefix("--screenshot=")
 		elif arg.begins_with("--time="):
 			_set_start_time(arg.trim_prefix("--time="))
+	_view.show_world(_state.world)
+	# Among the objects, so the player walks behind tree canopies.
+	_view.entities.add_child(_player_view)
+	_player_view.show_player(_state.player)
 	_show_clock()
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_fast_forward"):
 		_fast_forward = not _fast_forward
+	elif event.is_action_pressed("interact") and not _is_sleeping:
+		_try_sleep()
 
 
 func _process(delta: float) -> void:
 	_tick_clock(delta)
-	var direction := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
-	_camera.position += direction * CAMERA_SPEED * delta
-	_view.set_focus(Vector2i((_camera.position / TerrainTileset.TILE_SIZE).floor()))
+	if not _is_sleeping:
+		var direction := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+		_state.player.move(_state.world, direction, delta)
+	_camera.position = (_state.player.position * TerrainTileset.TILE_SIZE).round()
+	_view.set_focus(_state.player.tile())
 	if _screenshot_path != "" and _view.is_settled:
 		_save_screenshot_and_quit()
 
@@ -62,8 +73,24 @@ func _tick_clock(delta: float) -> void:
 	var whole_minutes := int(_pending_minutes)
 	if whole_minutes > 0:
 		_pending_minutes -= whole_minutes
-		clock.advance(whole_minutes)
+		_state.clock.advance(whole_minutes)
 		_show_clock()
+
+
+func _try_sleep() -> void:
+	var bed := _state.bed_in_reach()
+	if bed == null:
+		return
+	_is_sleeping = true
+	var fade := create_tween()
+	fade.tween_property(_fade, "color:a", 1.0, SLEEP_FADE_SECONDS)
+	await fade.finished
+	_state.sleep_in(bed)
+	_show_clock()
+	fade = create_tween()
+	fade.tween_property(_fade, "color:a", 0.0, SLEEP_FADE_SECONDS)
+	await fade.finished
+	_is_sleeping = false
 
 
 func _set_start_time(text: String) -> void:
@@ -76,12 +103,13 @@ func _set_start_time(text: String) -> void:
 	if hour < 0 or hour > 23 or minute < 0 or minute > 59:
 		push_error("--time out of range: '%s'" % text)
 		return
-	clock.set_time(hour, minute)
+	_state.clock.set_time(hour, minute)
 
 
 func _show_clock() -> void:
-	_tint.show_time(clock)
-	_hud.show_time(clock)
+	_tint.show_time(_state.clock)
+	_view.set_light_strength(_tint.light_strength())
+	_hud.show_time(_state.clock)
 
 
 func _save_screenshot_and_quit() -> void:

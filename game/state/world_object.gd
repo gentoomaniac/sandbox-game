@@ -18,3 +18,13 @@ func _init(object_type: StringName, world_pos: Vector2i) -> void:
 
 func blocks_walking() -> bool:
 	return WorldObjectTypes.TYPES[type]["blocks_walking"]
+
+
+## How long sleeping here takes, in game minutes. 0 if this is not a bed.
+func sleep_minutes() -> int:
+	return WorldObjectTypes.TYPES[type].get("sleep_minutes", 0)
+
+
+## The light this object shines (see WorldObjectTypes), or an empty dictionary.
+func light() -> Dictionary:
+	return WorldObjectTypes.TYPES[type].get("light", {})

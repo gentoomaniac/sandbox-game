@@ -8,8 +8,9 @@ extends Node2D
 ## bottom-right tile is its own, so loading or unloading it fills or erases those cells,
 ## with no nodes to create or free. On top, a decoration layer on the plain tile grid
 ## scatters flowers, pebbles and the like; they are only looks, not world objects. Above
-## that, an objects layer on the same grid draws the world's trees and rocks. It is y-sorted
-## (so a later player can walk behind a tree) and keeps no decoration under an object.
+## that, an objects layer on the same grid draws the world's objects. It sits in the
+## y-sorted `entities` node, where the player (and later creatures) stand among them, and
+## keeps no decoration under an object. Objects that shine get an ObjectLight.
 
 const LOAD_RADIUS := 3
 const UNLOAD_RADIUS := 5
@@ -34,6 +35,8 @@ const DECORATION_SEED_OFFSET := 104729
 const DECORATION_FREQUENCY := 0.12
 
 var world: World
+## Y-sorted: whatever is added here is drawn in front of or behind the objects by its y.
+var entities := Node2D.new()
 ## True once every chunk around the focus is loaded.
 var is_settled := false
 var _generator: WorldGenerator
@@ -46,6 +49,9 @@ var _object_tileset := ObjectTileset.new()
 var _layers: Array[TileMapLayer] = []
 var _decorations := TileMapLayer.new()
 var _objects := TileMapLayer.new()
+## The light of each shining object, by tile.
+var _lights: Dictionary[Vector2i, ObjectLight] = {}
+var _light_strength := 1.0
 
 
 func _ready() -> void:
@@ -62,9 +68,13 @@ func _ready() -> void:
 	_objects.name = "Objects"
 	_objects.tile_set = _object_tileset.tile_set
 	_objects.y_sort_enabled = true
-	add_child(_objects)
+	entities.name = "Entities"
+	entities.y_sort_enabled = true
+	entities.add_child(_objects)
+	add_child(entities)
 
 
+## Shows a world, including the chunks that are already loaded in it.
 func show_world(world_to_show: World) -> void:
 	world = world_to_show
 	world.objects_changed.connect(_on_objects_changed)
@@ -73,6 +83,15 @@ func show_world(world_to_show: World) -> void:
 	_variety_noise.frequency = VARIETY_FREQUENCY
 	_decoration_noise.seed = world.world_seed + DECORATION_SEED_OFFSET
 	_decoration_noise.frequency = DECORATION_FREQUENCY
+	for coords in world.loaded_chunk_coords():
+		_draw_chunk(world.chunk_at(coords))
+
+
+## Sets how brightly every light shines (see ObjectLight.strength).
+func set_light_strength(strength: float) -> void:
+	_light_strength = strength
+	for light in _lights.values():
+		light.strength = strength
 
 
 ## Streaming follows this world tile position.
@@ -111,6 +130,11 @@ func _on_objects_changed(world_pos: Vector2i) -> void:
 func _load_chunk(coords: Vector2i) -> void:
 	var chunk := _generator.generate_chunk(coords)
 	world.add_chunk(chunk)
+	_draw_chunk(chunk)
+
+
+func _draw_chunk(chunk: Chunk) -> void:
+	var coords := chunk.coords
 	var origin := Chunk.to_world(coords, Vector2i.ZERO)
 	# The corners of the chunk's cells: its own tiles plus the row above and the column to
 	# the left. Reading them once, mostly straight from the chunk, is several times faster
@@ -154,6 +178,7 @@ func _load_chunk(coords: Vector2i) -> void:
 func _unload_chunk(coords: Vector2i) -> void:
 	for object in world.chunk_at(coords).objects():
 		_objects.erase_cell(object.pos)
+		_remove_light(object.pos)
 	var origin := Chunk.to_world(coords, Vector2i.ZERO)
 	for y in Chunk.CHUNK_SIZE:
 		for x in Chunk.CHUNK_SIZE:
@@ -190,10 +215,23 @@ func _draw_cell_corners(cell: Vector2i, corners: PackedInt32Array) -> void:
 
 func _draw_object(world_pos: Vector2i) -> void:
 	var object := world.object_at(world_pos)
+	_remove_light(world_pos)
 	if object == null:
 		_objects.erase_cell(world_pos)
-	else:
-		_objects.set_cell(world_pos, ObjectTileset.SOURCE_ID, ObjectTileset.atlas_cell(object))
+		return
+	_objects.set_cell(world_pos, ObjectTileset.SOURCE_ID, ObjectTileset.atlas_cell(object))
+	if not object.light().is_empty():
+		var light := ObjectLight.new(object.light(), world_pos)
+		light.strength = _light_strength
+		_lights[world_pos] = light
+		add_child(light)
+
+
+func _remove_light(world_pos: Vector2i) -> void:
+	var light: ObjectLight = _lights.get(world_pos)
+	if light != null:
+		_lights.erase(world_pos)
+		light.queue_free()
 
 
 func _draw_decoration(world_pos: Vector2i, layer: int) -> void:

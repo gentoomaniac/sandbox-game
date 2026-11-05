@@ -17,9 +17,13 @@ assets/decorations.png, per row: small visual-only sprites (flowers, pebbles, re
 drawn on top of world tiles of that layer. A row may be empty.
 
 assets/objects.png: world objects, 32x32 cells (OBJECT_CELL). Row 0 is the oak (3 variants),
-row 1 the stone (2 variants); the rows and counts are in game/state/world_object_types.gd.
+row 1 the stone (2 variants), then the camp site: row 2 the fireplace, row 3 the sleeping bag
+(1 variant each). The rows and counts are in game/state/world_object_types.gd.
 An object stands on one tile: the bottom centre 16x16 of its cell (x 8..23, y 16..31). The
 oak's canopy rises above that, over the tiles north of it.
+
+assets/player.png: the player character, 16x16 cells with the feet on the bottom row. One row
+per facing (down, up, left, right), columns: idle, walk 1, walk 2 (see game/scenes/player_view.gd).
 """
 
 import math
@@ -643,6 +647,118 @@ def stone(seed):
 OBJECTS = [[oak(seed) for seed in (101, 102, 103)], [stone(seed) for seed in (111, 112)]]
 
 
+# Camp site objects (assets/objects.png rows 2 and 3).
+
+
+def fill_rect(canvas, x0, y0, x1, y1, colour):
+    """Fills x0..x1 and y0..y1, both ends included."""
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            canvas[y][x] = colour
+
+
+def fireplace():
+    rng = random.Random(121)
+    canvas = object_canvas()
+    # Ash bed, with two crossed logs on it.
+    for y in range(22, 29):
+        for x in range(9, 23):
+            if ((x - 16) / 7.0) ** 2 + ((y - 25.5) / 3.5) ** 2 <= 1:
+                canvas[y][x] = "soil_dark"
+    for i in range(9):
+        canvas[24 + i // 3][11 + i] = "soil_mid"
+        canvas[27 - i // 3][11 + i] = "soil"
+    # Flame: a teardrop from the logs up into the tile north, jagged at the edges.
+    for y in range(12, 26):
+        tip = (25 - y) / 13.0
+        half_width = 4.5 * (1 - tip) ** 0.7
+        for colour, scale, lowest in (("flame", 1.0, 25), ("gold", 0.65, 25), ("cream", 0.3, 24)):
+            reach = half_width * scale + rng.uniform(-0.4, 0.4)
+            for x in range(16 - int(reach + 1), 16 + int(reach + 1)):
+                if abs(x + 0.5 - 16) <= reach and y <= lowest:
+                    canvas[y][x] = colour
+    # Ring of stones around the ash.
+    for step in range(12):
+        angle = step / 12 * 2 * math.pi
+        x = round(16 + 7.5 * math.cos(angle))
+        y = round(25.5 + 4 * math.sin(angle))
+        fill_rect(canvas, x - 1, y - 1, x + 1, y, "stone")
+        fill_rect(canvas, x - 1, y - 1, x, y - 1, "stone_light")
+        fill_rect(canvas, x + 1, y, x + 1, y, "stone_dark")
+    return canvas
+
+
+def sleeping_bag():
+    canvas = object_canvas()
+    fill_rect(canvas, 11, 18, 20, 30, "ink")
+    fill_rect(canvas, 12, 19, 19, 29, "ember")
+    fill_rect(canvas, 12, 19, 13, 29, "flame")
+    fill_rect(canvas, 18, 19, 19, 29, "soil")
+    fill_rect(canvas, 12, 26, 19, 26, "soil_dark")
+    # Pillow.
+    fill_rect(canvas, 13, 20, 18, 22, "cream")
+    fill_rect(canvas, 13, 22, 18, 22, "sand_light")
+    return canvas
+
+
+CAMP_OBJECTS = [[fireplace()], [sleeping_bag()]]
+
+
+# The player character (assets/player.png).
+
+PLAYER_FACINGS = ("down", "up", "left", "right")
+PLAYER_FRAMES = ("idle", "walk1", "walk2")
+
+
+def player_frame(facing, frame):
+    """One 16x16 frame: a figure 6 px wide with a 1 px ink outline, feet on the bottom row."""
+    canvas = blank()
+    side = facing in ("left", "right")
+    # Legs: a walking frame lifts one leg; seen from the side the legs swing apart instead.
+    legs = ((6, 7), (7, 8)) if side else ((6, 7), (8, 9))
+    lifted_leg = {"idle": None, "walk1": 0, "walk2": 1}[frame]
+    for index, (x0, x1) in enumerate(legs):
+        lifted = index == lifted_leg
+        shift = 0
+        if side and lifted_leg is not None:
+            shift = (1 if lifted else -1) * (1 if facing == "right" else -1)
+        fill_rect(canvas, x0 + shift, 11, x1 + shift, 12 if lifted and not side else 13, "soil")
+        fill_rect(canvas, x0 + shift, 13 if lifted and not side else 14, x1 + shift, 13 if lifted and not side else 14, "soil_dark")
+    # Torso and arms.
+    fill_rect(canvas, 5, 7, 10, 10, "water_light")
+    fill_rect(canvas, 5, 10, 10, 10, "water")
+    if not side:
+        fill_rect(canvas, 4, 7, 4, 10, "water")
+        fill_rect(canvas, 11, 7, 11, 10, "water")
+        canvas[10][4] = canvas[10][11] = "sand_light"
+    else:
+        fill_rect(canvas, 7, 8, 8, 10, "water")
+        canvas[10][7] = canvas[10][8] = "sand_light"
+    # Head: skin with hair on top, and over the whole head from behind.
+    fill_rect(canvas, 5, 2, 10, 6, "sand_light")
+    fill_rect(canvas, 5, 2, 10, 3, "soil_dark")
+    if facing == "down":
+        canvas[5][6] = canvas[5][9] = "ink"
+    elif facing == "up":
+        fill_rect(canvas, 5, 2, 10, 6, "soil_dark")
+    elif facing == "left":
+        fill_rect(canvas, 8, 2, 10, 6, "soil_dark")
+        canvas[5][6] = "ink"
+    else:
+        fill_rect(canvas, 5, 2, 7, 6, "soil_dark")
+        canvas[5][9] = "ink"
+    # Outline.
+    covered = {(x, y) for y in range(TILE) for x in range(TILE) if canvas[y][x] is not None}
+    for x, y in covered:
+        for dx, dy in NEIGHBOURS:
+            if 0 <= x + dx < TILE and 0 <= y + dy < TILE and (x + dx, y + dy) not in covered:
+                canvas[y + dy][x + dx] = "ink"
+    return canvas
+
+
+PLAYER = [[player_frame(facing, frame) for frame in PLAYER_FRAMES] for facing in PLAYER_FACINGS]
+
+
 def to_image(rows, size=TILE):
     """Lays out rows of size x size tiles as one image."""
     width = max(1, max(len(row) for row in rows)) * size
@@ -704,10 +820,11 @@ def main():
         decoration_rows.append(decorations)
     to_image(terrain_rows).save(ASSETS / "terrain.png")
     to_image(decoration_rows).save(ASSETS / "decorations.png")
-    to_image(OBJECTS, OBJECT_CELL).save(ASSETS / "objects.png")
+    to_image(OBJECTS + CAMP_OBJECTS, OBJECT_CELL).save(ASSETS / "objects.png")
+    to_image(PLAYER).save(ASSETS / "player.png")
     write_palette()
     check_palette()
-    print("Wrote terrain.png, decorations.png, objects.png, palette.png and palette.gpl to assets/; palette check passed.")
+    print("Wrote terrain.png, decorations.png, objects.png, player.png, palette.png and palette.gpl to assets/; palette check passed.")
 
 
 if __name__ == "__main__":

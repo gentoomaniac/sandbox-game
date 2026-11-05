@@ -37,3 +37,13 @@ theme_override_constants/outline_size = 2
 theme_override_font_sizes/font_size = 8
 
 [node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="FadeLayer" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="Fade" type="ColorRect" parent="FadeLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0)

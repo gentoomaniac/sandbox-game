@@ -1,0 +1,43 @@
+class_name PlayerState
+extends RefCounted
+## The player: where they stand and which bed is home. This is the source of truth for the
+## player's position; PlayerView only draws it, and `move` is the only thing that walks.
+
+const SPEED := 5.0  # tiles per second
+## The player's body, as the area they occupy on the ground: this wide and this tall,
+## measured up from the feet. Smaller than a tile, so they can pass between trees.
+const BODY_HALF_WIDTH := 0.3
+const BODY_HEIGHT := 0.3
+## A long frame must not let the player jump through a thin wall.
+const MAX_STEP_SECONDS := 0.05
+
+## World position of the feet, in tiles: tile (x, y) spans x..x+1 and y..y+1.
+var position := Vector2.ZERO
+## Tile of the bed the player last slept in, where they wake up when they pass out.
+var home_bed := Vector2i.ZERO
+
+
+## The tile the player's feet are on.
+func tile() -> Vector2i:
+	return Vector2i(position.floor())
+
+
+## Walks along `direction` for `delta` seconds. Each axis moves on its own, so the player
+## slides along a wall instead of stopping against it.
+func move(world: World, direction: Vector2, delta: float) -> void:
+	var step := direction.limit_length(1.0) * SPEED * minf(delta, MAX_STEP_SECONDS)
+	for axis in [Vector2(step.x, 0.0), Vector2(0.0, step.y)]:
+		if can_stand_at(world, position + axis):
+			position += axis
+
+
+## Whether a player with their feet at `feet` fits: every tile their body touches is walkable.
+static func can_stand_at(world: World, feet: Vector2) -> bool:
+	var top_left := Vector2i(Vector2(feet.x - BODY_HALF_WIDTH, feet.y - BODY_HEIGHT).floor())
+	# Ceiling minus one: a body that ends exactly on a tile edge does not touch the next tile.
+	var bottom_right := Vector2i(int(ceilf(feet.x + BODY_HALF_WIDTH)) - 1, int(ceilf(feet.y)) - 1)
+	for y in range(top_left.y, bottom_right.y + 1):
+		for x in range(top_left.x, bottom_right.x + 1):
+			if not world.is_walkable(Vector2i(x, y)):
+				return false
+	return true
