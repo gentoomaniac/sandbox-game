@@ -109,9 +109,8 @@ func use_at(world_pos: Vector2i) -> Use:
 	return Use.NOTHING
 
 
-## Uses the tile the player faces (see `use_at`) and returns what was done.
-func use_facing_tile() -> Use:
-	var target := player.facing_tile()
+## Uses a tile (see `use_at`) and returns what was done.
+func use_tile(target: Vector2i) -> Use:
 	var use := use_at(target)
 	match use:
 		Use.TILL:
@@ -122,6 +121,11 @@ func use_facing_tile() -> Use:
 			world.remove_object(target)
 			harvest_count += 1
 	return use
+
+
+## Uses the tile the player faces.
+func use_facing_tile() -> Use:
+	return use_tile(player.facing_tile())
 
 
 func _on_new_day(_day: int) -> void:

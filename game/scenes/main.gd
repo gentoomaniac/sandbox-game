@@ -10,6 +10,7 @@ extends Node2D
 ## `--time=<hh:mm>` sets the time of day; `--field=<x>,<y>` tills a small field there with
 ## crops in every growth stage (see DebugField); `--inside` walks into the first house as soon
 ## as one exists (see `--house`); `--zoom=<z>` sets the camera zoom;
+## `--mouse-tile=<x>,<y>` pretends the mouse is always on that tile (for screenshots);
 ## `--camera-shift=<x>,<y>` moves the camera by that many art pixels, fractions included
 ## (to check smooth scrolling). PlayerView parses `--outfit=<n>` and
 ## `--pose=<direction>`, and F6 cycles the outfit (see there). BuildMode parses
@@ -65,6 +66,9 @@ func _ready() -> void:
 			_enter_first_house = true
 		elif arg.begins_with("--zoom="):
 			_start_zoom = float(arg.trim_prefix("--zoom="))
+		elif arg.begins_with("--mouse-tile="):
+			var tile := arg.trim_prefix("--mouse-tile=").split_floats(",")
+			_use_highlight.debug_mouse_tile = Vector2i(int(tile[0]), int(tile[1]))
 		elif arg.begins_with("--camera-shift="):
 			var shift := arg.trim_prefix("--camera-shift=").split_floats(",")
 			_camera_shift = Vector2(shift[0], shift[1])
@@ -78,7 +82,7 @@ func _ready() -> void:
 	_view.entities.add_child(_player_view)
 	_player_view.show_player(_state.player)
 	_view.add_child(_use_highlight)
-	_use_highlight.show_for(_state)
+	_use_highlight.show_for(_state, _camera)
 	add_child(_harvest_hud)
 	_interior_view.hide()
 	_world.add_child(_interior_view)
@@ -86,6 +90,9 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Decided before BuildMode sees the event: the click that places a house ends build mode,
+	# and must not also be a use click.
+	var can_use := _can_use()
 	# A SubViewport only gets the events that are pushed into it. That does not mark the
 	# event as handled here, so Main still sees what BuildMode consumed.
 	_world.push_input(event)
@@ -93,13 +100,20 @@ func _unhandled_input(event: InputEvent) -> void:
 		_fast_forward = not _fast_forward
 	elif event.is_action_pressed("interact") and not _is_fading:
 		_try_sleep()
-	elif event.is_action_pressed("use") and not _is_fading and not _build_mode.is_active():
-		if _state.use_facing_tile() == GameState.Use.HARVEST:
-			_harvest_hud.show_harvest(GameState.CROP, _state.harvest_count)
+	elif event.is_action_pressed("use") and can_use:
+		_use_on(_use_highlight.targeting())
+	elif event.is_action_pressed("use_click") and can_use:
+		var target := _use_highlight.targeting()
+		if target.source == Targeting.Source.MOUSE:
+			_use_on(target)
+		# A click also counts as the mouse being in use. One that wakes an idle mouse (the target
+		# is then the facing tile) does not act.
+		_use_highlight.note_mouse_activity()
 
 
 func _process(delta: float) -> void:
 	_tick_clock(delta)
+	_use_highlight.is_enabled = not _build_mode.is_active() and not _state.is_inside()
 	if not _is_fading:
 		var direction := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 		_state.player.move(_state.current_map, direction, delta)
@@ -115,6 +129,16 @@ func _process(delta: float) -> void:
 		_settled_frames = _settled_frames + 1 if _is_ready_to_shoot() else 0
 		if _settled_frames > SCREENSHOT_SETTLE_FRAMES:
 			_save_screenshot_and_quit()
+
+
+func _can_use() -> bool:
+	return not _is_fading and not _build_mode.is_active()
+
+
+## Uses the targeted tile if the player can reach it.
+func _use_on(target: Targeting) -> void:
+	if target.is_in_reach and _state.use_tile(target.tile) == GameState.Use.HARVEST:
+		_harvest_hud.show_harvest(GameState.CROP, _state.harvest_count)
 
 
 ## Where the camera looks. The player is drawn on the art pixel grid (rounded), the camera

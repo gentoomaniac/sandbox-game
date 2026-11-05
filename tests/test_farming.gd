@@ -43,6 +43,13 @@ func test_using_grass_tills_it_to_soil() -> void:
 	assert_eq(_world.tile_at(_tile).terrain, Tile.Terrain.SOIL)
 
 
+func test_use_tile_works_on_any_tile_as_reach_is_not_the_states_concern() -> void:
+	var far := _tile + Vector2i(0, 1)
+	assert_true(Vector2i(far - _state.player.tile()).abs().y > Targeting.REACH)
+	var expected := _state.use_at(far)
+	assert_eq(_state.use_tile(far), expected)
+
+
 func test_water_cannot_be_tilled() -> void:
 	_world.chunk_at(Chunk.world_to_chunk(_tile)).set_terrain(
 		Chunk.local_pos(_tile), Tile.Terrain.WATER
