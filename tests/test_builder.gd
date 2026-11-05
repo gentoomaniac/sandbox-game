@@ -84,7 +84,7 @@ func test_the_costs_are_the_buildings_from_the_file() -> void:
 		{ItemTypes.LOGS: 30, ItemTypes.STONE: 15, ItemTypes.CLAY: 15, ItemTypes.REEDS: 25}
 	)
 	_builder.choice = BuildingTypes.SHACK
-	assert_eq(_builder.costs(), {ItemTypes.LOGS: 20, ItemTypes.STONE: 5, ItemTypes.REEDS: 5})
+	assert_eq(_builder.costs(), {ItemTypes.LOGS: 20, ItemTypes.STONE: 5})
 
 
 func test_placing_takes_the_materials() -> void:
@@ -131,7 +131,7 @@ func test_a_refused_spot_takes_nothing_either() -> void:
 func test_shortfalls_say_how_many_are_missing() -> void:
 	_builder.choice = BuildingTypes.SHACK
 	_state.player.inventory.add(ItemTypes.LOGS, 8)
-	assert_eq(_builder.shortfalls(), {ItemTypes.LOGS: 12, ItemTypes.STONE: 5, ItemTypes.REEDS: 5})
+	assert_eq(_builder.shortfalls(), {ItemTypes.LOGS: 12, ItemTypes.STONE: 5})
 
 
 func test_the_nocost_cheat_waives_the_costs_and_takes_nothing() -> void:

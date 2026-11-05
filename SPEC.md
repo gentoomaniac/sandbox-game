@@ -552,7 +552,7 @@ Decided 2026-11-05. A text console for testing and cheats.
 - **Harvesting, reworked** (decided 2026-11-05; replaces drops straight into the inventory,
   stumps regrowing into trees and the generic sapling):
   - **Final resources lie on the ground** where they come off, as items you collect by
-    walking over them (a small pull towards the player in the last half tile). Final
+    walking over them (a pull towards the player from 1.25 tiles away; widened 2026-11-05). Final
     resources are logs (the item `wood` becomes `logs`), stone, clay, hay, all crop
     produce, and also what is picked by hand (berries, fibre) and seeds. They stay on the
     ground (saved) until collected; with a full inventory they stay where they are.
@@ -774,7 +774,7 @@ Decided 2026-11-05.
 - **Buildings cost materials:** logs, stone, clay and reeds (reeds for the thatch), taken
   from the inventory when the building is placed. The ghost shows the costs against what
   the player carries and refuses the spot while something is missing. No refunds or
-  demolishing yet. First numbers (tune in play): shack 20 logs, 5 stone, 0 clay, 5 reeds;
+  demolishing yet. First numbers (tune in play): shack 20 logs, 5 stone, no clay and no reeds (a plank roof);
   Kate 30 logs, 15 stone, 15 clay, 25 reeds; longhouse about twice the Kate; barn like the
   Kate with less clay.
 - **The hammer builds:** holding the hammer is build mode (the ghost follows the cursor,
