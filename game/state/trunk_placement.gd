@@ -14,17 +14,18 @@ static func lay(world: World, tree: WorldObject, player_tile: Vector2i) -> World
 	var sides: Array[Vector2i] = [Vector2i.RIGHT, Vector2i.LEFT]
 	if away.x != 0:
 		sides = [away, -away]
-	var trunk: WorldObject = null
+	# Candidates in the order of preference: the long ones, then the short ones.
+	var candidates: Array[WorldObject] = []
 	for side in sides:
 		# A long trunk's own tile is its left one, so on the left side that is two tiles over.
 		var origin := tree.pos + (side if side.x > 0 else side * 2)
-		trunk = WorldObject.new(WorldObjectTypes.trunk_type(tree.type, false), origin)
-		if _has_room(world, trunk, player_tile):
-			world.add_object(trunk)
-			return trunk
+		candidates.append(WorldObject.new(WorldObjectTypes.trunk_type(tree.type, false), origin))
 	sides.append_array([Vector2i.UP, Vector2i.DOWN])
 	for side in sides:
-		trunk = WorldObject.new(WorldObjectTypes.trunk_type(tree.type, true), tree.pos + side)
+		candidates.append(
+			WorldObject.new(WorldObjectTypes.trunk_type(tree.type, true), tree.pos + side)
+		)
+	for trunk in candidates:
 		if _has_room(world, trunk, player_tile):
 			world.add_object(trunk)
 			return trunk

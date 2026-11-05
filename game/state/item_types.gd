@@ -11,8 +11,8 @@ extends RefCounted
 ## - equip_slot: the Equipment slot it is worn in (wearables have a stack limit of 1), and
 ##   `layer_variant`, the variant of the character layer it shows (see Appearance.dress);
 ## - plants: seeds (of a crop or of a tree); the world object type that grows from them,
-##   `plants_on` the
-##   terrain it needs (soil if not given) and `plants_state` the state the new object starts with.
+##   `plants_on` the terrain it needs (soil if not given) and `plants_state` the state the new
+##   object starts with.
 
 const HOE := &"hoe"
 const AXE := &"axe"

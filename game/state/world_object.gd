@@ -152,6 +152,7 @@ func pass_night() -> bool:
 		else:
 			state.erase("days_until_bears")
 		return days_left <= 0
+	# A sapling of a tree grows up, a stump rots: both just count their days.
 	if _is_of_a_tree() or type_data().has("rots_after_days"):
 		state["days_grown"] = days_grown() + 1
 	return false

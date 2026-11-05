@@ -92,7 +92,7 @@ func test_a_trunk_blocks_walking_and_wants_the_axe_level_of_its_tree() -> void:
 	_fell_oak_from(Vector2i.LEFT)
 	assert_false(_world.is_walkable(_tile + Vector2i.RIGHT))
 	assert_false(_world.is_walkable(_tile + Vector2i(2, 0)))
-	var pine_trunk := WorldObjectTypes.TYPES[WorldObjectTypes.trunk_type(
+	var pine_trunk: Dictionary = WorldObjectTypes.TYPES[WorldObjectTypes.trunk_type(
 		WorldObjectTypes.PINE, false
 	)]
 	assert_eq(pine_trunk["harvest_level"], 2)

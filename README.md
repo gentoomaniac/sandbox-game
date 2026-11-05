@@ -51,7 +51,8 @@ You till the soil with the hoe, plant seeds, and harvest your crops. Crops grow 
 
 Use the axe on trees and the pickaxe on stones and boulders. A better tool needs fewer
 hits, and some resources need a better tool. A felled tree leaves a stump and a trunk
-to cut into logs; the stump rots away over about two weeks, and trees seed new saplings. Berry bushes bear fruit again a few days after picking, and shrubs and
+to cut into logs; the stump rots away over about two weeks, and trees seed new saplings.
+Berry bushes bear fruit again a few days after picking, and shrubs and
 ferns give fibre.
 
 ![A stump, a picked and a ripe berry bush and a sapling](docs/screenshots/forage.png)

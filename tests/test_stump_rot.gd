@@ -71,6 +71,16 @@ func test_the_stump_of_a_dead_tree_rots_away_and_leaves_nothing() -> void:
 	assert_null(_world.object_at(_tile))
 
 
+func test_a_stump_rots_away_in_an_unloaded_chunk_without_rolling_again() -> void:
+	var stump := _stump_of(&"")
+	var coords := Chunk.world_to_chunk(_tile)
+	_world.remove_chunk(coords)
+	_sleep_days(ROT_DAYS + 20)
+	_world.add_chunk(WorldGenerator.new(SEED).generate_chunk(coords))
+	assert_null(_world.object_at(_tile))
+	assert_eq(stump.type, WorldObjectTypes.STUMP)
+
+
 func test_rotting_goes_on_in_unloaded_chunks_and_through_a_save() -> void:
 	_stump_of(WorldObjectTypes.OAK)
 	_sleep_days(ROT_DAYS - 2)

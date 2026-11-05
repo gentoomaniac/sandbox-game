@@ -292,7 +292,7 @@ func pass_night(occupied_tiles: Array[Vector2i], weather: Weather) -> void:
 		elif object.has_rotted():
 			var sapling := object.rotted(clock.day)
 			if sapling == null:
-				remove_object(object.pos)
+				_take_off(object)
 			else:
 				replace_object(object, sapling)
 
@@ -311,8 +311,11 @@ func _dry_and_wet_soil(weather: Weather) -> void:
 		set_moisture(pos, moisture_at(pos) + rules.farming("rain_wets") * day.rain_hours - drying)
 
 
+## Takes an object off its tiles, in an unloaded chunk too (the edit keeps it off).
 func _take_off(object: WorldObject) -> void:
-	chunk_at(Chunk.world_to_chunk(object.pos)).remove_object(Chunk.local_pos(object.pos))
+	var chunk := chunk_at(Chunk.world_to_chunk(object.pos))
+	if chunk != null:
+		chunk.remove_object(Chunk.local_pos(object.pos))
 	_object_edits[object.pos] = null
 	for tile in object.tiles():
 		objects_changed.emit(tile)

@@ -46,7 +46,7 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 		return null
 	# JSON parsing gives numbers as floats.
 	var version: Variant = parsed.get("version")
-	if not (version is float and version >= 1 and version <= VERSION):
+	if not (version is float and version == int(version) and version >= 1 and version <= VERSION):
 		_reject(path, "save version %s, this game reads versions 1 to %d" % [version, VERSION])
 		return null
 	if not parsed.has("game"):
