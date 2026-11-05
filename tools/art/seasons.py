@@ -146,6 +146,10 @@ def remap(canvas, mapping):
     return [[mapping.get(name, name) for name in row] for row in canvas]
 
 
+def copy(canvas):
+    return [row[:] for row in canvas]
+
+
 def ground_rows(season, rows):
     """Terrain or decoration rows (the layers bottom to top) in a season. Water stays as it
     is: freezing it belongs to the weather."""
@@ -203,7 +207,7 @@ def _season_object(season, kind, variant, canvas, redraw):
         if kind in redraw:
             canvas = redraw[kind](variant)
         elif kind in ("spruce", "pine"):
-            canvas = remap(canvas, {})
+            canvas = copy(canvas)
             snow_caps(canvas, rng, *(_SNOW_CONIFER if kind == "spruce" else _SNOW_PINE), centre)
         elif kind == "berry_bush":
             canvas = remap(canvas, _SNOW_MOUND)
@@ -214,17 +218,17 @@ def _season_object(season, kind, variant, canvas, redraw):
             canvas = remap(canvas, _DRY_FERN)
             snow_caps(canvas, rng, {"straw", "reed", "olive"}, set(), 1, centre)
         elif kind in ("stone", "boulder", "stump"):
-            canvas = remap(canvas, {})
+            canvas = copy(canvas)
             snow_caps(canvas, rng, *{"stone": _SNOW_STONE, "boulder": _SNOW_BOULDER, "stump": _SNOW_STUMP}[kind], centre)
     return remap(canvas, {"shadow": _SHADOW_REMAPS[season]})
 
 
-def object_rows(season, kinds, rows, redraw):
-    """The object atlas rows in a season. `kinds` names each row; `redraw` maps a kind to a
+def object_rows(season, atlas, redraw):
+    """The object atlas rows in a season. `atlas` lists (kind, variants) per row; `redraw` maps a kind to a
     function that draws a variant from scratch where a remap is not enough (the bare oak)."""
     return [
         [_season_object(season, kind, variant, canvas, redraw) for variant, canvas in enumerate(row)]
-        for kind, row in zip(kinds, rows)
+        for kind, row in atlas
     ]
 
 
@@ -233,6 +237,7 @@ def snow_roof(canvas, rng, ridge_y, eaves_y, shade_x):
     covered from its top down to a ragged edge that leaves a little thatch at the eaves; the
     roof's own outline stays. Shading: a light band at the top, blue-grey towards the eaves,
     a lip at the edge with a darker underside, and one step darker right of `shade_x`."""
+    # Snow shades from lit to dark; `shade` indexes them and the shaded right side goes one step on.
     lit = ("snow_light", "snow", "snow_shadow", "snow_deep")
     edge_of_snow = 0
     for x in range(len(canvas[0])):
@@ -264,8 +269,9 @@ def house(season, canvas, ridge_y, eaves_y):
     """A house picture in a season: snow on the thatch in winter."""
     canvas = remap(canvas, {"shadow": _SHADOW_REMAPS[season]})
     if season == "winter":
+        # The roof's right of x 50 is in shade; the chimney's top is x 51 to 60 at row 2
+        # (see small_house in generate.py).
         snow_roof(canvas, random.Random("house"), ridge_y, eaves_y, 50)
-        # Snow on top of the chimney.
         for x in range(51, 61):
             canvas[2][x] = "snow_light"
     return canvas

@@ -1001,13 +1001,6 @@ BOULDERS = [[boulder(seed) for seed in (191, 192)]]
 STUMPS = [[stump(seed) for seed in (201, 202)]]
 
 
-# What each row of assets/objects.png holds, in order; the seasons treat each kind alike.
-OBJECT_KINDS = (
-    "oak", "stone", "fireplace", "sleeping_bag", "spruce", "pine", "dead_tree", "berry_bush",
-    "shrub", "sapling", "fern", "turnip", "boulder", "stump",
-)
-
-
 # Camp site objects (assets/objects.png rows 2 and 3).
 
 
@@ -1168,6 +1161,28 @@ def turnip_stages():
 
 
 TURNIP_STAGES = turnip_stages()
+
+
+def object_atlas():
+    """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
+    treat every kind alike, so kind and row come from one list."""
+    spruces, pines, dead_trees, berry_bushes, shrubs, saplings, ferns = vegetation()
+    return [
+        ("oak", OBJECTS[0]),
+        ("stone", OBJECTS[1]),
+        ("fireplace", CAMP_OBJECTS[0]),
+        ("sleeping_bag", CAMP_OBJECTS[1]),
+        ("spruce", spruces),
+        ("pine", pines),
+        ("dead_tree", dead_trees),
+        ("berry_bush", berry_bushes),
+        ("shrub", shrubs),
+        ("sapling", saplings),
+        ("fern", ferns),
+        ("turnip", TURNIP_STAGES),
+        ("boulder", BOULDERS[0]),
+        ("stump", STUMPS[0]),
+    ]
 
 
 # The player character (assets/character/<slot>_<variant>.png).
@@ -1939,8 +1954,7 @@ def main():
             assert all(None not in line for line in tile), f"{layer.__name__}: full tile has holes"
         terrain_rows.append(tiles)
         decoration_rows.append(decorations)
-    object_rows = OBJECTS + CAMP_OBJECTS + vegetation() + [TURNIP_STAGES] + BOULDERS + STUMPS
-    assert len(object_rows) == len(OBJECT_KINDS)
+    objects = object_atlas()
     houses = {"small_house": small_house(is_lit=False), "small_house_lit": small_house(is_lit=True)}
     redraws = {"oak": lambda variant: bare_oak(OAK_SEEDS[variant])}
     (ASSETS / "buildings").mkdir(exist_ok=True)
@@ -1950,7 +1964,7 @@ def main():
         to_image(seasons.ground_rows(season, terrain_rows)).save(ASSETS / f"terrain{suffix}.png")
         to_image(seasons.ground_rows(season, decoration_rows)).save(ASSETS / f"decorations{suffix}.png")
         to_image(
-            seasons.object_rows(season, OBJECT_KINDS, object_rows, redraws),
+            seasons.object_rows(season, objects, redraws),
             OBJECT_CELL_WIDTH,
             OBJECT_CELL_HEIGHT,
         ).save(ASSETS / f"objects{suffix}.png")
