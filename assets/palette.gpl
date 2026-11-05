@@ -1,0 +1,36 @@
+GIMP Palette
+Name: Sandbox Game
+Columns: 8
+#
+ 29  27  38	ink
+ 74  72  82	stone_dark
+119 115 122	stone
+168 163 156	stone_light
+ 38  64  44	green_deep
+ 52  84  51	green_dark
+ 70 112  61	green
+ 95 138  69	green_light
+130 163  82	green_bright
+ 92 102  52	olive
+128 122  64	reed
+176 160  94	straw
+ 58  41  32	soil_dark
+ 87  60  43	soil
+111  79  55	soil_mid
+140 106  75	soil_light
+ 79  68  54	mud_dark
+107  92  71	mud
+143 127  94	sand
+179 162 124	sand_light
+ 37  46  38	bog_dark
+ 56  67  47	bog
+ 43  69  97	water_deep
+ 56  92 121	water
+ 80 123 147	water_light
+146 180 189	foam
+168  64  46	ember
+220 122  55	flame
+238 194  90	gold
+241 230 194	cream
+111  76 145	arcane
+ 78 158 155	spirit

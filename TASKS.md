@@ -130,7 +130,7 @@ no visible seams.
 
 ## 5. Art pass 1: palette and terrain tiles
 
-- [ ] Done
+- [x] Done
 
 Depends on: 4.
 

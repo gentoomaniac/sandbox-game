@@ -1,25 +1,44 @@
 class_name WorldView
 extends Node2D
-## Renders a World with one TileMapLayer and streams chunks in and out around a focus.
+## Renders a World and streams chunks in and out around a focus.
 ##
-## One layer for the whole world (not one per chunk): tiles use world coordinates, and
-## loading or unloading a chunk is just filling or erasing its 32x32 cells, with no nodes
-## to create or free.
+## One TileMapLayer per terrain layer for the whole world (not per chunk), drawn as a dual
+## grid (see TerrainTileset): cell (x, y) of every layer is shifted half a tile up and left,
+## so its corners sit on world tiles (x - 1, y - 1) to (x, y). A chunk owns the cells whose
+## bottom-right tile is its own, so loading or unloading it fills or erases those cells,
+## with no nodes to create or free.
 
 const LOAD_RADIUS := 3
 const UNLOAD_RADIUS := 5
-## Generating a chunk takes ~2 ms and drawing it ~1 ms; this keeps a frame well under 16 ms.
-const MAX_LOADS_PER_FRAME := 2
+## Loading a chunk (generating it and drawing its dual-grid layers) takes ~4.5 ms, at
+## worst ~6.5 ms. One per frame keeps a frame well under 16 ms and still streams far
+## faster than the camera moves.
+const MAX_LOADS_PER_FRAME := 1
+
+## The 4 corner tiles of a cell, in mask order: top-left, top-right, bottom-left,
+## bottom-right.
+const CORNER_OFFSETS: Array[Vector2i] = [
+	Vector2i(-1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 0)
+]
 
 var world: World
+## True once every chunk around the focus is loaded.
+var is_settled := false
 var _generator: WorldGenerator
-var _layer := TileMapLayer.new()
 var _focus_chunk := Vector2i.ZERO
+var _tileset := TerrainTileset.new()
+## Indexed by TerrainTileset.Layer.
+var _layers: Array[TileMapLayer] = []
 
 
 func _ready() -> void:
-	_layer.tile_set = PlaceholderTileset.build()
-	add_child(_layer)
+	for layer in TerrainTileset.LAYER_COUNT:
+		var tile_map := TileMapLayer.new()
+		tile_map.name = TerrainTileset.Layer.keys()[layer].capitalize()
+		tile_map.tile_set = _tileset.tile_set
+		tile_map.position = -Vector2(TerrainTileset.TILE_SIZE, TerrainTileset.TILE_SIZE) / 2
+		add_child(tile_map)
+		_layers.append(tile_map)
 
 
 func show_world(world_to_show: World) -> void:
@@ -43,31 +62,93 @@ func _process(_delta: float) -> void:
 	var to_load: Array = plan["load"]
 	for coords: Vector2i in to_load.slice(0, MAX_LOADS_PER_FRAME):
 		_load_chunk(coords)
+	is_settled = to_load.is_empty()
 
 
 ## Redraws one tile after its state changed. Call it after any Chunk setter.
 func redraw_tile(world_pos: Vector2i) -> void:
-	var chunk := world.chunk_at(Chunk.world_to_chunk(world_pos))
-	if chunk != null:
-		_draw_tile(chunk, Chunk.local_pos(world_pos))
+	# The tile is a corner of the 4 cells around it.
+	for offset: Vector2i in CORNER_OFFSETS:
+		_redraw_cell(world_pos - offset)
 
 
 func _load_chunk(coords: Vector2i) -> void:
 	var chunk := _generator.generate_chunk(coords)
 	world.add_chunk(chunk)
+	var origin := Chunk.to_world(coords, Vector2i.ZERO)
+	# The corners of the chunk's cells: its own tiles plus the row above and the column to
+	# the left. Reading them once, mostly straight from the chunk, is several times faster
+	# than looking up 4 corners per cell through the world.
+	var size := Chunk.CHUNK_SIZE + 1
+	var corner_layers := PackedInt32Array()
+	corner_layers.resize(size * size)
+	for y in size:
+		for x in size:
+			var local := Vector2i(x - 1, y - 1)
+			if x == 0 or y == 0:
+				corner_layers[y * size + x] = _layer_at(origin + local)
+			else:
+				corner_layers[y * size + x] = TerrainTileset.LAYER_OF_TERRAIN[chunk.terrain_at(
+					local
+				)]
 	for y in Chunk.CHUNK_SIZE:
 		for x in Chunk.CHUNK_SIZE:
-			_draw_tile(chunk, Vector2i(x, y))
+			var top_left := y * size + x
+			var corners := PackedInt32Array(
+				[
+					corner_layers[top_left],
+					corner_layers[top_left + 1],
+					corner_layers[top_left + size],
+					corner_layers[top_left + size + 1]
+				]
+			)
+			_draw_cell_corners(origin + Vector2i(x, y), corners)
+	# The right and bottom neighbours' border cells drew this chunk's tiles with a fallback
+	# while it was missing. Now they can blend properly.
+	for i in Chunk.CHUNK_SIZE + 1:
+		_redraw_cell(origin + Vector2i(Chunk.CHUNK_SIZE, i))
+	for i in Chunk.CHUNK_SIZE:
+		_redraw_cell(origin + Vector2i(i, Chunk.CHUNK_SIZE))
 
 
 func _unload_chunk(coords: Vector2i) -> void:
+	var origin := Chunk.to_world(coords, Vector2i.ZERO)
 	for y in Chunk.CHUNK_SIZE:
 		for x in Chunk.CHUNK_SIZE:
-			_layer.erase_cell(Chunk.to_world(coords, Vector2i(x, y)))
+			for tile_map in _layers:
+				tile_map.erase_cell(origin + Vector2i(x, y))
 	world.remove_chunk(coords)
 
 
-## The one place a tile's state becomes a look.
-func _draw_tile(chunk: Chunk, local: Vector2i) -> void:
-	var atlas_cell := PlaceholderTileset.atlas_cell(chunk.terrain_at(local))
-	_layer.set_cell(Chunk.to_world(chunk.coords, local), PlaceholderTileset.SOURCE_ID, atlas_cell)
+## Redraws a cell if the chunk that owns it is loaded.
+func _redraw_cell(cell: Vector2i) -> void:
+	if not world.is_chunk_loaded(Chunk.world_to_chunk(cell)):
+		return
+	var corners := PackedInt32Array()
+	for offset: Vector2i in CORNER_OFFSETS:
+		corners.append(_layer_at(cell + offset))
+	_draw_cell_corners(cell, corners)
+
+
+## The one place tile state becomes a look: the layers of a cell's 4 corner tiles (in
+## CORNER_OFFSETS order, MISSING where not loaded) decide which layers it draws and with
+## which shapes.
+func _draw_cell_corners(cell: Vector2i, corners: PackedInt32Array) -> void:
+	TerrainTileset.fill_missing_corners(corners)
+	# Only the corners' own layers are drawn. The lowest one is full and hides everything
+	# below it, and a layer between two corner terrains would peek out from under the
+	# upper one's edge.
+	for layer in TerrainTileset.LAYER_COUNT:
+		if not corners.has(layer):
+			_layers[layer].erase_cell(cell)
+		else:
+			var mask := TerrainTileset.mask_for(corners, layer)
+			var atlas_cell := _tileset.atlas_cell(layer, mask, cell)
+			_layers[layer].set_cell(cell, TerrainTileset.SOURCE_ID, atlas_cell)
+
+
+func _layer_at(world_pos: Vector2i) -> int:
+	var chunk := world.chunk_at(Chunk.world_to_chunk(world_pos))
+	if chunk == null:
+		return TerrainTileset.MISSING
+	return TerrainTileset.LAYER_OF_TERRAIN[chunk.terrain_at(Chunk.local_pos(world_pos))]

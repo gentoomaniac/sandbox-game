@@ -5,10 +5,12 @@ GUT_VERSION := 9.7.1
 # Pinned. Bump only to a release that ships a GDScript build (some are C#-only).
 YATI_VERSION := 2.2.9
 GDTOOLKIT_VERSION := 4.5.0
+PILLOW_VERSION := 12.0.0
 
 VENV := .venv
 GDLINT := $(VENV)/bin/gdlint
 GDFORMAT := $(VENV)/bin/gdformat
+PYTHON := $(VENV)/bin/python
 GDSCRIPT_DIRS := game tests
 
 # Godot only finds addon classes (GUT) and new class_name scripts after an import
@@ -20,7 +22,7 @@ IMPORT := $(GODOT) --headless --quiet --import
 # reproducible, and it keeps third-party code out of our history and diffs.
 # The cost is that a fresh clone needs `make setup` (and network) before it runs.
 
-.PHONY: setup run test lint format export
+.PHONY: setup assets run screenshot test lint format export
 
 setup:
 	@missing=0; \
@@ -43,8 +45,10 @@ setup:
 			echo "WRONG VERSION: Godot $$found found, $(GODOT_VERSION) required (.godot-version)"; missing=1; \
 		fi; \
 	fi; \
-	if command -v python3 >/dev/null 2>&1 && [ ! -x $(GDLINT) ]; then \
-		python3 -m venv $(VENV) && $(VENV)/bin/pip install --quiet gdtoolkit==$(GDTOOLKIT_VERSION) || missing=1; \
+	if command -v python3 >/dev/null 2>&1 \
+		&& { [ ! -x $(GDLINT) ] || ! $(PYTHON) -c 'import PIL' 2>/dev/null; }; then \
+		python3 -m venv $(VENV) && $(VENV)/bin/pip install --quiet \
+			gdtoolkit==$(GDTOOLKIT_VERSION) pillow==$(PILLOW_VERSION) || missing=1; \
 	fi; \
 	if [ ! -d addons/gut ] && command -v curl >/dev/null 2>&1; then \
 		echo "Downloading GUT $(GUT_VERSION)"; \
@@ -64,9 +68,22 @@ setup:
 	if [ $$missing -ne 0 ]; then echo "Setup incomplete, see above."; exit 1; fi; \
 	echo "Setup complete."
 
+# Regenerates every PNG under assets/ and checks that they use only palette colours.
+assets:
+	$(PYTHON) tools/art/generate.py
+
 run:
 	$(IMPORT)
 	$(GODOT) --path .
+
+# Saves one frame of the game as PNG, e.g. make screenshot AT=40,-20 OUT=/tmp/shot.png
+# (AT is a world tile position).
+AT ?= 0,0
+OUT ?= $(CURDIR)/build/screenshot.png
+screenshot:
+	$(IMPORT)
+	mkdir -p $(dir $(OUT))
+	$(GODOT) --path . -- --at=$(AT) --screenshot=$(OUT)
 
 # On Godot builds without navigation (e.g. some Gentoo builds) GUT prints a harmless
 # 'Identifier "NavigationMeshGenerator" not declared' parse error. Tests still run.
