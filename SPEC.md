@@ -89,6 +89,15 @@ top of classic pixel art (details under "Lighting and look").
 - **Floodplain looks fertile:** lush, damp meadow, with a narrow muddy bank right at the
   water. It must not read as barren sand.
 
+### Saving (first version)
+
+- Save format: seed + world edits (terrain and objects) + buildings with their interiors +
+  player state (position, current map, home, appearance) + clock + harvest count. One JSON
+  file per world under `user://saves/`.
+- **Autosave when the player sleeps and when the game quits.** On start, the game loads
+  the save if there is one, otherwise it starts a new game (`--new-game` forces one).
+- No save menu or multiple slots yet; revisit when there is a main menu.
+
 ### Tile state (architecture)
 
 - A tile is **state, not a fixed picture**: terrain type plus dynamic properties such as
@@ -149,6 +158,10 @@ top of classic pixel art (details under "Lighting and look").
     bonus, not like escaping a penalty.
   - Other bed bonuses come later.
 - **Inventory and equipment.** Carried items have weight (see Energy).
+- **Scale between character and world (to fix, 2026-11-05):** the character looks too big
+  next to the other art. World art (trees, buildings, objects) gets bigger relative to the
+  16×16 tiles, and the character a few percent smaller. Exact numbers come from the art
+  review.
 - **Character sprite: 16×32 pixels** (one tile wide, two tall), built from **layers**
   (body, clothes, head/hair, held tool or weapon, later gear), so equipment can be shown
   by swapping or adding a layer instead of redrawing the character.

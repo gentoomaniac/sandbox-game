@@ -402,6 +402,34 @@ See SPEC.md "Lighting and look" (see-through occluders).
 - Fade in and out over a short time, so it doesn't pop.
 - Tests for the pure part (which objects occlude the player).
 
+# Milestone 2
+
+## 15. Saving and loading
+
+- [ ] Done
+
+See SPEC.md "Saving (first version)" and "World edits (architecture)".
+
+- One explicit serializer (`to_dict` / `from_dict` style) for each state class that needs
+  it: GameState, World (seed, terrain and object edits, buildings), Building (incl. its
+  interior if created), Interior, WorldObject (type, position, state), PlayerState
+  (position, facing, current map, home bed and map, appearance), GameClock, harvest count.
+- JSON file per world under `user://saves/`, with a format version number.
+- Autosave after sleeping and when the game quits; load on start if a save exists;
+  `--new-game` forces a new game.
+- Loading regenerates chunks from the seed and replays the edits, as streaming already
+  does.
+- Tests: round trip (save → load → equal state) for every class, including a crop's growth,
+  a removed tree, tilled soil, a building with a visited interior, home in the interior
+  bed; loading an older/unknown version fails with a clear error.
+
+## 16. Art scale pass
+
+- [ ] Done
+
+See SPEC.md "Player" (scale between character and world). Details follow from the art
+review (2026-11-05).
+
 ## Later (not part of the prototype)
 
 Camera follow mode: task 12 left two modes for the user to compare by feel (F7):
