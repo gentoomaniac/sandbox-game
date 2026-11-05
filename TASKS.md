@@ -840,6 +840,10 @@ Depends on 33. See SPEC.md "Scythe and tall grass" and "Shovel and clay".
   and drop the `max-public-methods` lint exception in world.gd.
 - Edits of objects that are back to their generated state (a healed tree) stay in the
   save; harmless, bounded by what the player touched.
+- Ground items (task 33 review): `World.ground_items_near` scans every pile each frame
+  (fine for tens, not hundreds; piles never expire): bucket per tile or chunk. A pile that
+  falls back onto a non-walkable source may be out of reach. A pulled pile moves straight
+  through walls and water in its last half tile.
 - Held art and use poses for axe, pickaxe, scythe and shovel.
 - A planted sapling can be picked up again by hand for free; decide whether that's fine.
 - The shovel could later dig up a young sapling to move it.
