@@ -50,12 +50,19 @@ func test_every_natural_object_type_is_generated() -> void:
 			var pos := Vector2i(x, y)
 			types[generator.object_type_at(pos, generator.terrain_at(pos))] = true
 	for object_type: StringName in WorldObjectTypes.TYPES:
-		# The camp is placed by the game, crops by the player, stumps by felling and furniture
+		# The camp is placed by the game, crops by the player, stumps and trunks by felling and furniture
 		# comes with interiors.
 		var type_data: Dictionary = WorldObjectTypes.TYPES[object_type]
 		var is_made_by_play := (
-			object_type
-			in [WorldObjectTypes.FIREPLACE, WorldObjectTypes.SLEEPING_BAG, WorldObjectTypes.STUMP]
+			(
+				object_type
+				in [
+					WorldObjectTypes.FIREPLACE,
+					WorldObjectTypes.SLEEPING_BAG,
+					WorldObjectTypes.STUMP
+				]
+			)
+			or str(object_type).ends_with("trunk")
 		)
 		if is_made_by_play or type_data.has("growth_stages") or type_data.has("interior_sprite"):
 			continue

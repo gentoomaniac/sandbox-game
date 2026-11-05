@@ -19,7 +19,8 @@ extends Node2D
 ## as one exists (see `--house`); `--drops=<x>,<y>` leaves what a felled tree, a mined stone, a
 ## harvested crop and a picked bush drop (see DebugDrops); `--forage=<x>,<y>` puts a stump,
 ## bushes and a sapling in a row from there and some of every new item in the inventory
-## (see DebugForage);
+## (see DebugForage); `--felled=<x>,<y>` shows trees felled from each side, with their stumps and
+## trunks, and tree seeds on the ground (see DebugFelled);
 ## `--console=<line>;<line>` runs those console commands at start and leaves the console
 ## open (see ConsoleView); `--zoom=<z>` sets the camera zoom; `--coordinates` shows the
 ## coordinates (F3); `--inventory` opens the character screen at start;
@@ -151,6 +152,9 @@ func _ready() -> void:
 		elif arg.begins_with("--forage="):
 			var tile := arg.trim_prefix("--forage=").split_floats(",")
 			DebugForage.create(_state, Vector2i(int(tile[0]), int(tile[1])))
+		elif arg.begins_with("--felled="):
+			var tile := arg.trim_prefix("--felled=").split_floats(",")
+			DebugFelled.create(_state.world, Vector2i(int(tile[0]), int(tile[1])))
 		elif arg.begins_with("--drops="):
 			var tile := arg.trim_prefix("--drops=").split_floats(",")
 			DebugDrops.create(_state.world, Vector2i(int(tile[0]), int(tile[1])))

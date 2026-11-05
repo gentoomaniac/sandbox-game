@@ -17,12 +17,12 @@ func test_a_hand_picks_fibre_and_the_plant_goes() -> void:
 	assert_eq(_dropped(ItemTypes.FIBRE), 4)
 
 
-func test_a_hand_picks_a_wild_sapling_into_a_sapling_item() -> void:
+func test_a_hand_picks_a_wild_sapling_into_an_acorn() -> void:
 	_place(WorldObjectTypes.SAPLING)
 	_hold(ItemTypes.NONE)
 	_state.use_facing_tile()
 	assert_null(_world.object_at(_tile))
-	assert_eq(_dropped(ItemTypes.SAPLING), 1)
+	assert_eq(_dropped(ItemTypes.ACORN), 1)
 
 
 func test_a_wild_sapling_does_not_grow() -> void:
@@ -66,11 +66,11 @@ func test_a_picked_bush_survives_the_chunk_and_the_save() -> void:
 # --- Planting ---
 
 
-func test_a_sapling_item_is_planted_on_grass_and_grows_into_an_oak() -> void:
-	_state.player.inventory.add(ItemTypes.SAPLING, 2)
-	_hold(ItemTypes.SAPLING)
+func test_an_acorn_is_planted_on_grass_and_grows_into_an_oak() -> void:
+	_state.player.inventory.add(ItemTypes.ACORN, 2)
+	_hold(ItemTypes.ACORN)
 	assert_eq(_state.use_facing_tile(), GameState.Use.PLANT)
-	assert_eq(_count(ItemTypes.SAPLING), 1)
+	assert_eq(_count(ItemTypes.ACORN), 1)
 	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.SAPLING)
 	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING, "the tile is taken")
 	_sleep_days(3)
@@ -79,10 +79,10 @@ func test_a_sapling_item_is_planted_on_grass_and_grows_into_an_oak() -> void:
 	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.OAK)
 
 
-func test_a_sapling_is_not_planted_on_soil_and_seeds_not_on_grass() -> void:
+func test_an_acorn_is_not_planted_on_soil_and_seeds_not_on_grass() -> void:
 	_world.set_terrain(_tile, Tile.Terrain.SOIL)
-	_state.player.inventory.add(ItemTypes.SAPLING, 1)
-	_hold(ItemTypes.SAPLING)
+	_state.player.inventory.add(ItemTypes.ACORN, 1)
+	_hold(ItemTypes.ACORN)
 	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
 	_world.set_terrain(_tile, Tile.Terrain.GRASS)
 	_hold(ItemTypes.TURNIP_SEEDS)

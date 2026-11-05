@@ -22,6 +22,6 @@ static func create(state: GameState, origin: Vector2i) -> void:
 		state.world.remove_object(object.pos)
 		state.world.add_object(object)
 	for item: StringName in [
-		ItemTypes.LOGS, ItemTypes.STONE, ItemTypes.FIBRE, ItemTypes.BERRIES, ItemTypes.SAPLING
+		ItemTypes.LOGS, ItemTypes.STONE, ItemTypes.FIBRE, ItemTypes.BERRIES, ItemTypes.ACORN
 	]:
 		state.player.inventory.add(item, 7)

@@ -222,9 +222,9 @@ func pass_out() -> void:
 
 
 ## What `use` would do on a tile of the world (nothing inside) with the held item: a hoe
-## tills grass, seeds plant on soil and a sapling on grass, a watering can wets dry tilled soil,
-## an empty hand harvests a ripe crop, clears a dead one or picks a bush, an axe or pickaxe hits
-## what it cuts or mines.
+## tills grass, crop seeds plant on soil and tree seeds on grass, a watering can wets dry tilled
+## soil, an empty hand harvests a ripe crop, clears a dead one or picks a bush, an axe or
+## pickaxe hits what it cuts or mines.
 func use_at(world_pos: Vector2i) -> Use:
 	if is_inside():
 		return Use.NOTHING
@@ -296,7 +296,7 @@ func _do_use(target: Vector2i) -> Use:
 				world.change_object(plant)
 			else:
 				world.remove_object(target)
-			world.drop_items(target, plant.type_data()["drops"])
+			world.drop_items(target, plant.picked_drops())
 		Use.HIT:
 			return _hit(world.object_at(target))
 	return use
@@ -326,17 +326,17 @@ func _use_by_hand(object: WorldObject) -> Use:
 	return Use.FORAGE if object.is_forageable() and not world.is_bare(object) else Use.NOTHING
 
 
-## Hits an object with the held tool. The hit that finishes it leaves what it leaves and
-## drops its drops around it.
+## Hits an object with the held tool. The hit that finishes it leaves what it leaves (a felled
+## tree a stump and a trunk, see TrunkPlacement) and drops its drops around it.
 func _hit(object: WorldObject) -> Use:
 	var power := ItemTypes.tool_power(player.inventory.held_item())
 	if not object.is_finished_by(power):
 		world.hit_object(object, power)
 		return Use.HIT
 	var object_type := object.type_data()
-	var drops: Dictionary = object_type["drops"].duplicate()
-	if _rolls_sapling(object):
-		drops[ItemTypes.SAPLING] = 1
+	var drops: Dictionary = object_type.get("drops", {}).duplicate()
+	if _rolls_seed(object):
+		drops[object_type["seed"]] = 1
 	if not object_type.has("leaves"):
 		world.remove_object(object.pos)
 	else:
@@ -344,6 +344,7 @@ func _hit(object: WorldObject) -> Use:
 		if object_type.get("regrows", false):
 			stump.state["tree"] = str(object.type)
 		world.replace_object(object, stump)
+		TrunkPlacement.lay(world, object, player.tile())
 	world.drop_items(object.pos, drops)
 	# The finishing hit replaces or removes the object instead of `hit_object`, which emits
 	# this for the other hits; the view still shakes and throws particles for it.
@@ -351,12 +352,11 @@ func _hit(object: WorldObject) -> Use:
 	return Use.HIT
 
 
-## Whether felling this tree today also gives a sapling. The same tree on the same day always
+## Whether felling this tree today also gives its seed. The same tree on the same day always
 ## rolls the same.
-func _rolls_sapling(tree: WorldObject) -> bool:
+func _rolls_seed(tree: WorldObject) -> bool:
 	return (
-		PositionHash.of(tree.pos, clock.day) % 100
-		< tree.type_data().get("sapling_chance", 0.0) * 100
+		PositionHash.of(tree.pos, clock.day) % 100 < tree.type_data().get("seed_chance", 0.0) * 100
 	)
 
 

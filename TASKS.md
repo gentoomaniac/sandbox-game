@@ -796,7 +796,7 @@ See SPEC.md "Harvesting, reworked". Can run alongside 32.
 
 ## 34. Trees leave trunks, stumps rot, seeds per species
 
-- [ ] Done
+- [x] Done
 
 Depends on 33. See SPEC.md "Harvesting, reworked".
 

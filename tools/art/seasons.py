@@ -195,6 +195,7 @@ _SNOW_BUSH = ({"mud", "mud_dark", "soil_dark"}, {"green_deep"}, 5)
 _SNOW_STONE = ({"stone_light", "stone"}, set(), 2)
 _SNOW_BOULDER = ({"stone_light", "stone", "green_light", "green", "olive"}, set(), 3)
 _SNOW_STUMP = ({"sand_light", "sand", "straw"}, set(), 3)
+_SNOW_TRUNK = ({"soil_light", "soil_mid", "sand", "mud", "sand_light"}, set(), 2)
 _THATCH = {"straw", "sand_light", "sand", "gold", "dry_light", "mud"}
 # Thatch rows left showing under the snow at the eaves.
 _THATCH_AT_EAVES = 4
@@ -360,10 +361,10 @@ def _winter_object(look, kind, variant, canvas, redraw, rng, centre):
         if has_snow:
             snow_caps(canvas, rng, {"straw", "reed", "olive"}, set(), 1, centre)
         return canvas
-    if kind in ("stone", "boulder", "stump"):
+    if kind in ("stone", "boulder", "stump") or kind.endswith("trunk"):
         if has_snow:
             canvas = copy(canvas)
-            spec = {"stone": _SNOW_STONE, "boulder": _SNOW_BOULDER, "stump": _SNOW_STUMP}[kind]
+            spec = {"stone": _SNOW_STONE, "boulder": _SNOW_BOULDER, "stump": _SNOW_STUMP}.get(kind, _SNOW_TRUNK)
             snow_caps(canvas, rng, *cap(spec), centre)
             return canvas
         return remap(canvas, _FROST_STONE) if is_frosty else canvas

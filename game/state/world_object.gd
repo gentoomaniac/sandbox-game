@@ -96,23 +96,46 @@ func pick() -> void:
 	state["days_until_bears"] = type_data()["regrow_days"]
 
 
-## A stump or sapling that grows back into a tree remembers which one in `state["tree"]`.
-func _is_growing_back() -> bool:
+## A stump or sapling of a tree that can grow remembers which one in `state["tree"]`.
+func _is_of_a_tree() -> bool:
 	return state.has("tree")
 
 
+## Whether a sapling has grown up. One without a tree in its state (a wild one) never does.
 func is_mature() -> bool:
-	return _is_growing_back() and days_grown() >= type_data()["matures_after_days"]
+	return (
+		_is_of_a_tree()
+		and type_data().has("matures_after_days")
+		and days_grown() >= type_data()["matures_after_days"]
+	)
 
 
-## What this one turns into when it matures: the next stage of the tree it grows back into.
+## The tree this sapling grows into.
 func matured() -> WorldObject:
-	var stage: Variant = type_data().get("matures_into")
-	if stage == null:
-		return WorldObject.new(StringName(state["tree"]), pos)
-	var next := WorldObject.new(stage, pos)
-	next.state["tree"] = state["tree"]
-	return next
+	return WorldObject.new(StringName(state["tree"]), pos)
+
+
+## Whether a stump has rotted away.
+func has_rotted() -> bool:
+	return type_data().has("rots_after_days") and days_grown() >= type_data()["rots_after_days"]
+
+
+## What a rotted stump leaves: a sapling of its tree with the type's chance (the same stump on
+## the same day always rolls the same), or null, nothing.
+func rotted(day: int) -> WorldObject:
+	var chance: float = type_data()["rots_into_sapling_chance"]
+	if not _is_of_a_tree() or PositionHash.of(pos, day) % 100 >= chance * 100:
+		return null
+	var sapling := WorldObject.new(WorldObjectTypes.SAPLING, pos)
+	sapling.state["tree"] = state["tree"]
+	return sapling
+
+
+## What a hand picks off it, item id to count. A sapling of a tree gives that tree's seed.
+func picked_drops() -> Dictionary:
+	if type == WorldObjectTypes.SAPLING and _is_of_a_tree():
+		return {WorldObjectTypes.TYPES[StringName(state["tree"])]["seed"]: 1}
+	return type_data()["drops"]
 
 
 ## Lets one night pass: damage heals, a picked bush bears again soon, something that grows back
@@ -129,7 +152,7 @@ func pass_night() -> bool:
 		else:
 			state.erase("days_until_bears")
 		return days_left <= 0
-	if _is_growing_back():
+	if _is_of_a_tree() or type_data().has("rots_after_days"):
 		state["days_grown"] = days_grown() + 1
 	return false
 

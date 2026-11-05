@@ -17,7 +17,10 @@ static func create(world: World, origin: Vector2i) -> void:
 	var stump := WorldObject.new(WorldObjectTypes.STUMP, oak_pos)
 	stump.state["tree"] = str(WorldObjectTypes.OAK)
 	world.add_object(stump)
-	world.drop_items(oak_pos, WorldObjectTypes.TYPES[WorldObjectTypes.OAK]["drops"])
+	var oak_trunk: Dictionary = WorldObjectTypes.TYPES[WorldObjectTypes.trunk_type(
+		WorldObjectTypes.OAK, false
+	)]
+	world.drop_items(oak_pos, oak_trunk["drops"])
 	world.drop_items(stone_pos, WorldObjectTypes.TYPES[WorldObjectTypes.STONE]["drops"])
 	var crop := WorldObject.new(WorldObjectTypes.TURNIP, crop_pos)
 	world.drop_items(crop_pos, CropLife.harvest_of(crop))

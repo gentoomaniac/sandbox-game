@@ -458,6 +458,13 @@ Decided 2026-11-05. A text console for testing and cheats.
     logs (e.g. oak 3, spruce 3, pine 4, dead tree 2) and chops out the stump for 1 log.
     Living trees sometimes leave a seed of their species on the ground (acorn, spruce cone,
     pine cone; about 25 %).
+  - **Trunk placement** (decided 2026-11-05): a trunk always lies horizontally (there is no
+    vertical art). With the player left or right of the tree it lies on the far side of the
+    stump; with the player above or below it lies to the right of the stump, or to the left if
+    the right has no room. With no room for 2×1 a 1×1 trunk lies on any free tile beside the
+    stump (never the player's), and with none there is no trunk. The numbers are in
+    world_object_types.gd: trunk hit points (oak 4, spruce 3, pine 5, dead tree 2), rot after 14
+    days, sapling chance 30 %, seed chance 25 %.
   - **Stumps don't regrow into trees.** A stump left alone rots away over about two weeks;
     when it is gone it has a chance (about 30 %) to leave a sapling of its tree's species
     in its place.

@@ -10,6 +10,7 @@ var _player_start: Vector2
 
 func before_each() -> void:
 	super.before_each()
+	_make_room()
 	_player_start = _state.player.position
 
 
@@ -36,10 +37,13 @@ func _fill_inventory_completely() -> void:
 # --- Dropping ---
 
 
-func test_felling_drops_the_logs_on_the_ground_not_in_the_inventory() -> void:
+func test_cutting_a_trunk_drops_the_logs_on_the_ground_not_in_the_inventory() -> void:
 	_place(WorldObjectTypes.OAK)
 	_hit(ItemTypes.AXE, OAK_HITS)
-	assert_eq(_dropped(ItemTypes.LOGS), 4)
+	_state.player.position += Vector2(1, 0)
+	_state.player.facing = Vector2i.DOWN
+	_hit(ItemTypes.AXE, 4)
+	assert_eq(_dropped(ItemTypes.LOGS), 3)
 	assert_eq(_count(ItemTypes.LOGS), 0)
 
 
@@ -114,11 +118,14 @@ func test_a_source_with_no_walkable_tile_around_drops_on_itself() -> void:
 		assert_eq(Vector2i(ground_item.position.floor()), _tile)
 
 
-func test_the_drops_of_a_felled_tree_avoid_its_stump() -> void:
+func test_drops_beside_a_felled_tree_avoid_its_stump_and_trunk() -> void:
 	_place(WorldObjectTypes.OAK)
 	_hit(ItemTypes.AXE, OAK_HITS)
+	_world.drop_items(_tile, {ItemTypes.LOGS: 8})
+	assert_eq(_dropped(ItemTypes.LOGS), 8)
+	var blocked: Array[Vector2i] = [_tile, _tile + Vector2i.RIGHT, _tile + Vector2i(2, 0)]
 	for ground_item in _world.ground_items():
-		assert_ne(Vector2i(ground_item.position.floor()), _tile)
+		assert_does_not_have(blocked, Vector2i(ground_item.position.floor()))
 
 
 # --- Collecting ---

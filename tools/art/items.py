@@ -211,20 +211,54 @@ def berries():
     return outlined(picture)
 
 
-def sapling():
-    """A seedling with a root ball, two leaves on a thin stem."""
+def acorn():
+    """An acorn: a round nut with a cap and a short stem."""
     picture = canvas()
-    rect(picture, 5, 10, 10, 13, "soil_mid")
-    rect(picture, 4, 11, 11, 12, "soil_mid")
-    rect(picture, 5, 12, 10, 13, "soil")
-    rect(picture, 5, 10, 7, 10, "soil_light")
-    line(picture, 8, 9, 8, 4, "soil_light")
-    for x, y in ((9, 3), (10, 3), (11, 4), (10, 5), (9, 4)):
-        pixel(picture, x, y, "green_light")
-    for x, y in ((6, 5), (5, 6), (6, 6), (7, 6), (6, 7)):
-        pixel(picture, x, y, "green")
-    pixel(picture, 8, 2, "green_bright")
-    pixel(picture, 8, 3, "green_light")
+    rect(picture, 5, 8, 10, 12, "straw")
+    rect(picture, 6, 13, 9, 13, "straw")
+    pixel(picture, 7, 14, "sand")
+    pixel(picture, 8, 14, "sand")
+    rect(picture, 9, 9, 10, 12, "sand")
+    pixel(picture, 6, 9, "sand_light")
+    pixel(picture, 6, 10, "sand_light")
+    rect(picture, 4, 5, 11, 7, "soil_mid")
+    rect(picture, 5, 4, 10, 4, "soil_mid")
+    rect(picture, 4, 7, 11, 7, "soil")
+    for x in (5, 7, 9):
+        pixel(picture, x, 6, "soil")
+    rect(picture, 8, 2, 8, 3, "soil")
+    return outlined(picture)
+
+
+def spruce_cone():
+    """A long, narrow cone hanging from a twig, its scales in rows."""
+    picture = canvas()
+    widths = (2, 4, 6, 6, 6, 6, 6, 4, 4, 2)
+    for row, width in enumerate(widths):
+        for x in range(8 - width // 2, 8 + width // 2):
+            picture[3 + row][x] = "soil_mid" if (x + row) % 2 == 0 else "soil"
+    rect(picture, 5, 3, 6, 3, "soil_light")
+    pixel(picture, 5, 5, "soil_light")
+    pixel(picture, 5, 8, "soil_light")
+    line(picture, 8, 2, 8, 1, "green_dark")
+    pixel(picture, 9, 1, "green")
+    pixel(picture, 10, 1, "green_light")
+    return outlined(picture)
+
+
+def pine_cone():
+    """A fat, rounded cone with open, pale-edged scales."""
+    picture = canvas()
+    widths = (4, 6, 8, 8, 8, 8, 6, 4, 2)
+    for row, width in enumerate(widths):
+        for x in range(8 - width // 2, 8 + width // 2):
+            picture[4 + row][x] = "mud" if (x + row) % 2 == 0 else "mud_dark"
+            if (x + row) % 2 == 0 and row % 2 == 1:
+                picture[4 + row][x] = "sand"
+    rect(picture, 5, 4, 6, 4, "sand_light")
+    rect(picture, 7, 2, 8, 3, "soil")
+    pixel(picture, 9, 2, "green_dark")
+    pixel(picture, 10, 2, "green")
     return outlined(picture)
 
 
@@ -336,7 +370,9 @@ ICONS = {
     "stone": stone(),
     "fibre": fibre(),
     "berries": berries(),
-    "sapling": sapling(),
+    "acorn": acorn(),
+    "spruce_cone": spruce_cone(),
+    "pine_cone": pine_cone(),
     "tunic": tunic(),
     "shirt": shirt(),
     "trousers": trousers(),

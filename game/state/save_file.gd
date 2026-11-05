@@ -1,10 +1,9 @@
 class_name SaveFile
 extends RefCounted
-## The save on disk: one JSON file per world, `{"version": 3, "game": <GameState.to_dict>}`.
-## Older saves still load, upgraded step by step (see `_upgrade_from_version_1` and
-## `_upgrade_from_version_2`).
+## The save on disk: one JSON file per world, `{"version": 4, "game": <GameState.to_dict>}`.
+## Older saves still load, upgraded step by step (see `_upgrade_from_version_1` and so on).
 
-const VERSION := 3
+const VERSION := 4
 const DEFAULT_PATH := "user://saves/world.json"
 ## What a save we can't use is renamed to, so it is never overwritten silently.
 const BACKUP_SUFFIX := ".bak"
@@ -45,9 +44,9 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 	if not parsed is Dictionary:
 		_reject(path, "not a save file")
 		return null
-	# `==` also accepts the 1.0 that JSON parsing gives.
+	# JSON parsing gives numbers as floats.
 	var version: Variant = parsed.get("version")
-	if version != 1 and version != 2 and version != VERSION:
+	if not (version is float and version >= 1 and version <= VERSION):
 		_reject(path, "save version %s, this game reads versions 1 to %d" % [version, VERSION])
 		return null
 	if not parsed.has("game"):
@@ -55,8 +54,10 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 		return null
 	if version == 1:
 		_upgrade_from_version_1(parsed["game"])
-	if version == 1 or version == 2:
+	if version <= 2:
 		_upgrade_from_version_2(parsed["game"])
+	if version <= 3:
+		_upgrade_from_version_3(parsed["game"])
 	return GameState.from_dict(parsed["game"])
 
 
@@ -76,6 +77,16 @@ static func _upgrade_from_version_2(game: Dictionary) -> void:
 	for stack: Variant in game["player"]["inventory"]["slots"]:
 		if stack != null and stack["item"] == "wood":
 			stack["item"] = "logs"
+
+
+## Version 3 had one kind of sapling item, which planted an oak: now the acorn does.
+static func _upgrade_from_version_3(game: Dictionary) -> void:
+	for stack: Variant in game["player"]["inventory"]["slots"]:
+		if stack != null and stack["item"] == "sapling":
+			stack["item"] = "acorn"
+	for ground_item: Dictionary in game["world"]["ground_items"]:
+		if ground_item["item"] == "sapling":
+			ground_item["item"] = "acorn"
 
 
 static func _reject(path: String, reason: String) -> void:

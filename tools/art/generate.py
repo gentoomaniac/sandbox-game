@@ -19,7 +19,7 @@ drawn on top of world tiles of that layer. A row may be empty.
 assets/objects.png: world objects, 48x80 cells (OBJECT_CELL_WIDTH x OBJECT_CELL_HEIGHT). Row 0
 is the oak (3 variants), row 1 the stone (2 variants), then the camp site: row 2 the fireplace,
 row 3 the sleeping bag (1 variant each), then the vegetation rows from 4 (see vegetation()),
-row 11 the boulder and row 12 the stump. The rows and
+row 11 the boulder, row 12 the stump and rows 13 to 20 the trunks (see trunks.py). The rows and
 counts are in game/state/world_object_types.gd.
 An object stands on one tile: the bottom centre 16x16 of its cell (x 16..31, y 64..79). A tree's
 crown rises above that, over the tiles around it. An object on several tiles (boulder 2x1,
@@ -62,6 +62,7 @@ import crop_icons
 import crops
 import items
 import seasons
+import trunks
 import ui
 
 ASSETS = Path(__file__).resolve().parents[2] / "assets"
@@ -1117,7 +1118,7 @@ def object_atlas():
         ("fern", ferns),
         ("boulder", BOULDERS[0]),
         ("stump", STUMPS[0]),
-    ]
+    ] + trunks.rows()
 
 
 # The player character (assets/character/<slot>_<variant>.png).

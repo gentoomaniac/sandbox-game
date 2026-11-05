@@ -20,14 +20,22 @@ extends RefCounted
 ##   file) of at least its harvest level takes off the tool's power, and when none are left it
 ##   gives its `drops` (item id to count, plain names for the same reason). Without `hp`,
 ##   `drops` are picked by hand, which removes the object;
-## - sapling_chance: a felled tree also drops a sapling item with this chance;
+## - seed and seed_chance: a felled tree also drops this item with this chance (it plants a
+##   sapling of the tree; the dead tree has no seed);
 ## - leaves: what stands in its place once it is cut down;
-## - regrows: a tree that its stump grows back into (see matures_after_days);
+## - regrows: its stump and the saplings of its seed remember the tree in the state `tree`, and
+##   so can leave a sapling of it (see rots_after_days);
+## - trunk: what felling leaves beside the stump, as `logs` (dropped when it is cut up) and `hp`.
+##   The trunk's own types come from it (see `_with_trunks`, `trunk_type`): a trunk on 2x1 tiles
+##   and a short one on 1x1, for when there is no room; they need the tree's harvest level.
+##   Their pictures are the rows after the stump's in the atlas, long then short per tree;
 ## - regrow_days: picking it by hand does not remove it: it looks picked and gives its drops
 ##   again after this many days (berry bush); the atlas row then has the picked looks after
 ##   the normal ones, `variants` of each;
-## - matures_after_days: with the state `tree` set (a stump or sapling that regrows) it is
-##   replaced after this many days by `matures_into`, or by the tree named in `tree`;
+## - matures_after_days: with the state `tree` set (a sapling that grows) it is replaced after
+##   this many days by `matures_into`, or by the tree named in `tree`;
+## - rots_after_days: it is gone after this many days (a stump), but for the chance
+##   `rots_into_sapling_chance` that a sapling of the tree in its state `tree` stands in its place;
 ## - seasonal: it follows a yearly curve of the same name (see Vegetation): DORMANCY, it is
 ##   gone from the world while the density is below its threshold (a fern), or FRUIT, it
 ##   looks picked and can't be picked while it is (a berry bush). Woody plants have none;
@@ -64,13 +72,17 @@ const FRUIT := &"fruit"
 ## object that covers a tile.
 const MAX_FOOTPRINT := Vector2i(2, 2)
 
+## The first atlas row of the trunks: the row after the last of the other types.
+const _FIRST_TRUNK_ROW := 13
+
 const _OTHER_TYPES := {
 	OAK:
 	{
 		"hp": 5,
 		"tool": &"axe",
-		"drops": {&"logs": 4},
-		"sapling_chance": 0.25,
+		"seed": &"acorn",
+		"seed_chance": 0.25,
+		"trunk": {"logs": 3, "hp": 4},
 		"leaves": STUMP,
 		"regrows": true,
 		"footprint": Vector2i(1, 1),
@@ -115,8 +127,9 @@ const _OTHER_TYPES := {
 	{
 		"hp": 4,
 		"tool": &"axe",
-		"drops": {&"logs": 4},
-		"sapling_chance": 0.25,
+		"seed": &"spruce_cone",
+		"seed_chance": 0.25,
+		"trunk": {"logs": 3, "hp": 3},
 		"leaves": STUMP,
 		"regrows": true,
 		"footprint": Vector2i(1, 1),
@@ -130,8 +143,9 @@ const _OTHER_TYPES := {
 	{
 		"hp": 7,
 		"tool": &"axe",
-		"drops": {&"logs": 5},
-		"sapling_chance": 0.25,
+		"seed": &"pine_cone",
+		"seed_chance": 0.25,
+		"trunk": {"logs": 4, "hp": 5},
 		"leaves": STUMP,
 		"regrows": true,
 		"footprint": Vector2i(1, 1),
@@ -145,7 +159,7 @@ const _OTHER_TYPES := {
 	{
 		"hp": 3,
 		"tool": &"axe",
-		"drops": {&"logs": 2},
+		"trunk": {"logs": 2, "hp": 2},
 		"leaves": STUMP,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": true,
@@ -176,7 +190,7 @@ const _OTHER_TYPES := {
 	},
 	SAPLING:
 	{
-		"drops": {&"sapling": 1},
+		"drops": {&"acorn": 1},
 		"matures_after_days": 4,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": false,
@@ -215,8 +229,8 @@ const _OTHER_TYPES := {
 		"hp": 2,
 		"tool": &"axe",
 		"drops": {&"logs": 1},
-		"matures_after_days": 3,
-		"matures_into": SAPLING,
+		"rots_after_days": 14,
+		"rots_into_sapling_chance": 0.3,
 	},
 	SMALL_BED:
 	{
@@ -267,7 +281,12 @@ const _OTHER_TYPES := {
 
 ## Every type: the fixed ones above and the crops of data/crops.cfg.
 # The name is that of a constant, but crop types are only known once the file is read.
-static var TYPES := _with_crops(_OTHER_TYPES)  # gdlint: ignore=class-variable-name
+static var TYPES := _with_trunks(_with_crops(_OTHER_TYPES))  # gdlint: ignore=class-variable-name
+
+
+## The type of the trunk a felled tree leaves: the long one on 2x1 tiles, or the short one on 1x1.
+static func trunk_type(tree: StringName, is_short: bool) -> StringName:
+	return StringName("%s_%s" % [tree, "short_trunk" if is_short else "trunk"])
 
 
 static func _with_crops(other_types: Dictionary) -> Dictionary:
@@ -282,4 +301,27 @@ static func _with_crops(other_types: Dictionary) -> Dictionary:
 		crop_type["harvest_level"] = 0
 		crop_type["growth_stages"] = CropRules.STAGES
 		types[crop_id] = crop_type
+	return types
+
+
+## Adds the trunk types of the trees that have a `trunk`, as the data of the tree says.
+static func _with_trunks(other_types: Dictionary) -> Dictionary:
+	var types := other_types.duplicate()
+	var row := _FIRST_TRUNK_ROW
+	for tree: StringName in other_types:
+		var tree_data: Dictionary = other_types[tree]
+		if not tree_data.has("trunk"):
+			continue
+		for is_short in [false, true]:
+			types[trunk_type(tree, is_short)] = {
+				"hp": tree_data["trunk"]["hp"],
+				"tool": tree_data["tool"],
+				"drops": {&"logs": tree_data["trunk"]["logs"]},
+				"footprint": Vector2i(1, 1) if is_short else Vector2i(2, 1),
+				"blocks_walking": true,
+				"harvest_level": tree_data["harvest_level"],
+				"atlas_row": row,
+				"variants": 2,
+			}
+			row += 1
 	return types

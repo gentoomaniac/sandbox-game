@@ -269,10 +269,9 @@ func change_object(object: WorldObject) -> void:
 
 ## Lets a night pass over everything the player changed, in unloaded chunks too: the soil
 ## dries and rain wets it, crops live through the day that ended (in the weather of their
-## tile), damage heals, picked bushes bear again, stumps and saplings grow back. Only edits
+## tile), damage heals, picked bushes bear again, saplings grow up and stumps rot away. Only edits
 ## change like this (a hit, a tilling or a planting makes one), so they are all in the edits.
-## A stump or sapling does not turn into something that blocks walking on a tile in
-## `occupied_tiles`: it waits a day.
+## A sapling does not turn into a tree on a tile in `occupied_tiles`: it waits a day.
 func pass_night(occupied_tiles: Array[Vector2i], weather: Weather) -> void:
 	_dry_and_wet_soil(weather)
 	for object: WorldObject in _object_edits.values():
@@ -290,6 +289,12 @@ func pass_night(occupied_tiles: Array[Vector2i], weather: Weather) -> void:
 			var next := object.matured()
 			if not (next.blocks_walking() and occupied_tiles.has(next.pos)):
 				replace_object(object, next)
+		elif object.has_rotted():
+			var sapling := object.rotted(clock.day)
+			if sapling == null:
+				remove_object(object.pos)
+			else:
+				replace_object(object, sapling)
 
 
 ## Rain wets the tilled soil and the day dries it, as the weather of the day that ended says.

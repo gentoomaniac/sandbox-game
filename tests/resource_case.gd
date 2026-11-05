@@ -21,6 +21,16 @@ func before_each() -> void:
 	_state.player.facing = Vector2i.DOWN
 
 
+## Clears the row of the tile of what stands on it, two tiles to each side, and makes it grass:
+## room for the trunk of a felled tree.
+func _make_room() -> void:
+	for x in range(-2, 3):
+		var pos := _tile + Vector2i(x, 0)
+		if pos != _tile:
+			_world.remove_object(pos)
+		_world.set_terrain(pos, Tile.Terrain.GRASS)
+
+
 ## Berry bushes bear and ferns stand, whatever their thresholds.
 func _set_midsummer() -> void:
 	_state.clock.day = MIDSUMMER

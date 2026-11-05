@@ -42,3 +42,20 @@ func test_a_current_save_keeps_its_ground_items() -> void:
 
 	assert_eq(restored.world.ground_count_of(ItemTypes.LOGS), 2)
 	assert_eq(restored.world.ground_items()[0].position, Vector2(1.5, 2.25))
+
+
+func test_a_version_3_save_loads_with_its_saplings_as_acorns() -> void:
+	var state := GameState.new_game(7)
+	state.player.inventory.add(ItemTypes.ACORN, 3)
+	state.world.add_ground_item(GroundItem.new(ItemTypes.ACORN, 2, Vector2(1.5, 2.25)))
+	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
+	for stack: Variant in game["player"]["inventory"]["slots"]:
+		if stack != null and stack["item"] == "acorn":
+			stack["item"] = "sapling"
+	game["world"]["ground_items"][0]["item"] = "sapling"
+	_write_save(3, game)
+
+	var restored := SaveFile.read(SAVE_PATH)
+
+	assert_eq(restored.player.inventory.count_of(ItemTypes.ACORN), 3)
+	assert_eq(restored.world.ground_count_of(ItemTypes.ACORN), 2)

@@ -10,7 +10,8 @@ extends RefCounted
 ## - held_sheet: the variant of the character's `held` layer that shows it in the hand;
 ## - equip_slot: the Equipment slot it is worn in (wearables have a stack limit of 1), and
 ##   `layer_variant`, the variant of the character layer it shows (see Appearance.dress);
-## - plants: seeds or a sapling; the world object type that grows from them, `plants_on` the
+## - plants: seeds (of a crop or of a tree); the world object type that grows from them,
+##   `plants_on` the
 ##   terrain it needs (soil if not given) and `plants_state` the state the new object starts with.
 
 const HOE := &"hoe"
@@ -23,7 +24,9 @@ const LOGS := &"logs"
 const STONE := &"stone"
 const FIBRE := &"fibre"
 const BERRIES := &"berries"
-const SAPLING := &"sapling"
+const ACORN := &"acorn"
+const SPRUCE_CONE := &"spruce_cone"
+const PINE_CONE := &"pine_cone"
 const TUNIC := &"tunic"
 const SHIRT := &"shirt"
 const TROUSERS := &"trousers"
@@ -99,14 +102,32 @@ const _OTHER_TYPES := {
 		"weight": 0.05,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
-	SAPLING:
+	ACORN:
 	{
-		"name": "Sapling",
-		"weight": 0.5,
+		"name": "Acorn",
+		"weight": 0.05,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 		"plants": WorldObjectTypes.SAPLING,
 		"plants_on": Tile.Terrain.GRASS,
 		"plants_state": {"tree": WorldObjectTypes.OAK},
+	},
+	SPRUCE_CONE:
+	{
+		"name": "Spruce cone",
+		"weight": 0.05,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+		"plants": WorldObjectTypes.SAPLING,
+		"plants_on": Tile.Terrain.GRASS,
+		"plants_state": {"tree": WorldObjectTypes.SPRUCE},
+	},
+	PINE_CONE:
+	{
+		"name": "Pine cone",
+		"weight": 0.05,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+		"plants": WorldObjectTypes.SAPLING,
+		"plants_on": Tile.Terrain.GRASS,
+		"plants_state": {"tree": WorldObjectTypes.PINE},
 	},
 	TUNIC:
 	{

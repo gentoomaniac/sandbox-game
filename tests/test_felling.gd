@@ -1,12 +1,18 @@
 extends ResourceCase
-## Felling and mining: hits, tool levels, drops, stumps and regrowth.
+## Felling and mining: hits, tool levels, drops and stumps. Trunks are in test_trunks.gd, rotting
+## stumps in test_stump_rot.gd, seeds in test_tree_seeds.gd.
 
 const OAK_HITS := 5
 
 # --- Hits ---
 
 
-func test_a_tree_falls_after_hp_over_power_hits_and_gives_logs() -> void:
+func before_each() -> void:
+	super.before_each()
+	_make_room()
+
+
+func test_a_tree_falls_after_hp_over_power_hits_and_leaves_a_stump_and_a_trunk() -> void:
 	var tree := _place(WorldObjectTypes.OAK)
 	var hp: int = tree.type_data()["hp"]
 	var power := ItemTypes.tool_power(ItemTypes.AXE)
@@ -17,7 +23,8 @@ func test_a_tree_falls_after_hp_over_power_hits_and_gives_logs() -> void:
 	assert_eq(_dropped(ItemTypes.LOGS), 0)
 	assert_eq(_hit(ItemTypes.AXE, 1), GameState.Use.HIT)
 	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.STUMP)
-	assert_eq(_dropped(ItemTypes.LOGS), 4)
+	assert_eq(_world.object_at(_tile + Vector2i.RIGHT).type, &"oak_trunk")
+	assert_eq(_dropped(ItemTypes.LOGS), 0, "the logs come off the trunk")
 
 
 func test_a_better_tool_needs_fewer_hits() -> void:
@@ -121,8 +128,8 @@ func test_every_drop_is_an_item() -> void:
 		for item: StringName in WorldObjectTypes.TYPES[type_name].get("drops", {}):
 			assert_true(ItemTypes.TYPES.has(item), "%s drops %s" % [type_name, item])
 	assert_eq(WorldObjectTypes.TYPES[WorldObjectTypes.BOULDER]["drops"], {&"stone": 5})
-	assert_eq(WorldObjectTypes.TYPES[WorldObjectTypes.PINE]["drops"], {&"logs": 5})
-	assert_eq(WorldObjectTypes.TYPES[WorldObjectTypes.DEAD_TREE]["drops"], {&"logs": 2})
+	for tree: StringName in [WorldObjectTypes.OAK, WorldObjectTypes.SPRUCE, WorldObjectTypes.PINE]:
+		assert_false(WorldObjectTypes.TYPES[tree].has("drops"), "%s drops nothing itself" % tree)
 
 
 func test_the_final_hit_happens_with_a_full_inventory() -> void:
@@ -131,71 +138,19 @@ func test_the_final_hit_happens_with_a_full_inventory() -> void:
 	_fill_inventory()
 	assert_eq(_hit(ItemTypes.AXE, 1), GameState.Use.HIT)
 	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.STUMP)
-	assert_eq(_dropped(ItemTypes.LOGS), 4)
+	assert_eq(_world.object_at(_tile + Vector2i.RIGHT).type, &"oak_trunk")
 
 
-func _saplings_from_felling_on_days(days: int) -> Array[int]:
-	var saplings: Array[int] = []
-	for day in days:
-		_state.clock.day = day + 1
-		_place(WorldObjectTypes.OAK)
-		_clear_ground()
-		_hit(ItemTypes.AXE, OAK_HITS)
-		saplings.append(_dropped(ItemTypes.SAPLING))
-		_world.remove_object(_tile)
-	return saplings
-
-
-func test_the_sapling_chance_is_deterministic_and_about_a_quarter() -> void:
-	var first := _saplings_from_felling_on_days(80)
-	var second := _saplings_from_felling_on_days(80)
-	assert_eq(first, second)
-	var total: int = first.reduce(func(sum: int, count: int) -> int: return sum + count, 0)
-	assert_between(total, 8, 32)
-
-
-func test_a_stone_never_gives_a_sapling() -> void:
+func test_a_stone_never_gives_a_seed() -> void:
 	for day in 30:
 		_state.clock.day = day + 1
 		_place(WorldObjectTypes.STONE)
 		_hit(ItemTypes.PICKAXE, 3)
-	assert_eq(_dropped(ItemTypes.SAPLING), 0)
+	for seed_item: StringName in [ItemTypes.ACORN, ItemTypes.SPRUCE_CONE, ItemTypes.PINE_CONE]:
+		assert_eq(_dropped(seed_item), 0)
 
 
 # --- Stumps ---
-
-
-func test_a_stump_becomes_a_sapling_and_then_the_tree() -> void:
-	_place(WorldObjectTypes.SPRUCE)
-	_hit(ItemTypes.AXE, 4)
-	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.STUMP)
-	_sleep_days(2)
-	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.STUMP)
-	_sleep_days(1)
-	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.SAPLING)
-	_sleep_days(3)
-	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.SAPLING)
-	_sleep_days(1)
-	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.SPRUCE)
-	assert_eq(_world.object_at(_tile).state, {})
-
-
-func test_growth_waits_a_day_while_the_player_stands_on_the_sapling() -> void:
-	_place(WorldObjectTypes.SAPLING, "oak")
-	_state.player.position = Vector2(_tile) + Vector2(0.5, 0.5)
-	_sleep_days(4)
-	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.SAPLING)
-	_state.player.position += Vector2(0, 2)
-	_sleep_days(1)
-	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.OAK)
-
-
-func test_a_dead_tree_leaves_a_stump_that_stays() -> void:
-	_place(WorldObjectTypes.DEAD_TREE)
-	_hit(ItemTypes.AXE, 3)
-	assert_eq(_dropped(ItemTypes.LOGS), 2)
-	_sleep_days(10)
-	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.STUMP)
 
 
 func test_a_stump_can_be_removed_with_the_axe_for_a_log() -> void:
@@ -205,18 +160,3 @@ func test_a_stump_can_be_removed_with_the_axe_for_a_log() -> void:
 	assert_eq(_hit(ItemTypes.AXE, 2), GameState.Use.HIT)
 	assert_null(_world.object_at(_tile))
 	assert_eq(_dropped(ItemTypes.LOGS), 1)
-
-
-func test_regrowth_goes_on_in_unloaded_chunks_and_through_a_save() -> void:
-	_place(WorldObjectTypes.OAK)
-	_hit(ItemTypes.AXE, OAK_HITS)
-	var coords := Chunk.world_to_chunk(_tile)
-	_world.remove_chunk(coords)
-	_sleep_days(3)
-	var restored := _through_save()
-	_world.add_chunk(WorldGenerator.new(SEED).generate_chunk(coords))
-	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.SAPLING)
-	assert_eq(restored.world.object_at(_tile).type, WorldObjectTypes.SAPLING)
-	assert_eq(restored.world.object_at(_tile).state["tree"], "oak")
-	restored.clock.advance(4 * GameClock.MINUTES_PER_DAY)
-	assert_eq(restored.world.object_at(_tile).type, WorldObjectTypes.OAK)
