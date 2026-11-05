@@ -1033,6 +1033,8 @@ See SPEC.md "Signs of tiredness". A small reusable thought-bubble view over the 
 (an icon in a bubble, pop in, ~2 s, fade), first used for "zzz…" when energy falls to
 20 % and to 10 % (once per crossing). Sweat drops on actions at 20 % or less (one) and
 10 % or less (two or three). View only; tests for when they show; README updated.
+The "zzz…" bubble also shows at 00:00 and at 00:30 while the player is awake, as a warning
+before the 01:00 pass-out (task 46).
 
 ## Later (not part of the prototype)
 
