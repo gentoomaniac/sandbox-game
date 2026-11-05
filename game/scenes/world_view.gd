@@ -12,6 +12,9 @@ extends Node2D
 ## grid that draws the world's objects. It sits in the y-sorted `entities` node, where the
 ## player (and later creatures) stand among them, and keeps no decoration under an object.
 ## Objects that shine get an ObjectLight.
+##
+## A tree that is felled topples as a FallingTree sprite while the state already has its stump
+## and its trunk; the trunk's cell stays erased until the fall ends.
 ## Buildings are sprites in that node too, so they sort with the objects and the player. They
 ## belong to the world, not to a chunk, so they stay when chunks unload.
 ##
@@ -19,6 +22,11 @@ extends Node2D
 ## circle around the player. A building is a SeeThroughSprite already; a tree is a cell of the
 ## objects layer, which can't fade, so while it occludes (and while it fades back) its cell
 ## is erased and a SeeThroughSprite at the same place in the y-sorted node draws it instead.
+
+## A tree was felled and starts to fall, for `seconds` until it lands.
+signal tree_felled(tile: Vector2i, seconds: float)
+## A felled tree hit the ground (where the sound of it belongs). `tree` is the object it was.
+signal tree_landed(tree: WorldObject)
 
 ## How long a frame may spend bringing the looks up to date after they changed. Scanning a
 ## chunk takes about 1 ms, redrawing the cells of one whose tiles all changed about 10 ms, so
@@ -134,6 +142,9 @@ var _object_states: Dictionary[Vector2i, int] = {}
 var _decoration_spots: Dictionary[Vector2i, DecorationSpot] = {}
 ## The sprites that stand in for object cells while they are see-through, by tile.
 var _object_sprites: Dictionary[Vector2i, SeeThroughSprite] = {}
+var _falling_trees: Array[FallingTree] = []
+## The trunks (by tile) that a falling tree is about to lie down as, and that are not drawn yet.
+var _hidden_trunks: Dictionary[Vector2i, bool] = {}
 var _building_sprites: Dictionary[Building, SeeThroughSprite] = {}
 ## The lights in the windows of each building.
 var _window_lights: Dictionary[Building, Array] = {}
@@ -290,6 +301,7 @@ func _process(delta: float) -> void:
 			_refresh_step()
 	is_settled = to_load.is_empty() and not _is_refreshing()
 	_update_see_through(delta)
+	_update_falling_trees(delta)
 
 
 ## Redraws one tile after its state changed. World's `tile_changed` calls it.
@@ -320,15 +332,23 @@ func _on_clay_spot_changed(world_pos: Vector2i) -> void:
 
 
 ## A tool hit an object: what it leaves, if any, shakes (a stump, after the last hit), and
-## what flies off it depends on the look the object had.
+## what flies off it depends on the look the object had. The finishing hit on a tree has it
+## topple instead, and the stump shakes when it lands.
 func _on_object_hit(object: WorldObject) -> void:
+	var standing := world.object_at(object.pos)
+	if standing != object and object.type_data().has("leaves"):
+		_start_fall(object)
+		return
+	_hit_particles.emit(_hit_effect(object), _hit_origin(object))
+	if standing != null:
+		_shake_object(standing)
+
+
+func _hit_effect(object: WorldObject) -> HitEffect.Kind:
 	var look := _object_look(object)
 	if look == SeasonBlend.Look.FROST:
 		look = _conditions.foliage_season_look(_blend.thresholds(object.pos).x)
-	_hit_particles.emit(HitEffect.kind_for(object.type, look), _hit_origin(object))
-	var standing := world.object_at(object.pos)
-	if standing != null:
-		_shake_object(standing)
+	return HitEffect.kind_for(object.type, look)
 
 
 ## Where a hit object throws its particles, in world pixels: the canopy of a tree, else the
@@ -345,6 +365,8 @@ func _hit_origin(object: WorldObject) -> Vector2:
 
 ## Shakes an object: as a sprite, since a cell of the objects layer can't move alone.
 func _shake_object(object: WorldObject) -> void:
+	if _hidden_trunks.has(object.pos):
+		return
 	if not _object_sprites.has(object.pos):
 		_swap_cell_for_sprite(object)
 	_object_sprites[object.pos].shake()
@@ -536,6 +558,9 @@ func _unload_chunk(coords: Vector2i) -> void:
 			_clay_hints.erase_cell(origin + Vector2i(x, y))
 			_decoration_spots.erase(origin + Vector2i(x, y))
 	world.remove_chunk(coords)
+	for fall in _falling_trees.duplicate():
+		if Chunk.world_to_chunk(fall.tree.pos) == coords:
+			_end_fall(fall)
 
 
 ## Redraws a cell if the chunk that owns it is loaded: its terrain layers too, unless only the
@@ -665,7 +690,7 @@ func _set_overlay_cell(
 func _draw_object(world_pos: Vector2i) -> void:
 	var object := world.object_at(world_pos)
 	_remove_light(world_pos)
-	if object == null:
+	if object == null or _hidden_trunks.has(world_pos):
 		_objects.erase_cell(world_pos)
 		_object_states.erase(world_pos)
 		return
@@ -796,12 +821,20 @@ func _update_see_through(delta: float) -> void:
 
 ## Erases an object's cell and draws the same picture as a sprite, sorted the same way.
 func _swap_cell_for_sprite(object: WorldObject) -> void:
-	var cell_size := Vector2i(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT)
 	var sprite := SeeThroughSprite.new()
+	_place_object_sprite(sprite, object)
+	entities.add_child(sprite)
+	_object_sprites[object.pos] = sprite
+	_objects.erase_cell(object.pos)
+
+
+## Gives a sprite the picture of an object as it looks now, at the place and sorted the same way
+## as the tile map draws it (see ObjectTileset): sorted by the middle of the footprint's bottom
+## row, the cell's bottom on the footprint's bottom edge.
+func _place_object_sprite(sprite: Sprite2D, object: WorldObject) -> void:
+	var cell_size := Vector2i(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT)
 	sprite.texture = _object_texture(object)
 	sprite.centered = false
-	# Like the tile map draws it (see ObjectTileset): sorted by the middle of the footprint's
-	# bottom row, the cell's bottom on the footprint's bottom edge.
 	var footprint: Vector2i = WorldObjectTypes.TYPES[object.type]["footprint"]
 	var sort_shift := Vector2(0, (footprint.y - 1) * TerrainTileset.TILE_SIZE)
 	sprite.position = (Vector2(object.pos) + Vector2(0.5, 0.5)) * TerrainTileset.TILE_SIZE
@@ -809,9 +842,6 @@ func _swap_cell_for_sprite(object: WorldObject) -> void:
 	sprite.offset = (
 		-Vector2(cell_size) / 2 - Vector2(ObjectTileset.cell_origin(footprint)) - sort_shift
 	)
-	entities.add_child(sprite)
-	_object_sprites[object.pos] = sprite
-	_objects.erase_cell(object.pos)
 
 
 ## The picture of an object as it looks now, for its stand-in sprite.
@@ -916,3 +946,43 @@ func _layer_at(world_pos: Vector2i) -> int:
 
 func _layer_of_tile(terrain: Tile.Terrain, world_pos: Vector2i) -> int:
 	return TerrainTileset.layer_of(terrain, _variety_noise.get_noise_2dv(Vector2(world_pos)))
+
+
+## Starts the fall of a tree that was just replaced by its stump. Its trunk is already in the
+## world; it stays hidden until the tree has landed.
+func _start_fall(tree: WorldObject) -> void:
+	var fall := FallingTree.beside_trunk_of(tree, world, player_feet.x)
+	fall.impact_effect = _hit_effect(tree)
+	_place_object_sprite(fall, tree)
+	fall.landed.connect(_on_tree_landed.bind(fall))
+	fall.finished.connect(_end_fall.bind(fall))
+	entities.add_child(fall)
+	_falling_trees.append(fall)
+	if fall.trunk != null:
+		_hidden_trunks[fall.trunk.pos] = true
+		_drop_object_sprite(fall.trunk.pos)
+		_draw_object(fall.trunk.pos)
+	tree_felled.emit(tree.pos, FallingTree.FALL_SECONDS)
+
+
+func _update_falling_trees(delta: float) -> void:
+	for fall in _falling_trees.duplicate():
+		fall.advance(delta)
+
+
+func _on_tree_landed(fall: FallingTree) -> void:
+	_hit_particles.emit(fall.impact_effect, fall.impact_point())
+	var stump := world.object_at(fall.tree.pos)
+	if stump != null:
+		_shake_object(stump)
+	tree_landed.emit(fall.tree)
+
+
+## Takes the tree's sprite away and draws its trunk. Also how a fall ends when its chunk unloads.
+func _end_fall(fall: FallingTree) -> void:
+	_falling_trees.erase(fall)
+	fall.queue_free()
+	if fall.trunk != null:
+		_hidden_trunks.erase(fall.trunk.pos)
+		if world.is_chunk_loaded(Chunk.world_to_chunk(fall.trunk.pos)):
+			_draw_object(fall.trunk.pos)

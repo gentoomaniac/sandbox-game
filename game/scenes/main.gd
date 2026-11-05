@@ -22,6 +22,10 @@ extends Node2D
 ## bushes and a sapling in a row from there and some of every new item in the inventory
 ## (see DebugForage); `--felled=<x>,<y>` shows trees felled from each side, with their stumps and
 ## trunks, and tree seeds on the ground (see DebugFelled);
+## `--harvest=<x>,<y>` fells two oaks, cuts a trunk, breaks a stone and mows a patch in a row from
+## that tile once the world is drawn, to catch the falling trees and the hopping items (see
+## DebugHarvest; use `--day=45` and `--screenshot-delay=0.3`, say, and `--at=` ten tiles right of
+## the tile);
 ## `--mow=<x>,<y>` mows twice with the scythe from that tile, leaving mown patches and hay
 ## (see DebugMow; with `--day=45` for summer);
 ## `--console=<line>;<line>` runs those console commands at start and leaves the console
@@ -89,6 +93,7 @@ var _weather_view := WeatherView.new()
 var _wildlife := WildlifeView.new()
 var _start_wildlife := PackedStringArray()
 var _debug_hit_tile := NO_TILE
+var _debug_harvest_tile := NO_TILE
 var _weather: WeatherSample
 var _snow_cover := 0.0
 var _frost := 0.0
@@ -212,6 +217,9 @@ func _ready() -> void:
 		elif arg.begins_with("--hit="):
 			var tile := arg.trim_prefix("--hit=").split_floats(",")
 			_debug_hit_tile = Vector2i(int(tile[0]), int(tile[1]))
+		elif arg.begins_with("--harvest="):
+			var tile := arg.trim_prefix("--harvest=").split_floats(",")
+			_debug_harvest_tile = Vector2i(int(tile[0]), int(tile[1]))
 		elif arg == "--wildlife-calm":
 			_wildlife.is_player_ignored = true
 		elif arg == "--flash":
@@ -224,6 +232,7 @@ func _ready() -> void:
 	_view.show_world(_state.world)
 	_view.add_child(_ground_item_view)
 	_ground_item_view.show_items(_state.world, _view.entities)
+	_view.tree_felled.connect(_ground_item_view.hold_hops_from)
 	_view.add_child(_wildlife)
 	_wildlife.show_wildlife(_state, _view, _camera)
 	_builder = Builder.new(_state)
@@ -382,6 +391,9 @@ func _process(delta: float) -> void:
 		_spawn_start_wildlife()
 	if _debug_hit_tile != NO_TILE and _view.is_settled and not _state.is_inside():
 		_hit_debug_tile()
+	if _debug_harvest_tile != NO_TILE and _view.is_settled and not _state.is_inside():
+		DebugHarvest.run(_state, _debug_harvest_tile)
+		_debug_harvest_tile = NO_TILE
 	if _screenshot_path != "" and _debug_menu_page >= 0:
 		_open_debug_menu_when_ready()
 	elif _screenshot_path != "":
@@ -635,7 +647,11 @@ func _set_start_time(text: String) -> void:
 
 func _is_ready_to_shoot() -> bool:
 	# The world is not streamed while the player is inside.
-	return (_view.is_settled or _state.is_inside()) and not _enter_first_house
+	return (
+		(_view.is_settled or _state.is_inside())
+		and not _enter_first_house
+		and _debug_harvest_tile == NO_TILE
+	)
 
 
 func _show_build_message(text: String) -> void:

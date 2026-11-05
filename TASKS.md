@@ -931,7 +931,7 @@ distance.
 
 ## 43. Harvest animations: falling trees, items hopping out
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Harvest animations". View only. Depends on the season tiling fix being
 merged (both touch world_view.gd).

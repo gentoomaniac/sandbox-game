@@ -25,6 +25,9 @@ signal building_placed(building: Building)
 ## A pile of items was put on the ground, or taken off it (see `drop_items`).
 signal ground_item_added(ground_item: GroundItem)
 signal ground_item_removed(ground_item: GroundItem)
+## What one `drop_items` call put on the ground, after `ground_item_added` for each pile: the
+## view lets them hop out of `source` (nothing about it is saved).
+signal ground_items_dropped(source: Vector2i, piles: Array[GroundItem])
 
 ## Why a footprint tile can't be built on.
 enum Blocked {
@@ -499,6 +502,7 @@ func ground_count_of(item: StringName) -> int:
 ## Call it after the source was removed or replaced, so its own tile counts if it is free now.
 func drop_items(source: Vector2i, drops: Dictionary) -> void:
 	var kind_index := 0
+	var dropped: Array[GroundItem] = []
 	for item: StringName in drops:
 		var tiles := _scatter_tiles(source, kind_index)
 		var total: int = drops[item]
@@ -509,8 +513,11 @@ func drop_items(source: Vector2i, drops: Dictionary) -> void:
 				_hash_fraction(tiles[pile], 2 * kind_index),
 				_hash_fraction(tiles[pile], 2 * kind_index + 1)
 			)
-			add_ground_item(GroundItem.new(item, count, Vector2(tiles[pile]) + offset))
+			var ground_item := GroundItem.new(item, count, Vector2(tiles[pile]) + offset)
+			add_ground_item(ground_item)
+			dropped.append(ground_item)
 		kind_index += 1
+	ground_items_dropped.emit(source, dropped)
 
 
 ## Takes a pile off the ground (it was collected).
