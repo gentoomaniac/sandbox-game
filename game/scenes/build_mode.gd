@@ -33,6 +33,11 @@ var _pinned_origin: Variant = null  # Vector2i, set by --ghost
 var _debug_house_origin: Variant = null  # Vector2i, set by --house
 
 
+## Shows the ghost as the house looks in `season`.
+func set_season(season: GameClock.Season) -> void:
+	_texture = load(SeasonalArt.path(BuildingTypes.TYPES[BUILDING_TYPE]["sprite"], season))
+
+
 func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--ghost="):

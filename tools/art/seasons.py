@@ -71,8 +71,10 @@ _WINTER_GROUND = {
     "green_light": "snow_light",
     "green": "snow",
     "lush": "snow",
-    "green_dark": "snow_shadow",
-    "green_deep": "snow_deep",
+    # The dark greens only soften by one step, so where layers meet (grass rims and blades
+    # showing through the dithered edge of lush or dry grass) no lines stand out on the snow.
+    "green_dark": "snow",
+    "green_deep": "snow_shadow",
     "olive": "snow_shadow",
     "dry": "snow",
     "dry_light": "snow_light",
@@ -80,7 +82,7 @@ _WINTER_GROUND = {
     "meadow_light": "snow_light",
     "meadow_dark": "snow_shadow",
     "bog": "snow_shadow",
-    "bog_dark": "snow_deep",
+    "bog_dark": "snow_shadow",
     # Flowers are frosted.
     "cream": "snow_light",
     "gold": "snow",
@@ -118,6 +120,10 @@ _BARE_BUSH = {
     "green_bright": "mud", "green_light": "mud", "green": "mud_dark", "green_dark": "soil_dark",
     "olive": "mud_dark", "dry_light": "mud", "dry": "mud",
 }
+# A berry bush under snow: a clean mound, the berries peeking out.
+_SNOW_MOUND = {
+    "green_light": "snow_light", "green": "snow", "green_dark": "snow_shadow", "green_deep": "snow_deep",
+}
 _DRY_FERN = {"green_light": "straw", "green": "reed", "green_dark": "olive"}
 
 # How the snow cap of each object is drawn: (surfaces, edges, depth in px).
@@ -127,7 +133,9 @@ _SNOW_BUSH = ({"mud", "mud_dark", "soil_dark"}, {"green_deep"}, 5)
 _SNOW_STONE = ({"stone_light", "stone"}, set(), 2)
 _SNOW_BOULDER = ({"stone_light", "stone", "green_light", "green", "olive"}, set(), 3)
 _SNOW_STUMP = ({"sand_light", "sand", "straw"}, set(), 3)
-_SNOW_ROOF = ({"straw", "sand_light", "sand", "gold", "dry_light", "mud"}, {"soil_dark"}, 30)
+_THATCH = {"straw", "sand_light", "sand", "gold", "dry_light", "mud"}
+# Thatch rows left showing under the snow at the eaves.
+_THATCH_AT_EAVES = 4
 
 _SPRING_KINDS = {"oak", "berry_bush", "shrub", "sapling", "fern", "boulder"}
 _BLOSSOM_KINDS = {"berry_bush", "shrub"}
@@ -197,7 +205,9 @@ def _season_object(season, kind, variant, canvas, redraw):
         elif kind in ("spruce", "pine"):
             canvas = remap(canvas, {})
             snow_caps(canvas, rng, *(_SNOW_CONIFER if kind == "spruce" else _SNOW_PINE), centre)
-        elif kind in ("berry_bush", "shrub", "sapling"):
+        elif kind == "berry_bush":
+            canvas = remap(canvas, _SNOW_MOUND)
+        elif kind in ("shrub", "sapling"):
             canvas = remap(canvas, _BARE_BUSH)
             snow_caps(canvas, rng, *_SNOW_BUSH, centre)
         elif kind == "fern":
@@ -218,9 +228,44 @@ def object_rows(season, kinds, rows, redraw):
     ]
 
 
-def house(season, canvas, roof_bottom):
-    """A house picture in a season: snow on the thatch above row `roof_bottom` in winter."""
+def snow_roof(canvas, rng, ridge_y, eaves_y, shade_x):
+    """Snow on a thatched roof between the rows `ridge_y` and `eaves_y`. Each column is
+    covered from its top down to a ragged edge that leaves a little thatch at the eaves; the
+    roof's own outline stays. Shading: a light band at the top, blue-grey towards the eaves,
+    a lip at the edge with a darker underside, and one step darker right of `shade_x`."""
+    lit = ("snow_light", "snow", "snow_shadow", "snow_deep")
+    edge_of_snow = 0
+    for x in range(len(canvas[0])):
+        rows = [y for y in range(ridge_y, eaves_y - 1) if canvas[y][x] in _THATCH]
+        if not rows:
+            continue
+        top, bottom = rows[0], rows[-1]
+        # Neighbouring columns share a lip height in runs, so the edge is ragged, not noisy.
+        if x % 3 == 0:
+            edge_of_snow = rng.choice((-1, 0, 0, 1))
+        last = bottom - _THATCH_AT_EAVES + edge_of_snow
+        step = 1 if x > shade_x else 0
+        for y in range(top, last + 1):
+            from_top, from_edge = y - top, last - y
+            if from_edge == 0:
+                shade = 2
+            elif from_edge == 1:
+                shade = 0
+            elif from_top < 3:
+                shade = 0
+            elif from_edge < 5:
+                shade = 2
+            else:
+                shade = 1
+            canvas[y][x] = lit[min(shade + step, 3)]
+
+
+def house(season, canvas, ridge_y, eaves_y):
+    """A house picture in a season: snow on the thatch in winter."""
     canvas = remap(canvas, {"shadow": _SHADOW_REMAPS[season]})
     if season == "winter":
-        snow_caps(canvas, random.Random("house"), *_SNOW_ROOF, len(canvas[0]) // 2, roof_bottom)
+        snow_roof(canvas, random.Random("house"), ridge_y, eaves_y, 50)
+        # Snow on top of the chimney.
+        for x in range(51, 61):
+            canvas[2][x] = "snow_light"
     return canvas

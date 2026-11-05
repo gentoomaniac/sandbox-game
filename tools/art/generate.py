@@ -737,13 +737,15 @@ def bare_oak(seed):
     canvas = object_canvas()
     ground_shadow(canvas, 13)
     tree_trunk(canvas, rng, 46, 7)
-    for x, y, direction, length in (
+    branches = (
         (22, 46, -1, 20),
         (26, 46, 1, 20),
+        (24, 46, rng.choice((-1, 1)), 22),
         (23, 54, -1, 14),
         (27, 52, 1, 14),
-        (24, 46, rng.choice((-1, 1)), 22),
-    ):
+    )
+    # Fewer branches on some variants, so a forest is not a wall of twigs.
+    for x, y, direction, length in branches[: 5 - seed % 3]:
         draw_branch(canvas, rng, x, y, direction, length + rng.randint(-2, 2), "soil_mid")
     outline_in_bark(canvas)
     return canvas
@@ -1953,7 +1955,7 @@ def main():
             OBJECT_CELL_HEIGHT,
         ).save(ASSETS / f"objects{suffix}.png")
         for name, picture in houses.items():
-            seasonal = seasons.house(season, picture, HOUSE_EAVES_Y)
+            seasonal = seasons.house(season, picture, HOUSE_RIDGE_Y, HOUSE_EAVES_Y)
             to_image([[seasonal]], HOUSE_WIDTH, HOUSE_HEIGHT).save(ASSETS / "buildings" / f"{name}{suffix}.png")
     (ASSETS / "character").mkdir(exist_ok=True)
     for name, rows in CHARACTER_SHEETS.items():
