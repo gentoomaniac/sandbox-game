@@ -36,6 +36,8 @@ const EVENTS: Array[StringName] = [
 	&"ui_open",
 	&"ui_close",
 	&"hotbar_select",
+	&"chest_open",
+	&"chest_close",
 	&"rain_loop",
 	&"wind_loop",
 	&"wind_gust",

@@ -70,6 +70,8 @@ EVENTS = {
     "ui_open": (-15, [ui.ui_open] * 2),
     "ui_close": (-15, [ui.ui_close] * 2),
     "hotbar_select": (-18, [ui.hotbar_select] * 3),
+    "chest_open": (-9, [ui.chest_open] * 2),
+    "chest_close": (-10, [ui.chest_close] * 2),
     "rain_loop": (-10, [weather.rain_loop] * 2),
     "wind_loop": (-12, [weather.wind_loop] * 2),
     "wind_gust": (-8, [weather.wind_gust] * 3),
