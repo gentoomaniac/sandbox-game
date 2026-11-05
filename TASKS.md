@@ -459,7 +459,7 @@ fullscreen (`godot --path . -f -- --new-game --screenshot=... --at=...`).
 
 ### 16c. House and interior
 
-- [ ] Done
+- [x] Done
 
 - House: 5×3 footprint, sprite about 80×96 in 3/4 view (ridge, slope, eaves), straw
   thatch, door 14–16 × 24–26 on the middle tile (door_offset (2,2)) with frame and step,
