@@ -11,7 +11,8 @@ extends Node2D
 ## crops in every growth stage (see DebugField); `--inside` walks into the first house as soon
 ## as one exists (see `--house`); `--zoom=<z>` sets the camera zoom;
 ## `--camera-shift=<x>,<y>` moves the camera by that many art pixels, fractions included
-## (to check smooth scrolling). BuildMode parses `--ghost=<x>,<y>` and
+## (to check smooth scrolling). PlayerView parses `--outfit=<n>` and `--pose=<direction>`,
+## and F6 cycles the outfit (see there). BuildMode parses `--ghost=<x>,<y>` and
 ## `--house=<x>,<y>` (see there).
 
 const WORLD_SEED := 1
