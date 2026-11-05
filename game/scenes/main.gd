@@ -561,8 +561,7 @@ func _pass_out() -> void:
 	_is_in_transition = true
 	# Nothing else may move the player meanwhile.
 	_console_view.close()
-	if _character_screen.is_open():
-		_character_screen.toggle()
+	_close_screens()
 	var was_up_too_late := _state.is_up_too_late
 	_player_view.collapse()
 	await get_tree().create_timer(PlayerView.COLLAPSE_SECONDS).timeout
@@ -613,6 +612,15 @@ func _screens_take(event: InputEvent) -> bool:
 		_character_screen.toggle()
 		return true
 	return _character_screen.is_open() or _crafting_screen.is_open()
+
+
+func _close_screens() -> void:
+	if _character_screen.is_open():
+		_character_screen.toggle()
+	if _crafting_screen.is_open():
+		_crafting_screen.toggle()
+	if _storage_screen.is_open():
+		_storage_screen.close()
 
 
 ## E: opens the chest in reach, else sleeps in the bed in reach.
