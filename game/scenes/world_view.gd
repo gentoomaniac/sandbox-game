@@ -157,6 +157,7 @@ func _load_chunk(coords: Vector2i) -> void:
 func _draw_chunk(chunk: Chunk) -> void:
 	var coords := chunk.coords
 	var origin := Chunk.to_world(coords, Vector2i.ZERO)
+	var covered := _covered_tiles(chunk)
 	# The corners of the chunk's cells: its own tiles plus the row above and the column to
 	# the left. Reading them once, mostly straight from the chunk, is several times faster
 	# than looking up 4 corners per cell through the world.
@@ -185,7 +186,9 @@ func _draw_chunk(chunk: Chunk) -> void:
 			)
 			_draw_cell_corners(origin + Vector2i(x, y), corners)
 			# The bottom-right corner is this chunk's tile (x, y).
-			_draw_decoration(origin + Vector2i(x, y), corners[3])
+			_set_decoration(
+				origin + Vector2i(x, y), corners[3], covered.has(origin + Vector2i(x, y))
+			)
 	for object in chunk.objects():
 		_draw_object(object.pos)
 	# The right and bottom neighbours' border cells drew this chunk's tiles with a fallback
@@ -194,6 +197,21 @@ func _draw_chunk(chunk: Chunk) -> void:
 		_redraw_cell(origin + Vector2i(Chunk.CHUNK_SIZE, i))
 	for i in Chunk.CHUNK_SIZE:
 		_redraw_cell(origin + Vector2i(i, Chunk.CHUNK_SIZE))
+
+
+## The tiles of a chunk that objects cover: those of its own objects, and those of objects
+## from the loaded chunks above and to the left that reach in. Cheaper for a whole chunk than
+## asking the world about every tile.
+func _covered_tiles(chunk: Chunk) -> Dictionary[Vector2i, bool]:
+	var covered: Dictionary[Vector2i, bool] = {}
+	for offset in [Vector2i.ZERO, Vector2i.LEFT, Vector2i.UP, Vector2i(-1, -1)]:
+		var neighbour := world.chunk_at(chunk.coords + offset)
+		if neighbour == null:
+			continue
+		for object in neighbour.objects():
+			for tile in object.tiles():
+				covered[tile] = true
+	return covered
 
 
 func _unload_chunk(coords: Vector2i) -> void:
@@ -333,7 +351,11 @@ func _drop_object_sprite(world_pos: Vector2i) -> void:
 
 
 func _draw_decoration(world_pos: Vector2i, layer: int) -> void:
-	if world.object_at(world_pos) != null:
+	_set_decoration(world_pos, layer, world.object_at(world_pos) != null)
+
+
+func _set_decoration(world_pos: Vector2i, layer: int, is_covered: bool) -> void:
+	if is_covered:
 		_decorations.erase_cell(world_pos)
 		return
 	var cluster := _decoration_noise.get_noise_2dv(Vector2(world_pos))

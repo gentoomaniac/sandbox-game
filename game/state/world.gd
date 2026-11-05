@@ -103,15 +103,22 @@ func tile_at(world_pos: Vector2i) -> Tile:
 
 ## The object that covers a tile (see WorldObject.tiles), or null if there is none (or the
 ## chunk is not loaded). A big object is stored at its own tile only, so look back from the
-## tile over the largest footprint.
+## tile over the largest footprint: in its own chunk, and only near the chunk's top and left
+## border in the neighbours. A big object whose own chunk is not loaded is not seen; that is
+## safe because the player only acts on tiles well inside the loaded area (see
+## WorldView.LOAD_RADIUS and UNLOAD_RADIUS).
 func object_at(world_pos: Vector2i) -> WorldObject:
+	var own_chunk := chunk_at(Chunk.world_to_chunk(world_pos))
+	var local := Chunk.local_pos(world_pos)
 	for y in WorldObjectTypes.MAX_FOOTPRINT.y:
 		for x in WorldObjectTypes.MAX_FOOTPRINT.x:
-			var origin := world_pos - Vector2i(x, y)
-			var chunk := chunk_at(Chunk.world_to_chunk(origin))
+			var origin_local := local - Vector2i(x, y)
+			var chunk := own_chunk
+			if not Chunk.is_local_in_range(origin_local):
+				chunk = chunk_at(Chunk.world_to_chunk(world_pos - Vector2i(x, y)))
 			if chunk == null:
 				continue
-			var object := chunk.object_at(Chunk.local_pos(origin))
+			var object := chunk.object_at(Chunk.local_pos(world_pos - Vector2i(x, y)))
 			if object != null and object.covers(world_pos):
 				return object
 	return null
