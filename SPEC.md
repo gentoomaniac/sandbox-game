@@ -234,6 +234,32 @@ top of classic pixel art (details under "Lighting and look").
     watering can wets tilled soil, the scythe mows tall grass, the shovel digs for clay,
     an empty hand harvests crops, clears dead ones and picks bushes.
 
+### Sound
+
+Decided 2026-11-05. Everything makes sound; no background music for now.
+
+- **All sounds are generated** by a script (`tools/audio/`, run by `make assets`), like
+  the art: deterministic, in the repo, retro in style, with a few variants per sound
+  and a little pitch variation when played. **`data/sounds.cfg`** maps every sound event
+  to its files, volume and pitch range, so any sound can later be replaced by a recording
+  without touching code.
+- **World sounds come from where they happen** (positional), on an Effects or Ambience
+  bus. Inside a house the weather and the world outside are muffled.
+- **Footsteps** follow the walk animation and the ground: grass, soil, sand or floodplain,
+  wetland (squelch), ice, snow (crunch), wooden floor.
+- **Work:** axe chop, a tree's crack and thud when it falls, pickaxe on stone, stone
+  breaking, scythe swish, shovel dig, hoe, watering, planting, picking a bush, a soft pop
+  when an item on the ground is collected, placing a building, and a short "denied" sound
+  (e.g. needs a better tool).
+- **UI:** clicks for menus, the inventory and the hotbar.
+- **Weather (ambience):** rain and wind as loops that follow their strength and fade like
+  the weather visuals, wind gusts, and thunder after a flash, delayed as if far away.
+- **Animals:** birds sometimes chirp where they are; frogs croak near rivers and ponds in
+  spring and summer, mostly in the evening and at night and when it is warm, louder the
+  closer the player is; deer snort now and then and their hooves sound when they bound
+  away; rabbits rustle when they flee; squirrels chatter; bees buzz softly at their
+  flower. Butterflies are silent.
+
 ### Menus and settings
 
 Decided 2026-11-05.
@@ -248,6 +274,8 @@ Decided 2026-11-05.
   - **Display:** fullscreen or windowed.
   - **Game:** UI scale (a slider from 0.5× to 2×, the UI only, not the world), the
     energy drain (Low, Normal, High) and the day length variation (0–100 %).
+  - **Audio:** Master, Effects and Ambience volume sliders, and "Sound in background"
+    (off: the game is silent while its window is not focused).
   - Settings are saved in `user://settings.cfg`, separate from the save game.
   - Gamepads later.
 - **UI look:** a pixel font and a framed panel (9-slice) in palette colours, in one shared

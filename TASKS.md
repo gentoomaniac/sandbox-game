@@ -880,6 +880,37 @@ Depends on 36. A Tiled interior per building (see InteriorLoader), sized to its 
 the shack bare and small, the Kate a cottage room with hearth and bed, the longhouse with
 a hall and living end, the barn with stalls and storage and no bed or hearth.
 
+## 40. Sound generator
+
+- [ ] Done
+
+See SPEC.md "Sound". A script in tools/audio/ (run by `make assets`, deterministic) that
+writes every sound event of the list below as WAV files with 2–4 variants each, loops
+marked for looping. Event names (also the keys of data/sounds.cfg in task 41):
+step_grass, step_soil, step_sand, step_wetland, step_ice, step_snow, step_wood;
+axe_chop, tree_fall, pickaxe_hit, stone_break, scythe_swish, shovel_dig, hoe_till,
+water_pour, plant, pick_bush, item_pickup, build_place, denied; ui_click, ui_open,
+ui_close, hotbar_select; rain_loop, wind_loop, wind_gust, thunder; bird_chirp,
+frog_croak, deer_snort, deer_hooves, rabbit_rustle, squirrel_chatter, bee_buzz_loop.
+
+## 41. Sound system and game sounds
+
+- [ ] Done
+
+Depends on 40. data/sounds.cfg (required keys: files, volume, pitch range per event);
+an audio service with Master/Effects/Ambience buses, positional players for world sounds
+and a muffle while inside; the Audio settings page (three sliders, "Sound in background");
+footsteps by ground, work sounds, item pickup, building placed, denied, UI sounds.
+
+## 42. Ambience: weather and animals
+
+- [ ] Done
+
+Depends on 41. Rain and wind loops following the weather with fades, gusts, thunder
+after the flash with a delay; birds chirping from their nodes now and then, deer, rabbit,
+squirrel and bee sounds; frogs near water by season, time of day, temperature and
+distance.
+
 ## Later (not part of the prototype)
 
 - Season looks follow-ups (from the task 29 review): world_view.gd carries layer, season
