@@ -37,12 +37,15 @@ extends Node2D
 ## the snow cover;
 ## `--mouse-tile=<x>,<y>` pretends the mouse is always on that tile (for screenshots);
 ## `--camera-shift=<x>,<y>` moves the camera by that many art pixels, fractions included
-## (to check smooth scrolling); `--menu=pause|settings|controls|display|game` opens that menu page
-## (with `--screenshot`, the shot is of the menu). The console's `snow <0..1>` forces the snow
+## (to check smooth scrolling); `--menu=pause|settings|controls|display|game|audio` opens that menu
+## page (with `--screenshot`, the shot is of the menu). The console's `snow <0..1>` forces the snow
 ## cover (`snow auto` ends it), and F3 shows the snow cover and the frost.
 ## `--tooltip=<id>` shows the tooltip of a control as if the mouse rested on it: `hotbar_<0..9>`,
 ## `inventory_<n>` and `equipment_<slot>` (with `--inventory`), `setting_ui_scale` and
-## `setting_day_length` (with `--menu=game`), `action_<action>` (with `--menu=controls`).
+## `setting_day_length` (with `--menu=game`), `setting_master_volume`, `setting_effects_volume`,
+## `setting_ambience_volume` and `setting_sound_in_background` (with `--menu=audio`),
+## `action_<action>` (with `--menu=controls`).
+## `--sound-log` prints every sound event as it plays (see AudioService).
 ## `--wildlife=<kind>[,<kind>]` puts a few animals of those kinds near the player once the
 ## world is drawn and leaves it at that (`bird`, `rabbit`, `squirrel`, `deer`, `bee`,
 ## `butterfly`, `flock`; see WildlifeView), `--wildlife-calm` makes them take no notice of the
@@ -71,6 +74,8 @@ const NO_TILE := Vector2i(1 << 30, 1 << 30)
 var _state: GameState
 var _builder: Builder
 var _settings: GameSettings
+var _audio := AudioService.new()
+var _sounds := GameSounds.new()
 var _menu: PauseMenu
 var _tooltip_view := TooltipView.new()
 var _save_path := SaveFile.DEFAULT_PATH
@@ -128,6 +133,7 @@ func _ready() -> void:
 		or not WildlifeRules.default_rules().is_valid()
 		or not SeasonRules.default_rules().is_valid()
 		or not BuildingRules.default_rules().is_valid()
+		or not SoundRules.default_rules().is_valid()
 		or not AssetCheck.report()
 	):
 		# The load has reported the missing rules, crops, curves or pictures. Nothing else runs
@@ -138,6 +144,11 @@ func _ready() -> void:
 		return
 	_settings = _load_settings()
 	_apply_ui_scale(_settings.ui_scale)
+	add_child(_audio)
+	_world.audio_listener_enable_2d = true
+	_audio.use_world(_world)
+	_audio.apply_settings(_settings)
+	_settings.audio_changed.connect(func() -> void: _audio.apply_settings(_settings))
 	_settings.ui_scale_changed.connect(_apply_ui_scale)
 	_state = _load_or_start_game()
 	_state.energy_drain = _settings.energy_drain_factor()
@@ -287,6 +298,7 @@ func _ready() -> void:
 	_menu.save_and_quit_requested.connect(_save_and_quit)
 	add_child(_menu)
 	add_child(_tooltip_view)
+	_start_sounds()
 	_interior_view.hide()
 	_world.add_child(_interior_view)
 	_world.add_child(_weather_view)
@@ -378,7 +390,8 @@ func _process(delta: float) -> void:
 		var direction := Vector2.ZERO
 		if not _character_screen.is_open() and not _console_view.is_open():
 			direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")
-		_state.player.move(_state.current_map, direction, delta, _state.walk_speed_factor())
+		_player_view.walk_speed = _state.walk_speed_factor()
+		_state.player.move(_state.current_map, direction, delta, _player_view.walk_speed)
 		_state.collect_ground_items(delta)
 		if _state.door_underfoot():
 			_fade_through(_pass_door)
@@ -462,7 +475,9 @@ func _hotbar_slot_of(event: InputEvent) -> int:
 func _use_on(target: Targeting) -> void:
 	if not target.is_in_reach:
 		return
-	if _state.use_tile(target.tile) == GameState.Use.NEEDS_BETTER_TOOL:
+	var use := _state.use_tile(target.tile)
+	_sounds.used(use, target.tile)
+	if use == GameState.Use.NEEDS_BETTER_TOOL:
 		var tool_name: String = ItemTypes.TYPES[_state.player.inventory.held_item()]["name"]
 		_harvest_hud.show_note("Needs a better %s." % tool_name.to_lower())
 	if _state.is_out_of_energy():
@@ -538,6 +553,7 @@ func _pass_door() -> void:
 ## chunk streaming, leaving it as it is).
 func _show_current_map() -> void:
 	var is_inside := _state.is_inside()
+	_audio.set_inside(is_inside)
 	_view.visible = not is_inside
 	_weather_view.visible = not is_inside
 	_view.process_mode = PROCESS_MODE_DISABLED if is_inside else PROCESS_MODE_INHERIT
@@ -547,6 +563,18 @@ func _show_current_map() -> void:
 		_interior_view.show_interior(_state.current_map)
 	_player_view.reparent(_interior_view.entities if is_inside else _view.entities, false)
 	_show_clock()
+
+
+## Starts the sounds of the game once everything that makes one exists: the footsteps, work and
+## pickups, the buttons of the menus, and the opening and closing of menus, screens and console.
+func _start_sounds() -> void:
+	add_child(_sounds)
+	_sounds.listen(_audio, _state, _view, _player_view, _build_mode)
+	_sounds.click_on_press_in(_menu)
+	_sounds.click_on_press_in(_character_screen)
+	_sounds.watch_panel(func() -> bool: return _menu.visible)
+	_sounds.watch_panel(_character_screen.is_open)
+	_sounds.watch_panel(_console_view.is_open)
 
 
 ## Debug (`--hit`): hits the object on the asked tile, if there is one.

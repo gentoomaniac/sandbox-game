@@ -913,12 +913,20 @@ frog_croak, deer_snort, deer_hooves, rabbit_rustle, squirrel_chatter, bee_buzz_l
 
 ## 41. Sound system and game sounds
 
-- [ ] Done
+- [x] Done
 
 Depends on 40. data/sounds.cfg (required keys: files, volume, pitch range per event);
 an audio service with Master/Effects/Ambience buses, positional players for world sounds
 and a muffle while inside; the Audio settings page (three sliders, "Sound in background");
 footsteps by ground, work sounds, item pickup, building placed, denied, UI sounds.
+
+Done: AudioService is a node owned by Main (`Main._audio`), wired up by GameSounds. Buses:
+Master, then Effects, Ambience and UI; plus OutsideEffects, which sends to Effects. Ambience
+and OutsideEffects carry the low-pass filter that fades in inside a building, so task 42 plays
+the world's effects with `play(event, position, true)` (is_from_outside) and loops with
+`start_loop(event, position, level)`, whose handle fades and stops. `--sound-log` prints every
+event as it plays. `PlayerView.walk_speed` scales the walk animation, and with it the steps;
+`tree_fall` plays on `WorldView.tree_landed`.
 
 ## 42. Ambience: weather and animals
 

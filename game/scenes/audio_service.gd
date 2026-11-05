@@ -1,0 +1,192 @@
+class_name AudioService
+extends Node
+## Plays the game's sounds. Main owns it (not an autoload): everything that makes a sound is
+## wired in Main anyway, and a node of its own is easy to test. `play` plays a sound event of
+## data/sounds.cfg (see SoundRules) with a random variant and pitch; with a position the
+## sound comes from there in the world (AudioStreamPlayer2D), else it is plain.
+##
+## Buses: Master with Effects, Ambience and UI under it; OutsideEffects sends to Effects. While
+## the player is inside a building (`set_inside`) a low-pass filter fades in on Ambience and
+## OutsideEffects, which is where the sounds of the world outside go.
+## Players come from two small pools; when all are busy the next in turn is cut off.
+##
+## Debug: `--sound-log` prints each event as it plays.
+
+## An event was played; `position` is null for a plain sound.
+signal played(event: StringName, position: Variant)
+
+const MASTER := &"Master"
+const EFFECTS := &"Effects"
+const AMBIENCE := &"Ambience"
+const UI := &"UI"
+## Where the world's own effects play: muffled indoors, then on to Effects.
+const OUTSIDE_EFFECTS := &"OutsideEffects"
+## The bus of each `bus` value in sounds.cfg.
+const BUS_OF_KEY := {"effects": EFFECTS, "ambience": AMBIENCE, "ui": UI}
+## The bus of each volume channel of the settings (see GameSettings).
+const CHANNEL_BUSES := {&"master": MASTER, &"effects": EFFECTS, &"ambience": AMBIENCE}
+const POOL_SIZE := 12
+## Beyond this many art pixels from the camera a positional sound is silent.
+const MAX_DISTANCE := 500.0
+const SILENT_DB := -80.0
+
+var _rules := SoundRules.default_rules()
+var _rng := RandomNumberGenerator.new()
+var _muffle := Muffle.new()
+var _low_passes: Array[AudioEffectLowPassFilter] = []
+var _plain_players: Array[AudioStreamPlayer] = []
+var _world_players: Array[AudioStreamPlayer2D] = []
+var _world_root: Node = self
+var _next_plain := 0
+var _next_world := 0
+var _is_focused := true
+var _is_sound_in_background := true
+
+
+## A slider's percent as decibels: 100 % is 0 dB, and 0 % is silent.
+static func percent_to_db(percent: float) -> float:
+	if percent <= 0.0:
+		return SILENT_DB
+	return maxf(linear_to_db(percent / 100.0), SILENT_DB)
+
+
+## Whether the game is silent: only when it isn't to play in the background and its window has
+## lost the focus.
+static func is_silenced(is_sound_in_background: bool, is_focused: bool) -> bool:
+	return not is_sound_in_background and not is_focused
+
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	_rng.randomize()
+	_set_up_buses()
+	for index in POOL_SIZE:
+		var player := AudioStreamPlayer.new()
+		add_child(player)
+		_plain_players.append(player)
+		var world_player := AudioStreamPlayer2D.new()
+		world_player.max_distance = MAX_DISTANCE
+		# Reparented into the world viewport, which is paused with the game.
+		world_player.process_mode = Node.PROCESS_MODE_ALWAYS
+		add_child(world_player)
+		_world_players.append(world_player)
+	if OS.get_cmdline_user_args().has("--sound-log"):
+		played.connect(
+			func(event: StringName, position: Variant) -> void:
+				print("sound: %s%s" % [event, "" if position == null else " at %s" % position])
+		)
+
+
+func _process(delta: float) -> void:
+	_muffle.step(delta)
+	for low_pass in _low_passes:
+		low_pass.cutoff_hz = _muffle.cutoff_hz()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		_is_focused = false
+		_update_silence()
+	elif what == NOTIFICATION_APPLICATION_FOCUS_IN:
+		_is_focused = true
+		_update_silence()
+
+
+## Positional sounds come from here: the world's viewport, whose camera is the listener.
+func use_world(root: Node) -> void:
+	_world_root = root
+	for player in _world_players:
+		player.reparent(root, false)
+
+
+## Muffles the world outside while the player is inside a building, fading over a moment.
+func set_inside(is_inside: bool) -> void:
+	_muffle.is_inside = is_inside
+
+
+## How muffled the outside sounds are now, 0 to 1 (see Muffle).
+func muffle_amount() -> float:
+	return _muffle.amount
+
+
+## Applies the volume sliders and the background setting of the settings.
+func apply_settings(settings: GameSettings) -> void:
+	for channel in CHANNEL_BUSES:
+		AudioServer.set_bus_volume_db(
+			AudioServer.get_bus_index(CHANNEL_BUSES[channel]),
+			percent_to_db(settings.volume_percent(channel))
+		)
+	_is_sound_in_background = settings.sound_in_background
+	_update_silence()
+
+
+## Plays a sound event once. `position` (in the world's art pixels) makes it come from there.
+## `is_from_outside` marks an effect of the world outside, which is muffled while the player is
+## inside; the player's own sounds are not.
+func play(event: StringName, position: Variant = null, is_from_outside := false) -> void:
+	if not _rules.has_event(event):
+		push_error("No sound event '%s'" % event)
+		return
+	var player := _free_player(position != null)
+	_start(player, event, position, is_from_outside)
+
+
+## Starts a looping sound event at `level` (0 to 1) and returns its handle, to fade or stop it.
+func start_loop(event: StringName, position: Variant = null, level := 1.0) -> SoundLoop:
+	var player: Node = AudioStreamPlayer.new() if position == null else AudioStreamPlayer2D.new()
+	player.process_mode = Node.PROCESS_MODE_ALWAYS
+	if position != null:
+		player.max_distance = MAX_DISTANCE
+	(self if position == null else _world_root).add_child(player)
+	_start(player, event, position, false)
+	return SoundLoop.new(player, _rules.event(event)["volume_db"], level)
+
+
+func _start(player: Node, event: StringName, position: Variant, is_from_outside: bool) -> void:
+	var values := _rules.event(event)
+	var bus: StringName = BUS_OF_KEY[values["bus"]]
+	player.stream = load(_rules.pick_file(event, _rng))
+	player.volume_db = values["volume_db"]
+	player.pitch_scale = _rules.pick_pitch(event, _rng)
+	player.bus = OUTSIDE_EFFECTS if is_from_outside and bus == EFFECTS else bus
+	if position != null:
+		player.position = position
+	player.play()
+	played.emit(event, position)
+
+
+## An idle player of the pool, or else the next in turn.
+func _free_player(is_in_world: bool) -> Node:
+	var players: Array = _world_players if is_in_world else _plain_players
+	for player: Node in players:
+		if not player.playing:
+			return player
+	var index := _next_world if is_in_world else _next_plain
+	if is_in_world:
+		_next_world = (_next_world + 1) % POOL_SIZE
+	else:
+		_next_plain = (_next_plain + 1) % POOL_SIZE
+	return players[index]
+
+
+func _update_silence() -> void:
+	AudioServer.set_bus_mute(
+		AudioServer.get_bus_index(MASTER), is_silenced(_is_sound_in_background, _is_focused)
+	)
+
+
+## Makes the buses (unless they exist: another service made them) and puts a low-pass filter on
+## the two that are muffled.
+func _set_up_buses() -> void:
+	for bus in [EFFECTS, AMBIENCE, UI, OUTSIDE_EFFECTS]:
+		if AudioServer.get_bus_index(bus) != -1:
+			continue
+		AudioServer.add_bus()
+		var index := AudioServer.bus_count - 1
+		AudioServer.set_bus_name(index, bus)
+		AudioServer.set_bus_send(index, EFFECTS if bus == OUTSIDE_EFFECTS else MASTER)
+		if bus == AMBIENCE or bus == OUTSIDE_EFFECTS:
+			AudioServer.add_bus_effect(index, AudioEffectLowPassFilter.new())
+	for bus in [AMBIENCE, OUTSIDE_EFFECTS]:
+		var effect := AudioServer.get_bus_effect(AudioServer.get_bus_index(bus), 0)
+		_low_passes.append(effect as AudioEffectLowPassFilter)

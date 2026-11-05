@@ -202,7 +202,7 @@ func show_world(world_to_show: World) -> void:
 	world.tile_changed.connect(redraw_tile)
 	world.object_hit.connect(_on_object_hit)
 	world.clay_spot_changed.connect(_on_clay_spot_changed)
-	_soil_wetness.show_world(world, _is_snowed_over)
+	_soil_wetness.show_world(world, is_snowed_over)
 	world.building_placed.connect(_draw_building)
 	_generator = WorldGenerator.new(world.world_seed)
 	_variety_noise.seed = world.world_seed + VARIETY_SEED_OFFSET
@@ -931,7 +931,7 @@ func _weather_look_at(world_pos: Vector2i) -> int:
 
 
 ## Whether snow or a dusting of it lies on a tile, so soil under it doesn't look wet.
-func _is_snowed_over(world_pos: Vector2i) -> bool:
+func is_snowed_over(world_pos: Vector2i) -> bool:
 	var look := _weather_look_at(world_pos)
 	return look == SeasonBlend.Look.SNOW or look == SeasonBlend.Look.DUSTING
 

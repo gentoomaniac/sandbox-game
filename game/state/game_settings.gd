@@ -1,15 +1,15 @@
 class_name GameSettings
 extends RefCounted
-## The player's settings: key bindings, display mode, UI scale, energy drain and day length
-## variation. Bindings live in Godot's InputMap (that is what the game reads); this class edits
-## them, remembers the project's defaults and keeps them in a ConfigFile, written on every
-## change. It has no UI code.
+## The player's settings: key bindings, display mode, UI scale, energy drain, day length
+## variation and audio. Bindings live in Godot's InputMap (that is what the game reads); this
+## class edits them, remembers the project's defaults and keeps them in a ConfigFile, written on
+## every change. It has no UI code.
 ##
 ## The file only holds what differs from the defaults, so an action added later, or one the
 ## file doesn't mention, keeps its default binding. The display mode is only stored once the
 ## player has chosen it; until then the window stays as the command line or project left it.
-## The UI scale, the energy drain and the day length variation are stored when they differ
-## from their defaults.
+## The UI scale, the energy drain, the day length variation and the audio settings are stored
+## when they differ from their defaults.
 
 ## Emitted when the player changes the energy drain; loading it does not, so whoever connects
 ## reads `energy_drain_factor()` once at start and then follows this.
@@ -20,6 +20,10 @@ signal ui_scale_changed(scale: float)
 ## Emitted when the player changes the day length variation; loading it does not, so whoever
 ## uses it reads `day_length_variation_factor()` once at start and then follows this.
 signal day_length_changed
+
+## Emitted when the player changes a volume or "Sound in background"; loading does not, so
+## whoever applies the audio settings does it once after `load_file()` and then on this.
+signal audio_changed
 
 enum EnergyDrain { LOW, NORMAL, HIGH }
 
@@ -40,6 +44,8 @@ const GAME_SECTION := "game"
 const UI_SCALE_KEY := "ui_scale"
 const ENERGY_DRAIN_KEY := "energy_drain"
 const DAY_LENGTH_KEY := "day_length_variation"
+const AUDIO_SECTION := "audio"
+const SOUND_IN_BACKGROUND_KEY := "in_background"
 
 const MIN_UI_SCALE := 0.5
 const MAX_UI_SCALE := 2.0
@@ -56,6 +62,13 @@ const ENERGY_DRAIN_FACTORS := {EnergyDrain.LOW: 0.5, EnergyDrain.NORMAL: 1.0, En
 const MAX_DAY_LENGTH_VARIATION := 100
 const DAY_LENGTH_VARIATION_STEP := 10
 const DEFAULT_DAY_LENGTH_VARIATION := 100
+
+## The volume sliders (also the keys in the file): percent, in steps.
+const VOLUME_CHANNELS: Array[StringName] = [&"master", &"effects", &"ambience"]
+const MAX_VOLUME := 100
+const VOLUME_STEP := 5
+const DEFAULT_VOLUME := 100
+const DEFAULT_SOUND_IN_BACKGROUND := true
 
 const ACTION_LABELS := {
 	&"use": "Use",
@@ -104,8 +117,11 @@ var is_fullscreen := false
 var ui_scale := DEFAULT_UI_SCALE
 var energy_drain := DEFAULT_ENERGY_DRAIN
 var day_length_variation := DEFAULT_DAY_LENGTH_VARIATION
+var sound_in_background := DEFAULT_SOUND_IN_BACKGROUND
 
 var _has_chosen_fullscreen := false
+## Channel (see VOLUME_CHANNELS) -> percent.
+var _volumes := {}
 var _path: String
 ## Action -> its events in the project's input map, taken before anything is changed.
 var _defaults := {}
@@ -114,6 +130,8 @@ var _defaults := {}
 ## Create it before the input map is changed, as it takes the defaults from it.
 func _init(path: String = DEFAULT_PATH) -> void:
 	_path = path
+	for channel in VOLUME_CHANNELS:
+		_volumes[channel] = DEFAULT_VOLUME
 	for action in actions():
 		_defaults[action] = InputMap.action_get_events(action)
 	var mode := DisplayServer.window_get_mode()
@@ -275,6 +293,24 @@ func day_length_variation_factor() -> float:
 	return day_length_variation / 100.0
 
 
+## A volume in percent, 0 to 100.
+func volume_percent(channel: StringName) -> int:
+	return _volumes[channel]
+
+
+## Percent, kept in range and on the slider's steps.
+func set_volume(channel: StringName, percent: int) -> void:
+	_volumes[channel] = _clamped_volume(percent)
+	_save()
+	audio_changed.emit()
+
+
+func set_sound_in_background(value: bool) -> void:
+	sound_in_background = value
+	_save()
+	audio_changed.emit()
+
+
 ## Reads the file and applies it. A file that can't be read or understood is ignored (with a
 ## warning), as is any single entry that isn't understood. A missing file is normal.
 func load_file() -> void:
@@ -298,6 +334,7 @@ func load_file() -> void:
 		else:
 			push_warning("Ignoring display setting in %s: not true or false" % _path)
 	_load_game_section(file)
+	_load_audio_section(file)
 
 
 func _load_game_section(file: ConfigFile) -> void:
@@ -321,6 +358,23 @@ func _load_game_section(file: ConfigFile) -> void:
 			day_length_variation = _clamped_variation(value)
 		else:
 			push_warning("Ignoring day length variation in %s: not a whole number 0 to 100" % _path)
+
+
+func _load_audio_section(file: ConfigFile) -> void:
+	for channel in VOLUME_CHANNELS:
+		if not file.has_section_key(AUDIO_SECTION, channel):
+			continue
+		var value: Variant = file.get_value(AUDIO_SECTION, channel)
+		if value is int and value >= 0 and value <= MAX_VOLUME:
+			_volumes[channel] = _clamped_volume(value)
+		else:
+			push_warning("Ignoring %s volume in %s: not a whole number 0 to 100" % [channel, _path])
+	if file.has_section_key(AUDIO_SECTION, SOUND_IN_BACKGROUND_KEY):
+		var value: Variant = file.get_value(AUDIO_SECTION, SOUND_IN_BACKGROUND_KEY)
+		if value is bool:
+			sound_in_background = value
+		else:
+			push_warning("Ignoring sound in background in %s: not true or false" % _path)
 
 
 func _load_action(file: ConfigFile, action: StringName) -> void:
@@ -394,6 +448,11 @@ func _save() -> void:
 		file.set_value(GAME_SECTION, ENERGY_DRAIN_KEY, ENERGY_DRAIN_NAMES[energy_drain])
 	if day_length_variation != DEFAULT_DAY_LENGTH_VARIATION:
 		file.set_value(GAME_SECTION, DAY_LENGTH_KEY, day_length_variation)
+	for channel in VOLUME_CHANNELS:
+		if _volumes[channel] != DEFAULT_VOLUME:
+			file.set_value(AUDIO_SECTION, channel, _volumes[channel])
+	if sound_in_background != DEFAULT_SOUND_IN_BACKGROUND:
+		file.set_value(AUDIO_SECTION, SOUND_IN_BACKGROUND_KEY, sound_in_background)
 	var error := DirAccess.make_dir_recursive_absolute(_path.get_base_dir())
 	if error == OK:
 		error = file.save(_path)
@@ -427,6 +486,10 @@ static func _clamped_variation(percent: int) -> int:
 		0,
 		MAX_DAY_LENGTH_VARIATION
 	)
+
+
+static func _clamped_volume(percent: int) -> int:
+	return clampi(roundi(float(percent) / VOLUME_STEP) * VOLUME_STEP, 0, MAX_VOLUME)
 
 
 static func _set_bindings(action: StringName, events: Array) -> void:

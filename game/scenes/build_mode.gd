@@ -10,6 +10,8 @@ extends Node2D
 
 ## The message to show, or "" to hide it. It is drawn by the UI, outside the world viewport.
 signal message_changed(text: String)
+## A click or Use tried to place the building and could not.
+signal placement_refused
 
 const UNSAFE_LAND_MESSAGE := "This land doesn't look safe to build on."
 const OCCUPIED_MESSAGE := "Something is in the way."
@@ -123,7 +125,8 @@ func is_active() -> bool:
 
 func _place() -> void:
 	# Builder checks the rules again, so a ghost one frame behind can't place a blocked house.
-	builder.place(_origin)
+	if builder.place(_origin) == null:
+		placement_refused.emit()
 
 
 func _footprint() -> Vector2i:

@@ -9,6 +9,9 @@ extends Node2D
 ## `--pose=<up|down|left|right>[,<column>]` turns the player and optionally freezes the
 ## animation on a column of the sheet (0 idle, 1 to 4 the walk frames).
 
+## A foot came down: time for a footstep sound.
+signal stepped
+
 ## Frames per facing in every layer sheet: idle, walk 1 to 4.
 const FRAMES_PER_FACING := 5
 ## Sheet rows by facing, in the order the art generator draws them.
@@ -19,6 +22,8 @@ const IDLE_COLUMN := 0
 ## A walk cycle visits these columns, step after step.
 const WALK_COLUMNS := [1, 2, 3, 4]
 const WALK_FRAMES_PER_SECOND := 10.0
+## The walk frames where a foot comes down, two per cycle.
+const STEP_COLUMNS := [1, 3]
 ## The hair variants that `--hair` and F6 cycle through.
 const HAIR_COUNT := 2
 const HAIR_KEY := KEY_F6
@@ -26,7 +31,12 @@ const FACINGS_BY_NAME := {
 	"up": Vector2i.UP, "down": Vector2i.DOWN, "left": Vector2i.LEFT, "right": Vector2i.RIGHT
 }
 
+## How fast the player walks (see GameState `walk_speed_factor`); the walk animation, and so the
+## steps, keep that pace.
+var walk_speed := 1.0
+
 var _player: PlayerState
+var _last_column := IDLE_COLUMN
 var _last_position := Vector2.ZERO
 var _walk_time := 0.0
 var _hair := 0
@@ -74,12 +84,15 @@ func _process(delta: float) -> void:
 	_last_position = _player.position
 	position = (_player.position * TerrainTileset.TILE_SIZE).round()
 	if moved != Vector2.ZERO:
-		_walk_time += delta
+		_walk_time += delta * walk_speed
 	else:
 		_walk_time = 0.0
 	var column := frame_column(moved != Vector2.ZERO, _walk_time)
 	if _frozen_column >= 0:
 		column = _frozen_column
+	if column != _last_column and column in STEP_COLUMNS:
+		stepped.emit()
+	_last_column = column
 	_show_held_item()
 	_show_layers(_player.appearance.layers_for(_player.facing))
 	for sprite in _sprites:

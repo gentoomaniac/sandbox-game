@@ -7,7 +7,7 @@ extends CanvasLayer
 signal resumed
 signal save_and_quit_requested
 
-enum Page { PAUSE, SETTINGS, CONTROLS, DISPLAY, GAME }
+enum Page { PAUSE, SETTINGS, CONTROLS, DISPLAY, GAME, AUDIO }
 
 const THEME := preload("res://game/scenes/ui_theme.tres")
 const PANEL_WIDTH := 280
@@ -69,7 +69,9 @@ func _init(settings: GameSettings) -> void:
 	_first_focus[Page.PAUSE] = _add_button(
 		pause, "Resume", close, "Close the menu and go back to the game."
 	)
-	_add_button(pause, "Settings", _go_to.bind(Page.SETTINGS), "Keys, display and game options.")
+	_add_button(
+		pause, "Settings", _go_to.bind(Page.SETTINGS), "Keys, audio, display and game options."
+	)
 	_add_button(pause, "Save and quit", save_and_quit_requested.emit, "Save the game and close it.")
 
 	var settings_page := _add_page(pages, Page.SETTINGS, "Settings")
@@ -78,6 +80,9 @@ func _init(settings: GameSettings) -> void:
 	)
 	_add_button(
 		settings_page, "Game", _go_to.bind(Page.GAME), "UI scale, energy drain and day length."
+	)
+	_add_button(
+		settings_page, "Audio", _go_to.bind(Page.AUDIO), "Volumes and sound in the background."
 	)
 	_add_button(settings_page, "Display", _go_to.bind(Page.DISPLAY), "Fullscreen or windowed.")
 	_add_button(settings_page, "Back", _back)
@@ -122,6 +127,12 @@ func _init(settings: GameSettings) -> void:
 	pages.add_child(controls)
 	_pages[Page.CONTROLS] = controls
 	_first_focus[Page.CONTROLS] = controls.first_focus
+
+	var audio := AudioPage.new(_settings)
+	audio.back_requested.connect(_back)
+	pages.add_child(audio)
+	_pages[Page.AUDIO] = audio
+	_first_focus[Page.AUDIO] = audio.first_focus
 
 
 ## Opens the menu on the pause page, or on `page` (a debug flag uses that).
@@ -175,6 +186,8 @@ func _show_page(page: Page) -> void:
 		_show_game_settings()
 	elif page == Page.CONTROLS:
 		_pages[page].show_bindings()
+	elif page == Page.AUDIO:
+		_pages[page].show_settings()
 	_first_focus[page].grab_focus()
 
 
