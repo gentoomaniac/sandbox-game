@@ -126,13 +126,19 @@ static func from_dict(data: Dictionary, home_map: GameMap) -> PlayerState:
 	return player
 
 
-## Whether a player with their feet at `feet` fits: every tile their body touches is walkable.
-static func can_stand_at(map: GameMap, feet: Vector2) -> bool:
+## The tiles the body of a player with their feet at `feet` touches.
+static func body_tiles(feet: Vector2) -> Rect2i:
 	var top_left := Vector2i(Vector2(feet.x - BODY_HALF_WIDTH, feet.y - BODY_HEIGHT).floor())
 	# Ceiling minus one: a body that ends exactly on a tile edge does not touch the next tile.
 	var bottom_right := Vector2i(int(ceilf(feet.x + BODY_HALF_WIDTH)) - 1, int(ceilf(feet.y)) - 1)
-	for y in range(top_left.y, bottom_right.y + 1):
-		for x in range(top_left.x, bottom_right.x + 1):
+	return Rect2i(top_left, bottom_right - top_left + Vector2i.ONE)
+
+
+## Whether a player with their feet at `feet` fits: every tile their body touches is walkable.
+static func can_stand_at(map: GameMap, feet: Vector2) -> bool:
+	var tiles := body_tiles(feet)
+	for y in range(tiles.position.y, tiles.end.y):
+		for x in range(tiles.position.x, tiles.end.x):
 			if not map.is_walkable(Vector2i(x, y)):
 				return false
 	return true

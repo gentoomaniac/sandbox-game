@@ -133,6 +133,23 @@ func test_a_panel_opening_and_closing_is_heard() -> void:
 	assert_eq(_events, [&"ui_open", &"ui_close"])
 
 
+func test_the_storage_screen_squeaks_open_and_thumps_shut() -> void:
+	_sounds.watch_panel(func() -> bool: return _is_panel_open, &"chest_open", &"chest_close")
+	_is_panel_open = true
+	simulate(_sounds, 2, 0.1)
+	_is_panel_open = false
+	simulate(_sounds, 2, 0.1)
+	assert_eq(_events, [&"chest_open", &"chest_close"])
+
+
+func test_placing_a_chest_and_taking_one_down_inside_are_heard() -> void:
+	_hold_quietly(ItemTypes.CHEST)
+	_sounds.used(GameState.Use.PLACE, _tile)
+	_sounds.used(GameState.Use.TAKE_DOWN, _tile)
+	_sounds.used(GameState.Use.NO_ROOM, _tile)
+	assert_eq(_events, [&"build_place", &"axe_chop", &"denied"])
+
+
 func test_a_button_clicks_when_pressed() -> void:
 	var root := Control.new()
 	var button := Button.new()

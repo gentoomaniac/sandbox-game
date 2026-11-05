@@ -14,7 +14,9 @@ extends RefCounted
 ##   `stats`, {"Warmth": 2, ...} values the tooltip lists (none yet);
 ## - plants: seeds (of a crop or of a tree); the world object type that grows from them,
 ##   `plants_on` the terrain it needs (soil if not given) and `plants_state` the state the new
-##   object starts with.
+##   object starts with;
+## - places: using it puts the world object type of this name on a free tile and takes one away
+##   (the chest).
 
 const HOE := &"hoe"
 const AXE := &"axe"
@@ -23,6 +25,7 @@ const WATERING_CAN := &"watering_can"
 const SCYTHE := &"scythe"
 const SHOVEL := &"shovel"
 const HAMMER := &"hammer"
+const CHEST := &"chest"
 const TURNIP_SEEDS := &"turnip_seeds"
 const TURNIP := &"turnip"
 const LOGS := &"logs"
@@ -119,6 +122,14 @@ const _OTHER_TYPES := {
 		"stack_limit": 1,
 		"tool": HAMMER,
 		"level": 1,
+	},
+	CHEST:
+	{
+		"name": "Chest",
+		"description": "Stores items. Place it outside or in a house; the axe takes it down.",
+		"weight": 4.0,
+		"stack_limit": 10,
+		"places": WorldObjectTypes.CHEST,
 	},
 	HAY:
 	{
@@ -250,6 +261,11 @@ static func icon_path(item: StringName) -> String:
 ## The item's 8x8 picture for when it lies on the ground (see tools/art/items.py).
 static func ground_icon_path(item: StringName) -> String:
 	return GROUND_ICON_PATH % item
+
+
+## The world object type that using the item puts down, or &"" if it puts none down.
+static func placed_object(item: StringName) -> StringName:
+	return TYPES.get(item, {}).get("places", &"")
 
 
 ## How many hit points one hit of this tool takes off.

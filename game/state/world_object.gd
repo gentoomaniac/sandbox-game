@@ -8,16 +8,26 @@ var type: StringName
 ## World tile position.
 var pos: Vector2i
 var state := {}
+## What a chest holds, if the type has `storage_slots`; null for anything that stores nothing.
+## It is saved with the object.
+var storage: ItemSlots
 
 
 func _init(object_type: StringName, world_pos: Vector2i) -> void:
 	assert(WorldObjectTypes.TYPES.has(object_type), "Unknown object type: %s" % object_type)
 	type = object_type
 	pos = world_pos
+	if type_data().has("storage_slots"):
+		storage = ItemSlots.new(type_data()["storage_slots"])
 
 
 func to_dict() -> Dictionary:
-	return {"type": str(type), "pos": SaveCodec.vector_to_json(pos), "state": state.duplicate()}
+	var data := {
+		"type": str(type), "pos": SaveCodec.vector_to_json(pos), "state": state.duplicate()
+	}
+	if storage != null:
+		data["storage"] = storage.slots_to_data()
+	return data
 
 
 static func from_dict(data: Dictionary) -> WorldObject:
@@ -25,6 +35,9 @@ static func from_dict(data: Dictionary) -> WorldObject:
 	# Left as parsed: JSON numbers are floats, so the typed accessors convert.
 	object.state = data["state"].duplicate()
 	CropLife.upgrade_old_state(object)
+	# An object saved before it could store anything (an interior's chest) has an empty store.
+	if object.storage != null and data.has("storage"):
+		object.storage.load_slots(data["storage"])
 	return object
 
 

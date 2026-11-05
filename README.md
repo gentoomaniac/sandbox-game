@@ -143,6 +143,24 @@ your energy. A message says what happened before the morning fades in.
 
 ![Passing out: kneeling, tipping over, asleep, and the message on waking](docs/screenshots/passing-out.png)
 
+### Crafting and chests
+
+Press C for the crafting menu. It lists what you can make with what you carry; a recipe you
+can't afford yet is greyed, with the missing materials marked, and hovering shows what is
+missing. The first recipe is the chest, for 5 logs. The recipes are in
+[data/recipes.cfg](data/recipes.cfg).
+
+![The crafting menu with a chest recipe](docs/screenshots/crafting.png)
+
+Hold a chest and a ghost shows where it would go: green where it fits, red where it doesn't
+(not on water, wetland or floodplain, not on something else, not in front of a door). Use it
+to place the chest, outdoors or inside a house. Press E in front of a chest to open it: your
+inventory is on the left and the chest's 15 slots on the right. Click an item and click a
+slot to move it, or Shift+click to send a whole stack across. The axe takes a chest down and
+spills what it held.
+
+![The storage screen of a chest](docs/screenshots/chest.png)
+
 ### Settings and controls
 
 You can rebind every key, including mouse buttons. You can also switch between fullscreen
@@ -166,7 +184,7 @@ arguments.
 | `help` | List the commands. |
 | `tp <x> <y>` | Teleport to a world tile outside (F3 shows your coordinates). |
 | `give <item> [count]` | Put items in the inventory. |
-| `god`, `nodrain`, `noweight`, `nocost` | Toggle invincibility, free actions, weight costing nothing, and buildings needing no materials. |
+| `god`, `nodrain`, `noweight`, `nocost` | Toggle invincibility, free actions, weight costing nothing, and buildings and crafting needing no materials. |
 | `weather`, `weather <condition>`, `weather auto` | Show the weather, force a condition, or go back to the simulation. |
 | `snow`, `snow <0..1>`, `snow auto` | Show the snow cover, force it, or go back to the weather. |
 | `spawn <animal> [count]` | Put animals nearby. |
@@ -185,7 +203,8 @@ These are the default keys; all of them can be changed under Settings → Contro
 | Space or left click | Use the held item on the targeted tile |
 | 1–0 | Pick a hotbar slot |
 | Tab | Character screen and inventory |
-| E | Sleep until morning (next to a bed; with the hammer in hand it picks the next building) |
+| C | Crafting menu |
+| E | Open the chest in front of you, else sleep until morning (next to a bed); with the hammer in hand it picks the next building |
 | B | Take the hammer: build mode |
 | Q, E | Previous and next building (while holding the hammer) |
 | Mouse wheel | Zoom |
@@ -227,7 +246,7 @@ fresh world, run `godot --path . -- --new-game`.
 - **Sound:** all sounds are synthesised by [tools/audio/generate.py](tools/audio/generate.py)
   into assets/sounds/; its docstring explains how to tune or replace one.
 - **Data files:** gameplay numbers you might want to tune live in
-  [data/](data/) (energy, crops, buildings, weather, seasons, vegetation, wildlife, sounds, ambience).
+  [data/](data/) (energy, crops, buildings, recipes, weather, seasons, vegetation, wildlife, sounds, ambience).
 - **Design:** the design is in [SPEC.md](SPEC.md).
 - **Debug flags:** command-line flags for screenshots and debugging (time, day, weather,
   position and more) are listed at the top of [game/scenes/main.gd](game/scenes/main.gd).

@@ -695,21 +695,31 @@ Decided 2026-11-05.
   with the missing materials marked. Clicking an affordable one takes the materials and puts
   the item in the inventory. Recipes are in `data/recipes.cfg` (result, count, materials),
   validated like the other data files. Crafting works anywhere for now (a workbench may
-  come later); the hammer is a later recipe.
+  come later); the hammer is a later recipe. When the result would not fit in the inventory
+  (once the materials are taken) crafting is refused and the menu says so; nothing is
+  dropped. The game does not pause while the menu is open (as with the character screen),
+  but the player neither walks nor acts. C or Escape closes it.
 - **First recipe: the chest**, 5 logs. A chest holds 15 slots (5×3).
 - **Placing a chest:** held like seeds; while it is held a ghost of the chest follows the
   targeted tile, and using it places the chest there. The same rules as for buildings, just
-  on one tile: not on blocked or unsafe tiles, not in the way of a door. Chests can be
-  placed outdoors and inside houses (the first furniture the player places in an
-  interior).
+  on one tile: not on blocked or unsafe tiles, not in the way of a door (the tile in front
+  of it), not on the player. The ghost is green where it fits and red where it doesn't.
+  Chests can be placed outdoors and inside houses (the first furniture the player places in
+  an interior): inside, on free floor, not on walls, furniture, the exit or the tile inside
+  it.
 - **Opening a chest:** E on a chest within reach opens the storage screen (a chest on the
-  targeted tile wins over sleeping; with the hammer held E still picks the next building).
+  targeted tile wins over sleeping; with a bed in reach and no chest targeted the player
+  sleeps, without a bed the nearest chest in reach opens; with the hammer held outdoors E
+  still picks the next building).
   The player's inventory is on the left, the chest's 5×3 slots on the right, with a small
   backpack icon above the one and a chest icon above the other (equipment is not shown).
   Items move by dragging as on the character screen; Shift+click sends a whole stack to the
   other side. Opening makes a creaky squeak, closing a soft wooden thump.
-- **Picking a chest up:** hitting it with the axe takes it down and gives the chest item
-  back; its contents spill onto the ground as piles around it.
+- **Picking a chest up:** hitting it with the axe (three hits outdoors) takes it down and
+  gives the chest item back; its contents spill onto the ground as piles around it. Inside
+  a house there is no ground to spill on: one swing of the axe puts the chest item and its
+  contents into the inventory, if they all fit (otherwise nothing happens and the player is
+  told).
 - A chest and its contents are saved with the world (outdoors) or the building's inside.
 
 ### Building and land

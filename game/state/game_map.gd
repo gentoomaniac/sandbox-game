@@ -15,6 +15,22 @@ func object_at(_pos: Vector2i) -> WorldObject:
 	return null
 
 
+## Whether a one tile object can be put on a tile.
+func is_placeable(_pos: Vector2i) -> bool:
+	return false
+
+
+## Puts an object on every tile it covers.
+func add_object(_object: WorldObject) -> void:
+	pass
+
+
+## Takes the object that covers a tile off the map and returns it, or returns null if there was
+## none.
+func remove_object(_pos: Vector2i) -> WorldObject:
+	return null
+
+
 ## Tile rules combined with the objects on the tile. False where there is no tile.
 func is_walkable(pos: Vector2i) -> bool:
 	var tile := tile_at(pos)

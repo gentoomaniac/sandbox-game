@@ -1091,7 +1091,32 @@ anyway, so one shader serves both. Sparks and the light flicker stay.
 
 ## 49. Crafting and the chest
 
-- [ ] Done
+- [x] Done
+
+Done: data/recipes.cfg (validated by RecipeRules, required keys, checked at start) holds the
+recipes (the chest, 5 logs); Crafting (state) takes the materials and gives the item, and
+refuses (`NO_ROOM`) when the result would not fit once the materials are gone, rather than
+dropping it. C (rebindable) opens CraftingScreen: a RecipeRow per recipe with icon, name,
+carried/needed per material, greyed when short (tooltip says what is missing). The chest is
+a WorldObjectTypes type with `storage_slots` (a WorldObject `storage`, an ItemSlots, saved
+with the object, outdoors in the world's edits and inside in the interior; no save version
+bump, a chest saved without storage loads empty) and an item with `places`. Holding it, the
+UseHighlight draws a green or red ghost on the targeted tile (World/Interior
+`is_placeable`: buildable land, nothing on it, not in front of a door; inside free floor but
+not the exit or entry tile; never under the player's body). The highlight now works inside
+houses too, so chests are placed there as well; inside, the axe takes a chest down into the
+inventory with its contents (`TAKE_DOWN`, or `NO_ROOM` if they don't fit). Outdoors the axe
+hits it like a stump (3 hits) and the chest item and its contents spill as piles
+(`drop_items`). E opens StorageScreen for the chest on the targeted tile, before sleeping;
+with a bed in reach it sleeps, without one the nearest chest in reach opens; with the hammer
+held outdoors E is still the next building. Inventory (left) and the 5×3 chest (right) with
+backpack and chest icons, click to pick up and put down, Shift+click sends a stack across
+(what doesn't fit stays). Inventory and chests share ItemSlots (`move_to`, `send`). New
+sounds chest_open (creak) and chest_close (thump) in tools/audio. Art: chest picture
+(tools/art/chest.py) for the world with snow look, interior and icon, header icons. Tests:
+recipes and crafting, placement rules, E precedence, moves, felling and spilling, saves.
+Left over: the crafting menu and storage screen don't stop the clock (like the character
+screen); the `nocost` cheat makes crafting free too.
 
 See SPEC.md "Crafting". The crafting menu on C with `data/recipes.cfg` (first recipe: the
 chest, 5 logs); the chest item, placed like seeds with a one-tile ghost under the building

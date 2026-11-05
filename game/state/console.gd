@@ -11,7 +11,7 @@ const COMMANDS := {
 	"god": ["god", "Toggle invincibility: health never drops (energy still runs out)."],
 	"nodrain": ["nodrain", "Toggle: actions cost no energy."],
 	"noweight": ["noweight", "Toggle: carried weight doesn't raise costs."],
-	"nocost": ["nocost", "Toggle: buildings need no materials."],
+	"nocost": ["nocost", "Toggle: buildings and crafting need no materials."],
 	"spawn":
 	[
 		"spawn <kind> [count]",

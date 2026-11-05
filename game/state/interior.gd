@@ -25,6 +25,19 @@ func object_at(pos: Vector2i) -> WorldObject:
 	return _objects.get(pos)
 
 
+## Free floor: not a wall, not furniture, not the exit and not the tile inside it, which has to
+## stay free for the player to come in.
+func is_placeable(pos: Vector2i) -> bool:
+	var tile := tile_at(pos)
+	return (
+		tile != null
+		and tile.terrain == Tile.Terrain.FLOOR
+		and object_at(pos) == null
+		and pos != exit_tile
+		and pos != entry_tile()
+	)
+
+
 func set_terrain(pos: Vector2i, terrain: Tile.Terrain) -> void:
 	var tile := Tile.new()
 	tile.terrain = terrain
@@ -36,6 +49,16 @@ func add_object(object: WorldObject) -> void:
 	for tile in object.tiles():
 		assert(not _objects.has(tile), "Interior tile %s is taken" % tile)
 		_objects[tile] = object
+
+
+## Takes the object that covers a tile off its tiles and returns it, or returns null if there is
+## none.
+func remove_object(pos: Vector2i) -> WorldObject:
+	var object := object_at(pos)
+	if object != null:
+		for tile in object.tiles():
+			_objects.erase(tile)
+	return object
 
 
 ## Each object once.

@@ -14,6 +14,8 @@ var _selected_slot := 0
 ## The panels to give an open and close sound: how to ask each if it is open, and whether it was.
 var _panel_checks: Array[Callable] = []
 var _panel_was_open: Array[bool] = []
+## The open and close event of each.
+var _panel_events: Array[Array] = []
 
 
 ## Starts listening to `state`'s world, `player_view`'s steps and `build_mode`'s refusals.
@@ -45,11 +47,12 @@ func listen(
 	state.player.inventory.changed.connect(_on_inventory_changed)
 
 
-## Plays ui_open and ui_close as a panel (the menu, a screen) opens and closes. `is_open` says
-## whether it is open now.
-func watch_panel(is_open: Callable) -> void:
+## Plays ui_open and ui_close (or the events given) as a panel (the menu, a screen) opens and
+## closes. `is_open` says whether it is open now.
+func watch_panel(is_open: Callable, open_event := &"ui_open", close_event := &"ui_close") -> void:
 	_panel_checks.append(is_open)
 	_panel_was_open.append(is_open.call())
+	_panel_events.append([open_event, close_event])
 
 
 ## Plays ui_click when a button, or an inventory slot, under `root` is pressed.
@@ -75,7 +78,7 @@ func _process(_delta: float) -> void:
 		var is_open: bool = _panel_checks[index].call()
 		if is_open != _panel_was_open[index]:
 			_panel_was_open[index] = is_open
-			_audio.play(&"ui_open" if is_open else &"ui_close")
+			_audio.play(_panel_events[index][0 if is_open else 1])
 
 
 func _on_step() -> void:

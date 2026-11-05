@@ -40,6 +40,8 @@ static func _kind_line(item: StringName, type: Dictionary) -> String:
 		return "Equipment"
 	if type.has("plants"):
 		return "Seeds"
+	if type.has("places"):
+		return "Placeable"
 	if EnergyRules.default_rules().is_food(item):
 		return "Food"
 	return "Resource"

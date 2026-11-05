@@ -54,7 +54,11 @@ static func use(result: GameState.Use, held_tool: StringName) -> StringName:
 			return &"scythe_swish"
 		GameState.Use.DIG:
 			return &"shovel_dig"
-		GameState.Use.NEEDS_BETTER_TOOL:
+		GameState.Use.PLACE:
+			return &"build_place"
+		GameState.Use.TAKE_DOWN:
+			return &"axe_chop"
+		GameState.Use.NEEDS_BETTER_TOOL, GameState.Use.NO_ROOM:
 			return &"denied"
 		GameState.Use.NOTHING:
 			return &"scythe_swish" if held_tool == ItemTypes.SCYTHE else &""

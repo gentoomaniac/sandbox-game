@@ -10,7 +10,9 @@ extends RefCounted
 ## - atlas_row, variants: where its looks are in assets/objects.png (see the art generator).
 ## Furniture, which only stands inside buildings, has `interior_sprite` (its picture in
 ## assets/interior/) instead of atlas_row and variants. The picture is centred on the
-## footprint, its bottom on the footprint's bottom edge. Optional:
+## footprint, its bottom on the footprint's bottom edge. The chest stands in both places, so it
+## has both, and the ghost of an object the player places uses the interior picture. Optional:
+## - storage_slots: it holds items, this many slots (a chest, see WorldObject `storage`);
 ## - bed: the object is a bed (what sleeping in it fills is in data/energy.cfg, [sleep]);
 ## - growth_stages: the object is a crop (all of them come from data/crops.cfg, see CropRules,
 ##   which says what the other values of a crop type are). Its picture sheet is not in the
@@ -97,6 +99,8 @@ const _FIRST_TRUNK_ROW := 14
 const _REEDS_ROW := 22
 ## The atlas row of the dead tree's stump, after the reeds.
 const _DEAD_STUMP_ROW := 23
+## The atlas row of the chest, after the dead tree's stump.
+const _CHEST_ROW := 24
 
 const _OTHER_TYPES := {
 	OAK:
@@ -314,9 +318,15 @@ const _OTHER_TYPES := {
 	},
 	CHEST:
 	{
+		"hp": 3,
+		"tool": &"axe",
+		"drops": {&"chest": 1},
+		"storage_slots": 15,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": true,
-		"harvest_level": 0,
+		"harvest_level": 1,
+		"atlas_row": _CHEST_ROW,
+		"variants": 1,
 		"interior_sprite": "res://assets/interior/chest.png",
 	},
 	HEARTH:

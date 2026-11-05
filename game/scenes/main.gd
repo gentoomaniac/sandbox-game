@@ -30,7 +30,11 @@ extends Node2D
 ## (see DebugMow; with `--day=45` for summer);
 ## `--console=<line>;<line>` runs those console commands at start and leaves the console
 ## open (see ConsoleView); `--zoom=<z>` sets the camera zoom; `--coordinates` shows the
-## coordinates (F3); `--inventory` opens the character screen at start;
+## coordinates (F3); `--inventory` opens the character screen at start, `--crafting` the
+## crafting menu; `--hold=<item>` puts 5 of an item in the inventory and holds it (`chest`, say, to
+## see its ghost, with `--mouse-tile`); `--chest=<x>,<y>` puts a chest with some items on that tile
+## (see DebugChest), `--chest-inside=<x>,<y>` one inside the first house, on that tile of its
+## room (with `--inside`), and `--storage` opens the storage screen of that chest at start;
 ## `--wear=<item>` puts a wearable item on (`straw_hat`, `shirt`, ...);
 ## `--weather=<condition>` forces the weather (`clear`, `rain`, `snow`, `fog`, `wind`, `storm`,
 ## `thunder`; see WeatherView), `--flash` keeps the flash of lightning on, `--snow=<0..1>` forces
@@ -41,7 +45,8 @@ extends Node2D
 ## page (with `--screenshot`, the shot is of the menu). The console's `snow <0..1>` forces the snow
 ## cover (`snow auto` ends it), and F3 shows the snow cover and the frost.
 ## `--tooltip=<id>` shows the tooltip of a control as if the mouse rested on it: `hotbar_<0..9>`,
-## `inventory_<n>` and `equipment_<slot>` (with `--inventory`), `setting_ui_scale` and
+## `inventory_<n>` and `equipment_<slot>` (with `--inventory`), `recipe_<id>` (with `--crafting`),
+## `inventory_<n>` and `chest_<n>` (with `--storage`), `setting_ui_scale` and
 ## `setting_day_length` (with `--menu=game`), `setting_master_volume`, `setting_effects_volume`,
 ## `setting_ambience_volume` and `setting_sound_in_background` (with `--menu=audio`),
 ## `action_<action>` (with `--menu=controls`).
@@ -96,6 +101,8 @@ var _hotbar := HotbarHud.new()
 var _build_panel := BuildPanel.new()
 var _vitals := VitalsHud.new()
 var _character_screen := CharacterScreen.new()
+var _crafting_screen := CraftingScreen.new()
+var _storage_screen := StorageScreen.new()
 var _console_view := ConsoleView.new()
 var _cheat_hud := CheatHud.new()
 var _start_console_lines := PackedStringArray()
@@ -117,6 +124,11 @@ var _fade_screen := FadeScreen.new()
 var _sleep_at_start := false
 var _enter_first_house := false
 var _open_character_screen_at_start := false
+var _open_crafting_screen_at_start := false
+var _open_storage_screen_at_start := false
+var _debug_chest_tile := NO_TILE
+var _debug_chest_inside_tile := NO_TILE
+var _debug_chest: WorldObject
 var _settled_frames := 0
 var _screenshot_delay := 0.0
 var _pending_minutes := 0.0
@@ -145,6 +157,7 @@ func _ready() -> void:
 		or not WildlifeRules.default_rules().is_valid()
 		or not SeasonRules.default_rules().is_valid()
 		or not BuildingRules.default_rules().is_valid()
+		or not RecipeRules.default_rules().is_valid()
 		or not SoundRules.default_rules().is_valid()
 		or not AmbienceRules.default_rules().is_valid()
 		or not AssetCheck.report()
@@ -225,6 +238,18 @@ func _ready() -> void:
 			_sleep_at_start = true
 		elif arg == "--inventory":
 			_open_character_screen_at_start = true
+		elif arg == "--crafting":
+			_open_crafting_screen_at_start = true
+		elif arg == "--storage":
+			_open_storage_screen_at_start = true
+		elif arg.begins_with("--hold="):
+			_hold(StringName(arg.trim_prefix("--hold=")))
+		elif arg.begins_with("--chest="):
+			var tile := arg.trim_prefix("--chest=").split_floats(",")
+			_debug_chest_tile = Vector2i(int(tile[0]), int(tile[1]))
+		elif arg.begins_with("--chest-inside="):
+			var tile := arg.trim_prefix("--chest-inside=").split_floats(",")
+			_debug_chest_inside_tile = Vector2i(int(tile[0]), int(tile[1]))
 		elif arg.begins_with("--console="):
 			_start_console_lines = arg.trim_prefix("--console=").split(";")
 		elif arg.begins_with("--zoom="):
@@ -297,6 +322,11 @@ func _ready() -> void:
 	_character_screen.show_player(_state.player)
 	if _open_character_screen_at_start:
 		_character_screen.toggle()
+	add_child(_crafting_screen)
+	_crafting_screen.show_crafting(Crafting.new(_state), _state.player.inventory)
+	if _open_crafting_screen_at_start:
+		_crafting_screen.toggle()
+	add_child(_storage_screen)
 	add_child(_cheat_hud)
 	_cheat_hud.show_cheats(_state.cheats)
 	add_child(_console_view)
@@ -343,12 +373,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		_console_view.open()
 		return
 	if event.is_action_pressed("pause"):
-		# Escape closes the console, then the character screen, then dismisses build mode (until
-		# the player holds the hammer again), then opens the menu.
+		# Escape closes the console, then a screen, then dismisses build mode (until the player
+		# holds the hammer again), then opens the menu.
 		if _console_view.is_open():
 			_console_view.close()
 		elif _character_screen.is_open():
 			_character_screen.toggle()
+		elif _crafting_screen.is_open():
+			_crafting_screen.toggle()
+		elif _storage_screen.is_open():
+			_storage_screen.close()
 		elif _build_mode.is_active():
 			_builder.dismiss()
 		else:
@@ -358,11 +392,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _console_view.is_open():
 		return
 	var can_use := _can_use()
-	if event.is_action_pressed("inventory"):
-		_character_screen.toggle()
-		return
-	# The open character screen takes the input: the player neither walks nor acts.
-	if _character_screen.is_open():
+	if _screens_take(event):
 		return
 	# A SubViewport only gets the events that are pushed into it. That does not mark the
 	# event as handled here, so Main still sees what BuildMode consumed.
@@ -376,9 +406,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		_state.player.inventory.select(hotbar_slot)
 	elif event.is_action_pressed("select_hammer"):
 		_builder.select_hammer()
-	# E also picks the next building (outdoors), so the hammer in hand doesn't put the player to bed.
+	# E also picks the next building (outdoors), so the hammer in hand doesn't open a chest or put
+	# the player to bed.
 	elif event.is_action_pressed("interact") and not _build_mode.is_active():
-		_try_sleep()
+		_interact()
 	elif _is_use_event(event) and can_use and _eat_held():
 		pass  # Eating needs no target: a held food is eaten instead of used on a tile.
 	elif event.is_action_pressed("use") and can_use:
@@ -400,15 +431,13 @@ func _process(delta: float) -> void:
 	_coordinates_hud.show_position(
 		_state.player.tile(), _state.is_inside(), _weather_and_sun_text(_weather)
 	)
-	var is_world_in_play := (
-		not _state.is_inside() and not _character_screen.is_open() and not _console_view.is_open()
-	)
+	var is_in_play := not _is_screen_open() and not _console_view.is_open()
 	_use_highlight.is_enabled = (
-		is_world_in_play and not _builder.is_building() and not _is_in_transition
+		is_in_play and not _builder.is_building() and not _is_in_transition
 	)
 	# Build mode only counts outdoors, in play and not during a transition; it keeps processing,
 	# to clear its message when it goes off.
-	_build_mode.visible = is_world_in_play and not _is_in_transition
+	_build_mode.visible = is_in_play and not _state.is_inside() and not _is_in_transition
 	_build_panel.visible = _build_mode.is_active()
 	# Out of energy after a use (or in a game saved while passing out), or up too late. A game
 	# that starts so shows the world first.
@@ -417,7 +446,7 @@ func _process(delta: float) -> void:
 		_pass_out()
 	if not _is_in_transition:
 		var direction := Vector2.ZERO
-		if not _character_screen.is_open() and not _console_view.is_open():
+		if not _is_screen_open() and not _console_view.is_open():
 			direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 		_player_view.walk_speed = _state.walk_speed_factor()
 		_state.player.move(_state.current_map, direction, delta, _player_view.walk_speed)
@@ -432,6 +461,7 @@ func _process(delta: float) -> void:
 	if _sleep_at_start and _view.is_settled:
 		_sleep_at_start = false
 		_try_sleep()
+	_place_debug_chests()
 	if not _start_wildlife.is_empty() and _view.is_settled and not _state.is_inside():
 		_spawn_start_wildlife()
 	if _debug_hit_tile != NO_TILE and _view.is_settled and not _state.is_inside():
@@ -487,6 +517,11 @@ func _is_use_event(event: InputEvent) -> bool:
 	return event.is_action_pressed("use") or event.is_action_pressed("use_click")
 
 
+## Whether a screen that takes the input (not the console) is open.
+func _is_screen_open() -> bool:
+	return _character_screen.is_open() or _crafting_screen.is_open() or _storage_screen.is_open()
+
+
 func _can_open_console() -> bool:
 	return not _console_view.is_open() and not get_tree().paused and not _is_in_transition
 
@@ -510,6 +545,10 @@ func _use_on(target: Targeting) -> void:
 	var use := _state.use_tile(target.tile)
 	_sounds.used(use, target.tile)
 	_tiredness_view.acted(use)
+	if _state.is_inside() and use in [GameState.Use.PLACE, GameState.Use.TAKE_DOWN]:
+		_interior_view.show_interior(_state.current_map)
+	if use == GameState.Use.NO_ROOM:
+		_harvest_hud.show_note("Not enough room in the inventory.")
 	if use == GameState.Use.NEEDS_BETTER_TOOL:
 		var tool_name: String = ItemTypes.TYPES[_state.player.inventory.held_item()]["name"]
 		_harvest_hud.show_note("Needs a better %s." % tool_name.to_lower())
@@ -560,6 +599,31 @@ func _tick_clock(delta: float) -> void:
 		_show_clock()
 
 
+## Opens and closes the screens on their keys. Returns whether a screen took the event: one that
+## is open takes all the input, so the player neither walks nor acts.
+func _screens_take(event: InputEvent) -> bool:
+	if _storage_screen.is_open():
+		if event.is_action_pressed("interact"):
+			_storage_screen.close()
+		return true
+	if event.is_action_pressed("crafting") and not _character_screen.is_open():
+		_crafting_screen.toggle()
+		return true
+	if event.is_action_pressed("inventory") and not _crafting_screen.is_open():
+		_character_screen.toggle()
+		return true
+	return _character_screen.is_open() or _crafting_screen.is_open()
+
+
+## E: opens the chest in reach, else sleeps in the bed in reach.
+func _interact() -> void:
+	var chest := _state.chest_to_open(_use_highlight.targeting().tile)
+	if chest == null:
+		_try_sleep()
+	else:
+		_storage_screen.open(chest, _state.player)
+
+
 ## Sleeps in the bed in reach until the morning: the new day shows on the black for a moment.
 func _try_sleep() -> void:
 	var bed := _state.bed_in_reach()
@@ -606,6 +670,7 @@ func _show_current_map() -> void:
 		_wildlife.clear()
 		_interior_view.show_interior(_state.current_map)
 	_player_view.reparent(_interior_view.entities if is_inside else _view.entities, false)
+	_use_highlight.reparent(_interior_view if is_inside else _view, false)
 	_show_clock()
 
 
@@ -617,11 +682,43 @@ func _start_sounds() -> void:
 	_sounds.listen(_audio, _state, _view, _player_view, _build_mode)
 	_sounds.click_on_press_in(_menu)
 	_sounds.click_on_press_in(_character_screen)
+	_sounds.click_on_press_in(_crafting_screen)
+	_sounds.click_on_press_in(_storage_screen)
 	_sounds.watch_panel(func() -> bool: return _menu.visible)
 	_sounds.watch_panel(_character_screen.is_open)
+	_sounds.watch_panel(_crafting_screen.is_open)
+	_sounds.watch_panel(_storage_screen.is_open, &"chest_open", &"chest_close")
 	_sounds.watch_panel(_console_view.is_open)
 	add_child(_ambience)
 	_ambience.listen(_audio, _state, _wildlife, _weather_view)
+
+
+## Debug (`--hold`): puts 5 of an item in the inventory and holds it, if it is on the hotbar.
+func _hold(item: StringName) -> void:
+	if not ItemTypes.TYPES.has(item):
+		push_error("--hold expects an item, got '%s'" % item)
+		return
+	var inventory := _state.player.inventory
+	inventory.add(item, 5)
+	for slot in Inventory.HOTBAR_SIZE:
+		if inventory.item_in(slot) == item:
+			inventory.select(slot)
+			return
+
+
+## Debug (`--chest`, `--chest-inside`, `--storage`): puts the asked chests where they go once
+## their map is drawn, and opens the storage screen of the last.
+func _place_debug_chests() -> void:
+	if _debug_chest_tile != NO_TILE and _view.is_settled and not _state.is_inside():
+		_debug_chest = DebugChest.create(_state.world, _debug_chest_tile)
+		_debug_chest_tile = NO_TILE
+	if _debug_chest_inside_tile != NO_TILE and _state.is_inside() and not _enter_first_house:
+		_debug_chest = DebugChest.create(_state.current_map, _debug_chest_inside_tile)
+		_interior_view.show_interior(_state.current_map)
+		_debug_chest_inside_tile = NO_TILE
+	if _open_storage_screen_at_start and _debug_chest != null:
+		_open_storage_screen_at_start = false
+		_storage_screen.open(_debug_chest, _state.player)
 
 
 ## Debug (`--hit`): hits the object on the asked tile, if there is one.
@@ -727,6 +824,9 @@ func _is_ready_to_shoot() -> bool:
 		(_view.is_settled or _state.is_inside())
 		and not _enter_first_house
 		and _debug_harvest_tile == NO_TILE
+		and _debug_chest_tile == NO_TILE
+		and _debug_chest_inside_tile == NO_TILE
+		and not _open_storage_screen_at_start
 	)
 
 

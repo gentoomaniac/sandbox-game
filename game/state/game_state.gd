@@ -10,8 +10,10 @@ extends RefCounted
 ## (a bush, a fern), CLEAR a dead crop that a hand pulls up, WATER a watering can wetting tilled
 ## soil, HIT a tool cut or mined at an object, NEEDS_BETTER_TOOL a tool that is too weak for the
 ## object, MOW a scythe cutting the tall grass and reeds around the target, DIG a shovel in grass
-## (which may find clay). What a harvest, a pick or a final hit gives lies on the ground (see World
-## `drop_items`).
+## (which may find clay), PLACE an item that puts an object down (a chest), TAKE_DOWN an axe taking
+## a chest down inside a house (outdoors it is a HIT), NO_ROOM that, with too little room in the
+## inventory for the chest and what it holds. What a harvest, a pick or a final hit gives lies on
+## the ground (see World `drop_items`).
 enum Use {
 	NOTHING,
 	TILL,
@@ -24,6 +26,9 @@ enum Use {
 	WATER,
 	MOW,
 	DIG,
+	PLACE,
+	TAKE_DOWN,
+	NO_ROOM,
 }
 
 ## The tools the use action has something to do with.
@@ -148,16 +153,19 @@ func pass_door() -> void:
 
 ## The nearest bed the player can reach, or null. Their own tile counts.
 func bed_in_reach() -> WorldObject:
-	var player_tile := player.tile()
-	var nearest: WorldObject = null
-	for y in range(-BED_REACH, BED_REACH + 1):
-		for x in range(-BED_REACH, BED_REACH + 1):
-			var object := current_map.object_at(player_tile + Vector2i(x, y))
-			if object == null or not object.is_bed():
-				continue
-			if nearest == null or _distance_to_player(object) < _distance_to_player(nearest):
-				nearest = object
-	return nearest
+	return _nearest_in_reach(func(object: WorldObject) -> bool: return object.is_bed())
+
+
+## The chest the use of E opens, or null. A chest on `target` (the targeted tile) wins; with a bed
+## in reach the player sleeps instead, and without one the nearest chest in reach is opened.
+func chest_to_open(target: Vector2i) -> WorldObject:
+	var targeted := current_map.object_at(target)
+	var offset := (target - player.tile()).abs()
+	if targeted != null and targeted.storage != null and maxi(offset.x, offset.y) <= BED_REACH:
+		return targeted
+	if bed_in_reach() != null:
+		return null
+	return _nearest_in_reach(func(object: WorldObject) -> bool: return object.storage != null)
 
 
 ## Sleeps until the next morning (WAKE_UP_MINUTE), makes the bed home and fills energy and
@@ -255,23 +263,24 @@ func pass_out() -> int:
 	return minutes
 
 
-## What `use` would do on a tile of the world (nothing inside) with the held item: a hoe
-## tills grass, crop seeds plant on soil and tree seeds on grass, a watering can wets dry tilled
-## soil, an empty hand harvests a ripe crop, clears a dead one or picks a bush, an axe or
-## pickaxe hits what it cuts or mines, a scythe mows if there is tall grass or reeds in its reach
-## (see `_mow_tiles`), and a shovel digs in any free grass: the player can't tell a clay spot from
-## the cursor.
-func use_at(world_pos: Vector2i) -> Use:
-	if is_inside():
-		return Use.NOTHING
-	var object := world.object_at(world_pos)
+## What `use` would do on a tile with the held item: a hoe tills grass, crop seeds plant on soil
+## and tree seeds on grass, a watering can wets dry tilled soil, an empty hand harvests a ripe crop,
+## clears a dead one or picks a bush, an axe or pickaxe hits what it cuts or mines, a scythe mows if
+## there is tall grass or reeds in its reach, a shovel digs in any free grass (the player can't tell
+## a clay spot from the cursor), and an item that places an object puts it on a free tile. Inside,
+## only placing and taking a chest down are possible.
+func use_at(pos: Vector2i) -> Use:
 	var held := player.inventory.held_item()
 	if held == ItemTypes.NONE:
-		return _use_by_hand(object)
+		return Use.NOTHING if is_inside() else _use_by_hand(world.object_at(pos))
 	var item: Dictionary = ItemTypes.TYPES[held]
-	if item.has("plants") and world.is_free_on(world_pos, item.get("plants_on", Tile.Terrain.SOIL)):
+	if item.has("places") and _can_place_on(pos):
+		return Use.PLACE
+	if is_inside():
+		return _use_inside(item, pos)
+	if item.has("plants") and world.is_free_on(pos, item.get("plants_on", Tile.Terrain.SOIL)):
 		return Use.PLANT
-	return _use_tool(item, object, world_pos)
+	return _use_tool(item, world.object_at(pos), pos)
 
 
 ## Whether the held item does anything anywhere, so it is worth highlighting a target.
@@ -280,7 +289,7 @@ func can_use_held_item() -> bool:
 	if held == ItemTypes.NONE:
 		return true
 	var item: Dictionary = ItemTypes.TYPES[held]
-	return item.has("plants") or ACTIVE_TOOLS.has(item.get("tool"))
+	return item.has("plants") or item.has("places") or ACTIVE_TOOLS.has(item.get("tool"))
 
 
 ## Uses a tile (see `use_at`) and returns what was done, which costs energy (more the
@@ -336,6 +345,14 @@ func _do_use(target: Vector2i) -> Use:
 				world.drop_items(plant.pos, plant.picked_drops())
 		Use.DIG:
 			_dig(target)
+		Use.PLACE:
+			var held := player.inventory.held_item()
+			current_map.add_object(WorldObject.new(ItemTypes.TYPES[held]["places"], target))
+			player.inventory.remove(held, 1)
+		Use.TAKE_DOWN:
+			var items := _items_of_chest(current_map.remove_object(target))
+			for item: StringName in items:
+				player.inventory.add(item, items[item])
 		Use.HIT:
 			return _hit(world.object_at(target))
 	return use
@@ -371,6 +388,30 @@ func _dig(target: Vector2i) -> void:
 	world.spend_clay_spot(target)
 	if PositionHash.of(target, clock.day) % 100 < CLAY_DIG_CHANCE * 100:
 		world.drop_items(target, CLAY_DIG_YIELD)
+
+
+## Whether the player can put an object on a tile: it is free, and the player's body is not on it
+## (they would be stuck in it).
+func _can_place_on(pos: Vector2i) -> bool:
+	return (
+		current_map.is_placeable(pos) and not PlayerState.body_tiles(player.position).has_point(pos)
+	)
+
+
+## What an item does on a tile inside a house, other than placing: an axe takes down a chest.
+func _use_inside(item: Dictionary, pos: Vector2i) -> Use:
+	var chest := current_map.object_at(pos)
+	if chest == null or chest.storage == null or _use_cutting_tool(item, chest) != Use.HIT:
+		return Use.NOTHING
+	return Use.TAKE_DOWN if player.inventory.can_add(_items_of_chest(chest)) else Use.NO_ROOM
+
+
+## A chest and what it holds, item id to count: what taking it down gives.
+func _items_of_chest(chest: WorldObject) -> Dictionary:
+	var items := chest.storage.totals()
+	for item: StringName in chest.type_data()["drops"]:
+		items[item] = items.get(item, 0) + chest.type_data()["drops"][item]
+	return items
 
 
 ## Whether a tile is tilled soil that is not soaked yet. A crop may stand on it.
@@ -421,6 +462,8 @@ func _hit(object: WorldObject) -> Use:
 		return Use.HIT
 	var object_type := object.type_data()
 	var drops: Dictionary = object_type.get("drops", {}).duplicate()
+	if object.storage != null:
+		drops = _items_of_chest(object)
 	if _rolls_seed(object):
 		drops[object_type["seed"]] = 1
 	if not object_type.has("leaves"):
@@ -559,6 +602,21 @@ func _wake_up_tile() -> Vector2i:
 
 func _tile_centre(tile: Vector2i) -> Vector2:
 	return Vector2(tile) + Vector2(0.5, 0.5)
+
+
+## The nearest object on the map in the 3x3 tiles round the player (their own tile counts) that
+## `is_wanted` says yes to, or null.
+func _nearest_in_reach(is_wanted: Callable) -> WorldObject:
+	var player_tile := player.tile()
+	var nearest: WorldObject = null
+	for y in range(-BED_REACH, BED_REACH + 1):
+		for x in range(-BED_REACH, BED_REACH + 1):
+			var object := current_map.object_at(player_tile + Vector2i(x, y))
+			if object == null or not is_wanted.call(object):
+				continue
+			if nearest == null or _distance_to_player(object) < _distance_to_player(nearest):
+				nearest = object
+	return nearest
 
 
 func _distance_to_player(object: WorldObject) -> float:
