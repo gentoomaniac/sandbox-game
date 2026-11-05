@@ -336,12 +336,22 @@ Depends on: 6, 7, 8.
 
 Art notes from the art round 2 review and look:
 
+- Dense forest reads like an orchard: crowns barely overlap and every trunk shows.
+  Denser, overlapping canopies.
+- Dusk (18:30) comes out olive and muddy rather than warm orange; tune the tint gradient.
 - Lush and dry grass areas look blotchy; dry should differ in hue (yellower), not only
   brightness.
 - The grass texture is busy (many dark marks).
 - `tools/art/generate.py`: shared sprites (pebbles, fern, clover, brown caps) are defined
   several times; move them to module level. Add a small `size(picture)` helper.
 - No test yet that `redraw_tile` redraws decorations and unload erases them.
+
+Performance notes from the task 6 review:
+
+- Loading a chunk takes about 8 ms on average, with spikes up to 16 ms when crossing a
+  chunk border. Profile `_load_chunk` first. Likely fixes, cheapest first: generate
+  chunks on a `WorkerThreadPool` task (generation is pure); split drawing over frames;
+  skip `set_cell` for layers a cell doesn't use.
 
 World generation notes from the task 3 review:
 
