@@ -525,11 +525,12 @@ func _unload_chunk(coords: Vector2i) -> void:
 	var origin := Chunk.to_world(coords, Vector2i.ZERO)
 	_chunk_looks.erase(coords)
 	_refresh_queue.erase(coords)
+	var overlays := _overlays.values() + _variety_overlays.values()
 	for y in Chunk.CHUNK_SIZE:
 		for x in Chunk.CHUNK_SIZE:
 			for tile_map in _layers:
 				tile_map.erase_cell(origin + Vector2i(x, y))
-			for tile_map in _overlays.values() + _variety_overlays.values():
+			for tile_map in overlays:
 				tile_map.erase_cell(origin + Vector2i(x, y))
 			_decorations.erase_cell(origin + Vector2i(x, y))
 			_clay_hints.erase_cell(origin + Vector2i(x, y))
