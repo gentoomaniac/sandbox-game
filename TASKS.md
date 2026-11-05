@@ -613,7 +613,7 @@ See SPEC.md "Player" (character screen).
 
 ## 24. Console with cheat commands
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Console". Can run alongside 23.
 
