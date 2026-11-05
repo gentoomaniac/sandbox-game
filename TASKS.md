@@ -79,7 +79,7 @@ The tile-state model from SPEC.md ("Tile state").
 
 ## 3. World generation
 
-- [ ] Done
+- [x] Done
 
 Depends on: 2.
 
