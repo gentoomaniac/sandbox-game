@@ -334,6 +334,10 @@ Depends on: 6, 7, 8.
 
 ## Later (not part of the prototype)
 
+- Floodplain farming: floodplain is the most fertile farmland, but only grass can be tilled
+  now. Tilling it needs a "tilled" tile property that keeps the floodplain flag, so floods
+  can still act on it.
+
 Art notes from the art round 2 review and look:
 
 - Extra vegetation (done, branch `extra-vegetation`): spruce, pine, dead tree, berry bush,

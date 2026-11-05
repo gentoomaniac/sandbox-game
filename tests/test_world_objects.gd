@@ -50,8 +50,9 @@ func test_every_natural_object_type_is_generated() -> void:
 			var pos := Vector2i(x, y)
 			types[generator.object_type_at(pos, generator.terrain_at(pos))] = true
 	for object_type: StringName in WorldObjectTypes.TYPES:
-		# The camp is placed by the game, not generated.
-		if object_type in [WorldObjectTypes.FIREPLACE, WorldObjectTypes.SLEEPING_BAG]:
+		# The camp is placed by the game and crops by the player, not generated.
+		var is_crop: bool = WorldObjectTypes.TYPES[object_type].has("growth_stages")
+		if is_crop or object_type in [WorldObjectTypes.FIREPLACE, WorldObjectTypes.SLEEPING_BAG]:
 			continue
 		assert_true(types.has(object_type), "Missing object type %s" % object_type)
 

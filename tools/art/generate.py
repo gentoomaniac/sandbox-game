@@ -959,7 +959,7 @@ def crop_stage(*pictures):
 
 
 def turnip_stages():
-    mound = (("..hh..", ".hmmm.", "hmmmms"), 5, 10)
+    mound = ((".ee...", ".shhs.", "smmmms", ".ssss."), 5, 10)
     return [
         crop_stage(mound),
         crop_stage(mound, (("g...g.", ".g.g..", "..k..."), 5, 7)),
