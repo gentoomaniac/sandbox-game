@@ -56,7 +56,7 @@ opens an empty window.
 
 ## 2. Tile state
 
-- [ ] Done
+- [x] Done
 
 Depends on: 1.
 
