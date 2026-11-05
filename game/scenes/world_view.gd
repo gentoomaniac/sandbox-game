@@ -138,15 +138,14 @@ func refresh_vegetation() -> void:
 	var vegetation := world.vegetation
 	for coords in world.loaded_chunk_coords():
 		for object in world.chunk_at(coords).objects():
-			if (
-				object.type_data().has("seasonal")
-				and (
-					vegetation.is_present(object.type, world.world_seed, object.pos, drawn_day)
-					!= vegetation.is_present(
-						object.type, world.world_seed, object.pos, _vegetation_day
-					)
-				)
-			):
+			if not object.type_data().has("seasonal"):
+				continue
+			var world_seed := world.world_seed
+			var was_present := vegetation.is_present(object.type, world_seed, object.pos, drawn_day)
+			var is_present := vegetation.is_present(
+				object.type, world_seed, object.pos, _vegetation_day
+			)
+			if was_present != is_present:
 				_on_objects_changed(object.pos)
 
 

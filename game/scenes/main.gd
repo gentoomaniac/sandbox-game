@@ -78,8 +78,8 @@ var _start_zoom := 1.0
 
 
 func _ready() -> void:
-	if not EnergyRules.default_rules().is_valid():
-		# The load has reported the missing rules. Nothing else runs before the quit.
+	if not EnergyRules.default_rules().is_valid() or not Vegetation.default_vegetation().is_valid():
+		# The load has reported the missing rules or curves. Nothing else runs before the quit.
 		set_process(false)
 		set_process_unhandled_input(false)
 		get_tree().quit(1)
