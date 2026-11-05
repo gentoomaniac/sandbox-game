@@ -485,9 +485,9 @@ Decided 2026-11-05. A text console for testing and cheats.
   gone in winter (a vegetation curve). The scythe mows 4 tiles per swing: the 2 straight
   ahead and the tiles left and right of the nearer one (the nearer one is the targeted
   tile, "ahead" the way the player faces). Mowing nothing does nothing and costs nothing.
-  Tall grass doesn't block walking and a hand can't pick it. Each mown tuft gives 2 hay on
-  the ground and looks mown (stubble) for 4 days, then grows back. First numbers
-  (2026-11-05, tune in play).
+  Tall grass doesn't block walking, a hand can't pick it, and the hoe, planting and
+  building clear it (no hay). Each mown tuft gives 2 hay on the ground and looks mown
+  (stubble) for 4 days, then grows back. First numbers (2026-11-05, tune in play).
 - **Reeds:** dense stands on river and lake banks and at wetland edges, all year (green in
   summer, golden in autumn and winter). The scythe cuts them (the same 4-tile swing) into
   reeds on the ground. Cut reeds grow back only in their growing season: their needs

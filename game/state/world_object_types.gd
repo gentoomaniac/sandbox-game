@@ -32,6 +32,8 @@ extends RefCounted
 ## - regrow_days: picking it by hand does not remove it: it looks picked and gives its drops
 ##   again after this many days (berry bush); the atlas row then has the picked looks after
 ##   the normal ones, `variants` of each;
+## - clearable: it gives way to the hoe, planting and building, which remove it without a drop
+##   (tall grass);
 ## - tool (without hp): the item tool kind that mows it (tall grass): a hand can't pick it. A mown
 ##   one looks picked and grows back like a picked bush, see regrow_days;
 ## - matures_after_days: with the state `tree` set (a sapling that grows) it is replaced after
@@ -239,6 +241,7 @@ const _OTHER_TYPES := {
 	{
 		"drops": {&"hay": 2},
 		"tool": &"scythe",
+		"clearable": true,
 		"regrow_days": 4,
 		"seasonal": DORMANCY,
 		"footprint": Vector2i(1, 1),

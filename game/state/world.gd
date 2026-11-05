@@ -187,11 +187,11 @@ func _stored_object_at(world_pos: Vector2i) -> WorldObject:
 
 
 ## Changes the terrain of a loaded tile and remembers it as an edit, so it survives the
-## chunk unloading. A dormant plant on the tile is gone for good.
+## chunk unloading. A dormant plant or clearable object on the tile is gone for good.
 func set_terrain(world_pos: Vector2i, terrain: Tile.Terrain) -> void:
 	var chunk := chunk_at(Chunk.world_to_chunk(world_pos))
 	assert(chunk != null, "Chunk not loaded for tile at %s" % world_pos)
-	_clear_dormant(world_pos)
+	_clear_removable(world_pos)
 	chunk.set_terrain(Chunk.local_pos(world_pos), terrain)
 	_terrain_edits[world_pos] = terrain
 	tile_changed.emit(world_pos)
@@ -225,12 +225,12 @@ func tilled_tiles() -> Array[Vector2i]:
 
 
 ## Puts an object on its tiles. The chunk of its own tile must be loaded and its tiles free,
-## except for dormant plants, which are gone for good.
+## except for dormant plants and clearable objects, which are gone for good.
 func add_object(object: WorldObject) -> void:
 	var chunk := chunk_at(Chunk.world_to_chunk(object.pos))
 	assert(chunk != null, "Chunk not loaded for object at %s" % object.pos)
 	for tile in object.tiles():
-		_clear_dormant(tile)
+		_clear_removable(tile)
 	assert(
 		object.tiles().all(func(tile: Vector2i) -> bool: return object_at(tile) == null),
 		"Tiles already have an object: %s" % object.pos
@@ -341,12 +341,23 @@ func _take_off(object: WorldObject) -> void:
 		objects_changed.emit(tile)
 
 
-## Removes a dormant plant from a tile: whatever is put there now would otherwise have it
-## back in its way when its season comes.
-func _clear_dormant(world_pos: Vector2i) -> void:
+## Removes from a tile what gives way to whatever is put there: a dormant plant (it would
+## otherwise be back in the way when its season comes) and a clearable object (tall grass).
+func _clear_removable(world_pos: Vector2i) -> void:
 	var object := _stored_object_at(world_pos)
-	if object != null and is_dormant(object):
+	if object != null and (is_dormant(object) or _is_clearable(object)):
 		_take_off(object)
+
+
+## Whether an object is there, but gives way to what is tilled, planted or built on its tile.
+## The one rule that `is_free_on`, `is_buildable` and `placement_blockers` share.
+func _is_in_the_way(world_pos: Vector2i) -> bool:
+	var object := object_at(world_pos)
+	return object != null and not _is_clearable(object)
+
+
+func _is_clearable(object: WorldObject) -> bool:
+	return object.type_data().get("clearable", false)
 
 
 # Unloaded tiles have nothing to redraw; they are drawn when their chunk loads.
@@ -370,18 +381,19 @@ func is_buildable(world_pos: Vector2i) -> bool:
 	return (
 		tile != null
 		and tile.is_buildable()
-		and object_at(world_pos) == null
+		and not _is_in_the_way(world_pos)
 		and building_at(world_pos) == null
 	)
 
 
-## Whether a tile has this terrain and neither an object nor a building.
+## Whether a tile has this terrain and neither an object (a clearable one doesn't count) nor a
+## building.
 func is_free_on(world_pos: Vector2i, terrain: Tile.Terrain) -> bool:
 	var tile := tile_at(world_pos)
 	return (
 		tile != null
 		and tile.terrain == terrain
-		and object_at(world_pos) == null
+		and not _is_in_the_way(world_pos)
 		and building_at(world_pos) == null
 	)
 
@@ -408,7 +420,7 @@ func placement_blockers(
 		var tile := tile_at(pos)
 		if tile == null or not tile.is_buildable():
 			blockers[pos] = Blocked.TERRAIN
-		elif object_at(pos) != null or building_at(pos) != null:
+		elif _is_in_the_way(pos) or building_at(pos) != null:
 			blockers[pos] = Blocked.OCCUPIED
 	# The player has to be able to stand in front of the door, to go in and to come out.
 	var door_offset: Vector2i = BuildingTypes.TYPES[building_type]["door_offset"]
@@ -425,7 +437,7 @@ func place_building(building_type: StringName, origin: Vector2i) -> Building:
 		return null
 	var building := Building.new(building_type, origin)
 	for tile in building.tiles():
-		_clear_dormant(tile)
+		_clear_removable(tile)
 	_add_building(building)
 	building_placed.emit(building)
 	return building
