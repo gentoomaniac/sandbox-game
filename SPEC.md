@@ -422,6 +422,34 @@ Decided 2026-11-05. A text console for testing and cheats.
 - **Save format later:** seed + edits + buildings + player and clock state. Edits are also
   the natural unit to synchronise in multiplayer.
 
+### Ambient wildlife
+
+Decided 2026-11-05. Small animals that make the world feel alive. For now they are
+atmosphere only: no player impact, not hunted, not saved.
+
+- **Who and where:**
+  - birds: hop and peck on open ground, fly off when the player comes close; small flocks
+    cross the sky now and then (a shadow on the ground);
+  - rabbits: grassland and forest edges, hop about, flee in zigzags from the player;
+  - squirrels: forests, dart between trees, sit up, scurry off;
+  - deer: rare, in forests and at forest edges, mostly at dawn and dusk; graze, look up,
+    bound away when the player comes near;
+  - bees: at flowers by day in spring and summer;
+  - butterflies: over meadows and flowers by day in spring and summer.
+- **The world decides how many:** time of day (birds and insects by day, deer at dawn and
+  dusk, fewer animals at night), season (no insects in winter; fewer birds; rabbits and
+  squirrels still about), weather (animals hide in heavy rain, storms and dense fog), and
+  the land (each kind has its terrain).
+- **Size relative to the character (27–28 px tall):** deer about 20 px tall with the head
+  up, body about 18 px long; rabbit about 8×7 px; squirrel about 7×7 px; birds about
+  5×4 px; butterfly 3–4 px; bee 2–3 px. Each has a few animation frames, palette only,
+  in the art style of the world.
+- **How:** animals appear only near the player, out of sight or at the edge of the view,
+  and vanish when far away. Behaviour is a simple per-animal state machine (idle, move,
+  flee). The rules for how many and where are plain, testable logic; the animals
+  themselves are view nodes.
+- No animals inside buildings.
+
 ### Combat
 
 - **Real-time action combat.**

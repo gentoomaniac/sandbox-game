@@ -686,6 +686,26 @@ Depends on: 25. See SPEC.md "Vegetation density follows the year".
 - Tests: the curves, gradual change across days, dormancy of a fern in winter and its
   return in spring, harvesting unaffected otherwise, save/load.
 
+## 28. Ambient wildlife
+
+- [ ] Done
+
+Depends on: 26 (weather), ideally 27 (flowers present by season). See SPEC.md
+"Ambient wildlife".
+
+- Spawn rules as plain logic: kind, terrain, time of day, season, weather, distance to
+  the player, a cap per kind; animals appear out of view or at its edge and vanish far
+  away.
+- View nodes with small state machines: birds (peck, hop, fly off, flocks with shadows),
+  rabbits (hop, flee in zigzags), squirrels (dart, sit up, scurry), deer (graze, look up,
+  bound away; rare, dawn and dusk), bees (hover at flowers), butterflies (flutter over
+  meadows).
+- Art at the sizes in the spec, a few frames each, palette only; seasonal coats only if
+  cheap.
+- Y-sorted with the player and objects; see-through trees still work; nothing inside.
+- Tests: the spawn rules (no insects in winter, none in a storm, deer only in or near
+  forest, caps), fleeing distance.
+
 ## Later (not part of the prototype)
 
 - Split the object edits and regrowth (`_object_edits`, `replace_object`, `hit_object`,
