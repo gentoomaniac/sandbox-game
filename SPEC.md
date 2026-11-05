@@ -277,6 +277,21 @@ Decided 2026-11-05. A text console for testing and cheats.
 
 - Days and seasons work as is usual for the genre: crops grow day by day, and the season
   decides what grows.
+- **Vegetation density follows the year** (decided 2026-11-05):
+  - Ground cover (grass tufts, flowers, small plants, fallen leaves; the visual decoration
+    layer) has a density per kind that follows a smooth yearly curve: grass tufts sparse
+    in early spring, fullest in summer, thinning in autumn, a few dry stalks poking
+    through the snow in winter; flowers bloom in spring and summer, fallen leaves in
+    autumn.
+  - Each spot has a fixed random threshold (from the seed and position), and a plant shows
+    while the current density is above it. So plants come and go one by one over days,
+    not all on one morning.
+  - Seasonal plants among the world objects (fern bushes and similar soft plants) die back
+    in late autumn and regrow in spring the same way: while dormant they are not drawn,
+    don't block and can't be harvested. Woody plants (trees, berry bushes, shrubs) stay
+    all year and only change their look.
+  - Harvesting a seasonal plant still removes it as before; regrowth follows the existing
+    rules.
 - **Weather state** (decided 2026-11-05):
   - Four values: **humidity** (0–100 %), **wind speed** (m/s, with a direction),
     **temperature** (°C) and **sunlight** (0–100 %, cloud cover dims it).

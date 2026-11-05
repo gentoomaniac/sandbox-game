@@ -669,6 +669,21 @@ See SPEC.md "Time, seasons and weather" (weather state).
   out-of-season spells; temperature follows the sun (warmer while it's up, clouds damp
   the swing).
 
+## 27. Seasonal vegetation density
+
+- [ ] Done
+
+Depends on: 25. See SPEC.md "Vegetation density follows the year".
+
+- Decoration density per kind as a smooth yearly curve (data file), with a per-spot
+  threshold from PositionHash, so ground cover thins and fills gradually.
+- Seasonal world objects (fern bush and other soft plants) with a dormant period derived
+  from the day and a per-object threshold: not drawn, not blocking, not harvestable
+  while dormant; woody plants unchanged.
+- The view updates once per day (not every minute), only the chunks that are loaded.
+- Tests: the curves, gradual change across days, dormancy of a fern in winter and its
+  return in spring, harvesting unaffected otherwise, save/load.
+
 ## Later (not part of the prototype)
 
 - Split the object edits and regrowth (`_object_edits`, `replace_object`, `hit_object`,
