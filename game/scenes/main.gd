@@ -114,6 +114,7 @@ func _process(delta: float) -> void:
 		if _state.door_underfoot():
 			_fade_through(_pass_door)
 	if not _state.is_inside():
+		_view.player_feet = _player_view.position
 		_view.set_focus(_state.player.tile())
 	if _enter_first_house:
 		_enter_first_house_now()

@@ -11,6 +11,8 @@ extends RefCounted
 ## - sleep_minutes: the object is a bed, and sleeping in it takes this long;
 ## - growth_stages, days_per_stage: the object is a crop. Its `days_grown` state sets its
 ##   stage; the last stage is ripe. Its atlas variants are the stages.
+## - sprite_height: its picture's height in pixels, if it is tall enough to hide the player
+##   behind it (trees); only those become see-through (see Occlusion);
 ## - light: it shines: `color`, `energy` (of the brightest point) and `radius_tiles`.
 
 const OAK := &"oak"
@@ -35,6 +37,7 @@ const TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": 0,
+		"sprite_height": 40,
 		"variants": 3,
 	},
 	STONE:
@@ -70,6 +73,7 @@ const TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": 4,
+		"sprite_height": 45,
 		"variants": 3,
 	},
 	PINE:
@@ -78,6 +82,7 @@ const TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 2,
 		"atlas_row": 5,
+		"sprite_height": 36,
 		"variants": 3,
 	},
 	DEAD_TREE:
@@ -86,6 +91,7 @@ const TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": 6,
+		"sprite_height": 33,
 		"variants": 3,
 	},
 	BERRY_BUSH:

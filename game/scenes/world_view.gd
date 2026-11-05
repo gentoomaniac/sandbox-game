@@ -13,6 +13,11 @@ extends Node2D
 ## keeps no decoration under an object. Objects that shine get an ObjectLight.
 ## Buildings are sprites in that node too, so they sort with the objects and the player. They
 ## belong to the world, not to a chunk, so they stay when chunks unload.
+##
+## See-through: while a tree or building hides the player (see Occlusion) it fades inside a
+## circle around the player. A building is a SeeThroughSprite already; a tree is a cell of the
+## objects layer, which can't fade, so while it occludes (and while it fades back) its cell
+## is erased and a SeeThroughSprite at the same place in the y-sorted node draws it instead.
 
 const LOAD_RADIUS := 3
 const UNLOAD_RADIUS := 5
@@ -41,6 +46,8 @@ var world: World
 var entities := Node2D.new()
 ## True once every chunk around the focus is loaded.
 var is_settled := false
+## Where the player stands, in world pixels (set by the game scene every frame).
+var player_feet := Vector2.ZERO
 var _generator: WorldGenerator
 var _variety_noise := FastNoiseLite.new()
 var _decoration_noise := FastNoiseLite.new()
@@ -54,6 +61,9 @@ var _objects := TileMapLayer.new()
 ## The light of each shining object, by tile.
 var _lights: Dictionary[Vector2i, ObjectLight] = {}
 var _light_strength := 1.0
+## The sprites that stand in for object cells while they are see-through, by tile.
+var _object_sprites: Dictionary[Vector2i, SeeThroughSprite] = {}
+var _building_sprites: Dictionary[Building, SeeThroughSprite] = {}
 
 
 func _ready() -> void:
@@ -103,7 +113,7 @@ func set_focus(world_pos: Vector2i) -> void:
 	_focus_chunk = Chunk.world_to_chunk(world_pos)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if world == null:
 		return
 	var plan := ChunkStreaming.plan(
@@ -115,6 +125,7 @@ func _process(_delta: float) -> void:
 	for coords: Vector2i in to_load.slice(0, MAX_LOADS_PER_FRAME):
 		_load_chunk(coords)
 	is_settled = to_load.is_empty()
+	_update_see_through(delta)
 
 
 ## Redraws one tile after its state changed. World's `tile_changed` calls it.
@@ -127,6 +138,7 @@ func redraw_tile(world_pos: Vector2i) -> void:
 
 
 func _on_objects_changed(world_pos: Vector2i) -> void:
+	_drop_object_sprite(world_pos)
 	_draw_object(world_pos)
 	_draw_decoration(world_pos, _layer_at(world_pos))
 
@@ -181,6 +193,7 @@ func _draw_chunk(chunk: Chunk) -> void:
 
 func _unload_chunk(coords: Vector2i) -> void:
 	for object in world.chunk_at(coords).objects():
+		_drop_object_sprite(object.pos)
 		_objects.erase_cell(object.pos)
 		_remove_light(object.pos)
 	var origin := Chunk.to_world(coords, Vector2i.ZERO)
@@ -223,12 +236,16 @@ func _draw_object(world_pos: Vector2i) -> void:
 	if object == null:
 		_objects.erase_cell(world_pos)
 		return
-	_objects.set_cell(world_pos, ObjectTileset.SOURCE_ID, ObjectTileset.atlas_cell(object))
+	_set_object_cell(object)
 	if not object.light().is_empty():
 		var light := ObjectLight.new(object.light(), world_pos)
 		light.strength = _light_strength
 		_lights[world_pos] = light
 		add_child(light)
+
+
+func _set_object_cell(object: WorldObject) -> void:
+	_objects.set_cell(object.pos, ObjectTileset.SOURCE_ID, ObjectTileset.atlas_cell(object))
 
 
 func _remove_light(world_pos: Vector2i) -> void:
@@ -240,7 +257,8 @@ func _remove_light(world_pos: Vector2i) -> void:
 
 func _draw_building(building: Building) -> void:
 	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
-	var sprite := Sprite2D.new()
+	var sprite := SeeThroughSprite.new()
+	_building_sprites[building] = sprite
 	sprite.texture = load(building_type["sprite"])
 	sprite.centered = false
 	# The sprite is sorted by its position: the middle of its bottom footprint row, like an
@@ -254,6 +272,55 @@ func _draw_building(building: Building) -> void:
 	)
 	sprite.offset = Vector2(0, half_tile - sprite.texture.get_height())
 	entities.add_child(sprite)
+
+
+## Fades what hides the player and puts back what no longer does.
+func _update_see_through(delta: float) -> void:
+	for sprite in _object_sprites.values():
+		sprite.is_occluding = false
+	for object in Occlusion.occluding_objects(player_feet, world):
+		if not _object_sprites.has(object.pos):
+			_swap_cell_for_sprite(object)
+		_object_sprites[object.pos].is_occluding = true
+	for pos in _object_sprites.keys():
+		var sprite := _object_sprites[pos]
+		sprite.update(delta, player_feet)
+		if sprite.is_plain():
+			_drop_object_sprite(pos)
+			_set_object_cell(world.object_at(pos))
+	for sprite in _building_sprites.values():
+		sprite.is_occluding = false
+	for building in Occlusion.occluding_buildings(player_feet, world.buildings()):
+		_building_sprites[building].is_occluding = true
+	for sprite in _building_sprites.values():
+		sprite.update(delta, player_feet)
+
+
+## Erases an object's cell and draws the same picture as a sprite, sorted the same way.
+func _swap_cell_for_sprite(object: WorldObject) -> void:
+	var cell_size := Vector2i(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT)
+	var texture := AtlasTexture.new()
+	texture.atlas = load(ObjectTileset.ATLAS_PATH)
+	texture.region = Rect2(ObjectTileset.atlas_cell(object) * cell_size, cell_size)
+	var sprite := SeeThroughSprite.new()
+	sprite.texture = texture
+	sprite.centered = false
+	# Like the tile map draws it: sorted by the tile's middle, the cell's bottom on the tile's
+	# bottom edge.
+	var half_tile := TerrainTileset.TILE_SIZE / 2
+	sprite.position = (Vector2(object.pos) + Vector2(0.5, 0.5)) * TerrainTileset.TILE_SIZE
+	sprite.offset = Vector2(-ObjectTileset.CELL_WIDTH / 2, half_tile - ObjectTileset.CELL_HEIGHT)
+	entities.add_child(sprite)
+	_object_sprites[object.pos] = sprite
+	_objects.erase_cell(object.pos)
+
+
+## Frees the stand-in sprite of an object, if it has one. The caller sets the cell.
+func _drop_object_sprite(world_pos: Vector2i) -> void:
+	var sprite: SeeThroughSprite = _object_sprites.get(world_pos)
+	if sprite != null:
+		_object_sprites.erase(world_pos)
+		sprite.queue_free()
 
 
 func _draw_decoration(world_pos: Vector2i, layer: int) -> void:
