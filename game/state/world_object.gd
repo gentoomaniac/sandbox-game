@@ -94,11 +94,6 @@ func is_forageable() -> bool:
 	)
 
 
-## Whether a scythe can mow it now: it is something that gets mown and is not mown already.
-func is_mowable() -> bool:
-	return type_data().get("tool") == &"scythe" and not is_picked()
-
-
 ## Berry bushes and the like: picked (or mown, for tall grass), they bear again after a few days.
 func is_picked() -> bool:
 	return state.has("days_until_bears")

@@ -56,8 +56,14 @@ func _hold(item: StringName) -> void:
 		if inventory.item_in(slot) == item:
 			inventory.select(slot)
 			return
+	# The hotbar may be full: the new item then lies further on, and swaps into the held slot.
 	inventory.add(item, 1)
-	_hold(item)
+	for slot in Inventory.SLOT_COUNT:
+		if inventory.item_in(slot) == item:
+			var displaced := inventory.slots[inventory.selected_slot]
+			inventory.slots[inventory.selected_slot] = inventory.slots[slot]
+			inventory.slots[slot] = displaced
+			return
 
 
 func _place(type: StringName, tree := "") -> WorldObject:

@@ -335,9 +335,14 @@ func _tall_grass_to_mow(target: Vector2i) -> Array[WorldObject]:
 	var grass: Array[WorldObject] = []
 	for tile in mow_tiles(target):
 		var object := world.object_at(tile)
-		if object != null and object.is_mowable():
+		if object != null and _is_mowable(object):
 			grass.append(object)
 	return grass
+
+
+## Whether a scythe can mow the object now: it is something that gets mown and is not mown yet.
+func _is_mowable(object: WorldObject) -> bool:
+	return object.type_data().get("tool") == ItemTypes.SCYTHE and not object.is_picked()
 
 
 ## Digs the grass at `target`: a clay spot is spent, and gives clay with some chance. Anywhere
