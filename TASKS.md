@@ -385,7 +385,7 @@ See SPEC.md "Player" (character sprite).
 
 ## 14. See-through occluders
 
-- [ ] Done
+- [x] Done
 
 Depends on: 12, 13 (works in the new render pipeline, and the circle is sized for the
 16×32 character).
@@ -425,6 +425,15 @@ Art notes from the art round 2 review and look:
 - `tools/art/generate.py`: shared sprites (pebbles, fern, clover, brown caps) are defined
   several times; move them to module level. Add a small `size(picture)` helper.
 - No test yet that `redraw_tile` redraws decorations and unload erases them.
+
+See-through notes from the task 14 review:
+
+- `sprite_height` on tree types is hand-set and 1–2 px under the art for oak and dead tree.
+  Add a test that each declared height is at least the opaque height in the atlas.
+- `Occlusion.building_rect` calls `load()` and `world.buildings()` copies the array every
+  frame; cache texture sizes per building sprite.
+- A swapped sprite may change draw order against a same-row neighbour tree (small pop).
+- Skip `_update_see_through` while inside a building.
 
 Performance notes from the task 6 review:
 
