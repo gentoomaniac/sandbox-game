@@ -42,7 +42,7 @@ func test_generation_is_deterministic_and_independent_of_chunk_order() -> void:
 	assert_eq(forward, backward)
 
 
-func test_every_object_type_is_generated() -> void:
+func test_every_natural_object_type_is_generated() -> void:
 	var generator := WorldGenerator.new(SEED)
 	var types := {}
 	for y in range(-128, 128):
@@ -50,6 +50,9 @@ func test_every_object_type_is_generated() -> void:
 			var pos := Vector2i(x, y)
 			types[generator.object_type_at(pos, generator.terrain_at(pos))] = true
 	for object_type: StringName in WorldObjectTypes.TYPES:
+		# The camp is placed by the game, not generated.
+		if object_type in [WorldObjectTypes.FIREPLACE, WorldObjectTypes.SLEEPING_BAG]:
+			continue
 		assert_true(types.has(object_type), "Missing object type %s" % object_type)
 
 
