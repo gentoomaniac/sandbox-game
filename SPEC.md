@@ -153,6 +153,21 @@ top of classic pixel art (details under "Lighting and look").
     very little energy. The real loss is the time: crops and other chores may go
     untended.
   - A game setting scales how fast energy drains.
+  - Details (decided 2026-11-05):
+    - **Energy and health bars**, 100 points each, next to the hotbar. A bar at 20 % or
+      less pulses to show it is low. Health matters once combat exists; for now only the
+      pass-out debuff and sleep change it.
+    - **Costs per action** live in a hand-editable data file (`data/energy.cfg`). First
+      values: tool use (till, hit, water) 2, planting and picking 0.5; walking is free.
+    - **Weight:** up to 20 kg costs nothing extra; above that, +10 % cost per 10 kg more.
+    - **Low energy slows walking:** at 10 % or less to 75 % speed, below 5 % to 50 %.
+    - **Passing out** at 0: wake up in the home bed at 06:00 next morning. That day:
+      half walking speed, energy only up to 50 %, health 25. Speed effects don't stack;
+      the slowest wins.
+    - **Sleeping** fills energy and health per bed (sleeping bag 100 %, ground 50 %), and
+      **eating** food (berries, turnips) restores a little energy. Both are values in the
+      data file (`data/energy.cfg`).
+    - The energy drain setting: Low ×0.5, Normal ×1, High ×1.5.
 - **Home is the last bed the player slept in**, like a spawn point. Passing out wakes the
   player there.
 - **Starting shelter:** the game starts at a small camp site with a fireplace and a
@@ -218,8 +233,10 @@ Decided 2026-11-05.
     another action moves to the new one, and the menu says so. "Reset to defaults" restores
     all keys.
   - **Display:** fullscreen or windowed.
+  - **Game:** UI scale (a slider from 0.5× to 2×, the UI only, not the world) and the
+    energy drain (Low, Normal, High).
   - Settings are saved in `user://settings.cfg`, separate from the save game.
-  - The energy drain setting (see Energy) joins once energy exists. Gamepads later.
+  - Gamepads later.
 - **UI look:** a pixel font and a framed panel (9-slice) in palette colours, in one shared
   Godot Theme that all UI uses.
 
