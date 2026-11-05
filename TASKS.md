@@ -178,6 +178,10 @@ Done when `make run` shows textured terrain with soft transitions and no visible
 seams. Include a screenshot of the running game in the report (e.g. via
 `get_viewport().get_texture().get_image().save_png(...)` in a debug run).
 
+Art round 2 (branch `task-05b-terrain-art-2`, done): fertile-looking floodplain, narrower
+floodplain band, irregular grass edges, lush/dry grass variety, edge variants, decoration
+layer.
+
 ## 6. World objects: trees and rocks
 
 - [ ] Done
@@ -310,6 +314,15 @@ Depends on: 8.
   - planting only on soil.
 
 ## Later (not part of the prototype)
+
+Art notes from the art round 2 review and look:
+
+- Lush and dry grass areas look blotchy; dry should differ in hue (yellower), not only
+  brightness.
+- The grass texture is busy (many dark marks).
+- `tools/art/generate.py`: shared sprites (pebbles, fern, clover, brown caps) are defined
+  several times; move them to module level. Add a small `size(picture)` helper.
+- No test yet that `redraw_tile` redraws decorations and unload erases them.
 
 World generation notes from the task 3 review:
 
