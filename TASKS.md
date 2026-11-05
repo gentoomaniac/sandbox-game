@@ -991,6 +991,8 @@ morning). Replaces the fixed sleep duration per bed and the 06:00 pass-out wake-
   as a duration (beds keep their energy fill). Old saves need nothing.
 - Passing out sleeps until the next 06:30 but at least 10 hours; the debuff stays
   "until the next midnight".
+- Still awake at 01:00 (indoors or out): pass out the same way, with a "stayed up too
+  late" message (wakes at 11:00 by the 10-hour minimum).
 - Collapse animation: new player frames (kneel, lying, asleep) for every layer
   (body, hair, clothes, hat), generated like the other player art; rising "z"s; input
   locked; then fade to black.
