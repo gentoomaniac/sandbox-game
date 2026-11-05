@@ -18,10 +18,10 @@ var clock := GameClock.new()
 var player := PlayerState.new()
 ## Where the player is: `world`, or the interior of `_building_inside`.
 var current_map: GameMap
-var _building_inside: Building
 
 ## Crops harvested so far; there is no inventory yet.
 var harvest_count := 0
+var _building_inside: Building
 
 
 func _init() -> void:
@@ -94,7 +94,8 @@ func sleep_in(bed: WorldObject) -> void:
 	player.home_bed = bed.pos
 
 
-## What `use` would do on a tile of the world (nothing inside): harvest a ripe crop, plant on soil, till grass.
+## What `use` would do on a tile of the world (nothing inside): harvest a ripe crop, plant on
+## soil, till grass.
 func use_at(world_pos: Vector2i) -> Use:
 	if is_inside():
 		return Use.NOTHING
