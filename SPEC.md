@@ -376,6 +376,20 @@ Decided 2026-11-05. A text console for testing and cheats.
 
 ### Farming and foraging
 
+- **Crops** (decided 2026-11-05): classic crops beside the turnip, all defined in a
+  hand-editable data file (`data/crops.cfg`): growth stages, days per stage, the seasons
+  they grow in, yield, and whether they regrow after harvest.
+  - First set (fitting the Nordic setting): turnip, potato, carrot, cabbage, onion,
+    wheat, peas (regrow), strawberries (regrow) and pumpkin.
+  - Each crop has its own seeds (a seed bag item, or seed potatoes for potatoes) and its
+    produce item. Seeds plant on tilled soil like the turnip seeds; produce can be eaten
+    (food values in `data/energy.cfg`).
+  - A crop grows only in its seasons: planting outside them is refused with a short
+    message, and a crop still in the ground when its seasons end withers (a withered
+    crop is cleared by hand). Later, growth will also depend on the weather values.
+  - Until a shop exists, seeds come from the console (`give`), and a harvest still gives
+    one seed back.
+
 - Wild crops can be foraged.
 - The biome decides which resources are available and what the land is good for
   agriculturally (see Biomes).

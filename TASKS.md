@@ -725,6 +725,30 @@ from the weather".
 - Tests: snow builds and melts with the weather, gone at spring start, patchy thaw over
   2–3 days, frost only below 0 °C without snow, blend fractions across boundaries.
 
+## 30. More crops
+
+- [ ] Done
+
+See SPEC.md "Farming and foraging" (crops).
+
+- data/crops.cfg (required keys, fails loudly) with the nine crops; crop object types
+  and seed/produce item types built from it; turnip moves into the file.
+- Seasons: planting refused outside a crop's seasons; withering when its seasons end;
+  regrowing crops (peas, strawberries) go back a stage after harvest.
+- Art: growth stages per crop (tall ones like wheat and peas may use a taller cell),
+  withered look, 16×16 icons for each seed bag and produce. Same look in every season.
+- Food values for the produce in data/energy.cfg.
+- Tests: every crop grows to ripe in its days, season refusal, withering, regrowth,
+  yields, save/load, the data file.
+
+## 31. Console: completion for all arguments
+
+- [ ] Done
+
+Depends on: 28 (it adds `spawn`). Tab completes every command's arguments, not only
+command names and item ids: weather conditions, animal kinds, snow values, crop and item
+ids, and so on, from one table of argument kinds per command.
+
 ## Later (not part of the prototype)
 
 - Split the object edits and regrowth (`_object_edits`, `replace_object`, `hit_object`,
