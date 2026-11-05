@@ -61,3 +61,12 @@ func test_cannot_leave_the_loaded_chunks() -> void:
 func test_a_body_ending_on_a_tile_edge_does_not_touch_the_next_tile() -> void:
 	_world.add_object(WorldObject.new(WorldObjectTypes.STONE, Vector2i(5, 7)))
 	assert_true(PlayerState.can_stand_at(_world, Vector2(5.5, 7.0)))
+
+
+func test_a_long_frame_moves_as_far_as_the_same_time_in_short_steps() -> void:
+	var stepped := PlayerState.new()
+	stepped.position = _player.position
+	for _i in 4:
+		stepped.move(_world, Vector2.RIGHT, PlayerState.MAX_STEP_SECONDS)
+	_player.move(_world, Vector2.RIGHT, PlayerState.MAX_STEP_SECONDS * 4)
+	assert_almost_eq(_player.position, stepped.position, Vector2(0.0001, 0.0001))

@@ -13,6 +13,10 @@ const MAX_SIZE_CHUNKS := 64
 
 var world_seed: int
 var _chunks: Dictionary[Vector2i, Chunk] = {}
+## What the player changed, kept outside the chunks so it survives their unloading: per world
+## position the object that stands there now, or null where the generated object was
+## removed. Together with the seed this is the whole world (the future save format).
+var _object_edits: Dictionary[Vector2i, WorldObject] = {}
 
 
 func _init(seed_value: int) -> void:
@@ -33,10 +37,18 @@ static func is_in_bounds(world_pos: Vector2i) -> bool:
 	return is_chunk_in_bounds(Chunk.world_to_chunk(world_pos))
 
 
-## Adds (or replaces) a chunk. It must be inside the bounds.
+## Adds (or replaces) a chunk, freshly generated, and applies the edits within its area on
+## top. It must be inside the bounds. Replaying edits does not emit `objects_changed`: the
+## caller draws the whole chunk anyway.
 func add_chunk(chunk: Chunk) -> void:
 	assert(is_chunk_in_bounds(chunk.coords), "Chunk out of bounds: %s" % chunk.coords)
 	_chunks[chunk.coords] = chunk
+	for pos in _object_edits:
+		if Chunk.world_to_chunk(pos) != chunk.coords:
+			continue
+		chunk.remove_object(Chunk.local_pos(pos))
+		if _object_edits[pos] != null:
+			chunk.add_object(_object_edits[pos])
 
 
 func remove_chunk(chunk_coords: Vector2i) -> void:
@@ -79,6 +91,7 @@ func add_object(object: WorldObject) -> void:
 	var chunk := chunk_at(Chunk.world_to_chunk(object.pos))
 	assert(chunk != null, "Chunk not loaded for object at %s" % object.pos)
 	chunk.add_object(object)
+	_object_edits[object.pos] = object
 	objects_changed.emit(object.pos)
 
 
@@ -89,6 +102,7 @@ func remove_object(world_pos: Vector2i) -> WorldObject:
 		return null
 	var object := chunk.remove_object(Chunk.local_pos(world_pos))
 	if object != null:
+		_object_edits[world_pos] = null
 		objects_changed.emit(world_pos)
 	return object
 

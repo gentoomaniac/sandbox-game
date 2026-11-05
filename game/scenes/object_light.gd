@@ -13,6 +13,7 @@ var strength := 1.0:
 	set(value):
 		strength = value
 		visible = value > 0.0
+		set_process(value > 0.0)
 var _energy := 1.0
 ## Keeps neighbouring lights from flickering in step.
 var _phase := 0.0

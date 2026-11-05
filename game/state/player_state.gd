@@ -8,7 +8,8 @@ const SPEED := 5.0  # tiles per second
 ## measured up from the feet. Smaller than a tile, so they can pass between trees.
 const BODY_HALF_WIDTH := 0.3
 const BODY_HEIGHT := 0.3
-## A long frame must not let the player jump through a thin wall.
+## A long frame is walked in steps of at most this long, so the player cannot jump through
+## a thin wall.
 const MAX_STEP_SECONDS := 0.05
 
 ## World position of the feet, in tiles: tile (x, y) spans x..x+1 and y..y+1.
@@ -25,10 +26,13 @@ func tile() -> Vector2i:
 ## Walks along `direction` for `delta` seconds. Each axis moves on its own, so the player
 ## slides along a wall instead of stopping against it.
 func move(world: World, direction: Vector2, delta: float) -> void:
-	var step := direction.limit_length(1.0) * SPEED * minf(delta, MAX_STEP_SECONDS)
-	for axis in [Vector2(step.x, 0.0), Vector2(0.0, step.y)]:
-		if can_stand_at(world, position + axis):
-			position += axis
+	var velocity := direction.limit_length(1.0) * SPEED
+	while delta > 0.0:
+		var step := velocity * minf(delta, MAX_STEP_SECONDS)
+		delta -= MAX_STEP_SECONDS
+		for axis in [Vector2(step.x, 0.0), Vector2(0.0, step.y)]:
+			if can_stand_at(world, position + axis):
+				position += axis
 
 
 ## Whether a player with their feet at `feet` fits: every tile their body touches is walkable.
