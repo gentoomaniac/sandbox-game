@@ -81,7 +81,21 @@ func test_walking_steps_through_the_cycle() -> void:
 
 
 func test_frame_index_picks_the_row_of_the_facing() -> void:
+	var frames := PlayerView.FRAMES_PER_FACING
 	assert_eq(PlayerView.frame_index(Vector2i.DOWN, 2), 2)
-	assert_eq(PlayerView.frame_index(Vector2i.UP, 0), 3)
-	assert_eq(PlayerView.frame_index(Vector2i.LEFT, 1), 7)
-	assert_eq(PlayerView.frame_index(Vector2i.RIGHT, 2), 11)
+	assert_eq(PlayerView.frame_index(Vector2i.UP, 0), frames)
+	assert_eq(PlayerView.frame_index(Vector2i.LEFT, 1), 2 * frames + 1)
+	assert_eq(PlayerView.frame_index(Vector2i.RIGHT, 4), 4 * frames - 1)
+
+
+func test_every_sheet_has_the_frame_grid() -> void:
+	for layer in _appearance.layers:
+		var sheet: Texture2D = load(Appearance.sheet_path(layer))
+		assert_eq(
+			sheet.get_size(),
+			Vector2(
+				PlayerView.FRAMES_PER_FACING * 16,
+				PlayerView.FACING_ROWS.size() * PlayerView.FRAME_HEIGHT
+			),
+			str(layer)
+		)

@@ -26,7 +26,7 @@ oak's canopy rises above that, over the tiles north of it.
 
 assets/character/<slot>_<variant>.png: one sheet per layer of the player character, 16x32 cells
 with the feet on the bottom row. One row per facing (down, up, left, right), columns: idle,
-walk 1, walk 2 (see game/state/appearance.gd and game/scenes/player_view.gd).
+walk 1 to 4 (see game/state/appearance.gd and game/scenes/player_view.gd).
 
 assets/buildings/<type>.png: one picture per building type, as wide as its footprint (16 px
 per tile) and as tall as the footprint plus the roof rising above it. The bottom edge is the
@@ -984,14 +984,18 @@ TURNIP_STAGES = turnip_stages()
 # The player character (assets/character/<slot>_<variant>.png).
 #
 # One sheet per layer and variant, all with the same layout: 16x32 frames, one row per
-# facing (down, up, left, right), columns idle, walk 1, walk 2. Drawn for "right" and
-# "left" is its mirror image. The layers are drawn in the same coordinates, so any
-# combination lines up; game/state/appearance.gd says which are worn and in what order.
+# facing (down, up, left, right), columns idle, walk 1..4. Drawn for "right" and "left" is
+# its mirror image. The layers are drawn in the same coordinates, so any combination lines
+# up; game/state/appearance.gd says which are worn and in what order.
+#
+# The figure is 28 rows tall (outline included, y 4..31, feet on the bottom row): head 8
+# rows (y 5..12), torso 10 (13..22), legs 8 (23..30). Only the outer silhouette has the ink
+# outline; inside it, parts are separated by darker shades of their own colour.
 
 CHARACTER_WIDTH = 16
 CHARACTER_HEIGHT = 32
 PLAYER_FACINGS = ("down", "up", "left", "right")
-PLAYER_FRAMES = ("idle", "walk1", "walk2")
+PLAYER_FRAMES = ("idle", "walk1", "walk2", "walk3", "walk4")
 
 # Colours of the variants. A tunic or hair is a base colour with a light and a shade.
 CLOTHES_COLOURS = {
@@ -1003,181 +1007,185 @@ HAIR_COLOURS = {
     "1": {"base": "straw", "light": "gold", "shade": "reed", "long": True},
 }
 
+# A walk is two contact frames (walk 1 and 3: the hips sink, the legs spread) and two
+# passing frames (walk 2 and 4: one leg swings through). `lift` is how far each of the two
+# legs is raised (the far or left leg first), `stride` how far the near leg is ahead in a
+# side view and `swing` how far the near arm swings against it.
+POSES = {
+    "idle": {"sink": 0, "lift": (0, 0), "stride": 0, "swing": 0},
+    "walk1": {"sink": 1, "lift": (0, 0), "stride": 2, "swing": -2},
+    "walk2": {"sink": 0, "lift": (1, 0), "stride": 0, "swing": 0},
+    "walk3": {"sink": 1, "lift": (0, 0), "stride": -2, "swing": 2},
+    "walk4": {"sink": 0, "lift": (0, 1), "stride": 0, "swing": 0},
+}
+
 
 def character_canvas():
     return [[None] * CHARACTER_WIDTH for _ in range(CHARACTER_HEIGHT)]
 
 
-def pose(frame):
-    """How the figure stands in a frame: how far the upper body sinks, which leg is lifted
-    (0 = the back or left one, 1 = the other) and how far the arm swings."""
-    return {
-        "idle": (0, None, 0),
-        "walk1": (1, 1, 1),
-        "walk2": (1, 0, -1),
-    }[frame]
-
-
-def leg_boxes(facing, frame):
-    """The columns, top row and bottom row of each leg, back leg first. A lifted leg is
-    raised by a pixel."""
-    _, lifted, _ = pose(frame)
+def leg_boxes(facing, pose):
+    """The columns, top row and bottom row of each leg, back leg first."""
+    stride = pose["stride"]
     if facing in ("down", "up"):
-        columns = ((5, 7), (8, 10))
-    elif frame == "idle":
-        columns = ((6, 8), (7, 9))
+        columns = ((5, 7), (9, 11))
     else:
-        columns = ((5, 7), (8, 10))
-    return [(x0, x1, 22, 29) if index == lifted else (x0, x1, 23, 30) for index, (x0, x1) in enumerate(columns)]
+        columns = ((6 - stride, 8 - stride), (7 + stride, 9 + stride))
+    return [(x0, x1, 23 + pose["sink"], 30 - lift) for (x0, x1), lift in zip(columns, pose["lift"])]
 
 
-def draw_body(facing, frame, skin="skin", shade="skin_shade", **_):
-    """The bare figure: head, neck, arms with hands, and legs. Clothes cover most of it."""
+def draw_body(facing, pose, skin="skin", shade="skin_shade", **_):
+    """The bare figure: head, neck, arms with hands, and legs. Clothes cover most of it, so
+    this layer is also the silhouette that the outline follows."""
     canvas = character_canvas()
-    bob, _, swing = pose(frame)
-    fill_rect(canvas, 4, 4 + bob, 11, 11 + bob, skin)
-    fill_rect(canvas, 4, 11 + bob, 11, 11 + bob, shade)
-    fill_rect(canvas, 6, 12 + bob, 9, 12 + bob, shade)
-    for x0, x1, top, bottom in leg_boxes(facing, frame):
+    sink, swing = pose["sink"], pose["swing"]
+    # The head, with its top corners cut.
+    fill_rect(canvas, 4, 6 + sink, 12, 12 + sink, skin)
+    fill_rect(canvas, 5, 5 + sink, 11, 5 + sink, skin)
+    fill_rect(canvas, 5, 12 + sink, 11, 12 + sink, shade)
+    boxes = leg_boxes(facing, pose)
+    for x0, x1, top, bottom in boxes:
         fill_rect(canvas, x0, top, x1, bottom, skin)
         fill_rect(canvas, x0, bottom - 1, x1, bottom, shade)
-    if facing == "down":
-        fill_rect(canvas, 5, 13 + bob, 10, 22 + bob, shade)
-        for x in (3, 11):
-            fill_rect(canvas, x, 14 + bob, x + 1, 20 + bob, skin)
-        canvas[8 + bob][6] = canvas[8 + bob][9] = "ink"
-        canvas[9 + bob][6] = canvas[9 + bob][9] = "ink"
-        canvas[10 + bob][5] = canvas[10 + bob][10] = "petal"
-    elif facing == "up":
-        fill_rect(canvas, 5, 13 + bob, 10, 22 + bob, shade)
-        for x in (3, 11):
-            fill_rect(canvas, x, 14 + bob, x + 1, 20 + bob, skin)
+    if facing in ("down", "up"):
+        fill_rect(canvas, 6, 13 + sink, 10, 22 + sink, shade)
+        fill_rect(canvas, 8, boxes[0][2], 8, boxes[0][3] - 3, shade)
+        # The right arm swings; the left one holds the tool.
+        fill_rect(canvas, 4, 14 + sink, 5, 20 + sink, skin)
+        fill_rect(canvas, 11, 14 + sink + swing // 2, 12, 20 + sink + swing // 2, skin)
+        if facing == "down":
+            for x in (6, 10):
+                fill_rect(canvas, x, 9 + sink, x, 10 + sink, "soil_dark")
+            canvas[11 + sink][5] = canvas[11 + sink][11] = "petal"
     else:
-        fill_rect(canvas, 5, 13 + bob, 10, 22 + bob, shade)
-        canvas[9 + bob][12] = skin
-        canvas[8 + bob][9] = canvas[9 + bob][9] = "ink"
-        canvas[10 + bob][10] = "petal"
-        fill_rect(canvas, 6 + swing, 14 + bob, 8 + swing, 20 + bob, skin)
+        fill_rect(canvas, 5, 13 + sink, 10, 22 + sink, shade)
+        canvas[10 + sink][13] = skin
+        fill_rect(canvas, 11, 9 + sink, 11, 10 + sink, "soil_dark")
+        fill_rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 17 + sink, skin)
+        fill_rect(canvas, 7 + swing, 18 + sink, 8 + swing, 20 + sink, skin)
     return canvas
 
 
-def draw_legs(facing, frame, **_):
+def draw_legs(facing, pose, **_):
     """Linen trousers and leather boots."""
     canvas = character_canvas()
-    for index, (x0, x1, top, bottom) in enumerate(leg_boxes(facing, frame)):
+    boxes = leg_boxes(facing, pose)
+    for index, (x0, x1, top, bottom) in enumerate(boxes):
         fill_rect(canvas, x0, top, x1, bottom - 3, "sand")
-        # A shaded seam down the inside of each leg.
-        seam = x1 if index == 0 and facing in ("down", "up") else x0
-        fill_rect(canvas, seam, top, seam, bottom - 3, "mud")
         fill_rect(canvas, x0, bottom - 2, x1, bottom, "soil")
         fill_rect(canvas, x0, bottom - 2, x1, bottom - 2, "soil_light")
         fill_rect(canvas, x0, bottom, x1, bottom, "soil_dark")
+        # The inside of each leg is shaded, which also marks it against the other one.
+        seam = x1 if index == 0 and facing in ("down", "up") else x0
+        fill_rect(canvas, seam, top, seam, bottom - 3, "mud")
         if facing in ("left", "right"):
             canvas[bottom][x1 + 1] = canvas[bottom - 1][x1 + 1] = "soil_dark"
+    if facing in ("down", "up"):
+        fill_rect(canvas, 8, boxes[0][2], 8, boxes[0][3] - 3, "mud_dark")
     return canvas
 
 
-def draw_clothes(facing, frame, base, light, shade, **_):
+def draw_clothes(facing, pose, base, light, shade, **_):
     """A belted tunic with sleeves."""
     canvas = character_canvas()
-    bob, _, swing = pose(frame)
+    sink, swing = pose["sink"], pose["swing"]
     if facing in ("down", "up"):
-        fill_rect(canvas, 4, 13 + bob, 11, 22 + bob, base)
-        fill_rect(canvas, 3, 14 + bob, 12, 18 + bob, base)
-        fill_rect(canvas, 4, 13 + bob, 11, 14 + bob, light)
-        fill_rect(canvas, 3, 18 + bob, 4, 18 + bob, shade)
-        fill_rect(canvas, 11, 18 + bob, 12, 18 + bob, shade)
-        fill_rect(canvas, 11, 15 + bob, 11, 22 + bob, shade)
-        fill_rect(canvas, 4, 22 + bob, 11, 22 + bob, shade)
-        fill_rect(canvas, 5, 18 + bob, 10, 18 + bob, "soil_dark")
-        fill_rect(canvas, 5, 19 + bob, 10, 19 + bob, "soil")
+        fill_rect(canvas, 6, 13 + sink, 10, 22 + sink, base)
+        fill_rect(canvas, 5, 21 + sink, 11, 22 + sink, base)
+        fill_rect(canvas, 6, 13 + sink, 10, 14 + sink, light)
+        fill_rect(canvas, 10, 15 + sink, 10, 20 + sink, shade)
+        fill_rect(canvas, 5, 22 + sink, 11, 22 + sink, shade)
+        fill_rect(canvas, 6, 19 + sink, 10, 19 + sink, "soil_dark")
+        # Sleeves; the right one swings with the arm.
+        for x0, dy in ((4, 0), (11, swing // 2)):
+            fill_rect(canvas, x0, 14 + sink + dy, x0 + 1, 18 + sink + dy, base)
+            fill_rect(canvas, x0, 14 + sink + dy, x0 + 1, 14 + sink + dy, light)
+            fill_rect(canvas, x0 + 1, 15 + sink + dy, x0 + 1, 17 + sink + dy, shade)
+            fill_rect(canvas, x0, 18 + sink + dy, x0 + 1, 18 + sink + dy, shade)
         if facing == "down":
-            fill_rect(canvas, 6, 13 + bob, 9, 13 + bob, "cream")
-            fill_rect(canvas, 7, 14 + bob, 8, 14 + bob, "cream")
-            fill_rect(canvas, 7, 18 + bob, 8, 19 + bob, "gold")
-            canvas[18 + bob][7] = "cream"
-            fill_rect(canvas, 6, 21 + bob, 6, 21 + bob, shade)
+            fill_rect(canvas, 7, 13 + sink, 9, 13 + sink, "cream")
+            canvas[14 + sink][8] = "cream"
+            canvas[19 + sink][8] = "gold"
         else:
-            fill_rect(canvas, 6, 13 + bob, 9, 13 + bob, shade)
-            fill_rect(canvas, 6, 21 + bob, 6, 21 + bob, shade)
+            fill_rect(canvas, 6, 13 + sink, 10, 13 + sink, shade)
     else:
-        fill_rect(canvas, 5, 13 + bob, 10, 22 + bob, base)
-        fill_rect(canvas, 5, 13 + bob, 10, 14 + bob, light)
-        fill_rect(canvas, 5, 15 + bob, 5, 22 + bob, shade)
-        fill_rect(canvas, 5, 22 + bob, 10, 22 + bob, shade)
-        fill_rect(canvas, 5, 18 + bob, 10, 18 + bob, "soil_dark")
-        fill_rect(canvas, 5, 19 + bob, 10, 19 + bob, "soil")
-        fill_rect(canvas, 9, 18 + bob, 10, 19 + bob, "gold")
-        fill_rect(canvas, 6, 13 + bob, 8, 13 + bob, "cream")
-        # The near sleeve, over the torso.
-        fill_rect(canvas, 6 + swing, 14 + bob, 8 + swing, 18 + bob, light)
-        fill_rect(canvas, 6 + swing, 15 + bob, 8 + swing, 18 + bob, base)
-        fill_rect(canvas, 6 + swing, 18 + bob, 8 + swing, 18 + bob, shade)
+        fill_rect(canvas, 5, 13 + sink, 10, 22 + sink, base)
+        fill_rect(canvas, 5, 21 + sink, 11, 22 + sink, base)
+        fill_rect(canvas, 5, 13 + sink, 10, 14 + sink, light)
+        fill_rect(canvas, 5, 15 + sink, 5, 21 + sink, shade)
+        fill_rect(canvas, 5, 22 + sink, 11, 22 + sink, shade)
+        fill_rect(canvas, 5, 19 + sink, 10, 19 + sink, "soil_dark")
+        canvas[19 + sink][10] = "gold"
+        fill_rect(canvas, 8, 13 + sink, 10, 13 + sink, "cream")
+        # The near sleeve over the torso: a shaded edge at the back, and the cuff.
+        for y in range(14 + sink, 19 + sink):
+            x = 7 + (swing // 2 if y < 17 + sink else swing)
+            canvas[y][x], canvas[y][x + 1] = shade, base
+        fill_rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 14 + sink, light)
+        fill_rect(canvas, 7 + swing, 18 + sink, 8 + swing, 18 + sink, shade)
     return canvas
 
 
-def draw_hair(facing, frame, base, light, shade, long, **_):
-    """Short or long hair, over the head and from behind over the whole back of it."""
+def draw_hair(facing, pose, base, light, shade, long, **_):
+    """Short or long hair over the head (the same 9x8 block in every view), and from behind
+    over the whole back of it. The darkest shade is the line to the face."""
     canvas = character_canvas()
-    bob, _, _ = pose(frame)
-    fill_rect(canvas, 5, 2 + bob, 10, 2 + bob, base)
-    fill_rect(canvas, 4, 3 + bob, 11, 4 + bob, base)
-    fill_rect(canvas, 5, 3 + bob, 7, 3 + bob, light)
+    sink = pose["sink"]
+    fill_rect(canvas, 5, 5 + sink, 11, 5 + sink, base)
+    fill_rect(canvas, 4, 6 + sink, 12, 7 + sink, base)
+    fill_rect(canvas, 5, 6 + sink, 7, 6 + sink, light)
     if facing == "down":
-        fill_rect(canvas, 4, 5 + bob, 11, 5 + bob, base)
-        for x in (7, 8):
-            canvas[5 + bob][x] = None
-        fill_rect(canvas, 4, 6 + bob, 4, 7 + bob, shade)
-        fill_rect(canvas, 11, 6 + bob, 11, 7 + bob, shade)
-        canvas[5 + bob][5] = canvas[5 + bob][10] = shade
+        fill_rect(canvas, 6, 7 + sink, 10, 7 + sink, shade)
+        for x in (4, 12):
+            fill_rect(canvas, x, 8 + sink, x, 9 + sink, base)
+            canvas[9 + sink][x] = shade
         if long:
-            fill_rect(canvas, 4, 8 + bob, 4, 14 + bob, base)
-            fill_rect(canvas, 11, 8 + bob, 11, 14 + bob, base)
-            fill_rect(canvas, 4, 13 + bob, 4, 14 + bob, shade)
-            fill_rect(canvas, 11, 13 + bob, 11, 14 + bob, shade)
+            for x in (4, 12):
+                fill_rect(canvas, x, 10 + sink, x, 14 + sink, base)
+                fill_rect(canvas, x, 13 + sink, x, 14 + sink, shade)
     elif facing == "up":
-        fill_rect(canvas, 4, 5 + bob, 11, 9 + bob, base)
-        fill_rect(canvas, 5, 10 + bob, 10, 10 + bob, shade)
-        fill_rect(canvas, 7, 6 + bob, 8, 7 + bob, light)
-        fill_rect(canvas, 4, 9 + bob, 11, 9 + bob, shade)
+        fill_rect(canvas, 4, 8 + sink, 12, 11 + sink, base)
+        fill_rect(canvas, 5, 12 + sink, 11, 12 + sink, shade)
+        fill_rect(canvas, 8, 7 + sink, 8, 11 + sink, shade)
+        fill_rect(canvas, 6, 8 + sink, 6, 9 + sink, light)
         if long:
-            fill_rect(canvas, 4, 10 + bob, 11, 15 + bob, base)
-            fill_rect(canvas, 5, 16 + bob, 10, 16 + bob, base)
-            fill_rect(canvas, 7, 11 + bob, 7, 14 + bob, light)
-            fill_rect(canvas, 5, 15 + bob, 10, 15 + bob, shade)
-            fill_rect(canvas, 6, 16 + bob, 9, 16 + bob, shade)
+            fill_rect(canvas, 4, 12 + sink, 12, 16 + sink, base)
+            fill_rect(canvas, 5, 17 + sink, 11, 17 + sink, base)
+            fill_rect(canvas, 8, 12 + sink, 8, 16 + sink, shade)
+            fill_rect(canvas, 6, 13 + sink, 6, 15 + sink, light)
+            fill_rect(canvas, 5, 16 + sink, 11, 17 + sink, shade)
     else:
-        fill_rect(canvas, 4, 5 + bob, 7, 9 + bob, base)
-        fill_rect(canvas, 8, 5 + bob, 11, 5 + bob, base)
-        fill_rect(canvas, 4, 9 + bob, 7, 9 + bob, shade)
-        fill_rect(canvas, 5, 10 + bob, 6, 10 + bob, shade)
-        fill_rect(canvas, 5, 6 + bob, 6, 7 + bob, light)
-        canvas[7 + bob][8] = shade
+        fill_rect(canvas, 10, 7 + sink, 12, 7 + sink, shade)
+        fill_rect(canvas, 4, 8 + sink, 8, 11 + sink, base)
+        fill_rect(canvas, 8, 8 + sink, 8, 11 + sink, shade)
+        fill_rect(canvas, 5, 12 + sink, 7, 12 + sink, shade)
+        fill_rect(canvas, 5, 8 + sink, 5, 9 + sink, light)
         if long:
-            fill_rect(canvas, 3, 6 + bob, 7, 16 + bob, base)
-            fill_rect(canvas, 3, 15 + bob, 7, 16 + bob, shade)
-            fill_rect(canvas, 4, 11 + bob, 4, 14 + bob, light)
+            fill_rect(canvas, 3, 8 + sink, 6, 16 + sink, base)
+            fill_rect(canvas, 3, 15 + sink, 6, 16 + sink, shade)
+            fill_rect(canvas, 4, 11 + sink, 4, 14 + sink, light)
     return canvas
 
 
-def draw_held_hoe(facing, frame, **_):
-    """A hoe with a wooden shaft and an iron blade, held in the right hand."""
+def draw_held_hoe(facing, pose, **_):
+    """A hoe in the right hand, in dark soil colours with a light edge on the blade."""
     canvas = character_canvas()
-    bob, _, _ = pose(frame)
+    sink = pose["sink"]
     if facing in ("down", "up"):
-        shaft_x = 2 if facing == "down" else 13
-        fill_rect(canvas, shaft_x, 14 + bob, shaft_x, 29, "soil_light")
-        fill_rect(canvas, shaft_x - 1, 12 + bob, shaft_x + 1, 13 + bob, "stone")
-        fill_rect(canvas, shaft_x - 1, 12 + bob, shaft_x + 1, 12 + bob, "stone_light")
-        canvas[14 + bob][shaft_x - 1] = "stone"
+        shaft = 3 if facing == "down" else 13
+        top = 13 + sink
+        fill_rect(canvas, shaft, top, shaft, 30, "soil_dark")
+        blade = (shaft - 2, shaft) if facing == "down" else (shaft, shaft + 2)
+        fill_rect(canvas, blade[0], top - 1, blade[1], top, "soil_dark")
+        fill_rect(canvas, blade[0], top - 1, blade[1], top - 1, "soil_light")
         if facing == "down":
-            fill_rect(canvas, shaft_x, 19 + bob, shaft_x, 20 + bob, "skin")
+            fill_rect(canvas, shaft, 19, shaft, 20, "skin")
     else:
-        fill_rect(canvas, 11, 14 + bob, 11, 29, "soil_light")
-        fill_rect(canvas, 11, 12 + bob, 14, 13 + bob, "stone")
-        fill_rect(canvas, 11, 12 + bob, 14, 12 + bob, "stone_light")
-        fill_rect(canvas, 13, 14 + bob, 14, 16 + bob, "stone")
-        fill_rect(canvas, 10, 19 + bob, 11, 20 + bob, "skin")
+        top = 13 + sink
+        fill_rect(canvas, 12, top, 12, 30, "soil_dark")
+        fill_rect(canvas, 12, top + 1, 14, top + 2, "soil_dark")
+        fill_rect(canvas, 12, top + 1, 14, top + 1, "soil_light")
+        fill_rect(canvas, 11, 19, 12, 20, "skin")
     return canvas
 
 
@@ -1204,9 +1212,10 @@ def character_sheet(draw, variant_colours):
         drawn_facing = "right" if facing == "left" else facing
         row = []
         for frame in PLAYER_FRAMES:
-            body = draw_body(drawn_facing, frame)
+            pose = POSES[frame]
+            body = draw_body(drawn_facing, pose)
             body_pixels = {(x, y) for y in range(CHARACTER_HEIGHT) for x in range(CHARACTER_WIDTH) if body[y][x] is not None}
-            canvas = draw(drawn_facing, frame, **variant_colours)
+            canvas = draw(drawn_facing, pose, **variant_colours)
             canvas = outlined(canvas, set() if draw is draw_body else body_pixels)
             row.append(mirrored(canvas) if facing == "left" else canvas)
         rows.append(row)

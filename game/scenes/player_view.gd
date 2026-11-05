@@ -6,18 +6,18 @@ extends Node2D
 ##
 ## Debug: `--outfit=<n>` wears variant "n" of the clothes and hair (F6 cycles 0 and 1);
 ## `--pose=<up|down|left|right>[,<column>]` turns the player and optionally freezes the
-## animation on a column of the sheet (0 idle, 1 and 2 the walk frames).
+## animation on a column of the sheet (0 idle, 1 to 4 the walk frames).
 
-## Frames per facing in every layer sheet: idle, walk 1, walk 2.
-const FRAMES_PER_FACING := 3
+## Frames per facing in every layer sheet: idle, walk 1 to 4.
+const FRAMES_PER_FACING := 5
 ## Sheet rows by facing, in the order the art generator draws them.
 const FACING_ROWS := {Vector2i.DOWN: 0, Vector2i.UP: 1, Vector2i.LEFT: 2, Vector2i.RIGHT: 3}
 ## Sheets are 16x32 frames: one tile wide, two tall.
 const FRAME_HEIGHT := 32
 const IDLE_COLUMN := 0
 ## A walk cycle visits these columns, step after step.
-const WALK_COLUMNS := [1, 0, 2, 0]
-const WALK_FRAMES_PER_SECOND := 8.0
+const WALK_COLUMNS := [1, 2, 3, 4]
+const WALK_FRAMES_PER_SECOND := 10.0
 ## The slots whose variant changes with `--outfit` and F6.
 const OUTFIT_SLOTS := [Appearance.CLOTHES, Appearance.HAIR]
 const OUTFIT_COUNT := 2
