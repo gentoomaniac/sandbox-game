@@ -1165,6 +1165,98 @@ max"; "in spring trees should grow leaves until spring is in full bloom" (also w
 - Redraw the pine as a Scots pine; keep the spruce. Season looks (snow, frost) for both.
 - Screenshots of a forest over the first days of spring and of autumn; README and SPEC.
 
+## 52. Art quick wins from the style guide
+
+- [ ] Done
+
+See docs/art-style.md, "Changes to make", quick wins 1-8 (the user, 2026-11-06: implement
+the suggestions, quick ones first): straw bedroll instead of the sleeping bag; a new straw
+hat shape (and a red knitted cap as a second hat); tomatoes replaced by flax (a fibre crop;
+old saves map tomatoes to flax), strawberries the small wild kind, the pumpkin a smaller
+green garden squash; autumn colours towards brown, ochre and copper (after task 51 is
+merged, in seasons.py); small-paned windows on all buildings and the interior window; the
+palette swaps (merge the five rare colours, add lime, paint_teal, heather, heather_dark; Kate
+wall in lime and door in paint_teal, `spirit` kept for magic); seed sacks that can be told
+apart; a copper watering can. Screenshots refreshed (day-and-night.png too).
+
+## 53. Period clothes for the player
+
+- [ ] Done
+
+docs/art-style.md bigger item 1: knee breeches, white stockings, clogs, a red waistcoat
+over a linen shirt, a short blue or brown jacket, long hair tied back; every animation and
+the collapse frames; the starting clothes and the spare shirt become the period ones.
+
+## 54. Knicks, dykes and marsh ditches
+
+- [ ] Done
+
+docs/art-style.md bigger item 2: autotiled Knick hedges on earth banks (hazel, hawthorn),
+dykes with turf, straight drainage ditches with reeds, pollard willows, wattle fences and
+fieldstone walls, placed by the world generator where they fit (marsh, field edges).
+
+## 55. Thatch as courses, clear roof planes
+
+- [ ] Done
+
+docs/art-style.md bigger item 3: thatch drawn in 3-4 px courses with grouped strokes, clear
+roof planes and ridge so roofs read as steep hipped roofs, not domes; crossed ridge sticks
+on the Kate as an option. All buildings and their snow and lit looks.
+
+## 56. Tree species of the region
+
+- [ ] Done
+
+docs/art-style.md bigger item 4 (after task 51): beech, birch, alder and pollard willow as
+the common trees with their seasons, wood and seeds; spruce and pine rarer, in clumps or
+on the Geest; hazel and hawthorn in the Knicks.
+
+## 57. Hearth and furnishing of the period
+
+- [ ] Done
+
+docs/art-style.md bigger item 5: an open hearth under a smoke hood (or a jamb stove),
+Dutch tiles behind it, clay or brick floors, plate rack, wall benches; the animated fire of
+task 48 kept.
+
+## 58. The shack in tarred boards
+
+- [ ] Done
+
+docs/art-style.md bigger item 6: tarred black or weathered silver boards with a turf roof
+(no reeds, as the user decided), so it no longer reads as a frontier cabin.
+
+## 59. A hall house with the gable front
+
+- [ ] Done
+
+docs/art-style.md bigger item 7: a new building, the Niedersachsen-style hall house with
+the big arched door in the gable, owl hole (Uhlenloch) and crossed horse heads,
+half-timbered; buildings.cfg entry with costs and an interior. A Haubarg later.
+
+## 60. Animals of the region
+
+- [ ] Done
+
+docs/art-style.md bigger item 8: white storks (on roofs, in the marsh), red-brown cattle
+and sheep (on dykes and pasture), geese, as ambient wildlife with sounds; roe deer and
+rabbits stay.
+
+## 61. Coast and tidal flats
+
+- [ ] Done
+
+docs/art-style.md bigger item 9: tidal mud with ripples and tideways, salt marsh turning
+red in autumn, a Warft (dwelling mound), an Ewer lying on the mud; terrain and world
+generator work.
+
+## 62. Post mill and draw well
+
+- [ ] Done
+
+docs/art-style.md bigger item 10: a post mill and a draw well as landmark props, placed by
+the world generator near settlements or on rises.
+
 ## Later (not part of the prototype)
 
 - Season looks follow-ups (from the task 29 review): world_view.gd carries layer, season
