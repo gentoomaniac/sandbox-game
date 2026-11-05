@@ -5,3 +5,4 @@ build/
 export/
 # Downloaded by `make setup`, see the Makefile.
 addons/
+.claude/worktrees/

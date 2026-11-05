@@ -190,7 +190,7 @@ layer.
 
 ## 6. World objects: trees and rocks
 
-- [ ] Done
+- [x] Done
 
 Depends on: 5.
 
