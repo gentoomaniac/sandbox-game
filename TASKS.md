@@ -466,6 +466,14 @@ Art notes from the art round 2 review and look:
   several times; move them to module level. Add a small `size(picture)` helper.
 - No test yet that `redraw_tile` redraws decorations and unload erases them.
 
+Saving notes from the task 15 review:
+
+- A version-1 save with valid JSON but missing keys or bad references hits asserts in
+  `from_dict`; fine while only the game writes saves, but handle gracefully before players
+  edit or share saves.
+- Only closing the window saves; Ctrl-C/SIGTERM doesn't.
+- `--new-game` without `--save-path` replaces the real save on quit (intended).
+
 See-through notes from the task 14 review:
 
 - `sprite_height` on tree types is hand-set and 1–2 px under the art for oak and dead tree.
