@@ -41,10 +41,19 @@ top of classic pixel art (details under "Lighting and look").
 
 ### Lighting and look
 
-- **Render resolution:** 384×216 internal, **16×16 tiles** (24×13.5 tiles on screen).
-  Confirmed after seeing the first real tiles (2026-11-05).
-  The picture is scaled up by whole numbers only. Light and shadow fall on the same pixel
-  grid as the art, so lighting never looks smeared over sharp pixels.
+- **Rendering in two stages:**
+  1. The world is rendered **on the art-pixel grid** (one art pixel = one render pixel) into
+     an off-screen image of at most about 640×360 plus a small margin. Lighting, tint and
+     glow are computed there, so light lands exactly on the pixel grid.
+  2. That image is scaled to the screen **steplessly** with a sharp-bilinear filter:
+     pixels stay sharp, only one row of screen pixels blends at their edges. Zoom and
+     camera movement stay smooth at any value, without uneven pixels.
+- **UI** is rendered separately at native resolution.
+- **Tiles: 16×16.** Default view about 320×180 art pixels (20×11 tiles).
+- **Stepless zoom** from 0.5× (about 640×360 art pixels) to about 2×. The mouse wheel
+  zooms.
+- **Camera API** for scripted moves (cutscenes later): follow a target, move to a point,
+  zoom to a value, chain moves in a sequence. The mouse wheel uses the same zoom.
 - **Standard effects:**
   - **day and night tint:** the whole picture changes colour with the time of day (warm
     morning, neutral noon, orange dusk, blue night);
@@ -286,13 +295,6 @@ Tasks: see [TASKS.md](TASKS.md).
 - **Reputation details:**
   - What does reputation unlock or block (prices, quests, hostility)?
   - Which NPCs in the territory are affected: everyone, or only those living closest?
-- **Stepless zoom and camera moves:** the camera must zoom steplessly (mouse wheel down to
-  0.5×) and support scripted moves for cutscenes (follow a target, move, zoom, chain
-  moves). Proposed approach: render the world on the art-pixel grid into an off-screen
-  image (max ~640×360 plus margin, lighting included), then scale it to the screen
-  steplessly with a sharp-bilinear filter; UI at native resolution; default view about
-  320×180 art pixels, zoom 0.5×–2×. Replaces "384×216, whole-number scaling" once
-  confirmed.
 - **Target platforms:** Linux only, or desktop in general? Web?
 - **Scope:** hobby, learning project or release target?
 

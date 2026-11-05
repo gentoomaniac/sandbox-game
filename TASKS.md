@@ -9,6 +9,7 @@ Parallel plan:
 1. Tasks 6 and 7 together.
 2. Tasks 8 and 9 together.
 3. Tasks 10 and 11 together.
+4. Tasks 12 and 13 together.
 
 Rules for every task:
 
@@ -331,6 +332,56 @@ Depends on: 6, 7, 8.
   - growth over days;
   - harvesting only when fully grown;
   - planting only on soil.
+
+## 12. Two-stage rendering, camera and stepless zoom
+
+- [ ] Done
+
+Depends on: 10, 11.
+
+See SPEC.md "Lighting and look".
+
+- The world (terrain, objects, player, lights, tint, glow) renders into a `SubViewport`
+  at one art pixel per render pixel, sized for the widest zoom (about 640×360 plus a
+  margin for sub-pixel camera offsets).
+- The viewport's texture is drawn to the screen scaled steplessly, with a
+  sharp-bilinear shader (sharp pixels, one blended screen pixel at pixel edges). The
+  camera's sub-pixel offset is applied in this final step, so scrolling is smooth.
+- UI (clock, messages, build-mode HUD) renders at native resolution, outside the world
+  viewport.
+- Mouse input that needs a world position (build mode) converts through both stages.
+- Default view about 320×180 art pixels. The window may have any size; the final scale
+  follows from it.
+- A camera controller with an explicit API:
+  - follow a target;
+  - move to a point over a duration;
+  - zoom to a value over a duration;
+  - chain these into a sequence (for cutscenes later);
+  - the mouse wheel zooms steplessly between 0.5× and about 2× (clamped), around the
+    player.
+- Remove the old 384×216 / integer-scale settings.
+- Tests for the pure parts (zoom clamping, sequence timing, coordinate conversion).
+
+Done when zooming with the mouse wheel and walking look smooth and sharp at any zoom,
+and light still sits on the pixel grid.
+
+## 13. Layered 16×32 character
+
+- [ ] Done
+
+Depends on: 10, 11. Can run in parallel with 12.
+
+See SPEC.md "Player" (character sprite).
+
+- The player sprite becomes 16×32 (one tile wide, two tall), drawn from layers: body,
+  clothes, head/hair, held item. Each layer is its own sprite sheet with the same frame
+  layout (4 facings × idle and walk frames).
+- The art generator draws each layer; one or two variants per layer to prove swapping
+  works (e.g. two shirts).
+- `PlayerView` stacks the layers and animates them in sync. Which layers and variants
+  the player wears is plain data in player state, so gear can be added later.
+- The collision body stays at the feet; y-sorting stays correct with the taller sprite.
+- Tests for the pure parts (layer list from player data, frame selection).
 
 ## Later (not part of the prototype)
 
