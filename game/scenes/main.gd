@@ -358,7 +358,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _console_view.is_open():
 		return
 	var can_use := _can_use()
-	if event.is_action_pressed("inventory") and not _is_in_transition:
+	if event.is_action_pressed("inventory"):
 		_character_screen.toggle()
 		return
 	# The open character screen takes the input: the player neither walks nor acts.
@@ -377,11 +377,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("select_hammer"):
 		_builder.select_hammer()
 	# E also picks the next building (outdoors), so the hammer in hand doesn't put the player to bed.
-	elif (
-		event.is_action_pressed("interact")
-		and not _is_in_transition
-		and not _build_mode.is_active()
-	):
+	elif event.is_action_pressed("interact") and not _build_mode.is_active():
 		_try_sleep()
 	elif _is_use_event(event) and can_use and _eat_held():
 		pass  # Eating needs no target: a held food is eaten instead of used on a tile.
