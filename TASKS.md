@@ -542,7 +542,7 @@ See SPEC.md "Menus and settings".
 
 ## 20. Felling, mining and foraging
 
-- [ ] Done
+- [x] Done
 
 Depends on: 18. See SPEC.md "Resources: trees and minerals" (felling and mining).
 
@@ -567,6 +567,14 @@ Depends on: 20. See SPEC.md "Player" (energy).
 - Details to be decided before the brief.
 
 ## Later (not part of the prototype)
+
+- Split the object edits and regrowth (`_object_edits`, `replace_object`, `hit_object`,
+  `change_object`, `pass_night`) out of `World` into their own class with their own tests,
+  and drop the `max-public-methods` lint exception in world.gd.
+- Edits of objects that are back to their generated state (a healed tree) stay in the
+  save; harmless, bounded by what the player touched.
+- Held art and use poses for axe and pickaxe; a "+4 wood" note on drops.
+- A planted sapling can be picked up again by hand for free; decide whether that's fine.
 
 - Floodplain farming: floodplain is the most fertile farmland, but only grass can be tilled
   now. Tilling it needs a "tilled" tile property that keeps the floodplain flag, so floods

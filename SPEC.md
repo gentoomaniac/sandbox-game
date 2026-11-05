@@ -267,6 +267,15 @@ Decided 2026-11-05.
   - A felled tree leaves a stump, which regrows into a sapling and then a tree over days.
   - A berry bush gives berries and bears again after a few days; picking it doesn't
     remove it.
+  - First numbers (2026-11-05, tune in play): tool power = level. Hit points: oak 5,
+    spruce 4, pine 7 (level 2), dead tree 3, stone 3, boulder 6 (level 2), stump 2.
+    Drops: oak/spruce 4 wood, pine 5, dead tree 2; 25 % chance of a sapling from a living
+    tree; stone 2 stone, boulder 5; shrub and fern bush 2 fibre; berry bush 3 berries,
+    bearing again after 3 days. Damage heals overnight. A stump becomes a sapling after
+    3 days and the tree after 4 more (a dead tree's stump stays). A planted sapling becomes
+    an oak after 4 days.
+  - New items go onto existing stacks first, then into free slots, and into the held
+    slot only when nothing else is free, so an empty hand stays empty while harvesting.
 - **Regrowth:**
   - a felled tree leaves a stump or sapling and regrows over days or seasons;
   - minerals respawn slowly, mainly in areas the player hasn't visited for a while;
