@@ -162,10 +162,27 @@ top of classic pixel art (details under "Lighting and look").
       values: tool use (till, hit, water) 2, planting and picking 0.5; walking is free.
     - **Weight:** up to 20 kg costs nothing extra; above that, +10 % cost per 10 kg more.
     - **Low energy slows walking:** at 10 % or less to 75 % speed, below 5 % to 50 %.
-    - **Passing out** at 0: wake up in the home bed at 06:00 next morning. That day:
-      half walking speed, energy only up to 50 %, health 25. Speed effects don't stack;
-      the slowest wins. The debuff lasts until the next midnight, so after passing out between
-      00:00 and 06:00 it is less than a full day; sleeping does not end it early.
+    - **Passing out** at 0 (changed 2026-11-05): the player sleeps until the next 06:30,
+      but at least 10 hours (collapsing at 22:00 wakes at 08:00, at 15:00 at 06:30), and
+      wakes in the home bed. That day: half walking speed, energy only up to 50 %, health
+      25. Speed effects don't stack; the slowest wins. The debuff lasts until the next
+      midnight; sleeping does not end it early.
+    - **How passing out looks** (decided 2026-11-05): the player stops, can't be
+      controlled, sinks to the knees, tips over and lies asleep with rising "z"s (about
+      1.5 s, the world keeps running), then the screen fades to black. A short message fades
+      in: what happened, how long they slept, where they wake ("at home" or "at the camp")
+      and what the debuff does, e.g. "You collapsed from exhaustion. You slept 10 hours and
+      wake at the camp, still worn out: slow, weak and with half your energy until
+      midnight." After a key or click it fades into the bed in the morning. The asleep
+      frames are reused for sleeping on the ground later.
+    - **Signs of tiredness** (decided 2026-11-05):
+      - **Sweat:** while energy is at 20 % or less, every action (tool hit, till, water,
+        mow, dig, plant, pick) throws one sweat drop off the head; at 10 % or less two or
+        three, in a slightly bigger arc.
+      - **Thought bubble:** when energy falls to 20 %, and again to 10 %, a small "zzz…"
+        bubble pops up above the player for about 2 s (once per crossing, not per action).
+        The bubble is a general system: an icon in a bubble over the player, to be used
+        later for other states (cold, hungry, a question mark, ...).
     - **Sleeping** fills energy and health per bed (sleeping bag 100 %, ground 50 %), and
       **eating** food (berries, turnips) restores a little energy. Both are values in the
       data file (`data/energy.cfg`).
@@ -180,14 +197,17 @@ top of classic pixel art (details under "Lighting and look").
   - in dangerous areas, creatures can attack the sleeping player;
   - there is no next-day debuff. That stays unique to passing out, so the two feel
     different.
-- **Sleep has a fixed duration per bed.** The player can't choose how long to sleep.
-  Going to bed later simply means waking up later the next day.
+- **Sleep lasts until the next morning** (changed 2026-11-05, replaces the fixed duration
+  per bed): sleeping always wakes the player at the next 06:30, whenever they lie down
+  (after midnight that is the same morning). The screen fades to black and back, showing
+  the new day briefly, with no key press. Beds differ only in what they restore.
 - **Later: sleeping quality depends on the bed.**
-  - Each bed type has its own sleep duration, e.g. sleeping bag 8 h, luxurious bed 6 h.
   - The sleeping bag is the baseline: it fills the energy bar to 100 %.
   - Better beds may fill the bar a little above 100 %. Better beds should feel like a
     bonus, not like escaping a penalty.
   - Other bed bonuses come later.
+  - Left out for now: less energy when going to bed very late (a 05:00 nap still refills
+    fully).
 - **Tile targeting with the mouse:** the tile highlight follows the mouse cursor.
   - Within reach (the 3×3 tiles around the player for hand tools; later tools may reach
     further), the highlight shows normally, and the action (left click or Space) works on

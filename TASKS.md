@@ -980,6 +980,34 @@ pixels, stems fixed, per-object phase, gusts); water shimmer and ripples by wind
 flicker, lean and sparks by wind; rain splashes on the ground; lily pads drifting and
 bobbing. Must stay cheap per frame.
 
+## 46. Sleep until morning, passing out with a collapse and a wake-up screen
+
+- [ ] Done
+
+See SPEC.md "Player" (Passing out, How passing out looks, Sleep lasts until the next
+morning). Replaces the fixed sleep duration per bed and the 06:00 pass-out wake-up.
+
+- Sleeping in any bed (and on the ground) wakes at the next 06:30; drop `sleep_minutes`
+  as a duration (beds keep their energy fill). Old saves need nothing.
+- Passing out sleeps until the next 06:30 but at least 10 hours; the debuff stays
+  "until the next midnight".
+- Collapse animation: new player frames (kneel, lying, asleep) for every layer
+  (body, hair, clothes, hat), generated like the other player art; rising "z"s; input
+  locked; then fade to black.
+- Wake-up screen after passing out: the message (what happened, hours slept, where, the
+  debuff), a key or click to go on, fade into the morning. Normal sleep: the same fade
+  with the new day shown briefly, no key press.
+- Tests for the wake-up times and the flow; README and screenshots updated.
+
+## 47. Thought bubbles and sweat
+
+- [ ] Done
+
+See SPEC.md "Signs of tiredness". A small reusable thought-bubble view over the player
+(an icon in a bubble, pop in, ~2 s, fade), first used for "zzz…" when energy falls to
+20 % and to 10 % (once per crossing). Sweat drops on actions at 20 % or less (one) and
+10 % or less (two or three). View only; tests for when they show; README updated.
+
 ## Later (not part of the prototype)
 
 - Season looks follow-ups (from the task 29 review): world_view.gd carries layer, season
