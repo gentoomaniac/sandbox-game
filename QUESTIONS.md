@@ -1,0 +1,26 @@
+# Open questions
+
+Questions for the user that came up while they were away. Each has the default that work
+went ahead with, so nothing is blocked; answer or change any of them when you are back.
+Answered questions move into SPEC.md and are removed here.
+
+## Decisions taken without you (please confirm or change)
+
+1. **Chest storage moves items by clicking, not dragging** (task 49): click an item, then
+   click a slot, as on the character screen; Shift+click sends a whole stack. Default: keep.
+2. **Indoors, the axe puts a chest and its contents into the inventory** (task 49), since
+   there is no ground inside to spill onto; refused with a message when it doesn't fit.
+   Outdoors the contents spill as agreed. Default: keep.
+3. **Crafting with a full inventory is refused** ("Inventory full") instead of dropping the
+   item on the ground (task 49). Default: keep.
+4. **The backpack is shown as 2×10** instead of 4×5 (task 50), so it lines up with the
+   10-wide hotbar row below it. Default: keep.
+5. **`skip` never makes the player pass out** at 01:00 (task 46), so `skip 1d` stays usable
+   for testing crops. Default: keep.
+6. **After passing out the player wakes standing by the bed**, not lying in it (task 46).
+   Default: keep.
+7. **Shift+click from a chest fills the backpack before the hotbar** (task 50). Default: keep.
+
+## Questions
+
+(None yet.)
