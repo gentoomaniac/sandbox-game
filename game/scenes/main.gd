@@ -46,6 +46,8 @@ extends Node2D
 ## `setting_ambience_volume` and `setting_sound_in_background` (with `--menu=audio`),
 ## `action_<action>` (with `--menu=controls`).
 ## `--sound-log` prints every sound event as it plays (see AudioService).
+## `--mute` silences all sound (events still play and log); `--background` keeps the window
+## from taking the keyboard focus. Both are for test runs (`make screenshot` passes them).
 ## `--wildlife=<kind>[,<kind>]` puts a few animals of those kinds near the player once the
 ## world is drawn and leaves it at that (`bird`, `rabbit`, `squirrel`, `deer`, `bee`,
 ## `butterfly`, `flock`; see WildlifeView), `--wildlife-calm` makes them take no notice of the
@@ -127,6 +129,8 @@ var _is_hammer_held_at_start := false
 
 
 func _ready() -> void:
+	if OS.get_cmdline_user_args().has("--background"):
+		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_NO_FOCUS, true)
 	if (
 		not EnergyRules.default_rules().is_valid()
 		or not CropRules.default_rules().is_valid()
@@ -147,6 +151,7 @@ func _ready() -> void:
 	_settings = _load_settings()
 	_apply_ui_scale(_settings.ui_scale)
 	add_child(_audio)
+	_audio.is_muted = OS.get_cmdline_user_args().has("--mute")
 	_world.audio_listener_enable_2d = true
 	_audio.use_world(_world)
 	_audio.apply_settings(_settings)

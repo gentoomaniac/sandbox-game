@@ -30,6 +30,10 @@ const POOL_SIZE := 12
 const MAX_DISTANCE := 500.0
 const SILENT_DB := -80.0
 
+## Silent no matter the settings (the `--mute` flag, for test runs); sounds still play and
+## log.
+var is_muted := false
+
 var _rules := SoundRules.default_rules()
 var _rng := RandomNumberGenerator.new()
 var _muffle := Muffle.new()
@@ -173,7 +177,8 @@ func _free_player(is_in_world: bool) -> Node:
 
 func _update_silence() -> void:
 	AudioServer.set_bus_mute(
-		AudioServer.get_bus_index(MASTER), is_silenced(_is_sound_in_background, _is_focused)
+		AudioServer.get_bus_index(MASTER),
+		is_muted or is_silenced(_is_sound_in_background, _is_focused)
 	)
 
 

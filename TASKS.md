@@ -1107,7 +1107,8 @@ Saving notes from the task 15 review:
   `from_dict`; fine while only the game writes saves, but handle gracefully before players
   edit or share saves.
 - Only closing the window saves; Ctrl-C/SIGTERM doesn't.
-- `--new-game` without `--save-path` replaces the real save on quit (intended).
+- `--new-game` without `--save-path` replaces the real save on quit (intended); `make screenshot`
+  uses build/screenshot.save, so test runs never touch it.
 
 See-through notes from the task 14 review:
 

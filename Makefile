@@ -85,10 +85,15 @@ OUT ?= $(CURDIR)/build/screenshot.png
 # (e.g. with ARGS="--save-path=..."). They read build/settings.cfg instead of the player's
 # settings (a missing file means defaults), so stored keys or display mode don't apply.
 KEEP_SAVE ?=
+# Test runs stay out of the way: no sound (SOUND=1 keeps it) and a window that doesn't take the
+# focus. On Wayland the native driver is used, as the compositor then doesn't hand the focus to a
+# new window that didn't ask for it.
+QUIET_WINDOW := $(if $(WAYLAND_DISPLAY),--display-driver wayland)
+
 screenshot:
 	$(IMPORT)
 	mkdir -p $(dir $(OUT))
-	$(GODOT) --path . -- $(if $(KEEP_SAVE),,--new-game) $(if $(AT),--at=$(AT)) --settings-path=$(CURDIR)/build/settings.cfg --screenshot=$(OUT) $(if $(TIME),--time=$(TIME)) $(if $(ZOOM),--zoom=$(ZOOM)) $(ARGS)
+	$(GODOT) $(QUIET_WINDOW) --path . -- $(if $(SOUND),,--mute) --background $(if $(KEEP_SAVE),,--new-game --save-path=$(CURDIR)/build/screenshot.save) $(if $(AT),--at=$(AT)) --settings-path=$(CURDIR)/build/settings.cfg --screenshot=$(OUT) $(if $(TIME),--time=$(TIME)) $(if $(ZOOM),--zoom=$(ZOOM)) $(ARGS)
 
 # On Godot builds without navigation (e.g. some Gentoo builds) GUT prints a harmless
 # 'Identifier "NavigationMeshGenerator" not declared' parse error. Tests still run.
