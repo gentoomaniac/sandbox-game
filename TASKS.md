@@ -245,7 +245,7 @@ Depends on: 4.
 
 ## 8. Player, camp site and sleeping
 
-- [ ] Done
+- [x] Done
 
 Depends on: 6, 7.
 
