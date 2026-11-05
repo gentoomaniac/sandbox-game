@@ -126,12 +126,14 @@ top of classic pixel art (details under "Lighting and look").
 - Engine: **Godot 4.x**, language: **GDScript**. The exact version is pinned in the project
   (e.g. a `.godot-version` file), and `make setup` checks that the installed Godot
   matches.
-- Tiled maps (`.tmx`) are imported directly by an **importer addon** (e.g. YATI). The `.tmx`
-  file stays the source of truth; there is no manual export step.
+- Tiled maps (`.tmx`) are read at runtime by our own small loader (`InteriorLoader`). The
+  `.tmx` file stays the source of truth; there is no manual export step. (Decided
+  2026-11-05: the YATI importer addon does not run on the Gentoo Godot build and was
+  removed.)
 - Build, run, test and other multi-step tasks are wrapped in **make** targets, so each one
   is a single command.
 - **`make setup`** sets up the stack:
-  - it installs what it can automatically: project-local addons (Tiled importer, GUT) and
+  - it installs what it can automatically: project-local addons (GUT) and
     Python tools in a project-local venv;
   - it does not try to install system packages, because the developer machine may run a
     less common Linux distro (e.g. Gentoo). It checks system dependencies (Godot, Tiled,
@@ -177,7 +179,17 @@ top of classic pixel art (details under "Lighting and look").
   - When the mouse hasn't moved for a few seconds, the highlight fades out. Then the
     keyboard action (Space) works on the tile the player faces, as before, and the
     highlight shows that tile again once the player moves.
-- **Inventory and equipment.** Carried items have weight (see Energy).
+- **Inventory and equipment** (decided 2026-11-05):
+  - 20 slots at the start; the first 10 are the **hotbar**, shown at the bottom of the
+    screen. Backpack upgrades later add rows of 10.
+  - The selected hotbar slot is what the player holds: keys 1–0 pick a slot. The use
+    action (left click or Space) acts with the held item.
+  - Items of the same kind stack, up to 99 per slot; tools don't stack.
+  - Every item has a weight; the total carried weight raises how much energy actions use
+    (see Energy).
+  - An inventory screen shows all slots; items can be moved between slots.
+- **Movement keys:** arrow keys and WASD (decided 2026-11-05). All keys can be changed in
+  the settings (see Menus and settings).
 - **Scale between character and world:** character figure 27–28 px tall in its 16×32
   frame; mature trees about 2–2.5× the character (60–66 px); a small house about 3.4× (5×3
   footprint, ~96 px tall, door at least as tall as the character). Numbers in
@@ -185,7 +197,31 @@ top of classic pixel art (details under "Lighting and look").
 - **Character sprite: 16×32 pixels** (one tile wide, two tall), built from **layers**
   (body, clothes, head/hair, held tool or weapon, later gear), so equipment can be shown
   by swapping or adding a layer instead of redrawing the character.
-- **Tools** are bought and upgraded.
+- **Tools** are bought and upgraded (decided 2026-11-05):
+  - The player starts with a hoe, axe, pickaxe, watering can and a bag of turnip seeds,
+    all tools at level 1.
+  - Upgrades later come from a smith in a settlement, in tiers (level 2 copper, level 3
+    iron, as palette swaps of the same icon).
+  - The tool decides the action: hoe tills, seeds plant, axe fells, pickaxe mines, an
+    empty hand harvests crops and picks bushes. The watering can has no effect until
+    watering is designed.
+
+### Menus and settings
+
+Decided 2026-11-05.
+
+- **Escape opens the pause menu** (in build mode it first leaves build mode). The game
+  pauses while it is open: Resume, Settings, Save and quit. A title screen comes later.
+- **Settings:**
+  - **Controls:** every game action with its keys. Click a binding, then press a key or
+    mouse button to change it. Each action has up to two bindings. A key already used by
+    another action moves to the new one, and the menu says so. "Reset to defaults" restores
+    all keys.
+  - **Display:** fullscreen or windowed.
+  - Settings are saved in `user://settings.cfg`, separate from the save game.
+  - The energy drain setting (see Energy) joins once energy exists. Gamepads later.
+- **UI look:** a pixel font and a framed panel (9-slice) in palette colours, in one shared
+  Godot Theme that all UI uses.
 
 ### Time, seasons and weather
 
@@ -221,6 +257,16 @@ top of classic pixel art (details under "Lighting and look").
 - The biome decides which varieties occur where (see Biomes).
 - **Stronger tools unlock new varieties and harvest the older ones faster** (fewer hits).
   Together this is a progression loop: better tools → new resources → better tools.
+- **Felling and mining** (decided 2026-11-05):
+  - Every tree and mineral has hit points; each hit with a tool takes off the tool's
+    power, which grows with its level. So a better tool needs fewer hits.
+  - A tool below the object's harvest level does nothing, with a short message
+    (e.g. "Needs a better pickaxe.").
+  - Drops go straight into the inventory: trees give wood, sometimes a sapling; stone
+    gives stone; a boulder (level 2) gives more stone. Shrubs and ferns give fibre.
+  - A felled tree leaves a stump, which regrows into a sapling and then a tree over days.
+  - A berry bush gives berries and bears again after a few days; picking it doesn't
+    remove it.
 - **Regrowth:**
   - a felled tree leaves a stump or sapling and regrows over days or seasons;
   - minerals respawn slowly, mainly in areas the player hasn't visited for a while;

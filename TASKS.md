@@ -488,6 +488,82 @@ See SPEC.md "Player" (tile targeting with the mouse).
 - The targeting rule (which tile, in reach or not, which source) is a pure function with
   tests.
 
+Parallel plan for 18–21: 18 and 19 together; 20 after 18; 21 after 20.
+
+## 18. Inventory, hotbar and starting tools
+
+- [ ] Done
+
+See SPEC.md "Player" (inventory and equipment, tools).
+
+- State: `Item` types as data (name, icon, weight, stack limit; tools with a level), an
+  `Inventory` of 20 slots (first 10 the hotbar) with add (stacks, then free slots;
+  reports what didn't fit), remove, move/swap, total weight, and the selected hotbar
+  slot. Saved and loaded with the rest of the game; version-1 saves still load (their
+  harvest count becomes turnips).
+- New game: hoe, axe, pickaxe, watering can, 15 turnip seeds.
+- The use action acts with the held item: hoe tills grass, seeds plant on soil (one seed
+  used), empty hand harvests a ripe turnip into the inventory. Until a shop exists, a
+  harvest also gives one seed back. Axe, pickaxe and watering can do nothing yet (task
+  20). The use highlight only shows where the held item can act. The held-item layer of
+  the character shows the held tool (hoe art exists; others can wait for their art).
+- Keys 1–0 select a hotbar slot (input actions `hotbar_1` … `hotbar_10`, so task 19's
+  controls screen picks them up). The inventory screen opens with Tab (action
+  `inventory`); click an item, then click a slot to move or swap it.
+- UI: hotbar at the bottom centre (10 slots of 20×20, selected slot marked, stack counts),
+  inventory screen with all 20 slots. Replaces the harvest counter.
+- Art: 16×16 icons for hoe, axe, pickaxe, watering can, turnip seeds, turnip; slot art
+  (normal, selected). Put new art code in its own module next to `generate.py`.
+- Tests: stacking, full inventory, move/swap, weight, using each tool, save round trip,
+  loading a version-1 save.
+
+## 19. Pause menu and settings with key bindings
+
+- [ ] Done
+
+See SPEC.md "Menus and settings".
+
+- Escape opens the pause menu (leaving build mode first); the game pauses. Buttons:
+  Resume, Settings, Save and quit. Mouse and keyboard work in all menus.
+- Settings → Controls: every game action (all actions in the project's input map except
+  Godot's `ui_*` ones), with a readable name and its up to two bindings. Rebinding:
+  click, press a key or mouse button, Escape cancels. Conflicts move the key and say so.
+  Reset to defaults.
+- Settings → Display: fullscreen / windowed.
+- Settings saved to and loaded from `user://settings.cfg` at start; a bad file is ignored
+  with a warning.
+- UI look: a pixel bitmap font (5×7 or 6×8, generated or open licence), a 9-slice panel
+  frame, buttons, all in one shared Theme with palette colours, used by the menus and the
+  clock HUD. Put new art code in its own module next to `generate.py`.
+- Tests: the settings file round trip, rebinding and conflict rules, defaults reset (as
+  plain logic outside the UI).
+
+## 20. Felling, mining and foraging
+
+- [ ] Done
+
+Depends on: 18. See SPEC.md "Resources: trees and minerals" (felling and mining).
+
+- Hit points per object type and power per tool level; hits needed = ceil(hp / power).
+  Damage is object state (saved). A short shake on each hit.
+- Below the harvest level: no damage, a message ("Needs a better axe.").
+- Drops into the inventory (what doesn't fit lands on the ground later; for now a
+  message "Inventory full"): wood, sapling (chance), stone, fibre, berries. Item types
+  and 16×16 icons for each.
+- Stump object after felling (art 20×12), regrows into a sapling, then the tree, over
+  days. Berry bush keeps a picked state and bears again after a few days.
+- Saplings can be planted from the inventory.
+- Tests: hits per level, harvest level gate, drops, stump regrowth, bush regrowth, save.
+
+## 21. Energy
+
+Depends on: 20. See SPEC.md "Player" (energy).
+
+- Energy bar (art: frame and fill, icon), actions cost energy, weight raises the cost,
+  passing out at zero (debuff next day), sleeping refills per bed, energy drain setting
+  in the settings menu.
+- Details to be decided before the brief.
+
 ## Later (not part of the prototype)
 
 - Floodplain farming: floodplain is the most fertile farmland, but only grass can be tilled

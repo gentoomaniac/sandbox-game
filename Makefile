@@ -2,8 +2,6 @@ GODOT ?= godot
 GODOT_VERSION := $(shell cat .godot-version)
 
 GUT_VERSION := 9.7.1
-# Pinned. Bump only to a release that ships a GDScript build (some are C#-only).
-YATI_VERSION := 2.2.9
 GDTOOLKIT_VERSION := 4.5.0
 PILLOW_VERSION := 12.0.0
 
@@ -37,7 +35,6 @@ setup:
 		"Gentoo: emerge games-util/tiled; or download from mapeditor.org"; \
 	check python3 "Python 3" "Gentoo: emerge dev-lang/python; or your package manager's python3"; \
 	check git "git" "Gentoo: emerge dev-vcs/git; or your package manager's git"; \
-	check unzip "unzip (unpacks addons)" "Gentoo: emerge app-arch/unzip; or your package manager's unzip"; \
 	check curl "curl (downloads addons)" "Gentoo: emerge net-misc/curl; or your package manager's curl"; \
 	if command -v "$(GODOT)" >/dev/null 2>&1; then \
 		found=$$("$(GODOT)" --version | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+'); \
@@ -54,13 +51,6 @@ setup:
 		echo "Downloading GUT $(GUT_VERSION)"; \
 		curl -fsSL https://github.com/bitwes/Gut/archive/refs/tags/v$(GUT_VERSION).tar.gz \
 			| tar xz --strip-components=1 "Gut-$(GUT_VERSION)/addons/gut" || missing=1; \
-	fi; \
-	if [ ! -d addons/YATI ] && command -v curl >/dev/null 2>&1 && command -v unzip >/dev/null 2>&1; then \
-		echo "Downloading YATI $(YATI_VERSION)"; \
-		curl -fsSL -o yati.zip \
-			https://github.com/Kiamo2/YATI/releases/download/v$(YATI_VERSION)/v$(YATI_VERSION)-gdscript.zip \
-			&& unzip -q -o yati.zip 'addons/YATI/*' || missing=1; \
-		rm -f yati.zip; \
 	fi; \
 	if [ -d addons/gut ] && command -v "$(GODOT)" >/dev/null 2>&1; then \
 		$(IMPORT) || missing=1; \

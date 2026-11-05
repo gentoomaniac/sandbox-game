@@ -129,7 +129,7 @@ func _process(delta: float) -> void:
 	_tick_clock(delta)
 	_use_highlight.is_enabled = not _build_mode.is_active() and not _state.is_inside()
 	if not _is_fading:
-		var direction := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+		var direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 		_state.player.move(_state.current_map, direction, delta)
 		if _state.door_underfoot():
 			_fade_through(_pass_door)
