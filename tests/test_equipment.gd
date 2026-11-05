@@ -124,7 +124,7 @@ func test_quick_unequip_goes_to_the_first_free_slot() -> void:
 func test_quick_unequip_with_a_full_inventory_is_refused() -> void:
 	_equipment.equip(Equipment.HEAD, ItemTypes.STRAW_HAT)
 	for slot in Inventory.SLOT_COUNT:
-		_inventory.slots[slot] = {"item": ItemTypes.WOOD, "count": 1}
+		_inventory.slots[slot] = {"item": ItemTypes.LOGS, "count": 1}
 	assert_false(_equipment.quick_unequip(_inventory, Equipment.HEAD))
 	assert_eq(_equipment.item_in(Equipment.HEAD), ItemTypes.STRAW_HAT)
 

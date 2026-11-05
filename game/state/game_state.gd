@@ -9,7 +9,7 @@ extends RefCounted
 ## What the use action does on a tile. HARVEST is a ripe crop, FORAGE something a hand picks
 ## (a bush, a fern), CLEAR a dead crop that a hand pulls up, WATER a watering can wetting tilled
 ## soil, HIT a tool cut or mined at an object, NEEDS_BETTER_TOOL a tool that is too weak for the
-## object.
+## object. What a harvest, a pick or a final hit gives lies on the ground (see World `drop_items`).
 enum Use {
 	NOTHING,
 	TILL,
@@ -18,7 +18,6 @@ enum Use {
 	FORAGE,
 	HIT,
 	NEEDS_BETTER_TOOL,
-	INVENTORY_FULL,
 	CLEAR,
 	WATER,
 }
@@ -26,7 +25,7 @@ enum Use {
 ## The tools the use action has something to do with.
 const ACTIVE_TOOLS := [ItemTypes.HOE, ItemTypes.AXE, ItemTypes.PICKAXE, ItemTypes.WATERING_CAN]
 ## The energy rule (see EnergyRules `cost_of`) for each use that costs energy. The others
-## (nothing done, too weak a tool, full inventory) cost nothing.
+## (nothing done, too weak a tool) cost nothing.
 const COST_KINDS := {
 	Use.TILL: &"till",
 	Use.PLANT: &"plant",
@@ -40,6 +39,13 @@ const COST_KINDS := {
 const WAKE_UP_MINUTE := 6 * GameClock.MINUTES_PER_HOUR
 ## How close (in tiles, diagonals included) the player must be to a bed to sleep in it.
 const BED_REACH := 1
+## Items on the ground within this many tiles of the player (their feet) are pulled to them.
+const PULL_RADIUS := 0.5
+## How fast a pulled item moves, in tiles per second: faster than the player walks, so it
+## catches up.
+const PULL_SPEED := 8.0
+## A pulled item that is this close is picked up.
+const PICKUP_RADIUS := 0.15
 
 var world: World
 var clock := GameClock.new()
@@ -247,8 +253,7 @@ func can_use_held_item() -> bool:
 
 ## Uses a tile (see `use_at`) and returns what was done, which costs energy (more the
 ## heavier the load, unless a cheat says otherwise). A use with too little energy left still
-## happens; the energy ends at 0 (see `is_out_of_energy`). A harvest, pick or final hit
-## whose drops don't fit in the inventory is not done: INVENTORY_FULL.
+## happens; the energy ends at 0 (see `is_out_of_energy`).
 func use_tile(target: Vector2i) -> Use:
 	var weight_factor := 1.0
 	if not cheats.is_weight_off:
@@ -274,30 +279,24 @@ func _do_use(target: Vector2i) -> Use:
 			player.inventory.remove(seeds, 1)
 		Use.HARVEST:
 			var crop := world.object_at(target)
-			var harvest := CropLife.harvest_of(crop)
-			if not player.inventory.can_add(harvest):
-				return Use.INVENTORY_FULL
-			_take_drops(harvest)
 			if CropLife.regrows(crop):
 				CropLife.regrow(crop)
 				world.change_object(crop)
 			else:
 				world.remove_object(target)
+			world.drop_items(target, CropLife.harvest_of(crop))
 		Use.CLEAR:
 			world.remove_object(target)
 		Use.WATER:
 			world.set_moisture(target, 1.0)
 		Use.FORAGE:
 			var plant := world.object_at(target)
-			var drops: Dictionary = plant.type_data()["drops"]
-			if not player.inventory.can_add(drops):
-				return Use.INVENTORY_FULL
-			_take_drops(drops)
 			if plant.type_data().has("regrow_days"):
 				plant.pick()
 				world.change_object(plant)
 			else:
 				world.remove_object(target)
+			world.drop_items(target, plant.type_data()["drops"])
 		Use.HIT:
 			return _hit(world.object_at(target))
 	return use
@@ -327,8 +326,8 @@ func _use_by_hand(object: WorldObject) -> Use:
 	return Use.FORAGE if object.is_forageable() and not world.is_bare(object) else Use.NOTHING
 
 
-## Hits an object with the held tool. The hit that finishes it gives its drops and leaves
-## what it leaves; it is not done if the drops don't fit.
+## Hits an object with the held tool. The hit that finishes it leaves what it leaves and
+## drops its drops around it.
 func _hit(object: WorldObject) -> Use:
 	var power := ItemTypes.tool_power(player.inventory.held_item())
 	if not object.is_finished_by(power):
@@ -338,9 +337,6 @@ func _hit(object: WorldObject) -> Use:
 	var drops: Dictionary = object_type["drops"].duplicate()
 	if _rolls_sapling(object):
 		drops[ItemTypes.SAPLING] = 1
-	if not player.inventory.can_add(drops):
-		return Use.INVENTORY_FULL
-	_take_drops(drops)
 	if not object_type.has("leaves"):
 		world.remove_object(object.pos)
 	else:
@@ -348,6 +344,7 @@ func _hit(object: WorldObject) -> Use:
 		if object_type.get("regrows", false):
 			stump.state["tree"] = str(object.type)
 		world.replace_object(object, stump)
+	world.drop_items(object.pos, drops)
 	return Use.HIT
 
 
@@ -360,9 +357,22 @@ func _rolls_sapling(tree: WorldObject) -> bool:
 	)
 
 
-func _take_drops(drops: Dictionary) -> void:
-	for item: StringName in drops:
-		player.inventory.add(item, drops[item])
+## Pulls the items on the ground near the player towards them and picks up those that
+## arrive. What the inventory has no room for stays on the ground, and so do all piles of an
+## item while it has no room at all. Does nothing inside a building.
+func collect_ground_items(delta: float) -> void:
+	if is_inside():
+		return
+	for ground_item in world.ground_items_near(player.position, PULL_RADIUS):
+		if not player.inventory.can_add({ground_item.item: 1}):
+			continue
+		var to_player := player.position - ground_item.position
+		if to_player.length() > maxf(PICKUP_RADIUS, PULL_SPEED * delta):
+			ground_item.position += to_player.normalized() * PULL_SPEED * delta
+			continue
+		ground_item.count = player.inventory.add(ground_item.item, ground_item.count)
+		if ground_item.count == 0:
+			world.remove_ground_item(ground_item)
 
 
 ## Uses the tile the player faces.

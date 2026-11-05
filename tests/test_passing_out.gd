@@ -62,9 +62,9 @@ func test_passing_out_gives_the_debuff_values() -> void:
 
 
 func test_passing_out_keeps_the_items() -> void:
-	_state.player.inventory.add(ItemTypes.WOOD, 7)
+	_state.player.inventory.add(ItemTypes.LOGS, 7)
 	_state.pass_out()
-	assert_eq(_state.player.inventory.count_of(ItemTypes.WOOD), 7)
+	assert_eq(_state.player.inventory.count_of(ItemTypes.LOGS), 7)
 
 
 func test_the_debuff_ends_at_the_next_new_day() -> void:

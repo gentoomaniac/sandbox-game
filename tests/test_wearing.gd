@@ -19,7 +19,7 @@ func _layer_slots(player: PlayerState) -> Array:
 
 func test_worn_items_count_toward_the_carried_weight() -> void:
 	var player := PlayerState.new()
-	player.inventory.add(ItemTypes.WOOD, 2)
+	player.inventory.add(ItemTypes.LOGS, 2)
 	player.equipment = Equipment.with_starting_outfit()
 	var worn: float = (
 		ItemTypes.TYPES[ItemTypes.TUNIC]["weight"] + ItemTypes.TYPES[ItemTypes.TROUSERS]["weight"]

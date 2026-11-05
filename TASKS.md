@@ -776,7 +776,11 @@ See SPEC.md "Harvesting, reworked" (hit feedback). Visual only.
 
 ## 33. Final resources lie on the ground
 
-- [ ] Done
+- [x] Done: `World.drop_items(source_tile, {item: count})` is the entry point (piles of one
+  kind over the free walkable tiles within 1 tile, then 2, ordered by `PositionHash`);
+  `GameState.collect_ground_items(delta)` pulls piles within half a tile and picks them up;
+  GroundItemView draws them with the 8x8 icons of `assets/ground_items/`. Saves are version 3.
+  `--drops=<x>,<y>` shows drops for screenshots.
 
 See SPEC.md "Harvesting, reworked". Can run alongside 32.
 

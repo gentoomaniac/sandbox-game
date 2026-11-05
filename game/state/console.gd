@@ -67,7 +67,7 @@ func _init(state: GameState) -> void:
 	_state = state
 
 
-## Runs a line such as "give wood 5" (a leading "/" is optional) and returns the output.
+## Runs a line such as "give logs 5" (a leading "/" is optional) and returns the output.
 func run(line: String) -> Array[String]:
 	var words := _words(line)
 	if words.is_empty():

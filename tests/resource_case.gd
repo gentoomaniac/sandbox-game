@@ -94,6 +94,15 @@ func _count(item: StringName) -> int:
 	return _state.player.inventory.count_of(item)
 
 
+func _dropped(item: StringName) -> int:
+	return _world.ground_count_of(item)
+
+
+func _clear_ground() -> void:
+	for ground_item in _world.ground_items():
+		_world.remove_ground_item(ground_item)
+
+
 ## Fills every slot but the selected one.
 func _fill_inventory() -> void:
 	for slot in Inventory.SLOT_COUNT:

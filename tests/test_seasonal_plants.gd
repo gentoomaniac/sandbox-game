@@ -47,7 +47,7 @@ func test_a_dormant_fern_cant_be_harvested() -> void:
 	_state.clock.day = WINTER
 	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
 	assert_eq(_state.use_facing_tile(), GameState.Use.NOTHING)
-	assert_eq(_count(ItemTypes.FIBRE), 0)
+	assert_eq(_dropped(ItemTypes.FIBRE), 0)
 
 
 func test_a_dormant_fern_does_not_stand_in_the_way_of_building() -> void:
@@ -97,7 +97,7 @@ func test_a_harvested_fern_stays_removed() -> void:
 	_place(WorldObjectTypes.FERN_BUSH)
 	_hold(ItemTypes.NONE)
 	assert_eq(_state.use_facing_tile(), GameState.Use.FORAGE)
-	assert_eq(_count(ItemTypes.FIBRE), 2)
+	assert_eq(_dropped(ItemTypes.FIBRE), 2)
 	_state.clock.day = NEXT_SUMMER
 	assert_null(_world.object_at(_tile))
 
@@ -141,7 +141,7 @@ func test_berries_can_be_picked_in_summer_but_not_in_winter() -> void:
 	_state.clock.day = SUMMER
 	assert_false(_world.is_bare(bush))
 	assert_eq(_state.use_facing_tile(), GameState.Use.FORAGE)
-	assert_eq(_count(ItemTypes.BERRIES), 3)
+	assert_eq(_dropped(ItemTypes.BERRIES), 3)
 
 
 func test_a_bush_has_no_berries_in_early_spring_either() -> void:

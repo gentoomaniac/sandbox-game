@@ -153,7 +153,7 @@ func test_a_ripe_crop_is_harvested_and_the_soil_stays() -> void:
 	assert_eq(_state.use_facing_tile(), GameState.Use.HARVEST)
 	assert_null(_world.object_at(_tile))
 	assert_eq(_world.tile_at(_tile).terrain, Tile.Terrain.SOIL)
-	assert_eq(_state.player.inventory.count_of(ItemTypes.TURNIP), 1)
+	assert_eq(_world.ground_count_of(ItemTypes.TURNIP), 1)
 	_hold(ItemTypes.TURNIP_SEEDS)
 	assert_eq(_state.use_facing_tile(), GameState.Use.PLANT, "the soil can be planted again")
 

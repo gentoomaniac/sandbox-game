@@ -47,7 +47,8 @@ wide cells and as tall as the sheet (see crops.py and data/crops.cfg). They have
 assets/soil_wet.png: the damp and the wet look of tilled soil, two 16x16 tiles (see crop_icons.py).
 
 assets/items/<item id>.png (16x16) and assets/ui/slot.png, slot_selected.png (20x20): drawn in
-items.py, and for crops in crop_icons.py.
+items.py, and for crops in crop_icons.py. assets/ground_items/<item id>.png are their 8x8 versions
+for items lying on the ground (items.small), made for every icon (the tools too).
 """
 
 import math
@@ -1928,6 +1929,11 @@ def main():
         (ASSETS / directory).mkdir(exist_ok=True)
         for name, picture in pictures.items():
             to_image([[picture]], len(picture)).save(ASSETS / directory / f"{name}.png")
+        if directory == "items":
+            (ASSETS / "ground_items").mkdir(exist_ok=True)
+            for name, picture in pictures.items():
+                small = items.small(picture)
+                to_image([[small]], len(small)).save(ASSETS / "ground_items" / f"{name}.png")
     ui.write_ui_assets(ASSETS / "ui", PALETTE)
     write_palette()
     check_palette()

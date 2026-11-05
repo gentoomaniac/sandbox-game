@@ -19,7 +19,7 @@ const PICKAXE := &"pickaxe"
 const WATERING_CAN := &"watering_can"
 const TURNIP_SEEDS := &"turnip_seeds"
 const TURNIP := &"turnip"
-const WOOD := &"wood"
+const LOGS := &"logs"
 const STONE := &"stone"
 const FIBRE := &"fibre"
 const BERRIES := &"berries"
@@ -39,6 +39,7 @@ const DEFAULT_STACK_LIMIT := 99
 const POWER_OF_LEVEL := [0, 1, 2, 3]
 
 const ICON_PATH := "res://assets/items/%s.png"
+const GROUND_ICON_PATH := "res://assets/ground_items/%s.png"
 
 const _OTHER_TYPES := {
 	HOE:
@@ -74,9 +75,9 @@ const _OTHER_TYPES := {
 		"tool": WATERING_CAN,
 		"level": 1,
 	},
-	WOOD:
+	LOGS:
 	{
-		"name": "Wood",
+		"name": "Logs",
 		"weight": 1.0,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
@@ -149,6 +150,11 @@ static var TYPES := _with_crop_items(_OTHER_TYPES)  # gdlint: ignore=class-varia
 ## The item's 16x16 picture (see tools/art/items.py).
 static func icon_path(item: StringName) -> String:
 	return ICON_PATH % item
+
+
+## The item's 8x8 picture for when it lies on the ground (see tools/art/items.py).
+static func ground_icon_path(item: StringName) -> String:
+	return GROUND_ICON_PATH % item
 
 
 ## How many hit points one hit of this tool takes off.

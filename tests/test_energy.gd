@@ -37,15 +37,6 @@ func test_a_tool_too_weak_for_the_object_costs_nothing() -> void:
 	assert_eq(_state.player.energy, 100.0)
 
 
-func test_a_full_inventory_costs_nothing() -> void:
-	_place(WorldObjectTypes.OAK)
-	_hit(ItemTypes.AXE, 4)
-	var energy_before := _state.player.energy
-	_fill_inventory()
-	assert_eq(_hit(ItemTypes.AXE, 1), GameState.Use.INVENTORY_FULL)
-	assert_eq(_state.player.energy, energy_before)
-
-
 func test_the_weight_factor_is_free_up_to_the_limit_then_linear() -> void:
 	var rules := EnergyRules.new(RULES)
 	assert_eq(rules.weight_factor(0.0), 1.0)

@@ -47,15 +47,6 @@ func _plant_and_ripen() -> void:
 	_world.add_object(crop)
 
 
-## Every slot but the last hotbar slot holds a tool, so the hand is empty and nothing stacks.
-func _fill_all_but_the_last_hotbar_slot() -> void:
-	var inventory := _state.player.inventory
-	for slot in Inventory.SLOT_COUNT:
-		inventory.slots[slot] = (
-			{} if slot == Inventory.HOTBAR_SIZE - 1 else {"item": ItemTypes.HOE, "count": 1}
-		)
-
-
 func test_a_new_game_starts_with_the_tools_and_fifteen_seeds_on_the_hotbar() -> void:
 	var inventory := _state.player.inventory
 	for tool in [ItemTypes.HOE, ItemTypes.AXE, ItemTypes.PICKAXE, ItemTypes.WATERING_CAN]:
@@ -98,18 +89,8 @@ func test_an_empty_hand_harvests_a_ripe_crop_and_gets_a_seed_back() -> void:
 	_hold(ItemTypes.NONE)
 	assert_eq(_state.use_facing_tile(), GameState.Use.HARVEST)
 	assert_null(_world.object_at(_tile))
-	assert_eq(_state.player.inventory.count_of(ItemTypes.TURNIP), 1)
-	assert_eq(_state.player.inventory.count_of(ItemTypes.TURNIP_SEEDS), 16)
-
-
-func test_a_harvest_that_does_not_fit_is_not_done() -> void:
-	# The crop would take the one free slot, and its seed has nowhere to go.
-	_plant_and_ripen()
-	_fill_all_but_the_last_hotbar_slot()
-	_state.player.inventory.select(Inventory.HOTBAR_SIZE - 1)
-	assert_eq(_state.use_facing_tile(), GameState.Use.INVENTORY_FULL)
-	assert_not_null(_world.object_at(_tile))
-	assert_eq(_state.player.inventory.count_of(ItemTypes.TURNIP), 0)
+	assert_eq(_world.ground_count_of(ItemTypes.TURNIP), 1)
+	assert_eq(_world.ground_count_of(ItemTypes.TURNIP_SEEDS), 1)
 
 
 func test_an_empty_hand_does_not_harvest_an_unripe_crop() -> void:

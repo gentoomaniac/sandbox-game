@@ -1,9 +1,10 @@
 class_name SaveFile
 extends RefCounted
-## The save on disk: one JSON file per world, `{"version": 2, "game": <GameState.to_dict>}`.
-## Version 1 saves still load: they had a harvest count instead of an inventory.
+## The save on disk: one JSON file per world, `{"version": 3, "game": <GameState.to_dict>}`.
+## Older saves still load, upgraded step by step (see `_upgrade_from_version_1` and
+## `_upgrade_from_version_2`).
 
-const VERSION := 2
+const VERSION := 3
 const DEFAULT_PATH := "user://saves/world.json"
 ## What a save we can't use is renamed to, so it is never overwritten silently.
 const BACKUP_SUFFIX := ".bak"
@@ -46,14 +47,16 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 		return null
 	# `==` also accepts the 1.0 that JSON parsing gives.
 	var version: Variant = parsed.get("version")
-	if version != 1 and version != VERSION:
-		_reject(path, "save version %s, this game reads versions 1 and %d" % [version, VERSION])
+	if version != 1 and version != 2 and version != VERSION:
+		_reject(path, "save version %s, this game reads versions 1 to %d" % [version, VERSION])
 		return null
 	if not parsed.has("game"):
 		_reject(path, "no game in the save")
 		return null
 	if version == 1:
 		_upgrade_from_version_1(parsed["game"])
+	if version == 1 or version == 2:
+		_upgrade_from_version_2(parsed["game"])
 	return GameState.from_dict(parsed["game"])
 
 
@@ -65,6 +68,14 @@ static func _upgrade_from_version_1(game: Dictionary) -> void:
 	inventory.add(ItemTypes.TURNIP, int(game["harvest_count"]))
 	game.erase("harvest_count")
 	game["player"]["inventory"] = inventory.to_dict()
+
+
+## Version 2 had no items on the ground, and called logs `wood`.
+static func _upgrade_from_version_2(game: Dictionary) -> void:
+	game["world"]["ground_items"] = []
+	for stack: Variant in game["player"]["inventory"]["slots"]:
+		if stack != null and stack["item"] == "wood":
+			stack["item"] = "logs"
 
 
 static func _reject(path: String, reason: String) -> void:

@@ -26,7 +26,7 @@ func test_complete_an_item_after_give() -> void:
 
 
 func test_complete_leaves_other_words_alone() -> void:
-	assert_eq(_console.complete("give wood 5"), "give wood 5")
+	assert_eq(_console.complete("give logs 5"), "give logs 5")
 	assert_eq(_console.complete("tp 1"), "tp 1")
 	assert_eq(_console.complete("give zzz"), "give zzz")
 

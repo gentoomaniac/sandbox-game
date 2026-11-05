@@ -14,7 +14,7 @@ func test_a_hand_picks_fibre_and_the_plant_goes() -> void:
 		_hold(ItemTypes.NONE)
 		assert_eq(_state.use_facing_tile(), GameState.Use.FORAGE)
 		assert_null(_world.object_at(_tile))
-	assert_eq(_count(ItemTypes.FIBRE), 4)
+	assert_eq(_dropped(ItemTypes.FIBRE), 4)
 
 
 func test_a_hand_picks_a_wild_sapling_into_a_sapling_item() -> void:
@@ -22,7 +22,7 @@ func test_a_hand_picks_a_wild_sapling_into_a_sapling_item() -> void:
 	_hold(ItemTypes.NONE)
 	_state.use_facing_tile()
 	assert_null(_world.object_at(_tile))
-	assert_eq(_count(ItemTypes.SAPLING), 1)
+	assert_eq(_dropped(ItemTypes.SAPLING), 1)
 
 
 func test_a_wild_sapling_does_not_grow() -> void:
@@ -36,7 +36,7 @@ func test_a_berry_bush_is_picked_and_bears_again_after_three_days() -> void:
 	var ripe_look := ObjectTileset.atlas_cell(bush)
 	_hold(ItemTypes.NONE)
 	assert_eq(_state.use_facing_tile(), GameState.Use.FORAGE)
-	assert_eq(_count(ItemTypes.BERRIES), 3)
+	assert_eq(_dropped(ItemTypes.BERRIES), 3)
 	assert_same(_world.object_at(_tile), bush, "picking does not remove it")
 	assert_ne(ObjectTileset.atlas_cell(bush), ripe_look, "it looks picked")
 	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
@@ -47,7 +47,7 @@ func test_a_berry_bush_is_picked_and_bears_again_after_three_days() -> void:
 	# The berries went into the first free slot, which was the held (empty) one.
 	_hold(ItemTypes.NONE)
 	assert_eq(_state.use_facing_tile(), GameState.Use.FORAGE)
-	assert_eq(_count(ItemTypes.BERRIES), 6)
+	assert_eq(_dropped(ItemTypes.BERRIES), 6)
 
 
 func test_a_picked_bush_survives_the_chunk_and_the_save() -> void:

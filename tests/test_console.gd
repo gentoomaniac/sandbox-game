@@ -122,27 +122,27 @@ func test_give_defaults_to_one() -> void:
 
 
 func test_give_with_a_count() -> void:
-	var before := _count(ItemTypes.WOOD)
-	_console.run("/give WOOD 5")
-	assert_eq(_count(ItemTypes.WOOD), before + 5)
+	var before := _count(ItemTypes.LOGS)
+	_console.run("/give LOGS 5")
+	assert_eq(_count(ItemTypes.LOGS), before + 5)
 
 
 func test_give_tells_what_did_not_fit() -> void:
 	_fill_inventory()
-	var output := _console.run("give wood 5")
+	var output := _console.run("give logs 5")
 	assert_true(output.has("Inventory full: 5 not added"))
-	assert_eq(_count(ItemTypes.WOOD), 0)
+	assert_eq(_count(ItemTypes.LOGS), 0)
 
 
 func test_give_names_an_unknown_item_and_guesses() -> void:
 	assert_eq(
-		_console.run("give wod"), ["Unknown item: wod", "Did you mean: wood"] as Array[String]
+		_console.run("give lgs"), ["Unknown item: lgs", "Did you mean: logs"] as Array[String]
 	)
 	assert_eq(_console.run("give qqqqqq"), ["Unknown item: qqqqqq"] as Array[String])
 
 
 func test_give_with_wrong_arguments_shows_the_usage() -> void:
-	for line in ["give", "give wood 0", "give wood -2", "give wood x", "give wood 1 2"]:
+	for line in ["give", "give logs 0", "give logs -2", "give logs x", "give logs 1 2"]:
 		assert_eq(_console.run(line), ["Usage: give <item> [count]"] as Array[String], line)
 
 

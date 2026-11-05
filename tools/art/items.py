@@ -2,7 +2,8 @@
 
 Pictures are lists of rows of palette colour names (None = clear), like every other tile in
 generate.py, which writes them: icons to assets/items/<item id>.png (ids from
-game/state/item_types.gd), slots to assets/ui/slot.png and slot_selected.png.
+game/state/item_types.gd), their half size versions for the ground to
+assets/ground_items/<item id>.png, slots to assets/ui/slot.png and slot_selected.png.
 """
 
 ICON = 16
@@ -157,7 +158,7 @@ def turnip():
     return outlined(picture)
 
 
-def wood():
+def logs():
     """Two logs, one above the other, their cut faces on the right."""
     picture = canvas()
     for top in (3, 8):
@@ -310,13 +311,28 @@ def straw_hat():
     return outlined(from_rows(rows, keys))
 
 
+def small(picture):
+    """The icon at half size, for items lying on the ground: each 2x2 block of pixels becomes
+    the colour that most of its opaque pixels have (the first of them on a tie), or clear
+    where fewer than two are opaque."""
+    size = len(picture) // 2
+    result = canvas(size)
+    for y in range(size):
+        for x in range(size):
+            block = [picture[2 * y + dy][2 * x + dx] for dy in (0, 1) for dx in (0, 1)]
+            opaque = [colour for colour in block if colour is not None]
+            if len(opaque) >= 2:
+                result[y][x] = max(opaque, key=opaque.count)
+    return result
+
+
 ICONS = {
     "hoe": hoe(),
     "axe": axe(),
     "pickaxe": pickaxe(),
     "watering_can": watering_can(),
     "turnip": turnip(),
-    "wood": wood(),
+    "logs": logs(),
     "stone": stone(),
     "fibre": fibre(),
     "berries": berries(),

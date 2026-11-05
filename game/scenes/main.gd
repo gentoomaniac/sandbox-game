@@ -16,8 +16,10 @@ extends Node2D
 ## `--day=<n>` sets the day number (days 1, 31, 61 and 91 are the first day of each season);
 ## `--time=<hh:mm>` sets the time of day; `--field=<x>,<y>` tills a small field there with
 ## crops in every growth stage (see DebugField); `--inside` walks into the first house as soon
-## as one exists (see `--house`); `--forage=<x>,<y>` puts a stump, bushes and a sapling in a
-## row from there and some of every new item in the inventory (see DebugForage);
+## as one exists (see `--house`); `--drops=<x>,<y>` leaves what a felled tree, a mined stone, a
+## harvested crop and a picked bush drop (see DebugDrops); `--forage=<x>,<y>` puts a stump,
+## bushes and a sapling in a row from there and some of every new item in the inventory
+## (see DebugForage);
 ## `--console=<line>;<line>` runs those console commands at start and leaves the console
 ## open (see ConsoleView); `--zoom=<z>` sets the camera zoom; `--coordinates` shows the
 ## coordinates (F3); `--inventory` opens the character screen at start;
@@ -60,6 +62,7 @@ var _debug_menu_page := -1
 var _player_view := PlayerView.new()
 var _use_highlight := UseHighlight.new()
 var _harvest_hud := HarvestHud.new()
+var _ground_item_view := GroundItemView.new()
 var _coordinates_hud := CoordinatesHud.new()
 var _hotbar := HotbarHud.new()
 var _vitals := VitalsHud.new()
@@ -143,6 +146,9 @@ func _ready() -> void:
 		elif arg.begins_with("--forage="):
 			var tile := arg.trim_prefix("--forage=").split_floats(",")
 			DebugForage.create(_state, Vector2i(int(tile[0]), int(tile[1])))
+		elif arg.begins_with("--drops="):
+			var tile := arg.trim_prefix("--drops=").split_floats(",")
+			DebugDrops.create(_state.world, Vector2i(int(tile[0]), int(tile[1])))
 		elif arg.begins_with("--energy="):
 			_state.player.energy = float(arg.trim_prefix("--energy="))
 		elif arg.begins_with("--health="):
@@ -180,6 +186,8 @@ func _ready() -> void:
 			var shift := arg.trim_prefix("--camera-shift=").split_floats(",")
 			_camera_shift = Vector2(shift[0], shift[1])
 	_view.show_world(_state.world)
+	_view.add_child(_ground_item_view)
+	_ground_item_view.show_items(_state.world, _view.entities)
 	_view.add_child(_wildlife)
 	_wildlife.show_wildlife(_state, _view, _camera)
 	_build_mode.world = _state.world
@@ -311,6 +319,7 @@ func _process(delta: float) -> void:
 		if not _character_screen.is_open() and not _console_view.is_open():
 			direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 		_state.player.move(_state.current_map, direction, delta, _state.walk_speed_factor())
+		_state.collect_ground_items(delta)
 		if _state.door_underfoot():
 			_fade_through(_pass_door)
 	if not _state.is_inside():
@@ -388,17 +397,9 @@ func _hotbar_slot_of(event: InputEvent) -> int:
 func _use_on(target: Targeting) -> void:
 	if not target.is_in_reach:
 		return
-	var object := _state.world.object_at(target.tile)
-	match _state.use_tile(target.tile):
-		GameState.Use.HARVEST:
-			var crop_type := object.type_data()
-			var produce_name: String = ItemTypes.TYPES[crop_type["produce"]]["name"]
-			_harvest_hud.show_note("+%d %s" % [crop_type["yield"], produce_name.to_lower()])
-		GameState.Use.NEEDS_BETTER_TOOL:
-			var tool_name: String = ItemTypes.TYPES[_state.player.inventory.held_item()]["name"]
-			_harvest_hud.show_note("Needs a better %s." % tool_name.to_lower())
-		GameState.Use.INVENTORY_FULL:
-			_harvest_hud.show_note("Inventory full")
+	if _state.use_tile(target.tile) == GameState.Use.NEEDS_BETTER_TOOL:
+		var tool_name: String = ItemTypes.TYPES[_state.player.inventory.held_item()]["name"]
+		_harvest_hud.show_note("Needs a better %s." % tool_name.to_lower())
 	if _state.is_out_of_energy():
 		_pass_out()
 

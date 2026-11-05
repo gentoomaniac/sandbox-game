@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://blxuhwy8qedvn"
-path="res://.godot/imported/wood.png-cea84b5c5a2f45f908955b4cce524a95.ctex"
+uid="uid://tsvn6c8mf8jx"
+path="res://.godot/imported/turnip.png-618f2aee65dea43353df047898d228a4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/items/wood.png"
-dest_files=["res://.godot/imported/wood.png-cea84b5c5a2f45f908955b4cce524a95.ctex"]
+source_file="res://assets/ground_items/turnip.png"
+dest_files=["res://.godot/imported/turnip.png-618f2aee65dea43353df047898d228a4.ctex"]
 
 [params]
 

@@ -69,7 +69,7 @@ const _OTHER_TYPES := {
 	{
 		"hp": 5,
 		"tool": &"axe",
-		"drops": {&"wood": 4},
+		"drops": {&"logs": 4},
 		"sapling_chance": 0.25,
 		"leaves": STUMP,
 		"regrows": true,
@@ -115,7 +115,7 @@ const _OTHER_TYPES := {
 	{
 		"hp": 4,
 		"tool": &"axe",
-		"drops": {&"wood": 4},
+		"drops": {&"logs": 4},
 		"sapling_chance": 0.25,
 		"leaves": STUMP,
 		"regrows": true,
@@ -130,7 +130,7 @@ const _OTHER_TYPES := {
 	{
 		"hp": 7,
 		"tool": &"axe",
-		"drops": {&"wood": 5},
+		"drops": {&"logs": 5},
 		"sapling_chance": 0.25,
 		"leaves": STUMP,
 		"regrows": true,
@@ -145,7 +145,7 @@ const _OTHER_TYPES := {
 	{
 		"hp": 3,
 		"tool": &"axe",
-		"drops": {&"wood": 2},
+		"drops": {&"logs": 2},
 		"leaves": STUMP,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": true,
@@ -214,7 +214,7 @@ const _OTHER_TYPES := {
 		"variants": 2,
 		"hp": 2,
 		"tool": &"axe",
-		"drops": {&"wood": 1},
+		"drops": {&"logs": 1},
 		"matures_after_days": 3,
 		"matures_into": SAPLING,
 	},
