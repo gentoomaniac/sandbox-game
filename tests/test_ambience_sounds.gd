@@ -71,6 +71,16 @@ func test_a_bee_buzzes_where_it_is() -> void:
 	assert_true(_events.has(&"bee_buzz_loop"))
 
 
+func test_a_buzzing_bee_that_flies_out_of_hearing_goes_quiet() -> void:
+	var bee := _add_bee(Vector2(1, 1))
+	_ambience._process(1.0)
+	assert_eq(_ambience._bee_loops.size(), 1)
+	var reach: float = AmbienceRules.default_rules().value("bees", "hear_tiles")
+	bee.position += Vector2(reach + 2.0, 0) * TerrainTileset.TILE_SIZE
+	_ambience._process(1.0)
+	assert_eq(_ambience._bee_loops.size(), 0)
+
+
 func test_a_bee_out_of_hearing_is_quiet() -> void:
 	var reach: float = AmbienceRules.default_rules().value("bees", "hear_tiles")
 	_add_bee(Vector2(reach + 1.0, 0))
@@ -78,10 +88,11 @@ func test_a_bee_out_of_hearing_is_quiet() -> void:
 	assert_false(_events.has(&"bee_buzz_loop"))
 
 
-## A bee that many tiles from the player.
-func _add_bee(offset_tiles: Vector2) -> void:
+## Adds a bee `offset_tiles` away from the player and returns it.
+func _add_bee(offset_tiles: Vector2) -> Bee:
 	var bee := Bee.new()
 	autofree(bee)
 	bee.wildlife = _wildlife
 	bee.position = (_state.player.position + offset_tiles) * TerrainTileset.TILE_SIZE
 	_ambience._on_animal_added(bee)
+	return bee

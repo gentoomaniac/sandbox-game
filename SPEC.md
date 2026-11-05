@@ -285,18 +285,19 @@ Decided 2026-11-05. Everything makes sound; no background music for now.
   closer the player is; deer snort now and then and their hooves sound when they bound
   away; rabbits rustle when they flee; squirrels chatter; bees buzz softly at their
   flower. Butterflies are silent.
-- **How the ambience is made** (decided 2026-11-05, numbers in `data/ambience.cfg`): once a
-  second the weather sets the loops: rain at its strength, wind from calm (silent) to full
-  speed, and in wind a gust now and then plays `wind_gust` and swells the wind loop for a
-  couple of seconds. Each lightning flash is followed by one thunder 1 to 9 seconds later,
-  plain (not positional) on the Ambience bus. Birds chirp at a chance per second by season
-  (winter few), part of the day (none at night) and rain (none in heavy rain), from a bird
-  in view or else a tree near the player. Frogs look at some random tiles within 12 of the
-  player and croak at the nearest water or wetland among them, by season (none in winter,
-  few in autumn), part of the day (mostly night), warmth (none below 4 °C, full from 16 °C)
-  and distance. Deer, rabbits and squirrels make their sound now and then, and when they
-  start to run. The nearest two bees within 4 tiles buzz quietly as loops that follow them (changed 2026-11-05: they were too loud and heard from too far). The world's effects
-  are muffled in a house like the weather; birds and frogs fall silent there.
+- **How the ambience is made** (decided 2026-11-05, numbers in `data/ambience.cfg`): once
+  a second the weather sets the loops: rain at its strength, wind from calm (silent) to
+  full speed, and in wind a gust now and then plays `wind_gust` and swells the wind loop
+  for a couple of seconds. Each lightning flash is followed by one thunder 1 to 9 seconds
+  later, plain (not positional) on the Ambience bus. Birds chirp at a chance per second by
+  season (winter few), part of the day (none at night) and rain (none in heavy rain), from
+  a bird in view or else a tree near the player. Frogs look at some random tiles within 12
+  of the player and croak at the nearest water or wetland among them, by season (none in
+  winter, few in autumn), part of the day (mostly night), warmth (none below 4 °C, full
+  from 16 °C) and distance. Deer, rabbits and squirrels make their sound now and then, and
+  when they start to run. The nearest two bees within 4 tiles buzz quietly as loops that
+  follow them (changed 2026-11-05: they were too loud and heard from too far). The world's
+  effects are muffled in a house like the weather; birds and frogs fall silent there.
 
 ### Menus and settings
 
