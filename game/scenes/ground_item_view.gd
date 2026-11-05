@@ -29,8 +29,9 @@ func show_items(world: World, entities: Node2D) -> void:
 ## Makes the hops from `source` that were just dropped wait `seconds` longer: a felled tree's seed
 ## comes out when the tree lands, not when it is cut.
 func hold_hops_from(source: Vector2i, seconds: float) -> void:
-	for ground_item in _hops:
+	for ground_item in _hops.keys():
 		var hop := _hops[ground_item]
+		# A hop that hasn't run yet was dropped this frame, by the hit that felled the tree.
 		if hop.source == source and hop.elapsed == 0.0:
 			hop.delay += seconds
 			_update_sprite(ground_item)
