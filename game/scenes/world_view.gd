@@ -507,7 +507,7 @@ func _draw_overlays(
 			TerrainTileset.shown_weather_look(corners[corner], weathers[corner] as SeasonBlend.Look)
 		)
 	for look in TerrainTileset.OVERLAY_LOOKS:
-		var is_season := look != SeasonBlend.Look.FROST and look != SeasonBlend.Look.SNOW
+		var is_season := not TerrainTileset.is_weather_look(look)
 		var shown := shown_seasons if is_season else shown_weathers
 		var mask := 0
 		var layer: int = TerrainTileset.Layer.GRASS

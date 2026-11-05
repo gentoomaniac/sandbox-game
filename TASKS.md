@@ -729,7 +729,9 @@ from the weather".
   seams); decorations, objects and houses switch atlas source per look. `data/seasons.cfg`
   holds the blend windows and the snow and frost numbers; `SnowCover`, `SeasonBlend` are the
   plain logic. Console `snow <0..1>|auto`, flag `--snow=<n>`, F3 shows cover and frost. The
-  palette is at 62 (autumn/autumn_dark merged into reed/olive, two bare-ground colours added).
+  palette is at 64 (autumn/autumn_dark merged into reed/olive; bare-ground and frost colours added).
+  A seventh look, "dusting", is the thin fringe of snow (tiles whose threshold is just above the
+  cover); the snow threshold is slightly clustered in space so patches and fringes form.
 
 ## 30. More crops, grown by the weather
 

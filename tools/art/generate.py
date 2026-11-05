@@ -1969,7 +1969,7 @@ def main():
     # Summer keeps the plain names; the other looks add theirs, e.g. terrain_snow.png.
     for look in seasons.LOOKS:
         suffix = "" if look == "summer" else f"_{look}"
-        to_image(seasons.ground_rows(look, terrain_rows)).save(ASSETS / f"terrain{suffix}.png")
+        to_image(seasons.terrain_rows(look, terrain_rows)).save(ASSETS / f"terrain{suffix}.png")
         to_image(seasons.ground_rows(look, decoration_rows, seasons.STANDING.get(look))).save(ASSETS / f"decorations{suffix}.png")
         to_image(
             seasons.object_rows(look, objects, redraws),

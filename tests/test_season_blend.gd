@@ -118,20 +118,30 @@ func test_a_tile_that_is_snowy_at_a_cover_stays_snowy_at_a_higher_one() -> void:
 			was_snowy = is_snowy
 
 
-func test_frost_shows_only_where_there_is_no_snow() -> void:
+func test_snow_has_a_dusting_as_its_fringe_and_frost_only_beyond_it() -> void:
+	var band: float = SeasonRules.default_rules().value("snow", "dusting_band")
 	var conditions := _blend.conditions(105, 0.3, 0.6)
-	var frosty := 0
+	var counts := {}
 	for i in TILES:
 		var threshold := _threshold_of(i).y
 		var look := conditions.weather_look(threshold)
+		counts[look] = counts.get(look, 0) + 1
 		if threshold < 0.3:
 			assert_eq(look, L.SNOW)
+		elif threshold < 0.3 + band:
+			assert_eq(look, L.DUSTING)
 		elif threshold < 0.6:
 			assert_eq(look, L.FROST)
-			frosty += 1
 		else:
 			assert_eq(look, L.SUMMER, "nothing over the season's look")
-	assert_gt(frosty, 0)
+	for look in [L.SNOW, L.DUSTING, L.FROST]:
+		assert_gt(counts[look], 0)
+
+
+func test_there_is_no_dusting_without_snow_cover() -> void:
+	assert_eq(_share_with(0.0, 0.5, L.DUSTING), 0.0)
+	assert_gt(_share_with(0.05, 0.0, L.DUSTING), 0.0, "a first snowfall is a dusting")
+	assert_almost_eq(_share_with(0.2, 0.0, L.DUSTING), 0.15, 0.03)
 
 
 func test_a_frost_gets_stronger_as_it_gets_colder() -> void:

@@ -62,6 +62,7 @@ const OVERLAY_LOOKS: Array[SeasonBlend.Look] = [
 	SeasonBlend.Look.AUTUMN,
 	SeasonBlend.Look.BARE,
 	SeasonBlend.Look.FROST,
+	SeasonBlend.Look.DUSTING,
 	SeasonBlend.Look.SNOW,
 ]
 ## Grass is lush where the variety noise is below this, dry where it is above DRY_ABOVE.
@@ -146,6 +147,15 @@ static func layer_of(terrain: Tile.Terrain, variety: float) -> int:
 	if layer == Layer.GRASS and variety > DRY_ABOVE:
 		return Layer.DRY_GRASS
 	return layer
+
+
+## Whether an overlay look comes from the weather (snow, frost) and not the season.
+static func is_weather_look(look: SeasonBlend.Look) -> bool:
+	return (
+		look == SeasonBlend.Look.FROST
+		or look == SeasonBlend.Look.DUSTING
+		or look == SeasonBlend.Look.SNOW
+	)
 
 
 ## The season look a tile shows, given the look its place has by the season (see SeasonBlend)

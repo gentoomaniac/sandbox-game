@@ -9,12 +9,20 @@ extends RefCounted
 ## Pure functions of seed, position, day and weather: nothing is saved.
 
 ## What the art generator draws (see tools/art/seasons.py). SPRING, SUMMER and AUTUMN are the
-## foliage of those seasons, BARE is winter without snow, FROST a cold morning without snow
-## and SNOW the ground under snow.
-enum Look { SPRING, SUMMER, AUTUMN, BARE, FROST, SNOW }
+## foliage of those seasons, BARE is winter without snow, FROST a cold morning without snow,
+## SNOW the ground under snow and DUSTING its thin fringe: sparse flecks over what lies beneath.
+enum Look { SPRING, SUMMER, AUTUMN, BARE, FROST, SNOW, DUSTING }
 
 ## Keeps the thresholds apart from other hashes of the same positions.
 const SALT := 21
+## How much of the weather threshold is slow noise (the rest is the hash), and how fast the
+## noise changes over tiles.
+const CLUSTER_WEIGHT := 0.45
+const CLUSTER_FREQUENCY := 0.08
+## The sample and resolution of the table that evens the mix out.
+const CDF_SIDE := 96
+const CDF_SAMPLES := CDF_SIDE * CDF_SIDE
+const CDF_STEPS := 256
 
 
 ## What a day and an hour of weather make of a tile or plant: its look from its two thresholds,
@@ -28,6 +36,8 @@ class Conditions:
 	var foliage: Array[float] = []
 	var snow_cover := 0.0
 	var frost := 0.0
+	## How far above the cover a tile's threshold may be for it to have a dusting.
+	var dusting_band := 0.0
 
 	## The look of grass and ground by the season alone (SPRING to BARE).
 	func ground_season_look(season_threshold: float) -> Look:
@@ -37,10 +47,13 @@ class Conditions:
 	func foliage_season_look(season_threshold: float) -> Look:
 		return _season_look(foliage, season_threshold)
 
-	## What lies over the season's look: SNOW, FROST, or SUMMER for nothing (the base look).
+	## What lies over the season's look: SNOW where the cover is above the threshold, DUSTING
+	## where it is just below, FROST, or SUMMER for nothing (the base look).
 	func weather_look(weather_threshold: float) -> Look:
 		if snow_cover > weather_threshold:
 			return Look.SNOW
+		if snow_cover > 0.0 and snow_cover + dusting_band > weather_threshold:
+			return Look.DUSTING
 		if frost > weather_threshold:
 			return Look.FROST
 		return Look.SUMMER
@@ -66,11 +79,17 @@ class Conditions:
 
 var _rules: SeasonRules
 var _world_seed: int
+var _noise := FastNoiseLite.new()
+## The share of sampled mixes up to each of CDF_STEPS + 1 even steps from 0 to 1.
+var _cdf := PackedFloat32Array()
 
 
 func _init(world_seed: int, rules := SeasonRules.default_rules()) -> void:
 	_world_seed = world_seed
 	_rules = rules
+	_noise.seed = world_seed + SALT
+	_noise.frequency = CLUSTER_FREQUENCY
+	_cdf = _build_cdf()
 
 
 ## The conditions of a day with this snow cover and frost (both 0 to 1).
@@ -81,6 +100,7 @@ func conditions(day: int, snow_cover: float, frost: float) -> Conditions:
 		result.foliage.append(share_passed("foliage", boundary, day))
 	result.snow_cover = snow_cover
 	result.frost = frost
+	result.dusting_band = _rules.value("snow", "dusting_band")
 	return result
 
 
@@ -92,8 +112,36 @@ func share_passed(section: String, boundary: StringName, day: int) -> float:
 
 
 ## The two fixed thresholds of a tile or plant, each in [0, 1): x is held against the blend
-## shares of the seasons, y against the snow cover and the frost. One hash gives both, as
-## different digits of it.
+## shares of the seasons, y against the snow cover and the frost. x is a hash of the position
+## alone. y mixes in a slow noise, so snow lies in clusters: it builds and melts in patches
+## that a dusting rings, not tile by tile. The mix is bent back to an even spread (see
+## `_cdf`), so a cover of 0.3 still means about three in ten tiles.
 func thresholds(pos: Vector2i) -> Vector2:
 	var roll := PositionHash.of(pos, _world_seed + SALT)
-	return Vector2(roll % 10000, roll / 10000 % 10000) / 10000.0
+	return Vector2(roll % 10000 / 10000.0, _evened(_clustered(pos, roll / 10000 % 10000 / 10000.0)))
+
+
+## A hash roll in [0, 1) mixed with the slow noise at a position.
+func _clustered(pos: Vector2i, roll: float) -> float:
+	var noise := _noise.get_noise_2dv(Vector2(pos)) * 0.5 + 0.5
+	return lerpf(roll, noise, CLUSTER_WEIGHT)
+
+
+## Maps a mix to its rank among all mixes (from a sample), so that thresholds are spread evenly.
+func _evened(mixed: float) -> float:
+	var at := clampf(mixed, 0.0, 1.0) * (_cdf.size() - 1)
+	var index := mini(int(at), _cdf.size() - 2)
+	return minf(lerpf(_cdf[index], _cdf[index + 1], at - index), 0.9999)
+
+
+func _build_cdf() -> PackedFloat32Array:
+	var mixes := PackedFloat32Array()
+	for i in CDF_SAMPLES:
+		var pos := Vector2i(i % CDF_SIDE, i / CDF_SIDE)
+		mixes.append(_clustered(pos, PositionHash.of(pos, _world_seed + SALT) % 10000 / 10000.0))
+	mixes.sort()
+	var cdf := PackedFloat32Array()
+	for step in CDF_STEPS + 1:
+		var value := float(step) / CDF_STEPS
+		cdf.append(float(mixes.bsearch(value)) / mixes.size())
+	return cdf
