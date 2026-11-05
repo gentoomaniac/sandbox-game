@@ -190,3 +190,20 @@ func test_decorations_take_the_look_of_their_tile() -> void:
 			TerrainTileset.decoration_source_id(expected),
 			"decoration at %s" % pos
 		)
+
+
+func test_a_crop_is_drawn_from_its_own_sheet_in_every_look() -> void:
+	_view._load_chunk(RIGHT)
+	var pos := Vector2i(-20, -20)
+	_view.world.set_terrain(pos, Tile.Terrain.SOIL)
+	var crop := WorldObject.new(&"carrot", pos)
+	crop.state["growth"] = 2.0 * crop.type_data()["growth_per_stage"]
+	_view.world.add_object(crop)
+	var source_id := _view._objects.get_cell_source_id(pos)
+	assert_false(source_id in SeasonBlend.Look.values(), "not from an object atlas look")
+	assert_eq(source_id, _view._object_tileset.crop_source_id(&"carrot"))
+	assert_eq(_view._objects.get_cell_atlas_coords(pos), Vector2i(2, 0))
+	for look_day_snow in [[WINTER, 1.0, 0.0], [WINTER, 0.0, 1.0], [AUTUMN, 0.0, 0.0]]:
+		_show(look_day_snow[0], look_day_snow[1], look_day_snow[2])
+		assert_eq(_view._objects.get_cell_source_id(pos), source_id)
+		assert_eq(_view._object_state(crop), 0, "a look change does not redraw it")
