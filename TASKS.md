@@ -367,7 +367,7 @@ and light still sits on the pixel grid.
 
 ## 13. Layered 16×32 character
 
-- [ ] Done
+- [x] Done
 
 Depends on: 10, 11. Can run in parallel with 12.
 
