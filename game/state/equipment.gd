@@ -118,5 +118,10 @@ func to_dict() -> Dictionary:
 static func from_dict(data: Dictionary) -> Equipment:
 	var equipment := Equipment.new()
 	for slot: String in data:
-		equipment.equip(StringName(slot), StringName(data[slot]))
+		var item := StringName(data[slot])
+		# An item type that was removed since the save must not stop it from loading.
+		if ItemTypes.TYPES.has(item) and fits(StringName(slot), item):
+			equipment.equip(StringName(slot), item)
+		else:
+			push_warning("Dropped %s from slot %s of the save" % [item, slot])
 	return equipment

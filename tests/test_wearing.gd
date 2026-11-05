@@ -77,3 +77,12 @@ func test_a_save_from_before_equipment_gets_the_starting_outfit() -> void:
 	assert_eq(restored.equipment.item_in(Equipment.BODY), ItemTypes.TUNIC)
 	assert_eq(restored.equipment.item_in(Equipment.LEGS), ItemTypes.TROUSERS)
 	assert_eq(restored.equipment.item_in(Equipment.HEAD), ItemTypes.NONE)
+
+
+func test_loading_skips_unknown_items_and_items_in_the_wrong_slot() -> void:
+	var restored := Equipment.from_dict(
+		{"head": "removed_item", "body": "straw_hat", "legs": "trousers"}
+	)
+	assert_eq(restored.item_in(Equipment.HEAD), ItemTypes.NONE)
+	assert_eq(restored.item_in(Equipment.BODY), ItemTypes.NONE)
+	assert_eq(restored.item_in(Equipment.LEGS), ItemTypes.TROUSERS)

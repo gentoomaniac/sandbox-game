@@ -35,6 +35,8 @@ var inventory := Inventory.new()
 ## What they wear. Replace it only through the setter, so the appearance follows.
 var equipment: Equipment:
 	set(value):
+		if equipment != null:
+			equipment.changed.disconnect(_dress)
 		equipment = value
 		equipment.changed.connect(_dress)
 		_dress()
