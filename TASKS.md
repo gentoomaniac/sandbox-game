@@ -449,10 +449,6 @@ See SPEC.md "Player" (tile targeting with the mouse).
 
 ## Later (not part of the prototype)
 
-Camera follow mode: task 12 left two modes for the user to compare by feel (F7):
-smooth (default; the world scrolls sub-pixel, the player may wobble by up to half an art
-pixel) and pixel-locked (the player is still, the world scrolls in whole art pixels).
-Once chosen, remove the toggle and the unused mode.
 
 - Floodplain farming: floodplain is the most fertile farmland, but only grass can be tilled
   now. Tilling it needs a "tilled" tile property that keeps the floodplain flag, so floods

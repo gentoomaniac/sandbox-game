@@ -52,6 +52,9 @@ top of classic pixel art (details under "Lighting and look").
 - **Tiles: 16×16.** Default view about 320×180 art pixels (20×11 tiles).
 - **Stepless zoom** from 0.5× (about 640×360 art pixels) to about 2×. The mouse wheel
   zooms.
+- **Smooth camera following:** the camera follows the player's exact position, so the
+  world scrolls at sub-pixel precision; the player, drawn on the pixel grid, may wobble by up
+  to half an art pixel. Chosen over a pixel-locked camera (2026-11-05).
 - **Camera API** for scripted moves (cutscenes later): follow a target, move to a point,
   zoom to a value, chain moves in a sequence. The mouse wheel uses the same zoom.
 - **Standard effects:**

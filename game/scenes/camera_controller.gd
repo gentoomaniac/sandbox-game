@@ -7,21 +7,10 @@ extends Node
 ## stays on the art pixel grid. The mouse wheel zooms around the camera target. The camera
 ## API is CameraRig's, reached through `rig`.
 
-## What the camera follows the player with.
-enum Follow {
-	## The exact position: smooth scrolling, but the player, drawn on the pixel grid, wobbles
-	## by up to half an art pixel against the screen.
-	SMOOTH,
-	## The player's position on the pixel grid: still against the screen, but the world
-	## scrolls in whole art pixels.
-	PIXEL_LOCKED,
-}
-
 @export var world_viewport: SubViewport
 @export var world_camera: Camera2D
 @export var screen: TextureRect
 
-var follow_mode := Follow.SMOOTH
 var rig := CameraRig.new()
 
 
