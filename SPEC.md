@@ -278,6 +278,22 @@ Decided 2026-11-05. A text console for testing and cheats.
 
 - Days and seasons work as is usual for the genre: crops grow day by day, and the season
   decides what grows.
+- **Seasons fade into each other; snow and frost come from the weather** (decided
+  2026-11-05; replaces the hard switch of the art at a season's first day):
+  - **Snow cover is weather-driven:** snow on the ground builds up while it snows and
+    melts above 0 °C (faster in sunshine). It is derived from the weather history (no
+    save needed). The ground, objects and roofs show snow only where there is snow
+    cover, so the first frosty days of winter are not white yet.
+  - **Patches:** each tile has a fixed threshold; snow shows on a tile while the cover is
+    above it. So snow arrives as a dusting in patches, and in a thaw it melts away in
+    patches over 2–3 days. By the start of spring it is gone.
+  - **Frost:** below 0 °C without snow, grass and plants get a frosty look (pale,
+    rimed), stronger the colder it is, fading as it warms by day.
+  - **Foliage and grass blend:** spring to summer, summer to autumn and autumn to winter
+    change over several days around each boundary, tile by tile and tree by tree (each
+    has its own threshold), not on one morning. Autumn colours come in gradually; trees
+    drop their leaves one by one in late autumn and leaf out one by one in spring. Winter
+    without snow is bare and brown-grey, not white.
 - **Vegetation density follows the year** (decided 2026-11-05):
   - Ground cover (grass tufts, flowers, small plants, fallen leaves; the visual decoration
     layer) has a density per kind that follows a smooth yearly curve: grass tufts sparse

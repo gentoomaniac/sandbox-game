@@ -706,6 +706,25 @@ Depends on: 26 (weather), ideally 27 (flowers present by season). See SPEC.md
 - Tests: the spawn rules (no insects in winter, none in a storm, deer only in or near
   forest, caps), fleeing distance.
 
+## 29. Season blending, weather-driven snow and frost
+
+- [ ] Done
+
+Depends on: 25, 26, 27. See SPEC.md "Seasons fade into each other; snow and frost come
+from the weather".
+
+- Snow cover (0..1, per weather region) integrated from the weather history (snowfall
+  adds, warmth and sun melt), deterministic and cached; queryable for any time.
+- Per tile and per object a threshold (PositionHash); the view picks the art variant per
+  tile/object: season blend for foliage and grass (a blend factor around each season
+  boundary), snow where cover is above the threshold, frost when cold without snow.
+- Art: a bare, snowless winter look (brown-grey grass, bare deciduous trees, evergreens
+  without snow), a frost look, and the snow look from task 25 as the snow variant.
+- Refresh only tiles whose variant flips; snow and frost may change hourly, so spread
+  refreshes over frames if needed.
+- Tests: snow builds and melts with the weather, gone at spring start, patchy thaw over
+  2–3 days, frost only below 0 °C without snow, blend fractions across boundaries.
+
 ## Later (not part of the prototype)
 
 - Split the object edits and regrowth (`_object_edits`, `replace_object`, `hit_object`,
