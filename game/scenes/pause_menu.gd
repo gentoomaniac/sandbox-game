@@ -12,6 +12,20 @@ enum Page { PAUSE, SETTINGS, CONTROLS, DISPLAY, GAME }
 const THEME := preload("res://game/scenes/ui_theme.tres")
 const PANEL_WIDTH := 280
 const DIM_COLOUR := Color(0.114, 0.106, 0.149, 0.6)
+## The explanations of the settings, shown as tooltips.
+const DISPLAY_TIP := "Switch between fullscreen and a window."
+const DRAIN_TIP := (
+	"How fast energy runs out: Low is half the usual, High one and a half times."
+	+ " Click to change."
+)
+const UI_SCALE_TIP := (
+	"How large the menus and the HUD are. The world stays as it is."
+	+ " It applies when you let go."
+)
+const DAY_LENGTH_TIP := (
+	"How much the length of the day changes through the year."
+	+ " At 0 % every day is equally long."
+)
 
 var _settings: GameSettings
 var _pages := {}
@@ -52,24 +66,32 @@ func _init(settings: GameSettings) -> void:
 	panel.add_child(pages)
 
 	var pause := _add_page(pages, Page.PAUSE, "Paused")
-	_first_focus[Page.PAUSE] = _add_button(pause, "Resume", close)
-	_add_button(pause, "Settings", _go_to.bind(Page.SETTINGS))
-	_add_button(pause, "Save and quit", save_and_quit_requested.emit)
+	_first_focus[Page.PAUSE] = _add_button(
+		pause, "Resume", close, "Close the menu and go back to the game."
+	)
+	_add_button(pause, "Settings", _go_to.bind(Page.SETTINGS), "Keys, display and game options.")
+	_add_button(pause, "Save and quit", save_and_quit_requested.emit, "Save the game and close it.")
 
 	var settings_page := _add_page(pages, Page.SETTINGS, "Settings")
-	_first_focus[Page.SETTINGS] = _add_button(settings_page, "Controls", _go_to.bind(Page.CONTROLS))
-	_add_button(settings_page, "Game", _go_to.bind(Page.GAME))
-	_add_button(settings_page, "Display", _go_to.bind(Page.DISPLAY))
+	_first_focus[Page.SETTINGS] = _add_button(
+		settings_page, "Controls", _go_to.bind(Page.CONTROLS), "Change which keys do what."
+	)
+	_add_button(
+		settings_page, "Game", _go_to.bind(Page.GAME), "UI scale, energy drain and day length."
+	)
+	_add_button(settings_page, "Display", _go_to.bind(Page.DISPLAY), "Fullscreen or windowed.")
 	_add_button(settings_page, "Back", _back)
 
 	var display := _add_page(pages, Page.DISPLAY, "Display")
-	_display_button = _add_button(display, "", _toggle_fullscreen)
+	_display_button = _add_button(display, "", _toggle_fullscreen, DISPLAY_TIP)
 	_first_focus[Page.DISPLAY] = _display_button
 	_add_button(display, "Back", _back)
 
 	var game := _add_page(pages, Page.GAME, "Game")
 	_ui_scale_label = Label.new()
 	_ui_scale_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	TooltipView.set_text(_ui_scale_label, UI_SCALE_TIP)
+	_ui_scale_label.mouse_filter = Control.MOUSE_FILTER_PASS
 	game.add_child(_ui_scale_label)
 	_ui_scale_slider = HSlider.new()
 	_ui_scale_slider.min_value = GameSettings.MIN_UI_SCALE
@@ -78,16 +100,20 @@ func _init(settings: GameSettings) -> void:
 	_ui_scale_slider.value_changed.connect(_on_ui_scale_changed)
 	_ui_scale_slider.drag_started.connect(func() -> void: _is_dragging_slider = true)
 	_ui_scale_slider.drag_ended.connect(_on_slider_released)
+	TooltipView.set_text(_ui_scale_slider, UI_SCALE_TIP, "setting_ui_scale")
 	game.add_child(_ui_scale_slider)
 	_first_focus[Page.GAME] = _ui_scale_slider
-	_drain_button = _add_button(game, "", _cycle_energy_drain)
+	_drain_button = _add_button(game, "", _cycle_energy_drain, DRAIN_TIP)
 	_day_length_label = Label.new()
 	_day_length_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	TooltipView.set_text(_day_length_label, DAY_LENGTH_TIP)
+	_day_length_label.mouse_filter = Control.MOUSE_FILTER_PASS
 	game.add_child(_day_length_label)
 	_day_length_slider = HSlider.new()
 	_day_length_slider.max_value = GameSettings.MAX_DAY_LENGTH_VARIATION
 	_day_length_slider.step = GameSettings.DAY_LENGTH_VARIATION_STEP
 	_day_length_slider.value_changed.connect(_on_day_length_changed)
+	TooltipView.set_text(_day_length_slider, DAY_LENGTH_TIP, "setting_day_length")
 	game.add_child(_day_length_slider)
 	_add_button(game, "Back", _back)
 
@@ -129,10 +155,11 @@ func _add_page(parent: Control, page: Page, title: String) -> VBoxContainer:
 	return box
 
 
-func _add_button(parent: Control, text: String, on_pressed: Callable) -> Button:
+func _add_button(parent: Control, text: String, on_pressed: Callable, tip := "") -> Button:
 	var button := Button.new()
 	button.text = text
 	button.pressed.connect(on_pressed)
+	TooltipView.set_text(button, tip, "button_" + text.to_snake_case())
 	parent.add_child(button)
 	return button
 

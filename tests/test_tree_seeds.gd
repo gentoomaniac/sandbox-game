@@ -15,7 +15,12 @@ func before_each() -> void:
 	_make_room()
 	# The pine needs a level 2 axe, which the game doesn't have yet.
 	ItemTypes.TYPES[STRONG_AXE] = {
-		"name": "Strong axe", "weight": 3.0, "stack_limit": 1, "tool": ItemTypes.AXE, "level": 2
+		"name": "Strong axe",
+		"description": "Test.",
+		"weight": 3.0,
+		"stack_limit": 1,
+		"tool": ItemTypes.AXE,
+		"level": 2
 	}
 
 

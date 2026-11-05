@@ -64,6 +64,7 @@ func _init() -> void:
 	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for slot in Inventory.SLOT_COUNT:
 		var view := SlotView.new()
+		view.tooltip_id = "inventory_%d" % slot
 		view.pressed.connect(_on_inventory_slot_pressed.bind(slot))
 		view.secondary_pressed.connect(_on_inventory_slot_secondary_pressed.bind(slot))
 		grid.add_child(view)
@@ -128,6 +129,7 @@ func _add_equipment_column(column: VBoxContainer, slots: Array, parent: Containe
 	for slot: StringName in slots:
 		var view := SlotView.new()
 		view.hint = load(HINT_PATH % slot)
+		view.tooltip_id = "equipment_%s" % slot
 		view.pressed.connect(_on_equipment_slot_pressed.bind(slot))
 		view.secondary_pressed.connect(_on_equipment_slot_secondary_pressed.bind(slot))
 		column.add_child(view)

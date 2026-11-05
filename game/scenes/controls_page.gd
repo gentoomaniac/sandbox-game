@@ -58,6 +58,7 @@ func _init(settings: GameSettings) -> void:
 	var reset := Button.new()
 	reset.text = "Reset to defaults"
 	reset.pressed.connect(_reset)
+	TooltipView.set_text(reset, "Put every key back to its default.", "reset_bindings")
 	buttons.add_child(reset)
 	var back := Button.new()
 	back.text = "Back"
@@ -88,12 +89,16 @@ func _make_row(action: StringName) -> HBoxContainer:
 	var label := Label.new()
 	label.text = GameSettings.action_label(action)
 	label.custom_minimum_size.x = NAME_WIDTH
+	label.mouse_filter = Control.MOUSE_FILTER_PASS
+	var description := GameSettings.action_description(action)
+	TooltipView.set_text(label, description, "action_%s" % action)
 	row.add_child(label)
 	_binding_buttons[action] = []
 	for slot in GameSettings.MAX_BINDINGS:
 		var button := Button.new()
 		button.custom_minimum_size.x = BINDING_WIDTH
 		button.clip_text = true
+		TooltipView.set_text(button, description)
 		button.pressed.connect(_start_capture.bind(action, slot, button))
 		button.gui_input.connect(_on_binding_gui_input.bind(action, slot))
 		row.add_child(button)

@@ -2,7 +2,8 @@ class_name SlotView
 extends Control
 ## One inventory slot on screen: the slot art, the item's icon and, for more than one, its
 ## count. Left click emits `pressed`, right click `secondary_pressed`. An empty slot can show
-## a faint `hint` of what belongs in it.
+## a faint `hint` of what belongs in it. A slot with an item has its tooltip (see TooltipView);
+## `tooltip_id` names it for the debug flag.
 
 signal pressed
 signal secondary_pressed
@@ -17,6 +18,7 @@ const SELECTED_SLOT_TEXTURE := preload("res://assets/ui/slot_selected.png")
 
 ## Drawn in an empty slot, if set.
 var hint: Texture2D
+var tooltip_id := ""
 
 var _stack := {}
 var _icon: Texture2D
@@ -31,11 +33,16 @@ func show_stack(stack: Dictionary, is_selected: bool) -> void:
 	_stack = stack
 	_icon = null if stack.is_empty() else load(ItemTypes.icon_path(stack["item"]))
 	_is_selected = is_selected
+	var text := "" if stack.is_empty() else ItemTooltip.text_for(stack["item"], stack["count"])
+	TooltipView.set_text(self, text, tooltip_id)
 	queue_redraw()
 
 
 func _gui_input(event: InputEvent) -> void:
 	if not (event is InputEventMouseButton and event.pressed):
+		return
+	# A slot nobody listens to (the hotbar's) leaves the click to the game.
+	if not (pressed.has_connections() or secondary_pressed.has_connections()):
 		return
 	if event.button_index == MOUSE_BUTTON_LEFT:
 		pressed.emit()

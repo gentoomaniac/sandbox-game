@@ -2,6 +2,7 @@ class_name ItemTypes
 extends RefCounted
 ## The kinds of item, as data. Keyed by item id; each entry has:
 ## - name: what the player reads;
+## - description: one line about it for its tooltip (see ItemTooltip);
 ## - weight: of one item, in kilograms;
 ## - stack_limit: how many fit in one inventory slot.
 ## Optional:
@@ -9,7 +10,8 @@ extends RefCounted
 ##   WorldObjectTypes `harvest_level`);
 ## - held_sheet: the variant of the character's `held` layer that shows it in the hand;
 ## - equip_slot: the Equipment slot it is worn in (wearables have a stack limit of 1), and
-##   `layer_variant`, the variant of the character layer it shows (see Appearance.dress);
+##   `layer_variant`, the variant of the character layer it shows (see Appearance.dress), and
+##   `stats`, {"Warmth": 2, ...} values the tooltip lists (none yet);
 ## - plants: seeds (of a crop or of a tree); the world object type that grows from them,
 ##   `plants_on` the terrain it needs (soil if not given) and `plants_state` the state the new
 ##   object starts with.
@@ -43,6 +45,9 @@ const NONE := &""
 
 const DEFAULT_STACK_LIMIT := 99
 
+## What every crop seed says about itself; the crop it grows is in the tooltip anyway.
+const SEED_DESCRIPTION := "Sow it and keep it watered until harvest."
+
 ## The hit points a hit of a tool of each level (the index) takes off. Equal to the level for
 ## now; a table so it can be tuned per level later.
 const POWER_OF_LEVEL := [0, 1, 2, 3]
@@ -54,6 +59,7 @@ const _OTHER_TYPES := {
 	HOE:
 	{
 		"name": "Hoe",
+		"description": "Breaks up grass into tilled soil for planting.",
 		"weight": 2.0,
 		"stack_limit": 1,
 		"tool": HOE,
@@ -63,6 +69,7 @@ const _OTHER_TYPES := {
 	AXE:
 	{
 		"name": "Axe",
+		"description": "Fells trees and chops stumps.",
 		"weight": 3.0,
 		"stack_limit": 1,
 		"tool": AXE,
@@ -71,6 +78,7 @@ const _OTHER_TYPES := {
 	PICKAXE:
 	{
 		"name": "Pickaxe",
+		"description": "Breaks stones and boulders.",
 		"weight": 3.0,
 		"stack_limit": 1,
 		"tool": PICKAXE,
@@ -79,6 +87,7 @@ const _OTHER_TYPES := {
 	WATERING_CAN:
 	{
 		"name": "Watering can",
+		"description": "Waters tilled soil so crops grow.",
 		"weight": 2.5,
 		"stack_limit": 1,
 		"tool": WATERING_CAN,
@@ -87,6 +96,7 @@ const _OTHER_TYPES := {
 	SCYTHE:
 	{
 		"name": "Scythe",
+		"description": "Mows tall grass and reeds into hay.",
 		"weight": 2.0,
 		"stack_limit": 1,
 		"tool": SCYTHE,
@@ -95,6 +105,7 @@ const _OTHER_TYPES := {
 	SHOVEL:
 	{
 		"name": "Shovel",
+		"description": "Digs up grass and clay.",
 		"weight": 2.5,
 		"stack_limit": 1,
 		"tool": SHOVEL,
@@ -103,6 +114,7 @@ const _OTHER_TYPES := {
 	HAMMER:
 	{
 		"name": "Hammer",
+		"description": "Builds houses and other buildings.",
 		"weight": 2.0,
 		"stack_limit": 1,
 		"tool": HAMMER,
@@ -111,48 +123,56 @@ const _OTHER_TYPES := {
 	HAY:
 	{
 		"name": "Hay",
+		"description": "Dry cut grass. Good for stuffing and thatch.",
 		"weight": 0.2,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 	REEDS:
 	{
 		"name": "Reeds",
+		"description": "Tough stalks from the waterside.",
 		"weight": 0.3,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 	CLAY:
 	{
 		"name": "Clay",
+		"description": "Wet, sticky earth from the riverbank.",
 		"weight": 1.0,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 	LOGS:
 	{
 		"name": "Logs",
+		"description": "Rough timber from a felled tree.",
 		"weight": 1.0,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 	STONE:
 	{
 		"name": "Stone",
+		"description": "A solid chunk of rock for building.",
 		"weight": 1.5,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 	FIBRE:
 	{
 		"name": "Fibre",
+		"description": "Stringy plant fibre.",
 		"weight": 0.1,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 	BERRIES:
 	{
 		"name": "Berries",
+		"description": "Wild berries. Sweet and quick to eat.",
 		"weight": 0.05,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 	ACORN:
 	{
 		"name": "Acorn",
+		"description": "The seed of an oak.",
 		"weight": 0.05,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 		"plants": WorldObjectTypes.SAPLING,
@@ -162,6 +182,7 @@ const _OTHER_TYPES := {
 	SPRUCE_CONE:
 	{
 		"name": "Spruce cone",
+		"description": "The seed of a spruce.",
 		"weight": 0.05,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 		"plants": WorldObjectTypes.SAPLING,
@@ -171,6 +192,7 @@ const _OTHER_TYPES := {
 	PINE_CONE:
 	{
 		"name": "Pine cone",
+		"description": "The seed of a pine.",
 		"weight": 0.05,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 		"plants": WorldObjectTypes.SAPLING,
@@ -180,6 +202,7 @@ const _OTHER_TYPES := {
 	TUNIC:
 	{
 		"name": "Tunic",
+		"description": "A plain tunic that covers your body.",
 		"weight": 0.8,
 		"stack_limit": 1,
 		"equip_slot": Equipment.BODY,
@@ -188,6 +211,7 @@ const _OTHER_TYPES := {
 	SHIRT:
 	{
 		"name": "Shirt",
+		"description": "A light shirt.",
 		"weight": 0.5,
 		"stack_limit": 1,
 		"equip_slot": Equipment.BODY,
@@ -196,6 +220,7 @@ const _OTHER_TYPES := {
 	TROUSERS:
 	{
 		"name": "Trousers",
+		"description": "Simple trousers.",
 		"weight": 0.7,
 		"stack_limit": 1,
 		"equip_slot": Equipment.LEGS,
@@ -204,6 +229,7 @@ const _OTHER_TYPES := {
 	STRAW_HAT:
 	{
 		"name": "Straw hat",
+		"description": "Keeps the sun off your head.",
 		"weight": 0.3,
 		"stack_limit": 1,
 		"equip_slot": Equipment.HEAD,
@@ -238,12 +264,14 @@ static func _with_crop_items(other_types: Dictionary) -> Dictionary:
 		var crop := rules.crop(crop_id)
 		types[StringName(crop["seed"])] = {
 			"name": crop["seed_name"],
+			"description": SEED_DESCRIPTION,
 			"weight": crop["seed_weight"],
 			"stack_limit": DEFAULT_STACK_LIMIT,
 			"plants": crop_id,
 		}
 		types[StringName(crop["produce"])] = {
 			"name": crop["name"],
+			"description": crop["description"],
 			"weight": crop["produce_weight"],
 			"stack_limit": DEFAULT_STACK_LIMIT,
 		}

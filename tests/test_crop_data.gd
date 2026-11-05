@@ -8,6 +8,7 @@ const FAKE_CROP := """
 [dandelion]
 name="Dandelion"
 seed_name="Dandelion seeds"
+description="A weed."
 sheet="res://assets/crops/turnip.png"
 seed="dandelion_seeds"
 produce="dandelion"

@@ -20,7 +20,9 @@ func _init() -> void:
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for slot in Inventory.HOTBAR_SIZE:
 		var view := SlotView.new()
-		view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# Passes clicks on to the game, but is still hovered for its tooltip.
+		view.mouse_filter = Control.MOUSE_FILTER_PASS
+		view.tooltip_id = "hotbar_%d" % slot
 		row.add_child(view)
 		_slot_views.append(view)
 	add_child(row)

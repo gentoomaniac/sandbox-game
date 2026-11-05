@@ -17,6 +17,7 @@ const STAGES := 4
 const REQUIRED_CROP_KEYS: Array[String] = [
 	"name",
 	"seed_name",
+	"description",
 	"sheet",
 	"seed",
 	"produce",

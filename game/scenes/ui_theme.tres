@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=19 format=3]
+[gd_resource type="Theme" load_steps=20 format=3]
 
 [ext_resource type="FontFile" path="res://assets/ui/font.fnt" id="1_font"]
 [ext_resource type="Texture2D" path="res://assets/ui/panel.png" id="2_panel"]
@@ -14,6 +14,17 @@ content_margin_left = 10.0
 content_margin_top = 10.0
 content_margin_right = 10.0
 content_margin_bottom = 10.0
+texture = ExtResource("2_panel")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxTexture" id="TooltipPanel"]
+content_margin_left = 7.0
+content_margin_top = 6.0
+content_margin_right = 7.0
+content_margin_bottom = 6.0
 texture = ExtResource("2_panel")
 texture_margin_left = 8.0
 texture_margin_top = 8.0
@@ -108,6 +119,8 @@ Label/colors/font_shadow_color = Color(0.114, 0.106, 0.149, 1)
 Label/constants/shadow_offset_x = 1
 Label/constants/shadow_offset_y = 1
 PanelContainer/styles/panel = SubResource("Panel")
+TooltipPanel/base_type = &"PanelContainer"
+TooltipPanel/styles/panel = SubResource("TooltipPanel")
 VBoxContainer/constants/separation = 4
 VScrollBar/styles/grabber = SubResource("ScrollGrabber")
 VScrollBar/styles/grabber_highlight = SubResource("ScrollGrabberHighlight")

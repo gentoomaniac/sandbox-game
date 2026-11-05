@@ -36,6 +36,9 @@ extends Node2D
 ## (to check smooth scrolling); `--menu=pause|settings|controls|display|game` opens that menu page
 ## (with `--screenshot`, the shot is of the menu). The console's `snow <0..1>` forces the snow
 ## cover (`snow auto` ends it), and F3 shows the snow cover and the frost.
+## `--tooltip=<id>` shows the tooltip of a control as if the mouse rested on it: `hotbar_<0..9>`,
+## `inventory_<n>` and `equipment_<slot>` (with `--inventory`), `setting_ui_scale` and
+## `setting_day_length` (with `--menu=game`), `action_<action>` (with `--menu=controls`).
 ## `--wildlife=<kind>[,<kind>]` puts a few animals of those kinds near the player once the
 ## world is drawn and leaves it at that (`bird`, `rabbit`, `squirrel`, `deer`, `bee`,
 ## `butterfly`, `flock`; see WildlifeView), `--wildlife-calm` makes them take no notice of the
@@ -65,6 +68,7 @@ var _state: GameState
 var _builder: Builder
 var _settings: GameSettings
 var _menu: PauseMenu
+var _tooltip_view := TooltipView.new()
 var _save_path := SaveFile.DEFAULT_PATH
 var _settings_path := GameSettings.DEFAULT_PATH
 var _debug_menu_page := -1
@@ -196,6 +200,8 @@ func _ready() -> void:
 		elif arg.begins_with("--mouse-tile="):
 			var tile := arg.trim_prefix("--mouse-tile=").split_floats(",")
 			_use_highlight.debug_mouse_tile = Vector2i(int(tile[0]), int(tile[1]))
+		elif arg.begins_with("--tooltip="):
+			_tooltip_view.show_by_id(arg.trim_prefix("--tooltip="))
 		elif arg.begins_with("--menu="):
 			_debug_menu_page = PauseMenu.Page.get(arg.trim_prefix("--menu=").to_upper(), -1)
 		elif arg.begins_with("--weather="):
@@ -271,6 +277,7 @@ func _ready() -> void:
 	_menu.resumed.connect(_resume)
 	_menu.save_and_quit_requested.connect(_save_and_quit)
 	add_child(_menu)
+	add_child(_tooltip_view)
 	_interior_view.hide()
 	_world.add_child(_interior_view)
 	_world.add_child(_weather_view)

@@ -68,6 +68,26 @@ const ACTION_LABELS := {
 	&"pause": "Pause menu",
 	&"console": "Console",
 }
+## What each action does, for the tooltip of its row in the controls. The hotbar slots share
+## one text (see `action_description`).
+const ACTION_DESCRIPTIONS := {
+	&"move_left": "Walk left.",
+	&"move_right": "Walk right.",
+	&"move_up": "Walk up.",
+	&"move_down": "Walk down.",
+	&"interact": "Sleep in the bed next to you.",
+	&"use": "Use the held item on the tile in front of you, or eat held food.",
+	&"use_click": "Use the held item on the tile under the mouse, or eat held food.",
+	&"select_hammer": "Take the hammer from the hotbar to build.",
+	&"build_previous": "Pick the previous building while building.",
+	&"build_next": "Pick the next building while building.",
+	&"inventory": "Open or close the character screen with the inventory.",
+	&"toggle_fast_forward": "Run time faster. Only for testing.",
+	&"toggle_coordinates": "Show your tile coordinates in the top right corner.",
+	&"console": "Open the console for commands and cheats.",
+	&"pause": "Open the pause menu.",
+}
+const HOTBAR_DESCRIPTION := "Select this hotbar slot."
 const MOUSE_BUTTON_LABELS := {
 	MOUSE_BUTTON_LEFT: "Left mouse",
 	MOUSE_BUTTON_RIGHT: "Right mouse",
@@ -120,6 +140,12 @@ static func action_label(action: StringName) -> String:
 		return "Hotbar slot " + action.trim_prefix("hotbar_")
 	var text := String(action).replace("_", " ")
 	return text[0].to_upper() + text.substr(1)
+
+
+static func action_description(action: StringName) -> String:
+	if action.begins_with("hotbar_"):
+		return HOTBAR_DESCRIPTION
+	return ACTION_DESCRIPTIONS[action]
 
 
 ## A key or mouse button as text, e.g. "W", "Space", "Left mouse".

@@ -942,7 +942,7 @@ merged (both touch world_view.gd).
 
 ## 44. Tooltips
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Menus and settings" (tooltips). A tooltip panel in the shared theme, shown
 after a short hover and kept on screen at any UI scale; item tooltips for hotbar,

@@ -83,7 +83,7 @@ are, and the more you carry, the more each action costs.
 
 You can rebind every key, including mouse buttons. You can also switch between fullscreen
 and windowed, scale the UI from 0.5× to 2× without touching the world view, and set the
-energy drain and the day length variation. The mouse wheel zooms smoothly from 0.5× to 2×.
+energy drain and the day length variation. Hover over a setting, a key or an item in the hotbar, inventory or equipment for a short explanation: an item's kind, weight, what food gives back, what seeds grow and where they are planted. The mouse wheel zooms smoothly from 0.5× to 2×.
 
 ![Rebinding the controls](docs/screenshots/controls.png)
 
