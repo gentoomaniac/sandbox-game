@@ -222,7 +222,7 @@ See SPEC.md "World objects (architecture)" and "Resources: trees and minerals".
 
 ## 7. Clock and day/night tint
 
-- [ ] Done
+- [x] Done
 
 Depends on: 4.
 
