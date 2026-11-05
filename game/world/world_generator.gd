@@ -10,7 +10,7 @@ extends RefCounted
 ## Tiles from the river centre line to the bank (so the river is twice as wide).
 const RIVER_HALF_WIDTH := 3.0
 ## Tiles from the bank to the edge of the floodplain.
-const FLOODPLAIN_WIDTH := 6.0
+const FLOODPLAIN_WIDTH := 3.0
 ## How far (in tiles) the river's centre line wanders north and south of y = 0.
 const RIVER_MEANDER_AMPLITUDE := 150.0
 ## Wetland appears where the second noise is above this (dry land only).

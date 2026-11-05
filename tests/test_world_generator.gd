@@ -1,9 +1,9 @@
 extends GutTest
 
 const SEED := 42
-## Floodplain tiles must have water within this many tiles (the floodplain is
-## WorldGenerator.FLOODPLAIN_WIDTH wide, measured along y, so this is generous).
-const MAX_WATER_DISTANCE := 8
+## Floodplain tiles must have water within this many tiles: the floodplain is
+## WorldGenerator.FLOODPLAIN_WIDTH wide, measured along y, plus one for rounding.
+const MAX_WATER_DISTANCE := int(WorldGenerator.FLOODPLAIN_WIDTH) + 1
 
 
 func _terrain_grid(generator: WorldGenerator, area: Rect2i) -> Dictionary[Vector2i, Tile.Terrain]:
