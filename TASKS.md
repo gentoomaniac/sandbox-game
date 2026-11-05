@@ -841,7 +841,7 @@ See SPEC.md "Building and land" (first buildings, costs, hammer, buildings.cfg).
 - data/buildings.cfg (required keys, fails loudly) replaces the table in
   building_types.gd: shack, Kate, longhouse and barn with footprint, door, pictures,
   interior map, window lights, costs and documented future attributes.
-- The hammer item (starting items, console); holding it is build mode; mouse wheel or Q/E
+- The hammer item (starting items, console); holding it is build mode; Q/E (rebindable)
   pick the building; B selects the hammer; a small panel shows the name and the costs
   against the inventory; placing takes the materials; a spot is refused while something is
   missing.

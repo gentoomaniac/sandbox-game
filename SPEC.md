@@ -599,7 +599,7 @@ atmosphere only: no player impact, not hunted, not saved.
   Kate 30 logs, 15 stone, 15 clay, 25 reeds; longhouse about twice the Kate; barn like the
   Kate with less clay.
 - **The hammer builds:** holding the hammer is build mode (the ghost follows the cursor,
-  use places the building); the mouse wheel or Q/E pick the building, and B selects the
+  use places the building); Q and E (rebindable) pick the building, and B selects the
   hammer. The player starts with a hammer (later it is crafted); `give hammer` works too.
   A new game starts at the camp: the materials for a first house have to be gathered.
 - **`data/buildings.cfg`** defines the buildings (required keys, the game refuses to start
