@@ -186,3 +186,20 @@ func test_ground_items_survive_a_save() -> void:
 	assert_eq(restored.world.to_dict()["ground_items"], _world.to_dict()["ground_items"])
 	assert_eq(restored.world.ground_count_of(ItemTypes.LOGS), 4)
 	assert_eq(restored.world.ground_count_of(ItemTypes.BERRIES), 1)
+
+
+func test_a_dropped_pile_hops_out_before_it_is_pulled() -> void:
+	var source := Vector2i(_player_start.floor()) + Vector2i(1, 0)
+	_world.drop_items(source, {ItemTypes.LOGS: 1})
+	var pile: GroundItem = _world.ground_items()[-1]
+	var landing := pile.position
+	_walk_frames(int(World.DROP_SETTLE_SECONDS / FRAME) - 2)
+	assert_eq(pile.position, landing, "still hopping and settling")
+	_state.player.position = landing + Vector2(0.5, 0)
+	_walk_frames(60)
+	assert_eq(_count(ItemTypes.LOGS), 1, "then pulled in and picked up")
+
+
+func test_a_pile_laid_down_or_loaded_is_pulled_at_once() -> void:
+	var pile := _lay(ItemTypes.LOGS, 1, Vector2(0.6, 0))
+	assert_eq(pile.settle_seconds, 0.0)

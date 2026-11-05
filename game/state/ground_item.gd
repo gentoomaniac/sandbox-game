@@ -7,6 +7,10 @@ var item: StringName
 var count: int
 ## World position, in tiles: sub-tile, so piles on one tile don't lie on top of each other.
 var position: Vector2
+## Seconds before a freshly dropped pile can be pulled to the player: it hops out first (see
+## GroundItemView; a felled tree's seed waits for the tree to land). Not saved: a loaded pile
+## lies still.
+var settle_seconds := 0.0
 
 
 func _init(item_id: StringName, item_count: int, world_position: Vector2) -> void:

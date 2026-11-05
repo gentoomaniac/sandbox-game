@@ -1154,7 +1154,7 @@ gain the new empty backpack slots. Tests; README updated. Starts after task 49 i
 - Ground items (task 33 review): `World.ground_items_near` scans every pile each frame
   (fine for tens, not hundreds; piles never expire): bucket per tile or chunk. A pile that
   falls back onto a non-walkable source may be out of reach. A pulled pile moves straight
-  through walls and water in its last half tile.
+  through walls and water (the pull reaches 1.25 tiles since 2026-11-05).
 - Task 35 review: time a chunk load with the clay probe and hint layer against the ~14 ms
   baseline; a mown tuft stays an object edit forever after it regrew (drop edits that are
   back to their generated state); ResourceCase `_hold` could just select a hotbar slot.

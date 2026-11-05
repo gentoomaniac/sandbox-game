@@ -40,6 +40,9 @@ enum Blocked {
 ## Dropped items lie on the free tiles within this many tiles of their source; the second
 ## range is for a source that has no free tile around it.
 const SCATTER_RANGES := [1, 2]
+## How long dropped piles wait before they can be pulled: the longest hop with its stagger,
+## after a falling tree lands (about 1.3 s), with a little to spare.
+const DROP_SETTLE_SECONDS := 1.4
 ## Where on its tile a dropped pile lies, as a fraction of the tile, so the piles of one drop
 ## don't line up on the tile centres.
 const PILE_MARGIN := 0.25
@@ -524,6 +527,7 @@ func drop_items(source: Vector2i, drops: Dictionary) -> void:
 				_hash_fraction(tiles[pile], 2 * kind_index + 1)
 			)
 			var ground_item := GroundItem.new(item, count, Vector2(tiles[pile]) + offset)
+			ground_item.settle_seconds = DROP_SETTLE_SECONDS
 			add_ground_item(ground_item)
 			dropped.append(ground_item)
 		kind_index += 1

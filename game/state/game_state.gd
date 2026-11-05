@@ -484,7 +484,11 @@ func _rolls_seed(tree: WorldObject) -> bool:
 func collect_ground_items(delta: float) -> void:
 	if is_inside():
 		return
+	for ground_item in world.ground_items():
+		ground_item.settle_seconds = maxf(ground_item.settle_seconds - delta, 0.0)
 	for ground_item in world.ground_items_near(player.position, PULL_RADIUS):
+		if ground_item.settle_seconds > 0.0:
+			continue
 		if not player.inventory.can_add({ground_item.item: 1}):
 			continue
 		var to_player := player.position - ground_item.position
