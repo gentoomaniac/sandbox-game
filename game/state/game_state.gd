@@ -339,6 +339,7 @@ func _do_use(target: Vector2i) -> Use:
 			player.inventory.remove(held, 1)
 		Use.TAKE_DOWN:
 			var items := _items_of_chest(current_map.remove_object(target))
+			# `use_at` already checked that it all fits (or answered NO_ROOM).
 			for item: StringName in items:
 				player.inventory.add(item, items[item])
 		Use.HIT:

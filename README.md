@@ -156,8 +156,9 @@ Hold a chest and a ghost shows where it would go: green where it fits, red where
 (not on water, wetland or floodplain, not on something else, not in front of a door). Use it
 to place the chest, outdoors or inside a house. Press E in front of a chest to open it: your
 inventory is on the left and the chest's 15 slots on the right. Click an item and click a
-slot to move it, or Shift+click to send a whole stack across. The axe takes a chest down and
-spills what it held.
+slot to move it, or Shift+click to send a whole stack across. The axe takes a chest down: outdoors
+what it held spills onto the ground, inside a house the chest and its contents go into your
+inventory (or you are told there is no room).
 
 ![The storage screen of a chest](docs/screenshots/chest.png)
 
