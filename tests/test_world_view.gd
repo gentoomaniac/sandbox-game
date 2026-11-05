@@ -109,3 +109,27 @@ func _expected(cell: Vector2i) -> Array[Vector2i]:
 			var mask := TerrainTileset.mask_for(corners, layer)
 			cells[layer] = _view._tileset.atlas_cell(layer, mask, cell)
 	return cells
+
+
+func test_objects_are_drawn_on_load_and_erased_on_unload() -> void:
+	_view._load_chunk(RIGHT)
+	var object := _view.world.chunk_at(RIGHT).objects()[0]
+	assert_ne(_view._objects.get_cell_source_id(object.pos), -1)
+	assert_eq(_view._decorations.get_cell_source_id(object.pos), -1, "no decoration under it")
+	_view._unload_chunk(RIGHT)
+	assert_eq(_view._objects.get_cell_source_id(object.pos), -1)
+
+
+func test_objects_are_redrawn_when_added_and_removed() -> void:
+	_view._load_chunk(RIGHT)
+	var free_pos := Vector2i.ZERO
+	for local in Chunk.CHUNK_SIZE:
+		var pos := Chunk.to_world(RIGHT, Vector2i(local, 0))
+		if _view.world.object_at(pos) == null:
+			free_pos = pos
+	assert_eq(_view._objects.get_cell_source_id(free_pos), -1)
+	_view.world.add_object(WorldObject.new(WorldObjectTypes.OAK, free_pos))
+	assert_ne(_view._objects.get_cell_source_id(free_pos), -1)
+	assert_eq(_view._decorations.get_cell_source_id(free_pos), -1)
+	_view.world.remove_object(free_pos)
+	assert_eq(_view._objects.get_cell_source_id(free_pos), -1)

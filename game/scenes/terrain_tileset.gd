@@ -136,7 +136,7 @@ static func fill_missing_corners(corners: PackedInt32Array) -> void:
 ## same edge variant: lush and dry grass share their shapes with ordinary grass, and only
 ## stay inside it when the variant matches.
 func atlas_cell(layer: int, mask: int, cell: Vector2i) -> Vector2i:
-	var roll := hash(cell)
+	var roll := PositionHash.of(cell)
 	if mask != FULL:
 		return Vector2i(roll % EDGE_VARIANTS * FULL + mask, layer)
 	return Vector2i(FULL_COLUMN + roll % _full_variant_counts[layer], layer)
@@ -151,7 +151,7 @@ func decoration_cell(layer: int, tile_pos: Vector2i, cluster: float) -> Vector2i
 	var in_cluster := clampf((cluster - CLUSTER_START) * 3.0, 0.0, 1.0)
 	var chance := lerpf(DECORATION_CHANCE, CLUSTER_DECORATION_CHANCE, in_cluster)
 	# A different roll than atlas_cell's, so decorations don't follow the variants.
-	var roll := hash(Vector3i(tile_pos.x, tile_pos.y, 1))
+	var roll := PositionHash.of(tile_pos, 1)
 	if roll % 1000 >= chance * 1000:
 		return NO_DECORATION
 	return Vector2i(roll / 1000 % count, layer)

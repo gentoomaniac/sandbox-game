@@ -13,7 +13,8 @@ extends Node2D
 
 const LOAD_RADIUS := 3
 const UNLOAD_RADIUS := 5
-## Loading a chunk (generating it and drawing its layers) takes ~6 ms, at worst ~8 ms.
+## Loading a chunk (generating it, placing objects and drawing its layers) takes ~8 ms, at
+## worst ~10 ms.
 ## One per frame keeps a frame well under 16 ms and still streams far faster than the
 ## camera moves.
 const MAX_LOADS_PER_FRAME := 1

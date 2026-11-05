@@ -94,7 +94,7 @@ func object_type_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
 	var tree_chance := FOREST_TREE_CHANCE if in_forest else CLEARING_TREE_CHANCE
 	# A hash of the position instead of a shared RNG, so the roll does not depend on the
 	# order chunks are generated in.
-	var roll := hash(Vector3i(world_pos.x, world_pos.y, _object_roll_seed)) % 10000 / 10000.0
+	var roll := PositionHash.of(world_pos, _object_roll_seed) % 10000 / 10000.0
 	if roll < tree_chance:
 		return WorldObjectTypes.OAK
 	if roll < tree_chance + STONE_CHANCE:

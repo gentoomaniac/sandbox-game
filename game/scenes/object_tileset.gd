@@ -32,5 +32,5 @@ func _init() -> void:
 ## neighbours differ.
 static func atlas_cell(object: WorldObject) -> Vector2i:
 	var object_type: Dictionary = WorldObjectTypes.TYPES[object.type]
-	var variant := hash(object.pos) % int(object_type["variants"])
+	var variant := PositionHash.of(object.pos) % int(object_type["variants"])
 	return Vector2i(variant, object_type["atlas_row"])
