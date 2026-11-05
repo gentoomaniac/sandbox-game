@@ -587,8 +587,10 @@ func _draw_cell_corners(
 ## The overlay looks of a cell: for each, the tiles of the 4 corners that show it make the
 ## mask. A season's look is drawn like the grass terrain it covers: ordinary grass (and all
 ## other land) first, then lush and dry grass over it with their own masks, so their edges
-## stay soft instead of filling the whole cell. Snow and frost lie over the season's look,
-## so a tile under them still counts for that, and are drawn as ordinary grass.
+## stay soft instead of filling the whole cell. Where lush or dry grass has the same mask as
+## the layer below, it alone is drawn, since both edges together would show as a fringe.
+## Snow and frost lie over the season's look, so a tile under them still counts for that,
+## and are drawn as ordinary grass.
 func _draw_overlays(
 	cell: Vector2i, corners: PackedInt32Array, seasons: PackedInt32Array, weathers: PackedInt32Array
 ) -> void:
@@ -602,37 +604,54 @@ func _draw_overlays(
 			TerrainTileset.shown_weather_look(corners[corner], weathers[corner] as SeasonBlend.Look)
 		)
 	for look in TerrainTileset.OVERLAY_LOOKS:
-		var is_season := not TerrainTileset.is_weather_look(look)
-		var shown := shown_seasons if is_season else shown_weathers
-		_draw_overlay(_overlays[look], look, TerrainTileset.Layer.GRASS, 0, shown, corners, cell)
-		if is_season:
-			for layer in TerrainTileset.VARIETY_LAYERS:
-				_draw_overlay(
-					_variety_overlays[Vector2i(look, layer)],
-					look,
-					layer,
-					layer,
-					shown,
-					corners,
-					cell
-				)
+		if TerrainTileset.is_weather_look(look):
+			var mask := _overlay_mask(look, 0, shown_weathers, corners)
+			_set_overlay_cell(_overlays[look], look, TerrainTileset.Layer.GRASS, mask, cell)
+			continue
+		var ordinary_mask := _overlay_mask(look, 0, shown_seasons, corners)
+		var lush_mask := _overlay_mask(
+			look, TerrainTileset.Layer.LUSH_GRASS, shown_seasons, corners
+		)
+		var dry_mask := _overlay_mask(look, TerrainTileset.Layer.DRY_GRASS, shown_seasons, corners)
+		_set_overlay_cell(
+			_overlays[look],
+			look,
+			TerrainTileset.Layer.GRASS,
+			0 if ordinary_mask == lush_mask else ordinary_mask,
+			cell
+		)
+		_set_overlay_cell(
+			_variety_overlays[Vector2i(look, TerrainTileset.Layer.LUSH_GRASS)],
+			look,
+			TerrainTileset.Layer.LUSH_GRASS,
+			0 if lush_mask == dry_mask else lush_mask,
+			cell
+		)
+		_set_overlay_cell(
+			_variety_overlays[Vector2i(look, TerrainTileset.Layer.DRY_GRASS)],
+			look,
+			TerrainTileset.Layer.DRY_GRASS,
+			dry_mask,
+			cell
+		)
 
 
-## One overlay layer of a cell: the tile of atlas row `row` shaped by the corners that show
-## `look` and are on `min_layer` or above.
-func _draw_overlay(
-	tile_map: TileMapLayer,
-	look: SeasonBlend.Look,
-	row: int,
-	min_layer: int,
-	shown: PackedInt32Array,
-	corners: PackedInt32Array,
-	cell: Vector2i
-) -> void:
+## The corners that show `look` and are on `min_layer` or above, as a mask.
+func _overlay_mask(
+	look: SeasonBlend.Look, min_layer: int, shown: PackedInt32Array, corners: PackedInt32Array
+) -> int:
 	var mask := 0
 	for corner in 4:
 		if shown[corner] == look and corners[corner] >= min_layer:
 			mask |= 1 << corner
+	return mask
+
+
+## Draws the tile of atlas row `row` with `mask` on an overlay layer, or erases the cell if
+## the mask is empty.
+func _set_overlay_cell(
+	tile_map: TileMapLayer, look: SeasonBlend.Look, row: int, mask: int, cell: Vector2i
+) -> void:
 	if mask == 0:
 		tile_map.erase_cell(cell)
 	else:

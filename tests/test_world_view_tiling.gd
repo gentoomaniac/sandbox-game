@@ -74,7 +74,8 @@ func _mask_of(atlas_coords: Vector2i) -> int:
 
 
 ## Lush and dry grass in a season's look must fade out like the terrain below them, not cover
-## the whole cell as soon as one corner is lush: that showed as straight-edged blocks.
+## the whole cell as soon as one corner is lush (straight-edged blocks), and must not repeat
+## the edge of the layer below them (a fringe round the patches of another look).
 func test_lush_and_dry_overlays_have_the_shape_of_their_grass() -> void:
 	for coords in CHUNKS:
 		_view._load_chunk(coords)
@@ -84,17 +85,30 @@ func test_lush_and_dry_overlays_have_the_shape_of_their_grass() -> void:
 		_view.finish_refresh()
 		for key: Vector2i in _view._variety_overlays:
 			var overlay: TileMapLayer = _view._variety_overlays[key]
+			var below: TileMapLayer = _view._overlays[key.x]
+			if key.y == TerrainTileset.Layer.DRY_GRASS:
+				below = _view._variety_overlays[Vector2i(key.x, TerrainTileset.Layer.LUSH_GRASS)]
 			for cell in overlay.get_used_cells():
-				var expected := 0
 				var corner_layers := PackedInt32Array()
 				for offset in WorldView.CORNER_OFFSETS:
 					corner_layers.append(_view._layer_at(cell + offset))
 				if corner_layers.has(TerrainTileset.MISSING):
 					continue  # The edge of the loaded area, drawn with a fallback.
+				var mask := _mask_of(overlay.get_cell_atlas_coords(cell))
+				var expected := 0
 				for corner in 4:
-					if corner_layers[corner] >= key.y:
+					var pos: Vector2i = cell + WorldView.CORNER_OFFSETS[corner]
+					var shown := TerrainTileset.shown_season_look(
+						corner_layers[corner], _view._season_look_at(pos)
+					)
+					if corner_layers[corner] >= key.y and shown == key.x:
 						expected |= 1 << corner
-				assert_eq(_mask_of(overlay.get_cell_atlas_coords(cell)) & ~expected, 0, str(cell))
+				assert_eq(mask, expected, "%s on %s" % [cell, overlay.name])
+				if below.get_cell_source_id(cell) != -1:
+					var below_mask := _mask_of(below.get_cell_atlas_coords(cell))
+					assert_ne(
+						below_mask, mask, "%s: %s repeats the edge below" % [cell, overlay.name]
+					)
 				checked += 1
 	assert_gt(checked, 0, "some lush or dry grass shows a season's look")
 
