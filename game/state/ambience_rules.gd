@@ -39,6 +39,9 @@ const REQUIRED_KEYS := {
 	"squirrel": ["idle_chance"],
 	"bees": ["max_loops", "level"],
 }
+const SEASON_COUNT := 4
+## Day, dawn and dusk, night.
+const PHASE_COUNT := 3
 ## Frogs sit at the water's edge too.
 const FROG_TERRAINS: Array[Tile.Terrain] = [Tile.Terrain.WATER, Tile.Terrain.WETLAND]
 
@@ -60,6 +63,16 @@ static func default_rules() -> AmbienceRules:
 
 
 static func from_file(path: String) -> AmbienceRules:
+	var rules := AmbienceRules.new(read_values(path))
+	for missing in rules.missing_keys():
+		push_error("%s: no %s" % [path, missing])
+	for problem in rules.bad_values():
+		push_error("%s: %s" % [path, problem])
+	return rules
+
+
+## {section: {key: value}} of a data file, as it stands.
+static func read_values(path: String) -> Dictionary:
 	var file := ConfigFile.new()
 	var error := file.load(path)
 	if error != OK:
@@ -69,10 +82,7 @@ static func from_file(path: String) -> AmbienceRules:
 		values[section] = {}
 		for key in file.get_section_keys(section):
 			values[section][key] = file.get_value(section, key)
-	var rules := AmbienceRules.new(values)
-	for missing in rules.missing_keys():
-		push_error("%s: no %s" % [path, missing])
-	return rules
+	return values
 
 
 ## The required keys the rules lack, as "[section] key".
@@ -85,8 +95,30 @@ func missing_keys() -> Array[String]:
 	return missing
 
 
+## What is wrong with the values that are there, as "[section] what". Keys that are missing are
+## `missing_keys`' business.
+func bad_values() -> Array[String]:
+	var bad: Array[String] = []
+	if not missing_keys().is_empty():
+		return bad
+	if value("loops", "wind_full_speed") <= value("loops", "wind_calm_speed"):
+		bad.append("[loops] wind_full_speed must be above wind_calm_speed")
+	if value("loops", "wind_max_level") <= 0.0:
+		bad.append("[loops] wind_max_level must be above 0")
+	if value("frogs", "warm_temperature") <= value("frogs", "cold_temperature"):
+		bad.append("[frogs] warm_temperature must be above cold_temperature")
+	if value("thunder", "max_delay_seconds") < value("thunder", "min_delay_seconds"):
+		bad.append("[thunder] max_delay_seconds must be at least min_delay_seconds")
+	for section in ["birds", "frogs"]:
+		if _values[section]["season_factors"].size() != SEASON_COUNT:
+			bad.append("[%s] season_factors must have %d entries" % [section, SEASON_COUNT])
+		if _values[section]["phase_weights"].size() != PHASE_COUNT:
+			bad.append("[%s] phase_weights must have %d entries" % [section, PHASE_COUNT])
+	return bad
+
+
 func is_valid() -> bool:
-	return missing_keys().is_empty()
+	return missing_keys().is_empty() and bad_values().is_empty()
 
 
 func value(section: String, key: String) -> float:

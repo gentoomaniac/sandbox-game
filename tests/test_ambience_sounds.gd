@@ -52,13 +52,7 @@ func test_a_clear_calm_day_has_no_loops() -> void:
 
 ## The ambience rules of the data file with the thunder coming within 0.1 to 0.2 s.
 func _quick_thunder_rules() -> AmbienceRules:
-	var file := ConfigFile.new()
-	file.load(AmbienceRules.DEFAULT_PATH)
-	var values := {}
-	for section in file.get_sections():
-		values[section] = {}
-		for key in file.get_section_keys(section):
-			values[section][key] = file.get_value(section, key)
+	var values := AmbienceRules.read_values(AmbienceRules.DEFAULT_PATH)
 	values["thunder"] = {"min_delay_seconds": 0.1, "max_delay_seconds": 0.2}
 	return AmbienceRules.new(values)
 
@@ -73,6 +67,7 @@ func test_thunder_follows_a_flash_after_a_delay() -> void:
 
 func test_a_bee_buzzes_where_it_is() -> void:
 	var bee := Bee.new()
+	autofree(bee)
 	bee.wildlife = _wildlife
 	_ambience._on_animal_added(bee)
 	_ambience._process(1.0)

@@ -75,13 +75,13 @@ static func animal_idle(kind: StringName) -> StringName:
 
 
 ## The sound of an animal of a kind starting to run from the player: it is the state it enters
-## (the name of Deer.BOUND, Rabbit.FLEE or Squirrel.FLEE) that says so. Empty for any other.
+## (Deer.BOUND, Rabbit.FLEE or Squirrel.FLEE) that says so. Empty for any other.
 static func animal_alarm(kind: StringName, state: StringName) -> StringName:
 	match [kind, state]:
-		[WildlifeRules.DEER, &"bound"]:
+		[WildlifeRules.DEER, Deer.BOUND]:
 			return &"deer_hooves"
-		[WildlifeRules.RABBIT, &"flee"]:
+		[WildlifeRules.RABBIT, Rabbit.FLEE]:
 			return &"rabbit_rustle"
-		[WildlifeRules.SQUIRREL, &"flee"]:
+		[WildlifeRules.SQUIRREL, Squirrel.FLEE]:
 			return &"squirrel_chatter"
 	return &""
