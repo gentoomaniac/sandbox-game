@@ -3,7 +3,8 @@ extends RefCounted
 ## The kinds of world object, as data. Keyed by type name; each entry has:
 ## - footprint: tiles covered (1x1 for now);
 ## - blocks_walking: whether the tile can be walked on while the object is there;
-## - harvest_level: the tool level needed to harvest it;
+## - harvest_level: the tool level needed to harvest it: 0 by hand (bushes and saplings), 1 an
+##   axe or pickaxe (oak, spruce, dead tree, stone), 2 a better one (pine, the hardest wood);
 ## - atlas_row, variants: where its looks are in assets/objects.png (see the art generator).
 ## Optional:
 ## - sleep_minutes: the object is a bed, and sleeping in it takes this long;
@@ -13,6 +14,13 @@ const OAK := &"oak"
 const STONE := &"stone"
 const FIREPLACE := &"fireplace"
 const SLEEPING_BAG := &"sleeping_bag"
+const SPRUCE := &"spruce"
+const PINE := &"pine"
+const DEAD_TREE := &"dead_tree"
+const BERRY_BUSH := &"berry_bush"
+const SHRUB := &"shrub"
+const SAPLING := &"sapling"
+const FERN_BUSH := &"fern_bush"
 
 const TYPES := {
 	OAK:
@@ -49,5 +57,61 @@ const TYPES := {
 		"atlas_row": 3,
 		"variants": 1,
 		"sleep_minutes": 8 * GameClock.MINUTES_PER_HOUR,
+	},
+	SPRUCE:
+	{
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": 4,
+		"variants": 3,
+	},
+	PINE:
+	{
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 2,
+		"atlas_row": 5,
+		"variants": 3,
+	},
+	DEAD_TREE:
+	{
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": 6,
+		"variants": 3,
+	},
+	BERRY_BUSH:
+	{
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"atlas_row": 7,
+		"variants": 3,
+	},
+	SHRUB:
+	{
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": false,
+		"harvest_level": 0,
+		"atlas_row": 8,
+		"variants": 3,
+	},
+	SAPLING:
+	{
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": false,
+		"harvest_level": 0,
+		"atlas_row": 9,
+		"variants": 3,
+	},
+	FERN_BUSH:
+	{
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": false,
+		"harvest_level": 0,
+		"atlas_row": 10,
+		"variants": 3,
 	},
 }

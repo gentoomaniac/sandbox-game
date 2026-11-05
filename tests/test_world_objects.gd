@@ -42,13 +42,42 @@ func test_generation_is_deterministic_and_independent_of_chunk_order() -> void:
 	assert_eq(forward, backward)
 
 
-func test_both_object_types_are_generated() -> void:
+func test_every_object_type_is_generated() -> void:
+	var generator := WorldGenerator.new(SEED)
 	var types := {}
-	for chunk in _generate(WorldGenerator.new(SEED), CHUNKS):
-		for object in chunk.objects():
-			types[object.type] = true
-	assert_true(types.has(WorldObjectTypes.OAK))
-	assert_true(types.has(WorldObjectTypes.STONE))
+	for y in range(-128, 128):
+		for x in range(-128, 128):
+			var pos := Vector2i(x, y)
+			types[generator.object_type_at(pos, generator.terrain_at(pos))] = true
+	for object_type: StringName in WorldObjectTypes.TYPES:
+		assert_true(types.has(object_type), "Missing object type %s" % object_type)
+
+
+func test_dead_trees_are_more_common_near_wetland() -> void:
+	var generator := WorldGenerator.new(SEED)
+	var area := Rect2i(-128, -128, 256, 256)
+	var terrains := {}
+	for y in range(area.position.y, area.end.y):
+		for x in range(area.position.x, area.end.x):
+			terrains[Vector2i(x, y)] = generator.terrain_at(Vector2i(x, y))
+	var near := {"tiles": 0, "dead": 0}
+	var far := {"tiles": 0, "dead": 0}
+	for pos: Vector2i in terrains:
+		if terrains[pos] != Tile.Terrain.GRASS:
+			continue
+		var group := far
+		for offset in WorldGenerator.WETLAND_PROBE_DIRECTIONS:
+			if terrains.get(pos + offset * WorldGenerator.WETLAND_REACH) == Tile.Terrain.WETLAND:
+				group = near
+		group["tiles"] += 1
+		if generator.object_type_at(pos, Tile.Terrain.GRASS) == WorldObjectTypes.DEAD_TREE:
+			group["dead"] += 1
+	assert_gt(near["dead"], 0, "dead trees near wetland")
+	assert_gt(near["tiles"], 0)
+	assert_gt(far["tiles"], 0)
+	var near_rate: float = float(near["dead"]) / near["tiles"]
+	var far_rate: float = float(far["dead"]) / far["tiles"]
+	assert_gt(near_rate, 3.0 * far_rate)
 
 
 func test_objects_stand_only_on_grass() -> void:
