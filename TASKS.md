@@ -1,8 +1,14 @@
 # Tasks: Prototype
 
 Implements milestone 1 from [SPEC.md](SPEC.md). Each task is small enough for one
-developer brief. Do them in order unless "Depends on" says otherwise. When a task is
-done, tick it off here.
+developer brief. Tasks whose dependencies are done can run in parallel. The
+coordinator ticks a task off here when it is merged.
+
+Parallel plan:
+
+1. Tasks 6 and 7 together.
+2. Tasks 8 and 9 together.
+3. Tasks 10 and 11 together.
 
 Rules for every task:
 
@@ -214,70 +220,82 @@ See SPEC.md "World objects (architecture)" and "Resources: trees and minerals".
   - the combined walkable and buildable checks respect objects;
   - adding and removing objects works.
 
-## 7. Player and camp site
+## 7. Clock and day/night tint
 
 - [ ] Done
 
-Depends on: 6.
+Depends on: 4.
 
-- A top-down player character that walks in 8 directions and can't enter non-walkable
-  tiles.
-- The camera follows the player, and chunk streaming follows the player.
-- On a new game the generator picks a start position on buildable land near the world
-  centre, with no world objects in the way. It places a camp site there: a fireplace and a sleeping bag, as world objects
-  in game state.
-- The player starts at the camp site.
-- The fireplace has a warm point light with a slight flicker, and a subtle glow. Set up
-  glow once for the whole game (e.g. a `WorldEnvironment`), so later lights get it too.
-- GUT test: the start position is always on buildable land, for several seeds.
-
-## 8. Day counter and sleeping
-
-- [ ] Done
-
-Depends on: 7.
-
-- Game state has a clock: day number and time of day. Time passes while playing; a debug
-  key speeds it up.
-- An interact key at a bed (the sleeping bag for now) sleeps:
-  - each bed type has a fixed sleep duration (sleeping bag: 8 h);
-  - the clock advances by that duration;
-  - a new day begins whenever midnight is crossed.
-- The bed last slept in is stored as the player's home.
-- A minimal on-screen display of day and time.
+- Game state has a clock: day number and time of day.
+  - Time passes while playing, at a rate set by one constant.
+  - A debug key speeds it up.
+  - The clock can be advanced by a duration (sleeping in task 8 uses this). A new day
+    begins whenever midnight is crossed, and the clock emits a "new day" signal for
+    crops and other daily systems.
+- A minimal on-screen display of day and time. It is not tinted.
 - Day and night tint: the world's colour follows the time of day (warm morning, neutral
   noon, orange dusk, blue night), e.g. with `CanvasModulate` and a colour gradient over
-  the day. Point lights from task 7 must still shine at night. The UI is not tinted.
+  the day. Point lights (task 8) must still shine at night: check with a temporary test
+  light, then remove it.
+- Set up glow once for the whole game (e.g. a `WorldEnvironment`), so later lights get
+  it. Keep it subtle.
 - GUT tests:
-  - the clock advances correctly on sleep, including crossing midnight;
+  - the clock advances correctly, including crossing midnight and several days;
+  - the "new day" signal fires once per new day.
+
+## 8. Player, camp site and sleeping
+
+- [ ] Done
+
+Depends on: 6, 7.
+
+- A top-down player character that walks in 8 directions and can't enter non-walkable
+  tiles (including tiles with blocking world objects).
+- The camera follows the player, and chunk streaming follows the player. The debug
+  camera from task 4 goes.
+- On a new game the generator picks a start position on buildable land near the world
+  centre, with no world objects in the way. It places a camp site there: a fireplace and
+  a sleeping bag, as world objects in game state, with sprites from the art generator.
+- The player starts at the camp site.
+- The fireplace has a warm point light with a slight flicker. It gets the glow from
+  task 7.
+- An interact key at a bed (the sleeping bag for now) sleeps:
+  - each bed type has a fixed sleep duration (sleeping bag: 8 h);
+  - the clock advances by that duration (task 7).
+- The bed last slept in is stored as the player's home.
+- GUT tests:
+  - the start position is always on buildable land with no objects, for several seeds;
+  - sleeping advances the clock by the bed's duration;
   - home is updated.
 
 ## 9. Building placement
 
 - [ ] Done
 
-Depends on: 7.
+Depends on: 6.
 
 - One preset building, "small house", with a fixed footprint (e.g. 4×3 tiles) and one
   door tile.
-- A build mode shows a ghost of the building that follows the cursor or player and snaps
-  to tiles.
+- A build mode, toggled by a key, shows a ghost of the building that follows the mouse
+  cursor and snaps to tiles. (The player isn't needed for this, so it can run in
+  parallel with task 8.)
 - Every tile of the footprint is checked with `is_buildable`, and must have no world
-  object on it. Blocked tiles are marked,
-  and the message "This land doesn't look safe to build on." is shown.
+  object on it. Blocked tiles are marked, and the message "This land doesn't look safe
+  to build on." is shown.
 - Confirming places the building in game state, and its tiles become non-walkable except
   the door.
+- The house gets a sprite from the art generator.
 - Customisation options and expansion points are **not** in this task. Model the building
   type as data (footprint, door position, interior map) so they can be added later.
 - GUT tests:
-  - placement is rejected if any footprint tile is not buildable;
+  - placement is rejected if any footprint tile is not buildable or has an object;
   - after placement, the footprint tiles are occupied.
 
 ## 10. Interior map from Tiled
 
 - [ ] Done
 
-Depends on: 9.
+Depends on: 8, 9.
 
 - An interior map for the small house, made in Tiled (`maps/interiors/small_house.tmx`)
   and imported with YATI.
@@ -294,7 +312,7 @@ Done when: you can build a house, walk in, sleep there, and walk out.
 
 - [ ] Done
 
-Depends on: 8.
+Depends on: 6, 7, 8.
 
 - A crop is a world object (task 6) that keeps its growth state.
 - One crop type, with a few growth stages and a number of days per stage.
@@ -304,7 +322,8 @@ Depends on: 8.
   Weather will use the same path later.
 - Another action plants the crop on
   soil.
-- When a day begins, every crop advances by one day.
+- When a day begins (the clock's "new day" signal, task 7), every crop advances by one
+  day.
 - A fully grown crop can be harvested, which removes it. There's no inventory yet, so
   show or log the harvest count.
 - Each crop stage is rendered as a placeholder.
