@@ -16,15 +16,17 @@ light change the world as you play.
 ### Sound
 
 Footsteps follow the walk and the ground (grass, soil, sand, wetland, ice, snow, a wooden
-floor), and every tool, pickup, building and menu has a sound, played from where it happens.
-Inside a house the world outside is muffled. Settings → Audio has Master, Effects and Ambience
-volumes and "Sound in background" (off: silent while the window is not focused). Which file each
-sound plays is in [data/sounds.cfg](data/sounds.cfg), so any sound can be swapped for a recording.
+floor), and every tool, pickup, building and menu has a sound, played from where it
+happens. Inside a house the world outside is muffled. Settings → Audio has Master, Effects
+and Ambience volumes and "Sound in background" (off: silent while the window is not
+focused). Which file each sound plays is in [data/sounds.cfg](data/sounds.cfg), so any
+sound can be swapped for a recording.
 
-The world has an ambience too: rain and wind loops that follow the weather (and swell with gusts),
-thunder some seconds after each flash of lightning, birds chirping by day, deer, rabbits and
-squirrels, bees buzzing at their flowers, and frogs croaking near water on warm spring and summer
-evenings and nights. How often and how loud is in [data/ambience.cfg](data/ambience.cfg).
+The world has an ambience too: rain and wind loops that follow the weather (and swell with
+gusts), thunder some seconds after each flash of lightning, birds chirping by day, deer,
+rabbits and squirrels, bees buzzing at their flowers, and frogs croaking near water on
+warm spring and summer evenings and nights. How often and how loud is in
+[data/ambience.cfg](data/ambience.cfg).
 
 ### A world that changes with the seasons
 
@@ -75,9 +77,10 @@ seasons and the withering are in [data/crops.cfg](data/crops.cfg).
 Use the axe on trees and the pickaxe on stones and boulders. A better tool needs fewer
 hits, and some resources need a better tool. Everything you hit trembles and throws
 leaves, snow or splinters. A felled tree topples to the side and leaves a stump and a
-trunk (a dead tree a grey, splintered one); cut both into logs. A stump left alone rots away
-over about two weeks and may sprout a sapling of its kind (not a dead tree's), and now and
-then a tree drops a seed (acorn or cone) you can plant on grassland. Stones and boulders break into pieces of stone; a boulder needs a better pickaxe.
+trunk (a dead tree a grey, splintered one); cut both into logs. A stump left alone rots
+away over about two weeks and may sprout a sapling of its kind (not a dead tree's), and
+now and then a tree drops a seed (acorn or cone) you can plant on grassland. Stones and
+boulders break into pieces of stone; a boulder needs a better pickaxe.
 
 The scythe mows tall grass into hay and cuts reeds on river banks (reeds grow back in
 their season). The shovel digs clay, but only where a faint patch on the ground hints at
@@ -97,13 +100,13 @@ Hold the hammer (press B to take it from the hotbar) and a ghost of a building f
 mouse. Q and E pick the building: shack, Kate, longhouse or barn. A small panel lists the
 logs, stone, clay and reeds it takes against what you carry; the spot is refused while
 something is missing, and a click or Space builds it and takes the materials. The ghost
-shows where it fits, and the game tells you why a spot doesn't work, for example when it is
-unsafe wetland. Hold something else (or press Escape or right click) to stop building. You can
-walk inside every building, and each has its own room: a bare shack with a straw mat, a
-cottage room in the Kate, the longhouse with a living end and an animal end, and the barn with
-stalls and hay. The last bed you slept in becomes your home. A new game starts at the camp
-with your tools and the hammer, so the materials for the first house have to be gathered
-first. The buildings, their sizes, costs and insides are in
+shows where it fits, and the game tells you why a spot doesn't work, for example when it
+is unsafe wetland. Hold something else (or press Escape or right click) to stop building.
+You can walk inside every building, and each has its own room: a bare shack with a straw
+mat, a cottage room in the Kate, the longhouse with a living end and an animal end, and
+the barn with stalls and hay. The last bed you slept in becomes your home. A new game
+starts at the camp with your tools and the hammer, so the materials for the first house
+have to be gathered first. The buildings, their sizes, costs and insides are in
 [data/buildings.cfg](data/buildings.cfg).
 
 The buildings follow the reed-thatched farmhouses of Denmark and northern Germany: the Kate
@@ -138,7 +141,8 @@ from 0.5× to 2×.
 
 ### Console
 
-Press `/` to open a console for testing and cheats. Tab completes commands and their arguments.
+Press `/` to open a console for testing and cheats. Tab completes commands and their
+arguments.
 
 | Command | What it does |
 |---|---|
@@ -177,9 +181,8 @@ These are the default keys; all of them can be changed under Settings → Contro
 The game uses Godot 4.7.2 with GDScript. Make targets wrap every multi-step job.
 
 ```sh
-make setup   # checks for Godot, Python 3, git, curl and Tiled; downloads GUT; creates a Python venv
-make run     # starts the game
-```
+make setup   # checks for Godot, Python 3, git, curl and Tiled; downloads GUT; creates a
+Python venv make run     # starts the game ```
 
 Start the game with `make run`: it imports new art first. Starting Godot directly after
 pulling new art makes the game stop with a list of pictures that aren't imported yet; run
