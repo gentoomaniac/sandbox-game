@@ -49,8 +49,6 @@ Columns: 8
  63 110  61	spring_dark
 239 195 208	blossom
 168 154  76	autumn_light
-126 124  60	autumn
- 94  90  48	autumn_dark
 232 162  68	maple_light
 180  83  43	rust
 122  52  36	rust_dark
@@ -60,6 +58,8 @@ Columns: 8
 204 157  62	ochre
 154 116  48	ochre_dark
  90  68  38	umber
+138 130 112	bare_light
+106  99  84	bare
 230 238 242	snow_light
 205 218 227	snow
 163 180 198	snow_shadow

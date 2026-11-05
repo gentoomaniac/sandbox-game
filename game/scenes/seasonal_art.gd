@@ -1,16 +1,20 @@
 class_name SeasonalArt
 extends RefCounted
-## Which picture file shows a season. Summer is the plain file; the other seasons add
-## their name before the extension, as the art generator writes them (tools/art/seasons.py):
-## terrain_winter.png, small_house_lit_autumn.png.
+## Which picture file shows a look (see SeasonBlend.Look). Summer is the plain file; the other
+## looks add their name before the extension, as the art generator writes them
+## (tools/art/seasons.py): terrain_snow.png, small_house_lit_snow.png.
 
 
-## The file of `summer_path` as it looks in `season`.
-static func path(summer_path: String, season: GameClock.Season) -> String:
-	if season == GameClock.Season.SUMMER:
+## The file of `summer_path` as it looks in `look`.
+static func path(summer_path: String, look: SeasonBlend.Look) -> String:
+	if look == SeasonBlend.Look.SUMMER:
 		return summer_path
-	var season_name: String = GameClock.SEASON_NAMES[season]
+	var look_name: String = SeasonBlend.Look.keys()[look]
 	return (
-		"%s_%s.%s"
-		% [summer_path.get_basename(), season_name.to_lower(), summer_path.get_extension()]
+		"%s_%s.%s" % [summer_path.get_basename(), look_name.to_lower(), summer_path.get_extension()]
 	)
+
+
+## The file of a house picture: houses only change under snow.
+static func house_path(summer_path: String, is_snowy: bool) -> String:
+	return path(summer_path, SeasonBlend.Look.SNOW if is_snowy else SeasonBlend.Look.SUMMER)

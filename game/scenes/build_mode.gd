@@ -27,19 +27,19 @@ var camera: CameraController
 var _is_active := false
 var _origin := Vector2i.ZERO
 var _blockers: Dictionary[Vector2i, World.Blocked] = {}
-var _season := GameClock.Season.SUMMER
+var _is_snowy := false
 var _texture: Texture2D = load(BuildingTypes.TYPES[BUILDING_TYPE]["sprite"])
 var _footprint: Vector2i = BuildingTypes.TYPES[BUILDING_TYPE]["footprint"]
 var _pinned_origin: Variant = null  # Vector2i, set by --ghost
 var _debug_house_origin: Variant = null  # Vector2i, set by --house
 
 
-## Shows the ghost as the house looks in `season`.
-func set_season(season: GameClock.Season) -> void:
-	if season == _season:
+## Shows the ghost with snow on its roof, as a house looks while there is snow about.
+func set_snowy(is_snowy: bool) -> void:
+	if is_snowy == _is_snowy:
 		return
-	_season = season
-	_texture = load(SeasonalArt.path(BuildingTypes.TYPES[BUILDING_TYPE]["sprite"], season))
+	_is_snowy = is_snowy
+	_texture = load(SeasonalArt.house_path(BuildingTypes.TYPES[BUILDING_TYPE]["sprite"], is_snowy))
 
 
 func _ready() -> void:

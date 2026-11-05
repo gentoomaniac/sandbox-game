@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c6ih0r7trmiju"
-path="res://.godot/imported/decorations_winter.png-adaf708f6b50659b29b50f4a6ea507a6.ctex"
+uid="uid://dqc44euusheoa"
+path="res://.godot/imported/objects_frost.png-5c8c5541b50c1efafc11f355b0dad9fa.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/decorations_winter.png"
-dest_files=["res://.godot/imported/decorations_winter.png-adaf708f6b50659b29b50f4a6ea507a6.ctex"]
+source_file="res://assets/objects_frost.png"
+dest_files=["res://.godot/imported/objects_frost.png-5c8c5541b50c1efafc11f355b0dad9fa.ctex"]
 
 [params]
 

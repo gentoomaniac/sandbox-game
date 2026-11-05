@@ -202,7 +202,8 @@ func test_a_berry_bush_is_drawn_without_berries_out_of_season() -> void:
 ## What the game scene does when the clock passes midnight.
 func _set_day(day: int) -> void:
 	_view.world.clock.day = day
-	_view.refresh_vegetation()
+	_view.refresh_looks(day, 0.0, 0.0)
+	_view.finish_refresh()
 
 
 func _find_object(coords: Vector2i, type: StringName) -> WorldObject:

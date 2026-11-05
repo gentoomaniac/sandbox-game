@@ -25,9 +25,9 @@ An object stands on one tile: the bottom centre 16x16 of its cell (x 16..31, y 6
 crown rises above that, over the tiles around it. An object on several tiles (boulder 2x1,
 sleeping bag 1x2) is centred on its footprint, with the cell's bottom on the footprint's bottom.
 
-Each of terrain, decorations, objects and the house pictures also exists per season
-(see seasons.py): summer under the names above, the others with the season added,
-e.g. assets/terrain_winter.png and assets/buildings/small_house_lit_autumn.png.
+Terrain, decorations and objects also exist per look (see seasons.py: spring, summer, autumn,
+bare, frost, snow), the house pictures in summer and snow: summer under the names above, the
+others with the look added, e.g. assets/terrain_snow.png and assets/buildings/small_house_lit_snow.png.
 
 assets/character/<slot>_<variant>.png: one sheet per layer of the player character, 16x32 cells
 with the feet on the bottom row. One row per facing (down, up, left, right), columns: idle,
@@ -1966,20 +1966,21 @@ def main():
     houses = {"small_house": small_house(is_lit=False), "small_house_lit": small_house(is_lit=True)}
     redraws = {"oak": lambda variant: bare_oak(OAK_SEEDS[variant])}
     (ASSETS / "buildings").mkdir(exist_ok=True)
-    # Summer keeps the plain names; the other seasons add theirs, e.g. terrain_winter.png.
-    for season in seasons.SEASONS:
-        suffix = "" if season == "summer" else f"_{season}"
-        to_image(seasons.ground_rows(season, terrain_rows)).save(ASSETS / f"terrain{suffix}.png")
-        standing = seasons.WINTER_STALKS if season == "winter" else None
-        to_image(seasons.ground_rows(season, decoration_rows, standing)).save(ASSETS / f"decorations{suffix}.png")
+    # Summer keeps the plain names; the other looks add theirs, e.g. terrain_snow.png.
+    for look in seasons.LOOKS:
+        suffix = "" if look == "summer" else f"_{look}"
+        to_image(seasons.ground_rows(look, terrain_rows)).save(ASSETS / f"terrain{suffix}.png")
+        to_image(seasons.ground_rows(look, decoration_rows, seasons.STANDING.get(look))).save(ASSETS / f"decorations{suffix}.png")
         to_image(
-            seasons.object_rows(season, objects, redraws),
+            seasons.object_rows(look, objects, redraws),
             OBJECT_CELL_WIDTH,
             OBJECT_CELL_HEIGHT,
         ).save(ASSETS / f"objects{suffix}.png")
-        for name, picture in houses.items():
-            seasonal = seasons.house(season, picture, HOUSE_RIDGE_Y, HOUSE_EAVES_Y)
-            to_image([[seasonal]], HOUSE_WIDTH, HOUSE_HEIGHT).save(ASSETS / "buildings" / f"{name}{suffix}.png")
+        # Houses only change under snow.
+        if look in ("summer", "snow"):
+            for name, picture in houses.items():
+                seasonal = seasons.house(look, picture, HOUSE_RIDGE_Y, HOUSE_EAVES_Y)
+                to_image([[seasonal]], HOUSE_WIDTH, HOUSE_HEIGHT).save(ASSETS / "buildings" / f"{name}{suffix}.png")
     (ASSETS / "character").mkdir(exist_ok=True)
     for name, rows in CHARACTER_SHEETS.items():
         to_image(rows, CHARACTER_WIDTH, CHARACTER_HEIGHT).save(ASSETS / "character" / f"{name}.png")
@@ -1994,7 +1995,7 @@ def main():
     ui.write_ui_assets(ASSETS / "ui", PALETTE)
     write_palette()
     check_palette()
-    print("Wrote terrain*.png, decorations*.png, objects*.png (one per season), character/*.png, interior.png, interior/*.png, buildings/*.png, items/*.png, ui/*, palette.png and palette.gpl to assets/; palette check passed.")
+    print("Wrote terrain*.png, decorations*.png, objects*.png (one per look), character/*.png, interior.png, interior/*.png, buildings/*.png, items/*.png, ui/*, palette.png and palette.gpl to assets/; palette check passed.")
 
 
 if __name__ == "__main__":

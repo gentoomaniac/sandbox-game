@@ -1,48 +1,56 @@
 extends GutTest
-## Which art a season shows: the file names, and that the world view swaps its pictures on a
-## season change only.
+## Which art a look shows: the file names, and that every tile set has a source per look.
 
 
 func test_summer_is_the_plain_file() -> void:
-	var path := SeasonalArt.path("res://assets/terrain.png", GameClock.Season.SUMMER)
+	var path := SeasonalArt.path("res://assets/terrain.png", SeasonBlend.Look.SUMMER)
 	assert_eq(path, "res://assets/terrain.png")
 
 
-func test_other_seasons_add_their_name_before_the_extension() -> void:
+func test_other_looks_add_their_name_before_the_extension() -> void:
 	assert_eq(
-		SeasonalArt.path("res://assets/terrain.png", GameClock.Season.SPRING),
+		SeasonalArt.path("res://assets/terrain.png", SeasonBlend.Look.SPRING),
 		"res://assets/terrain_spring.png"
 	)
 	assert_eq(
-		SeasonalArt.path("res://assets/buildings/small_house_lit.png", GameClock.Season.WINTER),
-		"res://assets/buildings/small_house_lit_winter.png"
+		SeasonalArt.path("res://assets/objects.png", SeasonBlend.Look.BARE),
+		"res://assets/objects_bare.png"
 	)
 
 
-func test_every_season_has_its_files() -> void:
-	for season: GameClock.Season in GameClock.Season.values():
+func test_every_look_has_its_files() -> void:
+	for look: SeasonBlend.Look in SeasonBlend.Look.values():
 		for summer_path: String in [
 			TerrainTileset.TERRAIN_ATLAS_PATH,
 			TerrainTileset.DECORATION_ATLAS_PATH,
 			ObjectTileset.ATLAS_PATH,
-			BuildingTypes.TYPES[BuildingTypes.SMALL_HOUSE]["sprite"],
-			BuildingTypes.TYPES[BuildingTypes.SMALL_HOUSE]["sprite_lit"],
 		]:
-			assert_true(ResourceLoader.exists(SeasonalArt.path(summer_path, season)))
+			assert_true(ResourceLoader.exists(SeasonalArt.path(summer_path, look)))
 
 
-func test_view_switches_the_tile_pictures_on_a_season_change_only() -> void:
-	var view := WorldView.new()
-	add_child_autofree(view)
-	view.show_world(World.new(1))
-	assert_false(view.set_season(GameClock.Season.SUMMER))
-	assert_true(view.set_season(GameClock.Season.WINTER))
-	assert_false(view.set_season(GameClock.Season.WINTER))
-	var terrain: TileSetAtlasSource = view._tileset.tile_set.get_source(
-		TerrainTileset.TERRAIN_SOURCE_ID
-	)
-	assert_eq(terrain.texture.resource_path, "res://assets/terrain_winter.png")
-	var objects: TileSetAtlasSource = view._object_tileset.tile_set.get_source(
-		ObjectTileset.SOURCE_ID
-	)
-	assert_eq(objects.texture.resource_path, "res://assets/objects_winter.png")
+func test_a_house_only_has_a_plain_and_a_snowy_picture() -> void:
+	var lit: String = BuildingTypes.TYPES[BuildingTypes.SMALL_HOUSE]["sprite_lit"]
+	assert_eq(SeasonalArt.house_path(lit, false), lit)
+	assert_eq(SeasonalArt.house_path(lit, true), "res://assets/buildings/small_house_lit_snow.png")
+	for path: String in [
+		BuildingTypes.TYPES[BuildingTypes.SMALL_HOUSE]["sprite"],
+		lit,
+	]:
+		assert_true(ResourceLoader.exists(SeasonalArt.house_path(path, true)))
+
+
+func test_the_tile_sets_have_a_source_per_look_with_the_same_tiles() -> void:
+	var terrain := TerrainTileset.new()
+	var objects := ObjectTileset.new()
+	for look: SeasonBlend.Look in SeasonBlend.Look.values():
+		var source: TileSetAtlasSource = terrain.tile_set.get_source(
+			TerrainTileset.terrain_source_id(look)
+		)
+		var summer: TileSetAtlasSource = terrain.tile_set.get_source(
+			TerrainTileset.terrain_source_id(SeasonBlend.Look.SUMMER)
+		)
+		assert_eq(source.get_tiles_count(), summer.get_tiles_count(), "terrain %d" % look)
+		assert_eq(
+			objects.tile_set.get_source(look).texture.resource_path,
+			SeasonalArt.path(ObjectTileset.ATLAS_PATH, look)
+		)

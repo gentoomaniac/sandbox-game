@@ -96,7 +96,9 @@ func test_all_layers_of_a_cell_use_the_same_edge_variant() -> void:
 
 
 func test_every_atlas_cell_in_use_has_a_tile() -> void:
-	var source: TileSetAtlasSource = _tileset.tile_set.get_source(TerrainTileset.TERRAIN_SOURCE_ID)
+	var source: TileSetAtlasSource = _tileset.tile_set.get_source(
+		TerrainTileset.terrain_source_id(SeasonBlend.Look.SUMMER)
+	)
 	for layer in TerrainTileset.LAYER_COUNT:
 		for y in 8:
 			for x in 8:
@@ -123,7 +125,7 @@ func test_full_variant_is_stable_and_varies_by_position() -> void:
 
 func test_decorations_gather_where_the_cluster_noise_peaks() -> void:
 	var source: TileSetAtlasSource = _tileset.tile_set.get_source(
-		TerrainTileset.DECORATION_SOURCE_ID
+		TerrainTileset.decoration_source_id(SeasonBlend.Look.SUMMER)
 	)
 	var sparse := 0
 	var clustered := 0

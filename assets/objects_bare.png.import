@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dp55keait8o8p"
-path="res://.godot/imported/small_house_lit_winter.png-39159b5d00ff564fa4e401eb8c0c2559.ctex"
+uid="uid://boid0wl33kxqx"
+path="res://.godot/imported/objects_bare.png-9d8fcece4656b5d5f68b70c0d521eae4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/buildings/small_house_lit_winter.png"
-dest_files=["res://.godot/imported/small_house_lit_winter.png-39159b5d00ff564fa4e401eb8c0c2559.ctex"]
+source_file="res://assets/objects_bare.png"
+dest_files=["res://.godot/imported/objects_bare.png-9d8fcece4656b5d5f68b70c0d521eae4.ctex"]
 
 [params]
 

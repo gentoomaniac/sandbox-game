@@ -708,7 +708,7 @@ Depends on: 26 (weather), ideally 27 (flowers present by season). See SPEC.md
 
 ## 29. Season blending, weather-driven snow and frost
 
-- [ ] Done
+- [x] Done
 
 Depends on: 25, 26, 27. See SPEC.md "Seasons fade into each other; snow and frost come
 from the weather".
@@ -724,6 +724,12 @@ from the weather".
   refreshes over frames if needed.
 - Tests: snow builds and melts with the weather, gone at spring start, patchy thaw over
   2–3 days, frost only below 0 °C without snow, blend fractions across boundaries.
+- Done as: six looks (spring, summer, autumn, bare, frost, snow) made by the generator; the
+  base terrain is summer and each look is a dual-grid overlay layer over it (soft edges, no
+  seams); decorations, objects and houses switch atlas source per look. `data/seasons.cfg`
+  holds the blend windows and the snow and frost numbers; `SnowCover`, `SeasonBlend` are the
+  plain logic. Console `snow <0..1>|auto`, flag `--snow=<n>`, F3 shows cover and frost. The
+  palette is at 62 (autumn/autumn_dark merged into reed/olive, two bare-ground colours added).
 
 ## 30. More crops, grown by the weather
 

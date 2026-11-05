@@ -1,8 +1,11 @@
-"""The seasonal variants of the terrain, decoration, object and house art.
+"""The looks of the terrain, decoration, object and house art.
 
-Summer is the art as generate.py draws it. The other seasons are made from it: colour remaps
-(grass turns fresher, yellower or snowy; leaves change colour) plus a few overlays (snow caps,
-blossom). So an art change in generate.py carries over to every season.
+Summer is the art as generate.py draws it. The other looks are made from it: colour remaps
+(grass turns fresher, yellower, brown-grey, rimed or snowy; leaves change colour) plus a few
+overlays (snow caps, blossom). So an art change in generate.py carries over to every look.
+The game picks a look per tile and per object (see game/state/season_blend.gd): spring,
+summer and autumn are the seasons' foliage, "bare" is winter without snow, "frost" a cold
+morning without snow and "snow" the ground under snow.
 
 generate.py draws the ground shadow of objects and houses in the logical colour "shadow",
 which every season maps to a palette colour here. Pictures are grids of palette colour names,
@@ -11,7 +14,7 @@ as in generate.py.
 
 import random
 
-SEASONS = ("spring", "summer", "autumn", "winter")
+LOOKS = ("spring", "summer", "autumn", "bare", "frost", "snow")
 
 # Palette colours the seasons add to generate.PALETTE.
 COLOURS = {
@@ -23,8 +26,6 @@ COLOURS = {
     "blossom":        "efc3d0",
     # Yellow grass of autumn.
     "autumn_light":   "a89a4c",
-    "autumn":         "7e7c3c",
-    "autumn_dark":    "5e5a30",
     # Autumn leaves: orange, red and yellow ramps, light to dark.
     "maple_light":    "e8a244",
     "rust":           "b4532b",
@@ -35,6 +36,9 @@ COLOURS = {
     "ochre":          "cc9d3e",
     "ochre_dark":     "9a7430",
     "umber":          "5a4426",
+    # Bare ground of a winter without snow: brown-grey.
+    "bare_light":     "8a8270",
+    "bare":           "6a6354",
     # Snow, lit to shaded; the shades are blue-grey so they stay calm under the night tint.
     "snow_light":     "e6eef2",
     "snow":           "cddae3",
@@ -52,14 +56,13 @@ _SPRING_GREENS = {
 _AUTUMN_GRASS = {
     "green_bright": "straw",
     "green_light": "autumn_light",
-    "green": "autumn",
+    "green": "reed",
     "lush": "olive",
-    "green_dark": "autumn_dark",
+    "green_dark": "olive",
     "dry": "autumn_light",
     "dry_light": "straw",
-    "olive": "autumn_dark",
     "meadow": "olive",
-    "meadow_light": "autumn",
+    "meadow_light": "reed",
     "meadow_dark": "green_dark",
     # Flowers wither to dry heads and fallen leaves.
     "cream": "ochre",
@@ -92,14 +95,53 @@ _WINTER_GROUND = {
 WINTER_STALKS = {
     "green_bright": "straw", "green_light": "straw", "green_dark": "reed", "green_deep": "reed",
 }
+# Winter without snow: brown-grey ground, dry stalks, withered flowers.
+_BARE_GROUND = {
+    "green_bright": "bare_light",
+    "green_light": "bare_light",
+    "green": "bare",
+    "lush": "bare",
+    "green_dark": "mud_dark",
+    "green_deep": "soil_dark",
+    "olive": "mud_dark",
+    "dry": "bare",
+    "dry_light": "bare_light",
+    "meadow": "bare",
+    "meadow_light": "bare_light",
+    "meadow_dark": "mud_dark",
+    "cream": "straw",
+    "gold": "straw",
+    "petal": "sand",
+}
+# A frost: the same ground with white rime on the blades and tips.
+_FROST_GROUND = {
+    **_BARE_GROUND,
+    "green_bright": "snow_light",
+    "green_light": "snow",
+    "dry_light": "snow",
+    "meadow_light": "snow",
+    "green_dark": "snow_shadow",
+    "cream": "snow_light",
+    "gold": "snow",
+    "petal": "snow_shadow",
+}
+# Rimed stalks.
+_FROST_STALKS = {"green_bright": "snow_light", "green_light": "snow", "green_dark": "reed", "green_deep": "reed"}
 GROUND_REMAPS = {
     "spring": _SPRING_GREENS,
     "summer": {},
     "autumn": _AUTUMN_GRASS,
-    "winter": _WINTER_GROUND,
+    "bare": _BARE_GROUND,
+    "frost": _FROST_GROUND,
+    "snow": _WINTER_GROUND,
 }
+# What decoration tufts and plants turn into: dry stalks from the bare look on.
+STANDING = {"bare": WINTER_STALKS, "frost": _FROST_STALKS, "snow": WINTER_STALKS}
 
-_SHADOW_REMAPS = {"spring": "green_deep", "summer": "green_deep", "autumn": "green_deep", "winter": "snow_shadow"}
+_SHADOW_REMAPS = {
+    "spring": "green_deep", "summer": "green_deep", "autumn": "green_deep",
+    "bare": "mud_dark", "frost": "mud_dark", "snow": "snow_shadow",
+}
 
 # Leaf ramps for autumn trees and bushes, replacing the greens of summer.
 _ORANGE = {
@@ -121,7 +163,7 @@ _AUTUMN_BUSH = (_YELLOW, _ORANGE, _YELLOW)
 
 # Bare twigs in winter, under the snow.
 _BARE_BUSH = {
-    "green_bright": "mud", "green_light": "mud", "green": "mud_dark", "green_dark": "soil_dark",
+    "green_bright": "mud", "green_light": "mud", "green": "mud_dark", "green_dark": "soil_dark", "green_deep": "soil_dark",
     "olive": "mud_dark", "dry_light": "mud", "dry": "mud",
 }
 # A berry bush under snow: a clean mound, the berries peeking out.
@@ -154,10 +196,10 @@ def copy(canvas):
     return [row[:] for row in canvas]
 
 
-def ground_rows(season, rows, extra_remap=None):
-    """Terrain or decoration rows (the layers bottom to top) in a season, with `extra_remap`
-    applied over the season's own. Water stays as it is: freezing it belongs to the weather."""
-    mapping = {**GROUND_REMAPS[season], **(extra_remap or {})}
+def ground_rows(look, rows, extra_remap=None):
+    """Terrain or decoration rows (the layers bottom to top) in a look, with `extra_remap`
+    applied over the look's own. Water stays as it is: freezing it belongs to the weather."""
+    mapping = {**GROUND_REMAPS[look], **(extra_remap or {})}
     return [rows[0]] + [[remap(tile, mapping) for tile in row] for row in rows[1:]]
 
 
@@ -193,45 +235,68 @@ def blossoms(canvas, rng, surfaces, count):
             canvas[y][x + 1] = "blossom"
 
 
-def _season_object(season, kind, variant, canvas, redraw):
-    """One object cell in a season. `variant` is its column in the atlas row (picked bushes
+# Evergreens and rocks in a frost: the greens go pale and bluish, as if rimed.
+_FROST_CONIFER = {"green_light": "snow_shadow", "green": "green_light", "green_dark": "green"}
+_FROST_BUSH = {"green_light": "snow_light", "green": "snow_shadow", "green_dark": "mud_dark", "green_bright": "snow_light"}
+_FROST_FERN = {"green_light": "snow_light", "green": "straw", "green_dark": "reed"}
+_FROST_STONE = {"green_light": "snow", "green": "snow_shadow", "olive": "snow_shadow"}
+
+
+def _season_object(look, kind, variant, canvas, redraw):
+    """One object cell in a look. `variant` is its column in the atlas row (picked bushes
     repeat their bush's variants)."""
-    rng = random.Random(f"{season}-{kind}-{variant}")
+    rng = random.Random(f"{look}-{kind}-{variant}")
     centre = len(canvas[0]) // 2
-    if season == "spring" and kind in _SPRING_KINDS:
+    if look == "spring" and kind in _SPRING_KINDS:
         canvas = remap(canvas, _SPRING_GREENS)
         if kind in _BLOSSOM_KINDS:
             blossoms(canvas, rng, {"spring_light", "spring", "spring_pale"}, 7)
-    elif season == "autumn":
+    elif look == "autumn":
         if kind == "oak":
             canvas = remap(canvas, _AUTUMN_OAK[variant])
         elif kind in ("berry_bush", "shrub", "sapling", "fern"):
             canvas = remap(canvas, _AUTUMN_BUSH[variant % 3])
-    elif season == "winter":
-        if kind in redraw:
-            canvas = redraw[kind](variant)
-        elif kind in ("spruce", "pine"):
+    elif look in ("bare", "frost", "snow"):
+        canvas = _winter_object(look, kind, variant, canvas, redraw, rng, centre)
+    return remap(canvas, {"shadow": _SHADOW_REMAPS[look]})
+
+
+def _winter_object(look, kind, variant, canvas, redraw, rng, centre):
+    """An object without leaves: bare, rimed with frost or under snow."""
+    if kind in redraw:
+        return redraw[kind](variant)
+    if kind in ("spruce", "pine"):
+        if look == "snow":
             canvas = copy(canvas)
             snow_caps(canvas, rng, *(_SNOW_CONIFER if kind == "spruce" else _SNOW_PINE), centre)
-        elif kind == "berry_bush":
-            canvas = remap(canvas, _SNOW_MOUND)
-        elif kind in ("shrub", "sapling"):
-            canvas = remap(canvas, _BARE_BUSH)
+            return canvas
+        return remap(canvas, _FROST_CONIFER) if look == "frost" else canvas
+    if kind == "berry_bush":
+        return remap(canvas, {"bare": _BARE_BUSH, "frost": {**_BARE_BUSH, **_FROST_BUSH}, "snow": _SNOW_MOUND}[look])
+    if kind in ("shrub", "sapling"):
+        canvas = remap(canvas, {**_BARE_BUSH, **(_FROST_BUSH if look == "frost" else {})})
+        if look == "snow":
             snow_caps(canvas, rng, *_SNOW_BUSH, centre)
-        elif kind == "fern":
-            canvas = remap(canvas, _DRY_FERN)
+        return canvas
+    if kind == "fern":
+        canvas = remap(canvas, {**_DRY_FERN, **(_FROST_FERN if look == "frost" else {})})
+        if look == "snow":
             snow_caps(canvas, rng, {"straw", "reed", "olive"}, set(), 1, centre)
-        elif kind in ("stone", "boulder", "stump"):
+        return canvas
+    if kind in ("stone", "boulder", "stump"):
+        if look == "snow":
             canvas = copy(canvas)
             snow_caps(canvas, rng, *{"stone": _SNOW_STONE, "boulder": _SNOW_BOULDER, "stump": _SNOW_STUMP}[kind], centre)
-    return remap(canvas, {"shadow": _SHADOW_REMAPS[season]})
+            return canvas
+        return remap(canvas, _FROST_STONE) if look == "frost" else canvas
+    return canvas
 
 
-def object_rows(season, atlas, redraw):
-    """The object atlas rows in a season. `atlas` lists (kind, variants) per row; `redraw` maps a kind to a
+def object_rows(look, atlas, redraw):
+    """The object atlas rows in a look. `atlas` lists (kind, variants) per row; `redraw` maps a kind to a
     function that draws a variant from scratch where a remap is not enough (the bare oak)."""
     return [
-        [_season_object(season, kind, variant, canvas, redraw) for variant, canvas in enumerate(row)]
+        [_season_object(look, kind, variant, canvas, redraw) for variant, canvas in enumerate(row)]
         for kind, row in atlas
     ]
 
@@ -269,10 +334,11 @@ def snow_roof(canvas, rng, ridge_y, eaves_y, shade_x):
             canvas[y][x] = lit[min(shade + step, 3)]
 
 
-def house(season, canvas, ridge_y, eaves_y):
-    """A house picture in a season: snow on the thatch in winter."""
-    canvas = remap(canvas, {"shadow": _SHADOW_REMAPS[season]})
-    if season == "winter":
+def house(look, canvas, ridge_y, eaves_y):
+    """A house picture in a look: snow on the thatch under snow, the plain house otherwise
+    (the game only asks for "snow" and the summer picture)."""
+    canvas = remap(canvas, {"shadow": _SHADOW_REMAPS[look]})
+    if look == "snow":
         # The roof's right of x 50 is in shade; the chimney's top is x 51 to 60 at row 2
         # (see small_house in generate.py).
         snow_roof(canvas, random.Random("house"), ridge_y, eaves_y, 50)

@@ -18,8 +18,9 @@ extends RefCounted
 enum Layer { WATER, FLOODPLAIN, WETLAND, GRASS, LUSH_GRASS, DRY_GRASS, SOIL }
 
 const TILE_SIZE := 16
-const TERRAIN_SOURCE_ID := 0
-const DECORATION_SOURCE_ID := 1
+## Every look (see SeasonBlend.Look) has an atlas source of its own with the same tiles: the
+## terrain source's id is the look, the decoration source's id is this far on from it.
+const DECORATION_SOURCE_OFFSET := 10
 const TERRAIN_ATLAS_PATH := "res://assets/terrain.png"
 const DECORATION_ATLAS_PATH := "res://assets/decorations.png"
 
@@ -52,6 +53,16 @@ const BASE_LAYER: Array[Layer] = [
 	Layer.GRASS,
 	Layer.GRASS,
 	Layer.SOIL,
+]
+## The looks drawn over the base terrain (which is the summer look), bottom to top: a tile in
+## one of them has that look's tile drawn over it, shaped by the same dual-grid masks as a
+## terrain layer, so the looks fade into each other with soft edges.
+const OVERLAY_LOOKS: Array[SeasonBlend.Look] = [
+	SeasonBlend.Look.SPRING,
+	SeasonBlend.Look.AUTUMN,
+	SeasonBlend.Look.BARE,
+	SeasonBlend.Look.FROST,
+	SeasonBlend.Look.SNOW,
 ]
 ## Grass is lush where the variety noise is below this, dry where it is above DRY_ABOVE.
 const LUSH_BELOW := -0.2
@@ -92,30 +103,39 @@ const DECORATION_KINDS := {
 }
 
 var tile_set := TileSet.new()
-## The atlas sources, to swap their pictures when the season changes.
-var _terrain_source: TileSetAtlasSource
-var _decoration_source: TileSetAtlasSource
 var _full_variant_counts: Array[int] = []
 var _decoration_counts: Array[int] = []
 
 
 ## Builds a tile for every non-empty atlas cell, so the generator alone decides how many
-## variants and decorations each layer has.
+## variants and decorations each layer has. Every look's atlases have the same layout.
 func _init() -> void:
 	tile_set.tile_size = Vector2i(TILE_SIZE, TILE_SIZE)
-	_terrain_source = _atlas_source(TERRAIN_ATLAS_PATH, FULL_COLUMN, _full_variant_counts)
-	tile_set.add_source(_terrain_source, TERRAIN_SOURCE_ID)
-	_decoration_source = _atlas_source(DECORATION_ATLAS_PATH, 0, _decoration_counts)
-	tile_set.add_source(_decoration_source, DECORATION_SOURCE_ID)
+	for look: SeasonBlend.Look in SeasonBlend.Look.values():
+		var counts: Array[int] = []
+		tile_set.add_source(
+			_atlas_source(SeasonalArt.path(TERRAIN_ATLAS_PATH, look), FULL_COLUMN, counts),
+			terrain_source_id(look)
+		)
+		if look == SeasonBlend.Look.SUMMER:
+			_full_variant_counts = counts
+		var no_counts: Array[int] = []
+		tile_set.add_source(
+			_atlas_source(SeasonalArt.path(DECORATION_ATLAS_PATH, look), 0, no_counts),
+			decoration_source_id(look)
+		)
+		if look == SeasonBlend.Look.SUMMER:
+			_decoration_counts = no_counts
 	for layer in LAYER_COUNT:
 		assert(_full_variant_counts[layer] > 0, "Terrain atlas row %d has no full tile" % layer)
 
 
-## Shows the season's pictures. Every season's atlases have the same layout, so the tiles
-## stay and the tile maps redraw with the new texture.
-func set_season(season: GameClock.Season) -> void:
-	_terrain_source.texture = load(SeasonalArt.path(TERRAIN_ATLAS_PATH, season))
-	_decoration_source.texture = load(SeasonalArt.path(DECORATION_ATLAS_PATH, season))
+static func terrain_source_id(look: SeasonBlend.Look) -> int:
+	return look
+
+
+static func decoration_source_id(look: SeasonBlend.Look) -> int:
+	return DECORATION_SOURCE_OFFSET + look
 
 
 ## Which layer a world tile is drawn on. `variety` is the slow variety noise at the tile.
@@ -126,6 +146,31 @@ static func layer_of(terrain: Tile.Terrain, variety: float) -> int:
 	if layer == Layer.GRASS and variety > DRY_ABOVE:
 		return Layer.DRY_GRASS
 	return layer
+
+
+## The season look a tile shows, given the look its place has by the season (see SeasonBlend)
+## and its layer: the foliage of the seasons on all land the plough has not turned; water and
+## tilled soil keep the summer look.
+static func shown_season_look(layer: int, season_look: SeasonBlend.Look) -> SeasonBlend.Look:
+	if layer == Layer.WATER or layer == Layer.SOIL or layer == MISSING:
+		return SeasonBlend.Look.SUMMER
+	return season_look
+
+
+## The weather look a tile shows (SeasonBlend.Look.SUMMER for none): snow and frost cover any
+## land.
+static func shown_weather_look(layer: int, weather_look: SeasonBlend.Look) -> SeasonBlend.Look:
+	if layer == Layer.WATER or layer == MISSING:
+		return SeasonBlend.Look.SUMMER
+	return weather_look
+
+
+## The look a tile shows as a whole.
+static func shown_look(
+	layer: int, season_look: SeasonBlend.Look, weather_look: SeasonBlend.Look
+) -> SeasonBlend.Look:
+	var weather := shown_weather_look(layer, weather_look)
+	return weather if weather != SeasonBlend.Look.SUMMER else shown_season_look(layer, season_look)
 
 
 ## The layers a cell draws, as bits (1 << layer): only its corners' own layers and what

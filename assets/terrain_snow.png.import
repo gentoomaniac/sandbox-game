@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://4cllsaw02qxx"
-path="res://.godot/imported/terrain_winter.png-e86d4a4d9034ff55fbe9b3274ccbf60f.ctex"
+uid="uid://bh7xvkhnficn"
+path="res://.godot/imported/terrain_snow.png-02f0d158ae12b24fe2ef07d07613b8e9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/terrain_winter.png"
-dest_files=["res://.godot/imported/terrain_winter.png-e86d4a4d9034ff55fbe9b3274ccbf60f.ctex"]
+source_file="res://assets/terrain_snow.png"
+dest_files=["res://.godot/imported/terrain_snow.png-02f0d158ae12b24fe2ef07d07613b8e9.ctex"]
 
 [params]
 

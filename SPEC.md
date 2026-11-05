@@ -360,7 +360,17 @@ Decided 2026-11-05. A text console for testing and cheats.
   and yellower grass; winter is snow-covered (snow on the ground, snow on evergreens,
   bare deciduous trees). The look changes when the season changes. This is the visual
   season only: frozen rivers, deep snow and other weather effects on tiles stay with the
-  weather system.
+  weather system. The season's look is only the base: the blend, snow and frost above
+  decide per tile and per plant which look shows.
+- **How the looks are drawn** (decided 2026-11-05): there are six looks (spring, summer,
+  autumn, bare = winter without snow, frost, snow), each a recolour of the summer art made by
+  the generator. The base terrain is summer; a look is drawn over it as a dual-grid overlay
+  layer of its own (the same edge shapes as the terrain layers), so patches of autumn, bare
+  ground, frost and snow have soft edges and no seams. Snow and frost lie over the season's
+  look. Decorations, objects and houses pick their art by look instead. Snow cover comes from
+  `data/seasons.cfg` ([snow]: snowfall adds, warmth and sun melt, counted hour by hour from
+  the start of autumn; none from the first day of the year), the blend windows too; the view
+  updates once a game hour, a few milliseconds per frame.
 - **Weather and seasons change the map:**
   - frost freezes rivers so they can be crossed;
   - heavy, deep snow makes some areas unreachable;

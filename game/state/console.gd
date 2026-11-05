@@ -16,6 +16,11 @@ const COMMANDS := {
 		"weather [clear|rain|snow|fog|wind|storm|thunder|auto]",
 		"Show the weather, force a condition, or return to the simulation (auto).",
 	],
+	"snow":
+	[
+		"snow [0..1|auto]",
+		"Show the snow cover, force it (0 to 1) or return to the weather (auto).",
+	],
 }
 ## Item ids this similar to a misspelt one (see String.similarity) are offered as a guess.
 const CLOSE_MATCH_SIMILARITY := 0.4
@@ -53,6 +58,8 @@ func run(line: String) -> Array[String]:
 			output = [_toggle_message("No weight", cheats.is_weight_off)]
 		"weather":
 			output = _weather(arguments)
+		"snow":
+			output = _snow(arguments)
 		_:
 			output = ["Unknown command: %s (try help)" % words[0]]
 	return output
@@ -70,6 +77,8 @@ func complete(line: String) -> String:
 		candidates.assign(COMMANDS.keys())
 	elif word_index == 1 and words[0] == "give":
 		candidates = _item_ids()
+	elif word_index == 1 and words[0] == "snow":
+		candidates = ["auto"]
 	elif word_index == 1 and words[0] == "weather":
 		for condition in Weather.FORCEABLE:
 			candidates.append(String(condition))
@@ -164,6 +173,33 @@ func _weather(arguments: PackedStringArray) -> Array[String]:
 	)
 	if _state.weather_override != &"":
 		lines.append("Forced: %s" % _state.weather_override)
+	return lines
+
+
+func _snow(arguments: PackedStringArray) -> Array[String]:
+	var snow := _state.snow_cover
+	if arguments.size() > 1:
+		return ["Usage: %s" % COMMANDS["snow"][0]]
+	if arguments.size() == 1:
+		if arguments[0] == "auto":
+			snow.forced = -1.0
+			return ["Snow cover follows the weather"]
+		if (
+			not arguments[0].is_valid_float()
+			or float(arguments[0]) < 0.0
+			or float(arguments[0]) > 1.0
+		):
+			return ["Usage: %s" % COMMANDS["snow"][0]]
+		snow.forced = float(arguments[0])
+		return ["Snow cover forced to %s (snow auto ends it)" % arguments[0]]
+	var lines: Array[String] = [
+		(
+			"Snow cover %d %%, frost %d %%"
+			% [roundi(_state.current_snow_cover() * 100.0), roundi(_state.current_frost() * 100.0)]
+		)
+	]
+	if snow.forced >= 0.0:
+		lines.append("Forced: %s" % snow.forced)
 	return lines
 
 

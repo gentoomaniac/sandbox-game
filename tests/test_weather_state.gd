@@ -96,3 +96,32 @@ func _place_house() -> Building:
 
 func _lines(text: String) -> Array[String]:
 	return [text] as Array[String]
+
+
+# --- Snow cover ---
+
+
+func test_the_snow_cover_is_the_one_at_the_players_place_at_the_start_of_the_hour() -> void:
+	_state.clock.day = 110
+	_state.clock.set_time(14, 40)
+	var expected := _state.snow_cover.at(_state.player.tile(), 110, 14 * 60)
+	assert_eq(_state.current_snow_cover(), expected)
+
+
+func test_the_snow_command_forces_and_releases_the_cover() -> void:
+	assert_eq(_console.run("snow 0.4"), _lines("Snow cover forced to 0.4 (snow auto ends it)"))
+	assert_eq(_state.current_snow_cover(), 0.4)
+	assert_eq(_console.run("snow auto"), _lines("Snow cover follows the weather"))
+	assert_eq(_state.current_snow_cover(), 0.0, "no snow on the first day of spring")
+	assert_eq(_console.run("snow 2"), _lines("Usage: snow [0..1|auto]"))
+	assert_eq(_console.run("snow x"), _lines("Usage: snow [0..1|auto]"))
+
+
+func test_snow_alone_prints_the_cover_and_the_frost() -> void:
+	assert_eq(_console.run("snow")[0], "Snow cover 0 %, frost 0 %")
+
+
+func test_a_forced_cover_is_not_saved() -> void:
+	_state.snow_cover.forced = 0.9
+	var restored := GameState.from_dict(_state.to_dict())
+	assert_eq(restored.snow_cover.forced, -1.0)

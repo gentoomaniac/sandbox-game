@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://y8hksxkkrifm"
-path="res://.godot/imported/small_house_winter.png-9e068287d3435d0f2b34bfe61b25a03b.ctex"
+uid="uid://oqt7d7h5na6h"
+path="res://.godot/imported/terrain_frost.png-828a94f1a09395753d608fb35cd9eac6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/buildings/small_house_winter.png"
-dest_files=["res://.godot/imported/small_house_winter.png-9e068287d3435d0f2b34bfe61b25a03b.ctex"]
+source_file="res://assets/terrain_frost.png"
+dest_files=["res://.godot/imported/terrain_frost.png-828a94f1a09395753d608fb35cd9eac6.ctex"]
 
 [params]
 

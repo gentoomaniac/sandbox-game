@@ -23,15 +23,19 @@ extends Node2D
 ## coordinates (F3); `--inventory` opens the character screen at start;
 ## `--wear=<item>` puts a wearable item on (`straw_hat`, `shirt`, ...);
 ## `--weather=<condition>` forces the weather (`clear`, `rain`, `snow`, `fog`, `wind`, `storm`,
-## `thunder`; see WeatherView), `--flash` keeps the flash of lightning on;
+## `thunder`; see WeatherView), `--flash` keeps the flash of lightning on, `--snow=<0..1>` forces
+## the snow cover;
 ## `--mouse-tile=<x>,<y>` pretends the mouse is always on that tile (for screenshots);
 ## `--camera-shift=<x>,<y>` moves the camera by that many art pixels, fractions included
 ## (to check smooth scrolling); `--menu=pause|settings|controls|display|game` opens that menu page
-## (with `--screenshot`, the shot is of the menu). PlayerView parses `--hair=<n>` and
-## `--pose=<direction>`, and F6 cycles the hair (see there). BuildMode parses
+## (with `--screenshot`, the shot is of the menu). The console's `snow <0..1>` forces the snow
+## cover (`snow auto` ends it), and F3 shows the snow cover and the frost. PlayerView parses
+## `--hair=<n>` and `--pose=<direction>`, and F6 cycles the hair (see there). BuildMode parses
 ## `--ghost=<x>,<y>` and `--house=<x>,<y>` (see there).
 
 const WORLD_SEED := 1
+## The build ghost has snow on its roof while the snow cover is above this.
+const SNOWY_GHOST_COVER := 0.5
 ## One game day lasts 16 real minutes (24 h * 60 min / 1.5 / 60 s).
 const GAME_MINUTES_PER_REAL_SECOND := 1.5
 ## Debug speed-up, toggled with F2: a game day in 16 real seconds.
@@ -60,6 +64,8 @@ var _start_console_lines := PackedStringArray()
 var _interior_view := InteriorView.new()
 var _weather_view := WeatherView.new()
 var _weather: WeatherSample
+var _snow_cover := 0.0
+var _frost := 0.0
 var _screenshot_path := ""
 var _fast_forward := false
 var _is_fading := false
@@ -82,7 +88,11 @@ var _start_zoom := 1.0
 
 
 func _ready() -> void:
-	if not EnergyRules.default_rules().is_valid() or not Vegetation.default_vegetation().is_valid():
+	if (
+		not EnergyRules.default_rules().is_valid()
+		or not Vegetation.default_vegetation().is_valid()
+		or not SeasonRules.default_rules().is_valid()
+	):
 		# The load has reported the missing rules or curves. Nothing else runs before the quit.
 		set_process(false)
 		set_process_unhandled_input(false)
@@ -149,6 +159,8 @@ func _ready() -> void:
 			_force_weather(StringName(arg.trim_prefix("--weather=")))
 		elif arg == "--flash":
 			_weather_view.is_flash_held = true
+		elif arg.begins_with("--snow="):
+			_state.snow_cover.forced = float(arg.trim_prefix("--snow="))
 		elif arg.begins_with("--camera-shift="):
 			var shift := arg.trim_prefix("--camera-shift=").split_floats(",")
 			_camera_shift = Vector2(shift[0], shift[1])
@@ -507,9 +519,11 @@ func _force_weather(condition: StringName) -> void:
 func _weather_and_sun_text(weather: WeatherSample) -> String:
 	var day := _state.clock.day
 	return (
-		"%s\nsunrise %s · sunset %s"
+		"%s\nsnow cover %d %% · frost %d %%\nsunrise %s · sunset %s"
 		% [
 			weather.short_text(),
+			roundi(_snow_cover * 100.0),
+			roundi(_frost * 100.0),
 			Sun.time_text(_state.sun.sunrise(day)),
 			Sun.time_text(_state.sun.sunset(day)),
 		]
@@ -546,9 +560,11 @@ func _show_clock() -> void:
 	else:
 		_tint.show_time(_state.clock, _weather.cloud_cover)
 	_view.set_light_strength(_tint.light_strength())
-	_view.set_season(_state.clock.season())
-	_view.refresh_vegetation()
-	_build_mode.set_season(_state.clock.season())
+	# Snow and frost are those of the start of the hour, so the view redraws once an hour.
+	_snow_cover = _state.current_snow_cover()
+	_frost = _state.current_frost()
+	_view.refresh_looks(_state.clock.day, _snow_cover, _frost)
+	_build_mode.set_snowy(_snow_cover > SNOWY_GHOST_COVER)
 	_hud.show_time(_state.clock)
 
 
