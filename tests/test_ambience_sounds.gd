@@ -66,9 +66,22 @@ func test_thunder_follows_a_flash_after_a_delay() -> void:
 
 
 func test_a_bee_buzzes_where_it_is() -> void:
+	_add_bee(Vector2(1, 1))
+	_ambience._process(1.0)
+	assert_true(_events.has(&"bee_buzz_loop"))
+
+
+func test_a_bee_out_of_hearing_is_quiet() -> void:
+	var reach: float = AmbienceRules.default_rules().value("bees", "hear_tiles")
+	_add_bee(Vector2(reach + 1.0, 0))
+	_ambience._process(1.0)
+	assert_false(_events.has(&"bee_buzz_loop"))
+
+
+## A bee that many tiles from the player.
+func _add_bee(offset_tiles: Vector2) -> void:
 	var bee := Bee.new()
 	autofree(bee)
 	bee.wildlife = _wildlife
+	bee.position = (_state.player.position + offset_tiles) * TerrainTileset.TILE_SIZE
 	_ambience._on_animal_added(bee)
-	_ambience._process(1.0)
-	assert_true(_events.has(&"bee_buzz_loop"))

@@ -170,8 +170,10 @@ func _make_animal_sound() -> void:
 ## Makes the nearest bees buzz (as many as the rules allow) and lets the others go quiet.
 func _buzz_bees() -> void:
 	var player := _state.player.position * TerrainTileset.TILE_SIZE
+	var reach: float = rules.value("bees", "hear_tiles") * TerrainTileset.TILE_SIZE
 	var bees := _animals.filter(
-		func(animal: Animal) -> bool: return animal.kind == WildlifeRules.BEE
+		func(animal: Animal) -> bool:
+			return animal.kind == WildlifeRules.BEE and animal.position.distance_to(player) < reach
 	)
 	bees.sort_custom(
 		func(a: Animal, b: Animal) -> bool:
@@ -185,7 +187,7 @@ func _buzz_bees() -> void:
 	for bee: Animal in buzzing:
 		if not _bee_loops.has(bee):
 			_bee_loops[bee] = _audio.start_loop(
-				&"bee_buzz_loop", bee.position, rules.value("bees", "level")
+				&"bee_buzz_loop", bee.position, rules.value("bees", "level"), reach
 			)
 
 

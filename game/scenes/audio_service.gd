@@ -132,11 +132,13 @@ func play(event: StringName, position: Variant = null, is_from_outside := false)
 
 
 ## Starts a looping sound event at `level` (0 to 1) and returns its handle, to fade or stop it.
-func start_loop(event: StringName, position: Variant = null, level := 1.0) -> SoundLoop:
+func start_loop(
+	event: StringName, position: Variant = null, level := 1.0, max_distance := MAX_DISTANCE
+) -> SoundLoop:
 	var player: Node = AudioStreamPlayer.new() if position == null else AudioStreamPlayer2D.new()
 	player.process_mode = Node.PROCESS_MODE_ALWAYS
 	if position != null:
-		player.max_distance = MAX_DISTANCE
+		player.max_distance = max_distance
 	(self if position == null else _world_root).add_child(player)
 	_start(player, event, position, false)
 	return SoundLoop.new(player, _rules.event(event)["volume_db"], level)

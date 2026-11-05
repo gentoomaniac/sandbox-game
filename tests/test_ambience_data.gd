@@ -34,6 +34,10 @@ func test_a_wind_loop_that_is_never_audible_is_bad() -> void:
 	_assert_bad(_rules_with("loops", "wind_max_level", -0.5), "wind_max_level")
 
 
+func test_bees_heard_nowhere_are_bad() -> void:
+	_assert_bad(_rules_with("bees", "hear_tiles", 0.0), "hear_tiles")
+
+
 func test_warm_frogs_not_above_cold_ones_are_bad() -> void:
 	var cold := _rules.value("frogs", "cold_temperature")
 	_assert_bad(_rules_with("frogs", "warm_temperature", cold), "warm_temperature")

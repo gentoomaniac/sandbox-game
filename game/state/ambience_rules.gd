@@ -37,7 +37,7 @@ const REQUIRED_KEYS := {
 	"deer": ["idle_chance"],
 	"rabbit": ["idle_chance"],
 	"squirrel": ["idle_chance"],
-	"bees": ["max_loops", "level"],
+	"bees": ["max_loops", "level", "hear_tiles"],
 }
 const SEASON_COUNT := 4
 ## Day, dawn and dusk, night.
@@ -105,6 +105,8 @@ func bad_values() -> Array[String]:
 		bad.append("[loops] wind_full_speed must be above wind_calm_speed")
 	if value("loops", "wind_max_level") <= 0.0:
 		bad.append("[loops] wind_max_level must be above 0")
+	if value("bees", "hear_tiles") <= 0.0:
+		bad.append("[bees] hear_tiles must be above 0")
 	if value("frogs", "warm_temperature") <= value("frogs", "cold_temperature"):
 		bad.append("[frogs] warm_temperature must be above cold_temperature")
 	if value("thunder", "max_delay_seconds") < value("thunder", "min_delay_seconds"):

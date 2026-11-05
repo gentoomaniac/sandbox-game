@@ -295,7 +295,7 @@ Decided 2026-11-05. Everything makes sound; no background music for now.
   player and croak at the nearest water or wetland among them, by season (none in winter,
   few in autumn), part of the day (mostly night), warmth (none below 4 °C, full from 16 °C)
   and distance. Deer, rabbits and squirrels make their sound now and then, and when they
-  start to run. The nearest three bees buzz as loops that follow them. The world's effects
+  start to run. The nearest two bees within 4 tiles buzz quietly as loops that follow them (changed 2026-11-05: they were too loud and heard from too far). The world's effects
   are muffled in a house like the weather; birds and frogs fall silent there.
 
 ### Menus and settings
