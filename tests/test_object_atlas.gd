@@ -18,7 +18,7 @@ func test_sprite_height_is_at_least_the_opaque_height_of_every_variant() -> void
 		var object_type: Dictionary = WorldObjectTypes.TYPES[type_name]
 		if not object_type.has("sprite_height"):
 			continue
-		for variant: int in object_type["variants"]:
+		for variant in ObjectTileset.looks_count(object_type):
 			var opaque := _opaque_height(image, Vector2i(variant, object_type["atlas_row"]))
 			assert_gte(object_type["sprite_height"], opaque, "%s variant %d" % [type_name, variant])
 
@@ -29,6 +29,6 @@ func test_every_variant_has_something_drawn() -> void:
 		var object_type: Dictionary = WorldObjectTypes.TYPES[type_name]
 		if not object_type.has("atlas_row"):
 			continue
-		for variant: int in object_type["variants"]:
+		for variant in ObjectTileset.looks_count(object_type):
 			var opaque := _opaque_height(image, Vector2i(variant, object_type["atlas_row"]))
 			assert_gt(opaque, 0, "%s variant %d" % [type_name, variant])

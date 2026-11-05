@@ -29,7 +29,7 @@ func _free_tiles_near_player(count: int) -> Array[Vector2i]:
 	for y in range(-8, 9):
 		for x in range(-8, 9):
 			var pos := around + Vector2i(x, y)
-			if _state.world.is_tillable(pos) and tiles.size() < count:
+			if _state.world.is_free_on(pos, Tile.Terrain.GRASS) and tiles.size() < count:
 				tiles.append(pos)
 	return tiles
 

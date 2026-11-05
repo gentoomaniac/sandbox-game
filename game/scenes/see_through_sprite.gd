@@ -11,9 +11,14 @@ const RADIUS := 2.0 * TerrainTileset.TILE_SIZE
 const INNER_OPACITY := 0.35
 const EDGE_SOFTNESS := 4.0
 const FADE_SECONDS := 0.15
+## A hit shakes it: it hops one art pixel to either side every step.
+const SHAKE_SECONDS := 0.2
+const SHAKE_STEP_SECONDS := 0.05
 
 var is_occluding := false
 var _fade := 0.0
+var _shake_seconds_left := 0.0
+var _resting_x := 0.0
 
 
 func _init() -> void:
@@ -24,12 +29,24 @@ func _init() -> void:
 	material.set_shader_parameter("edge_softness", EDGE_SOFTNESS)
 
 
-## True when it is not occluding and has faded back to normal.
+## True when it is not occluding, has faded back to normal and stands still.
 func is_plain() -> bool:
-	return not is_occluding and _fade == 0.0
+	return not is_occluding and _fade == 0.0 and _shake_seconds_left == 0.0
+
+
+func shake() -> void:
+	if _shake_seconds_left == 0.0:
+		_resting_x = position.x
+	_shake_seconds_left = SHAKE_SECONDS
 
 
 func update(delta: float, player_feet: Vector2) -> void:
 	_fade = move_toward(_fade, 1.0 if is_occluding else 0.0, delta / FADE_SECONDS)
+	if _shake_seconds_left > 0.0:
+		_shake_seconds_left = maxf(_shake_seconds_left - delta, 0.0)
+		var hop := 0.0
+		if _shake_seconds_left > 0.0:
+			hop = 1.0 if int(_shake_seconds_left / SHAKE_STEP_SECONDS) % 2 == 0 else -1.0
+		position.x = _resting_x + hop
 	material.set_shader_parameter("fade", _fade)
 	material.set_shader_parameter("circle_centre", player_feet - Vector2(0, CENTRE_ABOVE_FEET))

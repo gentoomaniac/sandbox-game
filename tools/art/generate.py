@@ -19,7 +19,7 @@ drawn on top of world tiles of that layer. A row may be empty.
 assets/objects.png: world objects, 48x80 cells (OBJECT_CELL_WIDTH x OBJECT_CELL_HEIGHT). Row 0
 is the oak (3 variants), row 1 the stone (2 variants), then the camp site: row 2 the fireplace,
 row 3 the sleeping bag (1 variant each), then the vegetation rows from 4 (see vegetation()),
-row 11 the turnip crop (one variant per growth stage) and row 12 the boulder. The rows and
+row 11 the turnip crop (one variant per growth stage), row 12 the boulder and row 13 the stump. The rows and
 counts are in game/state/world_object_types.gd.
 An object stands on one tile: the bottom centre 16x16 of its cell (x 16..31, y 64..79). A tree's
 crown rises above that, over the tiles around it. An object on several tiles (boulder 2x1,
@@ -836,7 +836,8 @@ def dead_tree(seed):
     return canvas
 
 
-def berry_bush(seed):
+def berry_bush(seed, is_picked=False):
+    """With berries, or picked: the same bush without them."""
     rng = random.Random(seed)
     canvas = object_canvas()
     ground_shadow(canvas, 14)
@@ -844,7 +845,7 @@ def berry_bush(seed):
     shaded_blob(canvas, rng, blobs, ("green_light", "green", "green", "green_dark"), "green_deep")
     # Berries on the leaves: red, purple or both, with a pale glint.
     berries = {0: ("ember",), 1: ("arcane",)}.get(seed % 3, ("ember", "arcane", "petal"))
-    for _ in range(11):
+    for _ in range(0 if is_picked else 11):
         x, y = rng.randint(14, 33), rng.randint(63, 74)
         if canvas[y][x] not in ("green_light", "green", "green_dark"):
             continue
@@ -905,6 +906,49 @@ def fern_bush(seed):
     return canvas
 
 
+def stump(seed):
+    """What is left of a felled tree: about 20x12 px, the cut top with rings, bark below."""
+    rng = random.Random(seed)
+    canvas = object_canvas()
+    ground_shadow(canvas, 12)
+    centre_x, top_y, radius_x, radius_y, height = OBJECT_CENTRE, 72, 9, 4, 6
+    for y in range(top_y - radius_y, OBJECT_BOTTOM + 1):
+        for x in range(centre_x - radius_x - 2, centre_x + radius_x + 2):
+            dx, dy = x + 0.5 - centre_x, y + 0.5 - top_y
+            # The root flare widens the foot.
+            flare = 2 if y > OBJECT_BOTTOM - 3 else 0
+            if (dx / radius_x) ** 2 + (dy / radius_y) ** 2 <= 1:
+                ring = round(math.hypot(dx / radius_x, dy / radius_y) * 3)
+                canvas[y][x] = ("sand_light", "sand", "sand_light", "straw")[min(ring, 3)]
+            elif dy > 0 and abs(dx) <= radius_x + flare and y <= top_y + height + 1:
+                index = x - (centre_x - radius_x)
+                canvas[y][x] = "soil_mid" if index < 4 else "soil_dark" if index > 2 * radius_x - 3 else "soil"
+    for _ in range(3):
+        x = rng.randint(centre_x - radius_x + 2, centre_x + radius_x - 3)
+        y = rng.randint(top_y + radius_y, top_y + height - 1)
+        canvas[y][x] = canvas[y + 1][x] = "soil_dark"
+    outline_in_bark(canvas)
+    return canvas
+
+
+def outline_in_bark(canvas):
+    """A one pixel outline in the darkest bark colour round everything drawn except the
+    ground shadow."""
+    height = len(canvas)
+    marked = []
+    for y in range(height):
+        for x in range(OBJECT_CELL_WIDTH):
+            if canvas[y][x] is not None:
+                continue
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < OBJECT_CELL_WIDTH and 0 <= ny < height and canvas[ny][nx] not in (None, "green_deep"):
+                    marked.append((x, y))
+                    break
+    for x, y in marked:
+        canvas[y][x] = "soil_dark"
+
+
 def vegetation():
     """The vegetation rows of assets/objects.png, in the order of their atlas_row in
     game/state/world_object_types.gd, starting at row 4, after the camp rows."""
@@ -912,7 +956,9 @@ def vegetation():
         [spruce(seed) for seed in (121, 122, 123)],
         [pine(seed) for seed in (131, 132, 133)],
         [dead_tree(seed) for seed in (141, 142, 143)],
-        [berry_bush(seed) for seed in (151, 152, 153)],
+        # Columns 0 to 2 bear berries, 3 to 5 are the same bushes picked.
+        [berry_bush(seed) for seed in (151, 152, 153)]
+        + [berry_bush(seed, is_picked=True) for seed in (151, 152, 153)],
         [shrub(seed) for seed in (161, 162, 163)],
         [sapling(seed) for seed in (171, 172, 173)],
         [fern_bush(seed) for seed in (181, 182, 183)],
@@ -921,6 +967,7 @@ def vegetation():
 
 OBJECTS = [[oak(seed) for seed in (101, 102, 103)], [stone(seed) for seed in (111, 112)]]
 BOULDERS = [[boulder(seed) for seed in (191, 192)]]
+STUMPS = [[stump(seed) for seed in (201, 202)]]
 
 
 # Camp site objects (assets/objects.png rows 2 and 3).
@@ -1822,7 +1869,7 @@ def main():
     to_image(terrain_rows).save(ASSETS / "terrain.png")
     to_image(decoration_rows).save(ASSETS / "decorations.png")
     to_image(
-        OBJECTS + CAMP_OBJECTS + vegetation() + [TURNIP_STAGES] + BOULDERS,
+        OBJECTS + CAMP_OBJECTS + vegetation() + [TURNIP_STAGES] + BOULDERS + STUMPS,
         OBJECT_CELL_WIDTH,
         OBJECT_CELL_HEIGHT,
     ).save(

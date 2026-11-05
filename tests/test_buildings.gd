@@ -68,7 +68,7 @@ func test_footprint_is_occupied_and_only_the_door_is_walkable() -> void:
 	for pos in building.tiles():
 		assert_eq(_world.building_at(pos), building)
 		assert_false(_world.is_buildable(pos), "buildable %s" % pos)
-		assert_false(_world.is_plantable(pos), "plantable %s" % pos)
+		assert_false(_world.is_free_on(pos, Tile.Terrain.SOIL), "plantable %s" % pos)
 		assert_eq(_world.is_walkable(pos), pos == building.door_tile(), "walkable %s" % pos)
 	assert_true(building.tiles().has(building.door_tile()))
 	assert_true(_world.is_walkable(ORIGIN + Vector2i(2, 3)), "the tile in front of the door")

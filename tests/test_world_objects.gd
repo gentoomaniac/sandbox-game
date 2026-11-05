@@ -50,10 +50,14 @@ func test_every_natural_object_type_is_generated() -> void:
 			var pos := Vector2i(x, y)
 			types[generator.object_type_at(pos, generator.terrain_at(pos))] = true
 	for object_type: StringName in WorldObjectTypes.TYPES:
-		# The camp is placed by the game, crops by the player and furniture comes with interiors.
+		# The camp is placed by the game, crops by the player, stumps by felling and furniture
+		# comes with interiors.
 		var type_data: Dictionary = WorldObjectTypes.TYPES[object_type]
-		var is_camp := object_type in [WorldObjectTypes.FIREPLACE, WorldObjectTypes.SLEEPING_BAG]
-		if is_camp or type_data.has("growth_stages") or type_data.has("interior_sprite"):
+		var is_made_by_play := (
+			object_type
+			in [WorldObjectTypes.FIREPLACE, WorldObjectTypes.SLEEPING_BAG, WorldObjectTypes.STUMP]
+		)
+		if is_made_by_play or type_data.has("growth_stages") or type_data.has("interior_sprite"):
 			continue
 		assert_true(types.has(object_type), "Missing object type %s" % object_type)
 
@@ -153,10 +157,10 @@ func test_object_makes_a_tile_unbuildable_and_unplantable() -> void:
 	var pos := Vector2i(3, 4)
 	_world.chunk_at(Vector2i.ZERO).set_terrain(pos, Tile.Terrain.SOIL)
 	assert_true(_world.is_buildable(pos))
-	assert_true(_world.is_plantable(pos))
+	assert_true(_world.is_free_on(pos, Tile.Terrain.SOIL))
 	_world.add_object(WorldObject.new(WorldObjectTypes.OAK, pos))
 	assert_false(_world.is_buildable(pos))
-	assert_false(_world.is_plantable(pos))
+	assert_false(_world.is_free_on(pos, Tile.Terrain.SOIL))
 
 
 func test_combined_checks_still_follow_the_tile() -> void:
@@ -167,14 +171,14 @@ func test_combined_checks_still_follow_the_tile() -> void:
 	assert_false(_world.is_walkable(Vector2i(1, 1)))
 	assert_true(_world.is_walkable(Vector2i(2, 2)))
 	assert_false(_world.is_buildable(Vector2i(2, 2)))
-	assert_false(_world.is_plantable(Vector2i(5, 5)), "grass is not plantable")
+	assert_false(_world.is_free_on(Vector2i(5, 5), Tile.Terrain.SOIL), "grass is not plantable")
 
 
 func test_combined_checks_are_false_where_no_chunk_is_loaded() -> void:
 	var pos := Vector2i(100, 100)
 	assert_false(_world.is_walkable(pos))
 	assert_false(_world.is_buildable(pos))
-	assert_false(_world.is_plantable(pos))
+	assert_false(_world.is_free_on(pos, Tile.Terrain.SOIL))
 
 
 func test_big_object_covers_its_whole_footprint() -> void:
@@ -188,7 +192,7 @@ func test_big_object_covers_its_whole_footprint() -> void:
 	assert_null(_world.object_at(origin + Vector2i.DOWN))
 	assert_false(_world.is_walkable(origin + Vector2i.RIGHT))
 	assert_false(_world.is_buildable(origin + Vector2i.RIGHT))
-	assert_false(_world.is_tillable(origin + Vector2i.RIGHT))
+	assert_false(_world.is_free_on(origin + Vector2i.RIGHT, Tile.Terrain.GRASS))
 
 
 func test_big_object_is_found_across_a_chunk_border() -> void:

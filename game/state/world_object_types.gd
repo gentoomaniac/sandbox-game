@@ -14,6 +14,19 @@ extends RefCounted
 ## - sleep_minutes: the object is a bed, and sleeping in it takes this long;
 ## - growth_stages, days_per_stage: the object is a crop. Its `days_grown` state sets its
 ##   stage; the last stage is ripe. Its atlas variants are the stages.
+## - hp, tool, drops: it can be cut down or mined: it has `hp` hit points, each hit of a `tool`
+##   (an item's tool kind, as a plain name: ItemTypes can't be used here, it depends on this
+##   file) of at least its harvest level takes off the tool's power, and when none are left it
+##   gives its `drops` (item id to count, plain names for the same reason). Without `hp`,
+##   `drops` are picked by hand, which removes the object;
+## - sapling_chance: a felled tree also drops a sapling item with this chance;
+## - leaves: what stands in its place once it is cut down;
+## - regrows: a tree that its stump grows back into (see matures_after_days);
+## - regrow_days: picking it by hand does not remove it: it looks picked and gives its drops
+##   again after this many days (berry bush); the atlas row then has the picked looks after
+##   the normal ones, `variants` of each;
+## - matures_after_days: with the state `tree` set (a stump or sapling that regrows) it is
+##   replaced after this many days by `matures_into`, or by the tree named in `tree`;
 ## - sprite_height: its picture's height in pixels, if it is tall enough to hide the player
 ##   behind it (trees); only those become see-through (see Occlusion);
 ## - light: it shines: `color`, `energy` (of the brightest point) and `radius_tiles`.
@@ -37,6 +50,7 @@ const STOOL := &"stool"
 const CHEST := &"chest"
 const HEARTH := &"hearth"
 const WINDOW := &"window"
+const STUMP := &"stump"
 
 ## The largest footprint any type has, in tiles: what World looks back over to find the
 ## object that covers a tile.
@@ -45,6 +59,12 @@ const MAX_FOOTPRINT := Vector2i(2, 2)
 const TYPES := {
 	OAK:
 	{
+		"hp": 5,
+		"tool": &"axe",
+		"drops": {&"wood": 4},
+		"sapling_chance": 0.25,
+		"leaves": STUMP,
+		"regrows": true,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": true,
 		"harvest_level": 1,
@@ -54,6 +74,9 @@ const TYPES := {
 	},
 	STONE:
 	{
+		"hp": 3,
+		"tool": &"pickaxe",
+		"drops": {&"stone": 2},
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": true,
 		"harvest_level": 1,
@@ -82,6 +105,12 @@ const TYPES := {
 	},
 	SPRUCE:
 	{
+		"hp": 4,
+		"tool": &"axe",
+		"drops": {&"wood": 4},
+		"sapling_chance": 0.25,
+		"leaves": STUMP,
+		"regrows": true,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": true,
 		"harvest_level": 1,
@@ -91,6 +120,12 @@ const TYPES := {
 	},
 	PINE:
 	{
+		"hp": 7,
+		"tool": &"axe",
+		"drops": {&"wood": 5},
+		"sapling_chance": 0.25,
+		"leaves": STUMP,
+		"regrows": true,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": true,
 		"harvest_level": 2,
@@ -100,6 +135,10 @@ const TYPES := {
 	},
 	DEAD_TREE:
 	{
+		"hp": 3,
+		"tool": &"axe",
+		"drops": {&"wood": 2},
+		"leaves": STUMP,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": true,
 		"harvest_level": 1,
@@ -109,6 +148,8 @@ const TYPES := {
 	},
 	BERRY_BUSH:
 	{
+		"drops": {&"berries": 3},
+		"regrow_days": 3,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": true,
 		"harvest_level": 0,
@@ -117,6 +158,7 @@ const TYPES := {
 	},
 	SHRUB:
 	{
+		"drops": {&"fibre": 2},
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": false,
 		"harvest_level": 0,
@@ -125,6 +167,8 @@ const TYPES := {
 	},
 	SAPLING:
 	{
+		"drops": {&"sapling": 1},
+		"matures_after_days": 4,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": false,
 		"harvest_level": 0,
@@ -133,6 +177,7 @@ const TYPES := {
 	},
 	FERN_BUSH:
 	{
+		"drops": {&"fibre": 2},
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": false,
 		"harvest_level": 0,
@@ -151,11 +196,27 @@ const TYPES := {
 	},
 	BOULDER:
 	{
+		"hp": 6,
+		"tool": &"pickaxe",
+		"drops": {&"stone": 5},
 		"footprint": Vector2i(2, 1),
 		"blocks_walking": true,
 		"harvest_level": 2,
 		"atlas_row": 12,
 		"variants": 2,
+	},
+	STUMP:
+	{
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": 13,
+		"variants": 2,
+		"hp": 2,
+		"tool": &"axe",
+		"drops": {&"wood": 1},
+		"matures_after_days": 3,
+		"matures_into": SAPLING,
 	},
 	SMALL_BED:
 	{

@@ -1,3 +1,4 @@
+# gdlint: disable=max-public-methods
 class_name World
 extends GameMap
 ## The world: a seed, fixed bounds and the chunks that are currently loaded.
@@ -10,6 +11,8 @@ extends GameMap
 signal objects_changed(world_pos: Vector2i)
 ## A tile's terrain was changed (see `set_terrain`).
 signal tile_changed(world_pos: Vector2i)
+## A tool hit an object that is still standing (see `hit_object`).
+signal object_hit(object: WorldObject)
 ## A building was placed.
 signal building_placed(building: Building)
 
@@ -161,17 +164,54 @@ func remove_object(world_pos: Vector2i) -> WorldObject:
 	return object
 
 
-## Advances every crop by one day, those in unloaded chunks too: crops are always edits, so
-## they are all in `_object_edits`.
-func grow_crops() -> void:
-	for pos in _object_edits:
-		var object := _object_edits[pos]
-		if object == null or not object.is_crop():
+## Puts `replacement` where `old` stands. Works for objects in unloaded chunks too: they are
+## edits, so the replacement is drawn when the chunk loads.
+func replace_object(old: WorldObject, replacement: WorldObject) -> void:
+	assert(old.pos == replacement.pos and old.tiles() == replacement.tiles(), "Not in place")
+	var chunk := chunk_at(Chunk.world_to_chunk(old.pos))
+	if chunk != null:
+		chunk.remove_object(Chunk.local_pos(old.pos))
+		chunk.add_object(replacement)
+	_object_edits[old.pos] = replacement
+	_emit_objects_changed(old)
+
+
+## Hits an object that this does not finish, taking `power` hit points off it. The damage
+## makes it an edit, so it outlives the chunk. Draws nothing new, but the view shakes it.
+func hit_object(object: WorldObject, power: int) -> void:
+	object.take_hit(power)
+	_object_edits[object.pos] = object
+	object_hit.emit(object)
+
+
+## Records that an object's state changed, so it outlives its chunk, and has it redrawn.
+func change_object(object: WorldObject) -> void:
+	_object_edits[object.pos] = object
+	_emit_objects_changed(object)
+
+
+## Lets a night pass over everything the player changed, in unloaded chunks too: crops grow,
+## damage heals, picked bushes bear again, stumps and saplings grow back. Only edits change
+## like this (a hit or a planting makes one), so they are all in `_object_edits`. A stump or
+## sapling does not turn into something that blocks walking on a tile in `occupied_tiles`:
+## it waits a day.
+func pass_night(occupied_tiles: Array[Vector2i]) -> void:
+	for object: WorldObject in _object_edits.values():
+		if object == null:
 			continue
-		object.grow_one_day()
-		# Unloaded tiles have nothing to redraw; they are drawn when their chunk loads.
-		if is_chunk_loaded(Chunk.world_to_chunk(pos)):
-			objects_changed.emit(pos)
+		if object.pass_night():
+			_emit_objects_changed(object)
+		if object.is_mature():
+			var next := object.matured()
+			if not (next.blocks_walking() and occupied_tiles.has(next.pos)):
+				replace_object(object, next)
+
+
+# Unloaded tiles have nothing to redraw; they are drawn when their chunk loads.
+func _emit_objects_changed(object: WorldObject) -> void:
+	if is_chunk_loaded(Chunk.world_to_chunk(object.pos)):
+		for tile in object.tiles():
+			objects_changed.emit(tile)
 
 
 ## Tile and object rules, and buildings: only their door can be walked on.
@@ -193,21 +233,12 @@ func is_buildable(world_pos: Vector2i) -> bool:
 	)
 
 
-func is_tillable(world_pos: Vector2i) -> bool:
+## Whether a tile has this terrain and neither an object nor a building.
+func is_free_on(world_pos: Vector2i, terrain: Tile.Terrain) -> bool:
 	var tile := tile_at(world_pos)
 	return (
 		tile != null
-		and tile.is_tillable()
-		and object_at(world_pos) == null
-		and building_at(world_pos) == null
-	)
-
-
-func is_plantable(world_pos: Vector2i) -> bool:
-	var tile := tile_at(world_pos)
-	return (
-		tile != null
-		and tile.is_plantable()
+		and tile.terrain == terrain
 		and object_at(world_pos) == null
 		and building_at(world_pos) == null
 	)

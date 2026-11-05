@@ -24,13 +24,20 @@ func _init() -> void:
 	for object_type: Dictionary in WorldObjectTypes.TYPES.values():
 		if not object_type.has("atlas_row"):
 			continue
-		for variant: int in object_type["variants"]:
+		for variant in looks_count(object_type):
 			var atlas_cell := Vector2i(variant, object_type["atlas_row"])
 			source.create_tile(atlas_cell)
 			var tile_data := source.get_tile_data(atlas_cell, 0)
 			tile_data.texture_origin = cell_origin(object_type["footprint"])
 			# Sorted by the middle of the footprint's bottom row, like the player standing there.
 			tile_data.y_sort_origin = (object_type["footprint"].y - 1) * TerrainTileset.TILE_SIZE
+
+
+## How many pictures a type has in its atlas row: its variants, and for a bush that can be
+## picked the same again, picked.
+static func looks_count(object_type: Dictionary) -> int:
+	var picked_looks: int = object_type["variants"] if object_type.has("regrow_days") else 0
+	return object_type["variants"] + picked_looks
 
 
 ## Where a cell is drawn relative to its tile: texture_origin moves it up and left. Tiles are
@@ -45,12 +52,15 @@ static func cell_origin(footprint: Vector2i) -> Vector2i:
 
 
 ## The atlas cell for an object: a crop's variant is its growth stage; for the others it
-## comes from the position, so it is stable but neighbours differ.
+## comes from the position, so it is stable but neighbours differ. A picked bush has its
+## variant's picked look.
 static func atlas_cell(object: WorldObject) -> Vector2i:
 	var object_type: Dictionary = WorldObjectTypes.TYPES[object.type]
-	var variant := (
+	var variant: int = (
 		object.growth_stage()
 		if object.is_crop()
 		else PositionHash.of(object.pos) % int(object_type["variants"])
 	)
+	if object.is_picked():
+		variant += object_type["variants"]
 	return Vector2i(variant, object_type["atlas_row"])

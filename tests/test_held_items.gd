@@ -22,7 +22,10 @@ func _grass_tile() -> Vector2i:
 	for y in range(-SEARCH, SEARCH):
 		for x in range(-SEARCH, SEARCH):
 			var pos := center + Vector2i(x, y + 1)
-			if _world.is_tillable(pos) and _world.is_tillable(pos - Vector2i(0, 1)):
+			if (
+				_world.is_free_on(pos, Tile.Terrain.GRASS)
+				and _world.is_free_on(pos - Vector2i(0, 1), Tile.Terrain.GRASS)
+			):
 				return pos
 	fail_test("no grass near the camp")
 	return center
@@ -115,12 +118,11 @@ func test_an_empty_hand_does_not_harvest_an_unripe_crop() -> void:
 	assert_eq(_state.use_facing_tile(), GameState.Use.NOTHING)
 
 
-func test_tools_without_a_use_yet_do_nothing_anywhere() -> void:
+func test_the_watering_can_has_no_use_yet() -> void:
 	_plant_and_ripen()
-	for tool in [ItemTypes.AXE, ItemTypes.PICKAXE, ItemTypes.WATERING_CAN]:
-		_hold(tool)
-		assert_eq(_state.use_facing_tile(), GameState.Use.NOTHING, str(tool))
-		assert_false(_state.can_use_held_item(), str(tool))
+	_hold(ItemTypes.WATERING_CAN)
+	assert_eq(_state.use_facing_tile(), GameState.Use.NOTHING)
+	assert_false(_state.can_use_held_item())
 	_hold(ItemTypes.HOE)
 	assert_true(_state.can_use_held_item())
 	_hold(ItemTypes.NONE)

@@ -95,6 +95,7 @@ func show_world(world_to_show: World) -> void:
 	world = world_to_show
 	world.objects_changed.connect(_on_objects_changed)
 	world.tile_changed.connect(redraw_tile)
+	world.object_hit.connect(_shake_object)
 	world.building_placed.connect(_draw_building)
 	_generator = WorldGenerator.new(world.world_seed)
 	_variety_noise.seed = world.world_seed + VARIETY_SEED_OFFSET
@@ -152,6 +153,13 @@ func _on_objects_changed(world_pos: Vector2i) -> void:
 		_drop_object_sprite(world_pos)
 		_draw_object(world_pos)
 	_draw_decoration(world_pos, _layer_at(world_pos))
+
+
+## Shakes a hit object: as a sprite, since a cell of the objects layer can't move alone.
+func _shake_object(object: WorldObject) -> void:
+	if not _object_sprites.has(object.pos):
+		_swap_cell_for_sprite(object)
+	_object_sprites[object.pos].shake()
 
 
 func _load_chunk(coords: Vector2i) -> void:

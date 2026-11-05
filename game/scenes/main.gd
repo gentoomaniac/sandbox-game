@@ -12,8 +12,9 @@ extends Node2D
 ## `--screenshot=<path>` saves one frame as PNG once streaming has settled, then quits;
 ## `--time=<hh:mm>` sets the time of day; `--field=<x>,<y>` tills a small field there with
 ## crops in every growth stage (see DebugField); `--inside` walks into the first house as soon
-## as one exists (see `--house`); `--zoom=<z>` sets the camera zoom;
-## `--inventory` opens the inventory screen at start;
+## as one exists (see `--house`); `--forage=<x>,<y>` puts a stump, bushes and a sapling in a
+## row from there and some of every new item in the inventory (see DebugForage);
+## `--zoom=<z>` sets the camera zoom; `--inventory` opens the inventory screen at start;
 ## `--mouse-tile=<x>,<y>` pretends the mouse is always on that tile (for screenshots);
 ## `--camera-shift=<x>,<y>` moves the camera by that many art pixels, fractions included
 ## (to check smooth scrolling); `--menu=pause|settings|controls|display` opens that menu page
@@ -79,6 +80,9 @@ func _ready() -> void:
 		elif arg.begins_with("--field="):
 			var tile := arg.trim_prefix("--field=").split_floats(",")
 			DebugField.create(_state.world, Vector2i(int(tile[0]), int(tile[1])))
+		elif arg.begins_with("--forage="):
+			var tile := arg.trim_prefix("--forage=").split_floats(",")
+			DebugForage.create(_state, Vector2i(int(tile[0]), int(tile[1])))
 		elif arg == "--inside":
 			_enter_first_house = true
 		elif arg == "--inventory":
@@ -238,6 +242,9 @@ func _use_on(target: Targeting) -> void:
 		GameState.Use.HARVEST:
 			var crop_name: String = ItemTypes.TYPES[ItemTypes.TURNIP]["name"]
 			_harvest_hud.show_note("+1 %s" % crop_name.to_lower())
+		GameState.Use.NEEDS_BETTER_TOOL:
+			var tool_name: String = ItemTypes.TYPES[_state.player.inventory.held_item()]["name"]
+			_harvest_hud.show_note("Needs a better %s." % tool_name.to_lower())
 		GameState.Use.INVENTORY_FULL:
 			_harvest_hud.show_note("Inventory full")
 

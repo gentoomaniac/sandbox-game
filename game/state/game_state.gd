@@ -6,9 +6,13 @@ extends RefCounted
 ## The player is on one map at a time: the world, or the interior of a building. The world
 ## stays as it is while they are inside.
 
-## What the use action does on a tile.
-enum Use { NOTHING, TILL, PLANT, HARVEST, INVENTORY_FULL }
+## What the use action does on a tile. HARVEST is a ripe crop, FORAGE something a hand picks
+## (a bush, a fern), HIT a tool cut or mined at an object, NEEDS_BETTER_TOOL a tool that is too
+## weak for the object.
+enum Use { NOTHING, TILL, PLANT, HARVEST, FORAGE, HIT, NEEDS_BETTER_TOOL, INVENTORY_FULL }
 
+## The tools the use action has something to do with.
+const ACTIVE_TOOLS := [ItemTypes.HOE, ItemTypes.AXE, ItemTypes.PICKAXE]
 const CROP := WorldObjectTypes.TURNIP
 ## What harvesting a crop gives: the crop, and one seed back (until a shop sells seeds).
 const HARVEST_YIELD := {ItemTypes.TURNIP: 1, ItemTypes.TURNIP_SEEDS: 1}
@@ -96,21 +100,25 @@ func sleep_in(bed: WorldObject) -> void:
 
 
 ## What `use` would do on a tile of the world (nothing inside) with the held item: a hoe
-## tills grass, seeds plant on soil, an empty hand harvests a ripe crop. Other tools do nothing
-## yet.
+## tills grass, seeds plant on soil and a sapling on grass, an empty hand harvests a ripe crop
+## or picks a bush, an axe or pickaxe hits what it cuts or mines.
 func use_at(world_pos: Vector2i) -> Use:
 	if is_inside():
 		return Use.NOTHING
+	var object := world.object_at(world_pos)
 	var held := player.inventory.held_item()
 	if held == ItemTypes.NONE:
-		var object := world.object_at(world_pos)
-		return Use.HARVEST if object != null and object.is_ripe() else Use.NOTHING
+		return _use_by_hand(object)
 	var item: Dictionary = ItemTypes.TYPES[held]
-	if item.has("plants") and world.is_plantable(world_pos):
+	if item.has("plants") and world.is_free_on(world_pos, item.get("plants_on", Tile.Terrain.SOIL)):
 		return Use.PLANT
-	if item.get("tool") == ItemTypes.HOE and world.is_tillable(world_pos):
+	if item.get("tool") == ItemTypes.HOE and world.is_free_on(world_pos, Tile.Terrain.GRASS):
 		return Use.TILL
-	return Use.NOTHING
+	if object == null or object.type_data().get("tool", ItemTypes.NONE) != item.get("tool"):
+		return Use.NOTHING
+	return (
+		Use.HIT if item["level"] >= object.type_data()["harvest_level"] else Use.NEEDS_BETTER_TOOL
+	)
 
 
 ## Whether the held item does anything anywhere, so it is worth highlighting a target.
@@ -119,11 +127,11 @@ func can_use_held_item() -> bool:
 	if held == ItemTypes.NONE:
 		return true
 	var item: Dictionary = ItemTypes.TYPES[held]
-	return item.has("plants") or item.get("tool") == ItemTypes.HOE
+	return item.has("plants") or ACTIVE_TOOLS.has(item.get("tool"))
 
 
-## Uses a tile (see `use_at`) and returns what was done. A harvest that doesn't fit in the
-## inventory is not done: INVENTORY_FULL.
+## Uses a tile (see `use_at`) and returns what was done. A harvest, pick or final hit whose
+## drops don't fit in the inventory is not done: INVENTORY_FULL.
 func use_tile(target: Vector2i) -> Use:
 	var use := use_at(target)
 	match use:
@@ -131,7 +139,9 @@ func use_tile(target: Vector2i) -> Use:
 			world.set_terrain(target, Tile.Terrain.SOIL)
 		Use.PLANT:
 			var seeds := player.inventory.held_item()
-			world.add_object(WorldObject.new(ItemTypes.TYPES[seeds]["plants"], target))
+			var planted := WorldObject.new(ItemTypes.TYPES[seeds]["plants"], target)
+			planted.state = ItemTypes.TYPES[seeds].get("plants_state", {}).duplicate()
+			world.add_object(planted)
 			player.inventory.remove(seeds, 1)
 		Use.HARVEST:
 			if not player.inventory.can_add(HARVEST_YIELD):
@@ -139,7 +149,66 @@ func use_tile(target: Vector2i) -> Use:
 			world.remove_object(target)
 			for item: StringName in HARVEST_YIELD:
 				player.inventory.add(item, HARVEST_YIELD[item])
+		Use.FORAGE:
+			var plant := world.object_at(target)
+			var drops: Dictionary = plant.type_data()["drops"]
+			if not player.inventory.can_add(drops):
+				return Use.INVENTORY_FULL
+			_take_drops(drops)
+			if plant.type_data().has("regrow_days"):
+				plant.pick()
+				world.change_object(plant)
+			else:
+				world.remove_object(target)
+		Use.HIT:
+			return _hit(world.object_at(target))
 	return use
+
+
+func _use_by_hand(object: WorldObject) -> Use:
+	if object == null:
+		return Use.NOTHING
+	if object.is_ripe():
+		return Use.HARVEST
+	return Use.FORAGE if object.is_forageable() else Use.NOTHING
+
+
+## Hits an object with the held tool. The hit that finishes it gives its drops and leaves
+## what it leaves; it is not done if the drops don't fit.
+func _hit(object: WorldObject) -> Use:
+	var power := ItemTypes.tool_power(player.inventory.held_item())
+	if not object.is_finished_by(power):
+		world.hit_object(object, power)
+		return Use.HIT
+	var object_type := object.type_data()
+	var drops: Dictionary = object_type["drops"].duplicate()
+	if _rolls_sapling(object):
+		drops[ItemTypes.SAPLING] = 1
+	if not player.inventory.can_add(drops):
+		return Use.INVENTORY_FULL
+	_take_drops(drops)
+	if not object_type.has("leaves"):
+		world.remove_object(object.pos)
+	else:
+		var stump := WorldObject.new(object_type["leaves"], object.pos)
+		if object_type.get("regrows", false):
+			stump.state["tree"] = str(object.type)
+		world.replace_object(object, stump)
+	return Use.HIT
+
+
+## Whether felling this tree today also gives a sapling. The same tree on the same day always
+## rolls the same.
+func _rolls_sapling(tree: WorldObject) -> bool:
+	return (
+		PositionHash.of(tree.pos, clock.day) % 100
+		< tree.type_data().get("sapling_chance", 0.0) * 100
+	)
+
+
+func _take_drops(drops: Dictionary) -> void:
+	for item: StringName in drops:
+		player.inventory.add(item, drops[item])
 
 
 ## Uses the tile the player faces.
@@ -200,7 +269,11 @@ func _building_of_ref(ref: Dictionary) -> Building:
 
 
 func _on_new_day(_day: int) -> void:
-	world.grow_crops()
+	# A stump or sapling doesn't grow into a tree under the player's feet.
+	var occupied: Array[Vector2i] = []
+	if not is_inside():
+		occupied.append(player.tile())
+	world.pass_night(occupied)
 
 
 func _tile_centre(tile: Vector2i) -> Vector2:

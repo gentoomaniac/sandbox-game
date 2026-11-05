@@ -23,7 +23,10 @@ func _grass_tile() -> Vector2i:
 	for y in range(-SEARCH, SEARCH):
 		for x in range(-SEARCH, SEARCH):
 			var pos := center + Vector2i(x, y + 1)
-			if _world.is_tillable(pos) and _world.is_tillable(pos - Vector2i(0, 1)):
+			if (
+				_world.is_free_on(pos, Tile.Terrain.GRASS)
+				and _world.is_free_on(pos - Vector2i(0, 1), Tile.Terrain.GRASS)
+			):
 				return pos
 	fail_test("no grass near the camp")
 	return center
@@ -71,12 +74,12 @@ func test_water_cannot_be_tilled() -> void:
 
 func test_floodplain_cannot_be_tilled_yet() -> void:
 	_world.set_terrain(_tile, Tile.Terrain.FLOODPLAIN)
-	assert_false(_world.is_tillable(_tile))
+	assert_false(_world.is_free_on(_tile, Tile.Terrain.GRASS))
 
 
 func test_a_tile_with_an_object_cannot_be_tilled() -> void:
 	_world.add_object(WorldObject.new(WorldObjectTypes.STONE, _tile))
-	assert_false(_world.is_tillable(_tile))
+	assert_false(_world.is_free_on(_tile, Tile.Terrain.GRASS))
 
 
 func test_a_tile_under_a_building_cannot_be_tilled() -> void:
@@ -84,7 +87,7 @@ func test_a_tile_under_a_building_cannot_be_tilled() -> void:
 	meadow.add_chunk(Chunk.new(Vector2i.ZERO))
 	var origin := Vector2i(5, 5)
 	assert_not_null(meadow.place_building(BuildingTypes.SMALL_HOUSE, origin))
-	assert_false(meadow.is_tillable(origin))
+	assert_false(meadow.is_free_on(origin, Tile.Terrain.GRASS))
 
 
 func test_using_soil_plants_a_crop_at_its_first_stage() -> void:
@@ -97,12 +100,12 @@ func test_using_soil_plants_a_crop_at_its_first_stage() -> void:
 
 
 func test_a_crop_cannot_be_planted_on_grass() -> void:
-	assert_false(_world.is_plantable(_tile))
+	assert_false(_world.is_free_on(_tile, Tile.Terrain.SOIL))
 
 
 func test_a_crop_cannot_be_planted_on_a_planted_tile() -> void:
 	_till_and_plant()
-	assert_false(_world.is_plantable(_tile))
+	assert_false(_world.is_free_on(_tile, Tile.Terrain.SOIL))
 
 
 func test_a_crop_does_not_block_walking() -> void:

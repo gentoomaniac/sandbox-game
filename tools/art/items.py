@@ -154,6 +154,76 @@ def turnip():
     return outlined(picture)
 
 
+def wood():
+    """Two logs, one above the other, their cut faces on the right."""
+    picture = canvas()
+    for top in (3, 8):
+        rect(picture, 2, top, 11, top + 4, "soil_mid")
+        rect(picture, 2, top + 3, 11, top + 4, "soil")
+        rect(picture, 2, top, 11, top, "soil_light")
+        pixel(picture, 4, top + 2, "soil_dark")
+        pixel(picture, 5, top + 2, "soil_dark")
+        pixel(picture, 8, top + 3, "soil_dark")
+        rect(picture, 11, top, 13, top + 4, "sand_light")
+        rect(picture, 12, top + 1, 12, top + 3, "sand")
+        pixel(picture, 13, top + 4, "sand")
+    return outlined(picture)
+
+
+def stone():
+    picture = canvas()
+    rect(picture, 4, 5, 11, 12, "stone")
+    rect(picture, 3, 7, 12, 11, "stone")
+    rect(picture, 5, 4, 9, 4, "stone_light")
+    rect(picture, 4, 5, 8, 6, "stone_light")
+    rect(picture, 3, 7, 4, 9, "stone_light")
+    rect(picture, 4, 12, 11, 12, "stone_dark")
+    rect(picture, 11, 8, 12, 11, "stone_dark")
+    line(picture, 8, 6, 9, 9, "stone_dark")
+    return outlined(picture)
+
+
+def fibre():
+    """A bundle of long plant fibres, tied in the middle."""
+    picture = canvas()
+    for x, colour in ((3, "green_light"), (5, "straw"), (7, "green_light"), (9, "straw"), (11, "green_light")):
+        line(picture, x, 1, x + (x - 7) // 2, 14, colour)
+    rect(picture, 3, 7, 12, 8, "mud")
+    rect(picture, 3, 7, 12, 7, "sand")
+    return outlined(picture)
+
+
+def berries():
+    """A sprig of three berries under a leaf."""
+    picture = canvas()
+    rect(picture, 6, 2, 11, 3, "green")
+    rect(picture, 8, 1, 10, 1, "green_light")
+    rect(picture, 5, 3, 6, 3, "green_light")
+    line(picture, 8, 4, 8, 6, "green_dark")
+    for x, y, colour in ((3, 7, "ember"), (8, 8, "arcane"), (5, 11, "ember")):
+        rect(picture, x, y, x + 3, y + 2, colour)
+        rect(picture, x + 1, y - 1, x + 2, y + 3, colour)
+        pixel(picture, x + 1, y, "cream")
+    return outlined(picture)
+
+
+def sapling():
+    """A seedling with a root ball, two leaves on a thin stem."""
+    picture = canvas()
+    rect(picture, 5, 10, 10, 13, "soil_mid")
+    rect(picture, 4, 11, 11, 12, "soil_mid")
+    rect(picture, 5, 12, 10, 13, "soil")
+    rect(picture, 5, 10, 7, 10, "soil_light")
+    line(picture, 8, 9, 8, 4, "soil_light")
+    for x, y in ((9, 3), (10, 3), (11, 4), (10, 5), (9, 4)):
+        pixel(picture, x, y, "green_light")
+    for x, y in ((6, 5), (5, 6), (6, 6), (7, 6), (6, 7)):
+        pixel(picture, x, y, "green")
+    pixel(picture, 8, 2, "green_bright")
+    pixel(picture, 8, 3, "green_light")
+    return outlined(picture)
+
+
 ICONS = {
     "hoe": hoe(),
     "axe": axe(),
@@ -161,6 +231,11 @@ ICONS = {
     "watering_can": watering_can(),
     "turnip_seeds": turnip_seeds(),
     "turnip": turnip(),
+    "wood": wood(),
+    "stone": stone(),
+    "fibre": fibre(),
+    "berries": berries(),
+    "sapling": sapling(),
 }
 
 
