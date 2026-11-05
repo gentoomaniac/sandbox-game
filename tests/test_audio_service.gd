@@ -150,6 +150,17 @@ func test_losing_the_focus_keeps_the_sound_when_sound_in_background_is_on() -> v
 	assert_false(AudioServer.is_bus_mute(_bus(AudioService.MASTER)))
 
 
+func test_muted_stays_silent_through_settings_and_focus() -> void:
+	_service.is_muted = true
+	_service.apply_settings(GameSettings.new(SETTINGS_PATH))
+	assert_true(AudioServer.is_bus_mute(_bus(AudioService.MASTER)), "after the settings")
+	_service.notification(NOTIFICATION_APPLICATION_FOCUS_IN)
+	assert_true(AudioServer.is_bus_mute(_bus(AudioService.MASTER)), "after the focus")
+	_service.is_muted = false
+	_service.apply_settings(GameSettings.new(SETTINGS_PATH))
+	assert_false(AudioServer.is_bus_mute(_bus(AudioService.MASTER)), "unmuted again")
+
+
 func test_turning_the_setting_off_while_unfocused_mutes_at_once() -> void:
 	_service.notification(NOTIFICATION_APPLICATION_FOCUS_OUT)
 	var settings := GameSettings.new(SETTINGS_PATH)

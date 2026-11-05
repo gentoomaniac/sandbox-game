@@ -86,8 +86,9 @@ OUT ?= $(CURDIR)/build/screenshot.png
 # settings (a missing file means defaults), so stored keys or display mode don't apply.
 KEEP_SAVE ?=
 # Test runs stay out of the way: no sound (SOUND=1 keeps it) and a window that doesn't take the
-# focus. On Wayland the native driver is used, as the compositor then doesn't hand the focus to a
-# new window that didn't ask for it.
+# focus (--background makes it unfocusable). On Wayland the native driver is used as well, since
+# Wayland compositors are stricter than X11 about new windows grabbing the focus. A Godot build
+# without the Wayland driver needs QUIET_WINDOW= on the command line.
 QUIET_WINDOW := $(if $(WAYLAND_DISPLAY),--display-driver wayland)
 
 screenshot:
