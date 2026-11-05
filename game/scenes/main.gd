@@ -11,9 +11,10 @@ extends Node2D
 ## crops in every growth stage (see DebugField); `--inside` walks into the first house as soon
 ## as one exists (see `--house`); `--zoom=<z>` sets the camera zoom;
 ## `--camera-shift=<x>,<y>` moves the camera by that many art pixels, fractions included
-## (to check smooth scrolling). PlayerView parses `--outfit=<n>` and `--pose=<direction>`,
-## and F6 cycles the outfit (see there). BuildMode parses `--ghost=<x>,<y>` and
-## `--house=<x>,<y>` (see there).
+## (to check smooth scrolling); `--follow=<smooth|locked>` picks how the camera follows the
+## player (see CameraController.Follow) and F7 toggles it. PlayerView parses `--outfit=<n>` and
+## `--pose=<direction>`, and F6 cycles the outfit (see there). BuildMode parses
+## `--ghost=<x>,<y>` and `--house=<x>,<y>` (see there).
 
 const WORLD_SEED := 1
 ## One game day lasts 16 real minutes (24 h * 60 min / 1.5 / 60 s).
@@ -24,6 +25,8 @@ const FAST_FORWARD_FACTOR := 60.0
 const SCREENSHOT_SETTLE_FRAMES := 3
 ## Fading out and back in around sleep and doors.
 const SLEEP_FADE_SECONDS := 0.5
+## Debug: toggles the camera's follow mode.
+const FOLLOW_KEY := KEY_F7
 
 var _state := GameState.new_game(WORLD_SEED)
 var _player_view := PlayerView.new()
@@ -65,6 +68,8 @@ func _ready() -> void:
 			_enter_first_house = true
 		elif arg.begins_with("--zoom="):
 			_start_zoom = float(arg.trim_prefix("--zoom="))
+		elif arg == "--follow=locked":
+			_camera.follow_mode = CameraController.Follow.PIXEL_LOCKED
 		elif arg.begins_with("--camera-shift="):
 			var shift := arg.trim_prefix("--camera-shift=").split_floats(",")
 			_camera_shift = Vector2(shift[0], shift[1])
@@ -86,8 +91,12 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	# A SubViewport only gets the events that are pushed into it.
+	# A SubViewport only gets the events that are pushed into it. That does not mark the
+	# event as handled here, so Main still sees what BuildMode consumed.
 	_world.push_input(event)
+	if event is InputEventKey and event.pressed and event.keycode == FOLLOW_KEY:
+		_toggle_follow_mode()
+		return
 	if event.is_action_pressed("toggle_fast_forward"):
 		_fast_forward = not _fast_forward
 	elif event.is_action_pressed("interact") and not _is_fading:
@@ -115,10 +124,14 @@ func _process(delta: float) -> void:
 			_save_screenshot_and_quit()
 
 
-## Where the camera looks: the player as drawn, on the art pixel grid, so the player does
-## not move against the screen.
+## Where the camera looks. The player is drawn on the art pixel grid (rounded), the camera
+## is not, so the world scrolls smoothly and the player wobbles by up to half an art pixel
+## against the screen; PIXEL_LOCKED follows the rounded position instead.
 func _camera_target() -> Vector2:
-	return (_state.player.position * TerrainTileset.TILE_SIZE).round() + _camera_shift
+	var position := _state.player.position * TerrainTileset.TILE_SIZE
+	if _camera.follow_mode == CameraController.Follow.PIXEL_LOCKED:
+		position = position.round()
+	return position + _camera_shift
 
 
 ## Real time to whole game minutes; the fraction carries over to the next frame.
@@ -204,6 +217,13 @@ func _set_start_time(text: String) -> void:
 
 func _is_ready_to_shoot() -> bool:
 	return _view.is_settled and not _enter_first_house
+
+
+func _toggle_follow_mode() -> void:
+	var is_smooth := _camera.follow_mode == CameraController.Follow.SMOOTH
+	_camera.follow_mode = (
+		CameraController.Follow.PIXEL_LOCKED if is_smooth else CameraController.Follow.SMOOTH
+	)
 
 
 func _show_build_message(text: String) -> void:

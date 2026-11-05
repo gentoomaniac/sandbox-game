@@ -6,7 +6,8 @@ extends RefCounted
 ## with the camera at a whole art pixel. Stage two shows part of that image on the window,
 ## scaled by `screen_scale`. The part is centred on the camera's real (fractional) target,
 ## which is how scrolling and zooming stay smooth although stage one never moves by less than
-## a pixel.
+## a pixel: the world and the player stay on the art pixel grid, only the window's view of
+## it moves by fractions.
 
 const MIN_ZOOM := 0.5
 const MAX_ZOOM := 2.0
