@@ -24,6 +24,9 @@ extends Node2D
 ## chunk takes about 1 ms, redrawing the cells of one whose tiles all changed about 10 ms, so
 ## the work is cut into cells.
 const REFRESH_BUDGET_USEC := 3000
+## The lower part of a tree's canopy, as a share of its picture's height above the picture's
+## bottom: what falls from there passes the trunk and shows against the ground.
+const CANOPY_HEIGHT_SHARE := 0.45
 const LOAD_RADIUS := 3
 const UNLOAD_RADIUS := 5
 ## Loading a chunk (generating it, placing objects and drawing its layers and look overlays)
@@ -91,6 +94,7 @@ var is_settled := false
 ## Where the player stands, in world pixels (set by the game scene every frame).
 var player_feet := Vector2.ZERO
 var _generator: WorldGenerator
+var _hit_particles := HitParticles.new()
 var _variety_noise := FastNoiseLite.new()
 var _decoration_noise := FastNoiseLite.new()
 var _focus_chunk := Vector2i.ZERO
@@ -156,6 +160,7 @@ func _ready() -> void:
 	entities.y_sort_enabled = true
 	entities.add_child(_objects)
 	add_child(entities)
+	add_child(_hit_particles)
 
 
 ## Shows a world, including the chunks that are already loaded in it.
@@ -163,7 +168,7 @@ func show_world(world_to_show: World) -> void:
 	world = world_to_show
 	world.objects_changed.connect(_on_objects_changed)
 	world.tile_changed.connect(redraw_tile)
-	world.object_hit.connect(_shake_object)
+	world.object_hit.connect(_on_object_hit)
 	_soil_wetness.show_world(world, _is_snowed_over)
 	world.building_placed.connect(_draw_building)
 	_generator = WorldGenerator.new(world.world_seed)
@@ -288,7 +293,31 @@ func _on_objects_changed(world_pos: Vector2i) -> void:
 	_draw_decoration(world_pos, _layer_at(world_pos))
 
 
-## Shakes a hit object: as a sprite, since a cell of the objects layer can't move alone.
+## A tool hit an object: what it leaves, if any, shakes (a stump, after the last hit), and
+## what flies off it depends on the look the object had.
+func _on_object_hit(object: WorldObject) -> void:
+	var look := _object_look(object)
+	if look == SeasonBlend.Look.FROST:
+		look = _conditions.foliage_season_look(_blend.thresholds(object.pos).x)
+	_hit_particles.emit(HitEffect.kind_for(object.type, look), _hit_origin(object))
+	var standing := world.object_at(object.pos)
+	if standing != null:
+		_shake_object(standing)
+
+
+## Where a hit object throws its particles, in world pixels: the canopy of a tree, else the
+## middle of the object.
+func _hit_origin(object: WorldObject) -> Vector2:
+	var type_data := object.type_data()
+	var footprint: Vector2i = type_data["footprint"]
+	var middle := (Vector2(object.pos) + Vector2(footprint) / 2) * TerrainTileset.TILE_SIZE
+	if not type_data.has("sprite_height"):
+		return middle
+	var bottom := (object.pos.y + footprint.y) * TerrainTileset.TILE_SIZE
+	return Vector2(middle.x, bottom - CANOPY_HEIGHT_SHARE * type_data["sprite_height"])
+
+
+## Shakes an object: as a sprite, since a cell of the objects layer can't move alone.
 func _shake_object(object: WorldObject) -> void:
 	if not _object_sprites.has(object.pos):
 		_swap_cell_for_sprite(object)

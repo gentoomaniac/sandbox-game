@@ -345,6 +345,7 @@ func _hit(object: WorldObject) -> Use:
 			stump.state["tree"] = str(object.type)
 		world.replace_object(object, stump)
 	world.drop_items(object.pos, drops)
+	world.object_hit.emit(object)
 	return Use.HIT
 
 

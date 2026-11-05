@@ -35,8 +35,10 @@ extends Node2D
 ## `--wildlife=<kind>[,<kind>]` puts a few animals of those kinds near the player once the
 ## world is drawn and leaves it at that (`bird`, `rabbit`, `squirrel`, `deer`, `bee`,
 ## `butterfly`, `flock`; see WildlifeView), `--wildlife-calm` makes them take no notice of the
-## player. PlayerView parses `--hair=<n>` and `--pose=<direction>`, and F6 cycles the hair (see
-## there). BuildMode parses
+## player; `--hit=<x>,<y>` hits the object on that tile once, without damage, as soon as the
+## world is drawn (to see its shake and what flies off, see HitEffect; the particles last half a
+## second, so use a short `--screenshot-delay`). PlayerView parses `--hair=<n>` and
+## `--pose=<direction>`, and F6 cycles the hair (see there). BuildMode parses
 ## `--ghost=<x>,<y>` and `--house=<x>,<y>` (see there).
 
 const WORLD_SEED := 1
@@ -52,6 +54,8 @@ const SCREENSHOT_SETTLE_FRAMES := 3
 const SLEEP_FADE_SECONDS := 0.5
 ## Animals of each kind (but one flock) that `--wildlife` puts in view.
 const START_WILDLIFE_COUNT := 4
+## `_debug_hit_tile` while there is no `--hit` to do.
+const NO_TILE := Vector2i(1 << 30, 1 << 30)
 
 var _state: GameState
 var _settings: GameSettings
@@ -74,6 +78,7 @@ var _interior_view := InteriorView.new()
 var _weather_view := WeatherView.new()
 var _wildlife := WildlifeView.new()
 var _start_wildlife := PackedStringArray()
+var _debug_hit_tile := NO_TILE
 var _weather: WeatherSample
 var _snow_cover := 0.0
 var _frost := 0.0
@@ -176,6 +181,9 @@ func _ready() -> void:
 		elif arg.begins_with("--wildlife="):
 			_start_wildlife = arg.trim_prefix("--wildlife=").split(",")
 			_wildlife.is_spawning_naturally = false
+		elif arg.begins_with("--hit="):
+			var tile := arg.trim_prefix("--hit=").split_floats(",")
+			_debug_hit_tile = Vector2i(int(tile[0]), int(tile[1]))
 		elif arg == "--wildlife-calm":
 			_wildlife.is_player_ignored = true
 		elif arg == "--flash":
@@ -329,6 +337,8 @@ func _process(delta: float) -> void:
 		_enter_first_house_now()
 	if not _start_wildlife.is_empty() and _view.is_settled and not _state.is_inside():
 		_spawn_start_wildlife()
+	if _debug_hit_tile != NO_TILE and _view.is_settled and not _state.is_inside():
+		_hit_debug_tile()
 	if _screenshot_path != "" and _debug_menu_page >= 0:
 		_open_debug_menu_when_ready()
 	elif _screenshot_path != "":
@@ -484,6 +494,14 @@ func _show_current_map() -> void:
 		_interior_view.show_interior(_state.current_map)
 	_player_view.reparent(_interior_view.entities if is_inside else _view.entities, false)
 	_show_clock()
+
+
+## Debug (`--hit`): hits the object on the asked tile, if there is one.
+func _hit_debug_tile() -> void:
+	var object := _state.world.object_at(_debug_hit_tile)
+	if object != null:
+		_state.world.hit_object(object, 0)
+	_debug_hit_tile = NO_TILE
 
 
 ## Debug (`--wildlife`): puts a few animals of each asked kind in view.

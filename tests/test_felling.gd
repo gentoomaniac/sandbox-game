@@ -63,13 +63,13 @@ func test_the_wrong_kind_of_tool_does_nothing() -> void:
 	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
 
 
-func test_a_hit_emits_object_hit_and_the_final_hit_does_not() -> void:
+func test_every_hit_emits_object_hit_the_final_one_too() -> void:
 	_place(WorldObjectTypes.STONE)
 	watch_signals(_world)
 	_hit(ItemTypes.PICKAXE, 1)
 	assert_signal_emit_count(_world, "object_hit", 1)
 	_hit(ItemTypes.PICKAXE, 2)
-	assert_signal_emit_count(_world, "object_hit", 2)
+	assert_signal_emit_count(_world, "object_hit", 3)
 
 
 func test_damage_heals_overnight() -> void:

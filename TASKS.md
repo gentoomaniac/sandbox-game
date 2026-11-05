@@ -762,7 +762,7 @@ ids, and so on, from one table of argument kinds per command.
 
 ## 32. Hit feedback: shake, leaves, snow and splinters
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Harvesting, reworked" (hit feedback). Visual only.
 

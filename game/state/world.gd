@@ -15,7 +15,8 @@ signal objects_changed(world_pos: Vector2i)
 signal tile_changed(world_pos: Vector2i)
 ## The moisture of a tilled tile changed (see `set_moisture`).
 signal soil_moisture_changed(world_pos: Vector2i)
-## A tool hit an object that is still standing (see `hit_object`).
+## A tool hit an object (see `hit_object`). The finishing hit emits it too, after the object
+## is removed or replaced by what it leaves.
 signal object_hit(object: WorldObject)
 ## A building was placed.
 signal building_placed(building: Building)
