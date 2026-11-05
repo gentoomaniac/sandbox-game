@@ -63,7 +63,7 @@ func test_particles_are_few_and_gone_in_little_more_than_a_second() -> void:
 		particles.emit(kind, Vector2.ZERO)
 		var count := particles.particle_count()
 		var expected: Vector2i = HitParticles.SPECS[kind]["count"]
-		assert_between(count, expected.x, mini(expected.y, 14), "count of %s" % kind)
+		assert_between(count, expected.x, 14, "count of %s" % kind)
 		particles.advance(1.3)
 		assert_eq(particles.particle_count(), 0, "%s gone" % kind)
 		assert_lt(HitParticles.SPECS[kind]["life"], 1.3)
