@@ -162,7 +162,7 @@ func _on_inventory_slot_pressed(slot: int) -> void:
 	if not _has_pick():
 		_picked_inventory_slot = slot if not _player.inventory.slots[slot].is_empty() else -1
 	elif _picked_inventory_slot != -1:
-		_player.inventory.move(_picked_inventory_slot, slot)
+		_player.inventory.move_to(_picked_inventory_slot, _player.inventory, slot)
 		_drop_pick()
 	elif _player.equipment.move_to_inventory(_player.inventory, _picked_equipment_slot, slot):
 		_drop_pick()
