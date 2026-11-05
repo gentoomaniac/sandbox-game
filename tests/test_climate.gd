@@ -44,8 +44,13 @@ func test_the_temperature_means_are_moderate() -> void:
 func test_a_new_game_starts_mild() -> void:
 	for seed_value in range(1, 9):
 		var weather := Weather.new(seed_value, _sun)
-		assert_gt(weather.at(ORIGIN, 1, 14 * 60).temperature, 3.0, "seed %d" % seed_value)
-		assert_eq(weather.at(ORIGIN, 1, 14 * 60).snow, 0.0)
+		var total := 0.0
+		for hour in 24:
+			var sample := weather.at(ORIGIN, 1, hour * 60)
+			assert_gt(sample.temperature, 1.0, "seed %d hour %d" % [seed_value, hour])
+			assert_eq(sample.snow, 0.0)
+			total += sample.temperature / 24.0
+		assert_gt(total, 5.0, "mean of day 1, seed %d" % seed_value)
 
 
 func test_frost_comes_gradually_into_winter() -> void:

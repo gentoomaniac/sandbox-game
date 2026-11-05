@@ -283,7 +283,10 @@ func _season_curve(minutes: int) -> Array:
 	)
 	var seasons_since_middle := days_since_middle / GameClock.DAYS_PER_SEASON
 	var from := int(seasons_since_middle)
-	return [from, (from + 1) % 4, smoothstep(0.0, 1.0, seasons_since_middle - from)]
+	var weight := smoothstep(0.0, 1.0, seasons_since_middle - from)
+	if from == GameClock.Season.WINTER:
+		weight = pow(weight, _rules.value("curve", "winter_to_spring_exponent"))
+	return [from, (from + 1) % 4, weight]
 
 
 func _baseline(season_curve: Array, key: String) -> float:
