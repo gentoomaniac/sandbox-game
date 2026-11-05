@@ -37,6 +37,8 @@ float hash(vec2 p) {
 }
 
 // PositionHash.of with no salt.
+// A copy of PositionHash.of (game/world/position_hash.gd) with salt 0, which AmbientMotion.fire_frame mirrors:
+// change one, change the other.
 uint position_hash(ivec2 pos) {
 	uint h = uint(pos.x) * 0x9E3779B1u;
 	h ^= h >> 15u;

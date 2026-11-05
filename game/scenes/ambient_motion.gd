@@ -142,7 +142,8 @@ static func fire_material(type: StringName) -> ShaderMaterial:
 ## The frame of its flame's loop that a fire shows `seconds` into the shaders' clock, for the
 ## fire whose cell is at `origin` (world pixels). The frame advances FIRE_FRAMES_PER_SECOND
 ## times a second, and each fire starts its loop at a frame of its own, by its place, so
-## neighbours do not burn in step. fire.gdshader picks the frame the same way.
+## neighbours do not burn in step. fire.gdshader picks the frame the same way, with its own
+## copy of PositionHash.of (`position_hash`): change one, change the other.
 static func fire_frame(seconds: float, origin: Vector2i) -> int:
 	return (floori(seconds * FIRE_FRAMES_PER_SECOND) + PositionHash.of(origin)) % FIRE_FRAMES
 
