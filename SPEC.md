@@ -282,7 +282,7 @@ Decided 2026-11-05.
 - **Tooltips** (decided 2026-11-05): hovering a slot in the hotbar, the inventory or the
   equipment shows a small framed panel by the cursor: the item's name, kind and weight
   (each and stack), a one-line description, and what matters for its kind, from the data
-  files: food the energy and health it gives back, tools their type and level, seeds what
+  files: food the energy it gives back (and health once food restores any), tools their type and level, seeds what
   they grow and where they are planted, equipment its slot (stats once there are any).
   Settings show a short explanation on hover too.
 - **UI look:** a pixel font and a framed panel (9-slice) in palette colours, in one shared

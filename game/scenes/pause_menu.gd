@@ -159,7 +159,8 @@ func _add_button(parent: Control, text: String, on_pressed: Callable, tip := "")
 	var button := Button.new()
 	button.text = text
 	button.pressed.connect(on_pressed)
-	TooltipView.set_text(button, tip, "button_" + text.to_snake_case())
+	if tip != "":
+		TooltipView.set_text(button, tip, "button_" + text.to_snake_case())
 	parent.add_child(button)
 	return button
 

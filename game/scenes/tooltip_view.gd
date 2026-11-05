@@ -53,7 +53,12 @@ func show_by_id(id: String) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed:
+	# A click or drag hides the tooltip; the wheel (zooming) doesn't.
+	if (
+		event is InputEventMouseButton
+		and event.pressed
+		and event.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]
+	):
 		_is_suppressed = true
 		_panel.visible = false
 

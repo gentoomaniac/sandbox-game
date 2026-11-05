@@ -78,7 +78,7 @@ const _OTHER_TYPES := {
 	PICKAXE:
 	{
 		"name": "Pickaxe",
-		"description": "Breaks stones and boulders.",
+		"description": "Breaks stones; boulders need a stronger one.",
 		"weight": 3.0,
 		"stack_limit": 1,
 		"tool": PICKAXE,
