@@ -568,8 +568,8 @@ Depends on: 20. See SPEC.md "Player" (energy, details).
   explain each value), loaded once; tests use their own values.
 - Every use costs energy by kind (tool use 2, planting and picking 0.5), times the weight
   factor, times the energy drain factor (a plain number on the state, default 1; task 22
-  connects the setting). Nothing happens without enough energy? No: the action happens
-  and energy hits 0, then the player passes out.
+  connects the setting). An action with too little energy left still happens; energy
+  drops to 0 and the player passes out.
 - Walking speed: ≤10 % energy 75 %, <5 % 50 %, debuff day 50 %; the slowest wins.
 - Passing out: fade, wake in the home bed at 06:00 the next day, debuff that day (half
   speed, energy max 50 %, health 25). Sleeping refills energy and health per bed.
