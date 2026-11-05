@@ -277,6 +277,28 @@ Decided 2026-11-05. A text console for testing and cheats.
 
 - Days and seasons work as is usual for the genre: crops grow day by day, and the season
   decides what grows.
+- **Weather state** (decided 2026-11-05):
+  - Four values: **humidity** (0–100 %), **wind speed** (m/s, with a direction),
+    **temperature** (°C) and **sunlight** (0–100 %, cloud cover dims it).
+  - Weather is a deterministic function of the world seed, the region and the game time
+    (smooth noise over hours and days around a per-season baseline, plus a daily cycle:
+    cool nights, warm afternoons, morning fog). Nothing needs saving, and any past or
+    future moment can be asked for, e.g. "has it rained for three days?" for floods
+    later.
+  - Regions: the world is split into weather regions (for now one region for the whole
+    world, since biomes don't exist yet; the API already takes a position).
+  - **Conditions** are derived from the values: rain (high humidity, above freezing),
+    snow (high humidity, at or below freezing), fog (very high humidity, little wind,
+    mostly mornings), strong wind and storms, thunderstorms with lightning (warm, humid,
+    windy). Each has an intensity 0–1.
+  - **Seasons set the baselines:** spring mild and showery; summer warm and mostly dry
+    with occasional thunderstorms; autumn cooler, windy, foggy and rainy; winter cold
+    with snow.
+  - **Effects for now are visual only:** rain and snow particles (slanted by the wind),
+    fog drifting over the world, wind streaks and blowing leaves, lightning flashes, and
+    overcast skies dimming daylight. Nothing in the game reacts yet (crops, floods,
+    frozen rivers, energy and the like come later); the state is ready for it. No
+    effects inside buildings.
 - **Calendar** (decided 2026-11-05): four seasons of 30 days (Spring, Summer, Autumn,
   Winter), so a year has 120 days. The game starts on the 1st day of Spring, Year 1. The
   HUD shows "10th day of Spring Year 2 · 06:00".

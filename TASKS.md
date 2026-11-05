@@ -643,6 +643,27 @@ See SPEC.md "Time, seasons and weather" (calendar, the world looks like its seas
 - Palette: add the colours the seasons need; the cap may rise to about 64.
 - A debug flag to start on a given day (e.g. `--day=<n>`), for screenshots.
 
+## 26. Weather state and effects
+
+- [ ] Done
+
+See SPEC.md "Time, seasons and weather" (weather state).
+
+- State: a Weather class (plain logic) answering `at(region_or_position, day, minute)`
+  with humidity, wind (speed and direction), temperature and sunlight, plus derived
+  conditions with intensities (rain, snow, fog, wind, storm, lightning). Deterministic
+  from the world seed; season baselines and the daily cycle as data in a hand-editable
+  file (`data/weather.cfg`). The world state holds it; GameState exposes the current
+  weather at the player.
+- Effects (visual only): rain, snow, fog, wind streaks/leaves, lightning flash, overcast
+  dimming through the day/night tint. Drawn on the art-pixel grid; nothing inside
+  buildings; smooth transitions as values change.
+- Console: `weather` prints the current values and conditions; `weather <condition>`
+  forces one for testing (session only), `weather auto` returns to the simulation.
+  The F3 display also shows the values. Debug flag `--weather=<condition>`.
+- Tests: determinism, season baselines (e.g. snow possible in winter, never in summer),
+  the daily cycle, condition thresholds, the console command.
+
 ## Later (not part of the prototype)
 
 - Split the object edits and regrowth (`_object_edits`, `replace_object`, `hit_object`,
