@@ -294,7 +294,7 @@ Depends on: 6.
 
 ## 10. Interior map from Tiled
 
-- [ ] Done
+- [x] Done
 
 Depends on: 8, 9.
 
