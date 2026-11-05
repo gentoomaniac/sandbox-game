@@ -6,35 +6,30 @@ extends CanvasLayer
 
 const BOTTOM_MARGIN := 4
 const SLOT_GAP := 2
+const WIDTH := Inventory.HOTBAR_SIZE * SlotView.SIZE + (Inventory.HOTBAR_SIZE - 1) * SLOT_GAP
 const THEME := preload("res://game/scenes/ui_theme.tres")
 
 var _inventory: Inventory
-var _row := HBoxContainer.new()
 var _slot_views: Array[SlotView] = []
 
 
 func _init() -> void:
-	_row.theme = THEME
-	_row.add_theme_constant_override("separation", SLOT_GAP)
-	_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var row := HBoxContainer.new()
+	row.theme = THEME
+	row.add_theme_constant_override("separation", SLOT_GAP)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for slot in Inventory.HOTBAR_SIZE:
 		var view := SlotView.new()
 		view.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_row.add_child(view)
+		row.add_child(view)
 		_slot_views.append(view)
-	add_child(_row)
-	_row.set_anchors_and_offsets_preset(
-		Control.PRESET_CENTER_BOTTOM, Control.PRESET_MODE_MINSIZE, BOTTOM_MARGIN
-	)
-
-
-## Puts a control at the right end of the hotbar's row, level with the slots' bottom.
-func add_aside(control: Control) -> void:
-	control.size_flags_vertical = Control.SIZE_SHRINK_END
-	_row.add_child(control)
-	_row.set_anchors_and_offsets_preset(
-		Control.PRESET_CENTER_BOTTOM, Control.PRESET_MODE_MINSIZE, BOTTOM_MARGIN
-	)
+	add_child(row)
+	# Offsets from the bottom centre are set by hand, so the row is centred exactly.
+	row.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	row.offset_left = -WIDTH / 2.0
+	row.offset_right = WIDTH / 2.0
+	row.offset_top = -BOTTOM_MARGIN - SlotView.SIZE
+	row.offset_bottom = -BOTTOM_MARGIN
 
 
 func show_inventory(inventory: Inventory) -> void:

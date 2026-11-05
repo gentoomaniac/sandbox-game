@@ -127,7 +127,7 @@ func _ready() -> void:
 	add_child(_harvest_hud)
 	add_child(_hotbar)
 	_hotbar.show_inventory(_state.player.inventory)
-	_hotbar.add_aside(_vitals)
+	add_child(_vitals)
 	_vitals.show_state(_state)
 	add_child(_inventory_screen)
 	_inventory_screen.show_inventory(_state.player.inventory)
@@ -182,7 +182,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_state.player.inventory.select(hotbar_slot)
 	elif event.is_action_pressed("interact") and not _is_fading:
 		_try_sleep()
-	elif _is_use_event(event) and can_use and _state.eat_held():
+	elif _is_use_event(event) and can_use and _eat_held():
 		pass  # Eating needs no target: a held food is eaten instead of used on a tile.
 	elif event.is_action_pressed("use") and can_use:
 		_use_on(_use_highlight.targeting())
@@ -243,6 +243,15 @@ func _open_debug_menu_when_ready() -> void:
 		_open_menu(_debug_menu_page as PauseMenu.Page)
 		_debug_menu_page = -1
 		get_tree().create_timer(0.2, true).timeout.connect(_save_screenshot_and_quit)
+
+
+## Eats the held food, if any, and says how much energy it gave. Returns whether it ate.
+func _eat_held() -> bool:
+	var energy_before := _state.player.energy
+	if not _state.eat_held():
+		return false
+	_harvest_hud.show_note("+%s energy" % roundi(_state.player.energy - energy_before))
+	return true
 
 
 func _is_use_event(event: InputEvent) -> bool:
