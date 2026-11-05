@@ -164,6 +164,8 @@ top of classic pixel art (details under "Lighting and look").
 
 - The world has **trees and minerals in different varieties** (e.g. several tree types,
   stone, ores).
+- Vegetation varieties planned so far: oak, spruce (needle tree), pine, dead tree, and
+  bushes (e.g. berry bush, plain shrub).
 - Each variety has a **harvest level**: harvesting it needs a tool of at least that level.
   This ties resources to tool upgrades (see Player: Tools).
 - The biome decides which varieties occur where (see Biomes).
