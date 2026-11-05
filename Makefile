@@ -87,9 +87,16 @@ screenshot:
 
 # On Godot builds without navigation (e.g. some Gentoo builds) GUT prints a harmless
 # 'Identifier "NavigationMeshGenerator" not declared' parse error. Tests still run.
+# A script with a parse error is skipped by GUT without failing the run, so the log is
+# checked for parse errors in our own scripts (the GUT addon has a known harmless one).
 test:
 	$(IMPORT)
-	$(GODOT) --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://tests -gexit
+	@mkdir -p build
+	@$(GODOT) --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://tests -gexit \
+		> build/test.log 2>&1; status=$$?; cat build/test.log; \
+	if grep -A1 "Parse Error" build/test.log | grep -q "res://\(game\|tests\)/"; then \
+		echo "make test: a script in game/ or tests/ does not parse (see above)"; exit 1; fi; \
+	exit $$status
 
 lint:
 	$(GDLINT) $(GDSCRIPT_DIRS)
