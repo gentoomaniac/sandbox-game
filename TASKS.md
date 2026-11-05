@@ -310,7 +310,7 @@ Done when: you can build a house, walk in, sleep there, and walk out.
 
 ## 11. One crop
 
-- [ ] Done
+- [x] Done
 
 Depends on: 6, 7, 8.
 
