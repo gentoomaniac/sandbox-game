@@ -559,7 +559,7 @@ Depends on: 18. See SPEC.md "Resources: trees and minerals" (felling and mining)
 
 ## 21. Energy and health
 
-- [ ] Done
+- [x] Done
 
 Depends on: 20. See SPEC.md "Player" (energy, details).
 
