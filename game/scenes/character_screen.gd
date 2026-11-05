@@ -1,12 +1,11 @@
 class_name CharacterScreen
 extends CanvasLayer
-## The character screen over the game: the character with the equipment slots around it on
-## the left, the backpack with the hotbar as a row below it and the carried weight on the
-## right. Click an item to pick
-## it up, then click a slot to put it down: a different item swaps places, the same item
-## stacks, and an equipment slot only takes an item that fits (those light up while an item
-## is picked up). Clicking the picked slot again, or outside the slots, drops the pick.
-## Right click wears an inventory item, or takes a worn one off into the first free slot.
+## The character screen over the game: the character with the equipment slots around it on the
+## left, the backpack with the hotbar as a row below it and the carried weight on the right.
+## Click an item to pick it up, then click a slot to put it down: a different item swaps places,
+## the same item stacks, and an equipment slot only takes an item that fits (those light up
+## while an item is picked up). Clicking the picked slot again, or outside the slots, drops the
+## pick. Right click wears an inventory item, or takes a worn one off into the first free slot.
 
 const SLOT_GAP := 2
 const COLUMN_GAP := 4

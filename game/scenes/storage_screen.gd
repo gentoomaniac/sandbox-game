@@ -2,12 +2,11 @@ class_name StorageScreen
 extends CanvasLayer
 ## The storage screen over the game, for a chest: the player's backpack on the left (no
 ## equipment) with the hotbar as a row below it, and the chest's slots on the right, each under
-## a small icon. Click an item to pick
-## it up, then click a slot of either side to put it down: a different item swaps places, the
-## same item stacks. Clicking the picked slot again, or outside the slots, drops the pick.
-## Shift+click sends a whole stack to the other side (from the chest into the backpack first,
-## so the hotbar isn't flooded). Like the character screen, it takes the
-## input while it is open (Main sees to that, and closes it on E and Escape).
+## a small icon. Click an item to pick it up, then click a slot of either side to put it down: a
+## different item swaps places, the same item stacks. Clicking the picked slot again, or outside
+## the slots, drops the pick. Shift+click sends a whole stack to the other side (from the chest
+## into the backpack first, so the hotbar isn't flooded). Like the character screen, it takes
+## the input while it is open (Main sees to that, and closes it on E and Escape).
 
 ## Which side of the screen a slot is on.
 const INVENTORY := 0

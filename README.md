@@ -47,9 +47,9 @@ same weather.
 
 The world moves with the wind: trees, bushes, grass, reeds and crops sway, barely on a
 calm day and hard in the gusts of a storm; the water ripples and glints, choppier in wind;
-the campfire and the hearth burn, their flames licking up and falling back, and throw sparks;
-the campfire's flames lean and stretch downwind, more in a strong wind;
-rain splashes on the ground; lily pads drift and bob.
+the campfire and the hearth burn, their flames licking up and falling back, and throw
+sparks; the campfire's flames lean and stretch downwind, more in a strong wind; rain
+splashes on the ground; lily pads drift and bob.
 
 ![Rain in autumn, snow in winter, morning fog and a thunderstorm](docs/screenshots/weather.png)
 
@@ -155,14 +155,14 @@ missing. The first recipe is the chest, for 5 logs. The recipes are in
 
 ![The crafting menu with a chest recipe](docs/screenshots/crafting.png)
 
-Hold a chest and a ghost shows where it would go: green where it fits, red where it doesn't
-(not on water, wetland or floodplain, not on something else, not in front of a door). Use it
-to place the chest, outdoors or inside a house. Press E in front of a chest to open it: your
-backpack and hotbar are on the left and the chest's 15 slots on the right. Click an item and click a
-slot to move it, or Shift+click to send a whole stack across (from the chest it goes to the backpack first, so
-the hotbar isn't flooded). The axe takes a chest down: outdoors
-what it held spills onto the ground, inside a house the chest and its contents go into your
-inventory (or you are told there is no room).
+Hold a chest and a ghost shows where it would go: green where it fits, red where it
+doesn't (not on water, wetland or floodplain, not on something else, not in front of a
+door). Use it to place the chest, outdoors or inside a house. Press E in front of a chest
+to open it: your backpack and hotbar are on the left and the chest's 15 slots on the
+right. Click an item and click a slot to move it, or Shift+click to send a whole stack
+across (from the chest it goes to the backpack first, so the hotbar isn't flooded). The
+axe takes a chest down: outdoors what it held spills onto the ground, inside a house the
+chest and its contents go into your inventory (or you are told there is no room).
 
 ![The storage screen of a chest](docs/screenshots/chest.png)
 

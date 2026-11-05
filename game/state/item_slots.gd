@@ -43,7 +43,7 @@ func is_empty() -> bool:
 
 
 ## Puts `count` of `item` in: first onto stacks of it that have room, then into free slots in
-## the order of `free_slots` (default `_free_slot_order`). Returns how many did not fit.
+## the order of `free_slots` (empty: `_free_slot_order`). Returns how many did not fit.
 func add(item: StringName, count: int, free_slots: Array = []) -> int:
 	var limit: int = ItemTypes.TYPES[item]["stack_limit"]
 	var left := count
