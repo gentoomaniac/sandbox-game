@@ -899,6 +899,9 @@ a hall and living end, the barn with stalls and storage and no bed or hearth.
   (fine for tens, not hundreds; piles never expire): bucket per tile or chunk. A pile that
   falls back onto a non-walkable source may be out of reach. A pulled pile moves straight
   through walls and water in its last half tile.
+- Task 35 review: time a chunk load with the clay probe and hint layer against the ~14 ms
+  baseline; a mown tuft stays an object edit forever after it regrew (drop edits that are
+  back to their generated state); ResourceCase `_hold` could just select a hotbar slot.
 - Held art and use poses for axe, pickaxe, scythe and shovel.
 - A planted sapling can be picked up again by hand for free; decide whether that's fine.
 - The shovel could later dig up a young sapling to move it.
