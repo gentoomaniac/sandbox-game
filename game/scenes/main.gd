@@ -17,12 +17,13 @@ extends Node2D
 ## row from there and some of every new item in the inventory (see DebugForage);
 ## `--console=<line>;<line>` runs those console commands at start and leaves the console
 ## open (see ConsoleView); `--zoom=<z>` sets the camera zoom; `--coordinates` shows the
-## coordinates (F3); `--inventory` opens the inventory screen at start;
+## coordinates (F3); `--inventory` opens the character screen at start;
+## `--wear=<item>` puts a wearable item on (`straw_hat`, `shirt`, ...);
 ## `--mouse-tile=<x>,<y>` pretends the mouse is always on that tile (for screenshots);
 ## `--camera-shift=<x>,<y>` moves the camera by that many art pixels, fractions included
 ## (to check smooth scrolling); `--menu=pause|settings|controls|display|game` opens that menu page
-## (with `--screenshot`, the shot is of the menu). PlayerView parses `--outfit=<n>` and
-## `--pose=<direction>`, and F6 cycles the outfit (see there). BuildMode parses
+## (with `--screenshot`, the shot is of the menu). PlayerView parses `--hair=<n>` and
+## `--pose=<direction>`, and F6 cycles the hair (see there). BuildMode parses
 ## `--ghost=<x>,<y>` and `--house=<x>,<y>` (see there).
 
 const WORLD_SEED := 1
@@ -47,7 +48,7 @@ var _harvest_hud := HarvestHud.new()
 var _coordinates_hud := CoordinatesHud.new()
 var _hotbar := HotbarHud.new()
 var _vitals := VitalsHud.new()
-var _inventory_screen := InventoryScreen.new()
+var _character_screen := CharacterScreen.new()
 var _console_view := ConsoleView.new()
 var _cheat_hud := CheatHud.new()
 var _start_console_lines := PackedStringArray()
@@ -56,7 +57,7 @@ var _screenshot_path := ""
 var _fast_forward := false
 var _is_fading := false
 var _enter_first_house := false
-var _open_inventory_at_start := false
+var _open_character_screen_at_start := false
 var _settled_frames := 0
 var _pending_minutes := 0.0
 var _camera_shift := Vector2.ZERO
@@ -109,10 +110,13 @@ func _ready() -> void:
 			_state.player.health = float(arg.trim_prefix("--health="))
 		elif arg == "--coordinates":
 			_coordinates_hud.toggle()
+		elif arg.begins_with("--wear="):
+			var item := StringName(arg.trim_prefix("--wear="))
+			_state.player.equipment.equip(Equipment.slot_of(item), item)
 		elif arg == "--inside":
 			_enter_first_house = true
 		elif arg == "--inventory":
-			_open_inventory_at_start = true
+			_open_character_screen_at_start = true
 		elif arg.begins_with("--console="):
 			_start_console_lines = arg.trim_prefix("--console=").split(";")
 		elif arg.begins_with("--zoom="):
@@ -142,10 +146,10 @@ func _ready() -> void:
 	_hotbar.show_inventory(_state.player.inventory)
 	add_child(_vitals)
 	_vitals.show_state(_state)
-	add_child(_inventory_screen)
-	_inventory_screen.show_inventory(_state.player.inventory)
-	if _open_inventory_at_start:
-		_inventory_screen.toggle()
+	add_child(_character_screen)
+	_character_screen.show_player(_state.player)
+	if _open_character_screen_at_start:
+		_character_screen.toggle()
 	add_child(_cheat_hud)
 	_cheat_hud.show_cheats(_state.cheats)
 	add_child(_console_view)
@@ -185,12 +189,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		_console_view.open()
 		return
 	if event.is_action_pressed("pause"):
-		# Escape closes the console, then the inventory, then leaves build mode, then opens
+		# Escape closes the console, then the character screen, then leaves build mode, then opens
 		# the menu.
 		if _console_view.is_open():
 			_console_view.close()
-		elif _inventory_screen.is_open():
-			_inventory_screen.toggle()
+		elif _character_screen.is_open():
+			_character_screen.toggle()
 		elif _build_mode.is_active():
 			_build_mode.cancel()
 		else:
@@ -203,10 +207,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	# and must not also be a use click.
 	var can_use := _can_use()
 	if event.is_action_pressed("inventory") and not _is_fading:
-		_inventory_screen.toggle()
+		_character_screen.toggle()
 		return
-	# The open inventory takes the input: the player neither walks nor acts.
-	if _inventory_screen.is_open():
+	# The open character screen takes the input: the player neither walks nor acts.
+	if _character_screen.is_open():
 		return
 	# A SubViewport only gets the events that are pushed into it. That does not mark the
 	# event as handled here, so Main still sees what BuildMode consumed.
@@ -239,12 +243,12 @@ func _process(delta: float) -> void:
 	_use_highlight.is_enabled = (
 		not _build_mode.is_active()
 		and not _state.is_inside()
-		and not _inventory_screen.is_open()
+		and not _character_screen.is_open()
 		and not _console_view.is_open()
 	)
 	if not _is_fading:
 		var direction := Vector2.ZERO
-		if not _inventory_screen.is_open() and not _console_view.is_open():
+		if not _character_screen.is_open() and not _console_view.is_open():
 			direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 		_state.player.move(_state.current_map, direction, delta, _state.walk_speed_factor())
 		if _state.door_underfoot():

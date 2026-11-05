@@ -224,6 +224,89 @@ def sapling():
     return outlined(picture)
 
 
+def from_rows(rows, keys):
+    """A picture from rows of characters, each mapped to a colour name by `keys` ("." is clear)."""
+    return [[keys.get(character) for character in row] for row in rows]
+
+
+def tunic_shaped(base, light, shade, belt):
+    """A T-shaped tunic with short sleeves, outlined; with a belt if `belt`."""
+    rows = [
+        "................",
+        "................",
+        "..lbbbccccbbbs..",
+        ".lbbbbbccbbbbbs.",
+        ".lbbbbbbbbbbbbs.",
+        ".bbbsbbbbbbsbbs.",
+        ".sssslbbbbbbsss.",
+        "....lbbbbbbs....",
+        "....lbbbbbbs....",
+        "....dddgdddd...." if belt else "....lbbbbbbs....",
+        "....lbbbbbbs....",
+        "....lbbbbbbs....",
+        "....sbbbbbbs....",
+        "....ssssssss....",
+        "................",
+        "................",
+    ]
+    keys = {"b": base, "l": light, "s": shade, "c": "cream", "d": "soil_dark", "g": "gold"}
+    return outlined(from_rows(rows, keys))
+
+
+def tunic():
+    return tunic_shaped("water", "water_light", "water_deep", belt=True)
+
+
+def shirt():
+    return tunic_shaped("ember", "flame", "soil", belt=False)
+
+
+def trousers():
+    rows = [
+        "................",
+        "................",
+        "....llllllll....",
+        "....bbbbbbbb....",
+        "...lbbbslbbbs...",
+        "...lbbbslbbbs...",
+        "...lbbbslbbbs...",
+        "...lbbbslbbbs...",
+        "...lbbs..lbbs...",
+        "...lbbs..lbbs...",
+        "...lbbs..lbbs...",
+        "...lbbs..lbbs...",
+        "...ssss..ssss...",
+        "................",
+        "................",
+        "................",
+    ]
+    keys = {"b": "sand", "l": "sand_light", "s": "mud"}
+    return outlined(from_rows(rows, keys))
+
+
+def straw_hat():
+    rows = [
+        "................",
+        "................",
+        "................",
+        ".....lllbbb.....",
+        "....lllbbbbs....",
+        "....lbbbbbbs....",
+        "....dddddddd....",
+        "....bbbbbbbs....",
+        ".llllllbbbbbbbs.",
+        ".lbbbbbbbbbbbbs.",
+        "..ssssssssssss..",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+    ]
+    keys = {"b": "straw", "l": "sand_light", "s": "reed", "d": "soil"}
+    return outlined(from_rows(rows, keys))
+
+
 ICONS = {
     "hoe": hoe(),
     "axe": axe(),
@@ -236,6 +319,10 @@ ICONS = {
     "fibre": fibre(),
     "berries": berries(),
     "sapling": sapling(),
+    "tunic": tunic(),
+    "shirt": shirt(),
+    "trousers": trousers(),
+    "straw_hat": straw_hat(),
 }
 
 
@@ -254,3 +341,45 @@ def slot(frame):
 
 
 SLOTS = {"slot": slot("ink"), "slot_selected": slot("gold")}
+
+
+# The faint outline an empty equipment slot shows for what fits it, as 16x16 icons in a colour
+# just lighter than the slot. Each is a list of closed paths, drawn as lines between points.
+HINT_COLOUR = "soil_mid"
+HINT_PATHS = {
+    "head": [
+        [(5, 8), (5, 5), (7, 3), (10, 3), (12, 5), (12, 8)],
+        [(2, 8), (15, 8), (15, 10), (2, 10), (2, 8)],
+    ],
+    "body": [
+        [(5, 3), (7, 3), (8, 5), (9, 3), (11, 3), (14, 6), (12, 8), (11, 7), (11, 13), (4, 13), (4, 7), (3, 8), (1, 6), (5, 3)]
+    ],
+    "legs": [[(4, 2), (12, 2), (13, 14), (9, 14), (8, 7), (7, 14), (3, 14), (4, 2)]],
+    "feet": [[(5, 2), (9, 2), (9, 8), (13, 10), (13, 13), (5, 13), (5, 2)]],
+    "back": [
+        [(4, 5), (11, 5), (12, 13), (3, 13), (4, 5)],
+        [(5, 5), (5, 3), (10, 3), (10, 5)],
+        [(6, 9), (9, 9), (9, 12), (6, 12), (6, 9)],
+    ],
+    "main_hand": [
+        [(12, 2), (13, 3), (7, 9), (6, 8), (12, 2)],
+        [(4, 8), (8, 12)],
+        [(6, 10), (3, 13)],
+    ],
+    "off_hand": [
+        [(3, 3), (12, 3), (12, 8), (8, 14), (3, 8), (3, 3)],
+        [(7, 5), (7, 10)],
+        [(5, 7), (10, 7)],
+    ],
+}
+
+
+def hint(paths):
+    picture = canvas()
+    for path in paths:
+        for start, end in zip(path, path[1:]):
+            line(picture, *start, *end, HINT_COLOUR)
+    return picture
+
+
+SLOT_HINTS = {f"equip_{slot}": hint(paths) for slot, paths in HINT_PATHS.items()}

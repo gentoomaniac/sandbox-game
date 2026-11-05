@@ -5,7 +5,7 @@ extends ResourceCase
 
 const RULES := {
 	"cost": {"till": 4.0, "hit": 3.0, "water": 2.0, "plant": 1.0, "pick": 0.5},
-	"weight": {"free_kg": 12.0, "step_kg": 5.0, "extra_per_step": 0.5},
+	"weight": {"free_kg": 15.0, "step_kg": 5.0, "extra_per_step": 0.5},
 	"sleep": {"sleeping_bag": 80.0, "small_bed": 100.0},
 	"food": {"berries": 3.0, "turnip": 8.0},
 	"walk":

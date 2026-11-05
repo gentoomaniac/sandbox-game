@@ -32,10 +32,30 @@ var is_debuffed := false
 
 ## What they carry; the selected hotbar slot is what they hold.
 var inventory := Inventory.new()
+## What they wear. Replace it only through the setter, so the appearance follows.
+var equipment: Equipment:
+	set(value):
+		equipment = value
+		equipment.changed.connect(_dress)
+		_dress()
 
 # --- Looks ---
-## What the character wears and holds.
+## What the character looks like: their own body and hair, what they wear and what they hold.
 var appearance := Appearance.new()
+
+
+func _init() -> void:
+	equipment = Equipment.new()
+
+
+## Everything the player has with them, worn or carried, in kilograms: what the energy
+## cost of actions depends on.
+func carried_weight() -> float:
+	return inventory.total_weight() + equipment.total_weight()
+
+
+func _dress() -> void:
+	appearance.dress(equipment)
 
 
 ## The tile the player's feet are on.
@@ -75,6 +95,7 @@ func to_dict() -> Dictionary:
 		"home_bed": SaveCodec.vector_to_json(home_bed),
 		"appearance": appearance.to_dict(),
 		"inventory": inventory.to_dict(),
+		"equipment": equipment.to_dict(),
 		"energy": energy,
 		"health": health,
 		"is_debuffed": is_debuffed,
@@ -90,6 +111,12 @@ static func from_dict(data: Dictionary, home_map: GameMap) -> PlayerState:
 	player.home_bed = SaveCodec.vector_from_json(data["home_bed"])
 	player.appearance = Appearance.from_dict(data["appearance"])
 	player.inventory = Inventory.from_dict(data["inventory"])
+	# Saves from before equipment had the outfit of a new game on.
+	player.equipment = (
+		Equipment.from_dict(data["equipment"])
+		if data.has("equipment")
+		else Equipment.with_starting_outfit()
+	)
 	# Saves from before energy existed have none of these.
 	player.energy = data.get("energy", MAX_ENERGY)
 	player.health = data.get("health", MAX_HEALTH)

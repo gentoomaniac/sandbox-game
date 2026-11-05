@@ -59,6 +59,7 @@ static func new_game(world_seed: int) -> GameState:
 	state.player.home_map = state.world
 	state.player.home_bed = camp.sleeping_bag_pos
 	state.player.inventory = Inventory.with_starting_items()
+	state.player.equipment = Equipment.with_starting_outfit()
 	return state
 
 
@@ -197,7 +198,7 @@ func can_use_held_item() -> bool:
 func use_tile(target: Vector2i) -> Use:
 	var weight_factor := 1.0
 	if not cheats.is_weight_off:
-		weight_factor = energy_rules.weight_factor(player.inventory.total_weight())
+		weight_factor = energy_rules.weight_factor(player.carried_weight())
 	var drain := 0.0 if cheats.is_drain_off else energy_drain
 	var use := _do_use(target)
 	if COST_KINDS.has(use):

@@ -20,6 +20,8 @@ const STARTING_ITEMS := [
 	[ItemTypes.PICKAXE, 1],
 	[ItemTypes.WATERING_CAN, 1],
 	[ItemTypes.TURNIP_SEEDS, 15],
+	[ItemTypes.STRAW_HAT, 1],
+	[ItemTypes.SHIRT, 1],
 ]
 
 var slots: Array[Dictionary] = []

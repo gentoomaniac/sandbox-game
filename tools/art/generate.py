@@ -1158,6 +1158,11 @@ HAIR_COLOURS = {
     "1": {"base": "straw", "light": "gold", "shade": "reed", "long": True},
 }
 
+# The undershirt and shorts that the bare body wears.
+UNDERSHIRT = "sand_light"
+UNDERSHIRT_SHADE = "sand"
+SHORTS = "mud"
+
 # A walk is two contact frames (walk 1 and 3: the hips sink, the legs spread) and two
 # passing frames (walk 2 and 4: one leg swings through). `lift` is how far each of the two
 # legs is raised (the far or left leg first), `stride` how far the near leg is ahead in a
@@ -1186,8 +1191,8 @@ def leg_boxes(facing, pose):
 
 
 def draw_body(facing, pose, skin="skin", shade="skin_shade", **_):
-    """The bare figure: head, neck, arms with hands, and legs. Clothes cover most of it, so
-    this layer is also the silhouette that the outline follows."""
+    """The figure in a linen undershirt and shorts: head, arms with hands, and legs. Worn
+    clothes cover most of it, so this layer is also the silhouette that the outline follows."""
     canvas = character_canvas()
     sink, swing = pose["sink"], pose["swing"]
     # The head, with its top corners cut.
@@ -1208,12 +1213,24 @@ def draw_body(facing, pose, skin="skin", shade="skin_shade", **_):
             for x in (6, 10):
                 fill_rect(canvas, x, 9 + sink, x, 10 + sink, "soil_dark")
             canvas[11 + sink][5] = canvas[11 + sink][11] = "petal"
+        # The undershirt, with short sleeves, and the shorts down to the thighs.
+        fill_rect(canvas, 6, 13 + sink, 10, 20 + sink, UNDERSHIRT)
+        fill_rect(canvas, 10, 15 + sink, 10, 20 + sink, UNDERSHIRT_SHADE)
+        for x0, dy in ((4, 0), (11, swing // 2)):
+            fill_rect(canvas, x0, 14 + sink + dy, x0 + 1, 15 + sink + dy, UNDERSHIRT)
+        fill_rect(canvas, 6, 21 + sink, 10, 22 + sink, SHORTS)
     else:
         fill_rect(canvas, 5, 13 + sink, 10, 22 + sink, shade)
         canvas[10 + sink][13] = skin
         fill_rect(canvas, 11, 9 + sink, 11, 10 + sink, "soil_dark")
         fill_rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 17 + sink, skin)
         fill_rect(canvas, 7 + swing, 18 + sink, 8 + swing, 20 + sink, skin)
+        fill_rect(canvas, 5, 13 + sink, 10, 20 + sink, UNDERSHIRT)
+        fill_rect(canvas, 5, 15 + sink, 5, 20 + sink, UNDERSHIRT_SHADE)
+        fill_rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 15 + sink, UNDERSHIRT)
+        fill_rect(canvas, 5, 21 + sink, 10, 22 + sink, SHORTS)
+    for x0, x1, top, _bottom in boxes:
+        fill_rect(canvas, x0, top, x1, top + 2, SHORTS)
     return canvas
 
 
@@ -1318,6 +1335,22 @@ def draw_hair(facing, pose, base, light, shade, long, **_):
     return canvas
 
 
+def draw_straw_hat(facing, pose, **_):
+    """A straw hat: a round crown with a dark band and a wide brim over the hair. Seen from
+    the side the brim reaches further forward (right, mirrored for left) than back."""
+    canvas = character_canvas()
+    sink = pose["sink"]
+    brim = (2, 14) if facing in ("down", "up") else (3, 14)
+    fill_rect(canvas, 5, 3 + sink, 11, 5 + sink, "straw")
+    fill_rect(canvas, 6, 2 + sink, 10, 2 + sink, "straw")
+    fill_rect(canvas, 6, 2 + sink, 8, 2 + sink, "sand_light")
+    fill_rect(canvas, 5, 5 + sink, 11, 5 + sink, "soil")
+    fill_rect(canvas, brim[0], 6 + sink, brim[1], 7 + sink, "straw")
+    fill_rect(canvas, brim[0], 6 + sink, brim[1], 6 + sink, "sand_light")
+    fill_rect(canvas, brim[0], 7 + sink, brim[1], 7 + sink, "reed")
+    return canvas
+
+
 def draw_held_hoe(facing, pose, **_):
     """A hoe in the right hand, in dark soil colours with a light edge on the blade."""
     canvas = character_canvas()
@@ -1380,6 +1413,7 @@ for _variant, _colours in CLOTHES_COLOURS.items():
 for _variant, _colours in HAIR_COLOURS.items():
     CHARACTER_SHEETS[f"hair_{_variant}"] = character_sheet(draw_hair, _colours)
 CHARACTER_SHEETS["legs_0"] = character_sheet(draw_legs, {})
+CHARACTER_SHEETS["head_straw_hat"] = character_sheet(draw_straw_hat, {})
 CHARACTER_SHEETS["held_hoe"] = character_sheet(draw_held_hoe, {})
 
 
@@ -1887,7 +1921,7 @@ def main():
     (ASSETS / "interior").mkdir(exist_ok=True)
     for name, (picture, _footprint) in FURNITURE.items():
         to_image([[picture]], len(picture[0]), len(picture)).save(ASSETS / "interior" / f"{name}.png")
-    for directory, pictures in (("items", items.ICONS), ("ui", items.SLOTS)):
+    for directory, pictures in (("items", items.ICONS), ("ui", items.SLOTS | items.SLOT_HINTS)):
         (ASSETS / directory).mkdir(exist_ok=True)
         for name, picture in pictures.items():
             to_image([[picture]], len(picture)).save(ASSETS / directory / f"{name}.png")

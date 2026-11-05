@@ -1,9 +1,11 @@
 class_name SlotView
 extends Control
 ## One inventory slot on screen: the slot art, the item's icon and, for more than one, its
-## count. Left click emits `pressed`.
+## count. Left click emits `pressed`, right click `secondary_pressed`. An empty slot can show
+## a faint `hint` of what belongs in it.
 
 signal pressed
+signal secondary_pressed
 
 const SIZE := 20
 const ICON_OFFSET := Vector2(2, 2)
@@ -12,6 +14,9 @@ const COUNT_SHADOW_COLOR := Color("1d1b26")
 
 const SLOT_TEXTURE := preload("res://assets/ui/slot.png")
 const SELECTED_SLOT_TEXTURE := preload("res://assets/ui/slot_selected.png")
+
+## Drawn in an empty slot, if set.
+var hint: Texture2D
 
 var _stack := {}
 var _icon: Texture2D
@@ -30,14 +35,21 @@ func show_stack(stack: Dictionary, is_selected: bool) -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+	if not (event is InputEventMouseButton and event.pressed):
+		return
+	if event.button_index == MOUSE_BUTTON_LEFT:
 		pressed.emit()
+		accept_event()
+	elif event.button_index == MOUSE_BUTTON_RIGHT:
+		secondary_pressed.emit()
 		accept_event()
 
 
 func _draw() -> void:
 	draw_texture(SELECTED_SLOT_TEXTURE if _is_selected else SLOT_TEXTURE, Vector2.ZERO)
 	if _stack.is_empty():
+		if hint != null:
+			draw_texture(hint, ICON_OFFSET)
 		return
 	draw_texture(_icon, ICON_OFFSET)
 	if _stack["count"] > 1:

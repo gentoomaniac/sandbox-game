@@ -4,7 +4,8 @@ extends Node2D
 ## frame at the player's position. Walking comes from how the position changed since the
 ## last frame.
 ##
-## Debug: `--outfit=<n>` wears variant "n" of the clothes and hair (F6 cycles 0 and 1);
+## Debug: `--hair=<n>` wears variant "n" of the hair (F6 cycles 0 and 1; what the
+## character wears comes from the equipment, see `--wear` in Main);
 ## `--pose=<up|down|left|right>[,<column>]` turns the player and optionally freezes the
 ## animation on a column of the sheet (0 idle, 1 to 4 the walk frames).
 
@@ -18,10 +19,9 @@ const IDLE_COLUMN := 0
 ## A walk cycle visits these columns, step after step.
 const WALK_COLUMNS := [1, 2, 3, 4]
 const WALK_FRAMES_PER_SECOND := 10.0
-## The slots whose variant changes with `--outfit` and F6.
-const OUTFIT_SLOTS := [Appearance.CLOTHES, Appearance.HAIR]
-const OUTFIT_COUNT := 2
-const OUTFIT_KEY := KEY_F6
+## The hair variants that `--hair` and F6 cycle through.
+const HAIR_COUNT := 2
+const HAIR_KEY := KEY_F6
 const FACINGS_BY_NAME := {
 	"up": Vector2i.UP, "down": Vector2i.DOWN, "left": Vector2i.LEFT, "right": Vector2i.RIGHT
 }
@@ -29,7 +29,7 @@ const FACINGS_BY_NAME := {
 var _player: PlayerState
 var _last_position := Vector2.ZERO
 var _walk_time := 0.0
-var _outfit := 0
+var _hair := 0
 var _frozen_column := -1
 ## The sheets the sprites show now, bottom first. The sprites are rebuilt when they change.
 var _shown_sheets: Array[String] = []
@@ -53,8 +53,8 @@ func show_player(player: PlayerState) -> void:
 	_last_position = player.position
 	position = (player.position * TerrainTileset.TILE_SIZE).round()
 	for arg in OS.get_cmdline_user_args():
-		if arg.begins_with("--outfit="):
-			_wear_outfit(int(arg.trim_prefix("--outfit=")))
+		if arg.begins_with("--hair="):
+			_wear_hair(int(arg.trim_prefix("--hair=")))
 		elif arg.begins_with("--pose="):
 			var parts := arg.trim_prefix("--pose=").split(",")
 			player.facing = FACINGS_BY_NAME[parts[0]]
@@ -63,8 +63,8 @@ func show_player(player: PlayerState) -> void:
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == OUTFIT_KEY:
-		_wear_outfit((_outfit + 1) % OUTFIT_COUNT)
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == HAIR_KEY:
+		_wear_hair((_hair + 1) % HAIR_COUNT)
 
 
 func _process(delta: float) -> void:
@@ -96,10 +96,9 @@ func _show_held_item() -> void:
 		_player.appearance.wear(Appearance.HELD, held_sheet)
 
 
-func _wear_outfit(outfit: int) -> void:
-	_outfit = outfit
-	for slot in OUTFIT_SLOTS:
-		_player.appearance.wear(slot, str(outfit))
+func _wear_hair(hair: int) -> void:
+	_hair = hair
+	_player.appearance.wear(Appearance.HAIR, str(hair))
 
 
 func _show_layers(layers: Array[Dictionary]) -> void:

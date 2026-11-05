@@ -8,6 +8,8 @@ extends RefCounted
 ## - tool: the kind of tool it is (HOE ...) and `level`, how good it is (see
 ##   WorldObjectTypes `harvest_level`);
 ## - held_sheet: the variant of the character's `held` layer that shows it in the hand;
+## - equip_slot: the Equipment slot it is worn in (wearables have a stack limit of 1), and
+##   `layer_variant`, the variant of the character layer it shows (see Appearance.dress);
 ## - plants: seeds or a sapling; the world object type that grows from them, `plants_on` the
 ##   terrain it needs (soil if not given) and `plants_state` the state the new object starts with.
 
@@ -22,6 +24,10 @@ const STONE := &"stone"
 const FIBRE := &"fibre"
 const BERRIES := &"berries"
 const SAPLING := &"sapling"
+const TUNIC := &"tunic"
+const SHIRT := &"shirt"
+const TROUSERS := &"trousers"
+const STRAW_HAT := &"straw_hat"
 
 ## Stands for an empty hand or slot where an item id is expected.
 const NONE := &""
@@ -113,6 +119,38 @@ const TYPES := {
 		"plants": WorldObjectTypes.SAPLING,
 		"plants_on": Tile.Terrain.GRASS,
 		"plants_state": {"tree": WorldObjectTypes.OAK},
+	},
+	TUNIC:
+	{
+		"name": "Tunic",
+		"weight": 0.8,
+		"stack_limit": 1,
+		"equip_slot": Equipment.BODY,
+		"layer_variant": "0",
+	},
+	SHIRT:
+	{
+		"name": "Shirt",
+		"weight": 0.5,
+		"stack_limit": 1,
+		"equip_slot": Equipment.BODY,
+		"layer_variant": "1",
+	},
+	TROUSERS:
+	{
+		"name": "Trousers",
+		"weight": 0.7,
+		"stack_limit": 1,
+		"equip_slot": Equipment.LEGS,
+		"layer_variant": "0",
+	},
+	STRAW_HAT:
+	{
+		"name": "Straw hat",
+		"weight": 0.3,
+		"stack_limit": 1,
+		"equip_slot": Equipment.HEAD,
+		"layer_variant": "straw_hat",
 	},
 }
 

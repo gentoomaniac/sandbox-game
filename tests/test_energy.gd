@@ -48,15 +48,15 @@ func test_a_full_inventory_costs_nothing() -> void:
 func test_the_weight_factor_is_free_up_to_the_limit_then_linear() -> void:
 	var rules := EnergyRules.new(RULES)
 	assert_eq(rules.weight_factor(0.0), 1.0)
-	assert_eq(rules.weight_factor(12.0), 1.0)
-	assert_almost_eq(rules.weight_factor(14.0), 1.2, 0.0001)
-	assert_almost_eq(rules.weight_factor(17.0), 1.5, 0.0001)
-	assert_almost_eq(rules.weight_factor(22.0), 2.0, 0.0001)
+	assert_eq(rules.weight_factor(15.0), 1.0)
+	assert_almost_eq(rules.weight_factor(17.0), 1.2, 0.0001)
+	assert_almost_eq(rules.weight_factor(20.0), 1.5, 0.0001)
+	assert_almost_eq(rules.weight_factor(25.0), 2.0, 0.0001)
 
 
 func test_a_heavy_load_costs_more() -> void:
 	_state.player.inventory.add(ItemTypes.STONE, 10)
-	var factor := _state.energy_rules.weight_factor(_state.player.inventory.total_weight())
+	var factor := _state.energy_rules.weight_factor(_state.player.carried_weight())
 	assert_gt(factor, 1.0)
 	_hold(ItemTypes.HOE)
 	_state.use_facing_tile()
