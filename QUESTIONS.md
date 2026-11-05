@@ -23,4 +23,22 @@ Answered questions move into SPEC.md and are removed here.
 
 ## Questions
 
-(None yet.)
+1. **Art style: which changes should be made?** The style guide is in
+   [docs/art-style.md](docs/art-style.md); its last section ranks 8 quick wins and 10 bigger
+   items. Nothing has been changed yet. Suggested first batch, all small: the sleeping bag
+   as a straw bedroll, a new straw hat shape, autumn colours towards brown, ochre and
+   copper (oak, beech, birch) instead of maple reds, small-paned windows, the palette swaps
+   (lime wall and painted teal door on the Kate, so the magic colour `spirit` is free), seed
+   sacks that can be told apart, a copper watering can. Default: wait for you.
+2. **Tomatoes** are not a farm crop on this coast before the 19th century. Replace them
+   (broad beans, flax or kale), or keep them as a rare imported seed? Default: keep for now.
+3. **Tree species:** the guide says beech, birch, alder and pollard willow fit the region
+   better than spruce and pine, which were mostly planted later. You asked for the Scots
+   pine and to keep the spruce (task 51, in progress). Keep both as common trees, or make
+   them rarer (planted clumps, Geest) and add beech, birch, alder, willow later? Default:
+   task 51 as decided, no change to how common they are.
+4. **The shack** reads like a frontier log cabin; the guide suggests tarred black or
+   weathered silver boards with a turf roof (you said it needs no reeds, so not thatch).
+   Default: wait for you.
+5. **Period clothes for the player** (knee breeches, stockings, clogs, waistcoat, linen
+   shirt) are the guide's top bigger item. Default: wait for you.
