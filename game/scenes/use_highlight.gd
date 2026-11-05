@@ -7,6 +7,7 @@ extends Node2D
 ## - Under the mouse, in reach, nothing to do: a faint outline, so the cursor still shows
 ##   where it points. In front of the player the highlight stays off then.
 ## - Under the mouse, out of reach: translucent red outline and fill; the action does nothing.
+## Nothing at all while the held item does nothing anywhere (a tool that has no use yet).
 ## Drawn in world space, so it sits on the pixel grid and zooms with the world.
 
 ## The mouse target stays this long after the last mouse motion, then fades out ...
@@ -64,7 +65,9 @@ func _process(_delta: float) -> void:
 	if _state == null:
 		return
 	var target := targeting()
-	var color := _color_for(target) if is_enabled else Color.TRANSPARENT
+	var color := Color.TRANSPARENT
+	if is_enabled and _state.can_use_held_item():
+		color = _color_for(target)
 	var is_filled := not target.is_in_reach
 	if target.tile != _drawn_tile or color != _drawn_color or is_filled != _is_drawn_filled:
 		_drawn_tile = target.tile

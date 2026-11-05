@@ -104,7 +104,7 @@ top of classic pixel art (details under "Lighting and look").
 ### Saving (first version)
 
 - Save format: seed + world edits (terrain and objects) + buildings with their interiors +
-  player state (position, current map, home, appearance) + clock + harvest count. One JSON
+  player state (position, current map, home, appearance, inventory) + clock. One JSON
   file per world under `user://saves/`.
 - **Autosave when the player sleeps and when the game quits.** On start, the game loads
   the save if there is one, otherwise it starts a new game (`--new-game` forces one).

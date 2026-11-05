@@ -56,7 +56,8 @@ func _lived_in_state() -> GameState:
 	_state.world.set_terrain(tiles[1], Tile.Terrain.SOIL)
 	_state.world.add_object(WorldObject.new(GameState.CROP, tiles[1]))
 	_state.clock.advance(GameClock.MINUTES_PER_DAY)
-	_state.harvest_count = 3
+	_state.player.inventory.add(ItemTypes.TURNIP, 3)
+	_state.player.inventory.select(4)
 	var house := _place_house()
 	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
 	_state.pass_door()
@@ -166,7 +167,8 @@ func test_a_lived_in_game_round_trip() -> void:
 	var restored := GameState.from_dict(data)
 
 	assert_eq(_through_json(restored.to_dict()), data)
-	assert_eq(restored.harvest_count, 3)
+	assert_eq(restored.player.inventory.count_of(ItemTypes.TURNIP), 3)
+	assert_eq(restored.player.inventory.held_item(), ItemTypes.TURNIP_SEEDS)
 	assert_eq(restored.clock.day, 2)
 	assert_eq(restored.player.position, _state.player.position)
 	assert_eq(restored.world.world_seed, SEED)
@@ -231,6 +233,25 @@ func test_file_round_trip() -> void:
 
 func test_without_a_file_there_is_no_game_to_load() -> void:
 	assert_null(SaveFile.read(SAVE_PATH))
+
+
+func test_a_version_1_save_loads_with_its_harvest_count_as_turnips() -> void:
+	_lived_in_state()
+	var game := _through_json(_state.to_dict())
+	game["player"].erase("inventory")
+	game["harvest_count"] = 4
+	DirAccess.make_dir_recursive_absolute(SAVE_DIR)
+	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	file.store_string(JSON.stringify({"version": 1, "game": game}))
+	file.close()
+
+	var restored := SaveFile.read(SAVE_PATH)
+
+	var inventory := restored.player.inventory
+	assert_eq(inventory.count_of(ItemTypes.TURNIP), 4)
+	assert_eq(inventory.count_of(ItemTypes.HOE), 1)
+	assert_eq(inventory.count_of(ItemTypes.TURNIP_SEEDS), 15)
+	assert_eq(restored.clock.day, 2)
 
 
 func test_a_newer_version_is_refused_and_kept_as_backup() -> void:

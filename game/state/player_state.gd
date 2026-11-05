@@ -22,6 +22,9 @@ var facing := Vector2i.DOWN
 var home_map: GameMap
 var home_bed := Vector2i.ZERO
 
+## What they carry; the selected hotbar slot is what they hold.
+var inventory := Inventory.new()
+
 # --- Looks ---
 ## What the character wears and holds.
 var appearance := Appearance.new()
@@ -63,6 +66,7 @@ func to_dict() -> Dictionary:
 		"facing": SaveCodec.vector_to_json(facing),
 		"home_bed": SaveCodec.vector_to_json(home_bed),
 		"appearance": appearance.to_dict(),
+		"inventory": inventory.to_dict(),
 	}
 
 
@@ -74,6 +78,7 @@ static func from_dict(data: Dictionary, home_map: GameMap) -> PlayerState:
 	player.home_map = home_map
 	player.home_bed = SaveCodec.vector_from_json(data["home_bed"])
 	player.appearance = Appearance.from_dict(data["appearance"])
+	player.inventory = Inventory.from_dict(data["inventory"])
 	return player
 
 

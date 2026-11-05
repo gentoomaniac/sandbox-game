@@ -29,9 +29,21 @@ func _grass_tile() -> Vector2i:
 	return center
 
 
+func _hold(item: StringName) -> void:
+	var inventory := _state.player.inventory
+	for slot in Inventory.HOTBAR_SIZE:
+		if inventory.item_in(slot) == item:
+			inventory.select(slot)
+			return
+	fail_test("not on the hotbar: %s" % item)
+
+
 func _till_and_plant() -> void:
+	_hold(ItemTypes.HOE)
 	_state.use_facing_tile()
+	_hold(ItemTypes.TURNIP_SEEDS)
 	_state.use_facing_tile()
+	_hold(ItemTypes.NONE)
 
 
 func _sleep_days(days: int) -> void:
@@ -77,6 +89,7 @@ func test_a_tile_under_a_building_cannot_be_tilled() -> void:
 
 func test_using_soil_plants_a_crop_at_its_first_stage() -> void:
 	_state.use_facing_tile()
+	_hold(ItemTypes.TURNIP_SEEDS)
 	assert_eq(_state.use_facing_tile(), GameState.Use.PLANT)
 	var crop := _world.object_at(_tile)
 	assert_eq(crop.type, GameState.CROP)
@@ -122,7 +135,7 @@ func test_an_unripe_crop_cannot_be_harvested() -> void:
 	_till_and_plant()
 	assert_eq(_state.use_facing_tile(), GameState.Use.NOTHING)
 	assert_not_null(_world.object_at(_tile))
-	assert_eq(_state.harvest_count, 0)
+	assert_eq(_state.player.inventory.count_of(ItemTypes.TURNIP), 0)
 
 
 func test_a_ripe_crop_is_harvested_and_the_soil_stays() -> void:
@@ -131,7 +144,8 @@ func test_a_ripe_crop_is_harvested_and_the_soil_stays() -> void:
 	assert_eq(_state.use_facing_tile(), GameState.Use.HARVEST)
 	assert_null(_world.object_at(_tile))
 	assert_eq(_world.tile_at(_tile).terrain, Tile.Terrain.SOIL)
-	assert_eq(_state.harvest_count, 1)
+	assert_eq(_state.player.inventory.count_of(ItemTypes.TURNIP), 1)
+	_hold(ItemTypes.TURNIP_SEEDS)
 	assert_eq(_state.use_facing_tile(), GameState.Use.PLANT, "the soil can be planted again")
 
 

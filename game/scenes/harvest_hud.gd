@@ -1,6 +1,6 @@
 class_name HarvestHud
 extends CanvasLayer
-## Shows "+1 turnip" briefly after a harvest, with the running count under the clock.
+## Shows a short note under the clock for a moment, such as "+1 turnip" after a harvest.
 
 const MESSAGE_SECONDS := 1.5
 
@@ -18,8 +18,8 @@ func _init() -> void:
 	add_child(_label)
 
 
-func show_harvest(crop_name: String, total: int) -> void:
-	_label.text = "+1 %s (%d harvested)" % [crop_name, total]
+func show_note(text: String) -> void:
+	_label.text = text
 	_label.modulate.a = 1.0
 	if _tween != null:
 		_tween.kill()

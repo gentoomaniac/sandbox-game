@@ -12,6 +12,7 @@ extends Node2D
 ## `--time=<hh:mm>` sets the time of day; `--field=<x>,<y>` tills a small field there with
 ## crops in every growth stage (see DebugField); `--inside` walks into the first house as soon
 ## as one exists (see `--house`); `--zoom=<z>` sets the camera zoom;
+## `--inventory` opens the inventory screen at start;
 ## `--mouse-tile=<x>,<y>` pretends the mouse is always on that tile (for screenshots);
 ## `--camera-shift=<x>,<y>` moves the camera by that many art pixels, fractions included
 ## (to check smooth scrolling). PlayerView parses `--outfit=<n>` and
@@ -33,11 +34,14 @@ var _save_path := SaveFile.DEFAULT_PATH
 var _player_view := PlayerView.new()
 var _use_highlight := UseHighlight.new()
 var _harvest_hud := HarvestHud.new()
+var _hotbar := HotbarHud.new()
+var _inventory_screen := InventoryScreen.new()
 var _interior_view := InteriorView.new()
 var _screenshot_path := ""
 var _fast_forward := false
 var _is_fading := false
 var _enter_first_house := false
+var _open_inventory_at_start := false
 var _settled_frames := 0
 var _pending_minutes := 0.0
 var _camera_shift := Vector2.ZERO
@@ -70,6 +74,8 @@ func _ready() -> void:
 			DebugField.create(_state.world, Vector2i(int(tile[0]), int(tile[1])))
 		elif arg == "--inside":
 			_enter_first_house = true
+		elif arg == "--inventory":
+			_open_inventory_at_start = true
 		elif arg.begins_with("--zoom="):
 			_start_zoom = float(arg.trim_prefix("--zoom="))
 		elif arg.begins_with("--mouse-tile="):
@@ -90,6 +96,12 @@ func _ready() -> void:
 	_view.add_child(_use_highlight)
 	_use_highlight.show_for(_state, _camera)
 	add_child(_harvest_hud)
+	add_child(_hotbar)
+	_hotbar.show_inventory(_state.player.inventory)
+	add_child(_inventory_screen)
+	_inventory_screen.show_inventory(_state.player.inventory)
+	if _open_inventory_at_start:
+		_inventory_screen.toggle()
 	_interior_view.hide()
 	_world.add_child(_interior_view)
 	_show_clock()
@@ -107,11 +119,19 @@ func _unhandled_input(event: InputEvent) -> void:
 	# Decided before BuildMode sees the event: the click that places a house ends build mode,
 	# and must not also be a use click.
 	var can_use := _can_use()
+	if event.is_action_pressed("inventory") and not _is_fading:
+		_inventory_screen.toggle()
+		return
+	# The open inventory takes the input: the player neither walks nor acts.
+	if _inventory_screen.is_open():
+		return
 	# A SubViewport only gets the events that are pushed into it. That does not mark the
 	# event as handled here, so Main still sees what BuildMode consumed.
 	_world.push_input(event)
 	if event.is_action_pressed("toggle_fast_forward"):
 		_fast_forward = not _fast_forward
+	elif _hotbar_slot_of(event) != -1:
+		_state.player.inventory.select(_hotbar_slot_of(event))
 	elif event.is_action_pressed("interact") and not _is_fading:
 		_try_sleep()
 	elif event.is_action_pressed("use") and can_use:
@@ -129,7 +149,9 @@ func _process(delta: float) -> void:
 	_tick_clock(delta)
 	_use_highlight.is_enabled = not _build_mode.is_active() and not _state.is_inside()
 	if not _is_fading:
-		var direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+		var direction := Vector2.ZERO
+		if not _inventory_screen.is_open():
+			direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 		_state.player.move(_state.current_map, direction, delta)
 		if _state.door_underfoot():
 			_fade_through(_pass_door)
@@ -149,10 +171,24 @@ func _can_use() -> bool:
 	return not _is_fading and not _build_mode.is_active()
 
 
+## The hotbar slot (0 to 9) whose key `event` presses, or -1.
+func _hotbar_slot_of(event: InputEvent) -> int:
+	for slot in Inventory.HOTBAR_SIZE:
+		if event.is_action_pressed("hotbar_%d" % (slot + 1)):
+			return slot
+	return -1
+
+
 ## Uses the targeted tile if the player can reach it.
 func _use_on(target: Targeting) -> void:
-	if target.is_in_reach and _state.use_tile(target.tile) == GameState.Use.HARVEST:
-		_harvest_hud.show_harvest(GameState.CROP, _state.harvest_count)
+	if not target.is_in_reach:
+		return
+	match _state.use_tile(target.tile):
+		GameState.Use.HARVEST:
+			var crop_name: String = ItemTypes.TYPES[ItemTypes.TURNIP]["name"]
+			_harvest_hud.show_note("+1 %s" % crop_name.to_lower())
+		GameState.Use.INVENTORY_FULL:
+			_harvest_hud.show_note("Inventory full")
 
 
 ## Where the camera looks. The player is drawn on the art pixel grid (rounded), the camera

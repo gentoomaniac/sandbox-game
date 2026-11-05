@@ -80,9 +80,20 @@ func _process(delta: float) -> void:
 	var column := frame_column(moved != Vector2.ZERO, _walk_time)
 	if _frozen_column >= 0:
 		column = _frozen_column
+	_show_held_item()
 	_show_layers(_player.appearance.layers_for(_player.facing))
 	for sprite in _sprites:
 		sprite.frame = frame_index(_player.facing, column)
+
+
+## The hand shows the selected item, if it has art for the hand (the hoe); else it is empty.
+func _show_held_item() -> void:
+	var held: StringName = _player.inventory.held_item()
+	var held_sheet: Variant = ItemTypes.TYPES.get(held, {}).get("held_sheet")
+	if held_sheet == null:
+		_player.appearance.take_off(Appearance.HELD)
+	else:
+		_player.appearance.wear(Appearance.HELD, held_sheet)
 
 
 func _wear_outfit(outfit: int) -> void:

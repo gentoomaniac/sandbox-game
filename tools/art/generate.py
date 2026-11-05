@@ -33,6 +33,9 @@ assets/buildings/<type>.png: one picture per building type, as wide as its footp
 per tile) and as tall as the footprint plus the roof rising above it. The bottom edge is the
 footprint's bottom edge. <type>_lit.png is the same with lit windows, for the night. Sizes
 and door tiles are in game/state/building_types.gd.
+
+assets/items/<item id>.png (16x16) and assets/ui/slot.png, slot_selected.png (20x20): drawn in
+items.py.
 """
 
 import math
@@ -40,6 +43,8 @@ import random
 from pathlib import Path
 
 from PIL import Image
+
+import items
 
 ASSETS = Path(__file__).resolve().parents[2] / "assets"
 TILE = 16
@@ -1834,9 +1839,13 @@ def main():
     (ASSETS / "interior").mkdir(exist_ok=True)
     for name, (picture, _footprint) in FURNITURE.items():
         to_image([[picture]], len(picture[0]), len(picture)).save(ASSETS / "interior" / f"{name}.png")
+    for directory, pictures in (("items", items.ICONS), ("ui", items.SLOTS)):
+        (ASSETS / directory).mkdir(exist_ok=True)
+        for name, picture in pictures.items():
+            to_image([[picture]], len(picture)).save(ASSETS / directory / f"{name}.png")
     write_palette()
     check_palette()
-    print("Wrote terrain.png, decorations.png, objects.png, character/*.png, interior.png, interior/*.png, buildings/*.png, palette.png and palette.gpl to assets/; palette check passed.")
+    print("Wrote terrain.png, decorations.png, objects.png, character/*.png, interior.png, interior/*.png, buildings/*.png, items/*.png, ui/*.png, palette.png and palette.gpl to assets/; palette check passed.")
 
 
 if __name__ == "__main__":

@@ -7,9 +7,11 @@ extends RefCounted
 ## stays as it is while they are inside.
 
 ## What the use action does on a tile.
-enum Use { NOTHING, TILL, PLANT, HARVEST }
+enum Use { NOTHING, TILL, PLANT, HARVEST, INVENTORY_FULL }
 
 const CROP := WorldObjectTypes.TURNIP
+## What harvesting a crop gives: the crop, and one seed back (until a shop sells seeds).
+const HARVEST_YIELD := {ItemTypes.TURNIP: 1, ItemTypes.TURNIP_SEEDS: 1}
 ## How close (in tiles, diagonals included) the player must be to a bed to sleep in it.
 const BED_REACH := 1
 
@@ -19,8 +21,6 @@ var player := PlayerState.new()
 ## Where the player is: `world`, or the interior of `_building_inside`.
 var current_map: GameMap
 
-## Crops harvested so far; there is no inventory yet.
-var harvest_count := 0
 var _building_inside: Building
 
 
@@ -38,6 +38,7 @@ static func new_game(world_seed: int) -> GameState:
 	state.player.position = Vector2(camp.spawn_pos) + Vector2(0.5, 0.5)
 	state.player.home_map = state.world
 	state.player.home_bed = camp.sleeping_bag_pos
+	state.player.inventory = Inventory.with_starting_items()
 	return state
 
 
@@ -94,32 +95,50 @@ func sleep_in(bed: WorldObject) -> void:
 	player.home_bed = bed.pos
 
 
-## What `use` would do on a tile of the world (nothing inside): harvest a ripe crop, plant on
-## soil, till grass.
+## What `use` would do on a tile of the world (nothing inside) with the held item: a hoe
+## tills grass, seeds plant on soil, an empty hand harvests a ripe crop. Other tools do nothing
+## yet.
 func use_at(world_pos: Vector2i) -> Use:
 	if is_inside():
 		return Use.NOTHING
-	var object := world.object_at(world_pos)
-	if object != null:
-		return Use.HARVEST if object.is_ripe() else Use.NOTHING
-	if world.is_plantable(world_pos):
+	var held := player.inventory.held_item()
+	if held == ItemTypes.NONE:
+		var object := world.object_at(world_pos)
+		return Use.HARVEST if object != null and object.is_ripe() else Use.NOTHING
+	var item: Dictionary = ItemTypes.TYPES[held]
+	if item.has("plants") and world.is_plantable(world_pos):
 		return Use.PLANT
-	if world.is_tillable(world_pos):
+	if item.get("tool") == ItemTypes.HOE and world.is_tillable(world_pos):
 		return Use.TILL
 	return Use.NOTHING
 
 
-## Uses a tile (see `use_at`) and returns what was done.
+## Whether the held item does anything anywhere, so it is worth highlighting a target.
+func can_use_held_item() -> bool:
+	var held := player.inventory.held_item()
+	if held == ItemTypes.NONE:
+		return true
+	var item: Dictionary = ItemTypes.TYPES[held]
+	return item.has("plants") or item.get("tool") == ItemTypes.HOE
+
+
+## Uses a tile (see `use_at`) and returns what was done. A harvest that doesn't fit in the
+## inventory is not done: INVENTORY_FULL.
 func use_tile(target: Vector2i) -> Use:
 	var use := use_at(target)
 	match use:
 		Use.TILL:
 			world.set_terrain(target, Tile.Terrain.SOIL)
 		Use.PLANT:
-			world.add_object(WorldObject.new(CROP, target))
+			var seeds := player.inventory.held_item()
+			world.add_object(WorldObject.new(ItemTypes.TYPES[seeds]["plants"], target))
+			player.inventory.remove(seeds, 1)
 		Use.HARVEST:
+			if not player.inventory.can_add(HARVEST_YIELD):
+				return Use.INVENTORY_FULL
 			world.remove_object(target)
-			harvest_count += 1
+			for item: StringName in HARVEST_YIELD:
+				player.inventory.add(item, HARVEST_YIELD[item])
 	return use
 
 
@@ -138,7 +157,6 @@ func to_dict() -> Dictionary:
 		"player": player.to_dict(),
 		"current_map": _map_to_ref(current_map),
 		"home_map": _map_to_ref(player.home_map),
-		"harvest_count": harvest_count,
 	}
 
 
@@ -151,7 +169,6 @@ static func from_dict(data: Dictionary) -> GameState:
 	state.player = PlayerState.from_dict(data["player"], state._map_from_ref(data["home_map"]))
 	state.current_map = state._map_from_ref(data["current_map"])
 	state._building_inside = state._building_of_ref(data["current_map"])
-	state.harvest_count = int(data["harvest_count"])
 	return state
 
 
