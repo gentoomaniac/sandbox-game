@@ -163,7 +163,8 @@ top of classic pixel art (details under "Lighting and look").
     - **Low energy slows walking:** at 10 % or less to 75 % speed, below 5 % to 50 %.
     - **Passing out** at 0: wake up in the home bed at 06:00 next morning. That day:
       half walking speed, energy only up to 50 %, health 25. Speed effects don't stack;
-      the slowest wins.
+      the slowest wins. The debuff lasts until the next midnight, so after passing out between
+      00:00 and 06:00 it is less than a full day; sleeping does not end it early.
     - **Sleeping** fills energy and health per bed (sleeping bag 100 %, ground 50 %), and
       **eating** food (berries, turnips) restores a little energy. Both are values in the
       data file (`data/energy.cfg`).

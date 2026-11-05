@@ -8,8 +8,8 @@ extends RefCounted
 
 ## What the use action does on a tile. HARVEST is a ripe crop, FORAGE something a hand picks
 ## (a bush, a fern), HIT a tool cut or mined at an object, NEEDS_BETTER_TOOL a tool that is too
-## weak for the object, EAT a food item held.
-enum Use { NOTHING, TILL, PLANT, HARVEST, FORAGE, HIT, NEEDS_BETTER_TOOL, INVENTORY_FULL, EAT }
+## weak for the object.
+enum Use { NOTHING, TILL, PLANT, HARVEST, FORAGE, HIT, NEEDS_BETTER_TOOL, INVENTORY_FULL }
 
 ## The tools the use action has something to do with.
 const ACTIVE_TOOLS := [ItemTypes.HOE, ItemTypes.AXE, ItemTypes.PICKAXE]
@@ -24,7 +24,6 @@ const COST_KINDS := {
 	Use.HARVEST: &"pick",
 	Use.FORAGE: &"pick",
 	Use.HIT: &"hit",
-	Use.EAT: &"eat",
 }
 ## Passing out wakes the player at this time of day, in the home bed.
 const WAKE_UP_MINUTE := 6 * GameClock.MINUTES_PER_HOUR
@@ -132,6 +131,17 @@ func walk_speed_factor() -> float:
 	return factor
 
 
+## Eats one of the held food, on any map: it restores energy up to the cap. Does nothing, and
+## returns false, unless the held item is food and the energy is below the cap.
+func eat_held() -> bool:
+	var food := player.inventory.held_item()
+	if not energy_rules.is_food(food) or player.energy >= energy_cap():
+		return false
+	player.inventory.remove(food, 1)
+	player.energy = minf(player.energy + energy_rules.food_restore(food), energy_cap())
+	return true
+
+
 func is_out_of_energy() -> bool:
 	return player.energy <= 0.0
 
@@ -160,8 +170,6 @@ func use_at(world_pos: Vector2i) -> Use:
 	var held := player.inventory.held_item()
 	if held == ItemTypes.NONE:
 		return _use_by_hand(object)
-	if energy_rules.is_food(held):
-		return Use.EAT if player.energy < energy_cap() else Use.NOTHING
 	var item: Dictionary = ItemTypes.TYPES[held]
 	if item.has("plants") and world.is_free_on(world_pos, item.get("plants_on", Tile.Terrain.SOIL)):
 		return Use.PLANT
@@ -176,7 +184,7 @@ func can_use_held_item() -> bool:
 	if held == ItemTypes.NONE:
 		return true
 	var item: Dictionary = ItemTypes.TYPES[held]
-	return item.has("plants") or ACTIVE_TOOLS.has(item.get("tool")) or energy_rules.is_food(held)
+	return item.has("plants") or ACTIVE_TOOLS.has(item.get("tool"))
 
 
 ## Uses a tile (see `use_at`) and returns what was done, which costs energy (more the
@@ -222,10 +230,6 @@ func _do_use(target: Vector2i) -> Use:
 				world.remove_object(target)
 		Use.HIT:
 			return _hit(world.object_at(target))
-		Use.EAT:
-			var food := player.inventory.held_item()
-			player.inventory.remove(food, 1)
-			player.energy = minf(player.energy + energy_rules.food_restore(food), energy_cap())
 	return use
 
 

@@ -1,15 +1,14 @@
 class_name VitalsHud
-extends CanvasLayer
-## The energy and health bars right of the hotbar, each a 12x12 icon and a 48x8 bar (art in
+extends MarginContainer
+## The energy and health bars, put in the hotbar's row (see HotbarHud `add_aside`) so they stay
+## right of it at any UI scale. Each a 12x12 icon and a 48x8 bar (art in
 ## tools/art/ui.py). A bar at or below the warning level pulses.
 
-const BOTTOM_MARGIN := 4
 ## Gap between the hotbar and the bars.
 const HOTBAR_GAP := 6
 const ROW_GAP := 1
 const PULSE_HZ := 1.0
 const PULSE_LOW_ALPHA := 0.5
-const THEME := preload("res://game/scenes/ui_theme.tres")
 
 var _state: GameState
 var _energy_bar := VitalBar.new(
@@ -21,20 +20,15 @@ var _health_bar := VitalBar.new(
 
 
 func _init() -> void:
+	add_theme_constant_override("margin_left", HOTBAR_GAP)
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var column := VBoxContainer.new()
-	column.theme = THEME
 	column.add_theme_constant_override("separation", ROW_GAP)
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for bar in [_energy_bar, _health_bar]:
 		bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		column.add_child(bar)
 	add_child(column)
-	column.set_anchors_and_offsets_preset(
-		Control.PRESET_CENTER_BOTTOM, Control.PRESET_MODE_MINSIZE, BOTTOM_MARGIN
-	)
-	var shift := (HotbarHud.WIDTH + column.get_combined_minimum_size().x) / 2.0 + HOTBAR_GAP
-	column.offset_left += shift
-	column.offset_right += shift
 
 
 func show_state(state: GameState) -> void:

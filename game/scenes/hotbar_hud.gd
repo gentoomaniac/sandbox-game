@@ -6,25 +6,33 @@ extends CanvasLayer
 
 const BOTTOM_MARGIN := 4
 const SLOT_GAP := 2
-const WIDTH := Inventory.HOTBAR_SIZE * SlotView.SIZE + (Inventory.HOTBAR_SIZE - 1) * SLOT_GAP
 const THEME := preload("res://game/scenes/ui_theme.tres")
 
 var _inventory: Inventory
+var _row := HBoxContainer.new()
 var _slot_views: Array[SlotView] = []
 
 
 func _init() -> void:
-	var row := HBoxContainer.new()
-	row.theme = THEME
-	row.add_theme_constant_override("separation", SLOT_GAP)
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_row.theme = THEME
+	_row.add_theme_constant_override("separation", SLOT_GAP)
+	_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for slot in Inventory.HOTBAR_SIZE:
 		var view := SlotView.new()
 		view.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		row.add_child(view)
+		_row.add_child(view)
 		_slot_views.append(view)
-	add_child(row)
-	row.set_anchors_and_offsets_preset(
+	add_child(_row)
+	_row.set_anchors_and_offsets_preset(
+		Control.PRESET_CENTER_BOTTOM, Control.PRESET_MODE_MINSIZE, BOTTOM_MARGIN
+	)
+
+
+## Puts a control at the right end of the hotbar's row, level with the slots' bottom.
+func add_aside(control: Control) -> void:
+	control.size_flags_vertical = Control.SIZE_SHRINK_END
+	_row.add_child(control)
+	_row.set_anchors_and_offsets_preset(
 		Control.PRESET_CENTER_BOTTOM, Control.PRESET_MODE_MINSIZE, BOTTOM_MARGIN
 	)
 

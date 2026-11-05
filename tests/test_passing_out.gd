@@ -86,6 +86,17 @@ func test_passing_out_wakes_beside_a_home_bed_inside_a_house() -> void:
 	assert_eq(_state.bed_in_reach(), bed)
 
 
+func test_eating_works_inside_a_house() -> void:
+	_make_a_house_home()
+	_state.pass_out()
+	assert_true(_state.is_inside())
+	_state.player.energy = 30.0
+	_state.player.inventory.add(ItemTypes.TURNIP, 1)
+	_hold(ItemTypes.TURNIP)
+	assert_true(_state.eat_held())
+	assert_eq(_state.player.energy, 38.0)
+
+
 # --- Sleeping ---
 
 

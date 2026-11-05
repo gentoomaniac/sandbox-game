@@ -1,9 +1,19 @@
 class_name EnergyRules
 extends RefCounted
 ## The numbers of the energy system, read from data/energy.cfg (see there for what each one
-## means). A rule that is missing from the data is reported, and counts as 0.
+## means). Rules the game can't do without are listed in REQUIRED_KEYS: `from_file` reports
+## every one that is missing, and `is_valid` says whether any was. Only the lookups by id
+## (`sleep_fill`, `food_restore`) may come up empty, for a bed or food that has no rule.
 
 const DEFAULT_PATH := "res://data/energy.cfg"
+
+const REQUIRED_KEYS := {
+	"cost": ["till", "hit", "water", "plant", "pick"],
+	"weight": ["free_kg", "step_kg", "extra_per_step"],
+	"walk": ["slow_energy", "slow_speed", "very_slow_energy", "very_slow_speed"],
+	"debuff": ["walk_speed", "energy_max", "health"],
+	"bars": ["warning"],
+}
 
 static var _default: EnergyRules
 
@@ -32,11 +42,28 @@ static func from_file(path: String) -> EnergyRules:
 		values[section] = {}
 		for key in file.get_section_keys(section):
 			values[section][key] = file.get_value(section, key)
-	return EnergyRules.new(values)
+	var rules := EnergyRules.new(values)
+	for missing in rules.missing_keys():
+		push_error("%s: no %s" % [path, missing])
+	return rules
 
 
-## The energy a use of this kind costs (`till`, `hit`, `water`, `plant`, `pick`, `eat`), before
-## the weight and drain factors.
+## The required keys the rules lack, as "[section] key".
+func missing_keys() -> Array[String]:
+	var missing: Array[String] = []
+	for section: String in REQUIRED_KEYS:
+		for key: String in REQUIRED_KEYS[section]:
+			if not _values.get(section, {}).has(key):
+				missing.append("[%s] %s" % [section, key])
+	return missing
+
+
+func is_valid() -> bool:
+	return missing_keys().is_empty()
+
+
+## The energy a use of this kind costs (`till`, `hit`, `water`, `plant`, `pick`), before the
+## weight and drain factors.
 func cost_of(use_kind: StringName) -> float:
 	return _value("cost", use_kind)
 
@@ -48,9 +75,10 @@ func weight_factor(kilograms: float) -> float:
 	return 1.0 + over / _value("weight", "step_kg") * _value("weight", "extra_per_step")
 
 
-## The energy and health that sleeping in a bed of this object type fills up to.
+## The energy and health that sleeping in a bed of this object type fills up to; 0 for a bed
+## with no rule.
 func sleep_fill(bed_type: StringName) -> float:
-	return _value("sleep", bed_type)
+	return float(_values.get("sleep", {}).get(str(bed_type), 0.0))
 
 
 func is_food(item: StringName) -> bool:
@@ -58,7 +86,7 @@ func is_food(item: StringName) -> bool:
 
 
 func food_restore(item: StringName) -> float:
-	return _value("food", item)
+	return float(_values.get("food", {}).get(str(item), 0.0))
 
 
 ## The fraction of full walking speed that this much energy allows.
@@ -86,9 +114,6 @@ func warning_level() -> float:
 	return _value("bars", "warning")
 
 
+## A required rule; `from_file` has reported it already if it is missing.
 func _value(section: String, key: StringName) -> float:
-	var value: Variant = _values.get(section, {}).get(str(key))
-	if value == null:
-		push_error("Energy rules: no [%s] %s" % [section, key])
-		return 0.0
-	return float(value)
+	return float(_values.get(section, {}).get(str(key), 0.0))

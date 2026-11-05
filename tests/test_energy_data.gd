@@ -43,7 +43,7 @@ func test_the_data_file_holds_every_rule_with_the_first_values() -> void:
 	assert_eq(rules.cost_of(&"water"), 2.0)
 	assert_eq(rules.cost_of(&"plant"), 0.5)
 	assert_eq(rules.cost_of(&"pick"), 0.5)
-	assert_eq(rules.cost_of(&"eat"), 0.0)
+	assert_true(rules.is_valid())
 	assert_eq(rules.weight_factor(20.0), 1.0)
 	assert_almost_eq(rules.weight_factor(30.0), 1.1, 0.0001)
 	assert_eq(rules.sleep_fill(WorldObjectTypes.SLEEPING_BAG), 100.0)
@@ -60,18 +60,28 @@ func test_the_data_file_holds_every_rule_with_the_first_values() -> void:
 	assert_eq(rules.warning_level(), 20.0)
 
 
-func test_a_missing_rule_is_reported_and_counts_as_zero() -> void:
+func test_every_missing_required_rule_is_reported() -> void:
 	DirAccess.make_dir_recursive_absolute(DATA_DIR)
 	var file := FileAccess.open(DATA_FILE, FileAccess.WRITE)
 	file.store_string("[cost]\ntill=3.0\n")
 	file.close()
 	var rules := EnergyRules.from_file(DATA_FILE)
-	assert_eq(rules.cost_of(&"till"), 3.0)
-	assert_eq(rules.cost_of(&"hit"), 0.0)
-	assert_push_error("[cost] hit")
+	var missing := rules.missing_keys()
+	assert_false(rules.is_valid())
+	assert_true(missing.has("[cost] hit"))
+	assert_true(missing.has("[weight] step_kg"))
+	assert_false(missing.has("[cost] till"))
+	assert_push_error_count(missing.size())
+
+
+func test_a_bed_or_food_without_a_rule_gives_nothing() -> void:
+	var rules := EnergyRules.new(RULES)
+	assert_eq(rules.sleep_fill(&"hammock"), 0.0)
+	assert_false(rules.is_food(&"stone"))
+	assert_eq(rules.food_restore(&"stone"), 0.0)
 
 
 func test_a_missing_file_is_reported() -> void:
 	var rules := EnergyRules.from_file(DATA_DIR + "/nothing.cfg")
-	assert_push_error("Can't read")
-	assert_false(rules.is_food(ItemTypes.BERRIES))
+	assert_false(rules.is_valid())
+	assert_push_error_count(rules.missing_keys().size() + 1)

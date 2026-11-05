@@ -67,10 +67,18 @@ var _start_zoom := 1.0
 
 
 func _ready() -> void:
+	if not EnergyRules.default_rules().is_valid():
+		# The load has reported the missing rules.
+		get_tree().quit(1)
+		return
 	_settings = _load_settings()
 	_apply_ui_scale(_settings.ui_scale)
 	_settings.ui_scale_changed.connect(_apply_ui_scale)
 	_state = _load_or_start_game()
+	_state.energy_drain = _settings.energy_drain_factor()
+	_settings.drain_changed.connect(
+		func() -> void: _state.energy_drain = _settings.energy_drain_factor()
+	)
 	# Quitting saves first (see _notification).
 	get_tree().auto_accept_quit = false
 	for arg in OS.get_cmdline_user_args():
@@ -119,7 +127,7 @@ func _ready() -> void:
 	add_child(_harvest_hud)
 	add_child(_hotbar)
 	_hotbar.show_inventory(_state.player.inventory)
-	add_child(_vitals)
+	_hotbar.add_aside(_vitals)
 	_vitals.show_state(_state)
 	add_child(_inventory_screen)
 	_inventory_screen.show_inventory(_state.player.inventory)
@@ -134,6 +142,9 @@ func _ready() -> void:
 	_show_clock()
 	if _state.is_inside():
 		_show_current_map()
+	# A save made during the fade out has no energy left: finish the pass-out.
+	if _state.is_out_of_energy():
+		_pass_out()
 
 
 func _notification(what: int) -> void:
@@ -171,6 +182,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_state.player.inventory.select(hotbar_slot)
 	elif event.is_action_pressed("interact") and not _is_fading:
 		_try_sleep()
+	elif _is_use_event(event) and can_use and _state.eat_held():
+		pass  # Eating needs no target: a held food is eaten instead of used on a tile.
 	elif event.is_action_pressed("use") and can_use:
 		_use_on(_use_highlight.targeting())
 	elif event.is_action_pressed("use_click") and can_use:
@@ -230,6 +243,10 @@ func _open_debug_menu_when_ready() -> void:
 		_open_menu(_debug_menu_page as PauseMenu.Page)
 		_debug_menu_page = -1
 		get_tree().create_timer(0.2, true).timeout.connect(_save_screenshot_and_quit)
+
+
+func _is_use_event(event: InputEvent) -> bool:
+	return event.is_action_pressed("use") or event.is_action_pressed("use_click")
 
 
 func _can_use() -> bool:
