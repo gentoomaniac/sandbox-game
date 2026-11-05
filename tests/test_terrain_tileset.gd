@@ -5,6 +5,8 @@ const WATER := TerrainTileset.Layer.WATER
 const FLOODPLAIN := TerrainTileset.Layer.FLOODPLAIN
 const WETLAND := TerrainTileset.Layer.WETLAND
 const GRASS := TerrainTileset.Layer.GRASS
+const LUSH_GRASS := TerrainTileset.Layer.LUSH_GRASS
+const DRY_GRASS := TerrainTileset.Layer.DRY_GRASS
 const SOIL := TerrainTileset.Layer.SOIL
 
 var _tileset: TerrainTileset
@@ -28,15 +30,37 @@ func test_mask_counts_corners_on_the_layer_or_above() -> void:
 
 
 func test_layer_order_follows_terrain_priority() -> void:
-	var order: Array = [
+	var order: Array[Tile.Terrain] = [
 		Tile.Terrain.WATER,
 		Tile.Terrain.FLOODPLAIN,
 		Tile.Terrain.WETLAND,
 		Tile.Terrain.GRASS,
 		Tile.Terrain.SOIL,
 	]
-	for priority in order.size():
-		assert_eq(TerrainTileset.LAYER_OF_TERRAIN[order[priority]], priority)
+	for i in range(1, order.size()):
+		assert_gt(
+			TerrainTileset.layer_of(order[i], 0.0), TerrainTileset.layer_of(order[i - 1], 0.0)
+		)
+
+
+func test_variety_turns_only_grass_lush_or_dry() -> void:
+	assert_eq(TerrainTileset.layer_of(Tile.Terrain.GRASS, -0.9), LUSH_GRASS)
+	assert_eq(TerrainTileset.layer_of(Tile.Terrain.GRASS, 0.0), GRASS)
+	assert_eq(TerrainTileset.layer_of(Tile.Terrain.GRASS, 0.9), DRY_GRASS)
+	for variety: float in [-0.9, 0.9]:
+		assert_eq(TerrainTileset.layer_of(Tile.Terrain.FLOODPLAIN, variety), FLOODPLAIN)
+		assert_eq(TerrainTileset.layer_of(Tile.Terrain.SOIL, variety), SOIL)
+
+
+func test_cell_draws_its_corners_layers_and_grass_under_lush_and_dry() -> void:
+	var corners := PackedInt32Array([LUSH_GRASS, DRY_GRASS, FLOODPLAIN, FLOODPLAIN])
+	assert_eq(
+		TerrainTileset.drawn_layers(corners),
+		1 << FLOODPLAIN | 1 << GRASS | 1 << LUSH_GRASS | 1 << DRY_GRASS
+	)
+	# Nothing in between: no wetland under the grass edge.
+	corners = PackedInt32Array([GRASS, SOIL, WATER, WATER])
+	assert_eq(TerrainTileset.drawn_layers(corners), 1 << WATER | 1 << GRASS | 1 << SOIL)
 
 
 func test_missing_corner_takes_the_one_beside_it() -> void:
@@ -57,11 +81,22 @@ func test_missing_corners_fall_back_to_above_below_then_diagonal() -> void:
 
 func test_edge_shapes_sit_in_their_mask_column() -> void:
 	for mask in range(1, TerrainTileset.FULL):
-		assert_eq(_tileset.atlas_cell(GRASS, mask, Vector2i(3, 4)), Vector2i(mask, GRASS))
+		var cell := _tileset.atlas_cell(GRASS, mask, Vector2i(3, 4))
+		assert_eq(cell.y, GRASS)
+		assert_lt(cell.x, TerrainTileset.FULL_COLUMN)
+		assert_eq(cell.x % TerrainTileset.FULL, mask)
+
+
+func test_all_layers_of_a_cell_use_the_same_edge_variant() -> void:
+	for x in 20:
+		var cell := Vector2i(x, -x)
+		var variant := _tileset.atlas_cell(GRASS, 3, cell).x / TerrainTileset.FULL
+		assert_eq(_tileset.atlas_cell(LUSH_GRASS, 5, cell).x / TerrainTileset.FULL, variant)
+		assert_eq(_tileset.atlas_cell(DRY_GRASS, 12, cell).x / TerrainTileset.FULL, variant)
 
 
 func test_every_atlas_cell_in_use_has_a_tile() -> void:
-	var source: TileSetAtlasSource = _tileset.tile_set.get_source(TerrainTileset.SOURCE_ID)
+	var source: TileSetAtlasSource = _tileset.tile_set.get_source(TerrainTileset.TERRAIN_SOURCE_ID)
 	for layer in TerrainTileset.LAYER_COUNT:
 		for y in 8:
 			for x in 8:
@@ -70,8 +105,9 @@ func test_every_atlas_cell_in_use_has_a_tile() -> void:
 	# Water is always the lowest layer of a cell, so it only ever draws full tiles.
 	for layer in range(FLOODPLAIN, TerrainTileset.LAYER_COUNT):
 		for mask in range(1, TerrainTileset.FULL):
-			var cell := _tileset.atlas_cell(layer, mask, Vector2i.ZERO)
-			assert_true(source.has_tile(cell), "edge tile %s" % cell)
+			for x in 6:
+				var cell := _tileset.atlas_cell(layer, mask, Vector2i(x, 0))
+				assert_true(source.has_tile(cell), "edge tile %s" % cell)
 
 
 func test_full_variant_is_stable_and_varies_by_position() -> void:
@@ -80,6 +116,32 @@ func test_full_variant_is_stable_and_varies_by_position() -> void:
 		for x in range(-8, 8):
 			var cell := _tileset.atlas_cell(GRASS, TerrainTileset.FULL, Vector2i(x, y))
 			assert_eq(_tileset.atlas_cell(GRASS, TerrainTileset.FULL, Vector2i(x, y)), cell)
-			assert_true(cell.x >= TerrainTileset.FULL)
+			assert_true(cell.x >= TerrainTileset.FULL_COLUMN)
 			seen[cell] = true
-	assert_gt(seen.size(), 3, "grass uses several full variants")
+	assert_gt(seen.size(), 5, "grass uses several full variants")
+
+
+func test_decorations_gather_where_the_cluster_noise_peaks() -> void:
+	var source: TileSetAtlasSource = _tileset.tile_set.get_source(
+		TerrainTileset.DECORATION_SOURCE_ID
+	)
+	var sparse := 0
+	var clustered := 0
+	for y in 20:
+		for x in 20:
+			var tile := Vector2i(x, y)
+			var outside := _tileset.decoration_cell(GRASS, tile, -0.5)
+			var inside := _tileset.decoration_cell(GRASS, tile, 0.5)
+			assert_eq(_tileset.decoration_cell(GRASS, tile, 0.5), inside, "stable")
+			for cell in [outside, inside]:
+				if cell != TerrainTileset.NO_DECORATION:
+					assert_true(source.has_tile(cell), "decoration %s" % cell)
+			sparse += int(outside != TerrainTileset.NO_DECORATION)
+			clustered += int(inside != TerrainTileset.NO_DECORATION)
+	assert_gt(clustered, sparse * 4)
+	assert_gt(sparse, 0)
+
+
+func test_tilled_soil_has_no_decorations() -> void:
+	for x in 50:
+		assert_eq(_tileset.decoration_cell(SOIL, Vector2i(x, 0), 1.0), TerrainTileset.NO_DECORATION)

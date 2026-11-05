@@ -36,8 +36,9 @@ func test_left_neighbour_loaded_second_fixes_up_the_fallback() -> void:
 
 func test_bottom_neighbour_loaded_first_is_fixed_up_too() -> void:
 	_view._load_chunk(BELOW)
+	# Leaves out the corner cell: it also touches the diagonal chunk, which stays unloaded.
 	var top_row: Array[Vector2i] = []
-	for x in Chunk.CHUNK_SIZE:
+	for x in range(1, Chunk.CHUNK_SIZE):
 		top_row.append(Chunk.to_world(BELOW, Vector2i(x, 0)))
 	_assert_drawn_with_fallback(top_row)
 	_view._load_chunk(RIGHT)
@@ -99,10 +100,12 @@ func _empty() -> Array[Vector2i]:
 func _expected(cell: Vector2i) -> Array[Vector2i]:
 	var corners := PackedInt32Array()
 	for offset in WorldView.CORNER_OFFSETS:
-		corners.append(TerrainTileset.LAYER_OF_TERRAIN[_generator.terrain_at(cell + offset)])
+		var tile := cell + offset
+		corners.append(_view._layer_of_tile(_generator.terrain_at(tile), tile))
 	var cells := _empty()
+	var drawn := TerrainTileset.drawn_layers(corners)
 	for layer in TerrainTileset.LAYER_COUNT:
-		if corners.has(layer):
+		if drawn & (1 << layer):
 			var mask := TerrainTileset.mask_for(corners, layer)
 			cells[layer] = _view._tileset.atlas_cell(layer, mask, cell)
 	return cells

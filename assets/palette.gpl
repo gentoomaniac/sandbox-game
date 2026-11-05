@@ -11,9 +11,15 @@ Columns: 8
  70 112  61	green
  95 138  69	green_light
 130 163  82	green_bright
+ 64 120  58	lush
  92 102  52	olive
+104 116  62	dry
+138 146  80	dry_light
 128 122  64	reed
 176 160  94	straw
+ 41  72  58	meadow_dark
+ 55  96  62	meadow
+ 79 128  72	meadow_light
  58  41  32	soil_dark
  87  60  43	soil
 111  79  55	soil_mid
@@ -32,5 +38,6 @@ Columns: 8
 220 122  55	flame
 238 194  90	gold
 241 230 194	cream
+196 122 140	petal
 111  76 145	arcane
  78 158 155	spirit
