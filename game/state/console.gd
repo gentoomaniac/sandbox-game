@@ -103,7 +103,7 @@ func complete(line: String) -> String:
 	var is_new_word := line.ends_with(" ")
 	var word_index := words.size() if is_new_word else maxi(words.size() - 1, 0)
 	var typed := "" if is_new_word or words.is_empty() else words[-1]
-	var kind := &"command"
+	var kind := &"command"  # Past the last argument the kind stays empty: nothing to offer.
 	if word_index > 0:
 		var kinds: Array = ARGUMENTS.get(words[0], [])
 		kind = kinds[word_index - 1] if word_index <= kinds.size() else &""
@@ -117,22 +117,22 @@ func complete(line: String) -> String:
 
 ## What Tab offers for an argument of this kind (see ARGUMENTS).
 func candidates(kind: StringName) -> Array[String]:
-	var candidates: Array[String] = []
+	var values: Array[String] = []
 	match kind:
 		&"command":
-			candidates.assign(COMMANDS.keys())
+			values.assign(COMMANDS.keys())
 		&"item":
-			candidates = _item_ids()
+			values = _item_ids()
 		&"animal":
 			for animal in WildlifeRules.KINDS:
-				candidates.append(String(animal))
+				values.append(String(animal))
 		&"weather":
 			for condition in Weather.FORCEABLE:
-				candidates.append(String(condition))
-			candidates.append("auto")
+				values.append(String(condition))
+			values.append("auto")
 		&"snow":
-			candidates.assign(SNOW_CANDIDATES)
-	return candidates
+			values.assign(SNOW_CANDIDATES)
+	return values
 
 
 func _words(line: String) -> PackedStringArray:
