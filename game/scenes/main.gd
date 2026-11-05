@@ -11,6 +11,8 @@ extends Node2D
 ## `--at=<x>,<y>` puts the player on that world tile instead of at the camp;
 ## `--energy=<n>` and `--health=<n>` start with that much (0 to 100);
 ## `--screenshot=<path>` saves one frame as PNG once streaming has settled, then quits;
+## `--screenshot-delay=<s>` waits that many real seconds after that, with the clock running
+## (to see what a midnight changes, e.g. `--day=30 --time=23:50 --screenshot-delay=10`);
 ## `--day=<n>` sets the day number (days 1, 31, 61 and 91 are the first day of each season);
 ## `--time=<hh:mm>` sets the time of day; `--field=<x>,<y>` tills a small field there with
 ## crops in every growth stage (see DebugField); `--inside` walks into the first house as soon
@@ -60,6 +62,7 @@ var _is_fading := false
 var _enter_first_house := false
 var _open_character_screen_at_start := false
 var _settled_frames := 0
+var _screenshot_delay := 0.0
 var _pending_minutes := 0.0
 var _camera_shift := Vector2.ZERO
 var _start_zoom := 1.0
@@ -97,6 +100,8 @@ func _ready() -> void:
 			_state.player.position = Vector2(tile[0], tile[1]) + Vector2(0.5, 0.5)
 		elif arg.begins_with("--screenshot="):
 			_screenshot_path = arg.trim_prefix("--screenshot=")
+		elif arg.begins_with("--screenshot-delay="):
+			_screenshot_delay = float(arg.trim_prefix("--screenshot-delay="))
 		elif arg.begins_with("--day="):
 			_state.clock.day = maxi(int(arg.trim_prefix("--day=")), 1)
 		elif arg.begins_with("--time="):
@@ -267,7 +272,9 @@ func _process(delta: float) -> void:
 		# A few frames after everything is in place, for tile maps to catch up.
 		_settled_frames = _settled_frames + 1 if _is_ready_to_shoot() else 0
 		if _settled_frames > SCREENSHOT_SETTLE_FRAMES:
-			_save_screenshot_and_quit()
+			_screenshot_delay -= delta
+			if _screenshot_delay <= 0.0:
+				_save_screenshot_and_quit()
 
 
 func _open_menu(page := PauseMenu.Page.PAUSE) -> void:
@@ -360,8 +367,8 @@ func _camera_target() -> Vector2:
 
 ## Real time to whole game minutes; the fraction carries over to the next frame.
 func _tick_clock(delta: float) -> void:
-	# A screenshot with TIME=... must show exactly that time.
-	if _screenshot_path != "":
+	# A screenshot with TIME=... must show exactly that time, unless it is told to wait.
+	if _screenshot_path != "" and _screenshot_delay == 0.0:
 		return
 	var rate := GAME_MINUTES_PER_REAL_SECOND * (FAST_FORWARD_FACTOR if _fast_forward else 1.0)
 	_pending_minutes += delta * rate
