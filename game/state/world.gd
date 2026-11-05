@@ -1,4 +1,6 @@
 # gdlint: disable=max-public-methods
+# (World is the one entry point for map changes; splitting off the object edits is a
+# TASKS.md follow-up.)
 class_name World
 extends GameMap
 ## The world: a seed, fixed bounds and the chunks that are currently loaded.

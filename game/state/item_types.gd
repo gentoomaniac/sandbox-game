@@ -28,7 +28,8 @@ const NONE := &""
 
 const DEFAULT_STACK_LIMIT := 99
 
-## The hit points a hit of a tool of each level (the index) takes off.
+## The hit points a hit of a tool of each level (the index) takes off. Equal to the level for
+## now; a table so it can be tuned per level later.
 const POWER_OF_LEVEL := [0, 1, 2, 3]
 
 const ICON_PATH := "res://assets/items/%s.png"

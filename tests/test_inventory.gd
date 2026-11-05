@@ -6,6 +6,9 @@ var _inventory: Inventory
 
 func before_each() -> void:
 	_inventory = Inventory.new()
+	# Holding the last hotbar slot, so `add` fills slots from the first in these layout tests
+	# (it keeps the held slot for last, see test_inventory_held_slot.gd).
+	_inventory.select(9)
 
 
 func _fill_with_tools() -> void:

@@ -34,8 +34,8 @@ func _init() -> void:
 
 static func with_starting_items() -> Inventory:
 	var inventory := Inventory.new()
-	for item_and_count in STARTING_ITEMS:
-		inventory.add(item_and_count[0], item_and_count[1])
+	for slot in STARTING_ITEMS.size():
+		inventory.slots[slot] = {"item": STARTING_ITEMS[slot][0], "count": STARTING_ITEMS[slot][1]}
 	return inventory
 
 
@@ -55,7 +55,8 @@ func select(hotbar_slot: int) -> void:
 
 
 ## Puts `count` of `item` in: first onto stacks of it that have room, then into free slots,
-## hotbar first. Returns how many did not fit.
+## hotbar first, and into the selected slot only when nothing else is free (so an empty
+## hand stays empty after a harvest). Returns how many did not fit.
 func add(item: StringName, count: int) -> int:
 	var limit: int = ItemTypes.TYPES[item]["stack_limit"]
 	var left := count
@@ -66,7 +67,11 @@ func add(item: StringName, count: int) -> int:
 			var moved := mini(left, limit - slots[slot]["count"])
 			slots[slot]["count"] += moved
 			left -= moved
-	for slot in SLOT_COUNT:
+	var free_order := range(SLOT_COUNT).filter(
+		func(slot: int) -> bool: return slot != selected_slot
+	)
+	free_order.append(selected_slot)
+	for slot: int in free_order:
 		if left == 0:
 			break
 		if slots[slot].is_empty():
