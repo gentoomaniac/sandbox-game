@@ -96,7 +96,7 @@ const _OTHER_TYPES := {
 	SCYTHE:
 	{
 		"name": "Scythe",
-		"description": "Mows tall grass and reeds into hay.",
+		"description": "Mows tall grass into hay and cuts reeds.",
 		"weight": 2.0,
 		"stack_limit": 1,
 		"tool": SCYTHE,

@@ -52,7 +52,7 @@ lets you shrink or switch off the change in day length.
 ### Farming
 
 You till the soil with the hoe, plant seeds, water them, and pick the crops by hand. There
-are twelve crops: turnips, potatoes, carrots, cabbage, onions, wheat, peas, beans, tomatoes,
+are eleven crops: turnips, potatoes, carrots, cabbage, onions, wheat, peas, beans, tomatoes,
 strawberries and pumpkins. Each grows in its own seasons, and the weather (warmth, rain,
 frost) speeds it up, slows it down or damages it. A ripe crop doesn't wait forever: left
 unpicked for as long as it took to ripen, it withers and gives nothing. The growing times,
@@ -64,14 +64,13 @@ seasons and the withering are in [data/crops.cfg](data/crops.cfg).
 
 Use the axe on trees and the pickaxe on stones and boulders. A better tool needs fewer
 hits, and some resources need a better tool. Everything you hit trembles and throws
-leaves, snow or splinters. A felled tree topples away from you and leaves a stump and a
+leaves, snow or splinters. A felled tree topples to the side and leaves a stump and a
 trunk; cut both into logs. A stump left alone rots away over about two weeks and may sprout
 a sapling of its kind, and now and then a tree drops a seed (acorn or cone) you can plant on
-grassland. Big stones break into smaller ones.
+grassland. Stones and boulders break into pieces of stone; a boulder needs a better pickaxe.
 
 The scythe mows tall grass into hay and cuts reeds on river banks (reeds grow back in their
-season). The shovel digs clay, but only where the ground hints at it, and the hint is easy
-to miss. Berry bushes bear fruit again a few days after picking, and shrubs and ferns give
+season). The shovel digs clay, but only where a faint patch on the ground hints at it. Berry bushes bear fruit again a few days after picking, and shrubs and ferns give
 fibre.
 
 What you gather hops out onto the ground: logs, stone, clay, hay, reeds, seeds and produce
@@ -89,8 +88,8 @@ logs, stone, clay and reeds it takes against what you carry; the spot is refused
 something is missing, and a click or Space builds it and takes the materials. The ghost
 shows where it fits, and the game tells you why a spot doesn't work, for example when it is
 unsafe wetland. Hold something else (or press Escape or right click) to stop building. You can
-walk inside every building, and each has its own room: a bare shack with a straw mat, the
-Kate's cottage room, the longhouse with a living end and an animal end, and the barn with
+walk inside every building, and each has its own room: a bare shack with a straw mat, a
+cottage room in the Kate, the longhouse with a living end and an animal end, and the barn with
 stalls and hay. The last bed you slept in becomes your home. A new game starts at the camp
 with your tools and the hammer, so the materials for the first house have to be gathered
 first. The buildings, their sizes, costs and insides are in
