@@ -36,7 +36,7 @@ extends Node2D
 ## world is drawn and leaves it at that (`bird`, `rabbit`, `squirrel`, `deer`, `bee`,
 ## `butterfly`, `flock`; see WildlifeView), `--wildlife-calm` makes them take no notice of the
 ## player; `--hit=<x>,<y>` hits the object on that tile once, without damage, as soon as the
-## world is drawn (to see its shake and what flies off, see HitEffect; the particles last half a
+## world is drawn (to see its shake and what flies off, see HitEffect; the particles last about a
 ## second, so use a short `--screenshot-delay`). PlayerView parses `--hair=<n>` and
 ## `--pose=<direction>`, and F6 cycles the hair (see there). BuildMode parses
 ## `--ghost=<x>,<y>` and `--house=<x>,<y>` (see there).

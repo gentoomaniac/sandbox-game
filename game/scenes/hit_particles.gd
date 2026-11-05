@@ -4,92 +4,94 @@ extends Node2D
 ## pixels, so it stays crisp, and tinted by the day like the world around it. Not GPUParticles,
 ## which would not keep to the art grid.
 
-const GREENS: Array[Color] = [Color("8cc152"), Color("6aa83e"), Color("4f8f33")]
-const AUTUMN_COLORS: Array[Color] = [Color("e8902f"), Color("c8452c"), Color("eab836")]
-const NEEDLE_COLORS: Array[Color] = [Color("1c4426"), Color("13331b")]
-const SNOW_COLORS: Array[Color] = [
-	Color("ffffff"), Color("f4f8ff"), Color("b8c4dc"), Color("9fb0d0")
-]
+## Each palette is brighter than the foliage it falls from, or it is lost against it: yellow
+## greens under a green canopy, dry brown-green needles under a dark spruce.
+const GREENS: Array[Color] = [Color("c6e070"), Color("a9d158"), Color("e2e67e")]
+const AUTUMN_COLORS: Array[Color] = [Color("ff9a2a"), Color("f04a2c"), Color("ffd23c")]
+const NEEDLE_COLORS: Array[Color] = [Color("c0c860"), Color("d4a862"), Color("a2c252")]
+const SNOW_COLORS: Array[Color] = [Color("ffffff"), Color("ffffff"), Color("eef4ff")]
 const SPLINTER_COLORS: Array[Color] = [
-	Color("d0d0d8"), Color("a9a9b0"), Color("7c7c86"), Color("5c5c66")
+	Color("e4e4ea"), Color("b8b8c0"), Color("8a8a94"), Color("66666f")
 ]
 const DUST_COLORS: Array[Color] = [Color("e4e4dc"), Color("c8c8c0")]
 ## Frequency of the sway of falling leaves, in radians per second.
-const SWAY_RATE := 14.0
+const SWAY_RATE := 7.0
 ## The last share of a particle's life in which it fades out.
-const FADE_SHARE := 0.4
+const FADE_SHARE := 0.3
 ## How much darker the last pixel of a shaded particle is, which gives a leaf its shape.
-const SHADE_DARKENING := 0.4
+const SHADE_DARKENING := 0.45
 
 ## How each kind is thrown, in pixels and seconds. `count`: least and most particles;
 ## `spread`: half the size of the area they start in; `sideways`: the most horizontal speed
 ## either way; `vertical`: least and most vertical speed (down is positive); `gravity`: pull
 ## down; `sway`: how far a particle swings to the sides while it flies; `sizes`: the sizes in
 ## pixels a particle may have; `is_shaded`: whether its last pixel is darker.
+## Leaves and needles fall far enough to leave the canopy and land on the ground beside the
+## trunk, so they are seen against it too.
 const SPECS := {
 	HitEffect.Kind.LEAVES_GREEN:
 	{
-		"count": Vector2i(4, 6),
-		"spread": Vector2(12, 4),
-		"sideways": 6.0,
-		"vertical": Vector2(16, 22),
+		"count": Vector2i(6, 8),
+		"spread": Vector2(14, 6),
+		"sideways": 10.0,
+		"vertical": Vector2(22, 32),
 		"gravity": 0.0,
 		"sway": 3.0,
-		"life": 1.1,
+		"life": 1.2,
 		"colors": GREENS,
-		"sizes": [Vector2(2, 1), Vector2(2, 2)],
+		"sizes": [Vector2(2, 2), Vector2(2, 2), Vector2(3, 2)],
 		"is_shaded": true,
 	},
 	HitEffect.Kind.LEAVES_AUTUMN:
 	{
-		"count": Vector2i(4, 6),
-		"spread": Vector2(12, 4),
-		"sideways": 6.0,
-		"vertical": Vector2(16, 22),
+		"count": Vector2i(6, 8),
+		"spread": Vector2(14, 6),
+		"sideways": 10.0,
+		"vertical": Vector2(22, 32),
 		"gravity": 0.0,
 		"sway": 3.0,
-		"life": 1.1,
+		"life": 1.2,
 		"colors": AUTUMN_COLORS,
-		"sizes": [Vector2(2, 1), Vector2(2, 2)],
+		"sizes": [Vector2(2, 2), Vector2(2, 2), Vector2(3, 2)],
 		"is_shaded": true,
 	},
 	HitEffect.Kind.NEEDLES:
 	{
-		"count": Vector2i(5, 7),
-		"spread": Vector2(11, 6),
-		"sideways": 4.0,
-		"vertical": Vector2(18, 24),
+		"count": Vector2i(7, 9),
+		"spread": Vector2(10, 8),
+		"sideways": 6.0,
+		"vertical": Vector2(26, 34),
 		"gravity": 0.0,
-		"sway": 1.0,
-		"life": 1.0,
+		"sway": 1.5,
+		"life": 1.1,
 		"colors": NEEDLE_COLORS,
-		"sizes": [Vector2(2, 1)],
+		"sizes": [Vector2(3, 1), Vector2(1, 3), Vector2(2, 1)],
 		"is_shaded": false,
 	},
 	HitEffect.Kind.SNOW:
 	{
-		"count": Vector2i(8, 12),
-		"spread": Vector2(9, 5),
-		"sideways": 16.0,
-		"vertical": Vector2(0, 12),
-		"gravity": 40.0,
+		"count": Vector2i(10, 14),
+		"spread": Vector2(10, 8),
+		"sideways": 12.0,
+		"vertical": Vector2(4, 16),
+		"gravity": 45.0,
 		"sway": 0.0,
-		"life": 0.7,
+		"life": 1.1,
 		"colors": SNOW_COLORS,
-		"sizes": [Vector2(1, 1), Vector2(2, 1), Vector2(2, 2)],
+		"sizes": [Vector2(1, 1), Vector2(2, 1), Vector2(2, 2), Vector2(2, 2)],
 		"is_shaded": false,
 	},
 	HitEffect.Kind.SPLINTERS:
 	{
-		"count": Vector2i(4, 6),
+		"count": Vector2i(5, 7),
 		"spread": Vector2(3, 3),
-		"sideways": 30.0,
+		"sideways": 32.0,
 		"vertical": Vector2(-80, -50),
 		"gravity": 220.0,
 		"sway": 0.0,
 		"life": 0.7,
 		"colors": SPLINTER_COLORS,
-		"sizes": [Vector2(1, 1), Vector2(2, 1)],
+		"sizes": [Vector2(1, 1), Vector2(2, 1), Vector2(2, 1)],
 		"is_shaded": false,
 	},
 	HitEffect.Kind.DUST:

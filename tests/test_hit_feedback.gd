@@ -52,15 +52,15 @@ func test_stumps_and_bushes_drop_nothing() -> void:
 		assert_eq(HitEffect.kind_for(type, LOOKS.SUMMER), KINDS.NONE)
 
 
-func test_particles_are_few_and_gone_in_about_a_second() -> void:
+func test_particles_are_few_and_gone_in_little_more_than_a_second() -> void:
 	var particles: HitParticles = autofree(HitParticles.new())
 	for kind in HitParticles.SPECS:
 		particles.emit(kind, Vector2.ZERO)
 		var count := particles.particle_count()
-		assert_between(count, 2, 12, "count of %s" % kind)
-		particles.advance(1.2)
+		assert_between(count, 2, 14, "count of %s" % kind)
+		particles.advance(1.3)
 		assert_eq(particles.particle_count(), 0, "%s gone" % kind)
-		assert_lt(HitParticles.SPECS[kind]["life"], 1.2)
+		assert_lt(HitParticles.SPECS[kind]["life"], 1.3)
 
 
 func test_no_effect_emits_no_particles() -> void:

@@ -770,7 +770,7 @@ See SPEC.md "Harvesting, reworked" (hit feedback). Visual only.
 - A small pixel-particle node in the world viewport (on the art grid, tinted by the day
   like the world): a few leaves from a tree with foliage in its current look (needles for
   spruce and pine all year), a puff of snow from a snowy tree, nothing from a bare one;
-  3–5 one-pixel splinters arcing out of stone and boulders.
+  5–7 small splinters arcing out of stone and boulders.
 - A debug flag to show a hit for screenshots.
 - Tests: which effect a hit on each object type and look gives.
 

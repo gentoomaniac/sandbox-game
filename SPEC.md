@@ -467,8 +467,9 @@ Decided 2026-11-05. A text console for testing and cheats.
     (level 2) into more of them.
   - **Hit feedback:** every hit shakes the object, the finishing one too. A tree with
     foliage drops a few leaves (needles for spruce and pine, all year), a snowy tree a
-    puff of snow, a bare tree nothing. Stone and boulders throw a few one-pixel splinters
-    that arc out and fade. Effects are pixel particles on the art grid.
+    puff of snow, a bare tree nothing. Stone and boulders throw a few small splinters
+    that arc out and fade. Effects are pixel particles on the art grid, in colours that
+    stand out from what they fall from, and leaves fall past the canopy onto the ground.
   - A berry bush gives berries and bears again after a few days; picking it doesn't
     remove it. Shrubs and fern bushes give fibre.
   - Collected items go onto existing stacks first, then into free slots, and into the held
