@@ -77,11 +77,20 @@ top of classic pixel art (details under "Lighting and look").
 - Assets are created by Claude for now, in a **semi-fantasy/medieval pixel style**.
 - They come from a **generator script** (`make assets`). The generated PNGs are
   committed. Hand-drawn PNGs may replace single files later.
-- **One fixed palette of about 32 colours** (own palette): earthy greens and browns,
+- **One fixed palette** (own palette, see Style rules for its size): earthy greens and browns,
   muted blue water, warm accents for fire and light, room for magic colours. All assets
   use only palette colours.
 - **Terrain transitions (autotiling)** from the first art pass, so terrains blend
   instead of meeting as hard squares.
+- **Style rules** (from the art review):
+  - outlines: outer outline in the darkest colour of the object's own colour ramp; ink only
+    for characters and interactable pickups; no outlines on terrain;
+  - light from the top left everywhere;
+  - every standing thing gets a small contact shadow;
+  - houses and interiors in 3/4 view like trees and characters;
+  - 2–4 px detail clusters, not single-pixel noise.
+- **Palette:** "about 32" is loosened to **up to ~48 colours**, so snow/ice, a berry red and
+  a cool shadow grey fit; merge near-duplicate greens.
 - **Variety:** the world must not look tiled.
   - Large-scale colour variation: terrain colour shifts slowly across the world (e.g.
     lusher, drier, yellower patches of grass), driven by low-frequency noise in world
@@ -169,10 +178,10 @@ top of classic pixel art (details under "Lighting and look").
     keyboard action (Space) works on the tile the player faces, as before, and the
     highlight shows that tile again once the player moves.
 - **Inventory and equipment.** Carried items have weight (see Energy).
-- **Scale between character and world (to fix, 2026-11-05):** the character looks too big
-  next to the other art. World art (trees, buildings, objects) gets bigger relative to the
-  16×16 tiles, and the character a few percent smaller. Exact numbers come from the art
-  review.
+- **Scale between character and world:** character figure 27–28 px tall in its 16×32
+  frame; mature trees about 2–2.5× the character (60–66 px); a small house about 3.4× (5×3
+  footprint, ~96 px tall, door at least as tall as the character). Numbers in
+  `docs/art-review-2026-11-05.md`.
 - **Character sprite: 16×32 pixels** (one tile wide, two tall), built from **layers**
   (body, clothes, head/hair, held tool or weapon, later gear), so equipment can be shown
   by swapping or adding a layer instead of redrawing the character.

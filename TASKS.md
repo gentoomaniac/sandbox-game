@@ -425,10 +425,51 @@ See SPEC.md "Saving (first version)" and "World edits (architecture)".
 
 ## 16. Art scale pass
 
+Split into three tasks that can run in parallel. Numbers and reasons:
+`docs/art-review-2026-11-05.md`. All follow SPEC.md "Art pipeline" style rules.
+
+Screenshots: the tiling window manager makes windowed screenshots portrait; take them
+fullscreen (`godot --path . -f -- --new-game --screenshot=... --at=...`).
+
+### 16a. Objects: trees, bushes, stones, camp, crops
+
 - [ ] Done
 
-See SPEC.md "Player" (scale between character and world). Details follow from the art
-review (2026-11-05).
+- Redraw at the target sizes: oak, spruce, pine, dead tree, berry bush, shrub, fern bush,
+  sapling, fireplace (with logs), sleeping bag (1×2 tiles, vertical), turnip stages.
+  Include the review's improvements for these (oak crown lobes, fern fronds, sapling
+  trunk and stake, sleeping bag pillow and fold), the outline rule and contact shadows.
+- New object: boulder on 2×1 tiles, higher harvest level. Multi-tile objects need
+  footprint support in the object data and the walk/build checks.
+- Object atlas cells: per-row cell sizes from the type data (small 32×32, trees 48×80),
+  or one uniform 48×80 cell — whichever stays simpler.
+- Update `sprite_height`, and add the test that each is at least the opaque height in
+  the atlas. Widen the see-through radius to about 2 tiles.
+- Campfire light: deeper orange (~1.0, 0.5, 0.22), energy 1.2–1.6, so grass doesn't turn
+  lime and the character isn't bleached. Dusk tint: warmer, less olive (see review §2.3).
+
+### 16b. Character
+
+- [ ] Done
+
+- Figure 27–28 px tall in the 16×32 frame (head 9×8), feet on the bottom row.
+- Coloured inner lines (keep the outer outline), hoe in `soil_dark`, nose pixel and arm
+  swing in side views, 4-frame walk cycle.
+- All layers and both outfits.
+
+### 16c. House and interior
+
+- [ ] Done
+
+- House: 5×3 footprint, sprite about 80×96 in 3/4 view (ridge, slope, eaves), straw
+  thatch, door 14–16 × 24–26 on the middle tile (door_offset (2,2)) with frame and step,
+  windows with sills, chimney, shadow under the eaves, darker right wall.
+- Lit windows at night: a lit window variant plus a small warm point light, on when the
+  tint is dark.
+- Interior in 3/4 view: back wall as a 2-tile wall face with plaster, wainscot, window and
+  beam; side and front walls as thin top rims; room 7×5 floor tiles; furniture: bed on
+  1×2, table on 2×1 with two stools, doormat, hearth (light source), chest. Update the
+  Tiled map and tileset.
 
 ## 17. Mouse tile targeting
 
