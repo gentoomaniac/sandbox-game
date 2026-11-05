@@ -1101,6 +1101,16 @@ axe takes a chest down and spills its contents; chests and contents saved. Art: 
 (world sprite with a snow look, item icon), the two header icons; sounds generated in
 tools/audio and added to sounds.cfg. Tests, tooltips, README and the Controls table.
 
+## 50. Hotbar apart from the backpack
+
+- [ ] Done
+
+See SPEC.md "Inventory and equipment" (changed 2026-11-05). The hotbar's 10 slots no longer
+count against the backpack: 10 hotbar + 20 backpack slots. The character screen and the
+storage screen show the backpack grid with the hotbar as a row below it; moving items works
+between hotbar, backpack, equipment and chest. Old saves keep every item where it is and
+gain the new empty backpack slots. Tests; README updated. Starts after task 49 is merged.
+
 ## Later (not part of the prototype)
 
 - Season looks follow-ups (from the task 29 review): world_view.gd carries layer, season

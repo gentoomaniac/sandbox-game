@@ -228,8 +228,11 @@ top of classic pixel art (details under "Lighting and look").
     keyboard action (Space) works on the tile the player faces, as before, and the
     highlight shows that tile again once the player moves.
 - **Inventory and equipment** (decided 2026-11-05):
-  - 20 slots at the start; the first 10 are the **hotbar**, shown at the bottom of the
-    screen. Backpack upgrades later add rows of 10.
+  - The **hotbar** (10 slots, shown at the bottom of the screen) and the **backpack** (20
+    slots) are separate (changed 2026-11-05): what is on the hotbar takes no backpack
+    space, so the player carries 30 slots. Screens show the backpack grid with the hotbar
+    as its own row below. Picked-up items join a matching stack first, then take the first
+    free slot, hotbar before backpack. Backpack upgrades later add rows to the backpack.
   - The selected hotbar slot is what the player holds: keys 1–0 pick a slot. The use
     action (left click or Space) acts with the held item.
   - Items of the same kind stack, up to 99 per slot; tools don't stack.
