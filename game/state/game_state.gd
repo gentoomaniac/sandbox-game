@@ -63,7 +63,7 @@ const PASS_OUT_MINUTES := 10 * GameClock.MINUTES_PER_HOUR
 ## A player who is still awake when the clock shows this has stayed up too late and passes out.
 const LATE_NIGHT_MINUTE := 1 * GameClock.MINUTES_PER_HOUR
 ## Items on the ground within this many tiles of the player (their feet) are pulled to them.
-const PULL_RADIUS := 0.5
+const PULL_RADIUS := 1.25
 ## How fast a pulled item moves, in tiles per second: faster than the player walks, so it
 ## catches up.
 const PULL_SPEED := 8.0

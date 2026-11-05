@@ -138,11 +138,12 @@ func test_walking_over_a_pile_collects_it() -> void:
 	assert_eq(_world.ground_items().size(), 0)
 
 
-func test_a_pile_is_pulled_only_in_the_last_half_tile() -> void:
-	var far := _lay(ItemTypes.LOGS, 1, Vector2(0.8, 0))
+func test_a_pile_is_pulled_only_within_the_pull_radius() -> void:
+	var outside := GameState.PULL_RADIUS + 0.3
+	var far := _lay(ItemTypes.LOGS, 1, Vector2(outside, 0))
 	var near := _lay(ItemTypes.STONE, 1, Vector2(0, 0.4))
 	_walk_frames(1)
-	assert_eq(far.position, _player_start + Vector2(0.8, 0))
+	assert_eq(far.position, _player_start + Vector2(outside, 0))
 	assert_lt(near.position.distance_to(_player_start), 0.4)
 	assert_eq(_count(ItemTypes.STONE), 0, "pulled, not there yet")
 	_walk_frames(20)
