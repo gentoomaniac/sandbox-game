@@ -432,7 +432,7 @@ review (2026-11-05).
 
 ## 17. Mouse tile targeting
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Player" (tile targeting with the mouse).
 
