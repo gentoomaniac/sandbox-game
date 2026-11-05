@@ -46,7 +46,7 @@ Set up the Godot 4 project and the make targets.
       exist (e.g. `dev-games/godot`, `games-util/tiled`), plus a generic hint;
     - never installs system packages;
     - creates a project-local venv `.venv/` with gdtoolkit;
-    - downloads the GUT and YATI (Tiled importer) addons at pinned versions into
+    - downloads the GUT addon at a pinned version into
       `addons/`;
     - is safe to run again and skips what is already there;
     - exits non-zero if something is missing.
@@ -299,7 +299,7 @@ Depends on: 6.
 Depends on: 8, 9.
 
 - An interior map for the small house, made in Tiled (`maps/interiors/small_house.tmx`)
-  and imported with YATI.
+  and imported with YATI (now read by InteriorLoader).
 - Its tiles use the same terrain types as tile state, set as Tiled custom properties. The
   importer step turns them into tile state, so interiors use the same model as the world.
 - Walking into the door of a placed house switches to the interior map. Walking out
