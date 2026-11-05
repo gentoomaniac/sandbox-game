@@ -492,7 +492,7 @@ Parallel plan for 18–21: 18 and 19 together; 20 after 18; 21 after 20.
 
 ## 18. Inventory, hotbar and starting tools
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Player" (inventory and equipment, tools).
 
