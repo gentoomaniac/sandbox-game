@@ -1,15 +1,36 @@
 class_name InteriorView
 extends Node2D
-## Renders an Interior from its state: floor and walls on one tile layer, its objects on
-## another, in the y-sorted `entities` node where the player stands among them. Tiles come
-## from assets/interior.png, the same image the Tiled tileset (maps/interiors/interior.tsx)
-## uses, with the cells in this order: floor, wall, doormat, bed, table.
+## Renders an Interior from its state, in 3/4 view: the floor and walls on one tile layer,
+## the furniture as sprites in the y-sorted `entities` node, where the player stands among
+## them. Furniture that shines (the hearth) gets an ObjectLight.
+##
+## The room is walled in by its WALL tiles: along the top a back wall face of BACK_WALL_ROWS
+## tiles, on the other sides thin tops of walls, 8 px wide, drawn on the half of the wall
+## tile next to the room. Which picture a wall tile gets follows from where it is, so the
+## state only needs to say floor or wall. Tiles come from assets/interior.png, the same image
+## the Tiled tileset (maps/interiors/interior.tsx) uses; the order of `Ground` is the order
+## of its cells (see the art generator). Furniture pictures are in assets/interior/.
+
+enum Ground {
+	FLOOR,
+	FLOOR_SHADED,
+	RIM_LEFT,
+	RIM_RIGHT,
+	RIM_FRONT,
+	FRONT_LEFT,
+	FRONT_RIGHT,
+	DOORMAT,
+	BACK_TOP,
+	BACK_BOTTOM,
+	BACK_LEFT_TOP,
+	BACK_LEFT_BOTTOM,
+	BACK_RIGHT_TOP,
+	BACK_RIGHT_BOTTOM,
+}
 
 const ATLAS_PATH := "res://assets/interior.png"
 const SOURCE_ID := 0
-const FLOOR_CELL := Vector2i(0, 0)
-const WALL_CELL := Vector2i(1, 0)
-const DOORMAT_CELL := Vector2i(2, 0)
+const BACK_WALL_ROWS := 2
 ## Beyond the room, so it does not show the (hidden) world's emptiness.
 const BACKDROP := Color("1d1b26")
 const BACKDROP_RADIUS := 1000.0
@@ -17,7 +38,8 @@ const BACKDROP_RADIUS := 1000.0
 ## Y-sorted: the player is added here.
 var entities := Node2D.new()
 var _ground := TileMapLayer.new()
-var _objects := TileMapLayer.new()
+## The furniture sprites and the lights, to be replaced when another interior is shown.
+var _furniture: Array[Node] = []
 
 
 func _ready() -> void:
@@ -32,34 +54,75 @@ func _ready() -> void:
 	_ground.name = "Ground"
 	_ground.tile_set = tile_set
 	add_child(_ground)
-	_objects.name = "Objects"
-	_objects.tile_set = tile_set
-	_objects.y_sort_enabled = true
 	entities.name = "Entities"
 	entities.y_sort_enabled = true
-	entities.add_child(_objects)
 	add_child(entities)
 
 
 func show_interior(interior: Interior) -> void:
 	_ground.clear()
-	_objects.clear()
+	for node in _furniture:
+		node.queue_free()
+	_furniture.clear()
 	for y in interior.size.y:
 		for x in interior.size.x:
 			var pos := Vector2i(x, y)
 			var tile := interior.tile_at(pos)
 			if tile != null:
-				_ground.set_cell(pos, SOURCE_ID, _ground_cell(tile, pos == interior.exit_tile))
+				var ground := ground_at(tile, pos, interior.size, pos == interior.exit_tile)
+				_ground.set_cell(pos, SOURCE_ID, Vector2i(ground, 0))
 	for object in interior.objects():
-		var cell: Vector2i = WorldObjectTypes.TYPES[object.type]["interior_cell"]
-		_objects.set_cell(object.pos, SOURCE_ID, cell)
+		_add_furniture(object)
 
 
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ONE * -BACKDROP_RADIUS, Vector2.ONE * 2 * BACKDROP_RADIUS), BACKDROP)
 
 
-func _ground_cell(tile: Tile, is_exit: bool) -> Vector2i:
+## Which ground picture a tile of a room of this size gets.
+static func ground_at(tile: Tile, pos: Vector2i, size: Vector2i, is_exit: bool) -> Ground:
 	if is_exit:
-		return DOORMAT_CELL
-	return WALL_CELL if tile.terrain == Tile.Terrain.WALL else FLOOR_CELL
+		return Ground.DOORMAT
+	if tile.terrain == Tile.Terrain.FLOOR:
+		return Ground.FLOOR_SHADED if pos.y == BACK_WALL_ROWS else Ground.FLOOR
+	var is_left := pos.x == 0
+	var is_right := pos.x == size.x - 1
+	if pos.y < BACK_WALL_ROWS:
+		var is_lower := pos.y == BACK_WALL_ROWS - 1
+		if is_left:
+			return Ground.BACK_LEFT_BOTTOM if is_lower else Ground.BACK_LEFT_TOP
+		if is_right:
+			return Ground.BACK_RIGHT_BOTTOM if is_lower else Ground.BACK_RIGHT_TOP
+		return Ground.BACK_BOTTOM if is_lower else Ground.BACK_TOP
+	if pos.y == size.y - 1:
+		if is_left:
+			return Ground.FRONT_LEFT
+		return Ground.FRONT_RIGHT if is_right else Ground.RIM_FRONT
+	return Ground.RIM_LEFT if is_left else Ground.RIM_RIGHT
+
+
+func _add_furniture(object: WorldObject) -> void:
+	var object_type: Dictionary = WorldObjectTypes.TYPES[object.type]
+	var tile_size := TerrainTileset.TILE_SIZE
+	var footprint: Vector2i = object_type["footprint"]
+	var texture: Texture2D = load(object_type["interior_sprite"])
+	var sprite := Sprite2D.new()
+	sprite.texture = texture
+	sprite.centered = false
+	# Sorted by the middle of the bottom footprint row, like the objects outside. The picture
+	# is centred on the footprint, its bottom edge on the footprint's.
+	sprite.position = Vector2(
+		(object.pos.x + footprint.x / 2.0) * tile_size,
+		(object.pos.y + footprint.y - 0.5) * tile_size
+	)
+	sprite.offset = Vector2(-texture.get_width() / 2.0, tile_size / 2.0 - texture.get_height())
+	entities.add_child(sprite)
+	_furniture.append(sprite)
+	if not object.light().is_empty():
+		var light := ObjectLight.new(object.light(), object.pos)
+		# The fire, a bit below the middle of the footprint.
+		light.position = (
+			(Vector2(object.pos) + Vector2(footprint) / 2.0) * tile_size + Vector2(0, 4)
+		)
+		add_child(light)
+		_furniture.append(light)

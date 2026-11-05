@@ -42,7 +42,7 @@ func test_rejected_on_object() -> void:
 
 func test_rejected_on_overlap_with_another_building() -> void:
 	_world.place_building(HOUSE, ORIGIN)
-	var overlapping := ORIGIN + Vector2i(3, 2)
+	var overlapping := ORIGIN + Vector2i(4, 2)
 	assert_null(_world.place_building(HOUSE, overlapping))
 	assert_eq(
 		_world.placement_blockers(HOUSE, overlapping),
@@ -51,7 +51,7 @@ func test_rejected_on_overlap_with_another_building() -> void:
 	)
 	assert_eq(_world.buildings().size(), 1)
 	# Touching is fine.
-	assert_not_null(_world.place_building(HOUSE, ORIGIN + Vector2i(4, 0)))
+	assert_not_null(_world.place_building(HOUSE, ORIGIN + Vector2i(5, 0)))
 
 
 func test_rejected_when_a_chunk_is_not_loaded() -> void:
@@ -71,8 +71,8 @@ func test_footprint_is_occupied_and_only_the_door_is_walkable() -> void:
 		assert_false(_world.is_plantable(pos), "plantable %s" % pos)
 		assert_eq(_world.is_walkable(pos), pos == building.door_tile(), "walkable %s" % pos)
 	assert_true(building.tiles().has(building.door_tile()))
-	assert_true(_world.is_walkable(ORIGIN + Vector2i(1, 3)), "the tile in front of the door")
-	assert_null(_world.building_at(ORIGIN + Vector2i(4, 0)))
+	assert_true(_world.is_walkable(ORIGIN + Vector2i(2, 3)), "the tile in front of the door")
+	assert_null(_world.building_at(ORIGIN + Vector2i(5, 0)))
 
 
 func test_placement_emits_the_signal() -> void:

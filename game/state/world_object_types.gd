@@ -8,8 +8,9 @@ extends RefCounted
 ##   axe or pickaxe (oak, spruce, dead tree, stone), 2 a better one (pine, the hardest wood,
 ##   boulder);
 ## - atlas_row, variants: where its looks are in assets/objects.png (see the art generator).
-## Furniture, which only stands inside buildings, has `interior_cell` (its cell in
-## assets/interior.png) instead of atlas_row and variants. Optional:
+## Furniture, which only stands inside buildings, has `interior_sprite` (its picture in
+## assets/interior/) instead of atlas_row and variants. The picture is centred on the
+## footprint, its bottom on the footprint's bottom edge. Optional:
 ## - sleep_minutes: the object is a bed, and sleeping in it takes this long;
 ## - growth_stages, days_per_stage: the object is a crop. Its `days_grown` state sets its
 ##   stage; the last stage is ripe. Its atlas variants are the stages.
@@ -32,6 +33,10 @@ const TURNIP := &"turnip"
 const BOULDER := &"boulder"
 const SMALL_BED := &"small_bed"
 const TABLE := &"table"
+const STOOL := &"stool"
+const CHEST := &"chest"
+const HEARTH := &"hearth"
+const WINDOW := &"window"
 
 ## The largest footprint any type has, in tiles: what World looks back over to find the
 ## object that covers a tile.
@@ -154,17 +159,46 @@ const TYPES := {
 	},
 	SMALL_BED:
 	{
-		"footprint": Vector2i(1, 1),
+		"footprint": Vector2i(1, 2),
 		"blocks_walking": true,
 		"harvest_level": 0,
-		"interior_cell": Vector2i(3, 0),
+		"interior_sprite": "res://assets/interior/bed.png",
 		"sleep_minutes": 6 * GameClock.MINUTES_PER_HOUR,
 	},
 	TABLE:
 	{
+		"footprint": Vector2i(2, 1),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"interior_sprite": "res://assets/interior/table.png",
+	},
+	STOOL:
+	{
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": true,
 		"harvest_level": 0,
-		"interior_cell": Vector2i(4, 0),
+		"interior_sprite": "res://assets/interior/stool.png",
+	},
+	CHEST:
+	{
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"interior_sprite": "res://assets/interior/chest.png",
+	},
+	HEARTH:
+	{
+		"footprint": Vector2i(2, 2),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"interior_sprite": "res://assets/interior/hearth.png",
+		"light": {"color": Color(1.0, 0.5, 0.22), "energy": 1.2, "radius_tiles": 5.0},
+	},
+	WINDOW:
+	{
+		"footprint": Vector2i(1, 2),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"interior_sprite": "res://assets/interior/window.png",
 	},
 }

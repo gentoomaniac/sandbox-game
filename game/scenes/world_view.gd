@@ -26,6 +26,8 @@ const UNLOAD_RADIUS := 5
 ## One per frame keeps a frame well under 16 ms and still streams far faster than the
 ## camera moves.
 const MAX_LOADS_PER_FRAME := 1
+## The windows of buildings are lit (and shine) once the light strength is at least this.
+const WINDOW_LIT_STRENGTH := 0.3
 
 ## The 4 corner tiles of a cell, in mask order: top-left, top-right, bottom-left,
 ## bottom-right.
@@ -64,6 +66,8 @@ var _light_strength := 1.0
 ## The sprites that stand in for object cells while they are see-through, by tile.
 var _object_sprites: Dictionary[Vector2i, SeeThroughSprite] = {}
 var _building_sprites: Dictionary[Building, SeeThroughSprite] = {}
+## The lights in the windows of each building.
+var _window_lights: Dictionary[Building, Array] = {}
 
 
 func _ready() -> void:
@@ -108,6 +112,8 @@ func set_light_strength(strength: float) -> void:
 	_light_strength = strength
 	for light in _lights.values():
 		light.strength = strength
+	for building in _building_sprites:
+		_show_windows(building)
 
 
 ## Streaming follows this world tile position.
@@ -295,6 +301,33 @@ func _draw_building(building: Building) -> void:
 	)
 	sprite.offset = Vector2(0, half_tile - sprite.texture.get_height())
 	entities.add_child(sprite)
+	_add_window_lights(building, sprite)
+
+
+## Building windows: a lit sprite variant and a small warm light in each window, on at night.
+
+
+func _add_window_lights(building: Building, sprite: Sprite2D) -> void:
+	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
+	var lights: Array[ObjectLight] = []
+	for window_centre: Vector2i in building_type["window_lights"]:
+		var light := ObjectLight.new(building_type["window_light"], building.origin)
+		# On the window pane. The sprite's top left is its position plus its offset.
+		light.position = sprite.position + sprite.offset + Vector2(window_centre)
+		lights.append(light)
+		add_child(light)
+	_window_lights[building] = lights
+	_show_windows(building)
+
+
+func _show_windows(building: Building) -> void:
+	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
+	var is_lit := _light_strength >= WINDOW_LIT_STRENGTH
+	_building_sprites[building].texture = load(
+		building_type["sprite_lit"] if is_lit else building_type["sprite"]
+	)
+	for light: ObjectLight in _window_lights[building]:
+		light.strength = _light_strength if is_lit else 0.0
 
 
 ## Fades what hides the player and puts back what no longer does.

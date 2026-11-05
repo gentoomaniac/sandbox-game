@@ -8,6 +8,7 @@ var size := Vector2i.ZERO
 ## Walking onto this tile leaves the building.
 var exit_tile := Vector2i.ZERO
 var _tiles: Dictionary[Vector2i, Tile] = {}
+## Every tile an object covers points at it, so a bigger object is found from any of its tiles.
 var _objects: Dictionary[Vector2i, WorldObject] = {}
 
 
@@ -30,13 +31,23 @@ func set_terrain(pos: Vector2i, terrain: Tile.Terrain) -> void:
 	_tiles[pos] = tile
 
 
+## Puts an object on the tiles of its footprint, from its position (its top left tile) on.
 func add_object(object: WorldObject) -> void:
-	assert(not _objects.has(object.pos), "Interior tile %s is taken" % object.pos)
-	_objects[object.pos] = object
+	var footprint: Vector2i = WorldObjectTypes.TYPES[object.type]["footprint"]
+	for y in footprint.y:
+		for x in footprint.x:
+			var tile := object.pos + Vector2i(x, y)
+			assert(not _objects.has(tile), "Interior tile %s is taken" % tile)
+			_objects[tile] = object
 
 
+## Each object once.
 func objects() -> Array[WorldObject]:
-	return _objects.values()
+	var found: Array[WorldObject] = []
+	for tile in _objects:
+		if _objects[tile].pos == tile:
+			found.append(_objects[tile])
+	return found
 
 
 func to_dict() -> Dictionary:
@@ -46,7 +57,7 @@ func to_dict() -> Dictionary:
 			SaveCodec.vector_to_json(pos) + [SaveCodec.terrain_to_json(_tiles[pos].terrain)]
 		)
 	var objects_data: Array[Dictionary] = []
-	for object in _objects.values():
+	for object in objects():
 		objects_data.append(object.to_dict())
 	return {
 		"size": SaveCodec.vector_to_json(size),

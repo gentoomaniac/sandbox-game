@@ -8,7 +8,8 @@ extends RefCounted
 ## Properties of the tiles of the tileset say what a cell means, on whichever layer it is:
 ## - `terrain`: a Tile.Terrain name, such as FLOOR or WALL;
 ## - `exit` (bool): the cell is the exit;
-## - `object_type`: a WorldObjectTypes name; an object of it stands on the cell.
+## - `object_type`: a WorldObjectTypes name; an object of it stands there, the cell being the
+##   top left tile of its footprint.
 ## Layers and cell positions follow the map; empty cells are left empty.
 ##
 ## Bad content fails loudly, but with asserts: they are debug-time checks for authored content.

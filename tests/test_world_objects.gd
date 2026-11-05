@@ -53,7 +53,7 @@ func test_every_natural_object_type_is_generated() -> void:
 		# The camp is placed by the game, crops by the player and furniture comes with interiors.
 		var type_data: Dictionary = WorldObjectTypes.TYPES[object_type]
 		var is_camp := object_type in [WorldObjectTypes.FIREPLACE, WorldObjectTypes.SLEEPING_BAG]
-		if is_camp or type_data.has("growth_stages") or type_data.has("interior_cell"):
+		if is_camp or type_data.has("growth_stages") or type_data.has("interior_sprite"):
 			continue
 		assert_true(types.has(object_type), "Missing object type %s" % object_type)
 
