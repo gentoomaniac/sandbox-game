@@ -25,6 +25,9 @@ const LAYER_OF_EQUIPMENT_SLOT := {
 }
 
 const SHEET_PATH := "res://assets/character/%s_%s.png"
+## The same layer passing out: kneeling, tipping over, lying and asleep (see PlayerView). The
+## held layer has none: the hand lets go.
+const COLLAPSE_SHEET_PATH := "res://assets/character/collapse/%s_%s.png"
 
 ## What a new character looks like by themselves, bottom layer first.
 const DEFAULT_LOOK := [[BODY, "0"], [HAIR, "0"]]
@@ -90,6 +93,11 @@ static func _rank(slot: StringName) -> int:
 ## The sheet that holds a layer's frames.
 static func sheet_path(layer: Dictionary) -> String:
 	return SHEET_PATH % [layer.slot, layer.variant]
+
+
+## The sheet that holds a layer's passing-out frames.
+static func collapse_sheet_path(layer: Dictionary) -> String:
+	return COLLAPSE_SHEET_PATH % [layer.slot, layer.variant]
 
 
 func to_dict() -> Dictionary:

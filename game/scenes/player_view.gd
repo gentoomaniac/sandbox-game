@@ -8,6 +8,9 @@ extends Node2D
 ## character wears comes from the equipment, see `--wear` in Main);
 ## `--pose=<up|down|left|right>[,<column>]` turns the player and optionally freezes the
 ## animation on a column of the sheet (0 idle, 1 to 4 the walk frames).
+##
+## Passing out (`collapse`) shows the collapse sheets instead (see Appearance): the player sinks
+## to the knees, tips over and lies asleep with rising "z"s, until `stand_up`.
 
 ## A foot came down: time for a footstep sound.
 signal stepped
@@ -30,6 +33,15 @@ const HAIR_KEY := KEY_F6
 const FACINGS_BY_NAME := {
 	"up": Vector2i.UP, "down": Vector2i.DOWN, "left": Vector2i.LEFT, "right": Vector2i.RIGHT
 }
+## When each frame of a collapse sheet begins, in seconds after `collapse`: kneeling, tipping
+## over, lying and asleep. The sheets face right and are mirrored for a player facing left;
+## facing up or down, the player falls to the right.
+const COLLAPSE_FRAME_STARTS := [0.0, 0.5, 0.65, 0.95]
+const ASLEEP_FRAME := 3
+## From standing to asleep, with a moment of the "z"s: Main fades out after this.
+const COLLAPSE_SECONDS := 1.5
+## Where the "z"s start over a figure lying head to the right, in art pixels from the feet.
+const SLEEP_ZS_POSITION := Vector2(10, -16)
 
 ## How fast the player walks (see GameState `walk_speed_factor`); the walk animation, and so the
 ## steps, keep that pace.
@@ -41,6 +53,9 @@ var _last_position := Vector2.ZERO
 var _walk_time := 0.0
 var _hair := 0
 var _frozen_column := -1
+## Seconds since `collapse`, or -1 while the player is on their feet.
+var _collapse_time := -1.0
+var _sleep_zs := SleepZs.new()
 ## The sheets the sprites show now, bottom first. The sprites are rebuilt when they change.
 var _shown_sheets: Array[String] = []
 var _sprites: Array[Sprite2D] = []
@@ -58,6 +73,19 @@ static func frame_index(facing: Vector2i, column: int) -> int:
 	return FACING_ROWS[facing] * FRAMES_PER_FACING + column
 
 
+## The frame of the collapse sheets `time` seconds after the collapse began.
+static func collapse_frame(time: float) -> int:
+	var frame := 0
+	for index in COLLAPSE_FRAME_STARTS.size():
+		if time >= COLLAPSE_FRAME_STARTS[index]:
+			frame = index
+	return frame
+
+
+func _init() -> void:
+	add_child(_sleep_zs)
+
+
 func show_player(player: PlayerState) -> void:
 	_player = player
 	_last_position = player.position
@@ -72,6 +100,17 @@ func show_player(player: PlayerState) -> void:
 				_frozen_column = int(parts[1])
 
 
+## The player passes out where they stand (see the collapse sheets).
+func collapse() -> void:
+	_collapse_time = 0.0
+
+
+## Back on their feet, as after waking up.
+func stand_up() -> void:
+	_collapse_time = -1.0
+	_sleep_zs.is_sleeping = false
+
+
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == HAIR_KEY:
 		_wear_hair((_hair + 1) % HAIR_COUNT)
@@ -83,6 +122,9 @@ func _process(delta: float) -> void:
 	var moved := _player.position - _last_position
 	_last_position = _player.position
 	position = (_player.position * TerrainTileset.TILE_SIZE).round()
+	if _collapse_time >= 0.0:
+		_show_collapse(delta)
+		return
 	if moved != Vector2.ZERO:
 		_walk_time += delta * walk_speed
 	else:
@@ -94,9 +136,26 @@ func _process(delta: float) -> void:
 		stepped.emit()
 	_last_column = column
 	_show_held_item()
-	_show_layers(_player.appearance.layers_for(_player.facing))
+	_show_layers(_player.appearance.layers_for(_player.facing), false)
 	for sprite in _sprites:
 		sprite.frame = frame_index(_player.facing, column)
+
+
+func _show_collapse(delta: float) -> void:
+	_collapse_time += delta
+	var frame := collapse_frame(_collapse_time)
+	# The hand lets go of what it held.
+	var layers: Array[Dictionary] = []
+	for layer in _player.appearance.layers_for(Vector2i.RIGHT):
+		if layer.slot != Appearance.HELD:
+			layers.append(layer)
+	_show_layers(layers, true)
+	var is_facing_left := _player.facing == Vector2i.LEFT
+	for sprite in _sprites:
+		sprite.frame = frame
+		sprite.flip_h = is_facing_left
+	_sleep_zs.is_sleeping = frame == ASLEEP_FRAME
+	_sleep_zs.position = SLEEP_ZS_POSITION * Vector2(-1 if is_facing_left else 1, 1)
 
 
 ## The hand shows the selected item, if it has art for the hand (the hoe); else it is empty.
@@ -114,10 +173,13 @@ func _wear_hair(hair: int) -> void:
 	_player.appearance.wear(Appearance.HAIR, str(hair))
 
 
-func _show_layers(layers: Array[Dictionary]) -> void:
+## Shows the layers' sheets, or their collapse sheets.
+func _show_layers(layers: Array[Dictionary], is_collapse: bool) -> void:
 	var sheets: Array[String] = []
 	for layer in layers:
-		sheets.append(Appearance.sheet_path(layer))
+		sheets.append(
+			Appearance.collapse_sheet_path(layer) if is_collapse else Appearance.sheet_path(layer)
+		)
 	if sheets == _shown_sheets:
 		return
 	_shown_sheets = sheets
@@ -127,9 +189,11 @@ func _show_layers(layers: Array[Dictionary]) -> void:
 	for sheet in sheets:
 		var sprite := Sprite2D.new()
 		sprite.texture = load(sheet)
-		sprite.hframes = FRAMES_PER_FACING
-		sprite.vframes = FACING_ROWS.size()
+		sprite.hframes = COLLAPSE_FRAME_STARTS.size() if is_collapse else FRAMES_PER_FACING
+		sprite.vframes = 1 if is_collapse else FACING_ROWS.size()
 		# The frame's bottom centre is at the feet.
 		sprite.offset = Vector2(0, -FRAME_HEIGHT / 2.0)
 		add_child(sprite)
 		_sprites.append(sprite)
+	# The "z"s rise in front of the figure.
+	move_child(_sleep_zs, -1)

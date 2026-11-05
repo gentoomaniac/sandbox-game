@@ -69,7 +69,7 @@ func _lived_in_state() -> GameState:
 
 func _bed_in(interior: Interior) -> WorldObject:
 	for object in interior.objects():
-		if object.sleep_minutes() > 0:
+		if object.is_bed():
 			return object
 	fail_test("no bed in the interior")
 	return null
@@ -189,7 +189,7 @@ func test_a_lived_in_game_round_trip() -> void:
 	assert_same(restored.current_map, interior)
 	assert_same(restored.player.home_map, interior)
 	assert_eq(restored.player.home_bed, _state.player.home_bed)
-	assert_eq(interior.object_at(restored.player.home_bed).sleep_minutes() > 0, true)
+	assert_true(interior.object_at(restored.player.home_bed).is_bed())
 	# Chunks are regenerated from the seed with the edits replayed.
 	_load_chunks_like(_state.world, restored.world)
 	assert_null(restored.world.object_at(removed_tree))

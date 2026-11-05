@@ -27,28 +27,42 @@ func _make_a_house_home() -> WorldObject:
 # --- Passing out ---
 
 
-func test_passing_out_wakes_in_the_home_bed_at_six_the_next_day() -> void:
-	_state.clock.set_time(20, 30)
+func test_passing_out_wakes_in_the_home_bed_the_next_morning() -> void:
+	_state.clock.set_time(19, 0)
 	_state.player.position += Vector2(5, 0)
-	_state.pass_out()
+	assert_eq(_state.pass_out(), 11 * GameClock.MINUTES_PER_HOUR + 30)
 	assert_eq(_state.clock.day, 2)
 	assert_eq(_state.clock.minute_of_day, GameState.WAKE_UP_MINUTE)
 	assert_eq(_state.player.tile(), _state.player.home_bed)
 	assert_eq(_state.current_map, _world)
 
 
-func test_passing_out_before_six_wakes_the_same_morning() -> void:
+func test_passing_out_late_in_the_evening_sleeps_at_least_ten_hours() -> void:
+	_state.clock.set_time(22, 0)
+	assert_eq(_state.pass_out(), 10 * GameClock.MINUTES_PER_HOUR)
+	assert_eq(_state.clock.day, 2)
+	assert_eq(_state.clock.time_text(), "08:00")
+
+
+func test_passing_out_in_the_afternoon_wakes_at_half_past_six() -> void:
+	_state.clock.set_time(15, 0)
+	assert_eq(_state.pass_out(), 15 * GameClock.MINUTES_PER_HOUR + 30)
+	assert_eq(_state.clock.day, 2)
+	assert_eq(_state.clock.time_text(), "06:30")
+
+
+func test_passing_out_after_midnight_wakes_ten_hours_later_the_same_day() -> void:
 	_state.clock.set_time(2, 0)
 	_state.pass_out()
 	assert_eq(_state.clock.day, 1)
-	assert_eq(_state.clock.minute_of_day, GameState.WAKE_UP_MINUTE)
+	assert_eq(_state.clock.time_text(), "12:00")
 
 
-func test_passing_out_at_six_sharp_wakes_the_next_day() -> void:
-	_state.clock.set_time(6, 0)
-	_state.pass_out()
+func test_passing_out_at_half_past_six_sharp_sleeps_a_whole_day() -> void:
+	_state.clock.set_time(6, 30)
+	assert_eq(_state.pass_out(), GameClock.MINUTES_PER_DAY)
 	assert_eq(_state.clock.day, 2)
-	assert_eq(_state.clock.minute_of_day, GameState.WAKE_UP_MINUTE)
+	assert_eq(_state.clock.time_text(), "06:30")
 
 
 func test_passing_out_gives_the_debuff_values() -> void:
@@ -68,12 +82,24 @@ func test_passing_out_keeps_the_items() -> void:
 
 
 func test_the_debuff_ends_at_the_next_new_day() -> void:
+	_state.clock.set_time(20, 0)
 	_state.pass_out()
-	_state.clock.advance(GameClock.MINUTES_PER_DAY - GameState.WAKE_UP_MINUTE - 1)
+	_state.clock.advance(GameClock.MINUTES_PER_DAY - _state.clock.minute_of_day - 1)
 	assert_true(_state.player.is_debuffed, "still the same day")
 	_state.clock.advance(1)
 	assert_false(_state.player.is_debuffed)
 	assert_eq(_state.energy_cap(), PlayerState.MAX_ENERGY)
+
+
+func test_passing_out_after_midnight_keeps_the_debuff_until_the_next_midnight() -> void:
+	_state.clock.set_time(1, 0)
+	_state.pass_out()
+	assert_eq(_state.clock.time_text(), "11:00")
+	assert_true(_state.player.is_debuffed)
+	_state.clock.advance(_state.clock.minutes_until(0) - 1)
+	assert_true(_state.player.is_debuffed, "23:59")
+	_state.clock.advance(1)
+	assert_false(_state.player.is_debuffed)
 
 
 func test_passing_out_wakes_beside_a_home_bed_inside_a_house() -> void:
@@ -114,12 +140,13 @@ func test_sleeping_never_lowers_energy() -> void:
 	assert_eq(_state.player.energy, 90.0)
 
 
-func test_sleeping_during_a_debuff_day_fills_energy_only_to_the_cap() -> void:
+func test_sleeping_after_midnight_wakes_the_same_morning() -> void:
 	_state.pass_out()
-	_state.clock.set_time(7, 0)
+	_state.clock.set_time(2, 0)
 	_state.sleep_in(_bed())
-	assert_true(_state.player.is_debuffed, "an 8 h sleep from 07:00 ends before midnight")
-	assert_eq(_state.player.energy, 40.0)
+	assert_true(_state.player.is_debuffed, "a sleep from 02:00 crosses no midnight")
+	assert_eq(_state.clock.time_text(), "06:30")
+	assert_eq(_state.player.energy, 40.0, "only up to the debuff's cap")
 
 
 func test_sleeping_through_midnight_ends_the_debuff() -> void:
@@ -128,3 +155,34 @@ func test_sleeping_through_midnight_ends_the_debuff() -> void:
 	_state.sleep_in(_bed())
 	assert_false(_state.player.is_debuffed)
 	assert_eq(_state.player.energy, 80.0)
+
+
+# --- The message after passing out ---
+
+
+func test_the_message_says_what_happened_how_long_where_and_the_debuff() -> void:
+	_state.clock.set_time(22, 0)
+	var minutes := _state.pass_out()
+	assert_eq(
+		PassOutMessage.text(_state, false, minutes),
+		(
+			"You collapsed from exhaustion. You slept 10 hours and wake at the camp, still worn"
+			+ " out: slow, weak and with 40 % of your energy until midnight."
+		)
+	)
+
+
+func test_the_message_after_staying_up_too_late_with_home_in_a_house() -> void:
+	_make_a_house_home()
+	_state.energy_rules = EnergyRules.new(
+		RULES.merged({"debuff": {"walk_speed": 0.5, "energy_max": 50.0, "health": 25.0}}, true)
+	)
+	_state.clock.set_time(15, 0)
+	var minutes := _state.pass_out()
+	assert_eq(
+		PassOutMessage.text(_state, true, minutes),
+		(
+			"You stayed up far too late and collapsed. You slept 16 hours and wake at home, still"
+			+ " worn out: slow, weak and with half your energy until midnight."
+		)
+	)

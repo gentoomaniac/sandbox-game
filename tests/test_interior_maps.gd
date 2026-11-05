@@ -10,9 +10,7 @@ func _load(type: StringName) -> Interior:
 
 
 func _bed_of(interior: Interior) -> WorldObject:
-	var beds := interior.objects().filter(
-		func(object: WorldObject) -> bool: return object.sleep_minutes() > 0
-	)
+	var beds := interior.objects().filter(func(object: WorldObject) -> bool: return object.is_bed())
 	return null if beds.is_empty() else beds[0]
 
 

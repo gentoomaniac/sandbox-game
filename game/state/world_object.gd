@@ -48,9 +48,8 @@ func blocks_walking() -> bool:
 	return type_data()["blocks_walking"]
 
 
-## How long sleeping here takes, in game minutes. 0 if this is not a bed.
-func sleep_minutes() -> int:
-	return type_data().get("sleep_minutes", 0)
+func is_bed() -> bool:
+	return type_data().get("bed", false)
 
 
 func is_crop() -> bool:

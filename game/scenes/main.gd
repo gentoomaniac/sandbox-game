@@ -4,8 +4,8 @@ extends Node2D
 ## pixel) and shown on the window by CameraController; the UI is drawn on the window itself.
 ## The camera and chunk streaming follow the player.
 ##
-## The game is loaded from the save at start and saved after sleeping and on quit (see
-## SaveFile). Flags after `--` on the Godot command line (see `make screenshot`):
+## The game is loaded from the save at start and saved after sleeping, after passing out and on
+## quit (see SaveFile). Flags after `--` on the Godot command line (see `make screenshot`):
 ## `--new-game` ignores the save; `--save-path=<file>` uses another save file;
 ## `--settings-path=<file>` uses another settings file (see GameSettings). Debug flags:
 ## `--at=<x>,<y>` puts the player on that world tile instead of at the camp;
@@ -54,10 +54,12 @@ extends Node2D
 ## `butterfly`, `flock`; see WildlifeView), `--wildlife-calm` makes them take no notice of the
 ## player; `--hit=<x>,<y>` hits the object on that tile once, without damage, as soon as the
 ## world is drawn (to see its shake and what flies off, see HitEffect, and the sweat of a tired
-## player; the particles last about a second, so use a short `--screenshot-delay`).
-## PlayerView parses `--hair=<n>` and `--pose=<direction>`, and F6 cycles the hair (see there).
-## BuildMode parses `--ghost=<x>,<y>` and `--house=<x>,<y>` (see there). `--hit` throws sweat
-## only for a tired player: add `--energy=15`, say.
+## player; the particles last about a second, so use a short `--screenshot-delay`). `--hit`
+## throws sweat only for a tired player: add `--energy=15`, say. `--sleep` goes to bed as soon
+## as the world is drawn (a new game starts beside the sleeping bag); `--energy=0` passes out at
+## start, and `--time=00:59` with a `--screenshot-delay` of a second or more stays up too late
+## (see `_pass_out`). PlayerView parses `--hair=<n>` and `--pose=<direction>`, and F6 cycles the
+## hair (see there). BuildMode parses `--ghost=<x>,<y>` and `--house=<x>,<y>` (see there).
 
 const WORLD_SEED := 1
 ## The build ghost has snow on its roof while the snow cover is above this.
@@ -68,8 +70,6 @@ const GAME_MINUTES_PER_REAL_SECOND := 1.5
 const FAST_FORWARD_FACTOR := 60.0
 ## Frames to wait before a screenshot once the scene is ready.
 const SCREENSHOT_SETTLE_FRAMES := 3
-## Fading out and back in around sleep and doors.
-const SLEEP_FADE_SECONDS := 0.5
 ## Animals of each kind (but one flock) that `--wildlife` puts in view.
 const START_WILDLIFE_COUNT := 4
 ## `_debug_hit_tile` while there is no `--hit` to do.
@@ -110,7 +110,11 @@ var _snow_cover := 0.0
 var _frost := 0.0
 var _screenshot_path := ""
 var _fast_forward := false
-var _is_fading := false
+## A fade (through a door, into sleep) or passing out is running: the player neither walks nor
+## acts.
+var _is_in_transition := false
+var _fade_screen := FadeScreen.new()
+var _sleep_at_start := false
 var _enter_first_house := false
 var _open_character_screen_at_start := false
 var _settled_frames := 0
@@ -128,7 +132,6 @@ var _is_hammer_held_at_start := false
 @onready var _camera: CameraController = $CameraController
 @onready var _hud: ClockHud = $ClockHud
 @onready var _message: Label = $MessageHud/Message
-@onready var _fade: ColorRect = $FadeLayer/Fade
 
 
 func _ready() -> void:
@@ -218,6 +221,8 @@ func _ready() -> void:
 			_state.player.equipment.equip(Equipment.slot_of(item), item)
 		elif arg == "--inside":
 			_enter_first_house = true
+		elif arg == "--sleep":
+			_sleep_at_start = true
 		elif arg == "--inventory":
 			_open_character_screen_at_start = true
 		elif arg.begins_with("--console="):
@@ -311,6 +316,7 @@ func _ready() -> void:
 	_menu.save_and_quit_requested.connect(_save_and_quit)
 	add_child(_menu)
 	add_child(_tooltip_view)
+	add_child(_fade_screen)
 	_start_sounds()
 	_interior_view.hide()
 	_world.add_child(_interior_view)
@@ -318,9 +324,6 @@ func _ready() -> void:
 	_show_clock()
 	if _state.is_inside():
 		_show_current_map()
-	# A save made during the fade out has no energy left: finish the pass-out.
-	if _state.is_out_of_energy():
-		_pass_out()
 
 
 func _notification(what: int) -> void:
@@ -351,7 +354,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _console_view.is_open():
 		return
 	var can_use := _can_use()
-	if event.is_action_pressed("inventory") and not _is_fading:
+	if event.is_action_pressed("inventory") and not _is_in_transition:
 		_character_screen.toggle()
 		return
 	# The open character screen takes the input: the player neither walks nor acts.
@@ -370,7 +373,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("select_hammer"):
 		_builder.select_hammer()
 	# E also picks the next building (outdoors), so the hammer in hand doesn't put the player to bed.
-	elif event.is_action_pressed("interact") and not _is_fading and not _build_mode.is_active():
+	elif (
+		event.is_action_pressed("interact")
+		and not _is_in_transition
+		and not _build_mode.is_active()
+	):
 		_try_sleep()
 	elif _is_use_event(event) and can_use and _eat_held():
 		pass  # Eating needs no target: a held food is eaten instead of used on a tile.
@@ -387,7 +394,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	_tick_clock(delta)
-	_tiredness_view.is_awake = not _is_fading
+	_tiredness_view.is_awake = not _is_in_transition
 	_weather_view.show_weather(_weather, _tint.color)
 	_view.ambient_motion.update(delta, _weather_view.wind, _weather_view.rain)
 	_coordinates_hud.show_position(
@@ -396,12 +403,19 @@ func _process(delta: float) -> void:
 	var is_world_in_play := (
 		not _state.is_inside() and not _character_screen.is_open() and not _console_view.is_open()
 	)
-	_use_highlight.is_enabled = is_world_in_play and not _builder.is_building()
-	# Build mode only counts outdoors, in play and not during a fade; it keeps processing, to
-	# clear its message when it goes off.
-	_build_mode.visible = is_world_in_play and not _is_fading
+	_use_highlight.is_enabled = (
+		is_world_in_play and not _builder.is_building() and not _is_in_transition
+	)
+	# Build mode only counts outdoors, in play and not during a transition; it keeps processing,
+	# to clear its message when it goes off.
+	_build_mode.visible = is_world_in_play and not _is_in_transition
 	_build_panel.visible = _build_mode.is_active()
-	if not _is_fading:
+	# Out of energy after a use (or in a game saved while passing out), or up too late. A game
+	# that starts so shows the world first.
+	var is_drawn := _view.is_settled or _state.is_inside()
+	if (_state.is_out_of_energy() or _state.is_up_too_late) and is_drawn and not _is_in_transition:
+		_pass_out()
+	if not _is_in_transition:
 		var direction := Vector2.ZERO
 		if not _character_screen.is_open() and not _console_view.is_open():
 			direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")
@@ -415,6 +429,9 @@ func _process(delta: float) -> void:
 		_view.set_focus(_state.player.tile())
 	if _enter_first_house:
 		_enter_first_house_now()
+	if _sleep_at_start and _view.is_settled:
+		_sleep_at_start = false
+		_try_sleep()
 	if not _start_wildlife.is_empty() and _view.is_settled and not _state.is_inside():
 		_spawn_start_wildlife()
 	if _debug_hit_tile != NO_TILE and _view.is_settled and not _state.is_inside():
@@ -471,11 +488,11 @@ func _is_use_event(event: InputEvent) -> bool:
 
 
 func _can_open_console() -> bool:
-	return not _console_view.is_open() and not get_tree().paused and not _is_fading
+	return not _console_view.is_open() and not get_tree().paused and not _is_in_transition
 
 
 func _can_use() -> bool:
-	return not _is_fading and not _build_mode.is_active()
+	return not _is_in_transition and not _build_mode.is_active()
 
 
 ## The hotbar slot (0 to 9) whose key `event` presses, or -1.
@@ -496,19 +513,28 @@ func _use_on(target: Targeting) -> void:
 	if use == GameState.Use.NEEDS_BETTER_TOOL:
 		var tool_name: String = ItemTypes.TYPES[_state.player.inventory.held_item()]["name"]
 		_harvest_hud.show_note("Needs a better %s." % tool_name.to_lower())
-	if _state.is_out_of_energy():
-		_pass_out()
 
 
-## Out of energy: fades out, and the player wakes in their home bed the next morning.
+## Out of energy or up too late: the player collapses where they stand (the world keeps
+## running), the screen goes black, and a message says what happened until a key or a click.
+## Then they wake in their home bed (see GameState `pass_out`).
 func _pass_out() -> void:
-	_harvest_hud.show_note("You passed out")
-	_fade_through(
-		func() -> void:
-			_state.pass_out()
-			_show_current_map()
-			_save_game()
-	)
+	_is_in_transition = true
+	# Nothing else may move the player meanwhile.
+	_console_view.close()
+	if _character_screen.is_open():
+		_character_screen.toggle()
+	var was_up_too_late := _state.is_up_too_late
+	_player_view.collapse()
+	await get_tree().create_timer(PlayerView.COLLAPSE_SECONDS).timeout
+	await _fade_screen.fade_out()
+	var minutes_slept := _state.pass_out()
+	_player_view.stand_up()
+	_show_current_map()
+	_save_game()
+	await _fade_screen.show_message(PassOutMessage.text(_state, was_up_too_late, minutes_slept))
+	await _fade_screen.fade_in()
+	_is_in_transition = false
 
 
 ## Where the camera looks. The player is drawn on the art pixel grid (rounded), the camera
@@ -520,44 +546,46 @@ func _camera_target() -> Vector2:
 
 ## Real time to whole game minutes; the fraction carries over to the next frame.
 func _tick_clock(delta: float) -> void:
-	# A screenshot with TIME=... must show exactly that time, unless it is told to wait.
-	if _screenshot_path != "" and _screenshot_delay == 0.0:
+	# A screenshot with TIME=... must show exactly that time, unless it is told to wait. Time
+	# stands still while the screen is black (a message there may wait long for a key).
+	if (_screenshot_path != "" and _screenshot_delay == 0.0) or _fade_screen.is_black():
 		return
 	var rate := GAME_MINUTES_PER_REAL_SECOND * (FAST_FORWARD_FACTOR if _fast_forward else 1.0)
 	_pending_minutes += delta * rate
 	var whole_minutes := int(_pending_minutes)
 	if whole_minutes > 0:
 		_pending_minutes -= whole_minutes
-		_state.clock.advance(whole_minutes)
+		_state.pass_awake_time(whole_minutes)
 		_weather_view.minutes_passed(whole_minutes)
 		_show_clock()
 
 
+## Sleeps in the bed in reach until the morning: the new day shows on the black for a moment.
 func _try_sleep() -> void:
 	var bed := _state.bed_in_reach()
 	if bed == null:
 		return
 	_fade_through(
-		func() -> void:
+		func() -> String:
 			_state.sleep_in(bed)
 			_show_clock()
 			_save_game()
+			return _state.clock.date_text()
 	)
 
 
-## Fades to black, runs `change` while the screen is black, and fades back in.
+## Fades to black, runs `change` while the screen is black, and fades back in. A `change` that
+## returns text has it shown on the black for a moment first.
 func _fade_through(change: Callable) -> void:
-	_is_fading = true
+	_is_in_transition = true
 	# No command runs during a fade: a teleport would meet a door half way through.
 	_console_view.close()
-	var fade := create_tween()
-	fade.tween_property(_fade, "color:a", 1.0, SLEEP_FADE_SECONDS)
-	await fade.finished
-	change.call()
-	fade = create_tween()
-	fade.tween_property(_fade, "color:a", 0.0, SLEEP_FADE_SECONDS)
-	await fade.finished
-	_is_fading = false
+	await _fade_screen.fade_out()
+	var note: Variant = change.call()
+	if note is String:
+		await _fade_screen.show_note(note)
+	await _fade_screen.fade_in()
+	_is_in_transition = false
 
 
 func _pass_door() -> void:

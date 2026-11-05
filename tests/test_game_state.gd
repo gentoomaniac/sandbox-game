@@ -34,11 +34,34 @@ func test_no_bed_in_reach_far_away() -> void:
 	assert_null(_state.bed_in_reach())
 
 
-func test_sleeping_advances_the_clock_by_the_beds_duration() -> void:
+func test_sleeping_wakes_at_half_past_six_the_next_morning() -> void:
 	_state.clock.set_time(22, 0)
 	_state.sleep_in(_bed())
 	assert_eq(_state.clock.day, 2)
-	assert_eq(_state.clock.minute_of_day, 6 * GameClock.MINUTES_PER_HOUR)
+	assert_eq(_state.clock.time_text(), "06:30")
+
+
+func test_sleeping_after_midnight_wakes_the_same_morning() -> void:
+	_state.clock.set_time(3, 15)
+	_state.sleep_in(_bed())
+	assert_eq(_state.clock.day, 1)
+	assert_eq(_state.clock.time_text(), "06:30")
+
+
+func test_sleeping_at_half_past_six_sharp_wakes_the_next_morning() -> void:
+	_state.clock.set_time(6, 30)
+	_state.sleep_in(_bed())
+	assert_eq(_state.clock.day, 2)
+	assert_eq(_state.clock.time_text(), "06:30")
+
+
+func test_every_bed_wakes_at_the_same_time() -> void:
+	for bed_type in [WorldObjectTypes.SLEEPING_BAG, WorldObjectTypes.SMALL_BED]:
+		_state.clock.set_time(21, 0)
+		var bed := WorldObject.new(bed_type, _state.player.tile())
+		assert_true(bed.is_bed(), bed_type)
+		_state.sleep_in(bed)
+		assert_eq(_state.clock.time_text(), "06:30", bed_type)
 
 
 func test_sleeping_sets_home() -> void:
@@ -52,4 +75,4 @@ func test_sleeping_sets_home() -> void:
 
 func test_a_fireplace_is_no_bed() -> void:
 	var fireplace := WorldObject.new(WorldObjectTypes.FIREPLACE, Vector2i.ZERO)
-	assert_eq(fireplace.sleep_minutes(), 0)
+	assert_false(fireplace.is_bed())

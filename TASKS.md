@@ -1006,7 +1006,7 @@ bobbing. Must stay cheap per frame.
 
 ## 46. Sleep until morning, passing out with a collapse and a wake-up screen
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Player" (Passing out, How passing out looks, Sleep lasts until the next
 morning). Replaces the fixed sleep duration per bed and the 06:00 pass-out wake-up.
@@ -1024,6 +1024,21 @@ morning). Replaces the fixed sleep duration per bed and the 06:00 pass-out wake-
   debuff), a key or click to go on, fade into the morning. Normal sleep: the same fade
   with the new day shown briefly, no key press.
 - Tests for the wake-up times and the flow; README and screenshots updated.
+
+Done: GameState wakes every sleep at the next 06:30 (`GameClock.minutes_until`) and passing
+out at the next 06:30 but after at least 10 h (`pass_out` returns the minutes slept); beds
+are marked `bed` in WorldObjectTypes instead of `sleep_minutes` (saves keep only type ids,
+so old ones load as they are). `pass_awake_time`, which Main's clock calls, sets
+`is_up_too_late` when the clock reaches 01:00 while awake; sleeping and passing out clear
+it, and the console's `skip` is no time awake, so it never makes the player pass out.
+PassOutMessage builds the text. The art generator draws a collapse sheet per worn layer
+(assets/character/collapse/: kneeling, tipping over, lying, asleep; the held tool is let
+go) and the rising "z" (assets/effects/sleep_z.png); PlayerView plays them (`collapse`,
+`stand_up`, SleepZs). FadeScreen replaces the scene's fade: fades, a note (the new date
+after sleeping) and a message that waits for a key or a click. Main locks the player for
+the whole collapse, stops the clock while the screen is black and saves at the same points
+as before. Debug: `--sleep`; `--energy=0` and `--time=00:59` show the pass-out. Not
+covered by tests: Main itself (input lock, order of the flow), checked by screenshots.
 
 ## 47. Thought bubbles and sweat
 

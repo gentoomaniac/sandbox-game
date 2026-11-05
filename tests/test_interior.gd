@@ -139,7 +139,7 @@ func test_the_bed_is_in_reach_from_beside_it_and_sleeping_sets_home_there() -> v
 	assert_eq(bed, interior.object_at(Vector2i(1, 2)))
 	_state.clock.set_time(22, 0)
 	_state.sleep_in(bed)
-	assert_eq(_state.clock.minute_of_day, 4 * GameClock.MINUTES_PER_HOUR)
+	assert_eq(_state.clock.time_text(), "06:30")
 	assert_eq(_state.player.home_map, interior)
 	assert_eq(_state.player.home_bed, Vector2i(1, 2))
 

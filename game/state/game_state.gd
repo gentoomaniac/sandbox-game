@@ -51,8 +51,12 @@ const COST_KINDS := {
 ## Digging a clay spot gives this much clay, with this chance (rolled once per spot and day).
 const CLAY_DIG_YIELD := {ItemTypes.CLAY: 2}
 const CLAY_DIG_CHANCE := 0.4
-## Passing out wakes the player at this time of day, in the home bed.
-const WAKE_UP_MINUTE := 6 * GameClock.MINUTES_PER_HOUR
+## Sleeping and passing out wake the player the next time the clock shows this.
+const WAKE_UP_MINUTE := 6 * GameClock.MINUTES_PER_HOUR + 30
+## Passing out sleeps at least this long, even when the morning comes sooner.
+const PASS_OUT_MINUTES := 10 * GameClock.MINUTES_PER_HOUR
+## A player who is still awake when the clock shows this has stayed up too late and passes out.
+const LATE_NIGHT_MINUTE := 1 * GameClock.MINUTES_PER_HOUR
 ## How close (in tiles, diagonals included) the player must be to a bed to sleep in it.
 const BED_REACH := 1
 ## Items on the ground within this many tiles of the player (their feet) are pulled to them.
@@ -80,6 +84,9 @@ var energy_rules := EnergyRules.default_rules()
 var energy_drain := 1.0
 ## Session-only cheats (see Console): not saved.
 var cheats := CheatFlags.new()
+## The player was awake when the clock reached LATE_NIGHT_MINUTE (see `pass_awake_time`) and has
+## not slept since: they pass out. Not saved.
+var is_up_too_late := false
 ## Where the player is: `world`, or the interior of `_building_inside`.
 var current_map: GameMap
 
@@ -146,18 +153,19 @@ func bed_in_reach() -> WorldObject:
 	for y in range(-BED_REACH, BED_REACH + 1):
 		for x in range(-BED_REACH, BED_REACH + 1):
 			var object := current_map.object_at(player_tile + Vector2i(x, y))
-			if object == null or object.sleep_minutes() == 0:
+			if object == null or not object.is_bed():
 				continue
 			if nearest == null or _distance_to_player(object) < _distance_to_player(nearest):
 				nearest = object
 	return nearest
 
 
-## Sleeps through the bed's fixed sleep time, makes it home and fills energy and health as
-## far as the bed does (and a debuff still allows).
+## Sleeps until the next morning (WAKE_UP_MINUTE), makes the bed home and fills energy and
+## health as far as the bed does (and a debuff still allows).
 func sleep_in(bed: WorldObject) -> void:
-	assert(bed.sleep_minutes() > 0, "Not a bed: %s" % bed.type)
-	clock.advance(bed.sleep_minutes())
+	assert(bed.is_bed(), "Not a bed: %s" % bed.type)
+	clock.advance(clock.minutes_until(WAKE_UP_MINUTE))
+	is_up_too_late = false
 	player.home_map = current_map
 	player.home_bed = bed.pos
 	var fill := energy_rules.sleep_fill(bed.type)
@@ -222,12 +230,21 @@ func is_out_of_energy() -> bool:
 	return player.energy <= 0.0
 
 
-## The player passes out: time jumps to the next 06:00, they wake in the home bed with the
-## debuff of that day (it ends at the next new day) and no items lost.
-func pass_out() -> void:
-	var minutes := posmod(WAKE_UP_MINUTE - clock.minute_of_day, GameClock.MINUTES_PER_DAY)
-	# Passing out at 06:00 sharp wakes at 06:00 the next day, not at once.
-	clock.advance(minutes if minutes > 0 else GameClock.MINUTES_PER_DAY)
+## Lets time pass while the player is awake. Reaching LATE_NIGHT_MINUTE means they have stayed
+## up too late (`is_up_too_late`).
+func pass_awake_time(minutes: int) -> void:
+	if minutes >= clock.minutes_until(LATE_NIGHT_MINUTE):
+		is_up_too_late = true
+	clock.advance(minutes)
+
+
+## The player passes out: they sleep until the next morning (WAKE_UP_MINUTE) but at least
+## PASS_OUT_MINUTES, and wake in the home bed with the debuff of that day (it ends at the next
+## new day) and no items lost. Returns how many minutes they slept.
+func pass_out() -> int:
+	var minutes := maxi(clock.minutes_until(WAKE_UP_MINUTE), PASS_OUT_MINUTES)
+	clock.advance(minutes)
+	is_up_too_late = false
 	current_map = player.home_map
 	_building_inside = _building_with_interior(current_map)
 	player.position = _tile_centre(_wake_up_tile())
@@ -235,13 +252,14 @@ func pass_out() -> void:
 	player.energy = energy_rules.debuff_energy_max()
 	if not cheats.is_god:
 		player.health = energy_rules.debuff_health()
+	return minutes
 
 
 ## What `use` would do on a tile of the world (nothing inside) with the held item: a hoe
 ## tills grass, crop seeds plant on soil and tree seeds on grass, a watering can wets dry tilled
 ## soil, an empty hand harvests a ripe crop, clears a dead one or picks a bush, an axe or
 ## pickaxe hits what it cuts or mines, a scythe mows if there is tall grass or reeds in its reach
-## (see `mow_tiles`), and a shovel digs in any free grass: the player can't tell a clay spot from
+## (see `_mow_tiles`), and a shovel digs in any free grass: the player can't tell a clay spot from
 ## the cursor.
 func use_at(world_pos: Vector2i) -> Use:
 	if is_inside():
@@ -325,7 +343,7 @@ func _do_use(target: Vector2i) -> Use:
 
 ## The 4 tiles one swing of the scythe mows, aimed at `target`: it, the tile beyond it in the
 ## facing direction and the tiles left and right of `target`.
-func mow_tiles(target: Vector2i) -> Array[Vector2i]:
+func _mow_tiles(target: Vector2i) -> Array[Vector2i]:
 	var facing := player.facing
 	var sideways := Vector2i(absi(facing.y), absi(facing.x))
 	return [target, target + facing, target - sideways, target + sideways]
@@ -333,7 +351,7 @@ func mow_tiles(target: Vector2i) -> Array[Vector2i]:
 
 func _plants_to_mow(target: Vector2i) -> Array[WorldObject]:
 	var plants: Array[WorldObject] = []
-	for tile in mow_tiles(target):
+	for tile in _mow_tiles(target):
 		var object := world.object_at(tile)
 		if object != null and _is_mowable(object):
 			plants.append(object)

@@ -11,7 +11,7 @@ extends RefCounted
 ## Furniture, which only stands inside buildings, has `interior_sprite` (its picture in
 ## assets/interior/) instead of atlas_row and variants. The picture is centred on the
 ## footprint, its bottom on the footprint's bottom edge. Optional:
-## - sleep_minutes: the object is a bed, and sleeping in it takes this long;
+## - bed: the object is a bed (what sleeping in it fills is in data/energy.cfg, [sleep]);
 ## - growth_stages: the object is a crop (all of them come from data/crops.cfg, see CropRules,
 ##   which says what the other values of a crop type are). Its picture sheet is not in the
 ##   object atlas but its own (`sheet`), with a picture per growth stage and a dead one;
@@ -144,7 +144,7 @@ const _OTHER_TYPES := {
 		"harvest_level": 0,
 		"atlas_row": 3,
 		"variants": 1,
-		"sleep_minutes": 8 * GameClock.MINUTES_PER_HOUR,
+		"bed": true,
 	},
 	SPRUCE:
 	{
@@ -296,7 +296,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 0,
 		"interior_sprite": "res://assets/interior/bed.png",
-		"sleep_minutes": 6 * GameClock.MINUTES_PER_HOUR,
+		"bed": true,
 	},
 	TABLE:
 	{
@@ -333,7 +333,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 0,
 		"interior_sprite": "res://assets/interior/sleeping_mat.png",
-		"sleep_minutes": 6 * GameClock.MINUTES_PER_HOUR,
+		"bed": true,
 	},
 	BOX_BED:
 	{
@@ -341,7 +341,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 0,
 		"interior_sprite": "res://assets/interior/box_bed.png",
-		"sleep_minutes": 6 * GameClock.MINUTES_PER_HOUR,
+		"bed": true,
 	},
 	BENCH:
 	{

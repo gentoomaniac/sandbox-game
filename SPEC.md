@@ -107,8 +107,9 @@ top of classic pixel art (details under "Lighting and look").
 - Save format: seed + world edits (terrain and objects) + buildings with their interiors +
   player state (position, current map, home, appearance, inventory) + clock. One JSON
   file per world under `user://saves/`.
-- **Autosave when the player sleeps and when the game quits.** On start, the game loads
-  the save if there is one, otherwise it starts a new game (`--new-game` forces one).
+- **Autosave when the player sleeps, passes out and when the game quits.** On start, the
+  game loads the save if there is one, otherwise it starts a new game (`--new-game` forces
+  one).
 - No save menu or multiple slots yet; revisit when there is a main menu.
 
 ### Tile state (architecture)
@@ -169,7 +170,9 @@ top of classic pixel art (details under "Lighting and look").
       midnight; sleeping does not end it early.
     - **Staying up too late** (decided 2026-11-05): a player still awake at 01:00 passes
       out as well, with the same flow and debuff (the 10-hour minimum wakes them at 11:00);
-      the message says they stayed up too late instead of running out of energy.
+      the message says they stayed up too late instead of running out of energy. Only time
+      the player lives through counts: a console `skip` over 01:00 does not make them pass
+      out (like it costs no energy), and sleeping over it of course doesn't either.
     - **How passing out looks** (decided 2026-11-05): the player stops, can't be
       controlled, sinks to the knees, tips over and lies asleep with rising "z"s (about
       1.5 s, the world keeps running), then the screen fades to black. A short message fades
@@ -177,7 +180,9 @@ top of classic pixel art (details under "Lighting and look").
       and what the debuff does, e.g. "You collapsed from exhaustion. You slept 10 hours and
       wake at the camp, still worn out: slow, weak and with half your energy until
       midnight." After a key or click it fades into the bed in the morning. The asleep
-      frames are reused for sleeping on the ground later.
+      frames are reused for sleeping on the ground later. The collapse is drawn from the
+      side: a player facing up or down falls to the right. The held tool is not drawn while
+      down. The clock stands still while the screen is black.
     - **Signs of tiredness** (decided 2026-11-05):
       - **Sweat:** while energy is at 20 % or less, every action (tool hit, till, water,
         mow, dig, plant, pick) throws one sweat drop off the head; at 10 % or less two or
@@ -205,7 +210,8 @@ top of classic pixel art (details under "Lighting and look").
 - **Sleep lasts until the next morning** (changed 2026-11-05, replaces the fixed duration
   per bed): sleeping always wakes the player at the next 06:30, whenever they lie down
   (after midnight that is the same morning). The screen fades to black and back, showing
-  the new day briefly, with no key press. Beds differ only in what they restore.
+  the new day briefly (its date on the black), with no key press. Beds differ only in what
+  they restore.
 - **Later: sleeping quality depends on the bed.**
   - The sleeping bag is the baseline: it fills the energy bar to 100 %.
   - Better beds may fill the bar a little above 100 %. Better beds should feel like a

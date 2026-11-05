@@ -113,3 +113,18 @@ func test_ordinals() -> void:
 	}
 	for day: int in expected:
 		assert_eq(_clock_on(day).date_text().split(" ")[0], expected[day])
+
+
+func test_minutes_until_a_later_time_of_day() -> void:
+	_clock.set_time(22, 0)
+	assert_eq(_clock.minutes_until(23 * 60 + 30), 90)
+
+
+func test_minutes_until_a_time_of_day_past_midnight() -> void:
+	_clock.set_time(22, 0)
+	assert_eq(_clock.minutes_until(6 * 60 + 30), 8 * 60 + 30)
+
+
+func test_minutes_until_the_time_it_shows_now_is_a_whole_day() -> void:
+	_clock.set_time(6, 30)
+	assert_eq(_clock.minutes_until(6 * 60 + 30), GameClock.MINUTES_PER_DAY)

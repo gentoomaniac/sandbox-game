@@ -32,6 +32,12 @@ func advance(minutes: int) -> void:
 		new_day.emit(day)
 
 
+## The minutes from now until the clock next shows `time_of_day`: a whole day if it shows it
+## now.
+func minutes_until(time_of_day: int) -> int:
+	return posmod(time_of_day - minute_of_day - 1, MINUTES_PER_DAY) + 1
+
+
 func set_time(hour: int, minute: int) -> void:
 	assert(hour >= 0 and hour < 24 and minute >= 0 and minute < 60, "Not a time of day")
 	minute_of_day = hour * MINUTES_PER_HOUR + minute

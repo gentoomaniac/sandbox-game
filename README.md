@@ -130,6 +130,19 @@ after midnight.
 
 ![The character screen with equipment slots and the inventory](docs/screenshots/character.png)
 
+### Sleeping and passing out
+
+Press E next to a bed to sleep: the screen fades to black, shows the new day and wakes you
+at 06:30 the next morning (or the same morning, if it is already past midnight). A bed fills
+your energy and health, and the last one you slept in is home.
+
+Don't run out of energy, and don't stay up past 01:00: you sink to your knees, tip over and
+fall asleep where you stand. You sleep until 06:30 but at least ten hours, and wake in your
+home bed, still worn out for the rest of that day: walking slowly, with low health and half
+your energy. A message says what happened before the morning fades in.
+
+![Passing out: kneeling, tipping over, asleep, and the message on waking](docs/screenshots/passing-out.png)
+
 ### Settings and controls
 
 You can rebind every key, including mouse buttons. You can also switch between fullscreen
@@ -172,7 +185,7 @@ These are the default keys; all of them can be changed under Settings → Contro
 | Space or left click | Use the held item on the targeted tile |
 | 1–0 | Pick a hotbar slot |
 | Tab | Character screen and inventory |
-| E | Sleep (next to a bed; with the hammer in hand it picks the next building) |
+| E | Sleep until morning (next to a bed; with the hammer in hand it picks the next building) |
 | B | Take the hammer: build mode |
 | Q, E | Previous and next building (while holding the hammer) |
 | Mouse wheel | Zoom |

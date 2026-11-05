@@ -34,6 +34,9 @@ others with the look added, e.g. assets/terrain_snow.png and assets/buildings/ka
 assets/character/<slot>_<variant>.png: one sheet per layer of the player character, 16x32 cells
 with the feet on the bottom row. One row per facing (down, up, left, right), columns: idle,
 walk 1 to 4 (see game/state/appearance.gd and game/scenes/player_view.gd).
+assets/character/collapse/<slot>_<variant>.png: the same layers passing out, one row of 32x32
+cells facing right: kneeling, tipping over, lying and asleep (see `collapse_sheet`).
+assets/effects/sleep_z.png: the "z" that rises from a sleeping figure.
 
 assets/buildings/<type>.png: one picture per building type (drawn in buildings.py), as wide as
 its footprint (16 px per tile) and as tall as the footprint plus the roof rising above it. The
@@ -1302,6 +1305,10 @@ POSES = {
     "walk3": {"sink": 1, "lift": (0, 0), "stride": -2, "swing": 2},
     "walk4": {"sink": 0, "lift": (0, 1), "stride": 0, "swing": 0},
 }
+# Passing out (see `collapse_sheet`): kneeling, the figure sinks onto its folded legs (see
+# `draw_kneeling_legs`); asleep, its eye is shut.
+KNEEL = {"sink": 6, "lift": (0, 0), "stride": 0, "swing": 0, "kneel": True}
+ASLEEP = POSES["idle"] | {"asleep": True}
 
 
 def character_canvas():
@@ -1309,7 +1316,10 @@ def character_canvas():
 
 
 def leg_boxes(facing, pose):
-    """The columns, top row and bottom row of each leg, back leg first."""
+    """The columns, top row and bottom row of each leg, back leg first. None for a kneeling
+    figure, whose legs are folded (see `draw_kneeling_legs`)."""
+    if pose.get("kneel"):
+        return []
     stride = pose["stride"]
     if facing in ("down", "up"):
         columns = ((5, 7), (9, 11))
@@ -1350,7 +1360,11 @@ def draw_body(facing, pose, skin="skin", shade="skin_shade", **_):
     else:
         fill_rect(canvas, 5, 13 + sink, 10, 22 + sink, shade)
         canvas[10 + sink][13] = skin
-        fill_rect(canvas, 11, 9 + sink, 11, 10 + sink, "soil_dark")
+        # A shut eye is only its lid line, low on the eye.
+        if pose.get("asleep"):
+            canvas[10 + sink][11] = "soil_dark"
+        else:
+            fill_rect(canvas, 11, 9 + sink, 11, 10 + sink, "soil_dark")
         fill_rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 17 + sink, skin)
         fill_rect(canvas, 7 + swing, 18 + sink, 8 + swing, 20 + sink, skin)
         fill_rect(canvas, 5, 13 + sink, 10, 20 + sink, UNDERSHIRT)
@@ -1359,7 +1373,22 @@ def draw_body(facing, pose, skin="skin", shade="skin_shade", **_):
         fill_rect(canvas, 5, 21 + sink, 10, 22 + sink, SHORTS)
     for x0, x1, top, _bottom in boxes:
         fill_rect(canvas, x0, top, x1, top + 2, SHORTS)
+    if pose.get("kneel"):
+        draw_kneeling_legs(canvas, (SHORTS, skin), (skin, shade), (shade, shade, shade))
     return canvas
+
+
+def draw_kneeling_legs(canvas, thigh, shin, foot):
+    """Legs folded under a kneeling figure seen from the side (facing right): the thigh
+    forward to the knee, the shin back along the ground to the foot sticking out behind.
+    `thigh` and `shin` are (colour, front colour), `foot` (top, middle, sole)."""
+    fill_rect(canvas, 5, 27, 9, 28, thigh[0])
+    fill_rect(canvas, 10, 27, 11, 28, thigh[1])
+    fill_rect(canvas, 4, 29, 11, 29, shin[0])
+    fill_rect(canvas, 4, 30, 11, 30, shin[1])
+    fill_rect(canvas, 1, 28, 3, 28, foot[0])
+    fill_rect(canvas, 1, 29, 3, 29, foot[1])
+    fill_rect(canvas, 1, 30, 3, 30, foot[2])
 
 
 def draw_legs(facing, pose, **_):
@@ -1378,6 +1407,8 @@ def draw_legs(facing, pose, **_):
             canvas[bottom][x1 + 1] = canvas[bottom - 1][x1 + 1] = "soil_dark"
     if facing in ("down", "up"):
         fill_rect(canvas, 8, boxes[0][2], 8, boxes[0][3] - 3, "mud_dark")
+    if pose.get("kneel"):
+        draw_kneeling_legs(canvas, ("sand", "sand"), ("sand", "mud"), ("soil_light", "soil", "soil_dark"))
     return canvas
 
 
@@ -1508,13 +1539,18 @@ def mirrored(canvas):
 def outlined(canvas, skip):
     """Adds a 1 px ink outline around the drawing, except on pixels covered by `skip`: the
     body already outlines itself, and a layer drawn over it must not cut lines into it."""
-    covered = {(x, y) for y in range(CHARACTER_HEIGHT) for x in range(CHARACTER_WIDTH) if canvas[y][x] is not None}
+    width, height = len(canvas[0]), len(canvas)
+    covered = pixels_of(canvas)
     for x, y in covered:
         for dx, dy in NEIGHBOURS:
             nx, ny = x + dx, y + dy
-            if 0 <= nx < CHARACTER_WIDTH and 0 <= ny < CHARACTER_HEIGHT and (nx, ny) not in covered and (nx, ny) not in skip:
+            if 0 <= nx < width and 0 <= ny < height and (nx, ny) not in covered and (nx, ny) not in skip:
                 canvas[ny][nx] = "ink"
     return canvas
+
+
+def pixels_of(canvas):
+    return {(x, y) for y, row in enumerate(canvas) for x, colour in enumerate(row) if colour is not None}
 
 
 def character_sheet(draw, variant_colours):
@@ -1525,8 +1561,7 @@ def character_sheet(draw, variant_colours):
         row = []
         for frame in PLAYER_FRAMES:
             pose = POSES[frame]
-            body = draw_body(drawn_facing, pose)
-            body_pixels = {(x, y) for y in range(CHARACTER_HEIGHT) for x in range(CHARACTER_WIDTH) if body[y][x] is not None}
+            body_pixels = pixels_of(draw_body(drawn_facing, pose))
             canvas = draw(drawn_facing, pose, **variant_colours)
             canvas = outlined(canvas, set() if draw is draw_body else body_pixels)
             row.append(mirrored(canvas) if facing == "left" else canvas)
@@ -1534,15 +1569,86 @@ def character_sheet(draw, variant_colours):
     return rows
 
 
-# Layer sheets by file name (assets/character/<name>.png).
-CHARACTER_SHEETS = {"body_0": character_sheet(draw_body, {})}
+# Passing out (assets/character/collapse/<name>.png, one per layer sheet but the held tool,
+# which is let go): one row of 32x32 frames, facing right (the game mirrors them for left),
+# with the feet or the body on the bottom row: kneeling, tipping over forward, lying and
+# asleep. Lying is the side view of the standing figure laid down head first, face up.
+COLLAPSE_SIZE = 32
+# How far each row of the kneeling figure leans forward, per row above the ground: slumped
+# while kneeling, then tipping over.
+SLUMP_LEAN = 0.12
+TIP_LEAN = 0.45
+
+
+def leaning(lean):
+    """Places the 16x32 figure in the middle of the frame, each row moved forward by its
+    height above the ground times `lean`. Whole pixel steps keep the art crisp."""
+
+    def place(canvas):
+        frame = [[None] * COLLAPSE_SIZE for _ in range(COLLAPSE_SIZE)]
+        left = (COLLAPSE_SIZE - CHARACTER_WIDTH) // 2
+        ground = CHARACTER_HEIGHT - 1
+        for y, row in enumerate(canvas):
+            shift = left + round((ground - y) * lean)
+            for x, colour in enumerate(row):
+                if colour is not None:
+                    frame[y][x + shift] = colour
+        return frame
+
+    return place
+
+
+def lying(canvas):
+    """The standing figure laid down on the bottom half of the frame: its head to the right
+    (forward), its front (face and toes) up."""
+    frame = [[None] * COLLAPSE_SIZE for _ in range(COLLAPSE_SIZE)]
+    for y, row in enumerate(canvas):
+        for x, colour in enumerate(row):
+            if colour is not None:
+                frame[COLLAPSE_SIZE - 1 - x][CHARACTER_HEIGHT - 1 - y] = colour
+    return frame
+
+
+COLLAPSE_FRAMES = (
+    (KNEEL, leaning(SLUMP_LEAN)),
+    (KNEEL, leaning(TIP_LEAN)),
+    (POSES["idle"], lying),
+    (ASLEEP, lying),
+)
+
+
+def collapse_sheet(draw, variant_colours):
+    """One layer's passing-out frames, outlined after they are placed, like `character_sheet`."""
+    row = []
+    for pose, place in COLLAPSE_FRAMES:
+        body_pixels = pixels_of(place(draw_body("right", pose)))
+        canvas = place(draw("right", pose, **variant_colours))
+        row.append(outlined(canvas, set() if draw is draw_body else body_pixels))
+    return [row]
+
+
+# Layer sheets by file name (assets/character/<name>.png), and their passing-out frames
+# (assets/character/collapse/<name>.png).
+CHARACTER_LAYERS = {"body_0": (draw_body, {})}
 for _variant, _colours in CLOTHES_COLOURS.items():
-    CHARACTER_SHEETS[f"clothes_{_variant}"] = character_sheet(draw_clothes, _colours)
+    CHARACTER_LAYERS[f"clothes_{_variant}"] = (draw_clothes, _colours)
 for _variant, _colours in HAIR_COLOURS.items():
-    CHARACTER_SHEETS[f"hair_{_variant}"] = character_sheet(draw_hair, _colours)
-CHARACTER_SHEETS["legs_0"] = character_sheet(draw_legs, {})
-CHARACTER_SHEETS["head_straw_hat"] = character_sheet(draw_straw_hat, {})
+    CHARACTER_LAYERS[f"hair_{_variant}"] = (draw_hair, _colours)
+CHARACTER_LAYERS["legs_0"] = (draw_legs, {})
+CHARACTER_LAYERS["head_straw_hat"] = (draw_straw_hat, {})
+CHARACTER_SHEETS = {name: character_sheet(*layer) for name, layer in CHARACTER_LAYERS.items()}
 CHARACTER_SHEETS["held_hoe"] = character_sheet(draw_held_hoe, {})
+COLLAPSE_SHEETS = {name: collapse_sheet(*layer) for name, layer in CHARACTER_LAYERS.items()}
+
+# A "z" that rises from a sleeping figure (assets/effects/sleep_z.png): a cream glyph with
+# the ink outline around its strokes.
+SLEEP_Z = outlined(
+    [
+        [{"c": "cream"}.get(key) for key in line]
+        for line in ("......", ".cccc.", "...cc.", "..cc..", ".cc...", ".cccc.", "......")
+    ],
+    set(),
+)
 
 
 
@@ -2060,6 +2166,11 @@ def main():
     (ASSETS / "character").mkdir(exist_ok=True)
     for name, rows in CHARACTER_SHEETS.items():
         to_image(rows, CHARACTER_WIDTH, CHARACTER_HEIGHT).save(ASSETS / "character" / f"{name}.png")
+    (ASSETS / "character" / "collapse").mkdir(exist_ok=True)
+    for name, rows in COLLAPSE_SHEETS.items():
+        to_image(rows, COLLAPSE_SIZE).save(ASSETS / "character" / "collapse" / f"{name}.png")
+    (ASSETS / "effects").mkdir(exist_ok=True)
+    to_image([[SLEEP_Z]], len(SLEEP_Z[0]), len(SLEEP_Z)).save(ASSETS / "effects" / "sleep_z.png")
     to_image([INTERIOR_TILES]).save(ASSETS / "interior.png")
     (ASSETS / "interior").mkdir(exist_ok=True)
     for name, (picture, _footprint) in FURNITURE.items():
@@ -2094,7 +2205,7 @@ def main():
     ui.write_ui_assets(ASSETS / "ui", PALETTE)
     write_palette()
     check_palette()
-    print("Wrote terrain*.png, decorations*.png, objects*.png (one per look), character/*.png, interior.png, interior/*.png, fire/*.png, buildings/*.png, items/*.png, wildlife/*.png, crops/*.png, soil_wet.png, clay_hint.png, ui/*, palette.png and palette.gpl to assets/; palette check passed.")
+    print("Wrote terrain*.png, decorations*.png, objects*.png (one per look), character/*.png, character/collapse/*.png, effects/sleep_z.png, interior.png, interior/*.png, fire/*.png, buildings/*.png, items/*.png, wildlife/*.png, crops/*.png, soil_wet.png, clay_hint.png, ui/*, palette.png and palette.gpl to assets/; palette check passed.")
 
 
 if __name__ == "__main__":
