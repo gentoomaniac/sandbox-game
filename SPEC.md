@@ -656,10 +656,17 @@ atmosphere only: no player impact, not hunted, not saved.
     bench; a stall partition divides it from the animal end with stalls, hay and sacks), barn
     13×8 (four hay stalls, crates, barrels, sacks). Sleep fills: mat 80, bed and box bed 100.
     The barn has no bed, so it can't be slept in.
-  - The look: half-timbered walls (dark oak beams, red brick or lime-washed clay infill),
-    a steep thick reed thatch with a turf ridge, small windows, a stone base; the shack is
-    plank-built with a simple roof. Every building has a look per season and for snow, and
-    one with lit windows.
+  - The look (from the user's reference photos, 2026-11-05): the roof is the hero, a huge,
+    thick reed thatch, weathered grey-brown with moss, hipped at both ends with heavy rounded
+    eaves, and eyebrow dormers (the thatch swells in a wave over a half-round window). The
+    Kate has white lime walls, a teal door and shutters, white window frames, a turf ridge and
+    a small white chimney. The longhouse has buff brick on a fieldstone base, crossed sticks
+    on its ridge, two brick chimneys, white windows in dark green frames, climbing roses, and
+    the big arched green barn door of the hall house as its door (the middle tile), the
+    thatch sweeping up over it. The barn is half-timbered (dark oak beams, red brick) with big
+    plank doors and no windows; the shack is plank-built with a roof of weathered boards.
+    Every building has a summer look, a snow look and lit windows (spring and autumn show
+    the summer picture until the game asks for more looks).
 - **Buildings cost materials:** logs, stone, clay and reeds (reeds for the thatch), taken
   from the inventory when the building is placed. The ghost shows the costs against what
   the player carries and refuses the spot while something is missing. No refunds or

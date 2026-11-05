@@ -195,10 +195,8 @@ _SNOW_BUSH = ({"mud", "mud_dark", "soil_dark"}, {"green_deep"}, 5)
 _SNOW_STONE = ({"stone_light", "stone"}, set(), 2)
 _SNOW_BOULDER = ({"stone_light", "stone", "green_light", "green", "olive"}, set(), 3)
 _SNOW_STUMP = ({"sand_light", "sand", "straw"}, set(), 3)
-_SNOW_TRUNK = ({"soil_light", "soil_mid", "sand", "mud", "sand_light"}, set(), 2)
-_THATCH = {"straw", "sand_light", "sand", "gold", "dry_light", "mud"}
-# Thatch rows left showing under the snow at the eaves.
-_THATCH_AT_EAVES = 4
+_SNOW_TRUNK = ({"soil_light", "soil_mid", "sand", "stone_light", "sand_light", "straw"}, set(), 2)
+_SNOW_DEADWOOD = ({"stone_light", "stone", "bare_light"}, set(), 2)
 
 _SPRING_KINDS = {"oak", "berry_bush", "shrub", "sapling", "fern", "boulder", "tall_grass"}
 _BLOSSOM_KINDS = {"berry_bush", "shrub"}
@@ -381,6 +379,11 @@ def _winter_object(look, kind, variant, canvas, redraw, rng, centre):
         if has_snow:
             snow_caps(canvas, rng, {"straw", "reed", "olive"}, set(), 1, centre)
         return canvas
+    if kind == "dead_tree":
+        if has_snow:
+            canvas = copy(canvas)
+            snow_caps(canvas, rng, *cap(_SNOW_DEADWOOD), centre)
+        return canvas
     if kind in ("stone", "boulder", "stump") or kind.endswith("trunk"):
         if has_snow:
             canvas = copy(canvas)
@@ -400,47 +403,43 @@ def object_rows(look, atlas, redraw):
     ]
 
 
-def snow_roof(canvas, rng, ridge_y, eaves_y, shade_x):
-    """Snow on a thatched roof between the rows `ridge_y` and `eaves_y`. Each column is
-    covered from its top down to a ragged edge that leaves a little thatch at the eaves; the
-    roof's own outline stays. Shading: a light band at the top, blue-grey towards the eaves,
-    a lip at the edge with a darker underside, and one step darker right of `shade_x`."""
-    # Snow shades from lit to dark; `shade` indexes them and the shaded right side goes one step on.
-    lit = ("snow_light", "snow", "snow_shadow", "snow_deep")
-    edge_of_snow = 0
-    for x in range(len(canvas[0])):
-        rows = [y for y in range(ridge_y, eaves_y - 1) if canvas[y][x] in _THATCH]
-        if not rows:
-            continue
-        top, bottom = rows[0], rows[-1]
-        # Neighbouring columns share a lip height in runs, so the edge is ragged, not noisy.
-        if x % 3 == 0:
-            edge_of_snow = rng.choice((-1, 0, 0, 1))
-        last = bottom - _THATCH_AT_EAVES + edge_of_snow
-        step = 1 if x > shade_x else 0
-        for y in range(top, last + 1):
-            from_top, from_edge = y - top, last - y
-            if from_edge == 0:
-                shade = 2
-            elif from_edge == 1:
-                shade = 0
-            elif from_top < 3:
-                shade = 0
-            elif from_edge < 5:
-                shade = 2
-            else:
-                shade = 1
-            canvas[y][x] = lit[min(shade + step, 3)]
+# What each colour of a roof turns into under snow: the snow keeps the roof's light and shade.
+_SNOW_ON_ROOF = {
+    "sand": "snow_light", "bare_light": "snow_light", "bare": "snow", "mud_dark": "snow_shadow",
+    "soil_dark": "snow_deep", "umber": "snow_shadow", "dry_light": "snow_light", "dry": "snow",
+    "olive": "snow", "green_dark": "snow_shadow", "green_deep": "snow_shadow",
+    "cream": "snow_light", "snow_light": "snow_light", "stone_light": "snow_light", "stone": "snow",
+    "soil_mid": "snow", "soil": "snow_shadow",
+}
+# Rows of the eaves left showing under the snow: the dark underside of the rolled edge.
+_EAVES_UNDER_SNOW = 3
 
 
-def house(look, canvas, ridge_y, eaves_y, shade_x, chimney_xs):
-    """A house picture in a look: snow on the thatch under snow, the plain house otherwise
-    (the game only asks for "snow" and the summer picture). The roof is between the rows
-    `ridge_y` and `eaves_y` and in shade right of `shade_x`; the chimney's top is at row 2
-    over the columns `chimney_xs` (see `house` in generate.py)."""
+def house(look, canvas, snowy):
+    """A house picture in a look: snow on its roof under snow, the plain house otherwise (the game
+    only asks for "snow" and the summer picture). `snowy` are the pixels snow covers (see
+    buildings.py); in each column the lowest rows of them, the underside of the eaves, stay
+    clear, along a ragged edge."""
     canvas = remap(canvas, {"shadow": _SHADOW_REMAPS[look]})
-    if look == "snow":
-        snow_roof(canvas, random.Random("house"), ridge_y, eaves_y, shade_x)
-        for x in chimney_xs:
-            canvas[2][x] = "snow_light"
+    if look != "snow":
+        return canvas
+    rng = random.Random("house")
+    columns = {}
+    for x, y in snowy:
+        columns.setdefault(x, []).append(y)
+    edge = 0
+    for x in sorted(columns):
+        # Neighbouring columns share an edge height in runs, so the edge is ragged, not noisy.
+        if x % 3 == 0:
+            edge = rng.choice((-1, 0, 0, 1))
+        rows = sorted(columns[x])
+        # Only a long bottom run of a column ends in eaves; a chimney's cap is covered whole.
+        run_start = len(rows) - 1
+        while run_start > 0 and rows[run_start - 1] == rows[run_start] - 1:
+            run_start -= 1
+        keep = max(0, _EAVES_UNDER_SNOW + edge) if len(rows) - run_start > 6 else 0
+        for y in rows[: len(rows) - keep]:
+            canvas[y][x] = _SNOW_ON_ROOF.get(canvas[y][x], "snow")
+        if keep:
+            canvas[rows[len(rows) - keep - 1]][x] = "snow_shadow"
     return canvas

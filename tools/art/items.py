@@ -48,9 +48,9 @@ def line(picture, x0, y0, x1, y1, colour):
         picture[y][x] = colour
 
 
-def outlined(picture):
-    """The picture with a one pixel outline outside it, in the darkest colour of the ramp of
-    the pixel it surrounds. Drawn pixels stay."""
+def outlined(picture, colour=None):
+    """The picture with a one pixel outline outside it, in `colour`, or by default in the
+    darkest colour of the ramp of the pixel it surrounds. Drawn pixels stay."""
     size = len(picture)
     result = [row[:] for row in picture]
     for y in range(size):
@@ -60,65 +60,9 @@ def outlined(picture):
             for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
                 nx, ny = x + dx, y + dy
                 if 0 <= nx < size and 0 <= ny < size and picture[ny][nx] is not None:
-                    result[y][x] = OUTLINE_OF.get(picture[ny][nx], DEFAULT_OUTLINE)
+                    result[y][x] = colour or OUTLINE_OF.get(picture[ny][nx], DEFAULT_OUTLINE)
                     break
     return result
-
-
-def shaft(picture, start, end):
-    """A wooden shaft two pixels wide: light on the upper left, dark beside it."""
-    (x0, y0), (x1, y1) = start, end
-    line(picture, x0 + 1, y0, x1 + 1, y1, "soil")
-    line(picture, x0, y0, x1, y1, "soil_mid")
-
-
-def hoe():
-    picture = canvas()
-    shaft(picture, (2, 13), (10, 5))
-    rect(picture, 8, 3, 13, 4, "stone")
-    rect(picture, 8, 3, 13, 3, "stone_light")
-    rect(picture, 7, 5, 9, 6, "stone")
-    pixel(picture, 7, 5, "stone_light")
-    return outlined(picture)
-
-
-def axe():
-    picture = canvas()
-    shaft(picture, (2, 13), (10, 5))
-    for y, left in enumerate((8, 7, 5, 5, 6, 7), 2):
-        rect(picture, left, y, 11, y, "stone")
-        pixel(picture, left, y, "stone_light")
-    rect(picture, 5, 4, 5, 5, "stone_light")
-    rect(picture, 10, 2, 11, 7, "stone")
-    return outlined(picture)
-
-
-def pickaxe():
-    picture = canvas()
-    shaft(picture, (3, 14), (9, 5))
-    for x, y in ((1, 5), (2, 4), (3, 3), (5, 2), (7, 2), (9, 3), (11, 4), (12, 5), (13, 7)):
-        pixel(picture, x, y, "stone")
-    for x, y in ((2, 3), (4, 2), (6, 1), (8, 1)):
-        pixel(picture, x, y, "stone_light")
-    for x, y in ((3, 4), (4, 3), (5, 3), (6, 2), (8, 2), (10, 3), (11, 5), (12, 6)):
-        pixel(picture, x, y, "stone")
-    return outlined(picture)
-
-
-def watering_can():
-    picture = canvas()
-    rect(picture, 4, 7, 10, 13, "stone")
-    rect(picture, 4, 7, 10, 7, "stone_light")
-    rect(picture, 4, 7, 4, 13, "stone_light")
-    rect(picture, 4, 13, 10, 13, "stone_dark")
-    line(picture, 11, 11, 14, 6, "stone")
-    rect(picture, 13, 4, 14, 5, "stone_light")
-    pixel(picture, 12, 4, "water_light")
-    line(picture, 3, 9, 1, 8, "stone")
-    line(picture, 1, 8, 2, 5, "stone")
-    line(picture, 2, 5, 6, 5, "stone")
-    pixel(picture, 7, 6, "stone")
-    return outlined(picture)
 
 
 def seed_sack(emblem, keys):
@@ -212,54 +156,64 @@ def berries():
 
 
 def acorn():
-    """An acorn: a round nut with a cap and a short stem."""
+    """An acorn: a glossy nut in a scaly cap with a short stem."""
+    rows = [
+        "................",
+        "................",
+        ".......ss.......",
+        "........s.......",
+        ".....cCCCCc.....",
+        "....cCcCcCcd....",
+        "...cCcCcCcCdd...",
+        "...ddddddddddd..",
+        "....hnnnnnnb....",
+        "....hnnnnnbb....",
+        "....hhnnnnbb....",
+        ".....hnnnbbb....",
+        ".....nnnnbb.....",
+        "......nnbb......",
+        ".......bb.......",
+        "................",
+    ]
+    keys = {"s": "soil", "c": "soil_mid", "C": "soil_light", "d": "soil", "h": "ochre", "n": "ochre_dark", "b": "umber"}
+    return outlined(from_rows(rows, keys), "soil_dark")
+
+
+def cone(rows, keys):
+    """A cone from rows: `rows` gives each row's left edge and width. Its scales form a diamond
+    lattice: dark seams along both diagonals, each scale lit at its top; the right edge is in
+    shade."""
     picture = canvas()
-    rect(picture, 5, 8, 10, 12, "straw")
-    rect(picture, 6, 13, 9, 13, "straw")
-    pixel(picture, 7, 14, "sand")
-    pixel(picture, 8, 14, "sand")
-    rect(picture, 9, 9, 10, 12, "sand")
-    pixel(picture, 6, 9, "sand_light")
-    pixel(picture, 6, 10, "sand_light")
-    rect(picture, 4, 5, 11, 7, "soil_mid")
-    rect(picture, 5, 4, 10, 4, "soil_mid")
-    rect(picture, 4, 7, 11, 7, "soil")
-    for x in (5, 7, 9):
-        pixel(picture, x, 6, "soil")
-    rect(picture, 8, 2, 8, 3, "soil")
-    return outlined(picture)
+    for y, (left, width) in enumerate(rows):
+        for x in range(left, left + width):
+            rising, falling = (x + y) % 4, (x - y) % 4
+            if rising == 0 or falling == 0:
+                colour = keys["seam"]
+            elif rising == 2 and falling == 2:
+                colour = keys["tip"]
+            else:
+                colour = keys["body"]
+            if x >= left + width - 1 and colour != keys["seam"]:
+                colour = keys["shade"]
+            picture[y][x] = colour
+    return picture
 
 
 def spruce_cone():
-    """A long, narrow cone hanging from a twig, its scales in rows."""
-    picture = canvas()
-    widths = (2, 4, 6, 6, 6, 6, 6, 4, 4, 2)
-    for row, width in enumerate(widths):
-        for x in range(8 - width // 2, 8 + width // 2):
-            picture[3 + row][x] = "soil_mid" if (x + row) % 2 == 0 else "soil"
-    rect(picture, 5, 3, 6, 3, "soil_light")
-    pixel(picture, 5, 5, "soil_light")
-    pixel(picture, 5, 8, "soil_light")
-    line(picture, 8, 2, 8, 1, "green_dark")
-    pixel(picture, 9, 1, "green")
-    pixel(picture, 10, 1, "green_light")
-    return outlined(picture)
+    """A long, narrow cone hanging from a twig, its scales in a lattice."""
+    rows = [(0, 0)] * 3 + [(7, 2), (6, 4), (5, 5), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 5), (6, 4), (6, 3), (7, 2)]
+    picture = cone(rows, {"tip": "soil_light", "body": "soil_mid", "seam": "soil", "shade": "soil"})
+    rect(picture, 7, 1, 7, 2, "soil")
+    rect(picture, 8, 1, 9, 1, "green")
+    return outlined(picture, "ink")
 
 
 def pine_cone():
-    """A fat, rounded cone with open, pale-edged scales."""
-    picture = canvas()
-    widths = (4, 6, 8, 8, 8, 8, 6, 4, 2)
-    for row, width in enumerate(widths):
-        for x in range(8 - width // 2, 8 + width // 2):
-            picture[4 + row][x] = "mud" if (x + row) % 2 == 0 else "mud_dark"
-            if (x + row) % 2 == 0 and row % 2 == 1:
-                picture[4 + row][x] = "sand"
-    rect(picture, 5, 4, 6, 4, "sand_light")
-    rect(picture, 7, 2, 8, 3, "soil")
-    pixel(picture, 9, 2, "green_dark")
-    pixel(picture, 10, 2, "green")
-    return outlined(picture)
+    """A fat, rounded cone with open, pale-tipped scales."""
+    rows = [(0, 0)] * 3 + [(6, 4), (5, 6), (4, 8), (3, 10), (3, 10), (3, 10), (3, 10), (4, 8), (4, 8), (5, 6), (6, 4)]
+    picture = cone(rows, {"tip": "sand_light", "body": "mud", "seam": "mud_dark", "shade": "mud_dark"})
+    rect(picture, 7, 1, 8, 2, "soil")
+    return outlined(picture, "ink")
 
 
 def from_rows(rows, keys):
@@ -361,10 +315,6 @@ def small(picture):
 
 
 ICONS = {
-    "hoe": hoe(),
-    "axe": axe(),
-    "pickaxe": pickaxe(),
-    "watering_can": watering_can(),
     "turnip": turnip(),
     "logs": logs(),
     "stone": stone(),

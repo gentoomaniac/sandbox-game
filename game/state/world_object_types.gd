@@ -184,7 +184,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": 6,
-		"sprite_height": 48,
+		"sprite_height": 55,
 		"variants": 3,
 	},
 	BERRY_BUSH:

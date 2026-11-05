@@ -870,7 +870,12 @@ See SPEC.md "Reeds". Can run alongside 36.
 
 ## 38. Art pass: buildings and the new sprites
 
-- [ ] Done
+- [x] Done
+
+Also redrew all seven tool icons (hoe, axe, pickaxe, watering can, scythe, shovel, hammer) on
+the item diagonal in one metal ramp (tools/art/tool_icons.py), and the acorn and cones. The
+buildings follow the user's reference photos (see SPEC.md "Building and land"). No palette
+change was needed.
 
 Depends on 36 and 37. Opus. The four buildings (every season, snow, lit), and everything
 that has placeholder art: trunks, stumps, tree seeds, tall grass (and mown), reeds, the

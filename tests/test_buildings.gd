@@ -108,8 +108,10 @@ func test_rejected_when_the_tile_in_front_of_the_door_is_blocked() -> void:
 
 
 func test_window_lights_are_on_the_lit_windows_of_the_picture() -> void:
-	var building_type: Dictionary = BuildingTypes.TYPES[HOUSE]
-	var lit := Image.load_from_file(ProjectSettings.globalize_path(building_type["sprite_lit"]))
-	var unlit := Image.load_from_file(ProjectSettings.globalize_path(building_type["sprite"]))
-	for centre: Vector2i in building_type["window_lights"]:
-		assert_ne(lit.get_pixelv(centre), unlit.get_pixelv(centre), "lit window at %s" % centre)
+	for building_id in BuildingTypes.ids():
+		var building_type: Dictionary = BuildingTypes.TYPES[building_id]
+		var lit := Image.load_from_file(ProjectSettings.globalize_path(building_type["sprite_lit"]))
+		var unlit := Image.load_from_file(ProjectSettings.globalize_path(building_type["sprite"]))
+		for centre: Vector2i in building_type["window_lights"]:
+			var where := "%s lit window at %s" % [building_id, centre]
+			assert_ne(lit.get_pixelv(centre), unlit.get_pixelv(centre), where)
