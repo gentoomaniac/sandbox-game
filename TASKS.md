@@ -270,7 +270,7 @@ Depends on: 6, 7.
 
 ## 9. Building placement
 
-- [ ] Done
+- [x] Done
 
 Depends on: 6.
 
