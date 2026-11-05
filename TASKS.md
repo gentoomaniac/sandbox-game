@@ -870,7 +870,10 @@ See SPEC.md "Reeds". Can run alongside 36.
 
 Depends on 36 and 37. Opus. The four buildings (every season, snow, lit), and everything
 that has placeholder art: trunks, stumps, tree seeds, tall grass (and mown), reeds, the
-clay hint, and the icons for hay, clay, reeds, scythe, shovel and hammer.
+clay hint, and the icons for hay, clay, reeds, scythe, shovel and hammer. Also redraw the
+dead tree: it reads as thin brown and grey scribbles with no trunk. It should be a solid,
+weathered grey trunk with a few thick, gnarled, broken-off limbs, bark shading on one
+consistent light side, and a ground shadow, in the scale of the other trees.
 
 ## 39. Interiors for all four buildings
 
