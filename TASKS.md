@@ -27,11 +27,13 @@ Set up the Godot 4 project and the make targets.
   - `game/scenes/`: scenes and the scripts that render them;
   - `maps/`: Tiled files;
   - `tests/`.
-- `.godot-version` contains the exact Godot version. **The developer asks the user which
-  version is installed.**
+- `.godot-version` contains the exact Godot version: `4.7.2`.
 - `Makefile` with these targets:
   - `setup`:
-    - checks for Godot (exact version from `.godot-version`), Tiled, Python 3 and git;
+    - checks for Godot (exact version from `.godot-version`), Tiled, Python 3 and git.
+      The Godot binary name differs between installs (`godot`, `godot4`, an official
+      download), so the Makefile uses `GODOT ?= godot` and can be overridden, e.g.
+      `make GODOT=~/bin/Godot_v4.7.2 run`;
     - prints what is missing, with an install hint. Give Gentoo package names where they
       exist (e.g. `dev-games/godot`, `games-util/tiled`), plus a generic hint;
     - never installs system packages;
