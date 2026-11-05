@@ -22,6 +22,10 @@ var facing := Vector2i.DOWN
 var home_map: GameMap
 var home_bed := Vector2i.ZERO
 
+# --- Looks ---
+## What the character wears and holds.
+var appearance := Appearance.new()
+
 
 ## The tile the player's feet are on.
 func tile() -> Vector2i:
