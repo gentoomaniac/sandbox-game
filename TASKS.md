@@ -581,7 +581,7 @@ Depends on: 20. See SPEC.md "Player" (energy, details).
 
 ## 22. UI scale and the Game settings page
 
-- [ ] Done
+- [x] Done
 
 Depends on: 19. See SPEC.md "Menus and settings".
 
