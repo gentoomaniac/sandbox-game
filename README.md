@@ -90,7 +90,7 @@ Press `/` to open a console for testing and cheats. Tab completes commands and i
 | Command | What it does |
 |---|---|
 | `help` | List the commands. |
-| `tp <x> <y>` | Teleport to a world tile (F3 shows your coordinates). |
+| `tp <x> <y>` | Teleport to a world tile outside (F3 shows your coordinates). |
 | `give <item> [count]` | Put items in the inventory. |
 | `god`, `nodrain`, `noweight` | Toggle invincibility, free actions, and weight costing nothing. |
 | `weather`, `weather <condition>`, `weather auto` | Show the weather, force a condition, or go back to the simulation. |
@@ -119,7 +119,7 @@ These are the default keys; all of them can be changed under Settings → Contro
 The game uses Godot 4.7.2 with GDScript. Make targets wrap every multi-step job.
 
 ```sh
-make setup   # checks for Godot, Python and git; downloads GUT; creates a Python venv
+make setup   # checks for Godot, Python 3, git, curl and Tiled; downloads GUT; creates a Python venv
 make run     # starts the game
 ```
 
@@ -144,6 +144,6 @@ fresh world, run `godot --path . -- --new-game`.
   from a fixed palette of at most 64 colours.
 - **Data files:** gameplay numbers you might want to tune live in
   [data/](data/) (energy, weather, vegetation).
-- **Design:** the design is in [SPEC.md](SPEC.md) and the task breakdown is in [TASKS.md](TASKS.md).
+- **Design:** the design is in [SPEC.md](SPEC.md).
 - **Debug flags:** command-line flags for screenshots and debugging (time, day, weather,
   position and more) are listed at the top of [game/scenes/main.gd](game/scenes/main.gd).
