@@ -485,6 +485,11 @@ Decided 2026-11-05. A text console for testing and cheats.
   gone in winter (a vegetation curve). The scythe mows 4 tiles per swing: the 2 straight
   ahead and the tiles left and right of the nearer one. Mown grass gives hay on the ground
   and grows back after some days.
+- **Reeds:** dense stands on river and lake banks and at wetland edges, all year (green in
+  summer, golden in autumn and winter). The scythe cuts them (the same 4-tile swing) into
+  reeds on the ground. Cut reeds grow back only in their growing season: their needs
+  (temperature, sunlight) are a section of `data/crops.cfg`, and they regrow by the same
+  daily growth as crops, so the weather decides.
 - **Shovel and clay:** some spots near rivers, lakes and wetland hold clay, hinted only
   slightly on the ground (a few reddish-grey pixels; easy to miss). Digging such a spot
   with the shovel sometimes gives clay; a dug spot is spent for some days. Digging
@@ -571,6 +576,30 @@ atmosphere only: no player impact, not hunted, not saved.
   - options per building: style, doors, and similar visual or functional variants;
   - expansions attach only at **defined attachment points** on a building. That keeps
     interiors predictable to generate and render.
+- **First buildings** (decided 2026-11-05), in the style of the Danish and North German
+  countryside, each with its own inside:
+  - **Shack:** a small wooden hut, the cheapest shelter.
+  - **Kate:** a small cottage. It replaces the old small house (old saves map to it).
+  - **Longhouse:** a larger farmhouse with the big gable door of the Lower Saxon hall house.
+  - **Barn:** a work and storage building, no hearth or bed.
+  - The look: half-timbered walls (dark oak beams, red brick or lime-washed clay infill),
+    a steep thick reed thatch with a turf ridge, small windows, a stone base; the shack is
+    plank-built with a simple roof. Every building has a look per season and for snow, and
+    one with lit windows.
+- **Buildings cost materials:** logs, stone, clay and reeds (reeds for the thatch), taken
+  from the inventory when the building is placed. The ghost shows the costs against what
+  the player carries and refuses the spot while something is missing. No refunds or
+  demolishing yet. First numbers (tune in play): shack 20 logs, 5 stone, 0 clay, 5 reeds;
+  Kate 30 logs, 15 stone, 15 clay, 25 reeds; longhouse about twice the Kate; barn like the
+  Kate with less clay.
+- **The hammer builds:** holding the hammer is build mode (the ghost follows the cursor,
+  use places the building); the mouse wheel or Q/E pick the building, and B selects the
+  hammer. The player starts with a hammer (later it is crafted); `give hammer` works too.
+  A new game starts at the camp: the materials for a first house have to be gathered.
+- **`data/buildings.cfg`** defines the buildings (required keys, the game refuses to start
+  if one is missing): name, footprint, door tile, picture and lit picture (the season and
+  snow looks are found by name), the interior map, window lights, costs, and documented
+  places for future attributes (beds, storage, warmth, comfort) that have no effect yet.
 
 ### Reputation
 

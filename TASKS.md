@@ -825,6 +825,54 @@ Depends on 33. See SPEC.md "Scythe and tall grass" and "Shovel and clay".
 - Tests: the mowing pattern for each facing, regrowth, the seasons of tall grass, clay
   spot placement, digging odds and the spent spot, save/load.
 
+## 36. Buildings from a config, with costs and the hammer
+
+- [ ] Done
+
+See SPEC.md "Building and land" (first buildings, costs, hammer, buildings.cfg).
+
+- data/buildings.cfg (required keys, fails loudly) replaces the table in
+  building_types.gd: shack, Kate, longhouse and barn with footprint, door, pictures,
+  interior map, window lights, costs and documented future attributes.
+- The hammer item (starting items, console); holding it is build mode; mouse wheel or Q/E
+  pick the building; B selects the hammer; a small panel shows the name and the costs
+  against the inventory; placing takes the materials; a spot is refused while something is
+  missing.
+- Old saves: `small_house` becomes the Kate.
+- Placeholder pictures and interiors until 38 and 39 (the existing house and interior may
+  stand in, scaled to the footprints).
+- Tests: the data file, costs taken, refusal when short, picking, the save upgrade.
+
+## 37. Reeds on the banks
+
+- [ ] Done
+
+See SPEC.md "Reeds". Can run alongside 36.
+
+- Reed objects in stands along river and lake banks and wetland edges (world generator),
+  looks per season; the scythe cuts them into reeds on the ground.
+- A reeds section in data/crops.cfg with its growing needs; cut reeds regrow by daily
+  growth from the weather (as crops do), so only in their season.
+- The reeds item (icon, ground icon), placeholder art.
+- Tests: placement near water only, cutting, regrowth in season and none in winter,
+  save/load, the data file.
+
+## 38. Art pass: buildings and the new sprites
+
+- [ ] Done
+
+Depends on 36 and 37. Opus. The four buildings (every season, snow, lit), and everything
+that has placeholder art: trunks, stumps, tree seeds, tall grass (and mown), reeds, the
+clay hint, and the icons for hay, clay, reeds, scythe, shovel and hammer.
+
+## 39. Interiors for all four buildings
+
+- [ ] Done
+
+Depends on 36. A Tiled interior per building (see InteriorLoader), sized to its footprint:
+the shack bare and small, the Kate a cottage room with hearth and bed, the longhouse with
+a hall and living end, the barn with stalls and storage and no bed or hearth.
+
 ## Later (not part of the prototype)
 
 - Season looks follow-ups (from the task 29 review): world_view.gd carries layer, season
