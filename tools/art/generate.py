@@ -19,7 +19,8 @@ drawn on top of world tiles of that layer. A row may be empty.
 assets/objects.png: world objects, 48x80 cells (OBJECT_CELL_WIDTH x OBJECT_CELL_HEIGHT). Row 0
 is the oak (3 variants), row 1 the stone (2 variants), then the camp site: row 2 the fireplace,
 row 3 the sleeping bag (1 variant each), then the vegetation rows from 4 (see vegetation()),
-row 11 the boulder, row 12 the stump and rows 13 to 20 the trunks (see trunks.py). The rows and
+row 11 the boulder, row 12 the stump, row 13 the tall grass (3 tufts, then the same 3 mown;
+see meadow.py) and rows 14 to 21 the trunks (see trunks.py). The rows and
 counts are in game/state/world_object_types.gd.
 An object stands on one tile: the bottom centre 16x16 of its cell (x 16..31, y 64..79). A tree's
 crown rises above that, over the tiles around it. An object on several tiles (boulder 2x1,
@@ -46,6 +47,8 @@ wide cells and as tall as the sheet (see crops.py and data/crops.cfg). They have
 
 assets/soil_wet.png: the damp and the wet look of tilled soil, two 16x16 tiles (see crop_icons.py).
 
+assets/clay_hint.png: the faint hint of a clay spot, one 16x16 tile (see meadow.py).
+
 assets/items/<item id>.png (16x16) and assets/ui/slot.png, slot_selected.png (20x20): drawn in
 items.py, and for crops in crop_icons.py. assets/ground_items/<item id>.png are their 8x8 versions
 for items lying on the ground (items.small), made for every icon (the tools too).
@@ -61,6 +64,7 @@ import animals
 import crop_icons
 import crops
 import items
+import meadow
 import seasons
 import trunks
 import ui
@@ -1118,6 +1122,7 @@ def object_atlas():
         ("fern", ferns),
         ("boulder", BOULDERS[0]),
         ("stump", STUMPS[0]),
+        ("tall_grass", meadow.tall_grass_row()),
     ] + trunks.rows()
 
 
@@ -1923,8 +1928,9 @@ def main():
     for crop, cells in crops.sheets().items():
         to_image([cells], crops.TILE, len(cells[0])).save(ASSETS / "crops" / f"{crop}.png")
     to_image([crop_icons.soil_wet()]).save(ASSETS / "soil_wet.png")
+    to_image([[meadow.clay_hint()]]).save(ASSETS / "clay_hint.png")
     for directory, pictures in (
-        ("items", items.ICONS | crop_icons.icons()),
+        ("items", items.ICONS | crop_icons.icons() | meadow.icons()),
         ("ui", items.SLOTS | items.SLOT_HINTS),
     ):
         (ASSETS / directory).mkdir(exist_ok=True)
@@ -1938,7 +1944,7 @@ def main():
     ui.write_ui_assets(ASSETS / "ui", PALETTE)
     write_palette()
     check_palette()
-    print("Wrote terrain*.png, decorations*.png, objects*.png (one per look), character/*.png, interior.png, interior/*.png, buildings/*.png, items/*.png, wildlife/*.png, crops/*.png, soil_wet.png, ui/*, palette.png and palette.gpl to assets/; palette check passed.")
+    print("Wrote terrain*.png, decorations*.png, objects*.png (one per look), character/*.png, interior.png, interior/*.png, buildings/*.png, items/*.png, wildlife/*.png, crops/*.png, soil_wet.png, clay_hint.png, ui/*, palette.png and palette.gpl to assets/; palette check passed.")
 
 
 if __name__ == "__main__":

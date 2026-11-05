@@ -40,10 +40,10 @@ func test_a_tool_too_weak_for_the_object_costs_nothing() -> void:
 func test_the_weight_factor_is_free_up_to_the_limit_then_linear() -> void:
 	var rules := EnergyRules.new(RULES)
 	assert_eq(rules.weight_factor(0.0), 1.0)
-	assert_eq(rules.weight_factor(15.0), 1.0)
-	assert_almost_eq(rules.weight_factor(17.0), 1.2, 0.0001)
-	assert_almost_eq(rules.weight_factor(20.0), 1.5, 0.0001)
-	assert_almost_eq(rules.weight_factor(25.0), 2.0, 0.0001)
+	assert_eq(rules.weight_factor(20.0), 1.0)
+	assert_almost_eq(rules.weight_factor(22.0), 1.2, 0.0001)
+	assert_almost_eq(rules.weight_factor(25.0), 1.5, 0.0001)
+	assert_almost_eq(rules.weight_factor(30.0), 2.0, 0.0001)
 
 
 func test_a_heavy_load_costs_more() -> void:

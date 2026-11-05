@@ -32,6 +32,8 @@ extends RefCounted
 ## - regrow_days: picking it by hand does not remove it: it looks picked and gives its drops
 ##   again after this many days (berry bush); the atlas row then has the picked looks after
 ##   the normal ones, `variants` of each;
+## - tool (without hp): the item tool kind that mows it (tall grass): a hand can't pick it. A mown
+##   one looks picked and grows back like a picked bush, see regrow_days;
 ## - matures_after_days: with the state `tree` set (a sapling that grows) it is replaced after
 ##   this many days by `matures_into`, or by the tree named in `tree`;
 ## - rots_after_days: it is gone after this many days (a stump), but for the chance
@@ -63,6 +65,7 @@ const CHEST := &"chest"
 const HEARTH := &"hearth"
 const WINDOW := &"window"
 const STUMP := &"stump"
+const TALL_GRASS := &"tall_grass"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -73,7 +76,7 @@ const FRUIT := &"fruit"
 const MAX_FOOTPRINT := Vector2i(2, 2)
 
 ## The first atlas row of the trunks: the row after the last of the other types.
-const _FIRST_TRUNK_ROW := 13
+const _FIRST_TRUNK_ROW := 14
 
 const _OTHER_TYPES := {
 	OAK:
@@ -231,6 +234,18 @@ const _OTHER_TYPES := {
 		"drops": {&"logs": 1},
 		"rots_after_days": 14,
 		"rots_into_sapling_chance": 0.3,
+	},
+	TALL_GRASS:
+	{
+		"drops": {&"hay": 2},
+		"tool": &"scythe",
+		"regrow_days": 4,
+		"seasonal": DORMANCY,
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": false,
+		"harvest_level": 0,
+		"atlas_row": 13,
+		"variants": 3,
 	},
 	SMALL_BED:
 	{

@@ -8,7 +8,7 @@ extends RefCounted
 const DEFAULT_PATH := "res://data/energy.cfg"
 
 const REQUIRED_KEYS := {
-	"cost": ["till", "hit", "water", "plant", "pick"],
+	"cost": ["till", "hit", "water", "plant", "pick", "mow", "dig"],
 	"weight": ["free_kg", "step_kg", "extra_per_step"],
 	"walk": ["slow_energy", "slow_speed", "very_slow_energy", "very_slow_speed"],
 	"debuff": ["walk_speed", "energy_max", "health"],
@@ -62,8 +62,8 @@ func is_valid() -> bool:
 	return missing_keys().is_empty()
 
 
-## The energy a use of this kind costs (`till`, `hit`, `water`, `plant`, `pick`), before the
-## weight and drain factors.
+## The energy a use of this kind costs (`till`, `hit`, `water`, `plant`, `pick`, `mow`, `dig`),
+## before the weight and drain factors.
 func cost_of(use_kind: StringName) -> float:
 	return _value("cost", use_kind)
 

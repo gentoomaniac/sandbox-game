@@ -23,6 +23,9 @@ const TILE_SIZE := 16
 const DECORATION_SOURCE_OFFSET := 10
 const TERRAIN_ATLAS_PATH := "res://assets/terrain.png"
 const DECORATION_ATLAS_PATH := "res://assets/decorations.png"
+## The few reddish-grey pixels that hint at a clay spot: one tile, the same in every look.
+const CLAY_HINT_PATH := "res://assets/clay_hint.png"
+const CLAY_HINT_SOURCE_ID := 2 * DECORATION_SOURCE_OFFSET
 
 ## Corner bits of a mask, as in the generator.
 const TOP_LEFT := 1
@@ -127,6 +130,11 @@ func _init() -> void:
 		)
 		if look == SeasonBlend.Look.SUMMER:
 			_decoration_counts = no_counts
+	var clay_hint := TileSetAtlasSource.new()
+	clay_hint.texture = load(CLAY_HINT_PATH)
+	clay_hint.texture_region_size = Vector2i(TILE_SIZE, TILE_SIZE)
+	clay_hint.create_tile(Vector2i.ZERO)
+	tile_set.add_source(clay_hint, CLAY_HINT_SOURCE_ID)
 	for layer in LAYER_COUNT:
 		assert(_full_variant_counts[layer] > 0, "Terrain atlas row %d has no full tile" % layer)
 

@@ -813,7 +813,14 @@ Depends on 33. See SPEC.md "Harvesting, reworked".
 
 ## 35. Scythe and tall grass, shovel and clay
 
-- [ ] Done
+- [x] Done: tall grass is a seasonal object (`tall_grass` in data/vegetation.cfg, dormant in
+  winter) generated in meadows; mowing is `Use.MOW` (`GameState.mow_tiles`), a mown tuft is
+  "picked" and regrows after `regrow_days`. Clay spots are `WorldGenerator.is_clay_spot`;
+  `World.has_clay` / `spend_clay_spot` keep the spent ones (saved as `spent_clay_spots`, optional
+  in version 3 saves, so no version bump); `Use.DIG` is the shovel. `mow` and `dig` costs are in
+  data/energy.cfg. Art is a placeholder in tools/art/meadow.py (to be redrawn);
+  `--mow=<x>,<y>` mows for screenshots. Follow-up: tall grass blocks tilling, planting and
+  building like any object while it stands (see "Later").
 
 Depends on 33. See SPEC.md "Scythe and tall grass" and "Shovel and clay".
 
@@ -892,6 +899,9 @@ a hall and living end, the barn with stalls and storage and no bed or hearth.
   (fine for tens, not hundreds; piles never expire): bucket per tile or chunk. A pile that
   falls back onto a non-walkable source may be out of reach. A pulled pile moves straight
   through walls and water in its last half tile.
+- Tall grass (task 35) stands in the way of the hoe, planting and building while it is there
+  (mown or not); the hoe could clear it, and the camp clearing is checked in spring, so
+  summer grass can grow around the camp.
 - Held art and use poses for axe, pickaxe, scythe and shovel.
 - A planted sapling can be picked up again by hand for free; decide whether that's fine.
 - The shovel could later dig up a young sapling to move it.

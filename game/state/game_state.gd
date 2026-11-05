@@ -9,7 +9,9 @@ extends RefCounted
 ## What the use action does on a tile. HARVEST is a ripe crop, FORAGE something a hand picks
 ## (a bush, a fern), CLEAR a dead crop that a hand pulls up, WATER a watering can wetting tilled
 ## soil, HIT a tool cut or mined at an object, NEEDS_BETTER_TOOL a tool that is too weak for the
-## object. What a harvest, a pick or a final hit gives lies on the ground (see World `drop_items`).
+## object, MOW a scythe cutting the tall grass around the target, DIG a shovel in grass (which
+## may find clay). What a harvest, a pick or a final hit gives lies on the ground (see World
+## `drop_items`).
 enum Use {
 	NOTHING,
 	TILL,
@@ -20,10 +22,19 @@ enum Use {
 	NEEDS_BETTER_TOOL,
 	CLEAR,
 	WATER,
+	MOW,
+	DIG,
 }
 
 ## The tools the use action has something to do with.
-const ACTIVE_TOOLS := [ItemTypes.HOE, ItemTypes.AXE, ItemTypes.PICKAXE, ItemTypes.WATERING_CAN]
+const ACTIVE_TOOLS := [
+	ItemTypes.HOE,
+	ItemTypes.AXE,
+	ItemTypes.PICKAXE,
+	ItemTypes.WATERING_CAN,
+	ItemTypes.SCYTHE,
+	ItemTypes.SHOVEL,
+]
 ## The energy rule (see EnergyRules `cost_of`) for each use that costs energy. The others
 ## (nothing done, too weak a tool) cost nothing.
 const COST_KINDS := {
@@ -34,7 +45,12 @@ const COST_KINDS := {
 	Use.CLEAR: &"pick",
 	Use.WATER: &"water",
 	Use.HIT: &"hit",
+	Use.MOW: &"mow",
+	Use.DIG: &"dig",
 }
+## Digging a clay spot gives this much clay, with this chance (rolled once per spot and day).
+const CLAY_DIG_YIELD := {ItemTypes.CLAY: 2}
+const CLAY_DIG_CHANCE := 0.4
 ## Passing out wakes the player at this time of day, in the home bed.
 const WAKE_UP_MINUTE := 6 * GameClock.MINUTES_PER_HOUR
 ## How close (in tiles, diagonals included) the player must be to a bed to sleep in it.
@@ -224,7 +240,9 @@ func pass_out() -> void:
 ## What `use` would do on a tile of the world (nothing inside) with the held item: a hoe
 ## tills grass, crop seeds plant on soil and tree seeds on grass, a watering can wets dry tilled
 ## soil, an empty hand harvests a ripe crop, clears a dead one or picks a bush, an axe or
-## pickaxe hits what it cuts or mines.
+## pickaxe hits what it cuts or mines, a scythe mows if there is tall grass in its reach (see
+## `mow_tiles`), and a shovel digs in any free grass: the player can't tell a clay spot from the
+## cursor.
 func use_at(world_pos: Vector2i) -> Use:
 	if is_inside():
 		return Use.NOTHING
@@ -235,11 +253,7 @@ func use_at(world_pos: Vector2i) -> Use:
 	var item: Dictionary = ItemTypes.TYPES[held]
 	if item.has("plants") and world.is_free_on(world_pos, item.get("plants_on", Tile.Terrain.SOIL)):
 		return Use.PLANT
-	if item.get("tool") == ItemTypes.HOE and world.is_free_on(world_pos, Tile.Terrain.GRASS):
-		return Use.TILL
-	if item.get("tool") == ItemTypes.WATERING_CAN and _is_dry_soil(world_pos):
-		return Use.WATER
-	return _use_tool(item, object)
+	return _use_tool(item, object, world_pos)
 
 
 ## Whether the held item does anything anywhere, so it is worth highlighting a target.
@@ -297,9 +311,43 @@ func _do_use(target: Vector2i) -> Use:
 			else:
 				world.remove_object(target)
 			world.drop_items(target, plant.picked_drops())
+		Use.MOW:
+			for grass in _tall_grass_to_mow(target):
+				grass.pick()
+				world.change_object(grass)
+				world.drop_items(grass.pos, grass.picked_drops())
+		Use.DIG:
+			_dig(target)
 		Use.HIT:
 			return _hit(world.object_at(target))
 	return use
+
+
+## The 4 tiles one swing of the scythe mows, aimed at `target`: it, the tile beyond it in the
+## facing direction and the tiles left and right of `target`.
+func mow_tiles(target: Vector2i) -> Array[Vector2i]:
+	var facing := player.facing
+	var sideways := Vector2i(absi(facing.y), absi(facing.x))
+	return [target, target + facing, target - sideways, target + sideways]
+
+
+func _tall_grass_to_mow(target: Vector2i) -> Array[WorldObject]:
+	var grass: Array[WorldObject] = []
+	for tile in mow_tiles(target):
+		var object := world.object_at(tile)
+		if object != null and object.is_mowable():
+			grass.append(object)
+	return grass
+
+
+## Digs the grass at `target`: a clay spot is spent, and gives clay with some chance. Anywhere
+## else the shovel finds nothing.
+func _dig(target: Vector2i) -> void:
+	if not world.has_clay(target):
+		return
+	world.spend_clay_spot(target)
+	if PositionHash.of(target, clock.day) % 100 < CLAY_DIG_CHANCE * 100:
+		world.drop_items(target, CLAY_DIG_YIELD)
 
 
 ## Whether a tile is tilled soil that is not soaked yet. A crop may stand on it.
@@ -308,7 +356,22 @@ func _is_dry_soil(world_pos: Vector2i) -> bool:
 	return tile != null and tile.terrain == Tile.Terrain.SOIL and world.moisture_at(world_pos) < 1.0
 
 
-func _use_tool(tool_item: Dictionary, object: WorldObject) -> Use:
+func _use_tool(tool_item: Dictionary, object: WorldObject, world_pos: Vector2i) -> Use:
+	var is_grass_free := world.is_free_on(world_pos, Tile.Terrain.GRASS)
+	match tool_item.get("tool"):
+		ItemTypes.HOE:
+			return Use.TILL if is_grass_free else Use.NOTHING
+		ItemTypes.WATERING_CAN:
+			return Use.WATER if _is_dry_soil(world_pos) else Use.NOTHING
+		ItemTypes.SCYTHE:
+			return Use.MOW if not _tall_grass_to_mow(world_pos).is_empty() else Use.NOTHING
+		ItemTypes.SHOVEL:
+			return Use.DIG if is_grass_free else Use.NOTHING
+	return _use_cutting_tool(tool_item, object)
+
+
+## What an axe or a pickaxe does to the object: hit it if it is cut or mined with that tool.
+func _use_cutting_tool(tool_item: Dictionary, object: WorldObject) -> Use:
 	if object == null or object.type_data().get("tool", ItemTypes.NONE) != tool_item.get("tool"):
 		return Use.NOTHING
 	if tool_item["level"] >= object.type_data()["harvest_level"]:

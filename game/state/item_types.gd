@@ -18,6 +18,8 @@ const HOE := &"hoe"
 const AXE := &"axe"
 const PICKAXE := &"pickaxe"
 const WATERING_CAN := &"watering_can"
+const SCYTHE := &"scythe"
+const SHOVEL := &"shovel"
 const TURNIP_SEEDS := &"turnip_seeds"
 const TURNIP := &"turnip"
 const LOGS := &"logs"
@@ -27,6 +29,8 @@ const BERRIES := &"berries"
 const ACORN := &"acorn"
 const SPRUCE_CONE := &"spruce_cone"
 const PINE_CONE := &"pine_cone"
+const HAY := &"hay"
+const CLAY := &"clay"
 const TUNIC := &"tunic"
 const SHIRT := &"shirt"
 const TROUSERS := &"trousers"
@@ -77,6 +81,34 @@ const _OTHER_TYPES := {
 		"stack_limit": 1,
 		"tool": WATERING_CAN,
 		"level": 1,
+	},
+	SCYTHE:
+	{
+		"name": "Scythe",
+		"weight": 2.0,
+		"stack_limit": 1,
+		"tool": SCYTHE,
+		"level": 1,
+	},
+	SHOVEL:
+	{
+		"name": "Shovel",
+		"weight": 2.5,
+		"stack_limit": 1,
+		"tool": SHOVEL,
+		"level": 1,
+	},
+	HAY:
+	{
+		"name": "Hay",
+		"weight": 0.2,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+	},
+	CLAY:
+	{
+		"name": "Clay",
+		"weight": 1.0,
+		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 	LOGS:
 	{

@@ -200,7 +200,7 @@ _THATCH = {"straw", "sand_light", "sand", "gold", "dry_light", "mud"}
 # Thatch rows left showing under the snow at the eaves.
 _THATCH_AT_EAVES = 4
 
-_SPRING_KINDS = {"oak", "berry_bush", "shrub", "sapling", "fern", "boulder"}
+_SPRING_KINDS = {"oak", "berry_bush", "shrub", "sapling", "fern", "boulder", "tall_grass"}
 _BLOSSOM_KINDS = {"berry_bush", "shrub"}
 
 
@@ -322,6 +322,8 @@ def _season_object(look, kind, variant, canvas, redraw):
             canvas = remap(canvas, _AUTUMN_OAK[variant])
         elif kind in ("berry_bush", "shrub", "sapling", "fern"):
             canvas = remap(canvas, _AUTUMN_BUSH[variant % 3])
+        elif kind == "tall_grass":
+            canvas = remap(canvas, _AUTUMN_GRASS)
     elif look in ("bare", "frost", "snow", "dusting"):
         canvas = _winter_object(look, kind, variant, canvas, redraw, rng, centre)
     return remap(canvas, {"shadow": _SHADOW_REMAPS[look]})
@@ -349,6 +351,9 @@ def _winter_object(look, kind, variant, canvas, redraw, rng, centre):
             snow_caps(canvas, rng, *cap(_SNOW_CONIFER if kind == "spruce" else _SNOW_PINE), centre)
             return canvas
         return remap(canvas, _FROST_CONIFER) if look == "frost" else canvas
+    if kind == "tall_grass":
+        stalks = {"bare": WINTER_STALKS, "snow": WINTER_STALKS, "frost": _FROST_STALKS, "dusting": _FROST_STALKS}
+        return remap(canvas, stalks[look])
     if kind == "berry_bush":
         return remap(canvas, {"bare": _BARE_BUSH, "frost": {**_BARE_BUSH, **_FROST_BUSH}, "dusting": {**_BARE_BUSH, **_FROST_BUSH}, "snow": _SNOW_MOUND}[look])
     if kind in ("shrub", "sapling"):

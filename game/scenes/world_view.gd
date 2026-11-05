@@ -103,6 +103,8 @@ var _object_tileset := ObjectTileset.new()
 ## Indexed by TerrainTileset.Layer.
 var _layers: Array[TileMapLayer] = []
 var _decorations := TileMapLayer.new()
+## The hints of clay spots, on the same grid as the decorations.
+var _clay_hints := TileMapLayer.new()
 var _soil_wetness := SoilWetness.new()
 var _objects := TileMapLayer.new()
 ## The light of each shining object, by tile.
@@ -153,6 +155,9 @@ func _ready() -> void:
 	_decorations.name = "Decorations"
 	_decorations.tile_set = _tileset.tile_set
 	add_child(_decorations)
+	_clay_hints.name = "ClayHints"
+	_clay_hints.tile_set = _tileset.tile_set
+	add_child(_clay_hints)
 	_objects.name = "Objects"
 	_objects.tile_set = _object_tileset.tile_set
 	_objects.y_sort_enabled = true
@@ -169,6 +174,7 @@ func show_world(world_to_show: World) -> void:
 	world.objects_changed.connect(_on_objects_changed)
 	world.tile_changed.connect(redraw_tile)
 	world.object_hit.connect(_on_object_hit)
+	world.clay_spot_changed.connect(_on_clay_spot_changed)
 	_soil_wetness.show_world(world, _is_snowed_over)
 	world.building_placed.connect(_draw_building)
 	_generator = WorldGenerator.new(world.world_seed)
@@ -290,6 +296,10 @@ func _on_objects_changed(world_pos: Vector2i) -> void:
 	if object == null or object.pos == world_pos:
 		_drop_object_sprite(world_pos)
 		_draw_object(world_pos)
+	_draw_decoration(world_pos, _layer_at(world_pos))
+
+
+func _on_clay_spot_changed(world_pos: Vector2i) -> void:
 	_draw_decoration(world_pos, _layer_at(world_pos))
 
 
@@ -506,6 +516,7 @@ func _unload_chunk(coords: Vector2i) -> void:
 			for tile_map in _overlays.values():
 				tile_map.erase_cell(origin + Vector2i(x, y))
 			_decorations.erase_cell(origin + Vector2i(x, y))
+			_clay_hints.erase_cell(origin + Vector2i(x, y))
 			_decoration_spots.erase(origin + Vector2i(x, y))
 	world.remove_chunk(coords)
 
@@ -763,6 +774,7 @@ func _draw_decoration(world_pos: Vector2i, layer: int) -> void:
 
 
 func _set_decoration(world_pos: Vector2i, layer: int, is_covered: bool) -> void:
+	_set_clay_hint(world_pos, is_covered)
 	var atlas_cell := TerrainTileset.NO_DECORATION
 	if not is_covered:
 		var cluster := _decoration_noise.get_noise_2dv(Vector2(world_pos))
@@ -779,6 +791,14 @@ func _set_decoration(world_pos: Vector2i, layer: int, is_covered: bool) -> void:
 		spot.threshold = world.vegetation.threshold(spot.kind, world.world_seed, world_pos)
 	_decoration_spots[world_pos] = spot
 	_update_decoration(world_pos, spot)
+
+
+## Shows the hint of a clay spot that still holds clay, unless an object stands on it.
+func _set_clay_hint(world_pos: Vector2i, is_covered: bool) -> void:
+	if is_covered or not world.has_clay(world_pos):
+		_clay_hints.erase_cell(world_pos)
+	else:
+		_clay_hints.set_cell(world_pos, TerrainTileset.CLAY_HINT_SOURCE_ID, Vector2i.ZERO)
 
 
 ## Draws, erases or redraws the decoration of a spot, as its kind is present today and as the

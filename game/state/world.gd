@@ -18,6 +18,8 @@ signal soil_moisture_changed(world_pos: Vector2i)
 ## A tool hit an object (see `hit_object`). The finishing hit emits it too, after the object
 ## is removed or replaced by what it leaves.
 signal object_hit(object: WorldObject)
+## A clay spot was dug, or has recovered (see `spend_clay_spot`).
+signal clay_spot_changed(world_pos: Vector2i)
 ## A building was placed.
 signal building_placed(building: Building)
 ## A pile of items was put on the ground, or taken off it (see `drop_items`).
@@ -39,6 +41,9 @@ const SCATTER_RANGES := [1, 2]
 ## don't line up on the tile centres.
 const PILE_MARGIN := 0.25
 
+## A dug clay spot has no clay for this many nights.
+const CLAY_SPENT_NIGHTS := 5
+
 ## The only place that defines the world size. Must be even so the world is centred.
 const MAX_SIZE_CHUNKS := 64
 
@@ -47,6 +52,7 @@ var world_seed: int
 ## clock shares it here.
 var clock := GameClock.new()
 var vegetation := Vegetation.default_vegetation()
+var _generator: WorldGenerator
 var _chunks: Dictionary[Vector2i, Chunk] = {}
 ## What the player changed, kept outside the chunks so it survives their unloading: per world
 ## position the object that stands there now, or null where the generated object was
@@ -62,12 +68,15 @@ var _soil_moisture: Dictionary[Vector2i, float] = {}
 ## cross a chunk border, so they live here and not in chunks.
 var _buildings: Array[Building] = []
 var _building_by_tile: Dictionary[Vector2i, Building] = {}
+## The clay spots that were dug, with the nights left until they hold clay again.
+var _spent_clay_spots: Dictionary[Vector2i, int] = {}
 ## What lies on the ground: dropped by whatever the player harvested, until collected.
 var _ground_items: Array[GroundItem] = []
 
 
 func _init(seed_value: int) -> void:
 	world_seed = seed_value
+	_generator = WorldGenerator.new(seed_value)
 
 
 static func is_chunk_in_bounds(chunk_coords: Vector2i) -> bool:
@@ -274,6 +283,7 @@ func change_object(object: WorldObject) -> void:
 ## A sapling does not turn into a tree on a tile in `occupied_tiles`: it waits a day.
 func pass_night(occupied_tiles: Array[Vector2i], weather: Weather) -> void:
 	_dry_and_wet_soil(weather)
+	_recover_clay_spots()
 	for object: WorldObject in _object_edits.values():
 		if object == null:
 			continue
@@ -295,6 +305,16 @@ func pass_night(occupied_tiles: Array[Vector2i], weather: Weather) -> void:
 				_take_off(object)
 			else:
 				replace_object(object, sapling)
+
+
+## Counts a night off every dug clay spot; those that recover hold clay again.
+func _recover_clay_spots() -> void:
+	for pos in _spent_clay_spots.keys():
+		_spent_clay_spots[pos] -= 1
+		if _spent_clay_spots[pos] <= 0:
+			_spent_clay_spots.erase(pos)
+			if is_chunk_loaded(Chunk.world_to_chunk(pos)):
+				clay_spot_changed.emit(pos)
 
 
 ## Rain wets the tilled soil and the day dries it, as the weather of the day that ended says.
@@ -409,6 +429,28 @@ func place_building(building_type: StringName, origin: Vector2i) -> Building:
 	_add_building(building)
 	building_placed.emit(building)
 	return building
+
+
+# --- Clay ---
+
+
+## Whether a tile is a clay spot that still holds clay: grass (not tilled) on a generated spot
+## (see WorldGenerator `is_clay_spot`) that was not dug in the last CLAY_SPENT_NIGHTS nights.
+func has_clay(world_pos: Vector2i) -> bool:
+	var tile := tile_at(world_pos)
+	return (
+		tile != null
+		and tile.terrain == Tile.Terrain.GRASS
+		and not _spent_clay_spots.has(world_pos)
+		and _generator.is_clay_spot(world_pos)
+	)
+
+
+## Digs a clay spot out: it holds no clay for the next CLAY_SPENT_NIGHTS nights. What it gave is
+## up to the caller.
+func spend_clay_spot(world_pos: Vector2i) -> void:
+	_spent_clay_spots[world_pos] = CLAY_SPENT_NIGHTS
+	clay_spot_changed.emit(world_pos)
 
 
 # --- Ground items ---
@@ -527,9 +569,13 @@ func to_dict() -> Dictionary:
 	var ground_items_data: Array[Dictionary] = []
 	for ground_item in _ground_items:
 		ground_items_data.append(ground_item.to_dict())
+	var spent_clay_spots: Array[Array] = []
+	for pos in _spent_clay_spots:
+		spent_clay_spots.append(SaveCodec.vector_to_json(pos) + [_spent_clay_spots[pos]])
 	return {
 		"seed": world_seed,
 		"ground_items": ground_items_data,
+		"spent_clay_spots": spent_clay_spots,
 		"terrain_edits": terrain_edits,
 		"soil_moisture": soil_moisture,
 		"object_edits": object_edits,
@@ -547,6 +593,9 @@ static func from_dict(data: Dictionary) -> World:
 	# Saves from before moisture have none: all the soil is as default.
 	for entry: Array in data.get("soil_moisture", []):
 		world._soil_moisture[SaveCodec.vector_from_json(entry)] = float(entry[2])
+	# Saves from before clay have no spent spots.
+	for entry: Array in data.get("spent_clay_spots", []):
+		world._spent_clay_spots[SaveCodec.vector_from_json(entry)] = int(entry[2])
 	for edit: Dictionary in data["object_edits"]:
 		var object_data: Variant = edit["object"]
 		world._object_edits[SaveCodec.vector_from_json(edit["pos"])] = (

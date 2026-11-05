@@ -40,7 +40,21 @@ const DEAD_TREE_CHANCE := 0.0015
 const DEAD_TREE_NEAR_WETLAND_CHANCE := 0.02
 const WETLAND_REACH := 5
 
-## The 8 directions probed for wetland.
+## Tall grass grows in meadows: where the forest noise is below MEADOW_BELOW, in patches
+## where the grass noise is above GRASS_PATCH_ABOVE (thick) and thinly elsewhere.
+const MEADOW_BELOW := -0.1
+const GRASS_PATCH_ABOVE := 0.1
+const GRASS_PATCH_CHANCE := 0.6
+const GRASS_SCATTER_CHANCE := 0.04
+
+## Clay spots are grass tiles with water or wetland within CLAY_REACH tiles, in the clusters
+## where the clay noise is above CLAY_CLUSTER_ABOVE, of which CLAY_SPOT_CHANCE are spots. A
+## grass tile is as far as 3 tiles from the river's water (the floodplain lies between).
+const CLAY_REACH := 5
+const CLAY_CLUSTER_ABOVE := 0.25
+const CLAY_SPOT_CHANCE := 0.5
+
+## The 8 directions probed for wetland and, for clay, for water.
 const WETLAND_PROBE_DIRECTIONS: Array[Vector2i] = [
 	Vector2i(1, 0),
 	Vector2i(-1, 0),
@@ -70,22 +84,32 @@ const RIVER_FREQUENCY := 0.004
 const WETLAND_FREQUENCY := 0.03
 const FOREST_FREQUENCY := 0.02
 const COMPOSITION_FREQUENCY := 0.012
+const GRASS_FREQUENCY := 0.05
+const CLAY_FREQUENCY := 0.15
 
 ## Offsets the wetland seed so it is independent of the river noise.
 const WETLAND_SEED_OFFSET := 1
 const FOREST_SEED_OFFSET := 2
 const COMPOSITION_SEED_OFFSET := 4
+const GRASS_SEED_OFFSET := 6
+const CLAY_SEED_OFFSET := 7
 ## Offsets the per-tile object rolls from the noise seeds: one decides the kind of object,
 ## the other which variety of tree or bush.
 const OBJECT_ROLL_SEED_OFFSET := 3
 const VARIETY_ROLL_SEED_OFFSET := 5
+const GRASS_ROLL_SEED_OFFSET := 8
+const CLAY_ROLL_SEED_OFFSET := 9
 
 var _river_noise := FastNoiseLite.new()
 var _wetland_noise := FastNoiseLite.new()
 var _forest_noise := FastNoiseLite.new()
 var _composition_noise := FastNoiseLite.new()
+var _grass_noise := FastNoiseLite.new()
+var _clay_noise := FastNoiseLite.new()
 var _object_roll_seed: int
 var _variety_roll_seed: int
+var _grass_roll_seed: int
+var _clay_roll_seed: int
 
 
 func _init(world_seed: int) -> void:
@@ -97,8 +121,14 @@ func _init(world_seed: int) -> void:
 	_forest_noise.frequency = FOREST_FREQUENCY
 	_composition_noise.seed = world_seed + COMPOSITION_SEED_OFFSET
 	_composition_noise.frequency = COMPOSITION_FREQUENCY
+	_grass_noise.seed = world_seed + GRASS_SEED_OFFSET
+	_grass_noise.frequency = GRASS_FREQUENCY
+	_clay_noise.seed = world_seed + CLAY_SEED_OFFSET
+	_clay_noise.frequency = CLAY_FREQUENCY
 	_object_roll_seed = world_seed + OBJECT_ROLL_SEED_OFFSET
 	_variety_roll_seed = world_seed + VARIETY_ROLL_SEED_OFFSET
+	_grass_roll_seed = world_seed + GRASS_ROLL_SEED_OFFSET
+	_clay_roll_seed = world_seed + CLAY_ROLL_SEED_OFFSET
 
 
 ## The chunk at `chunk_coords`, or null if it is outside the world bounds.
@@ -180,7 +210,33 @@ func _rolled_type_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
 		and (roll < DEAD_TREE_CHANCE or _is_near_wetland(world_pos))
 	):
 		return WorldObjectTypes.DEAD_TREE
-	return &""
+	var is_tall_grass := forest_noise < MEADOW_BELOW and _is_tall_grass_at(world_pos)
+	return WorldObjectTypes.TALL_GRASS if is_tall_grass else &""
+
+
+func _is_tall_grass_at(world_pos: Vector2i) -> bool:
+	var in_patch := _grass_noise.get_noise_2dv(Vector2(world_pos)) > GRASS_PATCH_ABOVE
+	var chance := GRASS_PATCH_CHANCE if in_patch else GRASS_SCATTER_CHANCE
+	return _roll(world_pos, _grass_roll_seed) < chance
+
+
+## Whether a tile is a spot with clay in it (see CLAY_REACH): a pure function of the seed and
+## the position. Spots are only where no object is generated, so the shovel can reach them.
+func is_clay_spot(world_pos: Vector2i) -> bool:
+	if (
+		_clay_noise.get_noise_2dv(Vector2(world_pos)) <= CLAY_CLUSTER_ABOVE
+		or _roll(world_pos, _clay_roll_seed) >= CLAY_SPOT_CHANCE
+		or terrain_at(world_pos) != Tile.Terrain.GRASS
+		or object_type_at(world_pos, Tile.Terrain.GRASS) != &""
+	):
+		return false
+	# Water and wetland patches are wide, so probing the 8 directions finds them.
+	for distance in range(1, CLAY_REACH + 1):
+		for direction in WETLAND_PROBE_DIRECTIONS:
+			var terrain := terrain_at(world_pos + direction * distance)
+			if terrain == Tile.Terrain.WATER or terrain == Tile.Terrain.WETLAND:
+				return true
+	return false
 
 
 ## A float in [0, 1) from a position hash.

@@ -483,8 +483,11 @@ Decided 2026-11-05. A text console for testing and cheats.
     slot only when nothing else is free, so an empty hand stays empty while harvesting.
 - **Scythe and tall grass:** tall grass grows in meadows, in over spring, tallest in summer,
   gone in winter (a vegetation curve). The scythe mows 4 tiles per swing: the 2 straight
-  ahead and the tiles left and right of the nearer one. Mown grass gives hay on the ground
-  and grows back after some days.
+  ahead and the tiles left and right of the nearer one (the nearer one is the targeted
+  tile, "ahead" the way the player faces). Mowing nothing does nothing and costs nothing.
+  Tall grass doesn't block walking and a hand can't pick it. Each mown tuft gives 2 hay on
+  the ground and looks mown (stubble) for 4 days, then grows back. First numbers
+  (2026-11-05, tune in play).
 - **Reeds:** dense stands on river and lake banks and at wetland edges, all year (green in
   summer, golden in autumn and winter). The scythe cuts them (the same 4-tile swing) into
   reeds on the ground. Cut reeds grow back only in their growing season: their needs
@@ -493,7 +496,10 @@ Decided 2026-11-05. A text console for testing and cheats.
 - **Shovel and clay:** some spots near rivers, lakes and wetland hold clay, hinted only
   slightly on the ground (a few reddish-grey pixels; easy to miss). Digging such a spot
   with the shovel sometimes gives clay; a dug spot is spent for some days. Digging
-  anywhere else gives nothing.
+  anywhere else gives nothing. First numbers (2026-11-05, tune in play): 40 % chance of 2 clay
+  (a roll of the spot and the day), a dug spot is spent for 5 nights, spots lie on grass with
+  water or wetland within 5 tiles, in clusters, never where an object stands. The shovel's
+  targeting highlight shows on any free grass tile, so spots can't be told from the cursor.
 - **Regrowth:**
   - a felled tree leaves a stump that rots away and may leave a sapling (see above);
   - minerals respawn slowly, mainly in areas the player hasn't visited for a while;

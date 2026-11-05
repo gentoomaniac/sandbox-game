@@ -14,7 +14,7 @@ const DEFAULT_PATH := "res://data/vegetation.cfg"
 ## WorldObjectTypes.
 const KIND_SALTS := {
 	"decorations": {&"tuft": 1, &"flower": 2, &"small_plant": 3, &"leaves": 4},
-	"objects": {&"fern_bush": 11, &"berry_bush": 12},
+	"objects": {&"fern_bush": 11, &"berry_bush": 12, &"tall_grass": 13},
 }
 
 static var _default: Vegetation
