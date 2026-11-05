@@ -252,6 +252,21 @@ Decided 2026-11-05.
 - **UI look:** a pixel font and a framed panel (9-slice) in palette colours, in one shared
   Godot Theme that all UI uses.
 
+### Console
+
+Decided 2026-11-05. A text console for testing and cheats.
+
+- `/` opens it (a rebindable action like all keys); Escape or Enter on an empty line closes
+  it. While it is open the game keeps running, but the player doesn't walk or act.
+- Commands: `help`; `tp <x> <y>` (teleport to a world tile; outside only); `give <item>
+  [count]` (into the inventory, Tab completes item names); `god` (toggle invincibility:
+  health doesn't drop); `nodrain` (toggle: actions cost no energy); `noweight` (toggle:
+  carried weight doesn't raise costs).
+- Cheat toggles last for the session; they are not saved. A line in the HUD shows which
+  are on.
+- A history with up/down; output and errors in the console log.
+- Always available for now. Whether release builds lock it is decided later.
+
 ### Time, seasons and weather
 
 - Days and seasons work as is usual for the genre: crops grow day by day, and the season

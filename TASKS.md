@@ -611,6 +611,22 @@ See SPEC.md "Player" (character screen).
   right-click quick equip/unequip.
 - Tests: equip, unequip, swap, wrong slot refused, weight, save round trip, older save.
 
+## 24. Console with cheat commands
+
+- [ ] Done
+
+See SPEC.md "Console". Can run alongside 23.
+
+- Command parsing and execution as plain logic (a Console state class: parse a line,
+  run it against GameState, return output lines), tested without UI.
+- Commands: help, tp, give (with Tab completion of item ids), god, nodrain, noweight.
+  Errors say what was wrong ("Unknown item: wod").
+- GameState gets the session-only cheat flags; energy costs and health changes respect
+  them.
+- UI: an input line and a scrolling log at the top of the screen in the UI theme; `/`
+  opens it (action `console`); history with up/down; HUD line for active cheats.
+- Tests: parsing, each command, bad input, the cheats' effect on energy and health.
+
 ## Later (not part of the prototype)
 
 - Split the object edits and regrowth (`_object_edits`, `replace_object`, `hit_object`,
