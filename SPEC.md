@@ -135,6 +135,9 @@ top of classic pixel art (details under "Lighting and look").
     bonus, not like escaping a penalty.
   - Other bed bonuses come later.
 - **Inventory and equipment.** Carried items have weight (see Energy).
+- **Character sprite: 16×32 pixels** (one tile wide, two tall), built from **layers**
+  (body, clothes, head/hair, held tool or weapon, later gear), so equipment can be shown
+  by swapping or adding a layer instead of redrawing the character.
 - **Tools** are bought and upgraded.
 
 ### Time, seasons and weather
@@ -283,6 +286,13 @@ Tasks: see [TASKS.md](TASKS.md).
 - **Reputation details:**
   - What does reputation unlock or block (prices, quests, hostility)?
   - Which NPCs in the territory are affected: everyone, or only those living closest?
+- **Stepless zoom and camera moves:** the camera must zoom steplessly (mouse wheel down to
+  0.5×) and support scripted moves for cutscenes (follow a target, move, zoom, chain
+  moves). Proposed approach: render the world on the art-pixel grid into an off-screen
+  image (max ~640×360 plus margin, lighting included), then scale it to the screen
+  steplessly with a sharp-bilinear filter; UI at native resolution; default view about
+  320×180 art pixels, zoom 0.5×–2×. Replaces "384×216, whole-number scaling" once
+  confirmed.
 - **Target platforms:** Linux only, or desktop in general? Web?
 - **Scope:** hobby, learning project or release target?
 
