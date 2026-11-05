@@ -694,20 +694,6 @@ def shade_under_crown(canvas, shades=BARK):
             canvas[lowest - 1][x] = "green_dark"
 
 
-def sky_holes(canvas, rng, count, top, bottom, outline):
-    """Small gaps in a crown between rows `top` and `bottom`, each ringed with `outline`,
-    so the canopy reads as lobes of leaves and not as one solid mass."""
-    for _ in range(count):
-        x = OBJECT_CENTRE + rng.randint(-12, 11)
-        y = rng.randint(top, bottom)
-        ring = [(x + dx, y + dy) for dx in range(-1, 3) for dy in range(-1, 3)]
-        if all(canvas[ry][rx] in LEAVES for rx, ry in ring):
-            for rx, ry in ring:
-                canvas[ry][rx] = outline
-            for rx, ry in ((x, y), (x + 1, y), (x, y + 1), (x + 1, y + 1)):
-                canvas[ry][rx] = None
-
-
 def oak(seed):
     rng = random.Random(seed)
     canvas = object_canvas()
@@ -725,7 +711,6 @@ def oak(seed):
         blobs.append((cx + rng.uniform(-2, 2), cy + rng.uniform(-1.5, 1.5), radius + rng.uniform(-1, 1)))
     shaded_blob(canvas, rng, blobs, LEAVES[:5], "green_deep")
     shade_under_crown(canvas)
-    sky_holes(canvas, rng, 3, 38, 50, "green_deep")
     return canvas
 
 
