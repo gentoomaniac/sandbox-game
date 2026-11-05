@@ -119,8 +119,10 @@ func _ready() -> void:
 		or not WildlifeRules.default_rules().is_valid()
 		or not SeasonRules.default_rules().is_valid()
 		or not BuildingRules.default_rules().is_valid()
+		or not AssetCheck.report()
 	):
-		# The load has reported the missing rules, crops or curves. Nothing else runs before the quit.
+		# The load has reported the missing rules, crops, curves or pictures. Nothing else runs
+		# before the quit.
 		set_process(false)
 		set_process_unhandled_input(false)
 		get_tree().quit(1)

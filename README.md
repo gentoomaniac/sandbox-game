@@ -134,6 +134,10 @@ make setup   # checks for Godot, Python 3, git, curl and Tiled; downloads GUT; c
 make run     # starts the game
 ```
 
+Start the game with `make run`: it imports new art first. Starting Godot directly after
+pulling new art makes the game stop with a list of pictures that aren't imported yet; run
+`godot --headless --import` once then.
+
 `make setup` never installs system packages. If something is missing, it prints what to
 install, with Gentoo package names where there are some. If your Godot binary has a
 different name, pass its path: `make GODOT=/path/to/godot run`.
