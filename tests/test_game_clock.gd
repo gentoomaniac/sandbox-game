@@ -111,5 +111,5 @@ func test_ordinals() -> void:
 		23: "23rd",
 		30: "30th"
 	}
-	for day_of_season: int in expected:
-		assert_eq(_clock_on(day_of_season).date_text().split(" ")[0], expected[day_of_season])
+	for day: int in expected:
+		assert_eq(_clock_on(day).date_text().split(" ")[0], expected[day])
