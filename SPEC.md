@@ -79,8 +79,12 @@ Past. World, characters, art and names are original; nothing is taken from exist
   player there.
 - **Starting shelter:** the game starts at a small camp site with a fireplace and a
   sleeping bag, so there is always a bed.
-- **The player can sleep without a bed** (on the ground, anywhere), but this carries a
-  real penalty. The details are an open question.
+- **The player can sleep without a bed** (on the ground, anywhere), with a real penalty:
+  - energy fills to only 50 %;
+  - it does not set home;
+  - in dangerous areas, creatures can attack the sleeping player;
+  - there is no next-day debuff. That stays unique to passing out, so the two feel
+    different.
 - **Sleep has a fixed duration per bed.** The player can't choose how long to sleep.
   Going to bed later simply means waking up later the next day.
 - **Later: sleeping quality depends on the bed.**
@@ -196,12 +200,6 @@ Tasks: see [TASKS.md](TASKS.md).
 - **Reputation details:**
   - What does reputation unlock or block (prices, quests, hostility)?
   - Which NPCs in the territory are affected: everyone, or only those living closest?
-- **Sleeping without a bed:** what is the penalty? Ideas:
-  - energy fills below 100 %;
-  - sleep takes longer;
-  - the next day starts with a mild version of the pass-out debuff;
-  - creatures may attack in dangerous areas;
-  - it doesn't set home.
 - **Target platforms:** Linux only, or desktop in general? Web?
 - **Scope:** hobby, learning project or release target?
 
