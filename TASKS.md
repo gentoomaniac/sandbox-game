@@ -336,8 +336,9 @@ Depends on: 6, 7, 8.
 
 Art notes from the art round 2 review and look:
 
-- Dense forest reads like an orchard: crowns barely overlap and every trunk shows.
-  Denser, overlapping canopies.
+- Extra vegetation (done, branch `extra-vegetation`): spruce, pine, dead tree, berry bush,
+  shrub, sapling, fern bush; joined trunks, ground shadows, 32×48 object cells. Fern and
+  sapling sprites are still plain.
 - Dusk (18:30) comes out olive and muddy rather than warm orange; tune the tint gradient.
 - Lush and dry grass areas look blotchy; dry should differ in hue (yellower), not only
   brightness.
