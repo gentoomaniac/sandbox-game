@@ -122,7 +122,10 @@ half-timbered barn, and the plank shack.
 The character is drawn in layers, so anything they wear shows in the world. Press Tab to
 open the character screen, where you move items between the inventory and the equipment
 slots. The hotbar holds your tools and seeds. Energy and health bars track how tired you
-are, and the more you carry, the more each action costs.
+are, and the more you carry, the more each action costs. Below 20 % energy the character
+sweats with every action, and below 10 % even more. A "zzz" thought bubble pops up over the
+head at midnight and again at half past, while you are still awake: you pass out an hour
+after midnight.
 
 ![The character screen with equipment slots and the inventory](docs/screenshots/character.png)
 

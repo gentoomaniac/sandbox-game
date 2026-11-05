@@ -1027,13 +1027,27 @@ morning). Replaces the fixed sleep duration per bed and the 06:00 pass-out wake-
 
 ## 47. Thought bubbles and sweat
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Signs of tiredness". A small reusable thought-bubble view over the player
 (an icon in a bubble, pop in, ~2 s, fade), first used for "zzz…" at 00:00 and at 00:30
 while the player is awake, as the warning before the 01:00 pass-out (task 46); not for low
 energy. Sweat drops on actions at 20 % or less (one) and 10 % or less (two or three).
 View only; tests for when they show; README updated.
+
+Done: ThoughtBubble (game/scenes/thought_bubble.gd) shows assets/ui/bubble_<id>.png over the
+head: it pops up in whole pixels, stays 2 s and fades; the pictures come from `BUBBLE_ICONS`
+in tools/art/ui.py, so a new bubble is one entry there plus `make assets` and
+`show_icon(&"<id>")`. TirednessView (a child of PlayerView) owns the bubble and the sweat;
+TirednessSigns (pure, tests/test_tiredness.gd) decides the sweat kind per use and energy and
+which clock steps fire the "zzz" late warning (00:00 and 00:30, once each, only while awake
+and only when the clock runs on: never across a sleep, a fade or a `skip`; Main sets
+`is_awake` to false while it fades). Sweat is two HitParticles kinds (SWEAT: one drop, 20 % or
+less; SWEAT_HEAVY: two or three drops to both sides in a bigger arc, 10 % or less): 2x2 or 1x2 px,
+light blue and white from the palette with a darker last pixel, thrown out from beside the head. The
+bubble sits just above the head (hat or not; pinned to the sheets by a test). The levels and warning
+minutes are in data/energy.cfg `[signs]`.
+`--hit=<x>,<y>` also throws the sweat, for screenshots.
 
 ## 48. Burning flames: an animated fire
 

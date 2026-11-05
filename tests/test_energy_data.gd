@@ -60,6 +60,9 @@ func test_the_data_file_holds_every_rule_with_the_first_values() -> void:
 	assert_eq(rules.debuff_energy_max(), 50.0)
 	assert_eq(rules.debuff_health(), 25.0)
 	assert_eq(rules.warning_level(), 20.0)
+	assert_eq(rules.tired_level(), 20.0)
+	assert_eq(rules.exhausted_level(), 10.0)
+	assert_eq(rules.late_warning_minutes(), [0, 30] as Array[int])
 
 
 func test_every_missing_required_rule_is_reported() -> void:

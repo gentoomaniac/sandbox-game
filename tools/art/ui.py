@@ -11,7 +11,8 @@ Written to assets/ui/:
   4 px corners (margin 4). The focus frame has no fill and is drawn over the others;
 - energy_icon.png and health_icon.png: 12x12 icons for the bars next to the hotbar;
 - bar_frame.png (48x8) and energy_fill.png, health_fill.png (46x6, the frame's inside): the
-  bars. The game draws as much of a fill as the bar is full.
+  bars. The game draws as much of a fill as the bar is full;
+- bubble_<id>.png: the thought bubbles over the player's head, one per id of BUBBLE_ICONS.
 The Theme that uses them is game/scenes/ui_theme.tres.
 """
 
@@ -222,6 +223,22 @@ keeeeeeeeeek
 """,
 }
 
+BUBBLE_COLOURS = {"k": "ink", "b": "water_deep"}
+BUBBLE_PADDING = 2
+# The pictures inside the thought bubbles (see ThoughtBubble), by id. One bubble_<id>.png is
+# drawn for each, with the bubble around the picture: add a picture here to add a bubble.
+BUBBLE_ICONS = {
+    "zzz": """
+.....bbbbb
+........b.
+.......b..
+bbbb..b...
+..b..bbbbb
+.b........
+bbbb......
+""",
+}
+
 
 def rgba(palette, name):
     return (*bytes.fromhex(palette[name]), 255)
@@ -235,6 +252,34 @@ def icon(palette, rows):
         for x, character in enumerate(line):
             if character != ".":
                 image.putpixel((x, y), rgba(palette, ICON_COLOURS[character]))
+    return image
+
+
+def bubble(palette, rows):
+    """A thought bubble around the picture `rows` (BUBBLE_COLOURS characters; . is clear): a
+    rounded outline, a cream inside and a small tail below, pointing at the head."""
+    picture = rows.split()
+    margin = BUBBLE_PADDING + 1
+    width = len(picture[0]) + 2 * margin
+    height = len(picture) + 2 * margin
+    image = Image.new("RGBA", (width, height + 2), (0, 0, 0, 0))
+    for y in range(height):
+        for x in range(width):
+            is_corner = x in (0, width - 1) and y in (0, height - 1)
+            is_edge = x in (0, width - 1) or y in (0, height - 1)
+            if not is_corner:
+                image.putpixel((x, y), rgba(palette, "ink" if is_edge else "cream"))
+    middle = width // 2
+    for x in (middle - 1, middle):
+        image.putpixel((x, height - 1), rgba(palette, "cream"))
+        image.putpixel((x, height), rgba(palette, "cream"))
+        image.putpixel((x, height + 1), rgba(palette, "ink"))
+    for x in (middle - 2, middle + 1):
+        image.putpixel((x, height), rgba(palette, "ink"))
+    for y, line in enumerate(picture):
+        for x, character in enumerate(line):
+            if character != ".":
+                image.putpixel((margin + x, margin + y), rgba(palette, BUBBLE_COLOURS[character]))
     return image
 
 
@@ -295,7 +340,8 @@ def frame(palette, size, fill, lit, shaded, border="ink", studs=None, inner=None
 def ui_images(palette):
     """Returns {file name: image} of the frames, icons and bars."""
     icons = {f"{name}.png": icon(palette, rows) for name, rows in ICON_ROWS.items()}
-    return icons | {
+    bubbles = {f"bubble_{name}.png": bubble(palette, rows) for name, rows in BUBBLE_ICONS.items()}
+    return icons | bubbles | {
         "bar_frame.png": bar_frame(palette),
         "energy_fill.png": bar_fill(palette, "cream", "gold", "flame"),
         "health_fill.png": bar_fill(palette, "petal", "ember", "soil"),

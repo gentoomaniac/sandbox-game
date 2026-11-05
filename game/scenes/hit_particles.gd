@@ -14,6 +14,9 @@ const SPLINTER_COLORS: Array[Color] = [
 	Color("e4e4ea"), Color("b8b8c0"), Color("8a8a94"), Color("66666f")
 ]
 const DUST_COLORS: Array[Color] = [Color("e4e4dc"), Color("c8c8c0")]
+## Light blue and white drops; the last pixel of each is darker, so a drop shows against pale ground
+## (snow, the sleeping bag) as well as against grass.
+const SWEAT_COLORS: Array[Color] = [Color("92b4bd"), Color("92b4bd"), Color("e6eef2")]
 ## Frequency of the sway of falling leaves, in radians per second.
 const SWAY_RATE := 7.0
 ## The last share of a particle's life in which it fades out.
@@ -25,7 +28,9 @@ const SHADE_DARKENING := 0.45
 ## `spread`: half the size of the area they start in; `sideways`: the most horizontal speed
 ## either way; `vertical`: least and most vertical speed (down is positive); `gravity`: pull
 ## down; `sway`: how far a particle swings to the sides while it flies; `sizes`: the sizes in
-## pixels a particle may have; `is_shaded`: whether its last pixel is darker.
+## pixels a particle may have; `is_shaded`: whether its last pixel is darker. With `is_outward`
+## (optional) a particle starts `spread.x` to the left or right of the origin, and is thrown
+## away from it at between half of `sideways` and all of it.
 ## Leaves and needles fall far enough to leave the canopy and land on the ground beside the
 ## trunk, so they are seen against it too.
 const SPECS := {
@@ -107,6 +112,34 @@ const SPECS := {
 		"sizes": [Vector2(1, 1)],
 		"is_shaded": false,
 	},
+	HitEffect.Kind.SWEAT:
+	{
+		"count": Vector2i(1, 1),
+		"spread": Vector2(5, 1),
+		"sideways": 16.0,
+		"vertical": Vector2(-48, -36),
+		"gravity": 200.0,
+		"sway": 0.0,
+		"life": 0.8,
+		"colors": SWEAT_COLORS,
+		"sizes": [Vector2(2, 2), Vector2(1, 2)],
+		"is_shaded": true,
+		"is_outward": true,
+	},
+	HitEffect.Kind.SWEAT_HEAVY:
+	{
+		"count": Vector2i(2, 3),
+		"spread": Vector2(5, 1),
+		"sideways": 26.0,
+		"vertical": Vector2(-64, -44),
+		"gravity": 200.0,
+		"sway": 0.0,
+		"life": 0.9,
+		"colors": SWEAT_COLORS,
+		"sizes": [Vector2(2, 2), Vector2(1, 2)],
+		"is_shaded": true,
+		"is_outward": true,
+	},
 }
 
 var _particles: Array[Particle] = []
@@ -144,18 +177,18 @@ func emit(kind: HitEffect.Kind, origin: Vector2) -> void:
 	var vertical: Vector2 = spec["vertical"]
 	var colors: Array[Color] = spec["colors"]
 	var sizes: Array = spec["sizes"]
-	for _i in _random.randi_range(spec["count"].x, spec["count"].y):
+	var first_side := _random.randi() % 2
+	for i in _random.randi_range(spec["count"].x, spec["count"].y):
 		var particle := Particle.new()
-		particle.start = (
-			origin
-			+ Vector2(
-				_random.randf_range(-spread.x, spread.x), _random.randf_range(-spread.y, spread.y)
-			)
-		)
-		particle.velocity = Vector2(
-			_random.randf_range(-spec["sideways"], spec["sideways"]),
-			_random.randf_range(vertical.x, vertical.y)
-		)
+		# Outward particles alternate sides, so two drops never fly off the same one.
+		var side := 1.0 if (first_side + i) % 2 == 0 else -1.0
+		var offset_x := _random.randf_range(-spread.x, spread.x)
+		var speed_x := _random.randf_range(-spec["sideways"], spec["sideways"])
+		if spec.get("is_outward", false):
+			offset_x = side * spread.x
+			speed_x = side * _random.randf_range(spec["sideways"] / 2.0, spec["sideways"])
+		particle.start = origin + Vector2(offset_x, _random.randf_range(-spread.y, spread.y))
+		particle.velocity = Vector2(speed_x, _random.randf_range(vertical.x, vertical.y))
 		particle.gravity = spec["gravity"]
 		particle.sway = spec["sway"]
 		particle.phase = _random.randf_range(0.0, TAU)

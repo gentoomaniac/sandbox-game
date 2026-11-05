@@ -13,6 +13,8 @@ const RULES := {
 	{"slow_energy": 30.0, "slow_speed": 0.8, "very_slow_energy": 15.0, "very_slow_speed": 0.4},
 	"debuff": {"walk_speed": 0.6, "energy_max": 40.0, "health": 20.0},
 	"bars": {"warning": 25.0},
+	"signs":
+	{"tired": 30.0, "exhausted": 12.0, "late_first_minute": 15.0, "late_second_minute": 45.0},
 }
 
 

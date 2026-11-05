@@ -13,6 +13,7 @@ const REQUIRED_KEYS := {
 	"walk": ["slow_energy", "slow_speed", "very_slow_energy", "very_slow_speed"],
 	"debuff": ["walk_speed", "energy_max", "health"],
 	"bars": ["warning"],
+	"signs": ["tired", "exhausted", "late_first_minute", "late_second_minute"],
 }
 
 static var _default: EnergyRules
@@ -112,6 +113,21 @@ func debuff_health() -> float:
 
 func warning_level() -> float:
 	return _value("bars", "warning")
+
+
+## At this much energy or less the player shows the first signs of tiredness.
+func tired_level() -> float:
+	return _value("signs", "tired")
+
+
+## At this much energy or less the signs are stronger.
+func exhausted_level() -> float:
+	return _value("signs", "exhausted")
+
+
+## The minutes after midnight at which a player still awake is warned (see TirednessSigns).
+func late_warning_minutes() -> Array[int]:
+	return [int(_value("signs", "late_first_minute")), int(_value("signs", "late_second_minute"))]
 
 
 ## A required rule; `from_file` has reported it already if it is missing.

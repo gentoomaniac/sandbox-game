@@ -4,7 +4,9 @@ extends RefCounted
 ## drawing (see HitParticles).
 
 ## DUST is only raised together with SPLINTERS (see HitParticles), `kind_for` never gives it.
-enum Kind { NONE, LEAVES_GREEN, LEAVES_AUTUMN, NEEDLES, SNOW, SPLINTERS, DUST }
+## SWEAT and SWEAT_HEAVY are not thrown off objects but off a tired player's head (see
+## TirednessSigns).
+enum Kind { NONE, LEAVES_GREEN, LEAVES_AUTUMN, NEEDLES, SNOW, SPLINTERS, DUST, SWEAT, SWEAT_HEAVY }
 
 
 ## The effect of a hit on an object of `type` that is drawn in `look`. A frosty tree counts as

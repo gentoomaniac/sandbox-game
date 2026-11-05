@@ -53,9 +53,10 @@ extends Node2D
 ## world is drawn and leaves it at that (`bird`, `rabbit`, `squirrel`, `deer`, `bee`,
 ## `butterfly`, `flock`; see WildlifeView), `--wildlife-calm` makes them take no notice of the
 ## player; `--hit=<x>,<y>` hits the object on that tile once, without damage, as soon as the
-## world is drawn (to see its shake and what flies off, see HitEffect; the particles last about a
-## second, so use a short `--screenshot-delay`). PlayerView parses `--hair=<n>` and
-## `--pose=<direction>`, and F6 cycles the hair (see there). BuildMode parses
+## world is drawn (to see its shake and what flies off, see HitEffect, and the sweat of a tired
+## player; the particles last about a second, so use a short `--screenshot-delay`).
+## PlayerView parses `--hair=<n>` and `--pose=<direction>`, and F6 cycles the hair (see there).
+## BuildMode parses
 ## `--ghost=<x>,<y>` and `--house=<x>,<y>` (see there).
 
 const WORLD_SEED := 1
@@ -86,6 +87,7 @@ var _save_path := SaveFile.DEFAULT_PATH
 var _settings_path := GameSettings.DEFAULT_PATH
 var _debug_menu_page := -1
 var _player_view := PlayerView.new()
+var _tiredness_view := TirednessView.new()
 var _use_highlight := UseHighlight.new()
 var _harvest_hud := HarvestHud.new()
 var _ground_item_view := GroundItemView.new()
@@ -274,6 +276,8 @@ func _ready() -> void:
 	# Among the objects, so the player walks behind tree canopies.
 	_view.entities.add_child(_player_view)
 	_player_view.show_player(_state.player)
+	_tiredness_view.watch(_state.player, _state.clock, _state.energy_rules)
+	_player_view.add_child(_tiredness_view)
 	_view.add_child(_use_highlight)
 	_use_highlight.show_for(_state, _camera)
 	add_child(_harvest_hud)
@@ -383,6 +387,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	_tick_clock(delta)
+	_tiredness_view.is_awake = not _is_fading
 	_weather_view.show_weather(_weather, _tint.color)
 	_view.ambient_motion.update(delta, _weather_view.wind, _weather_view.rain)
 	_coordinates_hud.show_position(
@@ -487,6 +492,7 @@ func _use_on(target: Targeting) -> void:
 		return
 	var use := _state.use_tile(target.tile)
 	_sounds.used(use, target.tile)
+	_tiredness_view.acted(use)
 	if use == GameState.Use.NEEDS_BETTER_TOOL:
 		var tool_name: String = ItemTypes.TYPES[_state.player.inventory.held_item()]["name"]
 		_harvest_hud.show_note("Needs a better %s." % tool_name.to_lower())
@@ -595,6 +601,7 @@ func _hit_debug_tile() -> void:
 	var object := _state.world.object_at(_debug_hit_tile)
 	if object != null:
 		_state.world.hit_object(object, 0)
+	_tiredness_view.acted(GameState.Use.HIT)
 	_debug_hit_tile = NO_TILE
 
 
