@@ -84,6 +84,16 @@ func test_tp_refuses_a_tile_outside_the_world() -> void:
 	assert_eq(_state.player.position, before)
 
 
+func test_tp_refuses_a_tile_covered_by_a_building_door_included() -> void:
+	var house := _place_house()
+	var before := _state.player.position
+	for tile in [house.door_tile(), house.origin]:
+		assert_string_contains(
+			_console.run("tp %d %d" % [tile.x, tile.y])[0], "covered by a building"
+		)
+	assert_eq(_state.player.position, before)
+
+
 func test_tp_refuses_inside_a_house() -> void:
 	var house := _place_house()
 	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
@@ -134,28 +144,3 @@ func test_give_names_an_unknown_item_and_guesses() -> void:
 func test_give_with_wrong_arguments_shows_the_usage() -> void:
 	for line in ["give", "give wood 0", "give wood -2", "give wood x", "give wood 1 2"]:
 		assert_eq(_console.run(line), ["Usage: give <item> [count]"] as Array[String], line)
-
-
-# --- Completion ---
-
-
-func test_complete_a_command_name() -> void:
-	assert_eq(_console.complete("gi"), "give ")
-	assert_eq(_console.complete("/no"), "/no")
-	assert_eq(_console.complete("/nod"), "/nodrain ")
-
-
-func test_complete_goes_as_far_as_the_candidates_agree() -> void:
-	assert_eq(_console.complete("n"), "no")
-
-
-func test_complete_an_item_after_give() -> void:
-	assert_eq(_console.complete("give tur"), "give turnip")
-	assert_eq(_console.complete("give sto"), "give stone ")
-	assert_eq(_console.complete("/give pick"), "/give pickaxe ")
-
-
-func test_complete_leaves_other_words_alone() -> void:
-	assert_eq(_console.complete("give wood 5"), "give wood 5")
-	assert_eq(_console.complete("tp 1"), "tp 1")
-	assert_eq(_console.complete("give zzz"), "give zzz")

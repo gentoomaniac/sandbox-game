@@ -29,7 +29,7 @@ func run(line: String) -> Array[String]:
 		return []
 	var arguments := words.slice(1)
 	var cheats := _state.cheats
-	var output: Array[String] = ["Unknown command: %s (try help)" % words[0]]
+	var output: Array[String]
 	match words[0]:
 		"help":
 			output = _help()
@@ -46,6 +46,8 @@ func run(line: String) -> Array[String]:
 		"noweight":
 			cheats.is_weight_off = not cheats.is_weight_off
 			output = [_toggle_message("No weight", cheats.is_weight_off)]
+		_:
+			output = ["Unknown command: %s (try help)" % words[0]]
 	return output
 
 
@@ -87,7 +89,9 @@ func _tp(arguments: PackedStringArray) -> Array[String]:
 	var tile := Vector2i(int(arguments[0]), int(arguments[1]))
 	if not World.is_in_bounds(tile):
 		return ["Tile %d, %d is outside the world" % [tile.x, tile.y]]
-	if not _is_walkable_when_loaded(tile):
+	if _state.world.building_at(tile) != null:
+		return ["Tile %d, %d is covered by a building" % [tile.x, tile.y]]
+	if not _is_walkable_even_if_unloaded(tile):
 		return ["Can't walk on tile %d, %d" % [tile.x, tile.y]]
 	_state.player.position = Vector2(tile) + Vector2(0.5, 0.5)
 	return ["Teleported to %d, %d" % [tile.x, tile.y]]
@@ -95,7 +99,7 @@ func _tp(arguments: PackedStringArray) -> Array[String]:
 
 ## Whether a tile of the world is walkable, also when its chunk is not loaded: that chunk is
 ## generated for the look and dropped again, as the world view draws only the chunks it loads.
-func _is_walkable_when_loaded(tile: Vector2i) -> bool:
+func _is_walkable_even_if_unloaded(tile: Vector2i) -> bool:
 	var world := _state.world
 	var coords := Chunk.world_to_chunk(tile)
 	var was_loaded := world.is_chunk_loaded(coords)

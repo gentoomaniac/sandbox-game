@@ -177,9 +177,11 @@ func _notification(what: int) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("console") and not _console_view.is_open() and not get_tree().paused:
+	if event.is_action_pressed("console") and _can_open_console():
 		# The key that opens it must not be typed into the input line.
 		get_viewport().set_input_as_handled()
+		# BuildMode would still get clicks meant for the console.
+		_build_mode.cancel()
 		_console_view.open()
 		return
 	if event.is_action_pressed("pause"):
@@ -235,7 +237,10 @@ func _process(delta: float) -> void:
 	_tick_clock(delta)
 	_coordinates_hud.show_position(_state.player.tile(), _state.is_inside())
 	_use_highlight.is_enabled = (
-		not _build_mode.is_active() and not _state.is_inside() and not _inventory_screen.is_open()
+		not _build_mode.is_active()
+		and not _state.is_inside()
+		and not _inventory_screen.is_open()
+		and not _console_view.is_open()
 	)
 	if not _is_fading:
 		var direction := Vector2.ZERO
@@ -293,6 +298,10 @@ func _eat_held() -> bool:
 
 func _is_use_event(event: InputEvent) -> bool:
 	return event.is_action_pressed("use") or event.is_action_pressed("use_click")
+
+
+func _can_open_console() -> bool:
+	return not _console_view.is_open() and not get_tree().paused and not _is_fading
 
 
 func _can_use() -> bool:
@@ -371,6 +380,8 @@ func _try_sleep() -> void:
 ## Fades to black, runs `change` while the screen is black, and fades back in.
 func _fade_through(change: Callable) -> void:
 	_is_fading = true
+	# No command runs during a fade: a teleport would meet a door half way through.
+	_console_view.close()
 	var fade := create_tween()
 	fade.tween_property(_fade, "color:a", 1.0, SLEEP_FADE_SECONDS)
 	await fade.finished
