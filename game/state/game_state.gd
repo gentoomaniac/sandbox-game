@@ -17,12 +17,15 @@ var player := PlayerState.new()
 var harvest_count := 0
 
 
+func _init() -> void:
+	clock.new_day.connect(_on_new_day)
+
+
 ## A new game: the player starts at a camp site near the world centre, with home set to its
 ## sleeping bag. The chunks around the camp are generated into the world here.
 static func new_game(world_seed: int) -> GameState:
 	var state := GameState.new()
 	state.world = World.new(world_seed)
-	state.clock.new_day.connect(state._on_new_day)
 	var camp := CampSite.create(state.world, WorldGenerator.new(world_seed))
 	state.player.position = Vector2(camp.spawn_pos) + Vector2(0.5, 0.5)
 	state.player.home_bed = camp.sleeping_bag_pos

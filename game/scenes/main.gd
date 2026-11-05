@@ -62,7 +62,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_fast_forward = not _fast_forward
 	elif event.is_action_pressed("interact") and not _is_sleeping:
 		_try_sleep()
-	elif event.is_action_pressed("use") and not _is_sleeping:
+	elif event.is_action_pressed("use") and not _is_sleeping and not _build_mode.is_active():
 		if _state.use_facing_tile() == GameState.Use.HARVEST:
 			_harvest_hud.show_harvest(GameState.CROP, _state.harvest_count)
 

@@ -18,10 +18,10 @@ func _process(_delta: float) -> void:
 	if _state == null:
 		return
 	var target := _state.player.facing_tile()
-	var is_visible := _state.use_at(target) != GameState.Use.NOTHING
-	if target != _target or is_visible != _is_visible:
+	var has_use := _state.use_at(target) != GameState.Use.NOTHING
+	if target != _target or has_use != _is_visible:
 		_target = target
-		_is_visible = is_visible
+		_is_visible = has_use
 		queue_redraw()
 
 

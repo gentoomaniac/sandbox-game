@@ -85,6 +85,10 @@ func _draw() -> void:
 		draw_rect(Rect2(Vector2(pos * tile_size), Vector2(tile_size, tile_size)), tint)
 
 
+func is_active() -> bool:
+	return _is_active
+
+
 func _set_active(is_active: bool) -> void:
 	_is_active = is_active
 	if not is_active:
