@@ -629,7 +629,7 @@ See SPEC.md "Console". Can run alongside 23.
 
 ## 25. Seasonal look
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Time, seasons and weather" (calendar, the world looks like its season).
 
