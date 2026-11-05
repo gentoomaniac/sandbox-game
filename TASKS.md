@@ -1035,6 +1035,17 @@ while the player is awake, as the warning before the 01:00 pass-out (task 46); n
 energy. Sweat drops on actions at 20 % or less (one) and 10 % or less (two or three).
 View only; tests for when they show; README updated.
 
+## 48. Burning flames: an animated fire
+
+- [ ] Done
+
+The user, 2026-11-05: "the flames should also move, not only the light flicker". Task 45's
+fire shader only jumps the flame by a pixel and leans it, which reads as flicker. Give the
+campfire and the hearth a real flame animation: generated frames (tools/art) of flame
+tongues that rise, split and lick, played at a steady rate with a per-fire phase, leaning
+and stretching with the wind outdoors (the hearth doesn't lean). Sparks stay. Keep it on
+the art-pixel grid and cheap (one shared animation, no per-frame scripts per fire).
+
 ## Later (not part of the prototype)
 
 - Season looks follow-ups (from the task 29 review): world_view.gd carries layer, season
