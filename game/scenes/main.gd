@@ -15,8 +15,9 @@ extends Node2D
 ## crops in every growth stage (see DebugField); `--inside` walks into the first house as soon
 ## as one exists (see `--house`); `--forage=<x>,<y>` puts a stump, bushes and a sapling in a
 ## row from there and some of every new item in the inventory (see DebugForage);
-## `--zoom=<z>` sets the camera zoom; `--coordinates` shows the coordinates (F3);
-## `--inventory` opens the inventory screen at start;
+## `--console=<line>;<line>` runs those console commands at start and leaves the console
+## open (see ConsoleView); `--zoom=<z>` sets the camera zoom; `--coordinates` shows the
+## coordinates (F3); `--inventory` opens the inventory screen at start;
 ## `--mouse-tile=<x>,<y>` pretends the mouse is always on that tile (for screenshots);
 ## `--camera-shift=<x>,<y>` moves the camera by that many art pixels, fractions included
 ## (to check smooth scrolling); `--menu=pause|settings|controls|display|game` opens that menu page
@@ -47,6 +48,9 @@ var _coordinates_hud := CoordinatesHud.new()
 var _hotbar := HotbarHud.new()
 var _vitals := VitalsHud.new()
 var _inventory_screen := InventoryScreen.new()
+var _console_view := ConsoleView.new()
+var _cheat_hud := CheatHud.new()
+var _start_console_lines := PackedStringArray()
 var _interior_view := InteriorView.new()
 var _screenshot_path := ""
 var _fast_forward := false
@@ -109,6 +113,8 @@ func _ready() -> void:
 			_enter_first_house = true
 		elif arg == "--inventory":
 			_open_inventory_at_start = true
+		elif arg.begins_with("--console="):
+			_start_console_lines = arg.trim_prefix("--console=").split(";")
 		elif arg.begins_with("--zoom="):
 			_start_zoom = float(arg.trim_prefix("--zoom="))
 		elif arg.begins_with("--mouse-tile="):
@@ -140,6 +146,16 @@ func _ready() -> void:
 	_inventory_screen.show_inventory(_state.player.inventory)
 	if _open_inventory_at_start:
 		_inventory_screen.toggle()
+	add_child(_cheat_hud)
+	_cheat_hud.show_cheats(_state.cheats)
+	add_child(_console_view)
+	_console_view.show_state(_state)
+	# A teleport moves the player far: the camera jumps with them instead of gliding.
+	_console_view.command_ran.connect(func() -> void: _camera.rig.follow(_camera_target))
+	if not _start_console_lines.is_empty():
+		_console_view.open()
+		for line in _start_console_lines:
+			_console_view.run_line(line)
 	_menu = PauseMenu.new(_settings)
 	_menu.resumed.connect(_resume)
 	_menu.save_and_quit_requested.connect(_save_and_quit)
@@ -161,14 +177,25 @@ func _notification(what: int) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("console") and not _console_view.is_open() and not get_tree().paused:
+		# The key that opens it must not be typed into the input line.
+		get_viewport().set_input_as_handled()
+		_console_view.open()
+		return
 	if event.is_action_pressed("pause"):
-		# Escape closes the inventory, then leaves build mode, then opens the menu.
-		if _inventory_screen.is_open():
+		# Escape closes the console, then the inventory, then leaves build mode, then opens
+		# the menu.
+		if _console_view.is_open():
+			_console_view.close()
+		elif _inventory_screen.is_open():
 			_inventory_screen.toggle()
 		elif _build_mode.is_active():
 			_build_mode.cancel()
 		else:
 			_open_menu()
+		return
+	# The open console takes the input: the player neither walks nor acts.
+	if _console_view.is_open():
 		return
 	# Decided before BuildMode sees the event: the click that places a house ends build mode,
 	# and must not also be a use click.
@@ -212,7 +239,7 @@ func _process(delta: float) -> void:
 	)
 	if not _is_fading:
 		var direction := Vector2.ZERO
-		if not _inventory_screen.is_open():
+		if not _inventory_screen.is_open() and not _console_view.is_open():
 			direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 		_state.player.move(_state.current_map, direction, delta, _state.walk_speed_factor())
 		if _state.door_underfoot():

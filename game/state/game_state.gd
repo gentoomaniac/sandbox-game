@@ -36,6 +36,8 @@ var player := PlayerState.new()
 var energy_rules := EnergyRules.default_rules()
 ## What every use costs is multiplied by this (the Game setting: 0.5, 1 or 1.5).
 var energy_drain := 1.0
+## Session-only cheats (see Console): not saved.
+var cheats := CheatFlags.new()
 ## Where the player is: `world`, or the interior of `_building_inside`.
 var current_map: GameMap
 
@@ -157,7 +159,8 @@ func pass_out() -> void:
 	player.position = _tile_centre(_wake_up_tile())
 	player.is_debuffed = true
 	player.energy = energy_rules.debuff_energy_max()
-	player.health = energy_rules.debuff_health()
+	if not cheats.is_god:
+		player.health = energy_rules.debuff_health()
 
 
 ## What `use` would do on a tile of the world (nothing inside) with the held item: a hoe
@@ -188,14 +191,17 @@ func can_use_held_item() -> bool:
 
 
 ## Uses a tile (see `use_at`) and returns what was done, which costs energy (more the
-## heavier the load). A use with too little energy left still happens; the energy ends at 0
-## (see `is_out_of_energy`). A harvest, pick or final hit whose drops don't fit in the
-## inventory is not done: INVENTORY_FULL.
+## heavier the load, unless a cheat says otherwise). A use with too little energy left still
+## happens; the energy ends at 0 (see `is_out_of_energy`). A harvest, pick or final hit
+## whose drops don't fit in the inventory is not done: INVENTORY_FULL.
 func use_tile(target: Vector2i) -> Use:
-	var weight_factor := energy_rules.weight_factor(player.inventory.total_weight())
+	var weight_factor := 1.0
+	if not cheats.is_weight_off:
+		weight_factor = energy_rules.weight_factor(player.inventory.total_weight())
+	var drain := 0.0 if cheats.is_drain_off else energy_drain
 	var use := _do_use(target)
 	if COST_KINDS.has(use):
-		var cost := energy_rules.cost_of(COST_KINDS[use]) * weight_factor * energy_drain
+		var cost := energy_rules.cost_of(COST_KINDS[use]) * weight_factor * drain
 		player.energy = maxf(0.0, player.energy - cost)
 	return use
 

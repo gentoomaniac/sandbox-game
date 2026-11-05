@@ -50,6 +50,7 @@ const ACTION_LABELS := {
 	&"toggle_fast_forward": "Fast forward",
 	&"toggle_coordinates": "Show coordinates",
 	&"pause": "Pause menu",
+	&"console": "Console",
 }
 const MOUSE_BUTTON_LABELS := {
 	MOUSE_BUTTON_LEFT: "Left mouse",
