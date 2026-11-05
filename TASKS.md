@@ -760,6 +760,67 @@ Depends on: 28 (it adds `spawn`). Tab completes every command's arguments, not o
 command names and item ids: weather conditions, animal kinds, snow values, crop and item
 ids, and so on, from one table of argument kinds per command.
 
+## 32. Hit feedback: shake, leaves, snow and splinters
+
+- [ ] Done
+
+See SPEC.md "Harvesting, reworked" (hit feedback). Visual only.
+
+- Every hit shakes the object, the finishing hit too (today the last one swaps it at once).
+- A small pixel-particle node in the world viewport (on the art grid, tinted by the day
+  like the world): a few leaves from a tree with foliage in its current look (needles for
+  spruce and pine all year), a puff of snow from a snowy tree, nothing from a bare one;
+  3–5 one-pixel splinters arcing out of stone and boulders.
+- A debug flag to show a hit for screenshots.
+- Tests: which effect a hit on each object type and look gives.
+
+## 33. Final resources lie on the ground
+
+- [ ] Done
+
+See SPEC.md "Harvesting, reworked". Can run alongside 32.
+
+- Ground items: an item id and count at a world position, drawn as the item's icon (small)
+  in the world, saved, collected by walking over them with a short pull in the last half
+  tile; with a full inventory they stay.
+- Everything the world gives drops on the ground instead of going into the inventory:
+  felling and mining, crop harvests, picking bushes, shrubs and ferns. Drops scatter over
+  the free tiles around the source.
+- The item `wood` becomes `logs` (icon, recipes, console, saves).
+- Tests: drops land on the ground, collection, full inventory, save/load, old saves with
+  `wood`.
+
+## 34. Trees leave trunks, stumps rot, seeds per species
+
+- [ ] Done
+
+Depends on 33. See SPEC.md "Harvesting, reworked".
+
+- Felling leaves the stump and a trunk object (2×1, lying away from the player, 1×1 if
+  there is no room); the axe cuts the trunk into logs and chops out the stump for 1 log.
+  Art for trunks per species and for the seeds.
+- Stumps no longer regrow: they rot away over about two weeks (a look or two on the way),
+  then leave a sapling of their species with about 30 % chance.
+- Per-species seeds (acorn, spruce cone, pine cone) dropped by felling living trees (about
+  25 %); planted on grass they grow into a sapling of that species, then the tree. The
+  generic sapling item goes away (old saves: turn it into acorns).
+- Tests: felling, trunk placement and fallback, logs, rotting and the sapling roll, seeds
+  growing into the right species, save/load.
+
+## 35. Scythe and tall grass, shovel and clay
+
+- [ ] Done
+
+Depends on 33. See SPEC.md "Scythe and tall grass" and "Shovel and clay".
+
+- Tall grass objects in meadows with a vegetation curve (none in winter); the scythe mows
+  4 tiles (2 ahead, plus left and right of the nearer one); hay on the ground; regrowth.
+- Clay spots near rivers, lakes and wetland from noise, hinted by a faint decoration; the
+  shovel gives clay there by chance and spends the spot for some days.
+- Scythe, shovel, hay and clay items with icons; scythe and shovel in the starting items.
+- Tests: the mowing pattern for each facing, regrowth, the seasons of tall grass, clay
+  spot placement, digging odds and the spent spot, save/load.
+
 ## Later (not part of the prototype)
 
 - Season looks follow-ups (from the task 29 review): world_view.gd carries layer, season
@@ -775,8 +836,10 @@ ids, and so on, from one table of argument kinds per command.
   and drop the `max-public-methods` lint exception in world.gd.
 - Edits of objects that are back to their generated state (a healed tree) stay in the
   save; harmless, bounded by what the player touched.
-- Held art and use poses for axe and pickaxe; a "+4 wood" note on drops.
+- Held art and use poses for axe, pickaxe, scythe and shovel.
 - A planted sapling can be picked up again by hand for free; decide whether that's fine.
+- The shovel could later dig up a young sapling to move it.
+- A felled tree could topple in an animation before the trunk lies there.
 
 - Floodplain farming: floodplain is the most fertile farmland, but only grass can be tilled
   now. Tilling it needs a "tilled" tile property that keeps the floodplain flag, so floods

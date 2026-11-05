@@ -226,13 +226,13 @@ top of classic pixel art (details under "Lighting and look").
   (body, clothes, head/hair, held tool or weapon, later gear), so equipment can be shown
   by swapping or adding a layer instead of redrawing the character.
 - **Tools** are bought and upgraded (decided 2026-11-05):
-  - The player starts with a hoe, axe, pickaxe, watering can and a bag of turnip seeds,
-    all tools at level 1.
+  - The player starts with a hoe, axe, pickaxe, watering can, scythe, shovel and a bag of
+    turnip seeds, all tools at level 1.
   - Upgrades later come from a smith in a settlement, in tiers (level 2 copper, level 3
     iron, as palette swaps of the same icon).
   - The tool decides the action: hoe tills, seeds plant, axe fells, pickaxe mines, the
-    watering can wets tilled soil, an empty hand harvests crops, clears dead ones and
-    picks bushes.
+    watering can wets tilled soil, the scythe mows tall grass, the shovel digs for clay,
+    an empty hand harvests crops, clears dead ones and picks bushes.
 
 ### Menus and settings
 
@@ -438,22 +438,47 @@ Decided 2026-11-05. A text console for testing and cheats.
     power, which grows with its level. So a better tool needs fewer hits.
   - A tool below the object's harvest level does nothing, with a short message
     (e.g. "Needs a better pickaxe.").
-  - Drops go straight into the inventory: trees give wood, sometimes a sapling; stone
-    gives stone; a boulder (level 2) gives more stone. Shrubs and ferns give fibre.
-  - A felled tree leaves a stump, which regrows into a sapling and then a tree over days.
-  - A berry bush gives berries and bears again after a few days; picking it doesn't
-    remove it.
   - First numbers (2026-11-05, tune in play): tool power = level. Hit points: oak 5,
     spruce 4, pine 7 (level 2), dead tree 3, stone 3, boulder 6 (level 2), stump 2.
-    Drops: oak/spruce 4 wood, pine 5, dead tree 2; 25 % chance of a sapling from a living
-    tree; stone 2 stone, boulder 5; shrub and fern bush 2 fibre; berry bush 3 berries,
-    bearing again after 3 days. Damage heals overnight. A stump becomes a sapling after
-    3 days and the tree after 4 more (a dead tree's stump stays). A planted sapling becomes
-    an oak after 4 days.
-  - New items go onto existing stacks first, then into free slots, and into the held
+    Damage heals overnight.
+- **Harvesting, reworked** (decided 2026-11-05; replaces drops straight into the inventory,
+  stumps regrowing into trees and the generic sapling):
+  - **Final resources lie on the ground** where they come off, as items you collect by
+    walking over them (a small pull towards the player in the last half tile). Final
+    resources are logs (the item `wood` becomes `logs`), stone, clay, hay, all crop
+    produce, and also what is picked by hand (berries, fibre) and seeds. They stay on the
+    ground (saved) until collected; with a full inventory they stay where they are.
+  - **Intermediate leftovers are objects** that are hit again with the right tool.
+  - **Trees:** felling leaves a stump on the tree's tile and a fallen trunk (2×1, lying
+    away from the player; 1×1 if there is no room). The axe cuts the trunk into most of the
+    logs (e.g. oak 3, spruce 3, pine 4, dead tree 2) and chops out the stump for 1 log.
+    Living trees sometimes leave a seed of their species on the ground (acorn, spruce cone,
+    pine cone; about 25 %).
+  - **Stumps don't regrow into trees.** A stump left alone rots away over about two weeks;
+    when it is gone it has a chance (about 30 %) to leave a sapling of its tree's species
+    in its place.
+  - **Seeds per species:** a tree seed is planted on grass anywhere, becomes a sapling of
+    its species and then that tree. The generic sapling item goes away.
+  - **Stone:** a mined stone breaks into stone items scattered around its tile; a boulder
+    (level 2) into more of them.
+  - **Hit feedback:** every hit shakes the object, the finishing one too. A tree with
+    foliage drops a few leaves (needles for spruce and pine, all year), a snowy tree a
+    puff of snow, a bare tree nothing. Stone and boulders throw a few one-pixel splinters
+    that arc out and fade. Effects are pixel particles on the art grid.
+  - A berry bush gives berries and bears again after a few days; picking it doesn't
+    remove it. Shrubs and fern bushes give fibre.
+  - Collected items go onto existing stacks first, then into free slots, and into the held
     slot only when nothing else is free, so an empty hand stays empty while harvesting.
+- **Scythe and tall grass:** tall grass grows in meadows, in over spring, tallest in summer,
+  gone in winter (a vegetation curve). The scythe mows 4 tiles per swing: the 2 straight
+  ahead and the tiles left and right of the nearer one. Mown grass gives hay on the ground
+  and grows back after some days.
+- **Shovel and clay:** some spots near rivers, lakes and wetland hold clay, hinted only
+  slightly on the ground (a few reddish-grey pixels; easy to miss). Digging such a spot
+  with the shovel sometimes gives clay; a dug spot is spent for some days. Digging
+  anywhere else gives nothing.
 - **Regrowth:**
-  - a felled tree leaves a stump or sapling and regrows over days or seasons;
+  - a felled tree leaves a stump that rots away and may leave a sapling (see above);
   - minerals respawn slowly, mainly in areas the player hasn't visited for a while;
   - the player can plant trees (from seeds or saplings).
 
