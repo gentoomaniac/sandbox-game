@@ -182,10 +182,10 @@ top of classic pixel art (details under "Lighting and look").
       - **Sweat:** while energy is at 20 % or less, every action (tool hit, till, water,
         mow, dig, plant, pick) throws one sweat drop off the head; at 10 % or less two or
         three, in a slightly bigger arc.
-      - **Thought bubble:** when energy falls to 20 %, and again to 10 %, a small "zzz…"
-        bubble pops up above the player for about 2 s (once per crossing, not per action).
-        The same bubble warns of staying up too late: it shows at 00:00 and again at 00:30
-        while the player is awake (passing out follows at 01:00).
+      - **Thought bubble** (changed 2026-11-05): a small "zzz…" bubble pops up above the
+        player for about 2 s at 00:00 and again at 00:30 while they are awake, as the
+        warning before passing out at 01:00. It is only the late-hour warning; low energy
+        shows by sweat alone.
         The bubble is a general system: an icon in a bubble over the player, to be used
         later for other states (cold, hungry, a question mark, ...).
     - **Sleeping** fills energy and health per bed (sleeping bag 100 %, ground 50 %), and
