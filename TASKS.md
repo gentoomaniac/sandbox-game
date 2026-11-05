@@ -13,7 +13,8 @@ Rules for every task:
 - State logic gets GUT tests (`make test`). Rendering and input are checked by hand with
   `make run`.
 - `make lint` passes.
-- Placeholder art only: flat coloured tiles and simple shapes.
+- Visuals come from the art generator (task 5 on). Until a task adds art for something,
+  use simple placeholder shapes in palette colours.
 
 ## 1. Project skeleton and make targets
 
@@ -127,11 +128,61 @@ Depends on: 3.
 Done when: flying a debug camera around with the arrow keys streams chunks smoothly, with
 no visible seams.
 
-## 5. World objects: trees and rocks
+## 5. Art pass 1: palette and terrain tiles
 
 - [ ] Done
 
 Depends on: 4.
+
+See SPEC.md "Art pipeline" and "Lighting and look".
+
+- **Generator:**
+  - a Python script under `tools/art/`, using Pillow (pinned, installed into `.venv` by
+    `make setup`);
+  - `make assets` regenerates all PNGs under `assets/`. The output is committed;
+  - output is deterministic: fixed random seeds, so a re-run gives identical files.
+- **Palette:** about 32 colours, semi-fantasy/medieval: earthy greens and browns, muted
+  blue water, warm fire and light accents, a few spare colours for magic later.
+  - Defined once in the generator.
+  - Also written as `assets/palette.png` (one swatch per colour) and a `.gpl` file, so
+    drawing tools can use it.
+  - Every generated pixel uses a palette colour. A test or check in `make assets`
+    enforces this.
+- **Terrain tiles, 16×16**, with texture rather than flat fills:
+  - grass: tufts and colour variation, several variants so it doesn't look tiled;
+  - soil: tilled rows;
+  - water: wave highlights;
+  - floodplain: damp, muddy-sandy bank;
+  - wetland: dark wet ground with reeds.
+- **Transitions:** use a layered dual-grid approach:
+  - terrains have a priority, bottom to top: water, floodplain, wetland, grass, soil;
+  - each terrain has its own `TileMapLayer`, ordered by priority and offset by half a
+    tile (dual grid);
+  - each dual-grid cell looks at its 4 surrounding world tiles. For layer L, the 4-bit
+    mask is "which of the 4 tiles have terrain priority ≥ L". That gives 16 shapes per
+    terrain (empty, corners, edges, full), with irregular, natural pixel edges;
+  - the bottom layer (water) is a full fill;
+  - this needs no tiles per terrain pair: 16 tiles per terrain, and adding a terrain adds
+    16 tiles.
+- **Renderer:**
+  - replace the placeholder tileset;
+  - the state → look mapping stays in one place;
+  - when a tile changes, redraw the 4 dual-grid cells around it;
+  - when a chunk loads, also redraw the dual-grid cells on its borders with loaded
+    neighbours, so edges between chunks blend;
+  - re-measure chunk load time (now several layers), and lower the per-frame cap if a
+    frame goes over budget.
+- Lighting and objects are not part of this task.
+
+Done when `make run` shows textured terrain with soft transitions and no visible chunk
+seams. Include a screenshot of the running game in the report (e.g. via
+`get_viewport().get_texture().get_image().save_png(...)` in a debug run).
+
+## 6. World objects: trees and rocks
+
+- [ ] Done
+
+Depends on: 5.
 
 See SPEC.md "World objects (architecture)" and "Resources: trees and minerals".
 
@@ -150,7 +201,8 @@ See SPEC.md "World objects (architecture)" and "Resources: trees and minerals".
   - one tree type, e.g. "oak", harvest level 1, in clusters on grass;
   - one rock type, "stone", harvest level 1, scattered;
   - nothing on water, wetland or floodplain.
-- Rendering: placeholder shapes on top of the tile layer, streamed with the chunks.
+- Rendering: oak and stone sprites from the art generator (add them there), drawn on top
+  of the terrain and streamed with the chunks.
 - No harvesting yet: that needs tools and an inventory.
 - GUT tests:
   - object generation is deterministic and independent of chunk order;
@@ -158,11 +210,11 @@ See SPEC.md "World objects (architecture)" and "Resources: trees and minerals".
   - the combined walkable and buildable checks respect objects;
   - adding and removing objects works.
 
-## 6. Player and camp site
+## 7. Player and camp site
 
 - [ ] Done
 
-Depends on: 5.
+Depends on: 6.
 
 - A top-down player character that walks in 8 directions and can't enter non-walkable
   tiles.
@@ -175,11 +227,11 @@ Depends on: 5.
   glow once for the whole game (e.g. a `WorldEnvironment`), so later lights get it too.
 - GUT test: the start position is always on buildable land, for several seeds.
 
-## 7. Day counter and sleeping
+## 8. Day counter and sleeping
 
 - [ ] Done
 
-Depends on: 6.
+Depends on: 7.
 
 - Game state has a clock: day number and time of day. Time passes while playing; a debug
   key speeds it up.
@@ -191,16 +243,16 @@ Depends on: 6.
 - A minimal on-screen display of day and time.
 - Day and night tint: the world's colour follows the time of day (warm morning, neutral
   noon, orange dusk, blue night), e.g. with `CanvasModulate` and a colour gradient over
-  the day. Point lights from task 6 must still shine at night. The UI is not tinted.
+  the day. Point lights from task 7 must still shine at night. The UI is not tinted.
 - GUT tests:
   - the clock advances correctly on sleep, including crossing midnight;
   - home is updated.
 
-## 8. Building placement
+## 9. Building placement
 
 - [ ] Done
 
-Depends on: 6.
+Depends on: 7.
 
 - One preset building, "small house", with a fixed footprint (e.g. 4×3 tiles) and one
   door tile.
@@ -217,11 +269,11 @@ Depends on: 6.
   - placement is rejected if any footprint tile is not buildable;
   - after placement, the footprint tiles are occupied.
 
-## 9. Interior map from Tiled
+## 10. Interior map from Tiled
 
 - [ ] Done
 
-Depends on: 8.
+Depends on: 9.
 
 - An interior map for the small house, made in Tiled (`maps/interiors/small_house.tmx`)
   and imported with YATI.
@@ -229,18 +281,18 @@ Depends on: 8.
   importer step turns them into tile state, so interiors use the same model as the world.
 - Walking into the door of a placed house switches to the interior map. Walking out
   through the interior's exit returns the player to just outside the door.
-- The interior has a bed. Sleeping in it works like task 7 (house bed duration: e.g.
+- The interior has a bed. Sleeping in it works like task 8 (house bed duration: e.g.
   6 h), and makes it the new home.
 
 Done when: you can build a house, walk in, sleep there, and walk out.
 
-## 10. One crop
+## 11. One crop
 
 - [ ] Done
 
-Depends on: 7.
+Depends on: 8.
 
-- A crop is a world object (task 5) that keeps its growth state.
+- A crop is a world object (task 6) that keeps its growth state.
 - One crop type, with a few growth stages and a number of days per stage.
 - An action on a grass tile turns it into soil. This is the first real tile mutation:
   give `World` an explicit mutation method that emits a change signal, and let
