@@ -1,0 +1,180 @@
+"""Animal sounds: birds, frogs, deer, rabbits, squirrels and bees (see SPEC.md "Sound")."""
+
+import numpy as np
+
+from dsp import RATE, SAW, bandpass, burst, envelope, fade_out, lowpass, noise, noise_band
+from dsp import place, resonance, rms, silence, sweep, times, tone
+
+BEE_LENGTH = 3.0
+
+
+def _bird_note(start, end, length):
+    """One chirp: a quick glide with a fast flutter, fading out at its end."""
+    flutter = 0.75 + 0.25 * np.sin(2 * np.pi * 38 * times(length))
+    note = sweep(start, end, length, 0.7, harmonics=(1.0, 0.1)) * flutter
+    return fade_out(note * envelope(length, 0.008, 25), 0.015)
+
+
+def _phrase(notes, gap):
+    """Notes (start Hz, end Hz, length) one after another, gap seconds apart."""
+    out = silence(sum(length + gap for _, _, length in notes) + 0.1)
+    at = 0.02
+    for start, end, length in notes:
+        place(out, _bird_note(start, end, length), at)
+        at += length + gap
+    return out
+
+
+def bird_rising(rng):
+    """Three chirps, each a little higher."""
+    pitch = rng.uniform(0.92, 1.08)
+    notes = [(3200, 4800, 0.07), (4600, 3600, 0.06), (3400, 5200, 0.09)]
+    stretch = rng.uniform(0.9, 1.1, len(notes))
+    notes = [(start * pitch, end * pitch, length * k) for (start, end, length), k in zip(notes, stretch)]
+    return _phrase(notes, rng.uniform(0.04, 0.06))
+
+
+def bird_trill(rng):
+    """A quick trill of short notes, falling a little."""
+    pitch = rng.uniform(0.92, 1.08)
+    count = rng.integers(7, 10)
+    notes = [(4200 * pitch * 0.97**k, 3600 * pitch * 0.97**k, 0.035) for k in range(count)]
+    return _phrase(notes, 0.02)
+
+
+def bird_whistle(rng):
+    """A thin high note and a lower falling one: "tsee-tew"."""
+    pitch = rng.uniform(0.92, 1.08)
+    return _phrase([(4800 * pitch, 5000 * pitch, 0.18), (3800 * pitch, 2900 * pitch, 0.15)], 0.06)
+
+
+def _croak(start, end, length, pulse_rate, low, high, attack, rate, release):
+    """A frog's croak: a buzzing tone, pulsed by its throat, through a band."""
+    pulses = 0.5 + 0.5 * np.sin(2 * np.pi * pulse_rate * times(length))
+    buzz = sweep(start, end, length, harmonics=SAW) * pulses
+    croak = bandpass(buzz, low, high) * envelope(length, attack, rate)
+    return fade_out(croak, release)
+
+
+def _croaks(rng, croak, count, gap):
+    """The same croak count times, about gap seconds apart."""
+    length = len(croak) / RATE
+    out = silence(0.02 + count * (length + 1.15 * gap) + 0.05)
+    at = 0.02
+    for _ in range(count):
+        place(out, croak, at)
+        at += length + gap * rng.uniform(0.85, 1.15)
+    return out
+
+
+def frog_common(rng):
+    """Two or three throaty croaks."""
+    pitch = rng.uniform(0.9, 1.1)
+    croak = _croak(118 * pitch, 104 * pitch, 0.28, 26, 250, 1400, 0.03, 6, 0.04)
+    return _croaks(rng, croak, rng.integers(2, 4), 0.35)
+
+
+def frog_bull(rng):
+    """One deep, long "rumm"."""
+    pitch = rng.uniform(0.9, 1.1)
+    croak = _croak(90 * pitch, 80 * pitch, 0.6, 18, 150, 800, 0.05, 3, 0.1)
+    return _croaks(rng, croak, 1, 0)
+
+
+def frog_tree(rng):
+    """A small frog's quick, high "creek creek creek"."""
+    pitch = rng.uniform(0.9, 1.1)
+    creek = _croak(420 * pitch, 400 * pitch, 0.07, 55, 800, 3500, 0.008, 20, 0.015)
+    return _croaks(rng, creek, rng.integers(3, 5), 0.07)
+
+
+def _snort(rng, length, pitch, rate):
+    """A forceful breath through the nose: noise with two nasal peaks, fluttering."""
+    breath = noise(rng, length)
+    nasal = (
+        resonance(breath, 900 * pitch, 0.45)
+        + 0.6 * resonance(breath, 2200 * pitch, 0.3)
+        + 0.3 * bandpass(breath, 200, 4000)
+    )
+    flutter = 0.75 + 0.25 * np.sin(2 * np.pi * 35 * times(length))
+    nasal = lowpass(nasal, 3000)
+    return nasal / rms(nasal) * flutter * envelope(length, 0.012, rate, hold=0.04)
+
+
+def deer_snort(rng):
+    pitch = rng.uniform(0.9, 1.1)
+    out = silence(0.45)
+    place(out, _snort(rng, 0.35, pitch, 14), 0)
+    return out
+
+
+def deer_double_snort(rng):
+    """A short snort and a longer one."""
+    pitch = rng.uniform(0.9, 1.1)
+    out = silence(0.65)
+    place(out, _snort(rng, 0.18, pitch * 1.05, 30), 0, 0.7)
+    place(out, _snort(rng, 0.35, pitch, 14), rng.uniform(0.2, 0.25))
+    return out
+
+
+def deer_hooves(rng):
+    """A deer bounding away: each bound lands as two or three quick hits, and every
+    bound is quieter and duller than the one before."""
+    out = silence(1.5)
+    at = 0.0
+    for bound in range(4):
+        distance = 0.8**bound
+        hit_at = at
+        for _ in range(rng.integers(2, 4)):
+            hit = burst(rng, 0.1, 40, 400, 0.002, 50)
+            place(hit, burst(rng, 0.02, 1000, 3500, 0.0005, 400), 0, 0.3)
+            place(hit, burst(rng, 0.08, 500, 3000, 0.003, 40, per_second=2000), 0, 0.2)
+            place(out, lowpass(hit, 3000 * distance), hit_at, distance)
+            hit_at += rng.uniform(0.02, 0.045)
+        at += rng.uniform(0.28, 0.34)
+    return out
+
+
+def rabbit_rustle(rng):
+    """A rabbit dashing off through the grass: quick rustles and light hops."""
+    out = silence(0.6)
+    at = 0.0
+    for number in range(rng.integers(4, 7)):
+        gain = 0.8 - 0.1 * number
+        place(out, lowpass(burst(rng, 0.1, 1800, 4500, 0.008, rng.uniform(40, 60)), 5000), at, gain)
+        if number % 2 == 0:
+            place(out, burst(rng, 0.05, 40, 250, 0.002, 90), at, 0.3 * gain)
+        at += rng.uniform(0.05, 0.09)
+    return out
+
+
+def squirrel_chatter(rng):
+    """A fast run of short, sharp "chk" notes that swells and fades."""
+    pitch = rng.uniform(0.92, 1.08)
+    count = rng.integers(8, 15)
+    out = silence(count * 0.08 + 0.1)
+    at = 0.0
+    for number in range(count):
+        loudness = 0.4 + 0.6 * np.sin(np.pi * (number + 0.5) / count)
+        start = rng.uniform(3000, 3800) * pitch
+        note = sweep(start, start * 0.7, 0.04, harmonics=(1.0, 0.3, 0.15))
+        note *= envelope(0.04, 0.002, 120)
+        place(out, note, at, loudness)
+        place(out, burst(rng, 0.01, 2000, 6000, 0.0005, 900), at, 0.15 * loudness)
+        at += rng.uniform(0.06, 0.08)
+    return out
+
+
+def bee_buzz_loop(rng):
+    """A soft buzz of wings whose pitch and loudness slowly waver, as the bee turns."""
+    turns = 2 * np.pi * times(BEE_LENGTH) / BEE_LENGTH
+    phases = rng.uniform(0, 2 * np.pi, 3)
+    wobble = 0.03 * np.sin(2 * turns + phases[0]) + 0.012 * np.sin(5 * turns + phases[1])
+    frequency = rng.uniform(200, 240) * (1 + wobble)
+    # A loop has to hold a whole number of cycles, or the buzz jumps at the seam.
+    cycles = frequency.sum() / RATE
+    frequency *= round(cycles) / cycles
+    buzz = tone(frequency, (1.0, 0.6, 0.45, 0.3, 0.25, 0.18, 0.12, 0.08, 0.05, 0.03))
+    wings = noise_band(rng, BEE_LENGTH, 150, 1200, loop=True)
+    loudness = 0.8 + 0.2 * np.sin(3 * turns + phases[2])
+    return (buzz / rms(buzz) + 0.08 * wings) * loudness

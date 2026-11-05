@@ -242,7 +242,8 @@ Decided 2026-11-05. Everything makes sound; no background music for now.
   the art: deterministic, in the repo, retro in style, with a few variants per sound
   and a little pitch variation when played. **`data/sounds.cfg`** maps every sound event
   to its files, volume and pitch range, so any sound can later be replaced by a recording
-  without touching code.
+  without touching code. The loops carry their loop points in the WAV file (a "smpl"
+  chunk), which Godot's importer reads, so they loop without any setting in the game.
 - **World sounds come from where they happen** (positional), on an Effects or Ambience
   bus. Inside a house the weather and the world outside are muffled.
 - **Footsteps** follow the walk animation and the ground: grass, soil, sand or floodplain,

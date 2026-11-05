@@ -4,6 +4,7 @@ GODOT_VERSION := $(shell cat .godot-version)
 GUT_VERSION := 9.7.1
 GDTOOLKIT_VERSION := 4.5.0
 PILLOW_VERSION := 12.0.0
+NUMPY_VERSION := 2.3.4
 
 VENV := .venv
 GDLINT := $(VENV)/bin/gdlint
@@ -43,9 +44,10 @@ setup:
 		fi; \
 	fi; \
 	if command -v python3 >/dev/null 2>&1 \
-		&& { [ ! -x $(GDLINT) ] || ! $(PYTHON) -c 'import PIL' 2>/dev/null; }; then \
+		&& { [ ! -x $(GDLINT) ] || ! $(PYTHON) -c 'import PIL, numpy' 2>/dev/null; }; then \
 		python3 -m venv $(VENV) && $(VENV)/bin/pip install --quiet \
-			gdtoolkit==$(GDTOOLKIT_VERSION) pillow==$(PILLOW_VERSION) || missing=1; \
+			gdtoolkit==$(GDTOOLKIT_VERSION) pillow==$(PILLOW_VERSION) numpy==$(NUMPY_VERSION) \
+			|| missing=1; \
 	fi; \
 	if [ ! -d addons/gut ] && command -v curl >/dev/null 2>&1; then \
 		echo "Downloading GUT $(GUT_VERSION)"; \
@@ -58,9 +60,12 @@ setup:
 	if [ $$missing -ne 0 ]; then echo "Setup incomplete, see above."; exit 1; fi; \
 	echo "Setup complete."
 
-# Regenerates every PNG under assets/ and checks that they use only palette colours.
+# Regenerates every PNG under assets/ and checks that they use only palette colours, then
+# every sound under assets/sounds/ and checks their levels and loops.
 assets:
 	$(PYTHON) tools/art/generate.py
+	$(PYTHON) tools/audio/generate.py
+	$(PYTHON) tools/audio/check.py
 
 run:
 	$(IMPORT)
