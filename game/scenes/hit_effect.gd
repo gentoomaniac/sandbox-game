@@ -10,7 +10,7 @@ enum Kind { NONE, LEAVES_GREEN, LEAVES_AUTUMN, NEEDLES, SNOW, SPLINTERS, DUST }
 ## The effect of a hit on an object of `type` that is drawn in `look`. A frosty tree counts as
 ## its season's look: the caller passes that, as the frost says nothing about its foliage.
 static func kind_for(type: StringName, look: SeasonBlend.Look) -> Kind:
-	if type == WorldObjectTypes.STONE or type == WorldObjectTypes.BOULDER:
+	if type in [WorldObjectTypes.STONE, WorldObjectTypes.BOULDER, WorldObjectTypes.DEAD_STUMP]:
 		return Kind.SPLINTERS
 	var is_snowy := look == SeasonBlend.Look.SNOW or look == SeasonBlend.Look.DUSTING
 	match type:

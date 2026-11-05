@@ -197,6 +197,7 @@ _SNOW_BOULDER = ({"stone_light", "stone", "green_light", "green", "olive"}, set(
 _SNOW_STUMP = ({"sand_light", "sand", "straw"}, set(), 3)
 _SNOW_TRUNK = ({"soil_light", "soil_mid", "sand", "stone_light", "sand_light", "straw"}, set(), 2)
 _SNOW_DEADWOOD = ({"stone_light", "stone", "bare_light"}, set(), 2)
+_SNOW_DEAD_STUMP = ({"stone_light", "stone", "bare_light"}, set(), 3)
 
 _SPRING_KINDS = {"oak", "berry_bush", "shrub", "sapling", "fern", "boulder", "tall_grass"}
 _BLOSSOM_KINDS = {"berry_bush", "shrub"}
@@ -384,10 +385,10 @@ def _winter_object(look, kind, variant, canvas, redraw, rng, centre):
             canvas = copy(canvas)
             snow_caps(canvas, rng, *cap(_SNOW_DEADWOOD), centre)
         return canvas
-    if kind in ("stone", "boulder", "stump") or kind.endswith("trunk"):
+    if kind in ("stone", "boulder", "stump", "dead_stump") or kind.endswith("trunk"):
         if has_snow:
             canvas = copy(canvas)
-            spec = {"stone": _SNOW_STONE, "boulder": _SNOW_BOULDER, "stump": _SNOW_STUMP}.get(kind, _SNOW_TRUNK)
+            spec = {"stone": _SNOW_STONE, "boulder": _SNOW_BOULDER, "stump": _SNOW_STUMP, "dead_stump": _SNOW_DEAD_STUMP}.get(kind, _SNOW_TRUNK)
             snow_caps(canvas, rng, *cap(spec), centre)
             return canvas
         return remap(canvas, _FROST_STONE) if is_frosty else canvas

@@ -59,7 +59,8 @@ func test_every_natural_object_type_is_generated() -> void:
 				in [
 					WorldObjectTypes.FIREPLACE,
 					WorldObjectTypes.SLEEPING_BAG,
-					WorldObjectTypes.STUMP
+					WorldObjectTypes.STUMP,
+					WorldObjectTypes.DEAD_STUMP
 				]
 			)
 			or str(object_type).ends_with("trunk")

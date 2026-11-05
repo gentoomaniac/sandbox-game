@@ -35,7 +35,8 @@ func test_felling_leaves_a_stump_and_a_trunk_of_the_species() -> void:
 		_world.remove_object(_tile + Vector2i.RIGHT * 2)
 		_place(tree)
 		_hit(ItemTypes.AXE, int(WorldObjectTypes.TYPES[tree]["hp"]))
-		assert_eq(_type_at(Vector2i.ZERO), WorldObjectTypes.STUMP, tree)
+		var stump: StringName = WorldObjectTypes.TYPES[tree]["leaves"]
+		assert_eq(_type_at(Vector2i.ZERO), stump, tree)
 		assert_eq(_type_at(Vector2i.RIGHT), WorldObjectTypes.trunk_type(tree, false), tree)
 
 

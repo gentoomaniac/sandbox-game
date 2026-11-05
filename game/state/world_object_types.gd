@@ -42,7 +42,8 @@ extends RefCounted
 ## - matures_after_days: with the state `tree` set (a sapling that grows) it is replaced after
 ##   this many days by `matures_into`, or by the tree named in `tree`;
 ## - rots_after_days: it is gone after this many days (a stump), but for the chance
-##   `rots_into_sapling_chance` that a sapling of the tree in its state `tree` stands in its place;
+##   `rots_into_sapling_chance` (none without it: the dead tree's stump) that a sapling of the
+##   tree in its state `tree` stands in its place;
 ## - seasonal: it follows a yearly curve of the same name (see Vegetation): DORMANCY, it is
 ##   gone from the world while the density is below its threshold (a fern), or FRUIT, it
 ##   looks picked and can't be picked while it is (a berry bush). Woody plants have none;
@@ -78,6 +79,7 @@ const BARREL := &"barrel"
 const SACKS := &"sacks"
 const CRATE := &"crate"
 const STUMP := &"stump"
+const DEAD_STUMP := &"dead_stump"
 const TALL_GRASS := &"tall_grass"
 const REEDS := &"reeds"
 
@@ -93,6 +95,8 @@ const MAX_FOOTPRINT := Vector2i(2, 2)
 const _FIRST_TRUNK_ROW := 14
 ## The atlas row of the reeds: after the last trunk (4 trees, a long and a short trunk each).
 const _REEDS_ROW := 22
+## The atlas row of the dead tree's stump, after the reeds.
+const _DEAD_STUMP_ROW := 23
 
 const _OTHER_TYPES := {
 	OAK:
@@ -179,7 +183,7 @@ const _OTHER_TYPES := {
 		"hp": 3,
 		"tool": &"axe",
 		"trunk": {"logs": 2, "hp": 2},
-		"leaves": STUMP,
+		"leaves": DEAD_STUMP,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": true,
 		"harvest_level": 1,
@@ -250,6 +254,18 @@ const _OTHER_TYPES := {
 		"drops": {&"logs": 1},
 		"rots_after_days": 14,
 		"rots_into_sapling_chance": 0.3,
+	},
+	DEAD_STUMP:
+	{
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _DEAD_STUMP_ROW,
+		"variants": 2,
+		"hp": 2,
+		"tool": &"axe",
+		"drops": {&"logs": 1},
+		"rots_after_days": 14,
 	},
 	TALL_GRASS:
 	{

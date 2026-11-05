@@ -52,6 +52,11 @@ func test_stumps_and_bushes_drop_nothing() -> void:
 		assert_eq(HitEffect.kind_for(type, LOOKS.SUMMER), KINDS.NONE)
 
 
+func test_a_dead_stump_throws_splinters_in_every_look() -> void:
+	for look in LOOKS.values():
+		assert_eq(HitEffect.kind_for(WorldObjectTypes.DEAD_STUMP, look), KINDS.SPLINTERS)
+
+
 func test_particles_are_few_and_gone_in_little_more_than_a_second() -> void:
 	var particles: HitParticles = autofree(HitParticles.new())
 	for kind in HitParticles.SPECS:

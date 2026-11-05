@@ -533,7 +533,7 @@ Decided 2026-11-05. A text console for testing and cheats.
   - A tool below the object's harvest level does nothing, with a short message
     (e.g. "Needs a better pickaxe.").
   - First numbers (2026-11-05, tune in play): tool power = level. Hit points: oak 5,
-    spruce 4, pine 7 (level 2), dead tree 3, stone 3, boulder 6 (level 2), stump 2.
+    spruce 4, pine 7 (level 2), dead tree 3, stone 3, boulder 6 (level 2), stump 2, dead stump 2.
     Damage heals overnight.
 - **Harvesting, reworked** (decided 2026-11-05; replaces drops straight into the inventory,
   stumps regrowing into trees and the generic sapling):
@@ -558,6 +558,11 @@ Decided 2026-11-05. A text console for testing and cheats.
   - **Stumps don't regrow into trees.** A stump left alone rots away over about two weeks;
     when it is gone it has a chance (about 30 %) to leave a sapling of its tree's species
     in its place.
+  - **The dead tree leaves a dead stump** (decided 2026-11-05): grey, weathered wood with a
+    broken, splintered top and a dark rotten heart (2 looks, a snow look too), not the fresh
+    brown stump of a living tree. Same numbers (2 hp, axe, 1 log, rots away after 14 days),
+    but it never leaves a sapling, and it throws splinters when hit. Stumps of dead trees
+    felled before this change stay brown: nothing in an old save tells them from an oak's.
   - **Seeds per species:** a tree seed is planted on grass anywhere, becomes a sapling of
     its species and then that tree. The generic sapling item goes away.
   - **Stone:** a mined stone breaks into stone items scattered around its tile; a boulder

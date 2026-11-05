@@ -71,6 +71,45 @@ func test_the_stump_of_a_dead_tree_rots_away_and_leaves_nothing() -> void:
 	assert_null(_world.object_at(_tile))
 
 
+func test_a_felled_dead_tree_leaves_a_dead_stump_that_never_becomes_a_sapling() -> void:
+	_state.player.position = Vector2(_tile + Vector2i.LEFT) + Vector2(0.5, 0.5)
+	_state.player.facing = Vector2i.RIGHT
+	_place(WorldObjectTypes.DEAD_TREE)
+	_hit(ItemTypes.AXE, WorldObjectTypes.TYPES[WorldObjectTypes.DEAD_TREE]["hp"])
+	var stump := _world.object_at(_tile)
+	assert_eq(stump.type, WorldObjectTypes.DEAD_STUMP)
+	assert_eq(stump.state, {}, "nothing in it that implies regrowth")
+	assert_eq(_saplings_over(stump, 500), 0)
+	_sleep_days(ROT_DAYS)
+	assert_null(_world.object_at(_tile))
+
+
+func test_a_dead_stump_with_a_tree_in_its_state_still_leaves_no_sapling() -> void:
+	var stump := WorldObject.new(WorldObjectTypes.DEAD_STUMP, _tile)
+	stump.state["tree"] = str(WorldObjectTypes.OAK)
+	assert_eq(_saplings_over(stump, 500), 0)
+
+
+func test_a_dead_stump_is_like_a_stump_in_hits_drops_and_rot() -> void:
+	var stump: Dictionary = WorldObjectTypes.TYPES[WorldObjectTypes.STUMP]
+	var dead_stump: Dictionary = WorldObjectTypes.TYPES[WorldObjectTypes.DEAD_STUMP]
+	for key: String in ["hp", "tool", "drops", "rots_after_days", "harvest_level"]:
+		assert_eq(dead_stump[key], stump[key], key)
+	assert_eq(dead_stump["hp"], 2)
+	assert_eq(dead_stump["tool"], &"axe")
+	assert_eq(dead_stump["drops"], {&"logs": 1})
+	assert_eq(dead_stump["rots_after_days"], ROT_DAYS)
+	assert_false(dead_stump.has("rots_into_sapling_chance"))
+	assert_ne(dead_stump["atlas_row"], stump["atlas_row"])
+
+
+func test_chopping_a_dead_stump_gives_a_log() -> void:
+	_place(WorldObjectTypes.DEAD_STUMP)
+	_hit(ItemTypes.AXE, 2)
+	assert_null(_world.object_at(_tile))
+	assert_eq(_dropped(ItemTypes.LOGS), 1)
+
+
 func test_a_stump_rots_away_in_an_unloaded_chunk_without_rolling_again() -> void:
 	var stump := _stump_of(&"")
 	var coords := Chunk.world_to_chunk(_tile)

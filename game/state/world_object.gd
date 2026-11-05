@@ -137,7 +137,7 @@ func has_rotted() -> bool:
 ## What a rotted stump leaves: a sapling of its tree with the type's chance (the same stump on
 ## the same day always rolls the same), or null, nothing.
 func rotted(day: int) -> WorldObject:
-	var chance: float = type_data()["rots_into_sapling_chance"]
+	var chance: float = type_data().get("rots_into_sapling_chance", 0.0)
 	if not _is_of_a_tree() or PositionHash.of(pos, day) % 100 >= chance * 100:
 		return null
 	var sapling := WorldObject.new(WorldObjectTypes.SAPLING, pos)

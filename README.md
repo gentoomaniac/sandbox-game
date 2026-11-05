@@ -75,9 +75,9 @@ seasons and the withering are in [data/crops.cfg](data/crops.cfg).
 Use the axe on trees and the pickaxe on stones and boulders. A better tool needs fewer
 hits, and some resources need a better tool. Everything you hit trembles and throws
 leaves, snow or splinters. A felled tree topples to the side and leaves a stump and a
-trunk; cut both into logs. A stump left alone rots away over about two weeks and may sprout
-a sapling of its kind, and now and then a tree drops a seed (acorn or cone) you can plant on
-grassland. Stones and boulders break into pieces of stone; a boulder needs a better pickaxe.
+trunk (a dead tree a grey, splintered one); cut both into logs. A stump left alone rots away
+over about two weeks and may sprout a sapling of its kind (not a dead tree's), and now and
+then a tree drops a seed (acorn or cone) you can plant on grassland. Stones and boulders break into pieces of stone; a boulder needs a better pickaxe.
 
 The scythe mows tall grass into hay and cuts reeds on river banks (reeds grow back in
 their season). The shovel digs clay, but only where a faint patch on the ground hints at

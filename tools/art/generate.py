@@ -21,7 +21,7 @@ is the oak (3 variants), row 1 the stone (2 variants), then the camp site: row 2
 row 3 the sleeping bag (1 variant each), then the vegetation rows from 4 (see vegetation()),
 row 11 the boulder, row 12 the stump, row 13 the tall grass (3 tufts, then the same 3 mown;
 see meadow.py) and rows 14 to 21 the trunks (see trunks.py) and row 22 the reeds (3 stands, then the same 3 cut;
-see reeds.py). The rows and
+see reeds.py) and row 23 the dead tree's stump (2 variants). The rows and
 counts are in game/state/world_object_types.gd.
 An object stands on one tile: the bottom centre 16x16 of its cell (x 16..31, y 64..79). A tree's
 crown rises above that, over the tiles around it. An object on several tiles (boulder 2x1,
@@ -1060,6 +1060,60 @@ def stump(seed):
     return canvas
 
 
+def dead_stump(seed):
+    """What is left of a felled dead tree: a short stub of weathered grey wood like the dead
+    tree's, its top snapped off into a ragged crown of pale splinters round a dark rotten
+    heart, split by cracks, with roots; odd seeds wear moss on the left, even ones a bracket
+    fungus on the right."""
+    rng = random.Random(seed)
+    canvas = object_canvas()
+    ground_shadow(canvas, 13)
+    centre_x, top_y, radius_x = OBJECT_CENTRE, 63, 7
+    ground = OBJECT_BOTTOM - 1
+    left, right = centre_x - radius_x, centre_x + radius_x - 1
+    wood = ("stone_light", "stone", "bare", "stone_dark")
+    # The splinters: each column is broken off at its own height, a few stand up as spikes.
+    tops = {}
+    for x in range(left, right + 1):
+        tops[x] = top_y + rng.randint(0, 2) - (3 if rng.random() < 0.2 else 0)
+        if abs(x - centre_x) < 3:
+            tops[x] += 2
+    for x, top in tops.items():
+        across = (x + 0.5 - centre_x) / radius_x
+        shade = wood[0] if across < -0.55 else wood[1] if across < 0.1 else wood[2] if across < 0.7 else wood[3]
+        for y in range(top, ground + 1):
+            canvas[y][x] = shade
+        canvas[top][x] = canvas[top + 1][x] = "bare_light"
+        if abs(x - centre_x) < 3:
+            canvas[top][x] = "ink"
+            canvas[top + 1][x] = canvas[top + 2][x] = "stone_dark"
+    # Cracks running down the grey wood from the broken top.
+    for _ in range(3):
+        x = rng.randint(left + 2, right - 2)
+        for y in range(tops[x] + 3, min(ground - 2, tops[x] + 3 + rng.randint(3, 8))):
+            canvas[y][x] = "stone_dark"
+    # Roots: wedges running out from the foot, in the same grey.
+    roots = [(left - 1, -1, 5, 4), (right + 1, 1, 4, 4)]
+    if seed % 2:
+        roots.append((centre_x - 3, -1, 2, 2))
+    for start, direction, length, height in roots:
+        for step in range(length):
+            x = start + direction * step
+            first_row = ground - height + 1 + step * height // length
+            for y in range(first_row, ground + 1):
+                canvas[y][x] = wood[1] if direction < 0 else wood[2]
+            canvas[first_row][x] = wood[0] if direction < 0 else wood[1]
+    if seed % 2:
+        for _ in range(14):
+            x, y = rng.randint(left, left + 4), rng.randint(ground - 9, ground - 1)
+            canvas[y][x] = rng.choice(("green_dark", "green", "green_light"))
+    else:
+        for x, y in ((right - 3, ground - 6), (right - 2, ground - 6), (right - 1, ground - 6), (right - 2, ground - 5)):
+            canvas[y][x] = "sand_light" if y < ground - 5 else "soil_mid"
+    outline_in_bark(canvas, "ink")
+    return canvas
+
+
 def outline_in_bark(canvas, colour="soil_dark"):
     """A one pixel outline round everything drawn except the ground shadow, by default in the
     darkest bark colour."""
@@ -1098,6 +1152,7 @@ OAK_SEEDS = (101, 102, 103)
 OBJECTS = [[oak(seed) for seed in OAK_SEEDS], [stone(seed) for seed in (111, 112)]]
 BOULDERS = [[boulder(seed) for seed in (191, 192)]]
 STUMPS = [[stump(seed) for seed in (201, 202)]]
+DEAD_STUMPS = [[dead_stump(seed) for seed in (211, 212)]]
 
 
 # Camp site objects (assets/objects.png rows 2 and 3).
@@ -1197,7 +1252,7 @@ def object_atlas():
         ("boulder", BOULDERS[0]),
         ("stump", STUMPS[0]),
         ("tall_grass", meadow.tall_grass_row()),
-    ] + trunks.rows() + [("reeds", reeds.reeds_row())]
+    ] + trunks.rows() + [("reeds", reeds.reeds_row()), ("dead_stump", DEAD_STUMPS[0])]
 
 
 # The player character (assets/character/<slot>_<variant>.png).
