@@ -8,6 +8,9 @@ extends Node2D
 ## ghost's top left tile pinned there; `--house=<x>,<y>` places a house there as soon as
 ## its chunks are loaded.
 
+## The message to show, or "" to hide it. It is drawn by the UI, outside the world viewport.
+signal message_changed(text: String)
+
 const BUILDING_TYPE := BuildingTypes.SMALL_HOUSE
 const UNSAFE_LAND_MESSAGE := "This land doesn't look safe to build on."
 const OCCUPIED_MESSAGE := "Something is in the way."
@@ -18,6 +21,8 @@ const BLOCKED_TINT := Color("a8402e", 0.7)
 const GHOST_MODULATE := Color(1, 1, 1, 0.7)
 
 var world: World
+## Turns the mouse position into a world position.
+var camera: CameraController
 
 var _is_active := false
 var _origin := Vector2i.ZERO
@@ -27,11 +32,8 @@ var _footprint: Vector2i = BuildingTypes.TYPES[BUILDING_TYPE]["footprint"]
 var _pinned_origin: Variant = null  # Vector2i, set by --ghost
 var _debug_house_origin: Variant = null  # Vector2i, set by --house
 
-@onready var _message: Label = $Hud/Message
-
 
 func _ready() -> void:
-	_message.hide()
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--ghost="):
 			_pinned_origin = _parse_tile(arg)
@@ -64,7 +66,7 @@ func _process(_delta: float) -> void:
 	if not _is_active:
 		return
 	_origin = (
-		_pinned_origin if _pinned_origin != null else _origin_under(get_global_mouse_position())
+		_pinned_origin if _pinned_origin != null else _origin_under(camera.mouse_world_position())
 	)
 	_blockers = world.placement_blockers(BUILDING_TYPE, _origin)
 	_show_message()
@@ -101,7 +103,7 @@ func cancel() -> void:
 func _set_active(is_active: bool) -> void:
 	_is_active = is_active
 	if not is_active:
-		_message.hide()
+		message_changed.emit("")
 		queue_redraw()
 
 
@@ -119,11 +121,10 @@ func _origin_under(world_position: Vector2) -> Vector2i:
 
 func _show_message() -> void:
 	if _blockers.is_empty():
-		_message.hide()
+		message_changed.emit("")
 		return
 	var is_unsafe_land := _blockers.values().has(World.Blocked.TERRAIN)
-	_message.text = UNSAFE_LAND_MESSAGE if is_unsafe_land else OCCUPIED_MESSAGE
-	_message.show()
+	message_changed.emit(UNSAFE_LAND_MESSAGE if is_unsafe_land else OCCUPIED_MESSAGE)
 
 
 func _is_footprint_loaded(origin: Vector2i) -> bool:

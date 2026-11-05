@@ -78,16 +78,18 @@ run:
 
 # Saves one frame of the game as PNG, e.g. make screenshot AT=40,-20 OUT=/tmp/shot.png
 # (AT is a world tile to put the player on; default: the camp). TIME=hh:mm sets the time of
-# day (default: game start).
+# day (default: game start). The picture is the whole window, as the player sees it.
 AT ?=
 TIME ?=
+# Camera zoom, 0.5 to 2 (default 1).
+ZOOM ?=
 # Further debug flags, e.g. ARGS="--ghost=3,-5" (see game/scenes/build_mode.gd).
 ARGS ?=
 OUT ?= $(CURDIR)/build/screenshot.png
 screenshot:
 	$(IMPORT)
 	mkdir -p $(dir $(OUT))
-	$(GODOT) --path . -- $(if $(AT),--at=$(AT)) --screenshot=$(OUT) $(if $(TIME),--time=$(TIME)) $(ARGS)
+	$(GODOT) --path . -- $(if $(AT),--at=$(AT)) --screenshot=$(OUT) $(if $(TIME),--time=$(TIME)) $(if $(ZOOM),--zoom=$(ZOOM)) $(ARGS)
 
 # On Godot builds without navigation (e.g. some Gentoo builds) GUT prints a harmless
 # 'Identifier "NavigationMeshGenerator" not declared' parse error. Tests still run.

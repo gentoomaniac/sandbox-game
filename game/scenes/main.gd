@@ -1,13 +1,17 @@
 extends Node2D
 ## The game scene: owns the GameState, turns real time into game minutes and feeds the
-## player's input to the state. The camera and chunk streaming follow the player.
+## player's input to the state. The world is drawn into WorldViewport (one art pixel per
+## pixel) and shown on the window by CameraController; the UI is drawn on the window itself.
+## The camera and chunk streaming follow the player.
 ##
 ## Debug flags (after `--` on the Godot command line, see `make screenshot`):
 ## `--at=<x>,<y>` puts the player on that world tile instead of at the camp;
 ## `--screenshot=<path>` saves one frame as PNG once streaming has settled, then quits;
 ## `--time=<hh:mm>` sets the time of day; `--field=<x>,<y>` tills a small field there with
 ## crops in every growth stage (see DebugField); `--inside` walks into the first house as soon
-## as one exists (see `--house`). BuildMode parses `--ghost=<x>,<y>` and
+## as one exists (see `--house`); `--zoom=<z>` sets the camera zoom;
+## `--camera-shift=<x>,<y>` moves the camera by that many art pixels, fractions included
+## (to check smooth scrolling). BuildMode parses `--ghost=<x>,<y>` and
 ## `--house=<x>,<y>` (see there).
 
 const WORLD_SEED := 1
@@ -31,13 +35,17 @@ var _is_fading := false
 var _enter_first_house := false
 var _settled_frames := 0
 var _pending_minutes := 0.0
+var _camera_shift := Vector2.ZERO
+var _start_zoom := 1.0
 
-@onready var _view: WorldView = $WorldView
-@onready var _camera: Camera2D = $Camera2D
-@onready var _tint: DayNightTint = $DayNightTint
+@onready var _world: SubViewport = $WorldViewport
+@onready var _view: WorldView = $WorldViewport/WorldView
+@onready var _tint: DayNightTint = $WorldViewport/DayNightTint
+@onready var _build_mode: BuildMode = $WorldViewport/BuildMode
+@onready var _camera: CameraController = $CameraController
 @onready var _hud: ClockHud = $ClockHud
+@onready var _message: Label = $MessageHud/Message
 @onready var _fade: ColorRect = $FadeLayer/Fade
-@onready var _build_mode: BuildMode = $BuildMode
 
 
 func _ready() -> void:
@@ -54,8 +62,17 @@ func _ready() -> void:
 			DebugField.create(_state.world, Vector2i(int(tile[0]), int(tile[1])))
 		elif arg == "--inside":
 			_enter_first_house = true
+		elif arg.begins_with("--zoom="):
+			_start_zoom = float(arg.trim_prefix("--zoom="))
+		elif arg.begins_with("--camera-shift="):
+			var shift := arg.trim_prefix("--camera-shift=").split_floats(",")
+			_camera_shift = Vector2(shift[0], shift[1])
 	_view.show_world(_state.world)
 	_build_mode.world = _state.world
+	_build_mode.camera = _camera
+	_build_mode.message_changed.connect(_show_build_message)
+	_camera.rig.follow(_camera_target)
+	_camera.rig.set_zoom_clamped(_start_zoom)
 	# Among the objects, so the player walks behind tree canopies.
 	_view.entities.add_child(_player_view)
 	_player_view.show_player(_state.player)
@@ -63,11 +80,13 @@ func _ready() -> void:
 	_use_highlight.show_for(_state)
 	add_child(_harvest_hud)
 	_interior_view.hide()
-	add_child(_interior_view)
+	_world.add_child(_interior_view)
 	_show_clock()
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# A SubViewport only gets the events that are pushed into it.
+	_world.push_input(event)
 	if event.is_action_pressed("toggle_fast_forward"):
 		_fast_forward = not _fast_forward
 	elif event.is_action_pressed("interact") and not _is_fading:
@@ -84,7 +103,6 @@ func _process(delta: float) -> void:
 		_state.player.move(_state.current_map, direction, delta)
 		if _state.door_underfoot():
 			_fade_through(_pass_door)
-	_camera.position = (_state.player.position * TerrainTileset.TILE_SIZE).round()
 	if not _state.is_inside():
 		_view.set_focus(_state.player.tile())
 	if _enter_first_house:
@@ -94,6 +112,12 @@ func _process(delta: float) -> void:
 		_settled_frames = _settled_frames + 1 if _is_ready_to_shoot() else 0
 		if _settled_frames > SCREENSHOT_SETTLE_FRAMES:
 			_save_screenshot_and_quit()
+
+
+## Where the camera looks: the player as drawn, on the art pixel grid, so the player does
+## not move against the screen.
+func _camera_target() -> Vector2:
+	return (_state.player.position * TerrainTileset.TILE_SIZE).round() + _camera_shift
 
 
 ## Real time to whole game minutes; the fraction carries over to the next frame.
@@ -181,6 +205,10 @@ func _is_ready_to_shoot() -> bool:
 	return _view.is_settled and not _enter_first_house
 
 
+func _show_build_message(text: String) -> void:
+	_message.text = text
+
+
 func _show_clock() -> void:
 	if _state.is_inside():
 		_tint.show_interior()
@@ -194,5 +222,6 @@ func _save_screenshot_and_quit() -> void:
 	# Draws now instead of waiting for the next frame, which never comes while the window
 	# can't be shown (e.g. a locked screen).
 	RenderingServer.force_draw(false)
+	# The window as the player sees it, not only the world viewport.
 	get_viewport().get_texture().get_image().save_png(_screenshot_path)
 	get_tree().quit()
