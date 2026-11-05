@@ -2,7 +2,7 @@ GODOT ?= godot
 GODOT_VERSION := $(shell cat .godot-version)
 
 GUT_VERSION := 9.7.1
-# YATI 2.2.10 is a C#-only release (no GDScript change), so the GDScript build stays at 2.2.9.
+# Use the latest YATI release that ships a GDScript build (some releases are C#-only).
 YATI_VERSION := 2.2.9
 GDTOOLKIT_VERSION := 4.5.0
 
@@ -12,6 +12,8 @@ GDFORMAT := $(VENV)/bin/gdformat
 GDSCRIPT_DIRS := game tests
 
 # Godot only finds addon classes (GUT) after one import pass on a fresh clone.
+# The stamp is redone when .godot-version changes, and setup deletes it after any
+# addon download, so the import cache never outlives the addons it was built from.
 IMPORT_STAMP := .godot/import.stamp
 
 # Downloaded addons are NOT committed: the pinned versions above make `make setup`
@@ -45,12 +47,12 @@ setup:
 		python3 -m venv $(VENV) && $(VENV)/bin/pip install --quiet gdtoolkit==$(GDTOOLKIT_VERSION) || missing=1; \
 	fi; \
 	if [ ! -d addons/gut ] && command -v curl >/dev/null 2>&1; then \
-		echo "Downloading GUT $(GUT_VERSION)"; \
+		echo "Downloading GUT $(GUT_VERSION)"; rm -f $(IMPORT_STAMP); \
 		curl -fsSL https://github.com/bitwes/Gut/archive/refs/tags/v$(GUT_VERSION).tar.gz \
 			| tar xz --strip-components=1 "Gut-$(GUT_VERSION)/addons/gut" || missing=1; \
 	fi; \
 	if [ ! -d addons/YATI ] && command -v curl >/dev/null 2>&1 && command -v unzip >/dev/null 2>&1; then \
-		echo "Downloading YATI $(YATI_VERSION)"; \
+		echo "Downloading YATI $(YATI_VERSION)"; rm -f $(IMPORT_STAMP); \
 		curl -fsSL -o yati.zip \
 			https://github.com/Kiamo2/YATI/releases/download/v$(YATI_VERSION)/v$(YATI_VERSION)-gdscript.zip \
 			&& unzip -q -o yati.zip 'addons/YATI/*' || missing=1; \
@@ -62,13 +64,15 @@ setup:
 	if [ $$missing -ne 0 ]; then echo "Setup incomplete, see above."; exit 1; fi; \
 	echo "Setup complete."
 
-$(IMPORT_STAMP):
+$(IMPORT_STAMP): .godot-version
 	$(GODOT) --headless --quiet --import
 	touch $@
 
 run:
 	$(GODOT) --path .
 
+# On Godot builds without navigation (e.g. some Gentoo builds) GUT prints a harmless
+# 'Identifier "NavigationMeshGenerator" not declared' parse error. Tests still run.
 test: $(IMPORT_STAMP)
 	$(GODOT) --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://tests -gexit
 
