@@ -1,5 +1,6 @@
 .godot/
 .venv/
+__pycache__/
 build/
 export/
 # Downloaded by `make setup`, see the Makefile.

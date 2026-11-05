@@ -105,17 +105,6 @@ def sprinkle(tile, rng, pictures, spacing, chance):
                 stamp(tile, rng.choice(pictures), x, y)
 
 
-def blob(tile, rng, colour, radius_x, radius_y):
-    """Paints an irregular patch somewhere inside the tile, clear of its border."""
-    cx = rng.uniform(radius_x + 1, TILE - 2 - radius_x)
-    cy = rng.uniform(radius_y + 1, TILE - 2 - radius_y)
-    ragged = periodic_noise(rng.random(), [(2, 1.0), (3, 0.5)])
-    for y in range(1, TILE - 1):
-        for x in range(1, TILE - 1):
-            if math.hypot((x - cx) / radius_x, (y - cy) / radius_y) < 1 + 0.35 * ragged(x, y):
-                tile[y][x] = colour
-
-
 def periodic_noise(seed, waves):
     """A smooth noise field that repeats every TILE pixels on both axes, so it lines up
     across neighbouring tiles. `waves` are (frequency, weight) pairs; result is about -1..1.
