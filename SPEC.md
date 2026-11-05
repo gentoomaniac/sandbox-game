@@ -291,6 +291,10 @@ Decided 2026-11-05. A text console for testing and cheats.
     in late autumn and regrow in spring the same way: while dormant they are not drawn,
     don't block and can't be harvested. Woody plants (trees, berry bushes, shrubs) stay
     all year and only change their look.
+  - Fruit follows the season too: berry bushes carry berries from early summer to late
+    autumn (each bush starting and ending on its own day, by the same threshold rule).
+    Outside that window a bush shows without berries and can't be picked; picking within
+    the window works as before (bears again after a few days).
   - Harvesting a seasonal plant still removes it as before; regrowth follows the existing
     rules.
 - **Weather state** (decided 2026-11-05):

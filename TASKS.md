@@ -680,6 +680,8 @@ Depends on: 25. See SPEC.md "Vegetation density follows the year".
 - Seasonal world objects (fern bush and other soft plants) with a dormant period derived
   from the day and a per-object threshold: not drawn, not blocking, not harvestable
   while dormant; woody plants unchanged.
+- Berry bushes fruit only from early summer to late autumn (per-bush start and end);
+  outside it they show the berry-less look and can't be picked.
 - The view updates once per day (not every minute), only the chunks that are loaded.
 - Tests: the curves, gradual change across days, dormancy of a fern in winter and its
   return in spring, harvesting unaffected otherwise, save/load.
