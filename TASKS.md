@@ -933,6 +933,17 @@ merged (both touch world_view.gd).
 - A debug flag to capture the fall and the hops; tests for the timing and that the state
   is final at once.
 
+## 44. Tooltips
+
+- [ ] Done
+
+See SPEC.md "Menus and settings" (tooltips). A tooltip panel in the shared theme, shown
+after a short hover and kept on screen at any UI scale; item tooltips for hotbar,
+inventory and equipment slots built from the data (ItemTypes, energy.cfg food values,
+tool levels, CropRules for seeds and produce, equipment slots), with a `description` per
+item; short explanations for every setting. Tests: the text for food, a tool, seeds, a
+plain resource and equipment.
+
 ## Later (not part of the prototype)
 
 - Season looks follow-ups (from the task 29 review): world_view.gd carries layer, season
