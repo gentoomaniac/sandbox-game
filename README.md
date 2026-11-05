@@ -69,8 +69,9 @@ trunk; cut both into logs. A stump left alone rots away over about two weeks and
 a sapling of its kind, and now and then a tree drops a seed (acorn or cone) you can plant on
 grassland. Stones and boulders break into pieces of stone; a boulder needs a better pickaxe.
 
-The scythe mows tall grass into hay and cuts reeds on river banks (reeds grow back in their
-season). The shovel digs clay, but only where a faint patch on the ground hints at it. Berry bushes bear fruit again a few days after picking, and shrubs and ferns give
+The scythe mows tall grass into hay and cuts reeds on river banks (reeds grow back in
+their season). The shovel digs clay, but only where a faint patch on the ground hints at
+it. Berry bushes bear fruit again a few days after picking, and shrubs and ferns give
 fibre.
 
 What you gather hops out onto the ground: logs, stone, clay, hay, reeds, seeds and produce
