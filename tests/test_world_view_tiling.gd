@@ -141,3 +141,27 @@ func test_chunks_loading_between_refresh_steps_match_a_full_redraw() -> void:
 		_assert_matches_full_redraw("day %d" % day)
 		for coords: Vector2i in CHUNKS:
 			_view._unload_chunk(coords)
+
+
+func test_unloading_a_chunk_erases_every_layer_and_overlay_in_it() -> void:
+	var layers: Array[TileMapLayer] = []
+	layers.append_array(_view._layers)
+	layers.append_array(_view._overlays.values())
+	layers.append_array(_view._variety_overlays.values())
+	var first := Chunk.to_world(CHUNKS[0], Vector2i.ZERO)
+	var area := Rect2i(first, Vector2i.ONE * Chunk.CHUNK_SIZE)
+	for day: int in DAYS:
+		_set_day(day)
+		_view._load_chunk(CHUNKS[0])
+		_view.finish_refresh()
+		assert_gt(_cells_in(layers, area), 0, "day %d: the chunk is drawn" % day)
+		_view._unload_chunk(CHUNKS[0])
+		assert_eq(_cells_in(layers, area), 0, "day %d: nothing is left after unloading" % day)
+
+
+func _cells_in(layers: Array, area: Rect2i) -> int:
+	var count := 0
+	for layer: TileMapLayer in layers:
+		for cell in layer.get_used_cells():
+			count += 1 if area.has_point(cell) else 0
+	return count

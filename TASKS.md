@@ -732,6 +732,10 @@ from the weather".
   palette is at 64 (autumn/autumn_dark merged into reed/olive; bare-ground and frost colours added).
   A seventh look, "dusting", is the thin fringe of snow (tiles whose threshold is just above the
   cover); the snow threshold is slightly clustered in space so patches and fringes form.
+  A season's look has a lush and a dry grass overlay layer stacked over its ordinary one, each
+  shaped by its own corners like the terrain layers (otherwise a cell with one lush corner got
+  a full lush tile: straight-edged blocks); where one has the same mask as the layer below it,
+  only the upper is drawn, since both edges together show as a fringe.
 
 ## 30. More crops, grown by the weather
 

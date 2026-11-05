@@ -150,18 +150,14 @@ func _ready() -> void:
 	# Wet soil lies right over the soil terrain, under the snow and the other looks.
 	add_child(_soil_wetness)
 	for look in TerrainTileset.OVERLAY_LOOKS:
-		_overlays[look] = _add_overlay("%sLook" % SeasonBlend.Look.keys()[look].capitalize())
+		var look_name: String = SeasonBlend.Look.keys()[look].capitalize()
+		_overlays[look] = _add_overlay("%sLook" % look_name)
 		if TerrainTileset.is_weather_look(look):
 			continue
 		for layer in TerrainTileset.VARIETY_LAYERS:
+			var layer_name: String = TerrainTileset.Layer.keys()[layer].capitalize()
 			_variety_overlays[Vector2i(look, layer)] = _add_overlay(
-				(
-					"%s%sLook"
-					% [
-						SeasonBlend.Look.keys()[look].capitalize(),
-						TerrainTileset.Layer.keys()[layer].capitalize()
-					]
-				)
+				"%s%sLook" % [look_name, layer_name]
 			)
 	_decorations.name = "Decorations"
 	_decorations.tile_set = _tileset.tile_set
@@ -533,7 +529,7 @@ func _unload_chunk(coords: Vector2i) -> void:
 		for x in Chunk.CHUNK_SIZE:
 			for tile_map in _layers:
 				tile_map.erase_cell(origin + Vector2i(x, y))
-			for tile_map in _overlays.values():
+			for tile_map in _overlays.values() + _variety_overlays.values():
 				tile_map.erase_cell(origin + Vector2i(x, y))
 			_decorations.erase_cell(origin + Vector2i(x, y))
 			_clay_hints.erase_cell(origin + Vector2i(x, y))
@@ -605,10 +601,15 @@ func _draw_overlays(
 		)
 	for look in TerrainTileset.OVERLAY_LOOKS:
 		if TerrainTileset.is_weather_look(look):
-			var mask := _overlay_mask(look, 0, shown_weathers, corners)
+			var mask := _overlay_mask(look, TerrainTileset.Layer.WATER, shown_weathers, corners)
 			_set_overlay_cell(_overlays[look], look, TerrainTileset.Layer.GRASS, mask, cell)
 			continue
-		var ordinary_mask := _overlay_mask(look, 0, shown_seasons, corners)
+		var ordinary_mask := _overlay_mask(look, TerrainTileset.Layer.WATER, shown_seasons, corners)
+		if ordinary_mask == 0:
+			_overlays[look].erase_cell(cell)
+			_variety_overlays[Vector2i(look, TerrainTileset.Layer.LUSH_GRASS)].erase_cell(cell)
+			_variety_overlays[Vector2i(look, TerrainTileset.Layer.DRY_GRASS)].erase_cell(cell)
+			continue
 		var lush_mask := _overlay_mask(
 			look, TerrainTileset.Layer.LUSH_GRASS, shown_seasons, corners
 		)
