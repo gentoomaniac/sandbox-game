@@ -6,7 +6,8 @@ extends RefCounted
 ## - harvest_level: the tool level needed to harvest it: 0 by hand (bushes and saplings), 1 an
 ##   axe or pickaxe (oak, spruce, dead tree, stone), 2 a better one (pine, the hardest wood);
 ## - atlas_row, variants: where its looks are in assets/objects.png (see the art generator).
-## Optional:
+## Furniture, which only stands inside buildings, has `interior_cell` (its cell in
+## assets/interior.png) instead of atlas_row and variants. Optional:
 ## - sleep_minutes: the object is a bed, and sleeping in it takes this long;
 ## - growth_stages, days_per_stage: the object is a crop. Its `days_grown` state sets its
 ##   stage; the last stage is ripe. Its atlas variants are the stages.
@@ -24,6 +25,8 @@ const SHRUB := &"shrub"
 const SAPLING := &"sapling"
 const FERN_BUSH := &"fern_bush"
 const TURNIP := &"turnip"
+const SMALL_BED := &"small_bed"
+const TABLE := &"table"
 
 const TYPES := {
 	OAK:
@@ -126,5 +129,20 @@ const TYPES := {
 		"variants": 4,
 		"growth_stages": 4,
 		"days_per_stage": 1,
+	},
+	SMALL_BED:
+	{
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"interior_cell": Vector2i(3, 0),
+		"sleep_minutes": 6 * GameClock.MINUTES_PER_HOUR,
+	},
+	TABLE:
+	{
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"interior_cell": Vector2i(4, 0),
 	},
 }

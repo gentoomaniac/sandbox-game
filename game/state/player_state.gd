@@ -17,7 +17,9 @@ var position := Vector2.ZERO
 ## The axis direction the player last tried to walk in (UP, DOWN, LEFT or RIGHT), also when
 ## a wall stopped them.
 var facing := Vector2i.DOWN
-## Tile of the bed the player last slept in, where they wake up when they pass out.
+## The bed the player last slept in, where they wake up when they pass out: its tile on
+## `home_map` (the world, or the inside of a building).
+var home_map: GameMap
 var home_bed := Vector2i.ZERO
 
 
@@ -33,7 +35,7 @@ func facing_tile() -> Vector2i:
 
 ## Walks along `direction` for `delta` seconds. Each axis moves on its own, so the player
 ## slides along a wall instead of stopping against it.
-func move(world: World, direction: Vector2, delta: float) -> void:
+func move(map: GameMap, direction: Vector2, delta: float) -> void:
 	if direction != Vector2.ZERO:
 		# The axis the player moves along most; a tie faces vertically.
 		if absf(direction.x) > absf(direction.y):
@@ -45,17 +47,17 @@ func move(world: World, direction: Vector2, delta: float) -> void:
 		var step := velocity * minf(delta, MAX_STEP_SECONDS)
 		delta -= MAX_STEP_SECONDS
 		for axis in [Vector2(step.x, 0.0), Vector2(0.0, step.y)]:
-			if can_stand_at(world, position + axis):
+			if can_stand_at(map, position + axis):
 				position += axis
 
 
 ## Whether a player with their feet at `feet` fits: every tile their body touches is walkable.
-static func can_stand_at(world: World, feet: Vector2) -> bool:
+static func can_stand_at(map: GameMap, feet: Vector2) -> bool:
 	var top_left := Vector2i(Vector2(feet.x - BODY_HALF_WIDTH, feet.y - BODY_HEIGHT).floor())
 	# Ceiling minus one: a body that ends exactly on a tile edge does not touch the next tile.
 	var bottom_right := Vector2i(int(ceilf(feet.x + BODY_HALF_WIDTH)) - 1, int(ceilf(feet.y)) - 1)
 	for y in range(top_left.y, bottom_right.y + 1):
 		for x in range(top_left.x, bottom_right.x + 1):
-			if not world.is_walkable(Vector2i(x, y)):
+			if not map.is_walkable(Vector2i(x, y)):
 				return false
 	return true

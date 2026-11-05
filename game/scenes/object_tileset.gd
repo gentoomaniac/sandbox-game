@@ -23,6 +23,8 @@ func _init() -> void:
 	# tile's bottom edge.
 	var raise := (CELL_HEIGHT - TerrainTileset.TILE_SIZE) / 2
 	for object_type: Dictionary in WorldObjectTypes.TYPES.values():
+		if not object_type.has("atlas_row"):
+			continue
 		for variant: int in object_type["variants"]:
 			var atlas_cell := Vector2i(variant, object_type["atlas_row"])
 			source.create_tile(atlas_cell)

@@ -2,7 +2,7 @@ class_name Tile
 extends RefCounted
 ## A snapshot of one tile's state. Changing the world goes through Chunk's setters, not here.
 
-enum Terrain { GRASS, SOIL, WATER, WETLAND, FLOODPLAIN }
+enum Terrain { GRASS, SOIL, WATER, WETLAND, FLOODPLAIN, FLOOR, WALL }
 
 var terrain: Terrain = Terrain.GRASS
 ## Unused for now; will be driven by weather.
@@ -11,14 +11,16 @@ var frozen := false
 var snow_depth := 0.0
 
 
-## Water blocks movement unless it is frozen (a frozen river can be crossed).
+## Water blocks movement unless it is frozen (a frozen river can be crossed), and so does a
+## wall.
 func is_walkable() -> bool:
-	return terrain != Terrain.WATER or frozen
+	return (terrain != Terrain.WATER or frozen) and terrain != Terrain.WALL
 
 
-## Anything that can flood or is under water is off limits for building.
+## Only dry open ground. Anything that can flood or is under water is off limits, and
+## interiors are not built on.
 func is_buildable() -> bool:
-	return terrain != Terrain.WATER and terrain != Terrain.WETLAND and terrain != Terrain.FLOODPLAIN
+	return terrain == Terrain.GRASS or terrain == Terrain.SOIL
 
 
 ## Only grass can be tilled. Floodplain, the most fertile land, needs a "tilled" property

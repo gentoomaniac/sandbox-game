@@ -6,6 +6,9 @@ extends CanvasModulate
 ## (1 - luminance) of the night tint, which is about 0.5.
 const LIGHT_STRENGTH_PER_DARKNESS := 2.0
 
+## Inside there is no day and night: a fixed warm tint, as from lamps and a hearth.
+const INTERIOR_TINT := Color(1.0, 0.9, 0.78)
+
 ## Hour of day to tint colour. Blended linearly in between, and wraps around midnight.
 const STOPS := {
 	0.0: Color(0.40, 0.46, 0.74),
@@ -34,6 +37,10 @@ func _init() -> void:
 
 func show_time(clock: GameClock) -> void:
 	color = _gradient.sample(float(clock.minute_of_day) / GameClock.MINUTES_PER_DAY)
+
+
+func show_interior() -> void:
+	color = INTERIOR_TINT
 
 
 ## How much light sources should shine now: 0 in full daylight, 1 once the tint is as dark as

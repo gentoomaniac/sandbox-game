@@ -6,6 +6,9 @@ extends RefCounted
 var type: StringName
 ## World tile position of the top left tile of the footprint.
 var origin: Vector2i
+## The inside, made from the building type's map the first time someone enters. It is kept
+## here so what changes inside stays.
+var interior: Interior
 
 
 func _init(building_type: StringName, origin_tile: Vector2i) -> void:

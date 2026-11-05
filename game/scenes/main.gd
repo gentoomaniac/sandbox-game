@@ -6,7 +6,8 @@ extends Node2D
 ## `--at=<x>,<y>` puts the player on that world tile instead of at the camp;
 ## `--screenshot=<path>` saves one frame as PNG once streaming has settled, then quits;
 ## `--time=<hh:mm>` sets the time of day; `--field=<x>,<y>` tills a small field there with
-## crops in every growth stage (see DebugField). BuildMode parses `--ghost=<x>,<y>` and
+## crops in every growth stage (see DebugField); `--inside` walks into the first house as soon
+## as one exists (see `--house`). BuildMode parses `--ghost=<x>,<y>` and
 ## `--house=<x>,<y>` (see there).
 
 const WORLD_SEED := 1
@@ -14,16 +15,21 @@ const WORLD_SEED := 1
 const GAME_MINUTES_PER_REAL_SECOND := 1.5
 ## Debug speed-up, toggled with F2: a game day in 16 real seconds.
 const FAST_FORWARD_FACTOR := 60.0
-## Fading out and back in around sleep.
+## Frames to wait before a screenshot once the scene is ready.
+const SCREENSHOT_SETTLE_FRAMES := 3
+## Fading out and back in around sleep and doors.
 const SLEEP_FADE_SECONDS := 0.5
 
 var _state := GameState.new_game(WORLD_SEED)
 var _player_view := PlayerView.new()
 var _use_highlight := UseHighlight.new()
 var _harvest_hud := HarvestHud.new()
+var _interior_view := InteriorView.new()
 var _screenshot_path := ""
 var _fast_forward := false
-var _is_sleeping := false
+var _is_fading := false
+var _enter_first_house := false
+var _settled_frames := 0
 var _pending_minutes := 0.0
 
 @onready var _view: WorldView = $WorldView
@@ -46,6 +52,8 @@ func _ready() -> void:
 		elif arg.begins_with("--field="):
 			var tile := arg.trim_prefix("--field=").split_floats(",")
 			DebugField.create(_state.world, Vector2i(int(tile[0]), int(tile[1])))
+		elif arg == "--inside":
+			_enter_first_house = true
 	_view.show_world(_state.world)
 	_build_mode.world = _state.world
 	# Among the objects, so the player walks behind tree canopies.
@@ -54,28 +62,37 @@ func _ready() -> void:
 	_view.add_child(_use_highlight)
 	_use_highlight.show_for(_state)
 	add_child(_harvest_hud)
+	_interior_view.hide()
+	add_child(_interior_view)
 	_show_clock()
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_fast_forward"):
 		_fast_forward = not _fast_forward
-	elif event.is_action_pressed("interact") and not _is_sleeping:
+	elif event.is_action_pressed("interact") and not _is_fading:
 		_try_sleep()
-	elif event.is_action_pressed("use") and not _is_sleeping and not _build_mode.is_active():
+	elif event.is_action_pressed("use") and not _is_fading and not _build_mode.is_active():
 		if _state.use_facing_tile() == GameState.Use.HARVEST:
 			_harvest_hud.show_harvest(GameState.CROP, _state.harvest_count)
 
 
 func _process(delta: float) -> void:
 	_tick_clock(delta)
-	if not _is_sleeping:
+	if not _is_fading:
 		var direction := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
-		_state.player.move(_state.world, direction, delta)
+		_state.player.move(_state.current_map, direction, delta)
+		if _state.door_underfoot():
+			_fade_through(_pass_door)
 	_camera.position = (_state.player.position * TerrainTileset.TILE_SIZE).round()
 	_view.set_focus(_state.player.tile())
-	if _screenshot_path != "" and _view.is_settled:
-		_save_screenshot_and_quit()
+	if _enter_first_house:
+		_enter_first_house_now()
+	if _screenshot_path != "":
+		# A few frames after everything is in place, for tile maps to catch up.
+		_settled_frames = _settled_frames + 1 if _is_ready_to_shoot() else 0
+		if _settled_frames > SCREENSHOT_SETTLE_FRAMES:
+			_save_screenshot_and_quit()
 
 
 ## Real time to whole game minutes; the fraction carries over to the next frame.
@@ -96,16 +113,54 @@ func _try_sleep() -> void:
 	var bed := _state.bed_in_reach()
 	if bed == null:
 		return
-	_is_sleeping = true
+	_fade_through(
+		func() -> void:
+			_state.sleep_in(bed)
+			_show_clock()
+	)
+
+
+## Fades to black, runs `change` while the screen is black, and fades back in.
+func _fade_through(change: Callable) -> void:
+	_is_fading = true
 	var fade := create_tween()
 	fade.tween_property(_fade, "color:a", 1.0, SLEEP_FADE_SECONDS)
 	await fade.finished
-	_state.sleep_in(bed)
-	_show_clock()
+	change.call()
 	fade = create_tween()
 	fade.tween_property(_fade, "color:a", 0.0, SLEEP_FADE_SECONDS)
 	await fade.finished
-	_is_sleeping = false
+	_is_fading = false
+
+
+func _pass_door() -> void:
+	_state.pass_door()
+	_show_current_map()
+
+
+## Shows the map the player is on: the world, or the interior (which pauses the world's
+## chunk streaming, leaving it as it is).
+func _show_current_map() -> void:
+	var is_inside := _state.is_inside()
+	_build_mode.cancel()
+	_build_mode.process_mode = PROCESS_MODE_DISABLED if is_inside else PROCESS_MODE_INHERIT
+	_view.visible = not is_inside
+	_view.process_mode = PROCESS_MODE_DISABLED if is_inside else PROCESS_MODE_INHERIT
+	_interior_view.visible = is_inside
+	if is_inside:
+		_interior_view.show_interior(_state.current_map)
+	_player_view.reparent(_interior_view.entities if is_inside else _view.entities, false)
+	_show_clock()
+
+
+## Debug: waits for the first house and the world around, then walks in without a fade.
+func _enter_first_house_now() -> void:
+	var houses := _state.world.buildings()
+	if houses.is_empty() or not _view.is_settled:
+		return
+	_enter_first_house = false
+	_state.player.position = Vector2(houses[0].door_tile()) + Vector2(0.5, 0.5)
+	_pass_door()
 
 
 func _set_start_time(text: String) -> void:
@@ -121,8 +176,15 @@ func _set_start_time(text: String) -> void:
 	_state.clock.set_time(hour, minute)
 
 
+func _is_ready_to_shoot() -> bool:
+	return _view.is_settled and not _enter_first_house
+
+
 func _show_clock() -> void:
-	_tint.show_time(_state.clock)
+	if _state.is_inside():
+		_tint.show_interior()
+	else:
+		_tint.show_time(_state.clock)
 	_view.set_light_strength(_tint.light_strength())
 	_hud.show_time(_state.clock)
 

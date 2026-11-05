@@ -89,6 +89,10 @@ func is_active() -> bool:
 	return _is_active
 
 
+func cancel() -> void:
+	_set_active(false)
+
+
 func _set_active(is_active: bool) -> void:
 	_is_active = is_active
 	if not is_active:

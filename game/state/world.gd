@@ -1,5 +1,5 @@
 class_name World
-extends RefCounted
+extends GameMap
 ## The world: a seed, fixed bounds and the chunks that are currently loaded.
 ##
 ## The world is centred on the origin: with MAX_SIZE_CHUNKS = 64, chunk coordinates run
@@ -152,16 +152,12 @@ func grow_crops() -> void:
 			objects_changed.emit(pos)
 
 
-## Tile rules combined with the objects on the tile. False where there is no tile.
+## Tile and object rules, and buildings: only their door can be walked on.
 func is_walkable(world_pos: Vector2i) -> bool:
-	var tile := tile_at(world_pos)
-	if tile == null or not tile.is_walkable():
+	if not super(world_pos):
 		return false
 	var building := building_at(world_pos)
-	if building != null and building.door_tile() != world_pos:
-		return false
-	var object := object_at(world_pos)
-	return object == null or not object.blocks_walking()
+	return building == null or building.door_tile() == world_pos
 
 
 ## Must agree with placement_blockers: a tile is buildable if it would not block a building.
