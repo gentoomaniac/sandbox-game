@@ -72,6 +72,7 @@ from PIL import Image
 
 import animals
 import buildings
+import chest
 import crop_icons
 import crops
 import fire
@@ -1241,6 +1242,19 @@ def sleeping_bag():
 CAMP_OBJECTS = [[fireplace()], [sleeping_bag()]]
 
 
+def world_chest():
+    """The chest outdoors, on a ground shadow, its bottom a pixel above the cell's."""
+    canvas = object_canvas()
+    ground_shadow(canvas, 8)
+    picture = chest.chest()
+    top = OBJECT_BOTTOM - len(picture)
+    for y, row in enumerate(picture):
+        for x, name in enumerate(row):
+            if name is not None:
+                canvas[top + y][OBJECT_CENTRE - len(row) // 2 + x] = name
+    return canvas
+
+
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -1260,7 +1274,7 @@ def object_atlas():
         ("boulder", BOULDERS[0]),
         ("stump", STUMPS[0]),
         ("tall_grass", meadow.tall_grass_row()),
-    ] + trunks.rows() + [("reeds", reeds.reeds_row()), ("dead_stump", DEAD_STUMPS[0])]
+    ] + trunks.rows() + [("reeds", reeds.reeds_row()), ("dead_stump", DEAD_STUMPS[0]), ("chest", [world_chest()])]
 
 
 # The player character (assets/character/<slot>_<variant>.png).
@@ -1857,20 +1871,6 @@ def stool():
     return outline(canvas, "soil_dark", keep_bottom=True)
 
 
-def chest():
-    """A chest with iron bands and a gold lock, 1x1 tiles."""
-    canvas = sprite_canvas(TILE, TILE)
-    fill_rect(canvas, 0, 1, 15, 6, "soil_mid")
-    fill_rect(canvas, 1, 1, 14, 1, "soil_light")
-    fill_rect(canvas, 0, 7, 15, 15, "soil")
-    for x in (2, 12):
-        fill_rect(canvas, x, 1, x + 1, 15, "stone")
-        fill_rect(canvas, x, 1, x, 15, "stone_light")
-    fill_rect(canvas, 7, 5, 8, 8, "gold")
-    fill_rect(canvas, 0, 7, 15, 7, "soil_dark")
-    return outline(canvas, "soil_dark", keep_bottom=True)
-
-
 # The box of the hearth's picture that its flame burns in (x, y, width, height; the flame stands
 # on its bottom row, over the logs), and the flame's half width and height.
 HEARTH_FLAME = ((8, 10, 16, 16), 5.0, 12)
@@ -1907,7 +1907,7 @@ FURNITURE = {
     "bed": (bed(), (1, 2)),
     "table": (table(), (2, 1)),
     "stool": (stool(), (1, 1)),
-    "chest": (chest(), (1, 1)),
+    "chest": (chest.chest(), (1, 1)),
     "hearth": (hearth(), (2, 2)),
     "window": (window_picture(), (1, 2)),
 }

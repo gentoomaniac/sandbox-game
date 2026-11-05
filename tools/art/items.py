@@ -6,6 +6,8 @@ game/state/item_types.gd), their half size versions for the ground to
 assets/ground_items/<item id>.png, slots to assets/ui/slot.png and slot_selected.png.
 """
 
+import chest
+
 ICON = 16
 SLOT = 20
 
@@ -315,6 +317,7 @@ def small(picture):
 
 
 ICONS = {
+    "chest": chest.icon(),
     "turnip": turnip(),
     "logs": logs(),
     "stone": stone(),

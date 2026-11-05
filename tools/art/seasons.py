@@ -198,6 +198,14 @@ _SNOW_STUMP = ({"sand_light", "sand", "straw"}, set(), 3)
 _SNOW_TRUNK = ({"soil_light", "soil_mid", "sand", "stone_light", "sand_light", "straw"}, set(), 2)
 _SNOW_DEADWOOD = ({"stone_light", "stone", "bare_light"}, set(), 2)
 _SNOW_DEAD_STUMP = ({"stone_light", "stone", "bare_light"}, set(), 3)
+# Snow lies on the lid of the chest (its first rows), not on top of the box under the iron rim.
+_SNOW_CHEST = ({"soil_light", "sand", "soil_mid"}, set(), 3)
+_CHEST_LID_ROWS = 5
+
+
+def _chest_lid_bottom(canvas):
+    """The row under the lid of a chest picture: its first drawn row and the lid's height on."""
+    return next(y for y, row in enumerate(canvas) if any(row)) + _CHEST_LID_ROWS
 
 _SPRING_KINDS = {"oak", "berry_bush", "shrub", "sapling", "fern", "boulder", "tall_grass"}
 _BLOSSOM_KINDS = {"berry_bush", "shrub"}
@@ -385,11 +393,11 @@ def _winter_object(look, kind, variant, canvas, redraw, rng, centre):
             canvas = copy(canvas)
             snow_caps(canvas, rng, *cap(_SNOW_DEADWOOD), centre)
         return canvas
-    if kind in ("stone", "boulder", "stump", "dead_stump") or kind.endswith("trunk"):
+    if kind in ("stone", "boulder", "stump", "dead_stump", "chest") or kind.endswith("trunk"):
         if has_snow:
             canvas = copy(canvas)
-            spec = {"stone": _SNOW_STONE, "boulder": _SNOW_BOULDER, "stump": _SNOW_STUMP, "dead_stump": _SNOW_DEAD_STUMP}.get(kind, _SNOW_TRUNK)
-            snow_caps(canvas, rng, *cap(spec), centre)
+            spec = {"stone": _SNOW_STONE, "boulder": _SNOW_BOULDER, "stump": _SNOW_STUMP, "dead_stump": _SNOW_DEAD_STUMP, "chest": _SNOW_CHEST}.get(kind, _SNOW_TRUNK)
+            snow_caps(canvas, rng, *cap(spec), centre, _chest_lid_bottom(canvas) if kind == "chest" else None)
             return canvas
         return remap(canvas, _FROST_STONE) if is_frosty else canvas
     return canvas

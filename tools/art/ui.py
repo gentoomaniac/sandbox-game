@@ -191,7 +191,20 @@ def font_files(palette):
 
 
 # Icon pictures: one character per pixel, outlined in ink as pickups are.
-ICON_COLOURS = {"k": "ink", "c": "cream", "g": "gold", "f": "flame", "p": "petal", "e": "ember"}
+ICON_COLOURS = {
+    "k": "ink",
+    "c": "cream",
+    "g": "gold",
+    "f": "flame",
+    "p": "petal",
+    "e": "ember",
+    "l": "soil_light",
+    "m": "soil_mid",
+    "s": "soil",
+    "i": "stone",
+    "j": "stone_light",
+    "d": "stone_dark",
+}
 ICON_ROWS = {
     "energy_icon": """
 .....kkkkk..
@@ -220,6 +233,35 @@ keeeeeeeeeek
 ...keeeek...
 ....keek....
 .....kk.....
+""",
+    # Headers of the two sides of the storage screen: what you carry, and the chest.
+    "backpack_icon": """
+....kkkk....
+...kllllk...
+..kkmmmmkk..
+.kmmmmmmmmk.
+.kmllllllmk.
+.kmmssssmmk.
+.kmmmggmmmk.
+.kmmmmmmmmk.
+.kmllllllmk.
+.ksmssssmsk.
+..kssssssk..
+...kkkkkk...
+""",
+    "chest_icon": """
+............
+..kkkkkkkk..
+.kllllllllk.
+kmmimmmmimmk
+kmmimmmmimmk
+kjjjjggjjjjk
+kiiiiggiiiik
+kmmdmggmdmmk
+kmmdmmmmdmmk
+kssssssssssk
+.kkkkkkkkkk.
+............
 """,
 }
 
