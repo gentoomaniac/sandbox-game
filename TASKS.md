@@ -762,6 +762,14 @@ ids, and so on, from one table of argument kinds per command.
 
 ## Later (not part of the prototype)
 
+- Season looks follow-ups (from the task 29 review): world_view.gd carries layer, season
+  look and weather look as three parallel arrays with the corner assembly written out
+  several times; fold them into one packed per-tile code. SeasonBlend's four boundaries
+  as a loop over SeasonRules.BOUNDARIES; `frost_at` belongs with the season rules, not
+  SnowCover. SnowCover's cold start (~80 ms for a fresh region in late winter) could be
+  spread over frames. Snow cover of the player's region is applied to the whole loaded
+  world for now.
+
 - Split the object edits and regrowth (`_object_edits`, `replace_object`, `hit_object`,
   `change_object`, `pass_night`) out of `World` into their own class with their own tests,
   and drop the `max-public-methods` lint exception in world.gd.
