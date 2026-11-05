@@ -7,7 +7,8 @@ var type: StringName
 ## World tile position of the top left tile of the footprint.
 var origin: Vector2i
 ## The inside, made from the building type's map the first time someone enters. It is kept
-## here so what changes inside stays.
+## here so what changes inside stays. It is not in the world's edits, so a save must store it
+## with the building.
 var interior: Interior
 
 

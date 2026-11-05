@@ -215,6 +215,12 @@ func placement_blockers(
 			blockers[pos] = Blocked.TERRAIN
 		elif object_at(pos) != null or building_at(pos) != null:
 			blockers[pos] = Blocked.OCCUPIED
+	# The player has to be able to stand in front of the door, to go in and to come out.
+	var door_offset: Vector2i = BuildingTypes.TYPES[building_type]["door_offset"]
+	var front := origin + door_offset + Vector2i.DOWN
+	if not is_walkable(front):
+		var is_blocked_by_thing := tile_at(front) != null and tile_at(front).is_walkable()
+		blockers[front] = Blocked.OCCUPIED if is_blocked_by_thing else Blocked.TERRAIN
 	return blockers
 
 

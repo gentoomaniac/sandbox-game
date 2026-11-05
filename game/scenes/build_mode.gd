@@ -80,9 +80,14 @@ func _draw() -> void:
 	draw_texture(
 		_texture, top_left + Vector2(0, footprint_size.y - _texture.get_height()), GHOST_MODULATE
 	)
-	for pos in Building.footprint_tiles(BUILDING_TYPE, _origin):
+	var footprint := Building.footprint_tiles(BUILDING_TYPE, _origin)
+	for pos in footprint:
 		var tint := BLOCKED_TINT if _blockers.has(pos) else VALID_TINT
 		draw_rect(Rect2(Vector2(pos * tile_size), Vector2(tile_size, tile_size)), tint)
+	# A blocked tile in front of the door is outside the footprint.
+	for pos in _blockers:
+		if pos not in footprint:
+			draw_rect(Rect2(Vector2(pos * tile_size), Vector2(tile_size, tile_size)), BLOCKED_TINT)
 
 
 func is_active() -> bool:

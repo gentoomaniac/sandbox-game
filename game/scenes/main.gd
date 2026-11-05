@@ -85,7 +85,8 @@ func _process(delta: float) -> void:
 		if _state.door_underfoot():
 			_fade_through(_pass_door)
 	_camera.position = (_state.player.position * TerrainTileset.TILE_SIZE).round()
-	_view.set_focus(_state.player.tile())
+	if not _state.is_inside():
+		_view.set_focus(_state.player.tile())
 	if _enter_first_house:
 		_enter_first_house_now()
 	if _screenshot_path != "":

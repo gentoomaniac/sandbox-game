@@ -94,3 +94,14 @@ func test_building_outlives_its_chunks() -> void:
 	assert_eq(_world.building_at(crossing), building)
 	_world.add_chunk(Chunk.new(Vector2i.ZERO))
 	assert_false(_world.is_buildable(crossing), "still occupied after reloading")
+
+
+func test_rejected_when_the_tile_in_front_of_the_door_is_blocked() -> void:
+	var door_offset: Vector2i = BuildingTypes.TYPES[HOUSE]["door_offset"]
+	var front := ORIGIN + door_offset + Vector2i.DOWN
+	_world.add_object(WorldObject.new(WorldObjectTypes.OAK, front))
+	assert_eq(_world.placement_blockers(HOUSE, ORIGIN), {front: World.Blocked.OCCUPIED})
+	assert_null(_world.place_building(HOUSE, ORIGIN))
+	_world.remove_object(front)
+	_set_terrain(front, Tile.Terrain.WATER)
+	assert_eq(_world.placement_blockers(HOUSE, ORIGIN), {front: World.Blocked.TERRAIN})

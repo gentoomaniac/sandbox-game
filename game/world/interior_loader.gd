@@ -10,6 +10,8 @@ extends RefCounted
 ## - `exit` (bool): the cell is the exit;
 ## - `object_type`: a WorldObjectTypes name; an object of it stands on the cell.
 ## Layers and cell positions follow the map; empty cells are left empty.
+##
+## Bad content fails loudly, but with asserts: they are debug-time checks for authored content.
 
 
 ## Reads the map in the file. Asserts if it is not one of ours (CSV layers, one external
@@ -49,13 +51,18 @@ static func load_interior(tmx_path: String) -> Interior:
 					layers.append(parser.get_node_data().split(",", false))
 					is_in_data = false
 	var tile_properties := _read_tile_properties(tileset_path)
+	var has_exit := false
 	for gids in layers:
 		for index in gids.size():
 			var gid := gids[index].strip_edges().to_int()
 			if gid == 0:
 				continue
 			var pos := Vector2i(index % interior.size.x, index / interior.size.x)
-			_apply(interior, pos, tile_properties.get(gid - first_gid, {}))
+			assert(tile_properties.has(gid - first_gid), "%s: no tile for gid %d" % [tmx_path, gid])
+			var properties: Dictionary = tile_properties[gid - first_gid]
+			has_exit = has_exit or properties.get("exit") == "true"
+			_apply(interior, pos, properties)
+	assert(has_exit, "%s: no tile with the exit property" % tmx_path)
 	return interior
 
 
@@ -72,6 +79,7 @@ static func _read_tile_properties(tsx_path: String) -> Dictionary:
 				tile_id = parser.get_named_attribute_value("id").to_int()
 				properties[tile_id] = {}
 			"property":
+				assert(tile_id >= 0, "%s: property outside a tile" % tsx_path)
 				properties[tile_id][parser.get_named_attribute_value("name")] = (
 					parser.get_named_attribute_value("value")
 				)
@@ -86,6 +94,10 @@ static func _apply(interior: Interior, pos: Vector2i, properties: Dictionary) ->
 	if properties.get("exit") == "true":
 		interior.exit_tile = pos
 	if properties.has("object_type"):
+		assert(
+			WorldObjectTypes.TYPES.has(StringName(properties["object_type"])),
+			"Unknown object type: %s" % properties["object_type"]
+		)
 		interior.add_object(WorldObject.new(StringName(properties["object_type"]), pos))
 
 
