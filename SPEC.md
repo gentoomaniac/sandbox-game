@@ -62,6 +62,11 @@ top of classic pixel art (details under "Lighting and look").
   - **subtle glow/bloom** on bright light sources. Keep it subtle.
 - **Later: normal maps** on sprites and tiles, so light gives the pixel art relief. This
   is mostly an art cost. Code should not rule it out.
+- **See-through occluders:** when the character is behind something (tree, building,
+  other tall object), that object becomes translucent in a soft-edged circle around the
+  character, so the character stays visible. Only objects in front of the character fade;
+  objects behind it stay as they are. Defaults (tunable): radius about 1.5 tiles around
+  the character's centre, about 35 % opacity inside, soft edge.
 - **Left out for now:** shadows cast by objects.
 
 ### Art pipeline

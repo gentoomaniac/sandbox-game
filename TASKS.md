@@ -383,6 +383,25 @@ See SPEC.md "Player" (character sprite).
 - The collision body stays at the feet; y-sorting stays correct with the taller sprite.
 - Tests for the pure parts (layer list from player data, frame selection).
 
+## 14. See-through occluders
+
+- [ ] Done
+
+Depends on: 12, 13 (works in the new render pipeline, and the circle is sized for the
+16×32 character).
+
+See SPEC.md "Lighting and look" (see-through occluders).
+
+- When an object or building is in front of the player (sorted after the player) and its
+  sprite overlaps the player, it fades inside a soft circle around the player's centre.
+- Objects behind the player must not fade.
+- Suggested approach: objects are drawn by a `TileMapLayer`, which can't fade single
+  cells. For the few occluders near the player, hide their cell and draw them as a
+  `Sprite2D` with a fade shader (circle centre, radius, opacity as uniforms) while they
+  occlude; buildings are sprites already. Keep it to one small helper.
+- Fade in and out over a short time, so it doesn't pop.
+- Tests for the pure part (which objects occlude the player).
+
 ## Later (not part of the prototype)
 
 - Floodplain farming: floodplain is the most fertile farmland, but only grass can be tilled
