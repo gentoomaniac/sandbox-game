@@ -433,7 +433,7 @@ fullscreen (`godot --path . -f -- --new-game --screenshot=... --at=...`).
 
 ### 16a. Objects: trees, bushes, stones, camp, crops
 
-- [ ] Done
+- [x] Done
 
 - Redraw at the target sizes: oak, spruce, pine, dead tree, berry bush, shrub, fern bush,
   sapling, fireplace (with logs), sleeping bag (1×2 tiles, vertical), turnip stages.
@@ -506,6 +506,18 @@ Art notes from the art round 2 review and look:
 - `tools/art/generate.py`: shared sprites (pebbles, fern, clover, brown caps) are defined
   several times; move them to module level. Add a small `size(picture)` helper.
 - No test yet that `redraw_tile` redraws decorations and unload erases them.
+
+Art scale pass notes (16a–16c reviews and look):
+
+- Pines read as olive-brown blobs with stubby trunks inside forests.
+- The sleeping bag (1×2, vertical) reads like an upright sign behind the player; it should
+  look flat on the ground. The character's face turns slightly pink at night.
+- Seed mound and sprout stages are plain; the hoe is a thin stick from front/back.
+- A grass tuft can stay under a boulder's right half at the load frontier (hidden).
+- Saves from before 16a put the 1×1 bag where the new spawn is; `add_chunk` replay checks
+  only the origin tile of multi-tile objects.
+- Interior: the table reads like a chest, the chest is hard to identify, the bed is flat,
+  the floor boards are very high contrast.
 
 Saving notes from the task 15 review:
 
