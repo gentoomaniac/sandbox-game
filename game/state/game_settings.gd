@@ -48,6 +48,7 @@ const ACTION_LABELS := {
 	&"use_click": "Use (mouse)",
 	&"toggle_build": "Build mode",
 	&"toggle_fast_forward": "Fast forward",
+	&"toggle_coordinates": "Show coordinates",
 	&"pause": "Pause menu",
 }
 const MOUSE_BUTTON_LABELS := {

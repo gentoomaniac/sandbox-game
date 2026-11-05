@@ -252,6 +252,12 @@ Decided 2026-11-05.
 - **UI look:** a pixel font and a framed panel (9-slice) in palette colours, in one shared
   Godot Theme that all UI uses.
 
+### Coordinates display
+
+Decided 2026-11-05. The player's tile coordinates in the top right corner (inside a
+house: the room's, marked "House"). Off by default; F3 (rebindable, "Show coordinates")
+toggles it. Not saved.
+
 ### Console
 
 Decided 2026-11-05. A text console for testing and cheats.

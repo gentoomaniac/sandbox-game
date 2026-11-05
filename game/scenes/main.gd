@@ -15,7 +15,8 @@ extends Node2D
 ## crops in every growth stage (see DebugField); `--inside` walks into the first house as soon
 ## as one exists (see `--house`); `--forage=<x>,<y>` puts a stump, bushes and a sapling in a
 ## row from there and some of every new item in the inventory (see DebugForage);
-## `--zoom=<z>` sets the camera zoom; `--inventory` opens the inventory screen at start;
+## `--zoom=<z>` sets the camera zoom; `--coordinates` shows the coordinates (F3);
+## `--inventory` opens the inventory screen at start;
 ## `--mouse-tile=<x>,<y>` pretends the mouse is always on that tile (for screenshots);
 ## `--camera-shift=<x>,<y>` moves the camera by that many art pixels, fractions included
 ## (to check smooth scrolling); `--menu=pause|settings|controls|display|game` opens that menu page
@@ -42,6 +43,7 @@ var _debug_menu_page := -1
 var _player_view := PlayerView.new()
 var _use_highlight := UseHighlight.new()
 var _harvest_hud := HarvestHud.new()
+var _coordinates_hud := CoordinatesHud.new()
 var _hotbar := HotbarHud.new()
 var _vitals := VitalsHud.new()
 var _inventory_screen := InventoryScreen.new()
@@ -101,6 +103,8 @@ func _ready() -> void:
 			_state.player.energy = float(arg.trim_prefix("--energy="))
 		elif arg.begins_with("--health="):
 			_state.player.health = float(arg.trim_prefix("--health="))
+		elif arg == "--coordinates":
+			_coordinates_hud.toggle()
 		elif arg == "--inside":
 			_enter_first_house = true
 		elif arg == "--inventory":
@@ -127,6 +131,7 @@ func _ready() -> void:
 	_view.add_child(_use_highlight)
 	_use_highlight.show_for(_state, _camera)
 	add_child(_harvest_hud)
+	add_child(_coordinates_hud)
 	add_child(_hotbar)
 	_hotbar.show_inventory(_state.player.inventory)
 	add_child(_vitals)
@@ -178,7 +183,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	# event as handled here, so Main still sees what BuildMode consumed.
 	_world.push_input(event)
 	var hotbar_slot := _hotbar_slot_of(event)
-	if event.is_action_pressed("toggle_fast_forward"):
+	if event.is_action_pressed("toggle_coordinates"):
+		_coordinates_hud.toggle()
+	elif event.is_action_pressed("toggle_fast_forward"):
 		_fast_forward = not _fast_forward
 	elif hotbar_slot != -1:
 		_state.player.inventory.select(hotbar_slot)
@@ -199,6 +206,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	_tick_clock(delta)
+	_coordinates_hud.show_position(_state.player.tile(), _state.is_inside())
 	_use_highlight.is_enabled = (
 		not _build_mode.is_active() and not _state.is_inside() and not _inventory_screen.is_open()
 	)
