@@ -129,6 +129,21 @@ top of classic pixel art (details under "Lighting and look").
 - Each variety has a **harvest level**: harvesting it needs a tool of at least that level.
   This ties resources to tool upgrades (see Player: Tools).
 - The biome decides which varieties occur where (see Biomes).
+- **Stronger tools unlock new varieties and harvest the older ones faster** (fewer hits).
+  Together this is a progression loop: better tools → new resources → better tools.
+- **Regrowth:**
+  - a felled tree leaves a stump or sapling and regrows over days or seasons;
+  - minerals respawn slowly, mainly in areas the player hasn't visited for a while;
+  - the player can plant trees (from seeds or saplings).
+
+### World objects (architecture)
+
+- Trees, rocks and ores, crops, the camp site, beds and similar things are **world
+  objects placed on tiles**, not terrain types.
+- A world object keeps its own state (e.g. growth stage, hits left, time until regrowth).
+  Tile state stays lean and only describes the ground.
+- Whether a tile can be walked on, built on or planted on also depends on the objects on
+  it.
 
 ### Combat
 
@@ -211,13 +226,6 @@ Tasks: see [TASKS.md](TASKS.md).
 - **Reputation details:**
   - What does reputation unlock or block (prices, quests, hostility)?
   - Which NPCs in the territory are affected: everyone, or only those living closest?
-- **Resources:**
-  - Are trees and minerals world objects placed on tiles (with their own state, e.g. hits
-    left, regrowth), or terrain types? Suggested: world objects.
-  - Do they regrow or respawn? If so, how (trees from saplings, minerals per season, new
-    ones in unexplored areas)?
-  - Can the player plant trees?
-  - Does a stronger tool only unlock varieties, or also harvest faster?
 - **Lighting and look:** which effects, and at what render resolution (see the proposal
   in the conversation of 2026-11-05; to be decided).
 - **Target platforms:** Linux only, or desktop in general? Web?

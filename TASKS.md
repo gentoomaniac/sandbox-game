@@ -123,26 +123,57 @@ Depends on: 3.
 Done when: flying a debug camera around with the arrow keys streams chunks smoothly, with
 no visible seams.
 
-## 5. Player and camp site
+## 5. World objects: trees and rocks
 
 - [ ] Done
 
 Depends on: 4.
 
-- A top-down player character that walks in 8 directions and can't enter non-walkable
-  tiles.
-- The camera follows the player, and chunk streaming follows the player.
-- On a new game the generator picks a start position on buildable land near the world
-  centre. It places a camp site there: a fireplace and a sleeping bag, as world objects
-  in game state.
-- The player starts at the camp site.
-- GUT test: the start position is always on buildable land, for several seeds.
+See SPEC.md "World objects (architecture)" and "Resources: trees and minerals".
 
-## 6. Day counter and sleeping
+- A world object has:
+  - a type;
+  - a tile position;
+  - its own state (e.g. growth stage, hits left).
+- Object types are data: name, footprint (1×1 for now), blocks walking yes/no, harvest
+  level, placeholder look.
+- The world stores objects per chunk. It answers "object at tile position" and supports
+  adding and removing objects through explicit methods.
+- Tile rules take objects into account: a tile with a blocking object is not walkable,
+  and no tile with an object is buildable or plantable. Keep `Tile`'s own derived values
+  as they are. Add the combined check on `World` (e.g. `World.is_walkable(pos)`).
+- Generation places objects deterministically per chunk from the seed:
+  - one tree type, e.g. "oak", harvest level 1, in clusters on grass;
+  - one rock type, "stone", harvest level 1, scattered;
+  - nothing on water, wetland or floodplain.
+- Rendering: placeholder shapes on top of the tile layer, streamed with the chunks.
+- No harvesting yet: that needs tools and an inventory.
+- GUT tests:
+  - object generation is deterministic and independent of chunk order;
+  - no objects on water, wetland or floodplain;
+  - the combined walkable and buildable checks respect objects;
+  - adding and removing objects works.
+
+## 6. Player and camp site
 
 - [ ] Done
 
 Depends on: 5.
+
+- A top-down player character that walks in 8 directions and can't enter non-walkable
+  tiles.
+- The camera follows the player, and chunk streaming follows the player.
+- On a new game the generator picks a start position on buildable land near the world
+  centre, with no world objects in the way. It places a camp site there: a fireplace and a sleeping bag, as world objects
+  in game state.
+- The player starts at the camp site.
+- GUT test: the start position is always on buildable land, for several seeds.
+
+## 7. Day counter and sleeping
+
+- [ ] Done
+
+Depends on: 6.
 
 - Game state has a clock: day number and time of day. Time passes while playing; a debug
   key speeds it up.
@@ -156,17 +187,18 @@ Depends on: 5.
   - the clock advances correctly on sleep, including crossing midnight;
   - home is updated.
 
-## 7. Building placement
+## 8. Building placement
 
 - [ ] Done
 
-Depends on: 5.
+Depends on: 6.
 
 - One preset building, "small house", with a fixed footprint (e.g. 4×3 tiles) and one
   door tile.
 - A build mode shows a ghost of the building that follows the cursor or player and snaps
   to tiles.
-- Every tile of the footprint is checked with `is_buildable`. Blocked tiles are marked,
+- Every tile of the footprint is checked with `is_buildable`, and must have no world
+  object on it. Blocked tiles are marked,
   and the message "This land doesn't look safe to build on." is shown.
 - Confirming places the building in game state, and its tiles become non-walkable except
   the door.
@@ -176,11 +208,11 @@ Depends on: 5.
   - placement is rejected if any footprint tile is not buildable;
   - after placement, the footprint tiles are occupied.
 
-## 8. Interior map from Tiled
+## 9. Interior map from Tiled
 
 - [ ] Done
 
-Depends on: 7.
+Depends on: 8.
 
 - An interior map for the small house, made in Tiled (`maps/interiors/small_house.tmx`)
   and imported with YATI.
@@ -188,17 +220,18 @@ Depends on: 7.
   importer step turns them into tile state, so interiors use the same model as the world.
 - Walking into the door of a placed house switches to the interior map. Walking out
   through the interior's exit returns the player to just outside the door.
-- The interior has a bed. Sleeping in it works like task 6 (house bed duration: e.g.
+- The interior has a bed. Sleeping in it works like task 7 (house bed duration: e.g.
   6 h), and makes it the new home.
 
 Done when: you can build a house, walk in, sleep there, and walk out.
 
-## 9. One crop
+## 10. One crop
 
 - [ ] Done
 
-Depends on: 6.
+Depends on: 7.
 
+- A crop is a world object (task 5) that keeps its growth state.
 - One crop type, with a few growth stages and a number of days per stage.
 - An action on a plantable tile turns grass into soil. Another action plants the crop on
   soil.
@@ -222,5 +255,6 @@ World generation notes from the task 3 review:
 - More rivers, lakes or biomes: split `terrain_at` into one helper per feature instead of
   growing its if-chain.
 
-Saving and loading, inventory, energy, weather, biomes, combat, reputation, building
+Harvesting trees and rocks (tools, harvest levels, regrowth), saving and loading,
+inventory, energy, weather, biomes, combat, reputation, building
 customisation and expansions, real art.
