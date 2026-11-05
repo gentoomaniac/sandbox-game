@@ -1046,6 +1046,18 @@ tongues that rise, split and lick, played at a steady rate with a per-fire phase
 and stretching with the wind outdoors (the hearth doesn't lean). Sparks stay. Keep it on
 the art-pixel grid and cheap (one shared animation, no per-frame scripts per fire).
 
+## 49. Crafting and the chest
+
+- [ ] Done
+
+See SPEC.md "Crafting". The crafting menu on C with `data/recipes.cfg` (first recipe: the
+chest, 5 logs); the chest item, placed like seeds with a one-tile ghost under the building
+rules, outdoors and inside houses; the storage screen on E (inventory left, 5×3 chest
+right, backpack and chest icons, drag and Shift+click); squeak on open, thump on close; the
+axe takes a chest down and spills its contents; chests and contents saved. Art: the chest
+(world sprite with a snow look, item icon), the two header icons; sounds generated in
+tools/audio and added to sounds.cfg. Tests, tooltips, README and the Controls table.
+
 ## Later (not part of the prototype)
 
 - Season looks follow-ups (from the task 29 review): world_view.gd carries layer, season

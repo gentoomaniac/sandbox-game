@@ -672,6 +672,32 @@ atmosphere only: no player impact, not hunted, not saved.
 - Specific fights take place in handcrafted areas (Tiled).
 - Mobs also spawn in certain procedurally generated areas.
 
+### Crafting
+
+Decided 2026-11-05.
+
+- **C opens the crafting menu** (rebindable). It lists every recipe with its cost against
+  what the player carries, like the build panel; a recipe that can't be afforded is greyed
+  with the missing materials marked. Clicking an affordable one takes the materials and puts
+  the item in the inventory. Recipes are in `data/recipes.cfg` (result, count, materials),
+  validated like the other data files. Crafting works anywhere for now (a workbench may
+  come later); the hammer is a later recipe.
+- **First recipe: the chest**, 5 logs. A chest holds 15 slots (5×3).
+- **Placing a chest:** held like seeds; while it is held a ghost of the chest follows the
+  targeted tile, and using it places the chest there. The same rules as for buildings, just
+  on one tile: not on blocked or unsafe tiles, not in the way of a door. Chests can be
+  placed outdoors and inside houses (the first furniture the player places in an
+  interior).
+- **Opening a chest:** E on a chest within reach opens the storage screen (a chest on the
+  targeted tile wins over sleeping; with the hammer held E still picks the next building).
+  The player's inventory is on the left, the chest's 5×3 slots on the right, with a small
+  backpack icon above the one and a chest icon above the other (equipment is not shown).
+  Items move by dragging as on the character screen; Shift+click sends a whole stack to the
+  other side. Opening makes a creaky squeak, closing a soft wooden thump.
+- **Picking a chest up:** hitting it with the axe takes it down and gives the chest item
+  back; its contents spill onto the ground as piles around it.
+- A chest and its contents are saved with the world (outdoors) or the building's inside.
+
 ### Building and land
 
 - **No land ownership.** The player can build anywhere, except on blocked tiles.
