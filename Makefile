@@ -2,7 +2,7 @@ GODOT ?= godot
 GODOT_VERSION := $(shell cat .godot-version)
 
 GUT_VERSION := 9.7.1
-# Use the latest YATI release that ships a GDScript build (some releases are C#-only).
+# Pinned. Bump only to a release that ships a GDScript build (some are C#-only).
 YATI_VERSION := 2.2.9
 GDTOOLKIT_VERSION := 4.5.0
 
