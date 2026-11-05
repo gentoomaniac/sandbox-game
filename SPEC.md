@@ -68,7 +68,7 @@ top of classic pixel art (details under "Lighting and look").
 - **See-through occluders:** when the character is behind something (tree, building,
   other tall object), that object becomes translucent in a soft-edged circle around the
   character, so the character stays visible. Only objects in front of the character fade;
-  objects behind it stay as they are. Defaults (tunable): radius about 1.5 tiles around
+  objects behind it stay as they are. Defaults (tunable): radius about 2 tiles around
   the character's centre, about 35 % opacity inside, soft edge.
 - **Left out for now:** shadows cast by objects.
 
@@ -234,6 +234,8 @@ top of classic pixel art (details under "Lighting and look").
   Tile state stays lean and only describes the ground.
 - Whether a tile can be walked on, built on or planted on also depends on the objects on
   it.
+- An object can cover several tiles (its **footprint**, e.g. a boulder on 2x1, a sleeping
+  bag on 1x2). It is stored at its top left tile only; the tiles it covers are derived.
 
 ### World edits (architecture)
 

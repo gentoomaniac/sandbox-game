@@ -142,8 +142,10 @@ func object_type_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
 	if object_type != WorldObjectTypes.BOULDER:
 		return object_type
 	var right := world_pos + Vector2i.RIGHT
-	var right_terrain := terrain_at(right)
-	if _rolled_type_at(right, right_terrain) == &"":
+	if (
+		terrain_at(right) == Tile.Terrain.GRASS
+		and _rolled_type_at(right, Tile.Terrain.GRASS) == &""
+	):
 		return object_type
 	return &""
 

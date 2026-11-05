@@ -1,17 +1,17 @@
 class_name CampSite
 extends RefCounted
 ## The starting camp: a fireplace and a sleeping bag in a small free clearing near the world
-## centre. The sleeping bag lies vertically beside the fireplace, on the tile to its right and
-## the one below that.
+## centre. The sleeping bag lies vertically right of the fireplace, on the tiles up-right and
+## right of it. The player starts below the bag, so the fire is not behind them.
 
 ## The clearing is this many tiles wide and tall, centred on the fireplace.
 const CLEARING_SIZE := 3
 ## Where the search gives up. Far beyond what any generated world needs.
 const MAX_SEARCH_RADIUS := 64
 
-const SLEEPING_BAG_OFFSET := Vector2i(1, 0)
-## Below the fireplace and beside the sleeping bag, so the player can sleep straight away.
-const SPAWN_OFFSET := Vector2i(0, 1)
+const SLEEPING_BAG_OFFSET := Vector2i(1, -1)
+## Below the sleeping bag, so the player can sleep straight away.
+const SPAWN_OFFSET := Vector2i(1, 1)
 
 var fireplace_pos: Vector2i
 var sleeping_bag_pos: Vector2i

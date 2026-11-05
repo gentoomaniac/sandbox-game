@@ -175,3 +175,60 @@ func test_combined_checks_are_false_where_no_chunk_is_loaded() -> void:
 	assert_false(_world.is_walkable(pos))
 	assert_false(_world.is_buildable(pos))
 	assert_false(_world.is_plantable(pos))
+
+
+func test_big_object_covers_its_whole_footprint() -> void:
+	_load_chunk_at_origin()
+	var origin := Vector2i(3, 4)
+	var boulder := WorldObject.new(WorldObjectTypes.BOULDER, origin)
+	_world.add_object(boulder)
+	assert_same(_world.object_at(origin), boulder)
+	assert_same(_world.object_at(origin + Vector2i.RIGHT), boulder)
+	assert_null(_world.object_at(origin + Vector2i.LEFT))
+	assert_null(_world.object_at(origin + Vector2i.DOWN))
+	assert_false(_world.is_walkable(origin + Vector2i.RIGHT))
+	assert_false(_world.is_buildable(origin + Vector2i.RIGHT))
+	assert_false(_world.is_tillable(origin + Vector2i.RIGHT))
+
+
+func test_big_object_is_found_across_a_chunk_border() -> void:
+	_world.add_chunk(Chunk.new(Vector2i.ZERO))
+	_world.add_chunk(Chunk.new(Vector2i(1, 0)))
+	var origin := Vector2i(Chunk.CHUNK_SIZE - 1, 2)
+	var boulder := WorldObject.new(WorldObjectTypes.BOULDER, origin)
+	_world.add_object(boulder)
+	assert_same(_world.object_at(origin + Vector2i.RIGHT), boulder)
+
+
+func test_removing_a_big_object_by_any_of_its_tiles_frees_all_of_them() -> void:
+	_load_chunk_at_origin()
+	var origin := Vector2i(3, 4)
+	_world.add_object(WorldObject.new(WorldObjectTypes.SLEEPING_BAG, origin))
+	watch_signals(_world)
+	var removed := _world.remove_object(origin + Vector2i.DOWN)
+	assert_eq(removed.pos, origin)
+	assert_null(_world.object_at(origin))
+	assert_null(_world.object_at(origin + Vector2i.DOWN))
+	assert_signal_emit_count(_world, "objects_changed", 2)
+
+
+func test_every_footprint_fits_the_largest_footprint() -> void:
+	for object_type: Dictionary in WorldObjectTypes.TYPES.values():
+		var footprint: Vector2i = object_type["footprint"]
+		assert_true(footprint.x <= WorldObjectTypes.MAX_FOOTPRINT.x)
+		assert_true(footprint.y <= WorldObjectTypes.MAX_FOOTPRINT.y)
+
+
+func test_generated_boulders_have_free_grass_for_their_whole_footprint() -> void:
+	var generator := WorldGenerator.new(SEED)
+	var boulders := 0
+	for y in range(-96, 96):
+		for x in range(-96, 96):
+			var pos := Vector2i(x, y)
+			if generator.object_type_at(pos, generator.terrain_at(pos)) != WorldObjectTypes.BOULDER:
+				continue
+			boulders += 1
+			var right := pos + Vector2i.RIGHT
+			assert_eq(generator.terrain_at(right), Tile.Terrain.GRASS)
+			assert_eq(generator.object_type_at(right, Tile.Terrain.GRASS), &"")
+	assert_gt(boulders, 0)
