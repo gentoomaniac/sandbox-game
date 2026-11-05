@@ -2,7 +2,8 @@ class_name WorldGenerator
 extends RefCounted
 ## Generates the grassland biome: grass with one meandering river running west to east, a
 ## floodplain band along both banks and wetland patches, with forests (oak or conifer
-## stands, mixed at their borders), bushes, rare dead trees and scattered stones on the grass.
+## stands, mixed at their borders), bushes, rare dead trees and scattered stones and boulders
+## on the grass.
 ##
 ## Deterministic: terrain is a pure function of the seed and the world tile position, and
 ## each generator owns its noise instances, so chunks come out the same in any order and
@@ -19,18 +20,21 @@ const WETLAND_THRESHOLD := 0.45
 
 ## Forests are where the forest noise is above this; trees fill a forest densely and are
 ## rare outside it. Chances are per grass tile; one roll per tile decides tree, bush, stone,
-## dead tree or nothing, so a tile never has two objects. The tree chance rises from the
-## edge of a forest to its core (noise at FOREST_CORE_THRESHOLD and above), where crowns
-## overlap; bushes are the other way round, common at the edge and in clearings.
+## boulder, dead tree or nothing, so a tile never has two objects. The tree chance rises from
+## the edge of a forest to its core (noise at FOREST_CORE_THRESHOLD and above), where crowns
+## overlap: they are about 3 tiles wide, so a quarter of the tiles holding a trunk is a dense
+## forest. Bushes are the other way round, common at the edge and in clearings.
 const FOREST_THRESHOLD := 0.1
 const FOREST_CORE_THRESHOLD := 0.35
-const FOREST_EDGE_TREE_CHANCE := 0.12
-const FOREST_CORE_TREE_CHANCE := 0.55
-const CLEARING_TREE_CHANCE := 0.004
+const FOREST_EDGE_TREE_CHANCE := 0.05
+const FOREST_CORE_TREE_CHANCE := 0.22
+const CLEARING_TREE_CHANCE := 0.003
 const FOREST_EDGE_BUSH_CHANCE := 0.08
 const FOREST_CORE_BUSH_CHANCE := 0.01
 const CLEARING_BUSH_CHANCE := 0.02
 const STONE_CHANCE := 0.012
+## A boulder is 2 tiles wide: it needs the tile right of the rolled one to be free grass.
+const BOULDER_CHANCE := 0.004
 ## Dead trees are rare everywhere, and more common with wetland WETLAND_REACH tiles away.
 const DEAD_TREE_CHANCE := 0.0015
 const DEAD_TREE_NEAR_WETLAND_CHANCE := 0.02
@@ -131,8 +135,21 @@ func terrain_at(world_pos: Vector2i) -> Tile.Terrain:
 
 
 ## The type of object generated on a tile, or &"" for none. A pure function of the seed, the
-## position and the terrain; only grass has objects.
+## position and the terrain; only grass has objects. A boulder covers the tile to its right,
+## which therefore has to be free grass: otherwise there is no boulder.
 func object_type_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
+	var object_type := _rolled_type_at(world_pos, terrain)
+	if object_type != WorldObjectTypes.BOULDER:
+		return object_type
+	var right := world_pos + Vector2i.RIGHT
+	var right_terrain := terrain_at(right)
+	if _rolled_type_at(right, right_terrain) == &"":
+		return object_type
+	return &""
+
+
+## What the roll of a tile says, before a boulder is checked for room.
+func _rolled_type_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
 	if terrain != Tile.Terrain.GRASS:
 		return &""
 	var forest_noise := _forest_noise.get_noise_2dv(Vector2(world_pos))
@@ -153,9 +170,9 @@ func object_type_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
 	if roll < bush_chance:
 		return _bush_type(_roll(world_pos, _variety_roll_seed))
 	roll -= bush_chance
-	if roll < STONE_CHANCE:
-		return WorldObjectTypes.STONE
-	roll -= STONE_CHANCE
+	if roll < STONE_CHANCE + BOULDER_CHANCE:
+		return WorldObjectTypes.STONE if roll < STONE_CHANCE else WorldObjectTypes.BOULDER
+	roll -= STONE_CHANCE + BOULDER_CHANCE
 	if (
 		roll < DEAD_TREE_NEAR_WETLAND_CHANCE
 		and (roll < DEAD_TREE_CHANCE or _is_near_wetland(world_pos))

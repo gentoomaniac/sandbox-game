@@ -27,6 +27,22 @@ static func from_dict(data: Dictionary) -> WorldObject:
 	return object
 
 
+## The tiles the object covers: its own and, for a bigger one, those to the right and down.
+func tiles() -> Array[Vector2i]:
+	var footprint: Vector2i = WorldObjectTypes.TYPES[type]["footprint"]
+	var covered: Array[Vector2i] = []
+	for y in footprint.y:
+		for x in footprint.x:
+			covered.append(pos + Vector2i(x, y))
+	return covered
+
+
+func covers(world_pos: Vector2i) -> bool:
+	var offset := world_pos - pos
+	var footprint: Vector2i = WorldObjectTypes.TYPES[type]["footprint"]
+	return offset.x >= 0 and offset.y >= 0 and offset.x < footprint.x and offset.y < footprint.y
+
+
 func blocks_walking() -> bool:
 	return WorldObjectTypes.TYPES[type]["blocks_walking"]
 

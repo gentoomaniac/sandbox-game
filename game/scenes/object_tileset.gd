@@ -3,12 +3,14 @@ extends RefCounted
 ## The object atlas made by tools/art/generate.py as a TileSet: one row per object type,
 ## one column per variant (see WorldObjectTypes). Cells are bigger than a tile: an object
 ## stands on the bottom centre tile of its cell and a tall one (a tree) reaches over the
-## tiles north of it. Shorter sprites are drawn on the bottom of their cell.
+## tiles around it. An object on several tiles is centred on its footprint, with the
+## cell's bottom on the footprint's bottom, so it is drawn from its own (top left) tile
+## shifted accordingly.
 
 const ATLAS_PATH := "res://assets/objects.png"
 const SOURCE_ID := 0
-const CELL_WIDTH := 32
-const CELL_HEIGHT := 48
+const CELL_WIDTH := 48
+const CELL_HEIGHT := 80
 
 var tile_set := TileSet.new()
 
@@ -19,16 +21,27 @@ func _init() -> void:
 	source.texture = load(ATLAS_PATH)
 	source.texture_region_size = Vector2i(CELL_WIDTH, CELL_HEIGHT)
 	tile_set.add_source(source, SOURCE_ID)
-	# Tiles are drawn centred on their cell; raise them so the cell's bottom edge meets the
-	# tile's bottom edge.
-	var raise := (CELL_HEIGHT - TerrainTileset.TILE_SIZE) / 2
 	for object_type: Dictionary in WorldObjectTypes.TYPES.values():
 		if not object_type.has("atlas_row"):
 			continue
 		for variant: int in object_type["variants"]:
 			var atlas_cell := Vector2i(variant, object_type["atlas_row"])
 			source.create_tile(atlas_cell)
-			source.get_tile_data(atlas_cell, 0).texture_origin = Vector2i(0, raise)
+			var tile_data := source.get_tile_data(atlas_cell, 0)
+			tile_data.texture_origin = cell_origin(object_type["footprint"])
+			# Sorted by the middle of the footprint's bottom row, like the player standing there.
+			tile_data.y_sort_origin = (object_type["footprint"].y - 1) * TerrainTileset.TILE_SIZE
+
+
+## Where a cell is drawn relative to its tile: texture_origin moves it up and left. Tiles are
+## drawn centred on their cell; raise it so the cell's bottom edge meets the bottom edge of
+## the footprint, and shift it over so the cell is centred on the footprint.
+static func cell_origin(footprint: Vector2i) -> Vector2i:
+	var tile_size := TerrainTileset.TILE_SIZE
+	return Vector2i(
+		-(footprint.x - 1) * tile_size / 2,
+		(CELL_HEIGHT - tile_size) / 2 - (footprint.y - 1) * tile_size
+	)
 
 
 ## The atlas cell for an object: a crop's variant is its growth stage; for the others it

@@ -4,11 +4,11 @@ extends RefCounted
 ## y-sorted `entities` node does) whose sprite overlaps the player's sprite. All in world
 ## pixels. Things behind the player never occlude it.
 
-## Objects are drawn on the tile they stand on, centred and bottom-aligned, and sorted by
-## that tile's middle row; a sprite is at most 3 tiles high, so only these tiles around the
+## Objects are drawn centred on their footprint and bottom-aligned, and sorted by the middle
+## of its bottom row; a sprite is at most 5 tiles high, so only these tiles around the
 ## player's feet can reach its sprite.
 const NEARBY_COLUMNS := 2
-const NEARBY_ROWS_BELOW := 3
+const NEARBY_ROWS_BELOW := 5
 
 
 ## The player's sprite: one tile wide, standing on `feet`.
@@ -23,16 +23,20 @@ static func object_rect(object: WorldObject) -> Rect2:
 	if height == 0:
 		return Rect2()
 	var tile_size := TerrainTileset.TILE_SIZE
-	var bottom_centre := Vector2((object.pos.x + 0.5) * tile_size, (object.pos.y + 1) * tile_size)
+	var footprint: Vector2i = WorldObjectTypes.TYPES[object.type]["footprint"]
+	var bottom_centre := Vector2(
+		(object.pos.x + footprint.x / 2.0) * tile_size, (object.pos.y + footprint.y) * tile_size
+	)
 	return Rect2(
 		bottom_centre - Vector2(ObjectTileset.CELL_WIDTH / 2.0, height),
 		Vector2(ObjectTileset.CELL_WIDTH, height)
 	)
 
 
-## The y an object is sorted by: the middle of its tile.
+## The y an object is sorted by: the middle of its bottom footprint row.
 static func object_sort_y(object: WorldObject) -> float:
-	return (object.pos.y + 0.5) * TerrainTileset.TILE_SIZE
+	var footprint: Vector2i = WorldObjectTypes.TYPES[object.type]["footprint"]
+	return (object.pos.y + footprint.y - 0.5) * TerrainTileset.TILE_SIZE
 
 
 ## The picture of a building: as wide as its footprint, its bottom on the footprint's
@@ -61,6 +65,7 @@ static func occluding_objects(feet: Vector2, world: World) -> Array[WorldObject]
 			var object := world.object_at(feet_tile + Vector2i(x, y))
 			if (
 				object != null
+				and not found.has(object)
 				and object_sort_y(object) > feet.y
 				and object_rect(object).intersects(player_rect_now)
 			):

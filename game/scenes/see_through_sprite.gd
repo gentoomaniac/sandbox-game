@@ -7,7 +7,7 @@ extends Sprite2D
 const SHADER := preload("res://game/scenes/see_through.gdshader")
 ## The circle is centred on the player's middle, one tile above the feet.
 const CENTRE_ABOVE_FEET := TerrainTileset.TILE_SIZE
-const RADIUS := 1.5 * TerrainTileset.TILE_SIZE
+const RADIUS := 2.0 * TerrainTileset.TILE_SIZE
 const INNER_OPACITY := 0.35
 const EDGE_SOFTNESS := 4.0
 const FADE_SECONDS := 0.15

@@ -5,7 +5,8 @@ extends GameMap
 ## The world is centred on the origin: with MAX_SIZE_CHUNKS = 64, chunk coordinates run
 ## from -32 to 31 on both axes, so world tile positions run from -1024 to 1023.
 
-## An object was added or removed at this world tile position.
+## An object was added or removed at this world tile position: one signal for each tile it
+## covers.
 signal objects_changed(world_pos: Vector2i)
 ## A tile's terrain was changed (see `set_terrain`).
 signal tile_changed(world_pos: Vector2i)
@@ -100,12 +101,20 @@ func tile_at(world_pos: Vector2i) -> Tile:
 	return chunk.tile_at(Chunk.local_pos(world_pos))
 
 
-## The object on a tile, or null if there is none (or the chunk is not loaded).
+## The object that covers a tile (see WorldObject.tiles), or null if there is none (or the
+## chunk is not loaded). A big object is stored at its own tile only, so look back from the
+## tile over the largest footprint.
 func object_at(world_pos: Vector2i) -> WorldObject:
-	var chunk := chunk_at(Chunk.world_to_chunk(world_pos))
-	if chunk == null:
-		return null
-	return chunk.object_at(Chunk.local_pos(world_pos))
+	for y in WorldObjectTypes.MAX_FOOTPRINT.y:
+		for x in WorldObjectTypes.MAX_FOOTPRINT.x:
+			var origin := world_pos - Vector2i(x, y)
+			var chunk := chunk_at(Chunk.world_to_chunk(origin))
+			if chunk == null:
+				continue
+			var object := chunk.object_at(Chunk.local_pos(origin))
+			if object != null and object.covers(world_pos):
+				return object
+	return null
 
 
 ## Changes the terrain of a loaded tile and remembers it as an edit, so it survives the
@@ -118,24 +127,30 @@ func set_terrain(world_pos: Vector2i, terrain: Tile.Terrain) -> void:
 	tile_changed.emit(world_pos)
 
 
-## Puts an object on its tile. The chunk must be loaded and the tile free.
+## Puts an object on its tiles. The chunk of its own tile must be loaded and its tiles free.
 func add_object(object: WorldObject) -> void:
 	var chunk := chunk_at(Chunk.world_to_chunk(object.pos))
 	assert(chunk != null, "Chunk not loaded for object at %s" % object.pos)
+	assert(
+		object.tiles().all(func(tile: Vector2i) -> bool: return object_at(tile) == null),
+		"Tiles already have an object: %s" % object.pos
+	)
 	chunk.add_object(object)
 	_object_edits[object.pos] = object
-	objects_changed.emit(object.pos)
+	for tile in object.tiles():
+		objects_changed.emit(tile)
 
 
-## Takes the object off a tile and returns it, or returns null if there was none.
+## Takes the object that covers a tile off the world and returns it, or returns null if there
+## was none.
 func remove_object(world_pos: Vector2i) -> WorldObject:
-	var chunk := chunk_at(Chunk.world_to_chunk(world_pos))
-	if chunk == null:
+	var object := object_at(world_pos)
+	if object == null:
 		return null
-	var object := chunk.remove_object(Chunk.local_pos(world_pos))
-	if object != null:
-		_object_edits[world_pos] = null
-		objects_changed.emit(world_pos)
+	chunk_at(Chunk.world_to_chunk(object.pos)).remove_object(Chunk.local_pos(object.pos))
+	_object_edits[object.pos] = null
+	for tile in object.tiles():
+		objects_changed.emit(tile)
 	return object
 
 

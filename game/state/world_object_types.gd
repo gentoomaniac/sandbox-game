@@ -1,10 +1,12 @@
 class_name WorldObjectTypes
 extends RefCounted
 ## The kinds of world object, as data. Keyed by type name; each entry has:
-## - footprint: tiles covered (1x1 for now);
+## - footprint: tiles covered, from the object's own tile to the right and down (at most
+##   MAX_FOOTPRINT);
 ## - blocks_walking: whether the tile can be walked on while the object is there;
 ## - harvest_level: the tool level needed to harvest it: 0 by hand (bushes and saplings), 1 an
-##   axe or pickaxe (oak, spruce, dead tree, stone), 2 a better one (pine, the hardest wood);
+##   axe or pickaxe (oak, spruce, dead tree, stone), 2 a better one (pine, the hardest wood,
+##   boulder);
 ## - atlas_row, variants: where its looks are in assets/objects.png (see the art generator).
 ## Furniture, which only stands inside buildings, has `interior_cell` (its cell in
 ## assets/interior.png) instead of atlas_row and variants. Optional:
@@ -27,8 +29,13 @@ const SHRUB := &"shrub"
 const SAPLING := &"sapling"
 const FERN_BUSH := &"fern_bush"
 const TURNIP := &"turnip"
+const BOULDER := &"boulder"
 const SMALL_BED := &"small_bed"
 const TABLE := &"table"
+
+## The largest footprint any type has, in tiles: what World looks back over to find the
+## object that covers a tile.
+const MAX_FOOTPRINT := Vector2i(2, 2)
 
 const TYPES := {
 	OAK:
@@ -37,7 +44,7 @@ const TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": 0,
-		"sprite_height": 40,
+		"sprite_height": 64,
 		"variants": 3,
 	},
 	STONE:
@@ -55,12 +62,13 @@ const TYPES := {
 		"harvest_level": 0,
 		"atlas_row": 2,
 		"variants": 1,
-		# Energy 3 lifts the core of the light above the glow threshold (1.0).
-		"light": {"color": Color(1.0, 0.6, 0.3), "energy": 3.0, "radius_tiles": 7.0},
+		# Deep orange at a moderate energy: brighter or paler turns the grass lime and
+		# bleaches the player.
+		"light": {"color": Color(1.0, 0.5, 0.22), "energy": 1.4, "radius_tiles": 7.0},
 	},
 	SLEEPING_BAG:
 	{
-		"footprint": Vector2i(1, 1),
+		"footprint": Vector2i(1, 2),
 		"blocks_walking": false,
 		"harvest_level": 0,
 		"atlas_row": 3,
@@ -73,7 +81,7 @@ const TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": 4,
-		"sprite_height": 45,
+		"sprite_height": 66,
 		"variants": 3,
 	},
 	PINE:
@@ -82,7 +90,7 @@ const TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 2,
 		"atlas_row": 5,
-		"sprite_height": 36,
+		"sprite_height": 60,
 		"variants": 3,
 	},
 	DEAD_TREE:
@@ -91,7 +99,7 @@ const TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": 6,
-		"sprite_height": 33,
+		"sprite_height": 48,
 		"variants": 3,
 	},
 	BERRY_BUSH:
@@ -135,6 +143,14 @@ const TYPES := {
 		"variants": 4,
 		"growth_stages": 4,
 		"days_per_stage": 1,
+	},
+	BOULDER:
+	{
+		"footprint": Vector2i(2, 1),
+		"blocks_walking": true,
+		"harvest_level": 2,
+		"atlas_row": 12,
+		"variants": 2,
 	},
 	SMALL_BED:
 	{

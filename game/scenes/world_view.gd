@@ -139,9 +139,12 @@ func redraw_tile(world_pos: Vector2i) -> void:
 		_draw_decoration(world_pos, _layer_at(world_pos))
 
 
+## Called for every tile an object covers; it is drawn from its own tile only.
 func _on_objects_changed(world_pos: Vector2i) -> void:
-	_drop_object_sprite(world_pos)
-	_draw_object(world_pos)
+	var object := world.object_at(world_pos)
+	if object == null or object.pos == world_pos:
+		_drop_object_sprite(world_pos)
+		_draw_object(world_pos)
 	_draw_decoration(world_pos, _layer_at(world_pos))
 
 
@@ -307,11 +310,15 @@ func _swap_cell_for_sprite(object: WorldObject) -> void:
 	var sprite := SeeThroughSprite.new()
 	sprite.texture = texture
 	sprite.centered = false
-	# Like the tile map draws it: sorted by the tile's middle, the cell's bottom on the tile's
-	# bottom edge.
-	var half_tile := TerrainTileset.TILE_SIZE / 2
+	# Like the tile map draws it (see ObjectTileset): sorted by the middle of the footprint's
+	# bottom row, the cell's bottom on the footprint's bottom edge.
+	var footprint: Vector2i = WorldObjectTypes.TYPES[object.type]["footprint"]
+	var sort_shift := Vector2(0, (footprint.y - 1) * TerrainTileset.TILE_SIZE)
 	sprite.position = (Vector2(object.pos) + Vector2(0.5, 0.5)) * TerrainTileset.TILE_SIZE
-	sprite.offset = Vector2(-ObjectTileset.CELL_WIDTH / 2, half_tile - ObjectTileset.CELL_HEIGHT)
+	sprite.position += sort_shift
+	sprite.offset = (
+		-Vector2(cell_size) / 2 - Vector2(ObjectTileset.cell_origin(footprint)) - sort_shift
+	)
 	entities.add_child(sprite)
 	_object_sprites[object.pos] = sprite
 	_objects.erase_cell(object.pos)
