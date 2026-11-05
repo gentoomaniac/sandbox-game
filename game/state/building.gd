@@ -34,3 +34,20 @@ func tiles() -> Array[Vector2i]:
 
 func door_tile() -> Vector2i:
 	return origin + BuildingTypes.TYPES[type]["door_offset"]
+
+
+func to_dict() -> Dictionary:
+	return {
+		"type": str(type),
+		"origin": SaveCodec.vector_to_json(origin),
+		"interior": null if interior == null else interior.to_dict(),
+	}
+
+
+static func from_dict(data: Dictionary) -> Building:
+	var building := Building.new(
+		StringName(data["type"]), SaveCodec.vector_from_json(data["origin"])
+	)
+	if data["interior"] != null:
+		building.interior = Interior.from_dict(data["interior"])
+	return building

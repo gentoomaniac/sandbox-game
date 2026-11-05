@@ -99,6 +99,8 @@ func show_world(world_to_show: World) -> void:
 	_decoration_noise.frequency = DECORATION_FREQUENCY
 	for coords in world.loaded_chunk_coords():
 		_draw_chunk(world.chunk_at(coords))
+	for building in world.buildings():
+		_draw_building(building)
 
 
 ## Sets how brightly every light shines (see ObjectLight.strength).

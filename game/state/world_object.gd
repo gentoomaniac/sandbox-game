@@ -16,6 +16,19 @@ func _init(object_type: StringName, world_pos: Vector2i) -> void:
 	pos = world_pos
 
 
+func to_dict() -> Dictionary:
+	return {"type": str(type), "pos": SaveCodec.vector_to_json(pos), "state": state.duplicate()}
+
+
+static func from_dict(data: Dictionary) -> WorldObject:
+	var object := WorldObject.new(StringName(data["type"]), SaveCodec.vector_from_json(data["pos"]))
+	# JSON has only floats; the whole numbers in the state (days_grown) must be ints again.
+	for key: String in data["state"]:
+		var value: Variant = data["state"][key]
+		object.state[key] = int(value) if value is float and value == floorf(value) else value
+	return object
+
+
 func blocks_walking() -> bool:
 	return WorldObjectTypes.TYPES[type]["blocks_walking"]
 

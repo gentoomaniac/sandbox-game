@@ -1,0 +1,52 @@
+class_name SaveFile
+extends RefCounted
+## The save on disk: one JSON file per world, `{"version": 1, "game": <GameState.to_dict>}`.
+
+const VERSION := 1
+const DEFAULT_PATH := "user://saves/world.json"
+## What a save we can't use is renamed to, so it is never overwritten silently.
+const BACKUP_SUFFIX := ".bak"
+
+
+## Writes the game to `path`. Returns whether it worked.
+static func write(state: GameState, path: String = DEFAULT_PATH) -> bool:
+	var error := DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+	if error != OK:
+		push_error("Can't create the save folder: %s" % error_string(error))
+		return false
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		push_error("Can't write %s: %s" % [path, error_string(FileAccess.get_open_error())])
+		return false
+	file.store_string(JSON.stringify({"version": VERSION, "game": state.to_dict()}, "\t"))
+	return true
+
+
+## The saved game, or null if there is no save. A save that can't be read (broken, or from
+## another version) is reported, moved aside to `<path>.bak` and also gives null: the caller
+## starts a new game.
+static func read(path: String = DEFAULT_PATH) -> GameState:
+	if not FileAccess.file_exists(path):
+		return null
+	# Not parse_string: it prints an engine error of its own for broken text.
+	var json := JSON.new()
+	var parsed: Variant = (
+		json.data if json.parse(FileAccess.get_file_as_string(path)) == OK else null
+	)
+	if not parsed is Dictionary or not parsed.has("game"):
+		_reject(path, "not a save file")
+		return null
+	if not is_equal_approx(float(parsed.get("version", 0)), VERSION):
+		_reject(
+			path, "save version %s, this game reads version %d" % [parsed.get("version"), VERSION]
+		)
+		return null
+	return GameState.from_dict(parsed["game"])
+
+
+static func _reject(path: String, reason: String) -> void:
+	var backup := path + BACKUP_SUFFIX
+	push_error(
+		"Can't load %s (%s). Moving it to %s and starting a new game." % [path, reason, backup]
+	)
+	DirAccess.rename_absolute(path, backup)

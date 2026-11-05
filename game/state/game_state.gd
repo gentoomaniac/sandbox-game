@@ -125,7 +125,62 @@ func use_tile(target: Vector2i) -> Use:
 
 ## Uses the tile the player faces.
 func use_facing_tile() -> Use:
+
 	return use_tile(player.facing_tile())
+
+
+## Maps are saved as references, never as copies: `{"kind": "world"}`, or
+## `{"kind": "interior", "building": [x, y]}` for the interior of the building with that
+## origin. So the current map and the home map stay the very objects they point at.
+func to_dict() -> Dictionary:
+	return {
+		"world": world.to_dict(),
+		"clock": clock.to_dict(),
+		"player": player.to_dict(),
+		"current_map": _map_to_ref(current_map),
+		"home_map": _map_to_ref(player.home_map),
+		"harvest_count": harvest_count,
+	}
+
+
+## The chunks of the restored world are not loaded yet: whoever shows it streams them in.
+static func from_dict(data: Dictionary) -> GameState:
+	var state := GameState.new()
+	state.world = World.from_dict(data["world"])
+	state.clock = GameClock.from_dict(data["clock"])
+	state.clock.new_day.connect(state._on_new_day)
+	state.player = PlayerState.from_dict(data["player"], state._map_from_ref(data["home_map"]))
+	state.current_map = state._map_from_ref(data["current_map"])
+	state._building_inside = state._building_of_ref(data["current_map"])
+	state.harvest_count = int(data["harvest_count"])
+	return state
+
+
+func _map_to_ref(map: GameMap) -> Dictionary:
+	if map == world:
+		return {"kind": "world"}
+	for building in world.buildings():
+		if building.interior == map:
+			return {"kind": "interior", "building": SaveCodec.vector_to_json(building.origin)}
+	assert(false, "A map that belongs to no building")
+	return {}
+
+
+func _map_from_ref(ref: Dictionary) -> GameMap:
+	var building := _building_of_ref(ref)
+	return world if building == null else building.interior
+
+
+## The building whose interior the reference names, or null for the world.
+func _building_of_ref(ref: Dictionary) -> Building:
+	if ref["kind"] == "world":
+		return null
+	var origin := SaveCodec.vector_from_json(ref["building"])
+	for building in world.buildings():
+		if building.origin == origin:
+			return building
+	assert(false, "No building at %s" % origin)
+	return null
 
 
 func _on_new_day(_day: int) -> void:

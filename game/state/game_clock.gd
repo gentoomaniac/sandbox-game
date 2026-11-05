@@ -33,3 +33,14 @@ func set_time(hour: int, minute: int) -> void:
 ## "06:00"
 func time_text() -> String:
 	return "%02d:%02d" % [minute_of_day / MINUTES_PER_HOUR, minute_of_day % MINUTES_PER_HOUR]
+
+
+func to_dict() -> Dictionary:
+	return {"day": day, "minute_of_day": minute_of_day}
+
+
+static func from_dict(data: Dictionary) -> GameClock:
+	var clock := GameClock.new()
+	clock.day = int(data["day"])
+	clock.minute_of_day = int(data["minute_of_day"])
+	return clock

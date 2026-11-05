@@ -4,7 +4,9 @@ extends Node2D
 ## pixel) and shown on the window by CameraController; the UI is drawn on the window itself.
 ## The camera and chunk streaming follow the player.
 ##
-## Debug flags (after `--` on the Godot command line, see `make screenshot`):
+## The game is loaded from the save at start and saved after sleeping and on quit (see
+## SaveFile). Flags after `--` on the Godot command line (see `make screenshot`):
+## `--new-game` ignores the save; `--save-path=<file>` uses another save file. Debug flags:
 ## `--at=<x>,<y>` puts the player on that world tile instead of at the camp;
 ## `--screenshot=<path>` saves one frame as PNG once streaming has settled, then quits;
 ## `--time=<hh:mm>` sets the time of day; `--field=<x>,<y>` tills a small field there with
@@ -26,7 +28,8 @@ const SCREENSHOT_SETTLE_FRAMES := 3
 ## Fading out and back in around sleep and doors.
 const SLEEP_FADE_SECONDS := 0.5
 
-var _state := GameState.new_game(WORLD_SEED)
+var _state: GameState
+var _save_path := SaveFile.DEFAULT_PATH
 var _player_view := PlayerView.new()
 var _use_highlight := UseHighlight.new()
 var _harvest_hud := HarvestHud.new()
@@ -51,6 +54,9 @@ var _start_zoom := 1.0
 
 
 func _ready() -> void:
+	_state = _load_or_start_game()
+	# Quitting saves first (see _notification).
+	get_tree().auto_accept_quit = false
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--at="):
 			var tile := arg.trim_prefix("--at=").split_floats(",")
@@ -87,6 +93,14 @@ func _ready() -> void:
 	_interior_view.hide()
 	_world.add_child(_interior_view)
 	_show_clock()
+	if _state.is_inside():
+		_show_current_map()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		_save_game()
+		get_tree().quit()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -170,6 +184,7 @@ func _try_sleep() -> void:
 		func() -> void:
 			_state.sleep_in(bed)
 			_show_clock()
+			_save_game()
 	)
 
 
@@ -216,6 +231,24 @@ func _enter_first_house_now() -> void:
 	_pass_door()
 
 
+## The saved game, or a new one if there is no save or `--new-game` is given. `--save-path=`
+## picks another save file (to keep tests and screenshots off the real one). The first
+## autosave after `--new-game` replaces the old save.
+func _load_or_start_game() -> GameState:
+	var is_new_game := false
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--save-path="):
+			_save_path = arg.trim_prefix("--save-path=")
+		elif arg == "--new-game":
+			is_new_game = true
+	var saved := null if is_new_game else SaveFile.read(_save_path)
+	return saved if saved != null else GameState.new_game(WORLD_SEED)
+
+
+func _save_game() -> void:
+	SaveFile.write(_state, _save_path)
+
+
 func _set_start_time(text: String) -> void:
 	var parts := text.split(":")
 	if parts.size() != 2 or not parts[0].is_valid_int() or not parts[1].is_valid_int():
@@ -230,7 +263,8 @@ func _set_start_time(text: String) -> void:
 
 
 func _is_ready_to_shoot() -> bool:
-	return _view.is_settled and not _enter_first_house
+	# The world is not streamed while the player is inside.
+	return (_view.is_settled or _state.is_inside()) and not _enter_first_house
 
 
 func _show_build_message(text: String) -> void:

@@ -229,8 +229,64 @@ func place_building(building_type: StringName, origin: Vector2i) -> Building:
 	if not placement_blockers(building_type, origin).is_empty():
 		return null
 	var building := Building.new(building_type, origin)
+	_add_building(building)
+	building_placed.emit(building)
+	return building
+
+
+# --- Saving ---
+
+
+## The seed and what the player changed. The chunks are not saved: they are generated again
+## from the seed, with the edits replayed on top (see `add_chunk`).
+func to_dict() -> Dictionary:
+	var terrain_edits: Array[Array] = []
+	for pos in _terrain_edits:
+		terrain_edits.append(
+			SaveCodec.vector_to_json(pos) + [SaveCodec.terrain_to_json(_terrain_edits[pos])]
+		)
+	# A removed object is saved as `{"pos": [x, y], "object": null}`.
+	var object_edits: Array[Dictionary] = []
+	for pos in _object_edits:
+		var object := _object_edits[pos]
+		(
+			object_edits
+			. append(
+				{
+					"pos": SaveCodec.vector_to_json(pos),
+					"object": null if object == null else object.to_dict(),
+				}
+			)
+		)
+	var buildings_data: Array[Dictionary] = []
+	for building in _buildings:
+		buildings_data.append(building.to_dict())
+	return {
+		"seed": world_seed,
+		"terrain_edits": terrain_edits,
+		"object_edits": object_edits,
+		"buildings": buildings_data,
+	}
+
+
+## A world with no chunks loaded; whoever shows it loads them.
+static func from_dict(data: Dictionary) -> World:
+	var world := World.new(int(data["seed"]))
+	for edit: Array in data["terrain_edits"]:
+		world._terrain_edits[SaveCodec.vector_from_json(edit)] = SaveCodec.terrain_from_json(
+			edit[2]
+		)
+	for edit: Dictionary in data["object_edits"]:
+		var object_data: Variant = edit["object"]
+		world._object_edits[SaveCodec.vector_from_json(edit["pos"])] = (
+			null if object_data == null else WorldObject.from_dict(object_data)
+		)
+	for building_data: Dictionary in data["buildings"]:
+		world._add_building(Building.from_dict(building_data))
+	return world
+
+
+func _add_building(building: Building) -> void:
 	_buildings.append(building)
 	for pos in building.tiles():
 		_building_by_tile[pos] = building
-	building_placed.emit(building)
-	return building

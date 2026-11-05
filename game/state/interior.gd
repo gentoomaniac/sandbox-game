@@ -37,3 +37,32 @@ func add_object(object: WorldObject) -> void:
 
 func objects() -> Array[WorldObject]:
 	return _objects.values()
+
+
+func to_dict() -> Dictionary:
+	var tiles: Array[Array] = []
+	for pos in _tiles:
+		tiles.append(
+			SaveCodec.vector_to_json(pos) + [SaveCodec.terrain_to_json(_tiles[pos].terrain)]
+		)
+	var objects_data: Array[Dictionary] = []
+	for object in _objects.values():
+		objects_data.append(object.to_dict())
+	return {
+		"size": SaveCodec.vector_to_json(size),
+		"exit_tile": SaveCodec.vector_to_json(exit_tile),
+		"tiles": tiles,
+		"objects": objects_data,
+	}
+
+
+## Only the terrain of the tiles is saved: the rest of a tile's state is unused inside.
+static func from_dict(data: Dictionary) -> Interior:
+	var interior := Interior.new()
+	interior.size = SaveCodec.vector_from_json(data["size"])
+	interior.exit_tile = SaveCodec.vector_from_json(data["exit_tile"])
+	for tile: Array in data["tiles"]:
+		interior.set_terrain(SaveCodec.vector_from_json(tile), SaveCodec.terrain_from_json(tile[2]))
+	for object_data: Dictionary in data["objects"]:
+		interior.add_object(WorldObject.from_dict(object_data))
+	return interior

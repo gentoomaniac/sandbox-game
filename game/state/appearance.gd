@@ -61,3 +61,18 @@ func take_off(slot: StringName) -> void:
 ## The sheet that holds a layer's frames.
 static func sheet_path(layer: Dictionary) -> String:
 	return SHEET_PATH % [layer.slot, layer.variant]
+
+
+func to_dict() -> Dictionary:
+	var layers_data: Array[Dictionary] = []
+	for layer in layers:
+		layers_data.append({"slot": str(layer.slot), "variant": layer.variant})
+	return {"layers": layers_data}
+
+
+static func from_dict(data: Dictionary) -> Appearance:
+	var appearance := Appearance.new()
+	appearance.layers.clear()
+	for layer: Dictionary in data["layers"]:
+		appearance.layers.append({slot = StringName(layer["slot"]), variant = layer["variant"]})
+	return appearance

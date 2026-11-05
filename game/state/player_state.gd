@@ -55,6 +55,28 @@ func move(map: GameMap, direction: Vector2, delta: float) -> void:
 				position += axis
 
 
+## The home map is not saved here: a map is saved as a reference into the world (see
+## GameState.to_dict), so GameState writes and restores it.
+func to_dict() -> Dictionary:
+	return {
+		"position": SaveCodec.float_vector_to_json(position),
+		"facing": SaveCodec.vector_to_json(facing),
+		"home_bed": SaveCodec.vector_to_json(home_bed),
+		"appearance": appearance.to_dict(),
+	}
+
+
+## `home_map` is the map the saved `home_bed` is on.
+static func from_dict(data: Dictionary, home_map: GameMap) -> PlayerState:
+	var player := PlayerState.new()
+	player.position = SaveCodec.float_vector_from_json(data["position"])
+	player.facing = SaveCodec.vector_from_json(data["facing"])
+	player.home_map = home_map
+	player.home_bed = SaveCodec.vector_from_json(data["home_bed"])
+	player.appearance = Appearance.from_dict(data["appearance"])
+	return player
+
+
 ## Whether a player with their feet at `feet` fits: every tile their body touches is walkable.
 static func can_stand_at(map: GameMap, feet: Vector2) -> bool:
 	var top_left := Vector2i(Vector2(feet.x - BODY_HALF_WIDTH, feet.y - BODY_HEIGHT).floor())
