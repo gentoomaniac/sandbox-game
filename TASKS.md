@@ -17,7 +17,7 @@ Rules for every task:
 
 ## 1. Project skeleton and make targets
 
-- [ ] Done
+- [x] Done
 
 Set up the Godot 4 project and the make targets.
 

@@ -1,0 +1,6 @@
+.godot/
+.venv/
+build/
+export/
+# Downloaded by `make setup`, see the Makefile.
+addons/
