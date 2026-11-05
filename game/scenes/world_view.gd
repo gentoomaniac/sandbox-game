@@ -25,10 +25,9 @@ extends Node2D
 const REFRESH_BUDGET_USEC := 3000
 const LOAD_RADIUS := 3
 const UNLOAD_RADIUS := 5
-## Loading a chunk (generating it, placing objects and drawing its layers) takes ~8 ms, at
-## worst ~10 ms.
-## One per frame keeps a frame well under 16 ms and still streams far faster than the
-## camera moves.
+## Loading a chunk (generating it, placing objects and drawing its layers and look overlays)
+## takes ~14 ms. One per frame keeps a frame under 16 ms and still streams far faster than
+## the camera moves; the look refresh waits for frames without a load (see `_process`).
 const MAX_LOADS_PER_FRAME := 1
 ## An object state (see `_object_states`) for a plant that is dormant and not drawn.
 const DORMANT := -1
@@ -115,7 +114,7 @@ var _refresh_queue: Array[Vector2i] = []
 var _cells_to_redraw: Array[Vector2i] = []
 ## Where the overlay looks are drawn, by look.
 var _overlays: Dictionary[SeasonBlend.Look, TileMapLayer] = {}
-## What each object cell was last drawn as, by tile: its look, plus BARE_FLAG if it showed as
+## What each object cell was last drawn as, by tile: its look, plus BARE_OF_FRUIT_FLAG if it showed as
 ## bare of fruit, or DORMANT if it was not drawn.
 var _object_states: Dictionary[Vector2i, int] = {}
 ## Where a decoration could grow, shown or not, so a new day only revisits these tiles.
@@ -229,9 +228,11 @@ func _process(delta: float) -> void:
 	var to_load: Array = plan["load"]
 	for coords: Vector2i in to_load.slice(0, MAX_LOADS_PER_FRAME):
 		_load_chunk(coords)
-	var deadline := Time.get_ticks_usec() + REFRESH_BUDGET_USEC
-	while Time.get_ticks_usec() < deadline and _is_refreshing():
-		_refresh_step()
+	# A load already fills most of a frame, so the look refresh only runs in frames without one.
+	if to_load.is_empty():
+		var deadline := Time.get_ticks_usec() + REFRESH_BUDGET_USEC
+		while Time.get_ticks_usec() < deadline and _is_refreshing():
+			_refresh_step()
 	is_settled = to_load.is_empty() and not _is_refreshing()
 	_update_see_through(delta)
 
