@@ -83,7 +83,7 @@ The tile-state model from SPEC.md ("Tile state").
 
 Depends on: 2.
 
-- `generate_chunk(seed, chunk_coords)` returns a chunk. It is deterministic: the same
+- `WorldGenerator.new(seed).generate_chunk(chunk_coords)` returns a chunk. It is deterministic: the same
   seed and coordinates always give the same chunk, in any order.
 - Use one biome (grassland), built with Godot's `FastNoiseLite`:
   - mostly grass;
@@ -212,6 +212,15 @@ Depends on: 6.
   - planting only on soil.
 
 ## Later (not part of the prototype)
+
+World generation notes from the task 3 review:
+
+- The river is measured by vertical distance to its centre line, so it gets thin (about
+  2 tiles) in steep bends. Use perpendicular distance, or a smaller meander.
+- The wetland noise seed is `seed + 1`, which equals the river noise of the next seed.
+  Use a large constant offset.
+- More rivers, lakes or biomes: split `terrain_at` into one helper per feature instead of
+  growing its if-chain.
 
 Saving and loading, inventory, energy, weather, biomes, combat, reputation, building
 customisation and expansions, real art.
