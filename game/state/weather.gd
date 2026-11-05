@@ -125,6 +125,7 @@ func at(position: Vector2i, day: int, minute: int) -> WeatherSample:
 			* (1.0 - _rules.value("temperature", "cloud_damping") * sample.cloud_cover)
 		)
 	)
+	sample.temperature = _kept_above_frost_floor(sample.temperature, minutes)
 	_derive_conditions(sample, day, minute)
 	return sample
 
@@ -141,6 +142,35 @@ func forced(sample: WeatherSample, condition: StringName) -> WeatherSample:
 	result.sunlight = _sunlight(result)
 	result.lightning_chance = result.thunder * _rules.value("thunder", "lightning_per_minute")
 	return result
+
+
+## The temperature with winter's frost rule applied: below freezing only happens in winter.
+## The floor under the temperature is a degree or so above freezing outside winter and gives
+## way (smoothly) in the first days of winter; the temperature bends away from it instead of
+## sitting flat on it.
+func _kept_above_frost_floor(temperature: float, minutes: int) -> float:
+	var ramp: float = _rules.value("frost", "ramp_days")
+	var winter_day := (
+		fposmod(float(minutes) / GameClock.MINUTES_PER_DAY, GameClock.DAYS_PER_YEAR)
+		- 3 * GameClock.DAYS_PER_SEASON
+	)
+	var winter_share := (
+		smoothstep(0.0, ramp, winter_day)
+		* (
+			1.0
+			- smoothstep(GameClock.DAYS_PER_SEASON - ramp, GameClock.DAYS_PER_SEASON, winter_day)
+		)
+	)
+	var floor_temperature := lerpf(
+		_rules.value("frost", "floor_outside_winter"),
+		_rules.value("frost", "winter_floor"),
+		winter_share
+	)
+	var softness: float = _rules.value("frost", "softness")
+	var above_floor := (temperature - floor_temperature) / softness
+	if above_floor > 20.0:
+		return temperature
+	return floor_temperature + softness * log(1.0 + exp(above_floor))
 
 
 ## Percent of the sun's full light that gets through: nothing while it is down, more the

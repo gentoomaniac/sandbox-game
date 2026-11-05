@@ -102,13 +102,6 @@ func test_snow_falls_in_winter_and_never_in_midsummer() -> void:
 	assert_eq(_share(_samples(MIDSUMMER - 15, 30, 30, 12), is_snowing), 0.0)
 
 
-func test_snow_in_autumn_is_rare_but_happens() -> void:
-	var is_snowing := func(sample: WeatherSample) -> bool: return sample.snow > 0.1
-	var share := _share(_samples(61, 30, 120, 12), is_snowing)
-	assert_gt(share, 0.0)
-	assert_lt(share, 0.2)
-
-
 func test_there_is_no_rain_below_freezing() -> void:
 	for sample in _samples(1, 120, 120):
 		if sample.temperature <= 0.0:

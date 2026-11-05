@@ -59,6 +59,7 @@ var _cheat_hud := CheatHud.new()
 var _start_console_lines := PackedStringArray()
 var _interior_view := InteriorView.new()
 var _weather_view := WeatherView.new()
+var _weather: WeatherSample
 var _screenshot_path := ""
 var _fast_forward := false
 var _is_fading := false
@@ -266,10 +267,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	_tick_clock(delta)
-	var weather := _state.current_weather()
-	_weather_view.show_weather(weather, _tint.color)
+	_weather_view.show_weather(_weather, _tint.color)
 	_coordinates_hud.show_position(
-		_state.player.tile(), _state.is_inside(), _weather_and_sun_text(weather)
+		_state.player.tile(), _state.is_inside(), _weather_and_sun_text(_weather)
 	)
 	_use_highlight.is_enabled = (
 		not _build_mode.is_active()
@@ -539,10 +539,12 @@ func _show_build_message(text: String) -> void:
 
 
 func _show_clock() -> void:
+	# The weather only changes with the minute, the map or a console command, which all end here.
+	_weather = _state.current_weather()
 	if _state.is_inside():
 		_tint.show_interior()
 	else:
-		_tint.show_time(_state.clock, _state.current_weather().cloud_cover)
+		_tint.show_time(_state.clock, _weather.cloud_cover)
 	_view.set_light_strength(_tint.light_strength())
 	_view.set_season(_state.clock.season())
 	_view.refresh_vegetation()

@@ -1,10 +1,9 @@
 class_name GameSettings
 extends RefCounted
 ## The player's settings: key bindings, display mode, UI scale, energy drain and day length
-## variation. Bindings
-## live in Godot's InputMap (that is what the game reads); this class edits them, remembers
-## the project's defaults and keeps them in a ConfigFile, written on every change. It has no
-## UI code.
+## variation. Bindings live in Godot's InputMap (that is what the game reads); this class edits
+## them, remembers the project's defaults and keeps them in a ConfigFile, written on every
+## change. It has no UI code.
 ##
 ## The file only holds what differs from the defaults, so an action added later, or one the
 ## file doesn't mention, keeps its default binding. The display mode is only stored once the

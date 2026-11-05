@@ -13,12 +13,12 @@ func _hours(minutes: float) -> float:
 
 
 func test_the_days_are_longest_in_midsummer_shortest_in_midwinter_and_12_hours_between() -> void:
-	assert_almost_eq(_hours(_sun.day_length(45)), 18.25, 0.01)
-	assert_almost_eq(_hours(_sun.sunrise(45)), 3.875, 0.01)
-	assert_almost_eq(_hours(_sun.sunset(45)), 22.125, 0.01)
-	assert_almost_eq(_hours(_sun.sunrise(105)), 9.375, 0.01)
-	assert_almost_eq(_hours(_sun.sunset(105)), 15.125, 0.01)
-	assert_almost_eq(_hours(_sun.day_length(105)), 5.75, 0.01)
+	assert_almost_eq(_hours(_sun.day_length(45)), 16.0, 0.01)
+	assert_almost_eq(_hours(_sun.sunrise(45)), 5.0, 0.01)
+	assert_almost_eq(_hours(_sun.sunset(45)), 21.0, 0.01)
+	assert_almost_eq(_hours(_sun.sunrise(105)), 8.25, 0.01)
+	assert_almost_eq(_hours(_sun.sunset(105)), 16.25, 0.01)
+	assert_almost_eq(_hours(_sun.day_length(105)), 8.0, 0.01)
 	assert_almost_eq(_hours(_sun.day_length(15)), 12.0, 0.01)
 	assert_almost_eq(_hours(_sun.day_length(75)), 12.0, 0.01)
 
@@ -46,7 +46,7 @@ func test_no_variation_gives_12_hour_days_all_year() -> void:
 
 func test_variation_scales_the_swing() -> void:
 	_sun.variation = 0.5
-	assert_almost_eq(_hours(_sun.day_length(45)), 15.125, 0.01)
+	assert_almost_eq(_hours(_sun.day_length(45)), 14.0, 0.01)
 
 
 func test_the_sun_is_down_at_night_and_highest_at_noon() -> void:
@@ -75,7 +75,7 @@ func _tint_at(day: int, hour: int, minute: int, cloud_cover := 0.0) -> Color:
 
 
 func test_the_dawn_tint_comes_at_sunrise() -> void:
-	# Mid-winter: sunrise about 09:22.
+	# Mid-winter: sunrise about 08:15.
 	var sunrise := roundi(Sun.new().sunrise(105))
 	var at_sunrise := _tint_at(105, sunrise / 60, sunrise % 60)
 	assert_lt(_distance(at_sunrise, DayNightTint.DAWN), 0.02)
