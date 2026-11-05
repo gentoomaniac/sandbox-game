@@ -31,14 +31,11 @@ func set_terrain(pos: Vector2i, terrain: Tile.Terrain) -> void:
 	_tiles[pos] = tile
 
 
-## Puts an object on the tiles of its footprint, from its position (its top left tile) on.
+## Puts an object on every tile it covers.
 func add_object(object: WorldObject) -> void:
-	var footprint: Vector2i = WorldObjectTypes.TYPES[object.type]["footprint"]
-	for y in footprint.y:
-		for x in footprint.x:
-			var tile := object.pos + Vector2i(x, y)
-			assert(not _objects.has(tile), "Interior tile %s is taken" % tile)
-			_objects[tile] = object
+	for tile in object.tiles():
+		assert(not _objects.has(tile), "Interior tile %s is taken" % tile)
+		_objects[tile] = object
 
 
 ## Each object once.

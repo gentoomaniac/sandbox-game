@@ -55,7 +55,7 @@ func test_furniture_covers_its_whole_footprint_and_counts_once() -> void:
 		assert_eq(interior.object_at(hearth_tile).type, WorldObjectTypes.HEARTH)
 
 
-func test_footprints_cannot_overlap() -> void:
+func test_added_furniture_takes_its_tile() -> void:
 	var interior := InteriorLoader.load_interior(MAP_PATH)
 	assert_true(interior.object_at(Vector2i(2, 3)) == null, "free next to the bed")
 	interior.add_object(WorldObject.new(WorldObjectTypes.STOOL, Vector2i(2, 3)))

@@ -194,6 +194,7 @@ const TYPES := {
 		"interior_sprite": "res://assets/interior/hearth.png",
 		"light": {"color": Color(1.0, 0.5, 0.22), "energy": 1.2, "radius_tiles": 5.0},
 	},
+	# Wall decoration: it stands on the wall tiles of the back wall face.
 	WINDOW:
 	{
 		"footprint": Vector2i(1, 2),

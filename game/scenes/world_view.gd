@@ -323,9 +323,11 @@ func _add_window_lights(building: Building, sprite: Sprite2D) -> void:
 func _show_windows(building: Building) -> void:
 	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
 	var is_lit := _light_strength >= WINDOW_LIT_STRENGTH
-	_building_sprites[building].texture = load(
-		building_type["sprite_lit"] if is_lit else building_type["sprite"]
-	)
+	var sprite := _building_sprites[building]
+	var texture_path: String = building_type["sprite_lit"] if is_lit else building_type["sprite"]
+	# The strength changes every frame while the tint does; the picture only at dusk and dawn.
+	if sprite.texture.resource_path != texture_path:
+		sprite.texture = load(texture_path)
 	for light: ObjectLight in _window_lights[building]:
 		light.strength = _light_strength if is_lit else 0.0
 
