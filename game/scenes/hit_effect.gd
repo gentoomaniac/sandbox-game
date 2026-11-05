@@ -28,7 +28,7 @@ static func kind_for(type: StringName, look: SeasonBlend.Look) -> Kind:
 			if is_snowy:
 				return Kind.SNOW
 			match look:
-				SeasonBlend.Look.SPRING, SeasonBlend.Look.SUMMER:
+				SeasonBlend.Look.YOUNG_LEAVES, SeasonBlend.Look.SPRING, SeasonBlend.Look.SUMMER:
 					return Kind.LEAVES_GREEN
 				SeasonBlend.Look.AUTUMN:
 					return Kind.LEAVES_AUTUMN

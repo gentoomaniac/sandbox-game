@@ -28,8 +28,10 @@ crown rises above that, over the tiles around it. An object on several tiles (bo
 sleeping bag 1x2) is centred on its footprint, with the cell's bottom on the footprint's bottom.
 
 Terrain, decorations and objects also exist per look (see seasons.py: spring, summer, autumn,
-bare, frost, snow), the building pictures in summer and snow: summer under the names above, the
-others with the look added, e.g. assets/terrain_snow.png and assets/buildings/kate_lit_snow.png.
+bare, frost, snow, dusting), the objects also in the steps of the spring leaf-out (buds, young
+leaves), the building pictures in summer and snow: summer under the names above, the others
+with the look added, e.g. assets/terrain_snow.png, assets/objects_young_leaves.png and
+assets/buildings/kate_lit_snow.png.
 
 assets/character/<slot>_<variant>.png: one sheet per layer of the player character, 16x32 cells
 with the feet on the bottom row. One row per facing (down, up, left, right), columns: idle,
@@ -848,21 +850,96 @@ def spruce(seed):
     return canvas
 
 
+# A Scots pine: the trunk's bark, grey-brown and furrowed below, thin and reddish-orange in the
+# crown (each lit to dark, then its outline), and the dark blue-green needles (lit top to dark
+# underside, then the outline).
+PINE_BARK = ("mud", "mud_dark", "soil_dark", "soil_dark")
+PINE_RED_BARK = ("flame", "rust", "rust_dark", "russet_deep")
+PINE_NEEDLES = ("meadow_light", "meadow", "meadow_dark", "bog_dark")
+# Where the bark turns from grey-brown to red, in rows from the top of the cell.
+PINE_RED_FROM = 56
+
+
 def pine(seed):
+    """A Scots pine: a tall, slightly crooked bare trunk, reddish-orange up in the crown, with
+    a few flat layered clumps of dark blue-green needles high up, each on a branch of its own,
+    and an irregular outline."""
     rng = random.Random(seed)
     canvas = object_canvas()
-    ground_shadow(canvas, 10)
-    # A tall bare trunk in dull, dark bark, with limbs into the crown.
-    dull = ("mud", "mud_dark", "soil_dark", "soil_dark")
-    tree_trunk(canvas, rng, 40, 6, dull)
-    limb(canvas, 21, 52, -1, 8, "mud_dark")
-    limb(canvas, 27, 50, 1, 8, "mud_dark")
-    # Umbrella crown: a flat, wide cloud of needles with a smaller tuft on top.
-    blobs = [(24, 44, 8), (12, 46, 7), (36, 46, 7), (18, 40, 6), (31, 40, 6), (25, 26 + rng.randint(0, 2), 6.5), (19, 31, 5), (30, 32, 5)]
-    blobs = [(cx + rng.uniform(-1, 1), cy + rng.uniform(-1, 1), r) for cx, cy, r in blobs]
-    shaded_blob(canvas, rng, blobs, ("green_light", "olive", "green", "green_dark"), "green_deep")
-    shade_under_crown(canvas, ("mud", "mud_dark", "soil_dark"))
+    ground_shadow(canvas, 9)
+    top = 16 + rng.randint(0, 3)
+    # The trunk wanders a little from side to side as it rises, and leans as a whole.
+    lean = rng.choice((-1.5, 1.5, 2.5, -2.5))
+    bend = rng.uniform(0, 6.3)
+    centres = {}
+    for y in range(top, OBJECT_BOTTOM + 1):
+        rise = (OBJECT_BOTTOM - y) / (OBJECT_BOTTOM - top)
+        centres[y] = OBJECT_CENTRE + lean * rise * rise + math.sin(rise * 5 + bend) * 0.8
+    for y, centre in centres.items():
+        width = 5 if y > OBJECT_BOTTOM - 26 else 4 if y > PINE_RED_FROM - 8 else 3
+        flare = 2 if y == OBJECT_BOTTOM else 1 if y > OBJECT_BOTTOM - 3 else 0
+        left = round(centre - width / 2) - flare
+        # The red bark peels off into the grey-brown below over a few rows.
+        shades = PINE_RED_BARK if y < PINE_RED_FROM + rng.randint(-3, 3) else PINE_BARK
+        for x in range(left, left + width + 2 * flare):
+            index = x - left
+            canvas[y][x] = shades[0] if index == 1 else shades[2] if index == width + 2 * flare - 2 else shades[1]
+        canvas[y][left - 1] = canvas[y][left + width + 2 * flare] = shades[3]
+    # Furrows in the grey-brown bark below.
+    for _ in range(7):
+        y = rng.randint(PINE_RED_FROM + 2, OBJECT_BOTTOM - 4)
+        x = round(centres[y]) + rng.choice((-1, 0, 1))
+        canvas[y][x] = canvas[y + 1][x] = "soil_dark"
+    # The needle clumps, high up and in layers: each is flat and wide, made of a few smaller
+    # flat ovals so its outline is ragged, on a branch reaching out from the trunk.
+    heights = [top - 1, top + 8, top + 16, top + 24][: 3 + seed % 2]
+    side = rng.choice((-1, 1))
+    clumps = []
+    for index, cy in enumerate(heights):
+        cy += rng.randint(-1, 1)
+        reach = 0 if index == 0 else side * rng.randint(4, 8)
+        side = -side
+        cx = centres[min(max(cy, top), OBJECT_BOTTOM)] + reach
+        width = 8 + rng.uniform(0, 3) + index * 1.0
+        clumps.append((cx, cy, width))
+        branch_y = min(max(cy + 3, top), OBJECT_BOTTOM)
+        for step in range(abs(round(reach))):
+            x = round(centres[branch_y]) + (step + 1) * (1 if reach > 0 else -1)
+            y = branch_y - step // 2
+            canvas[y][x] = "rust_dark"
+    # The lowest clump is drawn first, so the ones above overlap it like layers.
+    for cx, cy, width in sorted(clumps, key=lambda clump: -clump[1]):
+        needle_clump(canvas, rng, cx, cy, width)
     return canvas
+
+
+def needle_clump(canvas, rng, cx, cy, half_width):
+    """A flat cloud of needles, lit on top and dark underneath, ragged at its rim."""
+    ovals = [(cx, cy, half_width, 3.5)]
+    for _ in range(5):
+        ovals.append((cx + rng.uniform(-0.75, 0.75) * half_width, cy + rng.uniform(-2.5, 1.0), rng.uniform(3, 5.5), rng.uniform(2.5, 3.5)))
+    covered = set()
+    for y in range(max(0, math.floor(cy - 6)), math.ceil(cy + 6)):
+        for x in range(math.floor(cx - half_width - 5), math.ceil(cx + half_width + 5)):
+            if not 0 <= x < OBJECT_CELL_WIDTH:
+                continue
+            inside = min(((x + 0.5 - ox) / rx) ** 2 + ((y + 0.5 - oy) / ry) ** 2 for ox, oy, rx, ry in ovals)
+            if inside < 1 + rng.uniform(-0.25, 0.25):
+                covered.add((x, y))
+    for x, y in sorted(covered):
+        if (x, y - 1) not in covered or (x, y + 1) not in covered or (x - 1, y) not in covered or (x + 1, y) not in covered:
+            canvas[y][x] = PINE_NEEDLES[3]
+            continue
+        # Lit where there is open sky a row or two above, dark where the clump ends below.
+        lit = (x, y - 2) not in covered
+        dark = (x, y + 2) not in covered or rng.random() < 0.15
+        canvas[y][x] = PINE_NEEDLES[2] if dark else PINE_NEEDLES[0] if lit else PINE_NEEDLES[1]
+    # Tufts of needles stick out of the rim, so it is not a smooth oval.
+    rim = sorted(covered)
+    for x, y in rng.sample(rim, min(len(rim), 10)):
+        dx, dy = rng.choice(((0, -1), (1, -1), (-1, -1), (1, 0), (-1, 0)))
+        if (x + dx, y + dy) not in covered and 0 <= x + dx < OBJECT_CELL_WIDTH and canvas[y + dy][x + dx] is None:
+            canvas[y + dy][x + dx] = PINE_NEEDLES[3]
 
 
 def draw_branch(canvas, rng, x, y, direction, length, colour):
@@ -2151,8 +2228,9 @@ def main():
     # Summer keeps the plain names; the other looks add theirs, e.g. terrain_snow.png.
     for look in seasons.LOOKS:
         suffix = "" if look == "summer" else f"_{look}"
-        to_image(seasons.terrain_rows(look, terrain_rows)).save(ASSETS / f"terrain{suffix}.png")
-        to_image(seasons.ground_rows(look, decoration_rows, seasons.STANDING.get(look))).save(ASSETS / f"decorations{suffix}.png")
+        if look in seasons.GROUND_LOOKS:
+            to_image(seasons.terrain_rows(look, terrain_rows)).save(ASSETS / f"terrain{suffix}.png")
+            to_image(seasons.ground_rows(look, decoration_rows, seasons.STANDING.get(look))).save(ASSETS / f"decorations{suffix}.png")
         to_image(
             seasons.object_rows(look, objects, redraws),
             OBJECT_CELL_WIDTH,

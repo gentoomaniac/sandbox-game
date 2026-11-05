@@ -6,7 +6,9 @@ overlays (snow caps, blossom). So an art change in generate.py carries over to e
 The game picks a look per tile and per object (see game/state/season_blend.gd): spring,
 summer and autumn are the seasons' foliage, "bare" is winter without snow, "frost" a cold
 morning without snow, "snow" the ground under snow and "dusting" the thin edge of the snow:
-sparse flecks over whatever lies beneath.
+sparse flecks over whatever lies beneath. Objects have two more looks, the steps of the
+spring leaf-out between bare and spring: "buds" and "young_leaves", drawn over the bare tree
+or bush where its summer leaves are.
 
 generate.py draws the ground shadow of objects and houses in the logical colour "shadow",
 which every season maps to a palette colour here. Pictures are grids of palette colour names,
@@ -16,7 +18,11 @@ as in generate.py.
 import math
 import random
 
-LOOKS = ("spring", "summer", "autumn", "bare", "frost", "snow", "dusting")
+# The looks of grass and ground, which every picture has.
+GROUND_LOOKS = ("spring", "summer", "autumn", "bare", "frost", "snow", "dusting")
+# The steps of the leaf-out between bare and spring, in order: only objects have them.
+LEAF_OUT_LOOKS = ("buds", "young_leaves")
+LOOKS = GROUND_LOOKS + LEAF_OUT_LOOKS
 
 # Palette colours the seasons add to generate.PALETTE.
 COLOURS = {
@@ -157,6 +163,7 @@ STANDING = {"bare": WINTER_STALKS, "frost": _FROST_STALKS, "snow": WINTER_STALKS
 _SHADOW_REMAPS = {
     "spring": "green_deep", "summer": "green_deep", "autumn": "green_deep",
     "bare": "mud_dark", "frost": "mud_dark", "snow": "snow_shadow", "dusting": "mud_dark",
+    "buds": "green_deep", "young_leaves": "green_deep",
 }
 
 # Leaf ramps for autumn trees and bushes, replacing the greens of summer.
@@ -190,7 +197,7 @@ _DRY_FERN = {"green_light": "straw", "green": "reed", "green_dark": "olive"}
 
 # How the snow cap of each object is drawn: (surfaces, edges, depth in px).
 _SNOW_CONIFER = ({"green_light", "green", "green_dark", "olive"}, {"green_deep"}, 2)
-_SNOW_PINE = ({"green_light", "green", "green_dark", "olive"}, {"green_deep"}, 3)
+_SNOW_PINE = ({"meadow_light", "meadow", "meadow_dark"}, {"bog_dark"}, 2)
 _SNOW_BUSH = ({"mud", "mud_dark", "soil_dark"}, {"green_deep"}, 5)
 _SNOW_STONE = ({"stone_light", "stone"}, set(), 2)
 _SNOW_BOULDER = ({"stone_light", "stone", "green_light", "green", "olive"}, set(), 3)
@@ -209,6 +216,49 @@ def _chest_lid_bottom(canvas):
 
 _SPRING_KINDS = {"oak", "berry_bush", "shrub", "sapling", "fern", "boulder", "tall_grass"}
 _BLOSSOM_KINDS = {"berry_bush", "shrub"}
+# The deciduous trees and bushes: they leaf out in steps (LEAF_OUT_LOOKS).
+_LEAF_OUT_KINDS = {"oak", "berry_bush", "shrub", "sapling"}
+# What the summer leaves of a picture are drawn in: where they are is where the new leaves come.
+_SUMMER_LEAVES = {"green_bright", "green_light", "green", "green_dark", "green_deep", "olive", "dry_light", "dry"}
+# Young leaves are light and thin; their summer shade picks how light.
+_YOUNG_LEAVES = {
+    "green_bright": "spring_pale", "green_light": "spring_pale", "dry_light": "spring_pale",
+    "green": "spring_light", "olive": "spring_light", "dry": "spring_light",
+    "green_dark": "spring", "green_deep": "spring",
+}
+
+
+def buds(bare, summer, rng):
+    """The bare picture with a haze of pale green dots where the summer leaves will be, most of
+    them on and around the twigs."""
+    canvas = copy(bare)
+    height, width = len(bare), len(bare[0])
+    for y, row in enumerate(summer):
+        for x, name in enumerate(row):
+            if name not in _SUMMER_LEAVES:
+                continue
+            is_by_twig = any(
+                bare[y + dy][x + dx] not in (None, "shadow")
+                for dy in (-1, 0, 1) for dx in (-1, 0, 1)
+                if 0 <= y + dy < height and 0 <= x + dx < width
+            )
+            if rng.random() < (0.3 if is_by_twig else 0.04):
+                canvas[y][x] = "spring_pale" if rng.random() < 0.7 else "spring_light"
+    return canvas
+
+
+def young_leaves(bare, summer, rng):
+    """The bare picture with a thin crown of small light leaves: the summer leaves in clumps of
+    2x2 pixels, about half of them, in light greens, with the branches showing through."""
+    canvas = copy(bare)
+    clumps = {}
+    for y, row in enumerate(summer):
+        for x, name in enumerate(row):
+            if name not in _SUMMER_LEAVES:
+                continue
+            if clumps.setdefault((x // 2, y // 2), rng.random() < 0.5):
+                canvas[y][x] = _YOUNG_LEAVES[name]
+    return canvas
 
 
 def remap(canvas, mapping):
@@ -318,6 +368,7 @@ _SNOW_REEDS = ({"sand_light", "straw", "reed"}, set(), 2)
 
 # Evergreens and rocks in a frost: the greens go pale and bluish, as if rimed.
 _FROST_CONIFER = {"green_light": "snow_shadow", "green": "green_light", "green_dark": "green"}
+_FROST_PINE = {"meadow_light": "snow_shadow", "meadow": "meadow_light", "meadow_dark": "meadow"}
 _FROST_BUSH = {"green_light": "snow_light", "green": "snow_shadow", "green_dark": "mud_dark", "green_bright": "snow_light"}
 _FROST_FERN = {"green_light": "snow_light", "green": "straw", "green_dark": "reed"}
 _FROST_STONE = {"green_light": "snow", "green": "snow_shadow", "olive": "snow_shadow"}
@@ -328,7 +379,13 @@ def _season_object(look, kind, variant, canvas, redraw):
     repeat their bush's variants)."""
     rng = random.Random(f"{look}-{kind}-{variant}")
     centre = len(canvas[0]) // 2
-    if look == "spring" and kind in _SPRING_KINDS:
+    if look in LEAF_OUT_LOOKS:
+        if kind not in _LEAF_OUT_KINDS:
+            # Everything else is as in spring meanwhile.
+            return _season_object("spring", kind, variant, canvas, redraw)
+        bare = _winter_object("bare", kind, variant, canvas, redraw, rng, centre)
+        canvas = buds(bare, canvas, rng) if look == "buds" else young_leaves(bare, canvas, rng)
+    elif look == "spring" and kind in _SPRING_KINDS:
         canvas = remap(canvas, _SPRING_GREENS)
         if kind in _BLOSSOM_KINDS:
             blossoms(canvas, rng, {"spring_light", "spring", "spring_pale"}, 7)
@@ -359,15 +416,11 @@ def _winter_object(look, kind, variant, canvas, redraw, rng, centre):
         return surfaces, edges, depth if look == "snow" else 1
 
     if kind in ("spruce", "pine"):
-        if look == "snow":
-            canvas = copy(canvas)
-            snow_caps(canvas, rng, *cap(_SNOW_CONIFER if kind == "spruce" else _SNOW_PINE), centre)
-            return canvas
-        if look == "dusting":
-            canvas = remap(canvas, _FROST_CONIFER)
-            snow_caps(canvas, rng, *cap(_SNOW_CONIFER if kind == "spruce" else _SNOW_PINE), centre)
-            return canvas
-        return remap(canvas, _FROST_CONIFER) if look == "frost" else canvas
+        frost, snow = (_FROST_CONIFER, _SNOW_CONIFER) if kind == "spruce" else (_FROST_PINE, _SNOW_PINE)
+        canvas = remap(canvas, frost if is_frosty else {})
+        if has_snow:
+            snow_caps(canvas, rng, *cap(snow), centre)
+        return canvas
     if kind == "tall_grass":
         stalks = {"bare": WINTER_STALKS, "snow": WINTER_STALKS, "frost": _FROST_STALKS, "dusting": _FROST_STALKS}
         return remap(canvas, stalks[look])

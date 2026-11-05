@@ -11,7 +11,16 @@ extends RefCounted
 ## What the art generator draws (see tools/art/seasons.py). SPRING, SUMMER and AUTUMN are the
 ## foliage of those seasons, BARE is winter without snow, FROST a cold morning without snow,
 ## SNOW the ground under snow and DUSTING its thin fringe: sparse flecks over what lies beneath.
-enum Look { SPRING, SUMMER, AUTUMN, BARE, FROST, SNOW, DUSTING }
+## BUDS and YOUNG_LEAVES are the steps of the leaf-out between BARE and SPRING; only plants have
+## them, grass and ground go from BARE to SPRING at once.
+enum Look { SPRING, SUMMER, AUTUMN, BARE, FROST, SNOW, DUSTING, BUDS, YOUNG_LEAVES }
+
+## The looks of grass and ground (all but the leaf-out steps).
+const GROUND_LOOKS: Array[Look] = [
+	Look.SPRING, Look.SUMMER, Look.AUTUMN, Look.BARE, Look.FROST, Look.SNOW, Look.DUSTING
+]
+## The steps of a plant's leaf-out in spring, from bare to full leaves.
+const LEAF_OUT: Array[Look] = [Look.BARE, Look.BUDS, Look.YOUNG_LEAVES, Look.SPRING]
 
 ## Keeps the thresholds apart from other hashes of the same positions.
 const SALT := 21
@@ -38,14 +47,17 @@ class Conditions:
 	var frost := 0.0
 	## How far above the cover a tile's threshold may be for it to have a dusting.
 	var dusting_band := 0.0
+	## The share of the spring window that one plant takes to leaf out.
+	var leaf_out_span := 1.0
 
 	## The look of grass and ground by the season alone (SPRING to BARE).
 	func ground_season_look(season_threshold: float) -> Look:
-		return _season_look(ground, season_threshold)
+		var spring_look := Look.SPRING if ground[0] > season_threshold else Look.BARE
+		return _season_look(ground, season_threshold, spring_look)
 
 	## The look of trees, bushes and ferns by the season alone.
 	func foliage_season_look(season_threshold: float) -> Look:
-		return _season_look(foliage, season_threshold)
+		return _season_look(foliage, season_threshold, _leaf_out_look(season_threshold))
 
 	## What lies over the season's look: SNOW where the cover is above the threshold, DUSTING
 	## where it is just below, FROST, or SUMMER for nothing (the base look).
@@ -63,18 +75,26 @@ class Conditions:
 		var weather := weather_look(weather_threshold)
 		return weather if weather != Look.SUMMER else foliage_season_look(season_threshold)
 
-	func _season_look(shares: Array[float], season_threshold: float) -> Look:
-		# The later boundary of the year wins over the earlier ones.
-		var look := Look.BARE
-		if shares[0] > season_threshold:
-			look = Look.SPRING
-		if shares[1] > season_threshold:
-			look = Look.SUMMER
-		if shares[2] > season_threshold:
-			look = Look.AUTUMN
+	## The look by the later boundaries of the year, which win over the earlier ones, or
+	## `spring_look`, the look by the first, if none has passed the threshold.
+	func _season_look(shares: Array[float], season_threshold: float, spring_look: Look) -> Look:
 		if shares[3] > season_threshold:
-			look = Look.BARE
-		return look
+			return Look.BARE
+		if shares[2] > season_threshold:
+			return Look.AUTUMN
+		if shares[1] > season_threshold:
+			return Look.SUMMER
+		return spring_look
+
+	## How far a plant has leafed out: it goes through the LEAF_OUT steps evenly over
+	## `leaf_out_span` of the spring window, starting the later the higher its threshold, so
+	## it is done by the end of the window.
+	func _leaf_out_look(season_threshold: float) -> Look:
+		var start := season_threshold * (1.0 - leaf_out_span)
+		if foliage[0] <= start:
+			return Look.BARE
+		var step := leaf_out_span / (LEAF_OUT.size() - 2)
+		return LEAF_OUT[mini(floori((foliage[0] - start) / step) + 1, LEAF_OUT.size() - 1)]
 
 
 var _rules: SeasonRules
@@ -101,6 +121,7 @@ func conditions(day: int, snow_cover: float, frost: float) -> Conditions:
 	result.snow_cover = snow_cover
 	result.frost = frost
 	result.dusting_band = _rules.value("snow", "dusting_band")
+	result.leaf_out_span = _rules.value("foliage", "leaf_out_span")
 	return result
 
 

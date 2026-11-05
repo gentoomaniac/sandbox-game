@@ -8,7 +8,7 @@ const LEFT := Vector2i(-2, -1)
 const RIGHT := Vector2i(-1, -1)
 const BELOW := Vector2i(-1, 0)
 const SUMMER := 45
-const AUTUMN := 66
+const AUTUMN := 62
 const WINTER := 105
 
 var _view: WorldView

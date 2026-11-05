@@ -20,12 +20,19 @@ func test_other_looks_add_their_name_before_the_extension() -> void:
 
 func test_every_look_has_its_files() -> void:
 	for look: SeasonBlend.Look in SeasonBlend.Look.values():
+		assert_true(ResourceLoader.exists(SeasonalArt.path(ObjectTileset.ATLAS_PATH, look)))
+	for look in SeasonBlend.GROUND_LOOKS:
 		for summer_path: String in [
-			TerrainTileset.TERRAIN_ATLAS_PATH,
-			TerrainTileset.DECORATION_ATLAS_PATH,
-			ObjectTileset.ATLAS_PATH,
+			TerrainTileset.TERRAIN_ATLAS_PATH, TerrainTileset.DECORATION_ATLAS_PATH
 		]:
 			assert_true(ResourceLoader.exists(SeasonalArt.path(summer_path, look)))
+
+
+func test_the_leaf_out_steps_are_only_object_art() -> void:
+	var terrain := TerrainTileset.new()
+	for look in [SeasonBlend.Look.BUDS, SeasonBlend.Look.YOUNG_LEAVES]:
+		assert_false(terrain.tile_set.has_source(TerrainTileset.terrain_source_id(look)))
+		assert_true(ResourceLoader.exists(SeasonalArt.path(ObjectTileset.ATLAS_PATH, look)))
 
 
 func test_a_house_only_has_a_plain_and_a_snowy_picture() -> void:
@@ -42,14 +49,15 @@ func test_a_house_only_has_a_plain_and_a_snowy_picture() -> void:
 func test_the_tile_sets_have_a_source_per_look_with_the_same_tiles() -> void:
 	var terrain := TerrainTileset.new()
 	var objects := ObjectTileset.new()
-	for look: SeasonBlend.Look in SeasonBlend.Look.values():
+	var summer: TileSetAtlasSource = terrain.tile_set.get_source(
+		TerrainTileset.terrain_source_id(SeasonBlend.Look.SUMMER)
+	)
+	for look in SeasonBlend.GROUND_LOOKS:
 		var source: TileSetAtlasSource = terrain.tile_set.get_source(
 			TerrainTileset.terrain_source_id(look)
 		)
-		var summer: TileSetAtlasSource = terrain.tile_set.get_source(
-			TerrainTileset.terrain_source_id(SeasonBlend.Look.SUMMER)
-		)
 		assert_eq(source.get_tiles_count(), summer.get_tiles_count(), "terrain %d" % look)
+	for look: SeasonBlend.Look in SeasonBlend.Look.values():
 		assert_eq(
 			objects.tile_set.get_source(look).texture.resource_path,
 			SeasonalArt.path(ObjectTileset.ATLAS_PATH, look)

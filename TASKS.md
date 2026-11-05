@@ -1151,7 +1151,7 @@ across all 30 slots through `can_add`. Tests: layout and add order
 
 ## 51. Quick season changes, spring leaf-out, Scots pines
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Foliage and grass blend" and "Pines look like pines" (2026-11-06). The user:
 "the seasons take too long to change visually, it should only be 2-3 days from start to
@@ -1164,6 +1164,19 @@ max"; "in spring trees should grow leaves until spring is in full bloom" (also w
   full): new intermediate looks in tools/art and in the season look pipeline.
 - Redraw the pine as a Scots pine; keep the spruce. Season looks (snow, frost) for both.
 - Screenshots of a forest over the first days of spring and of autumn; README and SPEC.
+
+Done: every blend window in data/seasons.cfg runs from the day before its season to the
+third day of it (e.g. Vector2(0, 4)), so a sixth, a half, five sixths and then all of the
+tiles and plants have changed on the season's days 1 to 4. SeasonBlend has two more looks,
+BUDS and YOUNG_LEAVES (objects only: SeasonBlend.GROUND_LOOKS are the ground's), and a plant
+leafs out through SeasonBlend.LEAF_OUT in even steps over `leaf_out_span` (0.7) of the
+spring window, starting by its threshold, so each oak and bush shows every step for about a
+day. tools/art/seasons.py draws them over the bare picture (buds: pale dots on and around
+the twigs; young leaves: half the summer crown in 2x2 clumps of light green) for oak, berry
+bush, shrub and sapling; everything else is its spring look meanwhile. The pine is a Scots
+pine (generate.py `pine`, `needle_clump`) in existing palette colours, with its own snow and
+frost; sprite_height 69 and its sway profile measured on the new art. The felled pine's log
+art doesn't depend on the tree picture and is unchanged.
 
 ## 52. Art quick wins from the style guide
 
@@ -1302,7 +1315,7 @@ Art notes from the art round 2 review and look:
 
 Art scale pass notes (16a–16c reviews and look):
 
-- Pines read as olive-brown blobs with stubby trunks inside forests.
+- Pines read as olive-brown blobs with stubby trunks inside forests (redrawn in task 51).
 - The sleeping bag (1×2, vertical) reads like an upright sign behind the player; it should
   look flat on the ground. The character's face turns slightly pink at night.
 - Seed mound and sprout stages are plain; the hoe is a thin stick from front/back.

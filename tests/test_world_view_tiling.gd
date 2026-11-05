@@ -6,8 +6,8 @@ const SEED := 1
 const CHUNKS: Array[Vector2i] = [
 	Vector2i(-2, -2), Vector2i(-1, -2), Vector2i(-2, -1), Vector2i(-1, -1)
 ]
-## Days across the blends of spring to summer, summer to autumn and autumn to winter.
-const DAYS := [25, 32, 40, 45, 55, 62, 70, 80, 90]
+## Days within the blends of each season's first days (see data/seasons.cfg), and one between.
+const DAYS := [2, 3, 32, 33, 45, 62, 63, 92, 93]
 
 var _view: WorldView
 

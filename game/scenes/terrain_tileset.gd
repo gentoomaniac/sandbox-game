@@ -18,8 +18,9 @@ extends RefCounted
 enum Layer { WATER, FLOODPLAIN, WETLAND, GRASS, LUSH_GRASS, DRY_GRASS, SOIL }
 
 const TILE_SIZE := 16
-## Every look (see SeasonBlend.Look) has an atlas source of its own with the same tiles: the
-## terrain source's id is the look, the decoration source's id is this far on from it.
+## Every look of the ground (see SeasonBlend.GROUND_LOOKS) has an atlas source of its own with
+## the same tiles: the terrain source's id is the look, the decoration source's id is this far
+## on from it.
 const DECORATION_SOURCE_OFFSET := 10
 const TERRAIN_ATLAS_PATH := "res://assets/terrain.png"
 const DECORATION_ATLAS_PATH := "res://assets/decorations.png"
@@ -118,7 +119,7 @@ var _decoration_counts: Array[int] = []
 ## decorations that move get the materials of `motion` (none without it).
 func _init(motion: AmbientMotion = null) -> void:
 	tile_set.tile_size = Vector2i(TILE_SIZE, TILE_SIZE)
-	for look: SeasonBlend.Look in SeasonBlend.Look.values():
+	for look: SeasonBlend.Look in SeasonBlend.GROUND_LOOKS:
 		var counts: Array[int] = []
 		tile_set.add_source(
 			_atlas_source(SeasonalArt.path(TERRAIN_ATLAS_PATH, look), FULL_COLUMN, counts),

@@ -5,6 +5,8 @@ extends GutTest
 const SEED := 3
 const TILES := 4000
 const L := SeasonBlend.Look
+## The first day of each season, and the look its boundary changes to.
+const SEASON_STARTS := [[1, L.SPRING], [31, L.SUMMER], [61, L.AUTUMN], [91, L.BARE]]
 
 var _blend := SeasonBlend.new(SEED)
 
@@ -51,39 +53,58 @@ func test_the_looks_follow_the_year() -> void:
 	assert_eq(_share(L.SUMMER, 45), 1.0)
 	assert_eq(_share(L.BARE, 110), 1.0, "winter is bare")
 	assert_eq(_share(L.SPRING, 20), 1.0, "spring has leafed out")
-	assert_eq(_share(L.BARE, 1), 1.0, "spring starts bare")
+	assert_eq(_share(L.SPRING, 20, true), 1.0)
+	assert_eq(_share(L.BARE, 120), 1.0, "winter ends bare")
+	assert_eq(_share(L.BARE, 120, true), 1.0)
 
 
-func test_the_share_changes_gradually_over_each_boundary_never_at_once() -> void:
-	# Day by day over a boundary's window the share of tiles that changed over grows a little
-	# at a time.
-	for window in [[60, 78, L.SUMMER], [22, 38, L.SPRING], [82, 100, L.AUTUMN]]:
-		var last := _share(window[2], window[0] - 1)
-		var biggest_step := 0.0
-		var steps_with_change := 0
-		for day in range(window[0], window[1] + 1):
-			var now := _share(window[2], day)
-			biggest_step = maxf(biggest_step, absf(now - last))
-			steps_with_change += 1 if now != last else 0
-			last = now
-		assert_lt(biggest_step, 0.3, "window %s changes day by day" % [window])
-		assert_gt(steps_with_change, 8, "window %s" % [window])
+func test_each_change_spreads_over_the_first_three_days_of_its_season() -> void:
+	for start: Array in SEASON_STARTS:
+		for is_foliage in [false, true]:
+			var first_day: int = start[0]
+			var look: SeasonBlend.Look = start[1]
+			if look == L.SPRING and is_foliage:
+				continue  # see the leaf-out test
+			var label := "%s from day %d" % [L.keys()[look], first_day]
+			assert_eq(_share(look, first_day - 1, is_foliage), 0.0, label + ": not before")
+			var last := 0.0
+			for day in range(first_day, first_day + 3):
+				var now := _share(look, day, is_foliage)
+				assert_between(now, 0.05, 0.95, label + ": a mix on day %d" % day)
+				assert_gt(now, last, label + ": grows on day %d" % day)
+				assert_lt(now - last, 0.5, label + ": not on one morning, day %d" % day)
+				last = now
+			assert_eq(_share(look, first_day + 3, is_foliage), 1.0, label + ": done")
 
 
-func test_trees_colour_first_and_drop_their_leaves_one_by_one() -> void:
-	assert_between(_share(L.AUTUMN, 66, true), 0.1, 0.9, "mixed in early autumn")
-	var late_autumn_bare := _share(L.BARE, 85, true)
-	assert_between(late_autumn_bare, 0.1, 0.9, "some trees are bare in late autumn")
-	assert_lt(_share(L.BARE, 78, true), late_autumn_bare)
-	assert_lt(late_autumn_bare, _share(L.BARE, 92, true))
-	assert_lt(_share(L.SPRING, 5, true), _share(L.SPRING, 12, true), "leaf-out goes on in spring")
+func test_trees_leaf_out_step_by_step_over_the_first_days_of_spring() -> void:
+	assert_eq(_share(L.BARE, 120, true), 1.0, "bare before spring")
+	assert_eq(_share(L.SPRING, 4, true), 1.0, "in full leaf on the fourth day")
+	for look_on_day in [[L.BUDS, 1], [L.BUDS, 2], [L.YOUNG_LEAVES, 2], [L.YOUNG_LEAVES, 3]]:
+		var look: SeasonBlend.Look = look_on_day[0]
+		var day: int = look_on_day[1]
+		assert_gt(_share(look, day, true), 0.05, "%s on day %d" % [L.keys()[look], day])
+	for i in 300:
+		var threshold := _threshold_of(i).x
+		var step := 0
+		for day in [120, 1, 2, 3, 4]:
+			var look := _blend.conditions(day, 0.0, 0.0).foliage_season_look(threshold)
+			var now := SeasonBlend.LEAF_OUT.find(look)
+			assert_between(now - step, 0, 1, "one step a day at most, tree %d day %d" % [i, day])
+			step = now
+		assert_eq(step, SeasonBlend.LEAF_OUT.size() - 1)
+
+
+func test_grass_has_no_leaf_out_steps() -> void:
+	for day in [1, 2, 3]:
+		assert_eq(_share(L.BARE, day) + _share(L.SPRING, day), 1.0)
 
 
 func test_a_tree_in_leaf_does_not_go_back_to_summer_while_autumn_comes() -> void:
 	for i in 300:
 		var threshold := _threshold_of(i).x
 		var was_autumn := false
-		for day in range(56, 74):
+		for day in range(58, 68):
 			var look := _blend.conditions(day, 0.0, 0.0).foliage_season_look(threshold)
 			assert_false(was_autumn and look != L.AUTUMN, "no going back")
 			was_autumn = look == L.AUTUMN

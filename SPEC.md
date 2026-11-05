@@ -384,10 +384,17 @@ Decided 2026-11-05. A text console for testing and cheats.
     (each has its own threshold), not on one morning and not over weeks. In spring the
     trees and bushes leaf out in visible steps within those days: bare, buds, small leaves,
     full leaves. Autumn colours and leaf fall come in the same way. Winter without snow is
-    bare and brown-grey, not white.
+    bare and brown-grey, not white. As built (task 51): each change starts the day before
+    its season, so on the first day about a sixth has changed, half on the second, five in
+    six on the third, and all is done on the fourth. Leaf fall is the change to the bare
+    look at the start of winter (day 91). Each tree or bush leafs out over most of those
+    days and shows each step for about a day; conifers, ferns and grass have no steps.
   - **Pines look like pines** (decided 2026-11-06): a Scots pine with a tall bare reddish
     trunk and a few flat dark blue-green needle clumps high up, so they don't read as
-    young leafy trees; evergreen like the spruce, which stays as the second conifer.
+    young leafy trees; evergreen like the spruce, which stays as the second conifer. As
+    built: the trunk is slightly crooked, grey-brown and furrowed below and reddish-orange
+    in the crown, with three or four flat, ragged clumps on short branches in its top half;
+    snow lies on the clumps, frost pales them.
 - **Vegetation density follows the year** (decided 2026-11-05):
   - Ground cover (grass tufts, flowers, small plants, fallen leaves; the visual decoration
     layer) has a density per kind that follows a smooth yearly curve: grass tufts sparse
@@ -478,9 +485,10 @@ Decided 2026-11-05. A text console for testing and cheats.
   season only: frozen rivers, deep snow and other weather effects on tiles stay with the
   weather system. The season's look is only the base: the blend, snow and frost above
   decide per tile and per plant which look shows.
-- **How the looks are drawn** (decided 2026-11-05): there are six looks (spring, summer,
-  autumn, bare = winter without snow, frost, snow), each a recolour of the summer art made by
-  the generator. The base terrain is summer; a look is drawn over it as a dual-grid overlay
+- **How the looks are drawn** (decided 2026-11-05): there are seven looks of the ground (spring,
+  summer, autumn, bare = winter without snow, frost, snow and its thin fringe, dusting), each a
+  recolour of the summer art made by the generator, and for objects two more, the steps of the
+  leaf-out (buds and young leaves, drawn over the bare tree). The base terrain is summer; a look is drawn over it as a dual-grid overlay
   layer of its own (the same edge shapes as the terrain layers), so patches of autumn, bare
   ground, frost and snow have soft edges and no seams. The season looks have stacked layers
   for lush and dry grass too, like the terrain. Snow and frost lie over the season's look.

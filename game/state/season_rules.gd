@@ -13,7 +13,7 @@ const BOUNDARIES: Array[StringName] = [
 ]
 const REQUIRED_KEYS := {
 	"ground": BOUNDARIES,
-	"foliage": BOUNDARIES,
+	"foliage": BOUNDARIES + [&"leaf_out_span"],
 	"snow":
 	[
 		"snowfall_per_hour",
