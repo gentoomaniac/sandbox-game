@@ -38,6 +38,11 @@ frost and snow only come in winter, and late winter thaws quickly into spring. T
 weather is worked out from the world seed and the time, so the same world always has the
 same weather.
 
+The world moves with the wind: trees, bushes, grass, reeds and crops sway, barely on a
+calm day and hard in the gusts of a storm; the water ripples and glints, choppier in wind;
+the campfire and the hearth flicker and throw sparks, and the campfire leans downwind;
+rain splashes on the ground; lily pads drift and bob.
+
 ![Rain in autumn, snow in winter, morning fog and a thunderstorm](docs/screenshots/weather.png)
 
 ### Day, night and light

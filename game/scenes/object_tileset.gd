@@ -22,15 +22,19 @@ var _crop_sources: Dictionary[StringName, int] = {}
 
 
 ## One atlas source per look (see SeasonBlend.Look), with the same tiles: a source's id is its
-## look. Then one source per crop, with the ids that follow.
-func _init(crop_rules := CropRules.default_rules()) -> void:
+## look. Then one source per crop, with the ids that follow. The tiles of plants and fires get
+## the materials of `motion` (none without it).
+func _init(crop_rules := CropRules.default_rules(), motion: AmbientMotion = null) -> void:
 	tile_set.tile_size = Vector2i(TerrainTileset.TILE_SIZE, TerrainTileset.TILE_SIZE)
 	for look: SeasonBlend.Look in SeasonBlend.Look.values():
 		var source := TileSetAtlasSource.new()
 		source.texture = load(SeasonalArt.path(ATLAS_PATH, look))
 		source.texture_region_size = Vector2i(CELL_WIDTH, CELL_HEIGHT)
+		# The motion shaders find a pixel's place in its cell from its texture coordinates.
+		source.use_texture_padding = false
 		tile_set.add_source(source, look)
-		for object_type: Dictionary in WorldObjectTypes.TYPES.values():
+		for type: StringName in WorldObjectTypes.TYPES:
+			var object_type: Dictionary = WorldObjectTypes.TYPES[type]
 			if not object_type.has("atlas_row"):
 				continue
 			for variant in looks_count(object_type):
@@ -42,8 +46,10 @@ func _init(crop_rules := CropRules.default_rules()) -> void:
 				tile_data.y_sort_origin = (
 					(object_type["footprint"].y - 1) * TerrainTileset.TILE_SIZE
 				)
+				if motion != null:
+					tile_data.material = motion.object_material(type)
 	for crop_id in crop_rules.crop_ids():
-		_add_crop_sheet(crop_id, crop_rules.crop(crop_id)["sheet"])
+		_add_crop_sheet(crop_id, crop_rules.crop(crop_id)["sheet"], motion)
 
 
 ## The source that has the sheet of a crop type. Everything else is drawn from the source of its
@@ -53,18 +59,20 @@ func crop_source_id(crop_type: StringName) -> int:
 
 
 ## A crop's sheet is the same in every season.
-func _add_crop_sheet(crop_id: StringName, sheet_path: String) -> void:
+func _add_crop_sheet(crop_id: StringName, sheet_path: String, motion: AmbientMotion) -> void:
 	var source := TileSetAtlasSource.new()
 	var sheet: Texture2D = load(sheet_path)
 	source.texture = sheet
 	var cell_size := Vector2i(sheet.get_width() / (CropRules.STAGES + 1), sheet.get_height())
 	source.texture_region_size = cell_size
+	source.use_texture_padding = false
 	_crop_sources[crop_id] = tile_set.add_source(source)
 	for look in CropRules.STAGES + 1:
 		source.create_tile(Vector2i(look, 0))
-		source.get_tile_data(Vector2i(look, 0), 0).texture_origin = Vector2i(
-			0, (cell_size.y - TerrainTileset.TILE_SIZE) / 2
-		)
+		var tile_data := source.get_tile_data(Vector2i(look, 0), 0)
+		tile_data.texture_origin = Vector2i(0, (cell_size.y - TerrainTileset.TILE_SIZE) / 2)
+		if motion != null:
+			tile_data.material = motion.crop_material(cell_size)
 
 
 ## How many pictures a type has in its atlas row: its variants, and for a bush that can be

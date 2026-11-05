@@ -33,18 +33,20 @@ const FLASH_PEAK := 0.55
 
 ## Debug: keeps the flash of lightning on, for screenshots.
 var is_flash_held := false
+## The rain (0 to 1) and the wind (m/s, the way it blows) shown now, which the world's ambient
+## motion follows too (see AmbientMotion).
+var rain := 0.0
+var wind := Vector2.ZERO
 
 var _precipitation := ColorRect.new()
 var _fog := ColorRect.new()
 var _flash := ColorRect.new()
 var _target := WeatherSample.new()
 var _has_weather := false
-## What is shown now: intensities, and the wind in m/s.
-var _rain := 0.0
+## The other intensities shown now.
 var _snow := 0.0
 var _fog_density := 0.0
 var _wind_intensity := 0.0
-var _wind := Vector2.ZERO
 ## How far each effect has moved, in pixels.
 var _rain_fall := 0.0
 var _snow_scroll := Vector2.ZERO
@@ -98,12 +100,12 @@ func flash() -> void:
 func _process(delta: float) -> void:
 	_follow_target(1.0 - exp(-FOLLOW_RATE * delta))
 	_seconds += delta
-	var wind_x := _wind.x
+	var wind_x := wind.x
 	_rain_fall += RAIN_FALL_SPEED * delta
 	_snow_scroll += Vector2(wind_x * SNOW_DRIFT_PER_WIND, SNOW_FALL_SPEED) * delta
 	var gust_direction := -1.0 if wind_x < 0.0 else 1.0
-	_streak_scroll += Vector2(gust_direction * _wind.length() * STREAK_SPEED_PER_WIND, 0.0) * delta
-	_fog_drift += (FOG_BASE_DRIFT + _wind * FOG_DRIFT_PER_WIND) * delta
+	_streak_scroll += Vector2(gust_direction * wind.length() * STREAK_SPEED_PER_WIND, 0.0) * delta
+	_fog_drift += (FOG_BASE_DRIFT + wind * FOG_DRIFT_PER_WIND) * delta
 	if is_flash_held:
 		_flash.color.a = FLASH_PEAK
 	_show_effects(wind_x)
@@ -111,19 +113,19 @@ func _process(delta: float) -> void:
 
 ## Moves what is shown by `share` (0 to 1) of the way to the weather.
 func _follow_target(share: float) -> void:
-	_rain = lerpf(_rain, _target.rain, share)
+	rain = lerpf(rain, _target.rain, share)
 	_snow = lerpf(_snow, _target.snow, share)
 	_fog_density = lerpf(_fog_density, _target.fog, share)
 	_wind_intensity = lerpf(_wind_intensity, _target.wind, share)
-	_wind = _wind.lerp(_target.wind_direction * _target.wind_speed, share)
+	wind = wind.lerp(_target.wind_direction * _target.wind_speed, share)
 
 
 func _show_effects(wind_x: float) -> void:
-	_precipitation.visible = maxf(maxf(_rain, _snow), _wind_intensity) > MIN_INTENSITY
+	_precipitation.visible = maxf(maxf(rain, _snow), _wind_intensity) > MIN_INTENSITY
 	_fog.visible = _fog_density > MIN_INTENSITY
 	var precipitation: ShaderMaterial = _precipitation.material
 	precipitation.set_shader_parameter("time", _seconds)
-	precipitation.set_shader_parameter("rain", _rain)
+	precipitation.set_shader_parameter("rain", rain)
 	precipitation.set_shader_parameter("rain_fall", _rain_fall)
 	precipitation.set_shader_parameter(
 		"rain_slant", clampf(wind_x * RAIN_SLANT_PER_WIND, -MAX_RAIN_SLANT, MAX_RAIN_SLANT)

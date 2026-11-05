@@ -2,7 +2,8 @@ class_name InteriorView
 extends Node2D
 ## Renders an Interior from its state, in 3/4 view: the floor and walls on one tile layer,
 ## the furniture as sprites in the y-sorted `entities` node, where the player stands among
-## them. Furniture that shines (the hearth) gets an ObjectLight.
+## them. Furniture that shines (the hearth) gets an ObjectLight, and its fire burns (see
+## AmbientMotion).
 ##
 ## The room is walled in by its WALL tiles: along the top a back wall face of BACK_WALL_ROWS
 ## tiles, on the other sides thin tops of walls, 8 px wide, drawn on the half of the wall
@@ -116,6 +117,8 @@ func _add_furniture(object: WorldObject) -> void:
 		(object.pos.y + footprint.y - 0.5) * tile_size
 	)
 	sprite.offset = Vector2(-texture.get_width() / 2.0, tile_size / 2.0 - texture.get_height())
+	if AmbientMotion.FIRE_PROFILES.has(object.type):
+		sprite.material = AmbientMotion.fire_material(object.type)
 	entities.add_child(sprite)
 	_furniture.append(sprite)
 	if not object.light().is_empty():

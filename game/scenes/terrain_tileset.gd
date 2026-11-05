@@ -114,8 +114,9 @@ var _decoration_counts: Array[int] = []
 
 
 ## Builds a tile for every non-empty atlas cell, so the generator alone decides how many
-## variants and decorations each layer has. Every look's atlases have the same layout.
-func _init() -> void:
+## variants and decorations each layer has. Every look's atlases have the same layout. The
+## decorations that move get the materials of `motion` (none without it).
+func _init(motion: AmbientMotion = null) -> void:
 	tile_set.tile_size = Vector2i(TILE_SIZE, TILE_SIZE)
 	for look: SeasonBlend.Look in SeasonBlend.Look.values():
 		var counts: Array[int] = []
@@ -126,10 +127,12 @@ func _init() -> void:
 		if look == SeasonBlend.Look.SUMMER:
 			_full_variant_counts = counts
 		var no_counts: Array[int] = []
-		tile_set.add_source(
-			_atlas_source(SeasonalArt.path(DECORATION_ATLAS_PATH, look), 0, no_counts),
-			decoration_source_id(look)
+		var decorations := _atlas_source(
+			SeasonalArt.path(DECORATION_ATLAS_PATH, look), 0, no_counts
 		)
+		if motion != null:
+			_set_motion(decorations, motion)
+		tile_set.add_source(decorations, decoration_source_id(look))
 		if look == SeasonBlend.Look.SUMMER:
 			_decoration_counts = no_counts
 	var clay_hint := TileSetAtlasSource.new()
@@ -266,6 +269,15 @@ func decoration_cell(layer: int, tile_pos: Vector2i, cluster: float) -> Vector2i
 static func decoration_kind(atlas_cell: Vector2i) -> StringName:
 	var kinds: Array = DECORATION_KINDS.get(atlas_cell.y, [])
 	return kinds[atlas_cell.x] if not kinds.is_empty() else &""
+
+
+## Puts the materials of `motion` on the decoration tiles that move.
+static func _set_motion(decorations: TileSetAtlasSource, motion: AmbientMotion) -> void:
+	# The motion shaders find a pixel's place in its tile from its texture coordinates.
+	decorations.use_texture_padding = false
+	for index in decorations.get_tiles_count():
+		var atlas_cell := decorations.get_tile_id(index)
+		decorations.get_tile_data(atlas_cell, 0).material = motion.decoration_material(atlas_cell)
 
 
 ## An atlas source with a tile for every non-empty cell of the image. Appends, per row,

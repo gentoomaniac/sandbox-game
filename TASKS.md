@@ -972,7 +972,21 @@ plain resource and equipment.
 
 ## 45. Ambient motion: wind sway, water, fire, rain splashes, lily pads
 
-- [ ] Done
+- [x] Done
+
+Done: AmbientMotion (game/scenes/ambient_motion.gd) turns the shown wind and rain into the
+numbers of six shaders and holds their materials, which ObjectTileset and TerrainTileset put
+on the tiles that move (per-tile materials; those atlases have no texture padding so the
+shaders can find a pixel's place in its cell). object_sway and decoration_sway bend plants
+by whole pixels with a per-object phase hashed from the world position and gust fronts
+travelling downwind; water ripples and glints; fire flickers, leans and throws sparks (the
+campfire tile and the hearth sprite indoors); lily pads drift and bob; RainSplashes draws
+splashes under the objects. Main feeds it WeatherView's smoothed wind and rain every frame.
+Tests cover the wind-to-sway, lean, gust, chop, fire lean and splash mappings and which
+tiles get which material. Left over: see-through and falling trees don't sway (sprites);
+oak crowns that reach the edge of their cell can lose an edge pixel at the peak of a storm
+swing (a tile is drawn only inside its cell); the reeds and tufts painted into wetland and
+grass terrain tiles stay still; dead trees (bare snags) stay still on purpose.
 
 See SPEC.md "Ambient motion". View only, driven by the weather's wind; depends on 43
 (both touch the world view). Sway by shader on the object and decoration layers (whole art

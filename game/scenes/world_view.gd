@@ -11,7 +11,8 @@ extends Node2D
 ## that, the damp or wet look of tilled soil (see SoilWetness), and an objects layer on the same
 ## grid that draws the world's objects. It sits in the y-sorted `entities` node, where the
 ## player (and later creatures) stand among them, and keeps no decoration under an object.
-## Objects that shine get an ObjectLight.
+## Objects that shine get an ObjectLight. Plants, water, fires and lily pads move in the wind
+## by the materials of `ambient_motion`, and the rain splashes on the ground under the objects.
 ##
 ## A tree that is felled topples as a FallingTree sprite while the state already has its stump
 ## and its trunk; the trunk's cell stays erased until the fall ends.
@@ -101,13 +102,15 @@ var entities := Node2D.new()
 var is_settled := false
 ## Where the player stands, in world pixels (set by the game scene every frame).
 var player_feet := Vector2.ZERO
+## The game scene gives it the wind and the rain every frame.
+var ambient_motion := AmbientMotion.new()
 var _generator: WorldGenerator
 var _hit_particles := HitParticles.new()
 var _variety_noise := FastNoiseLite.new()
 var _decoration_noise := FastNoiseLite.new()
 var _focus_chunk := Vector2i.ZERO
-var _tileset := TerrainTileset.new()
-var _object_tileset := ObjectTileset.new()
+var _tileset := TerrainTileset.new(ambient_motion)
+var _object_tileset := ObjectTileset.new(CropRules.default_rules(), ambient_motion)
 ## Indexed by TerrainTileset.Layer.
 var _layers: Array[TileMapLayer] = []
 var _decorations := TileMapLayer.new()
@@ -158,6 +161,7 @@ func _ready() -> void:
 		tile_map.position = -Vector2(TerrainTileset.TILE_SIZE, TerrainTileset.TILE_SIZE) / 2
 		add_child(tile_map)
 		_layers.append(tile_map)
+	_layers[TerrainTileset.Layer.WATER].material = ambient_motion.water
 	# Wet soil lies right over the soil terrain, under the snow and the other looks.
 	add_child(_soil_wetness)
 	for look in TerrainTileset.OVERLAY_LOOKS:
@@ -176,6 +180,7 @@ func _ready() -> void:
 	_clay_hints.name = "ClayHints"
 	_clay_hints.tile_set = _tileset.tile_set
 	add_child(_clay_hints)
+	add_child(RainSplashes.new(ambient_motion))
 	_objects.name = "Objects"
 	_objects.tile_set = _object_tileset.tile_set
 	_objects.y_sort_enabled = true
@@ -763,8 +768,6 @@ func _draw_building(building: Building) -> void:
 
 
 ## Building windows: a lit sprite variant and a small warm light in each window, on at night.
-
-
 func _add_window_lights(building: Building, sprite: Sprite2D) -> void:
 	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
 	var lights: Array[ObjectLight] = []

@@ -400,7 +400,17 @@ Decided 2026-11-05. A text console for testing and cheats.
     gusts in a storm, each plant with its own phase, in whole art pixels with the stems
     fixed); water shimmers and ripples, choppier in wind; the campfire and hearth flames
     flicker and lean downwind with drifting sparks; rain splatters small splashes on the
-    ground (more in heavy rain); lily pads drift and bob a little.
+    ground (more in heavy rain); lily pads drift and bob a little. It is all done by
+    shaders, with no nodes or scripts per plant: a pixel's sideways shift grows with its
+    height above the plant's foot (the trunk or stem stays put), plants lean downwind and
+    gust fronts sweep across the world with the wind; only the wind across the screen
+    leans them. At a light air (about 2 m/s) only the tips of the bendiest plants flick a
+    pixel now and then; in a storm tree tops swing up to 3 pixels. Water ripples only
+    change plain water pixels, so banks, foam and lily pads keep their shape. Splashes are
+    drawn under the objects and the player. The hearth's fire flickers indoors too, but
+    there is no wind inside, so it does not lean. Dead trees (bare snags), pebbles, fallen
+    leaves, toadstools and puddles stay still; so does a tree while it is see-through or
+    falling (it is a sprite then).
   - **Effects for now are visual only:** rain and snow particles (slanted by the wind),
     fog drifting over the world, wind streaks and blowing leaves, lightning flashes, and
     overcast skies dimming daylight. Nothing in the game reacts yet (crops, floods,

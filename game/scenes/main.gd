@@ -375,6 +375,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _process(delta: float) -> void:
 	_tick_clock(delta)
 	_weather_view.show_weather(_weather, _tint.color)
+	_view.ambient_motion.update(delta, _weather_view.wind, _weather_view.rain)
 	_coordinates_hud.show_position(
 		_state.player.tile(), _state.is_inside(), _weather_and_sun_text(_weather)
 	)
