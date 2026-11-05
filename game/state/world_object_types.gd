@@ -69,6 +69,14 @@ const STOOL := &"stool"
 const CHEST := &"chest"
 const HEARTH := &"hearth"
 const WINDOW := &"window"
+const SLEEPING_MAT := &"sleeping_mat"
+const BOX_BED := &"box_bed"
+const BENCH := &"bench"
+const STALL_PARTITION := &"stall_partition"
+const HAY_PILE := &"hay_pile"
+const BARREL := &"barrel"
+const SACKS := &"sacks"
+const CRATE := &"crate"
 const STUMP := &"stump"
 const TALL_GRASS := &"tall_grass"
 const REEDS := &"reeds"
@@ -302,6 +310,64 @@ const _OTHER_TYPES := {
 		"harvest_level": 0,
 		"interior_sprite": "res://assets/interior/hearth.png",
 		"light": {"color": Color(1.0, 0.5, 0.22), "energy": 1.2, "radius_tiles": 5.0},
+	},
+	SLEEPING_MAT:
+	{
+		"footprint": Vector2i(1, 2),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"interior_sprite": "res://assets/interior/sleeping_mat.png",
+		"sleep_minutes": 6 * GameClock.MINUTES_PER_HOUR,
+	},
+	BOX_BED:
+	{
+		"footprint": Vector2i(2, 2),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"interior_sprite": "res://assets/interior/box_bed.png",
+		"sleep_minutes": 6 * GameClock.MINUTES_PER_HOUR,
+	},
+	BENCH:
+	{
+		"footprint": Vector2i(2, 1),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"interior_sprite": "res://assets/interior/bench.png",
+	},
+	STALL_PARTITION:
+	{
+		"footprint": Vector2i(1, 2),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"interior_sprite": "res://assets/interior/stall_partition.png",
+	},
+	HAY_PILE:
+	{
+		"footprint": Vector2i(2, 1),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"interior_sprite": "res://assets/interior/hay_pile.png",
+	},
+	BARREL:
+	{
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"interior_sprite": "res://assets/interior/barrel.png",
+	},
+	SACKS:
+	{
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"interior_sprite": "res://assets/interior/sacks.png",
+	},
+	CRATE:
+	{
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"interior_sprite": "res://assets/interior/crate.png",
 	},
 	# Wall decoration: it stands on the wall tiles of the back wall face.
 	WINDOW:

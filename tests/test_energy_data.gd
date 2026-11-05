@@ -48,6 +48,8 @@ func test_the_data_file_holds_every_rule_with_the_first_values() -> void:
 	assert_almost_eq(rules.weight_factor(30.0), 1.1, 0.0001)
 	assert_eq(rules.sleep_fill(WorldObjectTypes.SLEEPING_BAG), 100.0)
 	assert_eq(rules.sleep_fill(WorldObjectTypes.SMALL_BED), 100.0)
+	assert_eq(rules.sleep_fill(WorldObjectTypes.SLEEPING_MAT), 80.0)
+	assert_eq(rules.sleep_fill(WorldObjectTypes.BOX_BED), 100.0)
 	assert_eq(rules.sleep_fill(&"ground"), 50.0)
 	assert_eq(rules.food_restore(ItemTypes.BERRIES), 3.0)
 	assert_eq(rules.food_restore(ItemTypes.TURNIP), 8.0)

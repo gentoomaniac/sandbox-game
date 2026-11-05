@@ -650,6 +650,12 @@ atmosphere only: no player impact, not hunted, not saved.
   - **Barn:** a work and storage building, no hearth or bed; 6×3, door on the third tile
     from the left, no windows. Costs 30 logs, 15 stone, 5 clay, 25 reeds. The longhouse
     costs 60 logs, 30 stone, 30 clay, 50 reeds.
+  - **Insides** (decided 2026-11-05): each is a Tiled map, `maps/interiors/<id>.tmx`, a little
+    larger than the footprint: shack 6×6 (straw sleeping mat, crate, stool), Kate 9×8 (hearth,
+    bed, table, stools, chest), longhouse 15×8 (living end with hearth, box bed, table and
+    bench; a stall partition divides it from the animal end with stalls, hay and sacks), barn
+    13×8 (four hay stalls, crates, barrels, sacks). Sleep fills: mat 80, bed and box bed 100.
+    The barn has no bed, so it can't be slept in.
   - The look: half-timbered walls (dark oak beams, red brick or lime-washed clay infill),
     a steep thick reed thatch with a turf ridge, small windows, a stone base; the shack is
     plank-built with a simple roof. Every building has a look per season and for snow, and

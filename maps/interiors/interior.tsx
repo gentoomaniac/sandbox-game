@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.12.0" name="interior" tilewidth="16" tileheight="16" tilecount="20" columns="20">
- <image source="../../assets/interior.png" width="320" height="16"/>
+<tileset version="1.10" tiledversion="1.12.0" name="interior" tilewidth="16" tileheight="16" tilecount="28" columns="28">
+ <image source="../../assets/interior.png" width="448" height="16"/>
  <tile id="0">
   <properties>
    <property name="terrain" value="FLOOR"/>
@@ -100,6 +100,46 @@
  <tile id="19">
   <properties>
    <property name="object_type" value="window"/>
+  </properties>
+ </tile>
+ <tile id="20">
+  <properties>
+   <property name="object_type" value="sleeping_mat"/>
+  </properties>
+ </tile>
+ <tile id="21">
+  <properties>
+   <property name="object_type" value="box_bed"/>
+  </properties>
+ </tile>
+ <tile id="22">
+  <properties>
+   <property name="object_type" value="bench"/>
+  </properties>
+ </tile>
+ <tile id="23">
+  <properties>
+   <property name="object_type" value="stall_partition"/>
+  </properties>
+ </tile>
+ <tile id="24">
+  <properties>
+   <property name="object_type" value="hay_pile"/>
+  </properties>
+ </tile>
+ <tile id="25">
+  <properties>
+   <property name="object_type" value="barrel"/>
+  </properties>
+ </tile>
+ <tile id="26">
+  <properties>
+   <property name="object_type" value="sacks"/>
+  </properties>
+ </tile>
+ <tile id="27">
+  <properties>
+   <property name="object_type" value="crate"/>
   </properties>
  </tile>
 </tileset>

@@ -884,13 +884,19 @@ silhouette that names it alone, filling the icon on the diagonal.
 
 ## 39. Interiors for all four buildings
 
-- [ ] Done
+- [x] Done
 
 Depends on 36. A Tiled interior per building (see InteriorLoader), sized to its footprint:
 the shack bare and small, the Kate a cottage room with hearth and bed, the longhouse with
 a hall and living end, the barn with stalls and storage and no bed or hearth. Until then
 all four buildings in data/buildings.cfg use maps/interiors/small_house.tmx, and
 tests/test_interior.gd still builds its checks on that map under the old name.
+
+Done: maps/interiors/{shack,kate,longhouse,barn}.tmx (6x6, 9x8, 15x8, 13x8 tiles), each
+building pointing at its own in data/buildings.cfg; small_house.tmx is now kate.tmx. New
+furniture: sleeping_mat (shack, sleep fill 80), box_bed (longhouse, 100), bench, stall_partition,
+hay_pile, barrel, sacks, crate. Saves store an interior's content, not its map, so old saves
+load unchanged (a Kate keeps the old room); the version 5 upgrade needed no change.
 
 ## 40. Sound generator
 

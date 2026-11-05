@@ -1673,6 +1673,137 @@ FURNITURE = {
 }
 
 
+# More furniture, for the shack, the longhouse and the barn (task 39). They come after the first
+# six so that the tile ids of the tileset stay as they were.
+
+
+def sleeping_mat():
+    """A straw sleeping mat 1x2 tiles, head to the north, with a cream pillow."""
+    canvas = sprite_canvas(TILE, 2 * TILE)
+    fill_rect(canvas, 1, 1, 14, 30, "straw")
+    for y in range(4, 30, 3):
+        fill_rect(canvas, 1, y, 14, y, "sand")
+    fill_rect(canvas, 1, 1, 1, 30, "sand_light")
+    fill_rect(canvas, 3, 2, 12, 8, "cream")
+    fill_rect(canvas, 3, 8, 12, 8, "sand_light")
+    return outline(canvas, "soil_dark")
+
+
+def box_bed():
+    """A box bed 2x2 tiles, head to the north: a timber box with a straw mattress, a pillow
+    and a red blanket, a front board in front."""
+    canvas = sprite_canvas(2 * TILE, 2 * TILE)
+    fill_rect(canvas, 0, 0, 31, 31, "soil_mid")
+    fill_rect(canvas, 1, 1, 30, 1, "soil_light")
+    fill_rect(canvas, 2, 5, 29, 24, "soil_dark")
+    fill_rect(canvas, 3, 6, 28, 24, "straw")
+    fill_rect(canvas, 4, 7, 14, 12, "cream")
+    fill_rect(canvas, 4, 12, 14, 12, "sand_light")
+    fill_rect(canvas, 4, 13, 28, 24, "ember")
+    fill_rect(canvas, 4, 13, 28, 15, "flame")
+    fill_rect(canvas, 4, 15, 28, 15, "ember")
+    fill_rect(canvas, 0, 25, 31, 31, "soil")
+    fill_rect(canvas, 0, 25, 31, 25, "soil_light")
+    fill_rect(canvas, 0, 28, 31, 28, "soil_mid")
+    return outline(canvas, "soil_dark")
+
+
+def bench():
+    """A bench 2x1 tiles: a plank seat on two legs."""
+    canvas = sprite_canvas(2 * TILE, TILE)
+    fill_rect(canvas, 0, 3, 31, 7, "soil_light")
+    fill_rect(canvas, 0, 5, 31, 5, "soil_mid")
+    fill_rect(canvas, 0, 8, 31, 9, "soil_mid")
+    fill_rect(canvas, 0, 10, 31, 10, "soil_dark")
+    for x in (2, 27):
+        fill_rect(canvas, x, 11, x + 2, 15, "soil")
+        fill_rect(canvas, x, 11, x, 15, "soil_mid")
+    return outline(canvas, "soil_dark", keep_bottom=True)
+
+
+def stall_partition():
+    """A stall partition 1x2 tiles: a post with two rails that run on into the next stall."""
+    canvas = sprite_canvas(TILE, 2 * TILE)
+    for top in (6, 16):
+        fill_rect(canvas, 0, top, 15, top + 3, "soil")
+        fill_rect(canvas, 0, top, 15, top, "soil_light")
+        fill_rect(canvas, 0, top + 3, 15, top + 3, "soil_dark")
+    fill_rect(canvas, 5, 0, 10, 31, "soil_mid")
+    fill_rect(canvas, 5, 0, 6, 31, "soil_light")
+    fill_rect(canvas, 5, 28, 10, 31, "soil_dark")
+    return outline(canvas, "soil_dark", keep_bottom=True)
+
+
+def hay_pile():
+    """A pile of hay 2x1 tiles: a mound of straw with gold and darker wisps."""
+    rng = random.Random(391)
+    canvas = sprite_canvas(2 * TILE, TILE)
+    for x in range(2 * TILE):
+        top = 2 + round(6 * (1 - math.sin(math.pi * (x + 0.5) / (2 * TILE))))
+        for y in range(top, TILE):
+            colour = rng.choice(("straw", "straw", "gold", "dry_light"))
+            if y >= TILE - 3:
+                colour = rng.choice(("sand", "sand_light", "sand"))
+            canvas[y][x] = colour
+    return outline(canvas, "soil_dark", keep_bottom=True)
+
+
+def barrel():
+    """A barrel, 1x1 tiles: staves, a lid and two iron hoops."""
+    canvas = sprite_canvas(TILE, TILE)
+    fill_rect(canvas, 2, 3, 13, 15, "soil_mid")
+    fill_rect(canvas, 3, 0, 12, 3, "soil_light")
+    for x in (5, 9):
+        fill_rect(canvas, x, 4, x, 15, "soil")
+    fill_rect(canvas, 12, 4, 13, 15, "soil")
+    for y in (5, 12):
+        fill_rect(canvas, 2, y, 13, y, "stone")
+        fill_rect(canvas, 2, y, 6, y, "stone_light")
+    return outline(canvas, "soil_dark", keep_bottom=True)
+
+
+def sacks():
+    """Two sacks of grain, 1x1 tiles, tied at the neck."""
+    canvas = sprite_canvas(TILE, TILE)
+    fill_rect(canvas, 1, 5, 8, 15, "sand_light")
+    fill_rect(canvas, 7, 5, 8, 15, "sand")
+    fill_rect(canvas, 3, 3, 6, 4, "sand_light")
+    fill_rect(canvas, 3, 5, 6, 5, "mud")
+    fill_rect(canvas, 8, 8, 14, 15, "straw")
+    fill_rect(canvas, 13, 8, 14, 15, "sand")
+    fill_rect(canvas, 10, 6, 12, 7, "straw")
+    fill_rect(canvas, 10, 8, 12, 8, "mud")
+    return outline(canvas, "soil_dark", keep_bottom=True)
+
+
+def crate():
+    """A wooden crate, 1x1 tiles, with a cross of boards."""
+    canvas = sprite_canvas(TILE, TILE)
+    fill_rect(canvas, 0, 1, 15, 15, "soil_light")
+    for i in range(2, 14):
+        canvas[1 + i][i] = "soil_mid"
+        canvas[1 + i][15 - i] = "soil_mid"
+    fill_rect(canvas, 0, 1, 15, 2, "soil_mid")
+    fill_rect(canvas, 0, 14, 15, 15, "soil_mid")
+    fill_rect(canvas, 0, 1, 1, 15, "soil_mid")
+    fill_rect(canvas, 14, 1, 15, 15, "soil_mid")
+    return outline(canvas, "soil_dark", keep_bottom=True)
+
+
+FURNITURE.update(
+    {
+        "sleeping_mat": (sleeping_mat(), (1, 2)),
+        "box_bed": (box_bed(), (2, 2)),
+        "bench": (bench(), (2, 1)),
+        "stall_partition": (stall_partition(), (1, 2)),
+        "hay_pile": (hay_pile(), (2, 1)),
+        "barrel": (barrel(), (1, 1)),
+        "sacks": (sacks(), (1, 1)),
+        "crate": (crate(), (1, 1)),
+    }
+)
+
+
 def marker_tile(picture, footprint):
     """The top left tile of the footprint of a sprite that is centred on it."""
     width, height = len(picture[0]), len(picture)
