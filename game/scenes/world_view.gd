@@ -114,8 +114,8 @@ var _refresh_queue: Array[Vector2i] = []
 var _cells_to_redraw: Array[Vector2i] = []
 ## Where the overlay looks are drawn, by look.
 var _overlays: Dictionary[SeasonBlend.Look, TileMapLayer] = {}
-## What each object cell was last drawn as, by tile: its look, plus BARE_OF_FRUIT_FLAG if it showed as
-## bare of fruit, or DORMANT if it was not drawn.
+## What each object cell was last drawn as, by tile: its look, plus BARE_OF_FRUIT_FLAG if it
+## showed as bare of fruit, or DORMANT if it was not drawn.
 var _object_states: Dictionary[Vector2i, int] = {}
 ## Where a decoration could grow, shown or not, so a new day only revisits these tiles.
 ## Never under an object.
