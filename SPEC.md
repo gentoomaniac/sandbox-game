@@ -376,20 +376,30 @@ Decided 2026-11-05. A text console for testing and cheats.
 
 ### Farming and foraging
 
-- **Crops** (decided 2026-11-05): classic crops beside the turnip, all defined in a
-  hand-editable data file (`data/crops.cfg`): growth stages, days per stage, the seasons
-  they grow in, yield, and whether they regrow after harvest.
-  - First set (fitting the Nordic setting): turnip, potato, carrot, cabbage, onion,
-    wheat, peas (regrow), strawberries (regrow) and pumpkin.
-  - Each crop has its own seeds (a seed bag item, or seed potatoes for potatoes) and its
-    produce item. Seeds plant on tilled soil like the turnip seeds; produce can be eaten
-    (food values in `data/energy.cfg`).
-  - A crop grows only in its seasons: planting outside them is refused with a short
-    message, and a crop still in the ground when its seasons end withers (a withered
-    crop is cleared by hand). Later, growth will also depend on the weather values.
+- **Crops** (decided 2026-11-05, extended the same day): classic crops beside the
+  turnip, all defined in a hand-editable data file (`data/crops.cfg`).
+  - **One picture sheet per crop** (`assets/crops/<crop>.png`): 4 growth stages and a
+    dead stage, side by side. A new crop is a new section in the config plus its sheet;
+    no code. The built-in crops' sheets come from the art generator.
+  - First set: turnip, potato, carrot, cabbage, onion, wheat, peas (regrow), beans
+    (regrow), tomatoes (regrow), strawberries (regrow) and pumpkin.
+  - **Crops need light, water and warmth to grow**, with the needs per crop in the
+    config: a temperature range (minimum, best, maximum), the sunlight they need per
+    day, the soil moisture they need, and how much wind they stand. Each night a crop
+    grows by how well the day met its needs (good days count fully, poor days partly,
+    bad days not at all) and moves to the next stage after enough growth.
+  - **Crops can die:** days without enough sun or water, frost below the crop's
+    minimum, or wind above its tolerance (beans and tomatoes are fragile, wheat bends)
+    damage the crop; enough damage and it dies and shows its dead stage, which the empty
+    hand clears. Damage heals slowly on good days.
+  - **Soil moisture** belongs to each tilled tile: rain wets it, the watering can fills
+    it, and warmth, sun and wind dry it out over the day. Watered soil looks darker.
+  - The calendar no longer gates planting: the weather does. Seeds plant on tilled soil
+    any time; a crop planted in the wrong season simply won't thrive.
+  - Each crop has its own seeds (a seed bag item, seed potatoes for potatoes) and its
+    produce item; produce can be eaten (food values in `data/energy.cfg`).
   - Until a shop exists, seeds come from the console (`give`), and a harvest still gives
     one seed back.
-
 - Wild crops can be foraged.
 - The biome decides which resources are available and what the land is good for
   agriculturally (see Biomes).

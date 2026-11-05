@@ -725,21 +725,24 @@ from the weather".
 - Tests: snow builds and melts with the weather, gone at spring start, patchy thaw over
   2–3 days, frost only below 0 °C without snow, blend fractions across boundaries.
 
-## 30. More crops
+## 30. More crops, grown by the weather
 
 - [ ] Done
 
 See SPEC.md "Farming and foraging" (crops).
 
-- data/crops.cfg (required keys, fails loudly) with the nine crops; crop object types
-  and seed/produce item types built from it; turnip moves into the file.
-- Seasons: planting refused outside a crop's seasons; withering when its seasons end;
-  regrowing crops (peas, strawberries) go back a stage after harvest.
-- Art: growth stages per crop (tall ones like wheat and peas may use a taller cell),
-  withered look, 16×16 icons for each seed bag and produce. Same look in every season.
-- Food values for the produce in data/energy.cfg.
-- Tests: every crop grows to ripe in its days, season refusal, withering, regrowth,
-  yields, save/load, the data file.
+- data/crops.cfg (required keys, fails loudly): per crop its sheet, needs (temperature
+  min/best/max, daily sunlight, soil moisture, wind tolerance), growth needed per stage,
+  yield, regrowth, seed and produce items. Eleven crops; turnip moves into the file.
+- One sheet per crop in assets/crops/ (4 growth stages + dead), loaded from the config,
+  so new crops need no code.
+- Soil moisture per tilled tile (saved): rain, watering can (now works), drying by
+  temperature, sun and wind; darker look when wet.
+- Nightly growth from the day's weather (aggregated per day and region) and the soil
+  moisture; damage from drought, darkness, frost and wind; death shows the dead stage.
+- Food values for the produce; seed bag and produce icons.
+- Tests: growth under good, poor and bad days; each death cause; wind-fragile crops;
+  moisture from rain and watering, drying; regrowth; save/load; the data file.
 
 ## 31. Console: completion for all arguments
 
