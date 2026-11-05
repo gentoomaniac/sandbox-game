@@ -38,6 +38,9 @@ per tile) and as tall as the footprint plus the roof rising above it. The bottom
 footprint's bottom edge. <type>_lit.png is the same with lit windows, for the night. Sizes
 and door tiles are in game/state/building_types.gd.
 
+assets/wildlife/<kind>.png: one sheet per animal kind, one row per action and one column per frame
+(see animals.py and game/scenes/wildlife/wildlife_sprites.gd).
+
 assets/items/<item id>.png (16x16) and assets/ui/slot.png, slot_selected.png (20x20): drawn in
 items.py.
 """
@@ -48,6 +51,7 @@ from pathlib import Path
 
 from PIL import Image
 
+import animals
 import items
 import seasons
 import ui
@@ -1988,6 +1992,9 @@ def main():
     (ASSETS / "interior").mkdir(exist_ok=True)
     for name, (picture, _footprint) in FURNITURE.items():
         to_image([[picture]], len(picture[0]), len(picture)).save(ASSETS / "interior" / f"{name}.png")
+    (ASSETS / "wildlife").mkdir(exist_ok=True)
+    for kind in animals.SHEETS:
+        to_image(animals.sheet_rows(kind), *animals.cell_size(kind)).save(ASSETS / "wildlife" / f"{kind}.png")
     for directory, pictures in (("items", items.ICONS), ("ui", items.SLOTS | items.SLOT_HINTS)):
         (ASSETS / directory).mkdir(exist_ok=True)
         for name, picture in pictures.items():
@@ -1995,7 +2002,7 @@ def main():
     ui.write_ui_assets(ASSETS / "ui", PALETTE)
     write_palette()
     check_palette()
-    print("Wrote terrain*.png, decorations*.png, objects*.png (one per look), character/*.png, interior.png, interior/*.png, buildings/*.png, items/*.png, ui/*, palette.png and palette.gpl to assets/; palette check passed.")
+    print("Wrote terrain*.png, decorations*.png, objects*.png (one per look), character/*.png, interior.png, interior/*.png, buildings/*.png, items/*.png, wildlife/*.png, ui/*, palette.png and palette.gpl to assets/; palette check passed.")
 
 
 if __name__ == "__main__":

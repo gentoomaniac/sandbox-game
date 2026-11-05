@@ -11,6 +11,11 @@ const COMMANDS := {
 	"god": ["god", "Toggle invincibility: health never drops (energy still runs out)."],
 	"nodrain": ["nodrain", "Toggle: actions cost no energy."],
 	"noweight": ["noweight", "Toggle: carried weight doesn't raise costs."],
+	"spawn":
+	[
+		"spawn <kind> [count]",
+		"Put animals in view: bird, rabbit, squirrel, deer, bee, butterfly or flock.",
+	],
 	"weather":
 	[
 		"weather [clear|rain|snow|fog|wind|storm|thunder|auto]",
@@ -24,6 +29,10 @@ const COMMANDS := {
 }
 ## Item ids this similar to a misspelt one (see String.similarity) are offered as a guess.
 const CLOSE_MATCH_SIMILARITY := 0.4
+
+## Puts animals in view: takes a kind and a count, returns how many it placed. Set by the game
+## scene, which has the animals; the console is plain logic.
+var wildlife_spawner := Callable()
 
 var _state: GameState
 
@@ -56,6 +65,8 @@ func run(line: String) -> Array[String]:
 		"noweight":
 			cheats.is_weight_off = not cheats.is_weight_off
 			output = [_toggle_message("No weight", cheats.is_weight_off)]
+		"spawn":
+			output = _spawn(arguments)
 		"weather":
 			output = _weather(arguments)
 		"snow":
@@ -77,6 +88,9 @@ func complete(line: String) -> String:
 		candidates.assign(COMMANDS.keys())
 	elif word_index == 1 and words[0] == "give":
 		candidates = _item_ids()
+	elif word_index == 1 and words[0] == "spawn":
+		for kind in WildlifeRules.KINDS:
+			candidates.append(String(kind))
 	elif word_index == 1 and words[0] == "snow":
 		candidates = ["auto"]
 	elif word_index == 1 and words[0] == "weather":
@@ -148,6 +162,22 @@ func _give(arguments: PackedStringArray) -> Array[String]:
 	if left > 0:
 		lines.append("Inventory full: %d not added" % left)
 	return lines
+
+
+func _spawn(arguments: PackedStringArray) -> Array[String]:
+	var is_count_valid := (
+		arguments.size() < 2 or (arguments[1].is_valid_int() and int(arguments[1]) > 0)
+	)
+	if arguments.is_empty() or arguments.size() > 2 or not is_count_valid:
+		return ["Usage: %s" % COMMANDS["spawn"][0]]
+	var kind := StringName(arguments[0])
+	if not WildlifeRules.KINDS.has(kind):
+		return ["Unknown animal: %s" % arguments[0]]
+	if _state.is_inside() or not wildlife_spawner.is_valid():
+		return ["No animals here"]
+	var count := 1 if arguments.size() < 2 else int(arguments[1])
+	var placed: int = wildlife_spawner.call(kind, count)
+	return ["Spawned %d of %d %s" % [placed, count, kind]]
 
 
 func _weather(arguments: PackedStringArray) -> Array[String]:

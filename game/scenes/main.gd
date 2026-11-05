@@ -29,8 +29,12 @@ extends Node2D
 ## `--camera-shift=<x>,<y>` moves the camera by that many art pixels, fractions included
 ## (to check smooth scrolling); `--menu=pause|settings|controls|display|game` opens that menu page
 ## (with `--screenshot`, the shot is of the menu). The console's `snow <0..1>` forces the snow
-## cover (`snow auto` ends it), and F3 shows the snow cover and the frost. PlayerView parses
-## `--hair=<n>` and `--pose=<direction>`, and F6 cycles the hair (see there). BuildMode parses
+## cover (`snow auto` ends it), and F3 shows the snow cover and the frost.
+## `--wildlife=<kind>[,<kind>]` puts a few animals of those kinds near the player once the
+## world is drawn and leaves it at that (`bird`, `rabbit`, `squirrel`, `deer`, `bee`,
+## `butterfly`, `flock`; see WildlifeView), `--wildlife-calm` makes them take no notice of the
+## player. PlayerView parses `--hair=<n>` and `--pose=<direction>`, and F6 cycles the hair (see
+## there). BuildMode parses
 ## `--ghost=<x>,<y>` and `--house=<x>,<y>` (see there).
 
 const WORLD_SEED := 1
@@ -44,6 +48,8 @@ const FAST_FORWARD_FACTOR := 60.0
 const SCREENSHOT_SETTLE_FRAMES := 3
 ## Fading out and back in around sleep and doors.
 const SLEEP_FADE_SECONDS := 0.5
+## Animals of each kind (but one flock) that `--wildlife` puts in view.
+const START_WILDLIFE_COUNT := 4
 
 var _state: GameState
 var _settings: GameSettings
@@ -63,6 +69,8 @@ var _cheat_hud := CheatHud.new()
 var _start_console_lines := PackedStringArray()
 var _interior_view := InteriorView.new()
 var _weather_view := WeatherView.new()
+var _wildlife := WildlifeView.new()
+var _start_wildlife := PackedStringArray()
 var _weather: WeatherSample
 var _snow_cover := 0.0
 var _frost := 0.0
@@ -91,6 +99,7 @@ func _ready() -> void:
 	if (
 		not EnergyRules.default_rules().is_valid()
 		or not Vegetation.default_vegetation().is_valid()
+		or not WildlifeRules.default_rules().is_valid()
 		or not SeasonRules.default_rules().is_valid()
 	):
 		# The load has reported the missing rules or curves. Nothing else runs before the quit.
@@ -157,6 +166,11 @@ func _ready() -> void:
 			_debug_menu_page = PauseMenu.Page.get(arg.trim_prefix("--menu=").to_upper(), -1)
 		elif arg.begins_with("--weather="):
 			_force_weather(StringName(arg.trim_prefix("--weather=")))
+		elif arg.begins_with("--wildlife="):
+			_start_wildlife = arg.trim_prefix("--wildlife=").split(",")
+			_wildlife.is_spawning_naturally = false
+		elif arg == "--wildlife-calm":
+			_wildlife.is_player_ignored = true
 		elif arg == "--flash":
 			_weather_view.is_flash_held = true
 		elif arg.begins_with("--snow="):
@@ -165,6 +179,8 @@ func _ready() -> void:
 			var shift := arg.trim_prefix("--camera-shift=").split_floats(",")
 			_camera_shift = Vector2(shift[0], shift[1])
 	_view.show_world(_state.world)
+	_view.add_child(_wildlife)
+	_wildlife.show_wildlife(_state, _view, _camera)
 	_build_mode.world = _state.world
 	_build_mode.camera = _camera
 	_build_mode.message_changed.connect(_show_build_message)
@@ -188,7 +204,7 @@ func _ready() -> void:
 	add_child(_cheat_hud)
 	_cheat_hud.show_cheats(_state.cheats)
 	add_child(_console_view)
-	_console_view.show_state(_state)
+	_console_view.show_state(_state, _wildlife.spawn_in_view)
 	# A teleport moves the player far: the camera jumps with them instead of gliding.
 	_console_view.command_ran.connect(
 		func() -> void:
@@ -301,6 +317,8 @@ func _process(delta: float) -> void:
 		_view.set_focus(_state.player.tile())
 	if _enter_first_house:
 		_enter_first_house_now()
+	if not _start_wildlife.is_empty() and _view.is_settled and not _state.is_inside():
+		_spawn_start_wildlife()
 	if _screenshot_path != "" and _debug_menu_page >= 0:
 		_open_debug_menu_when_ready()
 	elif _screenshot_path != "":
@@ -458,9 +476,18 @@ func _show_current_map() -> void:
 	_view.process_mode = PROCESS_MODE_DISABLED if is_inside else PROCESS_MODE_INHERIT
 	_interior_view.visible = is_inside
 	if is_inside:
+		_wildlife.clear()
 		_interior_view.show_interior(_state.current_map)
 	_player_view.reparent(_interior_view.entities if is_inside else _view.entities, false)
 	_show_clock()
+
+
+## Debug (`--wildlife`): puts a few animals of each asked kind in view.
+func _spawn_start_wildlife() -> void:
+	for kind in _start_wildlife:
+		var count := 1 if kind == "flock" else START_WILDLIFE_COUNT
+		_wildlife.spawn_in_view(StringName(kind), count)
+	_start_wildlife.clear()
 
 
 ## Debug: waits for the first house and the world around, then walks in without a fade.

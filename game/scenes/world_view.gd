@@ -203,6 +203,29 @@ func finish_refresh() -> void:
 		_refresh_step()
 
 
+## Whether a flower is in bloom on a tile today and not under snow (wildlife visits those).
+func has_flower(world_pos: Vector2i) -> bool:
+	var spot: DecorationSpot = _decoration_spots.get(world_pos)
+	return (
+		spot != null
+		and spot.is_shown
+		and spot.kind == &"flower"
+		and spot.look != SeasonBlend.Look.SNOW
+	)
+
+
+## The tiles within a rectangle (in world pixels) where a flower is in bloom today.
+func flower_tiles_within(area: Rect2) -> Array[Vector2i]:
+	var tiles: Array[Vector2i] = []
+	var first := Vector2i((area.position / TerrainTileset.TILE_SIZE).floor())
+	var last := Vector2i((area.end / TerrainTileset.TILE_SIZE).floor())
+	for y in range(first.y, last.y + 1):
+		for x in range(first.x, last.x + 1):
+			if has_flower(Vector2i(x, y)):
+				tiles.append(Vector2i(x, y))
+	return tiles
+
+
 ## Sets how brightly every light shines (see ObjectLight.strength).
 func set_light_strength(strength: float) -> void:
 	_light_strength = strength
