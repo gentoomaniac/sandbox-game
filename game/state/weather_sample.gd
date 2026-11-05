@@ -54,18 +54,18 @@ func copy() -> WeatherSample:
 	return sample
 
 
-## "12 C · 64 % · 5 m/s · sun 70 %", short enough for the F3 display.
+## "12 °C · 64 % · 5 m/s · sun 70 %", short enough for the F3 display.
 func short_text() -> String:
 	return (
-		"%d C · %d %% · %d m/s · sun %d %%"
+		"%d °C · %d %% · %d m/s · sun %d %%"
 		% [roundi(temperature), roundi(humidity), roundi(wind_speed), roundi(sunlight)]
 	)
 
 
-## "12.3 C, humidity 64 %, wind 5.1 m/s, sunlight 70 %"
+## "12.3 °C, humidity 64 %, wind 5.1 m/s, sunlight 70 %"
 func values_text() -> String:
 	return (
-		"%.1f C, humidity %d %%, wind %.1f m/s, sunlight %d %%"
+		"%.1f °C, humidity %d %%, wind %.1f m/s, sunlight %d %%"
 		% [temperature, roundi(humidity), wind_speed, roundi(sunlight)]
 	)
 

@@ -2,7 +2,7 @@ class_name Sun
 extends RefCounted
 ## Sunrise, sunset and the height of the sun over the year. The game is set in the Nordics:
 ## the day length follows a smooth cosine over the year, longest in mid-summer and shortest
-## in mid-winter, and the sun is up around noon. `variation` scales the swing: 0 gives
+## in mid-winter, and the sun is up around solar noon. `variation` scales the swing: 0 gives
 ## 12-hour days all year. The numbers are in data/weather.cfg (see WeatherRules).
 
 ## 0 to 1: how much of the yearly day length swing applies (the "Day length variation"
@@ -24,11 +24,21 @@ static func time_text(minutes: float) -> String:
 
 ## Minutes since midnight at which the sun rises on a day (as GameClock.day).
 func sunrise(day: int) -> float:
-	return GameClock.MINUTES_PER_DAY / 2.0 - day_length(day) / 2.0
+	return solar_noon(day) - day_length(day) / 2.0
 
 
 func sunset(day: int) -> float:
-	return GameClock.MINUTES_PER_DAY / 2.0 + day_length(day) / 2.0
+	return solar_noon(day) + day_length(day) / 2.0
+
+
+## Minutes since midnight at which the sun is highest. Clocks run on summer time in the
+## Nordics, so the sun is highest later in summer than in winter, along the same yearly curve
+## as the day length. Without variation it is 12:00 all year.
+func solar_noon(day: int) -> float:
+	var summer: float = _rules.value("sun", "midsummer_noon")
+	var winter: float = _rules.value("sun", "midwinter_noon")
+	var clock_time := (summer + winter) / 2.0 + (summer - winter) / 2.0 * _year_cosine(day)
+	return lerpf(GameClock.MINUTES_PER_DAY / 2.0, clock_time, variation)
 
 
 ## Minutes the sun is up on a day.

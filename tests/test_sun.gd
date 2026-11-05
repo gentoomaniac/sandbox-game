@@ -1,7 +1,11 @@
 extends GutTest
 ## Sunrise and sunset over the year, and the day/night tint that follows them.
 
-var _sun := Sun.new()
+var _sun: Sun
+
+
+func before_each() -> void:
+	_sun = Sun.new()
 
 
 func _hours(minutes: float) -> float:
@@ -10,10 +14,20 @@ func _hours(minutes: float) -> float:
 
 func test_the_days_are_longest_in_midsummer_shortest_in_midwinter_and_12_hours_between() -> void:
 	assert_almost_eq(_hours(_sun.day_length(45)), 18.25, 0.01)
-	assert_almost_eq(_hours(_sun.sunrise(45)), 2.875, 0.01)
+	assert_almost_eq(_hours(_sun.sunrise(45)), 3.875, 0.01)
+	assert_almost_eq(_hours(_sun.sunset(45)), 22.125, 0.01)
+	assert_almost_eq(_hours(_sun.sunrise(105)), 9.375, 0.01)
+	assert_almost_eq(_hours(_sun.sunset(105)), 15.125, 0.01)
 	assert_almost_eq(_hours(_sun.day_length(105)), 5.75, 0.01)
 	assert_almost_eq(_hours(_sun.day_length(15)), 12.0, 0.01)
 	assert_almost_eq(_hours(_sun.day_length(75)), 12.0, 0.01)
+
+
+func test_solar_noon_runs_from_13_00_in_summer_to_12_15_in_winter() -> void:
+	assert_almost_eq(_sun.solar_noon(45), 780.0, 0.01)
+	assert_almost_eq(_sun.solar_noon(105), 735.0, 0.01)
+	for day in range(1, 240):
+		assert_lt(absf(_sun.solar_noon(day + 1) - _sun.solar_noon(day)), 2.0)
 
 
 func test_the_day_length_changes_smoothly() -> void:
@@ -26,6 +40,7 @@ func test_no_variation_gives_12_hour_days_all_year() -> void:
 	for day in [1, 45, 75, 105]:
 		assert_almost_eq(_sun.sunrise(day), 360.0, 0.01)
 		assert_almost_eq(_sun.sunset(day), 1080.0, 0.01)
+		assert_almost_eq(_sun.solar_noon(day), 720.0, 0.01)
 		assert_almost_eq(_sun.noon_height(day), 1.0, 0.0001)
 
 
@@ -38,7 +53,7 @@ func test_the_sun_is_down_at_night_and_highest_at_noon() -> void:
 	assert_eq(_sun.height(105, 0), 0.0)
 	assert_eq(_sun.height(105, 1439), 0.0)
 	assert_gt(_sun.height(105, 720), 0.3)
-	assert_almost_eq(_sun.height(45, 720), 1.0, 0.0001)
+	assert_almost_eq(_sun.height(45, 780), 1.0, 0.0001)
 	assert_lt(_sun.noon_height(105), _sun.noon_height(45))
 
 
@@ -60,7 +75,7 @@ func _tint_at(day: int, hour: int, minute: int, cloud_cover := 0.0) -> Color:
 
 
 func test_the_dawn_tint_comes_at_sunrise() -> void:
-	# Mid-winter: sunrise about 09:07.
+	# Mid-winter: sunrise about 09:22.
 	var sunrise := roundi(Sun.new().sunrise(105))
 	var at_sunrise := _tint_at(105, sunrise / 60, sunrise % 60)
 	assert_lt(_distance(at_sunrise, DayNightTint.DAWN), 0.02)
@@ -69,7 +84,7 @@ func test_the_dawn_tint_comes_at_sunrise() -> void:
 
 
 func test_a_short_summer_night_still_gets_dark() -> void:
-	assert_lt(_distance(_tint_at(45, 1, 4), DayNightTint.NIGHT), 0.01)
+	assert_lt(_distance(_tint_at(45, 2, 0), DayNightTint.NIGHT), 0.01)
 	assert_eq(_tint_at(45, 12, 0), Color.WHITE)
 
 
@@ -83,4 +98,4 @@ func test_the_tint_has_no_jump_at_midnight_in_any_season() -> void:
 func test_clouds_darken_the_day_but_not_the_night() -> void:
 	assert_lt(_tint_at(45, 12, 0, 1.0).get_luminance(), 1.0)
 	assert_gt(_tint_at(45, 12, 0, 1.0).get_luminance(), 0.7)
-	assert_lt(_distance(_tint_at(45, 1, 4, 1.0), DayNightTint.NIGHT), 0.01)
+	assert_lt(_distance(_tint_at(45, 2, 0, 1.0), DayNightTint.NIGHT), 0.01)

@@ -18,7 +18,14 @@ const SEASON_KEYS := [
 	"cloudiness",
 ]
 const REQUIRED_KEYS := {
-	"sun": ["longest_day", "day_length_swing_hours", "lowest_noon_height"],
+	"sun":
+	[
+		"longest_day",
+		"day_length_swing_hours",
+		"midsummer_noon",
+		"midwinter_noon",
+		"lowest_noon_height",
+	],
 	"daily":
 	[
 		"humidity_swing",
