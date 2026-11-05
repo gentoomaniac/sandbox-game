@@ -70,3 +70,13 @@ func test_a_long_frame_moves_as_far_as_the_same_time_in_short_steps() -> void:
 		stepped.move(_world, Vector2.RIGHT, PlayerState.MAX_STEP_SECONDS)
 	_player.move(_world, Vector2.RIGHT, PlayerState.MAX_STEP_SECONDS * 4)
 	assert_almost_eq(_player.position, stepped.position, Vector2(0.0001, 0.0001))
+
+
+func test_facing_follows_the_last_move_direction() -> void:
+	_player.move(_world, Vector2.RIGHT, 0.05)
+	assert_eq(_player.facing, Vector2i.RIGHT)
+	_player.move(_world, Vector2(-0.3, -1.0), 0.05)
+	assert_eq(_player.facing, Vector2i.UP)
+	_player.move(_world, Vector2.ZERO, 0.05)
+	assert_eq(_player.facing, Vector2i.UP)
+	assert_eq(_player.facing_tile(), _player.tile() + Vector2i.UP)

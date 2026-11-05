@@ -19,8 +19,8 @@ drawn on top of world tiles of that layer. A row may be empty.
 assets/objects.png: world objects, 32x48 cells (OBJECT_CELL x OBJECT_CELL_HEIGHT; sprites
 of 32 rows sit at the bottom of their cell). Row 0 is the oak (3 variants),
 row 1 the stone (2 variants), then the camp site: row 2 the fireplace, row 3 the sleeping bag
-(1 variant each), then the vegetation rows from 4 (see vegetation()). The rows and counts are
-in game/state/world_object_types.gd.
+(1 variant each), then the vegetation rows from 4 (see vegetation()) and row 11 the turnip crop (one
+variant per growth stage). The rows and counts are in game/state/world_object_types.gd.
 An object stands on one tile: the bottom centre 16x16 of its cell (x 8..23, y 32..47). The
 oak's canopy rises above that, over the tiles north of it.
 
@@ -929,6 +929,54 @@ def sleeping_bag():
 CAMP_OBJECTS = [[fireplace()], [sleeping_bag()]]
 
 
+# The turnip crop (assets/objects.png row 4): one cell per growth stage, drawn on the tile.
+
+CROP_KEYS = {
+    "g": "green_bright",
+    "l": "green_light",
+    "d": "green",
+    "k": "green_dark",
+    "h": "soil_light",
+    "m": "soil_mid",
+    "s": "soil_dark",
+    "c": "cream",
+    "p": "petal",
+    "e": "sand_light",
+}
+
+
+def crop_stage(*pictures):
+    """A crop cell: sprites given as (rows, x, y) stamped on the object's tile, the bottom
+    centre 16x16 of the cell."""
+    tile = blank()
+    for rows, x, y in pictures:
+        stamp(tile, sprite(CROP_KEYS, *rows), x, y)
+    canvas = object_canvas()
+    for y in range(TILE):
+        for x in range(TILE):
+            canvas[TILE + y][TILE // 2 + x] = tile[y][x]
+    return canvas
+
+
+def turnip_stages():
+    mound = (("..hh..", ".hmmm.", "hmmmms"), 5, 10)
+    return [
+        crop_stage(mound),
+        crop_stage(mound, (("g...g.", ".g.g..", "..k..."), 5, 7)),
+        crop_stage(
+            mound,
+            (("..l..l..", ".lglgl.l", "lgdgdgl.", ".kdgdk..", "..kdk..."), 4, 5),
+        ),
+        crop_stage(
+            (("l..gl..l", ".lgdgl..", "lgdgdgl.", ".kdgdk.."), 4, 4),
+            (("..pppp..", ".ppppcp.", ".cccccc.", "..cccce.", "...ee..."), 4, 8),
+        ),
+    ]
+
+
+TURNIP_STAGES = turnip_stages()
+
+
 # The player character (assets/player.png).
 
 PLAYER_FACINGS = ("down", "up", "left", "right")
@@ -1134,7 +1182,7 @@ def main():
         decoration_rows.append(decorations)
     to_image(terrain_rows).save(ASSETS / "terrain.png")
     to_image(decoration_rows).save(ASSETS / "decorations.png")
-    to_image(OBJECTS + CAMP_OBJECTS + vegetation(), OBJECT_CELL, OBJECT_CELL_HEIGHT).save(
+    to_image(OBJECTS + CAMP_OBJECTS + vegetation() + [TURNIP_STAGES], OBJECT_CELL, OBJECT_CELL_HEIGHT).save(
         ASSETS / "objects.png"
     )
     to_image(PLAYER).save(ASSETS / "player.png")

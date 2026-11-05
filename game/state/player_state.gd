@@ -14,6 +14,9 @@ const MAX_STEP_SECONDS := 0.05
 
 ## World position of the feet, in tiles: tile (x, y) spans x..x+1 and y..y+1.
 var position := Vector2.ZERO
+## The axis direction the player last tried to walk in (UP, DOWN, LEFT or RIGHT), also when
+## a wall stopped them.
+var facing := Vector2i.DOWN
 ## Tile of the bed the player last slept in, where they wake up when they pass out.
 var home_bed := Vector2i.ZERO
 
@@ -23,9 +26,20 @@ func tile() -> Vector2i:
 	return Vector2i(position.floor())
 
 
+## The tile in front of the player: the target of their actions.
+func facing_tile() -> Vector2i:
+	return tile() + facing
+
+
 ## Walks along `direction` for `delta` seconds. Each axis moves on its own, so the player
 ## slides along a wall instead of stopping against it.
 func move(world: World, direction: Vector2, delta: float) -> void:
+	if direction != Vector2.ZERO:
+		# The axis the player moves along most; a tie faces vertically.
+		if absf(direction.x) > absf(direction.y):
+			facing = Vector2i.RIGHT if direction.x > 0 else Vector2i.LEFT
+		else:
+			facing = Vector2i.DOWN if direction.y > 0 else Vector2i.UP
 	var velocity := direction.limit_length(1.0) * SPEED
 	while delta > 0.0:
 		var step := velocity * minf(delta, MAX_STEP_SECONDS)

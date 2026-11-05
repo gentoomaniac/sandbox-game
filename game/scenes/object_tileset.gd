@@ -29,9 +29,13 @@ func _init() -> void:
 			source.get_tile_data(atlas_cell, 0).texture_origin = Vector2i(0, raise)
 
 
-## The atlas cell for an object: its variant comes from its position, so it is stable but
-## neighbours differ.
+## The atlas cell for an object: a crop's variant is its growth stage; for the others it
+## comes from the position, so it is stable but neighbours differ.
 static func atlas_cell(object: WorldObject) -> Vector2i:
 	var object_type: Dictionary = WorldObjectTypes.TYPES[object.type]
-	var variant := PositionHash.of(object.pos) % int(object_type["variants"])
+	var variant := (
+		object.growth_stage()
+		if object.is_crop()
+		else PositionHash.of(object.pos) % int(object_type["variants"])
+	)
 	return Vector2i(variant, object_type["atlas_row"])

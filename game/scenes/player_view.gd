@@ -1,7 +1,7 @@
 class_name PlayerView
 extends Node2D
-## Draws the PlayerState: the right frame of the character at their position. Facing and
-## walking come from how the position changed since the last frame.
+## Draws the PlayerState: the right frame of the character at their position. Walking comes
+## from how the position changed since the last frame.
 
 const ATLAS_PATH := "res://assets/player.png"
 ## Frames per facing in assets/player.png: idle, walk 1, walk 2.
@@ -15,7 +15,6 @@ const WALK_FRAMES_PER_SECOND := 8.0
 
 var _player: PlayerState
 var _last_position := Vector2.ZERO
-var _facing := Vector2i.DOWN
 var _walk_time := 0.0
 var _sprite := Sprite2D.new()
 
@@ -43,13 +42,8 @@ func _process(delta: float) -> void:
 	position = (_player.position * TerrainTileset.TILE_SIZE).round()
 	var column := IDLE_COLUMN
 	if moved != Vector2.ZERO:
-		# Face the axis the player moves along most.
-		if absf(moved.x) > absf(moved.y):
-			_facing = Vector2i.RIGHT if moved.x > 0 else Vector2i.LEFT
-		else:
-			_facing = Vector2i.DOWN if moved.y > 0 else Vector2i.UP
 		_walk_time += delta
 		column = WALK_COLUMNS[int(_walk_time * WALK_FRAMES_PER_SECOND) % WALK_COLUMNS.size()]
 	else:
 		_walk_time = 0.0
-	_sprite.frame = FACING_ROWS[_facing] * FRAMES_PER_FACING + column
+	_sprite.frame = FACING_ROWS[_player.facing] * FRAMES_PER_FACING + column

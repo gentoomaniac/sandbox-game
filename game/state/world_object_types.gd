@@ -8,6 +8,8 @@ extends RefCounted
 ## - atlas_row, variants: where its looks are in assets/objects.png (see the art generator).
 ## Optional:
 ## - sleep_minutes: the object is a bed, and sleeping in it takes this long;
+## - growth_stages, days_per_stage: the object is a crop. Its `days_grown` state sets its
+##   stage; the last stage is ripe. Its atlas variants are the stages.
 ## - light: it shines: `color`, `energy` (of the brightest point) and `radius_tiles`.
 
 const OAK := &"oak"
@@ -21,6 +23,7 @@ const BERRY_BUSH := &"berry_bush"
 const SHRUB := &"shrub"
 const SAPLING := &"sapling"
 const FERN_BUSH := &"fern_bush"
+const TURNIP := &"turnip"
 
 const TYPES := {
 	OAK:
@@ -113,5 +116,15 @@ const TYPES := {
 		"harvest_level": 0,
 		"atlas_row": 10,
 		"variants": 3,
+	},
+	TURNIP:
+	{
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": false,
+		"harvest_level": 0,
+		"atlas_row": 11,
+		"variants": 4,
+		"growth_stages": 4,
+		"days_per_stage": 1,
 	},
 }

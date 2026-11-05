@@ -80,6 +80,7 @@ func _ready() -> void:
 func show_world(world_to_show: World) -> void:
 	world = world_to_show
 	world.objects_changed.connect(_on_objects_changed)
+	world.tile_changed.connect(redraw_tile)
 	world.building_placed.connect(_draw_building)
 	_generator = WorldGenerator.new(world.world_seed)
 	_variety_noise.seed = world.world_seed + VARIETY_SEED_OFFSET
@@ -116,7 +117,7 @@ func _process(_delta: float) -> void:
 	is_settled = to_load.is_empty()
 
 
-## Redraws one tile after its state changed. Call it after any Chunk setter.
+## Redraws one tile after its state changed. World's `tile_changed` calls it.
 func redraw_tile(world_pos: Vector2i) -> void:
 	# The tile is a corner of the 4 cells around it.
 	for offset: Vector2i in CORNER_OFFSETS:

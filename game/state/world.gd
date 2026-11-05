@@ -7,6 +7,8 @@ extends RefCounted
 
 ## An object was added or removed at this world tile position.
 signal objects_changed(world_pos: Vector2i)
+## A tile's terrain was changed (see `set_terrain`).
+signal tile_changed(world_pos: Vector2i)
 ## A building was placed.
 signal building_placed(building: Building)
 
@@ -27,6 +29,9 @@ var _chunks: Dictionary[Vector2i, Chunk] = {}
 ## position the object that stands there now, or null where the generated object was
 ## removed. Together with the seed this is the whole world (the future save format).
 var _object_edits: Dictionary[Vector2i, WorldObject] = {}
+## Terrain the player changed (e.g. grass tilled to soil), by world position. Replayed on
+## chunks before the objects, which may depend on the ground.
+var _terrain_edits: Dictionary[Vector2i, Tile.Terrain] = {}
 ## Buildings are the player's work and must outlive the chunks they stand on, and one can
 ## cross a chunk border, so they live here and not in chunks.
 var _buildings: Array[Building] = []
@@ -52,11 +57,14 @@ static func is_in_bounds(world_pos: Vector2i) -> bool:
 
 
 ## Adds (or replaces) a chunk, freshly generated, and applies the edits within its area on
-## top. It must be inside the bounds. Replaying edits does not emit `objects_changed`: the
+## top. It must be inside the bounds. Replaying edits does not emit change signals: the
 ## caller draws the whole chunk anyway.
 func add_chunk(chunk: Chunk) -> void:
 	assert(is_chunk_in_bounds(chunk.coords), "Chunk out of bounds: %s" % chunk.coords)
 	_chunks[chunk.coords] = chunk
+	for pos in _terrain_edits:
+		if Chunk.world_to_chunk(pos) == chunk.coords:
+			chunk.set_terrain(Chunk.local_pos(pos), _terrain_edits[pos])
 	for pos in _object_edits:
 		if Chunk.world_to_chunk(pos) != chunk.coords:
 			continue
@@ -100,6 +108,16 @@ func object_at(world_pos: Vector2i) -> WorldObject:
 	return chunk.object_at(Chunk.local_pos(world_pos))
 
 
+## Changes the terrain of a loaded tile and remembers it as an edit, so it survives the
+## chunk unloading.
+func set_terrain(world_pos: Vector2i, terrain: Tile.Terrain) -> void:
+	var chunk := chunk_at(Chunk.world_to_chunk(world_pos))
+	assert(chunk != null, "Chunk not loaded for tile at %s" % world_pos)
+	chunk.set_terrain(Chunk.local_pos(world_pos), terrain)
+	_terrain_edits[world_pos] = terrain
+	tile_changed.emit(world_pos)
+
+
 ## Puts an object on its tile. The chunk must be loaded and the tile free.
 func add_object(object: WorldObject) -> void:
 	var chunk := chunk_at(Chunk.world_to_chunk(object.pos))
@@ -121,6 +139,19 @@ func remove_object(world_pos: Vector2i) -> WorldObject:
 	return object
 
 
+## Advances every crop by one day, those in unloaded chunks too: crops are always edits, so
+## they are all in `_object_edits`.
+func grow_crops() -> void:
+	for pos in _object_edits:
+		var object := _object_edits[pos]
+		if object == null or not object.is_crop():
+			continue
+		object.grow_one_day()
+		# Unloaded tiles have nothing to redraw; they are drawn when their chunk loads.
+		if is_chunk_loaded(Chunk.world_to_chunk(pos)):
+			objects_changed.emit(pos)
+
+
 ## Tile rules combined with the objects on the tile. False where there is no tile.
 func is_walkable(world_pos: Vector2i) -> bool:
 	var tile := tile_at(world_pos)
@@ -139,6 +170,16 @@ func is_buildable(world_pos: Vector2i) -> bool:
 	return (
 		tile != null
 		and tile.is_buildable()
+		and object_at(world_pos) == null
+		and building_at(world_pos) == null
+	)
+
+
+func is_tillable(world_pos: Vector2i) -> bool:
+	var tile := tile_at(world_pos)
+	return (
+		tile != null
+		and tile.is_tillable()
 		and object_at(world_pos) == null
 		and building_at(world_pos) == null
 	)

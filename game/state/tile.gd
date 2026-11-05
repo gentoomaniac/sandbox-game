@@ -21,6 +21,12 @@ func is_buildable() -> bool:
 	return terrain != Terrain.WATER and terrain != Terrain.WETLAND and terrain != Terrain.FLOODPLAIN
 
 
+## Only grass can be tilled. Floodplain, the most fertile land, needs a "tilled" property
+## that keeps its flood behaviour first (see TASKS.md, Later).
+func is_tillable() -> bool:
+	return terrain == Terrain.GRASS
+
+
 ## Only soil: grass becomes soil through a player action (tilling).
 func is_plantable() -> bool:
 	return terrain == Terrain.SOIL

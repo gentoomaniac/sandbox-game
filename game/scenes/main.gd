@@ -5,7 +5,8 @@ extends Node2D
 ## Debug flags (after `--` on the Godot command line, see `make screenshot`):
 ## `--at=<x>,<y>` puts the player on that world tile instead of at the camp;
 ## `--screenshot=<path>` saves one frame as PNG once streaming has settled, then quits;
-## `--time=<hh:mm>` sets the time of day. BuildMode parses `--ghost=<x>,<y>` and
+## `--time=<hh:mm>` sets the time of day; `--field=<x>,<y>` tills a small field there with
+## crops in every growth stage (see DebugField). BuildMode parses `--ghost=<x>,<y>` and
 ## `--house=<x>,<y>` (see there).
 
 const WORLD_SEED := 1
@@ -18,6 +19,8 @@ const SLEEP_FADE_SECONDS := 0.5
 
 var _state := GameState.new_game(WORLD_SEED)
 var _player_view := PlayerView.new()
+var _use_highlight := UseHighlight.new()
+var _harvest_hud := HarvestHud.new()
 var _screenshot_path := ""
 var _fast_forward := false
 var _is_sleeping := false
@@ -40,11 +43,17 @@ func _ready() -> void:
 			_screenshot_path = arg.trim_prefix("--screenshot=")
 		elif arg.begins_with("--time="):
 			_set_start_time(arg.trim_prefix("--time="))
+		elif arg.begins_with("--field="):
+			var tile := arg.trim_prefix("--field=").split_floats(",")
+			DebugField.create(_state.world, Vector2i(int(tile[0]), int(tile[1])))
 	_view.show_world(_state.world)
 	_build_mode.world = _state.world
 	# Among the objects, so the player walks behind tree canopies.
 	_view.entities.add_child(_player_view)
 	_player_view.show_player(_state.player)
+	_view.add_child(_use_highlight)
+	_use_highlight.show_for(_state)
+	add_child(_harvest_hud)
 	_show_clock()
 
 
@@ -53,6 +62,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		_fast_forward = not _fast_forward
 	elif event.is_action_pressed("interact") and not _is_sleeping:
 		_try_sleep()
+	elif event.is_action_pressed("use") and not _is_sleeping:
+		if _state.use_facing_tile() == GameState.Use.HARVEST:
+			_harvest_hud.show_harvest(GameState.CROP, _state.harvest_count)
 
 
 func _process(delta: float) -> void:
