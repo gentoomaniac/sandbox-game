@@ -90,25 +90,32 @@ static func troubles(crop: WorldObject, day: WeatherDay, moisture: float) -> Arr
 	return found
 
 
-## How well a day met a crop's needs, from 0 to 1: the lowest of the scores for the day's mean
-## temperature (none at the minimum and the maximum, full at the best), its hours of sun and the
-## soil's moisture (full at their best, less in proportion).
-static func score(crop: WorldObject, day: WeatherDay, moisture: float) -> float:
-	var crop_type := crop.type_data()
+## How well a day's weather met the needs of a crop or of the reeds (`needs`: the keys of data/
+## crops.cfg), from 0 to 1: the lower of the scores for the day's mean temperature (none at the
+## minimum and the maximum, full at the best) and its hours of sun (full at their best, less in
+## proportion).
+static func weather_score(needs: Dictionary, day: WeatherDay) -> float:
 	var warmth := 0.0
 	var temperature := day.mean_temperature
-	var coldest: float = crop_type["temperature_min"]
-	var best: float = crop_type["temperature_best"]
-	var hottest: float = crop_type["temperature_max"]
+	var coldest: float = needs["temperature_min"]
+	var best: float = needs["temperature_best"]
+	var hottest: float = needs["temperature_max"]
 	if temperature > coldest and temperature < hottest:
 		warmth = (
 			(temperature - coldest) / (best - coldest)
 			if temperature <= best
 			else (hottest - temperature) / (hottest - best)
 		)
-	var light := clampf(day.sunlight_hours / crop_type["sunlight_best"], 0.0, 1.0)
+	var light := clampf(day.sunlight_hours / needs["sunlight_best"], 0.0, 1.0)
+	return minf(warmth, light)
+
+
+## How well a day met a crop's needs, from 0 to 1: the lowest of its weather score and the
+## soil's moisture (full at its best, less in proportion).
+static func score(crop: WorldObject, day: WeatherDay, moisture: float) -> float:
+	var crop_type := crop.type_data()
 	var water := clampf(moisture / crop_type["moisture_best"], 0.0, 1.0)
-	return minf(warmth, minf(light, water))
+	return minf(weather_score(crop_type, day), water)
 
 
 ## Lets a crop live through a day of this weather on soil of this moisture. A bad day (see

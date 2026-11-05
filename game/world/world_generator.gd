@@ -47,6 +47,14 @@ const GRASS_PATCH_ABOVE := 0.1
 const GRASS_PATCH_CHANCE := 0.6
 const GRASS_SCATTER_CHANCE := 0.04
 
+## Reeds stand on the banks: on floodplain with water within REEDS_REACH tiles, and at the edges
+## of wetland (a wetland tile next to a tile that is not wetland). They grow in stands where the
+## grass noise is above REED_STAND_ABOVE (thick) and thinly elsewhere.
+const REEDS_REACH := 2
+const REED_STAND_ABOVE := 0.0
+const REED_STAND_CHANCE := 0.75
+const REED_SCATTER_CHANCE := 0.12
+
 ## Clay spots are grass tiles with water or wetland within CLAY_REACH tiles, in the clusters
 ## where the clay noise is above CLAY_CLUSTER_ABOVE, of which CLAY_SPOT_CHANCE are spots. A
 ## grass tile is as far as 3 tiles from the river's water (the floodplain lies between).
@@ -99,6 +107,7 @@ const OBJECT_ROLL_SEED_OFFSET := 3
 const VARIETY_ROLL_SEED_OFFSET := 5
 const GRASS_ROLL_SEED_OFFSET := 8
 const CLAY_ROLL_SEED_OFFSET := 9
+const REED_ROLL_SEED_OFFSET := 10
 
 var _river_noise := FastNoiseLite.new()
 var _wetland_noise := FastNoiseLite.new()
@@ -110,6 +119,7 @@ var _object_roll_seed: int
 var _variety_roll_seed: int
 var _grass_roll_seed: int
 var _clay_roll_seed: int
+var _reed_roll_seed: int
 
 
 func _init(world_seed: int) -> void:
@@ -129,6 +139,7 @@ func _init(world_seed: int) -> void:
 	_variety_roll_seed = world_seed + VARIETY_ROLL_SEED_OFFSET
 	_grass_roll_seed = world_seed + GRASS_ROLL_SEED_OFFSET
 	_clay_roll_seed = world_seed + CLAY_ROLL_SEED_OFFSET
+	_reed_roll_seed = world_seed + REED_ROLL_SEED_OFFSET
 
 
 ## The chunk at `chunk_coords`, or null if it is outside the world bounds.
@@ -165,9 +176,12 @@ func terrain_at(world_pos: Vector2i) -> Tile.Terrain:
 
 
 ## The type of object generated on a tile, or &"" for none. A pure function of the seed, the
-## position and the terrain; only grass has objects. A boulder covers the tile to its right,
-## which therefore has to be free grass: otherwise there is no boulder.
+## position and the terrain; only grass has objects, but for the reeds on the banks. A boulder
+## covers the tile to its right, which therefore has to be free grass: otherwise there is no
+## boulder.
 func object_type_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
+	if terrain == Tile.Terrain.FLOODPLAIN or terrain == Tile.Terrain.WETLAND:
+		return WorldObjectTypes.REEDS if _is_reeds_at(world_pos, terrain) else &""
 	var object_type := _rolled_type_at(world_pos, terrain)
 	if object_type != WorldObjectTypes.BOULDER:
 		return object_type
@@ -218,6 +232,34 @@ func _is_tall_grass_at(world_pos: Vector2i) -> bool:
 	var in_patch := _grass_noise.get_noise_2dv(Vector2(world_pos)) > GRASS_PATCH_ABOVE
 	var chance := GRASS_PATCH_CHANCE if in_patch else GRASS_SCATTER_CHANCE
 	return _roll(world_pos, _grass_roll_seed) < chance
+
+
+func _is_reeds_at(world_pos: Vector2i, terrain: Tile.Terrain) -> bool:
+	var is_bank := (
+		_is_wetland_edge(world_pos)
+		if terrain == Tile.Terrain.WETLAND
+		else _is_water_within(world_pos, REEDS_REACH)
+	)
+	if not is_bank:
+		return false
+	var in_stand := _grass_noise.get_noise_2dv(Vector2(world_pos)) > REED_STAND_ABOVE
+	var chance := REED_STAND_CHANCE if in_stand else REED_SCATTER_CHANCE
+	return _roll(world_pos, _reed_roll_seed) < chance
+
+
+func _is_water_within(world_pos: Vector2i, reach: int) -> bool:
+	for distance in range(1, reach + 1):
+		for direction in WETLAND_PROBE_DIRECTIONS:
+			if terrain_at(world_pos + direction * distance) == Tile.Terrain.WATER:
+				return true
+	return false
+
+
+func _is_wetland_edge(world_pos: Vector2i) -> bool:
+	for direction in WETLAND_PROBE_DIRECTIONS:
+		if terrain_at(world_pos + direction) != Tile.Terrain.WETLAND:
+			return true
+	return false
 
 
 ## Whether a tile is a spot with clay in it (see CLAY_REACH): a pure function of the seed and

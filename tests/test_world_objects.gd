@@ -96,17 +96,21 @@ func test_dead_trees_are_more_common_near_wetland() -> void:
 	assert_gt(near_rate, 3.0 * far_rate)
 
 
-func test_objects_stand_only_on_grass() -> void:
+func test_objects_stand_only_on_grass_but_for_the_reeds_on_the_banks() -> void:
 	var terrains := {}
 	for chunk in _generate(WorldGenerator.new(SEED), CHUNKS):
 		for object in chunk.objects():
 			var terrain := chunk.terrain_at(Chunk.local_pos(object.pos))
 			terrains[terrain] = true
 			assert_eq(Chunk.world_to_chunk(object.pos), chunk.coords)
-	assert_eq(terrains.keys(), [Tile.Terrain.GRASS])
+			if terrain != Tile.Terrain.GRASS:
+				assert_eq(object.type, WorldObjectTypes.REEDS)
+	var expected := [Tile.Terrain.GRASS, Tile.Terrain.FLOODPLAIN, Tile.Terrain.WETLAND]
+	for terrain in terrains:
+		assert_true(expected.has(terrain), "terrain %d" % terrain)
 
 
-func test_no_objects_on_water_wetland_or_floodplain() -> void:
+func test_no_objects_but_reeds_on_water_wetland_or_floodplain() -> void:
 	var generator := WorldGenerator.new(SEED)
 	var checked := {}
 	for y in range(-64, 64):
@@ -114,7 +118,11 @@ func test_no_objects_on_water_wetland_or_floodplain() -> void:
 			var terrain := generator.terrain_at(Vector2i(x, y))
 			if terrain != Tile.Terrain.GRASS:
 				checked[terrain] = true
-				assert_eq(generator.object_type_at(Vector2i(x, y), terrain), &"")
+				var object_type := generator.object_type_at(Vector2i(x, y), terrain)
+				if terrain == Tile.Terrain.WATER:
+					assert_eq(object_type, &"")
+				else:
+					assert_true(object_type in [&"", WorldObjectTypes.REEDS])
 	assert_true(checked.has(Tile.Terrain.WATER))
 	assert_true(checked.has(Tile.Terrain.FLOODPLAIN))
 	assert_true(checked.has(Tile.Terrain.WETLAND))

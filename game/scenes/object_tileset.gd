@@ -70,7 +70,8 @@ func _add_crop_sheet(crop_id: StringName, sheet_path: String) -> void:
 ## How many pictures a type has in its atlas row: its variants, and for a bush that can be
 ## picked the same again, picked.
 static func looks_count(object_type: Dictionary) -> int:
-	var picked_looks: int = object_type["variants"] if object_type.has("regrow_days") else 0
+	var can_be_picked: bool = object_type.has("regrow_days") or object_type.has("regrow_growth")
+	var picked_looks: int = object_type["variants"] if can_be_picked else 0
 	return object_type["variants"] + picked_looks
 
 

@@ -94,13 +94,18 @@ func is_forageable() -> bool:
 	)
 
 
-## Berry bushes and the like: picked (or mown, for tall grass), they bear again after a few days.
+## Berry bushes and the like: picked (or mown, for tall grass), they bear again after a few days;
+## cut reeds are back when they have grown enough.
 func is_picked() -> bool:
-	return state.has("days_until_bears")
+	return state.has("days_until_bears") or state.has(ReedLife.REGROWTH)
 
 
+## Cut reeds regrow with the weather (see ReedLife), the others after the days of their type.
 func pick() -> void:
-	state["days_until_bears"] = type_data()["regrow_days"]
+	if type_data().has("regrow_days"):
+		state["days_until_bears"] = type_data()["regrow_days"]
+	else:
+		state[ReedLife.REGROWTH] = 0.0
 
 
 ## A stump or sapling of a tree that can grow remembers which one in `state["tree"]`.
@@ -152,7 +157,7 @@ func pass_night() -> bool:
 	state.erase("damage")
 	if is_crop():
 		return false
-	if is_picked():
+	if state.has("days_until_bears"):
 		var days_left := int(state["days_until_bears"]) - 1
 		if days_left > 0:
 			state["days_until_bears"] = days_left

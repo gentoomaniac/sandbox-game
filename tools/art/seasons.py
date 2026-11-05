@@ -301,6 +301,14 @@ def blossoms(canvas, rng, surfaces, count):
             canvas[y][x + 1] = "blossom"
 
 
+# Reeds are green in spring and summer; from autumn on they stand golden.
+_GOLDEN_REEDS = {
+    "green_bright": "sand_light", "green_light": "sand_light", "green": "straw",
+    "green_dark": "reed", "green_deep": "reed",
+}
+_SNOW_REEDS = ({"sand_light", "straw", "reed"}, set(), 2)
+
+
 # Evergreens and rocks in a frost: the greens go pale and bluish, as if rimed.
 _FROST_CONIFER = {"green_light": "snow_shadow", "green": "green_light", "green_dark": "green"}
 _FROST_BUSH = {"green_light": "snow_light", "green": "snow_shadow", "green_dark": "mud_dark", "green_bright": "snow_light"}
@@ -324,6 +332,8 @@ def _season_object(look, kind, variant, canvas, redraw):
             canvas = remap(canvas, _AUTUMN_BUSH[variant % 3])
         elif kind == "tall_grass":
             canvas = remap(canvas, _AUTUMN_GRASS)
+        elif kind == "reeds":
+            canvas = remap(canvas, _GOLDEN_REEDS)
     elif look in ("bare", "frost", "snow", "dusting"):
         canvas = _winter_object(look, kind, variant, canvas, redraw, rng, centre)
     return remap(canvas, {"shadow": _SHADOW_REMAPS[look]})
@@ -354,6 +364,11 @@ def _winter_object(look, kind, variant, canvas, redraw, rng, centre):
     if kind == "tall_grass":
         stalks = {"bare": WINTER_STALKS, "snow": WINTER_STALKS, "frost": _FROST_STALKS, "dusting": _FROST_STALKS}
         return remap(canvas, stalks[look])
+    if kind == "reeds":
+        canvas = remap(canvas, _GOLDEN_REEDS)
+        if has_snow:
+            snow_caps(canvas, rng, *cap(_SNOW_REEDS), centre)
+        return canvas
     if kind == "berry_bush":
         return remap(canvas, {"bare": _BARE_BUSH, "frost": {**_BARE_BUSH, **_FROST_BUSH}, "dusting": {**_BARE_BUSH, **_FROST_BUSH}, "snow": _SNOW_MOUND}[look])
     if kind in ("shrub", "sapling"):

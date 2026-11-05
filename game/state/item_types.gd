@@ -31,6 +31,7 @@ const SPRUCE_CONE := &"spruce_cone"
 const PINE_CONE := &"pine_cone"
 const HAY := &"hay"
 const CLAY := &"clay"
+const REEDS := &"reeds"
 const TUNIC := &"tunic"
 const SHIRT := &"shirt"
 const TROUSERS := &"trousers"
@@ -102,6 +103,12 @@ const _OTHER_TYPES := {
 	{
 		"name": "Hay",
 		"weight": 0.2,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+	},
+	REEDS:
+	{
+		"name": "Reeds",
+		"weight": 0.3,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 	CLAY:

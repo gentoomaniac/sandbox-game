@@ -38,6 +38,15 @@ drying_per_sun_hour=0.015
 drying_per_wind=0.005
 good_day_score=0.6
 """
+const REEDS := """
+[reeds]
+regrow_growth=4.0
+temperature_min=5.0
+temperature_best=20.0
+temperature_max=32.0
+sunlight_min=2.0
+sunlight_best=6.0
+"""
 const CROP_NAMES: Array[StringName] = [
 	&"turnip",
 	&"potato",
@@ -74,6 +83,14 @@ func test_the_crops_file_is_valid_and_has_the_eleven_crops() -> void:
 	assert_eq(rules.farming("good_day_score"), 0.6)
 
 
+func test_the_reeds_are_no_crop_and_have_their_needs_in_their_own_section() -> void:
+	var rules := CropRules.default_rules()
+	assert_false(rules.crop_ids().has(&"reeds"), "no seeds, no sheet, no planting")
+	for key in CropRules.REQUIRED_REEDS_KEYS:
+		assert_true(rules.reeds().has(key), key)
+	assert_false(ItemTypes.TYPES.has(&"reeds_seeds"))
+
+
 func test_every_missing_required_key_is_reported() -> void:
 	_write('[farming]\nrain_wets=0.1\n[turnip]\nname="Turnip"\n')
 	var rules := CropRules.from_file(DATA_FILE)
@@ -83,12 +100,13 @@ func test_every_missing_required_key_is_reported() -> void:
 	assert_false(problems.has("[farming] no rain_wets"))
 	assert_true(problems.has("[turnip] no wind_max"))
 	assert_true(problems.has("[turnip] no sheet"))
+	assert_true(problems.has("[reeds] no regrow_growth"))
 	assert_false(problems.has("[turnip] no name"))
 	assert_push_error_count(problems.size())
 
 
 func test_a_regrow_stage_outside_the_stages_is_reported() -> void:
-	_write(FARMING + FAKE_CROP.replace("regrow_stage=0", "regrow_stage=4"))
+	_write(FARMING + REEDS + FAKE_CROP.replace("regrow_stage=0", "regrow_stage=4"))
 	var rules := CropRules.from_file(DATA_FILE)
 	assert_eq(rules.problems().size(), 1)
 	assert_true("regrow_stage" in rules.problems()[0])
@@ -175,7 +193,7 @@ func test_wheat_cannot_be_eaten() -> void:
 
 
 func test_a_crop_added_only_by_config_and_picture_gets_its_own_sheet_source() -> void:
-	_write(FARMING + FAKE_CROP)
+	_write(FARMING + REEDS + FAKE_CROP)
 	var rules := CropRules.from_file(DATA_FILE)
 	assert_true(rules.is_valid())
 	var tileset := ObjectTileset.new(rules)

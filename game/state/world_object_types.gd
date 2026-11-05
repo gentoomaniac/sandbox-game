@@ -36,6 +36,9 @@ extends RefCounted
 ##   (tall grass);
 ## - tool (without hp): the item tool kind that mows it (tall grass): a hand can't pick it. A mown
 ##   one looks picked and grows back like a picked bush, see regrow_days;
+## - regrow_growth: the wild reeds (their needs from data/crops.cfg, [reeds], are merged into the
+##   type): cutting one with the scythe is like picking a bush, but it stands again by the growth
+##   the weather gives it (see ReedLife) and not after a number of days;
 ## - matures_after_days: with the state `tree` set (a sapling that grows) it is replaced after
 ##   this many days by `matures_into`, or by the tree named in `tree`;
 ## - rots_after_days: it is gone after this many days (a stump), but for the chance
@@ -68,6 +71,7 @@ const HEARTH := &"hearth"
 const WINDOW := &"window"
 const STUMP := &"stump"
 const TALL_GRASS := &"tall_grass"
+const REEDS := &"reeds"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -79,6 +83,8 @@ const MAX_FOOTPRINT := Vector2i(2, 2)
 
 ## The first atlas row of the trunks: the row after the last of the other types.
 const _FIRST_TRUNK_ROW := 14
+## The atlas row of the reeds: after the last trunk (4 trees, a long and a short trunk each).
+const _REEDS_ROW := 22
 
 const _OTHER_TYPES := {
 	OAK:
@@ -250,6 +256,16 @@ const _OTHER_TYPES := {
 		"atlas_row": 13,
 		"variants": 3,
 	},
+	REEDS:
+	{
+		"drops": {&"reeds": 2},
+		"tool": &"scythe",
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": false,
+		"harvest_level": 0,
+		"atlas_row": _REEDS_ROW,
+		"variants": 3,
+	},
 	SMALL_BED:
 	{
 		"footprint": Vector2i(1, 2),
@@ -299,7 +315,7 @@ const _OTHER_TYPES := {
 
 ## Every type: the fixed ones above and the crops of data/crops.cfg.
 # The name is that of a constant, but crop types are only known once the file is read.
-static var TYPES := _with_trunks(_with_crops(_OTHER_TYPES))  # gdlint: ignore=class-variable-name
+static var TYPES := _build_types()  # gdlint: ignore=class-variable-name
 
 
 ## The type of the trunk a felled tree leaves: the long one on 2x1 tiles, or the short one on 1x1.
@@ -320,6 +336,12 @@ static func _with_crops(other_types: Dictionary) -> Dictionary:
 		crop_type["growth_stages"] = CropRules.STAGES
 		types[crop_id] = crop_type
 	return types
+
+
+static func _build_types() -> Dictionary:
+	var types := _with_crops(_OTHER_TYPES)
+	types[REEDS] = types[REEDS].merged(CropRules.default_rules().reeds())
+	return _with_trunks(types)
 
 
 ## Adds the trunk types of the trees that have a `trunk`, as the data of the tree says.

@@ -20,7 +20,8 @@ assets/objects.png: world objects, 48x80 cells (OBJECT_CELL_WIDTH x OBJECT_CELL_
 is the oak (3 variants), row 1 the stone (2 variants), then the camp site: row 2 the fireplace,
 row 3 the sleeping bag (1 variant each), then the vegetation rows from 4 (see vegetation()),
 row 11 the boulder, row 12 the stump, row 13 the tall grass (3 tufts, then the same 3 mown;
-see meadow.py) and rows 14 to 21 the trunks (see trunks.py). The rows and
+see meadow.py) and rows 14 to 21 the trunks (see trunks.py) and row 22 the reeds (3 stands, then the same 3 cut;
+see reeds.py). The rows and
 counts are in game/state/world_object_types.gd.
 An object stands on one tile: the bottom centre 16x16 of its cell (x 16..31, y 64..79). A tree's
 crown rises above that, over the tiles around it. An object on several tiles (boulder 2x1,
@@ -65,6 +66,7 @@ import crop_icons
 import crops
 import items
 import meadow
+import reeds
 import seasons
 import trunks
 import ui
@@ -1123,7 +1125,7 @@ def object_atlas():
         ("boulder", BOULDERS[0]),
         ("stump", STUMPS[0]),
         ("tall_grass", meadow.tall_grass_row()),
-    ] + trunks.rows()
+    ] + trunks.rows() + [("reeds", reeds.reeds_row())]
 
 
 # The player character (assets/character/<slot>_<variant>.png).
@@ -1930,7 +1932,7 @@ def main():
     to_image([crop_icons.soil_wet()]).save(ASSETS / "soil_wet.png")
     to_image([[meadow.clay_hint()]]).save(ASSETS / "clay_hint.png")
     for directory, pictures in (
-        ("items", items.ICONS | crop_icons.icons() | meadow.icons()),
+        ("items", items.ICONS | crop_icons.icons() | meadow.icons() | reeds.icons()),
         ("ui", items.SLOTS | items.SLOT_HINTS),
     ):
         (ASSETS / directory).mkdir(exist_ok=True)

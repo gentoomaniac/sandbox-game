@@ -17,8 +17,17 @@ func before_each() -> void:
 	_state = GameState.new_game(SEED)
 	_world = _state.world
 	_tile = _grass_tile()
+	_clear_surroundings()
 	_state.player.position = Vector2(_tile) + Vector2(0.5, 0.5) - Vector2(0, 1)
 	_state.player.facing = Vector2i.DOWN
+
+
+## Takes away what stands within two tiles of the tile (reeds on a bank, say), so that what a test
+## puts down and swings at has the room it expects.
+func _clear_surroundings() -> void:
+	for y in range(-2, 3):
+		for x in range(-2, 3):
+			_world.remove_object(_tile + Vector2i(x, y))
 
 
 ## Clears the row of the tile of what stands on it, two tiles to each side, and makes it grass:

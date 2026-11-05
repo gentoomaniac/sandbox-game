@@ -852,7 +852,7 @@ See SPEC.md "Building and land" (first buildings, costs, hammer, buildings.cfg).
 
 ## 37. Reeds on the banks
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Reeds". Can run alongside 36.
 

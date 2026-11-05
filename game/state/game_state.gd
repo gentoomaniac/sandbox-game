@@ -9,8 +9,8 @@ extends RefCounted
 ## What the use action does on a tile. HARVEST is a ripe crop, FORAGE something a hand picks
 ## (a bush, a fern), CLEAR a dead crop that a hand pulls up, WATER a watering can wetting tilled
 ## soil, HIT a tool cut or mined at an object, NEEDS_BETTER_TOOL a tool that is too weak for the
-## object, MOW a scythe cutting the tall grass around the target, DIG a shovel in grass (which
-## may find clay). What a harvest, a pick or a final hit gives lies on the ground (see World
+## object, MOW a scythe cutting the tall grass and reeds around the target, DIG a shovel in grass
+## (which may find clay). What a harvest, a pick or a final hit gives lies on the ground (see World
 ## `drop_items`).
 enum Use {
 	NOTHING,
@@ -240,9 +240,9 @@ func pass_out() -> void:
 ## What `use` would do on a tile of the world (nothing inside) with the held item: a hoe
 ## tills grass, crop seeds plant on soil and tree seeds on grass, a watering can wets dry tilled
 ## soil, an empty hand harvests a ripe crop, clears a dead one or picks a bush, an axe or
-## pickaxe hits what it cuts or mines, a scythe mows if there is tall grass in its reach (see
-## `mow_tiles`), and a shovel digs in any free grass: the player can't tell a clay spot from the
-## cursor.
+## pickaxe hits what it cuts or mines, a scythe mows if there is tall grass or reeds in its reach
+## (see `mow_tiles`), and a shovel digs in any free grass: the player can't tell a clay spot from
+## the cursor.
 func use_at(world_pos: Vector2i) -> Use:
 	if is_inside():
 		return Use.NOTHING
@@ -312,10 +312,10 @@ func _do_use(target: Vector2i) -> Use:
 				world.remove_object(target)
 			world.drop_items(target, plant.picked_drops())
 		Use.MOW:
-			for grass in _tall_grass_to_mow(target):
-				grass.pick()
-				world.change_object(grass)
-				world.drop_items(grass.pos, grass.picked_drops())
+			for plant in _plants_to_mow(target):
+				plant.pick()
+				world.change_object(plant)
+				world.drop_items(plant.pos, plant.picked_drops())
 		Use.DIG:
 			_dig(target)
 		Use.HIT:
@@ -331,13 +331,13 @@ func mow_tiles(target: Vector2i) -> Array[Vector2i]:
 	return [target, target + facing, target - sideways, target + sideways]
 
 
-func _tall_grass_to_mow(target: Vector2i) -> Array[WorldObject]:
-	var grass: Array[WorldObject] = []
+func _plants_to_mow(target: Vector2i) -> Array[WorldObject]:
+	var plants: Array[WorldObject] = []
 	for tile in mow_tiles(target):
 		var object := world.object_at(tile)
 		if object != null and _is_mowable(object):
-			grass.append(object)
-	return grass
+			plants.append(object)
+	return plants
 
 
 ## Whether a scythe can mow the object now: it is something that gets mown and is not mown yet.
@@ -369,7 +369,7 @@ func _use_tool(tool_item: Dictionary, object: WorldObject, world_pos: Vector2i) 
 		ItemTypes.WATERING_CAN:
 			return Use.WATER if _is_dry_soil(world_pos) else Use.NOTHING
 		ItemTypes.SCYTHE:
-			return Use.MOW if not _tall_grass_to_mow(world_pos).is_empty() else Use.NOTHING
+			return Use.MOW if not _plants_to_mow(world_pos).is_empty() else Use.NOTHING
 		ItemTypes.SHOVEL:
 			return Use.DIG if is_grass_free else Use.NOTHING
 	return _use_cutting_tool(tool_item, object)

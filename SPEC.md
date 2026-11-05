@@ -516,11 +516,19 @@ Decided 2026-11-05. A text console for testing and cheats.
   Tall grass doesn't block walking, a hand can't pick it, and the hoe, planting and
   building clear it (no hay). Each mown tuft gives 2 hay on the ground and looks mown
   (stubble) for 4 days, then grows back. First numbers (2026-11-05, tune in play).
-- **Reeds:** dense stands on river and lake banks and at wetland edges, all year (green in
-  summer, golden in autumn and winter). The scythe cuts them (the same 4-tile swing) into
-  reeds on the ground. Cut reeds grow back only in their growing season: their needs
-  (temperature, sunlight) are a section of `data/crops.cfg`, and they regrow by the same
-  daily growth as crops, so the weather decides.
+- **Reeds:** dense stands on the banks of the river (the floodplain within 2 tiles of the
+  water) and at wetland edges, thick in patches and thin elsewhere, all year, with no dormancy:
+  green in spring and summer, golden in autumn and winter, snow-capped under snow. They don't
+  block walking, the hoe doesn't clear them and a hand can't pick them. The scythe cuts them
+  (the same 4-tile swing as tall grass): each stand gives 2 reeds on the ground and is left as
+  low stubble. Cut reeds grow back only in their growing season: their needs (temperature,
+  sunlight, and the growth a stand needs to stand again) are a `[reeds]` section of
+  `data/crops.cfg`, no crop (no seeds, no sheet). Each night a cut stand gathers growth from
+  the day's temperature and sun by the same score as a crop's, with no soil moisture (reeds
+  stand in water), and stands again once it has enough. It gathers nothing on days too cold or
+  too dark, so a stand cut in autumn stays cut through winter. First numbers (2026-11-05, tune
+  in play): 4 growth, minimum 5 degrees, best 20, maximum 32, sun 2 to 6 hours: some five to
+  eight good days.
 - **Shovel and clay:** some spots near rivers, lakes and wetland hold clay, hinted only
   slightly on the ground (a few reddish-grey pixels; easy to miss). Digging such a spot
   with the shovel sometimes gives clay; a dug spot is spent for some days. Digging
