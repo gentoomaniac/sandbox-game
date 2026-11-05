@@ -1033,6 +1033,86 @@ PLAYER = [[player_frame(facing, frame) for frame in PLAYER_FRAMES] for facing in
 
 
 
+# The interior tiles (assets/interior.png), used by maps/interiors/*.tsx. One row of tiles,
+# in the order of the tileset: floor, wall, doormat, bed, table. The furniture tiles are
+# drawn over a floor tile, so they are partly clear.
+
+
+def planks(canvas, light, dark):
+    for y in range(TILE):
+        for x in range(TILE):
+            canvas[y][x] = light if (y // 4) % 2 == 0 else dark
+    for y in range(3, TILE, 4):
+        fill_rect(canvas, 0, y, TILE - 1, y, "soil")
+    # Board ends, staggered row by row.
+    for row, x in enumerate((5, 12, 8, 2)):
+        fill_rect(canvas, x, row * 4, x, row * 4 + 2, "soil")
+    return canvas
+
+
+def interior_floor():
+    return planks(blank(), "soil_light", "soil_mid")
+
+
+def interior_wall():
+    """A plaster wall seen from the front, between timber posts, on a plank skirting."""
+    canvas = filled("sand_light")
+    rng = random.Random(131)
+    for _ in range(10):
+        canvas[rng.randrange(2, 11)][rng.randrange(TILE)] = "sand"
+    fill_rect(canvas, 0, 0, TILE - 1, 1, "soil")
+    fill_rect(canvas, 0, 0, TILE - 1, 0, "soil_mid")
+    fill_rect(canvas, 0, 12, TILE - 1, 15, "soil_mid")
+    fill_rect(canvas, 0, 12, TILE - 1, 12, "soil_light")
+    fill_rect(canvas, 0, 15, TILE - 1, 15, "soil_dark")
+    for x in (0, 15):
+        fill_rect(canvas, x, 0, x, 15, "soil")
+    return canvas
+
+
+def interior_doormat():
+    canvas = interior_floor()
+    fill_rect(canvas, 2, 4, 13, 12, "ink")
+    fill_rect(canvas, 3, 5, 12, 11, "straw")
+    for y in (6, 8, 10):
+        fill_rect(canvas, 3, y, 12, y, "dry_light")
+    return canvas
+
+
+def bed():
+    """A bed seen from above, head to the north, one tile."""
+    canvas = blank()
+    fill_rect(canvas, 2, 0, 13, 15, "ink")
+    fill_rect(canvas, 3, 1, 12, 14, "soil")
+    fill_rect(canvas, 3, 1, 12, 2, "soil_light")
+    # Pillow, then a blanket with a folded edge.
+    fill_rect(canvas, 4, 3, 11, 5, "cream")
+    fill_rect(canvas, 4, 5, 11, 5, "sand_light")
+    fill_rect(canvas, 4, 6, 11, 14, "ember")
+    fill_rect(canvas, 4, 6, 11, 7, "flame")
+    fill_rect(canvas, 4, 14, 11, 14, "soil_dark")
+    fill_rect(canvas, 4, 11, 4, 13, "soil_dark")
+    return canvas
+
+
+def table():
+    """A small round table seen from above, with a candle."""
+    canvas = blank()
+    for y in range(TILE):
+        for x in range(TILE):
+            distance = ((x - 7.5) / 7.0) ** 2 + ((y - 8.0) / 6.0) ** 2
+            if distance <= 1.0:
+                canvas[y][x] = "ink"
+            if distance <= 0.7:
+                canvas[y][x] = "soil_light" if y < 8 else "soil_mid"
+    fill_rect(canvas, 7, 6, 8, 9, "cream")
+    fill_rect(canvas, 7, 5, 8, 5, "gold")
+    return canvas
+
+
+INTERIOR_TILES = [interior_floor(), interior_wall(), interior_doormat(), bed(), table()]
+
+
 # The small house (assets/buildings/small_house.png).
 
 
@@ -1188,9 +1268,10 @@ def main():
     to_image(PLAYER).save(ASSETS / "player.png")
     (ASSETS / "buildings").mkdir(exist_ok=True)
     to_image([[small_house()]], 64).save(ASSETS / "buildings" / "small_house.png")
+    to_image([INTERIOR_TILES]).save(ASSETS / "interior.png")
     write_palette()
     check_palette()
-    print("Wrote terrain.png, decorations.png, objects.png, player.png, buildings/small_house.png, palette.png and palette.gpl to assets/; palette check passed.")
+    print("Wrote terrain.png, decorations.png, objects.png, player.png, interior.png, buildings/small_house.png, palette.png and palette.gpl to assets/; palette check passed.")
 
 
 if __name__ == "__main__":
