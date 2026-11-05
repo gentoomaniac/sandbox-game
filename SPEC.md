@@ -485,14 +485,15 @@ Decided 2026-11-05. A text console for testing and cheats.
   season only: frozen rivers, deep snow and other weather effects on tiles stay with the
   weather system. The season's look is only the base: the blend, snow and frost above
   decide per tile and per plant which look shows.
-- **How the looks are drawn** (decided 2026-11-05): there are seven looks of the ground (spring,
-  summer, autumn, bare = winter without snow, frost, snow and its thin fringe, dusting), each a
-  recolour of the summer art made by the generator, and for objects two more, the steps of the
-  leaf-out (buds and young leaves, drawn over the bare tree). The base terrain is summer; a look is drawn over it as a dual-grid overlay
-  layer of its own (the same edge shapes as the terrain layers), so patches of autumn, bare
-  ground, frost and snow have soft edges and no seams. The season looks have stacked layers
-  for lush and dry grass too, like the terrain. Snow and frost lie over the season's look.
-  Decorations, objects and houses pick their art by look instead. Snow cover comes from
+- **How the looks are drawn** (decided 2026-11-05): there are seven looks of the ground
+  (spring, summer, autumn, bare = winter without snow, frost, snow and its thin fringe,
+  dusting), each a recolour of the summer art made by the generator, and for objects two
+  more, the steps of the leaf-out (buds and young leaves, drawn over the bare tree). The
+  base terrain is summer; a look is drawn over it as a dual-grid overlay layer of its own
+  (the same edge shapes as the terrain layers), so patches of autumn, bare ground, frost and
+  snow have soft edges and no seams. The season looks have stacked layers for lush and dry
+  grass too, like the terrain. Snow and frost lie over the season's look. Decorations,
+  objects and houses pick their art by look instead. Snow cover comes from
   `data/seasons.cfg` ([snow]: snowfall adds, warmth and sun melt, counted hour by hour from
   the start of autumn; none from the first day of the year), the blend windows too; the view
   updates once a game hour, a few milliseconds per frame.

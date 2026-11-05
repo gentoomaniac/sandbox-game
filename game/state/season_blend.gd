@@ -52,6 +52,8 @@ class Conditions:
 
 	## The look of grass and ground by the season alone (SPRING to BARE).
 	func ground_season_look(season_threshold: float) -> Look:
+		# Before the later boundaries, the first one decides between BARE and SPRING; grass has
+		# no leaf-out steps.
 		var spring_look := Look.SPRING if ground[0] > season_threshold else Look.BARE
 		return _season_look(ground, season_threshold, spring_look)
 
@@ -93,7 +95,9 @@ class Conditions:
 		var start := season_threshold * (1.0 - leaf_out_span)
 		if foliage[0] <= start:
 			return Look.BARE
-		var step := leaf_out_span / (LEAF_OUT.size() - 2)
+		# BUDS and YOUNG_LEAVES lie between BARE and SPRING; each takes an equal part of the span.
+		var steps_between := LEAF_OUT.size() - 2
+		var step := leaf_out_span / steps_between
 		return LEAF_OUT[mini(floori((foliage[0] - start) / step) + 1, LEAF_OUT.size() - 1)]
 
 
