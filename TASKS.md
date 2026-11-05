@@ -1040,6 +1040,9 @@ the whole collapse, stops the clock while the screen is black and saves at the s
 as before. Debug: `--sleep`; `--energy=0` and `--time=00:59` show the pass-out. Not
 covered by tests: Main itself (input lock, order of the flow), checked by screenshots.
 
+Review follow-ups: a collapse, the message and the sleep fade take all input (Escape, hotbar
+and hammer too); a game saved between 01:00 and 06:30 passes out on load (no sleep wakes then).
+
 ## 47. Thought bubbles and sweat
 
 - [x] Done

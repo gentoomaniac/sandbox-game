@@ -494,6 +494,10 @@ static func from_dict(data: Dictionary) -> GameState:
 	state.player = PlayerState.from_dict(data["player"], state._map_from_ref(data["home_map"]))
 	state.current_map = state._map_from_ref(data["current_map"])
 	state._building_inside = state._building_of_ref(data["current_map"])
+	# No sleep wakes between 01:00 and 06:30, so a game saved then was quit by a player who
+	# stayed up: they still pass out (`is_up_too_late` itself is not saved).
+	var minute := state.clock.minute_of_day
+	state.is_up_too_late = minute >= LATE_NIGHT_MINUTE and minute < WAKE_UP_MINUTE
 	return state
 
 

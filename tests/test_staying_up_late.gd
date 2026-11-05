@@ -87,3 +87,16 @@ func test_no_late_bubble_after_waking_from_passing_out_at_one() -> void:
 	_state.pass_out()
 	assert_eq(_state.clock.time_text(), "11:00")
 	assert_eq(_stay_awake(signs, 12 * GameClock.MINUTES_PER_HOUR), [] as Array[String])
+
+
+func test_a_game_saved_after_one_at_night_still_passes_out_on_load() -> void:
+	for time: Vector2i in [Vector2i(1, 0), Vector2i(3, 15), Vector2i(6, 29)]:
+		_state.clock.set_time(time.x, time.y)
+		assert_true(_reloaded().is_up_too_late, "saved at %s" % time)
+	for time: Vector2i in [Vector2i(0, 59), Vector2i(6, 30), Vector2i(11, 0)]:
+		_state.clock.set_time(time.x, time.y)
+		assert_false(_reloaded().is_up_too_late, "saved at %s" % time)
+
+
+func _reloaded() -> GameState:
+	return GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))

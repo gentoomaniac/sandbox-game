@@ -333,6 +333,10 @@ func _notification(what: int) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# A collapse, the message on black and the sleep fade take all input (the message screen
+	# reads its own key): no menu, console, hotbar or hammer until the player is up again.
+	if _is_in_transition:
+		return
 	if event.is_action_pressed("console") and _can_open_console():
 		# The key that opens it must not be typed into the input line.
 		get_viewport().set_input_as_handled()
