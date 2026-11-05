@@ -345,6 +345,8 @@ func _hit(object: WorldObject) -> Use:
 			stump.state["tree"] = str(object.type)
 		world.replace_object(object, stump)
 	world.drop_items(object.pos, drops)
+	# The finishing hit replaces or removes the object instead of `hit_object`, which emits
+	# this for the other hits; the view still shakes and throws particles for it.
 	world.object_hit.emit(object)
 	return Use.HIT
 

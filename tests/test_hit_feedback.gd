@@ -98,4 +98,7 @@ func test_the_finishing_hit_on_stone_removes_it_and_throws_splinters() -> void:
 	_show_world_in_view()
 	_hit(ItemTypes.PICKAXE, 1)
 	assert_null(_world.object_at(_tile))
-	assert_between(_view._hit_particles.particle_count(), 6, 9, "4 to 6 splinters and some dust")
+	var splinters: Vector2i = HitParticles.SPECS[KINDS.SPLINTERS]["count"]
+	var dust: Vector2i = HitParticles.SPECS[KINDS.DUST]["count"]
+	var count := _view._hit_particles.particle_count()
+	assert_between(count, splinters.x + dust.x, splinters.y + dust.y, "splinters and some dust")
