@@ -10,6 +10,9 @@ extends Node
 ## command); those are never sent away for the weather or the hour, and `is_player_ignored`
 ## makes every animal take no notice of the player (`--wildlife-calm`).
 
+## An animal came into being (see `_add`).
+signal animal_added(animal: Animal)
+
 ## Tries to find a place for one animal before giving up until the next second.
 const SPAWN_TRIES := 10
 const FLOCK_SIZE := Vector2i(3, 6)
@@ -258,6 +261,7 @@ func _add(animal: Animal, is_pinned: bool) -> void:
 	animal.is_pinned = is_pinned
 	_animals.append(animal)
 	world_view.entities.add_child(animal)
+	animal_added.emit(animal)
 
 
 ## Frees the animals that are done or far from the view.

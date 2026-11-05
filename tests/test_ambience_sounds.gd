@@ -1,0 +1,79 @@
+extends GutTest
+## The ambience node: the weather loops start and stop with the weather, thunder follows a flash
+## after a delay, and a bee that appears buzzes. The audio service is real; what it plays is
+## recorded.
+
+var _state: GameState
+var _audio: AudioService
+var _ambience: AmbienceSounds
+var _wildlife: WildlifeView
+var _weather_view: WeatherView
+var _events: Array[StringName] = []
+
+
+func before_each() -> void:
+	_state = GameState.new_game(7)
+	_audio = AudioService.new()
+	add_child_autofree(_audio)
+	_audio.played.connect(
+		func(event: StringName, _position: Variant) -> void: _events.append(event)
+	)
+	_wildlife = WildlifeView.new()
+	autofree(_wildlife)
+	_wildlife.rules = WildlifeRules.default_rules()
+	_wildlife.rules.sun = _state.sun
+	_wildlife.world_view = WorldView.new()
+	add_child_autofree(_wildlife.world_view)
+	_weather_view = WeatherView.new()
+	add_child_autofree(_weather_view)
+	_ambience = AmbienceSounds.new()
+	add_child_autofree(_ambience)
+	_ambience.listen(_audio, _state, _wildlife, _weather_view)
+	_events.clear()
+
+
+func test_rain_and_wind_loops_start_with_a_storm_and_stop_when_it_clears() -> void:
+	_state.weather_override = &"storm"
+	_ambience._process(1.0)
+	assert_true(_events.has(&"rain_loop"))
+	assert_true(_events.has(&"wind_loop"))
+	_events.clear()
+	_state.weather_override = &"clear"
+	_ambience._process(1.0)
+	assert_eq(_events, [], "nothing new starts")
+	assert_null(_ambience._rain_loop)
+
+
+func test_a_clear_calm_day_has_no_loops() -> void:
+	_state.weather_override = &"clear"
+	_ambience._process(1.0)
+	assert_false(_events.has(&"rain_loop"))
+
+
+## The ambience rules of the data file with the thunder coming within 0.1 to 0.2 s.
+func _quick_thunder_rules() -> AmbienceRules:
+	var file := ConfigFile.new()
+	file.load(AmbienceRules.DEFAULT_PATH)
+	var values := {}
+	for section in file.get_sections():
+		values[section] = {}
+		for key in file.get_section_keys(section):
+			values[section][key] = file.get_value(section, key)
+	values["thunder"] = {"min_delay_seconds": 0.1, "max_delay_seconds": 0.2}
+	return AmbienceRules.new(values)
+
+
+func test_thunder_follows_a_flash_after_a_delay() -> void:
+	_ambience.rules = _quick_thunder_rules()
+	_weather_view.flash()
+	assert_false(_events.has(&"thunder"), "not at once")
+	await wait_seconds(0.3)
+	assert_true(_events.has(&"thunder"))
+
+
+func test_a_bee_buzzes_where_it_is() -> void:
+	var bee := Bee.new()
+	bee.wildlife = _wildlife
+	_ambience._on_animal_added(bee)
+	_ambience._process(1.0)
+	assert_true(_events.has(&"bee_buzz_loop"))

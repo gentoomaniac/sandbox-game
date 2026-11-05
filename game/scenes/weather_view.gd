@@ -8,6 +8,9 @@ extends CanvasLayer
 ## (`show_weather`); what is on screen follows with a fade, so changes in the weather are
 ## never abrupt. Hide the node to show no weather, e.g. inside a building.
 
+## A flash of lightning has begun (its thunder is up to whoever listens).
+signal flashed
+
 const PRECIPITATION_SHADER := preload("res://game/scenes/weather_precipitation.gdshader")
 const FOG_SHADER := preload("res://game/scenes/weather_fog.gdshader")
 
@@ -88,6 +91,7 @@ func minutes_passed(count: int) -> void:
 
 ## A flash of lightning: bright for a moment, a flicker, then a fade.
 func flash() -> void:
+	flashed.emit()
 	if _flash_tween != null:
 		_flash_tween.kill()
 	_flash.color.a = FLASH_PEAK

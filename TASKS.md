@@ -935,12 +935,22 @@ event as it plays. `PlayerView.walk_speed` scales the walk animation, and with i
 
 ## 42. Ambience: weather and animals
 
-- [ ] Done
+- [x] Done
 
 Depends on 41. Rain and wind loops following the weather with fades, gusts, thunder
 after the flash with a delay; birds chirping from their nodes now and then, deer, rabbit,
 squirrel and bee sounds; frogs near water by season, time of day, temperature and
 distance.
+
+Done: data/ambience.cfg (validated by AmbienceRules, required keys, checked at start) holds
+the chances, levels, distances and delays; AmbienceRules (game/state) makes the pure choices
+and SoundEvents names the animals' sounds. AmbienceSounds (game/scenes, owned by Main) acts
+once a second: rain and wind loops follow the weather with fades, gusts swell the wind,
+birds chirp from a bird or a tree, frogs croak at water found among random tiles near the
+player, deer, rabbits and squirrels sound now and then; thunder follows the new
+`WeatherView.flashed` signal after a delay; WildlifeView's `animal_added` and Animal's
+`state_entered` signals let it hear when animals appear and run (hooves, rustle, chatter) and
+let bees' loops follow them with `move_to`. Birds and frogs are silent indoors.
 
 ## 43. Harvest animations: falling trees, items hopping out
 

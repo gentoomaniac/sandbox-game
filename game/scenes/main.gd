@@ -76,6 +76,7 @@ var _builder: Builder
 var _settings: GameSettings
 var _audio := AudioService.new()
 var _sounds := GameSounds.new()
+var _ambience := AmbienceSounds.new()
 var _menu: PauseMenu
 var _tooltip_view := TooltipView.new()
 var _save_path := SaveFile.DEFAULT_PATH
@@ -134,6 +135,7 @@ func _ready() -> void:
 		or not SeasonRules.default_rules().is_valid()
 		or not BuildingRules.default_rules().is_valid()
 		or not SoundRules.default_rules().is_valid()
+		or not AmbienceRules.default_rules().is_valid()
 		or not AssetCheck.report()
 	):
 		# The load has reported the missing rules, crops, curves or pictures. Nothing else runs
@@ -567,7 +569,8 @@ func _show_current_map() -> void:
 
 
 ## Starts the sounds of the game once everything that makes one exists: the footsteps, work and
-## pickups, the buttons of the menus, and the opening and closing of menus, screens and console.
+## pickups, the buttons of the menus, the opening and closing of menus, screens and console, and
+## the weather's and the animals' ambience.
 func _start_sounds() -> void:
 	add_child(_sounds)
 	_sounds.listen(_audio, _state, _view, _player_view, _build_mode)
@@ -576,6 +579,8 @@ func _start_sounds() -> void:
 	_sounds.watch_panel(func() -> bool: return _menu.visible)
 	_sounds.watch_panel(_character_screen.is_open)
 	_sounds.watch_panel(_console_view.is_open)
+	add_child(_ambience)
+	_ambience.listen(_audio, _state, _wildlife, _weather_view)
 
 
 ## Debug (`--hit`): hits the object on the asked tile, if there is one.

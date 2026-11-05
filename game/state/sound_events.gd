@@ -59,3 +59,29 @@ static func use(result: GameState.Use, held_tool: StringName) -> StringName:
 		GameState.Use.NOTHING:
 			return &"scythe_swish" if held_tool == ItemTypes.SCYTHE else &""
 	return &""
+
+
+## The sound an animal of a kind (see WildlifeRules) makes now and then while it goes about its
+## day; empty for those that are quiet.
+static func animal_idle(kind: StringName) -> StringName:
+	match kind:
+		WildlifeRules.DEER:
+			return &"deer_snort"
+		WildlifeRules.RABBIT:
+			return &"rabbit_rustle"
+		WildlifeRules.SQUIRREL:
+			return &"squirrel_chatter"
+	return &""
+
+
+## The sound of an animal of a kind starting to run from the player: it is the state it enters
+## (the name of Deer.BOUND, Rabbit.FLEE or Squirrel.FLEE) that says so. Empty for any other.
+static func animal_alarm(kind: StringName, state: StringName) -> StringName:
+	match [kind, state]:
+		[WildlifeRules.DEER, &"bound"]:
+			return &"deer_hooves"
+		[WildlifeRules.RABBIT, &"flee"]:
+			return &"rabbit_rustle"
+		[WildlifeRules.SQUIRREL, &"flee"]:
+			return &"squirrel_chatter"
+	return &""

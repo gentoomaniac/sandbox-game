@@ -7,7 +7,7 @@ light change the world as you play.
 
 > **Status:** early prototype, under active development. The core loop works: you can
 > walk, farm, fell, mine, gather, build and sleep through the seasons. There is no shop,
-> combat or story yet, and the weather and animals are still silent.
+> combat or story yet.
 
 ![The starting camp on a summer morning](docs/screenshots/camp.png)
 
@@ -20,6 +20,11 @@ floor), and every tool, pickup, building and menu has a sound, played from where
 Inside a house the world outside is muffled. Settings → Audio has Master, Effects and Ambience
 volumes and "Sound in background" (off: silent while the window is not focused). Which file each
 sound plays is in [data/sounds.cfg](data/sounds.cfg), so any sound can be swapped for a recording.
+
+The world has an ambience too: rain and wind loops that follow the weather (and swell with gusts),
+thunder some seconds after each flash of lightning, birds chirping by day, deer, rabbits and
+squirrels, bees buzzing at their flowers, and frogs croaking near water on warm spring and summer
+evenings and nights. How often and how loud is in [data/ambience.cfg](data/ambience.cfg).
 
 ### A world that changes with the seasons
 
@@ -202,7 +207,7 @@ fresh world, run `godot --path . -- --new-game`.
 - **Sound:** all sounds are synthesised by [tools/audio/generate.py](tools/audio/generate.py)
   into assets/sounds/; its docstring explains how to tune or replace one.
 - **Data files:** gameplay numbers you might want to tune live in
-  [data/](data/) (energy, crops, buildings, weather, seasons, vegetation, wildlife, sounds).
+  [data/](data/) (energy, crops, buildings, weather, seasons, vegetation, wildlife, sounds, ambience).
 - **Design:** the design is in [SPEC.md](SPEC.md).
 - **Debug flags:** command-line flags for screenshots and debugging (time, day, weather,
   position and more) are listed at the top of [game/scenes/main.gd](game/scenes/main.gd).

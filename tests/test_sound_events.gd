@@ -80,3 +80,28 @@ func test_every_event_made_is_a_known_event() -> void:
 		made.append(SoundEvents.hit(type, false))
 	for event in made:
 		assert_true(event == &"" or SoundRules.EVENTS.has(event), str(event))
+
+
+func test_animal_sounds_are_events_of_the_sound_data() -> void:
+	for kind in WildlifeRules.KINDS:
+		for event in [
+			SoundEvents.animal_idle(kind),
+			SoundEvents.animal_alarm(kind, Deer.BOUND),
+			SoundEvents.animal_alarm(kind, Rabbit.FLEE),
+		]:
+			assert_true(event == &"" or SoundRules.EVENTS.has(event), str(event))
+
+
+func test_deer_rabbits_and_squirrels_make_sounds_of_their_own() -> void:
+	assert_eq(SoundEvents.animal_idle(WildlifeRules.DEER), &"deer_snort")
+	assert_eq(SoundEvents.animal_idle(WildlifeRules.RABBIT), &"rabbit_rustle")
+	assert_eq(SoundEvents.animal_idle(WildlifeRules.SQUIRREL), &"squirrel_chatter")
+	assert_eq(SoundEvents.animal_idle(WildlifeRules.BIRD), &"", "birds chirp by the ambience")
+
+
+func test_animals_that_run_make_a_sound_when_they_start() -> void:
+	assert_eq(SoundEvents.animal_alarm(WildlifeRules.DEER, Deer.BOUND), &"deer_hooves")
+	assert_eq(SoundEvents.animal_alarm(WildlifeRules.RABBIT, Rabbit.FLEE), &"rabbit_rustle")
+	assert_eq(SoundEvents.animal_alarm(WildlifeRules.SQUIRREL, Squirrel.FLEE), &"squirrel_chatter")
+	assert_eq(SoundEvents.animal_alarm(WildlifeRules.DEER, Deer.GRAZE), &"")
+	assert_eq(SoundEvents.animal_alarm(WildlifeRules.RABBIT, Rabbit.HOP), &"")

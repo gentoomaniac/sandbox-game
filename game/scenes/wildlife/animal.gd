@@ -6,6 +6,9 @@ extends Node2D
 ## `is_done` or far from the view. Animals stand in the y-sorted `entities` node, so the
 ## player and the objects pass in front of or behind them; those that fly are drawn above.
 
+## The animal entered a state (see each kind's constants).
+signal state_entered(state: StringName)
+
 const SHADOW_COLOR := Color(0.0, 0.0, 0.0, 0.2)
 
 ## Set by the WildlifeView that made it.
@@ -78,6 +81,7 @@ func _update(_delta: float) -> void:
 func _enter(state: StringName) -> void:
 	_state = state
 	_state_time = 0.0
+	state_entered.emit(state)
 
 
 ## Starts playing an action's frames from the first, unless it is playing already.
