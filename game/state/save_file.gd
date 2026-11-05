@@ -61,6 +61,7 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 ## starting inventory.
 static func _upgrade_from_version_1(game: Dictionary) -> void:
 	var inventory := Inventory.with_starting_items()
+	# A count beyond what the free slots hold (about 1,500) is dropped.
 	inventory.add(ItemTypes.TURNIP, int(game["harvest_count"]))
 	game.erase("harvest_count")
 	game["player"]["inventory"] = inventory.to_dict()

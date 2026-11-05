@@ -128,10 +128,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	# A SubViewport only gets the events that are pushed into it. That does not mark the
 	# event as handled here, so Main still sees what BuildMode consumed.
 	_world.push_input(event)
+	var hotbar_slot := _hotbar_slot_of(event)
 	if event.is_action_pressed("toggle_fast_forward"):
 		_fast_forward = not _fast_forward
-	elif _hotbar_slot_of(event) != -1:
-		_state.player.inventory.select(_hotbar_slot_of(event))
+	elif hotbar_slot != -1:
+		_state.player.inventory.select(hotbar_slot)
 	elif event.is_action_pressed("interact") and not _is_fading:
 		_try_sleep()
 	elif event.is_action_pressed("use") and can_use:
@@ -147,7 +148,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	_tick_clock(delta)
-	_use_highlight.is_enabled = not _build_mode.is_active() and not _state.is_inside()
+	_use_highlight.is_enabled = (
+		not _build_mode.is_active() and not _state.is_inside() and not _inventory_screen.is_open()
+	)
 	if not _is_fading:
 		var direction := Vector2.ZERO
 		if not _inventory_screen.is_open():
