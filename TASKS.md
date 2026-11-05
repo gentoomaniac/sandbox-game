@@ -951,6 +951,16 @@ tool levels, CropRules for seeds and produce, equipment slots), with a `descript
 item; short explanations for every setting. Tests: the text for food, a tool, seeds, a
 plain resource and equipment.
 
+## 45. Ambient motion: wind sway, water, fire, rain splashes, lily pads
+
+- [ ] Done
+
+See SPEC.md "Ambient motion". View only, driven by the weather's wind; depends on 43
+(both touch the world view). Sway by shader on the object and decoration layers (whole art
+pixels, stems fixed, per-object phase, gusts); water shimmer and ripples by wind; fire
+flicker, lean and sparks by wind; rain splashes on the ground; lily pads drifting and
+bobbing. Must stay cheap per frame.
+
 ## Later (not part of the prototype)
 
 - Season looks follow-ups (from the task 29 review): world_view.gd carries layer, season

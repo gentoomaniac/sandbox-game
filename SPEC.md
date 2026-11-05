@@ -372,6 +372,12 @@ Decided 2026-11-05. A text console for testing and cheats.
   - **Seasons set the baselines:** spring mild and showery; summer warm and mostly dry
     with occasional thunderstorms; autumn cooler, windy, foggy and rainy; winter cold
     with snow.
+  - **Ambient motion** (decided 2026-11-05, view only): plants sway with the wind (tree
+    crowns, bushes, tall grass, reeds, crops, ground tufts; gentle on calm days, hard with
+    gusts in a storm, each plant with its own phase, in whole art pixels with the stems
+    fixed); water shimmers and ripples, choppier in wind; the campfire and hearth flames
+    flicker and lean downwind with drifting sparks; rain splatters small splashes on the
+    ground (more in heavy rain); lily pads drift and bob a little.
   - **Effects for now are visual only:** rain and snow particles (slanted by the wind),
     fog drifting over the world, wind streaks and blowing leaves, lightning flashes, and
     overcast skies dimming daylight. Nothing in the game reacts yet (crops, floods,
