@@ -68,6 +68,8 @@ const OVERLAY_LOOKS: Array[SeasonBlend.Look] = [
 	SeasonBlend.Look.DUSTING,
 	SeasonBlend.Look.SNOW,
 ]
+## The layers of grass that are drawn over ordinary grass.
+const VARIETY_LAYERS: Array[Layer] = [Layer.LUSH_GRASS, Layer.DRY_GRASS]
 ## Grass is lush where the variety noise is below this, dry where it is above DRY_ABOVE.
 const LUSH_BELOW := -0.2
 const DRY_ABOVE := 0.25
