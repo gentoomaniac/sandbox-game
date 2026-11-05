@@ -61,3 +61,16 @@ func test_chunk_setters_change_state() -> void:
 	assert_true(tile.frozen)
 	assert_eq(tile.snow_depth, 0.25)
 	assert_eq(chunk.tile_at(Vector2i(7, 4)).terrain, Tile.Terrain.GRASS)
+
+
+func test_chunk_read_accessors() -> void:
+	var chunk := Chunk.new(Vector2i.ZERO)
+	var local := Vector2i(3, 4)
+	chunk.set_terrain(local, Tile.Terrain.WATER)
+	chunk.set_water_level(local, 0.5)
+	chunk.set_frozen(local, true)
+	chunk.set_snow_depth(local, 0.25)
+	assert_eq(chunk.terrain_at(local), Tile.Terrain.WATER)
+	assert_eq(chunk.water_level_at(local), 0.5)
+	assert_true(chunk.is_frozen_at(local))
+	assert_eq(chunk.snow_depth_at(local), 0.25)

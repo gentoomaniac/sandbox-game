@@ -44,6 +44,10 @@ func is_chunk_loaded(chunk_coords: Vector2i) -> bool:
 	return _chunks.has(chunk_coords)
 
 
+func loaded_chunk_coords() -> Array[Vector2i]:
+	return _chunks.keys()
+
+
 ## The loaded chunk, or null if it is not loaded.
 func chunk_at(chunk_coords: Vector2i) -> Chunk:
 	return _chunks.get(chunk_coords)
@@ -51,6 +55,8 @@ func chunk_at(chunk_coords: Vector2i) -> Chunk:
 
 ## The tile at a world position, or null if it is out of bounds or its chunk is not loaded.
 func tile_at(world_pos: Vector2i) -> Tile:
+	# Out-of-bounds chunks can never be loaded (add_chunk asserts the bounds), so they
+	# end up here as null too.
 	var chunk := chunk_at(Chunk.world_to_chunk(world_pos))
 	if chunk == null:
 		return null

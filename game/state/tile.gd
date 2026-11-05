@@ -18,7 +18,7 @@ func is_walkable() -> bool:
 
 ## Anything that can flood or is under water is off limits for building.
 func is_buildable() -> bool:
-	return terrain not in [Terrain.WATER, Terrain.WETLAND, Terrain.FLOODPLAIN]
+	return terrain != Terrain.WATER and terrain != Terrain.WETLAND and terrain != Terrain.FLOODPLAIN
 
 
 ## Only soil: grass becomes soil through a player action (tilling).

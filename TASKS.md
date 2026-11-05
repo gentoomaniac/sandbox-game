@@ -100,7 +100,7 @@ Depends on: 2.
 
 ## 4. Chunk streaming and rendering
 
-- [ ] Done
+- [x] Done
 
 Depends on: 3.
 

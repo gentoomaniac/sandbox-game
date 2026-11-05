@@ -56,6 +56,24 @@ func tile_at(local: Vector2i) -> Tile:
 	return tile
 
 
+## Direct read accessors: unlike tile_at() they allocate nothing, for hot loops such as
+## rendering.
+func terrain_at(local: Vector2i) -> Tile.Terrain:
+	return _terrain[_index(local)] as Tile.Terrain
+
+
+func water_level_at(local: Vector2i) -> float:
+	return _water_level[_index(local)]
+
+
+func is_frozen_at(local: Vector2i) -> bool:
+	return _frozen[_index(local)] == 1
+
+
+func snow_depth_at(local: Vector2i) -> float:
+	return _snow_depth[_index(local)]
+
+
 func set_terrain(local: Vector2i, terrain: Tile.Terrain) -> void:
 	_terrain[_index(local)] = terrain
 
