@@ -242,7 +242,11 @@ Depends on: 7.
 
 - A crop is a world object (task 5) that keeps its growth state.
 - One crop type, with a few growth stages and a number of days per stage.
-- An action on a plantable tile turns grass into soil. Another action plants the crop on
+- An action on a grass tile turns it into soil. This is the first real tile mutation:
+  give `World` an explicit mutation method that emits a change signal, and let
+  `WorldView` redraw the tile from it (instead of callers remembering `redraw_tile`).
+  Weather will use the same path later.
+- An action on a plantable tile Another action plants the crop on
   soil.
 - When a day begins, every crop advances by one day.
 - A fully grown crop can be harvested, which removes it. There's no inventory yet, so
