@@ -77,13 +77,14 @@ run:
 	$(GODOT) --path .
 
 # Saves one frame of the game as PNG, e.g. make screenshot AT=40,-20 OUT=/tmp/shot.png
-# (AT is a world tile position).
+# (AT is a world tile position). TIME=hh:mm sets the time of day (default: game start).
 AT ?= 0,0
+TIME ?=
 OUT ?= $(CURDIR)/build/screenshot.png
 screenshot:
 	$(IMPORT)
 	mkdir -p $(dir $(OUT))
-	$(GODOT) --path . -- --at=$(AT) --screenshot=$(OUT)
+	$(GODOT) --path . -- --at=$(AT) --screenshot=$(OUT) $(if $(TIME),--time=$(TIME))
 
 # On Godot builds without navigation (e.g. some Gentoo builds) GUT prints a harmless
 # 'Identifier "NavigationMeshGenerator" not declared' parse error. Tests still run.
