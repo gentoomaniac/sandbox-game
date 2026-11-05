@@ -133,6 +133,7 @@ func is_walkable(world_pos: Vector2i) -> bool:
 	return object == null or not object.blocks_walking()
 
 
+## Must agree with placement_blockers: a tile is buildable if it would not block a building.
 func is_buildable(world_pos: Vector2i) -> bool:
 	var tile := tile_at(world_pos)
 	return (
@@ -157,7 +158,7 @@ func is_plantable(world_pos: Vector2i) -> bool:
 
 
 func buildings() -> Array[Building]:
-	return _buildings
+	return _buildings.duplicate()
 
 
 ## The building whose footprint covers a tile, or null.
@@ -166,7 +167,7 @@ func building_at(world_pos: Vector2i) -> Building:
 
 
 ## The footprint tiles that stop a building from being placed, with the reason for each.
-## Empty if it can be placed.
+## Empty if it can be placed. Must agree with is_buildable.
 func placement_blockers(
 	building_type: StringName, origin: Vector2i
 ) -> Dictionary[Vector2i, Blocked]:

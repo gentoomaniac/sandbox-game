@@ -14,7 +14,7 @@ const TYPES := {
 	{
 		"footprint": Vector2i(4, 3),
 		"door_offset": Vector2i(1, 2),
-		"interior_map": "res://maps/small_house.tmx",
+		"interior_map": "res://maps/interiors/small_house.tmx",
 		"sprite": "res://assets/buildings/small_house.png",
 	},
 }

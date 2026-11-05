@@ -34,20 +34,24 @@ func _ready() -> void:
 	_message.hide()
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--ghost="):
-			_pinned_origin = _parse_tile(arg.trim_prefix("--ghost="))
-			_is_active = true
+			_pinned_origin = _parse_tile(arg)
+			_is_active = _pinned_origin != null
 		elif arg.begins_with("--house="):
-			_debug_house_origin = _parse_tile(arg.trim_prefix("--house="))
+			_debug_house_origin = _parse_tile(arg)
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_build"):
 		_set_active(not _is_active)
+		get_viewport().set_input_as_handled()
 	elif _is_active and event is InputEventMouseButton and event.pressed:
+		# Clicks belong to build mode while it is active, not to the player's actions.
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			_place()
+			get_viewport().set_input_as_handled()
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			_set_active(false)
+			get_viewport().set_input_as_handled()
 
 
 func _process(_delta: float) -> void:
@@ -115,6 +119,11 @@ func _is_footprint_loaded(origin: Vector2i) -> bool:
 	)
 
 
-func _parse_tile(text: String) -> Vector2i:
-	var parts := text.split_floats(",")
+## The tile of a `--flag=<x>,<y>` argument, or null (after an error) if it is malformed.
+func _parse_tile(arg: String) -> Variant:
+	var value := arg.get_slice("=", 1)
+	var parts := value.split(",")
+	if parts.size() != 2 or not parts[0].is_valid_int() or not parts[1].is_valid_int():
+		push_error("%s expects <x>,<y>, got '%s'" % [arg.get_slice("=", 0), value])
+		return null
 	return Vector2i(int(parts[0]), int(parts[1]))
