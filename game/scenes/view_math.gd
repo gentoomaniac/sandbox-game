@@ -52,6 +52,13 @@ static func region_origin(target: Vector2, window_size: Vector2, zoom: float) ->
 	return Vector2(VIEWPORT_SIZE) / 2.0 + remainder - visible_size(window_size, zoom) / 2.0
 
 
+## A position in UI units (what the mouse reports) as window pixels. `ui_size` is the UI's
+## visible area, which shrinks as the UI scale grows: the world is drawn on the whole window
+## whatever the UI scale is, so only this conversion knows about it.
+static func ui_to_window(ui_position: Vector2, window_size: Vector2, ui_size: Vector2) -> Vector2:
+	return ui_position * window_size / ui_size
+
+
 static func window_to_world(
 	window_position: Vector2, window_size: Vector2, target: Vector2, zoom: float
 ) -> Vector2:

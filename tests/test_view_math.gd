@@ -60,3 +60,15 @@ func test_window_and_world_positions_convert_back_and_forth() -> void:
 		var world := ViewMath.window_to_world(window_position, WINDOW, target, zoom)
 		var back := ViewMath.world_to_window(world, WINDOW, target, zoom)
 		assert_almost_eq(back, window_position, Vector2(0.001, 0.001))
+
+
+func test_mouse_position_converts_at_every_ui_scale() -> void:
+	# The base UI size is 640x360 (the project's), and a UI scale divides it.
+	var target := Vector2(33.3, -12.7)
+	for ui_scale in [0.5, 1.0, 2.0]:
+		var ui_size: Vector2 = Vector2(640, 360) / ui_scale
+		var window_position := ViewMath.ui_to_window(ui_size / 2.0, WINDOW, ui_size)
+		assert_eq(window_position, WINDOW / 2.0)
+		assert_eq(ViewMath.window_to_world(window_position, WINDOW, target, 1.0), target)
+		# A quarter of the way across the UI is a quarter of the way across the window.
+		assert_eq(ViewMath.ui_to_window(ui_size / 4.0, WINDOW, ui_size), WINDOW / 4.0)

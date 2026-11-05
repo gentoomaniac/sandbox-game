@@ -9,6 +9,10 @@ signal back_requested
 const NAME_WIDTH := 100
 const BINDING_WIDTH := 74
 const LIST_HEIGHT := 190
+## Height of everything on the page and its panel except the list; the list shrinks to
+## leave this much room when the UI is scaled up.
+const CHROME_HEIGHT := 90
+const MIN_LIST_HEIGHT := 40
 const HINT := "Click a binding, then press a key. Esc cancels."
 const EMPTY_BINDING := "-"
 const CAPTURING_TEXT := "Press..."
@@ -16,6 +20,7 @@ const CAPTURING_TEXT := "Press..."
 var first_focus: Control
 
 var _settings: GameSettings
+var _scroll := ScrollContainer.new()
 ## Where the next key or button goes: the action and slot, and the button showing it.
 var _capture_action := &""
 var _capture_slot := 0
@@ -28,19 +33,19 @@ var _note := Label.new()
 func _init(settings: GameSettings) -> void:
 	_settings = settings
 	visibility_changed.connect(_stop_capture)
+	visibility_changed.connect(_fit_list_to_screen)
 	var title := Label.new()
 	title.text = "Controls"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(title)
 
-	var scroll := ScrollContainer.new()
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.custom_minimum_size = Vector2(NAME_WIDTH + 2 * BINDING_WIDTH + 24, LIST_HEIGHT)
-	add_child(scroll)
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_scroll.custom_minimum_size = Vector2(NAME_WIDTH + 2 * BINDING_WIDTH + 24, LIST_HEIGHT)
+	add_child(_scroll)
 	var rows := VBoxContainer.new()
 	rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rows.add_theme_constant_override("separation", 2)
-	scroll.add_child(rows)
+	_scroll.add_child(rows)
 	for action in GameSettings.actions():
 		rows.add_child(_make_row(action))
 
@@ -70,6 +75,12 @@ func show_bindings() -> void:
 			button.text = (
 				GameSettings.binding_text(events[slot]) if slot < events.size() else EMPTY_BINDING
 			)
+
+
+## A scaled-up UI has fewer units on screen, so the list gives way to keep the buttons in view.
+func _fit_list_to_screen() -> void:
+	var room := get_viewport().get_visible_rect().size.y - CHROME_HEIGHT
+	_scroll.custom_minimum_size.y = clampf(room, MIN_LIST_HEIGHT, LIST_HEIGHT)
 
 
 func _make_row(action: StringName) -> HBoxContainer:

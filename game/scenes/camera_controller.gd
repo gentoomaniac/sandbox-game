@@ -41,9 +41,10 @@ func _process(delta: float) -> void:
 
 ## The art-pixel position of the world under the mouse.
 func mouse_world_position() -> Vector2:
-	# The UI is scaled with the window (content scale), the mouse is in its units.
-	var ui_to_window := _window_size() / get_viewport().get_visible_rect().size
-	var window_position := get_viewport().get_mouse_position() * ui_to_window
+	# The mouse is in UI units, which depend on the window's size and the UI scale.
+	var window_position := ViewMath.ui_to_window(
+		get_viewport().get_mouse_position(), _window_size(), get_viewport().get_visible_rect().size
+	)
 	return ViewMath.window_to_world(window_position, _window_size(), rig.position, rig.zoom)
 
 

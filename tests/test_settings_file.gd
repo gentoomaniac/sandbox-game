@@ -15,6 +15,7 @@ func after_each() -> void:
 	# Puts the project's bindings back into the input map, which the tests share.
 	_settings.reset_bindings()
 	_settings.set_fullscreen(false)
+	_settings.set_ui_scale(GameSettings.DEFAULT_UI_SCALE)
 	for file_name in DirAccess.get_files_at(DIR):
 		DirAccess.remove_absolute(DIR.path_join(file_name))
 
@@ -142,3 +143,61 @@ func test_loading_gives_a_shared_key_to_the_first_action() -> void:
 func test_a_missing_file_changes_nothing() -> void:
 	_settings.load_file()
 	assert_eq(_texts(&"interact"), ["E"])
+
+
+func test_game_settings_default_to_one_times_and_normal_drain() -> void:
+	assert_eq(_settings.ui_scale, 1.0)
+	assert_eq(_settings.energy_drain, GameSettings.EnergyDrain.NORMAL)
+	assert_eq(_settings.energy_drain_factor(), 1.0)
+	_settings.load_file()
+	assert_eq(_settings.ui_scale, 1.0)
+
+
+func test_game_settings_survive_a_restart() -> void:
+	_settings.set_ui_scale(1.25)
+	_settings.set_energy_drain(GameSettings.EnergyDrain.HIGH)
+	_restart_with_saved_file()
+	assert_eq(_settings.ui_scale, 1.25)
+	assert_eq(get_tree().root.content_scale_factor, 1.25)
+	assert_eq(_settings.energy_drain, GameSettings.EnergyDrain.HIGH)
+	assert_eq(_settings.energy_drain_factor(), 1.5)
+
+
+func test_drain_factors() -> void:
+	_settings.set_energy_drain(GameSettings.EnergyDrain.LOW)
+	assert_eq(_settings.energy_drain_factor(), 0.5)
+
+
+func test_changing_the_drain_is_announced() -> void:
+	watch_signals(_settings)
+	_settings.set_energy_drain(GameSettings.EnergyDrain.LOW)
+	assert_signal_emitted(_settings, "drain_changed")
+
+
+func test_the_ui_scale_stays_on_the_steps_and_in_range() -> void:
+	_settings.set_ui_scale(1.1)
+	assert_eq(_settings.ui_scale, 1.0)
+	_settings.set_ui_scale(5.0)
+	assert_eq(_settings.ui_scale, 2.0)
+	_settings.set_ui_scale(0.0)
+	assert_eq(_settings.ui_scale, 0.5)
+
+
+func test_game_settings_at_their_defaults_are_not_stored() -> void:
+	_settings.set_ui_scale(2.0)
+	_settings.set_ui_scale(1.0)
+	var file := ConfigFile.new()
+	file.load(PATH)
+	assert_false(file.has_section("game"))
+
+
+func test_a_broken_ui_scale_or_drain_is_ignored() -> void:
+	var broken := ["ui_scale=3.0", 'ui_scale="big"', 'energy_drain="extreme"', "energy_drain=2"]
+	for index in broken.size():
+		var text: String = broken[index]
+		_write_file("[game]\n" + text + "\n")
+		_settings.load_file()
+		assert_eq(_settings.ui_scale, 1.0)
+		assert_eq(_settings.energy_drain, GameSettings.EnergyDrain.NORMAL)
+		assert_push_warning_count(index + 1)
+		_settings = GameSettings.new(PATH)

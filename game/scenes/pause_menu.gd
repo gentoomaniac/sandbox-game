@@ -7,7 +7,7 @@ extends CanvasLayer
 signal resumed
 signal save_and_quit_requested
 
-enum Page { PAUSE, SETTINGS, CONTROLS, DISPLAY }
+enum Page { PAUSE, SETTINGS, CONTROLS, DISPLAY, GAME }
 
 const THEME := preload("res://game/scenes/ui_theme.tres")
 const PANEL_WIDTH := 280
@@ -20,6 +20,10 @@ var _first_focus := {}
 var _history: Array[Page] = []
 var _current: Page
 var _display_button: Button
+var _ui_scale_label: Label
+var _ui_scale_slider: HSlider
+var _is_dragging_slider := false
+var _drain_button: Button
 
 
 func _init(settings: GameSettings) -> void:
@@ -52,6 +56,7 @@ func _init(settings: GameSettings) -> void:
 
 	var settings_page := _add_page(pages, Page.SETTINGS, "Settings")
 	_first_focus[Page.SETTINGS] = _add_button(settings_page, "Controls", _go_to.bind(Page.CONTROLS))
+	_add_button(settings_page, "Game", _go_to.bind(Page.GAME))
 	_add_button(settings_page, "Display", _go_to.bind(Page.DISPLAY))
 	_add_button(settings_page, "Back", _back)
 
@@ -59,6 +64,22 @@ func _init(settings: GameSettings) -> void:
 	_display_button = _add_button(display, "", _toggle_fullscreen)
 	_first_focus[Page.DISPLAY] = _display_button
 	_add_button(display, "Back", _back)
+
+	var game := _add_page(pages, Page.GAME, "Game")
+	_ui_scale_label = Label.new()
+	_ui_scale_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	game.add_child(_ui_scale_label)
+	_ui_scale_slider = HSlider.new()
+	_ui_scale_slider.min_value = GameSettings.MIN_UI_SCALE
+	_ui_scale_slider.max_value = GameSettings.MAX_UI_SCALE
+	_ui_scale_slider.step = GameSettings.UI_SCALE_STEP
+	_ui_scale_slider.value_changed.connect(_on_ui_scale_changed)
+	_ui_scale_slider.drag_started.connect(func() -> void: _is_dragging_slider = true)
+	_ui_scale_slider.drag_ended.connect(_on_slider_released)
+	game.add_child(_ui_scale_slider)
+	_first_focus[Page.GAME] = _ui_scale_slider
+	_drain_button = _add_button(game, "", _cycle_energy_drain)
+	_add_button(game, "Back", _back)
 
 	var controls := ControlsPage.new(_settings)
 	controls.back_requested.connect(_back)
@@ -112,6 +133,8 @@ func _show_page(page: Page) -> void:
 		_pages[other].visible = other == page
 	if page == Page.DISPLAY:
 		_show_display_mode()
+	elif page == Page.GAME:
+		_show_game_settings()
 	elif page == Page.CONTROLS:
 		_pages[page].show_bindings()
 	_first_focus[page].grab_focus()
@@ -136,3 +159,35 @@ func _toggle_fullscreen() -> void:
 
 func _show_display_mode() -> void:
 	_display_button.text = "Mode: " + ("Fullscreen" if _settings.is_fullscreen else "Windowed")
+
+
+func _show_game_settings() -> void:
+	_ui_scale_slider.set_value_no_signal(_settings.ui_scale)
+	_show_ui_scale(_settings.ui_scale)
+	_drain_button.text = (
+		"Energy drain: " + GameSettings.ENERGY_DRAIN_NAMES[_settings.energy_drain].capitalize()
+	)
+
+
+func _show_ui_scale(value: float) -> void:
+	_ui_scale_label.text = "UI scale %sx" % String.num(value)
+
+
+## While the slider is being dragged only the label follows: scaling the UI under the mouse
+## would move the slider away from it. The scale applies on release.
+func _on_ui_scale_changed(value: float) -> void:
+	_show_ui_scale(value)
+	if not _is_dragging_slider:
+		_settings.set_ui_scale(value)
+
+
+func _on_slider_released(_value_changed: bool) -> void:
+	_is_dragging_slider = false
+	_settings.set_ui_scale(_ui_scale_slider.value)
+
+
+func _cycle_energy_drain() -> void:
+	_settings.set_energy_drain(
+		((_settings.energy_drain + 1) % GameSettings.EnergyDrain.size()) as GameSettings.EnergyDrain
+	)
+	_show_game_settings()

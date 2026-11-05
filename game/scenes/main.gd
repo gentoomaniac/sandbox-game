@@ -17,7 +17,7 @@ extends Node2D
 ## `--zoom=<z>` sets the camera zoom; `--inventory` opens the inventory screen at start;
 ## `--mouse-tile=<x>,<y>` pretends the mouse is always on that tile (for screenshots);
 ## `--camera-shift=<x>,<y>` moves the camera by that many art pixels, fractions included
-## (to check smooth scrolling); `--menu=pause|settings|controls|display` opens that menu page
+## (to check smooth scrolling); `--menu=pause|settings|controls|display|game` opens that menu page
 ## (with `--screenshot`, the shot is of the menu). PlayerView parses `--outfit=<n>` and
 ## `--pose=<direction>`, and F6 cycles the outfit (see there). BuildMode parses
 ## `--ghost=<x>,<y>` and `--house=<x>,<y>` (see there).
