@@ -195,6 +195,10 @@ _SNOW_TRUNK = ({"soil_light", "soil_mid", "sand", "stone_light", "sand_light", "
 _SNOW_DEADWOOD = ({"stone_light", "stone", "bare_light"}, set(), 2)
 _SNOW_DEAD_STUMP = ({"stone_light", "stone", "bare_light"}, set(), 3)
 # Snow lies on the lid of the chest (its first rows), not on top of the box under the iron rim.
+_SNOW_BEDROLL = {
+    "sand_light": "snow_light", "sand": "snow", "stone_light": "snow_light", "stone": "snow",
+    "straw": "snow_shadow", "gold": "snow", "mud": "snow_shadow",
+}
 _SNOW_CHEST = ({"soil_light", "sand", "soil_mid"}, set(), 3)
 _CHEST_LID_ROWS = 5
 
@@ -429,6 +433,19 @@ def _winter_object(look, kind, variant, canvas, redraw, rng, centre):
         canvas = remap(canvas, {**_DRY_FERN, **(_FROST_FERN if is_frosty else {})})
         if has_snow:
             snow_caps(canvas, rng, {"straw", "reed", "olive"}, set(), 1, centre)
+        return canvas
+    if kind == "sleeping_bag":
+        # The bedroll: snow lies over the cloth; a frost rimes it in specks.
+        if look == "snow":
+            return remap(canvas, _SNOW_BEDROLL)
+        if is_frosty:
+            canvas = copy(canvas)
+            for y, row in enumerate(canvas):
+                for x, name in enumerate(row):
+                    if name in ("sand_light", "stone_light") and rng.random() < 0.15:
+                        row[x] = "snow_light"
+        if has_snow:
+            snow_caps(canvas, rng, *cap(({"sand_light", "sand", "stone_light", "stone"}, set(), 1)), centre)
         return canvas
     if kind == "dead_tree":
         if has_snow:

@@ -18,14 +18,14 @@ drawn on top of world tiles of that layer. A row may be empty.
 
 assets/objects.png: world objects, 48x80 cells (OBJECT_CELL_WIDTH x OBJECT_CELL_HEIGHT). Row 0
 is the oak (3 variants), row 1 the stone (2 variants), then the camp site: row 2 the fireplace,
-row 3 the sleeping bag (1 variant each), then the vegetation rows from 4 (see vegetation()),
+row 3 the bedroll (the sleeping_bag object; 1 variant each), then the vegetation rows from 4 (see vegetation()),
 row 11 the boulder, row 12 the stump, row 13 the tall grass (3 tufts, then the same 3 mown;
 see meadow.py) and rows 14 to 21 the trunks (see trunks.py) and row 22 the reeds (3 stands, then the same 3 cut;
 see reeds.py) and row 23 the dead tree's stump (2 variants). The rows and
 counts are in game/state/world_object_types.gd.
 An object stands on one tile: the bottom centre 16x16 of its cell (x 16..31, y 64..79). A tree's
 crown rises above that, over the tiles around it. An object on several tiles (boulder 2x1,
-sleeping bag 1x2) is centred on its footprint, with the cell's bottom on the footprint's bottom.
+bedroll 1x2) is centred on its footprint, with the cell's bottom on the footprint's bottom.
 
 Terrain, decorations and objects also exist per look (see seasons.py: spring, summer, autumn,
 bare, frost, snow, dusting), the objects also in the steps of the spring leaf-out (buds, young
@@ -1294,33 +1294,48 @@ def fireplace():
     return fire.burning(*fireplace_layers(), *FIREPLACE_FLAME)
 
 
-def sleeping_bag():
-    """14x26 px, lying vertically on 1x2 tiles: the cell's bottom edge is the footprint's."""
+def bedroll():
+    """14x26 px, lying vertically on 1x2 tiles (the cell's bottom edge is the footprint's): a
+    sack of linen ticking stuffed with straw, quilted across, straw poking out at its seams, and
+    a grey wool blanket rolled up and tied at its head end. The object's id stays sleeping_bag."""
     canvas = object_canvas()
     left, top, bottom = OBJECT_CENTRE - 7, 51, 76
-    fill_rect(canvas, left, top, left + 13, bottom, "soil_dark")
-    fill_rect(canvas, left + 1, top + 1, left + 12, bottom - 1, "ember")
-    fill_rect(canvas, left + 1, top + 8, left + 3, bottom - 1, "flame")
-    fill_rect(canvas, left + 10, top + 8, left + 12, bottom - 1, "soil")
-    # Rounded corners.
-    for x, y in ((left, top), (left + 13, top), (left, bottom), (left + 13, bottom)):
+    right = left + 13
+    # The straw sack: lit linen, shaded down its right side, quilted in rows.
+    fill_rect(canvas, left, top + 3, right, bottom, "mud_dark")
+    fill_rect(canvas, left + 1, top + 4, right - 1, bottom - 1, "sand_light")
+    fill_rect(canvas, right - 3, top + 4, right - 1, bottom - 1, "sand")
+    fill_rect(canvas, left + 1, bottom - 1, right - 1, bottom - 1, "sand")
+    for y in range(top + 12, bottom - 2, 5):
+        fill_rect(canvas, left + 1, y, right - 1, y, "sand")
+        fill_rect(canvas, right - 3, y, right - 1, y, "mud")
+    for x, y in ((left, bottom), (right, bottom), (left, top + 3), (right, top + 3)):
         canvas[y][x] = None
-    # Rolled pillow at the head.
-    fill_rect(canvas, left + 2, top + 1, left + 11, top + 6, "cream")
-    fill_rect(canvas, left + 2, top + 5, left + 11, top + 6, "sand_light")
-    fill_rect(canvas, left + 2, top + 7, left + 11, top + 7, "soil")
-    # Folded blanket across the middle, with the fold's shadow below it.
-    fill_rect(canvas, left + 1, top + 12, left + 12, top + 14, "gold")
-    fill_rect(canvas, left + 10, top + 12, left + 12, top + 14, "straw")
-    fill_rect(canvas, left + 1, top + 15, left + 12, top + 15, "soil")
-    # Strap round the foot end.
-    fill_rect(canvas, left + 1, bottom - 5, left + 12, bottom - 4, "soil_dark")
-    # Contact shadow.
-    fill_rect(canvas, left + 2, bottom + 1, left + 13, bottom + 2, "green_deep")
+    fill_rect(canvas, left + 2, bottom + 1, right, bottom + 2, "shadow")
+    # Straw sticking out of the seams.
+    for x, y, colour in ((left - 1, top + 13, "straw"), (left - 1, top + 14, "gold"), (left - 2, top + 14, "straw"),
+                         (right + 1, top + 20, "straw"), (right + 1, top + 21, "straw"), (right + 2, top + 20, "gold"),
+                         (left + 3, bottom + 1, "straw"), (left + 4, bottom + 1, "gold"), (left + 4, bottom + 2, "straw")):
+        canvas[y][x] = colour
+    # The rolled blanket across the head end: lit on top, its rolled-up ends showing a spiral.
+    fill_rect(canvas, left - 1, top, right + 1, top + 8, "stone_dark")
+    fill_rect(canvas, left, top + 1, right, top + 7, "stone")
+    fill_rect(canvas, left, top + 1, right, top + 3, "stone_light")
+    fill_rect(canvas, left, top + 7, right, top + 7, "stone_dark")
+    for x in (left - 1, right + 1):
+        canvas[top][x] = canvas[top + 8][x] = None
+    for x in (left, right):
+        fill_rect(canvas, x, top + 3, x, top + 5, "stone_dark")
+    canvas[top + 4][left + 1] = "stone_dark"
+    canvas[top + 4][right - 1] = "stone_dark"
+    # Two cords round the roll.
+    for x in (left + 3, right - 3):
+        fill_rect(canvas, x, top + 1, x, top + 7, "soil")
+        canvas[top + 1][x] = "soil_light"
     return canvas
 
 
-CAMP_OBJECTS = [[fireplace()], [sleeping_bag()]]
+CAMP_OBJECTS = [[fireplace()], [bedroll()]]
 
 
 def world_chest():

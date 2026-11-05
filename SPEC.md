@@ -208,7 +208,9 @@ top of classic pixel art (details under "Lighting and look").
 - **Home is the last bed the player slept in**, like a spawn point. Passing out wakes the
   player there.
 - **Starting shelter:** the game starts at a small camp site with a fireplace and a
-  sleeping bag, so there is always a bed.
+  bedroll, so there is always a bed. The bedroll (task 52, replacing a modern sleeping bag)
+  is a straw sack with a rolled grey wool blanket; its type id stays `sleeping_bag`, so
+  saves and `data/energy.cfg` are unchanged. It has snow and frost looks.
 - **The player can sleep without a bed** (on the ground, anywhere), with a real penalty:
   - energy fills to only 50 %;
   - it does not set home;
