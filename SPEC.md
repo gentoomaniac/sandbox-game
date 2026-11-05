@@ -266,9 +266,13 @@ Decided 2026-11-05. A text console for testing and cheats.
 - `/` opens it (a rebindable action like all keys); Escape or Enter on an empty line closes
   it. While it is open the game keeps running, but the player doesn't walk or act.
 - Commands: `help`; `tp <x> <y>` (teleport to a world tile; outside only); `give <item>
-  [count]` (into the inventory, Tab completes item names); `god` (toggle invincibility:
+  [count]` (into the inventory); `god` (toggle invincibility:
   health doesn't drop); `nodrain` (toggle: actions cost no energy); `noweight` (toggle:
-  carried weight doesn't raise costs).
+  carried weight doesn't raise costs). Later commands: `spawn`, `weather`, `snow`, `crop`
+  (see `help`).
+- Tab completes command names and every argument with a fixed set of values: item ids,
+  animal kinds, weather conditions, snow values. Each command lists its argument kinds in
+  one table in the console code; numbers are not completed.
 - Cheat toggles last for the session; they are not saved. A line in the HUD shows which
   are on.
 - A history with up/down; output and errors in the console log.

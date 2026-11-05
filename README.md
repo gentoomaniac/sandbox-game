@@ -85,7 +85,7 @@ energy drain and the day length variation. The mouse wheel zooms smoothly from 0
 
 ### Console
 
-Press `/` to open a console for testing and cheats. Tab completes commands and item names.
+Press `/` to open a console for testing and cheats. Tab completes commands and their arguments.
 
 | Command | What it does |
 |---|---|
@@ -94,6 +94,9 @@ Press `/` to open a console for testing and cheats. Tab completes commands and i
 | `give <item> [count]` | Put items in the inventory. |
 | `god`, `nodrain`, `noweight` | Toggle invincibility, free actions, and weight costing nothing. |
 | `weather`, `weather <condition>`, `weather auto` | Show the weather, force a condition, or go back to the simulation. |
+| `snow`, `snow <0..1>`, `snow auto` | Show the snow cover, force it, or go back to the weather. |
+| `spawn <animal> [count]` | Put animals nearby. |
+| `crop` | Show the growth, damage and needs of the nearest crop. |
 
 ![The console after a few commands](docs/screenshots/console.png)
 

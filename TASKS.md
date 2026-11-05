@@ -754,7 +754,7 @@ See SPEC.md "Farming and foraging" (crops).
 
 ## 31. Console: completion for all arguments
 
-- [ ] Done
+- [x] Done
 
 Depends on: 28 (it adds `spawn`). Tab completes every command's arguments, not only
 command names and item ids: weather conditions, animal kinds, snow values, crop and item

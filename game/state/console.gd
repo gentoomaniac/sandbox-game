@@ -32,6 +32,17 @@ const COMMANDS := {
 		"Show the growth, damage and needs of the crop in front of you or the nearest one.",
 	],
 }
+## The kind of each argument a command takes, in order, for Tab completion (see candidates).
+## Numbers have no candidates; commands not listed take no arguments.
+const ARGUMENTS := {
+	"tp": [&"number", &"number"],
+	"give": [&"item", &"number"],
+	"spawn": [&"animal", &"number"],
+	"weather": [&"weather"],
+	"snow": [&"snow"],
+}
+## The snow values Tab offers; any number from 0 to 1 works.
+const SNOW_CANDIDATES: Array[String] = ["auto", "0", "0.5", "1"]
 ## How far (in tiles) the `crop` command looks for a crop when none is in front of the player.
 const CROP_SEARCH_RADIUS := 4
 ## Item ids this similar to a misspelt one (see String.similarity) are offered as a guess.
@@ -85,32 +96,43 @@ func run(line: String) -> Array[String]:
 	return output
 
 
-## The line with its last word completed: a command name, or an item id after `give`. A word
-## with several candidates goes as far as they agree; one with none leaves the line alone.
+## The line with its last word completed: a command name, or an argument from ARGUMENTS. A
+## word with several candidates goes as far as they agree; one with none leaves the line alone.
 func complete(line: String) -> String:
 	var words := _words(line)
 	var is_new_word := line.ends_with(" ")
 	var word_index := words.size() if is_new_word else maxi(words.size() - 1, 0)
 	var typed := "" if is_new_word or words.is_empty() else words[-1]
-	var candidates: Array[String] = []
-	if word_index == 0:
-		candidates.assign(COMMANDS.keys())
-	elif word_index == 1 and words[0] == "give":
-		candidates = _item_ids()
-	elif word_index == 1 and words[0] == "spawn":
-		for kind in WildlifeRules.KINDS:
-			candidates.append(String(kind))
-	elif word_index == 1 and words[0] == "snow":
-		candidates = ["auto"]
-	elif word_index == 1 and words[0] == "weather":
-		for condition in Weather.FORCEABLE:
-			candidates.append(String(condition))
-		candidates.append("auto")
-	candidates = candidates.filter(func(name: String) -> bool: return name.begins_with(typed))
-	if candidates.is_empty():
+	var kind := &"command"
+	if word_index > 0:
+		var kinds: Array = ARGUMENTS.get(words[0], [])
+		kind = kinds[word_index - 1] if word_index <= kinds.size() else &""
+	var offered := candidates(kind)
+	offered = offered.filter(func(name: String) -> bool: return name.begins_with(typed))
+	if offered.is_empty():
 		return line
-	var completed := candidates[0] + " " if candidates.size() == 1 else _common_prefix(candidates)
+	var completed := offered[0] + " " if offered.size() == 1 else _common_prefix(offered)
 	return line.substr(0, line.length() - typed.length()) + completed
+
+
+## What Tab offers for an argument of this kind (see ARGUMENTS).
+func candidates(kind: StringName) -> Array[String]:
+	var candidates: Array[String] = []
+	match kind:
+		&"command":
+			candidates.assign(COMMANDS.keys())
+		&"item":
+			candidates = _item_ids()
+		&"animal":
+			for animal in WildlifeRules.KINDS:
+				candidates.append(String(animal))
+		&"weather":
+			for condition in Weather.FORCEABLE:
+				candidates.append(String(condition))
+			candidates.append("auto")
+		&"snow":
+			candidates.assign(SNOW_CANDIDATES)
+	return candidates
 
 
 func _words(line: String) -> PackedStringArray:

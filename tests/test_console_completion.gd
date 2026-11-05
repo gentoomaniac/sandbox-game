@@ -45,3 +45,26 @@ func test_every_crop_item_is_a_candidate_after_give() -> void:
 		var seeds: StringName = WorldObjectTypes.TYPES[crop_id]["seed"]
 		assert_true(ItemTypes.TYPES.has(seeds))
 		assert_eq(_console.complete("give %s" % seeds), "give %s " % seeds, str(seeds))
+
+
+func test_complete_the_arguments_of_every_command() -> void:
+	assert_eq(_console.complete("spawn sq"), "spawn squirrel ")
+	assert_eq(_console.complete("weather fo"), "weather fog ")
+	assert_eq(_console.complete("snow a"), "snow auto ")
+	assert_eq(_console.complete("snow 0"), "snow 0")
+	assert_eq(_console.complete("snow 0."), "snow 0.5 ")
+
+
+func test_numbers_and_extra_words_complete_nothing() -> void:
+	assert_eq(_console.complete("tp "), "tp ")
+	assert_eq(_console.complete("spawn deer "), "spawn deer ")
+	assert_eq(_console.complete("weather fog f"), "weather fog f")
+	assert_eq(_console.complete("god g"), "god g")
+
+
+func test_the_argument_table_names_real_commands_and_kinds() -> void:
+	for command: String in Console.ARGUMENTS:
+		assert_true(Console.COMMANDS.has(command), command)
+		for kind: StringName in Console.ARGUMENTS[command]:
+			var has_candidates := not _console.candidates(kind).is_empty()
+			assert_eq(has_candidates, kind != &"number", "%s %s" % [command, kind])
