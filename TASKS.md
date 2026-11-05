@@ -627,6 +627,22 @@ See SPEC.md "Console". Can run alongside 23.
   opens it (action `console`); history with up/down; HUD line for active cheats.
 - Tests: parsing, each command, bad input, the cheats' effect on energy and health.
 
+## 25. Seasonal look
+
+- [ ] Done
+
+See SPEC.md "Time, seasons and weather" (calendar, the world looks like its season).
+
+- The art generator makes a variant of the terrain, decoration and object art per season:
+  summer is today's art; spring lighter and fresher green (blossom on some bushes);
+  autumn orange/red/yellow foliage on deciduous trees and bushes, yellower grass;
+  winter snow on the ground, snow-capped evergreens and boulders, bare deciduous trees,
+  snow on the house roof. Water stays as it is (freezing belongs to weather).
+- The world view uses the current season's art and switches when the season changes
+  (at the new day), without reloading chunks if possible.
+- Palette: add the colours the seasons need; the cap may rise to about 64.
+- A debug flag to start on a given day (e.g. `--day=<n>`), for screenshots.
+
 ## Later (not part of the prototype)
 
 - Split the object edits and regrowth (`_object_edits`, `replace_object`, `hit_object`,
