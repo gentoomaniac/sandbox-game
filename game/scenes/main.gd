@@ -865,4 +865,7 @@ func _save_screenshot_and_quit() -> void:
 	RenderingServer.force_draw(false)
 	# The window as the player sees it, not only the world viewport.
 	get_viewport().get_texture().get_image().save_png(_screenshot_path)
+	# Quitting takes effect at the end of the frame; nothing more to do until then, so the
+	# shot is not saved again on every frame while the engine shuts down.
+	set_process(false)
 	get_tree().quit()
