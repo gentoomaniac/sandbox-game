@@ -42,6 +42,7 @@ const TUNIC := &"tunic"
 const SHIRT := &"shirt"
 const TROUSERS := &"trousers"
 const STRAW_HAT := &"straw_hat"
+const KNITTED_CAP := &"knitted_cap"
 
 ## Stands for an empty hand or slot where an item id is expected.
 const NONE := &""
@@ -245,6 +246,15 @@ const _OTHER_TYPES := {
 		"stack_limit": 1,
 		"equip_slot": Equipment.HEAD,
 		"layer_variant": "straw_hat",
+	},
+	KNITTED_CAP:
+	{
+		"name": "Knitted cap",
+		"description": "A red wool stocking cap, warm in the wind.",
+		"weight": 0.1,
+		"stack_limit": 1,
+		"equip_slot": Equipment.HEAD,
+		"layer_variant": "knitted_cap",
 	},
 }
 

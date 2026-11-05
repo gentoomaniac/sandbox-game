@@ -319,7 +319,7 @@ task 51 (pine, spring leaf-out); changes to trees should be coordinated with it.
 
 1. **Done (task 52):** **Sleeping bag → bedroll** (small). The red-and-white sleeping bag at the camp is a
    modern camping item. Draw a straw sack with a rolled grey wool blanket, or a sheepskin.
-2. **Straw hat shape** (small). It reads as a pith helmet. A low crown with a wide, slightly
+2. **Done (task 52):** **Straw hat shape** (small). It reads as a pith helmet. A low crown with a wide, slightly
    drooping brim, or a black felt hat; add a red knitted cap as a second hat.
 3. **Tomatoes** (small–medium). Not a farm crop here before the 19th century. Replace them
    in data and art with broad beans, flax or kale (or keep tomatoes as a rare imported

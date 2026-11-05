@@ -1604,20 +1604,68 @@ def draw_hair(facing, pose, base, light, shade, long, **_):
     return canvas
 
 
-def draw_straw_hat(facing, pose, **_):
-    """A straw hat: a round crown with a dark band and a wide brim over the hair. Seen from
-    the side the brim reaches further forward (right, mirrored for left) than back."""
-    canvas = character_canvas()
-    sink = pose["sink"]
-    brim = (2, 14) if facing in ("down", "up") else (3, 14)
-    fill_rect(canvas, 5, 3 + sink, 11, 5 + sink, "straw")
-    fill_rect(canvas, 6, 2 + sink, 10, 2 + sink, "straw")
-    fill_rect(canvas, 6, 2 + sink, 8, 2 + sink, "sand_light")
-    fill_rect(canvas, 5, 5 + sink, 11, 5 + sink, "soil")
-    fill_rect(canvas, brim[0], 6 + sink, brim[1], 7 + sink, "straw")
-    fill_rect(canvas, brim[0], 6 + sink, brim[1], 6 + sink, "sand_light")
-    fill_rect(canvas, brim[0], 7 + sink, brim[1], 7 + sink, "reed")
-    return canvas
+def draw_rows(canvas, rows, keys, top):
+    """Draws rows of characters, each mapped to a colour by `keys` ("." is clear), with the
+    first row at `top`."""
+    for dy, row in enumerate(rows):
+        for x, char in enumerate(row):
+            if char != ".":
+                canvas[top + dy][x] = keys[char]
+
+
+# Hats, from the front (also used from behind) and from the side, facing right. Row 0 is y 2
+# of a standing figure; the hats sit on the head, which starts at y 5.
+STRAW_HAT_KEYS = {"l": "sand_light", "b": "straw", "s": "reed", "d": "soil"}
+STRAW_HAT_ROWS = {
+    "front": (
+        "................",
+        "......llbbb.....",
+        ".....lbbbbbs....",
+        ".....ddddddd....",
+        "..lllllbbbbbbs..",
+        ".lbbbbbbbbbbbbs.",
+        ".ss..........ss.",
+    ),
+    "side": (
+        "................",
+        "......lbbb......",
+        ".....lbbbbbs....",
+        ".....dddddds....",
+        "..lllllbbbbbbbs.",
+        ".sbbbbbbbbbbbbbs",
+        ".s............ss",
+    ),
+}
+KNITTED_CAP_KEYS = {"l": "red_light", "r": "rust", "d": "rust_dark", "c": "ember", "k": "russet_deep"}
+KNITTED_CAP_ROWS = {
+    "front": (
+        "................",
+        "......lrrr......",
+        ".....lrrrrrd....",
+        "....lrrrrrrrdrr.",
+        "....ccccccccc.dd",
+        "....dkdkdkdkd...",
+    ),
+    "side": (
+        "................",
+        ".....lrrrr......",
+        "..rrlrrrrrrd....",
+        ".ddrrrrrrrrrd...",
+        ".d..cccccccccc..",
+        "....kdkdkdkdkd..",
+    ),
+}
+
+
+def draw_hat(rows, keys):
+    """A hat layer from its front and side rows."""
+
+    def draw(facing, pose, **_):
+        canvas = character_canvas()
+        draw_rows(canvas, rows["side" if facing in ("left", "right") else "front"], keys, 2 + pose["sink"])
+        return canvas
+
+    return draw
 
 
 def draw_held_hoe(facing, pose, **_):
@@ -1745,7 +1793,8 @@ for _variant, _colours in CLOTHES_COLOURS.items():
 for _variant, _colours in HAIR_COLOURS.items():
     CHARACTER_LAYERS[f"hair_{_variant}"] = (draw_hair, _colours)
 CHARACTER_LAYERS["legs_0"] = (draw_legs, {})
-CHARACTER_LAYERS["head_straw_hat"] = (draw_straw_hat, {})
+CHARACTER_LAYERS["head_straw_hat"] = (draw_hat(STRAW_HAT_ROWS, STRAW_HAT_KEYS), {})
+CHARACTER_LAYERS["head_knitted_cap"] = (draw_hat(KNITTED_CAP_ROWS, KNITTED_CAP_KEYS), {})
 CHARACTER_SHEETS = {name: character_sheet(*layer) for name, layer in CHARACTER_LAYERS.items()}
 CHARACTER_SHEETS["held_hoe"] = character_sheet(draw_held_hoe, {})
 COLLAPSE_SHEETS = {name: collapse_sheet(*layer) for name, layer in CHARACTER_LAYERS.items()}

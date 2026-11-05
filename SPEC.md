@@ -260,7 +260,10 @@ top of classic pixel art (details under "Lighting and look").
     while an item is picked up. Right-click equips or unequips at once.
   - Worn items count toward the carried weight.
   - Hair and body are the character's look, not equipment.
-  - New game: tunic and trousers worn; a straw hat and a spare shirt in the inventory.
+  - New game: tunic and trousers worn; a straw hat, a knitted cap and a spare shirt in the
+    inventory. The straw hat has a low crown and a wide brim drooping at its ends (task 52,
+    it read as a pith helmet); the knitted cap is a red wool stocking cap, as the guide's
+    period dress has it.
 - **Movement keys:** arrow keys and WASD (decided 2026-11-05). All keys can be changed in
   the settings (see Menus and settings).
 - **Scale between character and world:** character figure 27–28 px tall in its 16×32

@@ -4,10 +4,10 @@ extends Node2D
 ## and the sweat that flies off it. A child of the PlayerView, so it follows the player.
 
 ## Where the head is, relative to the feet, in pixels: the top of the bare head in the character
-## sheets (row 4 of 32), and the top of a hat (row 1). The bubble's tail points at it from two
-## pixels above; the sweat starts at the side of the head.
+## sheets (row 4 of 32), and the top of a hat (row 2; all hats are as tall). The bubble's tail
+## points at it from two pixels above; the sweat starts at the side of the head.
 const BARE_HEAD_TOP := -28
-const HAT_TOP := -31
+const HAT_TOP := -30
 const BUBBLE_GAP := 2
 const SWEAT_ORIGIN := Vector2(0, -24)
 ## Above the player's layers and the things in front of them.

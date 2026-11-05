@@ -279,25 +279,50 @@ def trousers():
 
 
 def straw_hat():
+    """A low crown with a dark band, on a wide brim that droops at its ends."""
     rows = [
         "................",
         "................",
         "................",
-        ".....lllbbb.....",
-        "....lllbbbbs....",
-        "....lbbbbbbs....",
-        "....dddddddd....",
-        "....bbbbbbbs....",
-        ".llllllbbbbbbbs.",
-        ".lbbbbbbbbbbbbs.",
-        "..ssssssssssss..",
         "................",
+        "......lllbb.....",
+        ".....lbbbbbs....",
+        ".....lbbbbbs....",
+        ".....dddddds....",
+        "..lllllbbbbbbs..",
+        ".lbbbbbbbbbbbbs.",
+        ".bsssbbbbbbssss.",
+        ".ss........ss.s.",
         "................",
         "................",
         "................",
         "................",
     ]
     keys = {"b": "straw", "l": "sand_light", "s": "reed", "d": "soil"}
+    return outlined(from_rows(rows, keys))
+
+
+def knitted_cap():
+    """A red wool stocking cap: a ribbed cuff, and the tip flopping over to one side."""
+    rows = [
+        "................",
+        "................",
+        "................",
+        "......lrrr......",
+        ".....lrrrrrd....",
+        "....lrrrrrrrd...",
+        "....lrrrrrrrrdd.",
+        "...lrrrrrrrrrd.d",
+        "...rrrrrrrrrrd.d",
+        "...ccccccccccc..",
+        "...dkdkdkdkdkd..",
+        "...kdkdkdkdkdk..",
+        "................",
+        "................",
+        "................",
+        "................",
+    ]
+    keys = {"l": "red_light", "r": "rust", "d": "rust_dark", "c": "ember", "k": "russet_deep"}
     return outlined(from_rows(rows, keys))
 
 
@@ -330,6 +355,7 @@ ICONS = {
     "shirt": shirt(),
     "trousers": trousers(),
     "straw_hat": straw_hat(),
+    "knitted_cap": knitted_cap(),
 }
 
 

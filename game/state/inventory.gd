@@ -24,6 +24,7 @@ const STARTING_ITEMS := [
 ## keeps room for what the player picks up.
 const STARTING_BACKPACK := [
 	[ItemTypes.STRAW_HAT, 1],
+	[ItemTypes.KNITTED_CAP, 1],
 	[ItemTypes.SHIRT, 1],
 ]
 

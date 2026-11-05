@@ -136,6 +136,10 @@ func test_the_bubble_sits_just_above_the_head_bare_or_with_a_hat() -> void:
 	assert_eq(
 		TirednessView.bubble_origin(appearance).y, float(_head_top_in_sheets(appearance) - gap)
 	)
+	appearance.wear(Appearance.HEAD, "knitted_cap")
+	assert_eq(
+		TirednessView.bubble_origin(appearance).y, float(_head_top_in_sheets(appearance) - gap)
+	)
 
 
 func test_sweat_drops_are_thrown_sideways_and_have_a_dark_pixel_to_show() -> void:

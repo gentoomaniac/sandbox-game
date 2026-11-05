@@ -39,15 +39,18 @@ func test_the_appearance_follows_the_equipment() -> void:
 	var player := PlayerState.new()
 	player.equipment.equip(Equipment.HEAD, ItemTypes.STRAW_HAT)
 	assert_true(Appearance.HEAD in _layer_slots(player))
+	player.equipment.equip(Equipment.HEAD, ItemTypes.KNITTED_CAP)
+	assert_true(Appearance.HEAD in _layer_slots(player))
 	player.equipment.unequip(Equipment.HEAD)
 	assert_false(Appearance.HEAD in _layer_slots(player))
 
 
-func test_a_new_game_wears_a_tunic_and_trousers_and_carries_a_hat_and_shirt() -> void:
+func test_a_new_game_wears_a_tunic_and_trousers_and_carries_two_hats_and_a_shirt() -> void:
 	var state := GameState.new_game(1)
 	assert_eq(state.player.equipment.item_in(Equipment.BODY), ItemTypes.TUNIC)
 	assert_eq(state.player.equipment.item_in(Equipment.LEGS), ItemTypes.TROUSERS)
 	assert_eq(state.player.inventory.count_of(ItemTypes.STRAW_HAT), 1)
+	assert_eq(state.player.inventory.count_of(ItemTypes.KNITTED_CAP), 1)
 	assert_eq(state.player.inventory.count_of(ItemTypes.SHIRT), 1)
 	assert_true(Appearance.CLOTHES in _layer_slots(state.player))
 
