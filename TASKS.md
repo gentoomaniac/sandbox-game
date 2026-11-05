@@ -645,7 +645,7 @@ See SPEC.md "Time, seasons and weather" (calendar, the world looks like its seas
 
 ## 26. Weather state and effects
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Time, seasons and weather" (weather state).
 
