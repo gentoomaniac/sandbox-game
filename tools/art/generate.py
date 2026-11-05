@@ -45,6 +45,7 @@ from pathlib import Path
 from PIL import Image
 
 import items
+import ui
 
 ASSETS = Path(__file__).resolve().parents[2] / "assets"
 TILE = 16
@@ -1843,9 +1844,10 @@ def main():
         (ASSETS / directory).mkdir(exist_ok=True)
         for name, picture in pictures.items():
             to_image([[picture]], len(picture)).save(ASSETS / directory / f"{name}.png")
+    ui.write_ui_assets(ASSETS / "ui", PALETTE)
     write_palette()
     check_palette()
-    print("Wrote terrain.png, decorations.png, objects.png, character/*.png, interior.png, interior/*.png, buildings/*.png, items/*.png, ui/*.png, palette.png and palette.gpl to assets/; palette check passed.")
+    print("Wrote terrain.png, decorations.png, objects.png, character/*.png, interior.png, interior/*.png, buildings/*.png, items/*.png, ui/*, palette.png and palette.gpl to assets/; palette check passed.")
 
 
 if __name__ == "__main__":

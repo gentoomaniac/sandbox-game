@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://game/scenes/build_mode.gd" id="5"]
 [ext_resource type="Script" path="res://game/scenes/camera_controller.gd" id="6"]
 [ext_resource type="Shader" path="res://game/scenes/sharp_bilinear.gdshader" id="7"]
+[ext_resource type="Theme" path="res://game/scenes/ui_theme.tres" id="8"]
 
 [sub_resource type="Environment" id="Environment_glow"]
 background_mode = 3
@@ -70,10 +71,7 @@ anchor_bottom = 1.0
 offset_top = -46.0
 offset_bottom = -30.0
 grow_vertical = 0
-theme_override_colors/font_color = Color(0.945, 0.902, 0.761, 1)
-theme_override_colors/font_outline_color = Color(0.161, 0.153, 0.2, 1)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 8
+theme = ExtResource("8")
 horizontal_alignment = 1
 
 [node name="ClockHud" type="CanvasLayer" parent="."]
@@ -82,10 +80,7 @@ script = ExtResource("4")
 [node name="Label" type="Label" parent="ClockHud"]
 offset_left = 4.0
 offset_top = 2.0
-theme_override_colors/font_color = Color(0.945, 0.902, 0.761, 1)
-theme_override_colors/font_outline_color = Color(0.161, 0.153, 0.2, 1)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 8
+theme = ExtResource("8")
 
 [node name="FadeLayer" type="CanvasLayer" parent="."]
 layer = 2

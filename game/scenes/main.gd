@@ -6,7 +6,8 @@ extends Node2D
 ##
 ## The game is loaded from the save at start and saved after sleeping and on quit (see
 ## SaveFile). Flags after `--` on the Godot command line (see `make screenshot`):
-## `--new-game` ignores the save; `--save-path=<file>` uses another save file. Debug flags:
+## `--new-game` ignores the save; `--save-path=<file>` uses another save file;
+## `--settings-path=<file>` uses another settings file (see GameSettings). Debug flags:
 ## `--at=<x>,<y>` puts the player on that world tile instead of at the camp;
 ## `--screenshot=<path>` saves one frame as PNG once streaming has settled, then quits;
 ## `--time=<hh:mm>` sets the time of day; `--field=<x>,<y>` tills a small field there with
@@ -15,7 +16,8 @@ extends Node2D
 ## `--inventory` opens the inventory screen at start;
 ## `--mouse-tile=<x>,<y>` pretends the mouse is always on that tile (for screenshots);
 ## `--camera-shift=<x>,<y>` moves the camera by that many art pixels, fractions included
-## (to check smooth scrolling). PlayerView parses `--outfit=<n>` and
+## (to check smooth scrolling); `--menu=pause|settings|controls|display` opens that menu page
+## (with `--screenshot`, the shot is of the menu). PlayerView parses `--outfit=<n>` and
 ## `--pose=<direction>`, and F6 cycles the outfit (see there). BuildMode parses
 ## `--ghost=<x>,<y>` and `--house=<x>,<y>` (see there).
 
@@ -30,7 +32,11 @@ const SCREENSHOT_SETTLE_FRAMES := 3
 const SLEEP_FADE_SECONDS := 0.5
 
 var _state: GameState
+var _settings: GameSettings
+var _menu: PauseMenu
 var _save_path := SaveFile.DEFAULT_PATH
+var _settings_path := GameSettings.DEFAULT_PATH
+var _debug_menu_page := -1
 var _player_view := PlayerView.new()
 var _use_highlight := UseHighlight.new()
 var _harvest_hud := HarvestHud.new()
@@ -58,6 +64,7 @@ var _start_zoom := 1.0
 
 
 func _ready() -> void:
+	_settings = _load_settings()
 	_state = _load_or_start_game()
 	# Quitting saves first (see _notification).
 	get_tree().auto_accept_quit = false
@@ -81,6 +88,8 @@ func _ready() -> void:
 		elif arg.begins_with("--mouse-tile="):
 			var tile := arg.trim_prefix("--mouse-tile=").split_floats(",")
 			_use_highlight.debug_mouse_tile = Vector2i(int(tile[0]), int(tile[1]))
+		elif arg.begins_with("--menu="):
+			_debug_menu_page = PauseMenu.Page.get(arg.trim_prefix("--menu=").to_upper(), -1)
 		elif arg.begins_with("--camera-shift="):
 			var shift := arg.trim_prefix("--camera-shift=").split_floats(",")
 			_camera_shift = Vector2(shift[0], shift[1])
@@ -102,6 +111,10 @@ func _ready() -> void:
 	_inventory_screen.show_inventory(_state.player.inventory)
 	if _open_inventory_at_start:
 		_inventory_screen.toggle()
+	_menu = PauseMenu.new(_settings)
+	_menu.resumed.connect(_resume)
+	_menu.save_and_quit_requested.connect(_save_and_quit)
+	add_child(_menu)
 	_interior_view.hide()
 	_world.add_child(_interior_view)
 	_show_clock()
@@ -116,6 +129,13 @@ func _notification(what: int) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("pause"):
+		# The first Escape leaves build mode, the next opens the menu.
+		if _build_mode.is_active():
+			_build_mode.cancel()
+		else:
+			_open_menu()
+		return
 	# Decided before BuildMode sees the event: the click that places a house ends build mode,
 	# and must not also be a use click.
 	var can_use := _can_use()
@@ -163,11 +183,37 @@ func _process(delta: float) -> void:
 		_view.set_focus(_state.player.tile())
 	if _enter_first_house:
 		_enter_first_house_now()
-	if _screenshot_path != "":
+	if _screenshot_path != "" and _debug_menu_page >= 0:
+		_open_debug_menu_when_ready()
+	elif _screenshot_path != "":
 		# A few frames after everything is in place, for tile maps to catch up.
 		_settled_frames = _settled_frames + 1 if _is_ready_to_shoot() else 0
 		if _settled_frames > SCREENSHOT_SETTLE_FRAMES:
 			_save_screenshot_and_quit()
+
+
+func _open_menu(page := PauseMenu.Page.PAUSE) -> void:
+	get_tree().paused = true
+	_menu.open(page)
+
+
+func _resume() -> void:
+	get_tree().paused = false
+
+
+func _save_and_quit() -> void:
+	_save_game()
+	get_tree().quit()
+
+
+## Debug: opens the menu once the world is drawn, then takes the screenshot. The game is
+## paused by then, so a timer that ignores the pause does the waiting.
+func _open_debug_menu_when_ready() -> void:
+	_settled_frames = _settled_frames + 1 if _is_ready_to_shoot() else 0
+	if _settled_frames > SCREENSHOT_SETTLE_FRAMES:
+		_open_menu(_debug_menu_page as PauseMenu.Page)
+		_debug_menu_page = -1
+		get_tree().create_timer(0.2, true).timeout.connect(_save_screenshot_and_quit)
 
 
 func _can_use() -> bool:
@@ -282,6 +328,17 @@ func _load_or_start_game() -> GameState:
 			is_new_game = true
 	var saved := null if is_new_game else SaveFile.read(_save_path)
 	return saved if saved != null else GameState.new_game(WORLD_SEED)
+
+
+## The settings, with the player's key bindings applied to the input map. `--settings-path=`
+## picks another file (to keep tests and screenshots off the real one).
+func _load_settings() -> GameSettings:
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--settings-path="):
+			_settings_path = arg.trim_prefix("--settings-path=")
+	var settings := GameSettings.new(_settings_path)
+	settings.load_file()
+	return settings
 
 
 func _save_game() -> void:
