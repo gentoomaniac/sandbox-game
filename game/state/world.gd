@@ -5,6 +5,9 @@ extends RefCounted
 ## The world is centred on the origin: with MAX_SIZE_CHUNKS = 64, chunk coordinates run
 ## from -32 to 31 on both axes, so world tile positions run from -1024 to 1023.
 
+## An object was added or removed at this world tile position.
+signal objects_changed(world_pos: Vector2i)
+
 ## The only place that defines the world size. Must be even so the world is centred.
 const MAX_SIZE_CHUNKS := 64
 
@@ -61,3 +64,49 @@ func tile_at(world_pos: Vector2i) -> Tile:
 	if chunk == null:
 		return null
 	return chunk.tile_at(Chunk.local_pos(world_pos))
+
+
+## The object on a tile, or null if there is none (or the chunk is not loaded).
+func object_at(world_pos: Vector2i) -> WorldObject:
+	var chunk := chunk_at(Chunk.world_to_chunk(world_pos))
+	if chunk == null:
+		return null
+	return chunk.object_at(Chunk.local_pos(world_pos))
+
+
+## Puts an object on its tile. The chunk must be loaded and the tile free.
+func add_object(object: WorldObject) -> void:
+	var chunk := chunk_at(Chunk.world_to_chunk(object.pos))
+	assert(chunk != null, "Chunk not loaded for object at %s" % object.pos)
+	chunk.add_object(object)
+	objects_changed.emit(object.pos)
+
+
+## Takes the object off a tile and returns it, or returns null if there was none.
+func remove_object(world_pos: Vector2i) -> WorldObject:
+	var chunk := chunk_at(Chunk.world_to_chunk(world_pos))
+	if chunk == null:
+		return null
+	var object := chunk.remove_object(Chunk.local_pos(world_pos))
+	if object != null:
+		objects_changed.emit(world_pos)
+	return object
+
+
+## Tile rules combined with the objects on the tile. False where there is no tile.
+func is_walkable(world_pos: Vector2i) -> bool:
+	var tile := tile_at(world_pos)
+	if tile == null or not tile.is_walkable():
+		return false
+	var object := object_at(world_pos)
+	return object == null or not object.blocks_walking()
+
+
+func is_buildable(world_pos: Vector2i) -> bool:
+	var tile := tile_at(world_pos)
+	return tile != null and tile.is_buildable() and object_at(world_pos) == null
+
+
+func is_plantable(world_pos: Vector2i) -> bool:
+	var tile := tile_at(world_pos)
+	return tile != null and tile.is_plantable() and object_at(world_pos) == null

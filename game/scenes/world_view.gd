@@ -7,7 +7,9 @@ extends Node2D
 ## so its corners sit on world tiles (x - 1, y - 1) to (x, y). A chunk owns the cells whose
 ## bottom-right tile is its own, so loading or unloading it fills or erases those cells,
 ## with no nodes to create or free. On top, a decoration layer on the plain tile grid
-## scatters flowers, pebbles and the like; they are only looks, not world objects.
+## scatters flowers, pebbles and the like; they are only looks, not world objects. Above
+## that, an objects layer on the same grid draws the world's trees and rocks. It is y-sorted
+## (so a later player can walk behind a tree) and keeps no decoration under an object.
 
 const LOAD_RADIUS := 3
 const UNLOAD_RADIUS := 5
@@ -38,9 +40,11 @@ var _variety_noise := FastNoiseLite.new()
 var _decoration_noise := FastNoiseLite.new()
 var _focus_chunk := Vector2i.ZERO
 var _tileset := TerrainTileset.new()
+var _object_tileset := ObjectTileset.new()
 ## Indexed by TerrainTileset.Layer.
 var _layers: Array[TileMapLayer] = []
 var _decorations := TileMapLayer.new()
+var _objects := TileMapLayer.new()
 
 
 func _ready() -> void:
@@ -54,10 +58,15 @@ func _ready() -> void:
 	_decorations.name = "Decorations"
 	_decorations.tile_set = _tileset.tile_set
 	add_child(_decorations)
+	_objects.name = "Objects"
+	_objects.tile_set = _object_tileset.tile_set
+	_objects.y_sort_enabled = true
+	add_child(_objects)
 
 
 func show_world(world_to_show: World) -> void:
 	world = world_to_show
+	world.objects_changed.connect(_on_objects_changed)
 	_generator = WorldGenerator.new(world.world_seed)
 	_variety_noise.seed = world.world_seed + VARIETY_SEED_OFFSET
 	_variety_noise.frequency = VARIETY_FREQUENCY
@@ -93,6 +102,11 @@ func redraw_tile(world_pos: Vector2i) -> void:
 		_draw_decoration(world_pos, _layer_at(world_pos))
 
 
+func _on_objects_changed(world_pos: Vector2i) -> void:
+	_draw_object(world_pos)
+	_draw_decoration(world_pos, _layer_at(world_pos))
+
+
 func _load_chunk(coords: Vector2i) -> void:
 	var chunk := _generator.generate_chunk(coords)
 	world.add_chunk(chunk)
@@ -126,6 +140,8 @@ func _load_chunk(coords: Vector2i) -> void:
 			_draw_cell_corners(origin + Vector2i(x, y), corners)
 			# The bottom-right corner is this chunk's tile (x, y).
 			_draw_decoration(origin + Vector2i(x, y), corners[3])
+	for object in chunk.objects():
+		_draw_object(object.pos)
 	# The right and bottom neighbours' border cells drew this chunk's tiles with a fallback
 	# while it was missing. Now they can blend properly.
 	for i in Chunk.CHUNK_SIZE + 1:
@@ -135,6 +151,8 @@ func _load_chunk(coords: Vector2i) -> void:
 
 
 func _unload_chunk(coords: Vector2i) -> void:
+	for object in world.chunk_at(coords).objects():
+		_objects.erase_cell(object.pos)
 	var origin := Chunk.to_world(coords, Vector2i.ZERO)
 	for y in Chunk.CHUNK_SIZE:
 		for x in Chunk.CHUNK_SIZE:
@@ -169,7 +187,18 @@ func _draw_cell_corners(cell: Vector2i, corners: PackedInt32Array) -> void:
 			_layers[layer].set_cell(cell, TerrainTileset.TERRAIN_SOURCE_ID, atlas_cell)
 
 
+func _draw_object(world_pos: Vector2i) -> void:
+	var object := world.object_at(world_pos)
+	if object == null:
+		_objects.erase_cell(world_pos)
+	else:
+		_objects.set_cell(world_pos, ObjectTileset.SOURCE_ID, ObjectTileset.atlas_cell(object))
+
+
 func _draw_decoration(world_pos: Vector2i, layer: int) -> void:
+	if world.object_at(world_pos) != null:
+		_decorations.erase_cell(world_pos)
+		return
 	var cluster := _decoration_noise.get_noise_2dv(Vector2(world_pos))
 	var atlas_cell := _tileset.decoration_cell(layer, world_pos, cluster)
 	if atlas_cell == TerrainTileset.NO_DECORATION:

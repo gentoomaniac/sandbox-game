@@ -4,7 +4,8 @@ extends RefCounted
 ##
 ## Tiles are stored as parallel packed arrays (one per property) instead of one object per
 ## tile, so a large world stays small in memory. tile_at() returns a Tile snapshot;
-## changes go through the set_* methods.
+## changes go through the set_* methods. The chunk also holds the world objects standing
+## on its tiles, so they stream and unload with it.
 
 const CHUNK_SIZE := 32
 
@@ -13,6 +14,8 @@ var _terrain := PackedByteArray()
 var _water_level := PackedFloat32Array()
 var _frozen := PackedByteArray()
 var _snow_depth := PackedFloat32Array()
+## At most one object per tile, keyed by local position.
+var _objects: Dictionary[Vector2i, WorldObject] = {}
 
 
 ## A new chunk with every tile set to `terrain`, dry and unfrozen.
@@ -88,6 +91,30 @@ func set_frozen(local: Vector2i, frozen: bool) -> void:
 
 func set_snow_depth(local: Vector2i, snow_depth: float) -> void:
 	_snow_depth[_index(local)] = snow_depth
+
+
+## The object on a tile, or null.
+func object_at(local: Vector2i) -> WorldObject:
+	return _objects.get(local)
+
+
+## Puts an object on its tile. The tile must be free.
+func add_object(object: WorldObject) -> void:
+	var local := Chunk.local_pos(object.pos)
+	assert(Chunk.world_to_chunk(object.pos) == coords, "Object outside chunk: %s" % object.pos)
+	assert(not _objects.has(local), "Tile already has an object: %s" % object.pos)
+	_objects[local] = object
+
+
+## Takes the object off a tile and returns it, or returns null if there was none.
+func remove_object(local: Vector2i) -> WorldObject:
+	var object := _objects.get(local) as WorldObject
+	_objects.erase(local)
+	return object
+
+
+func objects() -> Array[WorldObject]:
+	return _objects.values()
 
 
 func _index(local: Vector2i) -> int:

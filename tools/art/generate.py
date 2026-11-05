@@ -15,6 +15,11 @@ assets/terrain.png, per row:
 
 assets/decorations.png, per row: small visual-only sprites (flowers, pebbles, reeds...)
 drawn on top of world tiles of that layer. A row may be empty.
+
+assets/objects.png: world objects, 32x32 cells (OBJECT_CELL). Row 0 is the oak (3 variants),
+row 1 the stone (2 variants); the rows and counts are in game/state/world_object_types.gd.
+An object stands on one tile: the bottom centre 16x16 of its cell (x 8..23, y 16..31). The
+oak's canopy rises above that, over the tiles north of it.
 """
 
 import math
@@ -25,6 +30,7 @@ from PIL import Image
 
 ASSETS = Path(__file__).resolve().parents[2] / "assets"
 TILE = 16
+OBJECT_CELL = 32
 
 # fmt: off
 PALETTE = {
@@ -576,19 +582,80 @@ def soil():
 LAYERS = [water, floodplain, wetland, grass, lush_grass, dry_grass, soil]
 
 
-def to_image(rows):
-    """Lays out rows of tiles as one image."""
-    width = max(1, max(len(row) for row in rows)) * TILE
-    image = Image.new("RGBA", (width, len(rows) * TILE), (0, 0, 0, 0))
+def object_canvas():
+    return [[None] * OBJECT_CELL for _ in range(OBJECT_CELL)]
+
+
+def shaded_blob(canvas, rng, blobs, shades, outline):
+    """Fills the union of circles (cx, cy, radius) with `shades`, lightest first: light
+    comes from the top left, so a pixel is darker the further down and right of its
+    circle's centre it is. Pixels on the blob's border get `outline`."""
+    covered = set()
+    for y in range(OBJECT_CELL):
+        for x in range(OBJECT_CELL):
+            best = None
+            for cx, cy, radius in blobs:
+                distance = math.hypot(x - cx, y - cy)
+                if distance <= radius:
+                    # 0 at the lit top left of the circle, 1 at its dark bottom right.
+                    light = ((x - cx) * 0.5 + (y - cy) * 0.9) / radius * 0.5 + 0.5
+                    if best is None or light < best:
+                        best = light
+            if best is not None:
+                covered.add((x, y))
+                noise = rng.random() * 0.25 - 0.12
+                index = min(len(shades) - 1, max(0, int((best + noise) * len(shades))))
+                canvas[y][x] = shades[index]
+    for x, y in covered:
+        if any((x + dx, y + dy) not in covered for dx, dy in NEIGHBOURS):
+            canvas[y][x] = outline
+
+
+def oak(seed):
+    rng = random.Random(seed)
+    canvas = object_canvas()
+    # Trunk, standing on the tile, with a flared foot.
+    for y in range(22, 32):
+        for x in range(14, 18):
+            canvas[y][x] = ("soil_mid", "soil", "soil", "soil_dark")[x - 14]
+    for y in (30, 31):
+        canvas[y][13] = "soil"
+        canvas[y][18] = "soil_dark"
+    # Canopy: a few overlapping puffs, different for every variant.
+    blobs = [(16 + rng.uniform(-1, 1), 12 + rng.uniform(-1, 1), rng.uniform(8, 9))]
+    for cx, cy in ((9, 15), (23, 15), (16, 6), (12, 9), (20, 10)):
+        blobs.append((cx + rng.uniform(-2, 2), cy + rng.uniform(-1.5, 1.5), rng.uniform(5, 7)))
+    shaded_blob(
+        canvas, rng, blobs, ("green_bright", "green_light", "green", "green_dark", "green_deep"), "green_deep"
+    )
+    return canvas
+
+
+def stone(seed):
+    rng = random.Random(seed)
+    canvas = object_canvas()
+    # A boulder, and for the second variant a smaller one beside it, on the lower 16 rows.
+    blobs = [(16, 25, 6.5)] if seed % 2 else [(14, 26, 5.5), (20, 28, 3.5)]
+    shaded_blob(canvas, rng, blobs, ("stone_light", "stone", "stone", "stone_dark"), "ink")
+    return canvas
+
+
+OBJECTS = [[oak(seed) for seed in (101, 102, 103)], [stone(seed) for seed in (111, 112)]]
+
+
+def to_image(rows, size=TILE):
+    """Lays out rows of size x size tiles as one image."""
+    width = max(1, max(len(row) for row in rows)) * size
+    image = Image.new("RGBA", (width, len(rows) * size), (0, 0, 0, 0))
     pixels = image.load()
     for row_index, row in enumerate(rows):
         for column, tile in enumerate(row):
-            for y in range(TILE):
-                for x in range(TILE):
+            for y in range(size):
+                for x in range(size):
                     name = tile[y][x]
                     if name is not None:
                         rgb = bytes.fromhex(PALETTE[name])
-                        pixels[column * TILE + x, row_index * TILE + y] = (*rgb, 255)
+                        pixels[column * size + x, row_index * size + y] = (*rgb, 255)
     return image
 
 
@@ -637,9 +704,10 @@ def main():
         decoration_rows.append(decorations)
     to_image(terrain_rows).save(ASSETS / "terrain.png")
     to_image(decoration_rows).save(ASSETS / "decorations.png")
+    to_image(OBJECTS, OBJECT_CELL).save(ASSETS / "objects.png")
     write_palette()
     check_palette()
-    print("Wrote terrain.png, decorations.png, palette.png and palette.gpl to assets/; palette check passed.")
+    print("Wrote terrain.png, decorations.png, objects.png, palette.png and palette.gpl to assets/; palette check passed.")
 
 
 if __name__ == "__main__":
