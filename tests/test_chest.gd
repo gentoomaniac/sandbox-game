@@ -111,28 +111,28 @@ func test_e_opens_the_chest_on_the_targeted_tile_before_sleeping() -> void:
 	var bag := WorldObject.new(WorldObjectTypes.SLEEPING_BAG, _state.player.tile() + Vector2i.LEFT)
 	_world.add_object(bag)
 	assert_eq(_state.bed_in_reach(), bag, "a bed is in reach too")
-	assert_eq(_state.chest_to_open(_tile), chest)
+	assert_eq(Interaction.chest_to_open(_state, _tile), chest)
 
 
 func test_e_sleeps_when_a_bed_is_in_reach_and_the_chest_is_not_targeted() -> void:
 	_place(WorldObjectTypes.CHEST)
 	var bag := WorldObject.new(WorldObjectTypes.SLEEPING_BAG, _state.player.tile() + Vector2i.LEFT)
 	_world.add_object(bag)
-	assert_null(_state.chest_to_open(_state.player.tile() + Vector2i.UP))
+	assert_null(Interaction.chest_to_open(_state, _state.player.tile() + Vector2i.UP))
 
 
 func test_e_opens_the_nearest_chest_in_reach_when_there_is_no_bed() -> void:
 	var chest := _place(WorldObjectTypes.CHEST)
 	assert_null(_state.bed_in_reach())
-	assert_eq(_state.chest_to_open(_tile + Vector2i.RIGHT * 3), chest)
+	assert_eq(Interaction.chest_to_open(_state, _tile + Vector2i.RIGHT * 3), chest)
 
 
 func test_e_does_nothing_for_a_chest_out_of_reach() -> void:
 	_place(WorldObjectTypes.CHEST)
 	_state.player.position += Vector2(0, -2)
-	assert_null(_state.chest_to_open(_tile))
+	assert_null(Interaction.chest_to_open(_state, _tile))
 
 
 func test_e_with_no_chest_and_no_bed_does_nothing() -> void:
 	assert_null(_state.bed_in_reach())
-	assert_null(_state.chest_to_open(_tile))
+	assert_null(Interaction.chest_to_open(_state, _tile))

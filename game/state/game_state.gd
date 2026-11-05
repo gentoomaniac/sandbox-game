@@ -62,8 +62,6 @@ const WAKE_UP_MINUTE := 6 * GameClock.MINUTES_PER_HOUR + 30
 const PASS_OUT_MINUTES := 10 * GameClock.MINUTES_PER_HOUR
 ## A player who is still awake when the clock shows this has stayed up too late and passes out.
 const LATE_NIGHT_MINUTE := 1 * GameClock.MINUTES_PER_HOUR
-## How close (in tiles, diagonals included) the player must be to a bed to sleep in it.
-const BED_REACH := 1
 ## Items on the ground within this many tiles of the player (their feet) are pulled to them.
 const PULL_RADIUS := 0.5
 ## How fast a pulled item moves, in tiles per second: faster than the player walks, so it
@@ -153,19 +151,9 @@ func pass_door() -> void:
 
 ## The nearest bed the player can reach, or null. Their own tile counts.
 func bed_in_reach() -> WorldObject:
-	return _nearest_in_reach(func(object: WorldObject) -> bool: return object.is_bed())
-
-
-## The chest the use of E opens, or null. A chest on `target` (the targeted tile) wins; with a bed
-## in reach the player sleeps instead, and without one the nearest chest in reach is opened.
-func chest_to_open(target: Vector2i) -> WorldObject:
-	var targeted := current_map.object_at(target)
-	var offset := (target - player.tile()).abs()
-	if targeted != null and targeted.storage != null and maxi(offset.x, offset.y) <= BED_REACH:
-		return targeted
-	if bed_in_reach() != null:
-		return null
-	return _nearest_in_reach(func(object: WorldObject) -> bool: return object.storage != null)
+	return Interaction.nearest_in_reach(
+		self, func(object: WorldObject) -> bool: return object.is_bed()
+	)
 
 
 ## Sleeps until the next morning (WAKE_UP_MINUTE), makes the bed home and fills energy and
@@ -602,22 +590,3 @@ func _wake_up_tile() -> Vector2i:
 
 func _tile_centre(tile: Vector2i) -> Vector2:
 	return Vector2(tile) + Vector2(0.5, 0.5)
-
-
-## The nearest object on the map in the 3x3 tiles round the player (their own tile counts) that
-## `is_wanted` says yes to, or null.
-func _nearest_in_reach(is_wanted: Callable) -> WorldObject:
-	var player_tile := player.tile()
-	var nearest: WorldObject = null
-	for y in range(-BED_REACH, BED_REACH + 1):
-		for x in range(-BED_REACH, BED_REACH + 1):
-			var object := current_map.object_at(player_tile + Vector2i(x, y))
-			if object == null or not is_wanted.call(object):
-				continue
-			if nearest == null or _distance_to_player(object) < _distance_to_player(nearest):
-				nearest = object
-	return nearest
-
-
-func _distance_to_player(object: WorldObject) -> float:
-	return (Vector2(object.pos) + Vector2(0.5, 0.5)).distance_to(player.position)

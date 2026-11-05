@@ -617,7 +617,7 @@ func _screens_take(event: InputEvent) -> bool:
 
 ## E: opens the chest in reach, else sleeps in the bed in reach.
 func _interact() -> void:
-	var chest := _state.chest_to_open(_use_highlight.targeting().tile)
+	var chest := Interaction.chest_to_open(_state, _use_highlight.targeting().tile)
 	if chest == null:
 		_try_sleep()
 	else:
