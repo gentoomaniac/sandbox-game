@@ -873,7 +873,10 @@ that has placeholder art: trunks, stumps, tree seeds, tall grass (and mown), ree
 clay hint, and the icons for hay, clay, reeds, scythe, shovel and hammer. Also redraw the
 dead tree: it reads as thin brown and grey scribbles with no trunk. It should be a solid,
 weathered grey trunk with a few thick, gnarled, broken-off limbs, bark shading on one
-consistent light side, and a ground shadow, in the scale of the other trees.
+consistent light side, and a ground shadow, in the scale of the other trees. Redraw all seven tool icons
+(hoe, axe, pickaxe, watering can, scythe, shovel, hammer): today they are flat grey shapes on
+thin sticks that don't read as their tools (the axe was taken for a shovel); each needs a
+silhouette that names it alone, filling the icon on the diagonal.
 
 ## 39. Interiors for all four buildings
 
