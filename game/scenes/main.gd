@@ -56,8 +56,8 @@ extends Node2D
 ## world is drawn (to see its shake and what flies off, see HitEffect, and the sweat of a tired
 ## player; the particles last about a second, so use a short `--screenshot-delay`).
 ## PlayerView parses `--hair=<n>` and `--pose=<direction>`, and F6 cycles the hair (see there).
-## BuildMode parses
-## `--ghost=<x>,<y>` and `--house=<x>,<y>` (see there).
+## BuildMode parses `--ghost=<x>,<y>` and `--house=<x>,<y>` (see there). `--hit` throws sweat
+## only for a tired player: add `--energy=15`, say.
 
 const WORLD_SEED := 1
 ## The build ghost has snow on its roof while the snow cover is above this.

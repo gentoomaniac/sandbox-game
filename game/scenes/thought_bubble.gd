@@ -35,17 +35,20 @@ func show_icon(id: StringName) -> void:
 	_picture = load(PICTURE_PATH % id)
 	_age = 0.0
 	visible = true
+	set_process(true)
 	queue_redraw()
 
 
 func _ready() -> void:
 	visible = false
+	set_process(false)
 
 
 func _process(delta: float) -> void:
 	_age += delta
 	if _age >= LIFE_SECONDS:
 		visible = false
+		set_process(false)
 	queue_redraw()
 
 
