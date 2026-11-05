@@ -125,7 +125,6 @@ func use_tile(target: Vector2i) -> Use:
 
 ## Uses the tile the player faces.
 func use_facing_tile() -> Use:
-
 	return use_tile(player.facing_tile())
 
 
