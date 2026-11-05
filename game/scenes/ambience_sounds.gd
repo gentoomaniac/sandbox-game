@@ -75,10 +75,9 @@ func _tick() -> void:
 ## Makes the loops follow the weather, and starts a gust now and then.
 func _follow_weather(weather: WeatherSample) -> void:
 	var fade_seconds := rules.value("loops", "fade_seconds")
-	_rain_loop = _follow(
-		_rain_loop, &"rain_loop", rules.rain_level(weather), _rain_target, fade_seconds
-	)
-	_rain_target = rules.rain_level(weather)
+	var rain_level := rules.rain_level(weather)
+	_rain_loop = _follow(_rain_loop, &"rain_loop", rain_level, _rain_target, fade_seconds)
+	_rain_target = rain_level
 
 	var wind_level := rules.wind_level(weather)
 	var was_gusting := _gust_seconds_left > 0.0
