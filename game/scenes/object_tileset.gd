@@ -58,14 +58,14 @@ static func cell_origin(footprint: Vector2i) -> Vector2i:
 
 ## The atlas cell for an object: a crop's variant is its growth stage; for the others it
 ## comes from the position, so it is stable but neighbours differ. A picked bush has its
-## variant's picked look.
-static func atlas_cell(object: WorldObject) -> Vector2i:
+## variant's picked look, and so does a bush that is `is_bare` (out of its fruit season).
+static func atlas_cell(object: WorldObject, is_bare := false) -> Vector2i:
 	var object_type: Dictionary = WorldObjectTypes.TYPES[object.type]
 	var variant: int = (
 		object.growth_stage()
 		if object.is_crop()
 		else PositionHash.of(object.pos) % int(object_type["variants"])
 	)
-	if object.is_picked():
+	if object.is_picked() or is_bare:
 		variant += object_type["variants"]
 	return Vector2i(variant, object_type["atlas_row"])

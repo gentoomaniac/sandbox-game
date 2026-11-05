@@ -27,6 +27,9 @@ extends RefCounted
 ##   the normal ones, `variants` of each;
 ## - matures_after_days: with the state `tree` set (a stump or sapling that regrows) it is
 ##   replaced after this many days by `matures_into`, or by the tree named in `tree`;
+## - seasonal: it follows a yearly curve of the same name (see Vegetation): DORMANCY, it is
+##   gone from the world while the density is below its threshold (a fern), or FRUIT, it
+##   looks picked and can't be picked while it is (a berry bush). Woody plants have none;
 ## - sprite_height: its picture's height in pixels, if it is tall enough to hide the player
 ##   behind it (trees); only those become see-through (see Occlusion);
 ## - light: it shines: `color`, `energy` (of the brightest point) and `radius_tiles`.
@@ -51,6 +54,10 @@ const CHEST := &"chest"
 const HEARTH := &"hearth"
 const WINDOW := &"window"
 const STUMP := &"stump"
+
+## Values of a type's `seasonal` entry.
+const DORMANCY := &"dormancy"
+const FRUIT := &"fruit"
 
 ## The largest footprint any type has, in tiles: what World looks back over to find the
 ## object that covers a tile.
@@ -150,6 +157,7 @@ const TYPES := {
 	{
 		"drops": {&"berries": 3},
 		"regrow_days": 3,
+		"seasonal": FRUIT,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": true,
 		"harvest_level": 0,
@@ -178,6 +186,7 @@ const TYPES := {
 	FERN_BUSH:
 	{
 		"drops": {&"fibre": 2},
+		"seasonal": DORMANCY,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": false,
 		"harvest_level": 0,

@@ -6,6 +6,7 @@ extends GutTest
 const SEED := 7
 ## Tiles around the camp that are searched for a spot with grass in front of the player.
 const SEARCH := 6
+const MIDSUMMER := 45
 
 var _state: GameState
 var _world: World
@@ -18,6 +19,11 @@ func before_each() -> void:
 	_tile = _grass_tile()
 	_state.player.position = Vector2(_tile) + Vector2(0.5, 0.5) - Vector2(0, 1)
 	_state.player.facing = Vector2i.DOWN
+
+
+## Berry bushes bear and ferns stand, whatever their thresholds.
+func _set_midsummer() -> void:
+	_state.clock.day = MIDSUMMER
 
 
 func _grass_tile() -> Vector2i:

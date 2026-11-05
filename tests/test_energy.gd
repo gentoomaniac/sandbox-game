@@ -18,6 +18,7 @@ func test_a_hit_and_a_pick_cost_what_the_rules_say() -> void:
 	_hit(ItemTypes.AXE, 1)
 	assert_eq(_state.player.energy, 97.0)
 	_world.remove_object(_tile)
+	_set_midsummer()
 	_place(WorldObjectTypes.BERRY_BUSH)
 	_hold(ItemTypes.NONE)
 	assert_eq(_state.use_facing_tile(), GameState.Use.FORAGE)

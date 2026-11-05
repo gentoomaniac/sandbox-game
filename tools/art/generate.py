@@ -476,6 +476,11 @@ def grass_texture(colours):
     return texture
 
 
+# Dots in flower colours, which autumn turns into leaf colours (see seasons.py). The
+# game shows them only in autumn (see data/vegetation.cfg).
+fallen_leaves = sprite({"a": "gold", "b": "petal", "c": "cream"}, "aa..b", "..c.b", ".b..a", "c.aa.")
+
+
 def common_flowers(stem):
     return [
         sprite({"c": "cream", "d": stem}, "c...", "d.c.", "..d."),
@@ -528,6 +533,7 @@ def grass():
         decoration(56, pebbles),
         decoration(57, fern),
         decoration(58, tufts[0], tufts[1]),
+        decoration(59, fallen_leaves),
     ]
     return edge_tiles(texture, GRASS_SHAPES, 40, decorate) + fulls, decorations
 
@@ -563,6 +569,7 @@ def lush_grass():
         decoration(64, fern),
         decoration(65, brown_caps),
         decoration(66, fern, clover),
+        decoration(67, fallen_leaves),
     ]
     return tinted_grass(("lush", "green", "green_deep"), 60, tufts, decorations)
 
@@ -579,6 +586,7 @@ def dry_grass():
         decoration(73, flower),
         decoration(74, stalks, stalks),
         decoration(75, pebbles, tuft),
+        decoration(76, fallen_leaves),
     ]
     return tinted_grass(("dry", "dry_light", "olive"), 70, tufts, decorations)
 
@@ -1962,7 +1970,8 @@ def main():
     for season in seasons.SEASONS:
         suffix = "" if season == "summer" else f"_{season}"
         to_image(seasons.ground_rows(season, terrain_rows)).save(ASSETS / f"terrain{suffix}.png")
-        to_image(seasons.ground_rows(season, decoration_rows)).save(ASSETS / f"decorations{suffix}.png")
+        standing = seasons.WINTER_STALKS if season == "winter" else None
+        to_image(seasons.ground_rows(season, decoration_rows, standing)).save(ASSETS / f"decorations{suffix}.png")
         to_image(
             seasons.object_rows(season, objects, redraws),
             OBJECT_CELL_WIDTH,

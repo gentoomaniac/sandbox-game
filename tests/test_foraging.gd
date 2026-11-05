@@ -1,5 +1,11 @@
 extends ResourceCase
-## Picking by hand, berry bushes and planting saplings.
+## Picking by hand, berry bushes and planting saplings, in midsummer: see
+## test_seasonal_plants.gd for the rest of the year.
+
+
+func before_each() -> void:
+	super.before_each()
+	_set_midsummer()
 
 
 func test_a_hand_picks_fibre_and_the_plant_goes() -> void:

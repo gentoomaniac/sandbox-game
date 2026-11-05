@@ -30,6 +30,10 @@ enum Blocked {
 const MAX_SIZE_CHUNKS := 64
 
 var world_seed: int
+## The game's clock: what the seasonal plants follow (see `is_dormant`). Whoever owns the
+## clock shares it here.
+var clock := GameClock.new()
+var vegetation := Vegetation.default_vegetation()
 var _chunks: Dictionary[Vector2i, Chunk] = {}
 ## What the player changed, kept outside the chunks so it survives their unloading: per world
 ## position the object that stands there now, or null where the generated object was
@@ -106,13 +110,39 @@ func tile_at(world_pos: Vector2i) -> Tile:
 	return chunk.tile_at(Chunk.local_pos(world_pos))
 
 
-## The object that covers a tile (see WorldObject.tiles), or null if there is none (or the
-## chunk is not loaded). A big object is stored at its own tile only, so look back from the
-## tile over the largest footprint: in its own chunk, and only near the chunk's top and left
-## border in the neighbours. A big object whose own chunk is not loaded is not seen; that is
-## safe because the player only acts on tiles well inside the loaded area (see
-## WorldView.LOAD_RADIUS and UNLOAD_RADIUS).
+## The object that covers a tile (see WorldObject.tiles), or null if there is none, the chunk
+## is not loaded or the object is dormant (see `is_dormant`): a dormant plant is not there for
+## anything that walks, builds, targets or draws.
 func object_at(world_pos: Vector2i) -> WorldObject:
+	var object := _stored_object_at(world_pos)
+	return null if object != null and is_dormant(object) else object
+
+
+## Whether a seasonal plant is dormant: it is out of its season, by the vegetation curve of its
+## type and its own threshold. The one rule that the view, walking, building and targeting
+## share. Nothing about it is saved.
+func is_dormant(object: WorldObject) -> bool:
+	return (
+		object.type_data().get("seasonal") == WorldObjectTypes.DORMANCY
+		and not vegetation.is_present(object.type, world_seed, object.pos, clock.day)
+	)
+
+
+## Whether a plant that bears fruit has none now: its season is over or has not begun. Picked
+## or not, it then looks picked and can't be picked.
+func is_bare(object: WorldObject) -> bool:
+	return (
+		object.type_data().get("seasonal") == WorldObjectTypes.FRUIT
+		and not vegetation.is_present(object.type, world_seed, object.pos, clock.day)
+	)
+
+
+## Like `object_at`, but dormant plants are seen too. A big object is stored at its own tile
+## only, so look back from the tile over the largest footprint: in its own chunk, and only
+## near the chunk's top and left border in the neighbours. A big object whose own chunk is not
+## loaded is not seen; that is safe because the player only acts on tiles well inside the
+## loaded area (see WorldView.LOAD_RADIUS and UNLOAD_RADIUS).
+func _stored_object_at(world_pos: Vector2i) -> WorldObject:
 	var own_chunk := chunk_at(Chunk.world_to_chunk(world_pos))
 	var local := Chunk.local_pos(world_pos)
 	for y in WorldObjectTypes.MAX_FOOTPRINT.y:
@@ -130,19 +160,23 @@ func object_at(world_pos: Vector2i) -> WorldObject:
 
 
 ## Changes the terrain of a loaded tile and remembers it as an edit, so it survives the
-## chunk unloading.
+## chunk unloading. A dormant plant on the tile is gone for good.
 func set_terrain(world_pos: Vector2i, terrain: Tile.Terrain) -> void:
 	var chunk := chunk_at(Chunk.world_to_chunk(world_pos))
 	assert(chunk != null, "Chunk not loaded for tile at %s" % world_pos)
+	_clear_dormant(world_pos)
 	chunk.set_terrain(Chunk.local_pos(world_pos), terrain)
 	_terrain_edits[world_pos] = terrain
 	tile_changed.emit(world_pos)
 
 
-## Puts an object on its tiles. The chunk of its own tile must be loaded and its tiles free.
+## Puts an object on its tiles. The chunk of its own tile must be loaded and its tiles free,
+## except for dormant plants, which are gone for good.
 func add_object(object: WorldObject) -> void:
 	var chunk := chunk_at(Chunk.world_to_chunk(object.pos))
 	assert(chunk != null, "Chunk not loaded for object at %s" % object.pos)
+	for tile in object.tiles():
+		_clear_dormant(tile)
 	assert(
 		object.tiles().all(func(tile: Vector2i) -> bool: return object_at(tile) == null),
 		"Tiles already have an object: %s" % object.pos
@@ -157,12 +191,8 @@ func add_object(object: WorldObject) -> void:
 ## was none.
 func remove_object(world_pos: Vector2i) -> WorldObject:
 	var object := object_at(world_pos)
-	if object == null:
-		return null
-	chunk_at(Chunk.world_to_chunk(object.pos)).remove_object(Chunk.local_pos(object.pos))
-	_object_edits[object.pos] = null
-	for tile in object.tiles():
-		objects_changed.emit(tile)
+	if object != null:
+		_take_off(object)
 	return object
 
 
@@ -207,6 +237,21 @@ func pass_night(occupied_tiles: Array[Vector2i]) -> void:
 			var next := object.matured()
 			if not (next.blocks_walking() and occupied_tiles.has(next.pos)):
 				replace_object(object, next)
+
+
+func _take_off(object: WorldObject) -> void:
+	chunk_at(Chunk.world_to_chunk(object.pos)).remove_object(Chunk.local_pos(object.pos))
+	_object_edits[object.pos] = null
+	for tile in object.tiles():
+		objects_changed.emit(tile)
+
+
+## Removes a dormant plant from a tile: whatever is put there now would otherwise have it
+## back in its way when its season comes.
+func _clear_dormant(world_pos: Vector2i) -> void:
+	var object := _stored_object_at(world_pos)
+	if object != null and is_dormant(object):
+		_take_off(object)
 
 
 # Unloaded tiles have nothing to redraw; they are drawn when their chunk loads.
@@ -284,6 +329,8 @@ func place_building(building_type: StringName, origin: Vector2i) -> Building:
 	if not placement_blockers(building_type, origin).is_empty():
 		return null
 	var building := Building.new(building_type, origin)
+	for tile in building.tiles():
+		_clear_dormant(tile)
 	_add_building(building)
 	building_placed.emit(building)
 	return building

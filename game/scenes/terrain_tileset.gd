@@ -62,6 +62,35 @@ const DECORATION_CHANCE := 0.02
 const CLUSTER_DECORATION_CHANCE := 0.5
 const CLUSTER_START := 0.15
 
+## The Vegetation kind of each decoration, per layer, in the order of the atlas row (see
+## tools/art/generate.py). &"" is a decoration that is there all year (pebbles, reeds); a
+## layer that is not listed has only those.
+const DECORATION_KINDS := {
+	Layer.GRASS:
+	[
+		&"flower",
+		&"flower",
+		&"flower",
+		&"flower",
+		&"small_plant",
+		&"",
+		&"small_plant",
+		&"tuft",
+		&"leaves"
+	],
+	Layer.LUSH_GRASS:
+	[
+		&"small_plant",
+		&"flower",
+		&"flower",
+		&"small_plant",
+		&"small_plant",
+		&"small_plant",
+		&"leaves"
+	],
+	Layer.DRY_GRASS: [&"tuft", &"", &"flower", &"tuft", &"", &"leaves"],
+}
+
 var tile_set := TileSet.new()
 ## The atlas sources, to swap their pictures when the season changes.
 var _terrain_source: TileSetAtlasSource
@@ -165,6 +194,13 @@ func decoration_cell(layer: int, tile_pos: Vector2i, cluster: float) -> Vector2i
 	if roll % 1000 >= chance * 1000:
 		return NO_DECORATION
 	return Vector2i(roll / 1000 % count, layer)
+
+
+## The Vegetation kind of a decoration (an atlas cell from `decoration_cell`), or &"" if it
+## shows all year.
+static func decoration_kind(atlas_cell: Vector2i) -> StringName:
+	var kinds: Array = DECORATION_KINDS.get(atlas_cell.y, [])
+	return kinds[atlas_cell.x] if not kinds.is_empty() else &""
 
 
 ## An atlas source with a tile for every non-empty cell of the image. Appends, per row,

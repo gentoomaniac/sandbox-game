@@ -88,6 +88,10 @@ _WINTER_GROUND = {
     "gold": "snow",
     "petal": "snow_shadow",
 }
+# What still stands in winter is dry stalks poking through the snow, not frosted green.
+WINTER_STALKS = {
+    "green_bright": "straw", "green_light": "straw", "green_dark": "reed", "green_deep": "reed",
+}
 GROUND_REMAPS = {
     "spring": _SPRING_GREENS,
     "summer": {},
@@ -150,10 +154,10 @@ def copy(canvas):
     return [row[:] for row in canvas]
 
 
-def ground_rows(season, rows):
-    """Terrain or decoration rows (the layers bottom to top) in a season. Water stays as it
-    is: freezing it belongs to the weather."""
-    mapping = GROUND_REMAPS[season]
+def ground_rows(season, rows, extra_remap=None):
+    """Terrain or decoration rows (the layers bottom to top) in a season, with `extra_remap`
+    applied over the season's own. Water stays as it is: freezing it belongs to the weather."""
+    mapping = {**GROUND_REMAPS[season], **(extra_remap or {})}
     return [rows[0]] + [[remap(tile, mapping) for tile in row] for row in rows[1:]]
 
 

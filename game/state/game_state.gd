@@ -53,6 +53,7 @@ func _init() -> void:
 static func new_game(world_seed: int) -> GameState:
 	var state := GameState.new()
 	state.world = World.new(world_seed)
+	state.world.clock = state.clock
 	state.current_map = state.world
 	var camp := CampSite.create(state.world, WorldGenerator.new(world_seed))
 	state.player.position = Vector2(camp.spawn_pos) + Vector2(0.5, 0.5)
@@ -253,7 +254,7 @@ func _use_by_hand(object: WorldObject) -> Use:
 		return Use.NOTHING
 	if object.is_ripe():
 		return Use.HARVEST
-	return Use.FORAGE if object.is_forageable() else Use.NOTHING
+	return Use.FORAGE if object.is_forageable() and not world.is_bare(object) else Use.NOTHING
 
 
 ## Hits an object with the held tool. The hit that finishes it gives its drops and leaves
@@ -318,6 +319,7 @@ static func from_dict(data: Dictionary) -> GameState:
 	state.world = World.from_dict(data["world"])
 	state.clock = GameClock.from_dict(data["clock"])
 	state.clock.new_day.connect(state._on_new_day)
+	state.world.clock = state.clock
 	state.player = PlayerState.from_dict(data["player"], state._map_from_ref(data["home_map"]))
 	state.current_map = state._map_from_ref(data["current_map"])
 	state._building_inside = state._building_of_ref(data["current_map"])

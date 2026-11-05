@@ -500,6 +500,7 @@ func _show_clock() -> void:
 		_tint.show_time(_state.clock)
 	_view.set_light_strength(_tint.light_strength())
 	_view.set_season(_state.clock.season())
+	_view.refresh_vegetation()
 	_build_mode.set_season(_state.clock.season())
 	_hud.show_time(_state.clock)
 

@@ -43,6 +43,17 @@ const VARIETY_FREQUENCY := 0.008
 const DECORATION_SEED_OFFSET := 104729
 const DECORATION_FREQUENCY := 0.12
 
+
+## A place where a decoration could grow: its look, its Vegetation kind and fixed threshold,
+## and whether it is drawn now.
+class DecorationSpot:
+	extends RefCounted
+	var atlas_cell: Vector2i
+	var kind: StringName
+	var threshold: float
+	var is_shown := false
+
+
 var world: World
 ## Y-sorted: whatever is added here is drawn in front of or behind the objects by its y.
 var entities := Node2D.new()
@@ -64,6 +75,11 @@ var _objects := TileMapLayer.new()
 var _lights: Dictionary[Vector2i, ObjectLight] = {}
 var _light_strength := 1.0
 var _season := GameClock.Season.SUMMER
+## Where a decoration could grow, shown or not, so a new day only revisits these tiles.
+## Never under an object.
+var _decoration_spots: Dictionary[Vector2i, DecorationSpot] = {}
+## The day the vegetation was last drawn for.
+var _vegetation_day := 0
 ## The sprites that stand in for object cells while they are see-through, by tile.
 var _object_sprites: Dictionary[Vector2i, SeeThroughSprite] = {}
 var _building_sprites: Dictionary[Building, SeeThroughSprite] = {}
@@ -105,8 +121,33 @@ func show_world(world_to_show: World) -> void:
 	_decoration_noise.frequency = DECORATION_FREQUENCY
 	for coords in world.loaded_chunk_coords():
 		_draw_chunk(world.chunk_at(coords))
+	_vegetation_day = world.clock.day
 	for building in world.buildings():
 		_draw_building(building)
+
+
+## Redraws what follows the year (decorations and seasonal plants) once the day has changed
+## since it was last drawn. Chunks that load later draw the day they find.
+func refresh_vegetation() -> void:
+	if world == null or world.clock.day == _vegetation_day:
+		return
+	var drawn_day := _vegetation_day
+	_vegetation_day = world.clock.day
+	for pos in _decoration_spots:
+		_update_decoration(pos, _decoration_spots[pos])
+	var vegetation := world.vegetation
+	for coords in world.loaded_chunk_coords():
+		for object in world.chunk_at(coords).objects():
+			if (
+				object.type_data().has("seasonal")
+				and (
+					vegetation.is_present(object.type, world.world_seed, object.pos, drawn_day)
+					!= vegetation.is_present(
+						object.type, world.world_seed, object.pos, _vegetation_day
+					)
+				)
+			):
+				_on_objects_changed(object.pos)
 
 
 ## Sets how brightly every light shines (see ObjectLight.strength).
@@ -241,6 +282,8 @@ func _covered_tiles(chunk: Chunk) -> Dictionary[Vector2i, bool]:
 		if neighbour == null:
 			continue
 		for object in neighbour.objects():
+			if world.is_dormant(object):
+				continue
 			for tile in object.tiles():
 				covered[tile] = true
 	return covered
@@ -257,6 +300,7 @@ func _unload_chunk(coords: Vector2i) -> void:
 			for tile_map in _layers:
 				tile_map.erase_cell(origin + Vector2i(x, y))
 			_decorations.erase_cell(origin + Vector2i(x, y))
+			_decoration_spots.erase(origin + Vector2i(x, y))
 	world.remove_chunk(coords)
 
 
@@ -300,7 +344,9 @@ func _draw_object(world_pos: Vector2i) -> void:
 
 
 func _set_object_cell(object: WorldObject) -> void:
-	_objects.set_cell(object.pos, ObjectTileset.SOURCE_ID, ObjectTileset.atlas_cell(object))
+	_objects.set_cell(
+		object.pos, ObjectTileset.SOURCE_ID, ObjectTileset.atlas_cell(object, world.is_bare(object))
+	)
 
 
 func _remove_light(world_pos: Vector2i) -> void:
@@ -387,7 +433,9 @@ func _swap_cell_for_sprite(object: WorldObject) -> void:
 	var cell_size := Vector2i(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT)
 	var texture := AtlasTexture.new()
 	texture.atlas = load(SeasonalArt.path(ObjectTileset.ATLAS_PATH, _season))
-	texture.region = Rect2(ObjectTileset.atlas_cell(object) * cell_size, cell_size)
+	texture.region = Rect2(
+		ObjectTileset.atlas_cell(object, world.is_bare(object)) * cell_size, cell_size
+	)
 	var sprite := SeeThroughSprite.new()
 	sprite.texture = texture
 	sprite.centered = false
@@ -418,15 +466,35 @@ func _draw_decoration(world_pos: Vector2i, layer: int) -> void:
 
 
 func _set_decoration(world_pos: Vector2i, layer: int, is_covered: bool) -> void:
-	if is_covered:
-		_decorations.erase_cell(world_pos)
-		return
-	var cluster := _decoration_noise.get_noise_2dv(Vector2(world_pos))
-	var atlas_cell := _tileset.decoration_cell(layer, world_pos, cluster)
+	var atlas_cell := TerrainTileset.NO_DECORATION
+	if not is_covered:
+		var cluster := _decoration_noise.get_noise_2dv(Vector2(world_pos))
+		atlas_cell = _tileset.decoration_cell(layer, world_pos, cluster)
+	_decorations.erase_cell(world_pos)
 	if atlas_cell == TerrainTileset.NO_DECORATION:
-		_decorations.erase_cell(world_pos)
+		_decoration_spots.erase(world_pos)
+		return
+	var spot := DecorationSpot.new()
+	spot.atlas_cell = atlas_cell
+	spot.kind = TerrainTileset.decoration_kind(atlas_cell)
+	if spot.kind != &"":
+		spot.threshold = world.vegetation.threshold(spot.kind, world.world_seed, world_pos)
+	_decoration_spots[world_pos] = spot
+	_update_decoration(world_pos, spot)
+
+
+## Draws or erases the decoration of a spot, as its kind is present today or not.
+func _update_decoration(world_pos: Vector2i, spot: DecorationSpot) -> void:
+	var should_show := (
+		spot.kind == &"" or world.vegetation.shows(spot.kind, spot.threshold, world.clock.day)
+	)
+	if should_show == spot.is_shown:
+		return
+	spot.is_shown = should_show
+	if should_show:
+		_decorations.set_cell(world_pos, TerrainTileset.DECORATION_SOURCE_ID, spot.atlas_cell)
 	else:
-		_decorations.set_cell(world_pos, TerrainTileset.DECORATION_SOURCE_ID, atlas_cell)
+		_decorations.erase_cell(world_pos)
 
 
 ## The layer a tile is drawn on, or MISSING if its chunk is not loaded.

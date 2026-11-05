@@ -671,7 +671,7 @@ See SPEC.md "Time, seasons and weather" (weather state).
 
 ## 27. Seasonal vegetation density
 
-- [ ] Done
+- [x] Done
 
 Depends on: 25. See SPEC.md "Vegetation density follows the year".
 
