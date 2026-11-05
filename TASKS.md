@@ -112,6 +112,13 @@ Depends on: 3.
   larger radius unload.
 - The streaming logic itself (which chunks to load and unload for a position) is a pure
   function and has GUT tests.
+- Performance: `Chunk.tile_at` allocates a `Tile` per call. For rendering, add direct
+  read accessors on `Chunk` (e.g. `terrain_at(local)`), and redraw only chunks or tiles
+  that changed, not every frame.
+- While there, tidy two review notes from task 2:
+  - `Tile.is_buildable` builds an array literal on each call; avoid the allocation;
+  - `World.tile_at`: comment that out-of-bounds positions give null because
+    `add_chunk` asserts bounds.
 
 Done when: flying a debug camera around with the arrow keys streams chunks smoothly, with
 no visible seams.
