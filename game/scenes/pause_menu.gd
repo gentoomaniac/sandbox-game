@@ -80,6 +80,8 @@ func close() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# ui_cancel is Escape and not rebindable, so Escape still leaves the menu when the
+	# pause action has been moved to another key.
 	if visible and (event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause")):
 		get_viewport().set_input_as_handled()
 		_back()

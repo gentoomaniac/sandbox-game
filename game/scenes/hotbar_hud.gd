@@ -6,6 +6,7 @@ extends CanvasLayer
 
 const BOTTOM_MARGIN := 4
 const SLOT_GAP := 2
+const THEME := preload("res://game/scenes/ui_theme.tres")
 
 var _inventory: Inventory
 var _slot_views: Array[SlotView] = []
@@ -13,6 +14,7 @@ var _slot_views: Array[SlotView] = []
 
 func _init() -> void:
 	var row := HBoxContainer.new()
+	row.theme = THEME
 	row.add_theme_constant_override("separation", SLOT_GAP)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for slot in Inventory.HOTBAR_SIZE:

@@ -130,8 +130,10 @@ func _notification(what: int) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
-		# The first Escape leaves build mode, the next opens the menu.
-		if _build_mode.is_active():
+		# Escape closes the inventory, then leaves build mode, then opens the menu.
+		if _inventory_screen.is_open():
+			_inventory_screen.toggle()
+		elif _build_mode.is_active():
 			_build_mode.cancel()
 		else:
 			_open_menu()

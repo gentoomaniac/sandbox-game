@@ -5,7 +5,8 @@ extends RefCounted
 ## defaults and keeps them in a ConfigFile, written on every change. It has no UI code.
 ##
 ## The file only holds what differs from the defaults, so an action added later, or one the
-## file doesn't mention, keeps its default binding.
+## file doesn't mention, keeps its default binding. The display mode is only stored once the
+## player has chosen it; until then the window stays as the command line or project left it.
 
 const DEFAULT_PATH := "user://settings.cfg"
 const MAX_BINDINGS := 2
@@ -38,6 +39,7 @@ const ARROW_LABELS := {
 
 var is_fullscreen := false
 
+var _has_chosen_fullscreen := false
 var _path: String
 ## Action -> its events in the project's input map, taken before anything is changed.
 var _defaults := {}
@@ -68,6 +70,8 @@ static func actions() -> Array[StringName]:
 static func action_label(action: StringName) -> String:
 	if ACTION_LABELS.has(action):
 		return ACTION_LABELS[action]
+	if action.begins_with("hotbar_"):
+		return "Hotbar slot " + action.trim_prefix("hotbar_")
 	var text := String(action).replace("_", " ")
 	return text[0].to_upper() + text.substr(1)
 
@@ -104,19 +108,24 @@ func bind(action: StringName, slot: int, event: InputEvent) -> String:
 	var replaced: InputEvent = own[slot] if slot < own.size() else null
 	if replaced != null and _is_same(replaced, new_event):
 		return ""
-	var note := ""
+	# Everything that has to go is worked out first, so a refusal changes nothing.
+	var kept := {}
 	for other in actions():
-		var kept := bindings(other).filter(
+		var events := bindings(other)
+		var remaining := events.filter(
 			func(existing: InputEvent) -> bool:
 				return existing == replaced or not _is_same(existing, new_event)
 		)
-		if kept.size() == bindings(other).size():
+		if remaining.size() == events.size():
 			continue
-		if other != action and ALWAYS_BOUND.has(other) and kept.is_empty():
+		if other != action and ALWAYS_BOUND.has(other) and remaining.is_empty():
 			return "%s needs a key" % action_label(other)
+		kept[other] = remaining
+	var note := ""
+	for other in kept:
 		if other != action:
 			note = "%s removed from %s" % [binding_text(new_event), action_label(other)]
-		_set_bindings(other, kept)
+		_set_bindings(other, kept[other])
 	var target := bindings(action)
 	var index := target.find(replaced)
 	if index >= 0:
@@ -149,6 +158,7 @@ func reset_bindings() -> void:
 
 func set_fullscreen(value: bool) -> void:
 	is_fullscreen = value
+	_has_chosen_fullscreen = true
 	_apply_display()
 	_save()
 
@@ -166,10 +176,12 @@ func load_file() -> void:
 	if file.has_section(CONTROLS_SECTION):
 		for action in file.get_section_keys(CONTROLS_SECTION):
 			_load_action(file, StringName(action))
+		_resolve_loaded_bindings()
 	if file.has_section_key(DISPLAY_SECTION, FULLSCREEN_KEY):
 		var value: Variant = file.get_value(DISPLAY_SECTION, FULLSCREEN_KEY)
 		if value is bool:
 			is_fullscreen = value
+			_has_chosen_fullscreen = true
 			_apply_display()
 		else:
 			push_warning("Ignoring display setting in %s: not true or false" % _path)
@@ -193,13 +205,44 @@ func _load_action(file: ConfigFile, action: StringName) -> void:
 	_set_bindings(action, events.slice(0, MAX_BINDINGS))
 
 
+## A hand-edited file can bind one key twice or leave the pause menu without a key. The first
+## action in the input map keeps a shared key; the pause menu gets its defaults back.
+func _resolve_loaded_bindings() -> void:
+	var seen: Array[InputEvent] = []
+	for action in actions():
+		var kept: Array[InputEvent] = []
+		for event in bindings(action):
+			if seen.any(func(other: InputEvent) -> bool: return _is_same(other, event)):
+				push_warning(
+					"%s is bound twice in %s; %s loses it" % [binding_text(event), _path, action]
+				)
+			else:
+				kept.append(event)
+				seen.append(event)
+		_set_bindings(action, kept)
+	for action in ALWAYS_BOUND:
+		if not bindings(action).is_empty():
+			continue
+		push_warning("'%s' has no key in %s; using its default" % [action, _path])
+		for event in _defaults[action]:
+			for other in actions():
+				_set_bindings(
+					other,
+					bindings(other).filter(
+						func(e: InputEvent) -> bool: return not _is_same(e, event)
+					)
+				)
+		_set_bindings(action, _defaults[action])
+
+
 func _save() -> void:
 	var file := ConfigFile.new()
 	for action in actions():
 		var events := bindings(action)
 		if not _is_default(action, events):
 			file.set_value(CONTROLS_SECTION, action, events.map(_encode))
-	file.set_value(DISPLAY_SECTION, FULLSCREEN_KEY, is_fullscreen)
+	if _has_chosen_fullscreen:
+		file.set_value(DISPLAY_SECTION, FULLSCREEN_KEY, is_fullscreen)
 	var error := DirAccess.make_dir_recursive_absolute(_path.get_base_dir())
 	if error == OK:
 		error = file.save(_path)

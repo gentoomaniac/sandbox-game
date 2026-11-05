@@ -7,11 +7,8 @@ signal pressed
 
 const SIZE := 20
 const ICON_OFFSET := Vector2(2, 2)
-const FONT_SIZE := 8
-const COUNT_OUTLINE_SIZE := 2
-## Palette colours cream and ink (see tools/art/generate.py).
-const COUNT_COLOR := Color("f1e6c2")
-const COUNT_OUTLINE_COLOR := Color("1d1b26")
+## Palette colour ink (see tools/art/generate.py); the pixel font is already cream.
+const COUNT_SHADOW_COLOR := Color("1d1b26")
 
 const SLOT_TEXTURE := preload("res://assets/ui/slot.png")
 const SELECTED_SLOT_TEXTURE := preload("res://assets/ui/slot_selected.png")
@@ -44,19 +41,18 @@ func _draw() -> void:
 		return
 	draw_texture(_icon, ICON_OFFSET)
 	if _stack["count"] > 1:
-		var font := ThemeDB.fallback_font
-		var baseline := Vector2(1, SIZE - 2)
+		# The font comes from the theme set on a parent (see ui_theme.tres).
+		var font := get_theme_default_font()
+		var font_size := get_theme_default_font_size()
+		var baseline := Vector2(1, SIZE - 3)
 		var text := str(_stack["count"])
-		draw_string_outline(
+		draw_string(
 			font,
-			baseline,
+			baseline + Vector2.ONE,
 			text,
 			HORIZONTAL_ALIGNMENT_RIGHT,
 			SIZE - 2,
-			FONT_SIZE,
-			COUNT_OUTLINE_SIZE,
-			COUNT_OUTLINE_COLOR
+			font_size,
+			COUNT_SHADOW_COLOR
 		)
-		draw_string(
-			font, baseline, text, HORIZONTAL_ALIGNMENT_RIGHT, SIZE - 2, FONT_SIZE, COUNT_COLOR
-		)
+		draw_string(font, baseline, text, HORIZONTAL_ALIGNMENT_RIGHT, SIZE - 2, font_size)

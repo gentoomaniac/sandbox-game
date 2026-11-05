@@ -8,7 +8,7 @@ signal back_requested
 
 const NAME_WIDTH := 100
 const BINDING_WIDTH := 74
-const LIST_HEIGHT := 150
+const LIST_HEIGHT := 190
 const HINT := "Click a binding, then press a key. Esc cancels."
 const EMPTY_BINDING := "-"
 const CAPTURING_TEXT := "Press..."
@@ -111,6 +111,17 @@ func _stop_capture() -> void:
 func _input(event: InputEvent) -> void:
 	if _capture_button == null or not GameSettings.is_bindable(event):
 		return
+	# A click elsewhere ends the capture and works as usual; a click on the capturing button
+	# is how a mouse button gets bound.
+	var is_click_elsewhere := (
+		event is InputEventMouseButton
+		and not _capture_button.get_global_rect().has_point(
+			_capture_button.get_global_mouse_position()
+		)
+	)
+	if is_click_elsewhere:
+		_stop_capture()
+		return
 	get_viewport().set_input_as_handled()
 	var action := _capture_action
 	var slot := _capture_slot
@@ -139,6 +150,8 @@ func _on_binding_gui_input(event: InputEvent, action: StringName, slot: int) -> 
 
 
 func _clear(action: StringName, slot: int) -> void:
+	if slot >= _settings.bindings(action).size():
+		return
 	var refusal := _settings.clear(action, slot)
 	show_bindings()
 	_note.text = refusal if refusal != "" else "Cleared"

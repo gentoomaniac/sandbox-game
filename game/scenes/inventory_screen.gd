@@ -9,8 +9,7 @@ const ROW_GAP := 2
 const PICKED_ALPHA := 0.4
 ## Palette colour ink (see tools/art/generate.py), see-through.
 const BACKDROP_COLOR := Color(0.114, 0.106, 0.149, 0.6)
-const TEXT_COLOR := Color("f1e6c2")
-const TEXT_OUTLINE_COLOR := Color("1d1b26")
+const THEME := preload("res://game/scenes/ui_theme.tres")
 
 var _inventory: Inventory
 var _slot_views: Array[SlotView] = []
@@ -42,15 +41,15 @@ func _init() -> void:
 		row.add_child(view)
 		_slot_views.append(view)
 
-	_weight_label.add_theme_color_override("font_color", TEXT_COLOR)
-	_weight_label.add_theme_color_override("font_outline_color", TEXT_OUTLINE_COLOR)
-	_weight_label.add_theme_constant_override("outline_size", 2)
-	_weight_label.add_theme_font_size_override("font_size", 8)
 	_weight_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_weight_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(_weight_label)
-	_backdrop.add_child(column)
-	column.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
+	var panel := PanelContainer.new()
+	panel.theme = THEME
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(column)
+	_backdrop.add_child(panel)
+	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
 
 	_picked_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_picked_icon.visible = false
