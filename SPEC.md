@@ -277,6 +277,15 @@ Decided 2026-11-05. A text console for testing and cheats.
 
 - Days and seasons work as is usual for the genre: crops grow day by day, and the season
   decides what grows.
+- **Calendar** (decided 2026-11-05): four seasons of 30 days (Spring, Summer, Autumn,
+  Winter), so a year has 120 days. The game starts on the 1st day of Spring, Year 1. The
+  HUD shows "10th day of Spring Year 2 · 06:00".
+- **The world looks like its season** (decided 2026-11-05): the current art is summer.
+  Spring is a lighter, fresher green; autumn has colourful foliage (orange, red, yellow)
+  and yellower grass; winter is snow-covered (snow on the ground, snow on evergreens,
+  bare deciduous trees). The look changes when the season changes. This is the visual
+  season only: frozen rivers, deep snow and other weather effects on tiles stay with the
+  weather system.
 - **Weather and seasons change the map:**
   - frost freezes rivers so they can be crossed;
   - heavy, deep snow makes some areas unreachable;

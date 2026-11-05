@@ -69,3 +69,47 @@ func test_time_text_pads_digits() -> void:
 	assert_eq(_clock.time_text(), "00:07")
 	_clock.set_time(23, 59)
 	assert_eq(_clock.time_text(), "23:59")
+
+
+func _clock_on(day: int) -> GameClock:
+	var clock := GameClock.new()
+	clock.day = day
+	return clock
+
+
+func test_the_first_day_is_the_1st_day_of_spring_year_1() -> void:
+	assert_eq(_clock_on(1).date_text(), "1st day of Spring Year 1")
+
+
+func test_day_130_is_the_10th_day_of_spring_year_2() -> void:
+	var clock := _clock_on(130)
+	assert_eq(clock.season(), GameClock.Season.SPRING)
+	assert_eq(clock.day_of_season(), 10)
+	assert_eq(clock.year(), 2)
+	assert_eq(clock.date_text(), "10th day of Spring Year 2")
+
+
+func test_seasons_change_every_30_days() -> void:
+	assert_eq(_clock_on(30).date_text(), "30th day of Spring Year 1")
+	assert_eq(_clock_on(31).date_text(), "1st day of Summer Year 1")
+	assert_eq(_clock_on(61).season(), GameClock.Season.AUTUMN)
+	assert_eq(_clock_on(120).date_text(), "30th day of Winter Year 1")
+	assert_eq(_clock_on(121).date_text(), "1st day of Spring Year 2")
+
+
+func test_ordinals() -> void:
+	var expected := {
+		1: "1st",
+		2: "2nd",
+		3: "3rd",
+		4: "4th",
+		11: "11th",
+		12: "12th",
+		13: "13th",
+		21: "21st",
+		22: "22nd",
+		23: "23rd",
+		30: "30th"
+	}
+	for day_of_season: int in expected:
+		assert_eq(_clock_on(day_of_season).date_text().split(" ")[0], expected[day_of_season])
