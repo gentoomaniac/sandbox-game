@@ -449,7 +449,6 @@ See SPEC.md "Player" (tile targeting with the mouse).
 
 ## Later (not part of the prototype)
 
-
 - Floodplain farming: floodplain is the most fertile farmland, but only grass can be tilled
   now. Tilling it needs a "tilled" tile property that keeps the floodplain flag, so floods
   can still act on it.
