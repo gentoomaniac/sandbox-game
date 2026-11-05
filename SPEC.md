@@ -90,7 +90,8 @@ top of classic pixel art (details under "Lighting and look").
   - houses and interiors in 3/4 view like trees and characters;
   - 2–4 px detail clusters, not single-pixel noise.
 - **Palette:** "about 32" is loosened to **up to ~48 colours**, so snow/ice, a berry red and
-  a cool shadow grey fit; merge near-duplicate greens.
+  a cool shadow grey fit; merge near-duplicate greens. The seasonal looks (spring greens,
+  autumn leaves, snow) raise the cap to **about 64** (decided 2026-11-05).
 - **Variety:** the world must not look tiled.
   - Large-scale colour variation: terrain colour shifts slowly across the world (e.g.
     lusher, drier, yellower patches of grass), driven by low-frequency noise in world

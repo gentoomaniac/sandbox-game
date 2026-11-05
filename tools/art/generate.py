@@ -25,6 +25,10 @@ An object stands on one tile: the bottom centre 16x16 of its cell (x 16..31, y 6
 crown rises above that, over the tiles around it. An object on several tiles (boulder 2x1,
 sleeping bag 1x2) is centred on its footprint, with the cell's bottom on the footprint's bottom.
 
+Each of terrain, decorations, objects and the house pictures also exists per season
+(see seasons.py): summer under the names above, the others with the season added,
+e.g. assets/terrain_winter.png and assets/buildings/small_house_lit_autumn.png.
+
 assets/character/<slot>_<variant>.png: one sheet per layer of the player character, 16x32 cells
 with the feet on the bottom row. One row per facing (down, up, left, right), columns: idle,
 walk 1 to 4 (see game/state/appearance.gd and game/scenes/player_view.gd).
@@ -45,6 +49,7 @@ from pathlib import Path
 from PIL import Image
 
 import items
+import seasons
 import ui
 
 ASSETS = Path(__file__).resolve().parents[2] / "assets"
@@ -110,6 +115,8 @@ PALETTE = {
     "arcane":         "6f4c91",
     "spirit":         "4e9e9b",
 }
+PALETTE.update(seasons.COLOURS)
+MAX_PALETTE_COLOURS = 64
 # fmt: on
 
 # Dual-grid corner bits, shared with game/scenes/terrain_tileset.gd.
@@ -642,6 +649,9 @@ def shaded_blob(canvas, rng, blobs, shades, outline):
 
 BARK = ("soil_mid", "soil", "soil", "soil_dark")
 LEAVES = ("green_bright", "green_light", "green", "green_dark", "green_deep", "olive")
+# What shade_under_crown takes for foliage: the ground shadow (once drawn in green_deep)
+# too, which keeps the summer art as it was.
+FOLIAGE = LEAVES + ("shadow",)
 
 
 def ground_shadow(canvas, half_width, centre=OBJECT_CENTRE):
@@ -651,7 +661,7 @@ def ground_shadow(canvas, half_width, centre=OBJECT_CENTRE):
     for y, reach in ((bottom - 2, half_width - 3), (bottom - 1, half_width), (bottom, half_width - 2)):
         for x in range(centre - reach, centre + reach):
             if abs(x - centre) < reach - 1 or (x + y) % 2 == 0:
-                canvas[y][x] = "green_deep"
+                canvas[y][x] = "shadow"
 
 
 def tree_trunk(canvas, rng, top, width, shades=BARK):
@@ -692,11 +702,11 @@ def shade_under_crown(canvas, shades=BARK):
     for y in range(len(canvas)):
         for x in range(OBJECT_CELL_WIDTH):
             if canvas[y][x] in shades and any(
-                y - up >= 0 and canvas[y - up][x] in LEAVES for up in (1, 2, 3, 4)
+                y - up >= 0 and canvas[y - up][x] in FOLIAGE for up in (1, 2, 3, 4)
             ):
                 canvas[y][x] = dark
     for x in range(OBJECT_CELL_WIDTH):
-        lowest = max((y for y in range(len(canvas)) if canvas[y][x] in LEAVES), default=None)
+        lowest = max((y for y in range(len(canvas)) if canvas[y][x] in FOLIAGE), default=None)
         if lowest is not None and canvas[lowest - 1][x] in ("green_bright", "green_light", "green"):
             canvas[lowest - 1][x] = "green_dark"
 
@@ -718,6 +728,24 @@ def oak(seed):
         blobs.append((cx + rng.uniform(-2, 2), cy + rng.uniform(-1.5, 1.5), radius + rng.uniform(-1, 1)))
     shaded_blob(canvas, rng, blobs, LEAVES[:5], "green_deep")
     shade_under_crown(canvas)
+    return canvas
+
+
+def bare_oak(seed):
+    """The oak in winter: the trunk of the same seed, bare branches instead of the crown."""
+    rng = random.Random(seed)
+    canvas = object_canvas()
+    ground_shadow(canvas, 13)
+    tree_trunk(canvas, rng, 46, 7)
+    for x, y, direction, length in (
+        (22, 46, -1, 20),
+        (26, 46, 1, 20),
+        (23, 54, -1, 14),
+        (27, 52, 1, 14),
+        (24, 46, rng.choice((-1, 1)), 22),
+    ):
+        draw_branch(canvas, rng, x, y, direction, length + rng.randint(-2, 2), "soil_mid")
+    outline_in_bark(canvas)
     return canvas
 
 
@@ -942,7 +970,7 @@ def outline_in_bark(canvas):
                 continue
             for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
                 nx, ny = x + dx, y + dy
-                if 0 <= nx < OBJECT_CELL_WIDTH and 0 <= ny < height and canvas[ny][nx] not in (None, "green_deep"):
+                if 0 <= nx < OBJECT_CELL_WIDTH and 0 <= ny < height and canvas[ny][nx] not in (None, "shadow"):
                     marked.append((x, y))
                     break
     for x, y in marked:
@@ -965,9 +993,17 @@ def vegetation():
     ]
 
 
-OBJECTS = [[oak(seed) for seed in (101, 102, 103)], [stone(seed) for seed in (111, 112)]]
+OAK_SEEDS = (101, 102, 103)
+OBJECTS = [[oak(seed) for seed in OAK_SEEDS], [stone(seed) for seed in (111, 112)]]
 BOULDERS = [[boulder(seed) for seed in (191, 192)]]
 STUMPS = [[stump(seed) for seed in (201, 202)]]
+
+
+# What each row of assets/objects.png holds, in order; the seasons treat each kind alike.
+OBJECT_KINDS = (
+    "oak", "stone", "fireplace", "sleeping_bag", "spruce", "pine", "dead_tree", "berry_bush",
+    "shrub", "sapling", "fern", "turnip", "boulder", "stump",
+)
 
 
 # Camp site objects (assets/objects.png rows 2 and 3).
@@ -1832,9 +1868,9 @@ def small_house(is_lit=False):
 
     # A contact shadow on the ground in front, on the bottom 2 rows.
     for x in range(1, HOUSE_WIDTH - 1):
-        canvas[HOUSE_HEIGHT - 2][x] = "green_deep"
+        canvas[HOUSE_HEIGHT - 2][x] = "shadow"
         if x % 2 == 0 and 2 < x < HOUSE_WIDTH - 3:
-            canvas[HOUSE_HEIGHT - 1][x] = "green_deep"
+            canvas[HOUSE_HEIGHT - 1][x] = "shadow"
     return canvas
 
 
@@ -1878,6 +1914,7 @@ def write_palette():
 def check_palette():
     """Fails if any PNG under assets/ has a pixel that is neither transparent nor a
     palette colour, so hand-drawn replacements are held to the palette too."""
+    assert len(PALETTE) <= MAX_PALETTE_COLOURS, f"{len(PALETTE)} palette colours, at most {MAX_PALETTE_COLOURS}"
     allowed = {(*bytes.fromhex(hex_colour), 255) for hex_colour in PALETTE.values()}
     bad = []
     for path in sorted(ASSETS.rglob("*.png")):
@@ -1900,23 +1937,27 @@ def main():
             assert all(None not in line for line in tile), f"{layer.__name__}: full tile has holes"
         terrain_rows.append(tiles)
         decoration_rows.append(decorations)
-    to_image(terrain_rows).save(ASSETS / "terrain.png")
-    to_image(decoration_rows).save(ASSETS / "decorations.png")
-    to_image(
-        OBJECTS + CAMP_OBJECTS + vegetation() + [TURNIP_STAGES] + BOULDERS + STUMPS,
-        OBJECT_CELL_WIDTH,
-        OBJECT_CELL_HEIGHT,
-    ).save(
-        ASSETS / "objects.png"
-    )
+    object_rows = OBJECTS + CAMP_OBJECTS + vegetation() + [TURNIP_STAGES] + BOULDERS + STUMPS
+    assert len(object_rows) == len(OBJECT_KINDS)
+    houses = {"small_house": small_house(is_lit=False), "small_house_lit": small_house(is_lit=True)}
+    redraws = {"oak": lambda variant: bare_oak(OAK_SEEDS[variant])}
+    (ASSETS / "buildings").mkdir(exist_ok=True)
+    # Summer keeps the plain names; the other seasons add theirs, e.g. terrain_winter.png.
+    for season in seasons.SEASONS:
+        suffix = "" if season == "summer" else f"_{season}"
+        to_image(seasons.ground_rows(season, terrain_rows)).save(ASSETS / f"terrain{suffix}.png")
+        to_image(seasons.ground_rows(season, decoration_rows)).save(ASSETS / f"decorations{suffix}.png")
+        to_image(
+            seasons.object_rows(season, OBJECT_KINDS, object_rows, redraws),
+            OBJECT_CELL_WIDTH,
+            OBJECT_CELL_HEIGHT,
+        ).save(ASSETS / f"objects{suffix}.png")
+        for name, picture in houses.items():
+            seasonal = seasons.house(season, picture, HOUSE_EAVES_Y)
+            to_image([[seasonal]], HOUSE_WIDTH, HOUSE_HEIGHT).save(ASSETS / "buildings" / f"{name}{suffix}.png")
     (ASSETS / "character").mkdir(exist_ok=True)
     for name, rows in CHARACTER_SHEETS.items():
         to_image(rows, CHARACTER_WIDTH, CHARACTER_HEIGHT).save(ASSETS / "character" / f"{name}.png")
-    (ASSETS / "buildings").mkdir(exist_ok=True)
-    for name, is_lit in (("small_house", False), ("small_house_lit", True)):
-        to_image([[small_house(is_lit)]], HOUSE_WIDTH, HOUSE_HEIGHT).save(
-            ASSETS / "buildings" / f"{name}.png"
-        )
     to_image([INTERIOR_TILES]).save(ASSETS / "interior.png")
     (ASSETS / "interior").mkdir(exist_ok=True)
     for name, (picture, _footprint) in FURNITURE.items():
@@ -1928,7 +1969,7 @@ def main():
     ui.write_ui_assets(ASSETS / "ui", PALETTE)
     write_palette()
     check_palette()
-    print("Wrote terrain.png, decorations.png, objects.png, character/*.png, interior.png, interior/*.png, buildings/*.png, items/*.png, ui/*, palette.png and palette.gpl to assets/; palette check passed.")
+    print("Wrote terrain*.png, decorations*.png, objects*.png (one per season), character/*.png, interior.png, interior/*.png, buildings/*.png, items/*.png, ui/*, palette.png and palette.gpl to assets/; palette check passed.")
 
 
 if __name__ == "__main__":

@@ -63,6 +63,7 @@ var _objects := TileMapLayer.new()
 ## The light of each shining object, by tile.
 var _lights: Dictionary[Vector2i, ObjectLight] = {}
 var _light_strength := 1.0
+var _season := GameClock.Season.SUMMER
 ## The sprites that stand in for object cells while they are see-through, by tile.
 var _object_sprites: Dictionary[Vector2i, SeeThroughSprite] = {}
 var _building_sprites: Dictionary[Building, SeeThroughSprite] = {}
@@ -115,6 +116,23 @@ func set_light_strength(strength: float) -> void:
 		light.strength = strength
 	for building in _building_sprites:
 		_show_windows(building)
+
+
+## Shows the season's art on everything already drawn: tiles, objects, the stand-in sprites
+## of see-through objects and the buildings. Returns whether the season changed; nothing is
+## redrawn when it did not.
+func set_season(season: GameClock.Season) -> bool:
+	if season == _season:
+		return false
+	_season = season
+	_tileset.set_season(season)
+	_object_tileset.set_season(season)
+	var atlas: Texture2D = load(SeasonalArt.path(ObjectTileset.ATLAS_PATH, season))
+	for sprite in _object_sprites.values():
+		(sprite.texture as AtlasTexture).atlas = atlas
+	for building in _building_sprites:
+		_show_windows(building)
+	return true
 
 
 ## Streaming follows this world tile position.
@@ -296,7 +314,7 @@ func _draw_building(building: Building) -> void:
 	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
 	var sprite := SeeThroughSprite.new()
 	_building_sprites[building] = sprite
-	sprite.texture = load(building_type["sprite"])
+	sprite.texture = load(SeasonalArt.path(building_type["sprite"], _season))
 	sprite.centered = false
 	# The sprite is sorted by its position: the middle of its bottom footprint row, like an
 	# object standing on that row. Its bottom edge is the footprint's bottom edge.
@@ -332,7 +350,9 @@ func _show_windows(building: Building) -> void:
 	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
 	var is_lit := _light_strength >= WINDOW_LIT_STRENGTH
 	var sprite := _building_sprites[building]
-	var texture_path: String = building_type["sprite_lit"] if is_lit else building_type["sprite"]
+	var texture_path := SeasonalArt.path(
+		building_type["sprite_lit"] if is_lit else building_type["sprite"], _season
+	)
 	# The strength changes every frame while the tint does; the picture only at dusk and dawn.
 	if sprite.texture.resource_path != texture_path:
 		sprite.texture = load(texture_path)
@@ -366,7 +386,7 @@ func _update_see_through(delta: float) -> void:
 func _swap_cell_for_sprite(object: WorldObject) -> void:
 	var cell_size := Vector2i(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT)
 	var texture := AtlasTexture.new()
-	texture.atlas = load(ObjectTileset.ATLAS_PATH)
+	texture.atlas = load(SeasonalArt.path(ObjectTileset.ATLAS_PATH, _season))
 	texture.region = Rect2(ObjectTileset.atlas_cell(object) * cell_size, cell_size)
 	var sprite := SeeThroughSprite.new()
 	sprite.texture = texture

@@ -13,24 +13,29 @@ const CELL_WIDTH := 48
 const CELL_HEIGHT := 80
 
 var tile_set := TileSet.new()
+var _source := TileSetAtlasSource.new()
 
 
 func _init() -> void:
 	tile_set.tile_size = Vector2i(TerrainTileset.TILE_SIZE, TerrainTileset.TILE_SIZE)
-	var source := TileSetAtlasSource.new()
-	source.texture = load(ATLAS_PATH)
-	source.texture_region_size = Vector2i(CELL_WIDTH, CELL_HEIGHT)
-	tile_set.add_source(source, SOURCE_ID)
+	_source.texture = load(ATLAS_PATH)
+	_source.texture_region_size = Vector2i(CELL_WIDTH, CELL_HEIGHT)
+	tile_set.add_source(_source, SOURCE_ID)
 	for object_type: Dictionary in WorldObjectTypes.TYPES.values():
 		if not object_type.has("atlas_row"):
 			continue
 		for variant in looks_count(object_type):
 			var atlas_cell := Vector2i(variant, object_type["atlas_row"])
-			source.create_tile(atlas_cell)
-			var tile_data := source.get_tile_data(atlas_cell, 0)
+			_source.create_tile(atlas_cell)
+			var tile_data := _source.get_tile_data(atlas_cell, 0)
 			tile_data.texture_origin = cell_origin(object_type["footprint"])
 			# Sorted by the middle of the footprint's bottom row, like the player standing there.
 			tile_data.y_sort_origin = (object_type["footprint"].y - 1) * TerrainTileset.TILE_SIZE
+
+
+## Shows the season's pictures; the layout is the same in every season.
+func set_season(season: GameClock.Season) -> void:
+	_source.texture = load(SeasonalArt.path(ATLAS_PATH, season))
 
 
 ## How many pictures a type has in its atlas row: its variants, and for a bush that can be

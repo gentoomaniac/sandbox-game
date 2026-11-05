@@ -11,6 +11,7 @@ extends Node2D
 ## `--at=<x>,<y>` puts the player on that world tile instead of at the camp;
 ## `--energy=<n>` and `--health=<n>` start with that much (0 to 100);
 ## `--screenshot=<path>` saves one frame as PNG once streaming has settled, then quits;
+## `--day=<n>` sets the day number (days 1, 31, 61 and 91 are the first day of each season);
 ## `--time=<hh:mm>` sets the time of day; `--field=<x>,<y>` tills a small field there with
 ## crops in every growth stage (see DebugField); `--inside` walks into the first house as soon
 ## as one exists (see `--house`); `--forage=<x>,<y>` puts a stump, bushes and a sapling in a
@@ -96,6 +97,8 @@ func _ready() -> void:
 			_state.player.position = Vector2(tile[0], tile[1]) + Vector2(0.5, 0.5)
 		elif arg.begins_with("--screenshot="):
 			_screenshot_path = arg.trim_prefix("--screenshot=")
+		elif arg.begins_with("--day="):
+			_state.clock.day = maxi(int(arg.trim_prefix("--day=")), 1)
 		elif arg.begins_with("--time="):
 			_set_start_time(arg.trim_prefix("--time="))
 		elif arg.begins_with("--field="):
@@ -489,6 +492,7 @@ func _show_clock() -> void:
 	else:
 		_tint.show_time(_state.clock)
 	_view.set_light_strength(_tint.light_strength())
+	_view.set_season(_state.clock.season())
 	_hud.show_time(_state.clock)
 
 

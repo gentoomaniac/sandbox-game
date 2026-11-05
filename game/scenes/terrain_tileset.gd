@@ -63,6 +63,9 @@ const CLUSTER_DECORATION_CHANCE := 0.5
 const CLUSTER_START := 0.15
 
 var tile_set := TileSet.new()
+## The atlas sources, to swap their pictures when the season changes.
+var _terrain_source: TileSetAtlasSource
+var _decoration_source: TileSetAtlasSource
 var _full_variant_counts: Array[int] = []
 var _decoration_counts: Array[int] = []
 
@@ -71,12 +74,19 @@ var _decoration_counts: Array[int] = []
 ## variants and decorations each layer has.
 func _init() -> void:
 	tile_set.tile_size = Vector2i(TILE_SIZE, TILE_SIZE)
-	var terrain := _atlas_source(TERRAIN_ATLAS_PATH, FULL_COLUMN, _full_variant_counts)
-	tile_set.add_source(terrain, TERRAIN_SOURCE_ID)
-	var decorations := _atlas_source(DECORATION_ATLAS_PATH, 0, _decoration_counts)
-	tile_set.add_source(decorations, DECORATION_SOURCE_ID)
+	_terrain_source = _atlas_source(TERRAIN_ATLAS_PATH, FULL_COLUMN, _full_variant_counts)
+	tile_set.add_source(_terrain_source, TERRAIN_SOURCE_ID)
+	_decoration_source = _atlas_source(DECORATION_ATLAS_PATH, 0, _decoration_counts)
+	tile_set.add_source(_decoration_source, DECORATION_SOURCE_ID)
 	for layer in LAYER_COUNT:
 		assert(_full_variant_counts[layer] > 0, "Terrain atlas row %d has no full tile" % layer)
+
+
+## Shows the season's pictures. Every season's atlases have the same layout, so the tiles
+## stay and the tile maps redraw with the new texture.
+func set_season(season: GameClock.Season) -> void:
+	_terrain_source.texture = load(SeasonalArt.path(TERRAIN_ATLAS_PATH, season))
+	_decoration_source.texture = load(SeasonalArt.path(DECORATION_ATLAS_PATH, season))
 
 
 ## Which layer a world tile is drawn on. `variety` is the slow variety noise at the tile.
