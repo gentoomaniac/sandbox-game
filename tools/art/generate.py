@@ -108,15 +108,13 @@ PALETTE = {
     "green":          "46703d",
     "green_light":    "5f8a45",
     "green_bright":   "82a352",
-    "lush":           "40783a",
     "olive":          "5c6634",
     # Dry grass, straw, reeds.
     "dry":            "68743e",
     "dry_light":      "8a9250",
     "reed":           "807a40",
     "straw":          "b0a05e",
-    # Damp floodplain meadow.
-    "meadow_dark":    "29483a",
+    # Damp floodplain meadow, also the Scots pine's needles.
     "meadow":         "37603e",
     "meadow_light":   "4f8048",
     # Earth: tilled soil and mud.
@@ -145,7 +143,13 @@ PALETTE = {
     # Skin.
     "skin":           "d09a72",
     "skin_shade":     "a96d4c",
-    # Spare colours for magic later.
+    # Lime-wash, chalky and slightly warm, and the teal paint of doors and shutters.
+    "lime":           "e8e4d8",
+    "paint_teal":     "3f7f86",
+    # Heather on the Geest, and hand-dyed cloth.
+    "heather":        "8c5c86",
+    "heather_dark":   "5a3a5c",
+    # Kept for magic only: spirits, wisps, spells.
     "arcane":         "6f4c91",
     "spirit":         "4e9e9b",
 }
@@ -369,9 +373,9 @@ def water():
 
 
 def floodplain():
-    blade = sprite({"l": "meadow_light", "d": "meadow_dark"}, "l", "d")
-    dark_blade = sprite({"d": "meadow_dark"}, "d.d", ".d.")
-    clover = sprite({"g": "green_light", "d": "meadow_dark"}, "g.g", "dgd")
+    blade = sprite({"l": "meadow_light", "d": "green_deep"}, "l", "d")
+    dark_blade = sprite({"d": "green_deep"}, "d.d", ".d.")
+    clover = sprite({"g": "green_light", "d": "green_deep"}, "g.g", "dgd")
     puddle = sprite(
         {"m": "mud_dark", "w": "water", "l": "water_light"},
         ".mmm.",
@@ -379,9 +383,9 @@ def floodplain():
         ".mmm.",
     )
     flowers = [
-        sprite({"c": "cream", "d": "meadow_dark"}, "c..c", "d.cd", "..d."),
-        sprite({"c": "gold", "d": "meadow_dark"}, ".c.", ".dc", "c.d", "d.."),
-        sprite({"c": "petal", "d": "meadow_dark"}, "c.c", "d.d"),
+        sprite({"c": "cream", "d": "green_deep"}, "c..c", "d.cd", "..d."),
+        sprite({"c": "gold", "d": "green_deep"}, ".c.", ".dc", "c.d", "d.."),
+        sprite({"c": "petal", "d": "green_deep"}, "c.c", "d.d"),
     ]
     reed_keys = {"t": "straw", "r": "reed", "o": "olive", "c": "soil_mid"}
     reeds = sprite(reed_keys, "t..t.", "r.tr.", "rr.rt", "r.rr.", ".oro.")
@@ -605,7 +609,7 @@ def lush_grass():
         decoration(66, fern, clover),
         decoration(67, fallen_leaves),
     ]
-    return tinted_grass(("lush", "green", "green_deep"), 60, tufts, decorations)
+    return tinted_grass(("green", "green", "green_deep"), 60, tufts, decorations)
 
 
 def dry_grass():
@@ -855,7 +859,7 @@ def spruce(seed):
 # underside, then the outline).
 PINE_BARK = ("mud", "mud_dark", "soil_dark", "soil_dark")
 PINE_RED_BARK = ("flame", "rust", "rust_dark", "russet_deep")
-PINE_NEEDLES = ("meadow_light", "meadow", "meadow_dark", "bog_dark")
+PINE_NEEDLES = ("meadow_light", "meadow", "green_deep", "bog_dark")
 # Where the bark turns from grey-brown to red, in rows from the top of the cell.
 PINE_RED_FROM = 56
 
@@ -1037,7 +1041,7 @@ def berry_bush(seed, is_picked=False):
     blobs = [(24, 68, 8.5), (17, 70, 5.5), (31, 70, 5.5), (20, 64, 5.5), (28, 64, 5.5)]
     shaded_blob(canvas, rng, blobs, ("green_light", "green", "green", "green_dark"), "green_deep")
     # Berries on the leaves: red, purple or both, with a pale glint.
-    berries = {0: ("ember",), 1: ("arcane",)}.get(seed % 3, ("ember", "arcane", "petal"))
+    berries = {0: ("ember",), 1: ("heather",)}.get(seed % 3, ("ember", "heather", "petal"))
     for _ in range(0 if is_picked else 11):
         x, y = rng.randint(14, 33), rng.randint(63, 74)
         if canvas[y][x] not in ("green_light", "green", "green_dark"):

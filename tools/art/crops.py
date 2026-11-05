@@ -29,7 +29,7 @@ KEYS = {
     "p": "petal",
     "e": "sand_light",
     "w": "sand",
-    "a": "arcane",
+    "a": "heather",
     "o": "flame",
     "r": "ember",
     "y": "gold",
@@ -50,7 +50,7 @@ DEAD_COLOURS = {
     "gold": "sand",
     "flame": "mud",
     "ember": "mud_dark",
-    "arcane": "mud_dark",
+    "heather": "mud_dark",
     "petal": "sand",
 }
 

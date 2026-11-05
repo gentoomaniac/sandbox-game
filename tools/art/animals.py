@@ -38,7 +38,7 @@ BUTTERFLY_KEYS = {
     "c": "cream",
     "p": "petal",
     "q": "blossom",
-    "v": "arcane",
+    "v": "heather",
 }
 
 # Each sheet: cell size, outline colour (None for none), colour keys and the actions with

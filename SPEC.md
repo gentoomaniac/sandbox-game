@@ -92,7 +92,11 @@ top of classic pixel art (details under "Lighting and look").
   - 2–4 px detail clusters, not single-pixel noise.
 - **Palette:** "about 32" is loosened to **up to ~48 colours**, so snow/ice, a berry red and
   a cool shadow grey fit; merge near-duplicate greens. The seasonal looks (spring greens,
-  autumn leaves, snow) raise the cap to **about 64** (decided 2026-11-05).
+  autumn leaves, snow) raise the cap to **about 64** (decided 2026-11-05). The style guide's
+  swaps (task 52): `meadow_dark`, `lush`, `crimson` and `frost_light` merged into their
+  neighbours; `meadow_light` stays, as the Scots pine's lit needles; `lime` (lime-wash),
+  `paint_teal` (doors and shutters), `heather` and `heather_dark` added. `arcane` and
+  `spirit` are kept for magic only. 64 of 64 used: a new colour needs a merge first.
 - **Variety:** the world must not look tiled.
   - Large-scale colour variation: terrain colour shifts slowly across the world (e.g.
     lusher, drier, yellower patches of grass), driven by low-frequency noise in world
@@ -782,7 +786,7 @@ Decided 2026-11-05.
   - The look (from the user's reference photos, 2026-11-05): the roof is the hero, a huge,
     thick reed thatch, weathered grey-brown with moss, hipped at both ends with heavy rounded
     eaves, and eyebrow dormers (the thatch swells in a wave over a half-round window). The
-    Kate has white lime walls, a teal door and shutters, white window frames, a turf ridge and
+    Kate has lime-washed walls (`lime`), a teal door and shutters (`paint_teal`), white window frames, a turf ridge and
     a small white chimney. The longhouse has buff brick on a fieldstone base, crossed sticks
     on its ridge, two brick chimneys, white windows in dark green frames, climbing roses, and
     the big arched green barn door of the hall house as its door (the middle tile), the

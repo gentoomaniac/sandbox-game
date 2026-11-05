@@ -150,7 +150,7 @@ def berries():
     rect(picture, 8, 1, 10, 1, "green_light")
     rect(picture, 5, 3, 6, 3, "green_light")
     line(picture, 8, 4, 8, 6, "green_dark")
-    for x, y, colour in ((3, 7, "ember"), (8, 8, "arcane"), (5, 11, "ember")):
+    for x, y, colour in ((3, 7, "ember"), (8, 8, "heather"), (5, 11, "ember")):
         rect(picture, x, y, x + 3, y + 2, colour)
         rect(picture, x + 1, y - 1, x + 2, y + 3, colour)
         pixel(picture, x + 1, y, "cream")

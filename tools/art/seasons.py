@@ -40,7 +40,6 @@ COLOURS = {
     "rust_dark":      "7a3424",
     "russet_deep":    "4c2a22",
     "red_light":      "c8503a",
-    "crimson":        "86302f",
     "ochre":          "cc9d3e",
     "ochre_dark":     "9a7430",
     "umber":          "5a4426",
@@ -54,27 +53,23 @@ COLOURS = {
     "snow_deep":      "7a8ea8",
     # A calm pale blue-green for rimed grass.
     "frost":          "86a094",
-    "frost_light":    "aec4ba",
 }
 
 _SPRING_GREENS = {
     "green_bright": "spring_pale",
     "green_light": "spring_light",
     "green": "spring",
-    "lush": "spring",
     "green_dark": "spring_dark",
 }
 _AUTUMN_GRASS = {
     "green_bright": "straw",
     "green_light": "autumn_light",
     "green": "reed",
-    "lush": "olive",
     "green_dark": "olive",
     "dry": "autumn_light",
     "dry_light": "straw",
     "meadow": "olive",
     "meadow_light": "reed",
-    "meadow_dark": "green_dark",
     # Flowers wither to dry heads and fallen leaves.
     "cream": "ochre",
     "gold": "flame",
@@ -84,7 +79,6 @@ _WINTER_GROUND = {
     "green_bright": "snow_light",
     "green_light": "snow_light",
     "green": "snow",
-    "lush": "snow",
     # The dark greens only soften by one step, so where layers meet (grass rims and blades
     # showing through the dithered edge of lush or dry grass) no lines stand out on the snow.
     "green_dark": "snow",
@@ -94,7 +88,6 @@ _WINTER_GROUND = {
     "dry_light": "snow_light",
     "meadow": "snow",
     "meadow_light": "snow_light",
-    "meadow_dark": "snow_shadow",
     "bog": "snow_shadow",
     "bog_dark": "snow_shadow",
     # Flowers are frosted.
@@ -111,7 +104,6 @@ _BARE_GROUND = {
     "green_bright": "bare_light",
     "green_light": "bare_light",
     "green": "bare",
-    "lush": "bare",
     "green_dark": "mud_dark",
     "green_deep": "soil_dark",
     "olive": "mud_dark",
@@ -119,7 +111,6 @@ _BARE_GROUND = {
     "dry_light": "bare_light",
     "meadow": "bare",
     "meadow_light": "bare_light",
-    "meadow_dark": "mud_dark",
     "cream": "straw",
     "gold": "straw",
     "petal": "sand",
@@ -128,25 +119,23 @@ _BARE_GROUND = {
 # tips (see also `sparkle`).
 _FROST_GROUND = {
     "green_bright": "snow_light",
-    "green_light": "frost_light",
+    "green_light": "snow_shadow",
     "green": "frost",
-    "lush": "frost",
     "green_dark": "snow_deep",
     "green_deep": "snow_deep",
     "olive": "frost",
     "dry": "frost",
-    "dry_light": "frost_light",
+    "dry_light": "snow_shadow",
     "meadow": "frost",
-    "meadow_light": "frost_light",
-    "meadow_dark": "snow_deep",
+    "meadow_light": "snow_shadow",
     "bog": "snow_deep",
     "bog_dark": "snow_deep",
     "cream": "snow_light",
-    "gold": "frost_light",
+    "gold": "snow_shadow",
     "petal": "snow_shadow",
 }
 # Plants stay green-shaped under a frost, with white rims.
-_FROST_STALKS = {"green_bright": "snow_light", "green_light": "frost_light", "green_dark": "frost", "green_deep": "snow_deep"}
+_FROST_STALKS = {"green_bright": "snow_light", "green_light": "snow_shadow", "green_dark": "frost", "green_deep": "snow_deep"}
 GROUND_REMAPS = {
     "spring": _SPRING_GREENS,
     "summer": {},
@@ -172,7 +161,7 @@ _ORANGE = {
     "green_deep": "russet_deep", "olive": "rust_dark", "dry_light": "maple_light", "dry": "flame",
 }
 _RED = {
-    "green_bright": "red_light", "green_light": "ember", "green": "crimson", "green_dark": "rust_dark",
+    "green_bright": "red_light", "green_light": "ember", "green": "rust_dark", "green_dark": "rust_dark",
     "green_deep": "russet_deep", "olive": "rust_dark", "dry_light": "red_light", "dry": "ember",
 }
 _YELLOW = {
@@ -197,7 +186,7 @@ _DRY_FERN = {"green_light": "straw", "green": "reed", "green_dark": "olive"}
 
 # How the snow cap of each object is drawn: (surfaces, edges, depth in px).
 _SNOW_CONIFER = ({"green_light", "green", "green_dark", "olive"}, {"green_deep"}, 2)
-_SNOW_PINE = ({"meadow_light", "meadow", "meadow_dark"}, {"bog_dark"}, 2)
+_SNOW_PINE = ({"meadow_light", "meadow", "green_deep"}, {"bog_dark"}, 2)
 _SNOW_BUSH = ({"mud", "mud_dark", "soil_dark"}, {"green_deep"}, 5)
 _SNOW_STONE = ({"stone_light", "stone"}, set(), 2)
 _SNOW_BOULDER = ({"stone_light", "stone", "green_light", "green", "olive"}, set(), 3)
@@ -368,7 +357,7 @@ _SNOW_REEDS = ({"sand_light", "straw", "reed"}, set(), 2)
 
 # Evergreens and rocks in a frost: the greens go pale and bluish, as if rimed.
 _FROST_CONIFER = {"green_light": "snow_shadow", "green": "green_light", "green_dark": "green"}
-_FROST_PINE = {"meadow_light": "snow_shadow", "meadow": "meadow_light", "meadow_dark": "meadow"}
+_FROST_PINE = {"meadow_light": "snow_shadow", "meadow": "meadow_light", "green_deep": "meadow"}
 _FROST_BUSH = {"green_light": "snow_light", "green": "snow_shadow", "green_dark": "mud_dark", "green_bright": "snow_light"}
 _FROST_FERN = {"green_light": "snow_light", "green": "straw", "green_dark": "reed"}
 _FROST_STONE = {"green_light": "snow", "green": "snow_shadow", "olive": "snow_shadow"}

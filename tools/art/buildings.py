@@ -21,7 +21,7 @@ TILE = 16
 THATCH = ("sand", "bare_light", "bare", "mud_dark", "soil_dark")
 MOSS = ("dry", "olive", "green_dark")
 # The lime-washed walls: lit, and shaded at the right corner.
-LIME = ("cream", "sand_light")
+LIME = ("lime", "sand_light")
 # Fieldstones: lit on top, and their body.
 FIELDSTONE = ("stone_light", "stone")
 OAK = ("soil", "soil_dark")
@@ -29,7 +29,7 @@ GLASS = ("water_light", "water", "water_deep")
 LIT_GLASS = ("cream", "gold", "flame")
 # What the wall colours turn into in the shadow under the eaves.
 SHADED = {
-    "cream": "sand_light", "sand_light": "sand", "straw": "ochre_dark", "sand": "mud",
+    "lime": "sand_light", "cream": "sand_light", "sand_light": "sand", "straw": "ochre_dark", "sand": "mud",
     "rust": "rust_dark", "red_light": "rust", "rust_dark": "russet_deep",
     "soil_light": "soil_mid", "soil_mid": "soil", "soil": "soil_dark",
     "snow_light": "snow", "stone_light": "stone", "stone": "stone_dark",
@@ -299,15 +299,15 @@ def kate(is_lit):
     rect(picture, wall_left, wall_top, wall_right, base_top - 1, LIME[0])
     rect(picture, wall_right - 1, wall_top, wall_right, base_top - 1, LIME[1])
     fieldstone_base(picture, rng, wall_left, wall_right, base_top, height - 2)
-    teal = ("spirit", "spirit", "water")
+    teal = ("paint_teal", "paint_teal", "water")
     for left in (12, 57):
-        window(picture, left, 70, 10, 10, is_lit, shutters=("spirit", "water"))
+        window(picture, left, 70, 10, 10, is_lit, shutters=("paint_teal", "water"))
     plank_door(picture, 34, 68, height - 4, 12, teal)
     eaves = thatch_roof(picture, snowy, rng, 0, width - 1, 12, 63, 22)
     turf_ridge(picture, snowy, 22, width - 23, 12)
     eaves_shadow(picture, eaves, wall_left, wall_right)
     eyebrow(picture, snowy, 40, 46, 16, is_lit)
-    chimney(picture, snowy, 52, 3, 14, ("snow_light", "cream", "sand_light"))
+    chimney(picture, snowy, 52, 3, 14, ("snow_light", "lime", "sand_light"))
     outline(picture, THATCH[4])
     ground_shadow(picture)
     return picture, snowy

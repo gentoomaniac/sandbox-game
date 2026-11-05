@@ -20,8 +20,8 @@ local folklore (see "Fantasy").
 
 ## Palette
 
-The palette is in `tools/art/generate.py` (`PALETTE`, 41 colours) plus
-`tools/art/seasons.py` (`COLOURS`, 23), and it is **full: 64 of 64**. Every new colour
+The palette is in `tools/art/generate.py` (`PALETTE`, 43 colours) plus
+`tools/art/seasons.py` (`COLOURS`, 21), and it is **full: 64 of 64**. Every new colour
 needs a merge first.
 
 Principles:
@@ -34,15 +34,15 @@ Principles:
 - **Paint is a material.** Doors, shutters and window frames get the few strong colours a
   farm could afford: dark green, teal-blue, ox-blood red, white. Not on walls, not on
   roofs.
-- **Magic colours stay rare.** `arcane` and `spirit` are meant for magic. Today `spirit`
-  paints the Kate's teal door and `arcane` turns up in crops and icons, so a spirit
-  glow would look like a door. Keep these two for magic only.
+- **Magic colours stay rare.** `arcane` and `spirit` are meant for magic, and nothing
+  else uses them: the Kate's door and shutters are `paint_teal`, and the purple berries,
+  bean flowers, turnip shoulders and butterflies are `heather`. Keep these two for magic only.
 
-Measured use today (pixels across all of `assets/`), and what to do:
+The swaps made in task 52 (measured use before, in pixels across all of `assets/`):
 
 | Change | Why |
 |---|---|
-| Merge `meadow_light` (330 px) into `green_light` | Terrain only; barely visible. |
+| ~~Merge `meadow_light` (330 px) into `green_light`~~ kept | Now the Scots pine's lit needles (task 51). |
 | Merge `meadow_dark` (722 px) into `green_deep` | Same. |
 | Merge `lush` into `green` | Terrain only; the two read as one green. |
 | Merge `crimson` (377 px) into `rust_dark` | Only for red autumn crowns, which should be rare (see Trees). |
@@ -51,8 +51,12 @@ Measured use today (pixels across all of `assets/`), and what to do:
 | Add `paint_teal` (about `3f7f86`) | The door and shutter teal, so `spirit` is free for magic again. |
 | Add `heather` and `heather_dark` (about `8c5c86`, `5a3a5c`) | The Geest heath in August; also good for hand-dyed cloth. |
 
-That frees five and uses four, leaving one for later (for example a pale glowing
-`wisp` green-white for will-o'-the-wisps, about `c8f0c8`).
+Four were merged and four added. `meadow_light` was **kept**: since task 51 it is the lit
+needle colour of the Scots pine, and `green_light` would turn the dark blue-green crowns
+yellow-green (`meadow_dark` there became `green_deep`, which looks the same). So the
+palette is full again; the next colour (for example a pale glowing `wisp` green-white for
+will-o'-the-wisps, about `c8f0c8`) needs a merge first. After the `lush` merge, lush grass
+differs from grass only by its darker blades: still a visible patch, but softer.
 
 ## Materials
 
@@ -326,7 +330,7 @@ task 51 (pine, spring leaf-out); changes to trees should be coordinated with it.
    red rare (rowan, cherry) and merge `crimson` away. Coordinate with task 51.
 5. **Window panes** (small). Windows are 4-pane modern casements. Use 6–9 small panes
    with 1 px bars, on all buildings and the interior window.
-6. **Palette swaps** (small). Merge the five colours listed under Palette and add `lime`,
+6. **Done (task 52):** **Palette swaps** (small). Merge the five colours listed under Palette and add `lime`,
    `paint_teal`, `heather`, `heather_dark`; repaint the Kate wall in `lime` and its door in
    `paint_teal`, so `spirit` is free for magic.
 7. **Seed sacks** (small). All seed icons are the same sack with a tiny mark and can't be

@@ -11,13 +11,11 @@ Columns: 8
  70 112  61	green
  95 138  69	green_light
 130 163  82	green_bright
- 64 120  58	lush
  92 102  52	olive
 104 116  62	dry
 138 146  80	dry_light
 128 122  64	reed
 176 160  94	straw
- 41  72  58	meadow_dark
  55  96  62	meadow
  79 128  72	meadow_light
  58  41  32	soil_dark
@@ -41,6 +39,10 @@ Columns: 8
 196 122 140	petal
 208 154 114	skin
 169 109  76	skin_shade
+232 228 216	lime
+ 63 127 134	paint_teal
+140  92 134	heather
+ 90  58  92	heather_dark
 111  76 145	arcane
  78 158 155	spirit
 168 208 112	spring_pale
@@ -54,7 +56,6 @@ Columns: 8
 122  52  36	rust_dark
  76  42  34	russet_deep
 200  80  58	red_light
-134  48  47	crimson
 204 157  62	ochre
 154 116  48	ochre_dark
  90  68  38	umber
@@ -65,4 +66,3 @@ Columns: 8
 163 180 198	snow_shadow
 122 142 168	snow_deep
 134 160 148	frost
-174 196 186	frost_light
