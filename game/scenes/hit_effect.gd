@@ -3,7 +3,8 @@ extends RefCounted
 ## What flies off an object when a tool hits it. Pure logic, so it can be tested apart from the
 ## drawing (see HitParticles).
 
-enum Kind { NONE, LEAVES_GREEN, LEAVES_AUTUMN, NEEDLES, SNOW, SPLINTERS }
+## DUST is only raised together with SPLINTERS (see HitParticles), `kind_for` never gives it.
+enum Kind { NONE, LEAVES_GREEN, LEAVES_AUTUMN, NEEDLES, SNOW, SPLINTERS, DUST }
 
 
 ## The effect of a hit on an object of `type` that is drawn in `look`. A frosty tree counts as

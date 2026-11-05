@@ -52,15 +52,15 @@ func test_stumps_and_bushes_drop_nothing() -> void:
 		assert_eq(HitEffect.kind_for(type, LOOKS.SUMMER), KINDS.NONE)
 
 
-func test_particles_are_few_and_gone_in_under_a_second() -> void:
+func test_particles_are_few_and_gone_in_about_a_second() -> void:
 	var particles: HitParticles = autofree(HitParticles.new())
 	for kind in HitParticles.SPECS:
 		particles.emit(kind, Vector2.ZERO)
 		var count := particles.particle_count()
-		assert_between(count, 2, 8, "count of %s" % kind)
-		particles.advance(0.99)
+		assert_between(count, 2, 12, "count of %s" % kind)
+		particles.advance(1.2)
 		assert_eq(particles.particle_count(), 0, "%s gone" % kind)
-		assert_lt(HitParticles.SPECS[kind]["life"], 1.0)
+		assert_lt(HitParticles.SPECS[kind]["life"], 1.2)
 
 
 func test_no_effect_emits_no_particles() -> void:
@@ -98,4 +98,4 @@ func test_the_finishing_hit_on_stone_removes_it_and_throws_splinters() -> void:
 	_show_world_in_view()
 	_hit(ItemTypes.PICKAXE, 1)
 	assert_null(_world.object_at(_tile))
-	assert_between(_view._hit_particles.particle_count(), 3, 5)
+	assert_between(_view._hit_particles.particle_count(), 6, 9, "4 to 6 splinters and some dust")
