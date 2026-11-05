@@ -32,6 +32,13 @@ const BED_REACH := 1
 
 var world: World
 var clock := GameClock.new()
+## Where the sun is over the year; the weather follows it.
+var sun := Sun.new()
+## Built from the world seed (see `new_game` and `from_dict`).
+var weather: Weather
+## Session-only (see Console): the weather condition that is forced, or &"" for the weather
+## as the simulation has it. Not saved.
+var weather_override := &""
 var player := PlayerState.new()
 var energy_rules := EnergyRules.default_rules()
 ## What every use costs is multiplied by this (the Game setting: 0.5, 1 or 1.5).
@@ -54,6 +61,7 @@ static func new_game(world_seed: int) -> GameState:
 	var state := GameState.new()
 	state.world = World.new(world_seed)
 	state.world.clock = state.clock
+	state.weather = Weather.new(world_seed, state.sun)
 	state.current_map = state.world
 	var camp := CampSite.create(state.world, WorldGenerator.new(world_seed))
 	state.player.position = Vector2(camp.spawn_pos) + Vector2(0.5, 0.5)
@@ -119,6 +127,15 @@ func sleep_in(bed: WorldObject) -> void:
 	var fill := energy_rules.sleep_fill(bed.type)
 	player.energy = minf(maxf(player.energy, fill), energy_cap())
 	player.health = maxf(player.health, fill)
+
+
+## The weather the player sees: at their tile, or outside the door of the house they are in
+## (they would see it through its windows). A forced condition (see Console) replaces the
+## simulated one.
+func current_weather() -> WeatherSample:
+	var tile := _building_inside.door_tile() if is_inside() else player.tile()
+	var sample := weather.at(tile, clock.day, clock.minute_of_day)
+	return sample if weather_override == &"" else weather.forced(sample, weather_override)
 
 
 ## The most energy the player can have now.
@@ -317,6 +334,7 @@ func to_dict() -> Dictionary:
 static func from_dict(data: Dictionary) -> GameState:
 	var state := GameState.new()
 	state.world = World.from_dict(data["world"])
+	state.weather = Weather.new(state.world.world_seed, state.sun)
 	state.clock = GameClock.from_dict(data["clock"])
 	state.clock.new_day.connect(state._on_new_day)
 	state.world.clock = state.clock

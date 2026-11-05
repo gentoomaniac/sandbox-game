@@ -24,6 +24,8 @@ var _ui_scale_label: Label
 var _ui_scale_slider: HSlider
 var _is_dragging_slider := false
 var _drain_button: Button
+var _day_length_label: Label
+var _day_length_slider: HSlider
 
 
 func _init(settings: GameSettings) -> void:
@@ -79,6 +81,14 @@ func _init(settings: GameSettings) -> void:
 	game.add_child(_ui_scale_slider)
 	_first_focus[Page.GAME] = _ui_scale_slider
 	_drain_button = _add_button(game, "", _cycle_energy_drain)
+	_day_length_label = Label.new()
+	_day_length_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	game.add_child(_day_length_label)
+	_day_length_slider = HSlider.new()
+	_day_length_slider.max_value = GameSettings.MAX_DAY_LENGTH_VARIATION
+	_day_length_slider.step = GameSettings.DAY_LENGTH_VARIATION_STEP
+	_day_length_slider.value_changed.connect(_on_day_length_changed)
+	game.add_child(_day_length_slider)
 	_add_button(game, "Back", _back)
 
 	var controls := ControlsPage.new(_settings)
@@ -167,6 +177,8 @@ func _show_game_settings() -> void:
 	_drain_button.text = (
 		"Energy drain: " + GameSettings.ENERGY_DRAIN_NAMES[_settings.energy_drain].capitalize()
 	)
+	_day_length_slider.set_value_no_signal(_settings.day_length_variation)
+	_show_day_length(_settings.day_length_variation)
 
 
 func _show_ui_scale(value: float) -> void:
@@ -189,3 +201,12 @@ func _on_slider_released(_value_changed: bool) -> void:
 func _cycle_energy_drain() -> void:
 	_settings.set_energy_drain(GameSettings.next_drain(_settings.energy_drain))
 	_show_game_settings()
+
+
+func _show_day_length(percent: float) -> void:
+	_day_length_label.text = "Day length variation %d %%" % roundi(percent)
+
+
+func _on_day_length_changed(percent: float) -> void:
+	_show_day_length(percent)
+	_settings.set_day_length_variation(roundi(percent))

@@ -22,6 +22,8 @@ extends Node2D
 ## open (see ConsoleView); `--zoom=<z>` sets the camera zoom; `--coordinates` shows the
 ## coordinates (F3); `--inventory` opens the character screen at start;
 ## `--wear=<item>` puts a wearable item on (`straw_hat`, `shirt`, ...);
+## `--weather=<condition>` forces the weather (`clear`, `rain`, `snow`, `fog`, `wind`, `storm`,
+## `thunder`; see WeatherView), `--flash` keeps the flash of lightning on;
 ## `--mouse-tile=<x>,<y>` pretends the mouse is always on that tile (for screenshots);
 ## `--camera-shift=<x>,<y>` moves the camera by that many art pixels, fractions included
 ## (to check smooth scrolling); `--menu=pause|settings|controls|display|game` opens that menu page
@@ -56,6 +58,7 @@ var _console_view := ConsoleView.new()
 var _cheat_hud := CheatHud.new()
 var _start_console_lines := PackedStringArray()
 var _interior_view := InteriorView.new()
+var _weather_view := WeatherView.new()
 var _screenshot_path := ""
 var _fast_forward := false
 var _is_fading := false
@@ -91,6 +94,13 @@ func _ready() -> void:
 	_state.energy_drain = _settings.energy_drain_factor()
 	_settings.drain_changed.connect(
 		func() -> void: _state.energy_drain = _settings.energy_drain_factor()
+	)
+	_state.sun.variation = _settings.day_length_variation_factor()
+	_tint.sun = _state.sun
+	_settings.day_length_changed.connect(
+		func() -> void:
+			_state.sun.variation = _settings.day_length_variation_factor()
+			_show_clock()
 	)
 	# Quitting saves first (see _notification).
 	get_tree().auto_accept_quit = false
@@ -134,6 +144,10 @@ func _ready() -> void:
 			_use_highlight.debug_mouse_tile = Vector2i(int(tile[0]), int(tile[1]))
 		elif arg.begins_with("--menu="):
 			_debug_menu_page = PauseMenu.Page.get(arg.trim_prefix("--menu=").to_upper(), -1)
+		elif arg.begins_with("--weather="):
+			_force_weather(StringName(arg.trim_prefix("--weather=")))
+		elif arg == "--flash":
+			_weather_view.is_flash_held = true
 		elif arg.begins_with("--camera-shift="):
 			var shift := arg.trim_prefix("--camera-shift=").split_floats(",")
 			_camera_shift = Vector2(shift[0], shift[1])
@@ -163,7 +177,11 @@ func _ready() -> void:
 	add_child(_console_view)
 	_console_view.show_state(_state)
 	# A teleport moves the player far: the camera jumps with them instead of gliding.
-	_console_view.command_ran.connect(func() -> void: _camera.rig.follow(_camera_target))
+	_console_view.command_ran.connect(
+		func() -> void:
+			_camera.rig.follow(_camera_target)
+			_show_clock()
+	)
 	if not _start_console_lines.is_empty():
 		_console_view.open()
 		for line in _start_console_lines:
@@ -174,6 +192,7 @@ func _ready() -> void:
 	add_child(_menu)
 	_interior_view.hide()
 	_world.add_child(_interior_view)
+	_world.add_child(_weather_view)
 	_show_clock()
 	if _state.is_inside():
 		_show_current_map()
@@ -247,7 +266,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	_tick_clock(delta)
-	_coordinates_hud.show_position(_state.player.tile(), _state.is_inside())
+	var weather := _state.current_weather()
+	_weather_view.show_weather(weather, _tint.color)
+	_coordinates_hud.show_position(
+		_state.player.tile(), _state.is_inside(), _weather_and_sun_text(weather)
+	)
 	_use_highlight.is_enabled = (
 		not _build_mode.is_active()
 		and not _state.is_inside()
@@ -376,6 +399,7 @@ func _tick_clock(delta: float) -> void:
 	if whole_minutes > 0:
 		_pending_minutes -= whole_minutes
 		_state.clock.advance(whole_minutes)
+		_weather_view.minutes_passed(whole_minutes)
 		_show_clock()
 
 
@@ -418,6 +442,7 @@ func _show_current_map() -> void:
 	_build_mode.cancel()
 	_build_mode.process_mode = PROCESS_MODE_DISABLED if is_inside else PROCESS_MODE_INHERIT
 	_view.visible = not is_inside
+	_weather_view.visible = not is_inside
 	_view.process_mode = PROCESS_MODE_DISABLED if is_inside else PROCESS_MODE_INHERIT
 	_interior_view.visible = is_inside
 	if is_inside:
@@ -471,6 +496,26 @@ func _save_game() -> void:
 	SaveFile.write(_state, _save_path)
 
 
+func _force_weather(condition: StringName) -> void:
+	if not Weather.FORCEABLE.has(condition):
+		push_error("--weather expects one of %s, got '%s'" % [Weather.FORCEABLE, condition])
+		return
+	_state.weather_override = condition
+
+
+## The F3 lines on the weather: the values, and sunrise and sunset.
+func _weather_and_sun_text(weather: WeatherSample) -> String:
+	var day := _state.clock.day
+	return (
+		"%s\nsunrise %s · sunset %s"
+		% [
+			weather.short_text(),
+			Sun.time_text(_state.sun.sunrise(day)),
+			Sun.time_text(_state.sun.sunset(day)),
+		]
+	)
+
+
 func _set_start_time(text: String) -> void:
 	var parts := text.split(":")
 	if parts.size() != 2 or not parts[0].is_valid_int() or not parts[1].is_valid_int():
@@ -497,7 +542,7 @@ func _show_clock() -> void:
 	if _state.is_inside():
 		_tint.show_interior()
 	else:
-		_tint.show_time(_state.clock)
+		_tint.show_time(_state.clock, _state.current_weather().cloud_cover)
 	_view.set_light_strength(_tint.light_strength())
 	_view.set_season(_state.clock.season())
 	_view.refresh_vegetation()

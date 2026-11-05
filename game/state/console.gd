@@ -11,6 +11,11 @@ const COMMANDS := {
 	"god": ["god", "Toggle invincibility: health never drops (energy still runs out)."],
 	"nodrain": ["nodrain", "Toggle: actions cost no energy."],
 	"noweight": ["noweight", "Toggle: carried weight doesn't raise costs."],
+	"weather":
+	[
+		"weather [clear|rain|snow|fog|wind|storm|thunder|auto]",
+		"Show the weather, force a condition, or return to the simulation (auto).",
+	],
 }
 ## Item ids this similar to a misspelt one (see String.similarity) are offered as a guess.
 const CLOSE_MATCH_SIMILARITY := 0.4
@@ -46,6 +51,8 @@ func run(line: String) -> Array[String]:
 		"noweight":
 			cheats.is_weight_off = not cheats.is_weight_off
 			output = [_toggle_message("No weight", cheats.is_weight_off)]
+		"weather":
+			output = _weather(arguments)
 		_:
 			output = ["Unknown command: %s (try help)" % words[0]]
 	return output
@@ -63,6 +70,10 @@ func complete(line: String) -> String:
 		candidates.assign(COMMANDS.keys())
 	elif word_index == 1 and words[0] == "give":
 		candidates = _item_ids()
+	elif word_index == 1 and words[0] == "weather":
+		for condition in Weather.FORCEABLE:
+			candidates.append(String(condition))
+		candidates.append("auto")
 	candidates = candidates.filter(func(name: String) -> bool: return name.begins_with(typed))
 	if candidates.is_empty():
 		return line
@@ -127,6 +138,32 @@ func _give(arguments: PackedStringArray) -> Array[String]:
 		lines.append("Gave %d %s" % [count - left, ItemTypes.TYPES[item]["name"]])
 	if left > 0:
 		lines.append("Inventory full: %d not added" % left)
+	return lines
+
+
+func _weather(arguments: PackedStringArray) -> Array[String]:
+	if arguments.size() > 1:
+		return ["Usage: %s" % COMMANDS["weather"][0]]
+	if arguments.size() == 1:
+		var word := arguments[0]
+		if word == "auto":
+			_state.weather_override = &""
+			return ["Weather follows the simulation"]
+		if not Weather.FORCEABLE.has(StringName(word)):
+			return ["Usage: %s" % COMMANDS["weather"][0]]
+		_state.weather_override = StringName(word)
+		return ["Weather forced to %s (weather auto ends it)" % word]
+	var sample := _state.current_weather()
+	var lines: Array[String] = [sample.values_text(), "Conditions: " + sample.conditions_text()]
+	var day := _state.clock.day
+	lines.append(
+		(
+			"Sun: %s to %s"
+			% [Sun.time_text(_state.sun.sunrise(day)), Sun.time_text(_state.sun.sunset(day))]
+		)
+	)
+	if _state.weather_override != &"":
+		lines.append("Forced: %s" % _state.weather_override)
 	return lines
 
 

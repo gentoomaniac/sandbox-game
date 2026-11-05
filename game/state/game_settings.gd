@@ -1,6 +1,7 @@
 class_name GameSettings
 extends RefCounted
-## The player's settings: key bindings, display mode, UI scale and energy drain. Bindings
+## The player's settings: key bindings, display mode, UI scale, energy drain and day length
+## variation. Bindings
 ## live in Godot's InputMap (that is what the game reads); this class edits them, remembers
 ## the project's defaults and keeps them in a ConfigFile, written on every change. It has no
 ## UI code.
@@ -8,7 +9,8 @@ extends RefCounted
 ## The file only holds what differs from the defaults, so an action added later, or one the
 ## file doesn't mention, keeps its default binding. The display mode is only stored once the
 ## player has chosen it; until then the window stays as the command line or project left it.
-## The UI scale and the energy drain are stored when they differ from their defaults.
+## The UI scale, the energy drain and the day length variation are stored when they differ
+## from their defaults.
 
 ## Emitted when the player changes the energy drain; loading it does not, so whoever connects
 ## reads `energy_drain_factor()` once at start and then follows this.
@@ -16,6 +18,9 @@ signal drain_changed
 ## Emitted when the player changes the UI scale; loading it does not, so whoever applies the
 ## scale does it once after `load_file()` and then on this.
 signal ui_scale_changed(scale: float)
+## Emitted when the player changes the day length variation; loading it does not, so whoever
+## uses it reads `day_length_variation_factor()` once at start and then follows this.
+signal day_length_changed
 
 enum EnergyDrain { LOW, NORMAL, HIGH }
 
@@ -31,6 +36,7 @@ const FULLSCREEN_KEY := "fullscreen"
 const GAME_SECTION := "game"
 const UI_SCALE_KEY := "ui_scale"
 const ENERGY_DRAIN_KEY := "energy_drain"
+const DAY_LENGTH_KEY := "day_length_variation"
 
 const MIN_UI_SCALE := 0.5
 const MAX_UI_SCALE := 2.0
@@ -42,6 +48,11 @@ const ENERGY_DRAIN_NAMES := {
 	EnergyDrain.LOW: "low", EnergyDrain.NORMAL: "normal", EnergyDrain.HIGH: "high"
 }
 const ENERGY_DRAIN_FACTORS := {EnergyDrain.LOW: 0.5, EnergyDrain.NORMAL: 1.0, EnergyDrain.HIGH: 1.5}
+
+## Day length variation in percent: how much of the yearly swing of the day length applies.
+const MAX_DAY_LENGTH_VARIATION := 100
+const DAY_LENGTH_VARIATION_STEP := 10
+const DEFAULT_DAY_LENGTH_VARIATION := 100
 
 const ACTION_LABELS := {
 	&"use": "Use",
@@ -67,6 +78,7 @@ const ARROW_LABELS := {
 var is_fullscreen := false
 var ui_scale := DEFAULT_UI_SCALE
 var energy_drain := DEFAULT_ENERGY_DRAIN
+var day_length_variation := DEFAULT_DAY_LENGTH_VARIATION
 
 var _has_chosen_fullscreen := false
 var _path: String
@@ -216,6 +228,18 @@ func energy_drain_factor() -> float:
 	return ENERGY_DRAIN_FACTORS[energy_drain]
 
 
+## Percent, kept in range and on the slider's steps.
+func set_day_length_variation(percent: int) -> void:
+	day_length_variation = _clamped_variation(percent)
+	_save()
+	day_length_changed.emit()
+
+
+## The share of the yearly day length swing that applies, 0 to 1 (see Sun).
+func day_length_variation_factor() -> float:
+	return day_length_variation / 100.0
+
+
 ## Reads the file and applies it. A file that can't be read or understood is ignored (with a
 ## warning), as is any single entry that isn't understood. A missing file is normal.
 func load_file() -> void:
@@ -256,6 +280,12 @@ func _load_game_section(file: ConfigFile) -> void:
 			energy_drain = drain
 		else:
 			push_warning("Ignoring energy drain in %s: not low, normal or high" % _path)
+	if file.has_section_key(GAME_SECTION, DAY_LENGTH_KEY):
+		var value: Variant = file.get_value(GAME_SECTION, DAY_LENGTH_KEY)
+		if value is int and value >= 0 and value <= MAX_DAY_LENGTH_VARIATION:
+			day_length_variation = _clamped_variation(value)
+		else:
+			push_warning("Ignoring day length variation in %s: not a whole number 0 to 100" % _path)
 
 
 func _load_action(file: ConfigFile, action: StringName) -> void:
@@ -318,6 +348,8 @@ func _save() -> void:
 		file.set_value(GAME_SECTION, UI_SCALE_KEY, ui_scale)
 	if energy_drain != DEFAULT_ENERGY_DRAIN:
 		file.set_value(GAME_SECTION, ENERGY_DRAIN_KEY, ENERGY_DRAIN_NAMES[energy_drain])
+	if day_length_variation != DEFAULT_DAY_LENGTH_VARIATION:
+		file.set_value(GAME_SECTION, DAY_LENGTH_KEY, day_length_variation)
 	var error := DirAccess.make_dir_recursive_absolute(_path.get_base_dir())
 	if error == OK:
 		error = file.save(_path)
@@ -342,6 +374,14 @@ func _apply_display() -> void:
 			if is_fullscreen
 			else DisplayServer.WINDOW_MODE_WINDOWED
 		)
+	)
+
+
+static func _clamped_variation(percent: int) -> int:
+	return clampi(
+		roundi(float(percent) / DAY_LENGTH_VARIATION_STEP) * DAY_LENGTH_VARIATION_STEP,
+		0,
+		MAX_DAY_LENGTH_VARIATION
 	)
 
 
