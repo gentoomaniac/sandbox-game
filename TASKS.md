@@ -735,7 +735,7 @@ from the weather".
 
 ## 30. More crops, grown by the weather
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Farming and foraging" (crops).
 
