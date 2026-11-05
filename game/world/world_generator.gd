@@ -235,6 +235,10 @@ func _is_tall_grass_at(world_pos: Vector2i) -> bool:
 
 
 func _is_reeds_at(world_pos: Vector2i, terrain: Tile.Terrain) -> bool:
+	# The roll is the cheap part: only a tile that can still pass it is probed for water.
+	var roll := _roll(world_pos, _reed_roll_seed)
+	if roll >= maxf(REED_STAND_CHANCE, REED_SCATTER_CHANCE):
+		return false
 	var is_bank := (
 		_is_wetland_edge(world_pos)
 		if terrain == Tile.Terrain.WETLAND
@@ -244,7 +248,7 @@ func _is_reeds_at(world_pos: Vector2i, terrain: Tile.Terrain) -> bool:
 		return false
 	var in_stand := _grass_noise.get_noise_2dv(Vector2(world_pos)) > REED_STAND_ABOVE
 	var chance := REED_STAND_CHANCE if in_stand else REED_SCATTER_CHANCE
-	return _roll(world_pos, _reed_roll_seed) < chance
+	return roll < chance
 
 
 func _is_water_within(world_pos: Vector2i, reach: int) -> bool:

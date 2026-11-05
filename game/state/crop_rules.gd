@@ -1,10 +1,10 @@
 class_name CropRules
 extends RefCounted
 ## The crops and the farming rules, read from data/crops.cfg (see there for what each key
-## means; the wild reeds have a section of their own, no crop). `from_file` reports every required
-## key that is missing, and `is_valid` says whether
-## any was. WorldObjectTypes and ItemTypes build the crop object types and the seed and
-## produce items from `default_rules`; the art sheet of every crop is loaded from its `sheet`.
+## means; the wild reeds have a section of their own, no crop). `from_file` reports every
+## required key that is missing, and `is_valid` says whether any was. WorldObjectTypes and
+## ItemTypes build the crop object types and the seed and produce items from `default_rules`;
+## the art sheet of every crop is loaded from its `sheet`.
 
 const DEFAULT_PATH := "res://data/crops.cfg"
 ## The section with the rules that are not a crop's.

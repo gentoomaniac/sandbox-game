@@ -104,8 +104,10 @@ func is_picked() -> bool:
 func pick() -> void:
 	if type_data().has("regrow_days"):
 		state["days_until_bears"] = type_data()["regrow_days"]
-	else:
+	elif type_data().has("regrow_growth"):
 		state[ReedLife.REGROWTH] = 0.0
+	else:
+		assert(false, "Does not regrow once picked: %s" % type)
 
 
 ## A stump or sapling of a tree that can grow remembers which one in `state["tree"]`.
