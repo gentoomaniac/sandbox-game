@@ -38,7 +38,7 @@ func _init() -> void:
 	add_child(_panel)
 
 
-func show_builder(builder: Builder, inventory: Inventory) -> void:
+func bind(builder: Builder, inventory: Inventory) -> void:
 	_builder = builder
 	_inventory = inventory
 

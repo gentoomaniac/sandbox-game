@@ -29,6 +29,7 @@ var _origin := Vector2i.ZERO
 var _blockers: Dictionary[Vector2i, World.Blocked] = {}
 var _is_snowy := false
 var _texture: Texture2D
+var _was_active := false
 var _pinned_origin: Variant = null  # Vector2i, set by --ghost
 var _debug_house_origin: Variant = null  # Vector2i, set by --house
 
@@ -74,9 +75,13 @@ func _process(_delta: float) -> void:
 		if world.place_building(builder.choice, _debug_house_origin) == null:
 			push_error("--house: can't place a house at %s" % _debug_house_origin)
 		_debug_house_origin = null
-	if not is_active():
-		message_changed.emit("")
+	var is_now_active := is_active()
+	if is_now_active != _was_active:
+		_was_active = is_now_active
 		queue_redraw()
+		if not is_now_active:
+			message_changed.emit("")
+	if not is_now_active:
 		return
 	_origin = (
 		_pinned_origin if _pinned_origin != null else _origin_under(camera.mouse_world_position())

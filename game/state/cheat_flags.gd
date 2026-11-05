@@ -18,6 +18,6 @@ func active_names() -> Array[String]:
 		names.append("No drain")
 	if is_weight_off:
 		names.append("No weight")
-	return names
 	if is_cost_off:
 		names.append("No cost")
+	return names

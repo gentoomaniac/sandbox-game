@@ -29,6 +29,10 @@ const MAX_BINDINGS := 2
 ## that fixes bindings.
 const ALWAYS_BOUND: Array[StringName] = [&"pause"]
 
+## Actions that may share a key because they never apply at the same time: sleeping happens
+## indoors at a bed, picking a building outdoors with the hammer.
+const SHARING_PAIRS := [[&"interact", &"build_next"]]
+
 const CONTROLS_SECTION := "controls"
 const DISPLAY_SECTION := "display"
 const FULLSCREEN_KEY := "fullscreen"
@@ -156,7 +160,11 @@ func bind(action: StringName, slot: int, event: InputEvent) -> String:
 		var events := bindings(other)
 		var remaining := events.filter(
 			func(existing: InputEvent) -> bool:
-				return existing == replaced or not _is_same(existing, new_event)
+				return (
+					existing == replaced
+					or not _is_same(existing, new_event)
+					or (other != action and _may_share_a_key(action, other))
+				)
 		)
 		if remaining.size() == events.size():
 			continue
@@ -308,19 +316,24 @@ func _load_action(file: ConfigFile, action: StringName) -> void:
 
 
 ## A hand-edited file can bind one key twice or leave the pause menu without a key. The first
-## action in the input map keeps a shared key; the pause menu gets its defaults back.
+## action in the input map keeps a shared key (except for actions that may share one, see
+## SHARING_PAIRS); the pause menu gets its defaults back.
 func _resolve_loaded_bindings() -> void:
-	var seen: Array[InputEvent] = []
+	# Each event seen so far, with the action that has it.
+	var seen: Array[Array] = []
 	for action in actions():
 		var kept: Array[InputEvent] = []
 		for event in bindings(action):
-			if seen.any(func(other: InputEvent) -> bool: return _is_same(other, event)):
+			if seen.any(
+				func(owned: Array) -> bool:
+					return _is_same(owned[1], event) and not _may_share_a_key(owned[0], action)
+			):
 				push_warning(
 					"%s is bound twice in %s; %s loses it" % [binding_text(event), _path, action]
 				)
 			else:
 				kept.append(event)
-				seen.append(event)
+				seen.append([action, event])
 		_set_bindings(action, kept)
 	for action in ALWAYS_BOUND:
 		if not bindings(action).is_empty():
@@ -335,6 +348,10 @@ func _resolve_loaded_bindings() -> void:
 					)
 				)
 		_set_bindings(action, _defaults[action])
+
+
+func _may_share_a_key(action: StringName, other: StringName) -> bool:
+	return SHARING_PAIRS.any(func(pair: Array) -> bool: return pair.has(action) and pair.has(other))
 
 
 func _save() -> void:

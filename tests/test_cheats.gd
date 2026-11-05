@@ -17,6 +17,13 @@ func test_each_toggle_switches_on_and_off() -> void:
 	assert_eq(_state.cheats.active_names(), ["No drain", "No weight"] as Array[String])
 
 
+func test_the_hud_names_every_cheat_that_is_on_including_no_cost() -> void:
+	_console.run("nocost")
+	assert_eq(_state.cheats.active_names(), ["No cost"] as Array[String])
+	_console.run("god")
+	assert_eq(_state.cheats.active_names(), ["God", "No cost"] as Array[String])
+
+
 func test_nodrain_makes_actions_free() -> void:
 	_console.run("nodrain")
 	_hit(ItemTypes.HOE, 1)

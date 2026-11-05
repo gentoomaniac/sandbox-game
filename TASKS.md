@@ -881,7 +881,9 @@ consistent light side, and a ground shadow, in the scale of the other trees.
 
 Depends on 36. A Tiled interior per building (see InteriorLoader), sized to its footprint:
 the shack bare and small, the Kate a cottage room with hearth and bed, the longhouse with
-a hall and living end, the barn with stalls and storage and no bed or hearth.
+a hall and living end, the barn with stalls and storage and no bed or hearth. Until then
+all four buildings in data/buildings.cfg use maps/interiors/small_house.tmx, and
+tests/test_interior.gd still builds its checks on that map under the old name.
 
 ## 40. Sound generator
 

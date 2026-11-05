@@ -172,6 +172,7 @@ func _ready() -> void:
 		elif arg.begins_with("--building="):
 			_start_building = StringName(arg.trim_prefix("--building="))
 		elif arg.begins_with("--ghost="):
+			# BuildMode pins the ghost there; here the hammer is taken to see it.
 			_is_hammer_held_at_start = true
 		elif arg.begins_with("--energy="):
 			_state.player.energy = float(arg.trim_prefix("--energy="))
@@ -243,7 +244,7 @@ func _ready() -> void:
 	add_child(_hotbar)
 	_hotbar.show_inventory(_state.player.inventory)
 	add_child(_build_panel)
-	_build_panel.show_builder(_builder, _state.player.inventory)
+	_build_panel.bind(_builder, _state.player.inventory)
 	add_child(_vitals)
 	_vitals.show_state(_state)
 	add_child(_character_screen)
@@ -325,8 +326,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_state.player.inventory.select(hotbar_slot)
 	elif event.is_action_pressed("select_hammer"):
 		_builder.select_hammer()
-	# E also picks the next building, so the hammer in hand doesn't put the player to bed.
-	elif event.is_action_pressed("interact") and not _is_fading and not _builder.is_building():
+	# E also picks the next building (outdoors), so the hammer in hand doesn't put the player to bed.
+	elif event.is_action_pressed("interact") and not _is_fading and not _build_mode.is_active():
 		_try_sleep()
 	elif _is_use_event(event) and can_use and _eat_held():
 		pass  # Eating needs no target: a held food is eaten instead of used on a tile.
@@ -351,8 +352,9 @@ func _process(delta: float) -> void:
 		not _state.is_inside() and not _character_screen.is_open() and not _console_view.is_open()
 	)
 	_use_highlight.is_enabled = is_world_in_play and not _builder.is_building()
-	_build_mode.visible = is_world_in_play
-	_build_mode.process_mode = PROCESS_MODE_INHERIT if is_world_in_play else PROCESS_MODE_DISABLED
+	# Build mode only counts outdoors, in play and not during a fade; it keeps processing, to
+	# clear its message when it goes off.
+	_build_mode.visible = is_world_in_play and not _is_fading
 	_build_panel.visible = _build_mode.is_active()
 	if not _is_fading:
 		var direction := Vector2.ZERO
@@ -424,7 +426,7 @@ func _can_open_console() -> bool:
 
 
 func _can_use() -> bool:
-	return not _is_fading and not _builder.is_building()
+	return not _is_fading and not _build_mode.is_active()
 
 
 ## The hotbar slot (0 to 9) whose key `event` presses, or -1.
