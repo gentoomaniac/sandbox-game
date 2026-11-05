@@ -22,10 +22,8 @@ func to_dict() -> Dictionary:
 
 static func from_dict(data: Dictionary) -> WorldObject:
 	var object := WorldObject.new(StringName(data["type"]), SaveCodec.vector_from_json(data["pos"]))
-	# JSON has only floats; the whole numbers in the state (days_grown) must be ints again.
-	for key: String in data["state"]:
-		var value: Variant = data["state"][key]
-		object.state[key] = int(value) if value is float and value == floorf(value) else value
+	# Left as parsed: JSON numbers are floats, so the typed accessors convert.
+	object.state = data["state"].duplicate()
 	return object
 
 
@@ -44,7 +42,7 @@ func is_crop() -> bool:
 
 ## Crops only: the whole days this crop has grown.
 func days_grown() -> int:
-	return state.get("days_grown", 0)
+	return int(state.get("days_grown", 0))
 
 
 func grow_one_day() -> void:

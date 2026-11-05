@@ -98,13 +98,12 @@ func _remove_a_tree() -> Vector2i:
 	return Vector2i.ZERO
 
 
-func test_world_object_keeps_its_state_as_ints() -> void:
+func test_world_object_round_trip_keeps_its_growth() -> void:
 	var crop := WorldObject.new(GameState.CROP, Vector2i(-3, 4))
 	crop.grow_one_day()
 	var restored := WorldObject.from_dict(_through_json(crop.to_dict()))
 	assert_eq(restored.type, crop.type)
 	assert_eq(restored.pos, Vector2i(-3, 4))
-	assert_typeof(restored.state["days_grown"], TYPE_INT)
 	assert_eq(restored.days_grown(), 1)
 
 
@@ -187,6 +186,18 @@ func test_a_lived_in_game_round_trip() -> void:
 	assert_eq(crop.days_grown(), 1)
 	assert_eq(restored.world.tile_at(crop.pos).terrain, Tile.Terrain.SOIL)
 	assert_eq(restored.world.tile_at(_tilled_tile).terrain, Tile.Terrain.SOIL)
+
+
+func test_loading_does_not_make_a_second_camp() -> void:
+	var restored := GameState.from_dict(_through_json(_state.to_dict()))
+	_load_chunks_like(_state.world, restored.world)
+	var fireplaces := 0
+	for coords in restored.world.loaded_chunk_coords():
+		for object in restored.world.chunk_at(coords).objects():
+			if object.type == WorldObjectTypes.FIREPLACE:
+				fireplaces += 1
+	assert_eq(fireplaces, 1)
+	assert_eq(restored.player.home_bed, _state.player.home_bed)
 
 
 func test_the_restored_game_carries_on() -> void:

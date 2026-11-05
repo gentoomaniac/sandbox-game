@@ -14,11 +14,18 @@ static func write(state: GameState, path: String = DEFAULT_PATH) -> bool:
 	if error != OK:
 		push_error("Can't create the save folder: %s" % error_string(error))
 		return false
-	var file := FileAccess.open(path, FileAccess.WRITE)
+	# Written beside the save and renamed over it, so a crash never leaves half a save.
+	var temp_path := path + ".tmp"
+	var file := FileAccess.open(temp_path, FileAccess.WRITE)
 	if file == null:
-		push_error("Can't write %s: %s" % [path, error_string(FileAccess.get_open_error())])
+		push_error("Can't write %s: %s" % [temp_path, error_string(FileAccess.get_open_error())])
 		return false
 	file.store_string(JSON.stringify({"version": VERSION, "game": state.to_dict()}, "\t"))
+	file.close()
+	error = DirAccess.rename_absolute(temp_path, path)
+	if error != OK:
+		push_error("Can't replace %s: %s" % [path, error_string(error)])
+		return false
 	return true
 
 
@@ -33,13 +40,17 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 	var parsed: Variant = (
 		json.data if json.parse(FileAccess.get_file_as_string(path)) == OK else null
 	)
-	if not parsed is Dictionary or not parsed.has("game"):
+	if not parsed is Dictionary:
 		_reject(path, "not a save file")
 		return null
-	if not is_equal_approx(float(parsed.get("version", 0)), VERSION):
+	# `!=` also accepts the 1.0 that JSON parsing gives.
+	if parsed.get("version") != VERSION:
 		_reject(
 			path, "save version %s, this game reads version %d" % [parsed.get("version"), VERSION]
 		)
+		return null
+	if not parsed.has("game"):
+		_reject(path, "no game in the save")
 		return null
 	return GameState.from_dict(parsed["game"])
 

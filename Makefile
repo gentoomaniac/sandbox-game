@@ -86,10 +86,13 @@ ZOOM ?=
 # Further debug flags, e.g. ARGS="--ghost=3,-5" (see game/scenes/build_mode.gd).
 ARGS ?=
 OUT ?= $(CURDIR)/build/screenshot.png
+# Screenshots start a new game, so they never show the real save; KEEP_SAVE=1 loads it
+# (e.g. with ARGS="--save-path=...").
+KEEP_SAVE ?=
 screenshot:
 	$(IMPORT)
 	mkdir -p $(dir $(OUT))
-	$(GODOT) --path . -- $(if $(AT),--at=$(AT)) --screenshot=$(OUT) $(if $(TIME),--time=$(TIME)) $(if $(ZOOM),--zoom=$(ZOOM)) $(ARGS)
+	$(GODOT) --path . -- $(if $(KEEP_SAVE),,--new-game) $(if $(AT),--at=$(AT)) --screenshot=$(OUT) $(if $(TIME),--time=$(TIME)) $(if $(ZOOM),--zoom=$(ZOOM)) $(ARGS)
 
 # On Godot builds without navigation (e.g. some Gentoo builds) GUT prints a harmless
 # 'Identifier "NavigationMeshGenerator" not declared' parse error. Tests still run.
