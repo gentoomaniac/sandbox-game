@@ -593,7 +593,7 @@ Depends on: 19. See SPEC.md "Menus and settings".
 
 ## 23. Character screen with equipment
 
-- [ ] Done
+- [x] Done
 
 See SPEC.md "Player" (character screen).
 
