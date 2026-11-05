@@ -21,7 +21,7 @@ of 32 rows sit at the bottom of their cell). Row 0 is the oak (3 variants),
 row 1 the stone (2 variants), then the camp site: row 2 the fireplace, row 3 the sleeping bag
 (1 variant each), then the vegetation rows from 4 (see vegetation()). The rows and counts are
 in game/state/world_object_types.gd.
-An object stands on one tile: the bottom centre 16x16 of its cell (x 8..23, y 16..31). The
+An object stands on one tile: the bottom centre 16x16 of its cell (x 8..23, y 32..47). The
 oak's canopy rises above that, over the tiles north of it.
 
 assets/player.png: the player character, 16x16 cells with the feet on the bottom row. One row
@@ -41,6 +41,9 @@ from PIL import Image
 ASSETS = Path(__file__).resolve().parents[2] / "assets"
 TILE = 16
 OBJECT_CELL = 32
+# Trees are taller than they are wide; every cell of the object atlas is this high, and a
+# shorter sprite is drawn on its bottom rows.
+OBJECT_CELL_HEIGHT = 48
 
 # fmt: off
 PALETTE = {
@@ -592,8 +595,10 @@ def soil():
 LAYERS = [water, floodplain, wetland, grass, lush_grass, dry_grass, soil]
 
 
-def object_canvas():
-    return [[None] * OBJECT_CELL for _ in range(OBJECT_CELL)]
+def object_canvas(height=OBJECT_CELL):
+    """A blank sprite. Sprites of height OBJECT_CELL_HEIGHT (trees) fill a whole atlas cell,
+    shorter ones are put on the bottom of theirs."""
+    return [[None] * OBJECT_CELL for _ in range(height)]
 
 
 def shaded_blob(canvas, rng, blobs, shades, outline):
@@ -601,7 +606,7 @@ def shaded_blob(canvas, rng, blobs, shades, outline):
     comes from the top left, so a pixel is darker the further down and right of its
     circle's centre it is. Pixels on the blob's border get `outline`."""
     covered = set()
-    for y in range(OBJECT_CELL):
+    for y in range(len(canvas)):
         for x in range(OBJECT_CELL):
             best = None
             for cx, cy, radius in blobs:
@@ -621,25 +626,75 @@ def shaded_blob(canvas, rng, blobs, shades, outline):
             canvas[y][x] = outline
 
 
+BARK = ("soil_mid", "soil", "soil", "soil_dark")
+LEAVES = ("green_bright", "green_light", "green", "green_dark", "green_deep", "olive")
+
+
+def ground_shadow(canvas, half_width, bottom=None):
+    """A soft dark ellipse on the ground under an object, 3 rows high, with a dithered
+    rim; it is drawn first so the object covers its middle."""
+    bottom = len(canvas) - 1 if bottom is None else bottom
+    for y, reach in ((bottom - 2, half_width - 3), (bottom - 1, half_width), (bottom, half_width - 2)):
+        for x in range(16 - reach, 16 + reach):
+            if abs(x - 16) < reach - 1 or (x + y) % 2 == 0:
+                canvas[y][x] = "green_deep"
+
+
+def tree_trunk(canvas, top, shades=BARK):
+    """A trunk on the bottom tile, 3 wide above the lower rows and 4 wide below, with a
+    root flare at its foot."""
+    bottom = len(canvas) - 1
+    for y in range(top, bottom + 1):
+        width = 4 if y > bottom - 9 else 3
+        for index in range(width):
+            canvas[y][14 + index] = shades[index + (width == 3 and index == 2)]
+    canvas[bottom][13] = canvas[bottom - 1][13] = shades[1]
+    canvas[bottom][18] = canvas[bottom - 1][18] = shades[-1]
+    canvas[bottom][12] = canvas[bottom][19] = shades[-1]
+
+
+def limb(canvas, x, y, direction, length, colour="soil"):
+    """A 2px thick limb rising diagonally from the trunk at (x, y); the crown drawn over it
+    hides its far end."""
+    for step in range(length):
+        canvas[y - step][x + step * direction] = colour
+        canvas[y - step + 1][x + step * direction] = colour
+
+
+def shade_under_crown(canvas, shades=BARK):
+    """Darkens the trunk where the crown above it casts a shadow, and the crown's own
+    underside, so the two read as joined rather than stacked."""
+    dark = shades[-1]
+    for y in range(len(canvas)):
+        for x in range(OBJECT_CELL):
+            if canvas[y][x] in shades and any(
+                y - up >= 0 and canvas[y - up][x] in LEAVES for up in (1, 2, 3)
+            ):
+                canvas[y][x] = dark
+    for x in range(OBJECT_CELL):
+        lowest = max((y for y in range(len(canvas)) if canvas[y][x] in LEAVES), default=None)
+        if lowest is not None and canvas[lowest - 1][x] in ("green_bright", "green_light", "green"):
+            canvas[lowest - 1][x] = "green_dark"
+
+
 def oak(seed):
     rng = random.Random(seed)
-    canvas = object_canvas()
-    # Trunk, standing on the tile, with a flared foot.
-    for y in range(22, 32):
-        for x in range(14, 18):
-            canvas[y][x] = ("soil_mid", "soil", "soil", "soil_dark")[x - 14]
-    for y in (30, 31):
-        canvas[y][13] = "soil"
-        canvas[y][18] = "soil_dark"
+    canvas = object_canvas(OBJECT_CELL_HEIGHT)
+    ground_shadow(canvas, 10)
+    tree_trunk(canvas, 30)
+    # Limbs into the crown, on some variants.
+    if seed % 3 != 0:
+        limb(canvas, 14, 40, -1, 6)
+    if seed % 3 != 1:
+        limb(canvas, 17, 38, 1, 6)
     # Canopy: a few overlapping puffs, different for every variant. It is wide and reaches
     # down over most of the trunk, so that a dense forest reads as one canopy, not as
     # trunks in rows.
-    blobs = [(16 + rng.uniform(-1, 1), 13 + rng.uniform(-1, 1), rng.uniform(9, 10))]
-    for cx, cy in ((8, 17), (24, 17), (16, 5), (11, 9), (21, 10), (12, 21), (20, 21)):
+    blobs = [(16 + rng.uniform(-1, 1), 22 + rng.uniform(-1, 1), rng.uniform(9, 10))]
+    for cx, cy in ((8, 27), (24, 27), (16, 14), (11, 18), (21, 19), (12, 31), (20, 31)):
         blobs.append((cx + rng.uniform(-2, 2), cy + rng.uniform(-1.5, 1.5), rng.uniform(5, 7)))
-    shaded_blob(
-        canvas, rng, blobs, ("green_bright", "green_light", "green", "green_dark", "green_deep"), "green_deep"
-    )
+    shaded_blob(canvas, rng, blobs, LEAVES[:5], "green_deep")
+    shade_under_crown(canvas)
     return canvas
 
 
@@ -650,15 +705,6 @@ def stone(seed):
     blobs = [(16, 25, 6.5)] if seed % 2 else [(14, 26, 5.5), (20, 28, 3.5)]
     shaded_blob(canvas, rng, blobs, ("stone_light", "stone", "stone", "stone_dark"), "ink")
     return canvas
-
-
-def trunk(canvas, x_left, top, bottom, shades):
-    """A vertical trunk shaded from lit left to dark right, with a flared foot."""
-    for y in range(top, bottom + 1):
-        for index, shade in enumerate(shades):
-            canvas[y][x_left + index] = shade
-    canvas[bottom][x_left - 1] = shades[-2]
-    canvas[bottom][x_left + len(shades)] = shades[-1]
 
 
 def conifer_tier(canvas, rng, top, bottom, half_width):
@@ -679,33 +725,30 @@ def conifer_tier(canvas, rng, top, bottom, half_width):
 
 def spruce(seed):
     rng = random.Random(seed)
-    canvas = object_canvas()
-    trunk(canvas, 15, 26, 31, ("soil_mid", "soil", "soil_dark"))
-    # Tall and narrow: four tiers, the widest at the bottom, each overlapping the next.
-    tiers = [(18, 28, 9), (12, 22, 7.5), (7, 16, 6), (1 + rng.randint(0, 1), 10, 4)]
+    canvas = object_canvas(OBJECT_CELL_HEIGHT)
+    ground_shadow(canvas, 9)
+    tree_trunk(canvas, 38, ("soil_mid", "soil", "soil", "soil_dark"))
+    # Tall and narrow: five tiers, the widest at the bottom, each overlapping the next.
+    tiers = [(30, 41, 9.5), (23, 34, 8), (16, 28, 6.5), (9, 21, 5), (3 + rng.randint(0, 1), 14, 3.5)]
     for top, bottom, half_width in tiers:
         conifer_tier(canvas, rng, top, bottom, half_width + rng.uniform(-0.5, 0.5))
+    shade_under_crown(canvas)
     return canvas
 
 
 def pine(seed):
     rng = random.Random(seed)
-    canvas = object_canvas()
-    # A tall, warm trunk that leans a little, bare of branches except near the crown.
-    lean = rng.choice((-1, 0, 1))
-    for y in range(10, 32):
-        x_left = 15 + round(lean * (31 - y) / 24 * -1)
-        for index, shade in enumerate(("soil_light", "soil_mid", "soil")):
-            canvas[y][x_left + index] = shade
-    canvas[31][14] = "soil_mid"
-    canvas[31][18] = "soil"
-    for reach in (1, 2, 3):
-        canvas[16 - reach // 2][15 - reach] = "soil_mid"
-        canvas[16 - reach // 2][17 + reach] = "soil"
+    canvas = object_canvas(OBJECT_CELL_HEIGHT)
+    ground_shadow(canvas, 9)
+    # A tall trunk in dull, dark bark, with limbs into the crown.
+    tree_trunk(canvas, 23, ("mud", "mud_dark", "soil_dark", "soil_dark"))
+    limb(canvas, 14, 30, -1, 5, "mud_dark")
+    limb(canvas, 17, 28, 1, 5, "mud_dark")
     # Umbrella crown: a flat, wide cloud of needles.
-    blobs = [(16, 9, 6.5), (9, 11, 5.5), (23, 11, 5.5), (13, 6, 4.5), (20, 6, 4.5)]
+    blobs = [(16, 21, 6.5), (9, 24, 5.5), (23, 24, 5.5), (13, 17, 4.5), (20, 17, 4.5)]
     blobs = [(cx + rng.uniform(-1, 1), cy + rng.uniform(-1, 1), r) for cx, cy, r in blobs]
     shaded_blob(canvas, rng, blobs, ("green_light", "olive", "green", "green_dark"), "green_deep")
+    shade_under_crown(canvas, ("mud", "mud_dark", "soil_dark"))
     return canvas
 
 
@@ -727,23 +770,24 @@ def draw_branch(canvas, rng, x, y, direction, length, colour):
 
 def dead_tree(seed):
     rng = random.Random(seed)
-    canvas = object_canvas()
-    # A grey-brown trunk narrowing to a snag, with crooked bare branches.
-    for y in range(12, 32):
-        width = 4 if y > 22 else 3 if y > 16 else 2
-        x_left = 16 - width // 2 + (1 if y < 20 else 0)
+    canvas = object_canvas(OBJECT_CELL_HEIGHT)
+    ground_shadow(canvas, 9)
+    # A grey-brown trunk narrowing to a snag, with crooked bare branches that start inside it.
+    for y in range(22, 48):
+        width = 4 if y > 38 else 3 if y > 30 else 2
+        x_left = 16 - width // 2 + (1 if y < 30 else 0)
         for index in range(width):
             canvas[y][x_left + index] = ("stone", "mud", "mud", "mud_dark")[
                 index if width == 4 else min(index + 1, 3)
             ]
-    canvas[31][13] = "mud"
-    canvas[31][18] = "mud_dark"
-    canvas[30][19] = "mud_dark"
+    canvas[47][13] = canvas[46][13] = "mud"
+    canvas[47][18] = canvas[46][18] = "mud_dark"
+    canvas[47][12] = canvas[47][19] = "mud_dark"
     for x, y, direction, length in (
-        (16, 16, -1, 8 + rng.randint(0, 3)),
-        (17, 14, 1, 9 + rng.randint(0, 3)),
-        (16, 12, rng.choice((-1, 1)), 7 + rng.randint(0, 3)),
-        (15, 21, -1, 4 + rng.randint(0, 2)),
+        (16, 30, -1, 8 + rng.randint(0, 3)),
+        (17, 27, 1, 9 + rng.randint(0, 3)),
+        (16, 24, rng.choice((-1, 1)), 7 + rng.randint(0, 3)),
+        (15, 36, -1, 4 + rng.randint(0, 2)),
     ):
         draw_branch(canvas, rng, x, y, direction, length, "mud" if direction < 0 else "stone")
     return canvas
@@ -752,6 +796,7 @@ def dead_tree(seed):
 def berry_bush(seed):
     rng = random.Random(seed)
     canvas = object_canvas()
+    ground_shadow(canvas, 12)
     blobs = [(16, 24, 7), (10, 26, 5), (22, 26, 5), (16, 20, 4.5)]
     shaded_blob(canvas, rng, blobs, ("green_light", "green", "green", "green_dark"), "green_deep")
     # Berries on the leaves: red, purple or both, with a pale glint.
@@ -773,6 +818,7 @@ def shrub(seed):
     shades = (("green_bright", "green_light", "green", "green_dark"),
               ("green_light", "olive", "olive", "green_dark"),
               ("dry_light", "dry", "olive", "green_dark"))[seed % 3]
+    ground_shadow(canvas, 10)
     blobs = [(16, 25, 5.5), (11, 27, 3.5), (21, 27, 3.5)]
     shaded_blob(canvas, rng, blobs, shades, "green_deep")
     return canvas
@@ -781,6 +827,7 @@ def shrub(seed):
 def sapling(seed):
     rng = random.Random(seed)
     canvas = object_canvas()
+    ground_shadow(canvas, 6)
     lean = rng.choice((-1, 0, 1))
     for y in range(20, 32):
         canvas[y][16 + lean * (31 - y) // 8] = "soil_mid"
@@ -793,6 +840,7 @@ def sapling(seed):
 def fern_bush(seed):
     rng = random.Random(seed)
     canvas = object_canvas()
+    ground_shadow(canvas, 10)
     # Fronds fan out from the base and droop at their tips.
     for angle in (-75, -55, -30, -8, 12, 35, 58, 78):
         angle = math.radians(angle + rng.uniform(-6, 6))
@@ -1022,19 +1070,22 @@ def small_house():
     return canvas
 
 
-def to_image(rows, size=TILE):
-    """Lays out rows of size x size tiles as one image."""
+def to_image(rows, size=TILE, height=None):
+    """Lays out rows of tiles as one image. Tiles are size wide and `height` high (default
+    size); a tile with fewer rows of pixels sits at the bottom of its cell."""
+    height = height or size
     width = max(1, max(len(row) for row in rows)) * size
-    image = Image.new("RGBA", (width, len(rows) * size), (0, 0, 0, 0))
+    image = Image.new("RGBA", (width, len(rows) * height), (0, 0, 0, 0))
     pixels = image.load()
     for row_index, row in enumerate(rows):
         for column, tile in enumerate(row):
-            for y in range(size):
+            top = height - len(tile)
+            for y in range(len(tile)):
                 for x in range(size):
                     name = tile[y][x]
                     if name is not None:
                         rgb = bytes.fromhex(PALETTE[name])
-                        pixels[column * size + x, row_index * size + y] = (*rgb, 255)
+                        pixels[column * size + x, row_index * height + top + y] = (*rgb, 255)
     return image
 
 
@@ -1083,7 +1134,9 @@ def main():
         decoration_rows.append(decorations)
     to_image(terrain_rows).save(ASSETS / "terrain.png")
     to_image(decoration_rows).save(ASSETS / "decorations.png")
-    to_image(OBJECTS + CAMP_OBJECTS + vegetation(), OBJECT_CELL).save(ASSETS / "objects.png")
+    to_image(OBJECTS + CAMP_OBJECTS + vegetation(), OBJECT_CELL, OBJECT_CELL_HEIGHT).save(
+        ASSETS / "objects.png"
+    )
     to_image(PLAYER).save(ASSETS / "player.png")
     (ASSETS / "buildings").mkdir(exist_ok=True)
     to_image([[small_house()]], 64).save(ASSETS / "buildings" / "small_house.png")
