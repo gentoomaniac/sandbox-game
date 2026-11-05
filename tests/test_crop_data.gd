@@ -15,6 +15,7 @@ seed_weight=0.01
 produce_weight=0.1
 yield=1
 regrow_stage=0
+ripe_wait_factor=1.0
 growth_per_stage=2.0
 damage_per_bad_day=0.5
 heal_per_good_day=0.1

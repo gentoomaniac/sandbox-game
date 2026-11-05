@@ -1,4 +1,4 @@
-extends GutTest
+extends CropCase
 ## How crops live through days: growth from how well a day met their needs, damage from bad
 ## days, death, healing and regrowth, on days made up for the test (and a few of the real weather).
 
@@ -11,34 +11,6 @@ const COOL_CROPS: Array[StringName] = [
 	&"turnip", &"potato", &"carrot", &"cabbage", &"onion", &"peas", &"strawberries"
 ]
 const WARM_CROPS: Array[StringName] = [&"beans", &"tomatoes", &"pumpkin", &"wheat"]
-
-
-func _crop(type: StringName = WorldObjectTypes.TURNIP) -> WorldObject:
-	return WorldObject.new(type, Vector2i.ZERO)
-
-
-func _need(crop: WorldObject, key: String) -> float:
-	return crop.type_data()[key]
-
-
-## A day that meets every need of the crop at its best: a growth score of 1.
-func _best_day(crop: WorldObject) -> WeatherDay:
-	var day := WeatherDay.new()
-	day.mean_temperature = _need(crop, "temperature_best")
-	day.min_temperature = _need(crop, "temperature_min") + 2.0
-	day.max_temperature = _need(crop, "temperature_best") + 4.0
-	day.sunlight_hours = _need(crop, "sunlight_best")
-	day.max_wind_speed = 1.0
-	return day
-
-
-func _best_moisture(crop: WorldObject) -> float:
-	return _need(crop, "moisture_best")
-
-
-func _live(crop: WorldObject, day: WeatherDay, days := 1) -> void:
-	for _i in days:
-		CropLife.live_through_day(crop, day, _best_moisture(crop))
 
 
 func test_every_crop_ripens_in_its_growth_needed_on_best_days() -> void:
@@ -159,7 +131,9 @@ func test_good_days_heal_slowly_and_poor_ones_do_not() -> void:
 	var damage_before := CropLife.damage(crop)
 	_live(crop, poor)
 	assert_eq(CropLife.damage(crop), damage_before)
-	_live(crop, _best_day(crop), 100)
+	for _i in 100:
+		crop.state["growth"] = 0.0  # Kept from ripening, which would end in withering.
+		_live(crop, _best_day(crop))
 	assert_eq(CropLife.damage(crop), 0.0, "never below none")
 
 

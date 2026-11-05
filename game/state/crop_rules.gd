@@ -21,6 +21,7 @@ const REQUIRED_CROP_KEYS: Array[String] = [
 	"produce_weight",
 	"yield",
 	"regrow_stage",
+	"ripe_wait_factor",
 	"growth_per_stage",
 	"damage_per_bad_day",
 	"heal_per_good_day",

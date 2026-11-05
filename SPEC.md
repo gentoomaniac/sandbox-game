@@ -410,6 +410,10 @@ Decided 2026-11-05. A text console for testing and cheats.
     minimum, or wind above its tolerance (beans and tomatoes are fragile, wheat bends)
     damage the crop; enough damage and it dies and shows its dead stage, which the empty
     hand clears. Damage heals slowly on good days.
+  - **Ripe crops must be harvested in time** (decided 2026-11-05): a ripe crop waits as
+    many days as it took to ripen (since planting, or since it regrew), times its
+    `ripe_wait_factor` in the config (1 for all crops for now). One day more and it
+    withers: it dies, shows its dead stage and gives nothing. The player harvests by hand.
   - **Soil moisture** belongs to each tilled tile: rain wets it, the watering can fills
     it, and warmth, sun and wind dry it out over the day. Watered soil looks darker.
   - The calendar no longer gates planting: the weather does. Seeds plant on tilled soil
