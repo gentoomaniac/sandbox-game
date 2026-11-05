@@ -119,6 +119,14 @@ Past. World, characters, art and names are original; nothing is taken from exist
 - The biome decides which resources are available and what the land is good for
   agriculturally (see Biomes).
 
+### Resources: trees and minerals
+
+- The world has **trees and minerals in different varieties** (e.g. several tree types,
+  stone, ores).
+- Each variety has a **harvest level**: harvesting it needs a tool of at least that level.
+  This ties resources to tool upgrades (see Player: Tools).
+- The biome decides which varieties occur where (see Biomes).
+
 ### Combat
 
 - **Real-time action combat.**
@@ -200,6 +208,13 @@ Tasks: see [TASKS.md](TASKS.md).
 - **Reputation details:**
   - What does reputation unlock or block (prices, quests, hostility)?
   - Which NPCs in the territory are affected: everyone, or only those living closest?
+- **Resources:**
+  - Are trees and minerals world objects placed on tiles (with their own state, e.g. hits
+    left, regrowth), or terrain types? Suggested: world objects.
+  - Do they regrow or respawn? If so, how (trees from saplings, minerals per season, new
+    ones in unexplored areas)?
+  - Can the player plant trees?
+  - Does a stronger tool only unlock varieties, or also harvest faster?
 - **Target platforms:** Linux only, or desktop in general? Web?
 - **Scope:** hobby, learning project or release target?
 
