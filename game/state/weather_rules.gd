@@ -36,7 +36,7 @@ const REQUIRED_KEYS := {
 	],
 	"temperature":
 	["peak_at", "sunset_level", "cloud_damping", "length_effect_min", "length_effect_max"],
-	"curve": ["winter_to_spring_exponent"],
+	"thaw": ["start_day", "anchor_day", "anchor_temperature"],
 	"frost": ["floor_outside_winter", "winter_floor", "ramp_days", "softness"],
 	"clouds": ["humidity_from", "humidity_full", "overcast_sunlight"],
 	"precipitation": ["humidity_from", "humidity_full", "rain_from_temperature"],

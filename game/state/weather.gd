@@ -113,7 +113,7 @@ func at(position: Vector2i, day: int, minute: int) -> WeatherSample:
 	sample.sun_height = _sun.height(day, minute)
 	sample.sunlight = _sunlight(sample)
 	sample.temperature = (
-		_baseline(season_curve, "temperature_mean")
+		_temperature_mean(season_curve, minutes)
 		+ (
 			_baseline(season_curve, "temperature_spread")
 			* _noise(salt, Channel.TEMPERATURE, minutes, FRONT_OCTAVES)
@@ -283,10 +283,36 @@ func _season_curve(minutes: int) -> Array:
 	)
 	var seasons_since_middle := days_since_middle / GameClock.DAYS_PER_SEASON
 	var from := int(seasons_since_middle)
-	var weight := smoothstep(0.0, 1.0, seasons_since_middle - from)
-	if from == GameClock.Season.WINTER:
-		weight = pow(weight, _rules.value("curve", "winter_to_spring_exponent"))
-	return [from, (from + 1) % 4, weight]
+	return [from, (from + 1) % 4, smoothstep(0.0, 1.0, seasons_since_middle - from)]
+
+
+## The mean temperature: the season curve, except between the middle of winter and the middle
+## of spring, where it holds the winter value until late, thaws quickly and then rises on
+## (see [thaw] in the data file).
+func _temperature_mean(season_curve: Array, minutes: int) -> float:
+	var year_day := fposmod(float(minutes) / GameClock.MINUTES_PER_DAY, GameClock.DAYS_PER_YEAR)
+	# The span runs over the turn of the year, so the early days count past 120.
+	if year_day < GameClock.DAYS_PER_YEAR / 2.0:
+		year_day += GameClock.DAYS_PER_YEAR
+	var winter_middle := 3.5 * GameClock.DAYS_PER_SEASON
+	var spring_middle := 4.5 * GameClock.DAYS_PER_SEASON
+	if year_day < winter_middle or year_day > spring_middle:
+		return _baseline(season_curve, "temperature_mean")
+	var winter_mean := _rules.season_value(GameClock.Season.WINTER, "temperature_mean")
+	var points := [
+		Vector2(winter_middle, winter_mean),
+		Vector2(_rules.value("thaw", "start_day"), winter_mean),
+		Vector2(_rules.value("thaw", "anchor_day"), _rules.value("thaw", "anchor_temperature")),
+		Vector2(spring_middle, _rules.season_value(GameClock.Season.SPRING, "temperature_mean")),
+	]
+	for index in range(1, points.size()):
+		if year_day <= points[index].x:
+			return lerpf(
+				points[index - 1].y,
+				points[index].y,
+				smoothstep(points[index - 1].x, points[index].x, year_day)
+			)
+	return points[-1].y
 
 
 func _baseline(season_curve: Array, key: String) -> float:
