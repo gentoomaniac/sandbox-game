@@ -67,24 +67,28 @@ def outlined(picture, colour=None):
     return result
 
 
-def seed_sack(emblem, keys):
-    """A sack tied at the neck, with a few seeds spilled in front and a small picture of the
-    crop on it: `emblem` is 4 rows of 4 letters, in the colours `keys` gives them."""
+def seed_sack(emblem, keys, tie, seed):
+    """A sack tied at the neck with a string of the crop's colour, its crop painted large on the
+    front and a few of its seeds spilled in front, so each crop's sack is told apart at a
+    glance. `emblem` is 5 rows of 6 letters, in the colours `keys` gives them; `tie` and `seed`
+    are colours."""
     picture = canvas()
     rect(picture, 4, 6, 11, 12, "sand_light")
     rect(picture, 3, 8, 12, 11, "sand_light")
-    rect(picture, 4, 6, 5, 12, "straw")
-    rect(picture, 10, 8, 12, 12, "sand")
+    rect(picture, 4, 6, 4, 12, "straw")
+    rect(picture, 11, 8, 12, 12, "sand")
     rect(picture, 4, 12, 11, 12, "sand")
     rect(picture, 5, 3, 10, 4, "sand_light")
-    rect(picture, 5, 5, 10, 5, "mud")
     rect(picture, 6, 3, 6, 4, "straw")
+    rect(picture, 5, 5, 10, 5, tie)
+    rect(picture, 11, 5, 11, 6, tie)
+    pixel(picture, 12, 7, tie)
     for dy, row in enumerate(emblem):
         for dx, letter in enumerate(row):
             if letter != ".":
-                pixel(picture, 6 + dx, 7 + dy, keys[letter])
-    for x, y in ((3, 13), (6, 14), (9, 13), (12, 14)):
-        pixel(picture, x, y, "soil_mid")
+                pixel(picture, 5 + dx, 7 + dy, keys[letter])
+    for x, y in ((2, 13), (7, 14), (12, 13)):
+        rect(picture, x, y, x + 1, y, seed)
     return outlined(picture)
 
 

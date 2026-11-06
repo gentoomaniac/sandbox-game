@@ -7,22 +7,21 @@ import random
 import items
 from crops import KEYS, TILE, Surface
 
-# The picture on a seed bag's label: 4x4 letters of crops.KEYS.
-EMBLEMS = {
-    "turnip": (".gg.", "pppp", ".cc.", "..c."),
-    "potato": (".ee.", "eeew", "eeww", ".ww."),
-    "carrot": (".lg.", "oooo", ".or.", "..r."),
-    "cabbage": (".ll.", "lgdl", "ldgl", ".dd."),
-    "onion": (".yy.", "yyyt", "yttt", ".tt."),
-    "wheat": (".y.y", "yyyy", ".t.t", ".t.t"),
-    "peas": (".gg.", "gcgg", "ggcg", ".gg."),
-    "beans": ("g..g", "dg.d", "dg.d", ".dd."),
-    "flax": (".f.f", "fifi", ".l.l", ".l.l"),
-    "strawberries": (".ll.", "rrrr", "roro", ".rr."),
-    "pumpkin": (".k..", "oooo", "orro", ".oo."),
+# What tells each crop's seed sack apart (see items.seed_sack): the colour of its string, the
+# colour of its seeds, and the crop painted on it, 5 rows of 6 letters of crops.KEYS.
+SACKS = {
+    "turnip": ("heather", "soil_dark", ("..gl..", ".aaaa.", "aacccc", ".cccc.", "..cc..")),
+    "potato": ("soil", "soil_light", ("......", ".hhhh.", "hhmhhm", "hmhhmm", ".mmmm.")),
+    "carrot": ("flame", "soil_dark", (".l.g..", "..gl..", "oooooo", ".ooor.", "..or..")),
+    "cabbage": ("green_light", "soil_dark", (".gllg.", "glllld", "llggld", "dlgldd", ".dddd.")),
+    "onion": ("gold", "soil_dark", ("..g...", "..tt..", ".yyyt.", "yyyytt", ".ttt..")),
+    "wheat": ("ochre", "straw", ("y.y.y.", "yyyyyy", "y.y.y.", "x.x.x.", "x.x.x.")),
+    "peas": ("green_bright", "green_light", ("..dd..", ".dgdg.", "dgdgdd", ".dgdd.", "..dd..")),
+    "beans": ("green_dark", "soil_light", ("hh.hh.", "hmmhmm", "mm.mm.", ".hh.hh", ".mmmmm")),
+    "flax": ("water_light", "soil_light", (".f..f.", "fif.fi", ".f..f.", ".l..l.", ".l..l.")),
+    "strawberries": ("ember", "red_light", ("..g...", ".rrr..", "rryrr.", ".rrr..", "..r...")),
+    "pumpkin": ("olive", "sand", ("..k...", ".kddk.", "dkddkd", "dkddkd", ".dkkd.")),
 }
-
-
 def icon():
     return Surface(items.ICON, items.ICON, (0, 0))
 
@@ -166,7 +165,7 @@ PRODUCE = {
 def icons():
     """{item id: its 16x16 icon}: the seed bags of every crop and their produce, except the
     turnip, which items.py draws."""
-    pictures = {f"{crop}_seeds": items.seed_sack(emblem, KEYS) for crop, emblem in EMBLEMS.items()}
+    pictures = {f"{crop}_seeds": items.seed_sack(emblem, KEYS, tie, seed) for crop, (tie, seed, emblem) in SACKS.items()}
     for crop, draw in PRODUCE.items():
         pictures[crop] = items.outlined(draw().rows)
     return pictures

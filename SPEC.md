@@ -541,6 +541,9 @@ Decided 2026-11-05. A text console for testing and cheats.
     Flax isn't food. Save version 7 turns tomatoes and tomato plants into flax and flax
     seeds wherever they are. Strawberries are the small wild kind, and the pumpkin is
     drawn as a small green garden squash (its id stays `pumpkin`).
+  - **Seed sacks tell their crop at a glance** (task 52): each sack is tied with a string
+    of the crop's colour, has the crop painted large on its front and a few of its seeds
+    spilled in front.
   - **Crops need light, water and warmth to grow**, with the needs per crop in the
     config: a temperature range (minimum, best, maximum), the sunlight they need per
     day, the soil moisture they need, and how much wind they stand. Each night a crop
