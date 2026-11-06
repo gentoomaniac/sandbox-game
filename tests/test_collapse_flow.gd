@@ -17,6 +17,12 @@ func _key() -> InputEventKey:
 	return key
 
 
+## Runs the running fades for `seconds` at once, so no test waits on the clock.
+func _advance_fades(seconds: float) -> void:
+	for tween in get_tree().get_processed_tweens():
+		tween.custom_step(seconds)
+
+
 func test_the_collapse_kneels_tips_over_lies_and_sleeps_in_that_order() -> void:
 	assert_eq(PlayerView.collapse_frame(0.0), 0, "kneeling")
 	assert_eq(PlayerView.collapse_frame(0.55), 1, "tipping over")
@@ -31,9 +37,9 @@ func test_the_player_is_asleep_before_the_screen_fades() -> void:
 
 func test_the_message_waits_for_a_key() -> void:
 	_screen.show_message("You collapsed.")
-	await wait_seconds(FadeScreen.TEXT_FADE_SECONDS + 0.1)
+	_advance_fades(FadeScreen.TEXT_FADE_SECONDS)
 	assert_true(_screen.is_waiting_for_key())
-	await wait_seconds(1.0)
+	_advance_fades(1.0)
 	assert_true(_screen.is_waiting_for_key(), "still waiting without a key")
 	_screen._input(_key())
 	assert_false(_screen.is_waiting_for_key())
@@ -41,7 +47,7 @@ func test_the_message_waits_for_a_key() -> void:
 
 func test_a_click_goes_on_too() -> void:
 	_screen.show_message("You collapsed.")
-	await wait_seconds(FadeScreen.TEXT_FADE_SECONDS + 0.1)
+	_advance_fades(FadeScreen.TEXT_FADE_SECONDS)
 	var click := InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT
 	click.pressed = true
@@ -56,14 +62,14 @@ func test_a_key_while_the_message_fades_in_does_not_go_on() -> void:
 		done[0] = true
 	show.call()
 	_screen._input(_key())
-	await wait_seconds(FadeScreen.TEXT_FADE_SECONDS + 0.1)
+	_advance_fades(FadeScreen.TEXT_FADE_SECONDS)
 	assert_true(_screen.is_waiting_for_key())
 	assert_false(done[0])
 
 
 func test_a_held_key_repeating_does_not_go_on() -> void:
 	_screen.show_message("You collapsed.")
-	await wait_seconds(FadeScreen.TEXT_FADE_SECONDS + 0.1)
+	_advance_fades(FadeScreen.TEXT_FADE_SECONDS)
 	var repeat := _key()
 	repeat.echo = true
 	_screen._input(repeat)
@@ -72,9 +78,11 @@ func test_a_held_key_repeating_does_not_go_on() -> void:
 
 func test_fading_out_turns_the_screen_black_and_fading_in_clears_it() -> void:
 	assert_false(_screen.is_black())
-	await _screen.fade_out()
+	_screen.fade_out()
+	_advance_fades(FadeScreen.FADE_SECONDS)
 	assert_true(_screen.is_black())
-	await _screen.fade_in()
+	_screen.fade_in()
+	_advance_fades(FadeScreen.FADE_SECONDS)
 	assert_false(_screen.is_black())
 
 
