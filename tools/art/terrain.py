@@ -11,7 +11,7 @@ assets/terrain.png, per row:
   stays empty). A mask bit is set when that corner's world tile is on this layer or above;
 - then the full-tile variants (mask 15), at least one per row.
 
-assets/decorations.png, per row: small visual-only sprites (flowers, pebbles, reeds...)
+assets/decorations.png, per row: small visual-only sprites (pebbles, tufts, reeds...)
 drawn on top of world tiles of that layer. A row may be empty. Under the layers' rows comes
 one more, the meadow flowers of flowers.py.
 """
@@ -277,9 +277,7 @@ def floodplain():
     decorations = [
         decoration(30, reeds),
         decoration(31, cattails),
-        decoration(32, reeds, flowers[0]),
-        decoration(33, flowers[0], flowers[1]),
-        decoration(34, flowers[2], clover),
+        decoration(34, clover),
         decoration(35, puddle),
     ]
     return edge_tiles(texture, shapes, 20, decorate) + fulls, decorations
@@ -369,21 +367,12 @@ def grass_texture(colours):
 fallen_leaves = sprite({"a": "gold", "b": "petal", "c": "cream"}, "aa..b", "..c.b", ".b..a", "c.aa.")
 
 
-def common_flowers(stem):
-    return [
-        sprite({"c": "cream", "d": stem}, "c...", "d.c.", "..d."),
-        sprite({"c": "gold", "d": stem}, ".c..", ".d.c", "...d"),
-        sprite({"c": "petal", "d": stem}, "c.c", "d.d", ".c.", ".d."),
-    ]
-
-
 def grass():
     tufts = [
         sprite({"b": "green_bright", "d": "green_dark"}, "b...b", ".d.d.", "..d.."),
         sprite({"b": "green_bright", "d": "green_dark"}, ".b.", "bdb", "d.d"),
         sprite({"b": "green_light", "d": "green_dark"}, "b.b", "d.d"),
     ]
-    flowers = common_flowers("green_dark")
     clover = sprite({"g": "green_bright", "d": "green_dark"}, ".g.g", "gdgd", ".dg.")
     pebbles = sprite({"s": "stone_light", "m": "stone", "d": "stone_dark"}, ".s...", "smd.s", ".d..d")
     fern = sprite({"l": "green_light", "g": "green_dark"}, "l...l", ".l.l.", "l.g.l", ".ggg.", "..g..")
@@ -413,14 +402,11 @@ def grass():
         blades(tile, covered, rng, "green_dark", 0.45, -1, (1, 1, 2))
 
     decorations = [
-        decoration(51, flowers[0]),
-        decoration(52, flowers[1]),
-        decoration(53, flowers[2]),
-        decoration(54, flowers[0], flowers[1]),
         decoration(55, clover),
         decoration(56, pebbles),
         decoration(57, fern),
         decoration(58, tufts[0], tufts[1]),
+        decoration(53, tufts[2]),
         decoration(59, fallen_leaves),
     ]
     return edge_tiles(texture, GRASS_SHAPES, 40, decorate) + fulls, decorations
@@ -446,14 +432,11 @@ def tinted_grass(colours, seed, tufts, decorations):
 def lush_grass():
     tuft = sprite({"b": "green_bright", "d": "green_deep"}, "b.b.b", ".d.d.", "..d..")
     clover = sprite({"g": "green_bright", "d": "green_deep"}, ".g.g", "gdgd", ".dg.")
-    flowers = common_flowers("green_deep")
     brown_caps = sprite({"m": "soil_mid", "l": "soil_light", "s": "cream"}, ".m..", "mlm.", ".sml", ".s.s")
     fern = sprite({"l": "green_light", "g": "green_deep"}, "l...l", ".l.l.", "l.g.l", ".ggg.", "..g..")
     tufts = [(), (tuft,), (clover,), (), (tuft, clover), (tuft,), (), (clover,)]
     decorations = [
         decoration(61, clover, clover),
-        decoration(62, flowers[0]),
-        decoration(63, flowers[2], flowers[0]),
         decoration(64, fern),
         decoration(65, brown_caps),
         decoration(66, fern, clover),
@@ -466,12 +449,10 @@ def dry_grass():
     tuft = sprite({"s": "straw", "r": "reed"}, "s...s", ".r.r.", "..r..")
     stalks = sprite({"s": "straw", "r": "reed"}, "s.s", "r.r", "rr.")
     pebbles = sprite({"s": "stone_light", "m": "stone", "d": "stone_dark"}, ".s...", "smd.s", ".d..d")
-    flower = sprite({"c": "gold", "d": "olive"}, ".c..", ".d.c", "...d")
     tufts = [(), (tuft,), (stalks,), (), (tuft, stalks), (stalks,), (), (tuft,)]
     decorations = [
         decoration(71, tuft, stalks),
         decoration(72, pebbles),
-        decoration(73, flower),
         decoration(74, stalks, stalks),
         decoration(75, pebbles, tuft),
         decoration(76, fallen_leaves),

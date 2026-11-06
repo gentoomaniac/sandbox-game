@@ -99,11 +99,11 @@ const FIRE_PROFILES := {
 ## not here have none that sway. Decorations on water are lily pads, which drift instead, and
 ## all the meadow flowers (TerrainTileset.FLOWER_ROW) sway.
 const SWAYING_DECORATIONS := {
-	TerrainTileset.Layer.FLOODPLAIN: [true, true, true, true, true, false],
+	TerrainTileset.Layer.FLOODPLAIN: [true, true, true, false],
 	TerrainTileset.Layer.WETLAND: [false, false, true, true, true, true],
-	TerrainTileset.Layer.GRASS: [true, true, true, true, true, false, true, true, false],
-	TerrainTileset.Layer.LUSH_GRASS: [true, true, true, true, false, true, false],
-	TerrainTileset.Layer.DRY_GRASS: [true, false, true, true, false, false],
+	TerrainTileset.Layer.GRASS: [true, false, true, true, true, false],
+	TerrainTileset.Layer.LUSH_GRASS: [true, true, false, true, false],
+	TerrainTileset.Layer.DRY_GRASS: [true, false, true, false, false],
 }
 
 ## On the water layer of the terrain, and on the node that draws the rain's splashes.

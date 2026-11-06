@@ -54,9 +54,8 @@ func test_the_data_file_follows_the_seasons() -> void:
 	assert_lt(_vegetation.density(&"tuft", 80), _vegetation.density(&"tuft", summer))
 	assert_gt(_vegetation.density(&"tuft", winter), 0.0, "a few stalks in winter")
 	assert_lt(_vegetation.density(&"tuft", winter), 0.1)
-	assert_gt(_vegetation.density(&"flower", 20), 0.4)
-	assert_gt(_vegetation.density(&"flower", summer), 0.4)
-	assert_eq(_vegetation.density(&"flower", winter), 0.0)
+	assert_gt(_vegetation.density(&"small_plant", summer), 0.9)
+	assert_lt(_vegetation.density(&"small_plant", winter), 0.05)
 	assert_gt(_vegetation.density(&"leaves", 85), 0.8)
 	assert_eq(_vegetation.density(&"leaves", summer), 0.0)
 	assert_eq(_vegetation.density(&"fern_bush", winter), 0.0)
@@ -105,7 +104,7 @@ func test_thresholds_differ_between_kinds_and_seeds() -> void:
 	for x in 50:
 		var pos := Vector2i(x, 7)
 		var tuft := _vegetation.threshold(&"tuft", SEED, pos)
-		if tuft != _vegetation.threshold(&"flower", SEED, pos):
+		if tuft != _vegetation.threshold(&"daisy", SEED, pos):
 			differing_kinds += 1
 		if tuft != _vegetation.threshold(&"tuft", SEED + 1, pos):
 			differing_seeds += 1
@@ -116,10 +115,10 @@ func test_thresholds_differ_between_kinds_and_seeds() -> void:
 func test_a_spot_shows_while_the_density_is_above_its_threshold() -> void:
 	for x in 50:
 		var pos := Vector2i(x, 3)
-		var threshold := _vegetation.threshold(&"flower", SEED, pos)
+		var threshold := _vegetation.threshold(&"daisy", SEED, pos)
 		for day in [20, 50, 100]:
-			var density := _vegetation.density(&"flower", day)
-			assert_eq(_vegetation.is_present(&"flower", SEED, pos, day), density > threshold)
+			var density := _vegetation.density(&"daisy", day)
+			assert_eq(_vegetation.is_present(&"daisy", SEED, pos, day), density > threshold)
 
 
 # --- Gradual change ---
@@ -173,7 +172,8 @@ func test_every_missing_curve_is_reported() -> void:
 	var vegetation := Vegetation.from_file(DATA_FILE)
 	var missing := vegetation.problems()
 	assert_false(vegetation.is_valid())
-	assert_true(missing.has("[decorations] no flower"))
+	assert_true(missing.has("[decorations] no leaves"))
+	assert_true(missing.has("[flowers] no daisy"))
 	assert_true(missing.has("[objects] no fern_bush"))
 	assert_false(missing.has("[decorations] no tuft"))
 	assert_push_error_count(missing.size())
@@ -194,7 +194,7 @@ func test_every_decoration_has_a_kind_with_a_curve() -> void:
 
 func test_a_decoration_without_a_listed_layer_shows_all_year() -> void:
 	assert_eq(TerrainTileset.decoration_kind(Vector2i(0, TerrainTileset.Layer.WETLAND)), &"")
-	assert_eq(TerrainTileset.decoration_kind(Vector2i(7, TerrainTileset.Layer.GRASS)), &"tuft")
+	assert_eq(TerrainTileset.decoration_kind(Vector2i(3, TerrainTileset.Layer.GRASS)), &"tuft")
 
 
 func _present_count(kind: StringName, day: int) -> int:

@@ -118,31 +118,12 @@ const CLUSTER_START := 0.15
 
 ## The Vegetation kind of each decoration, per layer, in the order of the atlas row (see
 ## tools/art/terrain.py). &"" is a decoration that is there all year (pebbles, reeds); a
-## layer that is not listed has only those.
+## layer that is not listed has only those. The flowers are not among them: they have a row of
+## their own (FLOWER_ROW).
 const DECORATION_KINDS := {
-	Layer.GRASS:
-	[
-		&"flower",
-		&"flower",
-		&"flower",
-		&"flower",
-		&"small_plant",
-		&"",
-		&"small_plant",
-		&"tuft",
-		&"leaves"
-	],
-	Layer.LUSH_GRASS:
-	[
-		&"small_plant",
-		&"flower",
-		&"flower",
-		&"small_plant",
-		&"small_plant",
-		&"small_plant",
-		&"leaves"
-	],
-	Layer.DRY_GRASS: [&"tuft", &"", &"flower", &"tuft", &"", &"leaves"],
+	Layer.GRASS: [&"small_plant", &"", &"small_plant", &"tuft", &"tuft", &"leaves"],
+	Layer.LUSH_GRASS: [&"small_plant", &"small_plant", &"small_plant", &"small_plant", &"leaves"],
+	Layer.DRY_GRASS: [&"tuft", &"", &"tuft", &"", &"leaves"],
 }
 
 var tile_set := TileSet.new()

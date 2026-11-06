@@ -195,12 +195,12 @@ func test_crops_of_a_size_share_a_material() -> void:
 	assert_ne(motion.crop_material(Vector2i(16, 16)), motion.crop_material(Vector2i(16, 32)))
 
 
-func test_lily_pads_drift_flowers_sway_and_pebbles_stay() -> void:
+func test_lily_pads_drift_flowers_and_clover_sway_and_pebbles_stay() -> void:
 	var motion := AmbientMotion.new()
 	var grass := TerrainTileset.Layer.GRASS
 	assert_eq(motion.decoration_material(Vector2i(2, TerrainTileset.Layer.WATER)), motion.lily_pads)
-	assert_eq(motion.decoration_material(Vector2i(0, grass)), motion.decoration_sway, "a flower")
-	assert_null(motion.decoration_material(Vector2i(5, grass)), "pebbles")
+	assert_eq(motion.decoration_material(Vector2i(0, grass)), motion.decoration_sway, "clover")
+	assert_null(motion.decoration_material(Vector2i(1, grass)), "pebbles")
 	assert_null(motion.decoration_material(Vector2i(0, TerrainTileset.Layer.SOIL)))
 	var heather := TerrainTileset.flower_cell(&"heather", TerrainTileset.FlowerVariant.DRIFT)
 	assert_eq(motion.decoration_material(heather), motion.decoration_sway, "a meadow flower")
