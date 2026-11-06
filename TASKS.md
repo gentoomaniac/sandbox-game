@@ -777,6 +777,17 @@ the conversation is summarised (by the LLM, or a plain truncation without one) i
 memory line that is saved and used in later prompts; the raw lines stay capped as in task
 84. Tests use a fake backend; an optional test talks to `make llm-up` when it runs.
 
+## 87. Willows that stand out from the grass
+
+- [ ] Done
+
+The user's word of 2026-11-06, with a screenshot: willows sometimes melt into the grass.
+The pollard's crown of thin, pale yellow-green shoots has the same values as the meadow and
+lush grass under it, with no dark edge and little shadow, so only the trunk reads. Rework
+the willow (tools/art/willow.py) so it reads on every ground and in every season: a darker
+underside and outline of the crown, a clearer silhouette of the rods against the ground,
+the ground shadow, and a check on lush, dry and flowering grass. No new colours.
+
 ## Later (not part of the prototype)
 
 - `WildlifeSprites.frame_index` and `max_frames` allocate on every call (`keys()`,
