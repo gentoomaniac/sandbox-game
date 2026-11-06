@@ -10,6 +10,8 @@ extends RefCounted
 const SETTLE_FRAMES := 3
 ## Animals of each kind (but one flock) that `--wildlife` puts in view.
 const WILDLIFE_COUNT := 4
+## Farm animals of each species that `--livestock` puts near the player.
+const LIVESTOCK_COUNT := 4
 
 var state: GameState
 var view: WorldView
@@ -31,6 +33,7 @@ var _chest_tile: Vector2i
 var _chest_inside_tile: Vector2i
 var _is_storage_to_open: bool
 var _are_animals_to_spawn: bool
+var _is_livestock_to_spawn: bool
 var _hit_tile: Vector2i
 var _harvest_tile: Vector2i
 var _menu_page: int
@@ -47,6 +50,7 @@ func _init(options: StartupOptions) -> void:
 	_chest_inside_tile = options.chest_inside
 	_is_storage_to_open = options.storage
 	_are_animals_to_spawn = not options.wildlife.is_empty()
+	_is_livestock_to_spawn = not options.livestock.is_empty()
 	_hit_tile = options.hit
 	_harvest_tile = options.harvest
 	_menu_page = options.menu
@@ -70,6 +74,9 @@ func update(delta: float) -> void:
 			var count := 1 if kind == "flock" else WILDLIFE_COUNT
 			wildlife.spawn_in_view(StringName(kind), count)
 		_are_animals_to_spawn = false
+	if _is_livestock_to_spawn and _is_outside_and_drawn():
+		_spawn_livestock()
+		_is_livestock_to_spawn = false
 	if _hit_tile != StartupOptions.NO_TILE and _is_outside_and_drawn():
 		var object := state.world.object_at(_hit_tile)
 		if object != null:
@@ -93,6 +100,16 @@ func update(delta: float) -> void:
 	_screenshot_delay -= delta
 	if _screenshot_delay <= 0.0:
 		save_screenshot_and_quit.call()
+
+
+func _spawn_livestock() -> void:
+	for species in _options.livestock:
+		if not LivestockRules.SPECIES.has(StringName(species)):
+			push_error("--livestock expects %s, got '%s'" % [LivestockRules.SPECIES, species])
+			continue
+		state.livestock.spawn(
+			StringName(species), LIVESTOCK_COUNT, state.player.position, state.world
+		)
 
 
 ## Not while the player is inside: the world is not streamed then.

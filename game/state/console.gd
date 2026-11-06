@@ -15,7 +15,10 @@ const COMMANDS := {
 	"spawn":
 	[
 		"spawn <kind> [count]",
-		"Put animals in view: bird, rabbit, squirrel, deer, bee, butterfly or flock.",
+		(
+			"Put animals near you: farm animals that stay (cow, sheep, chicken, rabbit) or wild"
+			+ " ones that come and go (bird, wild_rabbit, squirrel, deer, bee, butterfly, flock)."
+		),
 	],
 	"weather":
 	[
@@ -54,6 +57,9 @@ const MAX_SKIP_MINUTES := GameClock.DAYS_PER_YEAR * GameClock.MINUTES_PER_DAY
 const SNOW_CANDIDATES: Array[String] = ["auto", "0", "0.5", "1"]
 ## How far (in tiles) the `crop` command looks for a crop when none is in front of the player.
 const CROP_SEARCH_RADIUS := 4
+## What `spawn` calls the wild rabbit (WildlifeRules.RABBIT): a plain rabbit is a tame one of the
+## livestock.
+const WILD_RABBIT := "wild_rabbit"
 ## Item ids this similar to a misspelt one (see String.similarity) are offered as a guess.
 const CLOSE_MATCH_SIMILARITY := 0.4
 
@@ -138,8 +144,10 @@ func candidates(kind: StringName) -> Array[String]:
 		&"item":
 			values = _item_ids()
 		&"animal":
+			for species in LivestockRules.SPECIES:
+				values.append(String(species))
 			for animal in WildlifeRules.KINDS:
-				values.append(String(animal))
+				values.append(WILD_RABBIT if animal == WildlifeRules.RABBIT else String(animal))
 		&"weather":
 			for condition in Weather.FORCEABLE:
 				values.append(String(condition))
@@ -215,14 +223,21 @@ func _spawn(arguments: PackedStringArray) -> Array[String]:
 	)
 	if arguments.is_empty() or arguments.size() > 2 or not is_count_valid:
 		return ["Usage: %s" % COMMANDS["spawn"][0]]
-	var kind := StringName(arguments[0])
+	var word := arguments[0]
+	var count := 1 if arguments.size() < 2 else int(arguments[1])
+	if LivestockRules.SPECIES.has(StringName(word)):
+		if _state.is_inside():
+			return ["No animals here"]
+		var near := _state.player.position
+		var spawned := _state.livestock.spawn(StringName(word), count, near, _state.world)
+		return ["Spawned %d of %d %s" % [spawned, count, word]]
+	var kind := WildlifeRules.RABBIT if word == WILD_RABBIT else StringName(word)
 	if not WildlifeRules.KINDS.has(kind):
-		return ["Unknown animal: %s" % arguments[0]]
+		return ["Unknown animal: %s" % word]
 	if _state.is_inside() or not wildlife_spawner.is_valid():
 		return ["No animals here"]
-	var count := 1 if arguments.size() < 2 else int(arguments[1])
 	var placed: int = wildlife_spawner.call(kind, count)
-	return ["Spawned %d of %d %s" % [placed, count, kind]]
+	return ["Spawned %d of %d %s" % [placed, count, word]]
 
 
 func _weather(arguments: PackedStringArray) -> Array[String]:
