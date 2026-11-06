@@ -214,7 +214,7 @@ def _chest_lid_bottom(canvas):
     """The row under the lid of a chest picture: its first drawn row and the lid's height on."""
     return next(y for y, row in enumerate(canvas) if any(row)) + _CHEST_LID_ROWS
 
-_SPRING_KINDS = {"oak", "berry_bush", "shrub", "sapling", "fern", "boulder", "tall_grass"}
+_SPRING_KINDS = {"oak", "berry_bush", "shrub", "sapling", "fern", "boulder", "tall_grass", "dyke"}
 _BLOSSOM_KINDS = {"berry_bush", "shrub"}
 # The deciduous trees and bushes: they leaf out in steps (LEAF_OUT_LOOKS).
 _LEAF_OUT_KINDS = {"oak", "berry_bush", "shrub", "sapling"}
@@ -447,6 +447,13 @@ _WINTER_LOOKS = {
         "specks": {"sand_light", "sand"},
         "snow": ({"sand_light", "sand", "mud", "soil_light", "soil_mid"}, set(), 1),
     },
+    # The dyke is turf and turns like the grass on the ground.
+    "dyke": {
+        "bare": _BARE_GROUND,
+        "frost": _FROST_GROUND,
+        "snow_remap": _WINTER_GROUND,
+        "snow": ({"frost", "snow_shadow", "snow_light", "snow_deep"}, set(), 1),
+    },
     "stone_wall": {
         "frost_only": _FROST_STONE,
         "snow": ({"stone_light", "stone", "sand_light", "bare_light", "bare", "olive"}, set(), 2),
@@ -480,7 +487,7 @@ def _season_object(look, kind, variant, canvas, redraw):
             canvas = remap(canvas, _AUTUMN_OAK[variant])
         elif kind in ("berry_bush", "shrub", "sapling", "fern"):
             canvas = remap(canvas, _AUTUMN_BUSH[variant % 3])
-        elif kind == "tall_grass":
+        elif kind in ("tall_grass", "dyke"):
             canvas = remap(canvas, _AUTUMN_GRASS)
         elif kind == "reeds":
             canvas = remap(canvas, _GOLDEN_REEDS)

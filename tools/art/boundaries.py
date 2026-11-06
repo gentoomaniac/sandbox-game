@@ -1,5 +1,5 @@
 """Art for the lines that run across the land: the Knick (a hedge of hazel and hawthorn on an earth
-bank), the wattle fence and the fieldstone wall.
+bank), the wattle fence, the fieldstone wall and the dyke.
 
 A line is drawn tile by tile, and each tile has 16 pictures, one per connection mask: which of
 its 4 sides it joins a neighbour on (bit 0 north, 1 east, 2 south, 3 west, as World
@@ -379,3 +379,38 @@ def stone_wall(mask):
 def stone_wall_row():
     """The atlas row of the fieldstone wall: one picture per connection mask."""
     return [stone_wall(mask) for mask in MASKS]
+
+
+# --- The dyke ---
+
+# A long smooth bank of clay under turf, the whole tile wide: this many px high on its crest,
+# down to the ground at the tile's edges across it.
+DYKE_HEIGHT = 7
+DYKE_FOOT = TILE / 2
+DYKE_TURF = ("green_bright", "green_light", "green", "green_dark")
+
+
+def _dyke_layers(mask, x, y):
+    distance = skeleton_distance(mask, x + 0.5, y + 0.5)
+    if distance >= DYKE_FOOT:
+        return []
+    height = round(DYKE_HEIGHT * (math.cos(math.pi * distance / DYKE_FOOT) + 1) / 2)
+    return [(height, "turf")] if height >= 1 else []
+
+
+def _dyke_colour(material, x, y, z, light, is_top):
+    # Grazed short: a turf of tufts in clusters, smoother than the hedge's leaves.
+    return _ramp(DYKE_TURF, light + 0.1 * _cluster(x, y, z, 5))
+
+
+def _dyke_outline(material):
+    return None
+
+
+def dyke(mask):
+    return draw_line(mask, _dyke_layers, _dyke_colour, _dyke_outline, has_faces=False)
+
+
+def dyke_row():
+    """The atlas row of the dyke: one picture per connection mask."""
+    return [dyke(mask) for mask in MASKS]

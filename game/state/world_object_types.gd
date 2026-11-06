@@ -91,6 +91,7 @@ const REEDS := &"reeds"
 const KNICK := &"knick"
 const WATTLE_FENCE := &"wattle_fence"
 const STONE_WALL := &"stone_wall"
+const DYKE := &"dyke"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -113,6 +114,7 @@ const _CHEST_ROW := 24
 const _KNICK_ROW := 25
 const _WATTLE_FENCE_ROW := 26
 const _STONE_WALL_ROW := 27
+const _DYKE_ROW := 28
 ## The pictures of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -346,6 +348,17 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": _STONE_WALL_ROW,
+		"variants": CONNECTION_LOOKS,
+	},
+	# A turfed bank of clay along the water: walked on like the grass, but nothing is built on
+	# it, tilled or cut out of it.
+	DYKE:
+	{
+		"connects": &"dyke",
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": false,
+		"harvest_level": 0,
+		"atlas_row": _DYKE_ROW,
 		"variants": CONNECTION_LOOKS,
 	},
 	SMALL_BED:

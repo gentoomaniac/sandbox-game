@@ -26,3 +26,4 @@
 25 knick 16
 26 wattle_fence 16
 27 stone_wall 16
+28 dyke 16

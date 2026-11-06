@@ -47,6 +47,21 @@ func test_the_field_boundaries_join_each_other() -> void:
 	assert_eq(_world.connections(knick), EAST | SOUTH)
 
 
+func test_a_dyke_joins_only_dykes() -> void:
+	var dyke := WorldObject.new(WorldObjectTypes.DYKE, Vector2i(5, 5))
+	_world.add_object(dyke)
+	_world.add_object(WorldObject.new(WorldObjectTypes.DYKE, Vector2i(5, 4)))
+	_knick(Vector2i(6, 5))
+	assert_eq(_world.connections(dyke), NORTH)
+
+
+func test_a_dyke_is_walked_on_but_not_built_on_or_tilled() -> void:
+	_world.add_object(WorldObject.new(WorldObjectTypes.DYKE, Vector2i(5, 5)))
+	assert_true(_world.is_walkable(Vector2i(5, 5)))
+	assert_false(_world.is_buildable(Vector2i(5, 5)))
+	assert_false(_world.is_free_on(Vector2i(5, 5), Tile.Terrain.GRASS))
+
+
 func test_a_side_in_an_unloaded_chunk_counts_its_edits() -> void:
 	var knick := _knick(Vector2i(0, 5))
 	_knick(Vector2i(1, 5))
