@@ -75,7 +75,9 @@ const DEFAULT_SOUND_IN_BACKGROUND := true
 
 ## The model of the test LLM (`make llm-up`); no endpoint means no model: villagers speak scripted
 ## lines (see NpcDialogue).
-const DEFAULT_LANGUAGE_MODEL := {"endpoint": "", "model": "qwen2.5:3b-instruct", "api_key": ""}
+const DEFAULT_LANGUAGE_MODEL := {
+	"endpoint": "http://127.0.0.1:11434/v1", "model": "qwen2.5:3b-instruct", "api_key": ""
+}
 
 const ACTION_LABELS := {
 	&"use": "Use",

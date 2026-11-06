@@ -2,7 +2,8 @@ class_name LanguageModelPage
 extends VBoxContainer
 ## The settings of the language model villagers talk through (see NpcDialogue): the endpoint of
 ## an OpenAI-compatible chat API, the model's name and a key, if it needs one. Each is stored as
-## it is typed. Without an endpoint villagers speak scripted lines.
+## it is typed. The endpoint is the test LLM by default; emptied, villagers speak scripted
+## lines.
 
 signal back_requested
 
@@ -14,11 +15,15 @@ const FIELDS := {
 const TIPS := {
 	"endpoint":
 	(
-		"The address of an OpenAI-compatible chat API, such as the test LLM of make llm-up."
+		"The address of an OpenAI-compatible chat API. By default the test LLM of make llm-up."
 		+ " Empty: villagers speak short scripted lines."
 	),
 	"model": "The name of the model the endpoint should use.",
-	"api_key": "Sent to the endpoint. Kept as plain text in settings.cfg, never in the save.",
+	"api_key":
+	(
+		'Sent to the endpoint as "Authorization: Bearer <key>". Kept as plain text in'
+		+ " settings.cfg, never in the save."
+	),
 }
 const NOTE := "The key is stored as plain text in settings.cfg."
 const FIELD_WIDTH := 260

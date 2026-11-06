@@ -899,8 +899,9 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   the answer is awaited the villager is shown typing; Escape leaves (and doesn't open the
   pause menu). The villager turns to the player and stands a while.
 - **Answers:** one function, `NpcDialogue.reply`, awaited by the chat. With a language model
-  set in Settings (an OpenAI-compatible chat endpoint, a model, an optional key; no endpoint,
-  the default, is none) it asks the model; without one, on an error or after 30 s it says a
+  set in Settings (an OpenAI-compatible chat endpoint, by default the test LLM's
+  `http://127.0.0.1:11434/v1`; a model; an optional key; an emptied endpoint is none) it asks
+  the model; without one, when nothing answers, on an error or after 30 s it says a
   scripted line of `data/npc_talk.cfg` ("Aye.", "Is that so?"). The answer is trimmed to the
   spoken line: no quotes or name in front, its first line, at most two sentences. Only the
   words come from the model; nothing else in the game changes by what it says.
@@ -925,9 +926,11 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   of what the player said. A villager keeps 10; beyond that the oldest two merge into one
   (its last 400 characters). Later prompts tell the memories, and only the lines since the
   last memory as earlier turns.
-- **Settings:** the endpoint, the model (default `qwen2.5:3b-instruct`, the test LLM's) and
-  the key are in the settings file; the key is plain text there, as the Settings page says,
-  never in the save, and the client follows no redirect, so the key goes only to that endpoint. Claude's own API needs an adapter of its own (later).
+- **Settings:** the endpoint (default the test LLM's), the model (default
+  `qwen2.5:3b-instruct`, the test LLM's) and the key are in the settings file
+  (`[language_model]`); the key is plain text there, as the Settings page says, never in the
+  save; it is sent as `Authorization: Bearer <key>`, and the client follows no redirect, so
+  the key goes only to that endpoint. Claude's own API needs an adapter of its own (later).
 - **Saved:** name, sex, look, who they are (id, age, trade, personality, background, habits;
   save version 19), the chat, its last 200 lines (version 17), the memories and how many of
   the last lines are not remembered yet (version 20), so a conversation saved before it was

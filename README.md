@@ -455,16 +455,44 @@ fresh world, run `godot --path . -- --new-game`.
 
 ### Talking NPCs with a language model
 
-The game does not need a language model: without one, villagers say short scripted lines.
-To hear them talk, give it an OpenAI-compatible chat endpoint under Settings → Language
-model: the endpoint (e.g. `http://127.0.0.1:11434/v1`), the model and, for a hosted model,
-a key. The key is stored as plain text in `settings.cfg` (never in the save, never logged);
-what you say to villagers goes to that endpoint. Ollama, LM Studio and llama.cpp's server
-work; Claude's own API would need an adapter of its own.
+Villagers talk through an OpenAI-compatible chat endpoint. Out of the box the game asks the
+test LLM on `http://127.0.0.1:11434/v1` (see below); when nothing answers there, or a reply
+takes longer than 30 seconds, villagers say short scripted lines instead, so the game never
+needs a model.
 
-For testing, `make llm-up` runs Ollama with Qwen2.5 3B Instruct (1.9 GB, Qwen Research
+**Configuring it.** Settings → Language model has three fields, each stored as you type:
+
+| Field | Default | What it is |
+|---|---|---|
+| Endpoint | `http://127.0.0.1:11434/v1` | The base address of the chat API; the game posts to `<endpoint>/chat/completions`. Empty it to turn the model off (villagers then always speak scripted lines). |
+| Model | `qwen2.5:3b-instruct` | The model name the endpoint should use. |
+| Key | empty | Only for endpoints that need one: sent as the header `Authorization: Bearer <key>`, and never sent along a redirect. |
+
+The same three live in `settings.cfg` (in Godot's user folder, e.g.
+`~/.local/share/godot/app_userdata/Sandbox Game/settings.cfg` on Linux), under
+`[language_model]`; only values that differ from the defaults are written:
+
+```
+[language_model]
+endpoint="https://api.openai.com/v1"
+model="gpt-4o-mini"
+api_key="sk-..."
+```
+
+The key is stored as plain text there (never in the save, never logged), and what you say to
+villagers goes to that endpoint. Ollama, LM Studio (`http://127.0.0.1:1234/v1`), llama.cpp's
+server and hosted OpenAI-compatible APIs work; Claude's own API would need an adapter of its
+own. To try an endpoint and key by hand:
+
+```
+curl -s <endpoint>/chat/completions -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <key>' \
+  -d '{"model": "<model>", "messages": [{"role": "user", "content": "Moin!"}]}'
+```
+
+**The test LLM.** `make llm-up` runs Ollama with Qwen2.5 3B Instruct (1.9 GB, Qwen Research
 License: for testing only) in a podman or docker container on `http://127.0.0.1:11434/v1`,
-which is the endpoint to enter (the model is the default); `make llm-check` asks it one
+the default endpoint, so villagers talk as soon as it is up; `make llm-check` asks it one
 question and `make llm-down` stops it. The container image (5.5 GB) and the model live in
 the container tool's storage and the volume `sandbox-game-llm-models`; `make llm-down PURGE=1`
 deletes the model. Details in [tools/README.md](tools/README.md). A reply takes a second or
@@ -482,8 +510,8 @@ frost, the wind and where it blows from; and the house or fire they stand by), t
 newcomer whose name they don't know, and what you said. Only the reply and the memory lines
 are kept; nothing else in the game changes by what the model says.
 
-To screenshot a talk, put the endpoint in `build/settings.cfg` (`[language_model]`, then
-`endpoint="http://127.0.0.1:11434/v1"`) and run
+To screenshot a talk, start the test LLM (`make llm-up`; screenshots read
+`build/settings.cfg`, where the default endpoint applies) and run
 
 ```
 make screenshot SCREENSHOT_TIMEOUT=120 ARGS="--villager=antje '--chat=Moin, Antje!;Do you have butter?'"

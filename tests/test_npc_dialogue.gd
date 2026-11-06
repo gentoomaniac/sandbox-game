@@ -18,6 +18,8 @@ func before_all() -> void:
 
 func before_each() -> void:
 	_settings = GameSettings.new(SETTINGS_PATH)
+	# No model unless a test sets one: the default endpoint is the test LLM, which may be up.
+	_settings.language_model["endpoint"] = ""
 	_antje = Npc.create_villager("antje", _state.player.position, VillagerRules.default_rules())
 
 

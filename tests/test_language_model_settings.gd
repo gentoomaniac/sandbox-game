@@ -25,8 +25,8 @@ func _reloaded() -> GameSettings:
 	return settings
 
 
-func test_by_default_there_is_no_endpoint_and_the_test_model() -> void:
-	assert_eq(_settings.language_model["endpoint"], "")
+func test_by_default_the_endpoint_is_the_test_llm_with_its_model() -> void:
+	assert_eq(_settings.language_model["endpoint"], "http://127.0.0.1:11434/v1")
 	assert_eq(_settings.language_model["model"], "qwen2.5:3b-instruct")
 	assert_eq(_settings.language_model["api_key"], "")
 
@@ -43,7 +43,7 @@ func test_the_endpoint_model_and_key_survive_a_restart() -> void:
 
 
 func test_only_what_differs_from_the_defaults_is_stored() -> void:
-	_settings.set_language_model("endpoint", "http://127.0.0.1:11434/v1")
+	_settings.set_language_model("endpoint", "http://127.0.0.1:1234/v1")
 	var file := ConfigFile.new()
 	file.load(PATH)
 	assert_eq(
@@ -57,8 +57,13 @@ func test_a_value_that_is_not_a_text_is_ignored() -> void:
 	file.store_string('[language_model]\nendpoint=42\nmodel="phi3"\n')
 	file.close()
 	var loaded := _reloaded()
-	assert_eq(loaded.language_model["endpoint"], "")
+	assert_eq(loaded.language_model["endpoint"], GameSettings.DEFAULT_LANGUAGE_MODEL["endpoint"])
 	assert_eq(loaded.language_model["model"], "phi3")
+
+
+func test_an_emptied_endpoint_stays_empty_after_a_restart_so_villagers_need_no_model() -> void:
+	_settings.set_language_model("endpoint", "")
+	assert_eq(_reloaded().language_model["endpoint"], "")
 
 
 func test_the_page_shows_the_settings_and_stores_what_is_typed() -> void:
