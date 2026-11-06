@@ -67,6 +67,7 @@ func test_every_natural_object_type_is_generated() -> void:
 					WorldObjectTypes.WATTLE_FENCE,
 					WorldObjectTypes.STONE_WALL,
 					WorldObjectTypes.DYKE,
+					WorldObjectTypes.WILLOW,
 				]
 			)
 			or str(object_type).ends_with("trunk")

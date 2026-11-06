@@ -92,6 +92,7 @@ const KNICK := &"knick"
 const WATTLE_FENCE := &"wattle_fence"
 const STONE_WALL := &"stone_wall"
 const DYKE := &"dyke"
+const WILLOW := &"willow"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -105,16 +106,17 @@ const MAX_FOOTPRINT := Vector2i(2, 2)
 ## counted in the order of the trees with a `trunk` below, which must be the order of
 ## SPECIES in tools/art/trunks.py (tests/test_object_atlas.gd checks it).
 const _FIRST_TRUNK_ROW := 14
-## The atlas row of the reeds: after the last trunk (4 trees, a long and a short trunk each).
-const _REEDS_ROW := 22
+## The atlas row of the reeds: after the last trunk (5 trees, a long and a short trunk each).
+const _REEDS_ROW := 24
 ## The atlas row of the dead tree's stump, after the reeds.
-const _DEAD_STUMP_ROW := 23
+const _DEAD_STUMP_ROW := 25
 ## The atlas row of the chest, after the dead tree's stump.
-const _CHEST_ROW := 24
-const _KNICK_ROW := 25
-const _WATTLE_FENCE_ROW := 26
-const _STONE_WALL_ROW := 27
-const _DYKE_ROW := 28
+const _CHEST_ROW := 26
+const _KNICK_ROW := 27
+const _WATTLE_FENCE_ROW := 28
+const _STONE_WALL_ROW := 29
+const _DYKE_ROW := 30
+const _WILLOW_ROW := 31
 ## The pictures of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -209,6 +211,21 @@ const _OTHER_TYPES := {
 		"harvest_level": 1,
 		"atlas_row": 6,
 		"sprite_height": 55,
+		"variants": 3,
+	},
+	# The pollard willow of the ditches, cut back to a head that sprouts rods.
+	WILLOW:
+	{
+		"hp": 4,
+		"tool": &"axe",
+		"trunk": {"logs": 2, "hp": 3},
+		"leaves": STUMP,
+		"regrows": true,
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _WILLOW_ROW,
+		"sprite_height": 62,
 		"variants": 3,
 	},
 	BERRY_BUSH:

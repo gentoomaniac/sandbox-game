@@ -27,6 +27,7 @@ by topic. Where is a thing drawn?
 | `palette.py` | The palette, `to_image`, `save` (one PNG under `assets/`) and the palette check. |
 | `terrain.py` | The ground: water, floodplain, wetland, grass, soil, and their decorations. |
 | `trees.py` | Oak, spruce, pine, dead tree, bushes, ferns, stones, boulders and stumps. |
+| `willow.py` | The pollard willow, in leaf and bare. |
 | `camp.py` | The fireplace and the bedroll. |
 | `character.py` | The player's layers (body, breeches and stockings, clogs, shirt and waistcoat, jacket, hair, hats, hoe), their passing out and the sleeping "z". |
 | `interior.py` | The room tiles and the furniture inside the buildings, the hearth too. |

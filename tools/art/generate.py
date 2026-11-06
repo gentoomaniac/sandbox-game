@@ -70,6 +70,7 @@ import tool_icons
 import trees
 import trunks
 import ui
+import willow
 from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, TILE, blank
 from palette import ASSETS, PALETTE, check_palette, save, save_picture, write_palette
 
@@ -89,7 +90,7 @@ def world_chest():
 
 # The rows of assets/objects.png, as (kind, looks). `atlas_row` of each type in
 # game/state/world_object_types.gd is its number here, and tests/test_object_atlas.gd checks
-# it against assets/objects_rows.txt, which is written from the list below. Rows 14 to 21
+# it against assets/objects_rows.txt, which is written from the list below. Rows 14 to 23
 # (the trunks) follow the order of the trees in trunks.SPECIES, and the types of
 # world_object_types.gd take their rows from the order of its trees.
 #
@@ -115,13 +116,16 @@ def world_chest():
 # 19 pine_short_trunk (2)
 # 20 dead_tree_trunk (2)
 # 21 dead_tree_short_trunk (2)
-# 22 reeds (3, then the same 3 cut)
-# 23 dead_stump (2)
-# 24 chest (1)
-# 25 knick (16: one per connection mask, see boundaries.py)
-# 26 wattle_fence (16, the same)
-# 27 stone_wall (16, the same)
-# 28 dyke (16, the same)
+# 22 willow_trunk (2)
+# 23 willow_short_trunk (2)
+# 24 reeds (3, then the same 3 cut)
+# 25 dead_stump (2)
+# 26 chest (1)
+# 27 knick (16: one per connection mask, see boundaries.py)
+# 28 wattle_fence (16, the same)
+# 29 stone_wall (16, the same)
+# 30 dyke (16, the same)
+# 31 willow (3)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -149,6 +153,7 @@ def object_atlas():
         ("wattle_fence", boundaries.wattle_fence_row()),
         ("stone_wall", boundaries.stone_wall_row()),
         ("dyke", boundaries.dyke_row()),
+        ("willow", willow.willow_row()),
     ]
 
 
@@ -173,7 +178,10 @@ def write_seasonal_art():
         decoration_rows.append(decorations)
     objects = object_atlas()
     write_object_rows(objects)
-    redraws = {"oak": lambda variant: trees.bare_oak(trees.OAK_SEEDS[variant])}
+    redraws = {
+        "oak": lambda variant: trees.bare_oak(trees.OAK_SEEDS[variant]),
+        "willow": lambda variant: willow.bare_willow(willow.WILLOW_SEEDS[variant]),
+    }
     houses = {}
     for name, draw in buildings.PICTURES.items():
         houses[name] = draw(is_lit=False)

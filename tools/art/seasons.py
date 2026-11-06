@@ -198,7 +198,7 @@ _SNOW_BUSH = ({"mud", "mud_dark", "soil_dark"}, {"green_deep"}, 5)
 _SNOW_STONE = ({"stone_light", "stone"}, set(), 2)
 _SNOW_BOULDER = ({"stone_light", "stone", "green_light", "green", "olive"}, set(), 3)
 _SNOW_STUMP = ({"sand_light", "sand", "straw"}, set(), 3)
-_SNOW_TRUNK = ({"soil_light", "soil_mid", "sand", "stone_light", "sand_light", "straw"}, set(), 2)
+_SNOW_TRUNK = ({"soil_light", "soil_mid", "sand", "stone_light", "sand_light", "straw", "bare_light"}, set(), 2)
 _SNOW_DEADWOOD = ({"stone_light", "stone", "bare_light"}, set(), 2)
 _SNOW_DEAD_STUMP = ({"stone_light", "stone", "bare_light"}, set(), 3)
 # Snow lies on the lid of the chest (its first rows), not on top of the box under the iron rim.
@@ -217,12 +217,12 @@ def _chest_lid_bottom(canvas):
 _SPRING_KINDS = {"oak", "berry_bush", "shrub", "sapling", "fern", "boulder", "tall_grass", "dyke"}
 _BLOSSOM_KINDS = {"berry_bush", "shrub"}
 # The deciduous trees and bushes: they leaf out in steps (LEAF_OUT_LOOKS).
-_LEAF_OUT_KINDS = {"oak", "berry_bush", "shrub", "sapling"}
+_LEAF_OUT_KINDS = {"oak", "berry_bush", "shrub", "sapling", "willow"}
 # What the summer leaves of a picture are drawn in: where they are is where the new leaves come.
-_SUMMER_LEAVES = {"green_bright", "green_light", "green", "green_dark", "green_deep", "olive", "dry_light", "dry"}
+_SUMMER_LEAVES = {"green_bright", "green_light", "green", "green_dark", "green_deep", "olive", "dry_light", "dry", "frost"}
 # Young leaves are light and thin; their summer shade picks how light.
 _YOUNG_LEAVES = {
-    "green_bright": "spring_pale", "green_light": "spring_pale", "dry_light": "spring_pale",
+    "green_bright": "spring_pale", "green_light": "spring_pale", "dry_light": "spring_pale", "frost": "spring_pale",
     "green": "spring_light", "olive": "spring_light", "dry": "spring_light",
     "green_dark": "spring", "green_deep": "spring",
 }
@@ -394,6 +394,12 @@ _KNICK_BLOSSOM = {"spring", "spring_dark"}
 _KNICK_HAWS = {"soil_light", "soil_mid"}
 
 
+# The pollard willow's silver-green leaves: fresh in spring, yellow in autumn. In winter it is
+# drawn again, bare (see generate.py).
+_WILLOW_SPRING = {"frost": "spring_pale", "dry_light": "spring_light", "dry": "spring", "olive": "spring_dark"}
+_WILLOW_AUTUMN = {"frost": "gold", "dry_light": "ochre", "dry": "ochre_dark", "olive": "umber"}
+
+
 def _dot(canvas, rng, surfaces, count, colour):
     """Single pixels of `colour` (haws, blossom) on pixels of `surfaces`."""
     spots = [(x, y) for y, row in enumerate(canvas) for x, name in enumerate(row) if name in surfaces]
@@ -434,6 +440,8 @@ _WINTER_LOOKS = {
     "pine_short_trunk": _TRUNK_WINTER,
     "dead_tree_trunk": _TRUNK_WINTER,
     "dead_tree_short_trunk": _TRUNK_WINTER,
+    "willow_trunk": _TRUNK_WINTER,
+    "willow_short_trunk": _TRUNK_WINTER,
     # The bedroll: snow lies over the cloth, a frost rimes it in specks.
     "sleeping_bag": {
         "specks": {"sand_light", "stone_light"},
@@ -478,6 +486,8 @@ def _season_object(look, kind, variant, canvas, redraw):
     elif look == "autumn" and kind == "knick":
         canvas = remap(canvas, _KNICK_AUTUMN)
         _dot(canvas, rng, _KNICK_HAWS, 8, "red_light")
+    elif look in ("spring", "autumn") and kind == "willow":
+        canvas = remap(canvas, _WILLOW_SPRING if look == "spring" else _WILLOW_AUTUMN)
     elif look == "spring" and kind in _SPRING_KINDS:
         canvas = remap(canvas, _SPRING_GREENS)
         if kind in _BLOSSOM_KINDS:

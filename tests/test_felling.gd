@@ -27,6 +27,36 @@ func test_a_tree_falls_after_hp_over_power_hits_and_leaves_a_stump_and_a_trunk()
 	assert_eq(_dropped(ItemTypes.LOGS), 0, "the logs come off the trunk")
 
 
+func test_a_willow_is_felled_like_the_other_trees_and_its_stump_remembers_it() -> void:
+	_place(WorldObjectTypes.WILLOW)
+	var hits_needed := ceili(4.0 / ItemTypes.tool_power(ItemTypes.AXE))
+	_hit(ItemTypes.AXE, hits_needed)
+	var stump := _world.object_at(_tile)
+	assert_eq(stump.type, WorldObjectTypes.STUMP)
+	assert_eq(stump.state["tree"], str(WorldObjectTypes.WILLOW))
+	assert_eq(_world.object_at(_tile + Vector2i.RIGHT).type, &"willow_trunk")
+
+
+# --- Line objects ---
+
+
+func test_the_axe_cuts_a_knick_down_for_its_wood() -> void:
+	_place(WorldObjectTypes.KNICK)
+	_hit(ItemTypes.AXE, ceili(4.0 / ItemTypes.tool_power(ItemTypes.AXE)))
+	assert_null(_world.object_at(_tile), "nothing is left")
+	assert_eq(_dropped(ItemTypes.LOGS), 1)
+	assert_eq(_dropped(ItemTypes.FIBRE), 2)
+
+
+func test_the_pickaxe_takes_a_stone_wall_apart_for_its_stone() -> void:
+	_place(WorldObjectTypes.STONE_WALL)
+	_hold(ItemTypes.AXE)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING, "an axe can't")
+	_hit(ItemTypes.PICKAXE, ceili(5.0 / ItemTypes.tool_power(ItemTypes.PICKAXE)))
+	assert_null(_world.object_at(_tile))
+	assert_eq(_dropped(ItemTypes.STONE), 3)
+
+
 func test_a_better_tool_needs_fewer_hits() -> void:
 	var hits_for := {}
 	for level in range(1, ItemTypes.POWER_OF_LEVEL.size()):
