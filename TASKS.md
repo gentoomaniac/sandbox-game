@@ -776,12 +776,40 @@ tools/README.md).
 
 The user's word of 2026-11-06. Needs tasks 84 and 85. `NpcDialogue.reply` asks the
 configured OpenAI-compatible endpoint (endpoint, model, optional key in Settings; "none"
-keeps "I understand.") with a short prompt built from the NPC's name, look, a generated
-personality line and its memory; time-outs and errors fall back to a scripted line. Save
-games keep, per NPC, the compacted history of former conversations: when a chat closes,
-the conversation is summarised (by the LLM, or a plain truncation without one) into a
-memory line that is saved and used in later prompts; the raw lines stay capped as in task
-84. Tests use a fake backend; an optional test talks to `make llm-up` when it runs.
+keeps "I understand.") and falls back to a scripted line on time-outs and errors. Save games
+keep, per NPC, the compacted history of former conversations: when a chat closes, the
+conversation is summarised (by the LLM, or a plain truncation without one) into a memory
+line that is saved and used in later prompts; the raw lines stay capped as in task 84.
+Tests use a fake backend; an optional test talks to `make llm-up` when it runs.
+
+The prompt, from the user's working example against the test LLM (2026-11-06): a template
+in a data file, shaped like this request, which gave good lines with qwen2.5:3b-instruct:
+
+```
+"temperature": 0.7, "max_tokens": 60,
+system: "You write dialogue lines for villagers in a game set on the North Frisian coast
+  in 1750. Answer with the villager's spoken line only: one or two short sentences of
+  plain, casual small talk in the language the neighbour speaks. Never break character,
+  never mention being an AI, never offer help or advice like an assistant."
+user: "Villager: Antje Boysen, a farmer's wife.\nHer neighbour says: \"Fine weather for
+  the hay today.\"\nAntje's reply:"
+assistant: "Aye, if it holds till Thursday. My Hinrich's out with the scythe already."
+user: "Villager: Antje Boysen, a farmer's wife.\nHer neighbour says: \"Good morning! Is
+  the dyke holding after the storm?\"\nAntje's reply:"
+```
+
+The template fills the villager line from the villager's data: name, sex (her/his),
+age, appearance in words (from their look), trade, personality, background story and
+memory, and the moment (time of day, season, weather, where they are); earlier turns of
+the chat go in as user/assistant pairs in the same shape. The example exchange (the
+few-shot turn) is part of the template data.
+
+Villagers are defined in data files: a few hand-written ones (Antje Boysen first, as in the
+example, then e.g. a fisherman, the miller, a dyke reeve's widow) with a fixed look,
+background and personality, spawned by id: `spawn npc antje`. `spawn npc` without an id
+keeps making a random villager, who gets a background composed from data tables (trade,
+family, a worry, a habit). The ids are listed in the console's spawn list and completion.
+
 From the review of task 84: the "awaiting an answer" state must belong to the villager, not
 the chat screen (closing A's chat while it answers and opening B's must not show B typing
 or block B), and `reply` needs a time-out and an error path that return a fallback line, so
