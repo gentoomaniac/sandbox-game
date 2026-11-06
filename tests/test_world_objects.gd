@@ -5,9 +5,11 @@ const SEED := 42
 ## Chunks around the river: they have grass with trees as well as water, floodplain and
 ## wetland.
 const CHUNKS: Array[Vector2i] = [Vector2i(0, -1), Vector2i(0, 0), Vector2i(1, -1), Vector2i(-3, -2)]
-## What stands on wetland and floodplain: reeds on the banks and the dykes along the
-## floodplain.
-const WET_LAND_TYPES: Array[StringName] = [WorldObjectTypes.REEDS, WorldObjectTypes.DYKE]
+## What stands on wetland and floodplain: reeds on the banks and by the ditches, willows by the
+## ditches, and the dykes along the floodplain.
+const WET_LAND_TYPES: Array[StringName] = [
+	WorldObjectTypes.REEDS, WorldObjectTypes.WILLOW, WorldObjectTypes.DYKE
+]
 
 var _world: World
 
@@ -64,9 +66,7 @@ func test_every_natural_object_type_is_generated() -> void:
 					WorldObjectTypes.FIREPLACE,
 					WorldObjectTypes.SLEEPING_BAG,
 					WorldObjectTypes.STUMP,
-					WorldObjectTypes.DEAD_STUMP,
-					# Not placed by the generator yet.
-					WorldObjectTypes.WILLOW,
+					WorldObjectTypes.DEAD_STUMP
 				]
 			)
 			or str(object_type).ends_with("trunk")
@@ -103,7 +103,7 @@ func test_dead_trees_are_more_common_near_wetland() -> void:
 	assert_gt(near_rate, 3.0 * far_rate)
 
 
-func test_objects_stand_only_on_grass_but_for_reeds_and_dykes() -> void:
+func test_objects_stand_only_on_grass_but_for_reeds_willows_and_dykes() -> void:
 	var terrains := {}
 	for chunk in _generate(WorldGenerator.new(SEED), CHUNKS):
 		for object in chunk.objects():
@@ -117,7 +117,7 @@ func test_objects_stand_only_on_grass_but_for_reeds_and_dykes() -> void:
 		assert_true(expected.has(terrain), "terrain %d" % terrain)
 
 
-func test_no_objects_on_water_and_only_reeds_and_dykes_on_wet_land() -> void:
+func test_no_objects_on_water_and_only_reeds_willows_and_dykes_on_wet_land() -> void:
 	var generator := WorldGenerator.new(SEED)
 	var checked := {}
 	for y in range(-64, 64):

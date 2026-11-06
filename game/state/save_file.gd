@@ -184,11 +184,11 @@ static func _upgrade_from_version_8(game: Dictionary) -> void:
 			_rename_items(object["storage"], TUNIC_AND_TROUSERS_TO_PERIOD)
 
 
-## Version 9 worlds were generated without the worked land (Knicks, walls, fences, dykes),
-## which the same seed now has. Where the player's things are it gives way, as
+## Version 9 worlds were generated without the worked land (Knicks, walls, fences, dykes,
+## ditches, willows), which the same seed now has. Where the player's things are it gives way, as
 ## if the player had cleared it: on the tiles of the buildings and in front of their doors, the
 ## tiles of what the player put down, changed or tilled, and where the player stands, the
-## generated objects are taken off. So nothing new stands in a house, blocks
+## generated objects are taken off and a ditch is grass. So nothing new stands in a house, blocks
 ## its door or the camp, or shuts the player in.
 static func _upgrade_from_version_9(game: Dictionary) -> void:
 	var world: Dictionary = game["world"]
@@ -206,7 +206,9 @@ static func _upgrade_from_version_9(game: Dictionary) -> void:
 		if edit["object"] != null:
 			for tile in WorldObject.from_dict(edit["object"]).tiles():
 				kept[tile] = true
+	var edited_terrain: Dictionary[Vector2i, bool] = {}
 	for edit: Array in world["terrain_edits"]:
+		edited_terrain[SaveCodec.vector_from_json(edit)] = true
 		kept[SaveCodec.vector_from_json(edit)] = true
 	var body := PlayerState.body_tiles(SaveCodec.float_vector_from_json(game["player"]["position"]))
 	for y in range(body.position.y, body.end.y):
@@ -214,6 +216,10 @@ static func _upgrade_from_version_9(game: Dictionary) -> void:
 			kept[Vector2i(x, y)] = true
 	var generator := WorldGenerator.new(int(world["seed"]))
 	for tile in kept:
+		if not edited_terrain.has(tile) and generator.is_ditch(tile):
+			world["terrain_edits"].append(
+				SaveCodec.vector_to_json(tile) + [SaveCodec.terrain_to_json(Tile.Terrain.GRASS)]
+			)
 		var generated := generator.object_type_at(tile, generator.terrain_at(tile))
 		if not edited_objects.has(tile) and generated != &"":
 			world["object_edits"].append({"pos": SaveCodec.vector_to_json(tile), "object": null})

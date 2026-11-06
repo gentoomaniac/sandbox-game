@@ -6,9 +6,12 @@ extends RefCounted
 ## on the grass.
 ##
 ## Over that natural land lies the worked land of data/landscape.cfg: the fields of a
-## FieldLayout, bounded on the dry Geest by Knicks, fieldstone walls and wattle fences (the marsh,
-## the low land along the river, has none); dykes run along the floodplain's edge. Nothing stands
-## on the gap of a boundary, and nothing that blocks the way beside it, so no field is shut in.
+## FieldLayout, bounded on the dry Geest by Knicks, fieldstone walls and wattle fences, and in the
+## marsh (the low land along the river) and on wetland by ditches of water with pollard willows
+## and reeds beside them; dykes run along the floodplain's edge. Nothing stands on the gap of a
+## boundary, and nothing that blocks the way beside it, so no field is shut in. The probes of the
+## natural land (for reeds, dead trees) look at the natural terrain, so the worked land only
+## changes the tiles it is on and beside, but for the clay, which is also found by the ditches.
 ##
 ## Deterministic: terrain is a pure function of the seed and the world tile position, and
 ## each generator owns its noise instances, so chunks come out the same in any order and
@@ -60,9 +63,10 @@ const REED_STAND_ABOVE := 0.0
 const REED_STAND_CHANCE := 0.75
 const REED_SCATTER_CHANCE := 0.12
 
-## Clay spots are grass tiles with water or wetland within CLAY_REACH tiles, in the clusters
-## where the clay noise is above CLAY_CLUSTER_ABOVE, of which CLAY_SPOT_CHANCE are spots. A
-## grass tile is as far as 3 tiles from the river's water (the floodplain lies between).
+## Clay spots are grass tiles with water (the river or a ditch) or wetland within CLAY_REACH
+## tiles, in the clusters where the clay noise is above CLAY_CLUSTER_ABOVE, of which
+## CLAY_SPOT_CHANCE are spots. A grass tile is as far as 3 tiles from the river's water (the
+## floodplain lies between).
 const CLAY_REACH := 5
 const CLAY_CLUSTER_ABOVE := 0.25
 const CLAY_SPOT_CHANCE := 0.5
@@ -120,6 +124,7 @@ const VARIETY_ROLL_SEED_OFFSET := 5
 const GRASS_ROLL_SEED_OFFSET := 8
 const CLAY_ROLL_SEED_OFFSET := 9
 const REED_ROLL_SEED_OFFSET := 10
+const DITCH_SIDE_ROLL_SEED_OFFSET := 12
 
 var _river_noise := FastNoiseLite.new()
 var _wetland_noise := FastNoiseLite.new()
@@ -133,10 +138,13 @@ var _variety_roll_seed: int
 var _grass_roll_seed: int
 var _clay_roll_seed: int
 var _reed_roll_seed: int
+var _ditch_side_roll_seed: int
 var _fields: FieldLayout
 ## The numbers of data/landscape.cfg (see there).
 var _marsh_reach: float
 var _dyke_above: float
+var _willow_chance: float
+var _ditch_reeds_chance: float
 
 
 func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void:
@@ -159,9 +167,12 @@ func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void
 	_grass_roll_seed = world_seed + GRASS_ROLL_SEED_OFFSET
 	_clay_roll_seed = world_seed + CLAY_ROLL_SEED_OFFSET
 	_reed_roll_seed = world_seed + REED_ROLL_SEED_OFFSET
+	_ditch_side_roll_seed = world_seed + DITCH_SIDE_ROLL_SEED_OFFSET
 	_fields = FieldLayout.new(world_seed, landscape)
 	_marsh_reach = landscape.value("marsh", "reach")
 	_dyke_above = landscape.value("dykes", "stretch_above")
+	_willow_chance = landscape.value("ditches", "willow_chance")
+	_ditch_reeds_chance = landscape.value("ditches", "reeds_chance")
 
 
 ## The chunk at `chunk_coords`, or null if it is outside the world bounds.
@@ -185,8 +196,23 @@ func generate_chunk(chunk_coords: Vector2i) -> Chunk:
 	return chunk
 
 
-## The one place that decides what a world tile is.
+## The one place that decides what a world tile is: the natural terrain, but for the ditches.
 func terrain_at(world_pos: Vector2i) -> Tile.Terrain:
+	var terrain := _natural_terrain_at(world_pos)
+	return Tile.Terrain.WATER if _is_ditch(world_pos, terrain) else terrain
+
+
+## Whether a tile is a ditch: water where the natural land has none.
+func is_ditch(world_pos: Vector2i) -> bool:
+	# Most tiles are on no boundary: that is the cheap part to ask first.
+	var boundary := _fields.boundary_at(world_pos)
+	if boundary == &"" or boundary == FieldLayout.GAP:
+		return false
+	return _is_ditch(world_pos, _natural_terrain_at(world_pos))
+
+
+## The land as nature made it: the river, its floodplain, wetland and grass.
+func _natural_terrain_at(world_pos: Vector2i) -> Tile.Terrain:
 	# The river is a centre line y = f(x) rather than a noise isoline: an isoline can fade
 	# out or leave isolated pools, but this one is always continuous and the floodplain
 	# distance is exact.
@@ -210,17 +236,29 @@ func _is_marsh(world_pos: Vector2i) -> bool:
 	return _river_distance(world_pos) < RIVER_HALF_WIDTH + FLOODPLAIN_WIDTH + _marsh_reach
 
 
-## Whether a tile of this terrain has a dyke: land with the floodplain among the 8 tiles
+## Whether a tile of this natural terrain is a ditch: a field boundary on wetland or in the
+## marsh, but for its gap and where a dyke runs.
+func _is_ditch(world_pos: Vector2i, natural: Tile.Terrain) -> bool:
+	var boundary := _fields.boundary_at(world_pos)
+	if boundary == &"" or boundary == FieldLayout.GAP:
+		return false
+	var is_wet_land := (
+		natural == Tile.Terrain.WETLAND or natural == Tile.Terrain.GRASS and _is_marsh(world_pos)
+	)
+	return is_wet_land and not _is_dyke(world_pos, natural)
+
+
+## Whether a tile of this natural terrain has a dyke: land with the floodplain among the 8 tiles
 ## around it (so the dyke is a line joined on its sides), on a stretch the dyke noise picks.
-func _is_dyke(world_pos: Vector2i, terrain: Tile.Terrain) -> bool:
-	if terrain != Tile.Terrain.GRASS and terrain != Tile.Terrain.WETLAND:
+func _is_dyke(world_pos: Vector2i, natural: Tile.Terrain) -> bool:
+	if natural != Tile.Terrain.GRASS and natural != Tile.Terrain.WETLAND:
 		return false
 	if _river_distance(world_pos) >= DYKE_PROBE_DISTANCE:
 		return false
 	if _dyke_noise.get_noise_2dv(Vector2(world_pos)) <= _dyke_above:
 		return false
 	for direction in WETLAND_PROBE_DIRECTIONS:
-		if terrain_at(world_pos + direction) == Tile.Terrain.FLOODPLAIN:
+		if _natural_terrain_at(world_pos + direction) == Tile.Terrain.FLOODPLAIN:
 			return true
 	return false
 
@@ -264,10 +302,13 @@ func _is_beside_gap(world_pos: Vector2i) -> bool:
 	return false
 
 
-## What nature puts on a tile: only grass has objects, but for the reeds on the banks. A boulder
-## covers the tile to its right, which therefore has to be free grass: otherwise there is no
-## boulder.
+## What nature and the ditches put on a tile: only grass has objects, but for the reeds on the
+## banks and what stands beside a ditch. A boulder covers the tile to its right, which therefore
+## has to be free grass: otherwise there is no boulder.
 func _natural_object_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
+	var by_ditch := _ditch_side_type_at(world_pos, terrain)
+	if by_ditch != &"":
+		return by_ditch
 	if terrain == Tile.Terrain.FLOODPLAIN or terrain == Tile.Terrain.WETLAND:
 		return WorldObjectTypes.REEDS if _is_reeds_at(world_pos, terrain) else &""
 	var object_type := _rolled_type_at(world_pos, terrain)
@@ -284,6 +325,28 @@ func _natural_object_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringNam
 	):
 		return object_type
 	return &""
+
+
+## A pollard willow or reeds beside a ditch, on wetland or in the marsh, with the chances of
+## data/landscape.cfg, or &"".
+func _ditch_side_type_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
+	var is_wet_land := (
+		terrain == Tile.Terrain.WETLAND or terrain == Tile.Terrain.GRASS and _is_marsh(world_pos)
+	)
+	if not is_wet_land:
+		return &""
+	# The roll is the cheap part: only a tile that can still pass it is probed for a ditch.
+	var roll := _roll(world_pos, _ditch_side_roll_seed)
+	if roll >= _willow_chance + _ditch_reeds_chance or not _is_beside_ditch(world_pos):
+		return &""
+	return WorldObjectTypes.WILLOW if roll < _willow_chance else WorldObjectTypes.REEDS
+
+
+func _is_beside_ditch(world_pos: Vector2i) -> bool:
+	for side in World.CONNECTION_SIDES:
+		if is_ditch(world_pos + side):
+			return true
+	return false
 
 
 ## What the roll of a tile says, before a boulder is checked for room.
@@ -346,14 +409,14 @@ func _is_reeds_at(world_pos: Vector2i, terrain: Tile.Terrain) -> bool:
 func _is_water_within(world_pos: Vector2i, reach: int) -> bool:
 	for distance in range(1, reach + 1):
 		for direction in WETLAND_PROBE_DIRECTIONS:
-			if terrain_at(world_pos + direction * distance) == Tile.Terrain.WATER:
+			if _natural_terrain_at(world_pos + direction * distance) == Tile.Terrain.WATER:
 				return true
 	return false
 
 
 func _is_wetland_edge(world_pos: Vector2i) -> bool:
 	for direction in WETLAND_PROBE_DIRECTIONS:
-		if terrain_at(world_pos + direction) != Tile.Terrain.WETLAND:
+		if _natural_terrain_at(world_pos + direction) != Tile.Terrain.WETLAND:
 			return true
 	return false
 
@@ -368,7 +431,8 @@ func is_clay_spot(world_pos: Vector2i) -> bool:
 		or object_type_at(world_pos, Tile.Terrain.GRASS) != &""
 	):
 		return false
-	# Water and wetland patches are wide, so probing the 8 directions finds them.
+	# Water and wetland patches are wide and ditches long, so probing the 8 directions finds
+	# them. The marsh clay by the ditches makes up for the clay the dykes cover.
 	for distance in range(1, CLAY_REACH + 1):
 		for direction in WETLAND_PROBE_DIRECTIONS:
 			var terrain := terrain_at(world_pos + direction * distance)
@@ -402,6 +466,6 @@ func _bush_type(variety_roll: float) -> StringName:
 
 func _is_near_wetland(world_pos: Vector2i) -> bool:
 	for direction in WETLAND_PROBE_DIRECTIONS:
-		if terrain_at(world_pos + direction * WETLAND_REACH) == Tile.Terrain.WETLAND:
+		if _natural_terrain_at(world_pos + direction * WETLAND_REACH) == Tile.Terrain.WETLAND:
 			return true
 	return false

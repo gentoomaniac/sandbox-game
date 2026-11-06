@@ -1,6 +1,6 @@
 class_name LandscapeRules
 extends RefCounted
-## The numbers of the worked land (field boundaries, dykes), read from
+## The numbers of the worked land (field boundaries, ditches, dykes, willows), read from
 ## data/landscape.cfg (see there for what each one means). `from_file` reports every key that is
 ## missing or out of range, and `is_valid` says whether any was.
 
@@ -11,6 +11,7 @@ const REQUIRED_KEYS := {
 	"kinds": ["knick", "stone_wall", "wattle_fence"],
 	"marsh": ["reach"],
 	"dykes": ["stretch_above"],
+	"ditches": ["willow_chance", "reeds_chance"],
 }
 ## A field must leave room for a gap that is not at either end of a boundary, with a tile
 ## beside it on both sides that is not on another boundary.

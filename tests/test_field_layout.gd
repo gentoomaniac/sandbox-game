@@ -1,6 +1,7 @@
 extends GutTest
 ## The fields the land is cut into, and what the generator makes of their boundaries: Knicks,
-## walls and fences on the Geest, dykes along the floodplain, and gaps that keep every field open.
+## walls and fences on the Geest, ditches in the marsh, willows by the ditches, dykes along the
+## floodplain, and gaps that keep every field open.
 
 const SEED := 42
 ## An area of the plain field layout, flood-filled from a corner: the fields inside the inner
@@ -84,7 +85,7 @@ func _is_on_boundary(pos: Vector2i) -> bool:
 # --- What the generator makes of them ---
 
 
-func test_the_geest_has_knicks_walls_and_fences_and_the_floodplain_dykes() -> void:
+func test_the_geest_has_knicks_walls_and_fences_and_the_marsh_ditches() -> void:
 	var generator := WorldGenerator.new(SEED)
 	var seen := {}
 	for y in range(-200, 200, 2):
@@ -96,6 +97,14 @@ func test_the_geest_has_knicks_walls_and_fences_and_the_floodplain_dykes() -> vo
 				assert_false(generator._is_marsh(pos), "%s in the marsh at %s" % [object_type, pos])
 				assert_eq(terrain, Tile.Terrain.GRASS, str(pos))
 				seen[object_type] = true
+			if generator.is_ditch(pos):
+				assert_eq(terrain, Tile.Terrain.WATER)
+				var natural := generator._natural_terrain_at(pos)
+				assert_true(natural == Tile.Terrain.WETLAND or generator._is_marsh(pos), str(pos))
+				seen[&"ditch"] = true
+			if object_type == WorldObjectTypes.WILLOW:
+				assert_true(generator._is_beside_ditch(pos), "a willow off a ditch at %s" % pos)
+				seen[object_type] = true
 			if object_type == WorldObjectTypes.DYKE:
 				assert_true(generator._river_distance(pos) < WorldGenerator.DYKE_PROBE_DISTANCE)
 				seen[object_type] = true
@@ -103,6 +112,8 @@ func test_the_geest_has_knicks_walls_and_fences_and_the_floodplain_dykes() -> vo
 		WorldObjectTypes.KNICK,
 		WorldObjectTypes.STONE_WALL,
 		WorldObjectTypes.WATTLE_FENCE,
+		&"ditch",
+		WorldObjectTypes.WILLOW,
 		WorldObjectTypes.DYKE,
 	]:
 		assert_true(seen.has(kind), "no %s" % kind)

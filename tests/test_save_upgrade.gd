@@ -288,25 +288,22 @@ func test_a_version_9_save_keeps_the_worked_land_off_the_house_and_the_player() 
 				generator.object_type_at(pos, generator.terrain_at(pos)) == WorldObjectTypes.KNICK
 			)
 	)
-	var dyke := _find_tile(
-		func(pos: Vector2i) -> bool:
-			return generator.object_type_at(pos, generator.terrain_at(pos)) == WorldObjectTypes.DYKE
-	)
-	# A shack whose door is right above the Knick, and the player standing on the dyke.
+	var ditch := _find_tile(generator.is_ditch)
+	# A shack whose door is right above the Knick, and the player standing in the ditch.
 	var origin := knick - Vector2i(1, 2)
 	var shack := {"type": "shack", "origin": SaveCodec.vector_to_json(origin), "interior": null}
 	game["world"]["buildings"].append(shack)
-	game["player"]["position"] = [dyke.x + 0.5, dyke.y + 0.9]
+	game["player"]["position"] = [ditch.x + 0.5, ditch.y + 0.9]
 	_write_save(9, game)
 
 	var restored := SaveFile.read(SAVE_PATH)
 
 	var world := restored.world
-	for tile: Vector2i in [knick, dyke]:
+	for tile: Vector2i in [knick, ditch]:
 		world.add_chunk(generator.generate_chunk(Chunk.world_to_chunk(tile)))
 	assert_null(world.object_at(knick), "nothing stands in front of the door")
 	assert_true(world.is_walkable(knick))
-	assert_null(world.object_at(dyke), "the player's ground is cleared")
+	assert_eq(world.tile_at(ditch).terrain, Tile.Terrain.GRASS)
 	assert_true(PlayerState.can_stand_at(world, restored.player.position))
 
 

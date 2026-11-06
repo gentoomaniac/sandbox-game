@@ -31,7 +31,7 @@ func test_every_missing_key_is_reported() -> void:
 	assert_false(rules.is_valid())
 	assert_true(missing.has("[fields] no field_width"))
 	assert_true(missing.has("[kinds] no knick"))
-	assert_true(missing.has("[dykes] no stretch_above"))
+	assert_true(missing.has("[ditches] no willow_chance"))
 	assert_false(missing.has("[marsh] no reach"))
 	assert_push_error_count(missing.size())
 
