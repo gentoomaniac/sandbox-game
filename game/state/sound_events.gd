@@ -61,6 +61,8 @@ static func use(result: ToolUse.Use, held_tool: StringName) -> StringName:
 			return &"build_place"
 		ToolUse.Use.TAKE_DOWN:
 			return &"axe_chop"
+		ToolUse.Use.GIVE_BONE:
+			return &"dog_bark"
 		ToolUse.Use.NEEDS_BETTER_TOOL, ToolUse.Use.NO_ROOM:
 			return &"denied"
 		ToolUse.Use.NOTHING:

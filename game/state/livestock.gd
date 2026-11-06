@@ -3,7 +3,8 @@ extends RefCounted
 ## The farm animals of the world (FarmAnimal) and how they go about their day: they stand idle,
 ## walk, graze and run about, turn away from water and anything solid, and rabbits run from the
 ## player. At night they sleep where they are, from a while after sunset until about sunrise
-## (each species has its hours, and each animal is a little later than the rest).
+## (each species has its hours, and each animal is a little later than the rest). A dog given a
+## bone follows the player for a while instead, day and night.
 ## GameState owns it and moves the animals with `update` while the player is out in the world.
 ##
 ## It does not know the world, so the two never hold each other: the map the animals walk on is
@@ -68,8 +69,7 @@ func spawn(species: StringName, count: int, near: Vector2, map: GameMap) -> int:
 	for _try in SPAWN_TRIES:
 		if placed == count:
 			break
-		var distance := rng.randf_range(SPAWN_DISTANCE.x, SPAWN_DISTANCE.y)
-		var feet := near + Vector2.from_angle(rng.randf() * TAU) * distance
+		var feet := _point_around(near, SPAWN_DISTANCE)
 		if not map.is_walkable(Vector2i(feet.floor())):
 			continue
 		var animal := FarmAnimal.create(species, rng.randi(), feet, rules)
@@ -80,14 +80,36 @@ func spawn(species: StringName, count: int, near: Vector2, map: GameMap) -> int:
 	return placed
 
 
-## Lets `delta` seconds pass for every animal on `map` at a time of the game clock. The
-## player's feet are where the rabbits run from.
-func update(delta: float, map: GameMap, player_feet: Vector2, day: int, minute: int) -> void:
-	delta = minf(delta, MAX_STEP_SECONDS)
-	var sunrise := _sun.sunrise(day)
-	var sunset := _sun.sunset(day)
+## The animal of a species nearest to `point` within `reach` tiles (from its feet), or null.
+func nearest(species: StringName, point: Vector2, reach: float) -> FarmAnimal:
+	var found: FarmAnimal = null
+	var found_distance := reach
 	for animal in _animals:
-		if _is_sleep_time(animal, minute, sunrise, sunset):
+		var distance := animal.position.distance_to(point)
+		if animal.species == species and distance <= found_distance:
+			found = animal
+			found_distance = distance
+	return found
+
+
+## The animal follows the player from the game minute `now` (see GameClock `total_minutes`) for
+## the `follow_minutes` of the rules.
+func start_following(animal: FarmAnimal, now: int) -> void:
+	animal.follow_until_minute = now + int(rules.general("follow_minutes"))
+
+
+## Lets `delta` seconds pass for every animal on `map` at the time of the game clock. The
+## player's feet are where the rabbits run from and the followers go.
+func update(delta: float, map: GameMap, player_feet: Vector2, clock: GameClock) -> void:
+	delta = minf(delta, MAX_STEP_SECONDS)
+	var minute := clock.minute_of_day
+	var now := clock.total_minutes()
+	var sunrise := _sun.sunrise(clock.day)
+	var sunset := _sun.sunset(clock.day)
+	for animal in _animals:
+		if now < animal.follow_until_minute:
+			_follow(animal, delta, map, player_feet)
+		elif _is_sleep_time(animal, minute, sunrise, sunset):
 			animal.activity = FarmAnimal.Activity.SLEEP
 		elif animal.activity == FarmAnimal.Activity.SLEEP:
 			_start_activity(animal, FarmAnimal.Activity.IDLE)
@@ -138,6 +160,58 @@ func _update_awake_animal(
 			animal.seconds_left -= delta
 			if animal.seconds_left <= 0.0:
 				_start_next_activity(animal)
+
+
+## Keeps a follower near the player: it waits within `follow_far_tiles` of them, and once they are
+## further off it walks after them (runs, when they are far) until it is `follow_near_tiles` from
+## them. One that is left far behind, or is stuck behind something, is put beside them.
+func _follow(animal: FarmAnimal, delta: float, map: GameMap, player_feet: Vector2) -> void:
+	var distance := animal.position.distance_to(player_feet)
+	if (
+		distance > rules.general("follow_lost_tiles")
+		or animal.stuck_seconds > rules.general("follow_stuck_seconds")
+	):
+		_put_beside(animal, player_feet, map)
+		return
+	var is_on_its_way := animal.activity in [FarmAnimal.Activity.WALK, FarmAnimal.Activity.RUN]
+	var stop_tiles := rules.general("follow_near_tiles" if is_on_its_way else "follow_far_tiles")
+	if distance <= stop_tiles:
+		animal.activity = FarmAnimal.Activity.IDLE
+		animal.stuck_seconds = 0.0
+		if absf(player_feet.x - animal.position.x) > 0.1:
+			animal.facing = signf(player_feet.x - animal.position.x)
+		return
+	var is_far := distance > rules.general("follow_run_tiles")
+	animal.activity = FarmAnimal.Activity.RUN if is_far else FarmAnimal.Activity.WALK
+	var speed := rules.run_speed(animal.species) if is_far else rules.walk_speed(animal.species)
+	var toward := (player_feet - animal.position).normalized()
+	if _walk(animal, toward, speed, delta, map):
+		animal.stuck_seconds = 0.0
+	else:
+		animal.stuck_seconds += delta
+
+
+## Puts an animal beside the player, facing them, where the ground under its feet and its nose is
+## walkable (as for a step, see `_walk`); it stays where it is if no such place is found.
+func _put_beside(animal: FarmAnimal, player_feet: Vector2, map: GameMap) -> void:
+	animal.stuck_seconds = 0.0
+	var distances := Vector2(rules.general("follow_near_tiles"), rules.general("follow_far_tiles"))
+	for _try in SPAWN_TRIES:
+		var feet := _point_around(player_feet, distances)
+		var facing := 1.0 if player_feet.x >= feet.x else -1.0
+		var nose := feet + Vector2(facing * rules.body_tiles(animal.species), 0.0)
+		if map.is_walkable(Vector2i(feet.floor())) and map.is_walkable(Vector2i(nose.floor())):
+			animal.position = feet
+			animal.facing = facing
+			animal.last_step = Vector2.ZERO
+			animal.activity = FarmAnimal.Activity.IDLE
+			return
+
+
+## A point in a random direction from `near`, between `distances.x` and `distances.y` tiles away.
+func _point_around(near: Vector2, distances: Vector2) -> Vector2:
+	var distance := rng.randf_range(distances.x, distances.y)
+	return near + Vector2.from_angle(rng.randf() * TAU) * distance
 
 
 func _start_next_activity(animal: FarmAnimal) -> void:

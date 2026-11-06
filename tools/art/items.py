@@ -485,6 +485,30 @@ def knitted_cap():
     return outlined(from_rows(rows, keys))
 
 
+def bone():
+    """A meaty bone lying across, from lower left to upper right, its knobbed ends pale and a
+    shred of meat left on the shaft."""
+    rows = [
+        "................",
+        "................",
+        "...........ll...",
+        "..........lccl..",
+        "..........cccc..",
+        ".........cccss..",
+        "........ccs.s...",
+        ".......crrs.....",
+        "......crrs......",
+        "..lcccrcs.......",
+        ".lccccss........",
+        ".cccsss.........",
+        "..css...........",
+        "..ss............",
+        "................",
+        "................",
+    ]
+    return outlined(from_rows(rows, {"l": "snow_light", "c": "cream", "s": "sand_light", "r": "red_light"}), "mud_dark")
+
+
 def small(picture):
     """The icon at half size, for items lying on the ground: each 2x2 block of pixels becomes
     the colour that most of its opaque pixels have (the first of them on a tie), or clear
@@ -521,6 +545,7 @@ ICONS = {
     "knitted_cap": knitted_cap(),
     "jacket": jacket(),
     "clogs": clogs(),
+    "bone": bone(),
 }
 
 

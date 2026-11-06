@@ -69,6 +69,8 @@ const FLOUR := &"flour"
 const BREAD := &"bread"
 const BERRY_TART := &"berry_tart"
 const FEAST_CAKE := &"feast_cake"
+## Given to a dog, it makes the dog follow the player (task 79).
+const BONE := &"bone"
 
 ## Stands for an empty hand or slot where an item id is expected.
 const NONE := &""
@@ -452,6 +454,13 @@ const _OTHER_TYPES := {
 		"description": "Berries baked in pastry, a treat for a feast day.",
 		"weight": 0.4,
 		"stack_limit": DEFAULT_STACK_LIMIT,
+	},
+	BONE:
+	{
+		"name": "Bone",
+		"description": "A meaty bone. Give it to a dog, and it follows you for a while.",
+		"weight": 0.3,
+		"stack_limit": 20,
 	},
 	FEAST_CAKE:
 	{

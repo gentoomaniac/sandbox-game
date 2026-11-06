@@ -15,7 +15,16 @@ const CAT := &"cat"
 const HORSE := &"horse"
 const SPECIES: Array[StringName] = [COW, SHEEP, CHICKEN, RABBIT, DOG, CAT, HORSE]
 
-const GENERAL_KEYS := ["calm_extra_tiles", "bedtime_spread_minutes"]
+const GENERAL_KEYS := [
+	"calm_extra_tiles",
+	"bedtime_spread_minutes",
+	"follow_minutes",
+	"follow_near_tiles",
+	"follow_far_tiles",
+	"follow_run_tiles",
+	"follow_lost_tiles",
+	"follow_stuck_seconds",
+]
 const SPECIES_KEYS := [
 	"looks",
 	"look_weights",

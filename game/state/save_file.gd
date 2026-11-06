@@ -12,7 +12,7 @@ extends RefCounted
 ## 4. Add a test in tests/test_save_upgrade*.gd: an old save without the field loads right.
 ## An upgrade step works on the parsed JSON, before any `from_dict` runs.
 
-const VERSION := 15
+const VERSION := 16
 ## Version 6 had tomatoes, which were not grown here before the 19th century; flax took their
 ## place, item for item.
 const TOMATOES_TO_FLAX := {"tomatoes": "flax", "tomatoes_seeds": "flax_seeds"}
@@ -105,6 +105,8 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 		_upgrade_from_version_13(parsed["game"])
 	if version <= 14:
 		_upgrade_from_version_14(parsed["game"])
+	if version <= 15:
+		_upgrade_from_version_15(parsed["game"])
 	return GameState.from_dict(parsed["game"])
 
 
@@ -332,6 +334,12 @@ static func _upgrade_from_version_13(game: Dictionary) -> void:
 ## Version 14 had no desire paths: all its grass is unworn.
 static func _upgrade_from_version_14(game: Dictionary) -> void:
 	game["world"]["wear"] = []
+
+
+## Version 15 had no bones for the dogs: no animal follows the player.
+static func _upgrade_from_version_15(game: Dictionary) -> void:
+	for animal: Dictionary in game["livestock"]:
+		animal["follow_until_minute"] = 0
 
 
 static func _keep(kept: Dictionary[Vector2i, bool], area: Rect2i) -> void:

@@ -352,10 +352,7 @@ func _process(delta: float) -> void:
 			_fade_through(_pass_door)
 	# The world, its animals too, stands still while the player is in a house.
 	if not _state.is_inside():
-		var clock := _state.clock
-		_state.livestock.update(
-			delta, _state.world, _state.player.position, clock.day, clock.minute_of_day
-		)
+		_state.livestock.update(delta, _state.world, _state.player.position, _state.clock)
 		_view.player_feet = _player_view.position
 		_view.set_focus(_state.player.tile())
 	_debug.update(delta)
@@ -432,6 +429,8 @@ func _use_on(target: Targeting) -> void:
 	_tiredness_view.acted(use)
 	if _state.is_inside() and use in [ToolUse.Use.PLACE, ToolUse.Use.TAKE_DOWN]:
 		_interior_view.show_interior(_state.current_map)
+	if use == ToolUse.Use.GIVE_BONE:
+		_harvest_hud.show_note("The dog follows you.")
 	if use == ToolUse.Use.NO_ROOM:
 		_harvest_hud.show_note("Not enough room in the inventory.")
 	if use == ToolUse.Use.NEEDS_BETTER_TOOL:

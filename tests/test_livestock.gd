@@ -1,53 +1,7 @@
-extends GutTest
+extends LivestockCase
 ## The farm animals: their data file, their looks, where they are put, and how they go about
 ## their day (they keep to ground they can stand on, some run about, rabbits run from the player,
 ## and all sleep at night).
-
-const SEED := 7
-## The pen: a square of grass this many tiles to each side of its middle, ringed by water, with
-## a few stones in it.
-const PEN_RADIUS := 3
-const STEP_SECONDS := 0.05
-const DAY := 45
-const NOON := 12 * 60
-const MIDNIGHT := 0
-
-var _state: GameState
-var _world: World
-var _middle: Vector2i
-var _livestock: Livestock
-
-
-func before_each() -> void:
-	_state = GameState.new_game(SEED)
-	_world = _state.world
-	_middle = _state.player.tile() + Vector2i(12, 0)
-	for y in range(-PEN_RADIUS - 1, PEN_RADIUS + 2):
-		for x in range(-PEN_RADIUS - 1, PEN_RADIUS + 2):
-			var tile := _middle + Vector2i(x, y)
-			_world.remove_object(tile)
-			var is_inside := maxi(absi(x), absi(y)) <= PEN_RADIUS
-			_world.set_terrain(tile, Tile.Terrain.GRASS if is_inside else Tile.Terrain.WATER)
-	for stone in [Vector2i(1, 1), Vector2i(-2, 0), Vector2i(0, -2)]:
-		_world.add_object(WorldObject.new(WorldObjectTypes.STONE, _middle + stone))
-	# Far from the pen, so that the rabbits take no notice unless a test brings them close.
-	_state.player.position = Vector2(_middle) + Vector2(0.5, 30.5)
-	_livestock = _state.livestock
-	_livestock.rng.seed = SEED
-
-
-func _pen_middle() -> Vector2:
-	return Vector2(_middle) + Vector2(0.5, 0.5)
-
-
-func _run(seconds: float, minute := NOON) -> void:
-	for _step in int(seconds / STEP_SECONDS):
-		_step(minute)
-
-
-func _step(minute := NOON) -> void:
-	_livestock.update(STEP_SECONDS, _world, _state.player.position, DAY, minute)
-
 
 # --- The data file ---
 

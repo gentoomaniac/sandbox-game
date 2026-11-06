@@ -26,6 +26,11 @@ var facing := 1.0
 ## Minutes it goes to sleep and wakes later than its species does, so that a herd doesn't lie
 ## down all at once (see Livestock `is_sleep_time`).
 var bedtime_delay := 0.0
+## The game minute (see GameClock `total_minutes`) until which it follows the player, as a dog
+## does once given a bone; 0 for an animal that never did.
+var follow_until_minute := 0
+## Seconds a follower has got no nearer the player for something in its way (see Livestock).
+var stuck_seconds := 0.0
 
 
 func _init(animal_species: StringName, animal_look: StringName, feet: Vector2) -> void:
@@ -57,6 +62,7 @@ func to_dict() -> Dictionary:
 		"look": str(look),
 		"tint": tint.to_html(false),
 		"position": SaveCodec.float_vector_to_json(position),
+		"follow_until_minute": follow_until_minute,
 	}
 
 
@@ -70,4 +76,5 @@ static func from_dict(data: Dictionary, rules: LivestockRules) -> FarmAnimal:
 		animal_species, StringName(data["look"]), SaveCodec.float_vector_from_json(data["position"])
 	)
 	animal.tint = Color.html(data["tint"])
+	animal.follow_until_minute = int(data["follow_until_minute"])
 	return animal
