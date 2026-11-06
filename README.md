@@ -188,6 +188,12 @@ another; the answer waits in the first one's chat.
 
 ![A chat with Antje Boysen through the test LLM: both portraits, and the lines with the game time](docs/screenshots/npc-chat.png)
 
+The pixel font has the Latin-1 letters (ä ö ü ß å æ ø é ç ñ ...), the Latin Extended-A letters
+of the neighbours' languages (Polish, Czech, Turkish and others) and the typographic quotes,
+dashes and « » ¿ ¡ …, so the villagers' German, Danish and Dutch show as written.
+
+![A chat with German and Danish lines, and the accented capitals](docs/screenshots/font-umlauts.png)
+
 ### Wildlife
 
 Birds hop and peck on open ground and small flocks cross the sky, rabbits graze the meadows,

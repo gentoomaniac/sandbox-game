@@ -970,7 +970,7 @@ changes. Tests with FakeChat; the README's "What the model is told" updated.
 
 ## 92. A font with umlauts and Scandinavian letters
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06, with screenshots of the chat: å, ä, ö, ü, æ, ø (and the like)
 show as boxes with hex codes, as the villagers answer in German and Danish too. Give the
@@ -978,6 +978,14 @@ game's pixel font the Latin-1 Supplement at least (À-ÿ, with ß), and the Lati
 letters the region's languages use, drawn in the font's style (generated, like the rest of
 the art, or a pixel font with a licence that allows it); check the chat, the HUD, the
 console and the menus, and add a test that every character of those ranges has a glyph.
+
+Done: tools/art/ui.py builds the Latin-1 letters (À-ÿ), the Latin Extended-A letters of the
+region and the typographic punctuation from the base letters plus two-row marks (hand-drawn:
+ß æ Æ œ Œ ð þ Þ ı Ø and the stroked ø đ Ð ł Ł), and € £ © § µ ² ³ • ‹ › ‚. The line is now
+12 px (was 10): two rows above the capitals are for the marks, as a label clipped them on its
+first line. test_font_coverage.gd checks the glyphs; the README shows a chat with German and
+Danish lines. Still missing: ½ ¼ ¾, ď ť ľ ĥ ķ ģ, Cyrillic and Greek, emoji; the en and em
+dash are as wide as the hyphen (a glyph is at most 6 px wide).
 
 ## 93. Claude as a language model choice in Settings
 
