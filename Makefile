@@ -35,7 +35,7 @@ help:
 	@echo "  test        Run the GUT tests headless."
 	@echo "  lint        Run gdlint and gdformat --check."
 	@echo "  format      Format the GDScript."
-	@echo "  assets      Regenerate all art and sounds,."
+	@echo "  assets      Regenerate all art and sounds, then check them."
 	@echo "  export      Not set up yet: no export presets exist."
 	@echo
 	@echo "Variables (make <target> NAME=value):"
