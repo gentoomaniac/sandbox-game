@@ -60,7 +60,7 @@ func blocks_walking() -> bool:
 
 
 func is_bed() -> bool:
-	return type_data().get("bed", false)
+	return type_data().has("bed")
 
 
 func is_crop() -> bool:

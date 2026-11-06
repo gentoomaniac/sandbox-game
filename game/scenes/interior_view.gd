@@ -2,8 +2,9 @@ class_name InteriorView
 extends Node2D
 ## Renders an Interior from its state, in 3/4 view: the floor and walls on one tile layer,
 ## the furniture as sprites in the y-sorted `entities` node, where the player stands among
-## them. Furniture that shines (the hearth) gets an ObjectLight, and its fire burns (see
-## AmbientMotion).
+## them. Beds lie on the floor, below the player; one the player lies in has its cover (the
+## blanket) drawn over them (see `cover_bed`). Furniture that shines (the hearth) gets an
+## ObjectLight, and its fire burns (see AmbientMotion).
 ##
 ## The room is walled in by its WALL tiles: along the top a back wall face of BACK_WALL_ROWS
 ## tiles, on the other sides thin tops of walls, 8 px wide, drawn on the half of the wall
@@ -37,12 +38,18 @@ const BACK_WALL_ROWS := 2
 ## Beyond the room, so it does not show the (hidden) world's emptiness.
 const BACKDROP := Color("1d1b26")
 const BACKDROP_RADIUS := 1000.0
+## A bed's cover goes above the player lying in it (see PlayerView.LYING_Z_INDEX).
+const COVER_Z_INDEX := 2
 
 ## Y-sorted: the player is added here.
 var entities := Node2D.new()
+## The beds, which are under everything that stands in the room.
+var _beds := Node2D.new()
 var _ground := TileMapLayer.new()
 ## The furniture sprites and the lights, to be replaced when another interior is shown.
 var _furniture: Array[Node] = []
+## The covers of the beds that have one, by the bed's tile; shown while the player lies in it.
+var _covers := {}
 
 
 func _ready() -> void:
@@ -57,6 +64,8 @@ func _ready() -> void:
 	_ground.name = "Ground"
 	_ground.tile_set = tile_set
 	add_child(_ground)
+	_beds.name = "Beds"
+	add_child(_beds)
 	entities.name = "Entities"
 	entities.y_sort_enabled = true
 	add_child(entities)
@@ -67,6 +76,7 @@ func show_interior(interior: Interior) -> void:
 	for node in _furniture:
 		node.queue_free()
 	_furniture.clear()
+	_covers.clear()
 	for y in interior.size.y:
 		for x in interior.size.x:
 			var pos := Vector2i(x, y)
@@ -76,6 +86,13 @@ func show_interior(interior: Interior) -> void:
 				_ground.set_cell(pos, SOURCE_ID, Vector2i(ground, 0))
 	for object in interior.objects():
 		_add_furniture(object)
+
+
+## Draws the cover of the bed the player lies in over them, and no other; null for a player on
+## their feet.
+func cover_bed(bed: WorldObject) -> void:
+	for pos: Vector2i in _covers:
+		_covers[pos].visible = bed != null and bed.pos == pos
 
 
 func _draw() -> void:
@@ -125,8 +142,19 @@ func _add_furniture(object: WorldObject) -> void:
 	sprite.offset = Vector2(-texture.get_width() / 2.0, tile_size / 2.0 - texture.get_height())
 	if AmbientMotion.FIRE_PROFILES.has(object.type):
 		sprite.material = AmbientMotion.fire_material(object.type)
-	entities.add_child(sprite)
+	(_beds if object.is_bed() else entities).add_child(sprite)
 	_furniture.append(sprite)
+	if object_type.has("interior_cover"):
+		var cover := Sprite2D.new()
+		cover.texture = load(object_type["interior_cover"])
+		cover.centered = false
+		cover.position = sprite.position
+		cover.offset = sprite.offset
+		cover.z_index = COVER_Z_INDEX
+		cover.visible = false
+		_beds.add_child(cover)
+		_furniture.append(cover)
+		_covers[object.pos] = cover
 	if not object.light().is_empty():
 		var light := ObjectLight.new(object.light(), object.pos)
 		# The fire, a bit above the middle of the footprint: it burns at the back of the hearth.

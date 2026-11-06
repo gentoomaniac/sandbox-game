@@ -243,6 +243,8 @@ def write_interior():
     save([interior.atlas_tiles(furniture)], "interior.png")
     for name, (picture, _footprint) in furniture.items():
         save_picture(picture, f"interior/{name}.png")
+    for name, picture in interior.covers(furniture).items():
+        save_picture(picture, f"interior/{name}.png")
 
 
 def write_fire():

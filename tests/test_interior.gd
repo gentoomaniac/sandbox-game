@@ -197,6 +197,6 @@ func test_the_view_shows_furniture_and_lights_the_hearth() -> void:
 	var view := InteriorView.new()
 	add_child_autofree(view)
 	view.show_interior(InteriorLoader.load_interior(KATE_MAP))
-	assert_eq(view.entities.get_child_count(), 10)
+	assert_eq(view.entities.get_child_count(), 9, "furniture but the bed, which lies below")
 	var lights := view.get_children().filter(func(node: Node) -> bool: return node is ObjectLight)
 	assert_eq(lights.size(), 1)

@@ -329,6 +329,7 @@ func _process(delta: float) -> void:
 		_player_view.walk_speed = _state.walk_speed_factor()
 		_state.player.move(_state.current_map, direction, delta, _player_view.walk_speed)
 		_state.collect_ground_items(delta)
+		_interior_view.cover_bed(_state.player.bed_lying_in)
 		if _state.door_underfoot():
 			_fade_through(_pass_door)
 	# The world, its animals too, stands still while the player is in a house.

@@ -11,7 +11,9 @@ extends Node2D
 ## StartupOptions, which `show_player` reads.
 ##
 ## Passing out (`collapse`) shows the collapse sheets instead (see Appearance): the player sinks
-## to the knees, tips over and lies asleep with rising "z"s, until `stand_up`.
+## to the knees, tips over and lies asleep with rising "z"s, until `stand_up`. A player in a bed
+## (PlayerState `bed_lying_in`) lies there in the same asleep frame, laid with its head to the
+## head end of the bed.
 
 ## A foot came down: time for a footstep sound.
 signal stepped
@@ -41,6 +43,16 @@ const COLLAPSE_FRAME_STARTS := [0.0, 0.5, 0.65, 0.95]
 const ASLEEP_FRAME := 3
 ## From standing to asleep, with a moment of the "z"s: Main fades out after this.
 const COLLAPSE_SECONDS := 1.5
+## How the asleep frame (head to the right, in the bottom half of the frame) is laid in a bed
+## whose head end lies in this direction: how it is turned and moved, in art pixels, so that the
+## figure's middle is on the player's position, the middle of the bed.
+const LYING_POSES := {
+	Vector2i.UP: {"rotation": -PI / 2, "shift": Vector2(8, 0), "is_flipped": false},
+	Vector2i.LEFT: {"rotation": 0.0, "shift": Vector2(0, 8), "is_flipped": true},
+}
+## A figure in a bed is drawn above the objects of the world (a sleeping bag lies among them);
+## the cover of a bed in a house is drawn above the figure (see InteriorView).
+const LYING_Z_INDEX := 1
 ## Where the "z"s start over a figure lying head to the right, in art pixels from the feet.
 const SLEEP_ZS_POSITION := Vector2(10, -16)
 
@@ -120,6 +132,12 @@ func _process(delta: float) -> void:
 	var moved := _player.position - _last_position
 	_last_position = _player.position
 	position = (_player.position * TerrainTileset.TILE_SIZE).round()
+	# Lying in a bed wins over the collapse; both skip the walking frames below.
+	var bed := _player.bed_lying_in
+	z_index = LYING_Z_INDEX if bed != null else 0
+	if bed != null:
+		_show_lying_in_bed(bed)
+		return
 	if _collapse_time >= 0.0:
 		_show_collapse(delta)
 		return
@@ -142,18 +160,37 @@ func _process(delta: float) -> void:
 func _show_collapse(delta: float) -> void:
 	_collapse_time += delta
 	var frame := collapse_frame(_collapse_time)
-	# The hand lets go of what it held.
+	_show_layers(_layers_without_held_item(), true)
+	var is_facing_left := _player.facing == Vector2i.LEFT
+	for sprite in _sprites:
+		_lay(sprite, frame, is_facing_left, 0.0, Vector2.ZERO)
+	_sleep_zs.is_sleeping = frame == ASLEEP_FRAME
+	_sleep_zs.position = SLEEP_ZS_POSITION * Vector2(-1 if is_facing_left else 1, 1)
+
+
+func _show_lying_in_bed(bed: WorldObject) -> void:
+	_show_layers(_layers_without_held_item(), true)
+	var pose: Dictionary = LYING_POSES[bed.type_data()["bed"]]
+	for sprite in _sprites:
+		_lay(sprite, ASLEEP_FRAME, pose["is_flipped"], pose["rotation"], pose["shift"])
+	_sleep_zs.is_sleeping = false
+
+
+## The player's layers for the collapse sheets: the hand lets go of what it held.
+func _layers_without_held_item() -> Array[Dictionary]:
 	var layers: Array[Dictionary] = []
 	for layer in _player.appearance.layers_for(Vector2i.RIGHT):
 		if layer.slot != Appearance.HELD:
 			layers.append(layer)
-	_show_layers(layers, true)
-	var is_facing_left := _player.facing == Vector2i.LEFT
-	for sprite in _sprites:
-		sprite.frame = frame
-		sprite.flip_h = is_facing_left
-	_sleep_zs.is_sleeping = frame == ASLEEP_FRAME
-	_sleep_zs.position = SLEEP_ZS_POSITION * Vector2(-1 if is_facing_left else 1, 1)
+	return layers
+
+
+## Shows a frame of a collapse sheet, mirrored, turned about its middle and moved.
+func _lay(sprite: Sprite2D, frame: int, is_flipped: bool, angle: float, shift: Vector2) -> void:
+	sprite.frame = frame
+	sprite.flip_h = is_flipped
+	sprite.rotation = angle
+	sprite.position = shift
 
 
 ## The hand shows the selected item, if it has art for the hand (the hoe); else it is empty.

@@ -39,7 +39,7 @@ func test_the_player_gets_up_on_the_first_move() -> void:
 
 func test_every_bed_can_be_walked_on() -> void:
 	for type: StringName in WorldObjectTypes.TYPES:
-		if WorldObjectTypes.TYPES[type].get("bed", false):
+		if WorldObjectTypes.TYPES[type].has("bed"):
 			assert_false(WorldObjectTypes.TYPES[type]["blocks_walking"], type)
 
 

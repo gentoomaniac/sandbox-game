@@ -380,6 +380,11 @@ def sleeping_mat():
     rect(canvas, 1, 1, 1, 30, "sand_light")
     rect(canvas, 3, 2, 12, 8, "cream")
     rect(canvas, 3, 8, 12, 8, "sand_light")
+    # A grey wool blanket over the foot end, folded back at the top, with a dark stripe.
+    rect(canvas, 2, 13, 13, 29, "stone")
+    rect(canvas, 2, 13, 13, 14, "stone_light")
+    rect(canvas, 2, 15, 13, 15, "stone_dark")
+    rect(canvas, 2, 22, 13, 22, "stone_dark")
     return outline(canvas, "soil_dark")
 
 
@@ -589,6 +594,30 @@ def furniture():
         "plate_rack": (plate_rack(), (1, 2)),
         "wall_bench": (wall_bench(), (2, 1)),
     }
+
+
+# The part of each bed that lies over the player when they wake in it (the blanket, and what
+# is below it), as rectangles (x0, y0, x1, y1) of the finished picture. The pillow stays under
+# them, so the head shows on it.
+BED_COVERS = {
+    "bed": [(0, 26, 15, 47)],
+    "sleeping_mat": [(0, 13, 15, 31)],
+    "box_bed": [(12, 17, 31, 28), (0, 29, 31, 43)],
+}
+
+
+def covers(furniture):
+    """The pictures assets/interior/<bed>_cover.png: the same size as the bed's, with only the
+    pixels inside BED_COVERS left. The game draws one over the player lying in the bed."""
+    result = {}
+    for name, rects in BED_COVERS.items():
+        picture = furniture[name][0]
+        cover = blank(len(picture[0]), len(picture))
+        for x0, y0, x1, y1 in rects:
+            for y in range(y0, y1 + 1):
+                cover[y][x0 : x1 + 1] = picture[y][x0 : x1 + 1]
+        result[f"{name}_cover"] = cover
+    return result
 
 
 def atlas_tiles(furniture):
