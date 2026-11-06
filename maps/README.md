@@ -7,7 +7,7 @@ these maps; `make setup` reports it as optional.
 ```
 maps/interiors/
   interior.tsx   the tileset all rooms share (its image is assets/interior.png)
-  shack.tmx      one map per building id: shack, kate, longhouse, barn
+  shack.tmx      one map per building id: shack, kate, longhouse, hall_house, barn
 ```
 
 A building's section in [data/buildings.cfg](../data/buildings.cfg) names its map in
