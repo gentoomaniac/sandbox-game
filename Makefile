@@ -23,7 +23,7 @@ IMPORT := $(GODOT) --headless --quiet --import
 # reproducible, and it keeps third-party code out of our history and diffs.
 # The cost is that a fresh clone needs `make setup` (and network) before it runs.
 
-.PHONY: help setup venv assets run screenshot test lint format export clean
+.PHONY: help setup venv assets run screenshot test lint format export clean llm-up llm-down llm-check
 
 help:
 	@echo "Targets:"
@@ -36,6 +36,9 @@ help:
 	@echo "  lint        Run gdlint and gdformat --check."
 	@echo "  format      Format the GDScript."
 	@echo "  assets      Regenerate all art and sounds, then check them (needs no Godot)."
+	@echo "  llm-up      Start the local test LLM (Ollama in a container) and pull its model; see tools/README.md."
+	@echo "  llm-down    Stop and remove the test LLM container (the model stays; PURGE=1 deletes it too)."
+	@echo "  llm-check   Send one chat request to the test LLM and print the reply."
 	@echo "  clean       Delete build/ (test log, screenshots, the screenshot save); nothing is lost."
 	@echo "  export      Not set up yet: no export presets exist."
 	@echo
@@ -49,6 +52,8 @@ help:
 	@echo "  SCREENSHOT_TIMEOUT  screenshot: seconds before a hung Godot is killed (default: 30)."
 	@echo "  KEEP_SAVE   screenshot: KEEP_SAVE=1 loads the real save instead of a new game."
 	@echo "  SOUND       screenshot: SOUND=1 keeps the sound on."
+	@echo "  CONTAINER   llm-*: container tool, podman or docker (default: podman if present)."
+	@echo "  LLM_MODEL   llm-*: Ollama model tag (default: qwen2.5:3b-instruct)."
 	@echo "  ARGS        screenshot: more debug flags, e.g. ARGS=\"--weather=rain\" (see game/scenes/startup_options.gd)."
 
 setup:
@@ -179,6 +184,16 @@ format:
 export:
 	@echo "No export presets exist yet."
 	@exit 1
+
+# A local LLM for trying NPC talk, in a container; no test needs it. See tools/README.md.
+llm-up:
+	tools/llm/llm.sh up
+
+llm-down:
+	tools/llm/llm.sh down $(if $(filter 1,$(PURGE)),--purge)
+
+llm-check:
+	tools/llm/llm.sh check
 
 # Everything in build/ is made by the targets above, so deleting it loses nothing.
 clean:
