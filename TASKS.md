@@ -1016,6 +1016,12 @@ in Settings, not the default (the local test LLM stays the default).
 - **Test LLM on the GPU, and which models fit** (the user, 2026-11-06): set up CDI for the
   RTX 4070 (tools/README.md, GPU), then try which models fit in its 8 GB of VRAM and how
   their villager lines compare (e.g. qwen2.5:7b-instruct, llama3.1:8b, gemma2:9b).
+- **More hosted providers: OpenAI, Gemini, others** (the user, 2026-11-07), once Claude
+  (task 93) works. OpenAI's API is the OpenAI-compatible one, and Gemini has an
+  OpenAI-compatible endpoint too (`https://generativelanguage.googleapis.com/v1beta/openai`),
+  so both already work by typing the endpoint and key. What's left is likely presets in the
+  provider choice that fill the endpoint (and a sensible cheap model), plus a README line each;
+  a native adapter only where the compatible endpoint falls short.
 
 - `WildlifeSprites.frame_index` and `max_frames` allocate on every call (`keys()`,
   `values().max()`); the older animals call them per frame. Cache them per sheet. And rename
