@@ -2,8 +2,9 @@
 
 Called from generate.py, which passes palette.PALETTE so it stays the only source of colours.
 Written to assets/ui/:
-- font.png and font.fnt: a BMFont that Godot imports as a font. Glyphs are 5 px wide, capitals
-  and digits 7 px tall, with descenders reaching 2 px below the baseline;
+- font.png and font.fnt: a BMFont that Godot imports as a font. Glyphs are 5 px wide (Ø 6), capitals
+  and digits 7 px tall, with descenders reaching 2 px below the baseline and the marks of
+  accented capitals in 2 more rows above the cap height (see COMPOSED);
 - panel.png: a 24x24 frame, 8 px corners (StyleBoxTexture margin 8);
 - slider_grabber.png and slider_grabber_highlight.png: 10x10 slider knobs (the highlight one
   is used when hovered, focused or dragged);
@@ -19,12 +20,15 @@ The Theme that uses them is game/scenes/ui_theme.tres.
 from PIL import Image
 
 GLYPH_COLOUR = "cream"
-CELL_WIDTH = 6
+CELL_WIDTH = 7
 CELL_HEIGHT = 10
 ATLAS_COLUMNS = 16
-# The font's line: capitals sit on the rows above BASELINE, descenders hang below it.
-LINE_HEIGHT = 10
-BASELINE = 7
+# The font's line: capitals sit on the rows above BASELINE, descenders hang below it. The
+# top ACCENT_ROWS of the line are for the marks of accented capitals, so labels do not clip them.
+FONT_SIZE = 9
+ACCENT_ROWS = 2
+LINE_HEIGHT = 10 + ACCENT_ROWS
+BASELINE = 7 + ACCENT_ROWS
 SPACE_ADVANCE = 3
 PANEL_SIZE = 24
 BUTTON_SIZE = 12
@@ -135,8 +139,107 @@ _ @7 #####
 · @3 ##
 × @2 #...# .#.#. ..#.. .#.#. #...#
 ° @0 .#. #.# .#.
+ß .##.. #..#. #..#. #.##. #..#. #..#. #.##.
+æ .#.#. #.#.# #.### #.#.. .####
+Æ ..### .##.. #.#.. ##### #.#.. #.#.. #.###
+Ø ..#### .#..## .#..## .#.#.# .##..# .#...# #.###.
+œ .#.#. #.#.# #.### #.#.. .#.##
+Œ .#### #.#.. #.#.. #.### #.#.. #.#.. .####
+ð ..##. .##.. ...#. .#### #...# #...# .###.
+þ @0 #.... #.... #.##. ##..# #...# #...# ####. #.... #....
+Þ #.... ####. #...# #...# ####. #.... #....
+ı .##.. ..#.. ..#.. ..#.. .###.
+¡ #. .. #. #. #. #. #.
+¿ ..#.. ..... .#... #.... #...# #...# .###.
+« @2 ..#.# .#.#. #.#.. .#.#. ..#.#
+» @2 #.#.. .#.#. ..#.# .#.#. #.#..
+‘ @0 .# #. ##
+’ @0 ## .# #.
+“ @0 .#.# #.#. ####
+” @0 #### .#.# #.#.
+„ @5 #### .#.# #.#.
+– @3 #####
+— @3 #####
+… @5 #.#.#
+÷ @1 ..#.. ..... ##### ..... ..#..
+± @1 ..#.. ..#.. ##### ..#.. .....
+€ @1 .###. #.... ####. #.... .###.
+• @2 .#. ### .#.
+§ .###. #.... .##.. .#.#. ..##. ....# ###..
+µ @2 #...# #...# #...# #..## ####. #.... #....
+² @0 ##. ..# .#. ###
+³ @0 ##. .#. ..# ##.
+£ ..##. .#... .#... ###.. .#... .#... #####
+© @1 .###. #.#.# #.#.. #.#.# .###.
+‹ @3 .# #. .#
+› @3 #. .# #.
+‚ @5 .# .# #.
 """
 # fmt: on
+
+# Characters drawn from a base glyph and a mark, one line per mark: pairs of base letter and
+# the composed character. Marks above are two rows sitting right on top of the base (a
+# capital grows two rows above the line, a small letter fills the two above its x-height);
+# marks below hang from the baseline. A blank row in a mark is a gap.
+MARKS_ABOVE = {
+    "grave": (".#...", "..#.."),
+    "acute": ("...#.", "..#.."),
+    "circumflex": ("..#..", ".#.#."),
+    "tilde": (".##.#", "#.##."),
+    "diaeresis": (".#.#.", "....."),
+    "ring": (".###.", ".#.#."),
+    "caron": (".#.#.", "..#.."),
+    "breve": ("#...#", ".###."),
+    "macron": (".###.", "....."),
+    "dot": ("..#..", "....."),
+    "double acute": ("..#.#", ".#.#."),
+}
+MARKS_BELOW = {
+    "cedilla": ("..#..", ".##.."),
+    "ogonek": ("...#.", "...##"),
+}
+COMPOSED = {
+    "grave": "AÀ EÈ IÌ ıì OÒ UÙ aà eè oò uù",
+    "acute": "AÁ EÉ IÍ OÓ UÚ YÝ CĆ NŃ SŚ ZŹ aá eé ıí oó uú yý cć nń sś zź",
+    "circumflex": "AÂ EÊ IÎ OÔ UÛ aâ eê ıî oô uû",
+    "tilde": "AÃ NÑ OÕ aã nñ oõ",
+    "diaeresis": "AÄ EË IÏ OÖ UÜ YŸ aä eë ıï oö uü yÿ",
+    "ring": "AÅ UŮ aå uů",
+    "caron": "CČ EĚ NŇ RŘ SŠ ZŽ cč eě nň rř sš zž",
+    "breve": "AĂ GĞ aă gğ",
+    "macron": "AĀ EĒ IĪ OŌ UŪ aā eē ıī oō uū",
+    "dot": "EĖ Iİ ZŻ eė zż",
+    "double acute": "OŐ UŰ oő uű",
+    "cedilla": "CÇ SŞ cç sş",
+    "ogonek": "AĄ EĘ aą eę",
+}
+# Letters with a stroke through them: the base letter and the pixels (row, column) to add.
+STROKED = {
+    "ø": ("o", [(0, 4), (1, 3), (2, 2), (3, 1), (4, 0)]),
+    "đ": ("d", [(1, 2), (1, 3)]),
+    "Ð": ("D", [(3, 1), (3, 2), (3, 3)]),
+    "ł": ("l", [(2, 3), (4, 1)]),
+    "Ł": ("L", [(3, 1), (3, 2)]),
+}
+
+
+def compose_glyphs(glyphs):
+    """Adds the accented and the stroked letters, built from the glyphs drawn above."""
+    for mark, pairs in COMPOSED.items():
+        for base, composed in pairs.split():
+            top, rows = glyphs[base]
+            if mark in MARKS_ABOVE:
+                glyphs[composed] = (top - 2, [*MARKS_ABOVE[mark], *rows])
+            else:
+                glyphs[composed] = (top, [*rows, *MARKS_BELOW[mark]])
+    for composed, (base, strokes) in STROKED.items():
+        top, rows = glyphs[base]
+        picture = [list(row.ljust(5, ".")) for row in rows]
+        for y, x in strokes:
+            picture[y][x] = "#"
+        glyphs[composed] = (top, ["".join(row) for row in picture])
+    glyphs["Đ"] = glyphs["Ð"]
+    glyphs["\u00a0"] = glyphs[" "]
 
 
 def parse_glyphs():
@@ -151,6 +254,7 @@ def parse_glyphs():
         else:
             top = 0 if len(rows) >= 7 else 2
         glyphs[character] = (top, rows)
+    compose_glyphs(glyphs)
     return glyphs
 
 
@@ -177,10 +281,11 @@ def font_files(palette):
         advance = width + 1 if picture else SPACE_ADVANCE
         lines.append(
             f"char id={ord(character)} x={cell_x} y={cell_y} width={width} "
-            f"height={len(picture)} xoffset=0 yoffset={top} xadvance={advance} page=0 chnl=15"
+            f"height={len(picture)} xoffset=0 yoffset={top + ACCENT_ROWS} xadvance={advance} "
+            "page=0 chnl=15"
         )
     header = [
-        f'info face="Pixel" size={LINE_HEIGHT - 1} bold=0 italic=0 charset="" unicode=1 '
+        f'info face="Pixel" size={FONT_SIZE} bold=0 italic=0 charset="" unicode=1 '
         "stretchH=100 smooth=0 aa=1 padding=0,0,0,0 spacing=0,0",
         f"common lineHeight={LINE_HEIGHT} base={BASELINE} scaleW={image.width} "
         f"scaleH={image.height} pages=1 packed=0",

@@ -8,7 +8,6 @@ extends Button
 
 const ROW_WIDTH := 180
 const MIN_HEIGHT := 22
-const LINE_HEIGHT := 10
 const ICON_SIZE := 16
 const GAP := 6
 ## Palette colour flame (see tools/art/palette.py), as in the build panel.
@@ -30,9 +29,7 @@ func _init(id: StringName, crafting: Crafting, inventory: Inventory) -> void:
 	_crafting = crafting
 	_rules = crafting.rules
 	_inventory = inventory
-	var materials := _rules.materials(id)
-	var lines := maxi(materials.size(), 2 if _has_level() else 1)
-	custom_minimum_size = Vector2(ROW_WIDTH, maxi(MIN_HEIGHT, lines * LINE_HEIGHT + 8))
+	custom_minimum_size = Vector2(ROW_WIDTH, MIN_HEIGHT)
 
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", GAP)
@@ -66,8 +63,11 @@ func _init(id: StringName, crafting: Crafting, inventory: Inventory) -> void:
 
 
 func _ready() -> void:
-	# A disabled row keeps the look of the others, just dimmer. The theme comes from the screen
-	# that holds the row, so it is not there yet in `_init`.
+	# The theme comes from the screen that holds the row, so it is not there yet in `_init`.
+	var lines := maxi(_rules.materials(recipe_id).size(), 2 if _has_level() else 1)
+	var height := lines * _materials_label.get_line_height() + 8
+	custom_minimum_size.y = maxf(MIN_HEIGHT, height)
+	# A disabled row keeps the look of the others, just dimmer.
 	add_theme_stylebox_override("disabled", get_theme_stylebox("normal"))
 
 
