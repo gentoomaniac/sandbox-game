@@ -16,14 +16,22 @@ make venv      # just the Python environment (make assets does this itself)
 
 ## Art: tools/art/
 
-`generate.py` is the entry point and holds much of the drawing (terrain, trees, bushes,
-the camp, the character, interior furniture). The other modules are topics it calls:
+`generate.py` is the entry point: it assembles the object atlas and `main()` writes every
+file under `assets/`, one small `write_...` function per family. The drawing is in the modules
+by topic. Where is a thing drawn?
 
 | Module | What it draws |
 |---|---|
-| `generate.py` | The palette, terrain and decoration layers, the object atlas, the character, the furniture, and `main()`, which writes every file under `assets/`. |
-| `seasons.py` | The other looks (spring, autumn, bare, frost, snow, dusting, leaf-out steps) made from the summer art by colour remaps and overlays. Also adds its colours to the palette. |
+| `generate.py` | The object atlas (`object_atlas()`, with the numbered table of its rows), the writers and `main()`. |
+| `canvas.py` | The shared basics: `TILE`, the size of an object cell, `blank`, `filled`, `copy` and a clipped `rect`. |
+| `palette.py` | The palette, `to_image`, `save` (one PNG under `assets/`) and the palette check. |
+| `terrain.py` | The ground: water, floodplain, wetland, grass, soil, and their decorations. |
+| `trees.py` | Oak, spruce, pine, dead tree, bushes, ferns, stones, boulders and stumps. |
+| `camp.py` | The fireplace and the bedroll. |
+| `character.py` | The player's layers (body, clothes, hair, hats, hoe), their passing out and the sleeping "z". |
+| `interior.py` | The room tiles and the furniture inside the buildings, the hearth too. |
 | `buildings.py` | The four buildings, plain and with lit windows. |
+| `seasons.py` | The other looks (spring, autumn, bare, frost, snow, dusting, leaf-out steps) made from the summer art by colour remaps and overlays. Also adds its colours to the palette. |
 | `crops.py`, `crop_icons.py` | Crop sheets (growth stages and the dead one), seed bag and produce icons, wet soil. |
 | `items.py`, `tool_icons.py`, `chest.py` | Item icons, the slot frames and the tools; the chest, which is drawn once for every use. |
 | `trunks.py`, `meadow.py`, `reeds.py` | Felled trunks, tall grass and clay hint, reeds. |
@@ -31,30 +39,39 @@ the camp, the character, interior furniture). The other modules are topics it ca
 | `animals.py` | One sheet per animal of the ambient wildlife. |
 | `ui.py` | The pixel font, the panel frame and the button frames. |
 
+`generate.py` imports all the others and none of them imports it; most import `canvas.py`, and
+`palette.py` imports only `seasons.COLOURS`.
+
 Pictures are lists of rows of **palette colour names** (`None` is transparent), never RGB
-values. The colours are `PALETTE` in `generate.py` plus `COLOURS` in `seasons.py`, and the
-palette is limited to `MAX_PALETTE_COLOURS` (when it is full, merge two similar colours to
-add one). After
-writing, `check_palette()` fails if any PNG under `assets/` has a colour outside the palette.
+values. The colours are `BASE_COLOURS` in `palette.py` plus `COLOURS` in `seasons.py`, merged
+into `PALETTE` (a name in both fails), and the palette is limited to `MAX_PALETTE_COLOURS`
+(when it is full, merge two similar colours to add one). A picture with a colour that is not
+in it fails with "unknown colour X in <the file being written>". After writing,
+`check_palette()` fails if any PNG under `assets/` has a colour outside the palette.
 
 ### Adding things
 
-- **A colour:** a name and a hex value in `PALETTE` (or in `seasons.COLOURS`, if only a season
-  look needs it). Mind the limit above.
+- **A colour:** a name and a hex value in `BASE_COLOURS` in `palette.py` (or in
+  `seasons.COLOURS`, if only a season look needs it). Mind the limit above.
 - **A sprite for something that already has a type** (an item, a furniture piece): draw it in
-  the module of its topic and add it to `ICONS` (items), `FURNITURE` (furniture) or the
-  matching table. Item icons are named after the item id in `game/state/item_types.gd`; the
-  8x8 version for the ground is made for you.
-- **A world object** (a tree, a rock, a plant): draw its variants and add a row to
-  `object_atlas()`. The row's number must match `atlas_row` of its type in
-  `game/state/world_object_types.gd`; the trunk rows are counted from `_FIRST_TRUNK_ROW`
-  there, and the order of trees in `trunks.py` and in that file must agree. `seasons.py`
-  derives the other looks per kind (see `_season_object`); look at the winter picture of a
-  new kind, since one it does not know stays green under snow. `tests/test_object_atlas.gd` checks that atlas and
-  types fit together.
+  the module of its topic and add it to `ICONS` (items) or to `furniture()` (interior.py; new
+  pieces go at the end, the tile ids of the interior tileset are counted in that order). Item
+  icons are named after the item id in `game/state/item_types.gd`; the 8x8 version for the
+  ground is made for you.
+- **A world object** (a tree, a rock, a plant): draw its variants in the module of its topic
+  (`trees.py` for most), add a row to `object_atlas()` and to the numbered table above it
+  (the table says the order; new rows go at the end, after the chest), and give its type an
+  `atlas_row` in `game/state/world_object_types.gd`. `generate.py` writes
+  `assets/objects_rows.txt` from the rows it draws, and `tests/test_object_atlas.gd` compares
+  it with every type's `atlas_row` and number of looks; the trunk rows are counted from
+  `_FIRST_TRUNK_ROW` there, and the order of trees in `trunks.py` and in that file must agree.
+  `seasons.py` needs a winter look per kind: add one entry to `_WINTER_LOOKS` (a kind
+  without one stops the build with its name), and look at the picture under snow.
 - **A building:** its picture in `buildings.py` (`PICTURES`), its section in
   `data/buildings.cfg`, and its interior ([maps/README.md](../maps/README.md)).
 - **A crop:** a section in `data/crops.cfg` and a sheet in `crops.py`; no game code.
+- **A new kind of file** (a new family of PNGs): a `write_...` function in `generate.py` that
+  calls `save` or `save_picture`, and a line in `main()`.
 
 ### Seeds: why the art stays the same between runs
 

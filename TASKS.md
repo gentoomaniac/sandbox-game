@@ -175,7 +175,7 @@ test_world); test_collapse_flow drives the fade directly instead of waiting real
 
 ## 65. The art generators split by topic
 
-- [ ] Done
+- [x] Done: generate.py 2362 to 247 lines; canvas.py, palette.py, terrain.py, trees.py, camp.py, character.py, interior.py split out, one commit per step, `make assets` byte-identical after each. Deviations: `palette.save(rows, path, size, height)` takes the rows, not an image, so an unknown colour names the file being written; the atlas rows are tied to the GD `atlas_row` numbers by a generated assets/objects_rows.txt (read by test_object_atlas), which is the one new file in assets/; the atlas kind `fern` stays (it seeds the season looks) while the type is `fern_bush`, so the test has one alias.
 
 From docs/code-review-2026-11-06.md; runs right after task 52, before task 53, so the later
 art tasks work in the new layout. tools/art/generate.py (2290 lines) split along its
