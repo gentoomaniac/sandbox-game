@@ -57,7 +57,9 @@ with Knicks, walls and fences on the Geest, ditches in the marsh, and dykes.
   WorldView streams chunks and draws terrain, objects, falling trees and the see-through
   effect; it owns two small views, `BuildingViews` (building sprites, window lights, snowy
   roofs) and `DecorationView` (flowers, pebbles, clay hints; the wildlife asks it where flowers
-  bloom). What a tile looks like is one int, its tile code: layer, season look and weather look
+  bloom). The meadow flowers are sown per tile when a chunk is drawn, by `FlowerRules`
+  (`data/flowers.cfg`) from two noises and the tile's habitat, and bloom by the curves of
+  `Vegetation`; nothing about them is saved. What a tile looks like is one int, its tile code: layer, season look and weather look
   packed together (`TerrainTileset.tile_code`, read with `layer_of`, `season_of`, `weather_of`;
   the bit fields are documented there).
 - **Livestock** (`game/state/livestock.gd`) holds the farm animals (`FarmAnimal`) and moves

@@ -461,12 +461,28 @@ mason with bricks and a kiln) and a UI for them. Decided by the user:
 
 ## 75. Flowering meadows; bees only at flowers
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06: in spring and summer the grass should have flowers on it, and
 bees should only be around flowers. Meadow flowers of the region, in patches and drifts
 (not evenly sprinkled), changing through the seasons; bees spawn at flowers, stay near them,
 and their sound comes only from there.
+
+Done: twelve species (wood anemone, dandelion, cuckooflower, daisy, buttercup, red campion,
+red and white clover, yarrow, knapweed, meadowsweet, heather) in tools/art/flowers.py, a row
+of their own in the decoration atlas (`TerrainTileset.FLOWER_ROW`), each as a small plant, a
+few and two drift tiles; no new colours. A bloom curve per species in data/vegetation.cfg
+`[flowers]`. DecorationView sows them per tile when a chunk is drawn: a drift noise and a mix
+noise, the habitat from the layer (woods: grass where `World.is_in_woods`) and the chances and
+communities of data/flowers.cfg (`FlowerRules`). A tile shows its species furthest into its
+bloom, small while it has only just opened or is fading, else its ordinary decoration; the
+old evenly sprinkled flowers and the `flower` kind are gone. Bees: `flowers_per_animal`
+(data/wildlife.cfg) replaces `needs_flowers`, one bee per 8 tiles of flowers in bloom in and
+around the view, up to the cap, spawned only at those in the spawn ring; the buzz was already
+the bees' own (the nearest two). For task 77: a worn tile loses its flowers by getting no
+habitat in `DecorationView._sow_flowers` and a redraw. Not done: meadowsweet grows on wet
+ground and the floodplain, not beside the ditches as such; no blue flower (cornflower belongs
+in the rye).
 
 ## 76. Console: what can be spawned
 

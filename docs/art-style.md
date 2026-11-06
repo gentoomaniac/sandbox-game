@@ -162,6 +162,12 @@ not "generic RPG forest".
 - **Tidal flats:** wet grey-brown mud with ripple marks, tideways, mussel beds, a few
   stranded boats; salt marsh with samphire turning red in autumn.
 - **Geest heath:** heather, juniper, sand, Scots pine, birch, peat cuts with stacked turf.
+- **Meadows and pasture** (task 75, `tools/art/flowers.py`): flowers in drifts, never an even
+  sprinkle. Spring: daisy, dandelion, cuckooflower (`blossom`) on wet meadows, wood anemone
+  in the beech woods; early summer: buttercup, red campion, red and white clover; high summer:
+  yarrow, knapweed, meadowsweet by ditches and banks, heather on the Geest. Heads are 1–3 px in
+  the flower accents (`gold`, `lime`, `cream`, `petal`, `blossom`, `heather`) on a stem of
+  their own; no blue: the cornflower belongs in the rye, and fields have no flowers.
 - **Woods:** beech and oak in the east, birch and alder in wet ground. **Spruce and pine
   were not common here before the heath plantations of the late 18th and 19th century**:
   keep them few, in clumps, as planted or Geest trees.

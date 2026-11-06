@@ -104,6 +104,16 @@ top of classic pixel art (details under "Lighting and look").
   - Many variants per terrain, including the edge shapes.
   - A **visual-only decoration layer** (flowers, clover, pebbles, small plants) scattered
     unevenly on top of terrain. It has no gameplay effect and is not a world object.
+  - **Flowering meadows** (decided 2026-11-06, task 75): in spring and summer the green
+    flowers with the meadow and pasture flowers of the region, in drifts and patches by a
+    seeded noise, not evenly sprinkled. Each habitat has its chance and its communities of
+    species that bloom one after another (`data/flowers.cfg`): dense on meadow grass and the
+    floodplain, heather on the dry Geest, cuckooflower and meadowsweet on wet ground, few
+    (wood anemone, red campion) in the woods, none on fields or water. A tile shows its
+    species furthest into its bloom, so the species of a drift mix and the drift changes
+    colour with the weeks; a species' first and last flowers are small ones. Early spring has
+    few, late spring and summer are full, autumn fades and winter has none. When a tile
+    blooms nothing, its ordinary decoration shows.
 - **Floodplain looks fertile:** lush, damp meadow, with a narrow muddy bank right at the
   water. It must not read as barren sand.
 
@@ -435,7 +445,8 @@ Decided 2026-11-05. A text console for testing and cheats.
   - Ground cover (grass tufts, flowers, small plants, fallen leaves; the visual decoration
     layer) has a density per kind that follows a smooth yearly curve: grass tufts sparse
     in early spring, fullest in summer, thinning in autumn, a few dry stalks poking
-    through the snow in winter; flowers bloom in spring and summer, fallen leaves in
+    through the snow in winter; flowers bloom in spring and summer (each species on a
+    curve of its own, see "Flowering meadows"), fallen leaves in
     autumn.
   - Each spot has a fixed random threshold (from the seed and position), and a plant shows
     while the current density is above it. So plants come and go one by one over days,
@@ -733,7 +744,9 @@ atmosphere only: no player impact, not hunted, not saved.
   - squirrels: forests, dart between trees, sit up, scurry off;
   - deer: rare, in forests and at forest edges, mostly at dawn and dusk; graze, look up,
     bound away when the player comes near;
-  - bees: at flowers by day in spring and summer;
+  - bees: only at flowers in bloom, by day in spring and summer: one for every few tiles
+    of flowers around the view (up to the cap), none where nothing blooms; they hop from
+    flower to flower within a few tiles and fly off when none is left near (task 75);
   - butterflies: over meadows and flowers by day in spring and summer.
 - **The world decides how many:** time of day (birds and insects by day, deer at dawn and
   dusk, fewer animals at night), season (no insects in winter; fewer birds; rabbits and

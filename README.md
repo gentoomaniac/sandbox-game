@@ -44,6 +44,19 @@ winter, and berry bushes only bear fruit in their season.
 
 ![A wood of beech, birch, oak and alder by a clump of pines on the Geest: on the second day of spring, in summer, on the third day of autumn and in the first snow](docs/screenshots/seasons.png)
 
+The meadows flower from spring to late summer, in drifts and patches rather than sprinkled
+evenly: the first daisies, dandelions and, in the beech woods, wood anemones in early spring,
+cuckooflower on the wet meadows, then buttercups, red campion and red and white clover, and in
+high summer yarrow, knapweed, meadowsweet by the water and the heather on the Geest. Each
+drift has its few species that take over from each other, so a patch changes colour with the
+weeks; the first and the last flowers of a species are small ones, and autumn sees them fade.
+Fields, water and the woods have none or few. Bees keep to the flowers: they come only where
+something blooms, more where more does, and their quiet buzz comes from where they are. Where
+the flowers grow is in [data/flowers.cfg](data/flowers.cfg), when they bloom in
+[data/vegetation.cfg](data/vegetation.cfg).
+
+![The same meadow on the 8th and the 25th day of spring and the 15th and the 27th day of summer](docs/screenshots/meadows.png)
+
 ### Knicks, ditches and dykes
 
 The land is worked, as in Schleswig-Holstein around 1700–1800. On the dry Geest the fields
@@ -309,7 +322,7 @@ to look. `make help` lists the targets and their variables.
   [maps/README.md](maps/README.md).
 - **Art style:** period, place, materials and what to avoid are in [docs/art-style.md](docs/art-style.md).
 - **Data files:** gameplay numbers you might want to tune live in
-  [data/](data/) (energy, crops, buildings, recipes, weather, seasons, vegetation, wildlife, sounds, ambience).
+  [data/](data/) (energy, crops, buildings, recipes, weather, seasons, vegetation, flowers, wildlife, sounds, ambience).
 - **Design:** the design is in [SPEC.md](SPEC.md).
 - **Debug flags:** command-line flags for screenshots and debugging (time, day, weather,
   position and more) are listed in the header of [game/scenes/startup_options.gd](game/scenes/startup_options.gd).
