@@ -1,7 +1,7 @@
 extends GutTest
 ## The farm animals: their data file, their looks, where they are put, and how they go about
-## their day (they keep to ground they can stand on, rabbits run from the player, and all sleep
-## at night).
+## their day (they keep to ground they can stand on, some run about, rabbits run from the player,
+## and all sleep at night).
 
 const SEED := 7
 ## The pen: a square of grass this many tiles to each side of its middle, ringed by water, with
@@ -184,6 +184,39 @@ func test_an_animal_grazes_now_and_then() -> void:
 	assert_true(activities.has(FarmAnimal.Activity.GRAZE))
 	assert_true(activities.has(FarmAnimal.Activity.WALK))
 	assert_true(activities.has(FarmAnimal.Activity.IDLE))
+
+
+func test_dogs_cats_and_horses_pick_running_now_and_then_but_cows_never() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = SEED
+	for species in [LivestockRules.DOG, LivestockRules.CAT, LivestockRules.HORSE]:
+		var picks := range(1000).map(
+			func(_pick: int) -> FarmAnimal.Activity:
+				return _livestock.rules.pick_activity(species, rng)
+		)
+		assert_has(picks, FarmAnimal.Activity.RUN, species)
+	var cow_picks := range(1000).map(
+		func(_pick: int) -> FarmAnimal.Activity:
+			return _livestock.rules.pick_activity(LivestockRules.COW, rng)
+	)
+	assert_does_not_have(cow_picks, FarmAnimal.Activity.RUN)
+
+
+func test_a_running_dog_goes_faster_than_a_walking_one() -> void:
+	var walker := FarmAnimal.new(LivestockRules.DOG, &"collie", _pen_middle() + Vector2(-1.0, -1.0))
+	var runner := FarmAnimal.new(LivestockRules.DOG, &"spitz", _pen_middle() + Vector2(-1.0, 0.0))
+	for dog in [walker, runner]:
+		_livestock.add(dog)
+		dog.heading = Vector2.RIGHT
+		dog.seconds_left = 10.0
+	walker.activity = FarmAnimal.Activity.WALK
+	runner.activity = FarmAnimal.Activity.RUN
+	var starts := [walker.position, runner.position]
+
+	_run(0.25)
+
+	assert_gt(walker.position.x - starts[0].x, 0.0, "the walker walked")
+	assert_gt(runner.position.x - starts[1].x, 2.0 * (walker.position.x - starts[0].x))
 
 
 func test_a_rabbit_runs_from_the_player_and_calms_down_further_off() -> void:

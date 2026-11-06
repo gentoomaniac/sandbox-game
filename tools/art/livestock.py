@@ -18,8 +18,11 @@ from animals import outline_in_place, paste
 
 # The rows of every sheet, with their frames.
 ACTIONS = {"idle": 2, "walk": 4, "graze": 2, "sleep": 2, "run": 4}
-# Characters that are drawn over the outline instead of being outlined.
-LEGS = {"L", "M", "N", "K"}
+# Characters that are drawn over the outline instead of being outlined: the near leg and its
+# shade, the far legs, hooves or paws, and the dark lower legs of a bay horse.
+LEGS = {"L", "M", "N", "K", "P"}
+# The far legs are drawn in the far leg's colour.
+FAR_LEG = str.maketrans("LMP", "NNN")
 
 
 def to_picture(rows, keys, outline, bare=LEGS):
@@ -232,14 +235,16 @@ COW = {
 }
 
 
-def four_legged_frame(animal, style, head="ahead", steps=None, tail="hanging", lying=False, head_drop=0):
-    """One frame of a four-legged animal (COW, SHEEP) as rows of characters on its cell, facing
-    right. `style` is a look, with the patterns of white on its torso and heads, if any; `steps`
-    names the near and the far hind and front leg ("stand", "forward", "back"). A lying animal
-    has its legs folded under it and its eyes closed. Returns the rows as strings."""
+def four_legged_frame(animal, style, head="ahead", steps=None, tail="hanging", lying=False, head_drop=0, lift=0):
+    """One frame of a four-legged animal (COW, SHEEP, DOG, HORSE ...) as rows of characters on its
+    cell, facing right. `style` is a look, with the patterns of white on its torso and heads, if
+    any; `steps` names the near and the far hind and front leg ("stand", "forward", "back", and
+    for a runner "reach", "push" and "tuck"). A lying animal has its legs folded under it and its
+    eyes closed; a running one is `lift` pixels off the ground between its strides. Returns the
+    rows as strings."""
     cells = grid(*animal["size"])
     torso_x, torso_y = animal["torso_at"]
-    top = torso_y + (animal["lying_drop"] if lying else 0)
+    top = torso_y + (animal["lying_drop"] if lying else 0) - lift
     pattern = style.get("pattern")
     torso = animal["torso"] if pattern is None else patched(animal["torso"], pattern)
     legs_top = top + len(torso) - 2
@@ -248,8 +253,8 @@ def four_legged_frame(animal, style, head="ahead", steps=None, tail="hanging", l
         (near_hind, near_front), (far_hind, far_front) = steps or (("stand", "stand"), ("stand", "stand"))
         far_hind_x, far_front_x = hind_x + animal["far_shift"][0], front_x + animal["far_shift"][1]
         for leg, x in ((far_hind, far_hind_x), (far_front, far_front_x)):
-            rows = [row.replace("L", "N").replace("M", "N") for row in animal["legs"][leg]]
-            paste(cells, rows, torso_x + x, legs_top)
+            rows = [row.translate(FAR_LEG) for row in animal["legs"][leg]]
+            paste(cells, rows, torso_x + x + leg_shift(animal, leg), legs_top)
     if tail is not None:
         tail_x, tail_y = animal["tail_at"]
         paste(cells, animal["tails"][tail], torso_x + tail_x, top + tail_y)
@@ -262,7 +267,7 @@ def four_legged_frame(animal, style, head="ahead", steps=None, tail="hanging", l
             rows, (x, y) = animal["under"]
             paste(cells, rows, torso_x + x, top + y)
         for leg, x in ((near_hind, hind_x), (near_front, front_x)):
-            paste(cells, animal["legs"][leg], torso_x + x, legs_top)
+            paste(cells, animal["legs"][leg], torso_x + x + leg_shift(animal, leg), legs_top)
     rows, (x, y) = animal["heads"][head]
     if head in style.get("head_patterns", {}):
         rows = patched(rows, style["head_patterns"][head])
@@ -270,6 +275,12 @@ def four_legged_frame(animal, style, head="ahead", steps=None, tail="hanging", l
         rows = tuple(row.replace("e", animal["closed_eye"]) for row in rows)
     paste(cells, rows, torso_x + x, top + y + head_drop)
     return joined(cells)
+
+
+def leg_shift(animal, leg):
+    """Where a leg's rows start, from where the leg joins the torso: further left for a leg
+    that reaches back from its hip (the animal's `leg_shifts`)."""
+    return animal.get("leg_shifts", {}).get(leg, 0)
 
 
 # A walk: the near hind and front leg, then the far ones, for each of its four frames.
@@ -280,6 +291,15 @@ WALK_STEPS = [
     (("stand", "stand"), ("stand", "stand")),
 ]
 
+# A gallop, for the animals that have running legs: stretched out off the ground, landing on the
+# hind legs, gathered under the body, and pushing off from the front legs.
+RUN_STEPS = [
+    ((("push", "reach"), ("push", "reach")), 1),
+    ((("forward", "back"), ("stand", "back")), 0),
+    ((("tuck", "fold"), ("tuck", "fold")), 1),
+    ((("back", "stand"), ("back", "forward")), 0),
+]
+
 
 def four_legged_sheet(animal, style, keys):
     """The rows of cells of a four-legged animal's sheet: it flicks its tail standing, chews with
@@ -288,14 +308,18 @@ def four_legged_sheet(animal, style, keys):
     def frame(**pose):
         return to_picture(four_legged_frame(animal, style, **pose), keys, style["outline"])
 
+    lying_head = animal.get("lying_head", "ahead")
     frames = {
         "idle": [frame(), frame(tail="swishing")],
         "walk": [frame(steps=steps) for steps in WALK_STEPS],
         "graze": [frame(head="down"), frame(head="down", head_drop=-1)],
-        "sleep": [frame(lying=True), frame(lying=True, head_drop=1)],
+        "sleep": [frame(lying=True, head=lying_head), frame(lying=True, head=lying_head, head_drop=1)],
     }
-    # Cattle and sheep only run from something, and then they hurry along at a walk.
-    frames["run"] = frames["walk"]
+    if "reach" in animal["legs"]:
+        frames["run"] = [frame(steps=steps, lift=lift, tail="flying") for steps, lift in RUN_STEPS]
+    else:
+        # Cattle and sheep only run from something, and then they hurry along at a walk.
+        frames["run"] = frames["walk"]
     return [frames[action] for action in ACTIONS]
 
 
@@ -555,6 +579,348 @@ def rabbit_sheet(look):
     return [[animals.frame_picture(sheet, coat(frame)) for frame in frames[action]] for action in ACTIONS]
 
 
+# --- Dogs ---------------------------------------------------------------------------------
+#
+# A farm dog of about 14 px from the rump to the nose and 10 px to its back: a short, deep body
+# on sturdy legs, drawn like the cattle with a torso, a head and legs, and running legs for its
+# gallop. The head has a clear stop between the skull and the muzzle. The three looks differ in
+# their ears and tails as well as their coats. Keys: l, b, d light, base and shade of the coat;
+# x, w, W of its white; e eye; n nose; L, M near leg and its shade, N far legs, K paw.
+
+DOG_SIZE = (24, 18)
+DOG_TORSO = (
+    "lllllllll.",
+    "bbbbbbbbbl",
+    "bbbbbbbbbb",
+    "dbbbbbbbbb",
+    ".dd..ddbbd",
+)
+DOG_LEGS = {
+    "stand": ("LM",) * 6 + ("KK",),
+    "forward": ("LM.",) * 3 + (".LM",) * 3 + (".KK",),
+    "back": (".LM",) * 3 + ("LM.",) * 3 + ("KK.",),
+    "reach": ("LM...", ".LM..", "..LM.", "...LM", "...KK"),
+    "push": ("...LM", "..LM.", ".LM..", "LM...", "KK..."),
+    "tuck": ("LM..", ".LM.", "..LM", ".KK."),
+    "fold": ("..LM", ".LM.", "LM..", ".KK."),
+}
+DOG = {
+    "size": DOG_SIZE,
+    "torso": DOG_TORSO,
+    "torso_at": (6, 8),
+    "lying_drop": 4,
+    "lying_head": "rest",
+    "tail_at": (-3, 0),
+    "legs": DOG_LEGS,
+    "leg_shifts": {"push": -3},
+    "leg_x": (1, 7),
+    "far_shift": (2, -1),
+    "folded": (("KKLM",), (6, len(DOG_TORSO) - 1)),
+    "closed_eye": "d",
+}
+# The farm collie: half-pricked ears with folded tips, a bushy tail carried low with a white tip,
+# a white collar and chest.
+COLLIE_PARTS = {
+    "heads": {
+        "ahead": (
+            ("...dd....", "..lbbd...", "..bbbb...", ".bbbebbb.", ".bbbbbbbn", "..bxxxx..", "..xxx....", "..bb....."),
+            (6, -6),
+        ),
+        "down": (("bb.......", "bbbdd....", ".bbbbb...", "..bbebbb.", "..bbbbbbn", "...xxx..."), (7, 2)),
+        "rest": (("..dd.....", ".bbbb....", ".bbebbbbn", "..xxxx..."), (7, 0)),
+    },
+    "tails": {
+        "hanging": (".bb", "bbb", "bb.", "bb.", "bx."),
+        "swishing": ("..b", ".bb", "bbb", "bb.", "x.."),
+        "flying": ("....", "xbbb", ".bbb", "....", "...."),
+    },
+}
+COLLIE_PATTERN = (
+    "..........",
+    "..........",
+    ".........w",
+    "........ww",
+    "......www.",
+)
+# A spitz: pricked, pointed ears, a wedge of a head, a ruff, and its bushy tail curled over its
+# back.
+SPITZ_PARTS = {
+    "heads": {
+        "ahead": (
+            ("...d.....", "..dbd....", "..bbbb...", ".bbbebb..", ".bbbbbbbn", "lbbbbb...", "lbbb.....", "bbb......"),
+            (6, -6),
+        ),
+        "down": (("bb.d.....", "bbdbd....", ".bbbbb...", "..bbebb..", "..bbbbbbn", "..lll...."), (7, 2)),
+        "rest": (("..d......", ".dbd.....", ".bbebbbbn", "lbbbbb..."), (7, 0)),
+    },
+    "tails": {
+        "hanging": (".lll.", "lbbbl", "lb.bb", ".l..."),
+        "swishing": ("..ll.", ".lbbl", "lbb.b", "l...."),
+        "flying": (".....", ".....", "lllll", "bbbb."),
+    },
+    "tail_at": (-2, -3),
+}
+# The hunting dog: drop ears hanging by the cheek, a long square muzzle, a deep chest and a thin
+# straight tail; liver with white patches.
+POINTER_PARTS = {
+    "heads": {
+        "ahead": (
+            ("..lbb....", ".bbbbb...", ".ddbebbb.", ".ddbbbbbn", ".ddbbbbb.", "..bbb....", "..bb....."),
+            (6, -5),
+        ),
+        "down": (("bb.......", "bbbb.....", ".ddbbb...", ".ddbebbb.", ".ddbbbbbn", "...bbbb.."), (7, 2)),
+        "rest": ((".bbbb....", "ddbebbbbn", "ddbbbbbb."), (7, 1)),
+    },
+    "tails": {
+        "hanging": ("...", "bbb", "...", "...", "..."),
+        "swishing": ("...", ".bb", "b..", "...", "..."),
+        "flying": ("....", "bbbb", "....", "....", "...."),
+    },
+}
+POINTER_PATTERN = (
+    "..........",
+    "..ww......",
+    ".wwww..ww.",
+    "..www.www.",
+    "......ww..",
+)
+DOG_LOOKS = {
+    "collie": {
+        "parts": COLLIE_PARTS,
+        "keys": {"l": "soil_light", "b": "soil_mid", "d": "soil", "L": "lime", "M": "stone_light", "N": "stone_light"},
+        "outline": "soil_dark",
+        "pattern": COLLIE_PATTERN,
+    },
+    "spitz": {
+        "parts": SPITZ_PARTS,
+        "keys": {"l": "lime", "b": "stone_light", "d": "stone", "L": "stone_light", "M": "stone", "N": "stone"},
+        "outline": "stone_dark",
+    },
+    "pointer": {
+        "parts": POINTER_PARTS,
+        "keys": {"l": "soil_mid", "b": "soil", "d": "soil_dark", "L": "soil", "M": "soil_dark", "N": "soil_dark"},
+        "outline": "ink",
+        "pattern": POINTER_PATTERN,
+    },
+}
+DOG_SHARED_KEYS = {"x": "lime", "w": "lime", "W": "stone_light", "e": "ink", "n": "ink", "K": "ink"}
+
+
+def dog_sheet(look):
+    style = DOG_LOOKS[look]
+    return four_legged_sheet(DOG | style["parts"], style, DOG_SHARED_KEYS | style["keys"])
+
+
+# --- Cats ---------------------------------------------------------------------------------
+#
+# A small farm cat, about 12 px from the tail to the nose, with pricked ears and a long tail held
+# up. Keys: l, b, d light, base and shade of the coat; s its stripes; e eye; n nose; L, N near
+# and far leg, K paw.
+
+CAT_SIZE = (16, 12)
+CAT = {
+    "size": CAT_SIZE,
+    "torso": (".llllll.", "lsbsbsbl", "bsbsbsbb", ".dddddd."),
+    "torso_at": (3, 5),
+    "lying_drop": 3,
+    "lying_head": "rest",
+    "heads": {
+        "ahead": (("d.d..", "bbbb.", "bebbn", ".bbb."), (6, -3)),
+        "down": (("bb...", ".bbd.", ".bbbd", "..beb", "..bbn"), (7, 1)),
+        "rest": (("d.d..", "bbbb.", "bdbbn"), (6, 0)),
+    },
+    "tails": {
+        "hanging": (".b", ".b", "b.", "b.", "b."),
+        "swishing": ("b.", "b.", ".b", ".b", "b."),
+        "flying": ("..", "..", "..", "bb", ".."),
+    },
+    "tail_at": (-2, -3),
+    "legs": {
+        "stand": ("L", "L", "L", "K"),
+        "forward": ("L.", "L.", ".L", ".K"),
+        "back": (".L", ".L", "L.", "K."),
+        "reach": ("L..", ".L.", "..K"),
+        "push": ("..L", ".L.", "K.."),
+        "tuck": ("L.", ".L", "K."),
+        "fold": (".L", "L.", ".K"),
+    },
+    "leg_shifts": {"push": -2},
+    "leg_x": (1, 6),
+    "far_shift": (1, -1),
+    "folded": (("KLL",), (5, 3)),
+    "closed_eye": "d",
+}
+CAT_LOOKS = {
+    # The grey-brown tabby, striped dark.
+    "tabby": {"keys": {"l": "sand_light", "b": "sand", "d": "mud", "s": "mud_dark", "e": "olive"}, "outline": "mud_dark"},
+    "black": {"keys": {"l": "stone_dark", "b": "bog_dark", "d": "ink", "s": "bog_dark", "e": "gold"}, "outline": "ink"},
+    "ginger": {"keys": {"l": "maple_light", "b": "flame", "d": "rust", "s": "rust", "e": "olive"}, "outline": "russet_deep"},
+}
+
+
+def cat_sheet(look):
+    style = CAT_LOOKS[look]
+    keys = style["keys"]
+    keys = keys | {"n": "petal", "L": keys["b"], "N": keys["d"], "K": keys["d"]}
+    return four_legged_sheet(CAT, style, keys)
+
+
+# --- Horses -------------------------------------------------------------------------------
+#
+# A heavy marsh horse of the Oldenburg kind, about 32 px (two tiles) from the tail to the nose,
+# and a small pony drawn in the same cell. The neck and head rise ahead of the back, so that the
+# back between the withers and the croup, the middle of the torso's top row, stays free for a
+# saddle and a rider (task 81). Keys: l, b, d light, base and shade of the coat; m
+# mane and tail; e eye; n muzzle; L, M near leg and its shade, P its dark lower part (a bay's
+# black points), N far legs, K hoof.
+
+HORSE_SIZE = (44, 36)
+HORSE_TORSO = (
+    "..llll.........lll......",
+    ".lbbbbllllllllllbbbll...",
+    "lbbbbbbbbbbbbbbbbbbbbbl.",
+    "bbbbbbbbbbbbbbbbbbbbbbbb",
+    "bbbbbbbbbbbbbbbbbbbbbbbb",
+    "bbbbbbbbbbbbbbbbbbbbbbbb",
+    "dbbbbbbbbbbbbbbbbbbbbbbd",
+    "ddbbbbbbbbbbbbbbbbbbbbdd",
+    ".dddddddddddddddddddddd.",
+)
+HORSE_LEGS = {
+    "stand": ("LM",) * 8 + ("PP",) * 5 + ("KK",),
+    "forward": ("LM.",) * 6 + (".LM", ".LM") + (".PP",) * 5 + (".KK",),
+    "back": (".LM",) * 6 + ("LM.", "LM.") + ("PP.",) * 5 + ("KK.",),
+    "reach": ("LM.....", "LM.....", ".LM....", ".LM....", "..LM...", "..LPP..", "...PP..", "....PP.", ".....PP", ".....KK"),
+    "push": (".....LM", ".....LM", "....LM.", "....LM.", "...LM..", "..PP...", ".PP....", "PP.....", "PP.....", "KK....."),
+    "tuck": ("LM...", "LM...", ".LM..", ".LM..", "..LM.", "..PP.", "..PP.", ".PP..", "KK..."),
+    "fold": ("..LM.", "..LM.", ".LM..", "LM...", "LM...", "PP...", ".PP..", "..PP.", "..KK."),
+}
+HORSE = {
+    "size": HORSE_SIZE,
+    "torso": HORSE_TORSO,
+    "torso_at": (8, 15),
+    "lying_drop": 12,
+    "heads": {
+        "ahead": (
+            (
+                "......mmb....",
+                "....mmmbbb...",
+                "...mmbbbbbb..",
+                "..mmbbbbebbb.",
+                "..mbbbbbbbbbb",
+                ".mmbbbbb.bbbn",
+                ".mbbbbbb..nn.",
+                ".mbbbbbb.....",
+                "mmbbbbbb.....",
+                "mbbbbbbb.....",
+                "mbbbbbbb.....",
+                "bbbbbbbb.....",
+                "bbbbbbbb.....",
+            ),
+            (16, -10),
+        ),
+        "down": (
+            (
+                "mbbbbb......",
+                "mmbbbbb.....",
+                ".mmbbbbb....",
+                "..mmbbbbb...",
+                "...mmbbbbb..",
+                "....mmbbbb..",
+                ".....mbbbb..",
+                "......bbbbm.",
+                "......bebbb.",
+                "......bbbbb.",
+                "......bbbbb.",
+                "......bbbbb.",
+                "......bbbbb.",
+                ".......bbbb.",
+                ".......bbbb.",
+                ".......bbbb.",
+                ".......bbnn.",
+                ".......nnn..",
+            ),
+            (18, 0),
+        ),
+    },
+    "tails": {
+        "hanging": ("mm..", "mmm.", "mmm.", ".mm.", ".mm.", ".mm.", ".mm.", ".mmm", "..mm"),
+        "swishing": (".mm.", "mmm.", "mm..", "mm..", "mm..", ".mm.", "..mm", "..mm", "...m"),
+        "flying": ("mm..", "mmmm", ".mmm", "..mm", "....", "....", "....", "....", "...."),
+    },
+    "tail_at": (-3, 0),
+    "legs": HORSE_LEGS,
+    "leg_shifts": {"push": -5},
+    "leg_x": (2, 19),
+    "far_shift": (2, -2),
+    "folded": (("KKPPLM",), (15, len(HORSE_TORSO) - 1)),
+    "closed_eye": "d",
+}
+# The pony: a smaller, rounder body on short legs, a thick neck and a shaggy mane.
+PONY_PARTS = {
+    "torso": (
+        "..lll.......ll...",
+        ".lbbbllllllllbbl.",
+        "lbbbbbbbbbbbbbbbl",
+        "bbbbbbbbbbbbbbbbb",
+        "bbbbbbbbbbbbbbbbb",
+        "dbbbbbbbbbbbbbbbd",
+        ".ddddddddddddddd.",
+    ),
+    "torso_at": (12, 24),
+    "lying_drop": 5,
+    "heads": {
+        "ahead": (
+            ("....mmb...", "...mmbbb..", "..mmbbebb.", "..mbbbbbbb", ".mmbbbb.nn", ".mbbbbb...", "mbbbbbb...", "bbbbbbb...", "bbbbbbb..."),
+            (11, -7),
+        ),
+        "down": (
+            ("mbbbb.....", "mmbbbb....", ".mmbbbb...", "..mbbbbb..", "...mbbbbm.", "....bbebb.", "....bbbbb.", ".....bbbb.", ".....bbnn.", ".....nnn.."),
+            (13, 0),
+        ),
+    },
+    "tails": {
+        "hanging": ("mm.", "mmm", "mm.", "mm.", ".m.", ".mm"),
+        "swishing": (".m.", "mm.", "m..", "mm.", ".mm", "..m"),
+        "flying": ("mm..", "mmmm", "..mm", "....", "....", "...."),
+    },
+    "tail_at": (-2, 0),
+    "legs": {
+        "stand": ("LM", "LM", "LM", "PP", "PP", "PP", "KK"),
+        "forward": ("LM.", "LM.", "LM.", ".PP", ".PP", ".PP", ".KK"),
+        "back": (".LM", ".LM", ".LM", "PP.", "PP.", "PP.", "KK."),
+        "reach": ("LM...", ".LM..", "..PP.", "...PP", "...KK"),
+        "push": ("...LM", "..LM.", ".PP..", "PP...", "KK..."),
+        "tuck": ("LM..", ".LM.", "..PP", ".KK."),
+        "fold": ("..LM", ".LM.", "PP..", ".KK."),
+    },
+    "leg_shifts": {"push": -3},
+    "leg_x": (2, 13),
+    "far_shift": (2, -2),
+    "folded": (("KKPLM",), (10, 6)),
+}
+HORSE_LOOKS = {
+    # Bay: a red-brown coat with the mane, the tail and the lower legs black.
+    "bay": {"keys": {"l": "soil_light", "b": "soil_mid", "d": "soil", "m": "ink", "P": "ink", "n": "soil_dark"}, "outline": "soil_dark"},
+    "black": {"keys": {"l": "stone", "b": "stone_dark", "d": "ink", "m": "ink", "P": "stone_dark", "n": "ink"}, "outline": "ink"},
+    # Dapple grey, darker on the legs.
+    "grey": {"keys": {"l": "lime", "b": "stone_light", "d": "stone", "m": "stone", "P": "stone", "n": "stone_dark"}, "outline": "stone_dark"},
+    # A dun pony with a dark mane and legs.
+    "pony": {
+        "parts": PONY_PARTS,
+        "keys": {"l": "sand_light", "b": "sand", "d": "mud", "m": "mud_dark", "P": "mud_dark", "n": "mud_dark"},
+        "outline": "mud_dark",
+    },
+}
+
+
+def horse_sheet(look):
+    style = HORSE_LOOKS[look]
+    keys = {"e": "ink", "K": "ink"} | style["keys"]
+    keys |= {"L": keys["b"], "M": keys["d"], "N": keys["d"]}
+    return four_legged_sheet(HORSE | style.get("parts", {}), style, keys)
+
+
 # --- All sheets ---------------------------------------------------------------------------
 
 SPECIES = {
@@ -562,6 +928,9 @@ SPECIES = {
     "sheep": (SHEEP_SIZE, SHEEP_LOOKS, sheep_sheet),
     "chicken": (CHICKEN_SIZE, CHICKEN_LOOKS, chicken_sheet),
     "rabbit": (RABBIT_SIZE, RABBIT_LOOKS, rabbit_sheet),
+    "dog": (DOG_SIZE, DOG_LOOKS, dog_sheet),
+    "cat": (CAT_SIZE, CAT_LOOKS, cat_sheet),
+    "horse": (HORSE_SIZE, HORSE_LOOKS, horse_sheet),
 }
 
 

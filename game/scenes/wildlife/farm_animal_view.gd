@@ -19,6 +19,9 @@ const SHADOW_HALF_WIDTHS := {
 	LivestockRules.SHEEP: 7,
 	LivestockRules.CHICKEN: 3,
 	LivestockRules.RABBIT: 4,
+	LivestockRules.DOG: 7,
+	LivestockRules.CAT: 4,
+	LivestockRules.HORSE: 15,
 }
 
 var farm_animal: FarmAnimal

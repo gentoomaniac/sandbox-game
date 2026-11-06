@@ -98,7 +98,7 @@ extends RefCounted
 ##                            flying_geese: one flock of them; mouse, frog)
 ##   --wildlife-calm          the animals take no notice of the player
 ##   --livestock=<species>[,<species>]  put a few farm animals of those species near the player
-##                            (cow, sheep, chicken, rabbit)
+##                            (cow, sheep, chicken, rabbit, dog, cat, horse)
 
 ## The value of a tile flag that was not given.
 const NO_TILE := Vector2i(1 << 30, 1 << 30)

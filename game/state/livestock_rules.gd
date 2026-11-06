@@ -10,7 +10,10 @@ const COW := &"cow"
 const SHEEP := &"sheep"
 const CHICKEN := &"chicken"
 const RABBIT := &"rabbit"
-const SPECIES: Array[StringName] = [COW, SHEEP, CHICKEN, RABBIT]
+const DOG := &"dog"
+const CAT := &"cat"
+const HORSE := &"horse"
+const SPECIES: Array[StringName] = [COW, SHEEP, CHICKEN, RABBIT, DOG, CAT, HORSE]
 
 const GENERAL_KEYS := ["calm_extra_tiles", "bedtime_spread_minutes"]
 const SPECIES_KEYS := [
