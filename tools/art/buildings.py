@@ -46,7 +46,7 @@ def thatch_roof(picture, snowy, rng, left, right, ridge_y, eaves_y, inset, swell
     lit hip line. The eaves are a thick rolled edge, curling up at the corners and rising in a
     smooth wave over each swell (cx, half width, rise), e.g. over a door. The reed lies in
     courses about 4 px high with ragged edges, each lit along its top in broken runs, with reed
-    ends of mixed length hanging below that; the courses bend up with the eaves over a
+    ends of mixed length hanging below that; the low courses bend up with the eaves over a
     swell. Weathering crowds the reed ends in a few patches, and moss grows in a few patches low
     on the front. Returns the eaves row of each column."""
     height = eaves_y - ridge_y
@@ -58,10 +58,10 @@ def thatch_roof(picture, snowy, rng, left, right, ridge_y, eaves_y, inset, swell
         lift = 0
         for cx, half_width, rise in swells:
             if abs(x - cx) < half_width:
-                lift += round(rise * math.cos((x - cx) / half_width * math.pi / 2) ** 2)
+                lift += rise * math.cos((x - cx) / half_width * math.pi / 2) ** 2
         lifts[x] = lift
         corner = min(x - left, right - x)
-        eaves[x] = eaves_y - lift - (round(6 - math.sqrt(36 - (6 - corner) ** 2)) if corner < 6 else 0)
+        eaves[x] = eaves_y - round(lift) - (round(6 - math.sqrt(36 - (6 - corner) ** 2)) if corner < 6 else 0)
     # Per course (counted up from the eaves) and column: how far its edge drops or lifts, in runs
     # of a few columns; whether its lit top shows there; and how long a reed end hangs there.
     courses = []
@@ -96,6 +96,11 @@ def thatch_roof(picture, snowy, rng, left, right, ridge_y, eaves_y, inset, swell
         (rng.uniform(left + inset, right - inset), rng.uniform(ridge_y + 8, eaves_y - 14), rng.uniform(3, 5))
         for _ in range(3)
     ]
+    # Not over a swell, where the bending courses are busy enough.
+    weathered = [
+        (wx, wy, radius) for wx, wy, radius in weathered
+        if all(abs(wx - cx) > half_width + radius for cx, half_width, _ in swells)
+    ]
 
     def is_weathered(x, y):
         return any(math.hypot(x - wx, (y - wy) * 0.6) < radius for wx, wy, radius in weathered)
@@ -129,8 +134,9 @@ def thatch_roof(picture, snowy, rng, left, right, ridge_y, eaves_y, inset, swell
                     shade -= 1
                 colour = THATCH[min(4, shade)]
             else:
-                # Up the slope from the eaves, the courses bend with them over a swell.
-                along = round(eaves_y - y - lifts[x] * t**2) - 6
+                # Up the slope from the eaves. Over a swell the lowest courses bend up with the
+                # eaves and the bend dies out fast above them, so the courses don't stack into steps.
+                along = round(eaves_y - y - lifts[x] * t**5) - 6
                 # The edges wave: the course a pixel would be in moves it up or down a little.
                 along += courses[along // COURSE][0][x]
                 course, row = divmod(max(0, along), COURSE)
