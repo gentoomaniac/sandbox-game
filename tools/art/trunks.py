@@ -24,9 +24,7 @@ LONG = 30
 SHORT = 14
 
 # Per tree: its bark lit to dark, the colour of the furrows in it, the outline, and how furrowed
-# it is (furrows per 10 px). The order is the order of the atlas rows, and world_object_types.gd
-# counts the trunk rows in the order of its trees that have a `trunk`: the two must agree
-# (tests/test_object_atlas.gd checks it).
+# it is (furrows per 10 px).
 SPECIES = {
     "oak": (("soil_light", "soil_mid", "soil"), "soil_dark", "soil_dark", 3.0),
     "spruce": (("soil_mid", "soil", "soil_dark"), "russet_deep", "ink", 1.2),
@@ -114,14 +112,13 @@ def _outline(canvas, colour):
         canvas[y][x] = colour
 
 
-def rows():
-    """The trunk rows of assets/objects.png as (kind, variants): per tree the long trunk, then the
-    short one."""
+def rows(species):
+    """The two trunk rows of a tree in assets/objects.png as (kind, variants): the long trunk, then
+    the short one."""
     result = []
-    for species in SPECIES:
-        for kind, length in (("trunk", LONG), ("short_trunk", SHORT)):
-            seeds = (_seed(species, length, variant) for variant in range(VARIANTS))
-            result.append((f"{species}_{kind}", [log_picture(species, length, seed) for seed in seeds]))
+    for kind, length in (("trunk", LONG), ("short_trunk", SHORT)):
+        seeds = (_seed(species, length, variant) for variant in range(VARIANTS))
+        result.append((f"{species}_{kind}", [log_picture(species, length, seed) for seed in seeds]))
     return result
 
 

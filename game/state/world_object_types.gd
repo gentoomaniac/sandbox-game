@@ -30,7 +30,7 @@ extends RefCounted
 ## - trunk: what felling leaves beside the stump, as `logs` (dropped when it is cut up) and `hp`.
 ##   The trunk's own types come from it (see `_with_trunks`, `trunk_type`): a trunk on 2x1 tiles
 ##   and a short one on 1x1, for when there is no room; they need the tree's harvest level.
-##   Their pictures are the rows after the stump's in the atlas, long then short per tree;
+##   Their pictures are the atlas row `atlas_row` (the long one) and the row after it (short);
 ## - regrow_days: picking it by hand does not remove it: it looks picked and gives its drops
 ##   again after this many days (berry bush); the atlas row then has the picked looks after
 ##   the normal ones, `variants` of each;
@@ -102,11 +102,13 @@ const FRUIT := &"fruit"
 ## object that covers a tile.
 const MAX_FOOTPRINT := Vector2i(2, 2)
 
-## The first atlas row of the trunks: the row after the last of the other types. Their rows are
-## counted in the order of the trees with a `trunk` below, which must be the order of
-## SPECIES in tools/art/trunks.py (tests/test_object_atlas.gd checks it).
-const _FIRST_TRUNK_ROW := 14
-## The atlas row of the reeds: after the last trunk (5 trees, a long and a short trunk each).
+## The atlas rows of the long trunks; the short one is the row after each.
+const _OAK_TRUNK_ROW := 14
+const _SPRUCE_TRUNK_ROW := 16
+const _PINE_TRUNK_ROW := 18
+const _DEAD_TREE_TRUNK_ROW := 20
+const _WILLOW_TRUNK_ROW := 22
+## The atlas row of the reeds: after the last trunk.
 const _REEDS_ROW := 24
 ## The atlas row of the dead tree's stump, after the reeds.
 const _DEAD_STUMP_ROW := 25
@@ -127,7 +129,7 @@ const _OTHER_TYPES := {
 		"tool": &"axe",
 		"seed": &"acorn",
 		"seed_chance": 0.25,
-		"trunk": {"logs": 3, "hp": 4},
+		"trunk": {"logs": 3, "hp": 4, "atlas_row": _OAK_TRUNK_ROW},
 		"leaves": STUMP,
 		"regrows": true,
 		"footprint": Vector2i(1, 1),
@@ -174,7 +176,7 @@ const _OTHER_TYPES := {
 		"tool": &"axe",
 		"seed": &"spruce_cone",
 		"seed_chance": 0.25,
-		"trunk": {"logs": 3, "hp": 3},
+		"trunk": {"logs": 3, "hp": 3, "atlas_row": _SPRUCE_TRUNK_ROW},
 		"leaves": STUMP,
 		"regrows": true,
 		"footprint": Vector2i(1, 1),
@@ -190,7 +192,7 @@ const _OTHER_TYPES := {
 		"tool": &"axe",
 		"seed": &"pine_cone",
 		"seed_chance": 0.25,
-		"trunk": {"logs": 4, "hp": 5},
+		"trunk": {"logs": 4, "hp": 5, "atlas_row": _PINE_TRUNK_ROW},
 		"leaves": STUMP,
 		"regrows": true,
 		"footprint": Vector2i(1, 1),
@@ -204,7 +206,7 @@ const _OTHER_TYPES := {
 	{
 		"hp": 3,
 		"tool": &"axe",
-		"trunk": {"logs": 2, "hp": 2},
+		"trunk": {"logs": 2, "hp": 2, "atlas_row": _DEAD_TREE_TRUNK_ROW},
 		"leaves": DEAD_STUMP,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": true,
@@ -218,7 +220,7 @@ const _OTHER_TYPES := {
 	{
 		"hp": 4,
 		"tool": &"axe",
-		"trunk": {"logs": 2, "hp": 3},
+		"trunk": {"logs": 2, "hp": 3, "atlas_row": _WILLOW_TRUNK_ROW},
 		"leaves": STUMP,
 		"regrows": true,
 		"footprint": Vector2i(1, 1),
@@ -523,7 +525,6 @@ static func _build_types() -> Dictionary:
 ## Adds the trunk types of the trees that have a `trunk`, as the data of the tree says.
 static func _with_trunks(other_types: Dictionary) -> Dictionary:
 	var types := other_types.duplicate()
-	var row := _FIRST_TRUNK_ROW
 	for tree: StringName in other_types:
 		var tree_data: Dictionary = other_types[tree]
 		if not tree_data.has("trunk"):
@@ -536,8 +537,7 @@ static func _with_trunks(other_types: Dictionary) -> Dictionary:
 				"footprint": Vector2i(1, 1) if is_short else Vector2i(2, 1),
 				"blocks_walking": true,
 				"harvest_level": tree_data["harvest_level"],
-				"atlas_row": row,
+				"atlas_row": tree_data["trunk"]["atlas_row"] + int(is_short),
 				"variants": 2,
 			}
-			row += 1
 	return types

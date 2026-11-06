@@ -90,9 +90,9 @@ def world_chest():
 
 # The rows of assets/objects.png, as (kind, looks). `atlas_row` of each type in
 # game/state/world_object_types.gd is its number here, and tests/test_object_atlas.gd checks
-# it against assets/objects_rows.txt, which is written from the list below. Rows 14 to 23
-# (the trunks) follow the order of the trees in trunks.SPECIES, and the types of
-# world_object_types.gd take their rows from the order of its trees.
+# it against assets/objects_rows.txt, which is written from the list below. A tree's trunks are
+# two rows, the long trunk and then the short one; its `trunk` in world_object_types.gd names the
+# first.
 #
 #  0 oak (3)
 #  1 stone (2)
@@ -145,7 +145,11 @@ def object_atlas():
         ("boulder", [trees.boulder(seed) for seed in (191, 192)]),
         ("stump", [trees.stump(seed) for seed in (201, 202)]),
         ("tall_grass", meadow.tall_grass_row()),
-    ] + trunks.rows() + [
+        *trunks.rows("oak"),
+        *trunks.rows("spruce"),
+        *trunks.rows("pine"),
+        *trunks.rows("dead_tree"),
+        *trunks.rows("willow"),
         ("reeds", reeds.reeds_row()),
         ("dead_stump", [trees.dead_stump(seed) for seed in (211, 212)]),
         ("chest", [world_chest()]),

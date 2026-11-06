@@ -62,11 +62,12 @@ in it fails with "unknown colour X in <the file being written>". After writing,
   ground is made for you.
 - **A world object** (a tree, a rock, a plant): draw its variants in the module of its topic
   (`trees.py` for most), add a row to `object_atlas()` and to the numbered table above it
-  (the table says the order; new rows go at the end, after the chest), and give its type an
+  (the table says the order; new rows go at the end), and give its type an
   `atlas_row` in `game/state/world_object_types.gd`. `generate.py` writes
   `assets/objects_rows.txt` from the rows it draws, and `tests/test_object_atlas.gd` compares
-  it with every type's `atlas_row` and number of looks; the trunk rows are counted from
-  `_FIRST_TRUNK_ROW` there, and the order of trees in `trunks.py` and in that file must agree.
+  it with every type's `atlas_row` and number of looks. A tree that leaves a trunk also has the
+  two rows of `trunks.rows(<tree>)` (its bark in `trunks.SPECIES`), and its `trunk` names the
+  first of them.
   `seasons.py` needs a winter look per kind: add one entry to `_WINTER_LOOKS` (a kind
   without one stops the build with its name), and look at the picture under snow.
 - **A building:** its picture in `buildings.py` (`PICTURES`), its section in
