@@ -15,8 +15,8 @@ const CHEST := 1
 const SLOT_GAP := 2
 const PANEL_GAP := 16
 const COLUMNS := 5
-## The inventory side: backpack rows as wide as the hotbar row below them.
-const INVENTORY_COLUMNS := Inventory.HOTBAR_SIZE
+## The inventory side: the backpack is 5 slots wide and 4 rows high, the hotbar one row.
+const INVENTORY_COLUMNS := 5
 ## Space between the backpack and the hotbar row below it.
 const HOTBAR_GAP := 8
 const PICKED_ALPHA := 0.4
@@ -53,7 +53,7 @@ func _init() -> void:
 	hotbar_gap.custom_minimum_size.y = HOTBAR_GAP - SLOT_GAP
 	hotbar_gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	inventory_column.add_child(hotbar_gap)
-	_add_grid(inventory_column, INVENTORY, 0, Inventory.HOTBAR_SIZE, INVENTORY_COLUMNS)
+	_add_grid(inventory_column, INVENTORY, 0, Inventory.HOTBAR_SIZE, Inventory.HOTBAR_SIZE)
 	row.add_child(inventory_column)
 	var chest_column := _new_column(CHEST_ICON)
 	var chest_slots: int = WorldObjectTypes.TYPES[WorldObjectTypes.CHEST]["storage_slots"]

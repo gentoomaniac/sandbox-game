@@ -10,8 +10,8 @@ extends CanvasLayer
 const SLOT_GAP := 2
 const COLUMN_GAP := 4
 const PANEL_GAP := 12
-## Backpack rows as wide as the hotbar row below them.
-const BACKPACK_COLUMNS := Inventory.HOTBAR_SIZE
+## The backpack is 5 slots wide and 4 rows high.
+const BACKPACK_COLUMNS := 5
 ## Space between the backpack and the hotbar row below it.
 const HOTBAR_GAP := 8
 const MAX_PREVIEW_SCALE := 4
