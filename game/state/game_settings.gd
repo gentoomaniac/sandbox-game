@@ -95,6 +95,7 @@ const ACTION_DESCRIPTIONS := {
 	&"build_previous": "Pick the previous building while building.",
 	&"build_next": "Pick the next building while building.",
 	&"inventory": "Open or close the character screen with the inventory.",
+	&"skills": "Open or close the skills tab of the character screen.",
 	&"crafting": "Open or close the crafting menu.",
 	&"toggle_fast_forward": "Run time faster. Only for testing.",
 	&"toggle_coordinates": "Show your tile coordinates in the top right corner.",

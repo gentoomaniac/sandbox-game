@@ -59,6 +59,7 @@ extends RefCounted
 ##
 ## Screens and the console
 ##   --inventory              open the character screen at start
+##   --skills                 open the character screen at start, on the skills tab
 ##   --crafting               open the crafting menu at start
 ##   --storage                open the storage screen of the --chest or --chest-inside chest
 ##   --console=<line>;<line>  run those console commands at start and leave the console open
@@ -141,6 +142,7 @@ var sleep := false
 
 # Screens and the console
 var inventory := false
+var skills := false
 var crafting := false
 var storage := false
 var console := PackedStringArray()
@@ -237,6 +239,8 @@ func _init(args := PackedStringArray()) -> void:
 				sleep = true
 			"--inventory":
 				inventory = true
+			"--skills":
+				skills = true
 			"--crafting":
 				crafting = true
 			"--storage":

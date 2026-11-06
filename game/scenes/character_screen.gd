@@ -6,6 +6,10 @@ extends CanvasLayer
 ## the same item stacks, and an equipment slot only takes an item that fits (those light up
 ## while an item is picked up). Clicking the picked slot again, or outside the slots, drops the
 ## pick. Right click wears an inventory item, or takes a worn one off into the first free slot.
+## A second tab beside it shows the skills (see SkillsPanel); Tab opens the screen on the
+## character, K on the skills.
+
+enum Tab { CHARACTER, SKILLS }
 
 const SLOT_GAP := 2
 const COLUMN_GAP := 4
@@ -40,6 +44,11 @@ var _right_column := VBoxContainer.new()
 var _weight_label := Label.new()
 var _note_label := Label.new()
 var _picked_icon := TextureRect.new()
+var _tab := Tab.CHARACTER
+## The page of each tab, and the button that shows it.
+var _pages := {}
+var _tab_buttons := {}
+var _skills_panel := SkillsPanel.new()
 
 
 func _init() -> void:
@@ -86,9 +95,25 @@ func _init() -> void:
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(character_row)
 	row.add_child(inventory_column)
+	_pages = {Tab.CHARACTER: row, Tab.SKILLS: _skills_panel}
+	var tabs := HBoxContainer.new()
+	var tab_group := ButtonGroup.new()
+	for tab: Tab in [Tab.CHARACTER, Tab.SKILLS]:
+		var button := Button.new()
+		button.text = "Character" if tab == Tab.CHARACTER else "Skills"
+		button.toggle_mode = true
+		button.button_group = tab_group
+		button.pressed.connect(_show_tab.bind(tab))
+		tabs.add_child(button)
+		_tab_buttons[tab] = button
+	var page_column := VBoxContainer.new()
+	page_column.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	page_column.add_child(tabs)
+	page_column.add_child(row)
+	page_column.add_child(_skills_panel)
 	_panel.theme = THEME
 	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_panel.add_child(row)
+	_panel.add_child(page_column)
 	_backdrop.add_child(_panel)
 
 	_picked_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -99,6 +124,7 @@ func _init() -> void:
 func show_player(player: PlayerState) -> void:
 	_player = player
 	_preview.show_appearance(player.appearance)
+	_skills_panel.show_skills(player.skills)
 	player.inventory.changed.connect(_refresh)
 	player.equipment.changed.connect(_refresh)
 	get_viewport().size_changed.connect(_fit_to_window)
@@ -110,7 +136,8 @@ func is_open() -> bool:
 	return visible
 
 
-func open() -> void:
+func open(tab := Tab.CHARACTER) -> void:
+	_show_tab(tab)
 	_show(true)
 
 
@@ -119,8 +146,28 @@ func close() -> void:
 	_show(false)
 
 
-func toggle() -> void:
-	_show(not visible)
+## Closes the screen if it is open on `tab`, else opens it there.
+func toggle(tab := Tab.CHARACTER) -> void:
+	if visible and _tab == tab:
+		close()
+	else:
+		open(tab)
+
+
+func current_tab() -> Tab:
+	return _tab
+
+
+func _show_tab(tab: Tab) -> void:
+	_tab = tab
+	_drop_pick()
+	_note_label.text = ""
+	for each: Tab in _pages:
+		_pages[each].visible = each == tab
+		_tab_buttons[each].set_pressed_no_signal(each == tab)
+	_refresh()
+	if is_inside_tree():
+		_fit_to_window()
 
 
 func _show(is_shown: bool) -> void:

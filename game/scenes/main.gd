@@ -231,6 +231,8 @@ func _apply_start_options() -> void:
 	_weather_view.is_flash_held = _options.flash
 	if _options.inventory:
 		_character_screen.open()
+	if _options.skills:
+		_character_screen.open(CharacterScreen.Tab.SKILLS)
 	if _options.crafting:
 		_crafting_screen.open()
 	if not _options.console.is_empty():
@@ -488,6 +490,9 @@ func _screens_take(event: InputEvent) -> bool:
 		return true
 	if event.is_action_pressed("inventory") and not _crafting_screen.is_open():
 		_character_screen.toggle()
+		return true
+	if event.is_action_pressed("skills") and not _crafting_screen.is_open():
+		_character_screen.toggle(CharacterScreen.Tab.SKILLS)
 		return true
 	return _is_any_screen_open()
 
