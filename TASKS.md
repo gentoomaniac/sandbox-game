@@ -113,7 +113,7 @@ the world generator near settlements or on rises.
 
 ## 63. Onboarding docs and build papercuts
 
-- [ ] Done
+- [x] Done
 
 From docs/code-review-2026-11-06.md. docs/architecture.md (~80 lines: game/state pure and
 tested, game/world, game/scenes rendering; data/*.cfg -> *_rules.gd -> *Types as the way
@@ -130,6 +130,14 @@ docs/art-review-2026-11-05.md archived or linked from art-style.md. Makefile: `m
 as the default goal (targets and their variables AT, TIME, ZOOM, OUT, KEEP_SAVE, SOUND,
 ARGS, GODOT); Tiled optional in `make setup`; `make clean` (build/); tools/requirements.txt
 with the pinned Pillow and numpy and a `make venv` target that `make assets` depends on.
+
+Done: docs/architecture.md, tools/README.md and maps/README.md, linked from the README.
+Tasks 1-51 are in docs/tasks-done.md (task numbers in SPEC and code comments stay valid).
+The art review is in docs/archive/. SPEC has a real status line and target list.
+`make help` is the default, Tiled is optional in `make setup`, `make clean` exists, and
+`make venv` (pins in tools/requirements.txt, gdtoolkit too) serves `make setup` and
+`make assets`, which now runs without Godot. A venv is no longer repaired when a package
+is missing: delete it and run `make venv`.
 
 ## 64. Quiet, honest tests
 
