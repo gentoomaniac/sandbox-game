@@ -8,6 +8,7 @@ extends RefCounted
 const SHEET_PATH := "res://assets/wildlife/%s.png"
 const LIVESTOCK_ACTIONS := {&"idle": 2, &"walk": 4, &"graze": 2, &"sleep": 2}
 const COW := {"size": Vector2i(32, 24), "actions": LIVESTOCK_ACTIONS}
+const SHEEP := {"size": Vector2i(22, 16), "actions": LIVESTOCK_ACTIONS}
 
 ## Per kind: the size of a frame and the frames of each action, in the order of the rows.
 const SHEETS := {
@@ -25,6 +26,9 @@ const SHEETS := {
 	&"cow_angler": COW,
 	&"cow_black_pied": COW,
 	&"cow_red_pied": COW,
+	&"sheep_white": SHEEP,
+	&"sheep_grey": SHEEP,
+	&"sheep_black_faced": SHEEP,
 }
 
 

@@ -305,10 +305,71 @@ def cow_sheet(look):
     return four_legged_sheet(COW, style, keys)
 
 
+# --- Sheep --------------------------------------------------------------------------------
+#
+# A small heath or marsh sheep, about 14 px long, in a round coat of wool with a lumpy edge.
+# Keys: l, b, d light, base and shade of the wool; f, F face and its shade; r ear; e eye;
+# L, N near and far leg, K hoof.
+
+SHEEP_SIZE = (22, 16)
+SHEEP_TORSO = (
+    "..ll.lll.ll...",
+    ".llllllllllll.",
+    "lbbbbdbbbbbbbl",
+    "bbdbbbbbbdbbbb",
+    "bbbbbbdbbbbbbb",
+    "bdbbbbbbbbbdbb",
+    ".bbbdbbbbbbbb.",
+    "..dddddddddd..",
+)
+SHEEP_LEG = ("L", "L", "L", "L", "L", "K")
+SHEEP = {
+    "size": SHEEP_SIZE,
+    "torso": SHEEP_TORSO,
+    "torso_at": (3, 4),
+    "lying_drop": 4,
+    "heads": {
+        "ahead": (("..lb..", ".rbff.", "rr.fef", "...fff", "...fFF"), (11, -3)),
+        "down": (("lbb...", "bbbf..", ".rfff.", "rr.fe.", "...ff.", "...fF."), (12, 4)),
+    },
+    "tails": {"hanging": ("l", "b", "b"), "swishing": ("b.", ".b", ".b")},
+    "tail_at": (-1, 1),
+    "legs": {
+        "stand": SHEEP_LEG,
+        "forward": ("L.", "L.", "L.", ".L", ".L", ".K"),
+        "back": (".L", ".L", ".L", "L.", "L.", "K."),
+    },
+    "leg_x": (2, 10),
+    "far_shift": (2, 2),
+    "folded": (("KL",), (9, len(SHEEP_TORSO) - 1)),
+    "closed_eye": "F",
+}
+WHITE_WOOL = {"l": "cream", "b": "lime", "d": "stone_light"}
+DARK_FACE = {"f": "stone_dark", "F": "ink", "r": "stone_dark", "e": "sand", "L": "stone_dark", "N": "ink", "K": "ink"}
+SHEEP_LOOKS = {
+    # The white marsh sheep of the dykes, with a pale face.
+    "white": {
+        "keys": WHITE_WOOL
+        | {"f": "sand_light", "F": "sand", "r": "skin_shade", "e": "ink", "L": "sand_light", "N": "sand", "K": "mud_dark"},
+        "outline": "stone",
+    },
+    # The grey heath sheep of the Geest (Heidschnucke), black in the face and legs; drawn hornless.
+    "grey": {"keys": {"l": "lime", "b": "stone_light", "d": "stone"} | DARK_FACE, "outline": "stone_dark"},
+    # White wool and a black face.
+    "black_faced": {"keys": WHITE_WOOL | DARK_FACE, "outline": "stone"},
+}
+
+
+def sheep_sheet(look):
+    style = SHEEP_LOOKS[look]
+    return four_legged_sheet(SHEEP, style, style["keys"])
+
+
 # --- All sheets ---------------------------------------------------------------------------
 
 SPECIES = {
     "cow": (COW_SIZE, COW_LOOKS, cow_sheet),
+    "sheep": (SHEEP_SIZE, SHEEP_LOOKS, sheep_sheet),
 }
 
 
