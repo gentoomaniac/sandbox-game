@@ -45,6 +45,7 @@ var _is_station_to_open: bool
 var _are_animals_to_spawn: bool
 var _is_livestock_to_spawn: bool
 var _npcs_to_spawn: int
+var _villager_to_spawn: String
 var _chat_lines: PackedStringArray
 var _hit_tile: Vector2i
 var _harvest_tile: Vector2i
@@ -65,6 +66,7 @@ func _init(options: StartupOptions) -> void:
 	_are_animals_to_spawn = not options.wildlife.is_empty()
 	_is_livestock_to_spawn = not options.livestock.is_empty()
 	_npcs_to_spawn = options.npcs
+	_villager_to_spawn = options.villager
 	_chat_lines = options.chat
 	_hit_tile = options.hit
 	_harvest_tile = options.harvest
@@ -105,6 +107,12 @@ func update(delta: float) -> void:
 		state.npcs.rng.seed = NPCS_SEED
 		state.npcs.spawn(_npcs_to_spawn, state.player.position, state.world)
 		_npcs_to_spawn = 0
+	if _villager_to_spawn != "" and _is_outside_and_drawn():
+		if not state.npcs.villagers.has(_villager_to_spawn):
+			push_error("--villager expects one of %s" % [state.npcs.villagers.ids()])
+		else:
+			state.npcs.spawn_villager(_villager_to_spawn, state.player.position, state.world)
+		_villager_to_spawn = ""
 	if not _chat_lines.is_empty() and _is_outside_and_drawn():
 		_chat()
 	if _hit_tile != StartupOptions.NO_TILE and _is_outside_and_drawn():
@@ -139,7 +147,7 @@ func _chat() -> void:
 	_chat_lines = PackedStringArray()
 	var villagers := state.npcs.all()
 	if villagers.is_empty():
-		push_error("--chat needs a villager near the player (see --npcs)")
+		push_error("--chat needs a villager near the player (see --npcs and --villager)")
 		return
 	var feet := state.player.position
 	villagers.sort_custom(

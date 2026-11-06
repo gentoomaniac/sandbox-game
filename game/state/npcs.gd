@@ -26,6 +26,8 @@ const MAX_STEP_SECONDS := 0.05
 const STROLL_REACH := 0.8
 
 var rules := NpcRules.default_rules()
+## The villagers written by hand (see `spawn_villager`).
+var villagers := VillagerRules.default_rules()
 var rng := RandomNumberGenerator.new()
 var _sun: Sun
 var _npcs: Array[Npc] = []
@@ -58,24 +60,37 @@ func load_array(data: Array) -> void:
 		add(Npc.from_dict(npc_data))
 
 
-## Puts up to `count` new villagers, each with a look and name of its own, where they can stand
-## a few tiles around `near`, each anchored to what is nearest its spot. Returns how many found
-## a place.
+## Puts up to `count` new villagers, each with a look, name and background of its own, where
+## they can stand a few tiles around `near`, each anchored to what is nearest its spot. Returns
+## how many found a place.
 func spawn(count: int, near: Vector2, world: World) -> int:
 	var placed := 0
 	for _try in SPAWN_TRIES:
 		if placed == count:
 			break
-		var distance := rng.randf_range(SPAWN_DISTANCE.x, SPAWN_DISTANCE.y)
-		var feet := near + Vector2.from_angle(rng.randf() * TAU) * distance
-		if not PlayerState.can_stand_at(world, feet):
-			continue
-		var npc := Npc.create(rng.randi(), feet, rules)
-		npc.anchor = anchor_near(feet, world, rules.behaviour("anchor_search"))
-		npc.seconds_left = rules.pick_seconds("idle_seconds", rng)
-		add(npc)
-		placed += 1
+		var feet := _spawn_spot(near)
+		if PlayerState.can_stand_at(world, feet):
+			_settle(Npc.create(rng.randi(), feet, rules), world)
+			placed += 1
 	return placed
+
+
+## Puts the villager of data/villagers.cfg with that id where they can stand a few tiles around
+## `near`, as `spawn` does. Returns them, or null if they found no place.
+func spawn_villager(villager_id: String, near: Vector2, world: World) -> Npc:
+	for _try in SPAWN_TRIES:
+		var feet := _spawn_spot(near)
+		if PlayerState.can_stand_at(world, feet):
+			return _settle(Npc.create_villager(villager_id, feet, villagers), world)
+	return null
+
+
+## The villager of data/villagers.cfg with that id, or null if they are not in the world.
+func find(villager_id: String) -> Npc:
+	for npc in _npcs:
+		if npc.id == villager_id:
+			return npc
+	return null
 
 
 ## The anchor of a villager that comes into the world at `feet`: the nearest of the yards in
@@ -128,6 +143,19 @@ func talk_to(npc: Npc, player_feet: Vector2) -> void:
 	npc.turn_to(player_feet)
 	npc.activity = Npc.Activity.IDLE
 	npc.seconds_left = rules.behaviour("linger_seconds")
+
+
+func _spawn_spot(near: Vector2) -> Vector2:
+	var distance := rng.randf_range(SPAWN_DISTANCE.x, SPAWN_DISTANCE.y)
+	return near + Vector2.from_angle(rng.randf() * TAU) * distance
+
+
+## Anchors a villager who came into the world to what is nearest them, and adds them.
+func _settle(npc: Npc, world: World) -> Npc:
+	npc.anchor = anchor_near(npc.position, world, rules.behaviour("anchor_search"))
+	npc.seconds_left = rules.pick_seconds("idle_seconds", rng)
+	add(npc)
+	return npc
 
 
 func _start_next_activity(npc: Npc) -> void:

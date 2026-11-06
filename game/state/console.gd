@@ -16,7 +16,10 @@ const COMMANDS := {
 	"spawn":
 	[
 		"spawn <kind> [count]",
-		"Put animals or villagers (npc) near you; farm animals and villagers stay.",
+		(
+			"Put animals or villagers (npc, or npc <villager> for one written by hand) near you;"
+			+ " farm animals and villagers stay."
+		),
 	],
 	"weather":
 	[
@@ -52,9 +55,12 @@ const ARGUMENTS := {
 	"snow": [&"snow"],
 	"skill": [&"skill", &"number"],
 }
+## `spawn npc` takes the id of a villager written by hand (see VillagerRules) where the other
+## kinds take a count, or a count.
+const SPAWN_NPC_ARGUMENTS: Array[StringName] = [&"animal", &"villager"]
 ## The argument kinds whose candidates `_candidates_text` lists: the names a command takes. Items
 ## are too many to list (Tab completes them) and the other kinds are numbers.
-const LISTED_KINDS: Array[StringName] = [&"animal", &"weather", &"snow"]
+const LISTED_KINDS: Array[StringName] = [&"animal", &"villager", &"weather", &"snow"]
 ## The most characters of a listed line, so the log shows it whole.
 const LIST_LINE_LENGTH := 70
 ## Minutes per unit of the `skip` command, and the longest skip (a year).
@@ -114,7 +120,12 @@ func run(line: String) -> Array[String]:
 			_state.go_to_home_bed()
 			output = ["Back in bed"]
 		"spawn":
-			output = _candidates_text("spawn") if arguments.is_empty() else _spawn(arguments)
+			if arguments.is_empty():
+				output = _candidates_text("spawn")
+			elif arguments.size() == 2 and arguments[0] == NPC and not arguments[1].is_valid_int():
+				output = _spawn_villager(arguments[1])
+			else:
+				output = _spawn(arguments)
 		"weather":
 			output = _weather(arguments)
 		"snow":
@@ -140,6 +151,8 @@ func complete(line: String) -> String:
 	var kind := &"command"  # Past the last argument the kind stays empty: nothing to offer.
 	if word_index > 0:
 		var kinds: Array = ARGUMENTS.get(words[0], [])
+		if words[0] == "spawn" and words.size() > 1 and words[1] == NPC:
+			kinds = SPAWN_NPC_ARGUMENTS
 		kind = kinds[word_index - 1] if word_index <= kinds.size() else &""
 	var offered := candidates(kind)
 	offered = offered.filter(func(name: String) -> bool: return name.begins_with(typed))
@@ -163,6 +176,8 @@ func candidates(kind: StringName) -> Array[String]:
 				values.append(String(species))
 			for animal in WildlifeRules.KINDS:
 				values.append(WILD_RABBIT if animal == WildlifeRules.RABBIT else String(animal))
+		&"villager":
+			values = _state.npcs.villagers.ids()
 		&"weather":
 			for condition in Weather.FORCEABLE:
 				values.append(String(condition))
@@ -199,7 +214,10 @@ func _help(arguments: PackedStringArray) -> Array[String]:
 ## argument (a long list continues on the next lines).
 func _candidates_text(command: String) -> Array[String]:
 	var lines: Array[String] = []
-	for kind: StringName in ARGUMENTS.get(command, []):
+	var kinds: Array = ARGUMENTS.get(command, [])
+	if command == "spawn":
+		kinds = kinds + [&"villager"]
+	for kind: StringName in kinds:
 		if not LISTED_KINDS.has(kind):
 			continue
 		var line := "%s:" % kind
@@ -298,6 +316,23 @@ func _spawn(arguments: PackedStringArray) -> Array[String]:
 		return ["No animals here"]
 	var placed: int = wildlife_spawner.call(kind, count)
 	return ["Spawned %d of %d %s" % [placed, count, word]]
+
+
+func _spawn_villager(villager_id: String) -> Array[String]:
+	var npcs := _state.npcs
+	if not npcs.villagers.has(villager_id):
+		var lines: Array[String] = ["Unknown villager: %s" % villager_id]
+		lines.append_array(_candidates_text("spawn"))
+		return lines
+	var here := npcs.find(villager_id)
+	if here != null:
+		return ["%s is already here" % here.name]
+	if _state.is_inside():
+		return ["No villagers here"]
+	var npc := npcs.spawn_villager(villager_id, _state.player.position, _state.world)
+	if npc == null:
+		return ["No room for %s here" % villager_id]
+	return ["Spawned %s" % npc.name]
 
 
 func _weather(arguments: PackedStringArray) -> Array[String]:

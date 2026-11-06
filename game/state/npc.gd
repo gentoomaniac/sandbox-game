@@ -1,8 +1,8 @@
 class_name Npc
 extends RefCounted
-## One villager: who they are (name, sex, looks), where they stand, the anchor they keep near
-## and what they and the player have said to each other. Npcs moves them; NpcView draws them and
-## ChatScreen shows the chat.
+## One villager: who they are (name, sex, looks, age, trade and the texts about them), where they
+## stand, the anchor they keep near and what they and the player have said to each other. Npcs
+## moves them; NpcView draws them and ChatScreen shows the chat.
 
 enum Activity { IDLE, WALK }
 
@@ -13,6 +13,23 @@ const HISTORY_LIMIT := 200
 var name: String
 var sex: StringName
 var appearance: Appearance
+
+# Who they are, as it is told to the language model (see NpcPrompt): written by hand in
+# data/villagers.cfg for a villager with an id, else made up from the tables of data/npcs.cfg,
+# and kept as they were when the villager came into the world.
+## The section of data/villagers.cfg they are, or "" for a villager made up from the tables.
+var id := ""
+## In years.
+var age := 0
+## What they do for a living, such as "a farmer's wife".
+var trade := ""
+## What they are like, in a sentence or two.
+var personality := ""
+## Their family and their story.
+var background := ""
+## How they talk and what they are wont to do.
+var habits := ""
+
 ## Where their feet are, in tiles of the world.
 var position: Vector2
 ## The point they keep near (see Npcs and data/npcs.cfg).
@@ -48,7 +65,22 @@ static func create(seed_value: int, feet: Vector2, rules: NpcRules) -> Npc:
 	rng.seed = seed_value
 	var npc_sex: StringName = NpcRules.SEXES[rng.randi_range(0, NpcRules.SEXES.size() - 1)]
 	var npc_name := rules.pick_name(npc_sex, rng)
-	return Npc.new(npc_name, npc_sex, rules.pick_look(npc_sex, rng), feet)
+	var npc := Npc.new(npc_name, npc_sex, rules.pick_look(npc_sex, rng), feet)
+	npc._set_background(rules.pick_background(npc_sex, rng))
+	return npc
+
+
+## The villager of data/villagers.cfg with that id.
+static func create_villager(villager_id: String, feet: Vector2, villagers: VillagerRules) -> Npc:
+	var written := villagers.villager(villager_id)
+	var look := Appearance.new()
+	look.layers.clear()
+	for slot: String in written["look"]:
+		look.wear(StringName(slot), written["look"][slot])
+	var npc := Npc.new(written["name"], StringName(written["sex"]), look, feet)
+	npc.id = villager_id
+	npc._set_background(written)
+	return npc
 
 
 ## The axis direction nearest to `direction`; a tie looks up or down, as the player does.
@@ -80,6 +112,12 @@ func to_dict() -> Dictionary:
 		"name": name,
 		"sex": str(sex),
 		"appearance": appearance.to_dict(),
+		"id": id,
+		"age": age,
+		"trade": trade,
+		"personality": personality,
+		"background": background,
+		"habits": habits,
 		"position": SaveCodec.float_vector_to_json(position),
 		"anchor": SaveCodec.float_vector_to_json(anchor),
 		"chat_history": chat_history,
@@ -95,7 +133,18 @@ static func from_dict(data: Dictionary) -> Npc:
 		Appearance.from_dict(data["appearance"]),
 		SaveCodec.float_vector_from_json(data["position"])
 	)
+	npc.id = data["id"]
+	npc._set_background(data)
 	npc.anchor = SaveCodec.float_vector_from_json(data["anchor"])
 	for line: Dictionary in data["chat_history"]:
 		npc.add_chat_line(int(line["day"]), int(line["minute"]), line["from_player"], line["text"])
 	return npc
+
+
+## Takes `age`, `trade`, `personality`, `background` and `habits` from a dictionary that has them.
+func _set_background(data: Dictionary) -> void:
+	age = int(data["age"])
+	trade = data["trade"]
+	personality = data["personality"]
+	background = data["background"]
+	habits = data["habits"]

@@ -66,7 +66,8 @@ extends RefCounted
 ##   --storage                open the storage screen of the --chest or --chest-inside chest
 ##   --console=<line>;<line>  run those console commands at start and leave the console open
 ##   --chat=<line>;<line>     speak to the nearest villager once the world is drawn (see
-##                            --npcs) and say those lines, each after the answer to the last
+##                            --npcs, --villager) and say those lines, each after the answer to
+##                            the last
 ##
 ## Building
 ##   --building=<id>          the building the hammer places
@@ -102,6 +103,7 @@ extends RefCounted
 ##   --livestock=<species>[,<species>]  put a few farm animals of those species near the player
 ##                            (cow, sheep, chicken, rabbit, dog, cat, horse)
 ##   --npcs=<count>           put that many villagers near the player, the same ones every time
+##   --villager=<id>          put the villager of data/villagers.cfg with that id near the player
 
 ## The value of a tile flag that was not given.
 const NO_TILE := Vector2i(1 << 30, 1 << 30)
@@ -184,6 +186,7 @@ var wildlife := PackedStringArray()
 var wildlife_calm := false
 var livestock := PackedStringArray()
 var npcs := 0
+var villager := ""
 
 
 static func from_command_line() -> StartupOptions:
@@ -308,6 +311,8 @@ func _init(args := PackedStringArray()) -> void:
 				livestock = _value(arg).split(",")
 			"--npcs":
 				npcs = _value(arg).to_int()
+			"--villager":
+				villager = _value(arg)
 			_:
 				if arg.begins_with("--"):
 					push_warning("Unknown flag '%s' (see StartupOptions)" % arg)

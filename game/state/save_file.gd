@@ -12,7 +12,7 @@ extends RefCounted
 ## 4. Add a test in tests/test_save_upgrade*.gd: an old save without the field loads right.
 ## An upgrade step works on the parsed JSON, before any `from_dict` runs.
 
-const VERSION := 18
+const VERSION := 19
 ## Version 6 had tomatoes, which were not grown here before the 19th century; flax took their
 ## place, item for item.
 const TOMATOES_TO_FLAX := {"tomatoes": "flax", "tomatoes_seeds": "flax_seeds"}
@@ -115,6 +115,8 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 		_upgrade_from_version_16(parsed["game"])
 	if version <= 17:
 		_upgrade_from_version_17(parsed["game"])
+	if version <= 18:
+		_upgrade_from_version_18(parsed["game"])
 	return GameState.from_dict(parsed["game"])
 
 
@@ -382,6 +384,17 @@ static func _upgrade_from_version_17(game: Dictionary) -> void:
 	var generator := WorldGenerator.new(int(game["world"]["seed"]))
 	var by_the_coast := _home_tiles(game).keys().filter(generator.is_by_the_coast)
 	_clear_new_land(game["world"], generator, by_the_coast)
+
+
+## Version 18 kept no more of who a villager is than their name, sex and look: each is given an
+## age, trade and the rest made up from the tables of data/npcs.cfg, the same for the same name.
+static func _upgrade_from_version_18(game: Dictionary) -> void:
+	var rules := NpcRules.default_rules()
+	for npc: Dictionary in game["npcs"]:
+		var rng := RandomNumberGenerator.new()
+		rng.seed = hash(npc["name"])
+		npc.merge(rules.pick_background(StringName(npc["sex"]), rng))
+		npc["id"] = ""
 
 
 static func _keep(kept: Dictionary[Vector2i, bool], area: Rect2i) -> void:

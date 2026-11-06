@@ -1,7 +1,8 @@
 class_name NpcRules
 extends RefCounted
 ## The villagers' rules, read from data/npcs.cfg (see there for what each key means): how they
-## behave, and the names and clothes a new one is given (`pick_name`, `pick_look`).
+## behave, and the names, clothes and background a new one is given (`pick_name`, `pick_look`,
+## `pick_background`).
 
 const DEFAULT_PATH := "res://data/npcs.cfg"
 
@@ -24,8 +25,18 @@ const BEHAVIOUR_KEYS: Array[String] = [
 ## The lists every villager draws from, and those drawn by sex.
 const EVERYONE_KEYS: Array[String] = ["skins", "hair_colours", "feet", "surnames"]
 const SEX_KEYS: Array[String] = [
-	"first_names", "hair_styles", "clothes", "legs", "aprons", "coats", "heads"
+	"first_names",
+	"hair_styles",
+	"clothes",
+	"legs",
+	"aprons",
+	"coats",
+	"heads",
+	"trades",
+	"families"
 ]
+## The lists of [background] (its `ages` is a range).
+const BACKGROUND_KEYS: Array[String] = ["personalities", "worries", "habits"]
 ## The Appearance slot of each list of layer variants (hair is put together from two lists).
 const SLOT_OF_KEY := {
 	"skins": Appearance.BODY,
@@ -67,7 +78,7 @@ func problems() -> Array[String]:
 	for key in BEHAVIOUR_KEYS:
 		if not _values.get("behaviour", {}).has(key):
 			found.append("[behaviour] no %s" % key)
-	var lists := {"everyone": EVERYONE_KEYS}
+	var lists := {"everyone": EVERYONE_KEYS, "background": BACKGROUND_KEYS}
 	for sex in SEXES:
 		lists[str(sex)] = SEX_KEYS
 	for section: String in lists:
@@ -75,6 +86,10 @@ func problems() -> Array[String]:
 			var list: Variant = _values.get(section, {}).get(key)
 			if not list is Array or list.is_empty():
 				found.append("[%s] %s is not a list of at least one" % [section, key])
+	var ages: Variant = _values.get("background", {}).get("ages")
+	var is_range: bool = ages is Array and ages.size() == 2 and ages[0] is int and ages[1] is int
+	if not is_range or ages[1] < ages[0]:
+		found.append("[background] ages is not [youngest, oldest]")
 	return found
 
 
@@ -111,6 +126,23 @@ func pick_look(sex: StringName, rng: RandomNumberGenerator) -> Appearance:
 	var hair_style := _pick(str(sex), "hair_styles", rng)
 	look.wear(Appearance.HAIR, "%s_%s" % [hair_style, _pick("everyone", "hair_colours", rng)])
 	return look
+
+
+## Who a villager of that sex made up from the tables is, as the fields of the same names of
+## Npc: `age`, `trade`, `personality`, `background` (family and a worry) and `habits`.
+func pick_background(sex: StringName, rng: RandomNumberGenerator) -> Dictionary:
+	var ages: Array = _values["background"]["ages"]
+	var other_sex := FEMALE if sex == MALE else MALE
+	var family := _pick(str(sex), "families", rng).format(
+		{"spouse": _pick(str(other_sex), "first_names", rng)}
+	)
+	return {
+		"age": rng.randi_range(ages[0], ages[1]),
+		"trade": _pick(str(sex), "trades", rng),
+		"personality": _pick("background", "personalities", rng),
+		"background": "%s %s" % [family, _pick("background", "worries", rng)],
+		"habits": _pick("background", "habits", rng),
+	}
 
 
 ## Every layer a villager may wear, as {slot, variant}: to check that each has its pictures.

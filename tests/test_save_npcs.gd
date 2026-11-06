@@ -1,6 +1,7 @@
 extends SaveUpgradeCase
-## The villagers are saved with their name, sex, look, place, anchor and chat, and a save from
-## before them (version 16) loads without any.
+## The villagers are saved with their name, sex, look, who they are, place, anchor and chat; a
+## save from before them (version 16) loads without any, and one from before their backgrounds
+## (version 18) gives them one.
 
 
 func test_the_villagers_and_their_chat_are_kept() -> void:
@@ -23,6 +24,22 @@ func test_the_villagers_and_their_chat_are_kept() -> void:
 	assert_eq(loaded.anchor, Vector2(1.5, -2.5))
 	assert_eq(loaded.chat_history, npc.chat_history)
 	assert_eq(loaded.chat_history[0]["minute"], 495)
+	assert_eq(loaded.age, npc.age)
+	assert_eq(loaded.trade, npc.trade)
+	assert_eq(loaded.personality, npc.personality)
+	assert_eq(loaded.background, npc.background)
+	assert_eq(loaded.habits, npc.habits)
+
+
+func test_a_villager_written_by_hand_keeps_their_id() -> void:
+	var state := GameState.new_game(7)
+	state.npcs.add(Npc.create_villager("antje", Vector2.ZERO, state.npcs.villagers))
+	assert_true(SaveFile.write(state, SAVE_PATH))
+
+	var antje := SaveFile.read(SAVE_PATH).npcs.find("antje")
+
+	assert_not_null(antje)
+	assert_eq(antje.trade, "a farmer's wife")
 
 
 func test_a_saved_chat_keeps_its_last_lines_only() -> void:
@@ -48,3 +65,19 @@ func test_a_version_16_save_loads_with_no_villagers() -> void:
 
 	assert_not_null(restored)
 	assert_eq(restored.npcs.all().size(), 0)
+
+
+func test_a_version_18_villager_is_given_a_background_from_the_tables() -> void:
+	var game := _current_game()
+	var npc := Npc.create(42, Vector2.ZERO, NpcRules.default_rules()).to_dict()
+	for key in ["id", "age", "trade", "personality", "background", "habits"]:
+		npc.erase(key)
+	game["npcs"] = [JSON.parse_string(JSON.stringify(npc))]
+	_write_save(18, game)
+
+	var loaded := SaveFile.read(SAVE_PATH).npcs.all()[0]
+
+	assert_eq(loaded.id, "")
+	assert_between(loaded.age, 18, 70)
+	assert_false(loaded.trade.is_empty())
+	assert_false(loaded.background.is_empty())
