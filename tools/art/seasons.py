@@ -400,12 +400,11 @@ _KNICK_HAWS = {"soil_light", "soil_mid"}
 
 
 # The pollard willow's silver-green leaves: fresh in spring, yellow in autumn. In winter it is
-# drawn again, bare (see generate.py).
-_WILLOW_SPRING = {
-    "frost": "spring_pale", "dry_light": "spring_light", "dry": "spring", "olive": "spring_dark",
-    "green_dark": "spring_dark",
-}
-_WILLOW_AUTUMN = {"frost": "gold", "dry_light": "ochre", "dry": "ochre_dark", "olive": "umber", "green_dark": "umber"}
+# drawn again, bare (see generate.py), with a little snow on its head (_WINTER_LOOKS).
+# Its rods and the dark leaves low in the crown stay darker than the grass, so the crown sits on
+# the head and not apart from it.
+_WILLOW_SPRING = {"frost": "spring_pale", "dry_light": "spring_light", "dry": "spring"}
+_WILLOW_AUTUMN = {"frost": "ochre", "dry_light": "ochre_dark", "dry": "reed", "olive": "umber", "green_dark": "umber"}
 
 
 def _dot(canvas, rng, surfaces, count, colour):
@@ -463,6 +462,8 @@ _WINTER_LOOKS = {
         "snow_remap": _SNOW_BEDROLL,
     },
     "fireplace": {},
+    # The willow is drawn again for winter (see generate.py); a little snow lies on its head.
+    "willow": {"snow": ({"sand", "mud"}, set(), 2)},
     "knick": {"bare": _KNICK_TWIGS, "frost": _KNICK_FROST, "specks": {"mud", "soil_mid"}, "snow": _KNICK_SNOW},
     "wattle_fence": {
         "frost_only": _FROST_STONE,
@@ -530,8 +531,11 @@ def _winter_object(look, kind, variant, canvas, redraw, rng, centre):
     """An object without leaves: bare, rimed with frost, under snow or under a dusting (frost
     with a thin snow cap)."""
     if kind in redraw:
-        return redraw[kind](variant)
-    if kind not in _WINTER_LOOKS:
+        # A redrawn kind gets the frost and snow of _WINTER_LOOKS too, if it has an entry there.
+        canvas = redraw[kind](variant)
+        if kind not in _WINTER_LOOKS:
+            return canvas
+    elif kind not in _WINTER_LOOKS:
         raise KeyError(f"no winter look for the object kind {kind!r}: add it to seasons._WINTER_LOOKS")
     winter = _WINTER_LOOKS[kind]
     is_frosty = look in ("frost", "dusting")

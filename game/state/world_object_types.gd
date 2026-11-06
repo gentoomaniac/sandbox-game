@@ -236,7 +236,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": _WILLOW_ROW,
-		"sprite_height": 62,
+		"sprite_height": 54,
 		"variants": 3,
 	},
 	# The beech of the woods: smooth grey bark, a dense dome of a crown.

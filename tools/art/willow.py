@@ -1,7 +1,7 @@
-"""Art for the pollard willow of the marsh ditches (Kopfweide): a short, thick, furrowed trunk cut
-back to a knobbly head at about the height of a man, from which a crown of straight rods springs
-every year. In summer the rods carry narrow silver-green leaves; in winter they stand bare, golden
-and orange-brown, which is the willow's look of the marsh in winter.
+"""Art for the pollard willow of the marsh ditches (Kopfweide): a short, gnarled, furrowed trunk
+about a tile high, cut back every few years to a knobbly head wider than the trunk, from which a
+dense crown of thin straight rods springs. In summer the rods carry narrow silver-green leaves,
+a loose and light crown; in winter they stand bare, a muted yellow-olive with a few brighter tips.
 
 Each picture is an object cell (48x80, see canvas.py) with its foot at the bottom centre, in
 palette colour names. generate.py calls `willow_row` and draws the winter looks with
@@ -11,91 +11,153 @@ palette colour names. generate.py calls `willow_row` and draws the winter looks 
 import math
 import random
 
-from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank
-from trees import ground_shadow, outline_in_bark, shaded_blob, tree_trunk
+from canvas import NEIGHBOURS, OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank
+from trees import ground_shadow, tree_trunk
 
 WILLOW_SEEDS = (321, 322, 323)
-# Grey-brown, deeply furrowed bark, lit to dark.
-BARK = ("bare_light", "bare", "mud_dark", "soil_dark")
+# Grey-brown, deeply furrowed bark, lit to dark; the darkest also outlines it.
+BARK = ("bare_light", "bare_light", "bare", "soil_dark")
+# The furrows in it.
+FURROW = "mud_dark"
+# The knobs of the head, where the rods were cut again and again: warmer than the trunk, so the
+# head reads as wood and not as a stone.
+KNOBS = ("sand", "mud", "mud_dark")
 # The narrow grey-green leaves, lit to dark, and their silvery undersides, which the wind shows.
 # seasons.py turns them for spring and autumn.
 LEAVES = ("dry_light", "dry", "olive", "green_dark")
 SILVER = "frost"
-# The rods in winter: golden at their tips, orange-brown low down.
-RODS = ("ochre", "ochre_dark", "umber")
-# Where the head sits: the top of the trunk, the rods spring from around it.
-HEAD_Y = 56
-TRUNK_WIDTH = 9
+# The rods in winter: brown at their foot, yellow-olive along them, a few brighter tips.
+RODS = ("umber", "reed", "straw")
+# The top of the trunk; the head sits on it and the rods spring from the head.
+HEAD_Y = 62
+TRUNK_WIDTH = 10
 
 
 def _trunk_and_head(canvas, rng):
-    """The trunk and the knobbly head it was cut back to."""
-    ground_shadow(canvas, 12)
+    """The gnarled trunk and the knobbly head it was cut back to. Returns the points on top of the
+    head the rods spring from."""
+    ground_shadow(canvas, 11)
     tree_trunk(canvas, rng, HEAD_Y, TRUNK_WIDTH, BARK)
-    # Deep furrows running up the trunk.
-    for x in range(OBJECT_CENTRE - TRUNK_WIDTH // 2 + 2, OBJECT_CENTRE + TRUNK_WIDTH // 2 - 1, 2):
-        start = rng.randint(HEAD_Y + 2, HEAD_Y + 8)
-        for y in range(start, OBJECT_BOTTOM - rng.randint(1, 4)):
-            canvas[y][x] = BARK[2]
-    blobs = [
-        (OBJECT_CENTRE + rng.uniform(-0.5, 0.5), HEAD_Y - 1, 6.5),
-        (OBJECT_CENTRE - 5, HEAD_Y, 3.5 + rng.uniform(0, 1)),
-        (OBJECT_CENTRE + 5, HEAD_Y + 1, 3.5 + rng.uniform(0, 1)),
-    ]
-    shaded_blob(canvas, rng, blobs, BARK[:3], BARK[3])
+    left = OBJECT_CENTRE - TRUNK_WIDTH // 2
+    # Deep furrows that wander up the trunk, and a dark hollow where a limb rotted out.
+    for x in range(left + 2, left + TRUNK_WIDTH - 1, 3):
+        for y in range(HEAD_Y + rng.randint(1, 4), OBJECT_BOTTOM - rng.randint(1, 3)):
+            if rng.random() < 0.2:
+                x += rng.choice((-1, 1)) if left < x < left + TRUNK_WIDTH - 2 else 0
+            canvas[y][x] = FURROW if rng.random() < 0.8 else BARK[3]
+    hollow_y = rng.randint(HEAD_Y + 5, HEAD_Y + 9)
+    hollow_x = left + rng.randint(2, TRUNK_WIDTH - 4)
+    canvas[hollow_y][hollow_x] = canvas[hollow_y + 1][hollow_x] = canvas[hollow_y][hollow_x + 1] = BARK[3]
+    # The trunk flares out into the head over its top rows.
+    for y in range(HEAD_Y, HEAD_Y + 5):
+        flare = (HEAD_Y + 5 - y) // 2
+        for x in range(left - flare, left + TRUNK_WIDTH + flare):
+            if canvas[y][x] is None:
+                canvas[y][x] = BARK[1] if x < OBJECT_CENTRE else BARK[2]
+    # The head: a cluster of small knobs, where the rods were cut back again and again, each lit
+    # on its upper left; the lower ones are drawn first, so those above overlap them.
+    head = set()
+    knobs = []
+    for _ in range(11):
+        angle = rng.uniform(0, 2 * math.pi)
+        distance = math.sqrt(rng.uniform(0, 1))
+        cx = OBJECT_CENTRE + math.cos(angle) * 6 * distance
+        cy = HEAD_Y - 1 + math.sin(angle) * 2.5 * distance
+        knobs.append((cx, cy, rng.uniform(1.8, 2.8)))
+    for cx, cy, radius in sorted(knobs, key=lambda knob: -knob[1]):
+        for y in range(math.floor(cy - radius), math.ceil(cy + radius) + 1):
+            for x in range(math.floor(cx - radius), math.ceil(cx + radius) + 1):
+                dx, dy = x + 0.5 - cx, y + 0.5 - cy
+                if dx * dx + dy * dy > radius * radius:
+                    continue
+                light = (dx * 0.7 + dy * 0.8) / radius
+                canvas[y][x] = KNOBS[0] if light < -0.5 else KNOBS[1] if light < 0.3 else KNOBS[2]
+                head.add((x, y))
+    # Bark over the head too: short dark furrows running down between the knobs.
+    for x, y in rng.sample(sorted(head), 10):
+        for step in range(rng.randint(2, 4)):
+            if canvas[y + step][x] in KNOBS[1:]:
+                canvas[y + step][x] = FURROW
+    for x, y in head:
+        if any((x + dx, y + dy) not in head and canvas[y + dy][x + dx] is None for dx, dy in NEIGHBOURS):
+            canvas[y][x] = BARK[3]
+    for x, y in rng.sample(sorted(head), 6):
+        if canvas[y][x] == KNOBS[1]:
+            canvas[y][x] = BARK[3]
+    tops = {}
+    for x, y in head:
+        tops[x] = min(y, tops.get(x, y))
+    return sorted(tops.items())
 
 
-def _rods(rng, count):
-    """The rods springing from the head, as lists of (x, y) from their foot up: straight, fanning
-    out, the outer ones leaning further."""
+def _rods(rng, feet, count):
+    """The rods springing from the top of the head, as lists of (x, y) from their foot up:
+    straight, 1 px wide, fanning upwards and a little outwards, of mixed lengths."""
     rods = []
     for index in range(count):
         spread = (index + rng.uniform(0, 1)) / count * 2 - 1
-        foot_x = OBJECT_CENTRE + spread * 5
-        angle = spread * math.radians(38) + rng.uniform(-0.08, 0.08)
-        length = rng.uniform(22, 30) * (1 - 0.25 * abs(spread))
-        rods.append([
-            (round(foot_x + math.sin(angle) * step), round(HEAD_Y - 4 - math.cos(angle) * step))
-            for step in range(round(length))
-        ])
+        foot_x, foot_y = feet[min(len(feet) - 1, max(0, round((spread + 1) / 2 * (len(feet) - 1))))]
+        angle = spread * math.radians(36) + rng.uniform(-0.1, 0.1)
+        length = rng.uniform(12, 34) * (1 - 0.3 * abs(spread))
+        rod = []
+        for step in range(1, round(length)):
+            point = (round(foot_x + math.sin(angle) * step), round(foot_y - math.cos(angle) * step))
+            if not rod or point != rod[-1]:
+                rod.append(point)
+        rods.append(rod)
     return rods
+
+
+def _rod_count(seed):
+    return 30 + seed % 3 * 4
 
 
 def bare_willow(seed):
     """The willow in winter: the same trunk and head, the rods bare."""
     rng = random.Random(seed)
     canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
-    _trunk_and_head(canvas, rng)
-    for rod in _rods(rng, 15 + seed % 3 * 2):
+    feet = _trunk_and_head(canvas, rng)
+    for rod in _rods(rng, feet, _rod_count(seed)):
+        bright = rng.random() < 0.25
         for step, (x, y) in enumerate(rod):
-            canvas[y][x] = RODS[2] if step < 4 else RODS[1] if step < len(rod) * 0.6 else RODS[0]
-    outline_in_bark(canvas, BARK[3])
+            if step < 2:
+                colour = RODS[0]
+            elif bright and step >= len(rod) - 3:
+                colour = RODS[2]
+            else:
+                colour = RODS[1]
+            if canvas[y][x] is None or canvas[y][x] in RODS:
+                canvas[y][x] = colour
     return canvas
 
 
 def willow(seed):
-    """The willow in leaf: a round, airy crown of leafy rods over the head, a few rods sticking
-    out of it at the top."""
+    """The willow in leaf: the same rods, each with narrow leaves along it, silvery on the lit
+    side, so the crown is loose and light, the rods showing through."""
     rng = random.Random(seed)
     canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
-    _trunk_and_head(canvas, rng)
-    rods = _rods(rng, 15 + seed % 3 * 2)
-    blobs = [(OBJECT_CENTRE + rng.uniform(-1, 1), 38 + rng.uniform(-1, 1), 12 + rng.uniform(0, 1.5))]
-    for cx, cy, radius in ((13, 44, 7), (35, 44, 7), (18, 30, 7.5), (30, 30, 7.5), (24, 25, 6)):
-        blobs.append((cx + rng.uniform(-1.5, 1.5), cy + rng.uniform(-1.5, 1.5), radius + rng.uniform(-1, 1)))
-    shaded_blob(canvas, rng, blobs, LEAVES, "green_deep")
-    # Narrow leaves along the rods: short light strokes, silvery on the lit side, so the crown
-    # reads as many thin rods.
+    feet = _trunk_and_head(canvas, rng)
+    rods = _rods(rng, feet, _rod_count(seed))
     for rod in rods:
-        for x, y in (point for point in rod[6:] if rng.random() < 0.3):
-            if canvas[y][x] in LEAVES[1:]:
-                canvas[y][x] = SILVER if x < OBJECT_CENTRE else LEAVES[0]
-                if canvas[y - 1][x] in LEAVES:
-                    canvas[y - 1][x] = LEAVES[0]
-        # The tips of the longest rods show above the crown.
-        for x, y in rod[-3:]:
+        for x, y in rod:
             if canvas[y][x] is None:
                 canvas[y][x] = LEAVES[2]
+    for rod in rods:
+        for step, (x, y) in enumerate(rod):
+            if step < 3 or rng.random() < 0.2:
+                continue
+            # Narrow leaves slant up and out from the rod to either side: silvery and light on
+            # the lit left and at the top, grey-green on the right, dark low in the crown.
+            for side in (-1, 1):
+                for leaf_x, leaf_y in ((x + side, y), (x + 2 * side, y - 1)):
+                    if not 0 <= leaf_x < OBJECT_CELL_WIDTH or canvas[leaf_y][leaf_x] not in (None, LEAVES[2]):
+                        continue
+                    if step < 6:
+                        canvas[leaf_y][leaf_x] = LEAVES[3]
+                    elif leaf_x < OBJECT_CENTRE or step > len(rod) * 0.8:
+                        canvas[leaf_y][leaf_x] = SILVER if rng.random() < 0.25 else LEAVES[0]
+                    else:
+                        canvas[leaf_y][leaf_x] = LEAVES[1] if rng.random() < 0.7 else LEAVES[2]
     return canvas
 
 

@@ -905,7 +905,11 @@ Decided 2026-11-05.
   - **The marsh** (the low land within 36 tiles of the floodplain's edge) and wetland anywhere:
     a boundary is a **ditch**, water terrain, which is how the marsh is drained and fenced. Beside
     the ditches stand **pollard willows** (10 % of the tiles) and reeds (30 %). Ditches block
-    walking like the river (no jumping); their gap is the crossing.
+    walking like the river (no jumping); their gap is the crossing. The willow (redrawn in task
+    56, as the first read as a sheaf of grain on a boulder in winter) is a gnarled grey-brown
+    trunk about a tile high with a knobbly brown head, and a dense crown of 30 to 38 thin rods
+    of mixed lengths: silver-green leaves along them in summer, muted yellow-olive with a few
+    straw tips in winter, a little snow on the head.
   - **Dykes** run on the land side of the floodplain's edge, in stretches picked by a slow noise.
   - **Walking:** Knicks, walls, fences and ditches block it; dykes don't (they are walked on,
     sheep grazed on them). Willows block like the other trees.

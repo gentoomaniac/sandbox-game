@@ -54,7 +54,7 @@ floodplain. Every boundary has a gap or a crossing, so no field is shut in. The 
 Knick down for logs and fibre, the pickaxe takes a wall apart for stone, and willows are
 felled like the other trees.
 
-![The Geest running into the marsh in summer, with Knicks, a wattle fence, ditches and willows; a Knick under snow](docs/screenshots/landscape.png)
+![The Geest running into the marsh, with a Knick, a wood, ditches, reeds and pollard willows, in summer and in the first snow](docs/screenshots/landscape.png)
 
 ### Weather
 
