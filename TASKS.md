@@ -1001,8 +1001,14 @@ in Settings, not the default (the local test LLM stays the default).
   `stop_reason` `refusal` or any error gives a scripted line; server-side fallbacks
   (`anthropic-beta: server-side-fallback-2026-07-01`, `fallbacks: "default"`) on models
   that take them. No redirects, the key never logged, time-out as now.
+- **The model is picked from a list** (the user, 2026-11-06), for both providers: the page
+  asks the endpoint which models it has (`GET <endpoint>/models`: the test LLM lists what
+  `make llm-pull` fetched; Claude's `GET /v1/models` with the key lists the Claude models)
+  and shows them in a drop-down, refreshed when the endpoint or key changes and by a button.
+  When the endpoint can't be asked (down, no key yet), the drop-down shows the saved model
+  and a note, and the name can still be typed.
 - Tests with canned HTTP responses like test_open_ai_chat.gd (success, refusal, error, the
-  headers and body shape); an optional real test only with an env var set. README: how to
+  headers and body shape, both model lists); an optional real test only with an env var set. README: how to
   pick Claude, what it costs per line roughly, that the chat goes to Anthropic.
 
 ## Later (not part of the prototype)
