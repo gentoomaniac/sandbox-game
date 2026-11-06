@@ -55,7 +55,13 @@ Answered questions move into SPEC.md and are removed here.
     the toughest (5 hits, 3 logs), birch the weakest (3 hits, 2 logs). Seeds: beechnut, birch
     catkin, alder cone and willow cutting, each a 25 % drop. Trees in your world stay where they
     are, but the ones you haven't touched may turn into another species. Default: keep.
-11. **Code review** (docs/code-review-2026-11-06.md): its findings became tasks 63-71 and run
+11. **Hearth and furnishing** (task 57): an open hearth under a smoke hood (the jamb stove,
+    Bilegger, is left for a best room later); herringbone red brick floors in the living rooms,
+    beaten clay in byre, barn and shack; Delft tiles only under the hood; a plate rack in the
+    Kate and longhouse; a wall bench only in the Kate (the longhouse has no free wall for it);
+    the Kate's bed is a curtained box bed, the longhouse's an Alkoven cupboard. Old saves get
+    the new floors and wall pieces; your own furniture stays put. Default: keep.
+12. **Code review** (docs/code-review-2026-11-06.md): its findings became tasks 63-71 and run
     one at a time beside the art tasks. Default: go ahead.
 
 ## Questions
