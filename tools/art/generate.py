@@ -67,6 +67,7 @@ import buildings
 import camp
 import character
 import chest
+import coast
 import crafts
 import crop_icons
 import crops
@@ -154,6 +155,7 @@ def standing_outdoors(picture):
 # 42 carved_chest (1)
 # 43 kiln (1)
 # 44 oven (1)
+# 45 ewer (1)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -196,6 +198,7 @@ def object_atlas():
         ("carved_chest", [standing_outdoors(crafts.carved_chest())]),
         ("kiln", [standing_outdoors(crafts.kiln())]),
         ("oven", [standing_outdoors(crafts.oven())]),
+        ("ewer", coast.ewer_row()),
     ]
 
 

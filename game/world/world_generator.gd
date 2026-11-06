@@ -19,7 +19,8 @@ extends RefCounted
 ## foreshore, which nothing grows on: the salt marsh, then the tidal mud cut by tideways that
 ## widen towards the open sea, then the sea. The river runs on through the foreshore, widening.
 ## Out on the salt marsh stands a Warft here and there ([warften]): a dwelling mound with a pond
-## (Fething) on top, ringed by salt marsh, where nobody lives yet.
+## (Fething) on top, ringed by salt marsh, where nobody lives yet. Now and then an Ewer lies on the
+## mud ([ewers]); nothing else stands on the foreshore.
 ##
 ## Deterministic: terrain is a pure function of the seed and the world tile position, and
 ## each generator owns its noise instances, so chunks come out the same in any order and
@@ -175,6 +176,7 @@ const REED_ROLL_SEED_OFFSET := 10
 const DITCH_SIDE_ROLL_SEED_OFFSET := 12
 const TIDEWAY_START_ROLL_SEED_OFFSET := 16
 const WARFT_ROLL_SEED_OFFSET := 17
+const EWER_ROLL_SEED_OFFSET := 18
 
 var _river_noise := FastNoiseLite.new()
 var _wetland_noise := FastNoiseLite.new()
@@ -194,6 +196,7 @@ var _reed_roll_seed: int
 var _ditch_side_roll_seed: int
 var _tideway_start_roll_seed: int
 var _warft_roll_seed: int
+var _ewer_roll_seed: int
 var _fields: FieldLayout
 ## The numbers of data/landscape.cfg (see there).
 var _marsh_reach: float
@@ -212,6 +215,10 @@ var _tideway_widest: float
 var _warft_spacing: float
 var _warft_chance: float
 var _warft_out: float
+var _ewer_spacing: float
+var _ewer_chance: float
+var _ewer_out_from: float
+var _ewer_out_to: float
 
 
 func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void:
@@ -243,6 +250,7 @@ func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void
 	_ditch_side_roll_seed = world_seed + DITCH_SIDE_ROLL_SEED_OFFSET
 	_tideway_start_roll_seed = world_seed + TIDEWAY_START_ROLL_SEED_OFFSET
 	_warft_roll_seed = world_seed + WARFT_ROLL_SEED_OFFSET
+	_ewer_roll_seed = world_seed + EWER_ROLL_SEED_OFFSET
 	_fields = FieldLayout.new(world_seed, landscape)
 	_marsh_reach = landscape.value("marsh", "reach")
 	_dyke_above = landscape.value("dykes", "stretch_above")
@@ -260,6 +268,10 @@ func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void
 	_warft_spacing = landscape.value("warften", "spacing")
 	_warft_chance = landscape.value("warften", "chance")
 	_warft_out = landscape.value("warften", "out")
+	_ewer_spacing = landscape.value("ewers", "spacing")
+	_ewer_chance = landscape.value("ewers", "chance")
+	_ewer_out_from = landscape.value("ewers", "out_from")
+	_ewer_out_to = landscape.value("ewers", "out_to")
 
 
 ## The chunk at `chunk_coords`, or null if it is outside the world bounds.
@@ -382,6 +394,23 @@ func _warft_middle(y: int) -> Vector2:
 	return middle
 
 
+## Where the Ewer of the band of rows of `y` lies (one band every `spacing` rows, of which `chance`
+## have one; the tile of its bow end), from `out_from` to `out_to` tiles seaward of the coast line,
+## or Vector2i.MAX if it has none: also where its 3 tiles are not all mud.
+func _ewer_at(y: int) -> Vector2i:
+	var band := floori(y / _ewer_spacing)
+	if _roll(Vector2i(band, 0), _ewer_roll_seed) >= _ewer_chance:
+		return Vector2i.MAX
+	var row := floori((band + _roll(Vector2i(band, 1), _ewer_roll_seed)) * _ewer_spacing)
+	var out := lerpf(_ewer_out_from, _ewer_out_to, _roll(Vector2i(band, 2), _ewer_roll_seed))
+	var bow := Vector2i(floori(_coast_line_x(row) - out), row)
+	var footprint: Vector2i = WorldObjectTypes.TYPES[WorldObjectTypes.EWER]["footprint"]
+	for x in footprint.x:
+		if _natural_terrain_at(bow + Vector2i(x, 0)) != Tile.Terrain.MUD:
+			return Vector2i.MAX
+	return bow
+
+
 ## Whether a tile of the mud, `out` tiles from the salt marsh, lies in a tideway. Tideway k winds
 ## along the middle of the band of rows from k * spacing on, and the bands are wide enough for it
 ## (see LandscapeRules), so only the tideway of the tile's own band can reach it. Some start a
@@ -470,6 +499,8 @@ func object_type_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
 func _object_type_from(
 	world_pos: Vector2i, terrain: Tile.Terrain, river_distance: float
 ) -> StringName:
+	if terrain == Tile.Terrain.MUD:
+		return WorldObjectTypes.EWER if world_pos == _ewer_at(world_pos.y) else &""
 	if _is_dyke(world_pos, terrain, river_distance):
 		return WorldObjectTypes.DYKE
 	var boundary := _fields.boundary_at(world_pos)

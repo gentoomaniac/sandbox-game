@@ -111,6 +111,8 @@ const WORKBENCH := &"workbench"
 const CARVED_CHEST := &"carved_chest"
 const KILN := &"kiln"
 const OVEN := &"oven"
+## A flat-bottomed sailing barge of the Wadden coast, lying on the mud (task 61): only to look at.
+const EWER := &"ewer"
 ## The woodworker's master piece (task 74): it stands only in a house.
 const CUPBOARD := &"cupboard"
 
@@ -120,7 +122,7 @@ const FRUIT := &"fruit"
 
 ## The largest footprint any type has, in tiles: what World looks back over to find the
 ## object that covers a tile.
-const MAX_FOOTPRINT := Vector2i(2, 2)
+const MAX_FOOTPRINT := Vector2i(3, 2)
 
 ## The atlas rows of the long trunks; the short one is the row after each. They follow the order
 ## in which tools/art/generate.py lays out the object atlas (assets/objects_rows.txt, checked by a
@@ -151,6 +153,7 @@ const _WORKBENCH_ROW := 41
 const _CARVED_CHEST_ROW := 42
 const _KILN_ROW := 43
 const _OVEN_ROW := 44
+const _EWER_ROW := 45
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -555,6 +558,14 @@ const _OTHER_TYPES := {
 		"atlas_row": _OVEN_ROW,
 		"variants": 1,
 		"interior_sprite": "res://assets/interior/oven.png",
+	},
+	EWER:
+	{
+		"footprint": Vector2i(3, 1),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"atlas_row": _EWER_ROW,
+		"variants": 1,
 	},
 	WORKBENCH:
 	{

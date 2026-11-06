@@ -15,6 +15,7 @@ const REQUIRED_KEYS := {
 	"coast": ["line_x", "wander", "salt_marsh_width", "salt_marsh_wander", "flats_width"],
 	"tideways": ["spacing", "meander", "widening", "widest"],
 	"warften": ["spacing", "chance", "out"],
+	"ewers": ["spacing", "chance", "out_from", "out_to"],
 }
 ## A field must leave room for a gap that is not at either end of a boundary, with a tile
 ## beside it on both sides that is not on another boundary.

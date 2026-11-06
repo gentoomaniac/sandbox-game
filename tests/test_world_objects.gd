@@ -73,6 +73,8 @@ func test_every_natural_object_type_is_generated() -> void:
 		)
 		if is_made_by_play or type_data.has("growth_stages") or type_data.has("interior_sprite"):
 			continue
+		if object_type == WorldObjectTypes.EWER:
+			continue  # It lies on the mud of the coast, far from here (see test_coast.gd).
 		assert_true(types.has(object_type), "Missing object type %s" % object_type)
 
 
