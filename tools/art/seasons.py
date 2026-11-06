@@ -152,6 +152,10 @@ GROUND_REMAPS = {
 # What decoration tufts and plants turn into: dry stalks from the bare look on.
 STANDING = {"bare": WINTER_STALKS, "frost": _FROST_STALKS, "snow": WINTER_STALKS, "dusting": _FROST_STALKS}
 
+# Snow on a desire path is trodden: the game draws the trodden grass in its snow look over the
+# snow, and its bare earth shows as blue-grey footprints.
+_TRODDEN_SNOW = {"mud": "snow_shadow", "mud_dark": "snow_shadow"}
+
 _SHADOW_REMAPS = {
     "spring": "green_deep", "summer": "green_deep", "autumn": "green_deep",
     "bare": "mud_dark", "frost": "mud_dark", "snow": "snow_shadow", "dusting": "mud_dark",
@@ -314,14 +318,15 @@ def dust(tile, rng):
 
 def terrain_rows(look, rows):
     """The terrain rows in a look. A frost gets a sprinkle of rime, a dusting is the snow thinned
-    out; the rest is `ground_rows`."""
+    out; the rest is `ground_rows`. Under snow, the bare patches of trodden grass are footprints
+    (see `_TRODDEN_SNOW`)."""
     if look == "dusting":
         snowy = ground_rows("snow", rows)
         return [snowy[0]] + [
             [dust(tile, random.Random(f"dust-{r}-{c}")) for c, tile in enumerate(row)]
             for r, row in enumerate(snowy[1:])
         ]
-    result = ground_rows(look, rows)
+    result = ground_rows(look, rows, _TRODDEN_SNOW if look == "snow" else None)
     if look == "frost":
         for r, row in enumerate(result[1:]):
             for c, tile in enumerate(row):

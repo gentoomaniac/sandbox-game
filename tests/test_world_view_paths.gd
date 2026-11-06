@@ -7,6 +7,7 @@ const CHUNK := Vector2i(-1, -1)
 const SUMMER := 45
 ## Deep in autumn, when every tile has its autumn look.
 const AUTUMN := 75
+const WINTER := 105
 
 var _view: WorldView
 var _rules := PathRules.default_rules()
@@ -84,4 +85,19 @@ func test_a_path_has_its_own_look_in_autumn() -> void:
 	)]
 	assert_eq(
 		overlay.get_cell_atlas_coords(tile).y, TerrainTileset.Layer.PATH, "drawn from the path row"
+	)
+
+
+func test_snow_covers_a_path_and_shows_a_trodden_track() -> void:
+	var tile := _flower_tile()
+	_wear(tile, _rules.path_from())
+	_view.world.clock.day = WINTER
+	_view.refresh_looks(WINTER, 1.0, 0.0)
+	_view.finish_refresh()
+	assert_eq(TerrainTileset.weather_of(_view._code_at(tile)), SeasonBlend.Look.SNOW)
+	assert_ne(_view._overlays[SeasonBlend.Look.SNOW].get_cell_source_id(tile), -1, "snow on it")
+	assert_eq(
+		_view._snow_track.get_cell_atlas_coords(tile).y,
+		TerrainTileset.Layer.TRODDEN,
+		"the track: trodden snow"
 	)

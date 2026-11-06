@@ -117,6 +117,8 @@ var _overlays: Dictionary[SeasonBlend.Look, TileMapLayer] = {}
 ## Vector2i(look, layer). They stack like the terrain layers they follow, so each keeps its own
 ## edges.
 var _variety_overlays: Dictionary[Vector2i, TileMapLayer] = {}
+## Over the snow: the snow of the desire paths, trodden (see `_draw_overlays`).
+var _snow_track: TileMapLayer
 ## What each object cell was last drawn as, by tile: its look, plus BARE_OF_FRUIT_FLAG if it
 ## showed as bare of fruit, or DORMANT if it was not drawn.
 var _object_states: Dictionary[Vector2i, int] = {}
@@ -153,6 +155,7 @@ func _ready() -> void:
 			_variety_overlays[Vector2i(look, layer)] = _add_overlay(
 				"%s%sLook" % [look_name, layer_name]
 			)
+	_snow_track = _add_overlay("SnowTrackLook")
 	add_child(decorations)
 	add_child(RainSplashes.new(ambient_motion))
 	_objects.name = "Objects"
@@ -489,7 +492,7 @@ func _unload_chunk(coords: Vector2i) -> void:
 	var origin := Chunk.to_world(coords, Vector2i.ZERO)
 	_chunk_looks.erase(coords)
 	_refresh_queue.erase(coords)
-	var overlays := _overlays.values() + _variety_overlays.values()
+	var overlays := _overlays.values() + _variety_overlays.values() + [_snow_track]
 	for y in Chunk.CHUNK_SIZE:
 		for x in Chunk.CHUNK_SIZE:
 			for tile_map in _layers:
@@ -543,7 +546,8 @@ func _draw_cell_corners(cell: Vector2i, codes: PackedInt32Array) -> void:
 ## over it with its own mask, so their edges stay soft instead of filling the whole cell. Where
 ## a layer has the same mask as the one above it, only the one above is drawn, since both edges
 ## together would show as a fringe. Snow and frost lie over the season's look, so a tile under
-## them still counts for that; snow and its dusting are drawn as ordinary grass.
+## them still counts for that; snow and its dusting are drawn as ordinary grass, and on the
+## desire paths the snow is trodden: their trodden grass in its snow look lies over it.
 func _draw_overlays(cell: Vector2i, codes: PackedInt32Array) -> void:
 	var corners := TerrainTileset.layers_of(codes)
 	var shown_seasons := PackedInt32Array()
@@ -566,6 +570,11 @@ func _draw_overlays(cell: Vector2i, codes: PackedInt32Array) -> void:
 			_set_overlay_cell(
 				_overlays[look], look, TerrainTileset.Layer.GRASS, ordinary_mask, cell
 			)
+			if look == SeasonBlend.Look.SNOW:
+				var track_mask := _overlay_mask(
+					look, shown, corners, TerrainTileset.Layer.TRODDEN, TerrainTileset.Layer.PATH
+				)
+				_set_overlay_cell(_snow_track, look, TerrainTileset.Layer.TRODDEN, track_mask, cell)
 			continue
 		if ordinary_mask == 0:
 			_overlays[look].erase_cell(cell)
