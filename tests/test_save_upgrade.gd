@@ -121,3 +121,25 @@ func test_a_version_6_save_loads_with_its_tomatoes_as_flax() -> void:
 			objects[edit["object"]["type"]] = edit["object"]
 	assert_true(objects.has("flax"), "the planted tomatoes are flax")
 	assert_eq(objects["chest"]["storage"][0], {"item": "flax", "count": 3})
+
+
+func test_a_version_6_save_turns_the_tomatoes_inside_a_building_into_flax() -> void:
+	var state := GameState.new_game(7)
+	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
+	var crop := WorldObject.new(&"flax", Vector2i(1, 1)).to_dict()
+	crop["type"] = "tomatoes"
+	crop["state"]["growth"] = 5.0
+	var chest := WorldObject.new(WorldObjectTypes.CHEST, Vector2i(2, 1)).to_dict()
+	chest["storage"][0] = {"item": "tomatoes_seeds", "count": 6}
+	var interior := {"size": [4, 4], "exit_tile": [1, 3], "tiles": [], "objects": [crop, chest]}
+	game["world"]["buildings"].append({"type": "kate", "origin": [200, 200], "interior": interior})
+	_write_save(6, game)
+
+	var restored := SaveFile.read(SAVE_PATH)
+
+	var inside := restored.world.building_at(Vector2i(200, 200)).interior
+	assert_eq(inside.object_at(Vector2i(1, 1)).type, &"flax")
+	assert_eq(inside.object_at(Vector2i(1, 1)).state["growth"], 5.0, "keeps its growth")
+	assert_eq(
+		inside.object_at(Vector2i(2, 1)).storage.slots[0], {"item": &"flax_seeds", "count": 6}
+	)
