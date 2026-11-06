@@ -38,6 +38,7 @@ const COMMANDS := {
 		"crop",
 		"Show the growth, damage and needs of the crop in front of you or the nearest one.",
 	],
+	"skill": ["skill <skill> <points>", "Set a skill's points (0 to 100)."],
 }
 ## The kind of each argument a command takes, in order, for Tab completion (see candidates).
 ## Numbers have no candidates; commands not listed take no arguments. `help <command>` and a
@@ -49,6 +50,7 @@ const ARGUMENTS := {
 	"spawn": [&"animal", &"number"],
 	"weather": [&"weather"],
 	"snow": [&"snow"],
+	"skill": [&"skill", &"number"],
 }
 ## The argument kinds whose candidates `_candidates_text` lists: the names a command takes. Items
 ## are too many to list (Tab completes them) and the other kinds are numbers.
@@ -119,6 +121,8 @@ func run(line: String) -> Array[String]:
 			output = _skip(arguments)
 		"crop":
 			output = _crop()
+		"skill":
+			output = _skill(arguments)
 		_:
 			output = ["Unknown command: %s (try help)" % words[0]]
 	return output
@@ -162,6 +166,9 @@ func candidates(kind: StringName) -> Array[String]:
 			values.append("auto")
 		&"snow":
 			values.assign(SNOW_CANDIDATES)
+		&"skill":
+			for skill in _state.player.skills.rules.skill_ids():
+				values.append(String(skill))
 	return values
 
 
@@ -247,6 +254,17 @@ func _give(arguments: PackedStringArray) -> Array[String]:
 	if left > 0:
 		lines.append("Inventory full: %d not added" % left)
 	return lines
+
+
+func _skill(arguments: PackedStringArray) -> Array[String]:
+	if arguments.size() != 2 or not arguments[1].is_valid_float():
+		return ["Usage: %s" % COMMANDS["skill"][0]]
+	var skills := _state.player.skills
+	var skill := StringName(arguments[0])
+	if not skills.rules.has_skill(skill):
+		return ["Unknown skill: %s" % arguments[0]]
+	skills.set_points(skill, float(arguments[1]))
+	return ["%s is %s" % [skills.rules.skill_name(skill), skills.points(skill)]]
 
 
 func _spawn(arguments: PackedStringArray) -> Array[String]:

@@ -32,6 +32,8 @@ var bed_lying_in: WorldObject
 var energy := MAX_ENERGY
 var health := MAX_HEALTH
 var is_debuffed := false
+## What they are good at (see Skills).
+var skills := Skills.new()
 
 ## What they carry; the selected hotbar slot is what they hold.
 var inventory := Inventory.new()
@@ -149,6 +151,7 @@ func to_dict() -> Dictionary:
 		"energy": energy,
 		"health": health,
 		"is_debuffed": is_debuffed,
+		"skills": skills.to_dict(),
 	}
 
 
@@ -165,6 +168,7 @@ static func from_dict(data: Dictionary, home_map: GameMap) -> PlayerState:
 	player.energy = data["energy"]
 	player.health = data["health"]
 	player.is_debuffed = data["is_debuffed"]
+	player.skills = Skills.from_dict(data["skills"])
 	return player
 
 
