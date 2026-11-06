@@ -28,6 +28,7 @@ func _init(source_tile: Vector2i, landing_spot: Vector2, wait: float) -> void:
 	delay = wait
 
 
+## Moves the hop on by `delta` seconds; from then on it is no longer `just_dropped`.
 func advance(delta: float) -> void:
 	elapsed += delta
 	just_dropped = false
