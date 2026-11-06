@@ -37,6 +37,9 @@ const REQUIRED_KEYS := {
 	"deer": ["idle_chance"],
 	"rabbit": ["idle_chance"],
 	"squirrel": ["idle_chance"],
+	"cow": ["idle_chance"],
+	"sheep": ["idle_chance"],
+	"chicken": ["idle_chance"],
 	"bees": ["max_loops", "level", "hear_tiles"],
 }
 const SEASON_COUNT := 4
@@ -150,8 +153,8 @@ func frog_chance(
 	return value("frogs", "croak_chance") * _activity("frogs", season, phase) * warmth * nearness
 
 
-## The chance per second that an animal of a kind (`deer`, `rabbit`, `squirrel`) makes a sound
-## of its own accord.
+## The chance per second that an animal of a kind (`deer`, `rabbit`, `squirrel`, and the farm
+## animals `cow`, `sheep`, `chicken`) makes a sound of its own accord.
 func idle_chance(kind: StringName) -> float:
 	return value(String(kind), "idle_chance")
 

@@ -14,7 +14,7 @@ extends Node
 ## command); those are never sent away for the weather or the hour, and `is_player_ignored`
 ## makes every animal take no notice of the player (`--wildlife-calm`).
 
-## An animal came into being (see `_add`).
+## An animal came into view: a wild one (see `_add`) or a farm animal (`_show_farm_animal_if_near`).
 signal animal_added(animal: Animal)
 
 ## Tries to find a place for one animal before giving up until the next second.
@@ -285,6 +285,7 @@ func _show_farm_animal_if_near(animal: FarmAnimal) -> void:
 	var animal_view := FarmAnimalView.new(animal)
 	_farm_animals[animal] = animal_view
 	world_view.entities.add_child(animal_view)
+	animal_added.emit(animal_view)
 
 
 ## Shows the farm animals that came near the view, and takes away those far from it.

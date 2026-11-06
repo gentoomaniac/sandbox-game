@@ -1,4 +1,5 @@
-"""Animal sounds: birds, frogs, deer, rabbits, squirrels and bees (see SPEC.md "Sound")."""
+"""Animal sounds: birds, frogs, deer, rabbits, squirrels and bees, and the cows, sheep and hens of
+the livestock (see SPEC.md "Sound")."""
 
 import numpy as np
 
@@ -178,3 +179,52 @@ def bee_buzz_loop(rng):
     wings = noise_band(rng, BEE_LENGTH, 150, 1200, loop=True)
     loudness = 0.8 + 0.2 * np.sin(3 * turns + phases[2])
     return (buzz / rms(buzz) + 0.08 * wings) * loudness
+
+
+def _voice(pitch_curve, length, formants, vibrato=0.0, vibrato_rate=6.0):
+    """A voiced call: a buzzing tone along a pitch curve (start, peak, end in Hz) through the
+    resonances of a mouth (centre Hz, width), swelling in and fading out."""
+    start, peak, end = pitch_curve
+    half = length / 2
+    frequency = np.concatenate([np.linspace(start, peak, len(times(half))), np.linspace(peak, end, len(times(length - half)))])
+    if vibrato:
+        frequency = frequency * (1 + vibrato * np.sin(2 * np.pi * vibrato_rate * np.arange(len(frequency)) / RATE))
+    buzz = tone(frequency, SAW[:20])
+    mouth = sum(gain * resonance(buzz, centre, width) for centre, width, gain in formants)
+    mouth = lowpass(mouth, 2500)
+    shape = np.sin(np.pi * np.clip(times(len(frequency) / RATE) / length, 0, 1)) ** 0.6
+    return fade_out(mouth / rms(mouth) * shape, 0.05)
+
+
+def cow_moo(rng):
+    """A low, closed "mmooo" that rises a little and sinks again."""
+    pitch = rng.uniform(0.9, 1.1)
+    length = rng.uniform(0.9, 1.3)
+    out = silence(length + 0.1)
+    curve = (95 * pitch, 125 * pitch, 85 * pitch)
+    place(out, _voice(curve, length, [(300, 0.6, 1.0), (700, 0.4, 0.4)]), 0.02)
+    return out
+
+
+def sheep_baa(rng):
+    """A bleat: "baa" with the quick wobble of a sheep's voice."""
+    pitch = rng.uniform(0.9, 1.12)
+    length = rng.uniform(0.5, 0.75)
+    out = silence(length + 0.1)
+    curve = (300 * pitch, 340 * pitch, 280 * pitch)
+    voice = _voice(curve, length, [(800, 0.5, 1.0), (1300, 0.4, 0.6)], vibrato=0.04, vibrato_rate=9)
+    tremolo = 0.7 + 0.3 * np.sin(2 * np.pi * 9 * times(len(voice) / RATE))
+    place(out, voice * tremolo, 0.02)
+    return out
+
+
+def chicken_cluck(rng):
+    """A hen going about: two to four short, throaty clucks."""
+    out = silence(0.9)
+    at = 0.02
+    for _ in range(rng.integers(2, 5)):
+        pitch = rng.uniform(0.85, 1.15)
+        length = rng.uniform(0.05, 0.08)
+        place(out, _voice((420 * pitch, 520 * pitch, 380 * pitch), length, [(900, 0.5, 1.0), (1800, 0.4, 0.4)]), at, rng.uniform(0.6, 1.0))
+        at += length + rng.uniform(0.08, 0.16)
+    return out

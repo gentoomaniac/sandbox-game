@@ -17,6 +17,8 @@ var wildlife: WildlifeView
 var is_pinned := false
 ## Gone for good (flown off, hidden behind a tree): the view takes it away.
 var is_done := false
+## Asleep: it makes no sound of its own accord (see AmbienceSounds).
+var is_asleep := false
 var kind: StringName
 ## Half the width of the contact shadow in pixels; 0 for none.
 var shadow_half_width := 3

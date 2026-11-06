@@ -68,8 +68,8 @@ static func use(result: ToolUse.Use, held_tool: StringName) -> StringName:
 	return &""
 
 
-## The sound an animal of a kind (see WildlifeRules) makes now and then while it goes about its
-## day; empty for those that are quiet.
+## The sound an animal of a kind (see WildlifeRules, and LivestockRules for the farm animals) makes
+## now and then while it goes about its day; empty for those that are quiet.
 static func animal_idle(kind: StringName) -> StringName:
 	match kind:
 		WildlifeRules.DEER:
@@ -78,6 +78,12 @@ static func animal_idle(kind: StringName) -> StringName:
 			return &"rabbit_rustle"
 		WildlifeRules.SQUIRREL:
 			return &"squirrel_chatter"
+		LivestockRules.COW:
+			return &"cow_moo"
+		LivestockRules.SHEEP:
+			return &"sheep_baa"
+		LivestockRules.CHICKEN:
+			return &"chicken_cluck"
 	return &""
 
 

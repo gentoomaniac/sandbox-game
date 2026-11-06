@@ -1,7 +1,7 @@
 extends GutTest
 ## The ambience node: the weather loops start and stop with the weather, thunder follows a flash
-## after a delay, and a bee that appears buzzes. The audio service is real; what it plays is
-## recorded.
+## after a delay, a bee that appears buzzes, and a farm animal calls only while it is awake. The
+## audio service is real; what it plays is recorded.
 
 var _state: GameState
 var _audio: AudioService
@@ -98,3 +98,21 @@ func _add_bee(offset_tiles: Vector2) -> Bee:
 	bee.position = (_state.player.position + offset_tiles) * TerrainTileset.TILE_SIZE
 	_ambience._on_animal_added(bee)
 	return bee
+
+
+func test_a_cow_moos_now_and_then_but_not_in_its_sleep() -> void:
+	var cow := FarmAnimal.new(LivestockRules.COW, &"angler", _state.player.position)
+	var cow_view := FarmAnimalView.new(cow)
+	add_child_autofree(cow_view)
+	cow_view._update(0.0)
+	_ambience._on_animal_added(cow_view)
+	for _second in 1000:
+		_ambience._make_animal_sound()
+	assert_true(_events.has(&"cow_moo"))
+
+	_events.clear()
+	cow.activity = FarmAnimal.Activity.SLEEP
+	cow_view._update(0.0)
+	for _second in 1000:
+		_ambience._make_animal_sound()
+	assert_false(_events.has(&"cow_moo"))

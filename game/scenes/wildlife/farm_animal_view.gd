@@ -43,6 +43,7 @@ func _update(_delta: float) -> void:
 	if farm_animal.activity == _activity:
 		return
 	_activity = farm_animal.activity
+	is_asleep = _activity == FarmAnimal.Activity.SLEEP
 	var action: Array = ACTIONS[_activity]
 	_play(action[0], action[1])
 	# Its state (see Animal) is the activity's name: running off is `flee`, as for a wild rabbit.

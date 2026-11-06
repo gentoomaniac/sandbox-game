@@ -2,7 +2,8 @@ class_name AmbienceSounds
 extends Node
 ## The sound of the world around the player: rain and wind as loops that follow the weather (and
 ## swell with gusts), thunder after each flash of lightning, birds, frogs, the sounds of deer,
-## rabbits and squirrels, and bees buzzing where they hover. The chances and levels are
+## rabbits and squirrels, bees buzzing where they hover, and now and then a cow, a sheep or a hen
+## of the livestock (not while it sleeps). The chances and levels are
 ## AmbienceRules'; which event an animal makes is SoundEvents'; playing is AudioService's.
 ##
 ## It is cheap by design: once a second it looks at the weather and rolls the dice for the
@@ -162,6 +163,8 @@ func _make_animal_sound() -> void:
 	if _animals.is_empty():
 		return
 	var animal := _animals[_rng.randi() % _animals.size()]
+	if animal.is_asleep:
+		return
 	var event := SoundEvents.animal_idle(animal.kind)
 	if event != &"" and _rng.randf() < rules.idle_chance(animal.kind) * TICK_SECONDS:
 		_play_at(event, animal.position)

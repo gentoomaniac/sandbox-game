@@ -84,7 +84,7 @@ func test_every_event_made_is_a_known_event() -> void:
 
 
 func test_animal_sounds_are_events_of_the_sound_data() -> void:
-	for kind in WildlifeRules.KINDS:
+	for kind in WildlifeRules.KINDS + LivestockRules.SPECIES:
 		for event in [
 			SoundEvents.animal_idle(kind),
 			SoundEvents.animal_alarm(kind, Deer.BOUND),
@@ -98,6 +98,15 @@ func test_deer_rabbits_and_squirrels_make_sounds_of_their_own() -> void:
 	assert_eq(SoundEvents.animal_idle(WildlifeRules.RABBIT), &"rabbit_rustle")
 	assert_eq(SoundEvents.animal_idle(WildlifeRules.SQUIRREL), &"squirrel_chatter")
 	assert_eq(SoundEvents.animal_idle(WildlifeRules.BIRD), &"", "birds chirp by the ambience")
+
+
+func test_the_farm_animals_moo_baa_and_cluck() -> void:
+	assert_eq(SoundEvents.animal_idle(LivestockRules.COW), &"cow_moo")
+	assert_eq(SoundEvents.animal_idle(LivestockRules.SHEEP), &"sheep_baa")
+	assert_eq(SoundEvents.animal_idle(LivestockRules.CHICKEN), &"chicken_cluck")
+	assert_eq(
+		SoundEvents.animal_idle(LivestockRules.RABBIT), &"rabbit_rustle", "a rabbit is a rabbit"
+	)
 
 
 func test_animals_that_run_make_a_sound_when_they_start() -> void:

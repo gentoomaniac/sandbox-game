@@ -83,6 +83,10 @@ EVENTS = {
     "rabbit_rustle": (-14, [animals.rabbit_rustle] * 3),
     "squirrel_chatter": (-13, [animals.squirrel_chatter] * 3),
     "bee_buzz_loop": (-16, [animals.bee_buzz_loop] * 2),
+    # The farm animals are kept quiet: they are heard often, wherever the player keeps them.
+    "cow_moo": (-20, [animals.cow_moo] * 3),
+    "sheep_baa": (-21, [animals.sheep_baa] * 3),
+    "chicken_cluck": (-22, [animals.chicken_cluck] * 3),
 }
 
 FADE_IN = 0.002
