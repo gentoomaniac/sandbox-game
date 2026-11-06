@@ -38,9 +38,9 @@ const PINE_CONE := &"pine_cone"
 const HAY := &"hay"
 const CLAY := &"clay"
 const REEDS := &"reeds"
-const TUNIC := &"tunic"
+const WAISTCOAT := &"waistcoat"
 const SHIRT := &"shirt"
-const TROUSERS := &"trousers"
+const BREECHES := &"breeches"
 const STRAW_HAT := &"straw_hat"
 const KNITTED_CAP := &"knitted_cap"
 const JACKET := &"jacket"
@@ -213,10 +213,10 @@ const _OTHER_TYPES := {
 		"plants_on": Tile.Terrain.GRASS,
 		"plants_state": {"tree": WorldObjectTypes.PINE},
 	},
-	TUNIC:
+	WAISTCOAT:
 	{
-		"name": "Tunic",
-		"description": "A plain tunic that covers your body.",
+		"name": "Waistcoat",
+		"description": "A red wool waistcoat with tin buttons, over a linen shirt.",
 		"weight": 0.6,
 		"stack_limit": 1,
 		"equip_slot": Equipment.BODY,
@@ -224,17 +224,17 @@ const _OTHER_TYPES := {
 	},
 	SHIRT:
 	{
-		"name": "Shirt",
-		"description": "A light shirt.",
+		"name": "Linen shirt",
+		"description": "A plain linen shirt, cool in the summer sun.",
 		"weight": 0.3,
 		"stack_limit": 1,
 		"equip_slot": Equipment.BODY,
 		"layer_variant": "1",
 	},
-	TROUSERS:
+	BREECHES:
 	{
-		"name": "Trousers",
-		"description": "Simple trousers.",
+		"name": "Breeches",
+		"description": "Brown wool knee breeches, with white knitted stockings.",
 		"weight": 0.5,
 		"stack_limit": 1,
 		"equip_slot": Equipment.LEGS,

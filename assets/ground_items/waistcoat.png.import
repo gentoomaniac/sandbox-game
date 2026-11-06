@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bg38fd542f3io"
-path="res://.godot/imported/tunic.png-94fed962f979b075521c0a1cfffccc36.ctex"
+uid="uid://c84eih3pff46w"
+path="res://.godot/imported/waistcoat.png-bdf36e97ba6c75cf9f21b5453c5d5cba.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/items/tunic.png"
-dest_files=["res://.godot/imported/tunic.png-94fed962f979b075521c0a1cfffccc36.ctex"]
+source_file="res://assets/ground_items/waistcoat.png"
+dest_files=["res://.godot/imported/waistcoat.png-bdf36e97ba6c75cf9f21b5453c5d5cba.ctex"]
 
 [params]
 

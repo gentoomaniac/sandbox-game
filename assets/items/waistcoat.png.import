@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cq3vawt6wp7a4"
-path="res://.godot/imported/trousers.png-e652eacddfe690f2ee5a3d28df0fa493.ctex"
+uid="uid://bhgaalk1jr02u"
+path="res://.godot/imported/waistcoat.png-cce42aef5731cd0a73e7bee037ef5388.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/items/trousers.png"
-dest_files=["res://.godot/imported/trousers.png-e652eacddfe690f2ee5a3d28df0fa493.ctex"]
+source_file="res://assets/items/waistcoat.png"
+dest_files=["res://.godot/imported/waistcoat.png-cce42aef5731cd0a73e7bee037ef5388.ctex"]
 
 [params]
 

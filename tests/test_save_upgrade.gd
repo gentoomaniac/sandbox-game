@@ -228,6 +228,57 @@ func test_a_version_7_crop_that_counted_days_has_that_many_stages_of_growth() ->
 	assert_false(restored_crop.state.has("days_grown"))
 
 
+## A version 8 save: dressed in the tunic and trousers, with bare feet.
+func _version_8_game() -> Dictionary:
+	var game := _current_game()
+	game["player"]["equipment"] = {"body": "tunic", "legs": "trousers"}
+	return game
+
+
+func test_a_version_8_save_loads_with_its_tunic_and_trousers_as_waistcoat_and_breeches() -> void:
+	var game := _version_8_game()
+	game["player"]["inventory"]["slots"][13] = {"item": "trousers", "count": 1}
+	game["world"]["ground_items"].append({"item": "tunic", "count": 1, "position": [3.0, 4.0]})
+	var chest := WorldObject.new(WorldObjectTypes.CHEST, Vector2i(101, 100)).to_dict()
+	chest["storage"][0] = {"item": "tunic", "count": 1}
+	game["world"]["object_edits"].append({"pos": [101, 100], "object": chest})
+	_write_save(8, game)
+
+	var restored := SaveFile.read(SAVE_PATH)
+
+	assert_eq(restored.player.equipment.item_in(Equipment.BODY), ItemTypes.WAISTCOAT)
+	assert_eq(restored.player.equipment.item_in(Equipment.LEGS), ItemTypes.BREECHES)
+	assert_eq(restored.player.inventory.slots[13], {"item": ItemTypes.BREECHES, "count": 1})
+	assert_eq(restored.world.ground_items.count_of(ItemTypes.WAISTCOAT), 1)
+	restored.world.add_chunk(Chunk.new(Vector2i(3, 3)))
+	var storage := restored.world.object_at(Vector2i(101, 100)).storage
+	assert_eq(storage.slots[0], {"item": ItemTypes.WAISTCOAT, "count": 1})
+
+
+func test_a_version_8_save_turns_the_trousers_in_a_chest_inside_a_building_into_breeches() -> void:
+	var game := _version_8_game()
+	var chest := WorldObject.new(WorldObjectTypes.CHEST, Vector2i(2, 1)).to_dict()
+	chest["storage"][0] = {"item": "trousers", "count": 1}
+	var interior := {"size": [4, 4], "exit_tile": [1, 3], "tiles": [], "objects": [chest]}
+	game["world"]["buildings"].append({"type": "kate", "origin": [200, 200], "interior": interior})
+	_write_save(8, game)
+
+	var restored := SaveFile.read(SAVE_PATH)
+
+	var inside := restored.world.building_at(Vector2i(200, 200)).interior
+	assert_eq(
+		inside.object_at(Vector2i(2, 1)).storage.slots[0], {"item": ItemTypes.BREECHES, "count": 1}
+	)
+
+
+func test_a_version_8_save_puts_clogs_on_the_bare_feet() -> void:
+	_write_save(8, _version_8_game())
+
+	var restored := SaveFile.read(SAVE_PATH)
+
+	assert_eq(restored.player.equipment.item_in(Equipment.FEET), ItemTypes.CLOGS)
+
+
 func test_a_current_save_missing_a_field_fails_loudly() -> void:
 	var game := _current_game()
 	game["player"].erase("energy")

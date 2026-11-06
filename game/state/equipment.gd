@@ -29,8 +29,8 @@ var _worn := {}
 ## not a constant: ItemTypes needs this class's slot names for its own constants.)
 static func with_starting_outfit() -> Equipment:
 	var equipment := Equipment.new()
-	equipment.equip(BODY, ItemTypes.TUNIC)
-	equipment.equip(LEGS, ItemTypes.TROUSERS)
+	equipment.equip(BODY, ItemTypes.WAISTCOAT)
+	equipment.equip(LEGS, ItemTypes.BREECHES)
 	equipment.equip(FEET, ItemTypes.CLOGS)
 	return equipment
 

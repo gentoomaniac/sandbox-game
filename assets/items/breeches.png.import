@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dib5yhrernuyv"
-path="res://.godot/imported/trousers.png-6aaf438373346f8b0b2d15299624bce1.ctex"
+uid="uid://c62xu8gidcpuo"
+path="res://.godot/imported/breeches.png-b75ebbcbd8743daeb9c6053bd0b14643.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ground_items/trousers.png"
-dest_files=["res://.godot/imported/trousers.png-6aaf438373346f8b0b2d15299624bce1.ctex"]
+source_file="res://assets/items/breeches.png"
+dest_files=["res://.godot/imported/breeches.png-b75ebbcbd8743daeb9c6053bd0b14643.ctex"]
 
 [params]
 

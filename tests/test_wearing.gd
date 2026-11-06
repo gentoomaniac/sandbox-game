@@ -22,7 +22,7 @@ func test_worn_items_count_toward_the_carried_weight() -> void:
 	player.inventory.add(ItemTypes.LOGS, 2)
 	player.equipment = Equipment.with_starting_outfit()
 	var worn := 0.0
-	for item in [ItemTypes.TUNIC, ItemTypes.TROUSERS, ItemTypes.CLOGS]:
+	for item in [ItemTypes.WAISTCOAT, ItemTypes.BREECHES, ItemTypes.CLOGS]:
 		worn += ItemTypes.TYPES[item]["weight"]
 	assert_almost_eq(player.carried_weight(), 2.0 + worn, 0.0001)
 
@@ -45,10 +45,12 @@ func test_the_appearance_follows_the_equipment() -> void:
 	assert_false(Appearance.HEAD in _layer_slots(player))
 
 
-func test_a_new_game_wears_a_tunic_and_trousers_and_carries_two_hats_and_a_shirt() -> void:
+func test_a_new_game_wears_the_period_clothes_and_carries_two_hats_a_shirt_and_a_jacket() -> void:
 	var state := GameState.new_game(1)
-	assert_eq(state.player.equipment.item_in(Equipment.BODY), ItemTypes.TUNIC)
-	assert_eq(state.player.equipment.item_in(Equipment.LEGS), ItemTypes.TROUSERS)
+	assert_eq(state.player.equipment.item_in(Equipment.BODY), ItemTypes.WAISTCOAT)
+	assert_eq(state.player.equipment.item_in(Equipment.LEGS), ItemTypes.BREECHES)
+	assert_eq(state.player.equipment.item_in(Equipment.FEET), ItemTypes.CLOGS)
+	assert_eq(state.player.inventory.count_of(ItemTypes.JACKET), 1)
 	assert_eq(state.player.inventory.count_of(ItemTypes.STRAW_HAT), 1)
 	assert_eq(state.player.inventory.count_of(ItemTypes.KNITTED_CAP), 1)
 	assert_eq(state.player.inventory.count_of(ItemTypes.SHIRT), 1)
@@ -74,8 +76,8 @@ func test_a_saved_player_keeps_what_they_wear_and_how_they_look() -> void:
 
 func test_loading_skips_unknown_items_and_items_in_the_wrong_slot() -> void:
 	var restored := Equipment.from_dict(
-		{"head": "removed_item", "body": "straw_hat", "legs": "trousers"}
+		{"head": "removed_item", "body": "straw_hat", "legs": "breeches"}
 	)
 	assert_eq(restored.item_in(Equipment.HEAD), ItemTypes.NONE)
 	assert_eq(restored.item_in(Equipment.BODY), ItemTypes.NONE)
-	assert_eq(restored.item_in(Equipment.LEGS), ItemTypes.TROUSERS)
+	assert_eq(restored.item_in(Equipment.LEGS), ItemTypes.BREECHES)

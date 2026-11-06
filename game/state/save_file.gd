@@ -12,10 +12,13 @@ extends RefCounted
 ## 4. Add a test in tests/test_save_upgrade.gd: an old save without the field loads right.
 ## An upgrade step works on the parsed JSON, before any `from_dict` runs.
 
-const VERSION := 8
+const VERSION := 9
 ## Version 6 had tomatoes, which were not grown here before the 19th century; flax took their
 ## place, item for item.
 const TOMATOES_TO_FLAX := {"tomatoes": "flax", "tomatoes_seeds": "flax_seeds"}
+## Version 8 dressed the player in a tunic and trousers; the clothes of the period took their
+## place, item for item.
+const TUNIC_AND_TROUSERS_TO_PERIOD := {"tunic": "waistcoat", "trousers": "breeches"}
 const DEFAULT_PATH := "user://saves/world.json"
 ## What a save we can't use is renamed to, so it is never overwritten silently.
 const BACKUP_SUFFIX := ".bak"
@@ -78,6 +81,8 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 		_upgrade_from_version_6(parsed["game"])
 	if version <= 7:
 		_upgrade_from_version_7(parsed["game"])
+	if version <= 8:
+		_upgrade_from_version_8(parsed["game"])
 	return GameState.from_dict(parsed["game"])
 
 
@@ -126,13 +131,13 @@ static func _upgrade_from_version_5(game: Dictionary) -> void:
 ## Version 6 had tomatoes: their plants, seeds and fruit become flax, wherever they are (in the
 ## inventory, on the ground, planted, and in chests outdoors and indoors).
 static func _upgrade_from_version_6(game: Dictionary) -> void:
-	_tomatoes_to_flax(game["player"]["inventory"]["slots"])
+	_rename_items(game["player"]["inventory"]["slots"], TOMATOES_TO_FLAX)
 	for ground_item: Dictionary in game["world"]["ground_items"]:
 		ground_item["item"] = TOMATOES_TO_FLAX.get(ground_item["item"], ground_item["item"])
 	for object in _saved_objects(game):
 		object["type"] = TOMATOES_TO_FLAX.get(object["type"], object["type"])
 		if object.has("storage"):
-			_tomatoes_to_flax(object["storage"])
+			_rename_items(object["storage"], TOMATOES_TO_FLAX)
 
 
 ## Version 7 saves may lack fields that were added to version 7 without a new version: soil
@@ -158,6 +163,25 @@ static func _upgrade_from_version_7(game: Dictionary) -> void:
 			state.erase("days_grown")
 
 
+## Version 8 had a tunic and trousers: they become the waistcoat and breeches wherever they are
+## (worn, in the inventory, on the ground and in chests outdoors and indoors). Feet were always
+## bare, as there was nothing to wear on them: they get the clogs of the starting outfit.
+static func _upgrade_from_version_8(game: Dictionary) -> void:
+	var player: Dictionary = game["player"]
+	_rename_items(player["inventory"]["slots"], TUNIC_AND_TROUSERS_TO_PERIOD)
+	var equipment: Dictionary = player["equipment"]
+	for slot: String in equipment:
+		equipment[slot] = TUNIC_AND_TROUSERS_TO_PERIOD.get(equipment[slot], equipment[slot])
+	equipment.get_or_add(str(Equipment.FEET), str(ItemTypes.CLOGS))
+	for ground_item: Dictionary in game["world"]["ground_items"]:
+		ground_item["item"] = TUNIC_AND_TROUSERS_TO_PERIOD.get(
+			ground_item["item"], ground_item["item"]
+		)
+	for object in _saved_objects(game):
+		if object.has("storage"):
+			_rename_items(object["storage"], TUNIC_AND_TROUSERS_TO_PERIOD)
+
+
 ## The saved world objects outside the loaded chunks: those the player changed in the world and
 ## those inside buildings.
 static func _saved_objects(game: Dictionary) -> Array:
@@ -171,10 +195,11 @@ static func _saved_objects(game: Dictionary) -> Array:
 	return objects
 
 
-static func _tomatoes_to_flax(slots: Array) -> void:
+## Renames the items of saved slots by `renames` (old id to new id).
+static func _rename_items(slots: Array, renames: Dictionary) -> void:
 	for stack: Variant in slots:
 		if stack != null:
-			stack["item"] = TOMATOES_TO_FLAX.get(stack["item"], stack["item"])
+			stack["item"] = renames.get(stack["item"], stack["item"])
 
 
 static func _reject(path: String, reason: String) -> void:

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dhv5n8fb3rybl"
-path="res://.godot/imported/tunic.png-87dd0ee2cd010b6e31de69cb58e8dc49.ctex"
+uid="uid://dxjs0ialpy5pn"
+path="res://.godot/imported/breeches.png-5a80e97a9f071bcd744b40eec0ac04f7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ground_items/tunic.png"
-dest_files=["res://.godot/imported/tunic.png-87dd0ee2cd010b6e31de69cb58e8dc49.ctex"]
+source_file="res://assets/ground_items/breeches.png"
+dest_files=["res://.godot/imported/breeches.png-5a80e97a9f071bcd744b40eec0ac04f7.ctex"]
 
 [params]
 

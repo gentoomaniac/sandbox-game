@@ -60,33 +60,33 @@ func test_moving_something_that_is_not_wearable_is_refused() -> void:
 
 
 func test_moving_onto_a_worn_item_swaps_them() -> void:
-	_equipment.equip(Equipment.BODY, ItemTypes.TUNIC)
+	_equipment.equip(Equipment.BODY, ItemTypes.WAISTCOAT)
 	_inventory.slots[2] = {"item": ItemTypes.SHIRT, "count": 1}
 	assert_true(_equipment.move_to_equipment(_inventory, 2, Equipment.BODY))
 	assert_eq(_equipment.item_in(Equipment.BODY), ItemTypes.SHIRT)
-	assert_eq(_inventory.item_in(2), ItemTypes.TUNIC)
+	assert_eq(_inventory.item_in(2), ItemTypes.WAISTCOAT)
 
 
 func test_moving_a_worn_item_to_a_free_inventory_slot() -> void:
-	_equipment.equip(Equipment.LEGS, ItemTypes.TROUSERS)
+	_equipment.equip(Equipment.LEGS, ItemTypes.BREECHES)
 	assert_true(_equipment.move_to_inventory(_inventory, Equipment.LEGS, 7))
-	assert_eq(_inventory.item_in(7), ItemTypes.TROUSERS)
+	assert_eq(_inventory.item_in(7), ItemTypes.BREECHES)
 	assert_eq(_equipment.item_in(Equipment.LEGS), ItemTypes.NONE)
 
 
 func test_moving_a_worn_item_onto_an_item_that_fits_swaps_them() -> void:
-	_equipment.equip(Equipment.BODY, ItemTypes.TUNIC)
+	_equipment.equip(Equipment.BODY, ItemTypes.WAISTCOAT)
 	_inventory.slots[4] = {"item": ItemTypes.SHIRT, "count": 1}
 	assert_true(_equipment.move_to_inventory(_inventory, Equipment.BODY, 4))
 	assert_eq(_equipment.item_in(Equipment.BODY), ItemTypes.SHIRT)
-	assert_eq(_inventory.item_in(4), ItemTypes.TUNIC)
+	assert_eq(_inventory.item_in(4), ItemTypes.WAISTCOAT)
 
 
 func test_moving_a_worn_item_onto_an_item_that_does_not_fit_is_refused() -> void:
-	_equipment.equip(Equipment.BODY, ItemTypes.TUNIC)
+	_equipment.equip(Equipment.BODY, ItemTypes.WAISTCOAT)
 	_inventory.slots[4] = {"item": ItemTypes.STRAW_HAT, "count": 1}
 	assert_false(_equipment.move_to_inventory(_inventory, Equipment.BODY, 4))
-	assert_eq(_equipment.item_in(Equipment.BODY), ItemTypes.TUNIC)
+	assert_eq(_equipment.item_in(Equipment.BODY), ItemTypes.WAISTCOAT)
 	assert_eq(_inventory.item_in(4), ItemTypes.STRAW_HAT)
 
 
@@ -102,10 +102,10 @@ func test_quick_equip_wears_the_item_in_its_slot() -> void:
 
 
 func test_quick_equip_swaps_the_worn_item_into_the_same_slot() -> void:
-	_equipment.equip(Equipment.BODY, ItemTypes.TUNIC)
+	_equipment.equip(Equipment.BODY, ItemTypes.WAISTCOAT)
 	_inventory.slots[5] = {"item": ItemTypes.SHIRT, "count": 1}
 	assert_true(_equipment.quick_equip(_inventory, 5))
-	assert_eq(_inventory.item_in(5), ItemTypes.TUNIC)
+	assert_eq(_inventory.item_in(5), ItemTypes.WAISTCOAT)
 
 
 func test_quick_equip_refuses_what_is_not_wearable_or_empty() -> void:
