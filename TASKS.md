@@ -657,23 +657,23 @@ loads with the player beside the horse.
 The user's word of 2026-11-06. Needs tasks 79 and 80. Defaults: a cat that sees a mouse
 within a few tiles crouches, creeps, and pounces; about half the pounces catch it.
 
-## 83. Taking down buildings and things; salvaging items
+## 83. Taking down buildings and placed things
 
 - [ ] Done
 
 The user's word of 2026-11-06: a way to deconstruct buildings and items. Placed things can
 already be taken down with the axe or the pickaxe; buildings can't be removed at all.
 
-Defaults (QUESTIONS.md 21): with the hammer in hand, X switches between building and taking
-down. Taking down marks the building or placed thing under the cursor in red; holding the
-use button for about a second takes it down. A building gives back all its materials and
-everything placed inside it (chests with what they hold, stations with their load), dropped
-in front of its door; the house's own furniture goes with the house. Not while inside it.
-If the player's bed was in it, they wake at the camp's sleeping bag again. A stork on its
-roof flies off. Placed things taken down with the hammer go to the inventory (or drop when
-it is full), like with the axe. Salvaging: a crafted item can be broken down at the station
-that makes it (by hand for hand-made things) into half its materials, rounded down, from a
-"Salvage" button in the crafting menu.
+Decided by the user (QUESTIONS.md 21): with the hammer in hand, X switches between building
+and taking down, and the HUD shows which mode is on. Taking down highlights the building or
+placed thing under the cursor; holding the use button for about a second takes it down. A
+building gives back about half its materials (rounded down), dropped in front of its door;
+the house's own furniture goes with the house. Not while inside it, and not while anything
+the player placed is still inside (chests, stations, stools...): those must be taken out
+first, and the message says so. If the player's bed was in it, they wake at the camp's
+sleeping bag. A stork on its roof flies off. Crafted placed things (chests, stations,
+stools) are not broken down: taken down, they go back into the inventory whole (or drop
+when it is full). No salvaging of items into materials.
 
 ## Later (not part of the prototype)
 

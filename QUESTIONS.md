@@ -103,10 +103,11 @@ Answered questions move into SPEC.md and are removed here.
     the view at once; a stork stands on a roof or hunts wet meadows; lapwings and
     oystercatchers left for later. Default: keep.
 
-21. **Taking down** (task 83): X with the hammer switches to taking down, hold the use button
-    a second; a building returns all its materials plus everything placed inside it at the
-    door; no taking down from inside; waking falls back to the camp's sleeping bag. Crafted
-    items salvage at their station for half their materials. Default: keep.
+21. **Taking down** (task 83), as the user set it: X with the hammer switches modes, shown on
+    the HUD; the thing to take down is highlighted; hold the use button a second; a building
+    returns about half its materials at the door, and only once nothing the player placed
+    is left inside; not from inside; waking falls back to the camp's sleeping bag. Crafted
+    placed things go back into the inventory whole; no salvaging. Default: keep.
 
 ## Questions
 
