@@ -365,11 +365,126 @@ def sheep_sheet(look):
     return four_legged_sheet(SHEEP, style, style["keys"])
 
 
+# --- Chickens -----------------------------------------------------------------------------
+#
+# A hen of about 9x10 px, drawn whole for each frame. Keys: l, b, d light, base and shade of the
+# plumage; t tail; r comb and wattles; k beak; e eye; L legs. The rooster has more: c the
+# rest of his big comb, s the sickle feathers of his tail and h the hackles of his neck; a hen
+# has no c or s, and her neck is plumage.
+
+CHICKEN_SIZE = (12, 12)
+CHICKEN_LEGS = ("....L.L.....", "...LL.LL....")
+CHICKEN_STEPS = [
+    ("...L...L....", "..LL...LL..."),
+    ("....L.L.....", "...LL.LL...."),
+    (".....LL.....", "....LLL....."),
+    ("....L.L.....", "...LL.LL...."),
+]
+CHICKEN_BODY = (
+    ".......c....",
+    "......crr...",
+    "s.....rbbb..",
+    "ss....bbebk.",
+    "ts....hbbrk.",
+    "tt...lhhb...",
+    "tbl.lbbbbb..",
+    "tbbllbbbbb..",
+    ".tbbbbbbbd..",
+    "..ddbbbbd...",
+)
+CHICKEN_PECK = (
+    "............",
+    "............",
+    "s...........",
+    "ss..........",
+    "tsl.........",
+    "tblllbb.....",
+    "tbbbbbhhb...",
+    ".tbbbbbhhbc.",
+    "..ddbbbbhrr.",
+    "....dd.bbeb.",
+    "....L.L.rbk.",
+    "...LL.LL..k.",
+)
+CHICKEN_PECK_UP = (
+    "............",
+    "............",
+    "s...........",
+    "ss..........",
+    "tsl......c..",
+    "tblllbb.crr.",
+    "tbbbbbhhbbb.",
+    ".tbbbbbhhbek",
+    "..ddbbbbbrk.",
+    "....dd...r..",
+    "....L.L.....",
+    "...LL.LL....",
+)
+CHICKEN_SLEEP = (
+    "............",
+    "............",
+    "............",
+    "............",
+    "s...........",
+    "ss.....c....",
+    "ts....crr...",
+    "tt..lhrbbb..",
+    "tbllhhbbdbk.",
+    "tbbbbbbbbbr.",
+    ".dbbbbbbbbd.",
+    "..ddddddddd.",
+)
+# Breathing out: the head sinks into the plumage.
+CHICKEN_SLEEP_LOW = CHICKEN_SLEEP[:5] + (
+    "ss..........",
+    "ts.....c....",
+    "tt..lhcrr...",
+    "tbllhhrbbb..",
+    "tbbbbbbbdbk.",
+) + CHICKEN_SLEEP[10:]
+CHICKEN_SHARED_KEYS = {"r": "red_light", "k": "ochre", "e": "ink", "L": "ochre"}
+CHICKEN_LOOKS = {
+    # A brown farm hen.
+    "brown": {
+        "keys": {"l": "ochre", "b": "ochre_dark", "d": "umber", "t": "soil", "h": "ochre_dark"},
+        "outline": "soil_dark",
+    },
+    "white": {"keys": {"l": "cream", "b": "lime", "d": "stone_light", "t": "lime", "h": "lime"}, "outline": "stone"},
+    # The rooster: red-brown, golden hackles, a dark tail of sickle feathers and a big comb.
+    "rooster": {
+        "keys": {
+            "l": "maple_light",
+            "b": "rust",
+            "d": "rust_dark",
+            "t": "green_deep",
+            "s": "green_deep",
+            "h": "gold",
+            "c": "red_light",
+        },
+        "outline": "russet_deep",
+    },
+}
+
+
+def chicken_sheet(look):
+    style = CHICKEN_LOOKS[look]
+    keys = CHICKEN_SHARED_KEYS | style["keys"]
+    blink = tuple(row.replace("e", "b") for row in CHICKEN_BODY)
+    frames = {
+        "idle": [CHICKEN_BODY + CHICKEN_LEGS, blink + CHICKEN_LEGS],
+        "walk": [CHICKEN_BODY + step for step in CHICKEN_STEPS],
+        "graze": [CHICKEN_PECK, CHICKEN_PECK_UP],
+        "sleep": [CHICKEN_SLEEP, CHICKEN_SLEEP_LOW],
+    }
+    return [[to_picture(rows, keys, style["outline"]) for rows in frames[action]] for action in ACTIONS]
+
+
 # --- All sheets ---------------------------------------------------------------------------
 
 SPECIES = {
     "cow": (COW_SIZE, COW_LOOKS, cow_sheet),
     "sheep": (SHEEP_SIZE, SHEEP_LOOKS, sheep_sheet),
+    "chicken": (CHICKEN_SIZE, CHICKEN_LOOKS, chicken_sheet),
 }
 
 
