@@ -242,7 +242,7 @@ validation API across them (`problems()` + `is_valid()`, renaming `missing_keys`
 
 Done: `GroundItems` (`world.ground_items`: all, near, count_of, add, remove, the signals
 `added`/`removed`/`dropped`, and `drop`) and `NightUpkeep.pass_night(world, ...)` (static, given
-the world) are out of World (652 -> 509 lines). Neither keeps the World, so there is no
+the world) are out of World (652 -> 506 lines). Neither keeps the World, so there is no
 reference cycle: `World.drop_items` stays as the one entry point and passes itself to
 `GroundItems.drop` per call (it is the one that knows what can be walked on). World still has 37
 public methods (chunks, objects, soil, buildings, clay), so the `max-public-methods` exception
