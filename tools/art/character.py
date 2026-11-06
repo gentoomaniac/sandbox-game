@@ -132,31 +132,33 @@ STOCKINGS = {"base": "lime", "shade": "sand_light"}
 BREECHES_ROWS = 3
 
 
-def draw_legs(facing, pose, **_):
-    """Knee breeches and stockings; the feet are in stockings too, clogs go over them."""
+def draw_legs(facing, pose, **colours):
+    """Knee breeches and stockings; the feet are in stockings too, clogs go over them.
+    `colours` replace those of BREECHES (the villagers wear other cloth)."""
+    breeches = BREECHES | colours
     canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
     boxes = leg_boxes(facing, pose)
     for index, (x0, x1, top, bottom) in enumerate(boxes):
         knee = top + BREECHES_ROWS - 1
-        rect(canvas, x0, top, x1, knee, BREECHES["base"])
-        rect(canvas, x0, knee, x1, knee, BREECHES["band"])
+        rect(canvas, x0, top, x1, knee, breeches["base"])
+        rect(canvas, x0, knee, x1, knee, breeches["band"])
         rect(canvas, x0, knee + 1, x1, bottom, STOCKINGS["base"])
         rect(canvas, x0, bottom, x1, bottom, STOCKINGS["shade"])
         # The inside of each leg is shaded, which also marks it against the other one.
         seam = x1 if index == 0 and facing in ("down", "up") else x0
-        rect(canvas, seam, top, seam, knee - 1, BREECHES["shade"])
+        rect(canvas, seam, top, seam, knee - 1, breeches["shade"])
         rect(canvas, seam, knee + 1, seam, bottom, STOCKINGS["shade"])
         if facing in ("left", "right"):
-            rect(canvas, x1, top, x1, knee - 1, BREECHES["light"])
+            rect(canvas, x1, top, x1, knee - 1, breeches["light"])
             canvas[bottom][x1 + 1] = STOCKINGS["shade"]
     if facing in ("down", "up"):
         top = boxes[0][2]
-        rect(canvas, 8, top, 8, top + BREECHES_ROWS - 2, BREECHES["shade"])
+        rect(canvas, 8, top, 8, top + BREECHES_ROWS - 2, breeches["shade"])
         rect(canvas, 8, top + BREECHES_ROWS - 1, 8, boxes[0][3] - 3, STOCKINGS["shade"])
     if pose.get("kneel"):
         draw_kneeling_legs(
             canvas,
-            (BREECHES["base"], BREECHES["band"]),
+            (breeches["base"], breeches["band"]),
             (STOCKINGS["base"], STOCKINGS["shade"]),
             (STOCKINGS["base"], STOCKINGS["base"], STOCKINGS["shade"]),
         )
@@ -230,11 +232,13 @@ def draw_near_sleeve(canvas, pose, base, shade):
     rect(canvas, 7 + swing, 18 + sink, 8 + swing, 18 + sink, shade)
 
 
-def draw_waistcoat(facing, pose, **_):
-    """The shirt under a long red waistcoat, buttoned down the front, its skirts over the hips."""
+def draw_waistcoat(facing, pose, **colours):
+    """The shirt under a long red waistcoat, buttoned down the front, its skirts over the hips.
+    `colours` replace those of WAISTCOAT."""
+    waistcoat = WAISTCOAT | colours
     canvas = draw_shirt(facing, pose)
     sink = pose["sink"]
-    base, light, shade = WAISTCOAT["base"], WAISTCOAT["light"], WAISTCOAT["shade"]
+    base, light, shade = waistcoat["base"], waistcoat["light"], waistcoat["shade"]
     if facing in ("down", "up"):
         rect(canvas, 6, 14 + sink, 10, 22 + sink, base)
         rect(canvas, 5, 21 + sink, 11, 22 + sink, base)
@@ -245,7 +249,7 @@ def draw_waistcoat(facing, pose, **_):
             # The neck opening shows the shirt; the buttons run down the middle.
             canvas[14 + sink][8] = SHIRT["base"]
             for y in (16, 18, 20):
-                canvas[y + sink][8] = WAISTCOAT["button"]
+                canvas[y + sink][8] = waistcoat["button"]
         else:
             rect(canvas, 8, 15 + sink, 8, 22 + sink, shade)
     else:
@@ -255,7 +259,7 @@ def draw_waistcoat(facing, pose, **_):
         rect(canvas, 5, 22 + sink, 11, 22 + sink, shade)
         rect(canvas, 10, 14 + sink, 10, 20 + sink, light)
         for y in (16, 18, 20):
-            canvas[y + sink][10] = WAISTCOAT["button"]
+            canvas[y + sink][10] = waistcoat["button"]
         draw_near_sleeve(canvas, pose, SHIRT["base"], SHIRT["shade"])
     return canvas
 
@@ -264,12 +268,13 @@ def draw_waistcoat(facing, pose, **_):
 JACKET = {"base": "water", "light": "water_light", "shade": "water_deep"}
 
 
-def draw_jacket(facing, pose, **_):
+def draw_jacket(facing, pose, **colours):
     """A short jacket with long sleeves, worn open: from the front the waistcoat shows between
-    its edges, from the side at the chest."""
+    its edges, from the side at the chest. `colours` replace those of JACKET."""
+    jacket = JACKET | colours
     canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
     sink, swing = pose["sink"], pose["swing"]
-    base, light, shade = JACKET["base"], JACKET["light"], JACKET["shade"]
+    base, light, shade = jacket["base"], jacket["light"], jacket["shade"]
     if facing in ("down", "up"):
         if facing == "down":
             # The open front: the two edges, and the turned-down collar at the shoulders.
@@ -307,8 +312,9 @@ def draw_jacket(facing, pose, **_):
 
 def draw_hair(facing, pose, base, light, shade, style, **_):
     """Hair over the head (the same 9x8 block in every view), and from behind over the whole
-    back of it: "short", "long" to the shoulders, or "tied" back with a ribbon into a tail
-    down the neck. The darkest shade is the line to the face."""
+    back of it: "short", "long" to the shoulders, "tied" back with a ribbon into a tail down
+    the neck, parted and pinned up in a "bun" at the back, or parted into two "plaits" tied with
+    red ribbons. The darkest shade is the line to the face."""
     canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
     sink = pose["sink"]
     rect(canvas, 5, 5 + sink, 11, 5 + sink, base)
@@ -323,6 +329,15 @@ def draw_hair(facing, pose, base, light, shade, style, **_):
             for x in (4, 12):
                 rect(canvas, x, 10 + sink, x, 14 + sink, base)
                 rect(canvas, x, 13 + sink, x, 14 + sink, shade)
+        if style in ("bun", "plaits"):
+            canvas[6 + sink][8] = shade
+        if style == "bun":
+            # The knot shows over the top of the head.
+            rect(canvas, 7, 4 + sink, 9, 4 + sink, base)
+            canvas[4 + sink][7] = light
+        if style == "plaits":
+            for x in (4, 12):
+                draw_plait(canvas, x, 10 + sink, 15 + sink, base, shade)
     elif facing == "up":
         rect(canvas, 4, 8 + sink, 12, 11 + sink, base)
         rect(canvas, 5, 12 + sink, 11, 12 + sink, shade)
@@ -338,6 +353,14 @@ def draw_hair(facing, pose, base, light, shade, style, **_):
             rect(canvas, 7, 12 + sink, 8, 17 + sink, base)
             rect(canvas, 8, 13 + sink, 8, 17 + sink, shade)
             rect(canvas, 6, 13 + sink, 9, 13 + sink, HAIR_RIBBON)
+        if style == "bun":
+            rect(canvas, 6, 9 + sink, 10, 11 + sink, base)
+            rect(canvas, 7, 8 + sink, 9, 12 + sink, base)
+            rect(canvas, 7, 12 + sink, 9, 12 + sink, shade)
+            canvas[9 + sink][7] = light
+        if style == "plaits":
+            for x in (6, 10):
+                draw_plait(canvas, x, 12 + sink, 17 + sink, base, shade)
     else:
         rect(canvas, 10, 7 + sink, 12, 7 + sink, shade)
         rect(canvas, 4, 8 + sink, 8, 11 + sink, base)
@@ -352,7 +375,25 @@ def draw_hair(facing, pose, base, light, shade, style, **_):
             rect(canvas, 3, 11 + sink, 4, 16 + sink, base)
             rect(canvas, 3, 15 + sink, 4, 16 + sink, shade)
             rect(canvas, 3, 12 + sink, 4, 12 + sink, HAIR_RIBBON)
+        if style == "bun":
+            rect(canvas, 2, 8 + sink, 4, 10 + sink, base)
+            rect(canvas, 2, 10 + sink, 4, 10 + sink, shade)
+            canvas[8 + sink][3] = light
+        if style == "plaits":
+            draw_plait(canvas, 4, 11 + sink, 16 + sink, base, shade)
     return canvas
+
+
+# The ribbons that tie the ends of plaits.
+PLAIT_RIBBON = "rust"
+
+
+def draw_plait(canvas, x, top, bottom, base, shade):
+    """A plait one pixel wide from `top` to `bottom`, its strands crossing every other row, and a
+    ribbon under its end."""
+    for y in range(top, bottom + 1):
+        canvas[y][x] = base if (y - top) % 2 == 0 else shade
+    canvas[bottom + 1][x] = PLAIT_RIBBON
 
 
 def draw_rows(canvas, rows, keys, top):
@@ -408,15 +449,22 @@ KNITTED_CAP_ROWS = {
 }
 
 
-def draw_hat(rows, keys):
-    """A hat layer from its front and side rows."""
+# A black felt hat with a broad brim: the straw hat's shape in felt, with a band of ribbon.
+FELT_HAT_KEYS = {"l": "stone", "b": "stone_dark", "s": "ink", "d": "soil_dark"}
+# The hats by name: their rows and the colours of the rows' characters.
+HATS = {
+    "straw_hat": (STRAW_HAT_ROWS, STRAW_HAT_KEYS),
+    "knitted_cap": (KNITTED_CAP_ROWS, KNITTED_CAP_KEYS),
+    "felt_hat": (STRAW_HAT_ROWS, FELT_HAT_KEYS),
+}
 
-    def draw(facing, pose, **_):
-        canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
-        draw_rows(canvas, rows["side" if facing in ("left", "right") else "front"], keys, 2 + pose["sink"])
-        return canvas
 
-    return draw
+def draw_hat(facing, pose, hat, **_):
+    """A hat of HATS, from its front and side rows."""
+    rows, keys = HATS[hat]
+    canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
+    draw_rows(canvas, rows["side" if facing in ("left", "right") else "front"], keys, 2 + pose["sink"])
+    return canvas
 
 
 def draw_held_hoe(facing, pose, **_):
@@ -548,8 +596,8 @@ def layers():
         result[f"hair_{variant}"] = (draw_hair, colours)
     result["legs_0"] = (draw_legs, {})
     result["feet_clogs"] = (draw_clogs, {})
-    result["head_straw_hat"] = (draw_hat(STRAW_HAT_ROWS, STRAW_HAT_KEYS), {})
-    result["head_knitted_cap"] = (draw_hat(KNITTED_CAP_ROWS, KNITTED_CAP_KEYS), {})
+    result["head_straw_hat"] = (draw_hat, {"hat": "straw_hat"})
+    result["head_knitted_cap"] = (draw_hat, {"hat": "knitted_cap"})
     return result
 
 

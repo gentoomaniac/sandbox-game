@@ -23,6 +23,9 @@ with the feet on the bottom row. One row per facing (down, up, left, right), col
 walk 1 to 4 (see game/state/appearance.gd and game/scenes/player_view.gd).
 assets/character/collapse/<slot>_<variant>.png: the same layers passing out, one row of 32x32
 cells facing right: kneeling, tipping over, lying and asleep (see `collapse_sheet`).
+The villagers' layers (villagers.py) are drawn the same way, under the same names.
+assets/character/portrait/<slot>_<variant>.png: a 32x32 head-and-shoulders portrait of each
+layer that shows in a bust, for the chat (see portraits.py).
 assets/effects/sleep_z.png: the "z" that rises from a sleeping figure.
 
 assets/buildings/<type>.png: one picture per building type (drawn in buildings.py), as wide as
@@ -73,6 +76,7 @@ import interior
 import items
 import livestock
 import meadow
+import portraits
 import reeds
 import seasons
 import terrain
@@ -80,6 +84,7 @@ import tool_icons
 import trees
 import trunks
 import ui
+import villagers
 import willow
 from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, TILE, blank
 from palette import ASSETS, PALETTE, check_palette, save, save_picture, write_palette
@@ -240,10 +245,12 @@ def write_seasonal_art():
 
 
 def write_character():
-    layers = character.layers()
+    layers = character.layers() | villagers.layers()
     for name, layer in layers.items():
         save(character.character_sheet(*layer), f"character/{name}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
         save(character.collapse_sheet(*layer), f"character/collapse/{name}.png", character.COLLAPSE_SIZE)
+    for name, picture in portraits.portraits(layers).items():
+        save_picture(picture, f"character/portrait/{name}.png")
     held_hoe = character.character_sheet(character.draw_held_hoe, {})
     save(held_hoe, "character/held_hoe.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
     save_picture(character.sleep_z(), "effects/sleep_z.png")
