@@ -1,10 +1,10 @@
 class_name NpcDialogue
 extends Node
 ## What a villager says back to the player: the one place their words come from. With a language
-## model set in Settings (GameSettings `language_model`) it is asked through `chat`, with the
-## prompt of NpcPrompt; without one, or when it fails or takes too long, the villager says one of
-## the scripted lines of data/npc_talk.cfg instead. Only the words come from the model: nothing
-## else in the game changes by what it says.
+## model set in Settings (GameSettings `language_model`) it is asked through the chat of its
+## provider, with the prompt of NpcPrompt; without one, or when it fails or takes too long, the
+## villager says one of the scripted lines of data/npc_talk.cfg instead. Only the words come from
+## the model: nothing else in the game changes by what it says.
 ##
 ## When a conversation is over its lines are summed up in a memory of the villager (`remember`),
 ## which later prompts tell.
@@ -12,18 +12,24 @@ extends Node
 ## `reply` is a coroutine: callers `await` it. It runs while the game is paused, as it is during a
 ## chat.
 
-## Asks the model; tests put a fake in its place.
-var chat: OpenAiChat
+## Ask the model, one for each protocol of the providers (GameSettings
+## `LANGUAGE_MODEL_PROVIDERS`); tests put fakes in their place.
+var chats: Dictionary
 var rules := NpcTalkRules.default_rules()
 var rng := RandomNumberGenerator.new()
 var _settings: GameSettings
 
 
-func _init(settings: GameSettings, model_chat := OpenAiChat.new()) -> void:
+func _init(
+	settings: GameSettings,
+	openai_chat: ModelChat = OpenAiChat.new(),
+	claude: ModelChat = ClaudeChat.new()
+) -> void:
 	_settings = settings
-	chat = model_chat
+	chats = {"openai": openai_chat, "claude": claude}
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	add_child(chat)
+	for model_chat: ModelChat in chats.values():
+		add_child(model_chat)
 	rng.randomize()
 
 
@@ -32,13 +38,20 @@ func has_model() -> bool:
 	return _settings.language_model["endpoint"] != ""
 
 
+func _chat_of_provider() -> ModelChat:
+	var provider: Dictionary = GameSettings.LANGUAGE_MODEL_PROVIDERS[
+		_settings.language_model["provider"]
+	]
+	return chats[provider["protocol"]]
+
+
 ## The villager's answer to `message`, said after the lines of `history` (the chat so far, as
 ## Npc `chat_history`, without the message) in the game of `state` as it is now.
 func reply(npc: Npc, history: Array[Dictionary], message: String, state: GameState) -> String:
 	if has_model():
 		var moment := NpcMoment.of(state, npc, rules.value("place", "reach"))
 		var request := NpcPrompt.reply_request(npc, history, message, moment, rules)
-		var answer: String = await chat.answer(
+		var answer: String = await _chat_of_provider().answer(
 			_settings.language_model, request, rules.value("request", "timeout_seconds")
 		)
 		answer = NpcPrompt.trimmed_reply(answer, npc, rules.value("request", "reply_sentences"))
@@ -56,7 +69,7 @@ func remember(npc: Npc, lines: Array[Dictionary], state: GameState) -> void:
 	var summary := ""
 	if has_model():
 		var request := NpcPrompt.memory_request(npc, lines, rules)
-		var answer: String = await chat.answer(
+		var answer: String = await _chat_of_provider().answer(
 			_settings.language_model, request, rules.value("request", "timeout_seconds")
 		)
 		summary = NpcPrompt.trimmed_reply(answer, npc, 1)

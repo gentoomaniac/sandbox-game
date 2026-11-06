@@ -38,8 +38,61 @@ func test_the_endpoint_model_and_key_survive_a_restart() -> void:
 	var loaded := _reloaded()
 	assert_eq(
 		loaded.language_model,
-		{"endpoint": "http://127.0.0.1:11434/v1", "model": "llama3.2", "api_key": "sk-test"}
+		{
+			"provider": "openai",
+			"endpoint": "http://127.0.0.1:11434/v1",
+			"model": "llama3.2",
+			"api_key": "sk-test"
+		}
 	)
+
+
+func test_claude_starts_with_its_endpoint_and_model_and_survives_a_restart() -> void:
+	_settings.set_language_model_provider("claude")
+	var loaded := _reloaded()
+	assert_eq(loaded.language_model["provider"], "claude")
+	assert_eq(loaded.language_model["endpoint"], "https://api.anthropic.com/v1")
+	assert_eq(loaded.language_model["model"], "claude-opus-5-5")
+	loaded.set_language_model_provider("openai")
+	assert_eq(loaded.language_model, GameSettings.DEFAULT_LANGUAGE_MODEL)
+
+
+func test_each_provider_keeps_its_own_endpoint_model_and_key() -> void:
+	_settings.set_language_model("api_key", "sk-openai")
+	_settings.set_language_model("endpoint", "http://localhost:1234/v1")
+	_settings.set_language_model_provider("claude")
+	assert_eq(_settings.language_model["api_key"], "", "the key stays with the other provider")
+	assert_eq(_settings.language_model["endpoint"], "https://api.anthropic.com/v1")
+	_settings.set_language_model("api_key", "sk-ant-test")
+	_settings.set_language_model("model", "claude-haiku-5-5")
+	for settings in [_settings, _reloaded()]:
+		settings.set_language_model_provider("openai")
+		assert_eq(settings.language_model["api_key"], "sk-openai")
+		assert_eq(settings.language_model["endpoint"], "http://localhost:1234/v1")
+		settings.set_language_model_provider("claude")
+		assert_eq(settings.language_model["api_key"], "sk-ant-test")
+		assert_eq(settings.language_model["model"], "claude-haiku-5-5")
+
+
+func test_a_file_from_before_the_providers_is_the_openai_providers() -> void:
+	DirAccess.make_dir_recursive_absolute(DIR)
+	var file := FileAccess.open(PATH, FileAccess.WRITE)
+	file.store_string('[language_model]\nendpoint="http://localhost:1234/v1"\napi_key="sk-old"\n')
+	file.close()
+	var loaded := _reloaded()
+	assert_eq(loaded.language_model["provider"], "openai")
+	assert_eq(loaded.language_model["api_key"], "sk-old")
+	loaded.set_language_model_provider("claude")
+	assert_eq(loaded.language_model["api_key"], "")
+
+
+func test_an_unknown_provider_in_the_file_is_ignored() -> void:
+	DirAccess.make_dir_recursive_absolute(DIR)
+	var file := FileAccess.open(PATH, FileAccess.WRITE)
+	file.store_string('[language_model]\nprovider="gpt"\n')
+	file.close()
+	assert_eq(_reloaded().language_model["provider"], "openai")
+	assert_push_warning_count(1)
 
 
 func test_only_what_differs_from_the_defaults_is_stored() -> void:
@@ -49,6 +102,12 @@ func test_only_what_differs_from_the_defaults_is_stored() -> void:
 	assert_eq(
 		file.get_section_keys(GameSettings.LANGUAGE_MODEL_SECTION), PackedStringArray(["endpoint"])
 	)
+	assert_false(file.has_section("language_model.claude"))
+	_settings.set_language_model_provider("claude")
+	_settings.set_language_model("api_key", "sk-ant-test")
+	file.load(PATH)
+	assert_eq(file.get_value("language_model", "provider"), "claude")
+	assert_eq(file.get_section_keys("language_model.claude"), PackedStringArray(["api_key"]))
 
 
 func test_a_value_that_is_not_a_text_is_ignored() -> void:
@@ -74,5 +133,14 @@ func test_the_page_shows_the_settings_and_stores_what_is_typed() -> void:
 	var fields := page._fields
 	assert_eq(fields["model"].text, "phi3")
 	assert_true(fields["api_key"].secret, "the key is not shown")
+	assert_eq(page._provider.selected, 0)
+	fields["api_key"].text_changed.emit("sk-openai")
+	page._provider.item_selected.emit(1)
+	assert_eq(_reloaded().language_model["provider"], "claude")
+	assert_eq(fields["endpoint"].text, "https://api.anthropic.com/v1", "the fields follow")
+	assert_eq(fields["api_key"].text, "", "the key of the other provider is not shown")
+	assert_eq(fields["model"].placeholder_text, "claude-opus-5-5")
+	page._provider.item_selected.emit(0)
+	assert_eq(fields["api_key"].text, "sk-openai")
 	fields["endpoint"].text_changed.emit("http://localhost:1234/v1")
 	assert_eq(_reloaded().language_model["endpoint"], "http://localhost:1234/v1")

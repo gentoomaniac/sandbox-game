@@ -48,6 +48,7 @@ const DAY_LENGTH_KEY := "day_length_variation"
 const AUDIO_SECTION := "audio"
 const SOUND_IN_BACKGROUND_KEY := "in_background"
 const LANGUAGE_MODEL_SECTION := "language_model"
+const LANGUAGE_MODEL_PROVIDER_KEY := "provider"
 const LANGUAGE_MODEL_KEYS: Array[String] = ["endpoint", "model", "api_key"]
 
 const MIN_UI_SCALE := 0.5
@@ -76,7 +77,30 @@ const DEFAULT_SOUND_IN_BACKGROUND := true
 ## The model of the test LLM (`make llm-up`); no endpoint means no model: villagers speak scripted
 ## lines (see NpcDialogue).
 const DEFAULT_LANGUAGE_MODEL := {
-	"endpoint": "http://127.0.0.1:11434/v1", "model": "qwen2.5:3b-instruct", "api_key": ""
+	"provider": "openai",
+	"endpoint": "http://127.0.0.1:11434/v1",
+	"model": "qwen2.5:3b-instruct",
+	"api_key": "",
+}
+## The providers of a language model, by their name in the settings: the protocol they speak
+## ("openai", an OpenAI-compatible API, see OpenAiChat; or "claude", Anthropic's, see ClaudeChat)
+## and the endpoint and model each starts with. Each keeps its own endpoint, model and key.
+## claude-haiku-5-5 is the much cheaper model of Claude's.
+const LANGUAGE_MODEL_PROVIDERS := {
+	"openai":
+	{
+		"name": "OpenAI-compatible",
+		"protocol": "openai",
+		"endpoint": DEFAULT_LANGUAGE_MODEL["endpoint"],
+		"model": DEFAULT_LANGUAGE_MODEL["model"],
+	},
+	"claude":
+	{
+		"name": "Claude",
+		"protocol": "claude",
+		"endpoint": "https://api.anthropic.com/v1",
+		"model": "claude-opus-5-5",
+	},
 }
 
 const ACTION_LABELS := {
@@ -138,10 +162,12 @@ var ui_scale := DEFAULT_UI_SCALE
 var energy_drain := DEFAULT_ENERGY_DRAIN
 var day_length_variation := DEFAULT_DAY_LENGTH_VARIATION
 var sound_in_background := DEFAULT_SOUND_IN_BACKGROUND
-## The OpenAI-compatible chat API villagers talk through: {endpoint, model, api_key}, such as
-## "http://127.0.0.1:11434/v1" (see OpenAiChat).
-var language_model := DEFAULT_LANGUAGE_MODEL.duplicate()
+## The chat API villagers talk through: {provider, endpoint, model, api_key} of the chosen
+## provider, such as "http://127.0.0.1:11434/v1" (see OpenAiChat and ClaudeChat).
+var language_model: Dictionary
 
+## What every provider has set (the key of one is never sent to another), by provider.
+var _language_models := _default_language_models()
 var _has_chosen_fullscreen := false
 ## Channel (see VOLUME_CHANNELS) -> percent.
 var _volumes := {}
@@ -153,6 +179,7 @@ var _defaults := {}
 ## Create it before the input map is changed, as it takes the defaults from it.
 func _init(path: String = DEFAULT_PATH) -> void:
 	_path = path
+	language_model = _language_models[DEFAULT_LANGUAGE_MODEL["provider"]]
 	for channel in VOLUME_CHANNELS:
 		_volumes[channel] = DEFAULT_VOLUME
 	for action in actions():
@@ -341,6 +368,33 @@ func set_language_model(key: String, text: String) -> void:
 	_save()
 
 
+## Chooses the provider of the language model (a key of LANGUAGE_MODEL_PROVIDERS): the endpoint,
+## model and key are those it had last.
+func set_language_model_provider(provider: String) -> void:
+	language_model = _language_models[provider]
+	_save()
+
+
+static func _default_language_models() -> Dictionary:
+	var defaults := {}
+	for provider: String in LANGUAGE_MODEL_PROVIDERS:
+		defaults[provider] = {
+			"provider": provider,
+			"endpoint": LANGUAGE_MODEL_PROVIDERS[provider]["endpoint"],
+			"model": LANGUAGE_MODEL_PROVIDERS[provider]["model"],
+			"api_key": "",
+		}
+	return defaults
+
+
+## The section of the settings file a provider's endpoint, model and key are in: that of the
+## default provider is the one they were in before there were more.
+static func _language_model_section(provider: String) -> String:
+	if provider == DEFAULT_LANGUAGE_MODEL["provider"]:
+		return LANGUAGE_MODEL_SECTION
+	return "%s.%s" % [LANGUAGE_MODEL_SECTION, provider]
+
+
 ## Reads the file and applies it. A file that can't be read or understood is ignored (with a
 ## warning), as is any single entry that isn't understood. A missing file is normal.
 func load_file() -> void:
@@ -365,14 +419,26 @@ func load_file() -> void:
 			push_warning("Ignoring display setting in %s: not true or false" % _path)
 	_load_game_section(file)
 	_load_audio_section(file)
-	for key in LANGUAGE_MODEL_KEYS:
-		if not file.has_section_key(LANGUAGE_MODEL_SECTION, key):
-			continue
-		var value: Variant = file.get_value(LANGUAGE_MODEL_SECTION, key)
-		if value is String:
-			language_model[key] = value.strip_edges()
+	_load_language_model_section(file)
+
+
+func _load_language_model_section(file: ConfigFile) -> void:
+	for provider: String in LANGUAGE_MODEL_PROVIDERS:
+		var section := _language_model_section(provider)
+		for key in LANGUAGE_MODEL_KEYS:
+			if not file.has_section_key(section, key):
+				continue
+			var value: Variant = file.get_value(section, key)
+			if value is String:
+				_language_models[provider][key] = value.strip_edges()
+			else:
+				push_warning("Ignoring language model %s in %s: not a text" % [key, _path])
+	if file.has_section_key(LANGUAGE_MODEL_SECTION, LANGUAGE_MODEL_PROVIDER_KEY):
+		var chosen: Variant = file.get_value(LANGUAGE_MODEL_SECTION, LANGUAGE_MODEL_PROVIDER_KEY)
+		if chosen is String and chosen in LANGUAGE_MODEL_PROVIDERS:
+			language_model = _language_models[chosen]
 		else:
-			push_warning("Ignoring language model %s in %s: not a text" % [key, _path])
+			push_warning("Ignoring language model provider in %s: not known" % _path)
 
 
 func _load_game_section(file: ConfigFile) -> void:
@@ -493,9 +559,17 @@ func _save() -> void:
 			file.set_value(AUDIO_SECTION, channel, _volumes[channel])
 	if sound_in_background != DEFAULT_SOUND_IN_BACKGROUND:
 		file.set_value(AUDIO_SECTION, SOUND_IN_BACKGROUND_KEY, sound_in_background)
-	for key in LANGUAGE_MODEL_KEYS:
-		if language_model[key] != DEFAULT_LANGUAGE_MODEL[key]:
-			file.set_value(LANGUAGE_MODEL_SECTION, key, language_model[key])
+	var defaults := _default_language_models()
+	for provider: String in LANGUAGE_MODEL_PROVIDERS:
+		for key in LANGUAGE_MODEL_KEYS:
+			if _language_models[provider][key] != defaults[provider][key]:
+				file.set_value(
+					_language_model_section(provider), key, _language_models[provider][key]
+				)
+	if language_model["provider"] != DEFAULT_LANGUAGE_MODEL["provider"]:
+		file.set_value(
+			LANGUAGE_MODEL_SECTION, LANGUAGE_MODEL_PROVIDER_KEY, language_model["provider"]
+		)
 	var error := DirAccess.make_dir_recursive_absolute(_path.get_base_dir())
 	if error == OK:
 		error = file.save(_path)

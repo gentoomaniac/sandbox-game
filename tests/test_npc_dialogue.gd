@@ -27,7 +27,7 @@ func after_each() -> void:
 	get_tree().paused = false
 
 
-func _dialogue(chat: OpenAiChat = FakeChat.new()) -> NpcDialogue:
+func _dialogue(chat: ModelChat = FakeChat.new()) -> NpcDialogue:
 	var dialogue := NpcDialogue.new(_settings, chat)
 	add_child_autoqfree(dialogue)
 	return dialogue
@@ -46,7 +46,7 @@ func test_without_a_model_a_villager_says_a_scripted_line_while_the_game_is_paus
 	assert_has(_scripted_replies(), answer)
 	# Not the whole half second: the first frame's time counts from before `start`.
 	assert_gte(Time.get_ticks_msec() - start, 250, "after a moment's thought")
-	assert_eq((dialogue.chat as FakeChat).requests.size(), 0, "the model is not asked")
+	assert_eq((dialogue.chats["openai"] as FakeChat).requests.size(), 0, "the model is not asked")
 
 
 func test_with_a_model_its_answer_is_said_trimmed() -> void:
@@ -112,3 +112,26 @@ func test_a_real_model_sums_up_a_conversation() -> void:
 	await dialogue.remember(_antje, lines, _state)
 	gut.p("Antje remembers: %s" % _antje.memories[0])
 	assert_false(_antje.memories[0].contains("The neighbour said:"), "the model summed it up")
+
+
+func test_the_chat_of_the_provider_is_asked_with_the_key_of_that_provider() -> void:
+	_settings.set_language_model("endpoint", "http://fake/v1")
+	_settings.set_language_model("api_key", "sk-openai")
+	_settings.set_language_model_provider("claude")
+	_settings.set_language_model("api_key", "sk-ant-test")
+	var openai_chat := FakeChat.new()
+	var claude_chat := FakeChat.new()
+	var dialogue := NpcDialogue.new(_settings, openai_chat, claude_chat)
+	add_child_autoqfree(dialogue)
+	await dialogue.reply(_antje, [], "Hello", _state)
+	_settings.set_language_model_provider("openai")
+	await dialogue.reply(_antje, [], "Hello", _state)
+	_settings.set_language_model_provider("claude")
+	await dialogue.reply(_antje, [], "Hello", _state)
+	assert_eq(openai_chat.language_models.size(), 1)
+	assert_eq(openai_chat.language_models[0]["api_key"], "sk-openai")
+	assert_eq(openai_chat.language_models[0]["endpoint"], "http://fake/v1")
+	assert_eq(claude_chat.language_models.size(), 2)
+	for language_model in claude_chat.language_models:
+		assert_eq(language_model["api_key"], "sk-ant-test")
+		assert_eq(language_model["endpoint"], "https://api.anthropic.com/v1")
