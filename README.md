@@ -501,7 +501,9 @@ question and `make llm-down` stops it. The container image (5.5 GB) and the mode
 the container tool's storage and the volume `sandbox-game-llm-models`; `make llm-down PURGE=1`
 deletes the model. Details in [tools/README.md](tools/README.md). A reply takes a second or
 two on the GPU, about five seconds on the CPU; one that takes longer than 30 seconds, or
-fails, becomes a scripted line.
+fails, becomes a scripted line. To try another model, run
+`make llm-pull LLM_MODEL=qwen2.5:7b-instruct` and set it as the model in Settings;
+[tools/README.md](tools/README.md) lists some that fit.
 
 What the model is told for each reply (the words are in [data/npc_talk.cfg](data/npc_talk.cfg),
 shaped like a prompt that worked well with the test model): a system line (1750 on the North
@@ -537,6 +539,7 @@ to look. `make help` lists the targets and their variables.
 | `make format` | Formats the GDScript. |
 | `make assets` | Regenerates all pixel art from the palette and all sounds (deterministic). Needs Python only, not Godot. |
 | `make llm-up`, `llm-check`, `llm-down` | A local test LLM in a container (see above); no test needs it. |
+| `make llm-pull`, `llm-models`, `llm-rm` | Fetch, list and delete other models for it, e.g. `LLM_MODEL=qwen2.5:7b-instruct`; then set that model under Settings → Language model. |
 | `make clean` | Deletes build/ (test log, screenshots). |
 | `make screenshot` | Saves one frame, e.g. `make screenshot AT=40,-20 TIME=21:00`. Muted (`SOUND=1` keeps the sound), the window doesn't take the focus, and it uses its own save in build/ (`KEEP_SAVE=1` loads yours). |
 

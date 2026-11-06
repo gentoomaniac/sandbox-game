@@ -1,6 +1,7 @@
 #!/bin/sh
 # A local LLM for testing NPC talk: Ollama in a container, OpenAI-compatible API on
-# http://127.0.0.1:11434/v1. See tools/README.md. Usage: llm.sh up | down [--purge] | check | status | logs
+# http://127.0.0.1:11434/v1. See tools/README.md.
+# Usage: llm.sh up | down [--purge] | check | pull | models | rm | status | logs
 # LLM_GPU=auto (default: the NVIDIA GPU if a CDI spec for it exists) | 1 (GPU or fail) | 0 (CPU).
 set -eu
 
@@ -142,14 +143,44 @@ JSON
 	"$CONTAINER" exec "$NAME" ollama ps
 }
 
+# The other commands need the container up.
+need_running() {
+	if ! is_running; then
+		echo "llm.sh: $NAME is not running (start it: make llm-up)" >&2
+		exit 1
+	fi
+}
+
+# Fetches $MODEL into the volume, next to the others; the game uses the one set in its
+# Settings (Language model -> Model).
+pull() {
+	need_running
+	if "$CONTAINER" exec "$NAME" ollama show "$MODEL" >/dev/null 2>&1; then
+		echo "Model $MODEL is present"
+	else
+		echo "Pulling $MODEL"
+		"$CONTAINER" exec "$NAME" ollama pull "$MODEL"
+	fi
+	echo "To use it: Settings -> Language model -> Model: $MODEL (and make llm-check LLM_MODEL=$MODEL)"
+}
+
 case "${1:-}" in
 up) up ;;
 down) down "${2:-}" ;;
 check) check ;;
+pull) pull ;;
+models)
+	need_running
+	"$CONTAINER" exec "$NAME" ollama list
+	;;
+rm)
+	need_running
+	"$CONTAINER" exec "$NAME" ollama rm "$MODEL"
+	;;
 status) "$CONTAINER" ps --filter "name=^$NAME\$" --format '{{.Names}} {{.Status}} {{.Ports}}' ;;
 logs) "$CONTAINER" logs "$NAME" ;;
 *)
-	echo "Usage: $0 up | down [--purge] | check | status | logs" >&2
+	echo "Usage: $0 up | down [--purge] | check | pull | models | rm | status | logs" >&2
 	exit 2
 	;;
 esac

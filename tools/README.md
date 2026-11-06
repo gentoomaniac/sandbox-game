@@ -139,8 +139,28 @@ make llm-up       # start the container, pull the model if missing; safe to repe
 make llm-check    # one chat request as a 1750s North Frisian villager, with the time taken
 make llm-down     # remove the container; the model stays in its volume
 make llm-down PURGE=1   # also delete the volume (the model)
+make llm-pull LLM_MODEL=qwen2.5:7b-instruct   # fetch another model next to the first
+make llm-models   # the models it has, with their sizes
+make llm-check LLM_MODEL=qwen2.5:7b-instruct  # ask that one
+make llm-rm LLM_MODEL=qwen2.5:7b-instruct     # delete it again
 tools/llm/llm.sh status | logs
 ```
+
+**Other models.** All pulled models sit side by side in the volume; the server loads the one
+a request names. The game uses the model set under Settings → Language model → Model, so
+after `make llm-pull` set it there (or `model="..."` under `[language_model]` in
+`settings.cfg`). Sizes are Ollama's Q4 downloads; a model needs about that much free memory
+plus 1-2 GB while it answers (RAM on the CPU, VRAM on the GPU):
+
+| Tag | Size | Licence | Notes |
+|---|---|---|---|
+| `qwen2.5:1.5b-instruct` | 1.0 GB | Apache-2.0 | Fast, plainer lines |
+| `qwen2.5:3b-instruct` | 1.9 GB | Qwen Research (non-commercial) | The default; testing only |
+| `qwen2.5:7b-instruct` | 4.7 GB | Apache-2.0 | Follows a conversation and the language better; needs about 6 GB free |
+| `llama3.2:3b` | 2.0 GB | Llama 3.2 Community | |
+| `gemma2:2b` | 1.6 GB | Gemma Terms of Use | |
+
+Which ones fit on the GPU (8 GB of VRAM here) is for later, with the GPU set up as below.
 
 - **Model:** `qwen2.5:3b-instruct` (override with `LLM_MODEL=<ollama tag>`), 3.1B parameters,
   Q4_K_M, 1.9 GB. Its licence is the **Qwen Research License** (non-commercial), not

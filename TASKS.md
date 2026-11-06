@@ -981,6 +981,10 @@ console and the menus, and add a test that every character of those ranges has a
 
 ## Later (not part of the prototype)
 
+- **Test LLM on the GPU, and which models fit** (the user, 2026-11-06): set up CDI for the
+  RTX 4070 (tools/README.md, GPU), then try which models fit in its 8 GB of VRAM and how
+  their villager lines compare (e.g. qwen2.5:7b-instruct, llama3.1:8b, gemma2:9b).
+
 - `WildlifeSprites.frame_index` and `max_frames` allocate on every call (`keys()`,
   `values().max()`); the older animals call them per frame. Cache them per sheet. And rename
   `SoundEvents.animal_alarm`, which since task 60 also gives the stork's clatter, to something

@@ -23,7 +23,8 @@ IMPORT := $(GODOT) --headless --quiet --import
 # reproducible, and it keeps third-party code out of our history and diffs.
 # The cost is that a fresh clone needs `make setup` (and network) before it runs.
 
-.PHONY: help setup venv assets run screenshot test lint format export clean llm-up llm-down llm-check
+.PHONY: help setup venv assets run screenshot test lint format export clean llm-up llm-down llm-check \
+	llm-pull llm-models llm-rm
 
 help:
 	@echo "Targets:"
@@ -39,6 +40,9 @@ help:
 	@echo "  llm-up      Start the local test LLM (Ollama in a container) and pull its model; see tools/README.md."
 	@echo "  llm-down    Stop and remove the test LLM container (the model stays; PURGE=1 deletes it too)."
 	@echo "  llm-check   Send one chat request to the test LLM and print the reply."
+	@echo "  llm-pull    Fetch another model into the running test LLM, e.g. LLM_MODEL=qwen2.5:7b-instruct."
+	@echo "  llm-models  List the models the test LLM has."
+	@echo "  llm-rm      Delete the model LLM_MODEL from the test LLM."
 	@echo "  clean       Delete build/ (test log, screenshots, the screenshot save); nothing is lost."
 	@echo "  export      Not set up yet: no export presets exist."
 	@echo
@@ -195,6 +199,15 @@ llm-down:
 
 llm-check:
 	tools/llm/llm.sh check
+
+llm-pull:
+	tools/llm/llm.sh pull
+
+llm-models:
+	tools/llm/llm.sh models
+
+llm-rm:
+	tools/llm/llm.sh rm
 
 # Everything in build/ is made by the targets above, so deleting it loses nothing.
 clean:
