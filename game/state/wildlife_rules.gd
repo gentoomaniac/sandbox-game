@@ -24,8 +24,23 @@ const ROOF_STORK := &"roof_stork"
 ## A flock of greylag geese grazing, and a skein of them flying over in a V.
 const GEESE := &"geese"
 const FLYING_GEESE := &"flying_geese"
+## Small ones: a mouse by the fields and the houses, a frog by the water.
+const MOUSE := &"mouse"
+const FROG := &"frog"
 const KINDS: Array[StringName] = [
-	BIRD, RABBIT, SQUIRREL, DEER, BEE, BUTTERFLY, FLOCK, STORK, ROOF_STORK, GEESE, FLYING_GEESE
+	BIRD,
+	RABBIT,
+	SQUIRREL,
+	DEER,
+	BEE,
+	BUTTERFLY,
+	FLOCK,
+	STORK,
+	ROOF_STORK,
+	GEESE,
+	FLYING_GEESE,
+	MOUSE,
+	FROG,
 ]
 
 const GENERAL_KEYS := [
@@ -44,6 +59,7 @@ const KIND_KEYS := [
 	"trees_radius",
 	"min_trees",
 	"water_radius",
+	"farm_radius",
 	"flowers_per_animal",
 	"season_factors",
 	"phase_weights",
@@ -57,6 +73,8 @@ const KIND_KEYS := [
 const TREE_TYPES: Array[StringName] = [
 	WorldObjectTypes.OAK, WorldObjectTypes.SPRUCE, WorldObjectTypes.PINE
 ]
+## The field boundaries mice live in: hedge banks and fieldstone walls.
+const FIELD_BANKS: Array[StringName] = [WorldObjectTypes.KNICK, WorldObjectTypes.STONE_WALL]
 ## World pixels per tile, for the ring around the view.
 const TILE_SIZE := 16
 ## Tries to find a point in the ring before settling for one on its left side.
@@ -107,6 +125,24 @@ static func has_water_near(map: GameMap, centre: Vector2i, radius: int) -> bool:
 		for x in range(centre.x - radius, centre.x + radius + 1):
 			var tile := map.tile_at(Vector2i(x, y))
 			if tile != null and tile.terrain == Tile.Terrain.WATER:
+				return true
+	return false
+
+
+## Whether there is farmland within `radius` tiles (a square) of a tile: tilled soil, a crop, a
+## Knick or a wall (see FIELD_BANKS), or a building with its hay and its stores. It stops at the
+## first.
+static func has_farm_near(world: World, centre: Vector2i, radius: int) -> bool:
+	for y in range(centre.y - radius, centre.y + radius + 1):
+		for x in range(centre.x - radius, centre.x + radius + 1):
+			var pos := Vector2i(x, y)
+			var tile := world.tile_at(pos)
+			if tile != null and tile.terrain == Tile.Terrain.SOIL:
+				return true
+			var object := world.object_at(pos)
+			if object != null and (FIELD_BANKS.has(object.type) or object.is_crop()):
+				return true
+			if world.building_at(pos) != null:
 				return true
 	return false
 
@@ -201,29 +237,32 @@ func spawn_chance(kind: StringName, day: int, minute: int, weather: WeatherSampl
 	return float(_value(kind, "spawn_chance")) * activity(kind, day, minute, weather)
 
 
-## Whether a kind lives on a terrain with this many trees around and water near or not (see
-## `trees_radius` and `water_radius`).
+## Whether a kind lives on a terrain with this many trees around, and water and farmland near or
+## not (see `trees_radius`, `water_radius` and `farm_radius`).
 func is_habitat(
-	kind: StringName, terrain: Tile.Terrain, tree_count: int, is_by_water: bool
+	kind: StringName, terrain: Tile.Terrain, tree_count: int, is_by_water: bool, is_by_farm := false
 ) -> bool:
 	return (
 		_lives_on(kind, terrain)
 		and (_water_radius(kind) == 0 or is_by_water)
+		and (_farm_radius(kind) == 0 or is_by_farm)
 		and tree_count >= int(_value(kind, "min_trees"))
 	)
 
 
-## Whether a kind lives on a tile of a map: its terrain first, then the trees and the water
-## around it, which take longer to look at.
-func is_habitat_at(kind: StringName, map: GameMap, tile: Vector2i) -> bool:
-	var ground := map.tile_at(tile)
+## Whether a kind lives on a tile of the world: its terrain first, then the trees, the water and
+## the farmland around it, which take longer to look at.
+func is_habitat_at(kind: StringName, world: World, tile: Vector2i) -> bool:
+	var ground := world.tile_at(tile)
 	if ground == null or not _lives_on(kind, ground.terrain):
 		return false
 	var trees := trees_radius(kind)
-	var tree_count := count_trees(map, tile, trees) if trees > 0 else 0
+	var tree_count := count_trees(world, tile, trees) if trees > 0 else 0
 	var water := _water_radius(kind)
-	var is_by_water := water > 0 and has_water_near(map, tile, water)
-	return is_habitat(kind, ground.terrain, tree_count, is_by_water)
+	var is_by_water := water > 0 and has_water_near(world, tile, water)
+	var farm := _farm_radius(kind)
+	var is_by_farm := farm > 0 and has_farm_near(world, tile, farm)
+	return is_habitat(kind, ground.terrain, tree_count, is_by_water, is_by_farm)
 
 
 func _lives_on(kind: StringName, terrain: Tile.Terrain) -> bool:
@@ -233,6 +272,10 @@ func _lives_on(kind: StringName, terrain: Tile.Terrain) -> bool:
 
 func _water_radius(kind: StringName) -> int:
 	return int(_value(kind, "water_radius"))
+
+
+func _farm_radius(kind: StringName) -> int:
+	return int(_value(kind, "farm_radius"))
 
 
 ## How a kind reacts to the player at a distance in tiles: it runs off when the player is as near as

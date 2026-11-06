@@ -182,3 +182,27 @@ func test_rules_use_their_own_values() -> void:
 	var rules := WildlifeRules.new(values)
 	assert_eq(rules.target_count(&"owl", SUMMER, MIDNIGHT, _clear()), 5)
 	assert_eq(rules.target_count(&"owl", SUMMER, NOON, _clear()), 0)
+
+
+func test_mice_are_about_all_year_mostly_at_dusk_and_at_night() -> void:
+	var mouse := WildlifeRules.MOUSE
+	var by_day := _rules.activity(mouse, SUMMER, NOON, _clear())
+	var at_night := _rules.activity(mouse, SUMMER, MIDNIGHT, _clear())
+	var at_dusk := _rules.activity(mouse, SUMMER, roundi(_sun.sunset(SUMMER)), _clear())
+	assert_gt(by_day, 0.0, "a few by day")
+	assert_gt(at_night, by_day)
+	assert_gt(at_dusk, by_day)
+	assert_gt(_rules.target_count(mouse, WINTER, MIDNIGHT, _clear()), 0, "in winter too")
+
+
+func test_frogs_are_about_from_spring_to_early_autumn_and_gone_in_winter() -> void:
+	var frog := WildlifeRules.FROG
+	var dusk := roundi(_sun.sunset(SUMMER))
+	assert_eq(_rules.target_count(frog, SUMMER, dusk, _clear()), _rules.cap(frog))
+	assert_gt(_rules.target_count(frog, SPRING, NOON, _clear()), 0)
+	var in_autumn := _rules.activity(frog, AUTUMN, NOON, _clear())
+	assert_lt(in_autumn, _rules.activity(frog, SUMMER, NOON, _clear()), "fewer in autumn")
+	assert_eq(_rules.target_count(frog, WINTER, NOON, _clear()), 0)
+	var rain := WeatherSample.new()
+	rain.rain = 0.8
+	assert_gt(_rules.target_count(frog, SUMMER, dusk, rain), 0, "rain doesn't drive them off")

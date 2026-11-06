@@ -154,3 +154,41 @@ func test_geese_look_up_at_9_tiles_and_fly_off_at_6() -> void:
 func test_insects_ignore_the_player() -> void:
 	assert_eq(_rules.reaction(WildlifeRules.BEE, 0.5), WildlifeRules.Reaction.NONE)
 	assert_eq(_rules.reaction(WildlifeRules.BUTTERFLY, 0.5), WildlifeRules.Reaction.NONE)
+
+
+func test_mice_live_by_farmland_and_frogs_by_the_water() -> void:
+	var mouse := WildlifeRules.MOUSE
+	assert_true(_rules.is_habitat(mouse, Tile.Terrain.SOIL, 0, false, true), "a field")
+	assert_true(_rules.is_habitat(mouse, Tile.Terrain.GRASS, 0, false, true), "a hedge bank")
+	assert_false(_rules.is_habitat(mouse, Tile.Terrain.GRASS, 0, false, false), "open grassland")
+	assert_false(_rules.is_habitat(mouse, Tile.Terrain.WETLAND, 0, false, true))
+	var frog := WildlifeRules.FROG
+	assert_true(_rules.is_habitat(frog, Tile.Terrain.WETLAND, 0, true))
+	assert_true(_rules.is_habitat(frog, Tile.Terrain.GRASS, 0, true), "by a ditch")
+	assert_false(_rules.is_habitat(frog, Tile.Terrain.GRASS, 0, false), "dry grass")
+	assert_false(_rules.is_habitat(frog, Tile.Terrain.SOIL, 0, true), "a field")
+
+
+func test_farmland_is_looked_for_around_a_tile() -> void:
+	var world := World.new(SEED)
+	world.add_chunk(WorldGenerator.new(SEED).generate_chunk(Vector2i(0, 0)))
+	var origin := Vector2i(8, 8)
+	for y in range(0, 16):
+		for x in range(0, 16):
+			world.set_terrain(Vector2i(x, y), Tile.Terrain.GRASS)
+			world.remove_object(Vector2i(x, y))
+	assert_false(WildlifeRules.has_farm_near(world, origin, 2))
+	assert_false(_rules.is_habitat_at(WildlifeRules.MOUSE, world, origin))
+	world.set_terrain(Vector2i(10, 9), Tile.Terrain.SOIL)
+	assert_true(WildlifeRules.has_farm_near(world, origin, 2), "a field")
+	assert_false(WildlifeRules.has_farm_near(world, origin, 1))
+	assert_true(_rules.is_habitat_at(WildlifeRules.MOUSE, world, origin))
+	world.set_terrain(Vector2i(10, 9), Tile.Terrain.GRASS)
+	world.add_object(WorldObject.new(WorldObjectTypes.KNICK, Vector2i(6, 7)))
+	assert_true(WildlifeRules.has_farm_near(world, origin, 2), "a Knick")
+	world.remove_object(Vector2i(6, 7))
+	world.add_object(WorldObject.new(WorldObjectTypes.STONE_WALL, Vector2i(7, 10)))
+	assert_true(WildlifeRules.has_farm_near(world, origin, 2), "a fieldstone wall")
+	world.remove_object(Vector2i(7, 10))
+	world.place_building(BuildingTypes.KATE, Vector2i(9, 10))
+	assert_true(WildlifeRules.has_farm_near(world, origin, 2), "a house")

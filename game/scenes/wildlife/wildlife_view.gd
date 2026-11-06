@@ -374,6 +374,10 @@ func _spawn(kind: StringName, point: Vector2, is_pinned: bool) -> void:
 			animal = Stork.new(WildlifeRules.STORK)
 		WildlifeRules.GEESE:
 			animal = GooseFlock.new()
+		WildlifeRules.MOUSE:
+			animal = Mouse.new()
+		WildlifeRules.FROG:
+			animal = Frog.new()
 	animal.position = point
 	_add(animal, is_pinned)
 
