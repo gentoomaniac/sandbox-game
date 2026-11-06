@@ -60,19 +60,7 @@ func _grass_tile() -> Vector2i:
 
 
 func _hold(item: StringName) -> void:
-	var inventory := _state.player.inventory
-	for slot in Inventory.HOTBAR_SIZE:
-		if inventory.item_in(slot) == item:
-			inventory.select(slot)
-			return
-	# The hotbar may be full: the new item then lies further on, and swaps into the held slot.
-	inventory.add(item, 1)
-	for slot in Inventory.SLOT_COUNT:
-		if inventory.item_in(slot) == item:
-			var displaced := inventory.slots[inventory.selected_slot]
-			inventory.slots[inventory.selected_slot] = inventory.slots[slot]
-			inventory.slots[slot] = displaced
-			return
+	HotbarHold.hold(_state.player.inventory, item)
 
 
 func _place(type: StringName, tree := "") -> WorldObject:

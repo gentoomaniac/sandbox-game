@@ -9,21 +9,26 @@ extends RefCounted
 ## 2. Raise VERSION by one.
 ## 3. Add `_upgrade_from_version_<old VERSION>` here, which gives the field to a save of the old
 ##    version (its default, or computed from what the save has), and call it from `read`.
-## 4. Add a test in tests/test_save_upgrade.gd: an old save without the field loads right.
+## 4. Add a test in tests/test_save_upgrade*.gd: an old save without the field loads right.
 ## An upgrade step works on the parsed JSON, before any `from_dict` runs.
 
-const VERSION := 10
+const VERSION := 11
 ## Version 6 had tomatoes, which were not grown here before the 19th century; flax took their
 ## place, item for item.
 const TOMATOES_TO_FLAX := {"tomatoes": "flax", "tomatoes_seeds": "flax_seeds"}
 ## Version 8 dressed the player in a tunic and trousers; the clothes of the period took their
 ## place, item for item.
 const TUNIC_AND_TROUSERS_TO_PERIOD := {"tunic": "waistcoat", "trousers": "breeches"}
+## Version 10 had a hotbar of 10 slots, with the backpack's 20 slots after it.
+const VERSION_10_HOTBAR_SIZE := 10
+const VERSION_10_SLOT_COUNT := 30
 ## How far around the buildings and the player's objects, and around their tilled fields, the
 ## worked land gives way in a version 9 world (see `_upgrade_from_version_9`): an old farm keeps
 ## its yard.
 const UPGRADE_CLEARANCE := 3
 const UPGRADE_FIELD_MARGIN := 2
+## How far apart the piles lie that a version 10 inventory leaves on the ground, in tiles.
+const UPGRADE_PILE_SPACING := 0.3
 const DEFAULT_PATH := "user://saves/world.json"
 ## What a save we can't use is renamed to, so it is never overwritten silently.
 const BACKUP_SUFFIX := ".bak"
@@ -90,17 +95,24 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 		_upgrade_from_version_8(parsed["game"])
 	if version <= 9:
 		_upgrade_from_version_9(parsed["game"])
+	if version <= 10:
+		_upgrade_from_version_10(parsed["game"])
 	return GameState.from_dict(parsed["game"])
 
 
-## Version 1 had no inventory, only the number of crops harvested: that is now turnips in the
-## starting inventory.
+## Version 1 had no inventory, only the number of crops harvested: that is now turnips with the
+## starting tools as the game has them today, in the 20 slots of version 5 (the later steps
+## widen them).
 static func _upgrade_from_version_1(game: Dictionary) -> void:
-	var inventory := Inventory.with_starting_items()
-	# A count beyond what the free slots hold (about 1,500) is dropped.
+	var inventory := ItemSlots.new(20)
+	assert(Inventory.STARTING_ITEMS.size() <= 20, "The starting items outgrew version 5's slots")
+	for slot in Inventory.STARTING_ITEMS.size():
+		var item_and_count: Array = Inventory.STARTING_ITEMS[slot]
+		inventory.slots[slot] = {"item": item_and_count[0], "count": item_and_count[1]}
+	# A count beyond what the free slots hold is dropped.
 	inventory.add(ItemTypes.TURNIP, int(game["harvest_count"]))
 	game.erase("harvest_count")
-	game["player"]["inventory"] = inventory.to_dict()
+	game["player"]["inventory"] = {"slots": inventory.slots_to_data(), "selected_slot": 0}
 
 
 ## Version 2 had no items on the ground, and called logs `wood`.
@@ -132,7 +144,7 @@ static func _upgrade_from_version_4(game: Dictionary) -> void:
 ## after them, so every item keeps its slot.
 static func _upgrade_from_version_5(game: Dictionary) -> void:
 	var slots: Array = game["player"]["inventory"]["slots"]
-	slots.resize(Inventory.SLOT_COUNT)
+	slots.resize(VERSION_10_SLOT_COUNT)
 
 
 ## Version 6 had tomatoes: their plants, seeds and fruit become flax, wherever they are (in the
@@ -233,6 +245,41 @@ static func _upgrade_from_version_9(game: Dictionary) -> void:
 		var generated := generator.object_type_at(tile, generator.terrain_at(tile))
 		if not edited_objects.has(tile) and generated != &"":
 			world["object_edits"].append({"pos": SaveCodec.vector_to_json(tile), "object": null})
+
+
+## Version 10 had a hotbar of ten slots; it has Inventory.HOTBAR_SIZE now. What lay in the
+## slots it lost goes to the first free slots of the backpack (onto stacks of the same item
+## first), and what has no room there onto the ground at the player's feet.
+## This step builds today's layout from Inventory; when the layout changes again, give the new
+## step its own constants and freeze these at version 11's (8 hotbar slots, 28 in all).
+static func _upgrade_from_version_10(game: Dictionary) -> void:
+	var player: Dictionary = game["player"]
+	var saved_inventory: Dictionary = player["inventory"]
+	var old_slots: Array = saved_inventory["slots"]
+	var inventory := Inventory.new()
+	inventory.load_slots(
+		(
+			old_slots.slice(0, Inventory.HOTBAR_SIZE)
+			+ old_slots.slice(VERSION_10_HOTBAR_SIZE, VERSION_10_SLOT_COUNT)
+		)
+	)
+	var backpack_slots := range(Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT)
+	var lost_slots := old_slots.slice(Inventory.HOTBAR_SIZE, VERSION_10_HOTBAR_SIZE)
+	var feet := SaveCodec.float_vector_from_json(player["position"])
+	var piles := 0
+	for stack: Variant in lost_slots:
+		if stack == null:
+			continue
+		var item := StringName(stack["item"])
+		var left := inventory.add(item, int(stack["count"]), backpack_slots)
+		if left > 0:
+			# Piles on one spot would hide each other.
+			var position := feet + Vector2.RIGHT * UPGRADE_PILE_SPACING * piles
+			game["world"]["ground_items"].append(GroundItem.new(item, left, position).to_dict())
+			piles += 1
+	saved_inventory["slots"] = inventory.slots_to_data()
+	if int(saved_inventory["selected_slot"]) >= Inventory.HOTBAR_SIZE:
+		saved_inventory["selected_slot"] = 0
 
 
 static func _keep(kept: Dictionary[Vector2i, bool], area: Rect2i) -> void:

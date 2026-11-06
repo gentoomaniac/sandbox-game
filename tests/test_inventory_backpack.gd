@@ -1,5 +1,5 @@
 extends GutTest
-## The inventory's layout: a hotbar of ten and a backpack of twenty slots, the hotbar extra room.
+## The inventory's layout: a hotbar of eight and a backpack of twenty slots, the hotbar extra room.
 
 var _inventory: Inventory
 
@@ -12,10 +12,10 @@ func before_each() -> void:
 
 
 func test_the_slots_are_the_hotbar_and_then_the_backpack() -> void:
-	assert_eq(Inventory.HOTBAR_SIZE, 10)
+	assert_eq(Inventory.HOTBAR_SIZE, 8)
 	assert_eq(Inventory.BACKPACK_SIZE, 20)
-	assert_eq(Inventory.SLOT_COUNT, 30)
-	assert_eq(_inventory.slots.size(), 30)
+	assert_eq(Inventory.SLOT_COUNT, 28)
+	assert_eq(_inventory.slots.size(), 28)
 
 
 func test_adding_goes_on_into_the_backpack_when_the_hotbar_is_full() -> void:
@@ -25,7 +25,7 @@ func test_adding_goes_on_into_the_backpack_when_the_hotbar_is_full() -> void:
 	assert_eq(_inventory.item_in(Inventory.HOTBAR_SIZE), ItemTypes.AXE)
 
 
-func test_hotbar_and_backpack_together_hold_thirty_stacks() -> void:
+func test_hotbar_and_backpack_together_hold_twenty_eight_stacks() -> void:
 	for slot in Inventory.SLOT_COUNT:
 		assert_eq(_inventory.add(ItemTypes.AXE, 1), 0)
 	assert_eq(_inventory.add(ItemTypes.AXE, 1), 1)
@@ -43,7 +43,7 @@ func test_backpack_first_order_puts_the_backpack_before_the_hotbar_and_the_held_
 	assert_eq(order.size(), Inventory.SLOT_COUNT)
 	assert_eq(order[0], Inventory.HOTBAR_SIZE)
 	assert_eq(order[Inventory.BACKPACK_SIZE], 0)
-	assert_eq(order[-1], 9)
+	assert_eq(order[-1], Inventory.HOTBAR_SIZE - 1)
 
 
 func test_a_duplicate_has_the_same_content_and_changes_alone() -> void:

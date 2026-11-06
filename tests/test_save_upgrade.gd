@@ -1,26 +1,11 @@
-extends GutTest
+extends SaveUpgradeCase
 ## Saves of older versions load, upgraded to the current one (see SaveFile).
-
-const SAVE_DIR := "user://test_save_upgrade"
-const SAVE_PATH := SAVE_DIR + "/world.json"
-
-
-func after_each() -> void:
-	for file_name in DirAccess.get_files_at(SAVE_DIR):
-		DirAccess.remove_absolute(SAVE_DIR.path_join(file_name))
-
-
-func _write_save(version: int, game: Dictionary) -> void:
-	DirAccess.make_dir_recursive_absolute(SAVE_DIR)
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	file.store_string(JSON.stringify({"version": version, "game": game}))
-	file.close()
 
 
 func test_a_version_2_save_loads_with_wood_as_logs_and_nothing_on_the_ground() -> void:
 	var state := GameState.new_game(7)
 	state.player.inventory.add(ItemTypes.LOGS, 7)
-	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
+	var game: Dictionary = _in_version_10_layout(JSON.parse_string(JSON.stringify(state.to_dict())))
 	game["world"].erase("ground_items")
 	for stack: Variant in game["player"]["inventory"]["slots"]:
 		if stack != null and stack["item"] == "logs":
@@ -48,7 +33,7 @@ func test_a_version_3_save_loads_with_its_saplings_as_acorns() -> void:
 	var state := GameState.new_game(7)
 	state.player.inventory.add(ItemTypes.ACORN, 3)
 	state.world.ground_items.add(GroundItem.new(ItemTypes.ACORN, 2, Vector2(1.5, 2.25)))
-	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
+	var game: Dictionary = _in_version_10_layout(JSON.parse_string(JSON.stringify(state.to_dict())))
 	for stack: Variant in game["player"]["inventory"]["slots"]:
 		if stack != null and stack["item"] == "acorn":
 			stack["item"] = "sapling"
@@ -70,7 +55,7 @@ func test_a_version_4_save_loads_with_its_small_houses_as_kates() -> void:
 				break
 		if not state.world.buildings().is_empty():
 			break
-	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
+	var game: Dictionary = _in_version_10_layout(JSON.parse_string(JSON.stringify(state.to_dict())))
 	game["world"]["buildings"][0]["type"] = "small_house"
 	_write_save(4, game)
 
@@ -81,26 +66,28 @@ func test_a_version_4_save_loads_with_its_small_houses_as_kates() -> void:
 
 
 func test_a_version_5_save_loads_with_its_twenty_slots_in_place_and_ten_new_empty_ones() -> void:
-	var state := GameState.new_game(7)
-	state.player.inventory.slots[19] = {"item": ItemTypes.LOGS, "count": 9}
-	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
-	var slots: Array = game["player"]["inventory"]["slots"]
+	var game := _current_game()
+	var slots: Array = [{"item": "hoe", "count": 1}]
 	slots.resize(20)
+	slots[10] = {"item": "straw_hat", "count": 1}
+	slots[19] = {"item": "logs", "count": 9}
+	game["player"]["inventory"]["slots"] = slots
 	_write_save(5, game)
 
 	var inventory := SaveFile.read(SAVE_PATH).player.inventory
 
 	assert_eq(inventory.slots.size(), Inventory.SLOT_COUNT)
 	assert_eq(inventory.item_in(0), ItemTypes.HOE)
-	assert_eq(inventory.item_in(10), ItemTypes.STRAW_HAT)
-	assert_eq(inventory.slots[19], {"item": ItemTypes.LOGS, "count": 9})
-	for slot in range(20, Inventory.SLOT_COUNT):
+	# The backpack of version 10 began at slot 10; it begins at HOTBAR_SIZE now.
+	assert_eq(inventory.item_in(Inventory.HOTBAR_SIZE), ItemTypes.STRAW_HAT)
+	assert_eq(inventory.slots[Inventory.HOTBAR_SIZE + 9], {"item": ItemTypes.LOGS, "count": 9})
+	for slot in range(Inventory.HOTBAR_SIZE + 10, Inventory.SLOT_COUNT):
 		assert_true(inventory.slots[slot].is_empty())
 
 
 func test_a_version_6_save_loads_with_its_tomatoes_as_flax() -> void:
 	var state := GameState.new_game(7)
-	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
+	var game: Dictionary = _in_version_10_layout(JSON.parse_string(JSON.stringify(state.to_dict())))
 	game["player"]["inventory"]["slots"][13] = {"item": "tomatoes_seeds", "count": 4}
 	game["world"]["ground_items"].append({"item": "tomatoes", "count": 2, "position": [3.0, 4.0]})
 	var crop := WorldObject.new(&"flax", Vector2i(100, 100)).to_dict()
@@ -113,7 +100,7 @@ func test_a_version_6_save_loads_with_its_tomatoes_as_flax() -> void:
 
 	var restored := SaveFile.read(SAVE_PATH)
 
-	assert_eq(restored.player.inventory.slots[13], {"item": &"flax_seeds", "count": 4})
+	assert_eq(restored.player.inventory.slots[11], {"item": &"flax_seeds", "count": 4})
 	assert_eq(restored.world.ground_items.count_of(&"flax"), 2)
 	var objects := {}
 	for edit: Dictionary in restored.world.to_dict()["object_edits"]:
@@ -125,7 +112,7 @@ func test_a_version_6_save_loads_with_its_tomatoes_as_flax() -> void:
 
 func test_a_version_6_save_turns_the_tomatoes_inside_a_building_into_flax() -> void:
 	var state := GameState.new_game(7)
-	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
+	var game: Dictionary = _in_version_10_layout(JSON.parse_string(JSON.stringify(state.to_dict())))
 	var crop := WorldObject.new(&"flax", Vector2i(1, 1)).to_dict()
 	crop["type"] = "tomatoes"
 	crop["state"]["growth"] = 5.0
@@ -145,13 +132,8 @@ func test_a_version_6_save_turns_the_tomatoes_inside_a_building_into_flax() -> v
 	)
 
 
-## A current save as parsed JSON, to take fields from.
-func _current_game() -> Dictionary:
-	return JSON.parse_string(JSON.stringify(GameState.new_game(7).to_dict()))
-
-
 func test_a_version_7_save_without_soil_moisture_or_spent_clay_loads_with_neither() -> void:
-	var game := _current_game()
+	var game := _in_version_10_layout(_current_game())
 	game["world"].erase("soil_moisture")
 	game["world"].erase("spent_clay_spots")
 	_write_save(7, game)
@@ -166,7 +148,7 @@ func test_a_version_7_save_keeps_the_soil_moisture_and_clay_it_has() -> void:
 	var state := GameState.new_game(7)
 	state.world.set_moisture(Vector2i(5, 5), 0.9)
 	state.world.spend_clay_spot(Vector2i(6, 6))
-	_write_save(7, JSON.parse_string(JSON.stringify(state.to_dict())))
+	_write_save(7, _in_version_10_layout(JSON.parse_string(JSON.stringify(state.to_dict()))))
 
 	var restored := SaveFile.read(SAVE_PATH)
 
@@ -175,7 +157,7 @@ func test_a_version_7_save_keeps_the_soil_moisture_and_clay_it_has() -> void:
 
 
 func test_a_version_7_save_without_equipment_wears_the_starting_outfit() -> void:
-	var game := _current_game()
+	var game := _in_version_10_layout(_current_game())
 	game["player"].erase("equipment")
 	_write_save(7, game)
 
@@ -185,7 +167,7 @@ func test_a_version_7_save_without_equipment_wears_the_starting_outfit() -> void
 
 
 func test_a_version_7_save_without_energy_health_or_debuff_has_them_full() -> void:
-	var game := _current_game()
+	var game := _in_version_10_layout(_current_game())
 	for field in ["energy", "health", "is_debuffed"]:
 		game["player"].erase(field)
 	_write_save(7, game)
@@ -198,7 +180,7 @@ func test_a_version_7_save_without_energy_health_or_debuff_has_them_full() -> vo
 
 
 func test_a_version_7_save_gives_a_chest_without_a_store_an_empty_one() -> void:
-	var game := _current_game()
+	var game := _in_version_10_layout(_current_game())
 	var chest := WorldObject.new(WorldObjectTypes.CHEST, Vector2i(101, 100)).to_dict()
 	chest.erase("storage")
 	game["world"]["object_edits"].append({"pos": [101, 100], "object": chest})
@@ -213,7 +195,7 @@ func test_a_version_7_save_gives_a_chest_without_a_store_an_empty_one() -> void:
 
 
 func test_a_version_7_crop_that_counted_days_has_that_many_stages_of_growth() -> void:
-	var game := _current_game()
+	var game := _in_version_10_layout(_current_game())
 	var crop := WorldObject.new(WorldObjectTypes.TURNIP, Vector2i(100, 100)).to_dict()
 	crop["state"] = {"days_grown": 2}
 	game["world"]["object_edits"].append({"pos": [100, 100], "object": crop})
@@ -230,7 +212,7 @@ func test_a_version_7_crop_that_counted_days_has_that_many_stages_of_growth() ->
 
 ## A version 8 save: dressed in the tunic and trousers, with bare feet.
 func _version_8_game() -> Dictionary:
-	var game := _current_game()
+	var game := _in_version_10_layout(_current_game())
 	game["player"]["equipment"] = {"body": "tunic", "legs": "trousers"}
 	return game
 
@@ -248,7 +230,7 @@ func test_a_version_8_save_loads_with_its_tunic_and_trousers_as_waistcoat_and_br
 
 	assert_eq(restored.player.equipment.item_in(Equipment.BODY), ItemTypes.WAISTCOAT)
 	assert_eq(restored.player.equipment.item_in(Equipment.LEGS), ItemTypes.BREECHES)
-	assert_eq(restored.player.inventory.slots[13], {"item": ItemTypes.BREECHES, "count": 1})
+	assert_eq(restored.player.inventory.slots[11], {"item": ItemTypes.BREECHES, "count": 1})
 	assert_eq(restored.world.ground_items.count_of(ItemTypes.WAISTCOAT), 1)
 	restored.world.add_chunk(Chunk.new(Vector2i(3, 3)))
 	var storage := restored.world.object_at(Vector2i(101, 100)).storage
@@ -280,7 +262,7 @@ func test_a_version_8_save_puts_clogs_on_the_bare_feet() -> void:
 
 
 func test_a_version_9_save_keeps_the_worked_land_off_the_house_and_the_player() -> void:
-	var game := _current_game()
+	var game := _in_version_10_layout(_current_game())
 	var generator := WorldGenerator.new(int(game["world"]["seed"]))
 	var knick := _find_tile(
 		func(pos: Vector2i) -> bool:
@@ -308,7 +290,7 @@ func test_a_version_9_save_keeps_the_worked_land_off_the_house_and_the_player() 
 
 
 func test_a_version_9_save_keeps_its_chest_on_a_knick_and_its_tilled_soil_on_a_ditch() -> void:
-	var game := _current_game()
+	var game := _in_version_10_layout(_current_game())
 	var generator := WorldGenerator.new(int(game["world"]["seed"]))
 	var knick := _find_tile(
 		func(pos: Vector2i) -> bool:

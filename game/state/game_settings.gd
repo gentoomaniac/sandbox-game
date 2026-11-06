@@ -101,6 +101,9 @@ const ACTION_DESCRIPTIONS := {
 	&"console": "Open the console for commands and cheats.",
 	&"pause": "Open the pause menu.",
 }
+## Actions older settings files may still bind (the hotbar had ten slots): skipped without a
+## warning.
+const RETIRED_ACTIONS: Array[StringName] = [&"hotbar_9", &"hotbar_10"]
 const HOTBAR_DESCRIPTION := "Select this hotbar slot."
 const MOUSE_BUTTON_LABELS := {
 	MOUSE_BUTTON_LEFT: "Left mouse",
@@ -379,6 +382,8 @@ func _load_audio_section(file: ConfigFile) -> void:
 
 
 func _load_action(file: ConfigFile, action: StringName) -> void:
+	if RETIRED_ACTIONS.has(action):
+		return
 	if not _defaults.has(action):
 		push_warning("Ignoring unknown action '%s' in %s" % [action, _path])
 		return

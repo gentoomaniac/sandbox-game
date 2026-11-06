@@ -24,8 +24,8 @@ extends RefCounted
 ##   --menu=<page>            open that menu page (pause, settings, controls, display, game,
 ##                            audio); with --screenshot the shot is of the menu
 ##   --tooltip=<id>           show the tooltip of a control as if the mouse rested on it:
-##                            hotbar_<0..9>; inventory_<0..29> and equipment_<slot> (with
-##                            --inventory); recipe_<id> (with --crafting); inventory_<0..29>
+##                            hotbar_<0..7>; inventory_<0..27> and equipment_<slot> (with
+##                            --inventory); recipe_<id> (with --crafting); inventory_<0..27>
 ##                            and chest_<n> (with --storage); setting_ui_scale and
 ##                            setting_day_length (with --menu=game); setting_master_volume,
 ##                            setting_effects_volume, setting_ambience_volume and

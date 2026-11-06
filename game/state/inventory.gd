@@ -5,7 +5,7 @@ extends ItemSlots
 ## it takes nothing from the backpack. Plain state; the hotbar and the inventory screen only
 ## show it and send it actions. `changed` also tells of the selection changing.
 
-const HOTBAR_SIZE := 10
+const HOTBAR_SIZE := 8
 const BACKPACK_SIZE := 20
 const SLOT_COUNT := HOTBAR_SIZE + BACKPACK_SIZE
 

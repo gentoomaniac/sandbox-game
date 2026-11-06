@@ -8,7 +8,7 @@ func before_each() -> void:
 	_inventory = Inventory.new()
 	# Holding the last hotbar slot, so `add` fills slots from the first in these layout tests
 	# (it keeps the held slot for last, see test_inventory_held_slot.gd).
-	_inventory.select(9)
+	_inventory.select(Inventory.HOTBAR_SIZE - 1)
 
 
 func _fill_with_tools() -> void:
@@ -16,8 +16,8 @@ func _fill_with_tools() -> void:
 		_inventory.add(ItemTypes.HOE, 1)
 
 
-func test_a_new_inventory_has_thirty_empty_slots() -> void:
-	assert_eq(_inventory.slots.size(), 30)
+func test_a_new_inventory_has_twenty_eight_empty_slots() -> void:
+	assert_eq(_inventory.slots.size(), 28)
 	assert_true(_inventory.slots.all(func(stack: Dictionary) -> bool: return stack.is_empty()))
 	assert_eq(_inventory.held_item(), ItemTypes.NONE)
 
@@ -147,7 +147,7 @@ func test_selecting_a_slot_holds_its_item() -> void:
 	_inventory.add(ItemTypes.AXE, 1)
 	_inventory.select(1)
 	assert_eq(_inventory.held_item(), ItemTypes.AXE)
-	_inventory.select(9)
+	_inventory.select(Inventory.HOTBAR_SIZE - 1)
 	assert_eq(_inventory.held_item(), ItemTypes.NONE)
 
 

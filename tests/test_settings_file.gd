@@ -107,6 +107,19 @@ func test_unknown_actions_and_unreadable_entries_are_ignored() -> void:
 	assert_push_warning_count(3)
 
 
+func test_the_bindings_of_the_retired_hotbar_slots_9_and_10_are_skipped_quietly() -> void:
+	_write_file(
+		(
+			'[controls]\nhotbar_1=["key:%d"]\nhotbar_9=["key:%d"]\nhotbar_10=["key:%d"]\n'
+			% [KEY_F, KEY_G, KEY_H]
+		)
+	)
+	_settings.load_file()
+	assert_eq(_texts(&"hotbar_1"), ["F"])
+	assert_false(InputMap.has_action(&"hotbar_9"))
+	assert_push_warning_count(0)
+
+
 func test_more_than_two_bindings_in_the_file_are_cut() -> void:
 	_write_file('[controls]\ninteract=["key:%d", "key:%d", "key:%d"]\n' % [KEY_F, KEY_G, KEY_H])
 	_settings.load_file()

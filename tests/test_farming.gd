@@ -35,12 +35,7 @@ func _grass_tile() -> Vector2i:
 
 
 func _hold(item: StringName) -> void:
-	var inventory := _state.player.inventory
-	for slot in Inventory.HOTBAR_SIZE:
-		if inventory.item_in(slot) == item:
-			inventory.select(slot)
-			return
-	fail_test("not on the hotbar: %s" % item)
+	HotbarHold.hold(_state.player.inventory, item)
 
 
 func _till_and_plant() -> void:

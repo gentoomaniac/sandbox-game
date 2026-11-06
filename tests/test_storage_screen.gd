@@ -9,7 +9,7 @@ var _screen: StorageScreen
 func before_each() -> void:
 	_inventory = Inventory.new()
 	# Holding the last hotbar slot, so items are added from the first slot on.
-	_inventory.select(9)
+	_inventory.select(Inventory.HOTBAR_SIZE - 1)
 	_chest = WorldObject.new(WorldObjectTypes.CHEST, Vector2i.ZERO).storage
 
 

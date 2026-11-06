@@ -390,7 +390,7 @@ func _can_use() -> bool:
 	return not _is_in_transition and not _build_mode.is_active()
 
 
-## The hotbar slot (0 to 9) whose key `event` presses, or -1.
+## The hotbar slot (0 to 7) whose key `event` presses, or -1.
 func _hotbar_slot_of(event: InputEvent) -> int:
 	for slot in Inventory.HOTBAR_SIZE:
 		if event.is_action_pressed("hotbar_%d" % (slot + 1)):
