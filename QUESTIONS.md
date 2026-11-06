@@ -42,7 +42,15 @@ Answered questions move into SPEC.md and are removed here.
    sticks; snow covers the roof evenly. A first pass looked like shingles and was redone.
    Compare: docs/screenshots/buildings.png. Each piece is its own commit (courses and planes,
    ridge sticks, door swells, snow), so any one can be reverted. Default: keep.
-10. **Code review** (docs/code-review-2026-11-06.md): its findings became tasks 63-71 and run
+10. **Hedges, walls, fences, dykes and ditches** (task 54): Knicks, stone walls, wattle
+    fences and ditches block walking, with one gap per stretch as gate or crossing; dykes can
+    be walked on. The axe cuts a Knick (1 log, 2 fibre) or a fence (2 fibre), the pickaxe takes
+    a wall apart (3 stone); dykes and ditches can't be removed yet. Nothing can be built or
+    tilled on them. **Old worlds get them too**, away from the farm: the save upgrade keeps 3
+    tiles around buildings and placed things and 2 around the tilled fields clear, so your
+    farm is untouched, but natural trees and rocks that stood on the new lines elsewhere are
+    gone. New land takes about 6.5 ms per chunk to generate (was 3.7). Default: keep.
+11. **Code review** (docs/code-review-2026-11-06.md): its findings became tasks 63-71 and run
    one at a time beside the art tasks. Default: go ahead.
 
 ## Questions
