@@ -39,7 +39,13 @@ func test_the_map_becomes_terrain_objects_and_an_exit() -> void:
 	assert_eq(interior.object_at(Vector2i(5, 5)).type, WorldObjectTypes.TABLE)
 	assert_eq(interior.object_at(Vector2i(7, 5)).type, WorldObjectTypes.STOOL)
 	assert_eq(interior.object_at(Vector2i(4, 2)).type, WorldObjectTypes.HEARTH)
-	assert_eq(interior.objects().size(), 8, "bed, table, 2 stools, hearth, chest, 2 windows")
+	assert_eq(interior.object_at(Vector2i(2, 2)).type, WorldObjectTypes.WALL_BENCH)
+	assert_eq(interior.object_at(Vector2i(7, 0)).type, WorldObjectTypes.PLATE_RACK)
+	assert_eq(
+		interior.objects().size(),
+		10,
+		"bed, table, 2 stools, hearth, chest, wall bench, 2 windows, plate rack"
+	)
 
 
 func test_furniture_covers_its_whole_footprint_and_counts_once() -> void:
@@ -191,6 +197,6 @@ func test_the_view_shows_furniture_and_lights_the_hearth() -> void:
 	var view := InteriorView.new()
 	add_child_autofree(view)
 	view.show_interior(InteriorLoader.load_interior(KATE_MAP))
-	assert_eq(view.entities.get_child_count(), 8)
+	assert_eq(view.entities.get_child_count(), 10)
 	var lights := view.get_children().filter(func(node: Node) -> bool: return node is ObjectLight)
 	assert_eq(lights.size(), 1)

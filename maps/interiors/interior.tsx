@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.12.0" name="interior" tilewidth="16" tileheight="16" tilecount="30" columns="30">
- <image source="../../assets/interior.png" width="480" height="16"/>
+<tileset version="1.10" tiledversion="1.12.0" name="interior" tilewidth="16" tileheight="16" tilecount="32" columns="32">
+ <image source="../../assets/interior.png" width="512" height="16"/>
  <tile id="0">
   <properties>
    <property name="terrain" value="FLOOR"/>
@@ -150,6 +150,16 @@
  <tile id="29">
   <properties>
    <property name="object_type" value="crate"/>
+  </properties>
+ </tile>
+ <tile id="30">
+  <properties>
+   <property name="object_type" value="plate_rack"/>
+  </properties>
+ </tile>
+ <tile id="31">
+  <properties>
+   <property name="object_type" value="wall_bench"/>
   </properties>
  </tile>
 </tileset>

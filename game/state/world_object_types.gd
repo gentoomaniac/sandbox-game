@@ -84,6 +84,8 @@ const HAY_PILE := &"hay_pile"
 const BARREL := &"barrel"
 const SACKS := &"sacks"
 const CRATE := &"crate"
+const PLATE_RACK := &"plate_rack"
+const WALL_BENCH := &"wall_bench"
 const STUMP := &"stump"
 const DEAD_STUMP := &"dead_stump"
 const TALL_GRASS := &"tall_grass"
@@ -545,13 +547,28 @@ const _OTHER_TYPES := {
 		"harvest_level": 0,
 		"interior_sprite": "res://assets/interior/crate.png",
 	},
-	# Wall decoration: it stands on the wall tiles of the back wall face.
+	# A bench against the back wall: its backboard stands on the wall above its footprint.
+	WALL_BENCH:
+	{
+		"footprint": Vector2i(2, 1),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"interior_sprite": "res://assets/interior/wall_bench.png",
+	},
+	# Wall pieces: they stand on the wall tiles of the back wall face.
 	WINDOW:
 	{
 		"footprint": Vector2i(1, 2),
 		"blocks_walking": true,
 		"harvest_level": 0,
 		"interior_sprite": "res://assets/interior/window.png",
+	},
+	PLATE_RACK:
+	{
+		"footprint": Vector2i(1, 2),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"interior_sprite": "res://assets/interior/plate_rack.png",
 	},
 }
 

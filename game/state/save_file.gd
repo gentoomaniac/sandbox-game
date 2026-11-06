@@ -284,19 +284,33 @@ static func _upgrade_from_version_10(game: Dictionary) -> void:
 		saved_inventory["selected_slot"] = 0
 
 
-## Version 11 rooms had one floor; the maps now lay brick in the living rooms and clay in the
-## work rooms (the byre, the barn, the shack). A saved room takes the floor of its building's
-## map of today, tile by tile; its walls and furniture stay as they were.
+## Version 11 rooms had one floor and bare walls; the maps now lay brick in the living rooms
+## and clay in the work rooms (the byre, the barn, the shack), and hang plate racks on the back
+## wall. A saved room takes the floor of its building's map of today, tile by tile, and the
+## wall pieces of the map (whatever stands on wall tiles only) that it lacks, where their tiles
+## are free. The furniture on its floor stays as it was: the player may have moved in.
 static func _upgrade_from_version_11(game: Dictionary) -> void:
 	for building: Dictionary in game["world"]["buildings"]:
-		if building["interior"] == null:
+		var saved: Variant = building["interior"]
+		if saved == null:
 			continue
 		var map_path: String = BuildingTypes.TYPES[StringName(building["type"])]["interior_map"]
 		var today := InteriorLoader.load_interior(map_path)
-		for tile: Array in building["interior"]["tiles"]:
+		for tile: Array in saved["tiles"]:
 			var today_tile := today.tile_at(SaveCodec.vector_from_json(tile))
 			if tile[2] == "FLOOR" and today_tile != null and today_tile.is_floor():
 				tile[2] = SaveCodec.terrain_to_json(today_tile.terrain)
+		var room := Interior.from_dict(saved)
+		for piece in today.objects():
+			var is_on_the_wall := piece.tiles().all(
+				func(tile: Vector2i) -> bool:
+					return today.tile_at(tile).terrain == Tile.Terrain.WALL
+			)
+			var is_free := piece.tiles().all(
+				func(tile: Vector2i) -> bool: return room.object_at(tile) == null
+			)
+			if is_on_the_wall and is_free:
+				saved["objects"].append(piece.to_dict())
 
 
 static func _keep(kept: Dictionary[Vector2i, bool], area: Rect2i) -> void:

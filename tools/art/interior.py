@@ -467,6 +467,61 @@ def crate():
     return outline(canvas, "soil_dark", keep_bottom=True)
 
 
+def plate(canvas, left, top, rim, face, shade):
+    """A plate 5x6 standing on its edge, its top left at (left, top): a `rim`, a `face` and a
+    `shade` on its right."""
+    for y, (start, end) in enumerate(((1, 3), (0, 4), (0, 4), (0, 4), (0, 4), (1, 3))):
+        rect(canvas, left + start, top + y, left + end, top + y, rim)
+    rect(canvas, left + 1, top + 1, left + 3, top + 4, face)
+    rect(canvas, left + 4, top + 1, left + 4, top + 4, shade)
+
+
+def plate_rack():
+    """A plate rack 1x2 tiles, hung on the back wall: two oak shelves, each with a rail in
+    front, holding a blue-and-white Delft plate and a pewter one."""
+    canvas = blank(TILE, 2 * TILE)
+    rect(canvas, 1, 5, 14, 25, "soil")
+    rect(canvas, 1, 5, 14, 6, "soil_mid")
+    rect(canvas, 1, 5, 14, 5, "soil_light")
+    for top, plates in ((8, ("delft", "pewter")), (17, ("pewter", "delft"))):
+        for left, kind in zip((3, 8), plates):
+            if kind == "delft":
+                plate(canvas, left, top, "water", "lime", "snow_shadow")
+                canvas[top + 2][left + 2] = "water_deep"
+            else:
+                plate(canvas, left, top, "stone", "stone_light", "stone_dark")
+        # The shelf the plates stand on and the rail that holds them.
+        rect(canvas, 1, top + 6, 14, top + 7, "soil_mid")
+        rect(canvas, 1, top + 6, 14, top + 6, "soil_light")
+        rect(canvas, 2, top + 4, 13, top + 4, "soil_mid")
+    for x in (1, 14):
+        rect(canvas, x, 5, x, 25, "soil_mid")
+    return outline(canvas, "soil_dark")
+
+
+def wall_bench():
+    """A bench 2x1 tiles along the back wall: a back of turned spindles under a rail, standing
+    on the wall above the footprint, and a plank seat on four legs."""
+    canvas = blank(2 * TILE, TILE + 8)
+    rect(canvas, 0, 0, 31, 1, "soil_light")
+    rect(canvas, 0, 1, 31, 1, "soil_mid")
+    for x in range(1, 32, 4):
+        rect(canvas, x, 2, x + 1, 8, "soil_light")
+        rect(canvas, x + 1, 2, x + 1, 8, "soil_mid")
+    # The seat, seen from above, and its front edge.
+    rect(canvas, 0, 9, 31, 14, "soil_light")
+    rect(canvas, 0, 9, 31, 9, "soil_mid")
+    rect(canvas, 0, 12, 31, 12, "soil_mid")
+    rect(canvas, 0, 15, 31, 16, "soil_mid")
+    rect(canvas, 0, 16, 31, 16, "soil")
+    # The legs and a stretcher between them.
+    for x in (1, 28):
+        rect(canvas, x, 17, x + 2, 23, "soil")
+        rect(canvas, x, 17, x, 23, "soil_mid")
+    rect(canvas, 4, 20, 27, 20, "soil")
+    return outline(canvas, "soil_dark", keep_bottom=True)
+
+
 def marker_tile(picture, footprint):
     """The top left tile of the footprint of a sprite that is centred on it."""
     width, height = len(picture[0]), len(picture)
@@ -499,6 +554,8 @@ def furniture():
         "barrel": (barrel(), (1, 1)),
         "sacks": (sacks(), (1, 1)),
         "crate": (crate(), (1, 1)),
+        "plate_rack": (plate_rack(), (1, 2)),
+        "wall_bench": (wall_bench(), (2, 1)),
     }
 
 
