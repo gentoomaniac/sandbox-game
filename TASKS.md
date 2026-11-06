@@ -678,7 +678,7 @@ within a few tiles crouches, creeps, and pounces; about half the pounces catch i
 
 ## 83. Taking down buildings and placed things
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06: a way to deconstruct buildings and items. Placed things can
 already be taken down with the axe or the pickaxe; buildings can't be removed at all.
@@ -693,6 +693,18 @@ first, and the message says so. If the player's bed was in it, they wake at the 
 sleeping bag. A stork on its roof flies off. Crafted placed things (chests, stations,
 stools) are not broken down: taken down, they go back into the inventory whole (or drop
 when it is full). No salvaging of items into materials.
+
+Done: `World.remove_building` (signal `building_removed`, which `BuildingViews.remove` answers)
+and `GameState.take_down_building` / `refund_of_building` / `why_not_take_down`. The furniture
+the house came with is told from what the player put in by reloading the house's own map
+(same type at the same tile, and nothing in it), so an empty chest of the Kate goes with the
+house but a full one, or a stool the player added, keeps it standing. The camp's sleeping bag
+is not saved: `CampSite.sleeping_bag_of_seed` finds it again from the generated land, so no
+save change. `Builder` has the mode (`is_taking_down`, reset when the hammer is let go or
+build mode dismissed) and `take_down_target` / `take_down_gives` / `take_down`; what counts as
+a placed thing is `ItemTypes.item_placing`. `BuildMode` marks the target and runs the one
+second hold; the sound is the axe's chop (`taken_down`). `--taking-down` for screenshots.
+Storks: `WildlifeView.is_standing` already made a stork leave a roof that is gone.
 
 ## Later (not part of the prototype)
 

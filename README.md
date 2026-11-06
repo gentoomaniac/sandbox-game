@@ -208,6 +208,18 @@ and 5 stone, the Kate 30, 15, 15 and 25).
 
 ![Build mode: the ghost of a Kate and what it costs](docs/screenshots/build.png)
 
+Press X with the hammer in hand to switch from building to taking down: the panel reads
+"Taking down", the tile under the mouse gets a red frame, and the building or the thing you
+placed (a chest, a workbench, a kiln) under it is tinted red, with a message of what it gives.
+Hold Space or the click for a second to take it down. A building gives back half of each
+material, rounded down, in front of its door; the furniture it came with goes with it. It
+stands while you are inside, or while anything you put in it is left (the message says so).
+If your bed was in it, you wake at the camp's sleeping bag again. A placed thing goes into the
+inventory whole, with what it holds, or onto the ground when the inventory is full. X again
+goes back to building.
+
+![Taking down: a shack marked red, and what it gives](docs/screenshots/take-down.png)
+
 ### Character, inventory and equipment
 
 The character is drawn in layers, so anything they wear shows in the world. They dress as
@@ -347,6 +359,7 @@ These are the default keys; all of them can be changed under Settings → Contro
 | C | Crafting menu (by hand) |
 | E | Open the chest or the station (its crafting menu) in front of you, else sleep until morning (next to a bed); with the hammer in hand it picks the next building |
 | B | Take the hammer: build mode |
+| X | Switch the hammer between building and taking down (hold Space or click to take down) |
 | Q, E | Previous and next building (while holding the hammer) |
 | Mouse wheel | Zoom |
 | Escape | Pause menu |

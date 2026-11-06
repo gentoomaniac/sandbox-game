@@ -87,7 +87,9 @@ with Knicks, walls and fences on the Geest, ditches in the marsh, and dykes.
   as **StationWork** in the object's `state` until it is done on the game clock. `Interaction`
   says which chest or station E opens; `CraftingScreen` shows the recipes of one place.
 - Other views each draw one piece of state: `PlayerView`, `WeatherView`, `WildlifeView`,
-  `BuildMode`, `GroundItemView`, and the HUDs and screens (`HotbarHud`, `CharacterScreen`,
+  `BuildMode` (the ghost, and the red marking and hold of taking down; `Builder` holds the
+  mode and what each target gives, `GameState.take_down_building` the rules for buildings),
+  `GroundItemView`, and the HUDs and screens (`HotbarHud`, `CharacterScreen`,
   `CraftingScreen`, `PauseMenu`, `ConsoleView` and so on).
 
 ## Data files and how to add content
