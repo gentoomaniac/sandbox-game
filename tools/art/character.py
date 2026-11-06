@@ -17,11 +17,7 @@ CHARACTER_HEIGHT = 32
 PLAYER_FACINGS = ("down", "up", "left", "right")
 PLAYER_FRAMES = ("idle", "walk1", "walk2", "walk3", "walk4")
 
-# Colours of the variants. A tunic or hair is a base colour with a light and a shade.
-CLOTHES_COLOURS = {
-    "0": {"base": "water", "light": "water_light", "shade": "water_deep"},
-    "1": {"base": "ember", "light": "flame", "shade": "soil"},
-}
+# Colours of the hair variants: a base colour with a light and a shade.
 HAIR_COLOURS = {
     "0": {"base": "soil", "light": "soil_light", "shade": "soil_dark", "long": False},
     "1": {"base": "straw", "light": "gold", "shade": "reed", "long": True},
@@ -164,44 +160,75 @@ def draw_legs(facing, pose, **_):
     return canvas
 
 
-def draw_clothes(facing, pose, base, light, shade, **_):
-    """A belted tunic with sleeves."""
+# The linen shirt, and the waistcoat of madder-red wool with its row of tin buttons.
+SHIRT = {"base": "lime", "shade": "sand_light"}
+WAISTCOAT = {"base": "rust", "light": "red_light", "shade": "rust_dark", "button": "stone_light"}
+
+
+def draw_shirt(facing, pose, **_):
+    """A linen shirt with long sleeves to the wrist, tucked into the breeches."""
     canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
     sink, swing = pose["sink"], pose["swing"]
+    base, shade = SHIRT["base"], SHIRT["shade"]
     if facing in ("down", "up"):
         rect(canvas, 6, 13 + sink, 10, 22 + sink, base)
-        rect(canvas, 5, 21 + sink, 11, 22 + sink, base)
-        rect(canvas, 6, 13 + sink, 10, 14 + sink, light)
-        rect(canvas, 10, 15 + sink, 10, 20 + sink, shade)
-        rect(canvas, 5, 22 + sink, 11, 22 + sink, shade)
-        rect(canvas, 6, 19 + sink, 10, 19 + sink, "soil_dark")
+        rect(canvas, 10, 15 + sink, 10, 22 + sink, shade)
+        rect(canvas, 6, 22 + sink, 10, 22 + sink, shade)
         # Sleeves; the right one swings with the arm.
         for x0, dy in ((4, 0), (11, swing // 2)):
             rect(canvas, x0, 14 + sink + dy, x0 + 1, 18 + sink + dy, base)
-            rect(canvas, x0, 14 + sink + dy, x0 + 1, 14 + sink + dy, light)
             rect(canvas, x0 + 1, 15 + sink + dy, x0 + 1, 17 + sink + dy, shade)
             rect(canvas, x0, 18 + sink + dy, x0 + 1, 18 + sink + dy, shade)
         if facing == "down":
-            rect(canvas, 7, 13 + sink, 9, 13 + sink, "cream")
-            canvas[14 + sink][8] = "cream"
-            canvas[19 + sink][8] = "gold"
+            # The open neck.
+            canvas[13 + sink][8] = "skin_shade"
         else:
             rect(canvas, 6, 13 + sink, 10, 13 + sink, shade)
     else:
         rect(canvas, 5, 13 + sink, 10, 22 + sink, base)
+        rect(canvas, 5, 15 + sink, 5, 22 + sink, shade)
+        rect(canvas, 5, 22 + sink, 10, 22 + sink, shade)
+        draw_near_sleeve(canvas, pose, base, shade)
+    return canvas
+
+
+def draw_near_sleeve(canvas, pose, base, shade):
+    """The sleeve of the near arm, seen from the side over the torso: a shaded edge at the back,
+    and the cuff."""
+    sink, swing = pose["sink"], pose["swing"]
+    for y in range(14 + sink, 19 + sink):
+        x = 7 + (swing // 2 if y < 17 + sink else swing)
+        canvas[y][x], canvas[y][x + 1] = shade, base
+    rect(canvas, 7 + swing, 18 + sink, 8 + swing, 18 + sink, shade)
+
+
+def draw_waistcoat(facing, pose, **_):
+    """The shirt under a long red waistcoat, buttoned down the front, its skirts over the hips."""
+    canvas = draw_shirt(facing, pose)
+    sink = pose["sink"]
+    base, light, shade = WAISTCOAT["base"], WAISTCOAT["light"], WAISTCOAT["shade"]
+    if facing in ("down", "up"):
+        rect(canvas, 6, 14 + sink, 10, 22 + sink, base)
         rect(canvas, 5, 21 + sink, 11, 22 + sink, base)
-        rect(canvas, 5, 13 + sink, 10, 14 + sink, light)
-        rect(canvas, 5, 15 + sink, 5, 21 + sink, shade)
+        rect(canvas, 6, 14 + sink, 6, 20 + sink, light)
+        rect(canvas, 10, 14 + sink, 10, 20 + sink, shade)
         rect(canvas, 5, 22 + sink, 11, 22 + sink, shade)
-        rect(canvas, 5, 19 + sink, 10, 19 + sink, "soil_dark")
-        canvas[19 + sink][10] = "gold"
-        rect(canvas, 8, 13 + sink, 10, 13 + sink, "cream")
-        # The near sleeve over the torso: a shaded edge at the back, and the cuff.
-        for y in range(14 + sink, 19 + sink):
-            x = 7 + (swing // 2 if y < 17 + sink else swing)
-            canvas[y][x], canvas[y][x + 1] = shade, base
-        rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 14 + sink, light)
-        rect(canvas, 7 + swing, 18 + sink, 8 + swing, 18 + sink, shade)
+        if facing == "down":
+            # The neck opening shows the shirt; the buttons run down the middle.
+            canvas[14 + sink][8] = SHIRT["base"]
+            for y in (16, 18, 20):
+                canvas[y + sink][8] = WAISTCOAT["button"]
+        else:
+            rect(canvas, 8, 15 + sink, 8, 22 + sink, shade)
+    else:
+        rect(canvas, 5, 14 + sink, 10, 22 + sink, base)
+        rect(canvas, 5, 21 + sink, 11, 22 + sink, base)
+        rect(canvas, 5, 14 + sink, 5, 21 + sink, shade)
+        rect(canvas, 5, 22 + sink, 11, 22 + sink, shade)
+        rect(canvas, 10, 14 + sink, 10, 20 + sink, light)
+        for y in (16, 18, 20):
+            canvas[y + sink][10] = WAISTCOAT["button"]
+        draw_near_sleeve(canvas, pose, SHIRT["base"], SHIRT["shade"])
     return canvas
 
 
@@ -432,8 +459,8 @@ def layers():
     collapse/ for passing out), each as the function that draws it and the colours of its
     variant."""
     result = {"body_0": (draw_body, {})}
-    for variant, colours in CLOTHES_COLOURS.items():
-        result[f"clothes_{variant}"] = (draw_clothes, colours)
+    result["clothes_0"] = (draw_waistcoat, {})
+    result["clothes_1"] = (draw_shirt, {})
     for variant, colours in HAIR_COLOURS.items():
         result[f"hair_{variant}"] = (draw_hair, colours)
     result["legs_0"] = (draw_legs, {})

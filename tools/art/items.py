@@ -218,36 +218,55 @@ def from_rows(rows, keys):
     return [[keys.get(character) for character in row] for row in rows]
 
 
-def tunic_shaped(base, light, shade, belt):
-    """A T-shaped tunic with short sleeves, outlined; with a belt if `belt`."""
-    rows = [
-        "................",
-        "................",
-        "..lbbbccccbbbs..",
-        ".lbbbbbccbbbbbs.",
-        ".lbbbbbbbbbbbbs.",
-        ".bbbsbbbbbbsbbs.",
-        ".sssslbbbbbbsss.",
-        "....lbbbbbbs....",
-        "....lbbbbbbs....",
-        "....dddgdddd...." if belt else "....lbbbbbbs....",
-        "....lbbbbbbs....",
-        "....lbbbbbbs....",
-        "....sbbbbbbs....",
-        "....ssssssss....",
-        "................",
-        "................",
-    ]
-    keys = {"b": base, "l": light, "s": shade, "c": "cream", "d": "soil_dark", "g": "gold"}
-    return outlined(from_rows(rows, keys))
-
-
-def tunic():
-    return tunic_shaped("water", "water_light", "water_deep", belt=True)
+# The linen shirt with its long sleeves; the waistcoat icon draws the waistcoat over it.
+SHIRT_ROWS = (
+    "................",
+    "................",
+    "....lbbnnbbs....",
+    "..lbbbbbnbbbbs..",
+    ".lbbbbbbbbbbbbs.",
+    ".lbbslbbbbbsbbs.",
+    ".lbbslbbbbbsbbs.",
+    ".lbbslbbbbbsbbs.",
+    ".lbbslbbbbbsbbs.",
+    ".lbbslbbbbbsbbs.",
+    ".lbbslbbbbbsbbs.",
+    ".sss.lbbbbs.sss.",
+    ".....lbbbbs.....",
+    ".....ssssss.....",
+    "................",
+    "................",
+)
+SHIRT_KEYS = {"b": "lime", "l": "lime", "s": "sand_light", "n": "skin_shade"}
 
 
 def shirt():
-    return tunic_shaped("ember", "flame", "soil", belt=False)
+    """A linen shirt with long sleeves and an open neck."""
+    return outlined(from_rows(SHIRT_ROWS, SHIRT_KEYS))
+
+
+def waistcoat():
+    """A long red waistcoat with tin buttons, over the white sleeves of the shirt."""
+    rows = [
+        "................",
+        "................",
+        "....lbbnnbbs....",
+        "..lbRrrbbrrdbs..",
+        ".lbbRrrrbrrdbbs.",
+        ".lbbRrrrrrrdbbs.",
+        ".lbbRrrrorrdbbs.",
+        ".lbbRrrrrrrdbbs.",
+        ".lbbRrrrorrdbbs.",
+        ".lbbRrrrrrrdbbs.",
+        ".lbbRrrrorrdbbs.",
+        ".sssRrrrrrrdsss.",
+        "...Rrrrrrrrrd...",
+        "...dddddddddd...",
+        "................",
+        "................",
+    ]
+    keys = SHIRT_KEYS | {"R": "red_light", "r": "rust", "d": "rust_dark", "o": "stone_light"}
+    return outlined(from_rows(rows, keys))
 
 
 def breeches():
@@ -347,7 +366,7 @@ ICONS = {
     "acorn": acorn(),
     "spruce_cone": spruce_cone(),
     "pine_cone": pine_cone(),
-    "tunic": tunic(),
+    "tunic": waistcoat(),
     "shirt": shirt(),
     "trousers": breeches(),
     "straw_hat": straw_hat(),
