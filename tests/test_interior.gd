@@ -149,6 +149,24 @@ func test_the_bed_is_in_reach_from_beside_it_and_sleeping_sets_home_there() -> v
 	assert_eq(_state.player.home_bed, Vector2i(1, 2))
 
 
+func test_in_the_hall_house_e_opens_the_hearth_and_a_night_in_a_box_bed_makes_it_home() -> void:
+	var hall_house := _state.world.place_building(BuildingTypes.HALL_HOUSE, Vector2i(12, 2))
+	_stand_on(hall_house.door_tile())
+	_state.pass_door()
+	var interior := _state.current_map as Interior
+	_stand_on(Vector2i(8, 4))
+	var hearth := interior.object_at(Vector2i(6, 2))
+	assert_eq(hearth.type, WorldObjectTypes.HEARTH)
+	assert_eq(Interaction.object_to_open(_state, Vector2i(7, 3)), hearth)
+	_stand_on(Vector2i(12, 4))
+	var bed := _state.bed_in_reach()
+	assert_eq(bed, interior.object_at(Vector2i(12, 2)))
+	_state.clock.set_time(22, 0)
+	_state.sleep_in(bed)
+	assert_eq(_state.player.home_map, interior)
+	assert_eq(_state.player.home_bed, Vector2i(12, 2))
+
+
 func test_new_game_home_is_in_the_world() -> void:
 	var state := GameState.new_game(7)
 	assert_eq(state.player.home_map, state.world)

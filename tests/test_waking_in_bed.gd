@@ -75,7 +75,9 @@ func test_getting_out_of_bed_towards_a_wall_goes_to_the_front() -> void:
 
 
 func test_getting_out_of_any_house_bed_never_goes_behind_it_or_into_a_wall() -> void:
-	for type: StringName in [BuildingTypes.SHACK, BuildingTypes.KATE, BuildingTypes.LONGHOUSE]:
+	for type: StringName in BuildingTypes.ids():
+		if type == BuildingTypes.BARN:
+			continue
 		var interior := InteriorLoader.load_interior(BuildingTypes.TYPES[type]["interior_map"])
 		var beds := interior.objects().filter(func(o: WorldObject) -> bool: return o.is_bed())
 		var bed: WorldObject = beds[0]

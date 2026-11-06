@@ -41,6 +41,7 @@ func test_each_interior_has_walls_around_and_its_door_in_the_front_wall() -> voi
 		BuildingTypes.SHACK: Vector2i(6, 6),
 		BuildingTypes.KATE: Vector2i(9, 8),
 		BuildingTypes.LONGHOUSE: Vector2i(15, 8),
+		BuildingTypes.HALL_HOUSE: Vector2i(15, 13),
 		BuildingTypes.BARN: Vector2i(13, 8),
 	}
 	for type: StringName in sizes:
@@ -65,6 +66,7 @@ func test_the_beds_are_in_the_buildings_that_can_be_slept_in_and_reachable() -> 
 		BuildingTypes.SHACK: WorldObjectTypes.SLEEPING_MAT,
 		BuildingTypes.KATE: WorldObjectTypes.SMALL_BED,
 		BuildingTypes.LONGHOUSE: WorldObjectTypes.BOX_BED,
+		BuildingTypes.HALL_HOUSE: WorldObjectTypes.BOX_BED,
 	}
 	for type: StringName in bed_types:
 		var interior := _load(type)
@@ -110,6 +112,34 @@ func test_the_living_rooms_have_brick_floors_and_the_work_rooms_clay() -> void:
 	var longhouse := _load(BuildingTypes.LONGHOUSE)
 	assert_eq(longhouse.tile_at(Vector2i(3, 4)).terrain, Tile.Terrain.FLOOR, "the living end")
 	assert_eq(longhouse.tile_at(Vector2i(10, 4)).terrain, Tile.Terrain.CLAY_FLOOR, "the byre")
+	var hall_house := _load(BuildingTypes.HALL_HOUSE)
+	assert_eq(hall_house.tile_at(Vector2i(7, 3)).terrain, Tile.Terrain.FLOOR, "the Flett")
+	assert_eq(hall_house.tile_at(Vector2i(7, 8)).terrain, Tile.Terrain.CLAY_FLOOR, "the Diele")
+
+
+func test_the_hall_house_has_the_hearth_at_the_end_of_the_diele_and_stalls_on_both_sides() -> void:
+	var hall_house := _load(BuildingTypes.HALL_HOUSE)
+	var hearth: WorldObject = null
+	var box_beds := 0
+	var stalls_left := 0
+	var stalls_right := 0
+	for object in hall_house.objects():
+		match object.type:
+			WorldObjectTypes.HEARTH:
+				hearth = object
+			WorldObjectTypes.BOX_BED:
+				box_beds += 1
+			WorldObjectTypes.STALL_PARTITION:
+				if object.pos.x < hall_house.exit_tile.x:
+					stalls_left += 1
+				else:
+					stalls_right += 1
+	assert_not_null(hearth)
+	assert_eq(hearth.pos.y, InteriorView.BACK_WALL_ROWS, "on the back wall, across the Diele")
+	assert_almost_eq(hearth.pos.x + 1.0, hall_house.exit_tile.x + 0.5, 0.5, "behind the door")
+	assert_eq(box_beds, 2)
+	assert_gt(stalls_left, 0)
+	assert_gt(stalls_right, 0)
 
 
 func test_every_free_floor_tile_of_every_interior_is_reachable() -> void:

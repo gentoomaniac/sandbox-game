@@ -7,6 +7,7 @@ const FOOTPRINTS := {
 	BuildingTypes.SHACK: Vector2i(3, 2),
 	BuildingTypes.KATE: Vector2i(5, 3),
 	BuildingTypes.LONGHOUSE: Vector2i(7, 3),
+	BuildingTypes.HALL_HOUSE: Vector2i(7, 5),
 	BuildingTypes.BARN: Vector2i(6, 3),
 }
 
@@ -23,12 +24,18 @@ func _write(text: String) -> void:
 	file.close()
 
 
-func test_the_buildings_file_is_valid_and_has_the_four_buildings_in_order() -> void:
+func test_the_buildings_file_is_valid_and_has_the_five_buildings_in_order() -> void:
 	var rules := BuildingRules.from_file(BuildingRules.DEFAULT_PATH)
 	assert_true(rules.is_valid(), str(rules.problems()))
 	assert_eq(
 		rules.building_ids(),
-		[BuildingTypes.SHACK, BuildingTypes.KATE, BuildingTypes.LONGHOUSE, BuildingTypes.BARN]
+		[
+			BuildingTypes.SHACK,
+			BuildingTypes.KATE,
+			BuildingTypes.LONGHOUSE,
+			BuildingTypes.HALL_HOUSE,
+			BuildingTypes.BARN,
+		]
 	)
 	assert_eq(BuildingTypes.ids(), rules.building_ids())
 
@@ -100,6 +107,18 @@ func test_costs_are_the_materials_that_are_not_zero() -> void:
 		for item: StringName in BuildingTypes.TYPES[id]["costs"]:
 			assert_true(ItemTypes.TYPES.has(item), "%s %s" % [id, item])
 			assert_true(ResourceLoader.exists(ItemTypes.icon_path(item)))
+
+
+func test_the_hall_house_is_the_biggest_and_costs_the_most_of_every_material() -> void:
+	var hall_house: Dictionary = BuildingTypes.TYPES[BuildingTypes.HALL_HOUSE]
+	var area: int = hall_house["footprint"].x * hall_house["footprint"].y
+	for id in BuildingTypes.ids():
+		if id == BuildingTypes.HALL_HOUSE:
+			continue
+		var building_type: Dictionary = BuildingTypes.TYPES[id]
+		assert_lt(building_type["footprint"].x * building_type["footprint"].y, area, str(id))
+		for key: String in BuildingTypes.COST_ITEMS:
+			assert_lt(building_type[key], hall_house[key], "%s %s" % [id, key])
 
 
 func test_the_hammer_is_a_tool_item_with_icons() -> void:

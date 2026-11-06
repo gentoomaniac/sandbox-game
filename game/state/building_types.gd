@@ -7,6 +7,7 @@ extends RefCounted
 const SHACK := &"shack"
 const KATE := &"kate"
 const LONGHOUSE := &"longhouse"
+const HALL_HOUSE := &"hall_house"
 const BARN := &"barn"
 
 ## The material of each `cost_<material>` key of the file.
