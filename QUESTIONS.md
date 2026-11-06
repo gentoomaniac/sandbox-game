@@ -48,7 +48,14 @@ Answered questions move into SPEC.md and are removed here.
    tiles around buildings and placed things and 2 around the tilled fields clear, so your
    farm is untouched, but natural trees and rocks that stood on the new lines elsewhere are
    gone. New land takes about 6.5 ms per chunk to generate (was 3.7). Default: keep.
-10. **Code review** (docs/code-review-2026-11-06.md): its findings became tasks 63-71 and run
+10. **Tree species** (task 56): the oak stays common beside beech, birch and alder. Wet ground
+    (the marsh, and the Geest within 5 tiles of wetland) grows mostly alder; the dry Geest
+    mostly beech, then oak and birch; pine and spruce only in clumps on the Geest. Woods are now
+    about 28 % beech, 24 % oak, 19 % birch, 16 % alder, 7 % pine and spruce, 4 % willow. Beech is
+    the toughest (5 hits, 3 logs), birch the weakest (3 hits, 2 logs). Seeds: beechnut, birch
+    catkin, alder cone and willow cutting, each a 25 % drop. Trees in your world stay where they
+    are; only land not yet generated gets the new mix. Default: keep.
+11. **Code review** (docs/code-review-2026-11-06.md): its findings became tasks 63-71 and run
     one at a time beside the art tasks. Default: go ahead.
 
 ## Questions
