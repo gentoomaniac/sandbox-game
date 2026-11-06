@@ -651,7 +651,8 @@ Decided 2026-11-05. A text console for testing and cheats.
   building clear it (no hay). Each mown tuft gives 2 hay on the ground and looks mown
   (stubble) for 4 days, then grows back. First numbers (2026-11-05, tune in play).
 - **Reeds:** dense stands on the banks of the river (the floodplain within 2 tiles of the
-  water) and at wetland edges, thick in patches and thin elsewhere, all year, with no dormancy:
+  water), at wetland edges and beside the marsh ditches, thick in patches and thin elsewhere,
+  all year, with no dormancy:
   green in spring and summer, golden in autumn and winter, snow-capped under snow. They don't
   block walking, the hoe doesn't clear them and a hand can't pick them. The scythe cuts them
   (the same 4-tile swing as tall grass): each stand gives 2 reeds on the ground and is left as
@@ -668,7 +669,7 @@ Decided 2026-11-05. A text console for testing and cheats.
   with the shovel sometimes gives clay; a dug spot is spent for some days. Digging
   anywhere else gives nothing. First numbers (2026-11-05, tune in play): 40 % chance of 2 clay
   (a roll of the spot and the day), a dug spot is spent for 5 nights, spots lie on grass with
-  water or wetland within 5 tiles, in clusters, never where an object stands. The shovel's
+  water (the river or a ditch) or wetland within 5 tiles, in clusters, never where an object stands. The shovel's
   targeting highlight shows on any free grass tile, so spots can't be told from the cursor.
 - **Regrowth:**
   - a felled tree leaves a stump that rots away and may leave a sapling (see above);
@@ -872,6 +873,42 @@ Decided 2026-11-05.
 - **Danger:** regions have different danger levels (see Defence).
 - **Interiors:** each building interior is a separate map. Entering through the door
   switches to it.
+- **The worked land** (task 54, 2026-11-06): the generator lays fields over the natural land, so
+  it reads as Schleswig-Holstein around 1700–1800. Numbers in `data/landscape.cfg`, first
+  values, tune in play.
+  - **Fields:** rows of fields between straight east-west boundaries (13 tiles apart, up to 4
+    more), each row cut by north-south ones (18 apart, up to 6 more); 80 % of the stretches of
+    boundary are there, so some fields run together. Every stretch has **one gap** (a gate, a
+    crossing) away from its ends, and nothing that blocks the way stands on a gap or beside it,
+    so no field is ever shut in: every boundary blocks, so without gaps the player could be.
+  - **The Geest** (dry grass beyond the marsh, outside the forests): a boundary is a **Knick**
+    (80 %), a **fieldstone wall** (10 %) or a **wattle fence** (10 %). There are no hedges in the
+    forests, the marsh, on wetland or the floodplain.
+  - **The marsh** (the low land within 36 tiles of the floodplain's edge) and wetland anywhere:
+    a boundary is a **ditch**, water terrain, which is how the marsh is drained and fenced. Beside
+    the ditches stand **pollard willows** (10 % of the tiles) and reeds (30 %). Ditches block
+    walking like the river (no jumping); their gap is the crossing.
+  - **Dykes** run on the land side of the floodplain's edge, in stretches picked by a slow noise.
+  - **Walking:** Knicks, walls, fences and ditches block it; dykes don't (they are walked on,
+    sheep grazed on them). Willows block like the other trees.
+  - **Tools:** the axe cuts a Knick down to the ground for 1 log and 2 fibre (its wood was the
+    reason it was planted and cut back every few years), and a wattle fence for 2 fibre; the
+    pickaxe takes a wall apart for 3 stone. Nothing removes a dyke or fills a ditch (yet): they
+    are the land's, not the player's. A willow is felled like the other trees (2 logs, its stump
+    may grow a willow sapling again).
+  - **Building and tilling:** all of them block building and tilling on their tile (a dyke too:
+    nothing is built into it). Building next to them is fine. The door's front tile must still
+    be walkable, so a door can't open onto a Knick or a ditch.
+  - **Clay** is also found near ditches, which makes up for the clay the dykes cover by the
+    river.
+  - **Old worlds:** the worked land comes from the seed, so saves of version 9 and before show it
+    where nothing was edited. Save version 10 lets it give way where the player has made a home,
+    as if they had cleared it: 3 tiles around every building and around everything the player put
+    down or changed (camp, chests, crops), over the tilled fields (their bounding box and 2 tiles
+    more), under the items on the ground and where the player stands, the new objects are removed
+    (as edits) and a ditch is grass. A 1-tile ring was too thin: on the user's farm ditches ran
+    through the yard. So nothing new stands in or by a house, across the yard, the camp or the
+    fields, or shuts the player in; further out an old world gets the new land.
 
 ## Later features
 

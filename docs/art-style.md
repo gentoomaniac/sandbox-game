@@ -352,10 +352,13 @@ copper watering can. Kept here as the record of why.
    a coat slot of its own, and long hair tied back with a ribbon as a third hair style. All
    from existing colours. Still to do: women's dress for NPCs (apron, bodice, cap), and
    buckled shoes for best.
-2. **Knicks, dykes and marsh ditches** (large). The features that make the land read as
-   Schleswig-Holstein: autotiled Knick hedges on banks, dykes with turf and sheep, straight
-   water ditches with reeds instead of fences, pollard willows. Wattle fences and
-   fieldstone walls on the way.
+2. ~~**Knicks, dykes and marsh ditches**~~ done (task 54). The features that make the land
+   read as Schleswig-Holstein: autotiled Knick hedges of hazel and hawthorn on earth banks,
+   turfed dykes along the floodplain, straight water ditches with reeds and pollard willows
+   in the marsh, and wattle fences and fieldstone walls as rarer field boundaries, all with
+   their seasons (tools/art/boundaries.py and willow.py). Still to do: sheep on the dykes
+   (bigger item 8), overstander oaks in the Knicks, a Stackdeich and sluices, and a look per
+   season for a whole line rather than per tile.
 3. ~~**Thatch texture**~~ done (task 55). The thatch was single-pixel streaks over the
    whole roof and looked like grey fur at 1×, over a dome. Now: courses of combed reed about
    4 px high with wavy edges, a broken lit top and reed ends of mixed length; three clear

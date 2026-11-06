@@ -19,8 +19,10 @@ the state never knows about scenes.** That is why almost everything in `game/sta
 
 Names are not always where you would guess: the `World` class (tiles, chunks, objects,
 buildings) is in `game/state/world.gd`. `game/world/` holds the code that builds a world
-and plans which chunks to load (`WorldGenerator`, `ChunkStreaming`, `CampSite`,
-`InteriorLoader`, `PositionHash`).
+and plans which chunks to load (`WorldGenerator`, `FieldLayout`, `ChunkStreaming`, `CampSite`,
+`InteriorLoader`, `PositionHash`). `WorldGenerator` makes the natural land (river, wetland,
+forests) and lays the worked land of `data/landscape.cfg` over it: the fields of a `FieldLayout`
+with Knicks, walls and fences on the Geest, ditches in the marsh, and dykes.
 
 ## The main objects
 
@@ -45,7 +47,9 @@ and plans which chunks to load (`WorldGenerator`, `ChunkStreaming`, `CampSite`,
   inside.
 - **World** holds the loaded chunks of tiles (`Tile`, `Chunk`), the objects on them
   (`WorldObject`: trees, crops, furniture), buildings and, in `ground_items` (`GroundItems`),
-  the items lying on the ground. The nightly upkeep of what the player changed is
+  the items lying on the ground. Line objects (Knicks, walls, fences, dykes) are one object per
+  tile whose type `connects`; `World.connections` says which neighbours a tile joins, and the
+  view draws the picture of that connection mask. The nightly upkeep of what the player changed is
   `NightUpkeep`, which is given the world. Every change goes through it, and it emits signals that the views follow.
 - **WorldView** (`game/scenes/world_view.gd`) draws a `World` into a SubViewport at one art
   pixel per screen pixel; `CameraController` shows that viewport on the window, so the world

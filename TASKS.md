@@ -75,11 +75,23 @@ Screenshot: character.
 
 ## 54. Knicks, dykes and marsh ditches
 
-- [ ] Done
+- [x] Done
 
 docs/art-style.md bigger item 2: autotiled Knick hedges on earth banks (hazel, hawthorn),
 dykes with turf, straight drainage ditches with reeds, pollard willows, wattle fences and
 fieldstone walls, placed by the world generator where they fit (marsh, field edges).
+
+Done: one commit per piece, then polish. Line objects (a type that `connects`) are one object
+per tile, drawn by connection mask (World `connections`, 16 pictures per variant), as solids on
+the ground in tools/art/boundaries.py: the Knick (3 variants), the wattle fence, the
+fieldstone wall (3 variants) and the dyke, with all their seasons; the pollard willow is a new
+tree with a trunk. `data/landscape.cfg` (LandscapeRules) and `FieldLayout` lay rows of fields
+over the land; every stretch of boundary has a gap, nothing blocking stands on or beside it.
+Geest: Knicks, walls, fences; marsh and wetland: ditches (water terrain) with willows and
+reeds; dykes along the floodplain. Knicks, walls, fences and ditches block walking, dykes don't;
+axe and pickaxe take hedges, fences and walls down. Save version 10 clears the new land 3 tiles
+around buildings and the player's objects, over the tilled fields (grown by 2), under ground
+items and where the player stands. Generating a chunk takes about 6.5 ms instead of 3.7. Screenshot: landscape. Decisions in SPEC, World, "The worked land".
 
 ## 55. Thatch as courses, clear roof planes
 

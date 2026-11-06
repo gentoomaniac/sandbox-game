@@ -41,6 +41,19 @@ winter, and berry bushes only bear fruit in their season.
 
 ![The same forest on the second day of spring, in summer, on the third day of autumn and under snow](docs/screenshots/seasons.png)
 
+### Knicks, ditches and dykes
+
+The land is worked, as in Schleswig-Holstein around 1700–1800. On the dry Geest the fields
+are bounded by Knicks, hedges of hazel and hawthorn on earth banks that blossom in spring,
+turn yellow and brown in autumn and stand bare in winter, and here and there by a fieldstone
+wall or a wattle fence. Down in the marsh along the river the fields are cut by straight
+ditches of water lined with reeds and pollard willows, and turfed dykes run along the
+floodplain. Every boundary has a gap or a crossing, so no field is shut in. The axe cuts a
+Knick down for logs and fibre, the pickaxe takes a wall apart for stone, and willows are
+felled like the other trees.
+
+![The Geest running into the marsh in summer, with Knicks, a wattle fence, ditches and willows; a Knick under snow](docs/screenshots/landscape.png)
+
 ### Weather
 
 The weather is simulated from humidity, wind, temperature and sunlight. It brings rain,
