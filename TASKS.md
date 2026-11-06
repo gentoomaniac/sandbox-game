@@ -195,7 +195,7 @@ leave `make assets` byte-identical.
 
 ## 66. Small state cleanups
 
-- [ ] Done
+- [x] Done: one commit per item. Save VERSION is now 8 (`_upgrade_from_version_7` gives old saves the moisture, clay, outfit, energy, health, debuff, chest store and crop growth they lack; every from_dict is strict). `World.new(seed, clock)` and `GameState.new(clock)` keep a default clock because many tests build them bare. Interaction uses Targeting.REACH. The five tests of the old lenient from_dict were replaced by upgrade tests.
 
 From docs/code-review-2026-11-06.md. Delete unused tile state: Tile.water_level and
 snow_depth with Chunk's arrays and accessors, Tile.is_tillable and is_plantable; keep

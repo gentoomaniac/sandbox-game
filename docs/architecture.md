@@ -33,7 +33,8 @@ and plans which chunks to load (`WorldGenerator`, `ChunkStreaming`, `CampSite`,
   the ones that wait for the world to be drawn (see below).
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
   weather, the snow cover and the player. It is the entry point for actions (`use_at`,
-  `sleep_in`, `pass_door`, `pass_out`), and what gets saved (`to_dict`, see `SaveFile`).
+  `sleep_in`, `pass_door`, `pass_out`), and what gets saved (`to_dict`, see `SaveFile`). It owns
+  the clock and gives it to the World; `current_map` follows from the building the player is in.
 - **GameMap** is a place the player can walk: either **World** or **Interior** (the inside of
   one building). The player is on one map at a time; the world stands still while they are
   inside.
@@ -76,8 +77,10 @@ Typical jobs:
 ## Saving
 
 `SaveFile` writes one JSON file (`user://saves/world.json`) with a `version`. Every state
-class that is saved has an explicit `to_dict` and `from_dict`. When the format changes,
-raise `SaveFile.VERSION` and add an upgrade step, so old saves still load. Things marked
+class that is saved has an explicit `to_dict` and a strict `from_dict` (`data["x"]`, never
+`data.get(...)` with a default). When the format changes, raise `SaveFile.VERSION` and add an
+upgrade step that gives old saves the new field (the rule is at the top of `save_file.gd`).
+Things marked
 "not saved" in a comment (cheats, a forced weather) live only for the session.
 
 ## Settings and key bindings
