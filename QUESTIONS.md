@@ -37,7 +37,12 @@ Answered questions move into SPEC.md and are removed here.
      either body item and comes off; **old saves get clogs** on their bare feet; and **the
      clothes got lighter** (0.3 to 0.6 kg each), so a new game still carries under the free
      20 kg.
-9. **Code review** (docs/code-review-2026-11-06.md): its findings became tasks 63-71 and run
+9. **The thatch redraw** (task 55): the roofs are now steep hipped planes with the reed laid in
+   ragged courses instead of the soft streaky dome; the Kate and longhouse got crossed ridge
+   sticks; snow covers the roof evenly. A first pass looked like shingles and was redone.
+   Compare: docs/screenshots/buildings.png. Each piece is its own commit (courses and planes,
+   ridge sticks, door swells, snow), so any one can be reverted. Default: keep.
+10. **Code review** (docs/code-review-2026-11-06.md): its findings became tasks 63-71 and run
    one at a time beside the art tasks. Default: go ahead.
 
 ## Questions
