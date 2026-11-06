@@ -3,8 +3,9 @@
 Each lies on the diagonal from the bottom left to the top right, the classic item-icon pose: a
 wooden handle 2 px wide (lit on its upper left side) with the working end at the top right, in
 an ink outline so its silhouette reads on its own. The metal uses only the METAL ramp, so a
-better tool later is the same icon with that ramp swapped (copper, iron). Pictures are lists of
-rows of palette colour names, as in items.py.
+better tool later is the same icon with that ramp swapped (copper, iron). The watering can is
+all copper, as cans were before tin-plate. Pictures are lists of rows of palette colour names,
+as in items.py.
 """
 
 import math
@@ -168,23 +169,33 @@ def hammer():
     return items.outlined(picture, "ink")
 
 
+# Copper, lit to dark, for the watering can: a glint, the lit face, the body, the shade.
+COPPER = {"g": "gold", "o": "ochre", "a": "ochre_dark", "u": "umber"}
+
+
 def watering_can():
-    """A round can with a handle on top and a long spout ending in a rose."""
+    """A copper can of the old kind: a tall round body, a handle arching over the top, and a
+    spout rising to a big round rose, its face pricked with holes."""
     picture = items.canvas()
-    stamp(
-        picture, 1, 3,
-        "...kssk....kk.",
-        "..k....k..emsk",
-        "..k....k...sk.",
-        ".mmmmmmsk.msk.",
-        "emmmmsssk.sk..",
-        "emmmssssksk...",
-        "emmmssssssk...",
-        "emmsssssskk...",
-        "emssssssk.....",
-        "emssssssk.....",
-        ".kkkkkkk......",
+    rows = (
+        "..........aaaa.",
+        ".........aoggoa",
+        "...aaa...aguoua",
+        "..o...a..aouoga",
+        ".o.....a..aaau.",
+        ".aoooooa..ou...",
+        "agoooaaau.ou...",
+        "agooaaaauou....",
+        "agooaaaaauu....",
+        "agoaaaaaau.....",
+        "agoaaaaaau.....",
+        ".aaaaaaau......",
+        "..uuuuuu.......",
     )
+    for dy, row in enumerate(rows):
+        for dx, letter in enumerate(row):
+            if letter != ".":
+                picture[2 + dy][dx] = COPPER[letter]
     return items.outlined(picture, "ink")
 
 

@@ -336,7 +336,7 @@ task 51 (pine, spring leaf-out); changes to trees should be coordinated with it.
 7. **Done (task 52):** **Seed sacks** (small). All seed icons are the same sack with a tiny mark and can't be
    told apart at 1×. Draw the seed or the crop's colour large on the sack, or tie it with a
    coloured string per crop.
-8. **Watering can** (small). The grey tin can with a long spout looks modern. Copper
+8. **Done (task 52):** **Watering can** (small). The grey tin can with a long spout looks modern. Copper
    (`ochre`) with a big rose, or a wooden bucket with a dipper.
 
 ### Bigger items
