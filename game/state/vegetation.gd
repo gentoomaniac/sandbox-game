@@ -35,15 +35,12 @@ static func default_vegetation() -> Vegetation:
 
 
 static func from_file(path: String) -> Vegetation:
-	var file := ConfigFile.new()
-	var error := file.load(path)
-	if error != OK:
-		push_error("Can't read %s: %s" % [path, error_string(error)])
+	var sections := DataFile.read_sections(path)
 	var vegetation := Vegetation.new()
 	for section: String in KIND_SALTS:
 		for kind: StringName in KIND_SALTS[section]:
-			if file.has_section_key(section, kind):
-				vegetation._curves[kind] = file.get_value(section, kind)
+			if sections.get(section, {}).has(str(kind)):
+				vegetation._curves[kind] = sections[section][str(kind)]
 			else:
 				vegetation._missing.append("[%s] %s" % [section, kind])
 	for missing in vegetation._missing:

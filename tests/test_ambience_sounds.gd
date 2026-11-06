@@ -54,7 +54,7 @@ func test_a_clear_calm_day_has_no_loops() -> void:
 
 ## The ambience rules of the data file with the thunder coming within 0.1 to 0.2 s.
 func _quick_thunder_rules() -> AmbienceRules:
-	var values := AmbienceRules.read_values(AmbienceRules.DEFAULT_PATH)
+	var values := DataFile.read_sections(AmbienceRules.DEFAULT_PATH)
 	values["thunder"] = {"min_delay_seconds": 0.1, "max_delay_seconds": 0.2}
 	return AmbienceRules.new(values)
 

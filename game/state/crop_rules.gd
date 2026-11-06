@@ -93,23 +93,11 @@ static func default_rules() -> CropRules:
 
 
 static func from_file(path: String) -> CropRules:
-	var file := ConfigFile.new()
-	var error := file.load(path)
-	if error != OK:
-		push_error("Can't read %s: %s" % [path, error_string(error)])
-	var crops := {}
-	var farming := {}
-	var reeds := {}
-	for section in file.get_sections():
-		var values := {}
-		for key in file.get_section_keys(section):
-			values[key] = file.get_value(section, key)
-		if section == FARMING:
-			farming = values
-		elif section == REEDS:
-			reeds = values
-		else:
-			crops[section] = values
+	var crops := DataFile.read_sections(path)
+	var farming: Dictionary = crops.get(FARMING, {})
+	var reeds: Dictionary = crops.get(REEDS, {})
+	crops.erase(FARMING)
+	crops.erase(REEDS)
 	var rules := CropRules.new(crops, farming, reeds)
 	for problem in rules.problems():
 		push_error("%s: %s" % [path, problem])

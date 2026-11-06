@@ -63,26 +63,12 @@ static func default_rules() -> AmbienceRules:
 
 
 static func from_file(path: String) -> AmbienceRules:
-	var rules := AmbienceRules.new(read_values(path))
+	var rules := AmbienceRules.new(DataFile.read_sections(path))
 	for missing in rules.missing_keys():
 		push_error("%s: no %s" % [path, missing])
 	for problem in rules.bad_values():
 		push_error("%s: %s" % [path, problem])
 	return rules
-
-
-## {section: {key: value}} of a data file, as it stands.
-static func read_values(path: String) -> Dictionary:
-	var file := ConfigFile.new()
-	var error := file.load(path)
-	if error != OK:
-		push_error("Can't read %s: %s" % [path, error_string(error)])
-	var values := {}
-	for section in file.get_sections():
-		values[section] = {}
-		for key in file.get_section_keys(section):
-			values[section][key] = file.get_value(section, key)
-	return values
 
 
 ## The required keys the rules lack, as "[section] key".

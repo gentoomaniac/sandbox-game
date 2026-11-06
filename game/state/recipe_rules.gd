@@ -36,16 +36,7 @@ static func default_rules() -> RecipeRules:
 
 
 static func from_file(path: String) -> RecipeRules:
-	var file := ConfigFile.new()
-	var error := file.load(path)
-	if error != OK:
-		push_error("Can't read %s: %s" % [path, error_string(error)])
-	var recipes := {}
-	for section in file.get_sections():
-		recipes[section] = {}
-		for key in file.get_section_keys(section):
-			recipes[section][key] = file.get_value(section, key)
-	var rules := RecipeRules.new(recipes)
+	var rules := RecipeRules.new(DataFile.read_sections(path))
 	for problem in rules.problems():
 		push_error("%s: %s" % [path, problem])
 	return rules

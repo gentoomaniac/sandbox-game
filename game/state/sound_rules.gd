@@ -75,17 +75,7 @@ static func default_rules() -> SoundRules:
 
 
 static func from_file(path: String) -> SoundRules:
-	var file := ConfigFile.new()
-	var error := file.load(path)
-	if error != OK:
-		push_error("Can't read %s: %s" % [path, error_string(error)])
-	var events := {}
-	for section in file.get_sections():
-		var values := {}
-		for key in file.get_section_keys(section):
-			values[key] = file.get_value(section, key)
-		events[section] = values
-	var rules := SoundRules.new(events)
+	var rules := SoundRules.new(DataFile.read_sections(path))
 	for problem in rules.problems():
 		push_error("%s: %s" % [path, problem])
 	return rules

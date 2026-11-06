@@ -56,16 +56,7 @@ static func default_rules() -> BuildingRules:
 
 
 static func from_file(path: String) -> BuildingRules:
-	var file := ConfigFile.new()
-	var error := file.load(path)
-	if error != OK:
-		push_error("Can't read %s: %s" % [path, error_string(error)])
-	var buildings := {}
-	for section in file.get_sections():
-		buildings[section] = {}
-		for key in file.get_section_keys(section):
-			buildings[section][key] = file.get_value(section, key)
-	var rules := BuildingRules.new(buildings)
+	var rules := BuildingRules.new(DataFile.read_sections(path))
 	for problem in rules.problems():
 		push_error("%s: %s" % [path, problem])
 	return rules

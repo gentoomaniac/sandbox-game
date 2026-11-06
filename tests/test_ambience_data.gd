@@ -7,7 +7,7 @@ var _rules := AmbienceRules.default_rules()
 
 ## The rules of the data file with one value changed.
 func _rules_with(section: String, key: String, value: Variant) -> AmbienceRules:
-	var values := AmbienceRules.read_values(AmbienceRules.DEFAULT_PATH)
+	var values := DataFile.read_sections(AmbienceRules.DEFAULT_PATH)
 	values[section][key] = value
 	return AmbienceRules.new(values)
 

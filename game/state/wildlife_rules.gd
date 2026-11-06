@@ -75,16 +75,7 @@ static func default_rules() -> WildlifeRules:
 
 
 static func from_file(path: String) -> WildlifeRules:
-	var file := ConfigFile.new()
-	var error := file.load(path)
-	if error != OK:
-		push_error("Can't read %s: %s" % [path, error_string(error)])
-	var values := {}
-	for section in file.get_sections():
-		values[section] = {}
-		for key in file.get_section_keys(section):
-			values[section][key] = file.get_value(section, key)
-	var rules := WildlifeRules.new(values)
+	var rules := WildlifeRules.new(DataFile.read_sections(path))
 	for missing in rules.missing_keys():
 		push_error("%s: no %s" % [path, missing])
 	return rules
