@@ -3,7 +3,7 @@
 A trunk is a felled log lying horizontally, seen in 3/4 view like everything else: its cut face
 with year rings on the left, the bark of its top and front lit from the top left, a broken-off
 branch stub or two, and a shadow on the ground. Its cell is an object cell of the atlas (48x80,
-see generate.py): the long one (2x1 tiles) is centred on its 32 px wide footprint, the short one
+see canvas.py): the long one (2x1 tiles) is centred on its 32 px wide footprint, the short one
 (1x1) on 16 px. The ground row is the cell's bottom row. Pictures are lists of rows of palette
 colour names.
 """

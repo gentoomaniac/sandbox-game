@@ -1,6 +1,6 @@
 """Art for the menus: the pixel font, the 9-slice panel frame and the button frames.
 
-Called from generate.py, which passes the palette so it stays the only source of colours.
+Called from generate.py, which passes palette.PALETTE so it stays the only source of colours.
 Written to assets/ui/:
 - font.png and font.fnt: a BMFont that Godot imports as a font. Glyphs are 5 px wide, capitals
   and digits 7 px tall, with descenders reaching 2 px below the baseline;

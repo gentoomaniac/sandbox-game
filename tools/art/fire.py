@@ -1,5 +1,5 @@
-"""The flames of the campfire and the hearth, as a short loop of frames (see generate.py,
-fireplace and hearth, and game/scenes/fire.gdshader, which plays them).
+"""The flames of the campfire and the hearth, as a short loop of frames (see the fireplace in
+camp.py, the hearth in interior.py and game/scenes/fire.gdshader, which plays them).
 
 A flame is a heat field: a round body over the logs and three tongues rising out of it. Each
 tongue grows, licks sideways and falls back in turn, and as it is at its tallest its tip breaks

@@ -1,6 +1,6 @@
 class_name TerrainTileset
 extends RefCounted
-## The terrain and decoration atlases made by tools/art/generate.py, as one TileSet, plus
+## The terrain and decoration atlases made by tools/art/terrain.py, as one TileSet, plus
 ## the rules that pick a tile from them.
 ##
 ## Dual grid: each terrain layer is offset by half a tile, so the 4 corners of a layer cell
@@ -81,7 +81,7 @@ const CLUSTER_DECORATION_CHANCE := 0.5
 const CLUSTER_START := 0.15
 
 ## The Vegetation kind of each decoration, per layer, in the order of the atlas row (see
-## tools/art/generate.py). &"" is a decoration that is there all year (pebbles, reeds); a
+## tools/art/terrain.py). &"" is a decoration that is there all year (pebbles, reeds); a
 ## layer that is not listed has only those.
 const DECORATION_KINDS := {
 	Layer.GRASS:

@@ -1,8 +1,8 @@
 """The looks of the terrain, decoration, object and house art.
 
-Summer is the art as generate.py draws it. The other looks are made from it: colour remaps
+Summer is the art as terrain.py, trees.py and the other drawing modules draw it. The other looks are made from it: colour remaps
 (grass turns fresher, yellower, brown-grey, rimed or snowy; leaves change colour) plus a few
-overlays (snow caps, blossom). So an art change in generate.py carries over to every look.
+overlays (snow caps, blossom). So an art change in those modules carries over to every look.
 The game picks a look per tile and per object (see game/state/season_blend.gd): spring,
 summer and autumn are the seasons' foliage, "bare" is winter without snow, "frost" a cold
 morning without snow, "snow" the ground under snow and "dusting" the thin edge of the snow:
@@ -10,9 +10,8 @@ sparse flecks over whatever lies beneath. Objects have two more looks, the steps
 spring leaf-out between bare and spring: "buds" and "young_leaves", drawn over the bare tree
 or bush where its summer leaves are.
 
-generate.py draws the ground shadow of objects and houses in the logical colour "shadow",
-which every season maps to a palette colour here. Pictures are grids of palette colour names,
-as in generate.py.
+The drawing modules draw the ground shadow of objects and houses in the logical colour "shadow",
+which every season maps to a palette colour here.
 """
 
 import math

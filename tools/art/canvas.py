@@ -11,11 +11,17 @@ OBJECT_CELL_HEIGHT = 80
 OBJECT_CENTRE = OBJECT_CELL_WIDTH // 2
 OBJECT_BOTTOM = OBJECT_CELL_HEIGHT - 1
 
+NEIGHBOURS = ((1, 0), (-1, 0), (0, 1), (0, -1))
+
 
 def blank(width=TILE, height=None):
     """A clear picture, square unless a height is given."""
     height = width if height is None else height
     return [[None] * width for _ in range(height)]
+
+
+def filled(colour):
+    return [[colour] * TILE for _ in range(TILE)]
 
 
 def copy(picture):

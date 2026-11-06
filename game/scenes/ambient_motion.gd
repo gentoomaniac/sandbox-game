@@ -68,8 +68,8 @@ const CROP_SWAY := {"stem": 1.0, "strength": 0.6, "frequency": 0.8}
 const DECORATION_SWAY := {"strength": 0.5, "frequency": 0.9}
 
 ## The fires, by type: their cell, the strip of their flame and where its box is in the cell
-## (FIREPLACE_FLAME and HEARTH_FLAME in tools/art/generate.py), the row the flame's tip
-## usually reaches and how high the sparks rise from there (pixels).
+## (FIREPLACE_FLAME in tools/art/camp.py and HEARTH_FLAME in tools/art/interior.py), the row
+## the flame's tip usually reaches and how high the sparks rise from there (pixels).
 const FIRE_PROFILES := {
 	WorldObjectTypes.FIREPLACE:
 	{

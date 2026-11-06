@@ -3,7 +3,7 @@
 A sheet has one row per action and one column per frame, in the order of SHEETS (which
 game/scenes/wildlife/wildlife_sprites.gd mirrors). Every cell has the size of its kind; the
 animal stands in the bottom centre, facing right (the game flips it to face left). Pictures
-are rows of characters mapped to palette colour names, as everywhere in generate.py. Land
+are rows of characters mapped to palette colour names, as everywhere in the art. Land
 animals get a one pixel outline in the darkest colour of their coat; the butterfly goes
 without, and the bee has its dark outline drawn in (see the style rules in SPEC.md).
 """
@@ -390,7 +390,7 @@ def outline_in_place(shape, colour):
 
 
 def sheet_rows(kind):
-    """The sheet of a kind as rows of cells for generate.to_image: one list of cells per
+    """The sheet of a kind as rows of cells for palette.to_image: one list of cells per
     action, one cell per frame."""
     sheet = SHEETS[kind]
     return [[frame_picture(sheet, frame) for frame in frames] for frames in sheet["actions"].values()]

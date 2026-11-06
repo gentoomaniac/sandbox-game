@@ -6,7 +6,7 @@ stages and then the dead one side by side. Every cell is a tile wide (16 px) and
 sheet: a tall crop (wheat, peas, beans, flax) has a taller sheet, with its bottom on the
 bottom of its tile. A crop looks the same in every season, so the seasons never touch these.
 
-Pictures are lists of rows of palette colour names (None = clear), as in generate.py. Crops
+Pictures are lists of rows of palette colour names (None = clear), as in canvas.py. Crops
 have no outline: the dark shades inside them separate them from the soil.
 """
 

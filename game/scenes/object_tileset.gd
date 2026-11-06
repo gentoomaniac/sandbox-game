@@ -1,6 +1,6 @@
 class_name ObjectTileset
 extends RefCounted
-## The object atlas made by tools/art/generate.py as a TileSet: one row per object type,
+## The object atlas assembled by tools/art/generate.py as a TileSet: one row per object type,
 ## one column per variant (see WorldObjectTypes). Cells are bigger than a tile: an object
 ## stands on the bottom centre tile of its cell and a tall one (a tree) reaches over the
 ## tiles around it. An object on several tiles is centred on its footprint, with the
