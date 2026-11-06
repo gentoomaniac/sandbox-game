@@ -24,8 +24,9 @@ sound can be swapped for a recording.
 
 The world has an ambience too: rain and wind loops that follow the weather (and swell with
 gusts), thunder some seconds after each flash of lightning, birds chirping by day, deer,
-rabbits and squirrels, bees buzzing at their flowers, and frogs croaking near water on
-warm spring and summer evenings and nights. How often and how loud is in
+rabbits and squirrels, bees buzzing at their flowers, frogs croaking near water on
+warm spring and summer evenings and nights, and now and then a quiet moo, baa or cluck from
+the farm animals. How often and how loud is in
 [data/ambience.cfg](data/ambience.cfg).
 
 ### A world that changes with the seasons
@@ -92,6 +93,18 @@ to ripen, it withers and gives nothing. The growing times, seasons and the withe
 in [data/crops.cfg](data/crops.cfg).
 
 ![A small field with turnips in every growth stage](docs/screenshots/field.png)
+
+### Livestock
+
+Cows, sheep, chickens and rabbits of the region: red-brown Angler, black pied and red pied
+cattle; white, grey and black-faced sheep; brown and white hens and a rooster; agouti, white
+and Dutch rabbits, each with a slight tint of its own. They wander, graze (the hens peck for
+seeds and worms), keep out of water and away from anything solid, and the rabbits hop off
+when you come close. At night they lie down and sleep until the morning. For now they come
+from the console (`spawn cow 3`); they are saved with the game. Milk, wool, eggs, pens and
+feeding come later. The numbers are in [data/livestock.cfg](data/livestock.cfg).
+
+![A mixed herd by the camp on a summer morning, and asleep after midnight](docs/screenshots/livestock.png)
 
 ### Felling, mining and gathering
 
@@ -222,7 +235,7 @@ arguments.
 | `god`, `nodrain`, `noweight`, `nocost` | Toggle invincibility, free actions, weight costing nothing, and buildings and crafting needing no materials. |
 | `weather`, `weather <condition>`, `weather auto` | Show the weather, force a condition, or go back to the simulation. |
 | `snow`, `snow <0..1>`, `snow auto` | Show the snow cover, force it, or go back to the weather. |
-| `spawn <animal> [count]` | Put animals nearby. |
+| `spawn <animal> [count]` | Put animals nearby: farm animals that stay (`cow`, `sheep`, `chicken`, `rabbit`) or wild ones that come and go (`bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`). |
 | `skip <n>m\|h\|d` | Let minutes, hours or days pass, e.g. `skip 2h` or `skip 3d`. |
 | `crop` | Show the growth, damage and needs of the nearest crop. |
 

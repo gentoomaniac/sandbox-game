@@ -373,7 +373,9 @@ Decided 2026-11-05. A text console for testing and cheats.
 - Commands: `help`; `tp <x> <y>` (teleport to a world tile; outside only); `give <item>
   [count]` (into the inventory); `god` (toggle invincibility:
   health doesn't drop); `nodrain` (toggle: actions cost no energy); `noweight` (toggle:
-  carried weight doesn't raise costs). Later commands: `spawn`, `weather`, `snow`, `crop`
+  carried weight doesn't raise costs). Later commands: `spawn` (farm animals: `cow`, `sheep`,
+  `chicken`, `rabbit`; wild ones: `bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`,
+  `butterfly`, `flock`), `weather`, `snow`, `crop`
   (see `help`), and `skip <n>m|h|d` (let minutes, hours or days pass, at most a year; the
   nights in between pass as when sleeping, so crops grow).
 - Tab completes command names and every argument with a fixed set of values: item ids,
@@ -746,6 +748,31 @@ atmosphere only: no player impact, not hunted, not saved.
   flee). The rules for how many and where are plain, testable logic; the animals
   themselves are view nodes.
 - No animals inside buildings.
+
+### Livestock
+
+Decided 2026-11-07 (task 73). Farm animals of the region, for now put in the world with the
+console (`spawn cow 3`, near the player). Unlike the wildlife they are state and saved.
+
+- **Who:** cows (red-brown Angler, black pied and red pied marsh cattle), sheep (white marsh
+  sheep, the grey Heidschnucke with a black face and legs, white with a black face), chickens
+  (brown and white hens, a rooster) and tame rabbits (agouti, white, Dutch). Each animal draws
+  its look and a slight tint from a seed, so no two look quite alike; how often each look
+  comes up and the tints are in `data/livestock.cfg`.
+- **Size:** a cow about 22 px long and 15 px to its back, a sheep about 14 px long, a hen
+  about 9x10 px, a rabbit as the wild one.
+- **Behaviour:** an awake animal stands idle (and now and then turns round), walks or grazes;
+  chickens peck for seeds and worms. Grazing doesn't change the grass. It walks only onto
+  walkable ground under its feet and its nose, so it keeps out of water and away from
+  anything solid. Rabbits hop and run from a player who comes close. At night every animal
+  sleeps where it stands (lying down, or tucked in): from a while after sunset (hens go to
+  roost before it) until about sunrise, each animal up to half an hour later than its
+  species. They stand still while the player is in a house, like the rest of the world.
+- **Sound:** now and then a moo, a baa or a cluck, quiet and rare; none while asleep.
+- **Saved:** species, look, tint and position (save version 13); what an animal is doing is
+  not.
+- Animals don't avoid each other or the player yet.
+- **Later:** milk, wool and eggs, pens, feeding, owning and breeding.
 
 ### Combat
 

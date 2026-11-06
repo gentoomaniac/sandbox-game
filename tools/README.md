@@ -40,6 +40,7 @@ by topic. Where is a thing drawn?
 | `trunks.py`, `meadow.py`, `reeds.py` | Felled trunks, tall grass and clay hint, reeds. |
 | `fire.py` | The animation frames of the campfire and the hearth. |
 | `animals.py` | One sheet per animal of the ambient wildlife. |
+| `livestock.py` | One sheet per farm animal and look (cows, sheep, hens, tame rabbits), put together from parts; the tame rabbit reuses the wild one's frames. |
 | `ui.py` | The pixel font, the panel frame and the button frames. |
 
 `generate.py` imports all the others and none of them imports it; most import `canvas.py`, and

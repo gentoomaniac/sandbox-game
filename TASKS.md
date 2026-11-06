@@ -420,12 +420,26 @@ the held slot, `SaveUpgradeCase` shares the old-save helpers.
 
 ## 73. Livestock: cows, sheep, chickens, rabbits
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06: cows, sheep, chickens and rabbits, spawned for now with a
 console command. They wander, graze grass (cows, sheep, rabbits) or peck for seeds and worms
 (chickens), and sleep at night. Not all alike: 2-3 looks per species, plus colour variation
 when drawn. Products (milk, wool, eggs) and keeping them (pens, feeding, owning) come later.
+
+Done: `FarmAnimal` and `Livestock` in game/state, the numbers in data/livestock.cfg
+(`LivestockRules`): idle, walk, graze (peck), run (rabbits, from 2.5 tiles), sleep from
+sunset plus `sleep_minutes` to sunrise plus `wake_minutes`, each animal up to 30 minutes
+later. An animal steps only where its feet and its nose are on walkable tiles; the map is
+asked again only when one of those tiles changes (it costs about 7 µs a tile), so about 130
+animals take some 0.3 ms a frame by day. Drawn by `FarmAnimalView`, an `Animal` of the
+wildlife whose state comes from Livestock; the WildlifeView makes one per animal near the view.
+Sheets `assets/wildlife/<species>_<look>.png` from tools/art/livestock.py (no palette change);
+the tint is a sprite modulate drawn from the animal's seed with its look. `spawn
+cow|sheep|chicken|rabbit [count]`; the wild rabbit is now `spawn wild_rabbit`. Debug flag
+`--livestock=<species>,...`. Save version 13 keeps species, look, tint and position. Sounds
+`cow_moo`, `sheep_baa`, `chicken_cluck` through the ambience (rare, -20 to -22 dBFS, none
+asleep). Not done: animals don't avoid each other or the player and may stand on a bedroll.
 
 ## 74. Professions: woodworker, cook, mason; a UI for them
 

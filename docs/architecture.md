@@ -60,6 +60,12 @@ with Knicks, walls and fences on the Geest, ditches in the marsh, and dykes.
   bloom). What a tile looks like is one int, its tile code: layer, season look and weather look
   packed together (`TerrainTileset.tile_code`, read with `layer_of`, `season_of`, `weather_of`;
   the bit fields are documented there).
+- **Livestock** (`game/state/livestock.gd`) holds the farm animals (`FarmAnimal`) and moves
+  them: GameState owns it and Main calls its `update` every frame while the player is
+  outside. The numbers are `data/livestock.cfg` (`LivestockRules`). The WildlifeView draws
+  them: one `FarmAnimalView` (an `Animal` like the wild ones, but its state comes from the
+  FarmAnimal) for each animal near the view. Wildlife is view only and not saved; livestock is
+  state and saved, and shares the wildlife's drawing, sheets and sounds.
 - Other views each draw one piece of state: `PlayerView`, `WeatherView`, `WildlifeView`,
   `BuildMode`, `GroundItemView`, and the HUDs and screens (`HotbarHud`, `CharacterScreen`,
   `CraftingScreen`, `PauseMenu`, `ConsoleView` and so on).

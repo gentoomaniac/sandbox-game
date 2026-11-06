@@ -395,7 +395,10 @@ copper watering can. Kept here as the record of why.
    arched door in the gable, half-timber: the strongest period landmark. Later a Haubarg on
    a mound for a rich marsh farm.
 8. **Animals of the region** (large). White storks on roofs, red-brown cattle, sheep on
-   the dykes, geese; the roe deer and rabbits stay.
+   the dykes, geese; the roe deer and rabbits stay. Task 73 drew the livestock
+   (tools/art/livestock.py) without a new colour: Angler, black pied and red pied cattle;
+   white, grey (Heidschnucke) and black-faced sheep; brown and white hens and a rooster;
+   agouti, white and Dutch rabbits. Still to do: storks, geese, pigs, horses.
 9. **Coast and flats** (large). Tidal mud with ripples and tideways, salt marsh turning red
    in autumn, an Ewer on the mud, a Warft with its Fething. Needs map and terrain work
    too.
