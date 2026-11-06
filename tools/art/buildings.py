@@ -749,12 +749,14 @@ def gable_roof(picture, snowy, rng, left, right, eaves_y, foot_y, hip_half, dept
             line = round(eaves_y - step * slope)
             for row, colour in enumerate(BOARD):
                 picture[line + 1 + row][x] = colour
+                snowy.discard((x, line + 1 + row))
             below = line + 1 + len(BOARD)
             if picture[below][x] not in BOARD:
                 picture[below][x] = "soil_dark"
+                snowy.discard((x, below))
             if abs(x - centre) >= hip_half:
                 face_top[x] = max(face_top[x], below)
-        horse_head(picture, start - side * reach, round(eaves_y - reach * slope), -side)
+        horse_head(picture, snowy, start - side * reach, round(eaves_y - reach * slope), -side)
     return face_top
 
 
@@ -775,9 +777,10 @@ HORSE_HEAD = (
 )
 
 
-def horse_head(picture, x, y, facing):
+def horse_head(picture, snowy, x, y, facing):
     """A horse head carved on the end of a bargeboard whose top edge ends at (x, y), looking
-    right with `facing` 1 and left with -1, outlined in dark oak so it shows against the thatch."""
+    right with `facing` 1 and left with -1, outlined in dark oak so it shows against the thatch
+    and kept clear of snow."""
     colours = {"o": BOARD[0], "#": BOARD[1], "x": BOARD[3], "e": "soil_dark"}
     head = {}
     for row, line in enumerate(HORSE_HEAD):
@@ -788,8 +791,10 @@ def horse_head(picture, x, y, facing):
         for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
             if (hx + dx, hy + dy) not in head and picture[hy + dy][hx + dx] not in BOARD:
                 picture[hy + dy][hx + dx] = "soil_dark"
+                snowy.discard((hx + dx, hy + dy))
     for (hx, hy), colour in head.items():
         picture[hy][hx] = colour
+        snowy.discard((hx, hy))
 
 
 def herringbone(picture, rng, pixels, bricks, mortar):
