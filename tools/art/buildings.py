@@ -168,10 +168,13 @@ def crossed_ridge(picture, snowy, left, right, y):
     rect(picture, left, y + 3, right, y + 3, "soil_dark")
     for x in range(left, right + 1):
         snowy.update(((x, y), (x, y + 1)))
-    for x in range(left + 1, right - 3, 5):
-        for step in range(4):
-            picture[y - 2 + step][x + step] = "soil_light" if step < 2 else "soil_mid"
-            picture[y - 2 + step][x + 3 - step] = "soil_mid"
+    # The crossings sit on the cap and the tips stand out above it, so the row of X's shows
+    # against the sky; a stick is lit where it lies on the cap.
+    for x in range(left + 1, right - 4, 6):
+        for step in range(5):
+            colour = "soil_light" if y <= y - 3 + step <= y + 1 else "soil_mid"
+            picture[y - 3 + step][x + step] = colour
+            picture[y - 3 + step][x + 4 - step] = colour
 
 
 def chimney(picture, snowy, left, top, bottom, colours):
@@ -333,9 +336,10 @@ def outline(picture, colour):
         picture[y][x] = colour
 
 
-def kate(is_lit):
+def kate(is_lit, ridge_sticks=True):
     """A small cottage on 5x3 tiles: white lime walls, teal door and shutters, a big eyebrow
-    dormer in the middle of the roof and a small white chimney."""
+    dormer in the middle of the roof and a small white chimney. The ridge is held by crossed
+    sticks, or with `ridge_sticks` off capped with turf as in the west."""
     rng = random.Random(381)
     width, height = 5 * TILE, 96
     picture = blank(width, height)
@@ -349,7 +353,10 @@ def kate(is_lit):
         window(picture, left, 70, 10, 10, is_lit, shutters=("paint_teal", "water"))
     plank_door(picture, 34, 68, height - 4, 12, teal)
     eaves = thatch_roof(picture, snowy, rng, 0, width - 1, 12, 63, 22)
-    turf_ridge(picture, snowy, 22, width - 23, 12)
+    if ridge_sticks:
+        crossed_ridge(picture, snowy, 22, width - 23, 12)
+    else:
+        turf_ridge(picture, snowy, 22, width - 23, 12)
     eaves_shadow(picture, eaves, wall_left, wall_right)
     eyebrow(picture, snowy, 40, 46, 16, is_lit)
     chimney(picture, snowy, 52, 3, 14, ("snow_light", "lime", "sand_light"))
