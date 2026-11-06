@@ -142,11 +142,12 @@ The character is drawn in layers, so anything they wear shows in the world. They
 on the North Sea coast in the 18th century: a red waistcoat over a linen shirt, knee breeches
 with white stockings, wooden clogs, and a short blue jacket and hats to put on. Press Tab to
 open the character screen, where you move items between the inventory and the equipment
-slots. The hotbar (the ten slots at the bottom of the screen, keys 1 to 0) holds your tools
-and seeds and is extra room: it takes nothing from the backpack's 20 slots, so you carry 30
-stacks. The screen shows the backpack with the hotbar as its own row below it, and new
-items fill the hotbar first. Energy and health bars track how tired you
-are, and the more you carry, the more each action costs. Below 20 % energy the character
+slots. The hotbar (the eight slots at the bottom of the screen, keys 1 to 8) holds your tools
+and seeds and is extra room: it takes nothing from the backpack's 20 slots (4 rows of 5), so
+you carry 28 stacks. The screen shows the backpack with the hotbar as its own row below it, and
+new items fill the free hotbar slots first. Energy and health bars track how tired you
+are, and the more you carry, the more each action costs: up to 40 kg is free, and tools
+weigh nothing. Below 20 % energy the character
 sweats with every action, and below 10 % even more. A "zzz" thought bubble pops up over the
 head at midnight and again at half past, while you are still awake: you pass out an hour
 after midnight.
@@ -226,7 +227,7 @@ These are the default keys; all of them can be changed under Settings → Contro
 |---|---|
 | WASD or arrow keys | Walk |
 | Space or left click | Use the held item on the targeted tile |
-| 1–0 | Pick a hotbar slot |
+| 1–8 | Pick a hotbar slot |
 | Tab | Character screen and inventory |
 | C | Crafting menu |
 | E | Open the chest in front of you, else sleep until morning (next to a bed); with the hammer in hand it picks the next building |

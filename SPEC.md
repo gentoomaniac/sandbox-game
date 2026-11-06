@@ -1,7 +1,7 @@
 # Sandbox Game: Spec
 
 Status: playable prototype (the milestone 1 slice and much more; the README lists what
-works today). Last updated: 2026-11-06.
+works today). Last updated: 2026-11-07.
 
 This file is the single source of truth for what the game is. Decisions move from
 "Open questions" to "Decided" as they are made.
@@ -169,7 +169,8 @@ top of classic pixel art (details under "Lighting and look").
       pass-out debuff and sleep change it.
     - **Costs per action** live in a hand-editable data file (`data/energy.cfg`). First
       values: tool use (till, hit, water) 2, planting and picking 0.5; walking is free.
-    - **Weight:** up to 20 kg costs nothing extra; above that, +10 % cost per 10 kg more.
+    - **Weight:** up to 40 kg costs nothing extra (changed 2026-11-07, was 20 kg); above
+      that, +10 % cost per 10 kg more. Tools weigh nothing (task 72).
     - **Low energy slows walking:** at 10 % or less to 75 % speed, below 5 % to 50 %.
     - **Passing out** at 0 (changed 2026-11-05): the player sleeps until the next 06:30,
       but at least 10 hours (collapsing at 22:00 wakes at 08:00, at 15:00 at 06:30), and
@@ -238,13 +239,15 @@ top of classic pixel art (details under "Lighting and look").
     keyboard action (Space) works on the tile the player faces, as before, and the
     highlight shows that tile again once the player moves.
 - **Inventory and equipment** (decided 2026-11-05):
-  - The **hotbar** (10 slots, shown at the bottom of the screen) and the **backpack** (20
-    slots) are separate (changed 2026-11-05): what is on the hotbar takes no backpack
-    space, so the player carries 30 slots. Screens show the backpack (two rows of ten,
-    as wide as the hotbar) with the hotbar as its own row below, set off by a small gap.
+  - The **hotbar** (8 slots, shown at the bottom of the screen; 10 until task 72) and the
+    **backpack** (20 slots) are separate (changed 2026-11-05): what is on the hotbar takes no
+    backpack space, so the player carries 28 slots. Screens show the backpack (4 rows of 5)
+    with the hotbar as its own row below, set off by a small gap. A version 10 save moves what
+    lay in the two dropped hotbar slots into the backpack (onto a stack of the same item
+    first), or onto the ground at the player's feet when the backpack is full.
     Shift+click from a chest sends a stack to the backpack first, then the hotbar. Picked-up items join a matching stack first, then take the first
     free slot, hotbar before backpack. Backpack upgrades later add rows to the backpack.
-  - The selected hotbar slot is what the player holds: keys 1–0 pick a slot. The use
+  - The selected hotbar slot is what the player holds: keys 1–8 pick a slot. The use
     action (left click or Space) acts with the held item.
   - Items of the same kind stack, up to 99 per slot; tools don't stack.
   - Every item has a weight; the total carried weight raises how much energy actions use
@@ -264,8 +267,8 @@ top of classic pixel art (details under "Lighting and look").
   - New game (period clothes since task 53, North Sea coast 1700–1800): a red waistcoat
     over a linen shirt, brown knee breeches with white stockings and wooden clogs worn; a
     straw hat, a knitted cap, a spare linen shirt and a short blue jacket in the inventory.
-    The clothes are light (0.3 to 0.6 kg), so a new game carries 19.9 kg, under the 20 kg
-    that cost no extra energy. Three hair styles: short, shoulder length, and long tied back
+    The clothes are light (0.3 to 0.6 kg) and the tools weigh nothing, so a new game carries
+    2.9 kg, far under the 40 kg that cost no extra energy. Three hair styles: short, shoulder length, and long tied back
     with a ribbon. Old saves (version 8) get the tunic and trousers renamed to the waistcoat
     and breeches and clogs on their bare feet. The straw hat has a low crown and a wide brim drooping at its ends (task 52,
     it read as a pith helmet); the knitted cap is a red wool stocking cap, as the guide's

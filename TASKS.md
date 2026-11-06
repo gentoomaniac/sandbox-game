@@ -353,7 +353,7 @@ text only while it shows; WorldView returns early with no falling trees.
 
 ## 72. Lighter load, 8-slot hotbar, 4×5 backpack
 
-- [ ] Done
+- [x] Done
 
 The user's answers of 2026-11-07:
 - Tools weigh nothing, and the weight that costs no extra energy goes up to 40 kg.
@@ -361,6 +361,20 @@ The user's answers of 2026-11-07:
 - The hotbar has 8 slots instead of 10 (keys 1-8). Old saves move whatever sits in the two
   dropped hotbar slots into the backpack, or onto the ground at the player's feet when it is
   full.
+
+Done: tools (every item with a `tool`) weigh 0 and the tooltip leaves out the weight line of a
+weightless item; `free_kg` is 40. The backpack is a grid of 5 columns and 4 rows on both screens,
+the hotbar a row of its own below it (8 slots wide; on the storage screen it no longer wraps to
+the backpack's width). `Inventory.HOTBAR_SIZE` is 8, so there are 28 slots; keys 1-8 (the
+`hotbar_9` and `hotbar_10` actions are gone, and `GameSettings.RETIRED_ACTIONS` lets a settings
+file that still binds them load without a warning). Save version 11: the upgrade moves what lay
+in old hotbar slots 8 and 9 into the first free backpack slots (onto stacks of the same item
+first), else onto the ground at the player's feet (piles 0.3 tiles apart), and a selected slot
+that is gone becomes slot 0. The version 1 step now builds its inventory in version 5's 20
+slots (it used the current layout, which the later steps would misread); the version 5 step
+widens to 30 literally. The 8 starting items fill the hotbar, so a new game has no free hotbar
+slot; harvests go to the backpack. Tests: `HotbarHold` fetches an item (or an empty hand) into
+the held slot, `SaveUpgradeCase` shares the old-save helpers.
 
 ## Later (not part of the prototype)
 
