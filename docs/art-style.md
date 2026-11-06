@@ -233,6 +233,10 @@ not new art styles.
 
 Links only; no images are copied into the repo.
 
+- The first art review (2026-11-05), with the measured sizes behind SPEC.md's scale rules:
+  [archive/art-review-2026-11-05.md](archive/art-review-2026-11-05.md). It is a snapshot of
+  that day; this guide is the current word.
+
 - Houses and farms:
   - Uthland Frisian house: <https://en.wikipedia.org/wiki/Uthland-Frisian_house>,
     <https://de.wikipedia.org/wiki/Uthlandfriesisches_Haus>; Frisian gable:

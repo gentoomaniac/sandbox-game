@@ -405,7 +405,7 @@ See SPEC.md "Saving (first version)" and "World edits (architecture)".
 ## 16. Art scale pass
 
 Split into three tasks that can run in parallel. Numbers and reasons:
-`docs/art-review-2026-11-05.md`. All follow SPEC.md "Art pipeline" style rules.
+`docs/archive/art-review-2026-11-05.md`. All follow SPEC.md "Art pipeline" style rules.
 
 Screenshots: the tiling window manager makes windowed screenshots portrait; take them
 fullscreen (`godot --path . -f -- --new-game --save-path=<scratch> --settings-path=<scratch>

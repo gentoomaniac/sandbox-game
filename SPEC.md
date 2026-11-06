@@ -260,7 +260,7 @@ top of classic pixel art (details under "Lighting and look").
 - **Scale between character and world:** character figure 27–28 px tall in its 16×32
   frame; mature trees about 2–2.5× the character (60–66 px); a small house about 3.4× (5×3
   footprint, ~96 px tall, door at least as tall as the character). Numbers in
-  `docs/art-review-2026-11-05.md`.
+  `docs/archive/art-review-2026-11-05.md`.
 - **Character sprite: 16×32 pixels** (one tile wide, two tall), built from **layers**
   (body, clothes, head/hair, held tool or weapon, later gear), so equipment can be shown
   by swapping or adding a layer instead of redrawing the character.
