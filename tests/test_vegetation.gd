@@ -67,6 +67,27 @@ func test_the_data_file_follows_the_seasons() -> void:
 	assert_eq(_vegetation.density(&"berry_bush", winter), 0.0)
 
 
+func test_every_meadow_flower_has_a_curve() -> void:
+	for species in TerrainTileset.FLOWER_SPECIES:
+		assert_true(Vegetation.KIND_SALTS["flowers"].has(species), species)
+	assert_eq(Vegetation.KIND_SALTS["flowers"].size(), TerrainTileset.FLOWER_SPECIES.size())
+
+
+func test_meadow_flowers_bloom_from_spring_to_early_autumn_and_never_in_winter() -> void:
+	var blooming := func(day: int) -> float:
+		var total := 0.0
+		for species in TerrainTileset.FLOWER_SPECIES:
+			total += _vegetation.density(species, day)
+		return total
+	assert_lt(blooming.call(6), blooming.call(25), "early spring has few")
+	assert_gt(blooming.call(45), 4.0, "midsummer is full")
+	assert_lt(blooming.call(75), blooming.call(55), "fading in autumn")
+	for day in range(91, DAYS_PER_YEAR + 1):
+		assert_eq(blooming.call(day), 0.0, "none on winter day %d" % day)
+	assert_eq(_vegetation.density(&"heather", 20), 0.0, "heather is late")
+	assert_eq(_vegetation.density(&"dandelion", 50), 0.0, "dandelions are early")
+
+
 # --- Thresholds ---
 
 

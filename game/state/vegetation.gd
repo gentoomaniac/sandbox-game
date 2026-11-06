@@ -11,10 +11,26 @@ const DEFAULT_PATH := "res://data/vegetation.cfg"
 ## The kinds with a curve, per section of the data file, each with the salt that keeps its
 ## thresholds independent of the others'. Decoration kinds are those of
 ## TerrainTileset.DECORATION_KINDS, object kinds the types with a `seasonal` entry in
-## WorldObjectTypes.
+## WorldObjectTypes, flower kinds the species of TerrainTileset.FLOWER_SPECIES (their density is
+## how much of them is in bloom).
 const KIND_SALTS := {
 	"decorations": {&"tuft": 1, &"flower": 2, &"small_plant": 3, &"leaves": 4},
 	"objects": {&"fern_bush": 11, &"berry_bush": 12, &"tall_grass": 13},
+	"flowers":
+	{
+		&"wood_anemone": 21,
+		&"dandelion": 22,
+		&"cuckooflower": 23,
+		&"daisy": 24,
+		&"buttercup": 25,
+		&"red_campion": 26,
+		&"red_clover": 27,
+		&"white_clover": 28,
+		&"yarrow": 29,
+		&"knapweed": 30,
+		&"meadowsweet": 31,
+		&"heather": 32,
+	},
 }
 
 static var _default: Vegetation
