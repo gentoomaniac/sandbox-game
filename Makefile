@@ -42,7 +42,7 @@ help:
 	@echo "  llm-check   Send one chat request to the test LLM and print the reply."
 	@echo "  llm-pull    Fetch another model into the running test LLM, e.g. LLM_MODEL=qwen2.5:7b-instruct."
 	@echo "  llm-models  List the models the test LLM has."
-	@echo "  llm-rm      Delete the model LLM_MODEL from the test LLM."
+	@echo "  llm-rm      Delete the model LLM_MODEL (required) from the test LLM."
 	@echo "  clean       Delete build/ (test log, screenshots, the screenshot save); nothing is lost."
 	@echo "  export      Not set up yet: no export presets exist."
 	@echo
@@ -206,7 +206,9 @@ llm-pull:
 llm-models:
 	tools/llm/llm.sh models
 
+# Never the default model by accident: the tag must be given.
 llm-rm:
+	@test -n "$(LLM_MODEL)" || { echo "llm-rm needs LLM_MODEL=<tag>, e.g. make llm-rm LLM_MODEL=qwen2.5:7b-instruct" >&2; exit 1; }
 	tools/llm/llm.sh rm
 
 # Everything in build/ is made by the targets above, so deleting it loses nothing.

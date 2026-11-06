@@ -70,6 +70,16 @@ wait_for_api() {
 	return 1
 }
 
+# Pulls $MODEL unless the volume has it.
+ensure_model() {
+	if "$CONTAINER" exec "$NAME" ollama show "$MODEL" >/dev/null 2>&1; then
+		echo "Model $MODEL is present"
+	else
+		echo "Pulling $MODEL"
+		"$CONTAINER" exec "$NAME" ollama pull "$MODEL"
+	fi
+}
+
 up() {
 	gpu=$(want_gpu)
 	# The label records how the container was started, so a GPU change recreates it.
@@ -92,12 +102,7 @@ up() {
 			-p "127.0.0.1:$PORT:11434" -v "$VOLUME:/root/.ollama" "$IMAGE" >/dev/null
 	fi
 	wait_for_api
-	if "$CONTAINER" exec "$NAME" ollama show "$MODEL" >/dev/null 2>&1; then
-		echo "Model $MODEL is present"
-	else
-		echo "Pulling $MODEL (about 2 GB the first time)"
-		"$CONTAINER" exec "$NAME" ollama pull "$MODEL"
-	fi
+	ensure_model
 	echo "Ready: $URL/v1 (model $MODEL)"
 }
 
@@ -155,12 +160,8 @@ need_running() {
 # Settings (Language model -> Model).
 pull() {
 	need_running
-	if "$CONTAINER" exec "$NAME" ollama show "$MODEL" >/dev/null 2>&1; then
-		echo "Model $MODEL is present"
-	else
-		echo "Pulling $MODEL"
-		"$CONTAINER" exec "$NAME" ollama pull "$MODEL"
-	fi
+	wait_for_api
+	ensure_model
 	echo "To use it: Settings -> Language model -> Model: $MODEL (and make llm-check LLM_MODEL=$MODEL)"
 }
 

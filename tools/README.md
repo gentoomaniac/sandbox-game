@@ -185,4 +185,5 @@ Which ones fit on the GPU (8 GB of VRAM here) is for later, with the GPU set up 
   nvidia-ctk cdi list   # should list nvidia.com/gpu=0 and nvidia.com/gpu=all
   ```
 
-  With 8 GB of VRAM, `qwen2.5:7b-instruct` (4.7 GB) fits on the GPU as well.
+  With 8 GB of VRAM, `qwen2.5:7b-instruct` (4.7 GB) should fit on the GPU as well (not tried
+  yet).
