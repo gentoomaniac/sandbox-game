@@ -1,4 +1,5 @@
 shader_type canvas_item;
+#include "res://game/scenes/hash.gdshaderinc"
 // Raindrops splashing on the ground: a world-anchored grid where each cell may have a splash
 // in each short cycle (with the chance `chance`, set by AmbientMotion from the rain), at a
 // spot of its own every time: a pixel where the drop lands, then two flying out to the sides,
@@ -9,13 +10,10 @@ uniform float chance : hint_range(0.0, 1.0) = 0.0;
 
 const vec2 CELL = vec2(12.0, 10.0);
 const float CYCLE_SECONDS = 0.6;
+// palette: tools/art/palette.py (not guarded by a test)
 const vec3 SPLASH_COLOR = vec3(0.72, 0.82, 0.96);
 
 varying vec2 world_position;
-
-float hash(vec2 p) {
-	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-}
 
 void vertex() {
 	world_position = (MODEL_MATRIX * vec4(VERTEX, 0.0, 1.0)).xy;

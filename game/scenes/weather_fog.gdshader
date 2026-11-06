@@ -14,6 +14,7 @@ uniform float fog : hint_range(0.0, 1.0) = 0.0;
 // The day tint, so that the fog darkens at night like the world.
 uniform vec4 tint : source_color = vec4(1.0);
 
+// palette: tools/art/palette.py (not guarded by a test)
 const vec3 FOG_COLOR = vec3(0.84, 0.87, 0.91);
 // The opacity of the thickest fog, and the number of levels it is dithered between.
 const float MAX_OPACITY = 0.7;

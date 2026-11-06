@@ -1,4 +1,5 @@
 shader_type canvas_item;
+#include "res://game/scenes/hash.gdshaderinc"
 // Lily pads drifting a pixel back and forth and bobbing, slowly, each tile in its own rhythm
 // (hashed from where it is). The wind (`drift`, set by AmbientMotion) widens the drift. Set on
 // the decoration tiles of water, in an atlas without padding.
@@ -14,10 +15,6 @@ varying vec4 modulate;
 void vertex() {
 	world_position = (MODEL_MATRIX * vec4(VERTEX, 0.0, 1.0)).xy;
 	modulate = COLOR;
-}
-
-float hash(vec2 p) {
-	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
 }
 
 void fragment() {

@@ -1,4 +1,5 @@
 shader_type canvas_item;
+#include "res://game/scenes/hash.gdshaderinc"
 // Water that moves: short ripples that come and go and drift with the wind, and the odd glint,
 // all in whole pixels and anchored to the world. Only pixels of plain water change, so the
 // marks, banks and foam of the tiles stay as they are. The wind makes it choppy (`chop`, 0 to
@@ -8,7 +9,7 @@ shader_type canvas_item;
 uniform float chop : hint_range(0.0, 1.0) = 0.0;
 uniform vec2 drift = vec2(0.0);
 
-// The palette's water colours (tools/art/palette.py).
+// palette: tools/art/palette.py (the water colours; tests/test_shader_palette.gd guards them)
 const vec3 WATER = vec3(0.220, 0.361, 0.475);
 const vec3 WATER_DEEP = vec3(0.169, 0.271, 0.380);
 const vec3 WATER_LIGHT = vec3(0.314, 0.482, 0.576);
@@ -18,15 +19,6 @@ const vec2 GLINT_CELL = vec2(14.0, 12.0);
 
 varying vec2 world_position;
 varying vec4 modulate;
-
-float hash(vec2 p) {
-	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-}
-
-vec4 hash4(vec2 cell, float layer) {
-	vec2 c = cell + layer * 17.31;
-	return vec4(hash(c), hash(c + 3.7), hash(c + 9.1), hash(c + 15.3));
-}
 
 void vertex() {
 	world_position = (MODEL_MATRIX * vec4(VERTEX, 0.0, 1.0)).xy;

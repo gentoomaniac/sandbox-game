@@ -1,4 +1,5 @@
 shader_type canvas_item;
+#include "res://game/scenes/hash.gdshaderinc"
 // Rain, snow, wind streaks and blowing leaves over the whole world viewport, drawn per art
 // pixel: every effect is made of whole pixels (one pixel wide streaks, 1 or 2 pixel flakes),
 // so it stays crisp on the pixel grid. Nothing is stored: each pixel works out whether it is
@@ -25,18 +26,10 @@ uniform vec2 snow_scroll = vec2(0.0);
 uniform float wind : hint_range(0.0, 1.0) = 0.0;
 uniform vec2 wind_scroll = vec2(0.0);
 
+// palette: tools/art/palette.py (not guarded by a test)
 const vec3 RAIN_COLOR = vec3(0.66, 0.78, 0.95);
 const vec3 SNOW_COLOR = vec3(0.96, 0.98, 1.0);
 const vec3 STREAK_COLOR = vec3(0.92, 0.95, 1.0);
-
-float hash(vec2 p) {
-	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-}
-
-vec4 hash4(vec2 cell, float layer) {
-	vec2 c = cell + layer * 17.31;
-	return vec4(hash(c), hash(c + 3.7), hash(c + 9.1), hash(c + 15.3));
-}
 
 // A layer of rain: columns of a sheared grid hold a stream of drops each. Returns the alpha.
 float rain_layer(vec2 p, float layer, float density, float drop_length, float speed, float period) {

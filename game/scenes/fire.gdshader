@@ -1,4 +1,5 @@
 shader_type canvas_item;
+#include "res://game/scenes/hash.gdshaderinc"
 // A fire that burns: its flame plays a loop of frames (drawn by tools/art/fire.py), leans and
 // stretches downwind and throws sparks that rise, drift with the wind and fade. For a campfire
 // tile (cells of `cell_size` in an atlas without padding) or the hearth's sprite (one cell).
@@ -25,6 +26,7 @@ uniform float spark_rise = 16.0;
 uniform float lean = 0.0;
 uniform float stretch = 0.0;
 
+// palette: tools/art/palette.py (gold and ember; tests/test_shader_palette.gd guards them)
 const vec3 SPARK_HOT = vec3(0.933, 0.761, 0.353);
 const vec3 SPARK_COOL = vec3(0.659, 0.251, 0.180);
 const float SPARKS = 4.0;
@@ -32,11 +34,6 @@ const float SPARKS = 4.0;
 varying vec2 world_position;
 varying vec4 modulate;
 
-float hash(vec2 p) {
-	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-}
-
-// PositionHash.of with no salt.
 // A copy of PositionHash.of (game/world/position_hash.gd) with salt 0, which AmbientMotion.fire_frame mirrors:
 // change one, change the other.
 uint position_hash(ivec2 pos) {
