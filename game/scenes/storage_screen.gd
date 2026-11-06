@@ -75,9 +75,10 @@ func is_open() -> bool:
 	return visible
 
 
-## Shows the chest next to the player's inventory.
+## Shows the chest next to the player's inventory. Opening it again moves it to that chest.
 func open(chest: WorldObject, player: PlayerState) -> void:
 	assert(chest.storage != null, "Not a chest: %s" % chest.type)
+	close()
 	_inventory = player.inventory
 	_chest = chest.storage
 	_inventory.changed.connect(_refresh)
@@ -89,7 +90,11 @@ func open(chest: WorldObject, player: PlayerState) -> void:
 	_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
 
 
+## Safe to call when it is closed. The screen listens to the inventory and the chest only
+## while it is open.
 func close() -> void:
+	if not visible:
+		return
 	_inventory.changed.disconnect(_refresh)
 	_chest.changed.disconnect(_refresh)
 	visible = false

@@ -142,7 +142,14 @@ func open(page: Page = Page.PAUSE) -> void:
 	_show_page(page)
 
 
+func is_open() -> bool:
+	return visible
+
+
+## Safe to call when it is closed: the game is only resumed by closing an open menu.
 func close() -> void:
+	if not visible:
+		return
 	visible = false
 	resumed.emit()
 

@@ -112,8 +112,21 @@ func is_open() -> bool:
 	return visible
 
 
+func open() -> void:
+	_show(true)
+
+
+## Safe to call when it is closed.
+func close() -> void:
+	_show(false)
+
+
 func toggle() -> void:
-	visible = not visible
+	_show(not visible)
+
+
+func _show(is_shown: bool) -> void:
+	visible = is_shown
 	_drop_pick()
 	_note_label.text = ""
 	_refresh()
