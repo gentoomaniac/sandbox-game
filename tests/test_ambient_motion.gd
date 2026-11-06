@@ -238,3 +238,16 @@ func test_the_tile_sets_put_the_materials_on_the_tiles_that_move() -> void:
 		decorations.get_tile_data(Vector2i(0, TerrainTileset.Layer.WATER), 0).material,
 		motion.lily_pads
 	)
+
+
+func test_the_water_of_the_tide_ripples_like_the_river() -> void:
+	var motion := AmbientMotion.new()
+	motion.update(1.0, Vector2(10.0, 0.0), 0.0)
+	for parameter in ["chop", "drift"]:
+		assert_eq(
+			motion.mud.get_shader_parameter(parameter),
+			motion.water.get_shader_parameter(parameter),
+			parameter
+		)
+	motion.show_tide(0.3)
+	assert_eq(motion.mud.get_shader_parameter("tide"), 0.3)

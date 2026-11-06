@@ -6,7 +6,7 @@ extends GutTest
 const PALETTE_SOURCE := "res://tools/art/palette.py"
 ## Shader file -> {shader constant: palette color name}.
 const COPIES := {
-	"res://game/scenes/water.gdshader":
+	"res://game/scenes/water_surface.gdshaderinc":
 	{
 		"WATER": "water",
 		"WATER_DEEP": "water_deep",
@@ -14,6 +14,7 @@ const COPIES := {
 		"FOAM": "foam",
 	},
 	"res://game/scenes/fire.gdshader": {"SPARK_HOT": "gold", "SPARK_COOL": "ember"},
+	"res://game/scenes/mud.gdshader": {"MUD_DARK": "mud_dark"},
 }
 
 

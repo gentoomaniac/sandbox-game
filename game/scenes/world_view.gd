@@ -143,6 +143,7 @@ func _ready() -> void:
 		add_child(tile_map)
 		_layers.append(tile_map)
 	_layers[TerrainTileset.Layer.WATER].material = ambient_motion.water
+	_layers[TerrainTileset.Layer.MUD].material = ambient_motion.mud
 	# Wet soil lies right over the soil terrain, under the snow and the other looks.
 	add_child(_soil_wetness)
 	for look in TerrainTileset.OVERLAY_LOOKS:

@@ -1,11 +1,12 @@
 class_name AmbientMotion
 extends RefCounted
 ## The world moving in the wind, view only: plants sway, water ripples, fires burn and lean,
-## lily pads drift and rain splashes on the ground. It is all done by shaders, so it costs no
-## nodes or scripts per object: this holds their materials, which the tile sets put on the tiles
-## that move (see ObjectTileset and TerrainTileset), and gives them the wind every frame
-## (`update`). The swinging, burning and splashing run on the shaders' own clock; only what
-## builds up with the wind (how far the ripples drifted) is kept here.
+## lily pads drift, rain splashes on the ground and the tide comes and goes on the mud. It is all
+## done by shaders, so it costs no nodes or scripts per object: this holds their materials, which
+## the tile sets put on the tiles that move (see ObjectTileset and TerrainTileset), and gives them
+## the wind every frame (`update`) and the tide (`show_tide`). The swinging, burning and splashing
+## run on the shaders' own clock; only what builds up with the wind (how far the ripples drifted)
+## is kept here.
 ##
 ## Everything moves in whole art pixels, and on a calm day hardly at all. The static functions
 ## turn the weather into the shaders' numbers.
@@ -14,6 +15,7 @@ const OBJECT_SWAY_SHADER := preload("res://game/scenes/object_sway.gdshader")
 const DECORATION_SWAY_SHADER := preload("res://game/scenes/decoration_sway.gdshader")
 const LILY_PAD_SHADER := preload("res://game/scenes/lily_pad.gdshader")
 const WATER_SHADER := preload("res://game/scenes/water.gdshader")
+const MUD_SHADER := preload("res://game/scenes/mud.gdshader")
 const FIRE_SHADER := preload("res://game/scenes/fire.gdshader")
 const RAIN_SPLASH_SHADER := preload("res://game/scenes/rain_splashes.gdshader")
 
@@ -109,6 +111,8 @@ const SWAYING_DECORATIONS := {
 
 ## On the water layer of the terrain, and on the node that draws the rain's splashes.
 var water := _material(WATER_SHADER)
+## On the mud layer of the terrain: the tide (see `show_tide`), whose water ripples like the river.
+var mud := _material(MUD_SHADER)
 var splashes := _material(RAIN_SPLASH_SHADER)
 var decoration_sway := _material(DECORATION_SWAY_SHADER)
 var lily_pads := _material(LILY_PAD_SHADER)
@@ -198,11 +202,17 @@ func update(delta: float, wind: Vector2, rain: float) -> void:
 		material.set_shader_parameter("stretch", fire_stretch_for(wind))
 	var chop := chop_for(speed)
 	_water_drift += (WATER_BASE_DRIFT + wind * WATER_DRIFT_PER_WIND) * delta
-	water.set_shader_parameter("chop", chop)
-	water.set_shader_parameter("drift", _water_drift)
+	for material in [water, mud]:
+		material.set_shader_parameter("chop", chop)
+		material.set_shader_parameter("drift", _water_drift)
 	lily_pads.set_shader_parameter("drift", LILY_DRIFT + LILY_DRIFT_IN_WIND * chop)
 	splash_chance = splash_chance_for(rain)
 	splashes.set_shader_parameter("chance", splash_chance)
+
+
+## Shows the tide at `level` (see Tide.level): 0 at low water, 1 at high water.
+func show_tide(level: float) -> void:
+	mud.set_shader_parameter("tide", level)
 
 
 ## How far the top of the bendiest plant swings to either side in a wind of `speed` m/s, in
