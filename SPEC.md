@@ -279,18 +279,29 @@ top of classic pixel art (details under "Lighting and look").
 - **Inventory and equipment** (decided 2026-11-05):
   - The **hotbar** (8 slots, shown at the bottom of the screen; 10 until task 72) and the
     **backpack** (20 slots) are separate (changed 2026-11-05): what is on the hotbar takes no
-    backpack space, so the player carries 28 slots. Screens show the backpack (4 rows of 5)
-    with the hotbar as its own row below, set off by a small gap. A version 10 save moves what
-    lay in the two dropped hotbar slots into the backpack (onto a stack of the same item
+    backpack space, so the player carries 28 slots. Screens show the backpack (4 rows of 5);
+    the hotbar is only the HUD's (changed 2026-11-06, task 88): while the character or chest
+    screen is open it stays lit, above the screens' dimmed backdrop, and is the quick bar
+    there (its slots take the clicks; the screens draw no copy of it). A version 10 save moves
+    what lay in the two dropped hotbar slots into the backpack (onto a stack of the same item
     first), or onto the ground at the player's feet when the backpack is full.
-    Shift+click from a chest sends a stack to the backpack first, then the hotbar. Picked-up items join a matching stack first, then take the first
-    free slot, hotbar before backpack. Backpack upgrades later add rows to the backpack.
+    Shift+click from a chest sends a stack to the backpack first, then the hotbar. Picked-up
+    items join a matching stack first, then take the first free slot, hotbar before backpack. Backpack upgrades later add rows to the backpack.
   - The selected hotbar slot is what the player holds: keys 1–8 pick a slot. The use
     action (left click or Space) acts with the held item.
   - Items of the same kind stack, up to 99 per slot; tools don't stack.
   - Every item has a weight; the total carried weight raises how much energy actions use
     (see Energy).
-  - An inventory screen shows all slots; items can be moved between slots.
+  - An inventory screen shows all slots; items can be moved between slots. Putting the picked
+    stack on a different item swaps and the other item is picked up in turn (task 88); the same
+    item stacks. Shift+click on the character screen sends a stack from the backpack to the
+    hotbar and back (onto stacks of the same item first, then the first free slot, as far as
+    there is room); in a chest screen it sends it to the other side.
+  - **Dropping** (task 88): a left click outside the screen's panel with a backpack or hotbar
+    stack picked, or the rebindable `drop_item` action (T) for the held stack, puts the stack on
+    the ground in front of the player as piles like any drop (not inside a house). Such piles
+    are not pulled back until the player has walked out of reach of them; then they are
+    collected as usual.
 - **Character screen** (decided 2026-11-05): Tab opens one screen with the character and
   their equipment on one side and the inventory on the other.
   - Equipment slots: head, body, legs, feet, coat, back, main hand, off hand (coat added in
@@ -979,7 +990,7 @@ Decided 2026-11-05.
   backpack icon above the one and a chest icon above the other (equipment is not shown).
   Items move by clicking as on the character screen (pick up, then click a slot; decided by
   the implementation 2026-11-05 instead of dragging); Shift+click sends a whole stack to the
-  other side. Opening makes a creaky squeak, closing a soft wooden thump.
+  other side. The hotbar is the HUD's, lit and clickable while the screen is open (task 88). Opening makes a creaky squeak, closing a soft wooden thump.
 - **Picking a chest up:** hitting it with the axe (three hits outdoors) takes it down and
   gives the chest item back; its contents spill onto the ground as piles around it. Inside
   a house there is no ground to spill on: one swing of the axe puts the chest item and its

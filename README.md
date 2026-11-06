@@ -291,11 +291,16 @@ with white stockings, wooden clogs, and a short blue jacket and hats to put on. 
 open the character screen, where you move items between the inventory and the equipment
 slots. The hotbar (the eight slots at the bottom of the screen, keys 1 to 8) holds your tools
 and seeds and is extra room: it takes nothing from the backpack's 20 slots (4 rows of 5), so
-you carry 28 stacks. The screen shows the backpack with the hotbar as its own row below it, and
-new items fill the free hotbar slots first. Energy and health bars track how tired you
-are, and the more you carry, the more each action costs: up to 40 kg is free, and tools
-weigh nothing. Below 20 % energy the character
-sweats with every action, and below 10 % even more. A "zzz" thought bubble pops up over the
+you carry 28 stacks. New items fill the free hotbar slots first. The screen shows the backpack
+and the hotbar stays lit at the bottom, where you use it as the quick bar: click an item, then
+a slot of the backpack, the hotbar or the equipment to put it there. A different item in that
+slot swaps places and sticks to the mouse in turn, the same item stacks. Shift+click sends a
+whole stack from the backpack to the hotbar and back (onto the same item first, if there is
+room). Let go of a picked stack outside the screen, or press T for the held stack, and it lies
+on the ground in front of you; walk away and back to pick it up again (a game saved right
+after a drop picks the pile up when it loads). Energy and health bars track how tired you are,
+and the more you carry, the more each action costs: up to 40 kg is free, and tools weigh
+nothing. Below 20 % energy the character sweats with every action, and below 10 % even more. A "zzz" thought bubble pops up over the
 head at midnight and again at half past, while you are still awake: you pass out an hour
 after midnight.
 
@@ -366,9 +371,10 @@ fades on its own. The skills are in [data/skills.cfg](data/skills.cfg), the stat
 Hold a chest and a ghost shows where it would go: green where it fits, red where it
 doesn't (not on water, wetland or floodplain, not on something else, not in front of a
 door). Use it to place the chest, outdoors or inside a house. Press E in front of a chest
-to open it: your backpack and hotbar are on the left and the chest's 15 slots (20 in a carved
-chest) on the right. Click an item and click a slot to move it, or Shift+click to send a whole stack
-across (from the chest it goes to the backpack first, so the hotbar isn't flooded). The
+to open it: your backpack is on the left (the hotbar below stays usable) and the chest's 15
+slots (20 in a carved chest) on the right. Click an item and click a slot to move it, or
+Shift+click to send a whole stack across (from the chest it goes to the backpack first, so the
+hotbar isn't flooded). The
 axe takes a chest down: outdoors what it held spills onto the ground, inside a house the
 chest and its contents go into your inventory (or you are told there is no room).
 
@@ -421,6 +427,7 @@ These are the default keys; all of them can be changed under Settings → Contro
 | WASD or arrow keys | Walk |
 | Space or left click | Use the held item on the targeted tile |
 | 1–8 | Pick a hotbar slot |
+| T | Drop the held stack on the ground in front of you (picked up again by walking away and back) |
 | Tab | Character screen and inventory |
 | K | Skills tab of the character screen |
 | C | Crafting menu (by hand) |

@@ -118,7 +118,11 @@ Warft and an Ewer here and there.
   `BuildMode` (the ghost, and the red marking and hold of taking down; `Builder` holds the
   mode and what each target gives, `GameState.take_down_building` the rules for buildings),
   `GroundItemView`, and the HUDs and screens (`HotbarHud`, `CharacterScreen`,
-  `CraftingScreen`, `PauseMenu`, `ConsoleView` and so on).
+  `CraftingScreen`, `PauseMenu`, `ConsoleView` and so on). The hotbar is on a layer above the
+  character and chest screens and is their quick bar: they take it in their constructor and
+  listen to its slot views, and it passes clicks on to the game when none of them is open.
+  A stack let go outside a screen reaches the world as `drop_requested`, which Main hands to
+  `GameState.drop_from_inventory`.
 
 ## Data files and how to add content
 

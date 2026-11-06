@@ -903,7 +903,7 @@ the ground shadow, and a check on lush, dry and flowering grass. No new colours.
 
 ## 88. Inventory handling
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06:
 
@@ -918,6 +918,28 @@ The user's word of 2026-11-06:
   it into the backpack, as long as there is space (stacking onto the same item first).
 - **The quick bar while the inventory is open:** the HUD's quick bar is not greyed out and
   is used directly; the extra copy of the quick bar inside the inventory screen goes.
+
+Done: **The bug:** the fade screen's invisible text box (layer 2, centred, 320x32, default mouse
+filter) caught every click on the strip in the middle of the window, which lay over the
+bottom rows of the backpack; it now ignores the mouse. tests/test_inventory_clicks.gd clicks
+every slot at its centre and corners with the fade screen and the hotbar in the tree.
+**Quick bar:** `HotbarHud` is on layer 2 (above the screens' backdrop, under the fade), its
+slots are clickable (`SlotView.is_clickable`) only while the character page or the chest screen
+is open, and both screens take the hotbar in their constructor, listen to its slot views and
+draw no row of their own (the tooltip ids of those slots are `hotbar_<n>`, no longer
+`inventory_<n>`). **Swap:** `ItemSlots.move_to` says whether it swapped; the screens then keep
+the picked slot (now holding the displaced item) as the pick; on the character screen also onto
+and off the equipment slots. **Shift-click:** `Inventory.move_to_other_part` (character
+screen); the chest screen already sent stacks to the other side. **Dropping:** a left click
+outside the panel (and the hotbar) with a backpack or hotbar stack picked emits `drop_requested`
+(chest screen too, for inventory picks; an equipment or chest pick is just let go), and the new
+action `drop_item` (default T; Q and G were taken or clashed with test bindings) drops the held
+stack: `GameState.drop_from_inventory` lays it in front of the player with `World.drop_items`;
+such piles (`GroundItem.is_dropped_by_player`) are pulled in again only after the player has
+left their reach (not saved: a game saved right after a drop collects the pile on load).
+Nothing is dropped inside a house. The hotbar is on layer 2 only while a screen that uses it
+is open (else layer 1 with the other HUDs), and only that screen listens to its clicks; the
+dragged icon has a layer of its own (3), above the hotbar.
 
 ## 89. Crafting UI: buttons clickable all over
 
