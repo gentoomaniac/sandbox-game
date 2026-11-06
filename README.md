@@ -136,7 +136,8 @@ have to be gathered first. The buildings, their sizes, costs and insides are in
 
 The buildings follow the reed-thatched farmhouses of Denmark and northern Germany: the Kate
 with white lime walls and teal shutters, the brick longhouse with its arched barn door, the
-half-timbered barn, and the plank shack.
+half-timbered barn, and the shack: tarred black boards under a turf roof, which greens in
+spring, browns in autumn and winter and lies under snow like the thatch.
 
 ![The Kate, the longhouse, the barn and the shack in summer](docs/screenshots/buildings.png)
 

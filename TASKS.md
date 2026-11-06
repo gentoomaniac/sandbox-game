@@ -159,10 +159,23 @@ stove (the guide's first suggestion); the Bilegger is left for a best room.
 
 ## 58. The shack in tarred boards
 
-- [ ] Done
+- [x] Done
 
 docs/art-style.md bigger item 6: tarred black or weathered silver boards with a turf roof
 (no reeds, as the user decided), so it no longer reads as a frontier cabin.
+
+Done: one commit per piece. Walls of upright boards tarred near-black with a batten over
+each joint (the tar's blue-grey sheen on its edge), a sill beam on a low fieldstone base, a
+ledged door and the shutter in ox-blood red, the window in a white frame. A turf roof on
+birch bark: grass in overlapping clumps lit from the top left, two dry patches, a few
+flowers, a ragged crest, and at the eaves a thick lip of turf with blades hanging over the
+pale bark edge. Houses now have a picture per season (SeasonalArt.HOUSE_LOOKS: spring,
+summer, autumn, bare, snow), picked from the season of the grass on their tile: the turf
+(and the barn's turf ridge) is fresh in spring, yellow-brown in autumn, brown-grey in
+winter; the build ghost stays summer or snow. Under snow the turf turns into lumpy snow,
+lit near the ridge, with the lip and bark showing; the dark grass now maps to snow, which
+takes a few shadow flecks off the thatch moss and the barn ridge too. Footprint, door and
+window light unchanged. No new colours. Screenshot: buildings.
 
 ## 59. A hall house with the gable front
 

@@ -856,7 +856,13 @@ Decided 2026-11-05.
     on its ridge, two brick chimneys, white windows in dark green frames, climbing roses, and
     the big arched green barn door of the hall house as its door (the middle tile), the
     thatch sweeping up over it. The barn is half-timbered (dark oak beams, red brick) with big
-    plank doors and no windows; the shack is plank-built with a roof of weathered boards.
+    plank doors and no windows. The shack (task 58) is a fisherman's or herdsman's hut, not a
+    frontier cabin: upright boards tarred near-black with battens over the joints (the tar's
+    blue-grey sheen on their edge), on a sill beam and a low fieldstone base, a ledged door
+    and a shutter in ox-blood red, a white window; a turf roof on birch bark, grass in
+    clumps with dry patches and a few flowers, a ragged crest and a thick lip of turf at the
+    eaves with blades hanging over the pale bark edge. Under snow the turf is lumpy snow with
+    the lip and the bark showing under it.
     Every building has lit windows and a look per season of the grass on its tile (task 58,
     SeasonalArt.HOUSE_LOOKS): the grass on a roof (the shack's turf, a turf ridge) is fresh
     in spring, yellow-brown in autumn and brown-grey in winter, its dark base and the moss
@@ -869,7 +875,7 @@ Decided 2026-11-05.
 - **Buildings cost materials:** logs, stone, clay and reeds (reeds for the thatch), taken
   from the inventory when the building is placed. The ghost shows the costs against what
   the player carries and refuses the spot while something is missing. No refunds or
-  demolishing yet. First numbers (tune in play): shack 20 logs, 5 stone (plank roof, no clay or reeds);
+  demolishing yet. First numbers (tune in play): shack 20 logs, 5 stone (turf roof, no clay or reeds);
   Kate 30 logs, 15 stone, 15 clay, 25 reeds; longhouse about twice the Kate; barn like the
   Kate with less clay.
 - **The hammer builds:** holding the hammer is build mode (the ghost follows the cursor,

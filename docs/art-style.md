@@ -117,8 +117,8 @@ shutters.
 - **Haubarg** (Eiderstedt): the giant of the marsh, an almost square house under a towering
   pyramid of thatch over a central hay store, on a mound. A late-game status building.
 - **Barn:** half-timber or boards, big plank doors, no windows; a hay loft hatch.
-- **Shack:** boards tarred black or silver-grey with a reed or turf roof; a fisherman's or
-  herdsman's hut, not a frontier log cabin.
+- **Shack:** boards tarred black or silver-grey with a turf roof (the user chose turf over
+  reeds); a fisherman's or herdsman's hut, not a frontier log cabin.
 - Details worth having: a bench by the door, a **stork's nest** on the ridge, the door
   split in two halves (*Klöntür*), a date or initials in iron wall anchors, a sod-roofed
   outhouse, a draw well with a sweep.
@@ -363,7 +363,7 @@ copper watering can. Kept here as the record of why.
    4 px high with wavy edges, a broken lit top and reed ends of mixed length; three clear
    planes (lit left hip, front, shaded right hip) under a straight ridge, so the roofs read
    as steep hipped roofs; crossed ridge sticks on the Kate (the turf ridge is an option).
-   Under snow the planes show but no stripes; the snow also covers the shack's board joints.
+   Under snow the planes show but no stripes.
 4. ~~**Tree species**~~ done (task 56). The woods were oak and conifers half and half. Now
    beech (smooth grey bole, broad dome, copper in autumn), birch (white trunk with black marks,
    narrow open crown, yellow in autumn) and alder (dark stem, narrow cone of dark leaves, green
@@ -382,8 +382,15 @@ copper watering can. Kept here as the record of why.
    with red curtains and a checked indigo blanket. No new colours. Still to do: the jamb
    stove (*Bilegger*) for a best room, sanded boards there, lime-washed inner walls, and a
    long table.
-6. **Shack** (small–medium). Reads as a frontier cabin. Tarred black or silver boards with
-   a reed or turf roof.
+6. ~~**Shack**~~ done (task 58). It read as a frontier cabin in brown planks under a roof
+   of boards. Now upright boards tarred near-black with battens, the tar's blue-grey sheen
+   on their edges, a ledged ox-blood door and shutter and a white window on a low
+   fieldstone base, under a turf roof on birch bark (the user chose turf over reeds): grass
+   in clumps with dry patches and a few flowers, a ragged crest and a thick lip of turf
+   with blades hanging over the bark. The houses got a look per season for it: the grass
+   on a roof greens in spring and browns in autumn and winter (a turf ridge too); under
+   snow the turf is lumpy snow over the lip. No new colours. Still to do: silver-grey
+   weathered boards as a variant, a turf-roofed outhouse, frost on the turf.
 7. **A hall house with the gable front** (large). Uhlenloch, crossed horse heads, the big
    arched door in the gable, half-timber: the strongest period landmark. Later a Haubarg on
    a mound for a rich marsh farm.
