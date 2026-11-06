@@ -441,6 +441,7 @@ _WINTER_LOOKS = {
     "chest": {"frost_only": _FROST_STONE, "snow": _SNOW_CHEST},
     "carved_chest": {"frost_only": _FROST_STONE, "snow": ({"water_light", "foam", "paint_teal"}, set(), 3)},
     "kiln": {"frost_only": _FROST_STONE, "snow": ({"sand", "mud", "stone", "stone_light"}, set(), 2)},
+    "oven": {"frost_only": _FROST_STONE, "snow": ({"rust", "red_light", "rust_dark"}, set(), 2)},
     "workbench": {"frost_only": _FROST_STONE, "snow": ({"sand_light", "sand"}, set(), 2)},
     "oak_trunk": _TRUNK_WINTER,
     "oak_short_trunk": _TRUNK_WINTER,

@@ -52,6 +52,7 @@ const CLOGS := &"clogs"
 # The stations the player places (task 74).
 const WORKBENCH := &"workbench"
 const KILN := &"kiln"
+const OVEN := &"oven"
 # Made at the workbench (task 74).
 const PLANKS := &"planks"
 const STOOL := &"stool"
@@ -63,6 +64,9 @@ const BRICK := &"brick"
 const ROAST_TURNIP := &"roast_turnip"
 const POTTAGE := &"pottage"
 const PEA_SOUP := &"pea_soup"
+const FLOUR := &"flour"
+const BREAD := &"bread"
+const BERRY_TART := &"berry_tart"
 
 ## Stands for an empty hand or slot where an item id is expected.
 const NONE := &""
@@ -351,6 +355,14 @@ const _OTHER_TYPES := {
 		"stack_limit": 5,
 		"places": WorldObjectTypes.KILN,
 	},
+	OVEN:
+	{
+		"name": "Bake oven",
+		"description": "A brick oven for bread. It stands outdoors or in a house.",
+		"weight": 15.0,
+		"stack_limit": 5,
+		"places": WorldObjectTypes.OVEN,
+	},
 	PLANKS:
 	{
 		"name": "Planks",
@@ -407,6 +419,27 @@ const _OTHER_TYPES := {
 		"name": "Pea soup",
 		"description": "Thick soup of peas and onion, the coast's daily fare.",
 		"weight": 0.5,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+	},
+	FLOUR:
+	{
+		"name": "Flour",
+		"description": "Wheat ground in a hand quern. Bread needs it.",
+		"weight": 0.5,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+	},
+	BREAD:
+	{
+		"name": "Bread",
+		"description": "A round loaf from the oven, the daily bread of the coast.",
+		"weight": 0.5,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+	},
+	BERRY_TART:
+	{
+		"name": "Berry tart",
+		"description": "Berries baked in pastry, a treat for a feast day.",
+		"weight": 0.4,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 }

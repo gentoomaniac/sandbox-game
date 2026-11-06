@@ -160,6 +160,70 @@ def kiln(is_standing=True):
     return outline(picture, "soil_dark", keep_bottom=is_standing)
 
 
+def oven(is_standing=True):
+    """A bake oven of brick, 16x15 px: a dome with an arched mouth on a fieldstone base."""
+    picture = blank(16, 15)
+    for y in range(9):
+        half = (4, 5, 6, 7, 7, 7, 7, 7, 7)[y]
+        left, right = 8 - half - 1, 8 + half
+        rect(picture, left, y, right, y, "rust")
+        picture[y][left] = "red_light"
+        rect(picture, right - 1, y, right, y, "rust_dark")
+        # Courses of brick, the joints staggered.
+        if y % 2 == 1:
+            rect(picture, left + 1, y, right - 2, y, "rust_dark")
+        elif y > 0:
+            for x in range(left + 2 + y % 4, right - 1, 4):
+                picture[y][x] = "rust_dark"
+    # The mouth, with its iron door leaning aside.
+    rect(picture, 6, 4, 9, 8, "soil_dark")
+    rect(picture, 7, 3, 8, 3, "soil_dark")
+    rect(picture, 11, 6, 12, 8, "stone_dark")
+    # The base of field stones, with a hearth ledge in front of the mouth.
+    rect(picture, 0, 9, 15, 14, "stone")
+    rect(picture, 0, 9, 15, 9, "stone_light")
+    for x, y in ((3, 11), (9, 12), (13, 11), (6, 13)):
+        picture[y][x] = "stone_dark"
+    return outline(picture, "soil_dark", keep_bottom=is_standing)
+
+
+def flour():
+    """A small linen sack of flour, open at the top, with flour spilt in front."""
+    picture = blank()
+    rect(picture, 4, 5, 11, 13, "lime")
+    rect(picture, 3, 8, 12, 12, "lime")
+    rect(picture, 10, 6, 12, 13, "stone_light")
+    rect(picture, 5, 3, 10, 4, "cream")
+    rect(picture, 6, 3, 9, 3, "snow_light")
+    rect(picture, 4, 14, 7, 14, "cream")
+    pixel(picture, 9, 14, "cream")
+    return outlined(picture, "stone_dark")
+
+
+def bread():
+    """A round rye loaf with cuts across its crust."""
+    picture = blank()
+    rect(picture, 4, 5, 11, 12, "ochre_dark")
+    rect(picture, 2, 7, 13, 11, "ochre_dark")
+    rect(picture, 3, 6, 12, 7, "ochre")
+    rect(picture, 3, 11, 12, 12, "umber")
+    for x in (5, 8, 11):
+        rect(picture, x - 1, 7, x, 8, "sand_light")
+    return outlined(picture, "soil_dark")
+
+
+def berry_tart():
+    """A round tart in its pastry, full of berries."""
+    picture = blank()
+    rect(picture, 2, 7, 13, 11, "ochre")
+    rect(picture, 3, 6, 12, 6, "ochre")
+    rect(picture, 3, 11, 12, 12, "ochre_dark")
+    rect(picture, 4, 7, 11, 9, "heather_dark")
+    for x, y in ((5, 7), (8, 8), (10, 7), (6, 9)):
+        pixel(picture, x, y, "petal")
+    return outlined(picture, "soil_dark")
+
+
 def bricks(face, top, shade):
     """Two bricks, one on the other and set back: `face` is their front, `top` the lit top and
     `shade` the dark end."""
@@ -192,7 +256,7 @@ def _shrunk(picture):
 
 def stations():
     """The pictures of the stations, standing, by world object type."""
-    return {"workbench": workbench(), "carved_chest": carved_chest(), "kiln": kiln()}
+    return {"workbench": workbench(), "carved_chest": carved_chest(), "kiln": kiln(), "oven": oven()}
 
 
 def icons():
@@ -200,6 +264,7 @@ def icons():
     return {
         "workbench": icon_of(workbench(is_standing=False)),
         "kiln": _shrunk(kiln(is_standing=False)),
+        "oven": icon_of(oven(is_standing=False)),
         "planks": planks(),
         # Dried clay, grey-brown, and fired, red.
         "raw_brick": bricks("mud", "sand", "mud_dark"),
@@ -211,5 +276,8 @@ def icons():
         "pottage": bowl("green", "ochre"),
         # Yellow split peas, thick.
         "pea_soup": bowl("dry_light", "straw"),
+        "flour": flour(),
+        "bread": bread(),
+        "berry_tart": berry_tart(),
     }
 

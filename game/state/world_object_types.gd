@@ -110,6 +110,7 @@ const WORKBENCH := &"workbench"
 ## The woodworker's chest, painted (task 74): more room than the plain one.
 const CARVED_CHEST := &"carved_chest"
 const KILN := &"kiln"
+const OVEN := &"oven"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -147,6 +148,7 @@ const _ALDER_TRUNK_ROW := 39
 const _WORKBENCH_ROW := 41
 const _CARVED_CHEST_ROW := 42
 const _KILN_ROW := 43
+const _OVEN_ROW := 44
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -528,6 +530,18 @@ const _OTHER_TYPES := {
 		"variants": 1,
 		"interior_sprite": "res://assets/interior/kiln.png",
 		"outdoors_only": true,
+	},
+	OVEN:
+	{
+		"hp": 4,
+		"tool": &"pickaxe",
+		"drops": {&"oven": 1},
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _OVEN_ROW,
+		"variants": 1,
+		"interior_sprite": "res://assets/interior/oven.png",
 	},
 	WORKBENCH:
 	{

@@ -1,5 +1,5 @@
 extends ResourceCase
-## The stations the player places (the workbench and the kiln): crafted by hand, placed like a
+## The stations the player places (workbench, kiln, oven): crafted by hand, placed like a
 ## chest (the kiln only outdoors), opened with E, and taken down again.
 
 
@@ -89,3 +89,11 @@ func test_a_kiln_is_broken_down_with_the_pickaxe() -> void:
 	_state.player.inventory.add(ItemTypes.PICKAXE, 1)
 	_hit(ItemTypes.PICKAXE, 4)
 	assert_eq(_dropped(ItemTypes.KILN), 1)
+
+
+func test_a_bake_oven_stands_outdoors_and_in_a_house() -> void:
+	_hold_placed(ItemTypes.OVEN)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.PLACE)
+	var state := _inside_a_house(ItemTypes.OVEN)
+	assert_eq(state.use_at(Vector2i(3, 5)), ToolUse.Use.PLACE)
+	assert_eq(StationRules.default_rules().station_of(WorldObjectTypes.OVEN), &"oven")

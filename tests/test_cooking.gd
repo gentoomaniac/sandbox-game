@@ -2,7 +2,7 @@ extends GutTest
 ## Cooking: the recipes of the cook make food that is worth the cooking, and the first of them
 ## needs no skill.
 
-const COOK_STATIONS: Array[StringName] = [&"hearth"]
+const COOK_STATIONS: Array[StringName] = [&"hearth", &"oven"]
 
 
 func _cooking_recipes() -> Array[StringName]:
@@ -56,3 +56,11 @@ func test_a_cooked_dish_is_eaten_like_raw_food() -> void:
 		state.player.energy, 50.0 + EnergyRules.default_rules().food_restore(ItemTypes.POTTAGE)
 	)
 	assert_string_contains(ItemTooltip.text_for(ItemTypes.POTTAGE), "Food")
+
+
+func test_bread_is_baked_in_the_oven_from_flour_ground_by_hand() -> void:
+	var rules := RecipeRules.default_rules()
+	assert_has(rules.recipes_at(&""), &"flour")
+	assert_has(rules.recipes_at(&"oven"), &"bread")
+	assert_has(rules.recipes_at(&""), &"oven")
+	assert_has(rules.materials(&"oven"), ItemTypes.BRICK, "the oven is the mason's work")
