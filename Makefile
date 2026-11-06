@@ -24,7 +24,7 @@ IMPORT := $(GODOT) --headless --quiet --import
 # reproducible, and it keeps third-party code out of our history and diffs.
 # The cost is that a fresh clone needs `make setup` (and network) before it runs.
 
-.PHONY: help setup assets run screenshot test lint format export
+.PHONY: help setup assets run screenshot test lint format export clean
 
 help:
 	@echo "Targets:"
@@ -36,6 +36,7 @@ help:
 	@echo "  lint        Run gdlint and gdformat --check."
 	@echo "  format      Format the GDScript."
 	@echo "  assets      Regenerate all art and sounds, then check them."
+	@echo "  clean       Delete build/ (test log, screenshots, the screenshot save); nothing is lost."
 	@echo "  export      Not set up yet: no export presets exist."
 	@echo
 	@echo "Variables (make <target> NAME=value):"
@@ -154,3 +155,7 @@ format:
 export:
 	@echo "No export presets exist yet."
 	@exit 1
+
+# Everything in build/ is made by the targets above, so deleting it loses nothing.
+clean:
+	rm -rf build
