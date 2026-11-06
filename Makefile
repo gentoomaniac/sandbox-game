@@ -46,6 +46,7 @@ help:
 	@echo "  TIME        screenshot: time of day, e.g. TIME=21:00 (default: the game start)."
 	@echo "  ZOOM        screenshot: camera zoom, 0.5 to 2 (default 1)."
 	@echo "  OUT         screenshot: file to write (default: build/screenshot.png)."
+	@echo "  SCREENSHOT_TIMEOUT  screenshot: seconds before a hung Godot is killed (default: 30)."
 	@echo "  KEEP_SAVE   screenshot: KEEP_SAVE=1 loads the real save instead of a new game."
 	@echo "  SOUND       screenshot: SOUND=1 keeps the sound on."
 	@echo "  ARGS        screenshot: more debug flags, e.g. ARGS=\"--weather=rain\" (see game/scenes/startup_options.gd)."
@@ -128,10 +129,20 @@ KEEP_SAVE ?=
 # without the Wayland driver needs QUIET_WINDOW= on the command line.
 QUIET_WINDOW := $(if $(WAYLAND_DISPLAY),--display-driver wayland)
 
+# Godot's Wayland driver sometimes hangs for good while it shuts down, after the PNG is written
+# (an empty project does it too: about 1 quit in 20). Such a run is killed after
+# SCREENSHOT_TIMEOUT seconds (exit status 137, killed) and counts as done when the PNG is there.
+# A long --screenshot-delay needs a larger SCREENSHOT_TIMEOUT, or the run is killed before the PNG
+# exists and fails.
+SCREENSHOT_TIMEOUT ?= 30
+
 screenshot:
 	$(IMPORT)
 	mkdir -p $(dir $(OUT))
-	$(GODOT) $(QUIET_WINDOW) --path . -- $(if $(SOUND),,--mute) --background $(if $(KEEP_SAVE),,--new-game --save-path=$(CURDIR)/build/screenshot.save) $(if $(AT),--at=$(AT)) --settings-path=$(CURDIR)/build/settings.cfg --screenshot=$(OUT) $(if $(TIME),--time=$(TIME)) $(if $(ZOOM),--zoom=$(ZOOM)) $(ARGS)
+	rm -f $(OUT)
+	timeout -s KILL $(SCREENSHOT_TIMEOUT) $(GODOT) $(QUIET_WINDOW) --path . -- $(if $(SOUND),,--mute) --background $(if $(KEEP_SAVE),,--new-game --save-path=$(CURDIR)/build/screenshot.save) $(if $(AT),--at=$(AT)) --settings-path=$(CURDIR)/build/settings.cfg --screenshot=$(OUT) $(if $(TIME),--time=$(TIME)) $(if $(ZOOM),--zoom=$(ZOOM)) $(ARGS); status=$$?; \
+	if [ $$status -eq 137 ] && [ -s $(OUT) ]; then echo "make screenshot: Godot hung on quit, after the screenshot"; exit 0; fi; \
+	exit $$status
 
 # On Godot builds without navigation (e.g. some Gentoo builds) GUT prints a harmless
 # 'Identifier "NavigationMeshGenerator" not declared' parse error. Tests still run.
