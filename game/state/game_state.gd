@@ -220,6 +220,13 @@ func go_to_home_bed() -> void:
 		_lie_in(bed)
 
 
+## Puts the player on a tile of the world, out of the house they are in.
+func teleport_to(tile: Vector2i) -> void:
+	_building_inside = null
+	player.position = _tile_centre(tile)
+	player.bed_lying_in = null
+
+
 ## What `use_tile` would do on a tile (see ToolUse). The use rules get a ToolUse made for the
 ## call: one kept in a field would hold the state while the state holds it, and neither would
 ## ever be freed.

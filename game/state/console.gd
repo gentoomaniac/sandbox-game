@@ -6,7 +6,7 @@ extends RefCounted
 ## Command name to its usage and what it does, in the order `help` lists them.
 const COMMANDS := {
 	"help": ["help [command]", "List the commands, or show what one takes."],
-	"tp": ["tp <x> <y>", "Teleport to a world tile (outside only)."],
+	"tp": ["tp <x> <y>", "Teleport to a world tile; from inside a house you step out there."],
 	"give": ["give <item> [count]", "Put items in the inventory."],
 	"god": ["god", "Toggle invincibility: health never drops (energy still runs out)."],
 	"nodrain": ["nodrain", "Toggle: actions cost no energy."],
@@ -205,8 +205,6 @@ func _candidates_text(command: String) -> Array[String]:
 func _tp(arguments: PackedStringArray) -> Array[String]:
 	if arguments.size() != 2 or not arguments[0].is_valid_int() or not arguments[1].is_valid_int():
 		return ["Usage: %s" % COMMANDS["tp"][0]]
-	if _state.is_inside():
-		return ["Can't teleport inside a house"]
 	var tile := Vector2i(int(arguments[0]), int(arguments[1]))
 	if not World.is_in_bounds(tile):
 		return ["Tile %d, %d is outside the world" % [tile.x, tile.y]]
@@ -214,7 +212,7 @@ func _tp(arguments: PackedStringArray) -> Array[String]:
 		return ["Tile %d, %d is covered by a building" % [tile.x, tile.y]]
 	if not _is_walkable_even_if_unloaded(tile):
 		return ["Can't walk on tile %d, %d" % [tile.x, tile.y]]
-	_state.player.position = Vector2(tile) + Vector2(0.5, 0.5)
+	_state.teleport_to(tile)
 	return ["Teleported to %d, %d" % [tile.x, tile.y]]
 
 

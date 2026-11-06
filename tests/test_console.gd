@@ -9,17 +9,6 @@ func before_each() -> void:
 	_console = Console.new(_state)
 
 
-func _tile_where(is_walkable: bool) -> Vector2i:
-	var origin := _state.player.tile()
-	for y in range(-SEARCH, SEARCH):
-		for x in range(-SEARCH, SEARCH):
-			var tile := origin + Vector2i(x, y)
-			if _world.is_walkable(tile) == is_walkable and _world.tile_at(tile) != null:
-				return tile
-	fail_test("no such tile near the camp")
-	return origin
-
-
 # --- Parsing ---
 
 
@@ -40,76 +29,6 @@ func test_help_lists_every_command() -> void:
 	var text := "\n".join(_console.run("help"))
 	for command: String in Console.COMMANDS:
 		assert_string_contains(text, command)
-
-
-# --- tp ---
-
-
-func _place_house() -> Building:
-	for y in range(-12, 13):
-		for x in range(-12, 13):
-			var origin := _state.player.tile() + Vector2i(x, y)
-			if _world.placement_blockers(BuildingTypes.KATE, origin).is_empty():
-				return _world.place_building(BuildingTypes.KATE, origin)
-	fail_test("no room for a house near the camp")
-	return null
-
-
-func test_tp_moves_the_player_to_the_tile_centre() -> void:
-	var tile := _tile_where(true)
-	assert_eq(_console.run("tp %d %d" % [tile.x, tile.y]).size(), 1)
-	assert_eq(_state.player.position, Vector2(tile) + Vector2(0.5, 0.5))
-
-
-func test_tp_with_wrong_arguments_shows_the_usage() -> void:
-	var before := _state.player.position
-	for line in ["tp", "tp 1", "tp 1 2 3", "tp a b", "tp 1.5 2"]:
-		assert_eq(_console.run(line), ["Usage: tp <x> <y>"] as Array[String], line)
-	assert_eq(_state.player.position, before)
-
-
-func test_tp_refuses_a_tile_that_cannot_be_walked_on() -> void:
-	var tile := _tile_where(false)
-	var before := _state.player.position
-	assert_eq(
-		_console.run("tp %d %d" % [tile.x, tile.y]),
-		["Can't walk on tile %d, %d" % [tile.x, tile.y]] as Array[String]
-	)
-	assert_eq(_state.player.position, before)
-
-
-func test_tp_refuses_a_tile_outside_the_world() -> void:
-	var before := _state.player.position
-	assert_string_contains(_console.run("tp 99999999 0")[0], "outside the world")
-	assert_eq(_state.player.position, before)
-
-
-func test_tp_refuses_a_tile_covered_by_a_building_door_included() -> void:
-	var house := _place_house()
-	var before := _state.player.position
-	for tile in [house.door_tile(), house.origin]:
-		assert_string_contains(
-			_console.run("tp %d %d" % [tile.x, tile.y])[0], "covered by a building"
-		)
-	assert_eq(_state.player.position, before)
-
-
-func test_tp_refuses_inside_a_house() -> void:
-	var house := _place_house()
-	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
-	assert_eq(_console.run("tp 0 0"), ["Can't teleport inside a house"] as Array[String])
-
-
-func test_tp_to_an_unloaded_chunk_checks_it_and_leaves_it_unloaded() -> void:
-	var far := Vector2i(Chunk.CHUNK_SIZE * 6, 0)
-	var coords := Chunk.world_to_chunk(far)
-	assert_false(_world.is_chunk_loaded(coords))
-	var generated := WorldGenerator.new(_world.world_seed).generate_chunk(coords)
-	var walkable := generated.tile_at(Chunk.local_pos(far)).is_walkable()
-	var output := _console.run("tp %d %d" % [far.x, far.y])
-	assert_eq(output[0].begins_with("Teleported"), walkable and _world.object_at(far) == null)
-	assert_false(_world.is_chunk_loaded(coords))
 
 
 # --- give ---

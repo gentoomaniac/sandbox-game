@@ -27,6 +27,18 @@ func _bed() -> WorldObject:
 	return _world.object_at(_state.player.home_bed)
 
 
+## A tile near the camp that can (or can't) be walked on.
+func _tile_where(is_walkable: bool) -> Vector2i:
+	var origin := _state.player.tile()
+	for y in range(-SEARCH, SEARCH):
+		for x in range(-SEARCH, SEARCH):
+			var tile := origin + Vector2i(x, y)
+			if _world.is_walkable(tile) == is_walkable and _world.tile_at(tile) != null:
+				return tile
+	fail_test("no such tile near the camp")
+	return origin
+
+
 ## Walks into a new house, sleeps in its bed (making it home) and walks out again.
 func _make_a_house_home() -> WorldObject:
 	var house: Building
