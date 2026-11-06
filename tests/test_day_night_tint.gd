@@ -1,4 +1,5 @@
 extends GutTest
+## The day and night tint: its colour across the day and across midnight.
 
 
 func test_night_is_blue_but_readable_and_noon_is_neutral() -> void:

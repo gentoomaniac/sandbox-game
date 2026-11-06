@@ -1,4 +1,5 @@
 extends GutTest
+## Tile: the values derived from each terrain (walkable, buildable, plantable).
 
 const TERRAIN_RULES := {
 	Tile.Terrain.GRASS: {"walkable": true, "buildable": true, "plantable": false},

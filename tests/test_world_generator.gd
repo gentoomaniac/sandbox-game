@@ -1,4 +1,5 @@
 extends GutTest
+## WorldGenerator: terrain that is deterministic per seed, seamless and plausible.
 
 const SEED := 42
 ## Floodplain tiles must have water within this many tiles: the floodplain is

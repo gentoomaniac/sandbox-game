@@ -1,4 +1,5 @@
 extends GutTest
+## Interiors read from a Tiled map: terrain, objects, furniture, exits and walking inside.
 
 const KATE_MAP := "res://maps/interiors/kate.tmx"
 

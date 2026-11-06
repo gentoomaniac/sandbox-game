@@ -1,4 +1,5 @@
 extends GutTest
+## CameraRig: following a target, timed moves and zooms, and sequences of steps.
 
 var _rig := CameraRig.new()
 var _target := Vector2.ZERO

@@ -1,4 +1,5 @@
 extends GutTest
+## World objects: generation by seed, where each kind stands, and adding and removing them.
 
 const SEED := 42
 ## Chunks around the river: they have grass with trees as well as water, floodplain and

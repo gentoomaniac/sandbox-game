@@ -1,4 +1,5 @@
 extends GutTest
+## ChunkStreaming: which chunks load around a focus and when they unload again.
 
 const HALF := World.MAX_SIZE_CHUNKS / 2
 

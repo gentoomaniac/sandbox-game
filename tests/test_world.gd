@@ -1,4 +1,5 @@
 extends GutTest
+## World: chunk coordinates, bounds, tile access and changes to loaded chunks.
 
 const SIZE := Chunk.CHUNK_SIZE
 const HALF := World.MAX_SIZE_CHUNKS / 2

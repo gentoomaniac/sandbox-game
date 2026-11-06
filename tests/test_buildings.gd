@@ -1,4 +1,5 @@
 extends GutTest
+## Placing buildings on the world: what blocks a placement, the footprint and the door.
 
 const HOUSE := BuildingTypes.KATE
 const ORIGIN := Vector2i(2, 2)

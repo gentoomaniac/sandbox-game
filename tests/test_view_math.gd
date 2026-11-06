@@ -1,4 +1,5 @@
 extends GutTest
+## ViewMath: zoom limits, the visible area and whole-pixel camera targets.
 
 const WINDOW := Vector2(1920, 1080)
 

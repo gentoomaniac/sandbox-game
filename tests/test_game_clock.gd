@@ -1,4 +1,5 @@
 extends GutTest
+## GameClock: the time of day, days passing and the day signals.
 
 var _clock := GameClock.new()
 var _new_days: Array[int] = []

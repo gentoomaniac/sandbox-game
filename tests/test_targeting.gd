@@ -1,4 +1,5 @@
 extends GutTest
+## Targeting: which tile the mouse or the facing direction picks, within the player's reach.
 
 const PLAYER := Vector2i(10, 10)
 const FACING := Vector2i(10, 11)

@@ -1,4 +1,5 @@
 extends GutTest
+## TerrainTileset: the autotile mask and layers, corner fallbacks and decorations.
 
 const MISSING := TerrainTileset.MISSING
 const WATER := TerrainTileset.Layer.WATER

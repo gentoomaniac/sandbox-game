@@ -1,4 +1,5 @@
 extends GutTest
+## GameState: a new game, sleeping and waking, and the rules that tie the parts together.
 
 const SEED := 7
 
