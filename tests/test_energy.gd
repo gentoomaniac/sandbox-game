@@ -47,7 +47,7 @@ func test_the_weight_factor_is_free_up_to_the_limit_then_linear() -> void:
 
 
 func test_a_heavy_load_costs_more() -> void:
-	_state.player.inventory.add(ItemTypes.STONE, 10)
+	_state.player.inventory.add(ItemTypes.STONE, 40)
 	var factor := _state.energy_rules.weight_factor(_state.player.carried_weight())
 	assert_gt(factor, 1.0)
 	_hold(ItemTypes.HOE)

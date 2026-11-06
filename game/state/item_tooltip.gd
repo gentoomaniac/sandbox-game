@@ -2,7 +2,8 @@ class_name ItemTooltip
 extends RefCounted
 ## The text of an item's tooltip, built from the data: ItemTypes for the name, weight, kind
 ## and description, data/energy.cfg for food, data/crops.cfg for what seeds grow. One item per
-## line, in this order: name, kind, description, what the kind adds, weight.
+## line, in this order: name, kind, description, what the kind adds, weight (left out for
+## weightless items).
 
 const PRECISION := 0.01
 ## Terrains seeds are planted on, as the player calls them.
@@ -16,7 +17,8 @@ static func text_for(item: StringName, count := 1) -> String:
 	var type: Dictionary = ItemTypes.TYPES[item]
 	var lines: Array[String] = [type["name"], _kind_line(item, type), type["description"]]
 	lines.append_array(_detail_lines(item, type))
-	lines.append(weight_text(type["weight"], count))
+	if type["weight"] > 0.0:
+		lines.append(weight_text(type["weight"], count))
 	return "\n".join(lines)
 
 

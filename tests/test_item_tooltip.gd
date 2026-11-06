@@ -19,7 +19,6 @@ func test_food_shows_its_energy() -> void:
 func test_a_tool_shows_its_level() -> void:
 	var lines := ItemTooltip.text_for(ItemTypes.HOE).split("\n")
 	assert_eq(lines[1], "Tool, level 1")
-	assert_eq(lines[-1], "2 kg each")
 
 
 func test_crop_seeds_show_the_crop_and_tilled_soil() -> void:
@@ -87,3 +86,9 @@ func test_every_item_has_a_tooltip() -> void:
 func test_every_action_has_a_description() -> void:
 	for action in GameSettings.actions():
 		assert_ne(GameSettings.action_description(action), "", str(action))
+
+
+func test_a_weightless_item_shows_no_weight() -> void:
+	var lines := ItemTooltip.text_for(ItemTypes.AXE).split("\n")
+	assert_eq(lines.size(), 3, str(lines))
+	assert_false(" ".join(lines).contains("kg"))

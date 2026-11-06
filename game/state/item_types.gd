@@ -66,7 +66,7 @@ const _OTHER_TYPES := {
 	{
 		"name": "Hoe",
 		"description": "Breaks up grass into tilled soil for planting.",
-		"weight": 2.0,
+		"weight": 0.0,
 		"stack_limit": 1,
 		"tool": HOE,
 		"level": 1,
@@ -76,7 +76,7 @@ const _OTHER_TYPES := {
 	{
 		"name": "Axe",
 		"description": "Fells trees and chops stumps.",
-		"weight": 3.0,
+		"weight": 0.0,
 		"stack_limit": 1,
 		"tool": AXE,
 		"level": 1,
@@ -85,7 +85,7 @@ const _OTHER_TYPES := {
 	{
 		"name": "Pickaxe",
 		"description": "Breaks stones; boulders need a stronger one.",
-		"weight": 3.0,
+		"weight": 0.0,
 		"stack_limit": 1,
 		"tool": PICKAXE,
 		"level": 1,
@@ -94,7 +94,7 @@ const _OTHER_TYPES := {
 	{
 		"name": "Watering can",
 		"description": "Waters tilled soil so crops grow.",
-		"weight": 2.5,
+		"weight": 0.0,
 		"stack_limit": 1,
 		"tool": WATERING_CAN,
 		"level": 1,
@@ -103,7 +103,7 @@ const _OTHER_TYPES := {
 	{
 		"name": "Scythe",
 		"description": "Mows tall grass into hay and cuts reeds.",
-		"weight": 2.0,
+		"weight": 0.0,
 		"stack_limit": 1,
 		"tool": SCYTHE,
 		"level": 1,
@@ -112,7 +112,7 @@ const _OTHER_TYPES := {
 	{
 		"name": "Shovel",
 		"description": "Digs up grass and clay.",
-		"weight": 2.5,
+		"weight": 0.0,
 		"stack_limit": 1,
 		"tool": SHOVEL,
 		"level": 1,
@@ -121,7 +121,7 @@ const _OTHER_TYPES := {
 	{
 		"name": "Hammer",
 		"description": "Builds houses and other buildings.",
-		"weight": 2.0,
+		"weight": 0.0,
 		"stack_limit": 1,
 		"tool": HAMMER,
 		"level": 1,

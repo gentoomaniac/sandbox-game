@@ -54,3 +54,13 @@ func test_a_duplicate_has_the_same_content_and_changes_alone() -> void:
 	assert_eq(copy.selected_slot, 1)
 	copy.remove(ItemTypes.TURNIP, 5)
 	assert_eq(_inventory.count_of(ItemTypes.TURNIP), 5)
+
+
+func test_tools_add_no_weight() -> void:
+	var tools := 0
+	for item: StringName in ItemTypes.TYPES:
+		if ItemTypes.TYPES[item].has("tool"):
+			_inventory.add(item, 1)
+			tools += 1
+	assert_gt(tools, 0)
+	assert_eq(_inventory.total_weight(), 0.0)
