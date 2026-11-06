@@ -24,6 +24,8 @@ func before_each() -> void:
 	_wildlife.rules.sun = _state.sun
 	_wildlife.world_view = WorldView.new()
 	add_child_autofree(_wildlife.world_view)
+	# As show_wildlife does: the ground is a Node2D nobody frees unless the world view owns it.
+	_wildlife.world_view.add_child(_wildlife.ground)
 	_weather_view = WeatherView.new()
 	add_child_autofree(_weather_view)
 	_ambience = AmbienceSounds.new()
