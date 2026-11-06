@@ -223,11 +223,15 @@ func _use_inside(item: Dictionary, pos: Vector2i) -> Use:
 	return Use.TAKE_DOWN if fits else Use.NO_ROOM
 
 
-## What the player placed and what it holds, item id to count: what taking it down gives.
+## What the player placed and what it holds (a chest's items, a kiln's load), item id to count:
+## what taking it down gives.
 func _items_of_placed(placed: WorldObject) -> Dictionary:
 	var items := {} if placed.storage == null else placed.storage.totals()
-	for item: StringName in placed.type_data()["drops"]:
-		items[item] = items.get(item, 0) + placed.type_data()["drops"][item]
+	var now := _state.clock.total_minutes()
+	var held := StationWork.contents(placed, now, RecipeRules.default_rules())
+	for gives: Dictionary in [held, placed.type_data()["drops"]]:
+		for item: StringName in gives:
+			items[item] = items.get(item, 0) + gives[item]
 	return items
 
 
@@ -284,9 +288,8 @@ func _hit(object: WorldObject) -> void:
 		_state.world.hit_object(object, power)
 		return
 	var object_type := object.type_data()
-	var drops: Dictionary = object_type.get("drops", {}).duplicate()
-	if object.storage != null:
-		drops = _items_of_placed(object)
+	# What it holds (a chest's items, a kiln's load) comes out with it.
+	var drops := _items_of_placed(object) if object_type.has("drops") else {}
 	if _rolls_seed(object):
 		drops[object_type["seed"]] = 1
 	if not object_type.has("leaves"):

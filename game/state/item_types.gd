@@ -56,6 +56,9 @@ const KILN := &"kiln"
 const PLANKS := &"planks"
 const STOOL := &"stool"
 const CARVED_CHEST := &"carved_chest"
+# The mason's (task 74).
+const RAW_BRICK := &"raw_brick"
+const BRICK := &"brick"
 # Cooked at the hearth (task 74).
 const ROAST_TURNIP := &"roast_turnip"
 const POTTAGE := &"pottage"
@@ -370,6 +373,20 @@ const _OTHER_TYPES := {
 		"weight": 6.0,
 		"stack_limit": 10,
 		"places": WorldObjectTypes.CARVED_CHEST,
+	},
+	RAW_BRICK:
+	{
+		"name": "Raw brick",
+		"description": "Clay moulded into a brick and dried. The kiln fires it hard.",
+		"weight": 1.0,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+	},
+	BRICK:
+	{
+		"name": "Brick",
+		"description": "A fired red brick, as the marsh brickworks make them.",
+		"weight": 1.0,
+		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 	ROAST_TURNIP:
 	{

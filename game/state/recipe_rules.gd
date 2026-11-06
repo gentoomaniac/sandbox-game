@@ -83,6 +83,11 @@ func level(recipe_id: StringName) -> float:
 	return float(_recipes[str(recipe_id)].get("level", 0.0))
 
 
+## The game hours a slow recipe takes at its station (the kiln's firing); 0 for one made at once.
+func hours(recipe_id: StringName) -> float:
+	return float(_recipes[str(recipe_id)].get("hours", 0.0))
+
+
 ## The item a recipe makes.
 func result(recipe_id: StringName) -> StringName:
 	return StringName(_recipes[str(recipe_id)]["result"])
@@ -132,6 +137,12 @@ func _check_station_and_skill(recipe_id: String, values: Dictionary) -> void:
 	var skill_rules := SkillRules.default_rules()
 	if values.has("skill") and not skill_rules.has_skill(StringName(str(values["skill"]))):
 		_problems.append("[%s] skill is not a skill: %s" % [recipe_id, values["skill"]])
+	if values.has("hours"):
+		var hours_value: Variant = values["hours"]
+		if not (hours_value is int or hours_value is float) or hours_value <= 0:
+			_problems.append("[%s] hours must be a number above 0" % recipe_id)
+		elif not values.has("station"):
+			_problems.append("[%s] a recipe with hours needs a station to hold it" % recipe_id)
 	if not values.has("level"):
 		return
 	var level_value: Variant = values["level"]

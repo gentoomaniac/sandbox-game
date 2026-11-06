@@ -160,6 +160,17 @@ def kiln(is_standing=True):
     return outline(picture, "soil_dark", keep_bottom=is_standing)
 
 
+def bricks(face, top, shade):
+    """Two bricks, one on the other and set back: `face` is their front, `top` the lit top and
+    `shade` the dark end."""
+    picture = blank()
+    for left, bottom in ((4, 8), (2, 13)):
+        rect(picture, left, bottom - 4, left + 10, bottom, face)
+        rect(picture, left, bottom - 4, left + 10, bottom - 4, top)
+        rect(picture, left + 10, bottom - 3, left + 11, bottom, shade)
+    return outlined(picture, "soil_dark")
+
+
 def icon_of(picture):
     """An item icon: the picture, outlined all round, in the middle of 16x16 px."""
     icon = blank()
@@ -190,6 +201,9 @@ def icons():
         "workbench": icon_of(workbench(is_standing=False)),
         "kiln": _shrunk(kiln(is_standing=False)),
         "planks": planks(),
+        # Dried clay, grey-brown, and fired, red.
+        "raw_brick": bricks("mud", "sand", "mud_dark"),
+        "brick": bricks("rust", "red_light", "rust_dark"),
         "stool": icon_of(interior.stool()),
         "carved_chest": icon_of(carved_chest(is_standing=False)),
         "roast_turnip": roast_turnip(),

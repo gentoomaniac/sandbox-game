@@ -22,6 +22,12 @@ var day := 1
 var minute_of_day := START_MINUTE
 
 
+## The minutes since the start of day 1: a running count for what takes time across days (a
+## kiln's firing, see StationWork).
+func total_minutes() -> int:
+	return (day - 1) * MINUTES_PER_DAY + minute_of_day
+
+
 func advance(minutes: int) -> void:
 	assert(minutes >= 0, "Time only moves forward")
 	var total := minute_of_day + minutes
