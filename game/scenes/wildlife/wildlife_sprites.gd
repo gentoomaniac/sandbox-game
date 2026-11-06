@@ -7,7 +7,7 @@ extends RefCounted
 ## tools/art/livestock.py).
 
 const SHEET_PATH := "res://assets/wildlife/%s.png"
-const LIVESTOCK_ACTIONS := {&"idle": 2, &"walk": 4, &"graze": 2, &"sleep": 2}
+const LIVESTOCK_ACTIONS := {&"idle": 2, &"walk": 4, &"graze": 2, &"sleep": 2, &"run": 4}
 const COW := {"size": Vector2i(32, 24), "actions": LIVESTOCK_ACTIONS}
 const SHEEP := {"size": Vector2i(22, 16), "actions": LIVESTOCK_ACTIONS}
 const CHICKEN := {"size": Vector2i(12, 12), "actions": LIVESTOCK_ACTIONS}

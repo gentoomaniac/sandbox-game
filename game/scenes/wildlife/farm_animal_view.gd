@@ -9,7 +9,8 @@ const ACTIONS := {
 	FarmAnimal.Activity.IDLE: [&"idle", 1.5],
 	FarmAnimal.Activity.WALK: [&"walk", 5.0],
 	FarmAnimal.Activity.GRAZE: [&"graze", 2.0],
-	FarmAnimal.Activity.FLEE: [&"walk", 12.0],
+	FarmAnimal.Activity.RUN: [&"run", 10.0],
+	FarmAnimal.Activity.FLEE: [&"run", 12.0],
 	FarmAnimal.Activity.SLEEP: [&"sleep", 0.5],
 }
 ## Half the width of each species' contact shadow, in pixels.

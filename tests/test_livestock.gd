@@ -72,10 +72,11 @@ func test_every_missing_or_malformed_key_is_reported() -> void:
 					"idle_seconds": [5.0, 2.0],
 					"walk_seconds": [1.0, 2.0],
 					"graze_seconds": [1.0, 2.0],
+					"run_seconds": [1.0, 2.0],
 					"walk_speed": 1.0,
 					"body_tiles": 0.5,
 					"flee_tiles": 0.0,
-					"flee_speed": 0.0,
+					"run_speed": 0.0,
 					"sleep_minutes": 0.0,
 					"wake_minutes": 0.0,
 				},
@@ -87,7 +88,7 @@ func test_every_missing_or_malformed_key_is_reported() -> void:
 	assert_has(problems, "[sheep] no looks")
 	assert_has(problems, "[cow] looks and look_weights differ in length or are empty")
 	assert_has(problems, "[cow] tints needs one colour or more, as hex")
-	assert_has(problems, "[cow] activity_weights needs idle, walk and graze")
+	assert_has(problems, "[cow] activity_weights needs idle, walk, graze and run")
 	assert_has(problems, "[cow] idle_seconds needs [shortest, longest]")
 	assert_does_not_have(problems, "[cow] walk_seconds needs [shortest, longest]")
 

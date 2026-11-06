@@ -3,7 +3,7 @@ extends RefCounted
 ## One farm animal (a species of LivestockRules): which it is, how it looks, where it stands and
 ## what it is doing. Livestock moves it; the WildlifeView draws it while it is near the view.
 
-enum Activity { IDLE, WALK, GRAZE, FLEE, SLEEP }
+enum Activity { IDLE, WALK, GRAZE, RUN, FLEE, SLEEP }
 
 var species: StringName
 ## The name of its picture (see `looks` in data/livestock.cfg).

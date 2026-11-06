@@ -1,7 +1,7 @@
 """Art for the farm animals: one sheet per species and look at assets/wildlife/<species>_<look>.png.
 
-Every sheet has the same rows (ACTIONS): standing idle, walking, grazing (pecking, for a hen)
-and asleep, one column per frame, and the animal stands in the bottom centre of its cell,
+Every sheet has the same rows (ACTIONS): standing idle, walking, grazing (pecking, for a hen),
+asleep and running, one column per frame, and the animal stands in the bottom centre of its cell,
 facing right (the game flips it to face left). game/scenes/wildlife/wildlife_sprites.gd
 mirrors the cell sizes and the frames. The looks are those of the region around 1700-1800 (see
 docs/art-style.md, "Props and animals").
@@ -17,7 +17,7 @@ import animals
 from animals import outline_in_place, paste
 
 # The rows of every sheet, with their frames.
-ACTIONS = {"idle": 2, "walk": 4, "graze": 2, "sleep": 2}
+ACTIONS = {"idle": 2, "walk": 4, "graze": 2, "sleep": 2, "run": 4}
 # Characters that are drawn over the outline instead of being outlined.
 LEGS = {"L", "M", "N", "K"}
 
@@ -294,6 +294,8 @@ def four_legged_sheet(animal, style, keys):
         "graze": [frame(head="down"), frame(head="down", head_drop=-1)],
         "sleep": [frame(lying=True), frame(lying=True, head_drop=1)],
     }
+    # Cattle and sheep only run from something, and then they hurry along at a walk.
+    frames["run"] = frames["walk"]
     return [frames[action] for action in ACTIONS]
 
 
@@ -477,6 +479,7 @@ def chicken_sheet(look):
         "walk": [CHICKEN_BODY + step for step in CHICKEN_STEPS],
         "graze": [CHICKEN_PECK, CHICKEN_PECK_UP],
         "sleep": [CHICKEN_SLEEP, CHICKEN_SLEEP_LOW],
+        "run": [CHICKEN_BODY + step for step in CHICKEN_STEPS],
     }
     return [[to_picture(rows, keys, style["outline"]) for rows in frames[action]] for action in ACTIONS]
 
@@ -538,6 +541,7 @@ def rabbit_sheet(look):
         "walk": wild["hop"] + [wild["sit"][0]],
         "graze": wild["nibble"],
         "sleep": [RABBIT_SLEEP, RABBIT_SLEEP_LOW],
+        "run": wild["hop"] + [wild["sit"][0]],
     }
     sheet = {"size": RABBIT_SIZE, "outline": style["outline"], "keys": style["keys"]}
 

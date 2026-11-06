@@ -1,9 +1,9 @@
 class_name Livestock
 extends RefCounted
 ## The farm animals of the world (FarmAnimal) and how they go about their day: they stand idle,
-## walk and graze, turn away from water and anything solid, and rabbits run from the player. At
-## night they sleep where they are, from a while after sunset until about sunrise (each species
-## has its hours, and each animal is a little later than the rest).
+## walk, graze and run about, turn away from water and anything solid, and rabbits run from the
+## player. At night they sleep where they are, from a while after sunset until about sunrise
+## (each species has its hours, and each animal is a little later than the rest).
 ## GameState owns it and moves the animals with `update` while the player is out in the world.
 ##
 ## It does not know the world, so the two never hold each other: the map the animals walk on is
@@ -122,12 +122,17 @@ func _update_awake_animal(
 				return
 			var away := animal.position - player_feet
 			var direction := animal.heading if away.is_zero_approx() else away.normalized()
-			_walk(animal, direction, rules.flee_speed(animal.species), delta, map)
-		FarmAnimal.Activity.WALK:
+			_walk(animal, direction, rules.run_speed(animal.species), delta, map)
+		FarmAnimal.Activity.WALK, FarmAnimal.Activity.RUN:
+			var speed := (
+				rules.walk_speed(animal.species)
+				if animal.activity == FarmAnimal.Activity.WALK
+				else rules.run_speed(animal.species)
+			)
 			animal.seconds_left -= delta
 			if animal.seconds_left <= 0.0:
 				_start_next_activity(animal)
-			elif not _walk(animal, animal.heading, rules.walk_speed(animal.species), delta, map):
+			elif not _walk(animal, animal.heading, speed, delta, map):
 				_start_activity(animal, FarmAnimal.Activity.IDLE)
 		_:
 			animal.seconds_left -= delta
@@ -143,7 +148,7 @@ func _start_activity(animal: FarmAnimal, activity: FarmAnimal.Activity) -> void:
 	animal.activity = activity
 	animal.seconds_left = rules.pick_seconds(animal.species, activity, rng)
 	match activity:
-		FarmAnimal.Activity.WALK:
+		FarmAnimal.Activity.WALK, FarmAnimal.Activity.RUN:
 			animal.heading = Vector2.from_angle(rng.randf() * TAU)
 		FarmAnimal.Activity.IDLE:
 			# Now and then it turns round where it stands.

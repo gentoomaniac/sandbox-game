@@ -21,22 +21,27 @@ const SPECIES_KEYS := [
 	"idle_seconds",
 	"walk_seconds",
 	"graze_seconds",
+	"run_seconds",
 	"walk_speed",
 	"body_tiles",
 	"flee_tiles",
-	"flee_speed",
+	"run_speed",
 	"sleep_minutes",
 	"wake_minutes",
 ]
 ## The activities `activity_weights` weighs, in its order.
 const CHOSEN_ACTIVITIES: Array[FarmAnimal.Activity] = [
-	FarmAnimal.Activity.IDLE, FarmAnimal.Activity.WALK, FarmAnimal.Activity.GRAZE
+	FarmAnimal.Activity.IDLE,
+	FarmAnimal.Activity.WALK,
+	FarmAnimal.Activity.GRAZE,
+	FarmAnimal.Activity.RUN,
 ]
 ## The key of how long each chosen activity lasts.
 const SECONDS_KEYS := {
 	FarmAnimal.Activity.IDLE: "idle_seconds",
 	FarmAnimal.Activity.WALK: "walk_seconds",
 	FarmAnimal.Activity.GRAZE: "graze_seconds",
+	FarmAnimal.Activity.RUN: "run_seconds",
 }
 
 static var _default: LivestockRules
@@ -85,7 +90,7 @@ func problems() -> Array[String]:
 		):
 			found.append("[%s] tints needs one colour or more, as hex" % species)
 		if values["activity_weights"].size() != CHOSEN_ACTIVITIES.size():
-			found.append("[%s] activity_weights needs idle, walk and graze" % species)
+			found.append("[%s] activity_weights needs idle, walk, graze and run" % species)
 		for key: String in SECONDS_KEYS.values():
 			if values[key].size() != 2 or values[key][0] > values[key][1]:
 				found.append("[%s] %s needs [shortest, longest]" % [species, key])
@@ -142,8 +147,8 @@ func flee_tiles(species: StringName) -> float:
 	return _value(species, "flee_tiles")
 
 
-func flee_speed(species: StringName) -> float:
-	return _value(species, "flee_speed")
+func run_speed(species: StringName) -> float:
+	return _value(species, "run_speed")
 
 
 func sleep_minutes(species: StringName) -> float:
