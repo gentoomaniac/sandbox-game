@@ -50,12 +50,57 @@ static func reply_messages(
 	words["background"] = npc.background
 	words["habits"] = npc.habits
 	words.merge(moment_words(moment, rules))
-	var last: Array[String] = [
-		_said(rules, "villager", words), _said(rules, "about", words), _said(rules, "moment", words)
-	]
+	var last: Array[String] = [_said(rules, "villager", words), _said(rules, "about", words)]
+	if not npc.memories.is_empty():
+		words["memories"] = " ".join(npc.memories)
+		last.append(_said(rules, "memory", words))
+	last.append(_said(rules, "moment", words))
 	last.append_array(_neighbour_says(message, words, rules))
 	messages.append(_message("user", "\n".join(last)))
 	return messages
+
+
+## The request that sums up the `lines` of a conversation (as Npc `chat_history`) in one line
+## for the villager to remember: {messages, temperature, max_tokens}.
+static func memory_request(npc: Npc, lines: Array[Dictionary], rules: NpcTalkRules) -> Dictionary:
+	var words := _words_of(npc, rules)
+	var told: Array[String] = []
+	for line in lines:
+		var key := "neighbour_line" if line["from_player"] else "villager_line"
+		var with_text := words.duplicate()
+		with_text["text"] = line["text"]
+		told.append(rules.value("memory", key).format(with_text))
+	words["lines"] = "\n".join(told)
+	return {
+		"messages":
+		[
+			_message("system", rules.value("memory", "system")),
+			_message("user", rules.value("memory", "conversation").format(words)),
+		],
+		"temperature": float(rules.value("request", "temperature")),
+		"max_tokens": int(rules.value("memory", "max_tokens")),
+	}
+
+
+## What a villager remembers of the `lines` of a conversation without a model to sum them up:
+## the start of what the player said.
+static func plain_memory(lines: Array[Dictionary], rules: NpcTalkRules) -> String:
+	var said: Array[String] = []
+	for line in lines:
+		if line["from_player"]:
+			said.append(line["text"])
+	var length := int(rules.value("memory", "plain_length"))
+	var text := " ".join(said)
+	if text.length() > length:
+		text = text.left(length).strip_edges() + "..."
+	return rules.value("memory", "plain").format({"said": text})
+
+
+## A memory as it is kept: the summary with the day of `clock`.
+static func dated_memory(summary: String, clock: GameClock, rules: NpcTalkRules) -> String:
+	return rules.value("memory", "dated").format(
+		{"date": date_text(clock, rules), "summary": summary}
+	)
 
 
 ## The villager's look in words: "a pale woman with blond hair in a bun, wearing a white coif,
@@ -95,34 +140,34 @@ static func looks_text(npc: Npc, rules: NpcTalkRules) -> String:
 ## weather and place.
 static func moment_words(moment: NpcMoment, rules: NpcTalkRules) -> Dictionary:
 	var clock := moment.clock
-	var parts: Array = rules.value("moment", "season_parts")
-	var season := GameClock.SEASON_NAMES[clock.season()] as String
-	var part_index := (clock.day_of_season() - 1) * parts.size() / GameClock.DAYS_PER_SEASON
-	var date: String = (
-		rules
-		. value("moment", "date")
-		. format(
-			{
-				"day": GameClock.ordinal(clock.day_of_season()),
-				"season": season,
-				"season_lower": season.to_lower(),
-				"season_part": parts[part_index],
-				"year": clock.year(),
-			}
-		)
-	)
 	var place: String = rules.value("place", "open")
 	if moment.building != "":
 		place = rules.value("place", "building").format({"building": moment.building.to_lower()})
 	elif moment.is_by_fire:
 		place = rules.value("place", "fireplace")
 	return {
-		"date": date,
+		"date": date_text(clock, rules),
 		"time": clock.time_text(),
 		"part_of_day": rules.value("moment", "parts_of_day")[part_of_day(moment, rules)],
 		"weather": weather_text(moment.weather, rules),
 		"place": place,
 	}
+
+
+## The day of `clock` as the clock shows it, with how far into the season it is: "the 12th day
+## of Spring, year 1 (mid spring)".
+static func date_text(clock: GameClock, rules: NpcTalkRules) -> String:
+	var parts: Array = rules.value("moment", "season_parts")
+	var season := GameClock.SEASON_NAMES[clock.season()] as String
+	var part_index := (clock.day_of_season() - 1) * parts.size() / GameClock.DAYS_PER_SEASON
+	var words := {
+		"day": GameClock.ordinal(clock.day_of_season()),
+		"season": season,
+		"season_lower": season.to_lower(),
+		"season_part": parts[part_index],
+		"year": clock.year(),
+	}
+	return rules.value("moment", "date").format(words)
 
 
 ## One of NpcTalkRules.PARTS_OF_DAY, by the sun: dawn, morning, noon, afternoon, dusk or night.

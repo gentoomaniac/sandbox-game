@@ -73,19 +73,40 @@ func test_a_model_that_gives_nothing_gets_a_scripted_line() -> void:
 	assert_has(_scripted_replies(), answer)
 
 
-func test_a_real_model_answers_in_character() -> void:
+## A dialogue with the real model of SANDBOX_LLM_URL (and SANDBOX_LLM_MODEL, if set), or null
+## when there is none: the test passes without asking.
+func _real_dialogue() -> NpcDialogue:
 	var url := OS.get_environment("SANDBOX_LLM_URL")
 	if url == "":
 		pass_test("SANDBOX_LLM_URL is not set: no real model to ask")
-		return
+		return null
 	_settings.language_model["endpoint"] = url
 	var model := OS.get_environment("SANDBOX_LLM_MODEL")
 	if model != "":
 		_settings.language_model["model"] = model
-	var dialogue := _dialogue(OpenAiChat.new())
+	return _dialogue(OpenAiChat.new())
+
+
+func test_a_real_model_answers_in_character() -> void:
+	var dialogue := _real_dialogue()
+	if dialogue == null:
+		return
 	var answer: String = await dialogue.reply(
 		_antje, [], "Good morning! Is the dyke holding after the storm?", _state
 	)
 	gut.p("Antje: %s" % answer)
 	assert_does_not_have(_scripted_replies(), answer, "the model answered")
 	assert_false(answer.to_lower().contains("as an ai"))
+
+
+func test_a_real_model_sums_up_a_conversation() -> void:
+	var dialogue := _real_dialogue()
+	if dialogue == null:
+		return
+	var lines: Array[Dictionary] = [
+		{"day": 1, "minute": 400, "from_player": true, "text": "Do you have butter to sell?"},
+		{"day": 1, "minute": 400, "from_player": false, "text": "Aye, two pounds at the door."},
+	]
+	await dialogue.remember(_antje, lines, _state)
+	gut.p("Antje remembers: %s" % _antje.memories[0])
+	assert_false(_antje.memories[0].contains("The neighbour said:"), "the model summed it up")

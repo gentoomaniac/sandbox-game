@@ -6,6 +6,9 @@ extends Node
 ## the scripted lines of data/npc_talk.cfg instead. Only the words come from the model: nothing
 ## else in the game changes by what it says.
 ##
+## When a conversation is over its lines are summed up in a memory of the villager (`remember`),
+## which later prompts tell.
+##
 ## `reply` is a coroutine: callers `await` it. It runs while the game is paused, as it is during a
 ## chat.
 
@@ -45,3 +48,18 @@ func reply(npc: Npc, history: Array[Dictionary], message: String, state: GameSta
 		await get_tree().create_timer(rules.value("scripted", "thinking_seconds"), true).timeout
 	var lines: Array = rules.value("scripted", "replies")
 	return lines[rng.randi_range(0, lines.size() - 1)]
+
+
+## Remembers the `lines` of a conversation with the villager (see Npc `add_memory`): summed up by
+## the model, or the start of what the player said without one or when it gives nothing.
+func remember(npc: Npc, lines: Array[Dictionary], state: GameState) -> void:
+	var summary := ""
+	if has_model():
+		var request := NpcPrompt.memory_request(npc, lines, rules)
+		var answer: String = await chat.answer(
+			_settings.language_model, request, rules.value("request", "timeout_seconds")
+		)
+		summary = NpcPrompt.trimmed_reply(answer, npc, 1)
+	if summary == "":
+		summary = NpcPrompt.plain_memory(lines, rules)
+	npc.add_memory(NpcPrompt.dated_memory(summary, state.clock, rules))

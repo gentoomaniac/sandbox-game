@@ -1,7 +1,7 @@
 extends SaveUpgradeCase
 ## The villagers are saved with their name, sex, look, who they are, place, anchor and chat; a
-## save from before them (version 16) loads without any, and one from before their backgrounds
-## (version 18) gives them one.
+## save from before them (version 16) loads without any, one from before their backgrounds
+## (version 18) gives them one, and one from before their memories (version 19) none.
 
 
 func test_the_villagers_and_their_chat_are_kept() -> void:
@@ -10,6 +10,7 @@ func test_the_villagers_and_their_chat_are_kept() -> void:
 	npc.anchor = Vector2(1.5, -2.5)
 	npc.add_chat_line(3, 495, true, "hello")
 	npc.add_chat_line(3, 495, false, "I understand.")
+	npc.add_memory("On the 3rd day of Spring, year 1 (early spring): The neighbour said hello.")
 	state.npcs.add(npc)
 	assert_true(SaveFile.write(state, SAVE_PATH))
 
@@ -29,6 +30,8 @@ func test_the_villagers_and_their_chat_are_kept() -> void:
 	assert_eq(loaded.personality, npc.personality)
 	assert_eq(loaded.background, npc.background)
 	assert_eq(loaded.habits, npc.habits)
+	assert_eq(loaded.memories, npc.memories)
+	assert_eq(loaded.lines_since_memory, 2, "the conversation is not remembered yet")
 
 
 func test_a_villager_written_by_hand_keeps_their_id() -> void:
@@ -81,3 +84,17 @@ func test_a_version_18_villager_is_given_a_background_from_the_tables() -> void:
 	assert_between(loaded.age, 18, 70)
 	assert_false(loaded.trade.is_empty())
 	assert_false(loaded.background.is_empty())
+
+
+func test_a_version_19_villager_remembers_nothing() -> void:
+	var game := _current_game()
+	var npc := Npc.create(42, Vector2.ZERO, NpcRules.default_rules()).to_dict()
+	npc.erase("memories")
+	npc.erase("lines_since_memory")
+	game["npcs"] = [JSON.parse_string(JSON.stringify(npc))]
+	_write_save(19, game)
+
+	var loaded := SaveFile.read(SAVE_PATH).npcs.all()[0]
+
+	assert_eq(loaded.memories.size(), 0)
+	assert_eq(loaded.lines_since_memory, 0)

@@ -1,13 +1,17 @@
 class_name Npc
 extends RefCounted
 ## One villager: who they are (name, sex, looks, age, trade and the texts about them), where they
-## stand, the anchor they keep near and what they and the player have said to each other. Npcs
-## moves them; NpcView draws them and ChatScreen shows the chat.
+## stand, the anchor they keep near, what they and the player have said to each other and what
+## they remember of it. Npcs moves them; NpcView draws them and ChatScreen shows the chat.
 
 enum Activity { IDLE, WALK }
 
 ## The chat keeps this many of its last lines, the player's and the villager's.
 const HISTORY_LIMIT := 200
+## They remember this many conversations; the oldest two are merged into one when there are more.
+const MEMORY_LIMIT := 10
+## A merged memory keeps its last this many characters.
+const MEMORY_LENGTH := 400
 
 ## Their full name, such as "Antje Boysen".
 var name: String
@@ -37,6 +41,13 @@ var anchor: Vector2
 ## The chat, oldest line first, each `{day, minute, from_player, text}`: the game day and the
 ## minute of the day it was said, and whether the player said it.
 var chat_history: Array[Dictionary] = []
+## One line for each conversation they remember, oldest first, such as "On the 12th day of
+## Spring, year 1: The neighbour asked after the dyke." (see NpcDialogue `remember`).
+var memories: Array[String] = []
+## How many of the last lines of the chat are not in a memory yet: those of this conversation.
+## Saved, so a conversation the game was saved in (an answer still owed, or its summing up still
+## under way) is remembered the next time the chat is closed.
+var lines_since_memory := 0
 
 # What they are doing is not saved: a loaded villager stands and looks about for what to do.
 ## The axis direction they look in (UP, DOWN, LEFT or RIGHT).
@@ -49,6 +60,7 @@ var heading := Vector2.ZERO
 ## the map again (see Npcs).
 var free_body_tiles := Rect2i()
 ## Whether an answer to the player is awaited (see ChatScreen): they say nothing more till then.
+## A loaded villager owes none: an answer the game was saved before is lost.
 var is_answering := false
 
 
@@ -107,6 +119,20 @@ func add_chat_line(day: int, minute: int, from_player: bool, text: String) -> vo
 	chat_history.append({"day": day, "minute": minute, "from_player": from_player, "text": text})
 	if chat_history.size() > HISTORY_LIMIT:
 		chat_history.pop_front()
+	lines_since_memory = mini(lines_since_memory + 1, chat_history.size())
+
+
+## The lines of the chat not in a memory yet, oldest first.
+func unremembered_lines() -> Array[Dictionary]:
+	return chat_history.slice(chat_history.size() - lines_since_memory)
+
+
+## Remembers a conversation. Beyond MEMORY_LIMIT the oldest two become one, which keeps its end.
+func add_memory(memory: String) -> void:
+	memories.append(memory)
+	if memories.size() > MEMORY_LIMIT:
+		var merged := "%s %s" % [memories.pop_front(), memories[0]]
+		memories[0] = merged.right(MEMORY_LENGTH)
 
 
 func to_dict() -> Dictionary:
@@ -123,6 +149,8 @@ func to_dict() -> Dictionary:
 		"position": SaveCodec.float_vector_to_json(position),
 		"anchor": SaveCodec.float_vector_to_json(anchor),
 		"chat_history": chat_history,
+		"memories": memories,
+		"lines_since_memory": lines_since_memory,
 	}
 
 
@@ -140,6 +168,8 @@ static func from_dict(data: Dictionary) -> Npc:
 	npc.anchor = SaveCodec.float_vector_from_json(data["anchor"])
 	for line: Dictionary in data["chat_history"]:
 		npc.add_chat_line(int(line["day"]), int(line["minute"]), line["from_player"], line["text"])
+	npc.memories.assign(data["memories"])
+	npc.lines_since_memory = mini(int(data["lines_since_memory"]), npc.chat_history.size())
 	return npc
 
 

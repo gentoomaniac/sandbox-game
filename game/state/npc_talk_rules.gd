@@ -9,7 +9,17 @@ const DEFAULT_PATH := "res://data/npc_talk.cfg"
 const KEYS := {
 	"request": ["temperature", "max_tokens", "history_lines", "reply_sentences", "timeout_seconds"],
 	"prompt":
-	["system", "example", "example_reply", "villager", "about", "moment", "says", "reply"],
+	[
+		"system",
+		"example",
+		"example_reply",
+		"villager",
+		"about",
+		"memory",
+		"moment",
+		"says",
+		"reply"
+	],
 	"female": ["their", "person"],
 	"male": ["their", "person"],
 	"looks": ["sentence", "body", "hair_styles", "hair_colours", "worn"],
@@ -18,6 +28,17 @@ const KEYS := {
 	"weather": ["conditions", "sky", "temperature", "frost", "wind", "directions"],
 	"place": ["reach", "building", "fireplace", "open"],
 	"scripted": ["thinking_seconds", "replies"],
+	"memory":
+	[
+		"system",
+		"conversation",
+		"neighbour_line",
+		"villager_line",
+		"max_tokens",
+		"plain",
+		"plain_length",
+		"dated",
+	],
 }
 const PARTS_OF_DAY: Array[String] = ["dawn", "morning", "noon", "afternoon", "dusk", "night"]
 
