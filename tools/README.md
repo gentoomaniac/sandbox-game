@@ -32,6 +32,8 @@ by topic. Where is a thing drawn?
 | `willow.py` | The pollard willow, in leaf and bare. |
 | `camp.py` | The fireplace and the bedroll. |
 | `character.py` | The player's layers (body, breeches and stockings, clogs, shirt and waistcoat, jacket, hair, hats, hoe), their passing out and the sleeping "z". |
+| `villagers.py` | The villagers' layers in the same frames: the women's dress (bodice, skirt, apron, shawl, coif, headscarf), other skins, hair colours and cloth, the felt hat. |
+| `portraits.py` | The 32x32 chat portrait of every layer that shows in a bust, in the layer's colours. |
 | `interior.py` | The room tiles and the furniture inside the buildings, the hearth too. |
 | `buildings.py` | The five buildings, plain and with lit windows. |
 | `seasons.py` | The other looks (spring, autumn, bare, frost, snow, dusting, leaf-out steps) made from the summer art by colour remaps and overlays. Also adds its colours to the palette. |

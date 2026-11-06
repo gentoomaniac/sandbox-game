@@ -30,8 +30,8 @@ with Knicks, walls and fences on the Geest, ditches in the marsh, and dykes.
   turns real time into game minutes, sends input to the state and creates the views and
   screens. Its `_ready` runs in steps: load the game, make the views, connect the state and
   the views, apply the start options. Every screen (`CharacterScreen`, `CraftingScreen`,
-  `StorageScreen`, `ConsoleView`) has `open()`, `close()` and `is_open()`, and Main keeps them
-  in one list (`_screens`). The debug flags are parsed by `StartupOptions`; `DebugRunner` does
+  `StorageScreen`, `ConsoleView`, `ChatScreen`) has `open()`, `close()` and `is_open()`, and
+  Main keeps them in one list (`_screens`). The debug flags are parsed by `StartupOptions`; `DebugRunner` does
   the ones that wait for the world to be drawn (see below).
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
   weather, the snow cover and the player. It is the entry point for actions (`walk`, `use_at`,
@@ -80,6 +80,15 @@ with Knicks, walls and fences on the Geest, ditches in the marsh, and dykes.
   (`BuildingViews.sort_position`); flying birds cast `GroundShadows`. A hunter finds its prey
   with `WildlifeView.nearest_animal` (a stork its frogs, `Frog`; a cat will find the `Mouse`),
   asked when it picks what to do next, not every frame.
+- **Npcs** (`game/state/npcs.gd`) holds the villagers (`Npc`: name, sex, look as an
+  `Appearance`, position, anchor and chat history) and moves them like the livestock: GameState
+  owns it, Main calls its `update` every frame while the player is outside, and the numbers,
+  names and clothes are `data/npcs.cfg` (`NpcRules`). Each is drawn by an `NpcView` among the
+  world view's entities, with the player's sheets and frames. E speaks to the villager
+  `Interaction.npc_to_chat` names, before any chest, station or bed; `ChatScreen` shows the
+  chat with both portraits (`Appearance.portrait_layers`) and pauses the game while it is open.
+  What a villager answers comes from one place, `NpcDialogue.reply`, which the chat awaits, so
+  a language model that answers over the network fits there later.
 - **Crafting** (`game/state/crafting.gd`) is what the crafting menu does: it checks a recipe of
   `RecipeRules` (materials, the skill level it needs), crafts it and practises its skill on the
   player's **Skills** (`skills.gd`: points per skill, the total cap and the skills that fade,

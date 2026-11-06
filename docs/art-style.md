@@ -144,6 +144,19 @@ so there was no single male costume; that gives freedom, as long as it is 18th-c
 - **Not period:** baseball-cap shapes, pith helmets, modern long trousers with belts as the
   default (long trousers are fine for sailors and farmhands later in the century), T-shirt
   cuts, sneakers.
+- **Villagers** (task 84, `tools/art/villagers.py`) are put together from the same layers as
+  the player, in the same 16x32 frames: four skins (`skin`, a fair `cream`, a tanned
+  `skin_shade` and a dark `soil_light` face), five hair colours (brown, blond, red, grey,
+  black) in the styles short, long, tied, a bun and plaits with red ribbons; waistcoats and
+  breeches in other wools (indigo, plant green, brown, black; leather breeches), brown and
+  black jackets, a black felt hat with the straw hat's brim; for the women a laced bodice
+  over the chemise, a long skirt to the ankles (madder red, indigo, brown, black, heather),
+  a white or blue apron, a shawl (red, cream, heather), a white coif or a red or blue
+  headscarf. No new colours.
+- **Portraits** for the chat (`tools/art/portraits.py`): a 32x32 head and shoulders, facing
+  the viewer, for every layer that shows in a bust, in the layer's colours, drawn at 2x. The
+  head is 12 px wide with eyes that have a white, brows, a nose shadow, cheeks and a mouth;
+  the outline is ink, as on the sprites.
 
 ## Landscape
 
@@ -355,8 +368,9 @@ copper watering can. Kept here as the record of why.
    generic tunic and long trousers. Now: brown knee breeches over white stockings, pale
    wooden clogs, a red waistcoat with tin buttons over a linen shirt, a short blue jacket in
    a coat slot of its own, and long hair tied back with a ribbon as a third hair style. All
-   from existing colours. Still to do: women's dress for NPCs (apron, bodice, cap), and
-   buckled shoes for best.
+   from existing colours. Task 84 added the women's dress for the villagers (bodice, skirt,
+   apron, shawl, coif and headscarf) and more colours of the men's clothes, skins and hair.
+   Still to do: buckled shoes for best, island dress with silver (Föhr, Amrum).
 2. ~~**Knicks, dykes and marsh ditches**~~ done (task 54). The features that make the land
    read as Schleswig-Holstein: autotiled Knick hedges of hazel and hawthorn on earth banks,
    turfed dykes along the floodplain, straight water ditches with reeds and pollard willows

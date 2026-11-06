@@ -723,7 +723,7 @@ Storks: `WildlifeView.is_standing` already made a stork leave a roof that is gon
 
 ## 84. NPCs: a first villager to spawn and chat with
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06 (priority, the first step of docs/ideas/NPC.md): NPC art and
 an entity that can be spawned randomised via the console. It walks about a bit but stays
@@ -741,6 +741,25 @@ still at night. NPCs, their looks, names, anchors and chat histories are saved (
 version bump; history capped at the last 200 lines). The chat pauses the game while open;
 lines read `[08:15] <You> hello` with the game time; Enter sends, Esc closes; the history
 scrolls. The reply function is async-ready (awaited), so a slow LLM fits later.
+
+Done: `Npc` and `Npcs` in game/state, the numbers, names and clothes in data/npcs.cfg
+(`NpcRules`): a seed gives the sex, the name and the look, layers of `Appearance` (which got an
+`apron` slot) drawn from the player's kind of sheets, the women's dress and the other colours
+from tools/art/villagers.py, no new colours. The anchor is the yard in front of the nearest
+building's door or the nearest fireplace within 16 tiles, else the spawn spot; a villager
+strolls towards points inside 6 tiles of it, never steps out of that circle (one outside only
+steps back in), steps only where its body fits on walkable tiles (the map asked only when the
+body moves onto new tiles), stops short of the player, and stands still from 30 minutes after
+sunset to sunrise. `NpcView` draws it among the entities with the player's frames. E speaks to
+the villager on the targeted tile or the nearest one in reach in front
+(`Interaction.npc_to_chat`), before chests, stations and beds; `NpcNameTag` shows that one's
+name over their head. `ChatScreen` pauses the game, shows 32x32 portraits at 2x laid together from the
+layers' portraits (tools/art/portraits.py) and the IRC-style lines, awaits
+`NpcDialogue.reply` (for now "I understand." after half a second) and keeps its lines in the
+villager's history. `spawn npc [count]`; debug flags `--npcs=<count>` and
+`--chat=<line>;<line>`. Save version 17 keeps name, sex, look, position, anchor and the last
+200 chat lines. Not done: villagers don't avoid each other and may share a spot; two can get
+the same name.
 
 ## 85. A local LLM in a container for testing NPC talk
 

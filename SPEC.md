@@ -415,10 +415,10 @@ Decided 2026-11-05. A text console for testing and cheats.
 - Commands: `help`; `tp <x> <y>` (teleport to a world tile; from inside a house the player steps out there); `give <item>
   [count]` (into the inventory); `god` (toggle invincibility:
   health doesn't drop); `nodrain` (toggle: actions cost no energy); `noweight` (toggle:
-  carried weight doesn't raise costs). Later commands: `spawn` (farm animals: `cow`, `sheep`,
-  `chicken`, `rabbit`, `dog`, `cat`, `horse`; wild ones: `bird`, `wild_rabbit`, `squirrel`,
-  `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork`, `geese`, `flying_geese`,
-  `mouse`, `frog`), `weather`, `snow`, `crop`
+  carried weight doesn't raise costs). Later commands: `spawn` (villagers: `npc`; farm
+  animals: `cow`, `sheep`, `chicken`, `rabbit`, `dog`, `cat`, `horse`; wild ones: `bird`,
+  `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork`,
+  `geese`, `flying_geese`, `mouse`, `frog`), `weather`, `snow`, `crop`
   (see `help`), `reset` (puts the player in the bed they wake in, inside or out), and
   `skip <n>m|h|d` (let minutes, hours or days pass, at most a year; the
   nights in between pass as when sleeping, so crops grow).
@@ -857,6 +857,44 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   the player (save version 16); what an animal is doing is not.
 - Animals don't avoid each other or the player yet.
 - **Later:** milk, wool and eggs, pens, feeding, owning and breeding.
+
+### NPCs (villagers)
+
+Decided 2026-11-06 (task 84, QUESTIONS.md 22): the first step towards the people of
+[docs/ideas/NPC.md](docs/ideas/NPC.md). For now villagers are put in the world with the
+console (`spawn npc [count]`, near the player); they are state and saved.
+
+- **Who:** each villager draws a sex, a name and a look from a seed. Names are period North
+  Frisian and Low German first names by sex (Hinrich, Jens, Boy, Momme, Ocke, Tete; Antje,
+  Elke, Inken, Kerrin, Wiebke) and surnames (Hansen, Jensen, Petersen, Paulsen, Boysen,
+  Ketels, Lorenzen). The look is layers like the player's: a skin, a hair style and colour
+  (short, long or tied for men; a bun or plaits for women), and period clothes (men: shirt or
+  waistcoat, knee breeches, sometimes a jacket, a knitted cap, straw or felt hat; women: a
+  laced bodice over the chemise, a long skirt, often an apron or a shawl, a white coif or a
+  headscarf), all in existing palette colours. The lists are in `data/npcs.cfg`.
+- **Where:** each keeps near its anchor: the yard in front of the door of the nearest
+  building or the nearest fireplace within 16 tiles of where it came, else that spot. It
+  never walks further than 6 tiles from it (one outside the circle only walks back in).
+- **Behaviour:** by day it stands about and strolls (at a third of the player's speed) only
+  where its body fits on walkable tiles, and stops short of the player rather than walk into
+  them; the player walks through villagers, so they never shut the player in. At night (from
+  half an hour after sunset to sunrise) it stands still. Like the animals it stands still
+  while the player is in a house.
+- **Talking:** E speaks to the villager on the targeted tile, or the nearest one in reach in
+  front of the player, before any chest, station or bed; that villager's name shows over
+  their head. The chat pauses the game: the player's portrait on the left, the villager's on
+  the right (32x32 head-and-shoulders portraits laid together from the same layers, drawn at
+  2x), names under them, and an IRC-style window between them: lines like
+  `[08:15] <You> hello` with the game time, scrollback, a one-line input. Enter sends; while
+  the answer is awaited the villager is shown typing; Escape leaves (and doesn't open the
+  pause menu). The villager turns to the player and stands a while.
+- **Answers:** one function, `NpcDialogue.reply(npc, history, message)`, awaited by the chat,
+  so a slow language model fits later (tasks 85 and 86). For now it always answers
+  "I understand." after half a second.
+- **Saved:** name, sex, look, position, anchor and the chat, its last 200 lines (save
+  version 17); what a villager is doing is not.
+- **Later:** homes, schedules, trades, intentions and memory, and words from an LLM (see the
+  ideas doc).
 
 ### Combat
 

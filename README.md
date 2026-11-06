@@ -142,6 +142,28 @@ ridden yet.
 
 ![Horses, dogs and cats about the camp](docs/screenshots/dogs-cats-horses.png)
 
+### Villagers
+
+The first people of the coast: villagers dressed in the clothes of the period, the men in
+knee breeches, waistcoats and felt hats or knitted caps, the women in long skirts, laced
+bodices, aprons, shawls and white coifs or headscarves, each with a skin, hair and clothes
+of their own and a North Frisian or Low German name (Antje Boysen, Momme Ketels). They keep
+to within about six tiles of the house or campfire nearest to where they came, stand about
+and stroll by day and stand still at night; you walk through them, so they never shut you
+in. For now they come from the console (`spawn npc 3`); they are saved with the game.
+
+Face a villager and press E to talk: the name over their head shows whom E speaks to. The
+chat shows your portrait and theirs, and between them a chat window with the game time,
+like `[08:15] <You> hello`. Type a line and press Enter; Escape leaves. The game stands still
+while you talk, and the chat keeps its last 200 lines for the next time. For now every
+villager answers "I understand."; their words will come from a language model later (see
+[docs/ideas/NPC.md](docs/ideas/NPC.md)). Their names and clothes are in
+[data/npcs.cfg](data/npcs.cfg).
+
+![Villagers by the camp, the name of the one E would speak to over their head](docs/screenshots/npcs.png)
+
+![A chat with a villager: both portraits, and the lines with the game time](docs/screenshots/npc-chat.png)
+
 ### Wildlife
 
 Birds hop and peck on open ground and small flocks cross the sky, rabbits graze the meadows,
@@ -349,6 +371,7 @@ arguments.
 | `god`, `nodrain`, `noweight`, `nocost` | Toggle invincibility, free actions, weight costing nothing, and buildings and crafting needing no materials. |
 | `weather`, `weather <condition>`, `weather auto` | Show the weather, force a condition, or go back to the simulation. |
 | `snow`, `snow <0..1>`, `snow auto` | Show the snow cover, force it, or go back to the weather. |
+| `spawn npc [count]` | Put villagers nearby, each with a look and a name of their own; they stay. |
 | `spawn <animal> [count]` | Put animals nearby: farm animals that stay (`cow`, `sheep`, `chicken`, `rabbit`, `dog`, `cat`, `horse`) or wild ones that come and go (`bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork` on the nearest roof, `geese` grazing, `flying_geese`, `mouse`, `frog`). `spawn` alone, or with an unknown name, lists them. |
 | `skip <n>m\|h\|d` | Let minutes, hours or days pass, e.g. `skip 2h` or `skip 3d`. |
 | `crop` | Show the growth, damage and needs of the nearest crop. |
@@ -368,7 +391,8 @@ These are the default keys; all of them can be changed under Settings → Contro
 | Tab | Character screen and inventory |
 | K | Skills tab of the character screen |
 | C | Crafting menu (by hand) |
-| E | Open the chest or the station (its crafting menu) in front of you, else sleep until morning (next to a bed); with the hammer in hand it picks the next building |
+| E | Talk to the villager in front of you; else open the chest or the station (its crafting menu) in front of you, else sleep until morning (next to a bed); with the hammer in hand it picks the next building |
+| Enter, Escape | In a chat: send the line, leave the chat (Page Up and Down scroll back) |
 | B | Take the hammer: build mode |
 | X | Switch the hammer between building and taking down (hold Space or click to take down) |
 | Q, E | Previous and next building (while holding the hammer) |
