@@ -38,10 +38,15 @@ var _character_screen := CharacterScreen.new()
 var _crafting_screen := CraftingScreen.new()
 var _storage_screen := StorageScreen.new()
 var _console_view := ConsoleView.new()
+var _chat_screen := ChatScreen.new()
+var _npc_name_tag := NpcNameTag.new()
 var _cheat_hud := CheatHud.new()
 ## The screens, in the order Escape closes them. The pause menu is not among them: Escape
 ## opens it, it pauses the game, and it has its own input.
-var _screens: Array = [_console_view, _character_screen, _crafting_screen, _storage_screen]
+## The chat pauses the game like the pause menu, but takes Escape itself.
+var _screens: Array = [
+	_console_view, _chat_screen, _character_screen, _crafting_screen, _storage_screen
+]
 var _interior_view := InteriorView.new()
 var _object_cover := ObjectCover.new()
 var _weather_view := WeatherView.new()
@@ -155,6 +160,7 @@ func _make_views() -> void:
 	_view.add_child(_use_highlight)
 	add_child(_harvest_hud)
 	add_child(_coordinates_hud)
+	add_child(_npc_name_tag)
 	add_child(_hotbar)
 	add_child(_build_panel)
 	add_child(_vitals)
@@ -163,6 +169,7 @@ func _make_views() -> void:
 	add_child(_storage_screen)
 	add_child(_cheat_hud)
 	add_child(_console_view)
+	add_child(_chat_screen)
 	_menu = PauseMenu.new(_settings)
 	add_child(_menu)
 	add_child(_tooltip_view)
@@ -254,6 +261,8 @@ func _apply_start_options() -> void:
 	_debug.interior_view = _interior_view
 	_debug.storage_screen = _storage_screen
 	_debug.crafting_screen = _crafting_screen
+	_debug.chat_screen = _chat_screen
+	_debug.open_chat = _open_chat
 	_debug.try_sleep = _try_sleep
 	_debug.pass_door = _pass_door
 	_debug.open_menu = _open_menu
@@ -333,6 +342,11 @@ func _process(delta: float) -> void:
 	var is_in_play := not _is_any_screen_open()
 	_use_highlight.is_enabled = (
 		is_in_play and not _builder.is_building() and not _is_in_transition
+	)
+	var can_chat := is_in_play and not _build_mode.is_active() and not _is_in_transition
+	_npc_name_tag.show_over(
+		Interaction.npc_to_chat(_state, _use_highlight.targeting().tile) if can_chat else null,
+		_camera
 	)
 	# Build mode only counts outdoors, in play and not during a transition; it keeps processing,
 	# to clear its message when it goes off.
@@ -507,9 +521,15 @@ func _screens_take(event: InputEvent) -> bool:
 	return _is_any_screen_open()
 
 
-## E: opens the chest or the station in reach, else sleeps in the bed in reach.
+## E: speaks to the villager in front, else opens the chest or the station in reach, else sleeps
+## in the bed in reach.
 func _interact() -> void:
-	var object := Interaction.object_to_open(_state, _use_highlight.targeting().tile)
+	var target := _use_highlight.targeting().tile
+	var npc := Interaction.npc_to_chat(_state, target)
+	if npc != null:
+		_open_chat(npc)
+		return
+	var object := Interaction.object_to_open(_state, target)
 	if object == null:
 		_try_sleep()
 	elif object.storage != null:
@@ -521,6 +541,12 @@ func _interact() -> void:
 ## Puts a villager among the world's entities, where it stands among the objects like the player.
 func _show_npc(npc: Npc) -> void:
 	_view.entities.add_child(NpcView.new(npc))
+
+
+## Opens the chat with a villager, who turns to the player (the chat pauses the game).
+func _open_chat(npc: Npc) -> void:
+	_state.npcs.talk_to(npc, _state.player.position)
+	_chat_screen.open(npc, _state.player, _state.clock)
 
 
 ## Sleeps in the bed in reach until the morning: the new day shows on the black for a moment.

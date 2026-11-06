@@ -31,6 +31,10 @@ const LAYER_OF_EQUIPMENT_SLOT := {
 }
 
 const SHEET_PATH := "res://assets/character/%s_%s.png"
+## The layer's head-and-shoulders portrait, for the chat (see ChatScreen). Only the slots that
+## show in a bust have one.
+const PORTRAIT_PATH := "res://assets/character/portrait/%s_%s.png"
+const PORTRAIT_SLOTS := [BODY, CLOTHES, COAT, HAIR, HEAD]
 ## The same layer passing out: kneeling, tipping over, lying and asleep (see PlayerView). The
 ## held layer has none: the hand lets go.
 const COLLAPSE_SHEET_PATH := "res://assets/character/collapse/%s_%s.png"
@@ -99,6 +103,15 @@ static func _rank(slot: StringName) -> int:
 ## The sheet that holds a layer's frames.
 static func sheet_path(layer: Dictionary) -> String:
 	return SHEET_PATH % [layer.slot, layer.variant]
+
+
+## The layers that show in a portrait, in the order they are drawn.
+func portrait_layers() -> Array[Dictionary]:
+	return layers.filter(func(layer: Dictionary) -> bool: return layer.slot in PORTRAIT_SLOTS)
+
+
+static func portrait_path(layer: Dictionary) -> String:
+	return PORTRAIT_PATH % [layer.slot, layer.variant]
 
 
 ## The sheet that holds a layer's passing-out frames.

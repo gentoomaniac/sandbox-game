@@ -26,10 +26,12 @@ var tiredness_view: TirednessView
 var interior_view: InteriorView
 var storage_screen: StorageScreen
 var crafting_screen: CraftingScreen
+var chat_screen: ChatScreen
 ## Main's doings, as `func()` unless noted.
 var try_sleep: Callable
 var pass_door: Callable
 var open_menu: Callable  # func(page: PauseMenu.Page)
+var open_chat: Callable  # func(npc: Npc)
 var save_screenshot_and_quit: Callable
 
 var _options: StartupOptions
@@ -43,6 +45,7 @@ var _is_station_to_open: bool
 var _are_animals_to_spawn: bool
 var _is_livestock_to_spawn: bool
 var _npcs_to_spawn: int
+var _chat_lines: PackedStringArray
 var _hit_tile: Vector2i
 var _harvest_tile: Vector2i
 var _menu_page: int
@@ -62,6 +65,7 @@ func _init(options: StartupOptions) -> void:
 	_are_animals_to_spawn = not options.wildlife.is_empty()
 	_is_livestock_to_spawn = not options.livestock.is_empty()
 	_npcs_to_spawn = options.npcs
+	_chat_lines = options.chat
 	_hit_tile = options.hit
 	_harvest_tile = options.harvest
 	_menu_page = options.menu
@@ -101,6 +105,8 @@ func update(delta: float) -> void:
 		state.npcs.rng.seed = NPCS_SEED
 		state.npcs.spawn(_npcs_to_spawn, state.player.position, state.world)
 		_npcs_to_spawn = 0
+	if not _chat_lines.is_empty() and _is_outside_and_drawn():
+		_chat()
 	if _hit_tile != StartupOptions.NO_TILE and _is_outside_and_drawn():
 		var object := state.world.object_at(_hit_tile)
 		if object != null:
@@ -123,6 +129,30 @@ func update(delta: float) -> void:
 		return
 	_screenshot_delay -= delta
 	if _screenshot_delay <= 0.0:
+		save_screenshot_and_quit.call()
+
+
+## Speaks to the nearest villager and says the `--chat` lines, each after the last is answered.
+## The chat pauses the game, and so this runner: a screenshot is taken here, once it is done.
+func _chat() -> void:
+	var lines := _chat_lines
+	_chat_lines = PackedStringArray()
+	var villagers := state.npcs.all()
+	if villagers.is_empty():
+		push_error("--chat needs a villager near the player (see --npcs)")
+		return
+	var feet := state.player.position
+	villagers.sort_custom(
+		func(a: Npc, b: Npc) -> bool:
+			return a.position.distance_to(feet) < b.position.distance_to(feet)
+	)
+	open_chat.call(villagers[0])
+	for line in lines:
+		chat_screen.say(line)
+		await chat_screen.answered
+	if _options.screenshot != "":
+		# One frame for the last answer to be drawn.
+		await chat_screen.get_tree().process_frame
 		save_screenshot_and_quit.call()
 
 

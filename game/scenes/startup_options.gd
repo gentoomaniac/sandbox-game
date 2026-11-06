@@ -65,6 +65,8 @@ extends RefCounted
 ##                            map is drawn (with --inside, in the house)
 ##   --storage                open the storage screen of the --chest or --chest-inside chest
 ##   --console=<line>;<line>  run those console commands at start and leave the console open
+##   --chat=<line>;<line>     speak to the nearest villager once the world is drawn (see
+##                            --npcs) and say those lines, each after the answer to the last
 ##
 ## Building
 ##   --building=<id>          the building the hammer places
@@ -156,6 +158,7 @@ var crafting := false
 var station := false
 var storage := false
 var console := PackedStringArray()
+var chat := PackedStringArray()
 
 # Building
 var building := &""
@@ -263,6 +266,8 @@ func _init(args := PackedStringArray()) -> void:
 				storage = true
 			"--console":
 				console = _value(arg).split(";")
+			"--chat":
+				chat = _value(arg).split(";")
 			"--building":
 				building = StringName(_value(arg))
 			"--ghost":

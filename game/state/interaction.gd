@@ -1,8 +1,9 @@
 class_name Interaction
 extends RefCounted
-## What the player's E acts on: the beds, chests and crafting stations within reach of them
-## (Targeting.REACH, the same as the use action's). Plain rules; Main asks and then sleeps, opens
-## the storage screen or opens the crafting menu of the station.
+## What the player's E acts on: the villagers, beds, chests and crafting stations within reach of
+## them (Targeting.REACH, the same as the use action's). Plain rules; Main asks and then chats,
+## sleeps, opens the storage screen or opens the crafting menu of the station. A villager E speaks
+## to (`npc_to_chat`) comes first, before any chest, station or bed.
 
 
 ## The nearest object on the player's map within reach that `is_wanted` says yes to, or null.
@@ -39,3 +40,28 @@ static func _opens(object: WorldObject) -> bool:
 
 static func _distance(state: GameState, object: WorldObject) -> float:
 	return (Vector2(object.pos) + Vector2(0.5, 0.5)).distance_to(state.player.position)
+
+
+## The villager E speaks to, or null: the one on the targeted tile if that is in reach, else the
+## nearest one in reach in front of the player (villagers move, so the player need not face their
+## very tile; one behind them would take E from the chest they face). None indoors, where there
+## are none.
+static func npc_to_chat(state: GameState, target: Vector2i) -> Npc:
+	if state.is_inside():
+		return null
+	var player_tile := state.player.tile()
+	var facing := Vector2(state.player.facing)
+	var nearest: Npc = null
+	for npc in state.npcs.all():
+		var offset := (npc.tile() - player_tile).abs()
+		if maxi(offset.x, offset.y) > Targeting.REACH:
+			continue
+		if npc.tile() == target:
+			return npc
+		var to_npc := npc.position - state.player.position
+		var is_nearer := (
+			nearest == null or to_npc.length() < nearest.position.distance_to(state.player.position)
+		)
+		if to_npc.dot(facing) > 0.0 and is_nearer:
+			nearest = npc
+	return nearest

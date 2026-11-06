@@ -48,5 +48,13 @@ func mouse_world_position() -> Vector2:
 	return ViewMath.window_to_world(window_position, _window_size(), rig.position, rig.zoom)
 
 
+## Where an art-pixel position of the world is on screen, in UI units (where the HUD is placed).
+func world_to_ui(world_position: Vector2) -> Vector2:
+	var window_position := ViewMath.world_to_window(
+		world_position, _window_size(), rig.position, rig.zoom
+	)
+	return window_position * get_viewport().get_visible_rect().size / _window_size()
+
+
 func _window_size() -> Vector2:
 	return Vector2(get_window().size)
