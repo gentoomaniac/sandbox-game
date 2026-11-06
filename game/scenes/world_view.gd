@@ -109,11 +109,13 @@ var _chunk_looks: Dictionary[Vector2i, ChunkLooks] = {}
 var _refresh_queue: Array[Vector2i] = []
 ## Cells whose overlays must be drawn again after a refresh found their tiles' looks changed.
 var _cells_to_redraw: Array[Vector2i] = []
-## Where the overlay looks are drawn, by look. A season's look has this layer for ordinary
-## grass and all other land, and a layer over it for each lush and dry grass (see below).
+## Where the overlay looks are drawn, by look. A look drawn in layers (the seasons', the frost)
+## has this layer for ordinary grass and all other land, and one over it for each of
+## TerrainTileset.VARIETY_LAYERS (see below).
 var _overlays: Dictionary[SeasonBlend.Look, TileMapLayer] = {}
-## The overlays of a season's look over lush and dry grass, by Vector2i(look, layer). They
-## stack like the terrain layers they follow, so lush and dry grass keep their own edges.
+## The overlays of a look drawn in layers over lush and dry grass and the paths, by
+## Vector2i(look, layer). They stack like the terrain layers they follow, so each keeps its own
+## edges.
 var _variety_overlays: Dictionary[Vector2i, TileMapLayer] = {}
 ## What each object cell was last drawn as, by tile: its look, plus BARE_OF_FRUIT_FLAG if it
 ## showed as bare of fruit, or DORMANT if it was not drawn.
@@ -144,7 +146,7 @@ func _ready() -> void:
 	for look in TerrainTileset.OVERLAY_LOOKS:
 		var look_name: String = SeasonBlend.Look.keys()[look].capitalize()
 		_overlays[look] = _add_overlay("%sLook" % look_name)
-		if TerrainTileset.is_weather_look(look):
+		if not TerrainTileset.is_drawn_in_layers(look):
 			continue
 		for layer in TerrainTileset.VARIETY_LAYERS:
 			var layer_name: String = TerrainTileset.Layer.keys()[layer].capitalize()
@@ -536,12 +538,12 @@ func _draw_cell_corners(cell: Vector2i, codes: PackedInt32Array) -> void:
 
 
 ## The overlay looks of a cell: for each, the tiles of the 4 corners that show it make the
-## mask. A season's look is drawn like the grass terrain it covers: ordinary grass (and all
-## other land) first, then lush and dry grass over it with their own masks, so their edges
-## stay soft instead of filling the whole cell. Where lush or dry grass has the same mask as
-## the layer below, it alone is drawn, since both edges together would show as a fringe.
-## Snow and frost lie over the season's look, so a tile under them still counts for that,
-## and are drawn as ordinary grass.
+## mask. A look drawn in layers (see TerrainTileset.is_drawn_in_layers) is drawn like the
+## terrain it covers: ordinary grass (and all other land) first, then each of VARIETY_LAYERS
+## over it with its own mask, so their edges stay soft instead of filling the whole cell. Where
+## a layer has the same mask as the one above it, only the one above is drawn, since both edges
+## together would show as a fringe. Snow and frost lie over the season's look, so a tile under
+## them still counts for that; snow and its dusting are drawn as ordinary grass.
 func _draw_overlays(cell: Vector2i, codes: PackedInt32Array) -> void:
 	var corners := TerrainTileset.layers_of(codes)
 	var shown_seasons := PackedInt32Array()
@@ -558,50 +560,54 @@ func _draw_overlays(cell: Vector2i, codes: PackedInt32Array) -> void:
 			)
 		)
 	for look in TerrainTileset.OVERLAY_LOOKS:
-		if TerrainTileset.is_weather_look(look):
-			var mask := _overlay_mask(look, TerrainTileset.Layer.WATER, shown_weathers, corners)
-			_set_overlay_cell(_overlays[look], look, TerrainTileset.Layer.GRASS, mask, cell)
+		var shown := shown_weathers if TerrainTileset.is_weather_look(look) else shown_seasons
+		var ordinary_mask := _overlay_mask(look, shown, corners, TerrainTileset.Layer.WATER)
+		if not TerrainTileset.is_drawn_in_layers(look):
+			_set_overlay_cell(
+				_overlays[look], look, TerrainTileset.Layer.GRASS, ordinary_mask, cell
+			)
 			continue
-		var ordinary_mask := _overlay_mask(look, TerrainTileset.Layer.WATER, shown_seasons, corners)
 		if ordinary_mask == 0:
 			_overlays[look].erase_cell(cell)
-			_variety_overlays[Vector2i(look, TerrainTileset.Layer.LUSH_GRASS)].erase_cell(cell)
-			_variety_overlays[Vector2i(look, TerrainTileset.Layer.DRY_GRASS)].erase_cell(cell)
+			for layer in TerrainTileset.VARIETY_LAYERS:
+				_variety_overlays[Vector2i(look, layer)].erase_cell(cell)
 			continue
-		var lush_mask := _overlay_mask(
-			look, TerrainTileset.Layer.LUSH_GRASS, shown_seasons, corners
-		)
-		var dry_mask := _overlay_mask(look, TerrainTileset.Layer.DRY_GRASS, shown_seasons, corners)
+		# The masks bottom to top, and none above the top one. Tilled soil is no variety: a
+		# frost over it is drawn as ordinary grass.
+		var masks: Array[int] = [ordinary_mask]
+		for layer in TerrainTileset.VARIETY_LAYERS:
+			masks.append(_overlay_mask(look, shown, corners, layer, TerrainTileset.Layer.PATH))
+		masks.append(0)
 		_set_overlay_cell(
 			_overlays[look],
 			look,
 			TerrainTileset.Layer.GRASS,
-			0 if ordinary_mask == lush_mask else ordinary_mask,
+			0 if masks[0] == masks[1] else masks[0],
 			cell
 		)
-		_set_overlay_cell(
-			_variety_overlays[Vector2i(look, TerrainTileset.Layer.LUSH_GRASS)],
-			look,
-			TerrainTileset.Layer.LUSH_GRASS,
-			0 if lush_mask == dry_mask else lush_mask,
-			cell
-		)
-		_set_overlay_cell(
-			_variety_overlays[Vector2i(look, TerrainTileset.Layer.DRY_GRASS)],
-			look,
-			TerrainTileset.Layer.DRY_GRASS,
-			dry_mask,
-			cell
-		)
+		for index in TerrainTileset.VARIETY_LAYERS.size():
+			var layer := TerrainTileset.VARIETY_LAYERS[index]
+			var mask := masks[index + 1]
+			_set_overlay_cell(
+				_variety_overlays[Vector2i(look, layer)],
+				look,
+				layer,
+				0 if mask == masks[index + 2] else mask,
+				cell
+			)
 
 
-## The corners that show `look` and are on `min_layer` or above, as a mask.
+## The corners that show `look` and are on a layer from `lowest` to `highest`, as a mask.
 func _overlay_mask(
-	look: SeasonBlend.Look, min_layer: int, shown: PackedInt32Array, corners: PackedInt32Array
+	look: SeasonBlend.Look,
+	shown: PackedInt32Array,
+	corners: PackedInt32Array,
+	lowest: int,
+	highest := TerrainTileset.Layer.SOIL
 ) -> int:
 	var mask := 0
 	for corner in 4:
-		if shown[corner] == look and corners[corner] >= min_layer:
+		if shown[corner] == look and corners[corner] >= lowest and corners[corner] <= highest:
 			mask |= 1 << corner
 	return mask
 
@@ -758,7 +764,8 @@ func is_snowed_over(world_pos: Vector2i) -> bool:
 
 
 func _layer_of_tile(terrain: Tile.Terrain, world_pos: Vector2i) -> int:
-	return TerrainTileset.terrain_layer(terrain, _variety_noise.get_noise_2dv(Vector2(world_pos)))
+	var variety := _variety_noise.get_noise_2dv(Vector2(world_pos))
+	return TerrainTileset.terrain_layer(terrain, variety, world.wear_stage(world_pos))
 
 
 ## Starts the fall of a tree that was just replaced by its stump. Its trunk is already in the

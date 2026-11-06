@@ -182,3 +182,16 @@ func test_a_tile_code_holds_its_layer_and_both_looks_apart() -> void:
 
 func test_the_layer_of_a_missing_corner_is_missing() -> void:
 	assert_eq(TerrainTileset.layer_of(MISSING), MISSING)
+
+
+func test_worn_ground_is_drawn_trodden_or_as_a_path_whatever_its_grass() -> void:
+	for terrain in [Tile.Terrain.GRASS, Tile.Terrain.FLOODPLAIN]:
+		for variety: float in [-0.9, 0.0, 0.9]:
+			assert_eq(
+				TerrainTileset.terrain_layer(terrain, variety, PathRules.Stage.TRODDEN),
+				TerrainTileset.Layer.TRODDEN
+			)
+			assert_eq(
+				TerrainTileset.terrain_layer(terrain, variety, PathRules.Stage.PATH),
+				TerrainTileset.Layer.PATH
+			)

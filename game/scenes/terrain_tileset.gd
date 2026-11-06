@@ -9,6 +9,8 @@ extends RefCounted
 ##
 ## Grass comes in three looks (ordinary, lush, dry), picked by slow noise across the world
 ## so the colour shifts gradually. Lush and dry grass are layers drawn over ordinary grass.
+## Grass walked often wears to a desire path (see World.wear_stage): trodden grass, then a
+## path, two layers over any grass (and the floodplain) that fade into it.
 ##
 ## Terrain atlas: one row per layer. EDGE_VARIANTS blocks of 15 columns hold the edge
 ## shapes for masks 0..14 (0 is empty), the columns from FULL_COLUMN on the full-tile
@@ -107,8 +109,9 @@ const OVERLAY_LOOKS: Array[SeasonBlend.Look] = [
 	SeasonBlend.Look.DUSTING,
 	SeasonBlend.Look.SNOW,
 ]
-## The layers of grass that are drawn over ordinary grass.
-const VARIETY_LAYERS: Array[Layer] = [Layer.LUSH_GRASS, Layer.DRY_GRASS]
+## The layers drawn over ordinary grass, bottom to top: lush and dry grass, and the desire
+## paths worn into any of them. A season's look has an overlay of its own for each.
+const VARIETY_LAYERS: Array[Layer] = [Layer.LUSH_GRASS, Layer.DRY_GRASS, Layer.TRODDEN, Layer.PATH]
 ## Grass is lush where the variety noise is below this, dry where it is above DRY_ABOVE.
 const LUSH_BELOW := -0.2
 const DRY_ABOVE := 0.25
@@ -172,8 +175,15 @@ static func decoration_source_id(look: SeasonBlend.Look) -> int:
 	return DECORATION_SOURCE_OFFSET + look
 
 
-## Which layer a world tile is drawn on. `variety` is the slow variety noise at the tile.
-static func terrain_layer(terrain: Tile.Terrain, variety: float) -> int:
+## Which layer a world tile is drawn on. `variety` is the slow variety noise at the tile, and
+## `wear` how worn its grass is (World.wear_stage; only ground that wears is ever worn).
+static func terrain_layer(
+	terrain: Tile.Terrain, variety: float, wear := PathRules.Stage.UNWORN
+) -> int:
+	if wear == PathRules.Stage.TRODDEN:
+		return Layer.TRODDEN
+	if wear == PathRules.Stage.PATH:
+		return Layer.PATH
 	var layer := LAYER_OF_TERRAIN[terrain]
 	if layer == Layer.GRASS and variety < LUSH_BELOW:
 		return Layer.LUSH_GRASS
@@ -224,6 +234,13 @@ static func is_weather_look(look: SeasonBlend.Look) -> bool:
 		or look == SeasonBlend.Look.DUSTING
 		or look == SeasonBlend.Look.SNOW
 	)
+
+
+## Whether an overlay look is drawn layer by layer, like the terrain it lies on (see
+## VARIETY_LAYERS): the seasons' looks and the frost, which rimes the grass and paths as they
+## are. Snow and its dusting lie evenly over all of them.
+static func is_drawn_in_layers(look: SeasonBlend.Look) -> bool:
+	return look != SeasonBlend.Look.SNOW and look != SeasonBlend.Look.DUSTING
 
 
 ## The season look a tile shows, given the look its place has by the season (see SeasonBlend)
