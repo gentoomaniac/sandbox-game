@@ -6,7 +6,7 @@ extends Button
 ## missing is marked in flame. The tooltip is that of the item it makes, plus what is missing and
 ## what the craft teaches.
 
-const ROW_WIDTH := 150
+const ROW_WIDTH := 180
 const MIN_HEIGHT := 22
 const LINE_HEIGHT := 10
 const ICON_SIZE := 16

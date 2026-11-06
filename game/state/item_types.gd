@@ -49,6 +49,10 @@ const STRAW_HAT := &"straw_hat"
 const KNITTED_CAP := &"knitted_cap"
 const JACKET := &"jacket"
 const CLOGS := &"clogs"
+# Cooked at the hearth (task 74).
+const ROAST_TURNIP := &"roast_turnip"
+const POTTAGE := &"pottage"
+const PEA_SOUP := &"pea_soup"
 
 ## Stands for an empty hand or slot where an item id is expected.
 const NONE := &""
@@ -320,6 +324,27 @@ const _OTHER_TYPES := {
 		"stack_limit": 1,
 		"equip_slot": Equipment.FEET,
 		"layer_variant": "clogs",
+	},
+	ROAST_TURNIP:
+	{
+		"name": "Roast turnip",
+		"description": "A turnip roasted in the embers. Sweeter than raw.",
+		"weight": 0.4,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+	},
+	POTTAGE:
+	{
+		"name": "Pottage",
+		"description": "Cabbage, carrot and onion stewed in the pot over the fire.",
+		"weight": 0.5,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+	},
+	PEA_SOUP:
+	{
+		"name": "Pea soup",
+		"description": "Thick soup of peas and onion, the coast's daily fare.",
+		"weight": 0.5,
+		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 }
 

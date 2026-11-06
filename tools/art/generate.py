@@ -62,6 +62,7 @@ import buildings
 import camp
 import character
 import chest
+import crafts
 import crop_icons
 import crops
 import fire
@@ -275,7 +276,7 @@ def write_crops():
 
 
 def write_items():
-    icons = items.ICONS | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons()
+    icons = items.ICONS | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons()
     for name, picture in icons.items():
         save_picture(picture, f"items/{name}.png")
         # The same icon at half size, for items lying on the ground.
