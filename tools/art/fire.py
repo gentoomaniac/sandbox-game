@@ -10,6 +10,8 @@ then gold, flame and, at the cool tips, ember.
 
 import math
 
+from canvas import blank, copy
+
 # As many as AmbientMotion.FIRE_FRAMES.
 FRAMES = 6
 # Heat over which a pixel takes each colour, from the core out.
@@ -24,7 +26,7 @@ def flame(width, height, frame, half_width, tall):
     on the bottom row in the middle, `half_width` pixels to either side at its widest and about
     `tall` pixels high (its licks rise higher)."""
     centre = width / 2
-    canvas = [[None] * width for _ in range(height)]
+    canvas = blank(width, height)
     for y in range(height):
         rise = height - y - 0.5
         for x in range(width):
@@ -69,7 +71,7 @@ def strip(behind, front, box, half_width, tall):
 def burning(behind, front, box, half_width, tall):
     """The whole picture with the first frame of its flame, for where it does not move."""
     x0, y0, width, height = box
-    canvas = [row[:] for row in behind]
+    canvas = copy(behind)
     first = flame(width, height, 0, half_width, tall)
     for y in range(height):
         for x in range(width):

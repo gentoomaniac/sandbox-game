@@ -15,7 +15,7 @@ snow covers, which seasons.house uses for the snow look.
 import math
 import random
 
-TILE = 16
+from canvas import TILE, blank, rect
 
 # The thatch, lit to dark: weathered grey-brown reed, darkest in the shadow under the eaves.
 THATCH = ("sand", "bare_light", "bare", "mud_dark", "soil_dark")
@@ -34,17 +34,6 @@ SHADED = {
     "soil_light": "soil_mid", "soil_mid": "soil", "soil": "soil_dark",
     "snow_light": "snow", "stone_light": "stone", "stone": "stone_dark",
 }
-
-
-def canvas(width, height):
-    return [[None] * width for _ in range(height)]
-
-
-def rect(picture, x0, y0, x1, y1, colour):
-    """Fills x0..x1 and y0..y1, both ends included, clipped to the picture."""
-    for y in range(max(0, y0), min(len(picture) - 1, y1) + 1):
-        for x in range(max(0, x0), min(len(picture[0]) - 1, x1) + 1):
-            picture[y][x] = colour
 
 
 def thatch_roof(picture, snowy, rng, left, right, ridge_y, eaves_y, inset, swells=(), moss=5):
@@ -298,7 +287,7 @@ def kate(is_lit):
     dormer in the middle of the roof and a small white chimney."""
     rng = random.Random(381)
     width, height = 5 * TILE, 96
-    picture = canvas(width, height)
+    picture = blank(width, height)
     snowy = set()
     wall_left, wall_right, wall_top, base_top = 3, width - 4, 60, 89
     rect(picture, wall_left, wall_top, wall_right, base_top - 1, LIME[0])
@@ -347,7 +336,7 @@ def longhouse(is_lit):
     windows in dark green frames to either side, roses climbing the wall."""
     rng = random.Random(382)
     width, height = 7 * TILE, 96
-    picture = canvas(width, height)
+    picture = blank(width, height)
     snowy = set()
     wall_left, wall_right, wall_top, base_top = 3, width - 4, 56, 88
     brick_wall(picture, rng, wall_left, wall_right, wall_top, base_top - 1, ("sand_light", "sand_light", "straw"), "sand")
@@ -396,7 +385,7 @@ def barn(is_lit):
     changes nothing: a barn has no windows to light."""
     rng = random.Random(383)
     width, height = 6 * TILE, 96
-    picture = canvas(width, height)
+    picture = blank(width, height)
     snowy = set()
     wall_left, wall_right, wall_top, base_top = 3, width - 4, 58, 89
     brick_wall(picture, rng, wall_left, wall_right, wall_top, base_top - 1, ("rust", "rust", "red_light", "rust_dark"), "sand")
@@ -433,7 +422,7 @@ def shack(is_lit):
     and a small window with a shutter on the right."""
     rng = random.Random(384)
     width, height = 3 * TILE, 64
-    picture = canvas(width, height)
+    picture = blank(width, height)
     snowy = set()
     wall_left, wall_right, wall_top, wall_bottom = 2, width - 3, 28, height - 3
     for x in range(wall_left, wall_right + 1):

@@ -8,6 +8,8 @@ animals get a one pixel outline in the darkest colour of their coat; the butterf
 without, and the bee has its dark outline drawn in (see the style rules in SPEC.md).
 """
 
+from canvas import blank, copy
+
 NEIGHBOURS = ((1, 0), (-1, 0), (0, 1), (0, -1))
 
 # Sparrow: crown and back, wing, pale cheek and belly, beak, eye.
@@ -317,7 +319,7 @@ SHEETS = {
 def outlined(shape, colour):
     """The shape on a canvas one pixel larger on every side, with the outline around it."""
     height, width = len(shape), len(shape[0])
-    result = [[None] * (width + 2) for _ in range(height + 2)]
+    result = blank(width + 2, height + 2)
     for y in range(height):
         for x in range(width):
             result[y + 1][x + 1] = shape[y][x]
@@ -340,7 +342,7 @@ def shape_pixel(shape, x, y):
 def frame_picture(sheet, frame):
     """One frame as a grid of colour names filling a cell, the animal in the bottom centre."""
     width, height = sheet["size"]
-    picture = [[None] * width for _ in range(height)]
+    picture = blank(width, height)
     lift = 0
     if frame and frame[0] == "lift":
         _, lift, frame = frame
@@ -375,7 +377,7 @@ def frame_picture(sheet, frame):
 def outline_in_place(shape, colour):
     """Outlines inside the same-size grid: pixels outside the shape that touch it."""
     height, width = len(shape), len(shape[0])
-    result = [row[:] for row in shape]
+    result = copy(shape)
     for y in range(height):
         for x in range(width):
             if shape[y][x] is not None:

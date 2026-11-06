@@ -11,6 +11,7 @@ as in items.py.
 import math
 
 import items
+from canvas import blank
 
 # Metal, lit to dark: the bright cutting edge, the lit face, the body, the shade.
 METAL = ("snow_light", "stone_light", "stone", "stone_dark")
@@ -65,7 +66,7 @@ def curved_band(picture, start, control, end, widths, shades):
 
 def hoe():
     """A long handle with a flat blade at right angles to its top end, its edge bright."""
-    picture = items.canvas()
+    picture = blank()
     handle(picture, 3, 14)
     stamp(
         picture, 2, 1,
@@ -80,7 +81,7 @@ def hoe():
 
 def axe():
     """A wedge blade on the left of the handle's top, its curved cutting edge bright."""
-    picture = items.canvas()
+    picture = blank()
     handle(picture, 2, 14)
     stamp(
         picture, 2, 1,
@@ -98,7 +99,7 @@ def axe():
 
 def pickaxe():
     """A curved head with two points, crossing the top of the handle."""
-    picture = items.canvas()
+    picture = blank()
     handle(picture, 5, 14)
     curved_band(
         picture, (2.5, 2.5), (13, 0.5), (13.5, 12.5), (1, 1),
@@ -114,7 +115,7 @@ def pickaxe():
 
 def scythe():
     """A long snath with a grip peg, and a long curved blade off its top, the biggest icon."""
-    picture = items.canvas()
+    picture = blank()
     handle(picture, 2, 14)
     stamp(picture, 3, 7, "lw", ".lw")
     curved_band(
@@ -127,7 +128,7 @@ def scythe():
 
 def shovel():
     """A pointed spade blade at the bottom left, a D-grip at the top right."""
-    picture = items.canvas()
+    picture = blank()
     handle(picture, 3, 7)
     stamp(
         picture, 11, 0,
@@ -155,7 +156,7 @@ def shovel():
 
 def hammer():
     """A heavy, blocky head square on the top of the handle, its striking faces bright."""
-    picture = items.canvas()
+    picture = blank()
     handle(picture, 7, 14)
     stamp(
         picture, 5, 1,
@@ -176,7 +177,7 @@ COPPER = {"g": "gold", "o": "ochre", "a": "ochre_dark", "u": "umber"}
 def watering_can():
     """A copper can of the old kind: a tall round body, a handle arching over the top, and a
     spout rising to a big round rose, its face pricked with holes."""
-    picture = items.canvas()
+    picture = blank()
     rows = (
         "..........aaaa.",
         ".........aoggoa",

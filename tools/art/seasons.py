@@ -18,6 +18,8 @@ as in generate.py.
 import math
 import random
 
+from canvas import copy
+
 # The looks of grass and ground, which every picture has.
 GROUND_LOOKS = ("spring", "summer", "autumn", "bare", "frost", "snow", "dusting")
 # The steps of the leaf-out between bare and spring, in order: only objects have them.
@@ -263,10 +265,6 @@ def young_leaves(bare, summer, rng):
 def remap(canvas, mapping):
     """A copy of a picture with colours replaced by name."""
     return [[mapping.get(name, name) for name in row] for row in canvas]
-
-
-def copy(canvas):
-    return [row[:] for row in canvas]
 
 
 def ground_rows(look, rows, extra_remap=None):

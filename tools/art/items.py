@@ -7,8 +7,9 @@ assets/ground_items/<item id>.png, slots to assets/ui/slot.png and slot_selected
 """
 
 import chest
+from canvas import TILE, blank, copy, rect
 
-ICON = 16
+ICON = TILE
 SLOT = 20
 
 # The darkest colour of each ramp, which outlines it (see the style rules in SPEC.md).
@@ -27,18 +28,8 @@ OUTLINE_OF = {
 DEFAULT_OUTLINE = "ink"
 
 
-def canvas(size=ICON):
-    return [[None] * size for _ in range(size)]
-
-
 def pixel(picture, x, y, colour):
     picture[y][x] = colour
-
-
-def rect(picture, x0, y0, x1, y1, colour):
-    for y in range(y0, y1 + 1):
-        for x in range(x0, x1 + 1):
-            picture[y][x] = colour
 
 
 def line(picture, x0, y0, x1, y1, colour):
@@ -54,7 +45,7 @@ def outlined(picture, colour=None):
     """The picture with a one pixel outline outside it, in `colour`, or by default in the
     darkest colour of the ramp of the pixel it surrounds. Drawn pixels stay."""
     size = len(picture)
-    result = [row[:] for row in picture]
+    result = copy(picture)
     for y in range(size):
         for x in range(size):
             if picture[y][x] is not None:
@@ -72,7 +63,7 @@ def seed_sack(emblem, keys, tie, seed):
     front and a few of its seeds spilled in front, so each crop's sack is told apart at a
     glance. `emblem` is 5 rows of 6 letters, in the colours `keys` gives them; `tie` and `seed`
     are colours."""
-    picture = canvas()
+    picture = blank()
     rect(picture, 4, 6, 11, 12, "sand_light")
     rect(picture, 3, 8, 12, 11, "sand_light")
     rect(picture, 4, 6, 4, 12, "straw")
@@ -93,7 +84,7 @@ def seed_sack(emblem, keys, tie, seed):
 
 
 def turnip():
-    picture = canvas()
+    picture = blank()
     for x, y in ((6, 1), (8, 0), (10, 1)):
         rect(picture, x, y, x, y + 2, "green_light")
     rect(picture, 6, 4, 10, 4, "green")
@@ -110,7 +101,7 @@ def turnip():
 
 def logs():
     """Two logs, one above the other, their cut faces on the right."""
-    picture = canvas()
+    picture = blank()
     for top in (3, 8):
         rect(picture, 2, top, 11, top + 4, "soil_mid")
         rect(picture, 2, top + 3, 11, top + 4, "soil")
@@ -125,7 +116,7 @@ def logs():
 
 
 def stone():
-    picture = canvas()
+    picture = blank()
     rect(picture, 4, 5, 11, 12, "stone")
     rect(picture, 3, 7, 12, 11, "stone")
     rect(picture, 5, 4, 9, 4, "stone_light")
@@ -139,7 +130,7 @@ def stone():
 
 def fibre():
     """A bundle of long plant fibres, tied in the middle."""
-    picture = canvas()
+    picture = blank()
     for x, colour in ((3, "green_light"), (5, "straw"), (7, "green_light"), (9, "straw"), (11, "green_light")):
         line(picture, x, 1, x + (x - 7) // 2, 14, colour)
     rect(picture, 3, 7, 12, 8, "mud")
@@ -149,7 +140,7 @@ def fibre():
 
 def berries():
     """A sprig of three berries under a leaf."""
-    picture = canvas()
+    picture = blank()
     rect(picture, 6, 2, 11, 3, "green")
     rect(picture, 8, 1, 10, 1, "green_light")
     rect(picture, 5, 3, 6, 3, "green_light")
@@ -189,7 +180,7 @@ def cone(rows, keys):
     """A cone from rows: `rows` gives each row's left edge and width. Its scales form a diamond
     lattice: dark seams along both diagonals, each scale lit at its top; the right edge is in
     shade."""
-    picture = canvas()
+    picture = blank()
     for y, (left, width) in enumerate(rows):
         for x in range(left, left + width):
             rising, falling = (x + y) % 4, (x - y) % 4
@@ -335,7 +326,7 @@ def small(picture):
     the colour that most of its opaque pixels have (the first of them on a tie), or clear
     where fewer than two are opaque."""
     size = len(picture) // 2
-    result = canvas(size)
+    result = blank(size)
     for y in range(size):
         for x in range(size):
             block = [picture[2 * y + dy][2 * x + dx] for dy in (0, 1) for dx in (0, 1)]
@@ -366,7 +357,7 @@ ICONS = {
 def slot(frame):
     """A 20x20 slot: a frame round a soil panel lit from the upper left. The selected one has
     a gold frame."""
-    picture = canvas(SLOT)
+    picture = blank(SLOT)
     rect(picture, 0, 0, SLOT - 1, SLOT - 1, frame)
     rect(picture, 1, 1, SLOT - 2, SLOT - 2, "soil_dark")
     rect(picture, 2, 2, SLOT - 3, SLOT - 3, "soil")
@@ -412,7 +403,7 @@ HINT_PATHS = {
 
 
 def hint(paths):
-    picture = canvas()
+    picture = blank()
     for path in paths:
         for start, end in zip(path, path[1:]):
             line(picture, *start, *end, HINT_COLOUR)

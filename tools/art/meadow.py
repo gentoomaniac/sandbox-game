@@ -10,18 +10,9 @@ stands out from it; seasons.py turns it golden in autumn and to dry stalks in wi
 import random
 
 import items
-
-# The object atlas cell, as in generate.py (the grass stands at the bottom centre).
-CELL_WIDTH = 48
-CELL_HEIGHT = 80
-CENTRE = CELL_WIDTH // 2
-BOTTOM = CELL_HEIGHT - 1
+from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank, rect
 
 TALL_GRASS_SEEDS = (211, 212, 213)
-
-
-def _cell():
-    return [[None] * CELL_WIDTH for _ in range(CELL_HEIGHT)]
 
 
 def tall_grass(seed, is_mown=False):
@@ -29,43 +20,43 @@ def tall_grass(seed, is_mown=False):
     lighter green than the grass on the ground, some with a seed head, lit from the left. Or the
     stubble that is left once it is mown."""
     rng = random.Random(seed)
-    canvas = _cell()
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     # A small shadow at the foot of the clump.
-    for x in range(CENTRE - 7, CENTRE + 8):
-        canvas[BOTTOM][x] = "shadow"
+    for x in range(OBJECT_CENTRE - 7, OBJECT_CENTRE + 8):
+        canvas[OBJECT_BOTTOM][x] = "shadow"
     if is_mown:
-        for x in range(CENTRE - 7, CENTRE + 7):
+        for x in range(OBJECT_CENTRE - 7, OBJECT_CENTRE + 7):
             if rng.random() < 0.25:
                 continue
             height = rng.randint(2, 4)
             for step in range(height):
-                canvas[BOTTOM - step][x] = "olive" if step == 0 else "dry"
-            canvas[BOTTOM - height + 1][x] = "straw" if x % 2 else "dry_light"
+                canvas[OBJECT_BOTTOM - step][x] = "olive" if step == 0 else "dry"
+            canvas[OBJECT_BOTTOM - height + 1][x] = "straw" if x % 2 else "dry_light"
         # A few cut blades left lying.
         for _ in range(3):
-            x = rng.randint(CENTRE - 7, CENTRE + 3)
+            x = rng.randint(OBJECT_CENTRE - 7, OBJECT_CENTRE + 3)
             for step in range(rng.randint(3, 5)):
-                canvas[BOTTOM - rng.choice((0, 1))][x + step] = "dry_light"
+                canvas[OBJECT_BOTTOM - rng.choice((0, 1))][x + step] = "dry_light"
         return canvas
     # The back blades first, darker, then the front ones over them.
     for row, colours in ((0, ("olive", "dry", "dry", "dry_light")), (1, ("olive", "dry_light", "green_bright", "green_bright"))):
         for _ in range(7):
-            base = CENTRE + rng.uniform(-6, 6)
+            base = OBJECT_CENTRE + rng.uniform(-6, 6)
             height = rng.randint(11, 15) if row == 0 else rng.randint(9, 14)
             # Blades arch away from the middle of the clump.
-            bend = (base - CENTRE) / 6 * rng.uniform(2, 4) + rng.uniform(-1, 1)
+            bend = (base - OBJECT_CENTRE) / 6 * rng.uniform(2, 4) + rng.uniform(-1, 1)
             for step in range(height):
                 t = step / height
                 x = round(base + bend * t * t)
                 colour = colours[min(3, int(t * 4))]
                 # Light from the left: the left half of the clump is a step lighter.
-                if x < CENTRE - 2 and colour == "dry":
+                if x < OBJECT_CENTRE - 2 and colour == "dry":
                     colour = "dry_light"
-                canvas[BOTTOM - step][x] = colour
+                canvas[OBJECT_BOTTOM - step][x] = colour
             tip = round(base + bend)
             if rng.random() < 0.45:
                 for head in range(1, 4):
-                    canvas[BOTTOM - height - head + 1][tip] = "straw" if head < 3 else "sand_light"
+                    canvas[OBJECT_BOTTOM - height - head + 1][tip] = "straw" if head < 3 else "sand_light"
     return canvas
 
 
@@ -78,7 +69,7 @@ def tall_grass_row():
 
 def clay_hint():
     """A 16x16 tile with a few reddish-grey pixels: all that shows of a clay spot."""
-    tile = items.canvas()
+    tile = blank()
     for x, y, colour in (
         (6, 8, "soil_light"),
         (7, 8, "bare_light"),
@@ -95,7 +86,7 @@ def clay_hint():
 def hay():
     """A golden sheaf: stalks fanning out from a red band, ears spread on top, lit from the
     left."""
-    picture = items.canvas()
+    picture = blank()
     band = 10
     # The sheaf's shape in the shade colour, so gaps between the stalks read as depth.
     for y in range(2, 15):
@@ -109,9 +100,9 @@ def hay():
         # The ear: a seed head leaning out at the top.
         x = round(8 + stalk * 2)
         picture[2][x] = picture[1][x + (stalk > 0) - (stalk < 0)] = "gold" if stalk < 1 else "straw"
-    items.rect(picture, 5, band - 1, 10, band, "rust")
-    items.rect(picture, 5, band - 1, 7, band - 1, "red_light")
-    items.rect(picture, 9, band, 10, band, "rust_dark")
+    rect(picture, 5, band - 1, 10, band, "rust")
+    rect(picture, 5, band - 1, 7, band - 1, "red_light")
+    rect(picture, 9, band, 10, band, "rust_dark")
     return items.outlined(picture, "mud_dark")
 
 

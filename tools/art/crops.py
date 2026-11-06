@@ -11,8 +11,8 @@ have no outline: the dark shades inside them separate them from the soil.
 """
 
 import items
+from canvas import TILE
 
-TILE = 16
 STAGES = 4
 
 # The letters of the pictures drawn as rows of text.

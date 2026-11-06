@@ -85,15 +85,18 @@ import seasons
 import tool_icons
 import trunks
 import ui
+from canvas import (
+    OBJECT_BOTTOM,
+    OBJECT_CELL_HEIGHT,
+    OBJECT_CELL_WIDTH,
+    OBJECT_CENTRE,
+    TILE,
+    blank,
+    copy,
+    rect,
+)
 
 ASSETS = Path(__file__).resolve().parents[2] / "assets"
-TILE = 16
-# Every cell of the object atlas is this big: a tree fits, and smaller things are drawn at
-# the cell's bottom centre. A multi-tile object is centred on its footprint instead.
-OBJECT_CELL_WIDTH = 48
-OBJECT_CELL_HEIGHT = 80
-OBJECT_CENTRE = OBJECT_CELL_WIDTH // 2
-OBJECT_BOTTOM = OBJECT_CELL_HEIGHT - 1
 
 # fmt: off
 PALETTE = {
@@ -166,16 +169,8 @@ EDGE_VARIANTS = 3
 NEIGHBOURS = ((1, 0), (-1, 0), (0, 1), (0, -1))
 
 
-def blank():
-    return [[None] * TILE for _ in range(TILE)]
-
-
 def filled(colour):
     return [[colour] * TILE for _ in range(TILE)]
-
-
-def copy(tile):
-    return [row[:] for row in tile]
 
 
 def sprite(keys, *rows):
@@ -662,12 +657,6 @@ def soil():
 LAYERS = [water, floodplain, wetland, grass, lush_grass, dry_grass, soil]
 
 
-def object_canvas():
-    """A blank sprite the size of one atlas cell. Objects are drawn at the cell's bottom
-    centre: x = OBJECT_CENTRE, ground row y = OBJECT_BOTTOM."""
-    return [[None] * OBJECT_CELL_WIDTH for _ in range(OBJECT_CELL_HEIGHT)]
-
-
 def shaded_blob(canvas, rng, blobs, shades, outline):
     """Fills the union of circles (cx, cy, radius) with `shades`, lightest first: light
     comes from the top left, so a pixel is darker the further down and right of its
@@ -759,7 +748,7 @@ def shade_under_crown(canvas, shades=BARK):
 
 def oak(seed):
     rng = random.Random(seed)
-    canvas = object_canvas()
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 13)
     tree_trunk(canvas, rng, 52, 7)
     # Limbs into the crown, on some variants.
@@ -780,7 +769,7 @@ def oak(seed):
 def bare_oak(seed):
     """The oak in winter: the trunk of the same seed, bare branches instead of the crown."""
     rng = random.Random(seed)
-    canvas = object_canvas()
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 13)
     tree_trunk(canvas, rng, 46, 7)
     branches = (
@@ -799,7 +788,7 @@ def bare_oak(seed):
 
 def stone(seed):
     rng = random.Random(seed)
-    canvas = object_canvas()
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 8)
     # A small stone of 13x12 px, and for the second variant a pebble beside it.
     blobs = [(24, 73, 6)] if seed % 2 else [(22, 73, 5.5), (29, 76, 2.5)]
@@ -810,7 +799,7 @@ def stone(seed):
 def boulder(seed):
     """A boulder on 2x1 tiles: the cell is centred on the footprint, which is 32 px wide."""
     rng = random.Random(seed)
-    canvas = object_canvas()
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 14)
     blobs = [(23, 68, 10), (16, 71, 6), (31, 70, 6.5), (26, 64, 7)]
     shaded_blob(canvas, rng, blobs, ("stone_light", "stone", "stone", "stone_dark"), "stone_dark")
@@ -843,7 +832,7 @@ def conifer_tier(canvas, rng, top, bottom, half_width):
 
 def spruce(seed):
     rng = random.Random(seed)
-    canvas = object_canvas()
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 10)
     tree_trunk(canvas, rng, 66, 5)
     # Tall and narrow: six tiers, the widest at the bottom, each overlapping the next.
@@ -869,7 +858,7 @@ def pine(seed):
     a few flat layered clumps of dark blue-green needles high up, each on a branch of its own,
     and an irregular outline."""
     rng = random.Random(seed)
-    canvas = object_canvas()
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 9)
     top = 16 + rng.randint(0, 3)
     # The trunk wanders a little from side to side as it rises, and leans as a whole.
@@ -967,7 +956,7 @@ def dead_tree(seed):
     """A long-dead tree: a solid, weathered grey trunk, snapped off at the top, with a few
     thick, gnarled limbs broken off short. Lit from the left, outlined in ink."""
     rng = random.Random(seed)
-    canvas = object_canvas()
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 12)
     # The trunk leans a little and bends once; it is thick at the foot, flaring into roots.
     top = 27 + rng.randint(0, 4)
@@ -1036,7 +1025,7 @@ def broken_end(canvas, x, y):
 def berry_bush(seed, is_picked=False):
     """With berries, or picked: the same bush without them."""
     rng = random.Random(seed)
-    canvas = object_canvas()
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 14)
     blobs = [(24, 68, 8.5), (17, 70, 5.5), (31, 70, 5.5), (20, 64, 5.5), (28, 64, 5.5)]
     shaded_blob(canvas, rng, blobs, ("green_light", "green", "green", "green_dark"), "green_deep")
@@ -1055,7 +1044,7 @@ def berry_bush(seed, is_picked=False):
 
 def shrub(seed):
     rng = random.Random(seed)
-    canvas = object_canvas()
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     shades = (("green_bright", "green_light", "green", "green_dark"),
               ("green_light", "olive", "olive", "green_dark"),
               ("dry_light", "dry", "olive", "green_dark"))[seed % 3]
@@ -1068,7 +1057,7 @@ def shrub(seed):
 def sapling(seed):
     """A young tree 13 px wide and about 22 tall: a thin trunk tied to a stake."""
     rng = random.Random(seed)
-    canvas = object_canvas()
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 7)
     lean = rng.choice((-1, 0, 1))
     for y in range(62, OBJECT_BOTTOM - 1):
@@ -1086,7 +1075,7 @@ def sapling(seed):
 
 def fern_bush(seed):
     rng = random.Random(seed)
-    canvas = object_canvas()
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 11)
     # Fronds fan out from the base and droop at their tips, with leaflets along them.
     for angle in (-78, -58, -36, -14, 8, 30, 54, 76):
@@ -1107,7 +1096,7 @@ def stump(seed):
     """What is left of a felled tree: a short trunk about 16 px wide, its cut top with year rings
     and a crack, bark lit on the left, and roots spreading into the ground."""
     rng = random.Random(seed)
-    canvas = object_canvas()
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 13)
     centre_x, top_y, radius_x, radius_y = OBJECT_CENTRE, 67, 7.5, 4
     ground = OBJECT_BOTTOM - 1
@@ -1157,7 +1146,7 @@ def dead_stump(seed):
     heart, split by cracks, with roots; odd seeds wear moss on the left, even ones a bracket
     fungus on the right."""
     rng = random.Random(seed)
-    canvas = object_canvas()
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 13)
     centre_x, top_y, radius_x = OBJECT_CENTRE, 63, 7
     ground = OBJECT_BOTTOM - 1
@@ -1249,17 +1238,10 @@ DEAD_STUMPS = [[dead_stump(seed) for seed in (211, 212)]]
 # Camp site objects (assets/objects.png rows 2 and 3).
 
 
-def fill_rect(canvas, x0, y0, x1, y1, colour):
-    """Fills x0..x1 and y0..y1, both ends included."""
-    for y in range(y0, y1 + 1):
-        for x in range(x0, x1 + 1):
-            canvas[y][x] = colour
-
-
 def fire_stone(canvas, x, y):
-    fill_rect(canvas, x - 1, y - 1, x + 1, y, "stone")
-    fill_rect(canvas, x - 1, y - 1, x, y - 1, "stone_light")
-    fill_rect(canvas, x + 1, y, x + 1, y, "stone_dark")
+    rect(canvas, x - 1, y - 1, x + 1, y, "stone")
+    rect(canvas, x - 1, y - 1, x, y - 1, "stone_light")
+    rect(canvas, x + 1, y, x + 1, y, "stone_dark")
 
 
 # The box of the fireplace's cell that its flame burns in (x, y, width, height; the flame stands
@@ -1270,7 +1252,7 @@ FIREPLACE_FLAME = ((OBJECT_CENTRE - 8, 51, 16, 20), 5.5, 15)
 def fireplace_layers():
     """The fireplace without its flame: what is behind the flame (the ash bed and three logs on
     it, laid like the spokes of a wheel) and what is in front of it (the ring of stones)."""
-    behind, front = object_canvas(), object_canvas()
+    behind, front = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT), blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     centre, ground = OBJECT_CENTRE, 71
     for y in range(ground - 4, ground + 5):
         for x in range(centre - 10, centre + 10):
@@ -1298,39 +1280,39 @@ def bedroll():
     """14x26 px, lying vertically on 1x2 tiles (the cell's bottom edge is the footprint's): a
     sack of linen ticking stuffed with straw, quilted across, straw poking out at its seams, and
     a grey wool blanket rolled up and tied at its head end. The object's id stays sleeping_bag."""
-    canvas = object_canvas()
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     left, top, bottom = OBJECT_CENTRE - 7, 51, 76
     right = left + 13
     # The straw sack: lit linen, shaded down its right side, quilted in rows.
-    fill_rect(canvas, left, top + 3, right, bottom, "mud_dark")
-    fill_rect(canvas, left + 1, top + 4, right - 1, bottom - 1, "sand_light")
-    fill_rect(canvas, right - 3, top + 4, right - 1, bottom - 1, "sand")
-    fill_rect(canvas, left + 1, bottom - 1, right - 1, bottom - 1, "sand")
+    rect(canvas, left, top + 3, right, bottom, "mud_dark")
+    rect(canvas, left + 1, top + 4, right - 1, bottom - 1, "sand_light")
+    rect(canvas, right - 3, top + 4, right - 1, bottom - 1, "sand")
+    rect(canvas, left + 1, bottom - 1, right - 1, bottom - 1, "sand")
     for y in range(top + 12, bottom - 2, 5):
-        fill_rect(canvas, left + 1, y, right - 1, y, "sand")
-        fill_rect(canvas, right - 3, y, right - 1, y, "mud")
+        rect(canvas, left + 1, y, right - 1, y, "sand")
+        rect(canvas, right - 3, y, right - 1, y, "mud")
     for x, y in ((left, bottom), (right, bottom), (left, top + 3), (right, top + 3)):
         canvas[y][x] = None
-    fill_rect(canvas, left + 2, bottom + 1, right, bottom + 2, "shadow")
+    rect(canvas, left + 2, bottom + 1, right, bottom + 2, "shadow")
     # Straw sticking out of the seams.
     for x, y, colour in ((left - 1, top + 13, "straw"), (left - 1, top + 14, "gold"), (left - 2, top + 14, "straw"),
                          (right + 1, top + 20, "straw"), (right + 1, top + 21, "straw"), (right + 2, top + 20, "gold"),
                          (left + 3, bottom + 1, "straw"), (left + 4, bottom + 1, "gold"), (left + 4, bottom + 2, "straw")):
         canvas[y][x] = colour
     # The rolled blanket across the head end: lit on top, its rolled-up ends showing a spiral.
-    fill_rect(canvas, left - 1, top, right + 1, top + 8, "stone_dark")
-    fill_rect(canvas, left, top + 1, right, top + 7, "stone")
-    fill_rect(canvas, left, top + 1, right, top + 3, "stone_light")
-    fill_rect(canvas, left, top + 7, right, top + 7, "stone_dark")
+    rect(canvas, left - 1, top, right + 1, top + 8, "stone_dark")
+    rect(canvas, left, top + 1, right, top + 7, "stone")
+    rect(canvas, left, top + 1, right, top + 3, "stone_light")
+    rect(canvas, left, top + 7, right, top + 7, "stone_dark")
     for x in (left - 1, right + 1):
         canvas[top][x] = canvas[top + 8][x] = None
     for x in (left, right):
-        fill_rect(canvas, x, top + 3, x, top + 5, "stone_dark")
+        rect(canvas, x, top + 3, x, top + 5, "stone_dark")
     canvas[top + 4][left + 1] = "stone_dark"
     canvas[top + 4][right - 1] = "stone_dark"
     # Two cords round the roll.
     for x in (left + 3, right - 3):
-        fill_rect(canvas, x, top + 1, x, top + 7, "soil")
+        rect(canvas, x, top + 1, x, top + 7, "soil")
         canvas[top + 1][x] = "soil_light"
     return canvas
 
@@ -1340,7 +1322,7 @@ CAMP_OBJECTS = [[fireplace()], [bedroll()]]
 
 def world_chest():
     """The chest outdoors, on a ground shadow, its bottom a pixel above the cell's."""
-    canvas = object_canvas()
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 8)
     picture = chest.chest()
     top = OBJECT_BOTTOM - len(picture)
@@ -1421,10 +1403,6 @@ KNEEL = {"sink": 6, "lift": (0, 0), "stride": 0, "swing": 0, "kneel": True}
 ASLEEP = POSES["idle"] | {"asleep": True}
 
 
-def character_canvas():
-    return [[None] * CHARACTER_WIDTH for _ in range(CHARACTER_HEIGHT)]
-
-
 def leg_boxes(facing, pose):
     """The columns, top row and bottom row of each leg, back leg first. None for a kneeling
     figure, whose legs are folded (see `draw_kneeling_legs`)."""
@@ -1441,48 +1419,48 @@ def leg_boxes(facing, pose):
 def draw_body(facing, pose, skin="skin", shade="skin_shade", **_):
     """The figure in a linen undershirt and shorts: head, arms with hands, and legs. Worn
     clothes cover most of it, so this layer is also the silhouette that the outline follows."""
-    canvas = character_canvas()
+    canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
     sink, swing = pose["sink"], pose["swing"]
     # The head, with its top corners cut.
-    fill_rect(canvas, 4, 6 + sink, 12, 12 + sink, skin)
-    fill_rect(canvas, 5, 5 + sink, 11, 5 + sink, skin)
-    fill_rect(canvas, 5, 12 + sink, 11, 12 + sink, shade)
+    rect(canvas, 4, 6 + sink, 12, 12 + sink, skin)
+    rect(canvas, 5, 5 + sink, 11, 5 + sink, skin)
+    rect(canvas, 5, 12 + sink, 11, 12 + sink, shade)
     boxes = leg_boxes(facing, pose)
     for x0, x1, top, bottom in boxes:
-        fill_rect(canvas, x0, top, x1, bottom, skin)
-        fill_rect(canvas, x0, bottom - 1, x1, bottom, shade)
+        rect(canvas, x0, top, x1, bottom, skin)
+        rect(canvas, x0, bottom - 1, x1, bottom, shade)
     if facing in ("down", "up"):
-        fill_rect(canvas, 6, 13 + sink, 10, 22 + sink, shade)
-        fill_rect(canvas, 8, boxes[0][2], 8, boxes[0][3] - 3, shade)
+        rect(canvas, 6, 13 + sink, 10, 22 + sink, shade)
+        rect(canvas, 8, boxes[0][2], 8, boxes[0][3] - 3, shade)
         # The right arm swings; the left one holds the tool.
-        fill_rect(canvas, 4, 14 + sink, 5, 20 + sink, skin)
-        fill_rect(canvas, 11, 14 + sink + swing // 2, 12, 20 + sink + swing // 2, skin)
+        rect(canvas, 4, 14 + sink, 5, 20 + sink, skin)
+        rect(canvas, 11, 14 + sink + swing // 2, 12, 20 + sink + swing // 2, skin)
         if facing == "down":
             for x in (6, 10):
-                fill_rect(canvas, x, 9 + sink, x, 10 + sink, "soil_dark")
+                rect(canvas, x, 9 + sink, x, 10 + sink, "soil_dark")
             canvas[11 + sink][5] = canvas[11 + sink][11] = "petal"
         # The undershirt, with short sleeves, and the shorts down to the thighs.
-        fill_rect(canvas, 6, 13 + sink, 10, 20 + sink, UNDERSHIRT)
-        fill_rect(canvas, 10, 15 + sink, 10, 20 + sink, UNDERSHIRT_SHADE)
+        rect(canvas, 6, 13 + sink, 10, 20 + sink, UNDERSHIRT)
+        rect(canvas, 10, 15 + sink, 10, 20 + sink, UNDERSHIRT_SHADE)
         for x0, dy in ((4, 0), (11, swing // 2)):
-            fill_rect(canvas, x0, 14 + sink + dy, x0 + 1, 15 + sink + dy, UNDERSHIRT)
-        fill_rect(canvas, 6, 21 + sink, 10, 22 + sink, SHORTS)
+            rect(canvas, x0, 14 + sink + dy, x0 + 1, 15 + sink + dy, UNDERSHIRT)
+        rect(canvas, 6, 21 + sink, 10, 22 + sink, SHORTS)
     else:
-        fill_rect(canvas, 5, 13 + sink, 10, 22 + sink, shade)
+        rect(canvas, 5, 13 + sink, 10, 22 + sink, shade)
         canvas[10 + sink][13] = skin
         # A shut eye is only its lid line, low on the eye.
         if pose.get("asleep"):
             canvas[10 + sink][11] = "soil_dark"
         else:
-            fill_rect(canvas, 11, 9 + sink, 11, 10 + sink, "soil_dark")
-        fill_rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 17 + sink, skin)
-        fill_rect(canvas, 7 + swing, 18 + sink, 8 + swing, 20 + sink, skin)
-        fill_rect(canvas, 5, 13 + sink, 10, 20 + sink, UNDERSHIRT)
-        fill_rect(canvas, 5, 15 + sink, 5, 20 + sink, UNDERSHIRT_SHADE)
-        fill_rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 15 + sink, UNDERSHIRT)
-        fill_rect(canvas, 5, 21 + sink, 10, 22 + sink, SHORTS)
+            rect(canvas, 11, 9 + sink, 11, 10 + sink, "soil_dark")
+        rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 17 + sink, skin)
+        rect(canvas, 7 + swing, 18 + sink, 8 + swing, 20 + sink, skin)
+        rect(canvas, 5, 13 + sink, 10, 20 + sink, UNDERSHIRT)
+        rect(canvas, 5, 15 + sink, 5, 20 + sink, UNDERSHIRT_SHADE)
+        rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 15 + sink, UNDERSHIRT)
+        rect(canvas, 5, 21 + sink, 10, 22 + sink, SHORTS)
     for x0, x1, top, _bottom in boxes:
-        fill_rect(canvas, x0, top, x1, top + 2, SHORTS)
+        rect(canvas, x0, top, x1, top + 2, SHORTS)
     if pose.get("kneel"):
         draw_kneeling_legs(canvas, (SHORTS, skin), (skin, shade), (shade, shade, shade))
     return canvas
@@ -1492,31 +1470,31 @@ def draw_kneeling_legs(canvas, thigh, shin, foot):
     """Legs folded under a kneeling figure seen from the side (facing right): the thigh
     forward to the knee, the shin back along the ground to the foot sticking out behind.
     `thigh` and `shin` are (colour, front colour), `foot` (top, middle, sole)."""
-    fill_rect(canvas, 5, 27, 9, 28, thigh[0])
-    fill_rect(canvas, 10, 27, 11, 28, thigh[1])
-    fill_rect(canvas, 4, 29, 11, 29, shin[0])
-    fill_rect(canvas, 4, 30, 11, 30, shin[1])
-    fill_rect(canvas, 1, 28, 3, 28, foot[0])
-    fill_rect(canvas, 1, 29, 3, 29, foot[1])
-    fill_rect(canvas, 1, 30, 3, 30, foot[2])
+    rect(canvas, 5, 27, 9, 28, thigh[0])
+    rect(canvas, 10, 27, 11, 28, thigh[1])
+    rect(canvas, 4, 29, 11, 29, shin[0])
+    rect(canvas, 4, 30, 11, 30, shin[1])
+    rect(canvas, 1, 28, 3, 28, foot[0])
+    rect(canvas, 1, 29, 3, 29, foot[1])
+    rect(canvas, 1, 30, 3, 30, foot[2])
 
 
 def draw_legs(facing, pose, **_):
     """Linen trousers and leather boots."""
-    canvas = character_canvas()
+    canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
     boxes = leg_boxes(facing, pose)
     for index, (x0, x1, top, bottom) in enumerate(boxes):
-        fill_rect(canvas, x0, top, x1, bottom - 3, "sand")
-        fill_rect(canvas, x0, bottom - 2, x1, bottom, "soil")
-        fill_rect(canvas, x0, bottom - 2, x1, bottom - 2, "soil_light")
-        fill_rect(canvas, x0, bottom, x1, bottom, "soil_dark")
+        rect(canvas, x0, top, x1, bottom - 3, "sand")
+        rect(canvas, x0, bottom - 2, x1, bottom, "soil")
+        rect(canvas, x0, bottom - 2, x1, bottom - 2, "soil_light")
+        rect(canvas, x0, bottom, x1, bottom, "soil_dark")
         # The inside of each leg is shaded, which also marks it against the other one.
         seam = x1 if index == 0 and facing in ("down", "up") else x0
-        fill_rect(canvas, seam, top, seam, bottom - 3, "mud")
+        rect(canvas, seam, top, seam, bottom - 3, "mud")
         if facing in ("left", "right"):
             canvas[bottom][x1 + 1] = canvas[bottom - 1][x1 + 1] = "soil_dark"
     if facing in ("down", "up"):
-        fill_rect(canvas, 8, boxes[0][2], 8, boxes[0][3] - 3, "mud_dark")
+        rect(canvas, 8, boxes[0][2], 8, boxes[0][3] - 3, "mud_dark")
     if pose.get("kneel"):
         draw_kneeling_legs(canvas, ("sand", "sand"), ("sand", "mud"), ("soil_light", "soil", "soil_dark"))
     return canvas
@@ -1524,83 +1502,83 @@ def draw_legs(facing, pose, **_):
 
 def draw_clothes(facing, pose, base, light, shade, **_):
     """A belted tunic with sleeves."""
-    canvas = character_canvas()
+    canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
     sink, swing = pose["sink"], pose["swing"]
     if facing in ("down", "up"):
-        fill_rect(canvas, 6, 13 + sink, 10, 22 + sink, base)
-        fill_rect(canvas, 5, 21 + sink, 11, 22 + sink, base)
-        fill_rect(canvas, 6, 13 + sink, 10, 14 + sink, light)
-        fill_rect(canvas, 10, 15 + sink, 10, 20 + sink, shade)
-        fill_rect(canvas, 5, 22 + sink, 11, 22 + sink, shade)
-        fill_rect(canvas, 6, 19 + sink, 10, 19 + sink, "soil_dark")
+        rect(canvas, 6, 13 + sink, 10, 22 + sink, base)
+        rect(canvas, 5, 21 + sink, 11, 22 + sink, base)
+        rect(canvas, 6, 13 + sink, 10, 14 + sink, light)
+        rect(canvas, 10, 15 + sink, 10, 20 + sink, shade)
+        rect(canvas, 5, 22 + sink, 11, 22 + sink, shade)
+        rect(canvas, 6, 19 + sink, 10, 19 + sink, "soil_dark")
         # Sleeves; the right one swings with the arm.
         for x0, dy in ((4, 0), (11, swing // 2)):
-            fill_rect(canvas, x0, 14 + sink + dy, x0 + 1, 18 + sink + dy, base)
-            fill_rect(canvas, x0, 14 + sink + dy, x0 + 1, 14 + sink + dy, light)
-            fill_rect(canvas, x0 + 1, 15 + sink + dy, x0 + 1, 17 + sink + dy, shade)
-            fill_rect(canvas, x0, 18 + sink + dy, x0 + 1, 18 + sink + dy, shade)
+            rect(canvas, x0, 14 + sink + dy, x0 + 1, 18 + sink + dy, base)
+            rect(canvas, x0, 14 + sink + dy, x0 + 1, 14 + sink + dy, light)
+            rect(canvas, x0 + 1, 15 + sink + dy, x0 + 1, 17 + sink + dy, shade)
+            rect(canvas, x0, 18 + sink + dy, x0 + 1, 18 + sink + dy, shade)
         if facing == "down":
-            fill_rect(canvas, 7, 13 + sink, 9, 13 + sink, "cream")
+            rect(canvas, 7, 13 + sink, 9, 13 + sink, "cream")
             canvas[14 + sink][8] = "cream"
             canvas[19 + sink][8] = "gold"
         else:
-            fill_rect(canvas, 6, 13 + sink, 10, 13 + sink, shade)
+            rect(canvas, 6, 13 + sink, 10, 13 + sink, shade)
     else:
-        fill_rect(canvas, 5, 13 + sink, 10, 22 + sink, base)
-        fill_rect(canvas, 5, 21 + sink, 11, 22 + sink, base)
-        fill_rect(canvas, 5, 13 + sink, 10, 14 + sink, light)
-        fill_rect(canvas, 5, 15 + sink, 5, 21 + sink, shade)
-        fill_rect(canvas, 5, 22 + sink, 11, 22 + sink, shade)
-        fill_rect(canvas, 5, 19 + sink, 10, 19 + sink, "soil_dark")
+        rect(canvas, 5, 13 + sink, 10, 22 + sink, base)
+        rect(canvas, 5, 21 + sink, 11, 22 + sink, base)
+        rect(canvas, 5, 13 + sink, 10, 14 + sink, light)
+        rect(canvas, 5, 15 + sink, 5, 21 + sink, shade)
+        rect(canvas, 5, 22 + sink, 11, 22 + sink, shade)
+        rect(canvas, 5, 19 + sink, 10, 19 + sink, "soil_dark")
         canvas[19 + sink][10] = "gold"
-        fill_rect(canvas, 8, 13 + sink, 10, 13 + sink, "cream")
+        rect(canvas, 8, 13 + sink, 10, 13 + sink, "cream")
         # The near sleeve over the torso: a shaded edge at the back, and the cuff.
         for y in range(14 + sink, 19 + sink):
             x = 7 + (swing // 2 if y < 17 + sink else swing)
             canvas[y][x], canvas[y][x + 1] = shade, base
-        fill_rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 14 + sink, light)
-        fill_rect(canvas, 7 + swing, 18 + sink, 8 + swing, 18 + sink, shade)
+        rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 14 + sink, light)
+        rect(canvas, 7 + swing, 18 + sink, 8 + swing, 18 + sink, shade)
     return canvas
 
 
 def draw_hair(facing, pose, base, light, shade, long, **_):
     """Short or long hair over the head (the same 9x8 block in every view), and from behind
     over the whole back of it. The darkest shade is the line to the face."""
-    canvas = character_canvas()
+    canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
     sink = pose["sink"]
-    fill_rect(canvas, 5, 5 + sink, 11, 5 + sink, base)
-    fill_rect(canvas, 4, 6 + sink, 12, 7 + sink, base)
-    fill_rect(canvas, 5, 6 + sink, 7, 6 + sink, light)
+    rect(canvas, 5, 5 + sink, 11, 5 + sink, base)
+    rect(canvas, 4, 6 + sink, 12, 7 + sink, base)
+    rect(canvas, 5, 6 + sink, 7, 6 + sink, light)
     if facing == "down":
-        fill_rect(canvas, 6, 7 + sink, 10, 7 + sink, shade)
+        rect(canvas, 6, 7 + sink, 10, 7 + sink, shade)
         for x in (4, 12):
-            fill_rect(canvas, x, 8 + sink, x, 9 + sink, base)
+            rect(canvas, x, 8 + sink, x, 9 + sink, base)
             canvas[9 + sink][x] = shade
         if long:
             for x in (4, 12):
-                fill_rect(canvas, x, 10 + sink, x, 14 + sink, base)
-                fill_rect(canvas, x, 13 + sink, x, 14 + sink, shade)
+                rect(canvas, x, 10 + sink, x, 14 + sink, base)
+                rect(canvas, x, 13 + sink, x, 14 + sink, shade)
     elif facing == "up":
-        fill_rect(canvas, 4, 8 + sink, 12, 11 + sink, base)
-        fill_rect(canvas, 5, 12 + sink, 11, 12 + sink, shade)
-        fill_rect(canvas, 8, 7 + sink, 8, 11 + sink, shade)
-        fill_rect(canvas, 6, 8 + sink, 6, 9 + sink, light)
+        rect(canvas, 4, 8 + sink, 12, 11 + sink, base)
+        rect(canvas, 5, 12 + sink, 11, 12 + sink, shade)
+        rect(canvas, 8, 7 + sink, 8, 11 + sink, shade)
+        rect(canvas, 6, 8 + sink, 6, 9 + sink, light)
         if long:
-            fill_rect(canvas, 4, 12 + sink, 12, 16 + sink, base)
-            fill_rect(canvas, 5, 17 + sink, 11, 17 + sink, base)
-            fill_rect(canvas, 8, 12 + sink, 8, 16 + sink, shade)
-            fill_rect(canvas, 6, 13 + sink, 6, 15 + sink, light)
-            fill_rect(canvas, 5, 16 + sink, 11, 17 + sink, shade)
+            rect(canvas, 4, 12 + sink, 12, 16 + sink, base)
+            rect(canvas, 5, 17 + sink, 11, 17 + sink, base)
+            rect(canvas, 8, 12 + sink, 8, 16 + sink, shade)
+            rect(canvas, 6, 13 + sink, 6, 15 + sink, light)
+            rect(canvas, 5, 16 + sink, 11, 17 + sink, shade)
     else:
-        fill_rect(canvas, 10, 7 + sink, 12, 7 + sink, shade)
-        fill_rect(canvas, 4, 8 + sink, 8, 11 + sink, base)
-        fill_rect(canvas, 8, 8 + sink, 8, 11 + sink, shade)
-        fill_rect(canvas, 5, 12 + sink, 7, 12 + sink, shade)
-        fill_rect(canvas, 5, 8 + sink, 5, 9 + sink, light)
+        rect(canvas, 10, 7 + sink, 12, 7 + sink, shade)
+        rect(canvas, 4, 8 + sink, 8, 11 + sink, base)
+        rect(canvas, 8, 8 + sink, 8, 11 + sink, shade)
+        rect(canvas, 5, 12 + sink, 7, 12 + sink, shade)
+        rect(canvas, 5, 8 + sink, 5, 9 + sink, light)
         if long:
-            fill_rect(canvas, 3, 8 + sink, 6, 16 + sink, base)
-            fill_rect(canvas, 3, 15 + sink, 6, 16 + sink, shade)
-            fill_rect(canvas, 4, 11 + sink, 4, 14 + sink, light)
+            rect(canvas, 3, 8 + sink, 6, 16 + sink, base)
+            rect(canvas, 3, 15 + sink, 6, 16 + sink, shade)
+            rect(canvas, 4, 11 + sink, 4, 14 + sink, light)
     return canvas
 
 
@@ -1661,7 +1639,7 @@ def draw_hat(rows, keys):
     """A hat layer from its front and side rows."""
 
     def draw(facing, pose, **_):
-        canvas = character_canvas()
+        canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
         draw_rows(canvas, rows["side" if facing in ("left", "right") else "front"], keys, 2 + pose["sink"])
         return canvas
 
@@ -1670,23 +1648,23 @@ def draw_hat(rows, keys):
 
 def draw_held_hoe(facing, pose, **_):
     """A hoe in the right hand, in dark soil colours with a light edge on the blade."""
-    canvas = character_canvas()
+    canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
     sink = pose["sink"]
     if facing in ("down", "up"):
         shaft = 3 if facing == "down" else 13
         top = 13 + sink
-        fill_rect(canvas, shaft, top, shaft, 30, "soil_dark")
+        rect(canvas, shaft, top, shaft, 30, "soil_dark")
         blade = (shaft - 2, shaft) if facing == "down" else (shaft, shaft + 2)
-        fill_rect(canvas, blade[0], top - 1, blade[1], top, "soil_dark")
-        fill_rect(canvas, blade[0], top - 1, blade[1], top - 1, "soil_light")
+        rect(canvas, blade[0], top - 1, blade[1], top, "soil_dark")
+        rect(canvas, blade[0], top - 1, blade[1], top - 1, "soil_light")
         if facing == "down":
-            fill_rect(canvas, shaft, 19, shaft, 20, "skin")
+            rect(canvas, shaft, 19, shaft, 20, "skin")
     else:
         top = 13 + sink
-        fill_rect(canvas, 12, top, 12, 30, "soil_dark")
-        fill_rect(canvas, 12, top + 1, 14, top + 2, "soil_dark")
-        fill_rect(canvas, 12, top + 1, 14, top + 1, "soil_light")
-        fill_rect(canvas, 11, 19, 12, 20, "skin")
+        rect(canvas, 12, top, 12, 30, "soil_dark")
+        rect(canvas, 12, top + 1, 14, top + 2, "soil_dark")
+        rect(canvas, 12, top + 1, 14, top + 1, "soil_light")
+        rect(canvas, 11, 19, 12, 20, "skin")
     return canvas
 
 
@@ -1743,7 +1721,7 @@ def leaning(lean):
     height above the ground times `lean`. Whole pixel steps keep the art crisp."""
 
     def place(canvas):
-        frame = [[None] * COLLAPSE_SIZE for _ in range(COLLAPSE_SIZE)]
+        frame = blank(COLLAPSE_SIZE)
         left = (COLLAPSE_SIZE - CHARACTER_WIDTH) // 2
         ground = CHARACTER_HEIGHT - 1
         for y, row in enumerate(canvas):
@@ -1759,7 +1737,7 @@ def leaning(lean):
 def lying(canvas):
     """The standing figure laid down on the bottom half of the frame: its head to the right
     (forward), its front (face and toes) up."""
-    frame = [[None] * COLLAPSE_SIZE for _ in range(COLLAPSE_SIZE)]
+    frame = blank(COLLAPSE_SIZE)
     for y, row in enumerate(canvas):
         for x, colour in enumerate(row):
             if colour is not None:
@@ -1842,19 +1820,15 @@ def outline(canvas, colour, keep_bottom=False):
     return canvas
 
 
-def sprite_canvas(width, height):
-    return [[None] * width for _ in range(height)]
-
-
 def planks(canvas, light, dark):
     for y in range(TILE):
         for x in range(TILE):
             canvas[y][x] = light if (y // 4) % 2 == 0 else dark
     for y in range(3, TILE, 4):
-        fill_rect(canvas, 0, y, TILE - 1, y, "soil")
+        rect(canvas, 0, y, TILE - 1, y, "soil")
     # Board ends, staggered row by row.
     for row, x in enumerate((5, 12, 8, 2)):
-        fill_rect(canvas, x, row * 4, x, row * 4 + 2, "soil")
+        rect(canvas, x, row * 4, x, row * 4 + 2, "soil")
     return canvas
 
 
@@ -1865,7 +1839,7 @@ def interior_floor():
 def interior_floor_shaded():
     """The floor row along the back wall, in its shadow."""
     canvas = planks(blank(), "soil_mid", "soil")
-    fill_rect(canvas, 0, 0, TILE - 1, 1, "soil_dark")
+    rect(canvas, 0, 0, TILE - 1, 1, "soil_dark")
     return canvas
 
 
@@ -1884,7 +1858,7 @@ def rim_left():
     """The top of the left wall: its 8 px next to the room are the right half of the tile."""
     canvas = blank()
     for x, colour in zip(range(RIM, TILE), WALL_TOP_SHADES):
-        fill_rect(canvas, x, 0, x, TILE - 1, colour)
+        rect(canvas, x, 0, x, TILE - 1, colour)
     return canvas
 
 
@@ -1892,7 +1866,7 @@ def rim_front():
     """The top of the front wall: its 8 px next to the room are the top half of the tile."""
     canvas = blank()
     for y, colour in zip(range(RIM), WALL_TOP_SHADES[::-1]):
-        fill_rect(canvas, 0, y, TILE - 1, y, colour)
+        rect(canvas, 0, y, TILE - 1, y, colour)
     return canvas
 
 
@@ -1903,11 +1877,11 @@ def mirrored_tile(canvas):
 def interior_doormat():
     """The exit: a woven mat 16x8 across the gap in the front wall."""
     canvas = blank()
-    fill_rect(canvas, 0, 0, TILE - 1, 7, "soil_dark")
-    fill_rect(canvas, 1, 1, TILE - 2, 6, "straw")
+    rect(canvas, 0, 0, TILE - 1, 7, "soil_dark")
+    rect(canvas, 1, 1, TILE - 2, 6, "straw")
     for y in (2, 4):
-        fill_rect(canvas, 1, y, TILE - 2, y, "dry_light")
-    fill_rect(canvas, 1, 6, TILE - 2, 6, "reed")
+        rect(canvas, 1, y, TILE - 2, y, "dry_light")
+    rect(canvas, 1, 6, TILE - 2, 6, "reed")
     return canvas
 
 
@@ -1917,10 +1891,10 @@ def back_wall_top():
     rng = random.Random(131)
     for _ in range(9):
         canvas[rng.randrange(5, TILE)][rng.randrange(TILE)] = "sand"
-    fill_rect(canvas, 0, 0, TILE - 1, 0, "soil_mid")
-    fill_rect(canvas, 0, 1, TILE - 1, 2, "soil")
-    fill_rect(canvas, 0, 2, TILE - 1, 2, "soil_dark")
-    fill_rect(canvas, 0, 3, TILE - 1, 3, "mud")
+    rect(canvas, 0, 0, TILE - 1, 0, "soil_mid")
+    rect(canvas, 0, 1, TILE - 1, 2, "soil")
+    rect(canvas, 0, 2, TILE - 1, 2, "soil_dark")
+    rect(canvas, 0, 3, TILE - 1, 3, "mud")
     return canvas
 
 
@@ -1930,12 +1904,12 @@ def back_wall_bottom():
     rng = random.Random(132)
     for _ in range(5):
         canvas[rng.randrange(0, 5)][rng.randrange(TILE)] = "sand"
-    fill_rect(canvas, 0, 5, TILE - 1, 5, "soil_light")
-    fill_rect(canvas, 0, 6, TILE - 1, 6, "soil")
-    fill_rect(canvas, 0, 7, TILE - 1, 13, "soil_mid")
-    fill_rect(canvas, 0, 14, TILE - 1, 15, "soil_dark")
+    rect(canvas, 0, 5, TILE - 1, 5, "soil_light")
+    rect(canvas, 0, 6, TILE - 1, 6, "soil")
+    rect(canvas, 0, 7, TILE - 1, 13, "soil_mid")
+    rect(canvas, 0, 14, TILE - 1, 15, "soil_dark")
     for x in (0, 7, 8, 15):
-        fill_rect(canvas, x, 7, x, 13, "soil")
+        rect(canvas, x, 7, x, 13, "soil")
     return canvas
 
 
@@ -1957,66 +1931,66 @@ def back_wall_end(tile, is_left):
 def window_picture():
     """A 10x10 window with a sill, 16x32: drawn over the plaster of the back wall face. Nine
     small panes of daylight in wooden glazing bars."""
-    canvas = sprite_canvas(TILE, 2 * TILE)
-    fill_rect(canvas, 3, 7, 12, 16, "soil_dark")
-    fill_rect(canvas, 4, 8, 11, 15, "water_light")
-    fill_rect(canvas, 4, 8, 8, 9, "foam")
-    fill_rect(canvas, 4, 8, 5, 12, "foam")
-    fill_rect(canvas, 4, 14, 11, 15, "water")
+    canvas = blank(TILE, 2 * TILE)
+    rect(canvas, 3, 7, 12, 16, "soil_dark")
+    rect(canvas, 4, 8, 11, 15, "water_light")
+    rect(canvas, 4, 8, 8, 9, "foam")
+    rect(canvas, 4, 8, 5, 12, "foam")
+    rect(canvas, 4, 14, 11, 15, "water")
     for offset in (3, 6):
-        fill_rect(canvas, 3 + offset, 8, 3 + offset, 15, "soil_mid")
-        fill_rect(canvas, 4, 7 + offset, 11, 7 + offset, "soil_mid")
-    fill_rect(canvas, 2, 17, 13, 17, "soil_light")
-    fill_rect(canvas, 2, 18, 13, 18, "soil_mid")
-    fill_rect(canvas, 3, 19, 12, 19, "mud")
+        rect(canvas, 3 + offset, 8, 3 + offset, 15, "soil_mid")
+        rect(canvas, 4, 7 + offset, 11, 7 + offset, "soil_mid")
+    rect(canvas, 2, 17, 13, 17, "soil_light")
+    rect(canvas, 2, 18, 13, 18, "soil_mid")
+    rect(canvas, 3, 19, 12, 19, "mud")
     return canvas
 
 
 def bed():
     """A bed 1x2 tiles, head to the north: frame, pillow and a blanket with a folded edge."""
-    canvas = sprite_canvas(TILE, 2 * TILE)
-    fill_rect(canvas, 0, 0, 15, 31, "soil_mid")
-    fill_rect(canvas, 0, 0, 15, 5, "soil")
-    fill_rect(canvas, 1, 1, 14, 1, "soil_light")
-    fill_rect(canvas, 2, 6, 13, 12, "cream")
-    fill_rect(canvas, 2, 12, 13, 12, "sand_light")
-    fill_rect(canvas, 2, 13, 13, 28, "ember")
-    fill_rect(canvas, 2, 13, 13, 15, "flame")
-    fill_rect(canvas, 2, 15, 13, 15, "ember")
-    fill_rect(canvas, 11, 16, 13, 28, "soil")
-    fill_rect(canvas, 5, 20, 7, 21, "soil")
-    fill_rect(canvas, 2, 29, 13, 31, "soil")
-    fill_rect(canvas, 0, 29, 15, 29, "soil_light")
+    canvas = blank(TILE, 2 * TILE)
+    rect(canvas, 0, 0, 15, 31, "soil_mid")
+    rect(canvas, 0, 0, 15, 5, "soil")
+    rect(canvas, 1, 1, 14, 1, "soil_light")
+    rect(canvas, 2, 6, 13, 12, "cream")
+    rect(canvas, 2, 12, 13, 12, "sand_light")
+    rect(canvas, 2, 13, 13, 28, "ember")
+    rect(canvas, 2, 13, 13, 15, "flame")
+    rect(canvas, 2, 15, 13, 15, "ember")
+    rect(canvas, 11, 16, 13, 28, "soil")
+    rect(canvas, 5, 20, 7, 21, "soil")
+    rect(canvas, 2, 29, 13, 31, "soil")
+    rect(canvas, 0, 29, 15, 29, "soil_light")
     outline(canvas, "soil_dark")
     return canvas
 
 
 def table():
     """A table 2x1 tiles: a plank top, an apron and two legs; a candle and a bowl on it."""
-    canvas = sprite_canvas(2 * TILE, 24)
-    fill_rect(canvas, 0, 0, 31, 15, "soil_light")
+    canvas = blank(2 * TILE, 24)
+    rect(canvas, 0, 0, 31, 15, "soil_light")
     for y in (4, 9, 14):
-        fill_rect(canvas, 0, y, 31, y, "soil_mid")
-    fill_rect(canvas, 0, 16, 31, 17, "soil_mid")
-    fill_rect(canvas, 0, 18, 31, 18, "soil_dark")
+        rect(canvas, 0, y, 31, y, "soil_mid")
+    rect(canvas, 0, 16, 31, 17, "soil_mid")
+    rect(canvas, 0, 18, 31, 18, "soil_dark")
     for x in (2, 27):
-        fill_rect(canvas, x, 19, x + 2, 23, "soil")
-        fill_rect(canvas, x, 19, x, 23, "soil_mid")
-    fill_rect(canvas, 23, 5, 24, 9, "cream")
-    fill_rect(canvas, 23, 3, 24, 4, "gold")
-    fill_rect(canvas, 7, 6, 12, 9, "stone_light")
-    fill_rect(canvas, 8, 7, 11, 8, "stone_dark")
+        rect(canvas, x, 19, x + 2, 23, "soil")
+        rect(canvas, x, 19, x, 23, "soil_mid")
+    rect(canvas, 23, 5, 24, 9, "cream")
+    rect(canvas, 23, 3, 24, 4, "gold")
+    rect(canvas, 7, 6, 12, 9, "stone_light")
+    rect(canvas, 8, 7, 11, 8, "stone_dark")
     return outline(canvas, "soil_dark", keep_bottom=True)
 
 
 def stool():
     """A stool, 10x10 on its 16x16 tile."""
-    canvas = sprite_canvas(10, 10)
-    fill_rect(canvas, 0, 0, 9, 4, "soil_light")
-    fill_rect(canvas, 0, 4, 9, 4, "soil_mid")
+    canvas = blank(10, 10)
+    rect(canvas, 0, 0, 9, 4, "soil_light")
+    rect(canvas, 0, 4, 9, 4, "soil_mid")
     for x in (1, 7):
-        fill_rect(canvas, x, 5, x + 1, 9, "soil")
-    fill_rect(canvas, 4, 5, 5, 8, "soil_dark")
+        rect(canvas, x, 5, x + 1, 9, "soil")
+    rect(canvas, 4, 5, 5, 8, "soil_dark")
     return outline(canvas, "soil_dark", keep_bottom=True)
 
 
@@ -2027,27 +2001,27 @@ HEARTH_FLAME = ((8, 10, 16, 16), 5.0, 12)
 
 def hearth_without_flame():
     """A stone hearth 2x2 tiles with two logs in its firebox."""
-    canvas = sprite_canvas(2 * TILE, 2 * TILE)
-    fill_rect(canvas, 0, 0, 31, 29, "stone")
+    canvas = blank(2 * TILE, 2 * TILE)
+    rect(canvas, 0, 0, 31, 29, "stone")
     for y in range(4, 30, 4):
-        fill_rect(canvas, 0, y, 31, y, "stone_dark")
+        rect(canvas, 0, y, 31, y, "stone_dark")
         for x in range(2 + (y // 4 % 2) * 4, 32, 8):
-            fill_rect(canvas, x, y - 3, x, y - 1, "stone_dark")
-    fill_rect(canvas, 0, 0, 31, 2, "stone_light")
-    fill_rect(canvas, 0, 3, 31, 3, "stone_dark")
-    fill_rect(canvas, 7, 9, 24, 28, "stone_dark")
-    fill_rect(canvas, 8, 10, 23, 28, "soil_dark")
-    fill_rect(canvas, 9, 25, 22, 27, "soil")
-    fill_rect(canvas, 9, 25, 22, 25, "soil_mid")
+            rect(canvas, x, y - 3, x, y - 1, "stone_dark")
+    rect(canvas, 0, 0, 31, 2, "stone_light")
+    rect(canvas, 0, 3, 31, 3, "stone_dark")
+    rect(canvas, 7, 9, 24, 28, "stone_dark")
+    rect(canvas, 8, 10, 23, 28, "soil_dark")
+    rect(canvas, 9, 25, 22, 27, "soil")
+    rect(canvas, 9, 25, 22, 25, "soil_mid")
     # Hearthstone in front.
-    fill_rect(canvas, 2, 29, 29, 31, "stone_light")
-    fill_rect(canvas, 2, 31, 29, 31, "stone")
+    rect(canvas, 2, 29, 29, 31, "stone_light")
+    rect(canvas, 2, 31, 29, 31, "stone")
     return outline(canvas, "soil_dark", keep_bottom=True)
 
 
 def hearth():
     """A stone hearth 2x2 tiles with a fire in it."""
-    return fire.burning(hearth_without_flame(), sprite_canvas(2 * TILE, 2 * TILE), *HEARTH_FLAME)
+    return fire.burning(hearth_without_flame(), blank(2 * TILE, 2 * TILE), *HEARTH_FLAME)
 
 
 # Furniture by name: its picture and its footprint in tiles. The marker tiles and the files
@@ -2068,65 +2042,65 @@ FURNITURE = {
 
 def sleeping_mat():
     """A straw sleeping mat 1x2 tiles, head to the north, with a cream pillow."""
-    canvas = sprite_canvas(TILE, 2 * TILE)
-    fill_rect(canvas, 1, 1, 14, 30, "straw")
+    canvas = blank(TILE, 2 * TILE)
+    rect(canvas, 1, 1, 14, 30, "straw")
     for y in range(4, 30, 3):
-        fill_rect(canvas, 1, y, 14, y, "sand")
-    fill_rect(canvas, 1, 1, 1, 30, "sand_light")
-    fill_rect(canvas, 3, 2, 12, 8, "cream")
-    fill_rect(canvas, 3, 8, 12, 8, "sand_light")
+        rect(canvas, 1, y, 14, y, "sand")
+    rect(canvas, 1, 1, 1, 30, "sand_light")
+    rect(canvas, 3, 2, 12, 8, "cream")
+    rect(canvas, 3, 8, 12, 8, "sand_light")
     return outline(canvas, "soil_dark")
 
 
 def box_bed():
     """A box bed 2x2 tiles, head to the north: a timber box with a straw mattress, a pillow
     and a red blanket, a front board in front."""
-    canvas = sprite_canvas(2 * TILE, 2 * TILE)
-    fill_rect(canvas, 0, 0, 31, 31, "soil_mid")
-    fill_rect(canvas, 1, 1, 30, 1, "soil_light")
-    fill_rect(canvas, 2, 5, 29, 24, "soil_dark")
-    fill_rect(canvas, 3, 6, 28, 24, "straw")
-    fill_rect(canvas, 4, 7, 14, 12, "cream")
-    fill_rect(canvas, 4, 12, 14, 12, "sand_light")
-    fill_rect(canvas, 4, 13, 28, 24, "ember")
-    fill_rect(canvas, 4, 13, 28, 15, "flame")
-    fill_rect(canvas, 4, 15, 28, 15, "ember")
-    fill_rect(canvas, 0, 25, 31, 31, "soil")
-    fill_rect(canvas, 0, 25, 31, 25, "soil_light")
-    fill_rect(canvas, 0, 28, 31, 28, "soil_mid")
+    canvas = blank(2 * TILE, 2 * TILE)
+    rect(canvas, 0, 0, 31, 31, "soil_mid")
+    rect(canvas, 1, 1, 30, 1, "soil_light")
+    rect(canvas, 2, 5, 29, 24, "soil_dark")
+    rect(canvas, 3, 6, 28, 24, "straw")
+    rect(canvas, 4, 7, 14, 12, "cream")
+    rect(canvas, 4, 12, 14, 12, "sand_light")
+    rect(canvas, 4, 13, 28, 24, "ember")
+    rect(canvas, 4, 13, 28, 15, "flame")
+    rect(canvas, 4, 15, 28, 15, "ember")
+    rect(canvas, 0, 25, 31, 31, "soil")
+    rect(canvas, 0, 25, 31, 25, "soil_light")
+    rect(canvas, 0, 28, 31, 28, "soil_mid")
     return outline(canvas, "soil_dark")
 
 
 def bench():
     """A bench 2x1 tiles: a plank seat on two legs."""
-    canvas = sprite_canvas(2 * TILE, TILE)
-    fill_rect(canvas, 0, 3, 31, 7, "soil_light")
-    fill_rect(canvas, 0, 5, 31, 5, "soil_mid")
-    fill_rect(canvas, 0, 8, 31, 9, "soil_mid")
-    fill_rect(canvas, 0, 10, 31, 10, "soil_dark")
+    canvas = blank(2 * TILE, TILE)
+    rect(canvas, 0, 3, 31, 7, "soil_light")
+    rect(canvas, 0, 5, 31, 5, "soil_mid")
+    rect(canvas, 0, 8, 31, 9, "soil_mid")
+    rect(canvas, 0, 10, 31, 10, "soil_dark")
     for x in (2, 27):
-        fill_rect(canvas, x, 11, x + 2, 15, "soil")
-        fill_rect(canvas, x, 11, x, 15, "soil_mid")
+        rect(canvas, x, 11, x + 2, 15, "soil")
+        rect(canvas, x, 11, x, 15, "soil_mid")
     return outline(canvas, "soil_dark", keep_bottom=True)
 
 
 def stall_partition():
     """A stall partition 1x2 tiles: a post with two rails that run on into the next stall."""
-    canvas = sprite_canvas(TILE, 2 * TILE)
+    canvas = blank(TILE, 2 * TILE)
     for top in (6, 16):
-        fill_rect(canvas, 0, top, 15, top + 3, "soil")
-        fill_rect(canvas, 0, top, 15, top, "soil_light")
-        fill_rect(canvas, 0, top + 3, 15, top + 3, "soil_dark")
-    fill_rect(canvas, 5, 0, 10, 31, "soil_mid")
-    fill_rect(canvas, 5, 0, 6, 31, "soil_light")
-    fill_rect(canvas, 5, 28, 10, 31, "soil_dark")
+        rect(canvas, 0, top, 15, top + 3, "soil")
+        rect(canvas, 0, top, 15, top, "soil_light")
+        rect(canvas, 0, top + 3, 15, top + 3, "soil_dark")
+    rect(canvas, 5, 0, 10, 31, "soil_mid")
+    rect(canvas, 5, 0, 6, 31, "soil_light")
+    rect(canvas, 5, 28, 10, 31, "soil_dark")
     return outline(canvas, "soil_dark", keep_bottom=True)
 
 
 def hay_pile():
     """A pile of hay 2x1 tiles: a mound of straw with gold and darker wisps."""
     rng = random.Random(391)
-    canvas = sprite_canvas(2 * TILE, TILE)
+    canvas = blank(2 * TILE, TILE)
     for x in range(2 * TILE):
         top = 2 + round(6 * (1 - math.sin(math.pi * (x + 0.5) / (2 * TILE))))
         for y in range(top, TILE):
@@ -2139,43 +2113,43 @@ def hay_pile():
 
 def barrel():
     """A barrel, 1x1 tiles: staves, a lid and two iron hoops."""
-    canvas = sprite_canvas(TILE, TILE)
-    fill_rect(canvas, 2, 3, 13, 15, "soil_mid")
-    fill_rect(canvas, 3, 0, 12, 3, "soil_light")
+    canvas = blank(TILE, TILE)
+    rect(canvas, 2, 3, 13, 15, "soil_mid")
+    rect(canvas, 3, 0, 12, 3, "soil_light")
     for x in (5, 9):
-        fill_rect(canvas, x, 4, x, 15, "soil")
-    fill_rect(canvas, 12, 4, 13, 15, "soil")
+        rect(canvas, x, 4, x, 15, "soil")
+    rect(canvas, 12, 4, 13, 15, "soil")
     for y in (5, 12):
-        fill_rect(canvas, 2, y, 13, y, "stone")
-        fill_rect(canvas, 2, y, 6, y, "stone_light")
+        rect(canvas, 2, y, 13, y, "stone")
+        rect(canvas, 2, y, 6, y, "stone_light")
     return outline(canvas, "soil_dark", keep_bottom=True)
 
 
 def sacks():
     """Two sacks of grain, 1x1 tiles, tied at the neck."""
-    canvas = sprite_canvas(TILE, TILE)
-    fill_rect(canvas, 1, 5, 8, 15, "sand_light")
-    fill_rect(canvas, 7, 5, 8, 15, "sand")
-    fill_rect(canvas, 3, 3, 6, 4, "sand_light")
-    fill_rect(canvas, 3, 5, 6, 5, "mud")
-    fill_rect(canvas, 8, 8, 14, 15, "straw")
-    fill_rect(canvas, 13, 8, 14, 15, "sand")
-    fill_rect(canvas, 10, 6, 12, 7, "straw")
-    fill_rect(canvas, 10, 8, 12, 8, "mud")
+    canvas = blank(TILE, TILE)
+    rect(canvas, 1, 5, 8, 15, "sand_light")
+    rect(canvas, 7, 5, 8, 15, "sand")
+    rect(canvas, 3, 3, 6, 4, "sand_light")
+    rect(canvas, 3, 5, 6, 5, "mud")
+    rect(canvas, 8, 8, 14, 15, "straw")
+    rect(canvas, 13, 8, 14, 15, "sand")
+    rect(canvas, 10, 6, 12, 7, "straw")
+    rect(canvas, 10, 8, 12, 8, "mud")
     return outline(canvas, "soil_dark", keep_bottom=True)
 
 
 def crate():
     """A wooden crate, 1x1 tiles, with a cross of boards."""
-    canvas = sprite_canvas(TILE, TILE)
-    fill_rect(canvas, 0, 1, 15, 15, "soil_light")
+    canvas = blank(TILE, TILE)
+    rect(canvas, 0, 1, 15, 15, "soil_light")
     for i in range(2, 14):
         canvas[1 + i][i] = "soil_mid"
         canvas[1 + i][15 - i] = "soil_mid"
-    fill_rect(canvas, 0, 1, 15, 2, "soil_mid")
-    fill_rect(canvas, 0, 14, 15, 15, "soil_mid")
-    fill_rect(canvas, 0, 1, 1, 15, "soil_mid")
-    fill_rect(canvas, 14, 1, 15, 15, "soil_mid")
+    rect(canvas, 0, 1, 15, 2, "soil_mid")
+    rect(canvas, 0, 14, 15, 15, "soil_mid")
+    rect(canvas, 0, 1, 1, 15, "soil_mid")
+    rect(canvas, 14, 1, 15, 15, "soil_mid")
     return outline(canvas, "soil_dark", keep_bottom=True)
 
 
@@ -2328,7 +2302,7 @@ def main():
     (ASSETS / "fire").mkdir(exist_ok=True)
     for name, (behind, front), (box, half_width, tall) in (
         ("fireplace", fireplace_layers(), FIREPLACE_FLAME),
-        ("hearth", (hearth_without_flame(), sprite_canvas(2 * TILE, 2 * TILE)), HEARTH_FLAME),
+        ("hearth", (hearth_without_flame(), blank(2 * TILE, 2 * TILE)), HEARTH_FLAME),
     ):
         strip = fire.strip(behind, front, box, half_width, tall)
         to_image([strip], box[2], box[3]).save(ASSETS / "fire" / f"{name}.png")
@@ -2337,7 +2311,7 @@ def main():
         to_image(animals.sheet_rows(kind), *animals.cell_size(kind)).save(ASSETS / "wildlife" / f"{kind}.png")
     (ASSETS / "crops").mkdir(exist_ok=True)
     for crop, cells in crops.sheets().items():
-        to_image([cells], crops.TILE, len(cells[0])).save(ASSETS / "crops" / f"{crop}.png")
+        to_image([cells], TILE, len(cells[0])).save(ASSETS / "crops" / f"{crop}.png")
     to_image([crop_icons.soil_wet()]).save(ASSETS / "soil_wet.png")
     to_image([[meadow.clay_hint()]]).save(ASSETS / "clay_hint.png")
     for directory, pictures in (

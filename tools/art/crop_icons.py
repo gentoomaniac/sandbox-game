@@ -5,7 +5,8 @@ seed bags and the produce, and the look of damp and wet soil.
 import random
 
 import items
-from crops import KEYS, TILE, Surface
+from canvas import TILE
+from crops import KEYS, Surface
 
 # What tells each crop's seed sack apart (see items.seed_sack): the colour of its string, the
 # colour of its seeds, and the crop painted on it, 5 rows of 6 letters of crops.KEYS.

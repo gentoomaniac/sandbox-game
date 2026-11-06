@@ -11,13 +11,11 @@ colour names.
 import math
 import random
 
-CELL_WIDTH = 48
-CELL_HEIGHT = 80
-CENTRE = CELL_WIDTH // 2
-BOTTOM = CELL_HEIGHT - 1
+from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank
+
 # The log's rows, its outline included, ending a row above the cell's bottom.
 LOG_HEIGHT = 11
-LOG_BOTTOM = BOTTOM - 1
+LOG_BOTTOM = OBJECT_BOTTOM - 1
 # How far the cut face reaches into the log: it is an ellipse this wide, seen at a slant.
 FACE_WIDTH = 7
 
@@ -43,15 +41,15 @@ def log_picture(species, length, seed):
     off, a branch stub on top."""
     rng = random.Random(seed)
     (light, middle, dark), furrow, outline, furrows = SPECIES[species]
-    canvas = [[None] * CELL_WIDTH for _ in range(CELL_HEIGHT)]
-    left = CENTRE - length // 2
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
+    left = OBJECT_CENTRE - length // 2
     right = left + length - 1
     top = LOG_BOTTOM - LOG_HEIGHT + 1
     centre_y = (top + LOG_BOTTOM) / 2
     radius_y = LOG_HEIGHT / 2
 
     # The ground shadow, a little wider than the log and offset to the lower right.
-    for y, inset in ((BOTTOM - 2, 1), (BOTTOM - 1, 0), (BOTTOM, 2)):
+    for y, inset in ((OBJECT_BOTTOM - 2, 1), (OBJECT_BOTTOM - 1, 0), (OBJECT_BOTTOM, 2)):
         for x in range(left + inset, right + 3 - inset):
             canvas[y][x] = "shadow"
 
@@ -101,8 +99,8 @@ def log_picture(species, length, seed):
 def _outline(canvas, colour):
     """The edge pixels of everything but the ground shadow, in the outline colour."""
     marked = []
-    for y in range(CELL_HEIGHT):
-        for x in range(CELL_WIDTH):
+    for y in range(OBJECT_CELL_HEIGHT):
+        for x in range(OBJECT_CELL_WIDTH):
             if canvas[y][x] in (None, "shadow"):
                 continue
             for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):

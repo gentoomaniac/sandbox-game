@@ -9,18 +9,9 @@ seasons.py turns them golden for autumn and winter and caps them with snow.
 import random
 
 import items
-
-# The object atlas cell, as in generate.py (the reeds stand at the bottom centre).
-CELL_WIDTH = 48
-CELL_HEIGHT = 80
-CENTRE = CELL_WIDTH // 2
-BOTTOM = CELL_HEIGHT - 1
+from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank
 
 REEDS_SEEDS = (311, 312, 313)
-
-
-def _cell():
-    return [[None] * CELL_WIDTH for _ in range(CELL_HEIGHT)]
 
 
 def reeds(seed, is_cut=False):
@@ -28,26 +19,26 @@ def reeds(seed, is_cut=False):
     long leaves bending off them, and brown cattail heads on a few; or the low stubble left once
     it is cut. Drawn in dark, cool greens with a dark foot, so it stands apart from tall grass."""
     rng = random.Random(seed)
-    canvas = _cell()
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     # The wet, dark foot of the stand.
-    for x in range(CENTRE - 9, CENTRE + 9):
-        canvas[BOTTOM][x] = "shadow"
-        if abs(x + 0.5 - CENTRE) < 7:
-            canvas[BOTTOM - 1][x] = "green_deep"
+    for x in range(OBJECT_CENTRE - 9, OBJECT_CENTRE + 9):
+        canvas[OBJECT_BOTTOM][x] = "shadow"
+        if abs(x + 0.5 - OBJECT_CENTRE) < 7:
+            canvas[OBJECT_BOTTOM - 1][x] = "green_deep"
     if is_cut:
-        for x in range(CENTRE - 8, CENTRE + 8):
+        for x in range(OBJECT_CENTRE - 8, OBJECT_CENTRE + 8):
             if rng.random() < 0.3:
                 continue
             height = rng.randint(3, 5)
             for step in range(height):
-                canvas[BOTTOM - 1 - step][x] = "green_deep" if step == 0 else "green_dark"
-            canvas[BOTTOM - height][x] = "straw" if x % 3 else "sand_light"
+                canvas[OBJECT_BOTTOM - 1 - step][x] = "green_deep" if step == 0 else "green_dark"
+            canvas[OBJECT_BOTTOM - height][x] = "straw" if x % 3 else "sand_light"
         return canvas
     # Back stems first, darker and taller; then the front ones, lit on the left of the stand.
     stems = []
     # A packed row of back stems, and front stems scattered unevenly over them.
     for row in range(2):
-        for x in range(CENTRE - 8, CENTRE + 8):
+        for x in range(OBJECT_CENTRE - 8, OBJECT_CENTRE + 8):
             if rng.random() < (0.15 if row == 0 else 0.6):
                 continue
             height = rng.randint(17, 28) if row == 0 else rng.randint(9, 24)
@@ -55,14 +46,14 @@ def reeds(seed, is_cut=False):
     for row, x, height in stems:
         lean = rng.choice((-1, 0, 0, 1))
         for step in range(height):
-            y = BOTTOM - 1 - step
+            y = OBJECT_BOTTOM - 1 - step
             stem_x = x + lean * step // 12
             if row == 0:
                 colour = "green_dark" if step < height * 0.6 else "green"
             else:
-                colour = "green_dark" if step < 3 else "green_light" if stem_x < CENTRE - 2 else "green"
+                colour = "green_dark" if step < 3 else "green_light" if stem_x < OBJECT_CENTRE - 2 else "green"
             canvas[y][stem_x] = colour
-        top_x, top_y = x + lean * (height - 1) // 12, BOTTOM - height
+        top_x, top_y = x + lean * (height - 1) // 12, OBJECT_BOTTOM - height
         # Some stems end in a cattail on a thin spike, some in a leaf bending over.
         if rng.random() < 0.25:
             for head in range(4):
@@ -87,7 +78,7 @@ def reeds_row():
 def reeds_item():
     """A bundle of long cut reeds lying on the diagonal, tied twice, with brown cattail heads at
     the top right."""
-    picture = items.canvas()
+    picture = blank()
     # Five stalks on the diagonals x + y = 13..17, the upper left one lit. Each ends at its own
     # length, so the ends are not cut square.
     stalks = ((13, "sand_light", 1, 10), (14, "straw", 1, 11), (15, "straw", 2, 12), (16, "reed", 3, 12), (17, "olive", 4, 13))
