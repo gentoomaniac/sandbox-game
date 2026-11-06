@@ -3,8 +3,9 @@
 The North German and Danish countryside, seen from the front in 3/4 view: a huge, thick reed
 thatch, weathered grey-brown with moss, hipped at both ends with soft rounded eaves and eyebrow
 dormers swelling out of it; lime-washed or brick walls on a fieldstone base; green or teal doors
-and shutters, white window frames; the small hut in tarred boards under turf. Light comes from
-the top left.
+and shutters, white window frames; the small hut in tarred boards under turf; and the hall house,
+which shows its half-timbered gable and big barn door to the front, its roof running back up
+the picture. Light comes from the top left.
 
 A picture is as wide as the footprint (16 px per tile) and its bottom edge is the footprint's
 bottom edge; the roof rises above it (see data/buildings.cfg, which also has the window light
@@ -638,6 +639,286 @@ def turf_roof(picture, snowy, rng, left, right, ridge_y, eaves_y):
     return eaves
 
 
+def gable_roof(picture, snowy, rng, left, right, eaves_y, foot_y, hip_half, depth, moss=6):
+    """A half-hipped thatch roof seen from its gable end, over the columns left..right: the
+    gable's rakes rise from the eaves at `eaves_y` on both sides to the foot of the little hip at
+    `foot_y`, `hip_half` px either side of the middle, and the roof runs back `depth` px from
+    them, up the picture. Its two long planes show from above, the left one lit and the right
+    one in shade, with a turf ridge between them. As the eaves run back along the sides, the
+    courses of reed run up the picture: about 4 px wide, lit along their edge towards the ridge
+    in broken runs, the reed ends hanging out towards the eaves, and the eaves are a thick
+    rolled edge along both sides. At the front the reed is cut along the rakes; the hip faces
+    the front in level courses over a rolled foot. White bargeboards lie along the rakes and
+    cross over the hip, their ends carved into horse heads looking out. Moss grows in a few
+    patches low on the shaded plane. Returns the top row of the gable wall in each column,
+    below the boards and the hip."""
+    centre = (left + right) / 2
+    slope = (eaves_y - foot_y) / ((right - left) / 2 - hip_half)
+
+    def rake(x):
+        return round(eaves_y - min(x - left, right - x) * slope)
+
+    # Per course (counted in from the eaves) and row: how far its edge moves in or out, in runs
+    # of a few rows; whether its lit edge shows there; and how far a reed end hangs out there.
+    courses = []
+    for _ in range(round((right - left) / 2) // COURSE + 2):
+        shift, lit, reed = {}, {}, {}
+        y, drift = 0, 0
+        while y < len(picture):
+            run = rng.randint(6, 12)
+            shift.update(dict.fromkeys(range(y, y + run), drift))
+            drift = max(-1, min(1, drift + rng.choice((-1, 1))))
+            y += run
+        y = 0
+        while y < len(picture):
+            run = 1 if rng.random() < 0.25 else rng.randint(3, 9)
+            lit.update(dict.fromkeys(range(y, y + run), run > 1))
+            y += run
+        y = rng.randrange(3)
+        while y < len(picture):
+            reed[y] = rng.choice((1, 1, 2, 2, 3))
+            y += rng.choice((2, 2, 3, 3, 4))
+        courses.append((shift, lit, reed))
+    patches = [
+        (rng.uniform(right - 24, right - 8), rng.uniform(eaves_y - depth, eaves_y - 10), rng.uniform(2.5, 4))
+        for _ in range(moss)
+    ]
+    face_top = {}
+    for x in range(left, right + 1):
+        from_eaves = min(x - left, right - x)
+        plane = 1 if x < centre else 3
+        bottom = rake(x)
+        for y in range(bottom - depth, bottom + 1):
+            if from_eaves < EAVES_ROWS:
+                # The rolled eaves, one shade per column in from the side: a lit lip over a dark
+                # underside, darker on the shaded plane.
+                shade = (4, 4, 3, 2, 1, 1)[from_eaves]
+                if plane == 3 and from_eaves > 2:
+                    shade += 1
+                colour = THATCH[min(4, shade)]
+            elif y > bottom - 2:
+                # The cut ends of the reed along the rake.
+                colour = THATCH[3] if plane == 1 and (x + y) % 3 else THATCH[4]
+            else:
+                along = from_eaves - EAVES_ROWS
+                along += courses[along // COURSE][0][y]
+                course, row = divmod(max(0, along), COURSE)
+                _, lit, reed = courses[course]
+                is_lit = row == COURSE - 1 and lit[y]
+                hangs = COURSE - 1 - row <= reed.get(y, 0)
+                tone = plane - 1 if is_lit else plane
+                colour = THATCH[tone + 1 if not is_lit and row < COURSE - 1 and hangs else tone]
+                for mx, my, radius in patches:
+                    distance = math.hypot((x - mx) * 1.5, y - my)
+                    if distance < radius - 1 or (distance < radius and (x + y) % 2):
+                        colour = MOSS[max(0, tone - 1)]
+            picture[y][x] = colour
+            snowy.add((x, y))
+        face_top[x] = bottom + 1
+    # The hip at the front, under the boards: level courses over a rolled foot, lit on the left.
+    for x in range(left, right + 1):
+        if abs(x - centre) >= hip_half:
+            continue
+        for y in range(rake(x) + 1, foot_y + 1):
+            from_foot = foot_y - y
+            if from_foot < 4:
+                shade = (4, 3, 1, 0)[from_foot]
+            else:
+                row = (from_foot - 4) % COURSE
+                shade = 1 if row == COURSE - 1 and x % 5 else 3 if row < 2 and x % 2 else 2
+            picture[y][x] = THATCH[shade + (x > centre and shade < 4)]
+            snowy.add((x, y))
+        face_top[x] = foot_y + 1
+    # The turf ridge: a band 4 px wide, lit on the left, with tufts along its edges, rounded off
+    # at both ends.
+    ridge_top, ridge_bottom = rake(centre) - depth - 1, rake(centre) + 1
+    for column, colour in enumerate(("dry", "green", "green_dark", "green_dark", "green_deep", "green_deep")):
+        x = round(centre - 2.5) + column
+        is_edge = column in (0, 5)
+        for y in range(ridge_top + is_edge, ridge_bottom - is_edge):
+            if not is_edge or rng.random() < 0.4:
+                picture[y][x] = colour
+                snowy.add((x, y))
+    # The bargeboards: each runs from its eaves along the rake and on past the middle, so they
+    # cross over the hip and end in horse heads, lit on top.
+    for side in (-1, 1):
+        start = left if side < 0 else right
+        reach = round((right - left) / 2) + 6
+        for step in range(1, reach + 1):
+            x = start - side * step
+            line = round(eaves_y - step * slope)
+            for row, colour in enumerate(BOARD):
+                picture[line + 1 + row][x] = colour
+            below = line + 1 + len(BOARD)
+            if picture[below][x] not in BOARD:
+                picture[below][x] = "soil_dark"
+            if abs(x - centre) >= hip_half:
+                face_top[x] = max(face_top[x], below)
+        horse_head(picture, start - side * reach, round(eaves_y - reach * slope), -side)
+    return face_top
+
+
+# The white-painted bargeboards and their horse heads: lit, body, shade, from the top down.
+BOARD = ("snow_light", "lime", "lime", "sand_light")
+# A horse head carved on a board's end, looking right, from its top row down; the board comes in
+# at the bottom left. "#" is the board's body, "o" its lit edge, "x" its shade, "e" the eye.
+HORSE_HEAD = (
+    "..o.......",
+    "..oo......",
+    "..#e#o....",
+    ".o####o...",
+    ".o###x#o..",
+    ".o#x.xx#o.",
+    "o#x....xx.",
+    "##x.......",
+    "#x........",
+)
+
+
+def horse_head(picture, x, y, facing):
+    """A horse head carved on the end of a bargeboard whose top edge ends at (x, y), looking
+    right with `facing` 1 and left with -1, outlined in dark oak so it shows against the thatch."""
+    colours = {"o": BOARD[0], "#": BOARD[1], "x": BOARD[3], "e": "soil_dark"}
+    head = {}
+    for row, line in enumerate(HORSE_HEAD):
+        for column, mark in enumerate(line):
+            if mark in colours:
+                head[x + facing * column, y - len(HORSE_HEAD) + 2 + row] = colours[mark]
+    for hx, hy in head:
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            if (hx + dx, hy + dy) not in head and picture[hy + dy][hx + dx] not in BOARD:
+                picture[hy + dy][hx + dx] = "soil_dark"
+    for (hx, hy), colour in head.items():
+        picture[hy][hx] = colour
+
+
+def herringbone(picture, rng, pixels, bricks, mortar):
+    """Bricks laid slanting in columns 4 px wide, leaning one way in one column and the other way
+    in the next, so their joints zigzag: the herringbone of a decorated gable."""
+    colours = {}
+    for x, y in pixels:
+        band, offset = divmod(x, 4)
+        diagonal = y + offset if band % 2 else y - offset
+        if diagonal % 3 == 0:
+            picture[y][x] = mortar
+        else:
+            picture[y][x] = colours.setdefault((band, diagonal // 3), rng.choice(bricks))
+
+
+def diagonal_bricks(picture, rng, pixels, bricks, mortar, rising):
+    """Bricks laid slanting all one way, parallel to a rake: rising to the right, or to the left
+    with `rising` -1; a joint every 5 px along each course."""
+    colours = {}
+    for x, y in pixels:
+        course = y + rising * x
+        if course % 3 == 0 or (x + course // 3 * 2) % 6 == 0:
+            picture[y][x] = mortar
+        else:
+            picture[y][x] = colours.setdefault((course // 3, (x + course // 3 * 2) // 6), rng.choice(bricks))
+
+
+def grote_door(picture, left, right, top, spring, bottom):
+    """The Grote Door of a hall house: two tall leaves of upright planks painted green, under a
+    flat arch rising from `spring` at the sides to `top` in the middle, in a white frame, each
+    leaf held by ledges with iron hinges; a stone threshold below."""
+    centre = (left + right) / 2
+    half = (right - left + 1) / 2
+    right_leaf = (left + right + 1) // 2
+    for x in range(left, right + 1):
+        arch = spring - round((spring - top) * math.sqrt(max(0.0, 1 - ((x - centre) / half) ** 2)))
+        picture[arch - 1][x] = "snow_light"
+        leaf_left = left if x < right_leaf else right_leaf
+        if x in (left, right):
+            colour = "green_dark"
+        elif x in (right_leaf - 1, right_leaf) or (x - leaf_left) % 4 == 3:
+            colour = "green_deep"
+        else:
+            colour = "green_light" if x == leaf_left + 1 else "green"
+        rect(picture, x, arch, x, bottom, colour)
+    for y in (spring + 4, (spring + bottom) // 2 + 4, bottom - 5):
+        rect(picture, left + 1, y, right - 1, y, "green_light")
+        rect(picture, left + 1, y + 1, right - 1, y + 1, "green_dark")
+        rect(picture, left + 1, y, left + 3, y + 1, "stone_dark")
+        rect(picture, right - 3, y, right - 1, y + 1, "stone_dark")
+    rect(picture, left - 1, top - 1, left - 1, bottom, "snow_light")
+    rect(picture, right + 1, top - 1, right + 1, bottom, "snow_light")
+    rect(picture, right_leaf - 3, (spring + bottom) // 2, right_leaf - 2, (spring + bottom) // 2, "gold")
+    rect(picture, left - 2, bottom + 1, right + 2, bottom + 2, "stone_light")
+    rect(picture, left - 2, bottom + 2, right + 2, bottom + 2, "stone")
+
+
+def hall_house(is_lit):
+    """The Low German hall house (Niedersachsenhaus) on 7x5 tiles, its gable end to the front:
+    the big arched barn door (Grote Door) in the middle under a carved oak beam, oak framing
+    with red brick in it, laid in herringbone and slanting courses in the gable, and the top of
+    the gable boarded, with the owl hole (Uhlenloch) under the little hip. A huge half-hipped
+    thatch runs back from it, with a turf ridge, and white bargeboards cross over the hip in a
+    pair of horse heads. Small stable windows to either side of the door."""
+    rng = random.Random(385)
+    width, height = 7 * TILE, 136
+    picture = blank(width, height)
+    snowy = set()
+    face_top = gable_roof(picture, snowy, rng, 0, width - 1, 106, 54, 13, 34)
+    # The gable is drawn whole on a picture of its own, and shows below the roof and the boards.
+    gable = blank(width, height)
+    wall_left, wall_right, base_top = 3, width - 4, 128
+    bricks = ("rust", "rust", "red_light", "rust_dark")
+    brick_wall(gable, rng, wall_left, wall_right, 54, base_top - 1, bricks, "sand")
+    # The upper gable: brick in herringbone between the posts, slanting with the rakes beside them.
+    herringbone(gable, rng, [(x, y) for x in range(40, 72) for y in range(66, 82)], bricks, "sand")
+    for x0, x1, rising in ((22, 37, 1), (74, 89, -1)):
+        diagonal_bricks(gable, rng, [(x, y) for x in range(x0, x1 + 1) for y in range(66, 82)], bricks, "sand", rising)
+    # The top of the gable boarded in oak, with the owl hole in it.
+    for x in range(wall_left, wall_right + 1):
+        rect(gable, x, 54, x, 63, ("soil_light", "soil_mid", "soil_mid", "soil")[(x - wall_left) % 4])
+    for row in range(5):
+        rect(gable, 55 - row, 57 + row, 56 + row, 57 + row, "ink")
+    # The oak frame: the sill, the posts, a rail in the side bays, short braces in the corner
+    # bays, the beam over the door (carved) and the gable's beam.
+    rect(gable, wall_left, base_top - 2, wall_right, base_top - 1, OAK[0])
+    rect(gable, wall_left, base_top - 1, wall_right, base_top - 1, OAK[1])
+    for x in (wall_left, 20, 55, 90, wall_right - 1):
+        rect(gable, x, 64, x + 1, base_top - 1, OAK[0])
+        rect(gable, x + 1, 64, x + 1, base_top - 1, OAK[1])
+    for x in (37, 71):
+        rect(gable, x, 64, x + 2, base_top - 1, OAK[0])
+        rect(gable, x, 64, x, base_top - 1, "soil_mid")
+        rect(gable, x + 2, 64, x + 2, base_top - 1, OAK[1])
+    for x0, x1 in ((wall_left, 37), (71, wall_right)):
+        rect(gable, x0, 104, x1, 105, OAK[0])
+        rect(gable, x0, 105, x1, 105, OAK[1])
+    for x0, direction in ((5, -1), (92, 1)):
+        for step in range(14):
+            bx = x0 + step if direction > 0 else x0 + 13 - step
+            gable[123 - step][bx] = OAK[0]
+            gable[123 - step][bx + 1] = OAK[1]
+    for top, bottom in ((64, 66), (82, 85)):
+        rect(gable, wall_left, top, wall_right, bottom, OAK[0])
+        rect(gable, wall_left, top, wall_right, top, "soil_mid")
+        rect(gable, wall_left, bottom, wall_right, bottom, OAK[1])
+    # A line cut into the door beam, as the farmer and his wife had their names and the year
+    # carved there.
+    x = 43
+    while x < 68:
+        letter = rng.randint(1, 3)
+        rect(gable, x, 84, x + letter - 1, 84, "soil_light")
+        if rng.random() < 0.5:
+            gable[83][x] = "soil_light"
+        x += letter + rng.choice((1, 1, 3))
+    fieldstone_base(gable, rng, wall_left, wall_right, base_top, height - 2)
+    for left in (24, 78):
+        window(gable, left, 90, 10, 10, is_lit, frame="green_dark")
+    grote_door(gable, 42, 69, 87, 94, height - 4)
+    for x, top in face_top.items():
+        for y in range(top, height):
+            if gable[y][x] is not None:
+                picture[y][x] = gable[y][x]
+    eaves_shadow(picture, {x: y - 1 for x, y in face_top.items()}, wall_left, wall_right)
+    outline(picture, THATCH[4])
+    ground_shadow(picture)
+    return picture, snowy
+
+
 # How to draw each building (is_lit to the picture and the pixels snow covers), by its id in
 # data/buildings.cfg.
-PICTURES = {"shack": shack, "kate": kate, "longhouse": longhouse, "barn": barn}
+PICTURES = {"shack": shack, "kate": kate, "longhouse": longhouse, "barn": barn, "hall_house": hall_house}

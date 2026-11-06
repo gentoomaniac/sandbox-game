@@ -33,7 +33,7 @@ by topic. Where is a thing drawn?
 | `camp.py` | The fireplace and the bedroll. |
 | `character.py` | The player's layers (body, breeches and stockings, clogs, shirt and waistcoat, jacket, hair, hats, hoe), their passing out and the sleeping "z". |
 | `interior.py` | The room tiles and the furniture inside the buildings, the hearth too. |
-| `buildings.py` | The four buildings, plain and with lit windows. |
+| `buildings.py` | The five buildings, plain and with lit windows. |
 | `seasons.py` | The other looks (spring, autumn, bare, frost, snow, dusting, leaf-out steps) made from the summer art by colour remaps and overlays. Also adds its colours to the palette. |
 | `crops.py`, `crop_icons.py` | Crop sheets (growth stages and the dead one), seed bag and produce icons, wet soil. |
 | `items.py`, `tool_icons.py`, `chest.py` | Item icons, the slot frames and the tools; the chest, which is drawn once for every use. |
