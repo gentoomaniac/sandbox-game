@@ -20,6 +20,8 @@ from canvas import TILE, blank, rect
 # The thatch, lit to dark: weathered grey-brown reed, darkest in the shadow under the eaves.
 THATCH = ("sand", "bare_light", "bare", "mud_dark", "soil_dark")
 MOSS = ("dry", "olive", "green_dark")
+# The height of a course of thatch, in px.
+COURSE = 4
 # The lime-washed walls: lit, and shaded at the right corner.
 LIME = ("lime", "sand_light")
 # Fieldstones: lit on top, and their body.
@@ -39,62 +41,111 @@ SHADED = {
 def thatch_roof(picture, snowy, rng, left, right, ridge_y, eaves_y, inset, swells=(), moss=5):
     """A hipped thatch roof over the columns left..right, from the ridge at `ridge_y` down to the
     eaves at `eaves_y`. The ridge is `inset` px shorter than the eaves on each side, and the hips
-    round off into it, so the roof bulges like a thick, heavy thatch. The hips are their own
-    faces, the left one lit, the right one in shade. The eaves are a thick rolled edge, curling up
-    at the corners and rising in a smooth wave over each swell (cx, half width, rise), e.g. over
-    a door. The reed shows as short vertical strokes and long darker streaks of weathering; moss
-    grows in a few patches low on the front. Returns the eaves row of each column."""
+    run down from its ends with a little belly, so the roof reads as steep planes: the front
+    slope, and a narrow hip face at each end, the left one lit and the right one in shade, with a
+    lit hip line. The eaves are a thick rolled edge, curling up at the corners and rising in a
+    smooth wave over each swell (cx, half width, rise), e.g. over a door. The reed lies in
+    courses about 4 px high with ragged edges, each lit along its top in broken runs, with reed
+    ends of mixed length hanging below that; the courses bend up with the eaves over a
+    swell. Weathering crowds the reed ends in a few patches, and moss grows in a few patches low
+    on the front. Returns the eaves row of each column."""
     height = eaves_y - ridge_y
-    width = len(picture[0])
-    # Per column: where its strokes of reed start, and whether a streak of weathering runs down it.
-    strokes = [rng.randrange(7) for _ in range(width)]
-    streaks = [rng.random() < 0.12 for _ in range(width)]
+    # How far in from the eaves' corners the hip lines meet the eaves.
+    hip_foot = round(inset * 0.5)
+    lifts = {}
+    eaves = {}
+    for x in range(left, right + 1):
+        lift = 0
+        for cx, half_width, rise in swells:
+            if abs(x - cx) < half_width:
+                lift += round(rise * math.cos((x - cx) / half_width * math.pi / 2) ** 2)
+        lifts[x] = lift
+        corner = min(x - left, right - x)
+        eaves[x] = eaves_y - lift - (round(6 - math.sqrt(36 - (6 - corner) ** 2)) if corner < 6 else 0)
+    # Per course (counted up from the eaves) and column: how far its edge drops or lifts, in runs
+    # of a few columns; whether its lit top shows there; and how long a reed end hangs there.
+    courses = []
+    for _ in range(height // COURSE + 2):
+        shift, lit, reed = {}, {}, {}
+        # The edge wanders by a pixel at a time, so it waves instead of stepping like brick.
+        x, drop = left, 0
+        while x <= right:
+            run = rng.randint(6, 12)
+            shift.update(dict.fromkeys(range(x, x + run), drop))
+            drop = max(-1, min(1, drop + rng.choice((-1, 1))))
+            x += run
+        x = left
+        while x <= right:
+            run = 1 if rng.random() < 0.25 else rng.randint(3, 9)
+            lit.update(dict.fromkeys(range(x, x + run), run > 1))
+            x += run
+        x = left + rng.randrange(3)
+        while x <= right:
+            reed[x] = rng.choice((1, 1, 2, 2, 3))
+            x += rng.choice((2, 2, 3, 3, 4))
+        courses.append((shift, lit, reed))
+    # Under the dark underside of the rolled eaves, a ragged edge: one row more in runs of columns.
+    ragged = {}
+    x = left
+    while x <= right:
+        deeper = rng.random() < 0.5
+        run = rng.randint(2, 4)
+        ragged.update(dict.fromkeys(range(x, x + run), deeper))
+        x += run
+    weathered = [
+        (rng.uniform(left + inset, right - inset), rng.uniform(ridge_y + 8, eaves_y - 14), rng.uniform(3, 5))
+        for _ in range(3)
+    ]
+
+    def is_weathered(x, y):
+        return any(math.hypot(x - wx, (y - wy) * 0.6) < radius for wx, wy, radius in weathered)
+
     patches = [
         (rng.uniform(left + 10, right - 10), rng.uniform(ridge_y + height * 0.55, eaves_y - 6), rng.uniform(2.5, 4))
         for _ in range(moss)
     ]
-    eaves = {}
-    for x in range(left, right + 1):
-        line = eaves_y
-        for cx, half_width, rise in swells:
-            if abs(x - cx) < half_width:
-                line -= round(rise * math.cos((x - cx) / half_width * math.pi / 2) ** 2)
-        corner = min(x - left, right - x)
-        if corner < 6:
-            line -= round(6 - math.sqrt(36 - (6 - corner) ** 2))
-        eaves[x] = line
     for y in range(ridge_y, eaves_y + 1):
         t = (y - ridge_y) / height
-        # In from the eaves by `inset` at the ridge, falling away fast at first: a rounded hip.
-        reach = inset * (1 - t) ** 2.2
+        # The ends of the ridge are rounded off by a pixel or two.
+        reach = inset * (1 - t) ** 1.5 + max(0, 2 - (y - ridge_y))
+        hip = inset * (1 - t) ** 1.5 + hip_foot * t
         for x in range(left, right + 1):
             if x < left + reach or x > right - reach or y > eaves[x]:
                 continue
-            # The hip lines run from the ridge's ends to a little inside the eaves' corners.
-            hip = inset * (1 - t) ** 1.4 + 7 * t
+            # The planes, as steps of THATCH: the lit hip, the front, the hip in shade.
             if x < left + hip:
-                light = 0.18 + 0.2 * t
+                plane = 1
             elif x > right - hip:
-                light = 0.62 + 0.15 * t
+                plane = 3
             else:
-                light = 0.2 + 0.32 * t + 0.12 * (x - left) / (right - left)
-            # The rolled eaves: a lit lip over a dark underside.
+                plane = 2
             from_eaves = eaves[x] - y
-            if from_eaves <= 5:
-                light = (0.95, 0.8, 0.62, 0.45, 0.3, 0.32)[from_eaves] + (0.12 if x > right - hip else 0)
-            elif (y + strokes[x]) % 7 < 2 and x % 2:
-                light -= 0.17
-            elif (y + strokes[x] + 3) % 7 < 2 and not x % 2:
-                light += 0.17
-            if streaks[x] and from_eaves > 5:
-                light += 0.18
-            # Ragged edges between the shades, as the reed ends lie unevenly.
-            light += (strokes[x] - 3) * 0.02
-            colour = THATCH[min(len(THATCH) - 1, max(0, int(light * len(THATCH))))]
-            for mx, my, radius in patches:
-                distance = math.hypot(x - mx, (y - my) * 1.5)
-                if from_eaves > 4 and colour in THATCH[1:4] and (distance < radius - 1 or (distance < radius and (x + y) % 2)):
-                    colour = MOSS[THATCH.index(colour) - 1]
+            if from_eaves < 6:
+                # The rolled eaves: a lit lip over a dark underside, darker on the shaded hip.
+                shade = (4, 4, 4 if ragged[x] else 3, 2, 1, 1)[from_eaves]
+                if plane == 3 and from_eaves > 2:
+                    shade += 1
+                if plane == 1 and from_eaves > 3:
+                    shade -= 1
+                colour = THATCH[min(4, shade)]
+            else:
+                # Up the slope from the eaves, the courses bend with them over a swell.
+                along = round(eaves_y - y - lifts[x] * t**2) - 6
+                # The edges wave: the course a pixel would be in moves it up or down a little.
+                along += courses[along // COURSE][0][x]
+                course, row = divmod(max(0, along), COURSE)
+                _, lit, reed = courses[course]
+                # The lit hip line and the lit top edge of each course, then the reed ends below it.
+                is_lit = (row == COURSE - 1 and lit[x]) or (plane == 1 and x + 1 >= left + hip)
+                hangs = COURSE - 1 - row <= reed.get(x, 0) or (x % 2 and is_weathered(x, y))
+                tone = plane - is_lit
+                stroke = not is_lit and row < COURSE - 1 and plane > 1 and hangs
+                colour = THATCH[tone + stroke]
+                # Moss covers the reed ends, a little ragged at its edge.
+                for mx, my, radius in patches:
+                    distance = math.hypot(x - mx, (y - my) * 1.5)
+                    if distance < radius - 1 or (distance < radius and (x + y) % 2):
+                        colour = MOSS[max(0, tone - 1)]
             picture[y][x] = colour
             snowy.add((x, y))
     return eaves
