@@ -162,12 +162,16 @@ func test_a_chat_left_before_the_answer_is_remembered_with_it() -> void:
 	assert_string_contains(_chat.requests[1]["messages"][1]["content"], "Antje: Aye, it held.")
 
 
-func test_the_next_conversation_tells_only_its_own_lines() -> void:
+func test_the_next_conversation_still_tells_the_earlier_lines_and_the_memory() -> void:
 	_chat.answers = ["Moin!", "We greeted.", "Aye."]
 	var screen := _chat_screen()
 	await _talk(screen, "Moin")
 	await wait_until(func() -> bool: return _npc.memories.size() == 1, 2.0)
 	await _talk(screen, "Rain today?")
 	var messages: Array = _chat.requests[2]["messages"]
-	assert_eq(messages.size(), 4, "the system line, the example and the message: no old lines")
+	assert_eq(
+		messages.size(), 6, "the system line, the example, the earlier two lines, the message"
+	)
+	assert_string_contains(messages[3]["content"], "Moin")
+	assert_eq(messages[4]["content"], "Moin!")
 	assert_string_contains(messages[-1]["content"], "remembers earlier talks")

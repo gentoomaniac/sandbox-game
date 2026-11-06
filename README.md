@@ -506,7 +506,7 @@ fails, becomes a scripted line.
 What the model is told for each reply (the words are in [data/npc_talk.cfg](data/npc_talk.cfg),
 shaped like a prompt that worked well with the test model): a system line (1750 on the North
 Frisian coast, one or two sentences of small talk, never break character), one example
-exchange, the earlier lines of this conversation, and then who the villager is (name, trade,
+exchange, the last 24 lines of your chat with them (also from earlier talks), and then who the villager is (name, trade,
 age, their look in words, personality, background, habits, and what they remember of earlier
 talks), the moment (the date as the clock shows it and how far into the season, the time and
 part of the day by the sun, the weather as it is: rain, snow, fog or the sky, the temperature,

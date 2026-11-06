@@ -122,7 +122,9 @@ func say(text: String) -> void:
 	if npc.is_answering or line.is_empty():
 		return
 	var clock := _state.clock
-	var history := npc.unremembered_lines()
+	# The chat so far, also what is already in a memory: the model only follows a conversation it
+	# is told (NpcPrompt keeps the last `history_lines` of it).
+	var history := npc.chat_history.duplicate()
 	npc.add_chat_line(clock.day, clock.minute_of_day, true, line)
 	npc.is_answering = true
 	_show_lines()

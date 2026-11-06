@@ -926,8 +926,9 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   villager remembers the conversation in one dated line ("On the 12th day of Spring, year 1
   (mid spring): ..."): summed up by the model with a small prompt of its own, else the start
   of what the player said. A villager keeps 10; beyond that the oldest two merge into one
-  (its last 400 characters). Later prompts tell the memories, and only the lines since the
-  last memory as earlier turns.
+  (its last 400 characters). Later prompts tell the memories, and the last 24 lines of the
+  chat as earlier turns, also those already in a memory (with fewer, the model lost the
+  thread of a conversation).
 - **Settings:** the endpoint (default the test LLM's), the model (default
   `qwen2.5:3b-instruct`, the test LLM's) and the key are in the settings file
   (`[language_model]`); the key is plain text there, as the Settings page says, never in the

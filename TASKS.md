@@ -886,6 +886,10 @@ do. Why, do you need some?"; Kerrin in a storm at dusk: "The dyke will hold, the
 watching over us. But we must be ever vigilant." Not done: an adapter for Claude's own API,
 streaming, suggestions from the model (docs/ideas/NPC.md 6.3).
 
+Since (2026-11-06, the user's word): the model lost the thread, as only the lines since the
+last memory went in (at most 8), and every closed chat became a memory. Now the last 24
+lines of the chat go in, also those already remembered.
+
 ## 87. Willows that stand out from the grass
 
 - [ ] Done
