@@ -34,4 +34,4 @@ static func create(world: World, origin: Vector2i) -> void:
 		TrunkPlacement.lay(world, WorldObject.new(tree_type, tree_pos), player_tile)
 	for index in SEEDS.size():
 		var pos := origin + Vector2i(index * 2, 3)
-		world.add_ground_item(GroundItem.new(SEEDS[index], 1, Vector2(pos) + Vector2(0.5, 0.5)))
+		world.ground_items.add(GroundItem.new(SEEDS[index], 1, Vector2(pos) + Vector2(0.5, 0.5)))

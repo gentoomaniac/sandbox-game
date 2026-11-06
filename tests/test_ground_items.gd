@@ -17,7 +17,7 @@ func before_each() -> void:
 ## A pile lying at `offset` from the player, as if it had been dropped there.
 func _lay(item: StringName, count: int, offset: Vector2) -> GroundItem:
 	var ground_item := GroundItem.new(item, count, _state.player.position + offset)
-	_world.add_ground_item(ground_item)
+	_world.ground_items.add(ground_item)
 	return ground_item
 
 
@@ -70,12 +70,12 @@ func test_mining_picking_and_harvesting_drop_on_the_ground() -> void:
 func test_a_drop_is_split_over_free_walkable_tiles_around_the_source() -> void:
 	_world.drop_items(_tile, {ItemTypes.LOGS: 4})
 	var tiles := {}
-	for ground_item in _world.ground_items():
+	for ground_item in _world.ground_items.all():
 		var pile_tile := Vector2i(ground_item.position.floor())
 		assert_true(_world.is_walkable(pile_tile))
 		assert_lte(maxi(absi(pile_tile.x - _tile.x), absi(pile_tile.y - _tile.y)), 1)
 		tiles[pile_tile] = true
-	assert_eq(_world.ground_items().size(), 4)
+	assert_eq(_world.ground_items.all().size(), 4)
 	assert_eq(tiles.size(), 4, "one pile to a tile")
 	assert_eq(_dropped(ItemTypes.LOGS), 4)
 
@@ -83,7 +83,7 @@ func test_a_drop_is_split_over_free_walkable_tiles_around_the_source() -> void:
 func test_piles_are_as_even_as_they_can_be() -> void:
 	_world.drop_items(_tile, {ItemTypes.STONE: 20})
 	assert_eq(_dropped(ItemTypes.STONE), 20)
-	for ground_item in _world.ground_items():
+	for ground_item in _world.ground_items.all():
 		assert_between(ground_item.count, 2, 3)
 
 
@@ -100,7 +100,7 @@ func test_a_drop_avoids_tiles_that_block_walking() -> void:
 	_world.remove_object(blocked)
 	_world.add_object(WorldObject.new(WorldObjectTypes.STONE, blocked))
 	_world.drop_items(_tile, {ItemTypes.LOGS: 8})
-	for ground_item in _world.ground_items():
+	for ground_item in _world.ground_items.all():
 		assert_ne(Vector2i(ground_item.position.floor()), blocked)
 	assert_eq(_dropped(ItemTypes.LOGS), 8)
 
@@ -114,7 +114,7 @@ func test_a_source_with_no_walkable_tile_around_drops_on_itself() -> void:
 	_world.remove_object(_tile)
 	_world.drop_items(_tile, {ItemTypes.LOGS: 3})
 	assert_eq(_dropped(ItemTypes.LOGS), 3)
-	for ground_item in _world.ground_items():
+	for ground_item in _world.ground_items.all():
 		assert_eq(Vector2i(ground_item.position.floor()), _tile)
 
 
@@ -124,7 +124,7 @@ func test_drops_beside_a_felled_tree_avoid_its_stump_and_trunk() -> void:
 	_world.drop_items(_tile, {ItemTypes.LOGS: 8})
 	assert_eq(_dropped(ItemTypes.LOGS), 8)
 	var blocked: Array[Vector2i] = [_tile, _tile + Vector2i.RIGHT, _tile + Vector2i(2, 0)]
-	for ground_item in _world.ground_items():
+	for ground_item in _world.ground_items.all():
 		assert_does_not_have(blocked, Vector2i(ground_item.position.floor()))
 
 
@@ -135,7 +135,7 @@ func test_walking_over_a_pile_collects_it() -> void:
 	_lay(ItemTypes.LOGS, 3, Vector2(0.3, 0))
 	_walk_frames(30)
 	assert_eq(_count(ItemTypes.LOGS), 3)
-	assert_eq(_world.ground_items().size(), 0)
+	assert_eq(_world.ground_items.all().size(), 0)
 
 
 func test_a_pile_is_pulled_only_within_the_pull_radius() -> void:
@@ -157,7 +157,7 @@ func test_with_a_full_inventory_the_pile_stays_where_it_is() -> void:
 	_walk_frames(30)
 	assert_eq(pile.position, spot)
 	assert_eq(pile.count, 3)
-	assert_eq(_world.ground_items().size(), 1)
+	assert_eq(_world.ground_items.all().size(), 1)
 
 
 func test_a_pile_that_only_partly_fits_leaves_the_rest() -> void:
@@ -167,14 +167,14 @@ func test_a_pile_that_only_partly_fits_leaves_the_rest() -> void:
 	_walk_frames(30)
 	assert_eq(_count(ItemTypes.LOGS), 99)
 	assert_eq(pile.count, 3)
-	assert_eq(_world.ground_items(), [pile] as Array[GroundItem])
+	assert_eq(_world.ground_items.all(), [pile] as Array[GroundItem])
 
 
-func test_picking_up_emits_ground_item_removed() -> void:
+func test_picking_up_emits_removed() -> void:
 	_lay(ItemTypes.LOGS, 1, Vector2(0.1, 0))
-	watch_signals(_world)
+	watch_signals(_world.ground_items)
 	_walk_frames(30)
-	assert_signal_emitted(_world, "ground_item_removed")
+	assert_signal_emitted(_world.ground_items, "removed")
 
 
 # --- Saving ---
@@ -184,16 +184,16 @@ func test_ground_items_survive_a_save() -> void:
 	_world.drop_items(_tile, {ItemTypes.LOGS: 4, ItemTypes.BERRIES: 1})
 	var restored := _through_save()
 	assert_eq(restored.world.to_dict()["ground_items"], _world.to_dict()["ground_items"])
-	assert_eq(restored.world.ground_count_of(ItemTypes.LOGS), 4)
-	assert_eq(restored.world.ground_count_of(ItemTypes.BERRIES), 1)
+	assert_eq(restored.world.ground_items.count_of(ItemTypes.LOGS), 4)
+	assert_eq(restored.world.ground_items.count_of(ItemTypes.BERRIES), 1)
 
 
 func test_a_dropped_pile_hops_out_before_it_is_pulled() -> void:
 	var source := Vector2i(_player_start.floor()) + Vector2i(1, 0)
 	_world.drop_items(source, {ItemTypes.LOGS: 1})
-	var pile: GroundItem = _world.ground_items()[-1]
+	var pile: GroundItem = _world.ground_items.all()[-1]
 	var landing := pile.position
-	_walk_frames(int(World.DROP_SETTLE_SECONDS / FRAME) - 2)
+	_walk_frames(int(GroundItems.DROP_SETTLE_SECONDS / FRAME) - 2)
 	assert_eq(pile.position, landing, "still hopping and settling")
 	_state.player.position = landing + Vector2(0.5, 0)
 	_walk_frames(60)

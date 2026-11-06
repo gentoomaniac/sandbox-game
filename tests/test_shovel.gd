@@ -57,9 +57,9 @@ func _dig_all(state: GameState, day: int) -> Array[bool]:
 	state.player.inventory.select(_shovel_slot(state))
 	var gave_clay: Array[bool] = []
 	for spot in _spots:
-		var before := state.world.ground_count_of(ItemTypes.CLAY)
+		var before := state.world.ground_items.count_of(ItemTypes.CLAY)
 		state.use_tile(spot)
-		gave_clay.append(state.world.ground_count_of(ItemTypes.CLAY) > before)
+		gave_clay.append(state.world.ground_items.count_of(ItemTypes.CLAY) > before)
 	return gave_clay
 
 
@@ -160,7 +160,7 @@ func test_digging_a_clay_spot_gives_clay_about_four_times_in_ten() -> void:
 	var gave_clay := _dig_all(_state, MIDSUMMER)
 	var clay_spots := gave_clay.count(true)
 	assert_between(float(clay_spots) / _spots.size(), 0.28, 0.52)
-	assert_eq(_state.world.ground_count_of(ItemTypes.CLAY), 2 * clay_spots)
+	assert_eq(_state.world.ground_items.count_of(ItemTypes.CLAY), 2 * clay_spots)
 
 
 func test_the_roll_is_the_same_for_the_same_spot_and_day_and_differs_between_days() -> void:
@@ -177,9 +177,11 @@ func test_a_dug_spot_is_spent_whether_or_not_it_gave_clay() -> void:
 	_dig_all(_state, MIDSUMMER)
 	for spot in _spots:
 		assert_false(_state.world.has_clay(spot), "%s is spent" % spot)
-	var clay_before := _state.world.ground_count_of(ItemTypes.CLAY)
+	var clay_before := _state.world.ground_items.count_of(ItemTypes.CLAY)
 	_dig_all(_state, MIDSUMMER + 1)
-	assert_eq(_state.world.ground_count_of(ItemTypes.CLAY), clay_before, "nothing more to find")
+	assert_eq(
+		_state.world.ground_items.count_of(ItemTypes.CLAY), clay_before, "nothing more to find"
+	)
 
 
 func test_a_spent_spot_recovers_over_nights() -> void:
@@ -199,7 +201,7 @@ func test_digging_elsewhere_gives_nothing_and_spends_nothing() -> void:
 	for day in range(MIDSUMMER, MIDSUMMER + 30):
 		_state.clock.day = day
 		assert_eq(_state.use_tile(elsewhere), ToolUse.Use.DIG)
-	assert_eq(_state.world.ground_count_of(ItemTypes.CLAY), 0)
+	assert_eq(_state.world.ground_items.count_of(ItemTypes.CLAY), 0)
 	assert_lt(_state.player.energy, PlayerState.MAX_ENERGY, "digging still costs energy")
 
 

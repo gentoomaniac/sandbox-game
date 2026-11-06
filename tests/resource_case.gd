@@ -120,12 +120,12 @@ func _count(item: StringName) -> int:
 
 
 func _dropped(item: StringName) -> int:
-	return _world.ground_count_of(item)
+	return _world.ground_items.count_of(item)
 
 
 func _clear_ground() -> void:
-	for ground_item in _world.ground_items():
-		_world.remove_ground_item(ground_item)
+	for ground_item in _world.ground_items.all():
+		_world.ground_items.remove(ground_item)
 
 
 ## Fills every slot but the selected one.

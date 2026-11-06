@@ -19,10 +19,10 @@ var _hops: Dictionary[GroundItem, ItemHop] = {}
 ## The items that are on the ground now are not dropped: they appear where they lie.
 func show_items(world: World, entities: Node2D) -> void:
 	_entities = entities
-	world.ground_item_added.connect(_add_sprite)
-	world.ground_item_removed.connect(_remove_sprite)
-	world.ground_items_dropped.connect(_start_hops)
-	for ground_item in world.ground_items():
+	world.ground_items.added.connect(_add_sprite)
+	world.ground_items.removed.connect(_remove_sprite)
+	world.ground_items.dropped.connect(_start_hops)
+	for ground_item in world.ground_items.all():
 		_add_sprite(ground_item)
 
 

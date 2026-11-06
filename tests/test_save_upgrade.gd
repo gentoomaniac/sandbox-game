@@ -30,24 +30,24 @@ func test_a_version_2_save_loads_with_wood_as_logs_and_nothing_on_the_ground() -
 	var restored := SaveFile.read(SAVE_PATH)
 
 	assert_eq(restored.player.inventory.count_of(ItemTypes.LOGS), 7)
-	assert_eq(restored.world.ground_items().size(), 0)
+	assert_eq(restored.world.ground_items.all().size(), 0)
 
 
 func test_a_current_save_keeps_its_ground_items() -> void:
 	var state := GameState.new_game(7)
-	state.world.add_ground_item(GroundItem.new(ItemTypes.LOGS, 2, Vector2(1.5, 2.25)))
+	state.world.ground_items.add(GroundItem.new(ItemTypes.LOGS, 2, Vector2(1.5, 2.25)))
 	assert_true(SaveFile.write(state, SAVE_PATH))
 
 	var restored := SaveFile.read(SAVE_PATH)
 
-	assert_eq(restored.world.ground_count_of(ItemTypes.LOGS), 2)
-	assert_eq(restored.world.ground_items()[0].position, Vector2(1.5, 2.25))
+	assert_eq(restored.world.ground_items.count_of(ItemTypes.LOGS), 2)
+	assert_eq(restored.world.ground_items.all()[0].position, Vector2(1.5, 2.25))
 
 
 func test_a_version_3_save_loads_with_its_saplings_as_acorns() -> void:
 	var state := GameState.new_game(7)
 	state.player.inventory.add(ItemTypes.ACORN, 3)
-	state.world.add_ground_item(GroundItem.new(ItemTypes.ACORN, 2, Vector2(1.5, 2.25)))
+	state.world.ground_items.add(GroundItem.new(ItemTypes.ACORN, 2, Vector2(1.5, 2.25)))
 	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
 	for stack: Variant in game["player"]["inventory"]["slots"]:
 		if stack != null and stack["item"] == "acorn":
@@ -58,7 +58,7 @@ func test_a_version_3_save_loads_with_its_saplings_as_acorns() -> void:
 	var restored := SaveFile.read(SAVE_PATH)
 
 	assert_eq(restored.player.inventory.count_of(ItemTypes.ACORN), 3)
-	assert_eq(restored.world.ground_count_of(ItemTypes.ACORN), 2)
+	assert_eq(restored.world.ground_items.count_of(ItemTypes.ACORN), 2)
 
 
 func test_a_version_4_save_loads_with_its_small_houses_as_kates() -> void:
@@ -114,7 +114,7 @@ func test_a_version_6_save_loads_with_its_tomatoes_as_flax() -> void:
 	var restored := SaveFile.read(SAVE_PATH)
 
 	assert_eq(restored.player.inventory.slots[13], {"item": &"flax_seeds", "count": 4})
-	assert_eq(restored.world.ground_count_of(&"flax"), 2)
+	assert_eq(restored.world.ground_items.count_of(&"flax"), 2)
 	var objects := {}
 	for edit: Dictionary in restored.world.to_dict()["object_edits"]:
 		if edit["object"] != null:

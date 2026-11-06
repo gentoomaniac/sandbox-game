@@ -89,8 +89,8 @@ func test_an_empty_hand_harvests_a_ripe_crop_and_gets_a_seed_back() -> void:
 	_hold(ItemTypes.NONE)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.HARVEST)
 	assert_null(_world.object_at(_tile))
-	assert_eq(_world.ground_count_of(ItemTypes.TURNIP), 1)
-	assert_eq(_world.ground_count_of(ItemTypes.TURNIP_SEEDS), 1)
+	assert_eq(_world.ground_items.count_of(ItemTypes.TURNIP), 1)
+	assert_eq(_world.ground_items.count_of(ItemTypes.TURNIP_SEEDS), 1)
 
 
 func test_an_empty_hand_does_not_harvest_an_unripe_crop() -> void:

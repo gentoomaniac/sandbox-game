@@ -24,16 +24,16 @@ func test_the_axe_takes_a_chest_down_in_three_hits() -> void:
 func test_a_felled_chest_gives_the_chest_item_back_as_a_pile() -> void:
 	_chest_with_contents()
 	_hit(ItemTypes.AXE, 3)
-	assert_eq(_world.ground_count_of(ItemTypes.CHEST), 1)
+	assert_eq(_world.ground_items.count_of(ItemTypes.CHEST), 1)
 	assert_eq(_count(ItemTypes.CHEST), 0, "it lies on the ground")
 
 
 func test_a_felled_chest_spills_what_it_held_as_piles_on_the_ground() -> void:
 	_chest_with_contents()
 	_hit(ItemTypes.AXE, 3)
-	assert_eq(_world.ground_count_of(ItemTypes.LOGS), 120)
-	assert_eq(_world.ground_count_of(ItemTypes.HOE), 1)
-	var piles := _world.ground_items().filter(
+	assert_eq(_world.ground_items.count_of(ItemTypes.LOGS), 120)
+	assert_eq(_world.ground_items.count_of(ItemTypes.HOE), 1)
+	var piles := _world.ground_items.all().filter(
 		func(pile: GroundItem) -> bool: return pile.item == ItemTypes.LOGS
 	)
 	assert_gt(piles.size(), 1, "spread over tiles round the chest")
@@ -42,15 +42,15 @@ func test_a_felled_chest_spills_what_it_held_as_piles_on_the_ground() -> void:
 func test_an_empty_chest_taken_down_leaves_only_the_chest_item() -> void:
 	_place(WorldObjectTypes.CHEST)
 	_hit(ItemTypes.AXE, 3)
-	assert_eq(_world.ground_items().size(), 1)
-	assert_eq(_world.ground_count_of(ItemTypes.CHEST), 1)
+	assert_eq(_world.ground_items.all().size(), 1)
+	assert_eq(_world.ground_items.count_of(ItemTypes.CHEST), 1)
 
 
 func test_a_chest_inside_a_chest_comes_back_with_its_item_counted_once_each() -> void:
 	var chest := _place(WorldObjectTypes.CHEST)
 	chest.storage.add(ItemTypes.CHEST, 2)
 	_hit(ItemTypes.AXE, 3)
-	assert_eq(_world.ground_count_of(ItemTypes.CHEST), 3)
+	assert_eq(_world.ground_items.count_of(ItemTypes.CHEST), 3)
 
 
 func test_the_pickaxe_does_nothing_to_a_chest() -> void:

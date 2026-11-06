@@ -120,7 +120,7 @@ func test_unloading_the_chunk_cancels_the_fall() -> void:
 func test_dropped_piles_hop_from_the_middle_of_the_source_tile_to_where_they_lie() -> void:
 	_show_views()
 	_world.drop_items(_tile, {ItemTypes.STONE: 3})
-	var piles := _world.ground_items()
+	var piles := _world.ground_items.all()
 	assert_eq(piles.size(), _items._hops.size())
 	var tile_size := TerrainTileset.TILE_SIZE
 	for pile in piles:
@@ -147,7 +147,7 @@ func test_several_piles_hop_one_after_the_other() -> void:
 	_show_views()
 	_world.drop_items(_tile, {ItemTypes.STONE: 3, ItemTypes.CLAY: 3})
 	var delays: Array[float] = []
-	for pile in _world.ground_items():
+	for pile in _world.ground_items.all():
 		delays.append(_items._hops[pile].delay)
 	assert_gt(delays.size(), 1)
 	for index in delays.size():
@@ -158,7 +158,7 @@ func test_several_piles_hop_one_after_the_other() -> void:
 func test_a_waiting_pile_is_not_shown_yet() -> void:
 	_show_views()
 	_world.drop_items(_tile, {ItemTypes.STONE: 3, ItemTypes.CLAY: 3})
-	var piles := _world.ground_items()
+	var piles := _world.ground_items.all()
 	assert_true(_items._sprites[piles[0]].visible)
 	assert_false(_items._sprites[piles[-1]].visible)
 	_items._process(1.0)
@@ -167,22 +167,22 @@ func test_a_waiting_pile_is_not_shown_yet() -> void:
 
 
 func test_items_that_were_on_the_ground_appear_without_a_hop() -> void:
-	_world.add_ground_item(GroundItem.new(ItemTypes.STONE, 1, Vector2(_tile) + Vector2(0.5, 0.5)))
+	_world.ground_items.add(GroundItem.new(ItemTypes.STONE, 1, Vector2(_tile) + Vector2(0.5, 0.5)))
 	_show_views()
 	assert_true(_items._hops.is_empty())
-	_world.add_ground_item(GroundItem.new(ItemTypes.STONE, 1, Vector2(_tile) + Vector2(0.5, 0.5)))
+	_world.ground_items.add(GroundItem.new(ItemTypes.STONE, 1, Vector2(_tile) + Vector2(0.5, 0.5)))
 	assert_true(_items._hops.is_empty(), "placed, not dropped")
 
 
 func test_collecting_a_pile_mid_hop_works_and_ends_its_hop() -> void:
 	_show_views()
 	_world.drop_items(_tile, {ItemTypes.STONE: 1})
-	var pile := _world.ground_items()[0]
+	var pile := _world.ground_items.all()[0]
 	# A dropped pile normally waits out its hop; the view must still cope if it goes early.
 	pile.settle_seconds = 0.0
 	_state.player.position = pile.position
 	_state.collect_ground_items(0.1)
-	assert_true(_world.ground_items().is_empty(), "the state has collected it")
+	assert_true(_world.ground_items.all().is_empty(), "the state has collected it")
 	assert_true(_items._hops.is_empty())
 	assert_true(_items._sprites.is_empty())
 
@@ -190,7 +190,7 @@ func test_collecting_a_pile_mid_hop_works_and_ends_its_hop() -> void:
 func test_a_pile_pulled_mid_hop_stops_hopping() -> void:
 	_show_views()
 	_world.drop_items(_tile, {ItemTypes.STONE: 1})
-	var pile := _world.ground_items()[0]
+	var pile := _world.ground_items.all()[0]
 	pile.position += Vector2(0.1, 0.0)
 	_items._process(0.0)
 	assert_true(_items._hops.is_empty())
@@ -202,6 +202,6 @@ func test_the_seed_of_a_felled_tree_waits_for_the_landing() -> void:
 	_view.tree_felled.connect(_items.hold_hops_from)
 	_world.drop_items(_tile, {ItemTypes.ACORN: 1})
 	_view.tree_felled.emit(_tile, FallingTree.FALL_SECONDS)
-	var hop: ItemHop = _items._hops[_world.ground_items()[0]]
+	var hop: ItemHop = _items._hops[_world.ground_items.all()[0]]
 	assert_almost_eq(hop.delay, FallingTree.FALL_SECONDS, 0.0001)
-	assert_false(_items._sprites[_world.ground_items()[0]].visible)
+	assert_false(_items._sprites[_world.ground_items.all()[0]].visible)

@@ -205,7 +205,7 @@ func test_mown_grass_stays_mown_through_the_save() -> void:
 	var restored := _through_save()
 	_world = restored.world
 	assert_eq(_mown_tiles(), mown_before)
-	assert_eq(_world.ground_count_of(ItemTypes.HAY), 8)
+	assert_eq(_world.ground_items.count_of(ItemTypes.HAY), 8)
 
 
 func test_the_scythe_and_shovel_are_in_the_starting_items_within_the_hotbar() -> void:

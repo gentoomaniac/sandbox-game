@@ -36,7 +36,7 @@ func listen(
 	view.tree_landed.connect(
 		func(tree: WorldObject) -> void: _audio.play(&"tree_fall", _centre_of(tree.pos))
 	)
-	state.world.ground_item_removed.connect(
+	state.world.ground_items.removed.connect(
 		func(item: GroundItem) -> void:
 			_audio.play(&"item_pickup", item.position * TerrainTileset.TILE_SIZE)
 	)

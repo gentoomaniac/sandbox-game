@@ -228,9 +228,9 @@ func use_facing_tile() -> ToolUse.Use:
 func collect_ground_items(delta: float) -> void:
 	if is_inside():
 		return
-	for ground_item in world.ground_items():
+	for ground_item in world.ground_items.all():
 		ground_item.settle_seconds = maxf(ground_item.settle_seconds - delta, 0.0)
-	for ground_item in world.ground_items_near(player.position, PULL_RADIUS):
+	for ground_item in world.ground_items.near(player.position, PULL_RADIUS):
 		if ground_item.settle_seconds > 0.0:
 			continue
 		if not player.inventory.can_add({ground_item.item: 1}):
@@ -241,7 +241,7 @@ func collect_ground_items(delta: float) -> void:
 			continue
 		ground_item.count = player.inventory.add(ground_item.item, ground_item.count)
 		if ground_item.count == 0:
-			world.remove_ground_item(ground_item)
+			world.ground_items.remove(ground_item)
 
 
 ## Maps are saved as references, never as copies: `{"kind": "world"}`, or

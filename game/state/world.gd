@@ -22,13 +22,6 @@ signal object_hit(object: WorldObject)
 signal clay_spot_changed(world_pos: Vector2i)
 ## A building was placed.
 signal building_placed(building: Building)
-## A pile of items was put on the ground, or taken off it (see `drop_items`).
-signal ground_item_added(ground_item: GroundItem)
-signal ground_item_removed(ground_item: GroundItem)
-## What one `drop_items` call put on the ground, after `ground_item_added` for each pile: the
-## view lets them hop out of `source` (nothing about it is saved).
-signal ground_items_dropped(source: Vector2i, piles: Array[GroundItem])
-
 ## Why a footprint tile can't be built on.
 enum Blocked {
 	## Water, wetland or floodplain, or the tile is not loaded.
@@ -36,16 +29,6 @@ enum Blocked {
 	## A world object or a building is on it.
 	OCCUPIED,
 }
-
-## Dropped items lie on the free tiles within this many tiles of their source; the second
-## range is for a source that has no free tile around it.
-const SCATTER_RANGES := [1, 2]
-## How long dropped piles wait before they can be pulled: the longest hop with its stagger,
-## after a falling tree lands (about 1.3 s), with a little to spare.
-const DROP_SETTLE_SECONDS := 1.4
-## Where on its tile a dropped pile lies, as a fraction of the tile, so the piles of one drop
-## don't line up on the tile centres.
-const PILE_MARGIN := 0.25
 
 ## A dug clay spot has no clay for this many nights.
 const CLAY_SPENT_NIGHTS := 5
@@ -58,6 +41,8 @@ var world_seed: int
 ## GameState, which gives it in.
 var clock: GameClock
 var vegetation := Vegetation.default_vegetation()
+## What lies on the ground (see `drop_items`).
+var ground_items := GroundItems.new()
 var _generator: WorldGenerator
 var _chunks: Dictionary[Vector2i, Chunk] = {}
 ## What the player changed, kept outside the chunks so it survives their unloading: per world
@@ -76,8 +61,6 @@ var _buildings: Array[Building] = []
 var _building_by_tile: Dictionary[Vector2i, Building] = {}
 ## The clay spots that were dug, with the nights left until they hold clay again.
 var _spent_clay_spots: Dictionary[Vector2i, int] = {}
-## What lies on the ground: dropped by whatever the player harvested, until collected.
-var _ground_items: Array[GroundItem] = []
 
 
 ## `game_clock` defaults to a clock of its own because many tests make a World without a
@@ -491,89 +474,11 @@ func spend_clay_spot(world_pos: Vector2i) -> void:
 # --- Ground items ---
 
 
-func ground_items() -> Array[GroundItem]:
-	return _ground_items.duplicate()
-
-
-## The piles whose position is within `radius` tiles of `position`.
-func ground_items_near(position: Vector2, radius: float) -> Array[GroundItem]:
-	return _ground_items.filter(
-		func(ground_item: GroundItem) -> bool:
-			return ground_item.position.distance_to(position) <= radius
-	)
-
-
-## How many of an item lie on the ground, in all piles.
-func ground_count_of(item: StringName) -> int:
-	var total := 0
-	for ground_item in _ground_items:
-		if ground_item.item == item:
-			total += ground_item.count
-	return total
-
-
-## Puts items (item id to count) on the ground around a tile: each kind is split into piles of
-## about the same size over the free walkable tiles near `source`, in an order that depends on
-## the tile and the kind only. The one entry point for whatever gives items to the world.
-## Call it after the source was removed or replaced, so its own tile counts if it is free now.
+## Puts items (item id to count) on the ground around a tile (see `GroundItems.drop`). The one
+## entry point for whatever gives items to the world; it is here, and not on `ground_items`,
+## because where a pile can lie is up to the world's terrain and buildings.
 func drop_items(source: Vector2i, drops: Dictionary) -> void:
-	var kind_index := 0
-	var dropped: Array[GroundItem] = []
-	for item: StringName in drops:
-		var tiles := _scatter_tiles(source, kind_index)
-		var total: int = drops[item]
-		var piles := mini(total, tiles.size())
-		for pile in piles:
-			var count := total / piles + (1 if pile < total % piles else 0)
-			var offset := Vector2(
-				_hash_fraction(tiles[pile], 2 * kind_index),
-				_hash_fraction(tiles[pile], 2 * kind_index + 1)
-			)
-			var ground_item := GroundItem.new(item, count, Vector2(tiles[pile]) + offset)
-			ground_item.settle_seconds = DROP_SETTLE_SECONDS
-			add_ground_item(ground_item)
-			dropped.append(ground_item)
-		kind_index += 1
-	ground_items_dropped.emit(source, dropped)
-
-
-## Takes a pile off the ground (it was collected).
-func remove_ground_item(ground_item: GroundItem) -> void:
-	_ground_items.erase(ground_item)
-	ground_item_removed.emit(ground_item)
-
-
-## The free walkable tiles near `source`, in the order the piles of the `kind_index`th kind of
-## a drop go to them. With none free, the source itself.
-func _scatter_tiles(source: Vector2i, kind_index: int) -> Array[Vector2i]:
-	var tiles: Array[Vector2i] = []
-	for scatter_range: int in SCATTER_RANGES:
-		for y in range(-scatter_range, scatter_range + 1):
-			for x in range(-scatter_range, scatter_range + 1):
-				if is_walkable(source + Vector2i(x, y)):
-					tiles.append(source + Vector2i(x, y))
-		if not tiles.is_empty():
-			break
-	if tiles.is_empty():
-		return [source]
-	var salt := PositionHash.of(source, kind_index)
-	tiles.sort_custom(
-		func(a: Vector2i, b: Vector2i) -> bool:
-			return PositionHash.of(a, salt) < PositionHash.of(b, salt)
-	)
-	return tiles
-
-
-## A value from PILE_MARGIN to 1 - PILE_MARGIN, always the same for the same tile and salt.
-func _hash_fraction(tile: Vector2i, salt: int) -> float:
-	var fraction := float(PositionHash.of(tile, salt + world_seed)) / (PositionHash.MASK + 1)
-	return PILE_MARGIN + fraction * (1.0 - 2.0 * PILE_MARGIN)
-
-
-## Lays a pile at an exact position (`drop_items` scatters instead).
-func add_ground_item(ground_item: GroundItem) -> void:
-	_ground_items.append(ground_item)
-	ground_item_added.emit(ground_item)
+	ground_items.drop(source, drops, self)
 
 
 # --- Saving ---
@@ -606,15 +511,12 @@ func to_dict() -> Dictionary:
 	var soil_moisture: Array[Array] = []
 	for pos in _soil_moisture:
 		soil_moisture.append(SaveCodec.vector_to_json(pos) + [_soil_moisture[pos]])
-	var ground_items_data: Array[Dictionary] = []
-	for ground_item in _ground_items:
-		ground_items_data.append(ground_item.to_dict())
 	var spent_clay_spots: Array[Array] = []
 	for pos in _spent_clay_spots:
 		spent_clay_spots.append(SaveCodec.vector_to_json(pos) + [_spent_clay_spots[pos]])
 	return {
 		"seed": world_seed,
-		"ground_items": ground_items_data,
+		"ground_items": ground_items.to_array(),
 		"spent_clay_spots": spent_clay_spots,
 		"terrain_edits": terrain_edits,
 		"soil_moisture": soil_moisture,
@@ -641,8 +543,7 @@ static func from_dict(data: Dictionary, game_clock: GameClock) -> World:
 		)
 	for building_data: Dictionary in data["buildings"]:
 		world._add_building(Building.from_dict(building_data))
-	for ground_item_data: Dictionary in data["ground_items"]:
-		world._ground_items.append(GroundItem.from_dict(ground_item_data))
+	world.ground_items.load_array(data["ground_items"])
 	return world
 
 
