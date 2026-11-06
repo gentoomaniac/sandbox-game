@@ -98,7 +98,8 @@ func _process(_delta: float) -> void:
 
 
 func _draw() -> void:
-	if not is_active():
+	# The first frame can draw before _process has loaded the ghost's picture.
+	if not is_active() or _texture == null:
 		return
 	var tile_size := TerrainTileset.TILE_SIZE
 	var texture := _texture
