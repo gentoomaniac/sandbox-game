@@ -63,6 +63,15 @@ func test_a_hat_is_drawn_over_the_hair() -> void:
 	assert_gt(slots.find(Appearance.HEAD), slots.find(Appearance.HAIR))
 
 
+func test_a_jacket_is_drawn_over_the_clothes_and_under_the_hair() -> void:
+	var equipment := Equipment.with_starting_outfit()
+	equipment.equip(Equipment.COAT, ItemTypes.JACKET)
+	_appearance.dress(equipment)
+	var slots := _slots(_appearance.layers_for(Vector2i.DOWN))
+	assert_eq(slots.find(Appearance.COAT), slots.find(Appearance.CLOTHES) + 1)
+	assert_eq(slots.find(Appearance.HAIR), slots.find(Appearance.COAT) + 1)
+
+
 func test_dressing_follows_the_equipment() -> void:
 	var equipment := _equipment_with(ItemTypes.SHIRT)
 	_appearance.dress(equipment)

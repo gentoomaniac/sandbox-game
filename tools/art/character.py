@@ -232,6 +232,51 @@ def draw_waistcoat(facing, pose, **_):
     return canvas
 
 
+# The short jacket of indigo wool, worn open over the waistcoat.
+JACKET = {"base": "water", "light": "water_light", "shade": "water_deep"}
+
+
+def draw_jacket(facing, pose, **_):
+    """A short jacket with long sleeves, worn open: from the front the waistcoat shows between
+    its edges, from the side at the chest."""
+    canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
+    sink, swing = pose["sink"], pose["swing"]
+    base, light, shade = JACKET["base"], JACKET["light"], JACKET["shade"]
+    if facing in ("down", "up"):
+        if facing == "down":
+            # The open front: the two edges, and the turned-down collar at the shoulders.
+            rect(canvas, 6, 13 + sink, 7, 14 + sink, base)
+            rect(canvas, 9, 13 + sink, 10, 14 + sink, base)
+            rect(canvas, 6, 15 + sink, 6, 22 + sink, base)
+            rect(canvas, 10, 15 + sink, 10, 22 + sink, shade)
+            canvas[13 + sink][6] = canvas[13 + sink][9] = light
+            rect(canvas, 5, 21 + sink, 6, 22 + sink, base)
+            rect(canvas, 10, 21 + sink, 11, 22 + sink, shade)
+        else:
+            rect(canvas, 6, 13 + sink, 10, 22 + sink, base)
+            rect(canvas, 5, 21 + sink, 11, 22 + sink, base)
+            rect(canvas, 6, 13 + sink, 10, 13 + sink, light)
+            rect(canvas, 10, 14 + sink, 10, 22 + sink, shade)
+            rect(canvas, 8, 19 + sink, 8, 22 + sink, shade)
+        rect(canvas, 5, 22 + sink, 11, 22 + sink, shade)
+        # Sleeves; the right one swings with the arm.
+        for x0, dy in ((4, 0), (11, swing // 2)):
+            rect(canvas, x0, 14 + sink + dy, x0 + 1, 18 + sink + dy, base)
+            rect(canvas, x0, 14 + sink + dy, x0 + 1, 14 + sink + dy, light)
+            rect(canvas, x0 + 1, 15 + sink + dy, x0 + 1, 17 + sink + dy, shade)
+            rect(canvas, x0, 18 + sink + dy, x0 + 1, 18 + sink + dy, light)
+    else:
+        rect(canvas, 5, 13 + sink, 9, 22 + sink, base)
+        rect(canvas, 5, 21 + sink, 10, 22 + sink, base)
+        rect(canvas, 5, 13 + sink, 9, 13 + sink, light)
+        rect(canvas, 5, 15 + sink, 5, 22 + sink, shade)
+        rect(canvas, 5, 22 + sink, 10, 22 + sink, shade)
+        draw_near_sleeve(canvas, pose, base, shade)
+        rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 14 + sink, light)
+        rect(canvas, 7 + swing, 18 + sink, 8 + swing, 18 + sink, light)
+    return canvas
+
+
 def draw_hair(facing, pose, base, light, shade, long, **_):
     """Short or long hair over the head (the same 9x8 block in every view), and from behind
     over the whole back of it. The darkest shade is the line to the face."""
@@ -461,6 +506,7 @@ def layers():
     result = {"body_0": (draw_body, {})}
     result["clothes_0"] = (draw_waistcoat, {})
     result["clothes_1"] = (draw_shirt, {})
+    result["coat_jacket"] = (draw_jacket, {})
     for variant, colours in HAIR_COLOURS.items():
         result[f"hair_{variant}"] = (draw_hair, colours)
     result["legs_0"] = (draw_legs, {})

@@ -13,11 +13,13 @@ const HEAD := &"head"
 const BODY := &"body"
 const LEGS := &"legs"
 const FEET := &"feet"
+## Worn over the body: a jacket or a coat.
+const COAT := &"coat"
 const BACK := &"back"
 const MAIN_HAND := &"main_hand"
 const OFF_HAND := &"off_hand"
 
-const SLOTS := [HEAD, BODY, LEGS, FEET, BACK, MAIN_HAND, OFF_HAND]
+const SLOTS := [HEAD, BODY, LEGS, FEET, COAT, BACK, MAIN_HAND, OFF_HAND]
 
 ## Slot to item id; a slot without an item has no key.
 var _worn := {}

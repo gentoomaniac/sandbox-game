@@ -22,10 +22,13 @@ const STARTING_ITEMS := [
 ]
 ## What a new game starts with in the backpack (from the slot after the hotbar), so the hotbar
 ## keeps room for what the player picks up.
+## With the starting outfit, a new game carries just under the weight that costs no extra
+## energy (data/energy.cfg), and the energy tests count on that: mind it when adding here.
 const STARTING_BACKPACK := [
 	[ItemTypes.STRAW_HAT, 1],
 	[ItemTypes.KNITTED_CAP, 1],
 	[ItemTypes.SHIRT, 1],
+	[ItemTypes.JACKET, 1],
 ]
 
 ## The hotbar slot the player holds.

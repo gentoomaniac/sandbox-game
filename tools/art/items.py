@@ -269,6 +269,30 @@ def waistcoat():
     return outlined(from_rows(rows, keys))
 
 
+def jacket():
+    """A short blue jacket with long sleeves and turned-back cuffs, open down the front."""
+    rows = [
+        "................",
+        "................",
+        "....lbbiibbs....",
+        "..lblbbiibbbbs..",
+        ".lbbbbliisbbbbs.",
+        ".lbbsbliisbsbbs.",
+        ".lbbsbliisbsbbs.",
+        ".lbbsbliisbsbbs.",
+        ".lbbsbliisbsbbs.",
+        ".lbbsbliisbsbbs.",
+        ".cccsbliisbsccc.",
+        ".sss.bliisbs.sss",
+        ".....bliisbs....",
+        ".....ssiisss....",
+        "................",
+        "................",
+    ]
+    keys = {"b": "water", "l": "water_light", "s": "water_deep", "i": "soil_dark", "c": "water_light"}
+    return outlined(from_rows(rows, keys))
+
+
 def breeches():
     """Knee breeches of brown wool, banded at the knee, with the white stockings below them."""
     rows = [
@@ -371,6 +395,7 @@ ICONS = {
     "trousers": breeches(),
     "straw_hat": straw_hat(),
     "knitted_cap": knitted_cap(),
+    "jacket": jacket(),
 }
 
 
@@ -401,6 +426,11 @@ HINT_PATHS = {
     ],
     "body": [
         [(5, 3), (7, 3), (8, 5), (9, 3), (11, 3), (14, 6), (12, 8), (11, 7), (11, 13), (4, 13), (4, 7), (3, 8), (1, 6), (5, 3)]
+    ],
+    "coat": [
+        [(5, 2), (11, 2), (14, 5), (14, 13), (12, 13), (12, 8), (11, 8), (11, 14), (5, 14), (5, 8), (4, 8), (4, 13), (2, 13), (2, 5), (5, 2)],
+        [(7, 2), (8, 5), (9, 2)],
+        [(8, 5), (8, 14)],
     ],
     "legs": [[(4, 2), (12, 2), (13, 14), (9, 14), (8, 7), (7, 14), (3, 14), (4, 2)]],
     "feet": [[(5, 2), (9, 2), (9, 8), (13, 10), (13, 13), (5, 13), (5, 2)]],

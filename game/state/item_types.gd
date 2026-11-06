@@ -43,6 +43,7 @@ const SHIRT := &"shirt"
 const TROUSERS := &"trousers"
 const STRAW_HAT := &"straw_hat"
 const KNITTED_CAP := &"knitted_cap"
+const JACKET := &"jacket"
 
 ## Stands for an empty hand or slot where an item id is expected.
 const NONE := &""
@@ -215,7 +216,7 @@ const _OTHER_TYPES := {
 	{
 		"name": "Tunic",
 		"description": "A plain tunic that covers your body.",
-		"weight": 0.8,
+		"weight": 0.6,
 		"stack_limit": 1,
 		"equip_slot": Equipment.BODY,
 		"layer_variant": "0",
@@ -224,7 +225,7 @@ const _OTHER_TYPES := {
 	{
 		"name": "Shirt",
 		"description": "A light shirt.",
-		"weight": 0.5,
+		"weight": 0.3,
 		"stack_limit": 1,
 		"equip_slot": Equipment.BODY,
 		"layer_variant": "1",
@@ -255,6 +256,15 @@ const _OTHER_TYPES := {
 		"stack_limit": 1,
 		"equip_slot": Equipment.HEAD,
 		"layer_variant": "knitted_cap",
+	},
+	JACKET:
+	{
+		"name": "Jacket",
+		"description": "A short jacket of blue wool, worn open over the waistcoat.",
+		"weight": 0.5,
+		"stack_limit": 1,
+		"equip_slot": Equipment.COAT,
+		"layer_variant": "jacket",
 	},
 }
 

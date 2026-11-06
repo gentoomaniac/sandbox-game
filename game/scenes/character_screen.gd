@@ -26,7 +26,7 @@ const THEME := preload("res://game/scenes/ui_theme.tres")
 
 ## The equipment slots left and right of the character, top to bottom.
 const LEFT_SLOTS := [Equipment.HEAD, Equipment.BODY, Equipment.LEGS, Equipment.FEET]
-const RIGHT_SLOTS := [Equipment.BACK, Equipment.MAIN_HAND, Equipment.OFF_HAND]
+const RIGHT_SLOTS := [Equipment.COAT, Equipment.BACK, Equipment.MAIN_HAND, Equipment.OFF_HAND]
 
 var _player: PlayerState
 var _inventory_views: Array[SlotView] = []
