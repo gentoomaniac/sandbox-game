@@ -99,6 +99,10 @@ Answered questions move into SPEC.md and are removed here.
     stays on the horse, the use key mounts and dismounts, about twice walking speed, no
     tools, building or doors while riding. Default: keep.
 
+20. **Storks and geese** (task 60): greylag geese; at most a few storks and geese flocks near
+    the view at once; a stork stands on a roof or hunts wet meadows; lapwings and
+    oystercatchers left for later. Default: keep.
+
 ## Questions
 
 No open questions right now.
