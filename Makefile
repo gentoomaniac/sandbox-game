@@ -157,8 +157,8 @@ screenshot:
 # user:// points into build/ (Godot finds it under XDG_DATA_HOME on Linux): runs in two
 # worktrees at once don't delete each other's test files, and no test can reach the real save.
 test:
-	$(IMPORT)
 	@mkdir -p build/user-data
+	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT)
 	@XDG_DATA_HOME=$(CURDIR)/build/user-data $(GODOT) --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://tests -gexit \
 		> build/test.log 2>&1; status=$$?; cat build/test.log; \
 	if grep -Eq 'Failed to load script "res://(game|tests)/' build/test.log; then \
