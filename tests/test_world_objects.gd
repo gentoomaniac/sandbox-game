@@ -64,6 +64,8 @@ func test_every_natural_object_type_is_generated() -> void:
 					WorldObjectTypes.DEAD_STUMP,
 					# Not placed by the generator yet.
 					WorldObjectTypes.KNICK,
+					WorldObjectTypes.WATTLE_FENCE,
+					WorldObjectTypes.STONE_WALL,
 				]
 			)
 			or str(object_type).ends_with("trunk")

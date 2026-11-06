@@ -119,6 +119,8 @@ def world_chest():
 # 23 dead_stump (2)
 # 24 chest (1)
 # 25 knick (16: one per connection mask, see boundaries.py)
+# 26 wattle_fence (16, the same)
+# 27 stone_wall (16, the same)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -143,6 +145,8 @@ def object_atlas():
         ("dead_stump", [trees.dead_stump(seed) for seed in (211, 212)]),
         ("chest", [world_chest()]),
         ("knick", boundaries.knick_row()),
+        ("wattle_fence", boundaries.wattle_fence_row()),
+        ("stone_wall", boundaries.stone_wall_row()),
     ]
 
 

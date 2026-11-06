@@ -89,6 +89,8 @@ const DEAD_STUMP := &"dead_stump"
 const TALL_GRASS := &"tall_grass"
 const REEDS := &"reeds"
 const KNICK := &"knick"
+const WATTLE_FENCE := &"wattle_fence"
+const STONE_WALL := &"stone_wall"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -109,6 +111,8 @@ const _DEAD_STUMP_ROW := 23
 ## The atlas row of the chest, after the dead tree's stump.
 const _CHEST_ROW := 24
 const _KNICK_ROW := 25
+const _WATTLE_FENCE_ROW := 26
+const _STONE_WALL_ROW := 27
 ## The pictures of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -316,6 +320,32 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": _KNICK_ROW,
+		"variants": CONNECTION_LOOKS,
+	},
+	# Hazel rods woven between stakes: a light fence, cut down with the axe for its fibre.
+	WATTLE_FENCE:
+	{
+		"hp": 2,
+		"tool": &"axe",
+		"drops": {&"fibre": 2},
+		"connects": &"field_boundary",
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _WATTLE_FENCE_ROW,
+		"variants": CONNECTION_LOOKS,
+	},
+	# Fieldstones stacked dry: the pickaxe takes it apart for its stone.
+	STONE_WALL:
+	{
+		"hp": 5,
+		"tool": &"pickaxe",
+		"drops": {&"stone": 3},
+		"connects": &"field_boundary",
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _STONE_WALL_ROW,
 		"variants": CONNECTION_LOOKS,
 	},
 	SMALL_BED:

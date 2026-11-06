@@ -442,6 +442,15 @@ _WINTER_LOOKS = {
     },
     "fireplace": {},
     "knick": {"bare": _KNICK_TWIGS, "frost": _KNICK_FROST, "specks": {"mud", "soil_mid"}, "snow": _KNICK_SNOW},
+    "wattle_fence": {
+        "frost_only": _FROST_STONE,
+        "specks": {"sand_light", "sand"},
+        "snow": ({"sand_light", "sand", "mud", "soil_light", "soil_mid"}, set(), 1),
+    },
+    "stone_wall": {
+        "frost_only": _FROST_STONE,
+        "snow": ({"stone_light", "stone", "sand_light", "bare_light", "bare", "olive"}, set(), 2),
+    },
 }
 
 

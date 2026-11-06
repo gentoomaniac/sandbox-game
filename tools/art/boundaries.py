@@ -1,5 +1,5 @@
 """Art for the lines that run across the land: the Knick (a hedge of hazel and hawthorn on an earth
-bank).
+bank), the wattle fence and the fieldstone wall.
 
 A line is drawn tile by tile, and each tile has 16 pictures, one per connection mask: which of
 its 4 sides it joins a neighbour on (bit 0 north, 1 east, 2 south, 3 west, as World
@@ -60,13 +60,16 @@ def _brightness(gradient_x, gradient_y):
 _FACE_LIGHT = _brightness(0.0, 3.0)
 
 
-def draw_line(mask, layers, colour, outline, shadow_reach=1):
+def draw_line(mask, layers, colour, outline, shadow_reach=1, joints=False, has_faces=True):
     """One tile of a line as an object cell (48x80, the tile at its bottom centre).
 
     `layers(mask, x, y)` gives the layers that stand on ground pixel (x, y) of the tile (outside
     0..15 on the neighbours), bottom first, as (height of its top, material); heights are whole
     pixels and grow. `colour(material, x, y, z, light, is_top)` picks a pixel's colour, `light`
-    -1 to 1, and `outline(material)` the colour of the silhouette (None for none)."""
+    -1 to 1, and `outline(material)` the colour of the silhouette (None for none). With `joints`
+    the outline also runs where a material meets another above or beside it (between stones).
+    Steep layers have a face that looks to the front (a hedge, a fence); without `has_faces`
+    every pixel is shaded by its slope (round stones)."""
     span = range(-_REACH, TILE + _REACH)
     stacks = {(x, y): layers(mask, x, y) for y in span for x in span}
 
@@ -91,7 +94,7 @@ def draw_line(mask, layers, colour, outline, shadow_reach=1):
                 gradient_y = (height(x, y + 1, index) - height(x, y - 1, index)) / 2
                 light = _brightness(gradient_x, gradient_y)
                 # Below the top of a steep layer is its face, which looks to the front.
-                face_light = _FACE_LIGHT if abs(gradient_y) > 2 else light
+                face_light = _FACE_LIGHT if has_faces and abs(gradient_y) > 2 else light
                 for z in range(bottom + 1, top + 1):
                     is_top = z == top
                     shade = light if is_top else face_light
@@ -112,7 +115,9 @@ def draw_line(mask, layers, colour, outline, shadow_reach=1):
             continue
         if material is not None and outline(material) is not None:
             is_edge = any(
-                (x + dx, y + dy) not in screen or screen[(x + dx, y + dy)][1] is None
+                (x + dx, y + dy) not in screen
+                or screen[(x + dx, y + dy)][1] is None
+                or (joints and dy <= 0 and screen[(x + dx, y + dy)][1] != material)
                 for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
             )
             if is_edge:
@@ -247,3 +252,130 @@ def knick(mask):
 def knick_row():
     """The atlas row of the Knick: one picture per connection mask."""
     return [knick(mask) for mask in MASKS]
+
+
+# --- The wattle fence ---
+
+# Hazel rods woven between posts, about knee high: this far out from the skeleton and this
+# high, the posts a little higher, one every POST_SPACING px.
+WATTLE_REACH = 1.5
+WATTLE_HEIGHT = 9
+POST_HEIGHT = 11
+POST_SPACING = 8
+RODS = ("sand_light", "sand", "mud", "mud_dark")
+POSTS = ("soil_light", "soil_mid", "soil", "soil_dark")
+
+
+def _along(x, y):
+    """Where a pixel lies along the line: x on an arm running east-west, y on one running
+    north-south."""
+    return y if abs(x + 0.5 - _CENTRE) < abs(y + 0.5 - _CENTRE) else x
+
+
+def _wattle_layers(mask, x, y):
+    if skeleton_distance(mask, x + 0.5, y + 0.5) >= WATTLE_REACH:
+        return []
+    if _along(x, y) % POST_SPACING in (0, POST_SPACING - 1):
+        return [(POST_HEIGHT, "post")]
+    return [(WATTLE_HEIGHT, "rods")]
+
+
+def _wattle_colour(material, x, y, z, light, is_top):
+    if material == "post":
+        return _ramp(POSTS, light)
+    # The rods lie in bands of 2 px, lit on top and dark below; they go in front of and behind
+    # the stakes in turn, so the bands are lighter where they come out in front.
+    is_out = (_along(x, y) // 4 + z // 2) % 2 == 0
+    band = 0.25 if z % 2 == 0 else -0.25
+    return _ramp(RODS, light + band + (0.12 if is_out else -0.12) + (0.3 if is_top else 0.0))
+
+
+def _wattle_outline(material):
+    # A fence running north-south is seen from above, as a thin line: an outline would make it
+    # all dark.
+    return {"post": POSTS[-1], "rods": None}[material]
+
+
+def wattle_fence(mask):
+    return draw_line(mask, _wattle_layers, _wattle_colour, _wattle_outline)
+
+
+def wattle_fence_row():
+    """The atlas row of the wattle fence: one picture per connection mask."""
+    return [wattle_fence(mask) for mask in MASKS]
+
+
+# --- The fieldstone wall ---
+
+# Round boulders from the fields, stacked dry: big stones every STONE_SPACING px along the
+# skeleton, smaller ones on top between them. (radius, height) and (radius, base, height).
+STONE_SPACING = 8
+BASE_STONE = (5.2, 5.0)
+TOP_STONE = (4.0, 3.5, 3.5)
+# Granite in a cool and a warm grey, lit to dark; moss on the tops.
+COOL_STONE = ("stone_light", "stone", "stone_dark")
+WARM_STONE = ("sand_light", "bare_light", "bare", "stone_dark")
+
+
+def _stones(mask):
+    """The stones of a tile's wall as (x, y, radius, base, height, is_warm), in its ground
+    coordinates, on its arms and on through the neighbours. Their sizes come from their place
+    along the line, so neighbours agree."""
+    places = {(_CENTRE, _CENTRE)}
+    for bit, (dx, dy) in SIDES:
+        if mask & bit:
+            for step in range(1, (TILE + _REACH) * 2 // STONE_SPACING + 1):
+                offset = step * STONE_SPACING / 2
+                places.add((_CENTRE + dx * offset, _CENTRE + dy * offset))
+    stones = []
+    for x, y in sorted(places):
+        # Repeats every tile: a tile is 8 places long.
+        index = round(x + y) // (STONE_SPACING // 2) % (TILE * 2 // STONE_SPACING)
+        wobble = (index * 7 % 5 - 2) * 0.15
+        is_warm = index * 5 % 3 == 0
+        if index % 2 == 0:
+            radius, height = BASE_STONE
+            stones.append((x, y, radius + wobble, 0.0, height, is_warm))
+        else:
+            radius, base, height = TOP_STONE
+            stones.append((x, y, radius + wobble, base, height, is_warm))
+    return stones
+
+
+_STONE_CACHE = {}
+
+
+def _wall_layers(mask, x, y):
+    if mask not in _STONE_CACHE:
+        _STONE_CACHE[mask] = _stones(mask)
+    px, py = x + 0.5, y + 0.5
+    best = None
+    for number, (sx, sy, radius, base, height, is_warm) in enumerate(_STONE_CACHE[mask]):
+        reach = math.hypot(px - sx, py - sy)
+        if reach < radius:
+            top = base + height * math.sqrt(1 - (reach / radius) ** 2)
+            if best is None or top > best[0]:
+                best = (top, (round(sx), round(sy), is_warm))
+    if best is None or round(best[0]) < 1:
+        return []
+    return [(round(best[0]), best[1])]
+
+
+def _wall_colour(material, x, y, z, light, is_top):
+    is_warm = material[2]
+    if is_top and light > 0.5 and _cluster(x, y, z, 4) > 0.6:
+        return "olive"
+    return _ramp(WARM_STONE if is_warm else COOL_STONE, light)
+
+
+def _wall_outline(material):
+    return "stone_dark"
+
+
+def stone_wall(mask):
+    return draw_line(mask, _wall_layers, _wall_colour, _wall_outline, joints=True, has_faces=False)
+
+
+def stone_wall_row():
+    """The atlas row of the fieldstone wall: one picture per connection mask."""
+    return [stone_wall(mask) for mask in MASKS]

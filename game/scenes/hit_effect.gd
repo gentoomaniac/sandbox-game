@@ -18,7 +18,9 @@ static func kind_for(type: StringName, look: SeasonBlend.Look) -> Kind:
 			WorldObjectTypes.STONE,
 			WorldObjectTypes.BOULDER,
 			WorldObjectTypes.DEAD_STUMP,
-			WorldObjectTypes.CHEST
+			WorldObjectTypes.CHEST,
+			WorldObjectTypes.STONE_WALL,
+			WorldObjectTypes.WATTLE_FENCE,
 		]
 	):
 		return Kind.SPLINTERS

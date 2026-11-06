@@ -40,6 +40,13 @@ func test_a_knick_does_not_join_other_objects() -> void:
 	assert_eq(_world.connections(knick), 0)
 
 
+func test_the_field_boundaries_join_each_other() -> void:
+	var knick := _knick(Vector2i(5, 5))
+	_world.add_object(WorldObject.new(WorldObjectTypes.STONE_WALL, Vector2i(6, 5)))
+	_world.add_object(WorldObject.new(WorldObjectTypes.WATTLE_FENCE, Vector2i(5, 6)))
+	assert_eq(_world.connections(knick), EAST | SOUTH)
+
+
 func test_a_side_in_an_unloaded_chunk_counts_its_edits() -> void:
 	var knick := _knick(Vector2i(0, 5))
 	_knick(Vector2i(1, 5))
