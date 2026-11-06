@@ -61,6 +61,8 @@ extends RefCounted
 ##   --inventory              open the character screen at start
 ##   --skills                 open the character screen at start, on the skills tab
 ##   --crafting               open the crafting menu at start
+##   --station                open the crafting menu of the nearest station in reach, once the
+##                            map is drawn (with --inside, in the house)
 ##   --storage                open the storage screen of the --chest or --chest-inside chest
 ##   --console=<line>;<line>  run those console commands at start and leave the console open
 ##
@@ -144,6 +146,7 @@ var sleep := false
 var inventory := false
 var skills := false
 var crafting := false
+var station := false
 var storage := false
 var console := PackedStringArray()
 
@@ -243,6 +246,8 @@ func _init(args := PackedStringArray()) -> void:
 				skills = true
 			"--crafting":
 				crafting = true
+			"--station":
+				station = true
 			"--storage":
 				storage = true
 			"--console":

@@ -1,16 +1,28 @@
 class_name CraftingScreen
 extends CanvasLayer
-## The crafting menu over the game (C): a panel with a row for every recipe (see RecipeRow). A
-## click on a row the player can afford crafts it. Like the character screen, it takes the
-## input while it is open (Main sees to that, and closes it on C and Escape).
+## The crafting menu over the game: a panel with a row for every recipe of one place (see
+## RecipeRow). C opens it for the recipes made by hand; E on a station opens it for that station's
+## recipes, under the station's name and the player's points in the skills they practise. A click
+## on a row the player can make crafts it, and a note says what the craft taught. Like the
+## character screen, it takes the input while it is open (Main sees to that, and closes it on C,
+## E and Escape).
 
 const THEME := preload("res://game/scenes/ui_theme.tres")
 const NO_ROOM_NOTE := "Inventory full"
+const HAND_TITLE := "Crafting"
+const NOTHING_NOTE := "Nothing to make here yet."
+const AT_CAP_NOTE := "%s is held at the skill cap: let a skill fade (K)."
+const LEARNT_ALL_NOTE := "This teaches you no more %s."
 
 var _crafting: Crafting
 var _inventory: Inventory
+## The station whose recipes are shown, or null for those made by hand.
+var _station: WorldObject
 var _backdrop := ColorRect.new()
 var _panel := PanelContainer.new()
+var _title_label := Label.new()
+var _skills_label := Label.new()
+var _rows_column := VBoxContainer.new()
 var _rows: Array[RecipeRow] = []
 var _note_label := Label.new()
 
@@ -22,32 +34,33 @@ func _init() -> void:
 	add_child(_backdrop)
 	_panel.theme = THEME
 	_backdrop.add_child(_panel)
+	var column := VBoxContainer.new()
+	for label in [_title_label, _skills_label]:
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		column.add_child(label)
+	column.add_child(_rows_column)
+	column.add_child(_note_label)
+	_panel.add_child(column)
 
 
 func show_crafting(crafting: Crafting, inventory: Inventory) -> void:
 	_crafting = crafting
 	_inventory = inventory
-	var column := VBoxContainer.new()
-	var title := Label.new()
-	title.text = "Crafting"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	column.add_child(title)
-	for recipe_id in crafting.rules.recipe_ids():
-		var row := RecipeRow.new(recipe_id, crafting.rules)
-		row.pressed.connect(_craft.bind(recipe_id))
-		column.add_child(row)
-		_rows.append(row)
-	column.add_child(_note_label)
-	_panel.add_child(column)
 	inventory.changed.connect(_refresh)
-	_refresh()
+	crafting.practised.connect(_on_practised)
+	crafting.player_skills().changed.connect(_refresh)
+	_show_recipes()
 
 
 func is_open() -> bool:
 	return visible
 
 
-func open() -> void:
+## Opens the menu of `station` (an object that is a station, see StationRules), or of the recipes
+## made by hand.
+func open(station: WorldObject = null) -> void:
+	_station = station
+	_show_recipes()
 	_show(true)
 
 
@@ -56,13 +69,37 @@ func close() -> void:
 	_show(false)
 
 
+## Opens the menu of the recipes made by hand, or closes it.
 func toggle() -> void:
-	_show(not visible)
+	if visible:
+		close()
+	else:
+		open()
+
+
+func _station_id() -> StringName:
+	return &"" if _station == null else StationRules.default_rules().station_of(_station.type)
+
+
+## Builds the rows of the place the menu is open for.
+func _show_recipes() -> void:
+	for row in _rows:
+		row.free()
+	_rows.clear()
+	var station := _station_id()
+	_title_label.text = (
+		HAND_TITLE if station == &"" else StationRules.default_rules().station_name(station)
+	)
+	for recipe_id in _crafting.rules.recipes_at(station):
+		var row := RecipeRow.new(recipe_id, _crafting, _inventory)
+		row.pressed.connect(_craft.bind(recipe_id))
+		_rows_column.add_child(row)
+		_rows.append(row)
 
 
 func _show(is_shown: bool) -> void:
 	visible = is_shown
-	_show_note("")
+	_show_note(NOTHING_NOTE if _rows.is_empty() else "")
 	_refresh()
 	# The panel is sized round its rows, which are only measured once it is shown.
 	_panel.reset_size()
@@ -70,8 +107,19 @@ func _show(is_shown: bool) -> void:
 
 
 func _craft(recipe_id: StringName) -> void:
-	var result := _crafting.craft(recipe_id)
-	_show_note(NO_ROOM_NOTE if result == Crafting.Result.NO_ROOM else "")
+	_show_note("")
+	if _crafting.craft(recipe_id) == Crafting.Result.NO_ROOM:
+		_show_note(NO_ROOM_NOTE)
+
+
+func _on_practised(skill: StringName, gained: float, wanted: float) -> void:
+	var skill_name := _crafting.player_skills().rules.skill_name(skill)
+	if wanted == 0.0:
+		_show_note(LEARNT_ALL_NOTE % skill_name.to_lower())
+	elif gained < wanted:
+		_show_note(AT_CAP_NOTE % skill_name)
+	else:
+		_show_note("+%.1f %s" % [gained, skill_name])
 
 
 func _show_note(text: String) -> void:
@@ -81,4 +129,20 @@ func _show_note(text: String) -> void:
 
 func _refresh() -> void:
 	for row in _rows:
-		row.show_stock(_inventory, _crafting.shortfalls(row.recipe_id))
+		row.refresh()
+	_skills_label.text = _skills_text()
+	_skills_label.visible = _skills_label.text != ""
+
+
+## "Cooking 23.5": the player's points in the skills the shown recipes practise.
+func _skills_text() -> String:
+	var skills := _crafting.player_skills()
+	var parts: Array[String] = []
+	for row in _rows:
+		var skill := _crafting.rules.skill(row.recipe_id)
+		if skill == &"":
+			continue
+		var part := "%s %.1f" % [skills.rules.skill_name(skill), skills.points(skill)]
+		if not parts.has(part):
+			parts.append(part)
+	return "  ".join(parts)

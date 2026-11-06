@@ -19,6 +19,7 @@ var wildlife: WildlifeView
 var tiredness_view: TirednessView
 var interior_view: InteriorView
 var storage_screen: StorageScreen
+var crafting_screen: CraftingScreen
 ## Main's doings, as `func()` unless noted.
 var try_sleep: Callable
 var pass_door: Callable
@@ -32,6 +33,7 @@ var _is_sleeping: bool
 var _chest_tile: Vector2i
 var _chest_inside_tile: Vector2i
 var _is_storage_to_open: bool
+var _is_station_to_open: bool
 var _are_animals_to_spawn: bool
 var _is_livestock_to_spawn: bool
 var _hit_tile: Vector2i
@@ -49,6 +51,7 @@ func _init(options: StartupOptions) -> void:
 	_chest_tile = options.chest
 	_chest_inside_tile = options.chest_inside
 	_is_storage_to_open = options.storage
+	_is_station_to_open = options.station
 	_are_animals_to_spawn = not options.wildlife.is_empty()
 	_is_livestock_to_spawn = not options.livestock.is_empty()
 	_hit_tile = options.hit
@@ -69,6 +72,15 @@ func update(delta: float) -> void:
 		_is_sleeping = false
 		try_sleep.call()
 	_place_chests()
+	if _is_station_to_open and _is_map_drawn():
+		_is_station_to_open = false
+		var station := Interaction.nearest_in_reach(
+			state,
+			func(object: WorldObject) -> bool:
+				return StationRules.default_rules().station_of(object.type) != &""
+		)
+		if station != null:
+			crafting_screen.open(station)
 	if _are_animals_to_spawn and _is_outside_and_drawn():
 		for kind in _options.wildlife:
 			var count := 1 if kind == "flock" else WILDLIFE_COUNT
@@ -112,6 +124,11 @@ func _spawn_livestock() -> void:
 		)
 
 
+## The map the player is on is drawn: the world is streamed, or they are inside (where it is not).
+func _is_map_drawn() -> bool:
+	return (view.is_settled or state.is_inside()) and not _is_entering_first_house
+
+
 ## Not while the player is inside: the world is not streamed then.
 func _is_outside_and_drawn() -> bool:
 	return view.is_settled and not state.is_inside()
@@ -147,12 +164,11 @@ func _place_chests() -> void:
 
 
 func _is_ready_to_shoot() -> bool:
-	# The world is not streamed while the player is inside.
 	return (
-		(view.is_settled or state.is_inside())
-		and not _is_entering_first_house
+		_is_map_drawn()
 		and _harvest_tile == StartupOptions.NO_TILE
 		and _chest_tile == StartupOptions.NO_TILE
 		and _chest_inside_tile == StartupOptions.NO_TILE
 		and not _is_storage_to_open
+		and not _is_station_to_open
 	)

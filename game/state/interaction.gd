@@ -1,7 +1,8 @@
 class_name Interaction
 extends RefCounted
-## What the player's E acts on: the beds and chests within reach of them (Targeting.REACH, the
-## same as the use action's). Plain rules; Main asks and then sleeps or opens the storage screen.
+## What the player's E acts on: the beds, chests and crafting stations within reach of them
+## (Targeting.REACH, the same as the use action's). Plain rules; Main asks and then sleeps, opens
+## the storage screen or opens the crafting menu of the station.
 
 
 ## The nearest object on the player's map within reach that `is_wanted` says yes to, or null.
@@ -18,20 +19,22 @@ static func nearest_in_reach(state: GameState, is_wanted: Callable) -> WorldObje
 	return nearest
 
 
-## The chest E opens, or null. A chest on `target` (the targeted tile) wins; with a bed in reach
-## the player sleeps instead, and without one the nearest chest in reach is opened.
-static func chest_to_open(state: GameState, target: Vector2i) -> WorldObject:
+## The chest or station E opens, or null. One on `target` (the targeted tile) wins; with a bed
+## in reach the player sleeps instead, and without one the nearest chest or station in reach is
+## opened.
+static func object_to_open(state: GameState, target: Vector2i) -> WorldObject:
 	var targeted := state.current_map.object_at(target)
 	var offset := (target - state.player.tile()).abs()
-	if (
-		targeted != null
-		and targeted.storage != null
-		and maxi(offset.x, offset.y) <= Targeting.REACH
-	):
+	if targeted != null and _opens(targeted) and maxi(offset.x, offset.y) <= Targeting.REACH:
 		return targeted
 	if state.bed_in_reach() != null:
 		return null
-	return nearest_in_reach(state, func(object: WorldObject) -> bool: return object.storage != null)
+	return nearest_in_reach(state, _opens)
+
+
+## Whether E opens the object: a chest, or a station (see StationRules).
+static func _opens(object: WorldObject) -> bool:
+	return object.storage != null or StationRules.default_rules().station_of(object.type) != &""
 
 
 static func _distance(state: GameState, object: WorldObject) -> float:

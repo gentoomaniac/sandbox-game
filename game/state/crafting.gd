@@ -23,6 +23,11 @@ func _init(state: GameState, recipes := RecipeRules.default_rules()) -> void:
 	rules = recipes
 
 
+## The skills of the player who crafts.
+func player_skills() -> Skills:
+	return _state.player.skills
+
+
 ## What the player lacks for a recipe, item id to the count short; empty when they have it all
 ## (or the cost cheat is on).
 func shortfalls(recipe_id: StringName) -> Dictionary:

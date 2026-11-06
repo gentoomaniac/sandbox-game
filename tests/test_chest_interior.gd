@@ -123,19 +123,19 @@ func test_e_opens_the_targeted_chest_even_with_a_bed_in_reach() -> void:
 	var chest := WorldObject.new(WorldObjectTypes.CHEST, Vector2i(3, 4))
 	_interior.add_object(chest)
 	assert_not_null(_state.bed_in_reach())
-	assert_eq(Interaction.chest_to_open(_state, Vector2i(3, 4)), chest)
+	assert_eq(Interaction.object_to_open(_state, Vector2i(3, 4)), chest)
 
 
 func test_e_sleeps_when_the_chest_in_reach_is_not_the_target() -> void:
 	_stand_on(Vector2i(2, 3))
 	_interior.add_object(WorldObject.new(WorldObjectTypes.CHEST, Vector2i(3, 4)))
-	assert_null(Interaction.chest_to_open(_state, Vector2i(2, 4)))
+	assert_null(Interaction.object_to_open(_state, Vector2i(2, 4)))
 
 
 func test_the_chest_in_the_room_of_a_house_opens_with_no_bed_in_reach() -> void:
 	var chest := _place_chest_in_front()
 	assert_null(_state.bed_in_reach())
-	assert_eq(Interaction.chest_to_open(_state, Vector2i(3, 5)), chest)
+	assert_eq(Interaction.object_to_open(_state, Vector2i(3, 5)), chest)
 
 
 # --- Saving ---

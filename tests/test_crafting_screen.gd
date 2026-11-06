@@ -1,5 +1,6 @@
 extends GutTest
-## The crafting menu: a row per recipe, greyed when it can't be afforded, a click crafts.
+## The crafting menu that C opens: a row per recipe made by hand, greyed when it can't be
+## afforded, a click crafts.
 
 var _state: GameState
 var _screen: CraftingScreen
@@ -28,10 +29,10 @@ func test_the_menu_is_closed_at_first_and_toggles() -> void:
 	assert_false(_screen.is_open())
 
 
-func test_there_is_a_row_for_every_recipe() -> void:
+func test_there_is_a_row_for_every_recipe_made_by_hand() -> void:
 	assert_eq(
 		_screen.find_children("*", "RecipeRow", true, false).size(),
-		RecipeRules.default_rules().recipe_ids().size()
+		RecipeRules.default_rules().recipes_at(&"").size()
 	)
 	assert_eq(_row().recipe_id, &"chest")
 

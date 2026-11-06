@@ -246,6 +246,7 @@ func _apply_start_options() -> void:
 	_debug.tiredness_view = _tiredness_view
 	_debug.interior_view = _interior_view
 	_debug.storage_screen = _storage_screen
+	_debug.crafting_screen = _crafting_screen
 	_debug.try_sleep = _try_sleep
 	_debug.pass_door = _pass_door
 	_debug.open_menu = _open_menu
@@ -481,9 +482,11 @@ func _tick_clock(delta: float) -> void:
 ## Opens and closes the screens on their keys. Returns whether a screen took the event: one that
 ## is open takes all the input, so the player neither walks nor acts.
 func _screens_take(event: InputEvent) -> bool:
+	for screen: Node in [_storage_screen, _crafting_screen]:
+		if screen.is_open() and event.is_action_pressed("interact"):
+			screen.close()
+			return true
 	if _storage_screen.is_open():
-		if event.is_action_pressed("interact"):
-			_storage_screen.close()
 		return true
 	if event.is_action_pressed("crafting") and not _character_screen.is_open():
 		_crafting_screen.toggle()
@@ -497,13 +500,15 @@ func _screens_take(event: InputEvent) -> bool:
 	return _is_any_screen_open()
 
 
-## E: opens the chest in reach, else sleeps in the bed in reach.
+## E: opens the chest or the station in reach, else sleeps in the bed in reach.
 func _interact() -> void:
-	var chest := Interaction.chest_to_open(_state, _use_highlight.targeting().tile)
-	if chest == null:
+	var object := Interaction.object_to_open(_state, _use_highlight.targeting().tile)
+	if object == null:
 		_try_sleep()
+	elif object.storage != null:
+		_storage_screen.open(object, _state.player)
 	else:
-		_storage_screen.open(chest, _state.player)
+		_crafting_screen.open(object)
 
 
 ## Sleeps in the bed in reach until the morning: the new day shows on the black for a moment.
