@@ -94,13 +94,22 @@ func test_the_geest_has_knicks_walls_and_fences_and_the_marsh_ditches() -> void:
 			var terrain := generator.terrain_at(pos)
 			var object_type := generator.object_type_at(pos, terrain)
 			if object_type in LandscapeRules.default_rules().kind_shares():
-				assert_false(generator._is_marsh(pos), "%s in the marsh at %s" % [object_type, pos])
+				assert_false(
+					generator._is_marsh(generator._river_distance(pos)),
+					"%s in the marsh at %s" % [object_type, pos]
+				)
 				assert_eq(terrain, Tile.Terrain.GRASS, str(pos))
 				seen[object_type] = true
 			if generator.is_ditch(pos):
 				assert_eq(terrain, Tile.Terrain.WATER)
 				var natural := generator._natural_terrain_at(pos)
-				assert_true(natural == Tile.Terrain.WETLAND or generator._is_marsh(pos), str(pos))
+				assert_true(
+					(
+						natural == Tile.Terrain.WETLAND
+						or generator._is_marsh(generator._river_distance(pos))
+					),
+					str(pos)
+				)
 				seen[&"ditch"] = true
 			if object_type == WorldObjectTypes.WILLOW:
 				assert_true(generator._is_beside_ditch(pos), "a willow off a ditch at %s" % pos)

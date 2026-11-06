@@ -188,9 +188,11 @@ func generate_chunk(chunk_coords: Vector2i) -> Chunk:
 		for x in Chunk.CHUNK_SIZE:
 			var local := Vector2i(x, y)
 			var world_pos := Chunk.to_world(chunk_coords, local)
-			var terrain := terrain_at(world_pos)
+			# Most of what decides a tile depends on how far the river is: sampled once.
+			var river_distance := _river_distance(world_pos)
+			var terrain := _terrain_from(world_pos, river_distance)
 			chunk.set_terrain(local, terrain)
-			var object_type := object_type_at(world_pos, terrain)
+			var object_type := _object_type_from(world_pos, terrain, river_distance)
 			if object_type != &"":
 				chunk.add_object(WorldObject.new(object_type, world_pos))
 	return chunk
@@ -198,8 +200,13 @@ func generate_chunk(chunk_coords: Vector2i) -> Chunk:
 
 ## The one place that decides what a world tile is: the natural terrain, but for the ditches.
 func terrain_at(world_pos: Vector2i) -> Tile.Terrain:
-	var terrain := _natural_terrain_at(world_pos)
-	return Tile.Terrain.WATER if _is_ditch(world_pos, terrain) else terrain
+	return _terrain_from(world_pos, _river_distance(world_pos))
+
+
+## `terrain_at`, for a tile `river_distance` from the river (see `_river_distance`).
+func _terrain_from(world_pos: Vector2i, river_distance: float) -> Tile.Terrain:
+	var terrain := _natural_terrain_from(world_pos, river_distance)
+	return Tile.Terrain.WATER if _is_ditch(world_pos, terrain, river_distance) else terrain
 
 
 ## Whether a tile is a ditch: water where the natural land has none.
@@ -208,15 +215,16 @@ func is_ditch(world_pos: Vector2i) -> bool:
 	var boundary := _fields.boundary_at(world_pos)
 	if boundary == &"" or boundary == FieldLayout.GAP:
 		return false
-	return _is_ditch(world_pos, _natural_terrain_at(world_pos))
+	var river_distance := _river_distance(world_pos)
+	return _is_ditch(world_pos, _natural_terrain_from(world_pos, river_distance), river_distance)
 
 
 ## The land as nature made it: the river, its floodplain, wetland and grass.
 func _natural_terrain_at(world_pos: Vector2i) -> Tile.Terrain:
-	# The river is a centre line y = f(x) rather than a noise isoline: an isoline can fade
-	# out or leave isolated pools, but this one is always continuous and the floodplain
-	# distance is exact.
-	var river_distance := _river_distance(world_pos)
+	return _natural_terrain_from(world_pos, _river_distance(world_pos))
+
+
+func _natural_terrain_from(world_pos: Vector2i, river_distance: float) -> Tile.Terrain:
 	if river_distance < RIVER_HALF_WIDTH:
 		return Tile.Terrain.WATER
 	if river_distance < RIVER_HALF_WIDTH + FLOODPLAIN_WIDTH:
@@ -226,34 +234,38 @@ func _natural_terrain_at(world_pos: Vector2i) -> Tile.Terrain:
 	return Tile.Terrain.GRASS
 
 
-## How far a tile is from the river's centre line, along y.
+## How far a tile is from the river's centre line, along y. The river is a centre line
+## y = f(x) rather than a noise isoline: an isoline can fade out or leave isolated pools, but
+## this one is always continuous and the floodplain distance is exact.
 func _river_distance(world_pos: Vector2i) -> float:
 	return absf(world_pos.y - _river_noise.get_noise_1d(world_pos.x) * RIVER_MEANDER_AMPLITUDE)
 
 
-## Whether a tile is in the marsh: the low land along the floodplain, as wide as its reach.
-func _is_marsh(world_pos: Vector2i) -> bool:
-	return _river_distance(world_pos) < RIVER_HALF_WIDTH + FLOODPLAIN_WIDTH + _marsh_reach
+## Whether a tile this far from the river is in the marsh: the low land along the floodplain, as
+## wide as its reach.
+func _is_marsh(river_distance: float) -> bool:
+	return river_distance < RIVER_HALF_WIDTH + FLOODPLAIN_WIDTH + _marsh_reach
 
 
 ## Whether a tile of this natural terrain is a ditch: a field boundary on wetland or in the
 ## marsh, but for its gap and where a dyke runs.
-func _is_ditch(world_pos: Vector2i, natural: Tile.Terrain) -> bool:
+func _is_ditch(world_pos: Vector2i, natural: Tile.Terrain, river_distance: float) -> bool:
 	var boundary := _fields.boundary_at(world_pos)
 	if boundary == &"" or boundary == FieldLayout.GAP:
 		return false
 	var is_wet_land := (
-		natural == Tile.Terrain.WETLAND or natural == Tile.Terrain.GRASS and _is_marsh(world_pos)
+		natural == Tile.Terrain.WETLAND
+		or natural == Tile.Terrain.GRASS and _is_marsh(river_distance)
 	)
-	return is_wet_land and not _is_dyke(world_pos, natural)
+	return is_wet_land and not _is_dyke(world_pos, natural, river_distance)
 
 
 ## Whether a tile of this natural terrain has a dyke: land with the floodplain among the 8 tiles
 ## around it (so the dyke is a line joined on its sides), on a stretch the dyke noise picks.
-func _is_dyke(world_pos: Vector2i, natural: Tile.Terrain) -> bool:
+func _is_dyke(world_pos: Vector2i, natural: Tile.Terrain, river_distance: float) -> bool:
 	if natural != Tile.Terrain.GRASS and natural != Tile.Terrain.WETLAND:
 		return false
-	if _river_distance(world_pos) >= DYKE_PROBE_DISTANCE:
+	if river_distance >= DYKE_PROBE_DISTANCE:
 		return false
 	if _dyke_noise.get_noise_2dv(Vector2(world_pos)) <= _dyke_above:
 		return false
@@ -268,14 +280,21 @@ func _is_dyke(world_pos: Vector2i, natural: Tile.Terrain) -> bool:
 ## and the forests) takes the tile; nothing stands on the gap of a boundary, and nothing that
 ## blocks the way beside it.
 func object_type_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
-	if _is_dyke(world_pos, terrain):
+	return _object_type_from(world_pos, terrain, _river_distance(world_pos))
+
+
+## `object_type_at`, for a tile `river_distance` from the river (see `_river_distance`).
+func _object_type_from(
+	world_pos: Vector2i, terrain: Tile.Terrain, river_distance: float
+) -> StringName:
+	if _is_dyke(world_pos, terrain, river_distance):
 		return WorldObjectTypes.DYKE
 	var boundary := _fields.boundary_at(world_pos)
 	if boundary == FieldLayout.GAP:
 		return &""
-	if boundary != &"" and _is_geest_field(world_pos, terrain):
+	if boundary != &"" and _is_geest_field(world_pos, terrain, river_distance):
 		return boundary
-	var object_type := _natural_object_at(world_pos, terrain)
+	var object_type := _natural_object_at(world_pos, terrain, river_distance)
 	if (
 		object_type != &""
 		and WorldObjectTypes.TYPES[object_type]["blocks_walking"]
@@ -287,10 +306,10 @@ func object_type_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
 
 ## Whether a tile is grass of the Geest out of the forests: where the field boundaries are
 ## hedges, walls and fences.
-func _is_geest_field(world_pos: Vector2i, terrain: Tile.Terrain) -> bool:
+func _is_geest_field(world_pos: Vector2i, terrain: Tile.Terrain, river_distance: float) -> bool:
 	return (
 		terrain == Tile.Terrain.GRASS
-		and not _is_marsh(world_pos)
+		and not _is_marsh(river_distance)
 		and _forest_noise.get_noise_2dv(Vector2(world_pos)) < FOREST_THRESHOLD
 	)
 
@@ -305,8 +324,10 @@ func _is_beside_gap(world_pos: Vector2i) -> bool:
 ## What nature and the ditches put on a tile: only grass has objects, but for the reeds on the
 ## banks and what stands beside a ditch. A boulder covers the tile to its right, which therefore
 ## has to be free grass: otherwise there is no boulder.
-func _natural_object_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
-	var by_ditch := _ditch_side_type_at(world_pos, terrain)
+func _natural_object_at(
+	world_pos: Vector2i, terrain: Tile.Terrain, river_distance: float
+) -> StringName:
+	var by_ditch := _ditch_side_type_at(world_pos, terrain, river_distance)
 	if by_ditch != &"":
 		return by_ditch
 	if terrain == Tile.Terrain.FLOODPLAIN or terrain == Tile.Terrain.WETLAND:
@@ -329,9 +350,12 @@ func _natural_object_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringNam
 
 ## A pollard willow or reeds beside a ditch, on wetland or in the marsh, with the chances of
 ## data/landscape.cfg, or &"".
-func _ditch_side_type_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
+func _ditch_side_type_at(
+	world_pos: Vector2i, terrain: Tile.Terrain, river_distance: float
+) -> StringName:
 	var is_wet_land := (
-		terrain == Tile.Terrain.WETLAND or terrain == Tile.Terrain.GRASS and _is_marsh(world_pos)
+		terrain == Tile.Terrain.WETLAND
+		or terrain == Tile.Terrain.GRASS and _is_marsh(river_distance)
 	)
 	if not is_wet_land:
 		return &""
