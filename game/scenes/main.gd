@@ -114,9 +114,10 @@ func _ready() -> void:
 func _load_game() -> void:
 	_settings = _load_settings()
 	_apply_ui_scale(_settings.ui_scale)
-	add_child(_audio)
+	# Before add_child: AudioService._ready reads is_logging.
 	_audio.is_muted = _options.mute
 	_audio.is_logging = _options.sound_log
+	add_child(_audio)
 	_world.audio_listener_enable_2d = true
 	_audio.use_world(_world)
 	_audio.apply_settings(_settings)
