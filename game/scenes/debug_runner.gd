@@ -16,6 +16,8 @@ const WILDLIFE_GROUPS: Array[StringName] = [
 ]
 ## Farm animals of each species that `--livestock` puts near the player.
 const LIVESTOCK_COUNT := 4
+## The villagers of `--npcs` are drawn from this seed, so a screenshot shows the same ones.
+const NPCS_SEED := 84
 
 var state: GameState
 var view: WorldView
@@ -40,6 +42,7 @@ var _is_storage_to_open: bool
 var _is_station_to_open: bool
 var _are_animals_to_spawn: bool
 var _is_livestock_to_spawn: bool
+var _npcs_to_spawn: int
 var _hit_tile: Vector2i
 var _harvest_tile: Vector2i
 var _menu_page: int
@@ -58,6 +61,7 @@ func _init(options: StartupOptions) -> void:
 	_is_station_to_open = options.station
 	_are_animals_to_spawn = not options.wildlife.is_empty()
 	_is_livestock_to_spawn = not options.livestock.is_empty()
+	_npcs_to_spawn = options.npcs
 	_hit_tile = options.hit
 	_harvest_tile = options.harvest
 	_menu_page = options.menu
@@ -93,6 +97,10 @@ func update(delta: float) -> void:
 	if _is_livestock_to_spawn and _is_outside_and_drawn():
 		_spawn_livestock()
 		_is_livestock_to_spawn = false
+	if _npcs_to_spawn > 0 and _is_outside_and_drawn():
+		state.npcs.rng.seed = NPCS_SEED
+		state.npcs.spawn(_npcs_to_spawn, state.player.position, state.world)
+		_npcs_to_spawn = 0
 	if _hit_tile != StartupOptions.NO_TILE and _is_outside_and_drawn():
 		var object := state.world.object_at(_hit_tile)
 		if object != null:

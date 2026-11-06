@@ -178,6 +178,9 @@ func _connect_state_and_views() -> void:
 	_ground_item_view.show_items(_state.world, _view.entities)
 	_view.tree_felled.connect(_ground_item_view.hold_hops_from)
 	_wildlife.show_wildlife(_state, _view, _camera)
+	for npc in _state.npcs.all():
+		_show_npc(npc)
+	_state.npcs.added.connect(_show_npc)
 	_builder = Builder.new(_state)
 	_build_mode.world = _state.world
 	_build_mode.builder = _builder
@@ -513,6 +516,11 @@ func _interact() -> void:
 		_storage_screen.open(object, _state.player)
 	else:
 		_crafting_screen.open(object)
+
+
+## Puts a villager among the world's entities, where it stands among the objects like the player.
+func _show_npc(npc: Npc) -> void:
+	_view.entities.add_child(NpcView.new(npc))
 
 
 ## Sleeps in the bed in reach until the morning: the new day shows on the black for a moment.

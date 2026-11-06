@@ -99,6 +99,7 @@ extends RefCounted
 ##   --wildlife-calm          the animals take no notice of the player
 ##   --livestock=<species>[,<species>]  put a few farm animals of those species near the player
 ##                            (cow, sheep, chicken, rabbit, dog, cat, horse)
+##   --npcs=<count>           put that many villagers near the player, the same ones every time
 
 ## The value of a tile flag that was not given.
 const NO_TILE := Vector2i(1 << 30, 1 << 30)
@@ -179,6 +180,7 @@ var hit := NO_TILE
 var wildlife := PackedStringArray()
 var wildlife_calm := false
 var livestock := PackedStringArray()
+var npcs := 0
 
 
 static func from_command_line() -> StartupOptions:
@@ -299,6 +301,8 @@ func _init(args := PackedStringArray()) -> void:
 				wildlife_calm = true
 			"--livestock":
 				livestock = _value(arg).split(",")
+			"--npcs":
+				npcs = _value(arg).to_int()
 			_:
 				if arg.begins_with("--"):
 					push_warning("Unknown flag '%s' (see StartupOptions)" % arg)
