@@ -95,7 +95,7 @@ func test_the_geest_has_knicks_walls_and_fences_and_the_marsh_ditches() -> void:
 			var object_type := generator.object_type_at(pos, terrain)
 			if object_type in LandscapeRules.default_rules().kind_shares():
 				assert_false(
-					generator._is_marsh(generator._river_distance(pos)),
+					generator._is_marsh(pos, generator._river_distance(pos)),
 					"%s in the marsh at %s" % [object_type, pos]
 				)
 				assert_eq(terrain, Tile.Terrain.GRASS, str(pos))
@@ -106,7 +106,7 @@ func test_the_geest_has_knicks_walls_and_fences_and_the_marsh_ditches() -> void:
 				assert_true(
 					(
 						natural == Tile.Terrain.WETLAND
-						or generator._is_marsh(generator._river_distance(pos))
+						or generator._is_marsh(pos, generator._river_distance(pos))
 					),
 					str(pos)
 				)

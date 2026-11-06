@@ -104,6 +104,7 @@ const LAYER_OF_TERRAIN: Dictionary[Tile.Terrain, Layer] = {
 	Tile.Terrain.GRASS: Layer.GRASS,
 	Tile.Terrain.SOIL: Layer.SOIL,
 	Tile.Terrain.WATER: Layer.WATER,
+	Tile.Terrain.SEA: Layer.WATER,
 	Tile.Terrain.WETLAND: Layer.WETLAND,
 	Tile.Terrain.FLOODPLAIN: Layer.FLOODPLAIN,
 	Tile.Terrain.MUD: Layer.MUD,

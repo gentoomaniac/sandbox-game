@@ -1,8 +1,8 @@
 class_name LandscapeRules
 extends RefCounted
-## The numbers of the worked land (field boundaries, ditches, dykes, willows), read from
-## data/landscape.cfg (see there for what each one means). `from_file` reports every key that is
-## missing or out of range, and `is_valid` says whether any was.
+## The numbers of the worked land (field boundaries, ditches, dykes, willows) and of the coast,
+## read from data/landscape.cfg (see there for what each one means). `from_file` reports every key
+## that is missing or out of range, and `is_valid` says whether any was.
 
 const DEFAULT_PATH := "res://data/landscape.cfg"
 
@@ -12,6 +12,8 @@ const REQUIRED_KEYS := {
 	"marsh": ["reach"],
 	"dykes": ["stretch_above"],
 	"ditches": ["willow_chance", "reeds_chance"],
+	"coast": ["line_x", "wander", "salt_marsh_width", "salt_marsh_wander", "flats_width"],
+	"tideways": ["spacing", "meander", "widening", "widest"],
 }
 ## A field must leave room for a gap that is not at either end of a boundary, with a tile
 ## beside it on both sides that is not on another boundary.
@@ -54,6 +56,9 @@ func problems() -> Array[String]:
 		found.append("[fields] row_height less row_jitter must be at least %d" % MIN_FIELD_SIZE)
 	if value("fields", "field_width") - value("fields", "field_jitter") < MIN_FIELD_SIZE:
 		found.append("[fields] field_width less field_jitter must be at least %d" % MIN_FIELD_SIZE)
+	var tideway_band := 2.0 * value("tideways", "meander") + value("tideways", "widest")
+	if tideway_band >= value("tideways", "spacing"):
+		found.append("[tideways] twice the meander and the widest must be less than the spacing")
 	if kind_shares().values().all(func(share: float) -> bool: return share <= 0.0):
 		found.append("[kinds] no kind has a share")
 	return found

@@ -57,3 +57,13 @@ func test_a_missing_file_is_reported() -> void:
 	var rules := LandscapeRules.from_file(DATA_DIR + "/nothing.cfg")
 	assert_false(rules.is_valid())
 	assert_push_error_count(rules.problems().size() + 1)
+
+
+func test_tideways_that_could_run_together_are_reported() -> void:
+	var text := FileAccess.get_file_as_string(LandscapeRules.DEFAULT_PATH)
+	var rules := _write(text.replace("meander=11", "meander=15"))
+	assert_eq(
+		rules.problems(),
+		["[tideways] twice the meander and the widest must be less than the spacing"]
+	)
+	assert_push_error_count(1)

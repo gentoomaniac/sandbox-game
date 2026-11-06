@@ -97,7 +97,7 @@ func place(world_pos: Vector2i, code: int, is_covered: bool) -> void:
 	_set_clay_hint(world_pos, is_covered)
 	_decorations.erase_cell(world_pos)
 	_spots.erase(world_pos)
-	if is_covered:
+	if is_covered or _is_sea(world_pos):
 		return
 	var spot := DecorationSpot.new()
 	spot.layer = TerrainTileset.layer_of(code)
@@ -153,6 +153,12 @@ func flower_tiles_within(area: Rect2) -> Array[Vector2i]:
 			if has_flower(Vector2i(x, y)):
 				tiles.append(Vector2i(x, y))
 	return tiles
+
+
+## Whether a tile is the sea's, which is drawn as water but has no lily pads.
+func _is_sea(world_pos: Vector2i) -> bool:
+	var tile := _world.tile_at(world_pos)
+	return tile != null and tile.terrain == Tile.Terrain.SEA
 
 
 ## Shows the hint of a clay spot that still holds clay, unless an object stands on it.

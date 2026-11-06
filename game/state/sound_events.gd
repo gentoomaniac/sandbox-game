@@ -18,7 +18,7 @@ static func footstep(
 	if is_snowed:
 		return &"step_snow"
 	match terrain:
-		Tile.Terrain.WATER:
+		Tile.Terrain.WATER, Tile.Terrain.SEA:
 			# Unfrozen water can't be walked on, so this is only a fallback.
 			return &"step_ice" if is_frozen else &"step_grass"
 		Tile.Terrain.WETLAND, Tile.Terrain.MUD:

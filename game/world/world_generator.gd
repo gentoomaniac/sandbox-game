@@ -13,6 +13,12 @@ extends RefCounted
 ## natural land (for reeds, dead trees) look at the natural terrain, so the worked land only
 ## changes the tiles it is on and beside, but for the clay, which is also found by the ditches.
 ##
+## In the west lies the North Sea (data/landscape.cfg, [coast] and [tideways]). A coast line runs
+## north to south, x = f(y), like the river's centre line: east of it the land, whose first tiles
+## carry the sea dyke and whose marsh reaches inland from it as from the river; west of it the
+## foreshore, which nothing grows on: the salt marsh, then the tidal mud cut by tideways that
+## widen towards the open sea, then the sea. The river runs on through the foreshore, widening.
+##
 ## Deterministic: terrain is a pure function of the seed and the world tile position, and
 ## each generator owns its noise instances, so chunks come out the same in any order and
 ## fit together seamlessly.
@@ -71,6 +77,16 @@ const CLAY_REACH := 5
 const CLAY_CLUSTER_ABOVE := 0.25
 const CLAY_SPOT_CHANCE := 0.5
 
+## How much wider the river grows per tile it runs out into the foreshore: an estuary.
+const ESTUARY_WIDENING := 0.08
+## How far (as a share of `flats_width`) the edge of the open sea wanders in and out.
+const SEA_EDGE_WANDER := 0.3
+## How far out on the mud a tideway may start, at most, rather than at the salt marsh.
+const TIDEWAY_LATE_START := 24.0
+## How many tiles of mud a tideway leaves between itself and the river running out: if they met,
+## mud between them could be cut off from the land.
+const TIDEWAY_RIVER_CLEARANCE := 3.0
+
 ## A tile further than this from the river's centre line can't be beside the floodplain: a
 ## tile beside it is at most this much nearer, where the river turns steeply.
 const DYKE_PROBE_DISTANCE := RIVER_HALF_WIDTH + FLOODPLAIN_WIDTH + 6.0
@@ -120,6 +136,16 @@ const GRASS_FREQUENCY := 0.05
 const CLAY_FREQUENCY := 0.15
 ## The dyke noise picks the stretches of the floodplain's edge that have a dyke.
 const DYKE_FREQUENCY := 0.01
+## The coast line's wandering, and the foreshore's (the salt marsh's width, the sea's edge), along
+## y; how fast a tideway bends, along x.
+const COAST_FREQUENCY := 0.006
+const FORESHORE_FREQUENCY := 0.03
+const TIDEWAY_FREQUENCY := 0.035
+## The foreshore noise is sampled this far along y for the sea's edge, so it does not follow the
+## salt marsh's width.
+const SEA_EDGE_SAMPLE_OFFSET := 5000.0
+## Each tideway bends by the tideway noise sampled this far apart along y.
+const TIDEWAY_SAMPLE_SPACING := 1000.0
 
 ## Offsets the wetland seed so it is independent of the river noise.
 const WETLAND_SEED_OFFSET := 1
@@ -128,6 +154,9 @@ const COMPOSITION_SEED_OFFSET := 4
 const GRASS_SEED_OFFSET := 6
 const CLAY_SEED_OFFSET := 7
 const DYKE_SEED_OFFSET := 11
+const COAST_SEED_OFFSET := 13
+const FORESHORE_SEED_OFFSET := 14
+const TIDEWAY_SEED_OFFSET := 15
 ## Offsets the per-tile object rolls from the noise seeds: one decides the kind of object,
 ## the other which variety of tree or bush.
 const OBJECT_ROLL_SEED_OFFSET := 3
@@ -136,6 +165,7 @@ const GRASS_ROLL_SEED_OFFSET := 8
 const CLAY_ROLL_SEED_OFFSET := 9
 const REED_ROLL_SEED_OFFSET := 10
 const DITCH_SIDE_ROLL_SEED_OFFSET := 12
+const TIDEWAY_START_ROLL_SEED_OFFSET := 16
 
 var _river_noise := FastNoiseLite.new()
 var _wetland_noise := FastNoiseLite.new()
@@ -144,18 +174,31 @@ var _composition_noise := FastNoiseLite.new()
 var _grass_noise := FastNoiseLite.new()
 var _clay_noise := FastNoiseLite.new()
 var _dyke_noise := FastNoiseLite.new()
+var _coast_noise := FastNoiseLite.new()
+var _foreshore_noise := FastNoiseLite.new()
+var _tideway_noise := FastNoiseLite.new()
 var _object_roll_seed: int
 var _variety_roll_seed: int
 var _grass_roll_seed: int
 var _clay_roll_seed: int
 var _reed_roll_seed: int
 var _ditch_side_roll_seed: int
+var _tideway_start_roll_seed: int
 var _fields: FieldLayout
 ## The numbers of data/landscape.cfg (see there).
 var _marsh_reach: float
 var _dyke_above: float
 var _willow_chance: float
 var _ditch_reeds_chance: float
+var _coast_x: float
+var _coast_wander: float
+var _salt_marsh_width: float
+var _salt_marsh_wander: float
+var _flats_width: float
+var _tideway_spacing: float
+var _tideway_meander: float
+var _tideway_widening: float
+var _tideway_widest: float
 
 
 func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void:
@@ -173,17 +216,33 @@ func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void
 	_clay_noise.frequency = CLAY_FREQUENCY
 	_dyke_noise.seed = world_seed + DYKE_SEED_OFFSET
 	_dyke_noise.frequency = DYKE_FREQUENCY
+	_coast_noise.seed = world_seed + COAST_SEED_OFFSET
+	_coast_noise.frequency = COAST_FREQUENCY
+	_foreshore_noise.seed = world_seed + FORESHORE_SEED_OFFSET
+	_foreshore_noise.frequency = FORESHORE_FREQUENCY
+	_tideway_noise.seed = world_seed + TIDEWAY_SEED_OFFSET
+	_tideway_noise.frequency = TIDEWAY_FREQUENCY
 	_object_roll_seed = world_seed + OBJECT_ROLL_SEED_OFFSET
 	_variety_roll_seed = world_seed + VARIETY_ROLL_SEED_OFFSET
 	_grass_roll_seed = world_seed + GRASS_ROLL_SEED_OFFSET
 	_clay_roll_seed = world_seed + CLAY_ROLL_SEED_OFFSET
 	_reed_roll_seed = world_seed + REED_ROLL_SEED_OFFSET
 	_ditch_side_roll_seed = world_seed + DITCH_SIDE_ROLL_SEED_OFFSET
+	_tideway_start_roll_seed = world_seed + TIDEWAY_START_ROLL_SEED_OFFSET
 	_fields = FieldLayout.new(world_seed, landscape)
 	_marsh_reach = landscape.value("marsh", "reach")
 	_dyke_above = landscape.value("dykes", "stretch_above")
 	_willow_chance = landscape.value("ditches", "willow_chance")
 	_ditch_reeds_chance = landscape.value("ditches", "reeds_chance")
+	_coast_x = landscape.value("coast", "line_x")
+	_coast_wander = landscape.value("coast", "wander")
+	_salt_marsh_width = landscape.value("coast", "salt_marsh_width")
+	_salt_marsh_wander = landscape.value("coast", "salt_marsh_wander")
+	_flats_width = landscape.value("coast", "flats_width")
+	_tideway_spacing = landscape.value("tideways", "spacing")
+	_tideway_meander = landscape.value("tideways", "meander")
+	_tideway_widening = landscape.value("tideways", "widening")
+	_tideway_widest = landscape.value("tideways", "widest")
 
 
 ## The chunk at `chunk_coords`, or null if it is outside the world bounds.
@@ -230,12 +289,15 @@ func is_ditch(world_pos: Vector2i) -> bool:
 	return _is_ditch(world_pos, _natural_terrain_from(world_pos, river_distance), river_distance)
 
 
-## The land as nature made it: the river, its floodplain, wetland and grass.
+## The land as nature made it: the river, its floodplain, wetland and grass, and the foreshore.
 func _natural_terrain_at(world_pos: Vector2i) -> Tile.Terrain:
 	return _natural_terrain_from(world_pos, _river_distance(world_pos))
 
 
 func _natural_terrain_from(world_pos: Vector2i, river_distance: float) -> Tile.Terrain:
+	var coast_distance := _coast_distance(world_pos)
+	if coast_distance < 0.0:
+		return _foreshore_terrain(world_pos, -coast_distance, river_distance)
 	if river_distance < RIVER_HALF_WIDTH:
 		return Tile.Terrain.WATER
 	if river_distance < RIVER_HALF_WIDTH + FLOODPLAIN_WIDTH:
@@ -252,10 +314,54 @@ func _river_distance(world_pos: Vector2i) -> float:
 	return absf(world_pos.y - _river_noise.get_noise_1d(world_pos.x) * RIVER_MEANDER_AMPLITUDE)
 
 
-## Whether a tile this far from the river is in the marsh: the low land along the floodplain, as
-## wide as its reach.
-func _is_marsh(river_distance: float) -> bool:
-	return river_distance < RIVER_HALF_WIDTH + FLOODPLAIN_WIDTH + _marsh_reach
+## How far a tile lies east of the coast line, in tiles along x: negative out on the foreshore.
+func _coast_distance(world_pos: Vector2i) -> float:
+	return world_pos.x - (_coast_x + _coast_noise.get_noise_1d(world_pos.y) * _coast_wander)
+
+
+## The foreshore `seaward` tiles out from the coast line: the river running out, the salt marsh,
+## the tidal mud with its tideways, the open sea. Its water is the sea's.
+func _foreshore_terrain(world_pos: Vector2i, seaward: float, river_distance: float) -> Tile.Terrain:
+	var estuary_half_width := RIVER_HALF_WIDTH + seaward * ESTUARY_WIDENING
+	if river_distance < estuary_half_width:
+		return Tile.Terrain.SEA
+	var salt_marsh_width := (
+		_salt_marsh_width + _foreshore_noise.get_noise_1d(world_pos.y) * _salt_marsh_wander
+	)
+	if seaward < salt_marsh_width:
+		return Tile.Terrain.SALT_MARSH
+	var out := seaward - salt_marsh_width
+	var sea_wander := _foreshore_noise.get_noise_1d(world_pos.y + SEA_EDGE_SAMPLE_OFFSET)
+	if out > _flats_width * (1.0 + sea_wander * SEA_EDGE_WANDER):
+		return Tile.Terrain.SEA
+	var is_clear_of_the_river := river_distance >= estuary_half_width + TIDEWAY_RIVER_CLEARANCE
+	if is_clear_of_the_river and _is_tideway(world_pos, out):
+		return Tile.Terrain.SEA
+	return Tile.Terrain.MUD
+
+
+## Whether a tile of the mud, `out` tiles from the salt marsh, lies in a tideway. Tideway k winds
+## along the middle of the band of rows from k * spacing on, and the bands are wide enough for it
+## (see LandscapeRules), so only the tideway of the tile's own band can reach it. Some start a
+## little way out on the mud rather than at the salt marsh.
+func _is_tideway(world_pos: Vector2i, out: float) -> bool:
+	var band := floori(world_pos.y / _tideway_spacing)
+	var start := _roll(Vector2i(band, 0), _tideway_start_roll_seed) * TIDEWAY_LATE_START
+	if out < start:
+		return false
+	var bend := _tideway_noise.get_noise_2d(world_pos.x, band * TIDEWAY_SAMPLE_SPACING)
+	var middle := (band + 0.5) * _tideway_spacing + bend * _tideway_meander
+	var width := minf(1.0 + (out - start) * _tideway_widening, _tideway_widest)
+	return absf(world_pos.y + 0.5 - middle) < width / 2.0
+
+
+## Whether a tile is in the marsh: the low land along the floodplain and behind the sea dyke, as
+## far as its reach.
+func _is_marsh(world_pos: Vector2i, river_distance: float) -> bool:
+	return (
+		river_distance < RIVER_HALF_WIDTH + FLOODPLAIN_WIDTH + _marsh_reach
+		or _coast_distance(world_pos) < _marsh_reach
+	)
 
 
 ## Whether a tile of this natural terrain is a ditch: a field boundary on wetland or in the
@@ -266,14 +372,38 @@ func _is_ditch(world_pos: Vector2i, natural: Tile.Terrain, river_distance: float
 		return false
 	var is_wet_land := (
 		natural == Tile.Terrain.WETLAND
-		or natural == Tile.Terrain.GRASS and _is_marsh(river_distance)
+		or natural == Tile.Terrain.GRASS and _is_marsh(world_pos, river_distance)
 	)
 	return is_wet_land and not _is_dyke(world_pos, natural, river_distance)
 
 
-## Whether a tile of this natural terrain has a dyke: land with the floodplain among the 8 tiles
-## around it (so the dyke is a line joined on its sides), on a stretch the dyke noise picks.
+## Whether a tile of this natural terrain has a dyke: by the sea or along the river.
 func _is_dyke(world_pos: Vector2i, natural: Tile.Terrain, river_distance: float) -> bool:
+	return _is_sea_dyke(world_pos, natural) or _is_river_dyke(world_pos, natural, river_distance)
+
+
+## Whether a tile has the sea dyke: land (the floodplain too, where the river runs out) with the
+## foreshore among the 8 tiles around it, so the dyke is a line joined on its sides all along the
+## coast, but for the river.
+func _is_sea_dyke(world_pos: Vector2i, natural: Tile.Terrain) -> bool:
+	if (
+		natural != Tile.Terrain.GRASS
+		and natural != Tile.Terrain.WETLAND
+		and natural != Tile.Terrain.FLOODPLAIN
+	):
+		return false
+	# A tile beside the foreshore is less than 2 tiles from the line, along x: the cheap part.
+	if _coast_distance(world_pos) >= 2.0:
+		return false
+	for direction in WETLAND_PROBE_DIRECTIONS:
+		if _coast_distance(world_pos + direction) < 0.0:
+			return true
+	return false
+
+
+## Whether a tile of this natural terrain has a river dyke: land with the floodplain among the 8
+## tiles around it (so the dyke is a line joined on its sides), on a stretch the dyke noise picks.
+func _is_river_dyke(world_pos: Vector2i, natural: Tile.Terrain, river_distance: float) -> bool:
 	if natural != Tile.Terrain.GRASS and natural != Tile.Terrain.WETLAND:
 		return false
 	if river_distance >= DYKE_PROBE_DISTANCE:
@@ -320,7 +450,7 @@ func _object_type_from(
 func _is_geest_field(world_pos: Vector2i, terrain: Tile.Terrain, river_distance: float) -> bool:
 	return (
 		terrain == Tile.Terrain.GRASS
-		and not _is_marsh(river_distance)
+		and not _is_marsh(world_pos, river_distance)
 		and _forest_noise.get_noise_2dv(Vector2(world_pos)) < FOREST_THRESHOLD
 	)
 
@@ -366,7 +496,7 @@ func _ditch_side_type_at(
 ) -> StringName:
 	var is_wet_land := (
 		terrain == Tile.Terrain.WETLAND
-		or terrain == Tile.Terrain.GRASS and _is_marsh(river_distance)
+		or terrain == Tile.Terrain.GRASS and _is_marsh(world_pos, river_distance)
 	)
 	if not is_wet_land:
 		return &""
@@ -492,7 +622,7 @@ func _roll(world_pos: Vector2i, salt: int) -> float:
 ## `variety_roll` in [0, 1).
 func _tree_type_at(world_pos: Vector2i, river_distance: float, variety_roll: float) -> StringName:
 	# Wet ground: the marsh, and on the Geest the land by the wetland.
-	if _is_marsh(river_distance) or _is_near_wetland(world_pos):
+	if _is_marsh(world_pos, river_distance) or _is_near_wetland(world_pos):
 		return _weighted_pick(MARSH_BROADLEAVES, variety_roll)
 	var composition := _composition_noise.get_noise_2dv(Vector2(world_pos))
 	var conifer_share := clampf((composition - CONIFER_CLUMP_ABOVE) / CONIFER_CLUMP_EDGE, 0.0, 1.0)
