@@ -16,7 +16,7 @@ const COMMANDS := {
 	"spawn":
 	[
 		"spawn <kind> [count]",
-		"Put animals near you: farm animals that stay, or wild ones that come and go.",
+		"Put animals or villagers (npc) near you; farm animals and villagers stay.",
 	],
 	"weather":
 	[
@@ -64,6 +64,8 @@ const MAX_SKIP_MINUTES := GameClock.DAYS_PER_YEAR * GameClock.MINUTES_PER_DAY
 const SNOW_CANDIDATES: Array[String] = ["auto", "0", "0.5", "1"]
 ## How far (in tiles) the `crop` command looks for a crop when none is in front of the player.
 const CROP_SEARCH_RADIUS := 4
+## What `spawn` calls a villager (see Npcs).
+const NPC := "npc"
 ## What `spawn` calls the wild rabbit (WildlifeRules.RABBIT): a plain rabbit is a tame one of the
 ## livestock.
 const WILD_RABBIT := "wild_rabbit"
@@ -156,6 +158,7 @@ func candidates(kind: StringName) -> Array[String]:
 		&"item":
 			values = _item_ids()
 		&"animal":
+			values.append(NPC)
 			for species in LivestockRules.SPECIES:
 				values.append(String(species))
 			for animal in WildlifeRules.KINDS:
@@ -275,11 +278,16 @@ func _spawn(arguments: PackedStringArray) -> Array[String]:
 		return ["Usage: %s" % COMMANDS["spawn"][0]]
 	var word := arguments[0]
 	var count := 1 if arguments.size() < 2 else int(arguments[1])
-	if LivestockRules.SPECIES.has(StringName(word)):
+	# Farm animals and villagers stay in the world: they are part of the state.
+	if word == NPC or LivestockRules.SPECIES.has(StringName(word)):
 		if _state.is_inside():
-			return ["No animals here"]
+			return ["No %s here" % ("villagers" if word == NPC else "animals")]
 		var near := _state.player.position
-		var spawned := _state.livestock.spawn(StringName(word), count, near, _state.world)
+		var spawned := (
+			_state.npcs.spawn(count, near, _state.world)
+			if word == NPC
+			else _state.livestock.spawn(StringName(word), count, near, _state.world)
+		)
 		return ["Spawned %d of %d %s" % [spawned, count, word]]
 	var kind := WildlifeRules.RABBIT if word == WILD_RABBIT else StringName(word)
 	if not WildlifeRules.KINDS.has(kind):

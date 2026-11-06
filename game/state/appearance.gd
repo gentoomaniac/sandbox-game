@@ -1,21 +1,25 @@
 class_name Appearance
 extends RefCounted
-## What the player's character wears: an ordered list of layers, each `{slot, variant}`.
+## What a character wears, the player's or a villager's (see Npc): an ordered list of layers,
+## each `{slot, variant}`.
 ## Every layer is drawn from the sheet assets/character/<slot>_<variant>.png, so a new look
-## needs a new sheet and no code. The body and hair are the character's own; the legs, feet,
-## clothes, coat and head layers follow what is worn (see `dress`), and the held layer the hand.
+## needs a new sheet and no code. The body and hair are the character's own; the player's legs,
+## feet, clothes, coat and head layers follow what is worn (see `dress`), and the held layer the
+## hand.
 
 const BODY := &"body"
 const LEGS := &"legs"
 const FEET := &"feet"
 const CLOTHES := &"clothes"
+## Only villagers wear an apron for now (see NpcRules).
+const APRON := &"apron"
 const COAT := &"coat"
 const HAIR := &"hair"
 const HEAD := &"head"
 const HELD := &"held"
 
 ## The draw order, bottom first. A layer in a slot that is not listed goes on top.
-const DRAW_ORDER := [BODY, LEGS, FEET, CLOTHES, COAT, HAIR, HEAD, HELD]
+const DRAW_ORDER := [BODY, LEGS, FEET, CLOTHES, APRON, COAT, HAIR, HEAD, HELD]
 
 ## The layer each Equipment slot shows. Slots that are not listed (back, hands) show nothing.
 const LAYER_OF_EQUIPMENT_SLOT := {

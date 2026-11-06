@@ -37,6 +37,8 @@ var snow_cover: SnowCover
 var player := PlayerState.new()
 ## The farm animals of the world. Main moves them while the player is out in the world.
 var livestock := Livestock.new(sun)
+## The villagers of the world, moved like the farm animals.
+var npcs := Npcs.new(sun)
 var energy_rules := EnergyRules.default_rules()
 ## What every use costs is multiplied by this (the Game setting: 0.5, 1 or 1.5).
 var energy_drain := 1.0
@@ -337,6 +339,7 @@ func to_dict() -> Dictionary:
 		"clock": clock.to_dict(),
 		"player": player.to_dict(),
 		"livestock": livestock.to_array(),
+		"npcs": npcs.to_array(),
 		"current_map": _map_to_ref(current_map),
 		"home_map": _map_to_ref(player.home_map),
 	}
@@ -350,6 +353,7 @@ static func from_dict(data: Dictionary) -> GameState:
 	state.snow_cover = SnowCover.new(state.weather)
 	state.player = PlayerState.from_dict(data["player"], state._map_from_ref(data["home_map"]))
 	state.livestock.load_array(data["livestock"])
+	state.npcs.load_array(data["npcs"])
 	state._building_inside = state._building_of_ref(data["current_map"])
 	# No sleep wakes between 01:00 and 06:30, so a game saved then was quit by a player who
 	# stayed up: they still pass out (`is_up_too_late` itself is not saved).
