@@ -405,7 +405,17 @@ when drawn. Products (milk, wool, eggs) and keeping them (pens, feeding, owning)
 
 The user's word of 2026-11-07: start with the three professions suggested in
 docs/ideas/crafting-and-professions.md (woodworker at a workbench, cook at hearth and oven,
-mason with bricks and a kiln) and a UI for them. Design decisions to be settled first.
+mason with bricks and a kiln) and a UI for them. Decided by the user:
+- **Skills grow both ways:** crafting raises the skill (no gain from trivial recipes), and
+  skill levels unlock the next tier of recipes. Skill numbers are shown.
+- **A hard total cap, as points:** only one profession can reach the maximum; with it the
+  player can be above average in one or two others, not more.
+- **Stations are placed objects** (workbench, oven, kiln), crafted and placed like the chest.
+  The bench and oven craft at once; the kiln fires over time (overnight). The house hearth is
+  the cook's first station.
+- **UI:** a skills tab beside the character screen with each profession's level and progress;
+  using a station opens the crafting menu filtered to it, with locked recipes shown along with
+  the skill they need.
 
 ## Later (not part of the prototype)
 
