@@ -102,7 +102,7 @@ def world_chest():
 #  7 berry_bush (3, then the same 3 picked)
 #  8 shrub (3)
 #  9 sapling (3)
-# 10 fern (3)
+# 10 fern (3; the game type is fern_bush, the art kind keeps its old name)
 # 11 boulder (2)
 # 12 stump (2)
 # 13 tall_grass (3, then the same 3 mown)

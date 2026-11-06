@@ -1,7 +1,7 @@
 """The looks of the terrain, decoration, object and house art.
 
-Summer is the art as terrain.py, trees.py and the other drawing modules draw it. The other looks are made from it: colour remaps
-(grass turns fresher, yellower, brown-grey, rimed or snowy; leaves change colour) plus a few
+Summer is the art as terrain.py, trees.py and the other drawing modules draw it. The other
+looks are made from it: colour remaps (grass turns fresher, yellower, brown-grey, rimed or snowy; leaves change colour) plus a few
 overlays (snow caps, blossom). So an art change in those modules carries over to every look.
 The game picks a look per tile and per object (see game/state/season_blend.gd): spring,
 summer and autumn are the seasons' foliage, "bare" is winter without snow, "frost" a cold

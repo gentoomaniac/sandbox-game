@@ -40,7 +40,7 @@ by topic. Where is a thing drawn?
 | `ui.py` | The pixel font, the panel frame and the button frames. |
 
 `generate.py` imports all the others and none of them imports it; most import `canvas.py`, and
-`palette.py` imports only `seasons.COLOURS`.
+Of the art modules, `palette.py` imports only `seasons` (for its colours) and `canvas`.
 
 Pictures are lists of rows of **palette colour names** (`None` is transparent), never RGB
 values. The colours are `BASE_COLOURS` in `palette.py` plus `COLOURS` in `seasons.py`, merged

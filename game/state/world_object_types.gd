@@ -63,6 +63,7 @@ const DEAD_TREE := &"dead_tree"
 const BERRY_BUSH := &"berry_bush"
 const SHRUB := &"shrub"
 const SAPLING := &"sapling"
+## Drawn as the art kind "fern" (tools/art/generate.py keeps the old name: it seeds the art).
 const FERN_BUSH := &"fern_bush"
 const TURNIP := &"turnip"
 const BOULDER := &"boulder"
