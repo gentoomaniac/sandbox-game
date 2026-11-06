@@ -45,3 +45,7 @@ Answered questions move into SPEC.md and are removed here.
 1. **The push key** `.deploy-key/` sits in the working tree (gitignored, so safe). The code
    review suggests keeping it under `~/.ssh` instead. Default: left where it is; moving it
    is your call, as it is your machine's setup.
+2. **Carrying weight at the start** (task 53): a new game carries 19.9 kg against the 20 kg
+   that cost no extra energy, so the first log or stone picked up already costs more. The
+   period clothes were made lighter to fit (clogs 0.3 kg). Raise the free weight (e.g. 25 kg)
+   so a new player has room, or keep it tight? Default: keep as is.
