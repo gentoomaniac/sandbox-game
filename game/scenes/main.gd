@@ -15,10 +15,6 @@ const SNOWY_GHOST_COVER := 0.5
 const GAME_MINUTES_PER_REAL_SECOND := 1.5
 ## Debug speed-up, toggled with F2: a game day in 16 real seconds.
 const FAST_FORWARD_FACTOR := 60.0
-## Frames to wait before a screenshot once the scene is ready.
-const SCREENSHOT_SETTLE_FRAMES := 3
-## Animals of each kind (but one flock) that `--wildlife` puts in view.
-const START_WILDLIFE_COUNT := 4
 
 var _state: GameState
 var _builder: Builder
@@ -57,8 +53,7 @@ var _fast_forward := false
 ## acts.
 var _is_in_transition := false
 var _fade_screen := FadeScreen.new()
-var _debug_chest: WorldObject
-var _settled_frames := 0
+var _debug: DebugRunner
 var _pending_minutes := 0.0
 
 @onready var _world: SubViewport = $WorldViewport
@@ -186,6 +181,17 @@ func _ready() -> void:
 	add_child(_tooltip_view)
 	add_child(_fade_screen)
 	_start_sounds()
+	_debug = DebugRunner.new(_options)
+	_debug.state = _state
+	_debug.view = _view
+	_debug.wildlife = _wildlife
+	_debug.tiredness_view = _tiredness_view
+	_debug.interior_view = _interior_view
+	_debug.storage_screen = _storage_screen
+	_debug.try_sleep = _try_sleep
+	_debug.pass_door = _pass_door
+	_debug.open_menu = _open_menu
+	_debug.save_screenshot_and_quit = _save_screenshot_and_quit
 	_interior_view.hide()
 	_world.add_child(_interior_view)
 	_world.add_child(_weather_view)
@@ -288,28 +294,7 @@ func _process(delta: float) -> void:
 	if not _state.is_inside():
 		_view.player_feet = _player_view.position
 		_view.set_focus(_state.player.tile())
-	if _options.inside:
-		_enter_first_house_now()
-	if _options.sleep and _view.is_settled:
-		_options.sleep = false
-		_try_sleep()
-	_place_debug_chests()
-	if not _options.wildlife.is_empty() and _view.is_settled and not _state.is_inside():
-		_spawn_start_wildlife()
-	if _options.hit != StartupOptions.NO_TILE and _view.is_settled and not _state.is_inside():
-		_hit_debug_tile()
-	if _options.harvest != StartupOptions.NO_TILE and _view.is_settled and not _state.is_inside():
-		DebugHarvest.run(_state, _options.harvest)
-		_options.harvest = StartupOptions.NO_TILE
-	if _options.screenshot != "" and _options.menu >= 0:
-		_open_debug_menu_when_ready()
-	elif _options.screenshot != "":
-		# A few frames after everything is in place, for tile maps to catch up.
-		_settled_frames = _settled_frames + 1 if _is_ready_to_shoot() else 0
-		if _settled_frames > SCREENSHOT_SETTLE_FRAMES:
-			_options.screenshot_delay -= delta
-			if _options.screenshot_delay <= 0.0:
-				_save_screenshot_and_quit()
+	_debug.update(delta)
 
 
 func _open_menu(page := PauseMenu.Page.PAUSE) -> void:
@@ -324,16 +309,6 @@ func _resume() -> void:
 func _save_and_quit() -> void:
 	_save_game()
 	get_tree().quit()
-
-
-## Debug: opens the menu once the world is drawn, then takes the screenshot. The game is
-## paused by then, so a timer that ignores the pause does the waiting.
-func _open_debug_menu_when_ready() -> void:
-	_settled_frames = _settled_frames + 1 if _is_ready_to_shoot() else 0
-	if _settled_frames > SCREENSHOT_SETTLE_FRAMES:
-		_open_menu(_options.menu as PauseMenu.Page)
-		_options.menu = -1
-		get_tree().create_timer(0.2, true).timeout.connect(_save_screenshot_and_quit)
 
 
 ## Eats the held food, if any, and says how much energy it gave. Returns whether it ate.
@@ -431,7 +406,7 @@ func _camera_target() -> Vector2:
 func _tick_clock(delta: float) -> void:
 	# A screenshot with TIME=... must show exactly that time, unless it is told to wait. Time
 	# stands still while the screen is black (a message there may wait long for a key).
-	if (_options.screenshot != "" and _options.screenshot_delay == 0.0) or _fade_screen.is_black():
+	if _debug.is_clock_stopped() or _fade_screen.is_black():
 		return
 	var rate := GAME_MINUTES_PER_REAL_SECOND * (FAST_FORWARD_FACTOR if _fast_forward else 1.0)
 	_pending_minutes += delta * rate
@@ -591,52 +566,6 @@ func _hold(item: StringName) -> void:
 			return
 
 
-## Debug (`--chest`, `--chest-inside`, `--storage`): puts the asked chests where they go once
-## their map is drawn, and opens the storage screen of the last.
-func _place_debug_chests() -> void:
-	if _options.chest != StartupOptions.NO_TILE and _view.is_settled and not _state.is_inside():
-		_debug_chest = DebugChest.create(_state.world, _options.chest)
-		_options.chest = StartupOptions.NO_TILE
-	if (
-		_options.chest_inside != StartupOptions.NO_TILE
-		and _state.is_inside()
-		and not _options.inside
-	):
-		_debug_chest = DebugChest.create(_state.current_map, _options.chest_inside)
-		_interior_view.show_interior(_state.current_map)
-		_options.chest_inside = StartupOptions.NO_TILE
-	if _options.storage and _debug_chest != null:
-		_options.storage = false
-		_storage_screen.open(_debug_chest, _state.player)
-
-
-## Debug (`--hit`): hits the object on the asked tile, if there is one.
-func _hit_debug_tile() -> void:
-	var object := _state.world.object_at(_options.hit)
-	if object != null:
-		_state.world.hit_object(object, 0)
-	_tiredness_view.acted(GameState.Use.HIT)
-	_options.hit = StartupOptions.NO_TILE
-
-
-## Debug (`--wildlife`): puts a few animals of each asked kind in view.
-func _spawn_start_wildlife() -> void:
-	for kind in _options.wildlife:
-		var count := 1 if kind == "flock" else START_WILDLIFE_COUNT
-		_wildlife.spawn_in_view(StringName(kind), count)
-	_options.wildlife.clear()
-
-
-## Debug: waits for the first house and the world around, then walks in without a fade.
-func _enter_first_house_now() -> void:
-	var houses := _state.world.buildings()
-	if houses.is_empty() or not _view.is_settled:
-		return
-	_options.inside = false
-	_state.player.position = Vector2(houses[0].door_tile()) + Vector2(0.5, 0.5)
-	_pass_door()
-
-
 ## The saved game, or a new one if there is no save or `--new-game` is given. The first
 ## autosave after `--new-game` replaces the old save.
 func _load_or_start_game() -> GameState:
@@ -680,18 +609,6 @@ func _weather_and_sun_text(weather: WeatherSample) -> String:
 			Sun.time_text(_state.sun.sunrise(day)),
 			Sun.time_text(_state.sun.sunset(day)),
 		]
-	)
-
-
-func _is_ready_to_shoot() -> bool:
-	# The world is not streamed while the player is inside.
-	return (
-		(_view.is_settled or _state.is_inside())
-		and not _options.inside
-		and _options.harvest == StartupOptions.NO_TILE
-		and _options.chest == StartupOptions.NO_TILE
-		and _options.chest_inside == StartupOptions.NO_TILE
-		and not _options.storage
 	)
 
 
