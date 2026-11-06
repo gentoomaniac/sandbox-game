@@ -125,24 +125,42 @@ def draw_kneeling_legs(canvas, thigh, shin, foot):
     rect(canvas, 1, 30, 3, 30, foot[2])
 
 
+# Knee breeches of brown wool, buttoned at the knee, and white knitted stockings: the pale
+# lower legs below dark breeches are what reads as the period at 16x32.
+BREECHES = {"base": "soil_mid", "light": "soil_light", "shade": "soil", "band": "soil_dark"}
+STOCKINGS = {"base": "lime", "shade": "sand_light"}
+# Rows of the breeches from the top of the leg; the last is the band at the knee.
+BREECHES_ROWS = 4
+
+
 def draw_legs(facing, pose, **_):
-    """Linen trousers and leather boots."""
+    """Knee breeches and stockings; the feet are in stockings too, clogs go over them."""
     canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
     boxes = leg_boxes(facing, pose)
     for index, (x0, x1, top, bottom) in enumerate(boxes):
-        rect(canvas, x0, top, x1, bottom - 3, "sand")
-        rect(canvas, x0, bottom - 2, x1, bottom, "soil")
-        rect(canvas, x0, bottom - 2, x1, bottom - 2, "soil_light")
-        rect(canvas, x0, bottom, x1, bottom, "soil_dark")
+        knee = top + BREECHES_ROWS - 1
+        rect(canvas, x0, top, x1, knee, BREECHES["base"])
+        rect(canvas, x0, knee, x1, knee, BREECHES["band"])
+        rect(canvas, x0, knee + 1, x1, bottom, STOCKINGS["base"])
+        rect(canvas, x0, bottom, x1, bottom, STOCKINGS["shade"])
         # The inside of each leg is shaded, which also marks it against the other one.
         seam = x1 if index == 0 and facing in ("down", "up") else x0
-        rect(canvas, seam, top, seam, bottom - 3, "mud")
+        rect(canvas, seam, top, seam, knee - 1, BREECHES["shade"])
+        rect(canvas, seam, knee + 1, seam, bottom, STOCKINGS["shade"])
         if facing in ("left", "right"):
-            canvas[bottom][x1 + 1] = canvas[bottom - 1][x1 + 1] = "soil_dark"
+            rect(canvas, x1, top, x1, knee - 1, BREECHES["light"])
+            canvas[bottom][x1 + 1] = STOCKINGS["shade"]
     if facing in ("down", "up"):
-        rect(canvas, 8, boxes[0][2], 8, boxes[0][3] - 3, "mud_dark")
+        top = boxes[0][2]
+        rect(canvas, 8, top, 8, top + BREECHES_ROWS - 2, BREECHES["shade"])
+        rect(canvas, 8, top + BREECHES_ROWS - 1, 8, boxes[0][3] - 3, STOCKINGS["shade"])
     if pose.get("kneel"):
-        draw_kneeling_legs(canvas, ("sand", "sand"), ("sand", "mud"), ("soil_light", "soil", "soil_dark"))
+        draw_kneeling_legs(
+            canvas,
+            (BREECHES["base"], BREECHES["band"]),
+            (STOCKINGS["base"], STOCKINGS["shade"]),
+            (STOCKINGS["base"], STOCKINGS["base"], STOCKINGS["shade"]),
+        )
     return canvas
 
 

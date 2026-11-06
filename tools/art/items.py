@@ -250,26 +250,27 @@ def shirt():
     return tunic_shaped("ember", "flame", "soil", belt=False)
 
 
-def trousers():
+def breeches():
+    """Knee breeches of brown wool, banded at the knee, with the white stockings below them."""
     rows = [
         "................",
         "................",
         "....llllllll....",
         "....bbbbbbbb....",
-        "...lbbbslbbbs...",
-        "...lbbbslbbbs...",
+        "...lbbbsbbbbs...",
         "...lbbbslbbbs...",
         "...lbbbslbbbs...",
         "...lbbs..lbbs...",
-        "...lbbs..lbbs...",
-        "...lbbs..lbbs...",
-        "...lbbs..lbbs...",
-        "...ssss..ssss...",
-        "................",
+        "...dddd..dddd...",
+        "...wwwh..wwwh...",
+        "...wwwh..wwwh...",
+        "...wwwh..wwwh...",
+        "...wwwh..wwwh...",
+        "...hhhh..hhhh...",
         "................",
         "................",
     ]
-    keys = {"b": "sand", "l": "sand_light", "s": "mud"}
+    keys = {"b": "soil_mid", "l": "soil_light", "s": "soil", "d": "soil_dark", "w": "lime", "h": "sand_light"}
     return outlined(from_rows(rows, keys))
 
 
@@ -348,7 +349,7 @@ ICONS = {
     "pine_cone": pine_cone(),
     "tunic": tunic(),
     "shirt": shirt(),
-    "trousers": trousers(),
+    "trousers": breeches(),
     "straw_hat": straw_hat(),
     "knitted_cap": knitted_cap(),
 }
