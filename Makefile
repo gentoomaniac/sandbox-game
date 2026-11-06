@@ -1,3 +1,6 @@
+# Run `make` (or `make help`) to list the targets and variables.
+.DEFAULT_GOAL := help
+
 GODOT ?= godot
 GODOT_VERSION := $(shell cat .godot-version)
 
@@ -21,7 +24,30 @@ IMPORT := $(GODOT) --headless --quiet --import
 # reproducible, and it keeps third-party code out of our history and diffs.
 # The cost is that a fresh clone needs `make setup` (and network) before it runs.
 
-.PHONY: setup assets run screenshot test lint format export
+.PHONY: help setup assets run screenshot test lint format export
+
+help:
+	@echo "Targets:"
+	@echo "  help        This list (the default)."
+	@echo "  setup       Check the tools, download GUT, create the Python venv, import the project."
+	@echo "  run         Start the game."
+	@echo "  screenshot  Save one frame as PNG (a new game, muted, no focus, its own save)."
+	@echo "  test        Run the GUT tests headless."
+	@echo "  lint        Run gdlint and gdformat --check."
+	@echo "  format      Format the GDScript."
+	@echo "  assets      Regenerate all art and sounds,."
+	@echo "  export      Not set up yet: no export presets exist."
+	@echo
+	@echo "Variables (make <target> NAME=value):"
+	@echo "  GODOT       Path of the Godot binary (default: godot)."
+	@echo "  VENV        Directory of the Python venv (default: .venv)."
+	@echo "  AT          screenshot: world tile to put the player on, e.g. AT=40,-20 (default: the camp)."
+	@echo "  TIME        screenshot: time of day, e.g. TIME=21:00 (default: the game start)."
+	@echo "  ZOOM        screenshot: camera zoom, 0.5 to 2 (default 1)."
+	@echo "  OUT         screenshot: file to write (default: build/screenshot.png)."
+	@echo "  KEEP_SAVE   screenshot: KEEP_SAVE=1 loads the real save instead of a new game."
+	@echo "  SOUND       screenshot: SOUND=1 keeps the sound on."
+	@echo "  ARGS        screenshot: more debug flags, e.g. ARGS=\"--weather=rain\" (see game/scenes/main.gd)."
 
 setup:
 	@missing=0; \
