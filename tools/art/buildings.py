@@ -490,33 +490,69 @@ def barn(is_lit):
     return picture, snowy
 
 
+def tarred_boards(picture, rng, left, right, top, bottom):
+    """A wall of upright boards tarred near-black, a batten over each joint: its raised edge
+    catching the light in the blue-grey sheen of the tar, with a dark line where it shades the
+    board to its right. A few streaks of the sheen and of darker grain run down the boards."""
+    for x in range(left, right + 1):
+        board = (x - left) % 5
+        colour = ("mud_dark", "soil_dark", "ink", "ink", "ink")[board]
+        rect(picture, x, top, x, bottom, colour)
+        if board < 2:
+            continue
+        y = top + rng.randrange(6)
+        while y <= bottom:
+            run = rng.randint(3, 7)
+            if board == 2 and rng.random() < 0.5:
+                rect(picture, x, y, x, min(bottom, y + run - 1), "stone_dark")
+            elif board == 3 and rng.random() < 0.3:
+                rect(picture, x, y, x, min(bottom, y + run - 1), "soil_dark")
+            y += run + rng.randint(3, 8)
+
+
+def ledged_door(picture, left, top, bottom, width, colours):
+    """A low door of upright planks painted in `colours` (light, middle, dark), held by two
+    ledges and a brace between them, in a dark frame, with an iron latch and a stone step."""
+    light, middle, dark = colours
+    rect(picture, left - 1, top - 1, left + width, bottom, "ink")
+    for x in range(left, left + width):
+        colour = dark if (x - left) % 4 == 3 else light if x == left else middle
+        rect(picture, x, top, x, bottom, colour)
+    ledges = (top + 2, bottom - 3)
+    for y in ledges:
+        rect(picture, left, y, left + width - 1, y, light)
+        rect(picture, left, y + 1, left + width - 1, y + 1, dark)
+    span = ledges[1] - ledges[0] - 2
+    for step in range(span):
+        picture[ledges[1] - 1 - step][left + 1 + step * (width - 3) // span] = light
+    rect(picture, left + width - 3, (top + bottom) // 2, left + width - 2, (top + bottom) // 2, "stone_light")
+    rect(picture, left - 2, bottom + 1, left + width + 1, bottom + 2, "stone_light")
+    rect(picture, left - 2, bottom + 2, left + width + 1, bottom + 2, "stone")
+
+
 def shack(is_lit):
-    """A small plank hut on 3x2 tiles: a roof of weathered boards, a low door on the middle tile
-    and a small window with a shutter on the right."""
+    """A small hut on 3x2 tiles, a fisherman's or herdsman's: tarred boards with battens on a
+    low fieldstone base, a low ox-blood door on the middle tile and a small white window with an
+    ox-blood shutter on the right."""
     rng = random.Random(384)
     width, height = 3 * TILE, 64
     picture = blank(width, height)
     snowy = set()
-    wall_left, wall_right, wall_top, wall_bottom = 2, width - 3, 28, height - 3
-    for x in range(wall_left, wall_right + 1):
-        board = (x - wall_left) % 4
-        colour = "soil" if board == 3 else "soil_light" if board == 0 else "soil_mid"
-        rect(picture, x, wall_top, x, wall_bottom, colour)
-    for x in (wall_left, wall_right - 1):
-        rect(picture, x, wall_top, x + 1, wall_bottom, OAK[0])
-    rect(picture, wall_left, wall_bottom - 2, wall_right, wall_bottom, "stone")
-    rect(picture, wall_left, wall_bottom - 2, wall_right, wall_bottom - 2, "stone_light")
-    window(picture, 35, 34, 7, 10, is_lit, frame="soil_light")
-    rect(picture, 31, 33, 33, 44, "soil_mid")
-    rect(picture, 33, 33, 33, 44, "soil")
-    # The door: planks under a lintel, a latch on the right.
-    rect(picture, 17, 36, 30, wall_bottom, OAK[1])
-    for x in range(18, 30):
-        rect(picture, x, 38, x, wall_bottom, "soil" if (x - 18) % 4 == 3 else "soil_mid")
-    rect(picture, 18, 38, 29, 38, "soil_light")
-    rect(picture, 18, 50, 29, 50, "soil_light")
-    rect(picture, 27, 46, 28, 46, "stone_light")
-    rect(picture, 16, wall_bottom + 1, 31, wall_bottom + 1, "stone")
+    wall_left, wall_right, wall_top, base_top = 2, width - 3, 28, 58
+    tarred_boards(picture, rng, wall_left, wall_right, wall_top, base_top - 1)
+    # The corner posts, the right one in shade, and the sill beam they stand on.
+    rect(picture, wall_left, wall_top, wall_left + 1, base_top - 1, "stone_dark")
+    rect(picture, wall_left + 1, wall_top, wall_left + 1, base_top - 1, "soil_dark")
+    rect(picture, wall_right - 1, wall_top, wall_right, base_top - 1, "ink")
+    rect(picture, wall_left, base_top - 2, wall_right, base_top - 2, "stone_dark")
+    rect(picture, wall_left, base_top - 1, wall_right, base_top - 1, "ink")
+    fieldstone_base(picture, rng, wall_left, wall_right, base_top, height - 2)
+    window(picture, 35, 34, 7, 10, is_lit)
+    rect(picture, 31, 33, 33, 44, "rust_dark")
+    rect(picture, 33, 33, 33, 44, "russet_deep")
+    rect(picture, 31, 38, 33, 38, "russet_deep")
+    rect(picture, 30, 33, 30, 44, "ink")
+    ledged_door(picture, 18, 38, height - 4, 11, ("rust", "rust_dark", "russet_deep"))
     # The roof: courses of overlapping boards, lit at their top edge, the joints staggered.
     roof_top, roof_bottom = 9, 31
     for y in range(roof_top, roof_bottom + 1):
