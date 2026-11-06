@@ -294,11 +294,11 @@ func _on_clay_spot_changed(world_pos: Vector2i) -> void:
 ## what flies off it depends on the look the object had. The finishing hit on a tree has it
 ## topple instead, and the stump shakes when it lands.
 func _on_object_hit(object: WorldObject) -> void:
-	var standing := world.object_at(object.pos)
-	if standing != object and object.type_data().has("leaves"):
+	if world.is_gone(object) and object.type_data().has("leaves"):
 		_start_fall(object)
 		return
 	_hit_particles.emit(_hit_effect(object), _hit_origin(object))
+	var standing := world.object_at(object.pos)
 	if standing != null:
 		_shake_object(standing)
 

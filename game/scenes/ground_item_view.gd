@@ -31,8 +31,7 @@ func show_items(world: World, entities: Node2D) -> void:
 func hold_hops_from(source: Vector2i, seconds: float) -> void:
 	for ground_item in _hops.keys():
 		var hop := _hops[ground_item]
-		# A hop that hasn't run yet was dropped this frame, by the hit that felled the tree.
-		if hop.source == source and hop.elapsed == 0.0:
+		if hop.source == source and hop.just_dropped:
 			hop.delay += seconds
 			_update_sprite(ground_item)
 
@@ -40,7 +39,7 @@ func hold_hops_from(source: Vector2i, seconds: float) -> void:
 ## Piles move while they hop and while they are pulled to the player.
 func _process(delta: float) -> void:
 	for ground_item in _hops.keys():
-		_hops[ground_item].elapsed += delta
+		_hops[ground_item].advance(delta)
 	for ground_item in _sprites:
 		_update_sprite(ground_item)
 

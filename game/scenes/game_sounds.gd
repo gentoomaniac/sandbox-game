@@ -95,9 +95,7 @@ func _on_step() -> void:
 
 
 func _on_object_hit(object: WorldObject) -> void:
-	# The hit that finished the object left nothing, or something else, on its tile.
-	var is_finished := _state.world.object_at(object.pos) != object
-	var event := SoundEvents.hit(object.type_data(), is_finished)
+	var event := SoundEvents.hit(object.type_data(), _state.world.is_gone(object))
 	if event != &"":
 		_audio.play(event, _centre_of(object.pos))
 

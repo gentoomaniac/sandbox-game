@@ -139,6 +139,13 @@ func object_at(world_pos: Vector2i) -> WorldObject:
 	return null if object != null and is_dormant(object) else object
 
 
+## Whether a hit object was taken down: its tile no longer holds it (the finishing hit
+## removes it or leaves a stump or something else there). `object_hit` is emitted for every hit,
+## the finishing one included, so listeners ask this to tell them apart.
+func is_gone(object: WorldObject) -> bool:
+	return object_at(object.pos) != object
+
+
 ## Whether a seasonal plant is dormant: it is out of its season, by the vegetation curve of its
 ## type and its own threshold. The one rule that the view, walking, building and targeting
 ## share. Nothing about it is saved.

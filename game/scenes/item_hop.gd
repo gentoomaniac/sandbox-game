@@ -14,6 +14,8 @@ const BOUNCE_SHARE := 0.25
 var source: Vector2i
 var delay: float
 var elapsed := 0.0
+## True until the first `advance`: the pile was dropped this frame.
+var just_dropped := true
 var _start: Vector2
 var _landing: Vector2
 
@@ -24,6 +26,11 @@ func _init(source_tile: Vector2i, landing_spot: Vector2, wait: float) -> void:
 	_start = (Vector2(source_tile) + Vector2(0.5, 0.5)) * TerrainTileset.TILE_SIZE
 	_landing = landing_spot
 	delay = wait
+
+
+func advance(delta: float) -> void:
+	elapsed += delta
+	just_dropped = false
 
 
 func landing() -> Vector2:
