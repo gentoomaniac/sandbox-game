@@ -34,14 +34,16 @@ func listen(
 	player_view.stepped.connect(_on_step)
 	state.world.object_hit.connect(_on_object_hit)
 	view.tree_landed.connect(
-		func(tree: WorldObject) -> void: _audio.play(&"tree_fall", _centre_of(tree.pos))
+		func(tree: WorldObject) -> void:
+			_audio.play(&"tree_fall", TerrainTileset.tile_centre(tree.pos))
 	)
 	state.world.ground_items.removed.connect(
 		func(item: GroundItem) -> void:
 			_audio.play(&"item_pickup", item.position * TerrainTileset.TILE_SIZE)
 	)
 	state.world.building_placed.connect(
-		func(building: Building) -> void: _audio.play(&"build_place", _centre_of(building.origin))
+		func(building: Building) -> void:
+			_audio.play(&"build_place", TerrainTileset.tile_centre(building.origin))
 	)
 	build_mode.placement_refused.connect(func() -> void: _audio.play(&"denied"))
 	state.player.inventory.changed.connect(_on_inventory_changed)
@@ -70,7 +72,7 @@ func used(result: ToolUse.Use, tile: Vector2i) -> void:
 	var held_tool: StringName = ItemTypes.TYPES.get(held, {}).get("tool", &"")
 	var event := SoundEvents.use(result, held_tool)
 	if event != &"":
-		_audio.play(event, _centre_of(tile))
+		_audio.play(event, TerrainTileset.tile_centre(tile))
 
 
 func _process(_delta: float) -> void:
@@ -97,7 +99,7 @@ func _on_step() -> void:
 func _on_object_hit(object: WorldObject) -> void:
 	var event := SoundEvents.hit(object.type_data(), _state.world.is_gone(object))
 	if event != &"":
-		_audio.play(event, _centre_of(object.pos))
+		_audio.play(event, TerrainTileset.tile_centre(object.pos))
 
 
 func _on_inventory_changed() -> void:
@@ -105,7 +107,3 @@ func _on_inventory_changed() -> void:
 	if slot != _selected_slot:
 		_selected_slot = slot
 		_audio.play(&"hotbar_select")
-
-
-func _centre_of(tile: Vector2i) -> Vector2:
-	return (Vector2(tile) + Vector2(0.5, 0.5)) * TerrainTileset.TILE_SIZE

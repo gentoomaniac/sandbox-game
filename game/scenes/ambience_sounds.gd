@@ -132,7 +132,7 @@ func _chirp() -> void:
 	for tile in _random_tiles(radius, tries):
 		var object := _state.world.object_at(tile)
 		if object != null and WildlifeRules.TREE_TYPES.has(object.type):
-			_play_at(&"bird_chirp", _centre_of(tile))
+			_play_at(&"bird_chirp", TerrainTileset.tile_centre(tile))
 			return
 
 
@@ -154,7 +154,7 @@ func _croak(season: GameClock.Season, phase: WildlifeRules.Phase, weather: Weath
 		return
 	var chance := rules.frog_chance(season, phase, weather.temperature, nearest_distance)
 	if _rng.randf() < chance * TICK_SECONDS:
-		_play_at(&"frog_croak", _centre_of(nearest))
+		_play_at(&"frog_croak", TerrainTileset.tile_centre(nearest))
 
 
 ## One of the animals about makes the sound of its kind, if it is one that does.
@@ -222,7 +222,3 @@ func _random_tiles(radius: int, count: int) -> Array[Vector2i]:
 			centre + Vector2i(_rng.randi_range(-radius, radius), _rng.randi_range(-radius, radius))
 		)
 	return tiles
-
-
-func _centre_of(tile: Vector2i) -> Vector2:
-	return (Vector2(tile) + Vector2(0.5, 0.5)) * TerrainTileset.TILE_SIZE

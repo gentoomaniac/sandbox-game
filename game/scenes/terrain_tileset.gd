@@ -177,6 +177,11 @@ static func terrain_layer(terrain: Tile.Terrain, variety: float) -> int:
 	return layer
 
 
+## The middle of a tile, in world pixels.
+static func tile_centre(tile: Vector2i) -> Vector2:
+	return (Vector2(tile) + Vector2(0.5, 0.5)) * TILE_SIZE
+
+
 ## The code of a tile (see MISSING for the bit fields).
 static func tile_code(
 	layer: int, season_look: SeasonBlend.Look, weather_look: SeasonBlend.Look

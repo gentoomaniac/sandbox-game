@@ -172,7 +172,7 @@ func _spawn_somewhere(kind: StringName) -> void:
 		)
 		flowers.shuffle()
 		for tile in flowers.slice(0, SPAWN_TRIES):
-			var point := _tile_centre(tile)
+			var point := TerrainTileset.tile_centre(tile)
 			if rules.is_spawn_point(point, view, player) and _is_habitat(kind, point):
 				_spawn(kind, point, false)
 				return
@@ -206,9 +206,11 @@ func _spawn_near_player(kind: StringName) -> bool:
 			return false
 		flowers.sort_custom(
 			func(a: Vector2i, b: Vector2i) -> bool:
-				return _tile_centre(a).distance_to(player) < _tile_centre(b).distance_to(player)
+				var distance_a := TerrainTileset.tile_centre(a).distance_to(player)
+				return distance_a < TerrainTileset.tile_centre(b).distance_to(player)
 		)
-		_spawn(kind, _tile_centre(flowers[rng.randi() % mini(flowers.size(), DEBUG_FLOWERS)]), true)
+		var flower: Vector2i = flowers[rng.randi() % mini(flowers.size(), DEBUG_FLOWERS)]
+		_spawn(kind, TerrainTileset.tile_centre(flower), true)
 		return true
 	for _try in SPAWN_TRIES * 3:
 		var distance := rng.randf_range(DEBUG_DISTANCE.x, DEBUG_DISTANCE.y)
@@ -276,10 +278,6 @@ func _remove_gone_animals() -> void:
 		else:
 			staying.append(animal)
 	_animals = staying
-
-
-func _tile_centre(tile: Vector2i) -> Vector2:
-	return (Vector2(tile) + Vector2(0.5, 0.5)) * WildlifeRules.TILE_SIZE
 
 
 func _is_flying(kind: StringName) -> bool:

@@ -26,7 +26,7 @@ func _init(light: Dictionary, world_pos: Vector2i) -> void:
 	texture = _radial_texture()
 	texture_scale = light["radius_tiles"] * TerrainTileset.TILE_SIZE * 2.0 / TEXTURE_SIZE
 	# A little above the tile's centre, where the flame is.
-	position = (Vector2(world_pos) + Vector2(0.5, 0.5)) * TerrainTileset.TILE_SIZE
+	position = TerrainTileset.tile_centre(world_pos)
 	position.y -= 2.0
 
 

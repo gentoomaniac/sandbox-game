@@ -117,4 +117,4 @@ func _tree_foot(tree: Vector2i) -> Vector2:
 
 ## A spot hidden by a tree: on its trunk's tile, a little above the middle.
 func _tree_behind(tree: Vector2i) -> Vector2:
-	return (Vector2(tree) + Vector2(0.5, 0.5)) * WildlifeRules.TILE_SIZE - Vector2(0, BEHIND_TRUNK)
+	return TerrainTileset.tile_centre(tree) - Vector2(0, BEHIND_TRUNK)

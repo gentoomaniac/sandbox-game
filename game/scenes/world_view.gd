@@ -701,7 +701,7 @@ func _place_object_sprite(sprite: Sprite2D, object: WorldObject) -> void:
 	sprite.centered = false
 	var footprint: Vector2i = WorldObjectTypes.TYPES[object.type]["footprint"]
 	var sort_shift := Vector2(0, (footprint.y - 1) * TerrainTileset.TILE_SIZE)
-	sprite.position = (Vector2(object.pos) + Vector2(0.5, 0.5)) * TerrainTileset.TILE_SIZE
+	sprite.position = TerrainTileset.tile_centre(object.pos)
 	sprite.position += sort_shift
 	sprite.offset = (
 		-Vector2(cell_size) / 2 - Vector2(ObjectTileset.cell_origin(footprint)) - sort_shift

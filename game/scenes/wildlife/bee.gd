@@ -91,7 +91,7 @@ func _fly_to_next_flower() -> void:
 
 
 func _travel(delta: float) -> void:
-	var goal := (Vector2(_flower) + Vector2(0.5, 0.5)) * WildlifeRules.TILE_SIZE
+	var goal := TerrainTileset.tile_centre(_flower)
 	var to_goal := goal - position
 	if to_goal.length() <= TRAVEL_SPEED * delta:
 		position = goal

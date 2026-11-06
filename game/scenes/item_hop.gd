@@ -23,7 +23,7 @@ var _landing: Vector2
 ## `landing` is in world pixels, exactly where the pile lies.
 func _init(source_tile: Vector2i, landing_spot: Vector2, wait: float) -> void:
 	source = source_tile
-	_start = (Vector2(source_tile) + Vector2(0.5, 0.5)) * TerrainTileset.TILE_SIZE
+	_start = TerrainTileset.tile_centre(source_tile)
 	_landing = landing_spot
 	delay = wait
 
