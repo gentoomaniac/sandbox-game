@@ -68,6 +68,13 @@ with Knicks, walls and fences on the Geest, ditches in the marsh, and dykes.
   them: one `FarmAnimalView` (an `Animal` like the wild ones, but its state comes from the
   FarmAnimal) for each animal near the view. Wildlife is view only and not saved; livestock is
   state and saved, and shares the wildlife's drawing, sheets and sounds.
+- **Crafting** (`game/state/crafting.gd`) is what the crafting menu does: it checks a recipe of
+  `RecipeRules` (materials, the skill level it needs), crafts it and practises its skill on the
+  player's **Skills** (`skills.gd`: points per skill, the total cap and the skills that fade,
+  rules from `SkillRules`). A recipe is made by hand or at a station (`StationRules`: which
+  object types are which station); a slow one (with `hours`, the kiln) is held by its station
+  as **StationWork** in the object's `state` until it is done on the game clock. `Interaction`
+  says which chest or station E opens; `CraftingScreen` shows the recipes of one place.
 - Other views each draw one piece of state: `PlayerView`, `WeatherView`, `WildlifeView`,
   `BuildMode`, `GroundItemView`, and the HUDs and screens (`HotbarHud`, `CharacterScreen`,
   `CraftingScreen`, `PauseMenu`, `ConsoleView` and so on).
@@ -94,7 +101,9 @@ Typical jobs:
 |---|---|
 | New crop | A section in `data/crops.cfg` and a picture sheet; no code. |
 | New building | A section in `data/buildings.cfg`, its two pictures and an interior map ([maps/README.md](../maps/README.md)). |
-| New recipe | A section in `data/recipes.cfg` for an item that exists in `ItemTypes`. |
+| New recipe | A section in `data/recipes.cfg` for an item that exists in `ItemTypes`; `station`, `skill`, `level` and `hours` are optional. |
+| New station | A placed object kind (`WorldObjectTypes` with `drops`, `ItemTypes` with `places`, its picture in `tools/art/crafts.py`), a section in `data/stations.cfg`, and a recipe that makes it. |
+| New skill (profession) | A section in `data/skills.cfg`, and recipes that name it. |
 | New sound | An event in `tools/audio/generate.py`, a section in `data/sounds.cfg` ([tools/README.md](../tools/README.md)). |
 | New object or item kind | An entry in `WorldObjectTypes` or `ItemTypes`, and its art ([tools/README.md](../tools/README.md)). |
 

@@ -443,7 +443,7 @@ asleep). Not done: animals don't avoid each other or the player and may stand on
 
 ## 74. Professions: woodworker, cook, mason; a UI for them
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06: start with the three professions suggested in
 docs/ideas/crafting-and-professions.md (woodworker at a workbench, cook at hearth and oven,
@@ -458,6 +458,24 @@ mason with bricks and a kiln) and a UI for them. Decided by the user:
 - **UI:** a skills tab beside the character screen with each profession's level and progress;
   using a station opens the crafting menu filtered to it, with locked recipes shown along with
   the skill they need.
+
+Done: `Skills` (points in tenths, the total cap, the fade marks) on the player, the rules in
+data/skills.cfg (`SkillRules`: 0-100 a skill, 200 in all, 2 points a craft at the recipe's
+level falling to none 40 above it). The cap rule: at 200 a skill only grows by taking points
+from a skill marked Fade on the skills tab, nothing fades on its own (SPEC, Professions).
+data/stations.cfg (`StationRules`) maps object types to stations: the workbench, the kiln
+(outdoors only) and the bake oven are placed objects made by hand; the house hearth and the
+camp's fire are the hearth. Recipes got `station`, `skill`, `level` and `hours`; E on a
+station opens `CraftingScreen` on its recipes, locked ones greyed with the level they need.
+A recipe with `hours` is held by its station as `StationWork` in the object's saved state, so
+the kiln fires on the game clock while the player is away (no new save field). The skills tab
+is a second tab of the character screen (K). Recipes: planks, stool, clogs, carved chest
+(20 slots), joined cupboard (25); roast turnip, pottage, pea soup, bread, berry tart and feast
+cake (flour by hand from wheat, as there was none); raw bricks and bricks, which build the
+oven. Each skill has a master recipe at level 70, so every skill can reach 100. Art in tools/art/crafts.py
+(atlas rows 41-44, no palette change). Save version 14 (skills); console `skill`; flags
+`--skills` and `--station`. Not done: a look for a firing kiln, live refresh of the kiln's
+time while its menu stays open, more brick uses.
 
 ## 75. Flowering meadows; bees only at flowers
 

@@ -208,20 +208,54 @@ Beds don't block walking, so you can't get stuck behind one.
 
 ![Waking in the shack, the Kate, the longhouse and at the camp](docs/screenshots/waking-in-bed.png)
 
-### Crafting and chests
+### Crafting and professions
 
-Press C for the crafting menu. It lists what you can make with what you carry; a recipe you
-can't afford yet is greyed, with the missing materials marked, and hovering shows what is
-missing. The first recipe is the chest, for 5 logs. The recipes are in
+Press C for the crafting menu of what you make by hand: a chest, the stations below and flour.
+It lists what you can make with what you carry; a recipe you can't afford yet is greyed, with
+the missing materials marked, and hovering shows what is missing. The recipes are in
 [data/recipes.cfg](data/recipes.cfg).
 
-![The crafting menu with a chest recipe](docs/screenshots/crafting.png)
+![The crafting menu by hand: chest, workbench, kiln, bake oven and flour](docs/screenshots/crafting.png)
+
+Three crafts can be learnt, each at its own **station**: press E at one for its menu.
+
+- **Cooking** at the hearth of a house or the camp's fire (anyone can roast a turnip; pottage
+  and pea soup take practice) and at the **bake oven** (bread from flour, a berry tart,
+  a feast cake). Cooked food gives more energy than what it is made of, eaten raw.
+- **Woodworking** at the **workbench**: planks, a stool for the house, clogs, a painted
+  Frisian chest with 20 slots, and as the master's piece a joined cupboard with 25.
+- **Masonry**: clay is moulded into raw bricks at the workbench and fired in the **kiln**.
+  A firing takes 12 game hours and goes on while you are away; open the kiln's menu
+  afterwards to take the bricks out; a skilled mason fires more for the same fuel. The bake
+  oven is built of those bricks.
+
+The workbench, kiln and bake oven are made by hand and placed like a chest (the kiln only
+outdoors); the axe or the pickaxe takes them down again.
+
+![A kiln firing, the workbench, the bake oven and the carved chest by the camp](docs/screenshots/stations.png)
+
+Crafting raises the recipe's skill: the most at the recipe's level, less the further you are
+above it, nothing from a recipe 40 points below you. Better recipes need a skill level (the
+master recipe of each craft 70, which teaches it to 100); the
+menu shows them greyed with the level they need, and the tooltip what a craft teaches.
+
+![The menus of the hearth, the workbench and the kiln](docs/screenshots/station-menus.png)
+
+Each skill goes up to 100, but all of them together only to 200: one craft at the top and
+two at half, or three around two thirds. Press K for the skills tab of the character screen.
+At 200, a skill only grows by taking points from one you marked **Fade** there; nothing
+fades on its own. The skills are in [data/skills.cfg](data/skills.cfg), the stations in
+[data/stations.cfg](data/stations.cfg).
+
+![The skills tab: three skills, one marked to fade](docs/screenshots/skills.png)
+
+### Chests
 
 Hold a chest and a ghost shows where it would go: green where it fits, red where it
 doesn't (not on water, wetland or floodplain, not on something else, not in front of a
 door). Use it to place the chest, outdoors or inside a house. Press E in front of a chest
-to open it: your backpack and hotbar are on the left and the chest's 15 slots on the
-right. Click an item and click a slot to move it, or Shift+click to send a whole stack
+to open it: your backpack and hotbar are on the left and the chest's 15 slots (20 in a carved
+chest) on the right. Click an item and click a slot to move it, or Shift+click to send a whole stack
 across (from the chest it goes to the backpack first, so the hotbar isn't flooded). The
 axe takes a chest down: outdoors what it held spills onto the ground, inside a house the
 chest and its contents go into your inventory (or you are told there is no room).
@@ -258,6 +292,7 @@ arguments.
 | `spawn <animal> [count]` | Put animals nearby: farm animals that stay (`cow`, `sheep`, `chicken`, `rabbit`) or wild ones that come and go (`bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`). `spawn` alone, or with an unknown name, lists them. |
 | `skip <n>m\|h\|d` | Let minutes, hours or days pass, e.g. `skip 2h` or `skip 3d`. |
 | `crop` | Show the growth, damage and needs of the nearest crop. |
+| `skill <skill> <points>` | Set a skill's points (`woodworking`, `cooking`, `masonry`). |
 
 ![The console after a few commands](docs/screenshots/console.png)
 
@@ -271,8 +306,9 @@ These are the default keys; all of them can be changed under Settings → Contro
 | Space or left click | Use the held item on the targeted tile |
 | 1–8 | Pick a hotbar slot |
 | Tab | Character screen and inventory |
-| C | Crafting menu |
-| E | Open the chest in front of you, else sleep until morning (next to a bed); with the hammer in hand it picks the next building |
+| K | Skills tab of the character screen |
+| C | Crafting menu (by hand) |
+| E | Open the chest or the station (its crafting menu) in front of you, else sleep until morning (next to a bed); with the hammer in hand it picks the next building |
 | B | Take the hammer: build mode |
 | Q, E | Previous and next building (while holding the hammer) |
 | Mouse wheel | Zoom |
