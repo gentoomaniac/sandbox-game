@@ -83,13 +83,11 @@ class ChunkLooks:
 	## The thresholds of each tile (see SeasonBlend.thresholds).
 	var season_thresholds := PackedFloat32Array()
 	var weather_thresholds := PackedFloat32Array()
-	## The look each tile has now by the season, and the look over it by the weather
-	## (SeasonBlend.Look: FROST, SNOW or SUMMER for none).
-	var season_looks := PackedByteArray()
-	var weather_looks := PackedByteArray()
-	## The terrain layer each tile is drawn on (TerrainTileset.Layer): its variety noise is the
-	## slowest part of drawing a cell, and it does not change with the looks.
-	var layers := PackedByteArray()
+	## The code of each tile (see TerrainTileset.tile_code): the terrain layer it is drawn on,
+	## the look it has now by the season and the look over it by the weather. The layer comes
+	## from the variety noise, the slowest part of drawing a cell, and does not change with the
+	## looks.
+	var codes := PackedInt32Array()
 
 	static func index_of(local: Vector2i) -> int:
 		return local.y * Chunk.CHUNK_SIZE + local.x
@@ -315,12 +313,18 @@ func redraw_tile(world_pos: Vector2i) -> void:
 	if chunk_looks != null:
 		var local := Chunk.local_pos(world_pos)
 		var terrain := world.chunk_at(Chunk.world_to_chunk(world_pos)).terrain_at(local)
-		chunk_looks.layers[ChunkLooks.index_of(local)] = _layer_of_tile(terrain, world_pos)
+		var index := ChunkLooks.index_of(local)
+		var code := chunk_looks.codes[index]
+		chunk_looks.codes[index] = TerrainTileset.tile_code(
+			_layer_of_tile(terrain, world_pos),
+			TerrainTileset.season_of(code),
+			TerrainTileset.weather_of(code)
+		)
 	# The tile is a corner of the 4 cells around it.
 	for offset: Vector2i in CORNER_OFFSETS:
 		_redraw_cell(world_pos - offset)
 	if world.is_chunk_loaded(Chunk.world_to_chunk(world_pos)):
-		_draw_decoration(world_pos, _layer_at(world_pos))
+		_draw_decoration(world_pos, TerrainTileset.layer_of(_code_at(world_pos)))
 
 
 ## Called for every tile an object covers; it is drawn from its own tile only.
@@ -329,11 +333,11 @@ func _on_objects_changed(world_pos: Vector2i) -> void:
 	if object == null or object.pos == world_pos:
 		_drop_object_sprite(world_pos)
 		_draw_object(world_pos)
-	_draw_decoration(world_pos, _layer_at(world_pos))
+	_draw_decoration(world_pos, TerrainTileset.layer_of(_code_at(world_pos)))
 
 
 func _on_clay_spot_changed(world_pos: Vector2i) -> void:
-	_draw_decoration(world_pos, _layer_at(world_pos))
+	_draw_decoration(world_pos, TerrainTileset.layer_of(_code_at(world_pos)))
 
 
 ## A tool hit an object: what it leaves, if any, shakes (a stump, after the last hit), and
@@ -398,55 +402,32 @@ func _draw_chunk(chunk: Chunk) -> void:
 	# the left. Reading them once, mostly straight from the chunk, is several times faster
 	# than looking up 4 corners per cell through the world.
 	var size := Chunk.CHUNK_SIZE + 1
-	var corner_layers := PackedInt32Array()
-	corner_layers.resize(size * size)
-	var corner_seasons := PackedInt32Array()
-	corner_seasons.resize(size * size)
-	var corner_weathers := PackedInt32Array()
-	corner_weathers.resize(size * size)
+	var corner_codes := PackedInt32Array()
+	corner_codes.resize(size * size)
 	for y in size:
 		for x in size:
 			var local := Vector2i(x - 1, y - 1)
 			if x == 0 or y == 0:
-				corner_layers[y * size + x] = _layer_at(origin + local)
-				corner_seasons[y * size + x] = _season_look_at(origin + local)
-				corner_weathers[y * size + x] = _weather_look_at(origin + local)
+				corner_codes[y * size + x] = _code_at(origin + local)
 			else:
-				var index := ChunkLooks.index_of(local)
-				corner_layers[y * size + x] = chunk_looks.layers[index]
-				corner_seasons[y * size + x] = chunk_looks.season_looks[index]
-				corner_weathers[y * size + x] = chunk_looks.weather_looks[index]
+				corner_codes[y * size + x] = chunk_looks.codes[ChunkLooks.index_of(local)]
 	for y in Chunk.CHUNK_SIZE:
 		for x in Chunk.CHUNK_SIZE:
 			var top_left := y * size + x
-			var corners := PackedInt32Array(
+			var codes := PackedInt32Array(
 				[
-					corner_layers[top_left],
-					corner_layers[top_left + 1],
-					corner_layers[top_left + size],
-					corner_layers[top_left + size + 1]
+					corner_codes[top_left],
+					corner_codes[top_left + 1],
+					corner_codes[top_left + size],
+					corner_codes[top_left + size + 1]
 				]
 			)
-			var seasons := PackedInt32Array(
-				[
-					corner_seasons[top_left],
-					corner_seasons[top_left + 1],
-					corner_seasons[top_left + size],
-					corner_seasons[top_left + size + 1]
-				]
-			)
-			var weathers := PackedInt32Array(
-				[
-					corner_weathers[top_left],
-					corner_weathers[top_left + 1],
-					corner_weathers[top_left + size],
-					corner_weathers[top_left + size + 1]
-				]
-			)
-			_draw_cell_corners(origin + Vector2i(x, y), corners, seasons, weathers)
+			_draw_cell_corners(origin + Vector2i(x, y), codes)
 			# The bottom-right corner is this chunk's tile (x, y).
 			_set_decoration(
-				origin + Vector2i(x, y), corners[3], covered.has(origin + Vector2i(x, y))
+				origin + Vector2i(x, y),
+				TerrainTileset.layer_of(codes[3]),
+				covered.has(origin + Vector2i(x, y))
 			)
 	for object in chunk.objects():
 		_draw_object(object.pos)
@@ -464,21 +445,19 @@ func _make_chunk_looks(chunk: Chunk) -> ChunkLooks:
 	var tile_count := Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE
 	chunk_looks.season_thresholds.resize(tile_count)
 	chunk_looks.weather_thresholds.resize(tile_count)
-	chunk_looks.season_looks.resize(tile_count)
-	chunk_looks.weather_looks.resize(tile_count)
-	chunk_looks.layers.resize(tile_count)
+	chunk_looks.codes.resize(tile_count)
 	var origin := Chunk.to_world(chunk.coords, Vector2i.ZERO)
 	for y in Chunk.CHUNK_SIZE:
 		for x in Chunk.CHUNK_SIZE:
 			var index := y * Chunk.CHUNK_SIZE + x
 			var thresholds := _blend.thresholds(origin + Vector2i(x, y))
-			chunk_looks.layers[index] = _layer_of_tile(
-				chunk.terrain_at(Vector2i(x, y)), origin + Vector2i(x, y)
-			)
 			chunk_looks.season_thresholds[index] = thresholds.x
 			chunk_looks.weather_thresholds[index] = thresholds.y
-			chunk_looks.season_looks[index] = _conditions.ground_season_look(thresholds.x)
-			chunk_looks.weather_looks[index] = _conditions.weather_look(thresholds.y)
+			chunk_looks.codes[index] = TerrainTileset.tile_code(
+				_layer_of_tile(chunk.terrain_at(Vector2i(x, y)), origin + Vector2i(x, y)),
+				_conditions.ground_season_look(thresholds.x),
+				_conditions.weather_look(thresholds.y)
+			)
 	return chunk_looks
 
 
@@ -504,16 +483,16 @@ func _refresh_chunk(coords: Vector2i) -> void:
 		return
 	var origin := Chunk.to_world(coords, Vector2i.ZERO)
 	var changed_cells: Dictionary[Vector2i, bool] = {}
-	for index in chunk_looks.season_looks.size():
-		var season_look := _conditions.ground_season_look(chunk_looks.season_thresholds[index])
-		var weather_look := _conditions.weather_look(chunk_looks.weather_thresholds[index])
+	for index in chunk_looks.codes.size():
+		var old_code := chunk_looks.codes[index]
+		var code := TerrainTileset.tile_code(
+			TerrainTileset.layer_of(old_code),
+			_conditions.ground_season_look(chunk_looks.season_thresholds[index]),
+			_conditions.weather_look(chunk_looks.weather_thresholds[index])
+		)
 		var pos := origin + Vector2i(index % Chunk.CHUNK_SIZE, index / Chunk.CHUNK_SIZE)
-		if (
-			season_look != chunk_looks.season_looks[index]
-			or weather_look != chunk_looks.weather_looks[index]
-		):
-			chunk_looks.season_looks[index] = season_look
-			chunk_looks.weather_looks[index] = weather_look
+		if code != old_code:
+			chunk_looks.codes[index] = code
 			_soil_wetness.redraw_tile(pos)
 			for offset: Vector2i in CORNER_OFFSETS:
 				changed_cells[pos - offset] = true
@@ -573,31 +552,22 @@ func _unload_chunk(coords: Vector2i) -> void:
 func _redraw_cell(cell: Vector2i, is_terrain_changed := true) -> void:
 	if not world.is_chunk_loaded(Chunk.world_to_chunk(cell)):
 		return
-	var corners := PackedInt32Array()
-	var seasons := PackedInt32Array()
-	var weathers := PackedInt32Array()
+	var codes := PackedInt32Array()
 	for offset: Vector2i in CORNER_OFFSETS:
-		corners.append(_layer_at(cell + offset))
-		seasons.append(_season_look_at(cell + offset))
-		weathers.append(_weather_look_at(cell + offset))
+		codes.append(_code_at(cell + offset))
 	if is_terrain_changed:
-		_draw_cell_corners(cell, corners, seasons, weathers)
+		_draw_cell_corners(cell, codes)
 	else:
-		TerrainTileset.fill_missing_corners(corners)
-		TerrainTileset.fill_missing_corners(seasons)
-		TerrainTileset.fill_missing_corners(weathers)
-		_draw_overlays(cell, corners, seasons, weathers)
+		TerrainTileset.fill_missing_corners(codes)
+		_draw_overlays(cell, codes)
 
 
-## The one place tile state becomes a look: the layers of a cell's 4 corner tiles (in
-## CORNER_OFFSETS order, MISSING where not loaded) decide which layers it draws and with
-## which shapes, and their season and weather looks which overlays.
-func _draw_cell_corners(
-	cell: Vector2i, corners: PackedInt32Array, seasons: PackedInt32Array, weathers: PackedInt32Array
-) -> void:
-	TerrainTileset.fill_missing_corners(corners)
-	TerrainTileset.fill_missing_corners(seasons)
-	TerrainTileset.fill_missing_corners(weathers)
+## The one place tile state becomes a look: the codes of a cell's 4 corner tiles (in
+## CORNER_OFFSETS order, MISSING where not loaded). Their layers decide which layers it draws
+## and with which shapes, and their season and weather looks which overlays.
+func _draw_cell_corners(cell: Vector2i, codes: PackedInt32Array) -> void:
+	TerrainTileset.fill_missing_corners(codes)
+	var corners := TerrainTileset.layers_of(codes)
 	var drawn := TerrainTileset.drawn_layers(corners)
 	for layer in TerrainTileset.LAYER_COUNT:
 		if drawn & (1 << layer) == 0:
@@ -608,7 +578,7 @@ func _draw_cell_corners(
 			_layers[layer].set_cell(
 				cell, TerrainTileset.terrain_source_id(SeasonBlend.Look.SUMMER), atlas_cell
 			)
-	_draw_overlays(cell, corners, seasons, weathers)
+	_draw_overlays(cell, codes)
 
 
 ## The overlay looks of a cell: for each, the tiles of the 4 corners that show it make the
@@ -618,17 +588,20 @@ func _draw_cell_corners(
 ## the layer below, it alone is drawn, since both edges together would show as a fringe.
 ## Snow and frost lie over the season's look, so a tile under them still counts for that,
 ## and are drawn as ordinary grass.
-func _draw_overlays(
-	cell: Vector2i, corners: PackedInt32Array, seasons: PackedInt32Array, weathers: PackedInt32Array
-) -> void:
+func _draw_overlays(cell: Vector2i, codes: PackedInt32Array) -> void:
+	var corners := TerrainTileset.layers_of(codes)
 	var shown_seasons := PackedInt32Array()
 	var shown_weathers := PackedInt32Array()
 	for corner in 4:
 		shown_seasons.append(
-			TerrainTileset.shown_season_look(corners[corner], seasons[corner] as SeasonBlend.Look)
+			TerrainTileset.shown_season_look(
+				corners[corner], TerrainTileset.season_of(codes[corner])
+			)
 		)
 		shown_weathers.append(
-			TerrainTileset.shown_weather_look(corners[corner], weathers[corner] as SeasonBlend.Look)
+			TerrainTileset.shown_weather_look(
+				corners[corner], TerrainTileset.weather_of(codes[corner])
+			)
 		)
 	for look in TerrainTileset.OVERLAY_LOOKS:
 		if TerrainTileset.is_weather_look(look):
@@ -902,10 +875,9 @@ func _set_clay_hint(world_pos: Vector2i, is_covered: bool) -> void:
 ## look of its tile is now.
 func _update_decoration(world_pos: Vector2i, spot: DecorationSpot) -> void:
 	var should_show := spot.kind == &"" or world.vegetation.shows(spot.kind, spot.threshold, _day)
+	var code := _code_at(world_pos)
 	var look := TerrainTileset.shown_look(
-		spot.layer,
-		_season_look_at(world_pos) as SeasonBlend.Look,
-		_weather_look_at(world_pos) as SeasonBlend.Look
+		spot.layer, TerrainTileset.season_of(code), TerrainTileset.weather_of(code)
 	)
 	if should_show == spot.is_shown and (look == spot.look or not should_show):
 		return
@@ -917,38 +889,26 @@ func _update_decoration(world_pos: Vector2i, spot: DecorationSpot) -> void:
 		_decorations.erase_cell(world_pos)
 
 
-## The look of a tile by the season, or TerrainTileset.MISSING if its chunk is not loaded.
-func _season_look_at(world_pos: Vector2i) -> int:
+## The code of a tile (see TerrainTileset.tile_code), or TerrainTileset.MISSING if its chunk is
+## not loaded.
+func _code_at(world_pos: Vector2i) -> int:
 	var chunk_looks: ChunkLooks = _chunk_looks.get(Chunk.world_to_chunk(world_pos))
 	if chunk_looks == null:
 		return TerrainTileset.MISSING
-	return chunk_looks.season_looks[ChunkLooks.index_of(Chunk.local_pos(world_pos))]
-
-
-## The look of a tile by the weather, or TerrainTileset.MISSING if its chunk is not loaded.
-func _weather_look_at(world_pos: Vector2i) -> int:
-	var chunk_looks: ChunkLooks = _chunk_looks.get(Chunk.world_to_chunk(world_pos))
-	if chunk_looks == null:
-		return TerrainTileset.MISSING
-	return chunk_looks.weather_looks[ChunkLooks.index_of(Chunk.local_pos(world_pos))]
+	return chunk_looks.codes[ChunkLooks.index_of(Chunk.local_pos(world_pos))]
 
 
 ## Whether snow or a dusting of it lies on a tile, so soil under it doesn't look wet.
 func is_snowed_over(world_pos: Vector2i) -> bool:
-	var look := _weather_look_at(world_pos)
+	var code := _code_at(world_pos)
+	if code == TerrainTileset.MISSING:
+		return false
+	var look := TerrainTileset.weather_of(code)
 	return look == SeasonBlend.Look.SNOW or look == SeasonBlend.Look.DUSTING
 
 
-## The layer a tile is drawn on, or MISSING if its chunk is not loaded.
-func _layer_at(world_pos: Vector2i) -> int:
-	var chunk_looks: ChunkLooks = _chunk_looks.get(Chunk.world_to_chunk(world_pos))
-	if chunk_looks == null:
-		return TerrainTileset.MISSING
-	return chunk_looks.layers[ChunkLooks.index_of(Chunk.local_pos(world_pos))]
-
-
 func _layer_of_tile(terrain: Tile.Terrain, world_pos: Vector2i) -> int:
-	return TerrainTileset.layer_of(terrain, _variety_noise.get_noise_2dv(Vector2(world_pos)))
+	return TerrainTileset.terrain_layer(terrain, _variety_noise.get_noise_2dv(Vector2(world_pos)))
 
 
 ## Starts the fall of a tree that was just replaced by its stump. Its trunk is already in the

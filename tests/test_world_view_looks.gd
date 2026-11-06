@@ -35,11 +35,11 @@ func _show(day: int, snow: float, frost := 0.0) -> void:
 
 
 func _share_of_tiles_with_weather(coords: Vector2i, look: SeasonBlend.Look) -> float:
-	var looks: PackedByteArray = _view._chunk_looks[coords].weather_looks
+	var codes: PackedInt32Array = _view._chunk_looks[coords].codes
 	var count := 0
-	for weather_look in looks:
-		count += 1 if weather_look == look else 0
-	return float(count) / looks.size()
+	for code in codes:
+		count += 1 if TerrainTileset.weather_of(code) == look else 0
+	return float(count) / codes.size()
 
 
 func test_snow_comes_in_patches_that_grow_with_the_cover() -> void:
@@ -79,10 +79,10 @@ func test_the_season_overlays_follow_the_blend() -> void:
 func test_a_refresh_only_touches_the_cells_of_tiles_that_flipped() -> void:
 	_view._load_chunk(RIGHT)
 	_show(WINTER, 0.5)
-	var before: PackedByteArray = _view._chunk_looks[RIGHT].weather_looks.duplicate()
+	var before: PackedInt32Array = _view._chunk_looks[RIGHT].codes.duplicate()
 	_view.refresh_looks(WINTER, 0.52, 0.0)
 	_view._refresh_chunk(RIGHT)
-	var after: PackedByteArray = _view._chunk_looks[RIGHT].weather_looks
+	var after: PackedInt32Array = _view._chunk_looks[RIGHT].codes
 	var flipped := 0
 	for index in before.size():
 		flipped += 1 if before[index] != after[index] else 0
@@ -183,7 +183,7 @@ func test_decorations_take_the_look_of_their_tile() -> void:
 	assert_eq(source_ids.keys(), [TerrainTileset.decoration_source_id(SeasonBlend.Look.SUMMER)])
 	_show(SUMMER, 1.0)
 	for pos in _view._decorations.get_used_cells():
-		var is_water := _view._layer_at(pos) == TerrainTileset.Layer.WATER
+		var is_water := TerrainTileset.layer_of(_view._code_at(pos)) == TerrainTileset.Layer.WATER
 		var expected := SeasonBlend.Look.SUMMER if is_water else SeasonBlend.Look.SNOW
 		assert_eq(
 			_view._decorations.get_cell_source_id(pos),
@@ -229,9 +229,7 @@ func test_soil_that_snow_lies_on_is_not_drawn_wet() -> void:
 	_show(WINTER, 1.0)
 	var snowed := 0
 	for pos in tiles:
-		var is_snowy: bool = (
-			_view._weather_look_at(pos) in [SeasonBlend.Look.SNOW, SeasonBlend.Look.DUSTING]
-		)
+		var is_snowy := _view.is_snowed_over(pos)
 		snowed += 1 if is_snowy else 0
 		assert_eq(_view._soil_wetness.get_cell_source_id(pos) == -1, is_snowy, str(pos))
 	assert_gt(snowed, 0, "some of the soil is under snow")

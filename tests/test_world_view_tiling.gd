@@ -91,7 +91,7 @@ func test_lush_and_dry_overlays_have_the_shape_of_their_grass() -> void:
 			for cell in overlay.get_used_cells():
 				var corner_layers := PackedInt32Array()
 				for offset in WorldView.CORNER_OFFSETS:
-					corner_layers.append(_view._layer_at(cell + offset))
+					corner_layers.append(TerrainTileset.layer_of(_view._code_at(cell + offset)))
 				if corner_layers.has(TerrainTileset.MISSING):
 					continue  # The edge of the loaded area, drawn with a fallback.
 				var mask := _mask_of(overlay.get_cell_atlas_coords(cell))
@@ -99,7 +99,7 @@ func test_lush_and_dry_overlays_have_the_shape_of_their_grass() -> void:
 				for corner in 4:
 					var pos: Vector2i = cell + WorldView.CORNER_OFFSETS[corner]
 					var shown := TerrainTileset.shown_season_look(
-						corner_layers[corner], _view._season_look_at(pos)
+						corner_layers[corner], TerrainTileset.season_of(_view._code_at(pos))
 					)
 					if corner_layers[corner] >= key.y and shown == key.x:
 						expected |= 1 << corner

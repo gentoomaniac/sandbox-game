@@ -38,12 +38,26 @@ const FULL := 15
 const EDGE_VARIANTS := 3
 const FULL_COLUMN := EDGE_VARIANTS * FULL
 
-## A corner whose tile is not loaded.
+## The code of a tile packs what its drawing needs into one int, so a corner of a cell is one
+## value to read, fill in and pass on:
+##   bits 0-2   the layer (Layer, 0..6)
+##   bits 3-6   the look it has by the season (SeasonBlend.Look, 0..8)
+##   bits 7-10  the look over it by the weather (SeasonBlend.Look: FROST, DUSTING, SNOW, or
+##              SUMMER for none)
+const LAYER_BITS := 3
+const LOOK_BITS := 4
+const SEASON_SHIFT := LAYER_BITS
+const WEATHER_SHIFT := SEASON_SHIFT + LOOK_BITS
+const LAYER_MASK := (1 << LAYER_BITS) - 1
+const LOOK_MASK := (1 << LOOK_BITS) - 1
+
+## The code of a corner whose tile is not loaded. It is no packed code (it has all bits set),
+## so check for it before reading a field.
 const MISSING := -1
 const NO_DECORATION := Vector2i(-1, -1)
 
 const LAYER_COUNT := 7
-## Layer per terrain, indexed by Tile.Terrain. Grass is ordinary grass here; layer_of()
+## Layer per terrain, indexed by Tile.Terrain. Grass is ordinary grass here; terrain_layer()
 ## turns it lush or dry.
 const LAYER_OF_TERRAIN: Array[Layer] = [
 	Layer.GRASS, Layer.SOIL, Layer.WATER, Layer.WETLAND, Layer.FLOODPLAIN
@@ -154,13 +168,43 @@ static func decoration_source_id(look: SeasonBlend.Look) -> int:
 
 
 ## Which layer a world tile is drawn on. `variety` is the slow variety noise at the tile.
-static func layer_of(terrain: Tile.Terrain, variety: float) -> int:
+static func terrain_layer(terrain: Tile.Terrain, variety: float) -> int:
 	var layer := LAYER_OF_TERRAIN[terrain]
 	if layer == Layer.GRASS and variety < LUSH_BELOW:
 		return Layer.LUSH_GRASS
 	if layer == Layer.GRASS and variety > DRY_ABOVE:
 		return Layer.DRY_GRASS
 	return layer
+
+
+## The code of a tile (see MISSING for the bit fields).
+static func tile_code(
+	layer: int, season_look: SeasonBlend.Look, weather_look: SeasonBlend.Look
+) -> int:
+	return layer | season_look << SEASON_SHIFT | weather_look << WEATHER_SHIFT
+
+
+## The layer of a tile code, or MISSING for MISSING.
+static func layer_of(code: int) -> int:
+	return MISSING if code == MISSING else code & LAYER_MASK
+
+
+## The look by the season of a tile code (not for MISSING).
+static func season_of(code: int) -> SeasonBlend.Look:
+	return (code >> SEASON_SHIFT & LOOK_MASK) as SeasonBlend.Look
+
+
+## The look by the weather of a tile code (not for MISSING).
+static func weather_of(code: int) -> SeasonBlend.Look:
+	return (code >> WEATHER_SHIFT & LOOK_MASK) as SeasonBlend.Look
+
+
+## The layers of the 4 corner codes, MISSING where a corner is.
+static func layers_of(codes: PackedInt32Array) -> PackedInt32Array:
+	var layers := PackedInt32Array()
+	for code in codes:
+		layers.append(layer_of(code))
+	return layers
 
 
 ## Whether an overlay look comes from the weather (snow, frost) and not the season.

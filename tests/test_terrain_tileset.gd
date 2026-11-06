@@ -40,17 +40,18 @@ func test_layer_order_follows_terrain_priority() -> void:
 	]
 	for i in range(1, order.size()):
 		assert_gt(
-			TerrainTileset.layer_of(order[i], 0.0), TerrainTileset.layer_of(order[i - 1], 0.0)
+			TerrainTileset.terrain_layer(order[i], 0.0),
+			TerrainTileset.terrain_layer(order[i - 1], 0.0)
 		)
 
 
 func test_variety_turns_only_grass_lush_or_dry() -> void:
-	assert_eq(TerrainTileset.layer_of(Tile.Terrain.GRASS, -0.9), LUSH_GRASS)
-	assert_eq(TerrainTileset.layer_of(Tile.Terrain.GRASS, 0.0), GRASS)
-	assert_eq(TerrainTileset.layer_of(Tile.Terrain.GRASS, 0.9), DRY_GRASS)
+	assert_eq(TerrainTileset.terrain_layer(Tile.Terrain.GRASS, -0.9), LUSH_GRASS)
+	assert_eq(TerrainTileset.terrain_layer(Tile.Terrain.GRASS, 0.0), GRASS)
+	assert_eq(TerrainTileset.terrain_layer(Tile.Terrain.GRASS, 0.9), DRY_GRASS)
 	for variety: float in [-0.9, 0.9]:
-		assert_eq(TerrainTileset.layer_of(Tile.Terrain.FLOODPLAIN, variety), FLOODPLAIN)
-		assert_eq(TerrainTileset.layer_of(Tile.Terrain.SOIL, variety), SOIL)
+		assert_eq(TerrainTileset.terrain_layer(Tile.Terrain.FLOODPLAIN, variety), FLOODPLAIN)
+		assert_eq(TerrainTileset.terrain_layer(Tile.Terrain.SOIL, variety), SOIL)
 
 
 func test_cell_draws_its_corners_layers_and_grass_under_lush_and_dry() -> void:
@@ -148,3 +149,17 @@ func test_decorations_gather_where_the_cluster_noise_peaks() -> void:
 func test_tilled_soil_has_no_decorations() -> void:
 	for x in 50:
 		assert_eq(_tileset.decoration_cell(SOIL, Vector2i(x, 0), 1.0), TerrainTileset.NO_DECORATION)
+
+
+func test_a_tile_code_holds_its_layer_and_both_looks_apart() -> void:
+	for layer in TerrainTileset.LAYER_COUNT:
+		for season_look in SeasonBlend.Look.values():
+			for weather_look in SeasonBlend.Look.values():
+				var code := TerrainTileset.tile_code(layer, season_look, weather_look)
+				assert_eq(TerrainTileset.layer_of(code), layer)
+				assert_eq(TerrainTileset.season_of(code), season_look)
+				assert_eq(TerrainTileset.weather_of(code), weather_look)
+
+
+func test_the_layer_of_a_missing_corner_is_missing() -> void:
+	assert_eq(TerrainTileset.layer_of(MISSING), MISSING)
