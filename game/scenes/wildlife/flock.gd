@@ -2,7 +2,7 @@ class_name Flock
 extends Animal
 ## A flock of three to six birds crossing the view high up. Their small shadows cross the
 ## ground below, which is how it reads at a glance: the shadows are drawn on a layer of the
-## ground (see WildlifeView.ground), the birds above everything.
+## ground (see GroundShadows), the birds above everything.
 
 ## A flock is made of birds that look like the sparrows on the ground.
 const BIRD_ANIMATION := &"fly"
@@ -11,9 +11,6 @@ const FLIGHT_HEIGHT := 32.0
 const WINGBEAT_PER_SECOND := 10.0
 ## The birds keep a V: this far apart along and across the way they fly, in pixels.
 const SPACING := Vector2(5.0, 6.0)
-## The shadows fall to the lower right (the light is from the upper left).
-const SHADOW_SHIFT := Vector2(8.0, 6.0)
-const GROUND_SHADOW_COLOR := Color(0.0, 0.0, 0.0, 0.4)
 ## Gone once this far outside the view, having been inside it.
 const LEAVE_MARGIN := 24.0
 const MAX_SECONDS := 90.0
@@ -21,20 +18,8 @@ const MAX_SECONDS := 90.0
 var _heading := Vector2.RIGHT
 var _birds: Array[Sprite2D] = []
 var _offsets := PackedVector2Array()
-var _shadows := Shadows.new()
+var _shadows: GroundShadows
 var _has_entered_view := false
-
-
-## The shadows of the birds, on the ground.
-class Shadows:
-	extends Node2D
-	var points := PackedVector2Array()
-
-	func _draw() -> void:
-		for point in points:
-			var centre := point.round()
-			draw_rect(Rect2(centre + Vector2(-2, 0), Vector2(5, 1)), GROUND_SHADOW_COLOR)
-			draw_rect(Rect2(centre + Vector2(-1, 1), Vector2(3, 1)), GROUND_SHADOW_COLOR)
 
 
 func _init() -> void:
@@ -58,6 +43,7 @@ func _ready() -> void:
 	super()
 	_sprite.hide()
 	z_index = 1
+	_shadows = GroundShadows.new(_offsets.size())
 	wildlife.ground.add_child(_shadows)
 	for i in _offsets.size():
 		var bird := WildlifeSprites.make_sprite(WildlifeRules.BIRD)
@@ -77,7 +63,6 @@ func dismiss() -> void:
 
 func _update(delta: float) -> void:
 	position += _heading * SPEED * delta
-	var shadow_points := PackedVector2Array()
 	var count := WildlifeSprites.frame_count(WildlifeRules.BIRD, BIRD_ANIMATION)
 	for i in _birds.size():
 		var bob := sin(_state_time * 3.0 + i) * 1.5
@@ -86,9 +71,7 @@ func _update(delta: float) -> void:
 		# Each bird beats its wings a little out of step with the others.
 		var step := int(_state_time * WINGBEAT_PER_SECOND + i) % count
 		_birds[i].frame = WildlifeSprites.frame_index(WildlifeRules.BIRD, BIRD_ANIMATION, step)
-		shadow_points.append(position + offset + SHADOW_SHIFT)
-	_shadows.points = shadow_points
-	_shadows.queue_redraw()
+		_shadows.set_point(i, position + offset)
 	var is_inside := not _is_out_of_view(LEAVE_MARGIN)
 	_has_entered_view = _has_entered_view or is_inside
 	if (_has_entered_view and not is_inside) or _state_time > MAX_SECONDS:
