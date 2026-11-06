@@ -6,8 +6,9 @@ extends CanvasLayer
 ## Click an item to pick it up, then click a slot to put it down: a different item swaps places
 ## and is picked up in turn (it sticks to the mouse), the same item stacks, and an equipment
 ## slot only takes an item that fits (those light up while an item is picked up). Clicking the
-## picked slot again, or outside the slots, drops the pick. Right click wears an inventory item,
-## or takes a worn one off into the first free slot.
+## picked slot again, or outside the slots, drops the pick. Shift+click sends a whole stack from
+## the backpack to the hotbar or back (onto the same item first), if there is room. Right click
+## wears an inventory item, or takes a worn one off into the first free slot.
 ## A second tab beside it shows the skills (see SkillsPanel); Tab opens the screen on the
 ## character, K on the skills.
 
@@ -256,7 +257,10 @@ func _tallest_column_height() -> int:
 
 func _on_inventory_slot_pressed(slot: int) -> void:
 	_note_label.text = ""
-	if not _has_pick():
+	if Input.is_key_pressed(KEY_SHIFT):
+		_drop_pick()
+		_player.inventory.move_to_other_part(slot)
+	elif not _has_pick():
 		_picked_inventory_slot = slot if not _player.inventory.slots[slot].is_empty() else -1
 	elif _picked_inventory_slot != -1:
 		# After a swap the picked slot holds what was in `slot`: that is the pick now.

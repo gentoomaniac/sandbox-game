@@ -25,6 +25,19 @@ func before_each() -> void:
 	await wait_process_frames(2)
 
 
+func after_each() -> void:
+	_hold_shift(false)
+
+
+func _hold_shift(is_held := true) -> void:
+	var event := InputEventKey.new()
+	event.keycode = KEY_SHIFT
+	event.physical_keycode = KEY_SHIFT
+	event.pressed = is_held
+	Input.parse_input_event(event)
+	Input.flush_buffered_events()
+
+
 func _click(position: Vector2) -> void:
 	var motion := InputEventMouseMotion.new()
 	motion.position = position
@@ -113,3 +126,21 @@ func test_putting_the_picked_item_on_the_same_one_stacks_and_drops_the_pick() ->
 	_click_slot(Inventory.HOTBAR_SIZE + 1)
 	assert_eq(_player.inventory.slots[Inventory.HOTBAR_SIZE + 1]["count"], 6)
 	assert_eq(_screen._picked_inventory_slot, -1)
+
+
+func test_shift_click_sends_a_stack_between_the_backpack_and_the_hotbar_and_drops_the_pick(
+) -> void:
+	var backpack_slot := Inventory.HOTBAR_SIZE + 2
+	_player.inventory.slots[backpack_slot] = {"item": ItemTypes.LOGS, "count": 7}
+	for slot in Inventory.HOTBAR_SIZE:
+		_player.inventory.slots[slot] = {} if slot == 5 else {"item": ItemTypes.AXE, "count": 1}
+	_player.inventory.changed.emit()
+	_click_slot(0)
+	_hold_shift()
+	_click_slot(backpack_slot)
+	assert_true(_player.inventory.slots[backpack_slot].is_empty())
+	assert_eq(_player.inventory.slots[5], {"item": ItemTypes.LOGS, "count": 7})
+	assert_eq(_screen._picked_inventory_slot, -1, "shift-click lets go of what was picked")
+	_click_slot(5)
+	assert_eq(_player.inventory.slots[Inventory.HOTBAR_SIZE], {"item": ItemTypes.LOGS, "count": 7})
+	assert_true(_player.inventory.slots[5].is_empty())

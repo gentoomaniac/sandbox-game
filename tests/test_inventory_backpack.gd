@@ -64,3 +64,51 @@ func test_tools_add_no_weight() -> void:
 			tools += 1
 	assert_gt(tools, 0)
 	assert_eq(_inventory.total_weight(), 0.0)
+
+
+func test_shift_click_moves_a_stack_from_the_backpack_to_the_first_free_hotbar_slot() -> void:
+	_inventory.slots[0] = {"item": ItemTypes.HOE, "count": 1}
+	_inventory.slots[Inventory.HOTBAR_SIZE + 4] = {"item": ItemTypes.LOGS, "count": 7}
+	assert_true(_inventory.move_to_other_part(Inventory.HOTBAR_SIZE + 4))
+	assert_true(_inventory.slots[Inventory.HOTBAR_SIZE + 4].is_empty())
+	assert_eq(_inventory.slots[1], {"item": ItemTypes.LOGS, "count": 7})
+
+
+func test_shift_click_moves_a_hotbar_stack_to_the_first_free_backpack_slot() -> void:
+	_inventory.slots[2] = {"item": ItemTypes.LOGS, "count": 7}
+	assert_true(_inventory.move_to_other_part(2))
+	assert_true(_inventory.slots[2].is_empty())
+	assert_eq(_inventory.slots[Inventory.HOTBAR_SIZE], {"item": ItemTypes.LOGS, "count": 7})
+
+
+func test_shift_click_fills_a_stack_of_the_same_item_before_a_free_slot() -> void:
+	var limit: int = ItemTypes.TYPES[ItemTypes.LOGS]["stack_limit"]
+	_inventory.slots[0] = {"item": ItemTypes.LOGS, "count": 10}
+	_inventory.slots[Inventory.HOTBAR_SIZE + 2] = {"item": ItemTypes.LOGS, "count": limit - 4}
+	assert_true(_inventory.move_to_other_part(0))
+	assert_eq(_inventory.slots[Inventory.HOTBAR_SIZE + 2]["count"], limit)
+	assert_eq(_inventory.slots[Inventory.HOTBAR_SIZE], {"item": ItemTypes.LOGS, "count": 6})
+	assert_true(_inventory.slots[0].is_empty())
+
+
+func test_shift_click_with_room_for_only_a_part_leaves_the_rest_where_it_was() -> void:
+	var limit: int = ItemTypes.TYPES[ItemTypes.LOGS]["stack_limit"]
+	for slot in range(Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT):
+		_inventory.slots[slot] = {"item": ItemTypes.AXE, "count": 1}
+	_inventory.slots[Inventory.HOTBAR_SIZE] = {"item": ItemTypes.LOGS, "count": limit - 2}
+	_inventory.slots[0] = {"item": ItemTypes.LOGS, "count": 10}
+	assert_false(_inventory.move_to_other_part(0))
+	assert_eq(_inventory.slots[Inventory.HOTBAR_SIZE]["count"], limit)
+	assert_eq(_inventory.slots[0], {"item": ItemTypes.LOGS, "count": 8})
+
+
+func test_shift_click_with_no_room_on_the_other_side_changes_nothing() -> void:
+	for slot in range(Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT):
+		_inventory.slots[slot] = {"item": ItemTypes.AXE, "count": 1}
+	_inventory.slots[0] = {"item": ItemTypes.LOGS, "count": 7}
+	assert_false(_inventory.move_to_other_part(0))
+	assert_eq(_inventory.slots[0], {"item": ItemTypes.LOGS, "count": 7})
+
+
+func test_shift_click_on_an_empty_slot_does_nothing() -> void:
+	assert_false(_inventory.move_to_other_part(3))

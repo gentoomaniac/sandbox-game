@@ -43,6 +43,17 @@ func test_a_click_on_the_hotbar_with_only_the_character_screen_open_is_its_alone
 	assert_eq(_player.inventory.slots[2]["count"], 5)
 
 
+func test_shift_click_on_the_hotbar_goes_to_the_backpack_not_into_a_chest_seen_before() -> void:
+	_storage.open(_chest, _player)
+	_storage.close()
+	_character.open()
+	_hold_shift()
+	_hotbar.slot_view(2).pressed.emit()
+	assert_eq(_chest.storage.count_of(ItemTypes.LOGS), 0)
+	assert_eq(_player.inventory.count_of(ItemTypes.LOGS), 5)
+	assert_true(_player.inventory.slots[2].is_empty())
+
+
 func test_shift_click_on_the_hotbar_with_the_chest_open_goes_into_the_chest_only() -> void:
 	_storage.open(_chest, _player)
 	_hold_shift()
