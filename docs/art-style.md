@@ -356,10 +356,12 @@ copper watering can. Kept here as the record of why.
    Schleswig-Holstein: autotiled Knick hedges on banks, dykes with turf and sheep, straight
    water ditches with reeds instead of fences, pollard willows. Wattle fences and
    fieldstone walls on the way.
-3. **Thatch texture** (medium). The thatch is single-pixel streaks over the whole roof and
-   looks like grey fur at 1×. Redraw as courses of 3–4 px bands with grouped strokes; make
-   the roof planes and the ridge line clearer, so the roof reads as a steep hipped roof
-   rather than a dome. Add crossed ridge sticks on the Kate as an option.
+3. ~~**Thatch texture**~~ done (task 55). The thatch was single-pixel streaks over the
+   whole roof and looked like grey fur at 1×, over a dome. Now: courses of combed reed about
+   4 px high with wavy edges, a broken lit top and reed ends of mixed length; three clear
+   planes (lit left hip, front, shaded right hip) under a straight ridge, so the roofs read
+   as steep hipped roofs; crossed ridge sticks on the Kate (the turf ridge is an option).
+   Under snow the planes show but no stripes; the snow also covers the shack's board joints.
 4. **Tree species** (large, after task 51). Beech, birch, alder and pollard willow as the
    common trees; spruce and pine rarer, in planted clumps or on the Geest; hazel and hawthorn
    in the Knicks.

@@ -83,11 +83,22 @@ fieldstone walls, placed by the world generator where they fit (marsh, field edg
 
 ## 55. Thatch as courses, clear roof planes
 
-- [ ] Done
+- [x] Done
 
 docs/art-style.md bigger item 3: thatch drawn in 3-4 px courses with grouped strokes, clear
 roof planes and ridge so roofs read as steep hipped roofs, not domes; crossed ridge sticks
 on the Kate as an option. All buildings and their snow and lit looks.
+
+Done: one commit per piece. `thatch_roof` draws courses about 4 px high with wavy edges,
+lit along the top in broken runs, with reed ends 1-3 px long hanging below, on three
+planes: the lit left hip, the front slope and the shaded right hip, with a lit hip line,
+hips with a slight belly and a straight ridge; rolled eaves, dormers, moss and weathering
+(crowded reed ends) in patches, the weathering kept off the door swells. Only the lowest
+courses bend over a door swell. The Kate has crossed ridge sticks
+(`kate(ridge_sticks=False)` gives the turf ridge back), drawn taller so they show against
+the sky. Under snow the reed ends and most course lines are filled, leaving the planes and
+an odd short line; this also fills the shack's board joints under snow, its only change.
+No new colours, window lights unchanged.
 
 ## 56. Tree species of the region
 
