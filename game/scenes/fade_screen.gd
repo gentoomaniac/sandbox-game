@@ -35,6 +35,8 @@ func _init() -> void:
 	centre.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(centre)
 	_lines.theme = THEME
+	# The invisible text must not catch the clicks meant for what is under it.
+	_lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_lines.modulate.a = 0.0
 	_lines.add_theme_constant_override("separation", 12)
 	centre.add_child(_lines)
