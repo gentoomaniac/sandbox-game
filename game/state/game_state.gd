@@ -344,7 +344,7 @@ func _do_use(target: Vector2i) -> Use:
 			for item: StringName in items:
 				player.inventory.add(item, items[item])
 		Use.HIT:
-			return _hit(world.object_at(target))
+			_hit(world.object_at(target))
 	return use
 
 
@@ -445,11 +445,11 @@ func _use_by_hand(object: WorldObject) -> Use:
 
 ## Hits an object with the held tool. The hit that finishes it leaves what it leaves (a felled
 ## tree a stump and a trunk, see TrunkPlacement) and drops its drops around it.
-func _hit(object: WorldObject) -> Use:
+func _hit(object: WorldObject) -> void:
 	var power := ItemTypes.tool_power(player.inventory.held_item())
 	if not object.is_finished_by(power):
 		world.hit_object(object, power)
-		return Use.HIT
+		return
 	var object_type := object.type_data()
 	var drops: Dictionary = object_type.get("drops", {}).duplicate()
 	if object.storage != null:
@@ -468,7 +468,6 @@ func _hit(object: WorldObject) -> Use:
 	# The finishing hit replaces or removes the object instead of `hit_object`, which emits
 	# this for the other hits; the view still shakes and throws particles for it.
 	world.object_hit.emit(object)
-	return Use.HIT
 
 
 ## Whether felling this tree today also gives its seed. The same tree on the same day always
