@@ -867,6 +867,33 @@ the willow (tools/art/willow.py) so it reads on every ground and in every season
 underside and outline of the crown, a clearer silhouette of the rods against the ground,
 the ground shadow, and a check on lush, dry and flowering grass. No new colours.
 
+## 88. Inventory handling
+
+- [ ] Done
+
+The user's word of 2026-11-06:
+
+- **Bug:** some slots in the inventory can't be selected. Find which (likely hit areas or
+  an overlapping control) and fix all of them.
+- **Dropping:** items from the inventory can be dropped on the ground (e.g. dragged out of
+  the screen, or a drop key on the held stack); they lie as ground items like a felled
+  tree's drops and can be picked up again.
+- **Swapping:** dropping the held item on a slot that holds another item puts it there and
+  the item that was in the slot now sticks to the mouse (same items stack as today).
+- **Shift-click:** in the backpack moves the stack to the quick bar, on the quick bar moves
+  it into the backpack, as long as there is space (stacking onto the same item first).
+- **The quick bar while the inventory is open:** the HUD's quick bar is not greyed out and
+  is used directly; the extra copy of the quick bar inside the inventory screen goes.
+
+## 89. Crafting UI: buttons clickable all over
+
+- [ ] Done
+
+The user's word of 2026-11-06: in the crafting UI some buttons can only be clicked on small
+areas. Make every button and recipe entry clickable over its whole visible area (likely
+child controls eating the mouse or a too-small hit rect); check the other screens (storage,
+character, settings) for the same and add a test that clicks at the edges of a button.
+
 ## Later (not part of the prototype)
 
 - `WildlifeSprites.frame_index` and `max_frames` allocate on every call (`keys()`,
