@@ -727,6 +727,34 @@ version bump; history capped at the last 200 lines). The chat pauses the game wh
 lines read `[08:15] <You> hello` with the game time; Enter sends, Esc closes; the history
 scrolls. The reply function is async-ready (awaited), so a slow LLM fits later.
 
+## 85. A local LLM in a container for testing NPC talk
+
+- [ ] Done
+
+The user's word of 2026-11-06: a script that brings up an OpenAI-compatible server in a
+container (docker via podman on the user's machine) with a model that fits simple NPC
+conversations, for testing. Performance doesn't matter in this test.
+
+Defaults (QUESTIONS.md 23): Ollama in a container (`ollama/ollama`, OpenAI-compatible API on
+localhost:11434/v1) with a small instruct model of about 2 GB, e.g. Qwen2.5 3B Instruct
+(Apache-2.0), on the CPU (the GPU isn't exposed to containers here). `make llm-up` starts it
+and pulls the model (kept in a named volume), `make llm-down` stops it, `make llm-check`
+sends one chat request and prints the answer. Works with `docker` or `podman`. Normal tests
+never need it.
+
+## 86. NPC replies from the LLM, with compacted memory per NPC
+
+- [ ] Done
+
+The user's word of 2026-11-06. Needs tasks 84 and 85. `NpcDialogue.reply` asks the
+configured OpenAI-compatible endpoint (endpoint, model, optional key in Settings; "none"
+keeps "I understand.") with a short prompt built from the NPC's name, look, a generated
+personality line and its memory; time-outs and errors fall back to a scripted line. Save
+games keep, per NPC, the compacted history of former conversations: when a chat closes,
+the conversation is summarised (by the LLM, or a plain truncation without one) into a
+memory line that is saved and used in later prompts; the raw lines stay capped as in task
+84. Tests use a fake backend; an optional test talks to `make llm-up` when it runs.
+
 ## Later (not part of the prototype)
 
 - `WildlifeSprites.frame_index` and `max_frames` allocate on every call (`keys()`,
