@@ -154,10 +154,12 @@ screenshot:
 # harmless failure, under addons/).
 # It also fails when GUT ran no test (a broken selection must not pass silently), and ends with
 # the warning and orphan counts of GUT's summary (it leaves a count out when it is 0).
+# user:// points into build/ (Godot finds it under XDG_DATA_HOME on Linux): runs in two
+# worktrees at once don't delete each other's test files, and no test can reach the real save.
 test:
 	$(IMPORT)
-	@mkdir -p build
-	@$(GODOT) --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://tests -gexit \
+	@mkdir -p build/user-data
+	@XDG_DATA_HOME=$(CURDIR)/build/user-data $(GODOT) --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://tests -gexit \
 		> build/test.log 2>&1; status=$$?; cat build/test.log; \
 	if grep -Eq 'Failed to load script "res://(game|tests)/' build/test.log; then \
 		echo "make test: a script in game/ or tests/ failed to load (see above)"; exit 1; fi; \
