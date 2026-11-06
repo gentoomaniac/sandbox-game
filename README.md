@@ -403,6 +403,15 @@ different name, pass its path: `make GODOT=/path/to/godot run`.
 Saves go to `user://saves/world.json` and settings to `user://settings.cfg`. To start a
 fresh world, run `godot --path . -- --new-game`.
 
+### Talking NPCs, for testing
+
+The game does not need a language model. To try NPC talk against a real one, `make llm-up`
+runs Ollama with Qwen2.5 3B Instruct (1.9 GB, CPU only, Qwen Research License: for testing
+only) in a podman or docker container on `http://127.0.0.1:11434/v1`; `make llm-check` asks it
+one question and `make llm-down` stops it. The container image (5.5 GB) and the model live in
+the container tool's storage and the volume `sandbox-game-llm-models`; `make llm-down PURGE=1`
+deletes the model. Details in [tools/README.md](tools/README.md).
+
 ### For developers
 
 Start with [docs/architecture.md](docs/architecture.md): how the code is organised and where
@@ -415,6 +424,7 @@ to look. `make help` lists the targets and their variables.
 | `make lint` | Runs `gdlint` and `gdformat --check`. |
 | `make format` | Formats the GDScript. |
 | `make assets` | Regenerates all pixel art from the palette and all sounds (deterministic). Needs Python only, not Godot. |
+| `make llm-up`, `llm-check`, `llm-down` | A local test LLM in a container (see above); no test needs it. |
 | `make clean` | Deletes build/ (test log, screenshots). |
 | `make screenshot` | Saves one frame, e.g. `make screenshot AT=40,-20 TIME=21:00`. Muted (`SOUND=1` keeps the sound), the window doesn't take the focus, and it uses its own save in build/ (`KEEP_SAVE=1` loads yours). |
 

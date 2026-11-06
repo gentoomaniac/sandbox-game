@@ -174,6 +174,9 @@ top of classic pixel art (details under "Lighting and look").
   `screenshot`, `test`, `lint`, `format`, `assets`, `clean` and `export` (a placeholder: no
   export presets exist yet).
 - Tools:
+  - test LLM for NPC talk (decided 2026-11-06): `make llm-up`, `llm-check` and `llm-down`
+    run Ollama (pinned tag) in a podman/docker container with Qwen2.5 3B Instruct on the CPU,
+    OpenAI-compatible API on 127.0.0.1:11434/v1 (`tools/llm/llm.sh`); no test needs it;
   - tests: **GUT**, run headless by `make test`;
   - lint and format: gdtoolkit (`gdlint` / `gdformat`).
 

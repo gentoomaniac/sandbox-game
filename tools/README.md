@@ -119,3 +119,30 @@ add the event to `SoundRules.EVENTS` (`game/state/sound_rules.gd`) and a section
 `data/sounds.cfg`, then make the game play it (for work and steps, `SoundEvents` decides which
 event a happening makes; `GameSounds` and `AudioService` play it). To use a recording instead
 of a generated sound, point the event's `files` in `data/sounds.cfg` at the recording.
+
+## A local LLM for testing NPC talk: tools/llm/
+
+`llm.sh` runs [Ollama](https://ollama.com) in a container (podman if present, else docker;
+`CONTAINER=docker` forces one) with Qwen2.5 3B Instruct, on the CPU. It serves an
+OpenAI-compatible API at `http://127.0.0.1:11434/v1` (this machine only). The game never
+needs it: `make test` does not touch it.
+
+```sh
+make llm-up       # start the container, pull the model if missing; safe to repeat
+make llm-check    # one chat request as a 1750s North Frisian villager, with the time taken
+make llm-down     # remove the container; the model stays in its volume
+make llm-down PURGE=1   # also delete the volume (the model)
+tools/llm/llm.sh status | logs
+```
+
+- **Model:** `qwen2.5:3b-instruct` (override with `LLM_MODEL=<ollama tag>`), 3.1B parameters,
+  Q4_K_M, 1.9 GB. Its licence is the **Qwen Research License** (non-commercial), not
+  Apache-2.0: the 3B size is the exception in the Qwen2.5 family. Fine for testing here; never
+  ship it with the game. `LLM_MODEL=qwen2.5:1.5b-instruct` or `qwen2.5:7b-instruct` are
+  Apache-2.0.
+- **Where things live:** the container is `sandbox-game-llm`, the models are in the
+  volume `sandbox-game-llm-models`, the image is the pinned `docker.io/ollama/ollama` tag in
+  `llm.sh` (5.5 GB, from the container tool's image storage).
+- **Remove everything:** `make llm-down PURGE=1`, then `podman rmi docker.io/ollama/ollama:<tag>`
+  (or `docker rmi`).
+- A 3B model on 22 CPU cores answers a short line in a few seconds; speed is not a goal.

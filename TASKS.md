@@ -744,7 +744,7 @@ scrolls. The reply function is async-ready (awaited), so a slow LLM fits later.
 
 ## 85. A local LLM in a container for testing NPC talk
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06: a script that brings up an OpenAI-compatible server in a
 container (docker via podman on the user's machine) with a model that fits simple NPC
@@ -756,6 +756,13 @@ localhost:11434/v1) with a small instruct model of about 2 GB, e.g. Qwen2.5 3B I
 and pulls the model (kept in a named volume), `make llm-down` stops it, `make llm-check`
 sends one chat request and prints the answer. Works with `docker` or `podman`. Normal tests
 never need it.
+
+Done 2026-11-06: `tools/llm/llm.sh` (up, down [--purge], check, status, logs) and the targets
+`make llm-up`, `llm-down` (`PURGE=1` deletes the model), `llm-check`. Ollama 0.35.0 pinned,
+model `qwen2.5:3b-instruct` (override `LLM_MODEL=`), container `sandbox-game-llm`, volume
+`sandbox-game-llm-models`, 127.0.0.1:11434 only; podman if present, else docker. A check
+answers in about 5 s on the CPU. Note: the 3B model has the Qwen Research License
+(non-commercial), not Apache-2.0 as assumed in QUESTIONS.md 23; fine for testing only.
 
 ## 86. NPC replies from the LLM, with compacted memory per NPC
 
