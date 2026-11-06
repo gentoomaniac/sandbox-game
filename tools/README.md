@@ -123,7 +123,8 @@ of a generated sound, point the event's `files` in `data/sounds.cfg` at the reco
 ## A local LLM for testing NPC talk: tools/llm/
 
 `llm.sh` runs [Ollama](https://ollama.com) in a container (podman if present, else docker;
-`CONTAINER=docker` forces one) with Qwen2.5 3B Instruct, on the CPU. It serves an
+`CONTAINER=docker` forces one) with Qwen2.5 3B Instruct, on the NVIDIA GPU when the host
+exposes it to containers (see below), else on the CPU. It serves an
 OpenAI-compatible API at `http://127.0.0.1:11434/v1` (this machine only). The game never
 needs it: `make test` does not touch it.
 
@@ -146,3 +147,16 @@ tools/llm/llm.sh status | logs
 - **Remove everything:** `make llm-down PURGE=1`, then `podman rmi docker.io/ollama/ollama:<tag>`
   (or `docker rmi`).
 - A 3B model on 22 CPU cores answers a short line in a few seconds; speed is not a goal.
+- **GPU:** `llm.sh up` passes the GPU in (`--device nvidia.com/gpu=all`, CDI) when a CDI spec
+  for `nvidia.com/gpu` is in `/etc/cdi` or `/var/run/cdi`. `LLM_GPU=1` insists on the GPU,
+  `LLM_GPU=0` keeps the CPU; a container started with the other setting is recreated.
+  `make llm-check` ends with `ollama ps`, whose PROCESSOR column says `GPU` or `CPU`. One-time
+  host setup (root; Gentoo, the RTX 4070 here):
+
+  ```sh
+  sudo emerge app-containers/nvidia-container-toolkit
+  sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml   # again after each driver update
+  nvidia-ctk cdi list   # should list nvidia.com/gpu=0 and nvidia.com/gpu=all
+  ```
+
+  With 8 GB of VRAM, `qwen2.5:7b-instruct` (4.7 GB) fits on the GPU as well.

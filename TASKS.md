@@ -764,6 +764,12 @@ model `qwen2.5:3b-instruct` (override `LLM_MODEL=`), container `sandbox-game-llm
 answers in about 5 s on the CPU. Note: the 3B model has the Qwen Research License
 (non-commercial), not Apache-2.0 as assumed in QUESTIONS.md 23; fine for testing only.
 
+GPU, the user's word of 2026-11-06: give the container the NVIDIA GPU. `llm.sh up` adds
+`--device nvidia.com/gpu=all` (CDI, podman and docker) when a CDI spec for it exists,
+`LLM_GPU=auto|1|0` overrides, and a container with the other setting is recreated. The host
+needs `nvidia-container-toolkit` and `nvidia-ctk cdi generate` once (root, see
+tools/README.md).
+
 ## 86. NPC replies from the LLM, with compacted memory per NPC
 
 - [ ] Done
