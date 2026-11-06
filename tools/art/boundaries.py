@@ -276,9 +276,10 @@ def knick_row():
 
 # --- The wattle fence ---
 
-# Hazel rods woven between posts, about knee high: this far out from the skeleton and this
+# Hazel rods woven between posts, about knee high: this far out from the skeleton (wide enough
+# that a fence running north-south, seen from above, still shows its rods) and this
 # high, the posts a little higher, one every POST_SPACING px.
-WATTLE_REACH = 1.5
+WATTLE_REACH = 2.0
 WATTLE_HEIGHT = 9
 POST_HEIGHT = 11
 POST_SPACING = 8
