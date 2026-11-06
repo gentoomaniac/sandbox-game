@@ -187,29 +187,6 @@ static func body_tiles(feet: Vector2) -> Rect2i:
 	return Rect2i(top_left, bottom_right - top_left + Vector2i.ONE)
 
 
-## Puts a player who stands where they don't fit (noclip just turned off in a lake or a wall)
-## on the middle of the nearest tile where they do, nearest ring first, within `reach` tiles.
-## Returns whether they now fit.
-func step_onto_free_ground(map: GameMap, reach := 12) -> bool:
-	if can_stand_at(map, position):
-		return true
-	var here := tile()
-	for ring in range(1, reach + 1):
-		var nearest := Vector2.INF
-		for y in range(-ring, ring + 1):
-			for x in range(-ring, ring + 1):
-				if maxi(absi(x), absi(y)) != ring:
-					continue
-				var centre := Vector2(here + Vector2i(x, y)) + Vector2(0.5, 0.5)
-				var is_nearer := centre.distance_to(position) < nearest.distance_to(position)
-				if is_nearer and can_stand_at(map, centre):
-					nearest = centre
-		if nearest != Vector2.INF:
-			position = nearest
-			return true
-	return false
-
-
 ## Whether every tile a player's body touches with their feet at `feet` is on the map at all.
 static func is_on_map(map: GameMap, feet: Vector2) -> bool:
 	var tiles := body_tiles(feet)

@@ -121,11 +121,8 @@ func run(line: String) -> Array[String]:
 			cheats.is_noclip = not cheats.is_noclip
 			output = [_toggle_message("No clip", cheats.is_noclip)]
 			# Off inside a lake or a wall: onto the nearest ground they fit on.
-			if (
-				not cheats.is_noclip
-				and not PlayerState.can_stand_at(_state.current_map, _state.player.position)
-			):
-				_state.player.step_onto_free_ground(_state.current_map)
+			if not cheats.is_noclip and not _state.put_player_on_free_ground():
+				output.append("No free ground near you: walk out, or turn noclip on again")
 		"reset":
 			_state.go_to_home_bed()
 			output = ["Back in bed"]

@@ -176,8 +176,45 @@ func walk_speed_factor() -> float:
 func walk(direction: Vector2, delta: float, speed_factor := 1.0) -> void:
 	var tile_before := player.tile()
 	player.move(current_map, direction, delta, speed_factor, cheats.is_noclip)
-	if not is_inside() and player.tile() != tile_before:
+	# A noclip walk (through trees, rocks and walls) leaves no path.
+	if not is_inside() and not cheats.is_noclip and player.tile() != tile_before:
 		world.wear_tile(player.tile())
+
+
+## Puts a player who stands where they don't fit (noclip just turned off in a lake, a rock or a
+## house's walls) on the middle of the nearest tile, within `reach` tiles, where they fit and no
+## part of them is on a building (its door would take them inside). One lying in a bed stays:
+## they get out of it as they move. Returns whether they now fit.
+func put_player_on_free_ground(reach := 12) -> bool:
+	if player.bed_lying_in != null or PlayerState.can_stand_at(current_map, player.position):
+		return true
+	var here := player.tile()
+	var nearest := Vector2.INF
+	for y in range(-reach, reach + 1):
+		for x in range(-reach, reach + 1):
+			var centre := Vector2(here + Vector2i(x, y)) + Vector2(0.5, 0.5)
+			var is_nearer := (
+				centre.distance_to(player.position) < nearest.distance_to(player.position)
+			)
+			if is_nearer and _is_free_ground_for_player(centre):
+				nearest = centre
+	if nearest == Vector2.INF:
+		return false
+	player.position = nearest
+	return true
+
+
+func _is_free_ground_for_player(feet: Vector2) -> bool:
+	if not PlayerState.can_stand_at(current_map, feet):
+		return false
+	if is_inside():
+		return true
+	var tiles := PlayerState.body_tiles(feet)
+	for y in range(tiles.position.y, tiles.end.y):
+		for x in range(tiles.position.x, tiles.end.x):
+			if world.building_at(Vector2i(x, y)) != null:
+				return false
+	return true
 
 
 ## Eats one of the held food, on any map: it restores energy up to the cap. Does nothing, and

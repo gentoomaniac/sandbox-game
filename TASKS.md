@@ -937,8 +937,10 @@ Done: `CheatFlags.is_noclip` (HUD "No clip"), `PlayerState.move(..., is_noclip)`
 that the body's tiles exist (`is_on_map`): the room's tiles indoors, loaded chunks outdoors;
 a room's wall tiles are on the map, so noclip reaches the wall but not beyond. The step-off
 rule of task 78 refuses steps into water, so a player left in a lake would be stuck: turning
-noclip off where the player doesn't fit puts them on the nearest tile they fit on
-(`PlayerState.step_onto_free_ground`, within 12 tiles). Tests: tests/test_noclip.gd.
+noclip off where the player doesn't fit puts them on the nearest tile they fit on, within 12
+tiles, never on a building's tiles (its door would take them inside; one lying in a bed stays
+in it): `GameState.put_player_on_free_ground`; the console says so when nothing is free. A
+noclip walk wears no desire path. Tests: tests/test_noclip.gd.
 
 ## Later (not part of the prototype)
 
