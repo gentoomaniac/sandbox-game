@@ -78,6 +78,9 @@ extends RefCounted
 ##   --forage=<x>,<y>         a stump, bushes and a sapling in a row, and some of every new item
 ##   --felled=<x>,<y>         trees felled from each side, with stumps, trunks and tree seeds
 ##   --mow=<x>,<y>            mows twice with the scythe from that tile (--day=45 for summer)
+##   --path=<x>,<y>           a desire path walked from that tile eastwards (see DebugPath)
+##   --path-days=<walked>,<left>  the days --path is walked and then left to grow back
+##                            (default 6,0)
 ##   --chest=<x>,<y>          a chest with some items on that tile
 ##   --chest-inside=<x>,<y>   a chest on that tile of the first house's room (with --inside)
 ##
@@ -161,6 +164,8 @@ var drops := NO_TILE
 var forage := NO_TILE
 var felled := NO_TILE
 var mow := NO_TILE
+var path := NO_TILE
+var path_days := Vector2i(6, 0)
 var chest := NO_TILE
 var chest_inside := NO_TILE
 
@@ -268,6 +273,12 @@ func _init(args := PackedStringArray()) -> void:
 				felled = _tile(arg)
 			"--mow":
 				mow = _tile(arg)
+			"--path":
+				path = _tile(arg)
+			"--path-days":
+				var days := _tile(arg)
+				if days != NO_TILE:
+					path_days = days
 			"--chest":
 				chest = _tile(arg)
 			"--chest-inside":

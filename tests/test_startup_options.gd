@@ -91,6 +91,8 @@ func test_every_tile_flag_reads_its_tile() -> void:
 					"--chest-inside=19,20",
 					"--harvest=21,22",
 					"--hit=23,24",
+					"--path=25,26",
+					"--path-days=3,4",
 				]
 			)
 		)
@@ -107,6 +109,8 @@ func test_every_tile_flag_reads_its_tile() -> void:
 	assert_eq(options.chest_inside, Vector2i(19, 20))
 	assert_eq(options.harvest, Vector2i(21, 22))
 	assert_eq(options.hit, Vector2i(23, 24))
+	assert_eq(options.path, Vector2i(25, 26))
+	assert_eq(options.path_days, Vector2i(3, 4))
 
 
 func test_a_console_line_may_contain_an_equals_sign() -> void:

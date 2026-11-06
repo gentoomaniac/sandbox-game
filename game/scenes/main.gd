@@ -597,6 +597,8 @@ func _apply_game_options() -> void:
 		DebugFelled.create(_state.world, _options.felled)
 	if _options.mow != StartupOptions.NO_TILE:
 		DebugMow.create(_state, _options.mow)
+	if _options.path != StartupOptions.NO_TILE:
+		DebugPath.create(_state.world, _options.path, _options.path_days.x, _options.path_days.y)
 	if _options.drops != StartupOptions.NO_TILE:
 		DebugDrops.create(_state.world, _options.drops)
 	if _options.energy >= 0.0:
