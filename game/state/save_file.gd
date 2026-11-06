@@ -324,7 +324,7 @@ static func _upgrade_from_version_12(game: Dictionary) -> void:
 
 ## Version 13 had no skills: the player starts with none.
 static func _upgrade_from_version_13(game: Dictionary) -> void:
-	game["player"]["skills"] = {"points": {}}
+	game["player"]["skills"] = {"points": {}, "fading": []}
 
 
 static func _keep(kept: Dictionary[Vector2i, bool], area: Rect2i) -> void:

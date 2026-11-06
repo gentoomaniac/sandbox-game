@@ -7,7 +7,7 @@ const DEFAULT_PATH := "res://data/skills.cfg"
 
 ## The sections that hold rules; every other section is a skill.
 const RULE_KEYS := {
-	"cap": ["skill"],
+	"cap": ["skill", "total"],
 	"gain": ["at_level", "trivial_above"],
 }
 const SKILL_KEYS: Array[String] = ["name", "description"]
@@ -83,6 +83,11 @@ func description(skill: StringName) -> String:
 ## The most points one skill can have.
 func skill_cap() -> float:
 	return float(_values["cap"]["skill"])
+
+
+## The most points all skills together can have.
+func total_cap() -> float:
+	return float(_values["cap"]["total"])
 
 
 ## What one craft of a recipe of `level` teaches a skill that has `points`: the full gain at or

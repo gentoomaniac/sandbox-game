@@ -1,13 +1,15 @@
 extends GutTest
-## The skills file and its validation, and how a skill grows by practice and is saved.
+## The skills file and its validation, how a skill grows by practice, and saving (the total cap
+## is in test_skill_cap.gd).
 
 const DATA_DIR := "user://test_skills"
 const DATA_FILE := DATA_DIR + "/skills.cfg"
 const RULES := {
-	"cap": {"skill": 100.0},
+	"cap": {"skill": 100.0, "total": 200.0},
 	"gain": {"at_level": 2.0, "trivial_above": 40.0},
 	"woodworking": {"name": "Woodworking", "description": "Wood."},
 	"cooking": {"name": "Cooking", "description": "Food."},
+	"masonry": {"name": "Masonry", "description": "Bricks."},
 }
 
 
@@ -29,6 +31,7 @@ func test_the_skills_file_is_valid_and_has_the_three_first_crafts() -> void:
 	assert_eq(rules.skill_ids(), [&"woodworking", &"cooking", &"masonry"] as Array[StringName])
 	assert_eq(rules.skill_name(&"masonry"), "Masonry")
 	assert_eq(rules.skill_cap(), 100.0)
+	assert_eq(rules.total_cap(), 200.0)
 
 
 func test_every_missing_or_wrong_key_is_reported() -> void:
@@ -42,6 +45,7 @@ func test_every_missing_or_wrong_key_is_reported() -> void:
 		(
 			[
 				"[cap] no skill",
+				"[cap] no total",
 				"[gain] at_level must be a number above 0",
 				"[gain] no trivial_above",
 				"[cooking] no description",
@@ -49,7 +53,7 @@ func test_every_missing_or_wrong_key_is_reported() -> void:
 			as Array[String]
 		)
 	)
-	assert_push_error_count(4)
+	assert_push_error_count(5)
 
 
 func test_a_file_with_no_skills_is_invalid() -> void:
@@ -124,9 +128,12 @@ func test_practising_says_the_skills_changed() -> void:
 func test_the_skills_survive_a_save_round_trip() -> void:
 	var state := GameState.new_game(7)
 	state.player.skills.set_points(&"masonry", 12.3)
+	state.player.skills.set_fading(&"cooking", true)
 	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(state.to_dict())))
 	assert_eq(restored.player.skills.points(&"masonry"), 12.3)
 	assert_eq(restored.player.skills.points(&"cooking"), 0.0)
+	assert_true(restored.player.skills.is_fading(&"cooking"))
+	assert_false(restored.player.skills.is_fading(&"masonry"))
 
 
 # --- The console ---
