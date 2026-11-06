@@ -3,9 +3,14 @@ extends RefCounted
 ## What the crafting menu does: `craft` takes a recipe's materials from the inventory and puts
 ## its result in. Plain logic; CraftingScreen only shows the recipes and sends the click. A
 ## craft that would not leave room for the result is refused, as a building is refused when
-## the materials are missing: nothing is dropped on the ground.
+## the materials are missing: nothing is dropped on the ground. A recipe with a skill needs its
+## level in that skill (it is locked below it), and each craft practises the skill (see Skills).
 
-enum Result { CRAFTED, MISSING_MATERIALS, NO_ROOM }
+## A craft practised `skill`: it grew by `gained` points of the `wanted` the recipe teaches (less
+## at the total cap, see Skills).
+signal practised(skill: StringName, gained: float, wanted: float)
+
+enum Result { CRAFTED, MISSING_MATERIALS, NO_ROOM, LOCKED }
 
 ## The recipes there are.
 var rules: RecipeRules
@@ -32,7 +37,15 @@ func shortfalls(recipe_id: StringName) -> Dictionary:
 	return short
 
 
+## Whether the player lacks the skill points a recipe needs.
+func is_locked(recipe_id: StringName) -> bool:
+	var skill := rules.skill(recipe_id)
+	return skill != &"" and _state.player.skills.points(skill) < rules.level(recipe_id)
+
+
 func craft(recipe_id: StringName) -> Result:
+	if is_locked(recipe_id):
+		return Result.LOCKED
 	if not shortfalls(recipe_id).is_empty():
 		return Result.MISSING_MATERIALS
 	var inventory := _state.player.inventory
@@ -46,4 +59,14 @@ func craft(recipe_id: StringName) -> Result:
 	for item: StringName in materials:
 		inventory.remove(item, materials[item])
 	inventory.add(rules.result(recipe_id), rules.count(recipe_id))
+	_practise(recipe_id)
 	return Result.CRAFTED
+
+
+func _practise(recipe_id: StringName) -> void:
+	var skill := rules.skill(recipe_id)
+	if skill == &"":
+		return
+	var skills := _state.player.skills
+	var wanted := skills.gain_at(skill, rules.level(recipe_id))
+	practised.emit(skill, skills.practise(skill, rules.level(recipe_id)), wanted)

@@ -1,8 +1,9 @@
 class_name RecipeRules
 extends RefCounted
 ## The crafting recipes, read from data/recipes.cfg (see there for what each key means).
-## `from_file` reports every required key that is missing or wrong, and `is_valid` says whether
-## any was. The crafting menu and Crafting use `default_rules`.
+## `from_file` reports every key that is missing or wrong, and `is_valid` says whether any was.
+## The crafting menu and Crafting use `default_rules`. Stations and skills are checked against
+## the default StationRules and SkillRules.
 
 const DEFAULT_PATH := "res://data/recipes.cfg"
 
@@ -26,6 +27,7 @@ func _init(recipes: Dictionary) -> void:
 				_problems.append("[%s] no %s" % [recipe_id, key])
 		_check_result(recipe_id, values)
 		_check_materials(recipe_id, values)
+		_check_station_and_skill(recipe_id, values)
 
 
 ## The rules of the data file, loaded the first time they are asked for.
@@ -57,6 +59,28 @@ func recipe_ids() -> Array[StringName]:
 	for recipe_id: String in _recipes:
 		ids.append(StringName(recipe_id))
 	return ids
+
+
+## The recipes made at a station (or by hand, for &""), in the order of the file.
+func recipes_at(station: StringName) -> Array[StringName]:
+	return recipe_ids().filter(
+		func(recipe_id: StringName) -> bool: return station_of(recipe_id) == station
+	)
+
+
+## Where a recipe is made: a station id, or &"" by hand.
+func station_of(recipe_id: StringName) -> StringName:
+	return StringName(_recipes[str(recipe_id)].get("station", ""))
+
+
+## The skill a recipe practises, or &"" for none.
+func skill(recipe_id: StringName) -> StringName:
+	return StringName(_recipes[str(recipe_id)].get("skill", ""))
+
+
+## The points of its skill a recipe needs.
+func level(recipe_id: StringName) -> float:
+	return float(_recipes[str(recipe_id)].get("level", 0.0))
 
 
 ## The item a recipe makes.
@@ -99,3 +123,21 @@ func _check_materials(recipe_id: String, values: Dictionary) -> void:
 			_problems.append(
 				"[%s] material %s needs a whole number, at least 1" % [recipe_id, item]
 			)
+
+
+func _check_station_and_skill(recipe_id: String, values: Dictionary) -> void:
+	var station := StringName(str(values.get("station", "")))
+	if values.has("station") and not StationRules.default_rules().has_station(station):
+		_problems.append("[%s] station is not a station: %s" % [recipe_id, values["station"]])
+	var skill_rules := SkillRules.default_rules()
+	if values.has("skill") and not skill_rules.has_skill(StringName(str(values["skill"]))):
+		_problems.append("[%s] skill is not a skill: %s" % [recipe_id, values["skill"]])
+	if not values.has("level"):
+		return
+	var level_value: Variant = values["level"]
+	if not values.has("skill"):
+		_problems.append("[%s] a level needs a skill" % recipe_id)
+	elif not (level_value is int or level_value is float):
+		_problems.append("[%s] level must be a number" % recipe_id)
+	elif level_value < 0 or level_value > skill_rules.skill_cap():
+		_problems.append("[%s] level must be from 0 to %s" % [recipe_id, skill_rules.skill_cap()])

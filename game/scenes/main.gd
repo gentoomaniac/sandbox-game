@@ -82,6 +82,7 @@ func _ready() -> void:
 		or not BuildingRules.default_rules().is_valid()
 		or not RecipeRules.default_rules().is_valid()
 		or not SkillRules.default_rules().is_valid()
+		or not StationRules.default_rules().is_valid()
 		or not SoundRules.default_rules().is_valid()
 		or not AmbienceRules.default_rules().is_valid()
 		or not LandscapeRules.default_rules().is_valid()
