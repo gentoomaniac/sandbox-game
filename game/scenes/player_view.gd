@@ -4,7 +4,7 @@ extends Node2D
 ## frame at the player's position. Walking comes from how the position changed since the
 ## last frame.
 ##
-## Debug: `--hair=<n>` wears variant "n" of the hair (F6 cycles 0 and 1; what the
+## Debug: `--hair=<n>` wears variant "n" of the hair (F6 cycles 0 to 2; what the
 ## character wears comes from the equipment, see `--wear`);
 ## `--pose=<up|down|left|right>[,<column>]` turns the player and optionally freezes the
 ## animation on a column of the sheet (0 idle, 1 to 4 the walk frames). Both are in
@@ -29,7 +29,7 @@ const WALK_FRAMES_PER_SECOND := 10.0
 ## The walk frames where a foot comes down, two per cycle.
 const STEP_COLUMNS := [1, 3]
 ## The hair variants that `--hair` and F6 cycle through.
-const HAIR_COUNT := 2
+const HAIR_COUNT := 3
 const HAIR_KEY := KEY_F6
 const FACINGS_BY_NAME := {
 	"up": Vector2i.UP, "down": Vector2i.DOWN, "left": Vector2i.LEFT, "right": Vector2i.RIGHT

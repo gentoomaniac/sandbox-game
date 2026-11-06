@@ -17,11 +17,14 @@ CHARACTER_HEIGHT = 32
 PLAYER_FACINGS = ("down", "up", "left", "right")
 PLAYER_FRAMES = ("idle", "walk1", "walk2", "walk3", "walk4")
 
-# Colours of the hair variants: a base colour with a light and a shade.
-HAIR_COLOURS = {
-    "0": {"base": "soil", "light": "soil_light", "shade": "soil_dark", "long": False},
-    "1": {"base": "straw", "light": "gold", "shade": "reed", "long": True},
+# The hair variants: a base colour with a light and a shade, and the style (see `draw_hair`).
+HAIR_STYLES = {
+    "0": {"base": "soil", "light": "soil_light", "shade": "soil_dark", "style": "short"},
+    "1": {"base": "straw", "light": "gold", "shade": "reed", "style": "long"},
+    "2": {"base": "soil_mid", "light": "soil_light", "shade": "soil", "style": "tied"},
 }
+# The ribbon that ties back the "tied" hair.
+HAIR_RIBBON = "ink"
 
 # The undershirt and shorts that the bare body wears.
 UNDERSHIRT = "sand_light"
@@ -302,9 +305,10 @@ def draw_jacket(facing, pose, **_):
     return canvas
 
 
-def draw_hair(facing, pose, base, light, shade, long, **_):
-    """Short or long hair over the head (the same 9x8 block in every view), and from behind
-    over the whole back of it. The darkest shade is the line to the face."""
+def draw_hair(facing, pose, base, light, shade, style, **_):
+    """Hair over the head (the same 9x8 block in every view), and from behind over the whole
+    back of it: "short", "long" to the shoulders, or "tied" back with a ribbon into a tail
+    down the neck. The darkest shade is the line to the face."""
     canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
     sink = pose["sink"]
     rect(canvas, 5, 5 + sink, 11, 5 + sink, base)
@@ -315,7 +319,7 @@ def draw_hair(facing, pose, base, light, shade, long, **_):
         for x in (4, 12):
             rect(canvas, x, 8 + sink, x, 9 + sink, base)
             canvas[9 + sink][x] = shade
-        if long:
+        if style == "long":
             for x in (4, 12):
                 rect(canvas, x, 10 + sink, x, 14 + sink, base)
                 rect(canvas, x, 13 + sink, x, 14 + sink, shade)
@@ -324,22 +328,30 @@ def draw_hair(facing, pose, base, light, shade, long, **_):
         rect(canvas, 5, 12 + sink, 11, 12 + sink, shade)
         rect(canvas, 8, 7 + sink, 8, 11 + sink, shade)
         rect(canvas, 6, 8 + sink, 6, 9 + sink, light)
-        if long:
+        if style == "long":
             rect(canvas, 4, 12 + sink, 12, 16 + sink, base)
             rect(canvas, 5, 17 + sink, 11, 17 + sink, base)
             rect(canvas, 8, 12 + sink, 8, 16 + sink, shade)
             rect(canvas, 6, 13 + sink, 6, 15 + sink, light)
             rect(canvas, 5, 16 + sink, 11, 17 + sink, shade)
+        if style == "tied":
+            rect(canvas, 7, 12 + sink, 8, 17 + sink, base)
+            rect(canvas, 8, 13 + sink, 8, 17 + sink, shade)
+            rect(canvas, 6, 13 + sink, 9, 13 + sink, HAIR_RIBBON)
     else:
         rect(canvas, 10, 7 + sink, 12, 7 + sink, shade)
         rect(canvas, 4, 8 + sink, 8, 11 + sink, base)
         rect(canvas, 8, 8 + sink, 8, 11 + sink, shade)
         rect(canvas, 5, 12 + sink, 7, 12 + sink, shade)
         rect(canvas, 5, 8 + sink, 5, 9 + sink, light)
-        if long:
+        if style == "long":
             rect(canvas, 3, 8 + sink, 6, 16 + sink, base)
             rect(canvas, 3, 15 + sink, 6, 16 + sink, shade)
             rect(canvas, 4, 11 + sink, 4, 14 + sink, light)
+        if style == "tied":
+            rect(canvas, 3, 11 + sink, 4, 16 + sink, base)
+            rect(canvas, 3, 15 + sink, 4, 16 + sink, shade)
+            rect(canvas, 3, 12 + sink, 4, 12 + sink, HAIR_RIBBON)
     return canvas
 
 
@@ -532,7 +544,7 @@ def layers():
     result["clothes_0"] = (draw_waistcoat, {})
     result["clothes_1"] = (draw_shirt, {})
     result["coat_jacket"] = (draw_jacket, {})
-    for variant, colours in HAIR_COLOURS.items():
+    for variant, colours in HAIR_STYLES.items():
         result[f"hair_{variant}"] = (draw_hair, colours)
     result["legs_0"] = (draw_legs, {})
     result["feet_clogs"] = (draw_clogs, {})
