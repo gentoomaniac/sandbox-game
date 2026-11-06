@@ -18,7 +18,12 @@ const BEE := &"bee"
 const BUTTERFLY := &"butterfly"
 ## Not an animal but a group of birds high in the sky.
 const FLOCK := &"flock"
-const KINDS: Array[StringName] = [BIRD, RABBIT, SQUIRREL, DEER, BEE, BUTTERFLY, FLOCK]
+## A white stork hunting on wet ground, and one that comes to stand on a roof.
+const STORK := &"stork"
+const ROOF_STORK := &"roof_stork"
+const KINDS: Array[StringName] = [
+	BIRD, RABBIT, SQUIRREL, DEER, BEE, BUTTERFLY, FLOCK, STORK, ROOF_STORK
+]
 
 const GENERAL_KEYS := [
 	"twilight_minutes",
@@ -35,6 +40,7 @@ const KIND_KEYS := [
 	"terrains",
 	"trees_radius",
 	"min_trees",
+	"water_radius",
 	"flowers_per_animal",
 	"season_factors",
 	"phase_weights",
@@ -90,6 +96,16 @@ static func count_trees(map: GameMap, centre: Vector2i, radius: int) -> int:
 			if object != null and TREE_TYPES.has(object.type):
 				count += 1
 	return count
+
+
+## Whether there is open water within `radius` tiles (a square) of a tile. It stops at the first.
+static func has_water_near(map: GameMap, centre: Vector2i, radius: int) -> bool:
+	for y in range(centre.y - radius, centre.y + radius + 1):
+		for x in range(centre.x - radius, centre.x + radius + 1):
+			var tile := map.tile_at(Vector2i(x, y))
+			if tile != null and tile.terrain == Tile.Terrain.WATER:
+				return true
+	return false
 
 
 ## What is missing, as "[section] what".
@@ -182,11 +198,38 @@ func spawn_chance(kind: StringName, day: int, minute: int, weather: WeatherSampl
 	return float(_value(kind, "spawn_chance")) * activity(kind, day, minute, weather)
 
 
-## Whether a kind lives on a terrain with this many trees around (see `trees_radius`).
-func is_habitat(kind: StringName, terrain: Tile.Terrain, tree_count: int) -> bool:
+## Whether a kind lives on a terrain with this many trees around and water near or not (see
+## `trees_radius` and `water_radius`).
+func is_habitat(
+	kind: StringName, terrain: Tile.Terrain, tree_count: int, is_by_water: bool
+) -> bool:
+	return (
+		_lives_on(kind, terrain)
+		and (_water_radius(kind) == 0 or is_by_water)
+		and tree_count >= int(_value(kind, "min_trees"))
+	)
+
+
+## Whether a kind lives on a tile of a map: its terrain first, then the trees and the water
+## around it, which take longer to look at.
+func is_habitat_at(kind: StringName, map: GameMap, tile: Vector2i) -> bool:
+	var ground := map.tile_at(tile)
+	if ground == null or not _lives_on(kind, ground.terrain):
+		return false
+	var trees := trees_radius(kind)
+	var tree_count := count_trees(map, tile, trees) if trees > 0 else 0
+	var water := _water_radius(kind)
+	var is_by_water := water > 0 and has_water_near(map, tile, water)
+	return is_habitat(kind, ground.terrain, tree_count, is_by_water)
+
+
+func _lives_on(kind: StringName, terrain: Tile.Terrain) -> bool:
 	var terrains: Array = _value(kind, "terrains")
-	var is_terrain_right := terrains.is_empty() or terrains.has(_terrain_name(terrain))
-	return is_terrain_right and tree_count >= int(_value(kind, "min_trees"))
+	return terrains.is_empty() or terrains.has(_terrain_name(terrain))
+
+
+func _water_radius(kind: StringName) -> int:
+	return int(_value(kind, "water_radius"))
 
 
 ## How a kind reacts to the player at a distance in tiles: it runs off when the player is as near as

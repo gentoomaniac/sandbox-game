@@ -126,6 +126,15 @@ func test_deer_come_out_at_dawn_and_dusk_not_at_noon() -> void:
 	assert_eq(at_noon, 0)
 
 
+func test_storks_come_in_spring_and_summer_by_day_and_are_away_in_autumn_and_winter() -> void:
+	for kind in [WildlifeRules.STORK, WildlifeRules.ROOF_STORK]:
+		for day in [SPRING, SUMMER]:
+			assert_gt(_rules.target_count(kind, day, NOON, _clear()), 0, "%s by day" % kind)
+			assert_eq(_rules.target_count(kind, day, MIDNIGHT, _clear()), 0, "%s at night" % kind)
+		for day in [AUTUMN, WINTER]:
+			assert_eq(_rules.target_count(kind, day, NOON, _clear()), 0, "%s, day %d" % [kind, day])
+
+
 func test_the_count_never_passes_the_cap() -> void:
 	for kind in WildlifeRules.KINDS:
 		for day in [SPRING, SUMMER, AUTUMN, WINTER]:

@@ -92,7 +92,8 @@ extends RefCounted
 ##                            flies off; the sweat of a tired player, so add --energy=15). The
 ##                            particles last about a second: use a short --screenshot-delay.
 ##   --wildlife=<kind>[,<kind>]  put a few animals of those kinds near the player and leave it at
-##                            that (bird, rabbit, squirrel, deer, bee, butterfly, flock)
+##                            that (bird, rabbit, squirrel, deer, bee, butterfly, flock, stork,
+##                            roof_stork: on the roof of the nearest house, see --house)
 ##   --wildlife-calm          the animals take no notice of the player
 ##   --livestock=<species>[,<species>]  put a few farm animals of those species near the player
 ##                            (cow, sheep, chicken, rabbit)

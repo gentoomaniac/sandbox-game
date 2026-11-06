@@ -7,17 +7,56 @@ var _rules := WildlifeRules.default_rules()
 
 
 func test_deer_need_a_forest_and_squirrels_trees() -> void:
-	assert_false(_rules.is_habitat(WildlifeRules.DEER, Tile.Terrain.GRASS, 0))
-	assert_true(_rules.is_habitat(WildlifeRules.DEER, Tile.Terrain.GRASS, 10))
-	assert_false(_rules.is_habitat(WildlifeRules.SQUIRREL, Tile.Terrain.GRASS, 0))
-	assert_true(_rules.is_habitat(WildlifeRules.SQUIRREL, Tile.Terrain.GRASS, 3))
-	assert_false(_rules.is_habitat(WildlifeRules.DEER, Tile.Terrain.WATER, 10))
+	assert_false(_rules.is_habitat(WildlifeRules.DEER, Tile.Terrain.GRASS, 0, false))
+	assert_true(_rules.is_habitat(WildlifeRules.DEER, Tile.Terrain.GRASS, 10, false))
+	assert_false(_rules.is_habitat(WildlifeRules.SQUIRREL, Tile.Terrain.GRASS, 0, false))
+	assert_true(_rules.is_habitat(WildlifeRules.SQUIRREL, Tile.Terrain.GRASS, 3, false))
+	assert_false(_rules.is_habitat(WildlifeRules.DEER, Tile.Terrain.WATER, 10, false))
 
 
 func test_ground_animals_stay_off_water() -> void:
 	for kind in [WildlifeRules.BIRD, WildlifeRules.RABBIT, WildlifeRules.BUTTERFLY]:
-		assert_false(_rules.is_habitat(kind, Tile.Terrain.WATER, 0), "%s on water" % kind)
-		assert_true(_rules.is_habitat(kind, Tile.Terrain.GRASS, 0), "%s on grass" % kind)
+		assert_false(_rules.is_habitat(kind, Tile.Terrain.WATER, 0, false), "%s on water" % kind)
+		assert_true(_rules.is_habitat(kind, Tile.Terrain.GRASS, 0, false), "%s on grass" % kind)
+
+
+func test_storks_hunt_on_wet_ground_and_on_grass_only_by_water() -> void:
+	var stork := WildlifeRules.STORK
+	assert_true(_rules.is_habitat(stork, Tile.Terrain.WETLAND, 0, true))
+	assert_true(_rules.is_habitat(stork, Tile.Terrain.FLOODPLAIN, 0, true))
+	assert_true(_rules.is_habitat(stork, Tile.Terrain.GRASS, 0, true), "a wet meadow")
+	assert_false(_rules.is_habitat(stork, Tile.Terrain.GRASS, 0, false), "dry grass")
+	assert_false(_rules.is_habitat(stork, Tile.Terrain.SOIL, 0, true), "a field")
+	assert_false(_rules.is_habitat(stork, Tile.Terrain.WATER, 0, true))
+
+
+func test_water_is_looked_for_around_a_tile() -> void:
+	var world := World.new(SEED)
+	world.add_chunk(WorldGenerator.new(SEED).generate_chunk(Vector2i(0, 0)))
+	var origin := Vector2i(8, 8)
+	for y in range(3, 14):
+		for x in range(3, 14):
+			world.set_terrain(Vector2i(x, y), Tile.Terrain.GRASS)
+	assert_false(WildlifeRules.has_water_near(world, origin, 4))
+	world.set_terrain(Vector2i(13, 8), Tile.Terrain.WATER)
+	assert_false(WildlifeRules.has_water_near(world, origin, 4), "a pond beyond the radius")
+	assert_true(WildlifeRules.has_water_near(world, origin, 5))
+	world.set_terrain(Vector2i(6, 4), Tile.Terrain.WATER)
+	assert_true(WildlifeRules.has_water_near(world, origin, 4), "a ditch within it")
+	assert_false(WildlifeRules.has_water_near(world, origin, 0))
+
+
+func test_a_stork_is_at_home_on_a_wet_meadow_of_the_map_but_not_on_a_dry_one() -> void:
+	var world := World.new(SEED)
+	world.add_chunk(WorldGenerator.new(SEED).generate_chunk(Vector2i(0, 0)))
+	for y in range(0, 16):
+		for x in range(0, 16):
+			world.set_terrain(Vector2i(x, y), Tile.Terrain.GRASS)
+	assert_false(_rules.is_habitat_at(WildlifeRules.STORK, world, Vector2i(8, 8)))
+	world.set_terrain(Vector2i(10, 8), Tile.Terrain.WATER)
+	assert_true(_rules.is_habitat_at(WildlifeRules.STORK, world, Vector2i(8, 8)))
+	world.set_terrain(Vector2i(8, 8), Tile.Terrain.SOIL)
+	assert_false(_rules.is_habitat_at(WildlifeRules.STORK, world, Vector2i(8, 8)), "a field")
 
 
 func test_trees_are_counted_around_a_tile() -> void:
@@ -78,6 +117,12 @@ func test_deer_look_up_at_6_tiles_and_bound_away_at_4() -> void:
 	assert_eq(_rules.reaction(WildlifeRules.DEER, 7.0), WildlifeRules.Reaction.NONE)
 	assert_eq(_rules.reaction(WildlifeRules.DEER, 5.0), WildlifeRules.Reaction.ALERT)
 	assert_eq(_rules.reaction(WildlifeRules.DEER, 3.5), WildlifeRules.Reaction.FLEE)
+
+
+func test_a_hunting_stork_flies_off_at_5_tiles_but_one_on_a_roof_never() -> void:
+	assert_eq(_rules.reaction(WildlifeRules.STORK, 4.5), WildlifeRules.Reaction.FLEE)
+	assert_eq(_rules.reaction(WildlifeRules.STORK, 6.0), WildlifeRules.Reaction.NONE)
+	assert_eq(_rules.reaction(WildlifeRules.ROOF_STORK, 0.5), WildlifeRules.Reaction.NONE)
 
 
 func test_insects_ignore_the_player() -> void:

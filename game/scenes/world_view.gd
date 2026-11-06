@@ -222,6 +222,11 @@ func refresh_looks(day: int, snow_cover: float, frost: float) -> void:
 	_buildings.set_looks(_blend, _conditions)
 
 
+## The picture a building is shown with now, unlit (the roof is the same lit or not).
+func building_picture(building: Building) -> String:
+	return _buildings.picture_path(building)
+
+
 ## Brings every queued chunk up to date at once (for tests and for a screenshot).
 func finish_refresh() -> void:
 	while not _refresh_queue.is_empty() or not _cells_to_redraw.is_empty():

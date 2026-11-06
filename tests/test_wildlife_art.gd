@@ -12,9 +12,10 @@ func test_every_sheet_has_a_cell_per_frame_of_every_action() -> void:
 		assert_eq(texture.get_height(), size.y * sheet["actions"].size(), kind)
 
 
-func test_every_kind_but_the_flock_has_a_sheet() -> void:
+## The flock shows birds, and a stork on a roof is a stork.
+func test_every_kind_but_the_flock_and_the_roof_stork_has_a_sheet() -> void:
 	for kind in WildlifeRules.KINDS:
-		if kind != WildlifeRules.FLOCK:
+		if kind not in [WildlifeRules.FLOCK, WildlifeRules.ROOF_STORK]:
 			assert_true(WildlifeSprites.SHEETS.has(kind), kind)
 
 

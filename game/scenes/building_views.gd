@@ -40,22 +40,37 @@ func set_light_strength(strength: float) -> void:
 		_show_windows(building)
 
 
-func add(building: Building) -> void:
+## Where a building's picture is sorted with the objects and the player: the middle of its
+## bottom row of tiles, like an object standing on that row. The x is the picture's left edge.
+static func sort_position(building: Building) -> Vector2:
+	return Vector2(
+		building.origin.x * TerrainTileset.TILE_SIZE,
+		footprint_bottom(building) - TerrainTileset.TILE_SIZE / 2.0
+	)
+
+
+## The bottom edge of a building's footprint, in pixels: the bottom edge of its picture.
+static func footprint_bottom(building: Building) -> float:
+	var footprint: Vector2i = BuildingTypes.TYPES[building.type]["footprint"]
+	return (building.origin.y + footprint.y) * TerrainTileset.TILE_SIZE
+
+
+## The picture a building is shown with now: its look (see `_house_look`), lit or not.
+func picture_path(building: Building, is_lit := false) -> String:
 	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
+	var summer_path: String = building_type["sprite_lit"] if is_lit else building_type["sprite"]
+	return SeasonalArt.house_path(summer_path, _house_look(building))
+
+
+func add(building: Building) -> void:
 	var sprite := SeeThroughSprite.new()
 	_sprites[building] = sprite
-	sprite.texture = load(SeasonalArt.house_path(building_type["sprite"], _house_look(building)))
+	sprite.texture = load(picture_path(building))
 	sprite.centered = false
-	# The sprite is sorted by its position: the middle of its bottom footprint row, like an
-	# object standing on that row. Its bottom edge is the footprint's bottom edge.
-	var half_tile := TerrainTileset.TILE_SIZE / 2
-	var footprint_bottom: int = (
-		(building.origin.y + building_type["footprint"].y) * TerrainTileset.TILE_SIZE
-	)
-	sprite.position = Vector2(
-		building.origin.x * TerrainTileset.TILE_SIZE, footprint_bottom - half_tile
-	)
-	sprite.offset = Vector2(0, half_tile - sprite.texture.get_height())
+	sprite.position = sort_position(building)
+	# Its bottom edge is the footprint's bottom edge.
+	var bottom := footprint_bottom(building) - sprite.position.y
+	sprite.offset = Vector2(0, bottom - sprite.texture.get_height())
 	_entities.add_child(sprite)
 	_add_window_lights(building, sprite)
 
@@ -82,12 +97,9 @@ func _add_window_lights(building: Building, sprite: Sprite2D) -> void:
 
 
 func _show_windows(building: Building) -> void:
-	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
 	var is_lit := _light_strength >= WINDOW_LIT_STRENGTH
 	var sprite := _sprites[building]
-	var texture_path := SeasonalArt.house_path(
-		building_type["sprite_lit"] if is_lit else building_type["sprite"], _house_look(building)
-	)
+	var texture_path := picture_path(building, is_lit)
 	# The strength changes every frame while the tint does; the picture only at dusk and dawn.
 	if sprite.texture.resource_path != texture_path:
 		sprite.texture = load(texture_path)
