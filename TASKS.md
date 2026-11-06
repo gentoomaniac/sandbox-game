@@ -470,6 +470,18 @@ Defaults: steps on grass wear the tile (grass, then trodden, then a dirt path); 
 grows back over days; the wear is saved; worn tiles lose their flowers and grass tufts; paths
 are a look only (no change to speed or farming).
 
+## 78. Waking in the bed; reset and tp indoors
+
+- [ ] Done
+
+The user's word of 2026-11-06: passing out outside put the player behind the bed, stuck.
+- The bed is drawn in layers (frame and pillow under the player, blanket over), so the
+  player lies in it under the blanket; the bed no longer blocks walking, so nobody gets stuck.
+- Waking after passing out (and after sleeping) puts the player in the middle of the bed,
+  lying under the blanket, instead of standing beside it.
+- A `reset` console command puts the player at their bed.
+- `tp` also works indoors: it takes the player outside to the tile, if that tile is valid.
+
 ## Later (not part of the prototype)
 
 - A committed pixel guard (a GUT test hashing the tile cells, sprites and lights for a fixed seed

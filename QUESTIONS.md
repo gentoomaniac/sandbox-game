@@ -15,10 +15,8 @@ Answered questions move into SPEC.md and are removed here.
    item on the ground (task 49). Default: keep.
 4. **`skip` never makes the player pass out** at 01:00 (task 46), so `skip 1d` stays usable
    for testing crops. Default: keep.
-5. **After passing out the player wakes standing by the bed**, not lying in it (task 46).
-   Default: keep.
-6. **Shift+click from a chest fills the backpack before the hotbar** (task 50). Default: keep.
-7. **Art style changes** (2026-11-06, "implement them, quick ones first, then the longer
+5. **Shift+click from a chest fills the backpack before the hotbar** (task 50). Default: keep.
+6. **Art style changes** (2026-11-06, "implement them, quick ones first, then the longer
    ones one after the other"): all of docs/art-style.md's list became tasks 52-62. Where
    the guide left a choice, its suggestion was taken:
    - **tomatoes are replaced by flax** (a fibre crop; old saves turn tomatoes into flax);
@@ -35,12 +33,12 @@ Answered questions move into SPEC.md and are removed here.
      either body item and comes off; **old saves get clogs** on their bare feet; and **the
      clothes got lighter** (0.3 to 0.6 kg each), so a new game still carries under the free
      20 kg.
-8. **The thatch redraw** (task 55): the roofs are now steep hipped planes with the reed laid in
+7. **The thatch redraw** (task 55): the roofs are now steep hipped planes with the reed laid in
    ragged courses instead of the soft streaky dome; the Kate and longhouse got crossed ridge
    sticks; snow covers the roof evenly. A first pass looked like shingles and was redone.
    Compare: docs/screenshots/buildings.png. Each piece is its own commit (courses and planes,
    ridge sticks, door swells, snow), so any one can be reverted. Default: keep.
-9. **Hedges, walls, fences, dykes and ditches** (task 54): Knicks, stone walls, wattle
+8. **Hedges, walls, fences, dykes and ditches** (task 54): Knicks, stone walls, wattle
    fences and ditches block walking, with one gap per stretch as gate or crossing; dykes can
    be walked on. The axe cuts a Knick (1 log, 2 fibre) or a fence (2 fibre), the pickaxe takes
    a wall apart (3 stone); dykes and ditches can't be removed yet. Nothing can be built or
@@ -48,22 +46,22 @@ Answered questions move into SPEC.md and are removed here.
    tiles around buildings and placed things and 2 around the tilled fields clear, so your
    farm is untouched, but natural trees and rocks that stood on the new lines elsewhere are
    gone. New land takes about 6.5 ms per chunk to generate (was 3.7). Default: keep.
-10. **Tree species** (task 56): the oak stays common beside beech, birch and alder. Wet ground
+9. **Tree species** (task 56): the oak stays common beside beech, birch and alder. Wet ground
     (the marsh, and the Geest within 5 tiles of wetland) grows mostly alder; the dry Geest
     mostly beech, then oak and birch; pine and spruce only in clumps on the Geest. Woods are now
     about 28 % beech, 24 % oak, 19 % birch, 16 % alder, 7 % pine and spruce, 4 % willow. Beech is
     the toughest (5 hits, 3 logs), birch the weakest (3 hits, 2 logs). Seeds: beechnut, birch
     catkin, alder cone and willow cutting, each a 25 % drop. Trees in your world stay where they
     are, but the ones you haven't touched may turn into another species. Default: keep.
-11. **Hearth and furnishing** (task 57): an open hearth under a smoke hood (the jamb stove,
+10. **Hearth and furnishing** (task 57): an open hearth under a smoke hood (the jamb stove,
     Bilegger, is left for a best room later); herringbone red brick floors in the living rooms,
     beaten clay in byre, barn and shack; Delft tiles only under the hood; a plate rack in the
     Kate and longhouse; a wall bench only in the Kate (the longhouse has no free wall for it);
     the Kate's bed is a curtained box bed, the longhouse's an Alkoven cupboard. Old saves get
     the new floors and wall pieces; your own furniture stays put. Default: keep.
-12. **Code review** (docs/code-review-2026-11-06.md): its findings became tasks 63-71 and run
+11. **Code review** (docs/code-review-2026-11-06.md): its findings became tasks 63-71 and run
     one at a time beside the art tasks. Default: go ahead.
-13. **The shack** (task 58): tarred near-black boards with battens (not silver-grey ones), an
+12. **The shack** (task 58): tarred near-black boards with battens (not silver-grey ones), an
     ox-blood red door and shutter, a white window, on a low fieldstone base; a turf roof with
     a few flowers. For the turf to brown in autumn and winter, **every house now has a picture
     per season** (spring, summer, autumn, winter, snow) chosen like the ground's; only roofs
