@@ -415,7 +415,9 @@ Decided 2026-11-05. A text console for testing and cheats.
 - Commands: `help`; `tp <x> <y>` (teleport to a world tile; from inside a house the player steps out there); `give <item>
   [count]` (into the inventory); `god` (toggle invincibility:
   health doesn't drop); `nodrain` (toggle: actions cost no energy); `noweight` (toggle:
-  carried weight doesn't raise costs). Later commands: `spawn` (villagers: `npc`; farm
+  carried weight doesn't raise costs); `noclip` (toggle: nothing blocks the player, who stays
+  on the map's tiles; turned off where they don't fit, they are put on the nearest free
+  ground). Later commands: `spawn` (villagers: `npc`; farm
   animals: `cow`, `sheep`, `chicken`, `rabbit`, `dog`, `cat`, `horse`; wild ones: `bird`,
   `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork`,
   `geese`, `flying_geese`, `mouse`, `frog`), `weather`, `snow`, `crop`

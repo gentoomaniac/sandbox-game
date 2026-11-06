@@ -175,7 +175,7 @@ func walk_speed_factor() -> float:
 ## onto wears a little towards a desire path.
 func walk(direction: Vector2, delta: float, speed_factor := 1.0) -> void:
 	var tile_before := player.tile()
-	player.move(current_map, direction, delta, speed_factor)
+	player.move(current_map, direction, delta, speed_factor, cheats.is_noclip)
 	if not is_inside() and player.tile() != tile_before:
 		world.wear_tile(player.tile())
 

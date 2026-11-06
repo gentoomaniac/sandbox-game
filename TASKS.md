@@ -926,12 +926,19 @@ character, settings) for the same and add a test that clicks at the edges of a b
 
 ## 90. Console: noclip
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06: a console command `noclip` that turns off collision for the
 player. A toggle like `nocost`, shown on the cheat HUD: the player walks through trees,
 rocks, water, buildings and furniture; indoors they stay inside the room's bounds; off
 again, a player standing on a blocked tile can walk off it (the step-off rule of task 78).
+
+Done: `CheatFlags.is_noclip` (HUD "No clip"), `PlayerState.move(..., is_noclip)` checks only
+that the body's tiles exist (`is_on_map`): the room's tiles indoors, loaded chunks outdoors;
+a room's wall tiles are on the map, so noclip reaches the wall but not beyond. The step-off
+rule of task 78 refuses steps into water, so a player left in a lake would be stuck: turning
+noclip off where the player doesn't fit puts them on the nearest tile they fit on
+(`PlayerState.step_onto_free_ground`, within 12 tiles). Tests: tests/test_noclip.gd.
 
 ## Later (not part of the prototype)
 

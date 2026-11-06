@@ -76,8 +76,12 @@ func facing_tile() -> Vector2i:
 
 
 ## Walks along `direction` for `delta` seconds. Each axis moves on its own, so the player
-## slides along a wall instead of stopping against it. `speed_factor` scales SPEED.
-func move(map: GameMap, direction: Vector2, delta: float, speed_factor := 1.0) -> void:
+## slides along a wall instead of stopping against it. `speed_factor` scales SPEED. With
+## `is_noclip` (the console's noclip) nothing blocks them, but they stay on the map's tiles: in
+## the room indoors, on loaded ground outdoors.
+func move(
+	map: GameMap, direction: Vector2, delta: float, speed_factor := 1.0, is_noclip := false
+) -> void:
 	if direction != Vector2.ZERO:
 		# The axis the player moves along most; a tie faces vertically.
 		if absf(direction.x) > absf(direction.y):
@@ -91,7 +95,10 @@ func move(map: GameMap, direction: Vector2, delta: float, speed_factor := 1.0) -
 		var step := velocity * minf(delta, MAX_STEP_SECONDS)
 		delta -= MAX_STEP_SECONDS
 		for axis in [Vector2(step.x, 0.0), Vector2(0.0, step.y)]:
-			if can_stand_at(map, position + axis) or _can_step_off_blocked_tile(map, axis):
+			if is_noclip:
+				if is_on_map(map, position + axis):
+					position += axis
+			elif can_stand_at(map, position + axis) or _can_step_off_blocked_tile(map, axis):
 				position += axis
 
 
@@ -178,6 +185,39 @@ static func body_tiles(feet: Vector2) -> Rect2i:
 	# Ceiling minus one: a body that ends exactly on a tile edge does not touch the next tile.
 	var bottom_right := Vector2i(int(ceilf(feet.x + BODY_HALF_WIDTH)) - 1, int(ceilf(feet.y)) - 1)
 	return Rect2i(top_left, bottom_right - top_left + Vector2i.ONE)
+
+
+## Puts a player who stands where they don't fit (noclip just turned off in a lake or a wall)
+## on the middle of the nearest tile where they do, nearest ring first, within `reach` tiles.
+## Returns whether they now fit.
+func step_onto_free_ground(map: GameMap, reach := 12) -> bool:
+	if can_stand_at(map, position):
+		return true
+	var here := tile()
+	for ring in range(1, reach + 1):
+		var nearest := Vector2.INF
+		for y in range(-ring, ring + 1):
+			for x in range(-ring, ring + 1):
+				if maxi(absi(x), absi(y)) != ring:
+					continue
+				var centre := Vector2(here + Vector2i(x, y)) + Vector2(0.5, 0.5)
+				var is_nearer := centre.distance_to(position) < nearest.distance_to(position)
+				if is_nearer and can_stand_at(map, centre):
+					nearest = centre
+		if nearest != Vector2.INF:
+			position = nearest
+			return true
+	return false
+
+
+## Whether every tile a player's body touches with their feet at `feet` is on the map at all.
+static func is_on_map(map: GameMap, feet: Vector2) -> bool:
+	var tiles := body_tiles(feet)
+	for y in range(tiles.position.y, tiles.end.y):
+		for x in range(tiles.position.x, tiles.end.x):
+			if map.tile_at(Vector2i(x, y)) == null:
+				return false
+	return true
 
 
 ## Whether a player with their feet at `feet` fits: every tile their body touches is walkable.

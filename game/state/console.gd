@@ -12,6 +12,7 @@ const COMMANDS := {
 	"nodrain": ["nodrain", "Toggle: actions cost no energy."],
 	"noweight": ["noweight", "Toggle: carried weight doesn't raise costs."],
 	"nocost": ["nocost", "Toggle: buildings and crafting need no materials."],
+	"noclip": ["noclip", "Toggle: walk through anything (indoors within the room)."],
 	"reset": ["reset", "Put you in your bed, the one you wake in (inside or out)."],
 	"spawn":
 	[
@@ -116,6 +117,15 @@ func run(line: String) -> Array[String]:
 		"nocost":
 			cheats.is_cost_off = not cheats.is_cost_off
 			output = [_toggle_message("No cost", cheats.is_cost_off)]
+		"noclip":
+			cheats.is_noclip = not cheats.is_noclip
+			output = [_toggle_message("No clip", cheats.is_noclip)]
+			# Off inside a lake or a wall: onto the nearest ground they fit on.
+			if (
+				not cheats.is_noclip
+				and not PlayerState.can_stand_at(_state.current_map, _state.player.position)
+			):
+				_state.player.step_onto_free_ground(_state.current_map)
 		"reset":
 			_state.go_to_home_bed()
 			output = ["Back in bed"]
