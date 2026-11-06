@@ -946,6 +946,39 @@ tiles, never on a building's tiles (its door would take them inside; one lying i
 in it): `GameState.put_player_on_free_ground`; the console says so when nothing is free. A
 noclip walk wears no desire path. Tests: tests/test_noclip.gd.
 
+## 91. NPC chat history: a set length, the rest compacted, a clear for debugging
+
+- [ ] Done
+
+The user's word of 2026-11-06, after finding that villagers lost the thread (fixed for now
+by telling the last 24 lines, commit 4e7826c):
+
+- **A setting for the chat history length** (Settings → Language model, e.g. "Lines a
+  villager keeps", default 24): each villager keeps that many of the latest chat lines in
+  the save, and all of them are sent to the model as earlier turns.
+- **The older rest is compacted:** lines that fall out of the kept history are summed up
+  into the villager's memory (by the model, or plainly without one), saved, and sent too.
+  This replaces making a memory every time a chat closes: a memory is made when lines drop
+  out, so a reopened chat goes on where it left off. The memory cap and merging of task 86
+  stay. Lowering the setting compacts the lines it drops.
+- **Clearing, for debugging:** typing `/clear` in the chat (IRC style) forgets the chat
+  history and the memories of that villager (with a line saying so); the README and the
+  input's placeholder mention it.
+
+Save: the kept lines and memories are already saved; a save version step only if the format
+changes. Tests with FakeChat; the README's "What the model is told" updated.
+
+## 92. A font with umlauts and Scandinavian letters
+
+- [ ] Done
+
+The user's word of 2026-11-06, with screenshots of the chat: å, ä, ö, ü, æ, ø (and the like)
+show as boxes with hex codes, as the villagers answer in German and Danish too. Give the
+game's pixel font the Latin-1 Supplement at least (À-ÿ, with ß), and the Latin Extended-A
+letters the region's languages use, drawn in the font's style (generated, like the rest of
+the art, or a pixel font with a licence that allows it); check the chat, the HUD, the
+console and the menus, and add a test that every character of those ranges has a glyph.
+
 ## Later (not part of the prototype)
 
 - `WildlifeSprites.frame_index` and `max_frames` allocate on every call (`keys()`,
