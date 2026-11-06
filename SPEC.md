@@ -827,6 +827,23 @@ Decided 2026-11-05.
     bench; a stall partition divides it from the animal end with stalls, hay and sacks), barn
     13×8 (four hay stalls, crates, barrels, sacks). Sleep fills: mat 80, bed and box bed 100.
     The barn has no bed, so it can't be slept in.
+  - **Furnished in the period** (task 57, 2026-11-06, from docs/art-style.md): the rooms look
+    like 18th-century North Frisian and Danish farmhouses. Floors: red brick in a herringbone
+    in the living rooms (the Kate, the longhouse's living end), beaten clay in the work rooms
+    (the byre, the barn, the shack); clay is a terrain of its own (`CLAY_FLOOR`) and sounds
+    like soil underfoot, while clogs clack on brick as on wood. The hearth is an open hearth
+    of buff brick under a lime-washed smoke hood on an oak mantel, with an iron pot, Dutch
+    tiles (blue-and-white Delft) on the wall under the hood and soot behind the fire; the
+    hood stands on the back wall above the hearth's footprint, and its fire burns as before
+    (same shader, light and sound). Plate racks with Delft and pewter plates hang on the back
+    wall of the Kate and the longhouse's living end (wall pieces, like the window); the Kate
+    has a spindle-backed bench against the back wall. The Kate's bed is boxed in like a Durk
+    under a canopy with red curtains, the longhouse's box bed a panelled cupboard (an
+    Alkoven) open onto the bed, reaching up the wall to just under the window; both under a
+    checked indigo blanket. All furniture blocks walking as before; footprints, beds, doors
+    and every free floor tile stay reachable (tested). A save from before (version 11) takes
+    today's floors and the wall pieces its rooms lack; the furniture on the floor stays as
+    the player left it. The jamb stove (*Bilegger*) of the best room is left for later.
   - The look (from the user's reference photos, 2026-11-05): the roof is the hero, a huge,
     thick reed thatch, weathered grey-brown with moss, hipped at both ends with heavy rounded
     eaves, and eyebrow dormers (the thatch swells in a wave over a half-round window). The

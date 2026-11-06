@@ -125,8 +125,11 @@ something is missing, and a click or Space builds it and takes the materials. Th
 shows where it fits, and the game tells you why a spot doesn't work, for example when it
 is unsafe wetland. Hold something else (or press Escape or right click) to stop building.
 You can walk inside every building, and each has its own room: a bare shack with a straw
-mat, a cottage room in the Kate, the longhouse with a living end and an animal end, and
-the barn with stalls and hay. The last bed you slept in becomes your home. A new game
+mat on a clay floor, a cottage room in the Kate, the longhouse with a living end and an
+animal end, and the barn with stalls and hay. The rooms are furnished like 18th-century
+farmhouses of the coast: brick floors in the living rooms and beaten clay in the work rooms,
+an open hearth under a smoke hood with Dutch tiles behind the fire, plate racks with Delft
+and pewter, a wall bench and box beds with curtains. The last bed you slept in becomes your home. A new game
 starts at the camp with your tools and the hammer, so the materials for the first house
 have to be gathered first. The buildings, their sizes, costs and insides are in
 [data/buildings.cfg](data/buildings.cfg).
@@ -136,6 +139,8 @@ with white lime walls and teal shutters, the brick longhouse with its arched bar
 half-timbered barn, and the plank shack.
 
 ![The Kate, the longhouse, the barn and the shack in summer](docs/screenshots/buildings.png)
+
+![Inside the Kate and the longhouse at night, by the hearth](docs/screenshots/interiors.png)
 
 ![Build mode: the ghost of a Kate and what it costs](docs/screenshots/build.png)
 

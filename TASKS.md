@@ -136,11 +136,26 @@ as its seed, which also fixes a crash on picking a willow sapling.
 
 ## 57. Hearth and furnishing of the period
 
-- [ ] Done
+- [x] Done
 
 docs/art-style.md bigger item 5: an open hearth under a smoke hood (or a jamb stove),
 Dutch tiles behind it, clay or brick floors, plate rack, wall benches; the animated fire of
 task 48 kept.
+
+Done: one commit per piece. Floors: red brick in a herringbone in the living rooms (Kate,
+longhouse living end), beaten clay in the byre, the barn and the shack, as a new terrain
+`CLAY_FLOOR` (footsteps on it are soil; the tileset got two floor tiles, every later tile id
+moved up two). The hearth is an open hearth under a smoke hood, its picture 32x64 with the
+hood on the back wall (fire box, flame top and light moved with it; same shader, light and
+sound), the hearth of buff brick with an iron pot; Dutch tiles under the hood, soot behind
+the fire. A plate rack (a wall piece like the window) in the Kate and the longhouse, a
+spindle-backed `wall_bench` in the Kate between bed and hearth. The Kate's bed a Durk under
+a canopy with curtains, the longhouse's box bed an Alkoven cupboard that stops under the
+window's sill. Footprints, beds and gameplay unchanged; every free floor tile stays
+reachable. Save version 12: rooms saved before take today's floors and the wall pieces they
+lack, where the wall is free (checked on a copy of the user's save: Kate, shack and
+longhouse load and look right). No new colours. The open hearth was chosen over the jamb
+stove (the guide's first suggestion); the Bilegger is left for a best room.
 
 ## 58. The shack in tarred boards
 

@@ -46,8 +46,8 @@ and a free tile stands beside each bed.
 Furniture tiles are generated, so a new one starts in the art code
 ([tools/README.md](../tools/README.md)):
 
-1. Draw it in `tools/art/generate.py` and add it to `FURNITURE` with its footprint. Add it at
-   the **end**: the order is the tile ids of the tileset, and existing maps refer to them.
+1. Draw it in `tools/art/interior.py` and add it to `furniture()` with its footprint. Add it
+   at the **end**: the order is the tile ids of the tileset, and existing maps refer to them.
 2. Add its type to `WorldObjectTypes` with `interior_sprite` (the picture it made in
    `assets/interior/`) and its footprint.
 3. Run `make assets`, then add a `<tile>` with the property `object_type` to `interior.tsx`

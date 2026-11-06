@@ -373,9 +373,15 @@ copper watering can. Kept here as the record of why.
    willows and the Knicks' hazel and hawthorn are task 54's. No new colours. Still to do:
    overstander oaks in the Knicks, beech woods for the Baltic hill country once it exists,
    heath with juniper.
-5. **Interior hearth and furnishing** (medium). The hearth looks like a modern stone
-   fireplace. An open hearth under a smoke hood, or a jamb stove; Dutch tiles behind it;
-   clay or brick floor in the Kate; plate rack, benches along the wall.
+5. ~~**Interior hearth and furnishing**~~ done (task 57). The hearth looked like a modern
+   stone fireplace. Now: an open hearth of buff brick under a lime-washed smoke hood on an
+   oak mantel, with an iron pot, Dutch tiles under the hood and soot behind the fire; red
+   brick in a herringbone in the living rooms, beaten clay in the byre, the barn and the
+   shack; plate racks with Delft and pewter plates, a spindle-backed wall bench in the Kate;
+   the Kate's bed boxed in like a Durk and the longhouse's box bed an Alkoven cupboard, both
+   with red curtains and a checked indigo blanket. No new colours. Still to do: the jamb
+   stove (*Bilegger*) for a best room, sanded boards there, lime-washed inner walls, and a
+   long table.
 6. **Shack** (small–medium). Reads as a frontier cabin. Tarred black or silver boards with
    a reed or turf roof.
 7. **A hall house with the gable front** (large). Uhlenloch, crossed horse heads, the big
