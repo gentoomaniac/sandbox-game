@@ -6,11 +6,16 @@ extends CanvasLayer
 ## Click an item to pick it up, then click a slot to put it down: a different item swaps places
 ## and is picked up in turn (it sticks to the mouse), the same item stacks, and an equipment
 ## slot only takes an item that fits (those light up while an item is picked up). Clicking the
-## picked slot again, or outside the slots, drops the pick. Shift+click sends a whole stack from
-## the backpack to the hotbar or back (onto the same item first), if there is room. Right click
-## wears an inventory item, or takes a worn one off into the first free slot.
+## picked slot again, or on the screen's panel outside the slots, lets go of the pick; a left click
+## outside the panel puts a picked backpack or hotbar stack on the ground. Shift+click sends a
+## whole stack from the backpack to the hotbar or back (onto the same item first), if there is
+## room. Right click wears an inventory item, or takes a worn one off into the first free slot.
 ## A second tab beside it shows the skills (see SkillsPanel); Tab opens the screen on the
 ## character, K on the skills.
+
+## The player let go of the picked backpack or hotbar stack outside the screen (see
+## GameState `drop_from_inventory`).
+signal drop_requested(slot: int)
 
 enum Tab { CHARACTER, SKILLS }
 
@@ -309,6 +314,14 @@ func _on_equipment_slot_secondary_pressed(slot: StringName) -> void:
 
 func _on_backdrop_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
+		var is_outside := not _panel.get_rect().has_point(event.position)
+		var is_drop: bool = (
+			event.button_index == MOUSE_BUTTON_LEFT
+			and is_outside
+			and not _hotbar.covers(event.position)
+		)
+		if _picked_inventory_slot != -1 and is_drop:
+			drop_requested.emit(_picked_inventory_slot)
 		_drop_pick()
 		_note_label.text = ""
 		_refresh()

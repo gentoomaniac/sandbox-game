@@ -144,3 +144,28 @@ func test_shift_click_sends_a_stack_between_the_backpack_and_the_hotbar_and_drop
 	_click_slot(5)
 	assert_eq(_player.inventory.slots[Inventory.HOTBAR_SIZE], {"item": ItemTypes.LOGS, "count": 7})
 	assert_true(_player.inventory.slots[5].is_empty())
+
+
+func test_a_stack_let_go_outside_the_panel_is_dropped_on_the_ground() -> void:
+	_player.inventory.slots[Inventory.HOTBAR_SIZE] = {"item": ItemTypes.LOGS, "count": 7}
+	_player.inventory.changed.emit()
+	watch_signals(_screen)
+	_click_slot(Inventory.HOTBAR_SIZE)
+	_click(Vector2(4, 4))
+	assert_signal_emitted_with_parameters(_screen, "drop_requested", [Inventory.HOTBAR_SIZE])
+	assert_eq(_screen._picked_inventory_slot, -1)
+
+
+func test_a_click_on_the_panel_between_slots_or_between_hotbar_slots_only_lets_go() -> void:
+	_player.inventory.slots[Inventory.HOTBAR_SIZE] = {"item": ItemTypes.LOGS, "count": 7}
+	_player.inventory.changed.emit()
+	watch_signals(_screen)
+	_click_slot(Inventory.HOTBAR_SIZE)
+	_click(_screen._panel.get_rect().position + Vector2(2, 2))
+	assert_eq(_screen._picked_inventory_slot, -1)
+	_click_slot(Inventory.HOTBAR_SIZE)
+	var gap := _hotbar.slot_view(0).get_global_rect().end + Vector2(1, -5)
+	assert_true(_hotbar.covers(gap))
+	_click(gap)
+	assert_eq(_screen._picked_inventory_slot, -1)
+	assert_signal_not_emitted(_screen, "drop_requested")

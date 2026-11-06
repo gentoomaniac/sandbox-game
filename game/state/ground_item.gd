@@ -11,6 +11,9 @@ var position: Vector2
 ## GroundItemView; a felled tree's seed waits for the tree to land). Not saved: a loaded pile
 ## lies still.
 var settle_seconds := 0.0
+## Set on what the player dropped from the inventory: it is not pulled back until the player has
+## walked out of its reach, then it lies like any pile. Not saved.
+var is_dropped_by_player := false
 
 
 func _init(item_id: StringName, item_count: int, world_position: Vector2) -> void:

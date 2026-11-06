@@ -540,9 +540,9 @@ func regrow_paths() -> void:
 
 ## Puts items (item id to count) on the ground around a tile (see `GroundItems.drop`). The one
 ## entry point for whatever gives items to the world; it is here, and not on `ground_items`,
-## because where a pile can lie is up to the world's terrain and buildings.
-func drop_items(source: Vector2i, drops: Dictionary) -> void:
-	ground_items.drop(source, drops, self)
+## because where a pile can lie is up to the world's terrain and buildings. Returns the piles.
+func drop_items(source: Vector2i, drops: Dictionary) -> Array[GroundItem]:
+	return ground_items.drop(source, drops, self)
 
 
 # --- Saving ---

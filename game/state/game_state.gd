@@ -353,8 +353,10 @@ func collect_ground_items(delta: float) -> void:
 		return
 	for ground_item in world.ground_items.all():
 		ground_item.settle_seconds = maxf(ground_item.settle_seconds - delta, 0.0)
+		if ground_item.position.distance_to(player.position) > PULL_RADIUS:
+			ground_item.is_dropped_by_player = false
 	for ground_item in world.ground_items.near(player.position, PULL_RADIUS):
-		if ground_item.settle_seconds > 0.0:
+		if ground_item.settle_seconds > 0.0 or ground_item.is_dropped_by_player:
 			continue
 		if not player.inventory.can_add({ground_item.item: 1}):
 			continue
@@ -365,6 +367,20 @@ func collect_ground_items(delta: float) -> void:
 		ground_item.count = player.inventory.add(ground_item.item, ground_item.count)
 		if ground_item.count == 0:
 			world.ground_items.remove(ground_item)
+
+
+## Puts the stack in inventory slot `slot` on the ground in front of the player, as drops of
+## the world lie (see `World.drop_items`); the player picks it up again by walking away and back.
+## Does nothing inside a building (nothing lies on the ground there). Returns whether it did.
+func drop_from_inventory(slot: int) -> bool:
+	var stack := player.inventory.slots[slot]
+	if is_inside() or stack.is_empty():
+		return false
+	player.inventory.slots[slot] = {}
+	player.inventory.changed.emit()
+	for pile in world.drop_items(player.facing_tile(), {stack["item"]: stack["count"]}):
+		pile.is_dropped_by_player = true
+	return true
 
 
 ## Maps are saved as references, never as copies: `{"kind": "world"}`, or

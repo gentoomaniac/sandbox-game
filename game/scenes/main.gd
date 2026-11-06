@@ -197,6 +197,8 @@ func _connect_state_and_views() -> void:
 	_build_mode.builder = _builder
 	_build_mode.camera = _camera
 	_build_mode.message_changed.connect(_show_build_message)
+	_character_screen.drop_requested.connect(_state.drop_from_inventory)
+	_storage_screen.drop_requested.connect(_state.drop_from_inventory)
 	_camera.rig.follow(_camera_target)
 	_player_view.show_player(_state.player, _options)
 	_tiredness_view.watch(_state.player, _state.clock, _state.energy_rules)
@@ -317,6 +319,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_state.player.inventory.select(hotbar_slot)
 	elif event.is_action_pressed("select_hammer"):
 		_builder.select_hammer()
+	elif event.is_action_pressed("drop_item") and can_use:
+		_state.drop_from_inventory(_state.player.inventory.selected_slot)
 	# E also picks the next building (outdoors), so the hammer in hand doesn't open a chest or put
 	# the player to bed.
 	elif event.is_action_pressed("interact") and not _build_mode.is_active():

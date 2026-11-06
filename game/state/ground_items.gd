@@ -62,8 +62,8 @@ func remove(ground_item: GroundItem) -> void:
 ## Puts items (item id to count) on the ground around a tile: each kind is split into piles of
 ## about the same size over the tiles of `world` near `source` that can be walked on, in an
 ## order that depends on the tile, the kind and the world's seed only. Call it after the source
-## was removed or replaced, so its own tile counts if it is free now.
-func drop(source: Vector2i, drops: Dictionary, world: World) -> void:
+## was removed or replaced, so its own tile counts if it is free now. Returns the piles.
+func drop(source: Vector2i, drops: Dictionary, world: World) -> Array[GroundItem]:
 	var kind_index := 0
 	var dropped_piles: Array[GroundItem] = []
 	for item: StringName in drops:
@@ -82,6 +82,7 @@ func drop(source: Vector2i, drops: Dictionary, world: World) -> void:
 			dropped_piles.append(ground_item)
 		kind_index += 1
 	dropped.emit(source, dropped_piles)
+	return dropped_piles
 
 
 func to_array() -> Array[Dictionary]:

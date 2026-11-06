@@ -21,14 +21,14 @@ const THEME := preload("res://game/scenes/ui_theme.tres")
 
 var _inventory: Inventory
 var _slot_views: Array[SlotView] = []
+var _row := HBoxContainer.new()
 
 
 func _init() -> void:
 	layer = IDLE_LAYER
-	var row := HBoxContainer.new()
-	row.theme = THEME
-	row.add_theme_constant_override("separation", SLOT_GAP)
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_row.theme = THEME
+	_row.add_theme_constant_override("separation", SLOT_GAP)
+	_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for slot in Inventory.HOTBAR_SIZE:
 		var view := SlotView.new()
 		# Passes clicks on to the game, but is still hovered for its tooltip.
@@ -37,20 +37,25 @@ func _init() -> void:
 		view.tooltip_id = "hotbar_%d" % slot
 		view.pressed.connect(slot_pressed.emit.bind(slot))
 		view.secondary_pressed.connect(slot_secondary_pressed.emit.bind(slot))
-		row.add_child(view)
+		_row.add_child(view)
 		_slot_views.append(view)
-	add_child(row)
+	add_child(_row)
 	# Offsets from the bottom centre are set by hand, so the row is centred exactly.
-	row.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	row.offset_left = -WIDTH / 2.0
-	row.offset_right = WIDTH / 2.0
-	row.offset_top = -BOTTOM_MARGIN - SlotView.SIZE
-	row.offset_bottom = -BOTTOM_MARGIN
+	_row.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_row.offset_left = -WIDTH / 2.0
+	_row.offset_right = WIDTH / 2.0
+	_row.offset_top = -BOTTOM_MARGIN - SlotView.SIZE
+	_row.offset_bottom = -BOTTOM_MARGIN
 
 
 ## The view of a hotbar slot, for a screen to listen to and mark.
 func slot_view(slot: int) -> SlotView:
 	return _slot_views[slot]
+
+
+## Whether a point of the window (in canvas coordinates) is on the hotbar, between slots too.
+func covers(point: Vector2) -> bool:
+	return _row.get_global_rect().has_point(point)
 
 
 ## Whether the slots take clicks (a screen that moves items is open) or leave them to the game.
