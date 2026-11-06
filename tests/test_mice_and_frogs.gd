@@ -39,7 +39,10 @@ func test_a_mouse_dashes_away_from_the_player_and_is_gone() -> void:
 	assert_eq(mouse._state, Mouse.FLEE)
 	_run(mouse, Mouse.FLEE_SECONDS)
 	assert_true(mouse.is_done, "gone into cover")
-	assert_lt(mouse.position.x, start.x, "away from the player")
+	# Its way may be blocked at once (it is gone sooner then), so the dash is checked by its
+	# direction, and by where it got to only if it moved.
+	assert_lt(mouse._direction.x, 0.0, "away from the player")
+	assert_true(mouse.position.x <= start.x, "never towards the player")
 
 
 func test_a_frog_sits_a_while_and_hops_about() -> void:
