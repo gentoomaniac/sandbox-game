@@ -274,6 +274,11 @@ Start the game with `make run`: it imports new art first. Starting Godot directl
 pulling new art makes the game stop with a list of pictures that aren't imported yet; run
 `godot --headless --import` once then.
 
+On Linux the game uses the X11 display driver (XWayland under a Wayland desktop), set in
+project.godot: Godot 4.7.2's Wayland driver sometimes never finishes quitting, leaving the
+window open. The game has saved by then. To try Wayland anyway:
+`godot --path . --display-driver wayland`.
+
 `make setup` never installs system packages. If something is missing, it prints what to
 install, with Gentoo package names where there are some. If your Godot binary has a
 different name, pass its path: `make GODOT=/path/to/godot run`.

@@ -127,6 +127,9 @@ KEEP_SAVE ?=
 # focus (--background makes it unfocusable). On Wayland the native driver is used as well, since
 # Wayland compositors are stricter than X11 about new windows grabbing the focus. A Godot build
 # without the Wayland driver needs QUIET_WINDOW= on the command line.
+# The game itself runs on X11 (XWayland under Wayland; project.godot sets the driver), because
+# Godot 4.7.2's Wayland driver sometimes never finishes quitting. Screenshots keep Wayland for
+# the focus and live with that hang through SCREENSHOT_TIMEOUT below.
 QUIET_WINDOW := $(if $(WAYLAND_DISPLAY),--display-driver wayland)
 
 # Godot's Wayland driver sometimes hangs for good while it shuts down, after the PNG is written
