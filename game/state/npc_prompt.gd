@@ -7,8 +7,10 @@ extends RefCounted
 ## The shape is the user's working example of TASKS.md 86: a system line, one example exchange,
 ## the earlier lines of the chat as user and assistant turns, and last what the player says:
 ##   Villager: Antje Boysen, a farmer's wife.
-##   Antje is 38 years old, a pale woman with ... (who she is, the last turn only)
+##   Antje is 38 years old, a pale woman with ... (who she is and, if any, what she remembers:
+##   the last turn only)
 ##   It is the 12th day of Spring, year 1 (mid spring), 08:15 in the morning. The weather: ...
+##   The neighbour is a newcomer to these parts; Antje does not know their name.
 ##   Her neighbour says: "Good morning! Is the dyke holding after the storm?"
 ##   Antje's reply:
 
@@ -55,6 +57,7 @@ static func reply_messages(
 		words["memories"] = " ".join(npc.memories)
 		last.append(_said(rules, "memory", words))
 	last.append(_said(rules, "moment", words))
+	last.append(_said(rules, "neighbour", words))
 	last.append_array(_neighbour_says(message, words, rules))
 	messages.append(_message("user", "\n".join(last)))
 	return messages

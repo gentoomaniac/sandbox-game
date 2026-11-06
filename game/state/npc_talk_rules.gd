@@ -17,6 +17,7 @@ const KEYS := {
 		"about",
 		"memory",
 		"moment",
+		"neighbour",
 		"says",
 		"reply"
 	],
