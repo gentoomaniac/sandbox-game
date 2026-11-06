@@ -54,7 +54,7 @@ Answered questions move into SPEC.md and are removed here.
     about 28 % beech, 24 % oak, 19 % birch, 16 % alder, 7 % pine and spruce, 4 % willow. Beech is
     the toughest (5 hits, 3 logs), birch the weakest (3 hits, 2 logs). Seeds: beechnut, birch
     catkin, alder cone and willow cutting, each a 25 % drop. Trees in your world stay where they
-    are; only land not yet generated gets the new mix. Default: keep.
+    are, but the ones you haven't touched may turn into another species. Default: keep.
 11. **Code review** (docs/code-review-2026-11-06.md): its findings became tasks 63-71 and run
     one at a time beside the art tasks. Default: go ahead.
 
