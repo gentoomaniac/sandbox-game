@@ -48,6 +48,8 @@ var heading := Vector2.ZERO
 ## The tiles their body last stood on, all walkable: a step that stays on them needs no asking
 ## the map again (see Npcs).
 var free_body_tiles := Rect2i()
+## Whether an answer to the player is awaited (see ChatScreen): they say nothing more till then.
+var is_answering := false
 
 
 func _init(npc_name: String, npc_sex: StringName, look: Appearance, feet: Vector2) -> void:

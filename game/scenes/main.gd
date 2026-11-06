@@ -171,6 +171,8 @@ func _make_views() -> void:
 	add_child(_storage_screen)
 	add_child(_cheat_hud)
 	add_child(_console_view)
+	_chat_screen.dialogue = NpcDialogue.new(_settings)
+	add_child(_chat_screen.dialogue)
 	add_child(_chat_screen)
 	_menu = PauseMenu.new(_settings)
 	add_child(_menu)
@@ -549,7 +551,7 @@ func _show_npc(npc: Npc) -> void:
 ## Opens the chat with a villager, who turns to the player (the chat pauses the game).
 func _open_chat(npc: Npc) -> void:
 	_state.npcs.talk_to(npc, _state.player.position)
-	_chat_screen.open(npc, _state.player, _state.clock)
+	_chat_screen.open(npc, _state)
 
 
 ## Sleeps in the bed in reach until the morning: the new day shows on the black for a moment.

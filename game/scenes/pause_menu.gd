@@ -7,7 +7,7 @@ extends CanvasLayer
 signal resumed
 signal save_and_quit_requested
 
-enum Page { PAUSE, SETTINGS, CONTROLS, DISPLAY, GAME, AUDIO }
+enum Page { PAUSE, SETTINGS, CONTROLS, DISPLAY, GAME, AUDIO, LANGUAGE_MODEL }
 
 const THEME := preload("res://game/scenes/ui_theme.tres")
 const PANEL_WIDTH := 280
@@ -84,6 +84,12 @@ func _init(settings: GameSettings) -> void:
 		settings_page, "Audio", _go_to.bind(Page.AUDIO), "Volumes and sound in the background."
 	)
 	_add_button(settings_page, "Display", _go_to.bind(Page.DISPLAY), "Fullscreen or windowed.")
+	_add_button(
+		settings_page,
+		"Language model",
+		_go_to.bind(Page.LANGUAGE_MODEL),
+		"The language model villagers talk through, if any.",
+	)
 	_add_button(settings_page, "Back", _back)
 
 	var display := _add_page(pages, Page.DISPLAY, "Display")
@@ -132,6 +138,12 @@ func _init(settings: GameSettings) -> void:
 	pages.add_child(audio)
 	_pages[Page.AUDIO] = audio
 	_first_focus[Page.AUDIO] = audio.first_focus
+
+	var language_model := LanguageModelPage.new(_settings)
+	language_model.back_requested.connect(_back)
+	pages.add_child(language_model)
+	_pages[Page.LANGUAGE_MODEL] = language_model
+	_first_focus[Page.LANGUAGE_MODEL] = language_model.first_focus
 
 
 ## Opens the menu on the pause page, or on `page` (a debug flag uses that).
@@ -192,7 +204,7 @@ func _show_page(page: Page) -> void:
 		_show_game_settings()
 	elif page == Page.CONTROLS:
 		_pages[page].show_bindings()
-	elif page == Page.AUDIO:
+	elif page == Page.AUDIO or page == Page.LANGUAGE_MODEL:
 		_pages[page].show_settings()
 	_first_focus[page].grab_focus()
 

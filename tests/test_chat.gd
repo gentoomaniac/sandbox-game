@@ -1,6 +1,7 @@
 extends ResourceCase
 ## Speaking to a villager: which one E speaks to (before any chest, station or bed), and the chat
-## screen, its lines and the pause it holds the game in.
+## screen, its lines and the pause it holds the game in, and the wait for an answer, which is the
+## villager's.
 
 var _npc: Npc
 
@@ -16,8 +17,15 @@ func after_each() -> void:
 	get_tree().paused = false
 
 
-func _chat_screen() -> ChatScreen:
+## A chat screen whose villagers answer through a fake language model after `seconds`.
+func _chat_screen(seconds := 0.1) -> ChatScreen:
 	var screen := ChatScreen.new()
+	var settings := GameSettings.new("user://test_chat/settings.cfg")
+	settings.language_model["endpoint"] = "http://fake/v1"
+	var chat := FakeChat.new()
+	chat.seconds = seconds
+	screen.dialogue = NpcDialogue.new(settings, chat)
+	add_child_autofree(screen.dialogue)
 	add_child_autofree(screen)
 	return screen
 
@@ -65,7 +73,7 @@ func test_a_line_shows_the_time_and_who_said_it() -> void:
 func test_the_chat_pauses_the_game_until_it_is_closed() -> void:
 	var screen := _chat_screen()
 	assert_false(screen.is_open())
-	screen.open(_npc, _state.player, _state.clock)
+	screen.open(_npc, _state)
 	assert_true(screen.is_open())
 	assert_true(get_tree().paused)
 	screen.close()
@@ -78,21 +86,21 @@ func test_the_chat_pauses_the_game_until_it_is_closed() -> void:
 func test_a_line_said_is_answered_and_both_are_kept_with_the_game_time() -> void:
 	var screen := _chat_screen()
 	_state.clock.set_time(8, 15)
-	screen.open(_npc, _state.player, _state.clock)
+	screen.open(_npc, _state)
 	screen.say("Good morning")
 	assert_eq(_npc.chat_history.size(), 1, "the answer is awaited")
 	await wait_for_signal(screen.answered, 2.0)
 	assert_eq(_npc.chat_history.size(), 2)
 	assert_eq(_npc.chat_history[0]["text"], "Good morning")
 	assert_true(_npc.chat_history[0]["from_player"])
-	assert_eq(_npc.chat_history[1]["text"], NpcDialogue.STUB_REPLY)
+	assert_eq(_npc.chat_history[1]["text"], "Aye.")
 	assert_eq(_npc.chat_history[1]["minute"], 8 * 60 + 15)
 	screen.close()
 
 
 func test_nothing_more_is_sent_while_an_answer_is_awaited() -> void:
 	var screen := _chat_screen()
-	screen.open(_npc, _state.player, _state.clock)
+	screen.open(_npc, _state)
 	screen.say("One")
 	screen.say("Two")
 	await wait_for_signal(screen.answered, 2.0)
@@ -102,17 +110,38 @@ func test_nothing_more_is_sent_while_an_answer_is_awaited() -> void:
 
 func test_the_answer_is_kept_when_the_player_leaves_before_it_comes() -> void:
 	var screen := _chat_screen()
-	screen.open(_npc, _state.player, _state.clock)
+	screen.open(_npc, _state)
 	screen.say("Farewell")
 	screen.close()
 	await wait_for_signal(screen.answered, 2.0)
 	assert_eq(_npc.chat_history.size(), 2)
 
 
+func test_leaving_a_villager_who_is_answering_leaves_another_free_to_talk() -> void:
+	var screen := _chat_screen(0.3)
+	var other := Npc.create(6, _npc.position + Vector2(1, 0), _state.npcs.rules)
+	_state.npcs.add(other)
+	screen.open(_npc, _state)
+	screen.say("One")
+	assert_string_contains(screen._log.text, "%s is typing" % _npc.name)
+	screen.close()
+	screen.open(other, _state)
+	assert_false(screen._log.text.contains("typing"), "the other one owes no answer")
+	screen.say("Two")
+	assert_eq(other.chat_history.size(), 1, "and may be spoken to")
+	await wait_for_signal(screen.answered, 2.0)
+	assert_false(screen._log.text.contains(_npc.name), "the first answer is not shown here")
+	# GUT's waiting stands still while the game is paused.
+	screen.close()
+	await wait_until(func() -> bool: return not other.is_answering, 2.0)
+	assert_eq(_npc.chat_history.size(), 2, "the first answer is in the first chat")
+	assert_eq(other.chat_history.size(), 2)
+
+
 func test_the_held_key_that_opened_the_chat_types_nothing_until_it_is_let_go() -> void:
 	var screen := _chat_screen()
 	Input.action_press("interact")
-	screen.open(_npc, _state.player, _state.clock)
+	screen.open(_npc, _state)
 	var key := InputEventKey.new()
 	key.keycode = KEY_E
 	key.physical_keycode = KEY_E
@@ -131,7 +160,7 @@ func test_the_held_key_that_opened_the_chat_types_nothing_until_it_is_let_go() -
 
 func test_escape_closes_the_chat_and_goes_no_further() -> void:
 	var screen := _chat_screen()
-	screen.open(_npc, _state.player, _state.clock)
+	screen.open(_npc, _state)
 	var escape := InputEventKey.new()
 	escape.keycode = KEY_ESCAPE
 	escape.physical_keycode = KEY_ESCAPE

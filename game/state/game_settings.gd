@@ -1,15 +1,16 @@
 class_name GameSettings
 extends RefCounted
 ## The player's settings: key bindings, display mode, UI scale, energy drain, day length
-## variation and audio. Bindings live in Godot's InputMap (that is what the game reads); this
-## class edits them, remembers the project's defaults and keeps them in a ConfigFile, written on
-## every change. It has no UI code.
+## variation, audio and the language model villagers talk through. Bindings live in Godot's
+## InputMap (that is what the game reads); this class edits them, remembers the project's
+## defaults and keeps them in a ConfigFile, written on every change. It has no UI code.
 ##
 ## The file only holds what differs from the defaults, so an action added later, or one the
 ## file doesn't mention, keeps its default binding. The display mode is only stored once the
 ## player has chosen it; until then the window stays as the command line or project left it.
-## The UI scale, the energy drain, the day length variation and the audio settings are stored
-## when they differ from their defaults.
+## The UI scale, the energy drain, the day length variation, the audio settings and the language
+## model are stored when they differ from their defaults. The model's key is kept in the file as
+## plain text (Settings says so); it is never saved with the game or logged.
 
 ## Emitted when the player changes the energy drain; loading it does not, so whoever connects
 ## reads `energy_drain_factor()` once at start and then follows this.
@@ -46,6 +47,8 @@ const ENERGY_DRAIN_KEY := "energy_drain"
 const DAY_LENGTH_KEY := "day_length_variation"
 const AUDIO_SECTION := "audio"
 const SOUND_IN_BACKGROUND_KEY := "in_background"
+const LANGUAGE_MODEL_SECTION := "language_model"
+const LANGUAGE_MODEL_KEYS: Array[String] = ["endpoint", "model", "api_key"]
 
 const MIN_UI_SCALE := 0.5
 const MAX_UI_SCALE := 2.0
@@ -69,6 +72,10 @@ const MAX_VOLUME := 100
 const VOLUME_STEP := 5
 const DEFAULT_VOLUME := 100
 const DEFAULT_SOUND_IN_BACKGROUND := true
+
+## The model of the test LLM (`make llm-up`); no endpoint means no model: villagers speak scripted
+## lines (see NpcDialogue).
+const DEFAULT_LANGUAGE_MODEL := {"endpoint": "", "model": "qwen2.5:3b-instruct", "api_key": ""}
 
 const ACTION_LABELS := {
 	&"use": "Use",
@@ -127,6 +134,9 @@ var ui_scale := DEFAULT_UI_SCALE
 var energy_drain := DEFAULT_ENERGY_DRAIN
 var day_length_variation := DEFAULT_DAY_LENGTH_VARIATION
 var sound_in_background := DEFAULT_SOUND_IN_BACKGROUND
+## The OpenAI-compatible chat API villagers talk through: {endpoint, model, api_key}, such as
+## "http://127.0.0.1:11434/v1" (see OpenAiChat).
+var language_model := DEFAULT_LANGUAGE_MODEL.duplicate()
 
 var _has_chosen_fullscreen := false
 ## Channel (see VOLUME_CHANNELS) -> percent.
@@ -320,6 +330,13 @@ func set_sound_in_background(value: bool) -> void:
 	audio_changed.emit()
 
 
+## Sets the endpoint, the model or the key of the language model (see LANGUAGE_MODEL_KEYS),
+## without the spaces around it.
+func set_language_model(key: String, text: String) -> void:
+	language_model[key] = text.strip_edges()
+	_save()
+
+
 ## Reads the file and applies it. A file that can't be read or understood is ignored (with a
 ## warning), as is any single entry that isn't understood. A missing file is normal.
 func load_file() -> void:
@@ -344,6 +361,14 @@ func load_file() -> void:
 			push_warning("Ignoring display setting in %s: not true or false" % _path)
 	_load_game_section(file)
 	_load_audio_section(file)
+	for key in LANGUAGE_MODEL_KEYS:
+		if not file.has_section_key(LANGUAGE_MODEL_SECTION, key):
+			continue
+		var value: Variant = file.get_value(LANGUAGE_MODEL_SECTION, key)
+		if value is String:
+			language_model[key] = value.strip_edges()
+		else:
+			push_warning("Ignoring language model %s in %s: not a text" % [key, _path])
 
 
 func _load_game_section(file: ConfigFile) -> void:
@@ -464,6 +489,9 @@ func _save() -> void:
 			file.set_value(AUDIO_SECTION, channel, _volumes[channel])
 	if sound_in_background != DEFAULT_SOUND_IN_BACKGROUND:
 		file.set_value(AUDIO_SECTION, SOUND_IN_BACKGROUND_KEY, sound_in_background)
+	for key in LANGUAGE_MODEL_KEYS:
+		if language_model[key] != DEFAULT_LANGUAGE_MODEL[key]:
+			file.set_value(LANGUAGE_MODEL_SECTION, key, language_model[key])
 	var error := DirAccess.make_dir_recursive_absolute(_path.get_base_dir())
 	if error == OK:
 		error = file.save(_path)

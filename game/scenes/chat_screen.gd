@@ -7,7 +7,9 @@ extends CanvasLayer
 ##
 ## The game is paused while it is open, so nothing moves and no key reaches the game: it keeps
 ## running itself, and its input line takes every key. A line sent is answered by NpcDialogue;
-## while the answer is awaited the villager is shown typing, and nothing more is sent.
+## while the answer is awaited the villager is shown typing, and nothing more is sent to them. The
+## wait is the villager's (Npc `is_answering`): the player may leave and talk to another, and the
+## answer is kept in the chat of the one who was asked.
 
 ## The answer to a line came and is shown (for tests and the debug runner).
 signal answered
@@ -26,9 +28,11 @@ const GAP := 10
 ## Behind the portraits: palette colour mud_dark (see tools/art/palette.py).
 const PORTRAIT_GROUND := Color("4f4436")
 
+## Gives the villagers' answers. Set before the chat is opened.
+var dialogue: NpcDialogue
+
 var _npc: Npc
-var _clock: GameClock
-var _is_awaiting_answer := false
+var _state: GameState
 ## Whether the interact key that opened the chat is still held (its repeats are not typed).
 var _is_opening_key_held := false
 var _player_portrait := Control.new()
@@ -84,12 +88,12 @@ func is_open() -> bool:
 	return visible
 
 
-## Opens the chat with a villager, its lines so far shown, and pauses the game. The time of the
-## lines said is read from `clock`.
-func open(npc: Npc, player: PlayerState, clock: GameClock) -> void:
+## Opens the chat with a villager of the game of `state`, its lines so far shown, and pauses the
+## game.
+func open(npc: Npc, state: GameState) -> void:
 	_npc = npc
-	_clock = clock
-	_show_portrait(_player_portrait, player.appearance)
+	_state = state
+	_show_portrait(_player_portrait, state.player.appearance)
 	_show_portrait(_npc_portrait, npc.appearance)
 	_npc_name.text = npc.name
 	visible = true
@@ -109,19 +113,21 @@ func close() -> void:
 	get_tree().paused = false
 
 
-## Says a line to the villager and waits for the answer. Ignored while an answer is awaited.
+## Says a line to the villager and waits for the answer. Ignored while they still owe one.
 func say(text: String) -> void:
-	if _is_awaiting_answer or text.strip_edges().is_empty():
-		return
 	var npc := _npc
+	var line := text.strip_edges()
+	if npc.is_answering or line.is_empty():
+		return
+	var clock := _state.clock
 	var history := npc.chat_history.duplicate()
-	npc.add_chat_line(_clock.day, _clock.minute_of_day, true, text.strip_edges())
-	_is_awaiting_answer = true
+	npc.add_chat_line(clock.day, clock.minute_of_day, true, line)
+	npc.is_answering = true
 	_show_lines()
-	var answer: String = await NpcDialogue.reply(npc, history, text.strip_edges())
+	var answer: String = await dialogue.reply(npc, history, line, _state)
 	# Said even when the player has left meanwhile: it is there when they come back.
-	npc.add_chat_line(_clock.day, _clock.minute_of_day, false, answer)
-	_is_awaiting_answer = false
+	npc.add_chat_line(clock.day, clock.minute_of_day, false, answer)
+	npc.is_answering = false
 	if npc == _npc:
 		_show_lines()
 	answered.emit()
@@ -132,7 +138,7 @@ func _show_lines() -> void:
 	var lines: Array[String] = []
 	for line in _npc.chat_history:
 		lines.append(line_text(line, _npc.name))
-	if _is_awaiting_answer:
+	if _npc.is_answering:
 		lines.append("* %s is typing..." % _npc.name)
 	_log.text = "\n".join(lines)
 
@@ -167,7 +173,7 @@ func _show_portrait(portrait: Control, look: Appearance) -> void:
 
 
 func _on_submitted(text: String) -> void:
-	if _is_awaiting_answer:
+	if _npc.is_answering:
 		return
 	_input.clear()
 	say(text)

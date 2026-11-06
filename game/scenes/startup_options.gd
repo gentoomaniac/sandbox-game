@@ -22,7 +22,7 @@ extends RefCounted
 ##                            what a midnight changes: `--day=30 --time=23:50
 ##                            --screenshot-delay=10`)
 ##   --menu=<page>            open that menu page (pause, settings, controls, display, game,
-##                            audio); with --screenshot the shot is of the menu
+##                            audio, language_model); with --screenshot the shot is of the menu
 ##   --tooltip=<id>           show the tooltip of a control as if the mouse rested on it:
 ##                            hotbar_<0..7>; inventory_<0..27> and equipment_<slot> (with
 ##                            --inventory); recipe_<id> (with --crafting); inventory_<0..27>

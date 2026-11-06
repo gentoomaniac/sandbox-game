@@ -7,7 +7,7 @@ const DEFAULT_PATH := "res://data/npc_talk.cfg"
 
 ## The keys each section must have.
 const KEYS := {
-	"request": ["temperature", "max_tokens", "history_lines", "reply_sentences"],
+	"request": ["temperature", "max_tokens", "history_lines", "reply_sentences", "timeout_seconds"],
 	"prompt":
 	["system", "example", "example_reply", "villager", "about", "moment", "says", "reply"],
 	"female": ["their", "person"],
@@ -17,6 +17,7 @@ const KEYS := {
 	["date", "season_parts", "dawn_minutes", "noon_minutes", "dusk_minutes", "parts_of_day"],
 	"weather": ["conditions", "sky", "temperature", "frost", "wind", "directions"],
 	"place": ["reach", "building", "fireplace", "open"],
+	"scripted": ["thinking_seconds", "replies"],
 }
 const PARTS_OF_DAY: Array[String] = ["dawn", "morning", "noon", "afternoon", "dusk", "night"]
 
@@ -57,6 +58,9 @@ func problems() -> Array[String]:
 	for key: String in _values["weather"]["conditions"] + ["sky", "wind"]:
 		if not _values["weather"].get(key) is Array or _values["weather"][key].is_empty():
 			found.append("[weather] %s is not a list of [from, words]" % key)
+	var replies: Variant = _values["scripted"]["replies"]
+	if not replies is Array or replies.is_empty():
+		found.append("[scripted] replies is not a list of at least one")
 	for part in PARTS_OF_DAY:
 		if not _values["moment"]["parts_of_day"].has(part):
 			found.append("[moment] parts_of_day has no %s" % part)
