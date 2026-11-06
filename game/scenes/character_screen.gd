@@ -19,8 +19,6 @@ const MAX_PREVIEW_SCALE := 4
 const WINDOW_MARGIN := 8
 const PANEL_PADDING := 20
 const PICKED_ALPHA := 0.4
-## Palette colour ink (see tools/art/palette.py), see-through.
-const BACKDROP_COLOR := Color(0.114, 0.106, 0.149, 0.6)
 const HINT_PATH := "res://assets/ui/equip_%s.png"
 const THEME := preload("res://game/scenes/ui_theme.tres")
 
@@ -46,7 +44,7 @@ var _picked_icon := TextureRect.new()
 
 func _init() -> void:
 	visible = false
-	_backdrop.color = BACKDROP_COLOR
+	_backdrop.color = UiColors.BACKDROP
 	_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_backdrop.gui_input.connect(_on_backdrop_input)
 	add_child(_backdrop)

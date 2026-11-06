@@ -11,7 +11,6 @@ enum Page { PAUSE, SETTINGS, CONTROLS, DISPLAY, GAME, AUDIO }
 
 const THEME := preload("res://game/scenes/ui_theme.tres")
 const PANEL_WIDTH := 280
-const DIM_COLOUR := Color(0.114, 0.106, 0.149, 0.6)
 ## The explanations of the settings, shown as tooltips.
 const DISPLAY_TIP := "Switch between fullscreen and a window."
 const DRAIN_TIP := (
@@ -53,7 +52,7 @@ func _init(settings: GameSettings) -> void:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
 	var dim := ColorRect.new()
-	dim.color = DIM_COLOUR
+	dim.color = UiColors.BACKDROP
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.add_child(dim)
 	var centre := CenterContainer.new()

@@ -20,8 +20,6 @@ const INVENTORY_COLUMNS := Inventory.HOTBAR_SIZE
 ## Space between the backpack and the hotbar row below it.
 const HOTBAR_GAP := 8
 const PICKED_ALPHA := 0.4
-## Palette colour ink (see tools/art/palette.py), see-through.
-const BACKDROP_COLOR := Color(0.114, 0.106, 0.149, 0.6)
 const THEME := preload("res://game/scenes/ui_theme.tres")
 const BACKPACK_ICON := preload("res://assets/ui/backpack_icon.png")
 const CHEST_ICON := preload("res://assets/ui/chest_icon.png")
@@ -39,7 +37,7 @@ var _picked_icon := TextureRect.new()
 
 func _init() -> void:
 	visible = false
-	_backdrop.color = BACKDROP_COLOR
+	_backdrop.color = UiColors.BACKDROP
 	_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_backdrop.gui_input.connect(_on_backdrop_input)
 	add_child(_backdrop)

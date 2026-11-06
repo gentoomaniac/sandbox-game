@@ -4,8 +4,6 @@ extends CanvasLayer
 ## click on a row the player can afford crafts it. Like the character screen, it takes the
 ## input while it is open (Main sees to that, and closes it on C and Escape).
 
-## Palette colour ink (see tools/art/palette.py), see-through.
-const BACKDROP_COLOR := Color(0.114, 0.106, 0.149, 0.6)
 const THEME := preload("res://game/scenes/ui_theme.tres")
 const NO_ROOM_NOTE := "Inventory full"
 
@@ -19,7 +17,7 @@ var _note_label := Label.new()
 
 func _init() -> void:
 	visible = false
-	_backdrop.color = BACKDROP_COLOR
+	_backdrop.color = UiColors.BACKDROP
 	_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(_backdrop)
 	_panel.theme = THEME

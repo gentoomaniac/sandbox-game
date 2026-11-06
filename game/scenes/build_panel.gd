@@ -7,7 +7,7 @@ extends CanvasLayer
 const POSITION := Vector2(4, 40)
 const THEME := preload("res://game/scenes/ui_theme.tres")
 # Palette colour (see tools/art/palette.py).
-const SHORT_COLOUR := Color("dc7a37")
+const SHORT_COLOR := Color("dc7a37")
 
 var _builder: Builder
 var _inventory: Inventory
@@ -61,7 +61,7 @@ func _process(_delta: float) -> void:
 		)
 		label.text = text + (" !" if short.has(item) else "")
 		if short.has(item):
-			label.add_theme_color_override("font_color", SHORT_COLOUR)
+			label.add_theme_color_override("font_color", SHORT_COLOR)
 		else:
 			label.remove_theme_color_override("font_color")
 	# Shrinks back round fewer rows.

@@ -12,7 +12,7 @@ const TEXT_FADE_SECONDS := 0.6
 const NOTE_SECONDS := 1.2
 const TEXT_WIDTH := 320.0
 const HINT := "Press any key to go on"
-const HINT_COLOUR := Color(1, 1, 1, 0.6)
+const HINT_COLOR := Color(1, 1, 1, 0.6)
 const THEME := preload("res://game/scenes/ui_theme.tres")
 
 var _black := ColorRect.new()
@@ -44,7 +44,7 @@ func _init() -> void:
 	_lines.add_child(_text)
 	_hint.text = HINT
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_hint.modulate = HINT_COLOUR
+	_hint.modulate = HINT_COLOR
 	_lines.add_child(_hint)
 
 

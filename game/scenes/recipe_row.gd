@@ -10,7 +10,7 @@ const LINE_HEIGHT := 10
 const ICON_SIZE := 16
 const GAP := 6
 ## Palette colour flame (see tools/art/palette.py), as in the build panel.
-const SHORT_COLOUR := Color("dc7a37")
+const SHORT_COLOR := Color("dc7a37")
 const UNAFFORDABLE_ALPHA := 0.5
 
 var recipe_id: StringName
@@ -65,7 +65,7 @@ func show_stock(inventory: Inventory, short: Dictionary) -> void:
 		lines.append(line + (" !" if short.has(item) else ""))
 	_materials_label.text = "\n".join(lines)
 	_materials_label.add_theme_color_override(
-		"font_color", SHORT_COLOUR if not short.is_empty() else Color.WHITE
+		"font_color", SHORT_COLOR if not short.is_empty() else Color.WHITE
 	)
 	disabled = not short.is_empty()
 	modulate.a = UNAFFORDABLE_ALPHA if disabled else 1.0
