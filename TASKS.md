@@ -625,7 +625,7 @@ whinny and snort. Save version bump for the follow time.
 
 ## 80. Mice and frogs; storks eat frogs
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06: critters, mice and frogs, the frogs food for the storks.
 Ambient wildlife like the birds and rabbits, not livestock.
@@ -635,6 +635,25 @@ player, mostly at dusk and night; frogs at the water's edge, wet meadows and dit
 spring to early autumn, hopping, croaking in chorus on spring and summer evenings, gone in
 winter. A hunting stork walks to a frog, strikes and swallows it; the frog is gone. Needs
 task 60 (storks).
+
+Done: two kinds in data/wildlife.cfg, art in tools/art/animals.py (no new colours). `mouse`
+(`Mouse`) lives on grass and soil within 2 tiles of farmland: tilled soil, a crop, a Knick, a
+fieldstone wall or a building (`farm_radius`, a new key of every kind, and
+`WildlifeRules.has_farm_near`; hay lies only in the barns, so the building counts for it), all
+year, mostly at dusk and at night; it sniffs and scurries and dashes off into cover (gone) at
+2.5 tiles. `frog` (`Frog`) lives on grass, floodplain and wetland within 2 tiles of water,
+spring and summer and fewer in autumn, none in winter, most at dusk, and stays out in the
+rain; it sits puffing its throat, hops, and hops off at 1.5 tiles. A hunting `Stork` that
+sees a frog within 3 tiles when it picks what to do next walks up to it, strikes and swallows
+it (a new `swallow` row of the stork's sheet), and the frog is done; one that hopped away
+during the strike is missed. The lookup is `WildlifeView.nearest_animal(kind, point, reach)`
+over the few wild animals, for task 82's cats as well. Sound `frog_chorus_loop` (-22 dBFS,
+quiet) through the ambience: `AmbienceRules.chorus_level` by `[frog_chorus]` in
+data/ambience.cfg (dusk, less at night, spring and summer, as warm as the croaks need it),
+fuller with the frogs about up to 3; the single croaks at water stay. `spawn mouse|frog` and
+`--wildlife=mouse,frog` come with the kinds. Not done: autumn counts as a whole (no "early"
+autumn), frogs don't dive into the water, mice make no sound. Screenshot in
+docs/screenshots/mice-and-frogs.png.
 
 ## 81. Riding a horse with a saddle
 

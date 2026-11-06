@@ -351,9 +351,11 @@ Decided 2026-11-05. Everything makes sound; no background music for now.
   spring and summer, mostly in the evening and at night and when it is warm, louder the
   closer the player is; deer snort now and then and their hooves sound when they bound
   away; rabbits rustle when they flee; squirrels chatter; bees buzz softly at their
-  flower. Butterflies are silent. Storks clatter their bills (a dry, hollow rattle) about once
-  a minute or so while one is in view; geese honk now and then and when they take off, a skein
-  flying over more often. Both are rare and quieter than the farm animals.
+  flower. Butterflies are silent. Where frogs are about (task 80) a quiet chorus of them
+  swells on spring and summer evenings, fuller with more frogs, as warm as the croaks need
+  it. Storks clatter their bills (a dry, hollow rattle) about once a minute or so while one
+  is in view; geese honk now and then and when they take off, a skein flying over more
+  often. Both are rare and quieter than the farm animals.
 - **How the ambience is made** (decided 2026-11-05, numbers in `data/ambience.cfg`): once
   a second the weather sets the loops: rain at its strength, wind from calm (silent) to
   full speed, and in wind a gust now and then plays `wind_gust` and swells the wind loop
@@ -412,7 +414,8 @@ Decided 2026-11-05. A text console for testing and cheats.
   health doesn't drop); `nodrain` (toggle: actions cost no energy); `noweight` (toggle:
   carried weight doesn't raise costs). Later commands: `spawn` (farm animals: `cow`, `sheep`,
   `chicken`, `rabbit`; wild ones: `bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`,
-  `butterfly`, `flock`), `weather`, `snow`, `crop`
+  `butterfly`, `flock`, `stork`, `roof_stork`, `geese`, `flying_geese`, `mouse`, `frog`),
+  `weather`, `snow`, `crop`
   (see `help`), `reset` (puts the player in the bed they wake in, inside or out), and
   `skip <n>m|h|d` (let minutes, hours or days pass, at most a year; the
   nights in between pass as when sleeping, so crops grow).
@@ -791,14 +794,22 @@ atmosphere only: no player impact, not hunted, not saved.
     together when the player comes near and take off together when nearer, closing up into a
     V. Skeins of 7 to 13 fly over high up now and then, mostly at dawn and dusk. A flock counts
     as one animal.
+  - mice (task 80): within 2 tiles of farmland (tilled soil, a crop, a Knick, a fieldstone
+    wall or a building, with its hay), all year, mostly at dusk and at night and a few by day;
+    they sniff and scurry, and dash off into cover (gone) when the player comes near;
+  - frogs (task 80): on grass, the floodplain and wetland within 2 tiles of water, from spring
+    to early autumn (fewer in autumn, none in winter), most at dusk, out in the rain; they sit
+    puffing their throats, hop now and then and hop off from the player. A hunting stork that
+    sees a frog within 3 tiles walks up to it, strikes and swallows it, and the frog is gone.
+    The lookup (`WildlifeView.nearest_animal`) is the same a cat will use for mice (task 82).
 - **The world decides how many:** time of day (birds and insects by day, deer at dawn and
   dusk, fewer animals at night), season (no insects in winter; fewer birds; rabbits and
   squirrels still about), weather (animals hide in heavy rain, storms and dense fog), and
   the land (each kind has its terrain).
 - **Size relative to the character (27–28 px tall):** deer about 20 px tall with the head
   up, body about 18 px long; rabbit about 8×7 px; squirrel about 7×7 px; birds about
-  5×4 px; butterfly 3–4 px; bee 2–3 px. Each has a few animation frames, palette only,
-  in the art style of the world.
+  5×4 px; butterfly 3–4 px; bee 2–3 px; mouse and frog about 8×5 px (larger than life, to be
+  seen). Each has a few animation frames, palette only, in the art style of the world.
 - **How:** animals appear only near the player, out of sight or at the edge of the view,
   and vanish when far away. Behaviour is a simple per-animal state machine (idle, move,
   flee). The rules for how many and where are plain, testable logic; the animals

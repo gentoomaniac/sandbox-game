@@ -76,7 +76,9 @@ with Knicks, walls and fences on the Geest, ditches in the marsh, and dykes.
   `GooseFlock` (geese grazing, then taking off together). Storks on roofs (`Stork`) stand on the top edge
   of the house's picture as it is shown (`WorldView.building_picture`, so snow is counted), just
   in front of where the house sorts (`BuildingViews.sort_position`); flying birds cast
-  `GroundShadows`.
+  `GroundShadows`. A hunter finds its prey with `WildlifeView.nearest_animal` (a stork its
+  frogs, `Frog`; a cat will find the `Mouse`), asked when it picks what to do next, not every
+  frame.
 - **Crafting** (`game/state/crafting.gd`) is what the crafting menu does: it checks a recipe of
   `RecipeRules` (materials, the skill level it needs), crafts it and practises its skill on the
   player's **Skills** (`skills.gd`: points per skill, the total cap and the skills that fade,

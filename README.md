@@ -25,7 +25,8 @@ sound can be swapped for a recording.
 The world has an ambience too: rain and wind loops that follow the weather (and swell with
 gusts), thunder some seconds after each flash of lightning, birds chirping by day, deer,
 rabbits and squirrels, bees buzzing at their flowers, frogs croaking near water on
-warm spring and summer evenings and nights, a stork clattering its bill and geese honking,
+warm spring and summer evenings and nights (and, where frogs are about, a quiet chorus of
+them at dusk), a stork clattering its bill and geese honking,
 and now and then a quiet moo, baa or cluck from the farm animals. How often and how loud is in
 [data/ambience.cfg](data/ambience.cfg).
 
@@ -138,11 +139,16 @@ dusk, and bees and butterflies keep to the flowers. On the marsh and the wet mea
 storks hunt in spring and summer, stepping slowly with the head down; they come to stand on
 the roofs of the houses, clatter their bills now and then and fly off on slow wingbeats.
 In autumn and winter flocks of greylag geese graze the marsh and the floodplain, raise their
-heads when you come near and take off together, and skeins of them fly over in a V. The
-animals come and go around you by the season, the time of day and the weather; the numbers
-are in [data/wildlife.cfg](data/wildlife.cfg).
+heads when you come near and take off together, and skeins of them fly over in a V. Mice
+live by the fields, the Knicks, the walls and the houses, out mostly at dusk and at night, and
+dash off into cover when you come close; frogs sit and hop at the water's edge and on the wet
+meadows from spring to early autumn, and a hunting stork that sees one walks up to it,
+strikes and swallows it. The animals come and go around you by the season, the time of day
+and the weather; the numbers are in [data/wildlife.cfg](data/wildlife.cfg).
 
 ![White storks on the marsh, a stork on the roof of a Kate, a flock of geese grazing in autumn and a skein of them flying over](docs/screenshots/wildlife.png)
+
+![Storks striking at frogs by the camp on a summer evening, and mice in the grass](docs/screenshots/mice-and-frogs.png)
 
 ### Felling, mining and gathering
 
@@ -320,7 +326,7 @@ arguments.
 | `god`, `nodrain`, `noweight`, `nocost` | Toggle invincibility, free actions, weight costing nothing, and buildings and crafting needing no materials. |
 | `weather`, `weather <condition>`, `weather auto` | Show the weather, force a condition, or go back to the simulation. |
 | `snow`, `snow <0..1>`, `snow auto` | Show the snow cover, force it, or go back to the weather. |
-| `spawn <animal> [count]` | Put animals nearby: farm animals that stay (`cow`, `sheep`, `chicken`, `rabbit`) or wild ones that come and go (`bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork` on the nearest roof, `geese` grazing, `flying_geese`). `spawn` alone, or with an unknown name, lists them. |
+| `spawn <animal> [count]` | Put animals nearby: farm animals that stay (`cow`, `sheep`, `chicken`, `rabbit`) or wild ones that come and go (`bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork` on the nearest roof, `geese` grazing, `flying_geese`, `mouse`, `frog`). `spawn` alone, or with an unknown name, lists them. |
 | `skip <n>m\|h\|d` | Let minutes, hours or days pass, e.g. `skip 2h` or `skip 3d`. |
 | `crop` | Show the growth, damage and needs of the nearest crop. |
 | `skill <skill> <points>` | Set a skill's points (`woodworking`, `cooking`, `masonry`). |

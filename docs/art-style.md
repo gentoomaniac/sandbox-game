@@ -418,7 +418,11 @@ copper watering can. Kept here as the record of why.
    the head thrown back and flying; and the greylag goose, grey-brown (`bare_light`, `bare`,
    `mud`) with a pale breast, a white tail and an orange bill (`flame`), standing, grazing,
    walking and flying. Flying birds are seen from a little above: the far wing above the body,
-   the near wing below it. No new colours. The roe deer and rabbits stay. Still to do: a
+   the near wing below it. No new colours. The roe deer and rabbits stay. Task 80 added the
+   small ones (tools/art/animals.py): a grey-brown mouse (`mud`, a pale belly, pink ears, a
+   bare `skin_shade` tail drawn over the outline so that it stays thin), sitting and
+   scurrying, and an olive common frog (`dry_light` with `olive` blotches, a pale throat that
+   puffs out), sitting and hopping; and a stork swallowing a frog. Still to do: a
    stork's nest on a ridge, lapwings and oystercatchers, seals on the sandbanks, pigs,
    horses.
 9. **Coast and flats** (large). Tidal mud with ripples and tideways, salt marsh turning red
