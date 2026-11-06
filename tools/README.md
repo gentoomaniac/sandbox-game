@@ -34,6 +34,7 @@ by topic. Where is a thing drawn?
 | `seasons.py` | The other looks (spring, autumn, bare, frost, snow, dusting, leaf-out steps) made from the summer art by colour remaps and overlays. Also adds its colours to the palette. |
 | `crops.py`, `crop_icons.py` | Crop sheets (growth stages and the dead one), seed bag and produce icons, wet soil. |
 | `items.py`, `tool_icons.py`, `chest.py` | Item icons, the slot frames and the tools; the chest, which is drawn once for every use. |
+| `boundaries.py` | The lines across the land, drawn as solids tile by tile with a picture per connection mask: the Knick. |
 | `trunks.py`, `meadow.py`, `reeds.py` | Felled trunks, tall grass and clay hint, reeds. |
 | `fire.py` | The animation frames of the campfire and the hearth. |
 | `animals.py` | One sheet per animal of the ambient wildlife. |

@@ -34,6 +34,13 @@ enum Blocked {
 ## A dug clay spot has no clay for this many nights.
 const CLAY_SPENT_NIGHTS := 5
 
+## The sides of a tile that a line object can join (see `connections`), in the order of the
+## bits of a connection mask: north, east, south, west. tools/art/boundaries.py draws the
+## pictures in this order.
+const CONNECTION_SIDES: Array[Vector2i] = [
+	Vector2i.UP, Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT
+]
+
 ## The only place that defines the world size. Must be even so the world is centred.
 const MAX_SIZE_CHUNKS := 64
 
@@ -185,6 +192,35 @@ func _stored_object_at(world_pos: Vector2i) -> WorldObject:
 			if object != null and object.covers(world_pos):
 				return object
 	return null
+
+
+## The sides a line object (a type that `connects`, see WorldObjectTypes) joins a neighbour on,
+## as bits: bit i for CONNECTION_SIDES[i]. It joins the objects of the same `connects`. A side in
+## a chunk that is not loaded counts what will stand there, so a line drawn at a chunk border
+## runs on into the chunk before it loads.
+func connections(object: WorldObject) -> int:
+	var group: StringName = object.type_data()["connects"]
+	var mask := 0
+	for side in CONNECTION_SIDES.size():
+		var type := _type_standing_at(object.pos + CONNECTION_SIDES[side])
+		if type != &"" and WorldObjectTypes.TYPES[type].get("connects") == group:
+			mask |= 1 << side
+	return mask
+
+
+## The type of the object whose own tile this is, &"" for none: in a loaded chunk what stands
+## there, elsewhere the edit or else what the generator puts there.
+func _type_standing_at(world_pos: Vector2i) -> StringName:
+	var chunk := chunk_at(Chunk.world_to_chunk(world_pos))
+	var object: WorldObject
+	if chunk != null:
+		object = chunk.object_at(Chunk.local_pos(world_pos))
+	elif _object_edits.has(world_pos):
+		object = _object_edits[world_pos]
+	else:
+		var terrain: Tile.Terrain = _terrain_edits.get(world_pos, _generator.terrain_at(world_pos))
+		return _generator.object_type_at(world_pos, terrain)
+	return &"" if object == null else object.type
 
 
 ## Changes the terrain of a loaded tile and remembers it as an edit, so it survives the

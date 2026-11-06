@@ -51,7 +51,10 @@ extends RefCounted
 ##   looks picked and can't be picked while it is (a berry bush). Woody plants have none;
 ## - sprite_height: its picture's height in pixels, if it is tall enough to hide the player
 ##   behind it (trees); only those become see-through (see Occlusion);
-## - light: it shines: `color`, `energy` (of the brightest point) and `radius_tiles`.
+## - light: it shines: `color`, `energy` (of the brightest point) and `radius_tiles`;
+## - connects: it is a line across the land (a Knick, a wall, a dyke), drawn tile by tile: it
+##   joins the neighbours on its 4 sides whose `connects` is the same, and its atlas row has a
+##   picture per connection mask (see World `connections`) instead of variants.
 
 const OAK := &"oak"
 const STONE := &"stone"
@@ -85,6 +88,7 @@ const STUMP := &"stump"
 const DEAD_STUMP := &"dead_stump"
 const TALL_GRASS := &"tall_grass"
 const REEDS := &"reeds"
+const KNICK := &"knick"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -104,6 +108,9 @@ const _REEDS_ROW := 22
 const _DEAD_STUMP_ROW := 23
 ## The atlas row of the chest, after the dead tree's stump.
 const _CHEST_ROW := 24
+const _KNICK_ROW := 25
+## The pictures of a type that `connects`: one per connection mask.
+const CONNECTION_LOOKS := 16
 
 const _OTHER_TYPES := {
 	OAK:
@@ -296,6 +303,20 @@ const _OTHER_TYPES := {
 		"harvest_level": 0,
 		"atlas_row": _REEDS_ROW,
 		"variants": 3,
+	},
+	# A hedge of hazel and hawthorn on an earth bank, between fields. The axe cuts it down to
+	# the ground for its wood.
+	KNICK:
+	{
+		"hp": 4,
+		"tool": &"axe",
+		"drops": {&"logs": 1, &"fibre": 2},
+		"connects": &"field_boundary",
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _KNICK_ROW,
+		"variants": CONNECTION_LOOKS,
 	},
 	SMALL_BED:
 	{

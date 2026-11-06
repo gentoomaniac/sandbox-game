@@ -23,3 +23,4 @@
 22 reeds 6
 23 dead_stump 2
 24 chest 1
+25 knick 16

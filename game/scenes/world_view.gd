@@ -284,6 +284,16 @@ func _on_objects_changed(world_pos: Vector2i) -> void:
 		_drop_object_sprite(world_pos)
 		_draw_object(world_pos)
 	decorations.redraw(world_pos, _code_at(world_pos))
+	# The lines beside it may join it now, or no longer.
+	for side in World.CONNECTION_SIDES:
+		var neighbour := world.object_at(world_pos + side)
+		if (
+			neighbour != null
+			and neighbour.pos == world_pos + side
+			and neighbour.type_data().has("connects")
+		):
+			_drop_object_sprite(neighbour.pos)
+			_draw_object(neighbour.pos)
 
 
 func _on_clay_spot_changed(world_pos: Vector2i) -> void:
@@ -625,9 +635,7 @@ func _draw_object(world_pos: Vector2i) -> void:
 
 
 func _set_object_cell(object: WorldObject) -> void:
-	_objects.set_cell(
-		object.pos, _object_source(object), ObjectTileset.atlas_cell(object, world.is_bare(object))
-	)
+	_objects.set_cell(object.pos, _object_source(object), _atlas_cell(object))
 	_object_states[object.pos] = _object_state(object)
 
 
@@ -713,10 +721,14 @@ func _object_texture(object: WorldObject) -> AtlasTexture:
 	var cell_size := Vector2i(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT)
 	var texture := AtlasTexture.new()
 	texture.atlas = load(SeasonalArt.path(ObjectTileset.ATLAS_PATH, _object_look(object)))
-	texture.region = Rect2(
-		ObjectTileset.atlas_cell(object, world.is_bare(object)) * cell_size, cell_size
-	)
+	texture.region = Rect2(_atlas_cell(object) * cell_size, cell_size)
 	return texture
+
+
+## The object's cell in its source as it looks now (see ObjectTileset.atlas_cell).
+func _atlas_cell(object: WorldObject) -> Vector2i:
+	var connections := world.connections(object) if object.type_data().has("connects") else 0
+	return ObjectTileset.atlas_cell(object, world.is_bare(object), connections)
 
 
 ## Frees the stand-in sprite of an object, if it has one. The caller sets the cell.

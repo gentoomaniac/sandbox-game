@@ -52,6 +52,7 @@ id>.png are their 8x8 versions for items lying on the ground (items.small), made
 """
 
 import animals
+import boundaries
 import buildings
 import camp
 import character
@@ -117,6 +118,7 @@ def world_chest():
 # 22 reeds (3, then the same 3 cut)
 # 23 dead_stump (2)
 # 24 chest (1)
+# 25 knick (16: one per connection mask, see boundaries.py)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -140,6 +142,7 @@ def object_atlas():
         ("reeds", reeds.reeds_row()),
         ("dead_stump", [trees.dead_stump(seed) for seed in (211, 212)]),
         ("chest", [world_chest()]),
+        ("knick", boundaries.knick_row()),
     ]
 
 

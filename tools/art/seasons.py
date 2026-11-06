@@ -370,6 +370,37 @@ _FROST_FERN = {"green_light": "snow_light", "green": "straw", "green_dark": "ree
 _FROST_STONE = {"green_light": "snow", "green": "snow_shadow", "olive": "snow_shadow"}
 
 
+# The Knick: hazel (the green ramp), hawthorn (the meadow ramp) and the turf of its bank (dry
+# greens) each turn on their own. Hawthorn flowers white in spring and bears red haws in autumn;
+# in winter the hedge is twigs, thinned out where the summer leaves were darkest.
+_KNICK_SPRING = {
+    "green_bright": "spring_pale", "green_light": "spring_light", "green": "spring", "green_dark": "spring_dark",
+    "meadow_light": "spring", "meadow": "spring_dark", "dry_light": "spring", "dry": "spring_dark",
+    "olive": "green_dark",
+}
+_KNICK_AUTUMN = {
+    "green_bright": "gold", "green_light": "ochre", "green": "ochre_dark", "green_dark": "umber",
+    "meadow_light": "soil_light", "meadow": "soil_mid", "green_deep": "soil", "bog_dark": "russet_deep",
+    "dry_light": "autumn_light", "dry": "reed",
+}
+_KNICK_TWIGS = {
+    "green_bright": "mud", "green_light": "mud", "green": "mud_dark", "green_dark": None,
+    "meadow_light": "soil_mid", "meadow": "soil", "green_deep": "soil_dark", "bog_dark": None,
+    "dry_light": "bare_light", "dry": "bare", "olive": "mud_dark",
+}
+_KNICK_FROST = {"dry_light": "snow_shadow", "dry": "frost", "olive": "snow_deep"}
+_KNICK_SNOW = ({"mud", "mud_dark", "soil_mid", "soil", "bare_light", "bare"}, set(), 3)
+_KNICK_BLOSSOM = {"spring", "spring_dark"}
+_KNICK_HAWS = {"soil_light", "soil_mid"}
+
+
+def _dot(canvas, rng, surfaces, count, colour):
+    """Single pixels of `colour` (haws, blossom) on pixels of `surfaces`."""
+    spots = [(x, y) for y, row in enumerate(canvas) for x, name in enumerate(row) if name in surfaces]
+    for x, y in rng.sample(spots, min(count, len(spots))):
+        canvas[y][x] = colour
+
+
 # What winter does to each kind of object (the kinds of the object atlas), with these keys, all
 # optional. The leafless art is the summer art with colours remapped:
 # - "bare": the remap of every winter look;
@@ -410,6 +441,7 @@ _WINTER_LOOKS = {
         "snow_remap": _SNOW_BEDROLL,
     },
     "fireplace": {},
+    "knick": {"bare": _KNICK_TWIGS, "frost": _KNICK_FROST, "specks": {"mud", "soil_mid"}, "snow": _KNICK_SNOW},
 }
 
 
@@ -424,6 +456,12 @@ def _season_object(look, kind, variant, canvas, redraw):
             return _season_object("spring", kind, variant, canvas, redraw)
         bare = _winter_object("bare", kind, variant, canvas, redraw, rng, centre)
         canvas = buds(bare, canvas, rng) if look == "buds" else young_leaves(bare, canvas, rng)
+    elif look == "spring" and kind == "knick":
+        canvas = remap(canvas, _KNICK_SPRING)
+        _dot(canvas, rng, _KNICK_BLOSSOM, 12, "blossom")
+    elif look == "autumn" and kind == "knick":
+        canvas = remap(canvas, _KNICK_AUTUMN)
+        _dot(canvas, rng, _KNICK_HAWS, 8, "red_light")
     elif look == "spring" and kind in _SPRING_KINDS:
         canvas = remap(canvas, _SPRING_GREENS)
         if kind in _BLOSSOM_KINDS:
