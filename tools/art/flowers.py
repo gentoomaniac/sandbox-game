@@ -171,11 +171,12 @@ def knapweed(tile, x, foot, rng, is_small):
     """A wiry stem with a purple thistle-like tuft on a dark knob."""
     top = stem(tile, x, foot, 3 if is_small else rng.randint(4, 6))
     put(tile, x, top - 1, "heather_dark")
-    put(tile, x, top - 2, "heather")
+    put(tile, x, top - 2, "petal")
     if not is_small:
-        put(tile, x - 1, top - 2, "heather")
-        put(tile, x + 1, top - 2, "petal")
-        put(tile, x + 1, top - 1, "heather_dark")
+        put(tile, x - 1, top - 2, "petal")
+        put(tile, x + 1, top - 2, "heather")
+        put(tile, x, top - 3, "petal")
+        put(tile, x + 1, top - 1, "heather")
 
 
 def meadowsweet(tile, x, foot, rng, is_small):
