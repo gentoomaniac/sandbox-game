@@ -193,8 +193,8 @@ static func _upgrade_from_version_8(game: Dictionary) -> void:
 ## ditches, willows), which the same seed now has. Where the player has made a home it gives way,
 ## as if the player had cleared it: around the buildings and around what the player put down or
 ## changed (UPGRADE_CLEARANCE tiles out), over the tilled fields (their bounding box and
-## UPGRADE_FIELD_MARGIN tiles more) and where the player stands, the generated objects are taken
-## off and a ditch is grass. So nothing new stands in or by a
+## UPGRADE_FIELD_MARGIN tiles more), under the items on the ground and where the player stands,
+## the generated objects are taken off and a ditch is grass. So nothing new stands in or by a
 ## house, across the yard, the camp or the fields, or shuts the player in.
 static func _upgrade_from_version_9(game: Dictionary) -> void:
 	var world: Dictionary = game["world"]
@@ -219,6 +219,8 @@ static func _upgrade_from_version_9(game: Dictionary) -> void:
 		edited_terrain[tile.position] = true
 	if not edited_terrain.is_empty():
 		_keep(kept, fields.grow(UPGRADE_FIELD_MARGIN))
+	for ground_item: Dictionary in world["ground_items"]:
+		kept[Vector2i(SaveCodec.float_vector_from_json(ground_item["position"]).floor())] = true
 	_keep(
 		kept, PlayerState.body_tiles(SaveCodec.float_vector_from_json(game["player"]["position"]))
 	)
