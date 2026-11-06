@@ -303,9 +303,10 @@ func _process(delta: float) -> void:
 	_tiredness_view.is_awake = not _is_in_transition
 	_weather_view.show_weather(_weather, _tint.color)
 	_view.ambient_motion.update(delta, _weather_view.wind, _weather_view.rain)
-	_coordinates_hud.show_position(
-		_state.player.tile(), _state.is_inside(), _weather_and_sun_text(_weather)
-	)
+	if _coordinates_hud.visible:
+		_coordinates_hud.show_position(
+			_state.player.tile(), _state.is_inside(), _weather_and_sun_text(_weather)
+		)
 	var is_in_play := not _is_any_screen_open()
 	_use_highlight.is_enabled = (
 		is_in_play and not _builder.is_building() and not _is_in_transition

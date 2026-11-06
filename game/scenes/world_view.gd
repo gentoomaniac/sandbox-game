@@ -767,6 +767,8 @@ func _start_fall(tree: WorldObject) -> void:
 
 
 func _update_falling_trees(delta: float) -> void:
+	if _falling_trees.is_empty():
+		return
 	for fall in _falling_trees.duplicate():
 		fall.advance(delta)
 

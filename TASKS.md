@@ -308,7 +308,7 @@ light (8 buildings, 7 day/snow/frost states, lights on and off) before and after
 
 ## 71. Scene odds and ends
 
-- [ ] Done
+- [x] Done
 
 From docs/code-review-2026-11-06.md. One `hash.gdshaderinc` for the hash/hash4 copied in
 five shaders, the stale double comment in fire.gdshader, "palette: tools/art" notes next
@@ -318,6 +318,15 @@ argument) instead of re-derived in WorldView, GameSounds and GroundItemView (and
 (colour vs color) in the screens; `TerrainTileset.tile_centre`; FallingTree emits
 `finished` once; the weather text not built while F3 is off; no list copies per frame when
 empty.
+
+Done: `game/scenes/hash.gdshaderinc` (hash, hash4; the five copies were identical) is included
+by lily_pad, fire, rain_splashes, water and weather_precipitation; each shader colour block
+says "palette: tools/art/palette.py" and whether tests/test_shader_palette.gd guards it.
+`World.is_gone(object)` is the one "the hit took it down" check (WorldView, GameSounds);
+`ItemHop.just_dropped` replaces `elapsed == 0.0`. `UiColors.BACKDROP` is the one backdrop;
+constant names say `color`. `TerrainTileset.tile_centre` replaces the `_centre_of` copies and
+the inline math (wildlife included). FallingTree emits `finished` once. Main builds the F3
+text only while it shows; WorldView returns early with no falling trees.
 
 ## Later (not part of the prototype)
 
