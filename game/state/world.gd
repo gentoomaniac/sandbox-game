@@ -24,6 +24,8 @@ signal object_hit(object: WorldObject)
 signal clay_spot_changed(world_pos: Vector2i)
 ## A building was placed.
 signal building_placed(building: Building)
+## A building was taken down.
+signal building_removed(building: Building)
 ## Why a footprint tile can't be built on.
 enum Blocked {
 	## Water, wetland or floodplain, or the tile is not loaded.
@@ -449,6 +451,16 @@ func place_building(building_type: StringName, origin: Vector2i) -> Building:
 	_add_building(building)
 	building_placed.emit(building)
 	return building
+
+
+## Takes a building off the land, with its interior. What it held is the caller's to give back
+## (see GameState `take_down_building`).
+func remove_building(building: Building) -> void:
+	assert(_buildings.has(building), "Not a building of this world")
+	_buildings.erase(building)
+	for tile in building.tiles():
+		_building_by_tile.erase(tile)
+	building_removed.emit(building)
 
 
 # --- Clay ---

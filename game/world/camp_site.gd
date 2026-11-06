@@ -23,6 +23,18 @@ var spawn_pos: Vector2i
 ## Searching rings of growing radius around (0, 0) is deterministic, and the first clearing
 ## found never needs objects removed. Generates the chunks it looks at into `world`.
 static func create(world: World, generator: WorldGenerator) -> CampSite:
+	return _place(world, _find_clearing(world, generator))
+
+
+## Where the sleeping bag of a new game with this seed lies: the camp is found in the
+## generated land alone, so it can be found again whatever the player has built since.
+static func sleeping_bag_of_seed(world_seed: int) -> Vector2i:
+	var scratch_world := World.new(world_seed, GameClock.new())
+	return _find_clearing(scratch_world, WorldGenerator.new(world_seed)) + SLEEPING_BAG_OFFSET
+
+
+## The centre of the clearing nearest to the world centre.
+static func _find_clearing(world: World, generator: WorldGenerator) -> Vector2i:
 	for radius in MAX_SEARCH_RADIUS:
 		for y in range(-radius, radius + 1):
 			for x in range(-radius, radius + 1):
@@ -31,9 +43,9 @@ static func create(world: World, generator: WorldGenerator) -> CampSite:
 					continue
 				var center := Vector2i(x, y)
 				if _is_clearing(world, generator, center):
-					return _place(world, center)
+					return center
 	assert(false, "No camp site found within %d tiles of the centre" % MAX_SEARCH_RADIUS)
-	return null
+	return Vector2i.ZERO
 
 
 static func _is_clearing(world: World, generator: WorldGenerator, center: Vector2i) -> bool:

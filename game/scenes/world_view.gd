@@ -187,6 +187,7 @@ func show_world(world_to_show: World) -> void:
 	world.clay_spot_changed.connect(_on_clay_spot_changed)
 	_soil_wetness.show_world(world, is_snowed_over)
 	world.building_placed.connect(_buildings.add)
+	world.building_removed.connect(_buildings.remove)
 	_generator = WorldGenerator.new(world.world_seed)
 	_variety_noise.seed = world.world_seed + VARIETY_SEED_OFFSET
 	_variety_noise.frequency = VARIETY_FREQUENCY

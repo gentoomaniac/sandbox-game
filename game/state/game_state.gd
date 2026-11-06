@@ -229,6 +229,56 @@ func go_to_home_bed() -> void:
 		_lie_in(bed)
 
 
+## What taking a building down gives, item id to count: half of what it cost, rounded down
+## (nothing with the cost cheat on, which built it for nothing).
+func refund_of_building(building: Building) -> Dictionary:
+	var refund := {}
+	if cheats.is_cost_off:
+		return refund
+	var costs: Dictionary = BuildingTypes.TYPES[building.type]["costs"]
+	for item: StringName in costs:
+		if costs[item] / 2 > 0:
+			refund[item] = costs[item] / 2
+	return refund
+
+
+## Why a building can't be taken down now, or "" if it can: the player is inside, or something
+## the player put in it is still there (a thing they placed, or what a chest or station holds).
+## The furniture the house came with, empty, goes with it.
+func why_not_take_down(building: Building) -> String:
+	if is_inside():
+		return "You can't take a house down from inside."
+	if building.interior == null:
+		return ""
+	var own_furniture := InteriorLoader.load_interior(
+		BuildingTypes.TYPES[building.type]["interior_map"]
+	)
+	var tool_use := ToolUse.new(self)
+	for object in building.interior.objects():
+		if not object.type_data().has("drops"):
+			continue
+		var own := own_furniture.object_at(object.pos)
+		var is_own := own != null and own.type == object.type
+		if not is_own or not tool_use.items_held_by(object).is_empty():
+			return "Take out what you put in it first."
+	return ""
+
+
+## Takes a building down: half its materials lie in front of its door. Not while
+## `why_not_take_down` has a reason. A player whose home bed was in it has the camp's
+## sleeping bag for home again (if the bag is gone they wake standing on its spot, as with
+## any missing bed). Returns whether it was taken down.
+func take_down_building(building: Building) -> bool:
+	if why_not_take_down(building) != "":
+		return false
+	if player.home_map == building.interior:
+		player.home_map = world
+		player.home_bed = CampSite.sleeping_bag_of_seed(world.world_seed)
+	world.remove_building(building)
+	world.drop_items(building.door_tile() + Vector2i.DOWN, refund_of_building(building))
+	return true
+
+
 ## Puts the player on a tile of the world, out of the house they are in.
 func teleport_to(tile: Vector2i) -> void:
 	_building_inside = null

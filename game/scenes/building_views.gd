@@ -75,6 +75,15 @@ func add(building: Building) -> void:
 	_add_window_lights(building, sprite)
 
 
+## Takes down the sprite and the window lights of a building.
+func remove(building: Building) -> void:
+	_sprites[building].queue_free()
+	_sprites.erase(building)
+	for light: ObjectLight in _window_lights[building]:
+		light.queue_free()
+	_window_lights.erase(building)
+
+
 ## Fades the buildings in `occluding` and puts back the others.
 func update_see_through(delta: float, player_feet: Vector2, occluding: Array[Building]) -> void:
 	for building in _sprites:

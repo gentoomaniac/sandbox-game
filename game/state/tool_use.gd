@@ -152,7 +152,7 @@ func _do_use(target: Vector2i) -> Use:
 			_state.current_map.add_object(WorldObject.new(ItemTypes.TYPES[held]["places"], target))
 			_state.player.inventory.remove(held, 1)
 		Use.TAKE_DOWN:
-			var items := _items_of_placed(_state.current_map.remove_object(target))
+			var items := items_of_placed(_state.current_map.remove_object(target))
 			# `use_at` already checked that it all fits (or answered NO_ROOM).
 			for item: StringName in items:
 				_state.player.inventory.add(item, items[item])
@@ -219,19 +219,28 @@ func _use_inside(item: Dictionary, pos: Vector2i) -> Use:
 		or _use_cutting_tool(item, placed) != Use.HIT
 	):
 		return Use.NOTHING
-	var fits := _state.player.inventory.can_add(_items_of_placed(placed))
+	var fits := _state.player.inventory.can_add(items_of_placed(placed))
 	return Use.TAKE_DOWN if fits else Use.NO_ROOM
 
 
 ## What the player placed and what it holds (a chest's items, a kiln's load), item id to count:
 ## what taking it down gives.
-func _items_of_placed(placed: WorldObject) -> Dictionary:
+func items_of_placed(placed: WorldObject) -> Dictionary:
+	var items := items_held_by(placed)
+	var drops: Dictionary = placed.type_data()["drops"]
+	for item: StringName in drops:
+		items[item] = items.get(item, 0) + drops[item]
+	return items
+
+
+## What a placed thing holds, not counting the thing itself: a chest's items, a kiln's load.
+func items_held_by(placed: WorldObject) -> Dictionary:
 	var items := {} if placed.storage == null else placed.storage.totals()
-	var now := _state.clock.total_minutes()
-	var held := StationWork.contents(placed, now, RecipeRules.default_rules())
-	for gives: Dictionary in [held, placed.type_data()["drops"]]:
-		for item: StringName in gives:
-			items[item] = items.get(item, 0) + gives[item]
+	var held := StationWork.contents(
+		placed, _state.clock.total_minutes(), RecipeRules.default_rules()
+	)
+	for item: StringName in held:
+		items[item] = items.get(item, 0) + held[item]
 	return items
 
 
@@ -289,7 +298,7 @@ func _hit(object: WorldObject) -> void:
 		return
 	var object_type := object.type_data()
 	# What it holds (a chest's items, a kiln's load) comes out with it.
-	var drops := _items_of_placed(object) if object_type.has("drops") else {}
+	var drops := items_of_placed(object) if object_type.has("drops") else {}
 	if _rolls_seed(object):
 		drops[object_type["seed"]] = 1
 	if not object_type.has("leaves"):
