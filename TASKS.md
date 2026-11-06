@@ -526,10 +526,17 @@ are drawn below the entities (`InteriorView`'s `Beds` node) and `<bed>_cover.png
 cut from the bed's picture by tools/art/interior.py (`BED_COVERS`), is shown above the player
 while they lie there; the straw mat got a wool blanket for it. Outdoors the player lies on the
 bedroll (above the objects, `LYING_Z_INDEX`) under `assets/bedroll_cover.png`, the bag cut from
-its atlas cell by `camp.bedroll_cover` and shown by `ObjectCover` (the snow looks use the same cover). The beds do not block walking any more;
-the saved game of the report (player standing on the box bed of the longhouse, `[1.5, 2.5]`)
+its atlas cell by `camp.bedroll_cover` and shown by `ObjectCover` (the snow looks use the same cover). The beds did not block walking any more
+(reverted, see the fix below); the saved game of the report (player standing on the box bed of the longhouse, `[1.5, 2.5]`)
 loads and walks. No save change, so no new version. `GameState` got the same
 `max-public-methods` exception as `World`. Screenshots in docs/screenshots/waking-in-bed.png.
+
+Fix (2026-11-06, "now I'm walking straight on the bed"): the Kate bed, the shack mat and the
+box bed block walking again (the bedroll stays walkable). `PlayerState.move` takes the lying
+player out on their first move (`_get_out_of_bed`): onto the free tile beside the bed in the
+direction pressed, else the front (opposite the head), else the sides, never behind. A player
+standing where they do not fit walks through objects (not walls) until free
+(`_can_step_off_blocked_tile`), which covers old saves and saves made in bed.
 
 ## Later (not part of the prototype)
 

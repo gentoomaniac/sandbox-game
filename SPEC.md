@@ -221,9 +221,14 @@ top of classic pixel art (details under "Lighting and look").
 - **Waking in the bed** (decided 2026-11-06, after a player woke behind a bed and was stuck):
   after sleeping and after passing out the player wakes lying in the middle of the bed, head
   on the pillow and the body under the blanket (the asleep frame of the collapse, turned to
-  the bed; the bedroll at the camp has its own cover, `ObjectCover`). They get up on their first move. The beds
-  of the houses are drawn in layers: frame and pillow under the player, the blanket over them
-  while they lie there. Beds no longer block walking, so nobody can be stuck in or behind one.
+  the bed; the bedroll at the camp has its own cover, `ObjectCover`). The beds of the houses
+  are drawn in layers: frame and pillow under the player, the blanket over them while they
+  lie there. Beds block walking (the bedroll does not). **Getting out** (decided 2026-11-06, after
+  players walked into the cupboard bed): the first move puts the player on the free tile beside
+  the bed in the direction they pressed; if that is a wall or taken, on a free tile at the front
+  of the bed (opposite its head, facing into the room), else at its sides, never behind it.
+  Then they walk on. A player standing where they do not fit (an old save, or one made in
+  bed) walks through objects, not walls, until they are free, so nobody is stuck.
   Nothing of this is saved: a game saved in bed loads with the player standing on it.
 - **Starting shelter:** the game starts at a small camp site with a fireplace and a
   bedroll, so there is always a bed. The bedroll (task 52, replacing a modern sleeping bag)
