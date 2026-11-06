@@ -610,7 +610,7 @@ standing where they do not fit walks through objects (not walls) until free
 
 ## 79. Dogs, cats and horses; a bone for the dog
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06: dogs, cats and horses join the livestock, spawned with the
 console like the others, 2-3 looks per species plus tint, sleeping at night. A bone (an
@@ -622,6 +622,21 @@ black and grey, and a small pony. Cats roam wider than the others and climb noth
 dog with a bone follows at 1-2 tiles for 3 game hours (saved), then wanders again; giving
 it uses up the bone. Dogs bark now and then, cats are silent but for a rare meow, horses
 whinny and snort. Save version bump for the follow time.
+
+Done: `dog`, `cat` and `horse` in data/livestock.cfg with their looks (collie, spitz, pointer;
+tabby, black, ginger; bay, black, grey, pony), drawn in tools/art/livestock.py by the cow's
+frame builder, which grew running legs, a lift between strides and heads and tails per look.
+Every livestock sheet has a `run` row now (cattle, sheep, hens and rabbits reuse their walk),
+and an awake animal can pick `RUN` (a fourth `activity_weights`, `run_seconds`; `flee_speed` is
+now `run_speed`); only the new three do. The horse is 44x36 px a frame, about 32 px long, with
+the top of its torso free for a rider. Sounds `dog_bark`, `cat_meow`,
+`horse_whinny` (whinnies and snorts) through the ambience. The `bone` item: `ToolUse.Use.GIVE_BONE`
+on a dog within a tile of the target, then `Livestock.start_following` sets the animal's
+`follow_until_minute` (GameClock `total_minutes`, saved, save version 16); `Livestock.update`
+now takes the clock. A follower waits within 2 tiles, walks or runs after the player to 1 tile,
+and is put beside them when more than 15 tiles off or stuck for 2 s; it doesn't sleep. Not
+done: the bone has no recipe or source yet; a dog left outside while the player is in a house
+waits there (the world stands still).
 
 ## 80. Mice and frogs; storks eat frogs
 

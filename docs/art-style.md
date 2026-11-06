@@ -423,8 +423,13 @@ copper watering can. Kept here as the record of why.
    bare `skin_shade` tail drawn over the outline so that it stays thin), sitting and
    scurrying, and an olive common frog (`dry_light` with `olive` blotches, a pale throat that
    puffs out), sitting and hopping; and a stork swallowing a frog. Still to do: a
-   stork's nest on a ridge, lapwings and oystercatchers, seals on the sandbanks, pigs,
-   horses.
+   stork's nest on a ridge, lapwings and oystercatchers, seals on the sandbanks, pigs. Task 79
+   added dogs (a collie in brown with a white collar, a grey spitz with its tail curled over its
+   back, a liver-and-white hunting dog with drop ears), cats (tabby, black with gold eyes,
+   ginger) and horses: a heavy marsh horse about 32 px long in bay (black mane, tail and lower
+   legs), black and dapple grey, and a dun pony; all of them gallop. The horse's neck and head
+   rise ahead of its back, which stays free for a saddle and a rider. A bone item. No new
+   colours.
 9. **Coast and flats** (large). Tidal mud with ripples and tideways, salt marsh turning red
    in autumn, an Ewer on the mud, a Warft with its Fething. Needs map and terrain work
    too.

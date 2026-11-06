@@ -70,15 +70,16 @@ with Knicks, walls and fences on the Geest, ditches in the marsh, and dykes.
   them: GameState owns it and Main calls its `update` every frame while the player is
   outside. The numbers are `data/livestock.cfg` (`LivestockRules`). The WildlifeView draws
   them: one `FarmAnimalView` (an `Animal` like the wild ones, but its state comes from the
-  FarmAnimal) for each animal near the view. Wildlife is view only and not saved; livestock is
-  state and saved, and shares the wildlife's drawing, sheets and sounds. A group of birds is one
-  `Animal` with a sprite per bird: `Flock` (sparrows or a skein of geese crossing in a V) and
-  `GooseFlock` (geese grazing, then taking off together). Storks on roofs (`Stork`) stand on the top edge
-  of the house's picture as it is shown (`WorldView.building_picture`, so snow is counted), just
-  in front of where the house sorts (`BuildingViews.sort_position`); flying birds cast
-  `GroundShadows`. A hunter finds its prey with `WildlifeView.nearest_animal` (a stork its
-  frogs, `Frog`; a cat will find the `Mouse`), asked when it picks what to do next, not every
-  frame.
+  FarmAnimal) for each animal near the view. A dog given a bone (`ToolUse`, `GIVE_BONE`) follows
+  the player until a game minute it keeps (`follow_until_minute`). Wildlife is view only and
+  not saved; livestock is state and saved, and shares the wildlife's drawing, sheets and
+  sounds. A group of birds is one `Animal` with a sprite per bird: `Flock` (sparrows or a
+  skein of geese crossing in a V) and `GooseFlock` (geese grazing, then taking off together).
+  Storks on roofs (`Stork`) stand on the top edge of the house's picture as it is shown
+  (`WorldView.building_picture`, so snow is counted), just in front of where the house sorts
+  (`BuildingViews.sort_position`); flying birds cast `GroundShadows`. A hunter finds its prey
+  with `WildlifeView.nearest_animal` (a stork its frogs, `Frog`; a cat will find the `Mouse`),
+  asked when it picks what to do next, not every frame.
 - **Crafting** (`game/state/crafting.gd`) is what the crafting menu does: it checks a recipe of
   `RecipeRules` (materials, the skill level it needs), crafts it and practises its skill on the
   player's **Skills** (`skills.gd`: points per skill, the total cap and the skills that fade,
@@ -163,6 +164,8 @@ lives in the `tests/*_case.gd` base classes; extend the one that fits instead of
   chests, building, ground items and most world-change tests extend it.
 - `EnergyCase` (extends `ResourceCase`): a game running on its own energy rules, whose numbers
   differ from `data/energy.cfg`. The console, cheat, energy and passing-out tests extend it.
+- `LivestockCase`: a pen of grass ringed by water beside the camp and helpers to let the
+  farm animals' time pass (`test_livestock.gd`, `test_livestock_following.gd`).
 - `CropCase`: crops, their needs and days that meet them (`test_crops.gd`,
   `test_crop_withering.gd`).
 

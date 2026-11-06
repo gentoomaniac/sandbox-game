@@ -131,6 +131,17 @@ feeding come later. The numbers are in [data/livestock.cfg](data/livestock.cfg).
 
 ![A mixed herd by the camp on a summer morning, and asleep after midnight](docs/screenshots/livestock.png)
 
+Dogs, cats and horses keep them company: a farm collie, a spitz and a hunting dog; tabby,
+black and ginger cats; a heavy marsh horse, about two tiles long, in bay, black or grey, and a
+dun pony. Dogs and cats sniff about, horses graze, and all of them dash off at a run now and
+then; cats roam furthest. A dog barks now and then, a cat rarely meows, a horse whinnies or
+snorts. Hold a **bone** (`give bone`) and press the use key at a dog in front of you: it takes
+the bone and follows you for three game hours, day and night, keeping a tile or two from you
+and running to catch up (left far behind or stuck, it turns up at your side). Horses can't be
+ridden yet.
+
+![Horses, dogs and cats about the camp](docs/screenshots/dogs-cats-horses.png)
+
 ### Wildlife
 
 Birds hop and peck on open ground and small flocks cross the sky, rabbits graze the meadows,
@@ -334,11 +345,11 @@ arguments.
 | `help`, `help <command>` | List the commands, or show what one takes (the names it accepts too). |
 | `tp <x> <y>` | Teleport to a world tile; from inside a house you step out there (F3 shows your coordinates). |
 | `reset` | Put yourself in your bed, the one you wake in, inside or out. |
-| `give <item> [count]` | Put items in the inventory. |
+| `give <item> [count]` | Put items in the inventory (e.g. `give bone` for a dog). |
 | `god`, `nodrain`, `noweight`, `nocost` | Toggle invincibility, free actions, weight costing nothing, and buildings and crafting needing no materials. |
 | `weather`, `weather <condition>`, `weather auto` | Show the weather, force a condition, or go back to the simulation. |
 | `snow`, `snow <0..1>`, `snow auto` | Show the snow cover, force it, or go back to the weather. |
-| `spawn <animal> [count]` | Put animals nearby: farm animals that stay (`cow`, `sheep`, `chicken`, `rabbit`) or wild ones that come and go (`bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork` on the nearest roof, `geese` grazing, `flying_geese`, `mouse`, `frog`). `spawn` alone, or with an unknown name, lists them. |
+| `spawn <animal> [count]` | Put animals nearby: farm animals that stay (`cow`, `sheep`, `chicken`, `rabbit`, `dog`, `cat`, `horse`) or wild ones that come and go (`bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork` on the nearest roof, `geese` grazing, `flying_geese`, `mouse`, `frog`). `spawn` alone, or with an unknown name, lists them. |
 | `skip <n>m\|h\|d` | Let minutes, hours or days pass, e.g. `skip 2h` or `skip 3d`. |
 | `crop` | Show the growth, damage and needs of the nearest crop. |
 | `skill <skill> <points>` | Set a skill's points (`woodworking`, `cooking`, `masonry`). |
