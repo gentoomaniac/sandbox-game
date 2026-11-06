@@ -1,9 +1,9 @@
 class_name WorldGenerator
 extends RefCounted
 ## Generates the grassland biome: grass with one meandering river running west to east, a
-## floodplain band along both banks and wetland patches, with forests (oak or conifer
-## stands, mixed at their borders), bushes, rare dead trees and scattered stones and boulders
-## on the grass.
+## floodplain band along both banks and wetland patches, with forests (broadleaved woods, with
+## clumps of pine and spruce on the Geest), bushes, rare dead trees and scattered stones and
+## boulders on the grass.
 ##
 ## Over that natural land lies the worked land of data/landscape.cfg: the fields of a
 ## FieldLayout, bounded on the dry Geest by Knicks, fieldstone walls and wattle fences, and in the
@@ -87,11 +87,17 @@ const WETLAND_PROBE_DIRECTIONS: Array[Vector2i] = [
 	Vector2i(-1, 1),
 ]
 
-## Which trees a forest has: the composition noise says oak (negative) or conifer
-## (positive); the conifer share is 0.5 + noise * this, clamped, so stands are mostly one
-## kind with mixed borders. Of the conifers, this share is spruce and the rest pine.
-const CONIFER_SHARE_SLOPE := 2.0
-const SPRUCE_SHARE_OF_CONIFERS := 0.6
+## Which trees a forest has. The woods are broadleaved: in the marsh the kinds of wet ground, on
+## the Geest those of dry ground, picked by their weights below. Pine and spruce were rare here
+## before the heath plantations of the late 18th century, so they stand only in clumps on the
+## Geest, where the composition noise is above CONIFER_CLUMP_ABOVE; over the next
+## CONIFER_CLUMP_EDGE of noise their share rises to all, so a clump has a mixed rim. Of the
+## conifers, this share is Scots pine, the Geest's own, and the rest planted spruce.
+const CONIFER_CLUMP_ABOVE := 0.3
+const CONIFER_CLUMP_EDGE := 0.08
+const PINE_SHARE_OF_CONIFERS := 0.65
+const MARSH_BROADLEAVES := {WorldObjectTypes.OAK: 1.0}
+const GEEST_BROADLEAVES := {WorldObjectTypes.OAK: 1.0}
 ## The bush kinds as cumulative shares of the bush roll, in order.
 const BUSH_KIND_SHARES := [
 	[0.3, WorldObjectTypes.BERRY_BUSH],
@@ -332,14 +338,14 @@ func _natural_object_at(
 		return by_ditch
 	if terrain == Tile.Terrain.FLOODPLAIN or terrain == Tile.Terrain.WETLAND:
 		return WorldObjectTypes.REEDS if _is_reeds_at(world_pos, terrain) else &""
-	var object_type := _rolled_type_at(world_pos, terrain)
+	var object_type := _rolled_type_at(world_pos, terrain, river_distance)
 	if object_type != WorldObjectTypes.BOULDER:
 		return object_type
 	var right := world_pos + Vector2i.RIGHT
 	var right_terrain := terrain_at(right)
 	if (
 		right_terrain == Tile.Terrain.GRASS
-		and _rolled_type_at(right, Tile.Terrain.GRASS) == &""
+		and _rolled_type_at(right, Tile.Terrain.GRASS, _river_distance(right)) == &""
 		and object_type_at(right, right_terrain) == &""
 		and _fields.boundary_at(right) == &""
 		and not _is_beside_gap(right)
@@ -374,7 +380,9 @@ func _is_beside_ditch(world_pos: Vector2i) -> bool:
 
 
 ## What the roll of a tile says, before a boulder is checked for room.
-func _rolled_type_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
+func _rolled_type_at(
+	world_pos: Vector2i, terrain: Tile.Terrain, river_distance: float
+) -> StringName:
 	if terrain != Tile.Terrain.GRASS:
 		return &""
 	var forest_noise := _forest_noise.get_noise_2dv(Vector2(world_pos))
@@ -390,7 +398,7 @@ func _rolled_type_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
 	# order chunks are generated in.
 	var roll := _roll(world_pos, _object_roll_seed)
 	if roll < tree_chance:
-		return _tree_type_at(world_pos, _roll(world_pos, _variety_roll_seed))
+		return _tree_type_at(world_pos, river_distance, _roll(world_pos, _variety_roll_seed))
 	roll -= tree_chance
 	if roll < bush_chance:
 		return _bush_type(_roll(world_pos, _variety_roll_seed))
@@ -470,15 +478,33 @@ func _roll(world_pos: Vector2i, salt: int) -> float:
 	return PositionHash.of(world_pos, salt) % 10000 / 10000.0
 
 
-## Oak, spruce or pine, by the forest composition at the tile; `variety_roll` in [0, 1).
-func _tree_type_at(world_pos: Vector2i, variety_roll: float) -> StringName:
+## The kind of tree on a tile `river_distance` from the river (see the shares above);
+## `variety_roll` in [0, 1).
+func _tree_type_at(world_pos: Vector2i, river_distance: float, variety_roll: float) -> StringName:
+	if _is_marsh(river_distance):
+		return _weighted_pick(MARSH_BROADLEAVES, variety_roll)
 	var composition := _composition_noise.get_noise_2dv(Vector2(world_pos))
-	var conifer_share := clampf(0.5 + composition * CONIFER_SHARE_SLOPE, 0.0, 1.0)
-	if variety_roll >= conifer_share:
-		return WorldObjectTypes.OAK
-	if variety_roll < conifer_share * SPRUCE_SHARE_OF_CONIFERS:
+	var conifer_share := clampf((composition - CONIFER_CLUMP_ABOVE) / CONIFER_CLUMP_EDGE, 0.0, 1.0)
+	if variety_roll < conifer_share * PINE_SHARE_OF_CONIFERS:
+		return WorldObjectTypes.PINE
+	if variety_roll < conifer_share:
 		return WorldObjectTypes.SPRUCE
-	return WorldObjectTypes.PINE
+	# The roll left over after the conifers, stretched back to [0, 1).
+	return _weighted_pick(GEEST_BROADLEAVES, (variety_roll - conifer_share) / (1.0 - conifer_share))
+
+
+## The kind a roll in [0, 1) picks from kinds and their weights, each kind as likely as its
+## share of the total weight.
+static func _weighted_pick(weights: Dictionary, roll: float) -> StringName:
+	var total := 0.0
+	for kind: StringName in weights:
+		total += weights[kind]
+	var reached := 0.0
+	for kind: StringName in weights:
+		reached += weights[kind]
+		if roll * total < reached:
+			return kind
+	return weights.keys()[-1]
 
 
 func _bush_type(variety_roll: float) -> StringName:
