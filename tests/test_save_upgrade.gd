@@ -307,6 +307,31 @@ func test_a_version_9_save_keeps_the_worked_land_off_the_house_and_the_player() 
 	assert_true(PlayerState.can_stand_at(world, restored.player.position))
 
 
+func test_a_version_9_save_keeps_its_chest_on_a_knick_and_its_tilled_soil_on_a_ditch() -> void:
+	var game := _current_game()
+	var generator := WorldGenerator.new(int(game["world"]["seed"]))
+	var knick := _find_tile(
+		func(pos: Vector2i) -> bool:
+			return (
+				generator.object_type_at(pos, generator.terrain_at(pos)) == WorldObjectTypes.KNICK
+			)
+	)
+	var ditch := _find_tile(generator.is_ditch)
+	var chest := WorldObject.new(WorldObjectTypes.CHEST, knick).to_dict()
+	game["world"]["object_edits"].append({"pos": SaveCodec.vector_to_json(knick), "object": chest})
+	game["world"]["terrain_edits"].append(
+		SaveCodec.vector_to_json(ditch) + [SaveCodec.terrain_to_json(Tile.Terrain.SOIL)]
+	)
+	_write_save(9, game)
+
+	var world := SaveFile.read(SAVE_PATH).world
+	for tile: Vector2i in [knick, ditch]:
+		world.add_chunk(generator.generate_chunk(Chunk.world_to_chunk(tile)))
+	assert_eq(world.object_at(knick).type, WorldObjectTypes.CHEST)
+	assert_eq(world.tile_at(ditch).terrain, Tile.Terrain.SOIL)
+	assert_true(world.is_tilled(ditch))
+
+
 ## A tile within 200 tiles of the centre for which `is_wanted` is true.
 func _find_tile(is_wanted: Callable) -> Vector2i:
 	for y in range(-200, 200):
