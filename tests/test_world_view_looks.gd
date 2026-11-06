@@ -178,15 +178,15 @@ func test_decorations_take_the_look_of_their_tile() -> void:
 	_view._load_chunk(RIGHT)
 	_show(SUMMER, 0.0)
 	var source_ids := {}
-	for pos in _view._decorations.get_used_cells():
-		source_ids[_view._decorations.get_cell_source_id(pos)] = true
+	for pos in _view.decorations._decorations.get_used_cells():
+		source_ids[_view.decorations._decorations.get_cell_source_id(pos)] = true
 	assert_eq(source_ids.keys(), [TerrainTileset.decoration_source_id(SeasonBlend.Look.SUMMER)])
 	_show(SUMMER, 1.0)
-	for pos in _view._decorations.get_used_cells():
+	for pos in _view.decorations._decorations.get_used_cells():
 		var is_water := TerrainTileset.layer_of(_view._code_at(pos)) == TerrainTileset.Layer.WATER
 		var expected := SeasonBlend.Look.SUMMER if is_water else SeasonBlend.Look.SNOW
 		assert_eq(
-			_view._decorations.get_cell_source_id(pos),
+			_view.decorations._decorations.get_cell_source_id(pos),
 			TerrainTileset.decoration_source_id(expected),
 			"decoration at %s" % pos
 		)

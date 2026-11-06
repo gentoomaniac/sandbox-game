@@ -109,13 +109,13 @@ func trees_near(point: Vector2, tiles: int) -> Array[Vector2i]:
 
 
 func has_flower(tile: Vector2i) -> bool:
-	return world_view.has_flower(tile)
+	return world_view.decorations.has_flower(tile)
 
 
 ## The tiles of flowers in bloom within a number of tiles of a point.
 func flowers_near(point: Vector2, tiles: int) -> Array[Vector2i]:
 	var reach := tiles * WildlifeRules.TILE_SIZE
-	return world_view.flower_tiles_within(Rect2(point, Vector2.ZERO).grow(reach))
+	return world_view.decorations.flower_tiles_within(Rect2(point, Vector2.ZERO).grow(reach))
 
 
 ## Adds or sends away animals until each kind has the number the rules ask for.
@@ -167,7 +167,7 @@ func _spawn_somewhere(kind: StringName) -> void:
 	var view := view_rect()
 	var player := world_view.player_feet
 	if rules.needs_flowers(kind):
-		var flowers := world_view.flower_tiles_within(
+		var flowers := world_view.decorations.flower_tiles_within(
 			view.grow(rules.general("spawn_margin_tiles") * WildlifeRules.TILE_SIZE)
 		)
 		flowers.shuffle()
@@ -201,7 +201,7 @@ func _is_habitat(kind: StringName, point: Vector2) -> bool:
 func _spawn_near_player(kind: StringName) -> bool:
 	var player := world_view.player_feet
 	if kind == WildlifeRules.BEE:
-		var flowers := world_view.flower_tiles_within(view_rect())
+		var flowers := world_view.decorations.flower_tiles_within(view_rect())
 		if flowers.is_empty():
 			return false
 		flowers.sort_custom(

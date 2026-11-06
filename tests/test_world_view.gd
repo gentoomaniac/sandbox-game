@@ -117,7 +117,9 @@ func test_objects_are_drawn_on_load_and_erased_on_unload() -> void:
 	_view._load_chunk(RIGHT)
 	var object := _view.world.chunk_at(RIGHT).objects()[0]
 	assert_ne(_view._objects.get_cell_source_id(object.pos), -1)
-	assert_eq(_view._decorations.get_cell_source_id(object.pos), -1, "no decoration under it")
+	assert_eq(
+		_view.decorations._decorations.get_cell_source_id(object.pos), -1, "no decoration under it"
+	)
 	_view._unload_chunk(RIGHT)
 	assert_eq(_view._objects.get_cell_source_id(object.pos), -1)
 
@@ -132,7 +134,7 @@ func test_objects_are_redrawn_when_added_and_removed() -> void:
 	assert_eq(_view._objects.get_cell_source_id(free_pos), -1)
 	_view.world.add_object(WorldObject.new(WorldObjectTypes.OAK, free_pos))
 	assert_ne(_view._objects.get_cell_source_id(free_pos), -1)
-	assert_eq(_view._decorations.get_cell_source_id(free_pos), -1)
+	assert_eq(_view.decorations._decorations.get_cell_source_id(free_pos), -1)
 	_view.world.remove_object(free_pos)
 	assert_eq(_view._objects.get_cell_source_id(free_pos), -1)
 
@@ -158,24 +160,24 @@ func test_building_windows_are_lit_and_shine_only_in_the_dark() -> void:
 func test_decorations_thin_out_by_winter_and_return_on_the_refresh_of_a_new_day() -> void:
 	_view._load_chunk(RIGHT)
 	_set_day(SUMMER)
-	var in_summer := _view._decorations.get_used_cells().size()
+	var in_summer := _view.decorations._decorations.get_used_cells().size()
 	_set_day(WINTER)
-	var in_winter := _view._decorations.get_used_cells().size()
+	var in_winter := _view.decorations._decorations.get_used_cells().size()
 	assert_lt(in_winter, in_summer)
 	assert_gt(in_winter, 0, "pebbles and a few stalks stay")
 	_set_day(SUMMER)
-	assert_eq(_view._decorations.get_used_cells().size(), in_summer)
+	assert_eq(_view.decorations._decorations.get_used_cells().size(), in_summer)
 
 
 func test_a_chunk_loaded_in_winter_is_drawn_for_winter() -> void:
 	_set_day(SUMMER)
 	_view._load_chunk(RIGHT)
-	var in_summer := _view._decorations.get_used_cells().size()
+	var in_summer := _view.decorations._decorations.get_used_cells().size()
 	_view._unload_chunk(RIGHT)
-	assert_true(_view._decoration_spots.is_empty(), "unloading forgets the spots")
+	assert_true(_view.decorations._spots.is_empty(), "unloading forgets the spots")
 	_set_day(WINTER)
 	_view._load_chunk(RIGHT)
-	assert_lt(_view._decorations.get_used_cells().size(), in_summer)
+	assert_lt(_view.decorations._decorations.get_used_cells().size(), in_summer)
 
 
 func test_a_fern_is_drawn_in_summer_and_gone_in_winter() -> void:

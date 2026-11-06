@@ -6,11 +6,11 @@ extends Node2D
 ## grid (see TerrainTileset): cell (x, y) of every layer is shifted half a tile up and left,
 ## so its corners sit on world tiles (x - 1, y - 1) to (x, y). A chunk owns the cells whose
 ## bottom-right tile is its own, so loading or unloading it fills or erases those cells,
-## with no nodes to create or free. On top, a decoration layer on the plain tile grid
-## scatters flowers, pebbles and the like; they are only looks, not world objects. Above
-## that, the damp or wet look of tilled soil (see SoilWetness), and an objects layer on the same
-## grid that draws the world's objects. It sits in the y-sorted `entities` node, where the
-## player (and later creatures) stand among them, and keeps no decoration under an object.
+## with no nodes to create or free. On top, the DecorationView on the plain tile grid
+## scatters flowers, pebbles and the like. Above that, the damp or wet look of tilled soil (see
+## SoilWetness), and an objects layer on the same grid that draws the world's objects. It sits
+## in the y-sorted `entities` node, where the player (and later creatures) stand among them, and
+## keeps no decoration under an object.
 ## Objects that shine get an ObjectLight. Plants, water, fires and lily pads move in the wind
 ## by the materials of `ambient_motion`, and the rain splashes on the ground under the objects.
 ##
@@ -53,26 +53,10 @@ const CORNER_OFFSETS: Array[Vector2i] = [
 	Vector2i(-1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 0)
 ]
 
-## Visual-only noise, seeded from the world seed with offsets far from the generator's.
+## Visual-only noise, seeded from the world seed with an offset far from the generator's.
 ## Variety: grass turns lush or dry over patches about this many tiles across.
 const VARIETY_SEED_OFFSET := 7919
 const VARIETY_FREQUENCY := 0.008
-## Decoration clusters, a few tiles across.
-const DECORATION_SEED_OFFSET := 104729
-const DECORATION_FREQUENCY := 0.12
-
-
-## A place where a decoration could grow: its look, its Vegetation kind and fixed threshold,
-## and whether it is drawn now, and in which look.
-class DecorationSpot:
-	extends RefCounted
-	var atlas_cell: Vector2i
-	var kind: StringName
-	var threshold: float
-	var is_shown := false
-	## The terrain layer of its tile, which decides how its look shows.
-	var layer := 0
-	var look := SeasonBlend.Look.SUMMER
 
 
 ## What a chunk's tiles need for their looks, all by tile index (local y * CHUNK_SIZE + x).
@@ -100,18 +84,17 @@ var is_settled := false
 var player_feet := Vector2.ZERO
 ## The game scene gives it the wind and the rain every frame.
 var ambient_motion := AmbientMotion.new()
+## The flowers and pebbles on the ground and the hints of clay spots; the wildlife asks it where
+## flowers bloom.
+var decorations: DecorationView
 var _generator: WorldGenerator
 var _hit_particles := HitParticles.new()
 var _variety_noise := FastNoiseLite.new()
-var _decoration_noise := FastNoiseLite.new()
 var _focus_chunk := Vector2i.ZERO
 var _tileset := TerrainTileset.new(ambient_motion)
 var _object_tileset := ObjectTileset.new(CropRules.default_rules(), ambient_motion)
 ## Indexed by TerrainTileset.Layer.
 var _layers: Array[TileMapLayer] = []
-var _decorations := TileMapLayer.new()
-## The hints of clay spots, on the same grid as the decorations.
-var _clay_hints := TileMapLayer.new()
 var _soil_wetness := SoilWetness.new()
 var _objects := TileMapLayer.new()
 ## The light of each shining object, by tile.
@@ -121,7 +104,6 @@ var _blend: SeasonBlend
 ## The day, the snow cover and the frost that the looks are drawn for.
 var _look_state := Vector3(-1, 0, 0)
 var _conditions: SeasonBlend.Conditions
-var _day := 0
 var _chunk_looks: Dictionary[Vector2i, ChunkLooks] = {}
 ## Chunks whose looks are not brought up to date yet, the nearest to the focus last.
 var _refresh_queue: Array[Vector2i] = []
@@ -136,15 +118,16 @@ var _variety_overlays: Dictionary[Vector2i, TileMapLayer] = {}
 ## What each object cell was last drawn as, by tile: its look, plus BARE_OF_FRUIT_FLAG if it
 ## showed as bare of fruit, or DORMANT if it was not drawn.
 var _object_states: Dictionary[Vector2i, int] = {}
-## Where a decoration could grow, shown or not, so a new day only revisits these tiles.
-## Never under an object.
-var _decoration_spots: Dictionary[Vector2i, DecorationSpot] = {}
 ## The sprites that stand in for object cells while they are see-through, by tile.
 var _object_sprites: Dictionary[Vector2i, SeeThroughSprite] = {}
 var _falling_trees: Array[FallingTree] = []
 ## The trunks (by tile) that a falling tree is about to lie down as, and that are not drawn yet.
 var _hidden_trunks: Dictionary[Vector2i, bool] = {}
 var _buildings := BuildingViews.new(entities)
+
+
+func _init() -> void:
+	decorations = DecorationView.new(_tileset)
 
 
 func _ready() -> void:
@@ -168,12 +151,7 @@ func _ready() -> void:
 			_variety_overlays[Vector2i(look, layer)] = _add_overlay(
 				"%s%sLook" % [look_name, layer_name]
 			)
-	_decorations.name = "Decorations"
-	_decorations.tile_set = _tileset.tile_set
-	add_child(_decorations)
-	_clay_hints.name = "ClayHints"
-	_clay_hints.tile_set = _tileset.tile_set
-	add_child(_clay_hints)
+	add_child(decorations)
 	add_child(RainSplashes.new(ambient_motion))
 	_objects.name = "Objects"
 	_objects.tile_set = _object_tileset.tile_set
@@ -207,12 +185,11 @@ func show_world(world_to_show: World) -> void:
 	_generator = WorldGenerator.new(world.world_seed)
 	_variety_noise.seed = world.world_seed + VARIETY_SEED_OFFSET
 	_variety_noise.frequency = VARIETY_FREQUENCY
-	_decoration_noise.seed = world.world_seed + DECORATION_SEED_OFFSET
-	_decoration_noise.frequency = DECORATION_FREQUENCY
+	decorations.show_world(world)
 	_blend = SeasonBlend.new(world.world_seed)
-	_day = world.clock.day
-	_conditions = _blend.conditions(_day, 0.0, 0.0)
-	_look_state = Vector3(_day, 0.0, 0.0)
+	decorations.day = world.clock.day
+	_conditions = _blend.conditions(decorations.day, 0.0, 0.0)
+	_look_state = Vector3(decorations.day, 0.0, 0.0)
 	_buildings.set_looks(_blend, _conditions)
 	for coords in world.loaded_chunk_coords():
 		_draw_chunk(world.chunk_at(coords))
@@ -229,7 +206,7 @@ func refresh_looks(day: int, snow_cover: float, frost: float) -> void:
 	if world == null or state == _look_state:
 		return
 	_look_state = state
-	_day = day
+	decorations.day = day
 	_conditions = _blend.conditions(day, snow_cover, frost)
 	_refresh_queue.assign(world.loaded_chunk_coords())
 	var focus := _focus_chunk
@@ -244,29 +221,6 @@ func refresh_looks(day: int, snow_cover: float, frost: float) -> void:
 func finish_refresh() -> void:
 	while not _refresh_queue.is_empty() or not _cells_to_redraw.is_empty():
 		_refresh_step()
-
-
-## Whether a flower is in bloom on a tile today and not under snow (wildlife visits those).
-func has_flower(world_pos: Vector2i) -> bool:
-	var spot: DecorationSpot = _decoration_spots.get(world_pos)
-	return (
-		spot != null
-		and spot.is_shown
-		and spot.kind == &"flower"
-		and spot.look != SeasonBlend.Look.SNOW
-	)
-
-
-## The tiles within a rectangle (in world pixels) where a flower is in bloom today.
-func flower_tiles_within(area: Rect2) -> Array[Vector2i]:
-	var tiles: Array[Vector2i] = []
-	var first := Vector2i((area.position / TerrainTileset.TILE_SIZE).floor())
-	var last := Vector2i((area.end / TerrainTileset.TILE_SIZE).floor())
-	for y in range(first.y, last.y + 1):
-		for x in range(first.x, last.x + 1):
-			if has_flower(Vector2i(x, y)):
-				tiles.append(Vector2i(x, y))
-	return tiles
 
 
 ## Sets how brightly every light shines (see ObjectLight.strength).
@@ -320,7 +274,7 @@ func redraw_tile(world_pos: Vector2i) -> void:
 	for offset: Vector2i in CORNER_OFFSETS:
 		_redraw_cell(world_pos - offset)
 	if world.is_chunk_loaded(Chunk.world_to_chunk(world_pos)):
-		_draw_decoration(world_pos, TerrainTileset.layer_of(_code_at(world_pos)))
+		decorations.redraw(world_pos, _code_at(world_pos))
 
 
 ## Called for every tile an object covers; it is drawn from its own tile only.
@@ -329,11 +283,11 @@ func _on_objects_changed(world_pos: Vector2i) -> void:
 	if object == null or object.pos == world_pos:
 		_drop_object_sprite(world_pos)
 		_draw_object(world_pos)
-	_draw_decoration(world_pos, TerrainTileset.layer_of(_code_at(world_pos)))
+	decorations.redraw(world_pos, _code_at(world_pos))
 
 
 func _on_clay_spot_changed(world_pos: Vector2i) -> void:
-	_draw_decoration(world_pos, TerrainTileset.layer_of(_code_at(world_pos)))
+	decorations.redraw(world_pos, _code_at(world_pos))
 
 
 ## A tool hit an object: what it leaves, if any, shakes (a stump, after the last hit), and
@@ -420,10 +374,8 @@ func _draw_chunk(chunk: Chunk) -> void:
 			)
 			_draw_cell_corners(origin + Vector2i(x, y), codes)
 			# The bottom-right corner is this chunk's tile (x, y).
-			_set_decoration(
-				origin + Vector2i(x, y),
-				TerrainTileset.layer_of(codes[3]),
-				covered.has(origin + Vector2i(x, y))
+			decorations.place(
+				origin + Vector2i(x, y), codes[3], covered.has(origin + Vector2i(x, y))
 			)
 	for object in chunk.objects():
 		_draw_object(object.pos)
@@ -492,9 +444,7 @@ func _refresh_chunk(coords: Vector2i) -> void:
 			_soil_wetness.redraw_tile(pos)
 			for offset: Vector2i in CORNER_OFFSETS:
 				changed_cells[pos - offset] = true
-		var spot: DecorationSpot = _decoration_spots.get(pos)
-		if spot != null:
-			_update_decoration(pos, spot)
+		decorations.refresh(pos, chunk_looks.codes[index])
 	_cells_to_redraw.append_array(changed_cells.keys())
 	for object in chunk.objects():
 		if _object_states.get(object.pos, DORMANT) != _object_state(object):
@@ -534,9 +484,7 @@ func _unload_chunk(coords: Vector2i) -> void:
 				tile_map.erase_cell(origin + Vector2i(x, y))
 			for tile_map in overlays:
 				tile_map.erase_cell(origin + Vector2i(x, y))
-			_decorations.erase_cell(origin + Vector2i(x, y))
-			_clay_hints.erase_cell(origin + Vector2i(x, y))
-			_decoration_spots.erase(origin + Vector2i(x, y))
+			decorations.forget(origin + Vector2i(x, y))
 	world.remove_chunk(coords)
 	for fall in _falling_trees.duplicate():
 		if Chunk.world_to_chunk(fall.tree.pos) == coords:
@@ -777,56 +725,6 @@ func _drop_object_sprite(world_pos: Vector2i) -> void:
 	if sprite != null:
 		_object_sprites.erase(world_pos)
 		sprite.queue_free()
-
-
-func _draw_decoration(world_pos: Vector2i, layer: int) -> void:
-	_set_decoration(world_pos, layer, world.object_at(world_pos) != null)
-
-
-func _set_decoration(world_pos: Vector2i, layer: int, is_covered: bool) -> void:
-	_set_clay_hint(world_pos, is_covered)
-	var atlas_cell := TerrainTileset.NO_DECORATION
-	if not is_covered:
-		var cluster := _decoration_noise.get_noise_2dv(Vector2(world_pos))
-		atlas_cell = _tileset.decoration_cell(layer, world_pos, cluster)
-	_decorations.erase_cell(world_pos)
-	if atlas_cell == TerrainTileset.NO_DECORATION:
-		_decoration_spots.erase(world_pos)
-		return
-	var spot := DecorationSpot.new()
-	spot.atlas_cell = atlas_cell
-	spot.kind = TerrainTileset.decoration_kind(atlas_cell)
-	spot.layer = layer
-	if spot.kind != &"":
-		spot.threshold = world.vegetation.threshold(spot.kind, world.world_seed, world_pos)
-	_decoration_spots[world_pos] = spot
-	_update_decoration(world_pos, spot)
-
-
-## Shows the hint of a clay spot that still holds clay, unless an object stands on it.
-func _set_clay_hint(world_pos: Vector2i, is_covered: bool) -> void:
-	if is_covered or not world.has_clay(world_pos):
-		_clay_hints.erase_cell(world_pos)
-	else:
-		_clay_hints.set_cell(world_pos, TerrainTileset.CLAY_HINT_SOURCE_ID, Vector2i.ZERO)
-
-
-## Draws, erases or redraws the decoration of a spot, as its kind is present today and as the
-## look of its tile is now.
-func _update_decoration(world_pos: Vector2i, spot: DecorationSpot) -> void:
-	var should_show := spot.kind == &"" or world.vegetation.shows(spot.kind, spot.threshold, _day)
-	var code := _code_at(world_pos)
-	var look := TerrainTileset.shown_look(
-		spot.layer, TerrainTileset.season_of(code), TerrainTileset.weather_of(code)
-	)
-	if should_show == spot.is_shown and (look == spot.look or not should_show):
-		return
-	spot.is_shown = should_show
-	spot.look = look
-	if should_show:
-		_decorations.set_cell(world_pos, TerrainTileset.decoration_source_id(look), spot.atlas_cell)
-	else:
-		_decorations.erase_cell(world_pos)
 
 
 ## The code of a tile (see TerrainTileset.tile_code), or TerrainTileset.MISSING if its chunk is
