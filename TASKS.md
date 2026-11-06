@@ -236,7 +236,7 @@ validation API across them (`problems()` + `is_valid()`, renaming `missing_keys`
 
 ## 69. main.gd slimmed
 
-- [ ] Done
+- [x] Done
 
 From docs/code-review-2026-11-06.md. The ~45 debug flags into a parsed `StartupOptions`
 (typed fields, one `_tile(arg)` helper; also the flags now parsed in PlayerView, BuildMode
@@ -247,6 +247,17 @@ same `open()`/`close()`/`is_open()` (close safe when closed; StorageScreen conne
 safely), and Main keeps one list of them for the Escape order, "is any open", "close all"
 and the UI sounds. `_ready` in three named steps (make views, connect state, apply start
 options) with the order dependencies written down. Input order unchanged.
+
+Done: every screen has `open()`, `close()` and `is_open()` (`close()` is safe when closed;
+StorageScreen listens to the inventory and chest only while open). Main keeps `_screens`, a
+plain array of the console and the three screens in Escape order, with three small functions
+over it (any open, close topmost, close all) and the UI sound loop; the pause menu stays
+apart because Escape opens it and it pauses the game. `StartupOptions`
+(game/scenes/startup_options.gd) parses every flag once into typed fields and its header is
+the one list of flags; PlayerView, BuildMode and AudioService read it. `DebugRunner` does the
+"once the world is drawn" steps and the screenshot countdown. `_ready` is `_load_game`,
+`_make_views`, `_connect_state_and_views`, `_apply_start_options`, then the sounds, with the
+order written down. main.gd went from 871 to 671 lines.
 
 ## 70. world_view.gd: one tile code, buildings and decorations apart
 

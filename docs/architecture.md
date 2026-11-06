@@ -26,7 +26,11 @@ and plans which chunks to load (`WorldGenerator`, `ChunkStreaming`, `CampSite`,
 
 - **Main** (`game/scenes/main.gd`, `main.tscn`) is the one scene. It owns the `GameState`,
   turns real time into game minutes, sends input to the state and creates the views and
-  screens. The debug flags are parsed by `StartupOptions` (see below).
+  screens. Its `_ready` runs in steps: load the game, make the views, connect the state and
+  the views, apply the start options. Every screen (`CharacterScreen`, `CraftingScreen`,
+  `StorageScreen`, `ConsoleView`) has `open()`, `close()` and `is_open()`, and Main keeps them
+  in one list (`_screens`). The debug flags are parsed by `StartupOptions`; `DebugRunner` does
+  the ones that wait for the world to be drawn (see below).
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
   weather, the snow cover and the player. It is the entry point for actions (`use_at`,
   `sleep_in`, `pass_door`, `pass_out`), and what gets saved (`to_dict`, see `SaveFile`).

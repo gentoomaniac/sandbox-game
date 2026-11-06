@@ -87,6 +87,25 @@ func _ready() -> void:
 		set_process_unhandled_input(false)
 		get_tree().quit(1)
 		return
+	_load_game()
+	# The steps depend on each other in this order:
+	# - the views are made before they are connected, and all of them before the options act on
+	#   them;
+	# - the state is complete (the game options applied) before any view reads it;
+	# - `_view.show_world` comes before `_ground_item_view.show_items`, which draws into the
+	#   world view's entities, and `_builder` before the build mode and panel that use it;
+	# - the sounds start last, after the options, so a screen that is open at start makes no sound.
+	_make_views()
+	_connect_state_and_views()
+	_apply_start_options()
+	_start_sounds()
+	_show_clock()
+	if _state.is_inside():
+		_show_current_map()
+
+
+## The settings, the audio and the game, with the flags that change the game applied.
+func _load_game() -> void:
 	_settings = _load_settings()
 	_apply_ui_scale(_settings.ui_scale)
 	add_child(_audio)
@@ -111,14 +130,71 @@ func _ready() -> void:
 	)
 	# Quitting saves first (see _notification).
 	get_tree().auto_accept_quit = false
-	_apply_start_options_to_state()
-	_view.show_world(_state.world)
+	_apply_game_options()
+
+
+## Puts every view in the tree, in the order they are drawn and take input.
+func _make_views() -> void:
 	_view.add_child(_ground_item_view)
+	_view.add_child(_wildlife)
+	# Among the objects, so the player walks behind tree canopies.
+	_view.entities.add_child(_player_view)
+	_player_view.add_child(_tiredness_view)
+	_view.add_child(_use_highlight)
+	add_child(_harvest_hud)
+	add_child(_coordinates_hud)
+	add_child(_hotbar)
+	add_child(_build_panel)
+	add_child(_vitals)
+	add_child(_character_screen)
+	add_child(_crafting_screen)
+	add_child(_storage_screen)
+	add_child(_cheat_hud)
+	add_child(_console_view)
+	_menu = PauseMenu.new(_settings)
+	add_child(_menu)
+	add_child(_tooltip_view)
+	add_child(_fade_screen)
+	_interior_view.hide()
+	_world.add_child(_interior_view)
+	_world.add_child(_weather_view)
+
+
+## Shows the state in the views and wires what they report back.
+func _connect_state_and_views() -> void:
+	_view.show_world(_state.world)
 	_ground_item_view.show_items(_state.world, _view.entities)
 	_view.tree_felled.connect(_ground_item_view.hold_hops_from)
-	_view.add_child(_wildlife)
 	_wildlife.show_wildlife(_state, _view, _camera)
 	_builder = Builder.new(_state)
+	_build_mode.world = _state.world
+	_build_mode.builder = _builder
+	_build_mode.camera = _camera
+	_build_mode.message_changed.connect(_show_build_message)
+	_camera.rig.follow(_camera_target)
+	_player_view.show_player(_state.player, _options)
+	_tiredness_view.watch(_state.player, _state.clock, _state.energy_rules)
+	_use_highlight.show_for(_state, _camera)
+	_hotbar.show_inventory(_state.player.inventory)
+	_build_panel.bind(_builder, _state.player.inventory)
+	_vitals.show_state(_state)
+	_character_screen.show_player(_state.player)
+	_crafting_screen.show_crafting(Crafting.new(_state), _state.player.inventory)
+	_cheat_hud.show_cheats(_state.cheats)
+	_console_view.show_state(_state, _wildlife.spawn_in_view)
+	# A teleport moves the player far: the camera jumps with them instead of gliding.
+	_console_view.command_ran.connect(
+		func() -> void:
+			_camera.rig.follow(_camera_target)
+			_show_clock()
+	)
+	_menu.resumed.connect(_resume)
+	_menu.save_and_quit_requested.connect(_save_and_quit)
+
+
+## Applies the flags that put the views in a situation, and hands the ones that wait for the
+## drawn world to the DebugRunner.
+func _apply_start_options() -> void:
 	if _options.building != &"":
 		if BuildingTypes.TYPES.has(_options.building):
 			_builder.choice = _options.building
@@ -130,57 +206,24 @@ func _ready() -> void:
 	if _options.ghost != StartupOptions.NO_TILE:
 		_builder.select_hammer()
 	_build_mode.start_options = _options
-	_build_mode.world = _state.world
-	_build_mode.builder = _builder
-	_build_mode.camera = _camera
-	_build_mode.message_changed.connect(_show_build_message)
-	_camera.rig.follow(_camera_target)
 	_camera.rig.set_zoom_clamped(_options.zoom)
-	# Among the objects, so the player walks behind tree canopies.
-	_view.entities.add_child(_player_view)
-	_player_view.show_player(_state.player, _options)
-	_tiredness_view.watch(_state.player, _state.clock, _state.energy_rules)
-	_player_view.add_child(_tiredness_view)
-	_view.add_child(_use_highlight)
-	_use_highlight.show_for(_state, _camera)
-	add_child(_harvest_hud)
-	add_child(_coordinates_hud)
-	add_child(_hotbar)
-	_hotbar.show_inventory(_state.player.inventory)
-	add_child(_build_panel)
-	_build_panel.bind(_builder, _state.player.inventory)
-	add_child(_vitals)
-	_vitals.show_state(_state)
-	add_child(_character_screen)
-	_character_screen.show_player(_state.player)
+	if _options.coordinates:
+		_coordinates_hud.toggle()
+	if _options.mouse_tile != StartupOptions.NO_TILE:
+		_use_highlight.debug_mouse_tile = _options.mouse_tile
+	if _options.tooltip != "":
+		_tooltip_view.show_by_id(_options.tooltip)
+	_wildlife.is_spawning_naturally = _options.wildlife.is_empty()
+	_wildlife.is_player_ignored = _options.wildlife_calm
+	_weather_view.is_flash_held = _options.flash
 	if _options.inventory:
 		_character_screen.open()
-	add_child(_crafting_screen)
-	_crafting_screen.show_crafting(Crafting.new(_state), _state.player.inventory)
 	if _options.crafting:
 		_crafting_screen.open()
-	add_child(_storage_screen)
-	add_child(_cheat_hud)
-	_cheat_hud.show_cheats(_state.cheats)
-	add_child(_console_view)
-	_console_view.show_state(_state, _wildlife.spawn_in_view)
-	# A teleport moves the player far: the camera jumps with them instead of gliding.
-	_console_view.command_ran.connect(
-		func() -> void:
-			_camera.rig.follow(_camera_target)
-			_show_clock()
-	)
 	if not _options.console.is_empty():
 		_console_view.open()
 		for line in _options.console:
 			_console_view.run_line(line)
-	_menu = PauseMenu.new(_settings)
-	_menu.resumed.connect(_resume)
-	_menu.save_and_quit_requested.connect(_save_and_quit)
-	add_child(_menu)
-	add_child(_tooltip_view)
-	add_child(_fade_screen)
-	_start_sounds()
 	_debug = DebugRunner.new(_options)
 	_debug.state = _state
 	_debug.view = _view
@@ -192,12 +235,6 @@ func _ready() -> void:
 	_debug.pass_door = _pass_door
 	_debug.open_menu = _open_menu
 	_debug.save_screenshot_and_quit = _save_screenshot_and_quit
-	_interior_view.hide()
-	_world.add_child(_interior_view)
-	_world.add_child(_weather_view)
-	_show_clock()
-	if _state.is_inside():
-		_show_current_map()
 
 
 func _notification(what: int) -> void:
@@ -511,8 +548,8 @@ func _start_sounds() -> void:
 	_ambience.listen(_audio, _state, _wildlife, _weather_view)
 
 
-## Applies the flags that change the game before any view exists, so the views start from it.
-func _apply_start_options_to_state() -> void:
+## Applies the flags that change the game itself, before any view reads it.
+func _apply_game_options() -> void:
 	if _options.at != StartupOptions.NO_TILE:
 		_state.player.position = Vector2(_options.at) + Vector2(0.5, 0.5)
 	if _options.day > 0:
@@ -533,22 +570,12 @@ func _apply_start_options_to_state() -> void:
 		_state.player.energy = _options.energy
 	if _options.health >= 0.0:
 		_state.player.health = _options.health
-	if _options.coordinates:
-		_coordinates_hud.toggle()
 	if _options.wear != &"":
 		_state.player.equipment.equip(Equipment.slot_of(_options.wear), _options.wear)
 	if _options.hold != &"":
 		_hold(_options.hold)
-	if _options.mouse_tile != StartupOptions.NO_TILE:
-		_use_highlight.debug_mouse_tile = _options.mouse_tile
-	if _options.tooltip != "":
-		_tooltip_view.show_by_id(_options.tooltip)
 	if _options.weather != &"":
 		_force_weather(_options.weather)
-	if not _options.wildlife.is_empty():
-		_wildlife.is_spawning_naturally = false
-	_wildlife.is_player_ignored = _options.wildlife_calm
-	_weather_view.is_flash_held = _options.flash
 	if _options.snow >= 0.0:
 		_state.snow_cover.forced = _options.snow
 
