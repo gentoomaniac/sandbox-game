@@ -575,6 +575,10 @@ standing where they do not fit walks through objects (not walls) until free
 
 ## Later (not part of the prototype)
 
+- `WildlifeSprites.frame_index` and `max_frames` allocate on every call (`keys()`,
+  `values().max()`); the older animals call them per frame. Cache them per sheet. And rename
+  `SoundEvents.animal_alarm`, which since task 60 also gives the stork's clatter, to something
+  like `animal_state_sound`.
 - A committed pixel guard (a GUT test hashing the tile cells, sprites and lights for a fixed seed
   and a few days) would catch silent rendering changes in refactors like task 70; left out while
   the art tasks change the pictures on purpose, as its golden value would need updating each time.
