@@ -64,6 +64,19 @@ func test_no_flower_under_an_object() -> void:
 	assert_eq(_view._decorations.get_cell_source_id(tile), -1)
 
 
+func test_the_first_flowers_of_spring_are_small_and_summer_is_full() -> void:
+	var small_share := func(day: int) -> float:
+		var flowers := _flowers_on(GRASS, day)
+		var small := flowers.filter(
+			func(tile: Vector2i) -> bool:
+				var column := _view._decorations.get_cell_atlas_coords(tile).x
+				return column % TerrainTileset.FLOWER_VARIANTS == TerrainTileset.FlowerVariant.SMALL
+		)
+		return float(small.size()) / flowers.size()
+	assert_gt(small_share.call(EARLY_SPRING), 0.5)
+	assert_lt(small_share.call(SUMMER), 0.25)
+
+
 func test_the_flowers_change_with_the_season() -> void:
 	var species_on := func(day: int) -> Dictionary:
 		var seen := {}

@@ -188,7 +188,8 @@ func _sow_flowers(spot: DecorationSpot, world_pos: Vector2i) -> void:
 
 ## The atlas cell a spot shows today: of its flowers in bloom the one furthest into its bloom
 ## (its density furthest above the spot's threshold), so the species in bloom mix within a
-## drift; else its decoration while its kind is present; else none.
+## drift, as a small plant while it is only just in bloom; else its decoration while its kind
+## is present; else none.
 func _cell_for_today(spot: DecorationSpot) -> Vector2i:
 	var flower := &""
 	var best_margin := 0.0
@@ -198,8 +199,10 @@ func _cell_for_today(spot: DecorationSpot) -> Vector2i:
 		if margin > best_margin:
 			flower = species
 			best_margin = margin
-	if flower != &"":
+	if best_margin >= _flower_rules.value("drifts", "small_margin"):
 		return TerrainTileset.flower_cell(flower, spot.flower_variant)
+	if flower != &"":
+		return TerrainTileset.flower_cell(flower, TerrainTileset.FlowerVariant.SMALL)
 	if spot.kind == &"" or _world.vegetation.shows(spot.kind, spot.threshold, day):
 		return spot.atlas_cell
 	return TerrainTileset.NO_DECORATION
