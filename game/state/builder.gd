@@ -3,13 +3,16 @@ extends RefCounted
 ## What the hammer does. Holding it is build mode: `choice` is the building it would place,
 ## Q and E move it along BuildingTypes, and `place` builds it where the player points,
 ## taking the materials from the inventory. Plain logic; BuildMode draws the ghost and the
-## panel. Dismissing build mode (Escape, right click) lasts until the player holds
-## something else, or selects the hammer again.
+## panel. X switches to taking down: the hammer takes down the building or the thing the player
+## placed (a chest, a workbench) on a tile, and gives back what it held.
+## Dismissing build mode (Escape, right click) lasts until the player holds something else, or
+## selects the hammer again.
 
 var choice: StringName = BuildingTypes.ids()[0]
 
 var _state: GameState
 var _is_dismissed := false
+var _is_taking_down := false
 
 
 func _init(state: GameState) -> void:
@@ -22,8 +25,18 @@ func is_building() -> bool:
 	return _is_hammer_held() and not _is_dismissed
 
 
+## Whether the hammer takes down instead of building (see `toggle_taking_down`).
+func is_taking_down() -> bool:
+	return is_building() and _is_taking_down
+
+
 func dismiss() -> void:
 	_is_dismissed = true
+	_is_taking_down = false
+
+
+func toggle_taking_down() -> void:
+	_is_taking_down = not _is_taking_down
 
 
 ## Holds the hammer, if there is one on the hotbar. Returns whether the player does.
@@ -75,6 +88,45 @@ func place(origin: Vector2i) -> Building:
 	return _state.world.place_building(choice, origin)
 
 
+## What the hammer would take down on a tile, or null if there is nothing to take down.
+func take_down_target(tile: Vector2i) -> TakeDownTarget:
+	var building := _state.world.building_at(tile)
+	if building != null:
+		return TakeDownTarget.of_building(building)
+	var object := _state.world.object_at(tile)
+	if object != null and ItemTypes.item_placing(object.type) != &"":
+		return TakeDownTarget.of_object(object)
+	return null
+
+
+## What taking the target down gives, item id to count: half of a building's materials, a placed
+## thing whole with what it holds.
+func take_down_gives(target: TakeDownTarget) -> Dictionary:
+	if target.building != null:
+		return _state.refund_of_building(target.building)
+	return ToolUse.new(_state).items_of_placed(target.object)
+
+
+## Why the target can't be taken down now, or "".
+func why_not_take_down(target: TakeDownTarget) -> String:
+	return "" if target.building == null else _state.why_not_take_down(target.building)
+
+
+## Takes the target down. A building's materials lie in front of its door; a placed thing goes
+## to the inventory with what it holds, and what does not fit lies on the ground where it stood.
+## Returns false, and does nothing, for a target that has a reason to stay.
+func take_down(target: TakeDownTarget) -> bool:
+	if target.building != null:
+		return _state.take_down_building(target.building)
+	var items := take_down_gives(target)
+	_state.world.remove_object(target.object.pos)
+	for item: StringName in items:
+		var left := _state.player.inventory.add(item, items[item])
+		if left > 0:
+			_state.world.drop_items(target.object.pos, {item: left})
+	return true
+
+
 func _is_hammer_held() -> bool:
 	var held := _state.player.inventory.held_item()
 	return held != ItemTypes.NONE and ItemTypes.TYPES[held].get("tool") == ItemTypes.HAMMER
@@ -83,3 +135,4 @@ func _is_hammer_held() -> bool:
 func _on_inventory_changed() -> void:
 	if not _is_hammer_held():
 		_is_dismissed = false
+		_is_taking_down = false

@@ -76,6 +76,7 @@ const ACTION_LABELS := {
 	&"select_hammer": "Select hammer",
 	&"build_previous": "Previous building",
 	&"build_next": "Next building",
+	&"take_down_mode": "Build or take down",
 	&"toggle_fast_forward": "Fast forward",
 	&"toggle_coordinates": "Show coordinates",
 	&"pause": "Pause menu",
@@ -95,6 +96,8 @@ const ACTION_DESCRIPTIONS := {
 	&"select_hammer": "Take the hammer from the hotbar to build.",
 	&"build_previous": "Pick the previous building while building.",
 	&"build_next": "Pick the next building while building.",
+	&"take_down_mode":
+	"With the hammer, switch between building and taking down. Hold Use to take down.",
 	&"inventory": "Open or close the character screen with the inventory.",
 	&"skills": "Open or close the skills tab of the character screen.",
 	&"crafting": "Open or close the crafting menu.",

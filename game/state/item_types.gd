@@ -482,6 +482,15 @@ static func placed_object(item: StringName) -> StringName:
 	return TYPES.get(item, {}).get("places", &"")
 
 
+## The item that puts a world object type down, or &"" for what no item places (a tree, a rock):
+## what the player placed can be taken down again.
+static func item_placing(object_type: StringName) -> StringName:
+	for item: StringName in TYPES:
+		if TYPES[item].get("places") == object_type:
+			return item
+	return &""
+
+
 ## How many hit points one hit of this tool takes off.
 static func tool_power(tool_item: StringName) -> int:
 	return POWER_OF_LEVEL[TYPES[tool_item]["level"]]

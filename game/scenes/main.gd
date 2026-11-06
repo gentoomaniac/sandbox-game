@@ -219,6 +219,8 @@ func _apply_start_options() -> void:
 	# BuildMode pins the ghost there; here the hammer is taken to see it.
 	if _options.ghost != StartupOptions.NO_TILE:
 		_builder.select_hammer()
+		if _options.taking_down:
+			_builder.toggle_taking_down()
 	_build_mode.start_options = _options
 	_camera.rig.set_zoom_clamped(_options.zoom)
 	if _options.coordinates:

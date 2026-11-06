@@ -6,8 +6,9 @@ extends CanvasLayer
 
 const POSITION := Vector2(4, 40)
 const THEME := preload("res://game/scenes/ui_theme.tres")
-# Palette colour (see tools/art/palette.py).
+# Palette colour (see tools/art/palette.py): what is short, and the mode that takes down.
 const SHORT_COLOR := Color("dc7a37")
+const TAKING_DOWN_TEXT := "Taking down (X: build)"
 
 var _builder: Builder
 var _inventory: Inventory
@@ -46,6 +47,10 @@ func bind(builder: Builder, inventory: Inventory) -> void:
 func _process(_delta: float) -> void:
 	if not visible:
 		return
+	if _builder.is_taking_down():
+		_show_taking_down()
+		return
+	_name_label.remove_theme_color_override("font_color")
 	var costs := _builder.costs()
 	var short := _builder.shortfalls()
 	_name_label.text = BuildingTypes.TYPES[_builder.choice]["name"]
@@ -65,4 +70,13 @@ func _process(_delta: float) -> void:
 		else:
 			label.remove_theme_color_override("font_color")
 	# Shrinks back round fewer rows.
+	_panel.size = Vector2.ZERO
+
+
+## The mode is on the panel: red "Taking down" instead of the building and its materials.
+func _show_taking_down() -> void:
+	_name_label.text = TAKING_DOWN_TEXT
+	_name_label.add_theme_color_override("font_color", SHORT_COLOR)
+	for label in _material_labels:
+		label.visible = false
 	_panel.size = Vector2.ZERO

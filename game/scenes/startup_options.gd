@@ -69,6 +69,7 @@ extends RefCounted
 ## Building
 ##   --building=<id>          the building the hammer places
 ##   --ghost=<x>,<y>          hold the hammer, its ghost pinned on that tile (see BuildMode)
+##   --taking-down            with --ghost: the hammer takes down instead of building
 ##   --house=<x>,<y>          place the chosen building there once its chunks are loaded
 ##
 ## Things put in the world (see the Debug* classes)
@@ -158,6 +159,7 @@ var console := PackedStringArray()
 # Building
 var building := &""
 var ghost := NO_TILE
+var taking_down := false
 var house := NO_TILE
 
 # Things put in the world
@@ -263,6 +265,8 @@ func _init(args := PackedStringArray()) -> void:
 				building = StringName(_value(arg))
 			"--ghost":
 				ghost = _tile(arg)
+			"--taking-down":
+				taking_down = true
 			"--house":
 				house = _tile(arg)
 			"--field":
