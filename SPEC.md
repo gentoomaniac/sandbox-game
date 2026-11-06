@@ -218,6 +218,13 @@ top of classic pixel art (details under "Lighting and look").
     - The energy drain setting: Low ×0.5, Normal ×1, High ×1.5.
 - **Home is the last bed the player slept in**, like a spawn point. Passing out wakes the
   player there.
+- **Waking in the bed** (decided 2026-11-06, after a player woke behind a bed and was stuck):
+  after sleeping and after passing out the player wakes lying in the middle of the bed, head
+  on the pillow and the body under the blanket (the asleep frame of the collapse, turned to
+  the bed; on the bedroll outdoors they lie on it). They get up on their first move. The beds
+  of the houses are drawn in layers: frame and pillow under the player, the blanket over them
+  while they lie there. Beds no longer block walking, so nobody can be stuck in or behind one.
+  Nothing of this is saved: a game saved in bed loads with the player standing on it.
 - **Starting shelter:** the game starts at a small camp site with a fireplace and a
   bedroll, so there is always a bed. The bedroll (task 52, replacing a modern sleeping bag)
   is a straw sack with a rolled grey wool blanket; its type id stays `sleeping_bag`, so
@@ -380,17 +387,20 @@ Decided 2026-11-05. A text console for testing and cheats.
 
 - `/` opens it (a rebindable action like all keys); Escape or Enter on an empty line closes
   it. While it is open the game keeps running, but the player doesn't walk or act.
-- Commands: `help`; `tp <x> <y>` (teleport to a world tile; outside only); `give <item>
+- Commands: `help`; `tp <x> <y>` (teleport to a world tile; from inside a house the player steps out there); `give <item>
   [count]` (into the inventory); `god` (toggle invincibility:
   health doesn't drop); `nodrain` (toggle: actions cost no energy); `noweight` (toggle:
   carried weight doesn't raise costs). Later commands: `spawn` (farm animals: `cow`, `sheep`,
   `chicken`, `rabbit`; wild ones: `bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`,
   `butterfly`, `flock`), `weather`, `snow`, `crop`
-  (see `help`), and `skip <n>m|h|d` (let minutes, hours or days pass, at most a year; the
+  (see `help`), `reset` (puts the player in the bed they wake in, inside or out), and
+  `skip <n>m|h|d` (let minutes, hours or days pass, at most a year; the
   nights in between pass as when sleeping, so crops grow).
 - Tab completes command names and every argument with a fixed set of values: item ids,
   animal kinds, weather conditions, snow values. Each command lists its argument kinds in
-  one table in the console code; numbers are not completed.
+  one table in the console code; numbers are not completed. `help <command>` and a missing
+  or unknown name (`spawn`, `spawn unicorn`) list the animal kinds, weather conditions and
+  snow values from that same table.
 - Cheat toggles last for the session; they are not saved. A line in the HUD shows which
   are on.
 - A history with up/down; output and errors in the console log. The input line keeps the

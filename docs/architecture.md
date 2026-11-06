@@ -35,7 +35,7 @@ with Knicks, walls and fences on the Geest, ditches in the marsh, and dykes.
   the ones that wait for the world to be drawn (see below).
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
   weather, the snow cover and the player. It is the entry point for actions (`use_at`,
-  `sleep_in`, `pass_door`, `pass_out`), and what gets saved (`to_dict`, see `SaveFile`). It owns
+  `sleep_in`, `pass_door`, `pass_out`, `go_to_home_bed`, `teleport_to`), and what gets saved (`to_dict`, see `SaveFile`). It owns
   the clock and gives it to the World; `current_map` follows from the building the player is in.
 - **ToolUse** (`game/state/tool_use.gd`) is what the use action does: the `Use` outcomes, what
   each tool does on a tile, and the energy it costs. GameState makes one per call

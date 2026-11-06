@@ -486,10 +486,16 @@ in the rye).
 
 ## 76. Console: what can be spawned
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06: commands like `spawn` list what they take. `spawn` with no
 argument or an unknown name prints the list, and `help spawn` shows it.
+
+Done: `Console._candidates_text` lists the candidates of the kinds in `LISTED_KINDS` (animals,
+weather conditions, snow values), from the same `candidates` that Tab uses, wrapped to 70
+characters. `spawn` and `spawn <unknown>` print it; `help <command>` shows the usage and the
+list (and Tab completes command names after `help`). `weather` already shows its names in its
+usage, `give` has the "did you mean" for items (too many to list; Tab completes them).
 
 ## 77. Desire paths
 
@@ -502,7 +508,7 @@ are a look only (no change to speed or farming).
 
 ## 78. Waking in the bed; reset and tp indoors
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06: passing out outside put the player behind the bed, stuck.
 - The bed is drawn in layers (frame and pillow under the player, blanket over), so the
@@ -511,6 +517,18 @@ The user's word of 2026-11-06: passing out outside put the player behind the bed
   lying under the blanket, instead of standing beside it.
 - A `reset` console command puts the player at their bed.
 - `tp` also works indoors: it takes the player outside to the tile, if that tile is valid.
+
+Done: `GameState.go_to_home_bed` (waking, `reset`) and `teleport_to` (`tp`); the player lies
+in the middle of the bed (`PlayerState.bed_lying_in`, cleared by the first move; not saved).
+`PlayerView` lays the asleep frame of the collapse in the bed (rotated head up, or mirrored
+head left for the box bed; the type data `bed` is the head direction). The beds of the houses
+are drawn below the entities (`InteriorView`'s `Beds` node) and `<bed>_cover.png`, the blanket
+cut from the bed's picture by tools/art/interior.py (`BED_COVERS`), is shown above the player
+while they lie there; the straw mat got a wool blanket for it. Outdoors the player lies on the
+bedroll, drawn above the objects (`LYING_Z_INDEX`). The beds do not block walking any more;
+the saved game of the report (player standing on the box bed of the longhouse, `[1.5, 2.5]`)
+loads and walks. No save change, so no new version. `GameState` got the same
+`max-public-methods` exception as `World`. Screenshots in docs/screenshots/waking-in-bed.png.
 
 ## Later (not part of the prototype)
 

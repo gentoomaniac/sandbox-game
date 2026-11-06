@@ -202,6 +202,12 @@ your energy. A message says what happened before the morning fades in.
 
 ![Passing out: kneeling, tipping over, asleep, and the message on waking](docs/screenshots/passing-out.png)
 
+After sleeping or passing out you wake lying in the middle of the bed, head on the pillow
+and under the blanket (on the bedroll at the camp: on it), and get up with your first step.
+Beds don't block walking, so you can't get stuck behind one.
+
+![Waking in the shack, the Kate, the longhouse and at the camp](docs/screenshots/waking-in-bed.png)
+
 ### Crafting and chests
 
 Press C for the crafting menu. It lists what you can make with what you carry; a recipe you
@@ -242,13 +248,14 @@ arguments.
 
 | Command | What it does |
 |---|---|
-| `help` | List the commands. |
-| `tp <x> <y>` | Teleport to a world tile outside (F3 shows your coordinates). |
+| `help`, `help <command>` | List the commands, or show what one takes (the names it accepts too). |
+| `tp <x> <y>` | Teleport to a world tile; from inside a house you step out there (F3 shows your coordinates). |
+| `reset` | Put yourself in your bed, the one you wake in, inside or out. |
 | `give <item> [count]` | Put items in the inventory. |
 | `god`, `nodrain`, `noweight`, `nocost` | Toggle invincibility, free actions, weight costing nothing, and buildings and crafting needing no materials. |
 | `weather`, `weather <condition>`, `weather auto` | Show the weather, force a condition, or go back to the simulation. |
 | `snow`, `snow <0..1>`, `snow auto` | Show the snow cover, force it, or go back to the weather. |
-| `spawn <animal> [count]` | Put animals nearby: farm animals that stay (`cow`, `sheep`, `chicken`, `rabbit`) or wild ones that come and go (`bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`). |
+| `spawn <animal> [count]` | Put animals nearby: farm animals that stay (`cow`, `sheep`, `chicken`, `rabbit`) or wild ones that come and go (`bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`). `spawn` alone, or with an unknown name, lists them. |
 | `skip <n>m\|h\|d` | Let minutes, hours or days pass, e.g. `skip 2h` or `skip 3d`. |
 | `crop` | Show the growth, damage and needs of the nearest crop. |
 
