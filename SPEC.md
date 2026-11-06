@@ -950,6 +950,11 @@ woodworker, the cook and the mason, and a UI for them.
     house (old saves map to it).
   - **Longhouse:** a larger farmhouse with the big gable door of the Lower Saxon hall house;
     7×3, door on the middle tile.
+  - **Hall house** (task 59, 2026-11-06, from docs/art-style.md): the Low German hall house
+    (*Niederdeutsches Hallenhaus*, Niedersachsenhaus) of Holstein, the biggest and dearest
+    building: 7×5, its gable end to the front with the door (the Grote Door) on the middle
+    tile. Costs 100 logs, 40 stone, 50 clay, 80 reeds. A Haubarg (the giant of the marsh
+    under a pyramid of thatch) comes later.
   - **Barn:** a work and storage building, no hearth or bed; 6×3, door on the third tile
     from the left, no windows. Costs 30 logs, 15 stone, 5 clay, 25 reeds. The longhouse
     costs 60 logs, 30 stone, 30 clay, 50 reeds.
@@ -957,7 +962,14 @@ woodworker, the cook and the mason, and a UI for them.
     larger than the footprint: shack 6×6 (straw sleeping mat, crate, stool), Kate 9×8 (hearth,
     bed, table, stools, chest), longhouse 15×8 (living end with hearth, box bed, table and
     bench; a stall partition divides it from the animal end with stalls, hay and sacks), barn
-    13×8 (four hay stalls, crates, barrels, sacks). Sleep fills: mat 80, bed and box bed 100.
+    13×8 (four hay stalls, crates, barrels, sacks), hall house 15×13: the Diele, a long
+    threshing floor of clay from the door up the middle, rows of oak posts with rails (the
+    stall partitions) on both sides and hay, barrels, a crate and sacks in the stalls; at its
+    far end the Flett in brick across the whole width, with the open hearth on the back wall
+    straight behind the door (a cooking station like every hearth), a box bed in each corner,
+    the wall bench, a chest, table, bench and stool, a plate rack and three windows. The room
+    is taller than the screen at zoom 1, so the camera follows the player through it as
+    outside. Sleep fills: mat 80, bed and box bed 100.
     The barn has no bed, so it can't be slept in.
   - **Furnished in the period** (task 57, 2026-11-06, from docs/art-style.md): the rooms look
     like 18th-century North Frisian and Danish farmhouses. Floors: red brick in a herringbone
@@ -995,6 +1007,17 @@ woodworker, the cook and the mason, and a UI for them.
     clumps with dry patches and a few flowers, a ragged crest and a thick lip of turf at the
     eaves with blades hanging over the pale bark edge. Under snow the turf is lumpy snow with
     the lip and the bark showing under it.
+    The hall house (task 59) shows its gable: oak framing with red brick, laid in herringbone
+    between the gable's posts and in slanting courses beside them, the top of the gable
+    boarded in oak with the owl hole (*Uhlenloch*) under a little hip, the green Grote Door
+    under a flat white arch and a carved door beam, small stable windows in green frames to
+    either side and short braces in the corner bays. Its half-hipped thatch runs back up the
+    picture: seen from the gable, the eaves run along the sides, so the courses run up the
+    picture on its two planes (the left lit, the right in shade), with rolled eaves along
+    both sides, the reed cut along the rakes, a roll of reed as the ridge (lying along the
+    roof, narrowing as it runs back and ending short of its back) and moss low on the shaded
+    plane. White bargeboards lie along the rakes and cross over the hip in a pair
+    of carved horse heads (*Pferdeköpfe*); under snow the boards and the heads stay clear.
     Every building has lit windows and a look per season of the grass on its tile (task 58,
     SeasonalArt.HOUSE_LOOKS): the grass on a roof (the shack's turf, a turf ridge) is fresh
     in spring, yellow-brown in autumn and brown-grey in winter, its dark base and the moss
@@ -1009,7 +1032,8 @@ woodworker, the cook and the mason, and a UI for them.
   the player carries and refuses the spot while something is missing. No refunds or
   demolishing yet. First numbers (tune in play): shack 20 logs, 5 stone (turf roof, no clay or reeds);
   Kate 30 logs, 15 stone, 15 clay, 25 reeds; longhouse about twice the Kate; barn like the
-  Kate with less clay.
+  Kate with less clay; the hall house the most of every material (100 logs, 40 stone, 50
+  clay, 80 reeds).
 - **The hammer builds:** holding the hammer is build mode (the ghost follows the cursor,
   use places the building); Q and E (rebindable) pick the building, and B selects the
   hammer. Escape or a right click dismisses build mode until something else is held or B is

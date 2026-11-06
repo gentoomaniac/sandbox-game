@@ -113,7 +113,7 @@ shutters.
 - **Low German hall house** (*Hallenhaus*, Niedersachsenhaus), Holstein and the south:
   **gable end to the road** with the big arched barn door (*Grote Door*), half-timber,
   half-hipped roof with the **owl hole** (*Uhlenloch*) under the peak and **crossed horse
-  heads** (carved bargeboards) on top. The best period landmark we don't have yet.
+  heads** (carved bargeboards) on top. Our hall house (task 59) is this type.
 - **Haubarg** (Eiderstedt): the giant of the marsh, an almost square house under a towering
   pyramid of thatch over a central hay store, on a mound. A late-game status building.
 - **Barn:** half-timber or boards, big plank doors, no windows; a hay loft hatch.
@@ -397,9 +397,17 @@ copper watering can. Kept here as the record of why.
    on a roof greens in spring and browns in autumn and winter (a turf ridge too); under
    snow the turf is lumpy snow over the lip. No new colours. Still to do: silver-grey
    weathered boards as a variant, a turf-roofed outhouse, frost on the turf.
-7. **A hall house with the gable front** (large). Uhlenloch, crossed horse heads, the big
-   arched door in the gable, half-timber: the strongest period landmark. Later a Haubarg on
-   a mound for a rich marsh farm.
+7. ~~**A hall house with the gable front**~~ done (task 59). The strongest period landmark
+   was missing. Now the Low German hall house (`hall_house`, 7x5 tiles) shows its gable to
+   the front: oak framing with red brick in it, herringbone between the gable's posts and
+   slanting courses beside them, the top boarded in oak with the Uhlenloch under a little
+   half-hip, the green Grote Door under a flat white arch and a carved door beam, small
+   stable windows. The half-hipped thatch runs back up the picture in two planes, its
+   courses running along the side eaves, with a reed ridge; white bargeboards cross over the
+   hip in a pair of horse heads, clear of snow in winter. Inside, the Diele between rows of
+   stall posts, and the Flett with the open hearth, box beds and plate rack at its end. No
+   new colours. Still to do: a Haubarg on a mound for a rich marsh farm, a stork's nest on
+   the ridge, a Klöntür in the Grote Door, side doors to the Flett, cattle in the stalls.
 8. **Animals of the region** (large). White storks on roofs, red-brown cattle, sheep on
    the dykes, geese; the roe deer and rabbits stay. Task 73 drew the livestock
    (tools/art/livestock.py) without a new colour: Angler, black pied and red pied cattle;

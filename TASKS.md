@@ -179,11 +179,28 @@ window light unchanged. No new colours. Screenshot: buildings.
 
 ## 59. A hall house with the gable front
 
-- [ ] Done
+- [x] Done
 
 docs/art-style.md bigger item 7: a new building, the Niedersachsen-style hall house with
 the big arched door in the gable, owl hole (Uhlenloch) and crossed horse heads,
 half-timbered; buildings.cfg entry with costs and an interior. A Haubarg later.
+
+Done: one commit per piece. `hall_house`, 7x5 tiles, the biggest and dearest building (100
+logs, 40 stone, 50 clay, 80 reeds; the longhouse takes 60, 30, 30, 50), between the longhouse
+and the barn in the hammer's list. The picture (`buildings.hall_house`, 136 px tall) shows the
+gable: oak framing with red brick, herringbone and slanting courses in the upper gable, the
+top boarded with the Uhlenloch under a little half-hip, the green Grote Door under a carved
+beam, two stable windows (with window lights). `gable_roof` draws the half-hipped thatch seen
+end on in task 55's way: two planes (lit left, shaded right) whose courses run up the picture
+along the side eaves, rolled side eaves, the reed cut along the rakes, a roll of reed as the
+ridge lying along the roof (a turf ridge read as a green pole), moss on the shaded plane, and
+white bargeboards crossing over the hip in carved horse heads, which stay clear under snow.
+The interior (15x13, only task 57's furniture): the clay Diele from the door between rows of stall posts with hay, and the
+brick Flett at its end with the hearth straight behind the door (a cooking station), two box
+beds, wall bench, chest, table, bench, stool, plate rack and windows. Tested: footprint,
+costs the most, room walls and reachability, floors, hearth and stalls, getting out of the
+box beds, E at the hearth and a night in a box bed making it home. No save change (a new
+building type only; a copy of the user's save loads). No new colours. Screenshot: buildings.
 
 ## 60. Animals of the region
 

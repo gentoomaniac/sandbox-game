@@ -156,14 +156,15 @@ lie there until you walk over them and pick them up.
 ### Build anywhere
 
 Hold the hammer (press B to take it from the hotbar) and a ghost of a building follows the
-mouse. Q and E pick the building: shack, Kate, longhouse or barn. A small panel lists the
+mouse. Q and E pick the building: shack, Kate, longhouse, hall house or barn. A small panel lists the
 logs, stone, clay and reeds it takes against what you carry; the spot is refused while
 something is missing, and a click or Space builds it and takes the materials. The ghost
 shows where it fits, and the game tells you why a spot doesn't work, for example when it
 is unsafe wetland. Hold something else (or press Escape or right click) to stop building.
 You can walk inside every building, and each has its own room: a bare shack with a straw
 mat on a clay floor, a cottage room in the Kate, the longhouse with a living end and an
-animal end, and the barn with stalls and hay. The rooms are furnished like 18th-century
+animal end, the hall house with its long Diele between the stalls and the Flett with the
+hearth at its end, and the barn with stalls and hay. The rooms are furnished like 18th-century
 farmhouses of the coast: brick floors in the living rooms and beaten clay in the work rooms,
 an open hearth under a smoke hood with Dutch tiles behind the fire, plate racks with Delft
 and pewter, a wall bench and box beds with curtains. The last bed you slept in becomes your home. A new game
@@ -174,9 +175,14 @@ have to be gathered first. The buildings, their sizes, costs and insides are in
 The buildings follow the reed-thatched farmhouses of Denmark and northern Germany: the Kate
 with white lime walls and teal shutters, the brick longhouse with its arched barn door, the
 half-timbered barn, and the shack: tarred black boards under a turf roof, which greens in
-spring, browns in autumn and winter and lies under snow like the thatch.
+spring, browns in autumn and winter and lies under snow like the thatch. The biggest is the
+Low German hall house of Holstein: its half-timbered gable to the front with red brick in
+herringbone, the big arched barn door (the Grote Door), the owl hole under a little hip and
+white bargeboards crossing in a pair of horse heads, under a huge thatch.
+It is also the dearest: 100 logs, 40 stone, 50 clay and 80 reeds (the shack takes 20 logs
+and 5 stone, the Kate 30, 15, 15 and 25).
 
-![The Kate, the longhouse, the barn and the shack in summer](docs/screenshots/buildings.png)
+![The Kate, the longhouse, the hall house, the barn and the shack in summer, and the hall house on a winter night](docs/screenshots/buildings.png)
 
 ![Inside the Kate and the longhouse at night, by the hearth](docs/screenshots/interiors.png)
 
