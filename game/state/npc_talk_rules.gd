@@ -15,6 +15,14 @@ const KEYS := {
 		"reply_sentences": TYPE_INT,
 		"timeout_seconds": TYPE_FLOAT,
 	},
+	"claude":
+	{
+		"api_version": TYPE_STRING,
+		"max_tokens": TYPE_INT,
+		"effort": TYPE_STRING,
+		"fallback_models": TYPE_ARRAY,
+		"fallback_beta": TYPE_STRING,
+	},
 	"prompt":
 	{
 		"system": TYPE_STRING,
