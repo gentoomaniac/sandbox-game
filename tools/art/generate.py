@@ -243,7 +243,7 @@ def write_interior():
 def write_fire():
     for name, (behind, front), (box, half_width, tall) in (
         ("fireplace", camp.fireplace_layers(), camp.FIREPLACE_FLAME),
-        ("hearth", (interior.hearth_without_flame(), blank(2 * TILE, 2 * TILE)), interior.HEARTH_FLAME),
+        ("hearth", interior.hearth_layers(), interior.HEARTH_FLAME),
     ):
         strip = fire.strip(behind, front, box, half_width, tall)
         save([strip], f"fire/{name}.png", box[2], box[3])

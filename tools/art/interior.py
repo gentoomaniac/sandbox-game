@@ -246,34 +246,94 @@ def stool():
     return outline(canvas, "soil_dark", keep_bottom=True)
 
 
+# The hearth stands against the back wall: its footprint is the lower half of its picture, and
+# the upper half, the smoke hood, is drawn over the back wall.
+HEARTH_WIDTH, HEARTH_HEIGHT = 2 * TILE, 4 * TILE
 # The box of the hearth's picture that its flame burns in (x, y, width, height; the flame stands
 # on its bottom row, over the logs), and the flame's half width and height.
-HEARTH_FLAME = ((8, 10, 16, 16), 5.0, 12)
+HEARTH_FLAME = ((8, 26, 16, 22), 5.0, 14)
 
 
 def hearth_without_flame():
-    """A stone hearth 2x2 tiles with two logs in its firebox."""
-    canvas = blank(2 * TILE, 2 * TILE)
-    rect(canvas, 0, 0, 31, 29, "stone")
-    for y in range(4, 30, 4):
-        rect(canvas, 0, y, 31, y, "stone_dark")
-        for x in range(2 + (y // 4 % 2) * 4, 32, 8):
-            rect(canvas, x, y - 3, x, y - 1, "stone_dark")
-    rect(canvas, 0, 0, 31, 2, "stone_light")
-    rect(canvas, 0, 3, 31, 3, "stone_dark")
-    rect(canvas, 7, 9, 24, 28, "stone_dark")
-    rect(canvas, 8, 10, 23, 28, "soil_dark")
-    rect(canvas, 9, 25, 22, 27, "soil")
-    rect(canvas, 9, 25, 22, 25, "soil_mid")
-    # Hearthstone in front.
-    rect(canvas, 2, 29, 29, 31, "stone_light")
-    rect(canvas, 2, 31, 29, 31, "stone")
+    """An open hearth 2x2 tiles under a smoke hood: a raised hearth of buff brick with two logs
+    on it and an iron pot beside them, and over it, on the back wall, a lime-washed hood on an
+    oak mantel beam that takes the smoke up into the chimney. The wall under the hood is black
+    with soot."""
+    canvas = blank(HEARTH_WIDTH, HEARTH_HEIGHT)
+    # The hood: a shaft up into the ceiling beam, flaring out to the mantel.
+    for y in range(0, 16):
+        half = 6 if y < 5 else 6 + round((y - 4) * 10 / 11)
+        rect(canvas, 16 - half, y, 15 + half, y, "lime")
+        # Lit from the top left: the right flank in shade.
+        rect(canvas, 15 + half - max(2, half // 3), y, 15 + half, y, "sand_light")
+    rect(canvas, 10, 0, 10, 4, "snow_shadow")
+    # Soot creeps up from the mantel.
+    rect(canvas, 3, 14, 28, 15, "bare_light")
+    for x in (6, 11, 19, 24):
+        rect(canvas, x, 12, x + 1, 13, "bare_light")
+    # The mantel beam, with a lit top edge.
+    rect(canvas, 0, 16, 31, 19, "soil")
+    rect(canvas, 0, 16, 31, 16, "soil_light")
+    rect(canvas, 0, 19, 31, 19, "soil_dark")
+    # The wall under the hood, in the mantel's shadow and black with soot where the fire licks it.
+    rect(canvas, 1, 20, 30, 39, "bare")
+    rect(canvas, 1, 20, 30, 21, "soil_dark")
+    soot(canvas)
+    # The brackets that carry the mantel.
+    for x in (1, 28):
+        rect(canvas, x, 20, x + 2, 23, "soil")
+        rect(canvas, x + 1, 24, x + 2, 25, "soil")
+    # The raised hearth: its top, a row of bricks seen from above, and its front of buff brick.
+    rect(canvas, 0, 40, 31, 51, "sand")
+    for y in (43, 47):
+        rect(canvas, 0, y, 31, y, "mud")
+    for row, y in enumerate((40, 44, 48)):
+        for x in range(2 + row % 2 * 3, 32, 6):
+            rect(canvas, x, y, x, y + 2, "mud")
+    rect(canvas, 0, 40, 31, 40, "sand_light")
+    rect(canvas, 0, 51, 31, 51, "sand_light")
+    rect(canvas, 0, 52, 31, 62, "mud")
+    for y in range(54, 63, 3):
+        rect(canvas, 0, y, 31, y, "mud_dark")
+        for x in range(1 + y // 3 % 2 * 3, 32, 6):
+            rect(canvas, x, y - 2, x, y - 1, "mud_dark")
+    rect(canvas, 0, 63, 31, 63, "mud_dark")
+    # The ash bed and the logs.
+    rect(canvas, 8, 45, 23, 48, "stone")
+    rect(canvas, 9, 46, 22, 48, "soil_dark")
+    rect(canvas, 10, 44, 21, 46, "soil")
+    rect(canvas, 10, 44, 21, 44, "soil_mid")
+    # A three-legged iron pot, a brass glint on its lid.
+    rect(canvas, 24, 41, 29, 47, "stone_dark")
+    rect(canvas, 25, 40, 28, 40, "ink")
+    rect(canvas, 25, 42, 25, 44, "stone")
+    rect(canvas, 26, 40, 26, 40, "ochre")
+    for x in (24, 29):
+        rect(canvas, x, 48, x, 49, "ink")
     return outline(canvas, "soil_dark", keep_bottom=True)
 
 
+def soot(canvas):
+    """The soot on the wall behind the fire: a black core that fades out upwards in ragged
+    edges."""
+    for y in range(22, 40):
+        half = 4 + (y - 22) * 5 // 17
+        rect(canvas, 16 - half - 2, y, 15 + half + 2, y, "stone_dark")
+        if y >= 27:
+            rect(canvas, 16 - half, y, 15 + half, y, "ink")
+    for x, y in ((9, 23), (21, 22), (12, 21), (19, 24)):
+        rect(canvas, x, y, x + 1, y, "stone_dark")
+
+
+def hearth_layers():
+    """The hearth without its flame: what is behind the flame and what is in front of it
+    (nothing: the fire stands free on the hearth)."""
+    return hearth_without_flame(), blank(HEARTH_WIDTH, HEARTH_HEIGHT)
+
+
 def hearth():
-    """A stone hearth 2x2 tiles with a fire in it."""
-    return fire.burning(hearth_without_flame(), blank(2 * TILE, 2 * TILE), *HEARTH_FLAME)
+    """The open hearth with a fire on it."""
+    return fire.burning(*hearth_layers(), *HEARTH_FLAME)
 
 
 def sleeping_mat():

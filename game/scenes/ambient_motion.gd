@@ -85,11 +85,11 @@ const FIRE_PROFILES := {
 	},
 	WorldObjectTypes.HEARTH:
 	{
-		"cell_size": Vector2(32.0, 32.0),
+		"cell_size": Vector2(32.0, 64.0),
 		"flames": preload("res://assets/fire/hearth.png"),
-		"box_position": Vector2(8.0, 10.0),
-		"flame_top": 14.0,
-		"spark_rise": 4.0,
+		"box_position": Vector2(8.0, 26.0),
+		"flame_top": 34.0,
+		"spark_rise": 6.0,
 	},
 }
 
