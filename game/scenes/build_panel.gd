@@ -6,7 +6,7 @@ extends CanvasLayer
 
 const POSITION := Vector2(4, 40)
 const THEME := preload("res://game/scenes/ui_theme.tres")
-# Palette colour (see tools/art/generate.py).
+# Palette colour (see tools/art/palette.py).
 const SHORT_COLOUR := Color("dc7a37")
 
 var _builder: Builder

@@ -26,7 +26,7 @@ GROUND_LOOKS = ("spring", "summer", "autumn", "bare", "frost", "snow", "dusting"
 LEAF_OUT_LOOKS = ("buds", "young_leaves")
 LOOKS = GROUND_LOOKS + LEAF_OUT_LOOKS
 
-# Palette colours the seasons add to generate.PALETTE.
+# Palette colours the seasons add to palette.PALETTE.
 COLOURS = {
     # Spring greens and blossom.
     "spring_pale":    "a8d070",

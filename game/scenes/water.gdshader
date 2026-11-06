@@ -8,7 +8,7 @@ shader_type canvas_item;
 uniform float chop : hint_range(0.0, 1.0) = 0.0;
 uniform vec2 drift = vec2(0.0);
 
-// The palette's water colours (tools/art/generate.py).
+// The palette's water colours (tools/art/palette.py).
 const vec3 WATER = vec3(0.220, 0.361, 0.475);
 const vec3 WATER_DEEP = vec3(0.169, 0.271, 0.380);
 const vec3 WATER_LIGHT = vec3(0.314, 0.482, 0.576);

@@ -68,9 +68,6 @@ id>.png are their 8x8 versions for items lying on the ground (items.small), made
 
 import math
 import random
-from pathlib import Path
-
-from PIL import Image
 
 import animals
 import buildings
@@ -95,70 +92,7 @@ from canvas import (
     copy,
     rect,
 )
-
-ASSETS = Path(__file__).resolve().parents[2] / "assets"
-
-# fmt: off
-PALETTE = {
-    # Darks and neutrals.
-    "ink":            "1d1b26",
-    "stone_dark":     "4a4852",
-    "stone":          "77737a",
-    "stone_light":    "a8a39c",
-    # Grass and leaves.
-    "green_deep":     "26402c",
-    "green_dark":     "345433",
-    "green":          "46703d",
-    "green_light":    "5f8a45",
-    "green_bright":   "82a352",
-    "olive":          "5c6634",
-    # Dry grass, straw, reeds.
-    "dry":            "68743e",
-    "dry_light":      "8a9250",
-    "reed":           "807a40",
-    "straw":          "b0a05e",
-    # Damp floodplain meadow, also the Scots pine's needles.
-    "meadow":         "37603e",
-    "meadow_light":   "4f8048",
-    # Earth: tilled soil and mud.
-    "soil_dark":      "3a2920",
-    "soil":           "573c2b",
-    "soil_mid":       "6f4f37",
-    "soil_light":     "8c6a4b",
-    "mud_dark":       "4f4436",
-    "mud":            "6b5c47",
-    "sand":           "8f7f5e",
-    "sand_light":     "b3a27c",
-    # Wetland ground.
-    "bog_dark":       "252e26",
-    "bog":            "38432f",
-    # Water.
-    "water_deep":     "2b4561",
-    "water":          "385c79",
-    "water_light":    "507b93",
-    "foam":           "92b4bd",
-    # Warm accents: fire, lamps, flowers.
-    "ember":          "a8402e",
-    "flame":          "dc7a37",
-    "gold":           "eec25a",
-    "cream":          "f1e6c2",
-    "petal":          "c47a8c",
-    # Skin.
-    "skin":           "d09a72",
-    "skin_shade":     "a96d4c",
-    # Lime-wash, chalky and slightly warm, and the teal paint of doors and shutters.
-    "lime":           "e8e4d8",
-    "paint_teal":     "3f7f86",
-    # Heather on the Geest, and hand-dyed cloth.
-    "heather":        "8c5c86",
-    "heather_dark":   "5a3a5c",
-    # Kept for magic only: spirits, wisps, spells.
-    "arcane":         "6f4c91",
-    "spirit":         "4e9e9b",
-}
-PALETTE.update(seasons.COLOURS)
-MAX_PALETTE_COLOURS = 64
-# fmt: on
+from palette import ASSETS, PALETTE, check_palette, to_image, write_palette
 
 # Dual-grid corner bits, shared with game/scenes/terrain_tileset.gd.
 TL, TR, BL, BR = 1, 2, 4, 8
@@ -2199,58 +2133,6 @@ INTERIOR_GROUND_TILES = {
 INTERIOR_TILES = list(INTERIOR_GROUND_TILES.values()) + [
     marker_tile(*FURNITURE[name]) for name in FURNITURE
 ]
-
-
-def to_image(rows, size=TILE, height=None):
-    """Lays out rows of tiles as one image. Tiles are size wide and `height` high (default
-    size); a tile with fewer rows of pixels sits at the bottom of its cell."""
-    height = height or size
-    width = max(1, max(len(row) for row in rows)) * size
-    image = Image.new("RGBA", (width, len(rows) * height), (0, 0, 0, 0))
-    pixels = image.load()
-    for row_index, row in enumerate(rows):
-        for column, tile in enumerate(row):
-            top = height - len(tile)
-            for y in range(len(tile)):
-                for x in range(size):
-                    name = tile[y][x]
-                    if name is not None:
-                        rgb = bytes.fromhex(PALETTE[name])
-                        pixels[column * size + x, row_index * height + top + y] = (*rgb, 255)
-    return image
-
-
-def write_palette():
-    swatch = 8
-    per_row = 8
-    names = list(PALETTE)
-    rows = math.ceil(len(names) / per_row)
-    image = Image.new("RGBA", (per_row * swatch, rows * swatch), (0, 0, 0, 0))
-    for index, name in enumerate(names):
-        x, y = index % per_row * swatch, index // per_row * swatch
-        image.paste((*bytes.fromhex(PALETTE[name]), 255), (x, y, x + swatch, y + swatch))
-    image.save(ASSETS / "palette.png")
-
-    lines = ["GIMP Palette", "Name: Sandbox Game", f"Columns: {per_row}", "#"]
-    for name, hex_colour in PALETTE.items():
-        r, g, b = bytes.fromhex(hex_colour)
-        lines.append(f"{r:3d} {g:3d} {b:3d}\t{name}")
-    (ASSETS / "palette.gpl").write_text("\n".join(lines) + "\n")
-
-
-def check_palette():
-    """Fails if any PNG under assets/ has a pixel that is neither transparent nor a
-    palette colour, so hand-drawn replacements are held to the palette too."""
-    assert len(PALETTE) <= MAX_PALETTE_COLOURS, f"{len(PALETTE)} palette colours, at most {MAX_PALETTE_COLOURS}"
-    allowed = {(*bytes.fromhex(hex_colour), 255) for hex_colour in PALETTE.values()}
-    bad = []
-    for path in sorted(ASSETS.rglob("*.png")):
-        colours = {c for _, c in Image.open(path).convert("RGBA").getcolors(1 << 24)}
-        stray = {c for c in colours if c[3] != 0 and c not in allowed}
-        if stray:
-            bad.append(f"{path.relative_to(ASSETS)}: {len(stray)} colours not in the palette")
-    if bad:
-        raise SystemExit("Palette check failed:\n" + "\n".join(bad))
 
 
 def main():

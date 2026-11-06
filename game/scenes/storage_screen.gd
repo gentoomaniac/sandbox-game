@@ -20,7 +20,7 @@ const INVENTORY_COLUMNS := Inventory.HOTBAR_SIZE
 ## Space between the backpack and the hotbar row below it.
 const HOTBAR_GAP := 8
 const PICKED_ALPHA := 0.4
-## Palette colour ink (see tools/art/generate.py), see-through.
+## Palette colour ink (see tools/art/palette.py), see-through.
 const BACKDROP_COLOR := Color(0.114, 0.106, 0.149, 0.6)
 const THEME := preload("res://game/scenes/ui_theme.tres")
 const BACKPACK_ICON := preload("res://assets/ui/backpack_icon.png")

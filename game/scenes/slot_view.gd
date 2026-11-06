@@ -10,7 +10,7 @@ signal secondary_pressed
 
 const SIZE := 20
 const ICON_OFFSET := Vector2(2, 2)
-## Palette colour ink (see tools/art/generate.py); the pixel font is already cream.
+## Palette colour ink (see tools/art/palette.py); the pixel font is already cream.
 const COUNT_SHADOW_COLOR := Color("1d1b26")
 
 const SLOT_TEXTURE := preload("res://assets/ui/slot.png")

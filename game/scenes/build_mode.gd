@@ -17,7 +17,7 @@ const UNSAFE_LAND_MESSAGE := "This land doesn't look safe to build on."
 const OCCUPIED_MESSAGE := "Something is in the way."
 const MISSING_MESSAGE := "You lack the materials."
 
-# Palette colours (see tools/art/generate.py).
+# Palette colours (see tools/art/palette.py).
 const VALID_TINT := Color("82a352", 0.5)
 const BLOCKED_TINT := Color("a8402e", 0.7)
 const GHOST_MODULATE := Color(1, 1, 1, 0.7)

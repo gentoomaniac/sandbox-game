@@ -17,7 +17,7 @@ const MOUSE_IDLE_SECONDS := 3.0
 ## ... over this long, and the facing tile takes over.
 const MOUSE_FADE_SECONDS := 0.5
 
-# Palette colours cream and ember (see tools/art/generate.py).
+# Palette colours cream and ember (see tools/art/palette.py).
 const COLOR := Color("f1e6c2", 0.8)
 const COLOR_NOTHING_TO_DO := Color("f1e6c2", 0.3)
 const COLOR_OUT_OF_REACH := Color("a8402e", 0.9)

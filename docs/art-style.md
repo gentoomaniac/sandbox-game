@@ -20,7 +20,7 @@ local folklore (see "Fantasy").
 
 ## Palette
 
-The palette is in `tools/art/generate.py` (`PALETTE`, 43 colours) plus
+The palette is in `tools/art/palette.py` (`BASE_COLOURS`, 43 colours) plus
 `tools/art/seasons.py` (`COLOURS`, 21), and it is **full: 64 of 64**. Every new colour
 needs a merge first.
 

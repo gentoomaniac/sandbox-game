@@ -1,9 +1,9 @@
 extends GutTest
 ## The water and fire shaders compare pixels against copies of palette colours. If the
-## palette in tools/art/generate.py changes, these copies must change with it, or the ripples
+## palette in tools/art/palette.py changes, these copies must change with it, or the ripples
 ## and sparks silently stop showing.
 
-const PALETTE_SOURCE := "res://tools/art/generate.py"
+const PALETTE_SOURCE := "res://tools/art/palette.py"
 ## Shader file -> {shader constant: palette colour name}.
 const COPIES := {
 	"res://game/scenes/water.gdshader":

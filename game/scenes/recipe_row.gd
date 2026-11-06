@@ -9,7 +9,7 @@ const MIN_HEIGHT := 22
 const LINE_HEIGHT := 10
 const ICON_SIZE := 16
 const GAP := 6
-## Palette colour flame (see tools/art/generate.py), as in the build panel.
+## Palette colour flame (see tools/art/palette.py), as in the build panel.
 const SHORT_COLOUR := Color("dc7a37")
 const UNAFFORDABLE_ALPHA := 0.5
 

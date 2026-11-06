@@ -4,7 +4,7 @@ extends Control
 ## sheet (see Appearance), drawn at a whole-number `pixel_scale`.
 
 const FRAME_SIZE := Vector2i(TerrainTileset.TILE_SIZE, PlayerView.FRAME_HEIGHT)
-const BACKGROUND_COLOR := Color("3a2920")  # palette soil_dark, see tools/art/generate.py
+const BACKGROUND_COLOR := Color("3a2920")  # palette soil_dark, see tools/art/palette.py
 
 var pixel_scale := 4:
 	set(value):
