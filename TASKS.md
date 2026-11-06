@@ -1011,7 +1011,17 @@ dash are as wide as the hyphen (a glyph is at most 6 px wide).
 
 ## 93. Claude as a language model choice in Settings
 
-- [ ] Done
+- [x] Done: `ModelChat` (the POST, no redirects, the once-per-endpoint warning, the model list)
+  with `OpenAiChat` and `ClaudeChat` on it; the provider is a row of `GameSettings.LANGUAGE_MODEL_PROVIDERS`
+  (`openai` default, `claude`, with the protocol it speaks), each provider keeps its own
+  endpoint, model and key (a section each in settings.cfg), and NpcDialogue and the page pick
+  the chat by protocol, so a preset is one more row; Claude's numbers
+  and the models that take fallbacks are in `[claude]` of data/npc_talk.cfg; the drop-down
+  asks `<endpoint>/models` (not for a provider that needs a key, without one), debounced on
+  typing, and warns once per failure. The tests use a
+  small TCP server (`CannedHttpTest`); a real Claude is asked only with `ANTHROPIC_API_KEY`
+  set, and was not here, so the requests follow Anthropic's API reference unverified against
+  the live API.
 
 The user's word of 2026-11-06: hook Claude up to the villagers' talk, as an option to pick
 in Settings, not the default (the local test LLM stays the default).

@@ -97,12 +97,12 @@ templates).
    player, but native builds per platform and the model shares the GPU with the game.
 3. **A cloud API with the player's key.** The player enters an endpoint and key: OpenAI
    or any OpenAI-compatible host, or Claude, whose own Messages API has a different shape
-   and needs its own small adapter. Best quality, needs the internet, costs the
+   (a second adapter, `ClaudeChat`, exists now; picked in Settings). Best quality, needs the internet, costs the
    player per conversation, and adds a few hundred milliseconds or more.
 
 **Recommendation:** one backend interface in Settings: endpoint URL, model name, optional
 key. The OpenAI-compatible chat format covers option 1 and most of option 3 with the same
-code; Claude's API gets a second adapter behind the same interface (a few dozen lines). "None" uses scripted lines. Option 2
+code; Claude's API got a second adapter behind the same interface (`ClaudeChat`, task 93). "None" uses scripted lines. Option 2
 later, if setup turns out to be the main friction. The key is stored in the settings file
 (user://settings.cfg, plain text on disk: Settings says so), never in the save, never
 logged.

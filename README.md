@@ -469,34 +469,42 @@ fresh world, run `godot --path . -- --new-game`.
 
 ### Talking NPCs with a language model
 
-Villagers talk through an OpenAI-compatible chat endpoint. Out of the box the game asks the
+Villagers talk through an OpenAI-compatible chat endpoint, or through Claude. Out of the box the game asks the
 test LLM on `http://127.0.0.1:11434/v1` (see below); when nothing answers there, or a reply
 takes longer than 30 seconds, villagers say short scripted lines instead, so the game never
 needs a model.
 
-**Configuring it.** Settings → Language model has three fields, each stored as you type:
+**Configuring it.** Settings → Language model has a provider choice and three fields, each
+stored as you type or pick:
 
 | Field | Default | What it is |
 |---|---|---|
+| Provider | OpenAI-compatible | OpenAI-compatible (the test LLM, Ollama, LM Studio, hosted APIs) or Claude. Each provider keeps its own endpoint, model and key: choosing Claude shows Claude's (starting with `https://api.anthropic.com/v1` and `claude-opus-5-5`), choosing back shows the test LLM's again, and a key is only ever sent to the provider it was typed for. |
 | Endpoint | `http://127.0.0.1:11434/v1` | The base address of the chat API; the game posts to `<endpoint>/chat/completions`. Empty it to turn the model off (villagers then always speak scripted lines). |
-| Model | `qwen2.5:3b-instruct` | The model name the endpoint should use. |
+| Model | `qwen2.5:3b-instruct` | The model name the endpoint should use: typed, or picked from the drop-down below it, which lists what `<endpoint>/models` answers (Claude's `/v1/models` with the key), asks again a moment after the endpoint or key is typed and by the Refresh button, and shows only the saved model with a note when the endpoint can't be asked. |
 | Key | empty | Only for endpoints that need one: sent as the header `Authorization: Bearer <key>`, and never sent along a redirect. |
 
-The same three live in `settings.cfg` (in Godot's user folder, e.g.
-`~/.local/share/godot/app_userdata/Sandbox Game/settings.cfg` on Linux), under
-`[language_model]`; only values that differ from the defaults are written:
+The same live in `settings.cfg` (in Godot's user folder, e.g.
+`~/.local/share/godot/app_userdata/Sandbox Game/settings.cfg` on Linux): the chosen provider
+and the OpenAI-compatible provider's endpoint, model and key under `[language_model]` (where
+they were before there was a choice), Claude's under `[language_model.claude]`. Only values
+that differ from the defaults are written:
 
 ```
 [language_model]
+provider="claude"
 endpoint="https://api.openai.com/v1"
 model="gpt-4o-mini"
 api_key="sk-..."
+
+[language_model.claude]
+api_key="sk-ant-..."
 ```
 
 The key is stored as plain text there (never in the save, never logged), and what you say to
 villagers goes to that endpoint. Ollama, LM Studio (`http://127.0.0.1:1234/v1`), llama.cpp's
-server and hosted OpenAI-compatible APIs work; Claude's own API would need an adapter of its
-own. To try an endpoint and key by hand:
+server and hosted OpenAI-compatible APIs work as the OpenAI-compatible provider. To try an
+endpoint and key by hand:
 
 ```
 curl -s <endpoint>/chat/completions -H 'Content-Type: application/json' \
@@ -506,6 +514,19 @@ curl -s <endpoint>/chat/completions -H 'Content-Type: application/json' \
 
 (Leave out the `Authorization` line for an endpoint without a key, like the test LLM.) When
 the endpoint can't be reached, the game's output says so once, not for every line.
+
+**Claude.** Pick the provider Claude under Settings → Language model and paste an Anthropic
+API key (console.anthropic.com) into Key; the endpoint becomes `https://api.anthropic.com/v1`
+and the model `claude-opus-5-5`. Everything the villager is told and everything you say to
+villagers then goes to Anthropic over the internet, and the key sits in `settings.cfg` as plain
+text. A line costs about 600 tokens in and 40 out: roughly 0.4 cents with `claude-opus-5-5`
+($4 / $20 per million tokens), roughly 0.01 cents with `claude-haiku-5-5` ($0.10 / $0.50),
+which is plenty for small talk: pick it from the model list. The game sends the Messages API's
+`x-api-key` and `anthropic-version` headers, no temperature (current models refuse it), low
+effort and room for 1000 tokens (a model's thinking counts against that; the reply is trimmed
+to two sentences anyway); on Opus and Sonnet a refusal falls back server-side. A refusal, an
+error or a time-out gives a scripted line, as with any endpoint. The numbers are in `[claude]`
+of `data/npc_talk.cfg`. `ANTHROPIC_API_KEY=... make test` also asks the real Claude once.
 
 **The test LLM.** `make llm-up` runs Ollama with Qwen2.5 3B Instruct (1.9 GB, Qwen Research
 License: for testing only) in a podman or docker container on `http://127.0.0.1:11434/v1`,

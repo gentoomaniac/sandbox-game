@@ -912,10 +912,12 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   the answer is awaited the villager is shown typing; Escape leaves (and doesn't open the
   pause menu). The villager turns to the player and stands a while.
 - **Answers:** one function, `NpcDialogue.reply`, awaited by the chat. With a language model
-  set in Settings (an OpenAI-compatible chat endpoint, by default the test LLM's
-  `http://127.0.0.1:11434/v1`; a model; an optional key; an emptied endpoint is none) it asks
-  the model; without one, when nothing answers, on an error or after 30 s it says a
-  scripted line of `data/npc_talk.cfg` ("Aye.", "Is that so?"). The answer is trimmed to the
+  set in Settings (a provider, an OpenAI-compatible chat endpoint by default, the test LLM's
+  `http://127.0.0.1:11434/v1`, or Claude, whose endpoint and model, `claude-opus-5-5`, it starts
+  with; each provider keeps its own endpoint, model and key, so a key goes only to its own
+  provider; a model, picked from the endpoint's list of models or typed; an optional key; an
+  emptied endpoint is none) it asks the model; without one, when nothing answers, on an error
+  or after 30 s it says a scripted line of `data/npc_talk.cfg` ("Aye.", "Is that so?"). The answer is trimmed to the
   spoken line: no quotes or name in front, its first line, at most two sentences. Only the
   words come from the model; nothing else in the game changes by what it says.
 - **The prompt** (`data/npc_talk.cfg`, the user's working example of 2026-11-06 in shape;

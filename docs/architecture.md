@@ -98,10 +98,11 @@ Warft and an Ewer here and there.
   chat with both portraits (`Appearance.portrait_layers`) and pauses the game while it is open.
 - **What villagers say** comes from one place, `NpcDialogue.reply` (`game/scenes/`, a node, as
   it talks to the network), which the chat awaits; the wait is the villager's
-  (`Npc.is_answering`). With a language model set in Settings it asks `OpenAiChat` (one POST to
-  an OpenAI-compatible `/chat/completions`, running while the game is paused, with a time-out
-  and no redirects, so a key goes nowhere else;
-  tests put `FakeChat` in its place), else, or when that fails, it says a scripted line. The
+  (`Npc.is_answering`). With a language model set in Settings the chat of the
+  provider (`ModelChat`: `OpenAiChat`, one POST to an OpenAI-compatible `/chat/completions`, or
+  `ClaudeChat`, one POST to Anthropic's `/messages` with the system lines on top; both run while
+  the game is paused, with a time-out and no redirects, so a key goes nowhere else, and both
+  list the endpoint's models for Settings; tests put `FakeChat` in their place), else, or when that fails, it says a scripted line. The
   request is built by `NpcPrompt` (`game/state/`): pure functions of the villager, the chat,
   the moment (`NpcMoment`: clock, sun, weather and place, taken from GameState) and the words
   of `data/npc_talk.cfg` (`NpcTalkRules`), so they are tested without a model. When a chat is
@@ -183,8 +184,11 @@ The default key bindings are the input map in `project.godot` (in the Godot edit
 Settings → Input Map). The player changes them under Settings → Controls; `GameSettings`
 applies them to Godot's `InputMap` and stores only the differences from the defaults in
 `user://settings.cfg`. The same file keeps the display, game and audio settings and the
-language model's endpoint, model and key (`GameSettings.language_model`; the key in plain
-text, never in the save).
+language model's provider (OpenAI-compatible or Claude: a row of
+`GameSettings.LANGUAGE_MODEL_PROVIDERS`, with the protocol it speaks) and each provider's own
+endpoint, model and key (`GameSettings.language_model` is the chosen one's; the key in plain
+text, never in the save, never sent to another provider). The page of it
+(`LanguageModelPage`) lists the models the endpoint offers in a drop-down.
 
 ## Tests
 
