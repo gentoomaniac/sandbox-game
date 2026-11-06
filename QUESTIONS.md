@@ -114,8 +114,11 @@ Answered questions move into SPEC.md and are removed here.
     campfire, stands still at night; saved with its chat history (last 200 lines); the
     chat pauses the game; lines as `[08:15] <You> hello`. Default: keep.
 
-23. **Test LLM** (task 85): Ollama in a container with Qwen2.5 3B Instruct (about 2 GB,
-    Apache-2.0) on the CPU; `make llm-up`, `make llm-down`, `make llm-check`. Default: keep.
+23. **Test LLM** (task 85): Ollama in a container with Qwen2.5 3B Instruct (about 2 GB) on
+    the CPU; `make llm-up`, `make llm-down`, `make llm-check`. Its licence is the Qwen
+    Research License (non-commercial), not Apache-2.0 as first written: fine for local
+    tests, never to ship. Apache-2.0 alternatives: qwen2.5 1.5B or 7B. Default: keep 3B for
+    testing.
 
 ## Questions
 
