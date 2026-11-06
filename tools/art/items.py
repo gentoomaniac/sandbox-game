@@ -248,6 +248,30 @@ def alder_cone():
     return outlined(from_rows(rows, keys), "ink")
 
 
+def willow_cutting():
+    """A short willow rod cut at a slant at its foot, with two buds and a leaf breaking at its tip."""
+    rows = [
+        "................",
+        "................",
+        ".........lg.....",
+        "........lgg.....",
+        "........rd......",
+        ".......rd.......",
+        "......brd.......",
+        "......rd........",
+        ".....rd.........",
+        "....brd.........",
+        "....rd..........",
+        "...rd...........",
+        "..rd............",
+        "..s.............",
+        "................",
+        "................",
+    ]
+    keys = {"r": "reed", "d": "umber", "b": "ochre", "l": "dry_light", "g": "olive", "s": "sand_light"}
+    return outlined(from_rows(rows, keys), "soil_dark")
+
+
 def cone(rows, keys):
     """A cone from rows: `rows` gives each row's left edge and width. Its scales form a diamond
     lattice: dark seams along both diagonals, each scale lit at its top; the right edge is in
@@ -489,6 +513,7 @@ ICONS = {
     "beechnut": beechnut(),
     "birch_catkin": birch_catkin(),
     "alder_cone": alder_cone(),
+    "willow_cutting": willow_cutting(),
     "waistcoat": waistcoat(),
     "shirt": shirt(),
     "breeches": breeches(),

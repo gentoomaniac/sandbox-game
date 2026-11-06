@@ -38,6 +38,7 @@ const PINE_CONE := &"pine_cone"
 const BEECHNUT := &"beechnut"
 const BIRCH_CATKIN := &"birch_catkin"
 const ALDER_CONE := &"alder_cone"
+const WILLOW_CUTTING := &"willow_cutting"
 const HAY := &"hay"
 const CLAY := &"clay"
 const REEDS := &"reeds"
@@ -245,6 +246,17 @@ const _OTHER_TYPES := {
 		"plants": WorldObjectTypes.SAPLING,
 		"plants_on": Tile.Terrain.GRASS,
 		"plants_state": {"tree": WorldObjectTypes.ALDER},
+	},
+	# Willows are not grown from seed but from cut rods stuck in the ground.
+	WILLOW_CUTTING:
+	{
+		"name": "Willow cutting",
+		"description": "A rod cut from a willow. Stuck in the ground, it takes root.",
+		"weight": 0.05,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+		"plants": WorldObjectTypes.SAPLING,
+		"plants_on": Tile.Terrain.GRASS,
+		"plants_state": {"tree": WorldObjectTypes.WILLOW},
 	},
 	WAISTCOAT:
 	{

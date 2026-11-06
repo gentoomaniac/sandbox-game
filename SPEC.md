@@ -624,7 +624,9 @@ Decided 2026-11-05. A text console for testing and cheats.
     away from the player; 1×1 if there is no room). The axe cuts the trunk into most of the
     logs (e.g. oak 3, beech 3, spruce 3, pine 4, birch 2, alder 2, dead tree 2) and chops out
     the stump for 1 log. Living trees sometimes leave a seed of their species on the ground
-    (acorn, beechnut, birch catkin, alder cone, spruce cone, pine cone; about 25 %).
+    (acorn, beechnut, birch catkin, alder cone, spruce cone, pine cone, and the willow a
+    willow cutting, a rod stuck in the ground as willows are really grown; about 25 %). Every
+    tree whose stump can grow a sapling has one, as a sapling picked by hand gives it back.
   - **Trunk placement** (decided 2026-11-05): a trunk always lies horizontally (there is no
     vertical art). With the player left or right of the tree it lies on the far side of the
     stump; with the player above or below it lies to the right of the stump, or to the left if
@@ -917,7 +919,7 @@ Decided 2026-11-05.
     reason it was planted and cut back every few years), and a wattle fence for 2 fibre; the
     pickaxe takes a wall apart for 3 stone. Nothing removes a dyke or fills a ditch (yet): they
     are the land's, not the player's. A willow is felled like the other trees (2 logs, its stump
-    may grow a willow sapling again).
+    may grow a willow sapling again; it drops a willow cutting like a seed).
   - **Building and tilling:** all of them block building and tilling on their tile (a dyke too:
     nothing is built into it). Building next to them is fine. The door's front tile must still
     be walkable, so a door can't open onto a Knick or a ditch.

@@ -9,6 +9,7 @@ const SEEDS := {
 	WorldObjectTypes.BEECH: ItemTypes.BEECHNUT,
 	WorldObjectTypes.BIRCH: ItemTypes.BIRCH_CATKIN,
 	WorldObjectTypes.ALDER: ItemTypes.ALDER_CONE,
+	WorldObjectTypes.WILLOW: ItemTypes.WILLOW_CUTTING,
 }
 const STRONG_AXE := &"strong_axe"
 
@@ -72,6 +73,18 @@ func test_a_dead_tree_gives_no_seed() -> void:
 		assert_eq(_dropped(seed_item), 0)
 
 
+func test_every_tree_whose_stump_can_grow_a_sapling_has_a_seed_that_plants_it() -> void:
+	for tree: StringName in WorldObjectTypes.TYPES:
+		if not WorldObjectTypes.TYPES[tree].get("regrows", false):
+			continue
+		assert_true(WorldObjectTypes.TYPES[tree].has("seed"), "%s has a seed" % tree)
+		var seed_item: StringName = WorldObjectTypes.TYPES[tree].get("seed", &"")
+		assert_true(ItemTypes.TYPES.has(seed_item), "%s: %s is an item" % [tree, seed_item])
+		if ItemTypes.TYPES.has(seed_item):
+			var plants_state: Dictionary = ItemTypes.TYPES[seed_item]["plants_state"]
+			assert_eq(plants_state["tree"], tree, "%s plants its own tree" % seed_item)
+
+
 func test_the_generic_sapling_item_is_gone() -> void:
 	assert_false(ItemTypes.TYPES.has(&"sapling"))
 
@@ -108,3 +121,11 @@ func test_a_hand_picks_the_seed_of_the_species_off_a_planted_sapling() -> void:
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.FORAGE)
 	assert_eq(_dropped(ItemTypes.SPRUCE_CONE), 1)
 	assert_eq(_dropped(ItemTypes.ACORN), 0)
+
+
+func test_a_hand_picks_a_cutting_off_a_willow_sapling() -> void:
+	_place(WorldObjectTypes.SAPLING, str(WorldObjectTypes.WILLOW))
+	_hold(ItemTypes.NONE)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.FORAGE)
+	assert_null(_world.object_at(_tile))
+	assert_eq(_dropped(ItemTypes.WILLOW_CUTTING), 1)

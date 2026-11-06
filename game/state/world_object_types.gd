@@ -229,6 +229,8 @@ const _OTHER_TYPES := {
 	{
 		"hp": 4,
 		"tool": &"axe",
+		"seed": &"willow_cutting",
+		"seed_chance": 0.25,
 		"trunk": {"logs": 2, "hp": 3, "atlas_row": _WILLOW_TRUNK_ROW},
 		"leaves": STUMP,
 		"regrows": true,
