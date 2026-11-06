@@ -3,7 +3,8 @@
 The North German and Danish countryside, seen from the front in 3/4 view: a huge, thick reed
 thatch, weathered grey-brown with moss, hipped at both ends with soft rounded eaves and eyebrow
 dormers swelling out of it; lime-washed or brick walls on a fieldstone base; green or teal doors
-and shutters, white window frames. Light comes from the top left.
+and shutters, white window frames; the small hut in tarred boards under turf. Light comes from
+the top left.
 
 A picture is as wide as the footprint (16 px per tile) and its bottom edge is the footprint's
 bottom edge; the roof rises above it (see data/buildings.cfg, which also has the window light
@@ -20,6 +21,9 @@ from canvas import TILE, blank, rect
 # The thatch, lit to dark: weathered grey-brown reed, darkest in the shadow under the eaves.
 THATCH = ("sand", "bare_light", "bare", "mud_dark", "soil_dark")
 MOSS = ("dry", "olive", "green_dark")
+# The grass of a turf roof, lit to dark, and where it has dried out.
+TURF = ("green_bright", "green_light", "green", "green_dark", "green_deep")
+DRY_TURF = ("dry_light", "dry", "olive", "green_dark", "green_deep")
 # The height of a course of thatch, in px.
 COURSE = 4
 # The rolled eaves: how many rows they take up at the foot of the roof, and the radius in px of
@@ -533,7 +537,7 @@ def ledged_door(picture, left, top, bottom, width, colours):
 def shack(is_lit):
     """A small hut on 3x2 tiles, a fisherman's or herdsman's: tarred boards with battens on a
     low fieldstone base, a low ox-blood door on the middle tile and a small white window with an
-    ox-blood shutter on the right."""
+    ox-blood shutter on the right, under a turf roof."""
     rng = random.Random(384)
     width, height = 3 * TILE, 64
     picture = blank(width, height)
@@ -553,28 +557,85 @@ def shack(is_lit):
     rect(picture, 31, 38, 33, 38, "russet_deep")
     rect(picture, 30, 33, 30, 44, "ink")
     ledged_door(picture, 18, 38, height - 4, 11, ("rust", "rust_dark", "russet_deep"))
-    # The roof: courses of overlapping boards, lit at their top edge, the joints staggered.
-    roof_top, roof_bottom = 9, 31
-    for y in range(roof_top, roof_bottom + 1):
-        inset = max(0, 3 - (y - roof_top))
-        course = (roof_bottom - y) // 4
-        in_course = (roof_bottom - y) % 4
-        for x in range(inset, width - inset):
-            colour = ("soil_dark", "mud_dark", "bare", "bare_light")[in_course]
-            if in_course and (x + course * 5) % 9 == 0:
-                colour = "mud_dark"
-            if x > width - 10 and colour in ("bare_light", "bare"):
-                colour = "bare" if colour == "bare_light" else "mud_dark"
-            picture[y][x] = colour
-            snowy.add((x, y))
-    for _ in range(3):
-        mx, my = rng.randint(6, width - 8), rng.randint(roof_top + 6, roof_bottom - 4)
-        rect(picture, mx, my, mx + 2, my, "olive")
-        picture[my - 1][mx + 1] = "dry"
-    eaves_shadow(picture, {x: roof_bottom for x in range(width)}, wall_left, wall_right)
+    eaves = turf_roof(picture, snowy, rng, 0, width - 1, 9, 28)
+    eaves_shadow(picture, eaves, wall_left, wall_right)
     outline(picture, THATCH[4])
     ground_shadow(picture)
     return picture, snowy
+
+
+def turf_roof(picture, snowy, rng, left, right, ridge_y, eaves_y):
+    """A turf roof over the columns left..right, the grass growing on birch bark: a slope of
+    grass in clumps, lit on top and on the left and darker towards the eaves and the right end,
+    with a few patches of dry grass and a few flowers; a ragged crest of tufts on the ridge, and
+    at the eaves a thick rounded lip of turf with blades hanging over the pale edge of the bark.
+    Returns the lowest roof row of each column."""
+    height = eaves_y - ridge_y
+    # The ridge, a pixel higher in a few short runs, rounded off at the ends.
+    crest = {}
+    x = left
+    while x <= right:
+        lift = rng.random() < 0.35
+        for column in range(x, min(right, x + rng.randint(1, 3)) + 1):
+            crest[column] = ridge_y + max(0, 3 - min(column - left, right - column)) - lift
+        x = column + 1
+    dry = [
+        (rng.uniform(left + 6, right - 6), rng.uniform(ridge_y + 4, eaves_y - 6), rng.uniform(2.5, 4))
+        for _ in range(2)
+    ]
+    # The gaps between the clumps, in shade; darker towards the eaves.
+    for x in range(left, right + 1):
+        for y in range(crest[x], eaves_y + 1):
+            picture[y][x] = TURF[3] if (y - ridge_y) / height < 0.6 else TURF[4]
+            snowy.add((x, y))
+    # The clumps lie in rows 2 px apart, each a pixel up or down, so they overlap in scallops
+    # rather than stripes: a rounded lit top over a body that is darker on its right, one step
+    # darker on the lower slope and at the right end.
+    for y in range(ridge_y, eaves_y - 2, 2):
+        x = left + rng.randrange(-3, 1)
+        while x <= right:
+            clump = rng.randint(3, 6)
+            top = y + rng.choice((-1, 0, 0, 1))
+            is_dry = any(math.hypot((x - dx) / 1.5, top - dy) < radius for dx, dy, radius in dry)
+            ramp = DRY_TURF if is_dry else TURF
+            step = (top - ridge_y > height * 0.55) + (x > right - 6)
+            for cx in range(max(left, x), min(right, x + clump - 1) + 1):
+                is_edge = cx in (x, x + clump - 1)
+                for cy in range(max(crest[cx], top + is_edge), top + 3):
+                    lit = 0 if cy == top + is_edge and cx < x + clump - 1 else 1
+                    if cx == x + clump - 1 or cy == top + 2:
+                        lit = 2
+                    picture[cy][cx] = ramp[min(len(ramp) - 1, lit + step)]
+            # A flower on a few clumps: daisies, buttercups, a pink campion.
+            flower = min(right, x + 1)
+            if rng.random() < 0.08 and not is_dry and top >= crest[flower]:
+                picture[top][flower] = rng.choice(("cream", "cream", "gold", "petal"))
+            x += clump - rng.choice((0, 1))
+    # The lip of the turf at the eaves, thicker in some runs: a dark line where it stands out
+    # from the slope, then rounded and lit along its top. Under it the edge of the birch bark
+    # sticks out, pale with a few black marks and shaded below, and blades of grass hang over it.
+    eaves = {}
+    x = left
+    while x <= right:
+        lip_top = eaves_y - rng.choice((2, 2, 3))
+        for column in range(x, min(right, x + rng.randint(3, 6)) + 1):
+            shade = column > right - 4
+            picture[lip_top - 1][column] = TURF[4]
+            for y in range(lip_top, eaves_y + 1):
+                picture[y][column] = TURF[min(4, 1 + y - lip_top + shade)]
+            is_mark = rng.random() < 0.15
+            picture[eaves_y + 1][column] = "ink" if is_mark else "stone" if shade else "stone_light"
+            picture[eaves_y + 2][column] = "stone_dark" if shade else "stone"
+            snowy.update(((column, eaves_y + 1), (column, eaves_y + 2)))
+            eaves[column] = eaves_y + 2
+        x = column + 1
+    x = left + rng.randrange(2)
+    while x <= right:
+        for y in range(eaves_y + 1, eaves_y + 1 + rng.choice((1, 2, 2, 3))):
+            picture[y][x] = TURF[3] if y == eaves_y + 1 else TURF[4]
+            eaves[x] = max(eaves[x], y)
+        x += rng.choice((2, 2, 3, 4))
+    return eaves
 
 
 # How to draw each building (is_lit to the picture and the pixels snow covers), by its id in
