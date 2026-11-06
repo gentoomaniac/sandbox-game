@@ -212,7 +212,7 @@ func pass_out() -> int:
 ## standing on its tile.
 func go_to_home_bed() -> void:
 	_building_inside = _building_with_interior(player.home_map)
-	var bed := player.home_map.object_at(player.home_bed)
+	var bed := _home_bed()
 	if bed == null:
 		player.position = _tile_centre(player.home_bed)
 		player.bed_lying_in = null
@@ -326,6 +326,18 @@ func _on_new_day(_day: int) -> void:
 	if not is_inside():
 		occupied.append(player.tile())
 	NightUpkeep.pass_night(world, occupied, weather)
+
+
+## The bed object of the home bed. A bed in the world may be in a chunk that is not loaded: that
+## chunk is generated for the look and dropped again, as in the console's `tp`.
+func _home_bed() -> WorldObject:
+	var coords := Chunk.world_to_chunk(player.home_bed)
+	if player.home_map != world or world.is_chunk_loaded(coords):
+		return player.home_map.object_at(player.home_bed)
+	world.add_chunk(WorldGenerator.new(world.world_seed).generate_chunk(coords))
+	var bed := world.object_at(player.home_bed)
+	world.remove_chunk(coords)
+	return bed
 
 
 ## The building whose interior this is, or null for the world.

@@ -12,6 +12,7 @@ const COMMANDS := {
 	"nodrain": ["nodrain", "Toggle: actions cost no energy."],
 	"noweight": ["noweight", "Toggle: carried weight doesn't raise costs."],
 	"nocost": ["nocost", "Toggle: buildings and crafting need no materials."],
+	"reset": ["reset", "Put you in your bed, the one you wake in (inside or out)."],
 	"spawn":
 	[
 		"spawn <kind> [count]",
@@ -105,6 +106,9 @@ func run(line: String) -> Array[String]:
 		"nocost":
 			cheats.is_cost_off = not cheats.is_cost_off
 			output = [_toggle_message("No cost", cheats.is_cost_off)]
+		"reset":
+			_state.go_to_home_bed()
+			output = ["Back in bed"]
 		"spawn":
 			output = _candidates_text("spawn") if arguments.is_empty() else _spawn(arguments)
 		"weather":

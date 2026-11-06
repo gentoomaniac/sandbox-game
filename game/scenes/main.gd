@@ -55,6 +55,8 @@ var _is_in_transition := false
 var _fade_screen := FadeScreen.new()
 var _debug: DebugRunner
 var _pending_minutes := 0.0
+## The map the views show: the world or the interior of a house.
+var _shown_map: GameMap
 
 @onready var _world: SubViewport = $WorldViewport
 @onready var _view: WorldView = $WorldViewport/WorldView
@@ -102,6 +104,7 @@ func _ready() -> void:
 	_apply_start_options()
 	_start_sounds()
 	_show_clock()
+	_shown_map = _state.current_map
 	if _state.is_inside():
 		_show_current_map()
 
@@ -188,6 +191,9 @@ func _connect_state_and_views() -> void:
 	_console_view.command_ran.connect(
 		func() -> void:
 			_camera.rig.follow(_camera_target)
+			# `reset` and `tp` can take the player to another map.
+			if _state.current_map != _shown_map:
+				_show_current_map()
 			_show_clock()
 	)
 	_menu.resumed.connect(_resume)
@@ -525,6 +531,7 @@ func _pass_door() -> void:
 ## Shows the map the player is on: the world, or the interior (which pauses the world's
 ## chunk streaming, leaving it as it is).
 func _show_current_map() -> void:
+	_shown_map = _state.current_map
 	var is_inside := _state.is_inside()
 	_audio.set_inside(is_inside)
 	_view.visible = not is_inside
