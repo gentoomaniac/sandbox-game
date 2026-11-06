@@ -70,6 +70,18 @@ Answered questions move into SPEC.md and are removed here.
     turns to snow instead of shadow, which also takes a few grey flecks off the snowed-over
     thatch. Each piece is its own commit (walls, roof, seasons and snow). Default: keep.
 
+14. **Livestock** (task 73): `spawn rabbit` is the tame rabbit, the wild one is `wild_rabbit`;
+    only rabbits flee; hens roost before sunset, cows lie down an hour after it; activity and
+    bedtime aren't saved. Default: keep.
+15. **Professions** (task 74): skills 0-100, a craft teaches 2 points at or below its level,
+    falling to nothing 40 above it; at 200 total, a skill grows only by taking points from one
+    marked Fade on the skills tab (none fades on its own). Flour is 3 wheat ground by hand;
+    bricks so far only build the bake oven; the houses' own stools can be taken down. Master
+    recipes at level 70 (oak cupboard, feast cake, a master's firing) let a skill reach 100.
+    Default: keep.
+16. **Meadows** (task 75): flower communities per habitat, drifts about 14 tiles across,
+    heather in early autumn, no blue flower (cornflower grows in rye fields). Default: keep.
+
 ## Questions
 
 No open questions right now.
