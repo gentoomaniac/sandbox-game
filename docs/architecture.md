@@ -18,7 +18,7 @@ the state never knows about scenes.** That is why almost everything in `game/sta
 `make screenshot`.
 
 Names are not always where you would guess: the `World` class (tiles, chunks, objects,
-ground items) is in `game/state/world.gd`. `game/world/` holds the code that builds a world
+buildings) is in `game/state/world.gd`. `game/world/` holds the code that builds a world
 and plans which chunks to load (`WorldGenerator`, `ChunkStreaming`, `CampSite`,
 `InteriorLoader`, `PositionHash`).
 
@@ -44,8 +44,9 @@ and plans which chunks to load (`WorldGenerator`, `ChunkStreaming`, `CampSite`,
   one building). The player is on one map at a time; the world stands still while they are
   inside.
 - **World** holds the loaded chunks of tiles (`Tile`, `Chunk`), the objects on them
-  (`WorldObject`: trees, crops, furniture), buildings and items lying on the ground. Every
-  change goes through it, and it emits signals that the views follow.
+  (`WorldObject`: trees, crops, furniture), buildings and, in `ground_items` (`GroundItems`),
+  the items lying on the ground. The nightly upkeep of what the player changed is
+  `NightUpkeep`, which is given the world. Every change goes through it, and it emits signals that the views follow.
 - **WorldView** (`game/scenes/world_view.gd`) draws a `World` into a SubViewport at one art
   pixel per screen pixel; `CameraController` shows that viewport on the window, so the world
   scrolls smoothly. `InteriorView` draws an `Interior` in its place while the player is inside.
@@ -63,7 +64,7 @@ the comment at the top of each file). The path from a file to the game is usuall
 data/<topic>.cfg  ->  game/state/<topic>_rules.gd  ->  a Types class or the state that uses it
 ```
 
-- A `*Rules` class reads its file, checks that every required key is there (`problems()`,
+- A `*Rules` class reads its file with `DataFile.read_sections(path)`, checks it (`problems()`,
   `is_valid()`) and serves the values. `Main._ready` refuses to start, and reports what is
   wrong, if any of them is invalid.
 - `BuildingTypes`, `WorldObjectTypes` and `ItemTypes` are the tables of kinds, built from the
@@ -78,6 +79,22 @@ Typical jobs:
 | New recipe | A section in `data/recipes.cfg` for an item that exists in `ItemTypes`. |
 | New sound | An event in `tools/audio/generate.py`, a section in `data/sounds.cfg` ([tools/README.md](../tools/README.md)). |
 | New object or item kind | An entry in `WorldObjectTypes` or `ItemTypes`, and its art ([tools/README.md](../tools/README.md)). |
+
+### Adding a data file
+
+There is no base class: each rules class is plain, so copy one that is shaped like yours
+(`EnergyRules` for fixed sections and keys, `RecipeRules` for one section per thing).
+
+1. Write `data/<topic>.cfg`, with the meaning of every key in the comment at the top.
+2. Write `game/state/<topic>_rules.gd` with `DEFAULT_PATH`, a `static var _default`,
+   `default_rules()` (loaded on first use), `from_file(path)` and the accessors. `from_file`
+   is `DataFile.read_sections(path)` handed to the constructor, then a `push_error` for each
+   of `problems()`; `DataFile` already reports a file that can't be read.
+3. `problems() -> Array[String]` lists what is missing or wrong as `"[section] what"`, and
+   `is_valid()` is `problems().is_empty()`.
+4. Add `<Topic>Rules.default_rules().is_valid()` to the check in `Main._ready`.
+5. Test it: the real file is valid, a file with keys missing reports them (the test counts
+   the `push_error`s with `assert_push_error_count`), and so does a missing file.
 
 ## Saving
 

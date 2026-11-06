@@ -230,7 +230,7 @@ field would be a reference cycle: the state and the rules would never be freed).
 
 ## 68. World split and one way to read data files
 
-- [ ] Done
+- [x] Done
 
 From docs/code-review-2026-11-06.md. Ground items out of World into their own class
 (`_ground_items`, drop_items, _scatter_tiles, _hash_fraction, ground_items_near; no chunk
@@ -239,6 +239,16 @@ into its own; drop World's `max-public-methods` exception. One static
 `DataFile.read_sections(path)` used by the ten rules classes (no base class), and one
 validation API across them (`problems()` + `is_valid()`, renaming `missing_keys`/
 `bad_values`). README/architecture: "adding a data file".
+
+Done: `GroundItems` (`world.ground_items`: all, near, count_of, add, remove, the signals
+`added`/`removed`/`dropped`, and `drop`) and `NightUpkeep.pass_night(world, ...)` (static, given
+the world) are out of World (652 -> 509 lines). Neither keeps the World, so there is no
+reference cycle: `World.drop_items` stays as the one entry point and passes itself to
+`GroundItems.drop` per call (it is the one that knows what can be walked on). World still has 37
+public methods (chunks, objects, soil, buildings, clay), so the `max-public-methods` exception
+stays, with a comment on what is left. `DataFile.read_sections(path)` is used by the nine rules
+classes and `Vegetation`; all of them have `problems()` and `is_valid()` (`missing_keys` and
+`bad_values` are gone). docs/architecture.md has "Adding a data file".
 
 ## 69. main.gd slimmed
 
