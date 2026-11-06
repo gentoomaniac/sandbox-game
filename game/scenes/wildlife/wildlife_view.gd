@@ -103,6 +103,20 @@ func spawn_in_view(kind: StringName, count: int) -> int:
 	return spawned
 
 
+## The nearest animal of a kind that is still about within `reach` pixels of a point, or null:
+## how a hunter finds its prey (a stork its frogs). It looks only at the few wild animals.
+func nearest_animal(kind: StringName, point: Vector2, reach: float) -> Animal:
+	var nearest: Animal = null
+	var nearest_distance := reach
+	for animal in _animals:
+		if animal.kind == kind and not animal.is_done:
+			var distance := animal.position.distance_to(point)
+			if distance <= nearest_distance:
+				nearest = animal
+				nearest_distance = distance
+	return nearest
+
+
 ## The part of the world the camera shows, in world pixels.
 func view_rect() -> Rect2:
 	var size := ViewMath.visible_size(Vector2(get_window().size), _camera.rig.zoom)

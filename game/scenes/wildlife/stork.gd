@@ -1,9 +1,10 @@
 class_name Stork
 extends Animal
 ## A white stork. On wet ground (kind STORK) it hunts: slow steps with the head down, a stab
-## into the grass now and then, a look round; it flies off with slow wingbeats when the player
-## comes near. On a roof (kind ROOF_STORK) it flies in, lands on the ridge and stands there,
-## clattering its bill now and then, until it is sent away or the house is gone.
+## into the grass now and then, a look round; it walks up to a frog it sees near it, strikes and
+## swallows it (the frog is gone). It flies off with slow wingbeats when the player comes near.
+## On a roof (kind ROOF_STORK) it flies in, lands on the ridge and stands there, clattering its
+## bill now and then, until it is sent away or the house is gone.
 ##
 ## A flying stork is drawn `_lift` pixels above the point of the ground below it, its node's
 ## position. On a roof that point is just in front of the house, so the stork sorts in front of
@@ -14,11 +15,15 @@ const WALK := &"walk"
 const STRIKE := &"strike"
 const CLATTER := &"clatter"
 const FLY := &"fly"
+## Walking up to a frog, and swallowing it.
+const STALK := &"stalk"
+const SWALLOW := &"swallow"
 ## Flying to a roof, and standing on it.
 const ARRIVE := &"arrive"
 const PERCH := &"perch"
 
 const WALK_SPEED := 6.0
+const STALK_SPEED := 9.0
 const FLY_SPEED := 32.0
 const CLIMB_SPEED := 14.0
 ## How high it flies over open ground, and above the roof it flies to or leaves.
@@ -34,6 +39,16 @@ const GLIDE_FRAME := 1
 ## AmbienceSounds), so it is rare.
 const GROUND_CLATTER_CHANCE := 0.04
 const ROOF_CLATTER_CHANCE := 0.09
+## It sees a frog this many tiles away, when it picks what to do next, and gives up on one it
+## hasn't reached in STALK_SECONDS.
+const SIGHT_TILES := 3.0
+const STALK_SECONDS := 15.0
+## The tip of its bill in a strike is this many pixels ahead of its feet, and takes a frog this
+## near to it.
+const BILL_REACH := 10.0
+const CATCH_DISTANCE := 4.0
+const STRIKE_SECONDS := 0.8
+const SWALLOW_SECONDS := 1.6
 ## It is gone once it is this far outside the view: far enough for its height and its wings.
 const LEAVE_MARGIN := 72.0
 
@@ -50,6 +65,8 @@ var _landing_lift := 0.0
 var _arrival_distance := 1.0
 var _arrival_lift := 0.0
 var _shadow: GroundShadows
+## The frog it walks up to and strikes at, or null.
+var _prey: Animal
 
 
 func _init(stork_kind: StringName) -> void:
@@ -105,7 +122,7 @@ func _update(delta: float) -> void:
 	if _state not in [FLY, ARRIVE] and _reaction() == WildlifeRules.Reaction.FLEE:
 		_take_off(_away_from_player())
 	match _state:
-		STAND, STRIKE, CLATTER:
+		STAND, CLATTER:
 			if _state_time >= _state_seconds:
 				if roof == null:
 					_choose_next()
@@ -113,6 +130,14 @@ func _update(delta: float) -> void:
 					_choose_on_roof()
 		WALK:
 			if _state_time >= _state_seconds or not _walk(_walk_direction, WALK_SPEED, delta):
+				_choose_next()
+		STALK:
+			_stalk(delta)
+		STRIKE:
+			if _state_time >= _state_seconds:
+				_finish_strike()
+		SWALLOW:
+			if _state_time >= _state_seconds:
 				_choose_next()
 		PERCH:
 			if _state_time >= _state_seconds:
@@ -124,11 +149,16 @@ func _update(delta: float) -> void:
 
 
 func _choose_next() -> void:
+	_prey = wildlife.nearest_animal(
+		WildlifeRules.FROG, position, SIGHT_TILES * WildlifeRules.TILE_SIZE
+	)
+	if _prey != null:
+		_enter(STALK)
+		_play(WALK, 6.0)
+		return
 	var roll := wildlife.rng.randf()
 	if _state == WALK and roll < 0.35:
-		_enter(STRIKE)
-		_state_seconds = 0.8
-		_play(STRIKE, 2.5)
+		_strike()
 	elif roll < GROUND_CLATTER_CHANCE:
 		_clatter()
 	elif _state != WALK and roll < 0.75:
@@ -138,6 +168,46 @@ func _choose_next() -> void:
 		_play(WALK, 4.0)
 	else:
 		_stand()
+
+
+## Walks up to its frog until the frog is under the tip of its bill, and strikes; gives up if
+## the frog is gone, out of reach or too long in coming.
+func _stalk(delta: float) -> void:
+	if not _has_prey() or _state_time >= STALK_SECONDS:
+		_stand()
+		return
+	var side := 1.0 if position.x >= _prey.position.x else -1.0
+	var spot := _prey.position + Vector2(side * BILL_REACH, 0.0)
+	var to_go := spot - position
+	if to_go.length() <= STALK_SPEED * delta:
+		position = spot
+		_face(-side)
+		_strike()
+	elif not _walk(to_go.normalized(), STALK_SPEED, delta):
+		_stand()
+
+
+func _strike() -> void:
+	_enter(STRIKE)
+	_state_seconds = STRIKE_SECONDS
+	_play(STRIKE, 2.0 / STRIKE_SECONDS)
+
+
+## The bill comes up: with the frog, if it was still under its tip, which it swallows.
+func _finish_strike() -> void:
+	var tip := position + Vector2(_facing * BILL_REACH, 0.0)
+	if _has_prey() and _prey.position.distance_to(tip) <= CATCH_DISTANCE:
+		_prey.is_done = true
+		_enter(SWALLOW)
+		_state_seconds = SWALLOW_SECONDS
+		_play(SWALLOW, 2.0 / SWALLOW_SECONDS)
+	else:
+		_choose_next()
+
+
+## Whether its frog is still about: not caught, not gone (the view frees what is done).
+func _has_prey() -> bool:
+	return is_instance_valid(_prey) and not _prey.is_done
 
 
 func _stand() -> void:
