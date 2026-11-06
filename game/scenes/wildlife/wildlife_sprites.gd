@@ -1,9 +1,10 @@
 class_name WildlifeSprites
 extends RefCounted
 ## The pictures of the animals: one sheet per kind (assets/wildlife/<kind>.png, drawn by
-## tools/art/animals.py, whose order of actions this mirrors), one row per action and one
-## column per frame. Animals face right in the sheets. The farm animals have a sheet per species
-## and look, `<species>_<look>`, all with the same actions (drawn by tools/art/livestock.py).
+## tools/art/animals.py and birds.py, whose order of actions this mirrors), one row per action
+## and one column per frame. Animals face right in the sheets. The farm animals have a sheet per
+## species and look, `<species>_<look>`, all with the same actions (drawn by
+## tools/art/livestock.py).
 
 const SHEET_PATH := "res://assets/wildlife/%s.png"
 const LIVESTOCK_ACTIONS := {&"idle": 2, &"walk": 4, &"graze": 2, &"sleep": 2}
@@ -24,6 +25,11 @@ const SHEETS := {
 	{
 		"size": Vector2i(6, 6),
 		"actions": {&"flutter": 3, &"flutter_pale": 3, &"flutter_pink": 3},
+	},
+	&"stork":
+	{
+		"size": Vector2i(32, 26),
+		"actions": {&"stand": 2, &"walk": 4, &"strike": 2, &"clatter": 2, &"fly": 3},
 	},
 	&"cow_angler": COW,
 	&"cow_black_pied": COW,

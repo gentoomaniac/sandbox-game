@@ -22,13 +22,14 @@ ACTIONS = {"idle": 2, "walk": 4, "graze": 2, "sleep": 2}
 LEGS = {"L", "M", "N", "K"}
 
 
-def to_picture(rows, keys, outline):
-    """A grid of characters as a picture: the outline goes around everything but the legs."""
-    body = [[None if char in LEGS else keys.get(char) for char in row] for row in rows]
+def to_picture(rows, keys, outline, bare=LEGS):
+    """A grid of characters as a picture: the outline goes around everything but the legs (or
+    the characters of `bare`)."""
+    body = [[None if char in bare else keys.get(char) for char in row] for row in rows]
     picture = outline_in_place(body, outline)
     for y, row in enumerate(rows):
         for x, char in enumerate(row):
-            if char in LEGS:
+            if char in bare:
                 picture[y][x] = keys[char]
     return picture
 
