@@ -38,7 +38,7 @@ their own API key. Without one, NPCs speak short scripted lines.
 | Owns | Schedules, needs, intentions, actions, trades, reputation | Nothing; it proposes, the game disposes |
 | Without an LLM | Unchanged | Scripted lines per intention and mood |
 
-This split is the core decision. It keeps the game testable and saves deterministic, lets
+This split is the core decision. It keeps the game testable and its saves deterministic, lets
 the world run with hundreds of NPCs at no cost, and means a weak or missing model only
 makes the talk duller, never breaks the game.
 
@@ -48,10 +48,11 @@ makes the talk duller, never breaks the game.
   pastor, innkeeper, farmhand...), look (sprite layers, clothes).
 - **Personality:** a few traits on scales (warm-cold, pious-worldly, thrifty-generous,
   talkative-taciturn) plus a short free text, 2-4 sentences, written for the prompt.
-- **History:** a short free text (where from, losses, the storm tide of '17, a son at sea)
+- **History:** a short free text (where from, losses, the Christmas flood of 1717, a son at sea)
   and a few facts the game can use (born in, married to, owes money to).
 - **Relationships:** to other NPCs and groups (kin, friend, enemy, rival, employer), with a
-  strength. The reputation rules of SPEC run on these.
+  strength. SPEC's one-hop reputation spread uses friends and enemies; the other kinds
+  colour dialogue and carry gossip.
 - **Opinion of the player:** reputation, trust, debts, favours, gifts given.
 - **Intentions:** 1-4 at a time, each with a kind from a fixed list (work, sell, buy, visit,
   court, avoid, warn, ask for help, celebrate, mourn), a target, a priority and an end
@@ -60,7 +61,7 @@ makes the talk duller, never breaks the game.
 - **Needs / mood:** hunger, tiredness, cold, worry, cheer; simple numbers that colour both
   behaviour and speech.
 - **Knowledge:** what this NPC knows (rumours, prices, where the clay is, that the player
-  took down the old shack). Gossip spreads knowledge along relationships, one hop a day.
+  took down the old shack). Gossip spreads knowledge (not reputation) along relationships, one hop a day.
 - **Memory:** a short list of one-line summaries of past conversations and events with the
   player, newest first, capped (e.g. 10); older ones are merged into one line.
 
@@ -94,14 +95,17 @@ templates).
 2. **The model inside the game.** A GDExtension around llama.cpp (there are Godot plugins
    for this, NobodyWho for example) loads a GGUF model file directly. No setup for the
    player, but native builds per platform and the model shares the GPU with the game.
-3. **A cloud API with the player's key.** The player enters an endpoint and key (Claude,
-   OpenAI, or any OpenAI-compatible host). Best quality, needs the internet, costs the
+3. **A cloud API with the player's key.** The player enters an endpoint and key: OpenAI
+   or any OpenAI-compatible host, or Claude, whose own Messages API has a different shape
+   and needs its own small adapter. Best quality, needs the internet, costs the
    player per conversation, and adds a few hundred milliseconds or more.
 
 **Recommendation:** one backend interface in Settings: endpoint URL, model name, optional
-key; that covers options 1 and 3 with the same code. "None" uses scripted lines. Option 2
-later, if setup turns out to be the main friction. The key is stored in the settings file,
-never in the save, never logged.
+key. The OpenAI-compatible chat format covers option 1 and most of option 3 with the same
+code; Claude's API gets a second adapter behind the same interface (a few dozen lines). "None" uses scripted lines. Option 2
+later, if setup turns out to be the main friction. The key is stored in the settings file
+(user://settings.cfg, plain text on disk: Settings says so), never in the save, never
+logged.
 
 ### 6.2 The prompt
 
@@ -208,5 +212,5 @@ small. Without an LLM: no summary, only the game's own memory events.
    option later?
 7. **Do NPCs need the player at all to change?** E.g. marriages, deaths, moving away over
    the years. Recommendation: later, from events, not from the LLM.
-8. **Children, animals, ghosts and the fantasy layer:** the "fantasy later" of the setting
-   could start here (a wiedergänger on the dyke, the Klabautermann on a ship).
+8. **Children, animals, ghosts and the fantasy layer:** the fantasy that comes later in the setting
+   could start here (a Wiedergänger on the dyke, the Klabautermann on a ship).
