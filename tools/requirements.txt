@@ -1,0 +1,5 @@
+# The Python packages of the art and sound generators and the lint tools. `make venv`
+# installs exactly these into .venv (see the Makefile).
+gdtoolkit==4.5.0
+pillow==12.0.0
+numpy==2.3.4

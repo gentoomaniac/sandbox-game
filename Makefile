@@ -5,9 +5,6 @@ GODOT ?= godot
 GODOT_VERSION := $(shell cat .godot-version)
 
 GUT_VERSION := 9.7.1
-GDTOOLKIT_VERSION := 4.5.0
-PILLOW_VERSION := 12.0.0
-NUMPY_VERSION := 2.3.4
 
 VENV := .venv
 GDLINT := $(VENV)/bin/gdlint
@@ -24,18 +21,19 @@ IMPORT := $(GODOT) --headless --quiet --import
 # reproducible, and it keeps third-party code out of our history and diffs.
 # The cost is that a fresh clone needs `make setup` (and network) before it runs.
 
-.PHONY: help setup assets run screenshot test lint format export clean
+.PHONY: help setup venv assets run screenshot test lint format export clean
 
 help:
 	@echo "Targets:"
 	@echo "  help        This list (the default)."
 	@echo "  setup       Check the tools, download GUT, create the Python venv, import the project."
+	@echo "  venv        Create the Python venv with the packages of tools/requirements.txt."
 	@echo "  run         Start the game."
 	@echo "  screenshot  Save one frame as PNG (a new game, muted, no focus, its own save)."
 	@echo "  test        Run the GUT tests headless."
 	@echo "  lint        Run gdlint and gdformat --check."
 	@echo "  format      Format the GDScript."
-	@echo "  assets      Regenerate all art and sounds, then check them."
+	@echo "  assets      Regenerate all art and sounds, then check them (needs no Godot)."
 	@echo "  clean       Delete build/ (test log, screenshots, the screenshot save); nothing is lost."
 	@echo "  export      Not set up yet: no export presets exist."
 	@echo
@@ -72,11 +70,8 @@ setup:
 			echo "WRONG VERSION: Godot $$found found, $(GODOT_VERSION) required (.godot-version)"; missing=1; \
 		fi; \
 	fi; \
-	if command -v python3 >/dev/null 2>&1 \
-		&& { [ ! -x $(GDLINT) ] || ! $(PYTHON) -c 'import PIL, numpy' 2>/dev/null; }; then \
-		python3 -m venv $(VENV) && $(VENV)/bin/pip install --quiet \
-			gdtoolkit==$(GDTOOLKIT_VERSION) pillow==$(PILLOW_VERSION) numpy==$(NUMPY_VERSION) \
-			|| missing=1; \
+	if command -v python3 >/dev/null 2>&1; then \
+		$(MAKE) --no-print-directory venv || missing=1; \
 	fi; \
 	if [ ! -d addons/gut ] && command -v curl >/dev/null 2>&1; then \
 		echo "Downloading GUT $(GUT_VERSION)"; \
@@ -89,9 +84,18 @@ setup:
 	if [ $$missing -ne 0 ]; then echo "Setup incomplete, see above."; exit 1; fi; \
 	echo "Setup complete."
 
+# The Python tools (art, sound and lint) run in a venv of their own with pinned packages, see
+# tools/requirements.txt. A broken install is deleted again, so the next run starts over; after
+# changing the pins, delete the venv (rm -rf $(VENV)) and run make venv.
+venv: $(PYTHON)
+
+$(PYTHON):
+	python3 -m venv $(VENV)
+	$(VENV)/bin/pip install --quiet --disable-pip-version-check -r tools/requirements.txt || { rm -rf $(VENV); exit 1; }
+
 # Regenerates every PNG under assets/ and checks that they use only palette colours, then
 # every sound under assets/sounds/ and checks their levels and loops.
-assets:
+assets: $(PYTHON)
 	$(PYTHON) tools/art/generate.py
 	$(PYTHON) tools/audio/generate.py
 	$(PYTHON) tools/audio/check.py
