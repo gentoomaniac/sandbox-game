@@ -8,10 +8,10 @@ extends RefCounted
 ## (a bush, a fern), CLEAR a dead crop that a hand pulls up, WATER a watering can wetting tilled
 ## soil, HIT a tool cut or mined at an object, NEEDS_BETTER_TOOL a tool that is too weak for the
 ## object, MOW a scythe cutting the tall grass and reeds around the target, DIG a shovel in grass
-## (which may find clay), PLACE an item that puts an object down (a chest), TAKE_DOWN an axe taking
-## a chest down inside a house (outdoors it is a HIT), NO_ROOM that, with too little room in the
-## inventory for the chest and what it holds. What a harvest, a pick or a final hit gives lies on
-## the ground (see World `drop_items`).
+## (which may find clay), PLACE an item that puts an object down (a chest, a station), TAKE_DOWN an
+## axe or pickaxe taking down what the player placed inside a house (outdoors it is a HIT),
+## NO_ROOM that, with too little room in the inventory for it and what it holds. What a harvest,
+## a pick or a final hit gives lies on the ground (see World `drop_items`).
 enum Use {
 	NOTHING,
 	TILL,
@@ -73,7 +73,7 @@ func use_at(pos: Vector2i) -> Use:
 	if held == ItemTypes.NONE:
 		return Use.NOTHING if _state.is_inside() else _use_by_hand(_state.world.object_at(pos))
 	var item: Dictionary = ItemTypes.TYPES[held]
-	if item.has("places") and _can_place_on(pos):
+	if item.has("places") and _can_place_on(pos, item["places"]):
 		return Use.PLACE
 	if _state.is_inside():
 		return _use_inside(item, pos)
@@ -152,7 +152,7 @@ func _do_use(target: Vector2i) -> Use:
 			_state.current_map.add_object(WorldObject.new(ItemTypes.TYPES[held]["places"], target))
 			_state.player.inventory.remove(held, 1)
 		Use.TAKE_DOWN:
-			var items := _items_of_chest(_state.current_map.remove_object(target))
+			var items := _items_of_placed(_state.current_map.remove_object(target))
 			# `use_at` already checked that it all fits (or answered NO_ROOM).
 			for item: StringName in items:
 				_state.player.inventory.add(item, items[item])
@@ -193,28 +193,40 @@ func _dig(target: Vector2i) -> void:
 		_state.world.drop_items(target, CLAY_DIG_YIELD)
 
 
-## Whether the player can put an object on a tile: it is free, and the player's body is not on it
-## (they would be stuck in it).
-func _can_place_on(pos: Vector2i) -> bool:
+## Whether the player can put an object of this type on a tile: it is free, the player's body is
+## not on it (they would be stuck in it), and the object has a picture for the map (furniture with
+## only an interior picture goes only inside a house).
+func _can_place_on(pos: Vector2i, placed_type: StringName) -> bool:
+	var has_picture: bool = (
+		_state.is_inside() or WorldObjectTypes.TYPES[placed_type].has("atlas_row")
+	)
 	return (
-		_state.current_map.is_placeable(pos)
+		has_picture
+		and _state.current_map.is_placeable(pos)
 		and not PlayerState.body_tiles(_state.player.position).has_point(pos)
 	)
 
 
-## What an item does on a tile inside a house, other than placing: an axe takes down a chest.
+## What an item does on a tile inside a house, other than placing: the tool that cuts or breaks
+## what the player placed (an axe a chest or a workbench) takes it down. The furniture of the
+## house has nothing to drop and stays.
 func _use_inside(item: Dictionary, pos: Vector2i) -> Use:
-	var chest := _state.current_map.object_at(pos)
-	if chest == null or chest.storage == null or _use_cutting_tool(item, chest) != Use.HIT:
+	var placed := _state.current_map.object_at(pos)
+	if (
+		placed == null
+		or not placed.type_data().has("drops")
+		or _use_cutting_tool(item, placed) != Use.HIT
+	):
 		return Use.NOTHING
-	return Use.TAKE_DOWN if _state.player.inventory.can_add(_items_of_chest(chest)) else Use.NO_ROOM
+	var fits := _state.player.inventory.can_add(_items_of_placed(placed))
+	return Use.TAKE_DOWN if fits else Use.NO_ROOM
 
 
-## A chest and what it holds, item id to count: what taking it down gives.
-func _items_of_chest(chest: WorldObject) -> Dictionary:
-	var items := chest.storage.totals()
-	for item: StringName in chest.type_data()["drops"]:
-		items[item] = items.get(item, 0) + chest.type_data()["drops"][item]
+## What the player placed and what it holds, item id to count: what taking it down gives.
+func _items_of_placed(placed: WorldObject) -> Dictionary:
+	var items := {} if placed.storage == null else placed.storage.totals()
+	for item: StringName in placed.type_data()["drops"]:
+		items[item] = items.get(item, 0) + placed.type_data()["drops"][item]
 	return items
 
 
@@ -273,7 +285,7 @@ func _hit(object: WorldObject) -> void:
 	var object_type := object.type_data()
 	var drops: Dictionary = object_type.get("drops", {}).duplicate()
 	if object.storage != null:
-		drops = _items_of_chest(object)
+		drops = _items_of_placed(object)
 	if _rolls_seed(object):
 		drops[object_type["seed"]] = 1
 	if not object_type.has("leaves"):

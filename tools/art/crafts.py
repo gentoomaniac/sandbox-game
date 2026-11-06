@@ -1,12 +1,43 @@
-"""The art of the professions (task 74): what the cook, the woodworker and the mason make.
+"""The art of the professions (task 74): the stations they work at and what they make.
 
-Item icons are 16x16 pictures, named after the item id of game/state/item_types.gd; generate.py
-writes them with the other icons (and their 8x8 ground versions). Cooked food is warm in
-colour; the meals in a bowl steam a little.
+A station is drawn once, standing (its bottom row on the ground), like the chest: generate.py puts
+that picture into its cell of the object atlas (outdoors), writes it as assets/interior/<type>.png
+(inside a house, and the ghost while it is placed) and makes its item icon from it, outlined all
+round. Item icons are 16x16 pictures, named after the item id of game/state/item_types.gd;
+generate.py writes them with the other icons (and their 8x8 ground versions). Cooked food is warm
+in colour; the meals in a bowl steam a little.
 """
 
-from canvas import blank, rect
+from canvas import TILE, blank, rect
+from interior import outline
 from items import from_rows, outlined, pixel
+
+# The workbench: a thick beech top on four legs with a stretcher, a vice screw at its left end
+# and a saw lying on it.
+WORKBENCH_ROWS = (
+    ".TTTTTTTTTTTTTT.",
+    "TTTTTTTTTTTTTTTT",
+    "tttttttttttttttt",
+    "FFFFFFFFFFFFFFFF",
+    "FiiFFFFFFFFFFFFF",
+    "fiiffffffffffffs",
+    "LLl..........LLl",
+    "LLl..........LLl",
+    "LLlSSSSSSSSSSLLl",
+    "LLl..........LLl",
+    "LLl..........LLl",
+)
+WORKBENCH_KEYS = {
+    "T": "sand_light",
+    "t": "sand",
+    "F": "soil_light",
+    "f": "soil_mid",
+    "s": "soil",
+    "i": "stone_light",
+    "L": "soil_light",
+    "l": "soil_mid",
+    "S": "soil_mid",
+}
 
 # A wooden bowl seen from the side and a little above; letters "a" and "b" are its contents.
 BOWL_ROWS = (
@@ -57,9 +88,37 @@ def roast_turnip():
     return outlined(picture)
 
 
+def workbench(is_standing=True):
+    """The workbench, 16x11 px with its outline; standing, its bottom row has none."""
+    picture = from_rows(WORKBENCH_ROWS, WORKBENCH_KEYS)
+    # The saw on the top: its blade with teeth along the front and, at the right, its handle.
+    rect(picture, 4, 1, 10, 1, "stone_light")
+    for x in range(4, 11, 2):
+        pixel(picture, x, 2, "stone")
+    rect(picture, 11, 1, 12, 2, "soil")
+    return outline(picture, "soil_dark", keep_bottom=is_standing)
+
+
+def icon_of(picture):
+    """An item icon: the picture, outlined all round, in the middle of 16x16 px."""
+    icon = blank()
+    top = (TILE - len(picture)) // 2
+    left = (TILE - len(picture[0])) // 2
+    for y, row in enumerate(picture):
+        for x, name in enumerate(row):
+            icon[top + y][left + x] = name
+    return icon
+
+
+def stations():
+    """The pictures of the stations, standing, by world object type."""
+    return {"workbench": workbench()}
+
+
 def icons():
     """The icons of the professions' items, by item id."""
     return {
+        "workbench": icon_of(workbench(is_standing=False)),
         "roast_turnip": roast_turnip(),
         # Cabbage, carrot and onion in a broth.
         "pottage": bowl("green", "ochre"),

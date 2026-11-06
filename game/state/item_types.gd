@@ -16,7 +16,7 @@ extends RefCounted
 ##   `plants_on` the terrain it needs (soil if not given) and `plants_state` the state the new
 ##   object starts with;
 ## - places: using it puts the world object type of this name on a free tile and takes one away
-##   (the chest).
+##   (the chest, the stations).
 
 const HOE := &"hoe"
 const AXE := &"axe"
@@ -49,6 +49,8 @@ const STRAW_HAT := &"straw_hat"
 const KNITTED_CAP := &"knitted_cap"
 const JACKET := &"jacket"
 const CLOGS := &"clogs"
+# The stations the player places (task 74).
+const WORKBENCH := &"workbench"
 # Cooked at the hearth (task 74).
 const ROAST_TURNIP := &"roast_turnip"
 const POTTAGE := &"pottage"
@@ -324,6 +326,14 @@ const _OTHER_TYPES := {
 		"stack_limit": 1,
 		"equip_slot": Equipment.FEET,
 		"layer_variant": "clogs",
+	},
+	WORKBENCH:
+	{
+		"name": "Workbench",
+		"description": "A joiner's bench. Wood is worked here, and clay moulded.",
+		"weight": 8.0,
+		"stack_limit": 10,
+		"places": WorldObjectTypes.WORKBENCH,
 	},
 	ROAST_TURNIP:
 	{

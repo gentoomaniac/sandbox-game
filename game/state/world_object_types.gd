@@ -11,7 +11,9 @@ extends RefCounted
 ## Furniture, which only stands inside buildings, has `interior_sprite` (its picture in
 ## assets/interior/) instead of atlas_row and variants. The picture is centred on the
 ## footprint, its bottom on the footprint's bottom edge. The chest stands in both places, so it
-## has both, and the ghost of an object the player places uses the interior picture. Optional:
+## has both, and the ghost of an object the player places uses the interior picture. What the
+## player places goes only where it has a picture for: furniture with only `interior_sprite` only
+## inside a house. Optional:
 ## - storage_slots: it holds items, this many slots (a chest, see WorldObject `storage`);
 ## - bed: the object is a bed (what sleeping in it fills is in data/energy.cfg, [sleep]); the
 ##   value is the direction its head end lies in (the pillow). The player wakes lying
@@ -102,6 +104,8 @@ const WILLOW := &"willow"
 const BEECH := &"beech"
 const BIRCH := &"birch"
 const ALDER := &"alder"
+## The crafting stations the player places (task 74; see data/stations.cfg).
+const WORKBENCH := &"workbench"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -136,6 +140,7 @@ const _BIRCH_ROW := 35
 const _BIRCH_TRUNK_ROW := 36
 const _ALDER_ROW := 38
 const _ALDER_TRUNK_ROW := 39
+const _WORKBENCH_ROW := 41
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -486,6 +491,18 @@ const _OTHER_TYPES := {
 		"atlas_row": _CHEST_ROW,
 		"variants": 1,
 		"interior_sprite": "res://assets/interior/chest.png",
+	},
+	WORKBENCH:
+	{
+		"hp": 3,
+		"tool": &"axe",
+		"drops": {&"workbench": 1},
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _WORKBENCH_ROW,
+		"variants": 1,
+		"interior_sprite": "res://assets/interior/workbench.png",
 	},
 	HEARTH:
 	{

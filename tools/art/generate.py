@@ -83,11 +83,11 @@ from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_
 from palette import ASSETS, PALETTE, check_palette, save, save_picture, write_palette
 
 
-def world_chest():
-    """The chest outdoors, on a ground shadow, its bottom a pixel above the cell's."""
+def standing_outdoors(picture):
+    """A picture that stands on the ground (the chest, a station) in its cell of the object atlas,
+    on a ground shadow, its bottom a pixel above the cell's."""
     canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     trees.ground_shadow(canvas, 8)
-    picture = chest.chest()
     top = OBJECT_BOTTOM - len(picture)
     for y, row in enumerate(picture):
         for x, name in enumerate(row):
@@ -143,6 +143,7 @@ def world_chest():
 # 38 alder (3)
 # 39 alder_trunk (2)
 # 40 alder_short_trunk (2)
+# 41 workbench (1)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -169,7 +170,7 @@ def object_atlas():
         *trunks.rows("willow"),
         ("reeds", reeds.reeds_row()),
         ("dead_stump", [trees.dead_stump(seed) for seed in (211, 212)]),
-        ("chest", [world_chest()]),
+        ("chest", [standing_outdoors(chest.chest())]),
         ("knick", boundaries.knick_row()),
         ("wattle_fence", boundaries.wattle_fence_row()),
         ("stone_wall", boundaries.stone_wall_row()),
@@ -181,6 +182,7 @@ def object_atlas():
         *trunks.rows("birch"),
         ("alder", alder.alder_row()),
         *trunks.rows("alder"),
+        ("workbench", [standing_outdoors(crafts.workbench())]),
     ]
 
 
@@ -245,6 +247,9 @@ def write_interior():
     for name, (picture, _footprint) in furniture.items():
         save_picture(picture, f"interior/{name}.png")
     for name, picture in interior.covers(furniture).items():
+        save_picture(picture, f"interior/{name}.png")
+    # The stations the player places are no furniture of the maps: they have no marker tile.
+    for name, picture in crafts.stations().items():
         save_picture(picture, f"interior/{name}.png")
 
 
