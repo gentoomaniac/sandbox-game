@@ -32,6 +32,7 @@ var impact_effect := HitEffect.Kind.NONE
 var direction := 1
 var _age := 0.0
 var _has_landed := false
+var _has_finished := false
 
 
 ## A fall of `tree`, which was just replaced by its stump in `world`: towards the trunk beside
@@ -85,5 +86,6 @@ func advance(delta: float) -> void:
 	if not _has_landed and _age >= FALL_SECONDS:
 		_has_landed = true
 		landed.emit()
-	if _age >= TOTAL_SECONDS:
+	if not _has_finished and _age >= TOTAL_SECONDS:
+		_has_finished = true
 		finished.emit()
