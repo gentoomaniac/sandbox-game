@@ -13,6 +13,7 @@ const LEAFY: Array[StringName] = [
 	WorldObjectTypes.OAK,
 	WorldObjectTypes.BEECH,
 	WorldObjectTypes.BIRCH,
+	WorldObjectTypes.ALDER,
 	WorldObjectTypes.WILLOW,
 	WorldObjectTypes.KNICK,
 ]

@@ -11,6 +11,7 @@ const TREES: Array[StringName] = [
 	WorldObjectTypes.PINE,
 	WorldObjectTypes.BEECH,
 	WorldObjectTypes.BIRCH,
+	WorldObjectTypes.ALDER,
 ]
 
 

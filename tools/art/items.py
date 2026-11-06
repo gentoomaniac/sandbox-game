@@ -224,6 +224,30 @@ def birch_catkin():
     return outlined(from_rows(rows, keys), "soil_dark")
 
 
+def alder_cone():
+    """Three little black alder cones on a forked twig."""
+    rows = [
+        "................",
+        "................",
+        ".......t........",
+        "......t.t.......",
+        ".....t...t......",
+        "....t.....t.....",
+        "...hn.....hn....",
+        "..hNnn...hNnn...",
+        "..hnnb...hnnb...",
+        "..hNnb.t.hNnb...",
+        "...nb..t..nb....",
+        "......hn........",
+        ".....hNnn.......",
+        ".....hnnb.......",
+        ".....hNnb.......",
+        "......nb........",
+    ]
+    keys = {"t": "soil", "h": "mud", "n": "mud_dark", "N": "soil_mid", "b": "soil_dark"}
+    return outlined(from_rows(rows, keys), "ink")
+
+
 def cone(rows, keys):
     """A cone from rows: `rows` gives each row's left edge and width. Its scales form a diamond
     lattice: dark seams along both diagonals, each scale lit at its top; the right edge is in
@@ -464,6 +488,7 @@ ICONS = {
     "pine_cone": pine_cone(),
     "beechnut": beechnut(),
     "birch_catkin": birch_catkin(),
+    "alder_cone": alder_cone(),
     "waistcoat": waistcoat(),
     "shirt": shirt(),
     "breeches": breeches(),

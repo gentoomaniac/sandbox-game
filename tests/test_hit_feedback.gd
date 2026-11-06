@@ -6,7 +6,7 @@ const LOOKS := SeasonBlend.Look
 const KINDS := HitEffect.Kind
 ## The broadleaved trees: leaves while they have them.
 const BROADLEAVES: Array[StringName] = [
-	WorldObjectTypes.OAK, WorldObjectTypes.BEECH, WorldObjectTypes.BIRCH
+	WorldObjectTypes.OAK, WorldObjectTypes.BEECH, WorldObjectTypes.BIRCH, WorldObjectTypes.ALDER
 ]
 
 var _view: WorldView

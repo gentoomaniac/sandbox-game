@@ -58,6 +58,7 @@ const SWAY_PROFILES := {
 	WorldObjectTypes.PINE: {"stem": 34.0, "top": 74.0, "strength": 1.0, "frequency": 0.35},
 	WorldObjectTypes.BEECH: {"stem": 28.0, "top": 62.0, "strength": 0.9, "frequency": 0.35},
 	WorldObjectTypes.BIRCH: {"stem": 22.0, "top": 66.0, "strength": 1.1, "frequency": 0.5},
+	WorldObjectTypes.ALDER: {"stem": 20.0, "top": 65.0, "strength": 0.8, "frequency": 0.4},
 	WorldObjectTypes.WILLOW: {"stem": 26.0, "top": 60.0, "strength": 0.8, "frequency": 0.45},
 	WorldObjectTypes.SAPLING: {"stem": 3.0, "top": 22.0, "strength": 0.7, "frequency": 0.7},
 	WorldObjectTypes.BERRY_BUSH: {"stem": 3.0, "top": 20.0, "strength": 0.4, "frequency": 0.6},

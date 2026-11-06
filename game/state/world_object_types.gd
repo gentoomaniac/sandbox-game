@@ -95,6 +95,7 @@ const DYKE := &"dyke"
 const WILLOW := &"willow"
 const BEECH := &"beech"
 const BIRCH := &"birch"
+const ALDER := &"alder"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -125,6 +126,8 @@ const _BEECH_ROW := 32
 const _BEECH_TRUNK_ROW := 33
 const _BIRCH_ROW := 35
 const _BIRCH_TRUNK_ROW := 36
+const _ALDER_ROW := 38
+const _ALDER_TRUNK_ROW := 39
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -268,6 +271,23 @@ const _OTHER_TYPES := {
 		"harvest_level": 1,
 		"atlas_row": _BIRCH_ROW,
 		"sprite_height": 67,
+		"variants": 3,
+	},
+	# The black alder of wet ground: dark bark, a narrow cone of dark leaves, cones in winter.
+	ALDER:
+	{
+		"hp": 4,
+		"tool": &"axe",
+		"seed": &"alder_cone",
+		"seed_chance": 0.25,
+		"trunk": {"logs": 2, "hp": 3, "atlas_row": _ALDER_TRUNK_ROW},
+		"leaves": STUMP,
+		"regrows": true,
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _ALDER_ROW,
+		"sprite_height": 66,
 		"variants": 3,
 	},
 	BERRY_BUSH:

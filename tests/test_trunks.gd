@@ -111,6 +111,7 @@ func test_the_trunks_drop_most_of_the_logs_of_their_tree() -> void:
 		WorldObjectTypes.DEAD_TREE: 2,
 		WorldObjectTypes.BEECH: 3,
 		WorldObjectTypes.BIRCH: 2,
+		WorldObjectTypes.ALDER: 2,
 	}
 	for tree: StringName in expected:
 		for is_short in [false, true]:

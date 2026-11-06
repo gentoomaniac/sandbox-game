@@ -37,6 +37,7 @@ const SPRUCE_CONE := &"spruce_cone"
 const PINE_CONE := &"pine_cone"
 const BEECHNUT := &"beechnut"
 const BIRCH_CATKIN := &"birch_catkin"
+const ALDER_CONE := &"alder_cone"
 const HAY := &"hay"
 const CLAY := &"clay"
 const REEDS := &"reeds"
@@ -234,6 +235,16 @@ const _OTHER_TYPES := {
 		"plants": WorldObjectTypes.SAPLING,
 		"plants_on": Tile.Terrain.GRASS,
 		"plants_state": {"tree": WorldObjectTypes.BIRCH},
+	},
+	ALDER_CONE:
+	{
+		"name": "Alder cone",
+		"description": "A tiny woody cone of an alder. Its seeds float on the water.",
+		"weight": 0.01,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+		"plants": WorldObjectTypes.SAPLING,
+		"plants_on": Tile.Terrain.GRASS,
+		"plants_state": {"tree": WorldObjectTypes.ALDER},
 	},
 	WAISTCOAT:
 	{

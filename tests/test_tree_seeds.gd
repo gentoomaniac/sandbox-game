@@ -8,6 +8,7 @@ const SEEDS := {
 	WorldObjectTypes.PINE: ItemTypes.PINE_CONE,
 	WorldObjectTypes.BEECH: ItemTypes.BEECHNUT,
 	WorldObjectTypes.BIRCH: ItemTypes.BIRCH_CATKIN,
+	WorldObjectTypes.ALDER: ItemTypes.ALDER_CONE,
 }
 const STRONG_AXE := &"strong_axe"
 

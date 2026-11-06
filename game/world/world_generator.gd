@@ -87,16 +87,19 @@ const WETLAND_PROBE_DIRECTIONS: Array[Vector2i] = [
 	Vector2i(-1, 1),
 ]
 
-## Which trees a forest has. The woods are broadleaved: in the marsh the kinds of wet ground, on
-## the Geest those of dry ground, picked by their weights below. Pine and spruce were rare here
-## before the heath plantations of the late 18th century, so they stand only in clumps on the
-## Geest, where the composition noise is above CONIFER_CLUMP_ABOVE; over the next
-## CONIFER_CLUMP_EDGE of noise their share rises to all, so a clump has a mixed rim. Of the
-## conifers, this share is Scots pine, the Geest's own, and the rest planted spruce.
+## Which trees a forest has. The woods are broadleaved: in the marsh and by the wetland the
+## kinds of wet ground, elsewhere on the Geest those of dry ground, picked by their weights
+## below. Pine and spruce were rare here before the heath plantations of the late 18th century,
+## so they stand only in clumps on the Geest, where the composition noise is above
+## CONIFER_CLUMP_ABOVE; over the next CONIFER_CLUMP_EDGE of noise their share rises to all, so a
+## clump has a mixed rim. Of the conifers, this share is Scots pine, the Geest's own, and the
+## rest planted spruce.
 const CONIFER_CLUMP_ABOVE := 0.3
 const CONIFER_CLUMP_EDGE := 0.08
 const PINE_SHARE_OF_CONIFERS := 0.65
-const MARSH_BROADLEAVES := {WorldObjectTypes.OAK: 1.0, WorldObjectTypes.BIRCH: 1.0}
+const MARSH_BROADLEAVES := {
+	WorldObjectTypes.OAK: 1.0, WorldObjectTypes.BIRCH: 1.0, WorldObjectTypes.ALDER: 4.0
+}
 const GEEST_BROADLEAVES := {
 	WorldObjectTypes.OAK: 3.0, WorldObjectTypes.BEECH: 4.0, WorldObjectTypes.BIRCH: 2.0
 }
@@ -483,7 +486,8 @@ func _roll(world_pos: Vector2i, salt: int) -> float:
 ## The kind of tree on a tile `river_distance` from the river (see the shares above);
 ## `variety_roll` in [0, 1).
 func _tree_type_at(world_pos: Vector2i, river_distance: float, variety_roll: float) -> StringName:
-	if _is_marsh(river_distance):
+	# Wet ground: the marsh, and on the Geest the land by the wetland.
+	if _is_marsh(river_distance) or _is_near_wetland(world_pos):
 		return _weighted_pick(MARSH_BROADLEAVES, variety_roll)
 	var composition := _composition_noise.get_noise_2dv(Vector2(world_pos))
 	var conifer_share := clampf((composition - CONIFER_CLUMP_ABOVE) / CONIFER_CLUMP_EDGE, 0.0, 1.0)
