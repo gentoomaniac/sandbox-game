@@ -1292,7 +1292,7 @@ with the pinned Pillow and numpy and a `make venv` target that `make assets` dep
 
 ## 64. Quiet, honest tests
 
-- [ ] Done
+- [x] Done: 843 warnings and 6 orphans now 0 (the orphan leak was in the test, not the game: WildlifeView.ground was never parented; the test also leaked it at exit); 14 headers added (not 12); `make test` prints the counts and fails on 0 tests; test_collapse_flow steps the fade tweens with `custom_step`.
 
 From docs/code-review-2026-11-06.md. Fix the 840 "Float/Int comparison" warnings
 (tests/test_vegetation.gd) and 3 in tests/test_tiredness.gd; the 6 Node2D orphans in
