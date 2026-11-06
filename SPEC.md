@@ -1,7 +1,7 @@
 # Sandbox Game: Spec
 
 Status: playable prototype (the milestone 1 slice and much more; the README lists what
-works today). Last updated: 2026-11-07.
+works today). Last updated: 2026-11-06.
 
 This file is the single source of truth for what the game is. Decisions move from
 "Open questions" to "Decided" as they are made.
@@ -169,7 +169,7 @@ top of classic pixel art (details under "Lighting and look").
       pass-out debuff and sleep change it.
     - **Costs per action** live in a hand-editable data file (`data/energy.cfg`). First
       values: tool use (till, hit, water) 2, planting and picking 0.5; walking is free.
-    - **Weight:** up to 40 kg costs nothing extra (changed 2026-11-07, was 20 kg); above
+    - **Weight:** up to 40 kg costs nothing extra (changed 2026-11-06, was 20 kg); above
       that, +10 % cost per 10 kg more. Tools weigh nothing (task 72).
     - **Low energy slows walking:** at 10 % or less to 75 % speed, below 5 % to 50 %.
     - **Passing out** at 0 (changed 2026-11-05): the player sleeps until the next 06:30,
@@ -751,7 +751,7 @@ atmosphere only: no player impact, not hunted, not saved.
 
 ### Livestock
 
-Decided 2026-11-07 (task 73). Farm animals of the region, for now put in the world with the
+Decided 2026-11-06 (task 73). Farm animals of the region, for now put in the world with the
 console (`spawn cow 3`, near the player). Unlike the wildlife they are state and saved.
 
 - **Who:** cows (red-brown Angler, black pied and red pied marsh cattle), sheep (white marsh
