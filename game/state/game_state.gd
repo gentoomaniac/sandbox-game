@@ -90,9 +90,12 @@ var cheats := CheatFlags.new()
 ## The player was awake when the clock reached LATE_NIGHT_MINUTE (see `pass_awake_time`) and has
 ## not slept since: they pass out. Not saved.
 var is_up_too_late := false
-## Where the player is: `world`, or the interior of `_building_inside`.
-var current_map: GameMap
+## Where the player is: the world, or the interior of the building they are inside.
+var current_map: GameMap:
+	get:
+		return world if _building_inside == null else _building_inside.interior
 
+## The building the player is inside, or null when they are out in the world.
 var _building_inside: Building
 
 
@@ -108,7 +111,6 @@ static func new_game(world_seed: int) -> GameState:
 	state.world.clock = state.clock
 	state.weather = Weather.new(world_seed, state.sun)
 	state.snow_cover = SnowCover.new(state.weather)
-	state.current_map = state.world
 	var camp := CampSite.create(state.world, WorldGenerator.new(world_seed))
 	state.player.position = Vector2(camp.spawn_pos) + Vector2(0.5, 0.5)
 	state.player.home_map = state.world
@@ -139,13 +141,11 @@ func pass_door() -> void:
 	if is_inside():
 		player.position = _tile_centre(_building_inside.door_tile() + Vector2i.DOWN)
 		_building_inside = null
-		current_map = world
 		return
 	_building_inside = world.building_at(player.tile())
 	if _building_inside.interior == null:
 		var map_path: String = BuildingTypes.TYPES[_building_inside.type]["interior_map"]
 		_building_inside.interior = InteriorLoader.load_interior(map_path)
-	current_map = _building_inside.interior
 	player.position = _tile_centre(_building_inside.interior.entry_tile())
 
 
@@ -241,8 +241,7 @@ func pass_out() -> int:
 	var minutes := maxi(clock.minutes_until(WAKE_UP_MINUTE), PASS_OUT_MINUTES)
 	clock.advance(minutes)
 	is_up_too_late = false
-	current_map = player.home_map
-	_building_inside = _building_with_interior(current_map)
+	_building_inside = _building_with_interior(player.home_map)
 	player.position = _tile_centre(_wake_up_tile())
 	player.is_debuffed = true
 	player.energy = energy_rules.debuff_energy_max()
@@ -528,7 +527,6 @@ static func from_dict(data: Dictionary) -> GameState:
 	state.clock.new_day.connect(state._on_new_day)
 	state.world.clock = state.clock
 	state.player = PlayerState.from_dict(data["player"], state._map_from_ref(data["home_map"]))
-	state.current_map = state._map_from_ref(data["current_map"])
 	state._building_inside = state._building_of_ref(data["current_map"])
 	# No sleep wakes between 01:00 and 06:30, so a game saved then was quit by a player who
 	# stayed up: they still pass out (`is_up_too_late` itself is not saved).
@@ -540,11 +538,9 @@ static func from_dict(data: Dictionary) -> GameState:
 func _map_to_ref(map: GameMap) -> Dictionary:
 	if map == world:
 		return {"kind": "world"}
-	for building in world.buildings():
-		if building.interior == map:
-			return {"kind": "interior", "building": SaveCodec.vector_to_json(building.origin)}
-	assert(false, "A map that belongs to no building")
-	return {}
+	var building := _building_with_interior(map)
+	assert(building != null, "A map that belongs to no building")
+	return {"kind": "interior", "building": SaveCodec.vector_to_json(building.origin)}
 
 
 func _map_from_ref(ref: Dictionary) -> GameMap:

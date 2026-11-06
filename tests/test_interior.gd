@@ -11,7 +11,6 @@ func before_each() -> void:
 	_state = GameState.new()
 	_state.world = World.new(1)
 	_state.world.add_chunk(Chunk.new(Vector2i.ZERO))
-	_state.current_map = _state.world
 	_state.player.home_map = _state.world
 	_kate = _state.world.place_building(BuildingTypes.KATE, Vector2i(2, 2))
 

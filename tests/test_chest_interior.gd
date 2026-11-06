@@ -13,7 +13,6 @@ func before_each() -> void:
 	_state = GameState.new()
 	_state.world = World.new(SEED)
 	_state.world.add_chunk(Chunk.new(Vector2i.ZERO))
-	_state.current_map = _state.world
 	_state.player.home_map = _state.world
 	_state.player.inventory.add(ItemTypes.CHEST, 3)
 	_state.player.inventory.add(ItemTypes.AXE, 1)
