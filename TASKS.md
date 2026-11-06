@@ -776,6 +776,10 @@ games keep, per NPC, the compacted history of former conversations: when a chat 
 the conversation is summarised (by the LLM, or a plain truncation without one) into a
 memory line that is saved and used in later prompts; the raw lines stay capped as in task
 84. Tests use a fake backend; an optional test talks to `make llm-up` when it runs.
+From the review of task 84: the "awaiting an answer" state must belong to the villager, not
+the chat screen (closing A's chat while it answers and opening B's must not show B typing
+or block B), and `reply` needs a time-out and an error path that return a fallback line, so
+the typing line never sticks.
 
 ## 87. Willows that stand out from the grass
 
