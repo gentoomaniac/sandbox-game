@@ -61,11 +61,11 @@ func test_every_missing_required_rule_is_reported() -> void:
 	file.store_string("[cost]\ntill=3.0\n")
 	file.close()
 	var rules := EnergyRules.from_file(DATA_FILE)
-	var missing := rules.missing_keys()
+	var missing := rules.problems()
 	assert_false(rules.is_valid())
-	assert_true(missing.has("[cost] hit"))
-	assert_true(missing.has("[weight] step_kg"))
-	assert_false(missing.has("[cost] till"))
+	assert_true(missing.has("[cost] no hit"))
+	assert_true(missing.has("[weight] no step_kg"))
+	assert_false(missing.has("[cost] no till"))
 	assert_push_error_count(missing.size())
 
 
@@ -79,4 +79,4 @@ func test_a_bed_or_food_without_a_rule_gives_nothing() -> void:
 func test_a_missing_file_is_reported() -> void:
 	var rules := EnergyRules.from_file(DATA_DIR + "/nothing.cfg")
 	assert_false(rules.is_valid())
-	assert_push_error_count(rules.missing_keys().size() + 1)
+	assert_push_error_count(rules.problems().size() + 1)

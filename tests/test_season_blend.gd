@@ -177,5 +177,5 @@ func test_snow_wins_over_the_look_of_a_plant() -> void:
 
 func test_the_data_file_is_complete() -> void:
 	var rules := SeasonRules.default_rules()
-	assert_true(rules.is_valid(), str(rules.missing_keys()))
+	assert_true(rules.is_valid(), str(rules.problems()))
 	assert_false(SeasonRules.new({}).is_valid())

@@ -76,8 +76,8 @@ static func default_rules() -> WildlifeRules:
 
 static func from_file(path: String) -> WildlifeRules:
 	var rules := WildlifeRules.new(DataFile.read_sections(path))
-	for missing in rules.missing_keys():
-		push_error("%s: no %s" % [path, missing])
+	for problem in rules.problems():
+		push_error("%s: %s" % [path, problem])
 	return rules
 
 
@@ -92,21 +92,21 @@ static func count_trees(map: GameMap, centre: Vector2i, radius: int) -> int:
 	return count
 
 
-## The required keys the rules lack, as "[section] key".
-func missing_keys() -> Array[String]:
+## What is missing, as "[section] what".
+func problems() -> Array[String]:
 	var missing: Array[String] = []
 	for key: String in GENERAL_KEYS:
 		if not _values.get("general", {}).has(key):
-			missing.append("[general] %s" % key)
+			missing.append("[general] no %s" % key)
 	for kind in KINDS:
 		for key: String in KIND_KEYS:
 			if not _values.get(String(kind), {}).has(key):
-				missing.append("[%s] %s" % [kind, key])
+				missing.append("[%s] no %s" % [kind, key])
 	return missing
 
 
 func is_valid() -> bool:
-	return missing_keys().is_empty()
+	return problems().is_empty()
 
 
 func general(key: String) -> float:

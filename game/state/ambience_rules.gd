@@ -64,28 +64,20 @@ static func default_rules() -> AmbienceRules:
 
 static func from_file(path: String) -> AmbienceRules:
 	var rules := AmbienceRules.new(DataFile.read_sections(path))
-	for missing in rules.missing_keys():
-		push_error("%s: no %s" % [path, missing])
-	for problem in rules.bad_values():
+	for problem in rules.problems():
 		push_error("%s: %s" % [path, problem])
 	return rules
 
 
-## The required keys the rules lack, as "[section] key".
-func missing_keys() -> Array[String]:
-	var missing: Array[String] = []
+## What is missing or wrong, as "[section] what". The values are only checked once every key is
+## there.
+func problems() -> Array[String]:
+	var bad: Array[String] = []
 	for section: String in REQUIRED_KEYS:
 		for key: String in REQUIRED_KEYS[section]:
 			if not _values.get(section, {}).has(key):
-				missing.append("[%s] %s" % [section, key])
-	return missing
-
-
-## What is wrong with the values that are there, as "[section] what". Keys that are missing are
-## `missing_keys`' business.
-func bad_values() -> Array[String]:
-	var bad: Array[String] = []
-	if not missing_keys().is_empty():
+				bad.append("[%s] no %s" % [section, key])
+	if not bad.is_empty():
 		return bad
 	if value("loops", "wind_full_speed") <= value("loops", "wind_calm_speed"):
 		bad.append("[loops] wind_full_speed must be above wind_calm_speed")
@@ -106,7 +98,7 @@ func bad_values() -> Array[String]:
 
 
 func is_valid() -> bool:
-	return missing_keys().is_empty() and bad_values().is_empty()
+	return problems().is_empty()
 
 
 func value(section: String, key: String) -> float:

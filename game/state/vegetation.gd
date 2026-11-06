@@ -21,7 +21,7 @@ static var _default: Vegetation
 
 ## {kind: Array of Vector2(day of the year, density)}, sorted by day.
 var _curves := {}
-var _missing: Array[String] = []
+var _problems: Array[String] = []
 ## {kind: [day, density]} of the last `density` call for each kind: the view asks for the same
 ## day thousands of times in a row.
 var _last_density := {}
@@ -42,9 +42,9 @@ static func from_file(path: String) -> Vegetation:
 			if sections.get(section, {}).has(str(kind)):
 				vegetation._curves[kind] = sections[section][str(kind)]
 			else:
-				vegetation._missing.append("[%s] %s" % [section, kind])
-	for missing in vegetation._missing:
-		push_error("%s: no %s" % [path, missing])
+				vegetation._problems.append("[%s] no %s" % [section, kind])
+	for problem in vegetation.problems():
+		push_error("%s: %s" % [path, problem])
 	return vegetation
 
 
@@ -55,13 +55,13 @@ static func from_curves(curves: Dictionary) -> Vegetation:
 	return vegetation
 
 
-## The curves the data file lacks, as "[section] kind".
-func missing_keys() -> Array[String]:
-	return _missing
+## The curves the data file lacks, as "[section] what".
+func problems() -> Array[String]:
+	return _problems
 
 
 func is_valid() -> bool:
-	return _missing.is_empty()
+	return _problems.is_empty()
 
 
 ## The density of a kind on a game day, in 0..1.

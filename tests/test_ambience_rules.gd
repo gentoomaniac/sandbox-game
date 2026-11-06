@@ -26,16 +26,16 @@ func _weather(rain := 0.0, wind_speed := 0.0) -> WeatherSample:
 
 
 func test_the_data_file_holds_every_required_key() -> void:
-	assert_true(_rules.is_valid(), "missing: %s" % [_rules.missing_keys()])
+	assert_true(_rules.is_valid(), "missing: %s" % [_rules.problems()])
 
 
 func test_every_missing_key_is_reported() -> void:
 	var rules := AmbienceRules.new({"loops": {"min_level": 0.02}})
-	var missing := rules.missing_keys()
-	assert_true(missing.has("[loops] fade_seconds"))
-	assert_true(missing.has("[frogs] croak_chance"))
-	assert_true(missing.has("[bees] level"))
-	assert_false(missing.has("[loops] min_level"))
+	var missing := rules.problems()
+	assert_true(missing.has("[loops] no fade_seconds"))
+	assert_true(missing.has("[frogs] no croak_chance"))
+	assert_true(missing.has("[bees] no level"))
+	assert_false(missing.has("[loops] no min_level"))
 
 
 func test_rain_is_as_loud_as_it_is_strong() -> void:

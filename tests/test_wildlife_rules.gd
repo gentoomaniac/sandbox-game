@@ -23,16 +23,16 @@ func _dawn(day: int) -> int:
 
 
 func test_the_data_file_holds_every_required_key() -> void:
-	assert_true(_rules.is_valid(), "missing: %s" % [_rules.missing_keys()])
+	assert_true(_rules.is_valid(), "missing: %s" % [_rules.problems()])
 
 
 func test_every_missing_key_is_reported() -> void:
 	var rules := WildlifeRules.new({"general": {"max_total": 12}, "bird": {"cap": 4}})
-	var missing := rules.missing_keys()
-	assert_true(missing.has("[general] tick_seconds"))
-	assert_true(missing.has("[bird] spawn_chance"))
-	assert_true(missing.has("[deer] cap"))
-	assert_false(missing.has("[bird] cap"))
+	var missing := rules.problems()
+	assert_true(missing.has("[general] no tick_seconds"))
+	assert_true(missing.has("[bird] no spawn_chance"))
+	assert_true(missing.has("[deer] no cap"))
+	assert_false(missing.has("[bird] no cap"))
 
 
 func test_no_insects_in_winter_or_autumn() -> void:

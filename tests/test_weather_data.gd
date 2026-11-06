@@ -12,7 +12,7 @@ func after_each() -> void:
 
 func test_the_data_file_holds_every_required_key() -> void:
 	var rules := WeatherRules.from_file(WeatherRules.DEFAULT_PATH)
-	assert_true(rules.is_valid(), "missing: %s" % [rules.missing_keys()])
+	assert_true(rules.is_valid(), "missing: %s" % [rules.problems()])
 	assert_eq(rules.value("sun", "longest_day"), 45.0)
 	assert_eq(rules.season_value(GameClock.Season.WINTER, "temperature_mean"), -5.0)
 
@@ -23,16 +23,16 @@ func test_every_missing_key_is_reported() -> void:
 	file.store_string("[sun]\nlongest_day=45.0\n[winter]\ncloudiness=0.1\n")
 	file.close()
 	var rules := WeatherRules.from_file(DATA_FILE)
-	var missing := rules.missing_keys()
+	var missing := rules.problems()
 	assert_false(rules.is_valid())
-	assert_true(missing.has("[sun] lowest_noon_height"))
-	assert_true(missing.has("[winter] wind_mean"))
-	assert_true(missing.has("[summer] cloudiness"))
-	assert_false(missing.has("[sun] longest_day"))
+	assert_true(missing.has("[sun] no lowest_noon_height"))
+	assert_true(missing.has("[winter] no wind_mean"))
+	assert_true(missing.has("[summer] no cloudiness"))
+	assert_false(missing.has("[sun] no longest_day"))
 	assert_push_error_count(missing.size())
 
 
 func test_a_missing_file_is_reported() -> void:
 	var rules := WeatherRules.from_file(DATA_DIR + "/nothing.cfg")
 	assert_false(rules.is_valid())
-	assert_push_error_count(rules.missing_keys().size() + 1)
+	assert_push_error_count(rules.problems().size() + 1)

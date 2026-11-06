@@ -141,7 +141,7 @@ func test_a_spot_that_shows_stays_while_the_density_rises() -> void:
 
 func test_the_data_file_has_every_curve() -> void:
 	var vegetation := Vegetation.from_file(Vegetation.DEFAULT_PATH)
-	assert_true(vegetation.is_valid(), str(vegetation.missing_keys()))
+	assert_true(vegetation.is_valid(), str(vegetation.problems()))
 
 
 func test_every_missing_curve_is_reported() -> void:
@@ -150,11 +150,11 @@ func test_every_missing_curve_is_reported() -> void:
 	file.store_string("[decorations]\ntuft=[Vector2(1, 0.5)]\n")
 	file.close()
 	var vegetation := Vegetation.from_file(DATA_FILE)
-	var missing := vegetation.missing_keys()
+	var missing := vegetation.problems()
 	assert_false(vegetation.is_valid())
-	assert_true(missing.has("[decorations] flower"))
-	assert_true(missing.has("[objects] fern_bush"))
-	assert_false(missing.has("[decorations] tuft"))
+	assert_true(missing.has("[decorations] no flower"))
+	assert_true(missing.has("[objects] no fern_bush"))
+	assert_false(missing.has("[decorations] no tuft"))
 	assert_push_error_count(missing.size())
 
 

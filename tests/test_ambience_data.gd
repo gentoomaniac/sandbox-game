@@ -14,12 +14,12 @@ func _rules_with(section: String, key: String, value: Variant) -> AmbienceRules:
 
 func _assert_bad(rules: AmbienceRules, words: String) -> void:
 	assert_false(rules.is_valid(), words)
-	var found := rules.bad_values().filter(func(text: String) -> bool: return text.contains(words))
-	assert_eq(found.size(), 1, "bad_values names '%s': %s" % [words, rules.bad_values()])
+	var found := rules.problems().filter(func(text: String) -> bool: return text.contains(words))
+	assert_eq(found.size(), 1, "problems name '%s': %s" % [words, rules.problems()])
 
 
-func test_the_data_file_has_no_bad_values() -> void:
-	assert_eq(_rules.bad_values(), [])
+func test_the_data_file_has_no_problems() -> void:
+	assert_eq(_rules.problems(), [])
 	assert_true(_rules.is_valid())
 
 

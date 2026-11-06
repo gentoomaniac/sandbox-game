@@ -35,23 +35,23 @@ static func default_rules() -> EnergyRules:
 
 static func from_file(path: String) -> EnergyRules:
 	var rules := EnergyRules.new(DataFile.read_sections(path))
-	for missing in rules.missing_keys():
-		push_error("%s: no %s" % [path, missing])
+	for problem in rules.problems():
+		push_error("%s: %s" % [path, problem])
 	return rules
 
 
-## The required keys the rules lack, as "[section] key".
-func missing_keys() -> Array[String]:
+## What is missing, as "[section] what".
+func problems() -> Array[String]:
 	var missing: Array[String] = []
 	for section: String in REQUIRED_KEYS:
 		for key: String in REQUIRED_KEYS[section]:
 			if not _values.get(section, {}).has(key):
-				missing.append("[%s] %s" % [section, key])
+				missing.append("[%s] no %s" % [section, key])
 	return missing
 
 
 func is_valid() -> bool:
-	return missing_keys().is_empty()
+	return problems().is_empty()
 
 
 ## The energy a use of this kind costs (`till`, `hit`, `water`, `plant`, `pick`, `mow`, `dig`),

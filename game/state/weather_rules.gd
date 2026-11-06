@@ -73,13 +73,13 @@ static func default_rules() -> WeatherRules:
 
 static func from_file(path: String) -> WeatherRules:
 	var rules := WeatherRules.new(DataFile.read_sections(path))
-	for missing in rules.missing_keys():
-		push_error("%s: no %s" % [path, missing])
+	for problem in rules.problems():
+		push_error("%s: %s" % [path, problem])
 	return rules
 
 
-## The required keys the rules lack, as "[section] key".
-func missing_keys() -> Array[String]:
+## What is missing, as "[section] what".
+func problems() -> Array[String]:
 	var required := REQUIRED_KEYS.duplicate()
 	for season_name: String in GameClock.SEASON_NAMES:
 		required[season_name.to_lower()] = SEASON_KEYS
@@ -87,12 +87,12 @@ func missing_keys() -> Array[String]:
 	for section: String in required:
 		for key: String in required[section]:
 			if not _values.get(section, {}).has(key):
-				missing.append("[%s] %s" % [section, key])
+				missing.append("[%s] no %s" % [section, key])
 	return missing
 
 
 func is_valid() -> bool:
-	return missing_keys().is_empty()
+	return problems().is_empty()
 
 
 ## A required value; `from_file` has reported it already if it is missing.
