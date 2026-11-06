@@ -387,7 +387,7 @@ func _draw_chunk(chunk: Chunk) -> void:
 					corner_codes[top_left + size + 1]
 				]
 			)
-			_draw_cell_corners(origin + Vector2i(x, y), codes)
+			_draw_cell_corners(origin + Vector2i(x, y), codes, true)
 			# The bottom-right corner is this chunk's tile (x, y).
 			decorations.place(
 				origin + Vector2i(x, y), codes[3], covered.has(origin + Vector2i(x, y))
@@ -523,21 +523,24 @@ func _redraw_cell(cell: Vector2i, is_terrain_changed := true) -> void:
 
 ## The one place tile state becomes a look: the codes of a cell's 4 corner tiles (in
 ## CORNER_OFFSETS order, MISSING where not loaded). Their layers decide which layers it draws
-## and with which shapes, and their season and weather looks which overlays.
-func _draw_cell_corners(cell: Vector2i, codes: PackedInt32Array) -> void:
+## and with which shapes, and their season and weather looks which overlays. A cell `is_new` when
+## its chunk was just loaded: it is empty, so nothing needs erasing, which saves a good part of a
+## chunk load.
+func _draw_cell_corners(cell: Vector2i, codes: PackedInt32Array, is_new := false) -> void:
 	TerrainTileset.fill_missing_corners(codes)
 	var corners := TerrainTileset.layers_of(codes)
 	var drawn := TerrainTileset.drawn_layers(corners)
 	for layer in TerrainTileset.LAYER_COUNT:
 		if drawn & (1 << layer) == 0:
-			_layers[layer].erase_cell(cell)
+			if not is_new:
+				_layers[layer].erase_cell(cell)
 		else:
 			var mask := TerrainTileset.mask_for(corners, layer)
 			var atlas_cell := _tileset.atlas_cell(layer, mask, cell)
 			_layers[layer].set_cell(
 				cell, TerrainTileset.terrain_source_id(SeasonBlend.Look.SUMMER), atlas_cell
 			)
-	_draw_overlays(cell, codes)
+	_draw_overlays(cell, codes, is_new)
 
 
 ## The overlay looks of a cell: for each, the tiles of the 4 corners that show it make the
@@ -548,7 +551,7 @@ func _draw_cell_corners(cell: Vector2i, codes: PackedInt32Array) -> void:
 ## together would show as a fringe. Snow and frost lie over the season's look, so a tile under
 ## them still counts for that; snow and its dusting are drawn as ordinary grass, and on the
 ## desire paths the snow is trodden: their trodden grass in its snow look lies over it.
-func _draw_overlays(cell: Vector2i, codes: PackedInt32Array) -> void:
+func _draw_overlays(cell: Vector2i, codes: PackedInt32Array, is_new := false) -> void:
 	var corners := TerrainTileset.layers_of(codes)
 	var shown_seasons := PackedInt32Array()
 	var shown_weathers := PackedInt32Array()
@@ -566,6 +569,10 @@ func _draw_overlays(cell: Vector2i, codes: PackedInt32Array) -> void:
 	for look in TerrainTileset.OVERLAY_LOOKS:
 		var shown := shown_weathers if TerrainTileset.is_weather_look(look) else shown_seasons
 		var ordinary_mask := _overlay_mask(look, shown, corners, TerrainTileset.Layer.WATER)
+		if ordinary_mask == 0:
+			if not is_new:
+				_erase_overlays(look, cell)
+			continue
 		if not TerrainTileset.is_drawn_in_layers(look):
 			_set_overlay_cell(
 				_overlays[look], look, TerrainTileset.Layer.GRASS, ordinary_mask, cell
@@ -575,11 +582,6 @@ func _draw_overlays(cell: Vector2i, codes: PackedInt32Array) -> void:
 					look, shown, corners, TerrainTileset.Layer.TRODDEN, TerrainTileset.Layer.PATH
 				)
 				_set_overlay_cell(_snow_track, look, TerrainTileset.Layer.TRODDEN, track_mask, cell)
-			continue
-		if ordinary_mask == 0:
-			_overlays[look].erase_cell(cell)
-			for layer in TerrainTileset.VARIETY_LAYERS:
-				_variety_overlays[Vector2i(look, layer)].erase_cell(cell)
 			continue
 		# The masks bottom to top, and none above the top one. Tilled soil is no variety: a
 		# frost over it is drawn as ordinary grass.
@@ -604,6 +606,16 @@ func _draw_overlays(cell: Vector2i, codes: PackedInt32Array) -> void:
 				0 if mask == masks[index + 2] else mask,
 				cell
 			)
+
+
+## Erases a cell from every overlay of a look.
+func _erase_overlays(look: SeasonBlend.Look, cell: Vector2i) -> void:
+	_overlays[look].erase_cell(cell)
+	if TerrainTileset.is_drawn_in_layers(look):
+		for layer in TerrainTileset.VARIETY_LAYERS:
+			_variety_overlays[Vector2i(look, layer)].erase_cell(cell)
+	elif look == SeasonBlend.Look.SNOW:
+		_snow_track.erase_cell(cell)
 
 
 ## The corners that show `look` and are on a layer from `lowest` to `highest`, as a mask.
