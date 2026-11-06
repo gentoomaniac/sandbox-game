@@ -119,12 +119,16 @@ static func count_trees(map: GameMap, centre: Vector2i, radius: int) -> int:
 	return count
 
 
-## Whether there is open water within `radius` tiles (a square) of a tile. It stops at the first.
+## Whether there is open water (fresh or the sea's) within `radius` tiles (a square) of a tile. It
+## stops at the first.
 static func has_water_near(map: GameMap, centre: Vector2i, radius: int) -> bool:
 	for y in range(centre.y - radius, centre.y + radius + 1):
 		for x in range(centre.x - radius, centre.x + radius + 1):
 			var tile := map.tile_at(Vector2i(x, y))
-			if tile != null and tile.terrain == Tile.Terrain.WATER:
+			if (
+				tile != null
+				and (tile.terrain == Tile.Terrain.WATER or tile.terrain == Tile.Terrain.SEA)
+			):
 				return true
 	return false
 

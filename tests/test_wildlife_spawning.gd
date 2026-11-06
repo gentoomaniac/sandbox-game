@@ -64,6 +64,8 @@ func test_water_is_looked_for_around_a_tile() -> void:
 	world.set_terrain(Vector2i(6, 4), Tile.Terrain.WATER)
 	assert_true(WildlifeRules.has_water_near(world, origin, 4), "a ditch within it")
 	assert_false(WildlifeRules.has_water_near(world, origin, 0))
+	world.set_terrain(Vector2i(6, 4), Tile.Terrain.SEA)
+	assert_true(WildlifeRules.has_water_near(world, origin, 4), "a tideway within it")
 
 
 func test_a_stork_is_at_home_on_a_wet_meadow_of_the_map_but_not_on_a_dry_one() -> void:
