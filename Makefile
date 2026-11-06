@@ -101,6 +101,8 @@ screenshot:
 # A script that fails to load (e.g. a parse error) is skipped by GUT without failing the run,
 # so the log is checked for our own scripts that failed to load (the GUT addon has one known
 # harmless failure, under addons/).
+# It also fails when GUT ran no test (a broken selection must not pass silently), and ends with
+# the warning and orphan counts of GUT's summary (it leaves a count out when it is 0).
 test:
 	$(IMPORT)
 	@mkdir -p build
@@ -108,6 +110,10 @@ test:
 		> build/test.log 2>&1; status=$$?; cat build/test.log; \
 	if grep -Eq 'Failed to load script "res://(game|tests)/' build/test.log; then \
 		echo "make test: a script in game/ or tests/ failed to load (see above)"; exit 1; fi; \
+	count() { sed -En "s/^$$1 +([0-9]+)\$$/\1/p" build/test.log | tail -n 1; }; \
+	tests=$$(count Tests); \
+	if [ "$${tests:-0}" -eq 0 ]; then echo "make test: GUT ran no tests"; exit 1; fi; \
+	echo "make test: $$(count Warnings | grep . || echo 0) warnings, $$(count Orphans | grep . || echo 0) orphans"; \
 	exit $$status
 
 lint:
