@@ -254,6 +254,7 @@ func to_dict() -> Dictionary:
 		"world": world.to_dict(),
 		"clock": clock.to_dict(),
 		"player": player.to_dict(),
+		"livestock": livestock.to_array(),
 		"current_map": _map_to_ref(current_map),
 		"home_map": _map_to_ref(player.home_map),
 	}
@@ -266,6 +267,7 @@ static func from_dict(data: Dictionary) -> GameState:
 	state.weather = Weather.new(state.world.world_seed, state.sun)
 	state.snow_cover = SnowCover.new(state.weather)
 	state.player = PlayerState.from_dict(data["player"], state._map_from_ref(data["home_map"]))
+	state.livestock.load_array(data["livestock"])
 	state._building_inside = state._building_of_ref(data["current_map"])
 	# No sleep wakes between 01:00 and 06:30, so a game saved then was quit by a player who
 	# stayed up: they still pass out (`is_up_too_late` itself is not saved).

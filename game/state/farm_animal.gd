@@ -48,3 +48,26 @@ static func create(
 
 func tile() -> Vector2i:
 	return Vector2i(position.floor())
+
+
+## What it is doing is not saved: a loaded animal looks about for what to do next.
+func to_dict() -> Dictionary:
+	return {
+		"species": str(species),
+		"look": str(look),
+		"tint": tint.to_html(false),
+		"position": SaveCodec.float_vector_to_json(position),
+	}
+
+
+static func from_dict(data: Dictionary, rules: LivestockRules) -> FarmAnimal:
+	var animal_species := StringName(data["species"])
+	assert(
+		LivestockRules.SPECIES.has(animal_species), "Unknown species in save: %s" % animal_species
+	)
+	assert(rules.looks(animal_species).has(data["look"]), "Unknown look in save: %s" % data["look"])
+	var animal := FarmAnimal.new(
+		animal_species, StringName(data["look"]), SaveCodec.float_vector_from_json(data["position"])
+	)
+	animal.tint = Color.html(data["tint"])
+	return animal

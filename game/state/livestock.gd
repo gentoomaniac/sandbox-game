@@ -46,6 +46,18 @@ func add(animal: FarmAnimal) -> void:
 	added.emit(animal)
 
 
+func to_array() -> Array[Dictionary]:
+	var data: Array[Dictionary] = []
+	for animal in _animals:
+		data.append(animal.to_dict())
+	return data
+
+
+func load_array(data: Array) -> void:
+	for animal_data: Dictionary in data:
+		add(FarmAnimal.from_dict(animal_data, rules))
+
+
 ## Puts up to `count` new animals of a species on ground of `map` they can stand on, a few tiles
 ## around `near`. Returns how many found a place.
 func spawn(species: StringName, count: int, near: Vector2, map: GameMap) -> int:
