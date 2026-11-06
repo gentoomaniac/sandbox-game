@@ -226,8 +226,9 @@ These are the default keys; all of them can be changed under Settings → Contro
 The game uses Godot 4.7.2 with GDScript. Make targets wrap every multi-step job.
 
 ```sh
-make setup   # checks for Godot, Python 3, git, curl and Tiled; downloads GUT; creates a
-Python venv make run     # starts the game ```
+make setup   # checks for Godot, Python 3, git, curl and Tiled; downloads GUT; creates a Python venv
+make run     # starts the game
+```
 
 Start the game with `make run`: it imports new art first. Starting Godot directly after
 pulling new art makes the game stop with a list of pictures that aren't imported yet; run
