@@ -12,7 +12,8 @@ extends GameMap
 ## An object was added or removed at this world tile position: one signal for each tile it
 ## covers.
 signal objects_changed(world_pos: Vector2i)
-## A tile's terrain was changed (see `set_terrain`).
+## A tile's terrain was changed (see `set_terrain`), or its grass wore or grew to another stage
+## of a desire path (see `wear_tile`).
 signal tile_changed(world_pos: Vector2i)
 ## The moisture of a tilled tile changed (see `set_moisture`).
 signal soil_moisture_changed(world_pos: Vector2i)
@@ -54,6 +55,9 @@ var ground_items := GroundItems.new()
 ## The clay spots that were dug, with the nights left until they hold clay again (see
 ## `recover_clay_spots`).
 var _spent_clay_spots: Dictionary[Vector2i, int] = {}
+## The steps of wear of the tiles that are worn towards a desire path (see `wear_tile`), by world
+## position. A tile without wear is not here.
+var _wear: Dictionary[Vector2i, float] = {}
 var _generator: WorldGenerator
 var _chunks: Dictionary[Vector2i, Chunk] = {}
 ## What the player changed, kept outside the chunks so it survives their unloading: per world
@@ -231,6 +235,8 @@ func set_terrain(world_pos: Vector2i, terrain: Tile.Terrain) -> void:
 	_clear_removable(world_pos)
 	chunk.set_terrain(Chunk.local_pos(world_pos), terrain)
 	_terrain_edits[world_pos] = terrain
+	# New ground starts unworn: a path that is tilled and later grassed over is grass.
+	_wear.erase(world_pos)
 	tile_changed.emit(world_pos)
 
 
@@ -482,6 +488,28 @@ func recover_clay_spots() -> void:
 				clay_spot_changed.emit(pos)
 
 
+# --- Desire paths ---
+
+
+## Wears a tile by `steps` (one each time the player steps onto it), up to the most that
+## data/paths.cfg allows. Only grass and the floodplain wear (see `Tile.wears`), and not under a
+## building, whose door is walked on too. Emits `tile_changed` when the tile turns trodden or a
+## path.
+func wear_tile(world_pos: Vector2i, steps := 1.0) -> void:
+	var tile := tile_at(world_pos)
+	if tile == null or not tile.wears() or building_at(world_pos) != null:
+		return
+	var stage := wear_stage(world_pos)
+	_wear[world_pos] = minf(_wear.get(world_pos, 0.0) + steps, PathRules.default_rules().most())
+	if wear_stage(world_pos) != stage:
+		tile_changed.emit(world_pos)
+
+
+## How worn the grass of a tile is (see PathRules).
+func wear_stage(world_pos: Vector2i) -> PathRules.Stage:
+	return PathRules.default_rules().stage_of(_wear.get(world_pos, 0.0))
+
+
 # --- Ground items ---
 
 
@@ -525,10 +553,14 @@ func to_dict() -> Dictionary:
 	var clay_spots_data: Array[Array] = []
 	for pos in _spent_clay_spots:
 		clay_spots_data.append(SaveCodec.vector_to_json(pos) + [_spent_clay_spots[pos]])
+	var wear_data: Array[Array] = []
+	for pos in _wear:
+		wear_data.append(SaveCodec.vector_to_json(pos) + [_wear[pos]])
 	return {
 		"seed": world_seed,
 		"ground_items": ground_items.to_array(),
 		"spent_clay_spots": clay_spots_data,
+		"wear": wear_data,
 		"terrain_edits": terrain_edits,
 		"soil_moisture": soil_moisture,
 		"object_edits": object_edits,
@@ -547,6 +579,8 @@ static func from_dict(data: Dictionary, game_clock: GameClock) -> World:
 		world._soil_moisture[SaveCodec.vector_from_json(entry)] = float(entry[2])
 	for entry: Array in data["spent_clay_spots"]:
 		world._spent_clay_spots[SaveCodec.vector_from_json(entry)] = int(entry[2])
+	for entry: Array in data["wear"]:
+		world._wear[SaveCodec.vector_from_json(entry)] = float(entry[2])
 	for edit: Dictionary in data["object_edits"]:
 		var object_data: Variant = edit["object"]
 		world._object_edits[SaveCodec.vector_from_json(edit["pos"])] = (

@@ -342,7 +342,7 @@ func _process(delta: float) -> void:
 		if not _is_any_screen_open():
 			direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 		_player_view.walk_speed = _state.walk_speed_factor()
-		_state.player.move(_state.current_map, direction, delta, _player_view.walk_speed)
+		_state.walk(direction, delta, _player_view.walk_speed)
 		_state.collect_ground_items(delta)
 		_interior_view.cover_bed(_state.player.bed_lying_in)
 		_object_cover.cover(_state.player.bed_lying_in)

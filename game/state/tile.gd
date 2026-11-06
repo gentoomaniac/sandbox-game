@@ -17,6 +17,12 @@ func is_walkable() -> bool:
 	return (terrain != Terrain.WATER or frozen) and terrain != Terrain.WALL
 
 
+## Only grass (ordinary, lush or dry) and the floodplain wear to a desire path where they are
+## walked often (see World.wear_tile).
+func wears() -> bool:
+	return terrain == Terrain.GRASS or terrain == Terrain.FLOODPLAIN
+
+
 func is_floor() -> bool:
 	return terrain == Terrain.FLOOR or terrain == Terrain.CLAY_FLOOR
 

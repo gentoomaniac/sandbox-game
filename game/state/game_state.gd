@@ -169,6 +169,15 @@ func walk_speed_factor() -> float:
 	return factor
 
 
+## Walks the player on the map they are on (see PlayerState.move). Outdoors, each tile they step
+## onto wears a little towards a desire path.
+func walk(direction: Vector2, delta: float, speed_factor := 1.0) -> void:
+	var tile_before := player.tile()
+	player.move(current_map, direction, delta, speed_factor)
+	if not is_inside() and player.tile() != tile_before:
+		world.wear_tile(player.tile())
+
+
 ## Eats one of the held food, on any map: it restores energy up to the cap. Does nothing, and
 ## returns false, unless the held item is food and the energy is below the cap.
 func eat_held() -> bool:
