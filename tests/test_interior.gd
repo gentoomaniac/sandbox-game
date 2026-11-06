@@ -151,7 +151,7 @@ func test_new_game_home_is_in_the_world() -> void:
 func test_use_does_nothing_inside() -> void:
 	_enter_kate()
 	for tile in [Vector2i(3, 3), Vector2i(3, 2), Vector2i(0, 0)]:
-		assert_eq(_state.use_at(tile), GameState.Use.NOTHING)
+		assert_eq(_state.use_at(tile), ToolUse.Use.NOTHING)
 
 
 func test_wall_tiles_get_their_picture_from_their_place() -> void:

@@ -403,11 +403,11 @@ func _use_on(target: Targeting) -> void:
 	var use := _state.use_tile(target.tile)
 	_sounds.used(use, target.tile)
 	_tiredness_view.acted(use)
-	if _state.is_inside() and use in [GameState.Use.PLACE, GameState.Use.TAKE_DOWN]:
+	if _state.is_inside() and use in [ToolUse.Use.PLACE, ToolUse.Use.TAKE_DOWN]:
 		_interior_view.show_interior(_state.current_map)
-	if use == GameState.Use.NO_ROOM:
+	if use == ToolUse.Use.NO_ROOM:
 		_harvest_hud.show_note("Not enough room in the inventory.")
-	if use == GameState.Use.NEEDS_BETTER_TOOL:
+	if use == ToolUse.Use.NEEDS_BETTER_TOOL:
 		var tool_name: String = ItemTypes.TYPES[_state.player.inventory.held_item()]["name"]
 		_harvest_hud.show_note("Needs a better %s." % tool_name.to_lower())
 

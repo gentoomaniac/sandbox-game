@@ -59,7 +59,7 @@ func test_a_swing_mows_two_tiles_ahead_and_the_sides_of_the_nearer_one_for_each_
 		_fill_field()
 		_state.player.facing = facing
 		_hold(ItemTypes.SCYTHE)
-		assert_eq(_state.use_facing_tile(), GameState.Use.MOW)
+		assert_eq(_state.use_facing_tile(), ToolUse.Use.MOW)
 		var expected: Array[Vector2i] = []
 		for offset: Vector2i in expectations[facing]:
 			expected.append(_centre + offset)
@@ -74,7 +74,7 @@ func test_a_swing_mows_only_the_tall_grass_in_its_pattern() -> void:
 	_world.add_object(WorldObject.new(WorldObjectTypes.SHRUB, shrub_tile))
 	_state.player.facing = Vector2i.DOWN
 	_hold(ItemTypes.SCYTHE)
-	assert_eq(_state.use_facing_tile(), GameState.Use.MOW)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.MOW)
 	assert_eq(_world.object_at(shrub_tile).type, WorldObjectTypes.SHRUB)
 	assert_eq(_dropped(ItemTypes.HAY), 2, "only the one tuft gave hay")
 
@@ -83,8 +83,8 @@ func test_mowing_nothing_does_nothing_and_costs_nothing() -> void:
 	_state.player.facing = Vector2i.DOWN
 	_world.remove_object(_centre + Vector2i.DOWN)
 	_hold(ItemTypes.SCYTHE)
-	assert_eq(_state.use_at(_centre + Vector2i.DOWN), GameState.Use.NOTHING)
-	assert_eq(_state.use_facing_tile(), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(_centre + Vector2i.DOWN), ToolUse.Use.NOTHING)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
 	assert_eq(_state.player.energy, PlayerState.MAX_ENERGY)
 	assert_eq(_dropped(ItemTypes.HAY), 0)
 
@@ -103,7 +103,7 @@ func test_mowing_costs_one_action_of_energy() -> void:
 func test_a_hand_does_not_pick_tall_grass() -> void:
 	_fill_field()
 	_hold(ItemTypes.NONE)
-	assert_eq(_state.use_at(_centre + Vector2i.DOWN), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(_centre + Vector2i.DOWN), ToolUse.Use.NOTHING)
 
 
 # --- Hay and regrowth ---
@@ -132,12 +132,12 @@ func test_mown_grass_grows_back_after_its_regrow_days() -> void:
 	_state.use_facing_tile()
 	_sleep_days(regrow_days - 1)
 	assert_true(tuft.is_picked())
-	assert_eq(_state.use_at(_centre + Vector2i.DOWN), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(_centre + Vector2i.DOWN), ToolUse.Use.NOTHING)
 	_sleep_days(1)
 	assert_false(tuft.is_picked())
 	assert_eq(ObjectTileset.atlas_cell(tuft), tall_look)
 	_clear_ground()
-	assert_eq(_state.use_facing_tile(), GameState.Use.MOW)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.MOW)
 	assert_eq(_dropped(ItemTypes.HAY), 2 * 4, "four tufts again")
 
 
@@ -154,7 +154,7 @@ func test_tall_grass_is_there_in_summer_and_gone_in_winter() -> void:
 	assert_null(_world.object_at(tuft.pos))
 	_hold(ItemTypes.SCYTHE)
 	_state.player.facing = Vector2i.DOWN
-	assert_eq(_state.use_facing_tile(), GameState.Use.NOTHING, "nothing to mow in winter")
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING, "nothing to mow in winter")
 
 
 func test_tall_grass_comes_in_over_spring_and_thins_in_autumn() -> void:

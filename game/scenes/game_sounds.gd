@@ -65,7 +65,7 @@ func click_on_press_in(root: Node) -> void:
 
 ## Plays the sound of using `tile` with the held item, which had this `result` (see
 ## GameState `use_tile`).
-func used(result: GameState.Use, tile: Vector2i) -> void:
+func used(result: ToolUse.Use, tile: Vector2i) -> void:
 	var held := _state.player.inventory.held_item()
 	var held_tool: StringName = ItemTypes.TYPES.get(held, {}).get("tool", &"")
 	var event := SoundEvents.use(result, held_tool)

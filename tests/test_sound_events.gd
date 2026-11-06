@@ -51,29 +51,29 @@ func test_a_pickaxe_hits_and_a_stone_breaks() -> void:
 
 func test_each_use_has_its_sound() -> void:
 	var cases := {
-		GameState.Use.TILL: &"hoe_till",
-		GameState.Use.PLANT: &"plant",
-		GameState.Use.HARVEST: &"pick_bush",
-		GameState.Use.FORAGE: &"pick_bush",
-		GameState.Use.CLEAR: &"pick_bush",
-		GameState.Use.WATER: &"water_pour",
-		GameState.Use.MOW: &"scythe_swish",
-		GameState.Use.DIG: &"shovel_dig",
-		GameState.Use.NEEDS_BETTER_TOOL: &"denied",
-		GameState.Use.HIT: &"",
+		ToolUse.Use.TILL: &"hoe_till",
+		ToolUse.Use.PLANT: &"plant",
+		ToolUse.Use.HARVEST: &"pick_bush",
+		ToolUse.Use.FORAGE: &"pick_bush",
+		ToolUse.Use.CLEAR: &"pick_bush",
+		ToolUse.Use.WATER: &"water_pour",
+		ToolUse.Use.MOW: &"scythe_swish",
+		ToolUse.Use.DIG: &"shovel_dig",
+		ToolUse.Use.NEEDS_BETTER_TOOL: &"denied",
+		ToolUse.Use.HIT: &"",
 	}
 	for use in cases:
 		assert_eq(SoundEvents.use(use, ItemTypes.HOE), cases[use], str(use))
 
 
 func test_a_scythe_swishes_even_when_it_mows_nothing() -> void:
-	assert_eq(SoundEvents.use(GameState.Use.NOTHING, ItemTypes.SCYTHE), &"scythe_swish")
-	assert_eq(SoundEvents.use(GameState.Use.NOTHING, ItemTypes.AXE), &"")
+	assert_eq(SoundEvents.use(ToolUse.Use.NOTHING, ItemTypes.SCYTHE), &"scythe_swish")
+	assert_eq(SoundEvents.use(ToolUse.Use.NOTHING, ItemTypes.AXE), &"")
 
 
 func test_every_event_made_is_a_known_event() -> void:
 	var made: Array[StringName] = []
-	for use in GameState.Use.values():
+	for use in ToolUse.Use.values():
 		made.append(SoundEvents.use(use, ItemTypes.SCYTHE))
 	for type: Dictionary in WorldObjectTypes.TYPES.values():
 		made.append(SoundEvents.hit(type, true))

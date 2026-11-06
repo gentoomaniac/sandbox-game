@@ -84,9 +84,9 @@ func _place(type: StringName, tree := "") -> WorldObject:
 
 
 ## Uses the tile in front of the player `times` times with `tool_item`; returns the last use.
-func _hit(tool_item: StringName, times: int) -> GameState.Use:
+func _hit(tool_item: StringName, times: int) -> ToolUse.Use:
 	_hold(tool_item)
-	var use := GameState.Use.NOTHING
+	var use := ToolUse.Use.NOTHING
 	for _i in times:
 		use = _state.use_facing_tile()
 	return use

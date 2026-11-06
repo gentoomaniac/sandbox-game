@@ -145,9 +145,9 @@ func test_the_storage_screen_squeaks_open_and_thumps_shut() -> void:
 
 func test_placing_a_chest_and_taking_one_down_inside_are_heard() -> void:
 	_hold_quietly(ItemTypes.CHEST)
-	_sounds.used(GameState.Use.PLACE, _tile)
-	_sounds.used(GameState.Use.TAKE_DOWN, _tile)
-	_sounds.used(GameState.Use.NO_ROOM, _tile)
+	_sounds.used(ToolUse.Use.PLACE, _tile)
+	_sounds.used(ToolUse.Use.TAKE_DOWN, _tile)
+	_sounds.used(ToolUse.Use.NO_ROOM, _tile)
 	assert_eq(_events, [&"build_place", &"axe_chop", &"denied"])
 
 

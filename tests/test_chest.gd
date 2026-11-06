@@ -14,8 +14,8 @@ func _hold_chests() -> void:
 
 func test_using_the_chest_item_puts_a_chest_on_the_tile_and_takes_one_item() -> void:
 	_hold_chests()
-	assert_eq(_state.use_at(_tile), GameState.Use.PLACE)
-	assert_eq(_state.use_facing_tile(), GameState.Use.PLACE)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.PLACE)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.PLACE)
 	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.CHEST)
 	assert_true(_world.object_at(_tile).storage.is_empty())
 	assert_eq(_count(ItemTypes.CHEST), 2)
@@ -33,8 +33,8 @@ func test_the_last_chest_item_is_used_up() -> void:
 func test_a_chest_is_not_placed_on_an_occupied_tile() -> void:
 	_hold_chests()
 	_place(WorldObjectTypes.STONE)
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
-	assert_eq(_state.use_facing_tile(), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
 	assert_eq(_count(ItemTypes.CHEST), 3)
 
 
@@ -44,13 +44,13 @@ func test_a_chest_is_not_placed_on_land_that_is_unsafe_to_build_on() -> void:
 		Tile.Terrain.WATER, Tile.Terrain.WETLAND, Tile.Terrain.FLOODPLAIN
 	]:
 		_world.set_terrain(_tile, terrain)
-		assert_eq(_state.use_at(_tile), GameState.Use.NOTHING, "on %s" % terrain)
+		assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING, "on %s" % terrain)
 
 
 func test_a_chest_can_stand_on_tilled_soil() -> void:
 	_hold_chests()
 	_world.set_terrain(_tile, Tile.Terrain.SOIL)
-	assert_eq(_state.use_at(_tile), GameState.Use.PLACE)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.PLACE)
 
 
 func _shack() -> Building:
@@ -68,7 +68,7 @@ func test_a_chest_is_not_placed_on_a_building() -> void:
 	_hold_chests()
 	var shack := _shack()
 	for tile in shack.tiles():
-		assert_eq(_state.use_at(tile), GameState.Use.NOTHING, "on %s" % tile)
+		assert_eq(_state.use_at(tile), ToolUse.Use.NOTHING, "on %s" % tile)
 
 
 func test_a_chest_is_not_placed_in_front_of_a_door() -> void:
@@ -76,18 +76,18 @@ func test_a_chest_is_not_placed_in_front_of_a_door() -> void:
 	var front := _shack().door_tile() + Vector2i.DOWN
 	assert_true(_world.is_buildable(front), "the land in front of the door is fine to build on")
 	assert_false(_world.is_placeable(front))
-	assert_eq(_state.use_at(front), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(front), ToolUse.Use.NOTHING)
 
 
 func test_a_chest_is_not_placed_where_the_player_stands_or_touches() -> void:
 	_hold_chests()
 	_state.player.position = Vector2(_tile) + Vector2(0.5, 0.5)
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING, "on the tile")
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING, "on the tile")
 	# Feet just inside the tile above: the body still reaches into the tile.
 	_state.player.position = Vector2(_tile) + Vector2(0.5, 0.1)
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING, "the body touches it")
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING, "the body touches it")
 	_state.player.position = Vector2(_tile) + Vector2(0.5, -0.5)
-	assert_eq(_state.use_at(_tile), GameState.Use.PLACE, "a tile away")
+	assert_eq(_state.use_at(_tile), ToolUse.Use.PLACE, "a tile away")
 
 
 func test_the_chest_item_is_held_like_seeds() -> void:

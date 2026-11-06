@@ -45,7 +45,7 @@ func watch(player: PlayerState, clock: GameClock, rules: EnergyRules) -> void:
 
 
 ## The player has just done `use`, which may have cost energy.
-func acted(use: GameState.Use) -> void:
+func acted(use: ToolUse.Use) -> void:
 	_sweat.emit(_signs.sweat_for(use, _player.energy), SWEAT_ORIGIN)
 
 

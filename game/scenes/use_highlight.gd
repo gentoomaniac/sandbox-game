@@ -115,16 +115,16 @@ func _ghost_texture() -> Texture2D:
 
 
 func _ghost_tint(target: Targeting) -> Color:
-	var can_place := target.is_in_reach and _state.use_at(target.tile) == GameState.Use.PLACE
+	var can_place := target.is_in_reach and _state.use_at(target.tile) == ToolUse.Use.PLACE
 	return BuildMode.VALID_TINT if can_place else BuildMode.BLOCKED_TINT
 
 
 func _color_for(target: Targeting) -> Color:
 	if target.source == Targeting.Source.FACING:
-		return COLOR if _state.use_at(target.tile) != GameState.Use.NOTHING else Color.TRANSPARENT
+		return COLOR if _state.use_at(target.tile) != ToolUse.Use.NOTHING else Color.TRANSPARENT
 	if not target.is_in_reach:
 		return _color_with_opacity(COLOR_OUT_OF_REACH)
-	var has_use := _state.use_at(target.tile) != GameState.Use.NOTHING
+	var has_use := _state.use_at(target.tile) != ToolUse.Use.NOTHING
 	return _color_with_opacity(COLOR if has_use else COLOR_NOTHING_TO_DO)
 
 

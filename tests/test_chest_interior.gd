@@ -56,28 +56,28 @@ func test_a_chest_does_not_go_on_a_wall_furniture_the_exit_or_the_tile_inside_it
 
 func test_using_the_chest_item_inside_puts_a_chest_on_the_tile_in_front() -> void:
 	_hold(ItemTypes.CHEST)
-	assert_eq(_state.use_at(Vector2i(3, 5)), GameState.Use.PLACE)
-	assert_eq(_state.use_facing_tile(), GameState.Use.PLACE)
+	assert_eq(_state.use_at(Vector2i(3, 5)), ToolUse.Use.PLACE)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.PLACE)
 	assert_eq(_interior.object_at(Vector2i(3, 5)).type, WorldObjectTypes.CHEST)
 	assert_eq(_state.player.inventory.count_of(ItemTypes.CHEST), 2)
 
 
 func test_using_the_chest_item_on_furniture_or_a_wall_does_nothing() -> void:
 	_hold(ItemTypes.CHEST)
-	assert_eq(_state.use_at(Vector2i(5, 5)), GameState.Use.NOTHING)
-	assert_eq(_state.use_at(Vector2i(0, 4)), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(Vector2i(5, 5)), ToolUse.Use.NOTHING)
+	assert_eq(_state.use_at(Vector2i(0, 4)), ToolUse.Use.NOTHING)
 	assert_eq(_state.player.inventory.count_of(ItemTypes.CHEST), 3)
 
 
 func test_a_chest_is_not_placed_where_the_player_stands() -> void:
 	_hold(ItemTypes.CHEST)
-	assert_eq(_state.use_at(Vector2i(3, 4)), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(Vector2i(3, 4)), ToolUse.Use.NOTHING)
 
 
 func test_other_items_do_nothing_inside() -> void:
 	_state.player.inventory.add(ItemTypes.TURNIP_SEEDS, 2)
 	_hold(ItemTypes.TURNIP_SEEDS)
-	assert_eq(_state.use_at(Vector2i(3, 5)), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(Vector2i(3, 5)), ToolUse.Use.NOTHING)
 
 
 # --- Taking down ---
@@ -93,7 +93,7 @@ func _place_chest_in_front() -> WorldObject:
 func test_the_axe_takes_a_chest_inside_down_into_the_inventory_with_what_it_held() -> void:
 	_place_chest_in_front()
 	_hold(ItemTypes.AXE)
-	assert_eq(_state.use_facing_tile(), GameState.Use.TAKE_DOWN)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.TAKE_DOWN)
 	assert_null(_interior.object_at(Vector2i(3, 5)))
 	assert_eq(_state.player.inventory.count_of(ItemTypes.CHEST), 4)
 	assert_eq(_state.player.inventory.count_of(ItemTypes.LOGS), 12)
@@ -104,15 +104,15 @@ func test_a_chest_inside_stays_when_the_inventory_has_no_room_for_it() -> void:
 	for slot in Inventory.SLOT_COUNT:
 		_state.player.inventory.slots[slot] = {"item": ItemTypes.AXE, "count": 1}
 	_hold(ItemTypes.AXE)
-	assert_eq(_state.use_at(Vector2i(3, 5)), GameState.Use.NO_ROOM)
-	assert_eq(_state.use_facing_tile(), GameState.Use.NO_ROOM)
+	assert_eq(_state.use_at(Vector2i(3, 5)), ToolUse.Use.NO_ROOM)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.NO_ROOM)
 	assert_eq(_interior.object_at(Vector2i(3, 5)), chest)
 	assert_eq(chest.storage.count_of(ItemTypes.LOGS), 12)
 
 
 func test_the_axe_does_nothing_to_other_furniture() -> void:
 	_hold(ItemTypes.AXE)
-	assert_eq(_state.use_at(Vector2i(5, 5)), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(Vector2i(5, 5)), ToolUse.Use.NOTHING)
 
 
 # --- Opening ---

@@ -60,7 +60,7 @@ func _sleep_days(days: int) -> void:
 
 
 func test_using_grass_tills_it_to_soil() -> void:
-	assert_eq(_state.use_facing_tile(), GameState.Use.TILL)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.TILL)
 	assert_eq(_world.tile_at(_tile).terrain, Tile.Terrain.SOIL)
 
 
@@ -75,7 +75,7 @@ func test_water_cannot_be_tilled() -> void:
 	_world.chunk_at(Chunk.world_to_chunk(_tile)).set_terrain(
 		Chunk.local_pos(_tile), Tile.Terrain.WATER
 	)
-	assert_eq(_state.use_facing_tile(), GameState.Use.NOTHING)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
 
 
 func test_floodplain_cannot_be_tilled_yet() -> void:
@@ -99,7 +99,7 @@ func test_a_tile_under_a_building_cannot_be_tilled() -> void:
 func test_using_soil_plants_a_crop_at_its_first_stage() -> void:
 	_state.use_facing_tile()
 	_hold(ItemTypes.TURNIP_SEEDS)
-	assert_eq(_state.use_facing_tile(), GameState.Use.PLANT)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.PLANT)
 	var crop := _world.object_at(_tile)
 	assert_eq(crop.type, WorldObjectTypes.TURNIP)
 	assert_eq(CropLife.stage(crop), 0)
@@ -142,7 +142,7 @@ func test_a_crop_in_an_unloaded_chunk_keeps_living_through_the_days() -> void:
 
 func test_an_unripe_crop_cannot_be_harvested() -> void:
 	_till_and_plant()
-	assert_eq(_state.use_facing_tile(), GameState.Use.NOTHING)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
 	assert_not_null(_world.object_at(_tile))
 	assert_eq(_state.player.inventory.count_of(ItemTypes.TURNIP), 0)
 
@@ -150,12 +150,12 @@ func test_an_unripe_crop_cannot_be_harvested() -> void:
 func test_a_ripe_crop_is_harvested_and_the_soil_stays() -> void:
 	_till_and_plant()
 	_ripen(_world.object_at(_tile))
-	assert_eq(_state.use_facing_tile(), GameState.Use.HARVEST)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.HARVEST)
 	assert_null(_world.object_at(_tile))
 	assert_eq(_world.tile_at(_tile).terrain, Tile.Terrain.SOIL)
 	assert_eq(_world.ground_count_of(ItemTypes.TURNIP), 1)
 	_hold(ItemTypes.TURNIP_SEEDS)
-	assert_eq(_state.use_facing_tile(), GameState.Use.PLANT, "the soil can be planted again")
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.PLANT, "the soil can be planted again")
 
 
 func test_tilling_emits_tile_changed() -> void:

@@ -81,7 +81,7 @@ func test_a_seed_plants_a_sapling_of_its_species_that_grows_into_the_tree() -> v
 		_world.remove_object(_tile)
 		_state.player.inventory.add(SEEDS[tree], 2)
 		_hold(SEEDS[tree])
-		assert_eq(_state.use_facing_tile(), GameState.Use.PLANT, tree)
+		assert_eq(_state.use_facing_tile(), ToolUse.Use.PLANT, tree)
 		assert_eq(_world.object_at(_tile).type, WorldObjectTypes.SAPLING)
 		assert_eq(_world.object_at(_tile).state["tree"], str(tree))
 		_sleep_days(4)
@@ -93,15 +93,15 @@ func test_a_seed_is_not_planted_on_soil_and_crop_seeds_not_on_grass() -> void:
 	_world.set_terrain(_tile, Tile.Terrain.SOIL)
 	_state.player.inventory.add(ItemTypes.ACORN, 1)
 	_hold(ItemTypes.ACORN)
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
 	_world.set_terrain(_tile, Tile.Terrain.GRASS)
 	_hold(ItemTypes.TURNIP_SEEDS)
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
 
 
 func test_a_hand_picks_the_seed_of_the_species_off_a_planted_sapling() -> void:
 	_place(WorldObjectTypes.SAPLING, "spruce")
 	_hold(ItemTypes.NONE)
-	assert_eq(_state.use_facing_tile(), GameState.Use.FORAGE)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.FORAGE)
 	assert_eq(_dropped(ItemTypes.SPRUCE_CONE), 1)
 	assert_eq(_dropped(ItemTypes.ACORN), 0)

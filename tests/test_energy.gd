@@ -6,10 +6,10 @@ extends EnergyCase
 
 func test_a_use_costs_energy_by_its_kind() -> void:
 	_hold(ItemTypes.HOE)
-	assert_eq(_state.use_facing_tile(), GameState.Use.TILL)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.TILL)
 	assert_eq(_state.player.energy, 96.0)
 	_hold(ItemTypes.TURNIP_SEEDS)
-	assert_eq(_state.use_facing_tile(), GameState.Use.PLANT)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.PLANT)
 	assert_eq(_state.player.energy, 95.0)
 
 
@@ -21,19 +21,19 @@ func test_a_hit_and_a_pick_cost_what_the_rules_say() -> void:
 	_set_midsummer()
 	_place(WorldObjectTypes.BERRY_BUSH)
 	_hold(ItemTypes.NONE)
-	assert_eq(_state.use_facing_tile(), GameState.Use.FORAGE)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.FORAGE)
 	assert_eq(_state.player.energy, 96.5)
 
 
 func test_a_use_that_does_nothing_costs_nothing() -> void:
 	_hold(ItemTypes.AXE)
-	assert_eq(_state.use_facing_tile(), GameState.Use.NOTHING)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
 	assert_eq(_state.player.energy, 100.0)
 
 
 func test_a_tool_too_weak_for_the_object_costs_nothing() -> void:
 	_place(WorldObjectTypes.BOULDER)
-	assert_eq(_hit(ItemTypes.PICKAXE, 1), GameState.Use.NEEDS_BETTER_TOOL)
+	assert_eq(_hit(ItemTypes.PICKAXE, 1), ToolUse.Use.NEEDS_BETTER_TOOL)
 	assert_eq(_state.player.energy, 100.0)
 
 
@@ -65,7 +65,7 @@ func test_the_drain_factor_scales_the_cost() -> void:
 func test_a_use_with_too_little_energy_left_still_happens_and_empties_the_bar() -> void:
 	_state.player.energy = 1.0
 	_hold(ItemTypes.HOE)
-	assert_eq(_state.use_facing_tile(), GameState.Use.TILL)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.TILL)
 	assert_eq(_world.tile_at(_tile).terrain, Tile.Terrain.SOIL)
 	assert_eq(_state.player.energy, 0.0)
 	assert_true(_state.is_out_of_energy())

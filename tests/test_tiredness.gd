@@ -60,18 +60,18 @@ func test_waking_up_after_a_pause_does_not_warn_for_the_time_in_between() -> voi
 
 
 func test_every_use_that_costs_energy_makes_a_tired_player_sweat() -> void:
-	for use in GameState.COST_KINDS:
+	for use in ToolUse.COST_KINDS:
 		assert_eq(_signs.sweat_for(use, 25.0), KINDS.SWEAT, "use %s" % use)
 		assert_eq(_signs.sweat_for(use, 8.0), KINDS.SWEAT_HEAVY, "use %s" % use)
 
 
 func test_a_use_that_costs_nothing_makes_no_sweat() -> void:
-	for use in [GameState.Use.NOTHING, GameState.Use.NEEDS_BETTER_TOOL]:
+	for use in [ToolUse.Use.NOTHING, ToolUse.Use.NEEDS_BETTER_TOOL]:
 		assert_eq(_signs.sweat_for(use, 5.0), KINDS.NONE)
 
 
 func test_a_rested_player_does_not_sweat() -> void:
-	assert_eq(_signs.sweat_for(GameState.Use.HIT, 31.0), KINDS.NONE)
+	assert_eq(_signs.sweat_for(ToolUse.Use.HIT, 31.0), KINDS.NONE)
 
 
 func test_sweat_is_one_drop_when_tired_and_two_or_three_when_exhausted() -> void:
@@ -90,7 +90,7 @@ func test_the_energy_a_use_leaves_decides_the_sweat() -> void:
 	_state.player.energy = 31.0
 	_hold(ItemTypes.HOE)
 	var use := _state.use_facing_tile()
-	assert_eq(use, GameState.Use.TILL)
+	assert_eq(use, ToolUse.Use.TILL)
 	assert_eq(_state.player.energy, 27.0)
 	assert_eq(_signs.sweat_for(use, _state.player.energy), KINDS.SWEAT)
 

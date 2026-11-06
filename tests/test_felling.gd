@@ -21,7 +21,7 @@ func test_a_tree_falls_after_hp_over_power_hits_and_leaves_a_stump_and_a_trunk()
 	_hit(ItemTypes.AXE, hits_needed - 1)
 	assert_same(_world.object_at(_tile), tree, "still standing")
 	assert_eq(_dropped(ItemTypes.LOGS), 0)
-	assert_eq(_hit(ItemTypes.AXE, 1), GameState.Use.HIT)
+	assert_eq(_hit(ItemTypes.AXE, 1), ToolUse.Use.HIT)
 	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.STUMP)
 	assert_eq(_world.object_at(_tile + Vector2i.RIGHT).type, &"oak_trunk")
 	assert_eq(_dropped(ItemTypes.LOGS), 0, "the logs come off the trunk")
@@ -43,8 +43,8 @@ func test_a_better_tool_needs_fewer_hits() -> void:
 func test_a_tool_below_the_harvest_level_does_nothing() -> void:
 	var boulder := _place(WorldObjectTypes.BOULDER)
 	_hold(ItemTypes.PICKAXE)
-	assert_eq(_state.use_at(_tile), GameState.Use.NEEDS_BETTER_TOOL)
-	assert_eq(_state.use_facing_tile(), GameState.Use.NEEDS_BETTER_TOOL)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NEEDS_BETTER_TOOL)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.NEEDS_BETTER_TOOL)
 	assert_eq(boulder.state, {})
 	assert_same(_world.object_at(_tile), boulder)
 
@@ -52,22 +52,22 @@ func test_a_tool_below_the_harvest_level_does_nothing() -> void:
 func test_pine_needs_a_better_axe() -> void:
 	_place(WorldObjectTypes.PINE)
 	_hold(ItemTypes.AXE)
-	assert_eq(_state.use_at(_tile), GameState.Use.NEEDS_BETTER_TOOL)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NEEDS_BETTER_TOOL)
 
 
 func test_the_wrong_kind_of_tool_does_nothing() -> void:
 	var tree := _place(WorldObjectTypes.OAK)
 	_hold(ItemTypes.PICKAXE)
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
 	_hold(ItemTypes.WATERING_CAN)
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
 	assert_eq(tree.state, {})
 	_world.remove_object(_tile)
 	_place(WorldObjectTypes.STONE)
 	_hold(ItemTypes.AXE)
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
 	_hold(ItemTypes.TURNIP_SEEDS)
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
 
 
 func test_every_hit_emits_object_hit_the_final_one_too() -> void:
@@ -136,7 +136,7 @@ func test_the_final_hit_happens_with_a_full_inventory() -> void:
 	_place(WorldObjectTypes.OAK)
 	_hit(ItemTypes.AXE, OAK_HITS - 1)
 	_fill_inventory()
-	assert_eq(_hit(ItemTypes.AXE, 1), GameState.Use.HIT)
+	assert_eq(_hit(ItemTypes.AXE, 1), ToolUse.Use.HIT)
 	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.STUMP)
 	assert_eq(_world.object_at(_tile + Vector2i.RIGHT).type, &"oak_trunk")
 
@@ -157,6 +157,6 @@ func test_a_stump_can_be_removed_with_the_axe_for_a_log() -> void:
 	_place(WorldObjectTypes.OAK)
 	_hit(ItemTypes.AXE, OAK_HITS)
 	_clear_ground()
-	assert_eq(_hit(ItemTypes.AXE, 2), GameState.Use.HIT)
+	assert_eq(_hit(ItemTypes.AXE, 2), ToolUse.Use.HIT)
 	assert_null(_world.object_at(_tile))
 	assert_eq(_dropped(ItemTypes.LOGS), 1)

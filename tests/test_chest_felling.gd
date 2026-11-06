@@ -14,7 +14,7 @@ func _chest_with_contents() -> WorldObject:
 
 func test_the_axe_takes_a_chest_down_in_three_hits() -> void:
 	var chest := _chest_with_contents()
-	assert_eq(_hit(ItemTypes.AXE, 2), GameState.Use.HIT)
+	assert_eq(_hit(ItemTypes.AXE, 2), ToolUse.Use.HIT)
 	assert_eq(_world.object_at(_tile), chest, "still there")
 	assert_eq(chest.storage.count_of(ItemTypes.LOGS), 120, "and full")
 	_state.use_facing_tile()
@@ -55,7 +55,7 @@ func test_a_chest_inside_a_chest_comes_back_with_its_item_counted_once_each() ->
 
 func test_the_pickaxe_does_nothing_to_a_chest() -> void:
 	_place(WorldObjectTypes.CHEST)
-	assert_eq(_hit(ItemTypes.PICKAXE, 1), GameState.Use.NOTHING)
+	assert_eq(_hit(ItemTypes.PICKAXE, 1), ToolUse.Use.NOTHING)
 
 
 func test_a_chest_hit_but_not_felled_heals_overnight_and_keeps_its_contents() -> void:

@@ -40,27 +40,27 @@ static func hit(object_type: Dictionary, is_finished: bool) -> StringName:
 
 ## The sound of a use of the held item that is not a hit (those are heard as the object being
 ## hit, see `hit`). A scythe swings even when it mows nothing.
-static func use(result: GameState.Use, held_tool: StringName) -> StringName:
+static func use(result: ToolUse.Use, held_tool: StringName) -> StringName:
 	match result:
-		GameState.Use.TILL:
+		ToolUse.Use.TILL:
 			return &"hoe_till"
-		GameState.Use.PLANT:
+		ToolUse.Use.PLANT:
 			return &"plant"
-		GameState.Use.HARVEST, GameState.Use.FORAGE, GameState.Use.CLEAR:
+		ToolUse.Use.HARVEST, ToolUse.Use.FORAGE, ToolUse.Use.CLEAR:
 			return &"pick_bush"
-		GameState.Use.WATER:
+		ToolUse.Use.WATER:
 			return &"water_pour"
-		GameState.Use.MOW:
+		ToolUse.Use.MOW:
 			return &"scythe_swish"
-		GameState.Use.DIG:
+		ToolUse.Use.DIG:
 			return &"shovel_dig"
-		GameState.Use.PLACE:
+		ToolUse.Use.PLACE:
 			return &"build_place"
-		GameState.Use.TAKE_DOWN:
+		ToolUse.Use.TAKE_DOWN:
 			return &"axe_chop"
-		GameState.Use.NEEDS_BETTER_TOOL, GameState.Use.NO_ROOM:
+		ToolUse.Use.NEEDS_BETTER_TOOL, ToolUse.Use.NO_ROOM:
 			return &"denied"
-		GameState.Use.NOTHING:
+		ToolUse.Use.NOTHING:
 			return &"scythe_swish" if held_tool == ItemTypes.SCYTHE else &""
 	return &""
 

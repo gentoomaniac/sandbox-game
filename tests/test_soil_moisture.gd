@@ -51,24 +51,24 @@ func test_the_watering_can_fills_dry_soil_and_costs_the_water_energy() -> void:
 	_hold(ItemTypes.WATERING_CAN)
 	_state.player.energy = 50.0
 	_state.cheats.is_weight_off = true
-	assert_eq(_state.use_at(_tile), GameState.Use.WATER)
-	assert_eq(_state.use_facing_tile(), GameState.Use.WATER)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.WATER)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.WATER)
 	assert_eq(_world.moisture_at(_tile), 1.0)
 	assert_almost_eq(_state.player.energy, 50.0 - _state.energy_rules.cost_of(&"water"), 0.0001)
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING, "nothing more to fill")
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING, "nothing more to fill")
 
 
 func test_the_watering_can_waters_a_planted_tile() -> void:
 	_place(WorldObjectTypes.TURNIP)
 	_hold(ItemTypes.WATERING_CAN)
-	assert_eq(_state.use_facing_tile(), GameState.Use.WATER)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.WATER)
 	assert_eq(_world.moisture_at(_tile), 1.0)
 
 
 func test_the_watering_can_does_nothing_on_grass() -> void:
 	_world.set_terrain(_tile, Tile.Terrain.GRASS)
 	_hold(ItemTypes.WATERING_CAN)
-	assert_eq(_state.use_facing_tile(), GameState.Use.NOTHING)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
 
 
 func test_a_dry_day_dries_the_soil_by_its_temperature_sun_and_wind() -> void:

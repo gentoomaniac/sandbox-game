@@ -136,13 +136,13 @@ func test_the_shovel_is_usable_on_any_free_grass_and_nowhere_else() -> void:
 	_hold_shovel()
 	var spot := _spots[0]
 	var elsewhere := _grass_tile_without_clay()
-	assert_eq(_state.use_at(spot), GameState.Use.DIG)
-	assert_eq(_state.use_at(elsewhere), GameState.Use.DIG, "the cursor can't tell the spot")
+	assert_eq(_state.use_at(spot), ToolUse.Use.DIG)
+	assert_eq(_state.use_at(elsewhere), ToolUse.Use.DIG, "the cursor can't tell the spot")
 	var tilled := _grass_tile_without_clay(elsewhere)
 	_state.world.set_terrain(tilled, Tile.Terrain.SOIL)
-	assert_eq(_state.use_at(tilled), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(tilled), ToolUse.Use.NOTHING)
 	_state.world.add_object(WorldObject.new(WorldObjectTypes.OAK, spot + Vector2i.UP))
-	assert_eq(_state.use_at(spot + Vector2i.UP), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(spot + Vector2i.UP), ToolUse.Use.NOTHING)
 
 
 func _grass_tile_without_clay(not_this := Vector2i.ZERO) -> Vector2i:
@@ -198,7 +198,7 @@ func test_digging_elsewhere_gives_nothing_and_spends_nothing() -> void:
 	var elsewhere := _grass_tile_without_clay()
 	for day in range(MIDSUMMER, MIDSUMMER + 30):
 		_state.clock.day = day
-		assert_eq(_state.use_tile(elsewhere), GameState.Use.DIG)
+		assert_eq(_state.use_tile(elsewhere), ToolUse.Use.DIG)
 	assert_eq(_state.world.ground_count_of(ItemTypes.CLAY), 0)
 	assert_lt(_state.player.energy, PlayerState.MAX_ENERGY, "digging still costs energy")
 

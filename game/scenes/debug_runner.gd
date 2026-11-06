@@ -74,7 +74,7 @@ func update(delta: float) -> void:
 		var object := state.world.object_at(_hit_tile)
 		if object != null:
 			state.world.hit_object(object, 0)
-		tiredness_view.acted(GameState.Use.HIT)
+		tiredness_view.acted(ToolUse.Use.HIT)
 		_hit_tile = StartupOptions.NO_TILE
 	if _harvest_tile != StartupOptions.NO_TILE and _is_outside_and_drawn():
 		DebugHarvest.run(state, _harvest_tile)

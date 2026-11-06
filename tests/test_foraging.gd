@@ -12,7 +12,7 @@ func test_a_hand_picks_fibre_and_the_plant_goes() -> void:
 	for type_name in [WorldObjectTypes.SHRUB, WorldObjectTypes.FERN_BUSH]:
 		_place(type_name)
 		_hold(ItemTypes.NONE)
-		assert_eq(_state.use_facing_tile(), GameState.Use.FORAGE)
+		assert_eq(_state.use_facing_tile(), ToolUse.Use.FORAGE)
 		assert_null(_world.object_at(_tile))
 	assert_eq(_dropped(ItemTypes.FIBRE), 4)
 
@@ -35,18 +35,18 @@ func test_a_berry_bush_is_picked_and_bears_again_after_three_days() -> void:
 	var bush := _place(WorldObjectTypes.BERRY_BUSH)
 	var ripe_look := ObjectTileset.atlas_cell(bush)
 	_hold(ItemTypes.NONE)
-	assert_eq(_state.use_facing_tile(), GameState.Use.FORAGE)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.FORAGE)
 	assert_eq(_dropped(ItemTypes.BERRIES), 3)
 	assert_same(_world.object_at(_tile), bush, "picking does not remove it")
 	assert_ne(ObjectTileset.atlas_cell(bush), ripe_look, "it looks picked")
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
 	_sleep_days(2)
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
 	_sleep_days(1)
 	assert_eq(ObjectTileset.atlas_cell(bush), ripe_look)
 	# The berries went into the first free slot, which was the held (empty) one.
 	_hold(ItemTypes.NONE)
-	assert_eq(_state.use_facing_tile(), GameState.Use.FORAGE)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.FORAGE)
 	assert_eq(_dropped(ItemTypes.BERRIES), 6)
 
 
@@ -69,10 +69,10 @@ func test_a_picked_bush_survives_the_chunk_and_the_save() -> void:
 func test_an_acorn_is_planted_on_grass_and_grows_into_an_oak() -> void:
 	_state.player.inventory.add(ItemTypes.ACORN, 2)
 	_hold(ItemTypes.ACORN)
-	assert_eq(_state.use_facing_tile(), GameState.Use.PLANT)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.PLANT)
 	assert_eq(_count(ItemTypes.ACORN), 1)
 	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.SAPLING)
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING, "the tile is taken")
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING, "the tile is taken")
 	_sleep_days(3)
 	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.SAPLING)
 	_sleep_days(1)
@@ -83,10 +83,10 @@ func test_an_acorn_is_not_planted_on_soil_and_seeds_not_on_grass() -> void:
 	_world.set_terrain(_tile, Tile.Terrain.SOIL)
 	_state.player.inventory.add(ItemTypes.ACORN, 1)
 	_hold(ItemTypes.ACORN)
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
 	_world.set_terrain(_tile, Tile.Terrain.GRASS)
 	_hold(ItemTypes.TURNIP_SEEDS)
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
 
 
 func test_the_highlight_shows_for_axe_pickaxe_and_can() -> void:

@@ -16,7 +16,7 @@ func before_each() -> void:
 	_reeds = _place(WorldObjectTypes.REEDS)
 
 
-func _cut() -> GameState.Use:
+func _cut() -> ToolUse.Use:
 	_state.player.facing = Vector2i.DOWN
 	_state.player.position = Vector2(_tile) + Vector2(0.5, -0.5)
 	return _hit(ItemTypes.SCYTHE, 1)
@@ -66,7 +66,7 @@ func test_no_reeds_stand_on_grass_or_in_the_water() -> void:
 
 func test_reeds_neither_block_walking_nor_give_way_to_the_hoe() -> void:
 	assert_false(_reeds.blocks_walking())
-	assert_eq(_hit(ItemTypes.HOE, 1), GameState.Use.NOTHING)
+	assert_eq(_hit(ItemTypes.HOE, 1), ToolUse.Use.NOTHING)
 	assert_same(_world.object_at(_tile), _reeds)
 
 
@@ -74,7 +74,7 @@ func test_reeds_neither_block_walking_nor_give_way_to_the_hoe() -> void:
 
 
 func test_the_scythe_cuts_reeds_into_reeds_on_the_ground_and_leaves_stubble() -> void:
-	assert_eq(_cut(), GameState.Use.MOW)
+	assert_eq(_cut(), ToolUse.Use.MOW)
 	assert_eq(_dropped(ItemTypes.REEDS), 2)
 	assert_true(_reeds.is_picked(), "cut")
 	assert_same(_world.object_at(_tile), _reeds, "the stubble stays")
@@ -84,18 +84,18 @@ func test_the_scythe_cuts_reeds_into_reeds_on_the_ground_and_leaves_stubble() ->
 
 func test_cut_reeds_are_not_cut_again() -> void:
 	_cut()
-	assert_eq(_state.use_facing_tile(), GameState.Use.NOTHING)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
 	assert_eq(_dropped(ItemTypes.REEDS), 2)
 
 
 func test_a_hand_does_not_pick_reeds() -> void:
-	assert_eq(_hit(ItemTypes.NONE, 1), GameState.Use.NOTHING)
+	assert_eq(_hit(ItemTypes.NONE, 1), ToolUse.Use.NOTHING)
 
 
 func test_reeds_stand_all_year_and_can_be_cut_in_winter() -> void:
 	_state.clock.day = WINTER
 	assert_false(_world.is_dormant(_reeds))
-	assert_eq(_cut(), GameState.Use.MOW)
+	assert_eq(_cut(), ToolUse.Use.MOW)
 
 
 func test_reeds_have_a_look_in_every_season_and_cut() -> void:
@@ -146,7 +146,7 @@ func test_a_stand_cut_in_the_growing_season_is_back_after_some_days() -> void:
 	_cut()
 	_sleep_days(12)
 	assert_false(_world.object_at(_tile).is_picked())
-	assert_eq(_cut(), GameState.Use.MOW, "cut again")
+	assert_eq(_cut(), ToolUse.Use.MOW, "cut again")
 
 
 func test_a_stand_cut_in_winter_stays_cut_through_the_winter() -> void:

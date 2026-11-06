@@ -43,10 +43,10 @@ func test_a_dormant_fern_cant_be_harvested() -> void:
 	_state.clock.day = SUMMER
 	_place(WorldObjectTypes.FERN_BUSH)
 	_hold(ItemTypes.NONE)
-	assert_eq(_state.use_at(_tile), GameState.Use.FORAGE)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.FORAGE)
 	_state.clock.day = WINTER
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
-	assert_eq(_state.use_facing_tile(), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
 	assert_eq(_dropped(ItemTypes.FIBRE), 0)
 
 
@@ -76,7 +76,7 @@ func test_a_field_made_where_a_fern_sleeps_has_no_fern_in_spring() -> void:
 	_place(WorldObjectTypes.FERN_BUSH)
 	_state.clock.day = WINTER
 	_hold(ItemTypes.HOE)
-	assert_eq(_state.use_facing_tile(), GameState.Use.TILL)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.TILL)
 	_state.clock.day = NEXT_SUMMER
 	assert_null(_world.object_at(_tile))
 	assert_eq(_world.tile_at(_tile).terrain, Tile.Terrain.SOIL)
@@ -96,7 +96,7 @@ func test_a_harvested_fern_stays_removed() -> void:
 	_state.clock.day = SUMMER
 	_place(WorldObjectTypes.FERN_BUSH)
 	_hold(ItemTypes.NONE)
-	assert_eq(_state.use_facing_tile(), GameState.Use.FORAGE)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.FORAGE)
 	assert_eq(_dropped(ItemTypes.FIBRE), 2)
 	_state.clock.day = NEXT_SUMMER
 	assert_null(_world.object_at(_tile))
@@ -135,12 +135,12 @@ func test_berries_can_be_picked_in_summer_but_not_in_winter() -> void:
 	var bush := _place(WorldObjectTypes.BERRY_BUSH)
 	_hold(ItemTypes.NONE)
 	_state.clock.day = WINTER
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
 	assert_true(_world.is_bare(bush))
 	assert_ne(ObjectTileset.atlas_cell(bush, true), ObjectTileset.atlas_cell(bush), "looks picked")
 	_state.clock.day = SUMMER
 	assert_false(_world.is_bare(bush))
-	assert_eq(_state.use_facing_tile(), GameState.Use.FORAGE)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.FORAGE)
 	assert_eq(_dropped(ItemTypes.BERRIES), 3)
 
 
@@ -148,7 +148,7 @@ func test_a_bush_has_no_berries_in_early_spring_either() -> void:
 	var bush := _place(WorldObjectTypes.BERRY_BUSH)
 	_hold(ItemTypes.NONE)
 	_state.clock.day = SPRING_START
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
 	assert_true(_world.is_bare(bush))
 
 
@@ -157,16 +157,16 @@ func test_a_bush_picked_in_late_autumn_has_no_berries_until_the_next_window() ->
 	var bush := _place(WorldObjectTypes.BERRY_BUSH)
 	_hold(ItemTypes.NONE)
 	_state.clock.day = 88
-	assert_eq(_state.use_facing_tile(), GameState.Use.FORAGE)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.FORAGE)
 	assert_true(bush.is_picked())
 	_sleep_days(3)
 	assert_false(bush.is_picked(), "it would bear again by now")
 	_state.clock.day = 93
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING, "but the season is over")
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING, "but the season is over")
 	_state.clock.day = WINTER
 	assert_true(_world.is_bare(bush))
 	_state.clock.day = NEXT_SUMMER
-	assert_eq(_state.use_at(_tile), GameState.Use.FORAGE)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.FORAGE)
 	assert_eq(ObjectTileset.atlas_cell(bush, _world.is_bare(bush)), ObjectTileset.atlas_cell(bush))
 
 
@@ -174,11 +174,11 @@ func test_picking_in_season_bears_again_after_three_days_as_before() -> void:
 	var bush := _place(WorldObjectTypes.BERRY_BUSH)
 	_hold(ItemTypes.NONE)
 	_state.clock.day = SUMMER
-	assert_eq(_state.use_facing_tile(), GameState.Use.FORAGE)
-	assert_eq(_state.use_at(_tile), GameState.Use.NOTHING)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.FORAGE)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
 	_sleep_days(3)
 	assert_false(bush.is_picked())
-	assert_eq(_state.use_at(_tile), GameState.Use.FORAGE)
+	assert_eq(_state.use_at(_tile), ToolUse.Use.FORAGE)
 
 
 func _find_generated_fern() -> WorldObject:

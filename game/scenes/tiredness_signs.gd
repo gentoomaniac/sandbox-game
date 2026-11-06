@@ -50,9 +50,9 @@ func late_bubble_for(clock_minute: int, is_awake: bool) -> StringName:
 
 
 ## The sweat that an action throws at this much energy, as a HitEffect kind: only the uses
-## that cost energy (see GameState `COST_KINDS`) make the player sweat.
-func sweat_for(use: GameState.Use, energy: float) -> HitEffect.Kind:
-	if not GameState.COST_KINDS.has(use):
+## that cost energy (see ToolUse `COST_KINDS`) make the player sweat.
+func sweat_for(use: ToolUse.Use, energy: float) -> HitEffect.Kind:
+	if not ToolUse.COST_KINDS.has(use):
 		return HitEffect.Kind.NONE
 	match level_of(energy):
 		Level.EXHAUSTED:
