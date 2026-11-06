@@ -492,6 +492,8 @@ _SNOW_ON_ROOF = {
     "cream": "snow_light", "snow_light": "snow_light", "stone_light": "snow_light", "stone": "snow",
     "soil_mid": "snow", "soil": "snow_shadow",
 }
+# The colours of snow on a roof, lit to deep.
+_SNOW_DEPTH = ("snow_light", "snow", "snow_shadow", "snow_deep")
 # Rows of the eaves left showing under the snow: the dark underside of the rolled edge.
 _EAVES_UNDER_SNOW = 3
 
@@ -500,7 +502,8 @@ def house(look, canvas, snowy):
     """A house picture in a look: snow on its roof under snow, the plain house otherwise (the game
     only asks for "snow" and the summer picture). `snowy` are the pixels snow covers (see
     buildings.py); in each column the lowest rows of them, the underside of the eaves, stay
-    clear, along a ragged edge."""
+    clear, along a ragged edge. The snow fills the dents between the reeds of a thatch and most
+    of the lines between its courses, so the roof's planes show through it but no stripes."""
     canvas = remap(canvas, {"shadow": _SHADOW_REMAPS[look]})
     if look != "snow":
         return canvas
@@ -509,6 +512,7 @@ def house(look, canvas, snowy):
     for x, y in snowy:
         columns.setdefault(x, []).append(y)
     edge = 0
+    covered = set()
     for x in sorted(columns):
         # Neighbouring columns share an edge height in runs, so the edge is ragged, not noisy.
         if x % 3 == 0:
@@ -521,6 +525,29 @@ def house(look, canvas, snowy):
         keep = max(0, _EAVES_UNDER_SNOW + edge) if len(rows) - run_start > 6 else 0
         for y in rows[: len(rows) - keep]:
             canvas[y][x] = _SNOW_ON_ROOF.get(canvas[y][x], "snow")
+            covered.add((x, y))
         if keep:
             canvas[rows[len(rows) - keep - 1]][x] = "snow_shadow"
+    dents = []
+    for x, y in covered:
+        if (x - 1, y) in covered and (x + 1, y) in covered:
+            left, right = canvas[y][x - 1], canvas[y][x + 1]
+            if left == right and _SNOW_DEPTH.index(left) < _SNOW_DEPTH.index(canvas[y][x]):
+                dents.append((x, y, left))
+    for x, y, colour in dents:
+        canvas[y][x] = colour
+    # It also smooths over the thin lines between the courses: a pixel unlike both its
+    # neighbours above and below, which agree, takes their colour, except in a few short runs.
+    lines = []
+    kept = 0
+    for y, x in sorted((y, x) for x, y in covered):
+        if kept == 0 and rng.random() < 0.03:
+            kept = rng.randint(3, 7)
+        if kept:
+            kept -= 1
+            continue
+        if (x, y - 1) in covered and (x, y + 1) in covered and canvas[y - 1][x] == canvas[y + 1][x]:
+            lines.append((x, y, canvas[y - 1][x]))
+    for x, y, colour in lines:
+        canvas[y][x] = colour
     return canvas
