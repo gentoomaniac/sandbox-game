@@ -351,6 +351,17 @@ constant names say `color`. `TerrainTileset.tile_centre` replaces the `_centre_o
 the inline math (wildlife included). FallingTree emits `finished` once. Main builds the F3
 text only while it shows; WorldView returns early with no falling trees.
 
+## 72. Lighter load, 8-slot hotbar, 4×5 backpack
+
+- [ ] Done
+
+The user's answers of 2026-11-07:
+- Tools weigh nothing, and the weight that costs no extra energy goes up to 40 kg.
+- The backpack is shown as 4×5 again (not 2×10).
+- The hotbar has 8 slots instead of 10 (keys 1-8). Old saves move whatever sits in the two
+  dropped hotbar slots into the backpack, or onto the ground at the player's feet when it is
+  full.
+
 ## Later (not part of the prototype)
 
 - A committed pixel guard (a GUT test hashing the tile cells, sprites and lights for a fixed seed
