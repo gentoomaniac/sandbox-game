@@ -461,6 +461,15 @@ and their sound comes only from there.
 The user's word of 2026-11-06: commands like `spawn` list what they take. `spawn` with no
 argument or an unknown name prints the list, and `help spawn` shows it.
 
+## 77. Desire paths
+
+- [ ] Done
+
+The user's word of 2026-11-06: ways the player walks very often develop paths with less grass.
+Defaults: steps on grass wear the tile (grass, then trodden, then a dirt path); an unused path
+grows back over days; the wear is saved; worn tiles lose their flowers and grass tufts; paths
+are a look only (no change to speed or farming).
+
 ## Later (not part of the prototype)
 
 - A committed pixel guard (a GUT test hashing the tile cells, sprites and lights for a fixed seed
