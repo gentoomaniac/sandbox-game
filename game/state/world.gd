@@ -54,9 +54,9 @@ const CLAY_SPENT_NIGHTS := 5
 const MAX_SIZE_CHUNKS := 64
 
 var world_seed: int
-## The game's clock: what the seasonal plants follow (see `is_dormant`). Whoever owns the
-## clock shares it here.
-var clock := GameClock.new()
+## The game's clock: what the seasonal plants follow (see `is_dormant`). It belongs to the
+## GameState, which gives it in.
+var clock: GameClock
 var vegetation := Vegetation.default_vegetation()
 var _generator: WorldGenerator
 var _chunks: Dictionary[Vector2i, Chunk] = {}
@@ -80,8 +80,11 @@ var _spent_clay_spots: Dictionary[Vector2i, int] = {}
 var _ground_items: Array[GroundItem] = []
 
 
-func _init(seed_value: int) -> void:
+## `game_clock` defaults to a clock of its own because many tests make a World without a
+## GameState; the game always passes its clock in.
+func _init(seed_value: int, game_clock := GameClock.new()) -> void:
 	world_seed = seed_value
+	clock = game_clock
 	_generator = WorldGenerator.new(seed_value)
 
 
@@ -621,8 +624,8 @@ func to_dict() -> Dictionary:
 
 
 ## A world with no chunks loaded; whoever shows it loads them.
-static func from_dict(data: Dictionary) -> World:
-	var world := World.new(int(data["seed"]))
+static func from_dict(data: Dictionary, game_clock: GameClock) -> World:
+	var world := World.new(int(data["seed"]), game_clock)
 	for edit: Array in data["terrain_edits"]:
 		world._terrain_edits[SaveCodec.vector_from_json(edit)] = SaveCodec.terrain_from_json(
 			edit[2]

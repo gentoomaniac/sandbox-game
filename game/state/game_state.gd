@@ -71,7 +71,7 @@ const PULL_SPEED := 8.0
 const PICKUP_RADIUS := 0.15
 
 var world: World
-var clock := GameClock.new()
+var clock: GameClock
 ## Where the sun is over the year; the weather follows it.
 var sun := Sun.new()
 ## Built from the world seed (see `new_game` and `from_dict`).
@@ -99,7 +99,10 @@ var current_map: GameMap:
 var _building_inside: Building
 
 
-func _init() -> void:
+## `game_clock` is the clock to follow: a loaded game brings the one it saved. Whoever builds
+## the world from it passes the same clock on (see `new_game` and `from_dict`).
+func _init(game_clock := GameClock.new()) -> void:
+	clock = game_clock
 	clock.new_day.connect(_on_new_day)
 
 
@@ -107,8 +110,7 @@ func _init() -> void:
 ## sleeping bag. The chunks around the camp are generated into the world here.
 static func new_game(world_seed: int) -> GameState:
 	var state := GameState.new()
-	state.world = World.new(world_seed)
-	state.world.clock = state.clock
+	state.world = World.new(world_seed, state.clock)
 	state.weather = Weather.new(world_seed, state.sun)
 	state.snow_cover = SnowCover.new(state.weather)
 	var camp := CampSite.create(state.world, WorldGenerator.new(world_seed))
@@ -519,13 +521,10 @@ func to_dict() -> Dictionary:
 
 ## The chunks of the restored world are not loaded yet: whoever shows it streams them in.
 static func from_dict(data: Dictionary) -> GameState:
-	var state := GameState.new()
-	state.world = World.from_dict(data["world"])
+	var state := GameState.new(GameClock.from_dict(data["clock"]))
+	state.world = World.from_dict(data["world"], state.clock)
 	state.weather = Weather.new(state.world.world_seed, state.sun)
 	state.snow_cover = SnowCover.new(state.weather)
-	state.clock = GameClock.from_dict(data["clock"])
-	state.clock.new_day.connect(state._on_new_day)
-	state.world.clock = state.clock
 	state.player = PlayerState.from_dict(data["player"], state._map_from_ref(data["home_map"]))
 	state._building_inside = state._building_of_ref(data["current_map"])
 	# No sleep wakes between 01:00 and 06:30, so a game saved then was quit by a player who
@@ -561,6 +560,8 @@ func _building_of_ref(ref: Dictionary) -> Building:
 
 
 func _on_new_day(_day: int) -> void:
+	# The clock has already counted the new day, so the night that just ended is the day before:
+	# `world.pass_night` works from the weather of `clock.day - 1`.
 	player.is_debuffed = false
 	# A stump or sapling doesn't grow into a tree under the player's feet.
 	var occupied: Array[Vector2i] = []
