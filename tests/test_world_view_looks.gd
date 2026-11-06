@@ -174,6 +174,18 @@ func test_a_house_has_snow_on_its_roof_while_its_tile_is_snowy() -> void:
 	assert_false(sprite.texture.resource_path.contains("_snow"))
 
 
+func test_a_house_roof_takes_the_season_of_its_tile() -> void:
+	_view.world.add_chunk(Chunk.new(Vector2i.ZERO))
+	var building := _view.world.place_building(BuildingTypes.SHACK, Vector2i(2, 2))
+	var sprite := _view._buildings._sprites[building]
+	# In daylight, so the windows are not lit.
+	_view.set_light_strength(0.0)
+	_show(SUMMER, 0.0)
+	assert_eq(sprite.texture.resource_path, "res://assets/buildings/shack.png")
+	_show(WINTER, 0.0)
+	assert_eq(sprite.texture.resource_path, "res://assets/buildings/shack_bare.png")
+
+
 func test_decorations_take_the_look_of_their_tile() -> void:
 	_view._load_chunk(RIGHT)
 	_show(SUMMER, 0.0)

@@ -857,8 +857,11 @@ Decided 2026-11-05.
     the big arched green barn door of the hall house as its door (the middle tile), the
     thatch sweeping up over it. The barn is half-timbered (dark oak beams, red brick) with big
     plank doors and no windows; the shack is plank-built with a roof of weathered boards.
-    Every building has a summer look, a snow look and lit windows (spring and autumn show
-    the summer picture until the game asks for more looks).
+    Every building has lit windows and a look per season of the grass on its tile (task 58,
+    SeasonalArt.HOUSE_LOOKS): the grass on a roof (the shack's turf, a turf ridge) is fresh
+    in spring, yellow-brown in autumn and brown-grey in winter, its dark base and the moss
+    on a thatch green all year; under snow the roof is snowed over. Frost and the dusting
+    leave a roof in its season's look; the build ghost shows the summer or the snow look.
     Windows have small panes (task 52): 2×2 px panes in 1 px white glazing bars, 3×3 panes
     in a house window, 2×3 in the shack's, and the dormers' half-round windows divided
     the same way; a lit pane glows in one colour. The window inside is the same, with

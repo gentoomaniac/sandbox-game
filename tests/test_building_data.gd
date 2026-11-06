@@ -76,8 +76,8 @@ func test_every_building_has_pictures_as_wide_as_its_footprint() -> void:
 	for id: StringName in FOOTPRINTS:
 		var building_type: Dictionary = BuildingTypes.TYPES[id]
 		for key in ["sprite", "sprite_lit"]:
-			for is_snowy in [false, true]:
-				var path := SeasonalArt.house_path(building_type[key], is_snowy)
+			for look in SeasonalArt.HOUSE_LOOKS:
+				var path := SeasonalArt.house_path(building_type[key], look)
 				var texture: Texture2D = load(path)
 				assert_not_null(texture, path)
 				assert_eq(texture.get_width(), FOOTPRINTS[id].x * 16, path)

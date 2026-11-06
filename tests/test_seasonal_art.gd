@@ -35,15 +35,16 @@ func test_the_leaf_out_steps_are_only_object_art() -> void:
 		assert_true(ResourceLoader.exists(SeasonalArt.path(ObjectTileset.ATLAS_PATH, look)))
 
 
-func test_a_house_only_has_a_plain_and_a_snowy_picture() -> void:
+func test_a_house_has_a_picture_per_house_look() -> void:
 	var lit: String = BuildingTypes.TYPES[BuildingTypes.KATE]["sprite_lit"]
-	assert_eq(SeasonalArt.house_path(lit, false), lit)
-	assert_eq(SeasonalArt.house_path(lit, true), "res://assets/buildings/kate_lit_snow.png")
-	for path: String in [
-		BuildingTypes.TYPES[BuildingTypes.KATE]["sprite"],
-		lit,
-	]:
-		assert_true(ResourceLoader.exists(SeasonalArt.house_path(path, true)))
+	assert_eq(SeasonalArt.house_path(lit, SeasonBlend.Look.SUMMER), lit)
+	assert_eq(
+		SeasonalArt.house_path(lit, SeasonBlend.Look.SNOW),
+		"res://assets/buildings/kate_lit_snow.png"
+	)
+	for path: String in [BuildingTypes.TYPES[BuildingTypes.KATE]["sprite"], lit]:
+		for look in SeasonalArt.HOUSE_LOOKS:
+			assert_true(ResourceLoader.exists(SeasonalArt.house_path(path, look)), str(look))
 
 
 func test_the_tile_sets_have_a_source_per_look_with_the_same_tiles() -> void:

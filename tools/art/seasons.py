@@ -572,11 +572,29 @@ def object_rows(look, atlas, redraw):
     ]
 
 
+# The looks of a house (SeasonalArt.HOUSE_LOOKS in the game): the grass on a roof follows the
+# season, and the roof is snowed over under snow.
+HOUSE_LOOKS = ("spring", "summer", "autumn", "bare", "snow")
+# The grass of a turf roof or ridge in the seasons: fresh in spring, yellowing to brown in
+# autumn, brown-grey in winter, its flowers gone to seed. The dark grass at the foot of the
+# clumps and the moss on a thatch stay green all year.
+_ROOF_GRASS = {
+    "spring": {"green_bright": "spring_pale", "green_light": "spring_light", "green": "spring"},
+    "autumn": {
+        "green_bright": "autumn_light", "green_light": "reed", "green": "olive", "dry_light": "straw",
+        "cream": "straw", "gold": "ochre", "petal": "olive",
+    },
+    "bare": {
+        "green_bright": "bare_light", "green_light": "bare", "green": "mud_dark", "dry_light": "bare_light",
+        "cream": "bare_light", "gold": "bare", "petal": "mud_dark",
+    },
+}
 # What each colour of a roof turns into under snow: the snow keeps the roof's light and shade.
 _SNOW_ON_ROOF = {
     "sand": "snow_light", "bare_light": "snow_light", "bare": "snow", "mud_dark": "snow_shadow",
     "soil_dark": "snow_deep", "umber": "snow_shadow", "dry_light": "snow_light", "dry": "snow",
-    "olive": "snow", "green_dark": "snow_shadow", "green_deep": "snow_shadow",
+    "olive": "snow", "green_dark": "snow", "green_deep": "snow_shadow",
+    "green_bright": "snow_light", "green_light": "snow_light", "green": "snow",
     "cream": "snow_light", "snow_light": "snow_light", "stone_light": "snow_light", "stone": "snow",
     "soil_mid": "snow", "soil": "snow_shadow",
 }
@@ -587,12 +605,16 @@ _EAVES_UNDER_SNOW = 3
 
 
 def house(look, canvas, snowy):
-    """A house picture in a look: snow on its roof under snow, the plain house otherwise (the game
-    only asks for "snow" and the summer picture). `snowy` are the pixels snow covers (see
+    """A house picture in one of HOUSE_LOOKS: the grass on its roof in the season, or snow on
+    its roof under snow. `snowy` are the pixels of the roof, which snow covers (see
     buildings.py); in each column the lowest rows of them, the underside of the eaves, stay
-    clear, along a ragged edge. The snow fills the dents between the reeds of a thatch and most
-    of the lines between its courses, so the roof's planes show through it but no stripes."""
+    clear, along a ragged edge. The snow fills the dents between the reeds of a thatch or the
+    clumps of a turf roof, and most of the lines between its courses, so the roof's planes show
+    through it but no stripes."""
     canvas = remap(canvas, {"shadow": _SHADOW_REMAPS[look]})
+    grass = _ROOF_GRASS.get(look, {})
+    for x, y in snowy:
+        canvas[y][x] = grass.get(canvas[y][x], canvas[y][x])
     if look != "snow":
         return canvas
     rng = random.Random("house")

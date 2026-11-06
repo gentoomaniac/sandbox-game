@@ -44,7 +44,7 @@ func add(building: Building) -> void:
 	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
 	var sprite := SeeThroughSprite.new()
 	_sprites[building] = sprite
-	sprite.texture = load(SeasonalArt.house_path(building_type["sprite"], _is_snowy(building)))
+	sprite.texture = load(SeasonalArt.house_path(building_type["sprite"], _house_look(building)))
 	sprite.centered = false
 	# The sprite is sorted by its position: the middle of its bottom footprint row, like an
 	# object standing on that row. Its bottom edge is the footprint's bottom edge.
@@ -86,7 +86,7 @@ func _show_windows(building: Building) -> void:
 	var is_lit := _light_strength >= WINDOW_LIT_STRENGTH
 	var sprite := _sprites[building]
 	var texture_path := SeasonalArt.house_path(
-		building_type["sprite_lit"] if is_lit else building_type["sprite"], _is_snowy(building)
+		building_type["sprite_lit"] if is_lit else building_type["sprite"], _house_look(building)
 	)
 	# The strength changes every frame while the tint does; the picture only at dusk and dawn.
 	if sprite.texture.resource_path != texture_path:
@@ -95,6 +95,10 @@ func _show_windows(building: Building) -> void:
 		light.strength = _light_strength if is_lit else 0.0
 
 
-## Whether a house has snow on its roof: when the snow cover is above its tile's threshold.
-func _is_snowy(building: Building) -> bool:
-	return _conditions.snow_cover > _blend.thresholds(building.origin).y
+## The look of a house (see SeasonalArt.HOUSE_LOOKS): snow on its roof when the snow cover is
+## above its tile's threshold, else the season's look of the grass on its tile.
+func _house_look(building: Building) -> SeasonBlend.Look:
+	var thresholds := _blend.thresholds(building.origin)
+	if _conditions.snow_cover > thresholds.y:
+		return SeasonBlend.Look.SNOW
+	return _conditions.ground_season_look(thresholds.x)

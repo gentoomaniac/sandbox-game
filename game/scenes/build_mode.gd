@@ -87,7 +87,10 @@ func _process(_delta: float) -> void:
 	if _origin == StartupOptions.NO_TILE:
 		_origin = _origin_under(camera.mouse_world_position())
 	_texture = load(
-		SeasonalArt.house_path(BuildingTypes.TYPES[builder.choice]["sprite"], _is_snowy)
+		SeasonalArt.house_path(
+			BuildingTypes.TYPES[builder.choice]["sprite"],
+			SeasonBlend.Look.SNOW if _is_snowy else SeasonBlend.Look.SUMMER
+		)
 	)
 	_blockers = world.placement_blockers(builder.choice, _origin)
 	_show_message()

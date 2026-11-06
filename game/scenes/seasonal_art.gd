@@ -4,6 +4,17 @@ extends RefCounted
 ## looks add their name before the extension, as the art generator writes them
 ## (tools/art/seasons.py): terrain_snow.png, kate_lit_snow.png.
 
+## The looks of a house picture: its roof follows the season of the grass (a turf roof greens
+## in spring and browns in autumn and winter) and is snowed over under snow. Frost and the
+## dusting at the snow's edge leave it as the season has it.
+const HOUSE_LOOKS: Array[SeasonBlend.Look] = [
+	SeasonBlend.Look.SPRING,
+	SeasonBlend.Look.SUMMER,
+	SeasonBlend.Look.AUTUMN,
+	SeasonBlend.Look.BARE,
+	SeasonBlend.Look.SNOW,
+]
+
 
 ## The file of `summer_path` as it looks in `look`.
 static func path(summer_path: String, look: SeasonBlend.Look) -> String:
@@ -15,6 +26,7 @@ static func path(summer_path: String, look: SeasonBlend.Look) -> String:
 	)
 
 
-## The file of a house picture: houses only change under snow.
-static func house_path(summer_path: String, is_snowy: bool) -> String:
-	return path(summer_path, SeasonBlend.Look.SNOW if is_snowy else SeasonBlend.Look.SUMMER)
+## The file of a house picture in `look`, one of HOUSE_LOOKS.
+static func house_path(summer_path: String, look: SeasonBlend.Look) -> String:
+	assert(look in HOUSE_LOOKS, "a house has no picture for look %d" % look)
+	return path(summer_path, look)

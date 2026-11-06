@@ -28,7 +28,8 @@ assets/effects/sleep_z.png: the "z" that rises from a sleeping figure.
 assets/buildings/<type>.png: one picture per building type (drawn in buildings.py), as wide as
 its footprint (16 px per tile) and as tall as the footprint plus the roof rising above it. The
 bottom edge is the footprint's bottom edge. <type>_lit.png is the same with lit windows, for the
-night. Sizes and door tiles are in data/buildings.cfg.
+night. Each also comes in the house looks of seasons.HOUSE_LOOKS (kate_autumn.png,
+kate_lit_snow.png). Sizes and door tiles are in data/buildings.cfg.
 
 assets/fire/<type>.png: the flame of the fireplace and of the hearth, burning (see fire.py and
 game/scenes/fire.gdshader). Cells the size of the box the flame burns in: what is behind the
@@ -217,8 +218,7 @@ def write_seasonal_art():
             save(seasons.terrain_rows(look, terrain_rows), f"terrain{suffix}.png")
             save(seasons.ground_rows(look, decoration_rows, seasons.STANDING.get(look)), f"decorations{suffix}.png")
         save(seasons.object_rows(look, objects, redraws), f"objects{suffix}.png", OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
-        # Houses only change under snow.
-        if look in ("summer", "snow"):
+        if look in seasons.HOUSE_LOOKS:
             for name, (picture, snowy) in houses.items():
                 save_picture(seasons.house(look, picture, snowy), f"buildings/{name}{suffix}.png")
 
