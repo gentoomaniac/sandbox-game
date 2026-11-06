@@ -6,7 +6,11 @@ const ROT_DAYS := 14
 const SAPLING_GROWTH_DAYS := 4
 ## The trees that grow from a seed.
 const TREES: Array[StringName] = [
-	WorldObjectTypes.OAK, WorldObjectTypes.SPRUCE, WorldObjectTypes.PINE, WorldObjectTypes.BEECH
+	WorldObjectTypes.OAK,
+	WorldObjectTypes.SPRUCE,
+	WorldObjectTypes.PINE,
+	WorldObjectTypes.BEECH,
+	WorldObjectTypes.BIRCH,
 ]
 
 

@@ -33,3 +33,6 @@
 32 beech 3
 33 beech_trunk 2
 34 beech_short_trunk 2
+35 birch 3
+36 birch_trunk 2
+37 birch_short_trunk 2

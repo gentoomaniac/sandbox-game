@@ -5,7 +5,9 @@ extends ResourceCase
 const LOOKS := SeasonBlend.Look
 const KINDS := HitEffect.Kind
 ## The broadleaved trees: leaves while they have them.
-const BROADLEAVES: Array[StringName] = [WorldObjectTypes.OAK, WorldObjectTypes.BEECH]
+const BROADLEAVES: Array[StringName] = [
+	WorldObjectTypes.OAK, WorldObjectTypes.BEECH, WorldObjectTypes.BIRCH
+]
 
 var _view: WorldView
 

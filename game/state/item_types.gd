@@ -36,6 +36,7 @@ const ACORN := &"acorn"
 const SPRUCE_CONE := &"spruce_cone"
 const PINE_CONE := &"pine_cone"
 const BEECHNUT := &"beechnut"
+const BIRCH_CATKIN := &"birch_catkin"
 const HAY := &"hay"
 const CLAY := &"clay"
 const REEDS := &"reeds"
@@ -223,6 +224,16 @@ const _OTHER_TYPES := {
 		"plants": WorldObjectTypes.SAPLING,
 		"plants_on": Tile.Terrain.GRASS,
 		"plants_state": {"tree": WorldObjectTypes.BEECH},
+	},
+	BIRCH_CATKIN:
+	{
+		"name": "Birch catkin",
+		"description": "The seed catkin of a birch: it crumbles into tiny winged seeds.",
+		"weight": 0.01,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+		"plants": WorldObjectTypes.SAPLING,
+		"plants_on": Tile.Terrain.GRASS,
+		"plants_state": {"tree": WorldObjectTypes.BIRCH},
 	},
 	WAISTCOAT:
 	{

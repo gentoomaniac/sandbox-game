@@ -32,6 +32,7 @@ SPECIES = {
     "dead_tree": (("stone_light", "stone", "stone_dark"), "stone_dark", "ink", 2.0),
     "willow": (("bare_light", "bare", "mud_dark"), "soil_dark", "soil_dark", 3.5),
     "beech": (("stone_light", "stone", "stone_dark"), "stone_dark", "stone_dark", 0.6),
+    "birch": (("lime", "stone_light", "stone"), "ink", "stone_dark", 2.0),
 }
 # The cut face, from the rim of sapwood inwards: rings alternating, then the heart round the pith.
 RINGS = ("straw", "sand_light", "sand", "sand_light")

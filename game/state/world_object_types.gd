@@ -94,6 +94,7 @@ const STONE_WALL := &"stone_wall"
 const DYKE := &"dyke"
 const WILLOW := &"willow"
 const BEECH := &"beech"
+const BIRCH := &"birch"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -122,6 +123,8 @@ const _DYKE_ROW := 30
 const _WILLOW_ROW := 31
 const _BEECH_ROW := 32
 const _BEECH_TRUNK_ROW := 33
+const _BIRCH_ROW := 35
+const _BIRCH_TRUNK_ROW := 36
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -248,6 +251,23 @@ const _OTHER_TYPES := {
 		"harvest_level": 1,
 		"atlas_row": _BEECH_ROW,
 		"sprite_height": 63,
+		"variants": 3,
+	},
+	# The birch of the Geest and the wet woods: white bark, a light, open crown, soft wood.
+	BIRCH:
+	{
+		"hp": 3,
+		"tool": &"axe",
+		"seed": &"birch_catkin",
+		"seed_chance": 0.25,
+		"trunk": {"logs": 2, "hp": 2, "atlas_row": _BIRCH_TRUNK_ROW},
+		"leaves": STUMP,
+		"regrows": true,
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _BIRCH_ROW,
+		"sprite_height": 67,
 		"variants": 3,
 	},
 	BERRY_BUSH:

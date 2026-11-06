@@ -214,10 +214,10 @@ def _chest_lid_bottom(canvas):
     """The row under the lid of a chest picture: its first drawn row and the lid's height on."""
     return next(y for y, row in enumerate(canvas) if any(row)) + _CHEST_LID_ROWS
 
-_SPRING_KINDS = {"oak", "beech", "berry_bush", "shrub", "sapling", "fern", "boulder", "tall_grass", "dyke"}
+_SPRING_KINDS = {"oak", "beech", "birch", "berry_bush", "shrub", "sapling", "fern", "boulder", "tall_grass", "dyke"}
 _BLOSSOM_KINDS = {"berry_bush", "shrub"}
 # The deciduous trees and bushes: they leaf out in steps (LEAF_OUT_LOOKS).
-_LEAF_OUT_KINDS = {"oak", "beech", "berry_bush", "shrub", "sapling", "willow"}
+_LEAF_OUT_KINDS = {"oak", "beech", "birch", "berry_bush", "shrub", "sapling", "willow"}
 # What the summer leaves of a picture are drawn in: where they are is where the new leaves come.
 _SUMMER_LEAVES = {"green_bright", "green_light", "green", "green_dark", "green_deep", "olive", "dry_light", "dry", "frost"}
 # Young leaves are light and thin; their summer shade picks how light.
@@ -447,6 +447,8 @@ _WINTER_LOOKS = {
     "willow_short_trunk": _TRUNK_WINTER,
     "beech_trunk": _TRUNK_WINTER,
     "beech_short_trunk": _TRUNK_WINTER,
+    "birch_trunk": _TRUNK_WINTER,
+    "birch_short_trunk": _TRUNK_WINTER,
     # The bedroll: snow lies over the cloth, a frost rimes it in specks.
     "sleeping_bag": {
         "specks": {"sand_light", "stone_light"},
@@ -502,6 +504,8 @@ def _season_object(look, kind, variant, canvas, redraw):
             canvas = remap(canvas, _AUTUMN_OAK[variant])
         elif kind == "beech":
             canvas = remap(canvas, _COPPER)
+        elif kind == "birch":
+            canvas = remap(canvas, _YELLOW)
         elif kind in ("berry_bush", "shrub", "sapling", "fern"):
             canvas = remap(canvas, _AUTUMN_BUSH[variant % 3])
         elif kind in ("tall_grass", "dyke"):

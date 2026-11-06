@@ -200,6 +200,30 @@ def beechnut():
     return outlined(from_rows(rows, keys), "soil_dark")
 
 
+def birch_catkin():
+    """A birch's seed catkin: a slim cylinder of tight scales hanging from a twig."""
+    rows = [
+        "................",
+        "..........tt....",
+        ".........t......",
+        "........t.......",
+        "........s.......",
+        ".......hNb......",
+        ".......hnb......",
+        ".......hNb......",
+        ".......hnb......",
+        ".......hNb......",
+        ".......hnb......",
+        ".......hNb......",
+        ".......hnb......",
+        "........b.......",
+        "................",
+        "................",
+    ]
+    keys = {"t": "soil", "s": "soil_mid", "h": "ochre_dark", "n": "umber", "N": "ochre", "b": "umber"}
+    return outlined(from_rows(rows, keys), "soil_dark")
+
+
 def cone(rows, keys):
     """A cone from rows: `rows` gives each row's left edge and width. Its scales form a diamond
     lattice: dark seams along both diagonals, each scale lit at its top; the right edge is in
@@ -439,6 +463,7 @@ ICONS = {
     "spruce_cone": spruce_cone(),
     "pine_cone": pine_cone(),
     "beechnut": beechnut(),
+    "birch_catkin": birch_catkin(),
     "waistcoat": waistcoat(),
     "shirt": shirt(),
     "breeches": breeches(),
