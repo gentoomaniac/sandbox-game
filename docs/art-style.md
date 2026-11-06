@@ -444,7 +444,15 @@ copper watering can. Kept here as the record of why.
    legs), black and dapple grey, and a dun pony; all of them gallop. The horse's neck and head
    rise ahead of its back, which stays free for a saddle and a rider. A bone item. No new
    colours.
-9. **Coast and flats** (large). Tidal mud with ripples and tideways, salt marsh turning red
-   in autumn, an Ewer on the mud, a Warft with its Fething. Needs map and terrain work
-   too.
+9. ~~**Coast and flats**~~ done (task 61). The world had no sea. Now the Wadden coast lies
+   in the west: a sea dyke, then the salt marsh (grey-green turf with silvery sea purslane and
+   glasswort, drawn in logical colours that each look maps: red-purple in autumn, with thrift
+   and sea lavender among the flowers), the tidal mud (grey-brown, ripple marks along one wave
+   across the tiles, lugworm casts, shells, a mussel bed, wrack), tideways and the sea; a tide
+   that floods the mud by a relief of its own (mud.gdshader); a Warft, a grass mound whose
+   edges are lit and shaded slopes, with its Fething; and an Ewer on the mud (tools/art/
+   coast.py): a tarred hull lying askew with a raised leeboard, the mast leaning, the brown
+   sail furled. No new colours. Still to do: mussel beds and seals as objects, a Stackdeich
+   and sluices, ice on the mud, an Ewer at full scale (it is held to an object cell), the
+   tide's water reaching up the tideways' banks, Halligen.
 10. **Post mill and draw well** (medium). Landmark props that date the world at a glance.

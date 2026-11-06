@@ -82,6 +82,19 @@ felled like the other trees.
 
 ![The Geest running into the marsh, with a Knick, a wood, ditches, reeds and pollard willows, in summer and in the first snow](docs/screenshots/landscape.png)
 
+### The coast and the tidal flats
+
+In the west the land ends at the North Sea. A sea dyke runs along the coast, and beyond it lie
+the salt marsh, grey-green with sea purslane and glasswort, pink with thrift in early summer,
+lilac with sea lavender later and red-purple in autumn; then the tidal mud of the Wadden Sea,
+with ripple marks, lugworm casts and shells, cut by tideways that widen towards the open sea.
+The tide comes in and goes out twice a day: the water fills the hollows first, then the flats
+are under, and at low water the mud dries again. The mud can be walked at any tide. Out on the
+salt marsh a Warft rises here and there, a dwelling mound with a pond on top, and now and then
+an Ewer, a flat-bottomed sailing barge, lies on the mud. Storks and geese come to the salt marsh.
+
+![The coast: a Warft on the salt marsh behind the sea dyke at low water in summer, the salt marsh red in autumn with the tide rising, an Ewer lying on the mud, and the coast under snow with the tide coming in](docs/screenshots/coast.png)
+
 ### Weather
 
 The weather is simulated from humidity, wind, temperature and sunlight. It brings rain,

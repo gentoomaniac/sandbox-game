@@ -230,11 +230,31 @@ as such (a season factor of 0.5 for all of spring). Screenshot in docs/screensho
 
 ## 61. Coast and tidal flats
 
-- [ ] Done
+- [x] Done
 
 docs/art-style.md bigger item 9: tidal mud with ripples and tideways, salt marsh turning
 red in autumn, a Warft (dwelling mound), an Ewer lying on the mud; terrain and world
 generator work.
+
+Done: one commit per piece. The coast lies in the west: a coast line x = f(y) about 260 tiles
+west of the centre (`data/landscape.cfg` [coast], [tideways], [warften], [ewers]); the sea dyke
+on the first land without gaps but for the river, the marsh reaching 36 tiles inland of it; then
+salt marsh, tidal mud with tideways (one per 36 rows, clear of the river so no mud is cut off) and
+the sea. New terrains `MUD`, `SALT_MARSH`, `SEA` (the salt water: no lily pads, frogs or reeds) and
+`WARFT`, and layers `MUD` (over the water, the same in every season and weather), `SALT_MARSH` and
+`WARFT` (grass over grass with their own season looks); the tile code's layer field holds the 12.
+The salt marsh is drawn in logical colours per look (`seasons.SALT_MARSH_LOOKS`), red-purple in
+autumn, with glasswort (a new decoration kind) and the flowers thrift and sea lavender (habitat
+`salt_marsh`). The tide (`Tide`, `mud.gdshader`) is a look only: high water every 12 h 25 min, the
+water filling a relief of its own; the mud is walked at any tide. A Warft (11 by 8 tiles, with a
+Fething, buildable) on the salt marsh in one of 150 rows; an Ewer (3x1 object, tools/art/coast.py)
+on the mud in one of 70; MAX_FOOTPRINT is 3x2. Storks and geese also live on the salt marsh, and
+the sea counts as their water. Save version 18 gives an old home within reach of the coast its
+ground back as grass and takes the new objects off (version 9's clearing, shared); a copy of the
+user's save loads unchanged, the farm, camp and houses dry and reachable. Generating a chunk inland
+takes 8.0 ms instead of 7.3 (side by side on one machine), on the coast about 7.4. No new colours.
+Not done: ice on the mud, mussel beds and seals, a Stackdeich and sluices, the Ewer at full
+scale, walking that changes with the tide. Screenshot in docs/screenshots/coast.png.
 
 ## 62. Post mill and draw well
 

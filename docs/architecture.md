@@ -22,7 +22,10 @@ buildings) is in `game/state/world.gd`. `game/world/` holds the code that builds
 and plans which chunks to load (`WorldGenerator`, `FieldLayout`, `ChunkStreaming`, `CampSite`,
 `InteriorLoader`, `PositionHash`). `WorldGenerator` makes the natural land (river, wetland,
 forests) and lays the worked land of `data/landscape.cfg` over it: the fields of a `FieldLayout`
-with Knicks, walls and fences on the Geest, ditches in the marsh, and dykes.
+with Knicks, walls and fences on the Geest, ditches in the marsh, and dykes. In the west it makes
+the coast (task 61, same file): a coast line x = f(y) like the river's centre line, the sea dyke on
+the first land, and beyond it the foreshore (salt marsh, tidal mud with tideways, the sea), with a
+Warft and an Ewer here and there.
 
 ## The main objects
 
@@ -66,6 +69,10 @@ with Knicks, walls and fences on the Geest, ditches in the marsh, and dykes.
   `Vegetation`; nothing about them is saved. What a tile looks like is one int, its tile code: layer, season look and weather look
   packed together (`TerrainTileset.tile_code`, read with `layer_of`, `season_of`, `weather_of`;
   the bit fields are documented there).
+- **Tide** (`game/state/tide.gd`) says how high the water stands at a moment of the clock; it is a
+  look only. Main gives it to `AmbientMotion.show_tide` every frame, and `mud.gdshader` on the
+  mud layer floods the mud by it, with the water's ripples of `water_surface.gdshaderinc` (which
+  `water.gdshader` shares).
 - **Livestock** (`game/state/livestock.gd`) holds the farm animals (`FarmAnimal`) and moves
   them: GameState owns it and Main calls its `update` every frame while the player is
   outside. The numbers are `data/livestock.cfg` (`LivestockRules`). The WildlifeView draws
