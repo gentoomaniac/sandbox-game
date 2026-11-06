@@ -397,7 +397,7 @@ text only while it shows; WorldView returns early with no falling trees.
 
 - [x] Done
 
-The user's answers of 2026-11-07:
+The user's answers of 2026-11-06:
 - Tools weigh nothing, and the weight that costs no extra energy goes up to 40 kg.
 - The backpack is shown as 4×5 again (not 2×10).
 - The hotbar has 8 slots instead of 10 (keys 1-8). Old saves move whatever sits in the two
@@ -422,7 +422,7 @@ the held slot, `SaveUpgradeCase` shares the old-save helpers.
 
 - [ ] Done
 
-The user's word of 2026-11-07: cows, sheep, chickens and rabbits, spawned for now with a
+The user's word of 2026-11-06: cows, sheep, chickens and rabbits, spawned for now with a
 console command. They wander, graze grass (cows, sheep, rabbits) or peck for seeds and worms
 (chickens), and sleep at night. Not all alike: 2-3 looks per species, plus colour variation
 when drawn. Products (milk, wool, eggs) and keeping them (pens, feeding, owning) come later.
@@ -431,7 +431,7 @@ when drawn. Products (milk, wool, eggs) and keeping them (pens, feeding, owning)
 
 - [ ] Done
 
-The user's word of 2026-11-07: start with the three professions suggested in
+The user's word of 2026-11-06: start with the three professions suggested in
 docs/ideas/crafting-and-professions.md (woodworker at a workbench, cook at hearth and oven,
 mason with bricks and a kiln) and a UI for them. Decided by the user:
 - **Skills grow both ways:** crafting raises the skill (no gain from trivial recipes), and
@@ -444,6 +444,22 @@ mason with bricks and a kiln) and a UI for them. Decided by the user:
 - **UI:** a skills tab beside the character screen with each profession's level and progress;
   using a station opens the crafting menu filtered to it, with locked recipes shown along with
   the skill they need.
+
+## 75. Flowering meadows; bees only at flowers
+
+- [ ] Done
+
+The user's word of 2026-11-06: in spring and summer the grass should have flowers on it, and
+bees should only be around flowers. Meadow flowers of the region, in patches and drifts
+(not evenly sprinkled), changing through the seasons; bees spawn at flowers, stay near them,
+and their sound comes only from there.
+
+## 76. Console: what can be spawned
+
+- [ ] Done
+
+The user's word of 2026-11-06: commands like `spawn` list what they take. `spawn` with no
+argument or an unknown name prints the list, and `help spawn` shows it.
 
 ## Later (not part of the prototype)
 
