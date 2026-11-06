@@ -288,7 +288,7 @@ order written down. main.gd went from 871 to 671 lines.
 
 ## 70. world_view.gd: one tile code, buildings and decorations apart
 
-- [ ] Done
+- [x] Done
 
 From docs/code-review-2026-11-06.md (and the task 29 note in "Later"). Layer, season look
 and weather look of a tile packed into one int per tile (thresholds stay apart); one
@@ -296,6 +296,15 @@ and weather look of a tile packed into one int per tile (thresholds stay apart);
 building sprites, window lights, snowy check) and DecorationView (decoration spots, flowers
 for the wildlife) as their own small views; streaming, terrain and objects stay in
 WorldView. Verified with the season and tiling tests and a screenshot diff.
+
+Done: `TerrainTileset.tile_code` packs layer (bits 0-2), season look (3-6) and weather look
+(7-10) into one int; `ChunkLooks.codes` holds one per tile, `WorldView._code_at` reads it, and
+`_draw_chunk` and `_redraw_cell` build one corner grid / one 4-code array that
+`_draw_cell_corners` and `_draw_overlays` take (overlay rules untouched). `BuildingViews`
+(game/scenes/building_views.gd) and `DecorationView` (game/scenes/decoration_view.gd) are
+nodes WorldView owns; the wildlife reads `world_view.decorations`. world_view.gd went from 991
+to 789 lines. Pixels unchanged: checked by an exact digest of every tile layer, sprite and
+light (8 buildings, 7 day/snow/frost states, lights on and off) before and after each step.
 
 ## 71. Scene odds and ends
 
@@ -316,9 +325,7 @@ empty.
   buildings and clay share the same edits). Getting under 20 would take one more split, most
   likely buildings and their placement rules.
 
-- Season looks follow-ups (from the task 29 review): world_view.gd carries layer, season
-  look and weather look as three parallel arrays with the corner assembly written out
-  several times; fold them into one packed per-tile code. SeasonBlend's four boundaries
+- Season looks follow-ups (from the task 29 review): SeasonBlend's four boundaries
   as a loop over SeasonRules.BOUNDARIES; `frost_at` belongs with the season rules, not
   SnowCover. SnowCover's cold start (~80 ms for a fresh region in late winter) could be
   spread over frames. Snow cover of the player's region is applied to the whole loaded

@@ -50,6 +50,12 @@ and plans which chunks to load (`WorldGenerator`, `ChunkStreaming`, `CampSite`,
 - **WorldView** (`game/scenes/world_view.gd`) draws a `World` into a SubViewport at one art
   pixel per screen pixel; `CameraController` shows that viewport on the window, so the world
   scrolls smoothly. `InteriorView` draws an `Interior` in its place while the player is inside.
+  WorldView streams chunks and draws terrain, objects, falling trees and the see-through
+  effect; it owns two small views, `BuildingViews` (building sprites, window lights, snowy
+  roofs) and `DecorationView` (flowers, pebbles, clay hints; the wildlife asks it where flowers
+  bloom). What a tile looks like is one int, its tile code: layer, season look and weather look
+  packed together (`TerrainTileset.tile_code`, read with `layer_of`, `season_of`, `weather_of`;
+  the bit fields are documented there).
 - Other views each draw one piece of state: `PlayerView`, `WeatherView`, `WildlifeView`,
   `BuildMode`, `GroundItemView`, and the HUDs and screens (`HotbarHud`, `CharacterScreen`,
   `CraftingScreen`, `PauseMenu`, `ConsoleView` and so on).
