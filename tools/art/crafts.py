@@ -8,6 +8,8 @@ generate.py writes them with the other icons (and their 8x8 ground versions). Co
 in colour; the meals in a bowl steam a little.
 """
 
+import chest
+import interior
 from canvas import TILE, blank, rect
 from interior import outline
 from items import from_rows, outlined, pixel
@@ -99,6 +101,32 @@ def workbench(is_standing=True):
     return outline(picture, "soil_dark", keep_bottom=is_standing)
 
 
+# The carved chest is the chest painted as the Frisian chests were: blue-green with a pale lid,
+# flowers on its front.
+PAINTED_CHEST = {"soil_light": "water_light", "soil_mid": "paint_teal", "soil": "water", "sand": "foam"}
+CHEST_FLOWERS = ((4, 8), (11, 8), (4, 3), (11, 3))
+
+
+def carved_chest(is_standing=True):
+    """The chest, painted and with a flower on each side of its lock."""
+    picture = [[PAINTED_CHEST.get(name, name) for name in row] for row in chest.chest(is_standing)]
+    for x, y in CHEST_FLOWERS:
+        pixel(picture, x, y, "petal")
+        pixel(picture, x, y + 1, "cream")
+    return picture
+
+
+def planks():
+    """Three sawn boards, stacked, their ends showing on the right."""
+    picture = blank()
+    for top in (3, 7, 11):
+        rect(picture, 1, top, 13, top + 2, "sand")
+        rect(picture, 1, top, 13, top, "sand_light")
+        rect(picture, 14, top, 14, top + 2, "soil_light")
+        pixel(picture, 4 + top % 5, top + 1, "straw")
+    return outlined(picture, "soil_dark")
+
+
 def icon_of(picture):
     """An item icon: the picture, outlined all round, in the middle of 16x16 px."""
     icon = blank()
@@ -112,13 +140,16 @@ def icon_of(picture):
 
 def stations():
     """The pictures of the stations, standing, by world object type."""
-    return {"workbench": workbench()}
+    return {"workbench": workbench(), "carved_chest": carved_chest()}
 
 
 def icons():
     """The icons of the professions' items, by item id."""
     return {
         "workbench": icon_of(workbench(is_standing=False)),
+        "planks": planks(),
+        "stool": icon_of(interior.stool()),
+        "carved_chest": icon_of(carved_chest(is_standing=False)),
         "roast_turnip": roast_turnip(),
         # Cabbage, carrot and onion in a broth.
         "pottage": bowl("green", "ochre"),

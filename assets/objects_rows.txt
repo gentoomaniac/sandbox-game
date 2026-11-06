@@ -40,3 +40,4 @@
 39 alder_trunk 2
 40 alder_short_trunk 2
 41 workbench 1
+42 carved_chest 1

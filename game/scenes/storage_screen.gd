@@ -1,12 +1,13 @@
 class_name StorageScreen
 extends CanvasLayer
 ## The storage screen over the game, for a chest: the player's backpack on the left (no
-## equipment) with the hotbar as a row below it, and the chest's slots on the right, each under
-## a small icon. Click an item to pick it up, then click a slot of either side to put it down: a
-## different item swaps places, the same item stacks. Clicking the picked slot again, or outside
-## the slots, drops the pick. Shift+click sends a whole stack to the other side (from the chest
-## into the backpack first, so the hotbar isn't flooded). Like the character screen, it takes
-## the input while it is open (Main sees to that, and closes it on E and Escape).
+## equipment) with the hotbar as a row below it, and the chest's slots on the right (as many as
+## the chest has, 5 to a row), each under a small icon. Click an item to pick it up, then click a
+## slot of either side to put it down: a different item swaps places, the same item stacks.
+## Clicking the picked slot again, or outside the slots, drops the pick. Shift+click sends a whole
+## stack to the other side (from the chest into the backpack first, so the hotbar isn't flooded).
+## Like the character screen, it takes the input while it is open (Main sees to that, and closes it
+## on E and Escape).
 
 ## Which side of the screen a slot is on.
 const INVENTORY := 0
@@ -33,6 +34,7 @@ var _pick := {}
 var _backdrop := ColorRect.new()
 var _panel := PanelContainer.new()
 var _picked_icon := TextureRect.new()
+var _chest_column: VBoxContainer
 
 
 func _init() -> void:
@@ -55,10 +57,8 @@ func _init() -> void:
 	inventory_column.add_child(hotbar_gap)
 	_add_grid(inventory_column, INVENTORY, 0, Inventory.HOTBAR_SIZE, Inventory.HOTBAR_SIZE)
 	row.add_child(inventory_column)
-	var chest_column := _new_column(CHEST_ICON)
-	var chest_slots: int = WorldObjectTypes.TYPES[WorldObjectTypes.CHEST]["storage_slots"]
-	_add_grid(chest_column, CHEST, 0, chest_slots, COLUMNS)
-	row.add_child(chest_column)
+	_chest_column = _new_column(CHEST_ICON)
+	row.add_child(_chest_column)
 	_panel.theme = THEME
 	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel.add_child(row)
@@ -79,6 +79,8 @@ func open(chest: WorldObject, player: PlayerState) -> void:
 	close()
 	_inventory = player.inventory
 	_chest = chest.storage
+	if _views[CHEST].size() != _chest.slots.size():
+		_show_chest_slots(_chest.slots.size())
 	_inventory.changed.connect(_refresh)
 	_chest.changed.connect(_refresh)
 	_pick = {}
@@ -102,6 +104,14 @@ func _process(_delta: float) -> void:
 	if _picked_icon.visible:
 		var icon_size := _picked_icon.texture.get_size()
 		_picked_icon.position = (_backdrop.get_local_mouse_position() - icon_size / 2).round()
+
+
+## Makes the grid of the chest's side, for a chest of this many slots.
+func _show_chest_slots(slot_count: int) -> void:
+	if _chest_column.get_child_count() > 1:
+		_chest_column.get_child(1).free()
+	_views[CHEST] = {}
+	_add_grid(_chest_column, CHEST, 0, slot_count, COLUMNS)
 
 
 ## A column with an icon at the top.

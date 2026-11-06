@@ -106,6 +106,8 @@ const BIRCH := &"birch"
 const ALDER := &"alder"
 ## The crafting stations the player places (task 74; see data/stations.cfg).
 const WORKBENCH := &"workbench"
+## The woodworker's chest, painted (task 74): more room than the plain one.
+const CARVED_CHEST := &"carved_chest"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -141,6 +143,7 @@ const _BIRCH_TRUNK_ROW := 36
 const _ALDER_ROW := 38
 const _ALDER_TRUNK_ROW := 39
 const _WORKBENCH_ROW := 41
+const _CARVED_CHEST_ROW := 42
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -472,8 +475,12 @@ const _OTHER_TYPES := {
 		"harvest_level": 0,
 		"interior_sprite": "res://assets/interior/table.png",
 	},
+	# The woodworker makes stools too, so a stool can be taken down; it only stands inside.
 	STOOL:
 	{
+		"hp": 1,
+		"tool": &"axe",
+		"drops": {&"stool": 1},
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": true,
 		"harvest_level": 0,
@@ -491,6 +498,19 @@ const _OTHER_TYPES := {
 		"atlas_row": _CHEST_ROW,
 		"variants": 1,
 		"interior_sprite": "res://assets/interior/chest.png",
+	},
+	CARVED_CHEST:
+	{
+		"hp": 3,
+		"tool": &"axe",
+		"drops": {&"carved_chest": 1},
+		"storage_slots": 20,
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _CARVED_CHEST_ROW,
+		"variants": 1,
+		"interior_sprite": "res://assets/interior/carved_chest.png",
 	},
 	WORKBENCH:
 	{

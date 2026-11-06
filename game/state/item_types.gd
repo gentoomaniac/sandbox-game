@@ -51,6 +51,10 @@ const JACKET := &"jacket"
 const CLOGS := &"clogs"
 # The stations the player places (task 74).
 const WORKBENCH := &"workbench"
+# Made at the workbench (task 74).
+const PLANKS := &"planks"
+const STOOL := &"stool"
+const CARVED_CHEST := &"carved_chest"
 # Cooked at the hearth (task 74).
 const ROAST_TURNIP := &"roast_turnip"
 const POTTAGE := &"pottage"
@@ -334,6 +338,29 @@ const _OTHER_TYPES := {
 		"weight": 8.0,
 		"stack_limit": 10,
 		"places": WorldObjectTypes.WORKBENCH,
+	},
+	PLANKS:
+	{
+		"name": "Planks",
+		"description": "Boards split and planed from a log.",
+		"weight": 0.5,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+	},
+	STOOL:
+	{
+		"name": "Stool",
+		"description": "A three-legged stool. It stands in a house.",
+		"weight": 1.5,
+		"stack_limit": 10,
+		"places": WorldObjectTypes.STOOL,
+	},
+	CARVED_CHEST:
+	{
+		"name": "Carved chest",
+		"description": "A painted chest in the Frisian way, roomier than a plain one.",
+		"weight": 6.0,
+		"stack_limit": 10,
+		"places": WorldObjectTypes.CARVED_CHEST,
 	},
 	ROAST_TURNIP:
 	{
