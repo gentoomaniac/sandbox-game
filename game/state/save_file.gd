@@ -12,7 +12,7 @@ extends RefCounted
 ## 4. Add a test in tests/test_save_upgrade*.gd: an old save without the field loads right.
 ## An upgrade step works on the parsed JSON, before any `from_dict` runs.
 
-const VERSION := 17
+const VERSION := 18
 ## Version 6 had tomatoes, which were not grown here before the 19th century; flax took their
 ## place, item for item.
 const TOMATOES_TO_FLAX := {"tomatoes": "flax", "tomatoes_seeds": "flax_seeds"}
@@ -23,10 +23,14 @@ const TUNIC_AND_TROUSERS_TO_PERIOD := {"tunic": "waistcoat", "trousers": "breech
 const VERSION_10_HOTBAR_SIZE := 10
 const VERSION_10_SLOT_COUNT := 30
 ## How far around the buildings and the player's objects, and around their tilled fields, the
-## worked land gives way in a version 9 world (see `_upgrade_from_version_9`): an old farm keeps
-## its yard.
+## worked land gives way in a version 9 world, and the coast in a version 17 one (see
+## `_home_tiles`): an old farm keeps its yard.
 const UPGRADE_CLEARANCE := 3
 const UPGRADE_FIELD_MARGIN := 2
+## The ground of the coast, which an old home gives back as grass (see `_clear_new_land`).
+const COAST_TERRAINS: Array[Tile.Terrain] = [
+	Tile.Terrain.MUD, Tile.Terrain.SALT_MARSH, Tile.Terrain.SEA, Tile.Terrain.WARFT
+]
 ## How far apart the piles lie that a version 10 inventory leaves on the ground, in tiles.
 const UPGRADE_PILE_SPACING := 0.3
 const DEFAULT_PATH := "user://saves/world.json"
@@ -109,6 +113,8 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 		_upgrade_from_version_15(parsed["game"])
 	if version <= 16:
 		_upgrade_from_version_16(parsed["game"])
+	if version <= 17:
+		_upgrade_from_version_17(parsed["game"])
 	return GameState.from_dict(parsed["game"])
 
 
@@ -214,13 +220,20 @@ static func _upgrade_from_version_8(game: Dictionary) -> void:
 
 
 ## Version 9 worlds were generated without the worked land (Knicks, walls, fences, dykes,
-## ditches, willows), which the same seed now has. Where the player has made a home it gives way,
-## as if the player had cleared it: around the buildings and around what the player put down or
-## changed (UPGRADE_CLEARANCE tiles out), over the tilled fields (their bounding box and
-## UPGRADE_FIELD_MARGIN tiles more), under the items on the ground and where the player stands,
-## the generated objects are taken off and a ditch is grass. So nothing new stands in or by a
-## house, across the yard, the camp or the fields, or shuts the player in.
+## ditches, willows), which the same seed now has. Where the player has made a home (see
+## `_home_tiles`) it gives way, as if the player had cleared it (see `_clear_new_land`). So
+## nothing new stands in or by a house, across the yard, the camp or the fields, or shuts the
+## player in.
 static func _upgrade_from_version_9(game: Dictionary) -> void:
+	var generator := WorldGenerator.new(int(game["world"]["seed"]))
+	_clear_new_land(game["world"], generator, _home_tiles(game).keys())
+
+
+## Where the player has made a home in a world: around the buildings and around what the player
+## put down or changed (UPGRADE_CLEARANCE tiles out), over the tilled fields (their bounding box
+## and UPGRADE_FIELD_MARGIN tiles more), under the items on the ground and where the player
+## stands.
+static func _home_tiles(game: Dictionary) -> Dictionary[Vector2i, bool]:
 	var world: Dictionary = game["world"]
 	var kept: Dictionary[Vector2i, bool] = {}
 	for building: Dictionary in world["buildings"]:
@@ -228,34 +241,44 @@ static func _upgrade_from_version_9(game: Dictionary) -> void:
 		var footprint: Vector2i = BuildingTypes.TYPES[type]["footprint"]
 		var origin := SaveCodec.vector_from_json(building["origin"])
 		_keep(kept, Rect2i(origin, footprint).grow(UPGRADE_CLEARANCE))
-	var edited_objects: Dictionary[Vector2i, bool] = {}
 	for edit: Dictionary in world["object_edits"]:
-		edited_objects[SaveCodec.vector_from_json(edit["pos"])] = true
 		if edit["object"] != null:
 			var object := WorldObject.from_dict(edit["object"])
 			var footprint: Vector2i = object.type_data()["footprint"]
 			_keep(kept, Rect2i(object.pos, footprint).grow(UPGRADE_CLEARANCE))
-	var edited_terrain: Dictionary[Vector2i, bool] = {}
+	var terrain_edits: Array = world["terrain_edits"]
 	var fields := Rect2i()
-	for edit: Array in world["terrain_edits"]:
+	for edit: Array in terrain_edits:
 		var tile := Rect2i(SaveCodec.vector_from_json(edit), Vector2i.ONE)
-		fields = tile if edited_terrain.is_empty() else fields.merge(tile)
-		edited_terrain[tile.position] = true
-	if not edited_terrain.is_empty():
+		fields = tile if fields.size == Vector2i.ZERO else fields.merge(tile)
+	if not terrain_edits.is_empty():
 		_keep(kept, fields.grow(UPGRADE_FIELD_MARGIN))
 	for ground_item: Dictionary in world["ground_items"]:
 		kept[Vector2i(SaveCodec.float_vector_from_json(ground_item["position"]).floor())] = true
 	_keep(
 		kept, PlayerState.body_tiles(SaveCodec.float_vector_from_json(game["player"]["position"]))
 	)
-	var generator := WorldGenerator.new(int(world["seed"]))
-	for tile in kept:
-		if not edited_terrain.has(tile) and generator.is_ditch(tile):
+	return kept
+
+
+## Clears the land the generator makes now off `tiles` of a saved world, as if the player had
+## cleared it: the generated objects are taken off, and a ditch or the ground of the coast (the
+## foreshore, a Warft) is grass. What the player changed on a tile stays as it is.
+static func _clear_new_land(world: Dictionary, generator: WorldGenerator, tiles: Array) -> void:
+	var edited_terrain: Dictionary[Vector2i, bool] = {}
+	for edit: Array in world["terrain_edits"]:
+		edited_terrain[SaveCodec.vector_from_json(edit)] = true
+	var edited_objects: Dictionary[Vector2i, bool] = {}
+	for edit: Dictionary in world["object_edits"]:
+		edited_objects[SaveCodec.vector_from_json(edit["pos"])] = true
+	for tile: Vector2i in tiles:
+		var terrain := generator.terrain_at(tile)
+		var is_new_ground := generator.is_ditch(tile) or terrain in COAST_TERRAINS
+		if not edited_terrain.has(tile) and is_new_ground:
 			world["terrain_edits"].append(
 				SaveCodec.vector_to_json(tile) + [SaveCodec.terrain_to_json(Tile.Terrain.GRASS)]
 			)
-		var generated := generator.object_type_at(tile, generator.terrain_at(tile))
-		if not edited_objects.has(tile) and generated != &"":
+		if not edited_objects.has(tile) and generator.object_type_at(tile, terrain) != &"":
 			world["object_edits"].append({"pos": SaveCodec.vector_to_json(tile), "object": null})
 
 
@@ -347,6 +370,18 @@ static func _upgrade_from_version_15(game: Dictionary) -> void:
 ## Version 16 had no villagers.
 static func _upgrade_from_version_16(game: Dictionary) -> void:
 	game["npcs"] = []
+
+
+## Version 17 worlds were generated without the coast (task 61): the foreshore with its salt
+## marsh, tidal mud, tideways and sea, the sea dyke, Warften and Ewers, and the marsh reaching
+## inland from the dyke with its ditches and alders. Where the player has made a home within its
+## reach (see `_home_tiles`), it gives way as the worked land did for version 9: the ground is
+## grass and what the generator puts there now is taken off. Further from home an old world gets
+## the coast; a home away from it is left as it was.
+static func _upgrade_from_version_17(game: Dictionary) -> void:
+	var generator := WorldGenerator.new(int(game["world"]["seed"]))
+	var by_the_coast := _home_tiles(game).keys().filter(generator.is_by_the_coast)
+	_clear_new_land(game["world"], generator, by_the_coast)
 
 
 static func _keep(kept: Dictionary[Vector2i, bool], area: Rect2i) -> void:
