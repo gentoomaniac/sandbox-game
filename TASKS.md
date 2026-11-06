@@ -301,6 +301,10 @@ empty.
 
 ## Later (not part of the prototype)
 
+- World keeps its `max-public-methods` lint exception after task 68 (chunks, objects, soil,
+  buildings and clay share the same edits). Getting under 20 would take one more split, most
+  likely buildings and their placement rules.
+
 - Season looks follow-ups (from the task 29 review): world_view.gd carries layer, season
   look and weather look as three parallel arrays with the corner assembly written out
   several times; fold them into one packed per-tile code. SeasonBlend's four boundaries
