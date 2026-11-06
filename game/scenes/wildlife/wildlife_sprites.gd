@@ -10,6 +10,7 @@ const LIVESTOCK_ACTIONS := {&"idle": 2, &"walk": 4, &"graze": 2, &"sleep": 2}
 const COW := {"size": Vector2i(32, 24), "actions": LIVESTOCK_ACTIONS}
 const SHEEP := {"size": Vector2i(22, 16), "actions": LIVESTOCK_ACTIONS}
 const CHICKEN := {"size": Vector2i(12, 12), "actions": LIVESTOCK_ACTIONS}
+const RABBIT := {"size": Vector2i(12, 10), "actions": LIVESTOCK_ACTIONS}
 
 ## Per kind: the size of a frame and the frames of each action, in the order of the rows.
 const SHEETS := {
@@ -33,6 +34,9 @@ const SHEETS := {
 	&"chicken_brown": CHICKEN,
 	&"chicken_white": CHICKEN,
 	&"chicken_rooster": CHICKEN,
+	&"rabbit_agouti": RABBIT,
+	&"rabbit_white": RABBIT,
+	&"rabbit_dutch": RABBIT,
 }
 
 

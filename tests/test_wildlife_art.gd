@@ -1,5 +1,6 @@
 extends GutTest
-## The wildlife sheets agree with the layout the code expects, and the console can spawn.
+## The wildlife and livestock sheets agree with the layout the code expects, and the console can
+## spawn.
 
 
 func test_every_sheet_has_a_cell_per_frame_of_every_action() -> void:
@@ -15,6 +16,13 @@ func test_every_kind_but_the_flock_has_a_sheet() -> void:
 	for kind in WildlifeRules.KINDS:
 		if kind != WildlifeRules.FLOCK:
 			assert_true(WildlifeSprites.SHEETS.has(kind), kind)
+
+
+func test_every_look_of_every_farm_animal_has_a_sheet() -> void:
+	var rules := LivestockRules.default_rules()
+	for species in LivestockRules.SPECIES:
+		for look: String in rules.looks(species):
+			assert_true(WildlifeSprites.SHEETS.has(StringName("%s_%s" % [species, look])), look)
 
 
 func test_the_spawn_command_asks_for_animals() -> void:

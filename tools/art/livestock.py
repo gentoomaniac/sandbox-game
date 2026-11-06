@@ -13,6 +13,7 @@ of white patches for a pied coat. The body and the head get a one pixel outline 
 colour of the coat; the legs are drawn over it, so that thin legs stay thin.
 """
 
+import animals
 from animals import outline_in_place, paste
 
 # The rows of every sheet, with their frames.
@@ -479,12 +480,83 @@ def chicken_sheet(look):
     return [[to_picture(rows, keys, style["outline"]) for rows in frames[action]] for action in ACTIONS]
 
 
+# --- Rabbits -------------------------------------------------------------------------------
+#
+# The tame rabbit is the wild rabbit of animals.py in other coats: it sits, nibbles and hops in
+# the same frames, and only sleeping, flat in a loaf with its ears laid back, is its own. Keys
+# as there (b coat, l light underside, s tail, p inside of the ear, e eye), and w for the white
+# of a Dutch rabbit.
+
+RABBIT_SIZE = animals.RABBIT["size"]
+RABBIT_SLEEP = [
+    "...bbb..",
+    ".bbbbbbb",
+    "bbbbbbbb",
+    "sbbbbbbb",
+    "ssbbllll",
+]
+RABBIT_SLEEP_LOW = [
+    "........",
+    "...bbbb.",
+    ".bbbbbbb",
+    "sbbbbbbb",
+    "ssbbllll",
+]
+RABBIT_LOOKS = {
+    # The grey-brown of the wild rabbit (agouti).
+    "agouti": {"keys": animals.RABBIT_KEYS, "outline": "mud"},
+    # White with pink eyes.
+    "white": {"keys": {"b": "lime", "l": "cream", "s": "snow_light", "p": "petal", "e": "red_light"}, "outline": "stone"},
+    # Dutch: dark ears, muzzle and rump, a white blaze, collar and forelegs.
+    "dutch": {
+        "keys": {"b": "stone_dark", "l": "lime", "s": "lime", "p": "petal", "e": "ink", "w": "lime"},
+        "outline": "ink",
+    },
+}
+
+
+def dutch(rows):
+    """A rabbit frame in the coat of a Dutch rabbit: a band of white from the eye down to the
+    forelegs (the blaze and the collar), and the dark coat on the ears, the muzzle and the rump."""
+    eye_row = next((y for y, row in enumerate(rows) if "e" in row), len(rows))
+    eye_x = rows[eye_row].index("e") if eye_row < len(rows) else len(rows[0])
+    result = []
+    for y, row in enumerate(rows):
+        if y < eye_row:
+            result.append(row)
+            continue
+        result.append("".join("w" if char == "b" and eye_x - 3 <= x <= eye_x - 1 else char for x, char in enumerate(row)))
+    return result
+
+
+def rabbit_sheet(look):
+    style = RABBIT_LOOKS[look]
+    wild = animals.RABBIT["actions"]
+    frames = {
+        "idle": wild["sit"],
+        "walk": wild["hop"] + [wild["sit"][0]],
+        "graze": wild["nibble"],
+        "sleep": [RABBIT_SLEEP, RABBIT_SLEEP_LOW],
+    }
+    sheet = {"size": RABBIT_SIZE, "outline": style["outline"], "keys": style["keys"]}
+
+    def coat(frame):
+        if look != "dutch":
+            return frame
+        if frame[0] == "lift":
+            return ("lift", frame[1], dutch(frame[2]))
+        return dutch(frame)
+
+    return [[animals.frame_picture(sheet, coat(frame)) for frame in frames[action]] for action in ACTIONS]
+
+
 # --- All sheets ---------------------------------------------------------------------------
 
 SPECIES = {
     "cow": (COW_SIZE, COW_LOOKS, cow_sheet),
     "sheep": (SHEEP_SIZE, SHEEP_LOOKS, sheep_sheet),
     "chicken": (CHICKEN_SIZE, CHICKEN_LOOKS, chicken_sheet),
+    "rabbit": (RABBIT_SIZE, RABBIT_LOOKS, rabbit_sheet),
 }
 
 
