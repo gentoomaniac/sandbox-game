@@ -590,6 +590,55 @@ direction pressed, else the front (opposite the head), else the sides, never beh
 standing where they do not fit walks through objects (not walls) until free
 (`_can_step_off_blocked_tile`), which covers old saves and saves made in bed.
 
+## 79. Dogs, cats and horses; a bone for the dog
+
+- [ ] Done
+
+The user's word of 2026-11-06: dogs, cats and horses join the livestock, spawned with the
+console like the others, 2-3 looks per species plus tint, sleeping at night. A bone (an
+item, spawned for now) given to a dog makes it follow the player for a while.
+
+Defaults (QUESTIONS.md 19): period breeds, e.g. a farm collie, a spitz and a pointer-like
+hunting dog; tabby, black and ginger cats; a heavy marsh horse (Oldenburger type) in bay,
+black and grey, and a small pony. Cats roam wider than the others and climb nothing yet. A
+dog with a bone follows at 1-2 tiles for 3 game hours (saved), then wanders again; giving
+it uses up the bone. Dogs bark now and then, cats are silent but for a rare meow, horses
+whinny and snort. Save version bump for the follow time.
+
+## 80. Mice and frogs; storks eat frogs
+
+- [ ] Done
+
+The user's word of 2026-11-06: critters, mice and frogs, the frogs food for the storks.
+Ambient wildlife like the birds and rabbits, not livestock.
+
+Defaults (QUESTIONS.md 19): mice near fields, hay, buildings and hedges, scurrying from the
+player, mostly at dusk and night; frogs at the water's edge, wet meadows and ditches from
+spring to early autumn, hopping, croaking in chorus on spring and summer evenings, gone in
+winter. A hunting stork walks to a frog, strikes and swallows it; the frog is gone. Needs
+task 60 (storks).
+
+## 81. Riding a horse with a saddle
+
+- [ ] Done
+
+The user's word of 2026-11-06: horses can be ridden once you have a saddle, which for now is
+spawned with the console. Needs task 79.
+
+Defaults (QUESTIONS.md 19): use the saddle on a horse to saddle it (it stays on the horse;
+taking it off gives it back), use a saddled horse to mount it, the same key to get off
+beside it. Riding is about twice walking speed and costs no energy; no tools, no building,
+no doors while mounted (get off first). The player is drawn sitting on the horse in all four
+directions, walking and trotting. Saved: the saddle on the horse; a save made while riding
+loads with the player beside the horse.
+
+## 82. Cats hunt mice
+
+- [ ] Done
+
+The user's word of 2026-11-06. Needs tasks 79 and 80. Defaults: a cat that sees a mouse
+within a few tiles crouches, creeps, and pounces; about half the pounces catch it.
+
 ## Later (not part of the prototype)
 
 - `WildlifeSprites.frame_index` and `max_frames` allocate on every call (`keys()`,

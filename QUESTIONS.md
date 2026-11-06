@@ -91,6 +91,14 @@ Answered questions move into SPEC.md and are removed here.
     with a reed ridge, white bargeboards and a green door; the inside is larger than the
     screen and scrolls. Default: keep.
 
+19. **More animals** (tasks 79-82): dogs (collie, spitz, hunting dog), cats (tabby, black,
+    ginger) and horses (bay, black and grey marsh horse, a pony) as livestock; a bone makes a
+    dog follow for 3 game hours. Mice near fields, hay and houses, mostly at dusk and night;
+    frogs at water and in wet meadows from spring to early autumn, croaking on evenings;
+    storks catch frogs, cats catch about half the mice they pounce on. Riding: the saddle
+    stays on the horse, the use key mounts and dismounts, about twice walking speed, no
+    tools, building or doors while riding. Default: keep.
+
 ## Questions
 
 No open questions right now.
