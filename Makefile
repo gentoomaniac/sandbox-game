@@ -10,6 +10,8 @@ VENV := .venv
 GDLINT := $(VENV)/bin/gdlint
 GDFORMAT := $(VENV)/bin/gdformat
 PYTHON := $(VENV)/bin/python
+# Written once the packages are installed, so an interrupted install is not taken for a venv.
+VENV_READY := $(VENV)/.installed
 GDSCRIPT_DIRS := game tests
 
 # Godot only finds addon classes (GUT) and new class_name scripts after an import
@@ -85,17 +87,19 @@ setup:
 	echo "Setup complete."
 
 # The Python tools (art, sound and lint) run in a venv of their own with pinned packages, see
-# tools/requirements.txt. A broken install is deleted again, so the next run starts over; after
-# changing the pins, delete the venv (rm -rf $(VENV)) and run make venv.
-venv: $(PYTHON)
+# tools/requirements.txt. The venv counts as ready only once its packages are installed (a
+# marker file), so a broken or interrupted install is redone on the next run, and so is one
+# whose pins changed since.
+venv: $(VENV_READY)
 
-$(PYTHON):
+$(VENV_READY): tools/requirements.txt
 	python3 -m venv $(VENV)
-	$(VENV)/bin/pip install --quiet --disable-pip-version-check -r tools/requirements.txt || { rm -rf $(VENV); exit 1; }
+	$(VENV)/bin/pip install --quiet --disable-pip-version-check -r tools/requirements.txt
+	touch $(VENV_READY)
 
 # Regenerates every PNG under assets/ and checks that they use only palette colours, then
 # every sound under assets/sounds/ and checks their levels and loops.
-assets: $(PYTHON)
+assets: $(VENV_READY)
 	$(PYTHON) tools/art/generate.py
 	$(PYTHON) tools/audio/generate.py
 	$(PYTHON) tools/audio/check.py
