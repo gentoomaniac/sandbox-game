@@ -324,9 +324,8 @@ func _natural_terrain_at(world_pos: Vector2i) -> Tile.Terrain:
 
 
 func _natural_terrain_from(world_pos: Vector2i, river_distance: float) -> Tile.Terrain:
-	var coast_distance := _coast_distance(world_pos)
-	if coast_distance < 0.0:
-		return _foreshore_terrain(world_pos, -coast_distance, river_distance)
+	if _is_within_coast(world_pos, 0.0):
+		return _foreshore_terrain(world_pos, -_coast_distance(world_pos), river_distance)
 	if river_distance < RIVER_HALF_WIDTH:
 		return Tile.Terrain.WATER
 	if river_distance < RIVER_HALF_WIDTH + FLOODPLAIN_WIDTH:
@@ -346,6 +345,15 @@ func _river_distance(world_pos: Vector2i) -> float:
 ## How far a tile lies east of the coast line, in tiles along x: negative out on the foreshore.
 func _coast_distance(world_pos: Vector2i) -> float:
 	return world_pos.x - _coast_line_x(world_pos.y)
+
+
+## Whether a tile lies less than `distance` tiles east of the coast line, or west of it. Most of
+## the world lies further east than the line ever wanders, which is the cheap part to ask first:
+## the terrain probes ask it of many tiles.
+func _is_within_coast(world_pos: Vector2i, distance: float) -> bool:
+	return (
+		world_pos.x < _coast_x + _coast_wander + distance and _coast_distance(world_pos) < distance
+	)
 
 
 ## Where the coast line runs in a row.
@@ -394,21 +402,22 @@ func _warft_middle(y: int) -> Vector2:
 	return middle
 
 
-## Where the Ewer of the band of rows of `y` lies (one band every `spacing` rows, of which `chance`
-## have one; the tile of its bow end), from `out_from` to `out_to` tiles seaward of the coast line,
-## or Vector2i.MAX if it has none: also where its 3 tiles are not all mud.
-func _ewer_at(y: int) -> Vector2i:
-	var band := floori(y / _ewer_spacing)
-	if _roll(Vector2i(band, 0), _ewer_roll_seed) >= _ewer_chance:
-		return Vector2i.MAX
+## Whether an Ewer lies with its bow end on a tile of the mud: one in every band of `spacing` rows,
+## of which `chance` have one, from `out_from` to `out_to` tiles seaward of the coast line, where
+## its other tiles are mud too. Most rows have none, which is asked first.
+func _is_ewer_at(world_pos: Vector2i) -> bool:
+	var band := floori(world_pos.y / _ewer_spacing)
 	var row := floori((band + _roll(Vector2i(band, 1), _ewer_roll_seed)) * _ewer_spacing)
+	if world_pos.y != row or _roll(Vector2i(band, 0), _ewer_roll_seed) >= _ewer_chance:
+		return false
 	var out := lerpf(_ewer_out_from, _ewer_out_to, _roll(Vector2i(band, 2), _ewer_roll_seed))
-	var bow := Vector2i(floori(_coast_line_x(row) - out), row)
+	if world_pos.x != floori(_coast_line_x(row) - out):
+		return false
 	var footprint: Vector2i = WorldObjectTypes.TYPES[WorldObjectTypes.EWER]["footprint"]
-	for x in footprint.x:
-		if _natural_terrain_at(bow + Vector2i(x, 0)) != Tile.Terrain.MUD:
-			return Vector2i.MAX
-	return bow
+	for x in range(1, footprint.x):
+		if _natural_terrain_at(world_pos + Vector2i(x, 0)) != Tile.Terrain.MUD:
+			return false
+	return true
 
 
 ## Whether a tile of the mud, `out` tiles from the salt marsh, lies in a tideway. Tideway k winds
@@ -429,7 +438,7 @@ func _is_tideway(world_pos: Vector2i, out: float) -> bool:
 ## Whether a tile is on the coast or within the reach of its marsh: where the coast changed the
 ## land of the worlds made before it (see SaveFile).
 func is_by_the_coast(world_pos: Vector2i) -> bool:
-	return _coast_distance(world_pos) < _marsh_reach
+	return _is_within_coast(world_pos, _marsh_reach)
 
 
 ## Whether a tile is in the marsh: the low land along the floodplain and behind the sea dyke, as
@@ -437,7 +446,7 @@ func is_by_the_coast(world_pos: Vector2i) -> bool:
 func _is_marsh(world_pos: Vector2i, river_distance: float) -> bool:
 	return (
 		river_distance < RIVER_HALF_WIDTH + FLOODPLAIN_WIDTH + _marsh_reach
-		or _coast_distance(world_pos) < _marsh_reach
+		or _is_within_coast(world_pos, _marsh_reach)
 	)
 
 
@@ -470,10 +479,10 @@ func _is_sea_dyke(world_pos: Vector2i, natural: Tile.Terrain) -> bool:
 	):
 		return false
 	# A tile beside the foreshore is less than 2 tiles from the line, along x: the cheap part.
-	if _coast_distance(world_pos) >= 2.0:
+	if not _is_within_coast(world_pos, 2.0):
 		return false
 	for direction in WETLAND_PROBE_DIRECTIONS:
-		if _coast_distance(world_pos + direction) < 0.0:
+		if _is_within_coast(world_pos + direction, 0.0):
 			return true
 	return false
 
@@ -506,7 +515,7 @@ func _object_type_from(
 	world_pos: Vector2i, terrain: Tile.Terrain, river_distance: float
 ) -> StringName:
 	if terrain == Tile.Terrain.MUD:
-		return WorldObjectTypes.EWER if world_pos == _ewer_at(world_pos.y) else &""
+		return WorldObjectTypes.EWER if _is_ewer_at(world_pos) else &""
 	if _is_dyke(world_pos, terrain, river_distance):
 		return WorldObjectTypes.DYKE
 	var boundary := _fields.boundary_at(world_pos)
