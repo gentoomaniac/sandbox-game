@@ -83,6 +83,9 @@ EVENTS = {
     "rabbit_rustle": (-14, [animals.rabbit_rustle] * 3),
     "squirrel_chatter": (-13, [animals.squirrel_chatter] * 3),
     "bee_buzz_loop": (-16, [animals.bee_buzz_loop] * 2),
+    # The storks and geese are rare and far off, so quieter still than the farm animals.
+    "stork_clatter": (-25, [animals.stork_clatter] * 3),
+    "goose_honk": (-24, [animals.goose_honk] * 3),
     # The farm animals are kept quiet: they are heard often, wherever the player keeps them.
     "cow_moo": (-20, [animals.cow_moo] * 3),
     "sheep_baa": (-21, [animals.sheep_baa] * 3),

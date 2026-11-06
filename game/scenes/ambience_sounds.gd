@@ -2,9 +2,9 @@ class_name AmbienceSounds
 extends Node
 ## The sound of the world around the player: rain and wind as loops that follow the weather (and
 ## swell with gusts), thunder after each flash of lightning, birds, frogs, the sounds of deer,
-## rabbits and squirrels, bees buzzing where they hover, and now and then a cow, a sheep or a hen
-## of the livestock (not while it sleeps). The chances and levels are
-## AmbienceRules'; which event an animal makes is SoundEvents'; playing is AudioService's.
+## rabbits and squirrels, bees buzzing where they hover, a stork's clatter, honking geese, and now
+## and then a cow, a sheep or a hen of the livestock (not while it sleeps). The chances and levels
+## are AmbienceRules'; which event an animal makes is SoundEvents'; playing is AudioService's.
 ##
 ## It is cheap by design: once a second it looks at the weather and rolls the dice for the
 ## chirps, croaks and animal sounds, finding the place of a chirp or a croak by looking at a few

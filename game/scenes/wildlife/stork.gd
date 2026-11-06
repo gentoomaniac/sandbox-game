@@ -30,9 +30,10 @@ const FLAP_SECONDS := 2.4
 const GLIDE_SECONDS := 1.6
 const GLIDE_FRAME := 1
 ## The chances that a stork on the ground, and one on a roof, clatters when it picks what to do
-## next.
+## next: about once a minute and a half, and once a minute. The clatter is heard (see
+## AmbienceSounds), so it is rare.
 const GROUND_CLATTER_CHANCE := 0.04
-const ROOF_CLATTER_CHANCE := 0.15
+const ROOF_CLATTER_CHANCE := 0.09
 ## It is gone once it is this far outside the view: far enough for its height and its wings.
 const LEAVE_MARGIN := 72.0
 

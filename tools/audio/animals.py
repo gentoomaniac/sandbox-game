@@ -1,5 +1,5 @@
-"""Animal sounds: birds, frogs, deer, rabbits, squirrels and bees, and the cows, sheep and hens of
-the livestock (see SPEC.md "Sound")."""
+"""Animal sounds: birds, frogs, deer, rabbits, squirrels and bees, the storks and the geese, and the
+cows, sheep and hens of the livestock (see SPEC.md "Sound")."""
 
 import numpy as np
 
@@ -227,4 +227,37 @@ def chicken_cluck(rng):
         length = rng.uniform(0.05, 0.08)
         place(out, _voice((420 * pitch, 520 * pitch, 380 * pitch), length, [(900, 0.5, 1.0), (1800, 0.4, 0.4)]), at, rng.uniform(0.6, 1.0))
         at += length + rng.uniform(0.08, 0.16)
+    return out
+
+
+def stork_clatter(rng):
+    """A stork clattering its bill: a dry, hollow rattle of quick knocks, the beak snapping shut
+    on itself, that speeds up and slows down again and fades."""
+    length = rng.uniform(1.1, 1.6)
+    out = silence(length + 0.15)
+    pitch = rng.uniform(0.9, 1.1)
+    at = 0.02
+    while at < length:
+        progress = at / length
+        # Fastest in the middle of the rattle, loudest a little before it.
+        gap = 0.075 - 0.03 * np.sin(np.pi * progress)
+        loudness = np.sin(np.pi * min(progress * 1.3, 1.0)) ** 0.7
+        knock = burst(rng, 0.03, 500, 4000, 0.0005, 260)
+        wood = resonance(knock, 1150 * pitch * rng.uniform(0.95, 1.05), 0.25)
+        place(out, wood / rms(wood) * 0.5 + 0.2 * knock, at, loudness * rng.uniform(0.75, 1.0))
+        at += gap * rng.uniform(0.85, 1.15)
+    return lowpass(out, 5000)
+
+
+def goose_honk(rng):
+    """A greylag's call: two or three nasal "aahng" honks, the first the longest."""
+    out = silence(1.0)
+    at = 0.02
+    pitch = rng.uniform(0.9, 1.1)
+    for number in range(rng.integers(2, 4)):
+        length = rng.uniform(0.16, 0.22) * (1.3 if number == 0 else 1.0)
+        curve = (330 * pitch, 380 * pitch, 300 * pitch)
+        voice = _voice(curve, length, [(900, 0.4, 1.0), (1900, 0.3, 0.7), (2800, 0.3, 0.3)])
+        place(out, voice, at, rng.uniform(0.7, 1.0))
+        at += length + rng.uniform(0.07, 0.12)
     return out

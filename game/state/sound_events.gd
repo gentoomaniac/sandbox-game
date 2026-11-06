@@ -78,6 +78,8 @@ static func animal_idle(kind: StringName) -> StringName:
 			return &"rabbit_rustle"
 		WildlifeRules.SQUIRREL:
 			return &"squirrel_chatter"
+		WildlifeRules.GEESE, WildlifeRules.FLYING_GEESE:
+			return &"goose_honk"
 		LivestockRules.COW:
 			return &"cow_moo"
 		LivestockRules.SHEEP:
@@ -87,8 +89,9 @@ static func animal_idle(kind: StringName) -> StringName:
 	return &""
 
 
-## The sound of an animal of a kind starting to run from the player: it is the state it enters
-## (Deer.BOUND, Rabbit.FLEE or Squirrel.FLEE) that says so. Empty for any other.
+## The sound of an animal of a kind entering a state: starting to run from the player
+## (Deer.BOUND, Rabbit.FLEE, Squirrel.FLEE, geese taking off) or a stork's clatter. Empty for any
+## other.
 static func animal_alarm(kind: StringName, state: StringName) -> StringName:
 	match [kind, state]:
 		[WildlifeRules.DEER, Deer.BOUND]:
@@ -97,4 +100,8 @@ static func animal_alarm(kind: StringName, state: StringName) -> StringName:
 			return &"rabbit_rustle"
 		[WildlifeRules.SQUIRREL, Squirrel.FLEE]:
 			return &"squirrel_chatter"
+		[WildlifeRules.GEESE, GooseFlock.FLY]:
+			return &"goose_honk"
+		[WildlifeRules.STORK, Stork.CLATTER], [WildlifeRules.ROOF_STORK, Stork.CLATTER]:
+			return &"stork_clatter"
 	return &""
