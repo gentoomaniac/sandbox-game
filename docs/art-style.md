@@ -317,26 +317,31 @@ task 51 (pine, spring leaf-out); changes to trees should be coordinated with it.
 
 ### Quick wins
 
-1. **Done (task 52):** **Sleeping bag → bedroll** (small). The red-and-white sleeping bag at the camp is a
+All eight are done (task 52): a straw bedroll, the new straw hat and a red knitted cap, flax
+instead of tomatoes, wild strawberries and a green squash, brown, ochre and copper autumn
+oaks, small-paned windows, the palette swaps, seed sacks told apart by colour, and a
+copper watering can. Kept here as the record of why.
+
+1. **Sleeping bag → bedroll** (small). The red-and-white sleeping bag at the camp is a
    modern camping item. Draw a straw sack with a rolled grey wool blanket, or a sheepskin.
-2. **Done (task 52):** **Straw hat shape** (small). It reads as a pith helmet. A low crown with a wide, slightly
+2. **Straw hat shape** (small). It reads as a pith helmet. A low crown with a wide, slightly
    drooping brim, or a black felt hat; add a red knitted cap as a second hat.
-3. **Done (task 52, flax):** **Tomatoes** (small–medium). Not a farm crop here before the 19th century. Replace them
+3. **Tomatoes** (small–medium). Not a farm crop here before the 19th century. Replace them
    in data and art with broad beans, flax or kale (or keep tomatoes as a rare imported
    seed). Make strawberries the small wild kind and the pumpkin a smaller, greener garden
    squash.
-4. **Done (task 52):** **Autumn colours** (small, in `seasons.py`). Many crowns turn crimson and orange like
+4. **Autumn colours** (small, in `seasons.py`). Many crowns turn crimson and orange like
    New England maples. Here oaks go brown and ochre, beeches copper, birches yellow. Make
    red rare (rowan, cherry) and merge `crimson` away. Coordinate with task 51.
-5. **Done (task 52):** **Window panes** (small). Windows are 4-pane modern casements. Use 6–9 small panes
+5. **Window panes** (small). Windows are 4-pane modern casements. Use 6–9 small panes
    with 1 px bars, on all buildings and the interior window.
-6. **Done (task 52):** **Palette swaps** (small). Merge the five colours listed under Palette and add `lime`,
+6. **Palette swaps** (small). Merge the five colours listed under Palette and add `lime`,
    `paint_teal`, `heather`, `heather_dark`; repaint the Kate wall in `lime` and its door in
    `paint_teal`, so `spirit` is free for magic.
-7. **Done (task 52):** **Seed sacks** (small). All seed icons are the same sack with a tiny mark and can't be
+7. **Seed sacks** (small). All seed icons are the same sack with a tiny mark and can't be
    told apart at 1×. Draw the seed or the crop's colour large on the sack, or tie it with a
    coloured string per crop.
-8. **Done (task 52):** **Watering can** (small). The grey tin can with a long spout looks modern. Copper
+8. **Watering can** (small). The grey tin can with a long spout looks modern. Copper
    (`ochre`) with a big rose, or a wooden bucket with a dipper.
 
 ### Bigger items
@@ -370,6 +375,3 @@ task 51 (pine, spring leaf-out); changes to trees should be coordinated with it.
    in autumn, an Ewer on the mud, a Warft with its Fething. Needs map and terrain work
    too.
 10. **Post mill and draw well** (medium). Landmark props that date the world at a glance.
-
-Note: `docs/screenshots/day-and-night.png` still shows the old house and interior;
-`make screenshot` gives the current look.

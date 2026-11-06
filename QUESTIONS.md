@@ -28,6 +28,11 @@ Answered questions move into SPEC.md and are removed here.
      rarer (task 56, after the Scots pine of task 51);
    - **the shack gets tarred boards and a turf roof**;
    - **the player wears period clothes** (task 53).
+   - **flax yields a new `flax` item, not `fibre`** (task 52): flax stalks are a material
+     of their own (linen after retting), and `fibre` stays what bushes give. Not food;
+   - **`meadow_light` was not merged** (task 52): it is now the Scots pine's needle colour,
+     so the palette is full again (64 of 64);
+   - **a new game carries the red knitted cap** besides the straw hat (task 52).
 9. **Code review** (docs/code-review-2026-11-06.md): its findings became tasks 63-71 and run
    one at a time beside the art tasks. Default: go ahead.
 

@@ -21,7 +21,7 @@ Rules for every task:
 
 ## 52. Art quick wins from the style guide
 
-- [ ] Done
+- [x] Done
 
 See docs/art-style.md, "Changes to make", quick wins 1-8 (the user, 2026-11-06: implement
 the suggestions, quick ones first): straw bedroll instead of the sleeping bag; a new straw
@@ -32,6 +32,27 @@ merged, in seasons.py); small-paned windows on all buildings and the interior wi
 palette swaps (merge the five rare colours, add lime, paint_teal, heather, heather_dark; Kate
 wall in lime and door in paint_teal, `spirit` kept for magic); seed sacks that can be told
 apart; a copper watering can. Screenshots refreshed (day-and-night.png too).
+
+Done: one commit per quick win, each with its art, tests and docs. Palette: `meadow_dark`,
+`lush`, `crimson`, `frost_light` merged; `meadow_light` kept, as since task 51 it is the
+Scots pine's lit needles (`green_light` turned them yellow-green); `lime`, `paint_teal`,
+`heather`, `heather_dark` added (64 of 64); the Kate is lime-washed with `paint_teal` door
+and shutters, and the purple berries, bean flowers, turnip shoulders and butterflies moved
+from `arcane` to `heather`, so both magic colours are free. The camp's bed is a straw sack
+with a rolled grey wool blanket (id still `sleeping_bag`; snow, frost and dusting looks).
+The straw hat has a low crown and a drooping brim; `knitted_cap` is a red stocking cap, in
+the starting backpack, with all frames (both hats one row lower, so `HAT_TOP` is -30).
+Autumn oaks are brown, ochre or copper, bushes yellow or ochre, no red. Flax replaces
+tomatoes: a cool-weather fibre crop with blue flowers, no regrow, not food, yielding a new
+`flax` item rather than `fibre` (each crop's produce is its own item from crops.cfg, and
+flax stalks are a material of their own before retting); save version 7 maps tomatoes and
+their seeds to flax wherever they lie. Strawberries are wild, the pumpkin a small green
+squash (id kept). Windows have 2x2 px panes in 1 px bars (3x3 in houses, 2x3 in the
+shack, whose window grew taller; the dormers likewise; lit panes glow evenly); every
+`window_lights` point is on glass. Seed sacks have a crop-coloured string, the crop painted
+large and its seeds spilled. The watering can is copper with a big rose. Screenshots:
+camp, buildings, day-and-night, seasons, character; the others only show the new can
+icon in the hotbar and were left.
 
 ## 53. Period clothes for the player
 
