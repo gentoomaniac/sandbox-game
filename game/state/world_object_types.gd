@@ -199,7 +199,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 2,
 		"atlas_row": 5,
-		"sprite_height": 69,
+		"sprite_height": 75,
 		"variants": 3,
 	},
 	DEAD_TREE:

@@ -196,24 +196,26 @@ def spruce(seed):
     return canvas
 
 
-# A Scots pine: the trunk's bark, grey-brown and furrowed below, thin and reddish-orange in the
+# A Scots pine: the trunk's bark, grey-brown and furrowed below, thinner and a warm brown in the
 # crown (each lit to dark, then its outline), and the dark blue-green needles (lit top to dark
 # underside, then the outline).
 PINE_BARK = ("mud", "mud_dark", "soil_dark", "soil_dark")
-PINE_RED_BARK = ("flame", "rust", "rust_dark", "russet_deep")
+PINE_CROWN_BARK = ("soil_light", "soil_mid", "rust_dark", "soil_dark")
 PINE_NEEDLES = ("meadow_light", "meadow", "green_deep", "bog_dark")
-# Where the bark turns from grey-brown to red, in rows from the top of the cell.
-PINE_RED_FROM = 56
+# How far below the top of the trunk the bark turns from warm brown to grey-brown, in rows.
+PINE_CROWN_BARK_DEPTH = 34
 
 
 def pine(seed):
-    """A Scots pine: a tall, slightly crooked bare trunk, reddish-orange up in the crown, with
-    a few flat layered clumps of dark blue-green needles high up, each on a branch of its own,
-    and an irregular outline."""
+    """A Scots pine: a tall, slightly crooked trunk, bare for most of its height, warm brown up in
+    the crown and grey-brown below with a few dead branch stubs; the crown is a loose, flat-topped
+    umbrella of dark blue-green needle clumps on branches spreading from the top third, with gaps
+    where the sky shows through."""
     rng = random.Random(seed)
     canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
-    ground_shadow(canvas, 9)
-    top = 16 + rng.randint(0, 3)
+    ground_shadow(canvas, 10)
+    top = 9 + rng.randint(0, 3)
+    red_from = top + PINE_CROWN_BARK_DEPTH
     # The trunk wanders a little from side to side as it rises, and leans as a whole.
     lean = rng.choice((-1.5, 1.5, 2.5, -2.5))
     bend = rng.uniform(0, 6.3)
@@ -222,37 +224,50 @@ def pine(seed):
         rise = (OBJECT_BOTTOM - y) / (OBJECT_BOTTOM - top)
         centres[y] = OBJECT_CENTRE + lean * rise * rise + math.sin(rise * 5 + bend) * 0.8
     for y, centre in centres.items():
-        width = 5 if y > OBJECT_BOTTOM - 26 else 4 if y > PINE_RED_FROM - 8 else 3
+        width = 5 if y > OBJECT_BOTTOM - 30 else 4 if y > red_from - 10 else 3
         flare = 2 if y == OBJECT_BOTTOM else 1 if y > OBJECT_BOTTOM - 3 else 0
         left = round(centre - width / 2) - flare
-        # The red bark peels off into the grey-brown below over a few rows.
-        shades = PINE_RED_BARK if y < PINE_RED_FROM + rng.randint(-3, 3) else PINE_BARK
+        # The upper bark peels off into the grey-brown below over a few rows.
+        shades = PINE_CROWN_BARK if y < red_from + rng.randint(-3, 3) else PINE_BARK
         for x in range(left, left + width + 2 * flare):
             index = x - left
             canvas[y][x] = shades[0] if index == 1 else shades[2] if index == width + 2 * flare - 2 else shades[1]
         canvas[y][left - 1] = canvas[y][left + width + 2 * flare] = shades[3]
-    # Furrows in the grey-brown bark below.
-    for _ in range(7):
-        y = rng.randint(PINE_RED_FROM + 2, OBJECT_BOTTOM - 4)
+    # Furrows in the grey-brown bark below, and the stubs of dead lower branches.
+    for _ in range(8):
+        y = rng.randint(red_from + 2, OBJECT_BOTTOM - 4)
         x = round(centres[y]) + rng.choice((-1, 0, 1))
         canvas[y][x] = canvas[y + 1][x] = "soil_dark"
-    # The needle clumps, high up and in layers: each is flat and wide, made of a few smaller
-    # flat ovals so its outline is ragged, on a branch reaching out from the trunk.
-    heights = [top - 1, top + 8, top + 16, top + 24][: 3 + seed % 2]
     side = rng.choice((-1, 1))
-    clumps = []
-    for index, cy in enumerate(heights):
-        cy += rng.randint(-1, 1)
-        reach = 0 if index == 0 else side * rng.randint(4, 8)
+    for _ in range(2 + seed % 2):
+        y = rng.randint(red_from - 6, OBJECT_BOTTOM - 24)
+        x = round(centres[y]) + side * 3
+        for step in range(rng.randint(2, 3)):
+            canvas[y - step // 2][x + side * step] = "soil_dark"
         side = -side
-        cx = centres[min(max(cy, top), OBJECT_BOTTOM)] + reach
-        width = 8 + rng.uniform(0, 3) + index * 1.0
-        clumps.append((cx, cy, width))
-        branch_y = min(max(cy + 3, top), OBJECT_BOTTOM)
-        for step in range(abs(round(reach))):
-            x = round(centres[branch_y]) + (step + 1) * (1 if reach > 0 else -1)
-            y = branch_y - step // 2
-            canvas[y][x] = "rust_dark"
+    # The crown: clumps on branches that spread up and out from the top third of the trunk, the
+    # lower ones reaching furthest, so the crown is wide and flat on top. Its outline stays ragged.
+    clumps = [(centres[top], top + 2, 7 + rng.uniform(0, 2))]
+    side = rng.choice((-1, 1))
+    for index in range(5 + seed % 2):
+        foot_y = top + 4 + index * 4 + rng.randint(0, 2)
+        reach = side * (5 + index * 1.6 + rng.uniform(0, 3))
+        rise = 3 + index + rng.randint(0, 2)
+        cx = centres[foot_y] + reach
+        cy = foot_y - rise
+        clumps.append((cx, cy, 4.5 + rng.uniform(0, 2.5) + index * 0.3))
+        # The branch: from the trunk, up and out to under its clump.
+        steps = max(abs(round(reach)), 1)
+        for step in range(steps + 1):
+            x = round(centres[foot_y] + reach * step / steps)
+            y = round(foot_y - rise * step / steps + 2)
+            canvas[y][x] = "russet_deep"
+            if step < 3:
+                canvas[y + 1][x] = "soil_dark"
+        side = -side
+    # Two more clumps fill out the top, so it reads as one crown and not as pads on a stick.
+    for side in (-1, 1):
+        clumps.append((centres[top] + side * rng.uniform(4, 6), top + 5 + rng.randint(0, 2), 5 + rng.uniform(0, 1.5)))
     # The lowest clump is drawn first, so the ones above overlap it like layers.
     for cx, cy, width in sorted(clumps, key=lambda clump: -clump[1]):
         needle_clump(canvas, rng, cx, cy, width)
