@@ -79,7 +79,6 @@ func test_interior_terrain_cannot_be_built_on() -> void:
 		var tile := Tile.new()
 		tile.terrain = terrain
 		assert_false(tile.is_buildable())
-		assert_false(tile.is_plantable())
 
 
 func test_the_player_stops_at_the_interior_wall() -> void:

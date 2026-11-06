@@ -5,10 +5,8 @@ extends RefCounted
 enum Terrain { GRASS, SOIL, WATER, WETLAND, FLOODPLAIN, FLOOR, WALL }
 
 var terrain: Terrain = Terrain.GRASS
-## Unused for now; will be driven by weather.
-var water_level := 0.0
+## Nothing sets it yet: the hook for frozen rivers, which can be walked across.
 var frozen := false
-var snow_depth := 0.0
 
 
 ## Water blocks movement unless it is frozen (a frozen river can be crossed), and so does a
@@ -21,14 +19,3 @@ func is_walkable() -> bool:
 ## interiors are not built on.
 func is_buildable() -> bool:
 	return terrain == Terrain.GRASS or terrain == Terrain.SOIL
-
-
-## Only grass can be tilled. Floodplain, the most fertile land, needs a "tilled" property
-## that keeps its flood behaviour first (see TASKS.md, Later).
-func is_tillable() -> bool:
-	return terrain == Terrain.GRASS
-
-
-## Only soil: grass becomes soil through a player action (tilling).
-func is_plantable() -> bool:
-	return terrain == Terrain.SOIL

@@ -11,22 +11,18 @@ const CHUNK_SIZE := 32
 
 var coords: Vector2i
 var _terrain := PackedByteArray()
-var _water_level := PackedFloat32Array()
 var _frozen := PackedByteArray()
-var _snow_depth := PackedFloat32Array()
 ## At most one object per tile, keyed by local position.
 var _objects: Dictionary[Vector2i, WorldObject] = {}
 
 
-## A new chunk with every tile set to `terrain`, dry and unfrozen.
+## A new chunk with every tile set to `terrain`, unfrozen.
 func _init(chunk_coords: Vector2i, terrain := Tile.Terrain.GRASS) -> void:
 	coords = chunk_coords
 	var tile_count := CHUNK_SIZE * CHUNK_SIZE
 	_terrain.resize(tile_count)
 	_terrain.fill(terrain)
-	_water_level.resize(tile_count)
 	_frozen.resize(tile_count)
-	_snow_depth.resize(tile_count)
 
 
 ## Chunk coordinates of the chunk containing a world tile position. Floors, so negative
@@ -53,9 +49,7 @@ func tile_at(local: Vector2i) -> Tile:
 	var index := _index(local)
 	var tile := Tile.new()
 	tile.terrain = _terrain[index] as Tile.Terrain
-	tile.water_level = _water_level[index]
 	tile.frozen = _frozen[index] == 1
-	tile.snow_depth = _snow_depth[index]
 	return tile
 
 
@@ -65,32 +59,16 @@ func terrain_at(local: Vector2i) -> Tile.Terrain:
 	return _terrain[_index(local)] as Tile.Terrain
 
 
-func water_level_at(local: Vector2i) -> float:
-	return _water_level[_index(local)]
-
-
 func is_frozen_at(local: Vector2i) -> bool:
 	return _frozen[_index(local)] == 1
-
-
-func snow_depth_at(local: Vector2i) -> float:
-	return _snow_depth[_index(local)]
 
 
 func set_terrain(local: Vector2i, terrain: Tile.Terrain) -> void:
 	_terrain[_index(local)] = terrain
 
 
-func set_water_level(local: Vector2i, water_level: float) -> void:
-	_water_level[_index(local)] = water_level
-
-
 func set_frozen(local: Vector2i, frozen: bool) -> void:
 	_frozen[_index(local)] = 1 if frozen else 0
-
-
-func set_snow_depth(local: Vector2i, snow_depth: float) -> void:
-	_snow_depth[_index(local)] = snow_depth
 
 
 ## The object on a tile, or null.

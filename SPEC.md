@@ -119,8 +119,8 @@ top of classic pixel art (details under "Lighting and look").
 
 ### Tile state (architecture)
 
-- A tile is **state, not a fixed picture**: terrain type plus dynamic properties such as
-  water level, frozen, snow depth.
+- A tile is **state, not a fixed picture**: terrain type plus dynamic properties (for now
+  only frozen).
 - What a tile looks like and whether it can be walked on or built on are **derived from
   that state**.
 - This applies from the prototype on, even before weather exists. The chunk and tile code
