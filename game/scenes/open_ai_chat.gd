@@ -18,6 +18,10 @@ func _chat_url(endpoint: String) -> String:
 	return url_of(endpoint)
 
 
+func _models_url(endpoint: String) -> String:
+	return endpoint.trim_suffix(PATH).trim_suffix("/") + "/models"
+
+
 func _headers(language_model: Dictionary) -> PackedStringArray:
 	var headers := super(language_model)
 	if language_model["api_key"] != "":

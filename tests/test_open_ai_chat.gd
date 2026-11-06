@@ -82,3 +82,30 @@ func test_an_endpoint_that_does_not_answer_in_time_gives_no_answer() -> void:
 	get_tree().paused = false
 	assert_eq(answer, "")
 	assert_lt(Time.get_ticks_msec() - start, 3000)
+
+
+func test_the_models_are_the_ids_the_endpoint_lists() -> void:
+	var list := '{"object": "list", "data": [{"id": "qwen2.5:3b-instruct"}, {"id": "llama3.2"}]}'
+	var ask := func() -> Array[String]: return await _chat.models(_language_model("sk-test"), 5.0)
+	var asked := await _ask_and_answer(ask, _response("200 OK", list))
+	assert_string_starts_with(asked[0], "GET /v1/models HTTP/1.1")
+	assert_string_contains(asked[0], "Authorization: Bearer sk-test")
+	assert_eq(asked[1], ["qwen2.5:3b-instruct", "llama3.2"])
+
+
+func test_the_models_of_an_endpoint_that_cannot_be_asked_are_none() -> void:
+	var ask := func() -> Array[String]: return await _chat.models(_language_model(), 5.0)
+	assert_eq((await _ask_and_answer(ask, _response("404 Not Found", "{}")))[1], [])
+	assert_eq((await _ask_and_answer(ask, _response("200 OK", '{"data": 3}')))[1], [])
+	var closed := {"endpoint": CLOSED_ENDPOINT, "model": "any", "api_key": ""}
+	assert_eq(await _chat.models(closed, 5.0), [])
+
+
+func test_a_models_list_that_fails_is_warned_of_once() -> void:
+	var language_model := _language_model("sk-wrong")
+	language_model["endpoint"] += "/%d" % Time.get_ticks_usec()
+	var ask := func() -> Array[String]: return await _chat.models(language_model, 5.0)
+	var denied := _response("401 Unauthorized", '{"error": "key"}')
+	await _ask_and_answer(ask, denied)
+	await _ask_and_answer(ask, denied)
+	assert_push_warning_count(1)

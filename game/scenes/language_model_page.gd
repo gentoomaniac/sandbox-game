@@ -3,7 +3,9 @@ extends VBoxContainer
 ## The settings of the language model villagers talk through (see NpcDialogue): the provider
 ## (an OpenAI-compatible chat API, or Claude), its endpoint, the model's name and a key, if it
 ## needs one. Each provider keeps its own; each is stored as it is chosen or typed. The test LLM
-## is the default; with the endpoint emptied, villagers speak scripted lines.
+## is the default; with the endpoint emptied, villagers speak scripted lines. The endpoint is
+## asked which models it has, to pick one from a list (the name can be typed too, as the endpoint
+## may not be reachable).
 
 signal back_requested
 
@@ -51,6 +53,13 @@ var _settings: GameSettings
 var _provider := OptionButton.new()
 var _labels := {}
 var _fields := {}
+## Ask for the models, one for each protocol of the providers.
+var _chats := {"openai": OpenAiChat.new(), "claude": ClaudeChat.new()}
+var _models := OptionButton.new()
+var _models_note := Label.new()
+## Asks for the models once the endpoint or key has not been typed in for a moment.
+var _models_delay := Timer.new()
+var _models_asked := 0
 
 
 func _init(settings: GameSettings) -> void:
@@ -82,9 +91,19 @@ func _init(settings: GameSettings) -> void:
 		field.text_changed.connect(
 			func(text: String) -> void: _settings.set_language_model(key, text)
 		)
+		if key in ["endpoint", "api_key"]:
+			field.text_changed.connect(func(_text: String) -> void: _models_delay.start())
 		add_child(field)
 		_fields[key] = field
+		if key == "model":
+			_add_model_list()
 	first_focus = _provider
+	for chat: ModelChat in _chats.values():
+		add_child(chat)
+	_models_delay.one_shot = true
+	_models_delay.wait_time = NpcTalkRules.default_rules().value("request", "models_delay_seconds")
+	_models_delay.timeout.connect(show_models)
+	add_child(_models_delay)
 	var note := Label.new()
 	note.text = NOTE
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -94,7 +113,6 @@ func _init(settings: GameSettings) -> void:
 	back.text = "Back"
 	back.pressed.connect(back_requested.emit)
 	add_child(back)
-	show_settings()
 
 
 ## Brings the fields up to date with the settings: the chosen provider's, with its own
@@ -112,6 +130,65 @@ func show_settings() -> void:
 		TooltipView.set_text(_fields[key], tip, "setting_language_model_%s" % key)
 	_fields["endpoint"].placeholder_text = provider["endpoint"]
 	_fields["model"].placeholder_text = provider["model"]
+	show_models()
+
+
+## Asks the endpoint for its models and lists them. Without an answer the saved model is all
+## there is to pick, and a note says so.
+func show_models() -> void:
+	_models_asked += 1
+	var asked := _models_asked
+	var language_model := _settings.language_model.duplicate()
+	var provider: Dictionary = GameSettings.LANGUAGE_MODEL_PROVIDERS[language_model["provider"]]
+	if language_model["endpoint"] == "":
+		_list_models([], "No endpoint: villagers speak scripted lines.")
+		return
+	if provider["needs_key"] and language_model["api_key"] == "":
+		_list_models([], "Enter the key to list the models.")
+		return
+	_models_note.text = "Asking for the models..."
+	var timeout: float = NpcTalkRules.default_rules().value("request", "models_timeout_seconds")
+	var names: Array[String] = await _chats[provider["protocol"]].models(language_model, timeout)
+	if asked != _models_asked:
+		return
+	_list_models(
+		names, "The endpoint did not list its models: type the name." if names.is_empty() else ""
+	)
+
+
+func _add_model_list() -> void:
+	var row := HBoxContainer.new()
+	_models.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_models.item_selected.connect(_on_model_picked)
+	TooltipView.set_text(_models, "The models the endpoint offers.", "setting_language_model_list")
+	row.add_child(_models)
+	var refresh := Button.new()
+	refresh.text = "Refresh"
+	refresh.pressed.connect(show_models)
+	row.add_child(refresh)
+	add_child(row)
+	_models_note.autowrap_mode = TextServer.AUTOWRAP_WORD
+	add_child(_models_note)
+
+
+## Lists `names` to pick from, with the saved model among them, and `note` below.
+func _list_models(names: Array[String], note: String) -> void:
+	var saved: String = _settings.language_model["model"]
+	_models.clear()
+	if saved != "" and not saved in names:
+		_models.add_item(saved)
+	for name in names:
+		_models.add_item(name)
+	for index in _models.item_count:
+		if _models.get_item_text(index) == saved:
+			_models.select(index)
+	_models_note.text = note
+
+
+func _on_model_picked(index: int) -> void:
+	var model := _models.get_item_text(index)
+	_settings.set_language_model("model", model)
+	_fields["model"].text = model
 
 
 func _on_provider_selected(index: int) -> void:

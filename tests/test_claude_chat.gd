@@ -132,3 +132,17 @@ func test_a_real_claude_answers() -> void:
 	var answer: String = await _chat.answer(language_model, REQUEST, 30.0)
 	gut.p("Claude: %s" % answer)
 	assert_ne(answer, "")
+
+
+func test_the_models_are_the_ids_claude_lists() -> void:
+	var list := (
+		'{"data": [{"id": "claude-opus-5-5", "display_name": "Claude Opus 5.5"},'
+		+ ' {"id": "claude-haiku-5-5", "display_name": "Claude Haiku 5.5"}],'
+		+ ' "has_more": false, "last_id": "claude-haiku-5-5"}'
+	)
+	var ask := func() -> Array[String]: return await _chat.models(_language_model(), 5.0)
+	var asked := await _ask_and_answer(ask, _response("200 OK", list))
+	assert_string_starts_with(asked[0], "GET /v1/models?limit=1000 HTTP/1.1")
+	assert_string_contains(asked[0], "x-api-key: sk-ant-test")
+	assert_string_contains(asked[0], "anthropic-version: 2026-10-21")
+	assert_eq(asked[1], ["claude-opus-5-5", "claude-haiku-5-5"])

@@ -14,6 +14,8 @@ const KEYS := {
 		"history_lines": TYPE_INT,
 		"reply_sentences": TYPE_INT,
 		"timeout_seconds": TYPE_FLOAT,
+		"models_timeout_seconds": TYPE_FLOAT,
+		"models_delay_seconds": TYPE_FLOAT,
 	},
 	"claude":
 	{

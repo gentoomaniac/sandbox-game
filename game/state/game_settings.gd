@@ -91,6 +91,7 @@ const LANGUAGE_MODEL_PROVIDERS := {
 	{
 		"name": "OpenAI-compatible",
 		"protocol": "openai",
+		"needs_key": false,
 		"endpoint": DEFAULT_LANGUAGE_MODEL["endpoint"],
 		"model": DEFAULT_LANGUAGE_MODEL["model"],
 	},
@@ -98,6 +99,7 @@ const LANGUAGE_MODEL_PROVIDERS := {
 	{
 		"name": "Claude",
 		"protocol": "claude",
+		"needs_key": true,
 		"endpoint": "https://api.anthropic.com/v1",
 		"model": "claude-opus-5-5",
 	},

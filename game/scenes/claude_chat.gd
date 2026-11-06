@@ -16,6 +16,11 @@ func _chat_url(endpoint: String) -> String:
 	return endpoint.trim_suffix("/") + PATH
 
 
+## Asks for up to 1000 models, which is more than there are, so one page is all.
+func _models_url(endpoint: String) -> String:
+	return endpoint.trim_suffix("/") + "/models?limit=1000"
+
+
 func _headers(language_model: Dictionary) -> PackedStringArray:
 	var headers := super(language_model)
 	headers.append("x-api-key: %s" % language_model["api_key"])

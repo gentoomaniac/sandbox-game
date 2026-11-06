@@ -72,8 +72,9 @@ func _received_request() -> String:
 			var text := received.get_string_from_utf8()
 			var head_end := text.find("\r\n\r\n")
 			var length := RegEx.create_from_string("(?i)content-length: *(\\d+)").search(text)
-			if head_end >= 0 and length != null:
-				if text.length() - head_end - 4 >= int(length.get_string(1)):
-					return text
+			# A request without a body, such as a GET, may say no length.
+			var body_length := int(length.get_string(1)) if length != null else 0
+			if head_end >= 0 and text.length() - head_end - 4 >= body_length:
+				return text
 		await get_tree().process_frame
 	return ""
