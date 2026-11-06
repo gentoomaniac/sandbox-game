@@ -320,6 +320,27 @@ def draw_branch(canvas, rng, x, y, direction, length, colour):
             draw_branch(canvas, rng, x, y, -direction, length // 2, colour)
 
 
+def twigs(canvas, rng, x, y, angle, length, colours, forks, spread):
+    """A bare branch growing from (x, y) at `angle` (radians from straight up, positive to the
+    right), wavering a little, that forks `forks` times into two thinner, shorter ones `spread`
+    either side of it: a limb ending in a fan of fine twigs. `colours` are its lit and its
+    shaded side; a limb that still forks twice or more is 2 px thick, and the last twigs are all
+    shade."""
+    for _ in range(length):
+        x += math.sin(angle)
+        y -= math.cos(angle)
+        angle += rng.uniform(-0.12, 0.12)
+        px, py = round(x), round(y)
+        if not (0 <= px < OBJECT_CELL_WIDTH - 1 and 0 <= py < OBJECT_CELL_HEIGHT):
+            return
+        canvas[py][px] = colours[0] if forks else colours[1]
+        if forks >= 2:
+            canvas[py][px + 1] = colours[1]
+    if forks:
+        for side in (-1, 1):
+            twigs(canvas, rng, x, y, angle + side * spread * rng.uniform(0.6, 1.2), max(2, round(length * 0.68)), colours, forks - 1, spread)
+
+
 def dead_tree(seed):
     """A long-dead tree: a solid, weathered grey trunk, snapped off at the top, with a few
     thick, gnarled limbs broken off short. Lit from the left, outlined in ink."""

@@ -4,6 +4,8 @@ extends ResourceCase
 
 const LOOKS := SeasonBlend.Look
 const KINDS := HitEffect.Kind
+## The broadleaved trees: leaves while they have them.
+const BROADLEAVES: Array[StringName] = [WorldObjectTypes.OAK, WorldObjectTypes.BEECH]
 
 var _view: WorldView
 
@@ -16,9 +18,12 @@ func _show_world_in_view() -> void:
 
 
 func test_a_tree_with_foliage_drops_leaves_of_its_look() -> void:
-	assert_eq(HitEffect.kind_for(WorldObjectTypes.OAK, LOOKS.SPRING), KINDS.LEAVES_GREEN)
-	assert_eq(HitEffect.kind_for(WorldObjectTypes.OAK, LOOKS.SUMMER), KINDS.LEAVES_GREEN)
-	assert_eq(HitEffect.kind_for(WorldObjectTypes.OAK, LOOKS.AUTUMN), KINDS.LEAVES_AUTUMN)
+	for type in BROADLEAVES:
+		assert_eq(HitEffect.kind_for(type, LOOKS.SPRING), KINDS.LEAVES_GREEN, type)
+		assert_eq(HitEffect.kind_for(type, LOOKS.SUMMER), KINDS.LEAVES_GREEN, type)
+		assert_eq(HitEffect.kind_for(type, LOOKS.AUTUMN), KINDS.LEAVES_AUTUMN, type)
+		assert_eq(HitEffect.kind_for(type, LOOKS.BARE), KINDS.NONE, type)
+		assert_eq(HitEffect.kind_for(type, LOOKS.SNOW), KINDS.SNOW, type)
 
 
 func test_spruce_and_pine_drop_needles_all_year_unless_snowy() -> void:

@@ -4,6 +4,10 @@ extends ResourceCase
 
 const ROT_DAYS := 14
 const SAPLING_GROWTH_DAYS := 4
+## The trees that grow from a seed.
+const TREES: Array[StringName] = [
+	WorldObjectTypes.OAK, WorldObjectTypes.SPRUCE, WorldObjectTypes.PINE, WorldObjectTypes.BEECH
+]
 
 
 func _stump_of(tree: StringName) -> WorldObject:
@@ -50,7 +54,7 @@ func test_the_sapling_roll_is_deterministic_and_about_thirty_percent() -> void:
 
 
 func test_the_sapling_is_of_the_species_of_the_stump() -> void:
-	for tree: StringName in [WorldObjectTypes.OAK, WorldObjectTypes.SPRUCE, WorldObjectTypes.PINE]:
+	for tree: StringName in TREES:
 		var stump := WorldObject.new(WorldObjectTypes.STUMP, _tile)
 		stump.state["tree"] = str(tree)
 		var sapling: WorldObject = null
@@ -137,7 +141,7 @@ func test_rotting_goes_on_in_unloaded_chunks_and_through_a_save() -> void:
 
 
 func test_a_sapling_becomes_the_tree_of_its_species() -> void:
-	for tree: StringName in [WorldObjectTypes.OAK, WorldObjectTypes.SPRUCE, WorldObjectTypes.PINE]:
+	for tree: StringName in TREES:
 		_world.remove_object(_tile)
 		_place(WorldObjectTypes.SAPLING, str(tree))
 		_sleep_days(SAPLING_GROWTH_DAYS - 1)

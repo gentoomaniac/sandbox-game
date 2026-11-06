@@ -30,3 +30,6 @@
 29 stone_wall 48
 30 dyke 16
 31 willow 3
+32 beech 3
+33 beech_trunk 2
+34 beech_short_trunk 2

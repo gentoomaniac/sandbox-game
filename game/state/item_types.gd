@@ -35,6 +35,7 @@ const BERRIES := &"berries"
 const ACORN := &"acorn"
 const SPRUCE_CONE := &"spruce_cone"
 const PINE_CONE := &"pine_cone"
+const BEECHNUT := &"beechnut"
 const HAY := &"hay"
 const CLAY := &"clay"
 const REEDS := &"reeds"
@@ -212,6 +213,16 @@ const _OTHER_TYPES := {
 		"plants": WorldObjectTypes.SAPLING,
 		"plants_on": Tile.Terrain.GRASS,
 		"plants_state": {"tree": WorldObjectTypes.PINE},
+	},
+	BEECHNUT:
+	{
+		"name": "Beechnut",
+		"description": "The seed of a beech, from its prickly husk.",
+		"weight": 0.02,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+		"plants": WorldObjectTypes.SAPLING,
+		"plants_on": Tile.Terrain.GRASS,
+		"plants_state": {"tree": WorldObjectTypes.BEECH},
 	},
 	WAISTCOAT:
 	{

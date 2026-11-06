@@ -26,7 +26,7 @@ static func kind_for(type: StringName, look: SeasonBlend.Look) -> Kind:
 		return Kind.SPLINTERS
 	var is_snowy := look == SeasonBlend.Look.SNOW or look == SeasonBlend.Look.DUSTING
 	match type:
-		WorldObjectTypes.OAK, WorldObjectTypes.WILLOW, WorldObjectTypes.KNICK:
+		WorldObjectTypes.OAK, WorldObjectTypes.BEECH, WorldObjectTypes.WILLOW, WorldObjectTypes.KNICK:
 			if is_snowy:
 				return Kind.SNOW
 			match look:

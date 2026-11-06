@@ -176,6 +176,30 @@ def acorn():
     return outlined(from_rows(rows, keys), "soil_dark")
 
 
+def beechnut():
+    """A beechnut: two glossy three-sided nuts in the open, prickly husk they grew in."""
+    rows = [
+        "................",
+        "..p..........p..",
+        "...hh......hh...",
+        "...hHh....hHh...",
+        "....hh.LN.hh....",
+        "......LLNb......",
+        ".....LLLNb......",
+        "....LLLNNbb.....",
+        "....LLNNbbb.....",
+        "...hhhNNbhhh....",
+        "..phHHhhhhHhp...",
+        "....hhh.hhh.....",
+        "...hh.....hh....",
+        "..p.........p...",
+        "................",
+        "................",
+    ]
+    keys = {"p": "soil", "h": "soil_mid", "H": "soil_light", "L": "ochre", "N": "ochre_dark", "b": "umber"}
+    return outlined(from_rows(rows, keys), "soil_dark")
+
+
 def cone(rows, keys):
     """A cone from rows: `rows` gives each row's left edge and width. Its scales form a diamond
     lattice: dark seams along both diagonals, each scale lit at its top; the right edge is in
@@ -414,6 +438,7 @@ ICONS = {
     "acorn": acorn(),
     "spruce_cone": spruce_cone(),
     "pine_cone": pine_cone(),
+    "beechnut": beechnut(),
     "waistcoat": waistcoat(),
     "shirt": shirt(),
     "breeches": breeches(),

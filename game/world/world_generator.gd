@@ -97,7 +97,7 @@ const CONIFER_CLUMP_ABOVE := 0.3
 const CONIFER_CLUMP_EDGE := 0.08
 const PINE_SHARE_OF_CONIFERS := 0.65
 const MARSH_BROADLEAVES := {WorldObjectTypes.OAK: 1.0}
-const GEEST_BROADLEAVES := {WorldObjectTypes.OAK: 1.0}
+const GEEST_BROADLEAVES := {WorldObjectTypes.OAK: 3.0, WorldObjectTypes.BEECH: 4.0}
 ## The bush kinds as cumulative shares of the bush roll, in order.
 const BUSH_KIND_SHARES := [
 	[0.3, WorldObjectTypes.BERRY_BUSH],

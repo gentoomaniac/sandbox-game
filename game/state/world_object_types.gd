@@ -93,6 +93,7 @@ const WATTLE_FENCE := &"wattle_fence"
 const STONE_WALL := &"stone_wall"
 const DYKE := &"dyke"
 const WILLOW := &"willow"
+const BEECH := &"beech"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -119,6 +120,8 @@ const _WATTLE_FENCE_ROW := 28
 const _STONE_WALL_ROW := 29
 const _DYKE_ROW := 30
 const _WILLOW_ROW := 31
+const _BEECH_ROW := 32
+const _BEECH_TRUNK_ROW := 33
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -228,6 +231,23 @@ const _OTHER_TYPES := {
 		"harvest_level": 1,
 		"atlas_row": _WILLOW_ROW,
 		"sprite_height": 62,
+		"variants": 3,
+	},
+	# The beech of the woods: smooth grey bark, a dense dome of a crown.
+	BEECH:
+	{
+		"hp": 5,
+		"tool": &"axe",
+		"seed": &"beechnut",
+		"seed_chance": 0.25,
+		"trunk": {"logs": 3, "hp": 4, "atlas_row": _BEECH_TRUNK_ROW},
+		"leaves": STUMP,
+		"regrows": true,
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _BEECH_ROW,
+		"sprite_height": 63,
 		"variants": 3,
 	},
 	BERRY_BUSH:

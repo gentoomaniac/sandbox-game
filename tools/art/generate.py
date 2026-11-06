@@ -52,6 +52,7 @@ id>.png are their 8x8 versions for items lying on the ground (items.small), made
 """
 
 import animals
+import beech
 import boundaries
 import buildings
 import camp
@@ -126,6 +127,9 @@ def world_chest():
 # 29 stone_wall (3 variants of 16)
 # 30 dyke (16)
 # 31 willow (3)
+# 32 beech (3)
+# 33 beech_trunk (2)
+# 34 beech_short_trunk (2)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -158,6 +162,8 @@ def object_atlas():
         ("stone_wall", boundaries.stone_wall_row()),
         ("dyke", boundaries.dyke_row()),
         ("willow", willow.willow_row()),
+        ("beech", beech.beech_row()),
+        *trunks.rows("beech"),
     ]
 
 
@@ -185,6 +191,7 @@ def write_seasonal_art():
     redraws = {
         "oak": lambda variant: trees.bare_oak(trees.OAK_SEEDS[variant]),
         "willow": lambda variant: willow.bare_willow(willow.WILLOW_SEEDS[variant]),
+        "beech": lambda variant: beech.bare_beech(beech.BEECH_SEEDS[variant]),
     }
     houses = {}
     for name, draw in buildings.PICTURES.items():
