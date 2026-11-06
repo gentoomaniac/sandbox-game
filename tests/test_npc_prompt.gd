@@ -42,6 +42,29 @@ func test_missing_keys_are_reported() -> void:
 	assert_does_not_have(problems, "[request] no temperature")
 
 
+func test_values_of_the_wrong_type_are_reported() -> void:
+	var values := DataFile.read_sections(NpcTalkRules.DEFAULT_PATH)
+	values["prompt"]["system"] = 42
+	values["request"]["history_lines"] = "eight"
+	values["request"]["temperature"] = 1
+	var problems := NpcTalkRules.new(values).problems()
+	assert_has(problems, "[prompt] system is not a text")
+	assert_has(problems, "[request] history_lines is not a whole number")
+	assert_eq(problems.size(), 2, "a whole number is a number too: %s" % [problems])
+
+
+func test_weather_lists_must_be_pairs_of_from_and_words() -> void:
+	var values := DataFile.read_sections(NpcTalkRules.DEFAULT_PATH)
+	values["weather"]["rain"] = [[0.05, "light rain"], ["heavy rain"]]
+	values["weather"]["conditions"] = ["rain", "hail"]
+	values["scripted"]["replies"] = []
+	var problems := NpcTalkRules.new(values).problems()
+	assert_has(problems, "[weather] rain is not a list of [from, words]")
+	assert_has(problems, "[weather] conditions: hail is not a condition")
+	assert_has(problems, "[weather] hail is not a list of [from, words]")
+	assert_has(problems, "[scripted] replies is not a list of at least one")
+
+
 func test_every_layer_a_villager_may_wear_has_its_words() -> void:
 	for layer in NpcRules.default_rules().all_layers():
 		assert_ne(_rules.look_words(layer.slot, layer.variant), "", str(layer))
