@@ -120,6 +120,12 @@ Answered questions move into SPEC.md and are removed here.
     tests, never to ship. Apache-2.0 alternatives: qwen2.5 1.5B or 7B. Default: keep 3B for
     testing.
 
+24. **Coast** (task 61): the coast in the west, about 260 tiles out, the river running into
+    it; a sea dyke without gaps; mud walkable at any tide, one look in every season; the tide
+    a look only (high water every 12 h 25 min); salt marsh red-purple in autumn; Warften on
+    the salt marsh (buildable, not tillable, uninhabited); Ewers smaller than life (atlas
+    limit). Not yet: ice on the mud, mussel beds, seals, sluices, Halligen. Default: keep.
+
 ## Questions
 
 No open questions right now.
