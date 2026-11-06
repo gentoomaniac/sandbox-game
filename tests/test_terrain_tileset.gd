@@ -146,6 +146,25 @@ func test_decorations_gather_where_the_cluster_noise_peaks() -> void:
 	assert_gt(sparse, 0)
 
 
+func test_every_meadow_flower_has_its_tiles_in_every_look() -> void:
+	for look: SeasonBlend.Look in SeasonBlend.GROUND_LOOKS:
+		var source: TileSetAtlasSource = _tileset.tile_set.get_source(
+			TerrainTileset.decoration_source_id(look)
+		)
+		for species in TerrainTileset.FLOWER_SPECIES:
+			for variant in TerrainTileset.FLOWER_VARIANTS:
+				var cell := TerrainTileset.flower_cell(species, variant)
+				assert_true(source.has_tile(cell), "%s %d in look %d" % [species, variant, look])
+	var after_the_last := Vector2i(
+		TerrainTileset.FLOWER_SPECIES.size() * TerrainTileset.FLOWER_VARIANTS,
+		TerrainTileset.FLOWER_ROW
+	)
+	var summer: TileSetAtlasSource = _tileset.tile_set.get_source(
+		TerrainTileset.decoration_source_id(SeasonBlend.Look.SUMMER)
+	)
+	assert_false(summer.has_tile(after_the_last), "the art has no more flowers than the list")
+
+
 func test_tilled_soil_has_no_decorations() -> void:
 	for x in 50:
 		assert_eq(_tileset.decoration_cell(SOIL, Vector2i(x, 0), 1.0), TerrainTileset.NO_DECORATION)

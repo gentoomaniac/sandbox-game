@@ -202,6 +202,8 @@ func test_lily_pads_drift_flowers_sway_and_pebbles_stay() -> void:
 	assert_eq(motion.decoration_material(Vector2i(0, grass)), motion.decoration_sway, "a flower")
 	assert_null(motion.decoration_material(Vector2i(5, grass)), "pebbles")
 	assert_null(motion.decoration_material(Vector2i(0, TerrainTileset.Layer.SOIL)))
+	var heather := TerrainTileset.flower_cell(&"heather", TerrainTileset.FlowerVariant.DRIFT)
+	assert_eq(motion.decoration_material(heather), motion.decoration_sway, "a meadow flower")
 
 
 ## The list of swaying decorations follows the order of the atlas rows: a row with more or

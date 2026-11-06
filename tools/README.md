@@ -26,6 +26,7 @@ by topic. Where is a thing drawn?
 | `canvas.py` | The shared basics: `TILE`, the size of an object cell, `blank`, `filled`, `copy` and a clipped `rect`. |
 | `palette.py` | The palette, `to_image`, `save` (one PNG under `assets/`) and the palette check. |
 | `terrain.py` | The ground: water, floodplain, wetland, grass, soil, and their decorations. |
+| `flowers.py` | The meadow flowers of the region: the flower row of the decoration atlas. |
 | `trees.py` | Oak, spruce, pine, dead tree, bushes, ferns, stones, boulders and stumps, and the shared tree parts (crowns of shaded blobs, trunks, bare twigs). |
 | `beech.py`, `birch.py`, `alder.py` | The beech, the birch and the alder, in leaf and bare. |
 | `willow.py` | The pollard willow, in leaf and bare. |

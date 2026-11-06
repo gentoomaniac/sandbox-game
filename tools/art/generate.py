@@ -65,6 +65,7 @@ import chest
 import crop_icons
 import crops
 import fire
+import flowers
 import interior
 import items
 import livestock
@@ -201,6 +202,8 @@ def write_seasonal_art():
             assert all(None not in line for line in tile), f"{layer.__name__}: full tile has holes"
         terrain_rows.append(tiles)
         decoration_rows.append(decorations)
+    # The meadow flowers have a row of their own, below the layers' (see flowers.py).
+    decoration_rows.append(flowers.flower_row())
     objects = object_atlas()
     write_object_rows(objects)
     redraws = {

@@ -12,7 +12,8 @@ assets/terrain.png, per row:
 - then the full-tile variants (mask 15), at least one per row.
 
 assets/decorations.png, per row: small visual-only sprites (flowers, pebbles, reeds...)
-drawn on top of world tiles of that layer. A row may be empty.
+drawn on top of world tiles of that layer. A row may be empty. Under the layers' rows comes
+one more, the meadow flowers of flowers.py.
 """
 
 import math

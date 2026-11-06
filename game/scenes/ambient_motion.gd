@@ -96,7 +96,8 @@ const FIRE_PROFILES := {
 ## Which decorations sway, per terrain layer, in the order of the decoration atlas row (see
 ## TerrainTileset.DECORATION_KINDS and the art generator). Pebbles, fallen leaves, puddles and
 ## toadstools stay still, and so does a tile that mixes pebbles with a tuft; layers that are
-## not here have none that sway. Decorations on water are lily pads, which drift instead.
+## not here have none that sway. Decorations on water are lily pads, which drift instead, and
+## all the meadow flowers (TerrainTileset.FLOWER_ROW) sway.
 const SWAYING_DECORATIONS := {
 	TerrainTileset.Layer.FLOODPLAIN: [true, true, true, true, true, false],
 	TerrainTileset.Layer.WETLAND: [false, false, true, true, true, true],
@@ -174,6 +175,8 @@ func crop_material(cell_size: Vector2i) -> ShaderMaterial:
 func decoration_material(atlas_cell: Vector2i) -> ShaderMaterial:
 	if atlas_cell.y == TerrainTileset.Layer.WATER:
 		return lily_pads
+	if atlas_cell.y == TerrainTileset.FLOWER_ROW:
+		return decoration_sway
 	var sways: Array = SWAYING_DECORATIONS.get(atlas_cell.y, [])
 	if atlas_cell.x < sways.size() and sways[atlas_cell.x]:
 		return decoration_sway

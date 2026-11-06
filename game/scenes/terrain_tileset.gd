@@ -12,10 +12,13 @@ extends RefCounted
 ##
 ## Terrain atlas: one row per layer. EDGE_VARIANTS blocks of 15 columns hold the edge
 ## shapes for masks 0..14 (0 is empty), the columns from FULL_COLUMN on the full-tile
-## variants. Decoration atlas: one row per layer, one column per decoration.
+## variants. Decoration atlas: one row per layer, one column per decoration, and below them the
+## row of meadow flowers (FLOWER_ROW).
 
 ## Draw order and atlas row, bottom to top.
 enum Layer { WATER, FLOODPLAIN, WETLAND, GRASS, LUSH_GRASS, DRY_GRASS, SOIL }
+## The tiles of a meadow flower (see FLOWER_ROW).
+enum FlowerVariant { SMALL, FEW, DRIFT, OTHER_DRIFT }
 
 const TILE_SIZE := 16
 ## Every look of the ground (see SeasonBlend.GROUND_LOOKS) has an atlas source of its own with
@@ -57,6 +60,25 @@ const MISSING := -1
 const NO_DECORATION := Vector2i(-1, -1)
 
 const LAYER_COUNT := 7
+## The row of the decoration atlas with the meadow flowers: FLOWER_VARIANTS columns per species
+## of FLOWER_SPECIES, in that order (see tools/art/flowers.py): a small plant, a few, and two
+## tiles of the thick of a drift.
+const FLOWER_ROW := LAYER_COUNT
+const FLOWER_SPECIES: Array[StringName] = [
+	&"wood_anemone",
+	&"dandelion",
+	&"cuckooflower",
+	&"daisy",
+	&"buttercup",
+	&"red_campion",
+	&"red_clover",
+	&"white_clover",
+	&"yarrow",
+	&"knapweed",
+	&"meadowsweet",
+	&"heather",
+]
+const FLOWER_VARIANTS := 4
 ## Layer per terrain, indexed by Tile.Terrain. Grass is ordinary grass here; terrain_layer()
 ## turns it lush or dry.
 const LAYER_OF_TERRAIN: Array[Layer] = [
@@ -143,7 +165,7 @@ func _init(motion: AmbientMotion = null) -> void:
 			_full_variant_counts = counts
 		var no_counts: Array[int] = []
 		var decorations := _atlas_source(
-			SeasonalArt.path(DECORATION_ATLAS_PATH, look), 0, no_counts
+			SeasonalArt.path(DECORATION_ATLAS_PATH, look), 0, no_counts, LAYER_COUNT + 1
 		)
 		if motion != null:
 			_set_motion(decorations, motion)
@@ -314,6 +336,13 @@ func decoration_cell(layer: int, tile_pos: Vector2i, cluster: float) -> Vector2i
 	return Vector2i(roll / 1000 % count, layer)
 
 
+## The decoration atlas cell of a meadow flower of FLOWER_SPECIES.
+static func flower_cell(species: StringName, variant: FlowerVariant) -> Vector2i:
+	var index := FLOWER_SPECIES.find(species)
+	assert(index >= 0, "No flower species: %s" % species)
+	return Vector2i(index * FLOWER_VARIANTS + variant, FLOWER_ROW)
+
+
 ## The Vegetation kind of a decoration (an atlas cell from `decoration_cell`), or &"" if it
 ## shows all year.
 static func decoration_kind(atlas_cell: Vector2i) -> StringName:
@@ -330,17 +359,17 @@ static func _set_motion(decorations: TileSetAtlasSource, motion: AmbientMotion) 
 		decorations.get_tile_data(atlas_cell, 0).material = motion.decoration_material(atlas_cell)
 
 
-## An atlas source with a tile for every non-empty cell of the image. Appends, per row,
-## how many tiles sit at or right of `counted_from` to `counts`.
+## An atlas source with a tile for every non-empty cell of the first `rows` rows of the image.
+## Appends, per row, how many tiles sit at or right of `counted_from` to `counts`.
 static func _atlas_source(
-	path: String, counted_from: int, counts: Array[int]
+	path: String, counted_from: int, counts: Array[int], rows := LAYER_COUNT
 ) -> TileSetAtlasSource:
 	var texture: Texture2D = load(path)
 	var image := texture.get_image()
 	var source := TileSetAtlasSource.new()
 	source.texture = texture
 	source.texture_region_size = Vector2i(TILE_SIZE, TILE_SIZE)
-	for row in LAYER_COUNT:
+	for row in rows:
 		var count := 0
 		for column in image.get_width() / TILE_SIZE:
 			var region := Rect2i(column * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE)
