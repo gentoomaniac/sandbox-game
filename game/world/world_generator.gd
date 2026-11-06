@@ -420,6 +420,11 @@ func _rolled_type_at(
 	return WorldObjectTypes.TALL_GRASS if is_tall_grass else &""
 
 
+## Whether a tile lies in a forest, from its edge to its core: where the trees stand close.
+func is_forest(world_pos: Vector2i) -> bool:
+	return _forest_noise.get_noise_2dv(Vector2(world_pos)) > FOREST_THRESHOLD
+
+
 func _is_tall_grass_at(world_pos: Vector2i) -> bool:
 	var in_patch := _grass_noise.get_noise_2dv(Vector2(world_pos)) > GRASS_PATCH_ABOVE
 	var chance := GRASS_PATCH_CHANCE if in_patch else GRASS_SCATTER_CHANCE

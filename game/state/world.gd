@@ -460,6 +460,11 @@ func has_clay(world_pos: Vector2i) -> bool:
 	)
 
 
+## Whether a tile lies in a forest as the world generated it (see WorldGenerator `is_forest`).
+func is_in_woods(world_pos: Vector2i) -> bool:
+	return _generator.is_forest(world_pos)
+
+
 ## Digs a clay spot out: it holds no clay for the next CLAY_SPENT_NIGHTS nights. What it gave is
 ## up to the caller.
 func spend_clay_spot(world_pos: Vector2i) -> void:
