@@ -10,7 +10,7 @@ extends Node
 ## OutsideEffects, which is where the sounds of the world outside go.
 ## Players come from two small pools; when all are busy the next in turn is cut off.
 ##
-## Debug: `--sound-log` prints each event as it plays.
+## Debug: `--sound-log` (see StartupOptions) prints each event as it plays.
 
 ## An event was played; `position` is null for a plain sound.
 signal played(event: StringName, position: Variant)
@@ -33,6 +33,9 @@ const SILENT_DB := -80.0
 ## Silent no matter the settings (the `--mute` flag, for test runs); sounds still play and
 ## log.
 var is_muted := false
+## Prints each event as it plays (the `--sound-log` flag). Set before the service is added to the
+## tree.
+var is_logging := false
 
 var _rules := SoundRules.default_rules()
 var _rng := RandomNumberGenerator.new()
@@ -74,7 +77,7 @@ func _ready() -> void:
 		world_player.process_mode = Node.PROCESS_MODE_ALWAYS
 		add_child(world_player)
 		_world_players.append(world_player)
-	if OS.get_cmdline_user_args().has("--sound-log"):
+	if is_logging:
 		played.connect(
 			func(event: StringName, position: Variant) -> void:
 				print("sound: %s%s" % [event, "" if position == null else " at %s" % position])

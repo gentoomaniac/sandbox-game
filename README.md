@@ -269,4 +269,4 @@ to look. `make help` lists the targets and their variables.
   [data/](data/) (energy, crops, buildings, recipes, weather, seasons, vegetation, wildlife, sounds, ambience).
 - **Design:** the design is in [SPEC.md](SPEC.md).
 - **Debug flags:** command-line flags for screenshots and debugging (time, day, weather,
-  position and more) are listed at the top of [game/scenes/main.gd](game/scenes/main.gd).
+  position and more) are listed in the header of [game/scenes/startup_options.gd](game/scenes/startup_options.gd).

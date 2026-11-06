@@ -1,6 +1,6 @@
 class_name DebugField
 extends RefCounted
-## For screenshots (`--field=<x>,<y>` in main.gd): a tilled field with a row of bare soil from
+## For screenshots (`--field=<x>,<y>`): a tilled field with a row of bare soil from
 ## dry to soaked, and below that one row per crop, two tiles apart for the tall ones, with a crop
 ## in each growth stage and then a dead one. Whatever stood there is cleared. The chunks it
 ## covers must be loaded.

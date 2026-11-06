@@ -1,0 +1,302 @@
+class_name StartupOptions
+extends RefCounted
+## The flags after `--` on the Godot command line, parsed once into typed fields. Each field is
+## its flag in snake_case (`--chest-inside` is `chest_inside`); a field keeps its default when
+## its flag is not given. An unknown flag is a warning, a malformed value an error.
+## Pass them to `make screenshot` with `ARGS="--weather=rain --day=45"`.
+##
+## A `<x>,<y>` is a tile of the world (whole numbers); a tile flag left out is `NO_TILE`.
+##
+## Which game is run
+##   --new-game               ignore the save
+##   --save-path=<file>       use another save file (keeps tests and screenshots off yours)
+##   --settings-path=<file>   use another settings file
+##   --mute                   silence all sound (events still play and log)
+##   --background             make the window unfocusable, so it takes no focus but no keyboard
+##                            input either: not for playing. `make screenshot` passes both.
+##   --sound-log              print every sound event as it plays (see AudioService)
+##
+## The screenshot
+##   --screenshot=<path>      save one frame as PNG once streaming has settled, then quit
+##   --screenshot-delay=<s>   wait that many real seconds more, with the clock running (to see
+##                            what a midnight changes: `--day=30 --time=23:50
+##                            --screenshot-delay=10`)
+##   --menu=<page>            open that menu page (pause, settings, controls, display, game,
+##                            audio); with --screenshot the shot is of the menu
+##   --tooltip=<id>           show the tooltip of a control as if the mouse rested on it:
+##                            hotbar_<0..9>; inventory_<0..29> and equipment_<slot> (with
+##                            --inventory); recipe_<id> (with --crafting); inventory_<0..29>
+##                            and chest_<n> (with --storage); setting_ui_scale and
+##                            setting_day_length (with --menu=game); setting_master_volume,
+##                            setting_effects_volume, setting_ambience_volume and
+##                            setting_sound_in_background (with --menu=audio);
+##                            action_<action> (with --menu=controls)
+##
+## Where and when
+##   --at=<x>,<y>             put the player on that tile instead of at the camp
+##   --day=<n>                the day number (days 1, 31, 61 and 91 start a season)
+##   --time=<hh:mm>           the time of day
+##   --weather=<condition>    force the weather (clear, rain, snow, fog, wind, storm, thunder)
+##   --flash                  keep the flash of lightning on
+##   --snow=<0..1>            force the snow cover
+##   --zoom=<z>               the camera zoom
+##   --camera-shift=<x>,<y>   move the camera by that many art pixels, fractions included (to
+##                            check smooth scrolling)
+##   --coordinates            show the coordinates (F3)
+##   --mouse-tile=<x>,<y>     pretend the mouse is always on that tile
+##
+## The player
+##   --energy=<0..100>        start with that much energy; 0 passes out at start
+##   --health=<0..100>        start with that much health
+##   --hold=<item>            put 5 of an item in the inventory and hold it
+##   --wear=<item>            put a wearable item on (straw_hat, shirt, ...)
+##   --hair=<n>               the hair style (F6 cycles it)
+##   --pose=<direction>[,<column>]  face that way, optionally frozen on that walking frame
+##   --inside                 walk into the first house as soon as one exists (see --house)
+##   --sleep                  go to bed as soon as the world is drawn (a new game starts beside
+##                            the sleeping bag). With --time=00:59 and a --screenshot-delay of
+##                            a second or more the player stays up too late instead.
+##
+## Screens and the console
+##   --inventory              open the character screen at start
+##   --crafting               open the crafting menu at start
+##   --storage                open the storage screen of the --chest or --chest-inside chest
+##   --console=<line>;<line>  run those console commands at start and leave the console open
+##
+## Building
+##   --building=<id>          the building the hammer places
+##   --ghost=<x>,<y>          hold the hammer, its ghost pinned on that tile (see BuildMode)
+##   --house=<x>,<y>          place the chosen building there once its chunks are loaded
+##
+## Things put in the world (see the Debug* classes)
+##   --field=<x>,<y>          a small tilled field with crops in every growth stage
+##   --drops=<x>,<y>          what a felled tree, a mined stone, a harvested crop and a picked
+##                            bush drop
+##   --forage=<x>,<y>         a stump, bushes and a sapling in a row, and some of every new item
+##   --felled=<x>,<y>         trees felled from each side, with stumps, trunks and tree seeds
+##   --mow=<x>,<y>            mows twice with the scythe from that tile (--day=45 for summer)
+##   --chest=<x>,<y>          a chest with some items on that tile
+##   --chest-inside=<x>,<y>   a chest on that tile of the first house's room (with --inside)
+##
+## Done once the world is drawn (see DebugRunner)
+##   --harvest=<x>,<y>        fell two oaks, cut a trunk, break a stone and mow a patch in a row
+##                            from that tile, to catch the falling trees and the hopping items
+##                            (use --day=45, --screenshot-delay=0.3 and --at= ten tiles right)
+##   --hit=<x>,<y>            hit the object on that tile once, without damage (its shake, what
+##                            flies off; the sweat of a tired player, so add --energy=15). The
+##                            particles last about a second: use a short --screenshot-delay.
+##   --wildlife=<kind>[,<kind>]  put a few animals of those kinds near the player and leave it at
+##                            that (bird, rabbit, squirrel, deer, bee, butterfly, flock)
+##   --wildlife-calm          the animals take no notice of the player
+
+## The value of a tile flag that was not given.
+const NO_TILE := Vector2i(1 << 30, 1 << 30)
+
+# Which game is run
+var new_game := false
+var save_path := SaveFile.DEFAULT_PATH
+var settings_path := GameSettings.DEFAULT_PATH
+var mute := false
+var background := false
+var sound_log := false
+
+# The screenshot
+var screenshot := ""
+var screenshot_delay := 0.0
+## A `PauseMenu.Page`, or -1 for none.
+var menu := -1
+var tooltip := ""
+
+# Where and when
+var at := NO_TILE
+## 0 for the day of the game, which the clock would never have.
+var day := 0
+## -1 for the time of the game.
+var time_hour := -1
+var time_minute := 0
+var weather := &""
+var flash := false
+## -1 for the snow cover of the game.
+var snow := -1.0
+var zoom := 1.0
+var camera_shift := Vector2.ZERO
+var coordinates := false
+var mouse_tile := NO_TILE
+
+# The player
+## -1 for the energy and the health of the game.
+var energy := -1.0
+var health := -1.0
+var hold := &""
+var wear := &""
+## -1 for the hair of the game.
+var hair := -1
+var pose := ""
+## -1 for a walking player.
+var pose_column := -1
+var inside := false
+var sleep := false
+
+# Screens and the console
+var inventory := false
+var crafting := false
+var storage := false
+var console := PackedStringArray()
+
+# Building
+var building := &""
+var ghost := NO_TILE
+var house := NO_TILE
+
+# Things put in the world
+var field := NO_TILE
+var drops := NO_TILE
+var forage := NO_TILE
+var felled := NO_TILE
+var mow := NO_TILE
+var chest := NO_TILE
+var chest_inside := NO_TILE
+
+# Done once the world is drawn
+var harvest := NO_TILE
+var hit := NO_TILE
+var wildlife := PackedStringArray()
+var wildlife_calm := false
+
+
+static func from_command_line() -> StartupOptions:
+	return StartupOptions.new(OS.get_cmdline_user_args())
+
+
+func _init(args := PackedStringArray()) -> void:
+	for arg in args:
+		var name := arg.get_slice("=", 0)
+		match name:
+			"--new-game":
+				new_game = true
+			"--save-path":
+				save_path = _value(arg)
+			"--settings-path":
+				settings_path = _value(arg)
+			"--mute":
+				mute = true
+			"--background":
+				background = true
+			"--sound-log":
+				sound_log = true
+			"--screenshot":
+				screenshot = _value(arg)
+			"--screenshot-delay":
+				screenshot_delay = float(_value(arg))
+			"--menu":
+				menu = PauseMenu.Page.get(_value(arg).to_upper(), -1)
+			"--tooltip":
+				tooltip = _value(arg)
+			"--at":
+				at = _tile(arg)
+			"--day":
+				day = maxi(int(_value(arg)), 1)
+			"--time":
+				_parse_time(arg)
+			"--weather":
+				weather = StringName(_value(arg))
+			"--flash":
+				flash = true
+			"--snow":
+				snow = float(_value(arg))
+			"--zoom":
+				zoom = float(_value(arg))
+			"--camera-shift":
+				var shift := _value(arg).split_floats(",")
+				camera_shift = Vector2(shift[0], shift[1])
+			"--coordinates":
+				coordinates = true
+			"--mouse-tile":
+				mouse_tile = _tile(arg)
+			"--energy":
+				energy = float(_value(arg))
+			"--health":
+				health = float(_value(arg))
+			"--hold":
+				hold = StringName(_value(arg))
+			"--wear":
+				wear = StringName(_value(arg))
+			"--hair":
+				hair = int(_value(arg))
+			"--pose":
+				var parts := _value(arg).split(",")
+				pose = parts[0]
+				if parts.size() > 1:
+					pose_column = int(parts[1])
+			"--inside":
+				inside = true
+			"--sleep":
+				sleep = true
+			"--inventory":
+				inventory = true
+			"--crafting":
+				crafting = true
+			"--storage":
+				storage = true
+			"--console":
+				console = _value(arg).split(";")
+			"--building":
+				building = StringName(_value(arg))
+			"--ghost":
+				ghost = _tile(arg)
+			"--house":
+				house = _tile(arg)
+			"--field":
+				field = _tile(arg)
+			"--drops":
+				drops = _tile(arg)
+			"--forage":
+				forage = _tile(arg)
+			"--felled":
+				felled = _tile(arg)
+			"--mow":
+				mow = _tile(arg)
+			"--chest":
+				chest = _tile(arg)
+			"--chest-inside":
+				chest_inside = _tile(arg)
+			"--harvest":
+				harvest = _tile(arg)
+			"--hit":
+				hit = _tile(arg)
+			"--wildlife":
+				wildlife = _value(arg).split(",")
+			"--wildlife-calm":
+				wildlife_calm = true
+			_:
+				if arg.begins_with("--"):
+					push_warning("Unknown flag '%s' (see StartupOptions)" % arg)
+
+
+## What follows the first `=` of a `--flag=value` argument.
+func _value(arg: String) -> String:
+	return arg.substr(arg.find("=") + 1)
+
+
+## The tile of a `--flag=<x>,<y>` argument, or NO_TILE (after an error) if it is malformed.
+func _tile(arg: String) -> Vector2i:
+	var parts := _value(arg).split(",")
+	if parts.size() != 2 or not parts[0].is_valid_int() or not parts[1].is_valid_int():
+		push_error("%s expects <x>,<y>, got '%s'" % [arg.get_slice("=", 0), _value(arg)])
+		return NO_TILE
+	return Vector2i(int(parts[0]), int(parts[1]))
+
+
+func _parse_time(arg: String) -> void:
+	var text := _value(arg)
+	var parts := text.split(":")
+	if parts.size() != 2 or not parts[0].is_valid_int() or not parts[1].is_valid_int():
+		push_error("--time expects hh:mm, got '%s'" % text)
+		return
+	var hour := int(parts[0])
+	var minute := int(parts[1])
+	if hour < 0 or hour > 23 or minute < 0 or minute > 59:
+		push_error("--time out of range: '%s'" % text)
+		return
+	time_hour = hour
+	time_minute = minute

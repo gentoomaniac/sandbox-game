@@ -21,7 +21,7 @@ var _hovered: Control
 var _hover_seconds := 0.0
 ## Set by a click: no tooltip until the mouse is over another control.
 var _is_suppressed := false
-## Debug: the tooltip to show without hovering (see `--tooltip` in main.gd).
+## Debug: the tooltip to show without hovering (see `--tooltip`).
 var _debug_id := ""
 
 

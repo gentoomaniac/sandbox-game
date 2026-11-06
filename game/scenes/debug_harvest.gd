@@ -1,6 +1,6 @@
 class_name DebugHarvest
 extends RefCounted
-## For screenshots of the harvest animations (`--harvest=<x>,<y>` in main.gd): in a row from that
+## For screenshots of the harvest animations (`--harvest=<x>,<y>`): in a row from that
 ## tile, six tiles apart, the player fells an oak from the left, fells one from the right, cuts
 ## a trunk into logs, breaks a stone and mows a patch of tall grass (use `--day=45`, tall grass
 ## is gone in winter). It uses the real hits, so the view sees what it sees in play: take the

@@ -5,67 +5,8 @@ extends Node2D
 ## The camera and chunk streaming follow the player.
 ##
 ## The game is loaded from the save at start and saved after sleeping, after passing out and on
-## quit (see SaveFile). Flags after `--` on the Godot command line (see `make screenshot`):
-## `--new-game` ignores the save; `--save-path=<file>` uses another save file;
-## `--settings-path=<file>` uses another settings file (see GameSettings). Debug flags:
-## `--at=<x>,<y>` puts the player on that world tile instead of at the camp;
-## `--ghost=<x>,<y>` holds the hammer (see BuildMode), `--building=<id>` picks the building it
-## places; `--energy=<n>` and `--health=<n>` start with that much (0 to 100);
-## `--screenshot=<path>` saves one frame as PNG once streaming has settled, then quits;
-## `--screenshot-delay=<s>` waits that many real seconds after that, with the clock running
-## (to see what a midnight changes, e.g. `--day=30 --time=23:50 --screenshot-delay=10`);
-## `--day=<n>` sets the day number (days 1, 31, 61 and 91 are the first day of each season);
-## `--time=<hh:mm>` sets the time of day; `--field=<x>,<y>` tills a small field there with
-## crops in every growth stage (see DebugField); `--inside` walks into the first house as soon
-## as one exists (see `--house`); `--drops=<x>,<y>` leaves what a felled tree, a mined stone, a
-## harvested crop and a picked bush drop (see DebugDrops); `--forage=<x>,<y>` puts a stump,
-## bushes and a sapling in a row from there and some of every new item in the inventory
-## (see DebugForage); `--felled=<x>,<y>` shows trees felled from each side, with their stumps and
-## trunks, and tree seeds on the ground (see DebugFelled);
-## `--harvest=<x>,<y>` fells two oaks, cuts a trunk, breaks a stone and mows a patch in a row from
-## that tile once the world is drawn, to catch the falling trees and the hopping items (see
-## DebugHarvest; use `--day=45` and `--screenshot-delay=0.3`, say, and `--at=` ten tiles right of
-## the tile);
-## `--mow=<x>,<y>` mows twice with the scythe from that tile, leaving mown patches and hay
-## (see DebugMow; with `--day=45` for summer);
-## `--console=<line>;<line>` runs those console commands at start and leaves the console
-## open (see ConsoleView); `--zoom=<z>` sets the camera zoom; `--coordinates` shows the
-## coordinates (F3); `--inventory` opens the character screen at start, `--crafting` the
-## crafting menu; `--hold=<item>` puts 5 of an item in the inventory and holds it (`chest`, say, to
-## see its ghost, with `--mouse-tile`); `--chest=<x>,<y>` puts a chest with some items on that tile
-## (see DebugChest), `--chest-inside=<x>,<y>` one inside the first house, on that tile of its
-## room (with `--inside`), and `--storage` opens the storage screen of that chest at start;
-## `--wear=<item>` puts a wearable item on (`straw_hat`, `shirt`, ...);
-## `--weather=<condition>` forces the weather (`clear`, `rain`, `snow`, `fog`, `wind`, `storm`,
-## `thunder`; see WeatherView), `--flash` keeps the flash of lightning on, `--snow=<0..1>` forces
-## the snow cover;
-## `--mouse-tile=<x>,<y>` pretends the mouse is always on that tile (for screenshots);
-## `--camera-shift=<x>,<y>` moves the camera by that many art pixels, fractions included
-## (to check smooth scrolling); `--menu=pause|settings|controls|display|game|audio` opens that menu
-## page (with `--screenshot`, the shot is of the menu). The console's `snow <0..1>` forces the snow
-## cover (`snow auto` ends it), and F3 shows the snow cover and the frost.
-## `--tooltip=<id>` shows the tooltip of a control as if the mouse rested on it: `hotbar_<0..9>`,
-## `inventory_<0..29>` (0 to 9 the hotbar) and `equipment_<slot>` (with `--inventory`),
-## `recipe_<id>` (with `--crafting`),
-## `inventory_<0..29>` and `chest_<n>` (with `--storage`), `setting_ui_scale` and
-## `setting_day_length` (with `--menu=game`), `setting_master_volume`, `setting_effects_volume`,
-## `setting_ambience_volume` and `setting_sound_in_background` (with `--menu=audio`),
-## `action_<action>` (with `--menu=controls`).
-## `--sound-log` prints every sound event as it plays (see AudioService).
-## `--mute` silences all sound (events still play and log); `--background` makes the window
-## unfocusable, so it can't take the focus but takes no keyboard input at all: not for playing.
-## Both are for test runs (`make screenshot` passes them).
-## `--wildlife=<kind>[,<kind>]` puts a few animals of those kinds near the player once the
-## world is drawn and leaves it at that (`bird`, `rabbit`, `squirrel`, `deer`, `bee`,
-## `butterfly`, `flock`; see WildlifeView), `--wildlife-calm` makes them take no notice of the
-## player; `--hit=<x>,<y>` hits the object on that tile once, without damage, as soon as the
-## world is drawn (to see its shake and what flies off, see HitEffect, and the sweat of a tired
-## player; the particles last about a second, so use a short `--screenshot-delay`). `--hit`
-## throws sweat only for a tired player: add `--energy=15`, say. `--sleep` goes to bed as soon
-## as the world is drawn (a new game starts beside the sleeping bag); `--energy=0` passes out at
-## start, and `--time=00:59` with a `--screenshot-delay` of a second or more stays up too late
-## (see `_pass_out`). PlayerView parses `--hair=<n>` and `--pose=<direction>`, and F6 cycles the
-## hair (see there). BuildMode parses `--ghost=<x>,<y>` and `--house=<x>,<y>` (see there).
+## quit (see SaveFile). The debug flags after `--` on the Godot command line are documented in
+## StartupOptions.
 
 const WORLD_SEED := 1
 ## The build ghost has snow on its roof while the snow cover is above this.
@@ -78,8 +19,6 @@ const FAST_FORWARD_FACTOR := 60.0
 const SCREENSHOT_SETTLE_FRAMES := 3
 ## Animals of each kind (but one flock) that `--wildlife` puts in view.
 const START_WILDLIFE_COUNT := 4
-## `_debug_hit_tile` while there is no `--hit` to do.
-const NO_TILE := Vector2i(1 << 30, 1 << 30)
 
 var _state: GameState
 var _builder: Builder
@@ -89,9 +28,7 @@ var _sounds := GameSounds.new()
 var _ambience := AmbienceSounds.new()
 var _menu: PauseMenu
 var _tooltip_view := TooltipView.new()
-var _save_path := SaveFile.DEFAULT_PATH
-var _settings_path := GameSettings.DEFAULT_PATH
-var _debug_menu_page := -1
+var _options := StartupOptions.from_command_line()
 var _player_view := PlayerView.new()
 var _tiredness_view := TirednessView.new()
 var _use_highlight := UseHighlight.new()
@@ -109,37 +46,20 @@ var _cheat_hud := CheatHud.new()
 ## The screens, in the order Escape closes them. The pause menu is not among them: Escape
 ## opens it, it pauses the game, and it has its own input.
 var _screens: Array = [_console_view, _character_screen, _crafting_screen, _storage_screen]
-var _start_console_lines := PackedStringArray()
 var _interior_view := InteriorView.new()
 var _weather_view := WeatherView.new()
 var _wildlife := WildlifeView.new()
-var _start_wildlife := PackedStringArray()
-var _debug_hit_tile := NO_TILE
-var _debug_harvest_tile := NO_TILE
 var _weather: WeatherSample
 var _snow_cover := 0.0
 var _frost := 0.0
-var _screenshot_path := ""
 var _fast_forward := false
 ## A fade (through a door, into sleep) or passing out is running: the player neither walks nor
 ## acts.
 var _is_in_transition := false
 var _fade_screen := FadeScreen.new()
-var _sleep_at_start := false
-var _enter_first_house := false
-var _open_character_screen_at_start := false
-var _open_crafting_screen_at_start := false
-var _open_storage_screen_at_start := false
-var _debug_chest_tile := NO_TILE
-var _debug_chest_inside_tile := NO_TILE
 var _debug_chest: WorldObject
 var _settled_frames := 0
-var _screenshot_delay := 0.0
 var _pending_minutes := 0.0
-var _camera_shift := Vector2.ZERO
-var _start_zoom := 1.0
-var _start_building := &""
-var _is_hammer_held_at_start := false
 
 @onready var _world: SubViewport = $WorldViewport
 @onready var _view: WorldView = $WorldViewport/WorldView
@@ -152,7 +72,7 @@ var _is_hammer_held_at_start := false
 
 func _ready() -> void:
 	# First thing, before anything else can raise or focus the window.
-	if OS.get_cmdline_user_args().has("--background"):
+	if _options.background:
 		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_NO_FOCUS, true)
 	if (
 		not EnergyRules.default_rules().is_valid()
@@ -175,7 +95,8 @@ func _ready() -> void:
 	_settings = _load_settings()
 	_apply_ui_scale(_settings.ui_scale)
 	add_child(_audio)
-	_audio.is_muted = OS.get_cmdline_user_args().has("--mute")
+	_audio.is_muted = _options.mute
+	_audio.is_logging = _options.sound_log
 	_world.audio_listener_enable_2d = true
 	_audio.use_world(_world)
 	_audio.apply_settings(_settings)
@@ -195,96 +116,7 @@ func _ready() -> void:
 	)
 	# Quitting saves first (see _notification).
 	get_tree().auto_accept_quit = false
-	for arg in OS.get_cmdline_user_args():
-		if arg.begins_with("--at="):
-			var tile := arg.trim_prefix("--at=").split_floats(",")
-			_state.player.position = Vector2(tile[0], tile[1]) + Vector2(0.5, 0.5)
-		elif arg.begins_with("--screenshot="):
-			_screenshot_path = arg.trim_prefix("--screenshot=")
-		elif arg.begins_with("--screenshot-delay="):
-			_screenshot_delay = float(arg.trim_prefix("--screenshot-delay="))
-		elif arg.begins_with("--day="):
-			_state.clock.day = maxi(int(arg.trim_prefix("--day=")), 1)
-		elif arg.begins_with("--time="):
-			_set_start_time(arg.trim_prefix("--time="))
-		elif arg.begins_with("--field="):
-			var tile := arg.trim_prefix("--field=").split_floats(",")
-			DebugField.create(_state.world, Vector2i(int(tile[0]), int(tile[1])))
-		elif arg.begins_with("--forage="):
-			var tile := arg.trim_prefix("--forage=").split_floats(",")
-			DebugForage.create(_state, Vector2i(int(tile[0]), int(tile[1])))
-		elif arg.begins_with("--felled="):
-			var tile := arg.trim_prefix("--felled=").split_floats(",")
-			DebugFelled.create(_state.world, Vector2i(int(tile[0]), int(tile[1])))
-		elif arg.begins_with("--mow="):
-			var tile := arg.trim_prefix("--mow=").split_floats(",")
-			DebugMow.create(_state, Vector2i(int(tile[0]), int(tile[1])))
-		elif arg.begins_with("--drops="):
-			var tile := arg.trim_prefix("--drops=").split_floats(",")
-			DebugDrops.create(_state.world, Vector2i(int(tile[0]), int(tile[1])))
-		elif arg.begins_with("--building="):
-			_start_building = StringName(arg.trim_prefix("--building="))
-		elif arg.begins_with("--ghost="):
-			# BuildMode pins the ghost there; here the hammer is taken to see it.
-			_is_hammer_held_at_start = true
-		elif arg.begins_with("--energy="):
-			_state.player.energy = float(arg.trim_prefix("--energy="))
-		elif arg.begins_with("--health="):
-			_state.player.health = float(arg.trim_prefix("--health="))
-		elif arg == "--coordinates":
-			_coordinates_hud.toggle()
-		elif arg.begins_with("--wear="):
-			var item := StringName(arg.trim_prefix("--wear="))
-			_state.player.equipment.equip(Equipment.slot_of(item), item)
-		elif arg == "--inside":
-			_enter_first_house = true
-		elif arg == "--sleep":
-			_sleep_at_start = true
-		elif arg == "--inventory":
-			_open_character_screen_at_start = true
-		elif arg == "--crafting":
-			_open_crafting_screen_at_start = true
-		elif arg == "--storage":
-			_open_storage_screen_at_start = true
-		elif arg.begins_with("--hold="):
-			_hold(StringName(arg.trim_prefix("--hold=")))
-		elif arg.begins_with("--chest="):
-			var tile := arg.trim_prefix("--chest=").split_floats(",")
-			_debug_chest_tile = Vector2i(int(tile[0]), int(tile[1]))
-		elif arg.begins_with("--chest-inside="):
-			var tile := arg.trim_prefix("--chest-inside=").split_floats(",")
-			_debug_chest_inside_tile = Vector2i(int(tile[0]), int(tile[1]))
-		elif arg.begins_with("--console="):
-			_start_console_lines = arg.trim_prefix("--console=").split(";")
-		elif arg.begins_with("--zoom="):
-			_start_zoom = float(arg.trim_prefix("--zoom="))
-		elif arg.begins_with("--mouse-tile="):
-			var tile := arg.trim_prefix("--mouse-tile=").split_floats(",")
-			_use_highlight.debug_mouse_tile = Vector2i(int(tile[0]), int(tile[1]))
-		elif arg.begins_with("--tooltip="):
-			_tooltip_view.show_by_id(arg.trim_prefix("--tooltip="))
-		elif arg.begins_with("--menu="):
-			_debug_menu_page = PauseMenu.Page.get(arg.trim_prefix("--menu=").to_upper(), -1)
-		elif arg.begins_with("--weather="):
-			_force_weather(StringName(arg.trim_prefix("--weather=")))
-		elif arg.begins_with("--wildlife="):
-			_start_wildlife = arg.trim_prefix("--wildlife=").split(",")
-			_wildlife.is_spawning_naturally = false
-		elif arg.begins_with("--hit="):
-			var tile := arg.trim_prefix("--hit=").split_floats(",")
-			_debug_hit_tile = Vector2i(int(tile[0]), int(tile[1]))
-		elif arg.begins_with("--harvest="):
-			var tile := arg.trim_prefix("--harvest=").split_floats(",")
-			_debug_harvest_tile = Vector2i(int(tile[0]), int(tile[1]))
-		elif arg == "--wildlife-calm":
-			_wildlife.is_player_ignored = true
-		elif arg == "--flash":
-			_weather_view.is_flash_held = true
-		elif arg.begins_with("--snow="):
-			_state.snow_cover.forced = float(arg.trim_prefix("--snow="))
-		elif arg.begins_with("--camera-shift="):
-			var shift := arg.trim_prefix("--camera-shift=").split_floats(",")
-			_camera_shift = Vector2(shift[0], shift[1])
+	_apply_start_options_to_state()
 	_view.show_world(_state.world)
 	_view.add_child(_ground_item_view)
 	_ground_item_view.show_items(_state.world, _view.entities)
@@ -292,24 +124,26 @@ func _ready() -> void:
 	_view.add_child(_wildlife)
 	_wildlife.show_wildlife(_state, _view, _camera)
 	_builder = Builder.new(_state)
-	if _start_building != &"":
-		if BuildingTypes.TYPES.has(_start_building):
-			_builder.choice = _start_building
+	if _options.building != &"":
+		if BuildingTypes.TYPES.has(_options.building):
+			_builder.choice = _options.building
 		else:
 			push_error(
-				"--building expects one of %s, got '%s'" % [BuildingTypes.ids(), _start_building]
+				"--building expects one of %s, got '%s'" % [BuildingTypes.ids(), _options.building]
 			)
-	if _is_hammer_held_at_start:
+	# BuildMode pins the ghost there; here the hammer is taken to see it.
+	if _options.ghost != StartupOptions.NO_TILE:
 		_builder.select_hammer()
+	_build_mode.start_options = _options
 	_build_mode.world = _state.world
 	_build_mode.builder = _builder
 	_build_mode.camera = _camera
 	_build_mode.message_changed.connect(_show_build_message)
 	_camera.rig.follow(_camera_target)
-	_camera.rig.set_zoom_clamped(_start_zoom)
+	_camera.rig.set_zoom_clamped(_options.zoom)
 	# Among the objects, so the player walks behind tree canopies.
 	_view.entities.add_child(_player_view)
-	_player_view.show_player(_state.player)
+	_player_view.show_player(_state.player, _options)
 	_tiredness_view.watch(_state.player, _state.clock, _state.energy_rules)
 	_player_view.add_child(_tiredness_view)
 	_view.add_child(_use_highlight)
@@ -324,12 +158,12 @@ func _ready() -> void:
 	_vitals.show_state(_state)
 	add_child(_character_screen)
 	_character_screen.show_player(_state.player)
-	if _open_character_screen_at_start:
-		_character_screen.toggle()
+	if _options.inventory:
+		_character_screen.open()
 	add_child(_crafting_screen)
 	_crafting_screen.show_crafting(Crafting.new(_state), _state.player.inventory)
-	if _open_crafting_screen_at_start:
-		_crafting_screen.toggle()
+	if _options.crafting:
+		_crafting_screen.open()
 	add_child(_storage_screen)
 	add_child(_cheat_hud)
 	_cheat_hud.show_cheats(_state.cheats)
@@ -341,9 +175,9 @@ func _ready() -> void:
 			_camera.rig.follow(_camera_target)
 			_show_clock()
 	)
-	if not _start_console_lines.is_empty():
+	if not _options.console.is_empty():
 		_console_view.open()
-		for line in _start_console_lines:
+		for line in _options.console:
 			_console_view.run_line(line)
 	_menu = PauseMenu.new(_settings)
 	_menu.resumed.connect(_resume)
@@ -454,27 +288,27 @@ func _process(delta: float) -> void:
 	if not _state.is_inside():
 		_view.player_feet = _player_view.position
 		_view.set_focus(_state.player.tile())
-	if _enter_first_house:
+	if _options.inside:
 		_enter_first_house_now()
-	if _sleep_at_start and _view.is_settled:
-		_sleep_at_start = false
+	if _options.sleep and _view.is_settled:
+		_options.sleep = false
 		_try_sleep()
 	_place_debug_chests()
-	if not _start_wildlife.is_empty() and _view.is_settled and not _state.is_inside():
+	if not _options.wildlife.is_empty() and _view.is_settled and not _state.is_inside():
 		_spawn_start_wildlife()
-	if _debug_hit_tile != NO_TILE and _view.is_settled and not _state.is_inside():
+	if _options.hit != StartupOptions.NO_TILE and _view.is_settled and not _state.is_inside():
 		_hit_debug_tile()
-	if _debug_harvest_tile != NO_TILE and _view.is_settled and not _state.is_inside():
-		DebugHarvest.run(_state, _debug_harvest_tile)
-		_debug_harvest_tile = NO_TILE
-	if _screenshot_path != "" and _debug_menu_page >= 0:
+	if _options.harvest != StartupOptions.NO_TILE and _view.is_settled and not _state.is_inside():
+		DebugHarvest.run(_state, _options.harvest)
+		_options.harvest = StartupOptions.NO_TILE
+	if _options.screenshot != "" and _options.menu >= 0:
 		_open_debug_menu_when_ready()
-	elif _screenshot_path != "":
+	elif _options.screenshot != "":
 		# A few frames after everything is in place, for tile maps to catch up.
 		_settled_frames = _settled_frames + 1 if _is_ready_to_shoot() else 0
 		if _settled_frames > SCREENSHOT_SETTLE_FRAMES:
-			_screenshot_delay -= delta
-			if _screenshot_delay <= 0.0:
+			_options.screenshot_delay -= delta
+			if _options.screenshot_delay <= 0.0:
 				_save_screenshot_and_quit()
 
 
@@ -497,8 +331,8 @@ func _save_and_quit() -> void:
 func _open_debug_menu_when_ready() -> void:
 	_settled_frames = _settled_frames + 1 if _is_ready_to_shoot() else 0
 	if _settled_frames > SCREENSHOT_SETTLE_FRAMES:
-		_open_menu(_debug_menu_page as PauseMenu.Page)
-		_debug_menu_page = -1
+		_open_menu(_options.menu as PauseMenu.Page)
+		_options.menu = -1
 		get_tree().create_timer(0.2, true).timeout.connect(_save_screenshot_and_quit)
 
 
@@ -590,14 +424,14 @@ func _pass_out() -> void:
 ## is not, so the world scrolls smoothly and the player wobbles by up to half an art pixel
 ## against the screen (the user chose this over a pixel-locked camera).
 func _camera_target() -> Vector2:
-	return _state.player.position * TerrainTileset.TILE_SIZE + _camera_shift
+	return _state.player.position * TerrainTileset.TILE_SIZE + _options.camera_shift
 
 
 ## Real time to whole game minutes; the fraction carries over to the next frame.
 func _tick_clock(delta: float) -> void:
 	# A screenshot with TIME=... must show exactly that time, unless it is told to wait. Time
 	# stands still while the screen is black (a message there may wait long for a key).
-	if (_screenshot_path != "" and _screenshot_delay == 0.0) or _fade_screen.is_black():
+	if (_options.screenshot != "" and _options.screenshot_delay == 0.0) or _fade_screen.is_black():
 		return
 	var rate := GAME_MINUTES_PER_REAL_SECOND * (FAST_FORWARD_FACTOR if _fast_forward else 1.0)
 	_pending_minutes += delta * rate
@@ -702,6 +536,48 @@ func _start_sounds() -> void:
 	_ambience.listen(_audio, _state, _wildlife, _weather_view)
 
 
+## Applies the flags that change the game before any view exists, so the views start from it.
+func _apply_start_options_to_state() -> void:
+	if _options.at != StartupOptions.NO_TILE:
+		_state.player.position = Vector2(_options.at) + Vector2(0.5, 0.5)
+	if _options.day > 0:
+		_state.clock.day = _options.day
+	if _options.time_hour >= 0:
+		_state.clock.set_time(_options.time_hour, _options.time_minute)
+	if _options.field != StartupOptions.NO_TILE:
+		DebugField.create(_state.world, _options.field)
+	if _options.forage != StartupOptions.NO_TILE:
+		DebugForage.create(_state, _options.forage)
+	if _options.felled != StartupOptions.NO_TILE:
+		DebugFelled.create(_state.world, _options.felled)
+	if _options.mow != StartupOptions.NO_TILE:
+		DebugMow.create(_state, _options.mow)
+	if _options.drops != StartupOptions.NO_TILE:
+		DebugDrops.create(_state.world, _options.drops)
+	if _options.energy >= 0.0:
+		_state.player.energy = _options.energy
+	if _options.health >= 0.0:
+		_state.player.health = _options.health
+	if _options.coordinates:
+		_coordinates_hud.toggle()
+	if _options.wear != &"":
+		_state.player.equipment.equip(Equipment.slot_of(_options.wear), _options.wear)
+	if _options.hold != &"":
+		_hold(_options.hold)
+	if _options.mouse_tile != StartupOptions.NO_TILE:
+		_use_highlight.debug_mouse_tile = _options.mouse_tile
+	if _options.tooltip != "":
+		_tooltip_view.show_by_id(_options.tooltip)
+	if _options.weather != &"":
+		_force_weather(_options.weather)
+	if not _options.wildlife.is_empty():
+		_wildlife.is_spawning_naturally = false
+	_wildlife.is_player_ignored = _options.wildlife_calm
+	_weather_view.is_flash_held = _options.flash
+	if _options.snow >= 0.0:
+		_state.snow_cover.forced = _options.snow
+
+
 ## Debug (`--hold`): puts 5 of an item in the inventory and holds it, if it is on the hotbar.
 func _hold(item: StringName) -> void:
 	if not ItemTypes.TYPES.has(item):
@@ -718,33 +594,37 @@ func _hold(item: StringName) -> void:
 ## Debug (`--chest`, `--chest-inside`, `--storage`): puts the asked chests where they go once
 ## their map is drawn, and opens the storage screen of the last.
 func _place_debug_chests() -> void:
-	if _debug_chest_tile != NO_TILE and _view.is_settled and not _state.is_inside():
-		_debug_chest = DebugChest.create(_state.world, _debug_chest_tile)
-		_debug_chest_tile = NO_TILE
-	if _debug_chest_inside_tile != NO_TILE and _state.is_inside() and not _enter_first_house:
-		_debug_chest = DebugChest.create(_state.current_map, _debug_chest_inside_tile)
+	if _options.chest != StartupOptions.NO_TILE and _view.is_settled and not _state.is_inside():
+		_debug_chest = DebugChest.create(_state.world, _options.chest)
+		_options.chest = StartupOptions.NO_TILE
+	if (
+		_options.chest_inside != StartupOptions.NO_TILE
+		and _state.is_inside()
+		and not _options.inside
+	):
+		_debug_chest = DebugChest.create(_state.current_map, _options.chest_inside)
 		_interior_view.show_interior(_state.current_map)
-		_debug_chest_inside_tile = NO_TILE
-	if _open_storage_screen_at_start and _debug_chest != null:
-		_open_storage_screen_at_start = false
+		_options.chest_inside = StartupOptions.NO_TILE
+	if _options.storage and _debug_chest != null:
+		_options.storage = false
 		_storage_screen.open(_debug_chest, _state.player)
 
 
 ## Debug (`--hit`): hits the object on the asked tile, if there is one.
 func _hit_debug_tile() -> void:
-	var object := _state.world.object_at(_debug_hit_tile)
+	var object := _state.world.object_at(_options.hit)
 	if object != null:
 		_state.world.hit_object(object, 0)
 	_tiredness_view.acted(GameState.Use.HIT)
-	_debug_hit_tile = NO_TILE
+	_options.hit = StartupOptions.NO_TILE
 
 
 ## Debug (`--wildlife`): puts a few animals of each asked kind in view.
 func _spawn_start_wildlife() -> void:
-	for kind in _start_wildlife:
+	for kind in _options.wildlife:
 		var count := 1 if kind == "flock" else START_WILDLIFE_COUNT
 		_wildlife.spawn_in_view(StringName(kind), count)
-	_start_wildlife.clear()
+	_options.wildlife.clear()
 
 
 ## Debug: waits for the first house and the world around, then walks in without a fade.
@@ -752,32 +632,21 @@ func _enter_first_house_now() -> void:
 	var houses := _state.world.buildings()
 	if houses.is_empty() or not _view.is_settled:
 		return
-	_enter_first_house = false
+	_options.inside = false
 	_state.player.position = Vector2(houses[0].door_tile()) + Vector2(0.5, 0.5)
 	_pass_door()
 
 
-## The saved game, or a new one if there is no save or `--new-game` is given. `--save-path=`
-## picks another save file (to keep tests and screenshots off the real one). The first
+## The saved game, or a new one if there is no save or `--new-game` is given. The first
 ## autosave after `--new-game` replaces the old save.
 func _load_or_start_game() -> GameState:
-	var is_new_game := false
-	for arg in OS.get_cmdline_user_args():
-		if arg.begins_with("--save-path="):
-			_save_path = arg.trim_prefix("--save-path=")
-		elif arg == "--new-game":
-			is_new_game = true
-	var saved := null if is_new_game else SaveFile.read(_save_path)
+	var saved := null if _options.new_game else SaveFile.read(_options.save_path)
 	return saved if saved != null else GameState.new_game(WORLD_SEED)
 
 
-## The settings, with the player's key bindings applied to the input map. `--settings-path=`
-## picks another file (to keep tests and screenshots off the real one).
+## The settings, with the player's key bindings applied to the input map.
 func _load_settings() -> GameSettings:
-	for arg in OS.get_cmdline_user_args():
-		if arg.begins_with("--settings-path="):
-			_settings_path = arg.trim_prefix("--settings-path=")
-	var settings := GameSettings.new(_settings_path)
+	var settings := GameSettings.new(_options.settings_path)
 	settings.load_file()
 	return settings
 
@@ -789,7 +658,7 @@ func _apply_ui_scale(ui_scale: float) -> void:
 
 
 func _save_game() -> void:
-	SaveFile.write(_state, _save_path)
+	SaveFile.write(_state, _options.save_path)
 
 
 func _force_weather(condition: StringName) -> void:
@@ -814,28 +683,15 @@ func _weather_and_sun_text(weather: WeatherSample) -> String:
 	)
 
 
-func _set_start_time(text: String) -> void:
-	var parts := text.split(":")
-	if parts.size() != 2 or not parts[0].is_valid_int() or not parts[1].is_valid_int():
-		push_error("--time expects hh:mm, got '%s'" % text)
-		return
-	var hour := int(parts[0])
-	var minute := int(parts[1])
-	if hour < 0 or hour > 23 or minute < 0 or minute > 59:
-		push_error("--time out of range: '%s'" % text)
-		return
-	_state.clock.set_time(hour, minute)
-
-
 func _is_ready_to_shoot() -> bool:
 	# The world is not streamed while the player is inside.
 	return (
 		(_view.is_settled or _state.is_inside())
-		and not _enter_first_house
-		and _debug_harvest_tile == NO_TILE
-		and _debug_chest_tile == NO_TILE
-		and _debug_chest_inside_tile == NO_TILE
-		and not _open_storage_screen_at_start
+		and not _options.inside
+		and _options.harvest == StartupOptions.NO_TILE
+		and _options.chest == StartupOptions.NO_TILE
+		and _options.chest_inside == StartupOptions.NO_TILE
+		and not _options.storage
 	)
 
 
@@ -864,7 +720,7 @@ func _save_screenshot_and_quit() -> void:
 	# can't be shown (e.g. a locked screen).
 	RenderingServer.force_draw(false)
 	# The window as the player sees it, not only the world viewport.
-	get_viewport().get_texture().get_image().save_png(_screenshot_path)
+	get_viewport().get_texture().get_image().save_png(_options.screenshot)
 	# Quitting takes effect at the end of the frame; nothing more to do until then, so the
 	# shot is not saved again on every frame while the engine shuts down.
 	set_process(false)

@@ -1,6 +1,6 @@
 class_name DebugDrops
 extends RefCounted
-## For screenshots (`--drops=<x>,<y>` in main.gd): what a felled oak, a mined stone, a harvested
+## For screenshots (`--drops=<x>,<y>`): what a felled oak, a mined stone, a harvested
 ## turnip and a picked berry bush leave on the ground, in a row four tiles apart from there. The
 ## chunks around must be loaded.
 

@@ -1,6 +1,6 @@
 class_name DebugChest
 extends RefCounted
-## For screenshots (`--chest=<x>,<y>` and `--chest-inside=<x>,<y>` in main.gd): a chest with
+## For screenshots (`--chest=<x>,<y>` and `--chest-inside=<x>,<y>`): a chest with
 ## a few items in it.
 
 const CONTENTS := {

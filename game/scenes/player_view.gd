@@ -5,9 +5,10 @@ extends Node2D
 ## last frame.
 ##
 ## Debug: `--hair=<n>` wears variant "n" of the hair (F6 cycles 0 and 1; what the
-## character wears comes from the equipment, see `--wear` in Main);
+## character wears comes from the equipment, see `--wear`);
 ## `--pose=<up|down|left|right>[,<column>]` turns the player and optionally freezes the
-## animation on a column of the sheet (0 idle, 1 to 4 the walk frames).
+## animation on a column of the sheet (0 idle, 1 to 4 the walk frames). Both are in
+## StartupOptions, which `show_player` reads.
 ##
 ## Passing out (`collapse`) shows the collapse sheets instead (see Appearance): the player sinks
 ## to the knees, tips over and lies asleep with rising "z"s, until `stand_up`.
@@ -86,18 +87,15 @@ func _init() -> void:
 	add_child(_sleep_zs)
 
 
-func show_player(player: PlayerState) -> void:
+func show_player(player: PlayerState, options := StartupOptions.new()) -> void:
 	_player = player
 	_last_position = player.position
 	position = (player.position * TerrainTileset.TILE_SIZE).round()
-	for arg in OS.get_cmdline_user_args():
-		if arg.begins_with("--hair="):
-			_wear_hair(int(arg.trim_prefix("--hair=")))
-		elif arg.begins_with("--pose="):
-			var parts := arg.trim_prefix("--pose=").split(",")
-			player.facing = FACINGS_BY_NAME[parts[0]]
-			if parts.size() > 1:
-				_frozen_column = int(parts[1])
+	if options.hair >= 0:
+		_wear_hair(options.hair)
+	if options.pose != "":
+		player.facing = FACINGS_BY_NAME[options.pose]
+		_frozen_column = options.pose_column
 
 
 ## The player passes out where they stand (see the collapse sheets).

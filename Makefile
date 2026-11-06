@@ -48,7 +48,7 @@ help:
 	@echo "  OUT         screenshot: file to write (default: build/screenshot.png)."
 	@echo "  KEEP_SAVE   screenshot: KEEP_SAVE=1 loads the real save instead of a new game."
 	@echo "  SOUND       screenshot: SOUND=1 keeps the sound on."
-	@echo "  ARGS        screenshot: more debug flags, e.g. ARGS=\"--weather=rain\" (see game/scenes/main.gd)."
+	@echo "  ARGS        screenshot: more debug flags, e.g. ARGS=\"--weather=rain\" (see game/scenes/startup_options.gd)."
 
 setup:
 	@missing=0; \
@@ -115,7 +115,7 @@ AT ?=
 TIME ?=
 # Camera zoom, 0.5 to 2 (default 1).
 ZOOM ?=
-# Further debug flags, e.g. ARGS="--ghost=3,-5" (see game/scenes/build_mode.gd).
+# Further debug flags, e.g. ARGS="--ghost=3,-5" (see game/scenes/startup_options.gd).
 ARGS ?=
 OUT ?= $(CURDIR)/build/screenshot.png
 # Screenshots start a new game, so they never show the real save; KEEP_SAVE=1 loads it

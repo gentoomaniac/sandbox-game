@@ -1,6 +1,6 @@
 class_name DebugForage
 extends RefCounted
-## For screenshots (`--forage=<x>,<y>` in main.gd): a row of tiles with a stump, a picked and a
+## For screenshots (`--forage=<x>,<y>`): a row of tiles with a stump, a picked and a
 ## berry bush and a planted sapling, and a few of each new item in the inventory. The chunks
 ## must be loaded.
 

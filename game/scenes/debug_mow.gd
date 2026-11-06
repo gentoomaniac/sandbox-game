@@ -1,6 +1,6 @@
 class_name DebugMow
 extends RefCounted
-## For screenshots (`--mow=<x>,<y>` in main.gd): the player stands on that tile with the scythe
+## For screenshots (`--mow=<x>,<y>`): the player stands on that tile with the scythe
 ## and mows twice, facing right and then down, leaving mown patches and hay. Loads the chunks
 ## around the tile itself, so it works far from the camp.
 

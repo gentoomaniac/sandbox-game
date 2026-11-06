@@ -5,8 +5,8 @@ extends Node2D
 ## tiles marked red. A click or Use places it, Q and E pick the building, a right click
 ## dismisses build mode. The land's rules are World's, the materials' Builder's.
 ##
-## Debug flags (see `make screenshot`): `--ghost=<x>,<y>` pins the ghost's top left tile
-## there; `--house=<x>,<y>` places the chosen building there as soon as its chunks are loaded.
+## Debug flags (see StartupOptions): `--ghost` pins the ghost's top left tile; `--house` places
+## the chosen building as soon as its chunks are loaded.
 
 ## The message to show, or "" to hide it. It is drawn by the UI, outside the world viewport.
 signal message_changed(text: String)
@@ -26,27 +26,20 @@ var world: World
 var builder: Builder
 ## Turns the mouse position into a world position.
 var camera: CameraController
+## The `--ghost` and `--house` flags.
+var start_options := StartupOptions.new()
 
 var _origin := Vector2i.ZERO
 var _blockers: Dictionary[Vector2i, World.Blocked] = {}
 var _is_snowy := false
 var _texture: Texture2D
 var _was_active := false
-var _pinned_origin: Variant = null  # Vector2i, set by --ghost
-var _debug_house_origin: Variant = null  # Vector2i, set by --house
+var _is_debug_house_placed := false
 
 
 ## Shows the ghost with snow on its roof, as a house looks while there is snow about.
 func set_snowy(is_snowy: bool) -> void:
 	_is_snowy = is_snowy
-
-
-func _ready() -> void:
-	for arg in OS.get_cmdline_user_args():
-		if arg.begins_with("--ghost="):
-			_pinned_origin = _parse_tile(arg)
-		elif arg.begins_with("--house="):
-			_debug_house_origin = _parse_tile(arg)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -73,10 +66,15 @@ func _unhandled_input(event: InputEvent) -> void:
 func _process(_delta: float) -> void:
 	if world == null:
 		return
-	if _debug_house_origin != null and _is_footprint_loaded(_debug_house_origin):
-		if world.place_building(builder.choice, _debug_house_origin) == null:
-			push_error("--house: can't place a house at %s" % _debug_house_origin)
-		_debug_house_origin = null
+	var house := start_options.house
+	if (
+		not _is_debug_house_placed
+		and house != StartupOptions.NO_TILE
+		and _is_footprint_loaded(house)
+	):
+		if world.place_building(builder.choice, house) == null:
+			push_error("--house: can't place a house at %s" % house)
+		_is_debug_house_placed = true
 	var is_now_active := is_active()
 	if is_now_active != _was_active:
 		_was_active = is_now_active
@@ -85,9 +83,9 @@ func _process(_delta: float) -> void:
 			message_changed.emit("")
 	if not is_now_active:
 		return
-	_origin = (
-		_pinned_origin if _pinned_origin != null else _origin_under(camera.mouse_world_position())
-	)
+	_origin = start_options.ghost
+	if _origin == StartupOptions.NO_TILE:
+		_origin = _origin_under(camera.mouse_world_position())
 	_texture = load(
 		SeasonalArt.house_path(BuildingTypes.TYPES[builder.choice]["sprite"], _is_snowy)
 	)
@@ -153,13 +151,3 @@ func _is_footprint_loaded(origin: Vector2i) -> bool:
 	return Building.footprint_tiles(builder.choice, origin).all(
 		func(pos: Vector2i) -> bool: return world.is_chunk_loaded(Chunk.world_to_chunk(pos))
 	)
-
-
-## The tile of a `--flag=<x>,<y>` argument, or null (after an error) if it is malformed.
-func _parse_tile(arg: String) -> Variant:
-	var value := arg.get_slice("=", 1)
-	var parts := value.split(",")
-	if parts.size() != 2 or not parts[0].is_valid_int() or not parts[1].is_valid_int():
-		push_error("%s expects <x>,<y>, got '%s'" % [arg.get_slice("=", 0), value])
-		return null
-	return Vector2i(int(parts[0]), int(parts[1]))

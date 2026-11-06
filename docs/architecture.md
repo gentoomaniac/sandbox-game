@@ -26,7 +26,7 @@ and plans which chunks to load (`WorldGenerator`, `ChunkStreaming`, `CampSite`,
 
 - **Main** (`game/scenes/main.gd`, `main.tscn`) is the one scene. It owns the `GameState`,
   turns real time into game minutes, sends input to the state and creates the views and
-  screens. It also parses the debug flags (see below).
+  screens. The debug flags are parsed by `StartupOptions` (see below).
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
   weather, the snow cover and the player. It is the entry point for actions (`use_at`,
   `sleep_in`, `pass_door`, `pass_out`), and what gets saved (`to_dict`, see `SaveFile`).
@@ -107,8 +107,9 @@ save and does not touch yours.
 Flags after `--` on the Godot command line put the game in a situation for a screenshot or
 a manual check: the position (`--at=x,y`), day and time (`--day=`, `--time=`), weather
 (`--weather=`), a held item, an open screen, a small field of crops, animals and more.
-They are parsed in `Main._ready` and documented in the header of
-[game/scenes/main.gd](../game/scenes/main.gd). Pass them to `make screenshot` with
+They are parsed once into typed fields by `StartupOptions`, whose header lists every flag
+([game/scenes/startup_options.gd](../game/scenes/startup_options.gd)); Main, `PlayerView`,
+`BuildMode` and `AudioService` read those fields. An unknown flag is a warning. Pass them to `make screenshot` with
 `ARGS="--weather=rain --day=45"`.
 
 ## More

@@ -1,6 +1,6 @@
 class_name DebugFelled
 extends RefCounted
-## For screenshots (`--felled=<x>,<y>` in main.gd): an oak felled from the left, one from the
+## For screenshots (`--felled=<x>,<y>`): an oak felled from the left, one from the
 ## right, a spruce from above, a pine from below and a dead tree from the left, in a row five
 ## tiles apart from there, and the three tree seeds on the ground below. The chunks around must
 ## be loaded.
