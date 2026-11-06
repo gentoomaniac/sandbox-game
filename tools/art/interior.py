@@ -198,23 +198,40 @@ def window_picture():
     return canvas
 
 
+def checked_blanket(canvas, x0, y0, x1, y1):
+    """A blanket of indigo linen woven in a check, over x0..x1, y0..y1, with a folded edge of
+    the white sheet at its top."""
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            is_stripe = (x - x0) % 4 == 2 or (y - y0) % 4 == 2
+            canvas[y][x] = "water" if is_stripe else "water_deep"
+    rect(canvas, x0, y0, x1, y0 + 1, "lime")
+    rect(canvas, x0, y0 + 2, x1, y0 + 2, "snow_shadow")
+
+
 def bed():
-    """A bed 1x2 tiles, head to the north: frame, pillow and a blanket with a folded edge."""
-    canvas = blank(TILE, 2 * TILE)
-    rect(canvas, 0, 0, 15, 31, "soil_mid")
-    rect(canvas, 0, 0, 15, 5, "soil")
-    rect(canvas, 1, 1, 14, 1, "soil_light")
-    rect(canvas, 2, 6, 13, 12, "cream")
-    rect(canvas, 2, 12, 13, 12, "sand_light")
-    rect(canvas, 2, 13, 13, 28, "ember")
-    rect(canvas, 2, 13, 13, 15, "flame")
-    rect(canvas, 2, 15, 13, 15, "ember")
-    rect(canvas, 11, 16, 13, 28, "soil")
-    rect(canvas, 5, 20, 7, 21, "soil")
-    rect(canvas, 2, 29, 13, 31, "soil")
-    rect(canvas, 0, 29, 15, 29, "soil_light")
-    outline(canvas, "soil_dark")
-    return canvas
+    """A bed 1x2 tiles, head to the north, boxed in like a Durk: high side boards, a pillow and a
+    checked blanket, and over its head a canopy on the wall with red curtains drawn aside."""
+    canvas = blank(TILE, 3 * TILE)
+    # The canopy, standing on the wall above the footprint.
+    rect(canvas, 0, 2, 15, 15, "soil_mid")
+    rect(canvas, 0, 2, 15, 2, "soil_light")
+    rect(canvas, 0, 5, 15, 5, "soil")
+    rect(canvas, 2, 6, 13, 15, "soil_dark")
+    # The bed seen from above: side boards, pillow, blanket and the foot board.
+    rect(canvas, 0, 16, 15, 47, "soil_mid")
+    rect(canvas, 0, 16, 1, 47, "soil_light")
+    rect(canvas, 2, 16, 13, 44, "straw")
+    rect(canvas, 3, 16, 12, 21, "cream")
+    rect(canvas, 3, 21, 12, 21, "sand_light")
+    checked_blanket(canvas, 2, 22, 13, 43)
+    rect(canvas, 0, 44, 15, 47, "soil")
+    rect(canvas, 0, 44, 15, 44, "soil_light")
+    # The curtains, gathered to the sides of the canopy.
+    for x in (1, 12):
+        rect(canvas, x, 6, x + 2, 19, "rust")
+        rect(canvas, x + 1, 6, x + 1, 19, "rust_dark")
+    return outline(canvas, "soil_dark", keep_bottom=True)
 
 
 def table():
@@ -367,22 +384,37 @@ def sleeping_mat():
 
 
 def box_bed():
-    """A box bed 2x2 tiles, head to the north: a timber box with a straw mattress, a pillow
-    and a red blanket, a front board in front."""
-    canvas = blank(2 * TILE, 2 * TILE)
-    rect(canvas, 0, 0, 31, 31, "soil_mid")
-    rect(canvas, 1, 1, 30, 1, "soil_light")
-    rect(canvas, 2, 5, 29, 24, "soil_dark")
-    rect(canvas, 3, 6, 28, 24, "straw")
-    rect(canvas, 4, 7, 14, 12, "cream")
-    rect(canvas, 4, 12, 14, 12, "sand_light")
-    rect(canvas, 4, 13, 28, 24, "ember")
-    rect(canvas, 4, 13, 28, 15, "flame")
-    rect(canvas, 4, 15, 28, 15, "ember")
-    rect(canvas, 0, 25, 31, 31, "soil")
-    rect(canvas, 0, 25, 31, 25, "soil_light")
-    rect(canvas, 0, 28, 31, 28, "soil_mid")
-    return outline(canvas, "soil_dark")
+    """A box bed 2x2 tiles built against the back wall (an Alkoven): a panelled oak cupboard
+    whose front stands up the wall to just under a window's sill, open in the middle onto the
+    bed inside (a pillow at the left end, a checked blanket), red curtains drawn aside, and a
+    front board down to the floor."""
+    canvas = blank(2 * TILE, 2 * TILE + 12)
+    # The cupboard: a cornice, the posts at the sides and the dark alcove between them.
+    rect(canvas, 0, 0, 31, 43, "soil_mid")
+    rect(canvas, 0, 0, 31, 2, "soil")
+    rect(canvas, 0, 0, 31, 0, "soil_light")
+    for x in (1, 28):
+        rect(canvas, x, 5, x + 2, 12, "soil")
+        rect(canvas, x, 15, x + 2, 26, "soil")
+    rect(canvas, 5, 4, 26, 28, "soil_dark")
+    # The bed inside, lengthwise along the wall.
+    rect(canvas, 5, 18, 26, 28, "straw")
+    rect(canvas, 6, 15, 11, 21, "cream")
+    rect(canvas, 6, 21, 11, 21, "sand_light")
+    checked_blanket(canvas, 12, 18, 26, 28)
+    # The curtains, gathered to the sides.
+    for x in (5, 23):
+        rect(canvas, x, 4, x + 3, 19, "rust")
+        rect(canvas, x + 1, 4, x + 1, 19, "rust_dark")
+        rect(canvas, x, 12, x + 3, 12, "rust_dark")
+    rect(canvas, 5, 3, 26, 3, "soil")
+    # The front board, lit along its top, with two panels.
+    rect(canvas, 0, 29, 31, 29, "soil_light")
+    for x in (2, 17):
+        rect(canvas, x, 32, x + 12, 40, "soil")
+        rect(canvas, x, 32, x + 12, 32, "soil_dark")
+    rect(canvas, 0, 42, 31, 43, "soil")
+    return outline(canvas, "soil_dark", keep_bottom=True)
 
 
 def bench():
