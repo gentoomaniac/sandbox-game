@@ -135,6 +135,22 @@ func test_storks_come_in_spring_and_summer_by_day_and_are_away_in_autumn_and_win
 			assert_eq(_rules.target_count(kind, day, NOON, _clear()), 0, "%s, day %d" % [kind, day])
 
 
+func test_geese_graze_in_autumn_winter_and_spring_by_day_and_are_away_in_summer() -> void:
+	for day in [AUTUMN, WINTER, SPRING]:
+		assert_eq(_rules.target_count(WildlifeRules.GEESE, day, NOON, _clear()), 1, "day %d" % day)
+		assert_eq(_rules.target_count(WildlifeRules.GEESE, day, MIDNIGHT, _clear()), 0)
+	assert_eq(_rules.target_count(WildlifeRules.GEESE, SUMMER, NOON, _clear()), 0)
+	assert_lt(_rules.activity(WildlifeRules.GEESE, SPRING, NOON, _clear()), 1.0, "most have left")
+
+
+func test_skeins_of_geese_fly_over_mostly_at_dawn_and_dusk_and_not_in_summer() -> void:
+	var at_dawn := _rules.activity(WildlifeRules.FLYING_GEESE, AUTUMN, _dawn(AUTUMN), _clear())
+	var at_noon := _rules.activity(WildlifeRules.FLYING_GEESE, AUTUMN, NOON, _clear())
+	assert_gt(at_dawn, at_noon)
+	assert_gt(at_noon, 0.0)
+	assert_eq(_rules.activity(WildlifeRules.FLYING_GEESE, SUMMER, NOON, _clear()), 0.0)
+
+
 func test_the_count_never_passes_the_cap() -> void:
 	for kind in WildlifeRules.KINDS:
 		for day in [SPRING, SUMMER, AUTUMN, WINTER]:

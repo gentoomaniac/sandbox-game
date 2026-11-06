@@ -21,8 +21,11 @@ const FLOCK := &"flock"
 ## A white stork hunting on wet ground, and one that comes to stand on a roof.
 const STORK := &"stork"
 const ROOF_STORK := &"roof_stork"
+## A flock of greylag geese grazing, and a skein of them flying over in a V.
+const GEESE := &"geese"
+const FLYING_GEESE := &"flying_geese"
 const KINDS: Array[StringName] = [
-	BIRD, RABBIT, SQUIRREL, DEER, BEE, BUTTERFLY, FLOCK, STORK, ROOF_STORK
+	BIRD, RABBIT, SQUIRREL, DEER, BEE, BUTTERFLY, FLOCK, STORK, ROOF_STORK, GEESE, FLYING_GEESE
 ]
 
 const GENERAL_KEYS := [

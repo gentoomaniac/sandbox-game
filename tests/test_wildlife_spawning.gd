@@ -30,6 +30,26 @@ func test_storks_hunt_on_wet_ground_and_on_grass_only_by_water() -> void:
 	assert_false(_rules.is_habitat(stork, Tile.Terrain.WATER, 0, true))
 
 
+func test_geese_graze_the_marsh_and_the_floodplain() -> void:
+	var geese := WildlifeRules.GEESE
+	assert_true(_rules.is_habitat(geese, Tile.Terrain.FLOODPLAIN, 0, true))
+	assert_true(_rules.is_habitat(geese, Tile.Terrain.WETLAND, 0, true))
+	assert_true(_rules.is_habitat(geese, Tile.Terrain.GRASS, 0, true), "the marsh, by its ditches")
+	assert_false(_rules.is_habitat(geese, Tile.Terrain.GRASS, 0, false), "the dry Geest")
+	assert_false(_rules.is_habitat(geese, Tile.Terrain.SOIL, 0, true), "a field")
+
+
+func test_geese_graze_further_from_the_water_than_storks_hunt() -> void:
+	var world := World.new(SEED)
+	world.add_chunk(WorldGenerator.new(SEED).generate_chunk(Vector2i(0, 0)))
+	for y in range(0, 16):
+		for x in range(0, 16):
+			world.set_terrain(Vector2i(x, y), Tile.Terrain.GRASS)
+	world.set_terrain(Vector2i(14, 8), Tile.Terrain.WATER)
+	assert_true(_rules.is_habitat_at(WildlifeRules.GEESE, world, Vector2i(8, 8)))
+	assert_false(_rules.is_habitat_at(WildlifeRules.STORK, world, Vector2i(8, 8)))
+
+
 func test_water_is_looked_for_around_a_tile() -> void:
 	var world := World.new(SEED)
 	world.add_chunk(WorldGenerator.new(SEED).generate_chunk(Vector2i(0, 0)))
@@ -123,6 +143,12 @@ func test_a_hunting_stork_flies_off_at_5_tiles_but_one_on_a_roof_never() -> void
 	assert_eq(_rules.reaction(WildlifeRules.STORK, 4.5), WildlifeRules.Reaction.FLEE)
 	assert_eq(_rules.reaction(WildlifeRules.STORK, 6.0), WildlifeRules.Reaction.NONE)
 	assert_eq(_rules.reaction(WildlifeRules.ROOF_STORK, 0.5), WildlifeRules.Reaction.NONE)
+
+
+func test_geese_look_up_at_9_tiles_and_fly_off_at_6() -> void:
+	assert_eq(_rules.reaction(WildlifeRules.GEESE, 10.0), WildlifeRules.Reaction.NONE)
+	assert_eq(_rules.reaction(WildlifeRules.GEESE, 8.0), WildlifeRules.Reaction.ALERT)
+	assert_eq(_rules.reaction(WildlifeRules.GEESE, 5.5), WildlifeRules.Reaction.FLEE)
 
 
 func test_insects_ignore_the_player() -> void:

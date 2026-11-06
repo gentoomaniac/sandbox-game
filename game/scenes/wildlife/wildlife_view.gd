@@ -22,11 +22,12 @@ signal animal_added(animal: Animal)
 
 ## Tries to find a place for one animal before giving up until the next second.
 const SPAWN_TRIES := 10
-const FLOCK_SIZE := Vector2i(3, 6)
 ## Where animals made by hand appear: this far from the player, in pixels.
 const DEBUG_DISTANCE := Vector2(24.0, 70.0)
 ## A bee made by hand picks one of this many flowers nearest to the player.
 const DEBUG_FLOWERS := 5
+## A flock crossing the view starts this far behind the ring, in pixels.
+const FLOCK_ENTRY_DISTANCE := 120.0
 ## A stork flying to a roof comes from this far beside the view, in pixels.
 const ARRIVAL_MARGIN := 48.0
 
@@ -90,8 +91,8 @@ func clear() -> void:
 func spawn_in_view(kind: StringName, count: int) -> int:
 	var spawned := 0
 	for _i in count:
-		if kind == WildlifeRules.FLOCK:
-			_spawn_flock(true)
+		if kind in Flock.BIRDS:
+			_spawn_flock(kind, true)
 			spawned += 1
 		elif kind == WildlifeRules.ROOF_STORK:
 			if not _send_stork_to_roof(true):
@@ -188,8 +189,8 @@ func _send_away(kind: StringName, excess: int) -> void:
 ## Spawns an animal of a kind at a suitable place in the ring around the view, if it finds
 ## one: one that lives at flowers at one of `flowers`, the flowers in bloom around the view.
 func _spawn_somewhere(kind: StringName, flowers: Array[Vector2i]) -> void:
-	if kind == WildlifeRules.FLOCK:
-		_spawn_flock(false)
+	if kind in Flock.BIRDS:
+		_spawn_flock(kind, false)
 		return
 	if kind == WildlifeRules.ROOF_STORK:
 		_send_stork_to_roof(false)
@@ -244,9 +245,9 @@ func _spawn_near_player(kind: StringName) -> bool:
 	return false
 
 
-## A flock enters the view from its ring and crosses it. One made by hand starts inside the
-## view, on its left, so that it can be seen at once.
-func _spawn_flock(is_debug: bool) -> void:
+## A flock enters the view from beyond its ring and crosses it. One made by hand starts inside
+## the view, on its left, so that it can be seen at once.
+func _spawn_flock(kind: StringName, is_debug: bool) -> void:
 	var view := view_rect()
 	var start := rules.random_ring_point(view, rng)
 	if is_debug:
@@ -257,8 +258,12 @@ func _spawn_flock(is_debug: bool) -> void:
 			rng.randf_range(-0.3, 0.3) * view.size.x, rng.randf_range(-0.3, 0.3) * view.size.y
 		)
 	)
-	var flock := Flock.new()
-	flock.set_course(start, goal * 2.0 - start, rng.randi_range(FLOCK_SIZE.x, FLOCK_SIZE.y))
+	var end := goal * 2.0 - start
+	if not is_debug:
+		# High up, the birds would be seen at once from the ring: they start further back.
+		start -= (goal - start).normalized() * FLOCK_ENTRY_DISTANCE
+	var flock := Flock.new(kind)
+	flock.set_course(start, end, Flock.bird_count(kind, rng))
 	_add(flock, is_debug)
 
 
@@ -367,6 +372,8 @@ func _spawn(kind: StringName, point: Vector2, is_pinned: bool) -> void:
 			animal = Butterfly.new()
 		WildlifeRules.STORK:
 			animal = Stork.new(WildlifeRules.STORK)
+		WildlifeRules.GEESE:
+			animal = GooseFlock.new()
 	animal.position = point
 	_add(animal, is_pinned)
 

@@ -10,6 +10,9 @@ const SHIFT := Vector2(8.0, 6.0)
 
 ## Half the width of a shadow in pixels, past its middle pixel.
 var half_width := 2
+## How far from the point below its bird a shadow falls: SHIFT high in the air, nothing for a
+## bird on the ground.
+var shift := SHIFT
 var _points := PackedVector2Array()
 
 
@@ -26,7 +29,7 @@ func set_point(index: int, ground_point: Vector2) -> void:
 
 func _draw() -> void:
 	for point in _points:
-		var centre := (point + SHIFT).round()
+		var centre := (point + shift).round()
 		draw_rect(Rect2(centre + Vector2(-half_width, 0), Vector2(half_width * 2 + 1, 1)), COLOR)
 		draw_rect(
 			Rect2(centre + Vector2(-half_width + 1, 1), Vector2(half_width * 2 - 1, 1)), COLOR

@@ -8,8 +8,12 @@ extends RefCounted
 
 ## Frames to wait before a screenshot once everything is in place, for tile maps to catch up.
 const SETTLE_FRAMES := 3
-## Animals of each kind (but one flock) that `--wildlife` puts in view.
+## Animals of each kind that `--wildlife` puts in view; of the kinds that are a group of birds,
+## one group.
 const WILDLIFE_COUNT := 4
+const WILDLIFE_GROUPS: Array[StringName] = [
+	WildlifeRules.FLOCK, WildlifeRules.GEESE, WildlifeRules.FLYING_GEESE
+]
 ## Farm animals of each species that `--livestock` puts near the player.
 const LIVESTOCK_COUNT := 4
 
@@ -83,7 +87,7 @@ func update(delta: float) -> void:
 			crafting_screen.open(station)
 	if _are_animals_to_spawn and _is_outside_and_drawn():
 		for kind in _options.wildlife:
-			var count := 1 if kind == "flock" else WILDLIFE_COUNT
+			var count := 1 if StringName(kind) in WILDLIFE_GROUPS else WILDLIFE_COUNT
 			wildlife.spawn_in_view(StringName(kind), count)
 		_are_animals_to_spawn = false
 	if _is_livestock_to_spawn and _is_outside_and_drawn():
