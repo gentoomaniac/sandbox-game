@@ -1,9 +1,10 @@
 """Art for the big birds of the marsh: one sheet per kind at assets/wildlife/<kind>.png.
 
-The white stork walks the wet meadows and stands on the roofs (see docs/art-style.md, "Props and
-animals"). Like the other wildlife sheets (animals.py) a sheet has one row per action and one
-column per frame, in the order of its actions, which game/scenes/wildlife/wildlife_sprites.gd
-mirrors; the bird stands in the bottom centre of its cell, facing right, and flies in its middle.
+The white stork walks the wet meadows and stands on the roofs; greylag geese graze the marsh in
+flocks and fly over in a V (see docs/art-style.md, "Props and animals"). Like the other wildlife
+sheets (animals.py) a sheet has one row per action and one column per frame, in the order of its
+actions, which game/scenes/wildlife/wildlife_sprites.gd mirrors; the bird stands in the bottom
+centre of its cell, facing right, and flies in its middle.
 
 A frame is rows of characters, written as the bird is seen: side on while it stands or walks,
 from a little above while it flies, so the far wing shows above the body and the near wing below
@@ -226,6 +227,134 @@ def stork_sheet():
     return [[to_picture(frame, STORK_KEYS, STORK_OUTLINE, BARE) for frame in frames] for frames in rows]
 
 
+# --- Greylag goose ------------------------------------------------------------------------
+#
+# About 12 px long and 10 px tall with the head up, a wingspan of 22 px. Keys: l, b, d light, base
+# and shade of the grey-brown plumage (the shade also the barring of the folded wing); p the pale
+# breast and belly, w the white under the tail, e eye, o the orange bill, L and M the pink legs.
+
+GOOSE_SIZE = (24, 18)
+GOOSE_KEYS = {
+    "l": "bare_light",
+    "b": "bare",
+    "d": "mud",
+    "p": "stone_light",
+    "w": "lime",
+    "e": "ink",
+    "o": "flame",
+    "r": "flame",
+    "L": "skin",
+    "M": "skin_shade",
+}
+GOOSE_OUTLINE = "mud_dark"
+
+GOOSE_HEAD_UP = (
+    "..........bb...",
+    ".........bbeor.",
+    ".........bb....",
+    "..........b....",
+    "..........b....",
+    ".........pb....",
+)
+GOOSE_LOOKING_ROUND = (
+    "..........bb...",
+    ".........bebo..",
+    ".........bb....",
+    "..........b....",
+    "..........b....",
+    ".........pb....",
+)
+GOOSE_BODY = (
+    "...llllllppb...",
+    ".llbdbdbbbpp...",
+    "wbbdbdbbbppp...",
+    ".wbbbbbbpppp...",
+    "...bbbpppp.....",
+)
+GOOSE_GRAZING = (
+    "...............",
+    "...............",
+    "...............",
+    "...............",
+    "...............",
+    "...............",
+    "...lllllllll...",
+    ".llbdbdbbbbbb..",
+    "wbbdbdbbbbbbbb.",
+    ".wbbbbbbpp..bb.",
+    "...bbbppp....b.",
+    ".............bb",
+    "............bbe",
+)
+# Nibbling: the tip of the bill in the grass.
+GOOSE_BILL_IN_GRASS = ("..............r",)
+GOOSE_LEGS = ("LM", "LM", "LM")
+GOOSE_STEP = ("LM", "L.M", "L..M")
+GOOSE_STEP_BACK = ("LM", "M.L", "M..L")
+GOOSE_LEG_AT = (5, 11)
+
+# Flying, from a little above like the stork: the neck stretched, the long wings grey, paler in
+# front and dark at the tips and along the back edge.
+GOOSE_WINGS_UP = (
+    ".........d.......",
+    "........dd.......",
+    "........ddl......",
+    ".......dddl......",
+    ".......ddll......",
+    "......dddll......",
+    "......ddlll......",
+    ".....ddllll......",
+    ".wwbbbbbbbbbbbbeo",
+    "..wbbbbbbpppp....",
+)
+GOOSE_WINGS_LEVEL = (
+    ".......ddd.......",
+    "......dddll......",
+    ".wwbbbbbbbbbbbbeo",
+    "..wbbbbbbpppp....",
+    "......ddllll.....",
+    "......dddlll.....",
+    "......dddlll.....",
+    ".......ddlll.....",
+    ".......dddll.....",
+    "........ddl......",
+    "........dd.......",
+)
+GOOSE_WINGS_DOWN = (
+    ".wwbbbbbbbbbbbbeo",
+    "..wbbbbbbpppp....",
+    "......ddllll.....",
+    "......dddlll.....",
+    ".......ddlll.....",
+    ".......dddl......",
+    "........ddl......",
+    "........dd.......",
+)
+GOOSE_FLIGHT = [(GOOSE_WINGS_UP, 8), (GOOSE_WINGS_LEVEL, 2), (GOOSE_WINGS_DOWN, 0)]
+GOOSE_FLIGHT_LEFT = 3
+GOOSE_FLIGHT_BODY_Y = 9
+GOOSE_STANDING_LEFT = 5
+
+
+def goose_frame(head, legs=GOOSE_LEGS):
+    return on_legs(head + GOOSE_BODY, legs, GOOSE_LEG_AT)
+
+
+GOOSE_ACTIONS = {
+    "stand": [goose_frame(GOOSE_HEAD_UP), goose_frame(GOOSE_LOOKING_ROUND)],
+    "graze": [on_legs(GOOSE_GRAZING, GOOSE_LEGS, GOOSE_LEG_AT), on_legs(GOOSE_GRAZING + GOOSE_BILL_IN_GRASS, GOOSE_LEGS, GOOSE_LEG_AT)],
+    "walk": [goose_frame(GOOSE_HEAD_UP, GOOSE_STEP), goose_frame(GOOSE_HEAD_UP, GOOSE_STEP_BACK)],
+}
+
+
+def goose_sheet():
+    rows = [
+        [standing(frame, GOOSE_SIZE, GOOSE_STANDING_LEFT) for frame in frames] for frames in GOOSE_ACTIONS.values()
+    ]
+    rows.append([on_cell(shape, GOOSE_SIZE, GOOSE_FLIGHT_LEFT, GOOSE_FLIGHT_BODY_Y - body_y) for shape, body_y in GOOSE_FLIGHT])
+    return [[to_picture(frame, GOOSE_KEYS, GOOSE_OUTLINE, BARE) for frame in frames] for frames in rows]
+
+
 def sheets():
     """(name, cell size, rows of cells) of every sheet."""
-    return [("stork", STORK_SIZE, stork_sheet())]
+    return [("stork", STORK_SIZE, stork_sheet()), ("goose", GOOSE_SIZE, goose_sheet())]

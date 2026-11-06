@@ -37,8 +37,9 @@ flame, what is in front of it, then the frames of the flame. The atlas cell and 
 picture show the first frame, for where the fire does not move.
 
 assets/wildlife/<kind>.png: one sheet per animal kind, one row per action and one column per frame
-(see animals.py, birds.py for the stork, and game/scenes/wildlife/wildlife_sprites.gd). The farm
-animals have one sheet per species and look, assets/wildlife/<species>_<look>.png (see livestock.py).
+(see animals.py, birds.py for the stork and the goose, and game/scenes/wildlife/wildlife_sprites.gd).
+The farm animals have one sheet per species and look, assets/wildlife/<species>_<look>.png (see
+livestock.py).
 
 assets/crops/<crop>.png: one sheet per crop, its four growth stages and the dead one side by side, 16 px
 wide cells and as tall as the sheet (see crops.py and data/crops.cfg). They have no seasonal variants.
