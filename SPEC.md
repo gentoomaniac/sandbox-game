@@ -114,12 +114,25 @@ top of classic pixel art (details under "Lighting and look").
     colour with the weeks; a species' first and last flowers are small ones. Early spring has
     few, late spring and summer are full, autumn fades and winter has none. When a tile
     blooms nothing, its ordinary decoration shows.
+- **Desire paths** (decided 2026-11-06, task 77): ways walked often wear into paths with
+  less grass. Every tile the player steps onto outdoors takes a step of wear (a farm animal
+  half a step); a tile turns trodden (thin, flattened grass with the earth showing) and then
+  a path of bare earth, and each night takes some wear off, so an unused path grows back to
+  grass in about two weeks. Numbers in `data/paths.cfg`: trodden from 8 steps, a path from
+  24, at most 32, 2 a night; walking the same line about eight times a day makes a path in
+  four or five days. Only grass (ordinary, lush, dry) and the floodplain wear; fields,
+  wetland, water, buildings (their doors too) and interiors don't. Worn tiles lose their
+  flowers and tufts. A path is a look only: no change to speed or farming, and tilling it
+  works as on grass (and clears the wear). Drawn as two dual-grid layers over the grass,
+  with soft dithered edges, in every season's look and the frost; snow covers paths, with a
+  faint trodden track over them; in a bare winter the earth lies dark. The wear is saved
+  (only worn tiles, dropped once they have grown back).
 - **Floodplain looks fertile:** lush, damp meadow, with a narrow muddy bank right at the
   water. It must not read as barren sand.
 
 ### Saving (first version)
 
-- Save format: seed + world edits (terrain and objects) + buildings with their interiors +
+- Save format: seed + world edits (terrain, objects and the wear of desire paths) + buildings with their interiors +
   player state (position, current map, home, appearance, inventory) + clock. One JSON
   file per world under `user://saves/`.
 - **Autosave when the player sleeps, passes out and when the game quits.** On start, the
@@ -555,8 +568,8 @@ Decided 2026-11-05. A text console for testing and cheats.
   more, the steps of the leaf-out (buds and young leaves, drawn over the bare tree). The
   base terrain is summer; a look is drawn over it as a dual-grid overlay layer of its own
   (the same edge shapes as the terrain layers), so patches of autumn, bare ground, frost and
-  snow have soft edges and no seams. The season looks have stacked layers for lush and dry
-  grass too, like the terrain. Snow and frost lie over the season's look. Decorations,
+  snow have soft edges and no seams. The season looks and the frost have stacked layers for
+  lush and dry grass and the desire paths too, like the terrain. Snow and frost lie over the season's look. Decorations,
   objects and houses pick their art by look instead. Snow cover comes from
   `data/seasons.cfg` ([snow]: snowfall adds, warmth and sun melt, counted hour by hour from
   the start of autumn; none from the first day of the year), the blend windows too; the view

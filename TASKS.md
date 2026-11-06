@@ -517,12 +517,29 @@ usage, `give` has the "did you mean" for items (too many to list; Tab completes 
 
 ## 77. Desire paths
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06: ways the player walks very often develop paths with less grass.
 Defaults: steps on grass wear the tile (grass, then trodden, then a dirt path); an unused path
 grows back over days; the wear is saved; worn tiles lose their flowers and grass tufts; paths
 are a look only (no change to speed or farming).
+
+Done: `World.wear_tile` counts steps of wear per tile entered (`GameState.walk` outdoors, and
+`Livestock` at `animal_step`, half a step), only on grass and the floodplain and not under a
+building; `wear_stage` gives trodden from 8 steps and a path from 24, capped at 32
+(`data/paths.cfg`, `PathRules`), and `regrow_paths` takes 2 a night in the night upkeep. Only
+worn tiles are kept and saved (`"wear"`, save version 15; 14 is task 74's), and tilling clears
+the wear. Two terrain layers, `TRODDEN` and `PATH`, between dry grass and soil (the tile code's
+layer field is 4 bits now), drawn over any grass with dithered edges; a stage change emits
+`tile_changed`, which redraws the four cells and the decoration around the tile. The layers
+have no habitat and no decorations, so a worn tile loses its flowers and tufts. The overlay
+stack of the seasons' looks is a loop over `VARIETY_LAYERS` and the frost is drawn in layers
+too, so paths keep their edges in every look; snow covers them, with the trodden grass in its
+snow look over it as a faint track (`SnowTrackLook`); in the bare look the earth turns
+`mud_dark`. No new colours. A new chunk's cells are drawn without erasing, which pays for the
+extra overlays. `--path=<x>,<y>` and `--path-days=<walked>,<left>` walk a winding route for
+screenshots (`DebugPath`). Not done: mud in rain; a path does not change speed. Screenshot in
+docs/screenshots/desire-paths.png.
 
 ## 78. Waking in the bed; reset and tp indoors
 

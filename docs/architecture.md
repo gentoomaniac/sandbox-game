@@ -34,7 +34,7 @@ with Knicks, walls and fences on the Geest, ditches in the marsh, and dykes.
   in one list (`_screens`). The debug flags are parsed by `StartupOptions`; `DebugRunner` does
   the ones that wait for the world to be drawn (see below).
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
-  weather, the snow cover and the player. It is the entry point for actions (`use_at`,
+  weather, the snow cover and the player. It is the entry point for actions (`walk`, `use_at`,
   `sleep_in`, `pass_door`, `pass_out`, `go_to_home_bed`, `teleport_to`), and what gets saved (`to_dict`, see `SaveFile`). It owns
   the clock and gives it to the World; `current_map` follows from the building the player is in.
 - **ToolUse** (`game/state/tool_use.gd`) is what the use action does: the `Use` outcomes, what
@@ -49,7 +49,11 @@ with Knicks, walls and fences on the Geest, ditches in the marsh, and dykes.
   (`WorldObject`: trees, crops, furniture), buildings and, in `ground_items` (`GroundItems`),
   the items lying on the ground. Line objects (Knicks, walls, fences, dykes) are one object per
   tile whose type `connects`; `World.connections` says which neighbours a tile joins, and the
-  view draws the picture of that connection mask. The nightly upkeep of what the player changed is
+  view draws the picture of that connection mask. The wear of desire paths is World's too
+  (`wear_tile`, `wear_stage`, `regrow_paths`; numbers in `data/paths.cfg`, `PathRules`):
+  `GameState.walk` and `Livestock` wear each tile entered, and a tile that turns trodden or
+  a path emits `tile_changed`, so the view redraws the cells around it as for a tilling. The
+  view draws worn tiles on the `TRODDEN` and `PATH` layers of `TerrainTileset`. The nightly upkeep of what the player changed is
   `NightUpkeep`, which is given the world. Every change goes through it, and it emits signals that the views follow.
 - **WorldView** (`game/scenes/world_view.gd`) draws a `World` into a SubViewport at one art
   pixel per screen pixel; `CameraController` shows that viewport on the window, so the world
