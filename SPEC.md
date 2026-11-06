@@ -1084,6 +1084,8 @@ woodworker, the cook and the mason, and a UI for them.
   territory, and building inside it affects that settlement's NPCs. This is a first
   version, to be refined if it feels odd in play.
 - Relationships can be between individual NPCs and between groups.
+- Ideas for NPCs, their behaviour and LLM dialogue (nothing decided):
+  [docs/ideas/NPC.md](docs/ideas/NPC.md).
 
 ### World
 
