@@ -23,6 +23,9 @@ var facing := Vector2i.DOWN
 ## `home_map` (the world, or the inside of a building).
 var home_map: GameMap
 var home_bed := Vector2i.ZERO
+## The bed the player lies in after waking, until they move (see `move`). Not saved: a loaded
+## game has them standing.
+var bed_lying_in: WorldObject
 
 ## Both run from 0 to MAX_*. A player who passed out is `is_debuffed` until the next new day
 ## (see GameState).
@@ -74,6 +77,7 @@ func facing_tile() -> Vector2i:
 ## slides along a wall instead of stopping against it. `speed_factor` scales SPEED.
 func move(map: GameMap, direction: Vector2, delta: float, speed_factor := 1.0) -> void:
 	if direction != Vector2.ZERO:
+		bed_lying_in = null
 		# The axis the player moves along most; a tie faces vertically.
 		if absf(direction.x) > absf(direction.y):
 			facing = Vector2i.RIGHT if direction.x > 0 else Vector2i.LEFT

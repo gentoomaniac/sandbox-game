@@ -1,29 +1,6 @@
 extends EnergyCase
 ## Passing out and sleeping.
 
-
-## Walks into a new house, sleeps in its bed (making it home) and walks out again.
-func _make_a_house_home() -> WorldObject:
-	var house: Building
-	for y in range(-12, 13):
-		for x in range(-12, 13):
-			house = (
-				house
-				if house != null
-				else _world.place_building(
-					BuildingTypes.KATE, _state.player.tile() + Vector2i(x, y)
-				)
-			)
-	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
-	var bed: WorldObject = house.interior.object_at(Vector2i(1, 2))
-	_state.player.position = Vector2(2.5, 3.5)
-	_state.sleep_in(bed)
-	_state.player.position = Vector2(house.interior.exit_tile) + Vector2(0.5, 0.5)
-	_state.pass_door()
-	return bed
-
-
 # --- Passing out ---
 
 
@@ -33,7 +10,7 @@ func test_passing_out_wakes_in_the_home_bed_the_next_morning() -> void:
 	assert_eq(_state.pass_out(), 11 * GameClock.MINUTES_PER_HOUR + 30)
 	assert_eq(_state.clock.day, 2)
 	assert_eq(_state.clock.minute_of_day, GameState.WAKE_UP_MINUTE)
-	assert_eq(_state.player.tile(), _state.player.home_bed)
+	assert_true(_bed().covers(_state.player.tile()))
 	assert_eq(_state.current_map, _world)
 
 
@@ -102,7 +79,7 @@ func test_passing_out_after_midnight_keeps_the_debuff_until_the_next_midnight() 
 	assert_false(_state.player.is_debuffed)
 
 
-func test_passing_out_wakes_beside_a_home_bed_inside_a_house() -> void:
+func test_passing_out_wakes_in_a_home_bed_inside_a_house() -> void:
 	var bed := _make_a_house_home()
 	assert_false(_state.is_inside())
 	_state.pass_out()

@@ -25,3 +25,25 @@ func before_each() -> void:
 
 func _bed() -> WorldObject:
 	return _world.object_at(_state.player.home_bed)
+
+
+## Walks into a new house, sleeps in its bed (making it home) and walks out again.
+func _make_a_house_home() -> WorldObject:
+	var house: Building
+	for y in range(-12, 13):
+		for x in range(-12, 13):
+			house = (
+				house
+				if house != null
+				else _world.place_building(
+					BuildingTypes.KATE, _state.player.tile() + Vector2i(x, y)
+				)
+			)
+	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
+	_state.pass_door()
+	var bed: WorldObject = house.interior.object_at(Vector2i(1, 2))
+	_state.player.position = Vector2(2.5, 3.5)
+	_state.sleep_in(bed)
+	_state.player.position = Vector2(house.interior.exit_tile) + Vector2(0.5, 0.5)
+	_state.pass_door()
+	return bed

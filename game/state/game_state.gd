@@ -1,3 +1,6 @@
+# gdlint: disable=max-public-methods
+# (GameState is the one entry point the scenes and the console act through: tool uses, sleeping,
+# passing out and the doors all go via it.)
 class_name GameState
 extends RefCounted
 ## Everything that makes up one game: the world, the clock and the player. Plain state with
@@ -116,6 +119,7 @@ func sleep_in(bed: WorldObject) -> void:
 	assert(bed.is_bed(), "Not a bed: %s" % bed.type)
 	clock.advance(clock.minutes_until(WAKE_UP_MINUTE))
 	is_up_too_late = false
+	_lie_in(bed)
 	player.home_map = current_map
 	player.home_bed = bed.pos
 	var fill := energy_rules.sleep_fill(bed.type)
@@ -195,13 +199,25 @@ func pass_out() -> int:
 	var minutes := maxi(clock.minutes_until(WAKE_UP_MINUTE), PASS_OUT_MINUTES)
 	clock.advance(minutes)
 	is_up_too_late = false
-	_building_inside = _building_with_interior(player.home_map)
-	player.position = _tile_centre(_wake_up_tile())
+	go_to_home_bed()
 	player.is_debuffed = true
 	player.energy = energy_rules.debuff_energy_max()
 	if not cheats.is_god:
 		player.health = energy_rules.debuff_health()
 	return minutes
+
+
+## Puts the player in their home bed, on its map (the world or the inside of a house): lying in
+## its middle until they move. A home with no bed any more (a loaded game that lost it) has them
+## standing on its tile.
+func go_to_home_bed() -> void:
+	_building_inside = _building_with_interior(player.home_map)
+	var bed := player.home_map.object_at(player.home_bed)
+	if bed == null:
+		player.position = _tile_centre(player.home_bed)
+		player.bed_lying_in = null
+	else:
+		_lie_in(bed)
 
 
 ## What `use_tile` would do on a tile (see ToolUse). The use rules get a ToolUse made for the
@@ -320,16 +336,16 @@ func _building_with_interior(map: GameMap) -> Building:
 	return null
 
 
-## Where the player stands when they wake: on the bed, or beside it if the bed blocks walking.
-func _wake_up_tile() -> Vector2i:
-	var candidates: Array[Vector2i] = [player.home_bed]
-	for y in range(-1, 2):
-		for x in range(-1, 2):
-			candidates.append(player.home_bed + Vector2i(x, y))
-	for tile in candidates:
-		if PlayerState.can_stand_at(current_map, _tile_centre(tile)):
-			return tile
-	return player.home_bed
+## The middle of the bed's footprint, in tiles: where the player lies.
+static func _bed_middle(bed: WorldObject) -> Vector2:
+	var footprint: Vector2i = bed.type_data()["footprint"]
+	return Vector2(bed.pos) + Vector2(footprint) / 2.0
+
+
+## Puts the player in the middle of the bed, lying under its blanket until they move.
+func _lie_in(bed: WorldObject) -> void:
+	player.position = _bed_middle(bed)
+	player.bed_lying_in = bed
 
 
 func _tile_centre(tile: Vector2i) -> Vector2:

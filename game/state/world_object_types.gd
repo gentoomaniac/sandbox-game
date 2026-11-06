@@ -13,7 +13,8 @@ extends RefCounted
 ## footprint, its bottom on the footprint's bottom edge. The chest stands in both places, so it
 ## has both, and the ghost of an object the player places uses the interior picture. Optional:
 ## - storage_slots: it holds items, this many slots (a chest, see WorldObject `storage`);
-## - bed: the object is a bed (what sleeping in it fills is in data/energy.cfg, [sleep]);
+## - bed: the object is a bed (what sleeping in it fills is in data/energy.cfg, [sleep]). Beds do
+##   not block walking: the player wakes lying in the middle of one;
 ## - growth_stages: the object is a crop (all of them come from data/crops.cfg, see CropRules,
 ##   which says what the other values of a crop type are). Its picture sheet is not in the
 ##   object atlas but its own (`sheet`), with a picture per growth stage and a dead one;
@@ -449,7 +450,7 @@ const _OTHER_TYPES := {
 	SMALL_BED:
 	{
 		"footprint": Vector2i(1, 2),
-		"blocks_walking": true,
+		"blocks_walking": false,
 		"harvest_level": 0,
 		"interior_sprite": "res://assets/interior/bed.png",
 		"bed": true,
@@ -492,7 +493,7 @@ const _OTHER_TYPES := {
 	SLEEPING_MAT:
 	{
 		"footprint": Vector2i(1, 2),
-		"blocks_walking": true,
+		"blocks_walking": false,
 		"harvest_level": 0,
 		"interior_sprite": "res://assets/interior/sleeping_mat.png",
 		"bed": true,
@@ -500,7 +501,7 @@ const _OTHER_TYPES := {
 	BOX_BED:
 	{
 		"footprint": Vector2i(2, 2),
-		"blocks_walking": true,
+		"blocks_walking": false,
 		"harvest_level": 0,
 		"interior_sprite": "res://assets/interior/box_bed.png",
 		"bed": true,
