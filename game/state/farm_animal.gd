@@ -1,0 +1,42 @@
+class_name FarmAnimal
+extends RefCounted
+## One farm animal (a species of LivestockRules): which it is, how it looks, where it stands and
+## what it is doing. Livestock moves it; the WildlifeView draws it while it is near the view.
+
+enum Activity { IDLE, WALK, GRAZE, FLEE }
+
+var species: StringName
+## The name of its picture (see `looks` in data/livestock.cfg).
+var look: StringName
+## Where its feet are, in tiles of the world.
+var position: Vector2
+var activity := Activity.IDLE
+## Seconds left of the activity; running from the player ends by distance instead.
+var seconds_left := 0.0
+## The way it walks or runs, a unit vector.
+var heading := Vector2.RIGHT
+## The way of the last step it took: the ground under its nose that way is walkable (see Livestock
+## `_walk`); zero before its first.
+var last_step := Vector2.ZERO
+## The way it looks: 1 to the right, -1 to the left (the pictures face right).
+var facing := 1.0
+
+
+func _init(animal_species: StringName, animal_look: StringName, feet: Vector2) -> void:
+	species = animal_species
+	look = animal_look
+	position = feet
+
+
+## A new animal of a species whose look follows from `seed_value` alone: the same seed always
+## gives the same look.
+static func create(
+	animal_species: StringName, seed_value: int, feet: Vector2, rules: LivestockRules
+) -> FarmAnimal:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value
+	return FarmAnimal.new(animal_species, rules.pick_look(animal_species, rng), feet)
+
+
+func tile() -> Vector2i:
+	return Vector2i(position.floor())

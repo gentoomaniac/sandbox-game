@@ -74,6 +74,7 @@ func _ready() -> void:
 		or not CropRules.default_rules().is_valid()
 		or not Vegetation.default_vegetation().is_valid()
 		or not WildlifeRules.default_rules().is_valid()
+		or not LivestockRules.default_rules().is_valid()
 		or not SeasonRules.default_rules().is_valid()
 		or not BuildingRules.default_rules().is_valid()
 		or not RecipeRules.default_rules().is_valid()
@@ -330,7 +331,9 @@ func _process(delta: float) -> void:
 		_state.collect_ground_items(delta)
 		if _state.door_underfoot():
 			_fade_through(_pass_door)
+	# The world, its animals too, stands still while the player is in a house.
 	if not _state.is_inside():
+		_state.livestock.update(delta, _state.world, _state.player.position)
 		_view.player_feet = _player_view.position
 		_view.set_focus(_state.player.tile())
 	_debug.update(delta)
