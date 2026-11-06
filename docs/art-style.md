@@ -328,7 +328,7 @@ task 51 (pine, spring leaf-out); changes to trees should be coordinated with it.
 4. **Done (task 52):** **Autumn colours** (small, in `seasons.py`). Many crowns turn crimson and orange like
    New England maples. Here oaks go brown and ochre, beeches copper, birches yellow. Make
    red rare (rowan, cherry) and merge `crimson` away. Coordinate with task 51.
-5. **Window panes** (small). Windows are 4-pane modern casements. Use 6–9 small panes
+5. **Done (task 52):** **Window panes** (small). Windows are 4-pane modern casements. Use 6–9 small panes
    with 1 px bars, on all buildings and the interior window.
 6. **Done (task 52):** **Palette swaps** (small). Merge the five colours listed under Palette and add `lime`,
    `paint_teal`, `heather`, `heather_dark`; repaint the Kate wall in `lime` and its door in

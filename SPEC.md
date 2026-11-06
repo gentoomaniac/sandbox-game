@@ -800,14 +800,18 @@ Decided 2026-11-05.
   - The look (from the user's reference photos, 2026-11-05): the roof is the hero, a huge,
     thick reed thatch, weathered grey-brown with moss, hipped at both ends with heavy rounded
     eaves, and eyebrow dormers (the thatch swells in a wave over a half-round window). The
-    Kate has lime-washed walls (`lime`), a teal door and shutters (`paint_teal`), white window frames, a turf ridge and
-    a small white chimney. The longhouse has buff brick on a fieldstone base, crossed sticks
+    Kate has lime-washed walls (`lime`), a teal door and shutters (`paint_teal`), white
+    window frames, a turf ridge and a small white chimney. The longhouse has buff brick on a fieldstone base, crossed sticks
     on its ridge, two brick chimneys, white windows in dark green frames, climbing roses, and
     the big arched green barn door of the hall house as its door (the middle tile), the
     thatch sweeping up over it. The barn is half-timbered (dark oak beams, red brick) with big
     plank doors and no windows; the shack is plank-built with a roof of weathered boards.
     Every building has a summer look, a snow look and lit windows (spring and autumn show
     the summer picture until the game asks for more looks).
+    Windows have small panes (task 52): 2×2 px panes in 1 px white glazing bars, 3×3 panes
+    in a house window, 2×3 in the shack's, and the dormers' half-round windows divided
+    the same way; a lit pane glows in one colour. The window inside is the same, with
+    wooden bars and daylight.
 - **Buildings cost materials:** logs, stone, clay and reeds (reeds for the thatch), taken
   from the inventory when the building is placed. The ghost shows the costs against what
   the player carries and refuses the spot while something is missing. No refunds or

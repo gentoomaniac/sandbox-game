@@ -159,17 +159,18 @@ def eyebrow(picture, snowy, cx, bottom, width, is_lit):
             y = crest + row
             if (x, y) in snowy and y < bottom:
                 picture[y][x] = colour if x < cx + half else THATCH[min(4, THATCH.index(colour) + 1)]
-    # The window: flat at the bottom, arched on top, in a white frame with glazing bars.
+    # The window: flat at the bottom, arched on top, in a white frame with glazing bars round
+    # small panes.
     for y in range(bottom - arch - 1, bottom + 1):
         for x in range(cx - half, cx + half):
             distance = math.hypot(x + 0.5 - cx, (bottom - y) * half / (arch + 1))
             if distance > half:
                 continue
             snowy.discard((x, y))
-            if distance > half - 1.3 or y == bottom or (x - cx) % 4 == 2 or y == bottom - 2:
+            if distance > half - 1.3 or y == bottom or (x - cx) % 3 == 1 or (bottom - y) % 3 == 2:
                 picture[y][x] = "snow_light"
             else:
-                pane(picture, x, y, cx, bottom - 2, is_lit)
+                picture[y][x] = glass(x, y, cx, bottom - 2, is_lit)
     for x in range(cx - half, cx + half):
         for y in range(bottom - arch - 3, bottom):
             if (x, y) in snowy and picture[y + 1][x] == "snow_light" and math.hypot(x + 0.5 - cx, (bottom - y - 1) * half / (arch + 1)) > half - 1.3:
@@ -177,27 +178,31 @@ def eyebrow(picture, snowy, cx, bottom, width, is_lit):
     rect(picture, cx - half - 1, bottom + 1, cx + half, bottom + 1, THATCH[4])
 
 
-def pane(picture, x, y, cx, cy, is_lit):
-    """One pixel of window glass in a window whose middle is (cx, cy): dark glass with a glint at
-    the top left, or the warm light from inside."""
+def glass(x, y, cx, cy, is_lit):
+    """The colour of window glass at (x, y) in a window whose middle is (cx, cy): dark glass with
+    a glint at the top left, or the warm light from inside, brightest at the top left."""
     if is_lit:
-        picture[y][x] = LIT_GLASS[0] if x < cx and y < cy else LIT_GLASS[1] if x < cx or y < cy else LIT_GLASS[2]
-    else:
-        picture[y][x] = GLASS[0] if x < cx and y < cy - 1 else GLASS[1] if y < cy else GLASS[2]
+        return LIT_GLASS[0] if x < cx and y < cy else LIT_GLASS[1] if x < cx or y < cy else LIT_GLASS[2]
+    return GLASS[0] if x < cx and y < cy - 1 else GLASS[1] if y < cy else GLASS[2]
 
 
 def window(picture, left, top, width, height, is_lit, frame="snow_light", shutters=None):
-    """A window in a `frame`, white by default, with four panes and a sill; with `shutters` (light, dark) a
-    shutter on each side."""
+    """A window in a `frame`, white by default, with a sill; with `shutters` (light, dark) a
+    shutter on each side. Small panes of 2x2 px in white glazing bars, as glass came in small
+    pieces: a window 10 px square has 3x3 panes. Width and height are 3 times the panes + 1."""
+    assert width % 3 == 1 and height % 3 == 1, f"window {width}x{height} does not divide into panes"
     rect(picture, left - 1, top - 1, left + width, top + height, "soil_dark")
     rect(picture, left, top, left + width - 1, top + height - 1, frame)
     cx, cy = left + width // 2, top + height // 2
     for y in range(top + 1, top + height - 1):
         for x in range(left + 1, left + width - 1):
-            if x == cx or y == cy:
+            if (x - left) % 3 == 0 or (y - top) % 3 == 0:
                 picture[y][x] = "snow_light"
+            elif is_lit:
+                # Each lit pane glows in one colour, from the light at its top left pixel.
+                picture[y][x] = glass(x - (x - left - 1) % 3, y - (y - top - 1) % 3, cx, cy, is_lit)
             else:
-                pane(picture, x, y, cx, cy, is_lit)
+                picture[y][x] = glass(x, y, cx, cy, is_lit)
     rect(picture, left - 2, top + height, left + width + 1, top + height, "snow_light")
     rect(picture, left - 1, top + height + 1, left + width, top + height + 1, "stone")
     if shutters:
@@ -439,9 +444,9 @@ def shack(is_lit):
         rect(picture, x, wall_top, x + 1, wall_bottom, OAK[0])
     rect(picture, wall_left, wall_bottom - 2, wall_right, wall_bottom, "stone")
     rect(picture, wall_left, wall_bottom - 2, wall_right, wall_bottom - 2, "stone_light")
-    window(picture, 35, 37, 7, 7, is_lit, frame="soil_light")
-    rect(picture, 31, 36, 33, 44, "soil_mid")
-    rect(picture, 33, 36, 33, 44, "soil")
+    window(picture, 35, 34, 7, 10, is_lit, frame="soil_light")
+    rect(picture, 31, 33, 33, 44, "soil_mid")
+    rect(picture, 33, 33, 33, 44, "soil")
     # The door: planks under a lintel, a latch on the right.
     rect(picture, 17, 36, 30, wall_bottom, OAK[1])
     for x in range(18, 30):

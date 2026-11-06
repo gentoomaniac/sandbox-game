@@ -1955,13 +1955,17 @@ def back_wall_end(tile, is_left):
 
 
 def window_picture():
-    """A 10x10 window with a sill, 16x32: drawn over the plaster of the back wall face."""
+    """A 10x10 window with a sill, 16x32: drawn over the plaster of the back wall face. Nine
+    small panes of daylight in wooden glazing bars."""
     canvas = sprite_canvas(TILE, 2 * TILE)
     fill_rect(canvas, 3, 7, 12, 16, "soil_dark")
-    fill_rect(canvas, 4, 8, 11, 15, "water")
-    fill_rect(canvas, 4, 8, 6, 10, "water_light")
-    fill_rect(canvas, 7, 8, 7, 15, "soil_dark")
-    fill_rect(canvas, 4, 12, 11, 12, "soil_dark")
+    fill_rect(canvas, 4, 8, 11, 15, "water_light")
+    fill_rect(canvas, 4, 8, 8, 9, "foam")
+    fill_rect(canvas, 4, 8, 5, 12, "foam")
+    fill_rect(canvas, 4, 14, 11, 15, "water")
+    for offset in (3, 6):
+        fill_rect(canvas, 3 + offset, 8, 3 + offset, 15, "soil_mid")
+        fill_rect(canvas, 4, 7 + offset, 11, 7 + offset, "soil_mid")
     fill_rect(canvas, 2, 17, 13, 17, "soil_light")
     fill_rect(canvas, 2, 18, 13, 18, "soil_mid")
     fill_rect(canvas, 3, 19, 12, 19, "mud")
