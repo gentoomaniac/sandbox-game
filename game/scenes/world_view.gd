@@ -16,8 +16,8 @@ extends Node2D
 ##
 ## A tree that is felled topples as a FallingTree sprite while the state already has its stump
 ## and its trunk; the trunk's cell stays erased until the fall ends.
-## Buildings are sprites in that node too, so they sort with the objects and the player. They
-## belong to the world, not to a chunk, so they stay when chunks unload.
+## The buildings are BuildingViews, sprites in that node too, so they sort with the objects and
+## the player.
 ##
 ## See-through: while a tree or building hides the player (see Occlusion) it fades inside a
 ## circle around the player. A building is a SeeThroughSprite already; a tree is a cell of the
@@ -46,8 +46,6 @@ const MAX_LOADS_PER_FRAME := 1
 const DORMANT := -1
 ## Added to an object state for a bush that is out of its fruit season.
 const BARE_OF_FRUIT_FLAG := 16
-## The windows of buildings are lit (and shine) once the light strength is at least this.
-const WINDOW_LIT_STRENGTH := 0.3
 
 ## The 4 corner tiles of a cell, in mask order: top-left, top-right, bottom-left,
 ## bottom-right.
@@ -146,9 +144,7 @@ var _object_sprites: Dictionary[Vector2i, SeeThroughSprite] = {}
 var _falling_trees: Array[FallingTree] = []
 ## The trunks (by tile) that a falling tree is about to lie down as, and that are not drawn yet.
 var _hidden_trunks: Dictionary[Vector2i, bool] = {}
-var _building_sprites: Dictionary[Building, SeeThroughSprite] = {}
-## The lights in the windows of each building.
-var _window_lights: Dictionary[Building, Array] = {}
+var _buildings := BuildingViews.new(entities)
 
 
 func _ready() -> void:
@@ -187,6 +183,7 @@ func _ready() -> void:
 	entities.add_child(_objects)
 	add_child(entities)
 	add_child(_hit_particles)
+	add_child(_buildings)
 
 
 func _add_overlay(overlay_name: String) -> TileMapLayer:
@@ -206,7 +203,7 @@ func show_world(world_to_show: World) -> void:
 	world.object_hit.connect(_on_object_hit)
 	world.clay_spot_changed.connect(_on_clay_spot_changed)
 	_soil_wetness.show_world(world, is_snowed_over)
-	world.building_placed.connect(_draw_building)
+	world.building_placed.connect(_buildings.add)
 	_generator = WorldGenerator.new(world.world_seed)
 	_variety_noise.seed = world.world_seed + VARIETY_SEED_OFFSET
 	_variety_noise.frequency = VARIETY_FREQUENCY
@@ -216,10 +213,11 @@ func show_world(world_to_show: World) -> void:
 	_day = world.clock.day
 	_conditions = _blend.conditions(_day, 0.0, 0.0)
 	_look_state = Vector3(_day, 0.0, 0.0)
+	_buildings.set_looks(_blend, _conditions)
 	for coords in world.loaded_chunk_coords():
 		_draw_chunk(world.chunk_at(coords))
 	for building in world.buildings():
-		_draw_building(building)
+		_buildings.add(building)
 
 
 ## Sets the day, the snow cover and the frost (both 0 to 1) that tiles, plants and houses are
@@ -239,8 +237,7 @@ func refresh_looks(day: int, snow_cover: float, frost: float) -> void:
 		func(a: Vector2i, b: Vector2i) -> bool:
 			return (a - focus).length_squared() > (b - focus).length_squared()
 	)
-	for building in _building_sprites:
-		_show_windows(building)
+	_buildings.set_looks(_blend, _conditions)
 
 
 ## Brings every queued chunk up to date at once (for tests and for a screenshot).
@@ -277,8 +274,7 @@ func set_light_strength(strength: float) -> void:
 	_light_strength = strength
 	for light in _lights.values():
 		light.strength = strength
-	for building in _building_sprites:
-		_show_windows(building)
+	_buildings.set_light_strength(strength)
 
 
 ## Streaming follows this world tile position.
@@ -720,59 +716,6 @@ func _remove_light(world_pos: Vector2i) -> void:
 		light.queue_free()
 
 
-func _draw_building(building: Building) -> void:
-	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
-	var sprite := SeeThroughSprite.new()
-	_building_sprites[building] = sprite
-	sprite.texture = load(SeasonalArt.house_path(building_type["sprite"], _is_snowy(building)))
-	sprite.centered = false
-	# The sprite is sorted by its position: the middle of its bottom footprint row, like an
-	# object standing on that row. Its bottom edge is the footprint's bottom edge.
-	var half_tile := TerrainTileset.TILE_SIZE / 2
-	var footprint_bottom: int = (
-		(building.origin.y + building_type["footprint"].y) * TerrainTileset.TILE_SIZE
-	)
-	sprite.position = Vector2(
-		building.origin.x * TerrainTileset.TILE_SIZE, footprint_bottom - half_tile
-	)
-	sprite.offset = Vector2(0, half_tile - sprite.texture.get_height())
-	entities.add_child(sprite)
-	_add_window_lights(building, sprite)
-
-
-## Building windows: a lit sprite variant and a small warm light in each window, on at night.
-func _add_window_lights(building: Building, sprite: Sprite2D) -> void:
-	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
-	var lights: Array[ObjectLight] = []
-	for window_centre: Vector2i in building_type["window_lights"]:
-		var light := ObjectLight.new(building_type["window_light"], building.origin)
-		# On the window pane. The sprite's top left is its position plus its offset.
-		light.position = sprite.position + sprite.offset + Vector2(window_centre)
-		lights.append(light)
-		add_child(light)
-	_window_lights[building] = lights
-	_show_windows(building)
-
-
-func _show_windows(building: Building) -> void:
-	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
-	var is_lit := _light_strength >= WINDOW_LIT_STRENGTH
-	var sprite := _building_sprites[building]
-	var texture_path := SeasonalArt.house_path(
-		building_type["sprite_lit"] if is_lit else building_type["sprite"], _is_snowy(building)
-	)
-	# The strength changes every frame while the tint does; the picture only at dusk and dawn.
-	if sprite.texture.resource_path != texture_path:
-		sprite.texture = load(texture_path)
-	for light: ObjectLight in _window_lights[building]:
-		light.strength = _light_strength if is_lit else 0.0
-
-
-## Whether a house has snow on its roof: when the snow cover is above its tile's threshold.
-func _is_snowy(building: Building) -> bool:
-	return _conditions.snow_cover > _blend.thresholds(building.origin).y
-
-
 ## Fades what hides the player and puts back what no longer does.
 func _update_see_through(delta: float) -> void:
 	for sprite in _object_sprites.values():
@@ -787,12 +730,9 @@ func _update_see_through(delta: float) -> void:
 		if sprite.is_plain():
 			_drop_object_sprite(pos)
 			_set_object_cell(world.object_at(pos))
-	for sprite in _building_sprites.values():
-		sprite.is_occluding = false
-	for building in Occlusion.occluding_buildings(player_feet, world.buildings()):
-		_building_sprites[building].is_occluding = true
-	for sprite in _building_sprites.values():
-		sprite.update(delta, player_feet)
+	_buildings.update_see_through(
+		delta, player_feet, Occlusion.occluding_buildings(player_feet, world.buildings())
+	)
 
 
 ## Erases an object's cell and draws the same picture as a sprite, sorted the same way.

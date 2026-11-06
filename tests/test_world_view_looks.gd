@@ -166,7 +166,7 @@ func test_a_house_has_snow_on_its_roof_while_its_tile_is_snowy() -> void:
 	_view.world.add_chunk(Chunk.new(Vector2i.ZERO))
 	var building := _view.world.place_building(BuildingTypes.KATE, Vector2i(2, 2))
 	_show(WINTER, 0.0)
-	var sprite := _view._building_sprites[building]
+	var sprite := _view._buildings._sprites[building]
 	assert_false(sprite.texture.resource_path.contains("_snow"))
 	_show(WINTER, 1.0)
 	assert_true(sprite.texture.resource_path.contains("_snow"))

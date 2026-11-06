@@ -141,14 +141,14 @@ func test_building_windows_are_lit_and_shine_only_in_the_dark() -> void:
 	_view.world.add_chunk(Chunk.new(Vector2i.ZERO))
 	var building := _view.world.place_building(BuildingTypes.KATE, Vector2i(2, 2))
 	_view.set_light_strength(0.0)
-	var lights: Array = _view._window_lights[building]
-	var day_texture: Texture2D = _view._building_sprites[building].texture
+	var lights: Array = _view._buildings._window_lights[building]
+	var day_texture: Texture2D = _view._buildings._sprites[building].texture
 	assert_eq(lights.size(), BuildingTypes.TYPES[BuildingTypes.KATE]["window_lights"].size())
 	_view.set_light_strength(1.0)
-	assert_ne(_view._building_sprites[building].texture, day_texture, "lit window picture")
+	assert_ne(_view._buildings._sprites[building].texture, day_texture, "lit window picture")
 	assert_true(lights[0].visible)
 	_view.set_light_strength(0.0)
-	assert_eq(_view._building_sprites[building].texture, day_texture)
+	assert_eq(_view._buildings._sprites[building].texture, day_texture)
 	assert_false(lights[0].visible)
 
 
