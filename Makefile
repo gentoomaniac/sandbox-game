@@ -58,11 +58,13 @@ setup:
 	}; \
 	check "$(GODOT)" "Godot $(GODOT_VERSION) ('$(GODOT)' not found)" \
 		"Gentoo: emerge dev-games/godot; or download $(GODOT_VERSION) from godotengine.org and run make GODOT=/path/to/godot ..."; \
-	check tiled "Tiled" \
-		"Gentoo: emerge games-util/tiled; or download from mapeditor.org"; \
 	check python3 "Python 3" "Gentoo: emerge dev-lang/python; or your package manager's python3"; \
 	check git "git" "Gentoo: emerge dev-vcs/git; or your package manager's git"; \
 	check curl "curl (downloads addons)" "Gentoo: emerge net-misc/curl; or your package manager's curl"; \
+	if ! command -v tiled >/dev/null 2>&1; then \
+		echo "Tiled: not found (optional: only to edit interiors)"; \
+		echo "  install: Gentoo: emerge games-util/tiled; or download from mapeditor.org"; \
+	fi; \
 	if command -v "$(GODOT)" >/dev/null 2>&1; then \
 		found=$$("$(GODOT)" --version | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+'); \
 		if [ "$$found" != "$(GODOT_VERSION)" ]; then \
