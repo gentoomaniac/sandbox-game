@@ -33,7 +33,7 @@ var weather_override := &""
 var snow_cover: SnowCover
 var player := PlayerState.new()
 ## The farm animals of the world. Main moves them while the player is out in the world.
-var livestock := Livestock.new()
+var livestock := Livestock.new(sun)
 var energy_rules := EnergyRules.default_rules()
 ## What every use costs is multiplied by this (the Game setting: 0.5, 1 or 1.5).
 var energy_drain := 1.0

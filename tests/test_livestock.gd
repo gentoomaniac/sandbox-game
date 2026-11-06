@@ -1,12 +1,16 @@
 extends GutTest
 ## The farm animals: their data file, their looks, where they are put, and how they go about
-## their day (they keep to ground they can stand on, and rabbits run from the player).
+## their day (they keep to ground they can stand on, rabbits run from the player, and all sleep
+## at night).
 
 const SEED := 7
 ## The pen: a square of grass this many tiles to each side of its middle, ringed by water, with
 ## a few stones in it.
 const PEN_RADIUS := 3
 const STEP_SECONDS := 0.05
+const DAY := 45
+const NOON := 12 * 60
+const MIDNIGHT := 0
 
 var _state: GameState
 var _world: World
@@ -36,9 +40,13 @@ func _pen_middle() -> Vector2:
 	return Vector2(_middle) + Vector2(0.5, 0.5)
 
 
-func _run(seconds: float) -> void:
+func _run(seconds: float, minute := NOON) -> void:
 	for _step in int(seconds / STEP_SECONDS):
-		_livestock.update(STEP_SECONDS, _world, _state.player.position)
+		_step(minute)
+
+
+func _step(minute := NOON) -> void:
+	_livestock.update(STEP_SECONDS, _world, _state.player.position, DAY, minute)
 
 
 # --- The data file ---
@@ -67,6 +75,8 @@ func test_every_missing_or_malformed_key_is_reported() -> void:
 					"body_tiles": 0.5,
 					"flee_tiles": 0.0,
 					"flee_speed": 0.0,
+					"sleep_minutes": 0.0,
+					"wake_minutes": 0.0,
 				},
 			}
 		)
@@ -155,7 +165,7 @@ func test_an_animal_grazes_now_and_then() -> void:
 	var sheep: FarmAnimal = _livestock.all()[0]
 	var activities := {}
 	for _step in 1200:
-		_livestock.update(STEP_SECONDS, _world, _state.player.position)
+		_step()
 		activities[sheep.activity] = true
 	assert_true(activities.has(FarmAnimal.Activity.GRAZE))
 	assert_true(activities.has(FarmAnimal.Activity.WALK))
@@ -167,13 +177,13 @@ func test_a_rabbit_runs_from_the_player_and_calms_down_further_off() -> void:
 	_livestock.add(rabbit)
 	_state.player.position = _pen_middle() + Vector2(1.0, 0.0)
 
-	_livestock.update(STEP_SECONDS, _world, _state.player.position)
+	_step()
 	assert_eq(rabbit.activity, FarmAnimal.Activity.FLEE)
 	_run(1.0)
 
 	assert_lt(rabbit.position.x, _pen_middle().x - 0.5, "away from the player, to the left")
 	_state.player.position = _pen_middle() + Vector2(20.0, 0.0)
-	_livestock.update(STEP_SECONDS, _world, _state.player.position)
+	_step()
 	assert_ne(rabbit.activity, FarmAnimal.Activity.FLEE)
 
 
@@ -183,3 +193,52 @@ func test_a_cow_takes_no_notice_of_the_player() -> void:
 	_state.player.position = _pen_middle() + Vector2(0.5, 0.0)
 	_run(1.0)
 	assert_ne(cow.activity, FarmAnimal.Activity.FLEE)
+
+
+# --- Sleeping ---
+
+
+func test_at_midnight_every_animal_sleeps_where_it_is() -> void:
+	for species in LivestockRules.SPECIES:
+		_livestock.spawn(species, 2, _pen_middle(), _world)
+	var before := _livestock.all().map(func(animal: FarmAnimal) -> Vector2: return animal.position)
+
+	_run(5.0, MIDNIGHT)
+
+	for animal in _livestock.all():
+		assert_eq(animal.activity, FarmAnimal.Activity.SLEEP, animal.species)
+	var after := _livestock.all().map(func(animal: FarmAnimal) -> Vector2: return animal.position)
+	assert_eq(after, before)
+
+
+func test_they_wake_in_the_morning() -> void:
+	_livestock.spawn(LivestockRules.COW, 3, _pen_middle(), _world)
+	_run(1.0, MIDNIGHT)
+	var morning := roundi(_state.sun.sunrise(DAY)) + 60
+
+	_step(morning)
+
+	for animal in _livestock.all():
+		assert_ne(animal.activity, FarmAnimal.Activity.SLEEP)
+
+
+func test_hens_go_to_roost_before_sunset_and_cows_lie_down_after_it() -> void:
+	var hen := FarmAnimal.new(LivestockRules.CHICKEN, &"brown", _pen_middle())
+	var cow := FarmAnimal.new(LivestockRules.COW, &"angler", _pen_middle())
+	_livestock.add(hen)
+	_livestock.add(cow)
+	var sunset := roundi(_state.sun.sunset(DAY))
+
+	assert_true(_livestock.is_sleep_time(hen, DAY, sunset))
+	assert_false(_livestock.is_sleep_time(cow, DAY, sunset))
+
+
+func test_a_sleeping_rabbit_does_not_run() -> void:
+	var rabbit := FarmAnimal.new(LivestockRules.RABBIT, &"agouti", _pen_middle())
+	_livestock.add(rabbit)
+	_state.player.position = _pen_middle() + Vector2(1.0, 0.0)
+
+	_run(1.0, MIDNIGHT)
+
+	assert_eq(rabbit.activity, FarmAnimal.Activity.SLEEP)
+	assert_eq(rabbit.position, _pen_middle())

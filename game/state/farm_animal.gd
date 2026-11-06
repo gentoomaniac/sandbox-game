@@ -3,7 +3,7 @@ extends RefCounted
 ## One farm animal (a species of LivestockRules): which it is, how it looks, where it stands and
 ## what it is doing. Livestock moves it; the WildlifeView draws it while it is near the view.
 
-enum Activity { IDLE, WALK, GRAZE, FLEE }
+enum Activity { IDLE, WALK, GRAZE, FLEE, SLEEP }
 
 var species: StringName
 ## The name of its picture (see `looks` in data/livestock.cfg).
@@ -11,7 +11,8 @@ var look: StringName
 ## Where its feet are, in tiles of the world.
 var position: Vector2
 var activity := Activity.IDLE
-## Seconds left of the activity; running from the player ends by distance instead.
+## Seconds left of the activity; running from the player ends by distance, and sleep by the
+## clock, instead.
 var seconds_left := 0.0
 ## The way it walks or runs, a unit vector.
 var heading := Vector2.RIGHT
@@ -20,6 +21,9 @@ var heading := Vector2.RIGHT
 var last_step := Vector2.ZERO
 ## The way it looks: 1 to the right, -1 to the left (the pictures face right).
 var facing := 1.0
+## Minutes it goes to sleep and wakes later than its species does, so that a herd doesn't lie
+## down all at once (see Livestock `is_sleep_time`).
+var bedtime_delay := 0.0
 
 
 func _init(animal_species: StringName, animal_look: StringName, feet: Vector2) -> void:

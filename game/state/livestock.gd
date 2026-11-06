@@ -1,7 +1,9 @@
 class_name Livestock
 extends RefCounted
 ## The farm animals of the world (FarmAnimal) and how they go about their day: they stand idle,
-## walk and graze, turn away from water and anything solid, and rabbits run from the player.
+## walk and graze, turn away from water and anything solid, and rabbits run from the player. At
+## night they sleep where they are, from a while after sunset until about sunrise (each species
+## has its hours, and each animal is a little later than the rest).
 ## GameState owns it and moves the animals with `update` while the player is out in the world.
 ##
 ## It does not know the world, so the two never hold each other: the map the animals walk on is
@@ -23,10 +25,13 @@ const MAX_STEP_SECONDS := 0.05
 
 var rules := LivestockRules.default_rules()
 var rng := RandomNumberGenerator.new()
+var _sun: Sun
 var _animals: Array[FarmAnimal] = []
 
 
-func _init() -> void:
+## `sun` gives the times of sunrise and sunset that the animals sleep by.
+func _init(sun: Sun) -> void:
+	_sun = sun
 	rng.randomize()
 
 
@@ -36,6 +41,7 @@ func all() -> Array[FarmAnimal]:
 
 ## Puts an animal into the world as it is, doing what it is doing.
 func add(animal: FarmAnimal) -> void:
+	animal.bedtime_delay = rng.randf() * rules.general("bedtime_spread_minutes")
 	_animals.append(animal)
 	added.emit(animal)
 
@@ -59,15 +65,37 @@ func spawn(species: StringName, count: int, near: Vector2, map: GameMap) -> int:
 	return placed
 
 
-## Lets `delta` seconds pass for every animal on `map`. The player's feet are where the
-## rabbits run from.
-func update(delta: float, map: GameMap, player_feet: Vector2) -> void:
+## Lets `delta` seconds pass for every animal on `map` at a time of the game clock. The
+## player's feet are where the rabbits run from.
+func update(delta: float, map: GameMap, player_feet: Vector2, day: int, minute: int) -> void:
 	delta = minf(delta, MAX_STEP_SECONDS)
+	var sunrise := _sun.sunrise(day)
+	var sunset := _sun.sunset(day)
 	for animal in _animals:
-		_update_animal(animal, delta, map, player_feet)
+		if _is_sleep_time(animal, minute, sunrise, sunset):
+			animal.activity = FarmAnimal.Activity.SLEEP
+		elif animal.activity == FarmAnimal.Activity.SLEEP:
+			_start_activity(animal, FarmAnimal.Activity.IDLE)
+		else:
+			_update_awake_animal(animal, delta, map, player_feet)
 
 
-func _update_animal(animal: FarmAnimal, delta: float, map: GameMap, player_feet: Vector2) -> void:
+## Whether an animal sleeps at a time of day: from `sleep_minutes` after sunset until
+## `wake_minutes` after sunrise, both later by its `bedtime_delay`.
+func is_sleep_time(animal: FarmAnimal, day: int, minute: int) -> bool:
+	return _is_sleep_time(animal, minute, _sun.sunrise(day), _sun.sunset(day))
+
+
+func _is_sleep_time(animal: FarmAnimal, minute: int, sunrise: float, sunset: float) -> bool:
+	var delay := animal.bedtime_delay
+	var bedtime := sunset + rules.sleep_minutes(animal.species) + delay
+	var waking := sunrise + rules.wake_minutes(animal.species) + delay
+	return minute >= bedtime or minute < waking
+
+
+func _update_awake_animal(
+	animal: FarmAnimal, delta: float, map: GameMap, player_feet: Vector2
+) -> void:
 	var flee_tiles := rules.flee_tiles(animal.species)
 	var player_distance := animal.position.distance_to(player_feet)
 	if flee_tiles > 0.0 and player_distance <= flee_tiles:

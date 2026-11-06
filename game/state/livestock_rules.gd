@@ -12,7 +12,7 @@ const CHICKEN := &"chicken"
 const RABBIT := &"rabbit"
 const SPECIES: Array[StringName] = [COW, SHEEP, CHICKEN, RABBIT]
 
-const GENERAL_KEYS := ["calm_extra_tiles"]
+const GENERAL_KEYS := ["calm_extra_tiles", "bedtime_spread_minutes"]
 const SPECIES_KEYS := [
 	"looks",
 	"look_weights",
@@ -24,6 +24,8 @@ const SPECIES_KEYS := [
 	"body_tiles",
 	"flee_tiles",
 	"flee_speed",
+	"sleep_minutes",
+	"wake_minutes",
 ]
 ## The activities `activity_weights` weighs, in its order.
 const CHOSEN_ACTIVITIES: Array[FarmAnimal.Activity] = [
@@ -129,6 +131,14 @@ func flee_tiles(species: StringName) -> float:
 
 func flee_speed(species: StringName) -> float:
 	return _value(species, "flee_speed")
+
+
+func sleep_minutes(species: StringName) -> float:
+	return _value(species, "sleep_minutes")
+
+
+func wake_minutes(species: StringName) -> float:
+	return _value(species, "wake_minutes")
 
 
 func _value(species: StringName, key: String) -> Variant:

@@ -333,7 +333,10 @@ func _process(delta: float) -> void:
 			_fade_through(_pass_door)
 	# The world, its animals too, stands still while the player is in a house.
 	if not _state.is_inside():
-		_state.livestock.update(delta, _state.world, _state.player.position)
+		var clock := _state.clock
+		_state.livestock.update(
+			delta, _state.world, _state.player.position, clock.day, clock.minute_of_day
+		)
 		_view.player_feet = _player_view.position
 		_view.set_focus(_state.player.tile())
 	_debug.update(delta)
