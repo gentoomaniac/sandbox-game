@@ -32,6 +32,11 @@ func _init(animal: FarmAnimal) -> void:
 	position = _pixel_position()
 
 
+func _ready() -> void:
+	super()
+	_sprite.self_modulate = farm_animal.tint
+
+
 func _update(_delta: float) -> void:
 	position = _pixel_position()
 	_face(farm_animal.facing)

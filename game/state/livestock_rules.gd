@@ -16,6 +16,7 @@ const GENERAL_KEYS := ["calm_extra_tiles", "bedtime_spread_minutes"]
 const SPECIES_KEYS := [
 	"looks",
 	"look_weights",
+	"tints",
 	"activity_weights",
 	"idle_seconds",
 	"walk_seconds",
@@ -77,6 +78,12 @@ func problems() -> Array[String]:
 			continue
 		if values["looks"].is_empty() or values["looks"].size() != values["look_weights"].size():
 			found.append("[%s] looks and look_weights differ in length or are empty" % species)
+		var tints: Array = values["tints"]
+		if (
+			tints.is_empty()
+			or not tints.all(func(tint: String) -> bool: return Color.html_is_valid(tint))
+		):
+			found.append("[%s] tints needs one colour or more, as hex" % species)
 		if values["activity_weights"].size() != CHOSEN_ACTIVITIES.size():
 			found.append("[%s] activity_weights needs idle, walk and graze" % species)
 		for key: String in SECONDS_KEYS.values():
@@ -101,6 +108,12 @@ func looks(species: StringName) -> Array:
 func pick_look(species: StringName, rng: RandomNumberGenerator) -> StringName:
 	var weights := PackedFloat32Array(_value(species, "look_weights"))
 	return StringName(looks(species)[rng.rand_weighted(weights)])
+
+
+## One of a species' tints, each as likely.
+func pick_tint(species: StringName, rng: RandomNumberGenerator) -> Color:
+	var tints: Array = _value(species, "tints")
+	return Color.html(tints[rng.randi() % tints.size()])
 
 
 ## What an awake animal does next, drawn by its `activity_weights`.

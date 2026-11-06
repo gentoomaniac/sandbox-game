@@ -8,6 +8,8 @@ enum Activity { IDLE, WALK, GRAZE, FLEE, SLEEP }
 var species: StringName
 ## The name of its picture (see `looks` in data/livestock.cfg).
 var look: StringName
+## What its picture is multiplied by (see `tints`), so that no two look quite alike.
+var tint := Color.WHITE
 ## Where its feet are, in tiles of the world.
 var position: Vector2
 var activity := Activity.IDLE
@@ -32,14 +34,16 @@ func _init(animal_species: StringName, animal_look: StringName, feet: Vector2) -
 	position = feet
 
 
-## A new animal of a species whose look follows from `seed_value` alone: the same seed always
-## gives the same look.
+## A new animal of a species whose look and tint follow from `seed_value` alone: the same seed
+## always gives the same animal.
 static func create(
 	animal_species: StringName, seed_value: int, feet: Vector2, rules: LivestockRules
 ) -> FarmAnimal:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
-	return FarmAnimal.new(animal_species, rules.pick_look(animal_species, rng), feet)
+	var animal := FarmAnimal.new(animal_species, rules.pick_look(animal_species, rng), feet)
+	animal.tint = rules.pick_tint(animal_species, rng)
+	return animal
 
 
 func tile() -> Vector2i:

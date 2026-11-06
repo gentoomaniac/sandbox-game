@@ -67,6 +67,7 @@ func test_every_missing_or_malformed_key_is_reported() -> void:
 				{
 					"looks": ["angler"],
 					"look_weights": [1.0, 2.0],
+					"tints": ["ffffff", "not a colour"],
 					"activity_weights": [1.0],
 					"idle_seconds": [5.0, 2.0],
 					"walk_seconds": [1.0, 2.0],
@@ -85,6 +86,7 @@ func test_every_missing_or_malformed_key_is_reported() -> void:
 	assert_has(problems, "[general] no calm_extra_tiles")
 	assert_has(problems, "[sheep] no looks")
 	assert_has(problems, "[cow] looks and look_weights differ in length or are empty")
+	assert_has(problems, "[cow] tints needs one colour or more, as hex")
 	assert_has(problems, "[cow] activity_weights needs idle, walk and graze")
 	assert_has(problems, "[cow] idle_seconds needs [shortest, longest]")
 	assert_does_not_have(problems, "[cow] walk_seconds needs [shortest, longest]")
@@ -93,12 +95,23 @@ func test_every_missing_or_malformed_key_is_reported() -> void:
 # --- Looks ---
 
 
-func test_the_same_seed_gives_the_same_look() -> void:
+func test_the_same_seed_gives_the_same_look_and_tint() -> void:
 	for species in LivestockRules.SPECIES:
 		for seed_value in [1, 99, 123456]:
 			var first := FarmAnimal.create(species, seed_value, Vector2.ZERO, _livestock.rules)
 			var second := FarmAnimal.create(species, seed_value, Vector2.ZERO, _livestock.rules)
 			assert_eq(first.look, second.look, "%s with seed %d" % [species, seed_value])
+			assert_eq(first.tint, second.tint, "%s with seed %d" % [species, seed_value])
+
+
+func test_the_animals_of_a_herd_differ_in_tint() -> void:
+	var tints := {}
+	for seed_value in 50:
+		var sheep := FarmAnimal.create(
+			LivestockRules.SHEEP, seed_value, Vector2.ZERO, _livestock.rules
+		)
+		tints[sheep.tint] = true
+	assert_gt(tints.size(), 2)
 
 
 func test_every_look_of_a_species_comes_up() -> void:
