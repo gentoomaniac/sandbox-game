@@ -109,6 +109,11 @@ Answered questions move into SPEC.md and are removed here.
     is left inside; not from inside; waking falls back to the camp's sleeping bag. Crafted
     placed things go back into the inventory whole; no salvaging. Default: keep.
 
+22. **First NPC** (task 84): `spawn npc`, a randomised look from layers like the player's,
+    North Frisian / Low German names, stays within about 6 tiles of the nearest building or
+    campfire, stands still at night; saved with its chat history (last 200 lines); the
+    chat pauses the game; lines as `[08:15] <You> hello`. Default: keep.
+
 ## Questions
 
 No open questions right now.

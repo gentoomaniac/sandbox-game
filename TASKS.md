@@ -706,6 +706,27 @@ a placed thing is `ItemTypes.item_placing`. `BuildMode` marks the target and run
 second hold; the sound is the axe's chop (`taken_down`). `--taking-down` for screenshots.
 Storks: `WildlifeView.is_standing` already made a stork leave a roof that is gone.
 
+## 84. NPCs: a first villager to spawn and chat with
+
+- [ ] Done
+
+The user's word of 2026-11-06 (priority, the first step of docs/ideas/NPC.md): NPC art and
+an entity that can be spawned randomised via the console. It walks about a bit but stays
+close to buildings, so it never leaves the campfire area. The use of E on it opens a chat:
+the player's face on the left, the NPC's on the right, a classic IRC-style chat window in
+the middle. A random name on spawn. Esc leaves the chat. The chat keeps its history. For
+now the NPC always answers "I understand.", but the answer comes from one function that can
+later do more (an LLM, see the ideas doc).
+
+Defaults (QUESTIONS.md 22): `spawn npc [count]`; the look is randomised from layers like the
+player's (sex, skin, hair, period clothes in their colours); period North Frisian / Low
+German first names and surnames matching the sex. The NPC keeps to within about 6 tiles of
+the nearest building or campfire at spawn (its anchor), idles and strolls by day and stands
+still at night. NPCs, their looks, names, anchors and chat histories are saved (a save
+version bump; history capped at the last 200 lines). The chat pauses the game while open;
+lines read `[08:15] <You> hello` with the game time; Enter sends, Esc closes; the history
+scrolls. The reply function is async-ready (awaited), so a slow LLM fits later.
+
 ## Later (not part of the prototype)
 
 - `WildlifeSprites.frame_index` and `max_frames` allocate on every call (`keys()`,
