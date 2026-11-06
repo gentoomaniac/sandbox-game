@@ -29,7 +29,10 @@ func test_bricks_are_moulded_at_the_workbench_and_fired_in_the_kiln_for_twelve_h
 	var rules := RecipeRules.default_rules()
 	assert_eq(rules.station_of(&"raw_bricks"), &"workbench")
 	assert_eq(rules.hours(&"raw_bricks"), 0.0)
-	assert_eq(rules.recipes_at(&"kiln"), [&"bricks", &"bricks_large"] as Array[StringName])
+	assert_eq(
+		rules.recipes_at(&"kiln"),
+		[&"bricks", &"bricks_large", &"bricks_master"] as Array[StringName]
+	)
 	assert_eq(rules.hours(&"bricks"), 12.0)
 
 

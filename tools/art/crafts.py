@@ -224,6 +224,47 @@ def berry_tart():
     return outlined(picture, "soil_dark")
 
 
+def cupboard(is_standing=True):
+    """A joined oak cupboard, 16x24 px: a cornice, two panelled doors with brass knobs over a
+    drawer, on short feet. It stands in a house."""
+    picture = blank(16, 24)
+    rect(picture, 0, 0, 15, 2, "soil_light")
+    rect(picture, 0, 2, 15, 2, "soil")
+    rect(picture, 1, 3, 14, 21, "soil_mid")
+    rect(picture, 1, 3, 1, 21, "soil_light")
+    rect(picture, 14, 3, 14, 21, "soil")
+    # The doors, each with two sunk panels, and the seam between them.
+    for left in (2, 8):
+        for top, bottom in ((4, 9), (11, 16)):
+            rect(picture, left + 1, top, left + 4, bottom, "soil")
+            rect(picture, left + 1, top, left + 4, top, "soil_dark")
+    rect(picture, 7, 3, 8, 17, "soil")
+    pixel(picture, 6, 10, "gold")
+    pixel(picture, 9, 10, "gold")
+    # The drawer under the doors, and the feet.
+    rect(picture, 2, 18, 13, 20, "soil")
+    rect(picture, 2, 18, 13, 18, "soil_light")
+    pixel(picture, 7, 19, "gold")
+    pixel(picture, 8, 19, "gold")
+    rect(picture, 1, 22, 3, 23, "soil")
+    rect(picture, 12, 22, 14, 23, "soil")
+    return outline(picture, "soil_dark", keep_bottom=is_standing)
+
+
+def feast_cake():
+    """A tall round cake, iced, with strawberries and berries on top."""
+    picture = blank()
+    rect(picture, 3, 6, 12, 13, "ochre")
+    rect(picture, 3, 6, 12, 7, "cream")
+    rect(picture, 3, 9, 12, 9, "red_light")
+    rect(picture, 11, 8, 12, 13, "ochre_dark")
+    rect(picture, 3, 13, 12, 13, "ochre_dark")
+    for x, y, colour in ((4, 5, "red_light"), (7, 4, "red_light"), (10, 5, "red_light"), (6, 5, "heather_dark"), (9, 5, "heather_dark")):
+        pixel(picture, x, y, colour)
+    pixel(picture, 7, 3, "green")
+    return outlined(picture, "soil_dark")
+
+
 def bricks(face, top, shade):
     """Two bricks, one on the other and set back: `face` is their front, `top` the lit top and
     `shade` the dark end."""
@@ -256,7 +297,7 @@ def _shrunk(picture):
 
 def stations():
     """The pictures of the stations, standing, by world object type."""
-    return {"workbench": workbench(), "carved_chest": carved_chest(), "kiln": kiln(), "oven": oven()}
+    return {"workbench": workbench(), "carved_chest": carved_chest(), "kiln": kiln(), "oven": oven(), "cupboard": cupboard()}
 
 
 def icons():
@@ -266,6 +307,7 @@ def icons():
         "kiln": _shrunk(kiln(is_standing=False)),
         "oven": icon_of(oven(is_standing=False)),
         "planks": planks(),
+        "cupboard": _shrunk(cupboard(is_standing=False)),
         # Dried clay, grey-brown, and fired, red.
         "raw_brick": bricks("mud", "sand", "mud_dark"),
         "brick": bricks("rust", "red_light", "rust_dark"),
@@ -279,5 +321,6 @@ def icons():
         "flour": flour(),
         "bread": bread(),
         "berry_tart": berry_tart(),
+        "feast_cake": feast_cake(),
     }
 

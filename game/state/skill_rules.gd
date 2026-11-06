@@ -90,6 +90,11 @@ func total_cap() -> float:
 	return float(_values["cap"]["total"])
 
 
+## How far above a recipe's level a skill still learns from it.
+func trivial_above() -> float:
+	return float(_values["gain"]["trivial_above"])
+
+
 ## What one craft of a recipe of `level` teaches a skill that has `points`: the full gain at or
 ## below the level, falling evenly to nothing at `trivial_above` points over it.
 func gain(points: float, level: float) -> float:

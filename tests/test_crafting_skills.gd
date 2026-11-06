@@ -119,3 +119,23 @@ func test_a_refused_craft_practises_nothing() -> void:
 	_state.player.inventory.remove(ItemTypes.BERRIES, 10)
 	assert_eq(_crafting.craft(&"stew"), Crafting.Result.MISSING_MATERIALS)
 	assert_eq(_state.player.skills.points(&"cooking"), 0.0)
+
+
+# --- The real recipes ---
+
+
+func test_every_skill_has_a_recipe_that_teaches_it_up_to_its_cap() -> void:
+	var rules := RecipeRules.default_rules()
+	var skill_rules := SkillRules.default_rules()
+	for skill in skill_rules.skill_ids():
+		var top := -1.0
+		for recipe_id in rules.recipe_ids():
+			if rules.skill(recipe_id) == skill:
+				top = maxf(top, rules.level(recipe_id))
+		assert_gte(top + skill_rules.trivial_above() - 1.0, skill_rules.skill_cap(), str(skill))
+		var skills := Skills.new(skill_rules)
+		skills.set_points(skill, top)
+		for craft in 1000:
+			if skills.practise(skill, top) == 0.0:
+				break
+		assert_eq(skills.points(skill), skill_rules.skill_cap(), "%s reaches the top" % skill)

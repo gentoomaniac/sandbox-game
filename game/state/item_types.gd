@@ -57,6 +57,7 @@ const OVEN := &"oven"
 const PLANKS := &"planks"
 const STOOL := &"stool"
 const CARVED_CHEST := &"carved_chest"
+const CUPBOARD := &"cupboard"
 # The mason's (task 74).
 const RAW_BRICK := &"raw_brick"
 const BRICK := &"brick"
@@ -67,6 +68,7 @@ const PEA_SOUP := &"pea_soup"
 const FLOUR := &"flour"
 const BREAD := &"bread"
 const BERRY_TART := &"berry_tart"
+const FEAST_CAKE := &"feast_cake"
 
 ## Stands for an empty hand or slot where an item id is expected.
 const NONE := &""
@@ -400,6 +402,15 @@ const _OTHER_TYPES := {
 		"weight": 1.0,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
+	CUPBOARD:
+	{
+		"name": "Joined cupboard",
+		"description":
+		"An oak cupboard with panelled doors, a master's piece. It stands in a house.",
+		"weight": 10.0,
+		"stack_limit": 5,
+		"places": WorldObjectTypes.CUPBOARD,
+	},
 	ROAST_TURNIP:
 	{
 		"name": "Roast turnip",
@@ -440,6 +451,13 @@ const _OTHER_TYPES := {
 		"name": "Berry tart",
 		"description": "Berries baked in pastry, a treat for a feast day.",
 		"weight": 0.4,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+	},
+	FEAST_CAKE:
+	{
+		"name": "Feast cake",
+		"description": "A tall cake with strawberries, baked for a wedding or the harvest feast.",
+		"weight": 0.8,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 }

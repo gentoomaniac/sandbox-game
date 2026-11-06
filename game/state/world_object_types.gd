@@ -111,6 +111,8 @@ const WORKBENCH := &"workbench"
 const CARVED_CHEST := &"carved_chest"
 const KILN := &"kiln"
 const OVEN := &"oven"
+## The woodworker's master piece (task 74): it stands only in a house.
+const CUPBOARD := &"cupboard"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -530,6 +532,17 @@ const _OTHER_TYPES := {
 		"variants": 1,
 		"interior_sprite": "res://assets/interior/kiln.png",
 		"outdoors_only": true,
+	},
+	CUPBOARD:
+	{
+		"hp": 3,
+		"tool": &"axe",
+		"drops": {&"cupboard": 1},
+		"storage_slots": 25,
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"interior_sprite": "res://assets/interior/cupboard.png",
 	},
 	OVEN:
 	{
