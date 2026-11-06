@@ -449,8 +449,8 @@ func placement_blockers(
 	var door_offset: Vector2i = BuildingTypes.TYPES[building_type]["door_offset"]
 	var front := origin + door_offset + Vector2i.DOWN
 	if not is_walkable(front):
-		var is_blocked_by_thing := tile_at(front) != null and tile_at(front).is_walkable()
-		blockers[front] = Blocked.OCCUPIED if is_blocked_by_thing else Blocked.TERRAIN
+		var is_blocked_by_object := tile_at(front) != null and tile_at(front).is_walkable()
+		blockers[front] = Blocked.OCCUPIED if is_blocked_by_object else Blocked.TERRAIN
 	return blockers
 
 
