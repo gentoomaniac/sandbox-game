@@ -370,6 +370,49 @@ _FROST_FERN = {"green_light": "snow_light", "green": "straw", "green_dark": "ree
 _FROST_STONE = {"green_light": "snow", "green": "snow_shadow", "olive": "snow_shadow"}
 
 
+# What winter does to each kind of object (the kinds of the object atlas), with these keys, all
+# optional. The leafless art is the summer art with colours remapped:
+# - "bare": the remap of every winter look;
+# - "frost": a further remap in the frost and dusting looks, "frost_only" one in the frost look
+#   alone (under a dusting, the snow caps stand in for it);
+# - "specks": the colours that a frost rimes in specks;
+# - "snow": (surfaces, edges, depth) of the snow caps that lie on it in the snow look, and one
+#   pixel deep in the dusting look;
+# - "snow_remap": a remap in place of the caps, in the snow look (a mound of snow, a bedroll).
+_TRUNK_WINTER = {"frost_only": _FROST_STONE, "snow": _SNOW_TRUNK}
+_WINTER_LOOKS = {
+    "spruce": {"frost": _FROST_CONIFER, "snow": _SNOW_CONIFER},
+    "pine": {"frost": _FROST_PINE, "snow": _SNOW_PINE},
+    "dead_tree": {"snow": _SNOW_DEADWOOD},
+    "berry_bush": {"bare": _BARE_BUSH, "frost": _FROST_BUSH, "snow_remap": _SNOW_MOUND},
+    "shrub": {"bare": _BARE_BUSH, "frost": _FROST_BUSH, "snow": _SNOW_BUSH},
+    "sapling": {"bare": _BARE_BUSH, "frost": _FROST_BUSH, "snow": _SNOW_BUSH},
+    "fern": {"bare": _DRY_FERN, "frost": _FROST_FERN, "snow": ({"straw", "reed", "olive"}, set(), 1)},
+    "tall_grass": {"bare": WINTER_STALKS, "frost": _FROST_STALKS},
+    "reeds": {"bare": _GOLDEN_REEDS, "snow": _SNOW_REEDS},
+    "stone": {"frost_only": _FROST_STONE, "snow": _SNOW_STONE},
+    "boulder": {"frost_only": _FROST_STONE, "snow": _SNOW_BOULDER},
+    "stump": {"frost_only": _FROST_STONE, "snow": _SNOW_STUMP},
+    "dead_stump": {"frost_only": _FROST_STONE, "snow": _SNOW_DEAD_STUMP},
+    "chest": {"frost_only": _FROST_STONE, "snow": _SNOW_CHEST},
+    "oak_trunk": _TRUNK_WINTER,
+    "oak_short_trunk": _TRUNK_WINTER,
+    "spruce_trunk": _TRUNK_WINTER,
+    "spruce_short_trunk": _TRUNK_WINTER,
+    "pine_trunk": _TRUNK_WINTER,
+    "pine_short_trunk": _TRUNK_WINTER,
+    "dead_tree_trunk": _TRUNK_WINTER,
+    "dead_tree_short_trunk": _TRUNK_WINTER,
+    # The bedroll: snow lies over the cloth, a frost rimes it in specks.
+    "sleeping_bag": {
+        "specks": {"sand_light", "stone_light"},
+        "snow": ({"sand_light", "sand", "stone_light", "stone"}, set(), 1),
+        "snow_remap": _SNOW_BEDROLL,
+    },
+    "fireplace": {},
+}
+
+
 def _season_object(look, kind, variant, canvas, redraw):
     """One object cell in a look. `variant` is its column in the atlas row (picked bushes
     repeat their bush's variants)."""
@@ -404,64 +447,31 @@ def _winter_object(look, kind, variant, canvas, redraw, rng, centre):
     with a thin snow cap)."""
     if kind in redraw:
         return redraw[kind](variant)
+    if kind not in _WINTER_LOOKS:
+        raise KeyError(f"no winter look for the object kind {kind!r}: add it to seasons._WINTER_LOOKS")
+    winter = _WINTER_LOOKS[kind]
     is_frosty = look in ("frost", "dusting")
     has_snow = look in ("snow", "dusting")
+    if look == "snow" and "snow_remap" in winter:
+        return remap(canvas, winter["snow_remap"])
 
-    def cap(spec):
-        surfaces, edges, depth = spec
-        return surfaces, edges, depth if look == "snow" else 1
-
-    if kind in ("spruce", "pine"):
-        frost, snow = (_FROST_CONIFER, _SNOW_CONIFER) if kind == "spruce" else (_FROST_PINE, _SNOW_PINE)
-        canvas = remap(canvas, frost if is_frosty else {})
-        if has_snow:
-            snow_caps(canvas, rng, *cap(snow), centre)
-        return canvas
-    if kind == "tall_grass":
-        stalks = {"bare": WINTER_STALKS, "snow": WINTER_STALKS, "frost": _FROST_STALKS, "dusting": _FROST_STALKS}
-        return remap(canvas, stalks[look])
-    if kind == "reeds":
-        canvas = remap(canvas, _GOLDEN_REEDS)
-        if has_snow:
-            snow_caps(canvas, rng, *cap(_SNOW_REEDS), centre)
-        return canvas
-    if kind == "berry_bush":
-        return remap(canvas, {"bare": _BARE_BUSH, "frost": {**_BARE_BUSH, **_FROST_BUSH}, "dusting": {**_BARE_BUSH, **_FROST_BUSH}, "snow": _SNOW_MOUND}[look])
-    if kind in ("shrub", "sapling"):
-        canvas = remap(canvas, {**_BARE_BUSH, **(_FROST_BUSH if is_frosty else {})})
-        if has_snow:
-            snow_caps(canvas, rng, *cap(_SNOW_BUSH), centre)
-        return canvas
-    if kind == "fern":
-        canvas = remap(canvas, {**_DRY_FERN, **(_FROST_FERN if is_frosty else {})})
-        if has_snow:
-            snow_caps(canvas, rng, {"straw", "reed", "olive"}, set(), 1, centre)
-        return canvas
-    if kind == "sleeping_bag":
-        # The bedroll: snow lies over the cloth; a frost rimes it in specks.
-        if look == "snow":
-            return remap(canvas, _SNOW_BEDROLL)
-        if is_frosty:
-            canvas = copy(canvas)
-            for y, row in enumerate(canvas):
-                for x, name in enumerate(row):
-                    if name in ("sand_light", "stone_light") and rng.random() < 0.15:
-                        row[x] = "snow_light"
-        if has_snow:
-            snow_caps(canvas, rng, *cap(({"sand_light", "sand", "stone_light", "stone"}, set(), 1)), centre)
-        return canvas
-    if kind == "dead_tree":
-        if has_snow:
-            canvas = copy(canvas)
-            snow_caps(canvas, rng, *cap(_SNOW_DEADWOOD), centre)
-        return canvas
-    if kind in ("stone", "boulder", "stump", "dead_stump", "chest") or kind.endswith("trunk"):
-        if has_snow:
-            canvas = copy(canvas)
-            spec = {"stone": _SNOW_STONE, "boulder": _SNOW_BOULDER, "stump": _SNOW_STUMP, "dead_stump": _SNOW_DEAD_STUMP, "chest": _SNOW_CHEST}.get(kind, _SNOW_TRUNK)
-            snow_caps(canvas, rng, *cap(spec), centre, _chest_lid_bottom(canvas) if kind == "chest" else None)
-            return canvas
-        return remap(canvas, _FROST_STONE) if is_frosty else canvas
+    colours = dict(winter.get("bare", {}))
+    if is_frosty:
+        colours.update(winter.get("frost", {}))
+    if look == "frost":
+        colours.update(winter.get("frost_only", {}))
+    # remap copies, so the specks and caps below never touch the summer art.
+    canvas = remap(canvas, colours)
+    if is_frosty:
+        for row in canvas:
+            for x, name in enumerate(row):
+                if name in winter.get("specks", ()) and rng.random() < 0.15:
+                    row[x] = "snow_light"
+    if has_snow and "snow" in winter:
+        surfaces, edges, depth = winter["snow"]
+        # The chest's snow lies on its lid only.
+        bottom = _chest_lid_bottom(canvas) if kind == "chest" else None
+        snow_caps(canvas, rng, surfaces, edges, depth if look == "snow" else 1, centre, bottom)
     return canvas
 
 
