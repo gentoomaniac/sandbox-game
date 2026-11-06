@@ -115,6 +115,8 @@ _BARE_GROUND = {
     "cream": "straw",
     "gold": "straw",
     "petal": "sand",
+    # Desire paths lie dark and damp in the brown-grey of winter.
+    "mud": "mud_dark",
 }
 # A frost: the grass keeps its shapes but turns a cold pale blue-green, with white rims on the
 # tips (see also `sparkle`).

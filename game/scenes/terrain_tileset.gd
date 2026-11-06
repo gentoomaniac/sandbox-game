@@ -16,7 +16,7 @@ extends RefCounted
 ## row of meadow flowers (FLOWER_ROW).
 
 ## Draw order and atlas row, bottom to top.
-enum Layer { WATER, FLOODPLAIN, WETLAND, GRASS, LUSH_GRASS, DRY_GRASS, SOIL }
+enum Layer { WATER, FLOODPLAIN, WETLAND, GRASS, LUSH_GRASS, DRY_GRASS, TRODDEN, PATH, SOIL }
 ## The tiles of a meadow flower (see FLOWER_ROW).
 enum FlowerVariant { SMALL, FEW, DRIFT, OTHER_DRIFT }
 
@@ -43,11 +43,11 @@ const FULL_COLUMN := EDGE_VARIANTS * FULL
 
 ## The code of a tile packs what its drawing needs into one int, so a corner of a cell is one
 ## value to read, fill in and pass on:
-##   bits 0-2   the layer (Layer, 0..6)
-##   bits 3-6   the look it has by the season (SeasonBlend.Look, 0..8)
-##   bits 7-10  the look over it by the weather (SeasonBlend.Look: FROST, DUSTING, SNOW, or
+##   bits 0-3   the layer (Layer, 0..8)
+##   bits 4-7   the look it has by the season (SeasonBlend.Look, 0..8)
+##   bits 8-11  the look over it by the weather (SeasonBlend.Look: FROST, DUSTING, SNOW, or
 ##              SUMMER for none)
-const LAYER_BITS := 3
+const LAYER_BITS := 4
 const LOOK_BITS := 4
 const SEASON_SHIFT := LAYER_BITS
 const WEATHER_SHIFT := SEASON_SHIFT + LOOK_BITS
@@ -59,7 +59,7 @@ const LOOK_MASK := (1 << LOOK_BITS) - 1
 const MISSING := -1
 const NO_DECORATION := Vector2i(-1, -1)
 
-const LAYER_COUNT := 7
+const LAYER_COUNT := 9
 ## The row of the decoration atlas with the meadow flowers: FLOWER_VARIANTS columns per species
 ## of FLOWER_SPECIES, in that order (see tools/art/flowers.py): a small plant, a few, and two
 ## tiles of the thick of a drift.
@@ -92,6 +92,8 @@ const BASE_LAYER: Array[Layer] = [
 	Layer.GRASS,
 	Layer.GRASS,
 	Layer.GRASS,
+	Layer.TRODDEN,
+	Layer.PATH,
 	Layer.SOIL,
 ]
 ## The looks drawn over the base terrain (which is the summer look), bottom to top: a tile in

@@ -3,8 +3,8 @@ assets/decorations.png.
 
 Tiles are drawn as 16x16 grids of palette colour names (None = transparent). Each terrain layer
 has one function that returns its atlas row and its decorations; `LAYERS` lists them bottom to
-top: water, floodplain, wetland, grass, lush grass, dry grass, soil. Both atlases are read by
-game/scenes/terrain_tileset.gd.
+top: water, floodplain, wetland, grass, lush grass, dry grass, trodden grass, path, soil. Both
+atlases are read by game/scenes/terrain_tileset.gd.
 
 assets/terrain.png, per row:
 - EDGE_VARIANTS blocks of 15 columns: the dual-grid edge shapes for masks 0..14 (mask 0
@@ -460,6 +460,90 @@ def dry_grass():
     return tinted_grass(("dry", "dry_light", "olive"), 70, tufts, decorations)
 
 
+# Desire paths: grass that is walked often turns trodden, then a path of bare earth (see
+# data/paths.cfg). Both are drawn over whatever grass they wore, so their edges fade into it.
+
+
+def trodden():
+    """Thin, flattened grass with the earth showing through in patches."""
+    blade = sprite({"l": "green_light", "d": "green_dark"}, "l", "d")
+    flat_blades = sprite({"d": "dry", "l": "dry_light"}, "dl", ".d")
+    bare_spots = [
+        sprite({"m": "mud"}, "mm"),
+        sprite({"m": "mud", "d": "dry"}, ".m", "md"),
+        sprite({"m": "mud", "d": "mud_dark"}, "mm.", ".dm"),
+        sprite({"m": "mud"}, "m", "m"),
+    ]
+    pebble = sprite({"s": "stone", "d": "mud_dark"}, "s", "d")
+
+    def texture(seed):
+        rng = random.Random(seed)
+        tile = filled("green")
+        for y in range(TILE):
+            for x in range(TILE):
+                if rng.random() < 0.3:
+                    tile[y][x] = "dry"
+        sprinkle(tile, rng, bare_spots, spacing=4, chance=0.7)
+        sprinkle(tile, rng, [flat_blades, blade], spacing=5, chance=0.4)
+        return tile
+
+    fulls = [details(texture, 90 + n, *picks) for n, picks in enumerate([(), (pebble,), (), ()])]
+    shapes = edge_shapes(90, [(2, 1.0), (3, 0.7), (5, 0.3)], 0.22)
+
+    def decorate(tile, covered, rng):
+        # Fades out in a dither into the grass around it, so no line marks where it ends.
+        for y in range(TILE):
+            for x in range(TILE):
+                if covered(x, y):
+                    distance = edge_distance(covered, x, y, 4)
+                    if distance == 1 or (distance < 4 and rng.random() < 0.6 / distance):
+                        tile[y][x] = None
+
+    # A worn tile has no decorations: its flowers and tufts were trodden down.
+    return edge_tiles(texture, shapes, 90, decorate) + fulls, []
+
+
+def path():
+    """Bare trodden earth, with grit and the odd stone; grass creeps in at the edges."""
+    grit = sprite({"l": "sand"}, "l")
+    dark = sprite({"d": "mud_dark"}, "d")
+    stone = sprite({"s": "stone_light", "d": "stone"}, "s", "d")
+    pebbles = sprite({"s": "stone", "d": "stone_dark", "l": "stone_light"}, "l.s", ".d.")
+    tuft = sprite({"b": "green_light", "d": "green_dark"}, "b.b", ".d.")
+
+    def texture(seed):
+        rng = random.Random(seed)
+        tile = filled("mud")
+        sprinkle(tile, rng, [grit, dark, dark], spacing=3, chance=0.5)
+        return tile
+
+    fulls = [
+        details(texture, 101),
+        details(texture, 102, stone),
+        details(texture, 103),
+        details(texture, 104, pebbles),
+        details(texture, 105),
+        details(texture, 106, tuft),
+    ]
+    shapes = edge_shapes(100, [(2, 1.0), (3, 0.6), (4, 0.3)], 0.2)
+
+    def decorate(tile, covered, rng):
+        # The grass beside it shows through a ragged rim, and blades of it lean in.
+        for y in range(TILE):
+            for x in range(TILE):
+                if not covered(x, y):
+                    continue
+                distance = edge_distance(covered, x, y, 4)
+                if distance == 1 and rng.random() < 0.7:
+                    tile[y][x] = None
+                elif distance == 2 and rng.random() < 0.3:
+                    tile[y][x] = rng.choice(("green_dark", "green", None))
+                elif distance == 3 and rng.random() < 0.12:
+                    tile[y][x] = "green_dark"
+
+    return edge_tiles(texture, shapes, 100, decorate) + fulls, []
+
+
 def soil():
     clod = sprite({"l": "soil_light", "m": "soil_mid"}, "l", "m")
 
@@ -490,4 +574,4 @@ def soil():
     return edge_tiles(lambda seed: copy(base), shapes, 80, decorate) + fulls, []
 
 
-LAYERS = [water, floodplain, wetland, grass, lush_grass, dry_grass, soil]
+LAYERS = [water, floodplain, wetland, grass, lush_grass, dry_grass, trodden, path, soil]
