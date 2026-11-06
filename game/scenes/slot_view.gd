@@ -1,7 +1,8 @@
 class_name SlotView
 extends Control
 ## One inventory slot on screen: the slot art, the item's icon and, for more than one, its
-## count. Left click emits `pressed`, right click `secondary_pressed`. An empty slot can show
+## count. Left click emits `pressed`, right click `secondary_pressed` (unless it is not
+## `is_clickable`, then the click goes on to the game). An empty slot can show
 ## a faint `hint` of what belongs in it. A slot with an item has its tooltip (see TooltipView);
 ## `tooltip_id` names it for the debug flag.
 
@@ -19,6 +20,8 @@ const SELECTED_SLOT_TEXTURE := preload("res://assets/ui/slot_selected.png")
 ## Drawn in an empty slot, if set.
 var hint: Texture2D
 var tooltip_id := ""
+## The hotbar of the HUD is not clickable until a screen that moves items is open.
+var is_clickable := true
 
 var _stack := {}
 var _icon: Texture2D
@@ -41,8 +44,7 @@ func show_stack(stack: Dictionary, is_selected: bool) -> void:
 func _gui_input(event: InputEvent) -> void:
 	if not (event is InputEventMouseButton and event.pressed):
 		return
-	# A slot nobody listens to (the hotbar's) leaves the click to the game.
-	if not (pressed.has_connections() or secondary_pressed.has_connections()):
+	if not is_clickable:
 		return
 	if event.button_index == MOUSE_BUTTON_LEFT:
 		pressed.emit()

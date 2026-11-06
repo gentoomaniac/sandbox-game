@@ -2,8 +2,18 @@ class_name HotbarHud
 extends CanvasLayer
 ## The hotbar at the bottom centre of the window: the first slots of the inventory, the
 ## selected one marked. On its own canvas layer like the clock, so the day/night tint doesn't
-## touch it.
+## touch it. While the character or the storage screen is open the hotbar moves above their
+## dimmed backdrop: it stays lit and is their quick bar, its slots clickable (see
+## `set_clickable`); otherwise clicks on it go to the game.
 
+## A slot was clicked while the slots are clickable; one screen at a time listens (while open).
+signal slot_pressed(slot: int)
+signal slot_secondary_pressed(slot: int)
+
+## While the slots are clickable: above the screens (1), under the fade (2, added later) and
+## the menus. Otherwise the hotbar is on layer 1 with the other HUDs.
+const CLICKABLE_LAYER := 2
+const IDLE_LAYER := 1
 const BOTTOM_MARGIN := 4
 const SLOT_GAP := 2
 const WIDTH := Inventory.HOTBAR_SIZE * SlotView.SIZE + (Inventory.HOTBAR_SIZE - 1) * SLOT_GAP
@@ -14,6 +24,7 @@ var _slot_views: Array[SlotView] = []
 
 
 func _init() -> void:
+	layer = IDLE_LAYER
 	var row := HBoxContainer.new()
 	row.theme = THEME
 	row.add_theme_constant_override("separation", SLOT_GAP)
@@ -22,7 +33,10 @@ func _init() -> void:
 		var view := SlotView.new()
 		# Passes clicks on to the game, but is still hovered for its tooltip.
 		view.mouse_filter = Control.MOUSE_FILTER_PASS
+		view.is_clickable = false
 		view.tooltip_id = "hotbar_%d" % slot
+		view.pressed.connect(slot_pressed.emit.bind(slot))
+		view.secondary_pressed.connect(slot_secondary_pressed.emit.bind(slot))
 		row.add_child(view)
 		_slot_views.append(view)
 	add_child(row)
@@ -32,6 +46,18 @@ func _init() -> void:
 	row.offset_right = WIDTH / 2.0
 	row.offset_top = -BOTTOM_MARGIN - SlotView.SIZE
 	row.offset_bottom = -BOTTOM_MARGIN
+
+
+## The view of a hotbar slot, for a screen to listen to and mark.
+func slot_view(slot: int) -> SlotView:
+	return _slot_views[slot]
+
+
+## Whether the slots take clicks (a screen that moves items is open) or leave them to the game.
+func set_clickable(is_clickable: bool) -> void:
+	layer = CLICKABLE_LAYER if is_clickable else IDLE_LAYER
+	for view in _slot_views:
+		view.is_clickable = is_clickable
 
 
 func show_inventory(inventory: Inventory) -> void:

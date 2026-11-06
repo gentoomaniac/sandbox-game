@@ -1,8 +1,10 @@
 extends GutTest
-## Every slot of the character screen answers a click, wherever on the slot it lands.
+## Every slot of the character screen answers a click, wherever on the slot it lands, the
+## hotbar slots of the HUD among them.
 
 var _player: PlayerState
 var _screen: CharacterScreen
+var _hotbar: HotbarHud
 var _window: SubViewport
 
 
@@ -12,9 +14,11 @@ func before_each() -> void:
 	_window = SubViewport.new()
 	_window.size = Vector2i(640, 360)
 	add_child_autofree(_window)
-	_window.add_child(HotbarHud.new())
+	_hotbar = HotbarHud.new()
+	_window.add_child(_hotbar)
+	_hotbar.show_inventory(_player.inventory)
 	_window.add_child(FadeScreen.new())
-	_screen = CharacterScreen.new()
+	_screen = CharacterScreen.new(_hotbar)
 	_window.add_child(_screen)
 	_screen.show_player(_player)
 	_screen.open()
@@ -31,6 +35,10 @@ func _click(position: Vector2) -> void:
 		event.pressed = is_pressed
 		event.position = position
 		_window.push_input(event)
+
+
+func _click_slot(slot: int) -> void:
+	_click(_screen._inventory_views[slot].get_global_rect().get_center())
 
 
 ## The spots of a slot to click: the centre and just inside each corner.
@@ -57,3 +65,25 @@ func test_every_slot_can_be_picked_up_wherever_it_is_clicked() -> void:
 				view.modulate.a, CharacterScreen.PICKED_ALPHA, 0.01, "slot %d at %s" % [slot, spot]
 			)
 			_click(spot)
+
+
+func test_the_hud_hotbar_is_clickable_only_while_the_character_page_is_open() -> void:
+	var slot := _hotbar.slot_view(0)
+	assert_true(slot.is_clickable)
+	_screen.close()
+	assert_false(slot.is_clickable)
+	_screen.open(CharacterScreen.Tab.SKILLS)
+	assert_false(slot.is_clickable, "the skills page moves no items")
+
+
+func test_the_hotbar_is_drawn_above_the_dimmed_backdrop_of_the_screen() -> void:
+	assert_gt(_hotbar.layer, _screen.layer)
+
+
+func test_an_item_goes_from_the_backpack_onto_the_hotbar_by_clicks() -> void:
+	_player.inventory.slots[Inventory.HOTBAR_SIZE + 3] = {"item": ItemTypes.LOGS, "count": 4}
+	_player.inventory.slots[2] = {}
+	_player.inventory.changed.emit()
+	_click_slot(Inventory.HOTBAR_SIZE + 3)
+	_click_slot(2)
+	assert_eq(_player.inventory.slots[2], {"item": ItemTypes.LOGS, "count": 4})

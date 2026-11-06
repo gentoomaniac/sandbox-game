@@ -1,7 +1,8 @@
 class_name CharacterScreen
 extends CanvasLayer
 ## The character screen over the game: the character with the equipment slots around it on the
-## left, the backpack with the hotbar as a row below it and the carried weight on the right.
+## left and the backpack with the carried weight on the right. The hotbar is the HUD's, which
+## stays lit and clickable while the screen is open, and is used like the backpack's slots.
 ## Click an item to pick it up, then click a slot to put it down: a different item swaps places,
 ## the same item stacks, and an equipment slot only takes an item that fits (those light up
 ## while an item is picked up). Clicking the picked slot again, or outside the slots, drops the
@@ -16,13 +17,12 @@ const COLUMN_GAP := 4
 const PANEL_GAP := 12
 ## The backpack is 5 slots wide and 4 rows high.
 const BACKPACK_COLUMNS := 5
-## Space between the backpack and the hotbar row below it.
-const HOTBAR_GAP := 8
 const MAX_PREVIEW_SCALE := 4
 ## Kept free round the panel, and the panel's own frame and padding (see ui_theme.tres).
 const WINDOW_MARGIN := 8
 const PANEL_PADDING := 20
 const PICKED_ALPHA := 0.4
+const PICKED_ICON_LAYER := 3
 const HINT_PATH := "res://assets/ui/equip_%s.png"
 const THEME := preload("res://game/scenes/ui_theme.tres")
 
@@ -31,6 +31,8 @@ const LEFT_SLOTS := [Equipment.HEAD, Equipment.BODY, Equipment.LEGS, Equipment.F
 const RIGHT_SLOTS := [Equipment.COAT, Equipment.BACK, Equipment.MAIN_HAND, Equipment.OFF_HAND]
 
 var _player: PlayerState
+var _hotbar: HotbarHud
+var _is_using_hotbar := false
 var _inventory_views: Array[SlotView] = []
 var _equipment_views := {}
 ## What is picked up: an inventory slot (an index) or an equipment slot (a name), else none.
@@ -51,7 +53,8 @@ var _tab_buttons := {}
 var _skills_panel := SkillsPanel.new()
 
 
-func _init() -> void:
+func _init(hotbar: HotbarHud) -> void:
+	_hotbar = hotbar
 	visible = false
 	_backdrop.color = UiColors.BACKDROP
 	_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -68,13 +71,16 @@ func _init() -> void:
 	_add_equipment_column(_right_column, RIGHT_SLOTS, character_row)
 
 	var backpack_grid := _new_slot_grid(BACKPACK_COLUMNS)
-	var hotbar_grid := _new_slot_grid(Inventory.HOTBAR_SIZE)
 	for slot in Inventory.SLOT_COUNT:
-		var view := SlotView.new()
-		view.tooltip_id = "inventory_%d" % slot
-		view.pressed.connect(_on_inventory_slot_pressed.bind(slot))
-		view.secondary_pressed.connect(_on_inventory_slot_secondary_pressed.bind(slot))
-		(hotbar_grid if slot < Inventory.HOTBAR_SIZE else backpack_grid).add_child(view)
+		var view: SlotView
+		if slot < Inventory.HOTBAR_SIZE:
+			view = _hotbar.slot_view(slot)
+		else:
+			view = SlotView.new()
+			view.tooltip_id = "inventory_%d" % slot
+			backpack_grid.add_child(view)
+			view.pressed.connect(_on_inventory_slot_pressed.bind(slot))
+			view.secondary_pressed.connect(_on_inventory_slot_secondary_pressed.bind(slot))
 		_inventory_views.append(view)
 	var inventory_column := VBoxContainer.new()
 	inventory_column.add_theme_constant_override("separation", SLOT_GAP)
@@ -82,11 +88,6 @@ func _init() -> void:
 	for label in [_weight_label, _note_label]:
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	inventory_column.add_child(backpack_grid)
-	var hotbar_gap := Control.new()
-	hotbar_gap.custom_minimum_size.y = HOTBAR_GAP - SLOT_GAP
-	hotbar_gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	inventory_column.add_child(hotbar_gap)
-	inventory_column.add_child(hotbar_grid)
 	inventory_column.add_child(_weight_label)
 	inventory_column.add_child(_note_label)
 
@@ -118,7 +119,11 @@ func _init() -> void:
 
 	_picked_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_picked_icon.visible = false
-	_backdrop.add_child(_picked_icon)
+	# On a layer of its own, so the dragged icon is drawn above the hotbar too.
+	var icon_layer := CanvasLayer.new()
+	icon_layer.layer = PICKED_ICON_LAYER
+	icon_layer.add_child(_picked_icon)
+	add_child(icon_layer)
 
 
 func show_player(player: PlayerState) -> void:
@@ -165,6 +170,7 @@ func _show_tab(tab: Tab) -> void:
 	for each: Tab in _pages:
 		_pages[each].visible = each == tab
 		_tab_buttons[each].set_pressed_no_signal(each == tab)
+	_use_hotbar(visible and tab == Tab.CHARACTER)
 	_refresh()
 	if is_inside_tree():
 		_fit_to_window()
@@ -172,9 +178,27 @@ func _show_tab(tab: Tab) -> void:
 
 func _show(is_shown: bool) -> void:
 	visible = is_shown
+	_use_hotbar(is_shown and _tab == Tab.CHARACTER)
 	_drop_pick()
 	_note_label.text = ""
 	_refresh()
+
+
+## Makes the HUD's hotbar this screen's quick bar, or gives it back: the screen listens to its
+## clicks and marks its slots only while it is the one using it.
+func _use_hotbar(is_used: bool) -> void:
+	if is_used == _is_using_hotbar:
+		return
+	_is_using_hotbar = is_used
+	_hotbar.set_clickable(is_used)
+	if is_used:
+		_hotbar.slot_pressed.connect(_on_inventory_slot_pressed)
+		_hotbar.slot_secondary_pressed.connect(_on_inventory_slot_secondary_pressed)
+	else:
+		_hotbar.slot_pressed.disconnect(_on_inventory_slot_pressed)
+		_hotbar.slot_secondary_pressed.disconnect(_on_inventory_slot_secondary_pressed)
+		for slot in Inventory.HOTBAR_SIZE:
+			_hotbar.slot_view(slot).modulate.a = 1.0
 
 
 func _process(_delta: float) -> void:
@@ -294,6 +318,9 @@ func _refresh() -> void:
 		return
 	var inventory := _player.inventory
 	for slot in Inventory.SLOT_COUNT:
+		# The HUD draws its own hotbar slots while this screen doesn't use them.
+		if slot < Inventory.HOTBAR_SIZE and not _is_using_hotbar:
+			continue
 		var view := _inventory_views[slot]
 		view.show_stack(inventory.slots[slot], slot == inventory.selected_slot)
 		view.modulate.a = PICKED_ALPHA if slot == _picked_inventory_slot else 1.0
@@ -304,7 +331,9 @@ func _refresh() -> void:
 		var fits_picked := _picked_inventory_slot != -1 and Equipment.fits(slot, _picked_item())
 		view.show_stack(stack, fits_picked)
 		view.modulate.a = PICKED_ALPHA if slot == _picked_equipment_slot else 1.0
-	_picked_icon.visible = _has_pick()
-	if _has_pick():
-		_picked_icon.texture = load(ItemTypes.icon_path(_picked_item()))
+	# A move that emptied the picked slot refreshes the screen before the pick is dropped.
+	var picked_item := _picked_item() if _has_pick() else ItemTypes.NONE
+	_picked_icon.visible = picked_item != ItemTypes.NONE
+	if _picked_icon.visible:
+		_picked_icon.texture = load(ItemTypes.icon_path(picked_item))
 	_weight_label.text = "Carrying %.1f kg" % _player.carried_weight()

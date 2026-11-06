@@ -1,8 +1,9 @@
 class_name StorageScreen
 extends CanvasLayer
 ## The storage screen over the game, for a chest: the player's backpack on the left (no
-## equipment) with the hotbar as a row below it, and the chest's slots on the right (as many as
-## the chest has, 5 to a row), each under a small icon. Click an item to pick it up, then click a
+## equipment) and the chest's slots on the right (as many as the chest has, 5 to a row), each
+## under a small icon. The hotbar is the HUD's, which stays lit and clickable while the screen is
+## open, and is used like the backpack's slots. Click an item to pick it up, then click a
 ## slot of either side to put it down: a different item swaps places, the same item stacks.
 ## Clicking the picked slot again, or outside the slots, drops the pick. Shift+click sends a whole
 ## stack to the other side (from the chest into the backpack first, so the hotbar isn't flooded).
@@ -16,15 +17,15 @@ const CHEST := 1
 const SLOT_GAP := 2
 const PANEL_GAP := 16
 const COLUMNS := 5
-## The inventory side: the backpack is 5 slots wide and 4 rows high, the hotbar one row.
+## The backpack is 5 slots wide and 4 rows high.
 const INVENTORY_COLUMNS := 5
-## Space between the backpack and the hotbar row below it.
-const HOTBAR_GAP := 8
 const PICKED_ALPHA := 0.4
+const PICKED_ICON_LAYER := 3
 const THEME := preload("res://game/scenes/ui_theme.tres")
 const BACKPACK_ICON := preload("res://assets/ui/backpack_icon.png")
 const CHEST_ICON := preload("res://assets/ui/chest_icon.png")
 
+var _hotbar: HotbarHud
 var _inventory: Inventory
 var _chest: ItemSlots
 ## The slot views of each side, by slot.
@@ -37,7 +38,8 @@ var _picked_icon := TextureRect.new()
 var _chest_column: VBoxContainer
 
 
-func _init() -> void:
+func _init(hotbar: HotbarHud) -> void:
+	_hotbar = hotbar
 	visible = false
 	_backdrop.color = UiColors.BACKDROP
 	_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -51,11 +53,9 @@ func _init() -> void:
 	_add_grid(
 		inventory_column, INVENTORY, Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT, INVENTORY_COLUMNS
 	)
-	var hotbar_gap := Control.new()
-	hotbar_gap.custom_minimum_size.y = HOTBAR_GAP - SLOT_GAP
-	hotbar_gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	inventory_column.add_child(hotbar_gap)
-	_add_grid(inventory_column, INVENTORY, 0, Inventory.HOTBAR_SIZE, Inventory.HOTBAR_SIZE)
+	for slot in Inventory.HOTBAR_SIZE:
+		var view := _hotbar.slot_view(slot)
+		_views[INVENTORY][slot] = view
 	row.add_child(inventory_column)
 	_chest_column = _new_column(CHEST_ICON)
 	row.add_child(_chest_column)
@@ -66,7 +66,11 @@ func _init() -> void:
 
 	_picked_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_picked_icon.visible = false
-	_backdrop.add_child(_picked_icon)
+	# On a layer of its own, so the dragged icon is drawn above the hotbar too.
+	var icon_layer := CanvasLayer.new()
+	icon_layer.layer = PICKED_ICON_LAYER
+	icon_layer.add_child(_picked_icon)
+	add_child(icon_layer)
 
 
 func is_open() -> bool:
@@ -85,6 +89,8 @@ func open(chest: WorldObject, player: PlayerState) -> void:
 	_chest.changed.connect(_refresh)
 	_pick = {}
 	visible = true
+	_hotbar.set_clickable(true)
+	_hotbar.slot_pressed.connect(_on_hotbar_slot_pressed)
 	_refresh()
 	_panel.reset_size()
 	_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
@@ -98,6 +104,13 @@ func close() -> void:
 	_inventory.changed.disconnect(_refresh)
 	_chest.changed.disconnect(_refresh)
 	visible = false
+	_pick = {}
+	_picked_icon.visible = false
+	_hotbar.set_clickable(false)
+	_hotbar.slot_pressed.disconnect(_on_hotbar_slot_pressed)
+	# The screen no longer refreshes, so a picked hotbar slot would stay faded.
+	for slot in Inventory.HOTBAR_SIZE:
+		_hotbar.slot_view(slot).modulate.a = 1.0
 
 
 func _process(_delta: float) -> void:
@@ -163,6 +176,10 @@ func _on_slot_pressed(side: int, slot: int) -> void:
 		_pick = {}
 		_slots_of(picked["side"]).move_to(picked["slot"], slots, slot)
 	_refresh()
+
+
+func _on_hotbar_slot_pressed(slot: int) -> void:
+	_on_slot_pressed(INVENTORY, slot)
 
 
 func _on_backdrop_input(event: InputEvent) -> void:

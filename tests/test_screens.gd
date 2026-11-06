@@ -11,7 +11,7 @@ func before_each() -> void:
 
 
 func _character_screen() -> CharacterScreen:
-	var screen := CharacterScreen.new()
+	var screen := CharacterScreen.new(autofree(HotbarHud.new()))
 	add_child_autofree(screen)
 	screen.show_player(_state.player)
 	return screen
@@ -74,13 +74,13 @@ func test_closing_a_closed_pause_menu_does_not_resume() -> void:
 
 
 func test_storage_screen() -> void:
-	var screen := StorageScreen.new()
+	var screen := StorageScreen.new(autofree(HotbarHud.new()))
 	add_child_autofree(screen)
 	_opened_and_closed(screen, screen.open.bind(_chest, _state.player))
 
 
 func test_storage_screen_listens_once_however_often_it_is_opened() -> void:
-	var screen := StorageScreen.new()
+	var screen := StorageScreen.new(autofree(HotbarHud.new()))
 	add_child_autofree(screen)
 	screen.open(_chest, _state.player)
 	screen.open(_chest, _state.player)

@@ -26,17 +26,23 @@ func _hold_shift(is_held := true) -> void:
 	Input.flush_buffered_events()
 
 
-## The storage screen open on a chest with `_chest`'s slots, for `_inventory`'s player.
+## The storage screen open on a chest with `_chest`'s slots, for `_inventory`'s player. Returns
+## the views the player sees: the backpack's, the hotbar's (the HUD's), then the chest's.
 func _open_screen() -> Array[SlotView]:
 	var player := PlayerState.new()
 	player.inventory = _inventory
 	var chest := WorldObject.new(WorldObjectTypes.CHEST, Vector2i.ZERO)
 	chest.storage = _chest
-	_screen = StorageScreen.new()
+	var hotbar: HotbarHud = autofree(HotbarHud.new())
+	_screen = StorageScreen.new(hotbar)
 	add_child_autofree(_screen)
 	_screen.open(chest, player)
-	var views: Array[SlotView] = []
-	views.assign(_screen.find_children("*", "SlotView", true, false))
+	var in_screen: Array[SlotView] = []
+	in_screen.assign(_screen.find_children("*", "SlotView", true, false))
+	var views: Array[SlotView] = in_screen.slice(0, Inventory.BACKPACK_SIZE)
+	for slot in Inventory.HOTBAR_SIZE:
+		views.append(hotbar.slot_view(slot))
+	views.append_array(in_screen.slice(Inventory.BACKPACK_SIZE))
 	return views
 
 
@@ -53,7 +59,7 @@ func _chest_view(views: Array[SlotView], slot: int) -> SlotView:
 	return views[Inventory.SLOT_COUNT + slot]
 
 
-func test_the_screen_has_the_backpack_and_hotbar_slots_and_then_the_five_by_three_of_the_chest(
+func test_the_screen_has_the_backpack_slots_the_hotbars_and_then_the_five_by_three_of_the_chest(
 ) -> void:
 	var views := _open_screen()
 	assert_eq(views.size(), Inventory.SLOT_COUNT + 15)
