@@ -321,6 +321,10 @@ empty.
 
 ## Later (not part of the prototype)
 
+- A committed pixel guard (a GUT test hashing the tile cells, sprites and lights for a fixed seed
+  and a few days) would catch silent rendering changes in refactors like task 70; left out while
+  the art tasks change the pictures on purpose, as its golden value would need updating each time.
+
 - World keeps its `max-public-methods` lint exception after task 68 (chunks, objects, soil,
   buildings and clay share the same edits). Getting under 20 would take one more split, most
   likely buildings and their placement rules.
