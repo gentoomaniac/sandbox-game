@@ -1,9 +1,10 @@
 class_name AmbienceRules
 extends RefCounted
 ## When the weather and the animals make their sounds, read from data/ambience.cfg (see there
-## for what every key means): the levels of the rain and wind loops, the delay of thunder, and
-## the chances of birdsong, frogs and the sounds of animals. Pure functions of the weather, the
-## season and the part of the day; the random rolls and the playing are AmbienceSounds'.
+## for what every key means): the levels of the rain and wind loops and of the frogs' chorus,
+## the delay of thunder, and the chances of birdsong, frogs and the sounds of animals. Pure
+## functions of the weather, the season and the part of the day; the random rolls and the
+## playing are AmbienceSounds'.
 
 const DEFAULT_PATH := "res://data/ambience.cfg"
 
@@ -34,6 +35,7 @@ const REQUIRED_KEYS := {
 		"cold_temperature",
 		"warm_temperature",
 	],
+	"frog_chorus": ["level", "full_frogs", "fade_seconds", "season_factors", "phase_weights"],
 	"deer": ["idle_chance"],
 	"rabbit": ["idle_chance"],
 	"squirrel": ["idle_chance"],
@@ -88,13 +90,15 @@ func problems() -> Array[String]:
 		bad.append("[loops] wind_full_speed must be above wind_calm_speed")
 	if value("loops", "wind_max_level") <= 0.0:
 		bad.append("[loops] wind_max_level must be above 0")
+	if value("frog_chorus", "full_frogs") <= 0.0:
+		bad.append("[frog_chorus] full_frogs must be above 0")
 	if value("bees", "hear_tiles") <= 0.0:
 		bad.append("[bees] hear_tiles must be above 0")
 	if value("frogs", "warm_temperature") <= value("frogs", "cold_temperature"):
 		bad.append("[frogs] warm_temperature must be above cold_temperature")
 	if value("thunder", "max_delay_seconds") < value("thunder", "min_delay_seconds"):
 		bad.append("[thunder] max_delay_seconds must be at least min_delay_seconds")
-	for section in ["birds", "frogs"]:
+	for section in ["birds", "frogs", "frog_chorus"]:
 		if _values[section]["season_factors"].size() != SEASON_COUNT:
 			bad.append("[%s] season_factors must have %d entries" % [section, SEASON_COUNT])
 		if _values[section]["phase_weights"].size() != PHASE_COUNT:
@@ -147,12 +151,34 @@ func bird_chance(
 func frog_chance(
 	season: GameClock.Season, phase: WildlifeRules.Phase, temperature: float, distance_tiles: float
 ) -> float:
-	var cold := value("frogs", "cold_temperature")
-	var warmth := clampf(
-		(temperature - cold) / (value("frogs", "warm_temperature") - cold), 0.0, 1.0
-	)
 	var nearness := clampf(1.0 - distance_tiles / value("frogs", "radius_tiles"), 0.0, 1.0)
-	return value("frogs", "croak_chance") * _activity("frogs", season, phase) * warmth * nearness
+	return (
+		value("frogs", "croak_chance")
+		* _activity("frogs", season, phase)
+		* _frog_warmth(temperature)
+		* nearness
+	)
+
+
+## How loud the frogs' chorus loop is with this many frogs about: by season and part of the day
+## (spring and summer evenings), as warm as the croaks need it, and fuller with more frogs, up to
+## `full_frogs`.
+func chorus_level(
+	season: GameClock.Season, phase: WildlifeRules.Phase, temperature: float, frogs: int
+) -> float:
+	var fullness := minf(frogs / value("frog_chorus", "full_frogs"), 1.0)
+	return (
+		value("frog_chorus", "level")
+		* _activity("frog_chorus", season, phase)
+		* _frog_warmth(temperature)
+		* fullness
+	)
+
+
+## From 0 below the frogs' `cold_temperature` to 1 from their `warm_temperature` on.
+func _frog_warmth(temperature: float) -> float:
+	var cold := value("frogs", "cold_temperature")
+	return clampf((temperature - cold) / (value("frogs", "warm_temperature") - cold), 0.0, 1.0)
 
 
 ## The chance per second that an animal of a kind (`deer`, `rabbit`, `squirrel`, `geese`,

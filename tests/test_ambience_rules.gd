@@ -136,3 +136,17 @@ func test_frogs_croak_more_near_the_player_and_not_beyond_the_radius() -> void:
 func test_deer_rabbits_and_squirrels_have_a_chance_of_their_own() -> void:
 	for kind in [WildlifeRules.DEER, WildlifeRules.RABBIT, WildlifeRules.SQUIRREL]:
 		assert_gt(_rules.idle_chance(kind), 0.0, str(kind))
+
+
+func test_the_frogs_chorus_swells_with_the_frogs_on_spring_and_summer_evenings() -> void:
+	var full := _rules.value("frog_chorus", "level")
+	var frogs := int(_rules.value("frog_chorus", "full_frogs"))
+	assert_almost_eq(_rules.chorus_level(SUMMER, DUSK, 18.0, frogs), full, 0.001)
+	assert_almost_eq(_rules.chorus_level(SPRING, DUSK, 18.0, frogs * 2), full, 0.001, "at most")
+	assert_between(_rules.chorus_level(SUMMER, DUSK, 18.0, 1), 0.01, full - 0.01, "a few frogs")
+	assert_gt(_rules.chorus_level(SUMMER, NIGHT, 18.0, frogs), 0.0)
+	assert_eq(_rules.chorus_level(SUMMER, DUSK, 18.0, 0), 0.0, "no frogs, no chorus")
+	assert_eq(_rules.chorus_level(SUMMER, DAY, 18.0, frogs), 0.0, "not by day")
+	assert_eq(_rules.chorus_level(AUTUMN, DUSK, 18.0, frogs), 0.0)
+	var cold := _rules.value("frogs", "cold_temperature")
+	assert_eq(_rules.chorus_level(SUMMER, DUSK, cold, frogs), 0.0, "not in the cold")

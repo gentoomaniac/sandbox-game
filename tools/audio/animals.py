@@ -1,5 +1,5 @@
-"""Animal sounds: birds, frogs, deer, rabbits, squirrels and bees, the storks and the geese, and the
-cows, sheep and hens of the livestock (see SPEC.md "Sound")."""
+"""Animal sounds: birds, frogs and their chorus, deer, rabbits, squirrels and bees, the storks
+and the geese, and the cows, sheep and hens of the livestock (see SPEC.md "Sound")."""
 
 import numpy as np
 
@@ -7,6 +7,9 @@ from dsp import RATE, SAW, bandpass, burst, envelope, fade_out, lowpass, noise, 
 from dsp import place, resonance, rms, silence, sweep, times, tone
 
 BEE_LENGTH = 3.0
+CHORUS_LENGTH = 8.0
+# Croaks of the chorus keep this far from the loop's seam, so both sides of it are the murmur.
+CHORUS_SEAM_GAP = 0.15
 
 
 def _bird_note(start, end, length):
@@ -87,6 +90,22 @@ def frog_tree(rng):
     pitch = rng.uniform(0.9, 1.1)
     creek = _croak(420 * pitch, 400 * pitch, 0.07, 55, 800, 3500, 0.008, 20, 0.015)
     return _croaks(rng, creek, rng.integers(3, 5), 0.07)
+
+
+def frog_chorus_loop(rng):
+    """Frogs croaking together on a spring evening: a murmur of far ones, a throaty buzz pulsing
+    in a band, and over it a dozen near frogs, each croaking a few times in its own pitch."""
+    # The pulses hold a whole number of cycles in the loop, so the murmur has no seam.
+    pulses = 0.6 + 0.4 * np.sin(2 * np.pi * 22 * times(CHORUS_LENGTH))
+    out = 0.08 * noise_band(rng, CHORUS_LENGTH, 300, 1100, loop=True) * pulses
+    for _ in range(12):
+        pitch = rng.uniform(0.85, 1.25)
+        length = rng.uniform(0.18, 0.3)
+        croak = _croak(118 * pitch, 104 * pitch, length, rng.uniform(22, 30), 250, 1400, 0.03, 6, 0.04)
+        calls = _croaks(rng, croak, rng.integers(2, 5), rng.uniform(0.15, 0.4))
+        latest = CHORUS_LENGTH - CHORUS_SEAM_GAP - len(calls) / RATE
+        place(out, calls, rng.uniform(CHORUS_SEAM_GAP, latest), rng.uniform(0.15, 0.6))
+    return out
 
 
 def _snort(rng, length, pitch, rate):

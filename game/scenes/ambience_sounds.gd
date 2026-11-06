@@ -2,8 +2,9 @@ class_name AmbienceSounds
 extends Node
 ## The sound of the world around the player: rain and wind as loops that follow the weather (and
 ## swell with gusts), thunder after each flash of lightning, birds, frogs, the sounds of deer,
-## rabbits and squirrels, bees buzzing where they hover, a stork's clatter, honking geese, and now
-## and then a cow, a sheep or a hen of the livestock (not while it sleeps). The chances and levels
+## rabbits and squirrels, bees buzzing where they hover, a stork's clatter, honking geese, the
+## frogs' chorus on spring and summer evenings where frogs are about, and now and then a cow, a
+## sheep or a hen of the livestock (not while it sleeps). The chances and levels
 ## are AmbienceRules'; which event an animal makes is SoundEvents'; playing is AudioService's.
 ##
 ## It is cheap by design: once a second it looks at the weather and rolls the dice for the
@@ -24,9 +25,11 @@ var _rng := RandomNumberGenerator.new()
 var _seconds_to_tick := 0.0
 var _rain_loop: SoundLoop
 var _wind_loop: SoundLoop
+var _chorus_loop: SoundLoop
 ## What the loops are fading to now, to start a fade only when the target moves.
 var _rain_target := 0.0
 var _wind_target := 0.0
+var _chorus_target := 0.0
 var _gust_seconds_left := 0.0
 var _animals: Array[Animal] = []
 ## The loop of each bee that buzzes.
@@ -62,6 +65,7 @@ func _tick() -> void:
 	var weather := _state.current_weather()
 	_follow_weather(weather)
 	_buzz_bees()
+	_follow_frogs(weather)
 	if _state.is_inside():
 		return
 	var clock := _state.clock
@@ -96,8 +100,8 @@ func _follow_weather(weather: WeatherSample) -> void:
 	_wind_target = wind_target
 
 
-## Starts, fades or stops a weather loop so that it is at `level`. `old_level` is what it was
-## fading to. Returns the loop (null once it is stopped).
+## Starts, fades or stops a weather loop (or the frogs' chorus) so that it is at `level`.
+## `old_level` is what it was fading to. Returns the loop (null once it is stopped).
 func _follow(
 	loop: SoundLoop, event: StringName, level: float, old_level: float, fade_seconds: float
 ) -> SoundLoop:
@@ -112,6 +116,21 @@ func _follow(
 	if not is_equal_approx(level, old_level):
 		loop.fade_to(level, fade_seconds)
 	return loop
+
+
+## Makes the frogs' chorus follow the frogs about (none indoors, where the wildlife is cleared
+## away), the season, the hour and the warmth.
+func _follow_frogs(weather: WeatherSample) -> void:
+	var frogs := 0
+	for animal in _animals:
+		if animal.kind == WildlifeRules.FROG and not animal.is_done:
+			frogs += 1
+	var clock := _state.clock
+	var phase := _wildlife.rules.phase(clock.day, clock.minute_of_day)
+	var level := rules.chorus_level(clock.season(), phase, weather.temperature, frogs)
+	var fade_seconds := rules.value("frog_chorus", "fade_seconds")
+	_chorus_loop = _follow(_chorus_loop, &"frog_chorus_loop", level, _chorus_target, fade_seconds)
+	_chorus_target = level
 
 
 ## Thunder follows the flash after a while, as from a far-off strike.

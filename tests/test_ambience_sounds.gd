@@ -1,6 +1,7 @@
 extends GutTest
 ## The ambience node: the weather loops start and stop with the weather, thunder follows a flash
-## after a delay, a bee that appears buzzes, and a farm animal calls only while it is awake. The
+## after a delay, a bee that appears buzzes, frogs about croak in chorus on a summer evening, and
+## a farm animal calls only while it is awake. The
 ## audio service is real; what it plays is recorded.
 
 var _state: GameState
@@ -116,3 +117,23 @@ func test_a_cow_moos_now_and_then_but_not_in_its_sleep() -> void:
 	for _second in 1000:
 		_ambience._make_animal_sound()
 	assert_false(_events.has(&"cow_moo"))
+
+
+func test_frogs_about_croak_in_chorus_on_a_summer_evening_until_they_are_gone() -> void:
+	var values := DataFile.read_sections(AmbienceRules.DEFAULT_PATH)
+	# Whatever the weather of the day: warm enough.
+	values["frogs"]["cold_temperature"] = -100.0
+	values["frogs"]["warm_temperature"] = -90.0
+	_ambience.rules = AmbienceRules.new(values)
+	_state.clock.day = 45
+	_state.clock.minute_of_day = roundi(_state.sun.sunset(45))
+	_ambience._process(1.0)
+	assert_false(_events.has(&"frog_chorus_loop"), "no frogs, no chorus")
+	var frog := Frog.new()
+	autofree(frog)
+	_ambience._on_animal_added(frog)
+	_ambience._process(1.0)
+	assert_true(_events.has(&"frog_chorus_loop"))
+	_ambience._animals.erase(frog)
+	_ambience._process(1.0)
+	assert_null(_ambience._chorus_loop, "it stops once the frogs are gone")

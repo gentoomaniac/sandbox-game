@@ -78,6 +78,8 @@ EVENTS = {
     "thunder": (-3, [weather.thunder_near] * 2 + [weather.thunder_far] * 2),
     "bird_chirp": (-12, [animals.bird_rising, animals.bird_trill, animals.bird_whistle]),
     "frog_croak": (-10, [animals.frog_common, animals.frog_bull, animals.frog_tree]),
+    # Under the single croaks, and quiet: it plays on and on through spring and summer evenings.
+    "frog_chorus_loop": (-22, [animals.frog_chorus_loop] * 2),
     "deer_snort": (-11, [animals.deer_snort] * 2 + [animals.deer_double_snort]),
     "deer_hooves": (-12, [animals.deer_hooves] * 3),
     "rabbit_rustle": (-14, [animals.rabbit_rustle] * 3),
