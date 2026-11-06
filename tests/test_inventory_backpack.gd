@@ -44,3 +44,13 @@ func test_backpack_first_order_puts_the_backpack_before_the_hotbar_and_the_held_
 	assert_eq(order[0], Inventory.HOTBAR_SIZE)
 	assert_eq(order[Inventory.BACKPACK_SIZE], 0)
 	assert_eq(order[-1], 9)
+
+
+func test_a_duplicate_has_the_same_content_and_changes_alone() -> void:
+	_inventory.add(ItemTypes.TURNIP, 5)
+	_inventory.select(1)
+	var copy := _inventory.duplicate()
+	assert_eq(copy.slots, _inventory.slots)
+	assert_eq(copy.selected_slot, 1)
+	copy.remove(ItemTypes.TURNIP, 5)
+	assert_eq(_inventory.count_of(ItemTypes.TURNIP), 5)

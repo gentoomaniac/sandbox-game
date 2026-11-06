@@ -38,7 +38,7 @@ func craft(recipe_id: StringName) -> Result:
 	var inventory := _state.player.inventory
 	var materials := {} if _state.cheats.is_cost_off else rules.materials(recipe_id)
 	# The materials leave first, so a full inventory can still hold what they were made into.
-	var trial := Inventory.from_dict(inventory.to_dict())
+	var trial := inventory.duplicate()
 	for item: StringName in materials:
 		trial.remove(item, materials[item])
 	if not trial.can_add({rules.result(recipe_id): rules.count(recipe_id)}):
