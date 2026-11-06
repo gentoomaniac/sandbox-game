@@ -30,8 +30,27 @@ func test_a_mouse_sits_and_scurries_about() -> void:
 	assert_false(mouse.is_done)
 
 
+## An animal of a kind moved to a spot with open ground for a number of tiles to its left: one
+## spawned at random may have water or a house there, and a flight that is blocked at once
+## ends (a mouse) or stalls (a frog) without getting away.
+func _with_open_ground_left(kind: StringName, tiles: int) -> Animal:
+	var animal := _spawned(kind)
+	var tile := float(TerrainTileset.TILE_SIZE)
+	for y in range(-5, 6):
+		for x in range(-10, 11):
+			var point := animal.position + Vector2(x, y) * tile
+			if range(0, tiles + 1).all(
+				func(left: int) -> bool:
+					return _wildlife.can_stand(point - Vector2(left * tile, 0.0))
+			):
+				animal.position = point
+				return animal
+	fail_test("no open ground near the %s" % kind)
+	return animal
+
+
 func test_a_mouse_dashes_away_from_the_player_and_is_gone() -> void:
-	var mouse := _spawned(WildlifeRules.MOUSE)
+	var mouse := _with_open_ground_left(WildlifeRules.MOUSE, 3)
 	_wildlife.is_player_ignored = false
 	_player_beside(mouse, 1.0)
 	var start := mouse.position
@@ -39,10 +58,7 @@ func test_a_mouse_dashes_away_from_the_player_and_is_gone() -> void:
 	assert_eq(mouse._state, Mouse.FLEE)
 	_run(mouse, Mouse.FLEE_SECONDS)
 	assert_true(mouse.is_done, "gone into cover")
-	# Its way may be blocked at once (it is gone sooner then), so the dash is checked by its
-	# direction, and by where it got to only if it moved.
-	assert_lt(mouse._direction.x, 0.0, "away from the player")
-	assert_true(mouse.position.x <= start.x, "never towards the player")
+	assert_lt(mouse.position.x, start.x, "away from the player")
 
 
 func test_a_frog_sits_a_while_and_hops_about() -> void:
@@ -55,13 +71,17 @@ func test_a_frog_sits_a_while_and_hops_about() -> void:
 
 
 func test_a_frog_hops_off_from_the_player_and_stops_once_safe() -> void:
-	var frog := _spawned(WildlifeRules.FROG)
+	var frog := _with_open_ground_left(WildlifeRules.FROG, 5)
 	_wildlife.is_player_ignored = false
 	_player_beside(frog, 1.0)
 	var player := _wildlife.world_view.player_feet
 	_run(frog, STEP)
 	assert_eq(frog._state, Frog.FLEE)
-	_run(frog, 5.0)
+	# Until it sits: it sits only a few seconds before it hops about again, maybe back nearer.
+	for _i in roundi(5.0 / STEP):
+		if frog._state == Frog.SIT:
+			break
+		frog._process(STEP)
 	assert_eq(frog._state, Frog.SIT, "safe again")
 	assert_false(frog.is_done)
 	var safe_tiles: float = _wildlife.rules.flee_tiles(WildlifeRules.FROG) + Frog.SAFE_EXTRA_TILES
