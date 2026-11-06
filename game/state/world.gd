@@ -510,6 +510,19 @@ func wear_stage(world_pos: Vector2i) -> PathRules.Stage:
 	return PathRules.default_rules().stage_of(_wear.get(world_pos, 0.0))
 
 
+## A night lets the grass of every worn tile grow back a little (see NightUpkeep); a tile that
+## has grown back fully is forgotten.
+func regrow_paths() -> void:
+	var regrowth := PathRules.default_rules().regrowth_per_night()
+	for pos in _wear.keys():
+		var stage := wear_stage(pos)
+		_wear[pos] -= regrowth
+		if _wear[pos] <= 0.0:
+			_wear.erase(pos)
+		if wear_stage(pos) != stage and is_chunk_loaded(Chunk.world_to_chunk(pos)):
+			tile_changed.emit(pos)
+
+
 # --- Ground items ---
 
 

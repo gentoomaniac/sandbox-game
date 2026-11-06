@@ -3,8 +3,8 @@ extends RefCounted
 ## What a night does to everything the player changed in a world, in unloaded chunks too: the
 ## soil dries and rain wets it, crops live through the day that ended (in the weather of their
 ## tile), cut reeds grow back by it, damage heals, picked bushes bear again, saplings grow up,
-## stumps rot away and dug clay spots recover. Only edits change like this (a hit, a tilling or
-## a planting makes one), so they are all in the world's edits.
+## stumps rot away, dug clay spots recover and desire paths grow back. Only edits change like
+## this (a hit, a tilling, a planting or a step makes one), so they are all in the world's edits.
 
 
 ## Lets the night pass over `world`, which works from the weather of `clock.day - 1`. A sapling
@@ -12,6 +12,7 @@ extends RefCounted
 static func pass_night(world: World, occupied_tiles: Array[Vector2i], weather: Weather) -> void:
 	_dry_and_wet_soil(world, weather)
 	world.recover_clay_spots()
+	world.regrow_paths()
 	var yesterday := world.clock.day - 1
 	for object in world.edited_objects():
 		var has_changed := false

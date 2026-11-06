@@ -90,3 +90,22 @@ func test_the_wear_survives_a_save_round_trip() -> void:
 	restored.add_chunk(Chunk.new(Vector2i.ZERO))
 	assert_eq(restored.wear_stage(TILE), PathRules.Stage.PATH)
 	assert_eq(restored.wear_stage(TILE + Vector2i.DOWN), PathRules.Stage.TRODDEN)
+
+
+func test_a_path_left_alone_grows_back_to_trodden_and_then_grass() -> void:
+	_wear(TILE, _rules.path_from())
+	_world.regrow_paths()
+	assert_eq(_world.wear_stage(TILE), PathRules.Stage.TRODDEN)
+	for _i in ceili(_rules.path_from() / _rules.regrowth_per_night()):
+		_world.regrow_paths()
+	assert_eq(_world.wear_stage(TILE), PathRules.Stage.UNWORN)
+	assert_eq(_world.to_dict()["wear"], [], "a tile grown back is forgotten")
+
+
+func test_growing_back_changes_the_look_only_when_the_stage_does() -> void:
+	_wear(TILE, _rules.trodden_from() + _rules.regrowth_per_night())
+	watch_signals(_world)
+	_world.regrow_paths()
+	assert_signal_emit_count(_world, "tile_changed", 0, "still trodden")
+	_world.regrow_paths()
+	assert_signal_emitted_with_parameters(_world, "tile_changed", [TILE])

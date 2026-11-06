@@ -40,3 +40,11 @@ func test_walking_inside_a_house_wears_no_ground() -> void:
 		_state.walk(direction, ONE_TILE_SECONDS * 2)
 	assert_true(_state.is_inside())
 	assert_eq(_world.to_dict()["wear"], [])
+
+
+func test_a_night_lets_the_grass_grow_back() -> void:
+	var rules := PathRules.default_rules()
+	for _i in rules.trodden_from():
+		_world.wear_tile(_tile)
+	_sleep_days(1)
+	assert_eq(_wear_of(_tile), rules.trodden_from() - rules.regrowth_per_night())
