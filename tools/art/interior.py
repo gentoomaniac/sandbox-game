@@ -257,8 +257,8 @@ HEARTH_FLAME = ((8, 26, 16, 22), 5.0, 14)
 def hearth_without_flame():
     """An open hearth 2x2 tiles under a smoke hood: a raised hearth of buff brick with two logs
     on it and an iron pot beside them, and over it, on the back wall, a lime-washed hood on an
-    oak mantel beam that takes the smoke up into the chimney. The wall under the hood is black
-    with soot."""
+    oak mantel beam that takes the smoke up into the chimney. The wall under the hood is laid
+    with Dutch tiles, black with soot behind the fire."""
     canvas = blank(HEARTH_WIDTH, HEARTH_HEIGHT)
     # The hood: a shaft up into the ceiling beam, flaring out to the mantel.
     for y in range(0, 16):
@@ -275,8 +275,9 @@ def hearth_without_flame():
     rect(canvas, 0, 16, 31, 19, "soil")
     rect(canvas, 0, 16, 31, 16, "soil_light")
     rect(canvas, 0, 19, 31, 19, "soil_dark")
-    # The wall under the hood, in the mantel's shadow and black with soot where the fire licks it.
-    rect(canvas, 1, 20, 30, 39, "bare")
+    # The wall under the hood, tiled, in the mantel's shadow and black with soot where the fire
+    # licks it.
+    dutch_tiles(canvas, 1, 22, 30, 39)
     rect(canvas, 1, 20, 30, 21, "soil_dark")
     soot(canvas)
     # The brackets that carry the mantel.
@@ -313,15 +314,32 @@ def hearth_without_flame():
     return outline(canvas, "soil_dark", keep_bottom=True)
 
 
+def dutch_tiles(canvas, x0, y0, x1, y1):
+    """Blue-and-white Delft tiles over x0..x1, y0..y1: small white squares with a blue dot in
+    the middle, in grey-blue joints, and a blue corner ornament where four tiles meet."""
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            across, down = (x - x0) % 4, (y - y0) % 4
+            if across == 3 and down == 3:
+                colour = "water"
+            elif across == 3 or down == 3:
+                colour = "snow_shadow"
+            elif across == 1 and down == 1:
+                colour = "water_deep"
+            else:
+                colour = "lime"
+            canvas[y][x] = colour
+
+
 def soot(canvas):
     """The soot on the wall behind the fire: a black core that fades out upwards in ragged
     edges."""
     for y in range(22, 40):
-        half = 4 + (y - 22) * 5 // 17
-        rect(canvas, 16 - half - 2, y, 15 + half + 2, y, "stone_dark")
-        if y >= 27:
+        half = 2 + (y - 22) * 4 // 17
+        rect(canvas, 16 - half - 1, y, 15 + half + 1, y, "stone_dark")
+        if y >= 29:
             rect(canvas, 16 - half, y, 15 + half, y, "ink")
-    for x, y in ((9, 23), (21, 22), (12, 21), (19, 24)):
+    for x, y in ((11, 25), (19, 23), (10, 31), (21, 30)):
         rect(canvas, x, y, x + 1, y, "stone_dark")
 
 
