@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bn8sulygikau2"
-path="res://.godot/imported/tomatoes_seeds.png-84ff0dd7eb661fb17bb2a1a36d7e4e1c.ctex"
+uid="uid://ffa0wqrm2v4r"
+path="res://.godot/imported/flax.png-b142465204b9f0e47583d5f1bcc3fe23.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/items/tomatoes_seeds.png"
-dest_files=["res://.godot/imported/tomatoes_seeds.png-84ff0dd7eb661fb17bb2a1a36d7e4e1c.ctex"]
+source_file="res://assets/items/flax.png"
+dest_files=["res://.godot/imported/flax.png-b142465204b9f0e47583d5f1bcc3fe23.ctex"]
 
 [params]
 

@@ -3,7 +3,10 @@ extends RefCounted
 ## The save on disk: one JSON file per world, `{"version": 6, "game": <GameState.to_dict>}`.
 ## Older saves still load, upgraded step by step (see `_upgrade_from_version_1` and so on).
 
-const VERSION := 6
+const VERSION := 7
+## Version 6 had tomatoes, which were not grown here before the 19th century; flax took their
+## place, item for item.
+const TOMATOES_TO_FLAX := {"tomatoes": "flax", "tomatoes_seeds": "flax_seeds"}
 const DEFAULT_PATH := "user://saves/world.json"
 ## What a save we can't use is renamed to, so it is never overwritten silently.
 const BACKUP_SUFFIX := ".bak"
@@ -62,6 +65,8 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 		_upgrade_from_version_4(parsed["game"])
 	if version <= 5:
 		_upgrade_from_version_5(parsed["game"])
+	if version <= 6:
+		_upgrade_from_version_6(parsed["game"])
 	return GameState.from_dict(parsed["game"])
 
 
@@ -105,6 +110,31 @@ static func _upgrade_from_version_4(game: Dictionary) -> void:
 static func _upgrade_from_version_5(game: Dictionary) -> void:
 	var slots: Array = game["player"]["inventory"]["slots"]
 	slots.resize(Inventory.SLOT_COUNT)
+
+
+## Version 6 had tomatoes: their plants, seeds and fruit become flax, wherever they are (in the
+## inventory, on the ground, planted, and in chests outdoors and indoors).
+static func _upgrade_from_version_6(game: Dictionary) -> void:
+	_tomatoes_to_flax(game["player"]["inventory"]["slots"])
+	for ground_item: Dictionary in game["world"]["ground_items"]:
+		ground_item["item"] = TOMATOES_TO_FLAX.get(ground_item["item"], ground_item["item"])
+	var objects: Array = []
+	for edit: Dictionary in game["world"]["object_edits"]:
+		if edit["object"] != null:
+			objects.append(edit["object"])
+	for building: Dictionary in game["world"]["buildings"]:
+		if building["interior"] != null:
+			objects.append_array(building["interior"]["objects"])
+	for object: Dictionary in objects:
+		object["type"] = TOMATOES_TO_FLAX.get(object["type"], object["type"])
+		if object.has("storage"):
+			_tomatoes_to_flax(object["storage"])
+
+
+static func _tomatoes_to_flax(slots: Array) -> void:
+	for stack: Variant in slots:
+		if stack != null:
+			stack["item"] = TOMATOES_TO_FLAX.get(stack["item"], stack["item"])
 
 
 static func _reject(path: String, reason: String) -> void:

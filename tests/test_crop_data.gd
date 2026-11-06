@@ -57,7 +57,7 @@ const CROP_NAMES: Array[StringName] = [
 	&"wheat",
 	&"peas",
 	&"beans",
-	&"tomatoes",
+	&"flax",
 	&"strawberries",
 	&"pumpkin",
 ]
@@ -158,10 +158,10 @@ func test_every_seed_and_produce_has_an_icon() -> void:
 			assert_true(ResourceLoader.exists(ItemTypes.icon_path(item)), "icon of %s" % item)
 
 
-func test_produce_is_food_except_wheat() -> void:
+func test_produce_is_food_except_wheat_and_flax() -> void:
 	var rules := EnergyRules.default_rules()
 	for crop_id in CROP_NAMES:
-		assert_eq(rules.is_food(crop_id), crop_id != &"wheat", str(crop_id))
+		assert_eq(rules.is_food(crop_id), not crop_id in [&"wheat", &"flax"], str(crop_id))
 	assert_eq(rules.food_restore(&"pumpkin"), 12.0)
 	assert_eq(rules.food_restore(&"onion"), 4.0)
 
@@ -226,7 +226,7 @@ func test_each_crop_is_drawn_from_its_own_sheet_and_stage() -> void:
 
 
 func test_tall_crops_have_taller_sheets() -> void:
-	for crop_id in [&"wheat", &"peas", &"beans", &"tomatoes"]:
+	for crop_id in [&"wheat", &"peas", &"beans", &"flax"]:
 		var sheet: Texture2D = load(WorldObjectTypes.TYPES[crop_id]["sheet"])
 		assert_gt(sheet.get_height(), 16, str(crop_id))
 	var turnip: Texture2D = load(WorldObjectTypes.TYPES[WorldObjectTypes.TURNIP]["sheet"])

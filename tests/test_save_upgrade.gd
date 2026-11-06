@@ -96,3 +96,28 @@ func test_a_version_5_save_loads_with_its_twenty_slots_in_place_and_ten_new_empt
 	assert_eq(inventory.slots[19], {"item": ItemTypes.LOGS, "count": 9})
 	for slot in range(20, Inventory.SLOT_COUNT):
 		assert_true(inventory.slots[slot].is_empty())
+
+
+func test_a_version_6_save_loads_with_its_tomatoes_as_flax() -> void:
+	var state := GameState.new_game(7)
+	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
+	game["player"]["inventory"]["slots"][13] = {"item": "tomatoes_seeds", "count": 4}
+	game["world"]["ground_items"].append({"item": "tomatoes", "count": 2, "position": [3.0, 4.0]})
+	var crop := WorldObject.new(&"flax", Vector2i(100, 100)).to_dict()
+	crop["type"] = "tomatoes"
+	var chest := WorldObject.new(WorldObjectTypes.CHEST, Vector2i(101, 100)).to_dict()
+	chest["storage"][0] = {"item": "tomatoes", "count": 3}
+	game["world"]["object_edits"].append({"pos": [100, 100], "object": crop})
+	game["world"]["object_edits"].append({"pos": [101, 100], "object": chest})
+	_write_save(6, game)
+
+	var restored := SaveFile.read(SAVE_PATH)
+
+	assert_eq(restored.player.inventory.slots[13], {"item": &"flax_seeds", "count": 4})
+	assert_eq(restored.world.ground_count_of(&"flax"), 2)
+	var objects := {}
+	for edit: Dictionary in restored.world.to_dict()["object_edits"]:
+		if edit["object"] != null:
+			objects[edit["object"]["type"]] = edit["object"]
+	assert_true(objects.has("flax"), "the planted tomatoes are flax")
+	assert_eq(objects["chest"]["storage"][0], {"item": "flax", "count": 3})

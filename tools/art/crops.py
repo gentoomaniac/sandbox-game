@@ -3,7 +3,7 @@ look of wet soil.
 
 A crop's sheet (assets/crops/<crop>.png, named by `sheet` in data/crops.cfg) has its four growth
 stages and then the dead one side by side. Every cell is a tile wide (16 px) and as tall as the
-sheet: a tall crop (wheat, peas, beans, tomatoes) has a taller sheet, with its bottom on the
+sheet: a tall crop (wheat, peas, beans, flax) has a taller sheet, with its bottom on the
 bottom of its tile. A crop looks the same in every season, so the seasons never touch these.
 
 Pictures are lists of rows of palette colour names (None = clear), as in generate.py. Crops
@@ -38,6 +38,8 @@ KEYS = {
     "n": "mud",
     "u": "dry_light",
     "v": "dry",
+    "f": "foam",
+    "i": "water_light",
 }
 
 # What the greens of a dead crop turn into.
@@ -52,6 +54,8 @@ DEAD_COLOURS = {
     "ember": "mud_dark",
     "heather": "mud_dark",
     "petal": "sand",
+    "foam": "sand_light",
+    "water_light": "sand",
 }
 
 
@@ -378,69 +382,77 @@ def beans():
     return [sown(height), young, flowering, ripe], 2
 
 
-def tomatoes():
+def flax():
+    """A dense stand of thin stalks: young and green, then tall with sky-blue flowers, and ripe
+    turning straw-yellow, with round seed bolls and the last flowers."""
     height = 32
+    columns = (1, 3, 4, 6, 8, 9, 11, 13, 14)
 
-    def stake(top):
+    def stalks(heights, colour, shade):
         surface = cell(height)
-        surface.line(7, 15, 7, top, "soil_mid")
-        surface.line(8, 15, 8, top, "soil")
+        for index, (x, stalk) in enumerate(zip(columns, heights)):
+            surface.line(x, 15, x, 15 - stalk, shade if index % 3 == 1 else colour)
+            # A few narrow leaves along each stalk.
+            for y in range(13, 15 - stalk + 2, -4):
+                surface.pixel(x + (1 if index % 2 else -1), y - index % 3, shade)
         return surface
 
-    small = stake(4)
-    leaf_spots(small, ((2, 9), (8, 8), (5, 5)))
-    bush = stake(-10)
-    leaf_spots(bush, ((1, 8), (9, 9), (5, 3), (2, -2), (9, -3), (5, -7), (5, 11)))
-    for x, y in ((4, 6), (11, 2), (3, 0), (9, -6)):
-        bush.stamp((".y.", "yyy", ".y."), x, y)
-    ripe = stake(-10)
-    leaf_spots(ripe, ((1, 8), (9, 9), (5, 3), (2, -2), (9, -3), (5, -7), (5, 11)))
-    for x, y in ((3, 7), (10, 6), (2, -1), (10, 0), (6, 3)):
-        ripe.ball(x + 1.5, y + 1.5, 2.6, 2.6, "flame", "ember", "ember")
-        ripe.pixel(x, y, "gold")
-        ripe.pixel(x + 1, y - 1, "green")
-    return [sown(height), small, bush, ripe], 2
+    young = stalks((6, 8, 5, 7, 9, 6, 8, 5, 7), "green_light", "green")
+    tall = (17, 21, 15, 19, 22, 16, 20, 15, 18)
+    flowering = stalks(tall, "green_light", "green")
+    for x, stalk in zip(columns[::2], tall[::2]):
+        flowering.stamp((".f.", "fif", ".f."), x - 1, 14 - stalk)
+    for x, stalk in zip(columns[1::2], tall[1::2]):
+        flowering.pixel(x, 15 - stalk, "foam")
+    ripe = stalks(tall, "straw", "reed")
+    for x, stalk in zip(columns, tall):
+        ripe.stamp(("e", "w"), x, 14 - stalk)
+    for x, stalk in zip(columns[2::4], tall[2::4]):
+        ripe.stamp((".f.", "fif"), x - 1, 13 - stalk)
+    return [sown(height), young, flowering, ripe], 2
 
 
 def strawberries():
+    """Wild strawberries: low tufts of three-lobed leaves, small white flowers, and small red
+    berries, one or two pixels across, hanging among the leaves."""
     def leaf_cluster(surface, x, y):
-        surface.stamp((".lg.lg.", "lgdgdgl", ".kdgdk.", "..kdk.."), x, y)
+        surface.stamp((".lg.", "lgdl", ".kk."), x, y)
 
+    clusters = ((1, 9), (6, 10), (10, 8), (3, 5), (8, 4), (12, 12))
     low = cell()
-    for x, y in ((2, 8), (7, 8), (4, 4)):
+    for x, y in clusters[:4]:
         leaf_cluster(low, x, y)
     flowering = cell()
-    for x, y in ((1, 8), (8, 8), (4, 5)):
+    for x, y in clusters:
         leaf_cluster(flowering, x, y)
-    for x, y in ((3, 6), (11, 5), (8, 3)):
+    for x, y in ((5, 8), (11, 6), (2, 3), (9, 13)):
         flowering.stamp((".c.", "cyc", ".c."), x, y)
-    for x, y in ((6, 11), (2, 11)):
-        flowering.stamp(("ll", "ll"), x, y)
     ripe = cell()
-    for x, y in ((1, 7), (8, 7), (4, 3)):
+    for x, y in clusters:
         leaf_cluster(ripe, x, y)
-    for x, y in ((2, 11), (6, 12), (10, 10), (4, 6), (9, 5)):
-        ripe.stamp(("oro", "rrr", "rry", ".r."), x, y)
-        ripe.pixel(x + 1, y - 1, "green")
+    for x, y in ((0, 12), (5, 13), (10, 11), (4, 8), (9, 7), (13, 15), (2, 3)):
+        ripe.stamp(("or", "r."), x, y)
     return [sown(TILE), low, flowering, ripe], 2
 
 
 def pumpkin():
+    """A small green garden squash, ribbed and a little mottled, on its vine (the crop id stays
+    pumpkin)."""
     seedling = (("ll.ll", "lgdgl", ".dkd.", "..k.."), 5, 7)
     vine = ("..lgl.....lgl..", ".lgdgl...lgdgl.", "lgdddgl.lgdddgl", ".kdddkkkkdddk..", "..kkd..kk.dkk..")
     sprawling = cell()
     sprawling.stamp(vine, 0, 3)
     sprawling.line(7, 8, 7, 10, "green_dark")
-    sprawling.ball(7.5, 11.5, 3.2, 2.8, "green_light", "green", "green_dark")
+    sprawling.ball(7.5, 11.5, 2.4, 2.0, "green_light", "green", "green_dark")
     sprawling.stamp(("y.y", ".y."), 11, 9)
     ripe = cell()
-    ripe.stamp(("..lgl.........", ".lgdgl....lgl.", "lgdddgl..lgdgl", ".kkkdk....kkk."), 0, 0)
-    ripe.ball(7.5, 9.5, 7, 5.5, "flame", "flame", "ember")
-    ripe.ball(7.5, 9.5, 5.2, 5.5, "gold", "flame", "ember")
-    for x in (4, 7, 10):
-        ripe.line(x, 5, x, 14, "ember")
-    ripe.stamp(("..kk.", ".kdk.", ".kk.."), 6, 1)
-    ripe.line(9, 3, 12, 1, "green")
+    ripe.stamp(("..lgl.........", ".lgdgl....lgl.", "lgdddgl..lgdgl", ".kkkdk....kkk."), 0, 1)
+    ripe.ball(8, 10.5, 5, 4, "dry_light", "olive", "green_deep")
+    for x in (6, 10):
+        ripe.line(x, 8, x, 13, "green_deep")
+    for x, y in ((5, 9), (9, 10), (7, 12)):
+        ripe.pixel(x, y, "straw")
+    ripe.stamp((".kk", "kd."), 7, 5)
     return [sown(TILE), sown(TILE, seedling), sprawling, ripe], 2
 
 
@@ -455,7 +467,7 @@ ARTISTS = {
     "wheat": wheat,
     "peas": peas,
     "beans": beans,
-    "tomatoes": tomatoes,
+    "flax": flax,
     "strawberries": strawberries,
     "pumpkin": pumpkin,
 }

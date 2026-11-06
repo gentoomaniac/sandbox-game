@@ -532,14 +532,22 @@ Decided 2026-11-05. A text console for testing and cheats.
     dead stage, side by side. A new crop is a new section in the config plus its sheet;
     no code. The built-in crops' sheets come from the art generator.
   - First set: turnip, potato, carrot, cabbage, onion, wheat, peas (regrow), beans
-    (regrow), tomatoes (regrow), strawberries (regrow) and pumpkin.
+    (regrow), flax, strawberries (regrow) and pumpkin.
+  - **Flax replaced tomatoes** (task 52; tomatoes weren't a farm crop here before the 19th
+    century): a cool-weather fibre crop with sky-blue flowers, pulled up whole (no regrow).
+    It yields a new `flax` item (flax stalks), not `fibre`: flax is a material of its own
+    (retted and scutched it becomes linen fibre, a later crafting step), and every crop's
+    produce is its own item built from `data/crops.cfg`, while `fibre` comes from bushes.
+    Flax isn't food. Save version 7 turns tomatoes and tomato plants into flax and flax
+    seeds wherever they are. Strawberries are the small wild kind, and the pumpkin is
+    drawn as a small green garden squash (its id stays `pumpkin`).
   - **Crops need light, water and warmth to grow**, with the needs per crop in the
     config: a temperature range (minimum, best, maximum), the sunlight they need per
     day, the soil moisture they need, and how much wind they stand. Each night a crop
     grows by how well the day met its needs (good days count fully, poor days partly,
     bad days not at all) and moves to the next stage after enough growth.
   - **Crops can die:** days without enough sun or water, frost below the crop's
-    minimum, or wind above its tolerance (beans and tomatoes are fragile, wheat bends)
+    minimum, or wind above its tolerance (beans and flax are fragile, wheat bends)
     damage the crop; enough damage and it dies and shows its dead stage, which the empty
     hand clears. Damage heals slowly on good days.
   - **Ripe crops must be harvested in time** (decided 2026-11-05): a ripe crop waits as

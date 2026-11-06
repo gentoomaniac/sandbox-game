@@ -17,7 +17,7 @@ EMBLEMS = {
     "wheat": (".y.y", "yyyy", ".t.t", ".t.t"),
     "peas": (".gg.", "gcgg", "ggcg", ".gg."),
     "beans": ("g..g", "dg.d", "dg.d", ".dd."),
-    "tomatoes": ("..g.", ".rrr", "rorr", ".rr."),
+    "flax": (".f.f", "fifi", ".l.l", ".l.l"),
     "strawberries": (".ll.", "rrrr", "roro", ".rr."),
     "pumpkin": (".k..", "oooo", "orro", ".oo."),
 }
@@ -112,31 +112,40 @@ def beans():
     return picture
 
 
-def tomatoes():
+def flax():
+    """A bundle of flax stalks, tied, with blue flowers and seed bolls at the top."""
     picture = icon()
-    picture.ball(8, 9.5, 6, 5.2, "flame", "ember", "ember")
-    picture.rect(5, 7, 6, 8, "flame")
-    picture.stamp(("g.g.g", ".ggg.", "..g.."), 5, 3)
+    for x, tilt in ((4, -2), (6, -1), (8, 0), (10, 1), (12, 2)):
+        picture.line(x, 3, 8 + tilt // 2, 14, "straw" if x % 4 else "reed")
+    for x, y in ((3, 2), (7, 1), (11, 2)):
+        picture.stamp((".f.", "fif", ".f."), x, y)
+    for x, y in ((5, 2), (9, 2), (13, 3)):
+        picture.stamp(("e", "w"), x, y)
+    picture.rect(6, 9, 10, 10, "soil_mid")
+    picture.rect(6, 10, 10, 10, "soil")
     return picture
 
 
 def strawberries():
+    """Three small wild strawberries on their stalks, under a leaf."""
     picture = icon()
-    berry = (".rrrr.", "rorrrr", "rrrryr", "yrrrrr", ".rryr.", "..rr..")
-    picture.stamp(berry, 0, 8)
-    picture.stamp(berry, 9, 6)
-    for x, y in ((0, 6), (9, 4)):
-        picture.stamp((".g.gg.", "gggggg", ".gggg."), x, y)
+    picture.stamp((".lg.lg.", "lgdgdgl", ".kdgdk."), 5, 1)
+    for x0, y0, x1, y1 in ((7, 4, 4, 8), (8, 4, 8, 10), (9, 4, 12, 7)):
+        picture.line(x0, y0, x1, y1, "green_dark")
+    for x, y in ((2, 9), (7, 11), (11, 8)):
+        picture.stamp(("gdg.", "orrr", "rryr", ".rr."), x, y)
     return picture
 
 
 def pumpkin():
+    """A small green garden squash, ribbed and mottled (the item id stays pumpkin)."""
     picture = icon()
-    picture.ball(8, 10, 7, 5, "flame", "flame", "ember")
-    picture.ball(8, 10, 4.5, 5, "gold", "flame", "ember")
-    for x in (4, 8, 11):
-        picture.line(x, 6, x, 14, "ember")
-    picture.stamp(("kk", "kd", "k."), 7, 2)
+    picture.ball(8, 10, 6, 4.5, "dry_light", "olive", "green_deep")
+    for x in (5, 8, 11):
+        picture.line(x, 7, x, 13, "green_deep")
+    for x, y in ((4, 9), (7, 11), (10, 9), (12, 11)):
+        picture.pixel(x, y, "straw")
+    picture.stamp(("kk", "kd", "k."), 7, 3)
     return picture
 
 
@@ -148,7 +157,7 @@ PRODUCE = {
     "wheat": wheat,
     "peas": peas,
     "beans": beans,
-    "tomatoes": tomatoes,
+    "flax": flax,
     "strawberries": strawberries,
     "pumpkin": pumpkin,
 }

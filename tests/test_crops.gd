@@ -8,9 +8,9 @@ const MIDSUMMER := 40
 ## The cool-weather and the warm-weather crops (see data/crops.cfg): each grows best in the
 ## season of its list.
 const COOL_CROPS: Array[StringName] = [
-	&"turnip", &"potato", &"carrot", &"cabbage", &"onion", &"peas", &"strawberries"
+	&"turnip", &"potato", &"carrot", &"cabbage", &"onion", &"peas", &"strawberries", &"flax"
 ]
-const WARM_CROPS: Array[StringName] = [&"beans", &"tomatoes", &"pumpkin", &"wheat"]
+const WARM_CROPS: Array[StringName] = [&"beans", &"pumpkin", &"wheat"]
 
 
 func test_every_crop_ripens_in_its_growth_needed_on_best_days() -> void:
@@ -137,9 +137,9 @@ func test_good_days_heal_slowly_and_poor_ones_do_not() -> void:
 	assert_eq(CropLife.damage(crop), 0.0, "never below none")
 
 
-func test_beans_and_tomatoes_die_in_a_gale_but_wheat_stands_it() -> void:
+func test_beans_and_flax_die_in_a_gale_but_wheat_stands_it() -> void:
 	var gale_speed := 10.0
-	for crop_id: StringName in [&"beans", &"tomatoes", &"wheat"]:
+	for crop_id: StringName in [&"beans", &"flax", &"wheat"]:
 		var crop := _crop(crop_id)
 		var day := _best_day(crop)
 		day.max_wind_speed = gale_speed
@@ -155,13 +155,13 @@ func test_warmth_loving_crops_suffer_a_cold_night_that_cool_crops_do_not() -> vo
 	chilly.min_temperature = 4.0
 	chilly.mean_temperature = 9.0
 	chilly.sunlight_hours = 8.0
-	assert_true(CropLife.troubles(_crop(&"tomatoes"), chilly, 1.0).has(&"frost"))
+	assert_true(CropLife.troubles(_crop(&"beans"), chilly, 1.0).has(&"frost"))
 	assert_true(CropLife.troubles(_crop(&"turnip"), chilly, 1.0).is_empty())
 
 
-func test_only_peas_beans_tomatoes_and_strawberries_regrow() -> void:
+func test_only_peas_beans_and_strawberries_regrow() -> void:
 	for crop_id in CropRules.default_rules().crop_ids():
-		var regrows := crop_id in [&"peas", &"beans", &"tomatoes", &"strawberries"]
+		var regrows := crop_id in [&"peas", &"beans", &"strawberries"]
 		assert_eq(CropLife.regrows(_crop(crop_id)), regrows, str(crop_id))
 
 

@@ -69,8 +69,8 @@ lets you shrink or switch off the change in day length.
 ### Farming
 
 You till the soil with the hoe, plant seeds, water them, and pick the crops by hand. There
-are eleven crops: turnips, potatoes, carrots, cabbage, onions, wheat, peas, beans, tomatoes,
-strawberries and pumpkins. Each grows in its own seasons, and the weather (warmth, rain,
+are eleven crops: turnips, potatoes, carrots, cabbage, onions, wheat, peas, beans, flax
+(for its fibre, not to eat), wild strawberries and small green squashes (pumpkins). Each grows in its own seasons, and the weather (warmth, rain,
 frost) speeds it up, slows it down or damages it. A ripe crop doesn't wait forever: left
 unpicked for as long as it took to ripen, it withers and gives nothing. The growing times,
 seasons and the withering are in [data/crops.cfg](data/crops.cfg).
