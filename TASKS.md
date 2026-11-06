@@ -130,7 +130,9 @@ generator keeps every tree where it stood and only picks the species anew: alder
 on wet ground, beech, oak and birch on the dry Geest, pine and spruce only in clumps on the
 Geest; no save upgrade, as no type changed and no tree moved (checked on a copy of the user's
 save). No new colours. Screenshot: seasons. Decisions in SPEC, Time and seasons ("Trees of the
-region") and World ("Which trees grow where").
+region") and World ("Which trees grow where"). Added on the user's word: the pollard willow
+redrawn as a real Kopfweide (gnarled trunk, knobbly head, many thin rods), and a willow cutting
+as its seed, which also fixes a crash on picking a willow sapling.
 
 ## 57. Hearth and furnishing of the period
 
