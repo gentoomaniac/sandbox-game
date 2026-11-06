@@ -510,6 +510,7 @@ static func _weighted_pick(weights: Dictionary, roll: float) -> StringName:
 		reached += weights[kind]
 		if roll * total < reached:
 			return kind
+	# Only reached when float rounding leaves roll * total a hair above the last sum.
 	return weights.keys()[-1]
 
 

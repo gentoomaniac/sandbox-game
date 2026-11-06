@@ -36,7 +36,7 @@ def _stem(canvas, rng):
         left = OBJECT_CENTRE - width // 2
         for x in range(left, left + width):
             canvas[y][x] = BARK[1] if x == left else BARK[2]
-    for x in range(OBJECT_CENTRE - 1, OBJECT_CENTRE + 2, 2):
+    for x in (OBJECT_CENTRE - 1, OBJECT_CENTRE + 1):
         start = rng.randint(50, 58)
         for y in range(start, OBJECT_BOTTOM - rng.randint(2, 6)):
             canvas[y][x] = BARK[3] if rng.random() < 0.7 else BARK[2]

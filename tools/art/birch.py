@@ -55,6 +55,21 @@ def _trunk(canvas, rng, seed):
     return centres
 
 
+def _hanging_tips(canvas, rng, ends, colour, count):
+    """Strands 2 to 4 px long hanging from pixels of `ends` that have nothing below them."""
+    spots = [
+        (x, y)
+        for y in range(1, OBJECT_BOTTOM - 20)
+        for x in range(OBJECT_CELL_WIDTH)
+        if canvas[y][x] in ends and canvas[y + 1][x] is None
+    ]
+    for x, y in rng.sample(spots, min(count, len(spots))):
+        for step in range(1, rng.randint(3, 5)):
+            if canvas[y + step][x] is not None:
+                break
+            canvas[y + step][x] = colour
+
+
 def bare_birch(seed):
     """The birch in winter: the white trunk and limbs, fine brown twigs at their ends, some hanging
     down."""
@@ -93,21 +108,6 @@ def birch(seed):
     # The twigs hang: strands of leaves dangle from the clumps' undersides.
     _hanging_tips(canvas, rng, {LEAF_OUTLINE}, LEAVES[2], 22)
     return canvas
-
-
-def _hanging_tips(canvas, rng, ends, colour, count):
-    """Strands 2 to 4 px long hanging from pixels of `ends` that have nothing below them."""
-    spots = [
-        (x, y)
-        for y in range(1, OBJECT_BOTTOM - 20)
-        for x in range(OBJECT_CELL_WIDTH)
-        if canvas[y][x] in ends and canvas[y + 1][x] is None
-    ]
-    for x, y in rng.sample(spots, min(count, len(spots))):
-        for step in range(1, rng.randint(3, 5)):
-            if canvas[y + step][x] is not None:
-                break
-            canvas[y + step][x] = colour
 
 
 def birch_row():

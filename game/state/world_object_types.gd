@@ -105,7 +105,9 @@ const FRUIT := &"fruit"
 ## object that covers a tile.
 const MAX_FOOTPRINT := Vector2i(2, 2)
 
-## The atlas rows of the long trunks; the short one is the row after each.
+## The atlas rows of the long trunks; the short one is the row after each. They follow the order
+## in which tools/art/generate.py lays out the object atlas (assets/objects_rows.txt, checked by a
+## test), so a new tree gets the next free rows there and here.
 const _OAK_TRUNK_ROW := 14
 const _SPRUCE_TRUNK_ROW := 16
 const _PINE_TRUNK_ROW := 18
