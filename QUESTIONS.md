@@ -63,6 +63,14 @@ Answered questions move into SPEC.md and are removed here.
     the new floors and wall pieces; your own furniture stays put. Default: keep.
 12. **Code review** (docs/code-review-2026-11-06.md): its findings became tasks 63-71 and run
     one at a time beside the art tasks. Default: go ahead.
+13. **The shack** (task 58): tarred near-black boards with battens (not silver-grey ones), an
+    ox-blood red door and shutter, a white window, on a low fieldstone base; a turf roof with
+    a few flowers. For the turf to brown in autumn and winter, **every house now has a picture
+    per season** (spring, summer, autumn, winter, snow) chosen like the ground's; only roofs
+    with grass on them change (the shack, the barn's turf ridge), the thatch and its moss stay
+    as they were, and the build ghost still shows only summer or snow. Under snow the dark grass
+    turns to snow instead of shadow, which also takes a few grey flecks off the snowed-over
+    thatch. Each piece is its own commit (walls, roof, seasons and snow). Default: keep.
 
 ## Questions
 
