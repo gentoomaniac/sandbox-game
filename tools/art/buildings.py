@@ -47,6 +47,31 @@ SHADED = {
 }
 
 
+def thatch_course(rng, first, last):
+    """The random make of one course of thatch along the positions first..last (columns of a
+    roof seen from the eaves side, rows of one seen from its gable): how far its edge moves at
+    each, in runs of a few, wandering by a pixel at a time so it waves instead of stepping like
+    brick; whether its lit edge shows there; and how far a reed end hangs out there, at every
+    second to fourth position."""
+    shift, lit, reed = {}, {}, {}
+    at, drop = first, 0
+    while at <= last:
+        run = rng.randint(6, 12)
+        shift.update(dict.fromkeys(range(at, at + run), drop))
+        drop = max(-1, min(1, drop + rng.choice((-1, 1))))
+        at += run
+    at = first
+    while at <= last:
+        run = 1 if rng.random() < 0.25 else rng.randint(3, 9)
+        lit.update(dict.fromkeys(range(at, at + run), run > 1))
+        at += run
+    at = first + rng.randrange(3)
+    while at <= last:
+        reed[at] = rng.choice((1, 1, 2, 2, 3))
+        at += rng.choice((2, 2, 3, 3, 4))
+    return shift, lit, reed
+
+
 def thatch_roof(picture, snowy, rng, left, right, ridge_y, eaves_y, inset, swells=(), moss=5):
     """A hipped thatch roof over the columns left..right, from the ridge at `ridge_y` down to the
     eaves at `eaves_y`. The ridge is `inset` px shorter than the eaves on each side, and the hips
@@ -74,28 +99,8 @@ def thatch_roof(picture, snowy, rng, left, right, ridge_y, eaves_y, inset, swell
         if corner < EAVES_CORNER:
             upturn = round(EAVES_CORNER - math.sqrt(EAVES_CORNER**2 - (EAVES_CORNER - corner) ** 2))
         eaves[x] = eaves_y - round(lift) - upturn
-    # Per course (counted up from the eaves) and column: how far its edge drops or lifts, in runs
-    # of a few columns; whether its lit top shows there; and how long a reed end hangs there.
-    courses = []
-    for _ in range(height // COURSE + 2):
-        shift, lit, reed = {}, {}, {}
-        # The edge wanders by a pixel at a time, so it waves instead of stepping like brick.
-        x, drop = left, 0
-        while x <= right:
-            run = rng.randint(6, 12)
-            shift.update(dict.fromkeys(range(x, x + run), drop))
-            drop = max(-1, min(1, drop + rng.choice((-1, 1))))
-            x += run
-        x = left
-        while x <= right:
-            run = 1 if rng.random() < 0.25 else rng.randint(3, 9)
-            lit.update(dict.fromkeys(range(x, x + run), run > 1))
-            x += run
-        x = left + rng.randrange(3)
-        while x <= right:
-            reed[x] = rng.choice((1, 1, 2, 2, 3))
-            x += rng.choice((2, 2, 3, 3, 4))
-        courses.append((shift, lit, reed))
+    # The courses, counted up from the eaves, each varying along the columns.
+    courses = [thatch_course(rng, left, right) for _ in range(height // COURSE + 2)]
     # Under the dark underside of the rolled eaves, a ragged edge: one row more in runs of columns.
     ragged = {}
     x = left
@@ -658,27 +663,8 @@ def gable_roof(picture, snowy, rng, left, right, eaves_y, foot_y, hip_half, dept
     def rake(x):
         return round(eaves_y - min(x - left, right - x) * slope)
 
-    # Per course (counted in from the eaves) and row: how far its edge moves in or out, in runs
-    # of a few rows; whether its lit edge shows there; and how far a reed end hangs out there.
-    courses = []
-    for _ in range(round((right - left) / 2) // COURSE + 2):
-        shift, lit, reed = {}, {}, {}
-        y, drift = 0, 0
-        while y < len(picture):
-            run = rng.randint(6, 12)
-            shift.update(dict.fromkeys(range(y, y + run), drift))
-            drift = max(-1, min(1, drift + rng.choice((-1, 1))))
-            y += run
-        y = 0
-        while y < len(picture):
-            run = 1 if rng.random() < 0.25 else rng.randint(3, 9)
-            lit.update(dict.fromkeys(range(y, y + run), run > 1))
-            y += run
-        y = rng.randrange(3)
-        while y < len(picture):
-            reed[y] = rng.choice((1, 1, 2, 2, 3))
-            y += rng.choice((2, 2, 3, 3, 4))
-        courses.append((shift, lit, reed))
+    # The courses, counted in from the eaves, each varying along the rows.
+    courses = [thatch_course(rng, 0, len(picture) - 1) for _ in range(round((right - left) / 2) // COURSE + 2)]
     patches = [
         (rng.uniform(right - 24, right - 8), rng.uniform(eaves_y - depth, eaves_y - 10), rng.uniform(2.5, 4))
         for _ in range(moss)
