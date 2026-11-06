@@ -25,6 +25,9 @@ const MAX_STEP_SECONDS := 0.05
 
 var rules := LivestockRules.default_rules()
 var rng := RandomNumberGenerator.new()
+## The wear an animal's hooves or feet leave on each tile they walk onto, so a herd makes
+## tracks (see data/paths.cfg).
+var _animal_step := PathRules.default_rules().animal_step()
 var _sun: Sun
 var _animals: Array[FarmAnimal] = []
 
@@ -168,6 +171,8 @@ func _walk(
 			and nose_tile == Vector2i((animal.position + way * reach).floor())
 		)
 		if is_same_ground or (map.is_walkable(feet_tile) and map.is_walkable(nose_tile)):
+			if feet_tile != animal.tile() and map is World and _animal_step > 0.0:
+				(map as World).wear_tile(feet_tile, _animal_step)
 			animal.position = feet
 			animal.heading = way
 			animal.last_step = way

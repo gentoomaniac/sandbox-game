@@ -255,3 +255,18 @@ func test_a_sleeping_rabbit_does_not_run() -> void:
 
 	assert_eq(rabbit.activity, FarmAnimal.Activity.SLEEP)
 	assert_eq(rabbit.position, _pen_middle())
+
+
+func test_cows_wear_the_grass_they_walk_onto() -> void:
+	_livestock.spawn(LivestockRules.COW, 3, _pen_middle(), _world)
+	_run(60.0)
+	var worn: Array = _world.to_dict()["wear"]
+	assert_false(worn.is_empty(), "tracks in the pen")
+	for entry: Array in worn:
+		var tile := Vector2i(entry[0], entry[1])
+		assert_lte((tile - _middle).abs().x, PEN_RADIUS, "in the pen: %s" % tile)
+		assert_lte((tile - _middle).abs().y, PEN_RADIUS, "in the pen: %s" % tile)
+		var steps: float = entry[2]
+		assert_almost_eq(
+			fmod(steps, PathRules.default_rules().animal_step()), 0.0, 0.0001, "hoof steps"
+		)
