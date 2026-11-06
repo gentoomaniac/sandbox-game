@@ -82,9 +82,9 @@ func drift_depth(drift: float) -> float:
 	return clampf((drift - start) / (value("drifts", "core") - start), 0.0, 1.0)
 
 
-## The species that grow on a tile of a habitat ("" for none), in the order they take over
-## through the year; none on most tiles. `drift` and `mix` are the two noises at the tile,
-## `roll` a fixed random number of the tile in [0, 1).
+## The species that grow on a tile of a habitat (the habitat "" grows none), in the order
+## they take over through the year; an empty list on most tiles. `drift` and `mix` are the
+## two noises at the tile, `roll` a fixed random number of the tile in [0, 1).
 func flowers_at(habitat: String, drift: float, mix: float, roll: float) -> Array[StringName]:
 	var flowers: Array[StringName] = []
 	if habitat == "":

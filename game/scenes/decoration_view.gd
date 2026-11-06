@@ -166,6 +166,8 @@ func _set_clay_hint(world_pos: Vector2i, is_covered: bool) -> void:
 ## drift and mix noises there.
 func _sow_flowers(spot: DecorationSpot, world_pos: Vector2i) -> void:
 	var habitat: String = FLOWER_HABITATS.get(spot.layer, "")
+	if habitat == "":
+		return  # Fields, water and the like grow no flowers.
 	if spot.layer in GRASS_LAYERS and _world.is_in_woods(world_pos):
 		habitat = "woods"
 	var drift := _drift_noise.get_noise_2dv(Vector2(world_pos))
