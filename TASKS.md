@@ -390,6 +390,23 @@ widens to 30 literally. The 8 starting items fill the hotbar, so a new game has 
 slot; harvests go to the backpack. Tests: `HotbarHold` fetches an item (or an empty hand) into
 the held slot, `SaveUpgradeCase` shares the old-save helpers.
 
+## 73. Livestock: cows, sheep, chickens, rabbits
+
+- [ ] Done
+
+The user's word of 2026-11-07: cows, sheep, chickens and rabbits, spawned for now with a
+console command. They wander, graze grass (cows, sheep, rabbits) or peck for seeds and worms
+(chickens), and sleep at night. Not all alike: 2-3 looks per species, plus colour variation
+when drawn. Products (milk, wool, eggs) and keeping them (pens, feeding, owning) come later.
+
+## 74. Professions: woodworker, cook, mason; a UI for them
+
+- [ ] Done
+
+The user's word of 2026-11-07: start with the three professions suggested in
+docs/ideas/crafting-and-professions.md (woodworker at a workbench, cook at hearth and oven,
+mason with bricks and a kiln) and a UI for them. Design decisions to be settled first.
+
 ## Later (not part of the prototype)
 
 - A committed pixel guard (a GUT test hashing the tile cells, sprites and lights for a fixed seed
