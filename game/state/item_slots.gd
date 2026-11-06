@@ -93,10 +93,12 @@ func remove(item: StringName, count: int) -> int:
 
 ## Moves what is in slot `from` to slot `to` of `target` (these slots themselves for a move
 ## inside). Stacks of the same item merge, up to the stack limit, and what doesn't fit stays in
-## `from`; anything else swaps places.
-func move_to(from: int, target: ItemSlots, to: int) -> void:
+## `from`; anything else swaps places. Returns whether it swapped two items, so `from` now holds
+## the one that was in `to` (a screen lets that one stick to the mouse).
+func move_to(from: int, target: ItemSlots, to: int) -> bool:
 	if (target == self and from == to) or slots[from].is_empty():
-		return
+		return false
+	var is_swap := not target.slots[to].is_empty() and item_in(from) != target.item_in(to)
 	if item_in(from) == target.item_in(to):
 		var limit: int = ItemTypes.TYPES[item_in(to)]["stack_limit"]
 		var moved := mini(slots[from]["count"], limit - target.slots[to]["count"])
@@ -111,6 +113,7 @@ func move_to(from: int, target: ItemSlots, to: int) -> void:
 	changed.emit()
 	if target != self:
 		target.changed.emit()
+	return is_swap
 
 
 ## Moves the stack in slot `from` to `target`, as much of it as fits: onto stacks of the same

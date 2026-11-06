@@ -3,10 +3,11 @@ extends CanvasLayer
 ## The character screen over the game: the character with the equipment slots around it on the
 ## left and the backpack with the carried weight on the right. The hotbar is the HUD's, which
 ## stays lit and clickable while the screen is open, and is used like the backpack's slots.
-## Click an item to pick it up, then click a slot to put it down: a different item swaps places,
-## the same item stacks, and an equipment slot only takes an item that fits (those light up
-## while an item is picked up). Clicking the picked slot again, or outside the slots, drops the
-## pick. Right click wears an inventory item, or takes a worn one off into the first free slot.
+## Click an item to pick it up, then click a slot to put it down: a different item swaps places
+## and is picked up in turn (it sticks to the mouse), the same item stacks, and an equipment
+## slot only takes an item that fits (those light up while an item is picked up). Clicking the
+## picked slot again, or outside the slots, drops the pick. Right click wears an inventory item,
+## or takes a worn one off into the first free slot.
 ## A second tab beside it shows the skills (see SkillsPanel); Tab opens the screen on the
 ## character, K on the skills.
 
@@ -258,10 +259,17 @@ func _on_inventory_slot_pressed(slot: int) -> void:
 	if not _has_pick():
 		_picked_inventory_slot = slot if not _player.inventory.slots[slot].is_empty() else -1
 	elif _picked_inventory_slot != -1:
-		_player.inventory.move_to(_picked_inventory_slot, _player.inventory, slot)
-		_drop_pick()
-	elif _player.equipment.move_to_inventory(_player.inventory, _picked_equipment_slot, slot):
-		_drop_pick()
+		# After a swap the picked slot holds what was in `slot`: that is the pick now.
+		var is_swap := _player.inventory.move_to(_picked_inventory_slot, _player.inventory, slot)
+		if not is_swap:
+			_drop_pick()
+	else:
+		var is_swap := _player.inventory.item_in(slot) != ItemTypes.NONE
+		var is_moved := _player.equipment.move_to_inventory(
+			_player.inventory, _picked_equipment_slot, slot
+		)
+		if is_moved and not is_swap:
+			_drop_pick()
 	_refresh()
 
 
@@ -270,7 +278,11 @@ func _on_equipment_slot_pressed(slot: StringName) -> void:
 	if not _has_pick():
 		_picked_equipment_slot = slot if _player.equipment.item_in(slot) != ItemTypes.NONE else &""
 	elif _picked_inventory_slot != -1:
-		if _player.equipment.move_to_equipment(_player.inventory, _picked_inventory_slot, slot):
+		var is_swap := _player.equipment.item_in(slot) != ItemTypes.NONE
+		var is_moved := _player.equipment.move_to_equipment(
+			_player.inventory, _picked_inventory_slot, slot
+		)
+		if is_moved and not is_swap:
 			_drop_pick()
 	else:
 		_drop_pick()

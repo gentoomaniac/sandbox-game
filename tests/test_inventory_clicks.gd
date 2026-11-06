@@ -87,3 +87,29 @@ func test_an_item_goes_from_the_backpack_onto_the_hotbar_by_clicks() -> void:
 	_click_slot(Inventory.HOTBAR_SIZE + 3)
 	_click_slot(2)
 	assert_eq(_player.inventory.slots[2], {"item": ItemTypes.LOGS, "count": 4})
+
+
+func test_putting_the_picked_item_on_another_one_swaps_and_picks_that_one_up() -> void:
+	_player.inventory.slots[Inventory.HOTBAR_SIZE] = {"item": ItemTypes.LOGS, "count": 4}
+	_player.inventory.slots[Inventory.HOTBAR_SIZE + 1] = {"item": ItemTypes.STONE, "count": 2}
+	_player.inventory.slots[Inventory.HOTBAR_SIZE + 5] = {}
+	_player.inventory.changed.emit()
+	_click_slot(Inventory.HOTBAR_SIZE)
+	_click_slot(Inventory.HOTBAR_SIZE + 1)
+	assert_eq(_player.inventory.item_in(Inventory.HOTBAR_SIZE + 1), ItemTypes.LOGS)
+	assert_eq(_player.inventory.item_in(Inventory.HOTBAR_SIZE), ItemTypes.STONE)
+	assert_eq(_screen._picked_inventory_slot, Inventory.HOTBAR_SIZE, "the stone is in the hand")
+	_click_slot(Inventory.HOTBAR_SIZE + 5)
+	assert_eq(_player.inventory.item_in(Inventory.HOTBAR_SIZE + 5), ItemTypes.STONE)
+	assert_true(_player.inventory.slots[Inventory.HOTBAR_SIZE].is_empty())
+	assert_eq(_screen._picked_inventory_slot, -1, "nothing left in the hand")
+
+
+func test_putting_the_picked_item_on_the_same_one_stacks_and_drops_the_pick() -> void:
+	_player.inventory.slots[Inventory.HOTBAR_SIZE] = {"item": ItemTypes.LOGS, "count": 4}
+	_player.inventory.slots[Inventory.HOTBAR_SIZE + 1] = {"item": ItemTypes.LOGS, "count": 2}
+	_player.inventory.changed.emit()
+	_click_slot(Inventory.HOTBAR_SIZE)
+	_click_slot(Inventory.HOTBAR_SIZE + 1)
+	assert_eq(_player.inventory.slots[Inventory.HOTBAR_SIZE + 1]["count"], 6)
+	assert_eq(_screen._picked_inventory_slot, -1)

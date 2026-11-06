@@ -95,7 +95,7 @@ func test_remove_takes_from_stacks_and_empties_slots() -> void:
 
 func test_moving_to_an_empty_slot() -> void:
 	_inventory.add(ItemTypes.TURNIP, 4)
-	_inventory.move_to(0, _inventory, 15)
+	assert_false(_inventory.move_to(0, _inventory, 15), "no swap")
 	assert_true(_inventory.slots[0].is_empty())
 	assert_eq(_inventory.slots[15], {"item": ItemTypes.TURNIP, "count": 4})
 
@@ -103,7 +103,7 @@ func test_moving_to_an_empty_slot() -> void:
 func test_moving_onto_a_different_item_swaps() -> void:
 	_inventory.add(ItemTypes.TURNIP, 4)
 	_inventory.add(ItemTypes.AXE, 1)
-	_inventory.move_to(0, _inventory, 1)
+	assert_true(_inventory.move_to(0, _inventory, 1), "says it swapped")
 	assert_eq(_inventory.item_in(0), ItemTypes.AXE)
 	assert_eq(_inventory.slots[1], {"item": ItemTypes.TURNIP, "count": 4})
 
@@ -111,7 +111,7 @@ func test_moving_onto_a_different_item_swaps() -> void:
 func test_moving_onto_the_same_item_merges_up_to_the_limit() -> void:
 	_inventory.add(ItemTypes.TURNIP, 99)
 	_inventory.add(ItemTypes.TURNIP, 10)
-	_inventory.move_to(1, _inventory, 0)
+	assert_false(_inventory.move_to(1, _inventory, 0), "no swap")
 	assert_eq(_inventory.slots[0]["count"], 99)
 	assert_eq(_inventory.slots[1]["count"], 10)
 

@@ -4,7 +4,8 @@ extends CanvasLayer
 ## equipment) and the chest's slots on the right (as many as the chest has, 5 to a row), each
 ## under a small icon. The hotbar is the HUD's, which stays lit and clickable while the screen is
 ## open, and is used like the backpack's slots. Click an item to pick it up, then click a
-## slot of either side to put it down: a different item swaps places, the same item stacks.
+## slot of either side to put it down: a different item swaps places and is picked up in turn
+## (it sticks to the mouse), the same item stacks.
 ## Clicking the picked slot again, or outside the slots, drops the pick. Shift+click sends a whole
 ## stack to the other side (from the chest into the backpack first, so the hotbar isn't flooded).
 ## Like the character screen, it takes the input while it is open (Main sees to that, and closes it
@@ -174,7 +175,10 @@ func _on_slot_pressed(side: int, slot: int) -> void:
 		# Dropped first: the move refreshes the screen, which shows a pick that is still there.
 		var picked := _pick
 		_pick = {}
-		_slots_of(picked["side"]).move_to(picked["slot"], slots, slot)
+		var is_swap: bool = _slots_of(picked["side"]).move_to(picked["slot"], slots, slot)
+		# After a swap the picked slot holds what was in `slot`: that is the pick now.
+		if is_swap:
+			_pick = picked
 	_refresh()
 
 

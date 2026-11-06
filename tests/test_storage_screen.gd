@@ -142,3 +142,16 @@ func test_closing_the_screen_stops_it_following_the_slots() -> void:
 	assert_false(_screen.is_open())
 	assert_false(_inventory.changed.has_connections())
 	assert_false(_chest.changed.has_connections())
+
+
+func test_putting_an_item_on_another_across_the_sides_swaps_and_picks_that_one_up() -> void:
+	_inventory.add(ItemTypes.LOGS, 8)
+	_chest.add(ItemTypes.STONE, 3)
+	var views := _open_screen()
+	_inventory_view(views, 0).pressed.emit()
+	_chest_view(views, 0).pressed.emit()
+	assert_eq(_chest.slots[0], {"item": ItemTypes.LOGS, "count": 8})
+	assert_eq(_inventory.slots[0], {"item": ItemTypes.STONE, "count": 3})
+	_inventory_view(views, 6).pressed.emit()
+	assert_eq(_inventory.slots[6], {"item": ItemTypes.STONE, "count": 3}, "the stone was in hand")
+	assert_true(_inventory.slots[0].is_empty())
