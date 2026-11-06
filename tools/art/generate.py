@@ -6,13 +6,8 @@ others listed in tools/README.md. This file puts the objects together into the a
 fire, buildings, wildlife, crops, items, ui and the palette), then checks them against the
 palette.
 
-assets/objects.png: world objects, 48x80 cells (OBJECT_CELL_WIDTH x OBJECT_CELL_HEIGHT). Row 0
-is the oak (3 variants), row 1 the stone (2 variants), then the camp site: row 2 the fireplace,
-row 3 the bedroll (the sleeping_bag object; 1 variant each), then the vegetation rows from 4 (see vegetation()),
-row 11 the boulder, row 12 the stump, row 13 the tall grass (3 tufts, then the same 3 mown;
-see meadow.py) and rows 14 to 21 the trunks (see trunks.py) and row 22 the reeds (3 stands, then the same 3 cut;
-see reeds.py) and row 23 the dead tree's stump (2 variants). The rows and
-counts are in game/state/world_object_types.gd.
+assets/objects.png: world objects, 48x80 cells (OBJECT_CELL_WIDTH x OBJECT_CELL_HEIGHT), one row per
+kind (the table above `object_atlas`).
 An object stands on one tile: the bottom centre 16x16 of its cell (x 16..31, y 64..79). A tree's
 crown rises above that, over the tiles around it. An object on several tiles (boulder 2x1,
 bedroll 1x2) is centred on its footprint, with the cell's bottom on the footprint's bottom.
@@ -91,6 +86,37 @@ def world_chest():
     return canvas
 
 
+# The rows of assets/objects.png, as (kind, looks). `atlas_row` of each type in
+# game/state/world_object_types.gd is its number here, and tests/test_object_atlas.gd checks
+# it against assets/objects_rows.txt, which is written from the list below. Rows 14 to 21
+# (the trunks) follow the order of the trees in trunks.SPECIES, and the types of
+# world_object_types.gd take their rows from the order of its trees.
+#
+#  0 oak (3)
+#  1 stone (2)
+#  2 fireplace (1)
+#  3 sleeping_bag (1)
+#  4 spruce (3)
+#  5 pine (3)
+#  6 dead_tree (3)
+#  7 berry_bush (3, then the same 3 picked)
+#  8 shrub (3)
+#  9 sapling (3)
+# 10 fern (3)
+# 11 boulder (2)
+# 12 stump (2)
+# 13 tall_grass (3, then the same 3 mown)
+# 14 oak_trunk (2)
+# 15 oak_short_trunk (2)
+# 16 spruce_trunk (2)
+# 17 spruce_short_trunk (2)
+# 18 pine_trunk (2)
+# 19 pine_short_trunk (2)
+# 20 dead_tree_trunk (2)
+# 21 dead_tree_short_trunk (2)
+# 22 reeds (3, then the same 3 cut)
+# 23 dead_stump (2)
+# 24 chest (1)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -117,6 +143,13 @@ def object_atlas():
     ]
 
 
+def write_object_rows(objects):
+    """assets/objects_rows.txt: `row kind looks` per row of objects.png, which the test of the
+    object atlas compares with the types of world_object_types.gd."""
+    lines = [f"{row} {kind} {len(looks)}" for row, (kind, looks) in enumerate(objects)]
+    (ASSETS / "objects_rows.txt").write_text("\n".join(lines) + "\n")
+
+
 def write_seasonal_art():
     """The art that has a file per look: terrain, decorations, objects and buildings. Summer
     keeps the plain names; the other looks add theirs, e.g. terrain_snow.png."""
@@ -130,6 +163,7 @@ def write_seasonal_art():
         terrain_rows.append(tiles)
         decoration_rows.append(decorations)
     objects = object_atlas()
+    write_object_rows(objects)
     redraws = {"oak": lambda variant: trees.bare_oak(trees.OAK_SEEDS[variant])}
     houses = {}
     for name, draw in buildings.PICTURES.items():

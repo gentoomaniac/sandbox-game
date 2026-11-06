@@ -93,7 +93,9 @@ const FRUIT := &"fruit"
 ## object that covers a tile.
 const MAX_FOOTPRINT := Vector2i(2, 2)
 
-## The first atlas row of the trunks: the row after the last of the other types.
+## The first atlas row of the trunks: the row after the last of the other types. Their rows are
+## counted in the order of the trees with a `trunk` below, which must be the order of
+## SPECIES in tools/art/trunks.py (tests/test_object_atlas.gd checks it).
 const _FIRST_TRUNK_ROW := 14
 ## The atlas row of the reeds: after the last trunk (4 trees, a long and a short trunk each).
 const _REEDS_ROW := 22
