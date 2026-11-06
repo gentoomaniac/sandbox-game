@@ -7,6 +7,7 @@ func test_footstep_by_ground() -> void:
 		Tile.Terrain.GRASS: &"step_grass",
 		Tile.Terrain.SOIL: &"step_soil",
 		Tile.Terrain.WETLAND: &"step_wetland",
+		Tile.Terrain.MUD: &"step_wetland",
 		Tile.Terrain.FLOODPLAIN: &"step_sand",
 		Tile.Terrain.FLOOR: &"step_wood",
 	}

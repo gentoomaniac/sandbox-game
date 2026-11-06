@@ -3,7 +3,7 @@ assets/decorations.png.
 
 Tiles are drawn as 16x16 grids of palette colour names (None = transparent). Each terrain layer
 has one function that returns its atlas row and its decorations; `LAYERS` lists them bottom to
-top: water, floodplain, wetland, grass, lush grass, dry grass, trodden grass, path, soil. Both
+top: water, mud, floodplain, wetland, grass, lush grass, dry grass, trodden grass, path, soil. Both
 atlases are read by game/scenes/terrain_tileset.gd.
 
 assets/terrain.png, per row:
@@ -220,6 +220,100 @@ def water():
     decorations = [decoration(19, lily), decoration(20, lily, lily), decoration(21, lily_flower)]
     # Water is the bottom layer and always full, so it needs no edge shapes.
     return [blank()] * (EDGE_VARIANTS * FULL) + fulls, decorations
+
+
+# The ripple marks of the tidal mud follow one wave for every mud tile, so they run on in step
+# across tile borders: a trough every 4 rows, bent by a wave that repeats across the tile.
+_RIPPLE_BEND = periodic_noise(51, [(1, 1.0), (2, 0.4)])
+
+
+def _is_trough(x, y):
+    """Whether a pixel of the mud lies in the trough of a ripple."""
+    return (y + round(1.6 * _RIPPLE_BEND(x, y))) % 4 == 2
+
+
+def mud():
+    """The tidal flats (Watt): wet grey-brown mud with ripple marks, the casts of lugworms,
+    shells, a mussel bed and the water left in hollows at low tide. The tideways are the water
+    beneath it; at their banks the mud is dark and soaked, with a glint on the water. All of
+    it lies in the tiles, none in decorations."""
+    cast = sprite({"l": "bare_light", "s": "sand", "d": "mud_dark"}, "ls.", ".sl", "d..")
+    coil = sprite({"l": "bare_light", "s": "sand"}, ".ls", "sl.")
+    hole = sprite({"d": "mud_dark"}, "d")
+    damp = sprite({"m": "mud"}, "mm")
+    wet = sprite({"m": "mud"}, "m", "m")
+    glint = sprite({"l": "water_light"}, "l")
+    shells = [
+        sprite({"c": "cream", "s": "sand_light"}, "cs"),
+        sprite({"c": "sand_light", "s": "stone_light"}, "c", "s"),
+        sprite({"c": "cream"}, "c.c"),
+    ]
+    puddle = sprite(
+        {"m": "mud_dark", "w": "water", "l": "water_light"},
+        ".mmmm.",
+        "mwwlwm",
+        ".mmmm.",
+    )
+    mussels = sprite(
+        {"i": "ink", "d": "stone_dark", "l": "water_light", "m": "mud_dark"},
+        ".dd.d.",
+        "didlid",
+        "mdidd.",
+        "..mm..",
+    )
+    wrack = sprite({"o": "olive", "b": "bog", "y": "reed"}, "o.b", "boy", ".b.")
+
+    def texture(seed):
+        # Ripples as short dashes along the troughs, lit on their crest above, in a scatter of
+        # their own per tile, so the flats are marked but not ruled.
+        rng = random.Random(seed)
+        tile = filled("bare")
+        sprinkle(tile, rng, [damp, damp, wet], spacing=4, chance=0.35)
+        for y in range(TILE):
+            x = rng.randrange(4)
+            while x < TILE:
+                length = rng.randrange(2, 6)
+                for dx in range(length):
+                    if x + dx < TILE and _is_trough(x + dx, y):
+                        tile[y][x + dx] = "mud_dark"
+                        if y > 0 and rng.random() < 0.5:
+                            tile[y - 1][x + dx] = "bare_light"
+                x += length + rng.randrange(6, 16)
+        sprinkle(tile, rng, [hole, hole, coil, glint], spacing=8, chance=0.3)
+        return tile
+
+    fulls = [
+        details(texture, 111),
+        details(texture, 112, cast),
+        details(texture, 113, shells[0], hole),
+        details(texture, 114, puddle),
+        details(texture, 115, cast, shells[1]),
+        details(texture, 116),
+        details(texture, 117, mussels),
+        details(texture, 118, shells[2], cast),
+        details(texture, 119, wrack),
+        details(texture, 120),
+        details(texture, 121),
+        details(texture, 122),
+        details(texture, 123),
+        details(texture, 124),
+    ]
+    shapes = edge_shapes(110, [(1, 1.0), (2, 0.7), (4, 0.3)], 0.16)
+
+    def decorate(tile, covered, rng):
+        # The bank of a tideway: soaked dark mud running down into a glint of shallow water.
+        for y in range(TILE):
+            for x in range(TILE):
+                if covered(x, y):
+                    distance = edge_distance(covered, x, y, 3)
+                    if distance == 1:
+                        tile[y][x] = "mud_dark"
+                    elif distance == 2 and (x + y) % 2:
+                        tile[y][x] = "mud"
+                elif is_rim(lambda x, y: not covered(x, y), x, y) and rng.random() < 0.6:
+                    tile[y][x] = "water_light"
+
+    return edge_tiles(texture, shapes, 110, decorate) + fulls, []
 
 
 def floodplain():
@@ -574,4 +668,4 @@ def soil():
     return edge_tiles(lambda seed: copy(base), shapes, 80, decorate) + fulls, []
 
 
-LAYERS = [water, floodplain, wetland, grass, lush_grass, dry_grass, trodden, path, soil]
+LAYERS = [water, mud, floodplain, wetland, grass, lush_grass, dry_grass, trodden, path, soil]

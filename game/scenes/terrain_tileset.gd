@@ -10,7 +10,9 @@ extends RefCounted
 ## Grass comes in three looks (ordinary, lush, dry), picked by slow noise across the world
 ## so the colour shifts gradually. Lush and dry grass are layers drawn over ordinary grass.
 ## Grass walked often wears to a desire path (see World.wear_stage): trodden grass, then a
-## path, two layers over any grass (and the floodplain) that fade into it.
+## path, two layers over any grass (and the floodplain) that fade into it. The tidal mud lies
+## just over the water, so the tideways are water cut into it; it looks the same in every
+## season and weather, as the tide washes it.
 ##
 ## Terrain atlas: one row per layer. EDGE_VARIANTS blocks of 15 columns hold the edge
 ## shapes for masks 0..14 (0 is empty), the columns from FULL_COLUMN on the full-tile
@@ -18,7 +20,7 @@ extends RefCounted
 ## row of meadow flowers (FLOWER_ROW).
 
 ## Draw order and atlas row, bottom to top.
-enum Layer { WATER, FLOODPLAIN, WETLAND, GRASS, LUSH_GRASS, DRY_GRASS, TRODDEN, PATH, SOIL }
+enum Layer { WATER, MUD, FLOODPLAIN, WETLAND, GRASS, LUSH_GRASS, DRY_GRASS, TRODDEN, PATH, SOIL }
 ## The tiles of a meadow flower (see FLOWER_ROW).
 enum FlowerVariant { SMALL, FEW, DRIFT, OTHER_DRIFT }
 
@@ -45,7 +47,7 @@ const FULL_COLUMN := EDGE_VARIANTS * FULL
 
 ## The code of a tile packs what its drawing needs into one int, so a corner of a cell is one
 ## value to read, fill in and pass on:
-##   bits 0-3   the layer (Layer, 0..8)
+##   bits 0-3   the layer (Layer, 0..9)
 ##   bits 4-7   the look it has by the season (SeasonBlend.Look, 0..8)
 ##   bits 8-11  the look over it by the weather (SeasonBlend.Look: FROST, DUSTING, SNOW, or
 ##              SUMMER for none)
@@ -61,7 +63,7 @@ const LOOK_MASK := (1 << LOOK_BITS) - 1
 const MISSING := -1
 const NO_DECORATION := Vector2i(-1, -1)
 
-const LAYER_COUNT := 9
+const LAYER_COUNT := 10
 ## The row of the decoration atlas with the meadow flowers: FLOWER_VARIANTS columns per species
 ## of FLOWER_SPECIES, in that order (see tools/art/flowers.py): a small plant, a few, and two
 ## tiles of the thick of a drift.
@@ -81,14 +83,20 @@ const FLOWER_SPECIES: Array[StringName] = [
 	&"heather",
 ]
 const FLOWER_VARIANTS := 4
-## Layer per terrain, indexed by Tile.Terrain. Grass is ordinary grass here; terrain_layer()
-## turns it lush or dry.
-const LAYER_OF_TERRAIN: Array[Layer] = [
-	Layer.GRASS, Layer.SOIL, Layer.WATER, Layer.WETLAND, Layer.FLOODPLAIN
-]
+## Layer per terrain of the world (interiors are not drawn here). Grass is ordinary grass here;
+## terrain_layer() turns it lush or dry.
+const LAYER_OF_TERRAIN: Dictionary[Tile.Terrain, Layer] = {
+	Tile.Terrain.GRASS: Layer.GRASS,
+	Tile.Terrain.SOIL: Layer.SOIL,
+	Tile.Terrain.WATER: Layer.WATER,
+	Tile.Terrain.WETLAND: Layer.WETLAND,
+	Tile.Terrain.FLOODPLAIN: Layer.FLOODPLAIN,
+	Tile.Terrain.MUD: Layer.MUD,
+}
 ## The layer each layer is drawn over: lush and dry grass need ordinary grass beneath.
 const BASE_LAYER: Array[Layer] = [
 	Layer.WATER,
+	Layer.MUD,
 	Layer.FLOODPLAIN,
 	Layer.WETLAND,
 	Layer.GRASS,
@@ -244,18 +252,18 @@ static func is_drawn_in_layers(look: SeasonBlend.Look) -> bool:
 
 
 ## The season look a tile shows, given the look its place has by the season (see SeasonBlend)
-## and its layer: the foliage of the seasons on all land the plough has not turned; water and
-## tilled soil keep the summer look.
+## and its layer: the foliage of the seasons on all land the plough has not turned; water, the
+## tidal mud and tilled soil keep the summer look.
 static func shown_season_look(layer: int, season_look: SeasonBlend.Look) -> SeasonBlend.Look:
-	if layer == Layer.WATER or layer == Layer.SOIL or layer == MISSING:
+	if layer == Layer.WATER or layer == Layer.MUD or layer == Layer.SOIL or layer == MISSING:
 		return SeasonBlend.Look.SUMMER
 	return season_look
 
 
 ## The weather look a tile shows (SeasonBlend.Look.SUMMER for none): snow and frost cover any
-## land.
+## land but the tidal mud, which the tide washes clear twice a day.
 static func shown_weather_look(layer: int, weather_look: SeasonBlend.Look) -> SeasonBlend.Look:
-	if layer == Layer.WATER or layer == MISSING:
+	if layer == Layer.WATER or layer == Layer.MUD or layer == MISSING:
 		return SeasonBlend.Look.SUMMER
 	return weather_look
 

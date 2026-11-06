@@ -107,7 +107,7 @@ func test_every_atlas_cell_in_use_has_a_tile() -> void:
 				var cell := _tileset.atlas_cell(layer, TerrainTileset.FULL, Vector2i(x, y))
 				assert_true(source.has_tile(cell), "full tile %s" % cell)
 	# Water is always the lowest layer of a cell, so it only ever draws full tiles.
-	for layer in range(FLOODPLAIN, TerrainTileset.LAYER_COUNT):
+	for layer in range(WATER + 1, TerrainTileset.LAYER_COUNT):
 		for mask in range(1, TerrainTileset.FULL):
 			for x in 6:
 				var cell := _tileset.atlas_cell(layer, mask, Vector2i(x, 0))
@@ -195,3 +195,10 @@ func test_worn_ground_is_drawn_trodden_or_as_a_path_whatever_its_grass() -> void
 				TerrainTileset.terrain_layer(terrain, variety, PathRules.Stage.PATH),
 				TerrainTileset.Layer.PATH
 			)
+
+
+func test_the_tidal_mud_looks_the_same_in_every_season_and_weather() -> void:
+	var mud := TerrainTileset.terrain_layer(Tile.Terrain.MUD, 0.0)
+	assert_eq(mud, TerrainTileset.Layer.MUD)
+	for look in SeasonBlend.Look.values():
+		assert_eq(TerrainTileset.shown_look(mud, look, look), SeasonBlend.Look.SUMMER)

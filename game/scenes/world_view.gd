@@ -786,7 +786,9 @@ func is_snowed_over(world_pos: Vector2i) -> bool:
 	var code := _code_at(world_pos)
 	if code == TerrainTileset.MISSING:
 		return false
-	var look := TerrainTileset.weather_of(code)
+	var look := TerrainTileset.shown_weather_look(
+		TerrainTileset.layer_of(code), TerrainTileset.weather_of(code)
+	)
 	return look == SeasonBlend.Look.SNOW or look == SeasonBlend.Look.DUSTING
 
 

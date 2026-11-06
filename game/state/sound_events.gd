@@ -5,7 +5,8 @@ extends RefCounted
 ## ones in SoundRules.EVENTS. An empty name means the happening is silent.
 
 
-## The step on a tile. Snow lies over anything, ice is frozen water, a floodplain is sand.
+## The step on a tile. Snow lies over anything, ice is frozen water, a floodplain is sand,
+## the tidal mud squelches like wetland.
 ## Indoors the clogs clack on the brick floor as on wood, and a clay floor is soil.
 static func footstep(
 	terrain: Tile.Terrain, is_frozen: bool, is_snowed: bool, is_indoors: bool
@@ -20,7 +21,7 @@ static func footstep(
 		Tile.Terrain.WATER:
 			# Unfrozen water can't be walked on, so this is only a fallback.
 			return &"step_ice" if is_frozen else &"step_grass"
-		Tile.Terrain.WETLAND:
+		Tile.Terrain.WETLAND, Tile.Terrain.MUD:
 			return &"step_wetland"
 		Tile.Terrain.FLOODPLAIN:
 			return &"step_sand"
