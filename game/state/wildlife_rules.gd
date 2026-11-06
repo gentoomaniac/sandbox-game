@@ -35,7 +35,7 @@ const KIND_KEYS := [
 	"terrains",
 	"trees_radius",
 	"min_trees",
-	"needs_flowers",
+	"flowers_per_animal",
 	"season_factors",
 	"phase_weights",
 	"rain_limit",
@@ -129,8 +129,9 @@ func flee_tiles(kind: StringName) -> float:
 	return _value(kind, "flee_tiles")
 
 
+## Whether a kind lives only at flowers in bloom.
 func needs_flowers(kind: StringName) -> bool:
-	return _value(kind, "needs_flowers")
+	return int(_value(kind, "flowers_per_animal")) > 0
 
 
 ## The part of the day: dawn and dusk reach `twilight_minutes` either side of sunrise and
@@ -164,9 +165,16 @@ func is_hiding(kind: StringName, weather: WeatherSample) -> bool:
 	)
 
 
-## How many of a kind there should be near the player now.
-func target_count(kind: StringName, day: int, minute: int, weather: WeatherSample) -> int:
-	return roundi(cap(kind) * activity(kind, day, minute, weather))
+## How many of a kind there should be near the player now. `flower_tiles` is how many tiles
+## of flowers are in bloom in and around the view: a kind that needs flowers has one animal for
+## every `flowers_per_animal` of them at most, so none where there are none.
+func target_count(
+	kind: StringName, day: int, minute: int, weather: WeatherSample, flower_tiles := 0
+) -> int:
+	var count := roundi(cap(kind) * activity(kind, day, minute, weather))
+	if needs_flowers(kind):
+		count = mini(count, flower_tiles / int(_value(kind, "flowers_per_animal")))
+	return count
 
 
 ## The chance per second that a missing animal of a kind appears.
@@ -220,6 +228,17 @@ func random_ring_point(view: Rect2, rng: RandomNumberGenerator) -> Vector2:
 		if not inner.has_point(point):
 			return point
 	return Vector2(outer.position.x, rng.randf_range(outer.position.y, outer.end.y))
+
+
+## The points where an animal that lives at flowers may appear: the middles of the tiles of
+## `flowers` (flowers in bloom) that lie in the spawn ring (see `is_spawn_point`).
+func flower_spawn_points(flowers: Array[Vector2i], view: Rect2, player: Vector2) -> Array[Vector2]:
+	var points: Array[Vector2] = []
+	for tile in flowers:
+		var point := (Vector2(tile) + Vector2(0.5, 0.5)) * TILE_SIZE
+		if is_spawn_point(point, view, player):
+			points.append(point)
+	return points
 
 
 ## Whether an animal at a point is far enough from the view to vanish.

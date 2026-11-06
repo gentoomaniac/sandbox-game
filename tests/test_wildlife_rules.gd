@@ -9,6 +9,8 @@ const AUTUMN := 75
 const WINTER := 105
 const NOON := 12 * 60
 const MIDNIGHT := 0
+## Tiles of flowers in bloom around the view: a meadow in flower.
+const MEADOW := 100
 
 var _rules := WildlifeRules.default_rules()
 var _sun := Sun.new()
@@ -37,9 +39,44 @@ func test_every_missing_key_is_reported() -> void:
 
 func test_no_insects_in_winter_or_autumn() -> void:
 	for kind in [WildlifeRules.BEE, WildlifeRules.BUTTERFLY]:
-		assert_gt(_rules.target_count(kind, SUMMER, NOON, _clear()), 0, "%s in summer" % kind)
-		assert_gt(_rules.target_count(kind, SPRING, NOON, _clear()), 0, "%s in spring" % kind)
-		assert_eq(_rules.target_count(kind, WINTER, NOON, _clear()), 0, "%s in winter" % kind)
+		var summer := _rules.target_count(kind, SUMMER, NOON, _clear(), MEADOW)
+		assert_gt(summer, 0, "%s in summer" % kind)
+		var spring := _rules.target_count(kind, SPRING, NOON, _clear(), MEADOW)
+		assert_gt(spring, 0, "%s in spring" % kind)
+		var winter := _rules.target_count(kind, WINTER, NOON, _clear(), MEADOW)
+		assert_eq(winter, 0, "%s in winter" % kind)
+
+
+func test_bees_are_only_where_flowers_bloom_and_more_where_there_are_more() -> void:
+	var bee := WildlifeRules.BEE
+	assert_eq(_rules.target_count(bee, SUMMER, NOON, _clear(), 0), 0, "no flowers, no bees")
+	var few := _rules.target_count(bee, SUMMER, NOON, _clear(), 8)
+	assert_between(few, 1, _rules.cap(bee) - 1, "a few flowers, fewer bees")
+	assert_eq(_rules.target_count(bee, SUMMER, NOON, _clear(), MEADOW), _rules.cap(bee))
+	assert_eq(_rules.target_count(bee, SUMMER, MIDNIGHT, _clear(), MEADOW), 0, "none at night")
+	assert_gt(
+		_rules.target_count(WildlifeRules.BUTTERFLY, SUMMER, NOON, _clear(), 0),
+		0,
+		"butterflies do without"
+	)
+
+
+func test_bees_appear_only_at_flowers_in_the_ring_around_the_view() -> void:
+	var view := Rect2(0, 0, 384, 216)
+	var player := view.get_center()
+	var flowers: Array[Vector2i] = []
+	for y in range(-8, 22):
+		for x in range(-8, 32):
+			if (x * 7 + y * 3) % 5 == 0:
+				flowers.append(Vector2i(x, y))
+	var points := _rules.flower_spawn_points(flowers, view, player)
+	assert_gt(points.size(), 0)
+	for point in points:
+		var tile := Vector2i((point / WildlifeRules.TILE_SIZE).floor())
+		assert_true(flowers.has(tile), "at a flower: %s" % point)
+		assert_eq(point, TerrainTileset.tile_centre(tile), "in the middle of its tile")
+		assert_true(_rules.is_spawn_point(point, view, player), "in the ring: %s" % point)
+	assert_eq(_rules.flower_spawn_points([] as Array[Vector2i], view, player).size(), 0)
 
 
 func test_insects_hide_in_rain_but_birds_stand_a_drizzle() -> void:
@@ -93,7 +130,7 @@ func test_the_count_never_passes_the_cap() -> void:
 	for kind in WildlifeRules.KINDS:
 		for day in [SPRING, SUMMER, AUTUMN, WINTER]:
 			for minute in range(0, 24 * 60, 30):
-				var count := _rules.target_count(kind, day, minute, _clear())
+				var count := _rules.target_count(kind, day, minute, _clear(), MEADOW)
 				assert_between(count, 0, _rules.cap(kind), "%s, day %d, %d" % [kind, day, minute])
 
 
@@ -109,6 +146,7 @@ func test_rules_use_their_own_values() -> void:
 		"owl":
 		{
 			"cap": 5,
+			"flowers_per_animal": 0,
 			"season_factors": [1.0, 1.0, 1.0, 1.0],
 			"phase_weights": [0.0, 0.0, 1.0],
 			"rain_limit": 0.5,

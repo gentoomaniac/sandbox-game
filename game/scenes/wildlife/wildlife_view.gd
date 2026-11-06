@@ -127,21 +127,27 @@ func flowers_near(point: Vector2, tiles: int) -> Array[Vector2i]:
 	return world_view.decorations.flower_tiles_within(Rect2(point, Vector2.ZERO).grow(reach))
 
 
-## Adds or sends away animals until each kind has the number the rules ask for.
+## Adds or sends away animals until each kind has the number the rules ask for. The flowers in
+## bloom in and around the view are looked up once, for the kinds that live at them.
 func _match_counts() -> void:
 	var clock := _state.clock
 	var weather := _state.current_weather()
 	var chance_seconds := rules.general("tick_seconds")
+	var flowers := world_view.decorations.flower_tiles_within(
+		view_rect().grow(rules.general("spawn_margin_tiles") * WildlifeRules.TILE_SIZE)
+	)
 	for kind in WildlifeRules.KINDS:
 		var count := _count_of(kind)
-		var target := rules.target_count(kind, clock.day, clock.minute_of_day, weather)
+		var target := rules.target_count(
+			kind, clock.day, clock.minute_of_day, weather, flowers.size()
+		)
 		if count > target:
 			_send_away(kind, count - target)
 			continue
 		var chance := rules.spawn_chance(kind, clock.day, clock.minute_of_day, weather)
 		if count < target and _animals.size() < rules.general("max_total"):
 			if rng.randf() < chance * chance_seconds:
-				_spawn_somewhere(kind)
+				_spawn_somewhere(kind, flowers)
 
 
 func _count_of(kind: StringName) -> int:
@@ -168,21 +174,18 @@ func _send_away(kind: StringName, excess: int) -> void:
 
 
 ## Spawns an animal of a kind at a suitable place in the ring around the view, if it finds
-## one.
-func _spawn_somewhere(kind: StringName) -> void:
+## one: one that lives at flowers at one of `flowers`, the flowers in bloom around the view.
+func _spawn_somewhere(kind: StringName, flowers: Array[Vector2i]) -> void:
 	if kind == WildlifeRules.FLOCK:
 		_spawn_flock(false)
 		return
 	var view := view_rect()
 	var player := world_view.player_feet
 	if rules.needs_flowers(kind):
-		var flowers := world_view.decorations.flower_tiles_within(
-			view.grow(rules.general("spawn_margin_tiles") * WildlifeRules.TILE_SIZE)
-		)
-		flowers.shuffle()
-		for tile in flowers.slice(0, SPAWN_TRIES):
-			var point := TerrainTileset.tile_centre(tile)
-			if rules.is_spawn_point(point, view, player) and _is_habitat(kind, point):
+		var points := rules.flower_spawn_points(flowers, view, player)
+		points.shuffle()
+		for point in points.slice(0, SPAWN_TRIES):
+			if _is_habitat(kind, point):
 				_spawn(kind, point, false)
 				return
 		return
