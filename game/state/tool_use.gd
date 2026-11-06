@@ -194,14 +194,15 @@ func _dig(target: Vector2i) -> void:
 
 
 ## Whether the player can put an object of this type on a tile: it is free, the player's body is
-## not on it (they would be stuck in it), and the object has a picture for the map (furniture with
-## only an interior picture goes only inside a house).
+## not on it (they would be stuck in it), and the object goes on this map: furniture with only an
+## interior picture goes only inside a house, and what is `outdoors_only` only outdoors.
 func _can_place_on(pos: Vector2i, placed_type: StringName) -> bool:
-	var has_picture: bool = (
-		_state.is_inside() or WorldObjectTypes.TYPES[placed_type].has("atlas_row")
+	var placed: Dictionary = WorldObjectTypes.TYPES[placed_type]
+	var fits_map: bool = (
+		not placed.get("outdoors_only", false) if _state.is_inside() else placed.has("atlas_row")
 	)
 	return (
-		has_picture
+		fits_map
 		and _state.current_map.is_placeable(pos)
 		and not PlayerState.body_tiles(_state.player.position).has_point(pos)
 	)

@@ -127,6 +127,39 @@ def planks():
     return outlined(picture, "soil_dark")
 
 
+KILN_WIDTH = 16
+KILN_HEIGHT = 18
+
+
+def kiln(is_standing=True):
+    """A small beehive kiln of clay on a fieldstone footing, 16x18 px: the smoke hole at its top,
+    courses of clay round its dome, and the arched mouth where the fire is laid."""
+    picture = blank(KILN_WIDTH, KILN_HEIGHT)
+    for y in range(2, KILN_HEIGHT):
+        half = min(7, 3 + (y - 2) // 2)
+        left, right = 8 - half - 1, 8 + half
+        rect(picture, left, y, right, y, "mud")
+        picture[y][left] = "sand"
+        rect(picture, right - 1, y, right, y, "mud_dark")
+        if y % 3 == 0:
+            for x in range(left + 1 + y % 2, right - 1, 3):
+                picture[y][x] = "mud_dark"
+    # The rim and the smoke hole.
+    rect(picture, 5, 0, 10, 1, "sand")
+    rect(picture, 6, 1, 9, 2, "soil_dark")
+    # The mouth, an arch over the ash.
+    rect(picture, 6, 11, 9, 15, "soil_dark")
+    rect(picture, 7, 10, 8, 10, "soil_dark")
+    rect(picture, 6, 15, 9, 15, "stone_dark")
+    # The footing of field stones.
+    rect(picture, 0, 16, 15, 17, "stone")
+    for x in (2, 6, 11, 14):
+        picture[16][x] = "stone_light"
+    for x in (4, 9, 13):
+        picture[17][x] = "stone_dark"
+    return outline(picture, "soil_dark", keep_bottom=is_standing)
+
+
 def icon_of(picture):
     """An item icon: the picture, outlined all round, in the middle of 16x16 px."""
     icon = blank()
@@ -138,15 +171,24 @@ def icon_of(picture):
     return icon
 
 
+def _shrunk(picture):
+    """The icon of a picture taller than one: rows from its middle left out until it fits."""
+    while len(picture) > TILE:
+        middle = len(picture) // 2
+        picture = picture[:middle] + picture[middle + 1 :]
+    return icon_of(picture)
+
+
 def stations():
     """The pictures of the stations, standing, by world object type."""
-    return {"workbench": workbench(), "carved_chest": carved_chest()}
+    return {"workbench": workbench(), "carved_chest": carved_chest(), "kiln": kiln()}
 
 
 def icons():
     """The icons of the professions' items, by item id."""
     return {
         "workbench": icon_of(workbench(is_standing=False)),
+        "kiln": _shrunk(kiln(is_standing=False)),
         "planks": planks(),
         "stool": icon_of(interior.stool()),
         "carved_chest": icon_of(carved_chest(is_standing=False)),

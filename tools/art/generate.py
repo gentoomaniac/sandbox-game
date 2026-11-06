@@ -145,6 +145,7 @@ def standing_outdoors(picture):
 # 40 alder_short_trunk (2)
 # 41 workbench (1)
 # 42 carved_chest (1)
+# 43 kiln (1)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -185,6 +186,7 @@ def object_atlas():
         *trunks.rows("alder"),
         ("workbench", [standing_outdoors(crafts.workbench())]),
         ("carved_chest", [standing_outdoors(crafts.carved_chest())]),
+        ("kiln", [standing_outdoors(crafts.kiln())]),
     ]
 
 

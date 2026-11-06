@@ -13,7 +13,8 @@ extends RefCounted
 ## footprint, its bottom on the footprint's bottom edge. The chest stands in both places, so it
 ## has both, and the ghost of an object the player places uses the interior picture. What the
 ## player places goes only where it has a picture for: furniture with only `interior_sprite` only
-## inside a house. Optional:
+## inside a house, and one that is `outdoors_only` (the kiln: its fire would burn the house down)
+## only outdoors. Optional:
 ## - storage_slots: it holds items, this many slots (a chest, see WorldObject `storage`);
 ## - bed: the object is a bed (what sleeping in it fills is in data/energy.cfg, [sleep]); the
 ##   value is the direction its head end lies in (the pillow). The player wakes lying
@@ -108,6 +109,7 @@ const ALDER := &"alder"
 const WORKBENCH := &"workbench"
 ## The woodworker's chest, painted (task 74): more room than the plain one.
 const CARVED_CHEST := &"carved_chest"
+const KILN := &"kiln"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -144,6 +146,7 @@ const _ALDER_ROW := 38
 const _ALDER_TRUNK_ROW := 39
 const _WORKBENCH_ROW := 41
 const _CARVED_CHEST_ROW := 42
+const _KILN_ROW := 43
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -511,6 +514,20 @@ const _OTHER_TYPES := {
 		"atlas_row": _CARVED_CHEST_ROW,
 		"variants": 1,
 		"interior_sprite": "res://assets/interior/carved_chest.png",
+	},
+	# Its interior picture is the ghost while it is placed: it stands only outdoors.
+	KILN:
+	{
+		"hp": 4,
+		"tool": &"pickaxe",
+		"drops": {&"kiln": 1},
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _KILN_ROW,
+		"variants": 1,
+		"interior_sprite": "res://assets/interior/kiln.png",
+		"outdoors_only": true,
 	},
 	WORKBENCH:
 	{

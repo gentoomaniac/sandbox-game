@@ -51,6 +51,7 @@ const JACKET := &"jacket"
 const CLOGS := &"clogs"
 # The stations the player places (task 74).
 const WORKBENCH := &"workbench"
+const KILN := &"kiln"
 # Made at the workbench (task 74).
 const PLANKS := &"planks"
 const STOOL := &"stool"
@@ -338,6 +339,14 @@ const _OTHER_TYPES := {
 		"weight": 8.0,
 		"stack_limit": 10,
 		"places": WorldObjectTypes.WORKBENCH,
+	},
+	KILN:
+	{
+		"name": "Kiln",
+		"description": "A small clay kiln that fires bricks overnight. It stands outdoors.",
+		"weight": 15.0,
+		"stack_limit": 5,
+		"places": WorldObjectTypes.KILN,
 	},
 	PLANKS:
 	{
