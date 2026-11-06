@@ -44,8 +44,8 @@ func reply(npc: Npc, history: Array[Dictionary], message: String, state: GameSta
 		answer = NpcPrompt.trimmed_reply(answer, npc, rules.value("request", "reply_sentences"))
 		if answer != "":
 			return answer
-	else:
-		await get_tree().create_timer(rules.value("scripted", "thinking_seconds"), true).timeout
+	# A moment's thought before a scripted line too, also when the model gave nothing.
+	await get_tree().create_timer(rules.value("scripted", "thinking_seconds"), true).timeout
 	var lines: Array = rules.value("scripted", "replies")
 	return lines[rng.randi_range(0, lines.size() - 1)]
 

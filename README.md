@@ -490,6 +490,9 @@ curl -s <endpoint>/chat/completions -H 'Content-Type: application/json' \
   -d '{"model": "<model>", "messages": [{"role": "user", "content": "Moin!"}]}'
 ```
 
+(Leave out the `Authorization` line for an endpoint without a key, like the test LLM.) When
+the endpoint can't be reached, the game's output says so once, not for every line.
+
 **The test LLM.** `make llm-up` runs Ollama with Qwen2.5 3B Instruct (1.9 GB, Qwen Research
 License: for testing only) in a podman or docker container on `http://127.0.0.1:11434/v1`,
 the default endpoint, so villagers talk as soon as it is up; `make llm-check` asks it one

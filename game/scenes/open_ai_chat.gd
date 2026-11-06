@@ -10,6 +10,9 @@ extends Node
 
 const PATH := "/chat/completions"
 
+## The endpoints found not reachable this session: each is warned of once.
+static var _unreachable_warned := {}
+
 
 func _init() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -47,6 +50,15 @@ func answer(language_model: Dictionary, request: Dictionary, timeout_seconds: fl
 	var result: int = response[0]
 	var status: int = response[1]
 	var text: String = (response[3] as PackedByteArray).get_string_from_utf8()
+	if result in [HTTPRequest.RESULT_CANT_CONNECT, HTTPRequest.RESULT_CANT_RESOLVE]:
+		# Nothing listening there is normal (the default endpoint is the test LLM, which is
+		# often not running), so it is said once per endpoint, not for every line.
+		if not _unreachable_warned.has(url):
+			_unreachable_warned[url] = true
+			push_warning(
+				"Language model at %s: not reachable; villagers speak scripted lines" % url
+			)
+		return ""
 	if result != HTTPRequest.RESULT_SUCCESS or status != 200:
 		push_warning(
 			(

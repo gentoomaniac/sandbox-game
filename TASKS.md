@@ -851,6 +851,9 @@ background and personality, spawned by id: `spawn npc antje`. `spawn npc` withou
 keeps making a random villager, who gets a background composed from data tables (trade,
 family, a worry, a habit). The ids are listed in the console's spawn list and completion.
 
+Since (2026-11-06, the user's word): the endpoint defaults to the test LLM
+(`http://127.0.0.1:11434/v1`); emptied, it is off.
+
 From the review of task 84: the "awaiting an answer" state must belong to the villager, not
 the chat screen (closing A's chat while it answers and opening B's must not show B typing
 or block B), and `reply` needs a time-out and an error path that return a fallback line, so
