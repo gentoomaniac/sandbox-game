@@ -5,9 +5,10 @@ extends Node2D
 ## which would not keep to the art grid.
 
 ## Each palette is brighter than the foliage it falls from, or it is lost against it: yellow
-## greens under a green canopy, dry brown-green needles under a dark spruce.
+## greens under a green canopy, dry brown-green needles under a dark spruce, bright ochre,
+## copper and tan under the brown autumn oaks.
 const GREENS: Array[Color] = [Color("c6e070"), Color("a9d158"), Color("e2e67e")]
-const AUTUMN_COLORS: Array[Color] = [Color("ff9a2a"), Color("f04a2c"), Color("ffd23c")]
+const AUTUMN_COLORS: Array[Color] = [Color("f0c060"), Color("e88a40"), Color("d8b078")]
 const NEEDLE_COLORS: Array[Color] = [Color("c0c860"), Color("d4a862"), Color("a2c252")]
 const SNOW_COLORS: Array[Color] = [Color("ffffff"), Color("ffffff"), Color("eef4ff")]
 const SPLINTER_COLORS: Array[Color] = [

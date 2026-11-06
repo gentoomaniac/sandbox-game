@@ -155,23 +155,29 @@ _SHADOW_REMAPS = {
     "buds": "green_deep", "young_leaves": "green_deep",
 }
 
-# Leaf ramps for autumn trees and bushes, replacing the greens of summer.
-_ORANGE = {
-    "green_bright": "maple_light", "green_light": "flame", "green": "rust", "green_dark": "rust_dark",
-    "green_deep": "russet_deep", "olive": "rust_dark", "dry_light": "maple_light", "dry": "flame",
+# Leaf ramps for autumn trees and bushes, replacing the greens of summer. North Sea autumn is
+# brown, ochre, copper and yellow; red (rowan, cherry) is rare, and none of our trees has it.
+_BROWN = {
+    "green_bright": "ochre_dark", "green_light": "soil_light", "green": "soil_mid", "green_dark": "soil",
+    "green_deep": "soil_dark", "olive": "soil", "dry_light": "ochre_dark", "dry": "soil_light",
 }
-_RED = {
-    "green_bright": "red_light", "green_light": "ember", "green": "rust_dark", "green_dark": "rust_dark",
-    "green_deep": "russet_deep", "olive": "rust_dark", "dry_light": "red_light", "dry": "ember",
+_OCHRE = {
+    "green_bright": "ochre", "green_light": "ochre_dark", "green": "umber", "green_dark": "umber",
+    "green_deep": "russet_deep", "olive": "umber", "dry_light": "ochre", "dry": "ochre_dark",
+}
+# The beech's colour; an oak in its last leaves has it too.
+_COPPER = {
+    "green_bright": "ochre", "green_light": "soil_light", "green": "rust_dark", "green_dark": "russet_deep",
+    "green_deep": "soil_dark", "olive": "russet_deep", "dry_light": "ochre", "dry": "soil_light",
 }
 _YELLOW = {
     "green_bright": "gold", "green_light": "ochre", "green": "ochre", "green_dark": "ochre_dark",
     "green_deep": "umber", "olive": "ochre_dark", "dry_light": "gold", "dry": "ochre",
 }
 # One look per variant, so a forest of oaks has all of them.
-_AUTUMN_OAK = (_ORANGE, _RED, _YELLOW)
-# Bushes have yellow and orange only: red berries must stand out.
-_AUTUMN_BUSH = (_YELLOW, _ORANGE, _YELLOW)
+_AUTUMN_OAK = (_BROWN, _OCHRE, _COPPER)
+# Bushes turn yellow and ochre: the red berries must stand out.
+_AUTUMN_BUSH = (_YELLOW, _OCHRE, _YELLOW)
 
 # Bare twigs in winter, under the snow.
 _BARE_BUSH = {

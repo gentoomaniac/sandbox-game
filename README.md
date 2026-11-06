@@ -31,9 +31,9 @@ warm spring and summer evenings and nights. How often and how loud is in
 ### A world that changes with the seasons
 
 There are four seasons of 30 days each. The ground, the trees, the bushes and the buildings
-each have a look for every season: fresh green in spring, full summer foliage, red and
-gold autumn forests, and snow in winter. A new season comes in over its first three days,
-tile by tile and tree by tree: in spring the oaks and bushes leaf out in steps, from bare
+each have a look for every season: fresh green in spring, full summer foliage, brown,
+ochre and copper autumn oaks, and snow in winter. A new season comes in over its first
+three days, tile by tile and tree by tree: in spring the oaks and bushes leaf out in steps, from bare
 twigs to a haze of buds, thin young leaves and then the full crown. Pines are Scots pines,
 with tall reddish trunks and flat dark clumps of needles, and stay green all year like the
 spruces. Ground cover thins and fills over the year, ferns die back in winter, and berry

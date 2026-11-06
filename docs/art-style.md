@@ -325,7 +325,7 @@ task 51 (pine, spring leaf-out); changes to trees should be coordinated with it.
    in data and art with broad beans, flax or kale (or keep tomatoes as a rare imported
    seed). Make strawberries the small wild kind and the pumpkin a smaller, greener garden
    squash.
-4. **Autumn colours** (small, in `seasons.py`). Many crowns turn crimson and orange like
+4. **Done (task 52):** **Autumn colours** (small, in `seasons.py`). Many crowns turn crimson and orange like
    New England maples. Here oaks go brown and ochre, beeches copper, birches yellow. Make
    red rare (rowan, cherry) and merge `crimson` away. Coordinate with task 51.
 5. **Window panes** (small). Windows are 4-pane modern casements. Use 6–9 small panes
