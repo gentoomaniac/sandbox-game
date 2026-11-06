@@ -221,7 +221,7 @@ top of classic pixel art (details under "Lighting and look").
 - **Waking in the bed** (decided 2026-11-06, after a player woke behind a bed and was stuck):
   after sleeping and after passing out the player wakes lying in the middle of the bed, head
   on the pillow and the body under the blanket (the asleep frame of the collapse, turned to
-  the bed; on the bedroll outdoors they lie on it). They get up on their first move. The beds
+  the bed; the bedroll at the camp has its own cover, `ObjectCover`). They get up on their first move. The beds
   of the houses are drawn in layers: frame and pillow under the player, the blanket over them
   while they lie there. Beds no longer block walking, so nobody can be stuck in or behind one.
   Nothing of this is saved: a game saved in bed loads with the player standing on it.

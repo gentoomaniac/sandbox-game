@@ -83,3 +83,18 @@ def bedroll():
         rect(canvas, x, top + 1, x, top + 7, "soil")
         canvas[top + 1][x] = "soil_light"
     return canvas
+
+
+# The rows of the bedroll cell from which the bedroll covers a player lying in it: below the
+# rolled blanket at the head end, so only the head shows.
+BEDROLL_COVER_FROM_ROW = 62
+
+
+def bedroll_cover():
+    """The part of the bedroll drawn over the player lying on it (assets/bedroll_cover.png): the
+    cell of `bedroll` with everything above BEDROLL_COVER_FROM_ROW cleared, and its ground
+    shadow, which the atlas draws on its own."""
+    canvas = bedroll()
+    for y in range(BEDROLL_COVER_FROM_ROW):
+        canvas[y] = [None] * OBJECT_CELL_WIDTH
+    return [[None if colour == "shadow" else colour for colour in row] for row in canvas]

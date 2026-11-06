@@ -525,7 +525,8 @@ head left for the box bed; the type data `bed` is the head direction). The beds 
 are drawn below the entities (`InteriorView`'s `Beds` node) and `<bed>_cover.png`, the blanket
 cut from the bed's picture by tools/art/interior.py (`BED_COVERS`), is shown above the player
 while they lie there; the straw mat got a wool blanket for it. Outdoors the player lies on the
-bedroll, drawn above the objects (`LYING_Z_INDEX`). The beds do not block walking any more;
+bedroll (above the objects, `LYING_Z_INDEX`) under `assets/bedroll_cover.png`, the bag cut from
+its atlas cell by `camp.bedroll_cover` and shown by `ObjectCover` (the snow looks use the same cover). The beds do not block walking any more;
 the saved game of the report (player standing on the box bed of the longhouse, `[1.5, 2.5]`)
 loads and walks. No save change, so no new version. `GameState` got the same
 `max-public-methods` exception as `World`. Screenshots in docs/screenshots/waking-in-bed.png.

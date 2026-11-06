@@ -53,6 +53,8 @@ const LYING_POSES := {
 ## A figure in a bed is drawn above the objects of the world (a sleeping bag lies among them);
 ## the cover of a bed in a house is drawn above the figure (see InteriorView).
 const LYING_Z_INDEX := 1
+## What is drawn over a figure in a bed (see InteriorView and ObjectCover).
+const COVER_Z_INDEX := 2
 ## Where the "z"s start over a figure lying head to the right, in art pixels from the feet.
 const SLEEP_ZS_POSITION := Vector2(10, -16)
 

@@ -43,6 +43,7 @@ var _cheat_hud := CheatHud.new()
 ## opens it, it pauses the game, and it has its own input.
 var _screens: Array = [_console_view, _character_screen, _crafting_screen, _storage_screen]
 var _interior_view := InteriorView.new()
+var _object_cover := ObjectCover.new()
 var _weather_view := WeatherView.new()
 var _wildlife := WildlifeView.new()
 var _weather: WeatherSample
@@ -144,6 +145,7 @@ func _make_views() -> void:
 	_view.add_child(_wildlife)
 	# Among the objects, so the player walks behind tree canopies.
 	_view.entities.add_child(_player_view)
+	_view.entities.add_child(_object_cover)
 	_player_view.add_child(_tiredness_view)
 	_view.add_child(_use_highlight)
 	add_child(_harvest_hud)
@@ -336,6 +338,7 @@ func _process(delta: float) -> void:
 		_state.player.move(_state.current_map, direction, delta, _player_view.walk_speed)
 		_state.collect_ground_items(delta)
 		_interior_view.cover_bed(_state.player.bed_lying_in)
+		_object_cover.cover(_state.player.bed_lying_in)
 		if _state.door_underfoot():
 			_fade_through(_pass_door)
 	# The world, its animals too, stands still while the player is in a house.

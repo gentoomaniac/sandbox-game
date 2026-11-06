@@ -203,7 +203,7 @@ your energy. A message says what happened before the morning fades in.
 ![Passing out: kneeling, tipping over, asleep, and the message on waking](docs/screenshots/passing-out.png)
 
 After sleeping or passing out you wake lying in the middle of the bed, head on the pillow
-and under the blanket (on the bedroll at the camp: on it), and get up with your first step.
+and under the blanket (also on the bedroll at the camp), and get up with your first step.
 Beds don't block walking, so you can't get stuck behind one.
 
 ![Waking in the shack, the Kate, the longhouse and at the camp](docs/screenshots/waking-in-bed.png)

@@ -38,8 +38,6 @@ const BACK_WALL_ROWS := 2
 ## Beyond the room, so it does not show the (hidden) world's emptiness.
 const BACKDROP := Color("1d1b26")
 const BACKDROP_RADIUS := 1000.0
-## A bed's cover goes above the player lying in it (see PlayerView.LYING_Z_INDEX).
-const COVER_Z_INDEX := 2
 
 ## Y-sorted: the player is added here.
 var entities := Node2D.new()
@@ -150,7 +148,7 @@ func _add_furniture(object: WorldObject) -> void:
 		cover.centered = false
 		cover.position = sprite.position
 		cover.offset = sprite.offset
-		cover.z_index = COVER_Z_INDEX
+		cover.z_index = PlayerView.COVER_Z_INDEX
 		cover.visible = false
 		_beds.add_child(cover)
 		_furniture.append(cover)

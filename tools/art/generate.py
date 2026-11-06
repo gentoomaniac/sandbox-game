@@ -247,6 +247,10 @@ def write_interior():
         save_picture(picture, f"interior/{name}.png")
 
 
+def write_bedroll_cover():
+    save_picture(camp.bedroll_cover(), "bedroll_cover.png")
+
+
 def write_fire():
     for name, (behind, front), (box, half_width, tall) in (
         ("fireplace", camp.fireplace_layers(), camp.FIREPLACE_FLAME),
@@ -284,6 +288,7 @@ def main():
     write_seasonal_art()
     write_character()
     write_interior()
+    write_bedroll_cover()
     write_fire()
     write_wildlife()
     write_crops()

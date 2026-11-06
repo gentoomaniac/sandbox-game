@@ -15,8 +15,9 @@ extends RefCounted
 ## - storage_slots: it holds items, this many slots (a chest, see WorldObject `storage`);
 ## - bed: the object is a bed (what sleeping in it fills is in data/energy.cfg, [sleep]); the
 ##   value is the direction its head end lies in (the pillow). Beds do not block walking: the
-##   player wakes lying in the middle of one, and `interior_cover` is the picture of the part
-##   of the bed that is drawn over them (the blanket);
+##   player wakes lying in the middle of one, and `interior_cover` (`object_cover` for a bed in
+##   the world, a picture of the size of its atlas cell) is the part of the bed that is drawn
+##   over them (the blanket);
 ## - growth_stages: the object is a crop (all of them come from data/crops.cfg, see CropRules,
 ##   which says what the other values of a crop type are). Its picture sheet is not in the
 ##   object atlas but its own (`sheet`), with a picture per growth stage and a dead one;
@@ -184,6 +185,7 @@ const _OTHER_TYPES := {
 		"harvest_level": 0,
 		"atlas_row": 3,
 		"variants": 1,
+		"object_cover": "res://assets/bedroll_cover.png",
 		"bed": Vector2i.UP,
 	},
 	SPRUCE:

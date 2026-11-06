@@ -18,7 +18,7 @@ func before_each() -> void:
 func _covers() -> Array[Sprite2D]:
 	var covers: Array[Sprite2D] = []
 	for node in _view.get_node("Beds").get_children():
-		if node.z_index == InteriorView.COVER_Z_INDEX:
+		if node.z_index == PlayerView.COVER_Z_INDEX:
 			covers.append(node)
 	return covers
 
@@ -41,7 +41,7 @@ func test_the_cover_shows_only_while_the_player_lies_in_the_bed() -> void:
 
 
 func test_the_cover_is_above_the_player_lying_in_the_bed() -> void:
-	assert_gt(InteriorView.COVER_Z_INDEX, PlayerView.LYING_Z_INDEX)
+	assert_gt(PlayerView.COVER_Z_INDEX, PlayerView.LYING_Z_INDEX)
 
 
 func test_every_bed_has_a_head_end_the_player_can_lie_with() -> void:
@@ -60,3 +60,25 @@ func test_every_bed_in_a_house_has_a_cover_of_the_size_of_its_picture() -> void:
 		var picture: Texture2D = load(data["interior_sprite"])
 		var cover: Texture2D = load(data["interior_cover"])
 		assert_eq(cover.get_size(), picture.get_size(), type)
+
+
+func test_the_bedroll_has_a_cover_of_the_size_of_its_atlas_cell() -> void:
+	var cover: Texture2D = load(
+		WorldObjectTypes.TYPES[WorldObjectTypes.SLEEPING_BAG]["object_cover"]
+	)
+	assert_eq(cover.get_size(), Vector2(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT))
+
+
+func test_the_object_cover_shows_over_the_bedroll_the_player_lies_in() -> void:
+	var cover := ObjectCover.new()
+	add_child_autofree(cover)
+	var bedroll := WorldObject.new(WorldObjectTypes.SLEEPING_BAG, Vector2i(3, 5))
+	cover.cover(bedroll)
+	assert_true(cover.visible)
+	assert_eq(cover.z_index, PlayerView.COVER_Z_INDEX)
+	assert_eq(cover.position.x, 3.5 * TerrainTileset.TILE_SIZE)
+	assert_eq(cover.position.y + ObjectTileset.CELL_HEIGHT / 2.0, 7.0 * TerrainTileset.TILE_SIZE)
+	cover.cover(null)
+	assert_false(cover.visible)
+	cover.cover(_bed)
+	assert_false(cover.visible, "a bed of a house has its cover in the room")
