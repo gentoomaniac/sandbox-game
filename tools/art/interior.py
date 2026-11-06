@@ -2,7 +2,7 @@
 and game/scenes/interior_view.gd. The room is seen in 3/4 view: the back wall as a face 2
 tiles high, the side and front walls only as their 8 px thick tops.
 
-assets/interior.png is one row of 16x16 tiles, in the order of INTERIOR_GROUND_TILES, then
+assets/interior.png is one row of 16x16 tiles, in the order of `atlas_tiles`, then
 one marker tile per piece of furniture (the top left tile of its footprint, so Tiled shows
 what is where). The game draws the furniture from assets/interior/<name>.png instead:
 sprites of any size, centred on their footprint with their bottom edge on its bottom edge.
@@ -241,22 +241,6 @@ def hearth():
     return fire.burning(hearth_without_flame(), blank(2 * TILE, 2 * TILE), *HEARTH_FLAME)
 
 
-# Furniture by name: its picture and its footprint in tiles. The marker tiles and the files
-# follow this order.
-FURNITURE = {
-    "bed": (bed(), (1, 2)),
-    "table": (table(), (2, 1)),
-    "stool": (stool(), (1, 1)),
-    "chest": (chest.chest(), (1, 1)),
-    "hearth": (hearth(), (2, 2)),
-    "window": (window_picture(), (1, 2)),
-}
-
-
-# More furniture, for the shack, the longhouse and the barn (task 39). They come after the first
-# six so that the tile ids of the tileset stay as they were.
-
-
 def sleeping_mat():
     """A straw sleeping mat 1x2 tiles, head to the north, with a cream pillow."""
     canvas = blank(TILE, 2 * TILE)
@@ -370,20 +354,6 @@ def crate():
     return outline(canvas, "soil_dark", keep_bottom=True)
 
 
-FURNITURE.update(
-    {
-        "sleeping_mat": (sleeping_mat(), (1, 2)),
-        "box_bed": (box_bed(), (2, 2)),
-        "bench": (bench(), (2, 1)),
-        "stall_partition": (stall_partition(), (1, 2)),
-        "hay_pile": (hay_pile(), (2, 1)),
-        "barrel": (barrel(), (1, 1)),
-        "sacks": (sacks(), (1, 1)),
-        "crate": (crate(), (1, 1)),
-    }
-)
-
-
 def marker_tile(picture, footprint):
     """The top left tile of the footprint of a sprite that is centred on it."""
     width, height = len(picture[0]), len(picture)
@@ -397,22 +367,45 @@ def marker_tile(picture, footprint):
     return tile
 
 
-INTERIOR_GROUND_TILES = {
-    "floor": interior_floor(),
-    "floor_shaded": interior_floor_shaded(),
-    "rim_left": rim_left(),
-    "rim_right": mirrored_tile(rim_left()),
-    "rim_front": rim_front(),
-    "front_left": clear_columns(rim_front(), 0, RIM - 1),
-    "front_right": clear_columns(rim_front(), RIM, TILE - 1),
-    "doormat": interior_doormat(),
-    "back_top": back_wall_top(),
-    "back_bottom": back_wall_bottom(),
-    "back_left_top": back_wall_end(back_wall_top(), True),
-    "back_left_bottom": back_wall_end(back_wall_bottom(), True),
-    "back_right_top": back_wall_end(back_wall_top(), False),
-    "back_right_bottom": back_wall_end(back_wall_bottom(), False),
-}
-INTERIOR_TILES = list(INTERIOR_GROUND_TILES.values()) + [
-    marker_tile(*FURNITURE[name]) for name in FURNITURE
-]
+def furniture():
+    """The furniture by name: its picture and its footprint in tiles. The marker tiles of
+    assets/interior.png and the files follow this order, and the tile ids of the tileset
+    (maps/interiors/*.tsx) are counted in it, so new pieces go at the end."""
+    return {
+        "bed": (bed(), (1, 2)),
+        "table": (table(), (2, 1)),
+        "stool": (stool(), (1, 1)),
+        "chest": (chest.chest(), (1, 1)),
+        "hearth": (hearth(), (2, 2)),
+        "window": (window_picture(), (1, 2)),
+        "sleeping_mat": (sleeping_mat(), (1, 2)),
+        "box_bed": (box_bed(), (2, 2)),
+        "bench": (bench(), (2, 1)),
+        "stall_partition": (stall_partition(), (1, 2)),
+        "hay_pile": (hay_pile(), (2, 1)),
+        "barrel": (barrel(), (1, 1)),
+        "sacks": (sacks(), (1, 1)),
+        "crate": (crate(), (1, 1)),
+    }
+
+
+def atlas_tiles(furniture):
+    """The tiles of assets/interior.png: the ground tiles, then a marker tile per piece of
+    `furniture`."""
+    ground = {
+        "floor": interior_floor(),
+        "floor_shaded": interior_floor_shaded(),
+        "rim_left": rim_left(),
+        "rim_right": mirrored_tile(rim_left()),
+        "rim_front": rim_front(),
+        "front_left": clear_columns(rim_front(), 0, RIM - 1),
+        "front_right": clear_columns(rim_front(), RIM, TILE - 1),
+        "doormat": interior_doormat(),
+        "back_top": back_wall_top(),
+        "back_bottom": back_wall_bottom(),
+        "back_left_top": back_wall_end(back_wall_top(), True),
+        "back_left_bottom": back_wall_end(back_wall_bottom(), True),
+        "back_right_top": back_wall_end(back_wall_top(), False),
+        "back_right_bottom": back_wall_end(back_wall_bottom(), False),
+    }
+    return list(ground.values()) + [marker_tile(*furniture[name]) for name in furniture]

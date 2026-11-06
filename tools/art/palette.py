@@ -88,7 +88,7 @@ def rgba(name, asset):
     return (*bytes.fromhex(PALETTE[name]), 255)
 
 
-def to_image(rows, size=TILE, height=None, asset="a picture"):
+def to_image(rows, size=TILE, height=None, *, asset):
     """Lays out rows of tiles as one image. Tiles are size wide and `height` high (default
     size); a tile with fewer rows of pixels sits at the bottom of its cell. `asset` names what
     is drawn, for the error of an unknown colour."""
@@ -105,6 +105,19 @@ def to_image(rows, size=TILE, height=None, asset="a picture"):
                     if name is not None:
                         pixels[column * size + x, row_index * height + top + y] = rgba(name, asset)
     return image
+
+
+def save(rows, relative_path, size=TILE, height=None):
+    """Draws rows of tiles (see `to_image`) into `relative_path` under assets/, making its
+    directories."""
+    path = ASSETS / relative_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    to_image(rows, size, height, asset=relative_path).save(path)
+
+
+def save_picture(picture, relative_path):
+    """Saves one picture of any size as a PNG of its own."""
+    save([[picture]], relative_path, len(picture[0]), len(picture))
 
 
 def write_palette():
@@ -138,3 +151,4 @@ def check_palette():
             bad.append(f"{path.relative_to(ASSETS)}: {len(stray)} colours not in the palette")
     if bad:
         raise SystemExit("Palette check failed:\n" + "\n".join(bad))
+

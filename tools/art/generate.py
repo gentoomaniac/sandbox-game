@@ -75,7 +75,7 @@ import trees
 import trunks
 import ui
 from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, TILE, blank
-from palette import ASSETS, PALETTE, check_palette, to_image, write_palette
+from palette import ASSETS, PALETTE, check_palette, save, save_picture, write_palette
 
 
 def world_chest():
@@ -96,10 +96,10 @@ def object_atlas():
     treat every kind alike, so kind and row come from one list."""
     spruces, pines, dead_trees, berry_bushes, shrubs, saplings, ferns = trees.vegetation()
     return [
-        ("oak", trees.OBJECTS[0]),
-        ("stone", trees.OBJECTS[1]),
-        ("fireplace", camp.CAMP_OBJECTS[0]),
-        ("sleeping_bag", camp.CAMP_OBJECTS[1]),
+        ("oak", [trees.oak(seed) for seed in trees.OAK_SEEDS]),
+        ("stone", [trees.stone(seed) for seed in (111, 112)]),
+        ("fireplace", [camp.fireplace()]),
+        ("sleeping_bag", [camp.bedroll()]),
         ("spruce", spruces),
         ("pine", pines),
         ("dead_tree", dead_trees),
@@ -107,14 +107,19 @@ def object_atlas():
         ("shrub", shrubs),
         ("sapling", saplings),
         ("fern", ferns),
-        ("boulder", trees.BOULDERS[0]),
-        ("stump", trees.STUMPS[0]),
+        ("boulder", [trees.boulder(seed) for seed in (191, 192)]),
+        ("stump", [trees.stump(seed) for seed in (201, 202)]),
         ("tall_grass", meadow.tall_grass_row()),
-    ] + trunks.rows() + [("reeds", reeds.reeds_row()), ("dead_stump", trees.DEAD_STUMPS[0]), ("chest", [world_chest()])]
+    ] + trunks.rows() + [
+        ("reeds", reeds.reeds_row()),
+        ("dead_stump", [trees.dead_stump(seed) for seed in (211, 212)]),
+        ("chest", [world_chest()]),
+    ]
 
 
-def main():
-    ASSETS.mkdir(exist_ok=True)
+def write_seasonal_art():
+    """The art that has a file per look: terrain, decorations, objects and buildings. Summer
+    keeps the plain names; the other looks add theirs, e.g. terrain_snow.png."""
     terrain_rows = []
     decoration_rows = []
     for layer in terrain.LAYERS:
@@ -125,71 +130,83 @@ def main():
         terrain_rows.append(tiles)
         decoration_rows.append(decorations)
     objects = object_atlas()
+    redraws = {"oak": lambda variant: trees.bare_oak(trees.OAK_SEEDS[variant])}
     houses = {}
     for name, draw in buildings.PICTURES.items():
         houses[name] = draw(is_lit=False)
         houses[f"{name}_lit"] = draw(is_lit=True)
-    redraws = {"oak": lambda variant: trees.bare_oak(trees.OAK_SEEDS[variant])}
-    (ASSETS / "buildings").mkdir(exist_ok=True)
-    # Summer keeps the plain names; the other looks add theirs, e.g. terrain_snow.png.
     for look in seasons.LOOKS:
         suffix = "" if look == "summer" else f"_{look}"
         if look in seasons.GROUND_LOOKS:
-            to_image(seasons.terrain_rows(look, terrain_rows)).save(ASSETS / f"terrain{suffix}.png")
-            to_image(seasons.ground_rows(look, decoration_rows, seasons.STANDING.get(look))).save(ASSETS / f"decorations{suffix}.png")
-        to_image(
-            seasons.object_rows(look, objects, redraws),
-            OBJECT_CELL_WIDTH,
-            OBJECT_CELL_HEIGHT,
-        ).save(ASSETS / f"objects{suffix}.png")
+            save(seasons.terrain_rows(look, terrain_rows), f"terrain{suffix}.png")
+            save(seasons.ground_rows(look, decoration_rows, seasons.STANDING.get(look)), f"decorations{suffix}.png")
+        save(seasons.object_rows(look, objects, redraws), f"objects{suffix}.png", OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
         # Houses only change under snow.
         if look in ("summer", "snow"):
             for name, (picture, snowy) in houses.items():
-                seasonal = seasons.house(look, picture, snowy)
-                to_image([[seasonal]], len(seasonal[0]), len(seasonal)).save(ASSETS / "buildings" / f"{name}{suffix}.png")
-    (ASSETS / "character").mkdir(exist_ok=True)
-    for name, rows in character.CHARACTER_SHEETS.items():
-        to_image(rows, character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT).save(ASSETS / "character" / f"{name}.png")
-    (ASSETS / "character" / "collapse").mkdir(exist_ok=True)
-    for name, rows in character.COLLAPSE_SHEETS.items():
-        to_image(rows, character.COLLAPSE_SIZE).save(ASSETS / "character" / "collapse" / f"{name}.png")
-    (ASSETS / "effects").mkdir(exist_ok=True)
-    to_image([[character.SLEEP_Z]], len(character.SLEEP_Z[0]), len(character.SLEEP_Z)).save(ASSETS / "effects" / "sleep_z.png")
-    to_image([interior.INTERIOR_TILES]).save(ASSETS / "interior.png")
-    (ASSETS / "interior").mkdir(exist_ok=True)
-    for name, (picture, _footprint) in interior.FURNITURE.items():
-        to_image([[picture]], len(picture[0]), len(picture)).save(ASSETS / "interior" / f"{name}.png")
-    (ASSETS / "fire").mkdir(exist_ok=True)
+                save_picture(seasons.house(look, picture, snowy), f"buildings/{name}{suffix}.png")
+
+
+def write_character():
+    layers = character.layers()
+    for name, layer in layers.items():
+        save(character.character_sheet(*layer), f"character/{name}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
+        save(character.collapse_sheet(*layer), f"character/collapse/{name}.png", character.COLLAPSE_SIZE)
+    held_hoe = character.character_sheet(character.draw_held_hoe, {})
+    save(held_hoe, "character/held_hoe.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
+    save_picture(character.sleep_z(), "effects/sleep_z.png")
+
+
+def write_interior():
+    furniture = interior.furniture()
+    save([interior.atlas_tiles(furniture)], "interior.png")
+    for name, (picture, _footprint) in furniture.items():
+        save_picture(picture, f"interior/{name}.png")
+
+
+def write_fire():
     for name, (behind, front), (box, half_width, tall) in (
         ("fireplace", camp.fireplace_layers(), camp.FIREPLACE_FLAME),
         ("hearth", (interior.hearth_without_flame(), blank(2 * TILE, 2 * TILE)), interior.HEARTH_FLAME),
     ):
         strip = fire.strip(behind, front, box, half_width, tall)
-        to_image([strip], box[2], box[3]).save(ASSETS / "fire" / f"{name}.png")
-    (ASSETS / "wildlife").mkdir(exist_ok=True)
+        save([strip], f"fire/{name}.png", box[2], box[3])
+
+
+def write_wildlife():
     for kind in animals.SHEETS:
-        to_image(animals.sheet_rows(kind), *animals.cell_size(kind)).save(ASSETS / "wildlife" / f"{kind}.png")
-    (ASSETS / "crops").mkdir(exist_ok=True)
+        save(animals.sheet_rows(kind), f"wildlife/{kind}.png", *animals.cell_size(kind))
+
+
+def write_crops():
     for crop, cells in crops.sheets().items():
-        to_image([cells], TILE, len(cells[0])).save(ASSETS / "crops" / f"{crop}.png")
-    to_image([crop_icons.soil_wet()]).save(ASSETS / "soil_wet.png")
-    to_image([[meadow.clay_hint()]]).save(ASSETS / "clay_hint.png")
-    for directory, pictures in (
-        ("items", items.ICONS | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons()),
-        ("ui", items.SLOTS | items.SLOT_HINTS),
-    ):
-        (ASSETS / directory).mkdir(exist_ok=True)
-        for name, picture in pictures.items():
-            to_image([[picture]], len(picture)).save(ASSETS / directory / f"{name}.png")
-        if directory == "items":
-            (ASSETS / "ground_items").mkdir(exist_ok=True)
-            for name, picture in pictures.items():
-                small = items.small(picture)
-                to_image([[small]], len(small)).save(ASSETS / "ground_items" / f"{name}.png")
+        save([cells], f"crops/{crop}.png", TILE, len(cells[0]))
+    save([crop_icons.soil_wet()], "soil_wet.png")
+    save_picture(meadow.clay_hint(), "clay_hint.png")
+
+
+def write_items():
+    icons = items.ICONS | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons()
+    for name, picture in icons.items():
+        save_picture(picture, f"items/{name}.png")
+        # The same icon at half size, for items lying on the ground.
+        save_picture(items.small(picture), f"ground_items/{name}.png")
+    for name, picture in (items.SLOTS | items.SLOT_HINTS).items():
+        save_picture(picture, f"ui/{name}.png")
+
+
+def main():
+    write_seasonal_art()
+    write_character()
+    write_interior()
+    write_fire()
+    write_wildlife()
+    write_crops()
+    write_items()
     ui.write_ui_assets(ASSETS / "ui", PALETTE)
     write_palette()
     check_palette()
-    print("Wrote terrain*.png, decorations*.png, objects*.png (one per look), character/*.png, character/collapse/*.png, effects/sleep_z.png, interior.png, interior/*.png, fire/*.png, buildings/*.png, items/*.png, wildlife/*.png, crops/*.png, soil_wet.png, clay_hint.png, ui/*, palette.png and palette.gpl to assets/; palette check passed.")
+    print("Wrote every file under assets/ (palette check passed).")
 
 
 if __name__ == "__main__":

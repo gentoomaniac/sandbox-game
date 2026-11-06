@@ -582,7 +582,3 @@ def vegetation():
 
 
 OAK_SEEDS = (101, 102, 103)
-OBJECTS = [[oak(seed) for seed in OAK_SEEDS], [stone(seed) for seed in (111, 112)]]
-BOULDERS = [[boulder(seed) for seed in (191, 192)]]
-STUMPS = [[stump(seed) for seed in (201, 202)]]
-DEAD_STUMPS = [[dead_stump(seed) for seed in (211, 212)]]

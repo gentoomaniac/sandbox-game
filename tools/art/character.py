@@ -409,26 +409,28 @@ def collapse_sheet(draw, variant_colours):
     return [row]
 
 
-# Layer sheets by file name (assets/character/<name>.png), and their passing-out frames
-# (assets/character/collapse/<name>.png).
-CHARACTER_LAYERS = {"body_0": (draw_body, {})}
-for _variant, _colours in CLOTHES_COLOURS.items():
-    CHARACTER_LAYERS[f"clothes_{_variant}"] = (draw_clothes, _colours)
-for _variant, _colours in HAIR_COLOURS.items():
-    CHARACTER_LAYERS[f"hair_{_variant}"] = (draw_hair, _colours)
-CHARACTER_LAYERS["legs_0"] = (draw_legs, {})
-CHARACTER_LAYERS["head_straw_hat"] = (draw_hat(STRAW_HAT_ROWS, STRAW_HAT_KEYS), {})
-CHARACTER_LAYERS["head_knitted_cap"] = (draw_hat(KNITTED_CAP_ROWS, KNITTED_CAP_KEYS), {})
-CHARACTER_SHEETS = {name: character_sheet(*layer) for name, layer in CHARACTER_LAYERS.items()}
-CHARACTER_SHEETS["held_hoe"] = character_sheet(draw_held_hoe, {})
-COLLAPSE_SHEETS = {name: collapse_sheet(*layer) for name, layer in CHARACTER_LAYERS.items()}
+def layers():
+    """The layer sheets by file name (assets/character/<name>.png, and the same names in
+    collapse/ for passing out), each as the function that draws it and the colours of its
+    variant."""
+    result = {"body_0": (draw_body, {})}
+    for variant, colours in CLOTHES_COLOURS.items():
+        result[f"clothes_{variant}"] = (draw_clothes, colours)
+    for variant, colours in HAIR_COLOURS.items():
+        result[f"hair_{variant}"] = (draw_hair, colours)
+    result["legs_0"] = (draw_legs, {})
+    result["head_straw_hat"] = (draw_hat(STRAW_HAT_ROWS, STRAW_HAT_KEYS), {})
+    result["head_knitted_cap"] = (draw_hat(KNITTED_CAP_ROWS, KNITTED_CAP_KEYS), {})
+    return result
 
-# A "z" that rises from a sleeping figure (assets/effects/sleep_z.png): a cream glyph with
-# the ink outline around its strokes.
-SLEEP_Z = outlined(
-    [
-        [{"c": "cream"}.get(key) for key in line]
-        for line in ("......", ".cccc.", "...cc.", "..cc..", ".cc...", ".cccc.", "......")
-    ],
-    set(),
-)
+
+def sleep_z():
+    """The "z" that rises from a sleeping figure (assets/effects/sleep_z.png): a cream glyph
+    with the ink outline around its strokes."""
+    return outlined(
+        [
+            [{"c": "cream"}.get(key) for key in line]
+            for line in ("......", ".cccc.", "...cc.", "..cc..", ".cc...", ".cccc.", "......")
+        ],
+        set(),
+    )

@@ -83,6 +83,3 @@ def bedroll():
         rect(canvas, x, top + 1, x, top + 7, "soil")
         canvas[top + 1][x] = "soil_light"
     return canvas
-
-
-CAMP_OBJECTS = [[fireplace()], [bedroll()]]
