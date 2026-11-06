@@ -42,6 +42,9 @@ const REQUIRED_KEYS := {
 	"cow": ["idle_chance"],
 	"sheep": ["idle_chance"],
 	"chicken": ["idle_chance"],
+	"dog": ["idle_chance"],
+	"cat": ["idle_chance"],
+	"horse": ["idle_chance"],
 	"geese": ["idle_chance"],
 	"flying_geese": ["idle_chance"],
 	"bees": ["max_loops", "level", "hear_tiles"],
@@ -182,8 +185,8 @@ func _frog_warmth(temperature: float) -> float:
 
 
 ## The chance per second that an animal of a kind (`deer`, `rabbit`, `squirrel`, `geese`,
-## `flying_geese`, and the farm animals `cow`, `sheep`, `chicken`) makes a sound of its own
-## accord.
+## `flying_geese`, and the farm animals `cow`, `sheep`, `chicken`, `dog`, `cat`, `horse`) makes a
+## sound of its own accord.
 func idle_chance(kind: StringName) -> float:
 	return value(String(kind), "idle_chance")
 

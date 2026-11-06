@@ -111,6 +111,12 @@ func test_the_farm_animals_moo_baa_and_cluck() -> void:
 	)
 
 
+func test_dogs_bark_cats_meow_and_horses_whinny() -> void:
+	assert_eq(SoundEvents.animal_idle(LivestockRules.DOG), &"dog_bark")
+	assert_eq(SoundEvents.animal_idle(LivestockRules.CAT), &"cat_meow")
+	assert_eq(SoundEvents.animal_idle(LivestockRules.HORSE), &"horse_whinny")
+
+
 func test_animals_that_run_make_a_sound_when_they_start() -> void:
 	assert_eq(SoundEvents.animal_alarm(WildlifeRules.DEER, Deer.BOUND), &"deer_hooves")
 	assert_eq(SoundEvents.animal_alarm(WildlifeRules.RABBIT, Rabbit.FLEE), &"rabbit_rustle")

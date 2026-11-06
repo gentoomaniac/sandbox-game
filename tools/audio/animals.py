@@ -1,5 +1,6 @@
 """Animal sounds: birds, frogs and their chorus, deer, rabbits, squirrels and bees, the storks
-and the geese, and the cows, sheep and hens of the livestock (see SPEC.md "Sound")."""
+and the geese, and the cows, sheep, hens, dogs, cats and horses of the livestock (see SPEC.md
+"Sound")."""
 
 import numpy as np
 
@@ -246,6 +247,52 @@ def chicken_cluck(rng):
         length = rng.uniform(0.05, 0.08)
         place(out, _voice((420 * pitch, 520 * pitch, 380 * pitch), length, [(900, 0.5, 1.0), (1800, 0.4, 0.4)]), at, rng.uniform(0.6, 1.0))
         at += length + rng.uniform(0.08, 0.16)
+    return out
+
+
+def dog_bark(rng):
+    """A farm dog's one to three barks: short, rough "wuff"s, the first the loudest."""
+    out = silence(1.0)
+    at = 0.02
+    pitch = rng.uniform(0.85, 1.15)
+    for number in range(rng.integers(1, 4)):
+        length = rng.uniform(0.09, 0.13)
+        curve = (380 * pitch, 520 * pitch, 300 * pitch)
+        voice = _voice(curve, length, [(700, 0.5, 1.0), (1500, 0.4, 0.6)])
+        rasp = bandpass(noise(rng, length), 500, 2500) * envelope(length, 0.005, 25)
+        loudness = 1.0 - 0.15 * number
+        place(out, voice, at, loudness)
+        place(out, rasp / rms(rasp), at, 0.4 * loudness)
+        at += length + rng.uniform(0.12, 0.22)
+    return out
+
+
+def cat_meow(rng):
+    """A cat's "miaow": rising through an opening mouth, then falling as it closes."""
+    pitch = rng.uniform(0.9, 1.15)
+    length = rng.uniform(0.45, 0.7)
+    out = silence(length + 0.1)
+    curve = (600 * pitch, 820 * pitch, 520 * pitch)
+    place(out, _voice(curve, length, [(1100, 0.4, 1.0), (2600, 0.3, 0.5)], vibrato=0.01), 0.02)
+    return out
+
+
+def horse_whinny(rng):
+    """A whinny: a high, shaking call that falls away in a long trill."""
+    pitch = rng.uniform(0.9, 1.1)
+    length = rng.uniform(1.0, 1.4)
+    out = silence(length + 0.1)
+    curve = (900 * pitch, 1100 * pitch, 450 * pitch)
+    voice = _voice(curve, length, [(1000, 0.5, 1.0), (2200, 0.4, 0.5)], vibrato=0.06, vibrato_rate=14)
+    shake = 0.6 + 0.4 * np.sin(2 * np.pi * 12 * times(len(voice) / RATE))
+    place(out, voice * shake, 0.02)
+    return out
+
+
+def horse_snort(rng):
+    """A horse blowing through its nose: a long, low, fluttering snort."""
+    out = silence(0.7)
+    place(out, _snort(rng, 0.55, rng.uniform(0.55, 0.7), 6), 0)
     return out
 
 

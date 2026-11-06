@@ -92,6 +92,10 @@ EVENTS = {
     "cow_moo": (-20, [animals.cow_moo] * 3),
     "sheep_baa": (-21, [animals.sheep_baa] * 3),
     "chicken_cluck": (-22, [animals.chicken_cluck] * 3),
+    "dog_bark": (-20, [animals.dog_bark] * 3),
+    "cat_meow": (-23, [animals.cat_meow] * 3),
+    # Horses whinny, and as often snort.
+    "horse_whinny": (-21, [animals.horse_whinny, animals.horse_whinny, animals.horse_snort, animals.horse_snort]),
 }
 
 FADE_IN = 0.002

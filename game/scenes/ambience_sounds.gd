@@ -3,9 +3,10 @@ extends Node
 ## The sound of the world around the player: rain and wind as loops that follow the weather (and
 ## swell with gusts), thunder after each flash of lightning, birds, frogs, the sounds of deer,
 ## rabbits and squirrels, bees buzzing where they hover, a stork's clatter, honking geese, the
-## frogs' chorus on spring and summer evenings where frogs are about, and now and then a cow, a
-## sheep or a hen of the livestock (not while it sleeps). The chances and levels
-## are AmbienceRules'; which event an animal makes is SoundEvents'; playing is AudioService's.
+## frogs' chorus on spring and summer evenings where frogs are about, and now and then an animal
+## of the livestock: a cow, a sheep, a hen, a dog, a cat or a horse (not while it sleeps). The
+## chances and levels are AmbienceRules'; which event an animal makes is SoundEvents'; playing is
+## AudioService's.
 ##
 ## It is cheap by design: once a second it looks at the weather and rolls the dice for the
 ## chirps, croaks and animal sounds, finding the place of a chirp or a croak by looking at a few

@@ -86,6 +86,12 @@ static func animal_idle(kind: StringName) -> StringName:
 			return &"sheep_baa"
 		LivestockRules.CHICKEN:
 			return &"chicken_cluck"
+		LivestockRules.DOG:
+			return &"dog_bark"
+		LivestockRules.CAT:
+			return &"cat_meow"
+		LivestockRules.HORSE:
+			return &"horse_whinny"
 	return &""
 
 
