@@ -811,7 +811,7 @@ tools/README.md).
 
 ## 86. NPC replies from the LLM, with compacted memory per NPC
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06. Needs tasks 84 and 85. `NpcDialogue.reply` asks the
 configured OpenAI-compatible endpoint (endpoint, model, optional key in Settings; "none"
@@ -855,6 +855,33 @@ From the review of task 84: the "awaiting an answer" state must belong to the vi
 the chat screen (closing A's chat while it answers and opening B's must not show B typing
 or block B), and `reply` needs a time-out and an error path that return a fallback line, so
 the typing line never sticks.
+
+Added by the user while it was built: the moment in the prompt is concrete, from the game's
+state: the date as the HUD shows it and how far into the season, the clock time and the part
+of the day, and the weather as it is (condition, °C, wind, frost), wording in the data file.
+
+Done: `data/villagers.cfg` (`VillagerRules`, checked at start) has Antje Boysen, Momme Ketels
+(fisherman), Ocke Hansen (miller) and Kerrin Paulsen (the dyke reeve's widow); `spawn npc
+<id>` puts one near the player, once, and the ids are in the spawn list and Tab completion;
+the debug flag `--villager=<id>` does it for screenshots. Made-up villagers draw an age, trade,
+family, personality, worry and habit from new tables in `data/npcs.cfg`. `NpcPrompt` builds the
+request from `data/npc_talk.cfg` (`NpcTalkRules`) in the user's shape: system line, the Antje
+example, the last 8 lines of this conversation, then the villager line, who they are (look in
+words from the layers), their memories, the moment (`NpcMoment`: "the 12th day of Spring,
+year 1 (mid spring), 08:15 in the morning", "light rain, 9 °C, a fresh west wind", "outside
+the kate"), that the player is a newcomer whose name they don't know (else the model named the
+player "Jakob"), and what the player said. `OpenAiChat` (an HTTPRequest that runs while
+paused, 30 s time-out) asks the endpoint of Settings → Language model (endpoint, model, key;
+the key plain text in settings.cfg); `NpcDialogue` (moved to game/scenes) trims the answer
+(quotes, name prefix, first line, two sentences) or says a scripted line. `Npc.is_answering`
+holds the wait. On closing a chat `NpcDialogue.remember` sums it up in a dated memory line (by
+the model, else the start of what the player said), 10 kept, the oldest two merged. Save
+versions 19 (who they are) and 20 (memories), after task 61's 18. Tests use `FakeChat`; two tests ask the real
+model when `SANDBOX_LLM_URL` is set. Replies from qwen2.5:3b-instruct: Antje, asked whether
+the dyke holds: "Moin, welcome. The dyke's as good as it's ever been."; about butter: "Aye, I
+do. Why, do you need some?"; Kerrin in a storm at dusk: "The dyke will hold, the Lord is
+watching over us. But we must be ever vigilant." Not done: an adapter for Claude's own API,
+streaming, suggestions from the model (docs/ideas/NPC.md 6.3).
 
 ## 87. Willows that stand out from the grass
 

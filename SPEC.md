@@ -863,7 +863,8 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
 
 Decided 2026-11-06 (task 84, QUESTIONS.md 22): the first step towards the people of
 [docs/ideas/NPC.md](docs/ideas/NPC.md). For now villagers are put in the world with the
-console (`spawn npc [count]`, near the player); they are state and saved.
+console (`spawn npc [count]` or `spawn npc <id>`, near the player); they are state and saved.
+Task 86 (2026-11-06) added who they are, words from a language model and memory.
 
 - **Who:** each villager draws a sex, a name and a look from a seed. Names are period North
   Frisian and Low German first names by sex (Hinrich, Jens, Boy, Momme, Ocke, Tete; Antje,
@@ -873,6 +874,14 @@ console (`spawn npc [count]`, near the player); they are state and saved.
   waistcoat, knee breeches, sometimes a jacket, a knitted cap, straw or felt hat; women: a
   laced bodice over the chemise, a long skirt, often an apron or a shawl, a white coif or a
   headscarf), all in existing palette colours. The lists are in `data/npcs.cfg`.
+- **Who they are:** every villager has an age, a trade, a personality, a background (family and
+  story) and habits (of speech), told to the language model. Four are written by hand in
+  `data/villagers.cfg` with a fixed look, spawned by id and once each: `antje` (Antje Boysen, a
+  farmer's wife, married to Hinrich: the user's prompt example), `momme` (Momme Ketels, a
+  fisherman), `ocke` (Ocke Hansen, the miller) and `kerrin` (Kerrin Paulsen, the dyke reeve's
+  widow). The others draw them from tables in `data/npcs.cfg` along with their name: an age of
+  18 to 70, a trade and a family by sex (the spouse a first name of the other sex), a
+  personality, a worry and a habit.
 - **Where:** each keeps near its anchor: the yard in front of the door of the nearest
   building or the nearest fireplace within 16 tiles of where it came, else that spot. It
   never walks further than 6 tiles from it (one outside the circle only walks back in).
@@ -889,13 +898,44 @@ console (`spawn npc [count]`, near the player); they are state and saved.
   `[08:15] <You> hello` with the game time, scrollback, a one-line input. Enter sends; while
   the answer is awaited the villager is shown typing; Escape leaves (and doesn't open the
   pause menu). The villager turns to the player and stands a while.
-- **Answers:** one function, `NpcDialogue.reply(npc, history, message)`, awaited by the chat,
-  so a slow language model fits later (tasks 85 and 86). For now it always answers
-  "I understand." after half a second.
-- **Saved:** name, sex, look, position, anchor and the chat, its last 200 lines (save
-  version 17); what a villager is doing is not.
-- **Later:** homes, schedules, trades, intentions and memory, and words from an LLM (see the
-  ideas doc).
+- **Answers:** one function, `NpcDialogue.reply`, awaited by the chat. With a language model
+  set in Settings (an OpenAI-compatible chat endpoint, a model, an optional key; no endpoint,
+  the default, is none) it asks the model; without one, on an error or after 30 s it says a
+  scripted line of `data/npc_talk.cfg` ("Aye.", "Is that so?"). The answer is trimmed to the
+  spoken line: no quotes or name in front, its first line, at most two sentences. Only the
+  words come from the model; nothing else in the game changes by what it says.
+- **The prompt** (`data/npc_talk.cfg`, the user's working example of 2026-11-06 in shape;
+  temperature 0.7, at most 60 tokens): a system line (dialogue for villagers on the North
+  Frisian coast in 1750, one or two short sentences of small talk in the neighbour's language,
+  never break character or act as an assistant), the example exchange ("Villager: Antje
+  Boysen, a farmer's wife. / Her neighbour says: "Fine weather for the hay today." / Antje's
+  reply:" and her answer), the last 8 lines of this conversation as turns of the same shape,
+  and last what the player says, with who the villager is (age, look in words from the
+  layers, personality, background, habits, memories), the moment (the date as the clock shows
+  it and early, mid or late in the season; the time and part of the day by the sun: dawn,
+  morning, noon, afternoon, dusk, night; the weather as it is: thunder, storm, snow, rain or
+  fog by strength, else the sky by its clouds, the temperature, frost below 0 °C, the wind by
+  strength and where it blows from; the building or fire within 8 tiles) and that the player
+  is a newcomer whose name they don't know.
+- **The wait:** belongs to the villager: while one answers, the player can leave and talk to
+  another (who shows no typing); the answer lands in the chat of the one asked.
+- **Memory:** when a chat is closed after new lines (or once an owed answer comes), the
+  villager remembers the conversation in one dated line ("On the 12th day of Spring, year 1
+  (mid spring): ..."): summed up by the model with a small prompt of its own, else the start
+  of what the player said. A villager keeps 10; beyond that the oldest two merge into one
+  (its last 400 characters). Later prompts tell the memories, and only the lines since the
+  last memory as earlier turns.
+- **Settings:** the endpoint, the model (default `qwen2.5:3b-instruct`, the test LLM's) and
+  the key are in the settings file; the key is plain text there, as the Settings page says,
+  never in the save, and the client follows no redirect, so the key goes only to that endpoint. Claude's own API needs an adapter of its own (later).
+- **Saved:** name, sex, look, who they are (id, age, trade, personality, background, habits;
+  save version 19), the chat, its last 200 lines (version 17), the memories and how many of
+  the last lines are not remembered yet (version 20), so a conversation saved before it was
+  summed up is remembered at the next close; what a villager is doing, and an answer still
+  owed, are not. A version 18 villager is given a background from the tables, the same for
+  the same name.
+- **Later:** homes, schedules, intentions, suggestions from the model, NPC to NPC talk (see
+  the ideas doc).
 
 ### Combat
 

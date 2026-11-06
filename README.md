@@ -163,19 +163,30 @@ bodices, aprons, shawls and white coifs or headscarves, each with a skin, hair a
 of their own and a North Frisian or Low German name (Antje Boysen, Momme Ketels). They keep
 to within about six tiles of the house or campfire nearest to where they came, stand about
 and stroll by day and stand still at night; you walk through them, so they never shut you
-in. For now they come from the console (`spawn npc 3`); they are saved with the game.
+in. For now they come from the console; they are saved with the game.
+
+Each has an age, a trade, a personality, a background and habits of speech. Four are written
+by hand in [data/villagers.cfg](data/villagers.cfg) and come with `spawn npc <id>`: `antje`
+(Antje Boysen, a farmer's wife, whose husband Hinrich works their marsh farm), `momme` (Momme
+Ketels, a fisherman of the tidal creeks), `ocke` (Ocke Hansen, the miller) and `kerrin`
+(Kerrin Paulsen, the dyke reeve's widow, who lived through the Christmas flood of 1717).
+`spawn npc 3` makes villagers up, with a trade, family, worry and habit drawn from the tables
+of [data/npcs.cfg](data/npcs.cfg).
 
 Face a villager and press E to talk: the name over their head shows whom E speaks to. The
 chat shows your portrait and theirs, and between them a chat window with the game time,
 like `[08:15] <You> hello`. Type a line and press Enter; Escape leaves. The game stands still
-while you talk, and the chat keeps its last 200 lines for the next time. For now every
-villager answers "I understand."; their words will come from a language model later (see
-[docs/ideas/NPC.md](docs/ideas/NPC.md)). Their names and clothes are in
-[data/npcs.cfg](data/npcs.cfg).
+while you talk, and the chat keeps its last 200 lines for the next time. With a language
+model set under Settings → Language model (see
+[Talking NPCs](#talking-npcs-with-a-language-model)) villagers answer in their own words;
+without one they say short scripted lines ("Aye.", "Is that so?"). When you leave a chat,
+the villager remembers it in one line (the model sums it up, else it is what you said), and
+later talks build on it. While one villager is still answering you may leave and talk to
+another; the answer waits in the first one's chat.
 
 ![Villagers by the camp, the name of the one E would speak to over their head](docs/screenshots/npcs.png)
 
-![A chat with a villager: both portraits, and the lines with the game time](docs/screenshots/npc-chat.png)
+![A chat with Antje Boysen through the test LLM: both portraits, and the lines with the game time](docs/screenshots/npc-chat.png)
 
 ### Wildlife
 
@@ -361,7 +372,8 @@ chest and its contents go into your inventory (or you are told there is no room)
 
 You can rebind every key, including mouse buttons. You can also switch between fullscreen
 and windowed, scale the UI from 0.5× to 2× without touching the world view, and set the
-energy drain and the day length variation. Hover over a setting, a key or an item in the
+energy drain and the day length variation, and set the language model villagers talk
+through. Hover over a setting, a key or an item in the
 hotbar, inventory or equipment for a short explanation: an item's kind, weight, what food
 gives back, what seeds grow and where they are planted. The mouse wheel zooms smoothly
 from 0.5× to 2×.
@@ -384,7 +396,8 @@ arguments.
 | `god`, `nodrain`, `noweight`, `nocost` | Toggle invincibility, free actions, weight costing nothing, and buildings and crafting needing no materials. |
 | `weather`, `weather <condition>`, `weather auto` | Show the weather, force a condition, or go back to the simulation. |
 | `snow`, `snow <0..1>`, `snow auto` | Show the snow cover, force it, or go back to the weather. |
-| `spawn npc [count]` | Put villagers nearby, each with a look and a name of their own; they stay. |
+| `spawn npc [count]` | Put villagers nearby, each with a look, a name and a background of their own; they stay. |
+| `spawn npc <villager>` | Put a villager written by hand nearby: `antje`, `momme`, `ocke` or `kerrin`; each comes once. |
 | `spawn <animal> [count]` | Put animals nearby: farm animals that stay (`cow`, `sheep`, `chicken`, `rabbit`, `dog`, `cat`, `horse`) or wild ones that come and go (`bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork` on the nearest roof, `geese` grazing, `flying_geese`, `mouse`, `frog`). `spawn` alone, or with an unknown name, lists them. |
 | `skip <n>m\|h\|d` | Let minutes, hours or days pass, e.g. `skip 2h` or `skip 3d`. |
 | `crop` | Show the growth, damage and needs of the nearest crop. |
@@ -440,14 +453,44 @@ different name, pass its path: `make GODOT=/path/to/godot run`.
 Saves go to `user://saves/world.json` and settings to `user://settings.cfg`. To start a
 fresh world, run `godot --path . -- --new-game`.
 
-### Talking NPCs, for testing
+### Talking NPCs with a language model
 
-The game does not need a language model. To try NPC talk against a real one, `make llm-up`
-runs Ollama with Qwen2.5 3B Instruct (1.9 GB, CPU only, Qwen Research License: for testing
-only) in a podman or docker container on `http://127.0.0.1:11434/v1`; `make llm-check` asks it
-one question and `make llm-down` stops it. The container image (5.5 GB) and the model live in
+The game does not need a language model: without one, villagers say short scripted lines.
+To hear them talk, give it an OpenAI-compatible chat endpoint under Settings → Language
+model: the endpoint (e.g. `http://127.0.0.1:11434/v1`), the model and, for a hosted model,
+a key. The key is stored as plain text in `settings.cfg` (never in the save, never logged);
+what you say to villagers goes to that endpoint. Ollama, LM Studio and llama.cpp's server
+work; Claude's own API would need an adapter of its own.
+
+For testing, `make llm-up` runs Ollama with Qwen2.5 3B Instruct (1.9 GB, Qwen Research
+License: for testing only) in a podman or docker container on `http://127.0.0.1:11434/v1`,
+which is the endpoint to enter (the model is the default); `make llm-check` asks it one
+question and `make llm-down` stops it. The container image (5.5 GB) and the model live in
 the container tool's storage and the volume `sandbox-game-llm-models`; `make llm-down PURGE=1`
-deletes the model. Details in [tools/README.md](tools/README.md).
+deletes the model. Details in [tools/README.md](tools/README.md). A reply takes a second or
+two on the GPU, about five seconds on the CPU; one that takes longer than 30 seconds, or
+fails, becomes a scripted line.
+
+What the model is told for each reply (the words are in [data/npc_talk.cfg](data/npc_talk.cfg),
+shaped like a prompt that worked well with the test model): a system line (1750 on the North
+Frisian coast, one or two sentences of small talk, never break character), one example
+exchange, the earlier lines of this conversation, and then who the villager is (name, trade,
+age, their look in words, personality, background, habits, and what they remember of earlier
+talks), the moment (the date as the clock shows it and how far into the season, the time and
+part of the day by the sun, the weather as it is: rain, snow, fog or the sky, the temperature,
+frost, the wind and where it blows from; and the house or fire they stand by), that you are a
+newcomer whose name they don't know, and what you said. Only the reply and the memory lines
+are kept; nothing else in the game changes by what the model says.
+
+To screenshot a talk, put the endpoint in `build/settings.cfg` (`[language_model]`, then
+`endpoint="http://127.0.0.1:11434/v1"`) and run
+
+```
+make screenshot SCREENSHOT_TIMEOUT=120 ARGS="--villager=antje '--chat=Moin, Antje!;Do you have butter?'"
+```
+
+`SANDBOX_LLM_URL=http://127.0.0.1:11434/v1 make test` also runs the tests that ask the real
+model.
 
 ### For developers
 

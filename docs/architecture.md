@@ -88,14 +88,25 @@ Warft and an Ewer here and there.
   with `WildlifeView.nearest_animal` (a stork its frogs, `Frog`; a cat will find the `Mouse`),
   asked when it picks what to do next, not every frame.
 - **Npcs** (`game/state/npcs.gd`) holds the villagers (`Npc`: name, sex, look as an
-  `Appearance`, position, anchor and chat history) and moves them like the livestock: GameState
-  owns it, Main calls its `update` every frame while the player is outside, and the numbers,
-  names and clothes are `data/npcs.cfg` (`NpcRules`). Each is drawn by an `NpcView` among the
-  world view's entities, with the player's sheets and frames. E speaks to the villager
+  `Appearance`, who they are (age, trade, personality, background, habits), position, anchor,
+  chat history and memories) and moves them like the livestock: GameState owns it, Main calls
+  its `update` every frame while the player is outside, and the numbers, names, clothes and
+  background tables are `data/npcs.cfg` (`NpcRules`); the villagers written by hand, spawned by
+  id, are `data/villagers.cfg` (`VillagerRules`). Each is drawn by an `NpcView` among the world
+  view's entities, with the player's sheets and frames. E speaks to the villager
   `Interaction.npc_to_chat` names, before any chest, station or bed; `ChatScreen` shows the
   chat with both portraits (`Appearance.portrait_layers`) and pauses the game while it is open.
-  What a villager answers comes from one place, `NpcDialogue.reply`, which the chat awaits, so
-  a language model that answers over the network fits there later.
+- **What villagers say** comes from one place, `NpcDialogue.reply` (`game/scenes/`, a node, as
+  it talks to the network), which the chat awaits; the wait is the villager's
+  (`Npc.is_answering`). With a language model set in Settings it asks `OpenAiChat` (one POST to
+  an OpenAI-compatible `/chat/completions`, running while the game is paused, with a time-out
+  and no redirects, so a key goes nowhere else;
+  tests put `FakeChat` in its place), else, or when that fails, it says a scripted line. The
+  request is built by `NpcPrompt` (`game/state/`): pure functions of the villager, the chat,
+  the moment (`NpcMoment`: clock, sun, weather and place, taken from GameState) and the words
+  of `data/npc_talk.cfg` (`NpcTalkRules`), so they are tested without a model. When a chat is
+  closed, `NpcDialogue.remember` sums the conversation up in a memory line of the villager.
+  Only the reply and memory text come from the model; it changes nothing else.
 - **Crafting** (`game/state/crafting.gd`) is what the crafting menu does: it checks a recipe of
   `RecipeRules` (materials, the skill level it needs), crafts it and practises its skill on the
   player's **Skills** (`skills.gd`: points per skill, the total cap and the skills that fade,
@@ -167,7 +178,9 @@ Things marked
 The default key bindings are the input map in `project.godot` (in the Godot editor: Project
 Settings → Input Map). The player changes them under Settings → Controls; `GameSettings`
 applies them to Godot's `InputMap` and stores only the differences from the defaults in
-`user://settings.cfg`.
+`user://settings.cfg`. The same file keeps the display, game and audio settings and the
+language model's endpoint, model and key (`GameSettings.language_model`; the key in plain
+text, never in the save).
 
 ## Tests
 
