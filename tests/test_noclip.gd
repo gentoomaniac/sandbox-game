@@ -47,15 +47,22 @@ func test_with_it_the_player_stays_on_loaded_ground() -> void:
 	assert_not_null(_world.tile_at(_state.player.tile()))
 
 
-func test_a_noclip_walk_wears_no_path() -> void:
+func test_a_noclip_walk_wears_no_path_where_a_plain_walk_does() -> void:
 	var tile := _tile + Vector2i(2, -1)
 	var stage := _world.wear_stage(tile)
 	_state.cheats.is_noclip = true
-	_state.player.position = Vector2(_tile) + Vector2(0.5, -0.5)
+	_walk_to_and_fro_over(tile)
+	assert_eq(_world.wear_stage(tile), stage, "no path with noclip")
+	_state.cheats.is_noclip = false
+	_walk_to_and_fro_over(tile)
+	assert_ne(_world.wear_stage(tile), stage, "a path without")
+
+
+## Steps onto the tile from two tiles to its left, 20 times (a walk wears the tile it ends on).
+func _walk_to_and_fro_over(tile: Vector2i) -> void:
 	for _i in 20:
-		_walk_right(1.0)
-		_state.walk(Vector2.LEFT, 1.0)
-	assert_eq(_world.wear_stage(tile), stage)
+		_state.player.position = Vector2(tile) + Vector2(-1.5, 0.5)
+		_walk_right(0.4)
 
 
 func test_turned_off_in_the_water_the_player_is_put_on_the_nearest_ground() -> void:
@@ -63,7 +70,11 @@ func test_turned_off_in_the_water_the_player_is_put_on_the_nearest_ground() -> v
 	console.run("noclip")
 	_state.player.position = Vector2(_tile + Vector2i(2, 0)) + Vector2(0.5, 0.5)
 	assert_eq(console.run("noclip"), ["No clip off"] as Array[String])
-	assert_eq(_state.player.position, Vector2(_tile + Vector2i(2, -1)) + Vector2(0.5, 0.5))
+	# The grass above and below are as near: either.
+	assert_has(
+		[Vector2(_tile + Vector2i(2, -1)), Vector2(_tile + Vector2i(2, 1))],
+		_state.player.position - Vector2(0.5, 0.5)
+	)
 
 
 func test_with_no_free_ground_within_reach_the_player_stays() -> void:
@@ -76,19 +87,24 @@ func test_with_no_free_ground_within_reach_the_player_stays() -> void:
 
 
 func test_turned_off_in_a_bed_the_player_stays_lying_in_it() -> void:
-	var bed := _world.object_at(_state.player.home_bed)
+	# A bed that blocks walking, so the player in it doesn't fit where they lie.
+	var bed := WorldObject.new(WorldObjectTypes.SMALL_BED, _tile + Vector2i(2, -1))
+	_world.add_object(bed)
 	_state.player.bed_lying_in = bed
-	_state.player.position = Vector2(_tile + Vector2i(2, 0)) + Vector2(0.5, 0.5)
+	_state.player.position = Vector2(_tile + Vector2i(2, -1)) + Vector2(0.5, 0.5)
+	assert_false(PlayerState.can_stand_at(_world, _state.player.position))
 	var console := Console.new(_state)
 	console.run("noclip")
 	console.run("noclip")
 	assert_eq(_state.player.bed_lying_in, bed)
-	assert_eq(_state.player.position, Vector2(_tile + Vector2i(2, 0)) + Vector2(0.5, 0.5))
+	assert_eq(_state.player.position, Vector2(_tile + Vector2i(2, -1)) + Vector2(0.5, 0.5))
 
 
 func test_turned_off_in_a_house_the_player_is_put_outside_it_not_through_its_door() -> void:
 	var house := _placed_shack()
-	_state.player.position = Vector2(house.door_tile() + Vector2i.UP) + Vector2(0.5, 0.5)
+	# On the house, just above its door: the door is the nearest tile the player would fit on.
+	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, -0.01)
+	assert_not_null(_world.building_at(_state.player.tile()))
 	var console := Console.new(_state)
 	console.run("noclip")
 	console.run("noclip")
@@ -97,6 +113,21 @@ func test_turned_off_in_a_house_the_player_is_put_outside_it_not_through_its_doo
 		for x in range(body.position.x, body.end.x):
 			assert_null(_world.building_at(Vector2i(x, y)), "not on the house or its door")
 	assert_true(PlayerState.can_stand_at(_world, _state.player.position))
+	assert_false(_state.door_underfoot(), "not on the door, which would take them in")
+
+
+func test_indoors_the_player_stays_within_the_room() -> void:
+	var house := _placed_shack()
+	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
+	_state.pass_door()
+	var room := _state.current_map
+	_state.cheats.is_noclip = true
+	for direction in [Vector2.LEFT, Vector2.UP, Vector2.RIGHT, Vector2.DOWN]:
+		for _i in 10:
+			_state.walk(direction, 1.0)
+		assert_true(PlayerState.is_on_map(room, _state.player.position), "in the room")
+		var beyond := _state.player.tile() + Vector2i(direction)
+		assert_null(room.tile_at(beyond), "at the room's edge, going %s" % direction)
 
 
 func _placed_shack() -> Building:
