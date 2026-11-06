@@ -4,7 +4,8 @@ extends RefCounted
 ## soil dries and rain wets it, crops live through the day that ended (in the weather of their
 ## tile), cut reeds grow back by it, damage heals, picked bushes bear again, saplings grow up,
 ## stumps rot away, dug clay spots recover and desire paths grow back. Only edits change like
-## this (a hit, a tilling, a planting or a step makes one), so they are all in the world's edits.
+## this (a hit, a tilling, a planting or a step makes one), so they are all in the world's edits
+## (or, for the wear of desire paths, in its own small table beside them).
 
 
 ## Lets the night pass over `world`, which works from the weather of `clock.day - 1`. A sapling
