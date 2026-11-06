@@ -819,7 +819,9 @@ user: "Villager: Antje Boysen, a farmer's wife.\nHer neighbour says: \"Good morn
 
 The template fills the villager line from the villager's data: name, sex (her/his),
 age, appearance in words (from their look), trade, personality, background story and
-memory, and the moment (time of day, season, weather, where they are); earlier turns of
+memory, and the moment from the game's real state (the date as the HUD shows it and how far
+into the season, the clock time and the phase of the day, the actual weather in words:
+condition, temperature, wind, rain or snow, frost; and where they are); earlier turns of
 the chat go in as user/assistant pairs in the same shape. The example exchange (the
 few-shot turn) is part of the template data.
 
