@@ -1270,6 +1270,138 @@ generator work.
 docs/art-style.md bigger item 10: a post mill and a draw well as landmark props, placed by
 the world generator near settlements or on rises.
 
+## 63. Onboarding docs and build papercuts
+
+- [ ] Done
+
+From docs/code-review-2026-11-06.md. docs/architecture.md (~80 lines: game/state pure and
+tested, game/world, game/scenes rendering; data/*.cfg -> *_rules.gd -> *Types as the way
+to add content; the main nodes (Main, GameState, World, WorldView); which tests/*_case.gd to
+extend; `make screenshot` for rendering; key bindings live in project.godot, change them in
+the game; the debug flags), linked first under "For developers". tools/README.md (module
+map, add a sprite/object/colour/sound, seed rules: `random.Random(seed)` only, no `hash()`,
+draw order matters, `seed % 3` picks structure, the commands). maps/README.md (editing
+interiors in Tiled: interior.tsx tile properties such as `exit`, the CSV `ground` and
+`furniture` layers, one file per building id, InteriorLoader asserts). Finished tasks 1-51
+moved to docs/tasks-done.md (TASKS.md keeps the rules, open tasks and "Later"; the dead
+"Parallel plan" goes; check links). SPEC: real status line and make target list.
+docs/art-review-2026-11-05.md archived or linked from art-style.md. Makefile: `make help`
+as the default goal (targets and their variables AT, TIME, ZOOM, OUT, KEEP_SAVE, SOUND,
+ARGS, GODOT); Tiled optional in `make setup`; `make clean` (build/); tools/requirements.txt
+with the pinned Pillow and numpy and a `make venv` target that `make assets` depends on.
+
+## 64. Quiet, honest tests
+
+- [ ] Done
+
+From docs/code-review-2026-11-06.md. Fix the 840 "Float/Int comparison" warnings
+(tests/test_vegetation.gd) and 3 in tests/test_tiredness.gd; the 6 Node2D orphans in
+tests/test_ambience_sounds.gd; delete the placeholder tests/test_pipeline.gd; a one-line
+`##` header on the 13 test files without one (test_camera_rig, test_buildings,
+test_chunk_streaming, test_day_night_tint, test_game_clock, test_game_state,
+test_interior, test_targeting, test_tile, test_terrain_tileset, test_view_math,
+test_world); test_collapse_flow drives the fade directly instead of waiting real seconds;
+`make test` fails when no test ran, and prints the warning and orphan counts.
+
+## 65. The art generators split by topic
+
+- [ ] Done
+
+From docs/code-review-2026-11-06.md; runs right after task 52, before task 53, so the later
+art tasks work in the new layout. tools/art/generate.py (2290 lines) split along its
+sections into palette.py, canvas.py (TILE, the 48x80 object cell constants now copied into
+trunks/meadow/reeds/generate, one blank-canvas maker, one clipped `rect`, `copy`),
+terrain.py, trees.py, character.py, interior.py; generate.py keeps the atlas assembly and
+`main` (a `save(image, path)` helper that makes directories, the per-family writers, a
+short final print; module-level drawing moved into `main`; FURNITURE defined once). One
+numbered table of the object atlas rows above `object_atlas()` (the docstring misses the
+chest row), the trunk-row order dependency named in trunks.py and in
+world_object_types.gd, and a test tying the GD `atlas_row` numbers to it. seasons.py: copy
+the canvas once at the top of `_winter_object` (snow_caps mutates the shared summer art),
+a per-kind look table instead of the if-chain so a kind without a winter look fails
+loudly. Palette: fail on duplicate names when seasons' colours are merged in, and say
+"unknown colour X in <asset>". Outline helpers stay separate (different art rules). Must
+leave `make assets` byte-identical.
+
+## 66. Small state cleanups
+
+- [ ] Done
+
+From docs/code-review-2026-11-06.md. Delete unused tile state: Tile.water_level and
+snow_depth with Chunk's arrays and accessors, Tile.is_tillable and is_plantable; keep
+`frozen` with a comment (hook for frozen rivers); fix SPEC and TASKS lines that promise
+them. `current_map` becomes a getter from `_building_inside` (one field instead of two that
+must agree). `World.new(seed, clock)` instead of overwriting its own clock; one place that
+wires `new_day` for new_game and from_dict; a comment that `clock.day` is already the new
+day in `_on_new_day`. One `REACH` (Interaction and Targeting). Save: a "how to add a field"
+rule at the top of save_file.gd, the silent `data.get(...)` fallbacks in from_dict
+(soil moisture, spent clay, energy, equipment) and the crop `days_grown` conversion moved
+into a versioned upgrade step so every from_dict is strict; upgrade tests. Small: `_hit`
+returns nothing; `PositionHash.rolls(pos, salt, chance)` for the three roll idioms;
+`Inventory.duplicate()` instead of the to_dict clone in Crafting; `is_blocked_by_thing`
+renamed.
+
+## 67. Tool use out of GameState
+
+- [ ] Done
+
+From docs/code-review-2026-11-06.md. The use-action rules (~250 of GameState's lines: the
+`Use` enum, COST_KINDS, use_at, use_tile, _do_use, _use_tool, _use_cutting_tool,
+_use_by_hand, _use_inside, _hit, _dig, the mowing, _rolls_seed, _items_of_chest,
+CLAY_DIG_*, ACTIVE_TOOLS) move to `game/state/tool_use.gd` (`ToolUse`, given the state like
+Builder and Crafting). GameState keeps one-line forwards so scenes and tests keep working.
+A pure move; no behaviour change.
+
+## 68. World split and one way to read data files
+
+- [ ] Done
+
+From docs/code-review-2026-11-06.md. Ground items out of World into their own class
+(`_ground_items`, drop_items, _scatter_tiles, _hash_fraction, ground_items_near; no chunk
+coupling); then the nightly upkeep (pass_night, _dry_and_wet_soil, _recover_clay_spots)
+into its own; drop World's `max-public-methods` exception. One static
+`DataFile.read_sections(path)` used by the ten rules classes (no base class), and one
+validation API across them (`problems()` + `is_valid()`, renaming `missing_keys`/
+`bad_values`). README/architecture: "adding a data file".
+
+## 69. main.gd slimmed
+
+- [ ] Done
+
+From docs/code-review-2026-11-06.md. The ~45 debug flags into a parsed `StartupOptions`
+(typed fields, one `_tile(arg)` helper; also the flags now parsed in PlayerView, BuildMode
+and AudioService; unknown flags warn) and a small runner for the "once the world is drawn,
+do X" steps and the screenshot countdown; the flags documented in one place, main.gd's
+header points there. All screens (character, crafting, storage, console, pause) get the
+same `open()`/`close()`/`is_open()` (close safe when closed; StorageScreen connects
+safely), and Main keeps one list of them for the Escape order, "is any open", "close all"
+and the UI sounds. `_ready` in three named steps (make views, connect state, apply start
+options) with the order dependencies written down. Input order unchanged.
+
+## 70. world_view.gd: one tile code, buildings and decorations apart
+
+- [ ] Done
+
+From docs/code-review-2026-11-06.md (and the task 29 note in "Later"). Layer, season look
+and weather look of a tile packed into one int per tile (thresholds stay apart); one
+`_code_at`; one corner grid in `_draw_chunk` and `_redraw_cell`. Then BuildingViews (the
+building sprites, window lights, snowy check) and DecorationView (decoration spots, flowers
+for the wildlife) as their own small views; streaming, terrain and objects stay in
+WorldView. Verified with the season and tiling tests and a screenshot diff.
+
+## 71. Scene odds and ends
+
+- [ ] Done
+
+From docs/code-review-2026-11-06.md. One `hash.gdshaderinc` for the hash/hash4 copied in
+five shaders, the stale double comment in fire.gdshader, "palette: tools/art" notes next
+to shader colours. The "object is gone" contract written once (a World helper or a signal
+argument) instead of re-derived in WorldView, GameSounds and GroundItemView (and a named
+"waiting" flag on a hop instead of `elapsed == 0.0`). One backdrop colour and one spelling
+(colour vs color) in the screens; `TerrainTileset.tile_centre`; FallingTree emits
+`finished` once; the weather text not built while F3 is off; no list copies per frame when
+empty.
+
 ## Later (not part of the prototype)
 
 - Season looks follow-ups (from the task 29 review): world_view.gd carries layer, season

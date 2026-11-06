@@ -28,3 +28,11 @@ Answered questions move into SPEC.md and are removed here.
      rarer (task 56, after the Scots pine of task 51);
    - **the shack gets tarred boards and a turf roof**;
    - **the player wears period clothes** (task 53).
+9. **Code review** (docs/code-review-2026-11-06.md): its findings became tasks 63-71 and run
+   one at a time beside the art tasks. Default: go ahead.
+
+## Questions
+
+1. **The push key** `.deploy-key/` sits in the working tree (gitignored, so safe). The code
+   review suggests keeping it under `~/.ssh` instead. Default: left where it is; moving it
+   is your call, as it is your machine's setup.
