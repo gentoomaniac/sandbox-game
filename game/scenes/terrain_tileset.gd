@@ -12,7 +12,8 @@ extends RefCounted
 ## Grass walked often wears to a desire path (see World.wear_stage): trodden grass, then a
 ## path, two layers over any grass (and the floodplain) that fade into it. The tidal mud lies
 ## just over the water, so the tideways are water cut into it; it looks the same in every
-## season and weather, as the tide washes it.
+## season and weather, as the tide washes it. The salt marsh is a grass too, drawn over ordinary
+## grass like the lush and dry grass, with seasons of its own: red-purple in autumn.
 ##
 ## Terrain atlas: one row per layer. EDGE_VARIANTS blocks of 15 columns hold the edge
 ## shapes for masks 0..14 (0 is empty), the columns from FULL_COLUMN on the full-tile
@@ -20,7 +21,19 @@ extends RefCounted
 ## row of meadow flowers (FLOWER_ROW).
 
 ## Draw order and atlas row, bottom to top.
-enum Layer { WATER, MUD, FLOODPLAIN, WETLAND, GRASS, LUSH_GRASS, DRY_GRASS, TRODDEN, PATH, SOIL }
+enum Layer {
+	WATER,
+	MUD,
+	FLOODPLAIN,
+	WETLAND,
+	GRASS,
+	SALT_MARSH,
+	LUSH_GRASS,
+	DRY_GRASS,
+	TRODDEN,
+	PATH,
+	SOIL,
+}
 ## The tiles of a meadow flower (see FLOWER_ROW).
 enum FlowerVariant { SMALL, FEW, DRIFT, OTHER_DRIFT }
 
@@ -47,7 +60,7 @@ const FULL_COLUMN := EDGE_VARIANTS * FULL
 
 ## The code of a tile packs what its drawing needs into one int, so a corner of a cell is one
 ## value to read, fill in and pass on:
-##   bits 0-3   the layer (Layer, 0..9)
+##   bits 0-3   the layer (Layer, 0..10)
 ##   bits 4-7   the look it has by the season (SeasonBlend.Look, 0..8)
 ##   bits 8-11  the look over it by the weather (SeasonBlend.Look: FROST, DUSTING, SNOW, or
 ##              SUMMER for none)
@@ -63,7 +76,7 @@ const LOOK_MASK := (1 << LOOK_BITS) - 1
 const MISSING := -1
 const NO_DECORATION := Vector2i(-1, -1)
 
-const LAYER_COUNT := 10
+const LAYER_COUNT := 11
 ## The row of the decoration atlas with the meadow flowers: FLOWER_VARIANTS columns per species
 ## of FLOWER_SPECIES, in that order (see tools/art/flowers.py): a small plant, a few, and two
 ## tiles of the thick of a drift.
@@ -75,11 +88,13 @@ const FLOWER_SPECIES: Array[StringName] = [
 	&"daisy",
 	&"buttercup",
 	&"red_campion",
+	&"thrift",
 	&"red_clover",
 	&"white_clover",
 	&"yarrow",
 	&"knapweed",
 	&"meadowsweet",
+	&"sea_lavender",
 	&"heather",
 ]
 const FLOWER_VARIANTS := 4
@@ -92,13 +107,16 @@ const LAYER_OF_TERRAIN: Dictionary[Tile.Terrain, Layer] = {
 	Tile.Terrain.WETLAND: Layer.WETLAND,
 	Tile.Terrain.FLOODPLAIN: Layer.FLOODPLAIN,
 	Tile.Terrain.MUD: Layer.MUD,
+	Tile.Terrain.SALT_MARSH: Layer.SALT_MARSH,
 }
-## The layer each layer is drawn over: lush and dry grass need ordinary grass beneath.
+## The layer each layer is drawn over: the salt marsh, lush and dry grass need ordinary grass
+## beneath.
 const BASE_LAYER: Array[Layer] = [
 	Layer.WATER,
 	Layer.MUD,
 	Layer.FLOODPLAIN,
 	Layer.WETLAND,
+	Layer.GRASS,
 	Layer.GRASS,
 	Layer.GRASS,
 	Layer.GRASS,
@@ -117,9 +135,11 @@ const OVERLAY_LOOKS: Array[SeasonBlend.Look] = [
 	SeasonBlend.Look.DUSTING,
 	SeasonBlend.Look.SNOW,
 ]
-## The layers drawn over ordinary grass, bottom to top: lush and dry grass, and the desire
-## paths worn into any of them. A season's look has an overlay of its own for each.
-const VARIETY_LAYERS: Array[Layer] = [Layer.LUSH_GRASS, Layer.DRY_GRASS, Layer.TRODDEN, Layer.PATH]
+## The layers drawn over ordinary grass, bottom to top: the salt marsh, lush and dry grass, and
+## the desire paths worn into any of them. A season's look has an overlay of its own for each.
+const VARIETY_LAYERS: Array[Layer] = [
+	Layer.SALT_MARSH, Layer.LUSH_GRASS, Layer.DRY_GRASS, Layer.TRODDEN, Layer.PATH
+]
 ## Grass is lush where the variety noise is below this, dry where it is above DRY_ABOVE.
 const LUSH_BELOW := -0.2
 const DRY_ABOVE := 0.25
@@ -137,6 +157,7 @@ const DECORATION_KINDS := {
 	Layer.GRASS: [&"small_plant", &"", &"small_plant", &"tuft", &"tuft", &"leaves"],
 	Layer.LUSH_GRASS: [&"small_plant", &"small_plant", &"small_plant", &"small_plant", &"leaves"],
 	Layer.DRY_GRASS: [&"tuft", &"", &"tuft", &"", &"leaves"],
+	Layer.SALT_MARSH: [&"glasswort", &"glasswort", &"", &"glasswort"],
 }
 
 var tile_set := TileSet.new()

@@ -20,11 +20,13 @@ SPECIES = (
     "daisy",
     "buttercup",
     "red_campion",
+    "thrift",
     "red_clover",
     "white_clover",
     "yarrow",
     "knapweed",
     "meadowsweet",
+    "sea_lavender",
     "heather",
 )
 VARIANTS = 4
@@ -189,6 +191,35 @@ def meadowsweet(tile, x, foot, rng, is_small):
     for dx, dy, colour in ((-1, -1, "lime"), (0, -2, "lime"), (1, -1, "cream"), (-1, -2, "lime"),
                            (1, -2, "cream"), (0, -3, "lime"), (-1, 0, "cream"), (1, 0, "stone_light")):
         put(tile, x + dx, top + dy, colour)
+
+
+def thrift(tile, x, foot, rng, is_small):
+    """A cushion of grassy leaves with round pink heads on bare stalks: the salt marsh and the
+    foot of the dyke in early summer."""
+    put(tile, x - 1, foot, "olive")
+    put(tile, x, foot, "green_dark")
+    put(tile, x + 1, foot, "olive")
+    top = stem(tile, x, foot - 1, 2 if is_small else rng.randint(3, 4))
+    put(tile, x, top - 1, "petal")
+    if not is_small:
+        put(tile, x - 1, top - 1, "blossom")
+        put(tile, x, top - 2, "blossom")
+        put(tile, x + 1, top - 1, "petal")
+
+
+def sea_lavender(tile, x, foot, rng, is_small):
+    """A branched, flat-topped spray of tiny lilac flowers on wiry stems: the salt marsh in late
+    summer."""
+    put(tile, x - 1, foot, "olive")
+    top = stem(tile, x, foot, 2 if is_small else rng.randint(3, 5))
+    put(tile, x, top - 1, "heather")
+    if is_small:
+        return
+    for dx in (-2, -1, 1, 2):
+        put(tile, x + dx, top - (1 if abs(dx) == 2 else 2), "heather" if dx < 0 else "heather_dark")
+    put(tile, x - 1, top, STEM)
+    put(tile, x + 1, top, STEM)
+    put(tile, x, top - 2, "blossom")
 
 
 def heather(tile, x, foot, rng, is_small):

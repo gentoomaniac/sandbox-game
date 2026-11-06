@@ -14,7 +14,7 @@ const DEFAULT_PATH := "res://data/vegetation.cfg"
 ## WorldObjectTypes, flower kinds the species of TerrainTileset.FLOWER_SPECIES (their density is
 ## how much of them is in bloom).
 const KIND_SALTS := {
-	"decorations": {&"tuft": 1, &"small_plant": 3, &"leaves": 4},
+	"decorations": {&"tuft": 1, &"small_plant": 3, &"leaves": 4, &"glasswort": 5},
 	"objects": {&"fern_bush": 11, &"berry_bush": 12, &"tall_grass": 13},
 	"flowers":
 	{
@@ -30,6 +30,8 @@ const KIND_SALTS := {
 		&"knapweed": 30,
 		&"meadowsweet": 31,
 		&"heather": 32,
+		&"thrift": 33,
+		&"sea_lavender": 34,
 	},
 }
 

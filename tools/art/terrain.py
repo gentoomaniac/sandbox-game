@@ -3,8 +3,8 @@ assets/decorations.png.
 
 Tiles are drawn as 16x16 grids of palette colour names (None = transparent). Each terrain layer
 has one function that returns its atlas row and its decorations; `LAYERS` lists them bottom to
-top: water, mud, floodplain, wetland, grass, lush grass, dry grass, trodden grass, path, soil. Both
-atlases are read by game/scenes/terrain_tileset.gd.
+top: water, mud, floodplain, wetland, grass, salt marsh, lush grass, dry grass, trodden grass,
+path, soil. Both atlases are read by game/scenes/terrain_tileset.gd.
 
 assets/terrain.png, per row:
 - EDGE_VARIANTS blocks of 15 columns: the dual-grid edge shapes for masks 0..14 (mask 0
@@ -554,6 +554,60 @@ def dry_grass():
     return tinted_grass(("dry", "dry_light", "olive"), 70, tufts, decorations)
 
 
+def salt_marsh():
+    """The salt marsh (Salzwiese) between the dyke and the mud: low grey-green turf of salt grass
+    and sea purslane, with glasswort (Queller) in the wetter patches, which turns red-purple in
+    autumn. It is drawn in the logical colours `salt...` and `glasswort...`, which every look
+    maps to the palette (seasons.SALT_MARSH_LOOKS). Like lush and dry grass it lies over ordinary
+    grass and shares its edges: the grass's dark rim and blades are the low sod edge where it
+    breaks off to the mud."""
+    purslane = sprite({"l": "salt_light", "d": "salt_dark"}, ".l.", "lld", ".d.")
+    glasswort = sprite({"g": "glasswort", "d": "glasswort_dark"}, "g.g", "dgd", ".d.")
+    sprig = sprite({"g": "glasswort", "d": "glasswort_dark"}, "g", "d")
+    tufts = [(), (purslane,), (glasswort,), (), (purslane, sprig), (glasswort, glasswort), (), (sprig,)]
+    blade = sprite({"l": "salt_light", "d": "salt_dark"}, "l", "d")
+    dark_blade = sprite({"d": "salt_dark"}, "d.d", ".d.")
+    patches = [sprite({"p": "salt_patch"}, "pp.", "ppp", ".p."), sprite({"p": "salt_patch"}, "ppp", ".pp")]
+
+    def texture(seed):
+        rng = random.Random(seed)
+        tile = filled("salt")
+        sprinkle(tile, rng, patches, spacing=5, chance=0.6)
+        sprinkle(tile, rng, [blade, blade, dark_blade, sprig], spacing=4, chance=0.5)
+        return tile
+
+    fulls = [details(texture, 130 + n, *picks) for n, picks in enumerate(tufts)]
+
+    def decorate(tile, covered, rng):
+        for y in range(TILE):
+            for x in range(TILE):
+                if covered(x, y):
+                    distance = edge_distance(covered, x, y, 4)
+                    if distance == 1 or (distance < 4 and (x + y + distance) % 2):
+                        tile[y][x] = None
+
+    clump = sprite(
+        {"g": "glasswort", "d": "glasswort_dark", "s": "salt_dark"},
+        "g..g.",
+        "dg.gd",
+        ".dgd.",
+        "..s..",
+    )
+    bush = sprite(
+        {"l": "salt_light", "m": "salt", "d": "salt_dark"},
+        ".ll.",
+        "lmld",
+        "dmdd",
+    )
+    decorations = [
+        decoration(141, clump),
+        decoration(142, clump, sprig),
+        decoration(143, bush),
+        decoration(144, bush, clump),
+    ]
+    return edge_tiles(texture, GRASS_SHAPES, 130, decorate) + fulls, decorations
+
+
 # Desire paths: grass that is walked often turns trodden, then a path of bare earth (see
 # data/paths.cfg). Both are drawn over whatever grass they wore, so their edges fade into it.
 
@@ -668,4 +722,4 @@ def soil():
     return edge_tiles(lambda seed: copy(base), shapes, 80, decorate) + fulls, []
 
 
-LAYERS = [water, mud, floodplain, wetland, grass, lush_grass, dry_grass, trodden, path, soil]
+LAYERS = [water, mud, floodplain, wetland, grass, salt_marsh, lush_grass, dry_grass, trodden, path, soil]

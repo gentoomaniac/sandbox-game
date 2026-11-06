@@ -3,8 +3,9 @@ extends RefCounted
 ## A snapshot of one tile's state. Changing the world goes through Chunk's setters, not here.
 
 ## Inside a building, FLOOR is the laid brick floor of the living rooms and CLAY_FLOOR the
-## beaten clay of the work rooms. MUD is the tidal flats of the coast, walked on at any tide.
-enum Terrain { GRASS, SOIL, WATER, WETLAND, FLOODPLAIN, FLOOR, WALL, CLAY_FLOOR, MUD }
+## beaten clay of the work rooms. MUD is the tidal flats of the coast, walked on at any tide, and
+## SALT_MARSH the low turf between them and the sea dyke.
+enum Terrain { GRASS, SOIL, WATER, WETLAND, FLOODPLAIN, FLOOR, WALL, CLAY_FLOOR, MUD, SALT_MARSH }
 
 var terrain: Terrain = Terrain.GRASS
 ## Nothing sets it yet: the hook for frozen rivers, which can be walked across.

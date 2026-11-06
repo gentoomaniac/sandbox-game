@@ -104,6 +104,7 @@ const SWAYING_DECORATIONS := {
 	TerrainTileset.Layer.GRASS: [true, false, true, true, true, false],
 	TerrainTileset.Layer.LUSH_GRASS: [true, true, false, true, false],
 	TerrainTileset.Layer.DRY_GRASS: [true, false, true, false, false],
+	TerrainTileset.Layer.SALT_MARSH: [true, true, false, true],
 }
 
 ## On the water layer of the terrain, and on the node that draws the rain's splashes.

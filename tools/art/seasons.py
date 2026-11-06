@@ -152,6 +152,25 @@ GROUND_REMAPS = {
 # What decoration tufts and plants turn into: dry stalks from the bare look on.
 STANDING = {"bare": WINTER_STALKS, "frost": _FROST_STALKS, "snow": WINTER_STALKS, "dusting": _FROST_STALKS}
 
+# The salt marsh (terrain.salt_marsh) in its logical colours, per look: grey-green turf in patches
+# with silvery sea purslane and green glasswort in summer, fresher in spring; in autumn the
+# glasswort and the turf turn red-purple; brown-grey in winter, rimed in a frost, white under snow.
+SALT_MARSH_LOOKS = {
+    "spring": {"salt": "dry", "salt_patch": "olive", "salt_light": "spring_light",
+               "salt_dark": "green_dark", "glasswort": "spring", "glasswort_dark": "spring_dark"},
+    "summer": {"salt": "olive", "salt_patch": "dry", "salt_light": "frost",
+               "salt_dark": "green_dark", "glasswort": "green_bright", "glasswort_dark": "green_light"},
+    "autumn": {"salt": "heather_dark", "salt_patch": "rust_dark", "salt_light": "heather",
+               "salt_dark": "russet_deep", "glasswort": "red_light", "glasswort_dark": "rust_dark"},
+    "bare": {"salt": "bare", "salt_patch": "mud", "salt_light": "bare_light",
+             "salt_dark": "mud_dark", "glasswort": "umber", "glasswort_dark": "soil_dark"},
+    "frost": {"salt": "frost", "salt_patch": "snow_shadow", "salt_light": "snow_shadow",
+              "salt_dark": "snow_deep", "glasswort": "snow_shadow", "glasswort_dark": "snow_deep"},
+    "snow": {"salt": "snow", "salt_patch": "snow", "salt_light": "snow_light",
+             "salt_dark": "snow_shadow", "glasswort": "snow_shadow", "glasswort_dark": "snow_shadow"},
+}
+SALT_MARSH_LOOKS["dusting"] = SALT_MARSH_LOOKS["frost"]
+
 # Snow on a desire path is trodden: the game draws the trodden grass in its snow look over the
 # snow, and its bare earth shows as blue-grey footprints.
 _TRODDEN_SNOW = {"mud": "snow_shadow", "mud_dark": "snow_shadow"}
@@ -279,8 +298,9 @@ def remap(canvas, mapping):
 
 def ground_rows(look, rows, extra_remap=None):
     """Terrain or decoration rows (the layers bottom to top) in a look, with `extra_remap`
-    applied over the look's own. Water stays as it is: freezing it belongs to the weather."""
-    mapping = {**GROUND_REMAPS[look], **(extra_remap or {})}
+    applied over the look's own and the salt marsh's logical colours made real. Water stays as it
+    is: freezing it belongs to the weather."""
+    mapping = {**GROUND_REMAPS[look], **SALT_MARSH_LOOKS[look], **(extra_remap or {})}
     return [rows[0]] + [[remap(tile, mapping) for tile in row] for row in rows[1:]]
 
 

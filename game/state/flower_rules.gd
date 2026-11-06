@@ -11,7 +11,9 @@ const DEFAULT_PATH := "res://data/flowers.cfg"
 const DRIFT_KEYS := [
 	"frequency", "mix_frequency", "start", "core", "stray_share", "thick_from", "small_margin"
 ]
-const HABITATS := ["grass", "lush_grass", "dry_grass", "floodplain", "wetland", "woods"]
+const HABITATS := [
+	"grass", "lush_grass", "dry_grass", "floodplain", "wetland", "salt_marsh", "woods"
+]
 const HABITAT_KEYS := ["chance", "communities"]
 
 static var _default: FlowerRules
