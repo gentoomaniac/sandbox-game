@@ -7,9 +7,9 @@ and shutters, white window frames. Light comes from the top left.
 
 A picture is as wide as the footprint (16 px per tile) and its bottom edge is the footprint's
 bottom edge; the roof rises above it (see data/buildings.cfg, which also has the window light
-positions: a pane of glass near the middle of each window here). Each drawing function returns the picture (rows
-of palette colour names, as in generate.py) and the set of (x, y) pixels that snow covers, which
-seasons.house uses for the snow look.
+positions: a pane of glass near the middle of each window here). Each drawing function returns
+the picture (rows of palette colour names, as in generate.py) and the set of (x, y) pixels that
+snow covers, which seasons.house uses for the snow look.
 """
 
 import math
