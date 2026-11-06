@@ -299,13 +299,13 @@ func _building_of_ref(ref: Dictionary) -> Building:
 
 func _on_new_day(_day: int) -> void:
 	# The clock has already counted the new day, so the night that just ended is the day before:
-	# `world.pass_night` works from the weather of `clock.day - 1`.
+	# `NightUpkeep.pass_night` works from the weather of `clock.day - 1`.
 	player.is_debuffed = false
 	# A stump or sapling doesn't grow into a tree under the player's feet.
 	var occupied: Array[Vector2i] = []
 	if not is_inside():
 		occupied.append(player.tile())
-	world.pass_night(occupied, weather)
+	NightUpkeep.pass_night(world, occupied, weather)
 
 
 ## The building whose interior this is, or null for the world.
