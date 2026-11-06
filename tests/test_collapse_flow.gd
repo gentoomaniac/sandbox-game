@@ -17,7 +17,8 @@ func _key() -> InputEventKey:
 	return key
 
 
-## Runs the running fades for `seconds` at once, so no test waits on the clock.
+## Runs every running tween in the tree (here only the screen's fades) for `seconds` at once,
+## so no test waits on the clock.
 func _advance_fades(seconds: float) -> void:
 	for tween in get_tree().get_processed_tweens():
 		tween.custom_step(seconds)
