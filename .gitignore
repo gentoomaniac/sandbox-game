@@ -4,7 +4,7 @@ __pycache__/
 build/
 export/
 # Downloaded by `make setup`, see the Makefile.
-addons/
+/addons
 .claude/worktrees/
 
 # Deploy SSH key for pushing; never commit it.
