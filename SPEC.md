@@ -1,6 +1,7 @@
 # Sandbox Game: Spec
 
-Status: early concept. Last updated: 2026-11-05.
+Status: playable prototype (the milestone 1 slice and much more; the README lists what
+works today). Last updated: 2026-11-06.
 
 This file is the single source of truth for what the game is. Decisions move from
 "Open questions" to "Decided" as they are made.
@@ -138,10 +139,13 @@ top of classic pixel art (details under "Lighting and look").
   - it installs what it can automatically: project-local addons (GUT) and
     Python tools in a project-local venv;
   - it does not try to install system packages, because the developer machine may run a
-    less common Linux distro (e.g. Gentoo). It checks system dependencies (Godot, Tiled,
-    Python, …) and prints which ones are missing, with a hint on what to install;
+    less common Linux distro (e.g. Gentoo). It checks system dependencies (Godot, Python,
+    git, curl; Tiled is optional, only for editing interiors) and prints which ones are
+    missing, with a hint on what to install;
   - running it again is safe and only does what is still missing.
-- Planned targets: `setup`, `run`, `test`, `lint`, `export`.
+- Targets (`make help` lists them): `help` (the default), `setup`, `venv`, `run`,
+  `screenshot`, `test`, `lint`, `format`, `assets`, `clean` and `export` (a placeholder: no
+  export presets exist yet).
 - Tools:
   - tests: **GUT**, run headless by `make test`;
   - lint and format: gdtoolkit (`gdlint` / `gdformat`).
@@ -853,8 +857,9 @@ Goal: prove the world, building and Tiled pipeline with the smallest playable th
 - One crop that can be planted and grows over days.
 - The make targets from Tech, including `make setup`.
 
-Not in the prototype: combat, reputation, biomes beyond one, weather, energy, saving and
-loading, final hand-made art (generated art only, see Art pipeline).
+Not in the prototype (as planned): combat, reputation, biomes beyond one, weather, energy,
+saving and loading, final hand-made art (generated art only, see Art pipeline). The slice
+is done, and weather, energy, saving and loading and sound have been added since.
 
 Tasks: see [TASKS.md](TASKS.md).
 
