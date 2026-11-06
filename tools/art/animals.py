@@ -306,6 +306,97 @@ DEER["actions"] = {
     ],
 }
 
+# The mouse, grey-brown with a pale belly, pink ears and a long bare tail; the tail and the
+# feet are drawn over the outline ("raw" cells), so that they stay one pixel thin.
+MOUSE_KEYS = {"b": "mud", "s": "sand_light", "p": "petal", "e": "ink", "L": "skin_shade", "K": "mud_dark"}
+MOUSE = {
+    "size": (12, 7),
+    "outline": "mud_dark",
+    "keys": MOUSE_KEYS,
+    "actions": {
+        # Crouched, then sniffing with the nose up.
+        "sit": [
+            (
+                "raw",
+                [
+                    "............",
+                    "............",
+                    "......p.....",
+                    "....bbbb....",
+                    "...bbbbbbe..",
+                    "LL.bbsssbp..",
+                    "..L.........",
+                ],
+            ),
+            (
+                "raw",
+                [
+                    "............",
+                    "............",
+                    "......p.....",
+                    "....bbbbbe..",
+                    "...bbbbbbp..",
+                    "LL.bbsss....",
+                    "..L.........",
+                ],
+            ),
+        ],
+        # Low and long, the feet a blur under it.
+        "scurry": [
+            (
+                "raw",
+                [
+                    "............",
+                    "............",
+                    "............",
+                    ".......p....",
+                    "...bbbbbbbe.",
+                    "LLLbbbsssbbp",
+                    "....K...K...",
+                ],
+            ),
+            (
+                "raw",
+                [
+                    "............",
+                    "............",
+                    "............",
+                    ".......p....",
+                    "...bbbbbbbe.",
+                    ".LLbbbsssbbp",
+                    "L....K.K....",
+                ],
+            ),
+        ],
+    },
+}
+
+# The common frog: olive with darker blotches and a pale throat, the eye high on the head, the
+# hind leg folded along its side while it sits.
+FROG_KEYS = {"b": "dry_light", "d": "olive", "l": "dry", "y": "sand_light", "c": "cream", "e": "ink"}
+FROG_SIT = [
+    "......be..",
+    "....bbbbb.",
+    "..bdbbbbbb",
+    ".bbbdbbyy.",
+    "bllldbby..",
+    ".lllbby...",
+]
+FROG = {
+    "size": (12, 8),
+    "outline": "green_deep",
+    "keys": FROG_KEYS,
+    "actions": {
+        # Sitting, then with the throat puffed out (it croaks).
+        "sit": [FROG_SIT, FROG_SIT[:3] + [".bbbdbbycc", "bllldbbcc.", ".lllbby..."]],
+        # Pushing off, and stretched out in the air with the hind legs trailing.
+        "hop": [
+            ["......be..", "....bbbbb.", "..bdbbbbbb", ".bbbdbbyy.", "ll.ldbby..", "l....b...."],
+            ["........be.", "ll..bbbbbbb", "..lbdbbbbyy", ".....yy...."],
+        ],
+    },
+}
+
 SHEETS = {
     "bird": BIRD,
     "rabbit": RABBIT,
@@ -313,6 +404,8 @@ SHEETS = {
     "deer": DEER,
     "bee": BEE,
     "butterfly": BUTTERFLY,
+    "mouse": MOUSE,
+    "frog": FROG,
 }
 
 

@@ -34,6 +34,9 @@ STORK_KEYS = {
     "R": "ember",
     "L": "red_light",
     "M": "ember",
+    # A frog in the bill.
+    "f": "dry_light",
+    "F": "olive",
 }
 STORK_OUTLINE = "stone"
 
@@ -111,6 +114,15 @@ STORK_CLATTER_OPEN = (
     ".......r.R........",
     ".......r.R........",
     "........rR........",
+    ".......wer........",
+    ".......www........",
+    "........ww........",
+) + STORK_CLATTER_SHUT[6:]
+# Swallowing: the head thrown back with a frog across the bill, its legs dangling, then gone.
+STORK_SWALLOWING = (
+    ".......fFf........",
+    "......F.rFf.......",
+    "......F.rR.F......",
     ".......wer........",
     ".......www........",
     "........ww........",
@@ -214,6 +226,7 @@ STORK_ACTIONS = {
     ],
     "strike": [stork_frame(STORK_HUNTING), stork_frame(STORK_STRIKING)],
     "clatter": [stork_frame(STORK_CLATTER_SHUT), stork_frame(STORK_CLATTER_OPEN)],
+    "swallow": [stork_frame(STORK_SWALLOWING), stork_frame(STORK_CLATTER_SHUT)],
 }
 # Each wing beat with the row of its body.
 STORK_FLIGHT = [(STORK_WINGS_UP, 10), (STORK_WINGS_LEVEL, 3), (STORK_WINGS_DOWN, 0)]

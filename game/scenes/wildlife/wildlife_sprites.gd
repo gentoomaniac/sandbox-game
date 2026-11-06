@@ -29,8 +29,10 @@ const SHEETS := {
 	&"stork":
 	{
 		"size": Vector2i(32, 26),
-		"actions": {&"stand": 2, &"walk": 4, &"strike": 2, &"clatter": 2, &"fly": 3},
+		"actions": {&"stand": 2, &"walk": 4, &"strike": 2, &"clatter": 2, &"swallow": 2, &"fly": 3},
 	},
+	&"mouse": {"size": Vector2i(12, 7), "actions": {&"sit": 2, &"scurry": 2}},
+	&"frog": {"size": Vector2i(12, 8), "actions": {&"sit": 2, &"hop": 2}},
 	&"goose":
 	{"size": Vector2i(24, 18), "actions": {&"stand": 2, &"graze": 2, &"walk": 2, &"fly": 3}},
 	&"cow_angler": COW,
