@@ -68,11 +68,11 @@ func test_added_furniture_takes_its_tile() -> void:
 	assert_not_null(interior.object_at(Vector2i(2, 3)))
 
 
-func test_walls_and_furniture_block_walking_but_beds_and_floor_do_not() -> void:
+func test_walls_furniture_and_beds_block_walking_but_floor_does_not() -> void:
 	var interior := InteriorLoader.load_interior(KATE_MAP)
 	assert_false(interior.is_walkable(Vector2i(0, 3)), "wall")
 	assert_false(interior.is_walkable(Vector2i(4, 1)), "back wall")
-	assert_true(interior.is_walkable(Vector2i(1, 3)), "second tile of the bed")
+	assert_false(interior.is_walkable(Vector2i(1, 3)), "second tile of the bed")
 	assert_false(interior.is_walkable(Vector2i(6, 5)), "second tile of the table")
 	assert_false(interior.is_walkable(Vector2i(-1, 3)), "outside the map")
 	assert_true(interior.is_walkable(Vector2i(3, 3)), "floor")

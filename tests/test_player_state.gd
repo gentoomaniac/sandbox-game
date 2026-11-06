@@ -80,3 +80,46 @@ func test_facing_follows_the_last_move_direction() -> void:
 	_player.move(_world, Vector2.ZERO, 0.05)
 	assert_eq(_player.facing, Vector2i.UP)
 	assert_eq(_player.facing_tile(), _player.tile() + Vector2i.UP)
+
+
+## A player standing on a blocking object, who can walk away from it.
+func _stuck_on_an_object(tile: Vector2i) -> void:
+	_world.add_object(WorldObject.new(WorldObjectTypes.CHEST, tile))
+	_player.position = Vector2(tile) + Vector2(0.5, 0.5)
+	assert_false(PlayerState.can_stand_at(_world, _player.position))
+
+
+func test_a_player_standing_on_an_object_walks_through_it_to_free_ground() -> void:
+	_stuck_on_an_object(Vector2i(5, 5))
+	_world.add_object(WorldObject.new(WorldObjectTypes.CHEST, Vector2i(6, 5)))
+	_player.move(_world, Vector2.RIGHT, 0.5)
+	assert_gt(_player.position.x, 7.0)
+	assert_true(PlayerState.can_stand_at(_world, _player.position))
+
+
+func test_a_player_standing_on_an_object_is_stopped_by_water() -> void:
+	_stuck_on_an_object(Vector2i(5, 5))
+	_world.chunk_at(Vector2i.ZERO).set_terrain(Vector2i(6, 5), Tile.Terrain.WATER)
+	_player.move(_world, Vector2.RIGHT, 0.5)
+	assert_lt(_player.position.x, 6.0)
+
+
+func test_a_player_standing_on_an_object_is_stopped_by_a_building() -> void:
+	var building := _world.place_building(BuildingTypes.SHACK, Vector2i(8, 3))
+	assert_not_null(building)
+	var tiles := building.tiles().filter(
+		func(tile: Vector2i) -> bool: return tile != building.door_tile()
+	)
+	var wall_tile: Vector2i = tiles[0]
+	_stuck_on_an_object(wall_tile + Vector2i.LEFT)
+	_player.move(_world, Vector2.RIGHT, 0.5)
+	assert_lt(_player.position.x, float(wall_tile.x))
+
+
+func test_a_player_standing_on_an_object_is_stopped_by_an_interior_wall() -> void:
+	var kate_map: String = BuildingTypes.TYPES[BuildingTypes.KATE]["interior_map"]
+	var interior := InteriorLoader.load_interior(kate_map)
+	var bed: WorldObject = interior.object_at(Vector2i(1, 2))
+	_player.position = Vector2(bed.pos) + Vector2(0.5, 0.5)
+	_player.move(interior, Vector2.LEFT, 0.5)
+	assert_gt(_player.position.x, 0.99, "the wall at x = 0 stops them")

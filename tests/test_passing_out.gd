@@ -85,7 +85,7 @@ func test_passing_out_wakes_in_a_home_bed_inside_a_house() -> void:
 	_state.pass_out()
 	assert_true(_state.is_inside())
 	assert_eq(_state.current_map, _state.player.home_map)
-	assert_true(PlayerState.can_stand_at(_state.current_map, _state.player.position))
+	assert_eq(_state.player.bed_lying_in, bed)
 	assert_eq(_state.bed_in_reach(), bed)
 
 

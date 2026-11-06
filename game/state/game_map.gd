@@ -31,10 +31,16 @@ func remove_object(_pos: Vector2i) -> WorldObject:
 	return null
 
 
-## Tile rules combined with the objects on the tile. False where there is no tile.
-func is_walkable(pos: Vector2i) -> bool:
+## Whether the ground of a tile can be walked on, whatever stands on it: the tile rules (and,
+## in the world, the buildings). False where there is no tile.
+func is_ground_walkable(pos: Vector2i) -> bool:
 	var tile := tile_at(pos)
-	if tile == null or not tile.is_walkable():
+	return tile != null and tile.is_walkable()
+
+
+## The ground rules combined with the objects on the tile.
+func is_walkable(pos: Vector2i) -> bool:
+	if not is_ground_walkable(pos):
 		return false
 	var object := object_at(pos)
 	return object == null or not object.blocks_walking()

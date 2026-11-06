@@ -359,8 +359,8 @@ func _emit_objects_changed(object: WorldObject) -> void:
 			objects_changed.emit(tile)
 
 
-## Tile and object rules, and buildings: only their door can be walked on.
-func is_walkable(world_pos: Vector2i) -> bool:
+## Tile rules, and buildings: only their door can be walked on.
+func is_ground_walkable(world_pos: Vector2i) -> bool:
 	if not super(world_pos):
 		return false
 	var building := building_at(world_pos)

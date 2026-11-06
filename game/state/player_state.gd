@@ -77,19 +77,63 @@ func facing_tile() -> Vector2i:
 ## slides along a wall instead of stopping against it. `speed_factor` scales SPEED.
 func move(map: GameMap, direction: Vector2, delta: float, speed_factor := 1.0) -> void:
 	if direction != Vector2.ZERO:
-		bed_lying_in = null
 		# The axis the player moves along most; a tie faces vertically.
 		if absf(direction.x) > absf(direction.y):
 			facing = Vector2i.RIGHT if direction.x > 0 else Vector2i.LEFT
 		else:
 			facing = Vector2i.DOWN if direction.y > 0 else Vector2i.UP
+		if bed_lying_in != null:
+			_get_out_of_bed(map)
 	var velocity := direction.limit_length(1.0) * SPEED * speed_factor
 	while delta > 0.0:
 		var step := velocity * minf(delta, MAX_STEP_SECONDS)
 		delta -= MAX_STEP_SECONDS
 		for axis in [Vector2(step.x, 0.0), Vector2(0.0, step.y)]:
-			if can_stand_at(map, position + axis):
+			if can_stand_at(map, position + axis) or _can_step_off_blocked_tile(map, axis):
 				position += axis
+
+
+## Whether the player, who stands where they do not fit (a game saved in bed, or with an object
+## built on them), may take `step`: through objects, so they can always walk away, but not
+## into a wall, the water or a building.
+func _can_step_off_blocked_tile(map: GameMap, step: Vector2) -> bool:
+	if can_stand_at(map, position):
+		return false
+	return map.is_ground_walkable(Vector2i((position + step).floor()))
+
+
+## Puts the player, lying in the middle of a bed, on the free tile beside it in the direction
+## they face. If there is none, on one at the front of the bed (the side opposite its head),
+## then at its sides: never behind it, where the wall is.
+func _get_out_of_bed(map: GameMap) -> void:
+	var bed_data := bed_lying_in.type_data()
+	var bed_area := Rect2i(bed_lying_in.pos, bed_data["footprint"])
+	var front: Vector2i = -bed_data["bed"]
+	# The two lateral sides are the front turned a quarter either way.
+	var sides := [facing, front, Vector2i(front.y, front.x), Vector2i(-front.y, -front.x)]
+	bed_lying_in = null
+	# With every side blocked they stay where they lie, standing, and walk off through the rule
+	# of `_can_step_off_blocked_tile`.
+	for side: Vector2i in sides:
+		for tile in _tiles_beside(bed_area, side):
+			var centre := Vector2(tile) + Vector2(0.5, 0.5)
+			if can_stand_at(map, centre):
+				position = centre
+				return
+
+
+## The tiles along the `side` (an axis direction) of `area`, outside it.
+static func _tiles_beside(area: Rect2i, side: Vector2i) -> Array[Vector2i]:
+	var tiles: Array[Vector2i] = []
+	if side.x != 0:
+		var x := area.end.x if side.x > 0 else area.position.x - 1
+		for y in range(area.position.y, area.end.y):
+			tiles.append(Vector2i(x, y))
+	else:
+		var y := area.end.y if side.y > 0 else area.position.y - 1
+		for x in range(area.position.x, area.end.x):
+			tiles.append(Vector2i(x, y))
+	return tiles
 
 
 ## The home map is not saved here: a map is saved as a reference into the world (see
