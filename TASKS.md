@@ -94,7 +94,7 @@ lit along the top in broken runs, with reed ends 1-3 px long hanging below, on t
 planes: the lit left hip, the front slope and the shaded right hip, with a lit hip line,
 hips with a slight belly and a straight ridge; rolled eaves, dormers, moss and weathering
 (crowded reed ends) in patches, the weathering kept off the door swells. Only the lowest
-courses bend over a door swell. The Kate has crossed ridge sticks
+courses bend over a door swell. The Kate has crossed ridge sticks, and so does the longhouse, which shares them
 (`kate(ridge_sticks=False)` gives the turf ridge back), drawn taller so they show against
 the sky. Under snow the reed ends and most course lines are filled, leaving the planes and
 an odd short line; this also fills the shack's board joints under snow, its only change.
