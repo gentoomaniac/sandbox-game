@@ -110,7 +110,7 @@ func test_the_fraction_of_present_spots_changes_smoothly_from_day_to_day() -> vo
 			var previous := _present_count(kind, 1)
 			for day in range(2, DAYS_PER_YEAR + 2):
 				var count := _present_count(kind, day)
-				assert_lt(absi(count - previous), SPOTS * 0.15, "%s on day %d" % [kind, day])
+				assert_lt(float(absi(count - previous)), SPOTS * 0.15, "%s on day %d" % [kind, day])
 				previous = count
 
 
