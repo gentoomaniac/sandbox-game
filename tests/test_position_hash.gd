@@ -15,3 +15,12 @@ func test_values_are_non_negative_32_bit() -> void:
 	for x in range(-40, 40):
 		var value := PositionHash.of(Vector2i(x, -x * 3), x)
 		assert_between(value, 0, PositionHash.MASK)
+
+
+func test_rolls_follows_the_chance() -> void:
+	var pos := Vector2i(3, -4)
+	var roll := PositionHash.of(pos, 7) % 100
+	assert_true(PositionHash.rolls(pos, 7, (roll + 1) / 100.0), "chance just above the roll")
+	assert_false(PositionHash.rolls(pos, 7, roll / 100.0), "chance equal to the roll")
+	assert_false(PositionHash.rolls(pos, 7, 0.0))
+	assert_true(PositionHash.rolls(pos, 7, 1.0))

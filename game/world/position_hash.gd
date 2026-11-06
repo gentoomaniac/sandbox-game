@@ -17,3 +17,9 @@ static func of(pos: Vector2i, salt := 0) -> int:
 	h ^= h >> 13
 	h = (h * 0xC2B2AE35) & MASK
 	return h ^ (h >> 16)
+
+
+## Whether a tile succeeds at something that has `chance` (0 to 1) of working there, for the
+## same salt always the same answer. Resolution is 1 in 100.
+static func rolls(pos: Vector2i, salt: int, chance: float) -> bool:
+	return of(pos, salt) % 100 < chance * 100

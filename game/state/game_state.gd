@@ -376,7 +376,7 @@ func _dig(target: Vector2i) -> void:
 	if not world.has_clay(target):
 		return
 	world.spend_clay_spot(target)
-	if PositionHash.of(target, clock.day) % 100 < CLAY_DIG_CHANCE * 100:
+	if PositionHash.rolls(target, clock.day, CLAY_DIG_CHANCE):
 		world.drop_items(target, CLAY_DIG_YIELD)
 
 
@@ -474,9 +474,7 @@ func _hit(object: WorldObject) -> Use:
 ## Whether felling this tree today also gives its seed. The same tree on the same day always
 ## rolls the same.
 func _rolls_seed(tree: WorldObject) -> bool:
-	return (
-		PositionHash.of(tree.pos, clock.day) % 100 < tree.type_data().get("seed_chance", 0.0) * 100
-	)
+	return PositionHash.rolls(tree.pos, clock.day, tree.type_data().get("seed_chance", 0.0))
 
 
 ## Pulls the items on the ground near the player towards them and picks up those that

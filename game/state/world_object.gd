@@ -148,7 +148,7 @@ func has_rotted() -> bool:
 ## the same day always rolls the same), or null, nothing.
 func rotted(day: int) -> WorldObject:
 	var chance: float = type_data().get("rots_into_sapling_chance", 0.0)
-	if not _is_of_a_tree() or PositionHash.of(pos, day) % 100 >= chance * 100:
+	if not _is_of_a_tree() or not PositionHash.rolls(pos, day, chance):
 		return null
 	var sapling := WorldObject.new(WorldObjectTypes.SAPLING, pos)
 	sapling.state["tree"] = state["tree"]
