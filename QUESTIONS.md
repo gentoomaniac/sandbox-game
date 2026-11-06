@@ -82,6 +82,11 @@ Answered questions move into SPEC.md and are removed here.
 16. **Meadows** (task 75): flower communities per habitat, drifts about 14 tiles across,
     heather in early autumn, no blue flower (cornflower grows in rye fields). Default: keep.
 
+17. **Desire paths** (task 77): thin grass after 8 steps on a tile, a path after 24 (about
+    4-5 days of walking a line 8 times a day); grows back to thin grass in 5 nights and to
+    grass in about two weeks; cows wear tracks at half a step each; frost on lush and dry
+    grass now shows their own frosted look. No mud in rain yet. Default: keep.
+
 ## Questions
 
 No open questions right now.
