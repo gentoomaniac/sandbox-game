@@ -24,6 +24,8 @@ var _sprite: Sprite2D
 var _sheet_kind: StringName
 var _action := &""
 var _action_time := 0.0
+## The column of the action's row the sprite shows, so that it is set only when it changes.
+var _shown_column := -1
 var _frames_per_second := 6.0
 ## Whether frames play 0, 1, 2, 1, 0 ... instead of 0, 1, 2, 0 ...
 var _is_ping_pong := false
@@ -91,6 +93,7 @@ func _play(action: StringName, frames_per_second: float) -> void:
 		return
 	_action = action
 	_action_time = 0.0
+	_shown_column = -1
 
 
 ## Turns to look in the direction of x (to the right is how the sheets are drawn).
@@ -109,7 +112,9 @@ func _show_frame() -> void:
 		var cycle := (count - 1) * 2
 		column = step % cycle
 		column = column if column < count else cycle - column
-	_sprite.frame = WildlifeSprites.frame_index(_sheet_kind, _action, column)
+	if column != _shown_column:
+		_shown_column = column
+		_sprite.frame = WildlifeSprites.frame_index(_sheet_kind, _action, column)
 	_sprite.position.y = -(_lift + _arc)
 
 

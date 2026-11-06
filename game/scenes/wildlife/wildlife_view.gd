@@ -6,6 +6,10 @@ extends Node
 ## The animals are nodes in the world view's y-sorted `entities`. Nothing is saved: it is
 ## atmosphere, drawn with a random number generator.
 ##
+## It also shows the farm animals of the game's Livestock, which are state and saved: one
+## FarmAnimalView each while it is near the view (in the ring or within it), looked at every
+## second like the wild ones.
+##
 ## Debug: `spawn_in_view` puts animals in view (the `--wildlife` flag and the `spawn` console
 ## command); those are never sent away for the weather or the hour, and `is_player_ignored`
 ## makes every animal take no notice of the player (`--wildlife-calm`).
@@ -32,6 +36,7 @@ var is_spawning_naturally := true
 var _state: GameState
 var _camera: CameraController
 var _animals: Array[Animal] = []
+var _farm_animals: Dictionary[FarmAnimal, FarmAnimalView] = {}
 var _seconds_to_tick := 0.0
 
 
@@ -46,6 +51,7 @@ func show_wildlife(state: GameState, view: WorldView, camera: CameraController) 
 	_camera = camera
 	rules = WildlifeRules.default_rules()
 	rules.sun = state.sun
+	state.livestock.added.connect(_show_farm_animal_if_near)
 	ground.name = "Ground"
 	view.add_child(ground)
 	# Below the entities (objects, player, animals), above the terrain.
@@ -54,12 +60,12 @@ func show_wildlife(state: GameState, view: WorldView, camera: CameraController) 
 
 func _process(delta: float) -> void:
 	_remove_gone_animals()
-	if not is_spawning_naturally:
-		return
 	_seconds_to_tick -= delta
 	if _seconds_to_tick <= 0.0:
 		_seconds_to_tick += rules.general("tick_seconds")
-		_match_counts()
+		_follow_farm_animals()
+		if is_spawning_naturally:
+			_match_counts()
 
 
 ## Takes every animal away (the player went indoors).
@@ -67,6 +73,9 @@ func clear() -> void:
 	for animal in _animals:
 		animal.queue_free()
 	_animals.clear()
+	for animal_view in _farm_animals.values():
+		animal_view.queue_free()
+	_farm_animals.clear()
 
 
 ## Puts `count` animals of a kind in view, near the player. Returns how many it could place.
@@ -264,6 +273,29 @@ func _add(animal: Animal, is_pinned: bool) -> void:
 	_animals.append(animal)
 	world_view.entities.add_child(animal)
 	animal_added.emit(animal)
+
+
+## Gives a farm animal its view if it has none and is in the ring around the view or within it.
+func _show_farm_animal_if_near(animal: FarmAnimal) -> void:
+	if _farm_animals.has(animal):
+		return
+	var near := view_rect().grow(rules.general("spawn_margin_tiles") * WildlifeRules.TILE_SIZE)
+	if not near.has_point(animal.position * WildlifeRules.TILE_SIZE):
+		return
+	var animal_view := FarmAnimalView.new(animal)
+	_farm_animals[animal] = animal_view
+	world_view.entities.add_child(animal_view)
+
+
+## Shows the farm animals that came near the view, and takes away those far from it.
+func _follow_farm_animals() -> void:
+	var view := view_rect()
+	for animal: FarmAnimal in _farm_animals.keys():
+		if rules.is_beyond_view(_farm_animals[animal].position, view):
+			_farm_animals[animal].queue_free()
+			_farm_animals.erase(animal)
+	for animal in _state.livestock.all():
+		_show_farm_animal_if_near(animal)
 
 
 ## Frees the animals that are done or far from the view.
