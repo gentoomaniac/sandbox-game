@@ -87,6 +87,10 @@ Answered questions move into SPEC.md and are removed here.
     grass in about two weeks; cows wear tracks at half a step each; frost on lush and dry
     grass now shows their own frosted look. No mud in rain yet. Default: keep.
 
+18. **Hall house** (task 59): costs 100 wood, 40 stone, 50 clay, 80 reed; half-hipped thatch
+    with a reed ridge, white bargeboards and a green door; the inside is larger than the
+    screen and scrolls. Default: keep.
+
 ## Questions
 
 No open questions right now.
