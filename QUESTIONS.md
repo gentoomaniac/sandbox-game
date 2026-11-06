@@ -33,6 +33,10 @@ Answered questions move into SPEC.md and are removed here.
    - **`meadow_light` was not merged** (task 52): it is now the Scots pine's needle colour,
      so the palette is full again (64 of 64);
    - **a new game carries the red knitted cap** besides the straw hat (task 52).
+   - **the jacket has an equipment slot of its own, `coat`** (task 53), so it goes over
+     either body item and comes off; **old saves get clogs** on their bare feet; and **the
+     clothes got lighter** (0.3 to 0.6 kg each), so a new game still carries under the free
+     20 kg.
 9. **Code review** (docs/code-review-2026-11-06.md): its findings became tasks 63-71 and run
    one at a time beside the art tasks. Default: go ahead.
 

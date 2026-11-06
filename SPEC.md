@@ -252,7 +252,8 @@ top of classic pixel art (details under "Lighting and look").
   - An inventory screen shows all slots; items can be moved between slots.
 - **Character screen** (decided 2026-11-05): Tab opens one screen with the character and
   their equipment on one side and the inventory on the other.
-  - Equipment slots: head, body, legs, feet, back, main hand, off hand. Clothes, armour
+  - Equipment slots: head, body, legs, feet, coat, back, main hand, off hand (coat added in
+    task 53, for a jacket over the body item). Clothes, armour
     and later weapons, shields and backpacks are items with a slot; worn items show on the
     character (each slot is a sprite layer).
   - Items move between inventory slots and fitting equipment slots by clicking (pick up,
@@ -260,8 +261,13 @@ top of classic pixel art (details under "Lighting and look").
     while an item is picked up. Right-click equips or unequips at once.
   - Worn items count toward the carried weight.
   - Hair and body are the character's look, not equipment.
-  - New game: tunic and trousers worn; a straw hat, a knitted cap and a spare shirt in the
-    inventory. The straw hat has a low crown and a wide brim drooping at its ends (task 52,
+  - New game (period clothes since task 53, North Sea coast 1700–1800): a red waistcoat
+    over a linen shirt, brown knee breeches with white stockings and wooden clogs worn; a
+    straw hat, a knitted cap, a spare linen shirt and a short blue jacket in the inventory.
+    The clothes are light (0.3 to 0.6 kg), so a new game carries 19.9 kg, under the 20 kg
+    that cost no extra energy. Three hair styles: short, shoulder length, and long tied back
+    with a ribbon. Old saves (version 8) get the tunic and trousers renamed to the waistcoat
+    and breeches and clogs on their bare feet. The straw hat has a low crown and a wide brim drooping at its ends (task 52,
     it read as a pith helmet); the knitted cap is a red wool stocking cap, as the guide's
     period dress has it.
 - **Movement keys:** arrow keys and WASD (decided 2026-11-05). All keys can be changed in

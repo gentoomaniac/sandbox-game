@@ -346,10 +346,12 @@ copper watering can. Kept here as the record of why.
 
 ### Bigger items
 
-1. **Period clothes for the character** (medium). The most-seen sprite wears a generic
-   tunic and long trousers. Knee breeches, white stockings, clogs, a red waistcoat over a
-   linen shirt, a short blue or brown jacket; long hair tied back. Then women's dress for
-   NPCs (apron, bodice, cap).
+1. ~~**Period clothes for the character**~~ done (task 53). The most-seen sprite wore a
+   generic tunic and long trousers. Now: brown knee breeches over white stockings, pale
+   wooden clogs, a red waistcoat with tin buttons over a linen shirt, a short blue jacket in
+   a coat slot of its own, and long hair tied back with a ribbon as a third hair style. All
+   from existing colours. Still to do: women's dress for NPCs (apron, bodice, cap), and
+   buckled shoes for best.
 2. **Knicks, dykes and marsh ditches** (large). The features that make the land read as
    Schleswig-Holstein: autotiled Knick hedges on banks, dykes with turf and sheep, straight
    water ditches with reeds instead of fences, pollard willows. Wattle fences and

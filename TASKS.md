@@ -56,11 +56,22 @@ icon in the hotbar and were left.
 
 ## 53. Period clothes for the player
 
-- [ ] Done
+- [x] Done
 
 docs/art-style.md bigger item 1: knee breeches, white stockings, clogs, a red waistcoat
 over a linen shirt, a short blue or brown jacket, long hair tied back; every animation and
 the collapse frames; the starting clothes and the spare shirt become the period ones.
+
+Done: one commit per piece. Breeches (3 rows, banded at the knee) over white stockings
+that run into the feet; a red waistcoat with tin buttons over a linen shirt (`clothes_0`),
+the spare shirt the plain linen one (`clothes_1`); a short open blue jacket in a new `coat`
+equipment slot and layer (between clothes and hair), in the starting backpack; wooden clogs,
+the first feet item, worn from the start; hair 2, mid-brown tied back with a black ribbon
+(F6 cycles three). No new colours. Ids: `tunic` is `waistcoat`, `trousers` is `breeches`,
+`shirt` kept; save version 9 renames them in the equipment, inventory, ground items and
+chests (indoors too) and puts clogs on the bare feet. The clothes got lighter so a new game
+still carries under the free 20 kg (19.9). Hats unchanged (`HAT_TOP` still -30).
+Screenshot: character.
 
 ## 54. Knicks, dykes and marsh ditches
 

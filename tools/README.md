@@ -28,7 +28,7 @@ by topic. Where is a thing drawn?
 | `terrain.py` | The ground: water, floodplain, wetland, grass, soil, and their decorations. |
 | `trees.py` | Oak, spruce, pine, dead tree, bushes, ferns, stones, boulders and stumps. |
 | `camp.py` | The fireplace and the bedroll. |
-| `character.py` | The player's layers (body, clothes, hair, hats, hoe), their passing out and the sleeping "z". |
+| `character.py` | The player's layers (body, breeches and stockings, clogs, shirt and waistcoat, jacket, hair, hats, hoe), their passing out and the sleeping "z". |
 | `interior.py` | The room tiles and the furniture inside the buildings, the hearth too. |
 | `buildings.py` | The four buildings, plain and with lit windows. |
 | `seasons.py` | The other looks (spring, autumn, bare, frost, snow, dusting, leaf-out steps) made from the summer art by colour remaps and overlays. Also adds its colours to the palette. |

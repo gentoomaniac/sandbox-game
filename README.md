@@ -125,7 +125,9 @@ half-timbered barn, and the plank shack.
 
 ### Character, inventory and equipment
 
-The character is drawn in layers, so anything they wear shows in the world. Press Tab to
+The character is drawn in layers, so anything they wear shows in the world. They dress as
+on the North Sea coast in the 18th century: a red waistcoat over a linen shirt, knee breeches
+with white stockings, wooden clogs, and a short blue jacket and hats to put on. Press Tab to
 open the character screen, where you move items between the inventory and the equipment
 slots. The hotbar (the ten slots at the bottom of the screen, keys 1 to 0) holds your tools
 and seeds and is extra room: it takes nothing from the backpack's 20 slots, so you carry 30
