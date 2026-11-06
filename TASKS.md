@@ -894,6 +894,15 @@ areas. Make every button and recipe entry clickable over its whole visible area 
 child controls eating the mouse or a too-small hit rect); check the other screens (storage,
 character, settings) for the same and add a test that clicks at the edges of a button.
 
+## 90. Console: noclip
+
+- [ ] Done
+
+The user's word of 2026-11-06: a console command `noclip` that turns off collision for the
+player. A toggle like `nocost`, shown on the cheat HUD: the player walks through trees,
+rocks, water, buildings and furniture; indoors they stay inside the room's bounds; off
+again, a player standing on a blocked tile can walk off it (the step-off rule of task 78).
+
 ## Later (not part of the prototype)
 
 - `WildlifeSprites.frame_index` and `max_frames` allocate on every call (`keys()`,
