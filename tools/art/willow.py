@@ -17,8 +17,10 @@ from trees import ground_shadow, outline_in_bark, shaded_blob, tree_trunk
 WILLOW_SEEDS = (321, 322, 323)
 # Grey-brown, deeply furrowed bark, lit to dark.
 BARK = ("bare_light", "bare", "mud_dark", "soil_dark")
-# The narrow leaves, silvery underneath: lit to dark. seasons.py turns them for spring and autumn.
-LEAVES = ("frost", "dry_light", "dry", "olive")
+# The narrow grey-green leaves, lit to dark, and their silvery undersides, which the wind shows.
+# seasons.py turns them for spring and autumn.
+LEAVES = ("dry_light", "dry", "olive", "green_dark")
+SILVER = "frost"
 # The rods in winter: golden at their tips, orange-brown low down.
 RODS = ("ochre", "ochre_dark", "umber")
 # Where the head sits: the top of the trunk, the rods spring from around it.
@@ -82,13 +84,14 @@ def willow(seed):
     for cx, cy, radius in ((13, 44, 7), (35, 44, 7), (18, 30, 7.5), (30, 30, 7.5), (24, 25, 6)):
         blobs.append((cx + rng.uniform(-1.5, 1.5), cy + rng.uniform(-1.5, 1.5), radius + rng.uniform(-1, 1)))
     shaded_blob(canvas, rng, blobs, LEAVES, "green_deep")
-    # Narrow leaves along the rods: short light strokes, so the crown reads as many thin rods.
+    # Narrow leaves along the rods: short light strokes, silvery on the lit side, so the crown
+    # reads as many thin rods.
     for rod in rods:
-        for x, y in rod[6::3]:
+        for x, y in (point for point in rod[6:] if rng.random() < 0.3):
             if canvas[y][x] in LEAVES[1:]:
-                canvas[y][x] = LEAVES[0] if x < OBJECT_CENTRE else LEAVES[1]
+                canvas[y][x] = SILVER if x < OBJECT_CENTRE else LEAVES[0]
                 if canvas[y - 1][x] in LEAVES:
-                    canvas[y - 1][x] = LEAVES[1]
+                    canvas[y - 1][x] = LEAVES[0]
         # The tips of the longest rods show above the crown.
         for x, y in rod[-3:]:
             if canvas[y][x] is None:

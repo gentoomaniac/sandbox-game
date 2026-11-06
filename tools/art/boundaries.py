@@ -415,9 +415,9 @@ def stone_wall_row():
 
 # A long smooth bank of clay under turf, the whole tile wide: this many px high on its crest,
 # down to the ground at the tile's edges across it.
-DYKE_HEIGHT = 7
+DYKE_HEIGHT = 8
 DYKE_FOOT = TILE / 2
-DYKE_TURF = ("green_bright", "green_light", "green", "green_dark")
+DYKE_TURF = ("green_light", "green", "green_dark", "green_deep")
 
 
 def _dyke_layers(mask, x, y):

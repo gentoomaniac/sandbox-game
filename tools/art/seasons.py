@@ -396,8 +396,11 @@ _KNICK_HAWS = {"soil_light", "soil_mid"}
 
 # The pollard willow's silver-green leaves: fresh in spring, yellow in autumn. In winter it is
 # drawn again, bare (see generate.py).
-_WILLOW_SPRING = {"frost": "spring_pale", "dry_light": "spring_light", "dry": "spring", "olive": "spring_dark"}
-_WILLOW_AUTUMN = {"frost": "gold", "dry_light": "ochre", "dry": "ochre_dark", "olive": "umber"}
+_WILLOW_SPRING = {
+    "frost": "spring_pale", "dry_light": "spring_light", "dry": "spring", "olive": "spring_dark",
+    "green_dark": "spring_dark",
+}
+_WILLOW_AUTUMN = {"frost": "gold", "dry_light": "ochre", "dry": "ochre_dark", "olive": "umber", "green_dark": "umber"}
 
 
 def _dot(canvas, rng, surfaces, count, colour):
