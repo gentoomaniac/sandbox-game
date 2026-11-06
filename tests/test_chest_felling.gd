@@ -95,14 +95,6 @@ func test_what_is_put_in_a_chest_after_it_was_placed_is_saved() -> void:
 	assert_eq(restored.world.object_at(_tile).storage.count_of(ItemTypes.STONE), 9)
 
 
-func test_a_chest_saved_without_storage_comes_back_empty() -> void:
-	var data := WorldObject.new(WorldObjectTypes.CHEST, _tile).to_dict()
-	data.erase("storage")
-	var chest := WorldObject.from_dict(JSON.parse_string(JSON.stringify(data)))
-	assert_eq(chest.storage.slots.size(), 15)
-	assert_true(chest.storage.is_empty())
-
-
 func test_objects_that_store_nothing_have_no_storage_in_the_save() -> void:
 	var stone := WorldObject.new(WorldObjectTypes.STONE, _tile)
 	assert_null(stone.storage)

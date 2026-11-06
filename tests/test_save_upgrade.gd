@@ -143,3 +143,96 @@ func test_a_version_6_save_turns_the_tomatoes_inside_a_building_into_flax() -> v
 	assert_eq(
 		inside.object_at(Vector2i(2, 1)).storage.slots[0], {"item": &"flax_seeds", "count": 6}
 	)
+
+
+## A current save as parsed JSON, to take fields from.
+func _current_game() -> Dictionary:
+	return JSON.parse_string(JSON.stringify(GameState.new_game(7).to_dict()))
+
+
+func test_a_version_7_save_without_soil_moisture_or_spent_clay_loads_with_neither() -> void:
+	var game := _current_game()
+	game["world"].erase("soil_moisture")
+	game["world"].erase("spent_clay_spots")
+	_write_save(7, game)
+
+	var restored := SaveFile.read(SAVE_PATH)
+
+	assert_eq(restored.world.to_dict()["soil_moisture"], [])
+	assert_eq(restored.world.to_dict()["spent_clay_spots"], [])
+
+
+func test_a_version_7_save_keeps_the_soil_moisture_and_clay_it_has() -> void:
+	var state := GameState.new_game(7)
+	state.world.set_moisture(Vector2i(5, 5), 0.9)
+	state.world.spend_clay_spot(Vector2i(6, 6))
+	_write_save(7, JSON.parse_string(JSON.stringify(state.to_dict())))
+
+	var restored := SaveFile.read(SAVE_PATH)
+
+	assert_eq(restored.world.moisture_at(Vector2i(5, 5)), 0.9)
+	assert_eq(restored.world.to_dict()["spent_clay_spots"].size(), 1)
+
+
+func test_a_version_7_save_without_equipment_wears_the_starting_outfit() -> void:
+	var game := _current_game()
+	game["player"].erase("equipment")
+	_write_save(7, game)
+
+	var restored := SaveFile.read(SAVE_PATH)
+
+	assert_eq(restored.player.equipment.to_dict(), Equipment.with_starting_outfit().to_dict())
+
+
+func test_a_version_7_save_without_energy_health_or_debuff_has_them_full() -> void:
+	var game := _current_game()
+	for field in ["energy", "health", "is_debuffed"]:
+		game["player"].erase(field)
+	_write_save(7, game)
+
+	var restored := SaveFile.read(SAVE_PATH)
+
+	assert_eq(restored.player.energy, PlayerState.MAX_ENERGY)
+	assert_eq(restored.player.health, PlayerState.MAX_HEALTH)
+	assert_false(restored.player.is_debuffed)
+
+
+func test_a_version_7_save_gives_a_chest_without_a_store_an_empty_one() -> void:
+	var game := _current_game()
+	var chest := WorldObject.new(WorldObjectTypes.CHEST, Vector2i(101, 100)).to_dict()
+	chest.erase("storage")
+	game["world"]["object_edits"].append({"pos": [101, 100], "object": chest})
+	_write_save(7, game)
+
+	var restored := SaveFile.read(SAVE_PATH)
+
+	restored.world.add_chunk(Chunk.new(Vector2i(3, 3)))
+	var storage := restored.world.object_at(Vector2i(101, 100)).storage
+	assert_eq(storage.slots.size(), WorldObjectTypes.TYPES[WorldObjectTypes.CHEST]["storage_slots"])
+	assert_eq(storage.count_of(ItemTypes.LOGS), 0)
+
+
+func test_a_version_7_crop_that_counted_days_has_that_many_stages_of_growth() -> void:
+	var game := _current_game()
+	var crop := WorldObject.new(WorldObjectTypes.TURNIP, Vector2i(100, 100)).to_dict()
+	crop["state"] = {"days_grown": 2}
+	game["world"]["object_edits"].append({"pos": [100, 100], "object": crop})
+	_write_save(7, game)
+
+	var restored := SaveFile.read(SAVE_PATH)
+
+	restored.world.add_chunk(Chunk.new(Vector2i(3, 3)))
+	var restored_crop := restored.world.object_at(Vector2i(100, 100))
+	var per_stage: float = WorldObjectTypes.TYPES[restored_crop.type]["growth_per_stage"]
+	assert_eq(CropLife.growth(restored_crop), 2 * per_stage)
+	assert_false(restored_crop.state.has("days_grown"))
+
+
+func test_a_current_save_missing_a_field_fails_loudly() -> void:
+	var game := _current_game()
+	game["player"].erase("energy")
+	_write_save(SaveFile.VERSION, game)
+
+	SaveFile.read(SAVE_PATH)
+
+	assert_engine_error("energy")

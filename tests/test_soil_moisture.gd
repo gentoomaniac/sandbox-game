@@ -160,13 +160,6 @@ func test_moisture_survives_a_save_and_a_chunk_reload() -> void:
 	assert_almost_eq(restored.world.moisture_at(_tile), 0.77, 0.0001)
 
 
-func test_a_save_from_before_moisture_has_the_default_everywhere() -> void:
-	var data := _state.to_dict()
-	data["world"].erase("soil_moisture")
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(data)))
-	assert_eq(restored.world.moisture_at(_tile), _farming("default_moisture"))
-
-
 func test_soil_looks_damp_and_wet_from_their_moistures() -> void:
 	assert_eq(SoilWetness.look_for(0.0), -1)
 	assert_eq(SoilWetness.look_for(SoilWetness.DAMP_FROM - 0.01), -1)

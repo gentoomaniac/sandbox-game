@@ -176,13 +176,3 @@ static func describe(crop: WorldObject) -> Array[String]:
 			]
 		),
 	]
-
-
-## Crops used to count days, one stage each: turns the days of a crop from an old save into
-## growth.
-static func upgrade_old_state(crop: WorldObject) -> void:
-	if crop.is_crop() and crop.state.has("days_grown"):
-		crop.state["growth"] = (
-			float(crop.state["days_grown"]) * crop.type_data()["growth_per_stage"]
-		)
-		crop.state.erase("days_grown")

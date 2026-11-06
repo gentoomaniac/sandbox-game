@@ -219,14 +219,6 @@ func test_a_spent_spot_stays_spent_through_the_save() -> void:
 	assert_true(restored.world.has_clay(spot), "it recovers on schedule")
 
 
-func test_a_save_without_spent_spots_loads() -> void:
-	var game: Dictionary = JSON.parse_string(JSON.stringify(_state.to_dict()))
-	game["world"].erase("spent_clay_spots")
-	var restored := GameState.from_dict(game)
-	_load_chunks_of(restored, _spots)
-	assert_true(restored.world.has_clay(_spots[0]))
-
-
 # --- The hint ---
 
 

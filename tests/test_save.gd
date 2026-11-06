@@ -111,13 +111,6 @@ func test_world_object_round_trip_keeps_its_growth() -> void:
 	assert_eq(CropLife.damage(restored), 0.25)
 
 
-func test_a_crop_from_a_save_that_counted_days_has_that_many_stages_of_growth() -> void:
-	var old_crop := {"type": "turnip", "pos": [1, 1], "state": {"days_grown": 2}}
-	var crop := WorldObject.from_dict(old_crop)
-	assert_eq(CropLife.growth(crop), 2 * WorldObjectTypes.TYPES[crop.type]["growth_per_stage"])
-	assert_false(crop.state.has("days_grown"))
-
-
 func test_clock_round_trip() -> void:
 	_state.clock.advance(GameClock.MINUTES_PER_DAY + 95)
 	var restored := GameClock.from_dict(_through_json(_state.clock.to_dict()))

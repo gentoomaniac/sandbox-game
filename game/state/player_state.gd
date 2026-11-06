@@ -113,16 +113,10 @@ static func from_dict(data: Dictionary, home_map: GameMap) -> PlayerState:
 	player.home_bed = SaveCodec.vector_from_json(data["home_bed"])
 	player.appearance = Appearance.from_dict(data["appearance"])
 	player.inventory = Inventory.from_dict(data["inventory"])
-	# Saves from before equipment had the outfit of a new game on.
-	player.equipment = (
-		Equipment.from_dict(data["equipment"])
-		if data.has("equipment")
-		else Equipment.with_starting_outfit()
-	)
-	# Saves from before energy existed have none of these.
-	player.energy = data.get("energy", MAX_ENERGY)
-	player.health = data.get("health", MAX_HEALTH)
-	player.is_debuffed = data.get("is_debuffed", false)
+	player.equipment = Equipment.from_dict(data["equipment"])
+	player.energy = data["energy"]
+	player.health = data["health"]
+	player.is_debuffed = data["is_debuffed"]
 	return player
 
 

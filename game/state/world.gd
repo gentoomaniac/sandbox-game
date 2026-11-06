@@ -630,11 +630,9 @@ static func from_dict(data: Dictionary, game_clock: GameClock) -> World:
 		world._terrain_edits[SaveCodec.vector_from_json(edit)] = SaveCodec.terrain_from_json(
 			edit[2]
 		)
-	# Saves from before moisture have none: all the soil is as default.
-	for entry: Array in data.get("soil_moisture", []):
+	for entry: Array in data["soil_moisture"]:
 		world._soil_moisture[SaveCodec.vector_from_json(entry)] = float(entry[2])
-	# Saves from before clay have no spent spots.
-	for entry: Array in data.get("spent_clay_spots", []):
+	for entry: Array in data["spent_clay_spots"]:
 		world._spent_clay_spots[SaveCodec.vector_from_json(entry)] = int(entry[2])
 	for edit: Dictionary in data["object_edits"]:
 		var object_data: Variant = edit["object"]

@@ -23,16 +23,6 @@ func test_energy_health_and_the_debuff_survive_a_save_round_trip() -> void:
 	assert_true(restored.player.is_debuffed)
 
 
-func test_a_save_from_before_energy_loads_with_full_bars() -> void:
-	var data: Dictionary = JSON.parse_string(JSON.stringify(_state.to_dict()))
-	for key in ["energy", "health", "is_debuffed"]:
-		data["player"].erase(key)
-	var restored := GameState.from_dict(data)
-	assert_eq(restored.player.energy, PlayerState.MAX_ENERGY)
-	assert_eq(restored.player.health, PlayerState.MAX_HEALTH)
-	assert_false(restored.player.is_debuffed)
-
-
 # --- The data file ---
 
 

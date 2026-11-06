@@ -72,16 +72,6 @@ func test_a_saved_player_keeps_what_they_wear_and_how_they_look() -> void:
 	assert_eq(restored.appearance.layers, state.player.appearance.layers)
 
 
-func test_a_save_from_before_equipment_gets_the_starting_outfit() -> void:
-	var state := GameState.new_game(1)
-	var data := _through_json(state.player.to_dict())
-	data.erase("equipment")
-	var restored := PlayerState.from_dict(data, state.world)
-	assert_eq(restored.equipment.item_in(Equipment.BODY), ItemTypes.TUNIC)
-	assert_eq(restored.equipment.item_in(Equipment.LEGS), ItemTypes.TROUSERS)
-	assert_eq(restored.equipment.item_in(Equipment.HEAD), ItemTypes.NONE)
-
-
 func test_loading_skips_unknown_items_and_items_in_the_wrong_slot() -> void:
 	var restored := Equipment.from_dict(
 		{"head": "removed_item", "body": "straw_hat", "legs": "trousers"}

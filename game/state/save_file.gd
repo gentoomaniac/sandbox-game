@@ -1,9 +1,18 @@
 class_name SaveFile
 extends RefCounted
-## The save on disk: one JSON file per world, `{"version": 6, "game": <GameState.to_dict>}`.
+## The save on disk: one JSON file per world, `{"version": VERSION, "game": <GameState.to_dict>}`.
 ## Older saves still load, upgraded step by step (see `_upgrade_from_version_1` and so on).
+##
+## How to add a save field (or change one):
+## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
+##    with a default: a save without the field is a bug to see, not to hide.
+## 2. Raise VERSION by one.
+## 3. Add `_upgrade_from_version_<old VERSION>` here, which gives the field to a save of the old
+##    version (its default, or computed from what the save has), and call it from `read`.
+## 4. Add a test in tests/test_save_upgrade.gd: an old save without the field loads right.
+## An upgrade step works on the parsed JSON, before any `from_dict` runs.
 
-const VERSION := 7
+const VERSION := 8
 ## Version 6 had tomatoes, which were not grown here before the 19th century; flax took their
 ## place, item for item.
 const TOMATOES_TO_FLAX := {"tomatoes": "flax", "tomatoes_seeds": "flax_seeds"}
@@ -67,6 +76,8 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 		_upgrade_from_version_5(parsed["game"])
 	if version <= 6:
 		_upgrade_from_version_6(parsed["game"])
+	if version <= 7:
+		_upgrade_from_version_7(parsed["game"])
 	return GameState.from_dict(parsed["game"])
 
 
@@ -118,6 +129,38 @@ static func _upgrade_from_version_6(game: Dictionary) -> void:
 	_tomatoes_to_flax(game["player"]["inventory"]["slots"])
 	for ground_item: Dictionary in game["world"]["ground_items"]:
 		ground_item["item"] = TOMATOES_TO_FLAX.get(ground_item["item"], ground_item["item"])
+	for object in _saved_objects(game):
+		object["type"] = TOMATOES_TO_FLAX.get(object["type"], object["type"])
+		if object.has("storage"):
+			_tomatoes_to_flax(object["storage"])
+
+
+## Version 7 saves may lack fields that were added to version 7 without a new version: soil
+## moisture, spent clay spots, the outfit, energy, health and the debuff, and the empty store of
+## a chest made before chests stored anything. A field the save has is kept. Crops counted days
+## in `days_grown`, one growth stage each; they now keep `growth`.
+static func _upgrade_from_version_7(game: Dictionary) -> void:
+	var world: Dictionary = game["world"]
+	world.get_or_add("soil_moisture", [])
+	world.get_or_add("spent_clay_spots", [])
+	var player: Dictionary = game["player"]
+	player.get_or_add("equipment", Equipment.with_starting_outfit().to_dict())
+	player.get_or_add("energy", PlayerState.MAX_ENERGY)
+	player.get_or_add("health", PlayerState.MAX_HEALTH)
+	player.get_or_add("is_debuffed", false)
+	for object in _saved_objects(game):
+		var type_data: Dictionary = WorldObjectTypes.TYPES[StringName(object["type"])]
+		if type_data.has("storage_slots"):
+			object.get_or_add("storage", ItemSlots.new(type_data["storage_slots"]).slots_to_data())
+		if type_data.has("growth_stages") and object["state"].has("days_grown"):
+			var state: Dictionary = object["state"]
+			state["growth"] = float(state["days_grown"]) * type_data["growth_per_stage"]
+			state.erase("days_grown")
+
+
+## The saved world objects outside the loaded chunks: those the player changed in the world and
+## those inside buildings.
+static func _saved_objects(game: Dictionary) -> Array:
 	var objects: Array = []
 	for edit: Dictionary in game["world"]["object_edits"]:
 		if edit["object"] != null:
@@ -125,10 +168,7 @@ static func _upgrade_from_version_6(game: Dictionary) -> void:
 	for building: Dictionary in game["world"]["buildings"]:
 		if building["interior"] != null:
 			objects.append_array(building["interior"]["objects"])
-	for object: Dictionary in objects:
-		object["type"] = TOMATOES_TO_FLAX.get(object["type"], object["type"])
-		if object.has("storage"):
-			_tomatoes_to_flax(object["storage"])
+	return objects
 
 
 static func _tomatoes_to_flax(slots: Array) -> void:

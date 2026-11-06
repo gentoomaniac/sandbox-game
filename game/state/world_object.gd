@@ -34,9 +34,7 @@ static func from_dict(data: Dictionary) -> WorldObject:
 	var object := WorldObject.new(StringName(data["type"]), SaveCodec.vector_from_json(data["pos"]))
 	# Left as parsed: JSON numbers are floats, so the typed accessors convert.
 	object.state = data["state"].duplicate()
-	CropLife.upgrade_old_state(object)
-	# An object saved before it could store anything (an interior's chest) has an empty store.
-	if object.storage != null and data.has("storage"):
+	if object.storage != null:
 		object.storage.load_slots(data["storage"])
 	return object
 
