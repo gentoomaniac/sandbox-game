@@ -22,6 +22,10 @@ THATCH = ("sand", "bare_light", "bare", "mud_dark", "soil_dark")
 MOSS = ("dry", "olive", "green_dark")
 # The height of a course of thatch, in px.
 COURSE = 4
+# The rolled eaves: how many rows they take up at the foot of the roof, and the radius in px of
+# their upturn at each corner.
+EAVES_ROWS = 6
+EAVES_CORNER = 6
 # The lime-washed walls: lit, and shaded at the right corner.
 LIME = ("lime", "sand_light")
 # Fieldstones: lit on top, and their body.
@@ -61,7 +65,10 @@ def thatch_roof(picture, snowy, rng, left, right, ridge_y, eaves_y, inset, swell
                 lift += rise * math.cos((x - cx) / half_width * math.pi / 2) ** 2
         lifts[x] = lift
         corner = min(x - left, right - x)
-        eaves[x] = eaves_y - round(lift) - (round(6 - math.sqrt(36 - (6 - corner) ** 2)) if corner < 6 else 0)
+        upturn = 0
+        if corner < EAVES_CORNER:
+            upturn = round(EAVES_CORNER - math.sqrt(EAVES_CORNER**2 - (EAVES_CORNER - corner) ** 2))
+        eaves[x] = eaves_y - round(lift) - upturn
     # Per course (counted up from the eaves) and column: how far its edge drops or lifts, in runs
     # of a few columns; whether its lit top shows there; and how long a reed end hangs there.
     courses = []
@@ -102,6 +109,7 @@ def thatch_roof(picture, snowy, rng, left, right, ridge_y, eaves_y, inset, swell
         if all(abs(wx - cx) > half_width + radius for cx, half_width, _ in swells)
     ]
 
+    # The patches are flattened ellipses (0.6 squashes them vertically), so they lie along the courses.
     def is_weathered(x, y):
         return any(math.hypot(x - wx, (y - wy) * 0.6) < radius for wx, wy, radius in weathered)
 
@@ -125,8 +133,9 @@ def thatch_roof(picture, snowy, rng, left, right, ridge_y, eaves_y, inset, swell
             else:
                 plane = 2
             from_eaves = eaves[x] - y
-            if from_eaves < 6:
-                # The rolled eaves: a lit lip over a dark underside, darker on the shaded hip.
+            if from_eaves < EAVES_ROWS:
+                # The rolled eaves, one shade per row up from the bottom: a lit lip over a dark
+                # underside, darker on the shaded hip.
                 shade = (4, 4, 4 if ragged[x] else 3, 2, 1, 1)[from_eaves]
                 if plane == 3 and from_eaves > 2:
                     shade += 1
@@ -136,7 +145,7 @@ def thatch_roof(picture, snowy, rng, left, right, ridge_y, eaves_y, inset, swell
             else:
                 # Up the slope from the eaves. Over a swell the lowest courses bend up with the
                 # eaves and the bend dies out fast above them, so the courses don't stack into steps.
-                along = round(eaves_y - y - lifts[x] * t**5) - 6
+                along = round(eaves_y - y - lifts[x] * t**5) - EAVES_ROWS
                 # The edges wave: the course a pixel would be in moves it up or down a little.
                 along += courses[along // COURSE][0][x]
                 course, row = divmod(max(0, along), COURSE)
@@ -144,9 +153,9 @@ def thatch_roof(picture, snowy, rng, left, right, ridge_y, eaves_y, inset, swell
                 # The lit hip line and the lit top edge of each course, then the reed ends below it.
                 is_lit = (row == COURSE - 1 and lit[x]) or (plane == 1 and x + 1 >= left + hip)
                 hangs = COURSE - 1 - row <= reed.get(x, 0) or (x % 2 and is_weathered(x, y))
-                tone = plane - is_lit
-                stroke = not is_lit and row < COURSE - 1 and plane > 1 and hangs
-                colour = THATCH[tone + stroke]
+                tone = plane - 1 if is_lit else plane
+                is_stroke = not is_lit and row < COURSE - 1 and plane > 1 and hangs
+                colour = THATCH[tone + 1 if is_stroke else tone]
                 # Moss covers the reed ends, a little ragged at its edge.
                 for mx, my, radius in patches:
                     distance = math.hypot(x - mx, (y - my) * 1.5)
