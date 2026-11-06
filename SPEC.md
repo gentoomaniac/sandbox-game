@@ -351,7 +351,9 @@ Decided 2026-11-05. Everything makes sound; no background music for now.
   spring and summer, mostly in the evening and at night and when it is warm, louder the
   closer the player is; deer snort now and then and their hooves sound when they bound
   away; rabbits rustle when they flee; squirrels chatter; bees buzz softly at their
-  flower. Butterflies are silent.
+  flower. Butterflies are silent. Storks clatter their bills (a dry, hollow rattle) about once
+  a minute or so while one is in view; geese honk now and then and when they take off, a skein
+  flying over more often. Both are rare and quieter than the farm animals.
 - **How the ambience is made** (decided 2026-11-05, numbers in `data/ambience.cfg`): once
   a second the weather sets the loops: rain at its strength, wind from calm (silent) to
   full speed, and in wind a gust now and then plays `wind_gust` and swells the wind loop
@@ -775,7 +777,20 @@ atmosphere only: no player impact, not hunted, not saved.
   - bees: only at flowers in bloom, by day in spring and summer: one for every few tiles
     of flowers around the view (up to the cap), none where nothing blooms; they hop from
     flower to flower within a few tiles and fly off when none is left near (task 75);
-  - butterflies: over meadows and flowers by day in spring and summer.
+  - butterflies: over meadows and flowers by day in spring and summer;
+  - white storks (task 60): in spring and summer, by day only. They hunt on wetland, the
+    floodplain and grass with open water within a few tiles (the wet meadows of the marsh),
+    walking slowly with the head down and stabbing into the grass, and fly off with slow
+    wingbeats and glides when the player comes near. Others fly in and stand on the ridge of a
+    house near the view (one per roof; where they stand is read from the top of the house's
+    picture as it is shown, snow and all) and take no notice of the player, leaving if the
+    house is gone; storks clatter their bills now and then. No
+    nest yet;
+  - greylag geese (task 60): flocks of 6 to 12 graze the marsh and the floodplain (grass within
+    7 tiles of water) in autumn and winter, fewer in spring, by day. They raise their heads
+    together when the player comes near and take off together when nearer, closing up into a
+    V. Skeins of 7 to 13 fly over high up now and then, mostly at dawn and dusk. A flock counts
+    as one animal.
 - **The world decides how many:** time of day (birds and insects by day, deer at dawn and
   dusk, fewer animals at night), season (no insects in winter; fewer birds; rabbits and
   squirrels still about), weather (animals hide in heavy rain, storms and dense fog), and

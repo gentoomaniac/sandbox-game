@@ -361,8 +361,8 @@ copper watering can. Kept here as the record of why.
    read as Schleswig-Holstein: autotiled Knick hedges of hazel and hawthorn on earth banks,
    turfed dykes along the floodplain, straight water ditches with reeds and pollard willows
    in the marsh, and wattle fences and fieldstone walls as rarer field boundaries, all with
-   their seasons (tools/art/boundaries.py and willow.py). Still to do: sheep on the dykes
-   (bigger item 8), overstander oaks in the Knicks, a Stackdeich and sluices, and a look per
+   their seasons (tools/art/boundaries.py and willow.py). Sheep can graze on the dykes, which
+   are walked on like grass. Still to do: overstander oaks in the Knicks, a Stackdeich and sluices, and a look per
    season for a whole line rather than per tile.
 3. ~~**Thatch texture**~~ done (task 55). The thatch was single-pixel streaks over the
    whole roof and looked like grey fur at 1×, over a dome. Now: courses of combed reed about
@@ -408,11 +408,19 @@ copper watering can. Kept here as the record of why.
    stall posts, and the Flett with the open hearth, box beds and plate rack at its end. No
    new colours. Still to do: a Haubarg on a mound for a rich marsh farm, a stork's nest on
    the ridge, a Klöntür in the Grote Door, side doors to the Flett, cattle in the stalls.
-8. **Animals of the region** (large). White storks on roofs, red-brown cattle, sheep on
-   the dykes, geese; the roe deer and rabbits stay. Task 73 drew the livestock
-   (tools/art/livestock.py) without a new colour: Angler, black pied and red pied cattle;
-   white, grey (Heidschnucke) and black-faced sheep; brown and white hens and a rooster;
-   agouti, white and Dutch rabbits. Still to do: storks, geese, pigs, horses.
+8. ~~**Animals of the region**~~ done (tasks 73 and 60). Task 73 drew the livestock
+   (tools/art/livestock.py): Angler, black pied and red pied cattle; white, grey
+   (Heidschnucke) and black-faced sheep; brown and white hens and a rooster; agouti, white and
+   Dutch rabbits; they can graze the dykes, which are walked on like grass. Task 60 drew the
+   big birds of the marsh (tools/art/birds.py): the white stork about 16 px tall, white
+   (`lime`, `stone_light`) with black flight feathers (`ink`) and a red bill and legs
+   (`red_light`, `ember`), standing, hunting with the head down, striking, clattering with
+   the head thrown back and flying; and the greylag goose, grey-brown (`bare_light`, `bare`,
+   `mud`) with a pale breast, a white tail and an orange bill (`flame`), standing, grazing,
+   walking and flying. Flying birds are seen from a little above: the far wing above the body,
+   the near wing below it. No new colours. The roe deer and rabbits stay. Still to do: a
+   stork's nest on a ridge, lapwings and oystercatchers, seals on the sandbanks, pigs,
+   horses.
 9. **Coast and flats** (large). Tidal mud with ripples and tideways, salt marsh turning red
    in autumn, an Ewer on the mud, a Warft with its Fething. Needs map and terrain work
    too.

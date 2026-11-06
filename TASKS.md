@@ -204,11 +204,29 @@ building type only; a copy of the user's save loads). No new colours. Screenshot
 
 ## 60. Animals of the region
 
-- [ ] Done
+- [x] Done
 
 docs/art-style.md bigger item 8: white storks (on roofs, in the marsh), red-brown cattle
 and sheep (on dykes and pasture), geese, as ambient wildlife with sounds; roe deer and
 rabbits stay.
+
+Done: four kinds in data/wildlife.cfg, art in tools/art/birds.py (no new colours). `stork`
+hunts on wetland, the floodplain and grass with water within 4 tiles (`water_radius`, a new
+key of every kind), in spring and summer by day, and flies off at 5 tiles with slow beats and
+glides; `roof_stork` flies in from beside the view to a house near it (one per roof), lands
+on the ridge (the middle third of the top edge of the house's picture as it is shown, read once
+per picture, so it stays on top under snow), standing just in front of where the house sorts
+(`BuildingViews.sort_position`), and leaves if the house is gone. Both are `Stork`, which clatters now and then. `geese` is a `GooseFlock` of 6 to
+12 greylags on the marsh and floodplain (water within 7 tiles) in autumn, winter and, fewer,
+spring: each goose grazes, looks round or steps on its own near the others; the flock looks up
+at 9 tiles and takes off together at 6, closing into a V. `flying_geese` is a skein of 7 to 13
+crossing high up, mostly at dawn and dusk: `Flock` flies sparrows or geese by kind.
+`GroundShadows` are the flight shadows, kept and not made every frame. Sounds `stork_clatter`
+(with the clatter) and `goose_honk` (now and then, and on taking off), peaks -25 and -24 dBFS,
+quieter than the farm animals. Spawn and `--wildlife` take the four kinds (`roof_stork` on the
+nearest roof, the geese as one flock). Livestock already graze the dykes, which are walkable:
+no change. Not done: a stork's nest, lapwings and oystercatchers, the early spring of the geese
+as such (a season factor of 0.5 for all of spring). Screenshot in docs/screenshots/wildlife.png.
 
 ## 61. Coast and tidal flats
 

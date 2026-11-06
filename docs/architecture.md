@@ -71,7 +71,12 @@ with Knicks, walls and fences on the Geest, ditches in the marsh, and dykes.
   outside. The numbers are `data/livestock.cfg` (`LivestockRules`). The WildlifeView draws
   them: one `FarmAnimalView` (an `Animal` like the wild ones, but its state comes from the
   FarmAnimal) for each animal near the view. Wildlife is view only and not saved; livestock is
-  state and saved, and shares the wildlife's drawing, sheets and sounds.
+  state and saved, and shares the wildlife's drawing, sheets and sounds. A group of birds is one
+  `Animal` with a sprite per bird: `Flock` (sparrows or a skein of geese crossing in a V) and
+  `GooseFlock` (geese grazing, then taking off together). Storks on roofs (`Stork`) stand on the top edge
+  of the house's picture as it is shown (`WorldView.building_picture`, so snow is counted), just
+  in front of where the house sorts (`BuildingViews.sort_position`); flying birds cast
+  `GroundShadows`.
 - **Crafting** (`game/state/crafting.gd`) is what the crafting menu does: it checks a recipe of
   `RecipeRules` (materials, the skill level it needs), crafts it and practises its skill on the
   player's **Skills** (`skills.gd`: points per skill, the total cap and the skills that fade,
