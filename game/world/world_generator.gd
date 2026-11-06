@@ -18,6 +18,8 @@ extends RefCounted
 ## carry the sea dyke and whose marsh reaches inland from it as from the river; west of it the
 ## foreshore, which nothing grows on: the salt marsh, then the tidal mud cut by tideways that
 ## widen towards the open sea, then the sea. The river runs on through the foreshore, widening.
+## Out on the salt marsh stands a Warft here and there ([warften]): a dwelling mound with a pond
+## (Fething) on top, ringed by salt marsh, where nobody lives yet.
 ##
 ## Deterministic: terrain is a pure function of the seed and the world tile position, and
 ## each generator owns its noise instances, so chunks come out the same in any order and
@@ -86,6 +88,12 @@ const TIDEWAY_LATE_START := 24.0
 ## How many tiles of mud a tideway leaves between itself and the river running out: if they met,
 ## mud between them could be cut off from the land.
 const TIDEWAY_RIVER_CLEARANCE := 3.0
+## A Warft is an oval this many tiles from its middle to its edge, east-west and north-south, in a
+## ring of salt marsh that reaches this many times as far.
+const WARFT_RADII := Vector2(5.5, 4.0)
+const WARFT_SALT_MARSH_RING := 1.7
+## A Warft keeps this far from the river's centre line, in tiles.
+const WARFT_RIVER_CLEARANCE := 30.0
 
 ## A tile further than this from the river's centre line can't be beside the floodplain: a
 ## tile beside it is at most this much nearer, where the river turns steeply.
@@ -166,6 +174,7 @@ const CLAY_ROLL_SEED_OFFSET := 9
 const REED_ROLL_SEED_OFFSET := 10
 const DITCH_SIDE_ROLL_SEED_OFFSET := 12
 const TIDEWAY_START_ROLL_SEED_OFFSET := 16
+const WARFT_ROLL_SEED_OFFSET := 17
 
 var _river_noise := FastNoiseLite.new()
 var _wetland_noise := FastNoiseLite.new()
@@ -184,6 +193,7 @@ var _clay_roll_seed: int
 var _reed_roll_seed: int
 var _ditch_side_roll_seed: int
 var _tideway_start_roll_seed: int
+var _warft_roll_seed: int
 var _fields: FieldLayout
 ## The numbers of data/landscape.cfg (see there).
 var _marsh_reach: float
@@ -199,6 +209,9 @@ var _tideway_spacing: float
 var _tideway_meander: float
 var _tideway_widening: float
 var _tideway_widest: float
+var _warft_spacing: float
+var _warft_chance: float
+var _warft_out: float
 
 
 func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void:
@@ -229,6 +242,7 @@ func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void
 	_reed_roll_seed = world_seed + REED_ROLL_SEED_OFFSET
 	_ditch_side_roll_seed = world_seed + DITCH_SIDE_ROLL_SEED_OFFSET
 	_tideway_start_roll_seed = world_seed + TIDEWAY_START_ROLL_SEED_OFFSET
+	_warft_roll_seed = world_seed + WARFT_ROLL_SEED_OFFSET
 	_fields = FieldLayout.new(world_seed, landscape)
 	_marsh_reach = landscape.value("marsh", "reach")
 	_dyke_above = landscape.value("dykes", "stretch_above")
@@ -243,6 +257,9 @@ func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void
 	_tideway_meander = landscape.value("tideways", "meander")
 	_tideway_widening = landscape.value("tideways", "widening")
 	_tideway_widest = landscape.value("tideways", "widest")
+	_warft_spacing = landscape.value("warften", "spacing")
+	_warft_chance = landscape.value("warften", "chance")
+	_warft_out = landscape.value("warften", "out")
 
 
 ## The chunk at `chunk_coords`, or null if it is outside the world bounds.
@@ -316,7 +333,12 @@ func _river_distance(world_pos: Vector2i) -> float:
 
 ## How far a tile lies east of the coast line, in tiles along x: negative out on the foreshore.
 func _coast_distance(world_pos: Vector2i) -> float:
-	return world_pos.x - (_coast_x + _coast_noise.get_noise_1d(world_pos.y) * _coast_wander)
+	return world_pos.x - _coast_line_x(world_pos.y)
+
+
+## Where the coast line runs in a row.
+func _coast_line_x(y: float) -> float:
+	return _coast_x + _coast_noise.get_noise_1d(y) * _coast_wander
 
 
 ## The foreshore `seaward` tiles out from the coast line: the river running out, the salt marsh,
@@ -325,10 +347,16 @@ func _foreshore_terrain(world_pos: Vector2i, seaward: float, river_distance: flo
 	var estuary_half_width := RIVER_HALF_WIDTH + seaward * ESTUARY_WIDENING
 	if river_distance < estuary_half_width:
 		return Tile.Terrain.SEA
+	# How far out a tile is from a Warft's middle: 1 at its edge (INF where there is none).
+	var from_warft := Vector2(world_pos) + Vector2(0.5, 0.5) - _warft_middle(world_pos.y)
+	var warft_reach := (from_warft / WARFT_RADII).length()
+	if warft_reach < 1.0:
+		var is_fething := absf(from_warft.x) < 1.0 and absf(from_warft.y) < 1.0
+		return Tile.Terrain.WATER if is_fething else Tile.Terrain.WARFT
 	var salt_marsh_width := (
 		_salt_marsh_width + _foreshore_noise.get_noise_1d(world_pos.y) * _salt_marsh_wander
 	)
-	if seaward < salt_marsh_width:
+	if seaward < salt_marsh_width or warft_reach < WARFT_SALT_MARSH_RING:
 		return Tile.Terrain.SALT_MARSH
 	var out := seaward - salt_marsh_width
 	var sea_wander := _foreshore_noise.get_noise_1d(world_pos.y + SEA_EDGE_SAMPLE_OFFSET)
@@ -338,6 +366,20 @@ func _foreshore_terrain(world_pos: Vector2i, seaward: float, river_distance: flo
 	if is_clear_of_the_river and _is_tideway(world_pos, out):
 		return Tile.Terrain.SEA
 	return Tile.Terrain.MUD
+
+
+## The middle of the Warft in the band of rows of `y` (one band every `spacing` rows, of which
+## `chance` have one), `out` tiles seaward of the coast line, or Vector2.INF if it has none, as
+## where the river runs out.
+func _warft_middle(y: int) -> Vector2:
+	var band := floori(y / _warft_spacing)
+	if _roll(Vector2i(band, 0), _warft_roll_seed) >= _warft_chance:
+		return Vector2.INF
+	var middle_y := (band + 0.5) * _warft_spacing
+	var middle := Vector2(_coast_line_x(middle_y) - _warft_out, middle_y)
+	if _river_distance(Vector2i(middle)) < WARFT_RIVER_CLEARANCE:
+		return Vector2.INF
+	return middle
 
 
 ## Whether a tile of the mud, `out` tiles from the salt marsh, lies in a tideway. Tideway k winds

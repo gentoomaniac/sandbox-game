@@ -3,7 +3,9 @@ extends GutTest
 ## salt marsh, and the sea dyke on the first tiles of the land; nothing of it near the camp.
 
 const SEED := 42
-const FORESHORE: Array[Tile.Terrain] = [Tile.Terrain.MUD, Tile.Terrain.SALT_MARSH]
+const FORESHORE: Array[Tile.Terrain] = [
+	Tile.Terrain.MUD, Tile.Terrain.SALT_MARSH, Tile.Terrain.WARFT
+]
 ## The area looked at: the coast line wanders around x = -260 (data/landscape.cfg).
 const WEST := -700
 const EAST := -150
@@ -107,3 +109,25 @@ func test_the_sea_is_water_that_is_not_walked_on() -> void:
 	sea.terrain = Tile.Terrain.SEA
 	assert_false(sea.is_walkable())
 	assert_eq(TerrainTileset.terrain_layer(Tile.Terrain.SEA, 0.0), TerrainTileset.Layer.WATER)
+
+
+func test_a_warft_stands_on_the_salt_marsh_with_a_pond_on_top() -> void:
+	var warft_tiles := 0
+	var ponds := 0
+	for y in range(-600, 600):
+		for x in range(-320, -230):
+			var tile := Vector2i(x, y)
+			if _generator.terrain_at(tile) != Tile.Terrain.WARFT:
+				continue
+			warft_tiles += 1
+			for direction in WorldGenerator.WETLAND_PROBE_DIRECTIONS:
+				var beside := _generator.terrain_at(tile + direction)
+				assert_false(beside in [Tile.Terrain.MUD, Tile.Terrain.SEA], "beside %s" % tile)
+				ponds += int(beside == Tile.Terrain.WATER)
+			assert_eq(_generator.object_type_at(tile, Tile.Terrain.WARFT), &"", "bare %s" % tile)
+	assert_gt(warft_tiles, 100, "a few Warften along 1200 rows of coast")
+	assert_gt(ponds, 0, "their ponds")
+	var warft := Tile.new()
+	warft.terrain = Tile.Terrain.WARFT
+	assert_true(warft.is_buildable())
+	assert_true(warft.is_walkable())

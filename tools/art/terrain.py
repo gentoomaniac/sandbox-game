@@ -3,7 +3,7 @@ assets/decorations.png.
 
 Tiles are drawn as 16x16 grids of palette colour names (None = transparent). Each terrain layer
 has one function that returns its atlas row and its decorations; `LAYERS` lists them bottom to
-top: water, mud, floodplain, wetland, grass, salt marsh, lush grass, dry grass, trodden grass,
+top: water, mud, floodplain, wetland, grass, salt marsh, Warft, lush grass, dry grass, trodden grass,
 path, soil. Both atlases are read by game/scenes/terrain_tileset.gd.
 
 assets/terrain.png, per row:
@@ -608,6 +608,51 @@ def salt_marsh():
     return edge_tiles(texture, GRASS_SHAPES, 130, decorate) + fulls, decorations
 
 
+# How far down the slope of a Warft reaches from its edge, in pixels.
+_WARFT_SLOPE = 6
+
+
+def warft():
+    """A Warft, the dwelling mound of the marsh: its top is grass like any other, and its edges
+    are the slope down to the low land, lit where it faces north and west and in shade where it
+    faces south and east (the light comes from the top left), with a short shadow at its foot on
+    the south side. Around a pond on top (the Fething) the same edges are the pond's banks, which
+    face the other way and are lit and shaded the right way round by the same rule. It lies over
+    ordinary grass and shares its edges, like lush and dry grass."""
+    texture = grass_texture(("green", "green_light", "green_dark"))
+    tuft = sprite({"b": "green_bright", "d": "green_dark"}, "b.b", "d.d")
+    fulls = [details(texture, 150 + n, *picks) for n, picks in enumerate([(), (tuft,), (), ()])]
+    lit = ("green_bright", "green_light", "green_light", "green", "green", "green")
+    shaded = ("green_deep", "green_deep", "green_dark", "green_dark", "green", "green")
+
+    def decorate(tile, covered, rng):
+        slope = []
+        for y in range(TILE):
+            for x in range(TILE):
+                if not covered(x, y):
+                    continue
+                # The nearest way down: to the north or west is a lit face, south or east shade.
+                for step in range(1, _WARFT_SLOPE + 1):
+                    downs = [(dx, dy) for dx, dy in NEIGHBOURS if not covered(x + dx * step, y + dy * step)]
+                    if downs:
+                        faces_light = any(dx < 0 or dy < 0 for dx, dy in downs)
+                        slope.append((x, y, step, faces_light))
+                        break
+        for x, y, step, faces_light in slope:
+            # The band thins out in a dither towards the top, so the slope has no hard line.
+            if step == _WARFT_SLOPE and (x + y) % 2:
+                continue
+            tile[y][x] = (lit if faces_light else shaded)[step - 1]
+        for y in range(TILE):
+            for x in range(TILE):
+                # The shadow it casts on the low land at its southern foot.
+                if not covered(x, y) and (covered(x, y - 1) or covered(x, y - 2) and (x + y) % 2):
+                    tile[y][x] = "green_deep"
+
+    decorations = [decoration(161, tuft), decoration(162, tuft, tuft)]
+    return edge_tiles(texture, GRASS_SHAPES, 150, decorate) + fulls, decorations
+
+
 # Desire paths: grass that is walked often turns trodden, then a path of bare earth (see
 # data/paths.cfg). Both are drawn over whatever grass they wore, so their edges fade into it.
 
@@ -722,4 +767,6 @@ def soil():
     return edge_tiles(lambda seed: copy(base), shapes, 80, decorate) + fulls, []
 
 
-LAYERS = [water, mud, floodplain, wetland, grass, salt_marsh, lush_grass, dry_grass, trodden, path, soil]
+LAYERS = [
+    water, mud, floodplain, wetland, grass, salt_marsh, warft, lush_grass, dry_grass, trodden, path, soil
+]

@@ -13,7 +13,8 @@ extends RefCounted
 ## path, two layers over any grass (and the floodplain) that fade into it. The tidal mud lies
 ## just over the water, so the tideways are water cut into it; it looks the same in every
 ## season and weather, as the tide washes it. The salt marsh is a grass too, drawn over ordinary
-## grass like the lush and dry grass, with seasons of its own: red-purple in autumn.
+## grass like the lush and dry grass, with seasons of its own: red-purple in autumn. A Warft (a
+## dwelling mound) is grass over grass too, whose edges are its slopes.
 ##
 ## Terrain atlas: one row per layer. EDGE_VARIANTS blocks of 15 columns hold the edge
 ## shapes for masks 0..14 (0 is empty), the columns from FULL_COLUMN on the full-tile
@@ -28,6 +29,7 @@ enum Layer {
 	WETLAND,
 	GRASS,
 	SALT_MARSH,
+	WARFT,
 	LUSH_GRASS,
 	DRY_GRASS,
 	TRODDEN,
@@ -60,7 +62,7 @@ const FULL_COLUMN := EDGE_VARIANTS * FULL
 
 ## The code of a tile packs what its drawing needs into one int, so a corner of a cell is one
 ## value to read, fill in and pass on:
-##   bits 0-3   the layer (Layer, 0..10)
+##   bits 0-3   the layer (Layer, 0..11)
 ##   bits 4-7   the look it has by the season (SeasonBlend.Look, 0..8)
 ##   bits 8-11  the look over it by the weather (SeasonBlend.Look: FROST, DUSTING, SNOW, or
 ##              SUMMER for none)
@@ -76,7 +78,7 @@ const LOOK_MASK := (1 << LOOK_BITS) - 1
 const MISSING := -1
 const NO_DECORATION := Vector2i(-1, -1)
 
-const LAYER_COUNT := 11
+const LAYER_COUNT := 12
 ## The row of the decoration atlas with the meadow flowers: FLOWER_VARIANTS columns per species
 ## of FLOWER_SPECIES, in that order (see tools/art/flowers.py): a small plant, a few, and two
 ## tiles of the thick of a drift.
@@ -109,14 +111,16 @@ const LAYER_OF_TERRAIN: Dictionary[Tile.Terrain, Layer] = {
 	Tile.Terrain.FLOODPLAIN: Layer.FLOODPLAIN,
 	Tile.Terrain.MUD: Layer.MUD,
 	Tile.Terrain.SALT_MARSH: Layer.SALT_MARSH,
+	Tile.Terrain.WARFT: Layer.WARFT,
 }
-## The layer each layer is drawn over: the salt marsh, lush and dry grass need ordinary grass
-## beneath.
+## The layer each layer is drawn over: the salt marsh, the Warft, lush and dry grass need ordinary
+## grass beneath.
 const BASE_LAYER: Array[Layer] = [
 	Layer.WATER,
 	Layer.MUD,
 	Layer.FLOODPLAIN,
 	Layer.WETLAND,
+	Layer.GRASS,
 	Layer.GRASS,
 	Layer.GRASS,
 	Layer.GRASS,
@@ -136,10 +140,11 @@ const OVERLAY_LOOKS: Array[SeasonBlend.Look] = [
 	SeasonBlend.Look.DUSTING,
 	SeasonBlend.Look.SNOW,
 ]
-## The layers drawn over ordinary grass, bottom to top: the salt marsh, lush and dry grass, and
-## the desire paths worn into any of them. A season's look has an overlay of its own for each.
+## The layers drawn over ordinary grass, bottom to top: the salt marsh, the Warft, lush and dry
+## grass, and the desire paths worn into any of them. A season's look has an overlay of its own for
+## each.
 const VARIETY_LAYERS: Array[Layer] = [
-	Layer.SALT_MARSH, Layer.LUSH_GRASS, Layer.DRY_GRASS, Layer.TRODDEN, Layer.PATH
+	Layer.SALT_MARSH, Layer.WARFT, Layer.LUSH_GRASS, Layer.DRY_GRASS, Layer.TRODDEN, Layer.PATH
 ]
 ## Grass is lush where the variety noise is below this, dry where it is above DRY_ABOVE.
 const LUSH_BELOW := -0.2
@@ -159,6 +164,7 @@ const DECORATION_KINDS := {
 	Layer.LUSH_GRASS: [&"small_plant", &"small_plant", &"small_plant", &"small_plant", &"leaves"],
 	Layer.DRY_GRASS: [&"tuft", &"", &"tuft", &"", &"leaves"],
 	Layer.SALT_MARSH: [&"glasswort", &"glasswort", &"", &"glasswort"],
+	Layer.WARFT: [&"tuft", &"tuft"],
 }
 
 var tile_set := TileSet.new()

@@ -29,6 +29,7 @@ const FLOWER_HABITATS := {
 	TerrainTileset.Layer.FLOODPLAIN: "floodplain",
 	TerrainTileset.Layer.WETLAND: "wetland",
 	TerrainTileset.Layer.SALT_MARSH: "salt_marsh",
+	TerrainTileset.Layer.WARFT: "grass",
 }
 const GRASS_LAYERS: Array[TerrainTileset.Layer] = [
 	TerrainTileset.Layer.GRASS, TerrainTileset.Layer.LUSH_GRASS, TerrainTileset.Layer.DRY_GRASS
