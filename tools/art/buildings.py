@@ -849,57 +849,71 @@ def hall_house(is_lit):
     width, height = 7 * TILE, 136
     picture = blank(width, height)
     snowy = set()
-    face_top = gable_roof(picture, snowy, rng, 0, width - 1, 106, 54, 13, 34)
+    # The rows of the gable, top down: the foot of the hip, where the gable starts; the beam
+    # across the gable, with the boarded top above it; the beam over the door; the rail of the
+    # side bays; the fieldstone base.
+    gable_top = 54
+    gable_beam = (64, 66)
+    door_beam = (82, 85)
+    rail = 104
+    base_top = 128
+    wall_left, wall_right = 3, width - 4
+    # The posts of the oak frame, the stout posts either side of the door, and the door between.
+    posts = (wall_left, 20, 55, 90, wall_right - 1)
+    door_posts = (37, 71)
+    door_left, door_right = 42, 69
+    face_top = gable_roof(picture, snowy, rng, 0, width - 1, 106, gable_top, 13, 34)
     # The gable is drawn whole on a picture of its own, and shows below the roof and the boards.
     gable = blank(width, height)
-    wall_left, wall_right, base_top = 3, width - 4, 128
     bricks = ("rust", "rust", "red_light", "rust_dark")
-    brick_wall(gable, rng, wall_left, wall_right, 54, base_top - 1, bricks, "sand")
-    # The upper gable: brick in herringbone between the posts, slanting with the rakes beside them.
-    herringbone(gable, rng, [(x, y) for x in range(40, 72) for y in range(66, 82)], bricks, "sand")
+    brick_wall(gable, rng, wall_left, wall_right, gable_top, base_top - 1, bricks, "sand")
+    # The upper gable, between its beams: brick in herringbone between the door posts, slanting
+    # with the rakes in the bays beside them.
+    panel_rows = range(gable_beam[1], door_beam[0])
+    herringbone(gable, rng, [(x, y) for x in range(40, 72) for y in panel_rows], bricks, "sand")
     for x0, x1, rising in ((22, 37, 1), (74, 89, -1)):
-        diagonal_bricks(gable, rng, [(x, y) for x in range(x0, x1 + 1) for y in range(66, 82)], bricks, "sand", rising)
+        diagonal_bricks(gable, rng, [(x, y) for x in range(x0, x1 + 1) for y in panel_rows], bricks, "sand", rising)
     # The top of the gable boarded in oak, with the owl hole in it.
     for x in range(wall_left, wall_right + 1):
-        rect(gable, x, 54, x, 63, ("soil_light", "soil_mid", "soil_mid", "soil")[(x - wall_left) % 4])
+        rect(gable, x, gable_top, x, gable_beam[0] - 1, ("soil_light", "soil_mid", "soil_mid", "soil")[(x - wall_left) % 4])
     for row in range(5):
-        rect(gable, 55 - row, 57 + row, 56 + row, 57 + row, "ink")
+        rect(gable, 55 - row, gable_top + 3 + row, 56 + row, gable_top + 3 + row, "ink")
     # The oak frame: the sill, the posts, a rail in the side bays, short braces in the corner
     # bays, the beam over the door (carved) and the gable's beam.
     rect(gable, wall_left, base_top - 2, wall_right, base_top - 1, OAK[0])
     rect(gable, wall_left, base_top - 1, wall_right, base_top - 1, OAK[1])
-    for x in (wall_left, 20, 55, 90, wall_right - 1):
-        rect(gable, x, 64, x + 1, base_top - 1, OAK[0])
-        rect(gable, x + 1, 64, x + 1, base_top - 1, OAK[1])
-    for x in (37, 71):
-        rect(gable, x, 64, x + 2, base_top - 1, OAK[0])
-        rect(gable, x, 64, x, base_top - 1, "soil_mid")
-        rect(gable, x + 2, 64, x + 2, base_top - 1, OAK[1])
-    for x0, x1 in ((wall_left, 37), (71, wall_right)):
-        rect(gable, x0, 104, x1, 105, OAK[0])
-        rect(gable, x0, 105, x1, 105, OAK[1])
+    for x in posts:
+        rect(gable, x, gable_beam[0], x + 1, base_top - 1, OAK[0])
+        rect(gable, x + 1, gable_beam[0], x + 1, base_top - 1, OAK[1])
+    for x in door_posts:
+        rect(gable, x, gable_beam[0], x + 2, base_top - 1, OAK[0])
+        rect(gable, x, gable_beam[0], x, base_top - 1, "soil_mid")
+        rect(gable, x + 2, gable_beam[0], x + 2, base_top - 1, OAK[1])
+    for x0, x1 in ((wall_left, door_posts[0]), (door_posts[1], wall_right)):
+        rect(gable, x0, rail, x1, rail + 1, OAK[0])
+        rect(gable, x0, rail + 1, x1, rail + 1, OAK[1])
     for x0, direction in ((5, -1), (92, 1)):
         for step in range(14):
             bx = x0 + step if direction > 0 else x0 + 13 - step
-            gable[123 - step][bx] = OAK[0]
-            gable[123 - step][bx + 1] = OAK[1]
-    for top, bottom in ((64, 66), (82, 85)):
+            gable[base_top - 5 - step][bx] = OAK[0]
+            gable[base_top - 5 - step][bx + 1] = OAK[1]
+    for top, bottom in (gable_beam, door_beam):
         rect(gable, wall_left, top, wall_right, bottom, OAK[0])
         rect(gable, wall_left, top, wall_right, top, "soil_mid")
         rect(gable, wall_left, bottom, wall_right, bottom, OAK[1])
     # A line cut into the door beam, as the farmer and his wife had their names and the year
     # carved there.
-    x = 43
-    while x < 68:
+    x = door_left + 1
+    while x < door_right - 1:
         letter = rng.randint(1, 3)
-        rect(gable, x, 84, x + letter - 1, 84, "soil_light")
+        rect(gable, x, door_beam[1] - 1, x + letter - 1, door_beam[1] - 1, "soil_light")
         if rng.random() < 0.5:
-            gable[83][x] = "soil_light"
+            gable[door_beam[1] - 2][x] = "soil_light"
         x += letter + rng.choice((1, 1, 3))
     fieldstone_base(gable, rng, wall_left, wall_right, base_top, height - 2)
     for left in (24, 78):
         window(gable, left, 90, 10, 10, is_lit, frame="green_dark")
-    grote_door(gable, 42, 69, 87, 94, height - 4)
+    grote_door(gable, door_left, door_right, door_beam[1] + 2, door_beam[1] + 9, height - 4)
     for x, top in face_top.items():
         for y in range(top, height):
             if gable[y][x] is not None:
