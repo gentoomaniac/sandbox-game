@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.12.0" name="interior" tilewidth="16" tileheight="16" tilecount="28" columns="28">
- <image source="../../assets/interior.png" width="448" height="16"/>
+<tileset version="1.10" tiledversion="1.12.0" name="interior" tilewidth="16" tileheight="16" tilecount="30" columns="30">
+ <image source="../../assets/interior.png" width="480" height="16"/>
  <tile id="0">
   <properties>
    <property name="terrain" value="FLOOR"/>
@@ -13,12 +13,12 @@
  </tile>
  <tile id="2">
   <properties>
-   <property name="terrain" value="WALL"/>
+   <property name="terrain" value="CLAY_FLOOR"/>
   </properties>
  </tile>
  <tile id="3">
   <properties>
-   <property name="terrain" value="WALL"/>
+   <property name="terrain" value="CLAY_FLOOR"/>
   </properties>
  </tile>
  <tile id="4">
@@ -38,8 +38,7 @@
  </tile>
  <tile id="7">
   <properties>
-   <property name="exit" type="bool" value="true"/>
-   <property name="terrain" value="FLOOR"/>
+   <property name="terrain" value="WALL"/>
   </properties>
  </tile>
  <tile id="8">
@@ -49,7 +48,8 @@
  </tile>
  <tile id="9">
   <properties>
-   <property name="terrain" value="WALL"/>
+   <property name="exit" type="bool" value="true"/>
+   <property name="terrain" value="FLOOR"/>
   </properties>
  </tile>
  <tile id="10">
@@ -74,70 +74,80 @@
  </tile>
  <tile id="14">
   <properties>
-   <property name="object_type" value="small_bed"/>
+   <property name="terrain" value="WALL"/>
   </properties>
  </tile>
  <tile id="15">
   <properties>
-   <property name="object_type" value="table"/>
+   <property name="terrain" value="WALL"/>
   </properties>
  </tile>
  <tile id="16">
   <properties>
-   <property name="object_type" value="stool"/>
+   <property name="object_type" value="small_bed"/>
   </properties>
  </tile>
  <tile id="17">
   <properties>
-   <property name="object_type" value="chest"/>
+   <property name="object_type" value="table"/>
   </properties>
  </tile>
  <tile id="18">
   <properties>
-   <property name="object_type" value="hearth"/>
+   <property name="object_type" value="stool"/>
   </properties>
  </tile>
  <tile id="19">
   <properties>
-   <property name="object_type" value="window"/>
+   <property name="object_type" value="chest"/>
   </properties>
  </tile>
  <tile id="20">
   <properties>
-   <property name="object_type" value="sleeping_mat"/>
+   <property name="object_type" value="hearth"/>
   </properties>
  </tile>
  <tile id="21">
   <properties>
-   <property name="object_type" value="box_bed"/>
+   <property name="object_type" value="window"/>
   </properties>
  </tile>
  <tile id="22">
   <properties>
-   <property name="object_type" value="bench"/>
+   <property name="object_type" value="sleeping_mat"/>
   </properties>
  </tile>
  <tile id="23">
   <properties>
-   <property name="object_type" value="stall_partition"/>
+   <property name="object_type" value="box_bed"/>
   </properties>
  </tile>
  <tile id="24">
   <properties>
-   <property name="object_type" value="hay_pile"/>
+   <property name="object_type" value="bench"/>
   </properties>
  </tile>
  <tile id="25">
   <properties>
-   <property name="object_type" value="barrel"/>
+   <property name="object_type" value="stall_partition"/>
   </properties>
  </tile>
  <tile id="26">
   <properties>
-   <property name="object_type" value="sacks"/>
+   <property name="object_type" value="hay_pile"/>
   </properties>
  </tile>
  <tile id="27">
+  <properties>
+   <property name="object_type" value="barrel"/>
+  </properties>
+ </tile>
+ <tile id="28">
+  <properties>
+   <property name="object_type" value="sacks"/>
+  </properties>
+ </tile>
+ <tile id="29">
   <properties>
    <property name="object_type" value="crate"/>
   </properties>

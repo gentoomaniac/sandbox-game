@@ -2,7 +2,9 @@ class_name Tile
 extends RefCounted
 ## A snapshot of one tile's state. Changing the world goes through Chunk's setters, not here.
 
-enum Terrain { GRASS, SOIL, WATER, WETLAND, FLOODPLAIN, FLOOR, WALL }
+## Inside a building, FLOOR is the laid brick floor of the living rooms and CLAY_FLOOR the
+## beaten clay of the work rooms.
+enum Terrain { GRASS, SOIL, WATER, WETLAND, FLOODPLAIN, FLOOR, WALL, CLAY_FLOOR }
 
 var terrain: Terrain = Terrain.GRASS
 ## Nothing sets it yet: the hook for frozen rivers, which can be walked across.
@@ -13,6 +15,10 @@ var frozen := false
 ## wall.
 func is_walkable() -> bool:
 	return (terrain != Terrain.WATER or frozen) and terrain != Terrain.WALL
+
+
+func is_floor() -> bool:
+	return terrain == Terrain.FLOOR or terrain == Terrain.CLAY_FLOOR
 
 
 ## Only dry open ground. Anything that can flood or is under water is off limits, and

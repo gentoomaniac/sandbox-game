@@ -37,25 +37,60 @@ def outline(canvas, colour, keep_bottom=False):
     return canvas
 
 
-def planks(canvas, light, dark):
-    for y in range(TILE):
-        for x in range(TILE):
-            canvas[y][x] = light if (y // 4) % 2 == 0 else dark
-    for y in range(3, TILE, 4):
-        rect(canvas, 0, y, TILE - 1, y, "soil")
-    # Board ends, staggered row by row.
-    for row, x in enumerate((5, 12, 8, 2)):
-        rect(canvas, x, row * 4, x, row * 4 + 2, "soil")
+def herringbone_floor(tones, joint):
+    """Floor bricks 8x4 laid in a herringbone, one of `tones` each, a `joint` on their bottom
+    and right edges. The bricks step down to the right in bands; the pattern repeats every
+    tile, and the tones are picked once per brick so a tile reads as a warm texture."""
+    rng = random.Random(133)
+    canvas = blank()
+    width = 4
+    for band in range(-4, 5):
+        for step in range(-8, 9):
+            x, y = width * (step + 2 * band), width * (step - 2 * band)
+            # A brick lying across, then one standing under its left half.
+            for left, top, across, down in ((x, y, 2 * width, width), (x, y + width, width, 2 * width)):
+                tone = rng.choice(tones)
+                for dy in range(down):
+                    for dx in range(across):
+                        if 0 <= left + dx < TILE and 0 <= top + dy < TILE:
+                            is_joint = dx == across - 1 or dy == down - 1
+                            canvas[top + dy][left + dx] = joint if is_joint else tone
     return canvas
 
 
-def interior_floor():
-    return planks(blank(), "soil_light", "soil_mid")
+def brick_floor():
+    """The floor of the living rooms: old red brick in a herringbone, half of the bricks browner."""
+    return herringbone_floor(("rust_dark", "rust_dark", "soil_mid", "soil_mid"), "soil")
 
 
-def interior_floor_shaded():
+def clay_floor():
+    """The floor of the work rooms (the byre, the barn, the shack): beaten clay, with greyer and
+    darker trodden patches and a little sand. Kept calm: whatever stands out repeats every tile."""
+    rng = random.Random(134)
+    canvas = filled("mud")
+    for colour, count, length in (("bare", 6, 3), ("mud_dark", 3, 2), ("sand", 3, 2)):
+        for _ in range(count):
+            x, y = rng.randrange(TILE), rng.randrange(TILE)
+            for dx in range(length):
+                canvas[y][(x + dx) % TILE] = colour
+    return canvas
+
+
+# Each floor colour one step darker, for the row along the back wall in its shadow.
+FLOOR_SHADOW = {
+    "rust_dark": "russet_deep",
+    "soil_mid": "soil",
+    "soil": "soil_dark",
+    "mud": "mud_dark",
+    "mud_dark": "soil_dark",
+    "sand": "mud",
+    "bare": "mud_dark",
+}
+
+
+def shaded_floor(floor):
     """The floor row along the back wall, in its shadow."""
-    canvas = planks(blank(), "soil_mid", "soil")
+    canvas = [[FLOOR_SHADOW[colour] for colour in row] for row in floor]
     rect(canvas, 0, 0, TILE - 1, 1, "soil_dark")
     return canvas
 
@@ -393,8 +428,10 @@ def atlas_tiles(furniture):
     """The tiles of assets/interior.png: the ground tiles, then a marker tile per piece of
     `furniture`."""
     ground = {
-        "floor": interior_floor(),
-        "floor_shaded": interior_floor_shaded(),
+        "floor": brick_floor(),
+        "floor_shaded": shaded_floor(brick_floor()),
+        "clay_floor": clay_floor(),
+        "clay_floor_shaded": shaded_floor(clay_floor()),
         "rim_left": rim_left(),
         "rim_right": mirrored_tile(rim_left()),
         "rim_front": rim_front(),

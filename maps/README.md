@@ -24,7 +24,9 @@ Open the `.tmx` in Tiled and paint with the tiles of `interior.tsx`. Tiles are 1
   exactly one tileset, `interior.tsx`, as an external file. Anything else fails an `assert`
   in `InteriorLoader` when the room loads.
 - What a tile means is a property of the tile in `interior.tsx`:
-  - `terrain`: `FLOOR` or `WALL` (a `Tile.Terrain` name). Walls block walking.
+  - `terrain`: `FLOOR` (laid brick, the living rooms), `CLAY_FLOOR` (beaten clay, the work
+    rooms: the byre, the barn, the shack) or `WALL` (a `Tile.Terrain` name). Walls block
+    walking.
   - `exit` (bool): the tile that leaves the building. Every map needs one. It is the
     doormat in the front wall; the player appears on the tile above it when they come in,
     so keep that one free.

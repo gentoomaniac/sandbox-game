@@ -1,5 +1,5 @@
 extends GutTest
-## Tile: the values derived from each terrain (walkable, buildable).
+## Tile: the values derived from each terrain (walkable, buildable, floor).
 
 const TERRAIN_RULES := {
 	Tile.Terrain.GRASS: {"walkable": true, "buildable": true},
@@ -7,6 +7,9 @@ const TERRAIN_RULES := {
 	Tile.Terrain.WATER: {"walkable": false, "buildable": false},
 	Tile.Terrain.WETLAND: {"walkable": true, "buildable": false},
 	Tile.Terrain.FLOODPLAIN: {"walkable": true, "buildable": false},
+	Tile.Terrain.FLOOR: {"walkable": true, "buildable": false, "floor": true},
+	Tile.Terrain.CLAY_FLOOR: {"walkable": true, "buildable": false, "floor": true},
+	Tile.Terrain.WALL: {"walkable": false, "buildable": false},
 }
 
 
@@ -18,6 +21,7 @@ func test_derived_values_per_terrain() -> void:
 		var terrain_name: String = Tile.Terrain.keys()[terrain]
 		assert_eq(tile.is_walkable(), rules.walkable, "%s walkable" % terrain_name)
 		assert_eq(tile.is_buildable(), rules.buildable, "%s buildable" % terrain_name)
+		assert_eq(tile.is_floor(), rules.get("floor", false), "%s floor" % terrain_name)
 
 
 func test_frozen_water_is_walkable_but_not_buildable() -> void:

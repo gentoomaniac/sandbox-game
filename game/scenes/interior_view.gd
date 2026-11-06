@@ -15,6 +15,8 @@ extends Node2D
 enum Ground {
 	FLOOR,
 	FLOOR_SHADED,
+	CLAY_FLOOR,
+	CLAY_FLOOR_SHADED,
 	RIM_LEFT,
 	RIM_RIGHT,
 	RIM_FRONT,
@@ -84,8 +86,12 @@ func _draw() -> void:
 static func ground_at(tile: Tile, pos: Vector2i, size: Vector2i, is_exit: bool) -> Ground:
 	if is_exit:
 		return Ground.DOORMAT
-	if tile.terrain == Tile.Terrain.FLOOR:
-		return Ground.FLOOR_SHADED if pos.y == BACK_WALL_ROWS else Ground.FLOOR
+	if tile.is_floor():
+		# The row along the back wall lies in its shadow.
+		var is_shaded := pos.y == BACK_WALL_ROWS
+		if tile.terrain == Tile.Terrain.CLAY_FLOOR:
+			return Ground.CLAY_FLOOR_SHADED if is_shaded else Ground.CLAY_FLOOR
+		return Ground.FLOOR_SHADED if is_shaded else Ground.FLOOR
 	var is_left := pos.x == 0
 	var is_right := pos.x == size.x - 1
 	if pos.y < BACK_WALL_ROWS:

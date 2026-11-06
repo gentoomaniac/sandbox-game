@@ -98,6 +98,20 @@ func test_the_longhouse_has_a_living_end_and_a_stall_end() -> void:
 		assert_true(types.has(type), str(type))
 
 
+func test_the_living_rooms_have_brick_floors_and_the_work_rooms_clay() -> void:
+	var floors := {
+		BuildingTypes.KATE: [Vector2i(3, 4), Tile.Terrain.FLOOR],
+		BuildingTypes.SHACK: [Vector2i(2, 3), Tile.Terrain.CLAY_FLOOR],
+		BuildingTypes.BARN: [Vector2i(5, 4), Tile.Terrain.CLAY_FLOOR],
+	}
+	for type: StringName in floors:
+		var tile: Vector2i = floors[type][0]
+		assert_eq(_load(type).tile_at(tile).terrain, floors[type][1], str(type))
+	var longhouse := _load(BuildingTypes.LONGHOUSE)
+	assert_eq(longhouse.tile_at(Vector2i(3, 4)).terrain, Tile.Terrain.FLOOR, "the living end")
+	assert_eq(longhouse.tile_at(Vector2i(10, 4)).terrain, Tile.Terrain.CLAY_FLOOR, "the byre")
+
+
 func test_every_free_floor_tile_of_every_interior_is_reachable() -> void:
 	for type: StringName in BuildingTypes.TYPES:
 		var interior := _load(type)

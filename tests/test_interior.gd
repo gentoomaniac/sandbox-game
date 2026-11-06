@@ -179,6 +179,12 @@ func test_wall_tiles_get_their_picture_from_their_place() -> void:
 	assert_eq(lit, InteriorView.Ground.FLOOR)
 	var mat := InteriorView.ground_at(floor_tile, Vector2i(4, 7), size, true)
 	assert_eq(mat, InteriorView.Ground.DOORMAT)
+	var clay := Tile.new()
+	clay.terrain = Tile.Terrain.CLAY_FLOOR
+	var clay_shaded := InteriorView.ground_at(clay, Vector2i(3, 2), size, false)
+	assert_eq(clay_shaded, InteriorView.Ground.CLAY_FLOOR_SHADED)
+	var clay_lit := InteriorView.ground_at(clay, Vector2i(3, 4), size, false)
+	assert_eq(clay_lit, InteriorView.Ground.CLAY_FLOOR)
 
 
 func test_the_view_shows_furniture_and_lights_the_hearth() -> void:

@@ -31,7 +31,7 @@ func is_placeable(pos: Vector2i) -> bool:
 	var tile := tile_at(pos)
 	return (
 		tile != null
-		and tile.terrain == Tile.Terrain.FLOOR
+		and tile.is_floor()
 		and object_at(pos) == null
 		and pos != exit_tile
 		and pos != entry_tile()

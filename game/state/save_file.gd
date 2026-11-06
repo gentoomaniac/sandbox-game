@@ -12,7 +12,7 @@ extends RefCounted
 ## 4. Add a test in tests/test_save_upgrade*.gd: an old save without the field loads right.
 ## An upgrade step works on the parsed JSON, before any `from_dict` runs.
 
-const VERSION := 11
+const VERSION := 12
 ## Version 6 had tomatoes, which were not grown here before the 19th century; flax took their
 ## place, item for item.
 const TOMATOES_TO_FLAX := {"tomatoes": "flax", "tomatoes_seeds": "flax_seeds"}
@@ -97,6 +97,8 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 		_upgrade_from_version_9(parsed["game"])
 	if version <= 10:
 		_upgrade_from_version_10(parsed["game"])
+	if version <= 11:
+		_upgrade_from_version_11(parsed["game"])
 	return GameState.from_dict(parsed["game"])
 
 
@@ -280,6 +282,21 @@ static func _upgrade_from_version_10(game: Dictionary) -> void:
 	saved_inventory["slots"] = inventory.slots_to_data()
 	if int(saved_inventory["selected_slot"]) >= Inventory.HOTBAR_SIZE:
 		saved_inventory["selected_slot"] = 0
+
+
+## Version 11 rooms had one floor; the maps now lay brick in the living rooms and clay in the
+## work rooms (the byre, the barn, the shack). A saved room takes the floor of its building's
+## map of today, tile by tile; its walls and furniture stay as they were.
+static func _upgrade_from_version_11(game: Dictionary) -> void:
+	for building: Dictionary in game["world"]["buildings"]:
+		if building["interior"] == null:
+			continue
+		var map_path: String = BuildingTypes.TYPES[StringName(building["type"])]["interior_map"]
+		var today := InteriorLoader.load_interior(map_path)
+		for tile: Array in building["interior"]["tiles"]:
+			var today_tile := today.tile_at(SaveCodec.vector_from_json(tile))
+			if tile[2] == "FLOOR" and today_tile != null and today_tile.is_floor():
+				tile[2] = SaveCodec.terrain_to_json(today_tile.terrain)
 
 
 static func _keep(kept: Dictionary[Vector2i, bool], area: Rect2i) -> void:

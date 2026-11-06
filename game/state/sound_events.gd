@@ -6,9 +6,12 @@ extends RefCounted
 
 
 ## The step on a tile. Snow lies over anything, ice is frozen water, a floodplain is sand.
+## Indoors the clogs clack on the brick floor as on wood, and a clay floor is soil.
 static func footstep(
 	terrain: Tile.Terrain, is_frozen: bool, is_snowed: bool, is_indoors: bool
 ) -> StringName:
+	if terrain == Tile.Terrain.CLAY_FLOOR:
+		return &"step_soil"
 	if is_indoors or terrain == Tile.Terrain.FLOOR:
 		return &"step_wood"
 	if is_snowed:

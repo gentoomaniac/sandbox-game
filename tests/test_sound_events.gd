@@ -24,9 +24,10 @@ func test_snow_lies_over_the_ground() -> void:
 	assert_eq(SoundEvents.footstep(Tile.Terrain.WATER, true, true, false), &"step_snow")
 
 
-func test_indoors_it_is_the_wooden_floor() -> void:
+func test_indoors_clogs_clack_on_brick_and_tread_on_clay() -> void:
 	assert_eq(SoundEvents.footstep(Tile.Terrain.FLOOR, false, false, true), &"step_wood")
 	assert_eq(SoundEvents.footstep(Tile.Terrain.GRASS, false, true, true), &"step_wood")
+	assert_eq(SoundEvents.footstep(Tile.Terrain.CLAY_FLOOR, false, false, true), &"step_soil")
 
 
 func test_an_axe_chops_and_the_felling_blow_too() -> void:
