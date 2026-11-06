@@ -3,7 +3,8 @@ bank), the wattle fence, the fieldstone wall and the dyke.
 
 A line is drawn tile by tile, and each tile has 16 pictures, one per connection mask: which of
 its 4 sides it joins a neighbour on (bit 0 north, 1 east, 2 south, 3 west, as World
-CONNECTION_SIDES in the game). Picture n of an atlas row is mask n.
+CONNECTION_SIDES in the game). A line can have variants of these, which differ only inside the
+tile, so they all meet at the seams: picture v * 16 + n of an atlas row is variant v of mask n.
 
 Each line is a solid on the ground: a stack of layers (bank, hedge) whose heights depend on how
 far a ground pixel is from the line's skeleton, the centre of the tile and the arms to the sides
@@ -16,12 +17,15 @@ right.
 """
 
 import math
+import random
 
 from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, TILE, blank
 
 # The sides a line joins, as (bit, direction), in the order of the mask bits.
 SIDES = ((1, (0, -1)), (2, (1, 0)), (4, (0, 1)), (8, (-1, 0)))
 MASKS = range(16)
+# The Knick and the wall have variants, so a long line does not repeat every tile.
+LINE_VARIANTS = 3
 # The ground worked out around a tile: its neighbours on every side.
 _REACH = TILE
 _CENTRE = TILE / 2
@@ -172,9 +176,11 @@ HAWTHORN = ("meadow_light", "meadow", "green_deep", "bog_dark")
 TURF = ("dry_light", "dry", "olive")
 
 
-def _bushes(mask):
+def _bushes(mask, variant):
     """The bushes of a tile's hedge as (x, y, ground radius, height, species), in the ground
-    coordinates of the tile, on the arms it has and running on through the neighbours."""
+    coordinates of the tile, on the arms it has and running on through the neighbours. The
+    bushes that stand inside the tile are of another size or kind in each variant but the first;
+    those across its seams are the same in all."""
     x, y, radius, height, species = CENTRE_BUSH
     bushes = [(_CENTRE + x, _CENTRE + y, radius, height, species)]
     for bit, (dx, dy) in SIDES:
@@ -194,13 +200,22 @@ def _bushes(mask):
                         place if dy else _CENTRE + across,
                         radius, height, species,
                     ))
-    return bushes
+    if variant == 0:
+        return bushes
+    rng = random.Random(f"knick-{mask}-{variant}")
+    varied = []
+    for bx, by, radius, height, species in bushes:
+        along = bx if abs(by - _CENTRE) < 2 else by
+        if radius <= along <= TILE - radius:
+            radius += rng.uniform(-1.0, 1.0)
+            height += rng.choice((-3, -2, 0, 2, 3))
+            if rng.random() < 0.5:
+                species = "hazel" if species == "hawthorn" else "hawthorn"
+        varied.append((bx, by, radius, height, species))
+    return varied
 
 
-_BUSH_CACHE = {}
-
-
-def _knick_layers(mask, x, y):
+def _knick_layers(bushes, mask, x, y):
     px, py = x + 0.5, y + 0.5
     distance = skeleton_distance(mask, px, py)
     if distance >= BANK_FOOT:
@@ -208,11 +223,9 @@ def _knick_layers(mask, x, y):
     slope = max(0.0, (distance - BANK_CREST) / (BANK_FOOT - BANK_CREST))
     bank = max(1, round(BANK_HEIGHT * (1 - slope * slope)))
     layers = [(bank, "bank")]
-    if mask not in _BUSH_CACHE:
-        _BUSH_CACHE[mask] = _bushes(mask)
     top, species, nearest = 0.0, None, None
     ragged = periodic(x, y, _RAGGED)
-    for bx, by, radius, height, kind in _BUSH_CACHE[mask]:
+    for bx, by, radius, height, kind in bushes:
         reach = math.hypot(px - bx, py - by)
         radius += ragged
         if nearest is None or reach < nearest[0]:
@@ -237,7 +250,7 @@ def _knick_colour(material, x, y, z, light, is_top):
     # Leaves in clusters, darker low in the hedge where the crowns shade it.
     # The clusters of a face lie on the screen, so they don't run down it in streaks.
     cluster = _cluster(x, y, z, 2) if is_top else _cluster(x, y - z, 0, 3)
-    light += 0.35 * cluster - (0.35 if z < BANK_HEIGHT + 4 else 0)
+    light += 0.35 * cluster - (0.25 if z < BANK_HEIGHT + 2 else 0)
     return _ramp(shades, light)
 
 
@@ -245,13 +258,20 @@ def _knick_outline(material):
     return {"bank": None, "hazel": HAZEL[-1], "hawthorn": HAWTHORN[-1]}[material]
 
 
-def knick(mask):
-    return draw_line(mask, _knick_layers, _knick_colour, _knick_outline, shadow_reach=2)
+def knick(mask, variant=0):
+    bushes = _bushes(mask, variant)
+    return draw_line(
+        mask,
+        lambda mask, x, y: _knick_layers(bushes, mask, x, y),
+        _knick_colour,
+        _knick_outline,
+        shadow_reach=2,
+    )
 
 
 def knick_row():
-    """The atlas row of the Knick: one picture per connection mask."""
-    return [knick(mask) for mask in MASKS]
+    """The atlas row of the Knick: its variants, one picture per connection mask each."""
+    return [knick(mask, variant) for variant in range(LINE_VARIANTS) for mask in MASKS]
 
 
 # --- The wattle fence ---
@@ -317,10 +337,11 @@ COOL_STONE = ("stone_light", "stone", "stone_dark")
 WARM_STONE = ("sand_light", "bare_light", "bare", "stone_dark")
 
 
-def _stones(mask):
+def _stones(mask, variant):
     """The stones of a tile's wall as (x, y, radius, base, height, is_warm), in its ground
     coordinates, on its arms and on through the neighbours. Their sizes come from their place
-    along the line, so neighbours agree."""
+    along the line, so neighbours agree; the stones inside the tile are of another size or grey
+    in each variant but the first."""
     places = {(_CENTRE, _CENTRE)}
     for bit, (dx, dy) in SIDES:
         if mask & bit:
@@ -328,6 +349,7 @@ def _stones(mask):
                 offset = step * STONE_SPACING / 2
                 places.add((_CENTRE + dx * offset, _CENTRE + dy * offset))
     stones = []
+    rng = random.Random(f"wall-{mask}-{variant}")
     for x, y in sorted(places):
         # Repeats every tile: a tile is 8 places long.
         index = round(x + y) // (STONE_SPACING // 2) % (TILE * 2 // STONE_SPACING)
@@ -335,22 +357,22 @@ def _stones(mask):
         is_warm = index * 5 % 3 == 0
         if index % 2 == 0:
             radius, height = BASE_STONE
-            stones.append((x, y, radius + wobble, 0.0, height, is_warm))
+            base = 0.0
         else:
             radius, base, height = TOP_STONE
-            stones.append((x, y, radius + wobble, base, height, is_warm))
+        along = x if abs(y - _CENTRE) < 1 else y
+        if variant and radius <= along <= TILE - radius:
+            wobble += rng.uniform(-0.5, 0.4)
+            height += rng.choice((-1, 0, 1))
+            is_warm = rng.random() < 0.4
+        stones.append((x, y, radius + wobble, base, height, is_warm))
     return stones
 
 
-_STONE_CACHE = {}
-
-
-def _wall_layers(mask, x, y):
-    if mask not in _STONE_CACHE:
-        _STONE_CACHE[mask] = _stones(mask)
+def _wall_layers(stones, mask, x, y):
     px, py = x + 0.5, y + 0.5
     best = None
-    for number, (sx, sy, radius, base, height, is_warm) in enumerate(_STONE_CACHE[mask]):
+    for sx, sy, radius, base, height, is_warm in stones:
         reach = math.hypot(px - sx, py - sy)
         if reach < radius:
             top = base + height * math.sqrt(1 - (reach / radius) ** 2)
@@ -372,13 +394,21 @@ def _wall_outline(material):
     return "stone_dark"
 
 
-def stone_wall(mask):
-    return draw_line(mask, _wall_layers, _wall_colour, _wall_outline, joints=True, has_faces=False)
+def stone_wall(mask, variant=0):
+    stones = _stones(mask, variant)
+    return draw_line(
+        mask,
+        lambda mask, x, y: _wall_layers(stones, mask, x, y),
+        _wall_colour,
+        _wall_outline,
+        joints=True,
+        has_faces=False,
+    )
 
 
 def stone_wall_row():
-    """The atlas row of the fieldstone wall: one picture per connection mask."""
-    return [stone_wall(mask) for mask in MASKS]
+    """The atlas row of the fieldstone wall: its variants, one picture per connection mask each."""
+    return [stone_wall(mask, variant) for variant in range(LINE_VARIANTS) for mask in MASKS]
 
 
 # --- The dyke ---

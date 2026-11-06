@@ -76,8 +76,10 @@ func _add_crop_sheet(crop_id: StringName, sheet_path: String, motion: AmbientMot
 
 
 ## How many pictures a type has in its atlas row: its variants, and for a bush that can be
-## picked the same again, picked.
+## picked the same again, picked; a line object has a picture per connection mask of each.
 static func looks_count(object_type: Dictionary) -> int:
+	if object_type.has("connects"):
+		return object_type["variants"] * WorldObjectTypes.CONNECTION_LOOKS
 	var can_be_picked: bool = object_type.has("regrow_days") or object_type.has("regrow_growth")
 	var picked_looks: int = object_type["variants"] if can_be_picked else 0
 	return object_type["variants"] + picked_looks
@@ -94,18 +96,19 @@ static func cell_origin(footprint: Vector2i) -> Vector2i:
 	)
 
 
-## The cell for an object in its source: a crop's is its growth stage, or the dead one; a line
-## object's (one that `connects`) is its connection mask, `connections` (see World
-## `connections`); for the others the variant comes from the position, so it is stable but
-## neighbours differ. A picked bush has its variant's picked look, and so does a bush that is
-## `is_bare` (out of its fruit season).
+## The cell for an object in its source: a crop's is its growth stage, or the dead one; for the
+## others the variant comes from the position, so it is stable but neighbours differ. A line
+## object (one that `connects`) has the picture of its variant for its connection mask,
+## `connections` (see World `connections`). A picked bush has its variant's picked look, and so
+## does a bush that is `is_bare` (out of its fruit season).
 static func atlas_cell(object: WorldObject, is_bare := false, connections := 0) -> Vector2i:
 	if object.is_crop():
 		return Vector2i(CropLife.look(object), 0)
 	var object_type: Dictionary = WorldObjectTypes.TYPES[object.type]
-	if object_type.has("connects"):
-		return Vector2i(connections, object_type["atlas_row"])
 	var variant: int = PositionHash.of(object.pos) % int(object_type["variants"])
+	if object_type.has("connects"):
+		var column := variant * WorldObjectTypes.CONNECTION_LOOKS + connections
+		return Vector2i(column, object_type["atlas_row"])
 	if object.is_picked() or is_bare:
 		variant += object_type["variants"]
 	return Vector2i(variant, object_type["atlas_row"])

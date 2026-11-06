@@ -121,10 +121,10 @@ def world_chest():
 # 24 reeds (3, then the same 3 cut)
 # 25 dead_stump (2)
 # 26 chest (1)
-# 27 knick (16: one per connection mask, see boundaries.py)
-# 28 wattle_fence (16, the same)
-# 29 stone_wall (16, the same)
-# 30 dyke (16, the same)
+# 27 knick (3 variants of 16, one per connection mask, see boundaries.py)
+# 28 wattle_fence (16, one per connection mask)
+# 29 stone_wall (3 variants of 16)
+# 30 dyke (16)
 # 31 willow (3)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons

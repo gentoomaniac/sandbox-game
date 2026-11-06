@@ -80,10 +80,30 @@ func test_the_view_draws_the_picture_of_the_connections_and_redraws_the_neighbou
 	add_child_autofree(view)
 	view.show_world(_world)
 	var west := _knick(Vector2i(5, 5))
+	assert_eq(
+		view._objects.get_cell_atlas_coords(west.pos), ObjectTileset.atlas_cell(west, false, 0)
+	)
+	var east := _knick(Vector2i(6, 5))
+	assert_eq(
+		view._objects.get_cell_atlas_coords(west.pos), ObjectTileset.atlas_cell(west, false, EAST)
+	)
+	assert_eq(
+		view._objects.get_cell_atlas_coords(east.pos), ObjectTileset.atlas_cell(east, false, WEST)
+	)
+	_world.remove_object(east.pos)
+	assert_eq(
+		view._objects.get_cell_atlas_coords(west.pos), ObjectTileset.atlas_cell(west, false, 0)
+	)
+
+
+func test_a_line_object_has_the_picture_of_its_variant_for_its_connections() -> void:
 	var row: int = WorldObjectTypes.TYPES[WorldObjectTypes.KNICK]["atlas_row"]
-	assert_eq(view._objects.get_cell_atlas_coords(west.pos), Vector2i(0, row))
-	_knick(Vector2i(6, 5))
-	assert_eq(view._objects.get_cell_atlas_coords(west.pos), Vector2i(EAST, row))
-	assert_eq(view._objects.get_cell_atlas_coords(Vector2i(6, 5)), Vector2i(WEST, row))
-	_world.remove_object(Vector2i(6, 5))
-	assert_eq(view._objects.get_cell_atlas_coords(west.pos), Vector2i(0, row))
+	var columns := {}
+	for x in 20:
+		var cell := ObjectTileset.atlas_cell(
+			WorldObject.new(WorldObjectTypes.KNICK, Vector2i(x, 0)), false, EAST
+		)
+		assert_eq(cell.y, row)
+		assert_eq(cell.x % WorldObjectTypes.CONNECTION_LOOKS, EAST)
+		columns[cell.x] = true
+	assert_eq(columns.size(), WorldObjectTypes.TYPES[WorldObjectTypes.KNICK]["variants"])

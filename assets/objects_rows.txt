@@ -25,8 +25,8 @@
 24 reeds 6
 25 dead_stump 2
 26 chest 1
-27 knick 16
+27 knick 48
 28 wattle_fence 16
-29 stone_wall 16
+29 stone_wall 48
 30 dyke 16
 31 willow 3

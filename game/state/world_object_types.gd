@@ -53,8 +53,8 @@ extends RefCounted
 ##   behind it (trees); only those become see-through (see Occlusion);
 ## - light: it shines: `color`, `energy` (of the brightest point) and `radius_tiles`;
 ## - connects: it is a line across the land (a Knick, a wall, a dyke), drawn tile by tile: it
-##   joins the neighbours on its 4 sides whose `connects` is the same, and its atlas row has a
-##   picture per connection mask (see World `connections`) instead of variants.
+##   joins the neighbours on its 4 sides whose `connects` is the same, and each of its variants
+##   has a picture per connection mask (see World `connections`) in its atlas row.
 
 const OAK := &"oak"
 const STONE := &"stone"
@@ -117,7 +117,7 @@ const _WATTLE_FENCE_ROW := 28
 const _STONE_WALL_ROW := 29
 const _DYKE_ROW := 30
 const _WILLOW_ROW := 31
-## The pictures of a type that `connects`: one per connection mask.
+## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
 const _OTHER_TYPES := {
@@ -339,7 +339,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": _KNICK_ROW,
-		"variants": CONNECTION_LOOKS,
+		"variants": 3,
 	},
 	# Hazel rods woven between stakes: a light fence, cut down with the axe for its fibre.
 	WATTLE_FENCE:
@@ -352,7 +352,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": _WATTLE_FENCE_ROW,
-		"variants": CONNECTION_LOOKS,
+		"variants": 1,
 	},
 	# Fieldstones stacked dry: the pickaxe takes it apart for its stone.
 	STONE_WALL:
@@ -365,7 +365,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": _STONE_WALL_ROW,
-		"variants": CONNECTION_LOOKS,
+		"variants": 3,
 	},
 	# A turfed bank of clay along the water: walked on like the grass, but nothing is built on
 	# it, tilled or cut out of it.
@@ -376,7 +376,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": false,
 		"harvest_level": 0,
 		"atlas_row": _DYKE_ROW,
-		"variants": CONNECTION_LOOKS,
+		"variants": 1,
 	},
 	SMALL_BED:
 	{
