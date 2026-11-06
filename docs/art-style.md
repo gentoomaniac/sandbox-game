@@ -312,8 +312,7 @@ gaps are period details on the character and props, a few anachronisms, the nois
 and a landscape that is still generic forest and meadow rather than marsh, Geest and
 hedgerows.
 
-Ranked by how much each improves the look for its effort. The trees are being redrawn in
-task 51 (pine, spring leaf-out); changes to trees should be coordinated with it.
+Ranked by how much each improves the look for its effort.
 
 ### Quick wins
 
@@ -365,9 +364,15 @@ copper watering can. Kept here as the record of why.
    planes (lit left hip, front, shaded right hip) under a straight ridge, so the roofs read
    as steep hipped roofs; crossed ridge sticks on the Kate (the turf ridge is an option).
    Under snow the planes show but no stripes; the snow also covers the shack's board joints.
-4. **Tree species** (large, after task 51). Beech, birch, alder and pollard willow as the
-   common trees; spruce and pine rarer, in planted clumps or on the Geest; hazel and hawthorn
-   in the Knicks.
+4. ~~**Tree species**~~ done (task 56). The woods were oak and conifers half and half. Now
+   beech (smooth grey bole, broad dome, copper in autumn), birch (white trunk with black marks,
+   narrow open crown, yellow in autumn) and alder (dark stem, narrow cone of dark leaves, green
+   late, cones and catkins in winter) are the common trees with the oak, each with every
+   season look, its trunks and its seed; spruce and pine stand only in clumps on the Geest,
+   and the Scots pine is taller and quieter, no longer a bonsai with an orange trunk. Pollard
+   willows and the Knicks' hazel and hawthorn are task 54's. No new colours. Still to do:
+   overstander oaks in the Knicks, beech woods for the Baltic hill country once it exists,
+   heath with juniper.
 5. **Interior hearth and furnishing** (medium). The hearth looks like a modern stone
    fireplace. An open hearth under a smoke hood, or a jamb stove; Dutch tiles behind it;
    clay or brick floor in the Kate; plate rack, benches along the wall.

@@ -32,14 +32,16 @@ warm spring and summer evenings and nights. How often and how loud is in
 
 There are four seasons of 30 days each. The ground, the trees, the bushes and the
 buildings each have a look for every season: fresh green in spring, full summer foliage,
-brown, ochre and copper autumn oaks, and snow in winter. A new season comes in over its
-first three days, tile by tile and tree by tree: in spring the oaks and bushes leaf out in
-steps, from bare twigs to a haze of buds, thin young leaves and then the full crown. Pines
-are Scots pines, with tall reddish trunks and flat dark clumps of needles, and stay green
-all year like the spruces. Ground cover thins and fills over the year, ferns die back in
+autumn colours of the North Sea, and snow in winter. The woods are those of the region: grey
+beeches under broad domes that turn copper, white birches that turn yellow, dark alders on
+wet ground that stay green late and hang with cones in winter, and oaks in brown, ochre and
+copper. A new season comes in over its first three days, tile by tile and tree by tree: in
+spring the trees and bushes leaf out in steps, from bare twigs to a haze of buds, thin young
+leaves and then the full crown. Scots pines, tall with a loose flat crown, and spruces stay
+green all year; they are rare, in clumps on the dry Geest. Ground cover thins and fills over the year, ferns die back in
 winter, and berry bushes only bear fruit in their season.
 
-![The same forest on the second day of spring, in summer, on the third day of autumn and under snow](docs/screenshots/seasons.png)
+![A wood of beech, birch, oak and alder by a clump of pines on the Geest: on the second day of spring, in summer, on the third day of autumn and in the first snow](docs/screenshots/seasons.png)
 
 ### Knicks, ditches and dykes
 
@@ -98,8 +100,9 @@ hits, and some resources need a better tool. Everything you hit trembles and thr
 leaves, snow or splinters. A felled tree topples to the side and leaves a stump and a
 trunk (a dead tree a grey, splintered one); cut both into logs. A stump left alone rots
 away over about two weeks and may sprout a sapling of its kind (not a dead tree's), and
-now and then a tree drops a seed (acorn or cone) you can plant on grassland. Stones and
-boulders break into pieces of stone; a boulder needs a better pickaxe.
+now and then a tree drops a seed (an acorn, a beechnut, a catkin or a cone) you can plant
+on grassland. Stones and boulders break into pieces of stone; a boulder needs a better
+pickaxe.
 
 The scythe mows tall grass into hay and cuts reeds on river banks (reeds grow back in
 their season). The shovel digs clay, but only where a faint patch on the ground hints at

@@ -114,11 +114,23 @@ No new colours, window lights unchanged.
 
 ## 56. Tree species of the region
 
-- [ ] Done
+- [x] Done
 
 docs/art-style.md bigger item 4 (after task 51): beech, birch, alder and pollard willow as
 the common trees with their seasons, wood and seeds; spruce and pine rarer, in clumps or
 on the Geest; hazel and hawthorn in the Knicks.
+
+Done: one commit per piece. Beech (tools/art/beech.py), birch (birch.py) and alder (alder.py)
+with their summer art and a bare redraw for winter (fine twigs from `trees.twigs`), leaf-out
+steps, autumn copper, yellow and a dull green-brown, their long and short trunks, a seed each
+(beechnut, birch catkin, alder cone) that plants a sapling of them, sway and hit leaves. A tree
+now names its trunk rows (`trunk.atlas_row`), so new trees go at the end of the atlas. The
+Scots pine is redrawn taller (75 px) with a loose flat-topped crown and a warm brown trunk. The
+generator keeps every tree where it stood and only picks the species anew: alder, oak and birch
+on wet ground, beech, oak and birch on the dry Geest, pine and spruce only in clumps on the
+Geest; no save upgrade, as no type changed and no tree moved (checked on a copy of the user's
+save). No new colours. Screenshot: seasons. Decisions in SPEC, Time and seasons ("Trees of the
+region") and World ("Which trees grow where").
 
 ## 57. Hearth and furnishing of the period
 

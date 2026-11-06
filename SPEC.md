@@ -414,9 +414,21 @@ Decided 2026-11-05. A text console for testing and cheats.
   - **Pines look like pines** (decided 2026-11-06): a Scots pine with a tall bare reddish
     trunk and a few flat dark blue-green needle clumps high up, so they don't read as
     young leafy trees; evergreen like the spruce, which stays as the second conifer. As
-    built: the trunk is slightly crooked, grey-brown and furrowed below and reddish-orange
-    in the crown, with three or four flat, ragged clumps on short branches in its top half;
-    snow lies on the clumps, frost pales them.
+    built (redrawn in task 56, which found the first one bonsai-like and its orange trunk too
+    loud): about 75 px tall, the trunk slightly crooked, grey-brown and furrowed below with a
+    few dead branch stubs, a warm brown with a little red in its shade up in the crown; the
+    crown is a loose, flat-topped umbrella of needle clumps on thin dark branches spreading from
+    the top third. Snow lies on the clumps, frost pales them.
+  - **Trees of the region** (task 56, 2026-11-06): the woods are broadleaved, as docs/art-style.md
+    asks. Each species has its own silhouette and bark and every look: the **beech** a tall,
+    smooth grey bole under a broad round dome, copper in autumn, a fan of fine grey twigs in
+    winter; the **birch** a slender white trunk with black marks and a dark foot under a narrow,
+    open crown with hanging strands, yellow in autumn, white limbs and fine brown twigs in
+    winter; the **alder** a straight dark stem through a narrow, lumpy cone of dark leaves,
+    which stays green late and goes dull green-brown, and in winter carries black cones and
+    catkins; the **oak** stays as it was. All four leaf out in steps. Pine and spruce are the
+    rare ones (below). Pollard willows by the ditches and hazel and hawthorn in the Knicks are
+    those of task 54. No new colours: the birch's bark is `lime`, `stone_light` and `stone`.
 - **Vegetation density follows the year** (decided 2026-11-05):
   - Ground cover (grass tufts, flowers, small plants, fallen leaves; the visual decoration
     layer) has a density per kind that follows a smooth yearly curve: grass tufts sparse
@@ -502,7 +514,8 @@ Decided 2026-11-05. A text console for testing and cheats.
   HUD shows "10th day of Spring Year 2 · 06:00".
 - **The world looks like its season** (decided 2026-11-05): the current art is summer.
   Spring is a lighter, fresher green; autumn is North Sea autumn (task 52): oaks brown,
-  ochre or copper, bushes yellow and ochre, red rare (no tree has it yet), and yellower
+  ochre or copper, beeches copper, birches yellow, alders a dull green-brown (task 56), bushes
+  yellow and ochre, red rare (no tree has it yet), and yellower
   grass; winter is snow-covered (snow on the ground, snow on evergreens, bare deciduous
   trees). The look changes when the season changes. This is the visual
   season only: frozen rivers, deep snow and other weather effects on tiles stay with the
@@ -582,8 +595,8 @@ Decided 2026-11-05. A text console for testing and cheats.
 
 - The world has **trees and minerals in different varieties** (e.g. several tree types,
   stone, ores).
-- Vegetation varieties planned so far: oak, spruce (needle tree), pine, dead tree, and
-  bushes (e.g. berry bush, plain shrub).
+- Vegetation varieties so far: beech, oak, birch, alder, pollard willow, spruce (needle
+  tree), Scots pine, dead tree, and bushes (e.g. berry bush, plain shrub).
 - Each variety has a **harvest level**: harvesting it needs a tool of at least that level.
   This ties resources to tool upgrades (see Player: Tools).
 - The biome decides which varieties occur where (see Biomes).
@@ -595,7 +608,8 @@ Decided 2026-11-05. A text console for testing and cheats.
   - A tool below the object's harvest level does nothing, with a short message
     (e.g. "Needs a better pickaxe.").
   - First numbers (2026-11-05, tune in play): tool power = level. Hit points: oak 5,
-    spruce 4, pine 7 (level 2), dead tree 3, stone 3, boulder 6 (level 2), stump 2, dead stump 2.
+    spruce 4, pine 7 (level 2), dead tree 3, stone 3, boulder 6 (level 2), stump 2, dead stump 2;
+    beech 5, alder 4, birch 3 (soft wood) (task 56).
     Damage heals overnight.
 - **Harvesting, reworked** (decided 2026-11-05; replaces drops straight into the inventory,
   stumps regrowing into trees and the generic sapling):
@@ -608,15 +622,16 @@ Decided 2026-11-05. A text console for testing and cheats.
   - **Intermediate leftovers are objects** that are hit again with the right tool.
   - **Trees:** felling leaves a stump on the tree's tile and a fallen trunk (2×1, lying
     away from the player; 1×1 if there is no room). The axe cuts the trunk into most of the
-    logs (e.g. oak 3, spruce 3, pine 4, dead tree 2) and chops out the stump for 1 log.
-    Living trees sometimes leave a seed of their species on the ground (acorn, spruce cone,
-    pine cone; about 25 %).
+    logs (e.g. oak 3, beech 3, spruce 3, pine 4, birch 2, alder 2, dead tree 2) and chops out
+    the stump for 1 log. Living trees sometimes leave a seed of their species on the ground
+    (acorn, beechnut, birch catkin, alder cone, spruce cone, pine cone; about 25 %).
   - **Trunk placement** (decided 2026-11-05): a trunk always lies horizontally (there is no
     vertical art). With the player left or right of the tree it lies on the far side of the
     stump; with the player above or below it lies to the right of the stump, or to the left if
     the right has no room. With no room for 2×1 a 1×1 trunk lies on any free tile beside the
     stump (never the player's), and with none there is no trunk. The numbers are in
-    world_object_types.gd: trunk hit points (oak 4, spruce 3, pine 5, dead tree 2), rot after 14
+    world_object_types.gd: trunk hit points (oak 4, beech 4, spruce 3, alder 3, pine 5, birch 2,
+    dead tree 2), rot after 14
     days, sapling chance 30 %, seed chance 25 %.
   - **Stumps don't regrow into trees.** A stump left alone rots away over about two weeks;
     when it is gone it has a chance (about 30 %) to leave a sapling of its tree's species
@@ -912,6 +927,15 @@ Decided 2026-11-05.
     (as edits) and a ditch is grass. A 1-tile ring was too thin: on the user's farm ditches ran
     through the yard. So nothing new stands in or by a house, across the yard, the camp or the
     fields, or shuts the player in; further out an old world gets the new land.
+- **Which trees grow where** (task 56, 2026-11-06): the forests stand where they stood, only the
+  species of each tree changed, so old saves keep the shape of their land and need no upgrade.
+  The woods are broadleaved: on wet ground (the marsh, and the Geest by wetland) alder 4, oak 1
+  and birch 1 by weight, on the dry Geest beech 4, oak 3 and birch 2. Pine and spruce were not
+  common before the heath plantations of the late 18th century, so they stand only in clumps on
+  the Geest, where the composition noise is high (with a mixed rim), two in three of them Scots
+  pine. Over three seeds the trees are about 28 % beech, 24 % oak, 19 % birch, 16 % alder, 7 %
+  pine and spruce and 4 % willow (before: about half oak, half conifers). Numbers in
+  `WorldGenerator`, first values, tune in play.
 
 ## Later features
 
