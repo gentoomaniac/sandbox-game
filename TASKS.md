@@ -213,7 +213,7 @@ renamed.
 
 ## 67. Tool use out of GameState
 
-- [ ] Done
+- [x] Done
 
 From docs/code-review-2026-11-06.md. The use-action rules (~250 of GameState's lines: the
 `Use` enum, COST_KINDS, use_at, use_tile, _do_use, _use_tool, _use_cutting_tool,
@@ -221,6 +221,12 @@ _use_by_hand, _use_inside, _hit, _dig, the mowing, _rolls_seed, _items_of_chest,
 CLAY_DIG_*, ACTIVE_TOOLS) move to `game/state/tool_use.gd` (`ToolUse`, given the state like
 Builder and Crafting). GameState keeps one-line forwards so scenes and tests keep working.
 A pure move; no behaviour change.
+
+Done: `ToolUse` holds all of it (GameState 591 -> 331 lines, ToolUse 301). `Use` moved to
+`ToolUse.Use` (and `COST_KINDS` to `ToolUse.COST_KINDS`) with every caller updated: the enum
+belongs to the rules that produce it, and a newcomer finds it next to them. GameState makes a
+`ToolUse` per call and forwards `use_at`, `use_tile`, `use_facing_tile`, `can_use_held_item` (a
+field would be a reference cycle: the state and the rules would never be freed).
 
 ## 68. World split and one way to read data files
 

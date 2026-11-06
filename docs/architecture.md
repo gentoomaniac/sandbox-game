@@ -35,6 +35,11 @@ and plans which chunks to load (`WorldGenerator`, `ChunkStreaming`, `CampSite`,
   weather, the snow cover and the player. It is the entry point for actions (`use_at`,
   `sleep_in`, `pass_door`, `pass_out`), and what gets saved (`to_dict`, see `SaveFile`). It owns
   the clock and gives it to the World; `current_map` follows from the building the player is in.
+- **ToolUse** (`game/state/tool_use.gd`) is what the use action does: the `Use` outcomes, what
+  each tool does on a tile, and the energy it costs. GameState makes one per call
+  and forwards `use_at`, `use_tile`, `use_facing_tile` and `can_use_held_item` to it (kept in a
+  field, the two would hold each other and never be freed). To change what a hoe
+  does, open this file.
 - **GameMap** is a place the player can walk: either **World** or **Interior** (the inside of
   one building). The player is on one map at a time; the world stands still while they are
   inside.
