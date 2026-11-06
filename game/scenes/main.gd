@@ -106,6 +106,9 @@ var _crafting_screen := CraftingScreen.new()
 var _storage_screen := StorageScreen.new()
 var _console_view := ConsoleView.new()
 var _cheat_hud := CheatHud.new()
+## The screens, in the order Escape closes them. The pause menu is not among them: Escape
+## opens it, it pauses the game, and it has its own input.
+var _screens: Array = [_console_view, _character_screen, _crafting_screen, _storage_screen]
 var _start_console_lines := PackedStringArray()
 var _interior_view := InteriorView.new()
 var _weather_view := WeatherView.new()
@@ -374,17 +377,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		_console_view.open()
 		return
 	if event.is_action_pressed("pause"):
-		# Escape closes the console, then a screen, then dismisses build mode (until the player
-		# holds the hammer again), then opens the menu.
-		if _console_view.is_open():
-			_console_view.close()
-		elif _character_screen.is_open():
-			_character_screen.toggle()
-		elif _crafting_screen.is_open():
-			_crafting_screen.toggle()
-		elif _storage_screen.is_open():
-			_storage_screen.close()
-		elif _build_mode.is_active():
+		# Escape closes the topmost screen, then dismisses build mode (until the player holds
+		# the hammer again), then opens the menu.
+		if _close_topmost_screen():
+			return
+		if _build_mode.is_active():
 			_builder.dismiss()
 		else:
 			_open_menu()
@@ -432,7 +429,7 @@ func _process(delta: float) -> void:
 	_coordinates_hud.show_position(
 		_state.player.tile(), _state.is_inside(), _weather_and_sun_text(_weather)
 	)
-	var is_in_play := not _is_screen_open() and not _console_view.is_open()
+	var is_in_play := not _is_any_screen_open()
 	_use_highlight.is_enabled = (
 		is_in_play and not _builder.is_building() and not _is_in_transition
 	)
@@ -447,7 +444,7 @@ func _process(delta: float) -> void:
 		_pass_out()
 	if not _is_in_transition:
 		var direction := Vector2.ZERO
-		if not _is_screen_open() and not _console_view.is_open():
+		if not _is_any_screen_open():
 			direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 		_player_view.walk_speed = _state.walk_speed_factor()
 		_state.player.move(_state.current_map, direction, delta, _player_view.walk_speed)
@@ -518,9 +515,23 @@ func _is_use_event(event: InputEvent) -> bool:
 	return event.is_action_pressed("use") or event.is_action_pressed("use_click")
 
 
-## Whether a screen that takes the input (not the console) is open.
-func _is_screen_open() -> bool:
-	return _character_screen.is_open() or _crafting_screen.is_open() or _storage_screen.is_open()
+## Whether a screen or the console is open: the player neither walks nor acts.
+func _is_any_screen_open() -> bool:
+	return _screens.any(func(screen: Node) -> bool: return screen.is_open())
+
+
+## Closes the first open screen of `_screens`. Returns whether there was one.
+func _close_topmost_screen() -> bool:
+	for screen in _screens:
+		if screen.is_open():
+			screen.close()
+			return true
+	return false
+
+
+func _close_all_screens() -> void:
+	for screen in _screens:
+		screen.close()
 
 
 func _can_open_console() -> bool:
@@ -561,8 +572,7 @@ func _use_on(target: Targeting) -> void:
 func _pass_out() -> void:
 	_is_in_transition = true
 	# Nothing else may move the player meanwhile.
-	_console_view.close()
-	_close_screens()
+	_close_all_screens()
 	var was_up_too_late := _state.is_up_too_late
 	_player_view.collapse()
 	await get_tree().create_timer(PlayerView.COLLAPSE_SECONDS).timeout
@@ -612,16 +622,7 @@ func _screens_take(event: InputEvent) -> bool:
 	if event.is_action_pressed("inventory") and not _crafting_screen.is_open():
 		_character_screen.toggle()
 		return true
-	return _character_screen.is_open() or _crafting_screen.is_open()
-
-
-func _close_screens() -> void:
-	if _character_screen.is_open():
-		_character_screen.toggle()
-	if _crafting_screen.is_open():
-		_crafting_screen.toggle()
-	if _storage_screen.is_open():
-		_storage_screen.close()
+	return _is_any_screen_open()
 
 
 ## E: opens the chest in reach, else sleeps in the bed in reach.
@@ -690,14 +691,13 @@ func _start_sounds() -> void:
 	add_child(_sounds)
 	_sounds.listen(_audio, _state, _view, _player_view, _build_mode)
 	_sounds.click_on_press_in(_menu)
-	_sounds.click_on_press_in(_character_screen)
-	_sounds.click_on_press_in(_crafting_screen)
-	_sounds.click_on_press_in(_storage_screen)
-	_sounds.watch_panel(func() -> bool: return _menu.visible)
-	_sounds.watch_panel(_character_screen.is_open)
-	_sounds.watch_panel(_crafting_screen.is_open)
-	_sounds.watch_panel(_storage_screen.is_open, &"chest_open", &"chest_close")
-	_sounds.watch_panel(_console_view.is_open)
+	_sounds.watch_panel(_menu.is_open)
+	for screen in _screens:
+		_sounds.click_on_press_in(screen)
+		if screen == _storage_screen:
+			_sounds.watch_panel(screen.is_open, &"chest_open", &"chest_close")
+		else:
+			_sounds.watch_panel(screen.is_open)
 	add_child(_ambience)
 	_ambience.listen(_audio, _state, _wildlife, _weather_view)
 
