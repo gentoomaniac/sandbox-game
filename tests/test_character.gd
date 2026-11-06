@@ -40,6 +40,7 @@ func test_layers_are_drawn_in_the_draw_order() -> void:
 		[
 			Appearance.BODY,
 			Appearance.LEGS,
+			Appearance.FEET,
 			Appearance.CLOTHES,
 			Appearance.HAIR,
 			Appearance.HEAD,

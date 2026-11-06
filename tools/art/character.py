@@ -126,7 +126,7 @@ def draw_kneeling_legs(canvas, thigh, shin, foot):
 BREECHES = {"base": "soil_mid", "light": "soil_light", "shade": "soil", "band": "soil_dark"}
 STOCKINGS = {"base": "lime", "shade": "sand_light"}
 # Rows of the breeches from the top of the leg; the last is the band at the knee.
-BREECHES_ROWS = 4
+BREECHES_ROWS = 3
 
 
 def draw_legs(facing, pose, **_):
@@ -157,6 +157,31 @@ def draw_legs(facing, pose, **_):
             (STOCKINGS["base"], STOCKINGS["shade"]),
             (STOCKINGS["base"], STOCKINGS["base"], STOCKINGS["shade"]),
         )
+    return canvas
+
+
+# Wooden clogs, pale and wide: the feet the art guide names as the period cue.
+CLOGS = {"light": "sand_light", "base": "sand", "sole": "mud"}
+
+
+def draw_clogs(facing, pose, **_):
+    """Wooden clogs over the stockinged feet, a pixel wider than the leg; from the side their
+    long toe points forward."""
+    canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
+    for index, (x0, x1, _top, bottom) in enumerate(leg_boxes(facing, pose)):
+        if facing in ("down", "up"):
+            # Wider to the outside of each foot.
+            x0, x1 = (x0 - 1, x1) if index == 0 else (x0, x1 + 1)
+            rect(canvas, x0, bottom - 1, x1, bottom - 1, CLOGS["light"])
+            rect(canvas, x0, bottom, x1, bottom, CLOGS["base"])
+        else:
+            rect(canvas, x0, bottom - 1, x1 + 1, bottom - 1, CLOGS["light"])
+            rect(canvas, x0, bottom, x1 + 2, bottom, CLOGS["base"])
+            canvas[bottom][x0] = CLOGS["sole"]
+    if pose.get("kneel"):
+        rect(canvas, 1, 28, 3, 28, CLOGS["light"])
+        rect(canvas, 1, 29, 3, 29, CLOGS["base"])
+        rect(canvas, 1, 30, 3, 30, CLOGS["sole"])
     return canvas
 
 
@@ -510,6 +535,7 @@ def layers():
     for variant, colours in HAIR_COLOURS.items():
         result[f"hair_{variant}"] = (draw_hair, colours)
     result["legs_0"] = (draw_legs, {})
+    result["feet_clogs"] = (draw_clogs, {})
     result["head_straw_hat"] = (draw_hat(STRAW_HAT_ROWS, STRAW_HAT_KEYS), {})
     result["head_knitted_cap"] = (draw_hat(KNITTED_CAP_ROWS, KNITTED_CAP_KEYS), {})
     return result

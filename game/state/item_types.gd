@@ -44,6 +44,7 @@ const TROUSERS := &"trousers"
 const STRAW_HAT := &"straw_hat"
 const KNITTED_CAP := &"knitted_cap"
 const JACKET := &"jacket"
+const CLOGS := &"clogs"
 
 ## Stands for an empty hand or slot where an item id is expected.
 const NONE := &""
@@ -234,7 +235,7 @@ const _OTHER_TYPES := {
 	{
 		"name": "Trousers",
 		"description": "Simple trousers.",
-		"weight": 0.7,
+		"weight": 0.5,
 		"stack_limit": 1,
 		"equip_slot": Equipment.LEGS,
 		"layer_variant": "0",
@@ -265,6 +266,15 @@ const _OTHER_TYPES := {
 		"stack_limit": 1,
 		"equip_slot": Equipment.COAT,
 		"layer_variant": "jacket",
+	},
+	CLOGS:
+	{
+		"name": "Clogs",
+		"description": "Wooden clogs, for the fields and the mud.",
+		"weight": 0.3,
+		"stack_limit": 1,
+		"equip_slot": Equipment.FEET,
+		"layer_variant": "clogs",
 	},
 }
 

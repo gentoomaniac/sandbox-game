@@ -21,9 +21,9 @@ func test_worn_items_count_toward_the_carried_weight() -> void:
 	var player := PlayerState.new()
 	player.inventory.add(ItemTypes.LOGS, 2)
 	player.equipment = Equipment.with_starting_outfit()
-	var worn: float = (
-		ItemTypes.TYPES[ItemTypes.TUNIC]["weight"] + ItemTypes.TYPES[ItemTypes.TROUSERS]["weight"]
-	)
+	var worn := 0.0
+	for item in [ItemTypes.TUNIC, ItemTypes.TROUSERS, ItemTypes.CLOGS]:
+		worn += ItemTypes.TYPES[item]["weight"]
 	assert_almost_eq(player.carried_weight(), 2.0 + worn, 0.0001)
 
 

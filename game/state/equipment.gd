@@ -31,6 +31,7 @@ static func with_starting_outfit() -> Equipment:
 	var equipment := Equipment.new()
 	equipment.equip(BODY, ItemTypes.TUNIC)
 	equipment.equip(LEGS, ItemTypes.TROUSERS)
+	equipment.equip(FEET, ItemTypes.CLOGS)
 	return equipment
 
 

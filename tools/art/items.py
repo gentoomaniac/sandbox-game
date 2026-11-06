@@ -317,6 +317,30 @@ def breeches():
     return outlined(from_rows(rows, keys))
 
 
+def clogs():
+    """A pair of pale wooden clogs seen from above, the dark openings at the heel."""
+    rows = [
+        "................",
+        "................",
+        "................",
+        "..llll....llll..",
+        ".liiiil..liiiil.",
+        ".liiiib..liiiib.",
+        ".lbiibb..lbiibb.",
+        ".lbbbbb..lbbbbb.",
+        ".lbbbbs..lbbbbs.",
+        ".lbbbbs..lbbbbs.",
+        ".lbbbbs..lbbbbs.",
+        ".bbbbbs..bbbbbs.",
+        "..ssss....ssss..",
+        "................",
+        "................",
+        "................",
+    ]
+    keys = {"l": "sand_light", "b": "sand", "s": "mud", "i": "soil_dark"}
+    return outlined(from_rows(rows, keys))
+
+
 def straw_hat():
     """A low crown with a dark band, on a wide brim that droops at its ends."""
     rows = [
@@ -396,6 +420,7 @@ ICONS = {
     "straw_hat": straw_hat(),
     "knitted_cap": knitted_cap(),
     "jacket": jacket(),
+    "clogs": clogs(),
 }
 
 
