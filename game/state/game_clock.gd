@@ -65,7 +65,7 @@ func year() -> int:
 
 ## "10th day of Spring Year 2"
 func date_text() -> String:
-	return "%s day of %s Year %d" % [_ordinal(day_of_season()), SEASON_NAMES[season()], year()]
+	return "%s day of %s Year %d" % [ordinal(day_of_season()), SEASON_NAMES[season()], year()]
 
 
 ## "06:00"
@@ -78,7 +78,7 @@ func to_dict() -> Dictionary:
 
 
 ## 1st, 2nd, 3rd, 4th ... 11th, 12th, 13th ... 21st.
-static func _ordinal(number: int) -> String:
+static func ordinal(number: int) -> String:
 	var suffix := "th"
 	if number % 100 < 11 or number % 100 > 13:
 		suffix = {1: "st", 2: "nd", 3: "rd"}.get(number % 10, "th")

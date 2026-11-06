@@ -85,6 +85,7 @@ func _ready() -> void:
 		or not LivestockRules.default_rules().is_valid()
 		or not NpcRules.default_rules().is_valid()
 		or not VillagerRules.default_rules().is_valid()
+		or not NpcTalkRules.default_rules().is_valid()
 		or not SeasonRules.default_rules().is_valid()
 		or not BuildingRules.default_rules().is_valid()
 		or not RecipeRules.default_rules().is_valid()
