@@ -46,7 +46,8 @@ and plans which chunks to load (`WorldGenerator`, `ChunkStreaming`, `CampSite`,
 ## Data files and how to add content
 
 Gameplay numbers live in `data/*.cfg` (ConfigFile syntax, with the meaning of every key in
-the comment at the top of each file). The path from a file to the game is always the same:
+the comment at the top of each file). The path from a file to the game is usually the same (`vegetation.cfg` is read by
+`Vegetation`, which has no `_rules` file; file names are plural, the classes singular):
 
 ```
 data/<topic>.cfg  ->  game/state/<topic>_rules.gd  ->  a Types class or the state that uses it
@@ -86,7 +87,7 @@ applies them to Godot's `InputMap` and stores only the differences from the defa
 
 `make test` runs every `tests/test_*.gd` with GUT, headless. A test file is named after what
 it covers and should start with a one-line comment saying what it checks. Shared setup
-lives in three base classes; extend the one that fits instead of building a game by hand:
+lives in the `tests/*_case.gd` base classes; extend the one that fits instead of building a game by hand:
 
 - `ResourceCase` (`tests/resource_case.gd`): a `GameState` with a patch of grass in front of
   the player, helpers to put objects there and to let days pass. Felling, mining, foraging,

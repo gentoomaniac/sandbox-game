@@ -16,8 +16,8 @@ make venv      # just the Python environment (make assets does this itself)
 
 ## Art: tools/art/
 
-`generate.py` is the entry point and still holds most of the drawing (terrain, trees,
-bushes, the camp, the character, interior furniture). The other modules are topics it calls:
+`generate.py` is the entry point and holds much of the drawing (terrain, trees, bushes,
+the camp, the character, interior furniture). The other modules are topics it calls:
 
 | Module | What it draws |
 |---|---|
@@ -33,7 +33,8 @@ bushes, the camp, the character, interior furniture). The other modules are topi
 
 Pictures are lists of rows of **palette colour names** (`None` is transparent), never RGB
 values. The colours are `PALETTE` in `generate.py` plus `COLOURS` in `seasons.py`, and the
-palette is limited to 64 colours (it is full today; to add one, merge two similar ones). After
+palette is limited to `MAX_PALETTE_COLOURS` (when it is full, merge two similar colours to
+add one). After
 writing, `check_palette()` fails if any PNG under `assets/` has a colour outside the palette.
 
 ### Adding things
