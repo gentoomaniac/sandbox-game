@@ -31,6 +31,10 @@ COURSE = 4
 # their upturn at each corner.
 EAVES_ROWS = 6
 EAVES_CORNER = 6
+# The ridge of a roof seen from its gable: how far short of the back of the roof it ends, and
+# every how many rows it is bound, in px.
+RIDGE_SHORT = 6
+RIDGE_BINDING = 5
 # The lime-washed walls: lit, and shaded at the right corner.
 LIME = ("lime", "sand_light")
 # Fieldstones: lit on top, and their body.
@@ -649,7 +653,7 @@ def gable_roof(picture, snowy, rng, left, right, eaves_y, foot_y, hip_half, dept
     gable's rakes rise from the eaves at `eaves_y` on both sides to the foot of the little hip at
     `foot_y`, `hip_half` px either side of the middle, and the roof runs back `depth` px from
     them, up the picture. Its two long planes show from above, the left one lit and the right
-    one in shade, with a turf ridge between them. As the eaves run back along the sides, the
+    one in shade, with a reed ridge between them. As the eaves run back along the sides, the
     courses of reed run up the picture: about 4 px wide, lit along their edge towards the ridge
     in broken runs, the reed ends hanging out towards the eaves, and the eaves are a thick
     rolled edge along both sides. At the front the reed is cut along the rakes; the hip faces
@@ -715,16 +719,20 @@ def gable_roof(picture, snowy, rng, left, right, eaves_y, foot_y, hip_half, dept
             picture[y][x] = THATCH[shade + (x > centre and shade < 4)]
             snowy.add((x, y))
         face_top[x] = foot_y + 1
-    # The turf ridge: a band 4 px wide, lit on the left, with tufts along its edges, rounded off
-    # at both ends.
-    ridge_top, ridge_bottom = rake(centre) - depth - 1, rake(centre) + 1
-    for column, colour in enumerate(("dry", "green", "green_dark", "green_dark", "green_deep", "green_deep")):
-        x = round(centre - 2.5) + column
-        is_edge = column in (0, 5)
-        for y in range(ridge_top + is_edge, ridge_bottom - is_edge):
-            if not is_edge or rng.random() < 0.4:
-                picture[y][x] = colour
-                snowy.add((x, y))
+    # The ridge: a roll of reed lying along the top of the roof, lit on its left, bound every few
+    # rows. It narrows as it runs back into the picture and ends short of the back of the roof,
+    # so it lies on the roof rather than standing up out of it.
+    ridge_front, ridge_back = rake(centre), rake(centre) - depth + RIDGE_SHORT
+    for y in range(ridge_back, ridge_front + 1):
+        half_width = 1 + 2 * (y - ridge_back) / (ridge_front - ridge_back)
+        is_binding = (ridge_front - y) % RIDGE_BINDING == RIDGE_BINDING - 1
+        for x in range(left, right + 1):
+            offset = x - centre
+            if abs(offset) > half_width:
+                continue
+            shade = 0 if offset < -half_width / 3 else 1 if offset < half_width / 3 else 3
+            picture[y][x] = THATCH[min(4, shade + is_binding)]
+            snowy.add((x, y))
     # The bargeboards: each runs from its eaves along the rake and on past the middle, so they
     # cross over the hip and end in horse heads, lit on top.
     for side in (-1, 1):
@@ -843,7 +851,7 @@ def hall_house(is_lit):
     the big arched barn door (Grote Door) in the middle under a carved oak beam, oak framing
     with red brick in it, laid in herringbone and slanting courses in the gable, and the top of
     the gable boarded, with the owl hole (Uhlenloch) under the little hip. A huge half-hipped
-    thatch runs back from it, with a turf ridge, and white bargeboards cross over the hip in a
+    thatch runs back from it, with a reed ridge, and white bargeboards cross over the hip in a
     pair of horse heads. Small stable windows to either side of the door."""
     rng = random.Random(385)
     width, height = 7 * TILE, 136
