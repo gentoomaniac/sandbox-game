@@ -5,7 +5,7 @@ extends RefCounted
 
 ## Command name to its usage and what it does, in the order `help` lists them.
 const COMMANDS := {
-	"help": ["help", "List the commands."],
+	"help": ["help [command]", "List the commands, or show what one takes."],
 	"tp": ["tp <x> <y>", "Teleport to a world tile (outside only)."],
 	"give": ["give <item> [count]", "Put items in the inventory."],
 	"god": ["god", "Toggle invincibility: health never drops (energy still runs out)."],
@@ -15,10 +15,7 @@ const COMMANDS := {
 	"spawn":
 	[
 		"spawn <kind> [count]",
-		(
-			"Put animals near you: farm animals that stay (cow, sheep, chicken, rabbit) or wild"
-			+ " ones that come and go (bird, wild_rabbit, squirrel, deer, bee, butterfly, flock)."
-		),
+		"Put animals near you: farm animals that stay, or wild ones that come and go.",
 	],
 	"weather":
 	[
@@ -42,14 +39,21 @@ const COMMANDS := {
 	],
 }
 ## The kind of each argument a command takes, in order, for Tab completion (see candidates).
-## Numbers have no candidates; commands not listed take no arguments.
+## Numbers have no candidates; commands not listed take no arguments. `help <command>` and a
+## missing or unknown name list the candidates of the kinds in LISTED_KINDS.
 const ARGUMENTS := {
+	"help": [&"command"],
 	"tp": [&"number", &"number"],
 	"give": [&"item", &"number"],
 	"spawn": [&"animal", &"number"],
 	"weather": [&"weather"],
 	"snow": [&"snow"],
 }
+## The argument kinds whose candidates `_candidates_text` lists: the names a command takes. Items
+## are too many to list (Tab completes them) and the other kinds are numbers.
+const LISTED_KINDS: Array[StringName] = [&"animal", &"weather", &"snow"]
+## The most characters of a listed line, so the log shows it whole.
+const LIST_LINE_LENGTH := 70
 ## Minutes per unit of the `skip` command, and the longest skip (a year).
 const SKIP_UNITS := {"m": 1, "h": GameClock.MINUTES_PER_HOUR, "d": GameClock.MINUTES_PER_DAY}
 const MAX_SKIP_MINUTES := GameClock.DAYS_PER_YEAR * GameClock.MINUTES_PER_DAY
@@ -84,7 +88,7 @@ func run(line: String) -> Array[String]:
 	var output: Array[String]
 	match words[0]:
 		"help":
-			output = _help()
+			output = _help(arguments)
 		"tp":
 			output = _tp(arguments)
 		"give":
@@ -102,7 +106,7 @@ func run(line: String) -> Array[String]:
 			cheats.is_cost_off = not cheats.is_cost_off
 			output = [_toggle_message("No cost", cheats.is_cost_off)]
 		"spawn":
-			output = _spawn(arguments)
+			output = _candidates_text("spawn") if arguments.is_empty() else _spawn(arguments)
 		"weather":
 			output = _weather(arguments)
 		"snow":
@@ -161,10 +165,36 @@ func _words(line: String) -> PackedStringArray:
 	return line.strip_edges().trim_prefix("/").to_lower().split(" ", false)
 
 
-func _help() -> Array[String]:
+func _help(arguments: PackedStringArray) -> Array[String]:
 	var lines: Array[String] = []
+	if arguments.size() > 1:
+		return ["Usage: %s" % COMMANDS["help"][0]]
+	if arguments.size() == 1:
+		if not COMMANDS.has(arguments[0]):
+			return ["Unknown command: %s (try help)" % arguments[0]]
+		var entry: Array = COMMANDS[arguments[0]]
+		lines.append("%s: %s" % [entry[0], entry[1]])
+		lines.append_array(_candidates_text(arguments[0]))
+		return lines
 	for entry: Array in COMMANDS.values():
 		lines.append("%s: %s" % [entry[0], entry[1]])
+	return lines
+
+
+## The names the command takes, from the same candidates Tab completes, one line per kind of
+## argument (a long list continues on the next lines).
+func _candidates_text(command: String) -> Array[String]:
+	var lines: Array[String] = []
+	for kind: StringName in ARGUMENTS.get(command, []):
+		if not LISTED_KINDS.has(kind):
+			continue
+		var line := "%s:" % kind
+		for name in candidates(kind):
+			if line.length() + name.length() + 2 > LIST_LINE_LENGTH:
+				lines.append(line)
+				line = " "
+			line += " %s," % name
+		lines.append(line.trim_suffix(","))
 	return lines
 
 
@@ -233,7 +263,9 @@ func _spawn(arguments: PackedStringArray) -> Array[String]:
 		return ["Spawned %d of %d %s" % [spawned, count, word]]
 	var kind := WildlifeRules.RABBIT if word == WILD_RABBIT else StringName(word)
 	if not WildlifeRules.KINDS.has(kind):
-		return ["Unknown animal: %s" % word]
+		var lines: Array[String] = ["Unknown animal: %s" % word]
+		lines.append_array(_candidates_text("spawn"))
+		return lines
 	if _state.is_inside() or not wildlife_spawner.is_valid():
 		return ["No animals here"]
 	var placed: int = wildlife_spawner.call(kind, count)

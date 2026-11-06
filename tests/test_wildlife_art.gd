@@ -35,6 +35,6 @@ func test_the_spawn_command_asks_for_animals() -> void:
 		return count
 	assert_eq(console.run("spawn deer 2"), ["Spawned 2 of 2 deer"])
 	assert_eq(asked, [[&"deer", 2]])
-	assert_eq(console.run("spawn dragon"), ["Unknown animal: dragon"])
-	assert_eq(console.run("spawn"), ["Usage: spawn <kind> [count]"])
+	assert_eq(console.run("spawn dragon")[0], "Unknown animal: dragon")
+	assert_eq(console.run("spawn deer many"), ["Usage: spawn <kind> [count]"])
 	assert_eq(console.complete("spawn dee"), "spawn deer ")

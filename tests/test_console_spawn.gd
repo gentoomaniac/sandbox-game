@@ -52,3 +52,39 @@ func test_spawn_offers_the_farm_animals_and_the_wild_rabbit() -> void:
 	assert_eq(_console.complete("spawn co"), "spawn cow ")
 	assert_eq(_console.complete("spawn ch"), "spawn chicken ")
 	assert_eq(_console.complete("spawn wi"), "spawn wild_rabbit ")
+	assert_eq(_console.complete("help sp"), "help spawn ")
+
+
+func test_spawn_without_a_name_lists_what_can_be_spawned() -> void:
+	var lines := _console.run("spawn")
+	var text := "\n".join(lines)
+	for kind in _console.candidates(&"animal"):
+		assert_string_contains(text, kind)
+	assert_string_contains(text, "wild_rabbit")
+	assert_eq(_state.livestock.all().size(), 0)
+
+
+func test_an_unknown_animal_is_named_and_the_list_follows() -> void:
+	var lines := _console.run("spawn unicorn")
+	assert_eq(lines[0], "Unknown animal: unicorn")
+	assert_string_contains("\n".join(lines), "squirrel")
+
+
+func test_help_spawn_lists_what_can_be_spawned() -> void:
+	var lines := _console.run("help spawn")
+	assert_string_contains(lines[0], "spawn <kind> [count]")
+	assert_string_contains("\n".join(lines), "cow")
+
+
+func test_a_long_list_wraps_into_lines_that_fit_the_log() -> void:
+	for line in _console.run("spawn"):
+		assert_lte(line.length(), Console.LIST_LINE_LENGTH)
+
+
+func test_help_lists_the_names_of_every_command_that_takes_names() -> void:
+	assert_string_contains("\n".join(_console.run("help weather")), "thunder")
+	assert_string_contains("\n".join(_console.run("help snow")), "auto")
+	assert_eq(_console.run("help god").size(), 1)
+	assert_eq(
+		_console.run("help nonsense"), ["Unknown command: nonsense (try help)"] as Array[String]
+	)
