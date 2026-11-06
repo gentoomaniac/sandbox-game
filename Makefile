@@ -54,6 +54,7 @@ help:
 	@echo "  SOUND       screenshot: SOUND=1 keeps the sound on."
 	@echo "  CONTAINER   llm-*: container tool, podman or docker (default: podman if present)."
 	@echo "  LLM_MODEL   llm-*: Ollama model tag (default: qwen2.5:3b-instruct)."
+	@echo "  LLM_GPU     llm-up: auto (GPU if a CDI spec exists), 1 (GPU or fail), 0 (CPU)."
 	@echo "  ARGS        screenshot: more debug flags, e.g. ARGS=\"--weather=rain\" (see game/scenes/startup_options.gd)."
 
 setup:

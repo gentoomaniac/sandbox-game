@@ -1,6 +1,7 @@
 #!/bin/sh
 # A local LLM for testing NPC talk: Ollama in a container, OpenAI-compatible API on
 # http://127.0.0.1:11434/v1. See tools/README.md. Usage: llm.sh up | down [--purge] | check | status | logs
+# LLM_GPU=auto (default: the NVIDIA GPU if a CDI spec for it exists) | 1 (GPU or fail) | 0 (CPU).
 set -eu
 
 # Pinned, so the test setup does not change under us.
@@ -10,6 +11,9 @@ VOLUME=sandbox-game-llm-models
 PORT=11434
 URL=http://127.0.0.1:$PORT
 MODEL=${LLM_MODEL:-qwen2.5:3b-instruct}
+GPU=${LLM_GPU:-auto}
+GPU_DEVICE=nvidia.com/gpu=all
+GPU_LABEL=sandbox-game.gpu
 
 if [ -z "${CONTAINER:-}" ]; then
 	if command -v podman >/dev/null 2>&1; then CONTAINER=podman; else CONTAINER=docker; fi
@@ -17,6 +21,36 @@ fi
 
 is_running() {
 	[ "$("$CONTAINER" inspect --format '{{.State.Running}}' "$NAME" 2>/dev/null)" = true ]
+}
+
+# podman and docker (28+) both read CDI specs from these places; nvidia-ctk writes them.
+has_gpu_spec() {
+	grep -qsF 'nvidia.com/gpu' /etc/cdi/*.yaml /etc/cdi/*.json /var/run/cdi/*.yaml /var/run/cdi/*.json
+}
+
+# Prints 1 if the container gets the GPU, 0 if not; fails if LLM_GPU=1 cannot be met.
+want_gpu() {
+	case "$GPU" in
+	0) echo 0 ;;
+	1 | auto)
+		if has_gpu_spec; then
+			echo 1
+			return 0
+		fi
+		if [ "$GPU" = 1 ]; then
+			echo "llm.sh: LLM_GPU=1 but there is no CDI spec for nvidia.com/gpu (see tools/README.md)" >&2
+			return 1
+		fi
+		if command -v nvidia-smi >/dev/null 2>&1; then
+			echo "llm.sh: the NVIDIA GPU has no CDI spec, using the CPU (see tools/README.md)" >&2
+		fi
+		echo 0
+		;;
+	*)
+		echo "llm.sh: LLM_GPU must be auto, 1 or 0, not '$GPU'" >&2
+		return 1
+		;;
+	esac
 }
 
 wait_for_api() {
@@ -36,12 +70,25 @@ wait_for_api() {
 }
 
 up() {
+	gpu=$(want_gpu)
+	# The label records how the container was started, so a GPU change recreates it.
+	if is_running && [ "$("$CONTAINER" inspect --format "{{index .Config.Labels \"$GPU_LABEL\"}}" "$NAME")" != "$gpu" ]; then
+		echo "Recreating $NAME: it runs with a different GPU setting"
+		"$CONTAINER" rm -f "$NAME" >/dev/null
+	fi
 	if ! is_running; then
 		# A stopped container of that name would block the new one.
 		"$CONTAINER" rm -f "$NAME" >/dev/null 2>&1 || true
-		echo "Starting $NAME ($IMAGE, using $CONTAINER)"
-		"$CONTAINER" run -d --name "$NAME" -p "127.0.0.1:$PORT:11434" \
-			-v "$VOLUME:/root/.ollama" "$IMAGE" >/dev/null
+		if [ "$gpu" = 1 ]; then
+			set -- --device "$GPU_DEVICE"
+			where=GPU
+		else
+			set --
+			where=CPU
+		fi
+		echo "Starting $NAME ($IMAGE, using $CONTAINER, on the $where)"
+		"$CONTAINER" run -d --name "$NAME" --label "$GPU_LABEL=$gpu" "$@" \
+			-p "127.0.0.1:$PORT:11434" -v "$VOLUME:/root/.ollama" "$IMAGE" >/dev/null
 	fi
 	wait_for_api
 	if "$CONTAINER" exec "$NAME" ollama show "$MODEL" >/dev/null 2>&1; then
@@ -91,6 +138,8 @@ JSON
 	}
 	echo "Reply: $reply"
 	echo "Took $((end - start)) s"
+	# The PROCESSOR column says whether the model sits on the GPU or the CPU.
+	"$CONTAINER" exec "$NAME" ollama ps
 }
 
 case "${1:-}" in
