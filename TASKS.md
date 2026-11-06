@@ -979,6 +979,32 @@ letters the region's languages use, drawn in the font's style (generated, like t
 the art, or a pixel font with a licence that allows it); check the chat, the HUD, the
 console and the menus, and add a test that every character of those ranges has a glyph.
 
+## 93. Claude as a language model choice in Settings
+
+- [ ] Done
+
+The user's word of 2026-11-06: hook Claude up to the villagers' talk, as an option to pick
+in Settings, not the default (the local test LLM stays the default).
+
+- **Settings → Language model gets a provider choice:** "OpenAI-compatible" (the default:
+  the test LLM, Ollama, LM Studio, hosted OpenAI-style APIs) or "Claude". Picking Claude
+  fills the endpoint `https://api.anthropic.com/v1` and a Claude model (default
+  `claude-opus-5-5`; `claude-haiku-5-5` named as the much cheaper choice), each still
+  editable; the key field takes the Anthropic API key (plain text in settings.cfg, as the
+  page says).
+- **A Claude adapter** beside OpenAiChat, behind the same interface: POST
+  `<endpoint>/messages` with `x-api-key` and `anthropic-version: 2026-10-21` headers; the
+  template's system line as the top-level `system`, the example exchange and the chat as
+  user/assistant turns; no `temperature` (current models refuse it); `max_tokens` about
+  1000 (thinking counts against it; the reply is trimmed to two sentences anyway) and a low
+  effort (`output_config: {effort: "low"}`); the reply from the `text` blocks of `content`;
+  `stop_reason` `refusal` or any error gives a scripted line; server-side fallbacks
+  (`anthropic-beta: server-side-fallback-2026-07-01`, `fallbacks: "default"`) on models
+  that take them. No redirects, the key never logged, time-out as now.
+- Tests with canned HTTP responses like test_open_ai_chat.gd (success, refusal, error, the
+  headers and body shape); an optional real test only with an env var set. README: how to
+  pick Claude, what it costs per line roughly, that the chat goes to Anthropic.
+
 ## Later (not part of the prototype)
 
 - **Test LLM on the GPU, and which models fit** (the user, 2026-11-06): set up CDI for the
