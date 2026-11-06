@@ -11,7 +11,7 @@ extends RefCounted
 ## does not turn into a tree on a tile in `occupied_tiles`: it waits a day.
 static func pass_night(world: World, occupied_tiles: Array[Vector2i], weather: Weather) -> void:
 	_dry_and_wet_soil(world, weather)
-	_recover_clay_spots(world)
+	world.recover_clay_spots()
 	var yesterday := world.clock.day - 1
 	for object in world.edited_objects():
 		var has_changed := false
@@ -51,13 +51,3 @@ static func _dry_and_wet_soil(world: World, weather: Weather) -> void:
 		world.set_moisture(
 			pos, world.moisture_at(pos) + rules.farming("rain_wets") * day.rain_hours - drying
 		)
-
-
-## Counts a night off every dug clay spot; those that recover hold clay again.
-static func _recover_clay_spots(world: World) -> void:
-	for pos in world.spent_clay_spots.keys():
-		world.spent_clay_spots[pos] -= 1
-		if world.spent_clay_spots[pos] <= 0:
-			world.spent_clay_spots.erase(pos)
-			if world.is_chunk_loaded(Chunk.world_to_chunk(pos)):
-				world.clay_spot_changed.emit(pos)

@@ -1,7 +1,7 @@
 # gdlint: disable=max-public-methods
-# (World is the one entry point for map changes: chunks, objects, soil, buildings and clay are
-# 37 public methods that read and write the same edits, so ground items and the nightly upkeep
-# were split off, and the rest stays together.)
+# (World is the one entry point for map changes: chunks, objects, soil, buildings and clay all
+# read and write the same edits, so they stay together; ground items and the nightly upkeep were
+# split off.)
 class_name World
 extends GameMap
 ## The world: a seed, fixed bounds and the chunks that are currently loaded.
@@ -44,9 +44,9 @@ var clock: GameClock
 var vegetation := Vegetation.default_vegetation()
 ## What lies on the ground (see `drop_items`).
 var ground_items := GroundItems.new()
-## The clay spots that were dug, with the nights left until they hold clay again (counted down
-## by `NightUpkeep`).
-var spent_clay_spots: Dictionary[Vector2i, int] = {}
+## The clay spots that were dug, with the nights left until they hold clay again (see
+## `recover_clay_spots`).
+var _spent_clay_spots: Dictionary[Vector2i, int] = {}
 var _generator: WorldGenerator
 var _chunks: Dictionary[Vector2i, Chunk] = {}
 ## What the player changed, kept outside the chunks so it survives their unloading: per world
@@ -412,7 +412,7 @@ func has_clay(world_pos: Vector2i) -> bool:
 	return (
 		tile != null
 		and tile.terrain == Tile.Terrain.GRASS
-		and not spent_clay_spots.has(world_pos)
+		and not _spent_clay_spots.has(world_pos)
 		and _generator.is_clay_spot(world_pos)
 	)
 
@@ -420,8 +420,18 @@ func has_clay(world_pos: Vector2i) -> bool:
 ## Digs a clay spot out: it holds no clay for the next CLAY_SPENT_NIGHTS nights. What it gave is
 ## up to the caller.
 func spend_clay_spot(world_pos: Vector2i) -> void:
-	spent_clay_spots[world_pos] = CLAY_SPENT_NIGHTS
+	_spent_clay_spots[world_pos] = CLAY_SPENT_NIGHTS
 	clay_spot_changed.emit(world_pos)
+
+
+## Counts a night off every dug clay spot; those that recover hold clay again (see NightUpkeep).
+func recover_clay_spots() -> void:
+	for pos in _spent_clay_spots.keys():
+		_spent_clay_spots[pos] -= 1
+		if _spent_clay_spots[pos] <= 0:
+			_spent_clay_spots.erase(pos)
+			if is_chunk_loaded(Chunk.world_to_chunk(pos)):
+				clay_spot_changed.emit(pos)
 
 
 # --- Ground items ---
@@ -465,8 +475,8 @@ func to_dict() -> Dictionary:
 	for pos in _soil_moisture:
 		soil_moisture.append(SaveCodec.vector_to_json(pos) + [_soil_moisture[pos]])
 	var clay_spots_data: Array[Array] = []
-	for pos in spent_clay_spots:
-		clay_spots_data.append(SaveCodec.vector_to_json(pos) + [spent_clay_spots[pos]])
+	for pos in _spent_clay_spots:
+		clay_spots_data.append(SaveCodec.vector_to_json(pos) + [_spent_clay_spots[pos]])
 	return {
 		"seed": world_seed,
 		"ground_items": ground_items.to_array(),
@@ -488,7 +498,7 @@ static func from_dict(data: Dictionary, game_clock: GameClock) -> World:
 	for entry: Array in data["soil_moisture"]:
 		world._soil_moisture[SaveCodec.vector_from_json(entry)] = float(entry[2])
 	for entry: Array in data["spent_clay_spots"]:
-		world.spent_clay_spots[SaveCodec.vector_from_json(entry)] = int(entry[2])
+		world._spent_clay_spots[SaveCodec.vector_from_json(entry)] = int(entry[2])
 	for edit: Dictionary in data["object_edits"]:
 		var object_data: Variant = edit["object"]
 		world._object_edits[SaveCodec.vector_from_json(edit["pos"])] = (
