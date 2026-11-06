@@ -5,6 +5,9 @@ const SEED := 42
 ## Chunks around the river: they have grass with trees as well as water, floodplain and
 ## wetland.
 const CHUNKS: Array[Vector2i] = [Vector2i(0, -1), Vector2i(0, 0), Vector2i(1, -1), Vector2i(-3, -2)]
+## What stands on wetland and floodplain: reeds on the banks and the dykes along the
+## floodplain.
+const WET_LAND_TYPES: Array[StringName] = [WorldObjectTypes.REEDS, WorldObjectTypes.DYKE]
 
 var _world: World
 
@@ -63,10 +66,6 @@ func test_every_natural_object_type_is_generated() -> void:
 					WorldObjectTypes.STUMP,
 					WorldObjectTypes.DEAD_STUMP,
 					# Not placed by the generator yet.
-					WorldObjectTypes.KNICK,
-					WorldObjectTypes.WATTLE_FENCE,
-					WorldObjectTypes.STONE_WALL,
-					WorldObjectTypes.DYKE,
 					WorldObjectTypes.WILLOW,
 				]
 			)
@@ -104,7 +103,7 @@ func test_dead_trees_are_more_common_near_wetland() -> void:
 	assert_gt(near_rate, 3.0 * far_rate)
 
 
-func test_objects_stand_only_on_grass_but_for_the_reeds_on_the_banks() -> void:
+func test_objects_stand_only_on_grass_but_for_reeds_and_dykes() -> void:
 	var terrains := {}
 	for chunk in _generate(WorldGenerator.new(SEED), CHUNKS):
 		for object in chunk.objects():
@@ -112,13 +111,13 @@ func test_objects_stand_only_on_grass_but_for_the_reeds_on_the_banks() -> void:
 			terrains[terrain] = true
 			assert_eq(Chunk.world_to_chunk(object.pos), chunk.coords)
 			if terrain != Tile.Terrain.GRASS:
-				assert_eq(object.type, WorldObjectTypes.REEDS)
+				assert_true(object.type in WET_LAND_TYPES, "%s at %s" % [object.type, object.pos])
 	var expected := [Tile.Terrain.GRASS, Tile.Terrain.FLOODPLAIN, Tile.Terrain.WETLAND]
 	for terrain in terrains:
 		assert_true(expected.has(terrain), "terrain %d" % terrain)
 
 
-func test_no_objects_but_reeds_on_water_wetland_or_floodplain() -> void:
+func test_no_objects_on_water_and_only_reeds_and_dykes_on_wet_land() -> void:
 	var generator := WorldGenerator.new(SEED)
 	var checked := {}
 	for y in range(-64, 64):
@@ -130,7 +129,7 @@ func test_no_objects_but_reeds_on_water_wetland_or_floodplain() -> void:
 				if terrain == Tile.Terrain.WATER:
 					assert_eq(object_type, &"")
 				else:
-					assert_true(object_type in [&"", WorldObjectTypes.REEDS])
+					assert_true(object_type == &"" or object_type in WET_LAND_TYPES, object_type)
 	assert_true(checked.has(Tile.Terrain.WATER))
 	assert_true(checked.has(Tile.Terrain.FLOODPLAIN))
 	assert_true(checked.has(Tile.Terrain.WETLAND))

@@ -279,6 +279,47 @@ func test_a_version_8_save_puts_clogs_on_the_bare_feet() -> void:
 	assert_eq(restored.player.equipment.item_in(Equipment.FEET), ItemTypes.CLOGS)
 
 
+func test_a_version_9_save_keeps_the_worked_land_off_the_house_and_the_player() -> void:
+	var game := _current_game()
+	var generator := WorldGenerator.new(int(game["world"]["seed"]))
+	var knick := _find_tile(
+		func(pos: Vector2i) -> bool:
+			return (
+				generator.object_type_at(pos, generator.terrain_at(pos)) == WorldObjectTypes.KNICK
+			)
+	)
+	var dyke := _find_tile(
+		func(pos: Vector2i) -> bool:
+			return generator.object_type_at(pos, generator.terrain_at(pos)) == WorldObjectTypes.DYKE
+	)
+	# A shack whose door is right above the Knick, and the player standing on the dyke.
+	var origin := knick - Vector2i(1, 2)
+	var shack := {"type": "shack", "origin": SaveCodec.vector_to_json(origin), "interior": null}
+	game["world"]["buildings"].append(shack)
+	game["player"]["position"] = [dyke.x + 0.5, dyke.y + 0.9]
+	_write_save(9, game)
+
+	var restored := SaveFile.read(SAVE_PATH)
+
+	var world := restored.world
+	for tile: Vector2i in [knick, dyke]:
+		world.add_chunk(generator.generate_chunk(Chunk.world_to_chunk(tile)))
+	assert_null(world.object_at(knick), "nothing stands in front of the door")
+	assert_true(world.is_walkable(knick))
+	assert_null(world.object_at(dyke), "the player's ground is cleared")
+	assert_true(PlayerState.can_stand_at(world, restored.player.position))
+
+
+## A tile within 200 tiles of the centre for which `is_wanted` is true.
+func _find_tile(is_wanted: Callable) -> Vector2i:
+	for y in range(-200, 200):
+		for x in range(-60, 60):
+			if is_wanted.call(Vector2i(x, y)):
+				return Vector2i(x, y)
+	fail_test("no tile found")
+	return Vector2i.ZERO
+
+
 func test_a_current_save_missing_a_field_fails_loudly() -> void:
 	var game := _current_game()
 	game["player"].erase("energy")

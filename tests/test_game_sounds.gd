@@ -104,8 +104,12 @@ func test_collecting_an_item_pops() -> void:
 
 
 func test_placing_a_building_is_heard() -> void:
-	_world.place_building(BuildingTypes.SHACK, _tile + Vector2i(5, 5))
-	assert_eq(_events, [&"build_place"])
+	for y in range(2, 20):
+		for x in range(-10, 10):
+			if _world.place_building(BuildingTypes.SHACK, _tile + Vector2i(x, y)) != null:
+				assert_eq(_events, [&"build_place"])
+				return
+	fail_test("no room for a shack near the camp")
 
 
 func test_a_refused_placement_is_denied() -> void:

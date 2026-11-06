@@ -5,6 +5,11 @@ extends RefCounted
 ## stands, mixed at their borders), bushes, rare dead trees and scattered stones and boulders
 ## on the grass.
 ##
+## Over that natural land lies the worked land of data/landscape.cfg: the fields of a
+## FieldLayout, bounded on the dry Geest by Knicks, fieldstone walls and wattle fences (the marsh,
+## the low land along the river, has none); dykes run along the floodplain's edge. Nothing stands
+## on the gap of a boundary, and nothing that blocks the way beside it, so no field is shut in.
+##
 ## Deterministic: terrain is a pure function of the seed and the world tile position, and
 ## each generator owns its noise instances, so chunks come out the same in any order and
 ## fit together seamlessly.
@@ -62,6 +67,10 @@ const CLAY_REACH := 5
 const CLAY_CLUSTER_ABOVE := 0.25
 const CLAY_SPOT_CHANCE := 0.5
 
+## A tile further than this from the river's centre line can't be beside the floodplain: a
+## tile beside it is at most this much nearer, where the river turns steeply.
+const DYKE_PROBE_DISTANCE := RIVER_HALF_WIDTH + FLOODPLAIN_WIDTH + 6.0
+
 ## The 8 directions probed for wetland and, for clay, for water.
 const WETLAND_PROBE_DIRECTIONS: Array[Vector2i] = [
 	Vector2i(1, 0),
@@ -94,6 +103,8 @@ const FOREST_FREQUENCY := 0.02
 const COMPOSITION_FREQUENCY := 0.012
 const GRASS_FREQUENCY := 0.05
 const CLAY_FREQUENCY := 0.15
+## The dyke noise picks the stretches of the floodplain's edge that have a dyke.
+const DYKE_FREQUENCY := 0.01
 
 ## Offsets the wetland seed so it is independent of the river noise.
 const WETLAND_SEED_OFFSET := 1
@@ -101,6 +112,7 @@ const FOREST_SEED_OFFSET := 2
 const COMPOSITION_SEED_OFFSET := 4
 const GRASS_SEED_OFFSET := 6
 const CLAY_SEED_OFFSET := 7
+const DYKE_SEED_OFFSET := 11
 ## Offsets the per-tile object rolls from the noise seeds: one decides the kind of object,
 ## the other which variety of tree or bush.
 const OBJECT_ROLL_SEED_OFFSET := 3
@@ -115,14 +127,19 @@ var _forest_noise := FastNoiseLite.new()
 var _composition_noise := FastNoiseLite.new()
 var _grass_noise := FastNoiseLite.new()
 var _clay_noise := FastNoiseLite.new()
+var _dyke_noise := FastNoiseLite.new()
 var _object_roll_seed: int
 var _variety_roll_seed: int
 var _grass_roll_seed: int
 var _clay_roll_seed: int
 var _reed_roll_seed: int
+var _fields: FieldLayout
+## The numbers of data/landscape.cfg (see there).
+var _marsh_reach: float
+var _dyke_above: float
 
 
-func _init(world_seed: int) -> void:
+func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void:
 	_river_noise.seed = world_seed
 	_river_noise.frequency = RIVER_FREQUENCY
 	_wetland_noise.seed = world_seed + WETLAND_SEED_OFFSET
@@ -135,11 +152,16 @@ func _init(world_seed: int) -> void:
 	_grass_noise.frequency = GRASS_FREQUENCY
 	_clay_noise.seed = world_seed + CLAY_SEED_OFFSET
 	_clay_noise.frequency = CLAY_FREQUENCY
+	_dyke_noise.seed = world_seed + DYKE_SEED_OFFSET
+	_dyke_noise.frequency = DYKE_FREQUENCY
 	_object_roll_seed = world_seed + OBJECT_ROLL_SEED_OFFSET
 	_variety_roll_seed = world_seed + VARIETY_ROLL_SEED_OFFSET
 	_grass_roll_seed = world_seed + GRASS_ROLL_SEED_OFFSET
 	_clay_roll_seed = world_seed + CLAY_ROLL_SEED_OFFSET
 	_reed_roll_seed = world_seed + REED_ROLL_SEED_OFFSET
+	_fields = FieldLayout.new(world_seed, landscape)
+	_marsh_reach = landscape.value("marsh", "reach")
+	_dyke_above = landscape.value("dykes", "stretch_above")
 
 
 ## The chunk at `chunk_coords`, or null if it is outside the world bounds.
@@ -147,6 +169,10 @@ func generate_chunk(chunk_coords: Vector2i) -> Chunk:
 	if not World.is_chunk_in_bounds(chunk_coords):
 		return null
 	var chunk := Chunk.new(chunk_coords)
+	# Every tile and its sides are asked about.
+	_fields.cover(
+		Rect2i(Chunk.to_world(chunk_coords, Vector2i.ZERO), Vector2i.ONE * Chunk.CHUNK_SIZE).grow(1)
+	)
 	for y in Chunk.CHUNK_SIZE:
 		for x in Chunk.CHUNK_SIZE:
 			var local := Vector2i(x, y)
@@ -164,8 +190,7 @@ func terrain_at(world_pos: Vector2i) -> Tile.Terrain:
 	# The river is a centre line y = f(x) rather than a noise isoline: an isoline can fade
 	# out or leave isolated pools, but this one is always continuous and the floodplain
 	# distance is exact.
-	var river_y := _river_noise.get_noise_1d(world_pos.x) * RIVER_MEANDER_AMPLITUDE
-	var river_distance := absf(world_pos.y - river_y)
+	var river_distance := _river_distance(world_pos)
 	if river_distance < RIVER_HALF_WIDTH:
 		return Tile.Terrain.WATER
 	if river_distance < RIVER_HALF_WIDTH + FLOODPLAIN_WIDTH:
@@ -175,20 +200,87 @@ func terrain_at(world_pos: Vector2i) -> Tile.Terrain:
 	return Tile.Terrain.GRASS
 
 
+## How far a tile is from the river's centre line, along y.
+func _river_distance(world_pos: Vector2i) -> float:
+	return absf(world_pos.y - _river_noise.get_noise_1d(world_pos.x) * RIVER_MEANDER_AMPLITUDE)
+
+
+## Whether a tile is in the marsh: the low land along the floodplain, as wide as its reach.
+func _is_marsh(world_pos: Vector2i) -> bool:
+	return _river_distance(world_pos) < RIVER_HALF_WIDTH + FLOODPLAIN_WIDTH + _marsh_reach
+
+
+## Whether a tile of this terrain has a dyke: land with the floodplain among the 8 tiles
+## around it (so the dyke is a line joined on its sides), on a stretch the dyke noise picks.
+func _is_dyke(world_pos: Vector2i, terrain: Tile.Terrain) -> bool:
+	if terrain != Tile.Terrain.GRASS and terrain != Tile.Terrain.WETLAND:
+		return false
+	if _river_distance(world_pos) >= DYKE_PROBE_DISTANCE:
+		return false
+	if _dyke_noise.get_noise_2dv(Vector2(world_pos)) <= _dyke_above:
+		return false
+	for direction in WETLAND_PROBE_DIRECTIONS:
+		if terrain_at(world_pos + direction) == Tile.Terrain.FLOODPLAIN:
+			return true
+	return false
+
+
 ## The type of object generated on a tile, or &"" for none. A pure function of the seed, the
-## position and the terrain; only grass has objects, but for the reeds on the banks. A boulder
+## position and the terrain. A dyke or a field boundary on the Geest (dry grass out of the marsh
+## and the forests) takes the tile; nothing stands on the gap of a boundary, and nothing that
+## blocks the way beside it.
+func object_type_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
+	if _is_dyke(world_pos, terrain):
+		return WorldObjectTypes.DYKE
+	var boundary := _fields.boundary_at(world_pos)
+	if boundary == FieldLayout.GAP:
+		return &""
+	if boundary != &"" and _is_geest_field(world_pos, terrain):
+		return boundary
+	var object_type := _natural_object_at(world_pos, terrain)
+	if (
+		object_type != &""
+		and WorldObjectTypes.TYPES[object_type]["blocks_walking"]
+		and _is_beside_gap(world_pos)
+	):
+		return &""
+	return object_type
+
+
+## Whether a tile is grass of the Geest out of the forests: where the field boundaries are
+## hedges, walls and fences.
+func _is_geest_field(world_pos: Vector2i, terrain: Tile.Terrain) -> bool:
+	return (
+		terrain == Tile.Terrain.GRASS
+		and not _is_marsh(world_pos)
+		and _forest_noise.get_noise_2dv(Vector2(world_pos)) < FOREST_THRESHOLD
+	)
+
+
+func _is_beside_gap(world_pos: Vector2i) -> bool:
+	for side in World.CONNECTION_SIDES:
+		if _fields.boundary_at(world_pos + side) == FieldLayout.GAP:
+			return true
+	return false
+
+
+## What nature puts on a tile: only grass has objects, but for the reeds on the banks. A boulder
 ## covers the tile to its right, which therefore has to be free grass: otherwise there is no
 ## boulder.
-func object_type_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
+func _natural_object_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
 	if terrain == Tile.Terrain.FLOODPLAIN or terrain == Tile.Terrain.WETLAND:
 		return WorldObjectTypes.REEDS if _is_reeds_at(world_pos, terrain) else &""
 	var object_type := _rolled_type_at(world_pos, terrain)
 	if object_type != WorldObjectTypes.BOULDER:
 		return object_type
 	var right := world_pos + Vector2i.RIGHT
+	var right_terrain := terrain_at(right)
 	if (
-		terrain_at(right) == Tile.Terrain.GRASS
+		right_terrain == Tile.Terrain.GRASS
 		and _rolled_type_at(right, Tile.Terrain.GRASS) == &""
+		and object_type_at(right, right_terrain) == &""
+		and _fields.boundary_at(right) == &""
+		and not _is_beside_gap(right)
 	):
 		return object_type
 	return &""

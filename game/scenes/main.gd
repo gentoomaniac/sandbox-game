@@ -79,6 +79,7 @@ func _ready() -> void:
 		or not RecipeRules.default_rules().is_valid()
 		or not SoundRules.default_rules().is_valid()
 		or not AmbienceRules.default_rules().is_valid()
+		or not LandscapeRules.default_rules().is_valid()
 		or not AssetCheck.report()
 	):
 		# The load has reported the missing rules, crops, curves or pictures. Nothing else runs

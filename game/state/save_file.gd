@@ -12,7 +12,7 @@ extends RefCounted
 ## 4. Add a test in tests/test_save_upgrade.gd: an old save without the field loads right.
 ## An upgrade step works on the parsed JSON, before any `from_dict` runs.
 
-const VERSION := 9
+const VERSION := 10
 ## Version 6 had tomatoes, which were not grown here before the 19th century; flax took their
 ## place, item for item.
 const TOMATOES_TO_FLAX := {"tomatoes": "flax", "tomatoes_seeds": "flax_seeds"}
@@ -83,6 +83,8 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 		_upgrade_from_version_7(parsed["game"])
 	if version <= 8:
 		_upgrade_from_version_8(parsed["game"])
+	if version <= 9:
+		_upgrade_from_version_9(parsed["game"])
 	return GameState.from_dict(parsed["game"])
 
 
@@ -180,6 +182,41 @@ static func _upgrade_from_version_8(game: Dictionary) -> void:
 	for object in _saved_objects(game):
 		if object.has("storage"):
 			_rename_items(object["storage"], TUNIC_AND_TROUSERS_TO_PERIOD)
+
+
+## Version 9 worlds were generated without the worked land (Knicks, walls, fences, dykes),
+## which the same seed now has. Where the player's things are it gives way, as
+## if the player had cleared it: on the tiles of the buildings and in front of their doors, the
+## tiles of what the player put down, changed or tilled, and where the player stands, the
+## generated objects are taken off. So nothing new stands in a house, blocks
+## its door or the camp, or shuts the player in.
+static func _upgrade_from_version_9(game: Dictionary) -> void:
+	var world: Dictionary = game["world"]
+	var kept: Dictionary[Vector2i, bool] = {}
+	for building: Dictionary in world["buildings"]:
+		var type := StringName(building["type"])
+		var origin := SaveCodec.vector_from_json(building["origin"])
+		for tile in Building.footprint_tiles(type, origin):
+			kept[tile] = true
+		var door_offset: Vector2i = BuildingTypes.TYPES[type]["door_offset"]
+		kept[origin + door_offset + Vector2i.DOWN] = true
+	var edited_objects: Dictionary[Vector2i, bool] = {}
+	for edit: Dictionary in world["object_edits"]:
+		edited_objects[SaveCodec.vector_from_json(edit["pos"])] = true
+		if edit["object"] != null:
+			for tile in WorldObject.from_dict(edit["object"]).tiles():
+				kept[tile] = true
+	for edit: Array in world["terrain_edits"]:
+		kept[SaveCodec.vector_from_json(edit)] = true
+	var body := PlayerState.body_tiles(SaveCodec.float_vector_from_json(game["player"]["position"]))
+	for y in range(body.position.y, body.end.y):
+		for x in range(body.position.x, body.end.x):
+			kept[Vector2i(x, y)] = true
+	var generator := WorldGenerator.new(int(world["seed"]))
+	for tile in kept:
+		var generated := generator.object_type_at(tile, generator.terrain_at(tile))
+		if not edited_objects.has(tile) and generated != &"":
+			world["object_edits"].append({"pos": SaveCodec.vector_to_json(tile), "object": null})
 
 
 ## The saved world objects outside the loaded chunks: those the player changed in the world and

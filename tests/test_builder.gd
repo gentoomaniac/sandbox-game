@@ -11,8 +11,8 @@ func before_each() -> void:
 
 ## A top left tile near the camp where the chosen building can be placed.
 func _open_origin() -> Vector2i:
-	for y in range(-12, 13):
-		for x in range(-12, 13):
+	for y in range(-24, 25):
+		for x in range(-24, 25):
 			var origin := _state.player.tile() + Vector2i(x, y)
 			if _world.placement_blockers(_builder.choice, origin).is_empty():
 				return origin
