@@ -2,10 +2,12 @@ class_name WildlifeCase
 extends GutTest
 ## What the tests of the wildlife on screen share: a WildlifeView over a new game's world, with a
 ## camera on `VIEW_CENTRE` and nothing spawning of its own accord. Nothing runs by itself either:
-## a test steps an animal's frames with `run`.
+## a test steps an animal's frames with `run`. The view's dice are seeded, so a test throws the
+## same numbers every run.
 
 const VIEW_CENTRE := Vector2(80.0, 160.0)
 const STEP := 0.1
+const SEED := 1
 
 var _state: GameState
 var _wildlife: WildlifeView
@@ -15,6 +17,7 @@ var _camera: CameraController
 func before_each() -> void:
 	_state = GameState.new_game(1)
 	_wildlife = WildlifeView.new()
+	_wildlife.rng.seed = SEED
 	_wildlife.rules = WildlifeRules.default_rules()
 	_wildlife.is_player_ignored = true
 	_wildlife._state = _state

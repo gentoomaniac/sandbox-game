@@ -1248,13 +1248,19 @@ small in the bubble's corner, the name above the other's lines).
 
 ## 98. A flaky goose test
 
-- [ ] Done
+- [x] Done
 
 Seen on 2026-11-07 while task 96 was verified: tests/test_geese.gd failed twice in a row on
 one commit (a flock of 5 where 6 to 12 are expected) and passed on the third run. The wildlife
 view calls `rng.randomize()`, so the test is not deterministic, and `_place_geese` can place
 fewer geese than the flock size. Seed the test (or let it pass a seed) and make sure a flock
 is always placed in full, or that the test asks for what the game promises.
+
+Done: a flock got 4 tries per goose to find a dry spot not crowded by another, and 5 of 300
+seeds came out under 6 geese. Now it gets 20 tries per goose (`GooseFlock.PLACING_TRIES`), and
+none of 300 seeds came out short (a one-off measurement, not a test). On a narrow shore a flock
+still makes do with fewer geese, as there is no room for more; SPEC says so. The wildlife tests
+(tests/wildlife_case.gd) seed the view's dice, so they throw the same numbers every run.
 
 ## Later (not part of the prototype)
 

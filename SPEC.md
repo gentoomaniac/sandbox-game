@@ -808,11 +808,11 @@ atmosphere only: no player impact, not hunted, not saved.
     picture as it is shown, snow and all) and take no notice of the player, leaving if the
     house is gone; storks clatter their bills now and then. No
     nest yet;
-  - greylag geese (task 60): flocks of 6 to 12 graze the marsh and the floodplain (grass within
-    7 tiles of water) in autumn and winter, fewer in spring, by day. They raise their heads
-    together when the player comes near and take off together when nearer, closing up into a
-    V. Skeins of 7 to 13 fly over high up now and then, mostly at dawn and dusk. A flock counts
-    as one animal.
+  - greylag geese (task 60): flocks of 6 to 12 (fewer where a narrow shore has no room for them
+    all) graze the marsh and the floodplain (grass within 7 tiles of water) in autumn and winter,
+    fewer in spring, by day. They raise their heads together when the player comes near and take
+    off together when nearer, closing up into a V. Skeins of 7 to 13 fly over high up now and
+    then, mostly at dawn and dusk. A flock counts as one animal.
   - mice (task 80): within 2 tiles of farmland (tilled soil, a crop, a Knick, a fieldstone
     wall or a building, with its hay), all year, mostly at dusk and at night and a few by day;
     they sniff and scurry, and dash off into cover (gone) when the player comes near;

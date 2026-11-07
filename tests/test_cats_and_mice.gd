@@ -25,6 +25,7 @@ func before_each() -> void:
 	_camera.rig.position = TerrainTileset.tile_centre(MEADOW)
 	_state.clock.minute_of_day = NOON
 	_livestock = _state.livestock
+	# This test keeps the seed it had before WildlifeCase seeded the view: its own, not SEED.
 	_livestock.rng.seed = 3
 	_wildlife.rng.seed = 3
 	_cat = FarmAnimal.new(LivestockRules.CAT, &"ginger", Vector2(MEADOW) + Vector2(0.5, 0.5))
