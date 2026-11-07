@@ -449,7 +449,7 @@ arguments.
 | `weather`, `weather <condition>`, `weather auto` | Show the weather, force a condition, or go back to the simulation. |
 | `snow`, `snow <0..1>`, `snow auto` | Show the snow cover, force it, or go back to the weather. |
 | `spawn npc [count]` | Put villagers nearby, each with a look, a name and a sheet of their own; they stay. |
-| `spawn npc <villager>` | Put a villager written by hand nearby: `antje`, `momme`, `ocke`, `kerrin`, `hinrich`, `boy`, `inken` or `gesche`; each comes once. |
+| `spawn [npc] <villager>` | Put a villager written by hand nearby (`spawn kerrin` or `spawn npc kerrin`): `antje`, `momme`, `ocke`, `kerrin`, `hinrich`, `boy`, `inken` or `gesche`; each comes once. |
 | `spawn <animal> [count]` | Put animals nearby: farm animals that stay (`cow`, `sheep`, `chicken`, `rabbit`, `dog`, `cat`, `horse`) or wild ones that come and go (`bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork` on the nearest roof, `geese` grazing, `flying_geese`, `mouse`, `frog`). `spawn` alone, or with an unknown name, lists them. |
 | `skip <n>m\|h\|d` | Let minutes, hours or days pass, e.g. `skip 2h` or `skip 3d`. |
 | `crop` | Show the growth, damage and needs of the nearest crop. |

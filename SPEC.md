@@ -913,7 +913,8 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
 
 Decided 2026-11-06 (task 84, QUESTIONS.md 22): the first step towards the people of
 [docs/ideas/NPC.md](docs/ideas/NPC.md). For now villagers are put in the world with the
-console (`spawn npc [count]` or `spawn npc <id>`, near the player); they are state and saved.
+console (`spawn npc [count]`, or `spawn npc <id>` or just `spawn <id>`, near the player); they
+are state and saved.
 Task 86 (2026-11-06) added who they are, words from a language model and memory.
 
 - **Who:** each villager draws a sex, a name and a look from a seed. Names are period North

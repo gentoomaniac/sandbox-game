@@ -1,14 +1,7 @@
 extends ResourceCase
-## Who the villagers are: those written by hand in data/villagers.cfg, spawned by id from the
-## console, and the background a made-up villager draws from the tables of data/npcs.cfg.
-
-var _console: Console
-
-
-func before_each() -> void:
-	super.before_each()
-	_console = Console.new(_state)
-
+## Who the villagers are: those written by hand in data/villagers.cfg and the background a
+## made-up villager draws from the tables of data/npcs.cfg. Spawning them by id is tested in
+## test_spawn_villagers.
 
 # --- The villagers written by hand ---
 
@@ -170,49 +163,6 @@ func test_trades_without_their_day_and_speeches_without_samples_are_reported() -
 			as Array[String]
 		)
 	)
-
-
-# --- Spawned by id ---
-
-
-func test_family_and_friends_can_be_spawned() -> void:
-	assert_eq(_console.run("spawn npc hinrich"), ["Spawned Hinrich Boysen"] as Array[String])
-	assert_eq(_console.run("spawn npc inken"), ["Spawned Inken Ketels"] as Array[String])
-
-
-func test_spawn_npc_with_an_id_puts_that_villager_near_the_player() -> void:
-	assert_eq(_console.run("spawn npc antje"), ["Spawned Antje Boysen"] as Array[String])
-	var antje := _state.npcs.find("antje")
-	assert_not_null(antje)
-	assert_lte(antje.position.distance_to(_state.player.position), Npcs.SPAWN_DISTANCE.y)
-	assert_eq(_state.npcs.all().size(), 1)
-
-
-func test_a_villager_written_by_hand_comes_only_once() -> void:
-	_console.run("spawn npc kerrin")
-	assert_eq(_console.run("spawn npc kerrin"), ["Kerrin Paulsen is already here"] as Array[String])
-	assert_eq(_state.npcs.all().size(), 1)
-
-
-func test_an_unknown_villager_is_named_and_the_ids_follow() -> void:
-	var lines := _console.run("spawn npc nobody")
-	assert_eq(lines[0], "Unknown villager: nobody")
-	assert_string_contains("\n".join(lines), "antje")
-	assert_eq(_state.npcs.all().size(), 0)
-
-
-func test_a_count_still_makes_up_villagers() -> void:
-	assert_eq(_console.run("spawn npc 2"), ["Spawned 2 of 2 npc"] as Array[String])
-	for npc in _state.npcs.all():
-		assert_eq(npc.id, "")
-
-
-func test_tab_completes_the_ids_after_spawn_npc() -> void:
-	assert_eq(_console.complete("spawn npc an"), "spawn npc antje ")
-	assert_eq(_console.complete("spawn npc k"), "spawn npc kerrin ")
-	assert_eq(_console.complete("spawn cow a"), "spawn cow a", "a count after an animal")
-	assert_string_contains("\n".join(_console.run("spawn")), "villager: antje, momme")
-	assert_string_contains("\n".join(_console.run("help spawn")), "antje")
 
 
 ## A villager written by hand with every key, of that sex, age, home and people.

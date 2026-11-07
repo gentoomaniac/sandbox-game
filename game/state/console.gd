@@ -18,8 +18,8 @@ const COMMANDS := {
 	[
 		"spawn <kind> [count]",
 		(
-			"Put animals or villagers (npc, or npc <villager> for one written by hand) near you;"
-			+ " farm animals and villagers stay."
+			"Put animals or villagers (npc, or the id of one written by hand, such as antje) near"
+			+ " you; farm animals and villagers stay."
 		),
 	],
 	"weather":
@@ -131,6 +131,8 @@ func run(line: String) -> Array[String]:
 				output = _candidates_text("spawn")
 			elif arguments.size() == 2 and arguments[0] == NPC and not arguments[1].is_valid_int():
 				output = _spawn_villager(arguments[1])
+			elif arguments.size() == 1 and _state.npcs.villagers.has(arguments[0]):
+				output = _spawn_villager(arguments[0])
 			else:
 				output = _spawn(arguments)
 		"weather":
@@ -162,6 +164,8 @@ func complete(line: String) -> String:
 			kinds = SPAWN_NPC_ARGUMENTS
 		kind = kinds[word_index - 1] if word_index <= kinds.size() else &""
 	var offered := candidates(kind)
+	if word_index == 1 and words[0] == "spawn":
+		offered.append_array(candidates(&"villager"))  # `spawn antje` as well as `spawn npc antje`
 	offered = offered.filter(func(name: String) -> bool: return name.begins_with(typed))
 	if offered.is_empty():
 		return line
