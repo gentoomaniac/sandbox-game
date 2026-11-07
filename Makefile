@@ -34,7 +34,7 @@ help:
 	@echo "  run         Start the game."
 	@echo "  screenshot  Save one frame as PNG (a new game, muted, no focus, its own save)."
 	@echo "  test        Run the GUT tests headless."
-	@echo "  lint        Run gdlint and gdformat --check."
+	@echo "  lint        Run gdlint and gdformat --check, and check no API key is in the repo."
 	@echo "  format      Format the GDScript."
 	@echo "  assets      Regenerate all art and sounds, then check them (needs no Godot)."
 	@echo "  llm-up      Start the local test LLM (Ollama in a container) and pull its model; see tools/README.md."
@@ -182,6 +182,7 @@ test:
 lint:
 	$(GDLINT) $(GDSCRIPT_DIRS)
 	$(GDFORMAT) --check $(GDSCRIPT_DIRS)
+	tools/check_secrets.sh
 
 format:
 	$(GDFORMAT) $(GDSCRIPT_DIRS)

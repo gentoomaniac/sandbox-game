@@ -7,3 +7,6 @@ export/
 /addons
 .claude/worktrees/
 
+# The game's settings hold language model API keys; they live in the user data folder, but
+# never commit a copy.
+settings.cfg
