@@ -105,8 +105,9 @@ Warft and an Ewer here and there.
   list the endpoint's models for Settings; tests put `FakeChat` in their place), else, or when that fails, it says a scripted line. The
   request is built by `NpcPrompt` (`game/state/`): pure functions of the villager, the chat,
   the moment (`NpcMoment`: clock, sun, weather and place, taken from GameState) and the words
-  of `data/npc_talk.cfg` (`NpcTalkRules`), so they are tested without a model. When a chat is
-  closed, `NpcDialogue.remember` sums the conversation up in a memory line of the villager.
+  of `data/npc_talk.cfg` (`NpcTalkRules`), so they are tested without a model. The villager keeps the
+  last lines of the chat (a setting); `NpcDialogue.compact` sums the lines that drop out up in a
+  memory line, the dropped lines waiting in `Npc.uncompacted_lines` (saved) until it is made.
   Only the reply and memory text come from the model; it changes nothing else.
 - **Crafting** (`game/state/crafting.gd`) is what the crafting menu does: it checks a recipe of
   `RecipeRules` (materials, the skill level it needs), crafts it and practises its skill on the

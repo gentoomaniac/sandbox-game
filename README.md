@@ -176,13 +176,15 @@ of [data/npcs.cfg](data/npcs.cfg).
 Face a villager and press E to talk: the name over their head shows whom E speaks to. The
 chat shows your portrait and theirs, and between them a chat window with the game time,
 like `[08:15] <You> hello`. Type a line and press Enter; Escape leaves. The game stands still
-while you talk, and the chat keeps its last 200 lines for the next time. With a language
-model set under Settings → Language model (see
-[Talking NPCs](#talking-npcs-with-a-language-model)) villagers answer in their own words;
-without one they say short scripted lines ("Aye.", "Is that so?"). When you leave a chat,
-the villager remembers it in one line (the model sums it up, else it is what you said), and
-later talks build on it. While one villager is still answering you may leave and talk to
-another; the answer waits in the first one's chat.
+while you talk. A villager keeps the latest lines of your chat (24 by default, set under
+Settings → Language model) for the next time, so a reopened chat goes on where it left off;
+the older lines are summed up in one remembered line (by the model, else it is what you
+said), and later talks build on it. Type `/clear` in a chat to make that villager forget
+the chat and their memories (for debugging). With a language model set under Settings →
+Language model (see [Talking NPCs](#talking-npcs-with-a-language-model)) villagers answer
+in their own words; without one they say short scripted lines ("Aye.", "Is that so?").
+While one villager is still answering you may leave and talk to another; the answer waits
+in the first one's chat.
 
 ![Villagers by the camp, the name of the one E would speak to over their head](docs/screenshots/npcs.png)
 
@@ -432,7 +434,7 @@ These are the default keys; all of them can be changed under Settings → Contro
 | K | Skills tab of the character screen |
 | C | Crafting menu (by hand) |
 | E | Talk to the villager in front of you; else open the chest or the station (its crafting menu) in front of you, else sleep until morning (next to a bed); with the hammer in hand it picks the next building |
-| Enter, Escape | In a chat: send the line, leave the chat (Page Up and Down scroll back) |
+| Enter, Escape | In a chat: send the line, leave the chat (Page Up and Down scroll back); `/clear` makes the villager forget the chat |
 | B | Take the hammer: build mode |
 | X | Switch the hammer between building and taking down (hold Space or click to take down) |
 | Q, E | Previous and next building (while holding the hammer) |
@@ -474,7 +476,7 @@ test LLM on `http://127.0.0.1:11434/v1` (see below); when nothing answers there,
 takes longer than 30 seconds, villagers say short scripted lines instead, so the game never
 needs a model.
 
-**Configuring it.** Settings → Language model has a provider choice and three fields, each
+**Configuring it.** Settings → Language model has a provider choice, three fields and the chat length, each
 stored as you type or pick:
 
 | Field | Default | What it is |
@@ -482,13 +484,15 @@ stored as you type or pick:
 | Provider | OpenAI-compatible | OpenAI-compatible (the test LLM, Ollama, LM Studio, hosted APIs) or Claude. Each provider keeps its own endpoint, model and key: choosing Claude shows Claude's (starting with `https://api.anthropic.com/v1` and `claude-opus-5-5`), choosing back shows the test LLM's again, and a key is only ever sent to the provider it was typed for. |
 | Endpoint | `http://127.0.0.1:11434/v1` | The base address of the chat API; the game posts to `<endpoint>/chat/completions`. Empty it to turn the model off (villagers then always speak scripted lines). |
 | Model | `qwen2.5:3b-instruct` | The model name the endpoint should use: typed, or picked from the drop-down below it, which lists what `<endpoint>/models` answers (Claude's `/v1/models` with the key), asks again a moment after the endpoint or key is typed and by the Refresh button, and shows only the saved model with a note when the endpoint can't be asked. |
+| Lines a villager keeps | 24 | A number from 2 to 200, one for all providers: how many of the latest chat lines a villager keeps in the save and tells the model. Older lines are summed up in a memory; lowering it sums up the lines it drops, once the menu is closed. Every kept line is sent with each question, so higher values make the answers slower (and cost more with a hosted model). |
 | Key | empty | Only for endpoints that need one: sent as the header `Authorization: Bearer <key>`, and never sent along a redirect. |
 
 The same live in `settings.cfg` (in Godot's user folder, e.g.
 `~/.local/share/godot/app_userdata/Sandbox Game/settings.cfg` on Linux): the chosen provider
 and the OpenAI-compatible provider's endpoint, model and key under `[language_model]` (where
 they were before there was a choice), Claude's under `[language_model.claude]`. Only values
-that differ from the defaults are written:
+that differ from the defaults are written (the chat length is `chat_history_lines` under
+`[language_model]`):
 
 ```
 [language_model]
@@ -542,7 +546,8 @@ fails, becomes a scripted line. To try another model, run
 What the model is told for each reply (the words are in [data/npc_talk.cfg](data/npc_talk.cfg),
 shaped like a prompt that worked well with the test model): a system line (1750 on the North
 Frisian coast, one or two sentences of small talk, never break character), one example
-exchange, the last 24 lines of your chat with them (also from earlier talks), and then who the villager is (name, trade,
+exchange, the lines of your chat with them that they keep (24 by default; the older ones are in
+their memories), and then who the villager is (name, trade,
 age, their look in words, personality, background, habits, and what they remember of earlier
 talks), the moment (the date as the clock shows it and how far into the season, the time and
 part of the day by the sun, the weather as it is: rain, snow, fog or the sky, the temperature,

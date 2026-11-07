@@ -980,7 +980,7 @@ noclip walk wears no desire path. Tests: tests/test_noclip.gd.
 
 ## 91. NPC chat history: a set length, the rest compacted, a clear for debugging
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06, after finding that villagers lost the thread (fixed for now
 by telling the last 24 lines, commit 4e7826c):
@@ -999,6 +999,22 @@ by telling the last 24 lines, commit 4e7826c):
 
 Save: the kept lines and memories are already saved; a save version step only if the format
 changes. Tests with FakeChat; the README's "What the model is told" updated.
+
+Done: `GameSettings.chat_history_lines` (2 to 200, default 24, not per provider, in
+`[language_model]` of settings.cfg only when changed; the `history_lines` of npc_talk.cfg and
+the 200-line cap are gone, so the setting is the one source). `NpcDialogue.compact` keeps a
+villager's chat at that length and makes a memory of the lines that drop out, once per
+exchange (the model's summary, else `plain_memory`); a loaded game and a lowered setting
+compact every villager (`compact_all`). Dropped lines wait in `Npc.uncompacted_lines`, which is
+saved, until their memory is made: a save made while a summary is asked for loses none, and
+the next load summarises them. One summary at a time per villager (`is_compacting`), lines
+that drop meanwhile are summed up next; a summary in flight when the chat is cleared is
+dropped. Closing a chat no longer makes a memory; `lines_since_memory` became
+`remembered_lines` (save version 21, tests/test_save_npcs.gd): the oldest kept lines a version
+20 memory already holds, dropped without a second summary. The setting is applied when the
+menu closes, not at each step of its slider. `/clear` in the chat input forgets the chat, memories and lines
+waiting (a line says so, not sent, not kept); other text with a slash is said as it is. Tests:
+tests/test_npc_memory.gd and the settings, save and prompt tests.
 
 ## 92. A font with umlauts and Scandinavian letters
 

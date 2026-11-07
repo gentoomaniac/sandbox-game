@@ -935,22 +935,26 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   is a newcomer whose name they don't know.
 - **The wait:** belongs to the villager: while one answers, the player can leave and talk to
   another (who shows no typing); the answer lands in the chat of the one asked.
-- **Memory:** when a chat is closed after new lines (or once an owed answer comes), the
-  villager remembers the conversation in one dated line ("On the 12th day of Spring, year 1
-  (mid spring): ..."): summed up by the model with a small prompt of its own, else the start
-  of what the player said. A villager keeps 10; beyond that the oldest two merge into one
-  (its last 400 characters). Later prompts tell the memories, and the last 24 lines of the
-  chat as earlier turns, also those already in a memory (with fewer, the model lost the
-  thread of a conversation).
+- **Chat history and memory (task 91):** a villager keeps the last N lines of the chat (the
+  setting "Lines a villager keeps", 2 to 200, default 24, one for all providers); all go to the
+  model as earlier turns, so a reopened chat goes on. Lines that drop out (after an exchange,
+  when the setting is lowered, applied once the menu is closed, and on load) are made one dated memory ("On the 12th day of
+  Spring, year 1 (mid spring): ..."): summed up by the model with a small prompt of its own,
+  else the start of what the player said. One summary is asked for at a time; what drops
+  meanwhile is summed up next. A villager keeps 10 memories; beyond that the oldest two merge
+  into one (its last 400 characters). Later prompts tell the memories and the kept lines.
+  Typing `/clear` in the chat forgets the villager's chat, memories and lines waiting for a
+  memory, with a line saying so (not sent, not kept); other text with a "/" is said as it is.
 - **Settings:** the endpoint (default the test LLM's), the model (default
   `qwen2.5:3b-instruct`, the test LLM's) and the key are in the settings file
   (`[language_model]`); the key is plain text there, as the Settings page says, never in the
   save; it is sent as `Authorization: Bearer <key>`, and the client follows no redirect, so
   the key goes only to that endpoint. Claude's own API needs an adapter of its own (later).
 - **Saved:** name, sex, look, who they are (id, age, trade, personality, background, habits;
-  save version 19), the chat, its last 200 lines (version 17), the memories and how many of
-  the last lines are not remembered yet (version 20), so a conversation saved before it was
-  summed up is remembered at the next close; what a villager is doing, and an answer still
+  save version 19), the chat's kept lines (version 17), the memories, the lines
+  that dropped out and wait for their memory (version 21), so none is lost when the game is
+  saved while a summary is asked for, and how many of the oldest kept lines a version 20 memory
+  already holds (they drop out without a second summary); what a villager is doing, and an answer still
   owed, are not. A version 18 villager is given a background from the tables, the same for
   the same name.
 - **Later:** homes, schedules, intentions, suggestions from the model, NPC to NPC talk (see

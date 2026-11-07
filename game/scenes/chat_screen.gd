@@ -74,7 +74,7 @@ func _init() -> void:
 	_log.focus_mode = Control.FOCUS_NONE
 	chat.add_child(_log)
 	_input.max_length = MAX_LINE_LENGTH
-	_input.placeholder_text = "Say something. Enter sends, Esc leaves, /clear forgets."
+	_input.placeholder_text = "Enter sends, Esc leaves, /clear forgets."
 	_input.keep_editing_on_text_submit = true
 	_input.text_submitted.connect(_on_submitted)
 	_input.gui_input.connect(_on_input_gui_input)
