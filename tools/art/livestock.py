@@ -763,11 +763,42 @@ CAT_LOOKS = {
 }
 
 
+# On the hunt (task 82) the cat goes low: crouched with its belly near the ground, the head level
+# with the back, the ears laid back and the tail flat behind it; creeping on bent legs, a little
+# higher; and pouncing, from the crouch with its tail flicking, a leap stretched out off the
+# ground, and the landing with the head down on the mouse.
+CAT_CROUCHED = CAT | {
+    "torso": (".llllll.", "bsbsbsbb", ".dddddd."),
+    "torso_at": (3, 8),
+    "tail_at": (-3, -3),
+    "heads": {"low": (("dd...", "bbbb.", "bebbn", ".bbb."), (6, -2))},
+    "tails": {"flat": ("...", "...", "...", "...", "bbb"), "flicking": ("...", "...", "...", "b..", ".bb")},
+    "legs": {"stand": ("L", "K")},
+}
+CAT_CREEPING = CAT_CROUCHED | {"torso_at": (3, 6), "legs": CAT["legs"]}
+# The rows a cat on the hunt has after those of every sheet (see ACTIONS).
+CAT_HUNT_ACTIONS = {"crouch": 2, "creep": 4, "pounce": 3}
+
+
 def cat_sheet(look):
     style = CAT_LOOKS[look]
     keys = style["keys"]
     keys = keys | {"n": "petal", "L": keys["b"], "N": keys["d"], "K": keys["d"]}
-    return four_legged_sheet(CAT, style, keys)
+
+    def frame(animal, **pose):
+        return to_picture(four_legged_frame(animal, style, **pose), keys, style["outline"])
+
+    crouch = frame(CAT_CROUCHED, head="low", tail="flat")
+    hunt = {
+        "crouch": [crouch, frame(CAT_CROUCHED, head="low", tail="flicking")],
+        "creep": [frame(CAT_CREEPING, head="low", tail="flat", steps=steps) for steps in WALK_STEPS],
+        "pounce": [
+            frame(CAT_CROUCHED, head="low", tail="flicking"),
+            frame(CAT, steps=(("push", "reach"), ("push", "reach")), lift=2, tail="flying"),
+            frame(CAT, head="down", steps=(("tuck", "stand"), ("tuck", "stand")), tail="flying"),
+        ],
+    }
+    return four_legged_sheet(CAT, style, keys) + [hunt[action] for action in CAT_HUNT_ACTIONS]
 
 
 # --- Horses -------------------------------------------------------------------------------

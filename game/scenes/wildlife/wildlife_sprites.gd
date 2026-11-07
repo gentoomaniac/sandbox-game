@@ -4,7 +4,7 @@ extends RefCounted
 ## tools/art/animals.py and birds.py, whose order of actions this mirrors), one row per action
 ## and one column per frame. Animals face right in the sheets. The farm animals have a sheet per
 ## species and look, `<species>_<look>`, all with the same actions (a saddled horse has one more,
-## `horse_<look>_saddled`; drawn by tools/art/livestock.py).
+## `horse_<look>_saddled`; drawn by tools/art/livestock.py), and a cat's three more for hunting.
 
 const SHEET_PATH := "res://assets/wildlife/%s.png"
 const LIVESTOCK_ACTIONS := {&"idle": 2, &"walk": 4, &"graze": 2, &"sleep": 2, &"run": 4}
@@ -13,7 +13,20 @@ const SHEEP := {"size": Vector2i(22, 16), "actions": LIVESTOCK_ACTIONS}
 const CHICKEN := {"size": Vector2i(12, 12), "actions": LIVESTOCK_ACTIONS}
 const RABBIT := {"size": Vector2i(12, 10), "actions": LIVESTOCK_ACTIONS}
 const DOG := {"size": Vector2i(24, 18), "actions": LIVESTOCK_ACTIONS}
-const CAT := {"size": Vector2i(16, 12), "actions": LIVESTOCK_ACTIONS}
+const CAT := {
+	"size": Vector2i(16, 12),
+	"actions":
+	{
+		&"idle": 2,
+		&"walk": 4,
+		&"graze": 2,
+		&"sleep": 2,
+		&"run": 4,
+		&"crouch": 2,
+		&"creep": 4,
+		&"pounce": 3,
+	},
+}
 const HORSE := {"size": Vector2i(44, 36), "actions": LIVESTOCK_ACTIONS}
 
 ## Per kind: the size of a frame and the frames of each action, in the order of the rows.
