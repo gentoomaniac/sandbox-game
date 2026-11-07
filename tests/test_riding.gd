@@ -102,6 +102,19 @@ func test_no_tool_and_no_building_on_horseback() -> void:
 	assert_false(builder.is_building())
 
 
+func test_nothing_is_picked_up_on_horseback_until_the_rider_gets_off() -> void:
+	_state.mount(_horse)
+	var pile := GroundItem.new(ItemTypes.LOGS, 2, _state.player.position)
+	_state.world.ground_items.add(pile)
+	_state.collect_ground_items(1.0)
+	assert_eq(_state.player.inventory.count_of(ItemTypes.LOGS), 0, "not while riding")
+	_state.dismount()
+	# Off the horse the player stands beside it, out of the pile's reach: bring the pile over.
+	pile.position = _state.player.position
+	_state.collect_ground_items(1.0)
+	assert_eq(_state.player.inventory.count_of(ItemTypes.LOGS), 2)
+
+
 func test_e_gets_off_onto_free_ground_beside_the_horse_which_stays() -> void:
 	_state.mount(_horse)
 	_ride(Vector2.RIGHT, 0.2)

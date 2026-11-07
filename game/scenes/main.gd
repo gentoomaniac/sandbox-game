@@ -546,7 +546,11 @@ func _screens_take(event: InputEvent) -> bool:
 	if _storage_screen.is_open():
 		return true
 	if event.is_action_pressed("crafting") and not _character_screen.is_open():
-		_crafting_screen.toggle()
+		# On horseback only the inventory and eating are possible; an open screen still closes.
+		if _crafting_screen.is_open() or _state.player.horse == null:
+			_crafting_screen.toggle()
+		else:
+			_harvest_hud.show_note(GET_OFF_FIRST)
 		return true
 	if event.is_action_pressed("inventory") and not _crafting_screen.is_open():
 		_character_screen.toggle()
