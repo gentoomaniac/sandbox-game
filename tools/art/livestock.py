@@ -235,13 +235,15 @@ COW = {
 }
 
 
-def four_legged_frame(animal, style, head="ahead", steps=None, tail="hanging", lying=False, head_drop=0, lift=0):
+def four_legged_frame(
+    animal, style, head="ahead", steps=None, tail="hanging", lying=False, head_drop=0, lift=0, saddle=None
+):
     """One frame of a four-legged animal (COW, SHEEP, DOG, HORSE ...) as rows of characters on its
     cell, facing right. `style` is a look, with the patterns of white on its torso and heads, if
     any; `steps` names the near and the far hind and front leg ("stand", "forward", "back", and
     for a runner "reach", "push" and "tuck"). A lying animal has its legs folded under it and its
-    eyes closed; a running one is `lift` pixels off the ground between its strides. Returns the
-    rows as strings."""
+    eyes closed; a running one is `lift` pixels off the ground between its strides. A horse can wear
+    one of its `saddles` on its back. Returns the rows as strings."""
     cells = grid(*animal["size"])
     torso_x, torso_y = animal["torso_at"]
     top = torso_y + (animal["lying_drop"] if lying else 0) - lift
@@ -259,6 +261,9 @@ def four_legged_frame(animal, style, head="ahead", steps=None, tail="hanging", l
         tail_x, tail_y = animal["tail_at"]
         paste(cells, animal["tails"][tail], torso_x + tail_x, top + tail_y)
     paste(cells, torso, torso_x, top)
+    if saddle is not None:
+        rows, (x, y) = animal["saddles"][saddle]
+        paste(cells, rows, torso_x + x, top + y)
     if lying:
         rows, (x, y) = animal["folded"]
         paste(cells, rows, torso_x + x, top + y)
@@ -301,12 +306,12 @@ RUN_STEPS = [
 ]
 
 
-def four_legged_sheet(animal, style, keys):
+def four_legged_sheet(animal, style, keys, saddle=None):
     """The rows of cells of a four-legged animal's sheet: it flicks its tail standing, chews with
-    its head down and breathes lying down."""
+    its head down and breathes lying down. A horse may wear a saddle (see `four_legged_frame`)."""
 
     def frame(**pose):
-        return to_picture(four_legged_frame(animal, style, **pose), keys, style["outline"])
+        return to_picture(four_legged_frame(animal, style, saddle=saddle, **pose), keys, style["outline"])
 
     lying_head = animal.get("lying_head", "ahead")
     frames = {
@@ -855,6 +860,24 @@ HORSE = {
     "far_shift": (2, -2),
     "folded": (("KKPPLM",), (15, len(HORSE_TORSO) - 1)),
     "closed_eye": "d",
+    # The saddle on the dip of the back, and where its rows start on the torso: the cantle at the
+    # back, the pommel over the withers, the flap with the stirrup hanging from it and the girth.
+    "saddles": {
+        "on": (
+            (
+                "q..........",
+                "cq.......qc",
+                "kcqqqqqqqcc",
+                ".kcccccccck",
+                ".kcccccck.g",
+                "..kkckkk..g",
+                "....ii....g",
+                "...i..i...g",
+                "...iiii....",
+            ),
+            (5, -1),
+        ),
+    },
 }
 # The pony: a smaller, rounder body on short legs, a thick neck and a shaggy mane.
 PONY_PARTS = {
@@ -898,6 +921,9 @@ PONY_PARTS = {
     "leg_x": (2, 13),
     "far_shift": (2, -2),
     "folded": (("KKPLM",), (10, 6)),
+    "saddles": {
+        "on": (("q.......", "cq.....q", "kcqqqqqc", ".kccccck", ".kcccck.", "..kckk..", "...ii...", "..i..i..", "..iiii.."), (4, -1)),
+    },
 }
 HORSE_LOOKS = {
     # Bay: a red-brown coat with the mane, the tail and the lower legs black.
@@ -914,11 +940,18 @@ HORSE_LOOKS = {
 }
 
 
-def horse_sheet(look):
+# The saddle's leather (light, base and shade), its girth and its iron stirrup.
+SADDLE_KEYS = {"q": "rust", "c": "rust_dark", "k": "russet_deep", "g": "russet_deep", "i": "stone_light"}
+
+
+def horse_keys(style):
+    keys = {"e": "ink", "K": "ink"} | style["keys"] | SADDLE_KEYS
+    return keys | {"L": keys["b"], "M": keys["d"], "N": keys["d"]}
+
+
+def horse_sheet(look, saddle=None):
     style = HORSE_LOOKS[look]
-    keys = {"e": "ink", "K": "ink"} | style["keys"]
-    keys |= {"L": keys["b"], "M": keys["d"], "N": keys["d"]}
-    return four_legged_sheet(HORSE | style.get("parts", {}), style, keys)
+    return four_legged_sheet(HORSE | style.get("parts", {}), style, horse_keys(style), saddle)
 
 
 # --- All sheets ---------------------------------------------------------------------------
@@ -939,3 +972,6 @@ def sheets():
     for species, (size, looks, sheet) in SPECIES.items():
         for look in looks:
             yield f"{species}_{look}", size, sheet(look)
+    # A saddled horse: the same sheet with the saddle on (task 81).
+    for look in HORSE_LOOKS:
+        yield f"horse_{look}_saddled", HORSE_SIZE, horse_sheet(look, "on")

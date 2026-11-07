@@ -31,6 +31,8 @@ var bedtime_delay := 0.0
 var follow_until_minute := 0
 ## Seconds a follower has got no nearer the player for something in its way (see Livestock).
 var stuck_seconds := 0.0
+## A horse wears a saddle (see ToolUse `SADDLE`): it can be ridden.
+var is_saddled := false
 
 
 func _init(animal_species: StringName, animal_look: StringName, feet: Vector2) -> void:
@@ -63,6 +65,7 @@ func to_dict() -> Dictionary:
 		"tint": tint.to_html(false),
 		"position": SaveCodec.float_vector_to_json(position),
 		"follow_until_minute": follow_until_minute,
+		"is_saddled": is_saddled,
 	}
 
 
@@ -77,4 +80,5 @@ static func from_dict(data: Dictionary, rules: LivestockRules) -> FarmAnimal:
 	)
 	animal.tint = Color.html(data["tint"])
 	animal.follow_until_minute = int(data["follow_until_minute"])
+	animal.is_saddled = data["is_saddled"]
 	return animal

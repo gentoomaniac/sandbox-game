@@ -64,6 +64,8 @@ func test_each_use_has_its_sound() -> void:
 		ToolUse.Use.NEEDS_BETTER_TOOL: &"denied",
 		ToolUse.Use.HIT: &"",
 		ToolUse.Use.GIVE_BONE: &"dog_bark",
+		ToolUse.Use.SADDLE: &"horse_whinny",
+		ToolUse.Use.UNSADDLE: &"horse_whinny",
 	}
 	for use in cases:
 		assert_eq(SoundEvents.use(use, ItemTypes.HOE), cases[use], str(use))

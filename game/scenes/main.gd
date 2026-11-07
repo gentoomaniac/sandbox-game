@@ -463,6 +463,11 @@ func _use_on(target: Targeting) -> void:
 		_interior_view.show_interior(_state.current_map)
 	if use == ToolUse.Use.GIVE_BONE:
 		_harvest_hud.show_note("The dog follows you.")
+	if use == ToolUse.Use.SADDLE:
+		_harvest_hud.show_note("The horse is saddled.")
+	if use == ToolUse.Use.UNSADDLE:
+		_harvest_hud.show_note("You take the saddle off.")
+
 	if use == ToolUse.Use.NO_ROOM:
 		_harvest_hud.show_note("Not enough room in the inventory.")
 	if use == ToolUse.Use.NEEDS_BETTER_TOOL:

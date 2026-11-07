@@ -11,8 +11,9 @@ extends RefCounted
 ## (which may find clay), PLACE an item that puts an object down (a chest, a station), TAKE_DOWN an
 ## axe or pickaxe taking down what the player placed inside a house (outdoors it is a HIT),
 ## NO_ROOM that, with too little room in the inventory for it and what it holds, GIVE_BONE a bone
-## given to a dog, which then follows the player. What a harvest, a pick or a final hit gives lies
-## on the ground (see World `drop_items`).
+## given to a dog, which then follows the player, SADDLE the saddle put on a horse and UNSADDLE an
+## empty hand taking it off again. What a harvest, a pick or a final hit gives lies on the ground
+## (see World `drop_items`).
 enum Use {
 	NOTHING,
 	TILL,
@@ -29,6 +30,8 @@ enum Use {
 	TAKE_DOWN,
 	NO_ROOM,
 	GIVE_BONE,
+	SADDLE,
+	UNSADDLE,
 }
 
 ## The tools the use action has something to do with.
@@ -53,12 +56,15 @@ const COST_KINDS := {
 	Use.MOW: &"mow",
 	Use.DIG: &"dig",
 }
+## The items the use action gives to an animal (a bone to a dog) or puts on one (a saddle on a
+## horse).
+const ANIMAL_ITEMS := [ItemTypes.BONE, ItemTypes.SADDLE]
 ## Digging a clay spot gives this much clay, with this chance (rolled once per spot and day).
 const CLAY_DIG_YIELD := {ItemTypes.CLAY: 2}
 const CLAY_DIG_CHANCE := 0.4
-## A bone goes to a dog whose feet are this many tiles from the middle of the target tile, at the
-## most: a dog is about a tile long.
-const BONE_REACH := 1.0
+## A bone goes to a dog, and a saddle to a horse, whose feet are this many tiles from the middle of
+## the target tile, at the most: a dog is about a tile long, and a horse's feet are its middle.
+const ANIMAL_REACH := 1.0
 
 var _state: GameState
 
@@ -71,19 +77,20 @@ func _init(state: GameState) -> void:
 ## and tree seeds on grass, a watering can wets dry tilled soil, an empty hand harvests a ripe crop,
 ## clears a dead one or picks a bush, an axe or pickaxe hits what it cuts or mines, a scythe mows if
 ## there is tall grass or reeds in its reach, a shovel digs in any free grass (the player can't tell
-## a clay spot from the cursor), an item that places an object puts it on a free tile, and a bone
-## goes to a dog on the tile. Inside, only placing and taking a chest down are possible.
+## a clay spot from the cursor), an item that places an object puts it on a free tile, a bone
+## goes to a dog on the tile and a saddle on a horse, and an empty hand takes the saddle off a
+## horse. Inside, only placing and taking a chest down are possible.
 func use_at(pos: Vector2i) -> Use:
 	var held := _state.player.inventory.held_item()
 	if held == ItemTypes.NONE:
-		return Use.NOTHING if _state.is_inside() else _use_by_hand(_state.world.object_at(pos))
+		return Use.NOTHING if _state.is_inside() else _use_by_hand(pos)
 	var item: Dictionary = ItemTypes.TYPES[held]
 	if item.has("places") and _can_place_on(pos, item["places"]):
 		return Use.PLACE
 	if _state.is_inside():
 		return _use_inside(item, pos)
-	if held == ItemTypes.BONE:
-		return Use.GIVE_BONE if _dog_at(pos) != null else Use.NOTHING
+	if held in ANIMAL_ITEMS:
+		return _use_on_animal(held, pos)
 	if (
 		item.has("plants")
 		and _state.world.is_free_on(pos, item.get("plants_on", Tile.Terrain.SOIL))
@@ -102,7 +109,7 @@ func can_use_held_item() -> bool:
 		item.has("plants")
 		or item.has("places")
 		or ACTIVE_TOOLS.has(item.get("tool"))
-		or held == ItemTypes.BONE
+		or held in ANIMAL_ITEMS
 	)
 
 
@@ -173,6 +180,12 @@ func _do_use(target: Vector2i) -> Use:
 		Use.GIVE_BONE:
 			_state.livestock.start_following(_dog_at(target), _state.clock.total_minutes())
 			_state.player.inventory.remove(ItemTypes.BONE, 1)
+		Use.SADDLE:
+			_horse_at(target).is_saddled = true
+			_state.player.inventory.remove(ItemTypes.SADDLE, 1)
+		Use.UNSADDLE:
+			_horse_at(target).is_saddled = false
+			_state.player.inventory.add(ItemTypes.SADDLE, 1)
 	return use
 
 
@@ -259,10 +272,26 @@ func items_held_by(placed: WorldObject) -> Dictionary:
 	return items
 
 
-## The dog nearest the middle of a tile, within BONE_REACH, or null.
+## What an item of ANIMAL_ITEMS does on a tile: a bone goes to a dog there, a saddle on a horse
+## that has none.
+func _use_on_animal(held: StringName, pos: Vector2i) -> Use:
+	if held == ItemTypes.BONE:
+		return Use.GIVE_BONE if _dog_at(pos) != null else Use.NOTHING
+	var horse := _horse_at(pos)
+	return Use.SADDLE if horse != null and not horse.is_saddled else Use.NOTHING
+
+
+## The dog nearest the middle of a tile, within ANIMAL_REACH, or null.
 func _dog_at(pos: Vector2i) -> FarmAnimal:
 	return _state.livestock.nearest(
-		LivestockRules.DOG, Vector2(pos) + Vector2(0.5, 0.5), BONE_REACH
+		LivestockRules.DOG, Vector2(pos) + Vector2(0.5, 0.5), ANIMAL_REACH
+	)
+
+
+## The horse nearest the middle of a tile, within ANIMAL_REACH, or null.
+func _horse_at(pos: Vector2i) -> FarmAnimal:
+	return _state.livestock.nearest(
+		LivestockRules.HORSE, Vector2(pos) + Vector2(0.5, 0.5), ANIMAL_REACH
 	)
 
 
@@ -299,7 +328,13 @@ func _use_cutting_tool(tool_item: Dictionary, object: WorldObject) -> Use:
 	return Use.NEEDS_BETTER_TOOL
 
 
-func _use_by_hand(object: WorldObject) -> Use:
+## What an empty hand does on a tile outdoors: it takes the saddle off a horse (the hand's empty
+## slot always has room for it), harvests a ripe crop, clears a dead one or picks a bush.
+func _use_by_hand(pos: Vector2i) -> Use:
+	var horse := _horse_at(pos)
+	if horse != null and horse.is_saddled:
+		return Use.UNSADDLE
+	var object := _state.world.object_at(pos)
 	if object == null:
 		return Use.NOTHING
 	if object.is_crop():

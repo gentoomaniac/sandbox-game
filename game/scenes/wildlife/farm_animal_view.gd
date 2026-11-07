@@ -29,8 +29,15 @@ var farm_animal: FarmAnimal
 var _activity := -1
 
 
+## The sheet that shows the animal: that of its species and look, with the saddle on for a
+## saddled horse (see tools/art/livestock.py).
+static func sheet_kind(animal: FarmAnimal) -> StringName:
+	var kind := "%s_%s" % [animal.species, animal.look]
+	return StringName(kind + "_saddled" if animal.is_saddled else kind)
+
+
 func _init(animal: FarmAnimal) -> void:
-	super(animal.species, StringName("%s_%s" % [animal.species, animal.look]))
+	super(animal.species, sheet_kind(animal))
 	farm_animal = animal
 	shadow_half_width = SHADOW_HALF_WIDTHS[animal.species]
 	position = _pixel_position()
@@ -43,6 +50,11 @@ func _ready() -> void:
 
 func _update(_delta: float) -> void:
 	position = _pixel_position()
+	# Saddling a horse, or taking its saddle off, changes its sheet; the frames stay as they are.
+	if sheet_kind(farm_animal) != _sheet_kind:
+		_sheet_kind = sheet_kind(farm_animal)
+		_sprite.texture = load(WildlifeSprites.SHEET_PATH % _sheet_kind)
+
 	_face(farm_animal.facing)
 	if farm_animal.activity == _activity:
 		return

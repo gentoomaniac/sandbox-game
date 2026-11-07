@@ -3,8 +3,8 @@ extends RefCounted
 ## The pictures of the animals: one sheet per kind (assets/wildlife/<kind>.png, drawn by
 ## tools/art/animals.py and birds.py, whose order of actions this mirrors), one row per action
 ## and one column per frame. Animals face right in the sheets. The farm animals have a sheet per
-## species and look, `<species>_<look>`, all with the same actions (drawn by
-## tools/art/livestock.py).
+## species and look, `<species>_<look>`, all with the same actions (a saddled horse has one more,
+## `horse_<look>_saddled`; drawn by tools/art/livestock.py).
 
 const SHEET_PATH := "res://assets/wildlife/%s.png"
 const LIVESTOCK_ACTIONS := {&"idle": 2, &"walk": 4, &"graze": 2, &"sleep": 2, &"run": 4}
@@ -60,6 +60,10 @@ const SHEETS := {
 	&"horse_black": HORSE,
 	&"horse_grey": HORSE,
 	&"horse_pony": HORSE,
+	&"horse_bay_saddled": HORSE,
+	&"horse_black_saddled": HORSE,
+	&"horse_grey_saddled": HORSE,
+	&"horse_pony_saddled": HORSE,
 }
 
 
