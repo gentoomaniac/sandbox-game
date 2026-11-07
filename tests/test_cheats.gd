@@ -24,6 +24,14 @@ func test_the_hud_names_every_cheat_that_is_on_including_no_cost() -> void:
 	assert_eq(_state.cheats.active_names(), ["God", "No cost"] as Array[String])
 
 
+func test_freeze_stops_time_and_is_named_on_the_hud() -> void:
+	assert_eq(_console.run("freeze"), ["Time stopped on"] as Array[String])
+	assert_true(_state.cheats.is_time_stopped)
+	assert_eq(_state.cheats.active_names(), ["Time stopped"] as Array[String])
+	assert_eq(_console.run("freeze"), ["Time stopped off"] as Array[String])
+	assert_false(_state.cheats.is_time_stopped)
+
+
 func test_nodrain_makes_actions_free() -> void:
 	_console.run("nodrain")
 	_hit(ItemTypes.HOE, 1)

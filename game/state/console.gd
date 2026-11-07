@@ -13,6 +13,7 @@ const COMMANDS := {
 	"noweight": ["noweight", "Toggle: carried weight doesn't raise costs."],
 	"nocost": ["nocost", "Toggle: buildings and crafting need no materials."],
 	"noclip": ["noclip", "Toggle: walk through anything (indoors within the room)."],
+	"freeze": ["freeze", "Toggle: time stands still (you and the animals still move)."],
 	"reset": ["reset", "Put you in your bed, the one you wake in (inside or out)."],
 	"spawn":
 	[
@@ -123,6 +124,9 @@ func run(line: String) -> Array[String]:
 			# Off inside a lake or a wall: onto the nearest ground they fit on.
 			if not cheats.is_noclip and not _state.put_player_on_free_ground():
 				output.append("No free ground near you: walk out, or turn noclip on again")
+		"freeze":
+			cheats.is_time_stopped = not cheats.is_time_stopped
+			output = [_toggle_message("Time stopped", cheats.is_time_stopped)]
 		"reset":
 			_state.go_to_home_bed()
 			output = ["Back in bed"]

@@ -524,8 +524,9 @@ func _camera_target() -> Vector2:
 ## Real time to whole game minutes; the fraction carries over to the next frame.
 func _tick_clock(delta: float) -> void:
 	# A screenshot with TIME=... must show exactly that time, unless it is told to wait. Time
-	# stands still while the screen is black (a message there may wait long for a key).
-	if _debug.is_clock_stopped() or _fade_screen.is_black():
+	# stands still while the screen is black (a message there may wait long for a key), and
+	# while the console's freeze is on.
+	if _debug.is_clock_stopped() or _fade_screen.is_black() or _state.cheats.is_time_stopped:
 		return
 	var rate := GAME_MINUTES_PER_REAL_SECOND * (FAST_FORWARD_FACTOR if _fast_forward else 1.0)
 	_pending_minutes += delta * rate

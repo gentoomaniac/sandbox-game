@@ -8,6 +8,8 @@ var is_drain_off := false
 var is_weight_off := false
 var is_cost_off := false
 var is_noclip := false
+## The game clock stands still: no minutes pass, so the day, the crops and the weather wait.
+var is_time_stopped := false
 
 
 ## The names of the cheats that are on, for the HUD.
@@ -23,4 +25,6 @@ func active_names() -> Array[String]:
 		names.append("No cost")
 	if is_noclip:
 		names.append("No clip")
+	if is_time_stopped:
+		names.append("Time stopped")
 	return names
