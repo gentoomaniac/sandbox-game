@@ -41,11 +41,12 @@ func test_without_a_model_a_villager_says_a_scripted_line_while_the_game_is_paus
 	var dialogue := _dialogue()
 	assert_false(dialogue.has_model())
 	get_tree().paused = true
-	var start := Time.get_ticks_msec()
+	var frame := Engine.get_process_frames()
 	var answer: String = await dialogue.reply(_antje, [], "Is the dyke holding?", _state)
 	assert_has(_scripted_replies(), answer)
-	# Not the whole half second: the first frame's time counts from before `start`.
-	assert_gte(Time.get_ticks_msec() - start, 250, "after a moment's thought")
+	# The thought is a timer, which never ends in the frame it starts in. (Not the wall clock:
+	# on a busy machine one long frame from before the reply counts towards the timer.)
+	assert_gt(Engine.get_process_frames(), frame, "after a moment's thought")
 	assert_eq((dialogue.chats["openai"] as FakeChat).requests.size(), 0, "the model is not asked")
 
 
