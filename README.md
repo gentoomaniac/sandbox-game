@@ -476,7 +476,7 @@ test LLM on `http://127.0.0.1:11434/v1` (see below); when nothing answers there,
 takes longer than 30 seconds, villagers say short scripted lines instead, so the game never
 needs a model.
 
-**Configuring it.** Settings → Language model has a provider choice, three fields and the chat length, each
+**Configuring it.** Settings → Language model has a provider choice, four fields and the chat length, each
 stored as you type or pick:
 
 | Field | Default | What it is |
@@ -486,6 +486,7 @@ stored as you type or pick:
 | Model | `qwen2.5:3b-instruct` | The model name the endpoint should use: typed, or picked from the drop-down below it, which lists what `<endpoint>/models` answers (Claude's `/v1/models` with the key), asks again a moment after the endpoint or key is typed and by the Refresh button, and shows only the saved model with a note when the endpoint can't be asked. |
 | Lines a villager keeps | 24 | A number from 2 to 200, one for all providers: how many of the latest chat lines a villager keeps in the save and tells the model. Older lines are summed up in a memory; lowering it sums up the lines it drops, once the menu is closed. Every kept line is sent with each question, so higher values make the answers slower (and cost more with a hosted model). |
 | Key | empty | Only for endpoints that need one: sent as the header `Authorization: Bearer <key>`, and never sent along a redirect. |
+| Max tokens per answer | empty | The most tokens a villager's line or memory may take, a number from 1 to 32000. Empty is the game's own: 60 for a line and 40 for a memory, 1000 with Claude. A model that thinks first counts its thinking too, so give one such as Gemini's Flash a few hundred or more. |
 
 The same live in `settings.cfg` (in Godot's user folder, e.g.
 `~/.local/share/godot/app_userdata/Sandbox Game/settings.cfg` on Linux): the chosen provider
@@ -544,7 +545,7 @@ billing the key stays on the free tier). Pick the provider Gemini under Settings
 and paste the key (it starts with `AIza`); the endpoint becomes Gemini's OpenAI-compatible
 `https://generativelanguage.googleapis.com/v1beta/openai` and the model `gemini-2.5-flash-lite`,
 which answers fast and doesn't think first: a model that thinks may spend a line's 60 tokens
-before saying anything. The model list shows what the key may use. What villagers are told and
+before saying anything (raise Max tokens per answer for one). The model list shows what the key may use. What villagers are told and
 what you say goes to Google, and on the free tier Google may use it to improve its models. To
 check a key: `curl -s https://generativelanguage.googleapis.com/v1beta/openai/models -H
 "Authorization: Bearer <key>"`.
