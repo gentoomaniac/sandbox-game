@@ -24,7 +24,7 @@ IMPORT := $(GODOT) --headless --quiet --import
 # The cost is that a fresh clone needs `make setup` (and network) before it runs.
 
 .PHONY: help setup venv assets run screenshot test lint format export clean llm-up llm-down llm-check \
-	llm-pull llm-models llm-rm
+	llm-pull llm-models llm-rm llm-eval
 
 help:
 	@echo "Targets:"
@@ -42,6 +42,7 @@ help:
 	@echo "  llm-check   Send one chat request to the test LLM and print the reply."
 	@echo "  llm-pull    Fetch another model into the running test LLM, e.g. LLM_MODEL=qwen2.5:7b-instruct."
 	@echo "  llm-models  List the models the test LLM has."
+	@echo "  llm-eval    Try the villagers' prompts on LLM_MODEL (LLM_RUNS replies each); report in build/llm-eval/."
 	@echo "  llm-rm      Delete the model LLM_MODEL (required) from the test LLM."
 	@echo "  clean       Delete build/ (test log, screenshots, the screenshot save); nothing is lost."
 	@echo "  export      Not set up yet: no export presets exist."
@@ -58,6 +59,7 @@ help:
 	@echo "  SOUND       screenshot: SOUND=1 keeps the sound on."
 	@echo "  CONTAINER   llm-*: container tool, podman or docker (default: podman if present)."
 	@echo "  LLM_MODEL   llm-*: Ollama model tag (default: qwen2.5:3b-instruct)."
+	@echo "  LLM_RUNS    llm-eval: replies per scenario (default: 3)."
 	@echo "  LLM_GPU     llm-up: auto (GPU if a CDI spec exists), 1 (GPU or fail), 0 (CPU)."
 	@echo "  ARGS        screenshot: more debug flags, e.g. ARGS=\"--weather=rain\" (see game/scenes/startup_options.gd)."
 
@@ -206,6 +208,10 @@ llm-pull:
 
 llm-models:
 	tools/llm/llm.sh models
+
+# Needs the test LLM running (llm-up) with the model pulled.
+llm-eval: $(VENV_READY)
+	$(PYTHON) tools/llm/eval_prompts.py --runs $(or $(LLM_RUNS),3)
 
 # Never the default model by accident: the tag must be given.
 llm-rm:
