@@ -199,16 +199,20 @@ Which ones fit on the GPU (8 GB of VRAM here) is for later, with the GPU set up 
 ### Trying the prompts: `make llm-eval`
 
 `make llm-eval LLM_MODEL=<tag>` (the test LLM must be up with that model; `LLM_RUNS=n` replies
-per scenario, 3 by default) checks the villagers' prompts on a model. Godot builds the
-requests with `NpcPrompt` itself (`tools/llm/dump_requests.gd`: 13 fixed scenarios, a greeting,
-rain at dusk, German after English, Danish, English after German, family, a phone, a car, a
-rude line, a fact from earlier in a long chat, a villager with a memory, a memory summary;
-Antje and Momme), so the tool never drifts from the game; `tools/llm/eval_prompts.py` sends
-each one `n` times at the configured temperature and writes `build/llm-eval/<model>.md`:
-every reply, with crude checks (too long, too many sentences, cut off, assistant phrases,
-label echo, copying the example or the player's line, the wrong language by stop words,
-a memory not in the first person). The checks only find what is plainly wrong; read the
-replies. `tools/llm/eval_prompts.py --compare <tag> <tag>` puts the replies of two earlier
-runs side by side in `build/llm-eval/compare.md`. It takes about 2 minutes for the 3B and 4
-for the 7B with 5 replies each. When the prompt words in `data/npc_talk.cfg` change, run it on
-both and read the reports.
+per scenario, 3 by default) checks the villagers' prompts on a model. Godot builds the requests
+with `NpcPrompt` itself (`tools/llm/dump_requests.gd`: 18 fixed scenarios, a greeting, rain at
+dusk, switches of language (German after English, also in a longer chat, Danish after English,
+English after German, a short "Moin" after German and "Hej" after Danish), Danish, Swedish
+(which the game does not know), family, a phone, a car, a rude line, a fact from earlier in a
+long chat, a villager with a memory, a memory summary; Antje and Momme), so the tool never
+drifts from the game; `tools/llm/eval_prompts.py` sends each one `n` times at the configured
+temperature and writes `build/llm-eval/<model>.md`: every reply, with crude checks (too long,
+too many sentences, cut off, assistant phrases, label echo, copying the example or the player's
+line, the wrong language by stop words and telling letters, a memory not in the first person).
+The checks only find what is plainly wrong; read the replies. `LLM_API_KEY` set in the
+environment is sent as the bearer key, so that `tools/llm/eval_prompts.py --endpoint <url>
+--model <name>` can try a hosted model, and `--requests <file>` sends the requests of an earlier
+dump (to try old words again). `tools/llm/eval_prompts.py --compare <tag> <tag>` puts the
+replies of two earlier runs side by side in `build/llm-eval/compare.md`. It takes about 2
+minutes for the 3B and 4 for the 7B with 5 replies each. When the prompt words in
+`data/npc_talk.cfg` change, run it on both and read the reports.

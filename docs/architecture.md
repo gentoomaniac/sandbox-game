@@ -114,7 +114,9 @@ Warft and an Ewer here and there.
   list the endpoint's models for Settings; tests put `FakeChat` in their place), else, or when that fails, it says a scripted line. The
   request is built by `NpcPrompt` (`game/state/`): pure functions of the villager, the chat,
   the moment (`NpcMoment`: clock, sun, weather and place, taken from GameState) and the words
-  of `data/npc_talk.cfg` (`NpcTalkRules`), so they are tested without a model. The villager keeps the
+  of `data/npc_talk.cfg` (`NpcTalkRules`), so they are tested without a model. `NpcLanguage`
+  tells the language of the player's line (English, German, Danish; word lists and letters from
+  the same file, the chat's earlier lines for a line too short) for the prompt to name. The villager keeps the
   last lines of the chat (a setting); `NpcDialogue.compact` sums the lines that drop out up in a
   memory line, the dropped lines waiting in `Npc.uncompacted_lines` (saved) until it is made.
   Only the reply and memory text come from the model; it changes nothing else.

@@ -976,8 +976,13 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   weather as it is: thunder, storm, snow, rain or fog by strength, else the sky by its clouds, the
   temperature, frost below 0 °C, the wind by strength and where it blows from; the building or fire
   within 8 tiles), that the player is a newcomer whose name they don't know, and, right before the
-  answer, that the villager answers in the language the player just spoke in (so a switch of
-  language is followed, the user's word of 2026-11-07).
+  answer, the language the villager answers in (so a switch of language is followed, the user's
+  word of 2026-11-07; task 95): the game detects it (`NpcLanguage`: English, German or Danish by
+  the common words and telling letters of `[language]` in the data file; "Antje answers in
+  German." and "Antje's reply in German:"). A line too short to tell has the language of the
+  player's latest earlier line that can be told; with none, or in a language it does not know
+  (Swedish has a word list of its own so that it is not taken for Danish), the prompt only asks
+  for "the language the neighbour just spoke in". Derived from the chat, so nothing is saved.
 - **The wait:** belongs to the villager: while one answers, the player can leave and talk to
   another (who shows no typing); the answer lands in the chat of the one asked.
 - **Chat history and memory (task 91):** a villager keeps the last N lines of the chat (the

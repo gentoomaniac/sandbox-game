@@ -588,16 +588,20 @@ shaped like a prompt that worked well with the test model): a system line (1750 
 Frisian coast, one or two sentences of small talk that answer what you said, in your language,
 never break character, puzzled by what did not exist then), one example exchange (of a
 blacksmith who is not one of the villagers, so that the model does not copy a villager's words
-into the others' mouths), the lines of your chat with them that they keep (24 by default; the older ones are in
-their memories), and then who the villager is (name, trade,
-age, their look in words, personality, background, habits, and what they remember of earlier
-talks), the moment (the date as the clock shows it and how far into the season, the time and
-part of the day by the sun, the weather as it is: rain, snow, fog or the sky, the temperature,
-frost, the wind and where it blows from; and the house or fire they stand by), that you are a
-newcomer whose name they don't know, what you said, and that they answer in the language you
-just spoke in (switch language mid-chat and they follow). Only the reply and the memory lines
-are kept (a memory is one sentence the villager writes in the first person); nothing else in
-the game changes by what the model says.
+into the others' mouths), the lines of your chat with them that they keep (24 by default; the
+older ones are in their memories), and then who the villager is (name, trade, age, their look in
+words, personality, background, habits, and what they remember of earlier talks), the moment
+(the date as the clock shows it and how far into the season, the time and part of the day by the
+sun, the weather as it is: rain, snow, fog or the sky, the temperature, frost, the wind and
+where it blows from; and the house or fire they stand by), that you are a newcomer whose name
+they don't know, what you said, and the language they answer in. The game tells that itself: it
+recognises English, German and Danish by common words and letters (the lists are in the data
+file), so the prompt says "Antje answers in German." right before the answer, and a line too
+short to tell ("Moin", "Hej") keeps the language of your last line that could be told. A
+language it does not know (Swedish) is not named; the villager is then only asked to answer in
+the language you spoke (switch language mid-chat and they follow). Only the reply and the memory
+lines are kept (a memory is one sentence the villager writes in the first person); nothing else
+in the game changes by what the model says.
 
 To screenshot a talk, start the test LLM (`make llm-up`; screenshots read
 `build/settings.cfg`, where the default endpoint applies) and run

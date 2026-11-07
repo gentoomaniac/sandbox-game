@@ -1142,7 +1142,7 @@ still only about 3 of 5 in German after English for both; naming the language to
 
 ## 95. Villagers answer in the language the player speaks to them
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-07: if it can, the game should detect the language; villagers
 respond in the language the player speaks to them. Task 94 left following a switch of language
@@ -1152,6 +1152,27 @@ or Danish, from word lists and letters in data/npc_talk.cfg) and names it in the
 ("Hark answers in German."); a line too short to tell keeps the language of the player's last
 line that could be told, and with none the prompt keeps today's words. Measured with
 `make llm-eval` on the 7B and the 3B.
+
+Done: `NpcLanguage` (game/state/npc_language.gd) scores the lowercased words of a line against the
+short word lists of `[language]` in data/npc_talk.cfg (one point per word, two per telling letter: ä
+ö ü ß German, æ ø Danish) and names the language if it has at least 2 points and more than any
+other. Too short or tied ("Hi", "Moin", "Hej", a name): the player's latest earlier line in the chat
+that can be told, else nothing, and the prompt keeps its old words (`language_unknown`,
+`last_reply_unknown`). The last turn now says "Antje answers in German." and ends with "Antje's
+reply in German:" (`trimmed_reply` strips whichever label was used); nothing is saved, it is derived
+from the chat. A language that is none of the three (the user's Swedish case, "Tjena! Hur går det
+idag för dig?", which Gemini answered with "I don't understand this foreign language") has a list of
+its own (`other`) so that it is not taken for Danish, and is then not named; "å" tells no language
+for the same reason, and the Danish words Swedish shares (det, går, dig...) are in both lists so
+they favour neither. Eval: five new scenarios (German after a longer English chat, Danish after
+English, "Moin" after German, "Hej" after Danish, Swedish), the language check counts telling
+letters and has `LLM_API_KEY`/`--endpoint`/`--requests`. Replies in the right language, 5 per
+scenario: with the old words (17 scenarios) 7B 72/85 and 3B 72/85; with the new ones (the same plus
+Swedish, 18 scenarios) 7B 90/90 and 3B 86/90. The 7B had 0/5 on Moin and Hej and 3/5 on German after
+a longer English chat before; the four 3B misses are it only echoing "Hej!"; Swedish: both answer in
+Swedish, but the check can only tell they do not answer in English. Tried and dropped: carrying the
+language in the earlier turns (not needed after this), a second wording (the first was already at 0
+wrong language on the 7B). Not measured on Gemini: the sandbox refused to read the user's key.
 
 ## 96. Villagers with more background, family and friends, and a village they share
 
