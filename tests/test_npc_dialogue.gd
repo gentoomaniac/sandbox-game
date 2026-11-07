@@ -105,11 +105,12 @@ func test_a_real_model_sums_up_a_conversation() -> void:
 	var dialogue := _real_dialogue()
 	if dialogue == null:
 		return
-	var lines: Array[Dictionary] = [
-		{"day": 1, "minute": 400, "from_player": true, "text": "Do you have butter to sell?"},
-		{"day": 1, "minute": 400, "from_player": false, "text": "Aye, two pounds at the door."},
-	]
-	await dialogue.remember(_antje, lines, _state)
+	_settings.set_chat_history_lines(2)
+	_antje.add_chat_line(1, 400, true, "Do you have butter to sell?")
+	_antje.add_chat_line(1, 400, false, "Aye, two pounds at the door.")
+	_antje.add_chat_line(1, 401, true, "Thank you.")
+	_antje.add_chat_line(1, 401, false, "Gern.")
+	await dialogue.compact(_antje, _state)
 	gut.p("Antje remembers: %s" % _antje.memories[0])
 	assert_false(_antje.memories[0].contains("The neighbour said:"), "the model summed it up")
 

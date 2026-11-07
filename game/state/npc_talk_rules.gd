@@ -11,7 +11,6 @@ const KEYS := {
 	{
 		"temperature": TYPE_FLOAT,
 		"max_tokens": TYPE_INT,
-		"history_lines": TYPE_INT,
 		"reply_sentences": TYPE_INT,
 		"timeout_seconds": TYPE_FLOAT,
 		"models_timeout_seconds": TYPE_FLOAT,

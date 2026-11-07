@@ -216,13 +216,16 @@ func test_spoken_to_a_villager_turns_to_the_player_and_stands_a_while() -> void:
 	assert_eq(npc.position, _yard_middle())
 
 
-func test_the_chat_keeps_only_its_last_lines() -> void:
+func test_dropping_old_lines_keeps_the_last_ones_and_holds_the_rest_for_a_memory() -> void:
 	var npc := _add_villager(_yard_middle(), _yard_middle())
-	for index in Npc.HISTORY_LIMIT + 50:
+	for index in 30:
 		npc.add_chat_line(DAY, NOON, index % 2 == 0, "line %d" % index)
-	assert_eq(npc.chat_history.size(), Npc.HISTORY_LIMIT)
-	assert_eq(npc.chat_history[0]["text"], "line 50")
-	assert_eq(npc.chat_history[-1]["text"], "line %d" % (Npc.HISTORY_LIMIT + 49))
+	npc.drop_old_lines(24)
+	assert_eq(npc.chat_history.size(), 24)
+	assert_eq(npc.chat_history[0]["text"], "line 6")
+	assert_eq(npc.chat_history[-1]["text"], "line 29")
+	assert_eq(npc.uncompacted_lines.size(), 6)
+	assert_eq(npc.uncompacted_lines[0]["text"], "line 0")
 
 
 # --- The console ---

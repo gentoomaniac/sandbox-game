@@ -192,6 +192,10 @@ func _connect_state_and_views() -> void:
 	for npc in _state.npcs.all():
 		_show_npc(npc)
 	_state.npcs.added.connect(_show_npc)
+	# Chats longer than the setting (a saved game's, or one lowered in the menu, which is
+	# applied once it is closed rather than at every step) are compacted.
+	_chat_screen.dialogue.compact_all(_state)
+	_menu.resumed.connect(func() -> void: _chat_screen.dialogue.compact_all(_state))
 	_builder = Builder.new(_state)
 	_build_mode.world = _state.world
 	_build_mode.builder = _builder

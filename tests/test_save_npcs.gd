@@ -31,7 +31,7 @@ func test_the_villagers_and_their_chat_are_kept() -> void:
 	assert_eq(loaded.background, npc.background)
 	assert_eq(loaded.habits, npc.habits)
 	assert_eq(loaded.memories, npc.memories)
-	assert_eq(loaded.lines_since_memory, 2, "the conversation is not remembered yet")
+	assert_eq(loaded.uncompacted_lines, npc.uncompacted_lines)
 
 
 func test_a_villager_written_by_hand_keeps_their_id() -> void:
@@ -45,18 +45,22 @@ func test_a_villager_written_by_hand_keeps_their_id() -> void:
 	assert_eq(antje.trade, "a farmer's wife")
 
 
-func test_a_saved_chat_keeps_its_last_lines_only() -> void:
+func test_the_lines_waiting_for_a_memory_are_saved() -> void:
 	var state := GameState.new_game(7)
 	var npc := Npc.create(42, Vector2.ZERO, state.npcs.rules)
-	for index in Npc.HISTORY_LIMIT + 10:
+	for index in 5:
 		npc.add_chat_line(1, 600, true, "line %d" % index)
+	npc.drop_old_lines(3)
 	state.npcs.add(npc)
 	assert_true(SaveFile.write(state, SAVE_PATH))
 
-	var history := SaveFile.read(SAVE_PATH).npcs.all()[0].chat_history
+	var loaded := SaveFile.read(SAVE_PATH).npcs.all()[0]
 
-	assert_eq(history.size(), Npc.HISTORY_LIMIT)
-	assert_eq(history[0]["text"], "line 10")
+	assert_eq(loaded.chat_history.size(), 3)
+	assert_eq(
+		loaded.uncompacted_lines.map(func(line: Dictionary) -> String: return line["text"]),
+		["line 0", "line 1"]
+	)
 
 
 func test_a_version_16_save_loads_with_no_villagers() -> void:
@@ -90,11 +94,32 @@ func test_a_version_19_villager_remembers_nothing() -> void:
 	var game := _current_game()
 	var npc := Npc.create(42, Vector2.ZERO, NpcRules.default_rules()).to_dict()
 	npc.erase("memories")
-	npc.erase("lines_since_memory")
+	npc.erase("uncompacted_lines")
+	npc.erase("remembered_lines")
+	npc["lines_since_memory"] = 0
 	game["npcs"] = [JSON.parse_string(JSON.stringify(npc))]
 	_write_save(19, game)
 
 	var loaded := SaveFile.read(SAVE_PATH).npcs.all()[0]
 
 	assert_eq(loaded.memories.size(), 0)
-	assert_eq(loaded.lines_since_memory, 0)
+	assert_eq(loaded.uncompacted_lines.size(), 0)
+
+
+func test_a_version_20_villager_keeps_their_chat_and_the_lines_a_memory_holds_are_marked() -> void:
+	var game := _current_game()
+	var npc := Npc.create(42, Vector2.ZERO, NpcRules.default_rules())
+	for text in ["old", "older", "Moin"]:
+		npc.add_chat_line(1, 600, true, text)
+	var saved := npc.to_dict()
+	saved.erase("uncompacted_lines")
+	saved.erase("remembered_lines")
+	saved["lines_since_memory"] = 1
+	game["npcs"] = [JSON.parse_string(JSON.stringify(saved))]
+	_write_save(20, game)
+
+	var loaded := SaveFile.read(SAVE_PATH).npcs.all()[0]
+
+	assert_eq(loaded.chat_history.size(), 3)
+	assert_eq(loaded.remembered_lines, 2, "only the last line is not in a memory")
+	assert_eq(loaded.uncompacted_lines.size(), 0)

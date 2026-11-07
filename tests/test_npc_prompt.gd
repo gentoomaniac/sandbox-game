@@ -45,11 +45,11 @@ func test_missing_keys_are_reported() -> void:
 func test_values_of_the_wrong_type_are_reported() -> void:
 	var values := DataFile.read_sections(NpcTalkRules.DEFAULT_PATH)
 	values["prompt"]["system"] = 42
-	values["request"]["history_lines"] = "eight"
+	values["request"]["reply_sentences"] = "eight"
 	values["request"]["temperature"] = 1
 	var problems := NpcTalkRules.new(values).problems()
 	assert_has(problems, "[prompt] system is not a text")
-	assert_has(problems, "[request] history_lines is not a whole number")
+	assert_has(problems, "[request] reply_sentences is not a whole number")
 	assert_eq(problems.size(), 2, "a whole number is a number too: %s" % [problems])
 
 
@@ -134,13 +134,12 @@ func test_earlier_lines_go_in_as_turns_of_the_same_shape() -> void:
 	assert_string_contains(messages[5]["content"], 'Her neighbour says: "Aye."')
 
 
-func test_only_the_last_lines_of_a_long_chat_are_told() -> void:
+func test_every_line_of_the_history_is_told() -> void:
 	var history: Array[Dictionary] = []
 	for index in 30:
 		history.append(_line(index % 2 == 0, "line %d" % index))
 	var messages := NpcPrompt.reply_messages(_antje, history, "And?", _moment(), _rules)
-	var told := int(_rules.value("request", "history_lines"))
-	assert_eq(messages.size(), 3 + told + 1)
+	assert_eq(messages.size(), 3 + 30 + 1)
 	assert_eq(messages[-2]["content"], "line 29")
 
 

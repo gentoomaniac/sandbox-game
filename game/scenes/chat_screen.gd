@@ -9,8 +9,8 @@ extends CanvasLayer
 ## running itself, and its input line takes every key. A line sent is answered by NpcDialogue;
 ## while the answer is awaited the villager is shown typing, and nothing more is sent to them. The
 ## wait is the villager's (Npc `is_answering`): the player may leave and talk to another, and the
-## answer is kept in the chat of the one who was asked. When the chat is closed after new lines
-## the villager remembers them (NpcDialogue `remember`), once they have given their answer.
+## answer is kept in the chat of the one who was asked. The villager keeps the latest lines; the
+## older ones become a memory (NpcDialogue `compact`).
 
 ## The answer to a line came and is shown (for tests and the debug runner).
 signal answered
@@ -112,7 +112,6 @@ func close() -> void:
 	visible = false
 	_input.release_focus()
 	get_tree().paused = false
-	_remember(_npc)
 
 
 ## Says a line to the villager and waits for the answer. Ignored while they still owe one.
@@ -122,8 +121,7 @@ func say(text: String) -> void:
 	if npc.is_answering or line.is_empty():
 		return
 	var clock := _state.clock
-	# The chat so far, also what is already in a memory: the model only follows a conversation it
-	# is told (NpcPrompt keeps the last `history_lines` of it).
+	# The chat so far: the model only follows a conversation it is told.
 	var history := npc.chat_history.duplicate()
 	npc.add_chat_line(clock.day, clock.minute_of_day, true, line)
 	npc.is_answering = true
@@ -132,21 +130,11 @@ func say(text: String) -> void:
 	# Said even when the player has left meanwhile: it is there when they come back.
 	npc.add_chat_line(clock.day, clock.minute_of_day, false, answer)
 	npc.is_answering = false
+	# Once per exchange, not per line: the two lines that drop out are one memory.
+	dialogue.compact(npc, _state)
 	if npc == _npc and visible:
 		_show_lines()
-	else:
-		_remember(npc)
 	answered.emit()
-
-
-## The villager remembers the conversation since their last memory, if anything new was said,
-## once they owe no answer.
-func _remember(npc: Npc) -> void:
-	if npc.is_answering or npc.lines_since_memory == 0:
-		return
-	var lines := npc.unremembered_lines()
-	npc.lines_since_memory = 0
-	dialogue.remember(npc, lines, _state)
 
 
 ## The lines of the chat, and the villager typing while an answer is awaited.

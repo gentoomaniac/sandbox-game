@@ -6,8 +6,6 @@ extends RefCounted
 
 enum Activity { IDLE, WALK }
 
-## The chat keeps this many of its last lines, the player's and the villager's.
-const HISTORY_LIMIT := 200
 ## They remember this many conversations; the oldest two are merged into one when there are more.
 const MEMORY_LIMIT := 10
 ## A merged memory keeps its last this many characters.
@@ -38,16 +36,21 @@ var habits := ""
 var position: Vector2
 ## The point they keep near (see Npcs and data/npcs.cfg).
 var anchor: Vector2
-## The chat, oldest line first, each `{day, minute, from_player, text}`: the game day and the
-## minute of the day it was said, and whether the player said it.
+## The latest lines of the chat, oldest first, each `{day, minute, from_player, text}`: the game
+## day and the minute of the day it was said, and whether the player said it. How many are kept is
+## a setting (see `drop_old_lines`).
 var chat_history: Array[Dictionary] = []
-## One line for each conversation they remember, oldest first, such as "On the 12th day of
-## Spring, year 1: The neighbour asked after the dyke." (see NpcDialogue `remember`).
+## One line for each stretch of talk they remember, oldest first, such as "On the 12th day of
+## Spring, year 1: The neighbour asked after the dyke." (see NpcDialogue `compact`).
 var memories: Array[String] = []
-## How many of the last lines of the chat are not in a memory yet: those of this conversation.
-## Saved, so a conversation the game was saved in (an answer still owed, or its summing up still
-## under way) is remembered the next time the chat is closed.
-var lines_since_memory := 0
+## The lines that dropped out of `chat_history` and are not in a memory yet, oldest first. Saved,
+## so lines whose summing up was still under way when the game was saved are not lost.
+var uncompacted_lines: Array[Dictionary] = []
+## How many of the oldest lines of `chat_history` are already in a memory (only a save of version
+## 20 or older has such lines): they are forgotten, not summed up again, when they drop out.
+var remembered_lines := 0
+## Whether NpcDialogue is summing up `uncompacted_lines`. Not saved.
+var is_compacting := false
 
 # What they are doing is not saved: a loaded villager stands and looks about for what to do.
 ## The axis direction they look in (UP, DOWN, LEFT or RIGHT).
@@ -114,20 +117,31 @@ func turn_to(point: Vector2) -> void:
 		facing = facing_of(point - position)
 
 
-## Adds a line to the chat; the oldest lines beyond HISTORY_LIMIT are forgotten.
 func add_chat_line(day: int, minute: int, from_player: bool, text: String) -> void:
 	chat_history.append({"day": day, "minute": minute, "from_player": from_player, "text": text})
-	if chat_history.size() > HISTORY_LIMIT:
-		chat_history.pop_front()
-	lines_since_memory = mini(lines_since_memory + 1, chat_history.size())
 
 
-## The lines of the chat not in a memory yet, oldest first.
-func unremembered_lines() -> Array[Dictionary]:
-	return chat_history.slice(chat_history.size() - lines_since_memory)
+## Keeps the last `keep` lines of the chat; the older ones wait in `uncompacted_lines` to be
+## made a memory.
+func drop_old_lines(keep: int) -> void:
+	while chat_history.size() > keep:
+		var line: Dictionary = chat_history.pop_front()
+		if remembered_lines > 0:
+			remembered_lines -= 1
+		else:
+			uncompacted_lines.append(line)
 
 
-## Remembers a conversation. Beyond MEMORY_LIMIT the oldest two become one, which keeps its end.
+## Forgets the chat and everything remembered of it.
+func forget_chat() -> void:
+	chat_history.clear()
+	uncompacted_lines.clear()
+	remembered_lines = 0
+	memories.clear()
+
+
+## Remembers lines that dropped out of the chat. Beyond MEMORY_LIMIT the oldest two become one,
+## which keeps its end.
 func add_memory(memory: String) -> void:
 	memories.append(memory)
 	if memories.size() > MEMORY_LIMIT:
@@ -150,7 +164,8 @@ func to_dict() -> Dictionary:
 		"anchor": SaveCodec.float_vector_to_json(anchor),
 		"chat_history": chat_history,
 		"memories": memories,
-		"lines_since_memory": lines_since_memory,
+		"uncompacted_lines": uncompacted_lines,
+		"remembered_lines": remembered_lines,
 	}
 
 
@@ -169,7 +184,9 @@ static func from_dict(data: Dictionary) -> Npc:
 	for line: Dictionary in data["chat_history"]:
 		npc.add_chat_line(int(line["day"]), int(line["minute"]), line["from_player"], line["text"])
 	npc.memories.assign(data["memories"])
-	npc.lines_since_memory = mini(int(data["lines_since_memory"]), npc.chat_history.size())
+	for line: Dictionary in data["uncompacted_lines"]:
+		npc.uncompacted_lines.append(line)
+	npc.remembered_lines = mini(int(data["remembered_lines"]), npc.chat_history.size())
 	return npc
 
 

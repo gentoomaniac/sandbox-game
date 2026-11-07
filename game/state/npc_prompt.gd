@@ -19,7 +19,7 @@ const QUOTE_PAIRS: Array[String] = ['""', "“”", "''"]
 
 
 ## The request for the villager's answer to `message`, said after the lines of `history` (as
-## Npc `chat_history`; only its last lines are told): {messages, temperature, max_tokens}.
+## Npc `chat_history`): {messages, temperature, max_tokens}.
 static func reply_request(
 	npc: Npc, history: Array[Dictionary], message: String, moment: NpcMoment, rules: NpcTalkRules
 ) -> Dictionary:
@@ -39,7 +39,7 @@ static func reply_messages(
 		_message("assistant", rules.value("prompt", "example_reply")),
 	]
 	var words := _words_of(npc, rules)
-	for line in history.slice(-int(rules.value("request", "history_lines"))):
+	for line in history:
 		if line["from_player"]:
 			var turn: Array[String] = [_said(rules, "villager", words)]
 			turn.append_array(_neighbour_says(line["text"], words, rules))

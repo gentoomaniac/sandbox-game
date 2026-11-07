@@ -1,5 +1,5 @@
 extends ResourceCase
-## What villagers remember: a conversation summed up in one line when its chat is closed (by the
+## What villagers remember: the lines that drop out of their chat summed up in one line (by the
 ## model, else plainly), capped with the oldest merged, and told in later prompts (saved:
 ## test_save_npcs.gd).
 
@@ -63,17 +63,6 @@ func test_a_merged_memory_keeps_its_end() -> void:
 	assert_eq(_npc.memories.size(), Npc.MEMORY_LIMIT)
 
 
-func test_the_lines_since_the_last_memory_are_this_conversation() -> void:
-	_npc.add_chat_line(1, 400, true, "old")
-	_npc.lines_since_memory = 0
-	_npc.add_chat_line(1, 410, true, "new")
-	_npc.add_chat_line(1, 410, false, "Aye.")
-	assert_eq(
-		_npc.unremembered_lines().map(func(line: Dictionary) -> String: return line.text),
-		["new", "Aye."]
-	)
-
-
 # --- The prompts ---
 
 
@@ -121,57 +110,156 @@ func test_later_prompts_tell_what_the_villager_remembers() -> void:
 	)
 
 
-# --- When a chat is closed ---
+# --- When lines drop out of the chat ---
 
 
-func test_closing_a_chat_remembers_it_as_the_model_sums_it_up() -> void:
-	_chat.answers = ["Moin!", "The neighbour greeted me; I greeted back."]
+func _said(screen: ChatScreen, text: String) -> void:
+	screen.say(text)
+	await wait_for_signal(screen.answered, 2.0)
+
+
+func _texts(lines: Array[Dictionary]) -> Array:
+	return lines.map(func(line: Dictionary) -> String: return line["text"])
+
+
+func test_lines_beyond_the_setting_are_remembered_as_the_model_sums_them_up() -> void:
+	_settings.set_chat_history_lines(2)
+	_chat.answers = ["Moin!", "Aye.", "The neighbour greeted me; I greeted back."]
 	var screen := _chat_screen()
-	await _talk(screen, "Moin, Antje")
+	screen.open(_npc, _state)
+	await _said(screen, "Moin, Antje")
+	assert_eq(_npc.memories.size(), 0, "both lines are still kept")
+	await _said(screen, "Rain today?")
+	screen.close()
 	await wait_until(func() -> bool: return _npc.memories.size() == 1, 2.0)
-	assert_eq(_npc.memories.size(), 1)
+	assert_eq(_texts(_npc.chat_history), ["Rain today?", "Aye."])
 	assert_string_ends_with(_npc.memories[0], ": The neighbour greeted me; I greeted back.")
-	assert_string_contains(_chat.requests[1]["messages"][1]["content"], "Neighbour: Moin, Antje")
+	assert_true(_npc.uncompacted_lines.is_empty())
 
 
-func test_without_a_model_the_chat_is_remembered_plainly() -> void:
+func test_without_a_model_the_dropped_lines_are_remembered_plainly() -> void:
 	_settings.language_model["endpoint"] = ""
+	_settings.set_chat_history_lines(2)
 	var screen := _chat_screen()
-	await _talk(screen, "Moin, Antje")
+	screen.open(_npc, _state)
+	await _said(screen, "Moin, Antje")
+	await _said(screen, "Rain today?")
 	assert_eq(_npc.memories.size(), 1)
 	assert_string_ends_with(_npc.memories[0], ': The neighbour said: "Moin, Antje"')
 
 
-func test_a_chat_with_nothing_said_is_not_remembered() -> void:
-	var screen := _chat_screen()
-	screen.open(_npc, _state)
-	screen.close()
-	assert_eq(_npc.memories.size(), 0)
-	assert_eq(_chat.requests.size(), 0)
-
-
-func test_a_chat_left_before_the_answer_is_remembered_with_it() -> void:
-	_chat.answers = ["Aye, it held.", "Asked about the dyke."]
-	_chat.seconds = 0.2
-	var screen := _chat_screen()
-	screen.open(_npc, _state)
-	screen.say("The dyke?")
-	screen.close()
-	assert_eq(_chat.requests.size(), 1, "no summary while the answer is owed")
-	await wait_until(func() -> bool: return _npc.memories.size() == 1, 2.0)
-	assert_string_contains(_chat.requests[1]["messages"][1]["content"], "Antje: Aye, it held.")
-
-
-func test_the_next_conversation_still_tells_the_earlier_lines_and_the_memory() -> void:
-	_chat.answers = ["Moin!", "We greeted.", "Aye."]
+func test_closing_a_chat_makes_no_memory_and_the_chat_goes_on_when_reopened() -> void:
+	_chat.answers = ["Moin!", "Aye."]
 	var screen := _chat_screen()
 	await _talk(screen, "Moin")
-	await wait_until(func() -> bool: return _npc.memories.size() == 1, 2.0)
+	assert_eq(_npc.memories.size(), 0)
+	assert_eq(_chat.requests.size(), 1)
 	await _talk(screen, "Rain today?")
-	var messages: Array = _chat.requests[2]["messages"]
+	var messages: Array = _chat.requests[1]["messages"]
 	assert_eq(
 		messages.size(), 6, "the system line, the example, the earlier two lines, the message"
 	)
 	assert_string_contains(messages[3]["content"], "Moin")
 	assert_eq(messages[4]["content"], "Moin!")
-	assert_string_contains(messages[-1]["content"], "remembers earlier talks")
+
+
+func test_a_summary_asked_for_is_followed_by_one_for_the_lines_that_dropped_meanwhile() -> void:
+	_chat.seconds = 0.2
+	_chat.answers = ["First.", "Second."]
+	var dialogue := NpcDialogue.new(_settings, _chat)
+	add_child_autoqfree(dialogue)
+	for index in 4:
+		_npc.add_chat_line(1, 400, index % 2 == 0, "line %d" % index)
+	_settings.set_chat_history_lines(2)
+	dialogue.compact(_npc, _state)
+	_npc.add_chat_line(1, 410, true, "line 4")
+	dialogue.compact(_npc, _state)
+	assert_eq(_chat.requests.size(), 1, "one summary at a time")
+	await wait_until(func() -> bool: return _npc.memories.size() == 2, 3.0)
+	assert_eq(_chat.requests.size(), 2)
+	assert_string_contains(_chat.requests[0]["messages"][1]["content"], "line 0")
+	assert_string_contains(_chat.requests[0]["messages"][1]["content"], "line 1")
+	assert_string_contains(_chat.requests[1]["messages"][1]["content"], "line 2")
+	assert_false(_chat.requests[1]["messages"][1]["content"].contains("line 1"))
+	assert_true(_npc.uncompacted_lines.is_empty())
+	assert_false(_npc.is_compacting)
+
+
+func test_the_dropped_lines_are_kept_while_their_summary_is_asked_for() -> void:
+	_chat.seconds = 0.2
+	var dialogue := NpcDialogue.new(_settings, _chat)
+	add_child_autoqfree(dialogue)
+	for index in 3:
+		_npc.add_chat_line(1, 400, true, "line %d" % index)
+	_settings.set_chat_history_lines(2)
+	dialogue.compact(_npc, _state)
+	assert_eq(_texts(_npc.uncompacted_lines), ["line 0"], "a save would hold them")
+	await wait_until(func() -> bool: return _npc.memories.size() == 1, 3.0)
+
+
+func test_lowering_the_setting_compacts_every_villager_at_once() -> void:
+	_settings.language_model["endpoint"] = ""
+	var dialogue := NpcDialogue.new(_settings, _chat)
+	add_child_autoqfree(dialogue)
+	for index in 6:
+		_npc.add_chat_line(1, 400, index % 2 == 0, "line %d" % index)
+	_settings.set_chat_history_lines(4)
+	dialogue.compact_all(_state)
+	assert_eq(_texts(_npc.chat_history), ["line 2", "line 3", "line 4", "line 5"])
+	assert_eq(_npc.memories.size(), 1)
+
+
+# --- Lines a memory already holds, and a setting lowered in steps ---
+
+
+func test_lines_a_memory_holds_are_dropped_without_a_new_summary() -> void:
+	var dialogue := NpcDialogue.new(_settings, _chat)
+	add_child_autoqfree(dialogue)
+	for index in 8:
+		_npc.add_chat_line(1, 400, true, "line %d" % index)
+	_npc.remembered_lines = 5
+	_settings.set_chat_history_lines(3)
+	await dialogue.compact(_npc, _state)
+	assert_eq(_texts(_npc.chat_history), ["line 5", "line 6", "line 7"])
+	assert_eq(_npc.remembered_lines, 0)
+	assert_eq(_chat.requests.size(), 0, "lines already remembered are not summed up again")
+	_settings.set_chat_history_lines(2)
+	await dialogue.compact(_npc, _state)
+	assert_eq(_chat.requests.size(), 1, "line 5 was not in a memory")
+	assert_string_contains(_chat.requests[0]["messages"][1]["content"], "line 5")
+	assert_false(_chat.requests[0]["messages"][1]["content"].contains("line 4"))
+
+
+func test_lowering_the_setting_in_steps_then_compacting_once_makes_one_memory() -> void:
+	_settings.language_model["endpoint"] = ""
+	var dialogue := NpcDialogue.new(_settings, _chat)
+	add_child_autoqfree(dialogue)
+	for index in 24:
+		_npc.add_chat_line(1, 400, index % 2 == 0, "line %d" % index)
+	for lines in range(23, 9, -1):
+		_settings.set_chat_history_lines(lines)
+	dialogue.compact_all(_state)
+	assert_eq(_npc.chat_history.size(), 10)
+	assert_eq(_npc.memories.size(), 1)
+
+
+func test_lowering_the_setting_while_a_summary_is_in_flight_loses_and_doubles_nothing() -> void:
+	_chat.seconds = 0.2
+	_chat.answers = ["First.", "Second."]
+	var dialogue := NpcDialogue.new(_settings, _chat)
+	add_child_autoqfree(dialogue)
+	for index in 6:
+		_npc.add_chat_line(1, 400, index % 2 == 0, "line %d" % index)
+	_settings.set_chat_history_lines(5)
+	dialogue.compact(_npc, _state)
+	_settings.set_chat_history_lines(2)
+	dialogue.compact_all(_state)
+	assert_eq(_texts(_npc.uncompacted_lines), ["line 0", "line 1", "line 2", "line 3"])
+	await wait_until(func() -> bool: return _npc.memories.size() == 2, 3.0)
+	assert_eq(_texts(_npc.chat_history), ["line 4", "line 5"])
+	assert_true(_npc.uncompacted_lines.is_empty())
+	assert_eq(_chat.requests.size(), 2)
+	var second: String = _chat.requests[1]["messages"][1]["content"]
+	assert_false(second.contains("line 0"))
+	for index in [1, 2, 3]:
+		assert_string_contains(second, "line %d" % index)
