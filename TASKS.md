@@ -1153,6 +1153,34 @@ or Danish, from word lists and letters in data/npc_talk.cfg) and names it in the
 line that could be told, and with none the prompt keeps today's words. Measured with
 `make llm-eval` on the 7B and the 3B.
 
+## 96. Villagers with more background, family and friends, and a village they share
+
+- [ ] Done
+
+The user's word of 2026-11-07: with Gemini the talk works well, but replies are not consistent
+enough; villagers need way more background and instructions. A worker writes it for now
+(the user may edit it later); relationships and family members must exist and be spawnable.
+Plan: a longer sheet per hand-written villager (how they speak with sample lines in their
+voice, the people they know by name and what they think of them, likes, wants, their day,
+what they don't know or won't talk about); one village sheet every villager shares (the
+village and its places, who lives where, landlord, pastor, Deichgraf, prices, this year's
+news) so villagers don't contradict each other; family and friends named there are villagers
+of data/villagers.cfg that can be spawned; firmer instructions (keep to what was said
+earlier, never make up family or names, stay in one's own voice; perhaps a lower
+temperature); made-up villagers get their sheet drawn once and kept. Hosted models (Gemini,
+Claude) get the full sheets, local models a cut-down version. Seen by the user with Gemini:
+"Aye." in the middle of a German talk (the English habit leaks into other languages).
+
+## 97. Chat screen laid out like a messenger
+
+- [ ] Done
+
+The user's word of 2026-11-07: the chat is hard to read with all the text and the font. Make
+it look a bit like WhatsApp: the player's lines on one side and the villager's on the other,
+as bubbles with more space between them, so the conversation is easy to follow (the user
+showed a WhatsApp screenshot: bubbles in two colours, right for one's own lines, the time
+small in the bubble's corner, the name above the other's lines).
+
 ## Later (not part of the prototype)
 
 - **Graphics review: willows melt into the grass** (the user, 2026-11-06, with a screenshot;
