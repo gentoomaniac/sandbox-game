@@ -1140,6 +1140,19 @@ is Apache-2.0, the 3B has the Qwen Research License). Following the player's lan
 still only about 3 of 5 in German after English for both; naming the language to the model
 (the game detecting it) is an idea for later.
 
+## 95. Villagers answer in the language the player speaks to them
+
+- [ ] Done
+
+The user's word of 2026-11-07: if it can, the game should detect the language; villagers
+respond in the language the player speaks to them. Task 94 left following a switch of language
+at about 3 of 5 (German after English), with the prompt only asking for "the language the
+neighbour just spoke in". The game detects the language of the player's line (English, German
+or Danish, from word lists and letters in data/npc_talk.cfg) and names it in the prompt
+("Hark answers in German."); a line too short to tell keeps the language of the player's last
+line that could be told, and with none the prompt keeps today's words. Measured with
+`make llm-eval` on the 7B and the 3B.
+
 ## Later (not part of the prototype)
 
 - **Graphics review: willows melt into the grass** (the user, 2026-11-06, with a screenshot;
