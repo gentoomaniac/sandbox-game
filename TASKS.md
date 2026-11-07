@@ -1282,6 +1282,12 @@ day, spawnable from the console.
   edge and little shadow, so only the trunk reads. Ideas: a darker underside and outline of the
   crown, a clearer silhouette of the rods against the ground, the ground shadow, and a check on
   lush, dry and flowering grass in every season (tools/art/willow.py). No new colours.
+The user's word of 2026-11-08: the same problem as the willows affects some grass and reeds (and
+the bushes by a stream): too little contrast against the ground behind them. A slight outline
+for assets would be good. A visual review on Fable runs on 2026-11-08 (contrast and outlines,
+the art-style docs against the art, the villagers' and the village's places without art, and
+the buildings a village needs: house varieties, a small church, farm buildings such as a
+chicken coop and troughs for cows and horses).
 
 - **Test LLM on the GPU, and which models fit** (the user, 2026-11-06): set up CDI for the
   RTX 4070 (tools/README.md, GPU), then try which models fit in its 8 GB of VRAM and how
