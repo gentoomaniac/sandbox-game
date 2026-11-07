@@ -19,6 +19,8 @@ const FLOCK_SIZE := Vector2i(6, 12)
 ## How far from the middle a goose may wander, and how close to another one it starts.
 const RADIUS := 26.0
 const MIN_SPACING := 7.0
+## How many spots are tried for each goose of the flock before it makes do with fewer geese.
+const PLACING_TRIES := 20
 const WALK_SPEED := 4.0
 ## A goose picks what to do next by these chances: graze, else stand, else walk.
 const GRAZE_CHANCE := 0.6
@@ -126,7 +128,7 @@ func _update(delta: float) -> void:
 
 ## Spreads the geese around the middle, each where it can stand and not on top of another.
 func _place_geese(count: int) -> void:
-	for _try in count * 4:
+	for _try in count * PLACING_TRIES:
 		if _geese.size() == count:
 			return
 		var spot := Vector2.from_angle(wildlife.rng.randf() * TAU) * RADIUS
