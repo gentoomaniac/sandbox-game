@@ -943,12 +943,22 @@ dragged icon has a layer of its own (3), above the hotbar.
 
 ## 89. Crafting UI: buttons clickable all over
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06: in the crafting UI some buttons can only be clicked on small
 areas. Make every button and recipe entry clickable over its whole visible area (likely
 child controls eating the mouse or a too-small hit rect); check the other screens (storage,
 character, settings) for the same and add a test that clicks at the edges of a button.
+
+Done: no code fix was needed; the cause was the one task 88 fixed in commit 296d0c7: the fade
+screen's invisible text box (layer 2, centred) kept the default mouse filter and ate the
+clicks on a strip in the middle of the window, which cut across recipe rows. Without that fix
+the new test fails on the crafting rows at those places. Every recipe row (by hand and at a
+station), storage and character slot, tab button and pause menu page button and slider
+answers the mouse at its centre and just inside each corner (what is scrolled out of a list
+is left out), with the game's other HUD layers in the viewport; the HUDs that need a game
+state (build panel, vitals, cheats) are checked to have no control that stops the mouse.
+Tests: tests/test_click_areas.gd, helpers in tests/click_case.gd.
 
 ## 90. Console: noclip
 
