@@ -459,7 +459,11 @@ copper watering can. Kept here as the record of why.
    behind both legs outside the horse) and the ridden horse seen from the side, the front (its
    head in front of the rider) and behind, standing, walking and trotting on diagonal pairs.
    From the front and behind the horse is 14 px wide (the pony 12), broad enough under the
-   rider's legs not to read as a pole. No new colours.
+   rider's legs not to read as a pole. No new colours. Task 82 added a cat on the hunt, in
+   every look: crouched with the belly near the ground, the head level with the back, the ears
+   laid back and the tail flat behind (its tip flicking); creeping low on bent legs; and the
+   pounce, from the crouch to a leap stretched out two pixels off the ground and a landing with
+   the head down on the mouse. No new colours.
 9. ~~**Coast and flats**~~ done (task 61). The world had no sea. Now the Wadden coast lies
    in the west: a sea dyke, then the salt marsh (grey-green turf with silvery sea purslane and
    glasswort, drawn in logical colours that each look maps: red-purple in autumn, with thrift

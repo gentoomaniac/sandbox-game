@@ -154,6 +154,15 @@ and running to catch up (left far behind or stuck, it turns up at your side).
 
 ![Horses, dogs and cats about the camp](docs/screenshots/dogs-cats-horses.png)
 
+Cats hunt the mice. A cat that sees a mouse a few tiles off crouches low with its tail flat,
+creeps up on it and pounces; about half the pounces catch the mouse, and the others are seen
+coming and the mouse dashes off into cover. Then the cat rests a minute before it hunts again.
+Mice are out mostly at dusk and at night, and the cats sleep from a while after sunset, so
+dusk is the hunting hour. The numbers are in the `[hunting]` section of
+[data/livestock.cfg](data/livestock.cfg).
+
+![Three cats at dusk: crouched at their mice, creeping up on them, and the ginger one after its catch](docs/screenshots/cats-hunting.png)
+
 Horses can be ridden. Hold a **saddle** (`give saddle`) and press the use key at a horse in front
 of you to saddle it; the use key with an empty hand takes the saddle off again. Press **E** at a
 saddled horse to get on, and E again to get off: you land on free ground beside it, and the
@@ -218,8 +227,9 @@ heads when you come near and take off together, and skeins of them fly over in a
 live by the fields, the Knicks, the walls and the houses, out mostly at dusk and at night, and
 dash off into cover when you come close; frogs sit and hop at the water's edge and on the wet
 meadows from spring to early autumn, and a hunting stork that sees one walks up to it,
-strikes and swallows it. The animals come and go around you by the season, the time of day
-and the weather; the numbers are in [data/wildlife.cfg](data/wildlife.cfg).
+strikes and swallows it; the cats hunt the mice (see [Livestock](#livestock)). The animals
+come and go around you by the season, the time of day and the weather; the numbers are in
+[data/wildlife.cfg](data/wildlife.cfg).
 
 ![White storks on the marsh, a stork on the roof of a Kate, a flock of geese grazing in autumn and a skein of them flying over](docs/screenshots/wildlife.png)
 

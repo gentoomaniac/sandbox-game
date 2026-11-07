@@ -818,7 +818,7 @@ atmosphere only: no player impact, not hunted, not saved.
     to early autumn (fewer in autumn, none in winter), most at dusk, out in the rain; they sit
     puffing their throats, hop now and then and hop off from the player. A hunting stork that
     sees a frog within 3 tiles walks up to it, strikes and swallows it, and the frog is gone.
-    The lookup (`WildlifeView.nearest_animal`) is the same a cat will use for mice (task 82).
+    The lookup (`WildlifeView.nearest_animal`) is the same a cat uses for mice (task 82).
 - **The world decides how many:** time of day (birds and insects by day, deer at dawn and
   dusk, fewer animals at night), season (no insects in winter; fewer birds; rabbits and
   squirrels still about), weather (animals hide in heavy rain, storms and dense fog), and
@@ -848,6 +848,18 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   Oldenburg kind in bay, black and grey, and a dun pony). Dogs and cats sniff about (their
   graze), horses graze; all three run about now and then; cats walk longest and so roam
   widest; they climb nothing yet.
+- **Cats hunt mice** (decided 2026-11-06, task 82): a cat that is up and about and sees a mouse
+  within 3.5 tiles when it picks what to do next crouches facing it (1.5 s), creeps up on it
+  slowly and pounces from 1.2 tiles, leaping onto where the mouse was. About half the pounces
+  catch it (the mouse is gone, if it is still under the cat where it lands); for the others the
+  mouse sees the cat coming and dashes off into cover as it leaps, as from the player. The
+  mouse takes no notice of the cat until then. A cat gives up a mouse that is gone (run from
+  the player) or that it hasn't come near in 12 s, and after a hunt it rests for a minute. An
+  asleep cat hunts nothing; mice are out mostly at dusk and at night and cats sleep from two
+  hours after sunset, so they hunt mostly at dusk and before dawn. The mice are wildlife and the
+  cats livestock: the view finds the mouse and draws the catch, Livestock moves the cat, and
+  nothing of a hunt is saved (a game saved mid-hunt loads with the cat looking about). The
+  numbers are in `data/livestock.cfg` (`[hunting]`).
 - **The bone:** an item (from the console for now). The use key at a dog in front of the
   player gives it the bone, which is used up; the dog follows the player for 3 game hours,
   day and night, then wanders again. It waits within 2 tiles of the player, walks after them

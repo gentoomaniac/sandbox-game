@@ -731,10 +731,28 @@ carries an adult whose feet nearly touch the ground. Screenshot in docs/screensh
 
 ## 82. Cats hunt mice
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06. Needs tasks 79 and 80. Defaults: a cat that sees a mouse
 within a few tiles crouches, creeps, and pounces; about half the pounces catch it.
+
+Done: a cat's `FarmAnimalView` looks for a mouse when the cat picks what to do next
+(`WildlifeView.nearest_animal`, within `sight_tiles`, 3.5) if `Livestock.can_hunt` (a cat, up
+and about, not asleep, rested), and starts the hunt: three new activities of `FarmAnimal`,
+`CROUCH` (1.5 s, facing the mouse), `CREEP` (0.3 tiles a second, `track_prey` following the
+mouse, given up after 12 s, when blocked or when the mouse is gone: `stop_hunt`) and `POUNCE`
+(from 1.2 tiles, a leap at 3.5 tiles a second onto where the mouse was). As the cat pounces the
+view draws the catch (`catch_chance` 0.5, `wildlife.rng`): a miss sends the mouse dashing off
+into cover away from the cat (`Mouse.flee_from`), a catch takes it if it is within
+`catch_tiles` of where the cat lands. Then the cat rests 60 s (`hunt_rest_seconds`). The numbers
+are a new `[hunting]` section of data/livestock.cfg. The hunt is not saved (nor are the
+mice), so a game saved mid-hunt loads with the cat looking about; no save version bump. Mice
+take no notice of a creeping cat. Art: `crouch`, `creep` and `pounce` rows of every cat sheet
+(tools/art/livestock.py, low torso, flat tail, a leap and a landing with the head down); no new
+colours. Debug flag `--hunt` (a cat of each look with a mouse ahead). Not done: cats don't
+carry or eat what they catch, and hunt nothing but mice; the cats' sleeping hours are those of
+task 79, so they hunt at dusk and before dawn rather than through the night. Screenshot in
+docs/screenshots/cats-hunting.png.
 
 ## 83. Taking down buildings and placed things
 

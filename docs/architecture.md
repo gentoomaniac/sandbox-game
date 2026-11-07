@@ -89,8 +89,12 @@ Warft and an Ewer here and there.
   Storks on roofs (`Stork`) stand on the top edge of the house's picture as it is shown
   (`WorldView.building_picture`, so snow is counted), just in front of where the house sorts
   (`BuildingViews.sort_position`); flying birds cast `GroundShadows`. A hunter finds its prey
-  with `WildlifeView.nearest_animal` (a stork its frogs, `Frog`; a cat will find the `Mouse`),
-  asked when it picks what to do next, not every frame.
+  with `WildlifeView.nearest_animal` (a stork its frogs, `Frog`; a cat its `Mouse`), asked when
+  it picks what to do next, not every frame. A cat is state and a mouse is not, so a hunt is
+  split: the cat's `FarmAnimalView` finds the mouse, starts the hunt in Livestock
+  (`start_hunt`, `track_prey`, `stop_hunt`: the cat crouches, creeps and pounces, by the
+  `[hunting]` numbers of `data/livestock.cfg`) and draws the catch as the cat pounces (the mouse
+  is caught, or dashes off with `Mouse.flee_from`). Nothing of a hunt is saved.
 - **Npcs** (`game/state/npcs.gd`) holds the villagers (`Npc`: name, sex, look as an
   `Appearance`, who they are (age, trade, personality, background, habits), position, anchor,
   chat history and memories) and moves them like the livestock: GameState owns it, Main calls
