@@ -916,14 +916,8 @@ lines of the chat go in, also those already remembered.
 
 ## 87. Willows that stand out from the grass
 
-- [ ] Done
-
-The user's word of 2026-11-06, with a screenshot: willows sometimes melt into the grass.
-The pollard's crown of thin, pale yellow-green shoots has the same values as the meadow and
-lush grass under it, with no dark edge and little shadow, so only the trunk reads. Rework
-the willow (tools/art/willow.py) so it reads on every ground and in every season: a darker
-underside and outline of the crown, a clearer silhouette of the rods against the ground,
-the ground shadow, and a check on lush, dry and flowering grass. No new colours.
+Dropped as a task (the user, 2026-11-07): kept as a point for the next graphics review, see
+Later.
 
 ## 88. Inventory handling
 
@@ -1102,6 +1096,13 @@ in Settings, not the default (the local test LLM stays the default).
   pick Claude, what it costs per line roughly, that the chat goes to Anthropic.
 
 ## Later (not part of the prototype)
+
+- **Graphics review: willows melt into the grass** (the user, 2026-11-06, with a screenshot;
+  was task 87, to look at in the next graphics review). The pollard's crown of thin, pale
+  yellow-green shoots has the same values as the meadow and lush grass under it, with no dark
+  edge and little shadow, so only the trunk reads. Ideas: a darker underside and outline of the
+  crown, a clearer silhouette of the rods against the ground, the ground shadow, and a check on
+  lush, dry and flowering grass in every season (tools/art/willow.py). No new colours.
 
 - **Test LLM on the GPU, and which models fit** (the user, 2026-11-06): set up CDI for the
   RTX 4070 (tools/README.md, GPU), then try which models fit in its 8 GB of VRAM and how
