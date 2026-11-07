@@ -118,7 +118,8 @@ Answered questions move into SPEC.md and are removed here.
     the CPU; `make llm-up`, `make llm-down`, `make llm-check`. Its licence is the Qwen
     Research License (non-commercial), not Apache-2.0 as first written: fine for local
     tests, never to ship. Apache-2.0 alternatives: qwen2.5 1.5B or 7B. Default: keep 3B for
-    testing.
+    testing. **Decided 2026-11-07 (task 94):** the 7B (Apache-2.0) is the default; with the
+    refined prompts the 3B was not about as good.
 
 24. **Coast** (task 61): the coast in the west, about 260 tiles out, the river running into
     it; a sea dyke without gaps; mud walkable at any tide, one look in every season; the tide
