@@ -76,7 +76,8 @@ func test_the_summary_request_tells_the_conversation() -> void:
 		messages[1]["content"],
 		(
 			"Villager: Antje Boysen, a farmer's wife.\nThe conversation:\n"
-			+ "Neighbour: Is the dyke holding?\nAntje: Aye.\nWhat Antje remembers of it:"
+			+ "Neighbour: Is the dyke holding?\nAntje: Aye.\n"
+			+ 'What Antje remembers of it, in one sentence that starts with "I":'
 		)
 	)
 	assert_eq(request["max_tokens"], 40)

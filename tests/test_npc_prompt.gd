@@ -86,14 +86,14 @@ func test_the_prompt_has_the_shape_of_the_example() -> void:
 			"role": "user",
 			"content":
 			(
-				"Villager: Antje Boysen, a farmer's wife.\n"
-				+ 'Her neighbour says: "Fine weather for the hay today."\n'
-				+ "Antje's reply:"
+				"Villager: Hark Nissen, a blacksmith.\n"
+				+ 'His neighbour says: "Fine weather for the hay today."\n'
+				+ "Hark's reply:"
 			),
 		}
 	)
 	assert_eq(messages[2]["role"], "assistant")
-	assert_string_starts_with(messages[2]["content"], "Aye, if it holds till Thursday.")
+	assert_string_starts_with(messages[2]["content"], "Fine for the hay, aye, but the forge")
 	var last: String = messages[3]["content"]
 	assert_eq(messages[3]["role"], "user")
 	var lines := last.split("\n")
