@@ -126,7 +126,7 @@ of a generated sound, point the event's `files` in `data/sounds.cfg` at the reco
 ## A local LLM for testing NPC talk: tools/llm/
 
 `llm.sh` runs [Ollama](https://ollama.com) in a container (podman if present, else docker;
-`CONTAINER=docker` forces one) with Qwen2.5 3B Instruct, on the NVIDIA GPU when the host
+`CONTAINER=docker` forces one) with Qwen2.5 7B Instruct, on the NVIDIA GPU when the host
 exposes it to containers (see below), else on the CPU. It serves an
 OpenAI-compatible API at `http://127.0.0.1:11434/v1` (this machine only). The game never
 needs it: `make test` does not touch it, unless `SANDBOX_LLM_URL=http://127.0.0.1:11434/v1`
@@ -139,10 +139,11 @@ make llm-up       # start the container, pull the model if missing; safe to repe
 make llm-check    # one chat request as a 1750s North Frisian villager, with the time taken
 make llm-down     # remove the container; the model stays in its volume
 make llm-down PURGE=1   # also delete the volume (the model)
-make llm-pull LLM_MODEL=qwen2.5:7b-instruct   # fetch another model next to the first
+make llm-pull LLM_MODEL=qwen2.5:3b-instruct   # fetch another model next to the first
 make llm-models   # the models it has, with their sizes
-make llm-check LLM_MODEL=qwen2.5:7b-instruct  # ask that one
-make llm-rm LLM_MODEL=qwen2.5:7b-instruct     # delete it again
+make llm-check LLM_MODEL=qwen2.5:3b-instruct  # ask that one
+make llm-eval LLM_MODEL=qwen2.5:3b-instruct   # the villagers' prompts on it, see below
+make llm-rm LLM_MODEL=qwen2.5:3b-instruct     # delete it again
 tools/llm/llm.sh status | logs
 ```
 
@@ -155,24 +156,31 @@ plus 1-2 GB while it answers (RAM on the CPU, VRAM on the GPU):
 | Tag | Size | Licence | Notes |
 |---|---|---|---|
 | `qwen2.5:1.5b-instruct` | 1.0 GB | Apache-2.0 | Fast, plainer lines |
-| `qwen2.5:3b-instruct` | 1.9 GB | Qwen Research (non-commercial) | The default; testing only |
-| `qwen2.5:7b-instruct` | 4.7 GB | Apache-2.0 | Follows a conversation and the language better; needs about 6 GB free |
+| `qwen2.5:3b-instruct` | 1.9 GB | Qwen Research (non-commercial) | Twice as fast as the 7B; its lines drift into nonsense more often; testing only |
+| `qwen2.5:7b-instruct` | 4.7 GB | Apache-2.0 | The default: stays in character, follows the chat and the language better; needs about 6 GB free |
 | `llama3.2:3b` | 2.0 GB | Llama 3.2 Community | |
 | `gemma2:2b` | 1.6 GB | Gemma Terms of Use | |
 
 Which ones fit on the GPU (8 GB of VRAM here) is for later, with the GPU set up as below.
 
-- **Model:** `qwen2.5:3b-instruct` (override with `LLM_MODEL=<ollama tag>`), 3.1B parameters,
-  Q4_K_M, 1.9 GB. Its licence is the **Qwen Research License** (non-commercial), not
-  Apache-2.0: the 3B size is the exception in the Qwen2.5 family. Fine for testing here; never
-  ship it with the game. `LLM_MODEL=qwen2.5:1.5b-instruct` or `qwen2.5:7b-instruct` are
-  Apache-2.0.
+- **Model:** `qwen2.5:7b-instruct` (override with `LLM_MODEL=<ollama tag>`), 7.6B parameters,
+  Q4_K_M, 4.7 GB, Apache-2.0. It is the default because, with the refined prompts, the 3B
+  (`qwen2.5:3b-instruct`, 1.9 GB) was not about as good (see "Trying the prompts"). The 3B has
+  the **Qwen Research License** (non-commercial), not Apache-2.0: the 3B size is the exception
+  in the Qwen2.5 family. Fine for testing here; never ship it with the game.
+  `qwen2.5:1.5b-instruct` is Apache-2.0 too.
+- **Coming from the 3B:** settings.cfg keeps only what was changed, so unless the 3B was
+  picked in Settings, the game now asks for the 7B. If only the 3B is pulled, the test LLM
+  answers "model not found" and villagers say scripted lines until `make llm-up` (which pulls
+  the default) or `make llm-pull LLM_MODEL=qwen2.5:7b-instruct` has run; or pick the 3B in
+  Settings.
 - **Where things live:** the container is `sandbox-game-llm`, the models are in the
   volume `sandbox-game-llm-models`, the image is the pinned `docker.io/ollama/ollama` tag in
   `llm.sh` (5.5 GB, from the container tool's image storage).
 - **Remove everything:** `make llm-down PURGE=1`, then `podman rmi docker.io/ollama/ollama:<tag>`
   (or `docker rmi`).
-- A 3B model on 22 CPU cores answers a short line in a few seconds; speed is not a goal.
+- On 22 CPU cores the 7B answers a short line in two to four seconds (the 3B in one to two);
+  speed is not a goal.
 - **GPU:** `llm.sh up` passes the GPU in (`--device nvidia.com/gpu=all`, CDI) when a CDI spec
   for `nvidia.com/gpu` is in `/etc/cdi` or `/var/run/cdi`. `LLM_GPU=1` insists on the GPU,
   `LLM_GPU=0` keeps the CPU; a container started with the other setting is recreated.
@@ -185,5 +193,22 @@ Which ones fit on the GPU (8 GB of VRAM here) is for later, with the GPU set up 
   nvidia-ctk cdi list   # should list nvidia.com/gpu=0 and nvidia.com/gpu=all
   ```
 
-  With 8 GB of VRAM, `qwen2.5:7b-instruct` (4.7 GB) should fit on the GPU as well (not tried
+  With 8 GB of VRAM, the default `qwen2.5:7b-instruct` (4.7 GB) should fit on the GPU (not tried
   yet).
+
+### Trying the prompts: `make llm-eval`
+
+`make llm-eval LLM_MODEL=<tag>` (the test LLM must be up with that model; `LLM_RUNS=n` replies
+per scenario, 3 by default) checks the villagers' prompts on a model. Godot builds the
+requests with `NpcPrompt` itself (`tools/llm/dump_requests.gd`: 13 fixed scenarios, a greeting,
+rain at dusk, German after English, Danish, English after German, family, a phone, a car, a
+rude line, a fact from earlier in a long chat, a villager with a memory, a memory summary;
+Antje and Momme), so the tool never drifts from the game; `tools/llm/eval_prompts.py` sends
+each one `n` times at the configured temperature and writes `build/llm-eval/<model>.md`:
+every reply, with crude checks (too long, too many sentences, cut off, assistant phrases,
+label echo, copying the example or the player's line, the wrong language by stop words,
+a memory not in the first person). The checks only find what is plainly wrong; read the
+replies. `tools/llm/eval_prompts.py --compare <tag> <tag>` puts the replies of two earlier
+runs side by side in `build/llm-eval/compare.md`. It takes about 2 minutes for the 3B and 4
+for the 7B with 5 replies each. When the prompt words in `data/npc_talk.cfg` change, run it on
+both and read the reports.

@@ -175,8 +175,10 @@ top of classic pixel art (details under "Lighting and look").
   export presets exist yet).
 - Tools:
   - test LLM for NPC talk (decided 2026-11-06): `make llm-up`, `llm-check` and `llm-down`
-    run Ollama (pinned tag) in a podman/docker container with Qwen2.5 3B Instruct on the CPU,
+    run Ollama (pinned tag) in a podman/docker container with Qwen2.5 7B Instruct (Apache-2.0;
+    the 3B has the Qwen Research License and was not as good, 2026-11-07) on the CPU,
     OpenAI-compatible API on 127.0.0.1:11434/v1 (`tools/llm/llm.sh`); no test needs it;
+    `make llm-eval` tries the villagers' prompts on a model (`tools/llm/`);
   - tests: **GUT**, run headless by `make test`;
   - lint and format: gdtoolkit (`gdlint` / `gdformat`).
 
@@ -958,11 +960,13 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   words come from the model; nothing else in the game changes by what it says.
 - **The prompt** (`data/npc_talk.cfg`, the user's working example of 2026-11-06 in shape;
   temperature 0.7, at most 60 tokens): a system line (dialogue for villagers on the North Frisian
-  coast in 1750, one or two short sentences of small talk, always in the language of the neighbour's
-  latest line, never break character or act as an assistant), the example exchange ("Villager: Antje
-  Boysen, a farmer's wife. / Her neighbour says: "Fine weather for the hay today." / Antje's reply:"
-  and her answer), the lines the villager keeps as turns of the same shape, and last what the player
-  says, with who the villager is (age, look in words from the layers, personality, background,
+  coast in 1750, one or two short sentences of small talk that answer what was said, in the
+  language of the neighbour's latest line (English if that is English), never break character or
+  act as an assistant, puzzled by what did not exist in 1750, sharp to the rude), the example
+  exchange ("Villager: Hark Nissen, a blacksmith. / His neighbour says: "Fine weather for the hay
+  today." / Hark's reply:" and his answer; not a villager of the game, so that the models do not
+  copy a villager's words into the others), the lines the villager keeps as turns of the same
+  shape, and last what the player says, with who the villager is (age, look in words from the layers, personality, background,
   habits, memories), the moment (the date as the clock shows it and early, mid or late in the
   season; the time and part of the day by the sun: dawn, morning, noon, afternoon, dusk, night; the
   weather as it is: thunder, storm, snow, rain or fog by strength, else the sky by its clouds, the
@@ -976,14 +980,15 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   setting "Lines a villager keeps", 2 to 200, default 24, one for all providers); all go to the
   model as earlier turns, so a reopened chat goes on. Lines that drop out (after an exchange,
   when the setting is lowered, applied once the menu is closed, and on load) are made one dated memory ("On the 12th day of
-  Spring, year 1 (mid spring): ..."): summed up by the model with a small prompt of its own,
+  Spring, year 1 (mid spring): ..."): summed up by the model with a small prompt of its own (one sentence of at most 25 words, in
+  the villager's first person),
   else the start of what the player said. One summary is asked for at a time; what drops
   meanwhile is summed up next. A villager keeps 10 memories; beyond that the oldest two merge
   into one (its last 400 characters). Later prompts tell the memories and the kept lines.
   Typing `/clear` in the chat forgets the villager's chat, memories and lines waiting for a
   memory, with a line saying so (not sent, not kept); other text with a "/" is said as it is.
 - **Settings:** the endpoint (default the test LLM's), the model (default
-  `qwen2.5:3b-instruct`, the test LLM's) and the key are in the settings file
+  `qwen2.5:7b-instruct`, the test LLM's) and the key are in the settings file
   (`[language_model]`); the key is plain text there, as the Settings page says, never in the
   save; it is sent as `Authorization: Bearer <key>`, and the client follows no redirect, so
   the key goes only to that endpoint. Claude's own API needs an adapter of its own (later).

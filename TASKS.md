@@ -1114,6 +1114,32 @@ in Settings, not the default (the local test LLM stays the default).
   headers and body shape, both model lists); an optional real test only with an env var set. README: how to
   pick Claude, what it costs per line roughly, that the chat goes to Anthropic.
 
+## 94. Refine the villagers' prompts for the local model; the default test model
+
+- [x] Done
+
+The user's word of 2026-11-07: have a worker refine the queries for the local model, also try
+them on 3B; if 3B gives about the same quality, keep it as the default (they had agreed to
+make qwen2.5:7b-instruct the default otherwise).
+
+Done: `make llm-eval LLM_MODEL=<tag>` (tools/llm/dump_requests.gd has Godot write the requests
+of 13 fixed scenarios with NpcPrompt itself; tools/llm/eval_prompts.py sends each `LLM_RUNS`
+times and writes build/llm-eval/<model>.md with every reply and crude checks; `--compare`
+puts two models side by side). Baseline of the old words, 5 replies per scenario, replies
+without a failed check: 3B 52/65, 7B 55/65 (7 wrong language each). The new words
+(data/npc_talk.cfg only, no change of shape): the example exchange is told of a blacksmith
+who is not a villager, so the models stop copying Antje's answer and habits into other
+villagers' mouths; the system line asks to answer what was said, says an English line gets an
+English answer whatever the villager's home, to use the background only where it fits, to be
+puzzled by phones and cars, to answer rudeness sharply; a memory is one sentence of at most
+25 words in the first person. Result: 3B 57/65, 7B 60/65, wrong language 3 each, memories in
+the first person 5/5 for both. Tried and dropped: a second example in German, a longer
+language line, "never repeat their words". Decision: **7B is the default** (3B was faster,
+1.1 s against 2.2 s a reply, but drifts into nonsense and loses the thread more often; the 7B
+is Apache-2.0, the 3B has the Qwen Research License). Following the player's language is
+still only about 3 of 5 in German after English for both; naming the language to the model
+(the game detecting it) is an idea for later.
+
 ## Later (not part of the prototype)
 
 - **Graphics review: willows melt into the grass** (the user, 2026-11-06, with a screenshot;

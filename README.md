@@ -503,7 +503,7 @@ stored as you type or pick:
 |---|---|---|
 | Provider | OpenAI-compatible | OpenAI-compatible (the test LLM, Ollama, LM Studio, hosted APIs), Claude or Gemini. Each provider keeps its own endpoint, model and key: choosing Claude shows Claude's (starting with `https://api.anthropic.com/v1` and `claude-opus-5-5`), Gemini Gemini's, choosing back shows the test LLM's again, and a key is only ever sent to the provider it was typed for. |
 | Endpoint | `http://127.0.0.1:11434/v1` | The base address of the chat API; the game posts to `<endpoint>/chat/completions`. Empty it to turn the model off (villagers then always speak scripted lines). |
-| Model | `qwen2.5:3b-instruct` | The model name the endpoint should use: typed, or picked from the drop-down below it, which lists what `<endpoint>/models` answers (Claude's `/v1/models` with the key), asks again a moment after the endpoint or key is typed and by the Refresh button, and shows only the saved model with a note when the endpoint can't be asked. |
+| Model | `qwen2.5:7b-instruct` | The model name the endpoint should use: typed, or picked from the drop-down below it, which lists what `<endpoint>/models` answers (Claude's `/v1/models` with the key), asks again a moment after the endpoint or key is typed and by the Refresh button, and shows only the saved model with a note when the endpoint can't be asked. |
 | Lines a villager keeps | 24 | A number from 2 to 200, one for all providers: how many of the latest chat lines a villager keeps in the save and tells the model. Older lines are summed up in a memory; lowering it sums up the lines it drops, once the menu is closed. Every kept line is sent with each question, so higher values make the answers slower (and cost more with a hosted model). |
 | Key | empty | Only for endpoints that need one: sent as the header `Authorization: Bearer <key>`, and never sent along a redirect. |
 | Max tokens per answer | empty | The most tokens a villager's line or memory may take, a number from 1 to 32000. Empty is the game's own: 60 for a line and 40 for a memory, 1000 with Claude. A model that thinks first counts its thinking too, so give one such as Gemini's Flash a few hundred or more. |
@@ -570,21 +570,23 @@ what you say goes to Google, and on the free tier Google may use it to improve i
 check a key: `curl -s https://generativelanguage.googleapis.com/v1beta/openai/models -H
 "Authorization: Bearer <key>"`.
 
-**The test LLM.** `make llm-up` runs Ollama with Qwen2.5 3B Instruct (1.9 GB, Qwen Research
-License: for testing only) in a podman or docker container on `http://127.0.0.1:11434/v1`,
+**The test LLM.** `make llm-up` runs Ollama with Qwen2.5 7B Instruct (4.7 GB, Apache-2.0) in a podman or docker container on `http://127.0.0.1:11434/v1`,
 the default endpoint, so villagers talk as soon as it is up; `make llm-check` asks it one
 question and `make llm-down` stops it. The container image (5.5 GB) and the model live in
 the container tool's storage and the volume `sandbox-game-llm-models`; `make llm-down PURGE=1`
 deletes the model. Details in [tools/README.md](tools/README.md). A reply takes a second or
-two on the GPU, about five seconds on the CPU; one that takes longer than 30 seconds, or
+two on the GPU, a few seconds on the CPU; one that takes longer than 30 seconds, or
 fails, becomes a scripted line. To try another model, run
-`make llm-pull LLM_MODEL=qwen2.5:7b-instruct` and set it as the model in Settings;
-[tools/README.md](tools/README.md) lists some that fit.
+`make llm-pull LLM_MODEL=qwen2.5:3b-instruct` (twice as fast, but its lines are less
+sensible) and set it as the model in Settings; [tools/README.md](tools/README.md) lists some
+that fit, and says how `make llm-eval` compares models on the villagers' prompts.
 
 What the model is told for each reply (the words are in [data/npc_talk.cfg](data/npc_talk.cfg),
 shaped like a prompt that worked well with the test model): a system line (1750 on the North
-Frisian coast, one or two sentences of small talk, never break character), one example
-exchange, the lines of your chat with them that they keep (24 by default; the older ones are in
+Frisian coast, one or two sentences of small talk that answer what you said, in your language,
+never break character, puzzled by what did not exist then), one example exchange (of a
+blacksmith who is not one of the villagers, so that the model does not copy a villager's words
+into the others' mouths), the lines of your chat with them that they keep (24 by default; the older ones are in
 their memories), and then who the villager is (name, trade,
 age, their look in words, personality, background, habits, and what they remember of earlier
 talks), the moment (the date as the clock shows it and how far into the season, the time and
@@ -592,7 +594,8 @@ part of the day by the sun, the weather as it is: rain, snow, fog or the sky, th
 frost, the wind and where it blows from; and the house or fire they stand by), that you are a
 newcomer whose name they don't know, what you said, and that they answer in the language you
 just spoke in (switch language mid-chat and they follow). Only the reply and the memory lines
-are kept; nothing else in the game changes by what the model says.
+are kept (a memory is one sentence the villager writes in the first person); nothing else in
+the game changes by what the model says.
 
 To screenshot a talk, start the test LLM (`make llm-up`; screenshots read
 `build/settings.cfg`, where the default endpoint applies) and run
