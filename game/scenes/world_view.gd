@@ -80,8 +80,10 @@ var world: World
 var entities := Node2D.new()
 ## True once every chunk around the focus is loaded.
 var is_settled := false
-## Where the player stands, in world pixels (set by the game scene every frame).
+## Where the player stands, in world pixels, and how big they are (see Occlusion; both set by the
+## game scene every frame).
 var player_feet := Vector2.ZERO
+var player_size := Occlusion.PLAYER_SIZE
 ## The game scene gives it the wind and the rain every frame.
 var ambient_motion := AmbientMotion.new()
 ## The flowers and pebbles on the ground and the hints of clay spots; the wildlife asks it where
@@ -710,7 +712,7 @@ func _remove_light(world_pos: Vector2i) -> void:
 func _update_see_through(delta: float) -> void:
 	for sprite in _object_sprites.values():
 		sprite.is_occluding = false
-	for object in Occlusion.occluding_objects(player_feet, world):
+	for object in Occlusion.occluding_objects(player_feet, world, player_size):
 		if not _object_sprites.has(object.pos):
 			_swap_cell_for_sprite(object)
 		_object_sprites[object.pos].is_occluding = true
@@ -721,7 +723,9 @@ func _update_see_through(delta: float) -> void:
 			_drop_object_sprite(pos)
 			_set_object_cell(world.object_at(pos))
 	_buildings.update_see_through(
-		delta, player_feet, Occlusion.occluding_buildings(player_feet, world.buildings())
+		delta,
+		player_feet,
+		Occlusion.occluding_buildings(player_feet, world.buildings(), player_size)
 	)
 
 

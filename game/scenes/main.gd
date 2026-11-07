@@ -160,7 +160,7 @@ func _make_views() -> void:
 	# Among the objects, so the player walks behind tree canopies.
 	_view.entities.add_child(_player_view)
 	_view.entities.add_child(_object_cover)
-	_player_view.add_child(_tiredness_view)
+	_player_view.figure.add_child(_tiredness_view)
 	_view.add_child(_use_highlight)
 	add_child(_harvest_hud)
 	add_child(_coordinates_hud)
@@ -383,6 +383,7 @@ func _process(delta: float) -> void:
 		if not _is_any_screen_open():
 			direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 		_player_view.walk_speed = _state.walk_speed_factor()
+		_player_view.is_trotting = _state.is_trotting()
 		_state.walk(direction, delta, _player_view.walk_speed)
 		if _state.player.horse != null and direction != Vector2.ZERO and _state.is_door_ahead():
 			_harvest_hud.show_note(GET_OFF_FIRST)
@@ -396,6 +397,9 @@ func _process(delta: float) -> void:
 		_state.livestock.update(delta, _state.world, _state.player.position, _state.clock)
 		_state.npcs.update(delta, _state.world, _state.player.position, _state.clock)
 		_view.player_feet = _player_view.position
+		_view.player_size = (
+			Occlusion.RIDER_SIZE if _state.player.horse != null else Occlusion.PLAYER_SIZE
+		)
 		_view.set_focus(_state.player.tile())
 	_debug.update(delta)
 
@@ -687,6 +691,8 @@ func _apply_game_options() -> void:
 		_state.player.equipment.equip(Equipment.slot_of(_options.wear), _options.wear)
 	if _options.hold != &"":
 		_hold(_options.hold)
+	if _options.riding != &"":
+		_ride(_options.riding)
 	if _options.weather != &"":
 		_force_weather(_options.weather)
 	if _options.snow >= 0.0:
@@ -704,6 +710,17 @@ func _hold(item: StringName) -> void:
 		if inventory.item_in(slot) == item:
 			inventory.select(slot)
 			return
+
+
+## Debug (`--riding`): puts a saddled horse of a look under the player and gets on it.
+func _ride(look: StringName) -> void:
+	if not _state.livestock.rules.looks(LivestockRules.HORSE).has(look):
+		push_error("--riding expects a look of the horse, got '%s'" % look)
+		return
+	var horse := FarmAnimal.new(LivestockRules.HORSE, look, _state.player.position)
+	horse.is_saddled = true
+	_state.livestock.add(horse)
+	_state.mount(horse)
 
 
 ## The saved game, or a new one if there is no save or `--new-game` is given. The first

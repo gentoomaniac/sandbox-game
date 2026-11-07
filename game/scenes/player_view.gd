@@ -14,9 +14,17 @@ extends Node2D
 ## to the knees, tips over and lies asleep with rising "z"s, until `stand_up`. A player in a bed
 ## (PlayerState `bed_lying_in`) lies there in the same asleep frame, laid with its head to the
 ## head end of the bed.
+##
+## On horseback (PlayerState `horse`) the layers show their riding sheets on the ridden horse's
+## sheets (see tools/art/livestock.py): the horse behind the rider, and what of it is in front of
+## them (its head, coming towards the viewer). The horse stands, walks or trots, and the rider sits
+## in its saddle and rises with the trot.
 
 ## A foot came down: time for a footstep sound.
 signal stepped
+
+## The sheets the layers show: standing and walking, passing out, or on horseback.
+enum Pose { STANDING, COLLAPSE, RIDING }
 
 ## Frames per facing in every layer sheet: idle, walk 1 to 4.
 const FRAMES_PER_FACING := 5
@@ -57,10 +65,35 @@ const LYING_Z_INDEX := 1
 const COVER_Z_INDEX := 2
 ## Where the "z"s start over a figure lying head to the right, in art pixels from the feet.
 const SLEEP_ZS_POSITION := Vector2(10, -16)
+## The ridden horse's sheets, behind the rider ("") and in front of them ("_over"), in the rows of
+## FACING_ROWS: standing, four frames of the walk and four of the trot.
+const RIDDEN_HORSE_PATH := "res://assets/wildlife/horse_%s_ridden%s.png"
+const RIDE_COLUMNS := 9
+const RIDE_IDLE_COLUMN := 0
+const RIDE_WALK_COLUMNS := [1, 2, 3, 4]
+const RIDE_TROT_COLUMNS := [5, 6, 7, 8]
+## Frames of the walk per second; `walk_speed` makes the trot's faster.
+const RIDE_FRAMES_PER_SECOND := 6.0
+## Pixels the horse is off the ground in each column: the moments of the trot when no hoof is down.
+## The rider rises with it.
+const RIDE_LIFTS := [0, 0, 0, 0, 0, 0, 1, 0, 1]
+## Where the rider's feet (the bottom centre of a riding frame) are on a horse facing right, in art
+## pixels from the horse's feet: in its saddle. Facing left it is mirrored, facing up or down it is
+## in the middle. The pony is lower.
+const SEAT := Vector2(-3, -11)
+const PONY_SEAT := Vector2(-2, -2)
+## Half the width of the ridden horse's contact shadow seen from the front or from behind (from the
+## side it is that of FarmAnimalView).
+const RIDDEN_SHADOW_HALF_WIDTH := 6
 
 ## How fast the player walks (see GameState `walk_speed_factor`); the walk animation, and so the
 ## steps, keep that pace.
 var walk_speed := 1.0
+## The horse the player rides trots (see GameState `is_trotting`).
+var is_trotting := false
+## The figure: the layers' sprites and what goes with them (the "z"s; Main adds the signs of
+## tiredness). On horseback it sits in the saddle.
+var figure := Node2D.new()
 
 var _player: PlayerState
 var _last_column := IDLE_COLUMN
@@ -71,6 +104,10 @@ var _frozen_column := -1
 ## Seconds since `collapse`, or -1 while the player is on their feet.
 var _collapse_time := -1.0
 var _sleep_zs := SleepZs.new()
+var _horse_behind := Sprite2D.new()
+var _horse_in_front := Sprite2D.new()
+## The horse whose sheets the horse sprites show, to load them only when it changes.
+var _shown_horse: FarmAnimal
 ## The sheets the sprites show now, bottom first. The sprites are rebuilt when they change.
 var _shown_sheets: Array[String] = []
 var _sprites: Array[Sprite2D] = []
@@ -88,6 +125,14 @@ static func frame_index(facing: Vector2i, column: int) -> int:
 	return FACING_ROWS[facing] * FRAMES_PER_FACING + column
 
 
+## The column of the ridden horse's sheets: standing, else a step of the walk or the trot.
+static func ride_column(is_moving: bool, is_trotting_now: bool, walk_time: float) -> int:
+	if not is_moving:
+		return RIDE_IDLE_COLUMN
+	var columns := RIDE_TROT_COLUMNS if is_trotting_now else RIDE_WALK_COLUMNS
+	return columns[int(walk_time * RIDE_FRAMES_PER_SECOND) % columns.size()]
+
+
 ## The frame of the collapse sheets `time` seconds after the collapse began.
 static func collapse_frame(time: float) -> int:
 	var frame := 0
@@ -98,7 +143,15 @@ static func collapse_frame(time: float) -> int:
 
 
 func _init() -> void:
-	add_child(_sleep_zs)
+	for sprite in [_horse_behind, _horse_in_front]:
+		sprite.offset = Vector2(0, -WildlifeSprites.HORSE["size"].y / 2.0)
+		sprite.hframes = RIDE_COLUMNS
+		sprite.vframes = FACING_ROWS.size()
+		sprite.hide()
+	add_child(_horse_behind)
+	add_child(figure)
+	add_child(_horse_in_front)
+	figure.add_child(_sleep_zs)
 
 
 func show_player(player: PlayerState, options := StartupOptions.new()) -> void:
@@ -134,19 +187,25 @@ func _process(delta: float) -> void:
 	var moved := _player.position - _last_position
 	_last_position = _player.position
 	position = (_player.position * TerrainTileset.TILE_SIZE).round()
-	# Lying in a bed wins over the collapse; both skip the walking frames below.
+	if moved != Vector2.ZERO:
+		_walk_time += delta * walk_speed
+	else:
+		_walk_time = 0.0
+	_show_horse(_player.horse)
+	figure.position = Vector2.ZERO
+	# Lying in a bed wins over riding (one who passes out with no room to get off stays in the
+	# saddle), and riding over the collapse; all skip the walking frames below.
 	var bed := _player.bed_lying_in
 	z_index = LYING_Z_INDEX if bed != null else 0
 	if bed != null:
 		_show_lying_in_bed(bed)
 		return
+	if _player.horse != null:
+		_show_riding(moved != Vector2.ZERO)
+		return
 	if _collapse_time >= 0.0:
 		_show_collapse(delta)
 		return
-	if moved != Vector2.ZERO:
-		_walk_time += delta * walk_speed
-	else:
-		_walk_time = 0.0
 	var column := frame_column(moved != Vector2.ZERO, _walk_time)
 	if _frozen_column >= 0:
 		column = _frozen_column
@@ -154,15 +213,64 @@ func _process(delta: float) -> void:
 		stepped.emit()
 	_last_column = column
 	_show_held_item()
-	_show_layers(_player.appearance.layers_for(_player.facing), false)
+	_show_layers(_player.appearance.layers_for(_player.facing), Pose.STANDING)
 	for sprite in _sprites:
 		sprite.frame = frame_index(_player.facing, column)
+
+
+## The ridden horse's contact shadow, under the horse and the rider.
+func _draw() -> void:
+	if _player == null or _player.horse == null:
+		return
+	var half_width: int = (
+		FarmAnimalView.SHADOW_HALF_WIDTHS[LivestockRules.HORSE]
+		if _player.facing.x != 0
+		else RIDDEN_SHADOW_HALF_WIDTH
+	)
+	for row in 3:
+		var half := half_width - (1 if row != 1 else 0)
+		draw_rect(Rect2(-half, row - 1, half * 2, 1), Animal.SHADOW_COLOR)
+
+
+## Shows the horse the player rides, if any, in the horse sprites, and its shadow (drawn again
+## while riding, and once more when the horse is left, to take it away).
+func _show_horse(horse: FarmAnimal) -> void:
+	_horse_behind.visible = horse != null
+	_horse_in_front.visible = horse != null
+	if horse != null or _shown_horse != null:
+		queue_redraw()
+	if horse == _shown_horse:
+		return
+	_shown_horse = horse
+	if horse == null:
+		return
+	_horse_behind.texture = load(RIDDEN_HORSE_PATH % [horse.look, ""])
+	_horse_in_front.texture = load(RIDDEN_HORSE_PATH % [horse.look, "_over"])
+	for sprite in [_horse_behind, _horse_in_front]:
+		sprite.self_modulate = horse.tint
+
+
+## The rider on the horse: its frame of standing, walking or trotting, and the figure in the
+## saddle, rising with the trot. The hands hold the reins: no held item shows.
+func _show_riding(is_moving: bool) -> void:
+	var column := ride_column(is_moving, is_trotting, _walk_time)
+	if _frozen_column >= 0:
+		column = _frozen_column
+	var row: int = FACING_ROWS[_player.facing]
+	for sprite in [_horse_behind, _horse_in_front]:
+		sprite.frame = row * RIDE_COLUMNS + column
+	_show_layers(_layers_without_held_item(), Pose.RIDING)
+	for sprite in _sprites:
+		sprite.frame = row
+	var seat := PONY_SEAT if _player.horse.look == &"pony" else SEAT
+	seat.x *= _player.facing.x
+	figure.position = seat - Vector2(0, RIDE_LIFTS[column])
 
 
 func _show_collapse(delta: float) -> void:
 	_collapse_time += delta
 	var frame := collapse_frame(_collapse_time)
-	_show_layers(_layers_without_held_item(), true)
+	_show_layers(_layers_without_held_item(), Pose.COLLAPSE)
 	var is_facing_left := _player.facing == Vector2i.LEFT
 	for sprite in _sprites:
 		_lay(sprite, frame, is_facing_left, 0.0, Vector2.ZERO)
@@ -171,14 +279,14 @@ func _show_collapse(delta: float) -> void:
 
 
 func _show_lying_in_bed(bed: WorldObject) -> void:
-	_show_layers(_layers_without_held_item(), true)
+	_show_layers(_layers_without_held_item(), Pose.COLLAPSE)
 	var pose: Dictionary = LYING_POSES[bed.type_data()["bed"]]
 	for sprite in _sprites:
 		_lay(sprite, ASLEEP_FRAME, pose["is_flipped"], pose["rotation"], pose["shift"])
 	_sleep_zs.is_sleeping = false
 
 
-## The player's layers for the collapse sheets: the hand lets go of what it held.
+## The player's layers for the collapse and the riding sheets: the hand lets go of what it held.
 func _layers_without_held_item() -> Array[Dictionary]:
 	var layers: Array[Dictionary] = []
 	for layer in _player.appearance.layers_for(Vector2i.RIGHT):
@@ -210,27 +318,39 @@ func _wear_hair(hair: int) -> void:
 	_player.appearance.wear(Appearance.HAIR, str(hair))
 
 
-## Shows the layers' sheets, or their collapse sheets.
-func _show_layers(layers: Array[Dictionary], is_collapse: bool) -> void:
+## Shows the layers' sheets of a pose: standing, passing out or riding.
+func _show_layers(layers: Array[Dictionary], pose: Pose) -> void:
 	var sheets: Array[String] = []
 	for layer in layers:
-		sheets.append(
-			Appearance.collapse_sheet_path(layer) if is_collapse else Appearance.sheet_path(layer)
-		)
+		match pose:
+			Pose.STANDING:
+				sheets.append(Appearance.sheet_path(layer))
+			Pose.COLLAPSE:
+				sheets.append(Appearance.collapse_sheet_path(layer))
+			Pose.RIDING:
+				sheets.append(Appearance.riding_sheet_path(layer))
 	if sheets == _shown_sheets:
 		return
 	_shown_sheets = sheets
 	for sprite in _sprites:
 		sprite.queue_free()
 	_sprites.clear()
+	# The "z"s and the signs of tiredness stay in front of the figure.
+	var in_front := figure.get_children().filter(
+		func(child: Node) -> bool: return not child.is_queued_for_deletion()
+	)
 	for sheet in sheets:
 		var sprite := Sprite2D.new()
 		sprite.texture = load(sheet)
-		sprite.hframes = COLLAPSE_FRAME_STARTS.size() if is_collapse else FRAMES_PER_FACING
-		sprite.vframes = 1 if is_collapse else FACING_ROWS.size()
+		sprite.hframes = {
+			Pose.STANDING: FRAMES_PER_FACING,
+			Pose.COLLAPSE: COLLAPSE_FRAME_STARTS.size(),
+			Pose.RIDING: 1,
+		}[pose]
+		sprite.vframes = 1 if pose == Pose.COLLAPSE else FACING_ROWS.size()
 		# The frame's bottom centre is at the feet.
 		sprite.offset = Vector2(0, -FRAME_HEIGHT / 2.0)
-		add_child(sprite)
+		figure.add_child(sprite)
 		_sprites.append(sprite)
-	# The "z"s rise in front of the figure.
-	move_child(_sleep_zs, -1)
+	for child: Node in in_front:
+		figure.move_child(child, -1)

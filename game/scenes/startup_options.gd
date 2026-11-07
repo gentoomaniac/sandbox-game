@@ -51,7 +51,10 @@ extends RefCounted
 ##   --hold=<item>            put 5 of an item in the inventory and hold it
 ##   --wear=<item>            put a wearable item on (straw_hat, shirt, ...)
 ##   --hair=<n>               the hair style (F6 cycles it)
-##   --pose=<direction>[,<column>]  face that way, optionally frozen on that walking frame
+##   --pose=<direction>[,<column>]  face that way, optionally frozen on that walking frame (on
+##                            horseback a column of the ridden horse: 0 standing, 1 to 4
+##                            walking, 5 to 8 trotting)
+##   --riding=<look>          sit on a saddled horse of that look (bay, black, grey, pony)
 ##   --inside                 walk into the first house as soon as one exists (see --house)
 ##   --sleep                  go to bed as soon as the world is drawn (a new game starts beside
 ##                            the sleeping bag). With --time=00:59 and a --screenshot-delay of
@@ -150,6 +153,7 @@ var hair := -1
 var pose := ""
 ## -1 for a walking player.
 var pose_column := -1
+var riding := &""
 var inside := false
 var sleep := false
 
@@ -253,6 +257,8 @@ func _init(args := PackedStringArray()) -> void:
 				pose = parts[0]
 				if parts.size() > 1:
 					pose_column = int(parts[1])
+			"--riding":
+				riding = StringName(_value(arg))
 			"--inside":
 				inside = true
 			"--sleep":

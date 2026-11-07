@@ -38,6 +38,9 @@ const PORTRAIT_SLOTS := [BODY, CLOTHES, COAT, HAIR, HEAD]
 ## The same layer passing out: kneeling, tipping over, lying and asleep (see PlayerView). The
 ## held layer has none: the hand lets go.
 const COLLAPSE_SHEET_PATH := "res://assets/character/collapse/%s_%s.png"
+## The same layer sitting on a horse, one frame per facing (see PlayerView). Only the player's
+## layers have one, and not the held layer: the hands hold the reins.
+const RIDING_SHEET_PATH := "res://assets/character/riding/%s_%s.png"
 
 ## What a new character looks like by themselves, bottom layer first.
 const DEFAULT_LOOK := [[BODY, "0"], [HAIR, "0"]]
@@ -117,6 +120,11 @@ static func portrait_path(layer: Dictionary) -> String:
 ## The sheet that holds a layer's passing-out frames.
 static func collapse_sheet_path(layer: Dictionary) -> String:
 	return COLLAPSE_SHEET_PATH % [layer.slot, layer.variant]
+
+
+## The sheet that holds a layer's riding frames.
+static func riding_sheet_path(layer: Dictionary) -> String:
+	return RIDING_SHEET_PATH % [layer.slot, layer.variant]
 
 
 func to_dict() -> Dictionary:
