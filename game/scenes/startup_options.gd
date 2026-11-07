@@ -105,6 +105,9 @@ extends RefCounted
 ##   --wildlife-calm          the animals take no notice of the player
 ##   --livestock=<species>[,<species>]  put a few farm animals of those species near the player
 ##                            (cow, sheep, chicken, rabbit, dog, cat, horse)
+##   --hunt                   put a cat of each look a little right of the player, each with a
+##                            mouse further right that it hunts at once: it crouches for 1.5 s,
+##                            creeps up for a few seconds and pounces (use --screenshot-delay)
 ##   --npcs=<count>           put that many villagers near the player, the same ones every time
 ##   --villager=<id>          put the villager of data/villagers.cfg with that id near the player
 
@@ -189,6 +192,7 @@ var hit := NO_TILE
 var wildlife := PackedStringArray()
 var wildlife_calm := false
 var livestock := PackedStringArray()
+var hunt := false
 var npcs := 0
 var villager := ""
 
@@ -315,6 +319,8 @@ func _init(args := PackedStringArray()) -> void:
 				wildlife_calm = true
 			"--livestock":
 				livestock = _value(arg).split(",")
+			"--hunt":
+				hunt = true
 			"--npcs":
 				npcs = _value(arg).to_int()
 			"--villager":

@@ -16,6 +16,11 @@ const WILDLIFE_GROUPS: Array[StringName] = [
 ]
 ## Farm animals of each species that `--livestock` puts near the player.
 const LIVESTOCK_COUNT := 4
+## The cats of `--hunt` stand this many tiles right of the player, one below the other, and their
+## mice further right: out of the player's way, so that they take no notice of them.
+const HUNTING_CATS_AT := Vector2(1.0, -1.5)
+const HUNTING_CATS_APART := 1.5
+const HUNTED_MOUSE_AHEAD := 2.5
 ## The villagers of `--npcs` are drawn from this seed, so a screenshot shows the same ones.
 const NPCS_SEED := 84
 
@@ -44,6 +49,7 @@ var _is_storage_to_open: bool
 var _is_station_to_open: bool
 var _are_animals_to_spawn: bool
 var _is_livestock_to_spawn: bool
+var _is_hunt_to_stage: bool
 var _npcs_to_spawn: int
 var _villager_to_spawn: String
 var _chat_lines: PackedStringArray
@@ -65,6 +71,7 @@ func _init(options: StartupOptions) -> void:
 	_is_station_to_open = options.station
 	_are_animals_to_spawn = not options.wildlife.is_empty()
 	_is_livestock_to_spawn = not options.livestock.is_empty()
+	_is_hunt_to_stage = options.hunt
 	_npcs_to_spawn = options.npcs
 	_villager_to_spawn = options.villager
 	_chat_lines = options.chat
@@ -103,6 +110,9 @@ func update(delta: float) -> void:
 	if _is_livestock_to_spawn and _is_outside_and_drawn():
 		_spawn_livestock()
 		_is_livestock_to_spawn = false
+	if _is_hunt_to_stage and _is_outside_and_drawn():
+		_stage_hunt()
+		_is_hunt_to_stage = false
 	if _npcs_to_spawn > 0 and _is_outside_and_drawn():
 		state.npcs.rng.seed = NPCS_SEED
 		state.npcs.spawn(_npcs_to_spawn, state.player.position, state.world)
@@ -172,6 +182,18 @@ func _spawn_livestock() -> void:
 		state.livestock.spawn(
 			StringName(species), LIVESTOCK_COUNT, state.player.position, state.world
 		)
+
+
+## A cat of each look and a mouse ahead of each (see `--hunt`). A new cat picks what to do next at
+## once, and then it sees its mouse.
+func _stage_hunt() -> void:
+	var rules := state.livestock.rules
+	var looks := rules.looks(LivestockRules.CAT)
+	for index in looks.size():
+		var feet := state.player.position + HUNTING_CATS_AT + Vector2(0, index * HUNTING_CATS_APART)
+		var mouse := feet + Vector2(HUNTED_MOUSE_AHEAD, 0)
+		wildlife.place(WildlifeRules.MOUSE, mouse * WildlifeRules.TILE_SIZE)
+		state.livestock.add(FarmAnimal.new(LivestockRules.CAT, StringName(looks[index]), feet))
 
 
 ## The map the player is on is drawn: the world is streamed, or they are inside (where it is not).

@@ -103,6 +103,11 @@ func spawn_in_view(kind: StringName, count: int) -> int:
 	return spawned
 
 
+## Puts an animal of a kind at a point, to stay until it is far away (the `--hunt` flag).
+func place(kind: StringName, point: Vector2) -> void:
+	_spawn(kind, point, true)
+
+
 ## The nearest animal of a kind that is still about within `reach` pixels of a point, or null:
 ## how a hunter finds its prey (a stork its frogs, a cat its mice). It looks only at the few wild
 ## animals.
