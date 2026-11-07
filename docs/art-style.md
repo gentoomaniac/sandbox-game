@@ -453,7 +453,13 @@ copper watering can. Kept here as the record of why.
    ginger) and horses: a heavy marsh horse about 32 px long in bay (black mane, tail and lower
    legs), black and dapple grey, and a dun pony; all of them gallop. The horse's neck and head
    rise ahead of its back, which stays free for a saddle and a rider. A bone item. No new
-   colours.
+   colours. Task 81 added the saddle (leather in `rust`, `rust_dark` and `russet_deep`, a
+   `stone_light` stirrup) as an item and on the horse, the player's layers sitting astride
+   (from the side the near leg down the flank and the foot in the stirrup; from the front and
+   behind both legs outside the horse) and the ridden horse seen from the side, the front (its
+   head in front of the rider) and behind, standing, walking and trotting on diagonal pairs.
+   From the front and behind the horse is 14 px wide (the pony 12), broad enough under the
+   rider's legs not to read as a pole. No new colours.
 9. ~~**Coast and flats**~~ done (task 61). The world had no sea. Now the Wadden coast lies
    in the west: a sea dyke, then the salt marsh (grey-green turf with silvery sea purslane and
    glasswort, drawn in logical colours that each look maps: red-purple in autumn, with thrift

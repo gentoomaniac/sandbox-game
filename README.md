@@ -150,10 +150,19 @@ dun pony. Dogs and cats sniff about, horses graze, and all of them dash off at a
 then; cats roam furthest. A dog barks now and then, a cat rarely meows, a horse whinnies or
 snorts. Hold a **bone** (`give bone`) and press the use key at a dog in front of you: it takes
 the bone and follows you for three game hours, day and night, keeping a tile or two from you
-and running to catch up (left far behind or stuck, it turns up at your side). Horses can't be
-ridden yet.
+and running to catch up (left far behind or stuck, it turns up at your side).
 
 ![Horses, dogs and cats about the camp](docs/screenshots/dogs-cats-horses.png)
+
+Horses can be ridden. Hold a **saddle** (`give saddle`) and press the use key at a horse in front
+of you to saddle it; the use key with an empty hand takes the saddle off again. Press **E** at a
+saddled horse to get on, and E again to get off: you land on free ground beside it, and the
+horse stays there. A horse sets off at a walk and trots at twice your walking speed once you
+keep riding; it costs no energy and tiredness doesn't slow it. On horseback you can eat, pick
+things up and use the hotbar, but no tools, no building and no doors: get off first. A game
+saved on horseback loads with you standing beside the horse.
+
+![Trotting on a bay horse past the pollard willows, and walking a grey towards the viewer](docs/screenshots/riding.png)
 
 ### Villagers
 
@@ -406,7 +415,7 @@ arguments.
 | `help`, `help <command>` | List the commands, or show what one takes (the names it accepts too). |
 | `tp <x> <y>` | Teleport to a world tile; from inside a house you step out there (F3 shows your coordinates). |
 | `reset` | Put yourself in your bed, the one you wake in, inside or out. |
-| `give <item> [count]` | Put items in the inventory (e.g. `give bone` for a dog). |
+| `give <item> [count]` | Put items in the inventory (e.g. `give bone` for a dog, `give saddle` for a horse). |
 | `god`, `nodrain`, `noweight`, `nocost` | Toggle invincibility, free actions, weight costing nothing, and buildings and crafting needing no materials. |
 | `noclip` | Toggle walking through anything: water, trees, rocks, buildings, furniture (indoors within the room, outdoors on loaded ground). Turned off where you don't fit, it puts you on the nearest free ground. |
 | `weather`, `weather <condition>`, `weather auto` | Show the weather, force a condition, or go back to the simulation. |
@@ -433,7 +442,7 @@ These are the default keys; all of them can be changed under Settings → Contro
 | Tab | Character screen and inventory |
 | K | Skills tab of the character screen |
 | C | Crafting menu (by hand) |
-| E | Talk to the villager in front of you; else open the chest or the station (its crafting menu) in front of you, else sleep until morning (next to a bed); with the hammer in hand it picks the next building |
+| E | Get off the horse you ride; else talk to the villager in front of you, else get on the saddled horse in front of you, else open the chest or the station (its crafting menu) in front of you, else sleep until morning (next to a bed); with the hammer in hand it picks the next building |
 | Enter, Escape | In a chat: send the line, leave the chat (Page Up and Down scroll back); `/clear` makes the villager forget the chat |
 | B | Take the hammer: build mode |
 | X | Switch the hammer between building and taking down (hold Space or click to take down) |

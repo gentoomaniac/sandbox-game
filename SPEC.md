@@ -856,8 +856,29 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   in `data/livestock.cfg`.
 - **Size:** a cow about 22 px long and 15 px to its back, a sheep about 14 px long, a hen
   about 9x10 px, a rabbit as the wild one, a dog about 17 px long, a cat about 12 px, a horse
-  about 32 px (two tiles) long, its back free of the neck and head for a saddle and a rider
-  later (task 81).
+  about 32 px (two tiles) long, its back free of the neck and head for a saddle and a rider.
+- **Riding** (decided 2026-11-06, task 81): the saddle is an item (from the console for now).
+  The use key with the saddle at a horse in front of the player puts it on the horse, where it
+  stays; the use key with an empty hand takes it off again into the inventory (the empty
+  hand's slot always has room). E at a saddled horse in front gets on it (after a villager to
+  talk to, before chests, stations and beds), E again gets off. The horse walks at the
+  player's walking speed and, once they have ridden on for 0.6 s, trots at twice it; riding
+  costs no energy, and tiredness doesn't slow the horse (`data/livestock.cfg`). What collides
+  is the rider's body, as on foot, and it also keeps off the tiles of buildings, so a horse is
+  never ridden through a door (one that stood in a doorway is ridden out of it). On horseback
+  the use key does nothing but say "Get off the horse first.", the hammer builds nothing, a
+  door ahead says the same, and E only gets off; eating, picking up, dropping and the hotbar
+  work as on foot. A ridden horse does nothing of its own. Getting off puts the player on free
+  ground within two tiles of the horse, its side first (above or below it, not at its head or
+  tail), never in water, a wall or a building; with no room they stay on. Passing out (after
+  sliding off if there is room), a teleport or waking in the home bed leave the horse where it
+  is. Saved: the saddle on the horse (save version 22); riding is not saved, a game saved on
+  horseback loads with the player standing beside the horse.
+- **Riding, drawn:** the rider sits on the horse in all four directions, the horse standing,
+  walking or trotting under them (seen from the side, from the front with its head in front
+  of the rider, and from behind), the rider rising with the trot; the hands hold the reins, so
+  no held item shows. A saddled horse shows its saddle. The camera follows the rider as the
+  player, and what hides the player hides the rider and the horse too.
 - **Behaviour:** an awake animal stands idle (and now and then turns round), walks or grazes;
   chickens peck for seeds and worms. Grazing doesn't change the grass. It walks only onto
   walkable ground under its feet and its nose, so it keeps out of water and away from
@@ -867,9 +888,10 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   species. They stand still while the player is in a house, like the rest of the world.
 - **Sound:** now and then a moo, a baa, a cluck, a bark, a whinny or a snort, quiet and rare
   (a cat's meow rarer still); none while asleep.
-- **Saved:** species, look, tint and position (save version 13), and until when a dog follows
-  the player (save version 16); what an animal is doing is not.
-- Animals don't avoid each other or the player yet.
+- **Saved:** species, look, tint and position (save version 13), until when a dog follows the
+  player (save version 16) and whether a horse wears a saddle (save version 22); what an animal
+  is doing is not.
+- Animals don't avoid each other or the player yet. No hoofbeats are heard while riding yet.
 - **Later:** milk, wool and eggs, pens, feeding, owning and breeding.
 
 ### NPCs (villagers)

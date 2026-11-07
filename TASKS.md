@@ -692,7 +692,7 @@ docs/screenshots/mice-and-frogs.png.
 
 ## 81. Riding a horse with a saddle
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-06: horses can be ridden once you have a saddle, which for now is
 spawned with the console. Needs task 79.
@@ -703,6 +703,30 @@ beside it. Riding is about twice walking speed and costs no energy; no tools, no
 no doors while mounted (get off first). The player is drawn sitting on the horse in all four
 directions, walking and trotting. Saved: the saddle on the horse; a save made while riding
 loads with the player beside the horse.
+
+Done: the `saddle` item (`give saddle`, one to a slot). The use key with it puts it on the horse
+in front (`ToolUse.Use.SADDLE`, `FarmAnimal.is_saddled`, saved, save version 22), with an empty
+hand takes it off (`UNSADDLE`; the empty hand's slot always has room, so nothing is refused). A
+saddled horse has sheets of its own, `horse_<look>_saddled`. E on a saddled horse in front
+(`Interaction.horse_to_mount`, after a villager, before chests and beds) gets on it
+(`GameState.mount`, `PlayerState.horse`, `FarmAnimal.is_ridden`), E again gets off
+(`dismount`): on free ground within 2 tiles, its side first, never water, a wall or a building;
+with no room the player stays on ("No room to get off here."). A ridden horse does nothing of
+its own and goes where the player rides; it walks at walking speed and trots at twice it after
+0.6 s of riding on (`ride_walk_factor`, `ride_trot_factor`, `trot_after_seconds` in
+data/livestock.cfg), for no energy and unslowed by tiredness. The rider's body collides as on
+foot and keeps off buildings' tiles, so no door is passed (a horse in a doorway is ridden out);
+the use key (`Use.RIDING`), the hammer and a door ahead say "Get off the horse first."; eating,
+picking up, dropping and the hotbar work. Passing out slides the player off first if there is
+room; a teleport and waking in the home bed leave the horse. A save on horseback writes the
+player beside the horse (nothing about riding is saved). Art: the player's layers astride
+(assets/character/riding/, tools/art/character.py `riding_sheet`) and the ridden horse
+behind and in front of the rider in four directions, standing, walking and trotting
+(`horse_<look>_ridden[_over]`, tools/art/livestock.py `ridden_sheets`; the pony has its own
+views); no new colours. `PlayerView` draws them with the horse's tint and shadow, the rider
+rising with the trot; occlusion counts the rider and horse (`Occlusion.RIDER_SIZE`). Debug flag
+`--riding=<look>`. Not done: no hoofbeats (no sound for them yet), no saddle recipe, the pony
+carries an adult whose feet nearly touch the ground. Screenshot in docs/screenshots/riding.png.
 
 ## 82. Cats hunt mice
 

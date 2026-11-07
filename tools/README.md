@@ -31,7 +31,7 @@ by topic. Where is a thing drawn?
 | `beech.py`, `birch.py`, `alder.py` | The beech, the birch and the alder, in leaf and bare. |
 | `willow.py` | The pollard willow, in leaf and bare. |
 | `camp.py` | The fireplace and the bedroll. |
-| `character.py` | The player's layers (body, breeches and stockings, clogs, shirt and waistcoat, jacket, hair, hats, hoe), their passing out and the sleeping "z". |
+| `character.py` | The player's layers (body, breeches and stockings, clogs, shirt and waistcoat, jacket, hair, hats, hoe), their passing out, sitting on a horse and the sleeping "z". |
 | `villagers.py` | The villagers' layers in the same frames: the women's dress (bodice, skirt, apron, shawl, coif, headscarf), other skins, hair colours and cloth, the felt hat. |
 | `portraits.py` | The 32x32 chat portrait of every layer that shows in a bust, in the layer's colours. |
 | `interior.py` | The room tiles and the furniture inside the buildings, the hearth too. |
@@ -46,7 +46,7 @@ by topic. Where is a thing drawn?
 | `fire.py` | The animation frames of the campfire and the hearth. |
 | `animals.py` | One sheet per animal of the ambient wildlife. |
 | `birds.py` | The sheets of the big birds of the marsh: the white stork and the greylag goose. |
-| `livestock.py` | One sheet per farm animal and look (cows, sheep, hens, tame rabbits), put together from parts; the tame rabbit reuses the wild one's frames. |
+| `livestock.py` | One sheet per farm animal and look (cows, sheep, hens, tame rabbits, dogs, cats, horses), put together from parts; the tame rabbit reuses the wild one's frames. A horse also has a saddled sheet and the ridden horse's sheets (side, front and back, walking and trotting). |
 | `ui.py` | The pixel font, the panel frame and the button frames. |
 
 `generate.py` imports all the others and none of them imports it; most import `canvas.py`, and

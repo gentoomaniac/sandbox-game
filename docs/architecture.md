@@ -77,8 +77,12 @@ Warft and an Ewer here and there.
   them: GameState owns it and Main calls its `update` every frame while the player is
   outside. The numbers are `data/livestock.cfg` (`LivestockRules`). The WildlifeView draws
   them: one `FarmAnimalView` (an `Animal` like the wild ones, but its state comes from the
-  FarmAnimal) for each animal near the view. A dog given a bone (`ToolUse`, `GIVE_BONE`) follows
-  the player until a game minute it keeps (`follow_until_minute`). Wildlife is view only and
+  FarmAnimal) for each animal near the view. A horse is saddled by `ToolUse` (`SADDLE`,
+  `UNSADDLE`) and ridden through `GameState.mount` and `dismount`: `PlayerState.horse` is the
+  horse ridden (not saved), which `PlayerState.move` takes along and `Livestock.update` leaves
+  alone (`FarmAnimal.is_ridden`); `PlayerView` draws the rider's riding sheets on the ridden
+  horse's sheets while the horse's own view hides. A dog given a bone (`ToolUse`, `GIVE_BONE`)
+  follows the player until a game minute it keeps (`follow_until_minute`). Wildlife is view only and
   not saved; livestock is state and saved, and shares the wildlife's drawing, sheets and
   sounds. A group of birds is one `Animal` with a sprite per bird: `Flock` (sparrows or a
   skein of geese crossing in a V) and `GooseFlock` (geese grazing, then taking off together).
