@@ -1262,6 +1262,18 @@ none of 300 seeds came out short (a one-off measurement, not a test). On a narro
 still makes do with fewer geese, as there is no room for more; SPEC says so. The wildlife tests
 (tests/wildlife_case.gd) seed the view's dice, so they throw the same numbers every run.
 
+## 99. Sea birds of the coast
+
+- [ ] Done
+
+The user's word of 2026-11-08: sea birds that are active on the coastline, some pecking in the
+Watt, some going into the water to catch fish; think about the birds that naturally occur in
+the region (the North Frisian Wadden Sea in 1750). Candidates: oystercatchers, redshanks,
+curlews and dunlin probing the mud flats; shelducks dabbling; herring and black-headed gulls;
+terns plunge-diving for fish; cormorants diving and drying their wings. Ambient wildlife like
+task 60's geese: on Terrain.MUD, SEA and SALT_MARSH and their edges, by season and time of
+day, spawnable from the console.
+
 ## Later (not part of the prototype)
 
 - **Graphics review: willows melt into the grass** (the user, 2026-11-06, with a screenshot;
