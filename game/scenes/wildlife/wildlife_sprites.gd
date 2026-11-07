@@ -1,10 +1,11 @@
 class_name WildlifeSprites
 extends RefCounted
 ## The pictures of the animals: one sheet per kind (assets/wildlife/<kind>.png, drawn by
-## tools/art/animals.py and birds.py, whose order of actions this mirrors), one row per action
-## and one column per frame. Animals face right in the sheets. The farm animals have a sheet per
-## species and look, `<species>_<look>`, all with the same actions (a saddled horse has one more,
-## `horse_<look>_saddled`; drawn by tools/art/livestock.py), and a cat's three more for hunting.
+## tools/art/animals.py, birds.py and sea_birds.py, whose order of actions this mirrors), one row
+## per action and one column per frame. Animals face right in the sheets. The farm animals have a
+## sheet per species and look, `<species>_<look>`, all with the same actions (a saddled horse has
+## one more, `horse_<look>_saddled`; drawn by tools/art/livestock.py), and a cat's three more for
+## hunting.
 
 const SHEET_PATH := "res://assets/wildlife/%s.png"
 const LIVESTOCK_ACTIONS := {&"idle": 2, &"walk": 4, &"graze": 2, &"sleep": 2, &"run": 4}
@@ -51,6 +52,8 @@ const SHEETS := {
 	&"frog": {"size": Vector2i(12, 8), "actions": {&"sit": 2, &"hop": 2}},
 	&"goose":
 	{"size": Vector2i(24, 18), "actions": {&"stand": 2, &"graze": 2, &"walk": 2, &"fly": 3}},
+	&"oystercatcher":
+	{"size": Vector2i(16, 12), "actions": {&"stand": 2, &"probe": 2, &"walk": 2, &"fly": 3}},
 	&"cow_angler": COW,
 	&"cow_black_pied": COW,
 	&"cow_red_pied": COW,

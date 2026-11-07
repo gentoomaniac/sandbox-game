@@ -42,7 +42,8 @@ flame, what is in front of it, then the frames of the flame. The atlas cell and 
 picture show the first frame, for where the fire does not move.
 
 assets/wildlife/<kind>.png: one sheet per animal kind, one row per action and one column per frame
-(see animals.py, birds.py for the stork and the goose, and game/scenes/wildlife/wildlife_sprites.gd).
+(see animals.py, birds.py for the stork and the goose, sea_birds.py for the birds of the coast, and
+game/scenes/wildlife/wildlife_sprites.gd).
 The farm animals have one sheet per species and look, assets/wildlife/<species>_<look>.png (see
 livestock.py); a horse also has horse_<look>_saddled.png, and horse_<look>_ridden.png and
 horse_<look>_ridden_over.png, the ridden horse behind and in front of the rider in the rows of the
@@ -83,6 +84,7 @@ import livestock
 import meadow
 import portraits
 import reeds
+import sea_birds
 import seasons
 import terrain
 import tool_icons
@@ -294,7 +296,7 @@ def write_fire():
 def write_wildlife():
     for kind in animals.SHEETS:
         save(animals.sheet_rows(kind), f"wildlife/{kind}.png", *animals.cell_size(kind))
-    for name, size, rows in [*birds.sheets(), *livestock.sheets()]:
+    for name, size, rows in [*birds.sheets(), *sea_birds.sheets(), *livestock.sheets()]:
         save(rows, f"wildlife/{name}.png", *size)
 
 
