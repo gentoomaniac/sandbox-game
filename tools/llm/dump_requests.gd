@@ -13,6 +13,25 @@ const FACT_CHAT := [
 	[false, "Loud as ever, and the eldest is out with the cows."],
 ]
 
+const ENGLISH_CHAT := [
+	[true, "Good morning! Is the dyke holding after the storm?"],
+	[false, "Aye, barely. The sluice took the worst of it."],
+	[true, "Glad to hear it. Will the boats go out today?"],
+	[false, "If the wind drops, aye."],
+]
+const GERMAN_CHAT := [
+	[true, "Guten Morgen! Hat der Deich den Sturm gut überstanden?"],
+	[false, "Ach, gerade so. Die Schleuse hat das meiste abbekommen."],
+	[true, "Das freut mich. Wie geht es deinem Mann?"],
+	[false, "Der ist draußen auf der Marsch, wie immer."],
+]
+const DANISH_CHAT := [
+	[true, "Godmorgen! Holder diget efter stormen?"],
+	[false, "Ja, lige akkurat. Sluserne tog det værste."],
+	[true, "Det er jeg glad for. Skal bådene ud i dag?"],
+	[false, "Hvis vinden lægger sig."],
+]
+
 ## Each: id, villager, the language of the player's last line, and either a `message` (with
 ## optional `history` of [from_player, text] pairs, `memories`, `weather` "fine" or "rain" and
 ## `time` "morning" or "dusk") or `summarise`, the lines of a conversation to remember.
@@ -45,6 +64,40 @@ const SCENARIOS := [
 		"language": "en",
 		"message": "Good day to you! Is that your cow over there?",
 		"history": [[true, "Guten Morgen!"], [false, "Moin, Nachbar. Schönes Wetter heute."]],
+	},
+	{
+		"id": "german_after_english_chat",
+		"villager": "momme",
+		"language": "de",
+		"message": "Wie ist das Wasser heute? Fängt man viel?",
+		"history": ENGLISH_CHAT,
+	},
+	{
+		"id": "danish_after_english",
+		"villager": "antje",
+		"language": "da",
+		"message": "Goddag! Hvordan har du det i dag?",
+		"history": [[true, "Good morning!"], [false, "Morning to you. Fine day for it."]],
+	},
+	{
+		"id": "moin_after_german",
+		"villager": "antje",
+		"language": "de",
+		"message": "Moin!",
+		"history": GERMAN_CHAT,
+	},
+	{
+		"id": "hej_after_danish",
+		"villager": "momme",
+		"language": "da",
+		"message": "Hej!",
+		"history": DANISH_CHAT,
+	},
+	{
+		"id": "swedish",
+		"villager": "antje",
+		"language": "other",
+		"message": "Tjena! Hur går det idag för dig?",
 	},
 	{
 		"id": "family",
