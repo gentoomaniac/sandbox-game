@@ -877,6 +877,98 @@ HORSE = {
             ),
             (5, -1),
         ),
+        "ridden": (
+            (
+                "q..........",
+                "cq.......qc",
+                "kcqqqqqqqcc",
+                ".kcccccccck",
+                ".kcccccck.g",
+                "..kkckkk..g",
+                "..........g",
+                "..........g",
+            ),
+            (5, -1),
+        ),
+    },
+    # Ridden, from the front and from behind (see `view_frame`): rows behind and in front of the
+    # rider with where they start, the near and the far legs (their left columns) and the row
+    # their tops start on, and how many rows of their lower part are dark. From the front the
+    # chest with the saddle's pommel and flaps, and the head; from behind the neck and ears
+    # beyond the rider, the rump with the cantle, and the tail.
+    "views": {
+        "front": {
+            "behind": [
+                (
+                    (
+                        ".....kqqk.....",
+                        "...llllllll...",
+                        ".llbbbbbbbbdd.",
+                        "kbbbbbbbbbbbbk",
+                        "kbbbbbbbbbbbbk",
+                        "kbbbbbbbbbbbbk",
+                        "lbbbbbbbbbbbbd",
+                        "lbbbbbbbbbbbbd",
+                        ".bbbbbbbbbbbd.",
+                        ".dbbbbbbbbbdd.",
+                        "..dbbbbbbbdd..",
+                        "...dddddddd...",
+                    ),
+                    (15, 15),
+                ),
+            ],
+            "in_front": [
+                (
+                    (
+                        "d....d",
+                        "bd..db",
+                        "bbmmbb",
+                        "lbmmbd",
+                        "ebbbbe",
+                        "lbbbbd",
+                        ".bbbd.",
+                        ".bbbd.",
+                        ".bbbd.",
+                        ".bbbd.",
+                        ".nnnn.",
+                        ".nnnn.",
+                        "..nn..",
+                    ),
+                    (19, 9),
+                ),
+            ],
+            "near_legs": (15, 27),
+            "far_legs": (19, 24),
+            "legs_top": 23,
+            "points": 5,
+        },
+        "back": {
+            "behind": [
+                (("d..d",) + ("bmmb",) * 8, (20, 6)),
+                (
+                    (
+                        "....kcqqck....",
+                        "..llllllllll..",
+                        ".lbbbbbbbbbbd.",
+                        "lbbbbbbbbbbbbd",
+                        "lbbbbbbbbbbbbd",
+                        "lbbbbbbbbbbbbd",
+                        "lbbbbbbbbbbbbd",
+                        "lbbbbbbbbbbbbd",
+                        "lbbbbbbbbbbbbd",
+                        ".bbbbbbbbbbbd.",
+                        ".dbbbbbbbbbdd.",
+                        "..ddd....ddd..",
+                    ),
+                    (15, 15),
+                ),
+                ((".mm.",) * 6 + ("mmmm",) * 3 + (".mm.",) * 2, (20, 16)),
+            ],
+            "near_legs": (15, 27),
+            "far_legs": (19, 24),
+            "legs_top": 23,
+            "points": 5,
+        },
     },
 }
 # The pony: a smaller, rounder body on short legs, a thick neck and a shaggy mane.
@@ -923,6 +1015,56 @@ PONY_PARTS = {
     "folded": (("KKPLM",), (10, 6)),
     "saddles": {
         "on": (("q.......", "cq.....q", "kcqqqqqc", ".kccccck", ".kcccck.", "..kckk..", "...ii...", "..i..i..", "..iiii.."), (4, -1)),
+        "ridden": (("q.......", "cq.....q", "kcqqqqqc", ".kccccck", ".kcccck.", "..kckk.."), (4, -1)),
+    },
+    "views": {
+        "front": {
+            "behind": [
+                (
+                    (
+                        "....kqqk....",
+                        "..llllllll..",
+                        "kbbbbbbbbbbk",
+                        "kbbbbbbbbbbk",
+                        "lbbbbbbbbbbd",
+                        ".bbbbbbbbbd.",
+                        ".dbbbbbbbdd.",
+                        "..dddddddd..",
+                    ),
+                    (16, 24),
+                ),
+            ],
+            "in_front": [
+                (("d....d", "bmmmmb", "lmmmmd", "ebbbbe", "lbbbbd", ".bbbd.", ".bbbd.", ".nnnn.", "..nn.."), (19, 19)),
+            ],
+            "near_legs": (16, 26),
+            "far_legs": (19, 24),
+            "legs_top": 29,
+            "points": 3,
+        },
+        "back": {
+            "behind": [
+                (("d..d",) + ("bmmb",) * 5, (20, 19)),
+                (
+                    (
+                        "....kqqk....",
+                        "..llllllll..",
+                        "lbbbbbbbbbbd",
+                        "lbbbbbbbbbbd",
+                        "lbbbbbbbbbbd",
+                        "lbbbbbbbbbbd",
+                        ".bbbbbbbbbd.",
+                        "..dddddddd..",
+                    ),
+                    (16, 24),
+                ),
+                ((".mm.",) * 3 + ("mmmm",) * 3 + (".mm.",), (20, 25)),
+            ],
+            "near_legs": (16, 26),
+            "far_legs": (19, 24),
+            "legs_top": 29,
+            "points": 3,
+        },
     },
 }
 HORSE_LOOKS = {
@@ -954,6 +1096,105 @@ def horse_sheet(look, saddle=None):
     return four_legged_sheet(HORSE | style.get("parts", {}), style, horse_keys(style), saddle)
 
 
+# --- Riding -------------------------------------------------------------------------------
+#
+# A ridden horse (task 81) in the rows of the player's sheets, facing down, up, left and right
+# (left is the mirror of right), with nine columns: standing, four frames of the walk and four of
+# the trot. Two sheets per look: horse_<look>_ridden is drawn behind the rider and
+# horse_<look>_ridden_over in front of them (the head of a horse coming towards the viewer; it is
+# empty in the other rows). From the side it is the saddled horse of the sheets above, the
+# stirrup under the rider's foot; from the front and from behind it is drawn from the rows of its
+# `views`. game/scenes/player_view.gd mirrors the columns, the lifts and where the rider sits.
+
+RIDING_FACINGS = ("down", "up", "left", "right")
+# The trot, from the side: a diagonal pair of legs forward and the other back, then all four off
+# the ground (`lift` 1) with one pair folded, then the other way round.
+TROT_STEPS = [
+    ((("back", "forward"), ("forward", "back")), 0),
+    ((("tuck", "stand"), ("stand", "fold")), 1),
+    ((("forward", "back"), ("back", "forward")), 0),
+    ((("stand", "fold"), ("tuck", "stand")), 1),
+]
+# From the front and from behind: how far each leg is raised (the near left and right legs, then
+# the far left and right ones between them) and the lift, for the standing frame, the walk and the
+# trot. A trot raises a near leg with the far leg of the other side.
+VIEW_STEPS = [
+    ((0, 0, 0, 0), 0),
+    ((1, 0, 0, 1), 0),
+    ((0, 0, 0, 0), 0),
+    ((0, 1, 1, 0), 0),
+    ((0, 0, 0, 0), 0),
+    ((2, 0, 0, 2), 0),
+    ((0, 0, 0, 0), 1),
+    ((0, 2, 2, 0), 0),
+    ((0, 0, 0, 0), 1),
+]
+
+
+def view_leg(cells, x, top, bottom, points, far):
+    """A leg seen from the front or from behind, from `top` down to its hoof on row `bottom`: two
+    pixels wide, lit on the left, its last `points` rows above the hoof dark (a bay's black
+    points); a far leg is one pixel in the far legs' colour."""
+    for y in range(top, bottom):
+        upper = y < bottom - points
+        if far:
+            cells[y][x] = "N"
+        else:
+            cells[y][x], cells[y][x + 1] = ("L", "M") if upper else ("P", "P")
+    cells[bottom][x] = "K"
+    if not far:
+        cells[bottom][x + 1] = "K"
+
+
+def view_frame(animal, view, raised, lift):
+    """The front ("front") or back ("back") view of a ridden horse as rows of characters: its body,
+    the legs under it raised by `raised` (see VIEW_STEPS) and all of it `lift` pixels off the
+    ground. Returns the rows behind the rider and the rows in front of them."""
+    width, height = animal["size"]
+    parts = animal["views"][view]
+    behind, in_front = grid(width, height), grid(width, height)
+    ground = height - 1 - lift
+    legs_top = parts["legs_top"] - lift
+    near_x, far_x = parts["near_legs"], parts["far_legs"]
+    for x, up in zip(far_x, raised[2:]):
+        view_leg(behind, x, legs_top + 2, ground - up, parts["points"], far=True)
+    for x, up in zip(near_x, raised[:2]):
+        view_leg(behind, x, legs_top, ground - up, parts["points"], far=False)
+    for name, cells in (("behind", behind), ("in_front", in_front)):
+        for rows, (x, y) in parts.get(name, ()):
+            paste(cells, rows, x, y - lift)
+    return joined(behind), joined(in_front)
+
+
+def ridden_sheets(look):
+    """The two sheets of a ridden horse of a look (see above), as rows of cells."""
+    style = HORSE_LOOKS[look]
+    animal = HORSE | style.get("parts", {})
+    keys = horse_keys(style)
+
+    def picture(rows):
+        return to_picture(rows, keys, style["outline"])
+
+    empty = [[None] * animal["size"][0] for _ in range(animal["size"][1])]
+    side = [four_legged_frame(animal, style, saddle="ridden")]
+    side += [four_legged_frame(animal, style, steps=steps, saddle="ridden") for steps in WALK_STEPS]
+    side += [
+        four_legged_frame(animal, style, steps=steps, lift=lift, tail="swishing", saddle="ridden")
+        for steps, lift in TROT_STEPS
+    ]
+    behind, in_front = {}, {}
+    for view, facing in (("front", "down"), ("back", "up")):
+        frames = [view_frame(animal, view, raised, lift) for raised, lift in VIEW_STEPS]
+        behind[facing] = [picture(rows) for rows, _ in frames]
+        in_front[facing] = [picture(rows) for _, rows in frames]
+    behind["right"] = [picture(rows) for rows in side]
+    behind["left"] = [[row[::-1] for row in cell] for cell in behind["right"]]
+    return (
+        [behind[facing] for facing in RIDING_FACINGS],
+        [in_front.get(facing, [empty] * len(VIEW_STEPS)) for facing in RIDING_FACINGS],
+    )
+
+
 # --- All sheets ---------------------------------------------------------------------------
 
 SPECIES = {
@@ -975,3 +1216,6 @@ def sheets():
     # A saddled horse: the same sheet with the saddle on (task 81).
     for look in HORSE_LOOKS:
         yield f"horse_{look}_saddled", HORSE_SIZE, horse_sheet(look, "on")
+        behind, in_front = ridden_sheets(look)
+        yield f"horse_{look}_ridden", HORSE_SIZE, behind
+        yield f"horse_{look}_ridden_over", HORSE_SIZE, in_front

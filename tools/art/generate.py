@@ -24,6 +24,8 @@ walk 1 to 4 (see game/state/appearance.gd and game/scenes/player_view.gd).
 assets/character/collapse/<slot>_<variant>.png: the same layers passing out, one row of 32x32
 cells facing right: kneeling, tipping over, lying and asleep (see `collapse_sheet`).
 The villagers' layers (villagers.py) are drawn the same way, under the same names.
+assets/character/riding/<slot>_<variant>.png: the player's layers sitting on a horse, one 16x32
+cell per facing in the rows above (see `riding_sheet`).
 assets/character/portrait/<slot>_<variant>.png: a 32x32 head-and-shoulders portrait of each
 layer that shows in a bust, for the chat (see portraits.py).
 assets/effects/sleep_z.png: the "z" that rises from a sleeping figure.
@@ -42,7 +44,9 @@ picture show the first frame, for where the fire does not move.
 assets/wildlife/<kind>.png: one sheet per animal kind, one row per action and one column per frame
 (see animals.py, birds.py for the stork and the goose, and game/scenes/wildlife/wildlife_sprites.gd).
 The farm animals have one sheet per species and look, assets/wildlife/<species>_<look>.png (see
-livestock.py).
+livestock.py); a horse also has horse_<look>_saddled.png, and horse_<look>_ridden.png and
+horse_<look>_ridden_over.png, the ridden horse behind and in front of the rider in the rows of the
+player's sheets (see `ridden_sheets`).
 
 assets/crops/<crop>.png: one sheet per crop, its four growth stages and the dead one side by side, 16 px
 wide cells and as tall as the sheet (see crops.py and data/crops.cfg). They have no seasonal variants.
@@ -254,6 +258,9 @@ def write_character():
         save(character.collapse_sheet(*layer), f"character/collapse/{name}.png", character.COLLAPSE_SIZE)
     for name, picture in portraits.portraits(layers).items():
         save_picture(picture, f"character/portrait/{name}.png")
+    # Only the player rides, so only the player's layers sit on a horse.
+    for name, layer in character.layers().items():
+        save(character.riding_sheet(*layer), f"character/riding/{name}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
     held_hoe = character.character_sheet(character.draw_held_hoe, {})
     save(held_hoe, "character/held_hoe.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
     save_picture(character.sleep_z(), "effects/sleep_z.png")

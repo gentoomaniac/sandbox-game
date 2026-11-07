@@ -46,12 +46,14 @@ POSES = {
 # `draw_kneeling_legs`); asleep, its eye is shut.
 KNEEL = {"sink": 6, "lift": (0, 0), "stride": 0, "swing": 0, "kneel": True}
 ASLEEP = POSES["idle"] | {"asleep": True}
+# Riding (see `riding_sheet`): the figure sits astride a horse (see `draw_riding_legs`).
+RIDE = POSES["idle"] | {"ride": True}
 
 
 def leg_boxes(facing, pose):
-    """The columns, top row and bottom row of each leg, back leg first. None for a kneeling
-    figure, whose legs are folded (see `draw_kneeling_legs`)."""
-    if pose.get("kneel"):
+    """The columns, top row and bottom row of each leg, back leg first. None for a kneeling or a
+    riding figure, whose legs are folded (see `draw_kneeling_legs` and `draw_riding_legs`)."""
+    if pose.get("kneel") or pose.get("ride"):
         return []
     stride = pose["stride"]
     if facing in ("down", "up"):
@@ -76,7 +78,8 @@ def draw_body(facing, pose, skin="skin", shade="skin_shade", **_):
         rect(canvas, x0, bottom - 1, x1, bottom, shade)
     if facing in ("down", "up"):
         rect(canvas, 6, 13 + sink, 10, 22 + sink, shade)
-        rect(canvas, 8, boxes[0][2], 8, boxes[0][3] - 3, shade)
+        if boxes:
+            rect(canvas, 8, boxes[0][2], 8, boxes[0][3] - 3, shade)
         # The right arm swings; the left one holds the tool.
         rect(canvas, 4, 14 + sink, 5, 20 + sink, skin)
         rect(canvas, 11, 14 + sink + swing // 2, 12, 20 + sink + swing // 2, skin)
@@ -108,6 +111,8 @@ def draw_body(facing, pose, skin="skin", shade="skin_shade", **_):
         rect(canvas, x0, top, x1, top + 2, SHORTS)
     if pose.get("kneel"):
         draw_kneeling_legs(canvas, (SHORTS, skin), (skin, shade), (shade, shade, shade))
+    if pose.get("ride"):
+        draw_riding_legs(canvas, facing, (SHORTS, SHORTS), skin, (skin, shade), (shade, shade))
     return canvas
 
 
@@ -122,6 +127,31 @@ def draw_kneeling_legs(canvas, thigh, shin, foot):
     rect(canvas, 1, 28, 3, 28, foot[0])
     rect(canvas, 1, 29, 3, 29, foot[1])
     rect(canvas, 1, 30, 3, 30, foot[2])
+
+
+def draw_riding_legs(canvas, facing, thigh, knee, shin, foot):
+    """Legs astride a horse, the seat on the row where standing legs begin. From the side (facing
+    right) the near leg: the thigh forward along the saddle to the knee, the shin down the horse's
+    flank and the foot in the stirrup, its toe forward; the far leg is behind the horse. From the
+    front or behind both: the thighs spread over the saddle, the shins hanging outside the horse.
+    `thigh`, `shin` and `foot` are (colour, shade colour), `knee` a colour."""
+    if facing in ("left", "right"):
+        rect(canvas, 6, 23, 10, 23, thigh[0])
+        rect(canvas, 6, 24, 10, 24, thigh[1])
+        rect(canvas, 11, 23, 11, 24, knee)
+        rect(canvas, 10, 25, 11, 28, shin[0])
+        rect(canvas, 10, 25, 10, 28, shin[1])
+        rect(canvas, 10, 29, 12, 29, foot[0])
+        rect(canvas, 10, 30, 12, 30, foot[1])
+        return
+    rect(canvas, 4, 23, 12, 23, thigh[0])
+    rect(canvas, 3, 24, 13, 24, thigh[1])
+    for x in (2, 13):
+        rect(canvas, x, 25, x + 1, 25, knee)
+        rect(canvas, x, 26, x, 28, shin[0])
+        rect(canvas, x + 1, 26, x + 1, 28, shin[1])
+        rect(canvas, x, 29, x + 1, 29, foot[0])
+        rect(canvas, x, 30, x + 1, 30, foot[1])
 
 
 # Knee breeches of brown wool, buttoned at the knee, and white knitted stockings: the pale
@@ -151,7 +181,7 @@ def draw_legs(facing, pose, **colours):
         if facing in ("left", "right"):
             rect(canvas, x1, top, x1, knee - 1, breeches["light"])
             canvas[bottom][x1 + 1] = STOCKINGS["shade"]
-    if facing in ("down", "up"):
+    if facing in ("down", "up") and boxes:
         top = boxes[0][2]
         rect(canvas, 8, top, 8, top + BREECHES_ROWS - 2, breeches["shade"])
         rect(canvas, 8, top + BREECHES_ROWS - 1, 8, boxes[0][3] - 3, STOCKINGS["shade"])
@@ -161,6 +191,15 @@ def draw_legs(facing, pose, **colours):
             (breeches["base"], breeches["band"]),
             (STOCKINGS["base"], STOCKINGS["shade"]),
             (STOCKINGS["base"], STOCKINGS["base"], STOCKINGS["shade"]),
+        )
+    if pose.get("ride"):
+        draw_riding_legs(
+            canvas,
+            facing,
+            (breeches["base"], breeches["shade"]),
+            breeches["band"],
+            (STOCKINGS["base"], STOCKINGS["shade"]),
+            (STOCKINGS["base"], STOCKINGS["shade"]),
         )
     return canvas
 
@@ -187,6 +226,15 @@ def draw_clogs(facing, pose, **_):
         rect(canvas, 1, 28, 3, 28, CLOGS["light"])
         rect(canvas, 1, 29, 3, 29, CLOGS["base"])
         rect(canvas, 1, 30, 3, 30, CLOGS["sole"])
+    if pose.get("ride"):
+        if facing in ("left", "right"):
+            rect(canvas, 10, 29, 13, 29, CLOGS["light"])
+            rect(canvas, 10, 30, 13, 30, CLOGS["base"])
+            canvas[30][10] = CLOGS["sole"]
+        else:
+            for x0 in (2, 13):
+                rect(canvas, x0, 29, x0 + 1, 29, CLOGS["light"])
+                rect(canvas, x0, 30, x0 + 1, 30, CLOGS["base"])
     return canvas
 
 
@@ -510,14 +558,14 @@ def pixels_of(canvas):
     return {(x, y) for y, row in enumerate(canvas) for x, colour in enumerate(row) if colour is not None}
 
 
-def character_sheet(draw, variant_colours):
-    """One layer's sheet: the layer drawn in every facing and frame, with its outline."""
+def character_sheet(draw, variant_colours, poses=tuple(POSES[frame] for frame in PLAYER_FRAMES)):
+    """One layer's sheet: the layer drawn in every facing and pose (the frames of PLAYER_FRAMES),
+    with its outline."""
     rows = []
     for facing in PLAYER_FACINGS:
         drawn_facing = "right" if facing == "left" else facing
         row = []
-        for frame in PLAYER_FRAMES:
-            pose = POSES[frame]
+        for pose in poses:
             body_pixels = pixels_of(draw_body(drawn_facing, pose))
             canvas = draw(drawn_facing, pose, **variant_colours)
             canvas = outlined(canvas, set() if draw is draw_body else body_pixels)
@@ -582,6 +630,13 @@ def collapse_sheet(draw, variant_colours):
         canvas = place(draw("right", pose, **variant_colours))
         row.append(outlined(canvas, set() if draw is draw_body else body_pixels))
     return [row]
+
+
+def riding_sheet(draw, variant_colours):
+    """One layer's riding frames (assets/character/riding/<name>.png, every layer but the held
+    tool: the hands hold the reins): sitting astride, one frame per facing in the rows of
+    `character_sheet`."""
+    return character_sheet(draw, variant_colours, (RIDE,))
 
 
 def layers():
