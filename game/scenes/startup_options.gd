@@ -71,6 +71,10 @@ extends RefCounted
 ##   --chat=<line>;<line>     speak to the nearest villager once the world is drawn (see
 ##                            --npcs, --villager) and say those lines, each after the answer to
 ##                            the last
+##   --chat-script=<line>;<line>  speak to the nearest villager as with --chat, but the lines
+##                            are already in the chat, said by you and the villager in turn
+##                            (you first), a minute apart: no language model asked. A last
+##                            line of `...` leaves the villager typing.
 ##
 ## Building
 ##   --building=<id>          the building the hammer places
@@ -168,6 +172,7 @@ var station := false
 var storage := false
 var console := PackedStringArray()
 var chat := PackedStringArray()
+var chat_script := PackedStringArray()
 
 # Building
 var building := &""
@@ -281,6 +286,8 @@ func _init(args := PackedStringArray()) -> void:
 				console = _value(arg).split(";")
 			"--chat":
 				chat = _value(arg).split(";")
+			"--chat-script":
+				chat_script = _value(arg).split(";")
 			"--building":
 				building = StringName(_value(arg))
 			"--ghost":

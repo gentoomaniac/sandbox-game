@@ -53,6 +53,7 @@ var _is_hunt_to_stage: bool
 var _npcs_to_spawn: int
 var _villager_to_spawn: String
 var _chat_lines: PackedStringArray
+var _chat_script: PackedStringArray
 var _hit_tile: Vector2i
 var _harvest_tile: Vector2i
 var _menu_page: int
@@ -75,6 +76,7 @@ func _init(options: StartupOptions) -> void:
 	_npcs_to_spawn = options.npcs
 	_villager_to_spawn = options.villager
 	_chat_lines = options.chat
+	_chat_script = options.chat_script
 	_hit_tile = options.hit
 	_harvest_tile = options.harvest
 	_menu_page = options.menu
@@ -123,7 +125,7 @@ func update(delta: float) -> void:
 		else:
 			state.npcs.spawn_villager(_villager_to_spawn, state.player.position, state.world)
 		_villager_to_spawn = ""
-	if not _chat_lines.is_empty() and _is_outside_and_drawn():
+	if (not _chat_lines.is_empty() or not _chat_script.is_empty()) and _is_outside_and_drawn():
 		_chat()
 	if _hit_tile != StartupOptions.NO_TILE and _is_outside_and_drawn():
 		var object := state.world.object_at(_hit_tile)
@@ -155,6 +157,8 @@ func update(delta: float) -> void:
 func _chat() -> void:
 	var lines := _chat_lines
 	_chat_lines = PackedStringArray()
+	var script := _chat_script
+	_chat_script = PackedStringArray()
 	var villagers := state.npcs.all()
 	if villagers.is_empty():
 		push_error("--chat needs a villager near the player (see --npcs and --villager)")
@@ -164,7 +168,9 @@ func _chat() -> void:
 		func(a: Npc, b: Npc) -> bool:
 			return a.position.distance_to(feet) < b.position.distance_to(feet)
 	)
-	open_chat.call(villagers[0])
+	var villager := villagers[0]
+	_put_script_in_chat(villager, script)
+	open_chat.call(villager)
 	for line in lines:
 		chat_screen.say(line)
 		await chat_screen.answered
@@ -172,6 +178,18 @@ func _chat() -> void:
 		# One frame for the last answer to be drawn.
 		await chat_screen.get_tree().process_frame
 		save_screenshot_and_quit.call()
+
+
+## Puts the lines of `--chat-script` into the chat of a villager, as said a minute apart ending
+## now; a last `...` is the villager's answer still awaited.
+func _put_script_in_chat(villager: Npc, script: PackedStringArray) -> void:
+	var clock := state.clock
+	for index in script.size():
+		var minute := clock.minute_of_day - (script.size() - 1 - index)
+		if index == script.size() - 1 and script[index] == "...":
+			villager.is_answering = true
+		else:
+			villager.add_chat_line(clock.day, minute, index % 2 == 0, script[index])
 
 
 func _spawn_livestock() -> void:
