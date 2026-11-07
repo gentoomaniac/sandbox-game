@@ -37,7 +37,17 @@ const KEYS := {
 		"says": TYPE_STRING,
 		"reply": TYPE_STRING,
 		"language": TYPE_STRING,
+		"language_unknown": TYPE_STRING,
 		"last_reply": TYPE_STRING,
+		"last_reply_unknown": TYPE_STRING,
+	},
+	"language":
+	{
+		"names": TYPE_DICTIONARY,
+		"words": TYPE_DICTIONARY,
+		"letters": TYPE_DICTIONARY,
+		"letter_score": TYPE_INT,
+		"min_score": TYPE_INT,
 	},
 	"female": {"their": TYPE_STRING, "person": TYPE_STRING},
 	"male": {"their": TYPE_STRING, "person": TYPE_STRING},
@@ -154,6 +164,9 @@ func problems() -> Array[String]:
 			found.append("[looks] %s is not a dictionary of words" % slot)
 	if not found.is_empty():
 		return found
+	for code: Variant in _values["language"]["names"]:
+		if not _values["language"]["words"].has(code):
+			found.append("[language] words has no list for %s" % code)
 	for part in PARTS_OF_DAY:
 		if not _values["moment"]["parts_of_day"].has(part):
 			found.append("[moment] parts_of_day has no %s" % part)

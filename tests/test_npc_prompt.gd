@@ -28,6 +28,15 @@ func _line(from_player: bool, text: String) -> Dictionary:
 	return {"day": 12, "minute": 495, "from_player": from_player, "text": text}
 
 
+func _no_history() -> Array[Dictionary]:
+	return []
+
+
+## The last message of the prompt for Antje, for `message` said after `history`.
+func _last_turn(history: Array[Dictionary], message: String) -> String:
+	return NpcPrompt.reply_messages(_antje, history, message, _moment(), _rules)[-1]["content"]
+
+
 # --- The data file ---
 
 
@@ -112,11 +121,8 @@ func test_the_prompt_has_the_shape_of_the_example() -> void:
 		lines[3], "The neighbour is a newcomer to these parts; Antje does not know their name."
 	)
 	assert_eq(lines[4], 'Her neighbour says: "Good morning! Is the dyke holding after the storm?"')
-	assert_eq(lines[5], "Antje answers in the language the neighbour just spoke in.")
-	assert_eq(
-		lines[6],
-		'Antje\'s reply (in the language of "Good morning! Is the dyke holding after the storm?"):'
-	)
+	assert_eq(lines[5], "Antje answers in English.")
+	assert_eq(lines[6], "Antje's reply in English:")
 
 
 func test_the_request_carries_the_numbers_of_the_data_file() -> void:
@@ -236,11 +242,41 @@ func test_the_repeated_label_of_the_last_turn_is_left_out_whatever_was_said() ->
 		"Hmm (sure):": ['Antje\'s reply (in the language of "Hmm (sure):"): Aye.', "Aye."],
 		"Wie?":
 		['antje\'s reply (in the language of "wie?"):\nGut (ja): danke.', "Gut (ja): danke."],
+		"Guten Tag! Wie geht es dir?": ["Antje's reply in German: Gut, danke.", "Gut, danke."],
+		"Good morning! How are you?": ["Antje's reply in English:\nFine.", "Fine."],
 	}
 	for message: String in cases:
-		var label := NpcPrompt.last_reply_label(_antje, message, _rules)
+		var language := NpcLanguage.name_of(message, _no_history(), _rules)
+		var label := NpcPrompt.last_reply_label(_antje, message, language, _rules)
 		var answer: String = cases[message][0]
 		assert_eq(NpcPrompt.trimmed_reply(answer, _antje, 2, label), cases[message][1], answer)
+
+
+func test_the_last_turn_names_the_language_of_the_message() -> void:
+	var cases := {
+		"Guten Tag! Wie geht es dir heute?": "German",
+		"Good morning! Is the dyke holding?": "English",
+		"Goddag! Hvordan går det med fiskeriet?": "Danish",
+	}
+	for message: String in cases:
+		var last := _last_turn(_no_history(), message)
+		assert_string_contains(last, "Antje answers in %s." % cases[message])
+		assert_string_ends_with(last, "Antje's reply in %s:" % cases[message])
+
+
+func test_a_message_too_short_to_tell_takes_the_language_of_the_chat() -> void:
+	var history: Array[Dictionary] = [
+		_line(true, "Guten Morgen! Wie geht es dir?"), _line(false, "Gut, danke.")
+	]
+	var last := _last_turn(history, "Moin")
+	assert_string_contains(last, "Antje answers in German.")
+	assert_string_ends_with(last, "Antje's reply in German:")
+
+
+func test_with_no_language_known_the_last_turn_says_it_generally() -> void:
+	var last := _last_turn(_no_history(), "Moin")
+	assert_string_contains(last, "Antje answers in the language the neighbour just spoke in.")
+	assert_string_ends_with(last, 'Antje\'s reply (in the language of "Moin"):')
 
 
 func test_the_answer_is_trimmed_to_what_the_villager_says() -> void:

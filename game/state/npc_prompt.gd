@@ -59,8 +59,9 @@ static func reply_messages(
 	last.append(_said(rules, "moment", words))
 	last.append(_said(rules, "neighbour", words))
 	last.append(_said(rules, "says", _with_message(words, message)))
-	last.append(_said(rules, "language", words))
-	last.append(last_reply_label(npc, message, rules))
+	var language := NpcLanguage.name_of(message, history, rules)
+	last.append(_said_in(rules, "language", _with_message(words, message), language))
+	last.append(last_reply_label(npc, message, language, rules))
 	messages.append(_message("user", "\n".join(last)))
 	return messages
 
@@ -267,10 +268,24 @@ static func _with_message(words: Dictionary, message: String) -> Dictionary:
 	return with_message
 
 
-## The label the last turn ends with, which names the language of `message`: the model may
-## repeat it before its answer (see `trimmed_reply`).
-static func last_reply_label(npc: Npc, message: String, rules: NpcTalkRules) -> String:
-	return _said(rules, "last_reply", _with_message(_words_of(npc, rules), message))
+## The label the last turn ends with, which names the `language` of `message` ("" if unknown, see
+## NpcLanguage): the model may repeat it before its answer (see `trimmed_reply`).
+static func last_reply_label(
+	npc: Npc, message: String, language: String, rules: NpcTalkRules
+) -> String:
+	return _said_in(rules, "last_reply", _with_message(_words_of(npc, rules), message), language)
+
+
+## The line `key` of [prompt] for the `language` the player speaks, or its `_unknown` line if that
+## is not known (""); `words` has the placeholders of both.
+static func _said_in(
+	rules: NpcTalkRules, key: String, words: Dictionary, language: String
+) -> String:
+	if language == "":
+		return _said(rules, key + "_unknown", words)
+	var with_language := words.duplicate()
+	with_language["language"] = language
+	return _said(rules, key, with_language)
 
 
 ## A line of [prompt] with its placeholders filled in.

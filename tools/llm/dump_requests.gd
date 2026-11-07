@@ -189,7 +189,9 @@ func _init() -> void:
 			var moment := _moment(scenario.get("weather", "fine"), scenario.get("time", "morning"))
 			var history := _lines(scenario.get("history", []))
 			entry["request"] = NpcPrompt.reply_request(npc, history, message, moment, rules)
-			entry["label"] = NpcPrompt.last_reply_label(npc, message, rules)
+			entry["label"] = NpcPrompt.last_reply_label(
+				npc, message, NpcLanguage.name_of(message, history, rules), rules
+			)
 		entries.append(entry)
 	var file := FileAccess.open(OS.get_cmdline_user_args()[0], FileAccess.WRITE)
 	file.store_string(JSON.stringify(entries, "\t"))
