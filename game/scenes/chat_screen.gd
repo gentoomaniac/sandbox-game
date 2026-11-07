@@ -9,8 +9,9 @@ extends CanvasLayer
 ## running itself, and its input line takes every key. A line sent is answered by NpcDialogue;
 ## while the answer is awaited the villager is shown typing, and nothing more is sent to them. The
 ## wait is the villager's (Npc `is_answering`): the player may leave and talk to another, and the
-## answer is kept in the chat of the one who was asked. The villager keeps the latest lines; the
-## older ones become a memory (NpcDialogue `compact`).
+## answer is kept in the chat of the one who was asked. Typing `/clear` makes the villager forget
+## the chat and their memories (for debugging); other text, also with a "/", is said as it is.
+## The villager keeps the latest lines; the older ones become a memory (NpcDialogue `compact`).
 
 ## The answer to a line came and is shown (for tests and the debug runner).
 signal answered
@@ -25,6 +26,8 @@ const PORTRAIT_SIZE := 32 * PORTRAIT_SCALE
 const NAME_WIDTH := 76
 const LOG_SIZE := Vector2(340, 176)
 const MAX_LINE_LENGTH := 200
+const CLEAR_COMMAND := "/clear"
+const CLEARED_NOTICE := "* %s forgets your talks."
 const GAP := 10
 ## Behind the portraits: palette colour mud_dark (see tools/art/palette.py).
 const PORTRAIT_GROUND := Color("4f4436")
@@ -33,6 +36,8 @@ const PORTRAIT_GROUND := Color("4f4436")
 var dialogue: NpcDialogue
 
 var _npc: Npc
+## A line shown after the chat's, not part of it (what a command did); gone with the next line.
+var _notice := ""
 var _state: GameState
 ## Whether the interact key that opened the chat is still held (its repeats are not typed).
 var _is_opening_key_held := false
@@ -69,7 +74,7 @@ func _init() -> void:
 	_log.focus_mode = Control.FOCUS_NONE
 	chat.add_child(_log)
 	_input.max_length = MAX_LINE_LENGTH
-	_input.placeholder_text = "Say something. Enter sends, Esc leaves."
+	_input.placeholder_text = "Say something. Enter sends, Esc leaves, /clear forgets."
 	_input.keep_editing_on_text_submit = true
 	_input.text_submitted.connect(_on_submitted)
 	_input.gui_input.connect(_on_input_gui_input)
@@ -100,6 +105,7 @@ func open(npc: Npc, state: GameState) -> void:
 	visible = true
 	get_tree().paused = true
 	_input.clear()
+	_notice = ""
 	_show_lines()
 	_is_opening_key_held = Input.is_action_pressed("interact")
 	_input.grab_focus()
@@ -120,6 +126,12 @@ func say(text: String) -> void:
 	var line := text.strip_edges()
 	if npc.is_answering or line.is_empty():
 		return
+	if line == CLEAR_COMMAND:
+		npc.forget_chat()
+		_notice = CLEARED_NOTICE % npc.name
+		_show_lines()
+		return
+	_notice = ""
 	var clock := _state.clock
 	# The chat so far: the model only follows a conversation it is told.
 	var history := npc.chat_history.duplicate()
@@ -144,6 +156,8 @@ func _show_lines() -> void:
 		lines.append(line_text(line, _npc.name))
 	if _npc.is_answering:
 		lines.append("* %s is typing..." % _npc.name)
+	if _notice != "":
+		lines.append(_notice)
 	_log.text = "\n".join(lines)
 
 

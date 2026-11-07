@@ -263,3 +263,45 @@ func test_lowering_the_setting_while_a_summary_is_in_flight_loses_and_doubles_no
 	assert_false(second.contains("line 0"))
 	for index in [1, 2, 3]:
 		assert_string_contains(second, "line %d" % index)
+
+
+# --- /clear ---
+
+
+func test_clear_forgets_the_chat_and_the_memories_and_says_so() -> void:
+	_chat.answers = ["Moin!"]
+	var screen := _chat_screen()
+	screen.open(_npc, _state)
+	await _said(screen, "Moin")
+	_npc.add_memory("On the 1st day: one.")
+	_npc.uncompacted_lines.append(_line(true, "old"))
+	var requests := _chat.requests.size()
+	screen.say("/clear")
+	assert_true(_npc.chat_history.is_empty())
+	assert_true(_npc.memories.is_empty())
+	assert_true(_npc.uncompacted_lines.is_empty())
+	assert_eq(_chat.requests.size(), requests, "nothing was sent to the model")
+	assert_eq(screen._log.text, "* Antje Boysen forgets your talks.")
+	await _said(screen, "Moin again")
+	assert_false(screen._log.text.contains("forgets"), "the notice is gone with the next line")
+	assert_eq(_npc.chat_history.size(), 2, "the command was not kept as a line")
+
+
+func test_other_text_with_a_slash_is_said_as_it_is() -> void:
+	var screen := _chat_screen()
+	screen.open(_npc, _state)
+	await _said(screen, "/dance")
+	assert_eq(_npc.chat_history[0]["text"], "/dance")
+
+
+func test_a_summary_in_flight_when_the_chat_is_cleared_makes_no_memory() -> void:
+	_chat.seconds = 0.2
+	var dialogue := NpcDialogue.new(_settings, _chat)
+	add_child_autoqfree(dialogue)
+	for index in 3:
+		_npc.add_chat_line(1, 400, true, "line %d" % index)
+	_settings.set_chat_history_lines(2)
+	dialogue.compact(_npc, _state)
+	_npc.forget_chat()
+	await wait_until(func() -> bool: return not _npc.is_compacting, 3.0)
+	assert_true(_npc.memories.is_empty())
