@@ -24,8 +24,8 @@ func test_each_language_is_told_by_its_words() -> void:
 
 
 func test_a_letter_only_one_language_has_tells_it() -> void:
-	assert_eq(NpcLanguage.detect("Schön", _rules), "de")
 	assert_eq(NpcLanguage.detect("Grüße!", _rules), "de")
+	assert_eq(NpcLanguage.detect("Schön", _rules), "", "ö alone: Swedish has it too")
 	assert_eq(NpcLanguage.detect("Blåbær", _rules), "da")
 	assert_eq(NpcLanguage.detect("Rødgrød", _rules), "da")
 
@@ -91,3 +91,10 @@ func test_with_nothing_to_go_by_the_language_is_not_known() -> void:
 	assert_eq(NpcLanguage.name_of("Moin", [] as Array[Dictionary], _rules), "")
 	var history: Array[Dictionary] = [_line(true, "Hi"), _line(false, "Aye.")]
 	assert_eq(NpcLanguage.name_of("Hej", history, _rules), "")
+
+
+func test_a_swedish_line_with_an_o_umlaut_is_not_taken_for_german() -> void:
+	assert_eq(NpcLanguage.detect("Tjena! Vem ör du då?", _rules), "other")
+	assert_eq(
+		NpcLanguage.detect("Wie hören Sie mich?", _rules), "de", "German words outweigh the ö"
+	)

@@ -4,7 +4,7 @@ extends RefCounted
 ## model: a model that is only asked for "the language of the neighbour's line" follows a switch
 ## of language about three times in five. The words are those of [language] in
 ## data/npc_talk.cfg: each common word of a language in the line scores one for it, each letter
-## only it has (such as ä or æ) scores `letter_score`.
+## it has (such as ß or æ; Swedish shares ä and ö with German) scores `letter_score`.
 
 
 ## The name of the language of the player's `message`, such as "German": if it can't be told
