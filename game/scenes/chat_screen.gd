@@ -1,16 +1,19 @@
 class_name ChatScreen
 extends CanvasLayer
-## The chat with a villager: the player's portrait on the left and the villager's on the right,
-## each with the name under it, and between them a chat window as on IRC: the lines so far with
-## the game time and who said them, `[08:15] <You> hello`, scrolling back with the mouse wheel or
-## Page Up and Page Down, and a line to type into. Enter sends, Escape leaves.
+## The chat with a villager, laid out like a messenger: the villager's portrait on the left and
+## the player's on the right, each with the name under it, and between them the lines so far as
+## bubbles, the villager's on the left under their name and the player's on the right, each with
+## the game time in its corner. The window scrolls to the newest line, back with the mouse wheel
+## or Page Up and Page Down, and a line to type into is below. Enter sends, Escape leaves. The
+## window has a fixed size (LOG_SIZE), which the bubbles' widths are worked out from.
 ##
 ## The game is paused while it is open, so nothing moves and no key reaches the game: it keeps
 ## running itself, and its input line takes every key. A line sent is answered by NpcDialogue;
-## while the answer is awaited the villager is shown typing, and nothing more is sent to them. The
-## wait is the villager's (Npc `is_answering`): the player may leave and talk to another, and the
-## answer is kept in the chat of the one who was asked. Typing `/clear` makes the villager forget
-## the chat and their memories (for debugging); other text, also with a "/", is said as it is.
+## while the answer is awaited the villager is shown typing ("..."), and nothing more is sent to
+## them. The wait is the villager's (Npc `is_answering`): the player may leave and talk to
+## another, and the answer is kept in the chat of the one who was asked. Typing `/clear` makes
+## the villager forget the chat and their memories (for debugging); other text, also with a "/",
+## is said as it is.
 ## The villager keeps the latest lines; the older ones become a memory (NpcDialogue `compact`).
 
 ## The answer to a line came and is shown (for tests and the debug runner).
@@ -25,12 +28,28 @@ const PORTRAIT_SIZE := 32 * PORTRAIT_SCALE
 ## A name under a portrait wraps to this width.
 const NAME_WIDTH := 76
 const LOG_SIZE := Vector2(340, 176)
+## A bubble is at most this share of the window wide, so the two sides stay apart.
+const BUBBLE_MAX_SHARE := 0.7
+## Space between the bubbles of one speaker, and where the speaker changes.
+const SAME_SPEAKER_GAP := 2
+const OTHER_SPEAKER_GAP := 6
+const BUBBLE_PADDING := Vector2(5, 3)
+const LOG_PADDING := 4
+const BUBBLE_CORNER := 3
+const TYPING_TEXT := "..."
 const MAX_LINE_LENGTH := 200
 const CLEAR_COMMAND := "/clear"
 const CLEARED_NOTICE := "* %s forgets your talks."
 const GAP := 10
-## Behind the portraits: palette colour mud_dark (see tools/art/palette.py).
+## Palette colours (see tools/art/palette.py): behind the portraits mud_dark, behind the bubbles
+## ink, the villager's bubbles stone_dark and the player's water_deep, a name gold and a time
+## stone_light.
 const PORTRAIT_GROUND := Color("4f4436")
+const LOG_GROUND := Color("1d1b26")
+const NPC_BUBBLE := Color("4a4852")
+const PLAYER_BUBBLE := Color("2b4561")
+const NAME_COLOR := Color("eec25a")
+const TIME_COLOR := Color("a8a39c")
 
 ## Gives the villagers' answers. Set before the chat is opened.
 var dialogue: NpcDialogue
@@ -44,7 +63,11 @@ var _is_opening_key_held := false
 var _player_portrait := Control.new()
 var _npc_portrait := Control.new()
 var _npc_name := Label.new()
-var _log := RichTextLabel.new()
+## The lines, one MarginContainer each holding a bubble (or a notice), top to bottom.
+var _messages := VBoxContainer.new()
+var _scroll := ScrollContainer.new()
+## Whether the window follows the newest line: not once the player has scrolled back.
+var _is_following := true
 var _input := LineEdit.new()
 
 
@@ -65,14 +88,24 @@ func _init() -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", GAP)
 	panel.add_child(row)
-	var player_name := Label.new()
-	player_name.text = PLAYER_NAME
-	row.add_child(_portrait_column(_player_portrait, player_name))
+	row.add_child(_portrait_column(_npc_portrait, _npc_name))
 	var chat := VBoxContainer.new()
-	_log.custom_minimum_size = LOG_SIZE
-	_log.scroll_following = true
-	_log.focus_mode = Control.FOCUS_NONE
-	chat.add_child(_log)
+	var log_ground := PanelContainer.new()
+	var ground_box := StyleBoxFlat.new()
+	ground_box.bg_color = LOG_GROUND
+	ground_box.set_content_margin_all(LOG_PADDING)
+	log_ground.add_theme_stylebox_override("panel", ground_box)
+	_scroll.custom_minimum_size = LOG_SIZE
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_scroll.focus_mode = Control.FOCUS_NONE
+	var scroll_bar := _scroll.get_v_scroll_bar()
+	scroll_bar.changed.connect(_follow_newest_line)
+	scroll_bar.value_changed.connect(_on_scrolled)
+	_messages.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_messages.add_theme_constant_override("separation", 0)
+	_scroll.add_child(_messages)
+	log_ground.add_child(_scroll)
+	chat.add_child(log_ground)
 	_input.max_length = MAX_LINE_LENGTH
 	_input.placeholder_text = "Enter sends, Esc leaves, /clear forgets."
 	_input.keep_editing_on_text_submit = true
@@ -81,13 +114,9 @@ func _init() -> void:
 	_input.focus_exited.connect(_on_input_focus_exited)
 	chat.add_child(_input)
 	row.add_child(chat)
-	row.add_child(_portrait_column(_npc_portrait, _npc_name))
-
-
-## One line of the chat as it is shown: `[08:15] <Antje Boysen> I understand.`
-static func line_text(line: Dictionary, npc_name: String) -> String:
-	var speaker := PLAYER_NAME if line["from_player"] else npc_name
-	return "[%s] <%s> %s" % [Sun.time_text(line["minute"]), speaker, line["text"]]
+	var player_name := Label.new()
+	player_name.text = PLAYER_NAME
+	row.add_child(_portrait_column(_player_portrait, player_name))
 
 
 func is_open() -> bool:
@@ -149,16 +178,104 @@ func say(text: String) -> void:
 	answered.emit()
 
 
-## The lines of the chat, and the villager typing while an answer is awaited.
+## The lines of the chat as bubbles, the villager typing while an answer is awaited, and the
+## notice of a command.
 func _show_lines() -> void:
-	var lines: Array[String] = []
+	for message in _messages.get_children():
+		# Out of the tree first, so nothing counts it as a line while it is freed.
+		_messages.remove_child(message)
+		message.free()
+	# Whether the line above was the player's; null before the first.
+	var previous: Variant = null
 	for line in _npc.chat_history:
-		lines.append(line_text(line, _npc.name))
+		_add_bubble(line["text"], Sun.time_text(line["minute"]), line["from_player"], previous)
+		previous = line["from_player"]
 	if _npc.is_answering:
-		lines.append("* %s is typing..." % _npc.name)
+		_add_bubble(TYPING_TEXT, "", false, previous)
 	if _notice != "":
-		lines.append(_notice)
-	_log.text = "\n".join(lines)
+		var notice := Label.new()
+		notice.name = "Notice"
+		notice.text = _notice
+		notice.add_theme_color_override("font_color", TIME_COLOR)
+		notice.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		notice.autowrap_mode = TextServer.AUTOWRAP_WORD
+		_messages.add_child(_margin(notice, OTHER_SPEAKER_GAP))
+	_is_following = true
+
+
+## Adds the bubble of a line: on the right for the player, on the left for the villager, who has
+## their name above the first bubble of a run. `previous` is whether the line above was the
+## player's (null if none), which sets the space above.
+func _add_bubble(text: String, time: String, is_player: bool, previous: Variant) -> void:
+	var is_run_start: bool = previous != is_player
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 0)
+	if not is_player and is_run_start:
+		content.add_child(_bubble_label("Name", _npc.name, NAME_COLOR))
+	var body := _bubble_label("Text", text, Color.WHITE)
+	content.add_child(body)
+	if time != "":
+		var time_label := _bubble_label("Time", time, TIME_COLOR)
+		time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		content.add_child(time_label)
+	var box := StyleBoxFlat.new()
+	box.bg_color = PLAYER_BUBBLE if is_player else NPC_BUBBLE
+	box.set_corner_radius_all(BUBBLE_CORNER)
+	box.anti_aliasing = false
+	box.content_margin_left = BUBBLE_PADDING.x
+	box.content_margin_right = BUBBLE_PADDING.x
+	box.content_margin_top = BUBBLE_PADDING.y
+	box.content_margin_bottom = BUBBLE_PADDING.y
+	var bubble := PanelContainer.new()
+	bubble.name = "Bubble"
+	bubble.add_theme_stylebox_override("panel", box)
+	bubble.size_flags_horizontal = (
+		Control.SIZE_SHRINK_END if is_player else Control.SIZE_SHRINK_BEGIN
+	)
+	bubble.add_child(content)
+	var gap := 0
+	if previous != null:
+		gap = OTHER_SPEAKER_GAP if is_run_start else SAME_SPEAKER_GAP
+	_messages.add_child(_margin(bubble, gap))
+	# The text takes the width it needs up to the bubble's largest and wraps there; a word too
+	# long for it is broken.
+	var window_width := LOG_SIZE.x - _scroll.get_v_scroll_bar().get_combined_minimum_size().x
+	var max_width := int(window_width * BUBBLE_MAX_SHARE - BUBBLE_PADDING.x * 2)
+	var font := body.get_theme_font("font")
+	var font_size := body.get_theme_font_size("font_size")
+	var text_size := font.get_multiline_string_size(
+		text, HORIZONTAL_ALIGNMENT_LEFT, max_width, font_size
+	)
+	body.custom_minimum_size.x = ceili(minf(text_size.x, max_width))
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+
+func _bubble_label(label_name: String, text: String, color: Color) -> Label:
+	var label := Label.new()
+	label.name = label_name
+	label.text = text
+	label.add_theme_color_override("font_color", color)
+	return label
+
+
+func _margin(child: Control, top: int) -> MarginContainer:
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_top", top)
+	margin.add_child(child)
+	return margin
+
+
+## Keeps the newest line in view when the lines make the window longer, unless the player has
+## scrolled back.
+func _follow_newest_line() -> void:
+	if _is_following:
+		var scroll_bar := _scroll.get_v_scroll_bar()
+		_scroll.scroll_vertical = int(scroll_bar.max_value - scroll_bar.page)
+
+
+func _on_scrolled(value: float) -> void:
+	var scroll_bar := _scroll.get_v_scroll_bar()
+	_is_following = value >= scroll_bar.max_value - scroll_bar.page - 1.0
 
 
 func _portrait_column(portrait: Control, name_label: Label) -> VBoxContainer:
@@ -211,7 +328,7 @@ func _on_input_gui_input(event: InputEvent) -> void:
 		close()
 		_input.accept_event()
 		return
-	var scroll_bar := _log.get_v_scroll_bar()
+	var scroll_bar := _scroll.get_v_scroll_bar()
 	match event.keycode:
 		KEY_PAGEUP:
 			scroll_bar.value -= scroll_bar.page

@@ -62,14 +62,6 @@ func test_the_villager_comes_before_a_chest_and_a_bed_in_reach() -> void:
 # --- The chat screen ---
 
 
-func test_a_line_shows_the_time_and_who_said_it() -> void:
-	var line := {"day": 1, "minute": 8 * 60 + 15, "from_player": true, "text": "hello"}
-	assert_eq(ChatScreen.line_text(line, "Antje Boysen"), "[08:15] <You> hello")
-	line["from_player"] = false
-	line["text"] = "I understand."
-	assert_eq(ChatScreen.line_text(line, "Antje Boysen"), "[08:15] <Antje Boysen> I understand.")
-
-
 func test_the_chat_pauses_the_game_until_it_is_closed() -> void:
 	var screen := _chat_screen()
 	assert_false(screen.is_open())
@@ -123,14 +115,14 @@ func test_leaving_a_villager_who_is_answering_leaves_another_free_to_talk() -> v
 	_state.npcs.add(other)
 	screen.open(_npc, _state)
 	screen.say("One")
-	assert_string_contains(screen._log.text, "%s is typing" % _npc.name)
+	assert_eq(screen._messages.get_child_count(), 2, "the line and the dots")
 	screen.close()
 	screen.open(other, _state)
-	assert_false(screen._log.text.contains("typing"), "the other one owes no answer")
+	assert_eq(screen._messages.get_child_count(), 0, "the other one owes no answer")
 	screen.say("Two")
 	assert_eq(other.chat_history.size(), 1, "and may be spoken to")
 	await wait_for_signal(screen.answered, 2.0)
-	assert_false(screen._log.text.contains(_npc.name), "the first answer is not shown here")
+	assert_eq(screen._messages.get_child_count(), 2, "the first answer is not shown here")
 	# GUT's waiting stands still while the game is paused.
 	screen.close()
 	await wait_until(func() -> bool: return not other.is_answering, 2.0)

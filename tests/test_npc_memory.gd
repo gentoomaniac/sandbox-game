@@ -282,9 +282,13 @@ func test_clear_forgets_the_chat_and_the_memories_and_says_so() -> void:
 	assert_true(_npc.memories.is_empty())
 	assert_true(_npc.uncompacted_lines.is_empty())
 	assert_eq(_chat.requests.size(), requests, "nothing was sent to the model")
-	assert_eq(screen._log.text, "* Antje Boysen forgets your talks.")
+	assert_eq(screen._messages.get_child_count(), 1)
+	assert_eq(
+		screen._messages.find_child("Notice", true, false).text,
+		"* Antje Boysen forgets your talks."
+	)
 	await _said(screen, "Moin again")
-	assert_false(screen._log.text.contains("forgets"), "the notice is gone with the next line")
+	assert_null(screen._messages.find_child("Notice", true, false), "gone with the next line")
 	assert_eq(_npc.chat_history.size(), 2, "the command was not kept as a line")
 
 
