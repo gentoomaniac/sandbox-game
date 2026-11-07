@@ -11,7 +11,7 @@ NAME=sandbox-game-llm
 VOLUME=sandbox-game-llm-models
 PORT=11434
 URL=http://127.0.0.1:$PORT
-MODEL=${LLM_MODEL:-qwen2.5:3b-instruct}
+MODEL=${LLM_MODEL:-qwen2.5:7b-instruct}
 GPU=${LLM_GPU:-auto}
 GPU_DEVICE=nvidia.com/gpu=all
 GPU_LABEL=sandbox-game.gpu

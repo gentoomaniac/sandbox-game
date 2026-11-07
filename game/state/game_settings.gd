@@ -81,7 +81,7 @@ const DEFAULT_SOUND_IN_BACKGROUND := true
 const DEFAULT_LANGUAGE_MODEL := {
 	"provider": "openai",
 	"endpoint": "http://127.0.0.1:11434/v1",
-	"model": "qwen2.5:3b-instruct",
+	"model": "qwen2.5:7b-instruct",
 	"api_key": "",
 	"max_tokens": "",
 }

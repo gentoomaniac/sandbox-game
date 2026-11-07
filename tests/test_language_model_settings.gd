@@ -27,7 +27,7 @@ func _reloaded() -> GameSettings:
 
 func test_by_default_the_endpoint_is_the_test_llm_with_its_model() -> void:
 	assert_eq(_settings.language_model["endpoint"], "http://127.0.0.1:11434/v1")
-	assert_eq(_settings.language_model["model"], "qwen2.5:3b-instruct")
+	assert_eq(_settings.language_model["model"], "qwen2.5:7b-instruct")
 	assert_eq(_settings.language_model["api_key"], "")
 
 

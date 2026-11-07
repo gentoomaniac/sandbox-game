@@ -205,7 +205,7 @@ def compare(tags):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    parser.add_argument("--model", default=os.environ.get("LLM_MODEL", "qwen2.5:3b-instruct"))
+    parser.add_argument("--model", default=os.environ.get("LLM_MODEL", "qwen2.5:7b-instruct"))
     parser.add_argument("--endpoint", default=ENDPOINT)
     parser.add_argument("--runs", type=int, default=3, help="replies per scenario")
     parser.add_argument("--only", nargs="*", help="scenario ids to run")
