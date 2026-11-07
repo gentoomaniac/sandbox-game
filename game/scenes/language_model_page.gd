@@ -5,7 +5,8 @@ extends VBoxContainer
 ## needs one. Each provider keeps its own; each is stored as it is chosen or typed. The test LLM
 ## is the default; with the endpoint emptied, villagers speak scripted lines. The endpoint is
 ## asked which models it has, to pick one from a list (the name can be typed too, as the endpoint
-## may not be reachable).
+## may not be reachable). How many lines of a chat a villager keeps is one setting for all of
+## them.
 
 signal back_requested
 
@@ -44,6 +45,11 @@ const TIPS := {
 		),
 	},
 }
+const HISTORY_TIP := (
+	"How many of the latest chat lines a villager keeps and tells the model. Older lines are"
+	+ " summed up in the villager's memory. Every kept line is sent with each question, so more"
+	+ " lines make the answers slower (and cost more with a hosted model)."
+)
 const NOTE := "The key is stored as plain text in settings.cfg."
 const FIELD_WIDTH := 260
 
@@ -60,6 +66,8 @@ var _models_note := Label.new()
 ## Asks for the models once the endpoint or key has not been typed in for a moment.
 var _models_delay := Timer.new()
 var _models_asked := 0
+var _history_label := Label.new()
+var _history_lines := HSlider.new()
 
 
 func _init(settings: GameSettings) -> void:
@@ -104,6 +112,19 @@ func _init(settings: GameSettings) -> void:
 	_models_delay.wait_time = NpcTalkRules.default_rules().value("request", "models_delay_seconds")
 	_models_delay.timeout.connect(show_models)
 	add_child(_models_delay)
+	TooltipView.set_text(_history_label, HISTORY_TIP)
+	_history_label.mouse_filter = Control.MOUSE_FILTER_PASS
+	add_child(_history_label)
+	_history_lines.step = 1
+	_history_lines.min_value = GameSettings.MIN_CHAT_HISTORY_LINES
+	_history_lines.max_value = GameSettings.MAX_CHAT_HISTORY_LINES
+	_history_lines.value_changed.connect(
+		func(lines: float) -> void:
+			_settings.set_chat_history_lines(roundi(lines))
+			_show_history_lines()
+	)
+	TooltipView.set_text(_history_lines, HISTORY_TIP, "setting_chat_history_lines")
+	add_child(_history_lines)
 	var note := Label.new()
 	note.text = NOTE
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -128,6 +149,8 @@ func show_settings() -> void:
 		var tip: String = TIPS[key][provider["protocol"]]
 		TooltipView.set_text(_labels[key], tip)
 		TooltipView.set_text(_fields[key], tip, "setting_language_model_%s" % key)
+	_history_lines.set_value_no_signal(_settings.chat_history_lines)
+	_show_history_lines()
 	_fields["endpoint"].placeholder_text = provider["endpoint"]
 	_fields["model"].placeholder_text = provider["model"]
 	show_models()
@@ -154,6 +177,10 @@ func show_models() -> void:
 	_list_models(
 		names, "The endpoint did not list its models: type the name." if names.is_empty() else ""
 	)
+
+
+func _show_history_lines() -> void:
+	_history_label.text = "Lines a villager keeps: %d" % _settings.chat_history_lines
 
 
 func _add_model_list() -> void:

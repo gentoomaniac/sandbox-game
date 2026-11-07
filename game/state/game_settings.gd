@@ -50,6 +50,7 @@ const SOUND_IN_BACKGROUND_KEY := "in_background"
 const LANGUAGE_MODEL_SECTION := "language_model"
 const LANGUAGE_MODEL_PROVIDER_KEY := "provider"
 const LANGUAGE_MODEL_KEYS: Array[String] = ["endpoint", "model", "api_key"]
+const CHAT_HISTORY_LINES_KEY := "chat_history_lines"
 
 const MIN_UI_SCALE := 0.5
 const MAX_UI_SCALE := 2.0
@@ -159,6 +160,12 @@ const ARROW_LABELS := {
 	"Left": "Left arrow", "Right": "Right arrow", "Up": "Up arrow", "Down": "Down arrow"
 }
 
+## How many of the latest lines of a chat a villager keeps (and tells the model); the older ones
+## are compacted into a memory (see NpcDialogue `compact`).
+const MIN_CHAT_HISTORY_LINES := 2
+const MAX_CHAT_HISTORY_LINES := 200
+const DEFAULT_CHAT_HISTORY_LINES := 24
+
 var is_fullscreen := false
 var ui_scale := DEFAULT_UI_SCALE
 var energy_drain := DEFAULT_ENERGY_DRAIN
@@ -167,6 +174,8 @@ var sound_in_background := DEFAULT_SOUND_IN_BACKGROUND
 ## The chat API villagers talk through: {provider, endpoint, model, api_key} of the chosen
 ## provider, such as "http://127.0.0.1:11434/v1" (see OpenAiChat and ClaudeChat).
 var language_model: Dictionary
+## One value for every provider; see MIN_CHAT_HISTORY_LINES.
+var chat_history_lines := DEFAULT_CHAT_HISTORY_LINES
 
 ## What every provider has set (the key of one is never sent to another), by provider.
 var _language_models := _default_language_models()
@@ -377,6 +386,13 @@ func set_language_model_provider(provider: String) -> void:
 	_save()
 
 
+## Lines kept in range. Villagers apply it (NpcDialogue `compact_all`) once the menu is closed,
+## not at every step of the Settings page's slider.
+func set_chat_history_lines(lines: int) -> void:
+	chat_history_lines = clampi(lines, MIN_CHAT_HISTORY_LINES, MAX_CHAT_HISTORY_LINES)
+	_save()
+
+
 static func _default_language_models() -> Dictionary:
 	var defaults := {}
 	for provider: String in LANGUAGE_MODEL_PROVIDERS:
@@ -422,6 +438,7 @@ func load_file() -> void:
 	_load_game_section(file)
 	_load_audio_section(file)
 	_load_language_model_section(file)
+	_load_chat_history_lines(file)
 
 
 func _load_language_model_section(file: ConfigFile) -> void:
@@ -441,6 +458,21 @@ func _load_language_model_section(file: ConfigFile) -> void:
 			language_model = _language_models[chosen]
 		else:
 			push_warning("Ignoring language model provider in %s: not known" % _path)
+
+
+func _load_chat_history_lines(file: ConfigFile) -> void:
+	if not file.has_section_key(LANGUAGE_MODEL_SECTION, CHAT_HISTORY_LINES_KEY):
+		return
+	var value: Variant = file.get_value(LANGUAGE_MODEL_SECTION, CHAT_HISTORY_LINES_KEY)
+	if value is int and value >= MIN_CHAT_HISTORY_LINES and value <= MAX_CHAT_HISTORY_LINES:
+		chat_history_lines = value
+	else:
+		push_warning(
+			(
+				"Ignoring chat history lines in %s: not a whole number %d to %d"
+				% [_path, MIN_CHAT_HISTORY_LINES, MAX_CHAT_HISTORY_LINES]
+			)
+		)
 
 
 func _load_game_section(file: ConfigFile) -> void:
@@ -572,6 +604,8 @@ func _save() -> void:
 		file.set_value(
 			LANGUAGE_MODEL_SECTION, LANGUAGE_MODEL_PROVIDER_KEY, language_model["provider"]
 		)
+	if chat_history_lines != DEFAULT_CHAT_HISTORY_LINES:
+		file.set_value(LANGUAGE_MODEL_SECTION, CHAT_HISTORY_LINES_KEY, chat_history_lines)
 	var error := DirAccess.make_dir_recursive_absolute(_path.get_base_dir())
 	if error == OK:
 		error = file.save(_path)

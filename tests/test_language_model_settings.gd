@@ -144,3 +144,41 @@ func test_the_page_shows_the_settings_and_stores_what_is_typed() -> void:
 	assert_eq(fields["api_key"].text, "sk-openai")
 	fields["endpoint"].text_changed.emit("http://localhost:1234/v1")
 	assert_eq(_reloaded().language_model["endpoint"], "http://localhost:1234/v1")
+
+
+func test_the_chat_history_lines_default_to_24_and_are_stored_only_when_changed() -> void:
+	assert_eq(_settings.chat_history_lines, 24)
+	_settings.set_chat_history_lines(24)
+	assert_false(FileAccess.get_file_as_string(PATH).contains("chat_history_lines"))
+	_settings.set_chat_history_lines(40)
+	assert_eq(_reloaded().chat_history_lines, 40)
+
+
+func test_the_chat_history_lines_stay_in_range_and_one_for_every_provider() -> void:
+	_settings.set_chat_history_lines(0)
+	assert_eq(_settings.chat_history_lines, GameSettings.MIN_CHAT_HISTORY_LINES)
+	_settings.set_chat_history_lines(5000)
+	assert_eq(_settings.chat_history_lines, GameSettings.MAX_CHAT_HISTORY_LINES)
+	_settings.set_chat_history_lines(30)
+	_settings.set_language_model_provider("claude")
+	assert_eq(_settings.chat_history_lines, 30)
+
+
+func test_a_chat_history_lines_value_out_of_range_is_ignored() -> void:
+	var file := ConfigFile.new()
+	file.set_value("language_model", "chat_history_lines", 1)
+	DirAccess.make_dir_recursive_absolute(DIR)
+	file.save(PATH)
+	assert_eq(_reloaded().chat_history_lines, 24)
+	assert_push_warning_count(1)
+
+
+func test_the_page_shows_the_chat_history_lines_and_stores_a_change() -> void:
+	_settings.set_chat_history_lines(10)
+	var page := LanguageModelPage.new(_settings)
+	add_child_autofree(page)
+	page.show_settings()
+	assert_eq(page._history_lines.value, 10.0)
+	assert_eq(page._history_label.text, "Lines a villager keeps: 10")
+	page._history_lines.value = 12
+	assert_eq(_reloaded().chat_history_lines, 12)
