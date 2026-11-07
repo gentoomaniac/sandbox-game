@@ -193,8 +193,10 @@ Ketels, a fisherman of the tidal creeks), `ocke` (Ocke Hansen, the miller) and `
 of [data/npcs.cfg](data/npcs.cfg).
 
 Face a villager and press E to talk: the name over their head shows whom E speaks to. The
-chat shows your portrait and theirs, and between them a chat window with the game time,
-like `[08:15] <You> hello`. Type a line and press Enter; Escape leaves. The game stands still
+chat is laid out like a messenger: the villager's portrait on the left and yours on the
+right, and between them the talk as bubbles, the villager's on the left under their name,
+yours on the right, each with the game time in its corner; a "..." bubble shows the villager
+is still answering. Type a line and press Enter; Escape leaves. The game stands still
 while you talk. A villager keeps the latest lines of your chat (24 by default, set under
 Settings → Language model) for the next time, so a reopened chat goes on where it left off;
 the older lines are summed up in one remembered line (by the model, else it is what you
@@ -207,7 +209,7 @@ in the first one's chat.
 
 ![Villagers by the camp, the name of the one E would speak to over their head](docs/screenshots/npcs.png)
 
-![A chat with Antje Boysen through the test LLM: both portraits, and the lines with the game time](docs/screenshots/npc-chat.png)
+![A chat with Antje Boysen: the villager's bubbles on the left, yours on the right, the villager still typing](docs/screenshots/npc-chat.png)
 
 The pixel font has the Latin-1 letters (ä ö ü ß å æ ø é ç ñ ...), the Latin Extended-A letters
 of the neighbours' languages (Polish, Czech, Turkish and others) and the typographic quotes,
@@ -602,6 +604,8 @@ To screenshot a talk, start the test LLM (`make llm-up`; screenshots read
 
 ```
 make screenshot SCREENSHOT_TIMEOUT=120 ARGS="--villager=antje '--chat=Moin, Antje!;Do you have butter?'"
+# or canned lines, no model asked (you and the villager in turn; a last "..." is them typing)
+make screenshot ARGS="--villager=antje '--chat-script=Moin, Antje!;Moin!;...'"
 ```
 
 `SANDBOX_LLM_URL=http://127.0.0.1:11434/v1 make test` also runs the tests that ask the real

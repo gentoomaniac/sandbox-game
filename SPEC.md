@@ -942,11 +942,15 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   while the player is in a house.
 - **Talking:** E speaks to the villager on the targeted tile, or the nearest one in reach in
   front of the player, before any chest, station or bed; that villager's name shows over
-  their head. The chat pauses the game: the player's portrait on the left, the villager's on
-  the right (32x32 head-and-shoulders portraits laid together from the same layers, drawn at
-  2x), names under them, and an IRC-style window between them: lines like
-  `[08:15] <You> hello` with the game time, scrollback, a one-line input. Enter sends; while
-  the answer is awaited the villager is shown typing; Escape leaves (and doesn't open the
+  their head. The chat pauses the game and is laid out like a messenger: the villager's
+  portrait on the left, the player's on the right (32x32 head-and-shoulders portraits laid
+  together from the same layers, drawn at 2x), names under them, and between them the lines as
+  bubbles: the villager's on the left with their name above the first of a run, the player's
+  on the right, each with the game time small in its bottom corner, at most 70% of the window
+  wide with the text wrapped, closer together within one speaker's run than between speakers
+  (palette colours only), the window scrolling to the newest line (and back with the wheel or
+  Page Up/Down), and a one-line input. Enter sends; while the answer is awaited the villager
+  has a "..." bubble; Escape leaves (and doesn't open the
   pause menu). The villager turns to the player and stands a while.
 - **Answers:** one function, `NpcDialogue.reply`, awaited by the chat. With a language model
   set in Settings (a provider, an OpenAI-compatible chat endpoint by default, the test LLM's

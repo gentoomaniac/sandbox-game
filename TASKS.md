@@ -1173,13 +1173,15 @@ Claude) get the full sheets, local models a cut-down version. Seen by the user w
 
 ## 97. Chat screen laid out like a messenger
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-07: the chat is hard to read with all the text and the font. Make
 it look a bit like WhatsApp: the player's lines on one side and the villager's on the other,
 as bubbles with more space between them, so the conversation is easy to follow (the user
 showed a WhatsApp screenshot: bubbles in two colours, right for one's own lines, the time
 small in the bubble's corner, the name above the other's lines).
+
+- [x] Done: the chat is bubbles in a ScrollContainer: the villager's on the left (portrait left too, the player's right) in stone_dark with their name in gold above the first bubble of a run, the player's on the right in water_deep, the time small in each bubble's corner, at most 70% of the window wide, 2 px between lines of one speaker and 6 px at a change, "..." as the villager's bubble while they answer, a grey centred notice for `/clear`; it scrolls to the newest line (the scrollbar's `changed`). `line_text` is gone, unused. New debug flag `--chat-script` (canned lines, no model; a last `...` leaves the villager typing). The bubbles are StyleBoxFlat with a 3 px radius and no antialiasing, no art or palette change.
 
 ## Later (not part of the prototype)
 

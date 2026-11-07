@@ -103,7 +103,8 @@ Warft and an Ewer here and there.
   id, are `data/villagers.cfg` (`VillagerRules`). Each is drawn by an `NpcView` among the world
   view's entities, with the player's sheets and frames. E speaks to the villager
   `Interaction.npc_to_chat` names, before any chest, station or bed; `ChatScreen` shows the
-  chat with both portraits (`Appearance.portrait_layers`) and pauses the game while it is open.
+  chat as bubbles between both portraits (`Appearance.portrait_layers`) and pauses the game
+  while it is open.
 - **What villagers say** comes from one place, `NpcDialogue.reply` (`game/scenes/`, a node, as
   it talks to the network), which the chat awaits; the wait is the villager's
   (`Npc.is_answering`). With a language model set in Settings the chat of the
