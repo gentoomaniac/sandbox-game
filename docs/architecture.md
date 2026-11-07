@@ -96,11 +96,15 @@ Warft and an Ewer here and there.
   `[hunting]` numbers of `data/livestock.cfg`) and draws the catch as the cat pounces (the mouse
   is caught, or dashes off with `Mouse.flee_from`). Nothing of a hunt is saved.
 - **Npcs** (`game/state/npcs.gd`) holds the villagers (`Npc`: name, sex, look as an
-  `Appearance`, who they are (age, trade, personality, background, habits), position, anchor,
+  `Appearance`, who they are (their whole sheet: age, trade, personality, background, home,
+  speech, sample lines, people, likes, wants, day, habits, avoids, secrets), position, anchor,
   chat history and memories) and moves them like the livestock: GameState owns it, Main calls
   its `update` every frame while the player is outside, and the numbers, names, clothes and
   background tables are `data/npcs.cfg` (`NpcRules`); the villagers written by hand, spawned by
-  id, are `data/villagers.cfg` (`VillagerRules`). Each is drawn by an `NpcView` among the world
+  id, are `data/villagers.cfg` (`VillagerRules`, which also checks that their family and
+  friends name each other back; a loaded one takes their sheet from it, so edits to the file
+  reach saved games); the village they all share is `data/village.cfg`
+  (`VillageSheet`). Each is drawn by an `NpcView` among the world
   view's entities, with the player's sheets and frames. E speaks to the villager
   `Interaction.npc_to_chat` names, before any chest, station or bed; `ChatScreen` shows the
   chat as bubbles between both portraits (`Appearance.portrait_layers`) and pauses the game
@@ -114,7 +118,9 @@ Warft and an Ewer here and there.
   list the endpoint's models for Settings; tests put `FakeChat` in their place), else, or when that fails, it says a scripted line. The
   request is built by `NpcPrompt` (`game/state/`): pure functions of the villager, the chat,
   the moment (`NpcMoment`: clock, sun, weather and place, taken from GameState) and the words
-  of `data/npc_talk.cfg` (`NpcTalkRules`), so they are tested without a model. `NpcLanguage`
+  of `data/npc_talk.cfg` (`NpcTalkRules`), so they are tested without a model. Its system line
+  carries the village's sheet and the villager's, in full or cut down: `NpcDialogue` asks for the
+  full ones when the provider needs a key (a hosted model). `NpcLanguage`
   tells the language of the player's line (English, German, Danish; word lists and letters from
   the same file, the chat's earlier lines for a line too short) for the prompt to name. The villager keeps the
   last lines of the chat (a setting); `NpcDialogue.compact` sums the lines that drop out up in a

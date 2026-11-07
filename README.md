@@ -184,13 +184,28 @@ to within about six tiles of the house or campfire nearest to where they came, s
 and stroll by day and stand still at night; you walk through them, so they never shut you
 in. For now they come from the console; they are saved with the game.
 
-Each has an age, a trade, a personality, a background and habits of speech. Four are written
-by hand in [data/villagers.cfg](data/villagers.cfg) and come with `spawn npc <id>`: `antje`
-(Antje Boysen, a farmer's wife, whose husband Hinrich works their marsh farm), `momme` (Momme
-Ketels, a fisherman of the tidal creeks), `ocke` (Ocke Hansen, the miller) and `kerrin`
-(Kerrin Paulsen, the dyke reeve's widow, who lived through the Christmas flood of 1717).
-`spawn npc 3` makes villagers up, with a trade, family, worry and habit drawn from the tables
-of [data/npcs.cfg](data/npcs.cfg).
+They all live in Wehlsbüll, a made-up marsh parish two hours north of Husum in 1750, which
+[data/village.cfg](data/village.cfg) describes as everyone there knows it: the church, the Krug,
+the mill, the dyke and its sluice, the Koog, the creeks and the Geest; who is who (Pastor
+Johann Martens, the Deichgraf Peter Momsen, the Deichvogt Brar Feddersen, the innkeeper, the
+Amtmann at Husum); prices in Schilling and Mark; this year's news (the cattle plague, the dyke
+broken last autumn); the church year; and what people of the time know of the world (the Danish
+king, the Duke of Gottorf, who speaks what).
+
+Each villager has a sheet: age, trade, personality, background, home, how they speak (a manner,
+so it holds in any language), lines in their voice, their family and friends with what they
+think of each, likes, wants, their day, what they don't know or won't talk about, and a secret or
+two. Eight are written by hand in [data/villagers.cfg](data/villagers.cfg), two families and
+their friends, and come with `spawn npc <id>`: `antje` (Antje Boysen, a farmer's wife),
+`hinrich` (her husband) and `boy` (their son), `momme` (Momme Ketels, a fisherman of the tidal
+creeks) and `inken` (his daughter, Boy's sweetheart), `ocke` (Ocke Hansen, the miller) and
+`gesche` (his wife, Antje's friend), and `kerrin` (Kerrin Paulsen, the late Deichvogt's widow,
+Gesche's aunt, who lived through the Christmas flood of 1717). Everyone a sheet names as kin or
+close friend is one of them, and the sheets agree with each other (a test checks that each names
+the other back, the ages and the homes). Edit their sheets freely: a saved game takes them from
+the file each time it loads. `spawn npc 3` makes villagers up, with a sheet drawn
+from the tables of [data/npcs.cfg](data/npcs.cfg) once and kept: newcomers and people of the
+outlying farms, kin to none of the families.
 
 Face a villager and press E to talk: the name over their head shows whom E speaks to. The
 chat is laid out like a messenger: the villager's portrait on the left and yours on the
@@ -433,8 +448,8 @@ arguments.
 | `noclip` | Toggle walking through anything: water, trees, rocks, buildings, furniture (indoors within the room, outdoors on loaded ground). Turned off where you don't fit, it puts you on the nearest free ground. |
 | `weather`, `weather <condition>`, `weather auto` | Show the weather, force a condition, or go back to the simulation. |
 | `snow`, `snow <0..1>`, `snow auto` | Show the snow cover, force it, or go back to the weather. |
-| `spawn npc [count]` | Put villagers nearby, each with a look, a name and a background of their own; they stay. |
-| `spawn npc <villager>` | Put a villager written by hand nearby: `antje`, `momme`, `ocke` or `kerrin`; each comes once. |
+| `spawn npc [count]` | Put villagers nearby, each with a look, a name and a sheet of their own; they stay. |
+| `spawn npc <villager>` | Put a villager written by hand nearby: `antje`, `momme`, `ocke`, `kerrin`, `hinrich`, `boy`, `inken` or `gesche`; each comes once. |
 | `spawn <animal> [count]` | Put animals nearby: farm animals that stay (`cow`, `sheep`, `chicken`, `rabbit`, `dog`, `cat`, `horse`) or wild ones that come and go (`bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork` on the nearest roof, `geese` grazing, `flying_geese`, `mouse`, `frog`). `spawn` alone, or with an unknown name, lists them. |
 | `skip <n>m\|h\|d` | Let minutes, hours or days pass, e.g. `skip 2h` or `skip 3d`. |
 | `crop` | Show the growth, damage and needs of the nearest crop. |
@@ -552,8 +567,8 @@ the endpoint can't be reached, the game's output says so once, not for every lin
 API key (console.anthropic.com) into Key; the endpoint becomes `https://api.anthropic.com/v1`
 and the model `claude-opus-5-5`. Everything the villager is told and everything you say to
 villagers then goes to Anthropic over the internet, and the key sits in `settings.cfg` as plain
-text. A line costs about 600 tokens in and 40 out: roughly 0.4 cents with `claude-opus-5-5`
-($4 / $20 per million tokens), roughly 0.01 cents with `claude-haiku-5-5` ($0.10 / $0.50),
+text. A line costs about 2,500 tokens in (the full sheets, more with a long chat) and 40 out: roughly 1 cent with `claude-opus-5-5`
+($4 / $20 per million tokens), roughly 0.03 cents with `claude-haiku-5-5` ($0.10 / $0.50),
 which is plenty for small talk: pick it from the model list. The game sends the Messages API's
 `x-api-key` and `anthropic-version` headers, no temperature (current models refuse it), low
 effort and room for 1000 tokens (a model's thinking counts against that; the reply is trimmed
@@ -586,11 +601,14 @@ that fit, and says how `make llm-eval` compares models on the villagers' prompts
 What the model is told for each reply (the words are in [data/npc_talk.cfg](data/npc_talk.cfg),
 shaped like a prompt that worked well with the test model): a system line (1750 on the North
 Frisian coast, one or two sentences of small talk that answer what you said, in your language,
-never break character, puzzled by what did not exist then), one example exchange (of a
+never break character, puzzled by what did not exist then; keep to the sheets and to what was
+said earlier in the talk, never make up relatives, names or places that are not on them but say
+they don't know, speak in one's own manner, of which the sample lines show the manner and not
+the language) with the village's sheet and the villager's, one example exchange (of a
 blacksmith who is not one of the villagers, so that the model does not copy a villager's words
 into the others' mouths), the lines of your chat with them that they keep (24 by default; the
-older ones are in their memories), and then who the villager is (name, trade, age, their look in
-words, personality, background, habits, and what they remember of earlier talks), the moment
+older ones are in their memories), and then the villager's name, trade, age, look in words and
+what they remember of earlier talks, the moment
 (the date as the clock shows it and how far into the season, the time and part of the day by the
 sun, the weather as it is: rain, snow, fog or the sky, the temperature, frost, the wind and
 where it blows from; and the house or fire they stand by), that you are a newcomer whose name
@@ -602,6 +620,13 @@ language it does not know (Swedish) is not named; the villager is then only aske
 the language you spoke (switch language mid-chat and they follow). Only the reply and the memory
 lines are kept (a memory is one sentence the villager writes in the first person); nothing else
 in the game changes by what the model says.
+
+**Full or cut-down sheets.** A hosted model (a provider that needs a key: Gemini, Claude) is
+told the full sheets, about 2,000 tokens a line. A local model (the OpenAI-compatible provider,
+such as the test LLM) is told cut-down ones, so that a 3B or 7B stays fast: the villager's
+essentials, family and friends by name, manner of speaking and one sample line, and the
+village facts most likely needed (where it is, who is who). The rule is `needs_key`
+of the provider's row in `GameSettings.LANGUAGE_MODEL_PROVIDERS` (`NpcDialogue.has_full_sheets`).
 
 To screenshot a talk, start the test LLM (`make llm-up`; screenshots read
 `build/settings.cfg`, where the default endpoint applies) and run

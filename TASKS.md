@@ -1176,7 +1176,7 @@ wrong language on the 7B). Not measured on Gemini: the sandbox refused to read t
 
 ## 96. Villagers with more background, family and friends, and a village they share
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-07: with Gemini the talk works well, but replies are not consistent
 enough; villagers need way more background and instructions. A worker writes it for now
@@ -1191,6 +1191,48 @@ earlier, never make up family or names, stay in one's own voice; perhaps a lower
 temperature); made-up villagers get their sheet drawn once and kept. Hosted models (Gemini,
 Claude) get the full sheets, local models a cut-down version. Seen by the user with Gemini:
 "Aye." in the middle of a German talk (the English habit leaks into other languages).
+
+Done: `data/village.cfg` (`VillageSheet`) is Wehlsbüll, a made-up marsh parish two hours north
+of Husum in 1750: the village, places, who is who (Pastor Johann Martens, the Deichgraf Peter
+Momsen, the Deichvogt Brar Feddersen, the Krug's Tete Jacobsen, the sexton Claus Thomsen, the
+Amtmann at Husum, and the families), money and prices, this year's news (the cattle plague, the
+dyke broken last autumn, the land militia), the church year and what people know of the world (the
+Danish king holds all Schleswig since 1721, who speaks what), each topic with a full and a short
+text. `data/villagers.cfg` gives each villager a sheet: home, speech as a manner (no English
+words: "Says Aye" is gone), sample lines, people (family and friends by id, with kind and what
+they think), likes, wants, day, habits, avoids, secrets. Four new villagers make the families
+whole and can be spawned: `hinrich` and `boy` Boysen, `inken` Ketels (Boy's sweetheart), `gesche`
+Hansen (Antje's friend, Kerrin's niece). `VillagerRules` checks that each one named is a villager
+who names them back with a matching kind and sex, a parent is 15 or more years older, and a
+married couple shares a home (tests/test_villagers.gd). Fixed on the way: Kerrin was 30 in 1717,
+not a girl; Ocke's grudge is the king's Amt, not the duke's toll. Made-up villagers draw the whole
+sheet once from the tables of `data/npcs.cfg` (trades with their day, speeches with sample lines,
+homes on the edges of the parish, likes, wants, habits, avoids, secrets), have no people, no
+surname of the village sheet, and a spouse with their own surname; save version 23 keeps the
+sheet (a version 22 made-up villager is made up anew by their name, with another surname if theirs
+is now one of the village's families). The system line has firmer rules (keep to the sheets and to what was said;
+never make up relatives, names or places, say one doesn't know; one's own manner, the samples show
+the manner, not the language) and then the sheets: in full for a provider with `needs_key` (Gemini,
+Claude; `NpcDialogue.has_full_sheets`), cut down for a local model (the villager's essentials,
+people by name and kind, speech, one sample line; the village line and who is who). Temperature
+0.5 (was 0.7). The eval has 7 new scenarios (family, also in German; the husband's name again; another
+villager; the pastor; the Deichgraf in German; a sister or brother they don't have, also in German),
+a check for expected names and for made-up ones, prompt tokens, and `--full-sheets`.
+
+Measured with `make llm-eval`, 5 replies each of 25 scenarios, replies without a failed check:
+before, 7B 110/125 and 3B 87/125 at 515 prompt tokens (the 7B named no pastor or Deichgraf right
+in 10 of 10, made up names 7 times, e.g. "Herr Müller"; "Aye" in 23 replies, three children
+named Boy, Anna and Heinrich). After (cut-down, 0.5): 7B 123/125 and 3B 96/125 at 850 tokens
+(1.65x; 7B 3.5 s against 3.1 s a reply), "Aye" in 6 English replies and none of the others,
+"Pastor Johann Martens" and "Peter Momsen" named every
+time on the 7B, no sister made up. At 0.7: 7B 118, 3B 95. The cut-down before trimming (1150
+tokens) gave the 3B 110 and the 7B 121. The full sheets on the 7B: 50/50 (2 each) at 2375 tokens,
+but 12.9 s a reply on the CPU. The 3B still often says it doesn't know the pastor or that Momme
+has no children. Not measured on Gemini: no key here; the command is in tools/README.md
+(`--full-sheets --endpoint ... --model gemini-3.1-flash-lite`). The cfg wins for a hand-written
+villager (the coordinator's decision after review, as the user will edit the sheets): a loaded
+game takes their sheet from data/villagers.cfg as it is now; the saved sheet only stands in when
+their id has left the file.
 
 ## 97. Chat screen laid out like a messenger
 

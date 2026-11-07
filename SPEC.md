@@ -918,20 +918,43 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
 
 - **Who:** each villager draws a sex, a name and a look from a seed. Names are period North
   Frisian and Low German first names by sex (Hinrich, Jens, Boy, Momme, Ocke, Tete; Antje,
-  Elke, Inken, Kerrin, Wiebke) and surnames (Hansen, Jensen, Petersen, Paulsen, Boysen,
-  Ketels, Lorenzen). The look is layers like the player's: a skin, a hair style and colour
-  (short, long or tied for men; a bun or plaits for women), and period clothes (men: shirt or
+  Elke, Inken, Kerrin, Wiebke) and surnames (Jensen, Petersen, Lorenzen, Nissen, Carstensen;
+  the hand-written families are the Boysens, Ketels, Hansens and Paulsens). The look is layers
+  like the player's: a skin, a hair style and colour (short, long or tied for men; a bun or
+  plaits for women), and period clothes (men: shirt or
   waistcoat, knee breeches, sometimes a jacket, a knitted cap, straw or felt hat; women: a
   laced bodice over the chemise, a long skirt, often an apron or a shawl, a white coif or a
   headscarf), all in existing palette colours. The lists are in `data/npcs.cfg`.
-- **Who they are:** every villager has an age, a trade, a personality, a background (family and
-  story) and habits (of speech), told to the language model. Four are written by hand in
-  `data/villagers.cfg` with a fixed look, spawned by id and once each: `antje` (Antje Boysen, a
-  farmer's wife, married to Hinrich: the user's prompt example), `momme` (Momme Ketels, a
-  fisherman), `ocke` (Ocke Hansen, the miller) and `kerrin` (Kerrin Paulsen, the dyke reeve's
-  widow). The others draw them from tables in `data/npcs.cfg` along with their name: an age of
-  18 to 70, a trade and a family by sex (the spouse a first name of the other sex), a
-  personality, a worry and a habit.
+- **The village (task 96):** all villagers live in Wehlsbüll, a made-up marsh parish two hours
+  north of Husum in 1750, and share its sheet, `data/village.cfg` (`VillageSheet`): one topic a
+  section (the village, places, who is who, money and prices, this year's news and worries, the
+  church year, what people know of the world), each with a full text and a cut-down one (empty
+  leaves the topic out of the cut-down). Made-up people there who are not villagers (Pastor
+  Johann Martens, the Deichgraf Peter Momsen, the Deichvogt Brar Feddersen, the innkeeper Tete
+  Jacobsen, the sexton Claus Thomsen) have names; the offices and the history are real (the
+  Danish king holds all Schleswig since 1721, the floods of 1634 and 1717).
+- **Who they are:** every villager has a sheet, told to the language model: age, trade,
+  personality, background (the essentials of family and story; the dead are told only here),
+  home, speech (the manner of talking, written so that it holds in any language: no English words
+  to say, the user's "Aye." in a German talk), sample lines in their voice (they show the manner,
+  not the language), people (family and close friends, each a villager by id with the kind and
+  what they think of them), likes, wants (this year), day (where they are when), habits, avoids
+  (what they don't know or won't talk about) and secrets (only hinted at). Eight are written by
+  hand in `data/villagers.cfg` with a fixed look, spawned by id and once each: `antje` (Antje
+  Boysen, a farmer's wife: the user's prompt example), her husband `hinrich` and their son `boy`;
+  `momme` (Momme Ketels, a fisherman) and his daughter `inken`, Boy's sweetheart; `ocke` (Ocke
+  Hansen, the miller) and his wife `gesche`, Antje's friend; and `kerrin` (Kerrin Paulsen, the
+  late Deichvogt's widow), Gesche's aunt. Everyone a sheet names as kin or close friend is a
+  villager of the file, and `VillagerRules` checks that the sheets agree: each names the other
+  back with a matching kind (husband and wife, father or mother and son or daughter, aunt or uncle
+  and niece or nephew, brother or sister, sweetheart, friend) of the right sex, a parent is 15 or
+  more years older than the child, and a married couple has the same home. The others draw their
+  sheet from tables in `data/npcs.cfg` along with their name, once (it is saved): an age of 18 to
+  70, a trade with its day and a family by sex (the spouse a first name of the other sex with the
+  villager's surname), a personality, a worry, a home on the edges of the parish (newcomers and
+  outlying farms), a speech with its sample lines, likes, wants, a habit, what they avoid and a
+  secret; no people, and no surname of the village sheet, so they are kin to none of its
+  families.
 - **Where:** each keeps near its anchor: the yard in front of the door of the nearest
   building or the nearest fireplace within 16 tiles of where it came, else that spot. It
   never walks further than 6 tiles from it (one outside the circle only walks back in).
@@ -963,15 +986,22 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   spoken line: no quotes or name in front, its first line, at most two sentences. Only the
   words come from the model; nothing else in the game changes by what it says.
 - **The prompt** (`data/npc_talk.cfg`, the user's working example of 2026-11-06 in shape;
-  temperature 0.7, at most 60 tokens): a system line (dialogue for villagers on the North Frisian
-  coast in 1750, one or two short sentences of small talk that answer what was said, in the
-  language of the neighbour's latest line (English if that is English), never break character or
-  act as an assistant, puzzled by what did not exist in 1750, sharp to the rude), the example
+  temperature 0.5 since task 96 (was 0.7), at most 60 tokens): a system line (dialogue for one
+  villager of Wehlsbüll on the North Frisian coast in 1750, one or two short sentences of small
+  talk that answer what was said, in the language of the neighbour's latest line (English if that
+  is English), never break character or act as an assistant, keep to the sheets and to what was
+  said earlier, never make up relatives, friends, names or places beyond them but say one doesn't
+  know, speak in one's own manner (the sample lines show the manner, not the language), puzzled by
+  what did not exist in 1750, sharp to the rude) followed by the village's sheet and the
+  villager's: in full for a hosted model (a provider that needs a key, `needs_key` of
+  `GameSettings.LANGUAGE_MODEL_PROVIDERS`: Gemini, Claude), cut down for a local one (the
+  villager's essentials, family and friends by name and kind, speech and one sample line; the
+  village line and who is who), so that a 3B or 7B stays fast; the example
   exchange ("Villager: Hark Nissen, a blacksmith. / His neighbour says: "Fine weather for the hay
   today." / Hark's reply:" and his answer; not a villager of the game, so that the models do not
   copy a villager's words into the others), the lines the villager keeps as turns of the same
-  shape, and last what the player says, with who the villager is (age, look in words from the layers, personality, background,
-  habits, memories), the moment (the date as the clock shows it and early, mid or late in the
+  shape, and last what the player says, with the villager's age, look in words from the layers
+  and memories, the moment (the date as the clock shows it and early, mid or late in the
   season; the time and part of the day by the sun: dawn, morning, noon, afternoon, dusk, night; the
   weather as it is: thunder, storm, snow, rain or fog by strength, else the sky by its clouds, the
   temperature, frost below 0 °C, the wind by strength and where it blows from; the building or fire
@@ -1002,12 +1032,16 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   save; it is sent as `Authorization: Bearer <key>`, and the client follows no redirect, so
   the key goes only to that endpoint. Claude's own API needs an adapter of its own (later).
 - **Saved:** name, sex, look, who they are (id, age, trade, personality, background, habits;
-  save version 19), the chat's kept lines (version 17), the memories, the lines
-  that dropped out and wait for their memory (version 21), so none is lost when the game is
-  saved while a summary is asked for, and how many of the oldest kept lines a version 20 memory
-  already holds (they drop out without a second summary); what a villager is doing, and an answer still
-  owed, are not. A version 18 villager is given a background from the tables, the same for
-  the same name.
+  save version 19; the rest of the sheet, version 23), the chat's kept lines (version 17), the
+  memories, the lines that dropped out and wait for their memory (version 21), so none is lost
+  when the game is saved while a summary is asked for, and how many of the oldest kept lines a
+  version 20 memory already holds (they drop out without a second summary); what a villager is
+  doing, and an answer still owed, are not. The file wins for a villager written by hand (decided
+  2026-11-07, as the user will edit the sheets): a loaded one takes their sheet from
+  `data/villagers.cfg` as it is now, and the saved sheet only stands in when their id has left
+  the file. A version 18 villager is given a background from the tables, the same for the same
+  name. A version 22 made-up villager is made up anew from the tables by their name (the old
+  tables had "Says Aye"), with another surname if theirs is now a family of the village sheet.
 - **Later:** homes, schedules, intentions, suggestions from the model, NPC to NPC talk (see
   the ideas doc).
 

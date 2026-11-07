@@ -200,19 +200,34 @@ Which ones fit on the GPU (8 GB of VRAM here) is for later, with the GPU set up 
 
 `make llm-eval LLM_MODEL=<tag>` (the test LLM must be up with that model; `LLM_RUNS=n` replies
 per scenario, 3 by default) checks the villagers' prompts on a model. Godot builds the requests
-with `NpcPrompt` itself (`tools/llm/dump_requests.gd`: 18 fixed scenarios, a greeting, rain at
+with `NpcPrompt` itself (`tools/llm/dump_requests.gd`: 25 fixed scenarios, a greeting, rain at
 dusk, switches of language (German after English, also in a longer chat, Danish after English,
 English after German, a short "Moin" after German and "Hej" after Danish), Danish, Swedish
-(which the game does not know), family, a phone, a car, a rude line, a fact from earlier in a
-long chat, a villager with a memory, a memory summary; Antje and Momme), so the tool never
-drifts from the game; `tools/llm/eval_prompts.py` sends each one `n` times at the configured
+(which the game does not know), a phone, a car, a rude line, a fact from earlier in a long chat,
+a villager with a memory, a memory summary, and keeping to the sheets: family (also in German),
+the husband's name again after a long chat, another villager, the pastor, the Deichgraf (in
+German), a sister or brother the villager doesn't have (also in German); Antje, Momme, Ocke and
+Kerrin), so the tool never drifts from the game; `tools/llm/eval_prompts.py` sends each one `n` times at the configured
 temperature and writes `build/llm-eval/<model>.md`: every reply, with crude checks (too long,
 too many sentences, cut off, assistant phrases, label echo, copying the example or the player's
-line, the wrong language by stop words and telling letters, a memory not in the first person).
+line, the wrong language by stop words and telling letters, a memory not in the first person,
+none of the names a scenario expects (Hinrich or Boy for Antje's family, Martens for the pastor,
+Momsen for the Deichgraf), a name of the region the request never mentions, that is made up).
+The report gives the average prompt tokens too.
 The checks only find what is plainly wrong; read the replies. `LLM_API_KEY` set in the
 environment is sent as the bearer key, so that `tools/llm/eval_prompts.py --endpoint <url>
 --model <name>` can try a hosted model, and `--requests <file>` sends the requests of an earlier
-dump (to try old words again). `tools/llm/eval_prompts.py --compare <tag> <tag>` puts the
+dump (to try old words again). The requests have the cut-down sheets a local model gets;
+`--full-sheets` sends the full ones a hosted model gets (report `<model>-full.md`). To try them
+on Gemini with your AI Studio key:
+
+```
+LLM_API_KEY=AIza... .venv/bin/python tools/llm/eval_prompts.py --full-sheets --runs 2 \
+  --endpoint https://generativelanguage.googleapis.com/v1beta/openai --model gemini-3.1-flash-lite
+```
+
+On HTTP 429 (the free tier's limit) it stops and writes what it has; `--only <id> ...` runs a few
+scenarios. `tools/llm/eval_prompts.py --compare <tag> <tag>` puts the
 replies of two earlier runs side by side in `build/llm-eval/compare.md`. It takes about 2
 minutes for the 3B and 4 for the 7B with 5 replies each. When the prompt words in
 `data/npc_talk.cfg` change, run it on both and read the reports.
