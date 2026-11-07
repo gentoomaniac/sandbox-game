@@ -34,7 +34,9 @@ func _no_history() -> Array[Dictionary]:
 
 ## The last message of the prompt for Antje, for `message` said after `history`.
 func _last_turn(history: Array[Dictionary], message: String) -> String:
-	return NpcPrompt.reply_messages(_antje, history, message, _moment(), _rules)[-1]["content"]
+	return (
+		NpcPrompt.reply_messages(_antje, history, message, _moment(), _rules, false)[-1]["content"]
+	)
 
 
 # --- The data file ---
@@ -84,11 +86,11 @@ func test_every_layer_a_villager_may_wear_has_its_words() -> void:
 
 func test_the_prompt_has_the_shape_of_the_example() -> void:
 	var messages := NpcPrompt.reply_messages(
-		_antje, [], "Good morning! Is the dyke holding after the storm?", _moment(), _rules
+		_antje, [], "Good morning! Is the dyke holding after the storm?", _moment(), _rules, false
 	)
 	assert_eq(messages.size(), 4)
 	assert_eq(messages[0]["role"], "system")
-	assert_string_starts_with(messages[0]["content"], "You write dialogue lines for villagers")
+	assert_string_starts_with(messages[0]["content"], "You write dialogue lines for one villager")
 	assert_eq(
 		messages[1],
 		{
@@ -109,7 +111,7 @@ func test_the_prompt_has_the_shape_of_the_example() -> void:
 	assert_eq(lines.size(), 7, last)
 	assert_eq(lines[0], "Villager: Antje Boysen, a farmer's wife.")
 	assert_string_starts_with(lines[1], "Antje is 38 years old, a pale woman with blond hair")
-	assert_string_contains(lines[1], "Married to Hinrich Boysen")
+	assert_string_ends_with(lines[1], "and clogs.")
 	assert_eq(
 		lines[2],
 		(
@@ -126,15 +128,15 @@ func test_the_prompt_has_the_shape_of_the_example() -> void:
 
 
 func test_the_request_carries_the_numbers_of_the_data_file() -> void:
-	var request := NpcPrompt.reply_request(_antje, [], "Moin", _moment(), _rules)
-	assert_eq(request["temperature"], 0.7)
+	var request := NpcPrompt.reply_request(_antje, [], "Moin", _moment(), _rules, false)
+	assert_eq(request["temperature"], 0.5)
 	assert_eq(request["max_tokens"], 60)
 	assert_eq(request["messages"].size(), 4)
 
 
 func test_earlier_lines_go_in_as_turns_of_the_same_shape() -> void:
 	var history: Array[Dictionary] = [_line(true, "Moin, Antje."), _line(false, "Moin! Wet one.")]
-	var messages := NpcPrompt.reply_messages(_antje, history, "Aye.", _moment(), _rules)
+	var messages := NpcPrompt.reply_messages(_antje, history, "Aye.", _moment(), _rules, false)
 	assert_eq(messages.size(), 6)
 	assert_eq(
 		messages[3]["content"],
@@ -148,14 +150,16 @@ func test_every_line_of_the_history_is_told() -> void:
 	var history: Array[Dictionary] = []
 	for index in 30:
 		history.append(_line(index % 2 == 0, "line %d" % index))
-	var messages := NpcPrompt.reply_messages(_antje, history, "And?", _moment(), _rules)
+	var messages := NpcPrompt.reply_messages(_antje, history, "And?", _moment(), _rules, false)
 	assert_eq(messages.size(), 3 + 30 + 1)
 	assert_eq(messages[-2]["content"], "line 29")
 
 
 func test_a_man_is_his_neighbour_s() -> void:
 	var momme := Npc.create_villager("momme", Vector2.ZERO, VillagerRules.default_rules())
-	var last: String = NpcPrompt.reply_messages(momme, [], "Moin", _moment(), _rules)[-1]["content"]
+	var last: String = (
+		NpcPrompt.reply_messages(momme, [], "Moin", _moment(), _rules, false)[-1]["content"]
+	)
 	assert_string_contains(last, 'His neighbour says: "Moin"')
 	assert_string_contains(last, "a sun-tanned man with short grey hair, wearing a knitted cap,")
 	assert_string_ends_with(last, 'Momme\'s reply (in the language of "Moin"):')

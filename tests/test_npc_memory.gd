@@ -100,11 +100,13 @@ func test_a_memory_is_dated() -> void:
 
 func test_later_prompts_tell_what_the_villager_remembers() -> void:
 	var moment := NpcMoment.of(_state, _npc, 8.0)
-	var last: String = NpcPrompt.reply_messages(_npc, [], "Moin", moment, _rules)[-1]["content"]
+	var last: String = (
+		NpcPrompt.reply_messages(_npc, [], "Moin", moment, _rules, false)[-1]["content"]
+	)
 	assert_false(last.contains("remembers"), "nothing yet")
 	_npc.add_memory("On the 1st day: one.")
 	_npc.add_memory("On the 2nd day: two.")
-	last = NpcPrompt.reply_messages(_npc, [], "Moin", moment, _rules)[-1]["content"]
+	last = NpcPrompt.reply_messages(_npc, [], "Moin", moment, _rules, false)[-1]["content"]
 	assert_eq(
 		last.split("\n")[2],
 		"Antje remembers earlier talks with this neighbour: On the 1st day: one. On the 2nd day: two."

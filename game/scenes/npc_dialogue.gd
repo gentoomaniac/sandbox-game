@@ -38,11 +38,20 @@ func has_model() -> bool:
 	return _settings.language_model["endpoint"] != ""
 
 
+## The row of GameSettings `LANGUAGE_MODEL_PROVIDERS` of the provider set.
+func _provider() -> Dictionary:
+	return GameSettings.LANGUAGE_MODEL_PROVIDERS[_settings.language_model["provider"]]
+
+
 func _chat_of_provider() -> ModelChat:
-	var provider: Dictionary = GameSettings.LANGUAGE_MODEL_PROVIDERS[
-		_settings.language_model["provider"]
-	]
-	return chats[provider["protocol"]]
+	return chats[_provider()["protocol"]]
+
+
+## Whether the model is told the full sheets of the village and the villager (see NpcPrompt): a
+## provider that needs a key is a hosted model, large and quick enough for them; a local model
+## (the test LLM, a 3B or 7B) gets the cut-down sheets, which keep it fast.
+func has_full_sheets() -> bool:
+	return _provider()["needs_key"]
 
 
 ## The villager's answer to `message`, said after the lines of `history` (the chat so far, as
@@ -50,7 +59,9 @@ func _chat_of_provider() -> ModelChat:
 func reply(npc: Npc, history: Array[Dictionary], message: String, state: GameState) -> String:
 	if has_model():
 		var moment := NpcMoment.of(state, npc, rules.value("place", "reach"))
-		var request := NpcPrompt.reply_request(npc, history, message, moment, rules)
+		var request := NpcPrompt.reply_request(
+			npc, history, message, moment, rules, has_full_sheets()
+		)
 		var answer: String = await _chat_of_provider().answer(
 			_settings.language_model, request, rules.value("request", "timeout_seconds")
 		)

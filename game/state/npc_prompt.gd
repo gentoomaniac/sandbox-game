@@ -5,10 +5,11 @@ extends RefCounted
 ## Pure functions: the same villager, chat and moment always give the same request.
 ##
 ## The shape is the user's working example of TASKS.md 86: a system line, one example exchange,
-## the earlier lines of the chat as user and assistant turns, and last what the player says:
+## the earlier lines of the chat as user and assistant turns, and last what the player says. The
+## system line carries the sheets the villager keeps to: the village's (VillageSheet) and their
+## own, in full for a hosted model or cut down for a local one (`full_sheets`). The last turn:
 ##   Villager: Antje Boysen, a farmer's wife.
-##   Antje is 38 years old, a pale woman with ... (who she is and, if any, what she remembers:
-##   the last turn only)
+##   Antje is 38 years old, a pale woman with ... (and, if any, what she remembers)
 ##   It is the 12th day of Spring, year 1 (mid spring), 08:15 in the morning. The weather: ...
 ##   The neighbour is a newcomer to these parts; Antje does not know their name.
 ##   Her neighbour says: "Good morning! Is the dyke holding after the storm?"
@@ -16,25 +17,38 @@ extends RefCounted
 
 ## The quotes a model may put round the line it answers: straight, curly and single.
 const QUOTE_PAIRS: Array[String] = ['""', "“”", "''"]
+## The cut-down sheet tells this many of the villager's sample lines.
+const SHORT_SAMPLES := 1
 
 
 ## The request for the villager's answer to `message`, said after the lines of `history` (as
-## Npc `chat_history`): {messages, temperature, max_tokens}.
+## Npc `chat_history`): {messages, temperature, max_tokens}. `full_sheets` tells the whole of the
+## village's and the villager's sheets, else the cut-down for a small local model.
 static func reply_request(
-	npc: Npc, history: Array[Dictionary], message: String, moment: NpcMoment, rules: NpcTalkRules
+	npc: Npc,
+	history: Array[Dictionary],
+	message: String,
+	moment: NpcMoment,
+	rules: NpcTalkRules,
+	full_sheets: bool
 ) -> Dictionary:
 	return {
-		"messages": reply_messages(npc, history, message, moment, rules),
+		"messages": reply_messages(npc, history, message, moment, rules, full_sheets),
 		"temperature": float(rules.value("request", "temperature")),
 		"max_tokens": int(rules.value("request", "max_tokens")),
 	}
 
 
 static func reply_messages(
-	npc: Npc, history: Array[Dictionary], message: String, moment: NpcMoment, rules: NpcTalkRules
+	npc: Npc,
+	history: Array[Dictionary],
+	message: String,
+	moment: NpcMoment,
+	rules: NpcTalkRules,
+	full_sheets: bool
 ) -> Array[Dictionary]:
 	var messages: Array[Dictionary] = [
-		_message("system", rules.value("prompt", "system")),
+		_message("system", system_text(npc, full_sheets, rules)),
 		_message("user", rules.value("prompt", "example")),
 		_message("assistant", rules.value("prompt", "example_reply")),
 	]
@@ -48,9 +62,6 @@ static func reply_messages(
 			messages.append(_message("assistant", line["text"]))
 	words["age"] = npc.age
 	words["looks"] = looks_text(npc, rules)
-	words["personality"] = npc.personality
-	words["background"] = npc.background
-	words["habits"] = npc.habits
 	words.merge(moment_words(moment, rules))
 	var last: Array[String] = [_said(rules, "villager", words), _said(rules, "about", words)]
 	if not npc.memories.is_empty():
@@ -64,6 +75,59 @@ static func reply_messages(
 	last.append(last_reply_label(npc, message, language, rules))
 	messages.append(_message("user", "\n".join(last)))
 	return messages
+
+
+## The system line of a reply: the rules of the answer, the village's sheet and the villager's,
+## all of them if `full_sheets`, else cut down to what a small local model needs most.
+static func system_text(npc: Npc, full_sheets: bool, rules: NpcTalkRules) -> String:
+	var words := _words_of(npc, rules)
+	words["village"] = VillageSheet.default_sheet().text(full_sheets)
+	words["age"] = npc.age
+	words["personality"] = npc.personality
+	words["background"] = npc.background
+	words["home"] = npc.home
+	words["people"] = people_text(npc, full_sheets, rules)
+	words["speech"] = npc.speech
+	var samples := npc.samples if full_sheets else npc.samples.slice(0, SHORT_SAMPLES)
+	words["samples"] = " ".join(samples.map(func(line: String) -> String: return '"%s"' % line))
+	words["likes"] = npc.likes
+	words["wants"] = npc.wants
+	words["day"] = npc.day
+	words["habits"] = npc.habits
+	words["avoids"] = npc.avoids
+	words["secrets"] = npc.secrets
+	var sheet_lines := _said(rules, "sheet" if full_sheets else "sheet_short", words).split("\n")
+	# A line with nothing to tell (see `people_text`) is left out.
+	var sheet := "\n".join(Array(sheet_lines).filter(func(line: String) -> bool: return line != ""))
+	return "\n\n".join([rules.value("prompt", "system"), _said(rules, "village", words), sheet])
+
+
+## The line of the villager's family and friends (Npc `people`) by the names, kinds and ages of
+## their sheets, with what the villager thinks of each if `full_sheets`: "Family and friends:
+## Hinrich Boysen, husband, 42: Steady ...". Those no longer in data/villagers.cfg are left out,
+## and if none is left the line is "": better nothing than "none" against a background that
+## names them. A villager without people (a made-up one) has `no_people`.
+static func people_text(npc: Npc, full_sheets: bool, rules: NpcTalkRules) -> String:
+	if npc.people.is_empty():
+		return _said(rules, "no_people", _words_of(npc, rules))
+	var villagers := VillagerRules.default_rules()
+	var told: Array[String] = []
+	for id: String in npc.people:
+		if not villagers.has(id):
+			continue
+		var person := villagers.villager(id)
+		var kind_and_thought: Array = npc.people[id]
+		var words := {
+			"name": person["name"],
+			"kind": kind_and_thought[0],
+			"age": person["age"],
+			"thought": kind_and_thought[1],
+		}
+		told.append(_said(rules, "person" if full_sheets else "person_short", words))
+	if told.is_empty():
+		return ""
+	var joined := " ".join(told) if full_sheets else ", ".join(told)
+	return _said(rules, "people", {"people": joined})
 
 
 ## The request that sums up the `lines` of a conversation (as Npc `chat_history`) in one line

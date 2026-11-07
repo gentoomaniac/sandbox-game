@@ -131,6 +131,21 @@ func test_gemini_is_asked_through_the_openai_compatible_chat_with_its_own_key() 
 	assert_string_contains(openai_chat.language_models[0]["endpoint"], "googleapis.com")
 
 
+func test_a_hosted_model_is_told_the_full_sheets_and_a_local_one_the_cut_down() -> void:
+	var openai_chat := FakeChat.new()
+	var dialogue := _dialogue(openai_chat)
+	_settings.set_language_model("endpoint", "http://fake/v1")
+	assert_false(dialogue.has_full_sheets(), "the test LLM needs no key")
+	await dialogue.reply(_antje, [], "Hello", _state)
+	_settings.set_language_model_provider("gemini")
+	assert_true(dialogue.has_full_sheets())
+	await dialogue.reply(_antje, [], "Hello", _state)
+	var cut_down: String = openai_chat.requests[0]["messages"][0]["content"]
+	var full: String = openai_chat.requests[1]["messages"][0]["content"]
+	assert_eq(cut_down, NpcPrompt.system_text(_antje, false, NpcTalkRules.default_rules()))
+	assert_eq(full, NpcPrompt.system_text(_antje, true, NpcTalkRules.default_rules()))
+
+
 func test_the_chat_of_the_provider_is_asked_with_the_key_of_that_provider() -> void:
 	_settings.set_language_model("endpoint", "http://fake/v1")
 	_settings.set_language_model("api_key", "sk-openai")

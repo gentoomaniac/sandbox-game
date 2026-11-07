@@ -2,7 +2,9 @@ extends SceneTree
 ## Writes the requests the game would send to the language model for a fixed set of scenarios,
 ## as JSON, for tools/llm/eval_prompts.py to send: the prompts come from NpcPrompt itself, so
 ## the evaluation never drifts from the game.
-## Run: godot --headless --path . -s tools/llm/dump_requests.gd -- <out.json>
+## Run: godot --headless --path . -s tools/llm/dump_requests.gd -- <out.json> [--full-sheets]
+## The requests have the cut-down sheets a local model is sent, or with --full-sheets the full
+## ones of a hosted model (see NpcDialogue `has_full_sheets`).
 
 const FACT_CHAT := [
 	[true, "Moin! I lost my red scarf at the dyke yesterday."],
@@ -215,6 +217,8 @@ const SCENARIOS := [
 
 
 func _init() -> void:
+	var args := OS.get_cmdline_user_args()
+	var full_sheets := args.has("--full-sheets")
 	var rules := NpcTalkRules.default_rules()
 	var villagers := VillagerRules.default_rules()
 	var entries: Array[Dictionary] = []
@@ -239,12 +243,14 @@ func _init() -> void:
 			var message: String = scenario["message"]
 			var moment := _moment(scenario.get("weather", "fine"), scenario.get("time", "morning"))
 			var history := _lines(scenario.get("history", []))
-			entry["request"] = NpcPrompt.reply_request(npc, history, message, moment, rules)
+			entry["request"] = NpcPrompt.reply_request(
+				npc, history, message, moment, rules, full_sheets
+			)
 			entry["label"] = NpcPrompt.last_reply_label(
 				npc, message, NpcLanguage.name_of(message, history, rules), rules
 			)
 		entries.append(entry)
-	var file := FileAccess.open(OS.get_cmdline_user_args()[0], FileAccess.WRITE)
+	var file := FileAccess.open(args[0], FileAccess.WRITE)
 	file.store_string(JSON.stringify(entries, "\t"))
 	quit()
 

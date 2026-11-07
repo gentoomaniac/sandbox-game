@@ -6,10 +6,13 @@ test LLM, see llm.sh), and every reply is written to build/llm-eval/<model>.md w
 automatic checks. The checks are crude: they find what is plainly wrong, a person judges the rest.
 
     eval_prompts.py [--model TAG] [--endpoint URL] [--runs N] [--only ID ...] [--requests FILE]
-                    [--compare TAG TAG]
+                    [--full-sheets] [--compare TAG TAG]
 
 LLM_API_KEY, if set, is sent as the bearer key (a hosted model: also give --endpoint).
 --requests sends the requests of an earlier dump (to try other words on the same scenarios).
+--full-sheets sends the full sheets of the village and the villager, as the game does to a hosted
+model (one that needs a key), instead of the cut-down ones of a local model; the report is then
+build/llm-eval/<model>-full.md.
 --compare puts the replies of two models, as written by earlier runs, side by side.
 """
 
@@ -68,12 +71,12 @@ STOPWORDS = {
 LETTERS = {"de": "äöüß", "da": "æø"}
 
 
-def build_requests():
+def build_requests(full_sheets):
     OUT.mkdir(parents=True, exist_ok=True)
-    path = OUT / "requests.json"
+    path = OUT / ("requests-full.json" if full_sheets else "requests.json")
     subprocess.run(
         [GODOT, "--headless", "--quiet", "--path", str(ROOT), "-s",
-         "tools/llm/dump_requests.gd", "--", str(path)],
+         "tools/llm/dump_requests.gd", "--", str(path)] + ["--full-sheets"] * full_sheets,
         check=True, stdout=subprocess.DEVNULL,
     )  # fmt: skip
     return json.loads(path.read_text())
@@ -181,7 +184,7 @@ def checks(raw, finish_reason, scenario):
 
 
 def run(args):
-    requests = json.loads(Path(args.requests).read_text()) if args.requests else build_requests()
+    requests = json.loads(Path(args.requests).read_text()) if args.requests else build_requests(args.full_sheets)
     scenarios = [s for s in requests if not args.only or s["id"] in args.only]
     results = []
     rate_limited = False
@@ -208,7 +211,7 @@ def run(args):
         if rate_limited:
             break
     scenarios = scenarios[: len(results)]
-    stem = args.model.replace(":", "-")
+    stem = args.model.replace(":", "-").replace("/", "-") + ("-full" if args.full_sheets else "")
     (OUT / f"{stem}.json").write_text(json.dumps(results, indent=1, ensure_ascii=False))
     (OUT / f"{stem}.md").write_text(report(args.model, args.runs, scenarios, results))
     print(f"wrote {OUT / (stem + '.md')}")
@@ -276,6 +279,7 @@ def main():
     parser.add_argument("--runs", type=int, default=3, help="replies per scenario")
     parser.add_argument("--only", nargs="*", help="scenario ids to run")
     parser.add_argument("--requests", help="send the requests of this dump of an earlier run")
+    parser.add_argument("--full-sheets", action="store_true", help="the sheets of a hosted model")
     parser.add_argument("--compare", nargs=2, metavar="TAG")
     args = parser.parse_args()
     if args.compare:
