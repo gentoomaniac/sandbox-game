@@ -158,8 +158,9 @@ Horses can be ridden. Hold a **saddle** (`give saddle`) and press the use key at
 of you to saddle it; the use key with an empty hand takes the saddle off again. Press **E** at a
 saddled horse to get on, and E again to get off: you land on free ground beside it, and the
 horse stays there. A horse sets off at a walk and trots at twice your walking speed once you
-keep riding; it costs no energy and tiredness doesn't slow it. On horseback you can eat, pick
-things up and use the hotbar, but no tools, no building and no doors: get off first. A game
+keep riding; it costs no energy and tiredness doesn't slow it. On horseback you can only use
+the inventory and the hotbar (dropping things too), and eat: no tools, no building, no
+crafting, no doors, and nothing is picked up from the ground. Get off first. A game
 saved on horseback loads with you standing beside the horse.
 
 ![Trotting on a bay horse past the pollard willows, and walking a grey towards the viewer](docs/screenshots/riding.png)

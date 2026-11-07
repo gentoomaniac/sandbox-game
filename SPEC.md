@@ -867,8 +867,9 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   is the rider's body, as on foot, and it also keeps off the tiles of buildings, so a horse is
   never ridden through a door (one that stood in a doorway is ridden out of it). On horseback
   the use key does nothing but say "Get off the horse first.", the hammer builds nothing, a
-  door ahead says the same, and E only gets off; eating, picking up, dropping and the hotbar
-  work as on foot. A ridden horse does nothing of its own. Getting off puts the player on free
+  door ahead and the crafting key say the same, nothing on the ground is picked up, and E only
+  gets off; only the inventory (with the hotbar and dropping) and eating work as on foot (the
+  user, 2026-11-07). A ridden horse does nothing of its own. Getting off puts the player on free
   ground within two tiles of the horse, its side first (above or below it, not at its head or
   tail), never in water, a wall or a building; with no room they stay on. Passing out (after
   sliding off if there is room), a teleport or waking in the home bed leave the horse where it

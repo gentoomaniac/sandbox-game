@@ -716,8 +716,9 @@ its own and goes where the player rides; it walks at walking speed and trots at 
 0.6 s of riding on (`ride_walk_factor`, `ride_trot_factor`, `trot_after_seconds` in
 data/livestock.cfg), for no energy and unslowed by tiredness. The rider's body collides as on
 foot and keeps off buildings' tiles, so no door is passed (a horse in a doorway is ridden out);
-the use key (`Use.RIDING`), the hammer and a door ahead say "Get off the horse first."; eating,
-picking up, dropping and the hotbar work. Passing out slides the player off first if there is
+the use key (`Use.RIDING`), the hammer, a door ahead and (the user, 2026-11-07) the crafting
+key say "Get off the horse first."; only the inventory (with the hotbar and dropping) and eating
+work, and nothing is picked up while riding. Passing out slides the player off first if there is
 room; a teleport and waking in the home bed leave the horse. A save on horseback writes the
 player beside the horse (nothing about riding is saved). Art: the player's layers astride
 (assets/character/riding/, tools/art/character.py `riding_sheet`) and the ridden horse
