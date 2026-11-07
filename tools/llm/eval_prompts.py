@@ -40,6 +40,21 @@ FORBIDDEN = [
 NOT_UNDERSTOOD = re.compile(r"don't understand|do not understand|förstår inte|verstehe nicht", re.I)
 LABEL_ECHO = re.compile(r"reply\s*(\(in the language[^)]*\))?\s*:|^\(in the language|^[\w ]+:\s", re.I)
 
+# Names a model may make up for a villager's kin, neighbours, pastor or Deichgraf: those of the
+# period and the region (data/npcs.cfg has most) and some common ones. A reply that names one the
+# request never mentions has made it up.
+NAMES = set(
+    "Hinrich Jens Boy Momme Ocke Tete Knud Brar Harro Nahmen Arfst Lorenz Peter Claus Jacob Hans "
+    "Johann Jan Jürgen Heinrich Friedrich Christian Carsten Nis Niels Lars Erik Karl Wilhelm Georg "
+    "Thomas John William James Michael Paul Matthias Andreas Martin Detlef Sönke Volkert Rasmus "
+    "Antje Elke Inken Kerrin Wiebke Ingke Marret Gondel Ose Frauke Gesche Telse Moiken Anna "
+    "Catharina Margaretha Maria Marie Greta Grete Karen Mette Kirsten Christina Elisabeth Sophie "
+    "Mary Sarah Emma Lena Ingrid Birte Dorothea Helene Hanna Hansen Jensen Petersen Paulsen Boysen "
+    "Ketels Lorenzen Nissen Carstensen Brodersen Andresen Feddersen Jacobsen Momsen Hinrichsen "
+    "Martens Thomsen Schmidt Müller Meyer Schulz Johannsen Christiansen Clausen Asmussen Ipsen "
+    "Lassen Matthiesen Volquardsen Sönnichsen Wulff".split()
+)  # fmt: skip
+
 # Words that mark a language, crude but enough to tell a reply in German from one in English.
 STOPWORDS = {
     "de": "ich nicht und der die das ist ein eine mit auch wir wie gut heute aber mein mir dir dich "
@@ -84,7 +99,8 @@ def ask(endpoint, model, request):
         raise
     choice = answer["choices"][0]
     seconds = time.monotonic() - started
-    return choice["message"]["content"], choice["finish_reason"], seconds
+    prompt_tokens = answer.get("usage", {}).get("prompt_tokens", 0)
+    return choice["message"]["content"], choice["finish_reason"], seconds, prompt_tokens
 
 
 def trimmed(text, label, villager, sentences):
@@ -138,6 +154,14 @@ def checks(raw, finish_reason, scenario):
         failed.append("copies the example")
     if scenario["message"] and words_of(reply)[:5] == words_of(scenario["message"])[:5]:
         failed.append("echoes the neighbour")
+    said = set(re.findall(r"\w+", reply))
+    if scenario.get("names") and not said & set(scenario["names"]):
+        failed.append("names none of " + "/".join(scenario["names"]))
+    told = {word for message in scenario["request"]["messages"]
+            for word in re.findall(r"\w+", message["content"])}  # fmt: skip
+    made_up = sorted(said & NAMES - told)
+    if made_up:
+        failed.append(f"made-up name ({', '.join(made_up)})")
     if any(word in lower for word in FORBIDDEN):
         failed.append("assistant words")
     if LABEL_ECHO.search(raw.strip()):
@@ -165,12 +189,15 @@ def run(args):
         replies = []
         try:
             for _ in range(args.runs):
-                raw, finish_reason, seconds = ask(args.endpoint, args.model, scenario["request"])
+                raw, finish_reason, seconds, prompt_tokens = ask(
+                    args.endpoint, args.model, scenario["request"]
+                )
                 replies.append({
                     "raw": raw,
                     "reply": trimmed(raw, scenario["label"], scenario["villager"], scenario["sentences"]),
                     "failed": checks(raw, finish_reason, scenario),
                     "seconds": round(seconds, 1),
+                    "prompt_tokens": prompt_tokens,
                 })  # fmt: skip
                 print(f"{scenario['id']}: {replies[-1]['reply']}  {replies[-1]['failed']}", flush=True)
         except RateLimited:
@@ -193,11 +220,12 @@ def totals(results):
     replies = [r for result in results for r in result["replies"]]
     clean = sum(not r["failed"] for r in replies)
     seconds = sum(r["seconds"] for r in replies) / max(len(replies), 1)
-    return len(replies), clean, seconds
+    prompt_tokens = sum(r.get("prompt_tokens", 0) for r in replies) / max(len(replies), 1)
+    return len(replies), clean, seconds, prompt_tokens
 
 
 def report(model, runs, scenarios, results):
-    count, clean, seconds = totals(results)
+    count, clean, seconds, prompt_tokens = totals(results)
     failures = {}
     for result in results:
         for r in result["replies"]:
@@ -207,7 +235,7 @@ def report(model, runs, scenarios, results):
     lines = [
         f"# Villager prompts on {model}", "",
         f"{count} replies ({runs} per scenario), {clean} without a failed check, "
-        f"{seconds:.1f} s per reply.", "",
+        f"{seconds:.1f} s per reply, {prompt_tokens:.0f} prompt tokens on average.", "",
     ]  # fmt: skip
     lines += [f"- {name}: {n}" for name, n in sorted(failures.items())] or ["- no check failed"]
     for scenario, result in zip(scenarios, results):
@@ -224,8 +252,11 @@ def compare(tags):
     loaded = [json.loads((OUT / f"{tag.replace(':', '-')}.json").read_text()) for tag in tags]
     lines = ["# " + " vs ".join(tags), ""]
     for tag, results in zip(tags, loaded):
-        count, clean, seconds = totals(results)
-        lines.append(f"- {tag}: {clean}/{count} replies without a failed check, {seconds:.1f} s each")
+        count, clean, seconds, prompt_tokens = totals(results)
+        lines.append(
+            f"- {tag}: {clean}/{count} replies without a failed check, {seconds:.1f} s each,"
+            f" {prompt_tokens:.0f} prompt tokens"
+        )
     for rows in zip(*loaded):
         lines += ["", f"## {rows[0]['scenario']} ({rows[0]['language']})"]
         for tag, row in zip(tags, rows):

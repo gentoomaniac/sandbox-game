@@ -33,8 +33,9 @@ const DANISH_CHAT := [
 ]
 
 ## Each: id, villager, the language of the player's last line, and either a `message` (with
-## optional `history` of [from_player, text] pairs, `memories`, `weather` "fine" or "rain" and
-## `time` "morning" or "dusk") or `summarise`, the lines of a conversation to remember.
+## optional `history` of [from_player, text] pairs, `memories`, `weather` "fine" or "rain",
+## `time` "morning" or "dusk", and `names`, of which a good answer names at least one) or
+## `summarise`, the lines of a conversation to remember.
 const SCENARIOS := [
 	{"id": "greeting", "villager": "antje", "language": "en", "message": "Good morning!"},
 	{
@@ -104,12 +105,61 @@ const SCENARIOS := [
 		"villager": "antje",
 		"language": "en",
 		"message": "Tell me about your family.",
+		"names": ["Hinrich", "Boy"],
 	},
 	{
 		"id": "family_momme",
 		"villager": "momme",
 		"language": "en",
 		"message": "Do you have any children?",
+		"names": ["Inken"],
+	},
+	{
+		"id": "family_german",
+		"villager": "antje",
+		"language": "de",
+		"message": "Erzähl mir von deiner Familie. Wer gehört dazu?",
+		"names": ["Hinrich", "Boy"],
+	},
+	{
+		"id": "husband_again",
+		"villager": "antje",
+		"language": "en",
+		"message": "Sorry, what was your husband's name again?",
+		"history": FACT_CHAT,
+		"names": ["Hinrich"],
+	},
+	{
+		"id": "other_villager",
+		"villager": "antje",
+		"language": "en",
+		"message": "Do you know the miller's wife, Gesche?",
+	},
+	{
+		"id": "pastor",
+		"villager": "kerrin",
+		"language": "en",
+		"message": "Who is the pastor here, and is he any good?",
+		"names": ["Martens"],
+	},
+	{
+		"id": "deichgraf_german",
+		"villager": "ocke",
+		"language": "de",
+		"message": "Wer ist hier eigentlich der Deichgraf?",
+		"names": ["Momsen"],
+	},
+	{
+		"id": "not_on_sheet",
+		"villager": "momme",
+		"language": "en",
+		"message": "What is your sister's name, and where does she live?",
+	},
+	{
+		"id": "not_on_sheet_german",
+		"villager": "ocke",
+		"language": "de",
+		"message": "Wie heißt eigentlich dein Bruder?",
 	},
 	{
 		"id": "phone",
@@ -179,6 +229,7 @@ func _init() -> void:
 			"sentences": int(rules.value("request", "reply_sentences")),
 			"label": "",
 			"message": scenario.get("message", ""),
+			"names": scenario.get("names", []),
 			"example_reply": rules.value("prompt", "example_reply"),
 		}
 		if scenario.has("summarise"):
