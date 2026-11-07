@@ -112,7 +112,7 @@ static func animal_alarm(kind: StringName, state: StringName) -> StringName:
 			return &"rabbit_rustle"
 		[WildlifeRules.SQUIRREL, Squirrel.FLEE]:
 			return &"squirrel_chatter"
-		[WildlifeRules.GEESE, GooseFlock.FLY]:
+		[WildlifeRules.GEESE, GroundFlock.FLY]:
 			return &"goose_honk"
 		[WildlifeRules.STORK, Stork.CLATTER], [WildlifeRules.ROOF_STORK, Stork.CLATTER]:
 			return &"stork_clatter"

@@ -95,7 +95,7 @@ func test_animal_sounds_are_events_of_the_sound_data() -> void:
 			SoundEvents.animal_alarm(kind, Deer.BOUND),
 			SoundEvents.animal_alarm(kind, Rabbit.FLEE),
 			SoundEvents.animal_alarm(kind, Stork.CLATTER),
-			SoundEvents.animal_alarm(kind, GooseFlock.FLY),
+			SoundEvents.animal_alarm(kind, GroundFlock.FLY),
 		]:
 			assert_true(event == &"" or SoundRules.EVENTS.has(event), str(event))
 
@@ -140,5 +140,5 @@ func test_storks_clatter_rarely_and_otherwise_keep_quiet() -> void:
 func test_geese_honk_now_and_then_and_when_they_take_off() -> void:
 	assert_eq(SoundEvents.animal_idle(WildlifeRules.GEESE), &"goose_honk")
 	assert_eq(SoundEvents.animal_idle(WildlifeRules.FLYING_GEESE), &"goose_honk")
-	assert_eq(SoundEvents.animal_alarm(WildlifeRules.GEESE, GooseFlock.FLY), &"goose_honk")
-	assert_eq(SoundEvents.animal_alarm(WildlifeRules.GEESE, GooseFlock.ALERT), &"")
+	assert_eq(SoundEvents.animal_alarm(WildlifeRules.GEESE, GroundFlock.FLY), &"goose_honk")
+	assert_eq(SoundEvents.animal_alarm(WildlifeRules.GEESE, GroundFlock.ALERT), &"")

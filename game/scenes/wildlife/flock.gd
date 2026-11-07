@@ -23,7 +23,7 @@ const BIRDS := {
 	},
 	WildlifeRules.FLYING_GEESE:
 	{
-		"sheet": GooseFlock.SHEET,
+		"sheet": GroundFlock.FLOCKS[WildlifeRules.GEESE]["sheet"],
 		"count": Vector2i(7, 13),
 		"speed": 26.0,
 		"height": 56.0,

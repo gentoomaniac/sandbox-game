@@ -17,8 +17,8 @@ func test_every_kind_shows_a_sheet() -> void:
 	var sheets_of_others := {
 		WildlifeRules.FLOCK: WildlifeRules.BIRD,
 		WildlifeRules.ROOF_STORK: WildlifeRules.STORK,
-		WildlifeRules.GEESE: GooseFlock.SHEET,
-		WildlifeRules.FLYING_GEESE: GooseFlock.SHEET,
+		WildlifeRules.GEESE: GroundFlock.FLOCKS[WildlifeRules.GEESE]["sheet"],
+		WildlifeRules.FLYING_GEESE: GroundFlock.FLOCKS[WildlifeRules.GEESE]["sheet"],
 	}
 	for kind in WildlifeRules.KINDS:
 		assert_true(WildlifeSprites.SHEETS.has(sheets_of_others.get(kind, kind)), kind)

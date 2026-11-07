@@ -35,7 +35,7 @@ func before_each() -> void:
 	_wildlife.set_process(false)
 
 
-## The wild animals of the view that are of a class (Stork, GooseFlock, Flock).
+## The wild animals of the view that are of a class (Stork, GroundFlock, Flock).
 func _animals_of(type: Variant) -> Array[Animal]:
 	var found: Array[Animal] = []
 	for animal in _wildlife._animals:
