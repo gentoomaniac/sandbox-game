@@ -28,6 +28,17 @@ const GENERAL_KEYS := [
 	"ride_trot_factor",
 	"trot_after_seconds",
 ]
+const HUNTING_KEYS := [
+	"sight_tiles",
+	"crouch_seconds",
+	"creep_speed",
+	"give_up_seconds",
+	"pounce_tiles",
+	"pounce_speed",
+	"catch_chance",
+	"catch_tiles",
+	"rest_seconds",
+]
 const SPECIES_KEYS := [
 	"looks",
 	"look_weights",
@@ -89,6 +100,9 @@ func problems() -> Array[String]:
 	for key: String in GENERAL_KEYS:
 		if not _values.get("general", {}).has(key):
 			found.append("[general] no %s" % key)
+	for key: String in HUNTING_KEYS:
+		if not _values.get("hunting", {}).has(key):
+			found.append("[hunting] no %s" % key)
 	for species in SPECIES:
 		var values: Dictionary = _values.get(String(species), {})
 		var missing := SPECIES_KEYS.filter(func(key: String) -> bool: return not values.has(key))
@@ -118,6 +132,11 @@ func is_valid() -> bool:
 
 func general(key: String) -> float:
 	return float(_values["general"][key])
+
+
+## A number of how a cat hunts (see [hunting]).
+func hunting(key: String) -> float:
+	return float(_values["hunting"][key])
 
 
 func looks(species: StringName) -> Array:

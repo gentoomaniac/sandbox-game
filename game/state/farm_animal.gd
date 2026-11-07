@@ -3,7 +3,8 @@ extends RefCounted
 ## One farm animal (a species of LivestockRules): which it is, how it looks, where it stands and
 ## what it is doing. Livestock moves it; the WildlifeView draws it while it is near the view.
 
-enum Activity { IDLE, WALK, GRAZE, RUN, FLEE, SLEEP }
+## A cat hunting a mouse crouches, creeps up and pounces (see Livestock `start_hunt`).
+enum Activity { IDLE, WALK, GRAZE, RUN, FLEE, SLEEP, CROUCH, CREEP, POUNCE }
 
 var species: StringName
 ## The name of its picture (see `looks` in data/livestock.cfg).
@@ -36,6 +37,12 @@ var is_saddled := false
 ## The player rides it (see GameState `mount`): it goes where they ride, and does nothing of its
 ## own accord. Not saved, as the riding isn't.
 var is_ridden := false
+## Where the mouse a hunting cat is after is, in tiles of the world. Not saved, as the hunt isn't
+## (the mice are not either). A cat whose view is freed mid-hunt creeps to this last spot and
+## pounces there with no catch drawn: harmless, and the hunt ends by itself.
+var prey := Vector2.ZERO
+## Seconds before a cat hunts again (see `rest_seconds` in data/livestock.cfg).
+var hunt_rest_seconds := 0.0
 
 
 func _init(animal_species: StringName, animal_look: StringName, feet: Vector2) -> void:

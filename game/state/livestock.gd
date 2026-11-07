@@ -5,7 +5,8 @@ extends RefCounted
 ## player. At night they sleep where they are, from a while after sunset until about sunrise
 ## (each species has its hours, and each animal is a little later than the rest). A dog given a
 ## bone follows the player for a while instead, day and night. A horse the player rides does
-## nothing of its own: it goes where they ride it.
+## nothing of its own: it goes where they ride it. A cat hunts the mice it is shown (see
+## `start_hunt`).
 ## GameState owns it and moves the animals with `update` while the player is out in the world.
 ##
 ## It does not know the world, so the two never hold each other: the map the animals walk on is
@@ -106,6 +107,39 @@ func stand_still(animal: FarmAnimal) -> void:
 	animal.last_step = Vector2.ZERO
 
 
+## Whether an animal would hunt a mouse now: a cat that is up and about, rested since its last
+## hunt. The mice are the wildlife's, so the WildlifeView finds one for it (see FarmAnimalView).
+func can_hunt(animal: FarmAnimal) -> bool:
+	return (
+		animal.species == LivestockRules.CAT
+		and animal.activity in LivestockRules.CHOSEN_ACTIVITIES
+		and animal.hunt_rest_seconds <= 0.0
+	)
+
+
+## The cat starts to hunt a mouse at `prey` (in tiles): it crouches facing it, creeps up on it
+## and pounces from `pounce_tiles`. Then it rests for `rest_seconds`.
+func start_hunt(animal: FarmAnimal, prey: Vector2) -> void:
+	animal.activity = FarmAnimal.Activity.CROUCH
+	animal.seconds_left = rules.hunting("crouch_seconds")
+	track_prey(animal, prey)
+
+
+## The mouse the cat crouches at or creeps up on is at `prey` now. A pounce goes where the mouse
+## was when the cat leapt.
+func track_prey(animal: FarmAnimal, prey: Vector2) -> void:
+	if animal.activity in [FarmAnimal.Activity.CROUCH, FarmAnimal.Activity.CREEP]:
+		animal.prey = prey
+		if absf(prey.x - animal.position.x) > 0.1:
+			animal.facing = signf(prey.x - animal.position.x)
+
+
+## The cat gives up its hunt before it pounces: the mouse is gone.
+func stop_hunt(animal: FarmAnimal) -> void:
+	if animal.activity in [FarmAnimal.Activity.CROUCH, FarmAnimal.Activity.CREEP]:
+		_end_hunt(animal)
+
+
 ## Lets `delta` seconds pass for every animal on `map` at the time of the game clock. The
 ## player's feet are where the rabbits run from and the followers go.
 func update(delta: float, map: GameMap, player_feet: Vector2, clock: GameClock) -> void:
@@ -147,7 +181,17 @@ func _update_awake_animal(
 	var player_distance := animal.position.distance_to(player_feet)
 	if flee_tiles > 0.0 and player_distance <= flee_tiles:
 		animal.activity = FarmAnimal.Activity.FLEE
+	animal.hunt_rest_seconds = maxf(0.0, animal.hunt_rest_seconds - delta)
 	match animal.activity:
+		FarmAnimal.Activity.CROUCH:
+			animal.seconds_left -= delta
+			if animal.seconds_left <= 0.0:
+				animal.activity = FarmAnimal.Activity.CREEP
+				animal.seconds_left = rules.hunting("give_up_seconds")
+		FarmAnimal.Activity.CREEP:
+			_creep(animal, delta, map)
+		FarmAnimal.Activity.POUNCE:
+			_pounce(animal, delta, map)
 		FarmAnimal.Activity.FLEE:
 			if player_distance > flee_tiles + rules.general("calm_extra_tiles"):
 				_start_next_activity(animal)
@@ -170,6 +214,37 @@ func _update_awake_animal(
 			animal.seconds_left -= delta
 			if animal.seconds_left <= 0.0:
 				_start_next_activity(animal)
+
+
+## Creeps up on the mouse until it is near enough to pounce; gives up when it takes too long or
+## the way is blocked.
+func _creep(animal: FarmAnimal, delta: float, map: GameMap) -> void:
+	animal.seconds_left -= delta
+	var to_prey := animal.prey - animal.position
+	if to_prey.length() <= rules.hunting("pounce_tiles"):
+		animal.activity = FarmAnimal.Activity.POUNCE
+	elif (
+		animal.seconds_left <= 0.0
+		or not _walk(animal, to_prey.normalized(), rules.hunting("creep_speed"), delta, map)
+	):
+		_end_hunt(animal)
+
+
+## Leaps at where the mouse was when it pounced, and lands there; a leap that is blocked ends
+## short of it.
+func _pounce(animal: FarmAnimal, delta: float, map: GameMap) -> void:
+	var speed := rules.hunting("pounce_speed")
+	var to_prey := animal.prey - animal.position
+	if to_prey.length() <= speed * delta:
+		animal.position = animal.prey
+		_end_hunt(animal)
+	elif not _walk(animal, to_prey.normalized(), speed, delta, map):
+		_end_hunt(animal)
+
+
+func _end_hunt(animal: FarmAnimal) -> void:
+	animal.hunt_rest_seconds = rules.hunting("rest_seconds")
+	_start_activity(animal, FarmAnimal.Activity.IDLE)
 
 
 ## Keeps a follower near the player: it waits within `follow_far_tiles` of them, and once they are

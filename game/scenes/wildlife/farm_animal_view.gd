@@ -12,6 +12,9 @@ const ACTIONS := {
 	FarmAnimal.Activity.RUN: [&"run", 10.0],
 	FarmAnimal.Activity.FLEE: [&"run", 12.0],
 	FarmAnimal.Activity.SLEEP: [&"sleep", 0.5],
+	FarmAnimal.Activity.CROUCH: [&"crouch", 1.5],
+	FarmAnimal.Activity.CREEP: [&"creep", 3.0],
+	FarmAnimal.Activity.POUNCE: [&"pounce", 9.0],
 }
 ## Half the width of each species' contact shadow, in pixels.
 const SHADOW_HALF_WIDTHS := {
