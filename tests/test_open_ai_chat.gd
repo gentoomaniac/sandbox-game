@@ -93,6 +93,13 @@ func test_the_models_are_the_ids_the_endpoint_lists() -> void:
 	assert_eq(asked[1], ["qwen2.5:3b-instruct", "llama3.2"])
 
 
+func test_geminis_models_are_listed_by_their_bare_names() -> void:
+	var list := '{"object": "list", "data": [{"id": "models/gemini-2.5-flash-lite"}]}'
+	var ask := func() -> Array[String]: return await _chat.models(_language_model("AIza"), 5.0)
+	var asked := await _ask_and_answer(ask, _response("200 OK", list))
+	assert_eq(asked[1], ["gemini-2.5-flash-lite"])
+
+
 func test_the_models_of_an_endpoint_that_cannot_be_asked_are_none() -> void:
 	var ask := func() -> Array[String]: return await _chat.models(_language_model(), 5.0)
 	assert_eq((await _ask_and_answer(ask, _response("404 Not Found", "{}")))[1], [])

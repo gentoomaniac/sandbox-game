@@ -104,6 +104,16 @@ const LANGUAGE_MODEL_PROVIDERS := {
 		"endpoint": "https://api.anthropic.com/v1",
 		"model": "claude-opus-5-5",
 	},
+	## Google's Gemini through its OpenAI-compatible endpoint, with an AI Studio key (free tier).
+	## Flash-Lite doesn't think unless asked, so its answers fit the few tokens a line gets.
+	"gemini":
+	{
+		"name": "Gemini",
+		"protocol": "openai",
+		"needs_key": true,
+		"endpoint": "https://generativelanguage.googleapis.com/v1beta/openai",
+		"model": "gemini-2.5-flash-lite",
+	},
 }
 
 const ACTION_LABELS := {

@@ -115,6 +115,21 @@ func test_a_real_model_sums_up_a_conversation() -> void:
 	assert_false(_antje.memories[0].contains("The neighbour said:"), "the model summed it up")
 
 
+func test_gemini_is_asked_through_the_openai_compatible_chat_with_its_own_key() -> void:
+	_settings.set_language_model("api_key", "sk-openai")
+	_settings.set_language_model_provider("gemini")
+	_settings.set_language_model("api_key", "AIza-test")
+	var openai_chat := FakeChat.new()
+	var claude_chat := FakeChat.new()
+	var dialogue := NpcDialogue.new(_settings, openai_chat, claude_chat)
+	add_child_autoqfree(dialogue)
+	await dialogue.reply(_antje, [], "Hello", _state)
+	assert_eq(claude_chat.language_models.size(), 0)
+	assert_eq(openai_chat.language_models.size(), 1)
+	assert_eq(openai_chat.language_models[0]["api_key"], "AIza-test")
+	assert_string_contains(openai_chat.language_models[0]["endpoint"], "googleapis.com")
+
+
 func test_the_chat_of_the_provider_is_asked_with_the_key_of_that_provider() -> void:
 	_settings.set_language_model("endpoint", "http://fake/v1")
 	_settings.set_language_model("api_key", "sk-openai")

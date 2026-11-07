@@ -89,6 +89,14 @@ func test_switching_to_a_provider_without_a_key_sends_nothing_of_the_other_provi
 	assert_false(_server.is_connection_available(), "no request went to Anthropic")
 
 
+func test_gemini_shows_its_own_tips_and_placeholders() -> void:
+	_settings.set_language_model_provider("gemini")
+	_page.show_settings()
+	assert_eq(_page._fields["model"].placeholder_text, "gemini-2.5-flash-lite")
+	var tip: String = _page._fields["api_key"].get_meta(TooltipView.TEXT_META)
+	assert_string_contains(tip, "aistudio.google.com")
+
+
 func test_changing_the_endpoint_asks_again_after_a_moment() -> void:
 	var ask := func() -> Array:
 		_page._fields["endpoint"].text_changed.emit(_settings.language_model["endpoint"])

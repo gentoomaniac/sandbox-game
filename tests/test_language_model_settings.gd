@@ -74,6 +74,27 @@ func test_each_provider_keeps_its_own_endpoint_model_and_key() -> void:
 		assert_eq(settings.language_model["model"], "claude-haiku-5-5")
 
 
+func test_gemini_keeps_its_own_fields_in_its_own_section_beside_the_openai_ones() -> void:
+	_settings.set_language_model("api_key", "sk-openai")
+	_settings.set_language_model_provider("gemini")
+	assert_eq(_settings.language_model["api_key"], "", "the key stays with the other provider")
+	assert_eq(
+		_settings.language_model["endpoint"],
+		"https://generativelanguage.googleapis.com/v1beta/openai"
+	)
+	assert_eq(_settings.language_model["model"], "gemini-2.5-flash-lite")
+	_settings.set_language_model("api_key", "AIza-test")
+	var file := ConfigFile.new()
+	file.load(PATH)
+	assert_eq(file.get_section_keys("language_model.gemini"), PackedStringArray(["api_key"]))
+	assert_eq(file.get_value("language_model", "api_key"), "sk-openai")
+	var loaded := _reloaded()
+	assert_eq(loaded.language_model["provider"], "gemini")
+	assert_eq(loaded.language_model["api_key"], "AIza-test")
+	loaded.set_language_model_provider("openai")
+	assert_eq(loaded.language_model["api_key"], "sk-openai")
+
+
 func test_a_file_from_before_the_providers_is_the_openai_providers() -> void:
 	DirAccess.make_dir_recursive_absolute(DIR)
 	var file := FileAccess.open(PATH, FileAccess.WRITE)

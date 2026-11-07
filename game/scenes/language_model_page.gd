@@ -1,12 +1,11 @@
 class_name LanguageModelPage
 extends VBoxContainer
-## The settings of the language model villagers talk through (see NpcDialogue): the provider
-## (an OpenAI-compatible chat API, or Claude), its endpoint, the model's name and a key, if it
-## needs one. Each provider keeps its own; each is stored as it is chosen or typed. The test LLM
-## is the default; with the endpoint emptied, villagers speak scripted lines. The endpoint is
-## asked which models it has, to pick one from a list (the name can be typed too, as the endpoint
-## may not be reachable). How many lines of a chat a villager keeps is one setting for all of
-## them.
+## The settings of the language model villagers talk through (see NpcDialogue): the provider (an
+## OpenAI-compatible chat API, Claude or Gemini), its endpoint, the model's name and a key, if it
+## needs one. Each provider keeps its own; each is stored as it is chosen or typed. The test LLM is
+## the default; with the endpoint emptied, villagers speak scripted lines. The endpoint is asked
+## which models it has, to pick one from a list (the name can be typed too, as the endpoint may not
+## be reachable). How many lines of a chat a villager keeps is one setting for all of them.
 
 signal back_requested
 
@@ -14,8 +13,9 @@ const LABELS := {"endpoint": "Endpoint", "model": "Model", "api_key": "Key (if i
 const PROVIDER_TIP := (
 	"OpenAI-compatible: the test LLM of make llm-up, Ollama, LM Studio or a hosted API."
 	+ " Claude: Anthropic's API, which needs an API key and costs money."
+	+ " Gemini: Google's API, with a key from AI Studio (free within its limits)."
 )
-## What each field is for, by the protocol of the provider.
+## What each field is for, by the provider, else by its protocol.
 const TIPS := {
 	"endpoint":
 	{
@@ -25,11 +25,21 @@ const TIPS := {
 			+ " Empty: villagers speak short scripted lines."
 		),
 		"claude": "The address of Anthropic's API. Empty: villagers speak short scripted lines.",
+		"gemini":
+		(
+			"The address of Gemini's OpenAI-compatible API. Empty: villagers speak short"
+			+ " scripted lines."
+		),
 	},
 	"model":
 	{
 		"openai": "The name of the model the endpoint should use.",
 		"claude": "The Claude model: claude-opus-5-5, or the much cheaper claude-haiku-5-5.",
+		"gemini":
+		(
+			"The Gemini model. A Flash-Lite model answers fastest; a model that thinks first"
+			+ " may use up a line's few tokens and say nothing."
+		),
 	},
 	"api_key":
 	{
@@ -42,6 +52,12 @@ const TIPS := {
 		(
 			'Your Anthropic API key, sent to Anthropic as "x-api-key". Kept as plain text in'
 			+ " settings.cfg, never in the save."
+		),
+		"gemini":
+		(
+			"Your Gemini API key from aistudio.google.com/apikey, sent to Google as"
+			+ ' "Authorization: Bearer <key>". Kept as plain text in settings.cfg, never in the'
+			+ " save."
 		),
 	},
 }
@@ -146,7 +162,7 @@ func show_settings() -> void:
 	var provider: Dictionary = GameSettings.LANGUAGE_MODEL_PROVIDERS[chosen]
 	for key: String in _fields:
 		_fields[key].text = _settings.language_model[key]
-		var tip: String = TIPS[key][provider["protocol"]]
+		var tip: String = TIPS[key].get(chosen, TIPS[key][provider["protocol"]])
 		TooltipView.set_text(_labels[key], tip)
 		TooltipView.set_text(_fields[key], tip, "setting_language_model_%s" % key)
 	_history_lines.set_value_no_signal(_settings.chat_history_lines)

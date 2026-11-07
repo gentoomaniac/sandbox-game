@@ -50,7 +50,8 @@ func models(language_model: Dictionary, timeout_seconds: float) -> Array[String]
 	if text != "" and json.parse(text) == OK and json.data is Dictionary:
 		for model: Variant in json.data.get("data", []):
 			if model is Dictionary and model.get("id") is String:
-				names.append(model["id"])
+				# Gemini names its models "models/<name>"; the chat takes the bare name.
+				names.append(model["id"].trim_prefix("models/"))
 	return names
 
 
