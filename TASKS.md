@@ -1204,6 +1204,16 @@ small in the bubble's corner, the name above the other's lines).
 
 - [x] Done: the chat is bubbles in a ScrollContainer: the villager's on the left (portrait left too, the player's right) in stone_dark with their name in gold above the first bubble of a run, the player's on the right in water_deep, the time small in each bubble's corner, at most 70% of the window wide, 2 px between lines of one speaker and 6 px at a change, "..." as the villager's bubble while they answer, a grey centred notice for `/clear`; it scrolls to the newest line (the scrollbar's `changed`). `line_text` is gone, unused. New debug flag `--chat-script` (canned lines, no model; a last `...` leaves the villager typing). The bubbles are StyleBoxFlat with a 3 px radius and no antialiasing, no art or palette change.
 
+## 98. A flaky goose test
+
+- [ ] Done
+
+Seen on 2026-11-07 while task 96 was verified: tests/test_geese.gd failed twice in a row on
+one commit (a flock of 5 where 6 to 12 are expected) and passed on the third run. The wildlife
+view calls `rng.randomize()`, so the test is not deterministic, and `_place_geese` can place
+fewer geese than the flock size. Seed the test (or let it pass a seed) and make sure a flock
+is always placed in full, or that the test asks for what the game promises.
+
 ## Later (not part of the prototype)
 
 - **Graphics review: willows melt into the grass** (the user, 2026-11-06, with a screenshot;
