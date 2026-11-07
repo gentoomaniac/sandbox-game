@@ -1,7 +1,7 @@
 """Art for the sea birds of the coast: one sheet per kind at assets/wildlife/<kind>.png.
 
-Oystercatchers and dunlin probe the tidal mud, herring gulls walk the shore and swim
-(see docs/art-style.md, "Props and animals").
+Oystercatchers and dunlin probe the tidal mud, herring gulls walk the shore and swim, common terns
+plunge into the sea for fish (see docs/art-style.md, "Props and animals").
 
 The sheets are laid out and drawn like those of birds.py: one row per action and one column per
 frame, in the order game/scenes/wildlife/wildlife_sprites.gd mirrors; a bird stands in the bottom
@@ -331,10 +331,158 @@ def gull_sheet():
     return [[to_picture(frame, GULL_KEYS, GULL_OUTLINE, GULL_BARE) for frame in frames] for frames in rows]
 
 
+# --- Common tern --------------------------------------------------------------------------
+#
+# Slender, pale grey and white with a black cap, a red bill and a long forked tail: about 12 px
+# long, a wingspan of 18 px. It flies over the sea, hovers, plunges in with a splash and comes up,
+# now and then with a fish. Keys: w white, s and S the pale grey of the wings and their darker
+# tips, k the cap, o the bill, f and F a silver fish; x, q and Q the spray of the splash (white,
+# foam, light water), drawn without an outline.
+
+TERN_SIZE = (20, 14)
+TERN_KEYS = {
+    "w": "lime",
+    "s": "snow",
+    "S": "snow_deep",
+    "k": "ink",
+    "o": "red_light",
+    "f": "stone_light",
+    "F": "stone",
+    "x": "lime",
+    "q": "foam",
+    "Q": "water_light",
+}
+TERN_OUTLINE = "stone"
+TERN_BARE = BARE | {"x", "q", "Q"}
+
+TERN_WINGS_UP = (
+    "..........S.....",
+    ".........Ss.....",
+    "........Sss.....",
+    ".......sss......",
+    "......sss.......",
+    "w...wwwwwwwwkkoo",
+    ".wwwwwwwwwkk....",
+)
+TERN_WINGS_LEVEL = (
+    "......ssss......",
+    "w...wwwwwwwwkkoo",
+    ".wwwwwwwwwkk....",
+    "......sss.......",
+    ".......sss......",
+    "........Sss.....",
+    ".........SS.....",
+)
+TERN_WINGS_DOWN = (
+    "w...wwwwwwwwkkoo",
+    ".wwwwwwwwwkk....",
+    "......sss.......",
+    ".......Sss......",
+    "........SS......",
+)
+# Hovering: the head bent down to look into the water, the wings beating fast.
+TERN_HOVER_UP = (
+    "........S.S.....",
+    ".......SsSs.....",
+    "......ssss......",
+    "w...wwwwwwwwk...",
+    ".wwwwwwwwwkkk...",
+    "...........o....",
+    "...........o....",
+)
+TERN_HOVER_DOWN = (
+    "w...wwwwwwwwk...",
+    ".wwwwwwwwwkkk...",
+    "......ssss.o....",
+    "......SsSs.o....",
+    "......S.S.......",
+)
+# Plunging: wings half shut and the bill first, then straight down.
+TERN_DIVING = (
+    "w.....",
+    ".ww...",
+    "..wss.",
+    "..wwss",
+    "...wwk",
+    "....kk",
+    ".....o",
+    "......o",
+)
+TERN_PLUNGING = (
+    "w.w",
+    ".w.",
+    "sws",
+    "sws",
+    "sws",
+    ".w.",
+    ".k.",
+    ".k.",
+    ".o.",
+    ".o.",
+)
+# The splash where it went in: a crown of spray, falling back, a ring on the water.
+TERN_SPLASH = (
+    (
+        "..x...x..",
+        "x..x.x..x",
+        ".x.xxx.x.",
+        "..qqxqq..",
+    ),
+    (
+        ".x.....x.",
+        "...x.x...",
+        ".q.qxq.q.",
+        "..qqQqq..",
+    ),
+    (
+        ".........",
+        ".........",
+        "q.......q",
+        ".qqqQqqq.",
+    ),
+)
+# Carrying a fish crosswise in the bill, its tail hanging.
+TERN_FISH = (
+    "..............ff",
+    "...............F",
+)
+TERN_FLIGHT = [(TERN_WINGS_UP, 5), (TERN_WINGS_LEVEL, 1), (TERN_WINGS_DOWN, 0)]
+TERN_HOVER = [(TERN_HOVER_UP, 3), (TERN_HOVER_DOWN, 0)]
+TERN_FLIGHT_LEFT = 2
+TERN_FLIGHT_BODY_Y = 7
+
+
+def with_fish(shape, body_y):
+    """A flying tern with a fish in its bill, below the tip."""
+    rows = list(shape) + [""] * 2
+    for dy, fish_row in enumerate(TERN_FISH):
+        row = rows[body_y + 1 + dy].ljust(len(fish_row), ".")
+        rows[body_y + 1 + dy] = "".join(f if f != "." else c for c, f in zip(row, fish_row)) + row[len(fish_row) :]
+    return tuple(row for row in rows if row)
+
+
+def tern_sheet():
+    size = TERN_SIZE
+    width, height = size
+
+    def flying(shapes):
+        return [on_cell(shape, size, TERN_FLIGHT_LEFT, TERN_FLIGHT_BODY_Y - body_y) for shape, body_y in shapes]
+
+    rows = [
+        flying(TERN_FLIGHT),
+        flying(TERN_HOVER),
+        [standing(TERN_DIVING, size, 7), standing(TERN_PLUNGING, size, 9)],
+        [standing(splash, size, (width - len(splash[0])) // 2) for splash in TERN_SPLASH],
+        flying([(with_fish(shape, body_y), body_y) for shape, body_y in TERN_FLIGHT]),
+    ]
+    return [[to_picture(frame, TERN_KEYS, TERN_OUTLINE, TERN_BARE) for frame in frames] for frames in rows]
+
+
 def sheets():
     """(name, cell size, rows of cells) of every sheet."""
     return [
         ("oystercatcher", OYSTERCATCHER_SIZE, oystercatcher_sheet()),
         ("dunlin", DUNLIN_SIZE, dunlin_sheet()),
         ("gull", GULL_SIZE, gull_sheet()),
+        ("tern", TERN_SIZE, tern_sheet()),
     ]
