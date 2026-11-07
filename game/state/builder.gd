@@ -20,9 +20,10 @@ func _init(state: GameState) -> void:
 	_state.player.inventory.changed.connect(_on_inventory_changed)
 
 
-## Whether the player is placing buildings: they hold the hammer and have not dismissed it.
+## Whether the player is placing buildings: they hold the hammer, have not dismissed it and are
+## not on horseback (no building from the saddle).
 func is_building() -> bool:
-	return _is_hammer_held() and not _is_dismissed
+	return _is_hammer_held() and not _is_dismissed and _state.player.horse == null
 
 
 ## Whether the hammer takes down instead of building (see `toggle_taking_down`).

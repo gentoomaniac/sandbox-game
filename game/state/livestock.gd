@@ -4,7 +4,8 @@ extends RefCounted
 ## walk, graze and run about, turn away from water and anything solid, and rabbits run from the
 ## player. At night they sleep where they are, from a while after sunset until about sunrise
 ## (each species has its hours, and each animal is a little later than the rest). A dog given a
-## bone follows the player for a while instead, day and night.
+## bone follows the player for a while instead, day and night. A horse the player rides does
+## nothing of its own: it goes where they ride it.
 ## GameState owns it and moves the animals with `update` while the player is out in the world.
 ##
 ## It does not know the world, so the two never hold each other: the map the animals walk on is
@@ -98,6 +99,13 @@ func start_following(animal: FarmAnimal, now: int) -> void:
 	animal.follow_until_minute = now + int(rules.general("follow_minutes"))
 
 
+## The animal stands where it is, as one that has just been let go of (the player got off the
+## horse), until it picks what to do next.
+func stand_still(animal: FarmAnimal) -> void:
+	_start_activity(animal, FarmAnimal.Activity.IDLE)
+	animal.last_step = Vector2.ZERO
+
+
 ## Lets `delta` seconds pass for every animal on `map` at the time of the game clock. The
 ## player's feet are where the rabbits run from and the followers go.
 func update(delta: float, map: GameMap, player_feet: Vector2, clock: GameClock) -> void:
@@ -107,6 +115,8 @@ func update(delta: float, map: GameMap, player_feet: Vector2, clock: GameClock) 
 	var sunrise := _sun.sunrise(clock.day)
 	var sunset := _sun.sunset(clock.day)
 	for animal in _animals:
+		if animal.is_ridden:
+			continue
 		if now < animal.follow_until_minute:
 			_follow(animal, delta, map, player_feet)
 		elif _is_sleep_time(animal, minute, sunrise, sunset):

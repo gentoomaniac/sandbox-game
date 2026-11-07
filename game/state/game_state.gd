@@ -22,6 +22,8 @@ const PULL_RADIUS := 1.25
 const PULL_SPEED := 8.0
 ## A pulled item that is this close is picked up.
 const PICKUP_RADIUS := 0.15
+## Getting off a horse puts the player on free ground at most this many tiles from it.
+const DISMOUNT_REACH := 2
 
 var world: World
 var clock: GameClock
@@ -54,6 +56,9 @@ var current_map: GameMap:
 
 ## The building the player is inside, or null when they are out in the world.
 var _building_inside: Building
+## Seconds the player has kept moving: a horse trots after a while (see `is_trotting`). Not
+## saved.
+var _moving_seconds := 0.0
 
 
 ## `game_clock` is the clock to follow: a loaded game brings the one it saved. Whoever builds
@@ -84,8 +89,11 @@ func is_inside() -> bool:
 
 
 ## Whether the player stands on a tile that leads to another map: the door of a building in
-## the world, or the exit of the interior they are in.
+## the world, or the exit of the interior they are in. Never on horseback: a horse that stood in a
+## doorway when they got on it is ridden out of it, not into the house.
 func door_underfoot() -> bool:
+	if player.horse != null:
+		return false
 	var tile := player.tile()
 	if is_inside():
 		return tile == _building_inside.interior.exit_tile
@@ -162,20 +170,30 @@ func energy_cap() -> float:
 	return energy_rules.debuff_energy_max() if player.is_debuffed else PlayerState.MAX_ENERGY
 
 
+## Whether the tile the player faces is the door of a building (which they can't ride through).
+func is_door_ahead() -> bool:
+	var building := world.building_at(player.facing_tile())
+	return not is_inside() and building != null and building.door_tile() == player.facing_tile()
+
+
 ## How fast the player walks, as a fraction of full speed: the slowest of what low energy and
-## a debuff allow.
+## a debuff allow. On horseback it is the horse's pace, which nothing slows.
 func walk_speed_factor() -> float:
+	if player.horse != null:
+		var pace := "ride_trot_factor" if is_trotting() else "ride_walk_factor"
+		return livestock.rules.general(pace)
 	var factor := energy_rules.walk_factor(player.energy)
 	if player.is_debuffed:
 		factor = minf(factor, energy_rules.debuff_walk_factor())
 	return factor
 
 
-## Walks the player on the map they are on (see PlayerState.move). Outdoors, each tile they step
-## onto wears a little towards a desire path.
+## Walks the player on the map they are on (see PlayerState.move), or rides the horse they are on.
+## Outdoors, each tile they step onto wears a little towards a desire path.
 func walk(direction: Vector2, delta: float, speed_factor := 1.0) -> void:
 	var tile_before := player.tile()
 	player.move(current_map, direction, delta, speed_factor, cheats.is_noclip)
+	_moving_seconds = _moving_seconds + delta if direction != Vector2.ZERO else 0.0
 	# A noclip walk (through trees, rocks and walls) leaves no path.
 	if not is_inside() and not cheats.is_noclip and player.tile() != tile_before:
 		world.wear_tile(player.tile())
@@ -183,8 +201,8 @@ func walk(direction: Vector2, delta: float, speed_factor := 1.0) -> void:
 
 ## Puts a player who stands where they don't fit (noclip just turned off in a lake, a rock or a
 ## house's walls) on the middle of the nearest tile, within `reach` tiles, where they fit and no
-## part of them is on a building (its door would take them inside). One lying in a bed stays:
-## they get out of it as they move. Returns whether they now fit.
+## part of them is on a building (its door would take them inside), with the horse they ride. One
+## lying in a bed stays: they get out of it as they move. Returns whether they now fit.
 func put_player_on_free_ground(reach := 12) -> bool:
 	if player.bed_lying_in != null or PlayerState.can_stand_at(current_map, player.position):
 		return true
@@ -201,20 +219,72 @@ func put_player_on_free_ground(reach := 12) -> bool:
 	if nearest == Vector2.INF:
 		return false
 	player.position = nearest
+	if player.horse != null:
+		player.horse.position = nearest
 	return true
 
 
 func _is_free_ground_for_player(feet: Vector2) -> bool:
-	if not PlayerState.can_stand_at(current_map, feet):
+	return (
+		PlayerState.can_stand_at(current_map, feet)
+		and not PlayerState.touches_building(current_map, feet)
+	)
+
+
+## Whether the player rides fast enough for the horse to trot (see data/livestock.cfg).
+func is_trotting() -> bool:
+	return player.horse != null and _moving_seconds >= livestock.rules.general("trot_after_seconds")
+
+
+## Gets on a saddled horse: the player sits on it where it stands, facing its way, and it goes where
+## they ride until they get off (see `dismount`).
+func mount(horse: FarmAnimal) -> void:
+	assert(horse.is_saddled and player.horse == null, "Not a horse to get on")
+	player.horse = horse
+	horse.is_ridden = true
+	player.bed_lying_in = null
+	player.position = horse.position
+	player.facing = Vector2i.RIGHT if horse.facing > 0.0 else Vector2i.LEFT
+	_moving_seconds = 0.0
+
+
+## Gets off the horse onto free ground beside it (see `_dismount_spot`); the horse stays where it is
+## and goes about its day again. Returns false, and the player stays on, if there is no room.
+func dismount() -> bool:
+	var spot := _dismount_spot()
+	if spot == Vector2.INF:
 		return false
-	if is_inside():
-		return true
-	var tiles := PlayerState.body_tiles(feet)
-	for y in range(tiles.position.y, tiles.end.y):
-		for x in range(tiles.position.x, tiles.end.x):
-			if world.building_at(Vector2i(x, y)) != null:
-				return false
+	player.position = spot
+	_leave_horse()
 	return true
+
+
+## The horse stays where it is, and the player is no longer on it (wherever they are put next).
+func _leave_horse() -> void:
+	if player.horse == null:
+		return
+	player.horse.is_ridden = false
+	livestock.stand_still(player.horse)
+	player.horse = null
+
+
+## Where getting off the horse puts the player: the middle of a tile near it, within
+## DISMOUNT_REACH, where they stand free (never in the water, a wall or a building). Not on the
+## horse's own tile, and best at its side: a tile along its length (to the left or right, as it
+## is drawn standing) counts a tile further off. Vector2.INF if there is none.
+func _dismount_spot() -> Vector2:
+	var here := player.tile()
+	var nearest := Vector2.INF
+	var nearest_cost := INF
+	for y in range(DISMOUNT_REACH, -DISMOUNT_REACH - 1, -1):
+		for x in range(-DISMOUNT_REACH, DISMOUNT_REACH + 1):
+			var centre := Vector2(here + Vector2i(x, y)) + Vector2(0.5, 0.5)
+			var cost := centre.distance_to(player.position) + absi(x)
+			var is_cheaper := cost < nearest_cost and Vector2i(x, y) != Vector2i.ZERO
+			if is_cheaper and _is_free_ground_for_player(centre):
+				nearest = centre
+				nearest_cost = cost
+	return nearest
 
 
 ## Eats one of the held food, on any map: it restores energy up to the cap. Does nothing, and
@@ -259,6 +329,7 @@ func pass_out() -> int:
 ## its middle until they move. A home with no bed any more (a loaded game that lost it) has them
 ## standing on its tile.
 func go_to_home_bed() -> void:
+	_leave_horse()
 	_building_inside = _building_with_interior(player.home_map)
 	var bed := _home_bed()
 	if bed == null:
@@ -318,8 +389,10 @@ func take_down_building(building: Building) -> bool:
 	return true
 
 
-## Puts the player on a tile of the world, out of the house they are in.
+## Puts the player on a tile of the world, out of the house they are in (and off the horse they
+## ride, which stays).
 func teleport_to(tile: Vector2i) -> void:
+	_leave_horse()
 	_building_inside = null
 	player.position = _tile_centre(tile)
 	player.bed_lying_in = null
@@ -387,10 +460,16 @@ func drop_from_inventory(slot: int) -> bool:
 ## `{"kind": "interior", "building": [x, y]}` for the interior of the building with that
 ## origin. So the current map and the home map stay the very objects they point at.
 func to_dict() -> Dictionary:
+	var player_data := player.to_dict()
+	# A game saved on horseback loads with the player standing beside the horse (or, with no room
+	# there, on its spot).
+	var spot := Vector2.INF if player.horse == null else _dismount_spot()
+	if spot != Vector2.INF:
+		player_data["position"] = SaveCodec.float_vector_to_json(spot)
 	return {
 		"world": world.to_dict(),
 		"clock": clock.to_dict(),
-		"player": player.to_dict(),
+		"player": player_data,
 		"livestock": livestock.to_array(),
 		"npcs": npcs.to_array(),
 		"current_map": _map_to_ref(current_map),

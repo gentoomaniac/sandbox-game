@@ -26,6 +26,9 @@ var home_bed := Vector2i.ZERO
 ## The bed the player lies in after waking, until they move (see `move`). Not saved: a loaded
 ## game has them standing.
 var bed_lying_in: WorldObject
+## The horse the player rides, or null on foot (see GameState `mount`): it goes where they go. Not
+## saved: a game saved on horseback loads with the player standing beside the horse.
+var horse: FarmAnimal
 
 ## Both run from 0 to MAX_*. A player who passed out is `is_debuffed` until the next new day
 ## (see GameState).
@@ -78,7 +81,8 @@ func facing_tile() -> Vector2i:
 ## Walks along `direction` for `delta` seconds. Each axis moves on its own, so the player
 ## slides along a wall instead of stopping against it. `speed_factor` scales SPEED. With
 ## `is_noclip` (the console's noclip) nothing blocks them, but they stay on the map's tiles: in
-## the room indoors, on loaded ground outdoors.
+## the room indoors, on loaded ground outdoors. The horse they ride comes along, and keeps off the
+## buildings (see `_fits`).
 func move(
 	map: GameMap, direction: Vector2, delta: float, speed_factor := 1.0, is_noclip := false
 ) -> void:
@@ -98,15 +102,25 @@ func move(
 			if is_noclip:
 				if is_on_map(map, position + axis):
 					position += axis
-			elif can_stand_at(map, position + axis) or _can_step_off_blocked_tile(map, axis):
+			elif _fits(map, position + axis) or _can_step_off_blocked_tile(map, axis):
 				position += axis
+	if horse != null:
+		horse.position = position
+		if facing.x != 0:
+			horse.facing = facing.x
+
+
+## Whether the player fits with their feet at `feet` (see `can_stand_at`). On horseback they also
+## keep off the tiles of buildings: the door would take the horse inside.
+func _fits(map: GameMap, feet: Vector2) -> bool:
+	return can_stand_at(map, feet) and (horse == null or not touches_building(map, feet))
 
 
 ## Whether the player, who stands where they do not fit (a game saved in bed, or with an object
-## built on them), may take `step`: through objects, so they can always walk away, but not
-## into a wall, the water or a building.
+## built on them, or on a horse that stood in a doorway), may take `step`: through objects, so they
+## can always walk away, but not into a wall, the water or a building.
 func _can_step_off_blocked_tile(map: GameMap, step: Vector2) -> bool:
-	if can_stand_at(map, position):
+	if _fits(map, position):
 		return false
 	return map.is_ground_walkable(Vector2i((position + step).floor()))
 
@@ -195,6 +209,19 @@ static func is_on_map(map: GameMap, feet: Vector2) -> bool:
 			if map.tile_at(Vector2i(x, y)) == null:
 				return false
 	return true
+
+
+## Whether any tile a player's body touches with their feet at `feet` is a building's (its door
+## included). Only the world has buildings.
+static func touches_building(map: GameMap, feet: Vector2) -> bool:
+	if not map is World:
+		return false
+	var tiles := body_tiles(feet)
+	for y in range(tiles.position.y, tiles.end.y):
+		for x in range(tiles.position.x, tiles.end.x):
+			if (map as World).building_at(Vector2i(x, y)) != null:
+				return true
+	return false
 
 
 ## Whether a player with their feet at `feet` fits: every tile their body touches is walkable.

@@ -1,9 +1,10 @@
 class_name Interaction
 extends RefCounted
-## What the player's E acts on: the villagers, beds, chests and crafting stations within reach of
-## them (Targeting.REACH, the same as the use action's). Plain rules; Main asks and then chats,
-## sleeps, opens the storage screen or opens the crafting menu of the station. A villager E speaks
-## to (`npc_to_chat`) comes first, before any chest, station or bed.
+## What the player's E acts on: the villagers, saddled horses, beds, chests and crafting stations
+## within reach of them (Targeting.REACH, the same as the use action's). Plain rules; Main asks and
+## then chats, gets on the horse, sleeps, opens the storage screen or opens the crafting menu of
+## the station. A villager E speaks to (`npc_to_chat`) comes first, then a horse to get on
+## (`horse_to_mount`), before any chest, station or bed.
 
 
 ## The nearest object on the player's map within reach that `is_wanted` says yes to, or null.
@@ -65,3 +66,15 @@ static func npc_to_chat(state: GameState, target: Vector2i) -> Npc:
 		if to_npc.dot(facing) > 0.0 and is_nearer:
 			nearest = npc
 	return nearest
+
+
+## The saddled horse E gets on, or null: the one nearest the middle of the targeted tile, within
+## ToolUse.ANIMAL_REACH of it, if that tile is in reach. None indoors, where there are none.
+static func horse_to_mount(state: GameState, target: Vector2i) -> FarmAnimal:
+	var offset := (target - state.player.tile()).abs()
+	if state.is_inside() or maxi(offset.x, offset.y) > Targeting.REACH:
+		return null
+	var horse := state.livestock.nearest(
+		LivestockRules.HORSE, Vector2(target) + Vector2(0.5, 0.5), ToolUse.ANIMAL_REACH
+	)
+	return horse if horse != null and horse.is_saddled else null

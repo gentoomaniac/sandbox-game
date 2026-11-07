@@ -12,8 +12,8 @@ extends RefCounted
 ## axe or pickaxe taking down what the player placed inside a house (outdoors it is a HIT),
 ## NO_ROOM that, with too little room in the inventory for it and what it holds, GIVE_BONE a bone
 ## given to a dog, which then follows the player, SADDLE the saddle put on a horse and UNSADDLE an
-## empty hand taking it off again. What a harvest, a pick or a final hit gives lies on the ground
-## (see World `drop_items`).
+## empty hand taking it off again, RIDING anything on horseback (the player gets off first). What a
+## harvest, a pick or a final hit gives lies on the ground (see World `drop_items`).
 enum Use {
 	NOTHING,
 	TILL,
@@ -32,6 +32,7 @@ enum Use {
 	GIVE_BONE,
 	SADDLE,
 	UNSADDLE,
+	RIDING,
 }
 
 ## The tools the use action has something to do with.
@@ -79,8 +80,10 @@ func _init(state: GameState) -> void:
 ## there is tall grass or reeds in its reach, a shovel digs in any free grass (the player can't tell
 ## a clay spot from the cursor), an item that places an object puts it on a free tile, a bone
 ## goes to a dog on the tile and a saddle on a horse, and an empty hand takes the saddle off a
-## horse. Inside, only placing and taking a chest down are possible.
+## horse. Inside, only placing and taking a chest down are possible; on horseback, nothing.
 func use_at(pos: Vector2i) -> Use:
+	if _state.player.horse != null:
+		return Use.RIDING
 	var held := _state.player.inventory.held_item()
 	if held == ItemTypes.NONE:
 		return Use.NOTHING if _state.is_inside() else _use_by_hand(pos)
@@ -91,16 +94,14 @@ func use_at(pos: Vector2i) -> Use:
 		return _use_inside(item, pos)
 	if held in ANIMAL_ITEMS:
 		return _use_on_animal(held, pos)
-	if (
-		item.has("plants")
-		and _state.world.is_free_on(pos, item.get("plants_on", Tile.Terrain.SOIL))
-	):
-		return Use.PLANT
-	return _use_tool(item, _state.world.object_at(pos), pos)
+	return _use_outdoors(item, pos)
 
 
-## Whether the held item does anything anywhere, so it is worth highlighting a target.
+## Whether the held item does anything anywhere, so it is worth highlighting a target. Nothing
+## does on horseback.
 func can_use_held_item() -> bool:
+	if _state.player.horse != null:
+		return false
 	var held := _state.player.inventory.held_item()
 	if held == ItemTypes.NONE:
 		return true
@@ -303,6 +304,17 @@ func _is_dry_soil(world_pos: Vector2i) -> bool:
 		and tile.terrain == Tile.Terrain.SOIL
 		and _state.world.moisture_at(world_pos) < 1.0
 	)
+
+
+## What an item that is neither placed nor given to an animal does outdoors: seeds are planted on
+## free ground they grow on, a tool does its work (see `_use_tool`).
+func _use_outdoors(item: Dictionary, pos: Vector2i) -> Use:
+	if (
+		item.has("plants")
+		and _state.world.is_free_on(pos, item.get("plants_on", Tile.Terrain.SOIL))
+	):
+		return Use.PLANT
+	return _use_tool(item, _state.world.object_at(pos), pos)
 
 
 func _use_tool(tool_item: Dictionary, object: WorldObject, world_pos: Vector2i) -> Use:

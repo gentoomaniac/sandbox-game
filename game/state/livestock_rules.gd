@@ -24,6 +24,9 @@ const GENERAL_KEYS := [
 	"follow_run_tiles",
 	"follow_lost_tiles",
 	"follow_stuck_seconds",
+	"ride_walk_factor",
+	"ride_trot_factor",
+	"trot_after_seconds",
 ]
 const SPECIES_KEYS := [
 	"looks",

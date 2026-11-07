@@ -33,6 +33,9 @@ var follow_until_minute := 0
 var stuck_seconds := 0.0
 ## A horse wears a saddle (see ToolUse `SADDLE`): it can be ridden.
 var is_saddled := false
+## The player rides it (see GameState `mount`): it goes where they ride, and does nothing of its
+## own accord. Not saved, as the riding isn't.
+var is_ridden := false
 
 
 func _init(animal_species: StringName, animal_look: StringName, feet: Vector2) -> void:

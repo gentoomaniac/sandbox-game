@@ -15,6 +15,8 @@ const SNOWY_GHOST_COVER := 0.5
 const GAME_MINUTES_PER_REAL_SECOND := 1.5
 ## Debug speed-up, toggled with F2: a game day in 16 real seconds.
 const FAST_FORWARD_FACTOR := 60.0
+## What the player is told when they try on horseback what needs them on foot.
+const GET_OFF_FIRST := "Get off the horse first."
 
 var _state: GameState
 var _builder: Builder
@@ -356,7 +358,13 @@ func _process(delta: float) -> void:
 	_use_highlight.is_enabled = (
 		is_in_play and not _builder.is_building() and not _is_in_transition
 	)
-	var can_chat := is_in_play and not _build_mode.is_active() and not _is_in_transition
+	# On horseback E gets off instead.
+	var can_chat := (
+		is_in_play
+		and not _build_mode.is_active()
+		and not _is_in_transition
+		and _state.player.horse == null
+	)
 	_npc_name_tag.show_over(
 		Interaction.npc_to_chat(_state, _use_highlight.targeting().tile) if can_chat else null,
 		_camera
@@ -376,6 +384,8 @@ func _process(delta: float) -> void:
 			direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 		_player_view.walk_speed = _state.walk_speed_factor()
 		_state.walk(direction, delta, _player_view.walk_speed)
+		if _state.player.horse != null and direction != Vector2.ZERO and _state.is_door_ahead():
+			_harvest_hud.show_note(GET_OFF_FIRST)
 		_state.collect_ground_items(delta)
 		_interior_view.cover_bed(_state.player.bed_lying_in)
 		_object_cover.cover(_state.player.bed_lying_in)
@@ -464,10 +474,11 @@ func _use_on(target: Targeting) -> void:
 	if use == ToolUse.Use.GIVE_BONE:
 		_harvest_hud.show_note("The dog follows you.")
 	if use == ToolUse.Use.SADDLE:
-		_harvest_hud.show_note("The horse is saddled.")
+		_harvest_hud.show_note("The horse is saddled: E to get on.")
 	if use == ToolUse.Use.UNSADDLE:
 		_harvest_hud.show_note("You take the saddle off.")
-
+	if use == ToolUse.Use.RIDING:
+		_harvest_hud.show_note(GET_OFF_FIRST)
 	if use == ToolUse.Use.NO_ROOM:
 		_harvest_hud.show_note("Not enough room in the inventory.")
 	if use == ToolUse.Use.NEEDS_BETTER_TOOL:
@@ -482,6 +493,9 @@ func _pass_out() -> void:
 	_is_in_transition = true
 	# Nothing else may move the player meanwhile.
 	_close_all_screens()
+	# They slide off the horse first, if there is room beside it; else they collapse in the saddle.
+	if _state.player.horse != null:
+		_state.dismount()
 	var was_up_too_late := _state.is_up_too_late
 	_player_view.collapse()
 	await get_tree().create_timer(PlayerView.COLLAPSE_SECONDS).timeout
@@ -539,13 +553,21 @@ func _screens_take(event: InputEvent) -> bool:
 	return _is_any_screen_open()
 
 
-## E: speaks to the villager in front, else opens the chest or the station in reach, else sleeps
-## in the bed in reach.
+## E: on horseback, gets off. Else speaks to the villager in front, else gets on the saddled horse
+## in front, else opens the chest or the station in reach, else sleeps in the bed in reach.
 func _interact() -> void:
+	if _state.player.horse != null:
+		if not _state.dismount():
+			_harvest_hud.show_note("No room to get off here.")
+		return
 	var target := _use_highlight.targeting().tile
 	var npc := Interaction.npc_to_chat(_state, target)
 	if npc != null:
 		_open_chat(npc)
+		return
+	var horse := Interaction.horse_to_mount(_state, target)
+	if horse != null:
+		_state.mount(horse)
 		return
 	var object := Interaction.object_to_open(_state, target)
 	if object == null:
