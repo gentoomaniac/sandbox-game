@@ -104,7 +104,8 @@ func spawn_in_view(kind: StringName, count: int) -> int:
 
 
 ## The nearest animal of a kind that is still about within `reach` pixels of a point, or null:
-## how a hunter finds its prey (a stork its frogs). It looks only at the few wild animals.
+## how a hunter finds its prey (a stork its frogs, a cat its mice). It looks only at the few wild
+## animals.
 func nearest_animal(kind: StringName, point: Vector2, reach: float) -> Animal:
 	var nearest: Animal = null
 	var nearest_distance := reach
@@ -115,6 +116,11 @@ func nearest_animal(kind: StringName, point: Vector2, reach: float) -> Animal:
 				nearest = animal
 				nearest_distance = distance
 	return nearest
+
+
+## The farm animals of the game, which it shows (a cat asks it for mice to hunt).
+func livestock() -> Livestock:
+	return _state.livestock
 
 
 ## The part of the world the camera shows, in world pixels.
@@ -412,6 +418,7 @@ func _show_farm_animal_if_near(animal: FarmAnimal) -> void:
 	if not near.has_point(animal.position * WildlifeRules.TILE_SIZE):
 		return
 	var animal_view := FarmAnimalView.new(animal)
+	animal_view.wildlife = self
 	_farm_animals[animal] = animal_view
 	world_view.entities.add_child(animal_view)
 	animal_added.emit(animal_view)

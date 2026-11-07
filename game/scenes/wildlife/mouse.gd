@@ -1,8 +1,9 @@
 class_name Mouse
 extends Animal
 ## A mouse by the fields, the Knicks, the walls and the houses: it crouches and sniffs, and
-## scurries a short way now and then; when the player comes near (or it is sent away) it dashes
-## off and is gone into the grass.
+## scurries a short way now and then; when the player comes near (or it is sent away, or a cat
+## pounces on it and misses) it dashes off and is gone into the grass. It takes no notice of a cat
+## creeping up on it.
 
 const SIT := &"sit"
 const SCURRY := &"scurry"
@@ -30,6 +31,13 @@ func _ready() -> void:
 func dismiss() -> void:
 	if _state != FLEE:
 		_dash(_away_from_view_centre())
+
+
+## Dashes off into cover away from `point`, as from a cat that pounces on it and misses.
+func flee_from(point: Vector2) -> void:
+	if _state != FLEE:
+		var away := position - point
+		_dash(away.normalized() if away.length() >= 1.0 else _away_from_view_centre())
 
 
 func _update(delta: float) -> void:
