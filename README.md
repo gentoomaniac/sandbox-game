@@ -481,7 +481,7 @@ stored as you type or pick:
 
 | Field | Default | What it is |
 |---|---|---|
-| Provider | OpenAI-compatible | OpenAI-compatible (the test LLM, Ollama, LM Studio, hosted APIs) or Claude. Each provider keeps its own endpoint, model and key: choosing Claude shows Claude's (starting with `https://api.anthropic.com/v1` and `claude-opus-5-5`), choosing back shows the test LLM's again, and a key is only ever sent to the provider it was typed for. |
+| Provider | OpenAI-compatible | OpenAI-compatible (the test LLM, Ollama, LM Studio, hosted APIs), Claude or Gemini. Each provider keeps its own endpoint, model and key: choosing Claude shows Claude's (starting with `https://api.anthropic.com/v1` and `claude-opus-5-5`), Gemini Gemini's, choosing back shows the test LLM's again, and a key is only ever sent to the provider it was typed for. |
 | Endpoint | `http://127.0.0.1:11434/v1` | The base address of the chat API; the game posts to `<endpoint>/chat/completions`. Empty it to turn the model off (villagers then always speak scripted lines). |
 | Model | `qwen2.5:3b-instruct` | The model name the endpoint should use: typed, or picked from the drop-down below it, which lists what `<endpoint>/models` answers (Claude's `/v1/models` with the key), asks again a moment after the endpoint or key is typed and by the Refresh button, and shows only the saved model with a note when the endpoint can't be asked. |
 | Lines a villager keeps | 24 | A number from 2 to 200, one for all providers: how many of the latest chat lines a villager keeps in the save and tells the model. Older lines are summed up in a memory; lowering it sums up the lines it drops, once the menu is closed. Every kept line is sent with each question, so higher values make the answers slower (and cost more with a hosted model). |
@@ -490,7 +490,8 @@ stored as you type or pick:
 The same live in `settings.cfg` (in Godot's user folder, e.g.
 `~/.local/share/godot/app_userdata/Sandbox Game/settings.cfg` on Linux): the chosen provider
 and the OpenAI-compatible provider's endpoint, model and key under `[language_model]` (where
-they were before there was a choice), Claude's under `[language_model.claude]`. Only values
+they were before there was a choice), Claude's under `[language_model.claude]` and Gemini's
+under `[language_model.gemini]`. Only values
 that differ from the defaults are written (the chat length is `chat_history_lines` under
 `[language_model]`):
 
@@ -503,9 +504,14 @@ api_key="sk-..."
 
 [language_model.claude]
 api_key="sk-ant-..."
+
+[language_model.gemini]
+api_key="AIza..."
 ```
 
-The key is stored as plain text there (never in the save, never logged), and what you say to
+The key is stored as plain text there (never in the save, never logged; `make lint` fails on
+anything that looks like a key in the repository, and `.gitignore` keeps any `settings.cfg`
+out), and what you say to
 villagers goes to that endpoint. Ollama, LM Studio (`http://127.0.0.1:1234/v1`), llama.cpp's
 server and hosted OpenAI-compatible APIs work as the OpenAI-compatible provider. To try an
 endpoint and key by hand:
@@ -531,6 +537,17 @@ effort and room for 1000 tokens (a model's thinking counts against that; the rep
 to two sentences anyway); on Opus and Sonnet a refusal falls back server-side. A refusal, an
 error or a time-out gives a scripted line, as with any endpoint. The numbers are in `[claude]`
 of `data/npc_talk.cfg`. `ANTHROPIC_API_KEY=... make test` also asks the real Claude once.
+
+**Gemini.** Free within Google's limits, with an API key from AI Studio
+(aistudio.google.com/apikey: Create API key, in an existing or new Google Cloud project; without
+billing the key stays on the free tier). Pick the provider Gemini under Settings → Language model
+and paste the key (it starts with `AIza`); the endpoint becomes Gemini's OpenAI-compatible
+`https://generativelanguage.googleapis.com/v1beta/openai` and the model `gemini-2.5-flash-lite`,
+which answers fast and doesn't think first: a model that thinks may spend a line's 60 tokens
+before saying anything. The model list shows what the key may use. What villagers are told and
+what you say goes to Google, and on the free tier Google may use it to improve its models. To
+check a key: `curl -s https://generativelanguage.googleapis.com/v1beta/openai/models -H
+"Authorization: Bearer <key>"`.
 
 **The test LLM.** `make llm-up` runs Ollama with Qwen2.5 3B Instruct (1.9 GB, Qwen Research
 License: for testing only) in a podman or docker container on `http://127.0.0.1:11434/v1`,
