@@ -36,6 +36,8 @@ const KEYS := {
 		"neighbour": TYPE_STRING,
 		"says": TYPE_STRING,
 		"reply": TYPE_STRING,
+		"language": TYPE_STRING,
+		"last_reply": TYPE_STRING,
 	},
 	"female": {"their": TYPE_STRING, "person": TYPE_STRING},
 	"male": {"their": TYPE_STRING, "person": TYPE_STRING},

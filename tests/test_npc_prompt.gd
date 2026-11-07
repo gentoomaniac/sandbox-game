@@ -97,7 +97,7 @@ func test_the_prompt_has_the_shape_of_the_example() -> void:
 	var last: String = messages[3]["content"]
 	assert_eq(messages[3]["role"], "user")
 	var lines := last.split("\n")
-	assert_eq(lines.size(), 6, last)
+	assert_eq(lines.size(), 7, last)
 	assert_eq(lines[0], "Villager: Antje Boysen, a farmer's wife.")
 	assert_string_starts_with(lines[1], "Antje is 38 years old, a pale woman with blond hair")
 	assert_string_contains(lines[1], "Married to Hinrich Boysen")
@@ -112,7 +112,11 @@ func test_the_prompt_has_the_shape_of_the_example() -> void:
 		lines[3], "The neighbour is a newcomer to these parts; Antje does not know their name."
 	)
 	assert_eq(lines[4], 'Her neighbour says: "Good morning! Is the dyke holding after the storm?"')
-	assert_eq(lines[5], "Antje's reply:")
+	assert_eq(lines[5], "Antje answers in the language the neighbour just spoke in.")
+	assert_eq(
+		lines[6],
+		'Antje\'s reply (in the language of "Good morning! Is the dyke holding after the storm?"):'
+	)
 
 
 func test_the_request_carries_the_numbers_of_the_data_file() -> void:
@@ -148,7 +152,7 @@ func test_a_man_is_his_neighbour_s() -> void:
 	var last: String = NpcPrompt.reply_messages(momme, [], "Moin", _moment(), _rules)[-1]["content"]
 	assert_string_contains(last, 'His neighbour says: "Moin"')
 	assert_string_contains(last, "a sun-tanned man with short grey hair, wearing a knitted cap,")
-	assert_string_ends_with(last, "Momme's reply:")
+	assert_string_ends_with(last, 'Momme\'s reply (in the language of "Moin"):')
 
 
 # --- The moment in words ---
@@ -224,6 +228,19 @@ func test_the_moment_of_the_game_is_read_from_its_state() -> void:
 
 
 # --- The answer ---
+
+
+func test_the_repeated_label_of_the_last_turn_is_left_out_whatever_was_said() -> void:
+	var cases := {
+		"Moin": ['Antje\'s reply (in the language of "Moin"): Moin! Gut.', "Moin! Gut."],
+		"Hmm (sure):": ['Antje\'s reply (in the language of "Hmm (sure):"): Aye.', "Aye."],
+		"Wie?":
+		['antje\'s reply (in the language of "wie?"):\nGut (ja): danke.', "Gut (ja): danke."],
+	}
+	for message: String in cases:
+		var label := NpcPrompt.last_reply_label(_antje, message, _rules)
+		var answer: String = cases[message][0]
+		assert_eq(NpcPrompt.trimmed_reply(answer, _antje, 2, label), cases[message][1], answer)
 
 
 func test_the_answer_is_trimmed_to_what_the_villager_says() -> void:

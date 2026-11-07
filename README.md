@@ -570,7 +570,8 @@ age, their look in words, personality, background, habits, and what they remembe
 talks), the moment (the date as the clock shows it and how far into the season, the time and
 part of the day by the sun, the weather as it is: rain, snow, fog or the sky, the temperature,
 frost, the wind and where it blows from; and the house or fire they stand by), that you are a
-newcomer whose name they don't know, and what you said. Only the reply and the memory lines
+newcomer whose name they don't know, what you said, and that they answer in the language you
+just spoke in (switch language mid-chat and they follow). Only the reply and the memory lines
 are kept; nothing else in the game changes by what the model says.
 
 To screenshot a talk, start the test LLM (`make llm-up`; screenshots read

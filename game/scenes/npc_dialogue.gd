@@ -54,7 +54,10 @@ func reply(npc: Npc, history: Array[Dictionary], message: String, state: GameSta
 		var answer: String = await _chat_of_provider().answer(
 			_settings.language_model, request, rules.value("request", "timeout_seconds")
 		)
-		answer = NpcPrompt.trimmed_reply(answer, npc, rules.value("request", "reply_sentences"))
+		var label := NpcPrompt.last_reply_label(npc, message, rules)
+		answer = NpcPrompt.trimmed_reply(
+			answer, npc, rules.value("request", "reply_sentences"), label
+		)
 		if answer != "":
 			return answer
 	# A moment's thought before a scripted line too, also when the model gave nothing.

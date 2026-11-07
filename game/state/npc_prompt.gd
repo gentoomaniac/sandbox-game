@@ -58,7 +58,9 @@ static func reply_messages(
 		last.append(_said(rules, "memory", words))
 	last.append(_said(rules, "moment", words))
 	last.append(_said(rules, "neighbour", words))
-	last.append_array(_neighbour_says(message, words, rules))
+	last.append(_said(rules, "says", _with_message(words, message)))
+	last.append(_said(rules, "language", words))
+	last.append(last_reply_label(npc, message, rules))
 	messages.append(_message("user", "\n".join(last)))
 	return messages
 
@@ -219,8 +221,13 @@ static func weather_text(sample: WeatherSample, rules: NpcTalkRules) -> String:
 
 ## The model's answer as the villager says it: its first line without quotes or the name in
 ## front ("Antje's reply:", "Antje:"), and of that at most `sentences` sentences.
-static func trimmed_reply(text: String, npc: Npc, sentences: int) -> String:
-	var line := text.strip_edges().get_slice("\n", 0)
+static func trimmed_reply(text: String, npc: Npc, sentences: int, label := "") -> String:
+	var said := text.strip_edges()
+	# The label of the last turn repeated, as it was (see `last_reply_label`), maybe on a line
+	# of its own.
+	if label != "" and said.to_lower().begins_with(label.to_lower()):
+		said = said.substr(label.length()).strip_edges()
+	var line := said.get_slice("\n", 0)
 	var first_name := npc.name.get_slice(" ", 0)
 	for prefix in ["%s's reply:" % first_name, "%s:" % npc.name, "%s:" % first_name]:
 		if line.to_lower().begins_with(prefix.to_lower()):
@@ -251,9 +258,19 @@ static func _words_of(npc: Npc, rules: NpcTalkRules) -> Dictionary:
 static func _neighbour_says(
 	message: String, words: Dictionary, rules: NpcTalkRules
 ) -> Array[String]:
+	return [_said(rules, "says", _with_message(words, message)), _said(rules, "reply", words)]
+
+
+static func _with_message(words: Dictionary, message: String) -> Dictionary:
 	var with_message := words.duplicate()
 	with_message["message"] = message
-	return [_said(rules, "says", with_message), _said(rules, "reply", words)]
+	return with_message
+
+
+## The label the last turn ends with, which names the language of `message`: the model may
+## repeat it before its answer (see `trimmed_reply`).
+static func last_reply_label(npc: Npc, message: String, rules: NpcTalkRules) -> String:
+	return _said(rules, "last_reply", _with_message(_words_of(npc, rules), message))
 
 
 ## A line of [prompt] with its placeholders filled in.

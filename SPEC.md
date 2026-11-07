@@ -922,18 +922,19 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   spoken line: no quotes or name in front, its first line, at most two sentences. Only the
   words come from the model; nothing else in the game changes by what it says.
 - **The prompt** (`data/npc_talk.cfg`, the user's working example of 2026-11-06 in shape;
-  temperature 0.7, at most 60 tokens): a system line (dialogue for villagers on the North
-  Frisian coast in 1750, one or two short sentences of small talk in the neighbour's language,
-  never break character or act as an assistant), the example exchange ("Villager: Antje
-  Boysen, a farmer's wife. / Her neighbour says: "Fine weather for the hay today." / Antje's
-  reply:" and her answer), the last 8 lines of this conversation as turns of the same shape,
-  and last what the player says, with who the villager is (age, look in words from the
-  layers, personality, background, habits, memories), the moment (the date as the clock shows
-  it and early, mid or late in the season; the time and part of the day by the sun: dawn,
-  morning, noon, afternoon, dusk, night; the weather as it is: thunder, storm, snow, rain or
-  fog by strength, else the sky by its clouds, the temperature, frost below 0 °C, the wind by
-  strength and where it blows from; the building or fire within 8 tiles) and that the player
-  is a newcomer whose name they don't know.
+  temperature 0.7, at most 60 tokens): a system line (dialogue for villagers on the North Frisian
+  coast in 1750, one or two short sentences of small talk, always in the language of the neighbour's
+  latest line, never break character or act as an assistant), the example exchange ("Villager: Antje
+  Boysen, a farmer's wife. / Her neighbour says: "Fine weather for the hay today." / Antje's reply:"
+  and her answer), the lines the villager keeps as turns of the same shape, and last what the player
+  says, with who the villager is (age, look in words from the layers, personality, background,
+  habits, memories), the moment (the date as the clock shows it and early, mid or late in the
+  season; the time and part of the day by the sun: dawn, morning, noon, afternoon, dusk, night; the
+  weather as it is: thunder, storm, snow, rain or fog by strength, else the sky by its clouds, the
+  temperature, frost below 0 °C, the wind by strength and where it blows from; the building or fire
+  within 8 tiles), that the player is a newcomer whose name they don't know, and, right before the
+  answer, that the villager answers in the language the player just spoke in (so a switch of
+  language is followed, the user's word of 2026-11-07).
 - **The wait:** belongs to the villager: while one answers, the player can leave and talk to
   another (who shows no typing); the answer lands in the chat of the one asked.
 - **Chat history and memory (task 91):** a villager keeps the last N lines of the chat (the
