@@ -12,7 +12,7 @@ extends RefCounted
 ## 4. Add a test in tests/test_save_upgrade*.gd: an old save without the field loads right.
 ## An upgrade step works on the parsed JSON, before any `from_dict` runs.
 
-const VERSION := 22
+const VERSION := 23
 ## Version 6 had tomatoes, which were not grown here before the 19th century; flax took their
 ## place, item for item.
 const TOMATOES_TO_FLAX := {"tomatoes": "flax", "tomatoes_seeds": "flax_seeds"}
@@ -123,6 +123,8 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 		_upgrade_from_version_20(parsed["game"])
 	if version <= 21:
 		_upgrade_from_version_21(parsed["game"])
+	if version <= 22:
+		_upgrade_from_version_22(parsed["game"])
 	return GameState.from_dict(parsed["game"])
 
 
@@ -399,7 +401,7 @@ static func _upgrade_from_version_18(game: Dictionary) -> void:
 	for npc: Dictionary in game["npcs"]:
 		var rng := RandomNumberGenerator.new()
 		rng.seed = hash(npc["name"])
-		npc.merge(rules.pick_background(StringName(npc["sex"]), rng))
+		npc.merge(rules.pick_sheet(StringName(npc["sex"]), npc["name"].get_slice(" ", 1), rng))
 		npc["id"] = ""
 
 
@@ -426,6 +428,28 @@ static func _upgrade_from_version_20(game: Dictionary) -> void:
 static func _upgrade_from_version_21(game: Dictionary) -> void:
 	for animal: Dictionary in game["livestock"]:
 		animal["is_saddled"] = false
+
+
+## Version 22 kept a shorter sheet of who a villager is (task 96 made it longer). One written by
+## hand needs nothing: a loaded villager of data/villagers.cfg takes their sheet from it (see Npc
+## `from_dict`). A made-up one is made up anew from the tables of data/npcs.cfg, the same for the
+## same name, as the old tables gave them English words to say ("Aye") and trades they no longer
+## have; one with the surname of a family of the village sheet (Boysen, Hansen, ...) gets another,
+## so that they are not taken for kin of that family.
+static func _upgrade_from_version_22(game: Dictionary) -> void:
+	var villagers := VillagerRules.default_rules()
+	var rules := NpcRules.default_rules()
+	var village := VillageSheet.default_sheet().text(true)
+	for npc: Dictionary in game["npcs"]:
+		if villagers.has(npc["id"]):
+			continue
+		var rng := RandomNumberGenerator.new()
+		rng.seed = hash(npc["name"])
+		var surname: String = npc["name"].get_slice(" ", 1)
+		if village.contains(surname):
+			surname = rules.pick_surname(rng)
+			npc["name"] = "%s %s" % [npc["name"].get_slice(" ", 0), surname]
+		npc.merge(rules.pick_sheet(StringName(npc["sex"]), surname, rng), true)
 
 
 static func _keep(kept: Dictionary[Vector2i, bool], area: Rect2i) -> void:

@@ -17,7 +17,8 @@ var sex: StringName
 var appearance: Appearance
 
 # Who they are, as it is told to the language model (see NpcPrompt): written by hand in
-# data/villagers.cfg for a villager with an id, else made up from the tables of data/npcs.cfg,
+# data/villagers.cfg for a villager with an id, and read from it again when a game is loaded (the
+# file wins, so edits to it reach saved games), else made up from the tables of data/npcs.cfg
 # and kept as they were when the villager came into the world.
 ## The section of data/villagers.cfg they are, or "" for a villager made up from the tables.
 var id := ""
@@ -29,8 +30,27 @@ var trade := ""
 var personality := ""
 ## Their family and their story.
 var background := ""
-## How they talk and what they are wont to do.
+## Where they live.
+var home := ""
+## How they talk, as a manner that holds in any language.
+var speech := ""
+## Lines in their voice, which show their manner.
+var samples: Array[String] = []
+## Their family and close friends, each a villager of data/villagers.cfg: {id: [kind, what they
+## think of them]}, such as {"hinrich": ["husband", "Steady ..."]}. None for a made-up villager.
+var people := {}
+## What they like and dislike.
+var likes := ""
+## What they want this year.
+var wants := ""
+## Where they are at what time of the day and the week.
+var day := ""
+## What they are wont to do.
 var habits := ""
+## What they don't know or won't talk about.
+var avoids := ""
+## What they keep to themselves, and only hint at.
+var secrets := ""
 
 ## Where their feet are, in tiles of the world.
 var position: Vector2
@@ -83,7 +103,7 @@ static func create(seed_value: int, feet: Vector2, rules: NpcRules) -> Npc:
 	var npc_sex: StringName = NpcRules.SEXES[rng.randi_range(0, NpcRules.SEXES.size() - 1)]
 	var npc_name := rules.pick_name(npc_sex, rng)
 	var npc := Npc.new(npc_name, npc_sex, rules.pick_look(npc_sex, rng), feet)
-	npc._set_background(rules.pick_background(npc_sex, rng))
+	npc._set_sheet(rules.pick_sheet(npc_sex, npc_name.get_slice(" ", 1), rng))
 	return npc
 
 
@@ -96,7 +116,7 @@ static func create_villager(villager_id: String, feet: Vector2, villagers: Villa
 		look.wear(StringName(slot), written["look"][slot])
 	var npc := Npc.new(written["name"], StringName(written["sex"]), look, feet)
 	npc.id = villager_id
-	npc._set_background(written)
+	npc._set_sheet(written)
 	return npc
 
 
@@ -159,7 +179,16 @@ func to_dict() -> Dictionary:
 		"trade": trade,
 		"personality": personality,
 		"background": background,
+		"home": home,
+		"speech": speech,
+		"samples": samples,
+		"people": people,
+		"likes": likes,
+		"wants": wants,
+		"day": day,
 		"habits": habits,
+		"avoids": avoids,
+		"secrets": secrets,
 		"position": SaveCodec.float_vector_to_json(position),
 		"anchor": SaveCodec.float_vector_to_json(anchor),
 		"chat_history": chat_history,
@@ -179,7 +208,9 @@ static func from_dict(data: Dictionary) -> Npc:
 		SaveCodec.float_vector_from_json(data["position"])
 	)
 	npc.id = data["id"]
-	npc._set_background(data)
+	# The saved sheet stands in for one whose id has left the file.
+	var villagers := VillagerRules.default_rules()
+	npc._set_sheet(villagers.villager(npc.id) if villagers.has(npc.id) else data)
 	npc.anchor = SaveCodec.float_vector_from_json(data["anchor"])
 	for line: Dictionary in data["chat_history"]:
 		npc.add_chat_line(int(line["day"]), int(line["minute"]), line["from_player"], line["text"])
@@ -190,10 +221,20 @@ static func from_dict(data: Dictionary) -> Npc:
 	return npc
 
 
-## Takes `age`, `trade`, `personality`, `background` and `habits` from a dictionary that has them.
-func _set_background(data: Dictionary) -> void:
+## Takes who they are from a dictionary with the keys of the same names: a sheet of
+## data/villagers.cfg, one drawn by NpcRules `pick_sheet`, or a save.
+func _set_sheet(data: Dictionary) -> void:
 	age = int(data["age"])
 	trade = data["trade"]
 	personality = data["personality"]
 	background = data["background"]
+	home = data["home"]
+	speech = data["speech"]
+	samples.assign(data["samples"])
+	people = data["people"].duplicate(true)
+	likes = data["likes"]
+	wants = data["wants"]
+	day = data["day"]
 	habits = data["habits"]
+	avoids = data["avoids"]
+	secrets = data["secrets"]

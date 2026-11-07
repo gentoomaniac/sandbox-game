@@ -1,8 +1,8 @@
 class_name NpcRules
 extends RefCounted
 ## The villagers' rules, read from data/npcs.cfg (see there for what each key means): how they
-## behave, and the names, clothes and background a new one is given (`pick_name`, `pick_look`,
-## `pick_background`).
+## behave, and the names, clothes and sheet a new one is given (`pick_name`, `pick_look`,
+## `pick_sheet`).
 
 const DEFAULT_PATH := "res://data/npcs.cfg"
 
@@ -36,7 +36,9 @@ const SEX_KEYS: Array[String] = [
 	"families"
 ]
 ## The lists of [background] (its `ages` is a range).
-const BACKGROUND_KEYS: Array[String] = ["personalities", "worries", "habits"]
+const BACKGROUND_KEYS: Array[String] = [
+	"personalities", "worries", "homes", "speeches", "likes", "wants", "habits", "avoids", "secrets"
+]
 ## The Appearance slot of each list of layer variants (hair is put together from two lists).
 const SLOT_OF_KEY := {
 	"skins": Appearance.BODY,
@@ -90,6 +92,18 @@ func problems() -> Array[String]:
 	var is_range: bool = ages is Array and ages.size() == 2 and ages[0] is int and ages[1] is int
 	if not is_range or ages[1] < ages[0]:
 		found.append("[background] ages is not [youngest, oldest]")
+	if not found.is_empty():
+		return found
+	for sex in SEXES:
+		if not _values[str(sex)]["trades"].all(_is_trade_and_day):
+			found.append("[%s] trades is not a list of [trade, day]" % sex)
+	if not _values["background"]["speeches"].all(_is_manner_and_samples):
+		found.append(
+			(
+				"[background] speeches is not a list of [manner, [%d or more lines]]"
+				% VillagerRules.MIN_SAMPLES
+			)
+		)
 	return found
 
 
@@ -109,9 +123,13 @@ func pick_seconds(key: String, rng: RandomNumberGenerator) -> float:
 	return rng.randf_range(range_seconds[0], range_seconds[1])
 
 
-## A first name for the sex and a surname, such as "Antje Boysen".
+## A first name for the sex and a surname, such as "Elke Lorenzen".
 func pick_name(sex: StringName, rng: RandomNumberGenerator) -> String:
-	return "%s %s" % [_pick(str(sex), "first_names", rng), _pick("everyone", "surnames", rng)]
+	return "%s %s" % [_pick(str(sex), "first_names", rng), pick_surname(rng)]
+
+
+func pick_surname(rng: RandomNumberGenerator) -> String:
+	return _pick("everyone", "surnames", rng)
 
 
 ## The layers of a villager of that sex: skin, hair and clothes drawn from the lists.
@@ -120,28 +138,41 @@ func pick_look(sex: StringName, rng: RandomNumberGenerator) -> Appearance:
 	look.layers.clear()
 	for key: String in SLOT_OF_KEY:
 		var section := "everyone" if EVERYONE_KEYS.has(key) else str(sex)
-		var variant := _pick(section, key, rng)
+		var variant: String = _pick(section, key, rng)
 		if variant != "":
 			look.wear(SLOT_OF_KEY[key], variant)
-	var hair_style := _pick(str(sex), "hair_styles", rng)
+	var hair_style: String = _pick(str(sex), "hair_styles", rng)
 	look.wear(Appearance.HAIR, "%s_%s" % [hair_style, _pick("everyone", "hair_colours", rng)])
 	return look
 
 
-## Who a villager of that sex made up from the tables is, as the fields of the same names of
-## Npc: `age`, `trade`, `personality`, `background` (family and a worry) and `habits`.
-func pick_background(sex: StringName, rng: RandomNumberGenerator) -> Dictionary:
+## Who a villager of that sex and surname made up from the tables is, as the fields of the same
+## names of Npc: `age`, `trade` and their `day`, `personality`, `background` (family and a
+## worry), `home`, `speech` with its `samples`, `likes`, `wants`, `habits`, `avoids` and
+## `secrets`. They have no `people`: their family is told in the background, and is not any of
+## the villagers of data/villagers.cfg.
+func pick_sheet(sex: StringName, surname: String, rng: RandomNumberGenerator) -> Dictionary:
 	var ages: Array = _values["background"]["ages"]
 	var other_sex := FEMALE if sex == MALE else MALE
-	var family := _pick(str(sex), "families", rng).format(
-		{"spouse": _pick(str(other_sex), "first_names", rng)}
-	)
+	var spouse := "%s %s" % [_pick(str(other_sex), "first_names", rng), surname]
+	var family: String = _pick(str(sex), "families", rng).format({"spouse": spouse})
+	var trade: Array = _pick(str(sex), "trades", rng)
+	var speech: Array = _pick("background", "speeches", rng)
 	return {
 		"age": rng.randi_range(ages[0], ages[1]),
-		"trade": _pick(str(sex), "trades", rng),
+		"trade": trade[0],
+		"day": trade[1],
 		"personality": _pick("background", "personalities", rng),
 		"background": "%s %s" % [family, _pick("background", "worries", rng)],
+		"home": _pick("background", "homes", rng),
+		"speech": speech[0],
+		"samples": speech[1],
+		"people": {},
+		"likes": _pick("background", "likes", rng),
+		"wants": _pick("background", "wants", rng),
 		"habits": _pick("background", "habits", rng),
+		"avoids": _pick("background", "avoids", rng),
+		"secrets": _pick("background", "secrets", rng),
 	}
 
 
@@ -160,6 +191,25 @@ func all_layers() -> Array[Dictionary]:
 	return layers
 
 
-func _pick(section: String, key: String, rng: RandomNumberGenerator) -> String:
+func _pick(section: String, key: String, rng: RandomNumberGenerator) -> Variant:
 	var list: Array = _values[section][key]
 	return list[rng.randi_range(0, list.size() - 1)]
+
+
+static func _is_trade_and_day(value: Variant) -> bool:
+	return value is Array and value.size() == 2 and value.all(_is_text)
+
+
+static func _is_manner_and_samples(value: Variant) -> bool:
+	return (
+		value is Array
+		and value.size() == 2
+		and _is_text(value[0])
+		and value[1] is Array
+		and value[1].size() >= VillagerRules.MIN_SAMPLES
+		and value[1].all(_is_text)
+	)
+
+
+static func _is_text(value: Variant) -> bool:
+	return value is String and not value.is_empty()

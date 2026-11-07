@@ -110,26 +110,43 @@ func test_antje_is_the_farmer_s_wife_as_written() -> void:
 # --- Made up from the tables ---
 
 
-func test_a_made_up_villager_has_a_trade_of_their_sex_and_a_background() -> void:
+func test_a_made_up_villager_has_a_trade_of_their_sex_and_a_sheet() -> void:
 	var file := ConfigFile.new()
 	file.load(NpcRules.DEFAULT_PATH)
 	for seed_value in 30:
 		var npc := Npc.create(seed_value, Vector2.ZERO, _state.npcs.rules)
 		assert_eq(npc.id, "")
-		assert_has(file.get_value(str(npc.sex), "trades"), npc.trade)
+		assert_has(file.get_value(str(npc.sex), "trades"), [npc.trade, npc.day])
 		assert_between(npc.age, 18, 70)
-		assert_false(npc.personality.is_empty())
-		assert_false(npc.habits.is_empty())
+		for text in [npc.personality, npc.home, npc.speech, npc.likes, npc.wants, npc.habits]:
+			assert_false(text.is_empty())
+		assert_false(npc.avoids.is_empty())
+		assert_false(npc.secrets.is_empty())
+		assert_gte(npc.samples.size(), 2)
+		assert_eq(npc.people, {}, "no kin among the villagers written by hand")
 		assert_false(npc.background.contains("{"), "the spouse's name is filled in")
 		assert_string_contains(npc.background, "Worries")
+
+
+func test_a_made_up_spouse_has_the_villager_s_surname() -> void:
+	for seed_value in 30:
+		var npc := Npc.create(seed_value, Vector2.ZERO, _state.npcs.rules)
+		if npc.background.contains(" to "):
+			assert_string_contains(npc.background, npc.name.get_slice(" ", 1))
+
+
+func test_no_made_up_villager_has_a_surname_of_the_village_sheet() -> void:
+	var village := VillageSheet.default_sheet().text(true)
+	var file := ConfigFile.new()
+	file.load(NpcRules.DEFAULT_PATH)
+	for surname: String in file.get_value("everyone", "surnames"):
+		assert_false(village.contains(surname), "%s is a family of the village" % surname)
 
 
 func test_the_same_seed_gives_the_same_background() -> void:
 	var first := Npc.create(7, Vector2.ZERO, _state.npcs.rules)
 	var second := Npc.create(7, Vector2.ZERO, _state.npcs.rules)
-	assert_eq(
-		[first.age, first.trade, first.background], [second.age, second.trade, second.background]
-	)
+	assert_eq(first.to_dict(), second.to_dict())
 
 
 func test_missing_background_tables_are_reported() -> void:
@@ -137,6 +154,22 @@ func test_missing_background_tables_are_reported() -> void:
 	assert_has(problems, "[background] worries is not a list of at least one")
 	assert_has(problems, "[female] trades is not a list of at least one")
 	assert_has(problems, "[background] ages is not [youngest, oldest]")
+
+
+func test_trades_without_their_day_and_speeches_without_samples_are_reported() -> void:
+	var values := DataFile.read_sections(NpcRules.DEFAULT_PATH)
+	values["male"]["trades"] = ["a farmhand"]
+	values["background"]["speeches"] = [["Talks fast.", ["Moin!"]]]
+	assert_eq(
+		NpcRules.new(values).problems(),
+		(
+			[
+				"[male] trades is not a list of [trade, day]",
+				"[background] speeches is not a list of [manner, [2 or more lines]]",
+			]
+			as Array[String]
+		)
+	)
 
 
 # --- Spawned by id ---
