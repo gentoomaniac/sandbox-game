@@ -1,11 +1,11 @@
 """Art for the sea birds of the coast: one sheet per kind at assets/wildlife/<kind>.png.
 
-Oystercatchers probe the tidal mud in pairs and small groups (see docs/art-style.md, "Props and
-animals"). The sheets are laid out and drawn like those of birds.py: one row per action and one
-column per frame, in the order game/scenes/wildlife/wildlife_sprites.gd mirrors; a bird stands
-in the bottom centre of its cell facing right and flies in its middle, seen from a little above.
-The body gets a one pixel outline; the bill and the legs are drawn over it, so that they stay
-thin.
+Oystercatchers and dunlin probe the tidal mud (see docs/art-style.md, "Props and animals").
+
+The sheets are laid out and drawn like those of birds.py: one row per action and one column per
+frame, in the order game/scenes/wildlife/wildlife_sprites.gd mirrors; a bird stands in the bottom
+centre of its cell facing right and flies in its middle, seen from a little above. The body gets a
+one pixel outline; the bill and the legs are drawn over it, so that they stay thin.
 """
 
 from birds import on_cell, on_legs, standing
@@ -122,6 +122,97 @@ def oystercatcher_sheet():
     return [[to_picture(frame, OYSTERCATCHER_KEYS, OYSTERCATCHER_OUTLINE, BARE) for frame in frames] for frames in rows]
 
 
+# --- Dunlin -------------------------------------------------------------------------------
+#
+# A small wader in tight flocks, grey above and white below in its winter dress, with a black
+# bill drooping at the tip: about 7 px long and 6 px tall, a wingspan of 9 px. Keys: l and s the
+# light and the base grey, w white, e eye, o the bill, L and M the legs.
+
+DUNLIN_SIZE = (10, 8)
+DUNLIN_KEYS = {
+    "l": "stone_light",
+    "s": "stone",
+    "w": "lime",
+    "e": "ink",
+    "o": "ink",
+    "L": "stone_dark",
+    "M": "ink",
+}
+DUNLIN_OUTLINE = "stone_dark"
+
+DUNLIN_HEAD_UP = (
+    "....ll..",
+    "...lseo.",
+    "lsssslwo",
+    ".ssswww.",
+    "..www...",
+)
+DUNLIN_LOOKING_ROUND = ("....ll..", "...leso.") + DUNLIN_HEAD_UP[2:]
+# Probing: the head down and the bill on the mud, then in it, quick as a sewing machine.
+DUNLIN_PROBING = (
+    "........",
+    "........",
+    "lsssss..",
+    ".ssswwle",
+    "..www..o",
+    ".......o",
+    "........",
+)
+DUNLIN_PROBING_DEEP = DUNLIN_PROBING[:4] + ("..www..o", "........", "........")
+DUNLIN_LEGS = ("LM", "LM")
+DUNLIN_STEP = ("LM", "L.M")
+DUNLIN_STEP_BACK = ("LM", "M.L")
+DUNLIN_LEG_AT = (3, 5)
+
+# Flying: grey wings with a white bar, a white belly.
+DUNLIN_WINGS_UP = (
+    "....wl...",
+    "...wls...",
+    "..wlss...",
+    "ssssssleo",
+    ".wwwww...",
+)
+DUNLIN_WINGS_LEVEL = (
+    "..wlss...",
+    "ssssssleo",
+    ".wwwww...",
+    "...wlss..",
+    "....wl...",
+)
+DUNLIN_WINGS_DOWN = (
+    "ssssssleo",
+    ".wwwww...",
+    "...wlss..",
+    "....wls..",
+    ".....w...",
+)
+DUNLIN_FLIGHT = [(DUNLIN_WINGS_UP, 3), (DUNLIN_WINGS_LEVEL, 1), (DUNLIN_WINGS_DOWN, 0)]
+DUNLIN_FLIGHT_LEFT = 0
+DUNLIN_FLIGHT_BODY_Y = 4
+DUNLIN_STANDING_LEFT = 1
+
+
+def dunlin_frame(body, legs=DUNLIN_LEGS):
+    return on_legs(body, legs, DUNLIN_LEG_AT)
+
+
+DUNLIN_ACTIONS = {
+    "stand": [dunlin_frame(DUNLIN_HEAD_UP), dunlin_frame(DUNLIN_LOOKING_ROUND)],
+    "probe": [dunlin_frame(DUNLIN_PROBING), dunlin_frame(DUNLIN_PROBING_DEEP)],
+    "walk": [dunlin_frame(DUNLIN_HEAD_UP, DUNLIN_STEP), dunlin_frame(DUNLIN_HEAD_UP, DUNLIN_STEP_BACK)],
+}
+
+
+def dunlin_sheet():
+    size = DUNLIN_SIZE
+    rows = [[standing(frame, size, DUNLIN_STANDING_LEFT) for frame in frames] for frames in DUNLIN_ACTIONS.values()]
+    rows.append([on_cell(shape, size, DUNLIN_FLIGHT_LEFT, DUNLIN_FLIGHT_BODY_Y - body_y) for shape, body_y in DUNLIN_FLIGHT])
+    return [[to_picture(frame, DUNLIN_KEYS, DUNLIN_OUTLINE, BARE) for frame in frames] for frames in rows]
+
+
 def sheets():
     """(name, cell size, rows of cells) of every sheet."""
-    return [("oystercatcher", OYSTERCATCHER_SIZE, oystercatcher_sheet())]
+    return [
+        ("oystercatcher", OYSTERCATCHER_SIZE, oystercatcher_sheet()),
+        ("dunlin", DUNLIN_SIZE, dunlin_sheet()),
+    ]
