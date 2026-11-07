@@ -32,6 +32,10 @@ func _headers(language_model: Dictionary) -> PackedStringArray:
 func _body(language_model: Dictionary, request: Dictionary) -> Dictionary:
 	var body := request.duplicate()
 	body["model"] = language_model["model"]
+	# A request without a number of its own (0) gets one only if Settings set it.
+	var max_tokens := max_tokens_of(language_model, body.get("max_tokens", 0))
+	if max_tokens > 0:
+		body["max_tokens"] = max_tokens
 	body["stream"] = false
 	return body
 

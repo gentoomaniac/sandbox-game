@@ -49,7 +49,8 @@ const AUDIO_SECTION := "audio"
 const SOUND_IN_BACKGROUND_KEY := "in_background"
 const LANGUAGE_MODEL_SECTION := "language_model"
 const LANGUAGE_MODEL_PROVIDER_KEY := "provider"
-const LANGUAGE_MODEL_KEYS: Array[String] = ["endpoint", "model", "api_key"]
+## `max_tokens` empty is the game's own number (see ModelChat.max_tokens_of).
+const LANGUAGE_MODEL_KEYS: Array[String] = ["endpoint", "model", "api_key", "max_tokens"]
 const CHAT_HISTORY_LINES_KEY := "chat_history_lines"
 
 const MIN_UI_SCALE := 0.5
@@ -82,6 +83,7 @@ const DEFAULT_LANGUAGE_MODEL := {
 	"endpoint": "http://127.0.0.1:11434/v1",
 	"model": "qwen2.5:3b-instruct",
 	"api_key": "",
+	"max_tokens": "",
 }
 ## The providers of a language model, by their name in the settings: the protocol they speak
 ## ("openai", an OpenAI-compatible API, see OpenAiChat; or "claude", Anthropic's, see ClaudeChat)
@@ -382,7 +384,7 @@ func set_sound_in_background(value: bool) -> void:
 	audio_changed.emit()
 
 
-## Sets the endpoint, the model or the key of the language model (see LANGUAGE_MODEL_KEYS),
+## Sets the endpoint, the model, the key or the tokens of the language model (LANGUAGE_MODEL_KEYS),
 ## without the spaces around it.
 func set_language_model(key: String, text: String) -> void:
 	language_model[key] = text.strip_edges()
@@ -411,6 +413,7 @@ static func _default_language_models() -> Dictionary:
 			"endpoint": LANGUAGE_MODEL_PROVIDERS[provider]["endpoint"],
 			"model": LANGUAGE_MODEL_PROVIDERS[provider]["model"],
 			"api_key": "",
+			"max_tokens": "",
 		}
 	return defaults
 

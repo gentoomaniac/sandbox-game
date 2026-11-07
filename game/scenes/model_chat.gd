@@ -7,6 +7,9 @@ extends Node
 ## It runs while the game is paused, as it is during a chat. A failure is reported as a warning
 ## and gives no answer; the key is never logged, and never follows a redirect to another host.
 
+## The most tokens that can be set for an answer.
+const MAX_TOKENS := 32000
+
 ## What was warned of this session by `_warn_once`: each is said once.
 static var _warned := {}
 
@@ -36,6 +39,16 @@ func answer(language_model: Dictionary, request: Dictionary, timeout_seconds: fl
 		push_warning("Language model at %s: an answer without text: %s" % [url, text.left(200)])
 		return ""
 	return content
+
+
+## The most tokens an answer may take: the number set in Settings for the provider (a model that
+## thinks first needs more, as its thinking counts too), else `fallback`, the game's own number
+## for the request. Not a whole number from 1 to MAX_TOKENS is the same as none set.
+static func max_tokens_of(language_model: Dictionary, fallback: int) -> int:
+	var text: String = language_model.get("max_tokens", "")
+	if text.is_valid_int() and int(text) >= 1 and int(text) <= MAX_TOKENS:
+		return int(text)
+	return fallback
 
 
 ## The names of the models the endpoint of `language_model` offers, or none if it can't be asked

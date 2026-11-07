@@ -9,7 +9,12 @@ extends VBoxContainer
 
 signal back_requested
 
-const LABELS := {"endpoint": "Endpoint", "model": "Model", "api_key": "Key (if it needs one)"}
+const LABELS := {
+	"endpoint": "Endpoint",
+	"model": "Model",
+	"api_key": "Key (if it needs one)",
+	"max_tokens": "Max tokens per answer",
+}
 const PROVIDER_TIP := (
 	"OpenAI-compatible: the test LLM of make llm-up, Ollama, LM Studio or a hosted API."
 	+ " Claude: Anthropic's API, which needs an API key and costs money."
@@ -39,6 +44,19 @@ const TIPS := {
 		(
 			"The Gemini model. A Flash-Lite model answers fastest; a model that thinks first"
 			+ " may use up a line's few tokens and say nothing."
+		),
+	},
+	"max_tokens":
+	{
+		"openai":
+		(
+			"The most tokens a villager's line or memory may take. Empty: the game's own. A model"
+			+ " that thinks first counts its thinking too, so give it a few hundred or more."
+		),
+		"claude":
+		(
+			"The most tokens a villager's line or memory may take, thinking included. Empty: the"
+			+ " game's own."
 		),
 	},
 	"api_key":
@@ -169,6 +187,7 @@ func show_settings() -> void:
 	_show_history_lines()
 	_fields["endpoint"].placeholder_text = provider["endpoint"]
 	_fields["model"].placeholder_text = provider["model"]
+	_fields["max_tokens"].placeholder_text = str(_game_max_tokens(provider["protocol"]))
 	show_models()
 
 
@@ -237,3 +256,9 @@ func _on_model_picked(index: int) -> void:
 func _on_provider_selected(index: int) -> void:
 	_settings.set_language_model_provider(_provider.get_item_metadata(index))
 	show_settings()
+
+
+## The tokens a reply gets when none is set: what the game asks of a provider of `protocol`.
+static func _game_max_tokens(protocol: String) -> int:
+	var rules := NpcTalkRules.default_rules()
+	return rules.value("claude" if protocol == "claude" else "request", "max_tokens")

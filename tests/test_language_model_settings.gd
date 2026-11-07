@@ -42,7 +42,8 @@ func test_the_endpoint_model_and_key_survive_a_restart() -> void:
 			"provider": "openai",
 			"endpoint": "http://127.0.0.1:11434/v1",
 			"model": "llama3.2",
-			"api_key": "sk-test"
+			"api_key": "sk-test",
+			"max_tokens": "",
 		}
 	)
 
@@ -93,6 +94,20 @@ func test_gemini_keeps_its_own_fields_in_its_own_section_beside_the_openai_ones(
 	assert_eq(loaded.language_model["api_key"], "AIza-test")
 	loaded.set_language_model_provider("openai")
 	assert_eq(loaded.language_model["api_key"], "sk-openai")
+
+
+func test_the_max_tokens_are_each_providers_own_and_stored_only_when_set() -> void:
+	assert_eq(_settings.language_model["max_tokens"], "", "the game's own number")
+	_settings.set_language_model_provider("gemini")
+	_settings.set_language_model("max_tokens", " 500 ")
+	var file := ConfigFile.new()
+	file.load(PATH)
+	assert_eq(file.get_value("language_model.gemini", "max_tokens"), "500")
+	assert_false(file.has_section_key("language_model", "max_tokens"))
+	var loaded := _reloaded()
+	assert_eq(loaded.language_model["max_tokens"], "500")
+	loaded.set_language_model_provider("openai")
+	assert_eq(loaded.language_model["max_tokens"], "")
 
 
 func test_a_file_from_before_the_providers_is_the_openai_providers() -> void:

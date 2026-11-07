@@ -46,6 +46,18 @@ func test_an_answer_is_the_text_of_its_first_choice() -> void:
 	assert_eq(body["messages"], [])
 
 
+func test_the_max_tokens_set_for_the_provider_replace_the_requests() -> void:
+	var language_model := _language_model()
+	var sent := []
+	for set_tokens in ["400", "", "lots", "0"]:
+		language_model["max_tokens"] = set_tokens
+		var ask := func() -> String:
+			return await _chat.answer(language_model, {"messages": [], "max_tokens": 60}, 5.0)
+		var asked := await _ask_and_answer(ask, _response("200 OK", REPLY_BODY))
+		sent.append(int(_body_of(asked[0])["max_tokens"]))
+	assert_eq(sent, [400, 60, 60, 60], "a number set, else the request's")
+
+
 func test_without_a_key_no_authorization_is_sent() -> void:
 	var asked := await _ask_chat(_response("200 OK", REPLY_BODY))
 	assert_false(asked[0].contains("Authorization"))

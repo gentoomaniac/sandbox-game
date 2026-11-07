@@ -44,7 +44,7 @@ func _body(language_model: Dictionary, request: Dictionary) -> Dictionary:
 			turns.append(message.duplicate())
 	var body := {
 		"model": language_model["model"],
-		"max_tokens": _rules.value("claude", "max_tokens"),
+		"max_tokens": max_tokens_of(language_model, _rules.value("claude", "max_tokens")),
 		"output_config": {"effort": _rules.value("claude", "effort")},
 		"messages": turns,
 	}

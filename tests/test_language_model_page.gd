@@ -89,6 +89,14 @@ func test_switching_to_a_provider_without_a_key_sends_nothing_of_the_other_provi
 	assert_false(_server.is_connection_available(), "no request went to Anthropic")
 
 
+func test_the_max_tokens_field_shows_the_games_own_number_until_one_is_set() -> void:
+	_page.show_settings()
+	assert_eq(_page._fields["max_tokens"].placeholder_text, "60")
+	_settings.set_language_model_provider("claude")
+	_page.show_settings()
+	assert_eq(_page._fields["max_tokens"].placeholder_text, "1000")
+
+
 func test_gemini_shows_its_own_tips_and_placeholders() -> void:
 	_settings.set_language_model_provider("gemini")
 	_page.show_settings()

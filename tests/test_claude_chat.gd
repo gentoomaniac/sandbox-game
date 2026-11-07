@@ -40,6 +40,14 @@ func _ask_chat(response: String, model := "claude-haiku-5-5") -> Array:
 	return await _ask_and_answer(ask, response)
 
 
+func test_the_max_tokens_set_for_claude_replace_its_thousand() -> void:
+	var language_model := _language_model()
+	language_model["max_tokens"] = "2000"
+	var ask := func() -> String: return await _chat.answer(language_model, REQUEST, 5.0)
+	var asked := await _ask_and_answer(ask, _response("200 OK", REPLY_BODY))
+	assert_eq(int(_body_of(asked[0])["max_tokens"]), 2000)
+
+
 func test_the_text_blocks_are_the_answer_and_the_thinking_is_left_out() -> void:
 	var asked := await _ask_chat(_response("200 OK", REPLY_BODY))
 	assert_eq(asked[1], "Aye, it held.")
