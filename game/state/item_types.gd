@@ -71,6 +71,8 @@ const BERRY_TART := &"berry_tart"
 const FEAST_CAKE := &"feast_cake"
 ## Given to a dog, it makes the dog follow the player (task 79).
 const BONE := &"bone"
+## Put on a horse, it lets the player ride the horse (task 81).
+const SADDLE := &"saddle"
 
 ## Stands for an empty hand or slot where an item id is expected.
 const NONE := &""
@@ -461,6 +463,13 @@ const _OTHER_TYPES := {
 		"description": "A meaty bone. Give it to a dog, and it follows you for a while.",
 		"weight": 0.3,
 		"stack_limit": 20,
+	},
+	SADDLE:
+	{
+		"name": "Saddle",
+		"description": "A riding saddle of leather. Put it on a horse, and you can ride it.",
+		"weight": 8.0,
+		"stack_limit": 1,
 	},
 	FEAST_CAKE:
 	{

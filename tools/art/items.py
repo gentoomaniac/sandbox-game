@@ -509,6 +509,31 @@ def bone():
     return outlined(from_rows(rows, {"l": "snow_light", "c": "cream", "s": "sand_light", "r": "red_light"}), "mud_dark")
 
 
+def saddle():
+    """A riding saddle from the side: the seat dipping between the high cantle at the back and the
+    pommel at the front, the flap below it and an iron stirrup hanging from its leather."""
+    rows = [
+        "................",
+        "................",
+        "..ll............",
+        "..lbl...........",
+        "..lbbl.......ll.",
+        "...bbbllllllbbd.",
+        "...dbbbbbbbbbbd.",
+        "...lbbbbbbbbbd..",
+        "...lbbbbbbbbbd..",
+        "...lbbbbsbbbdd..",
+        "....ddddsddd....",
+        "........s.......",
+        ".......kkk......",
+        ".......k.k......",
+        "......mmmmm.....",
+        "................",
+    ]
+    keys = {"l": "rust", "b": "rust_dark", "d": "russet_deep", "s": "russet_deep", "k": "stone_light", "m": "stone"}
+    return outlined(from_rows(rows, keys), "soil_dark")
+
+
 def small(picture):
     """The icon at half size, for items lying on the ground: each 2x2 block of pixels becomes
     the colour that most of its opaque pixels have (the first of them on a tie), or clear
@@ -546,6 +571,7 @@ ICONS = {
     "jacket": jacket(),
     "clogs": clogs(),
     "bone": bone(),
+    "saddle": saddle(),
 }
 
 
