@@ -134,9 +134,25 @@ func view_rect() -> Rect2:
 	return Rect2(_camera.rig.position - size / 2.0, size)
 
 
-## Whether a point of the ground can be stood on (not water, a tree or a wall).
+## Whether a point of the ground can be stood on: not water (see `is_water`), a tree or a wall.
 func can_stand(point: Vector2) -> bool:
-	return world_view.world.is_walkable(_tile_at(point))
+	return world_view.world.is_walkable(_tile_at(point)) and not is_water(point)
+
+
+## Whether a point is on water: the sea and fresh water always, the tidal mud while the tide
+## stands above `flooded_tide` (see data/wildlife.cfg).
+func is_water(point: Vector2) -> bool:
+	var ground := world_view.world.tile_at(_tile_at(point))
+	if ground == null:
+		return false
+	if ground.terrain == Tile.Terrain.MUD:
+		return tide() > rules.general("flooded_tide")
+	return ground.terrain == Tile.Terrain.SEA or ground.terrain == Tile.Terrain.WATER
+
+
+## How high the tide stands now, from 0 at low water to 1 at high water.
+func tide() -> float:
+	return Tide.level(_state.clock.total_minutes())
 
 
 ## The tiles of trees within a number of tiles of a point, nearest first.

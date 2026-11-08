@@ -51,6 +51,7 @@ const GENERAL_KEYS := [
 	"despawn_margin_tiles",
 	"min_spawn_distance_tiles",
 	"tick_seconds",
+	"flooded_tide",
 ]
 const KIND_KEYS := [
 	"cap",
