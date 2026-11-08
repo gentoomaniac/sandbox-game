@@ -95,6 +95,9 @@ extends RefCounted
 ##                            (default 6,0)
 ##   --chest=<x>,<y>          a chest with some items on that tile
 ##   --chest-inside=<x>,<y>   a chest on that tile of the first house's room (with --inside)
+##   --landing=<x>,<y>        the fisherman's landing: a jetty from that tile west over the water,
+##                            a rowing boat, a net frame and eel traps (with --building=fisher_hut
+##                            and --house for the hut)
 ##
 ## Done once the world is drawn (see DebugRunner)
 ##   --harvest=<x>,<y>        fell two oaks, cut a trunk, break a stone and mow a patch in a row
@@ -194,6 +197,7 @@ var path := NO_TILE
 var path_days := Vector2i(6, 0)
 var chest := NO_TILE
 var chest_inside := NO_TILE
+var landing := NO_TILE
 
 # Done once the world is drawn
 var harvest := NO_TILE
@@ -322,6 +326,8 @@ func _init(args := PackedStringArray()) -> void:
 				chest = _tile(arg)
 			"--chest-inside":
 				chest_inside = _tile(arg)
+			"--landing":
+				landing = _tile(arg)
 			"--harvest":
 				harvest = _tile(arg)
 			"--hit":
