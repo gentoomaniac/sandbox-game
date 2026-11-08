@@ -54,12 +54,14 @@ top of classic pixel art (details in [Lighting and look](presentation/look.md)).
 - [Crafting](crafting/README.md): Making things from what was gathered, and the skills that grow with it.
     - [crafting.md](crafting/crafting.md): The crafting menu, recipes, the chest.
     - [professions.md](crafting/professions.md): Skills, stations, the kiln, the recipe list.
+    - [ideas.md](crafting/ideas.md): Ideas for more crafts and professions. Not decided.
 - [Building and land](building/README.md)
     - [first-buildings.md](building/first-buildings.md): The first buildings, their looks and shapes, the landing.
 - [Villagers](villagers/README.md): The people of Wehlsbüll, what they say, and what they think of the player.
     - [villagers.md](villagers/villagers.md): Who the villagers are, the village, sheets, behaviour, what is saved.
     - [dialogue.md](villagers/dialogue.md): Talking: the chat, the language model, the prompt, memory.
     - [reputation.md](villagers/reputation.md): Reputation, and how it spreads.
+    - [ideas.md](villagers/ideas.md): Ideas for NPCs, behaviour and LLM dialogue. Not decided.
 - [Presentation](presentation/README.md): How the game looks, sounds and is operated.
     - [look.md](presentation/look.md): Rendering, tile size, zoom, camera, lighting.
     - [art-pipeline.md](presentation/art-pipeline.md): How the art is made, the palette, style rules, variety.

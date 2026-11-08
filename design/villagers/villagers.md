@@ -1,7 +1,7 @@
 # Villagers
 
 Decided 2026-11-06 (task 84, QUESTIONS.md 22): the first step towards the people of
-[docs/ideas/NPC.md](../../docs/ideas/NPC.md). For now villagers are put in the world with the
+[ideas.md](ideas.md). For now villagers are put in the world with the
 console (`spawn npc [count]`, or `spawn npc <id>` or just `spawn <id>`, near the player); they
 are state and saved.
 Task 86 (2026-11-06) added who they are, words from a language model and memory.

@@ -11,4 +11,4 @@
   version, to be refined if it feels odd in play.
 - Relationships can be between individual NPCs and between groups.
 - Ideas for NPCs, their behaviour and LLM dialogue (nothing decided):
-  [docs/ideas/NPC.md](../../docs/ideas/NPC.md).
+  [ideas.md](ideas.md).

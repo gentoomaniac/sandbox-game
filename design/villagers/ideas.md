@@ -1,6 +1,6 @@
 # NPCs: people, behaviour and LLM dialogue
 
-Status: idea collection for later, nothing decided. Written 2026-11-06 from the user's idea:
+**Ideas, not decided.** An idea collection for later. Written 2026-11-06 from the user's idea:
 NPCs that feel alive, answer with unscripted text, and act on intentions that can change.
 For the user to edit; later the input for tasks. Setting as everywhere: the North Sea coast
 about 1700-1800.
@@ -21,10 +21,10 @@ their own API key. Without one, NPCs speak short scripted lines.
 
 ## 2. What already exists
 
-- SPEC "Reputation": building inside a settlement's territory costs reputation with its
+- [Reputation](reputation.md): building inside a settlement's territory costs reputation with its
   NPCs; changes spread one hop through friends and enemies. Open there: what reputation
   unlocks, and who in the territory is affected.
-- docs/ideas/crafting-and-professions.md: NPC smith (buying the first iron tools), NPC
+- [crafting/ideas.md](../crafting/ideas.md): NPC smith (buying the first iron tools), NPC
   commissions (bulk orders) with reward and reputation, learning a craft from a neighbour.
 - No NPCs, settlements or dialogue UI in the game yet. Livestock (task 73) and the wildlife
   give a pattern for things that move on their own, sleep at night and are drawn per look.
@@ -51,7 +51,7 @@ makes the talk duller, never breaks the game.
 - **History:** a short free text (where from, losses, the Christmas flood of 1717, a son at sea)
   and a few facts the game can use (born in, married to, owes money to).
 - **Relationships:** to other NPCs and groups (kin, friend, enemy, rival, employer), with a
-  strength. SPEC's one-hop reputation spread uses friends and enemies; the other kinds
+  strength. the one-hop reputation spread uses friends and enemies; the other kinds
   colour dialogue and carry gossip.
 - **Opinion of the player:** reputation, trust, debts, favours, gifts given.
 - **Intentions:** 1-4 at a time, each with a kind from a fixed list (work, sell, buy, visit,
@@ -174,7 +174,7 @@ small. Without an LLM: no summary, only the game's own memory events.
 
 ## 8. Tie-ins with the rest of the game
 
-- **Reputation (SPEC):** the opinion of the player is the reputation; the one-hop spread
+- **Reputation (see [reputation.md](reputation.md)):** the opinion of the player is the reputation; the one-hop spread
   runs on the relationships above.
 - **Professions:** NPC crafters to buy from or learn from; commissions as `ask_favour` /
   intentions ("I need six barrel staves by Martinmas").
@@ -203,7 +203,7 @@ small. Without an LLM: no summary, only the game's own memory events.
 2. **Which backend first?** Recommendation: the OpenAI-compatible endpoint in Settings,
    tested with Ollama locally (6.1).
 3. **How many NPCs, and where?** A hamlet of 5-10 near the start, or settlements placed by
-   the world generator (SPEC already has settlement territory)?
+   the world generator (the design already has settlement territory)?
 4. **Authored or generated people?** Recommendation: authored for the first hamlet,
    generated villagers later.
 5. **May the LLM create quests?** Recommendation: only from the fixed favour kinds, with

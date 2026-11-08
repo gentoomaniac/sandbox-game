@@ -1,6 +1,6 @@
 # Crafting and professions: ideas
 
-Status: idea collection, nothing decided. For the user and the coordinator to discuss which
+**Ideas, not decided.** An idea collection. For the user and the coordinator to discuss which
 ideas fit. Setting: North Sea coast (North Frisia, Schleswig, Denmark), about 1700-1800,
 before industry. Fantasy hooks are optional and for later. Other games are inspiration only;
 no names, art or content are taken from them.
@@ -18,11 +18,11 @@ Tags used below: **[cheap]** = data-only or small code, **[medium]** = new syste
 |---|---|
 | Use-based skill gain: you get better at what you do | No XP menu to learn; matches the "do it and see" feel of the energy system |
 | Gathering skills feed crafting skills (mining -> smithing, lumberjacking -> carpentry, sheep -> cloth -> tailoring) | We already have gathering with tool levels; chains are natural |
-| Resource tiers with the same recipe (iron, then better ores; plain wood, then rarer woods) | Same recipe, new material = cheap content. Fits "harvest level" already in SPEC |
+| Resource tiers with the same recipe (iron, then better ores; plain wood, then rarer woods) | Same recipe, new material = cheap content. Fits "harvest level" already in the design |
 | One tool per craft (tongs/hammer, saw, sewing kit), a crafting menu per tool | Clear mental model; a menu per workstation is just a filter over `recipes.cfg` |
 | Quality: normal and "exceptional" (chance rises with skill), plus an optional maker's mark | Gives crafted goods a reason to be made by the player rather than bought |
 | Tool wear (tools have uses and break) and repair | Gives smith and woodworker a steady job; a gold-sink-like loop |
-| Bulk order deeds: an NPC asks for N items of a kind and quality, pays a reward and reputation | A ready-made quest and trade loop; fits the existing NPC reputation idea in SPEC |
+| Bulk order deeds: an NPC asks for N items of a kind and quality, pays a reward and reputation | A ready-made quest and trade loop; fits the existing NPC reputation idea in the design |
 | Runic/enchanted tools (UO's runic tools give magic-metal items) | A later fantasy hook: a rare tool that adds a property |
 | Skill cap (700 total, 100 per skill) forces a template/profession choice | Makes "which crafter am I" a real choice and gives trade a reason (others make what you do not) |
 
@@ -537,7 +537,7 @@ rates); a new `stations.cfg` (object, menu name, fuel, slots); `foods.cfg` or ex
 - Unlocked recipes: a set of ids in the save.
 - Console commands (`give`, `nocost`) should respect new rules; `nocost` already covers
   materials.
-- Tests and README/SPEC updates follow the existing practice.
+- Tests and README and design updates follow the existing practice.
 
 ---
 
@@ -546,7 +546,7 @@ rates); a new `stations.cfg` (object, menu name, fuel, slots); `foods.cfg` or ex
 1. **Skills:** use-based, recipe unlocks, or both? Do you want visible skill numbers at all?
 2. **Specialising:** can the settler learn every craft (variant A) or is there a cap or
    apprenticeship choice? If capped, who fills the gaps: NPC craftspeople you buy from?
-3. **NPC smith:** should the first iron tools be bought from a smith (current SPEC) and the
+3. **NPC smith:** should the first iron tools be bought from a smith (as the design says now) and the
    player only later gets a forge? Which metals: keep copper as tier 2, or use
    period-correct iron and steel?
 4. **Iron source:** bog iron dug and smelted (a nice long chain), bar iron bought from
@@ -561,7 +561,7 @@ rates); a new `stations.cfg` (object, menu name, fuel, slots); `foods.cfg` or ex
 9. **Animals:** milk, wool, hides and eggs need livestock. Is livestock planned? It gates
    dairy, weaver (wool), tanner and part of the cook.
 10. **Bulk orders:** do you want NPC commissions with rewards and reputation? Fits the
-    reputation idea in SPEC.
+    reputation idea in the design.
 11. **Minigames:** any (smithing timing, brewing), or none?
 12. **Scope and order:** which three professions first? A suggestion for discussion:
     woodworker (workbench), cook (hearth and oven), then mason and kiln, because they use

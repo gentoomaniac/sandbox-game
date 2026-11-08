@@ -1,7 +1,7 @@
 # Professions
 
 Task 74, decided by the user 2026-11-06: the first three crafts of
-[docs/ideas/crafting-and-professions.md](../../docs/ideas/crafting-and-professions.md), the
+[ideas.md](ideas.md), the
 woodworker, the cook and the mason, and a UI for them.
 
 - **Skills grow both ways.** Each craft has a skill (woodworking, cooking, masonry; in
