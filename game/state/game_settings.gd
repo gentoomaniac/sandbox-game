@@ -130,6 +130,8 @@ const ACTION_LABELS := {
 	&"build_previous": "Previous building",
 	&"build_next": "Next building",
 	&"take_down_mode": "Build or take down",
+	&"zoom_in": "Zoom in",
+	&"zoom_out": "Zoom out",
 	&"toggle_fast_forward": "Fast forward",
 	&"toggle_coordinates": "Show coordinates",
 	&"toggle_art_set": "Classic or new art",
@@ -156,6 +158,8 @@ const ACTION_DESCRIPTIONS := {
 	&"skills": "Open or close the skills tab of the character screen.",
 	&"crafting": "Open or close the crafting menu.",
 	&"drop_item": "Drop the held stack on the ground in front of you.",
+	&"zoom_in": "Zoom the camera in. Ctrl and the mouse wheel zoom too.",
+	&"zoom_out": "Zoom the camera out. Ctrl and the mouse wheel zoom too.",
 	&"toggle_fast_forward": "Run time faster. Only for testing.",
 	&"toggle_coordinates": "Show your tile coordinates in the top right corner.",
 	&"toggle_art_set":

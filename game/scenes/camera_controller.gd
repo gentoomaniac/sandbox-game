@@ -4,9 +4,12 @@ extends Node
 ## nearest to the target and never zooms, and shows the matching part of the world viewport
 ## on the window through the sharp-bilinear shader (see ViewMath), shifted by the target's
 ## fraction. So the world scrolls at sub-pixel precision while everything in the viewport
-## stays on the art pixel grid. Ctrl and the mouse wheel zoom around the camera target (the
-## wheel alone steps through the hotbar, see Main). The camera API is CameraRig's, reached
-## through `rig`.
+## stays on the art pixel grid. Ctrl and the mouse wheel, or the zoom keys, zoom around the
+## camera target (the wheel alone steps through the hotbar, see Main). The camera API is
+## CameraRig's, reached through `rig`.
+
+## Wheel notches one press of a zoom key counts for; holding the key repeats it.
+const KEY_ZOOM_NOTCHES := 2.0
 
 @export var world_viewport: SubViewport
 @export var world_camera: Camera2D
@@ -21,10 +24,17 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if rig.is_playing() or not event is InputEventMouseButton or not event.pressed:
+	if rig.is_playing():
 		return
-	if not event.ctrl_pressed:
-		return
+	if event.is_action_pressed("zoom_in", true):
+		rig.zoom_by_wheel(KEY_ZOOM_NOTCHES)
+	elif event.is_action_pressed("zoom_out", true):
+		rig.zoom_by_wheel(-KEY_ZOOM_NOTCHES)
+	elif event is InputEventMouseButton and event.pressed and event.ctrl_pressed:
+		_zoom_by_wheel_event(event)
+
+
+func _zoom_by_wheel_event(event: InputEventMouseButton) -> void:
 	if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 		rig.zoom_by_wheel(event.factor)
 	elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
