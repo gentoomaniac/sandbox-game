@@ -1322,6 +1322,14 @@ flat rowing boat beside it.
 
 ## Later (not part of the prototype)
 
+- **One folder per entity in data/** (the user, 2026-11-08): the data of one thing is spread
+  over several files today; bread, for example, is an item in game/state/item_types.gd, its
+  energy in data/energy.cfg, its recipe in data/recipes.cfg and its skill in data/skills.cfg. Restructure data/ by kind and entity, e.g. data/consumables/<consumable>.cfg
+  (or a folder per entity) holding everything about it: name, item, energy, crafting, sounds,
+  looks. The game still reads everything at load, but each entity is in one place, so adding or
+  extending one touches one file. Plan the kinds and the file shape first, then move one kind
+  at a time with the rules classes (and their validation and tests) reading the new layout.
+
 - **Graphics review: willows melt into the grass** (the user, 2026-11-06, with a screenshot;
   was task 87, to look at in the next graphics review). The pollard's crown of thin, pale
   yellow-green shoots has the same values as the meadow and lush grass under it, with no dark
