@@ -75,8 +75,8 @@ the 16 px grain.
 Tasks 107 to 116 redraw the art group by group at 32 px; the people are done (task 113, see
 "Clothing and characters"), the farm animals (task 114, see "Props and animals", item 8),
 the wild animals and the effects (task 116, below), the ground (task 107, below), the
-buildings (task 110, see "Buildings"), the plants (task 108, below) and the crops (task 109,
-below). To take a group native:
+buildings (task 110, see "Buildings"), the plants (task 108, below), the crops (task 109,
+below) and the interiors (task 112, below). To take a group native:
 
 - draw it at 32 px per tile (its cells, frames and offsets are twice the numbers below) and
   take its files out of `DOUBLED` (or its rows of the object atlas out of `DOUBLED_ROWS`);
@@ -116,8 +116,8 @@ ones; the small animals (sparrow, rabbit, bee, butterflies, mouse, frog, dunlin)
 little larger than life, so that they read beside a 61 px person: the sparrow about 15 px long,
 the mouse 24, the frog 22, the rabbit 22 sitting, the squirrel 22 tall, the roe deer 40 tall,
 the stork 38. The effects are native too: the flame's loop of the campfire and the hearth
-(fire.py; what stands behind and in front of it is still 16 px art, scaled up in its strip,
-until tasks 111 and 112), the hit particles (leaves of a few pixels with their corners left out
+(fire.py; the fireplace around it is still 16 px art, scaled up in its strip, until task 111;
+the hearth is native since task 112), the hit particles (leaves of a few pixels with their corners left out
 and a shaded side, long thin needles, round snow clumps, chips, drops), the rain's splashes
 (a streak, a crown of droplets, a ring) and the weather (one pixel raindrops, round flakes of 2
 to 4 pixels, one pixel wind streaks, leaves with a darker lower row, fog dithered on single
@@ -177,6 +177,25 @@ browns and greys (`crops.DEAD_COLOURS`). The crops' 16 px art stays as the class
 
 The UI's pictures (item icons, slots, the frames and the chat portraits) are drawn for the UI's
 own 640×360 base and scale, and are not doubled; task 115 decides about the item icons.
+
+The interiors (task 112: tools/art/interior.py) are drawn at 32 px, as calm as the ground:
+old red floor bricks 16×8 in a herringbone, one colour of brick (a second colour repeats with
+the tile into a pattern) with joints one step darker and a worn spot on every third, and beaten
+clay trodden darker and paler in soft
+patches with bits of straw, calm behind the figures; an oak ceiling beam over plaster smoked
+warm, a wainscot of raised panels lit on their top and left edges, oak wall plates with their
+grain; a window set deep in the wall with daylight brightest at its top left. The furniture is
+lit from the top left like everything outdoors, outlined in the darkest shade of its own ramp
+(`soil_dark` for oak, `mud_dark` for straw and sacking), and what stands free on the floor
+casts a dithered `soil_dark` shadow to its bottom right, which reads on brick and clay alike.
+The beds are as long as the 61 px figure lying in them (`PlayerView.LYING_POSES`): the head on
+the pillow, the blanket and the cover down to the foot board, so the clogs never show (in the
+box bed the figure lies 2 px left and up of the middle, so that its head is on the pillow);
+the bedroll at the camp (still 16 px) reaches the foot of its footprint for the same reason,
+and the classic set keeps the old, shorter bedroll with its own cover. The
+hearth keeps its flame's box, so the flame and its profile need no new numbers. The rooms'
+16 px art stays as the classic art. The chest, the stations and the grave marker placed
+indoors are still 16 px art, scaled up (task 111).
 
 The sizes in this guide (a 48×80 object cell) are those of the 16 px art, but for the
 characters' 32×64, the farm animals' (item 8 of "Props and animals") and the plants' 96×160.

@@ -162,16 +162,16 @@ Warft and an Ewer here and there.
   one. The setting is `GameSettings.is_classic_art` (Settings → Display, F7); on a switch Main
   calls `ArtSet.show`, and the views that keep their pictures (`NpcView`, `CharacterPreview`,
   `ChatScreen`, every `Animal` with the flocks' birds, `WorldView` the ground, the objects, the
-  fires' flames and the buildings, and `InteriorView` the hearth's: the group `ArtSet.VIEWS`,
-  `show_art_set()`) load them anew, while the others load theirs as they show them
-  (`PlayerView` its layers and the ridden horse, `BuildMode` the ghost). The classic buildings
-  are as big as the new ones, so a building's window lights and its place stay the same in both
-  sets. The open chat pauses Main, so it passes F7 on itself
-  (`ChatScreen.art_set_switch_pressed`). The terrain and the object tilesets follow: both
-  sets have the same tiles, so `TerrainTileset.show_art_set` and `ObjectTileset.show_art_set`
-  only swap the atlases' pictures and no map is redrawn; `WorldView` also shows the chosen set
-  when it is given a world, since it is made before Main reads the setting. The numbers measured
-  on the art are
+  fires' flames and the buildings, `ObjectCover` the bedroll's cover, and `InteriorView` its
+  room, which it shows anew: the group `ArtSet.VIEWS`, `show_art_set()`) load them anew, while
+  the others load theirs as they show them (`PlayerView` its layers and the ridden horse,
+  `BuildMode` the ghost). The classic buildings are as big as the new ones, so a building's
+  window lights and its place stay the same in both sets. The open chat pauses Main, so it
+  passes F7 on itself (`ChatScreen.art_set_switch_pressed`). The terrain and the object
+  tilesets follow: both sets have the same tiles, so `TerrainTileset.show_art_set` and
+  `ObjectTileset.show_art_set` only swap the atlases' pictures and no map is redrawn;
+  `WorldView` also shows the chosen set when it is given a world, since it is made before Main
+  reads the setting. The numbers measured on the art are
   the new art's in both sets, but for the rider's seat on the classic horses
   (`PlayerView.CLASSIC_SEAT`, `CLASSIC_PONY_SEAT`).
 - Other views each draw one piece of state: `PlayerView`, `WeatherView`, `WildlifeView`,

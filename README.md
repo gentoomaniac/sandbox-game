@@ -404,7 +404,7 @@ After sleeping or passing out you wake lying in the middle of the bed, head on t
 and under the blanket (also on the bedroll at the camp), and get up with your first step.
 Beds don't block walking, so you can't get stuck behind one.
 
-![Waking in the shack and at the camp](docs/screenshots/waking-in-bed.png)
+![Waking on the straw mat of the shack, in the bed of the Kate, in the box bed of the longhouse and on the bedroll at the camp](docs/screenshots/waking-in-bed.png)
 
 ### Crafting and professions
 
@@ -478,8 +478,9 @@ to 4× that, 320×180 art pixels. The wheel alone steps through the hotbar.
 
 The art is being redrawn at 32 px per tile, group by group. Settings → Display → Art, or F7
 while playing, switches between the new art and the classic art, the 16 px art it replaces
-(doubled); so far the people, the farm and the wild animals, the flames, the ground and the
-plants have both. Everything not redrawn yet looks the same in both.
+(doubled); so far the people, the farm and the wild animals, the flames, the ground, the
+plants, the buildings and the interiors have both. Everything not redrawn yet looks the same in
+both.
 
 ![The camp with villagers in the new art and in the classic art](docs/screenshots/art-sets.png)
 

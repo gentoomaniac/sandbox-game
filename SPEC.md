@@ -59,9 +59,10 @@ top of classic pixel art (details under "Lighting and look").
   animals, the flames, the hit particles and the weather (rain, splashes, snow, wind, fog) since
   task 116, the small animals a little larger than life, the ground (terrain, paths, soil,
   water, mud and their decorations) since task 107, calm so that what stands on it reads, the
-  buildings since task 110, their doors about 60 px high so the people fit through, and the
+  buildings since task 110, their doors about 60 px high so the people fit through, the
   plants (trees, the pollard willow, bushes, tall grass, fern, reeds, the meadow flowers, rocks,
-  stumps and trunks) since task 108. The 16 px art of a redrawn group stays in the game as the
+  stumps and trunks) since task 108, and the interiors and furniture since task 112, the beds as
+  long as the people lying in them. The 16 px art of a redrawn group stays in the game as the
   classic art, a setting (see Settings).
   (Was: 16×16, 320×180 at zoom 1.)
 - **Stepless zoom** from the widest view (1280×720 art pixels, zoom 0.5) in to zoom 2
@@ -269,7 +270,7 @@ top of classic pixel art (details under "Lighting and look").
   on the pillow and the body under the blanket (the asleep frame of the collapse, turned to
   the bed; the bedroll at the camp has its own cover, `ObjectCover`). The beds of the houses
   are drawn in layers: frame and pillow under the player, the blanket over them while they
-  lie there. Beds block walking (the bedroll does not). **Getting out** (decided 2026-11-06, after
+  lie there, down to the foot, so the clogs don't show (task 112). Beds block walking (the bedroll does not). **Getting out** (decided 2026-11-06, after
   players walked into the cupboard bed): the first move puts the player on the free tile beside
   the bed in the direction they pressed; if that is a wall or taken, on a free tile at the front
   of the bed (opposite its head, facing into the room), else at its sides, never behind it.

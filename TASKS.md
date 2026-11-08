@@ -1631,9 +1631,51 @@ on the new windows' places, a few pixels off the old windows.
 
 The objects atlas is shared with 108; see there.
 
+From task 112: draw the bedroll's row of the object atlas and its cover (`camp.bedroll_cover`,
+assets/bedroll_cover.png, still in `DOUBLED`) at 32 px, and remove the explicit `doubled(...)`
+of the stations and the grave marker in `write_interior` (generate.py) and of the chest in
+`interior.chest_picture` once chest.py, crafts.py and the graves are drawn at 32 px.
+
 ## 112. 32 px art: interiors and furniture
 
-- [ ] Done
+- [x] Done
+
+Done: the rooms and their furniture are drawn at 32 px per tile (tools/art/interior.py) and
+left `DOUBLED`: floor bricks 16x8 in a herringbone, calm (one colour of brick, soft joints,
+a worn spot on every third) and beaten clay trodden in soft patches, an oak ceiling beam over smoked plaster, a wainscot of raised panels, oak wall
+plates and corner posts, a deep-set window, the doormat plaited; the bed with its canopy and
+curtains, the box bed, the sleeping mat, the table with a candle, a pewter plate and a jug,
+the stool, the bench and the wall bench with turned legs and spindles, the stall partition,
+the hay pile, barrel, sacks, crate and the plate rack with Delft and pewter plates, and the
+hearth (a lime-washed hood with soot, Delft tiles with flowers, buff brick, logs and an iron
+pot). From the review: each piece outlined in the darkest shade of its own ramp, a dithered
+floor shadow under what stands free. Every picture keeps its size and every tile its id, so
+the maps are unchanged. The beds fit the 61 px figure of `PlayerView.LYING_POSES`: the
+blanket and the cover go down to the foot, and the box bed's front board starts under the
+figure; in the box bed the figure lies 2 px left and up (`LYING_POSES`, head to the left), so
+its head is on the pillow inside the bed. The bedroll at the camp (16 px, the atlas is task
+111's) is two rows longer, so it reaches the foot of its footprint and its cover hides the
+clogs; the classic object atlas keeps the old bedroll, so the classic set has the old cover
+too (tools/art/classic/bedroll.py, `ObjectCover` loads it through `ArtSet`). The hearth's flame box is unchanged (`FIRE_PROFILES` keeps its numbers); its still
+picture shows the native flame (`fire.strip` and `fire.burning` take the pictures' scale),
+and its light is placed in native pixels. The classic art (task 117) has the old rooms:
+interior.py of commit f2c24f8 in tools/art/classic/; the atlas, the furniture, the covers and
+the ghost of a placed piece load through `ArtSet`, and `InteriorView` shows its room anew on
+F7. The stool's item icon keeps the 16 px stool (now in crafts.py); the indoor chest, the
+stations and the grave marker are still 16 px art, scaled up in write_interior. Debug flags:
+`--inside=<building>` walks into the first building of that type (with `--street`, every
+interior can be shot), and `--sleep` with `--inside` lies down in the room's first bed.
+Checked in screenshots at zoom 0.5, 1, 1.2 and 2: every interior (shack, fisherman's hut,
+Kate, longhouse, hall house, barn, church) by day and at night with the hearth lit, waking in
+the straw mat, the bed, the box bed and on the bedroll, in both art sets (at start and after
+F7). README pictures retaken: interiors, day-and-night, waking-in-bed.
+Left for later: the chest indoors comes from chest.py and the stations from crafts.py (task
+111), scaled up until they are redrawn; the bedroll's row of the object atlas is task 111's,
+which may draw it at 32 px with its cover (then `BEDROLL_COVER_FROM_ROW` and the cell are
+native); rooms have no seasonal looks, so seasons, frost and snow change nothing inside;
+`make contrast-sheet` draws atlas rows only, so the furniture was checked on brick and clay
+in screenshots; the screenshot window here is 1474x439, so the README pictures are cut from
+shots at zoom 1 and 1.2.
 
 ## 113. 32 px art: the player and the villagers (character layers, every action, riding, collapse, portraits)
 

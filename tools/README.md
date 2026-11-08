@@ -47,7 +47,7 @@ by topic. Where is a thing drawn?
 | `villagers.py` | The villagers' layers on the same figure: the women's dress (bodice, skirt, apron, shawl, coif, headscarf), other skins, hair colours and cloth, the felt hat, the tricorne and the white stocking cap. |
 | `forms.py` | Rounded shapes as masks (ellipse, turned or not, capsule, polygon, rounded box) and their shading by the light from the top left, for the figures of character.py and villagers.py, the farm animals of livestock.py and the wild animals. |
 | `portraits.py` | The 32x32 chat portrait of every layer that shows in a bust: the top of its frame facing the viewer. |
-| `interior.py` | The room tiles and the furniture inside the buildings, the hearth too. |
+| `interior.py` | The room tiles and the furniture inside the buildings, the hearth too, drawn at 32 px; the bed covers. |
 | `buildings.py` | The shack, fisherman's hut, Kate, longhouse, hall house and barn at 32 px per tile, plain and with lit windows. |
 | `church.py` | The church and its bell frame (as buildings.py), and the graves of the churchyard (a row of the object atlas, still 16 px). |
 | `seasons.py` | The other looks (spring, autumn, bare, frost, snow, dusting, leaf-out steps) made from the summer art by colour remaps and overlays, the ground's by terrain layer where they differ (`LAYER_REMAPS`: autumn straw only on the dry grass). Also adds its colours to the palette. |
@@ -58,7 +58,7 @@ by topic. Where is a thing drawn?
 | `landing.py` | The fisherman's landing: the jetty (a picture per connection mask), the rowing boat, the net frame and the eel traps, and their icons. |
 | `crafts.py` | The professions' art: the stations (workbench, kiln, bake oven) and the carved chest, each drawn once for the atlas, the interior and its icon, and the icons of what is made at them. |
 | `trunks.py`, `meadow.py`, `reeds.py` | Felled trunks, tall grass, reeds and the clay hint (drawn at 32 px), the hay, clay and reeds items. |
-| `fire.py` | The animation frames of the campfire and the hearth, drawn at 32 px; `strip` scales up the 16 px fireplace and hearth around them. |
+| `fire.py` | The animation frames of the campfire and the hearth, drawn at 32 px; `strip` scales up the 16 px fireplace around them (the hearth is drawn at 32 px). |
 | `animals.py` | One sheet per small wild animal (sparrow, rabbit, squirrel, roe deer, bee, butterflies, mouse, frog), drawn at 32 px per tile. |
 | `bird_forms.py` | Birds put together from rounded forms (body, tail, neck, head, bill, folded or open wings, legs), standing or flying, for the bird sheets of animals.py, birds.py and sea_birds.py. |
 | `birds.py` | The sheets of the big birds of the marsh: the white stork and the greylag goose, drawn at 32 px per tile. |
@@ -89,8 +89,8 @@ module trips over (a colour renamed) is made in the old module too. So far: the 
 `bubbles.py`, the thought bubble part of `ui.py`; the farm animals (task 114), from commit
 2793065: `livestock.py` and `animals.py` (whose tame rabbit it draws from) unchanged; the wild
 animals and the flames (task 116), from the same commit: `animals.py`, `birds.py`,
-`sea_birds.py` and `fire.py` unchanged (the fireplace and the hearth around the flames are the
-shared, still 16 px `camp.py` and `interior.py`); the ground (task 107), from commit acf236e:
+`sea_birds.py` and `fire.py` unchanged (the fireplace around the flames is the shared, still
+16 px `camp.py`, the hearth the classic `interior.py`); the ground (task 107), from commit acf236e:
 `terrain.py` unchanged, `ground_looks.py`, the ground part of `seasons.py` (a module of that
 name would stand in for the shared one that `palette.py` imports), and `ground_overlays.py`,
 the wet soil of `crop_icons.py` (drawn without `crops.Surface`) and the clay hint of `meadow.py`;
@@ -101,11 +101,14 @@ pictures kept their sizes at 32 px; the plants (task 108), from commit e303759: 
 of the classic decorations) unchanged, the plant parts of `meadow.py` and `reeds.py`, and
 `object_looks.py`, the object part of `seasons.py`. The object atlas is one picture, so the
 classic one (`object_atlas` there) has every row: the rows not drawn anew yet come from the
-shared modules, as the new atlas has them, and the graves from `graves.py`, the graves part of
-`church.py`; the crops (task 109), from commit f2c24f8: `crops.py` unchanged (rye and
-buckwheat were first drawn at 32 px and have no classic sheet). The cow's, the horse's and the
-small wild animals' cells grew at 32 px, so `set_in_grown_cells` puts their classic cells in the
-new ones (bottom centre), as the classic files must have the new cell sizes.
+shared modules, as the new atlas has them, the graves from `graves.py`, the graves part of
+`church.py`, and the bedroll from `bedroll.py`, the old bedroll and its cover of `camp.py`; the
+crops (task 109), from commit f2c24f8: `crops.py` unchanged (rye and buckwheat were first drawn
+at 32 px and have no classic sheet); the interiors (task 112), from commit f2c24f8:
+`interior.py` unchanged (its chest is the shared `chest.py`), whose pictures kept their sizes.
+The cow's, the horse's and the small wild animals' cells grew at 32 px, so `set_in_grown_cells`
+puts their classic cells in the new ones (bottom centre), as the classic files must have the
+new cell sizes.
 
 When a group goes native (docs/art-style.md, "Resolution"), before its redraw changes them:
 
