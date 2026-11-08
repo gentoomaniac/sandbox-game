@@ -82,7 +82,7 @@ func test_sweat_is_one_drop_when_tired_and_two_or_three_when_exhausted() -> void
 func test_sweat_drops_are_tiny_and_short_lived() -> void:
 	for kind in [KINDS.SWEAT, KINDS.SWEAT_HEAVY]:
 		for size: Vector2 in HitParticles.SPECS[kind]["sizes"]:
-			assert_true(size.x <= 2 and size.y <= 2, "drop size %s" % size)
+			assert_true(size.x <= 4 and size.y <= 4, "drop size %s" % size)
 		assert_lt(HitParticles.SPECS[kind]["life"], 1.0)
 
 

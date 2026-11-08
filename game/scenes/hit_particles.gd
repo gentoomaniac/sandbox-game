@@ -1,9 +1,9 @@
 class_name HitParticles
 extends Node2D
-## Short-lived pixel particles for hits (see HitEffect): each is a rect of one to four art
-## pixels, so it stays crisp, and tinted by the day like the world around it. Not GPUParticles,
-## which would not keep to the art grid. They fly and are drawn on the grid of the 16 px art,
-## scaled up to the world's (TerrainTileset.ART_16_SCALE).
+## Short-lived pixel particles for hits (see HitEffect): each is a small shape of whole art
+## pixels, one to five across, so it stays crisp, and tinted by the day like the world around it.
+## Not GPUParticles, which would not keep to the art grid. Those of three pixels or more both ways
+## have their corners left out, so a leaf or a flake is round.
 
 ## Each palette is brighter than the foliage it falls from, or it is lost against it: yellow
 ## greens under a green canopy, dry brown-green needles under a dark spruce, bright ochre,
@@ -16,21 +16,22 @@ const SPLINTER_COLORS: Array[Color] = [
 	Color("e4e4ea"), Color("b8b8c0"), Color("8a8a94"), Color("66666f")
 ]
 const DUST_COLORS: Array[Color] = [Color("e4e4dc"), Color("c8c8c0")]
-## Light blue and white drops; the last pixel of each is darker, so a drop shows against pale ground
+## Light blue and white drops, darker on their shaded side, so a drop shows against pale ground
 ## (snow, the sleeping bag) as well as against grass.
 const SWEAT_COLORS: Array[Color] = [Color("92b4bd"), Color("92b4bd"), Color("e6eef2")]
 ## Frequency of the sway of falling leaves, in radians per second.
 const SWAY_RATE := 7.0
 ## The last share of a particle's life in which it fades out.
 const FADE_SHARE := 0.3
-## How much darker the last pixel of a shaded particle is, which gives a leaf its shape.
+## How much darker the shaded side of a particle is (its bottom row and right column, away from
+## the light from the top left), which gives a leaf its shape.
 const SHADE_DARKENING := 0.45
 
-## How each kind is thrown, in pixels of the 16 px art and seconds. `count`: least and most
+## How each kind is thrown, in pixels and seconds. `count`: least and most
 ## particles; `spread`: half the size of the area they start in; `sideways`: the most horizontal
 ## speed either way; `vertical`: least and most vertical speed (down is positive); `gravity`: pull
 ## down; `sway`: how far a particle swings to the sides while it flies; `sizes`: the sizes in
-## pixels a particle may have; `is_shaded`: whether its last pixel is darker. With `is_outward`
+## pixels a particle may have; `is_shaded`: whether its shaded side is darker. With `is_outward`
 ## (optional) a particle starts `spread.x` to the left or right of the origin, and is thrown
 ## away from it at between half of `sideways` and all of it.
 ## Leaves and needles fall far enough to leave the canopy and land on the ground beside the
@@ -39,106 +40,106 @@ const SPECS := {
 	HitEffect.Kind.LEAVES_GREEN:
 	{
 		"count": Vector2i(6, 8),
-		"spread": Vector2(14, 6),
-		"sideways": 10.0,
-		"vertical": Vector2(22, 32),
+		"spread": Vector2(28, 12),
+		"sideways": 20.0,
+		"vertical": Vector2(44, 64),
 		"gravity": 0.0,
-		"sway": 3.0,
+		"sway": 6.0,
 		"life": 1.2,
 		"colors": GREENS,
-		"sizes": [Vector2(2, 2), Vector2(2, 2), Vector2(3, 2)],
+		"sizes": [Vector2(4, 3), Vector2(3, 3), Vector2(5, 3)],
 		"is_shaded": true,
 	},
 	HitEffect.Kind.LEAVES_AUTUMN:
 	{
 		"count": Vector2i(6, 8),
-		"spread": Vector2(14, 6),
-		"sideways": 10.0,
-		"vertical": Vector2(22, 32),
+		"spread": Vector2(28, 12),
+		"sideways": 20.0,
+		"vertical": Vector2(44, 64),
 		"gravity": 0.0,
-		"sway": 3.0,
+		"sway": 6.0,
 		"life": 1.2,
 		"colors": AUTUMN_COLORS,
-		"sizes": [Vector2(2, 2), Vector2(2, 2), Vector2(3, 2)],
+		"sizes": [Vector2(4, 3), Vector2(3, 3), Vector2(5, 3)],
 		"is_shaded": true,
 	},
 	HitEffect.Kind.NEEDLES:
 	{
 		"count": Vector2i(7, 9),
-		"spread": Vector2(10, 8),
-		"sideways": 6.0,
-		"vertical": Vector2(26, 34),
+		"spread": Vector2(20, 16),
+		"sideways": 12.0,
+		"vertical": Vector2(52, 68),
 		"gravity": 0.0,
-		"sway": 1.5,
+		"sway": 3.0,
 		"life": 1.1,
 		"colors": NEEDLE_COLORS,
-		"sizes": [Vector2(3, 1), Vector2(1, 3), Vector2(2, 1)],
+		"sizes": [Vector2(5, 1), Vector2(1, 5), Vector2(4, 1)],
 		"is_shaded": false,
 	},
 	HitEffect.Kind.SNOW:
 	{
 		"count": Vector2i(10, 14),
-		"spread": Vector2(10, 8),
-		"sideways": 12.0,
-		"vertical": Vector2(4, 16),
-		"gravity": 45.0,
+		"spread": Vector2(20, 16),
+		"sideways": 24.0,
+		"vertical": Vector2(8, 32),
+		"gravity": 90.0,
 		"sway": 0.0,
 		"life": 1.1,
 		"colors": SNOW_COLORS,
-		"sizes": [Vector2(1, 1), Vector2(2, 1), Vector2(2, 2), Vector2(2, 2)],
+		"sizes": [Vector2(2, 2), Vector2(3, 2), Vector2(3, 3), Vector2(4, 3)],
 		"is_shaded": false,
 	},
 	HitEffect.Kind.SPLINTERS:
 	{
 		"count": Vector2i(5, 7),
-		"spread": Vector2(3, 3),
-		"sideways": 32.0,
-		"vertical": Vector2(-80, -50),
-		"gravity": 220.0,
+		"spread": Vector2(6, 6),
+		"sideways": 64.0,
+		"vertical": Vector2(-160, -100),
+		"gravity": 440.0,
 		"sway": 0.0,
 		"life": 0.7,
 		"colors": SPLINTER_COLORS,
-		"sizes": [Vector2(1, 1), Vector2(2, 1), Vector2(2, 1)],
+		"sizes": [Vector2(2, 1), Vector2(3, 1), Vector2(4, 2)],
 		"is_shaded": false,
 	},
 	HitEffect.Kind.DUST:
 	{
 		"count": Vector2i(2, 3),
-		"spread": Vector2(3, 2),
-		"sideways": 8.0,
-		"vertical": Vector2(-12, -3),
+		"spread": Vector2(6, 4),
+		"sideways": 16.0,
+		"vertical": Vector2(-24, -6),
 		"gravity": 0.0,
 		"sway": 0.0,
 		"life": 0.3,
 		"colors": DUST_COLORS,
-		"sizes": [Vector2(1, 1)],
+		"sizes": [Vector2(2, 2), Vector2(2, 1)],
 		"is_shaded": false,
 	},
 	HitEffect.Kind.SWEAT:
 	{
 		"count": Vector2i(1, 1),
-		"spread": Vector2(5, 1),
-		"sideways": 16.0,
-		"vertical": Vector2(-48, -36),
-		"gravity": 200.0,
+		"spread": Vector2(10, 2),
+		"sideways": 32.0,
+		"vertical": Vector2(-96, -72),
+		"gravity": 400.0,
 		"sway": 0.0,
 		"life": 0.8,
 		"colors": SWEAT_COLORS,
-		"sizes": [Vector2(2, 2), Vector2(1, 2)],
+		"sizes": [Vector2(3, 4), Vector2(2, 3)],
 		"is_shaded": true,
 		"is_outward": true,
 	},
 	HitEffect.Kind.SWEAT_HEAVY:
 	{
 		"count": Vector2i(2, 3),
-		"spread": Vector2(5, 1),
-		"sideways": 26.0,
-		"vertical": Vector2(-64, -44),
-		"gravity": 200.0,
+		"spread": Vector2(10, 2),
+		"sideways": 52.0,
+		"vertical": Vector2(-128, -88),
+		"gravity": 400.0,
 		"sway": 0.0,
 		"life": 0.9,
 		"colors": SWEAT_COLORS,
-		"sizes": [Vector2(2, 2), Vector2(1, 2)],
+		"sizes": [Vector2(3, 4), Vector2(2, 3)],
 		"is_shaded": true,
 		"is_outward": true,
 	},
@@ -149,7 +150,7 @@ var _random := RandomNumberGenerator.new()
 
 
 class Particle:
-	## In pixels of the 16 px art, as everything of a particle.
+	## In pixels, as everything of a particle.
 	var start: Vector2
 	var velocity: Vector2
 	var gravity: float
@@ -190,10 +191,7 @@ func emit(kind: HitEffect.Kind, origin: Vector2) -> void:
 		if spec.get("is_outward", false):
 			offset_x = side * spread.x
 			speed_x = side * _random.randf_range(spec["sideways"] / 2.0, spec["sideways"])
-		particle.start = (
-			origin / TerrainTileset.ART_16_SCALE
-			+ Vector2(offset_x, _random.randf_range(-spread.y, spread.y))
-		)
+		particle.start = origin + Vector2(offset_x, _random.randf_range(-spread.y, spread.y))
 		particle.velocity = Vector2(speed_x, _random.randf_range(vertical.x, vertical.y))
 		particle.gravity = spec["gravity"]
 		particle.sway = spec["sway"]
@@ -221,12 +219,20 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * TerrainTileset.ART_16_SCALE)
 	for particle in _particles:
 		var color := particle.color
 		color.a = clampf((1.0 - particle.age / particle.life) / FADE_SHARE, 0.0, 1.0)
+		var shade := color.darkened(SHADE_DARKENING)
 		var top_left := particle.position_now().floor()
-		draw_rect(Rect2(top_left, particle.size), color)
-		if particle.is_shaded:
-			var last_pixel := top_left + particle.size - Vector2.ONE
-			draw_rect(Rect2(last_pixel, Vector2.ONE), color.darkened(SHADE_DARKENING))
+		var size := Vector2i(particle.size)
+		var is_round := size.x >= 3 and size.y >= 3
+		for y in size.y:
+			for x in size.x:
+				var is_edge_x := x == 0 or x == size.x - 1
+				var is_edge_y := y == 0 or y == size.y - 1
+				if is_round and is_edge_x and is_edge_y:
+					continue
+				var is_shaded := particle.is_shaded and (x == size.x - 1 or y == size.y - 1)
+				draw_rect(
+					Rect2(top_left + Vector2(x, y), Vector2.ONE), shade if is_shaded else color
+				)
