@@ -1,6 +1,6 @@
 class_name GameSettings
 extends RefCounted
-## The player's settings: key bindings, display mode, UI scale, energy drain, day length
+## The player's settings: key bindings, display mode, art set, UI scale, energy drain, day length
 ## variation, audio and the language model villagers talk through. Bindings live in Godot's
 ## InputMap (that is what the game reads); this class edits them, remembers the project's
 ## defaults and keeps them in a ConfigFile, written on every change. It has no UI code.
@@ -8,9 +8,9 @@ extends RefCounted
 ## The file only holds what differs from the defaults, so an action added later, or one the
 ## file doesn't mention, keeps its default binding. The display mode is only stored once the
 ## player has chosen it; until then the window stays as the command line or project left it.
-## The UI scale, the energy drain, the day length variation, the audio settings and the language
-## model are stored when they differ from their defaults. The model's key is kept in the file as
-## plain text (Settings says so); it is never saved with the game or logged.
+## The art set, the UI scale, the energy drain, the day length variation, the audio settings and
+## the language model are stored when they differ from their defaults. The model's key is kept in
+## the file as plain text (Settings says so); it is never saved with the game or logged.
 
 ## Emitted when the player changes the energy drain; loading it does not, so whoever connects
 ## reads `energy_drain_factor()` once at start and then follows this.
@@ -25,6 +25,9 @@ signal day_length_changed
 ## Emitted when the player changes a volume or "Sound in background"; loading does not, so
 ## whoever applies the audio settings does it once after `load_file()` and then on this.
 signal audio_changed
+## Emitted when the player switches between the classic and the new art; loading does not, so
+## whoever shows the art reads `is_classic_art` once at start and then follows this.
+signal art_set_changed
 
 enum EnergyDrain { LOW, NORMAL, HIGH }
 
@@ -41,6 +44,7 @@ const SHARING_PAIRS := [[&"interact", &"build_next"]]
 const CONTROLS_SECTION := "controls"
 const DISPLAY_SECTION := "display"
 const FULLSCREEN_KEY := "fullscreen"
+const CLASSIC_ART_KEY := "classic_art"
 const GAME_SECTION := "game"
 const UI_SCALE_KEY := "ui_scale"
 const ENERGY_DRAIN_KEY := "energy_drain"
@@ -179,6 +183,9 @@ const MAX_CHAT_HISTORY_LINES := 200
 const DEFAULT_CHAT_HISTORY_LINES := 24
 
 var is_fullscreen := false
+## Whether the world shows the classic art, the 16 px art doubled, where it has it, instead of
+## the new art drawn at 32 px per tile (see ArtSet).
+var is_classic_art := false
 var ui_scale := DEFAULT_UI_SCALE
 var energy_drain := DEFAULT_ENERGY_DRAIN
 var day_length_variation := DEFAULT_DAY_LENGTH_VARIATION
@@ -330,6 +337,12 @@ func set_fullscreen(value: bool) -> void:
 	_save()
 
 
+func set_classic_art(value: bool) -> void:
+	is_classic_art = value
+	_save()
+	art_set_changed.emit()
+
+
 ## Scales all UI, but not the world: that is drawn on the whole window by CameraController
 ## whatever the scale. The value is kept in range and on the slider's steps.
 func set_ui_scale(value: float) -> void:
@@ -448,6 +461,12 @@ func load_file() -> void:
 			_apply_display()
 		else:
 			push_warning("Ignoring display setting in %s: not true or false" % _path)
+	if file.has_section_key(DISPLAY_SECTION, CLASSIC_ART_KEY):
+		var value: Variant = file.get_value(DISPLAY_SECTION, CLASSIC_ART_KEY)
+		if value is bool:
+			is_classic_art = value
+		else:
+			push_warning("Ignoring the art setting in %s: not true or false" % _path)
 	_load_game_section(file)
 	_load_audio_section(file)
 	_load_language_model_section(file)
@@ -595,6 +614,8 @@ func _save() -> void:
 			file.set_value(CONTROLS_SECTION, action, events.map(_encode))
 	if _has_chosen_fullscreen:
 		file.set_value(DISPLAY_SECTION, FULLSCREEN_KEY, is_fullscreen)
+	if is_classic_art:
+		file.set_value(DISPLAY_SECTION, CLASSIC_ART_KEY, true)
 	if ui_scale != DEFAULT_UI_SCALE:
 		file.set_value(GAME_SECTION, UI_SCALE_KEY, ui_scale)
 	if energy_drain != DEFAULT_ENERGY_DRAIN:
