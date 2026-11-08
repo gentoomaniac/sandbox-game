@@ -59,7 +59,7 @@ func _ready() -> void:
 	var towards_view := signf(wildlife.view_rect().get_center().x - position.x)
 	_direction = Vector2(towards_view if towards_view != 0.0 else 1.0, 0.0)
 	_direction = _direction.rotated(wildlife.rng.randf_range(-0.3, 0.3))
-	_shadow = GroundShadows.new(1, 2)
+	_shadow = GroundShadows.new(1, 4)
 	wildlife.ground.add_child(_shadow)
 	_patrol()
 

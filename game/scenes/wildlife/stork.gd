@@ -76,7 +76,7 @@ func _init(stork_kind: StringName) -> void:
 
 func _ready() -> void:
 	super()
-	_shadow = GroundShadows.new(1, 3)
+	_shadow = GroundShadows.new(1, 6)
 	_shadow.hide()
 	wildlife.ground.add_child(_shadow)
 	if roof != null:

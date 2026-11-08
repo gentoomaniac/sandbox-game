@@ -19,7 +19,7 @@ const BIRDS := {
 		"wingbeat": 10.0,
 		"ping_pong": false,
 		"spacing": Vector2(10.0, 12.0),
-		"shadow": 2,
+		"shadow": 4,
 	},
 	WildlifeRules.FLYING_GEESE:
 	{
@@ -30,7 +30,7 @@ const BIRDS := {
 		"wingbeat": 5.0,
 		"ping_pong": true,
 		"spacing": Vector2(28.0, 24.0),
-		"shadow": 4,
+		"shadow": 8,
 	},
 }
 const ANIMATION := &"fly"

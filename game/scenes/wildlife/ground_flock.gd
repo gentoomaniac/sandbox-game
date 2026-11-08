@@ -41,7 +41,7 @@ const FLOCKS := {
 		"flight_height": 112.0,
 		"v_spacing": Vector2(28.0, 24.0),
 		"wheel": 0.0,
-		"shadow": 3,
+		"shadow": 6,
 	},
 	WildlifeRules.OYSTERCATCHER:
 	{
@@ -59,7 +59,7 @@ const FLOCKS := {
 		"flight_height": 36.0,
 		"v_spacing": Vector2.ZERO,
 		"wheel": 0.0,
-		"shadow": 2,
+		"shadow": 4,
 	},
 	WildlifeRules.DUNLIN:
 	{
@@ -77,7 +77,7 @@ const FLOCKS := {
 		"flight_height": 40.0,
 		"v_spacing": Vector2.ZERO,
 		"wheel": 0.7,
-		"shadow": 1,
+		"shadow": 2,
 	},
 }
 ## How many spots are tried for each bird of the flock before it makes do with fewer birds.

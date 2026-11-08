@@ -6,17 +6,17 @@ extends Node2D
 ## every frame (`set_point`), so the points are kept and never made anew.
 
 const COLOR := Color(0.0, 0.0, 0.0, 0.4)
-const SHIFT := Vector2(8.0, 6.0) * TerrainTileset.ART_16_SCALE
+const SHIFT := Vector2(16.0, 12.0)
 
-## Half the width of a shadow in pixels of the 16 px art, past its middle pixel.
-var half_width := 2
+## Half the width of a shadow in pixels.
+var half_width := 4
 ## How far from the point below its bird a shadow falls: SHIFT high in the air, nothing for a
 ## bird on the ground.
 var shift := SHIFT
 var _points := PackedVector2Array()
 
 
-func _init(count: int, shadow_half_width := 2) -> void:
+func _init(count: int, shadow_half_width := 4) -> void:
 	_points.resize(count)
 	half_width = shadow_half_width
 
@@ -28,10 +28,9 @@ func set_point(index: int, ground_point: Vector2) -> void:
 
 
 func _draw() -> void:
+	# A flat oval of four rows, its ends rounded off.
 	for point in _points:
-		# On the grid of the 16 px art, as the shadow is drawn on it.
-		var art_scale := TerrainTileset.ART_16_SCALE
-		var centre := ((point + shift) / art_scale).round() * art_scale
-		draw_set_transform(centre, 0.0, Vector2.ONE * art_scale)
-		draw_rect(Rect2(-half_width, 0, half_width * 2 + 1, 1), COLOR)
-		draw_rect(Rect2(-half_width + 1, 1, half_width * 2 - 1, 1), COLOR)
+		var centre := (point + shift).round()
+		for row in 4:
+			var half := half_width - (0 if row == 1 or row == 2 else 2)
+			draw_rect(Rect2(centre + Vector2(-half, row - 1), Vector2(half * 2, 1)), COLOR)
