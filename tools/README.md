@@ -14,6 +14,16 @@ make venv      # just the Python environment (make assets does this itself)
 [requirements.txt](requirements.txt). After new art, `make run`, `make test` and
 `make screenshot` import it themselves.
 
+## Tests: tools/run_tests.py
+
+`make test` runs it. It spreads tests/test_*.gd over `TEST_JOBS` headless Godot processes
+(default 8; `TEST_JOBS=1` is one process), each with its own `user://` (`build/user-data-<i>`)
+and log (`build/test-<i>.log`), and kills them after `TEST_TIMEOUT` seconds (default 600, the
+whole run), counting that as a failure. The files are balanced by their duration in the last
+run (`build/test-times`, from GUT's junit output), by file size until a file has a time.
+`build/test.log` is the shard logs joined plus a summary (Passing Tests, Failing Tests,
+`[Failed] file: test`, time); the exit status is non-zero if any shard or check fails.
+
 ## Art: tools/art/
 
 `generate.py` is the entry point: it assembles the object atlas and `main()` writes every

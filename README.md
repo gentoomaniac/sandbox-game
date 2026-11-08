@@ -657,7 +657,7 @@ to look. `make help` lists the targets and their variables.
 | Command | What it does |
 |---|---|
 | `make help` | Lists the targets and variables (the default). |
-| `make test` | Runs the GUT test suite headless. |
+| `make test` | Runs the GUT test suite headless, in `TEST_JOBS` parallel Godot processes (default 8; `TEST_JOBS=1` runs one process). A shard running longer than `TEST_TIMEOUT` seconds (default 600) is killed and fails. `build/test.log` is the shard logs joined plus a summary; `build/test-<i>.log` are the single logs, and `build/test-times` the file durations that balance the next run. |
 | `make lint` | Runs `gdlint` and `gdformat --check`. |
 | `make format` | Formats the GDScript. |
 | `make assets` | Regenerates all pixel art from the palette and all sounds (deterministic). Needs Python only, not Godot. |
