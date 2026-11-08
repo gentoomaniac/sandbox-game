@@ -56,9 +56,9 @@ extends RefCounted
 ## - seasonal: it follows a yearly curve of the same name (see Vegetation): DORMANCY, it is
 ##   gone from the world while the density is below its threshold (a fern), or FRUIT, it
 ##   looks picked and can't be picked while it is (a berry bush). Woody plants have none;
-## - sprite_height: its picture's height in pixels (of the file: the 16 px art doubled), if it is
-##   tall enough to hide the player behind it (trees); only those become see-through (see
-##   Occlusion);
+## - sprite_height: how many pixels its picture in leaf (in the summer atlas file, drawn at 32 px)
+##   rises above the bottom of its cell, if it is tall enough to hide the player behind it
+##   (trees); only those become see-through (see Occlusion);
 ## - light: it shines: `color`, `energy` (of the brightest point) and `radius_tiles`;
 ## - connects: it is a line across the land (a Knick, a wall, a dyke), drawn tile by tile: it
 ##   joins the neighbours on its 4 sides whose `connects` is the same, and each of its variants
@@ -190,7 +190,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": 0,
-		"sprite_height": 128,
+		"sprite_height": 130,
 		"variants": 3,
 	},
 	STONE:
@@ -238,7 +238,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": 4,
-		"sprite_height": 132,
+		"sprite_height": 140,
 		"variants": 3,
 	},
 	PINE:
@@ -254,7 +254,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 2,
 		"atlas_row": 5,
-		"sprite_height": 150,
+		"sprite_height": 156,
 		"variants": 3,
 	},
 	DEAD_TREE:
@@ -284,7 +284,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": _WILLOW_ROW,
-		"sprite_height": 108,
+		"sprite_height": 118,
 		"variants": 3,
 	},
 	# The beech of the woods: smooth grey bark, a dense dome of a crown.
@@ -318,7 +318,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": _BIRCH_ROW,
-		"sprite_height": 134,
+		"sprite_height": 136,
 		"variants": 3,
 	},
 	# The black alder of wet ground: dark bark, a narrow cone of dark leaves, cones in winter.
@@ -335,7 +335,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": _ALDER_ROW,
-		"sprite_height": 132,
+		"sprite_height": 134,
 		"variants": 3,
 	},
 	BERRY_BUSH:

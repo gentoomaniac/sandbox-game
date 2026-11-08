@@ -10,10 +10,10 @@ extends RefCounted
 ##
 ## Everything moves in whole art pixels, and on a calm day hardly at all. The static functions
 ## turn the weather into the shaders' numbers. The shaders work on the pixels of the art they move
-## (see art_scale.gdshaderinc): the plants' are those of the 16 px art, so their motion keeps to
-## its doubled pixels; the ground's (water, mud, lily pads and the plants of the decoration
-## layer) are the world's, as are the fire's and the rain's splashes, which are drawn at 32 px,
-## but in the classic art (see ArtSet) the ground's are the 16 px art's again.
+## (see art_scale.gdshaderinc): the plants', the ground's (water, mud, lily pads and the plants of
+## the decoration layer), the fire's and the rain's splashes are the world's, as they are drawn at
+## 32 px, but in the classic art (see ArtSet) the plants' and the ground's are the 16 px art's
+## again. The crops are still 16 px art in either set, so their motion keeps to its doubled pixels.
 
 const OBJECT_SWAY_SHADER := preload("res://game/scenes/object_sway.gdshader")
 const DECORATION_SWAY_SHADER := preload("res://game/scenes/decoration_sway.gdshader")
@@ -57,21 +57,26 @@ const MAX_SPLASH_CHANCE := 0.45
 ## How the plants among the objects bend, by type: the pixels above the bottom of their cell
 ## that stay put (`stem`, a trunk) and where they bend the most (`top`), how far (`strength`,
 ## a share of the wind's sway) and how fast they swing (`frequency`, per second). Measured on
-## the art; types that are not here stand still (the dead tree is a bare snag, too stiff to sway).
+## the art drawn at 32 px, in the world's pixels; types that are not here stand still (the dead
+## tree is a bare snag, too stiff to sway). The grass, the reeds and the fern bend most, so their
+## tips flick in a light air; the bushes and the sapling less; the big trees least and slowest,
+## so they stand still in a light air (the user, 2026-11-08: "grass and crops usually move more
+## than large trees"). The whole is calm: the plants bend half as far on screen as the doubled
+## 16 px art did.
 const SWAY_PROFILES := {
-	WorldObjectTypes.OAK: {"stem": 20.0, "top": 62.0, "strength": 1.0, "frequency": 0.35},
-	WorldObjectTypes.SPRUCE: {"stem": 8.0, "top": 65.0, "strength": 0.8, "frequency": 0.4},
-	WorldObjectTypes.PINE: {"stem": 34.0, "top": 74.0, "strength": 1.0, "frequency": 0.35},
-	WorldObjectTypes.BEECH: {"stem": 28.0, "top": 62.0, "strength": 0.9, "frequency": 0.35},
-	WorldObjectTypes.BIRCH: {"stem": 22.0, "top": 66.0, "strength": 1.1, "frequency": 0.5},
-	WorldObjectTypes.ALDER: {"stem": 20.0, "top": 65.0, "strength": 0.8, "frequency": 0.4},
-	WorldObjectTypes.WILLOW: {"stem": 20.0, "top": 53.0, "strength": 0.8, "frequency": 0.45},
-	WorldObjectTypes.SAPLING: {"stem": 3.0, "top": 22.0, "strength": 0.7, "frequency": 0.7},
-	WorldObjectTypes.BERRY_BUSH: {"stem": 3.0, "top": 20.0, "strength": 0.4, "frequency": 0.6},
-	WorldObjectTypes.SHRUB: {"stem": 2.0, "top": 16.0, "strength": 0.4, "frequency": 0.6},
-	WorldObjectTypes.FERN_BUSH: {"stem": 2.0, "top": 13.0, "strength": 0.7, "frequency": 0.8},
-	WorldObjectTypes.TALL_GRASS: {"stem": 1.0, "top": 17.0, "strength": 1.0, "frequency": 0.9},
-	WorldObjectTypes.REEDS: {"stem": 2.0, "top": 31.0, "strength": 1.0, "frequency": 0.7},
+	WorldObjectTypes.OAK: {"stem": 44.0, "top": 126.0, "strength": 0.5, "frequency": 0.35},
+	WorldObjectTypes.SPRUCE: {"stem": 18.0, "top": 136.0, "strength": 0.4, "frequency": 0.4},
+	WorldObjectTypes.PINE: {"stem": 70.0, "top": 150.0, "strength": 0.5, "frequency": 0.35},
+	WorldObjectTypes.BEECH: {"stem": 56.0, "top": 124.0, "strength": 0.45, "frequency": 0.35},
+	WorldObjectTypes.BIRCH: {"stem": 44.0, "top": 134.0, "strength": 0.6, "frequency": 0.5},
+	WorldObjectTypes.ALDER: {"stem": 40.0, "top": 132.0, "strength": 0.4, "frequency": 0.4},
+	WorldObjectTypes.WILLOW: {"stem": 38.0, "top": 114.0, "strength": 0.5, "frequency": 0.45},
+	WorldObjectTypes.SAPLING: {"stem": 8.0, "top": 50.0, "strength": 0.8, "frequency": 0.7},
+	WorldObjectTypes.BERRY_BUSH: {"stem": 6.0, "top": 42.0, "strength": 0.7, "frequency": 0.6},
+	WorldObjectTypes.SHRUB: {"stem": 4.0, "top": 34.0, "strength": 0.7, "frequency": 0.6},
+	WorldObjectTypes.FERN_BUSH: {"stem": 4.0, "top": 36.0, "strength": 1.3, "frequency": 0.8},
+	WorldObjectTypes.TALL_GRASS: {"stem": 3.0, "top": 42.0, "strength": 1.6, "frequency": 0.9},
+	WorldObjectTypes.REEDS: {"stem": 4.0, "top": 60.0, "strength": 1.5, "frequency": 0.7},
 }
 ## Every crop bends like this, up to the top of its cell.
 const CROP_SWAY := {"stem": 1.0, "strength": 0.6, "frequency": 0.8}
@@ -141,9 +146,12 @@ func _init() -> void:
 	_show_ground_art_set()
 	for type: StringName in SWAY_PROFILES:
 		var material := _material(OBJECT_SWAY_SHADER)
-		_set_parameters(material, SWAY_PROFILES[type])
+		var profile: Dictionary = SWAY_PROFILES[type]
+		material.set_shader_parameter("strength", profile["strength"])
+		material.set_shader_parameter("frequency", profile["frequency"])
 		_object_materials[type] = material
 		_sway_materials.append(material)
+	_show_plants_art_set()
 	var fireplace := fire_material(WorldObjectTypes.FIREPLACE)
 	_object_materials[WorldObjectTypes.FIREPLACE] = fireplace
 	_fire_materials.append(fireplace)
@@ -167,10 +175,11 @@ static func show_flames(material: ShaderMaterial, type: StringName) -> void:
 	material.set_shader_parameter("flames", load(ArtSet.path(FIRE_PROFILES[type]["flames"])))
 
 
-## Shows the flames of the fires outdoors and moves the ground in the chosen art set (see
-## WorldView `show_art_set`).
+## Shows the flames of the fires outdoors and moves the plants and the ground in the chosen art
+## set (see WorldView `show_art_set`).
 func show_art_set() -> void:
 	show_flames(_object_materials[WorldObjectTypes.FIREPLACE], WorldObjectTypes.FIREPLACE)
+	_show_plants_art_set()
 	_show_ground_art_set()
 
 
@@ -284,9 +293,26 @@ static func splash_chance_for(rain: float) -> float:
 ## The ground's shaders work on the pixels of its art: the world's, or the 16 px art's in the
 ## classic art.
 func _show_ground_art_set() -> void:
-	var art_scale := float(TerrainTileset.ART_16_SCALE) if ArtSet.is_classic else 1.0
 	for material in [water, mud, decoration_sway, lily_pads]:
+		material.set_shader_parameter("art_scale", _art_scale())
+
+
+## The plants sway on the pixels of their art, as the ground does: the profiles, in the world's
+## pixels, become the art's.
+func _show_plants_art_set() -> void:
+	var art_scale := _art_scale()
+	for type: StringName in SWAY_PROFILES:
+		var material := _object_materials[type]
 		material.set_shader_parameter("art_scale", art_scale)
+		var cell_size := Vector2(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT)
+		material.set_shader_parameter("cell_size", cell_size / art_scale)
+		material.set_shader_parameter("stem", SWAY_PROFILES[type]["stem"] / art_scale)
+		material.set_shader_parameter("top", SWAY_PROFILES[type]["top"] / art_scale)
+
+
+## How many world pixels an art pixel of the plants and the ground is: 1, or 2 in the classic art.
+static func _art_scale() -> float:
+	return float(TerrainTileset.ART_16_SCALE) if ArtSet.is_classic else 1.0
 
 
 ## A material for a shader of the 16 px art (see art_scale.gdshaderinc).

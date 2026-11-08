@@ -3,68 +3,65 @@ items. The scythe and shovel are in tool_icons.py.
 
 Each function returns one picture as rows of palette colour names, like the rest of the art
 code, and generate.py only calls `tall_grass_row`, `clay_hint` and `icons`. Tall grass is drawn
-in yellower, lighter greens than the grass on the ground (dry, dry_light, green_bright), so it
-stands out from it; seasons.py turns it golden in autumn and to dry stalks in winter.
+at 32 px per tile in yellower, lighter greens than the grass on the ground (dry, dry_light,
+green_bright) over a dark foot, so it stands out from it; seasons.py turns it golden in autumn
+and to dry stalks in winter.
 """
 
 import random
 
 import items
-from canvas import GAME_TILE, OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank, rect
-from trees import dense_foot, ground_shadow
+from canvas import GAME_TILE, blank, rect
+from trees import BOTTOM, CENTRE, blade, cell, dense_foot, ground_shadow
 
 TALL_GRASS_SEEDS = (211, 212, 213)
-# The lower part of a blade, as a fraction of its height, that is in the dark shades.
-SHADED = 0.35
+# The blades of a clump from the back to the front: their darkest shade (the lower third, in
+# shade), their shaded and their lit side. The olive edges keep the clump apart from straw
+# ground in autumn.
+BLADE_SHADES = (("green_deep", "olive", "dry"), ("green_dark", "olive", "dry_light"), ("green_dark", "dry", "green_bright"))
 
 
 def tall_grass(seed, is_mown=False):
-    """A clump of tall meadow grass about 16 px wide and 18 high: arching blades in a yellower,
-    lighter green than the grass on the ground, some with a seed head, lit from the left. Or the
-    stubble that is left once it is mown."""
+    """A clump of tall meadow grass about a tile wide and 36 px high: arching blades two pixels
+    wide in a yellower, lighter green than the grass on the ground, the far ones darker, lit from
+    the left, with seed heads on stalks above them. Or the stubble that is left once it is mown."""
     rng = random.Random(seed)
-    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
-    ground_shadow(canvas, 9)
+    canvas = cell()
+    ground_shadow(canvas, 18)
     if is_mown:
-        for x in range(OBJECT_CENTRE - 7, OBJECT_CENTRE + 7):
-            if rng.random() < 0.25:
+        for x in range(CENTRE - 14, CENTRE + 14):
+            if rng.random() < 0.3:
                 continue
-            height = rng.randint(2, 4)
+            height = rng.randint(3, 7)
             for step in range(height):
-                canvas[OBJECT_BOTTOM - step][x] = "olive" if step == 0 else "dry"
-            canvas[OBJECT_BOTTOM - height + 1][x] = "straw" if x % 2 else "dry_light"
+                canvas[BOTTOM - 1 - step][x] = "olive" if step < 2 else "dry"
+            canvas[BOTTOM - height][x] = "straw" if x % 2 else "dry_light"
         # A few cut blades left lying.
-        for _ in range(3):
-            x = rng.randint(OBJECT_CENTRE - 7, OBJECT_CENTRE + 3)
-            for step in range(rng.randint(3, 5)):
-                canvas[OBJECT_BOTTOM - rng.choice((0, 1))][x + step] = "dry_light"
+        for _ in range(5):
+            x, y = rng.randint(CENTRE - 14, CENTRE + 6), BOTTOM - rng.choice((0, 1, 2))
+            for step in range(rng.randint(6, 10)):
+                canvas[y][x + step] = "dry_light" if step % 3 else "straw"
+                canvas[y + (y < BOTTOM)][x + step] = "olive"
         return canvas
     # The dense foot of the clump, in the two darkest greens, rimmed with the darkest one so
     # the clump stands out from the ground. The blades above it are loose and have no rim.
-    dense_foot(
-        canvas,
-        [(OBJECT_BOTTOM - 1 - step, 7 - step // 2, "green_deep" if step < 2 else "green_dark") for step in range(5)],
-    )
-    # The back blades first, darker, then the front ones over them. Their lower third is in
-    # shade, in the dark greens; the light shades are on top.
-    for row, shade, lights in ((0, "green_deep", ("dry", "dry", "dry_light")), (1, "green_dark", ("dry_light", "green_bright", "green_bright"))):
-        for _ in range(7):
-            base = OBJECT_CENTRE + rng.uniform(-6, 6)
-            height = rng.randint(11, 15) if row == 0 else rng.randint(9, 14)
-            # Blades arch away from the middle of the clump.
-            bend = (base - OBJECT_CENTRE) / 6 * rng.uniform(2, 4) + rng.uniform(-1, 1)
-            for step in range(height):
-                t = step / height
-                x = round(base + bend * t * t)
-                colour = shade if t < SHADED else lights[min(2, int((t - SHADED) / (1 - SHADED) * 3))]
-                # Light from the left: the left half of the clump is a step lighter.
-                if x < OBJECT_CENTRE - 2 and colour == "dry":
-                    colour = "dry_light"
-                canvas[OBJECT_BOTTOM - step][x] = colour
-            tip = round(base + bend)
-            if rng.random() < 0.45:
-                for head in range(1, 4):
-                    canvas[OBJECT_BOTTOM - height - head + 1][tip] = "straw" if head < 3 else "sand_light"
+    dense_foot(canvas, [(BOTTOM - 2 - step, 13 - step, "green_deep" if step < 3 else "green_dark") for step in range(8)])
+    # The blades from the back to the front, so the front ones, lighter, overlap the back ones.
+    blades = sorted((rng.random(), CENTRE + rng.uniform(-12, 11), rng.uniform(18, 32), rng.uniform(-14, 14)) for _ in range(26))
+    for depth, x, height, lean in blades:
+        blade(canvas, x, BOTTOM - 2, height, lean, BLADE_SHADES[min(2, int(depth * 3))], droop=abs(lean) * 0.5)
+    # Seed heads on thin stalks over the blades: a column of spikelets, lit on the left.
+    for _ in range(rng.randint(3, 5)):
+        x0, lean, height = CENTRE + rng.uniform(-8, 8), rng.uniform(-8, 8), rng.uniform(32, 40)
+        steps = round(height * 1.5)
+        for step in range(steps):
+            t = step / steps
+            canvas[round(BOTTOM - 3 - height * t)][round(x0 + lean * t * t)] = "olive" if t < 0.3 else "dry_light"
+        hx, hy = round(x0 + lean), round(BOTTOM - 3 - height)
+        for k in range(7):
+            canvas[hy + k][hx - 1 + (k % 2) * 2] = "straw" if k % 2 == 0 else "reed"
+            canvas[hy + k][hx] = "sand_light" if k < 3 else "straw"
+        canvas[hy - 1][hx] = "straw"
     return canvas
 
 

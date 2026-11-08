@@ -114,6 +114,9 @@ WINTER_STALKS = {
 # Tall grass in winter and autumn keeps a dark foot: its green_deep and green_dark are what stands
 # out from the ground there (the dry stalks above are light).
 _DARK_FOOT = {"green_dark": "olive", "green_deep": "umber"}
+# Tall grass in autumn: the dry grass of the Geest turns autumn_light, so the clump's mid shade
+# turns a darker reed to stay apart from it.
+_AUTUMN_TALL_GRASS = _AUTUMN_GRASS | _DARK_FOOT | {"dry": "reed"}
 # Winter without snow: brown-grey ground, dry stalks, withered flowers.
 _BARE_GROUND = {
     "green_bright": "bare_light",
@@ -237,16 +240,17 @@ _SNOW_MOUND = {
 }
 _DRY_FERN = {"green_bright": "straw", "green_light": "straw", "green": "reed", "green_dark": "olive", "green_deep": "umber"}
 
-# How the snow cap of each object is drawn: (surfaces, edges, depth in px).
-_SNOW_CONIFER = ({"green_light", "green", "green_dark", "olive"}, {"green_deep"}, 2)
-_SNOW_PINE = ({"meadow_light", "meadow", "green_deep"}, {"bog_dark"}, 2)
-_SNOW_BUSH = ({"mud", "mud_dark", "soil_dark"}, {"green_deep"}, 5)
-_SNOW_STONE = ({"stone_light", "stone"}, set(), 2)
-_SNOW_BOULDER = ({"stone_light", "stone", "green_light", "green", "olive"}, set(), 3)
-_SNOW_STUMP = ({"sand_light", "sand", "straw"}, set(), 3)
-_SNOW_TRUNK = ({"soil_light", "soil_mid", "sand", "stone_light", "sand_light", "straw", "bare_light"}, set(), 2)
-_SNOW_DEADWOOD = ({"stone_light", "stone", "bare_light"}, set(), 2)
-_SNOW_DEAD_STUMP = ({"stone_light", "stone", "bare_light"}, set(), 3)
+# How the snow cap of each object is drawn: (surfaces, edges, depth in px). The plants are drawn
+# at 32 px per tile, the rest of the atlas still at 16 px (see DOUBLED_ROWS in generate.py).
+_SNOW_CONIFER = ({"green_light", "green", "green_dark", "olive"}, {"green_deep"}, 4)
+_SNOW_PINE = ({"meadow_light", "meadow", "green_deep"}, {"bog_dark"}, 4)
+_SNOW_BUSH = ({"mud", "mud_dark", "soil_dark"}, {"green_deep"}, 9)
+_SNOW_STONE = ({"stone_light", "stone"}, set(), 4)
+_SNOW_BOULDER = ({"stone_light", "stone", "green_light", "green", "olive"}, set(), 6)
+_SNOW_STUMP = ({"sand_light", "sand", "straw"}, set(), 6)
+_SNOW_TRUNK = ({"soil_light", "soil_mid", "sand", "stone_light", "lime", "sand_light", "straw", "bare_light", "mud"}, set(), 4)
+_SNOW_DEADWOOD = ({"stone_light", "stone", "bare_light"}, set(), 4)
+_SNOW_DEAD_STUMP = ({"stone_light", "stone", "bare_light"}, set(), 6)
 # Snow lies on the lid of the chest (its first rows), not on top of the box under the iron rim.
 _SNOW_BEDROLL = {
     "sand_light": "snow_light", "sand": "snow", "stone_light": "snow_light", "stone": "snow",
@@ -413,7 +417,7 @@ _GOLDEN_REEDS = {
     "green_bright": "sand_light", "green_light": "sand_light", "green": "straw",
     "green_dark": "reed", "green_deep": "umber",
 }
-_SNOW_REEDS = ({"sand_light", "straw", "reed"}, set(), 2)
+_SNOW_REEDS = ({"sand_light", "straw", "reed"}, set(), 3)
 
 
 # Evergreens and rocks in a frost: the greens go pale and bluish, as if rimed.
@@ -482,7 +486,7 @@ _WINTER_LOOKS = {
     "berry_bush": {"bare": _BARE_BUSH, "frost": _FROST_BUSH, "snow_remap": _SNOW_MOUND},
     "shrub": {"bare": _BARE_BUSH, "frost": _FROST_BUSH, "snow": _SNOW_BUSH},
     "sapling": {"bare": _BARE_BUSH, "frost": _FROST_BUSH, "snow": _SNOW_BUSH},
-    "fern": {"bare": _DRY_FERN, "frost": _FROST_FERN, "snow": ({"straw", "reed", "olive"}, set(), 1)},
+    "fern": {"bare": _DRY_FERN, "frost": _FROST_FERN, "snow": ({"straw", "reed", "olive"}, set(), 2)},
     "tall_grass": {"bare": WINTER_STALKS | _DARK_FOOT, "frost": _FROST_STALKS | _DARK_FOOT},
     "reeds": {"bare": _GOLDEN_REEDS, "snow": _SNOW_REEDS},
     "stone": {"frost_only": _FROST_STONE, "snow": _SNOW_STONE},
@@ -535,8 +539,11 @@ _WINTER_LOOKS = {
         "snow_remap": _SNOW_BEDROLL,
     },
     "fireplace": {},
-    # The willow is drawn again for winter (see generate.py); a little snow lies on its head.
-    "willow": {"snow": ({"sand", "mud"}, set(), 2)},
+    # The oak, the beech and the willow are drawn again for winter (see generate.py): snow lies
+    # along the oak's and the beech's limbs and on the willow's head.
+    "oak": {"snow": ({"soil_mid", "soil"}, set(), 2)},
+    "beech": {"snow": ({"stone_light", "stone"}, set(), 2)},
+    "willow": {"snow": ({"sand", "mud"}, set(), 4)},
     "knick": {"bare": _KNICK_TWIGS, "frost": _KNICK_FROST, "specks": {"mud", "soil_mid"}, "snow": _KNICK_SNOW},
     "wattle_fence": {
         "frost_only": _FROST_STONE,
@@ -594,7 +601,7 @@ def _season_object(look, kind, variant, canvas, redraw):
         elif kind == "dyke":
             canvas = remap(canvas, _AUTUMN_GRASS)
         elif kind == "tall_grass":
-            canvas = remap(canvas, _AUTUMN_GRASS | _DARK_FOOT)
+            canvas = remap(canvas, _AUTUMN_TALL_GRASS)
         elif kind == "reeds":
             canvas = remap(canvas, _GOLDEN_REEDS)
     elif look in ("bare", "frost", "snow", "dusting"):

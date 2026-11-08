@@ -130,7 +130,11 @@ def standing_outdoors(picture):
     """A picture that stands on the ground (the chest, a station) in its cell of the object atlas,
     on a ground shadow, its bottom a pixel above the cell's."""
     canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
-    trees.ground_shadow(canvas, 8)
+    # The ground shadow of the 16 px art, three rows with a dithered rim.
+    for y, reach in ((OBJECT_BOTTOM - 2, 5), (OBJECT_BOTTOM - 1, 8), (OBJECT_BOTTOM, 6)):
+        for x in range(OBJECT_CENTRE - reach, OBJECT_CENTRE + reach):
+            if abs(x - OBJECT_CENTRE) < reach - 1 or (x + y) % 2 == 0:
+                canvas[y][x] = "shadow"
     top = OBJECT_BOTTOM - len(picture)
     for y, row in enumerate(picture):
         for x, name in enumerate(row):
@@ -141,16 +145,11 @@ def standing_outdoors(picture):
 
 # The rows of the object atlas still drawn at 16 px per tile: write_seasonal_art scales them up
 # to the game's tile in every look, after the looks are made from them, so they look as they did.
-# Task 111 takes out the walls, fences, the dyke and the placed objects.
+# The plants are drawn at 32 px; task 111 draws the rest anew: the camp, the walls, fences, the
+# dyke and the placed objects.
 DOUBLED_ROWS = {
-    "oak", "stone", "fireplace", "sleeping_bag", "spruce", "pine", "dead_tree", "berry_bush",
-    "shrub", "sapling", "fern", "boulder", "stump", "tall_grass", "oak_trunk", "oak_short_trunk",
-    "spruce_trunk", "spruce_short_trunk", "pine_trunk", "pine_short_trunk", "dead_tree_trunk",
-    "dead_tree_short_trunk", "willow_trunk", "willow_short_trunk", "reeds", "dead_stump",
-    "chest", "knick", "wattle_fence", "stone_wall", "dyke", "willow", "beech", "beech_trunk",
-    "beech_short_trunk", "birch", "birch_trunk", "birch_short_trunk", "alder", "alder_trunk",
-    "alder_short_trunk", "workbench", "carved_chest", "kiln", "oven", "ewer", "grave", "jetty",
-    "rowing_boat", "net_frame", "eel_traps",
+    "fireplace", "sleeping_bag", "chest", "knick", "wattle_fence", "stone_wall", "dyke", "workbench",
+    "carved_chest", "kiln", "oven", "ewer", "grave", "jetty", "rowing_boat", "net_frame", "eel_traps",
 }
 
 

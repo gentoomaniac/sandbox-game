@@ -118,6 +118,23 @@ func test_the_ground_moves_on_the_pixels_of_its_art_in_either_set() -> void:
 		assert_eq(material.get_shader_parameter("art_scale"), 2.0, "the classic 16 px art")
 
 
+func test_the_plants_sway_on_the_pixels_of_their_art_in_either_set() -> void:
+	var motion := AmbientMotion.new()
+	var oak := motion.object_material(WorldObjectTypes.OAK)
+	var profile: Dictionary = AmbientMotion.SWAY_PROFILES[WorldObjectTypes.OAK]
+	assert_eq(oak.get_shader_parameter("art_scale"), 1.0, "drawn at 32 px")
+	assert_eq(oak.get_shader_parameter("top"), profile["top"])
+	assert_eq(
+		oak.get_shader_parameter("cell_size"),
+		Vector2(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT)
+	)
+	ArtSet.is_classic = true
+	motion.show_art_set()
+	assert_eq(oak.get_shader_parameter("art_scale"), 2.0, "the classic 16 px art")
+	assert_eq(oak.get_shader_parameter("top"), profile["top"] / 2.0, "in the classic art's pixels")
+	assert_eq(motion.crop_material(Vector2i(32, 64)).get_shader_parameter("art_scale"), 2.0)
+
+
 ## The atlas cells of an image that have a pixel drawn, cells of `size` (a tile by default).
 func _drawn_cells(
 	image: Image, size := Vector2i(TerrainTileset.TILE_SIZE, TerrainTileset.TILE_SIZE)
