@@ -556,6 +556,39 @@ def shack(is_lit):
     return picture, snowy
 
 
+def fisher_hut(is_lit):
+    """The fisherman's hut (Fischerkate) on 4x2 tiles, the shack's kin at the landing: low walls
+    of tarred boards on fieldstones, a hipped reed thatch with a turf ridge, a low door in faded
+    teal on the second tile, one small window and an oar leant against the wall between them."""
+    rng = random.Random(386)
+    width, height = 4 * TILE, 64
+    picture = blank(width, height)
+    snowy = set()
+    wall_left, wall_right, wall_top, base_top = 2, width - 3, 30, 58
+    tarred_boards(picture, rng, wall_left, wall_right, wall_top, base_top - 1)
+    rect(picture, wall_left, wall_top, wall_left + 1, base_top - 1, "stone_dark")
+    rect(picture, wall_left + 1, wall_top, wall_left + 1, base_top - 1, "soil_dark")
+    rect(picture, wall_right - 1, wall_top, wall_right, base_top - 1, "ink")
+    rect(picture, wall_left, base_top - 2, wall_right, base_top - 2, "stone_dark")
+    rect(picture, wall_left, base_top - 1, wall_right, base_top - 1, "ink")
+    fieldstone_base(picture, rng, wall_left, wall_right, base_top, height - 2)
+    window(picture, 44, 37, 7, 10, is_lit)
+    ledged_door(picture, 19, 40, height - 4, 10, ("water_light", "paint_teal", "water_deep"))
+    # The oar, its blade up under the eaves: a pale shaft lit on the left, a dark edge on the right.
+    for y in range(32, 57):
+        x = 34 + (56 - y) // 8
+        picture[y][x] = "sand" if y < 39 else "soil_light"
+        picture[y][x + 1] = "mud" if y < 39 else "soil_mid"
+        if y < 39:
+            picture[y][x - 1] = "sand_light"
+    eaves = thatch_roof(picture, snowy, rng, 0, width - 1, 8, 32, 16, moss=4)
+    turf_ridge(picture, snowy, 16, width - 17, 8)
+    eaves_shadow(picture, eaves, wall_left, wall_right)
+    outline_edge(picture, THATCH[4], keep_bottom=True)
+    ground_shadow(picture)
+    return picture, snowy
+
+
 def turf_roof(picture, snowy, rng, left, right, ridge_y, eaves_y):
     """A turf roof over the columns left..right, the grass growing on birch bark: a slope of
     grass in clumps, lit on top and on the left and darker towards the eaves and the right end,
@@ -916,4 +949,11 @@ def hall_house(is_lit):
 
 # How to draw each building (is_lit to the picture and the pixels snow covers), by its id in
 # data/buildings.cfg.
-PICTURES = {"shack": shack, "kate": kate, "longhouse": longhouse, "barn": barn, "hall_house": hall_house}
+PICTURES = {
+    "shack": shack,
+    "fisher_hut": fisher_hut,
+    "kate": kate,
+    "longhouse": longhouse,
+    "barn": barn,
+    "hall_house": hall_house,
+}
