@@ -18,10 +18,10 @@ var _peer: StreamPeerTCP
 
 func before_each() -> void:
 	_server = TCPServer.new()
-	for candidate in range(47100, 47200):
-		if _server.listen(candidate, "127.0.0.1") == OK:
-			_port = candidate
-			break
+	# Port 0: the system picks a free one. A fixed range was shared by the parallel test
+	# processes, so a late request of one process's test could reach another's server.
+	assert_eq(_server.listen(0, "127.0.0.1"), OK, "a port to listen on")
+	_port = _server.get_local_port()
 
 
 func after_each() -> void:
