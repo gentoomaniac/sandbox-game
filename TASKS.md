@@ -1562,12 +1562,42 @@ still doubled ones (task 116 may even them out).
 
 ## 116. 32 px art: wild animals (birds, flocks, storks, geese, sea birds, deer, squirrels, rabbits, mice, frogs, bees, butterflies) and effects (fire, particles, rain splashes, hit effects)
 
-- [ ] Done
+- [x] Done
 
-Once every animal is native, delete `Animal.art_scale`, the `scale` parameter of
-`Animal.draw_contact_shadow` and FarmAnimalView's `art_scale = 1` (task 114 added them for
-the time farm and wild animals differ). tools/art/classic/animals.py is already there (task
-114 copied it whole for the tame rabbit): the wild animals' classic art needs only its writes.
+Done: every wild animal is drawn at 32 px, every action and frame it had, in the style of the
+mockup: rounded forms shaded from the top left (forms.py, whose ellipse can now be turned),
+eyes with a glint, legs with joints (the deer's knee and hock), each outlined in the darkest
+colour of its own coat or plumage. The sparrow, rabbit, squirrel, roe deer, bee, butterflies,
+mouse and frog are in animals.py; the birds are put together by a new bird_forms.py (body,
+tail, neck, head, bill, folded or open wings, legs drawn over the outline) for the sparrow, the
+stork and goose (birds.py) and the oystercatcher, dunlin, gull and tern (sea_birds.py). From the
+art review: the small animals are drawn a little larger than life (cells twice the 16 px ones,
+the sparrow, rabbit, bee, butterflies and dunlin bigger still), and every animal stands on a
+contact shadow, now a flat oval in the game's pixels (`Animal.draw_contact_shadow`, its half
+widths native for the wild and the farm animals and the people; `Animal.art_scale` and the
+`scale` parameter are gone); the birds' flight shadows (`GroundShadows`) are native too. The
+wild sheets left `DOUBLED`; their frame sizes in `WildlifeSprites` and the wild animals' hops,
+speeds and margins are in the game's pixels. The classic art (task 117) has the old wild
+animals and flames (tools/art/classic/ birds.py, sea_birds.py and fire.py of commit 2793065,
+the grown cells set in the new ones); the wild sheets and the flame strips load through ArtSet,
+and the animals, the flocks' birds, WorldView and InteriorView (the fires) join ArtSet.VIEWS.
+The hit particles, the splashes and the weather are code and look new in both sets. The
+effects: the flame's loop is drawn at 32 px (fire.py; fire.gdshader works on the world's pixels,
+the fireplace and hearth around the flame are scaled up into the strip), the hit particles fly
+and are drawn natively (leaves with their corners left out and a shaded side, long needles,
+round snow, chips, drops), the rain's splashes show a streak, a crown and a ring, and the
+weather (rain, snow, wind streaks, leaves, fog) works on single pixels; `art_scale` is left to
+the plants, water, mud and lily pads. Checked by eye in screenshots at zoom 1 and 2 (every
+species and action, flight and shadows, the stork on a roof, gulls swimming, terns diving, the
+fire by day and night, hits, rain, storm, snow, fog, summer, autumn, dusk) and in sheets over
+grass, sand, snow and water, and the wild animals and the fire in the classic art too; README
+pictures retaken (wildlife, mice and frogs, sea birds, weather, camp, zoom).
+Left for later: the still pictures of the fireplace (atlas cell) and the hearth keep their 16
+px flame until tasks 111 and 112 redraw them; the Ewer (an object of the coast) is not in this
+group: its scale against the 61 px people is for task 111; `make contrast-sheet` covers the
+object atlas only, so the animals' contrast was checked on sheets over the grounds of every
+look instead; the day-and-night picture (the hearth inside a house) and the harvest picture
+were not retaken (`--inside` did not get into a house in time).
 
 The redraw takes in the findings of review/art-review-2026-11-08 (the user, 2026-11-08: "make
 sure the redraw includes the art review feedback"); each group's brief points at the review and

@@ -264,11 +264,11 @@ mud and the gulls swim where they stood. The animals
 come and go around you by the season, the time of day and the weather; the numbers are in
 [data/wildlife.cfg](data/wildlife.cfg).
 
-![White storks on the marsh, a stork on the roof of a Kate, a flock of geese grazing in autumn and a skein of them flying over](docs/screenshots/wildlife.png)
+![White storks by the camp, a stork on the roof of the shack, geese grazing in autumn and a flock of them flying over](docs/screenshots/wildlife.png)
 
 ![Storks striking at frogs by the camp on a summer evening, and mice in the grass](docs/screenshots/mice-and-frogs.png)
 
-![Oystercatchers and a flock of dunlin probing the mud at low water in spring; herring gulls on the mud and swimming in a tideway with a tern going by; terns fishing over a tideway, one just gone in with a splash; and the dunlin taking off together in autumn](docs/screenshots/sea-birds.png)
+![Oystercatchers and a flock of dunlin probing the mud at low water in spring; herring gulls on the mud; terns fishing over the sea, one just gone in with a splash, and gulls swimming; and the dunlin taking off together](docs/screenshots/sea-birds.png)
 
 ### Felling, mining and gathering
 

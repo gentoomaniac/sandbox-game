@@ -68,8 +68,8 @@ and the widest view is a native 640×360: 20×11 tiles, shown ×3 on a 1080p scr
 the game looks as it did, every pixel 2×2.
 
 Tasks 107 to 116 redraw the art group by group at 32 px; the people are done (task 113, see
-"Clothing and characters") and the farm animals (task 114, see "Props and animals", item 8).
-To take a group native:
+"Clothing and characters"), the farm animals (task 114, see "Props and animals", item 8) and
+the wild animals and the effects (task 116, below). To take a group native:
 
 - draw it at 32 px per tile (its cells, frames and offsets are twice the numbers below) and
   take its files out of `DOUBLED`;
@@ -88,16 +88,33 @@ To take a group native:
   its group is native, the number measured on the 32 px picture, without the factor. A number
   that joins two groups is measured on both: the rider's `SEAT` in `PlayerView` (the people's
   seat row on the horse's saddle) was measured anew when the horse was (task 114). Grep for
-  `ART_16_SCALE`; the factor also hides in `WildlifeSprites.SCALE` (the wild animals' frame
-  sizes; the farm animals' are native), `BuildMode.OUTLINE_WIDTH` and `PROGRESS_HEIGHT`, in
-  `Animal.art_scale` (the grid its contact shadow is drawn on: 1 for the farm animals) and in
-  the `draw_set_transform` of `GroundShadows` and `HitParticles`, which draw on the 16 px grid. Numbers in the
+  `ART_16_SCALE`; the factor also hides in `BuildMode.OUTLINE_WIDTH` and `PROGRESS_HEIGHT`.
+  Numbers in the
   pictures' own pixels in data (`sprite_height` in world_object_types.gd, `window_lights` in
   data/buildings.cfg) are the pixels of the files, so they are measured anew too;
-- the shaders of its pictures (sway, fire, water, weather) work on the art's pixels through
-  `art_scale` (game/scenes/art_scale.gdshaderinc), which the code that makes their materials
-  sets to `ART_16_SCALE`: at 32 px it is 1 for them, and their numbers (sway profiles, flame
-  boxes) are measured anew.
+- the shaders of its pictures (sway, water, mud, lily pads) work on the art's pixels through
+  `art_scale` (game/scenes/art_scale.gdshaderinc), which AmbientMotion sets to `ART_16_SCALE`:
+  at 32 px they do without it (as the fire, the rain's splashes and the weather do), and their
+  numbers (sway profiles) are measured anew.
+
+The wild animals (task 116: tools/art/animals.py, birds.py, sea_birds.py) are drawn at 32 px
+like the people: rounded forms shaded from the top left (forms.py), eyes with a glint, legs
+with joints, each outlined in the darkest colour of its own coat or plumage and standing on a
+contact shadow (`Animal.draw_contact_shadow`, a flat oval in the game's pixels; the birds in
+flight cast one too, `GroundShadows`). The birds are put together by bird_forms.py: a body, a
+tail, a neck up to a round head with an eye and a bill, a folded wing, legs drawn over the
+outline in two pixels (one for the sparrow, the dunlin and the tern), and in flight open wings
+with coloured tips and trailing edges, seen a little from above. Their cells are twice the 16 px
+ones; the small animals (sparrow, rabbit, bee, butterflies, mouse, frog, dunlin) are drawn a
+little larger than life, so that they read beside a 61 px person: the sparrow about 15 px long,
+the mouse 24, the frog 22, the rabbit 22 sitting, the squirrel 22 tall, the roe deer 40 tall,
+the stork 38. The effects are native too: the flame's loop of the campfire and the hearth
+(fire.py; what stands behind and in front of it is still 16 px art, scaled up in its strip,
+until tasks 111 and 112), the hit particles (leaves of a few pixels with their corners left out
+and a shaded side, long thin needles, round snow clumps, chips, drops), the rain's splashes
+(a streak, a crown of droplets, a ring) and the weather (one pixel raindrops, round flakes of 2
+to 4 pixels, one pixel wind streaks, leaves with a darker lower row, fog dithered on single
+pixels). The animals' and the flames' 16 px art stays as the classic art (tools/art/classic/).
 
 The UI's pictures (item icons, slots, the frames and the chat portraits) are drawn for the UI's
 own 640×360 base and scale, and are not doubled; task 115 decides about the item icons.
@@ -532,7 +549,7 @@ copper watering can. Kept here as the record of why.
    (tools/art/livestock.py): Angler, black pied and red pied cattle; white, grey
    (Heidschnucke) and black-faced sheep; brown and white hens and a rooster; agouti, white and
    Dutch rabbits; they can graze the dykes, which are walked on like grass. Task 60 drew the
-   big birds of the marsh (tools/art/birds.py): the white stork about 16 px tall, white
+   big birds of the marsh (tools/art/birds.py): the white stork (38 px tall at 32 px), white
    (`lime`, `stone_light`) with black flight feathers (`ink`) and a red bill and legs
    (`red_light`, `ember`), standing, hunting with the head down, striking, clattering with
    the head thrown back and flying; and the greylag goose, grey-brown (`bare_light`, `bare`,
@@ -590,11 +607,11 @@ copper watering can. Kept here as the record of why.
    tide's water reaching up the tideways' banks, Halligen. Task 99 added the sea birds
    (tools/art/sea_birds.py): the oystercatcher, black above and white below (`ink` with an
    `ink` outline, `lime`) with a long orange-red bill (`flame`, `red_light`) and pink legs,
-   about 10 px long; the dunlin, small and grey (`stone`, `stone_light`, a `stone_dark`
+   about 20 px long at 32 px; the dunlin, small and grey (`stone`, `stone_light`, a `stone_dark`
    outline so it stands out from the grey-brown mud) with a white belly and a drooping black
    bill; both standing, looking round, probing, walking and flying with a white wing bar. The
    herring gull, white with a blue-grey back (`snow_shadow`, `snow_deep`), black wing tips and
-   a yellow bill with its red spot (`gold`, `red_light`), about 13 px long: standing, calling,
+   a yellow bill with its red spot (`gold`, `red_light`), about 26 px long: standing, calling,
    walking, pecking, swimming in a ring of `foam` and flying. The common tern, slender and pale
    (`lime`, `snow`) with a black cap and a red bill: flying, hovering with the head bent down,
    plunging, the splash (a crown of spray falling back to a ring, without an outline) and

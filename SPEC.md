@@ -55,9 +55,10 @@ top of classic pixel art (details under "Lighting and look").
   The widest view is a native 640×360 art pixels (20×11 tiles, the area the 16 px art showed at
   zoom 1), shown at a whole multiple on the usual screens (×3 at 1080p, ×4 at 1440p). Until all
   art is redrawn at 32 px, the generators' 16 px output is doubled pixel for pixel (tasks 106 and
-  on); the people are drawn at 32 px since task 113, the farm animals since task 114. The 16 px
-  art of a redrawn group stays in the game as the classic art, a setting (see Settings). (Was:
-  16×16, 320×180 at zoom 1.)
+  on); the people are drawn at 32 px since task 113, the farm animals since task 114, the wild
+  animals, the flames, the hit particles and the weather (rain, splashes, snow, wind, fog) since
+  task 116, the small animals a little larger than life. The 16 px art of a redrawn group stays
+  in the game as the classic art, a setting (see Settings). (Was: 16×16, 320×180 at zoom 1.)
 - **Stepless zoom** from the widest view (640×360 art pixels, zoom 1) in to 2× (320×180); the
   game starts at the widest (the user zooms out fully anyway, 2026-11-08). Ctrl and the mouse
   wheel zoom; the wheel alone steps through the hotbar. (Was: 0.5× to 2×, starting at 0.5×.)

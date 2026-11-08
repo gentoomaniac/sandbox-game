@@ -142,8 +142,9 @@ Warft and an Ewer here and there.
   640×360, zoom 2 the closest. While the art is the 16 px art doubled (see docs/art-style.md,
   "Resolution"), a number measured on a picture is written as its 16 px number times
   `TerrainTileset.ART_16_SCALE`; once its group is drawn at 32 px (the people, task 113; the
-  farm animals, task 114, whose `Animal.art_scale` is 1), as the number measured on the 32 px
-  picture; and the shaders of the art work on its pixels through
+  farm animals, task 114; the wild animals, their shadows, the hit particles, the fire and the
+  weather, task 116), as the number measured on the 32 px picture; and the shaders of the art
+  work on its pixels through
   `art_scale` (`art_scale.gdshaderinc`). `WildlifeRules.TILE_SIZE` is the same tile size for
   the state, which can't see the scenes (a test keeps the two equal).
 - **Art sets:** the 16 px art of a group drawn anew at 32 px stays in the game as the classic
@@ -152,7 +153,8 @@ Warft and an Ewer here and there.
   that has classic art goes through `ArtSet.path`, which gives the classic picture where there is
   one. The setting is `GameSettings.is_classic_art` (Settings → Display, F7); on a switch Main
   calls `ArtSet.show`, and the views that keep their pictures (`NpcView`, `CharacterPreview`,
-  `ChatScreen`, `FarmAnimalView`: the group `ArtSet.VIEWS`, `show_art_set()`) load them anew,
+  `ChatScreen`, every `Animal` with the flocks' birds, `WorldView` and `InteriorView` the
+  fires' flames: the group `ArtSet.VIEWS`, `show_art_set()`) load them anew,
   while the others load theirs as they show them (`PlayerView` its layers and the ridden horse).
   The numbers measured on the art are the new art's in both sets, but for the rider's seat on
   the classic horses (`PlayerView.CLASSIC_SEAT`, `CLASSIC_PONY_SEAT`).
