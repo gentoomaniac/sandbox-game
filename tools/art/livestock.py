@@ -14,7 +14,8 @@ colour of the coat; the legs are drawn over it, so that thin legs stay thin.
 """
 
 import animals
-from animals import outline_in_place, paste
+from animals import paste
+from canvas import outline
 
 # The rows of every sheet, with their frames.
 ACTIONS = {"idle": 2, "walk": 4, "graze": 2, "sleep": 2, "run": 4}
@@ -25,11 +26,11 @@ LEGS = {"L", "M", "N", "K", "P"}
 FAR_LEG = str.maketrans("LMP", "NNN")
 
 
-def to_picture(rows, keys, outline, bare=LEGS):
+def to_picture(rows, keys, outline_colour, bare=LEGS):
     """A grid of characters as a picture: the outline goes around everything but the legs (or
     the characters of `bare`)."""
     body = [[None if char in bare else keys.get(char) for char in row] for row in rows]
-    picture = outline_in_place(body, outline)
+    picture = outline(body, outline_colour)
     for y, row in enumerate(rows):
         for x, char in enumerate(row):
             if char in bare:

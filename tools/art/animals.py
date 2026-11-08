@@ -8,9 +8,7 @@ animals get a one pixel outline in the darkest colour of their coat; the butterf
 without, and the bee has its dark outline drawn in (see the style rules in SPEC.md).
 """
 
-from canvas import blank, copy
-
-NEIGHBOURS = ((1, 0), (-1, 0), (0, 1), (0, -1))
+from canvas import blank, outline
 
 # Sparrow: crown and back, wing, pale cheek and belly, beak, eye.
 BIRD_KEYS = {"b": "soil_mid", "d": "soil", "s": "cream", "l": "sand_light", "k": "ochre", "e": "ink"}
@@ -414,22 +412,8 @@ def outlined(shape, colour):
     height, width = len(shape), len(shape[0])
     result = blank(width + 2, height + 2)
     for y in range(height):
-        for x in range(width):
-            result[y + 1][x + 1] = shape[y][x]
-    for y in range(height + 2):
-        for x in range(width + 2):
-            if result[y][x] is not None:
-                continue
-            for dx, dy in NEIGHBOURS:
-                nx, ny = x + dx, y + dy
-                if 0 <= nx < width + 2 and 0 <= ny < height + 2 and shape_pixel(shape, nx - 1, ny - 1):
-                    result[y][x] = colour
-                    break
-    return result
-
-
-def shape_pixel(shape, x, y):
-    return 0 <= y < len(shape) and 0 <= x < len(shape[0]) and shape[y][x] is not None
+        result[y + 1][1 : width + 1] = shape[y]
+    return outline(result, colour)
 
 
 def frame_picture(sheet, frame):
@@ -447,7 +431,7 @@ def frame_picture(sheet, frame):
             # Legs are outside the outline: it goes around the rest only.
             legs = {"L", "M", "K"}
             body = [[None if char in legs else colour for char, colour in zip(row, line)] for row, line in zip(rows, shape)]
-            shape = outline_in_place(body, sheet["outline"])
+            shape = outline(body, sheet["outline"])
             for y, row in enumerate(rows):
                 for x, char in enumerate(row):
                     if char in legs:
@@ -465,21 +449,6 @@ def frame_picture(sheet, frame):
             if colour is not None and 0 <= top + y < height and 0 <= left + x < width:
                 picture[top + y][left + x] = colour
     return picture
-
-
-def outline_in_place(shape, colour):
-    """Outlines inside the same-size grid: pixels outside the shape that touch it."""
-    height, width = len(shape), len(shape[0])
-    result = copy(shape)
-    for y in range(height):
-        for x in range(width):
-            if shape[y][x] is not None:
-                continue
-            for dx, dy in NEIGHBOURS:
-                if shape_pixel(shape, x + dx, y + dy):
-                    result[y][x] = colour
-                    break
-    return result
 
 
 def sheet_rows(kind):
