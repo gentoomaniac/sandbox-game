@@ -8,12 +8,12 @@ returns the rows in the atlas order. Pictures are lists of rows of palette colou
 import math
 import random
 
-from canvas import NEIGHBOURS, OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank
+from canvas import NEIGHBOURS, OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank, outline
 
-def shaded_blob(canvas, rng, blobs, shades, outline):
+def shaded_blob(canvas, rng, blobs, shades, edge_colour):
     """Fills the union of circles (cx, cy, radius) with `shades`, lightest first: light
     comes from the top left, so a pixel is darker the further down and right of its
-    circle's centre it is. Pixels on the blob's border get `outline`."""
+    circle's centre it is. Pixels on the blob's border get `edge_colour`."""
     covered = set()
     for y in range(len(canvas)):
         for x in range(OBJECT_CELL_WIDTH):
@@ -32,7 +32,7 @@ def shaded_blob(canvas, rng, blobs, shades, outline):
                 canvas[y][x] = shades[index]
     for x, y in covered:
         if any((x + dx, y + dy) not in covered for dx, dy in NEIGHBOURS):
-            canvas[y][x] = outline
+            canvas[y][x] = edge_colour
 
 
 BARK = ("soil_mid", "soil", "soil", "soil_dark")
@@ -586,19 +586,7 @@ def dead_stump(seed):
 def outline_in_bark(canvas, colour="soil_dark"):
     """A one pixel outline round everything drawn except the ground shadow, by default in the
     darkest bark colour."""
-    height = len(canvas)
-    marked = []
-    for y in range(height):
-        for x in range(OBJECT_CELL_WIDTH):
-            if canvas[y][x] is not None:
-                continue
-            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                nx, ny = x + dx, y + dy
-                if 0 <= nx < OBJECT_CELL_WIDTH and 0 <= ny < height and canvas[ny][nx] not in (None, "shadow"):
-                    marked.append((x, y))
-                    break
-    for x, y in marked:
-        canvas[y][x] = colour
+    canvas[:] = outline(canvas, colour, ignoring=("shadow",))
 
 
 def vegetation():
