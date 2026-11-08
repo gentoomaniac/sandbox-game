@@ -7,25 +7,11 @@ assets/ground_items/<item id>.png, slots to assets/ui/slot.png and slot_selected
 """
 
 import chest
-from canvas import TILE, blank, copy, rect
+from canvas import TILE, blank, outline, rect
+from palette import darkest_of
 
 ICON = TILE
 SLOT = 20
-
-# The darkest colour of each ramp, which outlines it (see the style rules in SPEC.md).
-OUTLINE_OF = {
-    "soil": "soil_dark",
-    "soil_mid": "soil_dark",
-    "soil_light": "soil_dark",
-    "stone": "stone_dark",
-    "stone_light": "stone_dark",
-    "sand": "mud_dark",
-    "sand_light": "mud_dark",
-    "straw": "mud_dark",
-    "mud": "mud_dark",
-}
-# Pickups and anything else are outlined in ink.
-DEFAULT_OUTLINE = "ink"
 
 
 def pixel(picture, x, y, colour):
@@ -43,19 +29,8 @@ def line(picture, x0, y0, x1, y1, colour):
 
 def outlined(picture, colour=None):
     """The picture with a one pixel outline outside it, in `colour`, or by default in the
-    darkest colour of the ramp of the pixel it surrounds. Drawn pixels stay."""
-    size = len(picture)
-    result = copy(picture)
-    for y in range(size):
-        for x in range(size):
-            if picture[y][x] is not None:
-                continue
-            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                nx, ny = x + dx, y + dy
-                if 0 <= nx < size and 0 <= ny < size and picture[ny][nx] is not None:
-                    result[y][x] = colour or OUTLINE_OF.get(picture[ny][nx], DEFAULT_OUTLINE)
-                    break
-    return result
+    darkest colour of the ramp of the pixel it surrounds."""
+    return outline(picture, colour or darkest_of)
 
 
 def seed_sack(emblem, keys, tie, seed):

@@ -15,6 +15,21 @@ from canvas import TILE
 
 ASSETS = Path(__file__).resolve().parents[2] / "assets"
 
+# The darkest colour of each ramp, which outlines it (see the style rules in SPEC.md).
+DARKEST_OF = {
+    "soil": "soil_dark",
+    "soil_mid": "soil_dark",
+    "soil_light": "soil_dark",
+    "stone": "stone_dark",
+    "stone_light": "stone_dark",
+    "sand": "mud_dark",
+    "sand_light": "mud_dark",
+    "straw": "mud_dark",
+    "mud": "mud_dark",
+}
+# What anything else is outlined in.
+DEFAULT_OUTLINE = "ink"
+
 # fmt: off
 BASE_COLOURS = {
     # Darks and neutrals.
@@ -79,6 +94,11 @@ for name, hex_colour in seasons.COLOURS.items():
     assert name not in PALETTE, f"colour {name} is in both palette.py and seasons.COLOURS"
     PALETTE[name] = hex_colour
 MAX_PALETTE_COLOURS = 64
+
+
+def darkest_of(colour):
+    """The outline colour of a pixel of `colour`: the darkest of its ramp, or ink."""
+    return DARKEST_OF.get(colour, DEFAULT_OUTLINE)
 
 
 def rgba(name, asset):
