@@ -2,7 +2,7 @@
 
 A crop's sheet (assets/crops/<crop>.png, named by `sheet` in data/crops.cfg) has its four growth
 stages and then the dead one side by side. Every cell is a tile wide and as tall as the sheet:
-a tall crop (wheat, peas, beans, flax) has a sheet two tiles tall, with its bottom on the bottom
+a tall crop (wheat, rye, buckwheat, peas, beans, flax) has a sheet two tiles tall, with its bottom on the bottom
 of its tile. A crop looks the same in every season, so the seasons never touch these.
 
 The plants stand on the lowest ridge of the tilled soil (terrain.py draws a crest every 8 rows,
@@ -36,6 +36,7 @@ WITHERING = ("olive", "dry", "dry_light", "straw")
 # The darkest shade of each colour's own ramp: the rim of a form of that colour.
 RIMS = {
     **dict.fromkeys(("green_bright", "green_light", "green", "green_dark", "olive"), "green_deep"),
+    **dict.fromkeys(("meadow", "meadow_light"), "green_deep"),
     **dict.fromkeys(("dry", "dry_light"), "olive"),
     **dict.fromkeys(("soil_light", "soil_mid", "soil"), "soil_dark"),
     **dict.fromkeys(("sand_light", "sand", "mud"), "mud_dark"),
@@ -52,6 +53,8 @@ DEAD_COLOURS = {
     "green": "mud_dark",
     "green_dark": "soil_dark",
     "green_deep": "soil_dark",
+    "meadow_light": "mud",
+    "meadow": "mud_dark",
     "olive": "mud_dark",
     "dry_light": "sand",
     "dry": "mud",
@@ -63,9 +66,11 @@ DEAD_COLOURS = {
     "heather": "mud_dark",
     "heather_dark": "soil_dark",
     "petal": "sand",
+    "blossom": "sand_light",
     "foam": "sand_light",
     "water_light": "sand",
     "rust_dark": "soil_dark",
+    "russet_deep": "soil_dark",
     "red_light": "mud",
 }
 
@@ -471,6 +476,72 @@ def wheat():
     return [sown(TALL), young, leafy, ripe], 2
 
 
+def rye():
+    """The grain of the sandy Geest: taller than wheat, blue-green when young, ripe a pale
+    grey-yellow with long slim ears that nod over, bristling with awns."""
+
+    def nodding(picture, x, y, grains, awn):
+        # The ear hangs a little to the right of its stalk's top.
+        light, mid, dark = grains
+        x, y = round(x), round(y)
+        for row in range(14):
+            gx, gy = x + row // 5, y + row
+            forms.dots(picture, [(gx - 1, gy)], light if row % 2 == 0 else mid)
+            forms.dots(picture, [(gx, gy)], mid if row % 2 == 0 else dark)
+            if awn and row % 4 == 1:
+                side = -1 if row % 8 == 1 else 1
+                line(picture, gx + (side - 1) / 2, gy, gx + (side - 1) / 2 + side * 2, gy - 4, awn)
+
+    def green_ears(picture, x, y, is_back):
+        nodding(picture, x, y, ("meadow_light", "meadow", "green_deep"), None)
+
+    def ripe_ears(picture, x, y, is_back):
+        grains = ("sand", "mud", "mud_dark") if is_back else ("sand_light", "sand", "mud")
+        nodding(picture, x, y, grains, "straw" if not is_back else "reed")
+
+    young = young_blades(("green_deep", "meadow", "meadow_light"))
+    leafy = grain(0.9, ("meadow_light", "meadow"), ("green_deep", "meadow", "meadow_light"), green_ears)
+    ripe = grain(1.15, ("straw", "reed"), ("reed", "straw", "sand_light"), ripe_ears)
+    return [sown(TALL), young, leafy, ripe], 2
+
+
+def buckwheat():
+    """The other grain of the Geest: red stems with arrow-shaped leaves, foaming with white and
+    pink flowers, and ripe with dark three-cornered seeds among the last flowers."""
+    stems = ((9, 30, -3), (16, 36, 0), (23, 31, 3), (12, 25, -1), (20, 27, 2))
+
+    def plant(picture, scale, flowers, seeds):
+        ground = foot(picture)
+        shadow(picture, 12)
+        layer = cell(TALL)
+        for index, (x, height, lean) in enumerate(stems):
+            top_x, top_y = x + lean * scale, ground - height * scale
+            line(picture, x, ground, top_x, top_y, "rust_dark" if index < 3 else "russet_deep")
+            for k in range(1, 3):
+                y = ground - height * scale * k / 3
+                stem_x = x + lean * scale * k / 3
+                side = 1 if (index + k) % 2 else -1
+                leaf(layer, (stem_x, y), (stem_x + side * 6 * scale, y - 3 * scale), 4 * scale, GREENS)
+        paste(picture, rimmed(layer))
+        for index, (x, height, lean) in enumerate(stems):
+            top_x, top_y = round(x + lean * scale), round(ground - height * scale)
+            if flowers:
+                for dx, dy in ((0, 0), (-2, 1), (2, 1), (-1, 2), (1, -1), (-3, 3), (3, 2), (0, 2), (-1, -1), (1, 3), (-2, 3)):
+                    forms.dots(picture, [(top_x + dx, top_y + dy)], "blossom" if (dx + dy) % 3 else "lime")
+                forms.dots(picture, [(top_x, top_y + 1), (top_x + 2, top_y + 3)], "petal")
+            if seeds:
+                for dx, dy in ((-1, 2), (2, 0), (0, 4)):
+                    forms.dots(picture, [(top_x + dx, top_y + dy), (top_x + dx + 1, top_y + dy)], "umber")
+                    forms.dots(picture, [(top_x + dx, top_y + dy + 1)], "russet_deep")
+        return picture
+
+    young = sprouts(TALL, 1.1, BRIGHT_GREENS, "rust")
+    leafy = plant(cell(TALL), 0.8, flowers=True, seeds=False)
+    ripe = plant(cell(TALL), 1.0, flowers=True, seeds=True)
+    dying = plant(cell(TALL), 0.8, flowers=False, seeds=False)
+    return [sown(TALL), young, leafy, ripe], dying
+
+
 def pod(picture, x, y, length):
     """A hanging pod from (x, y) down, two pixels wide and bowed a little: lit on its left, its
     tip darker. Too thin for a rim, it is pale against the leaves instead."""
@@ -683,6 +754,8 @@ ARTISTS = {
     "cabbage": cabbage,
     "onion": onion,
     "wheat": wheat,
+    "rye": rye,
+    "buckwheat": buckwheat,
     "peas": peas,
     "beans": beans,
     "flax": flax,

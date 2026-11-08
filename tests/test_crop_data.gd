@@ -55,6 +55,8 @@ const CROP_NAMES: Array[StringName] = [
 	&"cabbage",
 	&"onion",
 	&"wheat",
+	&"rye",
+	&"buckwheat",
 	&"peas",
 	&"beans",
 	&"flax",
@@ -75,7 +77,7 @@ func _write(text: String) -> void:
 	file.close()
 
 
-func test_the_crops_file_is_valid_and_has_the_eleven_crops() -> void:
+func test_the_crops_file_is_valid_and_has_the_thirteen_crops() -> void:
 	var rules := CropRules.from_file(CropRules.DEFAULT_PATH)
 	assert_true(rules.is_valid(), str(rules.problems()))
 	assert_eq(rules.crop_ids(), CROP_NAMES)
@@ -160,10 +162,11 @@ func test_every_seed_and_produce_has_an_icon() -> void:
 			assert_true(ResourceLoader.exists(ItemTypes.icon_path(item)), "icon of %s" % item)
 
 
-func test_produce_is_food_except_wheat_and_flax() -> void:
+func test_produce_is_food_except_the_grains_and_flax() -> void:
 	var rules := EnergyRules.default_rules()
 	for crop_id in CROP_NAMES:
-		assert_eq(rules.is_food(crop_id), not crop_id in [&"wheat", &"flax"], str(crop_id))
+		var is_food := crop_id not in [&"wheat", &"rye", &"buckwheat", &"flax"]
+		assert_eq(rules.is_food(crop_id), is_food, str(crop_id))
 	assert_eq(rules.food_restore(&"pumpkin"), 12.0)
 	assert_eq(rules.food_restore(&"onion"), 4.0)
 

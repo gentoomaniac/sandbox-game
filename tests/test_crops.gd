@@ -8,9 +8,9 @@ const MIDSUMMER := 40
 ## The cool-weather and the warm-weather crops (see data/crops.cfg): each grows best in the
 ## season of its list.
 const COOL_CROPS: Array[StringName] = [
-	&"turnip", &"potato", &"carrot", &"cabbage", &"onion", &"peas", &"strawberries", &"flax"
+	&"turnip", &"potato", &"carrot", &"cabbage", &"onion", &"peas", &"strawberries", &"flax", &"rye"
 ]
-const WARM_CROPS: Array[StringName] = [&"beans", &"pumpkin", &"wheat"]
+const WARM_CROPS: Array[StringName] = [&"beans", &"pumpkin", &"wheat", &"buckwheat"]
 
 
 func test_every_crop_ripens_in_its_growth_needed_on_best_days() -> void:

@@ -82,6 +82,8 @@ SACKS = {
     "cabbage": ("green_light", "soil_dark", (".gllg.", "glllld", "llggld", "dlgldd", ".dddd.")),
     "onion": ("gold", "soil_dark", ("..g...", "..tt..", ".yyyt.", "yyyytt", ".ttt..")),
     "wheat": ("ochre", "straw", ("y.y.y.", "yyyyyy", "y.y.y.", "x.x.x.", "x.x.x.")),
+    "rye": ("straw", "sand", ("t.t.t.", "txtxtx", ".x.x.x", "n.n.n.", "n.n.n.")),
+    "buckwheat": ("petal", "soil_dark", ("..h...", ".hbs..", "hbsh..", ".hbsbs", "..hbs.")),
     "peas": ("green_bright", "green_light", ("..dd..", ".dgdg.", "dgdgdd", ".dgdd.", "..dd..")),
     "beans": ("green_dark", "soil_light", ("hh.hh.", "hmmhmm", "mm.mm.", ".hh.hh", ".mmmmm")),
     "flax": ("water_light", "soil_light", (".f..f.", "fif.fi", ".f..f.", ".l..l.", ".l..l.")),
@@ -155,6 +157,28 @@ def wheat():
     return picture
 
 
+def rye():
+    """A sheaf of rye: pale, slim ears nodding over."""
+    picture = icon()
+    for top in (3, 6, 9, 12):
+        picture.line(8, 15, top, 6, "straw")
+        picture.stamp(("e.", "ew", "ew", ".w", ".w", ".n"), top - 1, 0)
+    picture.rect(6, 11, 10, 12, "mud")
+    picture.rect(6, 11, 10, 11, "sand")
+    return picture
+
+
+def buckwheat():
+    """A heap of buckwheat: small brown three-cornered grains."""
+    picture = icon()
+    for x, y in ((8, 4), (6, 6), (10, 6), (4, 8), (8, 8), (12, 8), (3, 10), (6, 10), (10, 10), (13, 10), (5, 12), (8, 12), (11, 12)):
+        picture.pixel(x, y, "soil_light")
+        picture.rect(x - 1, y + 1, x, y + 1, "soil_mid")
+        picture.pixel(x + 1, y + 1, "soil_dark")
+        picture.pixel(x, y + 2, "soil")
+    return picture
+
+
 def peas():
     picture = icon()
     picture.line(2, 12, 13, 4, "green_dark")
@@ -220,6 +244,8 @@ PRODUCE = {
     "cabbage": cabbage,
     "onion": onion,
     "wheat": wheat,
+    "rye": rye,
+    "buckwheat": buckwheat,
     "peas": peas,
     "beans": beans,
     "flax": flax,

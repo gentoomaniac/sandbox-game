@@ -46,7 +46,9 @@ func test_the_classic_crops_are_as_big_as_the_new() -> void:
 	for crop_id in rules.crop_ids():
 		var path: String = rules.crop(crop_id)["sheet"]
 		var classic: Texture2D = load(ArtSet.path(path))
-		assert_ne(classic.resource_path, path, "%s has classic art" % crop_id)
+		# The Geest grains were first drawn at 32 px.
+		var has_classic_art := crop_id not in [&"rye", &"buckwheat"]
+		assert_eq(classic.resource_path != path, has_classic_art, str(crop_id))
 		assert_eq(classic.get_size(), load(path).get_size(), path)
 
 
