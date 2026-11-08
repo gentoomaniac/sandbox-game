@@ -6,7 +6,7 @@ the item icon (assets/items/chest.png) and, in the item's half size, on the grou
 icon of the storage screen is in ui.py.
 """
 
-from canvas import blank, rect
+from canvas import blank, outline_edge, rect
 
 WIDTH = 16
 HEIGHT = 11
@@ -44,7 +44,7 @@ def chest(is_standing=True):
     rect(picture, 6, 4, 9, 4, "cream")
     rect(picture, 6, 8, 9, 8, "straw")
     rect(picture, 7, 5, 8, 6, "soil_dark")
-    return _outline(picture, is_standing)
+    return outline_edge(picture, "soil_dark", keep_bottom=is_standing)
 
 
 def icon():
@@ -53,23 +53,4 @@ def icon():
     top = (WIDTH - HEIGHT) // 2
     for y, row in enumerate(chest(is_standing=False)):
         picture[top + y] = row
-    return picture
-
-
-def _outline(picture, keeps_bottom):
-    """Gives the border of the picture the darkest brown, but for the bottom row if
-    `keeps_bottom`: a picture standing on the ground."""
-    height, width = len(picture), len(picture[0])
-    border = []
-    for y in range(height - 1 if keeps_bottom else height):
-        for x in range(width):
-            if picture[y][x] is None:
-                continue
-            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                nx, ny = x + dx, y + dy
-                if not (0 <= nx < width and 0 <= ny < height) or picture[ny][nx] is None:
-                    border.append((x, y))
-                    break
-    for x, y in border:
-        picture[y][x] = "soil_dark"
     return picture
