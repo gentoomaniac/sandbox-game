@@ -96,6 +96,9 @@ const PONY_SEAT := Vector2(-4, -4)
 ## Half the width of the ridden horse's contact shadow seen from the front or from behind (from the
 ## side it is that of FarmAnimalView).
 const RIDDEN_SHADOW_HALF_WIDTH := 6
+## Half the width of the contact shadow under a figure on its feet, a player's or a villager's, in
+## pixels of the 16 px art (see Animal `draw_contact_shadow`): as wide as the clogs.
+const FIGURE_SHADOW_HALF_WIDTH := 4
 
 ## How fast the player walks (see GameState `walk_speed_factor`); the walk animation, and so the
 ## steps, keep that pace.
@@ -203,6 +206,8 @@ func _process(delta: float) -> void:
 	else:
 		_walk_time = 0.0
 	_show_horse(_player.horse)
+	# The contact shadow depends on riding, the collapse and the bed, so draw it anew every frame.
+	queue_redraw()
 	figure.position = Vector2.ZERO
 	# Lying in a bed wins over riding (one who passes out with no room to get off stays in the
 	# saddle), and riding over the collapse; all skip the walking frames below.
@@ -229,9 +234,14 @@ func _process(delta: float) -> void:
 		sprite.frame = frame_index(_player.facing, column)
 
 
-## The ridden horse's contact shadow, under the horse and the rider.
+## The contact shadow under the figure on its feet, or under the ridden horse and the rider. One
+## who lies (passed out or in a bed) has none.
 func _draw() -> void:
-	if _player == null or _player.horse == null:
+	if _player == null or _player.bed_lying_in != null:
+		return
+	if _player.horse == null:
+		if _collapse_time < 0.0:
+			Animal.draw_contact_shadow(self, FIGURE_SHADOW_HALF_WIDTH)
 		return
 	var half_width: int = (
 		FarmAnimalView.SHADOW_HALF_WIDTHS[LivestockRules.HORSE]
@@ -241,13 +251,10 @@ func _draw() -> void:
 	Animal.draw_contact_shadow(self, half_width)
 
 
-## Shows the horse the player rides, if any, in the horse sprites, and its shadow (drawn again
-## while riding, and once more when the horse is left, to take it away).
+## Shows the horse the player rides, if any, in the horse sprites.
 func _show_horse(horse: FarmAnimal) -> void:
 	_horse_behind.visible = horse != null
 	_horse_in_front.visible = horse != null
-	if horse != null or _shown_horse != null:
-		queue_redraw()
 	if horse == _shown_horse:
 		return
 	_shown_horse = horse
