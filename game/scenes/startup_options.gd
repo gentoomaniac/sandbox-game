@@ -104,6 +104,9 @@ extends RefCounted
 ##   --landing=<x>,<y>        the fisherman's landing: a jetty from that tile west over the water,
 ##                            a rowing boat, a net frame and eel traps (with --building=fisher_hut
 ##                            and --house for the hut)
+##   --yard=<x>,<y>           the chest and the stations in a row from that tile eastwards, and
+##                            behind them a Knick, a wattle fence, a fieldstone wall and a dyke on
+##                            the slant (see DebugYard)
 ##
 ## Done once the world is drawn (see DebugRunner)
 ##   --harvest=<x>,<y>        fell two oaks, cut a trunk, break a stone and mow a patch in a row
@@ -213,6 +216,7 @@ var path_days := Vector2i(6, 0)
 var chest := NO_TILE
 var chest_inside := NO_TILE
 var landing := NO_TILE
+var yard := NO_TILE
 
 # Done once the world is drawn
 var harvest := NO_TILE
@@ -354,6 +358,8 @@ func _init(args := PackedStringArray()) -> void:
 				chest_inside = _tile(arg)
 			"--landing":
 				landing = _tile(arg)
+			"--yard":
+				yard = _tile(arg)
 			"--harvest":
 				harvest = _tile(arg)
 			"--hit":

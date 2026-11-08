@@ -752,6 +752,8 @@ func _apply_game_options() -> void:
 		DebugItems.create(_state, _options.items)
 	if _options.landing != StartupOptions.NO_TILE:
 		DebugLanding.create(_state.world, _options.landing)
+	if _options.yard != StartupOptions.NO_TILE:
+		DebugYard.create(_state.world, _options.yard)
 	if _options.energy >= 0.0:
 		_state.player.energy = _options.energy
 	if _options.health >= 0.0:
