@@ -156,6 +156,7 @@ Warft and an Ewer here and there.
   `ChatScreen`, every `Animal` with the flocks' birds, `WorldView` and `InteriorView` the
   fires' flames: the group `ArtSet.VIEWS`, `show_art_set()`) load them anew,
   while the others load theirs as they show them (`PlayerView` its layers and the ridden horse).
+  The open chat pauses Main, so it passes F7 on itself (`ChatScreen.art_set_switch_pressed`).
   The numbers measured on the art are the new art's in both sets, but for the rider's seat on
   the classic horses (`PlayerView.CLASSIC_SEAT`, `CLASSIC_PONY_SEAT`).
 - Other views each draw one piece of state: `PlayerView`, `WeatherView`, `WildlifeView`,

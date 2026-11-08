@@ -7,8 +7,9 @@ extends CanvasLayer
 ## or Page Up and Page Down, and a line to type into is below. Enter sends, Escape leaves. The
 ## window has a fixed size (LOG_SIZE), which the bubbles' widths are worked out from.
 ##
-## The game is paused while it is open, so nothing moves and no key reaches the game: it keeps
-## running itself, and its input line takes every key. A line sent is answered by NpcDialogue;
+## The game is paused while it is open, so nothing moves and no key reaches the game but the art
+## switch, which the chat passes on (`art_set_switch_pressed`): it keeps running itself, and its
+## input line takes every other key. A line sent is answered by NpcDialogue;
 ## while the answer is awaited the villager is shown typing ("..."), and nothing more is sent to
 ## them. The wait is the villager's (Npc `is_answering`): the player may leave and talk to
 ## another, and the answer is kept in the chat of the one who was asked. Typing `/clear` makes
@@ -18,6 +19,9 @@ extends CanvasLayer
 
 ## The answer to a line came and is shown (for tests and the debug runner).
 signal answered
+## The art switch key (the `toggle_art_set` action, F7 by default) was pressed in the chat, which
+## pauses the game and so Main's input.
+signal art_set_switch_pressed
 
 const THEME := preload("res://game/scenes/ui_theme.tres")
 ## What the player is called in the chat.
@@ -333,6 +337,10 @@ func _on_input_gui_input(event: InputEvent) -> void:
 	# keeps it from opening the pause menu once the game runs again.
 	if event.is_action_pressed("pause"):
 		close()
+		_input.accept_event()
+		return
+	if event.is_action_pressed("toggle_art_set"):
+		art_set_switch_pressed.emit()
 		_input.accept_event()
 		return
 	var scroll_bar := _scroll.get_v_scroll_bar()

@@ -183,6 +183,7 @@ func _make_views() -> void:
 	_chat_screen.dialogue = NpcDialogue.new(_settings)
 	add_child(_chat_screen.dialogue)
 	add_child(_chat_screen)
+	_chat_screen.art_set_switch_pressed.connect(_toggle_classic_art)
 	_menu = PauseMenu.new(_settings)
 	add_child(_menu)
 	add_child(_tooltip_view)
@@ -588,8 +589,12 @@ func _tick_clock(delta: float) -> void:
 func _switch_art_set(event: InputEvent) -> bool:
 	if not event.is_action_pressed("toggle_art_set"):
 		return false
-	_settings.set_classic_art(not ArtSet.is_classic)
+	_toggle_classic_art()
 	return true
+
+
+func _toggle_classic_art() -> void:
+	_settings.set_classic_art(not ArtSet.is_classic)
 
 
 ## Opens and closes the screens on their keys. Returns whether a screen took the event: one that

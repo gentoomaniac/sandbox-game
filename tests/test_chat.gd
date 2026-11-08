@@ -161,3 +161,19 @@ func test_escape_closes_the_chat_and_goes_no_further() -> void:
 	screen._input.gui_input.emit(escape)
 	assert_false(screen.is_open())
 	assert_false(get_tree().paused)
+
+
+func test_the_art_switch_key_is_passed_on_from_the_open_chat() -> void:
+	var screen := _chat_screen()
+	screen.open(_npc, _state)
+	watch_signals(screen)
+	var f7 := InputEventKey.new()
+	f7.keycode = KEY_F7
+	f7.physical_keycode = KEY_F7
+	f7.pressed = true
+	assert_true(f7.is_action_pressed("toggle_art_set"))
+	screen._input.gui_input.emit(f7)
+	assert_signal_emitted(screen, "art_set_switch_pressed")
+	assert_eq(screen._input.text, "")
+	assert_true(screen.is_open())
+	screen.close()
