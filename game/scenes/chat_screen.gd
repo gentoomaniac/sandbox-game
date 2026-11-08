@@ -72,6 +72,7 @@ var _input := LineEdit.new()
 
 
 func _init() -> void:
+	add_to_group(ArtSet.VIEWS)
 	layer = 5
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -294,13 +295,19 @@ func _portrait_column(portrait: Control, name_label: Label) -> VBoxContainer:
 	return column
 
 
+func show_art_set() -> void:
+	if visible:
+		_show_portrait(_player_portrait, _state.player.appearance)
+		_show_portrait(_npc_portrait, _npc.appearance)
+
+
 ## Lays the portraits of a look's layers over each other, scaled up pixel for pixel.
 func _show_portrait(portrait: Control, look: Appearance) -> void:
 	for child in portrait.get_children():
 		child.queue_free()
 	for portrait_layer in look.portrait_layers():
 		var picture := TextureRect.new()
-		picture.texture = load(Appearance.portrait_path(portrait_layer))
+		picture.texture = load(ArtSet.path(Appearance.portrait_path(portrait_layer)))
 		picture.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		picture.set_anchors_preset(Control.PRESET_FULL_RECT)

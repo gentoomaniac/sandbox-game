@@ -3,7 +3,7 @@ extends Node2D
 ## "z"s rising from a sleeping figure while `is_sleeping`: one every Z_INTERVAL seconds, each
 ## drifting up and a little sideways as it fades. Its position is where they start.
 
-const Z_TEXTURE := preload("res://assets/effects/sleep_z.png")
+const Z_PATH := "res://assets/effects/sleep_z.png"
 const Z_INTERVAL := 0.6
 const RISE_SECONDS := 1.6
 ## How far a "z" rises and drifts, in art pixels.
@@ -29,7 +29,7 @@ func _process(delta: float) -> void:
 		return
 	_until_next = Z_INTERVAL
 	var z := Sprite2D.new()
-	z.texture = Z_TEXTURE
+	z.texture = load(ArtSet.path(Z_PATH))
 	add_child(z)
 	var rise := create_tween().set_parallel()
 	rise.tween_property(z, "position", Vector2(DRIFT * _drift_sign, -RISE), RISE_SECONDS)

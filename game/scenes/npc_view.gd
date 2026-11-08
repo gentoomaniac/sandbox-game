@@ -18,16 +18,24 @@ func _init(shown_npc: Npc) -> void:
 	npc = shown_npc
 	_last_position = npc.position
 	position = _pixel_position()
+	add_to_group(ArtSet.VIEWS)
 	for layer in npc.appearance.layers:
 		var sprite := Sprite2D.new()
-		sprite.texture = load(Appearance.sheet_path(layer))
 		sprite.hframes = PlayerView.FRAMES_PER_FACING
 		sprite.vframes = PlayerView.FACING_ROWS.size()
 		# The frame's bottom centre is at the feet.
 		sprite.offset = Vector2(0, -PlayerView.FRAME_HEIGHT / 2.0)
 		add_child(sprite)
 		_sprites.append(sprite)
+	show_art_set()
 	_show_frame(0.0)
+
+
+## Loads the layers' sheets in the chosen art set.
+func show_art_set() -> void:
+	for index in _sprites.size():
+		var sheet := Appearance.sheet_path(npc.appearance.layers[index])
+		_sprites[index].texture = load(ArtSet.path(sheet))
 
 
 func _process(delta: float) -> void:

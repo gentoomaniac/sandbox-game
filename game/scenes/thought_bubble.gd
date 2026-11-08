@@ -32,7 +32,7 @@ static func alpha_at(age: float) -> float:
 
 ## Shows the bubble with this picture from its start, in place of one that is showing.
 func show_icon(id: StringName) -> void:
-	_picture = load(PICTURE_PATH % id)
+	_picture = load(ArtSet.path(PICTURE_PATH % id))
 	_age = 0.0
 	visible = true
 	set_process(true)

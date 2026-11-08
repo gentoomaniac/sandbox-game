@@ -43,6 +43,7 @@ extends RefCounted
 ##   --camera-shift=<x>,<y>   move the camera by that many art pixels, fractions included (to
 ##                            check smooth scrolling)
 ##   --coordinates            show the coordinates (F3)
+##   --classic-art            show the classic art (see ArtSet), not saved in the settings
 ##   --mouse-tile=<x>,<y>     pretend the mouse is always on that tile
 ##
 ## The player
@@ -153,6 +154,7 @@ var snow := -1.0
 var zoom := ViewMath.MIN_ZOOM
 var camera_shift := Vector2.ZERO
 var coordinates := false
+var classic_art := false
 var mouse_tile := NO_TILE
 
 # The player
@@ -257,6 +259,8 @@ func _init(args := PackedStringArray()) -> void:
 				camera_shift = Vector2(shift[0], shift[1])
 			"--coordinates":
 				coordinates = true
+			"--classic-art":
+				classic_art = true
 			"--mouse-tile":
 				mouse_tile = _tile(arg)
 			"--energy":

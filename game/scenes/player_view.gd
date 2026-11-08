@@ -334,17 +334,18 @@ func _wear_hair(hair: int) -> void:
 	_player.appearance.wear(Appearance.HAIR, str(hair))
 
 
-## Shows the layers' sheets of a pose: standing, passing out or riding.
+## Shows the layers' sheets of a pose: standing, passing out or riding, in the chosen art set
+## (a switch of the set changes the sheets, which rebuilds the sprites).
 func _show_layers(layers: Array[Dictionary], pose: Pose) -> void:
 	var sheets: Array[String] = []
 	for layer in layers:
 		match pose:
 			Pose.STANDING:
-				sheets.append(Appearance.sheet_path(layer))
+				sheets.append(ArtSet.path(Appearance.sheet_path(layer)))
 			Pose.COLLAPSE:
-				sheets.append(Appearance.collapse_sheet_path(layer))
+				sheets.append(ArtSet.path(Appearance.collapse_sheet_path(layer)))
 			Pose.RIDING:
-				sheets.append(Appearance.riding_sheet_path(layer))
+				sheets.append(ArtSet.path(Appearance.riding_sheet_path(layer)))
 	if sheets == _shown_sheets:
 		return
 	_shown_sheets = sheets

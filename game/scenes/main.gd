@@ -139,6 +139,10 @@ func _load_game() -> void:
 	_audio.apply_settings(_settings)
 	_settings.audio_changed.connect(func() -> void: _audio.apply_settings(_settings))
 	_settings.ui_scale_changed.connect(_apply_ui_scale)
+	ArtSet.is_classic = _settings.is_classic_art or _options.classic_art
+	_settings.art_set_changed.connect(
+		func() -> void: ArtSet.show(_settings.is_classic_art, get_tree())
+	)
 	_state = _load_or_start_game()
 	_state.energy_drain = _settings.energy_drain_factor()
 	_settings.drain_changed.connect(

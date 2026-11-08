@@ -17,8 +17,16 @@ var pixel_scale := 2:
 var _appearance: Appearance
 
 
+func _init() -> void:
+	add_to_group(ArtSet.VIEWS)
+
+
 func show_appearance(appearance: Appearance) -> void:
 	_appearance = appearance
+	queue_redraw()
+
+
+func show_art_set() -> void:
 	queue_redraw()
 
 
@@ -30,4 +38,4 @@ func _draw() -> void:
 	var source := Rect2(sheet_cell * FRAME_SIZE, FRAME_SIZE)
 	var target := Rect2(Vector2.ZERO, Vector2(SHOWN_SIZE * pixel_scale))
 	for layer in _appearance.layers_for(Vector2i.DOWN):
-		draw_texture_rect_region(load(Appearance.sheet_path(layer)), target, source)
+		draw_texture_rect_region(load(ArtSet.path(Appearance.sheet_path(layer))), target, source)
