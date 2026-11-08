@@ -44,7 +44,7 @@ top of classic pixel art (details under "Lighting and look").
 
 - **Rendering in two stages:**
   1. The world is rendered **on the art-pixel grid** (one art pixel = one render pixel) into
-     an off-screen image of at most about 640×360 plus a small margin. Lighting, tint and
+     an off-screen image of at most about 1280×720 plus a small margin. Lighting, tint and
      glow are computed there, so light lands exactly on the pixel grid.
   2. That image is scaled to the screen **steplessly** with a sharp-bilinear filter:
      pixels stay sharp, only one row of screen pixels blends at their edges. Zoom and
@@ -52,21 +52,24 @@ top of classic pixel art (details under "Lighting and look").
 - **UI** is rendered separately at native resolution.
 - **Tiles: 32×32** (decided 2026-11-08, after the mockup in review/resolution-mockup-2026-11-08:
   the 16×16 art was "early PC, almost C64"; small animals and legs one pixel wide did not read).
-  The widest view is a native 640×360 art pixels (20×11 tiles, the area the 16 px art showed at
-  zoom 1), shown at a whole multiple on the usual screens (×3 at 1080p, ×4 at 1440p). Until all
+  The widest view is 1280×720 art pixels (40×22 tiles, the area the 16 px art showed at its
+  widest zoom 0.5; task 118), an art pixel 1.5 screen pixels at 1080p. Until all
   art is redrawn at 32 px, the generators' 16 px output is doubled pixel for pixel (tasks 106 and
   on); the people are drawn at 32 px since task 113, the farm animals since task 114, the wild
   animals, the flames, the hit particles and the weather (rain, splashes, snow, wind, fog) since
   task 116, the small animals a little larger than life. The 16 px art of a redrawn group stays
   in the game as the classic art, a setting (see Settings). (Was: 16×16, 320×180 at zoom 1.)
-- **Stepless zoom** from the widest view (640×360 art pixels, zoom 1) in to 2× (320×180); the
-  game starts at the widest (the user zooms out fully anyway, 2026-11-08). Ctrl and the mouse
-  wheel zoom; the wheel alone steps through the hotbar. (Was: 0.5× to 2×, starting at 0.5×.)
+- **Stepless zoom** from the widest view (1280×720 art pixels, zoom 0.5) in to zoom 2
+  (320×180; zoom 1 is 640×360); the game starts at the widest (the user zooms out fully
+  anyway, 2026-11-08). The keys `=` and `-` (also the keypad's + and −; actions `zoom_in` and
+  `zoom_out`, rebindable) and Ctrl and the mouse wheel zoom; the wheel alone steps through the
+  hotbar. Zoom is a setting of the session, not saved. Between task 106 and task 118 the
+  widest view was 640×360 (20×11 tiles), a quarter of what the 16 px art showed.
 - **Smooth camera following:** the camera follows the player's exact position, so the
   world scrolls at sub-pixel precision; the player, drawn on the pixel grid, may wobble by up
   to half an art pixel. Chosen over a pixel-locked camera (2026-11-05).
 - **Camera API** for scripted moves (cutscenes later): follow a target, move to a point,
-  zoom to a value, chain moves in a sequence. The mouse wheel uses the same zoom.
+  zoom to a value, chain moves in a sequence. The mouse wheel and the zoom keys use the same zoom.
 - **Standard effects:**
   - **day and night tint:** the whole picture changes colour with the time of day (warm
     morning, neutral noon, orange dusk, blue night);

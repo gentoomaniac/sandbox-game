@@ -465,8 +465,9 @@ energy drain and the day length variation, and set the language model villagers 
 through. Hover over a setting, a key or an item in the
 hotbar, inventory or equipment for a short explanation: an item's kind, weight, what food
 gives back, what seeds grow and where they are planted. The game starts at its widest view,
-a native 640×360 art pixels (20×11 tiles of 32×32, ×3 on a 1080p screen and ×4 at 1440p);
-Ctrl and the mouse wheel zoom smoothly in to 2×. The wheel alone steps through the hotbar.
+1280×720 art pixels (40×22 tiles of 32×32, an art pixel is 1.5 screen pixels on a 1080p
+screen); `=` and `-` (also the keypad's + and −) or Ctrl and the mouse wheel zoom smoothly in
+to 4× that, 320×180 art pixels. The wheel alone steps through the hotbar.
 
 ![Rebinding the controls](docs/screenshots/controls.png)
 
@@ -477,7 +478,7 @@ same in both.
 
 ![The camp with villagers in the new art and in the classic art](docs/screenshots/art-sets.png)
 
-![Zoomed in to 2×](docs/screenshots/zoom.png)
+![Zoomed in to the closest view](docs/screenshots/zoom.png)
 
 ### Console
 
@@ -523,6 +524,7 @@ These are the default keys; all of them can be changed under Settings → Contro
 | X | Switch the hammer between building and taking down (hold Space or click to take down) |
 | Q, E | Previous and next building (while holding the hammer) |
 | Mouse wheel | Next or previous hotbar slot |
+| `=`, `-` (also keypad + and −) | Zoom in, zoom out (hold to keep zooming) |
 | Ctrl + mouse wheel | Zoom |
 | Escape | Pause menu |
 | `/` | Console |

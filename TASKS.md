@@ -1666,7 +1666,21 @@ running beside this task, so their classic art comes with them or right after.
 
 ## 118. Zoom out as far as before the 32 px switch
 
-- [ ] Done
+- [x] Done
+
+Done: the widest view shows 1280×720 art pixels, 40×22 tiles, again (zoom 0.5, `ViewMath.MIN_ZOOM`;
+`WIDEST_VISIBLE_SIZE`, and the stage-one viewport is that plus the margin). Zoom 1 and 2 keep
+their size (640×360, 320×180), so `--zoom=` and `make screenshot ZOOM=` mean what they did; the
+game starts at 0.5. The zoom keys `=` and `-` (and the keypad's + and −), the actions `zoom_in`
+and `zoom_out`, are rebindable and listed on the Controls page and in the README; a press is two
+wheel notches and holding repeats. Where an art pixel is smaller than a window pixel (windows
+under 1280×720) the sharp-bilinear shader averages four taps. Cost, measured in a busy scene
+(rain, 8 villagers, deer, rabbits, gulls, cows, sheep, dusk) at 1920×1080 on an Intel Arc: the
+world viewport's GPU time went from 1.09 to about 2.8 ms, the whole frame's GPU time from about
+4.8 to 6.4 ms, so the frame stays capped by the 145 Hz display (6.9 ms) either way. Nothing else
+needed a change: the weather and fog shaders work in viewport pixels (they follow
+`VIEWPORT_SIZE`), and spawning, wildlife and streaming count in tiles or follow the view
+(`view_rect`), and the same 40×22 tiles worked before task 106.
 
 The user, 2026-11-08: "we need the zoom back. Now we need to zoom even further to get the same
 effect as before". Before task 106 the widest view (zoom 0.5 of 16 px art) showed 640x360 art

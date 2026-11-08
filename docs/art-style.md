@@ -61,8 +61,9 @@ differs from grass only by its darker blades: still a visible patch, but softer.
 ## Resolution: 32 px per tile
 
 A tile is **32×32 art pixels** (decided 2026-11-08, task 106; see SPEC.md "Lighting and look"),
-and the widest view is a native 640×360: 20×11 tiles, shown ×3 on a 1080p screen and ×4 at
-1440p. The art was drawn at 16 px per tile, and the generators still draw at `canvas.TILE = 16`:
+and the widest view is 1280×720 art pixels: 40×22 tiles (task 118), shown ×1.5 on a 1080p screen
+(an art pixel is a window pixel at 1280×720; below that the view is averaged down), the closest
+320×180: 10×5.6 tiles. The art was drawn at 16 px per tile, and the generators still draw at `canvas.TILE = 16`:
 `generate.py` scales every file of its `DOUBLED` list up to the game's tile (`canvas.GAME_TILE`,
 32) pixel for pixel, as the last step before the palette check. So until a group is redrawn
 the game looks as it did, every pixel 2×2.

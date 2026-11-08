@@ -138,8 +138,10 @@ Warft and an Ewer here and there.
   says which chest or station E opens; `CraftingScreen` shows the recipes of one place.
 - **Units:** the state works in tiles (positions, speeds, reach); the views turn tiles into
   world pixels with `TerrainTileset.TILE_SIZE` (32: a tile is 32×32 art pixels, task 106).
-  `ViewMath` holds the numbers of the two-stage rendering: zoom 1 is the widest view, a native
-  640×360, zoom 2 the closest. While the art is the 16 px art doubled (see docs/art-style.md,
+  `ViewMath` holds the numbers of the two-stage rendering: zoom 0.5 is the widest view,
+  1280×720 art pixels (40×22 tiles) in a stage-one viewport of that size plus a margin, zoom 1
+  shows 640×360 and zoom 2, the closest, 320×180; the zoom keys and Ctrl and the wheel move it
+  (`CameraController`). While the art is the 16 px art doubled (see docs/art-style.md,
   "Resolution"), a number measured on a picture is written as its 16 px number times
   `TerrainTileset.ART_16_SCALE`; once its group is drawn at 32 px (the people, task 113; the
   farm animals, task 114; the wild animals, their shadows, the hit particles, the fire and the
