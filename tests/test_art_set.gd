@@ -206,3 +206,23 @@ func test_a_room_shown_switches_its_tiles_and_furniture_with_the_art() -> void:
 
 func _is_kept(node: Node) -> bool:
 	return not node.is_queued_for_deletion()
+
+
+func test_every_item_has_a_classic_icon_and_ground_item_as_big_as_the_new() -> void:
+	ArtSet.is_classic = true
+	for item: StringName in ItemTypes.TYPES:
+		var icon := ItemTypes.icon_path(item)
+		assert_ne(ArtSet.path(icon), icon, "%s has a classic icon" % item)
+		var ground := ItemTypes.ground_icon_path(item)
+		assert_ne(ArtSet.path(ground), ground, "%s has a classic ground item" % item)
+		assert_eq(load(ArtSet.path(ground)).get_size(), load(ground).get_size(), ground)
+
+
+func test_a_slot_shown_switches_its_icon_with_the_art() -> void:
+	var slot := SlotView.new()
+	add_child_autofree(slot)
+	slot.show_stack({"item": ItemTypes.AXE, "count": 1}, false)
+	ArtSet.show(true, get_tree())
+	assert_eq(slot._icon.resource_path, "res://assets/classic/items/axe.png")
+	ArtSet.show(false, get_tree())
+	assert_eq(slot._icon.resource_path, "res://assets/items/axe.png")

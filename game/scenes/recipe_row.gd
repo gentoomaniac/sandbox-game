@@ -20,6 +20,7 @@ var recipe_id: StringName
 var _crafting: Crafting
 var _rules: RecipeRules
 var _inventory: Inventory
+var _icon := TextureRect.new()
 var _level_label := Label.new()
 var _materials_label := Label.new()
 
@@ -30,17 +31,17 @@ func _init(id: StringName, crafting: Crafting, inventory: Inventory) -> void:
 	_rules = crafting.rules
 	_inventory = inventory
 	custom_minimum_size = Vector2(ROW_WIDTH, MIN_HEIGHT)
+	add_to_group(ArtSet.VIEWS)
 
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", GAP)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 4)
-	var icon := TextureRect.new()
-	icon.texture = load(ItemTypes.icon_path(_rules.result(id)))
-	icon.custom_minimum_size = Vector2(ICON_SIZE, ICON_SIZE)
-	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(icon)
+	_icon.custom_minimum_size = Vector2(ICON_SIZE, ICON_SIZE)
+	_icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	show_art_set()
+	row.add_child(_icon)
 	var name_column := VBoxContainer.new()
 	name_column.add_theme_constant_override("separation", 0)
 	name_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -69,6 +70,10 @@ func _ready() -> void:
 	custom_minimum_size.y = maxf(MIN_HEIGHT, height)
 	# A disabled row keeps the look of the others, just dimmer.
 	add_theme_stylebox_override("disabled", get_theme_stylebox("normal"))
+
+
+func show_art_set() -> void:
+	_icon.texture = load(ArtSet.path(ItemTypes.icon_path(_rules.result(recipe_id))))
 
 
 ## Shows what the player has against what the recipe takes and needs. `is_station_busy` says that

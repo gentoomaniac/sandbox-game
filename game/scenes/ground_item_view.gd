@@ -19,11 +19,18 @@ var _hops: Dictionary[GroundItem, ItemHop] = {}
 ## The items that are on the ground now are not dropped: they appear where they lie.
 func show_items(world: World, entities: Node2D) -> void:
 	_entities = entities
+	add_to_group(ArtSet.VIEWS)
 	world.ground_items.added.connect(_add_sprite)
 	world.ground_items.removed.connect(_remove_sprite)
 	world.ground_items.dropped.connect(_start_hops)
 	for ground_item in world.ground_items.all():
 		_add_sprite(ground_item)
+
+
+func show_art_set() -> void:
+	for ground_item in _sprites:
+		var path := ItemTypes.ground_icon_path(ground_item.item)
+		_sprites[ground_item].texture = load(ArtSet.path(path))
 
 
 ## Makes the hops from `source` that were just dropped wait `seconds` longer: a felled tree's seed
@@ -46,7 +53,7 @@ func _process(delta: float) -> void:
 
 func _add_sprite(ground_item: GroundItem) -> void:
 	var sprite := Sprite2D.new()
-	sprite.texture = load(ItemTypes.ground_icon_path(ground_item.item))
+	sprite.texture = load(ArtSet.path(ItemTypes.ground_icon_path(ground_item.item)))
 	sprite.centered = false
 	sprite.offset = SPRITE_OFFSET
 	sprite.position = _pixel_position(ground_item)

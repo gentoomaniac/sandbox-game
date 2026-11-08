@@ -364,5 +364,5 @@ func _refresh() -> void:
 	var picked_item := _picked_item() if _has_pick() else ItemTypes.NONE
 	_picked_icon.visible = picked_item != ItemTypes.NONE
 	if _picked_icon.visible:
-		_picked_icon.texture = load(ItemTypes.icon_path(picked_item))
+		_picked_icon.texture = load(ArtSet.path(ItemTypes.icon_path(picked_item)))
 	_weight_label.text = "Carrying %.1f kg" % _player.carried_weight()

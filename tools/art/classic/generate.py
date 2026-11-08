@@ -31,6 +31,8 @@ import chest  # noqa: E402
 import church  # noqa: E402
 import coast  # noqa: E402
 import crafts  # noqa: E402
+import craft_icons  # noqa: E402
+import crop_icons  # noqa: E402
 import crops  # noqa: E402
 import fire  # noqa: E402
 import flowers  # noqa: E402
@@ -38,6 +40,7 @@ import graves  # noqa: E402
 import ground_looks  # noqa: E402
 import ground_overlays  # noqa: E402
 import interior  # noqa: E402
+import item_icons  # noqa: E402
 import landing  # noqa: E402
 import livestock  # noqa: E402
 import meadow  # noqa: E402
@@ -46,6 +49,7 @@ import reeds  # noqa: E402
 import sea_birds  # noqa: E402
 import seasons  # noqa: E402
 import terrain  # noqa: E402
+import tool_icons  # noqa: E402
 import portraits  # noqa: E402
 import trees  # noqa: E402
 import trunks  # noqa: E402
@@ -115,6 +119,10 @@ DOUBLED = (
     # the shared chest.py).
     "interior.png",
     "interior/*.png",
+    # The items lying on the ground (task 115; items.py, tool_icons.py and crop_icons.py of
+    # commit 91742f0, and the icon parts of meadow.py, reeds.py, crafts.py, church.py and
+    # landing.py). The item icons are drawn for the UI and are not doubled.
+    "ground_items/*.png",
 )
 # The animals whose cells grew at 32 px per tile: the classic sheets, doubled, are set in
 # the new cells (bottom centre, as the animal stands in its cell), so that the game reads both
@@ -294,6 +302,14 @@ def write_interior():
         save_picture(picture, f"{CLASSIC}/interior/{name}.png")
 
 
+def write_items():
+    icons = item_icons.ICONS | crop_icons.icons() | tool_icons.icons() | craft_icons.icons()
+    for name, picture in icons.items():
+        save_picture(picture, f"{CLASSIC}/items/{name}.png")
+        # The same icon at half size, for items lying on the ground.
+        save_picture(item_icons.small(picture), f"{CLASSIC}/ground_items/{name}.png")
+
+
 def set_in_grown_cells():
     """Sets each cell of the sheets of GROWN_CELLS in the bottom centre of a cell of the new size."""
     for pattern, ((width, height), (new_width, new_height)) in GROWN_CELLS.items():
@@ -331,6 +347,7 @@ def main():
     write_objects()
     write_crops()
     write_interior()
+    write_items()
     scale_up_16_px_art()
     set_in_grown_cells()
     print("Wrote every file under assets/classic/.")

@@ -30,15 +30,20 @@ var _is_selected := false
 
 func _init() -> void:
 	custom_minimum_size = Vector2(SIZE, SIZE)
+	add_to_group(ArtSet.VIEWS)
 
 
 func show_stack(stack: Dictionary, is_selected: bool) -> void:
 	_stack = stack
-	_icon = null if stack.is_empty() else load(ItemTypes.icon_path(stack["item"]))
+	_icon = null if stack.is_empty() else load(ArtSet.path(ItemTypes.icon_path(stack["item"])))
 	_is_selected = is_selected
 	var text := "" if stack.is_empty() else ItemTooltip.text_for(stack["item"], stack["count"])
 	TooltipView.set_text(self, text, tooltip_id)
 	queue_redraw()
+
+
+func show_art_set() -> void:
+	show_stack(_stack, _is_selected)
 
 
 func _gui_input(event: InputEvent) -> void:

@@ -221,5 +221,5 @@ func _refresh() -> void:
 	_picked_icon.visible = not _pick.is_empty()
 	if not _pick.is_empty():
 		_picked_icon.texture = load(
-			ItemTypes.icon_path(_slots_of(_pick["side"]).item_in(_pick["slot"]))
+			ArtSet.path(ItemTypes.icon_path(_slots_of(_pick["side"]).item_in(_pick["slot"])))
 		)
