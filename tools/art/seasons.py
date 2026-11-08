@@ -599,7 +599,7 @@ def _season_object(look, kind, variant, canvas, redraw):
         elif kind in ("berry_bush", "shrub", "sapling", "fern"):
             canvas = remap(canvas, _AUTUMN_BUSH[variant % 3])
         elif kind == "dyke":
-            canvas = remap(canvas, _AUTUMN_GRASS)
+            canvas = remap(canvas, _AUTUMN_MARSH)
         elif kind == "tall_grass":
             canvas = remap(canvas, _AUTUMN_TALL_GRASS)
         elif kind == "reeds":
