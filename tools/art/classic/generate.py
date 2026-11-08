@@ -18,7 +18,6 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 import alder  # noqa: E402
 import animals  # noqa: E402
-import bedroll  # noqa: E402
 import beech  # noqa: E402
 import birch  # noqa: E402
 import birds  # noqa: E402
@@ -79,8 +78,8 @@ DOUBLED = (
     "wildlife/cat_*.png",
     "wildlife/horse_*.png",
     # The wild animals and the flames (task 116; animals.py, birds.py, sea_birds.py and fire.py
-    # of commit 2793065; the fireplace around its flames is the shared camp.py, still drawn at
-    # 16 px, the hearth the classic interior.py).
+    # of commit 2793065; the fireplace around its flames is the classic camp.py, the hearth the
+    # classic interior.py).
     "wildlife/bee.png",
     "wildlife/bird.png",
     "wildlife/butterfly.png",
@@ -108,15 +107,17 @@ DOUBLED = (
     "buildings/*.png",
     # The plants (task 108; trees.py, trunks.py, beech.py, birch.py, alder.py, willow.py, the
     # plant parts of meadow.py and reeds.py and the object looks of seasons.py of commit
-    # e303759). The atlas is one picture, so its other rows are here too: the walls, fences, the
-    # dyke and the placed objects are the shared modules, still drawn at 16 px (task 111).
+    # e303759), and the other rows of the atlas (task 111): the walls, fences and the dyke
+    # (boundaries.py), the camp (camp.py), the chest (chest.py), the stations (crafts.py), the
+    # Ewer (coast.py), the landing (landing.py) of commit ec0b1af and the graves (graves.py).
     "objects*.png",
     # The crops (task 109; crops.py of commit f2c24f8).
     "crops/*.png",
-    # The bedroll's cover, which matches the classic bedroll (bedroll.py, task 112).
+    # The bedroll's cover, which matches the classic bedroll (camp.py of commit ec0b1af, before
+    # task 112 made the bedroll longer).
     "bedroll_cover.png",
-    # The interiors and their furniture (task 112; interior.py of commit f2c24f8, whose chest is
-    # the shared chest.py).
+    # The interiors and their furniture (task 112; interior.py of commit f2c24f8), with the
+    # chest of chest.py, and the stations and the grave marker placed indoors (task 111).
     "interior.png",
     "interior/*.png",
     # The items lying on the ground (task 115; items.py, tool_icons.py and crop_icons.py of
@@ -228,7 +229,7 @@ def object_atlas():
         ("oak", [trees.oak(seed) for seed in trees.OAK_SEEDS]),
         ("stone", [trees.stone(seed) for seed in (111, 112)]),
         ("fireplace", [camp.fireplace()]),
-        ("sleeping_bag", [bedroll.bedroll()]),
+        ("sleeping_bag", [camp.bedroll()]),
         ("spruce", spruces),
         ("pine", pines),
         ("dead_tree", dead_trees),
@@ -285,7 +286,7 @@ def write_objects():
         suffix = "" if look == "summer" else f"_{look}"
         rows = object_looks.object_rows(look, objects, redraws)
         save(rows, f"{CLASSIC}/objects{suffix}.png", OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
-    save_picture(bedroll.bedroll_cover(), f"{CLASSIC}/bedroll_cover.png")
+    save_picture(camp.bedroll_cover(), f"{CLASSIC}/bedroll_cover.png")
 
 
 def write_crops():
@@ -300,6 +301,9 @@ def write_interior():
         save_picture(picture, f"{CLASSIC}/interior/{name}.png")
     for name, picture in interior.covers(furniture).items():
         save_picture(picture, f"{CLASSIC}/interior/{name}.png")
+    for name, picture in crafts.stations().items():
+        save_picture(picture, f"{CLASSIC}/interior/{name}.png")
+    save_picture(graves.graves()[0], f"{CLASSIC}/interior/grave.png")
 
 
 def write_items():

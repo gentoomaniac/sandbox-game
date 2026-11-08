@@ -1,8 +1,47 @@
-"""The bedroll of the camp and its cover, as camp.py drew them before task 112 made the bedroll
-as long as a person lying on it: the classic object atlas has this bedroll, so its cover must
-match it. Copied from camp.py of commit 6dbc5f5 unchanged."""
+"""The camp site objects of assets/objects.png: the fireplace and the bedroll (the
+sleeping_bag object)."""
 
+import math
+
+import fire
 from canvas import OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank, rect
+
+def fire_stone(canvas, x, y):
+    rect(canvas, x - 1, y - 1, x + 1, y, "stone")
+    rect(canvas, x - 1, y - 1, x, y - 1, "stone_light")
+    rect(canvas, x + 1, y, x + 1, y, "stone_dark")
+
+
+# The box of the fireplace's cell that its flame burns in (x, y, width, height; the flame stands
+# on its bottom row), and the flame's half width and height.
+FIREPLACE_FLAME = ((OBJECT_CENTRE - 8, 51, 16, 20), 5.5, 15)
+
+
+def fireplace_layers():
+    """The fireplace without its flame: what is behind the flame (the ash bed and three logs on
+    it, laid like the spokes of a wheel) and what is in front of it (the ring of stones)."""
+    behind, front = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT), blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
+    centre, ground = OBJECT_CENTRE, 71
+    for y in range(ground - 4, ground + 5):
+        for x in range(centre - 10, centre + 10):
+            if ((x - centre) / 9.5) ** 2 + ((y - ground) / 4.2) ** 2 <= 1:
+                behind[y][x] = "soil_dark"
+    for dx, dy, shades in ((-7, -2, ("soil_mid", "soil")), (7, -2, ("soil", "soil_dark")), (0, 3, ("soil_mid", "soil"))):
+        for i in range(9):
+            x, y = round(centre + dx * i / 8), round(ground + dy * i / 8)
+            behind[y][x] = behind[y + 1][x] = shades[0]
+            behind[y + 2][x] = shades[1]
+    ring = [
+        (round(centre + 10.5 * math.cos(step / 14 * 2 * math.pi)), round(ground + 3 + 4 * math.sin(step / 14 * 2 * math.pi)), math.sin(step / 14 * 2 * math.pi))
+        for step in range(14)
+    ]
+    for x, y, depth in sorted(ring, key=lambda stone: stone[2]):
+        fire_stone(front, x, y)
+    return behind, front
+
+
+def fireplace():
+    return fire.burning(*fireplace_layers(), *FIREPLACE_FLAME)
 
 
 def bedroll():
