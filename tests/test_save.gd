@@ -243,25 +243,6 @@ func test_without_a_file_there_is_no_game_to_load() -> void:
 	assert_null(SaveFile.read(SAVE_PATH))
 
 
-func test_a_version_1_save_loads_with_its_harvest_count_as_turnips() -> void:
-	_lived_in_state()
-	var game := _through_json(_state.to_dict())
-	game["player"].erase("inventory")
-	game["harvest_count"] = 4
-	DirAccess.make_dir_recursive_absolute(SAVE_DIR)
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	file.store_string(JSON.stringify({"version": 1, "game": game}))
-	file.close()
-
-	var restored := SaveFile.read(SAVE_PATH)
-
-	var inventory := restored.player.inventory
-	assert_eq(inventory.count_of(ItemTypes.TURNIP), 4)
-	assert_eq(inventory.count_of(ItemTypes.HOE), 1)
-	assert_eq(inventory.count_of(ItemTypes.TURNIP_SEEDS), 15)
-	assert_eq(restored.clock.day, 2)
-
-
 func test_a_newer_version_is_refused_and_kept_as_backup() -> void:
 	DirAccess.make_dir_recursive_absolute(SAVE_DIR)
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)

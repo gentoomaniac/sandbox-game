@@ -18,14 +18,6 @@ func _write_save(version: int, game: Dictionary) -> void:
 	file.close()
 
 
-## A save as parsed JSON with the slots of version 10: its hotbar had two slots more.
-func _in_version_10_layout(game: Dictionary) -> Dictionary:
-	var slots: Array = game["player"]["inventory"]["slots"]
-	slots.insert(Inventory.HOTBAR_SIZE, null)
-	slots.insert(Inventory.HOTBAR_SIZE, null)
-	return game
-
-
 ## A current save as parsed JSON, to take fields from.
 func _current_game() -> Dictionary:
 	return JSON.parse_string(JSON.stringify(GameState.new_game(7).to_dict()))

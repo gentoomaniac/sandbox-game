@@ -1,7 +1,7 @@
 class_name SaveFile
 extends RefCounted
 ## The save on disk: one JSON file per world, `{"version": VERSION, "game": <GameState.to_dict>}`.
-## Older saves still load, upgraded step by step (see `_upgrade_from_version_1` and so on).
+## Older saves still load, upgraded step by step (see `_upgrade_from_version_13` and so on).
 ##
 ## How to add a save field (or change one):
 ## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
@@ -14,27 +14,15 @@ extends RefCounted
 
 const VERSION := 23
 ## The oldest version we still upgrade.
-const OLDEST_VERSION := 1
-## Version 6 had tomatoes, which were not grown here before the 19th century; flax took their
-## place, item for item.
-const TOMATOES_TO_FLAX := {"tomatoes": "flax", "tomatoes_seeds": "flax_seeds"}
-## Version 8 dressed the player in a tunic and trousers; the clothes of the period took their
-## place, item for item.
-const TUNIC_AND_TROUSERS_TO_PERIOD := {"tunic": "waistcoat", "trousers": "breeches"}
-## Version 10 had a hotbar of 10 slots, with the backpack's 20 slots after it.
-const VERSION_10_HOTBAR_SIZE := 10
-const VERSION_10_SLOT_COUNT := 30
+const OLDEST_VERSION := VERSION - 10
 ## How far around the buildings and the player's objects, and around their tilled fields, the
-## worked land gives way in a version 9 world, and the coast in a version 17 one (see
-## `_home_tiles`): an old farm keeps its yard.
+## coast gives way in a version 17 world (see `_home_tiles`): an old farm keeps its yard.
 const UPGRADE_CLEARANCE := 3
 const UPGRADE_FIELD_MARGIN := 2
 ## The ground of the coast, which an old home gives back as grass (see `_clear_new_land`).
 const COAST_TERRAINS: Array[Tile.Terrain] = [
 	Tile.Terrain.MUD, Tile.Terrain.SALT_MARSH, Tile.Terrain.SEA, Tile.Terrain.WARFT
 ]
-## How far apart the piles lie that a version 10 inventory leaves on the ground, in tiles.
-const UPGRADE_PILE_SPACING := 0.3
 const DEFAULT_PATH := "user://saves/world.json"
 ## What a save we can't use is renamed to, so it is never overwritten silently.
 const BACKUP_SUFFIX := ".bak"
@@ -90,30 +78,6 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 	if not parsed.has("game"):
 		_reject(path, "no game in the save")
 		return null
-	if version == 1:
-		_upgrade_from_version_1(parsed["game"])
-	if version <= 2:
-		_upgrade_from_version_2(parsed["game"])
-	if version <= 3:
-		_upgrade_from_version_3(parsed["game"])
-	if version <= 4:
-		_upgrade_from_version_4(parsed["game"])
-	if version <= 5:
-		_upgrade_from_version_5(parsed["game"])
-	if version <= 6:
-		_upgrade_from_version_6(parsed["game"])
-	if version <= 7:
-		_upgrade_from_version_7(parsed["game"])
-	if version <= 8:
-		_upgrade_from_version_8(parsed["game"])
-	if version <= 9:
-		_upgrade_from_version_9(parsed["game"])
-	if version <= 10:
-		_upgrade_from_version_10(parsed["game"])
-	if version <= 11:
-		_upgrade_from_version_11(parsed["game"])
-	if version <= 12:
-		_upgrade_from_version_12(parsed["game"])
 	if version <= 13:
 		_upgrade_from_version_13(parsed["game"])
 	if version <= 14:
@@ -137,115 +101,25 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 	return GameState.from_dict(parsed["game"])
 
 
-## Version 1 had no inventory, only the number of crops harvested: that is now turnips with the
-## starting tools as the game has them today, in the 20 slots of version 5 (the later steps
-## widen them).
-static func _upgrade_from_version_1(game: Dictionary) -> void:
-	var inventory := ItemSlots.new(20)
-	assert(Inventory.STARTING_ITEMS.size() <= 20, "The starting items outgrew version 5's slots")
-	for slot in Inventory.STARTING_ITEMS.size():
-		var item_and_count: Array = Inventory.STARTING_ITEMS[slot]
-		inventory.slots[slot] = {"item": item_and_count[0], "count": item_and_count[1]}
-	# A count beyond what the free slots hold is dropped.
-	inventory.add(ItemTypes.TURNIP, int(game["harvest_count"]))
-	game.erase("harvest_count")
-	game["player"]["inventory"] = {"slots": inventory.slots_to_data(), "selected_slot": 0}
+## Version 13 had no skills: the player starts with none.
+static func _upgrade_from_version_13(game: Dictionary) -> void:
+	game["player"]["skills"] = {"points": {}, "fading": []}
 
 
-## Version 2 had no items on the ground, and called logs `wood`.
-static func _upgrade_from_version_2(game: Dictionary) -> void:
-	game["world"]["ground_items"] = []
-	for stack: Variant in game["player"]["inventory"]["slots"]:
-		if stack != null and stack["item"] == "wood":
-			stack["item"] = "logs"
+## Version 14 had no desire paths: all its grass is unworn.
+static func _upgrade_from_version_14(game: Dictionary) -> void:
+	game["world"]["wear"] = []
 
 
-## Version 3 had one kind of sapling item, which planted an oak: now the acorn does.
-static func _upgrade_from_version_3(game: Dictionary) -> void:
-	for stack: Variant in game["player"]["inventory"]["slots"]:
-		if stack != null and stack["item"] == "sapling":
-			stack["item"] = "acorn"
-	for ground_item: Dictionary in game["world"]["ground_items"]:
-		if ground_item["item"] == "sapling":
-			ground_item["item"] = "acorn"
+## Version 15 had no bones for the dogs: no animal follows the player.
+static func _upgrade_from_version_15(game: Dictionary) -> void:
+	for animal: Dictionary in game["livestock"]:
+		animal["follow_until_minute"] = 0
 
 
-## Version 4 had one building, the small house: now the Kate.
-static func _upgrade_from_version_4(game: Dictionary) -> void:
-	for building: Dictionary in game["world"]["buildings"]:
-		if building["type"] == "small_house":
-			building["type"] = "kate"
-
-
-## Version 5 had 20 inventory slots, the first ten the hotbar: the backpack now has ten more,
-## after them, so every item keeps its slot.
-static func _upgrade_from_version_5(game: Dictionary) -> void:
-	var slots: Array = game["player"]["inventory"]["slots"]
-	slots.resize(VERSION_10_SLOT_COUNT)
-
-
-## Version 6 had tomatoes: their plants, seeds and fruit become flax, wherever they are (in the
-## inventory, on the ground, planted, and in chests outdoors and indoors).
-static func _upgrade_from_version_6(game: Dictionary) -> void:
-	_rename_items(game["player"]["inventory"]["slots"], TOMATOES_TO_FLAX)
-	for ground_item: Dictionary in game["world"]["ground_items"]:
-		ground_item["item"] = TOMATOES_TO_FLAX.get(ground_item["item"], ground_item["item"])
-	for object in _saved_objects(game):
-		object["type"] = TOMATOES_TO_FLAX.get(object["type"], object["type"])
-		if object.has("storage"):
-			_rename_items(object["storage"], TOMATOES_TO_FLAX)
-
-
-## Version 7 saves may lack fields that were added to version 7 without a new version: soil
-## moisture, spent clay spots, the outfit, energy, health and the debuff, and the empty store of
-## a chest made before chests stored anything. A field the save has is kept. Crops counted days
-## in `days_grown`, one growth stage each; they now keep `growth`.
-static func _upgrade_from_version_7(game: Dictionary) -> void:
-	var world: Dictionary = game["world"]
-	world.get_or_add("soil_moisture", [])
-	world.get_or_add("spent_clay_spots", [])
-	var player: Dictionary = game["player"]
-	player.get_or_add("equipment", Equipment.with_starting_outfit().to_dict())
-	player.get_or_add("energy", PlayerState.MAX_ENERGY)
-	player.get_or_add("health", PlayerState.MAX_HEALTH)
-	player.get_or_add("is_debuffed", false)
-	for object in _saved_objects(game):
-		var type_data: Dictionary = WorldObjectTypes.TYPES[StringName(object["type"])]
-		if type_data.has("storage_slots"):
-			object.get_or_add("storage", ItemSlots.new(type_data["storage_slots"]).slots_to_data())
-		if type_data.has("growth_stages") and object["state"].has("days_grown"):
-			var state: Dictionary = object["state"]
-			state["growth"] = float(state["days_grown"]) * type_data["growth_per_stage"]
-			state.erase("days_grown")
-
-
-## Version 8 had a tunic and trousers: they become the waistcoat and breeches wherever they are
-## (worn, in the inventory, on the ground and in chests outdoors and indoors). Feet were always
-## bare, as there was nothing to wear on them: they get the clogs of the starting outfit.
-static func _upgrade_from_version_8(game: Dictionary) -> void:
-	var player: Dictionary = game["player"]
-	_rename_items(player["inventory"]["slots"], TUNIC_AND_TROUSERS_TO_PERIOD)
-	var equipment: Dictionary = player["equipment"]
-	for slot: String in equipment:
-		equipment[slot] = TUNIC_AND_TROUSERS_TO_PERIOD.get(equipment[slot], equipment[slot])
-	equipment.get_or_add(str(Equipment.FEET), str(ItemTypes.CLOGS))
-	for ground_item: Dictionary in game["world"]["ground_items"]:
-		ground_item["item"] = TUNIC_AND_TROUSERS_TO_PERIOD.get(
-			ground_item["item"], ground_item["item"]
-		)
-	for object in _saved_objects(game):
-		if object.has("storage"):
-			_rename_items(object["storage"], TUNIC_AND_TROUSERS_TO_PERIOD)
-
-
-## Version 9 worlds were generated without the worked land (Knicks, walls, fences, dykes,
-## ditches, willows), which the same seed now has. Where the player has made a home (see
-## `_home_tiles`) it gives way, as if the player had cleared it (see `_clear_new_land`). So
-## nothing new stands in or by a house, across the yard, the camp or the fields, or shuts the
-## player in.
-static func _upgrade_from_version_9(game: Dictionary) -> void:
-	var generator := WorldGenerator.new(int(game["world"]["seed"]))
-	_clear_new_land(game["world"], generator, _home_tiles(game).keys())
+## Version 16 had no villagers.
+static func _upgrade_from_version_16(game: Dictionary) -> void:
+	game["npcs"] = []
 
 
 ## Where the player has made a home in a world: around the buildings and around what the player
@@ -301,100 +175,10 @@ static func _clear_new_land(world: Dictionary, generator: WorldGenerator, tiles:
 			world["object_edits"].append({"pos": SaveCodec.vector_to_json(tile), "object": null})
 
 
-## Version 10 had a hotbar of ten slots; it has Inventory.HOTBAR_SIZE now. What lay in the
-## slots it lost goes to the first free slots of the backpack (onto stacks of the same item
-## first), and what has no room there onto the ground at the player's feet.
-## This step builds today's layout from Inventory; when the layout changes again, give the new
-## step its own constants and freeze these at version 11's (8 hotbar slots, 28 in all).
-static func _upgrade_from_version_10(game: Dictionary) -> void:
-	var player: Dictionary = game["player"]
-	var saved_inventory: Dictionary = player["inventory"]
-	var old_slots: Array = saved_inventory["slots"]
-	var inventory := Inventory.new()
-	inventory.load_slots(
-		(
-			old_slots.slice(0, Inventory.HOTBAR_SIZE)
-			+ old_slots.slice(VERSION_10_HOTBAR_SIZE, VERSION_10_SLOT_COUNT)
-		)
-	)
-	var backpack_slots := range(Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT)
-	var lost_slots := old_slots.slice(Inventory.HOTBAR_SIZE, VERSION_10_HOTBAR_SIZE)
-	var feet := SaveCodec.float_vector_from_json(player["position"])
-	var piles := 0
-	for stack: Variant in lost_slots:
-		if stack == null:
-			continue
-		var item := StringName(stack["item"])
-		var left := inventory.add(item, int(stack["count"]), backpack_slots)
-		if left > 0:
-			# Piles on one spot would hide each other.
-			var position := feet + Vector2.RIGHT * UPGRADE_PILE_SPACING * piles
-			game["world"]["ground_items"].append(GroundItem.new(item, left, position).to_dict())
-			piles += 1
-	saved_inventory["slots"] = inventory.slots_to_data()
-	if int(saved_inventory["selected_slot"]) >= Inventory.HOTBAR_SIZE:
-		saved_inventory["selected_slot"] = 0
-
-
-## Version 11 rooms had one floor and bare walls; the maps now lay brick in the living rooms
-## and clay in the work rooms (the byre, the barn, the shack), and hang plate racks on the back
-## wall. A saved room takes the floor of its building's map of today, tile by tile, and the
-## wall pieces of the map (whatever stands on wall tiles only) that it lacks, where their tiles
-## are free. The furniture on its floor stays as it was: the player may have moved in.
-static func _upgrade_from_version_11(game: Dictionary) -> void:
-	for building: Dictionary in game["world"]["buildings"]:
-		var saved: Variant = building["interior"]
-		if saved == null:
-			continue
-		var map_path: String = BuildingTypes.TYPES[StringName(building["type"])]["interior_map"]
-		var today := InteriorLoader.load_interior(map_path)
-		for tile: Array in saved["tiles"]:
-			var today_tile := today.tile_at(SaveCodec.vector_from_json(tile))
-			if tile[2] == "FLOOR" and today_tile != null and today_tile.is_floor():
-				tile[2] = SaveCodec.terrain_to_json(today_tile.terrain)
-		var room := Interior.from_dict(saved)
-		for piece in today.objects():
-			var is_on_the_wall := piece.tiles().all(
-				func(tile: Vector2i) -> bool:
-					return today.tile_at(tile).terrain == Tile.Terrain.WALL
-			)
-			var is_free := piece.tiles().all(
-				func(tile: Vector2i) -> bool: return room.object_at(tile) == null
-			)
-			if is_on_the_wall and is_free:
-				saved["objects"].append(piece.to_dict())
-
-
-## Version 12 had no farm animals.
-static func _upgrade_from_version_12(game: Dictionary) -> void:
-	game["livestock"] = []
-
-
-## Version 13 had no skills: the player starts with none.
-static func _upgrade_from_version_13(game: Dictionary) -> void:
-	game["player"]["skills"] = {"points": {}, "fading": []}
-
-
-## Version 14 had no desire paths: all its grass is unworn.
-static func _upgrade_from_version_14(game: Dictionary) -> void:
-	game["world"]["wear"] = []
-
-
-## Version 15 had no bones for the dogs: no animal follows the player.
-static func _upgrade_from_version_15(game: Dictionary) -> void:
-	for animal: Dictionary in game["livestock"]:
-		animal["follow_until_minute"] = 0
-
-
-## Version 16 had no villagers.
-static func _upgrade_from_version_16(game: Dictionary) -> void:
-	game["npcs"] = []
-
-
 ## Version 17 worlds were generated without the coast (task 61): the foreshore with its salt
 ## marsh, tidal mud, tideways and sea, the sea dyke, Warften and Ewers, and the marsh reaching
 ## inland from the dyke with its ditches and alders. Where the player has made a home within its
-## reach (see `_home_tiles`), it gives way as the worked land did for version 9: the ground is
+## reach (see `_home_tiles`), it gives way: the ground is
 ## grass and what the generator puts there now is taken off. Further from home an old world gets
 ## the coast; a home away from it is left as it was.
 static func _upgrade_from_version_17(game: Dictionary) -> void:
@@ -465,26 +249,6 @@ static func _keep(kept: Dictionary[Vector2i, bool], area: Rect2i) -> void:
 	for y in range(area.position.y, area.end.y):
 		for x in range(area.position.x, area.end.x):
 			kept[Vector2i(x, y)] = true
-
-
-## The saved world objects outside the loaded chunks: those the player changed in the world and
-## those inside buildings.
-static func _saved_objects(game: Dictionary) -> Array:
-	var objects: Array = []
-	for edit: Dictionary in game["world"]["object_edits"]:
-		if edit["object"] != null:
-			objects.append(edit["object"])
-	for building: Dictionary in game["world"]["buildings"]:
-		if building["interior"] != null:
-			objects.append_array(building["interior"]["objects"])
-	return objects
-
-
-## Renames the items of saved slots by `renames` (old id to new id).
-static func _rename_items(slots: Array, renames: Dictionary) -> void:
-	for stack: Variant in slots:
-		if stack != null:
-			stack["item"] = renames.get(stack["item"], stack["item"])
 
 
 static func _reject(path: String, reason: String) -> void:

@@ -1,8 +1,7 @@
 extends SaveUpgradeCase
 ## The farm animals are saved with their species, look, tint, place and how long they follow the
-## player and whether they wear a saddle; a save from before them (version 12) loads without any,
-## one from before the bone (version 15) with none following and one from before the saddle
-## (version 21) with none saddled.
+## player and whether they wear a saddle; a save from before the bone (version 15) loads with
+## none following and one from before the saddle (version 21) with none saddled.
 
 
 func test_the_farm_animals_are_kept() -> void:
@@ -21,17 +20,6 @@ func test_the_farm_animals_are_kept() -> void:
 	assert_eq(animals[0].tint.to_html(false), "f4e8dc")
 	assert_eq(animals[0].position, Vector2(3.25, -4.5))
 	assert_eq(animals[1].look, &"rooster")
-
-
-func test_a_version_12_save_loads_with_no_farm_animals() -> void:
-	var game := _current_game()
-	game.erase("livestock")
-	_write_save(12, game)
-
-	var restored := SaveFile.read(SAVE_PATH)
-
-	assert_not_null(restored)
-	assert_eq(restored.livestock.all().size(), 0)
 
 
 func test_a_version_15_save_loads_with_no_animal_following() -> void:
