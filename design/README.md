@@ -63,6 +63,8 @@ top of classic pixel art (details in [Lighting and look](presentation/look.md)).
     - [reputation.md](villagers/reputation.md): Reputation, and how it spreads.
     - [relationships.md](villagers/relationships.md): Friendship levels and what moves them. Planned, not decided.
     - [ideas.md](villagers/ideas.md): Ideas for NPCs, behaviour and LLM dialogue. Not decided.
+- [Economy](economy/README.md): Money, trade and shops. Planned, not decided.
+    - [README.md](economy/README.md): Currency, barter, shops, the player's stall, how money is saved.
 - [Presentation](presentation/README.md): How the game looks, sounds and is operated.
     - [look.md](presentation/look.md): Rendering, tile size, zoom, camera, lighting.
     - [art-pipeline.md](presentation/art-pipeline.md): How the art is made, the palette, style rules, variety.
