@@ -41,10 +41,9 @@ enum FlowerVariant { SMALL, FEW, DRIFT, OTHER_DRIFT }
 
 ## World pixels per tile: the size of a tile in art pixels.
 const TILE_SIZE := 32
-## World pixels per pixel of the art still drawn at 16 px per tile, which tools/art scales up
-## to the tile (DOUBLED in tools/art/generate.py). A number measured on such a picture (a
-## sprite's offset, a frame size, an animal's hop) is written in its pixels times this; the
-## task that redraws a group at 32 px measures its numbers anew, without it.
+## World pixels per pixel of the 16 px art. Since task 111 only the classic art (F7, task 117) is
+## drawn at 16 px per tile and scaled up (DOUBLED in tools/art/classic/generate.py); a few game
+## numbers are still written as 16 px numbers times this (see docs/art-style.md).
 @warning_ignore("integer_division") const ART_16_SCALE := TILE_SIZE / 16
 ## Every look of the ground (see SeasonBlend.GROUND_LOOKS) has an atlas source of its own with
 ## the same tiles: the terrain source's id is the look, the decoration source's id is this far

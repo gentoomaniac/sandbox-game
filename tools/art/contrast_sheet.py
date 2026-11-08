@@ -13,17 +13,16 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-from canvas import GAME_TILE, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, TILE
+from canvas import GAME_OBJECT_CELL_HEIGHT, GAME_OBJECT_CELL_WIDTH, GAME_TILE
 from palette import ASSETS
 from seasons import GROUND_LOOKS
 
 OUTPUT = Path(__file__).resolve().parents[2] / "build" / "contrast_sheet.png"
 DEFAULT_KINDS = ("tall_grass", "fern", "reeds")
 VARIANTS = 3
-# The assets are in the game's pixels: a tile is GAME_TILE, an object cell as many tiles as in
-# canvas.py. The sheet shows them as a 1080p screen does.
-CELL_WIDTH = OBJECT_CELL_WIDTH * GAME_TILE // TILE
-CELL_HEIGHT = OBJECT_CELL_HEIGHT * GAME_TILE // TILE
+# The assets are in the game's pixels. The sheet shows them as a 1080p screen does.
+CELL_WIDTH = GAME_OBJECT_CELL_WIDTH
+CELL_HEIGHT = GAME_OBJECT_CELL_HEIGHT
 SCALE = 3
 GAP = 4
 LABEL_HEIGHT = 12

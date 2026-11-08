@@ -3,23 +3,22 @@
 A picture is a list of rows of palette colour names (None = clear), `picture[y][x]`.
 """
 
-# The tile the art is drawn on, in pixels.
+# The tile of the 16 px art, in pixels: the classic art (tools/art/classic/) is drawn on it and
+# scaled up to the game's tile pixel for pixel when it is written (DOUBLED there).
 TILE = 16
-# The game's tile in pixels (TerrainTileset.TILE_SIZE). The art drawn at TILE is scaled up to it
-# pixel for pixel when it is written (DOUBLED in generate.py).
+# The game's tile in pixels (TerrainTileset.TILE_SIZE), which all the new art is drawn at.
 GAME_TILE = 32
 # Every cell of the object atlas is this big: a tree fits, and smaller things are drawn at
 # the cell's bottom centre. A multi-tile object is centred on its footprint instead.
-OBJECT_CELL_WIDTH = 48
-OBJECT_CELL_HEIGHT = 80
-OBJECT_CENTRE = OBJECT_CELL_WIDTH // 2
-OBJECT_BOTTOM = OBJECT_CELL_HEIGHT - 1
-# The same cell at the game's tile, for the rows of the atlas drawn at 32 px (the plants); the
-# others are drawn in the cell above and scaled up (DOUBLED_ROWS in generate.py).
-GAME_OBJECT_CELL_WIDTH = OBJECT_CELL_WIDTH * GAME_TILE // TILE
-GAME_OBJECT_CELL_HEIGHT = OBJECT_CELL_HEIGHT * GAME_TILE // TILE
+GAME_OBJECT_CELL_WIDTH = 3 * GAME_TILE
+GAME_OBJECT_CELL_HEIGHT = 5 * GAME_TILE
 GAME_OBJECT_CENTRE = GAME_OBJECT_CELL_WIDTH // 2
 GAME_OBJECT_BOTTOM = GAME_OBJECT_CELL_HEIGHT - 1
+# The same cell at the 16 px art's tile, which the classic object atlas is drawn in.
+OBJECT_CELL_WIDTH = 3 * TILE
+OBJECT_CELL_HEIGHT = 5 * TILE
+OBJECT_CENTRE = OBJECT_CELL_WIDTH // 2
+OBJECT_BOTTOM = OBJECT_CELL_HEIGHT - 1
 
 NEIGHBOURS = ((1, 0), (-1, 0), (0, 1), (0, -1))
 
@@ -36,12 +35,6 @@ def filled(colour, size=TILE):
 
 def copy(picture):
     return [row[:] for row in picture]
-
-
-def doubled(picture):
-    """A picture drawn at TILE scaled up to GAME_TILE, pixel for pixel."""
-    factor = GAME_TILE // TILE
-    return [[colour for colour in row for _ in range(factor)] for row in picture for _ in range(factor)]
 
 
 def rect(picture, x0, y0, x1, y1, colour):

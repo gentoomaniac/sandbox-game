@@ -3,17 +3,16 @@
 Each topic has its module: terrain.py, trees.py, camp.py, character.py, interior.py and the
 others listed in tools/README.md. This file puts the objects together into the atlas, and
 `main` writes every file under assets/ (terrain, decorations, objects, character, interior,
-fire, buildings, wildlife, crops, items, ui and the palette), scales the art drawn at 16 px per
-tile up to the game's tile (`scale_up_16_px_art`), then checks them against the palette.
-
-The sizes below are those of the art as drawn, at canvas.TILE = 16 px per tile, unless they
-say otherwise. The files of DOUBLED are written GAME_TILE / TILE times as big.
+fire, buildings, wildlife, crops, items, ui and the palette), then checks them against the
+palette. Everything is drawn at the game's tile, canvas.GAME_TILE = 32 px; the classic art, the
+16 px art doubled, is tools/art/classic/'s.
 
 assets/objects.png: world objects, 96x160 cells (GAME_OBJECT_CELL_WIDTH x
 GAME_OBJECT_CELL_HEIGHT) drawn at 32 px per tile, one row per kind (the table above
-`object_atlas`); the Ewer's picture is three cells wide. An object stands on one tile: the bottom centre 32x32 of its cell (x 32..63, y 128..159). A
-tree's crown rises above that, over the tiles around it. An object on several tiles (boulder 2x1,
-bedroll 1x2) is centred on its footprint, with the cell's bottom on the footprint's bottom.
+`object_atlas`); the Ewer's picture is three cells wide. An object stands on one tile: the
+bottom centre 32x32 of its cell (x 32..63, y 128..159). A tree's crown rises above that, over
+the tiles around it. An object on several tiles (boulder 2x1, bedroll 1x2) is centred on its
+footprint, with the cell's bottom on the footprint's bottom.
 
 Terrain, decorations and objects also exist per look (see seasons.py: spring, summer, autumn,
 bare, frost, snow, dusting), the objects also in the steps of the spring leaf-out (buds, young
@@ -110,16 +109,8 @@ import trunks
 import ui
 import villagers
 import willow
-from canvas import GAME_OBJECT_BOTTOM, GAME_OBJECT_CELL_HEIGHT, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CENTRE, GAME_TILE, TILE, doubled
-from PIL import Image
+from canvas import GAME_OBJECT_BOTTOM, GAME_OBJECT_CELL_HEIGHT, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CENTRE, GAME_TILE
 from palette import ASSETS, PALETTE, check_palette, save, save_picture, write_palette
-
-# The files under assets/ that the world draws and that are still drawn at 16 px per tile:
-# `scale_up_16_px_art` scales them up to the game's tile, pixel for pixel. Each task that
-# redraws a group at 32 px (tasks 107 to 116) takes its files out of here. The item icons and
-# the items on the ground are drawn at 32 px (items.py); the other pictures of ui/ are drawn for
-# the UI's own scale, except the thought bubbles, drawn at 32 px like the people.
-DOUBLED = ()
 
 
 def standing_outdoors(picture):
@@ -360,17 +351,6 @@ def write_items():
         save_picture(picture, f"ui/{name}.png")
 
 
-def scale_up_16_px_art():
-    """Scales the files of DOUBLED up from the art's tile to the game's, pixel for pixel."""
-    factor = GAME_TILE // TILE
-    for pattern in DOUBLED:
-        paths = sorted(ASSETS.glob(pattern))
-        assert paths, f"DOUBLED: no file matches {pattern}"
-        for path in paths:
-            image = Image.open(path)
-            image.resize((image.width * factor, image.height * factor), Image.Resampling.NEAREST).save(path)
-
-
 def main():
     write_seasonal_art()
     write_character()
@@ -381,7 +361,6 @@ def main():
     write_crops()
     write_items()
     ui.write_ui_assets(ASSETS / "ui", PALETTE)
-    scale_up_16_px_art()
     write_palette()
     check_palette()
     print("Wrote every file under assets/ (palette check passed).")
