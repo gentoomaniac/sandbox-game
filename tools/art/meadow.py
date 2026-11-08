@@ -11,8 +11,11 @@ import random
 
 import items
 from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank, rect
+from trees import dense_foot, ground_shadow
 
 TALL_GRASS_SEEDS = (211, 212, 213)
+# The lower part of a blade, as a fraction of its height, that is in the dark shades.
+SHADED = 0.35
 
 
 def tall_grass(seed, is_mown=False):
@@ -21,9 +24,7 @@ def tall_grass(seed, is_mown=False):
     stubble that is left once it is mown."""
     rng = random.Random(seed)
     canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
-    # A small shadow at the foot of the clump.
-    for x in range(OBJECT_CENTRE - 7, OBJECT_CENTRE + 8):
-        canvas[OBJECT_BOTTOM][x] = "shadow"
+    ground_shadow(canvas, 9)
     if is_mown:
         for x in range(OBJECT_CENTRE - 7, OBJECT_CENTRE + 7):
             if rng.random() < 0.25:
@@ -38,8 +39,15 @@ def tall_grass(seed, is_mown=False):
             for step in range(rng.randint(3, 5)):
                 canvas[OBJECT_BOTTOM - rng.choice((0, 1))][x + step] = "dry_light"
         return canvas
-    # The back blades first, darker, then the front ones over them.
-    for row, colours in ((0, ("olive", "dry", "dry", "dry_light")), (1, ("olive", "dry_light", "green_bright", "green_bright"))):
+    # The dense foot of the clump, in the two darkest greens, rimmed with the darkest one so
+    # the clump stands out from the ground. The blades above it are loose and have no rim.
+    dense_foot(
+        canvas,
+        [(OBJECT_BOTTOM - 1 - step, 7 - step // 2, "green_deep" if step < 2 else "green_dark") for step in range(5)],
+    )
+    # The back blades first, darker, then the front ones over them. Their lower third is in
+    # shade, in the dark greens; the light shades are on top.
+    for row, shade, lights in ((0, "green_deep", ("dry", "dry", "dry_light")), (1, "green_dark", ("dry_light", "green_bright", "green_bright"))):
         for _ in range(7):
             base = OBJECT_CENTRE + rng.uniform(-6, 6)
             height = rng.randint(11, 15) if row == 0 else rng.randint(9, 14)
@@ -48,7 +56,7 @@ def tall_grass(seed, is_mown=False):
             for step in range(height):
                 t = step / height
                 x = round(base + bend * t * t)
-                colour = colours[min(3, int(t * 4))]
+                colour = shade if t < SHADED else lights[min(2, int((t - SHADED) / (1 - SHADED) * 3))]
                 # Light from the left: the left half of the clump is a step lighter.
                 if x < OBJECT_CENTRE - 2 and colour == "dry":
                     colour = "dry_light"

@@ -8,7 +8,7 @@ returns the rows in the atlas order. Pictures are lists of rows of palette colou
 import math
 import random
 
-from canvas import NEIGHBOURS, OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank, outline
+from canvas import NEIGHBOURS, OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank, outline, rect
 
 def shaded_blob(canvas, rng, blobs, shades, edge_colour):
     """Fills the union of circles (cx, cy, radius) with `shades`, lightest first: light
@@ -50,6 +50,19 @@ def ground_shadow(canvas, half_width, centre=OBJECT_CENTRE):
         for x in range(centre - reach, centre + reach):
             if abs(x - centre) < reach - 1 or (x + y) % 2 == 0:
                 canvas[y][x] = "shadow"
+
+
+def dense_foot(canvas, rows, rim="green_deep", centre=OBJECT_CENTRE):
+    """The dense foot of a plant with loose blades, drawn with a rim round it: `rows` are
+    (y, half width, colour) from the top down, each centred on `centre`. The rim is the darkest
+    shade of the plant's own ramp, never ink, and the blades above it get none."""
+    foot = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
+    for y, half_width, colour in rows:
+        rect(foot, centre - half_width, y, centre + half_width - 1, y, colour)
+    for y, row in enumerate(outline(foot, rim)):
+        for x, colour in enumerate(row):
+            if colour is not None:
+                canvas[y][x] = colour
 
 
 def tree_trunk(canvas, rng, top, width, shades=BARK):

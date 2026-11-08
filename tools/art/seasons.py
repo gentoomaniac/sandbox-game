@@ -100,6 +100,9 @@ _WINTER_GROUND = {
 WINTER_STALKS = {
     "green_bright": "straw", "green_light": "straw", "green_dark": "reed", "green_deep": "reed",
 }
+# Tall grass in winter and autumn keeps a dark foot: its green_deep and green_dark are what stands
+# out from the ground there (the dry stalks above are light).
+_DARK_FOOT = {"green_dark": "olive", "green_deep": "umber"}
 # Winter without snow: brown-grey ground, dry stalks, withered flowers.
 _BARE_GROUND = {
     "green_bright": "bare_light",
@@ -459,7 +462,7 @@ _WINTER_LOOKS = {
     "shrub": {"bare": _BARE_BUSH, "frost": _FROST_BUSH, "snow": _SNOW_BUSH},
     "sapling": {"bare": _BARE_BUSH, "frost": _FROST_BUSH, "snow": _SNOW_BUSH},
     "fern": {"bare": _DRY_FERN, "frost": _FROST_FERN, "snow": ({"straw", "reed", "olive"}, set(), 1)},
-    "tall_grass": {"bare": WINTER_STALKS, "frost": _FROST_STALKS},
+    "tall_grass": {"bare": WINTER_STALKS | _DARK_FOOT, "frost": _FROST_STALKS | _DARK_FOOT},
     "reeds": {"bare": _GOLDEN_REEDS, "snow": _SNOW_REEDS},
     "stone": {"frost_only": _FROST_STONE, "snow": _SNOW_STONE},
     "boulder": {"frost_only": _FROST_STONE, "snow": _SNOW_BOULDER},
@@ -553,8 +556,10 @@ def _season_object(look, kind, variant, canvas, redraw):
             canvas = remap(canvas, _GREEN_BROWN)
         elif kind in ("berry_bush", "shrub", "sapling", "fern"):
             canvas = remap(canvas, _AUTUMN_BUSH[variant % 3])
-        elif kind in ("tall_grass", "dyke"):
+        elif kind == "dyke":
             canvas = remap(canvas, _AUTUMN_GRASS)
+        elif kind == "tall_grass":
+            canvas = remap(canvas, _AUTUMN_GRASS | _DARK_FOOT)
         elif kind == "reeds":
             canvas = remap(canvas, _GOLDEN_REEDS)
     elif look in ("bare", "frost", "snow", "dusting"):
