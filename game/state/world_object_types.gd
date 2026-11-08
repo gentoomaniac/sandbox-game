@@ -115,6 +115,9 @@ const OVEN := &"oven"
 const EWER := &"ewer"
 ## The woodworker's master piece (task 74): it stands only in a house.
 const CUPBOARD := &"cupboard"
+## A grave in the churchyard (task 102): an oak cross, a headstone or a fieldstone slab, the
+## look by its tile.
+const GRAVE := &"grave"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -154,6 +157,7 @@ const _CARVED_CHEST_ROW := 42
 const _KILN_ROW := 43
 const _OVEN_ROW := 44
 const _EWER_ROW := 45
+const _GRAVE_ROW := 46
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -566,6 +570,20 @@ const _OTHER_TYPES := {
 		"harvest_level": 0,
 		"atlas_row": _EWER_ROW,
 		"variants": 1,
+	},
+	# The grave marker the player places; its interior picture is the ghost (the oak cross).
+	GRAVE:
+	{
+		"hp": 2,
+		"tool": &"pickaxe",
+		"drops": {&"grave_marker": 1},
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _GRAVE_ROW,
+		"variants": 3,
+		"interior_sprite": "res://assets/interior/grave.png",
+		"outdoors_only": true,
 	},
 	WORKBENCH:
 	{

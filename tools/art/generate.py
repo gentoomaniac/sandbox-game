@@ -164,6 +164,7 @@ def standing_outdoors(picture):
 # 43 kiln (1)
 # 44 oven (1)
 # 45 ewer (1)
+# 46 grave (3)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -207,6 +208,7 @@ def object_atlas():
         ("kiln", [standing_outdoors(crafts.kiln())]),
         ("oven", [standing_outdoors(crafts.oven())]),
         ("ewer", coast.ewer_row()),
+        ("grave", [standing_outdoors(picture) for picture in church.graves()]),
     ]
 
 
@@ -280,6 +282,8 @@ def write_interior():
     # The stations the player places are no furniture of the maps: they have no marker tile.
     for name, picture in crafts.stations().items():
         save_picture(picture, f"interior/{name}.png")
+    # The ghost of the grave marker while it is placed (a grave stands only outdoors).
+    save_picture(church.graves()[0], "interior/grave.png")
 
 
 def write_bedroll_cover():
@@ -310,7 +314,7 @@ def write_crops():
 
 
 def write_items():
-    icons = items.ICONS | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons()
+    icons = items.ICONS | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons()
     for name, picture in icons.items():
         save_picture(picture, f"items/{name}.png")
         # The same icon at half size, for items lying on the ground.

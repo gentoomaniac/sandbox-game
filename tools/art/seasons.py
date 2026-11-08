@@ -472,6 +472,8 @@ _WINTER_LOOKS = {
     "workbench": {"frost_only": _FROST_STONE, "snow": ({"sand_light", "sand"}, set(), 2)},
     # The Ewer: snow on its deck and on the furled sail, a frost rimes the deck in specks.
     "ewer": {"specks": {"bare_light", "bare"}, "snow": ({"bare_light", "bare", "umber", "rust_dark"}, set(), 2)},
+    # Snow on the arms of a cross and the tops of the stones.
+    "grave": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "soil_mid", "sand_light", "sand", "stone_light", "stone"}, set(), 2)},
     "oak_trunk": _TRUNK_WINTER,
     "oak_short_trunk": _TRUNK_WINTER,
     "spruce_trunk": _TRUNK_WINTER,

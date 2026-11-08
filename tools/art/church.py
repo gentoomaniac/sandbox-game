@@ -1,4 +1,4 @@
-"""The parish church of a marsh village and its bell frame.
+"""The parish church of a marsh village, its bell frame and the graves of its churchyard.
 
 The church (assets/buildings/church.png) is drawn like the houses in buildings.py, from the
 south in 3/4 view: a nave of grey-brown tuff ashlar with the lower chancel to the east, under
@@ -6,12 +6,16 @@ steep roofs of red pantiles, small round-arched windows of leaded glass in brick
 low porch on the south side whose gable faces the front, with the round-arched church door in
 it. An iron cross stands on the west gable and on the porch. The small marsh parishes had no
 tower: the bells hung in a free-standing wooden frame (Glockenstapel, bell_frame.png), an open
-oak frame on a brick base under a pyramid of oak shingles, the bell in it.
+oak frame on a brick base under a pyramid of oak shingles, the bell in it. The churchyard wall
+is the fieldstone wall of boundaries.py; the graves (an oak cross, a sandstone headstone and a
+fieldstone slab) are world objects, a row of the object atlas.
 """
 
 import math
 import random
 
+import crafts
+import interior
 from buildings import LIME, OAK, SHADED, eaves_shadow, fieldstone_base, brick_wall, glass, ground_shadow, outline, plank_door
 from canvas import TILE, blank, rect
 
@@ -275,6 +279,58 @@ def bell_frame(is_lit):
     outline(picture, OUTLINE)
     ground_shadow(picture)
     return picture, snowy
+
+
+def oak_cross():
+    """An oak cross, 11x16 px, lit on the left, its arms a little below the top."""
+    picture = blank(11, 16)
+    rect(picture, 4, 0, 6, 15, "soil_mid")
+    rect(picture, 0, 4, 10, 6, "soil_mid")
+    rect(picture, 4, 0, 4, 15, "soil_light")
+    rect(picture, 0, 4, 10, 4, "soil_light")
+    rect(picture, 6, 7, 6, 15, "soil")
+    rect(picture, 0, 6, 10, 6, "soil")
+    return interior.outline(picture, "soil_dark", keep_bottom=True)
+
+
+def headstone():
+    """A headstone of sandstone, 11x14 px, its top round, a cross cut into it over three lines
+    of letters; lichen on its foot."""
+    picture = blank(11, 14)
+    for y in range(14):
+        for x in range(11):
+            if y >= 5 or math.hypot(x - 5, y - 5) <= 5.5:
+                picture[y][x] = "sand_light" if x < 3 or y < 2 else "sand" if x < 9 else "mud"
+    rect(picture, 5, 2, 5, 6, "mud")
+    rect(picture, 3, 3, 7, 3, "mud")
+    for y, (left, right) in zip((8, 10), ((2, 8), (3, 7))):
+        for x in range(left, right + 1, 2):
+            picture[y][x] = "mud"
+    rect(picture, 1, 12, 3, 12, "olive")
+    picture[11][2] = "dry"
+    return interior.outline(picture, "mud_dark", keep_bottom=True)
+
+
+def fieldstone_slab():
+    """A low slab of grey granite, 13x9 px, rough on top, a cross cut into it."""
+    picture = blank(13, 9)
+    tops = (3, 2, 1, 1, 0, 0, 0, 1, 1, 1, 2, 2, 3)
+    for x, top in enumerate(tops):
+        for y in range(top, 9):
+            picture[y][x] = "stone_light" if y <= top + 1 or x < 2 else "stone" if x < 11 else "stone_dark"
+    rect(picture, 6, 2, 6, 6, "stone_dark")
+    rect(picture, 4, 3, 8, 3, "stone_dark")
+    return interior.outline(picture, "stone_dark", keep_bottom=True)
+
+
+def graves():
+    """The looks of a grave, standing: the variants of the world object `grave`."""
+    return [oak_cross(), headstone(), fieldstone_slab()]
+
+
+def icons():
+    """The icon of the grave marker, the item that places a grave: the oak cross."""
+    return {"grave_marker": crafts.icon_of(oak_cross())}
 
 
 # How to draw each building, by its id in data/buildings.cfg (generate.py adds them to those of

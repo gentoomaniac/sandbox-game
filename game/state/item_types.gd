@@ -58,6 +58,8 @@ const PLANKS := &"planks"
 const STOOL := &"stool"
 const CARVED_CHEST := &"carved_chest"
 const CUPBOARD := &"cupboard"
+## A cross or a stone for a grave in the churchyard (task 102).
+const GRAVE_MARKER := &"grave_marker"
 # The mason's (task 74).
 const RAW_BRICK := &"raw_brick"
 const BRICK := &"brick"
@@ -414,6 +416,14 @@ const _OTHER_TYPES := {
 		"weight": 10.0,
 		"stack_limit": 5,
 		"places": WorldObjectTypes.CUPBOARD,
+	},
+	GRAVE_MARKER:
+	{
+		"name": "Grave marker",
+		"description": "An oak cross or a stone for a grave. It stands outdoors.",
+		"weight": 10.0,
+		"stack_limit": 5,
+		"places": WorldObjectTypes.GRAVE,
 	},
 	ROAST_TURNIP:
 	{
