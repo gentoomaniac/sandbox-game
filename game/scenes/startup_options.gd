@@ -90,6 +90,8 @@ extends RefCounted
 ##   --drops=<x>,<y>          what a felled tree, a mined stone, a harvested crop and a picked
 ##                            bush drop
 ##   --forage=<x>,<y>         a stump, bushes and a sapling in a row, and some of every new item
+##   --items=<x>,<y>          one of every item on the ground, ten to a row, and in the inventory
+##                            as many as fit (see DebugItems)
 ##   --churchyard=<x>,<y>     the church, its bell frame and graves in a walled churchyard
 ##   --street=<x>,<y>         every building in a row, from that tile eastwards (see DebugStreet)
 ##   --felled=<x>,<y>         trees felled from each side, with stumps, trunks and tree seeds
@@ -201,6 +203,7 @@ var house := NO_TILE
 var field := NO_TILE
 var drops := NO_TILE
 var forage := NO_TILE
+var items := NO_TILE
 var churchyard := NO_TILE
 var street := NO_TILE
 var felled := NO_TILE
@@ -329,6 +332,8 @@ func _init(args := PackedStringArray()) -> void:
 				drops = _tile(arg)
 			"--forage":
 				forage = _tile(arg)
+			"--items":
+				items = _tile(arg)
 			"--churchyard":
 				churchyard = _tile(arg)
 			"--street":

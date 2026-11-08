@@ -748,6 +748,8 @@ func _apply_game_options() -> void:
 		DebugPath.create(_state.world, _options.path, _options.path_days.x, _options.path_days.y)
 	if _options.drops != StartupOptions.NO_TILE:
 		DebugDrops.create(_state.world, _options.drops)
+	if _options.items != StartupOptions.NO_TILE:
+		DebugItems.create(_state, _options.items)
 	if _options.landing != StartupOptions.NO_TILE:
 		DebugLanding.create(_state.world, _options.landing)
 	if _options.energy >= 0.0:
