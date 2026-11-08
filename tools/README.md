@@ -42,9 +42,10 @@ by topic. Where is a thing drawn?
 | `beech.py`, `birch.py`, `alder.py` | The beech, the birch and the alder, in leaf and bare. |
 | `willow.py` | The pollard willow, in leaf and bare. |
 | `camp.py` | The fireplace and the bedroll. |
-| `character.py` | The player's layers (body, breeches and stockings, clogs, shirt and waistcoat, jacket, hair, hats, hoe), their passing out, sitting on a horse and the sleeping "z". |
-| `villagers.py` | The villagers' layers in the same frames: the women's dress (bodice, skirt, apron, shawl, coif, headscarf), other skins, hair colours and cloth, the felt hat. |
-| `portraits.py` | The 32x32 chat portrait of every layer that shows in a bust, in the layer's colours. |
+| `character.py` | The player's layers at 32 px per tile (body, breeches and stockings, clogs, shirt and waistcoat, jacket, hair, hats, hoe), all drawn on one `Figure` (where the head, arms and legs are in a frame), their passing out, sitting on a horse and the sleeping "z". |
+| `villagers.py` | The villagers' layers on the same figure: the women's dress (bodice, skirt, apron, shawl, coif, headscarf), other skins, hair colours and cloth, the felt hat, the tricorne and the white stocking cap. |
+| `forms.py` | Rounded shapes as masks (ellipse, capsule, polygon, rounded box) and their shading by the light from the top left, for the figures of character.py and villagers.py. |
+| `portraits.py` | The 32x32 chat portrait of every layer that shows in a bust: the top of its frame facing the viewer. |
 | `interior.py` | The room tiles and the furniture inside the buildings, the hearth too. |
 | `buildings.py` | The shack, Kate, longhouse, hall house and barn, plain and with lit windows. |
 | `church.py` | The church and its bell frame (as buildings.py), and the graves of the churchyard (a row of the object atlas). |

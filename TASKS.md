@@ -1495,7 +1495,30 @@ The objects atlas is shared with 108; see there.
 
 ## 113. 32 px art: the player and the villagers (character layers, every action, riding, collapse, portraits)
 
-- [ ] Done
+- [x] Done
+
+Done: every character layer is drawn at 32x64 (tools/art/character.py, villagers.py) in the
+style of the mockup: rounded forms shaded by the light from the top left (a new
+tools/art/forms.py with the mockup's shapes and shading), faces with eyes, a glint, brows, a
+nose shadow, cheeks and a mouth, collars, buttons and pockets, full sleeves gathered at the
+wrist, knee bands with a button, white stockings and clogs with a lit top and a dark sole. All
+layers draw on one `Figure` (head, torso, arms and legs of a facing and pose), so the looks still
+combine; the hands stay in front of what is worn. The walk, passing out (64x64 frames), riding,
+the held hoe, the sleeping "z" and the thought bubble are redrawn; the chat portraits are the top
+of each layer's front frame, so they have the new faces (the chat layout is unchanged). From the
+art review: a white stocking cap besides the red one (now a stocking cap with a tip and tassel),
+a striped apron and a tricorne, worn by made-up villagers (data/npcs.cfg, data/npc_talk.cfg).
+The people stand on the animals' contact shadow. The character sheets, the "z" and the bubbles
+left `DOUBLED`; the game's numbers measured on them are native (head tops and sweat in
+`TirednessView`, the name tag, the lying poses, the "z"s, the bubble's pop, the character
+preview at one UI pixel per art pixel). The seat on the horse keeps its row, as the horse is
+still doubled 16 px art: task 114 measures `SEAT` anew. Checked in screenshots at zoom 1 and 2
+(every facing and walk frame, riding the bay, the grey and the pony from the side, the front
+and behind, the collapse, beds, villagers of every look, the portraits, the inventory, summer, snow and night); README pictures retaken.
+Left for later: the trades' props in hand (net, crook, ...) for task 115; the bedroll's and the
+beds' covers (16 px art) are shorter than the 61 px figure, so its clogs show at the foot of
+the bedroll: tasks 111 and 112 draw the covers to the foot; the waking picture shows the shack
+and the camp only (a Kate or longhouse would not place by the camp with `--house`).
 
 ## 114. 32 px art: farm animals (cow, sheep, chicken, horse, dog, cat, rabbit), every action
 

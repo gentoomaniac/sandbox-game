@@ -179,17 +179,19 @@ the inventory and the hotbar (dropping things too), and eat: no tools, no buildi
 crafting, no doors, and nothing is picked up from the ground. Get off first. A game
 saved on horseback loads with you standing beside the horse.
 
-![Trotting on a bay horse past the pollard willows, and walking a grey towards the viewer](docs/screenshots/riding.png)
+![Trotting on a bay horse, walking a grey towards the viewer, and on a pony from behind](docs/screenshots/riding.png)
 
 ### Villagers
 
 The first people of the coast: villagers dressed in the clothes of the period, the men in
-knee breeches, waistcoats and felt hats or knitted caps, the women in long skirts, laced
-bodices, aprons, shawls and white coifs or headscarves, each with a skin, hair and clothes
-of their own and a North Frisian or Low German name (Antje Boysen, Momme Ketels). They keep
-to within about six tiles of the house or campfire nearest to where they came, stand about
-and stroll by day and stand still at night; you walk through them, so they never shut you
-in. For now they come from the console; they are saved with the game.
+knee breeches, waistcoats and felt hats, tricornes or red and white stocking caps, the women
+in long skirts, laced bodices, white, blue or striped aprons, shawls and white coifs or
+headscarves, each with a skin, hair and clothes of their own and a North Frisian or Low
+German name (Antje Boysen, Momme Ketels). Like you they are drawn at 32 px per tile, with
+faces, buttons, stockings and clogs, and stand on a small shadow. They keep to within about
+six tiles of the house or campfire nearest to where they came, stand about and stroll by day
+and stand still at night; you walk through them, so they never shut you in. For now they come
+from the console; they are saved with the game.
 
 They all live in Wehlsbüll, a made-up marsh parish two hours north of Husum in 1750, which
 [data/village.cfg](data/village.cfg) describes as everyone there knows it: the church, the Krug,
@@ -395,7 +397,7 @@ After sleeping or passing out you wake lying in the middle of the bed, head on t
 and under the blanket (also on the bedroll at the camp), and get up with your first step.
 Beds don't block walking, so you can't get stuck behind one.
 
-![Waking in the shack, the Kate, the longhouse and at the camp](docs/screenshots/waking-in-bed.png)
+![Waking in the shack and at the camp](docs/screenshots/waking-in-bed.png)
 
 ### Crafting and professions
 

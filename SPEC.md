@@ -55,7 +55,7 @@ top of classic pixel art (details under "Lighting and look").
   The widest view is a native 640×360 art pixels (20×11 tiles, the area the 16 px art showed at
   zoom 1), shown at a whole multiple on the usual screens (×3 at 1080p, ×4 at 1440p). Until all
   art is redrawn at 32 px, the generators' 16 px output is doubled pixel for pixel (tasks 106 and
-  on). (Was: 16×16, 320×180 at zoom 1.)
+  on); the people are drawn at 32 px since task 113. (Was: 16×16, 320×180 at zoom 1.)
 - **Stepless zoom** from the widest view (640×360 art pixels, zoom 1) in to 2× (320×180); the
   game starts at the widest (the user zooms out fully anyway, 2026-11-08). Ctrl and the mouse
   wheel zoom; the wheel alone steps through the hotbar. (Was: 0.5× to 2×, starting at 0.5×.)
@@ -342,13 +342,16 @@ top of classic pixel art (details under "Lighting and look").
     period dress has it.
 - **Movement keys:** arrow keys and WASD (decided 2026-11-05). All keys can be changed in
   the settings (see Menus and settings).
-- **Scale between character and world** (in pixels of the 16 px art, doubled for now):
-  character figure 27–28 px tall in its 16×32 frame; mature trees about 2–2.5× the character
-  (60–66 px); a small house about 3.4× (5×3 footprint, ~96 px tall, door at least as tall as
-  the character). Numbers in `docs/archive/art-review-2026-11-05.md`.
-- **Character sprite: 16×32 pixels** (one tile wide, two tall), built from **layers**
-  (body, clothes, head/hair, held tool or weapon, later gear), so equipment can be shown
-  by swapping or adding a layer instead of redrawing the character.
+- **Scale between character and world:** the character figure is 61 px tall (hat to soles)
+  in its 32×64 frame (task 113; 27–28 px in 16×32 before). Mature trees are about 2–2.5× the
+  character, a small house about 3.4× (5×3 footprint, door at least as tall as the
+  character); numbers in `docs/archive/art-review-2026-11-05.md`, in pixels of the 16 px art.
+- **Character sprite: 32×64 pixels** (one tile wide, two tall; 16×32 before task 113), built
+  from **layers** (body, clothes, head/hair, held tool or weapon, later gear), so equipment
+  can be shown by swapping or adding a layer instead of redrawing the character. Every layer
+  is drawn on the same figure, so they line up; the faces have eyes with a glint, brows, a
+  nose shadow, cheeks and a mouth. The player and the villagers stand on a small contact
+  shadow, as the animals do.
 - **Tools** are bought and upgraded (decided 2026-11-05):
   - The player starts with a hoe, axe, pickaxe, watering can, scythe, shovel and a bag of
     turnip seeds, all tools at level 1.
@@ -955,9 +958,10 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   the hand-written families are the Boysens, Ketels, Hansens and Paulsens). The look is layers
   like the player's: a skin, a hair style and colour (short, long or tied for men; a bun or
   plaits for women), and period clothes (men: shirt or
-  waistcoat, knee breeches, sometimes a jacket, a knitted cap, straw or felt hat; women: a
-  laced bodice over the chemise, a long skirt, often an apron or a shawl, a white coif or a
-  headscarf), all in existing palette colours. The lists are in `data/npcs.cfg`.
+  waistcoat, knee breeches, sometimes a jacket, a red or white stocking cap, a straw or felt
+  hat or a tricorne; women: a laced bodice over the chemise, a long skirt, often a white, blue
+  or striped apron or a shawl, a white coif or a headscarf), all in existing palette colours.
+  The lists are in `data/npcs.cfg`.
 - **The village (task 96):** all villagers live in Wehlsbüll, a made-up marsh parish two hours
   north of Husum in 1750, and share its sheet, `data/village.cfg` (`VillageSheet`): one topic a
   section (the village, places, who is who, money and prices, this year's news and worries, the
@@ -1000,7 +1004,8 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   front of the player, before any chest, station or bed; that villager's name shows over
   their head. The chat pauses the game and is laid out like a messenger: the villager's
   portrait on the left, the player's on the right (32x32 head-and-shoulders portraits laid
-  together from the same layers, drawn at 2x), names under them, and between them the lines as
+  together from the same layers, each the top of the layer's frame facing the viewer, drawn at
+  2x), names under them, and between them the lines as
   bubbles: the villager's on the left with their name above the first of a run, the player's
   on the right, each with the game time small in its bottom corner, at most 70% of the window
   wide with the text wrapped, closer together within one speaker's run than between speakers

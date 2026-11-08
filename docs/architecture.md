@@ -141,7 +141,8 @@ Warft and an Ewer here and there.
   `ViewMath` holds the numbers of the two-stage rendering: zoom 1 is the widest view, a native
   640×360, zoom 2 the closest. While the art is the 16 px art doubled (see docs/art-style.md,
   "Resolution"), a number measured on a picture is written as its 16 px number times
-  `TerrainTileset.ART_16_SCALE`, and the shaders of the art work on its pixels through
+  `TerrainTileset.ART_16_SCALE`; once its group is drawn at 32 px (the people, task 113), as
+  the number measured on the 32 px picture; and the shaders of the art work on its pixels through
   `art_scale` (`art_scale.gdshaderinc`). `WildlifeRules.TILE_SIZE` is the same tile size for
   the state, which can't see the scenes (a test keeps the two equal).
 - Other views each draw one piece of state: `PlayerView`, `WeatherView`, `WildlifeView`,

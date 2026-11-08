@@ -67,14 +67,16 @@ and the widest view is a native 640×360: 20×11 tiles, shown ×3 on a 1080p scr
 32) pixel for pixel, as the last step before the palette check. So until a group is redrawn
 the game looks as it did, every pixel 2×2.
 
-Tasks 107 to 116 redraw the art group by group at 32 px. To take a group native:
+Tasks 107 to 116 redraw the art group by group at 32 px; the people are done (task 113, see
+"Clothing and characters"). To take a group native:
 
 - draw it at 32 px per tile (its cells, frames and offsets are twice the numbers below) and
   take its files out of `DOUBLED`;
 - in the game, a number measured on a picture is either its 16 px number times
-  `TerrainTileset.ART_16_SCALE` (a frame size in `WildlifeSprites`, a seat in `PlayerView`, a
-  hop in `Rabbit`) or, once its group is native, the number measured on the 32 px picture,
-  without the factor. Grep for `ART_16_SCALE`; the factor also hides in `WildlifeSprites.SCALE`,
+  `TerrainTileset.ART_16_SCALE` (a frame size in `WildlifeSprites`, a hop in `Rabbit`) or, once
+  its group is native, the number measured on the 32 px picture, without the factor. A number
+  that joins two groups is measured on both: the rider's `SEAT` in `PlayerView` (the people's
+  seat row on the horse's saddle) is redone when the horse is (task 114). Grep for `ART_16_SCALE`; the factor also hides in `WildlifeSprites.SCALE`,
   `BuildMode.OUTLINE_WIDTH` and `PROGRESS_HEIGHT`, and in the `draw_set_transform` of
   `Animal.draw_contact_shadow`, `GroundShadows` and `HitParticles`, which draw on the 16 px grid. Numbers in the
   pictures' own pixels in data (`sprite_height` in world_object_types.gd, `window_lights` in
@@ -87,7 +89,8 @@ Tasks 107 to 116 redraw the art group by group at 32 px. To take a group native:
 The UI's pictures (item icons, slots, the frames and the chat portraits) are drawn for the UI's
 own 640×360 base and scale, and are not doubled; task 115 decides about the item icons.
 
-The sizes in this guide (16×32 for a character, a 48×80 object cell) are those of the 16 px art.
+The sizes in this guide (a 48×80 object cell) are those of the 16 px art, but for the
+characters' 32×64.
 
 ## Materials
 
@@ -195,7 +198,7 @@ shutters.
 
 ## Clothing and characters
 
-Period peasant dress, simplified to 16×32 pixels. Men at sea dressed like the port towns,
+Period peasant dress, simplified to 32×64 pixels. Men at sea dressed like the port towns,
 so there was no single male costume; that gives freedom, as long as it is 18th-century.
 
 - **Men:** white or undyed linen shirt; **waistcoat**, often red, with a row of tin or
@@ -208,25 +211,34 @@ so there was no single male costume; that gives freedom, as long as it is 18th-c
   ankle, a big **apron** (white, blue or striped), a shawl crossed over the chest, a white
   cap or headscarf. Field work: a sun hood or scarf, sleeves rolled up. Island women have
   distinctive dress with silver filigree (Föhr, Amrum), good for NPCs later.
-- **At 16×32:** the readable cues are clogs (pale, wide feet), stockings (pale lower legs
-  below dark breeches), the waistcoat colour, the apron and the headwear. Spend pixels on
-  those, not on folds.
+- **At 32×64** (task 113, after the mockup in review/resolution-mockup-2026-11-08, "Die
+  Siedler 1 level of fidelity"): the figure is 61 px from the crown of a hat to the soles,
+  the head 16 px wide. The readable cues are still clogs (pale, wide, lit on top, a dark
+  sole), stockings (pale lower legs below dark breeches with a band and a button at the
+  knee), the waistcoat colour with its buttons and pockets, the apron and the headwear; the
+  pixels beyond them go to the face (eyes with a glint, brows, a nose shadow, cheeks, a mouth),
+  a collar and full sleeves gathered at the wrist, not to folds. The parts are rounded forms
+  shaded by the light from the top left (`tools/art/forms.py`), each in the 2-3 shades of its
+  own colour; every layer is drawn on one `Figure` (character.py), so they line up, and only
+  the silhouette has the ink outline. A small contact shadow is drawn under the feet in the
+  game.
 - **Not period:** baseball-cap shapes, pith helmets, modern long trousers with belts as the
   default (long trousers are fine for sailors and farmhands later in the century), T-shirt
   cuts, sneakers.
 - **Villagers** (task 84, `tools/art/villagers.py`) are put together from the same layers as
-  the player, in the same 16x32 frames: four skins (`skin`, a fair `cream`, a tanned
+  the player, on the same figure: four skins (`skin`, a fair `cream`, a tanned
   `skin_shade` and a dark `soil_light` face), five hair colours (brown, blond, red, grey,
   black) in the styles short, long, tied, a bun and plaits with red ribbons; waistcoats and
   breeches in other wools (indigo, plant green, brown, black; leather breeches), brown and
-  black jackets, a black felt hat with the straw hat's brim; for the women a laced bodice
-  over the chemise, a long skirt to the ankles (madder red, indigo, brown, black, heather),
-  a white or blue apron, a shawl (red, cream, heather), a white coif or a red or blue
-  headscarf. No new colours.
-- **Portraits** for the chat (`tools/art/portraits.py`): a 32x32 head and shoulders, facing
-  the viewer, for every layer that shows in a bust, in the layer's colours, drawn at 2x. The
-  head is 12 px wide with eyes that have a white, brows, a nose shadow, cheeks and a mouth;
-  the outline is ink, as on the sprites.
+  black jackets, a black felt hat with the straw hat's brim, a tricorne of black felt edged in
+  a pale braid, the stocking cap in white as well as red; for the women a laced bodice over
+  the chemise, a long skirt to the ankles (madder red, indigo, brown, black, heather), a
+  white, blue or blue-and-white striped apron, a shawl (red, cream, heather), a white coif or
+  a red or blue headscarf. No new colours. The trades' props in hand (the fisherman's net, the
+  shepherd's crook) are not drawn yet.
+- **Portraits** for the chat (`tools/art/portraits.py`): a 32x32 head and shoulders for
+  every layer that shows in a bust, shown at 2x: the top 32 rows of the layer's frame facing
+  the viewer, standing still, so the portrait has the figure's own face.
 
 ## Landscape
 
