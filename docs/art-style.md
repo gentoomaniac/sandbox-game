@@ -147,6 +147,17 @@ shutters.
   bell in `gold`, `ochre`, `ochre_dark`. The churchyard has the fieldstone wall and graves:
   an oak cross, a sandstone headstone (`sand` ramp, a cut cross and lines of letters) and a
   low granite slab.
+- **Fisherman's hut** (*Fischerkate*, task 103): the shack's boards and fieldstones on 4x2
+  tiles under a hipped reed thatch with a turf ridge (`turf_ridge`), one small white window,
+  a low door in faded teal (`water_light`, `paint_teal`, `water_deep`) and an oar against
+  the wall. Its landing is objects (tools/art/landing.py): a jetty of weathered planks
+  (`bare_light`, `bare`, joints `mud_dark`) across the way it runs, its free edges
+  `soil_dark`, on oak piles (`soil_mid`/`soil_dark`) green with weed at the foot, two mooring
+  posts at its head with a rope; a flat rowing boat, tarred outside with a lit wale, floor
+  boards, thwarts and oars inside; a net frame with a tarred net (`umber`, `soil`) in open
+  4 px diamond meshes so the ground shows through, cork floats along the hem; wicker eel
+  traps (`straw`, `sand_light`, `sand`, `mud`, hoops and outline `mud_dark`). Snow covers
+  the deck and the boat's floor (a remap, as the planks lie flat), and caps the rest.
 - Details worth having: a bench by the door, a **stork's nest** on the ridge, the door
   split in two halves (*Klöntür*), a date or initials in iron wall anchors, a sod-roofed
   outhouse, a draw well with a sweep.
@@ -223,7 +234,8 @@ not "generic RPG forest".
   yoke for two buckets, a copper or wooden watering can with a big rose.
 - **Carts and boats:** two- and four-wheeled wooden carts with spoked wheels, a
   wheelbarrow, sleds; flat-bottomed sailing barges (*Ewer*) with leeboards that sit on the
-  mud at low tide, small rowing boats.
+  mud at low tide, small rowing boats (a flat-bottomed one lies at the fisherman's landing,
+  task 103).
 - **Fences and walls:** wattle (woven hazel or willow), split-rail fences, fieldstone dry
   walls, Knicks. No barbed wire, no sawn picket fences.
 - **Wells and water:** draw well with a long sweep (*Ziehbrunnen*), a wooden pump later

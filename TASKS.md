@@ -1365,12 +1365,23 @@ screenshots. Screenshot docs/screenshots/church.png.
 
 ## 103. A fisherman's hut, a jetty, nets and a boat
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-08 (review/art-review-2026-11-08, task 10 and buildings rows 6 and
 12): the Ketels' home at the landing by the sluice: a small turf-and-thatch hut of tarred
 boards, a net-drying frame and eel traps by the door, a plank jetty on posts at the water and a
 flat rowing boat beside it.
+
+Done: the fisherman's hut is a building (4x2, after the shack in data/buildings.cfg: tarred
+boards under a reed thatch with a turf ridge, one small window; 25 logs, 5 stone, 15 reeds; a
+7x6 room like the shack's). The landing is world objects placed with items (tools/art/
+landing.py, atlas rows 47-50): a jetty laid a piece per tile that joins its neighbours and is
+walked on over water or mud (the new `deck` and `placed_on` keys of WorldObjectTypes; placing
+checks every footprint tile now), a rowing boat (2x1, water or mud), a net frame (2x1) and
+eel traps. Jetty and boat at the workbench, frame and traps by hand. Snowy and lit looks as
+the other buildings and objects. `--landing=x,y` places it for screenshots; docs/screenshots/
+fisher-hut.png. Not done: fishing, a usable boat, nets as a crafting material, the net needle
+in Inken's hands, mooring the boat on a rope.
 
 ## 104. Save upgrades for the last 10 versions only
 

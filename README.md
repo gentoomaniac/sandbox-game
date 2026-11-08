@@ -318,6 +318,15 @@ white bargeboards crossing in a pair of horse heads, under a huge thatch.
 It is also the dearest: 100 logs, 40 stone, 50 clay and 80 reeds (the shack takes 20 logs
 and 5 stone, the Kate 30, 15, 15 and 25).
 
+The fisherman's hut is the shack's kin at the water: tarred boards under a reed thatch with a
+turf ridge (25 logs, 5 stone, 15 reeds). Its landing is laid piece by piece: a plank jetty on
+oak piles over the water or the mud, which you walk out on, joined up as you lay it and with
+mooring posts at its head (a piece takes 3 planks and a log at the workbench); a flat rowing
+boat to lie beside it (10 planks, 4 fibre); and, made by hand, a net frame with a tarred net
+hung to dry (2 logs, 8 fibre) and wicker eel traps (4 reeds, 1 fibre).
+
+![The fisherman's hut behind the sea dyke with its jetty, boat, net frame and eel traps at a tideway in summer, and on a winter night under snow, the player standing on the jetty](docs/screenshots/fisher-hut.png)
+
 ![The Kate, the longhouse, the hall house, the barn and the shack in summer, and the hall house on a winter night](docs/screenshots/buildings.png)
 
 The village church follows the small marsh churches of North Frisia: a nave of grey-brown tuff

@@ -53,6 +53,7 @@ by topic. Where is a thing drawn?
 | `items.py`, `tool_icons.py`, `chest.py` | Item icons, the slot frames and the tools; the chest, which is drawn once for every use. |
 | `boundaries.py` | The lines across the land, drawn as solids tile by tile with a picture per connection mask: the Knick, the wattle fence, the fieldstone wall and the dyke. |
 | `coast.py` | The things of the Wadden coast: the Ewer lying on the mud. |
+| `landing.py` | The fisherman's landing: the jetty (a picture per connection mask), the rowing boat, the net frame and the eel traps, and their icons. |
 | `crafts.py` | The professions' art: the stations (workbench, kiln, bake oven) and the carved chest, each drawn once for the atlas, the interior and its icon, and the icons of what is made at them. |
 | `trunks.py`, `meadow.py`, `reeds.py` | Felled trunks, tall grass and clay hint, reeds. |
 | `fire.py` | The animation frames of the campfire and the hearth. |

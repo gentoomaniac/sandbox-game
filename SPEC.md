@@ -1205,6 +1205,11 @@ woodworker, the cook and the mason, and a UI for them.
   countryside, each with its own inside:
   - **Shack:** a small wooden hut, the cheapest shelter. Footprint 3×2, door on the middle
     tile.
+  - **Fisherman's hut** (*Fischerkate*, task 103, 2026-11-08, from the art review of that
+    day): the shack's kin at a landing, the Ketels' home: 4×2, door on the second tile, tarred
+    boards under a reed thatch with a turf ridge, one small window. Costs 25 logs, 5 stone,
+    15 reeds. Its landing is made of world objects, not part of the building (see **The
+    landing** below).
   - **Kate:** a small cottage, 5×3, door on the middle tile. It replaces the old small
     house (old saves map to it).
   - **Longhouse:** a larger farmhouse with the big gable door of the Lower Saxon hall house;
@@ -1234,7 +1239,8 @@ woodworker, the cook and the mason, and a UI for them.
     put it in (the Warften on the salt marsh are empty); `--churchyard=<x>,<y>` puts one in
     view for screenshots.
   - **Insides** (decided 2026-11-05): each is a Tiled map, `maps/interiors/<id>.tmx`, a little
-    larger than the footprint: shack 6×6 (straw sleeping mat, crate, stool), Kate 9×8 (hearth,
+    larger than the footprint: shack 6×6 (straw sleeping mat, crate, stool), fisherman's hut
+    7×6 (the shack's room a tile wider: sleeping mat, stool, barrel, sacks), Kate 9×8 (hearth,
     bed, table, stools, chest), longhouse 15×8 (living end with hearth, box bed, table and
     bench; a stall partition divides it from the animal end with stalls, hay and sacks), barn
     13×8 (four hay stalls, crates, barrels, sacks), church 12×9 (a nave with six pews either
@@ -1303,14 +1309,29 @@ woodworker, the cook and the mason, and a UI for them.
     in a house window, 2×3 in the shack's, and the dormers' half-round windows divided
     the same way; a lit pane glows in one colour. The window inside is the same, with
     wooden bars and daylight.
+- **The landing** (task 103, 2026-11-08): what stands by the fisherman's hut, placed with
+  items like a chest: a **jetty**, laid a piece (1×1) at a time and joined to its neighbours
+  like a Knick, on water, the sea, mud or the salt marsh at the edge; it is walked on over
+  the water (the `deck` of WorldObjectTypes) and has mooring posts at its head. A flat
+  **rowing boat** (2×1) lies on water or mud, only to look at, like the Ewer. A **net frame**
+  (2×1, a tarred net hung on a pole between forked posts) and **eel traps** (1×1, wicker)
+  stand on the land. The jetty piece (3 planks, 1 log, woodworking 20) and the boat (10
+  planks, 4 fibre, woodworking 35) are made at the workbench, the net frame (2 logs, 8 fibre)
+  and the eel traps (4 reeds, 1 fibre) by hand. The axe takes the jetty, the boat and the
+  frame down for their items; the traps are picked up by hand, but not the jetty the
+  player stands on ("Step off it first.", for the axe and the hammer alike), and a player
+  who stands where they don't fit can always step onto a deck, so nobody is left in the
+  water. A deck is walkable for everyone: animals, villagers and a ridden horse can go out
+  on a jetty too, and getting off a horse there puts the player on the jetty, never in the
+  water (getting off looks for a tile they can stand on). No fishing yet.
 - **Buildings cost materials:** logs, stone, clay and reeds (reeds for the thatch), taken
   from the inventory when the building is placed. The ghost shows the costs against what
   the player carries and refuses the spot while something is missing. No refunds on
   placing. First numbers (tune in play): shack 20 logs, 5 stone (turf roof, no clay or
-  reeds); Kate 30 logs, 15 stone, 15 clay, 25 reeds; longhouse about twice the Kate; barn
-  like the Kate with less clay; the hall house the most of every material (100 logs, 40
-  stone, 50 clay, 80 reeds). A new game starts at the camp: the materials for a first house
-  have to be gathered.
+  reeds); fisherman's hut 25 logs, 5 stone, 15 reeds; Kate 30 logs, 15 stone, 15 clay, 25
+  reeds; longhouse about twice the Kate; barn like the Kate with less clay; the hall house
+  the most of every material (100 logs, 40 stone, 50 clay, 80 reeds). A new game starts at
+  the camp: the materials for a first house have to be gathered.
 - **The hammer builds:** holding the hammer is build mode (the ghost follows the cursor,
   use places the building); Q and E (rebindable) pick the building, and B selects the
   hammer. Escape or a right click dismisses build mode until something else is held or B is
