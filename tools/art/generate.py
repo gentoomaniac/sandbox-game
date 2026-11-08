@@ -127,19 +127,11 @@ DOUBLED = (
     # Interiors (task 112).
     "interior.png",
     "interior/*.png",
-    # Wild animals (task 116): a sheet per kind (animals.py, birds.py, sea_birds.py).
-    "wildlife/bee.png",
-    "wildlife/bird.png",
-    "wildlife/butterfly.png",
-    "wildlife/deer.png",
+    # Wild animals (task 116): a sheet per kind (birds.py, sea_birds.py) until it is redrawn.
     "wildlife/dunlin.png",
-    "wildlife/frog.png",
     "wildlife/goose.png",
     "wildlife/gull.png",
-    "wildlife/mouse.png",
     "wildlife/oystercatcher.png",
-    "wildlife/rabbit.png",
-    "wildlife/squirrel.png",
     "wildlife/stork.png",
     "wildlife/tern.png",
     # Items on the ground (task 115).
@@ -356,9 +348,7 @@ def write_fire():
 
 
 def write_wildlife():
-    for kind in animals.SHEETS:
-        save(animals.sheet_rows(kind), f"wildlife/{kind}.png", *animals.cell_size(kind))
-    for name, size, rows in [*birds.sheets(), *sea_birds.sheets(), *livestock.sheets()]:
+    for name, size, rows in [*animals.sheets(), *birds.sheets(), *sea_birds.sheets(), *livestock.sheets()]:
         save(rows, f"wildlife/{name}.png", *size)
 
 

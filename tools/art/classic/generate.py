@@ -69,12 +69,17 @@ DOUBLED = (
     "wildlife/tern.png",
     "fire/*.png",
 )
-# The farm animals whose cells grew at 32 px per tile: the classic sheets, doubled, are set in
+# The animals whose cells grew at 32 px per tile: the classic sheets, doubled, are set in
 # the new cells (bottom centre, as the animal stands in its cell), so that the game reads both
 # sets with the same frame sizes (WildlifeSprites). Their old and new cell sizes.
 GROWN_CELLS = {
     "wildlife/cow_*.png": ((64, 48), (72, 54)),
     "wildlife/horse_*.png": ((88, 72), (88, 76)),
+    # The small wild animals drawn larger than life at 32 px.
+    "wildlife/bird.png": ((16, 16), (22, 18)),
+    "wildlife/rabbit.png": ((24, 20), (26, 22)),
+    "wildlife/bee.png": ((8, 8), (10, 10)),
+    "wildlife/butterfly.png": ((12, 12), (14, 14)),
 }
 
 

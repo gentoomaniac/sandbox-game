@@ -35,19 +35,15 @@ const HORSE := {"size": Vector2i(88, 76), "actions": LIVESTOCK_ACTIONS}
 
 ## Per kind: the size of a frame and the frames of each action, in the order of the rows.
 const SHEETS := {
-	&"bird":
-	{"size": Vector2i(8, 8) * SCALE, "actions": {&"idle": 3, &"peck": 2, &"hop": 2, &"fly": 3}},
-	&"rabbit": {"size": Vector2i(12, 10) * SCALE, "actions": {&"sit": 2, &"nibble": 2, &"hop": 3}},
-	&"squirrel": {"size": Vector2i(14, 12) * SCALE, "actions": {&"sit": 3, &"dart": 3}},
+	&"bird": {"size": Vector2i(22, 18), "actions": {&"idle": 3, &"peck": 2, &"hop": 2, &"fly": 3}},
+	&"rabbit": {"size": Vector2i(26, 22), "actions": {&"sit": 2, &"nibble": 2, &"hop": 3}},
+	&"squirrel": {"size": Vector2i(28, 24), "actions": {&"sit": 3, &"dart": 3}},
 	&"deer":
-	{
-		"size": Vector2i(26, 26) * SCALE,
-		"actions": {&"graze": 2, &"look": 2, &"walk": 4, &"bound": 3}
-	},
-	&"bee": {"size": Vector2i(4, 4) * SCALE, "actions": {&"hover": 2}},
+	{"size": Vector2i(52, 52), "actions": {&"graze": 2, &"look": 2, &"walk": 4, &"bound": 3}},
+	&"bee": {"size": Vector2i(10, 10), "actions": {&"hover": 2}},
 	&"butterfly":
 	{
-		"size": Vector2i(6, 6) * SCALE,
+		"size": Vector2i(14, 14),
 		"actions": {&"flutter": 3, &"flutter_pale": 3, &"flutter_pink": 3},
 	},
 	&"stork":
@@ -55,8 +51,8 @@ const SHEETS := {
 		"size": Vector2i(32, 26) * SCALE,
 		"actions": {&"stand": 2, &"walk": 4, &"strike": 2, &"clatter": 2, &"swallow": 2, &"fly": 3},
 	},
-	&"mouse": {"size": Vector2i(12, 7) * SCALE, "actions": {&"sit": 2, &"scurry": 2}},
-	&"frog": {"size": Vector2i(12, 8) * SCALE, "actions": {&"sit": 2, &"hop": 2}},
+	&"mouse": {"size": Vector2i(24, 14), "actions": {&"sit": 2, &"scurry": 2}},
+	&"frog": {"size": Vector2i(24, 16), "actions": {&"sit": 2, &"hop": 2}},
 	&"goose":
 	{
 		"size": Vector2i(24, 18) * SCALE,

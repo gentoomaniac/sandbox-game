@@ -39,9 +39,13 @@ def rounded_box(width, height, x0, y0, x1, y1):
     return mask
 
 
-def ellipse(width, height, cx, cy, rx, ry):
+def ellipse(width, height, cx, cy, rx, ry, angle=0.0):
+    """An ellipse turned by `angle` degrees, its right end up for a positive angle."""
     xs, ys = grid(width, height)
-    return ((xs - cx) / rx) ** 2 + ((ys - cy) / ry) ** 2 <= 1.0
+    turn = np.radians(angle)
+    along = (xs - cx) * np.cos(turn) - (ys - cy) * np.sin(turn)
+    across = (xs - cx) * np.sin(turn) + (ys - cy) * np.cos(turn)
+    return (along / rx) ** 2 + (across / ry) ** 2 <= 1.0
 
 
 def polygon(width, height, points):
