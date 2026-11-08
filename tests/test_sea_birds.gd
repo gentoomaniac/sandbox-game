@@ -207,3 +207,58 @@ func test_gulls_all_year_and_hardly_at_night() -> void:
 		)
 	assert_eq(rules.target_count(WildlifeRules.GULL, 45, 0, clear), 0, "night")
 	assert_eq(Console.new(_state).complete("spawn gu"), "spawn gull ")
+
+
+func _tern_at(point: Vector2) -> Tern:
+	var tern := Tern.new()
+	tern.position = point
+	_wildlife._add(tern, true)
+	return tern
+
+
+func test_terns_fish_over_the_sea_in_summer_by_day() -> void:
+	var tern := WildlifeRules.TERN
+	assert_true(_wildlife._is_habitat(tern, _point(SEA_EAST - 2)), "the sea")
+	assert_false(_wildlife._is_habitat(tern, _point(0)), "not the mud")
+	var rules := _wildlife.rules
+	var clear := WeatherSample.new()
+	var noon := 12 * GameClock.MINUTES_PER_HOUR
+	assert_eq(rules.target_count(tern, 45, noon, clear), rules.cap(tern), "summer")
+	assert_gt(rules.target_count(tern, 15, noon, clear), 0, "late spring")
+	assert_eq(rules.target_count(tern, 75, noon, clear), 0, "gone in autumn")
+	assert_eq(rules.target_count(tern, 105, noon, clear), 0, "winter")
+	assert_eq(rules.target_count(tern, 45, 0, clear), 0, "night")
+
+
+func test_a_tern_hovers_plunges_in_with_a_splash_and_comes_up_again() -> void:
+	var tern := _tern_at(_point(SEA_EAST - 5))
+	var seen := {}
+	var caught := false
+	for _i in roundi(60.0 / STEP):
+		_run(tern, STEP)
+		seen[tern._state] = true
+		caught = caught or tern.has_fish()
+		if tern._state == Tern.HOVER:
+			assert_true(_wildlife.is_water(tern.position), "hovers over the water")
+		if tern._state == Tern.SPLASH:
+			assert_eq(tern._lift, 0.0, "in the water")
+	assert_true(seen.has(Tern.HOVER), "hovers")
+	assert_true(seen.has(Tern.DIVE), "plunges")
+	assert_true(seen.has(Tern.SPLASH), "splashes")
+	assert_true(caught, "now and then with a fish")
+
+
+func test_a_tern_leaves_after_its_dives() -> void:
+	var tern := _tern_at(_point(SEA_EAST - 5))
+	_run(tern, 120.0)
+	assert_eq(tern._dives_left, 0)
+	assert_true(tern.is_done, "flown out of the view")
+
+
+func test_a_tern_sent_away_flies_off_at_once() -> void:
+	var tern := _tern_at(_point(SEA_EAST - 5))
+	_run(tern, STEP)
+	tern.dismiss()
+	_run(tern, 20.0)
+	assert_true(tern.is_done)
+	assert_eq(Console.new(_state).complete("spawn ter"), "spawn tern ")

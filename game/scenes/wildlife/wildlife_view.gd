@@ -28,7 +28,7 @@ const DEBUG_DISTANCE := Vector2(24.0, 70.0)
 const DEBUG_FLOWERS := 5
 ## The birds of the coast keep to it even when made by hand: none appear where it is not near.
 const SEA_BIRDS: Array[StringName] = [
-	WildlifeRules.OYSTERCATCHER, WildlifeRules.DUNLIN, WildlifeRules.GULL
+	WildlifeRules.OYSTERCATCHER, WildlifeRules.DUNLIN, WildlifeRules.GULL, WildlifeRules.TERN
 ]
 ## A flock crossing the view starts this far behind the ring, in pixels.
 const FLOCK_ENTRY_DISTANCE := 120.0
@@ -432,6 +432,8 @@ func _spawn(kind: StringName, point: Vector2, is_pinned: bool) -> void:
 			animal = Frog.new()
 		WildlifeRules.GULL:
 			animal = Gull.new()
+		WildlifeRules.TERN:
+			animal = Tern.new()
 	animal.position = point
 	_add(animal, is_pinned)
 
@@ -484,7 +486,7 @@ func _remove_gone_animals() -> void:
 
 
 func _is_flying(kind: StringName) -> bool:
-	return kind in [WildlifeRules.BEE, WildlifeRules.BUTTERFLY]
+	return kind in [WildlifeRules.BEE, WildlifeRules.BUTTERFLY, WildlifeRules.TERN]
 
 
 func _tile_at(point: Vector2) -> Vector2i:
