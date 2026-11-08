@@ -72,6 +72,7 @@ const BRICK := &"brick"
 const ROAST_TURNIP := &"roast_turnip"
 const POTTAGE := &"pottage"
 const PEA_SOUP := &"pea_soup"
+const BUCKWHEAT_PANCAKES := &"buckwheat_pancakes"
 const FLOUR := &"flour"
 const BREAD := &"bread"
 const BERRY_TART := &"berry_tart"
@@ -488,6 +489,13 @@ const _OTHER_TYPES := {
 		"name": "Pea soup",
 		"description": "Thick soup of peas and onion, the coast's daily fare.",
 		"weight": 0.5,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+	},
+	BUCKWHEAT_PANCAKES:
+	{
+		"name": "Buckwheat pancakes",
+		"description": "Buckwheat ground and fried thin in the pan, the Geest's pancakes.",
+		"weight": 0.3,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 	FLOUR:

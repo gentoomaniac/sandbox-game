@@ -211,10 +211,12 @@ func _is_kept(node: Node) -> bool:
 func test_every_item_has_a_classic_icon_and_ground_item_as_big_as_the_new() -> void:
 	ArtSet.is_classic = true
 	for item: StringName in ItemTypes.TYPES:
+		# The pancakes were first drawn at 32 px.
+		var has_classic_art := item != ItemTypes.BUCKWHEAT_PANCAKES
 		var icon := ItemTypes.icon_path(item)
-		assert_ne(ArtSet.path(icon), icon, "%s has a classic icon" % item)
+		assert_eq(ArtSet.path(icon) != icon, has_classic_art, "%s has a classic icon" % item)
 		var ground := ItemTypes.ground_icon_path(item)
-		assert_ne(ArtSet.path(ground), ground, "%s has a classic ground item" % item)
+		assert_eq(ArtSet.path(ground) != ground, has_classic_art, "%s has classic art" % item)
 		assert_eq(load(ArtSet.path(ground)).get_size(), load(ground).get_size(), ground)
 
 

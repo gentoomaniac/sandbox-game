@@ -64,3 +64,10 @@ func test_bread_is_baked_in_the_oven_from_flour_ground_by_hand() -> void:
 	assert_has(rules.recipes_at(&"oven"), &"bread")
 	assert_has(rules.recipes_at(&""), &"oven")
 	assert_has(rules.materials(&"oven"), ItemTypes.BRICK, "the oven is the mason's work")
+
+
+func test_buckwheat_is_fried_into_pancakes_at_the_fire() -> void:
+	var rules := RecipeRules.default_rules()
+	assert_has(rules.recipes_at(&"hearth"), &"buckwheat_pancakes")
+	assert_eq(rules.result(&"buckwheat_pancakes"), ItemTypes.BUCKWHEAT_PANCAKES)
+	assert_has(rules.materials(&"buckwheat_pancakes"), &"buckwheat")

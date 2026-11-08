@@ -277,6 +277,20 @@ def stool():
     return picture
 
 
+def pancakes():
+    """Buckwheat pancakes, a stack of three on a wooden plate, dark and lacy at their rims, a
+    pat of butter on top."""
+    picture = blank(ICON)
+    shade(picture, ellipse(16, 24, 15, 5), OAK, radius=2)
+    for y in (21, 18, 15):
+        cake = ellipse(16, y, 12, 4) | ellipse(16, y + 1.5, 12, 4)
+        shade(picture, cake, ("soil", "soil_mid", "soil_light"), radius=2)
+        paint(picture, ellipse(16, y, 10, 3), "ochre_dark")
+        dots(picture, [(10, y), (14, y + 1), (20, y), (22, y + 1), (17, y - 1)], "soil_mid")
+    shade(picture, box(14, 11, 19, 14), ("ochre", "gold", "cream"), radius=1)
+    return picture
+
+
 def stations():
     """The pictures of the stations, standing, by world object type."""
     return {"workbench": workbench(), "carved_chest": carved_chest(), "kiln": kiln(), "oven": oven(), "cupboard": cupboard()}
@@ -300,6 +314,7 @@ def icons():
         "pottage": bowl(("olive", "dry_light", "green_light"), ("ochre", "flame", "cream")),
         # Yellow split peas, thick.
         "pea_soup": bowl(("reed", "straw", "dry_light"), ("straw", "gold")),
+        "buckwheat_pancakes": pancakes(),
         "flour": flour(),
         "bread": bread(),
         "berry_tart": berry_tart(),
