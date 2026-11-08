@@ -46,6 +46,9 @@ func _init(id: StringName, crafting: Crafting, inventory: Inventory) -> void:
 	var name_label := Label.new()
 	name_label.text = title_of(id, _rules)
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# A long name is cut short rather than pushing the materials out of the row.
+	name_label.clip_text = true
+	name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	name_column.add_child(name_label)
 	_level_label.text = _level_text()
 	_level_label.visible = _has_level()
@@ -114,9 +117,8 @@ func _tooltip(short: Dictionary, is_locked: bool) -> String:
 
 ## "Chest", or "Arrow x5" for a recipe that makes several.
 static func title_of(id: StringName, rules: RecipeRules) -> String:
-	var item_name: String = ItemTypes.TYPES[rules.result(id)]["name"]
 	var count := rules.count(id)
-	return item_name if count == 1 else "%s x%d" % [item_name, count]
+	return rules.name_of(id) if count == 1 else "%s x%d" % [rules.name_of(id), count]
 
 
 func _has_level() -> bool:

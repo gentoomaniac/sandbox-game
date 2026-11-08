@@ -93,6 +93,12 @@ func result(recipe_id: StringName) -> StringName:
 	return StringName(_recipes[str(recipe_id)]["result"])
 
 
+## What the crafting menu calls a recipe: its `name`, or else the name of the item it makes.
+func name_of(recipe_id: StringName) -> String:
+	var values: Dictionary = _recipes[str(recipe_id)]
+	return values.get("name", ItemTypes.TYPES[result(recipe_id)]["name"])
+
+
 ## How many of the result one crafting gives.
 func count(recipe_id: StringName) -> int:
 	return _recipes[str(recipe_id)]["count"]

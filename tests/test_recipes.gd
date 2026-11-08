@@ -54,6 +54,17 @@ func test_the_recipes_file_is_valid_and_its_first_recipe_is_the_chest_for_five_l
 	assert_eq(RecipeRules.default_rules().recipe_ids(), rules.recipe_ids())
 
 
+func test_no_two_recipes_have_the_same_name_in_the_menu() -> void:
+	var rules := RecipeRules.default_rules()
+	var names := {}
+	for recipe_id in rules.recipe_ids():
+		var title := RecipeRow.title_of(recipe_id, rules)
+		assert_false(names.has(title), "%s and %s" % [names.get(title), recipe_id])
+		names[title] = recipe_id
+	assert_eq(rules.name_of(&"rye_flour"), "Rye flour")
+	assert_eq(rules.name_of(&"chest"), "Chest", "the item's name")
+
+
 func test_every_missing_required_key_is_reported() -> void:
 	_write('[chest]\nresult="chest"\n')
 	var rules := RecipeRules.from_file(DATA_FILE)

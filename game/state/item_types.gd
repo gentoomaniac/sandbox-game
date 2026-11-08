@@ -501,7 +501,7 @@ const _OTHER_TYPES := {
 	FLOUR:
 	{
 		"name": "Flour",
-		"description": "Wheat ground in a hand quern. Bread needs it.",
+		"description": "Grain ground in a hand quern. Bread needs it.",
 		"weight": 0.5,
 		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
