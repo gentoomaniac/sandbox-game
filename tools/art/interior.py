@@ -13,28 +13,9 @@ import random
 
 import chest
 import fire
-from canvas import NEIGHBOURS, TILE, blank, copy, filled, rect
+from canvas import TILE, blank, copy, filled, outline_edge, rect
 
 RIM = 8
-
-
-def outline(canvas, colour, keep_bottom=False):
-    """Gives the picture's border (pixels next to clear ones or the image edge) `colour`.
-    keep_bottom leaves the bottom edge alone: the picture stands on the ground there."""
-    height, width = len(canvas), len(canvas[0])
-    border = []
-    for y in range(height):
-        for x in range(width):
-            if canvas[y][x] is None or (keep_bottom and y == height - 1):
-                continue
-            for dx, dy in NEIGHBOURS:
-                nx, ny = x + dx, y + dy
-                if not (0 <= nx < width and 0 <= ny < height) or canvas[ny][nx] is None:
-                    border.append((x, y))
-                    break
-    for x, y in border:
-        canvas[y][x] = colour
-    return canvas
 
 
 def herringbone_floor(tones, joint):
@@ -231,7 +212,7 @@ def bed():
     for x in (1, 12):
         rect(canvas, x, 6, x + 2, 19, "rust")
         rect(canvas, x + 1, 6, x + 1, 19, "rust_dark")
-    return outline(canvas, "soil_dark", keep_bottom=True)
+    return outline_edge(canvas, "soil_dark", keep_bottom=True)
 
 
 def table():
@@ -249,7 +230,7 @@ def table():
     rect(canvas, 23, 3, 24, 4, "gold")
     rect(canvas, 7, 6, 12, 9, "stone_light")
     rect(canvas, 8, 7, 11, 8, "stone_dark")
-    return outline(canvas, "soil_dark", keep_bottom=True)
+    return outline_edge(canvas, "soil_dark", keep_bottom=True)
 
 
 def stool():
@@ -260,7 +241,7 @@ def stool():
     for x in (1, 7):
         rect(canvas, x, 5, x + 1, 9, "soil")
     rect(canvas, 4, 5, 5, 8, "soil_dark")
-    return outline(canvas, "soil_dark", keep_bottom=True)
+    return outline_edge(canvas, "soil_dark", keep_bottom=True)
 
 
 # The hearth stands against the back wall: its footprint is the lower half of its picture, and
@@ -328,7 +309,7 @@ def hearth_without_flame():
     rect(canvas, 26, 40, 26, 40, "ochre")
     for x in (24, 29):
         rect(canvas, x, 48, x, 49, "ink")
-    return outline(canvas, "soil_dark", keep_bottom=True)
+    return outline_edge(canvas, "soil_dark", keep_bottom=True)
 
 
 def dutch_tiles(canvas, x0, y0, x1, y1):
@@ -385,7 +366,7 @@ def sleeping_mat():
     rect(canvas, 2, 13, 13, 14, "stone_light")
     rect(canvas, 2, 15, 13, 15, "stone_dark")
     rect(canvas, 2, 22, 13, 22, "stone_dark")
-    return outline(canvas, "soil_dark")
+    return outline_edge(canvas, "soil_dark")
 
 
 def box_bed():
@@ -419,7 +400,7 @@ def box_bed():
         rect(canvas, x, 32, x + 12, 40, "soil")
         rect(canvas, x, 32, x + 12, 32, "soil_dark")
     rect(canvas, 0, 42, 31, 43, "soil")
-    return outline(canvas, "soil_dark", keep_bottom=True)
+    return outline_edge(canvas, "soil_dark", keep_bottom=True)
 
 
 def bench():
@@ -432,7 +413,7 @@ def bench():
     for x in (2, 27):
         rect(canvas, x, 11, x + 2, 15, "soil")
         rect(canvas, x, 11, x, 15, "soil_mid")
-    return outline(canvas, "soil_dark", keep_bottom=True)
+    return outline_edge(canvas, "soil_dark", keep_bottom=True)
 
 
 def stall_partition():
@@ -445,7 +426,7 @@ def stall_partition():
     rect(canvas, 5, 0, 10, 31, "soil_mid")
     rect(canvas, 5, 0, 6, 31, "soil_light")
     rect(canvas, 5, 28, 10, 31, "soil_dark")
-    return outline(canvas, "soil_dark", keep_bottom=True)
+    return outline_edge(canvas, "soil_dark", keep_bottom=True)
 
 
 def hay_pile():
@@ -459,7 +440,7 @@ def hay_pile():
             if y >= TILE - 3:
                 colour = rng.choice(("sand", "sand_light", "sand"))
             canvas[y][x] = colour
-    return outline(canvas, "soil_dark", keep_bottom=True)
+    return outline_edge(canvas, "soil_dark", keep_bottom=True)
 
 
 def barrel():
@@ -473,7 +454,7 @@ def barrel():
     for y in (5, 12):
         rect(canvas, 2, y, 13, y, "stone")
         rect(canvas, 2, y, 6, y, "stone_light")
-    return outline(canvas, "soil_dark", keep_bottom=True)
+    return outline_edge(canvas, "soil_dark", keep_bottom=True)
 
 
 def sacks():
@@ -487,7 +468,7 @@ def sacks():
     rect(canvas, 13, 8, 14, 15, "sand")
     rect(canvas, 10, 6, 12, 7, "straw")
     rect(canvas, 10, 8, 12, 8, "mud")
-    return outline(canvas, "soil_dark", keep_bottom=True)
+    return outline_edge(canvas, "soil_dark", keep_bottom=True)
 
 
 def crate():
@@ -501,7 +482,7 @@ def crate():
     rect(canvas, 0, 14, 15, 15, "soil_mid")
     rect(canvas, 0, 1, 1, 15, "soil_mid")
     rect(canvas, 14, 1, 15, 15, "soil_mid")
-    return outline(canvas, "soil_dark", keep_bottom=True)
+    return outline_edge(canvas, "soil_dark", keep_bottom=True)
 
 
 def plate(canvas, left, top, rim, face, shade):
@@ -533,7 +514,7 @@ def plate_rack():
         rect(canvas, 2, top + 4, 13, top + 4, "soil_mid")
     for x in (1, 14):
         rect(canvas, x, 5, x, 25, "soil_mid")
-    return outline(canvas, "soil_dark")
+    return outline_edge(canvas, "soil_dark")
 
 
 def wall_bench():
@@ -556,7 +537,7 @@ def wall_bench():
         rect(canvas, x, 17, x + 2, 23, "soil")
         rect(canvas, x, 17, x, 23, "soil_mid")
     rect(canvas, 4, 20, 27, 20, "soil")
-    return outline(canvas, "soil_dark", keep_bottom=True)
+    return outline_edge(canvas, "soil_dark", keep_bottom=True)
 
 
 def marker_tile(picture, footprint):

@@ -15,7 +15,6 @@ import math
 import random
 
 import crafts
-import interior
 from buildings import LIME, OAK, SHADED, eaves_shadow, fieldstone_base, brick_wall, glass, ground_shadow, plank_door
 from canvas import TILE, blank, outline_edge, rect
 
@@ -290,7 +289,7 @@ def oak_cross():
     rect(picture, 0, 4, 10, 4, "soil_light")
     rect(picture, 6, 7, 6, 15, "soil")
     rect(picture, 0, 6, 10, 6, "soil")
-    return interior.outline(picture, "soil_dark", keep_bottom=True)
+    return outline_edge(picture, "soil_dark", keep_bottom=True)
 
 
 def headstone():
@@ -308,7 +307,7 @@ def headstone():
             picture[y][x] = "mud"
     rect(picture, 1, 12, 3, 12, "olive")
     picture[11][2] = "dry"
-    return interior.outline(picture, "mud_dark", keep_bottom=True)
+    return outline_edge(picture, "mud_dark", keep_bottom=True)
 
 
 def fieldstone_slab():
@@ -320,7 +319,7 @@ def fieldstone_slab():
             picture[y][x] = "stone_light" if y <= top + 1 or x < 2 else "stone" if x < 11 else "stone_dark"
     rect(picture, 6, 2, 6, 6, "stone_dark")
     rect(picture, 4, 3, 8, 3, "stone_dark")
-    return interior.outline(picture, "stone_dark", keep_bottom=True)
+    return outline_edge(picture, "stone_dark", keep_bottom=True)
 
 
 def graves():

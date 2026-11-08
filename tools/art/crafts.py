@@ -10,8 +10,7 @@ in colour; the meals in a bowl steam a little.
 
 import chest
 import interior
-from canvas import TILE, blank, rect
-from interior import outline
+from canvas import TILE, blank, outline_edge, rect
 from items import from_rows, outlined, pixel
 
 # The workbench: a thick beech top on four legs with a stretcher, a vice screw at its left end
@@ -98,7 +97,7 @@ def workbench(is_standing=True):
     for x in range(4, 11, 2):
         pixel(picture, x, 2, "stone")
     rect(picture, 11, 1, 12, 2, "soil")
-    return outline(picture, "soil_dark", keep_bottom=is_standing)
+    return outline_edge(picture, "soil_dark", keep_bottom=is_standing)
 
 
 # The carved chest is the chest painted as the Frisian chests were: blue-green with a pale lid,
@@ -157,7 +156,7 @@ def kiln(is_standing=True):
         picture[16][x] = "stone_light"
     for x in (4, 9, 13):
         picture[17][x] = "stone_dark"
-    return outline(picture, "soil_dark", keep_bottom=is_standing)
+    return outline_edge(picture, "soil_dark", keep_bottom=is_standing)
 
 
 def oven(is_standing=True):
@@ -184,7 +183,7 @@ def oven(is_standing=True):
     rect(picture, 0, 9, 15, 9, "stone_light")
     for x, y in ((3, 11), (9, 12), (13, 11), (6, 13)):
         picture[y][x] = "stone_dark"
-    return outline(picture, "soil_dark", keep_bottom=is_standing)
+    return outline_edge(picture, "soil_dark", keep_bottom=is_standing)
 
 
 def flour():
@@ -248,7 +247,7 @@ def cupboard(is_standing=True):
     pixel(picture, 8, 19, "gold")
     rect(picture, 1, 22, 3, 23, "soil")
     rect(picture, 12, 22, 14, 23, "soil")
-    return outline(picture, "soil_dark", keep_bottom=is_standing)
+    return outline_edge(picture, "soil_dark", keep_bottom=is_standing)
 
 
 def feast_cake():
