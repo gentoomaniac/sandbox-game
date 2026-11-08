@@ -18,6 +18,11 @@ Decided 2026-11-05.
     (off: the game is silent while its window is not focused).
   - Settings are saved in `user://settings.cfg`, separate from the save game.
   - Gamepads later.
+- **Item icons** (task 115): drawn at 32 px like the world and shown at half size in the
+  UI's 20 px slots, 16 UI pixels, so an icon's pixel is as big as a world pixel at the widest
+  zoom; the classic 16 px icons fill the same 16 UI pixels. Slots of 36 UI pixels for the icons
+  at full size were tried and turned down: the hotbar took over a third of the screen's width.
+  A shader keeps the icon's pixels square at 1.5 window pixels each (1080p).
 - **Tooltips** (decided 2026-11-05): hovering a slot in the hotbar, the inventory or the
   equipment shows a small framed panel by the cursor: the item's name, kind and weight
   (each and stack), a one-line description, and what matters for its kind, from the data

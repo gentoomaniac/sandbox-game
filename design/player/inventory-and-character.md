@@ -73,6 +73,7 @@
     turnip seeds, all tools at level 1.
   - Upgrades later come from a smith in a settlement, in tiers (level 2 copper, level 3
     iron, as palette swaps of the same icon).
-  - The tool decides the action: hoe tills, seeds plant, axe fells, pickaxe mines, the
+  - The tool decides the action: hoe tills, seeds plant, axe fells, the pickaxe (the pick of
+    the Geest, which grubbed the fieldstones of the till out of the fields) breaks stones, the
     watering can wets tilled soil, the scythe mows tall grass, the shovel digs for clay,
     an empty hand harvests crops, clears dead ones and picks bushes.

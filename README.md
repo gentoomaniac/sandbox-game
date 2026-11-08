@@ -388,6 +388,12 @@ after midnight.
 
 ![The character screen with equipment slots and the inventory](docs/screenshots/character.png)
 
+The items are drawn at 32 px like the world, so in the slots an icon's pixel is as big as a
+world pixel at the widest view; an item on the ground is its icon at half size, on a small
+shadow.
+
+![Every item lying on the ground, in summer and under snow](docs/screenshots/items.png)
+
 ### Sleeping and passing out
 
 Press E next to a bed to sleep: the screen fades to black, shows the new day and wakes you
@@ -409,17 +415,18 @@ Beds don't block walking, so you can't get stuck behind one.
 
 ### Crafting and professions
 
-Press C for the crafting menu of what you make by hand: a chest, the stations below and flour.
+Press C for the crafting menu of what you make by hand: a chest, the stations below and flour
+(from wheat, rye or buckwheat).
 It lists what you can make with what you carry; a recipe you can't afford yet is greyed, with
 the missing materials marked, and hovering shows what is missing. The recipes are in
 [data/recipes.cfg](data/recipes.cfg).
 
-![The crafting menu by hand: chest, workbench, kiln, bake oven and flour](docs/screenshots/crafting.png)
+![The crafting menu by hand: chest, workbench, kiln, bake oven, flour from wheat, rye or buckwheat, net frame and eel traps](docs/screenshots/crafting.png)
 
 Three crafts can be learnt, each at its own **station**: press E at one for its menu.
 
-- **Cooking** at the hearth of a house or the camp's fire (anyone can roast a turnip; pottage
-  and pea soup take practice) and at the **bake oven** (bread from flour, a berry tart,
+- **Cooking** at the hearth of a house or the camp's fire (anyone can roast a turnip; buckwheat
+  pancakes, pottage and pea soup take practice) and at the **bake oven** (bread from flour, a berry tart,
   a feast cake). Cooked food gives more energy than what it is made of, eaten raw.
 - **Woodworking** at the **workbench**: planks, a stool for the house, a grave marker for the
   churchyard, clogs, a painted Frisian chest with 20 slots, and as the master's piece a

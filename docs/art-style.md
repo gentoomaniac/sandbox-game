@@ -177,8 +177,22 @@ and long awns, the rye of the Geest taller, blue-green when young and ripe a pal
 with nodding ears, the buckwheat on red stems with white and pink flowers; a crop dies to
 browns and greys (`crops.DEAD_COLOURS`). The crops' 16 px art stays as the classic art.
 
-The UI's pictures (item icons, slots, the frames and the chat portraits) are drawn for the UI's
-own 640×360 base and scale, and are not doubled; task 115 decides about the item icons.
+The item icons (task 115: tools/art/items.py, tool_icons.py, crop_icons.py and the icon parts
+of meadow.py, reeds.py, crafts.py, church.py and landing.py) are drawn at 32 px, in the style
+of the 32 px art: rounded forms shaded from the top left (forms.py), wood with its grain, cloth
+with its folds, iron flat but for a lit top and left rim, a dark bottom and right rim and a
+bright edge, copper for the watering can. Each is a body outlined all round in the darkest shade
+of its own ramp (`items.RIMS`), none where its edge already is that shade. The UI shows them at
+half size, in the 20 UI pixel slots, so an icon's pixel is as big as a world pixel at the
+widest zoom. The tools lie on the diagonal, wooden with iron only at the edge: the spade has an
+iron shoe, and the pickaxe is the Geest's pick (a point and a chisel) that grubbed the
+fieldstones of the till out of the fields and split them. The seed sacks are one linen sack,
+told apart by the crop's string, its produce painted on the front at half size and its seeds
+spilled in front. An item on the ground is its icon's body at half size (16 px), outlined the
+same way, on a contact shadow the game draws. The items that place a world object (the chest,
+the stations, the grave marker, the landing's pieces) are icons of its picture, still 16 px
+(task 111). The old 16 px icons and ground items are the classic art. The other UI pictures
+(slots, frames, the chat portraits' frame) are drawn for the UI's own 640×360 base and scale.
 
 The interiors (task 112: tools/art/interior.py) are drawn at 32 px, as calm as the ground:
 old red floor bricks 16×8 in a herringbone, one colour of brick (a second colour repeats with
@@ -402,7 +416,11 @@ not "generic RPG forest".
 
 - **Tools:** wooden-handled, iron only at the edge: hoe, spade with an iron shoe, scythe,
   sickle, flail, wooden rake, pitchfork, axe, wooden buckets with iron or willow hoops, a
-  yoke for two buckets, a copper or wooden watering can with a big rose.
+  yoke for two buckets, a copper or wooden watering can with a big rose; the pick
+  (Kreuzhacke) for grubbing out and splitting the fieldstones of the Geest till. The game has
+  the hoe, axe, pick, scythe, spade, hammer and watering can; the sickle, flail, rake,
+  pitchfork, buckets and yoke wait for a job in the game (the grain harvest and threshing,
+  hay, carrying water).
 - **Carts and boats:** two- and four-wheeled wooden carts with spoked wheels, a
   wheelbarrow, sleds; flat-bottomed sailing barges (*Ewer*) with leeboards that sit on the
   mud at low tide, small rowing boats (a flat-bottomed one lies at the fisherman's landing,

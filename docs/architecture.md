@@ -146,7 +146,8 @@ Warft and an Ewer here and there.
   `TerrainTileset.ART_16_SCALE`; once its group is drawn at 32 px (the people, task 113; the
   farm animals, task 114; the wild animals, their shadows, the hit particles, the fire and the
   weather, task 116; the ground, task 107; the buildings, task 110; the plants and the trees'
-  `sprite_height`, task 108), as the number measured on the 32 px picture; and the shaders of
+  `sprite_height`, task 108; the items on the ground and their hop, task 115), as the number
+  measured on the 32 px picture; and the shaders of
   the art work on its pixels through `art_scale` (`art_scale.gdshaderinc`), which
   `AmbientMotion` sets for the ground's and the plants' shaders by the art set (1, or 2 in the
   classic art; the plants' sway profiles are in the world's pixels and halved for the classic
@@ -155,6 +156,10 @@ Warft and an Ewer here and there.
   task 111) are scaled up in it by the generator (`DOUBLED_ROWS`). `WildlifeRules.TILE_SIZE`
   is the same tile size for the state, which can't see the
   scenes (a test keeps the two equal).
+- **Item icons in the UI:** the icons are 32 px pictures and the classic ones 16 px; a slot
+  (`SlotView`), a recipe row and the icon that follows the mouse (`ItemIcon`) draw them into
+  16 UI pixels whatever their size, through `sharp_pixels.gdshader` (sharp bilinear, as the
+  world's screen), so each art pixel stays a square at 1.5 window pixels.
 - **Art sets:** the 16 px art of a group drawn anew at 32 px stays in the game as the classic
   art, generated into `assets/classic/` by tools/art/classic/ under the new art's names.
   `ArtSet` (`game/scenes/art_set.gd`) picks the picture of the chosen set: every load of a group
@@ -162,8 +167,9 @@ Warft and an Ewer here and there.
   one. The setting is `GameSettings.is_classic_art` (Settings → Display, F7); on a switch Main
   calls `ArtSet.show`, and the views that keep their pictures (`NpcView`, `CharacterPreview`,
   `ChatScreen`, every `Animal` with the flocks' birds, `WorldView` the ground, the objects, the
-  fires' flames and the buildings, `ObjectCover` the bedroll's cover, and `InteriorView` its
-  room, which it shows anew: the group `ArtSet.VIEWS`, `show_art_set()`) load them anew, while
+  fires' flames and the buildings, `ObjectCover` the bedroll's cover, `InteriorView` its
+  room, which it shows anew, and `SlotView`, `ItemIcon` and `GroundItemView` the item icons
+  and the items on the ground: the group `ArtSet.VIEWS`, `show_art_set()`) load them anew, while
   the others load theirs as they show them (`PlayerView` its layers and the ridden horse,
   `BuildMode` the ghost). The classic buildings are as big as the new ones, so a building's
   window lights and its place stay the same in both sets. The open chat pauses Main, so it

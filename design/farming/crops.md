@@ -10,7 +10,7 @@
   - **The grains of the Geest** (task 109, from the art review of 2026-11-08): rye, the hardy
     bread grain of the sandy Geest (cool weather, little water, stands the wind), and
     buckwheat, quick and warm, killed by frost. Neither is eaten raw; both are ground to flour
-    like wheat.
+    like wheat, and buckwheat is fried into pancakes at the fire (task 115).
   - **Flax replaced tomatoes** (task 52; tomatoes weren't a farm crop here before the 19th
     century): a cool-weather fibre crop with sky-blue flowers, pulled up whole (no regrow).
     It yields a new `flax` item (flax stalks), not `fibre`: flax is a material of its own

@@ -1745,7 +1745,39 @@ still doubled ones (task 116 may even them out).
 
 ## 115. 32 px art: items and icons (ground items, inventory icons, the UI slots that show them)
 
-- [ ] Done
+- [x] Done
+
+Done: every item icon is drawn at 32 px (tools/art/items.py, tool_icons.py, crop_icons.py and
+the icon parts of meadow.py, reeds.py, crafts.py, church.py and landing.py) in the style of the
+32 px art: forms.py shading from the top left, wood grain, cloth folds, iron with a lit and a
+dark rim and a bright edge, each a body outlined in the darkest shade of its own ramp
+(`items.RIMS`). The items on the ground are the bodies at half size (16 px, `items.ground_item`),
+no longer `DOUBLED`, on a contact shadow (`GroundItemView`); the drop's hop and the sprite
+offset are in world pixels. The UI keeps its 20 UI pixel slots and shows a 32 px icon at half
+size in 16 UI pixels (`SlotView.ICON_RECT`, `ItemIcon` for the recipe rows and the picked
+icon), an icon pixel as big as a world pixel at the widest zoom, through
+`sharp_pixels.gdshader` so the pixels stay square at 1.5 window pixels; 36 UI pixel slots for
+full-size icons were tried in a screenshot and turned down (the hotbar took over a third of the
+screen). The seed sacks are one linen sack told apart by the crop's string, its produce painted
+on it and its seeds. From the art review: the pickaxe is the Geest's pick for grubbing out and
+splitting the fieldstones of the till (a point and a chisel), in art-style.md's tools; the
+spade has an iron shoe. The three flour recipes have names of their own (`name` in
+data/recipes.cfg, `RecipeRules.name_of`): Wheat, Rye and Buckwheat flour, a long name clipped; the flour is one
+item. A buckwheat dish: buckwheat pancakes, 2 from 3 buckwheat at the fire (cooking 15, 14
+energy). The classic art (task 117): the old icon generators in tools/art/classic/
+(`item_icons.py`, `tool_icons.py`, `crop_icons.py`, `craft_icons.py`), the icons and the doubled
+ground items under assets/classic/, byte for byte main's; the slots, recipe rows, picked icons
+and ground items load through `ArtSet`. Debug flag `--items=<x>,<y>`: every item on the ground
+and in the inventory. Checked in screenshots at zoom 0.5, 1 and 2 in spring, summer, autumn,
+frost, snow, dusk and night, in both art sets, and the character screen, the crafting menu and
+the hotbar; README pictures retaken (character, crafting) and added (items).
+Left for later: the sickle, flail, rake, pitchfork, buckets and yoke have no job in the game
+yet (grain harvest and threshing, hay, carrying water), so they have no icons; the icons of the
+items that place a world object (chest, stations, grave marker, the landing's pieces) are their
+16 px world pictures doubled until task 111 redraws those (`items.icon_of` then needs no
+doubling); the station-menus and chest README pictures show the new icons but were not
+retaken; `make contrast-sheet` has no items, so they were checked on screenshots over grass,
+sand, snow and dyke instead.
 
 ## 116. 32 px art: wild animals (birds, flocks, storks, geese, sea birds, deer, squirrels, rabbits, mice, frogs, bees, butterflies) and effects (fire, particles, rain splashes, hit effects)
 

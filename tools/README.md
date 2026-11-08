@@ -105,7 +105,12 @@ shared modules, as the new atlas has them, the graves from `graves.py`, the grav
 `church.py`, and the bedroll from `bedroll.py`, the old bedroll and its cover of `camp.py`; the
 crops (task 109), from commit f2c24f8: `crops.py` unchanged (rye and buckwheat were first drawn
 at 32 px and have no classic sheet); the interiors (task 112), from commit f2c24f8:
-`interior.py` unchanged (its chest is the shared `chest.py`), whose pictures kept their sizes.
+`interior.py` unchanged (its chest is the shared `chest.py`), whose pictures kept their sizes;
+the item icons and the items on the ground (task 115), from commit 91742f0: `items.py` as
+`item_icons.py` (so that the shared modules that import `items` get the new one),
+`tool_icons.py` and `crop_icons.py` unchanged but for that import, and `craft_icons.py`, the
+icon parts of `meadow.py`, `reeds.py`, `crafts.py`, `church.py` and `landing.py` (their world
+pictures are the shared ones, still 16 px); the buckwheat pancakes were first drawn at 32 px.
 The cow's, the horse's and the small wild animals' cells grew at 32 px, so `set_in_grown_cells`
 puts their classic cells in the new ones (bottom centre), as the classic files must have the
 new cell sizes.
@@ -130,8 +135,9 @@ When a group goes native (docs/art-style.md, "Resolution"), before its redraw ch
 - **A sprite for something that already has a type** (an item, a furniture piece): draw it in
   the module of its topic and add it to `ICONS` (items) or to `furniture()` (interior.py; new
   pieces go at the end, the tile ids of the interior tileset are counted in that order). Item
-  icons are named after the item id in `game/state/item_types.gd`; the 8x8 version for the
-  ground is made for you.
+  icons are 32x32 bodies without an outline (see items.py), named after the item id in
+  `game/state/item_types.gd`; the outline and the 16x16 version for the ground are made for
+  you.
 - **A world object** (a tree, a rock, a plant): draw its variants in the module of its topic
   (`trees.py` for most), add a row to `object_atlas()` and to the numbered table above it
   (the table says the order; new rows go at the end), and give its type an

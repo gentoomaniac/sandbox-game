@@ -46,11 +46,14 @@ woodworker, the cook and the mason, and a UI for them.
     chest, painted the Frisian way, 8 planks, 20 slots (45); the master's piece, a joined oak
     cupboard, 12 planks and 2 logs, 25 slots, only in a house (70).
   - Cooking at the hearth: roast turnip (0); pottage, 2 from cabbage, carrot and onion (10);
-    pea soup, 2 from 4 peas and an onion (20). At the bake oven: bread from 2 flour (30), a
+    buckwheat pancakes, 2 from 3 buckwheat (15, task 115); pea soup, 2 from 4 peas and an
+    onion (20). At the bake oven: bread from 2 flour (30), a
     berry tart from a flour and 6 berries (50), a feast cake from 2 flour, 4 strawberries and
     4 berries (70). Flour is ground by hand from 3 wheat, rye or buckwheat (a hand
-    quern, not drawn): the simplest chain, as there was no flour. Cooked food restores more
-    energy than its ingredients raw (roast turnip 12, pottage 15, pea soup 16, bread 30,
+    quern, not drawn): the simplest chain, as there was no flour. It is one item; the menu
+    tells the three recipes apart by a name of their own (`name` in data/recipes.cfg: "Rye
+    flour"). Cooked food restores more
+    energy than its ingredients raw (roast turnip 12, buckwheat pancakes 14, pottage 15, pea soup 16, bread 30,
     tart 35, feast cake 60; in `data/energy.cfg`).
   - Masonry: raw bricks from clay at the workbench, 2 from 2 (0), 3 from 2 (25); bricks in the
     kiln, 6 raw bricks and 2 logs make 6 (0), 12 and 3 logs make 12 (50), a master's firing of
