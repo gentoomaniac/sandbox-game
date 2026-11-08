@@ -5,12 +5,9 @@ extends RefCounted
 ## per action and one column per frame. Animals face right in the sheets. The farm animals have a
 ## sheet per species and look, `<species>_<look>`, all with the same actions (a saddled horse has
 ## one more, `horse_<look>_saddled`; drawn by tools/art/livestock.py), and a cat's three more for
-## hunting.
+## hunting. All frame sizes below are the pictures' own pixels, drawn at 32 px per tile.
 
 const SHEET_PATH := "res://assets/wildlife/%s.png"
-## The wild animals' frame sizes below are measured on the 16 px art, which is scaled up by this.
-## The farm animals are drawn at 32 px per tile: theirs are the pictures' own.
-const SCALE := TerrainTileset.ART_16_SCALE
 const LIVESTOCK_ACTIONS := {&"idle": 2, &"walk": 4, &"graze": 2, &"sleep": 2, &"run": 4}
 const COW := {"size": Vector2i(72, 54), "actions": LIVESTOCK_ACTIONS}
 const SHEEP := {"size": Vector2i(44, 32), "actions": LIVESTOCK_ACTIONS}
@@ -48,31 +45,25 @@ const SHEETS := {
 	},
 	&"stork":
 	{
-		"size": Vector2i(32, 26) * SCALE,
+		"size": Vector2i(64, 52),
 		"actions": {&"stand": 2, &"walk": 4, &"strike": 2, &"clatter": 2, &"swallow": 2, &"fly": 3},
 	},
 	&"mouse": {"size": Vector2i(24, 14), "actions": {&"sit": 2, &"scurry": 2}},
 	&"frog": {"size": Vector2i(24, 16), "actions": {&"sit": 2, &"hop": 2}},
 	&"goose":
-	{
-		"size": Vector2i(24, 18) * SCALE,
-		"actions": {&"stand": 2, &"graze": 2, &"walk": 2, &"fly": 3}
-	},
+	{"size": Vector2i(48, 36), "actions": {&"stand": 2, &"graze": 2, &"walk": 2, &"fly": 3}},
 	&"oystercatcher":
-	{
-		"size": Vector2i(16, 12) * SCALE,
-		"actions": {&"stand": 2, &"probe": 2, &"walk": 2, &"fly": 3}
-	},
+	{"size": Vector2i(32, 24), "actions": {&"stand": 2, &"probe": 2, &"walk": 2, &"fly": 3}},
 	&"dunlin":
-	{"size": Vector2i(10, 8) * SCALE, "actions": {&"stand": 2, &"probe": 2, &"walk": 2, &"fly": 3}},
+	{"size": Vector2i(22, 16), "actions": {&"stand": 2, &"probe": 2, &"walk": 2, &"fly": 3}},
 	&"gull":
 	{
-		"size": Vector2i(20, 16) * SCALE,
+		"size": Vector2i(40, 32),
 		"actions": {&"stand": 2, &"walk": 2, &"peck": 2, &"swim": 2, &"fly": 3},
 	},
 	&"tern":
 	{
-		"size": Vector2i(20, 14) * SCALE,
+		"size": Vector2i(40, 28),
 		"actions": {&"fly": 3, &"hover": 2, &"dive": 2, &"splash": 3, &"fly_with_fish": 3},
 	},
 	&"cow_angler": COW,

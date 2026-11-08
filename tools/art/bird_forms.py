@@ -248,7 +248,7 @@ def _open_wing(picture, bird, root, tip_share, darker):
     def along(share, forward):
         return (root[0] + (tip[0] - root[0]) * share + forward, root[1] + (tip[1] - root[1]) * share)
 
-    blade = [along(0, chord * 0.8), along(0.55, chord * 0.55), tip, along(0.6, -chord * 0.9), along(0, -chord)]
+    blade = [along(0, chord * 0.8), along(0.6, chord * 0.6), along(0.9, chord * 0.3), tip, along(0.85, -chord * 0.6), along(0.5, -chord * 0.9), along(0, -chord)]
     mask = forms.polygon(width, height, blade)
     ramp = bird.flight_wing[:-1] if darker and len(bird.flight_wing) > 2 else bird.flight_wing
     forms.shade(picture, mask, ramp, radius=max(1, round(chord * 0.5)))

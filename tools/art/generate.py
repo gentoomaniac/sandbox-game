@@ -127,13 +127,6 @@ DOUBLED = (
     # Interiors (task 112).
     "interior.png",
     "interior/*.png",
-    # Wild animals (task 116): a sheet per kind (birds.py, sea_birds.py) until it is redrawn.
-    "wildlife/dunlin.png",
-    "wildlife/goose.png",
-    "wildlife/gull.png",
-    "wildlife/oystercatcher.png",
-    "wildlife/stork.png",
-    "wildlife/tern.png",
     # Items on the ground (task 115).
     "ground_items/*.png",
 )

@@ -1,481 +1,303 @@
-"""Art for the sea birds of the coast: one sheet per kind at assets/wildlife/<kind>.png.
+"""Art for the sea birds of the coast, drawn at 32 px per tile: one sheet per kind at
+assets/wildlife/<kind>.png.
 
 Oystercatchers and dunlin probe the tidal mud, herring gulls walk the shore and swim, common terns
 plunge into the sea for fish (see docs/art-style.md, "Props and animals").
 
-The sheets are laid out and drawn like those of birds.py: one row per action and one column per
-frame, in the order game/scenes/wildlife/wildlife_sprites.gd mirrors; a bird stands in the bottom
-centre of its cell facing right and flies in its middle, seen from a little above. The body gets a
-one pixel outline; the bill and the legs are drawn over it, so that they stay thin.
+The sheets are laid out like those of birds.py: one row per action and one column per frame, in
+the order game/scenes/wildlife/wildlife_sprites.gd mirrors; a bird stands on the bottom row of
+its cell facing right and flies in its middle. The birds are put together by bird_forms.py.
 """
 
-from birds import on_cell, on_legs, standing
-from livestock import to_picture
+import math
 
-# Bills and legs, drawn over the outline: o and O the bill and its shade, L and M the near and
-# the far leg.
-BARE = {"o", "O", "L", "M"}
+import forms
+from bird_forms import Bird, flying, standing
+from canvas import blank
 
 # --- Oystercatcher ------------------------------------------------------------------------
 #
-# Black above and white below, with a long orange-red bill and pink legs: about 10 px long
-# with the bill and 7 px tall (a sparrow is 5 px, a goose 12 px), a wingspan of 14 px. Keys: k
-# black, w white, e the red eye, o and O the bill, L and M the legs. Its outline is black too,
-# so the black parts read as one shape and the white is edged.
+# Black above and white below, with a long orange-red bill, a red eye and pink legs: about 20 px
+# long with the bill and 16 px tall, a wingspan of about 30 px, with a broad white bar along the
+# wing. Its outline is black too, so the black parts read as one shape and the white is edged.
 
-OYSTERCATCHER_SIZE = (16, 12)
-OYSTERCATCHER_KEYS = {
-    "k": "ink",
-    "w": "lime",
-    "e": "red_light",
-    "o": "flame",
-    "O": "red_light",
-    "L": "skin",
-    "M": "skin_shade",
-}
-OYSTERCATCHER_OUTLINE = "ink"
-
-OYSTERCATCHER_HEAD_UP = (
-    "......kk....",
-    ".....kkeooo.",
-    "......kk....",
-    "..kkkkkkk...",
-    "kkkkkkkkw...",
-    ".kkkwwwww...",
-    "...wwwww....",
+OYSTERCATCHER = Bird(
+    body=(6.5, 4.0),
+    neck=2.2,
+    head=2.6,
+    bill=(7.0, 1.0),
+    legs=6,
+    leg_width=2,
+    tail=3.0,
+    span=14.0,
+    chord=3.5,
+    ramp=["ink", "stone_dark"],
+    belly=["snow_shadow", "snow", "lime"],
+    back=None,
+    head_ramp=["ink", "stone_dark"],
+    wing=["ink", "stone_dark"],
+    flight_wing=["ink", "stone_dark"],
+    tail_ramp=["ink", "stone_dark"],
+    outline="ink",
+    eye="red_light",
+    bill_colours=("flame", "red_light"),
+    leg_colours=("skin", "skin_shade"),
+    wing_tip="ink",
+    trailing_edge="lime",
+    primaries="ink",
+    marks=None,
 )
-# Looking round: the head turned towards the viewer, the bill foreshortened.
-OYSTERCATCHER_LOOKING_ROUND = ("......kk....", ".....kekoo...") + OYSTERCATCHER_HEAD_UP[2:]
-# Probing: the head down, the bill on the mud ahead, then pushed into it.
-OYSTERCATCHER_PROBING = (
-    "............",
-    "............",
-    "............",
-    "..kkkkkkk...",
-    "kkkkkkkkkk..",
-    ".kkkwwwwkke.",
-    "...wwwww..ko",
-    "...........o",
-    "...........O",
-)
-OYSTERCATCHER_PROBING_DEEP = OYSTERCATCHER_PROBING[:7] + ("...........O",)
-OYSTERCATCHER_LEGS = ("LM", "LM")
-OYSTERCATCHER_STEP = ("LM", "L.M")
-OYSTERCATCHER_STEP_BACK = ("LM", "M.L")
-OYSTERCATCHER_LEG_AT = (4, 7)
-
-# Flying: black with a broad white bar along the wing and a white rump. Wings up, level (the far
-# one above the body, the near one below) and down.
-OYSTERCATCHER_WINGS_UP = (
-    "......wk......",
-    ".....wkk......",
-    "....wwkk......",
-    "...wwkkk......",
-    "wwkkkkkkkkkeoo",
-    ".wwkkkwwww....",
-)
-OYSTERCATCHER_WINGS_LEVEL = (
-    "....wwkk......",
-    "wwkkkkkkkkkeoo",
-    ".wwkkkwwww....",
-    "....wwkkk.....",
-    ".....wwkk.....",
-    "......wk......",
-)
-OYSTERCATCHER_WINGS_DOWN = (
-    "wwkkkkkkkkkeoo",
-    ".wwkkkwwww....",
-    "....wwkkk.....",
-    ".....wwkk.....",
-    "......wwk.....",
-    ".......k......",
-)
-OYSTERCATCHER_FLIGHT = [
-    (OYSTERCATCHER_WINGS_UP, 4),
-    (OYSTERCATCHER_WINGS_LEVEL, 1),
-    (OYSTERCATCHER_WINGS_DOWN, 0),
-]
-OYSTERCATCHER_FLIGHT_LEFT = 1
-OYSTERCATCHER_FLIGHT_BODY_Y = 5
-OYSTERCATCHER_STANDING_LEFT = 2
+OYSTERCATCHER_SIZE = (32, 24)
+OYSTERCATCHER_AT = (13.0, 14.0)
+OYSTERCATCHER_STANDING = {"angle": 5, "head_at": (2.0, -5.0), "bill_angle": 15}
+OYSTERCATCHER_PROBING = {"angle": -15, "head_at": (5.0, 3.0), "bill_angle": 62}
 
 
-def oystercatcher_frame(body, legs=OYSTERCATCHER_LEGS):
-    return on_legs(body, legs, OYSTERCATCHER_LEG_AT)
-
-
-OYSTERCATCHER_ACTIONS = {
-    "stand": [oystercatcher_frame(OYSTERCATCHER_HEAD_UP), oystercatcher_frame(OYSTERCATCHER_LOOKING_ROUND)],
-    "probe": [oystercatcher_frame(OYSTERCATCHER_PROBING), oystercatcher_frame(OYSTERCATCHER_PROBING_DEEP)],
-    "walk": [
-        oystercatcher_frame(OYSTERCATCHER_HEAD_UP, OYSTERCATCHER_STEP),
-        oystercatcher_frame(OYSTERCATCHER_HEAD_UP, OYSTERCATCHER_STEP_BACK),
-    ],
-}
+def oystercatcher(**pose):
+    return standing(OYSTERCATCHER_SIZE, OYSTERCATCHER, OYSTERCATCHER_AT, **pose)[0]
 
 
 def oystercatcher_sheet():
     size = OYSTERCATCHER_SIZE
-    rows = [[standing(frame, size, OYSTERCATCHER_STANDING_LEFT) for frame in frames] for frames in OYSTERCATCHER_ACTIONS.values()]
-    rows.append(
-        [on_cell(shape, size, OYSTERCATCHER_FLIGHT_LEFT, OYSTERCATCHER_FLIGHT_BODY_Y - body_y) for shape, body_y in OYSTERCATCHER_FLIGHT]
-    )
-    return [[to_picture(frame, OYSTERCATCHER_KEYS, OYSTERCATCHER_OUTLINE, BARE) for frame in frames] for frames in rows]
+    return [
+        [oystercatcher(**OYSTERCATCHER_STANDING), oystercatcher(**OYSTERCATCHER_STANDING, look_round=True)],
+        [oystercatcher(**OYSTERCATCHER_PROBING), oystercatcher(**OYSTERCATCHER_PROBING | {"head_at": (5.0, 4.5), "bill_angle": 72})],
+        [oystercatcher(**OYSTERCATCHER_STANDING, steps=((3, 2), (0, 0))), oystercatcher(**OYSTERCATCHER_STANDING, steps=((0, 0), (3, 2)))],
+        [flying(size, OYSTERCATCHER, (13.0, 13.0), beat)[0] for beat in ("up", "level", "down")],
+    ]
 
 
 # --- Dunlin -------------------------------------------------------------------------------
 #
 # A small wader in tight flocks, grey above and white below in its winter dress, with a black
-# bill drooping at the tip: about 7 px long and 6 px tall, a wingspan of 9 px. Keys: l and s the
-# light and the base grey, w white, e eye, o the bill, L and M the legs.
+# bill drooping at the tip: about 14 px long and 11 px tall (drawn larger than life), a wingspan
+# of about 20 px with a white bar.
 
-DUNLIN_SIZE = (10, 8)
-DUNLIN_KEYS = {
-    "l": "stone_light",
-    "s": "stone",
-    "w": "lime",
-    "e": "ink",
-    "o": "ink",
-    "L": "stone_dark",
-    "M": "ink",
-}
-DUNLIN_OUTLINE = "stone_dark"
-
-DUNLIN_HEAD_UP = (
-    "....ll..",
-    "...lseo.",
-    "lsssslwo",
-    ".ssswww.",
-    "..www...",
+DUNLIN = Bird(
+    body=(4.5, 3.0),
+    neck=1.8,
+    head=2.2,
+    bill=(4.0, 0.8),
+    legs=4,
+    leg_width=1,
+    tail=2.0,
+    span=9.0,
+    chord=2.4,
+    ramp=["stone", "stone_light", "snow"],
+    belly=["snow_shadow", "snow", "lime"],
+    back=None,
+    head_ramp=["stone", "stone_light", "snow"],
+    wing=["stone_dark", "stone", "stone_light"],
+    flight_wing=["stone", "stone_light"],
+    tail_ramp=["stone_dark", "stone"],
+    outline="stone_dark",
+    eye="ink",
+    bill_colours=("stone_dark", "ink"),
+    leg_colours=("stone_dark", "ink"),
+    wing_tip="stone_dark",
+    trailing_edge="lime",
+    primaries="stone_dark",
+    marks=None,
 )
-DUNLIN_LOOKING_ROUND = ("....ll..", "...leso.") + DUNLIN_HEAD_UP[2:]
-# Probing: the head down and the bill on the mud, then in it, quick as a sewing machine.
-DUNLIN_PROBING = (
-    "........",
-    "........",
-    "lsssss..",
-    ".ssswwle",
-    "..www..o",
-    ".......o",
-    "........",
-)
-DUNLIN_PROBING_DEEP = DUNLIN_PROBING[:4] + ("..www..o", "........", "........")
-DUNLIN_LEGS = ("LM", "LM")
-DUNLIN_STEP = ("LM", "L.M")
-DUNLIN_STEP_BACK = ("LM", "M.L")
-DUNLIN_LEG_AT = (3, 5)
-
-# Flying: grey wings with a white bar, a white belly.
-DUNLIN_WINGS_UP = (
-    "....wl...",
-    "...wls...",
-    "..wlss...",
-    "ssssssleo",
-    ".wwwww...",
-)
-DUNLIN_WINGS_LEVEL = (
-    "..wlss...",
-    "ssssssleo",
-    ".wwwww...",
-    "...wlss..",
-    "....wl...",
-)
-DUNLIN_WINGS_DOWN = (
-    "ssssssleo",
-    ".wwwww...",
-    "...wlss..",
-    "....wls..",
-    ".....w...",
-)
-DUNLIN_FLIGHT = [(DUNLIN_WINGS_UP, 3), (DUNLIN_WINGS_LEVEL, 1), (DUNLIN_WINGS_DOWN, 0)]
-DUNLIN_FLIGHT_LEFT = 0
-DUNLIN_FLIGHT_BODY_Y = 4
-DUNLIN_STANDING_LEFT = 1
+DUNLIN_SIZE = (22, 16)
+DUNLIN_AT = (9.0, 8.8)
+DUNLIN_STANDING = {"angle": 5, "head_at": (1.5, -3.0), "bill_angle": 25}
+DUNLIN_PROBING = {"angle": -15, "head_at": (3.5, 2.5), "bill_angle": 70}
 
 
-def dunlin_frame(body, legs=DUNLIN_LEGS):
-    return on_legs(body, legs, DUNLIN_LEG_AT)
-
-
-DUNLIN_ACTIONS = {
-    "stand": [dunlin_frame(DUNLIN_HEAD_UP), dunlin_frame(DUNLIN_LOOKING_ROUND)],
-    "probe": [dunlin_frame(DUNLIN_PROBING), dunlin_frame(DUNLIN_PROBING_DEEP)],
-    "walk": [dunlin_frame(DUNLIN_HEAD_UP, DUNLIN_STEP), dunlin_frame(DUNLIN_HEAD_UP, DUNLIN_STEP_BACK)],
-}
+def dunlin(**pose):
+    return standing(DUNLIN_SIZE, DUNLIN, DUNLIN_AT, **pose)[0]
 
 
 def dunlin_sheet():
-    size = DUNLIN_SIZE
-    rows = [[standing(frame, size, DUNLIN_STANDING_LEFT) for frame in frames] for frames in DUNLIN_ACTIONS.values()]
-    rows.append([on_cell(shape, size, DUNLIN_FLIGHT_LEFT, DUNLIN_FLIGHT_BODY_Y - body_y) for shape, body_y in DUNLIN_FLIGHT])
-    return [[to_picture(frame, DUNLIN_KEYS, DUNLIN_OUTLINE, BARE) for frame in frames] for frames in rows]
+    return [
+        [dunlin(**DUNLIN_STANDING), dunlin(**DUNLIN_STANDING, look_round=True)],
+        [dunlin(**DUNLIN_PROBING), dunlin(**DUNLIN_PROBING | {"head_at": (3.5, 3.5), "bill_angle": 80})],
+        [dunlin(**DUNLIN_STANDING, steps=((2, 1), (0, 0))), dunlin(**DUNLIN_STANDING, steps=((0, 0), (2, 1)))],
+        [flying(DUNLIN_SIZE, DUNLIN, (9.0, 8.0), beat)[0] for beat in ("up", "level", "down")],
+    ]
 
 
 # --- Herring gull -------------------------------------------------------------------------
 #
 # White with a pale blue-grey back and black wing tips, a yellow bill with a red spot and pink
-# legs: about 13 px long and 11 px tall, a wingspan of 18 px. It walks the mud and the shore,
-# and swims on the sea. Keys: w white, g and G the grey of the back and wings and its shade, k
-# the black tips, e eye, o the bill and O its red spot, L and M the legs, f the ring of foam
-# around a swimming gull.
+# legs: about 26 px long and 22 px tall, a wingspan of about 44 px. It walks the mud and the
+# shore, and swims on the sea in a ring of foam.
 
-GULL_SIZE = (20, 16)
-GULL_KEYS = {
-    "w": "lime",
-    "g": "snow_shadow",
-    "G": "snow_deep",
-    "k": "ink",
-    "e": "ink",
-    "o": "gold",
-    "O": "red_light",
-    "L": "skin",
-    "M": "skin_shade",
-    "f": "foam",
-}
-GULL_OUTLINE = "stone"
-# The foam is drawn over the outline as well.
-GULL_BARE = BARE | {"f"}
-
-GULL_HEAD_UP = (
-    "........ww....",
-    ".......wwew...",
-    ".......wwwwooo",
-    "........ww..O.",
-    "..gggggggww...",
-    "kggggggggwww..",
-    "kkGGGGGwwwww..",
-    "...wwwwwww....",
+GULL = Bird(
+    body=(8.5, 5.0),
+    neck=2.4,
+    head=3.2,
+    bill=(5.0, 1.3),
+    legs=7,
+    leg_width=2,
+    tail=3.0,
+    span=20.0,
+    chord=4.5,
+    ramp=["snow_shadow", "snow", "lime"],
+    belly=None,
+    back=["snow_deep", "snow_shadow", "snow"],
+    head_ramp=["snow_shadow", "snow", "lime"],
+    wing=["snow_deep", "snow_shadow", "snow"],
+    flight_wing=["snow_deep", "snow_shadow", "snow"],
+    tail_ramp=["snow_shadow", "lime"],
+    outline="stone",
+    eye="ink",
+    bill_colours=("gold", "ochre"),
+    leg_colours=("skin", "skin_shade"),
+    wing_tip="ink",
+    trailing_edge=None,
+    primaries="ink",
+    marks=None,
 )
+GULL_SIZE = (40, 32)
+GULL_AT = (17.0, 20.0)
+GULL_STANDING = {"angle": 5, "head_at": (2.0, -6.0), "bill_angle": 8}
 # Calling: the head thrown up, the bill open.
-GULL_CALLING = (
-    ".........wwo..",
-    "........wwe.o.",
-    "........www...",
-    "........ww....",
-    "..gggggggww...",
-    "kggggggggwww..",
-    "kkGGGGGwwwww..",
-    "...wwwwwww....",
-)
-# Pecking: the head down to the mud, then the bill on it.
-GULL_PECKING = (
-    "..............",
-    "..............",
-    "..............",
-    "..............",
-    "..gggggggww...",
-    "kggggggggwwww.",
-    "kkGGGGGwwwwwwe",
-    "...wwwwwww..ww",
-    "............oo",
-)
-GULL_PECKING_DOWN = GULL_PECKING[:8] + ("............wo", "............oO")
-GULL_LEGS = ("LM", "LM", "LM")
-GULL_STEP = ("LM", "L.M", "L..M")
-GULL_STEP_BACK = ("LM", "M.L", "M..L")
-GULL_LEG_AT = (6, 8)
-# Swimming: sitting on the water with a ring of foam around it, rising and sinking a little.
-GULL_SWIMMING = GULL_HEAD_UP[:7] + ("ff.fffffff.ff",)
-GULL_SWIMMING_LOW = GULL_HEAD_UP[:6] + (".fffffffffff.",)
-
-# Flying: long grey wings with black tips, a white body and tail.
-GULL_WINGS_UP = (
-    ".........kk.......",
-    "........kkg.......",
-    ".......kggg.......",
-    ".......gggg.......",
-    "......ggggG.......",
-    ".wwwwwwwwwwwwwweoo",
-    "..wwwwwwwwwww.....",
-)
-GULL_WINGS_LEVEL = (
-    "......ggggg.......",
-    ".wwwwwwwwwwwwwweoo",
-    "..wwwwwwwwwww.....",
-    "......gGggg.......",
-    ".......Gggg.......",
-    ".......kggg.......",
-    "........kkg.......",
-    "........kk........",
-)
-GULL_WINGS_DOWN = (
-    ".wwwwwwwwwwwwwweoo",
-    "..wwwwwwwwwww.....",
-    "......gGggg.......",
-    ".......Gggg.......",
-    "........kgg.......",
-    "........kk........",
-)
-GULL_FLIGHT = [(GULL_WINGS_UP, 5), (GULL_WINGS_LEVEL, 1), (GULL_WINGS_DOWN, 0)]
-GULL_FLIGHT_LEFT = 1
-GULL_FLIGHT_BODY_Y = 8
-GULL_STANDING_LEFT = 3
+GULL_CALLING = {"angle": 10, "head_at": (1.0, -7.0), "bill_angle": -40, "is_open": True}
+GULL_PECKING = {"angle": -12, "head_at": (6.0, 4.0), "bill_angle": 60}
+# The row of the water line of a swimming gull.
+WATER_LINE = 28
 
 
-def gull_frame(body, legs=GULL_LEGS):
-    return on_legs(body, legs, GULL_LEG_AT)
+def gull(**pose):
+    """A gull with the red spot near the tip of its bill (not on an open one)."""
+    picture, parts = standing(GULL_SIZE, GULL, GULL_AT, **pose)
+    if not pose.get("is_open"):
+        tip_x, tip_y = parts.bill_tip
+        forms.dots(picture, [(math.floor(tip_x) - 1, math.floor(tip_y) + 1)], "red_light")
+    return picture
 
 
-GULL_ACTIONS = {
-    "stand": [gull_frame(GULL_HEAD_UP), gull_frame(GULL_CALLING)],
-    "walk": [gull_frame(GULL_HEAD_UP, GULL_STEP), gull_frame(GULL_HEAD_UP, GULL_STEP_BACK)],
-    "peck": [gull_frame(GULL_PECKING), gull_frame(GULL_PECKING_DOWN)],
-    "swim": [GULL_SWIMMING, GULL_SWIMMING_LOW],
-}
+def gull_swimming(sink):
+    """Sitting on the water, the body cut by the water line and ringed by foam, `sink` pixels
+    lower in the swell."""
+    picture = gull(**GULL_STANDING, swimming=True, lift=-(WATER_LINE - 25 + sink))
+    for y in range(WATER_LINE, len(picture)):
+        picture[y] = [None] * len(picture[0])
+    width = len(picture[0])
+    drawn = [x for x in range(width) if picture[WATER_LINE - 1][x] is not None]
+    left, right = drawn[0] - 2, drawn[-1] + 2
+    foam = [(x, WATER_LINE) for x in range(left, right + 1) if x not in (left + 2, right - 3)]
+    forms.dots(picture, foam, "foam")
+    forms.dots(picture, [(left - 1, WATER_LINE + 1), (left - 2, WATER_LINE + 1), (right + 1, WATER_LINE + 1), (right + 2, WATER_LINE + 1)], "water_light")
+    return picture
 
 
 def gull_sheet():
-    size = GULL_SIZE
-    rows = [[standing(frame, size, GULL_STANDING_LEFT) for frame in frames] for frames in GULL_ACTIONS.values()]
-    rows.append([on_cell(shape, size, GULL_FLIGHT_LEFT, GULL_FLIGHT_BODY_Y - body_y) for shape, body_y in GULL_FLIGHT])
-    return [[to_picture(frame, GULL_KEYS, GULL_OUTLINE, GULL_BARE) for frame in frames] for frames in rows]
+    return [
+        [gull(**GULL_STANDING), gull(**GULL_CALLING)],
+        [gull(**GULL_STANDING, steps=((3, 2), (0, 0))), gull(**GULL_STANDING, steps=((0, 0), (3, 2)))],
+        [gull(**GULL_PECKING), gull(**GULL_PECKING | {"head_at": (6.0, 5.5), "bill_angle": 75})],
+        [gull_swimming(0), gull_swimming(1)],
+        [flying(GULL_SIZE, GULL, (17.0, 17.0), beat)[0] for beat in ("up", "level", "down")],
+    ]
 
 
 # --- Common tern --------------------------------------------------------------------------
 #
-# Slender, pale grey and white with a black cap, a red bill and a long forked tail: about 12 px
-# long, a wingspan of 18 px. It flies over the sea, hovers, plunges in with a splash and comes up,
-# now and then with a fish. Keys: w white, s and S the pale grey of the wings and their darker
-# tips, k the cap, o the bill, f and F a silver fish; x, q and Q the spray of the splash (white,
-# foam, light water), drawn without an outline.
-
-TERN_SIZE = (20, 14)
-TERN_KEYS = {
-    "w": "lime",
-    "s": "snow",
-    "S": "snow_deep",
-    "k": "ink",
-    "o": "red_light",
-    "f": "stone_light",
-    "F": "stone",
-    "x": "lime",
-    "q": "foam",
-    "Q": "water_light",
-}
-TERN_OUTLINE = "stone"
-TERN_BARE = BARE | {"x", "q", "Q"}
-
-TERN_WINGS_UP = (
-    "..........S.....",
-    ".........Ss.....",
-    "........Sss.....",
-    ".......sss......",
-    "......sss.......",
-    "w...wwwwwwwwkkoo",
-    ".wwwwwwwwwkk....",
-)
-TERN_WINGS_LEVEL = (
-    "......ssss......",
-    "w...wwwwwwwwkkoo",
-    ".wwwwwwwwwkk....",
-    "......sss.......",
-    ".......sss......",
-    "........Sss.....",
-    ".........SS.....",
-)
-TERN_WINGS_DOWN = (
-    "w...wwwwwwwwkkoo",
-    ".wwwwwwwwwkk....",
-    "......sss.......",
-    ".......Sss......",
-    "........SS......",
-)
-# Hovering: the head bent down to look into the water, the wings beating fast.
-TERN_HOVER_UP = (
-    "........S.S.....",
-    ".......SsSs.....",
-    "......ssss......",
-    "w...wwwwwwwwk...",
-    ".wwwwwwwwwkkk...",
-    "...........o....",
-    "...........o....",
-)
-TERN_HOVER_DOWN = (
-    "w...wwwwwwwwk...",
-    ".wwwwwwwwwkkk...",
-    "......ssss.o....",
-    "......SsSs.o....",
-    "......S.S.......",
-)
-# Plunging: wings half shut and the bill first, then straight down.
-TERN_DIVING = (
-    "w.....",
-    ".ww...",
-    "..wss.",
-    "..wwss",
-    "...wwk",
-    "....kk",
-    ".....o",
-    "......o",
-)
-TERN_PLUNGING = (
-    "w.w",
-    ".w.",
-    "sws",
-    "sws",
-    "sws",
-    ".w.",
-    ".k.",
-    ".k.",
-    ".o.",
-    ".o.",
-)
-# The splash where it went in: a crown of spray, falling back, a ring on the water.
-TERN_SPLASH = (
-    (
-        "..x...x..",
-        "x..x.x..x",
-        ".x.xxx.x.",
-        "..qqxqq..",
-    ),
-    (
-        ".x.....x.",
-        "...x.x...",
-        ".q.qxq.q.",
-        "..qqQqq..",
-    ),
-    (
-        ".........",
-        ".........",
-        "q.......q",
-        ".qqqQqqq.",
-    ),
-)
-# Carrying a fish crosswise in the bill, its tail hanging.
-TERN_FISH = (
-    "..............ff",
-    "...............F",
-)
-TERN_FLIGHT = [(TERN_WINGS_UP, 5), (TERN_WINGS_LEVEL, 1), (TERN_WINGS_DOWN, 0)]
-TERN_HOVER = [(TERN_HOVER_UP, 3), (TERN_HOVER_DOWN, 0)]
-TERN_FLIGHT_LEFT = 2
-TERN_FLIGHT_BODY_Y = 7
+# Slender, pale grey and white with a black cap, a red bill and a long forked tail: about 22 px
+# long, a wingspan of about 40 px with narrow, pointed wings. It flies over the sea, hovers,
+# plunges in with a splash and comes up, now and then with a fish.
 
 
-def with_fish(shape, body_y):
-    """A flying tern with a fish in its bill, below the tip."""
-    rows = list(shape) + [""] * 2
-    for dy, fish_row in enumerate(TERN_FISH):
-        row = rows[body_y + 1 + dy].ljust(len(fish_row), ".")
-        rows[body_y + 1 + dy] = "".join(f if f != "." else c for c, f in zip(row, fish_row)) + row[len(fish_row) :]
-    return tuple(row for row in rows if row)
+def tern_marks(picture, parts):
+    (cx, cy), radius = parts.head_centre, parts.head_radius
+    height, width = len(picture), len(picture[0])
+    xs, ys = forms.grid(width, height)
+    forms.paint(picture, parts.head & (ys < cy + 0.3) & (xs < cx + radius * 0.6), "ink")
+    if parts.wing is None:
+        # The fork of the tail, in flight.
+        bx, by = parts.centre
+        end = math.floor(bx - TERN.body[0] * 0.85 - TERN.tail)
+        forms.dots(picture, [(end, math.floor(by)), (end + 1, math.floor(by)), (end + 2, math.floor(by))], None)
+
+
+TERN = Bird(
+    body=(6.5, 3.0),
+    neck=1.8,
+    head=2.4,
+    bill=(5.0, 1.0),
+    legs=3,
+    leg_width=1,
+    tail=6.0,
+    span=17.0,
+    chord=3.2,
+    ramp=["snow_shadow", "snow", "lime"],
+    belly=None,
+    back=["snow_shadow", "snow"],
+    head_ramp=["snow_shadow", "snow", "lime"],
+    wing=["snow_shadow", "snow"],
+    flight_wing=["snow_shadow", "snow"],
+    tail_ramp=["snow_shadow", "lime"],
+    outline="stone",
+    eye="ink",
+    bill_colours=("red_light", "ember"),
+    leg_colours=("red_light", "ember"),
+    wing_tip="snow_deep",
+    trailing_edge=None,
+    primaries="snow_deep",
+    marks=tern_marks,
+)
+TERN_SIZE = (40, 28)
+TERN_FLYING_AT = (19.0, 14.0)
+
+
+def tern_flying(beat, bill_angle=0.0):
+    return flying(TERN_SIZE, TERN, TERN_FLYING_AT, beat, bill_angle=bill_angle)
+
+
+def with_fish(picture, tip):
+    """A silver fish crosswise in the bill, its tail hanging."""
+    x, y = math.floor(tip[0]), math.floor(tip[1])
+    forms.dots(picture, [(x - 2, y + 1), (x - 1, y + 1), (x, y + 1), (x + 1, y + 1)], "stone_light")
+    forms.dots(picture, [(x - 3, y + 2), (x + 2, y + 1), (x + 2, y + 2), (x - 1, y + 2)], "stone")
+    return picture
+
+
+def tern_diving(steep):
+    """Plunging: wings shut and the bill first, then straight down."""
+    pose = {"angle": -88, "head_at": (0.0, 0.0), "bill_angle": 90} if steep else {"angle": -55, "head_at": (1.0, 0.0), "bill_angle": 62}
+    return standing(TERN_SIZE, TERN, (20.0, 12.0), swimming=True, **pose)[0]
+
+
+# The splash where a tern went in, from the water line at the bottom of the cell: a crown of
+# spray (white and foam, as (x, y) from the middle of the bottom row), falling back, then a ring
+# on the water.
+SPLASH = (
+    {
+        "lime": [(0, -9), (-3, -8), (3, -8), (-5, -6), (5, -6), (-1, -6), (1, -5), (-2, -4), (2, -4), (0, -3), (-6, -3), (6, -3)],
+        "foam": [(-1, -2), (0, -2), (1, -2), (-3, -1), (-2, -1), (2, -1), (3, -1), (-1, 0), (0, 0), (1, 0)],
+    },
+    {
+        "lime": [(-5, -5), (5, -5), (-7, -3), (7, -3), (-1, -4), (2, -3)],
+        "foam": [(-4, -1), (-3, -1), (3, -1), (4, -1), (-2, 0), (-1, 0), (1, 0), (2, 0), (0, -1)],
+        "water_light": [(0, 0), (-5, 0), (5, 0)],
+    },
+    {
+        "foam": [(-7, -1), (7, -1), (-6, 0), (-5, 0), (5, 0), (6, 0), (-3, 0), (3, 0)],
+        "water_light": [(-4, 0), (-2, 0), (-1, 0), (0, 0), (1, 0), (2, 0), (4, 0)],
+    },
+)
+
+
+def splash(drops):
+    width, height = TERN_SIZE
+    picture = blank(width, height)
+    for colour, points in drops.items():
+        forms.dots(picture, [(width // 2 + x, height - 1 + y) for x, y in points], colour)
+    return picture
 
 
 def tern_sheet():
-    size = TERN_SIZE
-    width, height = size
-
-    def flying(shapes):
-        return [on_cell(shape, size, TERN_FLIGHT_LEFT, TERN_FLIGHT_BODY_Y - body_y) for shape, body_y in shapes]
-
-    rows = [
-        flying(TERN_FLIGHT),
-        flying(TERN_HOVER),
-        [standing(TERN_DIVING, size, 7), standing(TERN_PLUNGING, size, 9)],
-        [standing(splash, size, (width - len(splash[0])) // 2) for splash in TERN_SPLASH],
-        flying([(with_fish(shape, body_y), body_y) for shape, body_y in TERN_FLIGHT]),
+    fishing = [tern_flying(beat) for beat in ("up", "level", "down")]
+    return [
+        [picture for picture, _ in fishing],
+        [tern_flying(beat, bill_angle=50)[0] for beat in ("high", "down")],
+        [tern_diving(False), tern_diving(True)],
+        [splash(drops) for drops in SPLASH],
+        [with_fish([row[:] for row in picture], parts.bill_tip) for picture, parts in fishing],
     ]
-    return [[to_picture(frame, TERN_KEYS, TERN_OUTLINE, TERN_BARE) for frame in frames] for frames in rows]
 
 
 def sheets():

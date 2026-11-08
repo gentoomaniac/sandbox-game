@@ -22,23 +22,6 @@ from canvas import blank, outline
 
 # The rows of every sheet, with their frames.
 ACTIONS = {"idle": 2, "walk": 4, "graze": 2, "sleep": 2, "run": 4}
-# Characters of the 16 px birds (birds.py, sea_birds.py) that are drawn over the outline instead
-# of being outlined: legs, feet and the like.
-LEGS = {"L", "M", "N", "K", "P"}
-
-
-def to_picture(rows, keys, outline_colour, bare=LEGS):
-    """A grid of characters as a picture: the outline goes around everything but the legs (or
-    the characters of `bare`). The birds of the 16 px art use it (task 116 redraws them)."""
-    body = [[None if char in bare else keys.get(char) for char in row] for row in rows]
-    picture = outline(body, outline_colour)
-    for y, row in enumerate(rows):
-        for x, char in enumerate(row):
-            if char in bare:
-                picture[y][x] = keys[char]
-    return picture
-
-
 # --- Drawing at 32 px per tile ------------------------------------------------------------
 #
 # The animals drawn at 32 px per tile are put together from rounded forms (forms.py), like the

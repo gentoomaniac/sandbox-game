@@ -511,16 +511,3 @@ def sheets():
     }
     return [(name, size, list(rows.values())) for name, (size, rows) in actions.items()]
 
-
-# --- For the 16 px birds --------------------------------------------------------------------
-#
-# birds.py draws the big birds from rows of characters with `paste`, until they are drawn at 32
-# px too.
-
-
-def paste(grid, rows, x, y):
-    """Draws rows of characters into the grid."""
-    for dy, row in enumerate(rows):
-        for dx, char in enumerate(row):
-            if char != "." and 0 <= y + dy < len(grid) and 0 <= x + dx < len(grid[0]):
-                grid[y + dy][x + dx] = char
