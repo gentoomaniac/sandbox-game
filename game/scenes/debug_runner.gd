@@ -50,6 +50,7 @@ var _is_sleeping: bool
 var _chest_tile: Vector2i
 var _chest_inside_tile: Vector2i
 var _churchyard_tile: Vector2i
+var _street_tile: Vector2i
 var _is_storage_to_open: bool
 var _is_station_to_open: bool
 var _are_animals_to_spawn: bool
@@ -75,6 +76,7 @@ func _init(options: StartupOptions) -> void:
 	_chest_tile = options.chest
 	_chest_inside_tile = options.chest_inside
 	_churchyard_tile = options.churchyard
+	_street_tile = options.street
 	_is_storage_to_open = options.storage
 	_is_station_to_open = options.station
 	_are_animals_to_spawn = not options.wildlife.is_empty()
@@ -106,6 +108,9 @@ func update(delta: float) -> void:
 	if _churchyard_tile != StartupOptions.NO_TILE and view.is_settled and not state.is_inside():
 		DebugChurchyard.create(state, _churchyard_tile)
 		_churchyard_tile = StartupOptions.NO_TILE
+	if _street_tile != StartupOptions.NO_TILE and view.is_settled and not state.is_inside():
+		DebugStreet.create(state, _street_tile)
+		_street_tile = StartupOptions.NO_TILE
 	if _is_station_to_open and _is_map_drawn():
 		_is_station_to_open = false
 		var station := Interaction.nearest_in_reach(
