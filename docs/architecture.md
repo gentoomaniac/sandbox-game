@@ -85,7 +85,10 @@ Warft and an Ewer here and there.
   follows the player until a game minute it keeps (`follow_until_minute`). Wildlife is view only and
   not saved; livestock is state and saved, and shares the wildlife's drawing, sheets and
   sounds. A group of birds is one `Animal` with a sprite per bird: `Flock` (sparrows or a
-  skein of geese crossing in a V) and `GooseFlock` (geese grazing, then taking off together).
+  skein of geese crossing in a V) and `GroundFlock` (geese grazing, oystercatchers and dunlin
+  probing the mud, then taking off together; their numbers per kind are its `FLOCKS`). The birds
+  of the coast read the tide through `WildlifeView.is_water`: above `flooded_tide` the mud is
+  water, so nothing stands on it (`can_stand`), a `Gull` swims there and a `Tern` dives.
   Storks on roofs (`Stork`) stand on the top edge of the house's picture as it is shown
   (`WorldView.building_picture`, so snow is counted), just in front of where the house sorts
   (`BuildingViews.sort_position`); flying birds cast `GroundShadows`. A hunter finds its prey

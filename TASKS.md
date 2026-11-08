@@ -1264,7 +1264,7 @@ still makes do with fewer geese, as there is no room for more; SPEC says so. The
 
 ## 99. Sea birds of the coast
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-08: sea birds that are active on the coastline, some pecking in the
 Watt, some going into the water to catch fish; think about the birds that naturally occur in
@@ -1273,6 +1273,25 @@ curlews and dunlin probing the mud flats; shelducks dabbling; herring and black-
 terns plunge-diving for fish; cormorants diving and drying their wings. Ambient wildlife like
 task 60's geese: on Terrain.MUD, SEA and SALT_MARSH and their edges, by season and time of
 day, spawnable from the console.
+
+Done: four species the visitor of the Wadden Sea surely sees, each with its own behaviour, in
+data/wildlife.cfg: `oystercatcher` (groups of 2 to 5 on the mud and the salt marsh, all year, a
+few at night; probe, look up at 6 tiles, fly off low at 4), `dunlin` (flocks of 12 to 24 only on
+the mud, spring and autumn, fewer in winter; probe fast, take off at 3.5 tiles and swing round
+in a wheel), `gull` (herring gulls on the mud, the salt marsh and the sea all year; walk, peck,
+call, swim, fly off gliding at 3 tiles) and `tern` (common terns over the sea and the tideways
+from late spring to the end of summer; fly along, hover, plunge in with a splash, now and then
+a fish; after 2 to 4 dives they leave; no notice of the player). The waders are `GroundFlock`s
+(the former `GooseFlock`, now with its numbers per kind in `FLOCKS`: a bunch instead of a V, the
+wheel), the others `Gull` and `Tern`. The tide counts for the animals: above `flooded_tide`
+(0.6) the mud is water (`WildlifeView.is_water`, `can_stand`), so waders on it fly off and
+dunlin find none, gulls swim there and terns may dive. Made by hand (`spawn`, `--wildlife`)
+the sea birds appear only where they live, so near the coast; no extra debug flag was needed
+(`make screenshot AT=-298,-60 TIME=11:00 ARGS="--day=21 --wildlife=oystercatcher,dunlin"`).
+Sheets from tools/art/sea_birds.py, no new colours. Not done: their calls (the oystercatcher's
+piping, the gulls' laughing); cormorants, curlews, shelducks; waders roosting on the salt marsh
+at high water as a flock of their own; a flock partly on the salt marsh only takes off when
+the tide reaches its middle.
 
 ## 100. One shared outline helper for the art, and a contrast sheet
 

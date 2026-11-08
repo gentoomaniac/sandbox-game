@@ -447,7 +447,7 @@ copper watering can. Kept here as the record of why.
    bare `skin_shade` tail drawn over the outline so that it stays thin), sitting and
    scurrying, and an olive common frog (`dry_light` with `olive` blotches, a pale throat that
    puffs out), sitting and hopping; and a stork swallowing a frog. Still to do: a
-   stork's nest on a ridge, lapwings and oystercatchers, seals on the sandbanks, pigs. Task 79
+   stork's nest on a ridge, lapwings, seals on the sandbanks, pigs. Task 79
    added dogs (a collie in brown with a white collar, a grey spitz with its tail curled over its
    back, a liver-and-white hunting dog with drop ears), cats (tabby, black with gold eyes,
    ginger) and horses: a heavy marsh horse about 32 px long in bay (black mane, tail and lower
@@ -474,5 +474,16 @@ copper watering can. Kept here as the record of why.
    coast.py): a tarred hull lying askew with a raised leeboard, the mast leaning, the brown
    sail furled. No new colours. Still to do: mussel beds and seals as objects, a Stackdeich
    and sluices, ice on the mud, an Ewer at full scale (it is held to an object cell), the
-   tide's water reaching up the tideways' banks, Halligen.
+   tide's water reaching up the tideways' banks, Halligen. Task 99 added the sea birds
+   (tools/art/sea_birds.py): the oystercatcher, black above and white below (`ink` with an
+   `ink` outline, `lime`) with a long orange-red bill (`flame`, `red_light`) and pink legs,
+   about 10 px long; the dunlin, small and grey (`stone`, `stone_light`, a `stone_dark`
+   outline so it stands out from the grey-brown mud) with a white belly and a drooping black
+   bill; both standing, looking round, probing, walking and flying with a white wing bar. The
+   herring gull, white with a blue-grey back (`snow_shadow`, `snow_deep`), black wing tips and
+   a yellow bill with its red spot (`gold`, `red_light`), about 13 px long: standing, calling,
+   walking, pecking, swimming in a ring of `foam` and flying. The common tern, slender and pale
+   (`lime`, `snow`) with a black cap and a red bill: flying, hovering with the head bent down,
+   plunging, the splash (a crown of spray falling back to a ring, without an outline) and
+   flying with a silver fish. No new colours.
 10. **Post mill and draw well** (medium). Landmark props that date the world at a glance.

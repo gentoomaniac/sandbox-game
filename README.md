@@ -91,7 +91,8 @@ with ripple marks, lugworm casts and shells, cut by tideways that widen towards 
 The tide comes in and goes out twice a day: the water fills the hollows first, then the flats
 are under, and at low water the mud dries again. The mud can be walked at any tide. Out on the
 salt marsh a Warft rises here and there, a dwelling mound with a pond on top, and now and then
-an Ewer, a flat-bottomed sailing barge, lies on the mud. Storks and geese come to the salt marsh.
+an Ewer, a flat-bottomed sailing barge, lies on the mud. Storks and geese come to the salt marsh,
+and oystercatchers, dunlin, gulls and terns to the mud and the sea (see [Wildlife](#wildlife)).
 
 ![The coast: a Warft on the salt marsh behind the sea dyke at low water in summer, the salt marsh red in autumn with the tide rising, an Ewer lying on the mud, and the coast under snow with the tide coming in](docs/screenshots/coast.png)
 
@@ -244,13 +245,20 @@ heads when you come near and take off together, and skeins of them fly over in a
 live by the fields, the Knicks, the walls and the houses, out mostly at dusk and at night, and
 dash off into cover when you come close; frogs sit and hop at the water's edge and on the wet
 meadows from spring to early autumn, and a hunting stork that sees one walks up to it,
-strikes and swallows it; the cats hunt the mice (see [Livestock](#livestock)). The animals
+strikes and swallows it; the cats hunt the mice (see [Livestock](#livestock)). On the coast
+oystercatchers in black and white probe the tidal mud all year, and tight flocks of dunlin in
+the spring and autumn migration, swinging round together when you come near; herring gulls
+walk and peck on the mud and swim on the sea, and in summer common terns fish over the
+tideways, hovering and plunging in with a splash. When the tide comes in the waders leave the
+mud and the gulls swim where they stood. The animals
 come and go around you by the season, the time of day and the weather; the numbers are in
 [data/wildlife.cfg](data/wildlife.cfg).
 
 ![White storks on the marsh, a stork on the roof of a Kate, a flock of geese grazing in autumn and a skein of them flying over](docs/screenshots/wildlife.png)
 
 ![Storks striking at frogs by the camp on a summer evening, and mice in the grass](docs/screenshots/mice-and-frogs.png)
+
+![Oystercatchers and a flock of dunlin probing the mud at low water in spring; herring gulls on the mud and swimming in a tideway with a tern going by; terns fishing over a tideway, one just gone in with a splash; and the dunlin taking off together in autumn](docs/screenshots/sea-birds.png)
 
 ### Felling, mining and gathering
 
@@ -451,7 +459,7 @@ arguments.
 | `snow`, `snow <0..1>`, `snow auto` | Show the snow cover, force it, or go back to the weather. |
 | `spawn npc [count]` | Put villagers nearby, each with a look, a name and a sheet of their own; they stay. |
 | `spawn [npc] <villager>` | Put a villager written by hand nearby (`spawn kerrin` or `spawn npc kerrin`): `antje`, `momme`, `ocke`, `kerrin`, `hinrich`, `boy`, `inken` or `gesche`; each comes once. |
-| `spawn <animal> [count]` | Put animals nearby: farm animals that stay (`cow`, `sheep`, `chicken`, `rabbit`, `dog`, `cat`, `horse`) or wild ones that come and go (`bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork` on the nearest roof, `geese` grazing, `flying_geese`, `mouse`, `frog`). `spawn` alone, or with an unknown name, lists them. |
+| `spawn <animal> [count]` | Put animals nearby: farm animals that stay (`cow`, `sheep`, `chicken`, `rabbit`, `dog`, `cat`, `horse`) or wild ones that come and go (`bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork` on the nearest roof, `geese` grazing, `flying_geese`, `mouse`, `frog`, and on the coast `oystercatcher`, `dunlin`, `gull`, `tern`). `spawn` alone, or with an unknown name, lists them. |
 | `skip <n>m\|h\|d` | Let minutes, hours or days pass, e.g. `skip 2h` or `skip 3d`. |
 | `crop` | Show the growth, damage and needs of the nearest crop. |
 | `skill <skill> <points>` | Set a skill's points (`woodworking`, `cooking`, `masonry`). |

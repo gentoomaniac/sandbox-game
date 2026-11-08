@@ -823,6 +823,19 @@ atmosphere only: no player impact, not hunted, not saved.
     puffing their throats, hop now and then and hop off from the player. A hunting stork that
     sees a frog within 3 tiles walks up to it, strikes and swallows it, and the frog is gone.
     The lookup (`WildlifeView.nearest_animal`) is the same a cat uses for mice (task 82).
+  - the birds of the coast (task 99), the North Frisian Wadden Sea's commonest:
+    oystercatchers in pairs and small groups (2 to 5) on the tidal mud and the salt marsh all
+    year, a few at night, probing the mud, raising their heads when the player comes near and
+    flying off low when nearer; tight flocks of 12 to 24 dunlin on the mud in the spring and
+    autumn migration (fewer in winter, hardly any in summer), probing quickly and taking off
+    together in a swinging wheel; herring gulls on the mud, the salt marsh and the sea all
+    year, walking, pecking and calling on the ground and swimming on the water, flying off
+    with long glides; and common terns over the sea and the tideways from late spring to the
+    end of summer, by day, flying along over the water, hovering, plunging in with a splash
+    and coming up now and then with a fish; they take no notice of the player. The tide counts:
+    while it stands high over the mud (above `flooded_tide`) nothing stands there, the waders
+    on it fly off and the dunlin find no mud until it falls, the gulls swim on it and the terns
+    may dive into it. A flock of waders counts as one animal.
 - **The world decides how many:** time of day (birds and insects by day, deer at dawn and
   dusk, fewer animals at night), season (no insects in winter; fewer birds; rabbits and
   squirrels still about), weather (animals hide in heavy rain, storms and dense fog), and
@@ -830,7 +843,8 @@ atmosphere only: no player impact, not hunted, not saved.
 - **Size relative to the character (27–28 px tall):** deer about 20 px tall with the head
   up, body about 18 px long; rabbit about 8×7 px; squirrel about 7×7 px; birds about
   5×4 px; butterfly 3–4 px; bee 2–3 px; mouse and frog about 8×5 px (larger than life, to be
-  seen). Each has a few animation frames, palette only, in the art style of the world.
+  seen); a dunlin about 7×6 px, an oystercatcher about 10×7 px with its bill, a tern 12 px long,
+  a gull about 13×11 px. Each has a few animation frames, palette only, in the art style of the world.
 - **How:** animals appear only near the player, out of sight or at the edge of the view,
   and vanish when far away. Behaviour is a simple per-animal state machine (idle, move,
   flee). The rules for how many and where are plain, testable logic; the animals
