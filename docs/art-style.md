@@ -69,8 +69,9 @@ and the widest view is 1280×720 art pixels: 40×22 tiles (task 118), shown ×1.
 the game looks as it did, every pixel 2×2.
 
 Tasks 107 to 116 redraw the art group by group at 32 px; the people are done (task 113, see
-"Clothing and characters"), the farm animals (task 114, see "Props and animals", item 8) and
-the wild animals and the effects (task 116, below). To take a group native:
+"Clothing and characters"), the farm animals (task 114, see "Props and animals", item 8),
+the wild animals and the effects (task 116, below) and the ground (task 107, below). To take a
+group native:
 
 - draw it at 32 px per tile (its cells, frames and offsets are twice the numbers below) and
   take its files out of `DOUBLED`;
@@ -116,6 +117,23 @@ and a shaded side, long thin needles, round snow clumps, chips, drops), the rain
 (a streak, a crown of droplets, a ring) and the weather (one pixel raindrops, round flakes of 2
 to 4 pixels, one pixel wind streaks, leaves with a darker lower row, fog dithered on single
 pixels). The animals' and the flames' 16 px art stays as the classic art (tools/art/classic/).
+
+The ground (task 107: tools/art/terrain.py; the clay hint in meadow.py) is drawn at 32 px in
+the style of the mockup, and calm, so that people, animals, crops and items read on it without
+an outline: a base colour with single blade roots and small tufts (a dark root fanning up to
+lit tips, `terrain.tufts`) gathered in patches by a noise (`patch_noise`), few light pixels, no
+outline on any terrain; where a layer lies over another its edge is a rim in its own dark
+shade or a dither. Round things (pebbles with their shadow, lily pads with their notch,
+toadstools, pools) are shaded with forms.py. Tilled soil has four ridges to a tile, the crest
+one broken row of `soil_light`, the bands ragged by a pixel and the field's edge dark under
+the turf, so the rows read as earth and not as stacked logs; its wet look darkens the same
+ridges in patches (`terrain.soil_wet`). The path is packed earth worn pale in patches, dark
+under the turf at its edge with blades leaning in; the tidal mud has wavy ripple marks with
+dark troughs, which the tide fills first. In autumn the grass of the marsh stays green with
+olive tips and only the dry grass of the Geest turns straw (`seasons.LAYER_REMAPS`); the salt
+marsh keeps its olive turf, with patches of red-purple glasswort. The meadow flowers in the
+decoration atlas are still 16 px art, scaled up in their row (task 108). The ground's 16 px art
+stays as the classic art too.
 
 The UI's pictures (item icons, slots, the frames and the chat portraits) are drawn for the UI's
 own 640×360 base and scale, and are not doubled; task 115 decides about the item icons.

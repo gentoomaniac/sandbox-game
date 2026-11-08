@@ -1463,7 +1463,43 @@ for animation and random placement. The README's camp and zoom pictures are reta
 
 ## 107. 32 px art: ground (terrain, paths, soil, water, mud, the dual-grid looks)
 
-- [ ] Done
+- [x] Done
+
+Done: every terrain layer, its edge tiles and decorations, the wet look of tilled soil and the
+clay hint are drawn at 32 px (tools/art/terrain.py, the wet soil moved there from
+crop_icons.py) in the style of the mockup and left `DOUBLED`. From the art review: the ground
+is calm behind small figures (a base colour with blade roots and small tufts, a dark root
+fanning to lit tips, gathered in patches by a tile-periodic noise, few light pixels, no outline
+on terrain); tilled soil reads as earth, not stacked logs (one broken row of light on the crest,
+ragged bands, square field edges dark under the turf); autumn keeps the marsh's grass green with
+olive tips, straw only on the dry grass of the Geest (`seasons.LAYER_REMAPS`), and the salt
+marsh reads as marsh (olive turf with red-purple glasswort in autumn, cool green patches in
+summer, where it was purple all over and dry olive). The path is
+packed earth worn pale in patches with clog prints and pebbles; the mud has wavy ripple marks;
+pebbles, lily pads, caps and pools are shaded with forms.py. Every layer keeps its number of
+tiles and decorations, so no game data changed. The ground's shaders (water, mud, lily pads,
+swaying decorations) get `art_scale` 1 from AmbientMotion, or 2 in the classic art; the tide's
+relief is in world pixels; the meadow flowers are still 16 px art, scaled up in their row of
+the decoration atlas, with a sway material of their own (`flower_sway`, art_scale 2). The
+classic art (task 117) has the old ground: terrain.py, the ground part of seasons.py
+(`ground_looks.py`) and the wet soil and clay hint (`ground_overlays.py`) of commit acf236e,
+byte for byte the files before; the terrain tileset is the first tileset to follow the art set
+(`TerrainTileset.show_art_set` swaps its atlases' pictures, as both sets have the same tiles, a
+test checks it; no extra tileset is built, so the tests are no slower), and so does the wet
+soil. WorldView now shows the chosen set when given a world, as it is made before Main reads
+the setting (`--classic-art` at start). Checked in screenshots at zoom 1 and 2: grass, lush and
+dry grass, floodplain and river banks, wetland, a desire path, a field tilled, wet in rain and
+with crops, the coast (salt marsh, a Warft with its Fething, the tidal mud at low and high
+water), spring, summer, autumn (Geest and marsh), bare winter, frost, snow, the dusting, dusk
+and night, and both art sets (at start and after F7); `make contrast-sheet` (plants read on
+the new ground in every look). README pictures retaken: camp, zoom, coast, desire paths, field,
+art sets.
+Left for later: the coast's dyke, the Knick, fences and walls (boundaries.py) and the Ewer
+(coast.py) are rows of the object atlas, so they stay with tasks 108 and 111; the meadow flowers
+(task 108) look coarse on the new ground until they are redrawn; the seasons, meadows,
+landscape and outlines pictures of the README show mostly plants and were not retaken; the
+water's ripples and the lily pads' drift work in art pixels, so they are finer and move half as
+far in the new art; the wet soil's patches are the same on every tile, as before.
 
 ## 108. 32 px art: plants (trees, the willow, bushes, tall grass, fern, reeds, flowers, decorations)
 

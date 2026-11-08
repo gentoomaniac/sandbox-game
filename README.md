@@ -100,7 +100,7 @@ salt marsh a Warft rises here and there, a dwelling mound with a pond on top, an
 an Ewer, a flat-bottomed sailing barge, lies on the mud. Storks and geese come to the salt marsh,
 and oystercatchers, dunlin, gulls and terns to the mud and the sea (see [Wildlife](#wildlife)).
 
-![The coast: a Warft on the salt marsh behind the sea dyke at low water in summer, the salt marsh red in autumn with the tide rising, an Ewer lying on the mud, and the coast under snow with the tide coming in](docs/screenshots/coast.png)
+![The coast: a Warft with its Fething on the salt marsh on a summer morning, the salt marsh red around the green Warft in autumn, the tidal flats with their ripple marks at low water and the tide coming in, and the Warft under snow](docs/screenshots/coast.png)
 
 ### Weather
 
@@ -473,8 +473,8 @@ to 4× that, 320×180 art pixels. The wheel alone steps through the hotbar.
 
 The art is being redrawn at 32 px per tile, group by group. Settings → Display → Art, or F7
 while playing, switches between the new art and the classic art, the 16 px art it replaces
-(doubled); so far the player and the villagers have both. Everything not redrawn yet looks the
-same in both.
+(doubled); so far the people, the farm and the wild animals, the flames and the ground have
+both. Everything not redrawn yet looks the same in both.
 
 ![The camp with villagers in the new art and in the classic art](docs/screenshots/art-sets.png)
 

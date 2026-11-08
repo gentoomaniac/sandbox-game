@@ -57,8 +57,10 @@ top of classic pixel art (details under "Lighting and look").
   art is redrawn at 32 px, the generators' 16 px output is doubled pixel for pixel (tasks 106 and
   on); the people are drawn at 32 px since task 113, the farm animals since task 114, the wild
   animals, the flames, the hit particles and the weather (rain, splashes, snow, wind, fog) since
-  task 116, the small animals a little larger than life. The 16 px art of a redrawn group stays
-  in the game as the classic art, a setting (see Settings). (Was: 16×16, 320×180 at zoom 1.)
+  task 116, the small animals a little larger than life, and the ground (terrain, paths, soil,
+  water, mud and their decorations) since task 107, calm so that what stands on it reads. The
+  16 px art of a redrawn group stays in the game as the classic art, a setting (see Settings).
+  (Was: 16×16, 320×180 at zoom 1.)
 - **Stepless zoom** from the widest view (1280×720 art pixels, zoom 0.5) in to zoom 2
   (320×180; zoom 1 is 640×360); the game starts at the widest (the user zooms out fully
   anyway, 2026-11-08). The keys `=` and `-` (also the keypad's + and −; actions `zoom_in` and
@@ -609,11 +611,13 @@ Decided 2026-11-05. A text console for testing and cheats.
 - **The world looks like its season** (decided 2026-11-05): the current art is summer.
   Spring is a lighter, fresher green; autumn is North Sea autumn (task 52): oaks brown,
   ochre or copper, beeches copper, birches yellow, alders a dull green-brown (task 56), bushes
-  yellow and ochre, red rare (no tree has it yet), and yellower
-  grass; winter is snow-covered (snow on the ground, snow on evergreens, bare deciduous
-  trees). The look changes when the season changes. This is the visual
-  season only: frozen rivers, deep snow and other weather effects on tiles stay with the
-  weather system. The season's look is only the base: the blend, snow and frost above
+  yellow and ochre, red rare (no tree has it yet); the grass of the marsh stays green until
+  November, only its tips olive and its flowers withered, and only the dry grass of the Geest
+  turns straw; the salt marsh keeps its olive turf, with patches of red-purple glasswort
+  (task 107, from the art review of 2026-11-08); winter is snow-covered (snow on the ground,
+  snow on evergreens, bare deciduous trees). The look changes when the season changes. This is
+  the visual season only: frozen rivers, deep snow and other weather effects on tiles stay with
+  the weather system. The season's look is only the base: the blend, snow and frost above
   decide per tile and per plant which look shows.
 - **How the looks are drawn** (decided 2026-11-05): there are seven looks of the ground
   (spring, summer, autumn, bare = winter without snow, frost, snow and its thin fringe,
