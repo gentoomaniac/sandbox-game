@@ -150,7 +150,7 @@ func test_rain_splashes_more_the_heavier_it_rains() -> void:
 
 func test_the_wind_reaches_every_material_that_moves_with_it() -> void:
 	var motion := AmbientMotion.new()
-	var crop := motion.crop_material(Vector2i(16, 32))
+	var crop := motion.crop_material(Vector2i(32, 64))
 	var wind := Vector2(-12.0, 4.0)
 	motion.update(0.5, wind, 0.6)
 	for material in [motion.object_material(WorldObjectTypes.OAK), crop, motion.decoration_sway]:
@@ -186,10 +186,11 @@ func test_only_plants_and_fires_among_the_objects_move() -> void:
 		assert_null(motion.object_material(type), type)
 
 
-func test_crops_of_a_size_share_a_material() -> void:
+func test_crops_of_a_size_and_art_share_a_material() -> void:
 	var motion := AmbientMotion.new()
-	assert_eq(motion.crop_material(Vector2i(16, 16)), motion.crop_material(Vector2i(16, 16)))
-	assert_ne(motion.crop_material(Vector2i(16, 16)), motion.crop_material(Vector2i(16, 32)))
+	assert_eq(motion.crop_material(Vector2i(32, 32)), motion.crop_material(Vector2i(32, 32)))
+	assert_ne(motion.crop_material(Vector2i(32, 32)), motion.crop_material(Vector2i(32, 64)))
+	assert_ne(motion.crop_material(Vector2i(32, 32)), motion.crop_material(Vector2i(32, 32), 2))
 
 
 func test_lily_pads_drift_flowers_and_clover_sway_and_pebbles_stay() -> void:

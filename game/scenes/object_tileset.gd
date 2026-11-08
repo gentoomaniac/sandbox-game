@@ -26,6 +26,8 @@ var _crop_sources: Dictionary[StringName, int] = {}
 var _is_classic := ArtSet.is_classic
 ## The sheet of each crop type in the new art (see ArtSet).
 var _crop_sheets: Dictionary[StringName, String] = {}
+## Whose materials the plants, the fires and the crops get (none without it).
+var _motion: AmbientMotion
 
 
 ## One atlas source per look (see SeasonBlend.Look), with the same tiles: a source's id is its
@@ -33,6 +35,7 @@ var _crop_sheets: Dictionary[StringName, String] = {}
 ## crop, with the ids that follow. The tiles of plants and fires get the materials of `motion`
 ## (none without it).
 func _init(crop_rules := CropRules.default_rules(), motion: AmbientMotion = null) -> void:
+	_motion = motion
 	tile_set.tile_size = Vector2i(TerrainTileset.TILE_SIZE, TerrainTileset.TILE_SIZE)
 	for look: SeasonBlend.Look in SeasonBlend.Look.values():
 		var source := TileSetAtlasSource.new()
@@ -59,7 +62,7 @@ func _init(crop_rules := CropRules.default_rules(), motion: AmbientMotion = null
 				if motion != null:
 					tile_data.material = motion.object_material(type)
 	for crop_id in crop_rules.crop_ids():
-		_add_crop_sheet(crop_id, crop_rules.crop(crop_id)["sheet"], motion)
+		_add_crop_sheet(crop_id, crop_rules.crop(crop_id)["sheet"])
 
 
 ## Shows the atlases and the crops' sheets of the chosen art set (see ArtSet), if they are not
@@ -72,8 +75,7 @@ func show_art_set() -> void:
 		var source: TileSetAtlasSource = tile_set.get_source(look)
 		source.texture = load(picture(look))
 	for crop_id in _crop_sources:
-		var source: TileSetAtlasSource = tile_set.get_source(_crop_sources[crop_id])
-		source.texture = load(ArtSet.path(_crop_sheets[crop_id]))
+		_show_crop_sheet(crop_id)
 
 
 ## The object atlas in a look, in the chosen art set.
@@ -88,21 +90,37 @@ func crop_source_id(crop_type: StringName) -> int:
 
 
 ## A crop's sheet is the same in every season.
-func _add_crop_sheet(crop_id: StringName, sheet_path: String, motion: AmbientMotion) -> void:
+func _add_crop_sheet(crop_id: StringName, sheet_path: String) -> void:
 	var source := TileSetAtlasSource.new()
-	_crop_sheets[crop_id] = sheet_path
-	var sheet: Texture2D = load(ArtSet.path(sheet_path))
+	var sheet: Texture2D = load(sheet_path)
 	source.texture = sheet
 	var cell_size := Vector2i(sheet.get_width() / (CropRules.STAGES + 1), sheet.get_height())
 	source.texture_region_size = cell_size
 	source.use_texture_padding = false
-	_crop_sources[crop_id] = tile_set.add_source(source)
 	for look in CropRules.STAGES + 1:
 		source.create_tile(Vector2i(look, 0))
 		var tile_data := source.get_tile_data(Vector2i(look, 0), 0)
 		tile_data.texture_origin = Vector2i(0, (cell_size.y - TerrainTileset.TILE_SIZE) / 2)
-		if motion != null:
-			tile_data.material = motion.crop_material(cell_size)
+	_crop_sources[crop_id] = tile_set.add_source(source)
+	_crop_sheets[crop_id] = sheet_path
+	_show_crop_sheet(crop_id)
+
+
+## Gives the crop's tiles its sheet in the chosen art set, and the sway of that art: a classic
+## sheet is 16 px art doubled. A crop drawn after the crops went native has no classic sheet and
+## shows its new one in both sets.
+func _show_crop_sheet(crop_id: StringName) -> void:
+	var source: TileSetAtlasSource = tile_set.get_source(_crop_sources[crop_id])
+	var path := ArtSet.path(_crop_sheets[crop_id])
+	source.texture = load(path)
+	if _motion == null:
+		return
+	var is_classic := path != _crop_sheets[crop_id]
+	var material := _motion.crop_material(
+		source.texture_region_size, TerrainTileset.ART_16_SCALE if is_classic else 1
+	)
+	for look in CropRules.STAGES + 1:
+		source.get_tile_data(Vector2i(look, 0), 0).material = material
 
 
 ## How many pictures a type has in its atlas row: its variants, and for a bush that can be

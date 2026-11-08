@@ -10,10 +10,10 @@ extends RefCounted
 ##
 ## Everything moves in whole art pixels, and on a calm day hardly at all. The static functions
 ## turn the weather into the shaders' numbers. The shaders work on the pixels of the art they move
-## (see art_scale.gdshaderinc): the plants', the ground's (water, mud, lily pads and the plants of
-## the decoration layer), the fire's and the rain's splashes are the world's, as they are drawn at
-## 32 px, but in the classic art (see ArtSet) the plants' and the ground's are the 16 px art's
-## again. The crops are still 16 px art in either set, so their motion keeps to its doubled pixels.
+## (see art_scale.gdshaderinc): the plants', the crops', the ground's (water, mud, lily pads and
+## the plants of the decoration layer), the fire's and the rain's splashes are the world's, as they
+## are drawn at 32 px, but in the classic art (see ArtSet) the plants', the classic crops' and the
+## ground's are the 16 px art's again.
 
 const OBJECT_SWAY_SHADER := preload("res://game/scenes/object_sway.gdshader")
 const DECORATION_SWAY_SHADER := preload("res://game/scenes/decoration_sway.gdshader")
@@ -78,8 +78,9 @@ const SWAY_PROFILES := {
 	WorldObjectTypes.TALL_GRASS: {"stem": 3.0, "top": 42.0, "strength": 1.6, "frequency": 0.9},
 	WorldObjectTypes.REEDS: {"stem": 4.0, "top": 60.0, "strength": 1.5, "frequency": 0.7},
 }
-## Every crop bends like this, up to the top of its cell.
-const CROP_SWAY := {"stem": 1.0, "strength": 0.6, "frequency": 0.8}
+## Every crop bends like this, up to the top of its cell, in the pixels of its art: as much as
+## the grass, so more than the big trees (see SWAY_PROFILES).
+const CROP_SWAY := {"stem": 1.0, "strength": 1.3, "frequency": 0.8}
 const DECORATION_SWAY := {"strength": 0.5, "frequency": 0.9}
 
 ## The fires, by type: their cell, the strip of their flame and where its box is in the cell
@@ -130,8 +131,8 @@ var lily_pads := _material(LILY_PAD_SHADER)
 ## The chance of a splash now (see MAX_SPLASH_CHANCE): 0 when it does not rain.
 var splash_chance := 0.0
 var _object_materials: Dictionary[StringName, ShaderMaterial] = {}
-## By cell size: crops of the same size bend alike.
-var _crop_materials: Dictionary[Vector2i, ShaderMaterial] = {}
+## By cell size and art scale (x, y and the scale): crops of the same size and art bend alike.
+var _crop_materials: Dictionary[Vector3i, ShaderMaterial] = {}
 ## Every material that sways with the wind, and every fire that leans with it.
 var _sway_materials: Array[ShaderMaterial] = [decoration_sway]
 var _fire_materials: Array[ShaderMaterial] = []
@@ -194,17 +195,21 @@ func object_material(type: StringName) -> ShaderMaterial:
 	return _object_materials.get(type)
 
 
-## The material for the tiles of a crop's sheet, whose cells are `cell_size`.
-func crop_material(cell_size: Vector2i) -> ShaderMaterial:
-	if not _crop_materials.has(cell_size):
-		var material := _material(OBJECT_SWAY_SHADER)
+## The material for the tiles of a crop's sheet, whose cells are `cell_size`, of art with
+## `art_scale` world pixels to its pixel: 1 for the crops drawn at 32 px, ART_16_SCALE for the
+## classic sheets.
+func crop_material(cell_size: Vector2i, art_scale := 1) -> ShaderMaterial:
+	var key := Vector3i(cell_size.x, cell_size.y, art_scale)
+	if not _crop_materials.has(key):
+		var material := _native_material(OBJECT_SWAY_SHADER)
 		_set_parameters(material, CROP_SWAY)
-		var art_cell_size := Vector2(cell_size) / TerrainTileset.ART_16_SCALE
+		material.set_shader_parameter("art_scale", float(art_scale))
+		var art_cell_size := Vector2(cell_size) / art_scale
 		material.set_shader_parameter("cell_size", art_cell_size)
 		material.set_shader_parameter("top", art_cell_size.y)
-		_crop_materials[cell_size] = material
+		_crop_materials[key] = material
 		_sway_materials.append(material)
-	return _crop_materials[cell_size]
+	return _crop_materials[key]
 
 
 ## The material for a decoration tile (its atlas cell: column, and the terrain layer as row),

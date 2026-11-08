@@ -57,8 +57,9 @@ livestock.py), drawn at the game's tile (not doubled); a horse also has horse_<l
 and horse_<look>_ridden.png and horse_<look>_ridden_over.png, the ridden horse behind and in front
 of the rider in the rows of the player's sheets (see `ridden_sheets`).
 
-assets/crops/<crop>.png: one sheet per crop, its four growth stages and the dead one side by side, 16 px
-wide cells and as tall as the sheet (see crops.py and data/crops.cfg). They have no seasonal variants.
+assets/crops/<crop>.png: one sheet per crop, its four growth stages and the dead one side by side, cells a
+tile wide (32 px) and as tall as the sheet (see crops.py and data/crops.cfg), drawn at the game's tile. They
+have no seasonal variants.
 
 assets/soil_wet.png: the damp and the wet look of tilled soil, two tiles at the game's tile (see
 terrain.py).
@@ -116,8 +117,6 @@ from palette import ASSETS, PALETTE, check_palette, save, save_picture, write_pa
 DOUBLED = (
     # The bedroll (task 111); the object atlas doubles its rows itself (DOUBLED_ROWS).
     "bedroll_cover.png",
-    # Crops (task 109).
-    "crops/*.png",
     # Interiors (task 112).
     "interior.png",
     "interior/*.png",
@@ -362,7 +361,7 @@ def write_wildlife():
 
 def write_crops():
     for crop, cells in crops.sheets().items():
-        save([cells], f"crops/{crop}.png", TILE, len(cells[0]))
+        save([cells], f"crops/{crop}.png", crops.WIDTH, len(cells[0]))
     save([terrain.soil_wet()], "soil_wet.png", GAME_TILE)
     save_picture(meadow.clay_hint(), "clay_hint.png")
 

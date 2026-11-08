@@ -50,17 +50,21 @@ func test_the_classic_crops_are_as_big_as_the_new() -> void:
 		assert_eq(classic.get_size(), load(path).get_size(), path)
 
 
-func test_the_crops_follow_the_art_set() -> void:
-	var tileset := ObjectTileset.new()
+func test_the_crops_follow_the_art_set_and_sway_on_its_pixels() -> void:
+	var tileset := ObjectTileset.new(CropRules.default_rules(), AmbientMotion.new())
 	var source: TileSetAtlasSource = tileset.tile_set.get_source(
 		tileset.crop_source_id(WorldObjectTypes.TURNIP)
 	)
 	ArtSet.is_classic = true
 	tileset.show_art_set()
 	assert_eq(source.texture.resource_path, "res://assets/classic/crops/turnip.png")
+	var material := source.get_tile_data(Vector2i.ZERO, 0).material as ShaderMaterial
+	assert_eq(material.get_shader_parameter("art_scale"), float(TerrainTileset.ART_16_SCALE))
 	ArtSet.is_classic = false
 	tileset.show_art_set()
 	assert_eq(source.texture.resource_path, "res://assets/crops/turnip.png")
+	material = source.get_tile_data(Vector2i.ZERO, 0).material as ShaderMaterial
+	assert_eq(material.get_shader_parameter("art_scale"), 1.0)
 
 
 func test_a_villager_shown_switches_its_sheets_with_the_art() -> void:
@@ -154,7 +158,6 @@ func test_the_plants_sway_on_the_pixels_of_their_art_in_either_set() -> void:
 	motion.show_art_set()
 	assert_eq(oak.get_shader_parameter("art_scale"), 2.0, "the classic 16 px art")
 	assert_eq(oak.get_shader_parameter("top"), profile["top"] / 2.0, "in the classic art's pixels")
-	assert_eq(motion.crop_material(Vector2i(32, 64)).get_shader_parameter("art_scale"), 2.0)
 
 
 ## The atlas cells of an image that have a pixel drawn, cells of `size` (a tile by default).

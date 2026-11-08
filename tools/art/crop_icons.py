@@ -3,10 +3,78 @@ seed bags and the produce.
 """
 
 import items
-from crops import KEYS, Surface
+
+# The letters of the pictures drawn as rows of text.
+KEYS = {
+    "g": "green_bright",
+    "l": "green_light",
+    "d": "green",
+    "k": "green_dark",
+    "h": "soil_light",
+    "m": "soil_mid",
+    "s": "soil_dark",
+    "b": "soil",
+    "c": "cream",
+    "p": "petal",
+    "e": "sand_light",
+    "w": "sand",
+    "a": "heather",
+    "o": "flame",
+    "r": "ember",
+    "y": "gold",
+    "t": "straw",
+    "x": "reed",
+    "n": "mud",
+    "u": "dry_light",
+    "v": "dry",
+    "f": "foam",
+    "i": "water_light",
+}
+
+
+class Surface:
+    """A picture drawn on in its own coordinates, whose (0, 0) lies at `origin` in the picture,
+    with y growing downwards."""
+
+    def __init__(self, width, height, origin):
+        self.rows = [[None] * width for _ in range(height)]
+        self.origin_x, self.origin_y = origin
+
+    def pixel(self, x, y, colour):
+        column, row = x + self.origin_x, y + self.origin_y
+        if 0 <= row < len(self.rows) and 0 <= column < len(self.rows[0]):
+            self.rows[row][column] = colour
+
+    def rect(self, x0, y0, x1, y1, colour):
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1):
+                self.pixel(x, y, colour)
+
+    def line(self, x0, y0, x1, y1, colour):
+        steps = max(abs(x1 - x0), abs(y1 - y0), 1)
+        for step in range(steps + 1):
+            self.pixel(x0 + round((x1 - x0) * step / steps), y0 + round((y1 - y0) * step / steps), colour)
+
+    def stamp(self, rows, x, y):
+        """Draws rows of KEYS letters with their top left corner at (x, y)."""
+        for dy, row in enumerate(rows):
+            for dx, letter in enumerate(row):
+                if letter != ".":
+                    self.pixel(x + dx, y + dy, KEYS[letter])
+
+    def ball(self, cx, cy, rx, ry, light, mid, dark):
+        """A shaded ellipse centred on (cx, cy), lit from the upper left."""
+        for y in range(int(cy - ry) - 1, int(cy + ry) + 2):
+            for x in range(int(cx - rx) - 1, int(cx + rx) + 2):
+                dx, dy = (x + 0.5 - cx) / rx, (y + 0.5 - cy) / ry
+                if dx * dx + dy * dy > 1:
+                    continue
+                lit = -(dx * 0.6 + dy * 0.8)
+                self.pixel(x, y, light if lit > 0.45 else dark if lit < -0.35 else mid)
+
 
 # What tells each crop's seed sack apart (see items.seed_sack): the colour of its string, the
-# colour of its seeds, and the crop painted on it, 5 rows of 6 letters of crops.KEYS.
+# colour of its seeds, and the crop painted on it, 5 rows of 6 letters of KEYS.
 SACKS = {
     "turnip": ("heather", "soil_dark", ("..gl..", ".aaaa.", "aacccc", ".cccc.", "..cc..")),
     "potato": ("soil", "soil_light", ("......", ".hhhh.", "hhmhhm", "hmhhmm", ".mmmm.")),
