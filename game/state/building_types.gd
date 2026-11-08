@@ -5,6 +5,7 @@ extends RefCounted
 ## - costs: the materials placing it takes, item id to count (only those that are not 0).
 
 const SHACK := &"shack"
+const FISHER_HUT := &"fisher_hut"
 const KATE := &"kate"
 const LONGHOUSE := &"longhouse"
 const HALL_HOUSE := &"hall_house"

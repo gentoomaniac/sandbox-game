@@ -5,6 +5,7 @@ const DATA_DIR := "user://test_buildings"
 const DATA_FILE := DATA_DIR + "/buildings.cfg"
 const FOOTPRINTS := {
 	BuildingTypes.SHACK: Vector2i(3, 2),
+	BuildingTypes.FISHER_HUT: Vector2i(4, 2),
 	BuildingTypes.KATE: Vector2i(5, 3),
 	BuildingTypes.LONGHOUSE: Vector2i(7, 3),
 	BuildingTypes.HALL_HOUSE: Vector2i(7, 5),
@@ -24,13 +25,14 @@ func _write(text: String) -> void:
 	file.close()
 
 
-func test_the_buildings_file_is_valid_and_has_the_seven_buildings_in_order() -> void:
+func test_the_buildings_file_is_valid_and_has_the_eight_buildings_in_order() -> void:
 	var rules := BuildingRules.from_file(BuildingRules.DEFAULT_PATH)
 	assert_true(rules.is_valid(), str(rules.problems()))
 	assert_eq(
 		rules.building_ids(),
 		[
 			BuildingTypes.SHACK,
+			BuildingTypes.FISHER_HUT,
 			BuildingTypes.KATE,
 			BuildingTypes.LONGHOUSE,
 			BuildingTypes.HALL_HOUSE,
@@ -57,7 +59,8 @@ func test_every_missing_required_key_is_reported() -> void:
 
 func test_a_door_off_the_bottom_row_is_reported() -> void:
 	var text := FileAccess.get_file_as_string(BuildingRules.DEFAULT_PATH)
-	_write(text.replace("door_offset=Vector2i(1, 1)", "door_offset=Vector2i(1, 0)"))
+	var shack_door := 'door_offset=Vector2i(1, 1)\nsprite="res://assets/buildings/shack.png"'
+	_write(text.replace(shack_door, shack_door.replace("(1, 1)", "(1, 0)")))
 	var rules := BuildingRules.from_file(DATA_FILE)
 	assert_eq(rules.problems(), ["[shack] door_offset must be a tile of the bottom row"])
 	assert_push_error_count(1)

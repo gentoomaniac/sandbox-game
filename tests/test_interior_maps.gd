@@ -42,6 +42,7 @@ func test_every_building_but_the_bell_frame_has_its_own_interior_map() -> void:
 func test_each_interior_has_walls_around_and_its_door_in_the_front_wall() -> void:
 	var sizes := {
 		BuildingTypes.SHACK: Vector2i(6, 6),
+		BuildingTypes.FISHER_HUT: Vector2i(7, 6),
 		BuildingTypes.KATE: Vector2i(9, 8),
 		BuildingTypes.LONGHOUSE: Vector2i(15, 8),
 		BuildingTypes.HALL_HOUSE: Vector2i(15, 13),
@@ -68,6 +69,7 @@ func test_each_interior_has_walls_around_and_its_door_in_the_front_wall() -> voi
 func test_the_beds_are_in_the_buildings_that_can_be_slept_in_and_reachable() -> void:
 	var bed_types := {
 		BuildingTypes.SHACK: WorldObjectTypes.SLEEPING_MAT,
+		BuildingTypes.FISHER_HUT: WorldObjectTypes.SLEEPING_MAT,
 		BuildingTypes.KATE: WorldObjectTypes.SMALL_BED,
 		BuildingTypes.LONGHOUSE: WorldObjectTypes.BOX_BED,
 		BuildingTypes.HALL_HOUSE: WorldObjectTypes.BOX_BED,
