@@ -60,25 +60,20 @@ def flame(width, height, frame, half_width, tall, scale=1):
     return canvas
 
 
-def strip(behind, front, box, half_width, tall, scale=1):
-    """The cells of a fire's strip (assets/fire/<type>.png) at the game's tile: what is behind
-    the flame, what is in front of it, then the flame's frames. `box` (x, y, width, height),
-    `half_width` and `tall` are measured on the pictures `behind` and `front`, `scale` of whose
-    pixels make one of the 16 px art: the fireplace is still drawn at 16 px per tile (1), and
-    scaled up pixel for pixel here; the hearth at the game's tile (2). The flame is drawn at
-    the game's tile."""
-    up = GAME_TILE // TILE // scale
+def strip(behind, front, box, half_width, tall):
+    """The cells of a fire's strip (assets/fire/<type>.png): what is behind the flame, what is
+    in front of it, then the flame's frames, all drawn at the game's tile. `box` (x, y, width,
+    height), `half_width` and `tall` are measured on the pictures `behind` and `front`."""
     _, _, width, height = box
-    flames = [flame(width * up, height * up, frame, half_width * up, tall * up, GAME_TILE // TILE) for frame in range(FRAMES)]
-    return [_scaled_up(_cropped(behind, box), up), _scaled_up(_cropped(front, box), up)] + flames
+    flames = [flame(width, height, frame, half_width, tall, GAME_TILE // TILE) for frame in range(FRAMES)]
+    return [_cropped(behind, box), _cropped(front, box)] + flames
 
 
-def burning(behind, front, box, half_width, tall, scale=1):
-    """The whole picture with the first frame of its flame, for where it does not move; `scale`
-    as for `strip`."""
+def burning(behind, front, box, half_width, tall):
+    """The whole picture with the first frame of its flame, for where it does not move."""
     x0, y0, width, height = box
     canvas = copy(behind)
-    first = flame(width, height, 0, half_width, tall, scale)
+    first = flame(width, height, 0, half_width, tall, GAME_TILE // TILE)
     for y in range(height):
         for x in range(width):
             if first[y][x] is not None:
@@ -93,7 +88,3 @@ def burning(behind, front, box, half_width, tall, scale=1):
 def _cropped(canvas, box):
     x0, y0, width, height = box
     return [row[x0 : x0 + width] for row in canvas[y0 : y0 + height]]
-
-
-def _scaled_up(picture, scale):
-    return [[colour for colour in row for _ in range(scale)] for row in picture for _ in range(scale)]

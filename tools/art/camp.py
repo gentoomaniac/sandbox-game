@@ -1,94 +1,165 @@
-"""The camp site objects of assets/objects.png: the fireplace and the bedroll (the
-sleeping_bag object)."""
+"""The camp site objects of assets/objects.png, drawn at 32 px per tile: the fireplace and the
+bedroll (the sleeping_bag object). Light from the top left; each is rimmed in the darkest shade of
+its own colours and lies on a ground shadow."""
 
 import math
+import random
 
 import fire
-from canvas import OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank, rect
+import forms
+from canvas import GAME_OBJECT_BOTTOM, GAME_OBJECT_CELL_HEIGHT, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CENTRE, blank, outline, rect
+from palette import darkest_of
+from trees import ground_shadow
 
-def fire_stone(canvas, x, y):
-    rect(canvas, x - 1, y - 1, x + 1, y, "stone")
-    rect(canvas, x - 1, y - 1, x, y - 1, "stone_light")
-    rect(canvas, x + 1, y, x + 1, y, "stone_dark")
+WIDTH, HEIGHT = GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT
+CENTRE, BOTTOM = GAME_OBJECT_CENTRE, GAME_OBJECT_BOTTOM
 
+# Field stones round the fire, lit to dark, and split oak logs: bark and the pale cut ends.
+STONES = ("stone_dark", "stone", "stone_light")
+BARK = ("soil_dark", "soil", "soil_mid")
+CUT_END = ("soil_mid", "sand", "sand_light")
 
 # The box of the fireplace's cell that its flame burns in (x, y, width, height; the flame stands
-# on its bottom row), and the flame's half width and height.
-FIREPLACE_FLAME = ((OBJECT_CENTRE - 8, 51, 16, 20), 5.5, 15)
+# on its bottom row), and the flame's half width and height. The same box as the 16 px art's,
+# doubled, so AmbientMotion.FIRE_PROFILES fits both art sets.
+FIREPLACE_FLAME = ((CENTRE - 16, 102, 32, 40), 11, 30)
+# The middle of the fire on the ground, and the ring of stones round it (half width, half depth).
+_FIRE_GROUND = 142
+_RING = (21, 8)
+
+
+def _fire_stone(canvas, rng, x, y):
+    """A field stone of the ring, a rounded lump lit on its upper left."""
+    half_width, half_height = rng.uniform(3.2, 4.2), rng.uniform(2.6, 3.2)
+    stone = forms.ellipse(WIDTH, HEIGHT, x, y, half_width, half_height)
+    forms.shade(canvas, stone, STONES, radius=2)
+    for py, px in zip(*forms.edge(stone).nonzero()):
+        if py >= y or px >= x + half_width - 1.5:
+            canvas[py][px] = "ink" if py > y + half_height - 1.2 else "stone_dark"
+
+
+def _log(canvas, start, end):
+    """A split log lying from `start` to `end` (its cut end), barked, lit on top, with its pale
+    cut face at the end with rings and a dark rim."""
+    log = forms.capsule(WIDTH, HEIGHT, start, end, 2.6)
+    forms.shade(canvas, log, BARK, radius=2)
+    (x0, y0), (x1, y1) = start, end
+    length = math.hypot(x1 - x0, y1 - y0)
+    for step in range(3, int(length) - 2, 4):
+        x, y = round(x0 + (x1 - x0) * step / length), round(y0 + (y1 - y0) * step / length)
+        canvas[y][x] = "soil_dark"
+    cut = forms.ellipse(WIDTH, HEIGHT, x1, y1, 2.2, 2.2)
+    forms.shade(canvas, cut, CUT_END, radius=1)
+    canvas[round(y1)][round(x1)] = "soil_mid"
+    for py, px in zip(*forms.edge(cut).nonzero()):
+        canvas[py][px] = "soil"
 
 
 def fireplace_layers():
-    """The fireplace without its flame: what is behind the flame (the ash bed and three logs on
-    it, laid like the spokes of a wheel) and what is in front of it (the ring of stones)."""
-    behind, front = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT), blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
-    centre, ground = OBJECT_CENTRE, 71
-    for y in range(ground - 4, ground + 5):
-        for x in range(centre - 10, centre + 10):
-            if ((x - centre) / 9.5) ** 2 + ((y - ground) / 4.2) ** 2 <= 1:
-                behind[y][x] = "soil_dark"
-    for dx, dy, shades in ((-7, -2, ("soil_mid", "soil")), (7, -2, ("soil", "soil_dark")), (0, 3, ("soil_mid", "soil"))):
-        for i in range(9):
-            x, y = round(centre + dx * i / 8), round(ground + dy * i / 8)
-            behind[y][x] = behind[y + 1][x] = shades[0]
-            behind[y + 2][x] = shades[1]
-    ring = [
-        (round(centre + 10.5 * math.cos(step / 14 * 2 * math.pi)), round(ground + 3 + 4 * math.sin(step / 14 * 2 * math.pi)), math.sin(step / 14 * 2 * math.pi))
-        for step in range(14)
-    ]
-    for x, y, depth in sorted(ring, key=lambda stone: stone[2]):
-        fire_stone(front, x, y)
+    """The fireplace without its flame: what is behind the flame (the far half of the ring of
+    stones, the bed of ash and embers and three logs on it, laid like the spokes of a wheel with
+    their charred ends in the middle) and what is in front of it (the near half of the ring)."""
+    behind, front = blank(WIDTH, HEIGHT), blank(WIDTH, HEIGHT)
+    rng = random.Random(71)
+    centre, ground = CENTRE, _FIRE_GROUND
+    ground_shadow(behind, 26, rows=8)
+    stones = []
+    for step in range(16):
+        angle = step / 16 * 2 * math.pi
+        stones.append((centre + _RING[0] * math.cos(angle), ground + 5 + _RING[1] * math.sin(angle)))
+    for x, y in sorted(stones, key=lambda stone: stone[1]):
+        if y < ground + 5:
+            _fire_stone(behind, rng, x, y)
+    # The bed of ash, grey with soot at its rim, and the embers glowing in it.
+    ash = forms.ellipse(WIDTH, HEIGHT, centre, ground + 1, 18, 7)
+    forms.paint(behind, ash, "stone_dark")
+    forms.paint(behind, forms.shrunk(forms.shrunk(ash)), "stone")
+    for _ in range(26):
+        x, y = rng.randint(centre - 14, centre + 14), rng.randint(ground - 3, ground + 5)
+        if ash[y, x]:
+            behind[y][x] = rng.choice(("stone_light", "stone_dark", "ember", "stone_light"))
+    for (x0, y0), (x1, y1) in (((centre - 2, ground - 1), (centre - 15, ground - 6)), ((centre + 2, ground - 1), (centre + 15, ground - 6)), ((centre, ground + 1), (centre + 1, ground + 9))):
+        _log(behind, (x0, y0), (x1, y1))
+        # The charred end in the fire.
+        for dx, dy in ((0, 0), (1, 0), (0, 1), (-1, 0)):
+            behind[y0 + dy][x0 + dx] = "ink" if (dx + dy) % 2 else "ember"
+    for x, y in sorted(stones, key=lambda stone: stone[1]):
+        if y >= ground + 5:
+            _fire_stone(front, rng, x, y)
     return behind, front
 
 
 def fireplace():
+    """The fireplace with the first frame of its flame, for where the fire does not move."""
     return fire.burning(*fireplace_layers(), *FIREPLACE_FLAME)
 
 
+# The bedroll: 28x56 px on its 1x2 tiles (the cell's bottom edge is the footprint's), as long as a
+# person lying on it, so its foot hides their clogs (see BEDROLL_COVER_FROM_ROW).
+_BEDROLL_LEFT, _BEDROLL_TOP, _BEDROLL_BOTTOM = CENTRE - 14, 102, 156
+_BEDROLL_RIGHT = _BEDROLL_LEFT + 27
+# The linen ticking of the straw sack, lit to dark, its stripes, and the grey wool blanket.
+TICKING = ("mud", "sand", "sand_light")
+WOOL = ("stone_dark", "stone", "stone_light")
+
+
 def bedroll():
-    """14x28 px, lying vertically on 1x2 tiles (the cell's bottom edge is the footprint's), as
-    long as a person lying on it, so its foot hides their clogs (see BEDROLL_COVER_FROM_ROW): a
-    sack of linen ticking stuffed with straw, quilted across, straw poking out at its seams, and
-    a grey wool blanket rolled up and tied at its head end. The object's id stays sleeping_bag."""
-    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
-    left, top, bottom = OBJECT_CENTRE - 7, 51, 78
-    right = left + 13
-    # The straw sack: lit linen, shaded down its right side, quilted in rows.
-    rect(canvas, left, top + 3, right, bottom, "mud_dark")
-    rect(canvas, left + 1, top + 4, right - 1, bottom - 1, "sand_light")
-    rect(canvas, right - 3, top + 4, right - 1, bottom - 1, "sand")
-    rect(canvas, left + 1, bottom - 1, right - 1, bottom - 1, "sand")
-    for y in range(top + 12, bottom - 2, 5):
-        rect(canvas, left + 1, y, right - 1, y, "sand")
-        rect(canvas, right - 3, y, right - 1, y, "mud")
-    for x, y in ((left, bottom), (right, bottom), (left, top + 3), (right, top + 3)):
-        canvas[y][x] = None
-    rect(canvas, left + 2, bottom + 1, right, bottom + 1, "shadow")
-    # Straw sticking out of the seams.
-    for x, y, colour in ((left - 1, top + 13, "straw"), (left - 1, top + 14, "gold"), (left - 2, top + 14, "straw"),
-                         (right + 1, top + 20, "straw"), (right + 1, top + 21, "straw"), (right + 2, top + 20, "gold"),
-                         (left + 3, bottom + 1, "straw"), (left + 4, bottom + 1, "gold")):
-        canvas[y][x] = colour
-    # The rolled blanket across the head end: lit on top, its rolled-up ends showing a spiral.
-    rect(canvas, left - 1, top, right + 1, top + 8, "stone_dark")
-    rect(canvas, left, top + 1, right, top + 7, "stone")
-    rect(canvas, left, top + 1, right, top + 3, "stone_light")
-    rect(canvas, left, top + 7, right, top + 7, "stone_dark")
+    """The bedroll lying on 1x2 tiles: a sack of linen ticking with faint stripes, stuffed with
+    straw so it bulges between the rows it is quilted in, straw poking out at its seams, and a
+    grey wool blanket rolled up and tied at its head end. The object's id stays sleeping_bag."""
+    canvas = blank(WIDTH, HEIGHT)
+    left, top, bottom, right = _BEDROLL_LEFT, _BEDROLL_TOP, _BEDROLL_BOTTOM, _BEDROLL_RIGHT
+    # The straw sack: a long cushion, its quilted rows each a bulge lit on its top.
+    sack = forms.rounded_box(WIDTH, HEIGHT, left, top + 6, right, bottom)
+    level = forms.light_level(sack, 5)
+    rows = range(top + 15, bottom - 2, 8)
+    for row in rows:
+        level[row] -= 0.45
+        level[row + 1 : row + 3] += 0.3
+    forms.shade_by_level(canvas, sack, TICKING, level)
+    # Faint stripes woven into the ticking, and the quilting's ties.
+    for x in range(left + 4, right - 2, 6):
+        for y in range(top + 8, bottom - 1):
+            if sack[y, x] and canvas[y][x] == "sand_light":
+                canvas[y][x] = "stone_light"
+    for row in rows:
+        for x in (left + 7, left + 14, left + 21):
+            canvas[row][x] = "mud_dark"
+    # The rolled blanket across the head end: a roll lit on top, its ends showing the spiral.
+    roll = forms.rounded_box(WIDTH, HEIGHT, left - 2, top, right + 2, top + 15)
+    forms.shade(canvas, roll, WOOL, radius=5)
     for x in (left - 1, right + 1):
-        canvas[top][x] = canvas[top + 8][x] = None
-    for x in (left, right):
-        rect(canvas, x, top + 3, x, top + 5, "stone_dark")
-    canvas[top + 4][left + 1] = "stone_dark"
-    canvas[top + 4][right - 1] = "stone_dark"
+        end = forms.ellipse(WIDTH, HEIGHT, x + 0.5, top + 8, 2.5, 6.5)
+        forms.paint(canvas, end, "stone")
+        forms.paint(canvas, forms.ellipse(WIDTH, HEIGHT, x + 0.5, top + 8, 1.2, 3.6), "stone_dark")
+        canvas[top + 8][x] = "stone_light"
     # Two cords round the roll.
-    for x in (left + 3, right - 3):
-        rect(canvas, x, top + 1, x, top + 7, "soil")
-        canvas[top + 1][x] = "soil_light"
+    for x in (left + 6, right - 6):
+        rect(canvas, x, top, x + 1, top + 15, "soil")
+        rect(canvas, x, top + 1, x, top + 6, "soil_light")
+    canvas = outline(canvas, darkest_of)
+    # Straw sticking out of the seams.
+    rng = random.Random(53)
+    for _ in range(9):
+        side = rng.choice((left - 1, right + 1))
+        y = rng.randint(top + 16, bottom - 6)
+        direction = -1 if side < CENTRE else 1
+        for step in range(rng.randint(2, 4)):
+            canvas[y - step // 2][side + direction * step] = rng.choice(("straw", "gold", "straw"))
+    for x in range(left + 5, right - 4, 4):
+        canvas[bottom + 1][x] = "straw"
+        canvas[bottom + 1][x + 1] = "gold"
+    # Its shadow on the ground, to the lower right.
+    for y in range(top + 12, bottom + 3):
+        for x in range(left + 3, right + 4):
+            if canvas[y][x] is None:
+                canvas[y][x] = "shadow"
     return canvas
 
 
 # The rows of the bedroll cell from which the bedroll covers a player lying in it: below the
 # rolled blanket at the head end, so only the head shows.
-BEDROLL_COVER_FROM_ROW = 62
+BEDROLL_COVER_FROM_ROW = 124
 
 
 def bedroll_cover():
@@ -97,5 +168,5 @@ def bedroll_cover():
     shadow, which the atlas draws on its own."""
     canvas = bedroll()
     for y in range(BEDROLL_COVER_FROM_ROW):
-        canvas[y] = [None] * OBJECT_CELL_WIDTH
+        canvas[y] = [None] * WIDTH
     return [[None if colour == "shadow" else colour for colour in row] for row in canvas]

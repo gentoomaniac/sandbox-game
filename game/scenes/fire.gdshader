@@ -10,9 +10,9 @@ shader_type canvas_item;
 // for where the fire does not move), so the logs and stones stay still and only the flame
 // moves. Each fire starts its loop at its own frame, picked by its place, so two fires do not
 // burn in step (see AmbientMotion.fire_frame, which picks the same). Everything is in whole
-// pixels of the world, which are those of the textures: the strip is drawn at the game's tile,
-// and the picture's 16 px art is scaled up to it. AmbientMotion sets `lean` and `stretch`;
-// indoors they stay 0.
+// pixels of the world, which are those of the textures: the strip and the picture are drawn at
+// the game's tile (the classic art's are its 16 px art scaled up). AmbientMotion sets `lean` and
+// `stretch`; indoors they stay 0.
 
 uniform vec2 cell_size = vec2(96.0, 160.0);
 uniform sampler2D flames : filter_nearest;

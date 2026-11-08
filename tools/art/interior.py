@@ -703,7 +703,7 @@ def hearth_layers():
 
 def hearth():
     """The open hearth with a fire on it: the first frame of its flame (fire.strip)."""
-    return fire.burning(*hearth_layers(), *HEARTH_FLAME, scale=GAME_TILE // TILE)
+    return fire.burning(*hearth_layers(), *HEARTH_FLAME)
 
 
 # The byre and the store ---------------------------------------------------------------------------

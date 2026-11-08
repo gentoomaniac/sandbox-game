@@ -535,7 +535,7 @@ _WINTER_LOOKS = {
     # The bedroll: snow lies over the cloth, a frost rimes it in specks.
     "sleeping_bag": {
         "specks": {"sand_light", "stone_light"},
-        "snow": ({"sand_light", "sand", "stone_light", "stone"}, set(), 1),
+        "snow": ({"sand_light", "sand", "stone_light", "stone"}, set(), 2),
         "snow_remap": _SNOW_BEDROLL,
     },
     "fireplace": {},

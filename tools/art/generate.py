@@ -46,10 +46,9 @@ of seasons.HOUSE_LOOKS (kate_autumn.png, kate_lit_snow.png). Sizes and door tile
 data/buildings.cfg.
 
 assets/fire/<type>.png: the flame of the fireplace and of the hearth, burning (see fire.py and
-game/scenes/fire.gdshader), at the game's tile (not doubled). Cells the size of the box the
-flame burns in: what is behind the flame, what is in front of it (the fireplace's 16 px art
-scaled up in `fire.strip`, the hearth's drawn at the game's tile), then the frames of the flame.
-The atlas cell and the hearth's picture show the first frame, for where the fire does not move.
+game/scenes/fire.gdshader), at the game's tile. Cells the size of the box the flame burns in:
+what is behind the flame, what is in front of it, then the frames of the flame. The atlas cell
+and the hearth's picture show the first frame, for where the fire does not move.
 
 assets/interior.png and assets/interior/<name>.png: the tiles of the rooms and the furniture,
 drawn at the game's tile (see interior.py); the stations and the grave marker placed indoors
@@ -121,10 +120,7 @@ from palette import ASSETS, PALETTE, check_palette, save, save_picture, write_pa
 # redraws a group at 32 px (tasks 107 to 116) takes its files out of here. The item icons and
 # the items on the ground are drawn at 32 px (items.py); the other pictures of ui/ are drawn for
 # the UI's own scale, except the thought bubbles, drawn at 32 px like the people.
-DOUBLED = (
-    # The bedroll (task 111); the object atlas doubles its rows itself (DOUBLED_ROWS).
-    "bedroll_cover.png",
-)
+DOUBLED = ()
 
 
 def standing_outdoors(picture):
@@ -149,7 +145,7 @@ def standing_outdoors(picture):
 # The plants are drawn at 32 px; task 111 draws the rest anew: the camp, the walls, fences, the
 # dyke and the placed objects.
 DOUBLED_ROWS = {
-    "fireplace", "sleeping_bag", "chest", "workbench", "carved_chest", "kiln", "oven", "ewer", "grave",
+    "chest", "workbench", "carved_chest", "kiln", "oven", "ewer", "grave",
     "jetty", "rowing_boat", "net_frame", "eel_traps",
 }
 
@@ -349,11 +345,11 @@ def write_bedroll_cover():
 
 
 def write_fire():
-    for name, (behind, front), (box, half_width, tall), scale in (
-        ("fireplace", camp.fireplace_layers(), camp.FIREPLACE_FLAME, 1),
-        ("hearth", interior.hearth_layers(), interior.HEARTH_FLAME, GAME_TILE // TILE),
+    for name, (behind, front), (box, half_width, tall) in (
+        ("fireplace", camp.fireplace_layers(), camp.FIREPLACE_FLAME),
+        ("hearth", interior.hearth_layers(), interior.HEARTH_FLAME),
     ):
-        strip = fire.strip(behind, front, box, half_width, tall, scale)
+        strip = fire.strip(behind, front, box, half_width, tall)
         save([strip], f"fire/{name}.png", len(strip[0][0]), len(strip[0]))
 
 
