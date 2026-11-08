@@ -19,8 +19,10 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 import animals  # noqa: E402
 import birds  # noqa: E402
 import bubbles  # noqa: E402
+import buildings  # noqa: E402
 import camp  # noqa: E402
 import character  # noqa: E402
+import church  # noqa: E402
 import fire  # noqa: E402
 import flowers  # noqa: E402
 import ground_looks  # noqa: E402
@@ -28,6 +30,7 @@ import ground_overlays  # noqa: E402
 import interior  # noqa: E402
 import livestock  # noqa: E402
 import sea_birds  # noqa: E402
+import seasons  # noqa: E402
 import terrain  # noqa: E402
 import portraits  # noqa: E402
 import villagers  # noqa: E402
@@ -79,6 +82,9 @@ DOUBLED = (
     "decorations*.png",
     "soil_wet.png",
     "clay_hint.png",
+    # The buildings (task 110; buildings.py and church.py of commit e303759, their looks drawn by
+    # the shared seasons.house).
+    "buildings/*.png",
 )
 # The animals whose cells grew at 32 px per tile: the classic sheets, doubled, are set in
 # the new cells (bottom centre, as the animal stands in its cell), so that the game reads both
@@ -154,6 +160,15 @@ def write_ground():
     save_picture(ground_overlays.clay_hint(), f"{CLASSIC}/clay_hint.png")
 
 
+def write_buildings():
+    for name, draw in (buildings.PICTURES | church.PICTURES).items():
+        for lit_suffix, is_lit in (("", False), ("_lit", True)):
+            picture, snowy = draw(is_lit=is_lit)
+            for look in seasons.HOUSE_LOOKS:
+                look_suffix = "" if look == "summer" else f"_{look}"
+                save_picture(seasons.house(look, picture, snowy), f"{CLASSIC}/buildings/{name}{lit_suffix}{look_suffix}.png")
+
+
 def set_in_grown_cells():
     """Sets each cell of the sheets of GROWN_CELLS in the bottom centre of a cell of the new size."""
     for pattern, ((width, height), (new_width, new_height)) in GROWN_CELLS.items():
@@ -187,6 +202,7 @@ def main():
     write_wildlife()
     write_fire()
     write_ground()
+    write_buildings()
     scale_up_16_px_art()
     set_in_grown_cells()
     print("Wrote every file under assets/classic/.")

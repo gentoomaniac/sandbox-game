@@ -6,7 +6,8 @@ extends Node
 ## The sprites stand in the y-sorted `entities` node of WorldView, so they sort with the
 ## objects and the player. They belong to the world, not to a chunk, so they stay when chunks
 ## unload. A building is a SeeThroughSprite: it fades inside a circle around the player while
-## it hides them (see Occlusion).
+## it hides them (see Occlusion). Its pictures are those of the chosen art set (see ArtSet), which
+## WorldView shows anew by `show_art_set`.
 
 ## The windows of buildings are lit (and shine) once the light strength is at least this.
 const WINDOW_LIT_STRENGTH := 0.3
@@ -55,11 +56,12 @@ static func footprint_bottom(building: Building) -> float:
 	return (building.origin.y + footprint.y) * TerrainTileset.TILE_SIZE
 
 
-## The picture a building is shown with now: its look (see `_house_look`), lit or not.
+## The picture a building is shown with now: its look (see `_house_look`), lit or not, in the
+## chosen art set.
 func picture_path(building: Building, is_lit := false) -> String:
 	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
 	var summer_path: String = building_type["sprite_lit"] if is_lit else building_type["sprite"]
-	return SeasonalArt.house_path(summer_path, _house_look(building))
+	return ArtSet.path(SeasonalArt.house_path(summer_path, _house_look(building)))
 
 
 func add(building: Building) -> void:
@@ -68,11 +70,17 @@ func add(building: Building) -> void:
 	sprite.texture = load(picture_path(building))
 	sprite.centered = false
 	sprite.position = sort_position(building)
-	# Its bottom edge is the footprint's bottom edge.
+	# Its bottom edge is the footprint's bottom edge. The classic pictures are as big as the new.
 	var bottom := footprint_bottom(building) - sprite.position.y
 	sprite.offset = Vector2(0, bottom - sprite.texture.get_height())
 	_entities.add_child(sprite)
 	_add_window_lights(building, sprite)
+
+
+## Shows every building in the chosen art set (see ArtSet).
+func show_art_set() -> void:
+	for building in _sprites:
+		_show_windows(building)
 
 
 ## Takes down the sprite and the window lights of a building.

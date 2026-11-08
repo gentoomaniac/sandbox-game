@@ -173,11 +173,12 @@ func _ready() -> void:
 	add_child(_buildings)
 
 
-## Shows the ground and the campfires' flames in the chosen art set (see ArtSet).
+## Shows the ground, the campfires' flames and the buildings in the chosen art set (see ArtSet).
 func show_art_set() -> void:
 	_tileset.show_art_set()
 	_soil_wetness.show_art_set()
 	ambient_motion.show_art_set()
+	_buildings.show_art_set()
 
 
 func _add_overlay(overlay_name: String) -> TileMapLayer:

@@ -154,6 +154,16 @@ func test_building_windows_are_lit_and_shine_only_in_the_dark() -> void:
 	assert_false(lights[0].visible)
 
 
+func test_buildings_follow_the_art_set() -> void:
+	_view.world.add_chunk(Chunk.new(Vector2i.ZERO))
+	var building := _view.world.place_building(BuildingTypes.KATE, Vector2i(2, 2))
+	var sprite: Sprite2D = _view._buildings._sprites[building]
+	ArtSet.show(true, get_tree())
+	assert_string_starts_with(sprite.texture.resource_path, "res://assets/classic/buildings/kate")
+	ArtSet.show(false, get_tree())
+	assert_string_starts_with(sprite.texture.resource_path, "res://assets/buildings/kate")
+
+
 # --- Vegetation follows the year ---
 
 
