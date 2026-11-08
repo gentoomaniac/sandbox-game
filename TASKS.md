@@ -1361,6 +1361,28 @@ loads. The drop is a commit of its own (`Save: drop the upgrades from versions 1
 (oldest read: 13)`), so an older save can be rescued from its parent; the rule is in
 save_file.gd's header and SPEC "Saving".
 
+## 105. make test runs the tests in parallel
+
+- [x] Done
+
+The user's word of 2026-11-08, after the code review measured the suite: one Godot process took
+about 170 s, and the per-commit verify loop runs it once per commit.
+
+Done: `make test` runs `tools/run_tests.py`, which spreads tests/test_*.gd over `TEST_JOBS`
+headless Godot processes (default 8; `TEST_JOBS=1` is one process like before), each with its
+own user:// (build/user-data-<i>) and log (build/test-<i>.log), after one shared import. The
+files are balanced by their time in the last run (build/test-times, written from GUT's junit
+output), by size until a file has a time. Every check holds per shard (a script that failed to
+load, no tests run, "leaked at exit", Godot's exit status) and the exit status is non-zero if any
+shard fails. build/test.log is the shard logs joined, ending with a summary block that keeps
+GUT's labels (Passing Tests, Failing Tests), `[Failed] <file>: <test>` lines and the warning and
+orphan counts. Wall time of a full run (22 cores, 1656 tests): TEST_JOBS=1 169 s, 4 52 s, 8 36 s,
+12 29 s; 8 is the default as the gain flattens and several worker loops share the machine. Order
+dependence: runs with 3, 4, 5, 8, 12 and 16 shards, with time-balanced and size-balanced
+assignments, all green. The one failure found, `test_language_model_page` under load, was not
+order but time: `CannedHttpTest` waited for the client by frame count, and a headless frame takes
+microseconds, so it gave up before the client connected; it now waits 5 s of clock time.
+
 ## Later (not part of the prototype)
 
 - **The camp's bedroll and campfire can be taken down and built** (the user, 2026-11-08): today
