@@ -256,8 +256,8 @@ _SNOW_BEDROLL = {
     "sand_light": "snow_light", "sand": "snow", "stone_light": "snow_light", "stone": "snow",
     "straw": "snow_shadow", "gold": "snow", "mud": "snow_shadow",
 }
-_SNOW_CHEST = ({"soil_light", "sand", "soil_mid"}, set(), 3)
-_CHEST_LID_ROWS = 5
+_SNOW_CHEST = ({"sand_light", "sand", "soil_light", "soil_mid"}, set(), 5)
+_CHEST_LID_ROWS = 10
 
 
 def _chest_lid_bottom(canvas):
@@ -494,14 +494,14 @@ _WINTER_LOOKS = {
     "stump": {"frost_only": _FROST_STONE, "snow": _SNOW_STUMP},
     "dead_stump": {"frost_only": _FROST_STONE, "snow": _SNOW_DEAD_STUMP},
     "chest": {"frost_only": _FROST_STONE, "snow": _SNOW_CHEST},
-    "carved_chest": {"frost_only": _FROST_STONE, "snow": ({"water_light", "foam", "paint_teal"}, set(), 3)},
-    "kiln": {"frost_only": _FROST_STONE, "snow": ({"sand", "mud", "stone", "stone_light"}, set(), 2)},
-    "oven": {"frost_only": _FROST_STONE, "snow": ({"rust", "red_light", "rust_dark"}, set(), 2)},
-    "workbench": {"frost_only": _FROST_STONE, "snow": ({"sand_light", "sand"}, set(), 2)},
+    "carved_chest": {"frost_only": _FROST_STONE, "snow": ({"water_light", "foam", "paint_teal"}, set(), 5)},
+    "kiln": {"frost_only": _FROST_STONE, "snow": ({"sand_light", "sand", "mud", "stone", "stone_light"}, set(), 4)},
+    "oven": {"frost_only": _FROST_STONE, "snow": ({"rust", "red_light", "rust_dark"}, set(), 4)},
+    "workbench": {"frost_only": _FROST_STONE, "snow": ({"sand_light", "sand"}, set(), 3)},
     # The Ewer: snow on its deck and on the furled sail, a frost rimes the deck in specks.
     "ewer": {"specks": {"bare_light", "bare"}, "snow": ({"bare_light", "bare", "umber", "rust_dark"}, set(), 2)},
     # Snow on the arms of a cross and the tops of the stones.
-    "grave": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "soil_mid", "sand_light", "sand", "stone_light", "stone"}, set(), 2)},
+    "grave": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "soil_mid", "bare_light", "sand_light", "sand", "stone_light", "stone"}, set(), 4)},
     # The landing: snow covers the jetty's deck and the boat's floor boards (a dusting only caps
     # them), and lies on the net frame's pole and on the traps.
     "jetty": {

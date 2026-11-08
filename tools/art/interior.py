@@ -17,7 +17,7 @@ import random
 import chest
 import fire
 import forms
-from canvas import GAME_TILE, TILE, blank, copy, outline_edge, rect
+from canvas import GAME_TILE, blank, copy, outline_edge, rect
 from terrain import patch_noise
 
 T = GAME_TILE
@@ -893,14 +893,6 @@ def plate_rack():
     return canvas
 
 
-def chest_picture():
-    """The chest indoors is the chest of the object atlas (chest.py), still drawn at 16 px per
-    tile (task 111), scaled up to the game's tile."""
-    picture = chest.chest()
-    factor = GAME_TILE // TILE
-    return [[colour for colour in row for _ in range(factor)] for row in picture for _ in range(factor)]
-
-
 def marker_tile(picture, footprint):
     """The top left tile of the footprint of a sprite that is centred on it."""
     width, height = len(picture[0]), len(picture)
@@ -922,7 +914,7 @@ def furniture():
         "bed": (bed(), (1, 2)),
         "table": (table(), (2, 1)),
         "stool": (stool(), (1, 1)),
-        "chest": (chest_picture(), (1, 1)),
+        "chest": (chest.chest(), (1, 1)),
         "hearth": (hearth(), (2, 2)),
         "window": (window_picture(), (1, 2)),
         "sleeping_mat": (sleeping_mat(), (1, 2)),

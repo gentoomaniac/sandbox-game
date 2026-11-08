@@ -8,13 +8,13 @@ church door in it. An iron cross stands on the west gable and on the porch. The 
 parishes had no tower: the bells hung in a free-standing wooden frame (Glockenstapel,
 bell_frame.png), an open oak frame on a brick base under a pyramid of oak shingles, the bell in
 it. The churchyard wall is the fieldstone wall of boundaries.py; the graves (an oak cross, a
-sandstone headstone and a fieldstone slab) are world objects, a row of the object atlas, still
-drawn at 16 px per tile.
+sandstone headstone and a fieldstone slab) are world objects, a row of the object atlas.
 """
 
 import math
 import random
 
+import forms
 import items
 from buildings import OAK, RED_BRICKS, SHADED, brick_wall, door, eaves_shadow, fieldstone_base, glass, ground_shadow, lime_wall
 from canvas import GAME_TILE, blank, outline_edge, rect
@@ -311,44 +311,76 @@ def bell_frame(is_lit):
 
 
 def oak_cross():
-    """An oak cross, 11x16 px, lit on the left, its arms a little below the top."""
-    picture = blank(11, 16)
-    rect(picture, 4, 0, 6, 15, "soil_mid")
-    rect(picture, 0, 4, 10, 6, "soil_mid")
-    rect(picture, 4, 0, 4, 15, "soil_light")
-    rect(picture, 0, 4, 10, 4, "soil_light")
-    rect(picture, 6, 7, 6, 15, "soil")
-    rect(picture, 0, 6, 10, 6, "soil")
-    return outline_edge(picture, "soil_dark", keep_bottom=True)
+    """An oak cross, 22x32 px, its arms a little below the top: square-sawn beams lit on their
+    left and top faces, grain along them, weathered grey on top and green with lichen at the
+    foot, a little turf round it."""
+    picture = blank(22, 32)
+    for x0, y0, x1, y1 in ((8, 0, 13, 31), (0, 8, 21, 13)):
+        rect(picture, x0, y0, x1, y1, "soil_mid")
+        rect(picture, x0, y0, x1, y0 + 1, "soil_light")
+        rect(picture, x0, y0, x0 + 1, y1, "soil_light")
+        rect(picture, x1, y0 + 2, x1, y1, "soil")
+        rect(picture, x0 + 2, y1, x1, y1, "soil")
+    rng = random.Random(313)
+    for _ in range(9):
+        x, y = rng.randint(10, 12), rng.randint(2, 29)
+        rect(picture, x, y, x, min(30, y + rng.randint(1, 3)), "soil")
+    for _ in range(5):
+        x, y = rng.randint(2, 19), rng.randint(10, 11)
+        rect(picture, x, y, min(20, x + rng.randint(1, 3)), y, "soil")
+    # The end grain of the post's top and of the arms, weathered grey.
+    rect(picture, 8, 0, 13, 0, "bare_light")
+    rect(picture, 0, 8, 0, 13, "bare_light")
+    picture[9][21] = picture[10][21] = "bare"
+    for x, y in ((9, 28), (10, 29), (12, 27), (9, 30)):
+        picture[y][x] = "olive"
+    outline_edge(picture, "soil_dark", keep_bottom=True)
+    for x, height in ((5, 2), (6, 3), (7, 1), (14, 2), (15, 3), (16, 1)):
+        rect(picture, x, 31 - height + 1, x, 31, "green_dark" if height > 1 else "green")
+    return picture
 
 
 def headstone():
-    """A headstone of sandstone, 11x14 px, its top round, a cross cut into it over three lines
-    of letters; lichen on its foot."""
-    picture = blank(11, 14)
-    for y in range(14):
-        for x in range(11):
-            if y >= 5 or math.hypot(x - 5, y - 5) <= 5.5:
-                picture[y][x] = "sand_light" if x < 3 or y < 2 else "sand" if x < 9 else "mud"
-    rect(picture, 5, 2, 5, 6, "mud")
-    rect(picture, 3, 3, 7, 3, "mud")
-    for y, (left, right) in zip((8, 10), ((2, 8), (3, 7))):
+    """A headstone of sandstone, 22x28 px, its top round: a dome lit on its upper left, a cross
+    cut into it over three lines of letters, lichen and moss on its foot."""
+    width, height = 22, 28
+    picture = blank(width, height)
+    xs, ys = forms.grid(width, height)
+    stone = (ys >= 10) | (((xs - 11) / 10.5) ** 2 + ((ys - 10.5) / 10.5) ** 2 <= 1)
+    stone &= (xs > 0.5) & (xs < width - 0.5)
+    forms.shade(picture, stone, ("mud", "sand", "sand_light"), radius=4)
+    # The cross and the letters cut in, dark on their upper edge where the cut is in shade.
+    rect(picture, 10, 4, 11, 12, "mud_dark")
+    rect(picture, 7, 6, 14, 7, "mud_dark")
+    rect(picture, 10, 4, 11, 4, "mud")
+    for y, (left, right) in zip((16, 19, 22), ((4, 17), (5, 16), (7, 14))):
         for x in range(left, right + 1, 2):
-            picture[y][x] = "mud"
-    rect(picture, 1, 12, 3, 12, "olive")
-    picture[11][2] = "dry"
+            picture[y][x] = "mud_dark"
+    rect(picture, 2, 25, 7, 27, "olive")
+    rect(picture, 3, 24, 5, 24, "dry")
+    picture[26][15] = picture[27][16] = "olive"
     return outline_edge(picture, "mud_dark", keep_bottom=True)
 
 
 def fieldstone_slab():
-    """A low slab of grey granite, 13x9 px, rough on top, a cross cut into it."""
-    picture = blank(13, 9)
-    tops = (3, 2, 1, 1, 0, 0, 0, 1, 1, 1, 2, 2, 3)
+    """A low slab of grey granite, 26x18 px, rough on top, lit on its upper left, a cross cut into
+    it, a patch of lichen."""
+    width, height = 26, 18
+    picture = blank(width, height)
+    rng = random.Random(343)
+    tops = [round(6 - 6 * math.sin(math.pi * (x + 0.5) / width) ** 0.6 + rng.uniform(-0.6, 0.6)) for x in range(width)]
+    stone = forms.box(width, height, 0, 0, width - 1, height - 1)
     for x, top in enumerate(tops):
-        for y in range(top, 9):
-            picture[y][x] = "stone_light" if y <= top + 1 or x < 2 else "stone" if x < 11 else "stone_dark"
-    rect(picture, 6, 2, 6, 6, "stone_dark")
-    rect(picture, 4, 3, 8, 3, "stone_dark")
+        stone[: max(0, top), x] = False
+    forms.shade(picture, stone, ("stone_dark", "stone", "stone_light"), radius=4, top_light=0.3)
+    for _ in range(14):
+        x, y = rng.randrange(1, width - 1), rng.randrange(4, height - 1)
+        if stone[y, x]:
+            picture[y][x] = rng.choice(("stone_light", "stone_dark"))
+    rect(picture, 12, 4, 13, 13, "stone_dark")
+    rect(picture, 8, 7, 17, 8, "stone_dark")
+    for x, y in ((4, 12), (5, 13), (4, 14), (20, 6), (21, 7)):
+        picture[y][x] = "olive"
     return outline_edge(picture, "stone_dark", keep_bottom=True)
 
 

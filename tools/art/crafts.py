@@ -1,43 +1,20 @@
 """The art of the professions (task 74): the stations they work at and what they make.
 
-A station is drawn once, standing (its bottom row on the ground), like the chest: generate.py puts
-that picture into its cell of the object atlas (outdoors), writes it as assets/interior/<type>.png
-(inside a house, and the ghost while it is placed) and makes its item icon from it, outlined all
-round. Item icons are 16x16 pictures, named after the item id of game/state/item_types.gd;
-generate.py writes them with the other icons (and their 8x8 ground versions). Cooked food is warm
-in colour; the meals in a bowl steam a little.
+A station is drawn once at 32 px per tile, standing (its bottom row on the ground), like the
+chest: generate.py puts that picture into its cell of the object atlas (outdoors) and writes it as
+assets/interior/<type>.png (inside a house, and the ghost while it is placed). Each is rimmed in
+the darkest shade of its own colours, light from the top left. Its item icon's body is that
+picture (items.icon_of). The items made at the stations are drawn as icon bodies, named after the
+item id of game/state/item_types.gd, which generate.py outlines and writes with the other icons.
+Cooked food is warm in colour; the meals in a bowl steam a little.
 """
 
-import chest
-from canvas import blank, outline_edge, rect
-from items import ICON, LINEN, OAK, box, capsule, dots, ellipse, from_rows, grain, icon_of, line, paint, pixel, polygon, shade
+import random
 
-# The workbench: a thick beech top on four legs with a stretcher, a vice screw at its left end
-# and a saw lying on it.
-WORKBENCH_ROWS = (
-    ".TTTTTTTTTTTTTT.",
-    "TTTTTTTTTTTTTTTT",
-    "tttttttttttttttt",
-    "FFFFFFFFFFFFFFFF",
-    "FiiFFFFFFFFFFFFF",
-    "fiiffffffffffffs",
-    "LLl..........LLl",
-    "LLl..........LLl",
-    "LLlSSSSSSSSSSLLl",
-    "LLl..........LLl",
-    "LLl..........LLl",
-)
-WORKBENCH_KEYS = {
-    "T": "sand_light",
-    "t": "sand",
-    "F": "soil_light",
-    "f": "soil_mid",
-    "s": "soil",
-    "i": "stone_light",
-    "L": "soil_light",
-    "l": "soil_mid",
-    "S": "soil_mid",
-}
+import chest
+import forms
+from canvas import blank, outline_edge, rect
+from items import ICON, LINEN, OAK, box, capsule, dots, ellipse, grain, icon_of, line, paint, polygon, shade
 
 def bowl(broth, bits):
     """A wooden bowl of a meal from the side and a little above: `broth` is its ramp, dark to
@@ -68,29 +45,78 @@ def roast_turnip():
     return picture
 
 
-def workbench(is_standing=True):
-    """The workbench, 16x11 px with its outline; standing, its bottom row has none."""
-    picture = from_rows(WORKBENCH_ROWS, WORKBENCH_KEYS)
-    # The saw on the top: its blade with teeth along the front and, at the right, its handle.
-    rect(picture, 4, 1, 10, 1, "stone_light")
-    for x in range(4, 11, 2):
-        pixel(picture, x, 2, "stone")
-    rect(picture, 11, 1, 12, 2, "soil")
-    return outline_edge(picture, "soil_dark", keep_bottom=is_standing)
+def _grain(picture, x0, y0, x1, y1, colour, seed, count):
+    """Short streaks of grain in `colour` along a board x0..x1, y0..y1."""
+    rng = random.Random(seed)
+    for _ in range(count):
+        x, y = rng.randint(x0, x1), rng.randint(y0, y1)
+        rect(picture, x, y, min(x1, x + rng.randint(2, 6)), y, colour)
+
+
+def workbench():
+    """The workbench, 32x22 px: a thick beech top on four oak legs joined by a stretcher, a vice
+    at its left end with a wooden screw and its bar, and a saw and a few shavings lying on it."""
+    picture = blank(32, 22)
+    # The back legs, in the shade under the top, then the stretcher between the front ones.
+    for x in (7, 23):
+        rect(picture, x, 6, x + 1, 19, "soil")
+    rect(picture, 4, 14, 27, 16, "soil_mid")
+    rect(picture, 4, 14, 27, 14, "soil_light")
+    rect(picture, 4, 16, 27, 16, "soil")
+    for x in (2, 26):
+        rect(picture, x, 6, x + 3, 21, "soil_mid")
+        rect(picture, x, 6, x, 21, "soil_light")
+        rect(picture, x + 3, 6, x + 3, 21, "soil")
+    # The top: its face seen from above, lit, and its thick front edge, the end grain at the right.
+    rect(picture, 1, 0, 30, 2, "sand_light")
+    rect(picture, 0, 1, 31, 2, "sand_light")
+    rect(picture, 0, 2, 31, 2, "sand")
+    _grain(picture, 2, 0, 29, 1, "sand", 41, 4)
+    rect(picture, 0, 3, 31, 6, "soil_light")
+    rect(picture, 0, 6, 31, 6, "soil_mid")
+    _grain(picture, 1, 4, 28, 5, "soil_mid", 42, 5)
+    rect(picture, 29, 3, 31, 6, "sand")
+    picture[4][30] = picture[5][30] = "soil_mid"
+    # The vice: a jaw of oak under the left end, its screw through it and the bar through the
+    # screw's head.
+    rect(picture, 0, 7, 4, 12, "soil_mid")
+    rect(picture, 0, 7, 0, 12, "soil_light")
+    rect(picture, 0, 9, 7, 10, "sand")
+    rect(picture, 0, 9, 7, 9, "sand_light")
+    rect(picture, 5, 7, 5, 13, "stone")
+    # The saw lying on the top: its blade, teeth to the front, and its handle at the right.
+    rect(picture, 8, 1, 19, 1, "stone_light")
+    rect(picture, 8, 2, 19, 2, "stone")
+    for x in range(8, 20, 2):
+        picture[3][x] = "stone_dark"
+    rect(picture, 20, 0, 23, 2, "soil")
+    rect(picture, 20, 0, 23, 0, "soil_mid")
+    picture[1][22] = "soil_dark"
+    # Curled shavings.
+    for x, y in ((25, 1), (26, 0), (27, 1), (12, 0)):
+        picture[y][x] = "cream"
+    return outline_edge(picture, "soil_dark", keep_bottom=True)
 
 
 # The carved chest is the chest painted as the Frisian chests were: blue-green with a pale lid,
-# flowers on its front.
-PAINTED_CHEST = {"soil_light": "water_light", "soil_mid": "paint_teal", "soil": "water", "sand": "foam"}
-CHEST_FLOWERS = ((4, 8), (11, 8), (4, 3), (11, 3))
+# tulips on its front.
+PAINTED_CHEST = {
+    "sand_light": "foam", "sand": "water_light", "soil_light": "water_light", "soil_mid": "paint_teal", "soil": "water",
+}
+# Where the tulips stand, by the foot of their stems, either side of the lock.
+CHEST_TULIPS = ((8, 9), (23, 9), (8, 20), (23, 20))
 
 
-def carved_chest(is_standing=True):
-    """The chest, painted and with a flower on each side of its lock."""
-    picture = [[PAINTED_CHEST.get(name, name) for name in row] for row in chest.chest(is_standing)]
-    for x, y in CHEST_FLOWERS:
-        pixel(picture, x, y, "petal")
-        pixel(picture, x, y + 1, "cream")
+def carved_chest():
+    """The chest, painted, a tulip on each side of its lock on the lid and on the box."""
+    picture = [[PAINTED_CHEST.get(name, name) for name in row] for row in chest.chest()]
+    for x, y in CHEST_TULIPS:
+        rect(picture, x, y - 2, x, y, "green_light")
+        picture[y - 1][x - 1] = picture[y - 1][x + 1] = "green"
+        rect(picture, x - 1, y - 4, x + 1, y - 3, "red_light")
+        picture[y - 5][x - 1] = picture[y - 5][x + 1] = "red_light"
+        picture[y - 4][x] = "petal"
+        picture[y - 4][x - 1] = "cream"
     return picture
 
 
@@ -108,64 +134,86 @@ def planks():
     return picture
 
 
-KILN_WIDTH = 16
-KILN_HEIGHT = 18
+# Clay and fired clay, lit to dark; field stones; brick.
+CLAY = ("mud_dark", "mud", "sand", "sand_light")
+STONES = ("stone_dark", "stone", "stone_light")
+BRICK = ("rust_dark", "rust", "red_light")
 
 
-def kiln(is_standing=True):
-    """A small beehive kiln of clay on a fieldstone footing, 16x18 px: the smoke hole at its top,
-    courses of clay round its dome, and the arched mouth where the fire is laid."""
-    picture = blank(KILN_WIDTH, KILN_HEIGHT)
-    for y in range(2, KILN_HEIGHT):
-        half = min(7, 3 + (y - 2) // 2)
-        left, right = 8 - half - 1, 8 + half
-        rect(picture, left, y, right, y, "mud")
-        picture[y][left] = "sand"
-        rect(picture, right - 1, y, right, y, "mud_dark")
-        if y % 3 == 0:
-            for x in range(left + 1 + y % 2, right - 1, 3):
-                picture[y][x] = "mud_dark"
-    # The rim and the smoke hole.
-    rect(picture, 5, 0, 10, 1, "sand")
-    rect(picture, 6, 1, 9, 2, "soil_dark")
-    # The mouth, an arch over the ash.
-    rect(picture, 6, 11, 9, 15, "soil_dark")
-    rect(picture, 7, 10, 8, 10, "soil_dark")
-    rect(picture, 6, 15, 9, 15, "stone_dark")
-    # The footing of field stones.
-    rect(picture, 0, 16, 15, 17, "stone")
-    for x in (2, 6, 11, 14):
-        picture[16][x] = "stone_light"
-    for x in (4, 9, 13):
-        picture[17][x] = "stone_dark"
-    return outline_edge(picture, "soil_dark", keep_bottom=is_standing)
+def _footing(picture, top, bottom, seed):
+    """A footing of rounded field stones, rows top..bottom, the width of the picture."""
+    rng = random.Random(seed)
+    width = len(picture[0])
+    rect(picture, 0, top, width - 1, bottom, "stone_dark")
+    x = 1
+    while x < width - 1:
+        half = rng.uniform(2.6, 3.8)
+        stone = forms.ellipse(width, len(picture), x + half, (top + bottom) / 2 + rng.uniform(-0.5, 0.5), half, (bottom - top) / 2 + 0.4)
+        forms.shade(picture, stone, STONES, radius=2)
+        x += 2 * half + 0.6
 
 
-def oven(is_standing=True):
-    """A bake oven of brick, 16x15 px: a dome with an arched mouth on a fieldstone base."""
-    picture = blank(16, 15)
-    for y in range(9):
-        half = (4, 5, 6, 7, 7, 7, 7, 7, 7)[y]
-        left, right = 8 - half - 1, 8 + half
-        rect(picture, left, y, right, y, "rust")
-        picture[y][left] = "red_light"
-        rect(picture, right - 1, y, right, y, "rust_dark")
-        # Courses of brick, the joints staggered.
-        if y % 2 == 1:
-            rect(picture, left + 1, y, right - 2, y, "rust_dark")
-        elif y > 0:
-            for x in range(left + 2 + y % 4, right - 1, 4):
+def kiln():
+    """A small beehive kiln of clay on a fieldstone footing, 32x36 px: the smoke hole at its top,
+    courses of clay round its dome, and the arched mouth where the fire is laid, glowing low."""
+    width, height = 32, 36
+    picture = blank(width, height)
+    xs, ys = forms.grid(width, height)
+    half = 4.5 + 11 * ((ys - 2).clip(0) / 28) ** 0.5
+    dome = (abs(xs - 16) <= half) & (ys >= 2) & (ys < 31)
+    level = forms.light_level(dome, 6, top_light=0.25)
+    # The courses of clay: a darker joint every 5 rows, the clay bulging lit under it.
+    for y in range(6, 31, 5):
+        level[y] -= 0.5
+        level[y + 1] += 0.2
+    forms.shade_by_level(picture, dome, CLAY, level)
+    # The rim round the smoke hole, and the hole.
+    rect(picture, 11, 0, 20, 3, "sand")
+    rect(picture, 11, 0, 20, 0, "sand_light")
+    rect(picture, 13, 1, 18, 3, "soil_dark")
+    rect(picture, 14, 2, 17, 3, "ink")
+    # The mouth, an arch over the ash and the embers.
+    mouth = forms.ellipse(width, height, 16, 25, 5, 6) | forms.box(width, height, 11, 25, 20, 30)
+    forms.paint(picture, mouth, "ink")
+    forms.paint(picture, forms.shrunk(mouth), "soil_dark")
+    rect(picture, 12, 29, 19, 30, "stone_dark")
+    for x in (13, 16, 18):
+        picture[29][x] = "ember"
+    picture[28][15] = "flame"
+    _footing(picture, 31, 35, 151)
+    return outline_edge(picture, "soil_dark", keep_bottom=True)
+
+
+def oven():
+    """A bake oven of brick, 32x30 px: a dome of bricks in staggered courses with an arched
+    mouth, its iron door leaning aside, on a base of field stones with a hearth ledge in front."""
+    width, height = 32, 30
+    picture = blank(width, height)
+    xs, ys = forms.grid(width, height)
+    dome = forms.ellipse(width, height, 16, 18, 15, 17) & (ys < 18)
+    level = forms.light_level(dome, 6, top_light=0.2)
+    forms.shade_by_level(picture, dome, BRICK, level)
+    # Courses of brick 4 rows high, the joints staggered.
+    for y in range(3, 18, 4):
+        for x in range(32):
+            if dome[y, x]:
                 picture[y][x] = "rust_dark"
-    # The mouth, with its iron door leaning aside.
-    rect(picture, 6, 4, 9, 8, "soil_dark")
-    rect(picture, 7, 3, 8, 3, "soil_dark")
-    rect(picture, 11, 6, 12, 8, "stone_dark")
-    # The base of field stones, with a hearth ledge in front of the mouth.
-    rect(picture, 0, 9, 15, 14, "stone")
-    rect(picture, 0, 9, 15, 9, "stone_light")
-    for x, y in ((3, 11), (9, 12), (13, 11), (6, 13)):
-        picture[y][x] = "stone_dark"
-    return outline_edge(picture, "soil_dark", keep_bottom=is_standing)
+        for x in range(2 + (y // 4) % 2 * 4, 32, 8):
+            for dy in (1, 2, 3):
+                if y + dy < 18 and dome[y + dy, x]:
+                    picture[y + dy][x] = "rust_dark"
+    # The mouth: a dark arch, the iron door leaning beside it.
+    mouth = forms.ellipse(width, height, 15, 13, 5, 5) | forms.box(width, height, 10, 13, 19, 17)
+    forms.paint(picture, mouth, "soil_dark")
+    forms.paint(picture, forms.shrunk(mouth), "ink")
+    rect(picture, 22, 9, 25, 17, "stone_dark")
+    rect(picture, 22, 9, 22, 17, "stone")
+    picture[13][24] = "stone_light"
+    # The base of field stones and the hearth ledge in front of the mouth.
+    _footing(picture, 18, 29, 161)
+    rect(picture, 8, 18, 22, 19, "stone_light")
+    rect(picture, 8, 20, 22, 20, "stone")
+    return outline_edge(picture, "soil_dark", keep_bottom=True)
 
 
 def flour():
@@ -207,31 +255,46 @@ def berry_tart():
     return picture
 
 
-def cupboard(is_standing=True):
-    """A joined oak cupboard, 16x24 px: a cornice, two panelled doors with brass knobs over a
-    drawer, on short feet. It stands in a house."""
-    picture = blank(16, 24)
-    rect(picture, 0, 0, 15, 2, "soil_light")
-    rect(picture, 0, 2, 15, 2, "soil")
-    rect(picture, 1, 3, 14, 21, "soil_mid")
-    rect(picture, 1, 3, 1, 21, "soil_light")
-    rect(picture, 14, 3, 14, 21, "soil")
-    # The doors, each with two sunk panels, and the seam between them.
-    for left in (2, 8):
-        for top, bottom in ((4, 9), (11, 16)):
-            rect(picture, left + 1, top, left + 4, bottom, "soil")
-            rect(picture, left + 1, top, left + 4, top, "soil_dark")
-    rect(picture, 7, 3, 8, 17, "soil")
-    pixel(picture, 6, 10, "gold")
-    pixel(picture, 9, 10, "gold")
-    # The drawer under the doors, and the feet.
-    rect(picture, 2, 18, 13, 20, "soil")
-    rect(picture, 2, 18, 13, 18, "soil_light")
-    pixel(picture, 7, 19, "gold")
-    pixel(picture, 8, 19, "gold")
-    rect(picture, 1, 22, 3, 23, "soil")
-    rect(picture, 12, 22, 14, 23, "soil")
-    return outline_edge(picture, "soil_dark", keep_bottom=is_standing)
+def cupboard():
+    """A joined oak cupboard, 32x48 px: a moulded cornice, two doors with two raised panels each
+    and brass knobs, a drawer under them, on bun feet. It stands in a house."""
+    picture = blank(32, 48)
+    # The cornice, lit on top, its moulding in shadow below.
+    rect(picture, 0, 0, 31, 4, "soil_light")
+    rect(picture, 0, 0, 31, 1, "sand")
+    rect(picture, 1, 3, 30, 3, "soil_mid")
+    rect(picture, 1, 4, 30, 5, "soil")
+    # The carcass: lit down its left stile, dark down its right.
+    rect(picture, 1, 6, 30, 43, "soil_mid")
+    rect(picture, 1, 6, 2, 43, "soil_light")
+    rect(picture, 29, 6, 30, 43, "soil")
+    _grain(picture, 3, 6, 28, 42, "soil", 225, 10)
+    # The doors, each with two raised panels: lit on their top and left, shaded on their bottom
+    # and right; the seam between the doors.
+    for left in (4, 16):
+        for top, bottom in ((8, 18), (21, 32)):
+            rect(picture, left + 1, top, left + 10, bottom, "soil_mid")
+            rect(picture, left + 1, top, left + 10, top, "soil_light")
+            rect(picture, left + 1, top, left + 1, bottom, "soil_light")
+            rect(picture, left + 10, top + 1, left + 10, bottom, "soil")
+            rect(picture, left + 2, bottom, left + 10, bottom, "soil_dark")
+    rect(picture, 15, 6, 16, 34, "soil")
+    rect(picture, 15, 6, 15, 34, "soil_dark")
+    for x in (13, 18):
+        rect(picture, x, 19, x + 1, 20, "gold")
+        picture[19][x] = "cream"
+    # The drawer under the doors, its two knobs.
+    rect(picture, 4, 36, 27, 41, "soil")
+    rect(picture, 4, 36, 27, 36, "soil_light")
+    rect(picture, 4, 41, 27, 41, "soil_dark")
+    for x in (10, 21):
+        rect(picture, x, 38, x + 1, 39, "gold")
+        picture[38][x] = "cream"
+    # The bun feet.
+    for x in (2, 25):
+        rect(picture, x, 44, x + 4, 47, "soil")
+        rect(picture, x, 44, x + 1, 45, "soil_mid")
+    return outline_edge(picture, "soil_dark", keep_bottom=True)
 
 
 def feast_cake():
@@ -299,16 +362,16 @@ def stations():
 def icons():
     """The bodies of the icons of the professions' items, by item id."""
     return {
-        "workbench": icon_of(workbench(is_standing=False)),
-        "kiln": icon_of(kiln(is_standing=False)),
-        "oven": icon_of(oven(is_standing=False)),
+        "workbench": icon_of(workbench()),
+        "kiln": icon_of(kiln()),
+        "oven": icon_of(oven()),
         "planks": planks(),
-        "cupboard": icon_of(cupboard(is_standing=False)),
+        "cupboard": icon_of(cupboard()),
         # Dried clay, grey-brown, and fired, red.
         "raw_brick": bricks("mud", "sand", "mud_dark"),
         "brick": bricks("rust", "red_light", "rust_dark"),
         "stool": stool(),
-        "carved_chest": icon_of(carved_chest(is_standing=False)),
+        "carved_chest": icon_of(carved_chest()),
         "roast_turnip": roast_turnip(),
         # Cabbage, carrot and onion in a broth.
         "pottage": bowl(("olive", "dry_light", "green_light"), ("ochre", "flame", "cream")),

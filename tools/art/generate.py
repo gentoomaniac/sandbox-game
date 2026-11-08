@@ -51,8 +51,8 @@ what is behind the flame, what is in front of it, then the frames of the flame. 
 and the hearth's picture show the first frame, for where the fire does not move.
 
 assets/interior.png and assets/interior/<name>.png: the tiles of the rooms and the furniture,
-drawn at the game's tile (see interior.py); the stations and the grave marker placed indoors
-are still 16 px art, scaled up in `write_interior`.
+drawn at the game's tile (see interior.py), with the stations and the grave marker placed
+indoors (crafts.py, church.py).
 
 assets/wildlife/<kind>.png: one sheet per animal kind, one row per action and one column per frame
 (see animals.py, birds.py for the stork and the goose, sea_birds.py for the birds of the coast, and
@@ -111,7 +111,7 @@ import trunks
 import ui
 import villagers
 import willow
-from canvas import GAME_OBJECT_CELL_HEIGHT, GAME_OBJECT_CELL_WIDTH, GAME_TILE, OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, TILE, blank, doubled
+from canvas import GAME_OBJECT_BOTTOM, GAME_OBJECT_CELL_HEIGHT, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CENTRE, GAME_TILE, TILE, doubled
 from PIL import Image
 from palette import ASSETS, PALETTE, check_palette, save, save_picture, write_palette
 
@@ -124,19 +124,15 @@ DOUBLED = ()
 
 
 def standing_outdoors(picture):
-    """A picture that stands on the ground (the chest, a station) in its cell of the object atlas,
-    on a ground shadow, its bottom a pixel above the cell's."""
-    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
-    # The ground shadow of the 16 px art, three rows with a dithered rim.
-    for y, reach in ((OBJECT_BOTTOM - 2, 5), (OBJECT_BOTTOM - 1, 8), (OBJECT_BOTTOM, 6)):
-        for x in range(OBJECT_CENTRE - reach, OBJECT_CENTRE + reach):
-            if abs(x - OBJECT_CENTRE) < reach - 1 or (x + y) % 2 == 0:
-                canvas[y][x] = "shadow"
-    top = OBJECT_BOTTOM - len(picture)
+    """A picture that stands on the ground (the chest, a station, a grave) in its cell of the
+    object atlas, on a ground shadow, its bottom two pixels above the cell's."""
+    canvas = trees.cell()
+    trees.ground_shadow(canvas, len(picture[0]) // 2 + 4, rows=6)
+    top = GAME_OBJECT_BOTTOM - 1 - len(picture)
     for y, row in enumerate(picture):
         for x, name in enumerate(row):
             if name is not None:
-                canvas[top + y][OBJECT_CENTRE - len(row) // 2 + x] = name
+                canvas[top + y][GAME_OBJECT_CENTRE - len(row) // 2 + x] = name
     return canvas
 
 
@@ -144,10 +140,7 @@ def standing_outdoors(picture):
 # to the game's tile in every look, after the looks are made from them, so they look as they did.
 # The plants are drawn at 32 px; task 111 draws the rest anew: the camp, the walls, fences, the
 # dyke and the placed objects.
-DOUBLED_ROWS = {
-    "chest", "workbench", "carved_chest", "kiln", "oven", "ewer", "grave",
-    "jetty", "rowing_boat", "net_frame", "eel_traps",
-}
+DOUBLED_ROWS = {"ewer", "jetty", "rowing_boat", "net_frame", "eel_traps"}
 
 
 # The rows of assets/objects.png, as (kind, looks). `atlas_row` of each type in
@@ -333,11 +326,10 @@ def write_interior():
     for name, picture in interior.covers(furniture).items():
         save_picture(picture, f"interior/{name}.png")
     # The stations the player places are no furniture of the maps: they have no marker tile.
-    # They are still drawn at 16 px per tile (task 111), so they are scaled up here.
     for name, picture in crafts.stations().items():
-        save_picture(doubled(picture), f"interior/{name}.png")
+        save_picture(picture, f"interior/{name}.png")
     # The ghost of the grave marker while it is placed (a grave stands only outdoors).
-    save_picture(doubled(church.graves()[0]), "interior/grave.png")
+    save_picture(church.graves()[0], "interior/grave.png")
 
 
 def write_bedroll_cover():

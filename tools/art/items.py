@@ -20,7 +20,7 @@ import math
 import chest
 import forms
 import numpy as np
-from canvas import GAME_TILE, TILE, blank, doubled, outline, rect
+from canvas import GAME_TILE, TILE, blank, outline, rect
 
 ICON = GAME_TILE
 SLOT = 20
@@ -66,10 +66,10 @@ def ground_item(body):
 def small(picture):
     """The picture at half size: each 2x2 block of pixels becomes the colour that most of its
     opaque pixels have (the first of them on a tie), or clear where fewer than two are opaque."""
-    size = len(picture) // 2
-    result = blank(size)
-    for y in range(size):
-        for x in range(size):
+    height, width = len(picture) // 2, len(picture[0]) // 2
+    result = blank(width, height)
+    for y in range(height):
+        for x in range(width):
             block = [picture[2 * y + dy][2 * x + dx] for dy in (0, 1) for dx in (0, 1)]
             opaque = [colour for colour in block if colour is not None]
             if len(opaque) >= 2:
@@ -78,10 +78,14 @@ def small(picture):
 
 
 def icon_of(picture):
-    """The body of the icon of an item that places a world object: its picture (still drawn at
-    16 px per tile, so doubled) in the middle of the icon, rows from its middle left out until
-    it fits. The picture has its edge already."""
-    picture = doubled(picture)
+    """The body of the icon of an item that places a world object: its picture, drawn at 32 px
+    per tile, without its ground shadow and the clear rows round it, in the middle of the icon.
+    A picture much bigger than the icon (the rowing boat, the cupboard) is halved first; then
+    rows from its middle are left out until it fits. The picture has its edge already."""
+    picture = [[None if name == "shadow" else name for name in row] for row in picture]
+    picture = [row for row in picture if any(row)]
+    if len(picture[0]) > ICON or len(picture) > ICON * 5 // 4:
+        picture = small(picture)
     while len(picture) > ICON:
         middle = len(picture) // 2
         picture = picture[:middle] + picture[middle + 1 :]
@@ -160,7 +164,7 @@ def from_rows(rows, keys):
 
 def chest_icon():
     """The chest: its world picture."""
-    return icon_of(chest.chest(is_standing=False))
+    return icon_of(chest.chest())
 
 
 def logs():
