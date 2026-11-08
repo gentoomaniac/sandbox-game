@@ -33,7 +33,7 @@ help:
 	@echo "  venv        Create the Python venv with the packages of tools/requirements.txt."
 	@echo "  run         Start the game."
 	@echo "  screenshot  Save one frame as PNG (a new game, muted, no focus, its own save)."
-	@echo "  test        Run the GUT tests headless."
+	@echo "  test        Run the GUT tests headless, in TEST_JOBS parallel processes."
 	@echo "  lint        Run gdlint and gdformat --check, and check no API key is in the repo."
 	@echo "  format      Format the GDScript."
 	@echo "  assets      Regenerate all art and sounds, then check them (needs no Godot)."
@@ -50,6 +50,8 @@ help:
 	@echo "Variables (make <target> NAME=value):"
 	@echo "  GODOT       Path of the Godot binary (default: godot)."
 	@echo "  VENV        Directory of the Python venv (default: .venv)."
+	@echo "  TEST_JOBS   test: parallel test processes (default: 8; 1 runs the tests in one process)."
+	@echo "  TEST_TIMEOUT test: seconds before a hung run is stopped (default: 600)."
 	@echo "  AT          screenshot: world tile to put the player on, e.g. AT=40,-20 (default: the camp)."
 	@echo "  TIME        screenshot: time of day, e.g. TIME=21:00 (default: the game start)."
 	@echo "  ZOOM        screenshot: camera zoom, 0.5 to 2 (default 1)."
@@ -161,25 +163,19 @@ screenshot:
 
 # On Godot builds without navigation (e.g. some Gentoo builds) GUT prints a harmless
 # 'Identifier "NavigationMeshGenerator" not declared' parse error. Tests still run.
-# A script that fails to load (e.g. a parse error) is skipped by GUT without failing the run,
-# so the log is checked for our own scripts that failed to load (the GUT addon has one known
-# harmless failure, under addons/).
-# It also fails when GUT ran no test (a broken selection must not pass silently), and ends with
-# the warning and orphan counts of GUT's summary (it leaves a count out when it is 0).
-# user:// points into build/ (Godot finds it under XDG_DATA_HOME on Linux): runs in two
-# worktrees at once don't delete each other's test files, and no test can reach the real save.
+# tools/run_tests.py spreads the test files over TEST_JOBS headless Godot processes (1 = one
+# process, like a plain GUT run) and checks every shard: a script that failed to load (GUT skips
+# it without failing the run), no test run at all, failing tests, "leaked at exit". It ends with
+# the warning and orphan counts of GUT's summary and leaves the joined logs in build/test.log.
+# user:// of each shard points into build/ (Godot finds it under XDG_DATA_HOME on Linux): runs
+# in two worktrees at once don't delete each other's test files, and no test can reach the
+# real save.
+TEST_JOBS ?= 8
+
 test:
 	@mkdir -p build/user-data
 	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT)
-	@XDG_DATA_HOME=$(CURDIR)/build/user-data $(GODOT) --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://tests -gexit \
-		> build/test.log 2>&1; status=$$?; cat build/test.log; \
-	if grep -Eq 'Failed to load script "res://(game|tests)/' build/test.log; then \
-		echo "make test: a script in game/ or tests/ failed to load (see above)"; exit 1; fi; \
-	count() { sed -En "s/^$$1 +([0-9]+)\$$/\1/p" build/test.log | tail -n 1; }; \
-	tests=$$(count Tests); \
-	if [ "$${tests:-0}" -eq 0 ]; then echo "make test: GUT ran no tests"; exit 1; fi; \
-	echo "make test: $$(count Warnings | grep . || echo 0) warnings, $$(count Orphans | grep . || echo 0) orphans"; \
-	exit $$status
+	@GODOT=$(GODOT) python3 tools/run_tests.py $(TEST_JOBS)
 
 lint:
 	$(GDLINT) $(GDSCRIPT_DIRS)
