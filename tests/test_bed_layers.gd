@@ -82,3 +82,12 @@ func test_the_object_cover_shows_over_the_bedroll_the_player_lies_in() -> void:
 	assert_false(cover.visible)
 	cover.cover(_bed)
 	assert_false(cover.visible, "a bed of a house has its cover in the room")
+
+
+func test_the_classic_bedroll_has_its_own_cover() -> void:
+	var path: String = WorldObjectTypes.TYPES[WorldObjectTypes.SLEEPING_BAG]["object_cover"]
+	ArtSet.is_classic = true
+	var classic := ArtSet.path(path)
+	ArtSet.is_classic = false
+	assert_eq(classic, "res://assets/classic/bedroll_cover.png")
+	assert_eq(load(classic).get_size(), load(path).get_size())

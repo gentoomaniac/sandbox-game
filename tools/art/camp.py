@@ -45,11 +45,12 @@ def fireplace():
 
 
 def bedroll():
-    """14x26 px, lying vertically on 1x2 tiles (the cell's bottom edge is the footprint's): a
+    """14x28 px, lying vertically on 1x2 tiles (the cell's bottom edge is the footprint's), as
+    long as a person lying on it, so its foot hides their clogs (see BEDROLL_COVER_FROM_ROW): a
     sack of linen ticking stuffed with straw, quilted across, straw poking out at its seams, and
     a grey wool blanket rolled up and tied at its head end. The object's id stays sleeping_bag."""
     canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
-    left, top, bottom = OBJECT_CENTRE - 7, 51, 76
+    left, top, bottom = OBJECT_CENTRE - 7, 51, 78
     right = left + 13
     # The straw sack: lit linen, shaded down its right side, quilted in rows.
     rect(canvas, left, top + 3, right, bottom, "mud_dark")
@@ -61,11 +62,11 @@ def bedroll():
         rect(canvas, right - 3, y, right - 1, y, "mud")
     for x, y in ((left, bottom), (right, bottom), (left, top + 3), (right, top + 3)):
         canvas[y][x] = None
-    rect(canvas, left + 2, bottom + 1, right, bottom + 2, "shadow")
+    rect(canvas, left + 2, bottom + 1, right, bottom + 1, "shadow")
     # Straw sticking out of the seams.
     for x, y, colour in ((left - 1, top + 13, "straw"), (left - 1, top + 14, "gold"), (left - 2, top + 14, "straw"),
                          (right + 1, top + 20, "straw"), (right + 1, top + 21, "straw"), (right + 2, top + 20, "gold"),
-                         (left + 3, bottom + 1, "straw"), (left + 4, bottom + 1, "gold"), (left + 4, bottom + 2, "straw")):
+                         (left + 3, bottom + 1, "straw"), (left + 4, bottom + 1, "gold")):
         canvas[y][x] = colour
     # The rolled blanket across the head end: lit on top, its rolled-up ends showing a spiral.
     rect(canvas, left - 1, top, right + 1, top + 8, "stone_dark")

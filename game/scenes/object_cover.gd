@@ -3,7 +3,7 @@ extends Sprite2D
 ## The cover of a bed in the world (the bedroll's blanket), drawn over the player lying in it so
 ## that only their head shows. The beds of houses have theirs in InteriorView. The picture is a
 ## cell of the objects atlas, the bed's own cell cut down (see the art generator), so it sits
-## where the bed's cell does.
+## where the bed's cell does. It is loaded in the chosen art set (see ArtSet).
 
 var _bed: WorldObject
 
@@ -11,6 +11,13 @@ var _bed: WorldObject
 func _init() -> void:
 	z_index = PlayerView.COVER_Z_INDEX
 	visible = false
+	add_to_group(ArtSet.VIEWS)
+
+
+## Shows the cover in the chosen art set: the classic bedroll is shorter.
+func show_art_set() -> void:
+	if visible:
+		texture = load(ArtSet.path(_bed.type_data()["object_cover"]))
 
 
 ## Shows the cover of `bed`, or nothing for null or a bed without one.
@@ -22,7 +29,7 @@ func cover(bed: WorldObject) -> void:
 	visible = path != ""
 	if not visible:
 		return
-	texture = load(path)
+	texture = load(ArtSet.path(path))
 	# The cell is centred on the footprint, its bottom edge on the footprint's.
 	var tile_size := TerrainTileset.TILE_SIZE
 	var footprint: Vector2i = bed.type_data()["footprint"]

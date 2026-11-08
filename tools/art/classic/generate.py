@@ -18,6 +18,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 import alder  # noqa: E402
 import animals  # noqa: E402
+import bedroll  # noqa: E402
 import beech  # noqa: E402
 import birch  # noqa: E402
 import birds  # noqa: E402
@@ -108,6 +109,8 @@ DOUBLED = (
     "objects*.png",
     # The crops (task 109; crops.py of commit f2c24f8).
     "crops/*.png",
+    # The bedroll's cover, which matches the classic bedroll (bedroll.py, task 112).
+    "bedroll_cover.png",
     # The interiors and their furniture (task 112; interior.py of commit f2c24f8, whose chest is
     # the shared chest.py).
     "interior.png",
@@ -217,7 +220,7 @@ def object_atlas():
         ("oak", [trees.oak(seed) for seed in trees.OAK_SEEDS]),
         ("stone", [trees.stone(seed) for seed in (111, 112)]),
         ("fireplace", [camp.fireplace()]),
-        ("sleeping_bag", [camp.bedroll()]),
+        ("sleeping_bag", [bedroll.bedroll()]),
         ("spruce", spruces),
         ("pine", pines),
         ("dead_tree", dead_trees),
@@ -274,6 +277,7 @@ def write_objects():
         suffix = "" if look == "summer" else f"_{look}"
         rows = object_looks.object_rows(look, objects, redraws)
         save(rows, f"{CLASSIC}/objects{suffix}.png", OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
+    save_picture(bedroll.bedroll_cover(), f"{CLASSIC}/bedroll_cover.png")
 
 
 def write_crops():
