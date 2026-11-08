@@ -1,7 +1,8 @@
 class_name SaveFile
 extends RefCounted
 ## The save on disk: one JSON file per world, `{"version": VERSION, "game": <GameState.to_dict>}`.
-## Older saves still load, upgraded step by step (see `_upgrade_from_version_13` and so on).
+## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step
+## (see `_upgrade_from_version_13` and so on). Older ones are refused.
 ##
 ## How to add a save field (or change one):
 ## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
@@ -10,6 +11,11 @@ extends RefCounted
 ## 3. Add `_upgrade_from_version_<old VERSION>` here, which gives the field to a save of the old
 ##    version (its default, or computed from what the save has), and call it from `read`.
 ## 4. Add a test in tests/test_save_upgrade*.gd: an old save without the field loads right.
+## 5. Drop the oldest step, the constants and helpers only it uses, and its tests, so that ten
+##    steps remain (OLDEST_VERSION moves up with VERSION). That is a commit of its own, titled
+##    `Save: drop the upgrade from version <N> (oldest read: <N+1>)`: to rescue a save older
+##    than that, find the commit with `git log --grep '^Save: drop'` and check out its parent,
+##    which still upgrades it; load and save the game there, then move on to the latest.
 ## An upgrade step works on the parsed JSON, before any `from_dict` runs.
 
 const VERSION := 23

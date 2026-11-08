@@ -1341,7 +1341,7 @@ flat rowing boat beside it.
 
 ## 104. Save upgrades for the last 10 versions only
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-08: the game is in development and practically only the user plays
 it, so keep the code for save compatibility to the last 10 versions at most. With VERSION 23,
@@ -1349,6 +1349,17 @@ saves of versions 13 to 23 load; older ones are rejected the existing way (renam
 game). Drop `_upgrade_from_version_1` to `_12`, the constants and helpers only they use, and
 their tests; state the rule in save_file.gd's header (when VERSION goes up, the oldest step
 goes) and in SPEC "Saving".
+
+Done: `SaveFile.OLDEST_VERSION := VERSION - 10` (13 today); older saves are rejected with a
+message naming the versions read. Removed `_upgrade_from_version_1` to `_12`, their calls in
+`read` (the plain chain stays), TOMATOES_TO_FLAX, TUNIC_AND_TROUSERS_TO_PERIOD, the
+VERSION_10_* constants, UPGRADE_PILE_SPACING, `_saved_objects` and `_rename_items`
+(about 250 lines), and their tests (test_save_upgrade_hotbar and _interiors deleted, the
+rest trimmed). Kept for steps 17 and later: `_home_tiles`, `_clear_new_land`,
+COAST_TERRAINS and the clearance constants. New tests: version 12 is refused, version 13
+loads. The drop is a commit of its own (`Save: drop the upgrades from versions 1 to 12
+(oldest read: 13)`), so an older save can be rescued from its parent; the rule is in
+save_file.gd's header and SPEC "Saving".
 
 ## Later (not part of the prototype)
 

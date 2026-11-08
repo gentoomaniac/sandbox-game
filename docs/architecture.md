@@ -195,9 +195,9 @@ There is no base class: each rules class is plain, so copy one that is shaped li
 `SaveFile` writes one JSON file (`user://saves/world.json`) with a `version`. Every state
 class that is saved has an explicit `to_dict` and a strict `from_dict` (`data["x"]`, never
 `data.get(...)` with a default). When the format changes, raise `SaveFile.VERSION` and add an
-upgrade step that gives old saves the new field (the rule is at the top of `save_file.gd`).
-Things marked
-"not saved" in a comment (cheats, a forced weather) live only for the session.
+upgrade step that gives old saves the new field (the rule is at the top of `save_file.gd`, which
+keeps ten upgrade steps: versions VERSION - 10 to VERSION load). Things marked "not saved" in a
+comment (cheats, a forced weather) live only for the session.
 
 ## Settings and key bindings
 
