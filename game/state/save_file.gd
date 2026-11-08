@@ -13,6 +13,8 @@ extends RefCounted
 ## An upgrade step works on the parsed JSON, before any `from_dict` runs.
 
 const VERSION := 23
+## The oldest version we still upgrade.
+const OLDEST_VERSION := 1
 ## Version 6 had tomatoes, which were not grown here before the 19th century; flax took their
 ## place, item for item.
 const TOMATOES_TO_FLAX := {"tomatoes": "flax", "tomatoes_seeds": "flax_seeds"}
@@ -75,8 +77,15 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 		return null
 	# JSON parsing gives numbers as floats.
 	var version: Variant = parsed.get("version")
-	if not (version is float and version == int(version) and version >= 1 and version <= VERSION):
-		_reject(path, "save version %s, this game reads versions 1 to %d" % [version, VERSION])
+	var is_supported: bool = (
+		version is float
+		and version == int(version)
+		and version >= OLDEST_VERSION
+		and version <= VERSION
+	)
+	if not is_supported:
+		var reason := "save version %s, this game reads versions %d to %d"
+		_reject(path, reason % [version, OLDEST_VERSION, VERSION])
 		return null
 	if not parsed.has("game"):
 		_reject(path, "no game in the save")
