@@ -102,9 +102,10 @@ of the classic decorations) unchanged, the plant parts of `meadow.py` and `reeds
 `object_looks.py`, the object part of `seasons.py`. The object atlas is one picture, so the
 classic one (`object_atlas` there) has every row: the rows not drawn anew yet come from the
 shared modules, as the new atlas has them, and the graves from `graves.py`, the graves part of
-`church.py`. The cow's, the horse's and the small wild
-animals' cells grew at 32 px, so `set_in_grown_cells` puts their classic cells in the new ones
-(bottom centre), as the classic files must have the new cell sizes.
+`church.py`; the crops (task 109), from commit f2c24f8: `crops.py` unchanged (rye and
+buckwheat were first drawn at 32 px and have no classic sheet). The cow's, the horse's and the
+small wild animals' cells grew at 32 px, so `set_in_grown_cells` puts their classic cells in the
+new ones (bottom centre), as the classic files must have the new cell sizes.
 
 When a group goes native (docs/art-style.md, "Resolution"), before its redraw changes them:
 

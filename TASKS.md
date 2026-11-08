@@ -1555,7 +1555,38 @@ native ones). contrast_sheet.py needs no change.
 
 ## 109. 32 px art: crops and fields
 
-- [ ] Done
+- [x] Done
+
+Done: every crop's four growth stages and its dead look are drawn at 32 px per tile
+(tools/art/crops.py) after the field of the mockup, and left `DOUBLED`: a cell a tile wide, two
+tall for the tall crops, the plants' feet on the lowest ridge of the new tilled soil (task 107),
+on a shadow of dark earth; leaves, heads, roots and fruit are rounded forms shaded with forms.py
+and rimmed in the darkest shade of their own colours (no ink), stalks, awns, flowers and pods
+drawn over them. The sown mound, seed leaves, turnip rosettes and the purple-shouldered root, a
+potato bush of leaflets that flowers and dies back yellow over its tubers, feathery carrot
+fronds over orange shoulders, the mockup's cabbage, onion bulbs with fallen tops, wheat with
+paired grains and awns, peas on brushwood, runner beans on a pole, flax in blue flower and boll,
+wild strawberries and the small green squash. From the art review: the Geest grains rye and
+buckwheat are new crops end to end (data/crops.cfg, their sheets, seed and produce icons in
+crop_icons.py, flour from either in recipes.cfg; neither is eaten raw); the crops still read on
+the dark soil. The crops sway on the pixels of their art (`AmbientMotion.crop_material` by cell
+size and art scale, the material chosen per crop by the sheet it shows): calm like the plants
+of task 108 and in the grass's band, more than the big trees (`CROP_SWAY` strength 1.3, it was
+0.6 on doubled pixels), so their tips flick in a light air while the trees stand still;
+test_plant_sway.gd checks the order, docs/art-style.md writes it down. No other number of the game was measured on crop art
+(the cells' sizes come from the sheets). The classic art (task 117) has the old crops: crops.py
+of commit f2c24f8 in tools/art/classic/, byte for byte the old sheets, loaded through `ArtSet`
+by `ObjectTileset` (`show_art_set`, called by WorldView); rye and buckwheat show their new sheets
+in both sets. The drawing helpers of the old crop art (`KEYS`, `Surface`) moved to
+crop_icons.py, their only other user. `--field` lays the crops out three to a row on one tilled
+patch, so the whole field fits into the widest view. Checked in screenshots at zoom 0.5, 1 and
+2: every crop and stage in summer, autumn, under snow, at dusk and at night, in both art sets;
+README field picture retaken.
+Left for later: `make contrast-sheet` draws atlas rows only, so the crops were checked on the
+soil in screenshots and sheets instead; the classic crops now sway with strength 1.3 on their
+doubled pixels, more than they did; the crafting menu lists three recipes named "Flour" (from
+wheat, rye or buckwheat); a buckwheat dish (pancakes, groats) would need a new item (task 115);
+the potato bush is a dome of small leaflets that reads as a bush but could be leafier.
 
 ## 110. 32 px art: buildings (shack, fisherman's hut, Kate, longhouse, hall house, barn, church, bell frame) and their seasonal and lit looks
 

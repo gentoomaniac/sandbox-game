@@ -75,7 +75,8 @@ the 16 px grain.
 Tasks 107 to 116 redraw the art group by group at 32 px; the people are done (task 113, see
 "Clothing and characters"), the farm animals (task 114, see "Props and animals", item 8),
 the wild animals and the effects (task 116, below), the ground (task 107, below), the
-buildings (task 110, see "Buildings") and the plants (task 108, below). To take a group native:
+buildings (task 110, see "Buildings"), the plants (task 108, below) and the crops (task 109,
+below). To take a group native:
 
 - draw it at 32 px per tile (its cells, frames and offsets are twice the numbers below) and
   take its files out of `DOUBLED` (or its rows of the object atlas out of `DOUBLED_ROWS`);
@@ -161,7 +162,18 @@ In the wind the plants sway on their own pixels (`AmbientMotion.SWAY_PROFILES`),
 far on screen as the doubled 16 px art did (the user, 2026-11-08). Small plants move more than
 big ones: tall grass, reeds, fern and the meadow flowers most, so their tips flick in a light
 air; the bushes and the sapling less; the big trees least and slowest, still in a light air.
-The crops (task 109) bend like the grass.
+The crops (task 109) bend like the grass (`CROP_SWAY`), so more than the trees.
+
+The crops (task 109: tools/art/crops.py) are drawn at 32 px after the field of the mockup: a
+cell a tile wide, two tiles tall for the tall crops (wheat, rye, buckwheat, peas, beans, flax),
+the plants' feet 4 px above the cell's bottom, on the lowest ridge of the tilled soil, on a
+shadow of dark earth. Leaves, heads, roots and fruit are rounded forms shaded from the top left
+(forms.py) and rimmed in the darkest shade of their own colours (`crops.RIMS`), never ink;
+stalks, awns, flowers, tendrils and pods, too thin for a rim, are drawn over them in their
+light shades. On the dark soil they read without more. The wheat is golden with paired grains
+and long awns, the rye of the Geest taller, blue-green when young and ripe a pale grey-yellow
+with nodding ears, the buckwheat on red stems with white and pink flowers; a crop dies to
+browns and greys (`crops.DEAD_COLOURS`). The crops' 16 px art stays as the classic art.
 
 The UI's pictures (item icons, slots, the frames and the chat portraits) are drawn for the UI's
 own 640×360 base and scale, and are not doubled; task 115 decides about the item icons.
@@ -351,8 +363,9 @@ not "generic RPG forest".
 - **Woods:** beech and oak in the east, birch and alder in wet ground. **Spruce and pine
   were not common here before the heath plantations of the late 18th and 19th century**:
   keep them few, in clumps, as planted or Geest trees.
-- **Fields:** long strips; rye, oats, barley, buckwheat on the Geest; wheat, beans and
-  rapeseed in the marsh; flax (blue flowers) and hemp; kale and cabbage in gardens.
+- **Fields:** long strips; rye, oats, barley, buckwheat on the Geest (rye and buckwheat are
+  crops, task 109); wheat, beans and rapeseed in the marsh; flax (blue flowers) and hemp; kale
+  and cabbage in gardens.
 - **Weather:** wind is always there: bent trees, flying clouds, seabirds.
 
 ## Props and animals

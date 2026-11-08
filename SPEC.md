@@ -657,6 +657,10 @@ Decided 2026-11-05. A text console for testing and cheats.
     no code. The built-in crops' sheets come from the art generator.
   - First set: turnip, potato, carrot, cabbage, onion, wheat, peas (regrow), beans
     (regrow), flax, strawberries (regrow) and pumpkin.
+  - **The grains of the Geest** (task 109, from the art review of 2026-11-08): rye, the hardy
+    bread grain of the sandy Geest (cool weather, little water, stands the wind), and
+    buckwheat, quick and warm, killed by frost. Neither is eaten raw; both are ground to flour
+    like wheat.
   - **Flax replaced tomatoes** (task 52; tomatoes weren't a farm crop here before the 19th
     century): a cool-weather fibre crop with sky-blue flowers, pulled up whole (no regrow).
     It yields a new `flax` item (flax stalks), not `fibre`: flax is a material of its own
@@ -1199,7 +1203,7 @@ woodworker, the cook and the mason, and a UI for them.
   - Cooking at the hearth: roast turnip (0); pottage, 2 from cabbage, carrot and onion (10);
     pea soup, 2 from 4 peas and an onion (20). At the bake oven: bread from 2 flour (30), a
     berry tart from a flour and 6 berries (50), a feast cake from 2 flour, 4 strawberries and
-    4 berries (70). Flour is ground by hand from 3 wheat (a hand
+    4 berries (70). Flour is ground by hand from 3 wheat, rye or buckwheat (a hand
     quern, not drawn): the simplest chain, as there was no flour. Cooked food restores more
     energy than its ingredients raw (roast turnip 12, pottage 15, pea soup 16, bread 30,
     tart 35, feast cake 60; in `data/energy.cfg`).
