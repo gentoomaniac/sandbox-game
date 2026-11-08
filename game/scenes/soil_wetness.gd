@@ -21,7 +21,7 @@ func _init() -> void:
 	tile_set = TileSet.new()
 	tile_set.tile_size = Vector2i(TILE_SIZE, TILE_SIZE)
 	var source := TileSetAtlasSource.new()
-	source.texture = load(TEXTURE_PATH)
+	source.texture = load(ArtSet.path(TEXTURE_PATH))
 	source.texture_region_size = Vector2i(TILE_SIZE, TILE_SIZE)
 	tile_set.add_source(source, 0)
 	source.create_tile(Vector2i(0, 0))
@@ -37,6 +37,12 @@ func show_world(world: World, is_covered := func(_pos: Vector2i) -> bool: return
 	_world.tile_changed.connect(_draw_tile)
 	for pos in _world.tilled_tiles():
 		_draw_tile(pos)
+
+
+## Shows the wet soil of the chosen art set (see ArtSet).
+func show_art_set() -> void:
+	var source: TileSetAtlasSource = tile_set.get_source(0)
+	source.texture = load(ArtSet.path(TEXTURE_PATH))
 
 
 ## The picture of the atlas for a moisture, or -1 for none: dry soil looks as it is.

@@ -50,3 +50,38 @@ func test_a_villager_shown_switches_its_sheets_with_the_art() -> void:
 	)
 	ArtSet.show(false, get_tree())
 	assert_eq(view.get_child(0).texture.resource_path, BODY)
+
+
+func test_the_classic_atlases_have_the_tiles_of_the_new() -> void:
+	for look: SeasonBlend.Look in SeasonBlend.GROUND_LOOKS:
+		for atlas in [TerrainTileset.TERRAIN_ATLAS_PATH, TerrainTileset.DECORATION_ATLAS_PATH]:
+			var path := SeasonalArt.path(atlas, look)
+			var new_cells := _drawn_cells(load(path).get_image())
+			var classic_cells := _drawn_cells(
+				load(path.replace("res://assets/", ArtSet.CLASSIC_DIR)).get_image()
+			)
+			assert_eq(classic_cells, new_cells, path)
+
+
+func test_the_atlases_follow_the_art_set() -> void:
+	var tileset := TerrainTileset.new()
+	var summer: TileSetAtlasSource = tileset.tile_set.get_source(
+		TerrainTileset.terrain_source_id(SeasonBlend.Look.SUMMER)
+	)
+	ArtSet.is_classic = true
+	tileset.show_art_set()
+	assert_eq(summer.texture.resource_path, "res://assets/classic/terrain.png")
+	ArtSet.is_classic = false
+	tileset.show_art_set()
+	assert_eq(summer.texture.resource_path, TerrainTileset.TERRAIN_ATLAS_PATH)
+
+
+## The atlas cells of an image that have a pixel drawn.
+func _drawn_cells(image: Image) -> Array[Vector2i]:
+	var size := TerrainTileset.TILE_SIZE
+	var cells: Array[Vector2i] = []
+	for row in image.get_height() / size:
+		for column in image.get_width() / size:
+			if not image.get_region(Rect2i(column * size, row * size, size, size)).is_invisible():
+				cells.append(Vector2i(column, row))
+	return cells

@@ -173,8 +173,10 @@ func _ready() -> void:
 	add_child(_buildings)
 
 
-## Shows the campfires' flames in the chosen art set (see ArtSet).
+## Shows the ground and the campfires' flames in the chosen art set (see ArtSet).
 func show_art_set() -> void:
+	_tileset.show_art_set()
+	_soil_wetness.show_art_set()
 	ambient_motion.show_art_set()
 
 
@@ -190,6 +192,8 @@ func _add_overlay(overlay_name: String) -> TileMapLayer:
 ## Shows a world, including the chunks that are already loaded in it.
 func show_world(world_to_show: World) -> void:
 	world = world_to_show
+	# The view was made before Main chose the art set.
+	show_art_set()
 	world.objects_changed.connect(_on_objects_changed)
 	world.tile_changed.connect(redraw_tile)
 	world.object_hit.connect(_on_object_hit)

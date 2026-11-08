@@ -22,9 +22,13 @@ import bubbles  # noqa: E402
 import camp  # noqa: E402
 import character  # noqa: E402
 import fire  # noqa: E402
+import flowers  # noqa: E402
+import ground_looks  # noqa: E402
+import ground_overlays  # noqa: E402
 import interior  # noqa: E402
 import livestock  # noqa: E402
 import sea_birds  # noqa: E402
+import terrain  # noqa: E402
 import portraits  # noqa: E402
 import villagers  # noqa: E402
 from canvas import GAME_TILE, TILE  # noqa: E402
@@ -68,6 +72,13 @@ DOUBLED = (
     "wildlife/stork.png",
     "wildlife/tern.png",
     "fire/*.png",
+    # The ground (task 107; terrain.py, the ground looks of seasons.py, crop_icons.soil_wet and
+    # meadow.clay_hint of commit acf236e; the meadow flowers of its decorations are the shared
+    # flowers.py, still drawn at 16 px).
+    "terrain*.png",
+    "decorations*.png",
+    "soil_wet.png",
+    "clay_hint.png",
 )
 # The animals whose cells grew at 32 px per tile: the classic sheets, doubled, are set in
 # the new cells (bottom centre, as the animal stands in its cell), so that the game reads both
@@ -126,6 +137,23 @@ def write_fire():
         save([strip], f"{CLASSIC}/fire/{name}.png", box[2], box[3])
 
 
+def write_ground():
+    terrain_rows = []
+    decoration_rows = []
+    for layer in terrain.LAYERS:
+        tiles, decorations = layer()
+        terrain_rows.append(tiles)
+        decoration_rows.append(decorations)
+    decoration_rows.append(flowers.flower_row())
+    for look in ground_looks.GROUND_LOOKS:
+        suffix = "" if look == "summer" else f"_{look}"
+        save(ground_looks.terrain_rows(look, terrain_rows), f"{CLASSIC}/terrain{suffix}.png")
+        decorations = ground_looks.ground_rows(look, decoration_rows, ground_looks.STANDING.get(look))
+        save(decorations, f"{CLASSIC}/decorations{suffix}.png")
+    save([ground_overlays.soil_wet()], f"{CLASSIC}/soil_wet.png")
+    save_picture(ground_overlays.clay_hint(), f"{CLASSIC}/clay_hint.png")
+
+
 def set_in_grown_cells():
     """Sets each cell of the sheets of GROWN_CELLS in the bottom centre of a cell of the new size."""
     for pattern, ((width, height), (new_width, new_height)) in GROWN_CELLS.items():
@@ -158,6 +186,7 @@ def main():
     write_livestock()
     write_wildlife()
     write_fire()
+    write_ground()
     scale_up_16_px_art()
     set_in_grown_cells()
     print("Wrote every file under assets/classic/.")

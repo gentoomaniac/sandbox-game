@@ -176,24 +176,27 @@ const DECORATION_KINDS := {
 var tile_set := TileSet.new()
 var _full_variant_counts: Array[int] = []
 var _decoration_counts: Array[int] = []
+## Whether the atlases shown are the classic art's (see ArtSet).
+var _is_classic := ArtSet.is_classic
 
 
 ## Builds a tile for every non-empty atlas cell, so the generator alone decides how many
-## variants and decorations each layer has. Every look's atlases have the same layout. The
-## decorations that move get the materials of `motion` (none without it).
+## variants and decorations each layer has. Every look's atlases have the same layout, and so do
+## the classic art's (see `show_art_set`). The decorations that move get the materials of
+## `motion` (none without it).
 func _init(motion: AmbientMotion = null) -> void:
 	tile_set.tile_size = Vector2i(TILE_SIZE, TILE_SIZE)
 	for look: SeasonBlend.Look in SeasonBlend.GROUND_LOOKS:
 		var counts: Array[int] = []
 		tile_set.add_source(
-			_atlas_source(SeasonalArt.path(TERRAIN_ATLAS_PATH, look), FULL_COLUMN, counts),
+			_atlas_source(_picture(TERRAIN_ATLAS_PATH, look), FULL_COLUMN, counts),
 			terrain_source_id(look)
 		)
 		if look == SeasonBlend.Look.SUMMER:
 			_full_variant_counts = counts
 		var no_counts: Array[int] = []
 		var decorations := _atlas_source(
-			SeasonalArt.path(DECORATION_ATLAS_PATH, look), 0, no_counts, LAYER_COUNT + 1
+			_picture(DECORATION_ATLAS_PATH, look), 0, no_counts, LAYER_COUNT + 1
 		)
 		if motion != null:
 			_set_motion(decorations, motion)
@@ -201,12 +204,28 @@ func _init(motion: AmbientMotion = null) -> void:
 		if look == SeasonBlend.Look.SUMMER:
 			_decoration_counts = no_counts
 	var clay_hint := TileSetAtlasSource.new()
-	clay_hint.texture = load(CLAY_HINT_PATH)
+	clay_hint.texture = load(ArtSet.path(CLAY_HINT_PATH))
 	clay_hint.texture_region_size = Vector2i(TILE_SIZE, TILE_SIZE)
 	clay_hint.create_tile(Vector2i.ZERO)
 	tile_set.add_source(clay_hint, CLAY_HINT_SOURCE_ID)
 	for layer in LAYER_COUNT:
 		assert(_full_variant_counts[layer] > 0, "Terrain atlas row %d has no full tile" % layer)
+
+
+## Shows the atlases of the chosen art set (see ArtSet), if they are not shown yet. Both sets have
+## the same tiles (tests/test_terrain_tileset.gd), so the tiles stay and only their pictures
+## change: the maps drawn with them need no redraw.
+func show_art_set() -> void:
+	if _is_classic == ArtSet.is_classic:
+		return
+	_is_classic = ArtSet.is_classic
+	for look: SeasonBlend.Look in SeasonBlend.GROUND_LOOKS:
+		var terrain: TileSetAtlasSource = tile_set.get_source(terrain_source_id(look))
+		terrain.texture = load(_picture(TERRAIN_ATLAS_PATH, look))
+		var decorations: TileSetAtlasSource = tile_set.get_source(decoration_source_id(look))
+		decorations.texture = load(_picture(DECORATION_ATLAS_PATH, look))
+	var clay_hint: TileSetAtlasSource = tile_set.get_source(CLAY_HINT_SOURCE_ID)
+	clay_hint.texture = load(ArtSet.path(CLAY_HINT_PATH))
 
 
 static func terrain_source_id(look: SeasonBlend.Look) -> int:
@@ -399,6 +418,11 @@ static func _set_motion(decorations: TileSetAtlasSource, motion: AmbientMotion) 
 	for index in decorations.get_tiles_count():
 		var atlas_cell := decorations.get_tile_id(index)
 		decorations.get_tile_data(atlas_cell, 0).material = motion.decoration_material(atlas_cell)
+
+
+## The atlas `path` in a look, in the chosen art set.
+static func _picture(path: String, look: SeasonBlend.Look) -> String:
+	return ArtSet.path(SeasonalArt.path(path, look))
 
 
 ## An atlas source with a tile for every non-empty cell of the first `rows` rows of the image.
