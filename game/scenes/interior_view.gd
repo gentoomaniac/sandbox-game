@@ -11,7 +11,8 @@ extends Node2D
 ## tile next to the room. Which picture a wall tile gets follows from where it is, so the
 ## state only needs to say floor or wall. Tiles come from assets/interior.png, the same image
 ## the Tiled tileset (maps/interiors/interior.tsx) uses; the order of `Ground` is the order
-## of its cells (see the art generator). Furniture pictures are in assets/interior/.
+## of its cells (see the art generator). Furniture pictures are in assets/interior/. All are
+## loaded in the chosen art set (see ArtSet).
 
 enum Ground {
 	FLOOR,
@@ -44,24 +45,24 @@ var entities := Node2D.new()
 ## The beds, which are under everything that stands in the room.
 var _beds := Node2D.new()
 var _ground := TileMapLayer.new()
+var _atlas := TileSetAtlasSource.new()
+## The interior shown, to show it anew in the other art set.
+var _interior: Interior
 ## The furniture sprites and the lights, to be replaced when another interior is shown.
 var _furniture: Array[Node] = []
 ## The covers of the beds that have one, by the bed's tile; shown while the player lies in it.
 var _covers := {}
-## The type of each fire burning in the room (the hearth), by its material.
-var _fires := {}
 
 
 func _ready() -> void:
 	add_to_group(ArtSet.VIEWS)
 	var tile_set := TileSet.new()
 	tile_set.tile_size = Vector2i(TerrainTileset.TILE_SIZE, TerrainTileset.TILE_SIZE)
-	var source := TileSetAtlasSource.new()
-	source.texture = load(ATLAS_PATH)
-	source.texture_region_size = tile_set.tile_size
-	tile_set.add_source(source, SOURCE_ID)
-	for column in source.texture.get_width() / TerrainTileset.TILE_SIZE:
-		source.create_tile(Vector2i(column, 0))
+	_atlas.texture = load(ArtSet.path(ATLAS_PATH))
+	_atlas.texture_region_size = tile_set.tile_size
+	tile_set.add_source(_atlas, SOURCE_ID)
+	for column in _atlas.texture.get_width() / TerrainTileset.TILE_SIZE:
+		_atlas.create_tile(Vector2i(column, 0))
 	_ground.name = "Ground"
 	_ground.tile_set = tile_set
 	add_child(_ground)
@@ -72,19 +73,20 @@ func _ready() -> void:
 	add_child(entities)
 
 
-## Shows the fires' flames in the chosen art set (see ArtSet).
+## Shows the room in the chosen art set (see ArtSet): both sets have the same tiles.
 func show_art_set() -> void:
-	for material: ShaderMaterial in _fires:
-		AmbientMotion.show_flames(material, _fires[material])
+	_atlas.texture = load(ArtSet.path(ATLAS_PATH))
+	if _interior != null:
+		show_interior(_interior)
 
 
 func show_interior(interior: Interior) -> void:
+	_interior = interior
 	_ground.clear()
 	for node in _furniture:
 		node.queue_free()
 	_furniture.clear()
 	_covers.clear()
-	_fires.clear()
 	for y in interior.size.y:
 		for x in interior.size.x:
 			var pos := Vector2i(x, y)
@@ -137,7 +139,7 @@ func _add_furniture(object: WorldObject) -> void:
 	var object_type: Dictionary = WorldObjectTypes.TYPES[object.type]
 	var tile_size := TerrainTileset.TILE_SIZE
 	var footprint: Vector2i = object_type["footprint"]
-	var texture: Texture2D = load(object_type["interior_sprite"])
+	var texture: Texture2D = load(ArtSet.path(object_type["interior_sprite"]))
 	var sprite := Sprite2D.new()
 	sprite.texture = texture
 	sprite.centered = false
@@ -150,12 +152,11 @@ func _add_furniture(object: WorldObject) -> void:
 	sprite.offset = Vector2(-texture.get_width() / 2.0, tile_size / 2.0 - texture.get_height())
 	if AmbientMotion.FIRE_PROFILES.has(object.type):
 		sprite.material = AmbientMotion.fire_material(object.type)
-		_fires[sprite.material] = object.type
 	(_beds if object.is_bed() else entities).add_child(sprite)
 	_furniture.append(sprite)
 	if object_type.has("interior_cover"):
 		var cover := Sprite2D.new()
-		cover.texture = load(object_type["interior_cover"])
+		cover.texture = load(ArtSet.path(object_type["interior_cover"]))
 		cover.centered = false
 		cover.position = sprite.position
 		cover.offset = sprite.offset

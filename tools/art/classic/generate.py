@@ -74,8 +74,8 @@ DOUBLED = (
     "wildlife/cat_*.png",
     "wildlife/horse_*.png",
     # The wild animals and the flames (task 116; animals.py, birds.py, sea_birds.py and fire.py
-    # of commit 2793065; the fireplace and the hearth around the flames are the shared camp.py
-    # and interior.py, still drawn at 16 px).
+    # of commit 2793065; the fireplace around its flames is the shared camp.py, still drawn at
+    # 16 px, the hearth the classic interior.py).
     "wildlife/bee.png",
     "wildlife/bird.png",
     "wildlife/butterfly.png",
@@ -108,6 +108,10 @@ DOUBLED = (
     "objects*.png",
     # The crops (task 109; crops.py of commit f2c24f8).
     "crops/*.png",
+    # The interiors and their furniture (task 112; interior.py of commit f2c24f8, whose chest is
+    # the shared chest.py).
+    "interior.png",
+    "interior/*.png",
 )
 # The animals whose cells grew at 32 px per tile: the classic sheets, doubled, are set in
 # the new cells (bottom centre, as the animal stands in its cell), so that the game reads both
@@ -277,6 +281,15 @@ def write_crops():
         save([cells], f"{CLASSIC}/crops/{crop}.png", TILE, len(cells[0]))
 
 
+def write_interior():
+    furniture = interior.furniture()
+    save([interior.atlas_tiles(furniture)], f"{CLASSIC}/interior.png")
+    for name, (picture, _footprint) in furniture.items():
+        save_picture(picture, f"{CLASSIC}/interior/{name}.png")
+    for name, picture in interior.covers(furniture).items():
+        save_picture(picture, f"{CLASSIC}/interior/{name}.png")
+
+
 def set_in_grown_cells():
     """Sets each cell of the sheets of GROWN_CELLS in the bottom centre of a cell of the new size."""
     for pattern, ((width, height), (new_width, new_height)) in GROWN_CELLS.items():
@@ -313,6 +326,7 @@ def main():
     write_buildings()
     write_objects()
     write_crops()
+    write_interior()
     scale_up_16_px_art()
     set_in_grown_cells()
     print("Wrote every file under assets/classic/.")

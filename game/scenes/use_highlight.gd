@@ -113,7 +113,7 @@ func _ghost_texture() -> Texture2D:
 	var placed := ItemTypes.placed_object(_state.player.inventory.held_item())
 	if placed == &"":
 		return null
-	return load(WorldObjectTypes.TYPES[placed]["interior_sprite"])
+	return load(ArtSet.path(WorldObjectTypes.TYPES[placed]["interior_sprite"]))
 
 
 func _ghost_tint(target: Targeting) -> Color:

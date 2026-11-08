@@ -172,3 +172,37 @@ func _drawn_cells(
 			if not image.get_region(Rect2i(Vector2i(column, row) * size, size)).is_invisible():
 				cells.append(Vector2i(column, row))
 	return cells
+
+
+func test_the_classic_interior_is_as_big_as_the_new() -> void:
+	ArtSet.is_classic = true
+	var paths: Array[String] = [InteriorView.ATLAS_PATH]
+	for type: StringName in WorldObjectTypes.TYPES:
+		var data: Dictionary = WorldObjectTypes.TYPES[type]
+		for key in ["interior_sprite", "interior_cover"]:
+			if data.has(key):
+				paths.append(data[key])
+	for path in paths:
+		assert_eq(load(ArtSet.path(path)).get_size(), load(path).get_size(), path)
+	assert_ne(ArtSet.path(InteriorView.ATLAS_PATH), InteriorView.ATLAS_PATH, "classic art")
+
+
+func test_a_room_shown_switches_its_tiles_and_furniture_with_the_art() -> void:
+	var view := InteriorView.new()
+	add_child_autofree(view)
+	view.show_interior(InteriorLoader.load_interior("res://maps/interiors/kate.tmx"))
+	ArtSet.show(true, get_tree())
+	var atlas: TileSetAtlasSource = view.get_node("Ground").tile_set.get_source(
+		InteriorView.SOURCE_ID
+	)
+	assert_eq(atlas.texture.resource_path, "res://assets/classic/interior.png")
+	# The bed, the first of the sprites shown anew.
+	var beds := view.get_node("Beds").get_children()
+	var bed: Sprite2D = beds.filter(_is_kept)[0]
+	assert_eq(bed.texture.resource_path, "res://assets/classic/interior/bed.png")
+	ArtSet.show(false, get_tree())
+	assert_eq(atlas.texture.resource_path, InteriorView.ATLAS_PATH)
+
+
+func _is_kept(node: Node) -> bool:
+	return not node.is_queued_for_deletion()
