@@ -132,6 +132,7 @@ const ACTION_LABELS := {
 	&"take_down_mode": "Build or take down",
 	&"toggle_fast_forward": "Fast forward",
 	&"toggle_coordinates": "Show coordinates",
+	&"toggle_art_set": "Classic or new art",
 	&"pause": "Pause menu",
 	&"console": "Console",
 }
@@ -157,6 +158,8 @@ const ACTION_DESCRIPTIONS := {
 	&"drop_item": "Drop the held stack on the ground in front of you.",
 	&"toggle_fast_forward": "Run time faster. Only for testing.",
 	&"toggle_coordinates": "Show your tile coordinates in the top right corner.",
+	&"toggle_art_set":
+	"Switch between the new art, drawn at 32 px per tile, and the classic 16 px art.",
 	&"console": "Open the console for commands and cheats.",
 	&"pause": "Open the pause menu.",
 }

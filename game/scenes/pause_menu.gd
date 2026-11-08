@@ -13,6 +13,10 @@ const THEME := preload("res://game/scenes/ui_theme.tres")
 const PANEL_WIDTH := 280
 ## The explanations of the settings, shown as tooltips.
 const DISPLAY_TIP := "Switch between fullscreen and a window."
+const ART_TIP := (
+	"The world's art: new, drawn at 32 px per tile, or classic, the 16 px art doubled."
+	+ " F7 switches it while playing."
+)
 const DRAIN_TIP := (
 	"How fast energy runs out: Low is half the usual, High one and a half times."
 	+ " Click to change."
@@ -33,6 +37,7 @@ var _first_focus := {}
 var _history: Array[Page] = []
 var _current: Page
 var _display_button: Button
+var _art_button: Button
 var _ui_scale_label: Label
 var _ui_scale_slider: HSlider
 var _is_dragging_slider := false
@@ -83,7 +88,9 @@ func _init(settings: GameSettings) -> void:
 	_add_button(
 		settings_page, "Audio", _go_to.bind(Page.AUDIO), "Volumes and sound in the background."
 	)
-	_add_button(settings_page, "Display", _go_to.bind(Page.DISPLAY), "Fullscreen or windowed.")
+	_add_button(
+		settings_page, "Display", _go_to.bind(Page.DISPLAY), "Fullscreen or windowed, and the art."
+	)
 	_add_button(
 		settings_page,
 		"Language model",
@@ -95,6 +102,7 @@ func _init(settings: GameSettings) -> void:
 	var display := _add_page(pages, Page.DISPLAY, "Display")
 	_display_button = _add_button(display, "", _toggle_fullscreen, DISPLAY_TIP)
 	_first_focus[Page.DISPLAY] = _display_button
+	_art_button = _add_button(display, "", _toggle_art_set, ART_TIP)
 	_add_button(display, "Back", _back)
 
 	var game := _add_page(pages, Page.GAME, "Game")
@@ -199,7 +207,7 @@ func _show_page(page: Page) -> void:
 	for other in _pages:
 		_pages[other].visible = other == page
 	if page == Page.DISPLAY:
-		_show_display_mode()
+		_show_display_settings()
 	elif page == Page.GAME:
 		_show_game_settings()
 	elif page == Page.CONTROLS:
@@ -223,11 +231,17 @@ func _back() -> void:
 
 func _toggle_fullscreen() -> void:
 	_settings.set_fullscreen(not _settings.is_fullscreen)
-	_show_display_mode()
+	_show_display_settings()
 
 
-func _show_display_mode() -> void:
+func _toggle_art_set() -> void:
+	_settings.set_classic_art(not ArtSet.is_classic)
+	_show_display_settings()
+
+
+func _show_display_settings() -> void:
 	_display_button.text = "Mode: " + ("Fullscreen" if _settings.is_fullscreen else "Windowed")
+	_art_button.text = "Art: " + ("Classic 16 px" if ArtSet.is_classic else "New 32 px")
 
 
 func _show_game_settings() -> void:

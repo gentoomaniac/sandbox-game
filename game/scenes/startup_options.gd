@@ -120,6 +120,10 @@ extends RefCounted
 ##                            creeps up for a few seconds and pounces (use --screenshot-delay)
 ##   --npcs=<count>           put that many villagers near the player, the same ones every time
 ##   --villager=<id>          put the villager of data/villagers.cfg with that id near the player
+##   --switch-art             with --screenshot: press the key that switches the art (F7) when
+##                            the shot would be taken, and take it a few frames later, to see
+##                            the switch in a running game. The switch is saved in the
+##                            settings: give it a --settings-path of its own.
 
 ## The value of a tile flag that was not given.
 const NO_TILE := Vector2i(1 << 30, 1 << 30)
@@ -210,6 +214,7 @@ var livestock := PackedStringArray()
 var hunt := false
 var npcs := 0
 var villager := ""
+var switch_art := false
 
 
 static func from_command_line() -> StartupOptions:
@@ -261,6 +266,8 @@ func _init(args := PackedStringArray()) -> void:
 				coordinates = true
 			"--classic-art":
 				classic_art = true
+			"--switch-art":
+				switch_art = true
 			"--mouse-tile":
 				mouse_tile = _tile(arg)
 			"--energy":

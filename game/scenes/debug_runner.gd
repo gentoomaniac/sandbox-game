@@ -62,6 +62,7 @@ var _chat_script: PackedStringArray
 var _hit_tile: Vector2i
 var _harvest_tile: Vector2i
 var _menu_page: int
+var _is_art_to_switch: bool
 var _opened_chest: WorldObject
 var _settled_frames := 0
 var _screenshot_delay: float
@@ -86,6 +87,7 @@ func _init(options: StartupOptions) -> void:
 	_hit_tile = options.hit
 	_harvest_tile = options.harvest
 	_menu_page = options.menu
+	_is_art_to_switch = options.switch_art
 	_screenshot_delay = options.screenshot_delay
 
 
@@ -149,6 +151,14 @@ func update(delta: float) -> void:
 		return
 	_settled_frames = _settled_frames + 1 if _is_ready_to_shoot() else 0
 	if _settled_frames <= SETTLE_FRAMES:
+		return
+	if _is_art_to_switch:
+		_is_art_to_switch = false
+		_settled_frames = 0
+		var press := InputEventAction.new()
+		press.action = &"toggle_art_set"
+		press.pressed = true
+		Input.parse_input_event(press)
 		return
 	if _menu_page >= 0:
 		# The game is paused by then, so a timer that ignores the pause does the waiting.

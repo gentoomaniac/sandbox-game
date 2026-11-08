@@ -318,7 +318,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _console_view.is_open():
 		return
 	var can_use := _can_use()
-	if _screens_take(event):
+	# The art switches with a screen open too, so the character screen shows the switch.
+	if _switch_art_set(event) or _screens_take(event):
 		return
 	# A SubViewport only gets the events that are pushed into it. That does not mark the
 	# event as handled here, so Main still sees what BuildMode consumed.
@@ -581,6 +582,14 @@ func _tick_clock(delta: float) -> void:
 		_state.pass_awake_time(whole_minutes)
 		_weather_view.minutes_passed(whole_minutes)
 		_show_clock()
+
+
+## Switches between the classic and the new art (see ArtSet) on its key; whether it was that key.
+func _switch_art_set(event: InputEvent) -> bool:
+	if not event.is_action_pressed("toggle_art_set"):
+		return false
+	_settings.set_classic_art(not ArtSet.is_classic)
+	return true
 
 
 ## Opens and closes the screens on their keys. Returns whether a screen took the event: one that

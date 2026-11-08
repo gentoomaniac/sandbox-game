@@ -50,3 +50,9 @@ func test_a_broken_art_setting_is_ignored() -> void:
 	_settings.load_file()
 	assert_false(_settings.is_classic_art)
 	assert_push_warning_count(1)
+
+
+func test_f7_switches_the_art_by_default() -> void:
+	var events := InputMap.action_get_events(&"toggle_art_set")
+	assert_eq(events.size(), 1)
+	assert_eq(events[0].physical_keycode, KEY_F7)
