@@ -1481,6 +1481,33 @@ each group dropping its doubling. UI icons and slots stay as they are until task
 
 - [ ] Done
 
+The redraw takes in the findings of review/art-review-2026-11-08 (the user, 2026-11-08: "make
+sure the redraw includes the art review feedback"); each group's brief points at the review and
+lists its part:
+- every group: the contrast and outline rule (the darkest shade of an asset's own ramp at its
+  outer edge against the ground, a ground shadow, never ink on vegetation, none on terrain;
+  canvas.outline / outline_edge from task 100) and a check with `make contrast-sheet`;
+- 107 ground: autumn is not one straw yellow everywhere (the marsh stays green until November,
+  straw only on the dry Geest); tilled rows that don't read as stacked logs (a softer ridge
+  highlight, no rounded ends); a calmer ground behind small figures;
+- 108 plants: the pollard willow (a dense crown with an edge, rods over it, trunk in mud/mud_dark
+  rather than grey stone, its ground shadow); tall grass, fern and reeds legible on autumn and
+  night ground (task 101 left those weak); rename `maple_light` while touching seasons.py;
+- 109 crops: the Geest grains of the village sheet (rye, buckwheat) if cheap, else a task;
+- 110 buildings: the longhouse door as SPEC and art-style.md say (or fix the docs); the Kate in
+  brick and Geest variants (review task 7) if it fits; the buildings table of the review as
+  the reference for new ones;
+- 111 objects: the dyke as a sloped bank with corner and diagonal pieces (review task 5); the
+  farm yard objects (chicken coop, trough, hay rack, draw well, stork's nest; review task 6) if
+  they fit, else their own task;
+- 113 people: the clothes art-style.md lists but the art lacks (stocking caps in two colours,
+  striped apron, tricorne), the trades' props held in hand where cheap;
+- 115 items: the period tools art-style.md lists (sickle, flail, rake, pitchfork, bucket, yoke)
+  and a period job for the pickaxe, or the docs corrected;
+- 116 wild animals: small animals drawn a little larger than life, contact shadows; the Ewer's
+  scale against the people;
+- the last group: docs/art-style.md and SPEC brought in line with the art (review task 14).
+
 Each of 107 to 116 redraws its group at 32 px in the style of the mockup (more detail, legs
 with joints, faces, small animals drawn a little larger than life, a calmer ground behind small
 figures, contact shadows), drops the doubling for it, checks every season, frost, snow, dusk
