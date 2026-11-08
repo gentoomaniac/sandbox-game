@@ -8,9 +8,9 @@ extends Node2D
 ## add a bubble, add its picture there and run `make assets`, then `show_icon(&"<id>")`.
 
 const PICTURE_PATH := "res://assets/ui/bubble_%s.png"
-## How many pixels of the 16 px art lower the bubble starts, and how long it takes to rise into
-## place (it moves in whole pixels, so it pops rather than glides).
-const POP_DROP := 4
+## How many pixels lower the bubble starts, and how long it takes to rise into place (it moves
+## in whole pixels, so it pops rather than glides).
+const POP_DROP := 8
 const POP_SECONDS := 0.15
 ## How long the bubble is there from the start, and how much of that it fades out in.
 const LIFE_SECONDS := 2.0
@@ -20,7 +20,7 @@ var _picture: Texture2D
 var _age := 0.0
 
 
-## How many pixels of the 16 px art below its place the bubble is this long after it appeared.
+## How many pixels below its place the bubble is this long after it appeared.
 static func drop_at(age: float) -> int:
 	return POP_DROP - int(POP_DROP * clampf(age / POP_SECONDS, 0.0, 1.0))
 
@@ -54,6 +54,6 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	var size := _picture.get_size()
-	var drop := drop_at(_age) * TerrainTileset.ART_16_SCALE
+	var drop := drop_at(_age)
 	var top_left := Vector2(-int(size.x / 2.0), -size.y + drop)
 	draw_texture(_picture, top_left, Color(1.0, 1.0, 1.0, alpha_at(_age)))

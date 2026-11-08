@@ -371,18 +371,28 @@ kssssssssssk
 }
 
 BUBBLE_COLOURS = {"k": "ink", "b": "water_deep"}
-BUBBLE_PADDING = 2
+BUBBLE_PADDING = 4
+# The puffs under a thought bubble, the bottom one at the head.
+BUBBLE_PUFFS = ("....", ".kk.", "kcck", ".kk.", "....", ".kk.")
+PUFF_COLOURS = {"k": "ink", "c": "cream"}
 # The pictures inside the thought bubbles (see ThoughtBubble), by id. One bubble_<id>.png is
-# drawn for each, with the bubble around the picture: add a picture here to add a bubble.
+# drawn for each, with the bubble around the picture: add a picture here to add a bubble. They
+# are drawn at the world's 32 px per tile, like the figure the bubble rises from.
 BUBBLE_ICONS = {
     "zzz": """
-.....bbbbb
-........b.
-.......b..
-bbbb..b...
-..b..bbbbb
-.b........
-bbbb......
+.........bbbbbbbbb
+.........bbbbbbbbb
+..............bbb.
+.............bbb..
+............bbb...
+...........bbb....
+.........bbbbbbbbb
+bbbbbb...bbbbbbbbb
+...bb.............
+..bb..............
+.bb...............
+bb................
+bbbbbb............
 """,
 }
 
@@ -403,26 +413,26 @@ def icon(palette, rows):
 
 
 def bubble(palette, rows):
-    """A thought bubble around the picture `rows` (BUBBLE_COLOURS characters; . is clear): a
-    rounded outline, a cream inside and a small tail below, pointing at the head."""
+    """A thought bubble around the picture `rows` (BUBBLE_COLOURS characters; . is clear): an ink
+    outline with its corners cut, a cream inside, and two little puffs below it, the last
+    pointing at the head."""
     picture = rows.split()
     margin = BUBBLE_PADDING + 1
     width = len(picture[0]) + 2 * margin
     height = len(picture) + 2 * margin
-    image = Image.new("RGBA", (width, height + 2), (0, 0, 0, 0))
+    image = Image.new("RGBA", (width, height + len(BUBBLE_PUFFS)), (0, 0, 0, 0))
     for y in range(height):
         for x in range(width):
-            is_corner = x in (0, width - 1) and y in (0, height - 1)
-            is_edge = x in (0, width - 1) or y in (0, height - 1)
-            if not is_corner:
+            # How far the pixel is from the nearest corner, along the edges.
+            corner = min(x, width - 1 - x) + min(y, height - 1 - y)
+            is_edge = corner == 2 or x in (0, width - 1) or y in (0, height - 1)
+            if corner >= 2:
                 image.putpixel((x, y), rgba(palette, "ink" if is_edge else "cream"))
-    middle = width // 2
-    for x in (middle - 1, middle):
-        image.putpixel((x, height - 1), rgba(palette, "cream"))
-        image.putpixel((x, height), rgba(palette, "cream"))
-        image.putpixel((x, height + 1), rgba(palette, "ink"))
-    for x in (middle - 2, middle + 1):
-        image.putpixel((x, height), rgba(palette, "ink"))
+    left = width // 2 - 2
+    for dy, line in enumerate(BUBBLE_PUFFS):
+        for dx, character in enumerate(line):
+            if character != ".":
+                image.putpixel((left + dx, height + dy), rgba(palette, PUFF_COLOURS[character]))
     for y, line in enumerate(picture):
         for x, character in enumerate(line):
             if character != ".":

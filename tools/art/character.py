@@ -786,12 +786,19 @@ def layers():
 
 
 def sleep_z():
-    """The "z" that rises from a sleeping figure (assets/effects/sleep_z.png): a cream glyph
-    with the ink outline around its strokes."""
-    return outlined(
-        [
-            [{"c": "cream"}.get(key) for key in line]
-            for line in ("......", ".cccc.", "...cc.", "..cc..", ".cc...", ".cccc.", "......")
-        ],
-        set(),
+    """The "z" that rises from a sleeping figure (assets/effects/sleep_z.png): a cream glyph,
+    shaded under its strokes, with the ink outline around them."""
+    keys = {"c": "cream", "s": "sand_light"}
+    rows = (
+        "..........",
+        ".cccccccc.",
+        ".sssssccs.",
+        ".....ccs..",
+        "....ccs...",
+        "...ccs....",
+        "..ccs.....",
+        ".cccccccc.",
+        ".ssssssss.",
+        "..........",
     )
+    return outlined([[keys.get(key) for key in line] for line in rows], set())

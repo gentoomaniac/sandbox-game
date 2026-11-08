@@ -7,8 +7,8 @@ const Z_TEXTURE := preload("res://assets/effects/sleep_z.png")
 const Z_INTERVAL := 0.6
 const RISE_SECONDS := 1.6
 ## How far a "z" rises and drifts, in art pixels.
-const RISE := 14.0 * TerrainTileset.ART_16_SCALE
-const DRIFT := 5.0 * TerrainTileset.ART_16_SCALE
+const RISE := 28.0
+const DRIFT := 10.0
 
 var is_sleeping := false:
 	set(value):

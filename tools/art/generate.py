@@ -108,8 +108,8 @@ from palette import ASSETS, PALETTE, check_palette, save, save_picture, write_pa
 # The files under assets/ that the world draws and that are still drawn at 16 px per tile:
 # `scale_up_16_px_art` scales them up to the game's tile, pixel for pixel. Each task that
 # redraws a group at 32 px (tasks 107 to 116) takes its files out of here. The UI's pictures
-# (items/, ui/ but for the thought bubbles, and the chat portraits) are drawn for the UI's own
-# scale and stay as they are.
+# (items/ and ui/) are drawn for the UI's own scale and stay as they are; the thought bubbles in
+# ui/ are drawn at 32 px like the people.
 DOUBLED = (
     # Ground (task 107).
     "terrain*.png",
@@ -127,9 +127,6 @@ DOUBLED = (
     # Interiors (task 112).
     "interior.png",
     "interior/*.png",
-    # The sleeping "z" and the thought bubbles over the player (task 113).
-    "effects/*.png",
-    "ui/bubble_*.png",
     # Farm animals and wild animals (tasks 114 and 116).
     "wildlife/*.png",
     # Items on the ground (task 115).
