@@ -86,9 +86,10 @@ def edge(mask):
     return mask & ~shrunk(mask)
 
 
-def light_level(mask, radius):
+def light_level(mask, radius, top_light=0.0):
     """How lit each pixel of the mask is, about -1 to 1: the mask as a dome whose rim rises
-    over `radius` pixels, lit by LIGHT."""
+    over `radius` pixels, lit by LIGHT. `top_light` adds that much light at the mask's top and
+    takes it from its bottom, for a big form (an animal's body) whose middle would be flat."""
     depth = np.zeros(mask.shape, np.float32)
     inside = mask.copy()
     for _ in range(radius):
@@ -99,13 +100,24 @@ def light_level(mask, radius):
     gy, gx = np.gradient(dome)
     normals = np.dstack([-gx, -gy, np.ones_like(gx)])
     normals /= np.linalg.norm(normals, axis=2, keepdims=True)
-    return normals @ LIGHT
+    level = normals @ LIGHT
+    if top_light and mask.any():
+        rows = np.nonzero(mask)[0]
+        top, bottom = rows.min(), rows.max()
+        ys = np.arange(mask.shape[0])[:, None]
+        level = level + top_light * (1 - 2 * (ys - top) / max(1, bottom - top))
+    return level
 
 
-def shade(picture, mask, ramp, radius=3):
+def shade(picture, mask, ramp, radius=3, top_light=0.0):
     """Fills the mask into the picture in the colours of `ramp` (dark to light) by how lit
     each pixel is (see `light_level`)."""
-    level = light_level(mask, radius)
+    return shade_by_level(picture, mask, ramp, light_level(mask, radius, top_light))
+
+
+def shade_by_level(picture, mask, ramp, level):
+    """Fills the mask into the picture in the colours of `ramp` by a `light_level` worked out
+    for a larger form: a patch of a pied coat shaded with the body it is on."""
     steps = sum((level > threshold).astype(int) for threshold in THRESHOLDS[len(ramp)])
     for y, x in zip(*np.nonzero(mask)):
         picture[y][x] = ramp[steps[y, x]]
