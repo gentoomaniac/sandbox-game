@@ -12,7 +12,11 @@ const SETTLE_FRAMES := 3
 ## one group.
 const WILDLIFE_COUNT := 4
 const WILDLIFE_GROUPS: Array[StringName] = [
-	WildlifeRules.FLOCK, WildlifeRules.GEESE, WildlifeRules.FLYING_GEESE
+	WildlifeRules.FLOCK,
+	WildlifeRules.GEESE,
+	WildlifeRules.FLYING_GEESE,
+	WildlifeRules.OYSTERCATCHER,
+	WildlifeRules.DUNLIN,
 ]
 ## Farm animals of each species that `--livestock` puts near the player.
 const LIVESTOCK_COUNT := 4

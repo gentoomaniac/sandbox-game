@@ -26,6 +26,8 @@ const SPAWN_TRIES := 10
 const DEBUG_DISTANCE := Vector2(24.0, 70.0)
 ## A bee made by hand picks one of this many flowers nearest to the player.
 const DEBUG_FLOWERS := 5
+## The birds of the coast keep to it even when made by hand: none appear where it is not near.
+const SEA_BIRDS: Array[StringName] = [WildlifeRules.OYSTERCATCHER, WildlifeRules.DUNLIN]
 ## A flock crossing the view starts this far behind the ring, in pixels.
 const FLOCK_ENTRY_DISTANCE := 120.0
 ## A stork flying to a roof comes from this far beside the view, in pixels.
@@ -262,7 +264,8 @@ func _is_habitat(kind: StringName, point: Vector2) -> bool:
 
 
 ## Places an animal of a kind within a short way of the player, by hand: at a flower for a
-## bee, else on a spot where it can be. Returns whether there was one.
+## bee, where it lives for a bird of the coast, else on a spot where it can be. Returns whether
+## there was one.
 func _spawn_near_player(kind: StringName) -> bool:
 	var player := world_view.player_feet
 	if kind == WildlifeRules.BEE:
@@ -280,7 +283,12 @@ func _spawn_near_player(kind: StringName) -> bool:
 	for _try in SPAWN_TRIES * 3:
 		var distance := rng.randf_range(DEBUG_DISTANCE.x, DEBUG_DISTANCE.y)
 		var point := player + Vector2.from_angle(rng.randf() * TAU) * distance
-		if can_stand(point) or _is_flying(kind):
+		var can_be_there := (
+			_is_habitat(kind, point)
+			if kind in SEA_BIRDS
+			else (can_stand(point) or _is_flying(kind))
+		)
+		if can_be_there:
 			_spawn(kind, point, true)
 			return true
 	return false
@@ -413,7 +421,7 @@ func _spawn(kind: StringName, point: Vector2, is_pinned: bool) -> void:
 			animal = Butterfly.new()
 		WildlifeRules.STORK:
 			animal = Stork.new(WildlifeRules.STORK)
-		WildlifeRules.GEESE:
+		WildlifeRules.GEESE, WildlifeRules.OYSTERCATCHER, WildlifeRules.DUNLIN:
 			animal = GroundFlock.new(kind)
 		WildlifeRules.MOUSE:
 			animal = Mouse.new()

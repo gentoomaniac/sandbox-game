@@ -1,9 +1,11 @@
 class_name GroundFlock
 extends Animal
-## A flock of birds feeding on the ground: greylag geese grazing on the marsh. Each bird feeds,
-## looks up or takes a few steps on its own, keeping near the others; they all raise their heads
-## when the player comes near, and all take off together when the player comes nearer (or the
-## flock is sent away): they climb and fly out of the view, geese closing up into a V.
+## A flock of birds feeding on the ground: greylag geese grazing on the marsh, oystercatchers and
+## dunlin probing the tidal mud. Each bird feeds, looks up or takes a few steps on its own, keeping
+## near the others; they all raise their heads when the player comes near, and all take off
+## together when the player comes nearer, when the tide comes in over the mud they stand on, or
+## when the flock is sent away: they climb and fly out of the view, geese closing up into a V,
+## waders into a tight bunch that dunlin swing round in a wheel.
 ##
 ## The node is the middle of the flock; each bird is a sprite of its own, sorted with the rest
 ## of the world by its feet (the node sorts its children with its parent's). Their shadows lie on
@@ -19,7 +21,9 @@ const FLY := &"fly"
 ## (`spacing`); its walking speed; the chances by which a bird picks what to do next (feed, else
 ## stand, else walk); the frames per second of each action; its speed, climb and height in
 ## flight, in pixels; how far apart the birds keep in the V they close up into along and across
-## the way they fly; and half the width of their shadows.
+## the way they fly (zero: no V, they close up into a bunch); how fast the flock turns in the
+## first WHEEL_SECONDS of its flight, in radians per second, to one side or the other; and half
+## the width of their shadows.
 const FLOCKS := {
 	WildlifeRules.GEESE:
 	{
@@ -36,13 +40,53 @@ const FLOCKS := {
 		"climb_speed": 16.0,
 		"flight_height": 56.0,
 		"v_spacing": Vector2(14.0, 12.0),
+		"wheel": 0.0,
 		"shadow": 3,
+	},
+	WildlifeRules.OYSTERCATCHER:
+	{
+		"sheet": &"oystercatcher",
+		"feed": &"probe",
+		"size": Vector2i(2, 5),
+		"radius": 16.0,
+		"spacing": 6.0,
+		"walk_speed": 6.0,
+		"feed_chance": 0.6,
+		"stand_chance": 0.2,
+		"frames_per_second": {&"stand": 0.4, &"probe": 3.0, &"walk": 5.0, &"fly": 10.0},
+		"fly_speed": 40.0,
+		"climb_speed": 14.0,
+		"flight_height": 18.0,
+		"v_spacing": Vector2.ZERO,
+		"wheel": 0.0,
+		"shadow": 2,
+	},
+	WildlifeRules.DUNLIN:
+	{
+		"sheet": &"dunlin",
+		"feed": &"probe",
+		"size": Vector2i(12, 24),
+		"radius": 18.0,
+		"spacing": 4.0,
+		"walk_speed": 7.0,
+		"feed_chance": 0.75,
+		"stand_chance": 0.1,
+		"frames_per_second": {&"stand": 0.5, &"probe": 6.0, &"walk": 7.0, &"fly": 16.0},
+		"fly_speed": 50.0,
+		"climb_speed": 16.0,
+		"flight_height": 20.0,
+		"v_spacing": Vector2.ZERO,
+		"wheel": 0.7,
+		"shadow": 1,
 	},
 }
 ## How many spots are tried for each bird of the flock before it makes do with fewer birds.
 const PLACING_TRIES := 20
-## They close up over this many seconds after taking off.
+## They close up over this many seconds after taking off; a bunch to this share of how far apart
+## the birds stood.
 const FORMING_SECONDS := 3.0
+const BUNCH_CLOSING := 0.5
+const WHEEL_SECONDS := 2.5
 ## It is gone once it is this far outside the view: far enough for the V and its height.
 const LEAVE_MARGIN := 140.0
 ## The flock goes back to feeding once the player is this many tiles farther than the distance
@@ -52,6 +96,8 @@ const CALM_EXTRA_TILES := 1.5
 var _birds: Array[FlockBird] = []
 var _shadows: GroundShadows
 var _flight_direction := Vector2.RIGHT
+## How fast it turns in flight, in radians per second (see FLOCKS).
+var _wheel := 0.0
 ## The numbers of its kind (see FLOCKS), and its action of feeding.
 var _flock: Dictionary
 var _feed: StringName
@@ -114,6 +160,9 @@ func _update(delta: float) -> void:
 	var reaction := _reaction()
 	if _state != FLY and reaction == WildlifeRules.Reaction.FLEE:
 		_take_off(_away_from_player())
+	elif _state != FLY and wildlife.is_water(position):
+		# The tide came in over the mud they stood on.
+		_take_off(_away_from_view_centre())
 	elif _state == FEED and reaction == WildlifeRules.Reaction.ALERT:
 		_enter(ALERT)
 		for bird in _birds:
@@ -211,20 +260,22 @@ func _show(bird: FlockBird) -> void:
 
 
 ## All take off together and fly off; on the way they close up into a V, the bird furthest
-## ahead leading.
+## ahead leading, or into a bunch.
 func _take_off(away: Vector2) -> void:
 	_enter(FLY)
 	z_index = 1
 	_flight_direction = (away + Vector2(0.0, -0.3)).normalized()
+	_wheel = _flock["wheel"] * (1.0 if wildlife.rng.randf() < 0.5 else -1.0)
 	_birds.sort_custom(
 		func(a: FlockBird, b: FlockBird) -> bool:
 			return a.spot.dot(_flight_direction) > b.spot.dot(_flight_direction)
 	)
-	var v_spots := Flock.v_offsets(_flight_direction, _birds.size(), _flock["v_spacing"])
+	var v_spacing: Vector2 = _flock["v_spacing"]
+	var v_spots := Flock.v_offsets(_flight_direction, _birds.size(), v_spacing)
 	for i in _birds.size():
 		var bird := _birds[i]
 		bird.take_off_spot = bird.spot
-		bird.v_spot = v_spots[i]
+		bird.v_spot = v_spots[i] if v_spacing != Vector2.ZERO else bird.spot * BUNCH_CLOSING
 		bird.sprite.flip_h = _flight_direction.x < 0.0
 		# Each a little out of step with the others.
 		_start(bird, &"fly", INF)
@@ -233,6 +284,8 @@ func _take_off(away: Vector2) -> void:
 
 func _fly(delta: float) -> void:
 	var flight_height: float = _flock["flight_height"]
+	if _state_time < WHEEL_SECONDS:
+		_flight_direction = _flight_direction.rotated(_wheel * delta)
 	position += _flight_direction * _flock["fly_speed"] * delta
 	_lift = minf(_lift + _flock["climb_speed"] * delta, flight_height)
 	_shadows.shift = GroundShadows.SHIFT * _lift / flight_height
@@ -242,6 +295,7 @@ func _fly(delta: float) -> void:
 		bird.action_time += delta
 		bird.spot = bird.take_off_spot.lerp(bird.v_spot, forming)
 		bird.sprite.position = bird.spot + Vector2(0.0, -_lift)
+		bird.sprite.flip_h = _flight_direction.x < 0.0
 		_show(bird)
 		_shadows.set_point(i, position + bird.spot)
 	if _is_out_of_view(LEAVE_MARGIN):
