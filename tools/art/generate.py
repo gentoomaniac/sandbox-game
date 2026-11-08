@@ -261,6 +261,7 @@ def write_seasonal_art():
     keeps the plain names; the other looks add theirs, e.g. terrain_snow.png."""
     terrain_rows = []
     decoration_rows = []
+    layers = [layer.__name__ for layer in terrain.LAYERS]
     for layer in terrain.LAYERS:
         tiles, decorations = layer()
         # Full tiles hide the layers below them, so they must be opaque.
@@ -287,8 +288,8 @@ def write_seasonal_art():
     for look in seasons.LOOKS:
         suffix = "" if look == "summer" else f"_{look}"
         if look in seasons.GROUND_LOOKS:
-            save(seasons.terrain_rows(look, terrain_rows), f"terrain{suffix}.png", GAME_TILE)
-            decorations = seasons.ground_rows(look, decoration_rows, seasons.STANDING.get(look))
+            save(seasons.terrain_rows(look, terrain_rows, layers), f"terrain{suffix}.png", GAME_TILE)
+            decorations = seasons.ground_rows(look, decoration_rows, layers, seasons.STANDING.get(look))
             save(decorations, f"decorations{suffix}.png", GAME_TILE)
         save(seasons.object_rows(look, objects, redraws), f"objects{suffix}.png", OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
         if look in seasons.HOUSE_LOOKS:

@@ -62,6 +62,7 @@ _SPRING_GREENS = {
     "green": "spring",
     "green_dark": "spring_dark",
 }
+# Autumn straw and yellow: the dry grass of the Geest, the dyke and the tall grass.
 _AUTUMN_GRASS = {
     "green_bright": "straw",
     "green_light": "autumn_light",
@@ -72,6 +73,16 @@ _AUTUMN_GRASS = {
     "meadow": "olive",
     "meadow_light": "reed",
     # Flowers wither to dry heads and fallen leaves.
+    "cream": "ochre",
+    "gold": "flame",
+    "petal": "rust",
+}
+# Autumn everywhere else: the grass of the marsh stays green until November, only its tips and
+# the damp meadow's turn olive, and its flowers wither.
+_AUTUMN_MARSH = {
+    "green_bright": "dry_light",
+    "green_light": "dry",
+    "meadow_light": "dry",
     "cream": "ochre",
     "gold": "flame",
     "petal": "rust",
@@ -145,13 +156,15 @@ _FROST_STALKS = {"green_bright": "snow_light", "green_light": "snow_shadow", "gr
 GROUND_REMAPS = {
     "spring": _SPRING_GREENS,
     "summer": {},
-    "autumn": _AUTUMN_GRASS,
+    "autumn": _AUTUMN_MARSH,
     "bare": _BARE_GROUND,
     "frost": _FROST_GROUND,
     "snow": _WINTER_GROUND,
     # Only its decorations use this; see terrain_rows.
     "dusting": _FROST_GROUND,
 }
+# The terrain layers (terrain.LAYERS, by name) whose look differs from the rest of the ground's.
+LAYER_REMAPS = {"autumn": {"dry_grass": _AUTUMN_GRASS}}
 # What decoration tufts and plants turn into: dry stalks from the bare look on.
 STANDING = {"bare": WINTER_STALKS, "frost": _FROST_STALKS, "snow": WINTER_STALKS, "dusting": _FROST_STALKS}
 
@@ -161,10 +174,10 @@ STANDING = {"bare": WINTER_STALKS, "frost": _FROST_STALKS, "snow": WINTER_STALKS
 SALT_MARSH_LOOKS = {
     "spring": {"salt": "dry", "salt_patch": "olive", "salt_light": "spring_light",
                "salt_dark": "green_dark", "glasswort": "spring", "glasswort_dark": "spring_dark"},
-    "summer": {"salt": "olive", "salt_patch": "dry", "salt_light": "frost",
+    "summer": {"salt": "olive", "salt_patch": "meadow", "salt_light": "frost",
                "salt_dark": "green_dark", "glasswort": "green_bright", "glasswort_dark": "green_light"},
-    "autumn": {"salt": "heather_dark", "salt_patch": "rust_dark", "salt_light": "heather",
-               "salt_dark": "russet_deep", "glasswort": "red_light", "glasswort_dark": "rust_dark"},
+    "autumn": {"salt": "olive", "salt_patch": "heather_dark", "salt_light": "heather",
+               "salt_dark": "umber", "glasswort": "red_light", "glasswort_dark": "rust_dark"},
     "bare": {"salt": "bare", "salt_patch": "mud", "salt_light": "bare_light",
              "salt_dark": "mud_dark", "glasswort": "umber", "glasswort_dark": "soil_dark"},
     "frost": {"salt": "frost", "salt_patch": "snow_shadow", "salt_light": "snow_shadow",
@@ -299,12 +312,18 @@ def remap(canvas, mapping):
     return [[mapping.get(name, name) for name in row] for row in canvas]
 
 
-def ground_rows(look, rows, extra_remap=None):
-    """Terrain or decoration rows (the layers bottom to top) in a look, with `extra_remap`
-    applied over the look's own and the salt marsh's logical colours made real. Water stays as it
-    is: freezing it belongs to the weather."""
-    mapping = {**GROUND_REMAPS[look], **SALT_MARSH_LOOKS[look], **(extra_remap or {})}
-    return [rows[0]] + [[remap(tile, mapping) for tile in row] for row in rows[1:]]
+def ground_rows(look, rows, layers, extra_remap=None):
+    """Terrain or decoration rows in a look, with `extra_remap` applied over the look's own and
+    the salt marsh's logical colours made real. `layers` names the terrain layer of each row
+    (terrain.LAYERS), bottom to top; a row past them (the meadow flowers) has the look of the
+    ground. Water stays as it is: freezing it belongs to the weather."""
+    base = {**GROUND_REMAPS[look], **SALT_MARSH_LOOKS[look], **(extra_remap or {})}
+    result = [rows[0]]
+    for index, row in enumerate(rows[1:], start=1):
+        layer = layers[index] if index < len(layers) else None
+        mapping = {**base, **LAYER_REMAPS.get(look, {}).get(layer, {})}
+        result.append([remap(tile, mapping) for tile in row])
+    return result
 
 
 def sparkle(tile, rng, count):
@@ -339,17 +358,17 @@ def dust(tile, rng):
     ]
 
 
-def terrain_rows(look, rows):
+def terrain_rows(look, rows, layers):
     """The terrain rows in a look. A frost gets a sprinkle of rime, a dusting is the snow thinned
     out; the rest is `ground_rows`. Under snow, the bare patches of trodden grass are footprints
     (see `_TRODDEN_SNOW`)."""
     if look == "dusting":
-        snowy = ground_rows("snow", rows)
+        snowy = ground_rows("snow", rows, layers)
         return [snowy[0]] + [
             [dust(tile, random.Random(f"dust-{r}-{c}")) for c, tile in enumerate(row)]
             for r, row in enumerate(snowy[1:])
         ]
-    result = ground_rows(look, rows, _TRODDEN_SNOW if look == "snow" else None)
+    result = ground_rows(look, rows, layers, _TRODDEN_SNOW if look == "snow" else None)
     if look == "frost":
         for r, row in enumerate(result[1:]):
             for c, tile in enumerate(row):
