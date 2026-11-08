@@ -45,7 +45,8 @@ by topic. Where is a thing drawn?
 | `villagers.py` | The villagers' layers in the same frames: the women's dress (bodice, skirt, apron, shawl, coif, headscarf), other skins, hair colours and cloth, the felt hat. |
 | `portraits.py` | The 32x32 chat portrait of every layer that shows in a bust, in the layer's colours. |
 | `interior.py` | The room tiles and the furniture inside the buildings, the hearth too. |
-| `buildings.py` | The five buildings, plain and with lit windows. |
+| `buildings.py` | The shack, Kate, longhouse, hall house and barn, plain and with lit windows. |
+| `church.py` | The church and its bell frame (as buildings.py), and the graves of the churchyard (a row of the object atlas). |
 | `seasons.py` | The other looks (spring, autumn, bare, frost, snow, dusting, leaf-out steps) made from the summer art by colour remaps and overlays. Also adds its colours to the palette. |
 | `crops.py`, `crop_icons.py` | Crop sheets (growth stages and the dead one), seed bag and produce icons, wet soil. |
 | `items.py`, `tool_icons.py`, `chest.py` | Item icons, the slot frames and the tools; the chest, which is drawn once for every use. |
@@ -88,7 +89,7 @@ in it fails with "unknown colour X in <the file being written>". After writing,
   first of them.
   `seasons.py` needs a winter look per kind: add one entry to `_WINTER_LOOKS` (a kind
   without one stops the build with its name), and look at the picture under snow.
-- **A building:** its picture in `buildings.py` (`PICTURES`), its section in
+- **A building:** its picture in `buildings.py` or `church.py` (`PICTURES`), its section in
   `data/buildings.cfg`, and its interior ([maps/README.md](../maps/README.md)).
 - **A crop:** a section in `data/crops.cfg` and a sheet in `crops.py`; no game code.
 - **A new kind of file** (a new family of PNGs): a `write_...` function in `generate.py` that

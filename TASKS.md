@@ -1321,7 +1321,7 @@ The willow (TASKS Later, graphics review) is a task of its own.
 
 ## 102. A church with a wooden bell frame and a churchyard
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-08: the village needs a small church (review/art-review-2026-11-08,
 task 9 and buildings row 5). A small marsh-village church of North Frisia in 1750 for the
@@ -1329,6 +1329,20 @@ parish of Wehlsbüll (data/village.cfg): a nave of brick (or tuff), a steep tile
 arched windows, a south porch; beside it a free-standing wooden bell frame (Glockenstapel) on
 a brick base; the churchyard with a fieldstone wall and grave crosses, on the highest Warft.
 Buildable or placed, no interior yet.
+
+Done: two buildings the hammer builds (data/buildings.cfg), drawn in tools/art/church.py with
+no new colours. The church, 6x4 (70 logs, 35 stone, 45 clay): tuff ashlar nave and lower
+chancel, red pantile roofs that keep their light and shade under snow, three leaded arched
+windows that light at night, a lime-washed south porch with the door; the interior system
+was cheap, so it has a nave inside (maps/interiors/church.tmx: twelve pews, a table as the
+altar). The bell frame, 2x2 (25 logs, 5 stone, 10 clay): oak on a brick base under oak
+shingles, the bell in it; a building with an empty `interior_map`, so nobody goes in and none
+of its tiles can be walked on (`Building.has_inside`). The churchyard: the existing
+fieldstone wall, and grave markers made at the workbench (woodworking 15) and placed
+outdoors, standing as an oak cross, a headstone or a fieldstone slab by their tile. The world
+generator places none: the world has no village and its Warften are empty, so placing the
+church there waits for a village; `--churchyard=<x>,<y>` puts the yard in view for
+screenshots. Screenshot docs/screenshots/church.png.
 
 ## 103. A fisherman's hut, a jetty, nets and a boat
 

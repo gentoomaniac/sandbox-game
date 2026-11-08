@@ -119,6 +119,18 @@ shutters.
 - **Barn:** half-timber or boards, big plank doors, no windows; a hay loft hatch.
 - **Shack:** boards tarred black or silver-grey with a turf roof (the user chose turf over
   reeds); a fisherman's or herdsman's hut, not a frontier log cabin.
+- **Church** (task 102, `church.py`): the small marsh churches had no tower. A nave of tuff
+  ashlar (grey-brown `stone` and `sand` blocks lit along their top, `stone_dark` joints)
+  with a lower chancel, steep roofs of red **pantiles** (columns 5 px wide, each roll lit on
+  the left and the trough dark, courses 5 px high with a lit lip over a shadow line; a few
+  darker replaced tiles, lichen and moss low down), small round-arched windows of diamond
+  leaded glass in red brick arches, a lime-washed porch with its gable to the front (so it
+  stands out from the grey nave) and an iron cross on the gables. Under snow the pantiles
+  keep their light and shade. Beside it the **bell frame** (*Glockenstapel*): an open oak
+  frame on a brick base under a pyramid of silver-grey oak shingles (`stone` ramp), the
+  bell in `gold`, `ochre`, `ochre_dark`. The churchyard has the fieldstone wall and graves:
+  an oak cross, a sandstone headstone (`sand` ramp, a cut cross and lines of letters) and a
+  low granite slab.
 - Details worth having: a bench by the door, a **stork's nest** on the ridge, the door
   split in two halves (*Klöntür*), a date or initials in iron wall anchors, a sod-roofed
   outhouse, a draw well with a sweep.

@@ -167,7 +167,7 @@ Typical jobs:
 | Job | Where |
 |---|---|
 | New crop | A section in `data/crops.cfg` and a picture sheet; no code. |
-| New building | A section in `data/buildings.cfg`, its two pictures and an interior map ([maps/README.md](../maps/README.md)). |
+| New building | A section in `data/buildings.cfg`, its two pictures and an interior map ([maps/README.md](../maps/README.md)), or an empty `interior_map` for one nobody goes into (the bell frame). |
 | New recipe | A section in `data/recipes.cfg` for an item that exists in `ItemTypes`; `station`, `skill`, `level` and `hours` are optional. |
 | New station | A placed object kind (`WorldObjectTypes` with `drops`, `ItemTypes` with `places`, its picture in `tools/art/crafts.py`), a section in `data/stations.cfg`, and a recipe that makes it. |
 | New skill (profession) | A section in `data/skills.cfg`, and recipes that name it. |

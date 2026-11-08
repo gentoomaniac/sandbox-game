@@ -286,21 +286,21 @@ lie there until you walk over them and pick them up.
 ### Build anywhere
 
 Hold the hammer (press B to take it from the hotbar) and a ghost of a building follows the
-mouse. Q and E pick the building: shack, Kate, longhouse, hall house or barn. A small panel lists the
-logs, stone, clay and reeds it takes against what you carry; the spot is refused while
-something is missing, and a click or Space builds it and takes the materials. The ghost
-shows where it fits, and the game tells you why a spot doesn't work, for example when it
-is unsafe wetland. Hold something else (or press Escape or right click) to stop building.
-You can walk inside every building, and each has its own room: a bare shack with a straw
-mat on a clay floor, a cottage room in the Kate, the longhouse with a living end and an
-animal end, the hall house with its long Diele between the stalls and the Flett with the
-hearth at its end, and the barn with stalls and hay. The rooms are furnished like 18th-century
-farmhouses of the coast: brick floors in the living rooms and beaten clay in the work rooms,
-an open hearth under a smoke hood with Dutch tiles behind the fire, plate racks with Delft
-and pewter, a wall bench and box beds with curtains. The last bed you slept in becomes your home. A new game
-starts at the camp with your tools and the hammer, so the materials for the first house
-have to be gathered first. The buildings, their sizes, costs and insides are in
-[data/buildings.cfg](data/buildings.cfg).
+mouse. Q and E pick the building: shack, Kate, longhouse, hall house, barn, church or bell
+frame. A small panel lists the logs, stone, clay and reeds it takes against what you carry; the
+spot is refused while something is missing, and a click or Space builds it and takes the
+materials. The ghost shows where it fits, and the game tells you why a spot doesn't work, for
+example when it is unsafe wetland. Hold something else (or press Escape or right click) to stop
+building. You can walk inside every building but the bell frame, and each has its own room: a
+bare shack with a straw mat on a clay floor, a cottage room in the Kate, the longhouse with a
+living end and an animal end, the hall house with its long Diele between the stalls and the
+Flett with the hearth at its end, the barn with stalls and hay, and the church with its pews
+and altar. The rooms are furnished like 18th-century farmhouses of the coast: brick floors in
+the living rooms and beaten clay in the work rooms, an open hearth under a smoke hood with
+Dutch tiles behind the fire, plate racks with Delft and pewter, a wall bench and box beds with
+curtains. The last bed you slept in becomes your home. A new game starts at the camp with your
+tools and the hammer, so the materials for the first house have to be gathered first. The
+buildings, their sizes, costs and insides are in [data/buildings.cfg](data/buildings.cfg).
 
 The buildings follow the reed-thatched farmhouses of Denmark and northern Germany: the Kate
 with white lime walls and teal shutters, the brick longhouse with its arched barn door, the
@@ -313,6 +313,16 @@ It is also the dearest: 100 logs, 40 stone, 50 clay and 80 reeds (the shack take
 and 5 stone, the Kate 30, 15, 15 and 25).
 
 ![The Kate, the longhouse, the hall house, the barn and the shack in summer, and the hall house on a winter night](docs/screenshots/buildings.png)
+
+The village church follows the small marsh churches of North Frisia: a nave of grey-brown tuff
+with a lower chancel, steep red pantile roofs, small arched windows of leaded glass that light
+at night, and a white porch on the south side with the door (70 logs, 35 stone, 45 clay).
+These parishes had no tower; the bell hangs in a wooden bell frame of its own, an oak frame
+on a brick base under a shingled pyramid, which nobody goes into. For the churchyard, the
+workbench makes grave markers (2 planks, 2 stone), which stand outdoors as an oak cross, a
+headstone or a fieldstone slab.
+
+![The churchyard at noon in summer, with its bell frame and a Kate beside it, and on a winter night with the church windows lit](docs/screenshots/church.png)
 
 ![Inside the Kate and the longhouse at night, by the hearth](docs/screenshots/interiors.png)
 
@@ -386,8 +396,9 @@ Three crafts can be learnt, each at its own **station**: press E at one for its 
 - **Cooking** at the hearth of a house or the camp's fire (anyone can roast a turnip; pottage
   and pea soup take practice) and at the **bake oven** (bread from flour, a berry tart,
   a feast cake). Cooked food gives more energy than what it is made of, eaten raw.
-- **Woodworking** at the **workbench**: planks, a stool for the house, clogs, a painted
-  Frisian chest with 20 slots, and as the master's piece a joined cupboard with 25.
+- **Woodworking** at the **workbench**: planks, a stool for the house, a grave marker for the
+  churchyard, clogs, a painted Frisian chest with 20 slots, and as the master's piece a
+  joined cupboard with 25.
 - **Masonry**: clay is moulded into raw bricks at the workbench and fired in the **kiln**.
   A firing takes 12 game hours and goes on while you are away; open the kiln's menu
   afterwards to take the bricks out; a skilled mason fires more for the same fuel. The bake

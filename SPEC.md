@@ -1157,9 +1157,10 @@ woodworker, the cook and the mason, and a UI for them.
   skills; the key of the shown tab closes it): a row per skill with a bar, the points and the
   Fade button, the total against 200, and the rule of the cap in a sentence.
 - **Recipes** (levels in brackets):
-  - Woodworking at the workbench: planks, 2 from a log (0); stool from 3 planks (10); clogs
-    from a log (25); a carved chest, painted the Frisian way, 8 planks, 20 slots (45); the
-    master's piece, a joined oak cupboard, 12 planks and 2 logs, 25 slots, only in a house (70).
+  - Woodworking at the workbench: planks, 2 from a log (0); stool from 3 planks (10); a grave
+    marker from 2 planks and 2 stone, only outdoors (15); clogs from a log (25); a carved
+    chest, painted the Frisian way, 8 planks, 20 slots (45); the master's piece, a joined oak
+    cupboard, 12 planks and 2 logs, 25 slots, only in a house (70).
   - Cooking at the hearth: roast turnip (0); pottage, 2 from cabbage, carrot and onion (10);
     pea soup, 2 from 4 peas and an onion (20). At the bake oven: bread from 2 flour (30), a
     berry tart from a flour and 6 berries (50), a feast cake from 2 flour, 4 strawberries and
@@ -1213,11 +1214,28 @@ woodworker, the cook and the mason, and a UI for them.
   - **Barn:** a work and storage building, no hearth or bed; 6×3, door on the third tile
     from the left, no windows. Costs 30 logs, 15 stone, 5 clay, 25 reeds. The longhouse
     costs 60 logs, 30 stone, 30 clay, 50 reeds.
+  - **Church and bell frame** (task 102, 2026-11-08, from review/art-review-2026-11-08): the
+    parish church of a marsh village, 6×4, door in the porch on the third tile. A nave of
+    grey-brown tuff ashlar with the lower chancel to the east, steep roofs of red pantiles
+    (village churches here were tiled, not thatched), small round-arched windows of leaded
+    glass in brick arches, a low lime-washed porch on the south side with its gable to the
+    front, iron crosses on the west gable and the porch. Costs 70 logs, 35 stone, 45 clay
+    (the pantiles are fired clay). The small marsh parishes had no tower: the **bell frame**
+    (*Glockenstapel*), 2×2, is an open oak frame on a brick base under a pyramid of oak
+    shingles, the bronze bell in it; 25 logs, 5 stone, 10 clay. It has no inside: its
+    `interior_map` is empty, none of its tiles can be walked on and nobody goes in. The
+    **churchyard**: the fieldstone wall of the fields, and **grave markers** made at the
+    workbench (woodworking 15: 2 planks, 2 stone) and placed outdoors only, which stand as an
+    oak cross, a sandstone headstone or a fieldstone slab by their tile; the pickaxe takes
+    them up. The world generator places no church yet: there is no village in the world to
+    put it in (the Warften on the salt marsh are empty); `--churchyard=<x>,<y>` puts one in
+    view for screenshots.
   - **Insides** (decided 2026-11-05): each is a Tiled map, `maps/interiors/<id>.tmx`, a little
     larger than the footprint: shack 6×6 (straw sleeping mat, crate, stool), Kate 9×8 (hearth,
     bed, table, stools, chest), longhouse 15×8 (living end with hearth, box bed, table and
     bench; a stall partition divides it from the animal end with stalls, hay and sacks), barn
-    13×8 (four hay stalls, crates, barrels, sacks), hall house 15×13: the Diele, a long
+    13×8 (four hay stalls, crates, barrels, sacks), church 12×9 (a nave with six pews either
+    side of the aisle and a table for the altar under two windows), hall house 15×13: the Diele, a long
     threshing floor of clay from the door up the middle, rows of oak posts with rails (the
     stall partitions) on both sides and hay, barrels, a crate and sacks in the stalls; at its
     far end the Flett in brick across the whole width, with the open hearth on the back wall
@@ -1225,7 +1243,7 @@ woodworker, the cook and the mason, and a UI for them.
     the wall bench, a chest, table, bench and stool, a plate rack and three windows. The room
     is taller than the screen at zoom 1, so the camera follows the player through it as
     outside. Sleep fills: mat 80, bed and box bed 100.
-    The barn has no bed, so it can't be slept in.
+    The barn and the church have no bed, so they can't be slept in.
   - **Furnished in the period** (task 57, 2026-11-06, from docs/art-style.md): the rooms look
     like 18th-century North Frisian and Danish farmhouses. Floors: red brick in a herringbone
     in the living rooms (the Kate, the longhouse's living end), beaten clay in the work rooms
