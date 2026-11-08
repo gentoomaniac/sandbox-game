@@ -114,7 +114,7 @@ func test_the_flame_strips_match_the_pictures() -> void:
 		)
 	for type: StringName in AmbientMotion.FIRE_PROFILES:
 		var profile: Dictionary = AmbientMotion.FIRE_PROFILES[type]
-		var strip: Image = profile["flames"].get_image()
+		var strip: Image = load(profile["flames"]).get_image()
 		var cells := AmbientMotion.FIRE_FRAMES + 2
 		assert_eq(strip.get_width() % cells, 0, "%s: a whole number of cells" % type)
 		var box := Vector2i(strip.get_width() / cells, strip.get_height())

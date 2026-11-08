@@ -137,6 +137,7 @@ func _init() -> void:
 
 
 func _ready() -> void:
+	add_to_group(ArtSet.VIEWS)
 	for layer in TerrainTileset.LAYER_COUNT:
 		var tile_map := TileMapLayer.new()
 		tile_map.name = TerrainTileset.Layer.keys()[layer].capitalize()
@@ -170,6 +171,11 @@ func _ready() -> void:
 	add_child(entities)
 	add_child(_hit_particles)
 	add_child(_buildings)
+
+
+## Shows the campfires' flames in the chosen art set (see ArtSet).
+func show_art_set() -> void:
+	ambient_motion.show_art_set()
 
 
 func _add_overlay(overlay_name: String) -> TileMapLayer:

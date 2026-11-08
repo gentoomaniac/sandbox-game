@@ -48,9 +48,12 @@ var _ground := TileMapLayer.new()
 var _furniture: Array[Node] = []
 ## The covers of the beds that have one, by the bed's tile; shown while the player lies in it.
 var _covers := {}
+## The type of each fire burning in the room (the hearth), by its material.
+var _fires := {}
 
 
 func _ready() -> void:
+	add_to_group(ArtSet.VIEWS)
 	var tile_set := TileSet.new()
 	tile_set.tile_size = Vector2i(TerrainTileset.TILE_SIZE, TerrainTileset.TILE_SIZE)
 	var source := TileSetAtlasSource.new()
@@ -69,12 +72,19 @@ func _ready() -> void:
 	add_child(entities)
 
 
+## Shows the fires' flames in the chosen art set (see ArtSet).
+func show_art_set() -> void:
+	for material: ShaderMaterial in _fires:
+		AmbientMotion.show_flames(material, _fires[material])
+
+
 func show_interior(interior: Interior) -> void:
 	_ground.clear()
 	for node in _furniture:
 		node.queue_free()
 	_furniture.clear()
 	_covers.clear()
+	_fires.clear()
 	for y in interior.size.y:
 		for x in interior.size.x:
 			var pos := Vector2i(x, y)
@@ -140,6 +150,7 @@ func _add_furniture(object: WorldObject) -> void:
 	sprite.offset = Vector2(-texture.get_width() / 2.0, tile_size / 2.0 - texture.get_height())
 	if AmbientMotion.FIRE_PROFILES.has(object.type):
 		sprite.material = AmbientMotion.fire_material(object.type)
+		_fires[sprite.material] = object.type
 	(_beds if object.is_bed() else entities).add_child(sprite)
 	_furniture.append(sprite)
 	if object_type.has("interior_cover"):

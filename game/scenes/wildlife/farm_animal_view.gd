@@ -57,13 +57,6 @@ func _init(animal: FarmAnimal) -> void:
 func _ready() -> void:
 	super()
 	_sprite.self_modulate = farm_animal.tint
-	add_to_group(ArtSet.VIEWS)
-	show_art_set()
-
-
-## Loads its sheet in the chosen art set (see ArtSet); the frames stay as they are.
-func show_art_set() -> void:
-	_sprite.texture = load(ArtSet.path(WildlifeSprites.SHEET_PATH % _sheet_kind))
 
 
 func _update(_delta: float) -> void:

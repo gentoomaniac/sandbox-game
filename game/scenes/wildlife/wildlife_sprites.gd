@@ -113,11 +113,16 @@ static func make_sprite(kind: StringName) -> Sprite2D:
 	var sheet: Dictionary = SHEETS[kind]
 	var size: Vector2i = sheet["size"]
 	var sprite := Sprite2D.new()
-	sprite.texture = load(SHEET_PATH % kind)
+	sprite.texture = sheet_texture(kind)
 	sprite.hframes = max_frames(kind)
 	sprite.vframes = sheet["actions"].size()
 	sprite.offset = Vector2(0, -size.y / 2.0)
 	return sprite
+
+
+## The sheet of a kind in the chosen art set (see ArtSet): both sets have the same frames.
+static func sheet_texture(kind: StringName) -> Texture2D:
+	return load(ArtSet.path(SHEET_PATH % kind))
 
 
 ## How many frames the action has.

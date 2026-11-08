@@ -16,9 +16,15 @@ from pathlib import Path
 # The old modules here come first, the new art's shared basics (canvas, palette) after them.
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+import animals  # noqa: E402
+import birds  # noqa: E402
 import bubbles  # noqa: E402
+import camp  # noqa: E402
 import character  # noqa: E402
+import fire  # noqa: E402
+import interior  # noqa: E402
 import livestock  # noqa: E402
+import sea_birds  # noqa: E402
 import portraits  # noqa: E402
 import villagers  # noqa: E402
 from canvas import GAME_TILE, TILE  # noqa: E402
@@ -44,6 +50,24 @@ DOUBLED = (
     "wildlife/dog_*.png",
     "wildlife/cat_*.png",
     "wildlife/horse_*.png",
+    # The wild animals and the flames (task 116; animals.py, birds.py, sea_birds.py and fire.py
+    # of commit 2793065; the fireplace and the hearth around the flames are the shared camp.py
+    # and interior.py, still drawn at 16 px).
+    "wildlife/bee.png",
+    "wildlife/bird.png",
+    "wildlife/butterfly.png",
+    "wildlife/deer.png",
+    "wildlife/dunlin.png",
+    "wildlife/frog.png",
+    "wildlife/goose.png",
+    "wildlife/gull.png",
+    "wildlife/mouse.png",
+    "wildlife/oystercatcher.png",
+    "wildlife/rabbit.png",
+    "wildlife/squirrel.png",
+    "wildlife/stork.png",
+    "wildlife/tern.png",
+    "fire/*.png",
 )
 # The farm animals whose cells grew at 32 px per tile: the classic sheets, doubled, are set in
 # the new cells (bottom centre, as the animal stands in its cell), so that the game reads both
@@ -80,6 +104,22 @@ def write_livestock():
         save(rows, f"{CLASSIC}/wildlife/{name}.png", *size)
 
 
+def write_wildlife():
+    for kind in animals.SHEETS:
+        save(animals.sheet_rows(kind), f"{CLASSIC}/wildlife/{kind}.png", *animals.cell_size(kind))
+    for name, size, rows in [*birds.sheets(), *sea_birds.sheets()]:
+        save(rows, f"{CLASSIC}/wildlife/{name}.png", *size)
+
+
+def write_fire():
+    for name, (behind, front), (box, half_width, tall) in (
+        ("fireplace", camp.fireplace_layers(), camp.FIREPLACE_FLAME),
+        ("hearth", interior.hearth_layers(), interior.HEARTH_FLAME),
+    ):
+        strip = fire.strip(behind, front, box, half_width, tall)
+        save([strip], f"{CLASSIC}/fire/{name}.png", box[2], box[3])
+
+
 def set_in_grown_cells():
     """Sets each cell of the sheets of GROWN_CELLS in the bottom centre of a cell of the new size."""
     for pattern, ((width, height), (new_width, new_height)) in GROWN_CELLS.items():
@@ -110,6 +150,8 @@ def main():
     write_character()
     write_bubbles()
     write_livestock()
+    write_wildlife()
+    write_fire()
     scale_up_16_px_art()
     set_in_grown_cells()
     print("Wrote every file under assets/classic/.")

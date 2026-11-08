@@ -54,6 +54,12 @@ func _init(animal_kind: StringName, sheet_kind := &"") -> void:
 func _ready() -> void:
 	_sprite = WildlifeSprites.make_sprite(_sheet_kind)
 	add_child(_sprite)
+	add_to_group(ArtSet.VIEWS)
+
+
+## Loads its sheet in the chosen art set (see ArtSet); the frames stay as they are.
+func show_art_set() -> void:
+	_sprite.texture = WildlifeSprites.sheet_texture(_sheet_kind)
 
 
 func _process(delta: float) -> void:

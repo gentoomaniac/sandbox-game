@@ -151,6 +151,12 @@ func _exit_tree() -> void:
 	_shadows.queue_free()
 
 
+func show_art_set() -> void:
+	super()
+	for bird in _birds:
+		bird.sprite.texture = _sprite.texture
+
+
 func dismiss() -> void:
 	if _state != FLY:
 		_take_off(_away_from_view_centre())

@@ -82,7 +82,7 @@ const FIRE_PROFILES := {
 	{
 		"cell_size":
 		Vector2(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT) / TerrainTileset.ART_16_SCALE,
-		"flames": preload("res://assets/fire/fireplace.png"),
+		"flames": "res://assets/fire/fireplace.png",
 		"box_position": Vector2(16.0, 51.0),
 		"flame_top": 57.0,
 		"spark_rise": 16.0,
@@ -90,7 +90,7 @@ const FIRE_PROFILES := {
 	WorldObjectTypes.HEARTH:
 	{
 		"cell_size": Vector2(32.0, 64.0),
-		"flames": preload("res://assets/fire/hearth.png"),
+		"flames": "res://assets/fire/hearth.png",
 		"box_position": Vector2(8.0, 26.0),
 		"flame_top": 34.0,
 		"spark_rise": 6.0,
@@ -146,10 +146,23 @@ func _init() -> void:
 ## indoors, needs no wind.
 static func fire_material(type: StringName) -> ShaderMaterial:
 	var material := _material(FIRE_SHADER)
-	_set_parameters(material, FIRE_PROFILES[type])
+	var profile: Dictionary = FIRE_PROFILES[type].duplicate()
+	profile.erase("flames")
+	_set_parameters(material, profile)
+	show_flames(material, type)
 	material.set_shader_parameter("frames", FIRE_FRAMES)
 	material.set_shader_parameter("frames_per_second", FIRE_FRAMES_PER_SECOND)
 	return material
+
+
+## Gives a fire's material the strip of its flame in the chosen art set (see ArtSet).
+static func show_flames(material: ShaderMaterial, type: StringName) -> void:
+	material.set_shader_parameter("flames", load(ArtSet.path(FIRE_PROFILES[type]["flames"])))
+
+
+## Shows the flames of the fires outdoors in the chosen art set (see WorldView `show_art_set`).
+func show_art_set() -> void:
+	show_flames(_object_materials[WorldObjectTypes.FIREPLACE], WorldObjectTypes.FIREPLACE)
 
 
 ## The frame of its flame's loop that a fire shows `seconds` into the shaders' clock, for the
