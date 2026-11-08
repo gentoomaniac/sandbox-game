@@ -140,7 +140,7 @@ def standing_outdoors(picture):
 # to the game's tile in every look, after the looks are made from them, so they look as they did.
 # The plants are drawn at 32 px; task 111 draws the rest anew: the camp, the walls, fences, the
 # dyke and the placed objects.
-DOUBLED_ROWS = {"ewer", "jetty", "rowing_boat", "net_frame", "eel_traps"}
+DOUBLED_ROWS = {"ewer"}
 
 
 # The rows of assets/objects.png, as (kind, looks). `atlas_row` of each type in
