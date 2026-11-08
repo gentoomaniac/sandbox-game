@@ -55,8 +55,9 @@ top of classic pixel art (details under "Lighting and look").
   The widest view is a native 640×360 art pixels (20×11 tiles, the area the 16 px art showed at
   zoom 1), shown at a whole multiple on the usual screens (×3 at 1080p, ×4 at 1440p). Until all
   art is redrawn at 32 px, the generators' 16 px output is doubled pixel for pixel (tasks 106 and
-  on); the people are drawn at 32 px since task 113. The 16 px art of a redrawn group stays in
-  the game as the classic art, a setting (see Settings). (Was: 16×16, 320×180 at zoom 1.)
+  on); the people are drawn at 32 px since task 113, the farm animals since task 114. The 16 px
+  art of a redrawn group stays in the game as the classic art, a setting (see Settings). (Was:
+  16×16, 320×180 at zoom 1.)
 - **Stepless zoom** from the widest view (640×360 art pixels, zoom 1) in to 2× (320×180); the
   game starts at the widest (the user zooms out fully anyway, 2026-11-08). Ctrl and the mouse
   wheel zoom; the wheel alone steps through the hotbar. (Was: 0.5× to 2×, starting at 0.5×.)
@@ -906,9 +907,14 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   beyond that and runs beyond 4, until it is 1 tile from them. It never blocks the player; one
   more than 15 tiles behind, or stuck for 2 seconds, is put beside the player. The numbers are
   in `data/livestock.cfg`.
-- **Size:** a cow about 22 px long and 15 px to its back, a sheep about 14 px long, a hen
-  about 9x10 px, a rabbit as the wild one, a dog about 17 px long, a cat about 12 px, a horse
-  about 32 px (two tiles) long, its back free of the neck and head for a saddle and a rider.
+- **Size** (drawn at 32 px per tile since task 114, in scale with the 61 px people): a cow
+  about 66 px long and 40 px to its back, a sheep about 38 px long and 22 px to its back, a
+  dog about 40 px long, a horse about 88 px long (nearly three tiles) and 57 px to the
+  withers, its back free of the neck and head for a saddle and a rider, the pony four fifths
+  of it; the hen (about 22 px), the cat (about 28 px) and the rabbit (about 20 px) are drawn a
+  little larger than life. They are rounded forms shaded from the top left like the people,
+  with legs through their joints, an eye with a glint, and the outline in the darkest colour
+  of the coat; each stands on a contact shadow. (Was 16 px art: a cow 22 px long, a horse 32.)
 - **Riding** (decided 2026-11-06, task 81): the saddle is an item (from the console for now).
   The use key with the saddle at a horse in front of the player puts it on the horse, where it
   stays; the use key with an empty hand takes it off again into the inventory (the empty
@@ -930,7 +936,8 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
 - **Riding, drawn:** the rider sits on the horse in all four directions, the horse standing,
   walking or trotting under them (seen from the side, from the front with its head in front
   of the rider, and from behind), the rider rising with the trot; the hands hold the reins, so
-  no held item shows. A saddled horse shows its saddle. The camera follows the rider as the
+  no held item shows. A saddled horse shows its saddle, on a blue saddle cloth that sets the
+  rider's breeches off from the horse (task 114). The camera follows the rider as the
   player, and what hides the player hides the rider and the horse too.
 - **Behaviour:** an awake animal stands idle (and now and then turns round), walks or grazes;
   chickens peck for seeds and worms. Grazing doesn't change the grass. It walks only onto

@@ -1522,7 +1522,39 @@ and the camp only (a Kate or longhouse would not place by the camp with `--house
 
 ## 114. 32 px art: farm animals (cow, sheep, chicken, horse, dog, cat, rabbit), every action
 
-- [ ] Done
+- [x] Done
+
+Done: every farm animal sheet is drawn at 32 px per tile (tools/art/livestock.py) in the style
+of the mockup, with every action and frame it had: idle, walk, graze, sleep and run, the cat's
+crouch, creep and pounce, the saddled horse and the ridden horse from the side, the front and
+behind, standing, walking and trotting. The four-legged animals share `quadruped_frame`: body
+and neck with the head as polygons shaded as one rounded form (forms.py, with a new
+`top_light` and `shade_by_level`), legs as limbs through their joints swung and folded for each
+step, the far ones a step darker; the face, ears, manes and tails in strands and each look's
+marks by hand (pied patches shaded with the body, dapples, a dun's stripe, a bay's points and
+blaze, tabby stripes, wool curls). The cow's head is hand-drawn and transposed for grazing; the
+pony is the horse at four fifths; the hen and the rabbit are drawn whole per pose. In scale with
+the 61 px people (the horse 57 px to the withers, the cow 40 px to its back), the small animals
+a little larger than life; the outline is the darkest colour of each coat. The farm sheets left
+`DOUBLED` (the glob split so the wild animals stay doubled for task 116) and their numbers are
+native: the cell sizes in `WildlifeSprites` (cow 72x54, horse 88x76), the contact shadows of
+`FarmAnimalView` (`Animal.art_scale` 1), and in `PlayerView` the `SEAT` and `PONY_SEAT` measured
+on the new saddles, `RIDE_LIFTS` and the ridden horse's shadow. From the review of task 113: a
+blue saddle cloth sets the rider's brown breeches off from a bay. Checked in screenshots at
+zoom 1 and 2 (every species and look, summer, snow and night, the hunting cats at dusk, riding
+the bay, the grey and the pony from the side, the front and behind, walking and trotting);
+README pictures retaken (livestock, dogs, cats and horses, the hunt, riding). The 16 px farm
+animals are the classic art (task 117): their old livestock.py and animals.py in
+tools/art/classic/, the cow's and the horse's classic cells set in the new, larger ones, the
+sheets loaded through `ArtSet` (FarmAnimalView in `ArtSet.VIEWS`, the ridden horse in
+PlayerView), the rider seated where it was on the classic horses (`CLASSIC_SEAT`); checked in
+both sets (cows, horses, riding).
+Left for later: `make contrast-sheet` draws atlas rows only, so the animals were checked on
+grass, snow and night in screenshots instead; the riding legs of the people (task 113) are
+short for the 32 px horse, so from the front the rider's feet hang at the saddle cloth rather
+than down the barrel; a lying animal's folded legs mostly hide under its body; the contact
+shadow is three art rows tall, so under the native animals it is half as tall as under the
+still doubled ones (task 116 may even them out).
 
 ## 115. 32 px art: items and icons (ground items, inventory icons, the UI slots that show them)
 
@@ -1531,6 +1563,11 @@ and the camp only (a Kate or longhouse would not place by the camp with `--house
 ## 116. 32 px art: wild animals (birds, flocks, storks, geese, sea birds, deer, squirrels, rabbits, mice, frogs, bees, butterflies) and effects (fire, particles, rain splashes, hit effects)
 
 - [ ] Done
+
+Once every animal is native, delete `Animal.art_scale`, the `scale` parameter of
+`Animal.draw_contact_shadow` and FarmAnimalView's `art_scale = 1` (task 114 added them for
+the time farm and wild animals differ). tools/art/classic/animals.py is already there (task
+114 copied it whole for the tame rabbit): the wild animals' classic art needs only its writes.
 
 The redraw takes in the findings of review/art-review-2026-11-08 (the user, 2026-11-08: "make
 sure the redraw includes the art review feedback"); each group's brief points at the review and

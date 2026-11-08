@@ -45,7 +45,7 @@ by topic. Where is a thing drawn?
 | `camp.py` | The fireplace and the bedroll. |
 | `character.py` | The player's layers at 32 px per tile (body, breeches and stockings, clogs, shirt and waistcoat, jacket, hair, hats, hoe), all drawn on one `Figure` (where the head, arms and legs are in a frame), their passing out, sitting on a horse and the sleeping "z". |
 | `villagers.py` | The villagers' layers on the same figure: the women's dress (bodice, skirt, apron, shawl, coif, headscarf), other skins, hair colours and cloth, the felt hat, the tricorne and the white stocking cap. |
-| `forms.py` | Rounded shapes as masks (ellipse, capsule, polygon, rounded box) and their shading by the light from the top left, for the figures of character.py and villagers.py. |
+| `forms.py` | Rounded shapes as masks (ellipse, capsule, polygon, rounded box) and their shading by the light from the top left, for the figures of character.py and villagers.py and the farm animals of livestock.py. |
 | `portraits.py` | The 32x32 chat portrait of every layer that shows in a bust: the top of its frame facing the viewer. |
 | `interior.py` | The room tiles and the furniture inside the buildings, the hearth too. |
 | `buildings.py` | The shack, Kate, longhouse, hall house and barn, plain and with lit windows. |
@@ -61,7 +61,7 @@ by topic. Where is a thing drawn?
 | `fire.py` | The animation frames of the campfire and the hearth. |
 | `animals.py` | One sheet per animal of the ambient wildlife. |
 | `birds.py` | The sheets of the big birds of the marsh: the white stork and the greylag goose. |
-| `livestock.py` | One sheet per farm animal and look (cows, sheep, hens, tame rabbits, dogs, cats, horses), put together from parts; the tame rabbit reuses the wild one's frames. A horse also has a saddled sheet and the ridden horse's sheets (side, front and back, walking and trotting). |
+| `livestock.py` | One sheet per farm animal and look (cows, sheep, hens, tame rabbits, dogs, cats, horses), drawn at 32 px per tile with forms.py: the four-legged ones share `quadruped_frame` (body and head as shaded polygons, legs through their joints set for each step, the face and marks by hand), the hen and the rabbit are drawn whole per pose. A horse also has a saddled sheet and the ridden horse's sheets (side, front and back, walking and trotting). It keeps `to_picture` for the 16 px birds until task 116. |
 | `ui.py` | The pixel font, the panel frame and the button frames. |
 
 `generate.py` imports all the others and none of them imports it; most import `canvas.py`, and
@@ -85,7 +85,10 @@ ones by its own `DOUBLED`. The old modules import their siblings there first and
 `canvas.py` and `palette.py` of tools/art/ after them; a later change to those two that an old
 module trips over (a colour renamed) is made in the old module too. So far: the people (task
 113), from commit 97e9736: `character.py`, `villagers.py` and `portraits.py` unchanged, and
-`bubbles.py`, the thought bubble part of `ui.py`.
+`bubbles.py`, the thought bubble part of `ui.py`; the farm animals (task 114), from commit
+2793065: `livestock.py` and `animals.py` (whose tame rabbit it draws from) unchanged. The cow's
+and the horse's cells grew at 32 px, so `set_in_grown_cells` puts their classic cells in the
+new ones (bottom centre), as the classic files must have the new cell sizes.
 
 When a group goes native (docs/art-style.md, "Resolution"), before its redraw changes them:
 

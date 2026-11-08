@@ -147,13 +147,15 @@ and Dutch rabbits, each with a slight tint of its own. They wander, graze (the h
 seeds and worms), keep out of water and away from anything solid, and the rabbits hop off
 when you come close. At night they lie down and sleep until the morning. For now they come
 from the console (`spawn cow 3`); they are saved with the game. Milk, wool, eggs, pens and
-feeding come later. The numbers are in [data/livestock.cfg](data/livestock.cfg).
+feeding come later. The numbers are in [data/livestock.cfg](data/livestock.cfg). Like the
+people, the animals are drawn at 32 pixels per tile, with legs that bend at the joints, an eye
+with a glint and the marks of their coats.
 
 ![A mixed herd by the camp on a summer morning, and asleep after midnight](docs/screenshots/livestock.png)
 
 Dogs, cats and horses keep them company: a farm collie, a spitz and a hunting dog; tabby,
-black and ginger cats; a heavy marsh horse, about two tiles long, in bay, black or grey, and a
-dun pony. Dogs and cats sniff about, horses graze, and all of them dash off at a run now and
+black and ginger cats; a heavy marsh horse, nearly three tiles long and taller than you at the
+head, in bay, black or grey, and a dun pony. Dogs and cats sniff about, horses graze, and all of them dash off at a run now and
 then; cats roam furthest. A dog barks now and then, a cat rarely meows, a horse whinnies or
 snorts. Hold a **bone** (`give bone`) and press the use key at a dog in front of you: it takes
 the bone and follows you for three game hours, day and night, keeping a tile or two from you
@@ -168,7 +170,7 @@ Mice are out mostly at dusk and at night, and the cats sleep from a while after 
 dusk is the hunting hour. The numbers are in the `[hunting]` section of
 [data/livestock.cfg](data/livestock.cfg).
 
-![Three cats at dusk: crouched at their mice, creeping up on them, and the ginger one after its catch](docs/screenshots/cats-hunting.png)
+![Three cats at dusk: crouched at their mice, creeping up on them, and after the pounce, the mice caught or fled](docs/screenshots/cats-hunting.png)
 
 Horses can be ridden. Hold a **saddle** (`give saddle`) and press the use key at a horse in front
 of you to saddle it; the use key with an empty hand takes the saddle off again. Press **E** at a

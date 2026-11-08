@@ -68,7 +68,8 @@ and the widest view is a native 640×360: 20×11 tiles, shown ×3 on a 1080p scr
 the game looks as it did, every pixel 2×2.
 
 Tasks 107 to 116 redraw the art group by group at 32 px; the people are done (task 113, see
-"Clothing and characters"). To take a group native:
+"Clothing and characters") and the farm animals (task 114, see "Props and animals", item 8).
+To take a group native:
 
 - draw it at 32 px per tile (its cells, frames and offsets are twice the numbers below) and
   take its files out of `DOUBLED`;
@@ -81,14 +82,16 @@ Tasks 107 to 116 redraw the art group by group at 32 px; the people are done (ta
   `ArtSet.path`; a view or tileset that keeps them joins the group `ArtSet.VIEWS` and loads them
   anew (a tileset rebuilds, the chunks redraw) in `show_art_set()`. The numbers measured on the
   art are the new art's; where the classic art is visibly off by them, choose by
-  `ArtSet.is_classic`;
+  `ArtSet.is_classic` (the rider's seat on the classic horses, `PlayerView.CLASSIC_SEAT`);
 - in the game, a number measured on a picture is either its 16 px number times
   `TerrainTileset.ART_16_SCALE` (a frame size in `WildlifeSprites`, a hop in `Rabbit`) or, once
   its group is native, the number measured on the 32 px picture, without the factor. A number
   that joins two groups is measured on both: the rider's `SEAT` in `PlayerView` (the people's
-  seat row on the horse's saddle) is redone when the horse is (task 114). Grep for `ART_16_SCALE`; the factor also hides in `WildlifeSprites.SCALE`,
-  `BuildMode.OUTLINE_WIDTH` and `PROGRESS_HEIGHT`, and in the `draw_set_transform` of
-  `Animal.draw_contact_shadow`, `GroundShadows` and `HitParticles`, which draw on the 16 px grid. Numbers in the
+  seat row on the horse's saddle) was measured anew when the horse was (task 114). Grep for
+  `ART_16_SCALE`; the factor also hides in `WildlifeSprites.SCALE` (the wild animals' frame
+  sizes; the farm animals' are native), `BuildMode.OUTLINE_WIDTH` and `PROGRESS_HEIGHT`, in
+  `Animal.art_scale` (the grid its contact shadow is drawn on: 1 for the farm animals) and in
+  the `draw_set_transform` of `GroundShadows` and `HitParticles`, which draw on the 16 px grid. Numbers in the
   pictures' own pixels in data (`sprite_height` in world_object_types.gd, `window_lights` in
   data/buildings.cfg) are the pixels of the files, so they are measured anew too;
 - the shaders of its pictures (sway, fire, water, weather) work on the art's pixels through
@@ -100,7 +103,7 @@ The UI's pictures (item icons, slots, the frames and the chat portraits) are dra
 own 640×360 base and scale, and are not doubled; task 115 decides about the item icons.
 
 The sizes in this guide (a 48×80 object cell) are those of the 16 px art, but for the
-characters' 32×64.
+characters' 32×64 and the farm animals' (item 8 of "Props and animals").
 
 ## Materials
 
@@ -556,7 +559,24 @@ copper watering can. Kept here as the record of why.
    every look: crouched with the belly near the ground, the head level with the back, the ears
    laid back and the tail flat behind (its tip flicking); creeping low on bent legs; and the
    pounce, from the crouch to a leap stretched out two pixels off the ground and a landing with
-   the head down on the mouse. No new colours.
+   the head down on the mouse. No new colours. Task 114 drew the farm animals anew at 32 px
+   per tile, after the mockup (review/resolution-mockup-2026-11-08), every action and frame
+   kept: rounded forms shaded from the top left with `tools/art/forms.py` (as the people), the
+   body and the neck with the head shaded as one form with more light on top, legs as limbs
+   through their joints (a horse's forearm, knee, cannon, fetlock and hoof, its hind leg with
+   the hock pointing back), the far legs a step darker, an eye with a glint, nostrils, ears,
+   manes and tails in strands; each look's marks (pied patches shaded with the body, dapple
+   rings, the dun's dark stripe, a bay's black points and white blaze, tabby stripes, wool
+   curls, the collie's white collar) on top. The cow's head is drawn by hand and transposed
+   for grazing. Sizes against the 61 px people: the horse 88 px long and 57 px to the withers
+   (88×76 cell), the pony four fifths of it, the cow 40 px to its back (72×54), the sheep
+   22 px (44×32), the dog 48×36; the hen (24×24), the cat (32×24) and the rabbit (24×20) a
+   little larger than life. The outline is the darkest colour of the coat (ink for the black
+   and dark ones) and goes round the legs too; every animal stands on a contact shadow. The
+   saddle sits on a blue wool cloth (`water_deep`, `water`), so that the rider's brown
+   breeches don't merge with a bay. From the front and behind the ridden horse is 28 px wide.
+   Readable on summer grass, snow, at dusk and at night (checked in screenshots). No new
+   colours.
 9. ~~**Coast and flats**~~ done (task 61). The world had no sea. Now the Wadden coast lies
    in the west: a sea dyke, then the salt marsh (grey-green turf with silvery sea purslane and
    glasswort, drawn in logical colours that each look maps: red-purple in autumn, with thrift
