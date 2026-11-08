@@ -1,7 +1,7 @@
 // The moving surface of water, shared by water.gdshader and the tide of mud.gdshader: short
 // ripples that come and go and drift with the wind, and the odd glint, all in whole pixels and
 // anchored to the world. The wind makes it choppy (`chop`, 0 to 1): more, faster ripples, crests
-// and glints. AmbientMotion sets `chop` and how far the ripples have drifted (`drift`, pixels).
+// and glints. AmbientMotion sets `chop` and how far the ripples have drifted (`drift`, art pixels).
 // Needs hash.gdshaderinc.
 
 uniform float chop : hint_range(0.0, 1.0) = 0.0;
@@ -55,7 +55,7 @@ float glint(vec2 p) {
 	return local.y == 0.0 && local.x >= 0.0 && local.x < 2.0 ? 1.0 : 0.0;
 }
 
-// The colour of plain water at the world pixel `p`: its ripples and glints over WATER.
+// The colour of plain water at the art pixel `p`: its ripples and glints over WATER.
 vec3 water_surface(vec2 p) {
 	vec4 r = ripple(p);
 	if (r.a > 0.0) {

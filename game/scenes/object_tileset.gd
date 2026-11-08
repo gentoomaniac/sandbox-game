@@ -13,8 +13,10 @@ extends RefCounted
 ## cells, and stand with their bottom on the bottom of the crop's tile.
 
 const ATLAS_PATH := "res://assets/objects.png"
-const CELL_WIDTH := 48
-const CELL_HEIGHT := 80
+## A cell is three tiles wide and five tall (as OBJECT_CELL_WIDTH and OBJECT_CELL_HEIGHT in
+## tools/art/canvas.py).
+const CELL_WIDTH := 3 * TerrainTileset.TILE_SIZE
+const CELL_HEIGHT := 5 * TerrainTileset.TILE_SIZE
 
 var tile_set := TileSet.new()
 ## The source of each crop's sheet, by crop type.

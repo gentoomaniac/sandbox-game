@@ -2,7 +2,8 @@ class_name HitParticles
 extends Node2D
 ## Short-lived pixel particles for hits (see HitEffect): each is a rect of one to four art
 ## pixels, so it stays crisp, and tinted by the day like the world around it. Not GPUParticles,
-## which would not keep to the art grid.
+## which would not keep to the art grid. They fly and are drawn on the grid of the 16 px art,
+## scaled up to the world's (TerrainTileset.ART_16_SCALE).
 
 ## Each palette is brighter than the foliage it falls from, or it is lost against it: yellow
 ## greens under a green canopy, dry brown-green needles under a dark spruce, bright ochre,
@@ -25,9 +26,9 @@ const FADE_SHARE := 0.3
 ## How much darker the last pixel of a shaded particle is, which gives a leaf its shape.
 const SHADE_DARKENING := 0.45
 
-## How each kind is thrown, in pixels and seconds. `count`: least and most particles;
-## `spread`: half the size of the area they start in; `sideways`: the most horizontal speed
-## either way; `vertical`: least and most vertical speed (down is positive); `gravity`: pull
+## How each kind is thrown, in pixels of the 16 px art and seconds. `count`: least and most
+## particles; `spread`: half the size of the area they start in; `sideways`: the most horizontal
+## speed either way; `vertical`: least and most vertical speed (down is positive); `gravity`: pull
 ## down; `sway`: how far a particle swings to the sides while it flies; `sizes`: the sizes in
 ## pixels a particle may have; `is_shaded`: whether its last pixel is darker. With `is_outward`
 ## (optional) a particle starts `spread.x` to the left or right of the origin, and is thrown
@@ -148,6 +149,7 @@ var _random := RandomNumberGenerator.new()
 
 
 class Particle:
+	## In pixels of the 16 px art, as everything of a particle.
 	var start: Vector2
 	var velocity: Vector2
 	var gravity: float
@@ -188,7 +190,10 @@ func emit(kind: HitEffect.Kind, origin: Vector2) -> void:
 		if spec.get("is_outward", false):
 			offset_x = side * spread.x
 			speed_x = side * _random.randf_range(spec["sideways"] / 2.0, spec["sideways"])
-		particle.start = origin + Vector2(offset_x, _random.randf_range(-spread.y, spread.y))
+		particle.start = (
+			origin / TerrainTileset.ART_16_SCALE
+			+ Vector2(offset_x, _random.randf_range(-spread.y, spread.y))
+		)
 		particle.velocity = Vector2(speed_x, _random.randf_range(vertical.x, vertical.y))
 		particle.gravity = spec["gravity"]
 		particle.sway = spec["sway"]
@@ -216,6 +221,7 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * TerrainTileset.ART_16_SCALE)
 	for particle in _particles:
 		var color := particle.color
 		color.a = clampf((1.0 - particle.age / particle.life) / FADE_SHARE, 0.0, 1.0)

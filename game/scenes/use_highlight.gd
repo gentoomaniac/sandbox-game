@@ -103,7 +103,9 @@ func _draw() -> void:
 		return
 	if _is_drawn_filled:
 		draw_rect(rect, Color(_drawn_color, _drawn_color.a * OUT_OF_REACH_FILL_SHARE))
-	draw_rect(rect, _drawn_color, false)
+	# An art pixel wide, inside the tile.
+	var border := TerrainTileset.ART_16_SCALE
+	draw_rect(rect.grow(-border / 2.0), _drawn_color, false, border)
 
 
 ## The picture of the object the held item places, or null if it places none.

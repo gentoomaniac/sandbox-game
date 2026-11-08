@@ -7,7 +7,7 @@ extends Node
 ## a pile that is pulled towards the player or collected during its hop just ends the hop.
 
 ## From the sprite's position (the pile's spot on the ground) to its top left corner.
-const SPRITE_OFFSET := Vector2(-4, -7)
+const SPRITE_OFFSET := Vector2(-4, -7) * TerrainTileset.ART_16_SCALE
 ## Between the hops of the piles of one drop.
 const STAGGER_SECONDS := 0.05
 

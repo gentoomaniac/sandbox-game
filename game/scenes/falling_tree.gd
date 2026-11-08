@@ -20,7 +20,7 @@ const EASE_POWER := 2.4
 ## Where a toppled tree bursts on landing, as a share of its picture's height from its foot (the
 ## middle of its crown), and how high above the ground, in pixels.
 const IMPACT_REACH_SHARE := 0.55
-const IMPACT_HEIGHT := 12.0
+const IMPACT_HEIGHT := 12.0 * TerrainTileset.ART_16_SCALE
 
 ## What fell: the tree object, where it stood.
 var tree: WorldObject

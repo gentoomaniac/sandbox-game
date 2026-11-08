@@ -9,9 +9,9 @@ const SHADER := preload("res://game/scenes/see_through.gdshader")
 const CENTRE_ABOVE_FEET := TerrainTileset.TILE_SIZE
 const RADIUS := 2.0 * TerrainTileset.TILE_SIZE
 const INNER_OPACITY := 0.35
-const EDGE_SOFTNESS := 4.0
+const EDGE_SOFTNESS := 4.0 * TerrainTileset.ART_16_SCALE
 const FADE_SECONDS := 0.15
-## A hit shakes it: it hops one art pixel to either side every step.
+## A hit shakes it: it hops a pixel of the 16 px art to either side every step.
 const SHAKE_SECONDS := 0.2
 const SHAKE_STEP_SECONDS := 0.05
 
@@ -46,7 +46,8 @@ func update(delta: float, player_feet: Vector2) -> void:
 		_shake_seconds_left = maxf(_shake_seconds_left - delta, 0.0)
 		var hop := 0.0
 		if _shake_seconds_left > 0.0:
-			hop = 1.0 if int(_shake_seconds_left / SHAKE_STEP_SECONDS) % 2 == 0 else -1.0
+			var side := 1.0 if int(_shake_seconds_left / SHAKE_STEP_SECONDS) % 2 == 0 else -1.0
+			hop = side * TerrainTileset.ART_16_SCALE
 		position.x = _resting_x + hop
 	material.set_shader_parameter("fade", _fade)
 	material.set_shader_parameter("circle_centre", player_feet - Vector2(0, CENTRE_ABOVE_FEET))

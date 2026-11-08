@@ -9,8 +9,8 @@ const SIT := &"sit"
 const SCURRY := &"scurry"
 const FLEE := &"flee"
 
-const SCURRY_SPEED := 30.0
-const FLEE_SPEED := 70.0
+const SCURRY_SPEED := 30.0 * TerrainTileset.ART_16_SCALE
+const FLEE_SPEED := 70.0 * TerrainTileset.ART_16_SCALE
 ## A dash lasts this long before the mouse is gone into cover, sooner if its way is blocked.
 const FLEE_SECONDS := 0.6
 

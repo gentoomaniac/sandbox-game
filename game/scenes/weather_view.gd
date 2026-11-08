@@ -16,7 +16,8 @@ const FOG_SHADER := preload("res://game/scenes/weather_fog.gdshader")
 
 ## How fast what is shown follows the weather: the share of the way it covers per second.
 const FOLLOW_RATE := 1.5
-## Art pixels per second.
+## Art pixels per second. The shaders work on the pixels of the 16 px art (see
+## art_scale.gdshaderinc), and so do all the numbers of pixels here.
 const RAIN_FALL_SPEED := 230.0
 const SNOW_FALL_SPEED := 24.0
 ## Pixels per second for every m/s of wind.
@@ -151,4 +152,5 @@ static func _shader_material(shader: Shader, view_size: Vector2) -> ShaderMateri
 	var material := ShaderMaterial.new()
 	material.shader = shader
 	material.set_shader_parameter("view_size", view_size)
+	material.set_shader_parameter("art_scale", float(TerrainTileset.ART_16_SCALE))
 	return material

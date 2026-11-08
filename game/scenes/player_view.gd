@@ -30,8 +30,8 @@ enum Pose { STANDING, COLLAPSE, RIDING }
 const FRAMES_PER_FACING := 5
 ## Sheet rows by facing, in the order the art generator draws them.
 const FACING_ROWS := {Vector2i.DOWN: 0, Vector2i.UP: 1, Vector2i.LEFT: 2, Vector2i.RIGHT: 3}
-## Sheets are 16x32 frames: one tile wide, two tall.
-const FRAME_HEIGHT := 32
+## Sheets have frames one tile wide and two tall.
+const FRAME_HEIGHT := 2 * TerrainTileset.TILE_SIZE
 const IDLE_COLUMN := 0
 ## A walk cycle visits these columns, step after step.
 const WALK_COLUMNS := [1, 2, 3, 4]
@@ -55,8 +55,18 @@ const COLLAPSE_SECONDS := 1.5
 ## whose head end lies in this direction: how it is turned and moved, in art pixels, so that the
 ## figure's middle is on the player's position, the middle of the bed.
 const LYING_POSES := {
-	Vector2i.UP: {"rotation": -PI / 2, "shift": Vector2(8, 0), "is_flipped": false},
-	Vector2i.LEFT: {"rotation": 0.0, "shift": Vector2(0, 8), "is_flipped": true},
+	Vector2i.UP:
+	{
+		"rotation": -PI / 2,
+		"shift": Vector2(8, 0) * TerrainTileset.ART_16_SCALE,
+		"is_flipped": false,
+	},
+	Vector2i.LEFT:
+	{
+		"rotation": 0.0,
+		"shift": Vector2(0, 8) * TerrainTileset.ART_16_SCALE,
+		"is_flipped": true,
+	},
 }
 ## A figure in a bed is drawn above the objects of the world (a sleeping bag lies among them);
 ## the cover of a bed in a house is drawn above the figure (see InteriorView).
@@ -64,7 +74,7 @@ const LYING_Z_INDEX := 1
 ## What is drawn over a figure in a bed (see InteriorView and ObjectCover).
 const COVER_Z_INDEX := 2
 ## Where the "z"s start over a figure lying head to the right, in art pixels from the feet.
-const SLEEP_ZS_POSITION := Vector2(10, -16)
+const SLEEP_ZS_POSITION := Vector2(10, -16) * TerrainTileset.ART_16_SCALE
 ## The ridden horse's sheets, behind the rider ("") and in front of them ("_over"), in the rows of
 ## FACING_ROWS: standing, four frames of the walk and four of the trot.
 const RIDDEN_HORSE_PATH := "res://assets/wildlife/horse_%s_ridden%s.png"
@@ -80,8 +90,8 @@ const RIDE_LIFTS := [0, 0, 0, 0, 0, 0, 1, 0, 1]
 ## Where the rider's feet (the bottom centre of a riding frame) are on a horse facing right, in art
 ## pixels from the horse's feet: in its saddle. Facing left it is mirrored, facing up or down it is
 ## in the middle. The pony is lower.
-const SEAT := Vector2(-3, -11)
-const PONY_SEAT := Vector2(-2, -2)
+const SEAT := Vector2(-3, -11) * TerrainTileset.ART_16_SCALE
+const PONY_SEAT := Vector2(-2, -2) * TerrainTileset.ART_16_SCALE
 ## Half the width of the ridden horse's contact shadow seen from the front or from behind (from the
 ## side it is that of FarmAnimalView).
 const RIDDEN_SHADOW_HALF_WIDTH := 6
@@ -227,9 +237,7 @@ func _draw() -> void:
 		if _player.facing.x != 0
 		else RIDDEN_SHADOW_HALF_WIDTH
 	)
-	for row in 3:
-		var half := half_width - (1 if row != 1 else 0)
-		draw_rect(Rect2(-half, row - 1, half * 2, 1), Animal.SHADOW_COLOR)
+	Animal.draw_contact_shadow(self, half_width)
 
 
 ## Shows the horse the player rides, if any, in the horse sprites, and its shadow (drawn again
@@ -264,7 +272,7 @@ func _show_riding(is_moving: bool) -> void:
 		sprite.frame = row
 	var seat := PONY_SEAT if _player.horse.look == &"pony" else SEAT
 	seat.x *= _player.facing.x
-	figure.position = seat - Vector2(0, RIDE_LIFTS[column])
+	figure.position = seat - Vector2(0, RIDE_LIFTS[column] * TerrainTileset.ART_16_SCALE)
 
 
 func _show_collapse(delta: float) -> void:

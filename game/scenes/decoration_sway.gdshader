@@ -5,8 +5,10 @@ shader_type canvas_item;
 // above moves at most one pixel, and so do the ones above that, but sooner. Set on the
 // decoration tiles that sway (see AmbientMotion and TerrainTileset), in an atlas without padding.
 
+#include "res://game/scenes/art_scale.gdshaderinc"
 #include "res://game/scenes/sway.gdshaderinc"
 
+// A tile in art pixels, the 16 px art's (in art pixels, as everything below).
 const float TILE = 16.0;
 // How far these plants bend, as a share of the wind's sway.
 uniform float strength = 0.5;
@@ -23,9 +25,9 @@ float shift_of(float height, float offset) {
 }
 
 void fragment() {
-	vec2 texel = floor(UV / TEXTURE_PIXEL_SIZE);
+	vec2 texel = floor(UV / TEXTURE_PIXEL_SIZE / art_scale);
 	vec2 local = mod(texel, TILE);
-	vec2 origin = floor(world_position) - local;
+	vec2 origin = floor(world_position / art_scale) - local;
 	float offset = sway_at(origin) * strength;
 	float direction = clamp(whole_pixels(offset), -1.0, 1.0);
 	// The pixel shows the one the sway moves onto it (`moved`, from the column against the
@@ -39,8 +41,10 @@ void fragment() {
 	bool moved_stem = true;
 	for (float below = 0.0; below <= 2.0; below += 1.0) {
 		bool in_tile = local.y + below < TILE;
-		vec4 own_texel = texture(TEXTURE, (texel + vec2(0.0, below) + 0.5) * TEXTURE_PIXEL_SIZE);
-		vec4 moved_texel = texture(TEXTURE, (texel + vec2(-direction, below) + 0.5) * TEXTURE_PIXEL_SIZE);
+		vec2 own_source = (texel + vec2(0.0, below)) * art_scale + 0.5;
+		vec2 moved_source = (texel + vec2(-direction, below)) * art_scale + 0.5;
+		vec4 own_texel = texture(TEXTURE, own_source * TEXTURE_PIXEL_SIZE);
+		vec4 moved_texel = texture(TEXTURE, moved_source * TEXTURE_PIXEL_SIZE);
 		if (below == 0.0) {
 			own = own_texel;
 			moved = moved_texel;

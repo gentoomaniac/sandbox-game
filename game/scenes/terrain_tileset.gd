@@ -39,7 +39,13 @@ enum Layer {
 ## The tiles of a meadow flower (see FLOWER_ROW).
 enum FlowerVariant { SMALL, FEW, DRIFT, OTHER_DRIFT }
 
+## World pixels per tile: the size of a tile in art pixels.
 const TILE_SIZE := 16
+## World pixels per pixel of the art still drawn at 16 px per tile, which tools/art scales up
+## to the tile (DOUBLED in tools/art/generate.py). A number measured on such a picture (a
+## sprite's offset, a frame size, an animal's hop) is written in its pixels times this; the
+## task that redraws a group at 32 px measures its numbers anew, without it.
+@warning_ignore("integer_division") const ART_16_SCALE := TILE_SIZE / 16
 ## Every look of the ground (see SeasonBlend.GROUND_LOOKS) has an atlas source of its own with
 ## the same tiles: the terrain source's id is the look, the decoration source's id is this far
 ## on from it.

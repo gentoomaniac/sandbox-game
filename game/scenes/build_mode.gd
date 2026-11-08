@@ -33,7 +33,9 @@ const TAKE_DOWN_TINT := Color("a8402e", 0.55)
 const TAKE_DOWN_OUTLINE := Color("a8402e")
 const PROGRESS_BACKGROUND := Color(0, 0, 0, 0.6)
 const PROGRESS_COLOR := Color("dc7a37")
-const PROGRESS_HEIGHT := 4.0
+const PROGRESS_HEIGHT := 4.0 * TerrainTileset.ART_16_SCALE
+## The red frames are an art pixel wide.
+const OUTLINE_WIDTH := TerrainTileset.ART_16_SCALE
 
 var world: World
 var builder: Builder
@@ -229,12 +231,8 @@ func _show_take_down_message() -> void:
 func _draw_take_down_target() -> void:
 	var tile_size := TerrainTileset.TILE_SIZE
 	# The cursor: a red frame round the tile the mouse is on, as the ghost is the cursor of building.
-	draw_rect(
-		Rect2(Vector2(_cursor_tile * tile_size), Vector2(tile_size, tile_size)),
-		TAKE_DOWN_OUTLINE,
-		false,
-		1.0
-	)
+	var cursor := Rect2(Vector2(_cursor_tile * tile_size), Vector2(tile_size, tile_size))
+	draw_rect(cursor.grow(-OUTLINE_WIDTH / 2.0), TAKE_DOWN_OUTLINE, false, OUTLINE_WIDTH)
 	if _take_down_target == null:
 		return
 	var covered := Rect2()
@@ -242,10 +240,10 @@ func _draw_take_down_target() -> void:
 		var tile_rect := Rect2(Vector2(pos * tile_size), Vector2(tile_size, tile_size))
 		draw_rect(tile_rect, TAKE_DOWN_TINT)
 		covered = tile_rect if covered.size == Vector2.ZERO else covered.merge(tile_rect)
-	draw_rect(covered, TAKE_DOWN_OUTLINE, false, 1.0)
+	draw_rect(covered.grow(-OUTLINE_WIDTH / 2.0), TAKE_DOWN_OUTLINE, false, OUTLINE_WIDTH)
 	if _held_seconds > 0.0:
 		var bar := Rect2(
-			covered.position - Vector2(0, PROGRESS_HEIGHT + 2),
+			covered.position - Vector2(0, PROGRESS_HEIGHT + 2 * TerrainTileset.ART_16_SCALE),
 			Vector2(covered.size.x, PROGRESS_HEIGHT)
 		)
 		draw_rect(bar, PROGRESS_BACKGROUND)

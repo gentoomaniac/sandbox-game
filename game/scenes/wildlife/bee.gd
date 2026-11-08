@@ -7,15 +7,15 @@ const HOVER := &"hover"
 const TRAVEL := &"travel"
 const LEAVE := &"leave"
 
-const TRAVEL_SPEED := 28.0
+const TRAVEL_SPEED := 28.0 * TerrainTileset.ART_16_SCALE
 ## How far it looks for the next flower, in tiles.
 const FLOWER_REACH_TILES := 4
 ## How high above the flower it flies, in pixels.
-const FLIGHT_HEIGHT := 6.0
+const FLIGHT_HEIGHT := 6.0 * TerrainTileset.ART_16_SCALE
 ## The pixels it jitters by while hovering, and how often it picks a new spot.
-const JITTER := Vector2(1.5, 1.0)
+const JITTER := Vector2(1.5, 1.0) * TerrainTileset.ART_16_SCALE
 const JITTER_SECONDS := 0.12
-const LEAVE_MARGIN := 12.0
+const LEAVE_MARGIN := 12.0 * TerrainTileset.ART_16_SCALE
 
 var _state_seconds := 4.0
 var _flower := Vector2i.ZERO
@@ -70,8 +70,9 @@ func _jitter(delta: float) -> void:
 			wildlife.rng.randf_range(-JITTER.x, JITTER.x),
 			wildlife.rng.randf_range(-JITTER.y, JITTER.y)
 		)
-	_sprite.position.x = move_toward(_sprite.position.x, _jitter_goal.x, 20.0 * delta)
-	_arc = move_toward(_arc, _jitter_goal.y, 12.0 * delta)
+	var speed := Vector2(20.0, 12.0) * TerrainTileset.ART_16_SCALE
+	_sprite.position.x = move_toward(_sprite.position.x, _jitter_goal.x, speed.x * delta)
+	_arc = move_toward(_arc, _jitter_goal.y, speed.y * delta)
 
 
 func _fly_to_next_flower() -> void:
@@ -100,7 +101,7 @@ func _travel(delta: float) -> void:
 	position += to_goal.normalized() * TRAVEL_SPEED * delta
 	_face(to_goal.x)
 	# A wavering flight: up and down a little as it goes.
-	_arc = sin(_state_time * 9.0) * 1.0
+	_arc = sin(_state_time * 9.0) * TerrainTileset.ART_16_SCALE
 
 
 func _leave(direction: Vector2) -> void:

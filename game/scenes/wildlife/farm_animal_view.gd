@@ -21,7 +21,7 @@ const ACTIONS := {
 	FarmAnimal.Activity.CREEP: [&"creep", 3.0],
 	FarmAnimal.Activity.POUNCE: [&"pounce", 9.0],
 }
-## Half the width of each species' contact shadow, in pixels.
+## Half the width of each species' contact shadow, in pixels of the 16 px art.
 const SHADOW_HALF_WIDTHS := {
 	LivestockRules.COW: 11,
 	LivestockRules.SHEEP: 7,

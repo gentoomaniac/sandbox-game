@@ -244,7 +244,7 @@ func _add_equipment_column(column: VBoxContainer, slots: Array, parent: Containe
 ## scale), spreads the equipment slots over its height, and centres the panel.
 func _fit_to_window() -> void:
 	var room := get_viewport().get_visible_rect().size.y - 2 * (WINDOW_MARGIN + PANEL_PADDING / 2)
-	_preview.pixel_scale = clampi(int(room / CharacterPreview.FRAME_SIZE.y), 1, MAX_PREVIEW_SCALE)
+	_preview.pixel_scale = clampi(int(room / CharacterPreview.SHOWN_SIZE.y), 1, MAX_PREVIEW_SCALE)
 	for column: VBoxContainer in [_left_column, _right_column]:
 		var slot_count := column.get_child_count()
 		var column_height := maxi(int(_preview.custom_minimum_size.y), _tallest_column_height())

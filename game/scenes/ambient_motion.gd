@@ -9,7 +9,8 @@ extends RefCounted
 ## is kept here.
 ##
 ## Everything moves in whole art pixels, and on a calm day hardly at all. The static functions
-## turn the weather into the shaders' numbers.
+## turn the weather into the shaders' numbers. The pixels here are those of the 16 px art, which
+## the shaders work on (see art_scale.gdshaderinc), so the motion keeps to its doubled pixels.
 
 const OBJECT_SWAY_SHADER := preload("res://game/scenes/object_sway.gdshader")
 const DECORATION_SWAY_SHADER := preload("res://game/scenes/decoration_sway.gdshader")
@@ -79,7 +80,8 @@ const DECORATION_SWAY := {"strength": 0.5, "frequency": 0.9}
 const FIRE_PROFILES := {
 	WorldObjectTypes.FIREPLACE:
 	{
-		"cell_size": Vector2(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT),
+		"cell_size":
+		Vector2(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT) / TerrainTileset.ART_16_SCALE,
 		"flames": preload("res://assets/fire/fireplace.png"),
 		"box_position": Vector2(16.0, 51.0),
 		"flame_top": 57.0,
@@ -151,7 +153,7 @@ static func fire_material(type: StringName) -> ShaderMaterial:
 
 
 ## The frame of its flame's loop that a fire shows `seconds` into the shaders' clock, for the
-## fire whose cell is at `origin` (world pixels). The frame advances FIRE_FRAMES_PER_SECOND
+## fire whose cell is at `origin` (art pixels). The frame advances FIRE_FRAMES_PER_SECOND
 ## times a second, and each fire starts its loop at a frame of its own, by its place, so
 ## neighbours do not burn in step. fire.gdshader picks the frame the same way, with its own
 ## copy of PositionHash.of (`position_hash`): change one, change the other.
@@ -169,8 +171,9 @@ func crop_material(cell_size: Vector2i) -> ShaderMaterial:
 	if not _crop_materials.has(cell_size):
 		var material := _material(OBJECT_SWAY_SHADER)
 		_set_parameters(material, CROP_SWAY)
-		material.set_shader_parameter("cell_size", Vector2(cell_size))
-		material.set_shader_parameter("top", float(cell_size.y))
+		var art_cell_size := Vector2(cell_size) / TerrainTileset.ART_16_SCALE
+		material.set_shader_parameter("cell_size", art_cell_size)
+		material.set_shader_parameter("top", art_cell_size.y)
 		_crop_materials[cell_size] = material
 		_sway_materials.append(material)
 	return _crop_materials[cell_size]
@@ -259,6 +262,7 @@ static func splash_chance_for(rain: float) -> float:
 static func _material(shader: Shader) -> ShaderMaterial:
 	var material := ShaderMaterial.new()
 	material.shader = shader
+	material.set_shader_parameter("art_scale", float(TerrainTileset.ART_16_SCALE))
 	return material
 
 

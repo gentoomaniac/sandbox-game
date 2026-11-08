@@ -8,14 +8,16 @@ extends RefCounted
 ## hunting.
 
 const SHEET_PATH := "res://assets/wildlife/%s.png"
+## The frame sizes below are measured on the 16 px art, which is scaled up by this.
+const SCALE := TerrainTileset.ART_16_SCALE
 const LIVESTOCK_ACTIONS := {&"idle": 2, &"walk": 4, &"graze": 2, &"sleep": 2, &"run": 4}
-const COW := {"size": Vector2i(32, 24), "actions": LIVESTOCK_ACTIONS}
-const SHEEP := {"size": Vector2i(22, 16), "actions": LIVESTOCK_ACTIONS}
-const CHICKEN := {"size": Vector2i(12, 12), "actions": LIVESTOCK_ACTIONS}
-const RABBIT := {"size": Vector2i(12, 10), "actions": LIVESTOCK_ACTIONS}
-const DOG := {"size": Vector2i(24, 18), "actions": LIVESTOCK_ACTIONS}
+const COW := {"size": Vector2i(32, 24) * SCALE, "actions": LIVESTOCK_ACTIONS}
+const SHEEP := {"size": Vector2i(22, 16) * SCALE, "actions": LIVESTOCK_ACTIONS}
+const CHICKEN := {"size": Vector2i(12, 12) * SCALE, "actions": LIVESTOCK_ACTIONS}
+const RABBIT := {"size": Vector2i(12, 10) * SCALE, "actions": LIVESTOCK_ACTIONS}
+const DOG := {"size": Vector2i(24, 18) * SCALE, "actions": LIVESTOCK_ACTIONS}
 const CAT := {
-	"size": Vector2i(16, 12),
+	"size": Vector2i(16, 12) * SCALE,
 	"actions":
 	{
 		&"idle": 2,
@@ -28,42 +30,52 @@ const CAT := {
 		&"pounce": 3,
 	},
 }
-const HORSE := {"size": Vector2i(44, 36), "actions": LIVESTOCK_ACTIONS}
+const HORSE := {"size": Vector2i(44, 36) * SCALE, "actions": LIVESTOCK_ACTIONS}
 
 ## Per kind: the size of a frame and the frames of each action, in the order of the rows.
 const SHEETS := {
-	&"bird": {"size": Vector2i(8, 8), "actions": {&"idle": 3, &"peck": 2, &"hop": 2, &"fly": 3}},
-	&"rabbit": {"size": Vector2i(12, 10), "actions": {&"sit": 2, &"nibble": 2, &"hop": 3}},
-	&"squirrel": {"size": Vector2i(14, 12), "actions": {&"sit": 3, &"dart": 3}},
+	&"bird":
+	{"size": Vector2i(8, 8) * SCALE, "actions": {&"idle": 3, &"peck": 2, &"hop": 2, &"fly": 3}},
+	&"rabbit": {"size": Vector2i(12, 10) * SCALE, "actions": {&"sit": 2, &"nibble": 2, &"hop": 3}},
+	&"squirrel": {"size": Vector2i(14, 12) * SCALE, "actions": {&"sit": 3, &"dart": 3}},
 	&"deer":
-	{"size": Vector2i(26, 26), "actions": {&"graze": 2, &"look": 2, &"walk": 4, &"bound": 3}},
-	&"bee": {"size": Vector2i(4, 4), "actions": {&"hover": 2}},
+	{
+		"size": Vector2i(26, 26) * SCALE,
+		"actions": {&"graze": 2, &"look": 2, &"walk": 4, &"bound": 3}
+	},
+	&"bee": {"size": Vector2i(4, 4) * SCALE, "actions": {&"hover": 2}},
 	&"butterfly":
 	{
-		"size": Vector2i(6, 6),
+		"size": Vector2i(6, 6) * SCALE,
 		"actions": {&"flutter": 3, &"flutter_pale": 3, &"flutter_pink": 3},
 	},
 	&"stork":
 	{
-		"size": Vector2i(32, 26),
+		"size": Vector2i(32, 26) * SCALE,
 		"actions": {&"stand": 2, &"walk": 4, &"strike": 2, &"clatter": 2, &"swallow": 2, &"fly": 3},
 	},
-	&"mouse": {"size": Vector2i(12, 7), "actions": {&"sit": 2, &"scurry": 2}},
-	&"frog": {"size": Vector2i(12, 8), "actions": {&"sit": 2, &"hop": 2}},
+	&"mouse": {"size": Vector2i(12, 7) * SCALE, "actions": {&"sit": 2, &"scurry": 2}},
+	&"frog": {"size": Vector2i(12, 8) * SCALE, "actions": {&"sit": 2, &"hop": 2}},
 	&"goose":
-	{"size": Vector2i(24, 18), "actions": {&"stand": 2, &"graze": 2, &"walk": 2, &"fly": 3}},
+	{
+		"size": Vector2i(24, 18) * SCALE,
+		"actions": {&"stand": 2, &"graze": 2, &"walk": 2, &"fly": 3}
+	},
 	&"oystercatcher":
-	{"size": Vector2i(16, 12), "actions": {&"stand": 2, &"probe": 2, &"walk": 2, &"fly": 3}},
+	{
+		"size": Vector2i(16, 12) * SCALE,
+		"actions": {&"stand": 2, &"probe": 2, &"walk": 2, &"fly": 3}
+	},
 	&"dunlin":
-	{"size": Vector2i(10, 8), "actions": {&"stand": 2, &"probe": 2, &"walk": 2, &"fly": 3}},
+	{"size": Vector2i(10, 8) * SCALE, "actions": {&"stand": 2, &"probe": 2, &"walk": 2, &"fly": 3}},
 	&"gull":
 	{
-		"size": Vector2i(20, 16),
+		"size": Vector2i(20, 16) * SCALE,
 		"actions": {&"stand": 2, &"walk": 2, &"peck": 2, &"swim": 2, &"fly": 3},
 	},
 	&"tern":
 	{
-		"size": Vector2i(20, 14),
+		"size": Vector2i(20, 14) * SCALE,
 		"actions": {&"fly": 3, &"hover": 2, &"dive": 2, &"splash": 3, &"fly_with_fish": 3},
 	},
 	&"cow_angler": COW,

@@ -6,9 +6,9 @@ extends Node2D
 ## every frame (`set_point`), so the points are kept and never made anew.
 
 const COLOR := Color(0.0, 0.0, 0.0, 0.4)
-const SHIFT := Vector2(8.0, 6.0)
+const SHIFT := Vector2(8.0, 6.0) * TerrainTileset.ART_16_SCALE
 
-## Half the width of a shadow in pixels, past its middle pixel.
+## Half the width of a shadow in pixels of the 16 px art, past its middle pixel.
 var half_width := 2
 ## How far from the point below its bird a shadow falls: SHIFT high in the air, nothing for a
 ## bird on the ground.
@@ -29,8 +29,9 @@ func set_point(index: int, ground_point: Vector2) -> void:
 
 func _draw() -> void:
 	for point in _points:
-		var centre := (point + shift).round()
-		draw_rect(Rect2(centre + Vector2(-half_width, 0), Vector2(half_width * 2 + 1, 1)), COLOR)
-		draw_rect(
-			Rect2(centre + Vector2(-half_width + 1, 1), Vector2(half_width * 2 - 1, 1)), COLOR
-		)
+		# On the grid of the 16 px art, as the shadow is drawn on it.
+		var art_scale := TerrainTileset.ART_16_SCALE
+		var centre := ((point + shift) / art_scale).round() * art_scale
+		draw_set_transform(centre, 0.0, Vector2.ONE * art_scale)
+		draw_rect(Rect2(-half_width, 0, half_width * 2 + 1, 1), COLOR)
+		draw_rect(Rect2(-half_width + 1, 1, half_width * 2 - 1, 1), COLOR)

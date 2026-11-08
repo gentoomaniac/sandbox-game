@@ -86,7 +86,8 @@ const TREE_TYPES: Array[StringName] = [
 ]
 ## The field boundaries mice live in: hedge banks and fieldstone walls.
 const FIELD_BANKS: Array[StringName] = [WorldObjectTypes.KNICK, WorldObjectTypes.STONE_WALL]
-## World pixels per tile, for the ring around the view.
+## World pixels per tile, for the ring around the view: TerrainTileset.TILE_SIZE, which the
+## state does not know (a test checks that they agree).
 const TILE_SIZE := 16
 ## Tries to find a point in the ring before settling for one on its left side.
 const RING_TRIES := 12

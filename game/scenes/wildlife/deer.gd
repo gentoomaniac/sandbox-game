@@ -9,10 +9,10 @@ const WALK := &"walk"
 const ALERT := &"alert"
 const BOUND := &"bound"
 
-const WALK_SPEED := 14.0
-const BOUND_LENGTH := 30.0
+const WALK_SPEED := 14.0 * TerrainTileset.ART_16_SCALE
+const BOUND_LENGTH := 30.0 * TerrainTileset.ART_16_SCALE
 const BOUND_SECONDS := 0.42
-const BOUND_HEIGHT := 7.0
+const BOUND_HEIGHT := 7.0 * TerrainTileset.ART_16_SCALE
 ## An alert deer goes back to grazing once the player is this many tiles farther than the
 ## distance that alerted it.
 const CALM_EXTRA_TILES := 1.5

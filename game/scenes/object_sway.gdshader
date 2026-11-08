@@ -5,8 +5,10 @@ shader_type canvas_item;
 // AmbientMotion and ObjectTileset), which are cells of `cell_size` in an atlas without padding:
 // the texture coordinates say where in its cell a pixel is.
 
+#include "res://game/scenes/art_scale.gdshaderinc"
 #include "res://game/scenes/sway.gdshaderinc"
 
+// In art pixels, as everything below.
 uniform vec2 cell_size = vec2(48.0, 80.0);
 // Pixels above the cell's bottom: up to `stem` nothing moves, at `top` it bends the most.
 uniform float stem = 0.0;
@@ -20,9 +22,9 @@ void vertex() {
 }
 
 void fragment() {
-	vec2 texel = floor(UV / TEXTURE_PIXEL_SIZE);
+	vec2 texel = floor(UV / TEXTURE_PIXEL_SIZE / art_scale);
 	vec2 local = mod(texel, cell_size);
-	vec2 origin = floor(world_position) - local;
+	vec2 origin = floor(world_position / art_scale) - local;
 	float height = cell_size.y - 1.0 - local.y;
 	float bend = smoothstep(stem, top, height);
 	float shift = whole_pixels(sway_at(origin) * strength * bend);
@@ -30,6 +32,7 @@ void fragment() {
 	if (source_x < 0.0 || source_x >= cell_size.x) {
 		COLOR = vec4(0.0);
 	} else {
-		COLOR = texture(TEXTURE, (texel + vec2(-shift, 0.0) + 0.5) * TEXTURE_PIXEL_SIZE) * modulate;
+		vec2 source = (texel + vec2(-shift, 0.0)) * art_scale + 0.5;
+		COLOR = texture(TEXTURE, source * TEXTURE_PIXEL_SIZE) * modulate;
 	}
 }

@@ -9,12 +9,12 @@ const SIT := &"sit"
 const HOP := &"hop"
 const FLEE := &"flee"
 
-const HOP_LENGTH := 7.0
+const HOP_LENGTH := 7.0 * TerrainTileset.ART_16_SCALE
 const HOP_SECONDS := 0.3
-const HOP_HEIGHT := 3.0
-const FLEE_HOP_LENGTH := 12.0
+const HOP_HEIGHT := 3.0 * TerrainTileset.ART_16_SCALE
+const FLEE_HOP_LENGTH := 12.0 * TerrainTileset.ART_16_SCALE
 const FLEE_HOP_SECONDS := 0.3
-const FLEE_HOP_HEIGHT := 4.0
+const FLEE_HOP_HEIGHT := 4.0 * TerrainTileset.ART_16_SCALE
 ## It stops fleeing when this many tiles beyond the distance it flees from.
 const SAFE_EXTRA_TILES := 1.5
 

@@ -8,15 +8,15 @@ const PECK := &"peck"
 const HOP := &"hop"
 const FLY := &"fly"
 
-const HOP_LENGTH := Vector2(5.0, 9.0)
+const HOP_LENGTH := Vector2(5.0, 9.0) * TerrainTileset.ART_16_SCALE
 const HOP_SECONDS := 0.25
-const HOP_HEIGHT := 3.0
-const FLY_SPEED := 70.0
+const HOP_HEIGHT := 3.0 * TerrainTileset.ART_16_SCALE
+const FLY_SPEED := 70.0 * TerrainTileset.ART_16_SCALE
 ## How fast it climbs and how high above the ground it flies.
-const CLIMB_SPEED := 30.0
-const FLIGHT_HEIGHT := 14.0
+const CLIMB_SPEED := 30.0 * TerrainTileset.ART_16_SCALE
+const FLIGHT_HEIGHT := 14.0 * TerrainTileset.ART_16_SCALE
 ## It is gone once it is this far outside the view.
-const LEAVE_MARGIN := 12.0
+const LEAVE_MARGIN := 12.0 * TerrainTileset.ART_16_SCALE
 
 var _state_seconds := 1.0
 var _flight_direction := Vector2.RIGHT

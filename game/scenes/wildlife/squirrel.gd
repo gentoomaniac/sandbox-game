@@ -8,19 +8,19 @@ const DART := &"dart"
 const FLEE := &"flee"
 const HIDING := &"hiding"
 
-const DART_SPEED := 60.0
-const FLEE_SPEED := 80.0
+const DART_SPEED := 60.0 * TerrainTileset.ART_16_SCALE
+const FLEE_SPEED := 80.0 * TerrainTileset.ART_16_SCALE
 ## How far it looks for a tree to dart to, and to flee to, in tiles.
 const DART_REACH_TILES := 6
 const FLEE_REACH_TILES := 8
 ## It reaches a spot when this near, in pixels.
-const ARRIVED := 2.0
+const ARRIVED := 2.0 * TerrainTileset.ART_16_SCALE
 ## It hides behind a tree by standing this high up on the trunk's tile, which is in front of
 ## it in the draw order.
-const BEHIND_TRUNK := 3.0
+const BEHIND_TRUNK := 3.0 * TerrainTileset.ART_16_SCALE
 const HIDE_SECONDS := 0.2
 ## Where a squirrel with no tree to flee to runs: far, until it is out of the view.
-const RUN_OFF_DISTANCE := 600.0
+const RUN_OFF_DISTANCE := 600.0 * TerrainTileset.ART_16_SCALE
 
 var _state_seconds := 1.0
 var _target := Vector2.ZERO

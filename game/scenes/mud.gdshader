@@ -1,5 +1,6 @@
 shader_type canvas_item;
 #include "res://game/scenes/hash.gdshaderinc"
+#include "res://game/scenes/art_scale.gdshaderinc"
 #include "res://game/scenes/water_surface.gdshaderinc"
 // The tide on the tidal mud, a look only: the sea rises over the flats and falls again (`tide`,
 // 0 at low water to 1 at high water, set by AmbientMotion from Tide). The mud has a gentle relief
@@ -20,7 +21,7 @@ const float HIGH_WATER = 1.06;
 const float TROUGH_DEPTH = 0.07;
 // How far below the water's edge (on the relief's scale) its light line reaches.
 const float SHORE = 0.025;
-// The relief: broad swells and smaller hollows, in pixels across.
+// The relief: broad swells and smaller hollows, in art pixels across.
 const float SWELL_SIZE = 70.0;
 const float HOLLOW_SIZE = 23.0;
 
@@ -56,7 +57,7 @@ float value_noise(vec2 p, float size, uint layer) {
 void fragment() {
 	vec4 base = texture(TEXTURE, UV);
 	if (base.a > 0.0) {
-		vec2 p = floor(world_position);
+		vec2 p = floor(world_position / art_scale);
 		float height = 0.65 * value_noise(p, SWELL_SIZE, 1u) + 0.35 * value_noise(p, HOLLOW_SIZE, 2u);
 		if (distance(base.rgb, MUD_DARK) < 0.02) {
 			height -= TROUGH_DEPTH;

@@ -6,8 +6,8 @@ extends RefCounted
 
 const SECONDS := 0.42
 ## How high the arc and the bounce lift the pile, in art pixels.
-const HEIGHT := 7.0
-const BOUNCE_HEIGHT := 2.0
+const HEIGHT := 7.0 * TerrainTileset.ART_16_SCALE
+const BOUNCE_HEIGHT := 2.0 * TerrainTileset.ART_16_SCALE
 ## The last share of the hop that is the bounce.
 const BOUNCE_SHARE := 0.25
 

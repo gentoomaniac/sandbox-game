@@ -20,7 +20,7 @@ var is_done := false
 ## Asleep: it makes no sound of its own accord (see AmbienceSounds).
 var is_asleep := false
 var kind: StringName
-## Half the width of the contact shadow in pixels; 0 for none.
+## Half the width of the contact shadow in pixels of the 16 px art; 0 for none.
 var shadow_half_width := 3
 var _sprite: Sprite2D
 var _sheet_kind: StringName
@@ -64,12 +64,18 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	if shadow_half_width == 0:
-		return
-	# A flat ellipse of three rows, a little in front of the feet.
+	if shadow_half_width != 0:
+		draw_contact_shadow(self, shadow_half_width)
+
+
+## A flat ellipse of three rows at the feet of what `canvas` draws, `half_width` pixels of the
+## 16 px art to either side.
+static func draw_contact_shadow(canvas: CanvasItem, half_width: int) -> void:
+	canvas.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * TerrainTileset.ART_16_SCALE)
 	for row in 3:
-		var half := shadow_half_width - (1 if row != 1 else 0)
-		draw_rect(Rect2(-half, row - 1, half * 2, 1), SHADOW_COLOR)
+		var half := half_width - (1 if row != 1 else 0)
+		canvas.draw_rect(Rect2(-half, row - 1, half * 2, 1), SHADOW_COLOR)
+	canvas.draw_set_transform(Vector2.ZERO)
 
 
 ## Leaves for good: runs or flies off, whatever it was doing. Each kind knows how.

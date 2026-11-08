@@ -5,7 +5,7 @@ extends CanvasLayer
 ## camera shows them. Main says which villager each frame.
 
 ## The bottom of the name, in art pixels above the villager's feet: just over the head.
-const ABOVE_FEET := 30
+const ABOVE_FEET := 30 * TerrainTileset.ART_16_SCALE
 const THEME := preload("res://game/scenes/ui_theme.tres")
 
 var _label := Label.new()

@@ -24,6 +24,10 @@ func _dawn(day: int) -> int:
 	return roundi(_sun.sunrise(day))
 
 
+func test_the_tile_size_is_the_one_the_world_is_drawn_with() -> void:
+	assert_eq(WildlifeRules.TILE_SIZE, TerrainTileset.TILE_SIZE)
+
+
 func test_the_data_file_holds_every_required_key() -> void:
 	assert_true(_rules.is_valid(), "missing: %s" % [_rules.problems()])
 

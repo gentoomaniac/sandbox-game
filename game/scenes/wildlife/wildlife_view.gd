@@ -23,7 +23,7 @@ signal animal_added(animal: Animal)
 ## Tries to find a place for one animal before giving up until the next second.
 const SPAWN_TRIES := 10
 ## Where animals made by hand appear: this far from the player, in pixels.
-const DEBUG_DISTANCE := Vector2(24.0, 70.0)
+const DEBUG_DISTANCE := Vector2(24.0, 70.0) * TerrainTileset.ART_16_SCALE
 ## A bee made by hand picks one of this many flowers nearest to the player.
 const DEBUG_FLOWERS := 5
 ## The birds of the coast keep to it even when made by hand: none appear where it is not near.
@@ -31,9 +31,9 @@ const SEA_BIRDS: Array[StringName] = [
 	WildlifeRules.OYSTERCATCHER, WildlifeRules.DUNLIN, WildlifeRules.GULL, WildlifeRules.TERN
 ]
 ## A flock crossing the view starts this far behind the ring, in pixels.
-const FLOCK_ENTRY_DISTANCE := 120.0
+const FLOCK_ENTRY_DISTANCE := 120.0 * TerrainTileset.ART_16_SCALE
 ## A stork flying to a roof comes from this far beside the view, in pixels.
-const ARRIVAL_MARGIN := 48.0
+const ARRIVAL_MARGIN := 48.0 * TerrainTileset.ART_16_SCALE
 
 var rules: WildlifeRules
 var world_view: WorldView
@@ -364,7 +364,9 @@ func _send_stork_to_roof(is_debug: bool) -> bool:
 ## top of the roof. Under snow the roof is a little higher.
 func roof_lift(building: Building, column: int) -> float:
 	var heights := _roof_heights_of(world_view.building_picture(building))
-	var feet := BuildingViews.footprint_bottom(building) - heights[column] + 2
+	var feet := (
+		BuildingViews.footprint_bottom(building) - heights[column] + 2 * TerrainTileset.ART_16_SCALE
+	)
 	return _in_front_of(building, column).y - feet
 
 
