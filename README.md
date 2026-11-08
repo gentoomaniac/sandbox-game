@@ -76,9 +76,10 @@ are bounded by Knicks, hedges of hazel and hawthorn on earth banks that blossom 
 turn yellow and brown in autumn and stand bare in winter, and here and there by a fieldstone
 wall or a wattle fence. Down in the marsh along the river the fields are cut by straight
 ditches of water lined with reeds and pollard willows, and turfed dykes run along the
-floodplain. Every boundary has a gap or a crossing, so no field is shut in. The axe cuts a
-Knick down for logs and fibre, the pickaxe takes a wall apart for stone, and willows are
-felled like the other trees.
+floodplain, long green banks with a sheep track along the crest that bend round their corners
+and wind along where the river runs on the slant. Every boundary has a gap or a crossing, so no
+field is shut in. The axe cuts a Knick down for logs and fibre, the pickaxe takes a wall apart
+for stone, and willows are felled like the other trees.
 
 ![The marsh with its dykes, ditches, reeds and pollard willows by a wood, in summer, on a rainy autumn evening and in the first snow](docs/screenshots/landscape.png)
 
@@ -102,6 +103,8 @@ an Ewer, a flat-bottomed sailing barge, lies on the mud. Storks and geese come t
 and oystercatchers, dunlin, gulls and terns to the mud and the sea (see [Wildlife](#wildlife)).
 
 ![The coast: a Warft with its Fething on the salt marsh on a summer morning, the salt marsh red around the green Warft in autumn, the tidal flats with their ripple marks at low water and the tide coming in, and the Warft under snow](docs/screenshots/coast.png)
+
+![An Ewer lying on the mud at low water, seven tiles long, the player beside it](docs/screenshots/ewer.png)
 
 ### Weather
 
@@ -337,6 +340,8 @@ hung to dry (2 logs, 8 fibre) and wicker eel traps (4 reeds, 1 fibre).
 
 ![The shack, the fisherman's hut and the Kate at the shore with the jetty, boat, net frame and eel traps in summer, and on a winter night under snow with the windows lit](docs/screenshots/fisher-hut.png)
 
+![The landing by the camp: the jetty, the rowing boat, the net frame and the eel traps in summer, and on a winter night under snow, the campfire burning by the bedroll](docs/screenshots/landing.png)
+
 ![Every building in a row in summer: the shack, the fisherman's hut, the Kate, the longhouse, the hall house, the barn, the church and the bell frame; and the same row on a winter night under snow with the windows lit](docs/screenshots/buildings.png)
 
 The village church follows the small marsh churches of North Frisia: a nave of grey-brown tuff
@@ -439,7 +444,7 @@ Three crafts can be learnt, each at its own **station**: press E at one for its 
 The workbench, kiln and bake oven are made by hand and placed like a chest (the kiln only
 outdoors); the axe or the pickaxe takes them down again.
 
-![A kiln firing, the workbench, the bake oven and the carved chest by the camp](docs/screenshots/stations.png)
+![The chest, the workbench, the carved chest, the kiln and the bake oven by the camp, a Knick and a wattle fence behind them](docs/screenshots/stations.png)
 
 Crafting raises the recipe's skill: the most at the recipe's level, less the further you are
 above it, nothing from a recipe 40 points below you. Better recipes need a skill level (the

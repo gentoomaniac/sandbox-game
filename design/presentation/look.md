@@ -19,8 +19,10 @@
   water, mud and their decorations) since task 107, calm so that what stands on it reads, the
   buildings since task 110, their doors about 60 px high so the people fit through, the
   plants (trees, the pollard willow, bushes, tall grass, fern, reeds, the meadow flowers, rocks,
-  stumps and trunks) since task 108, and the interiors and furniture since task 112, the beds as
-  long as the people lying in them. The 16 px art of a redrawn group stays in the game as the
+  stumps and trunks) since task 108, the interiors and furniture since task 112, the beds as
+  long as the people lying in them, and the walls, fences, the dyke, the camp and the placed
+  objects since task 111, the dyke a bank that bends round its corners and the Ewer in scale
+  with the people. The 16 px art of a redrawn group stays in the game as the
   classic art, a setting (see Settings in [Menus and settings](menus-and-hud.md)).
   (Was: 16×16, 320×180 at zoom 1.)
 - **Stepless zoom** from the widest view (1280×720 art pixels, zoom 0.5) in to zoom 2

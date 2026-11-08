@@ -65,23 +65,21 @@ A tile is **32×32 art pixels** (decided 2026-11-08, task 106; see
 [design/presentation/look.md](../design/presentation/look.md)),
 and the widest view is 1280×720 art pixels: 40×22 tiles (task 118), shown ×1.5 on a 1080p screen
 (an art pixel is a window pixel at 1280×720; below that the view is averaged down), the closest
-320×180: 10×5.6 tiles. The art was drawn at 16 px per tile, and the generators still draw at `canvas.TILE = 16`:
-`generate.py` scales every file of its `DOUBLED` list up to the game's tile (`canvas.GAME_TILE`,
-32) pixel for pixel, as the last step before the palette check. So until a group is redrawn
-the game looks as it did, every pixel 2×2. The object atlas is one picture with cells of the
-game's tile (96×160) for every row: the rows still drawn at 16 px (`DOUBLED_ROWS` in
-`object_atlas`'s part of generate.py: the camp, the walls, fences, the dyke and the placed
-objects, task 111) are scaled up in it after their looks are made, so their snow and frost keep
-the 16 px grain.
+320×180: 10×5.6 tiles. The art was drawn at 16 px per tile (`canvas.TILE`) and scaled up to
+the game's tile pixel for pixel while tasks 107 to 116 redrew it group by group; since task 111,
+the last group, everything is drawn at the game's tile (`canvas.GAME_TILE`, 32) and nothing is
+scaled up. The object atlas is one picture with cells of 96×160; the Ewer's picture is three
+cells wide.
 
-Tasks 107 to 116 redraw the art group by group at 32 px; the people are done (task 113, see
+Tasks 107 to 116 redrew the art group by group at 32 px: the people (task 113, see
 "Clothing and characters"), the farm animals (task 114, see "Props and animals", item 8),
 the wild animals and the effects (task 116, below), the ground (task 107, below), the
 buildings (task 110, see "Buildings"), the plants (task 108, below), the crops (task 109,
-below) and the interiors (task 112, below). To take a group native:
+below), the interiors (task 112, below) and the walls, fences, the dyke and the placed objects
+(task 111, below). How a group was taken native, for any art still to come from the 16 px
+art:
 
-- draw it at 32 px per tile (its cells, frames and offsets are twice the numbers below) and
-  take its files out of `DOUBLED` (or its rows of the object atlas out of `DOUBLED_ROWS`);
+- draw it at 32 px per tile (its cells, frames and offsets are twice the numbers below);
 - keep its 16 px art as the classic art (task 117; the player switches with F7): move its old
   generator code, as it was before the redraw, to tools/art/classic/, call it from `main` there
   and put its doubled files in that file's `DOUBLED`, so `make assets` writes them under
@@ -118,8 +116,7 @@ ones; the small animals (sparrow, rabbit, bee, butterflies, mouse, frog, dunlin)
 little larger than life, so that they read beside a 61 px person: the sparrow about 15 px long,
 the mouse 24, the frog 22, the rabbit 22 sitting, the squirrel 22 tall, the roe deer 40 tall,
 the stork 38. The effects are native too: the flame's loop of the campfire and the hearth
-(fire.py; the fireplace around it is still 16 px art, scaled up in its strip, until task 111;
-the hearth is native since task 112), the hit particles (leaves of a few pixels with their corners left out
+(fire.py; the fireplace around it is native since task 111, the hearth since task 112), the hit particles (leaves of a few pixels with their corners left out
 and a shaded side, long thin needles, round snow clumps, chips, drops), the rain's splashes
 (a streak, a crown of droplets, a ring) and the weather (one pixel raindrops, round flakes of 2
 to 4 pixels, one pixel wind streaks, leaves with a darker lower row, fog dithered on single
@@ -207,14 +204,36 @@ casts a dithered `soil_dark` shadow to its bottom right, which reads on brick an
 The beds are as long as the 61 px figure lying in them (`PlayerView.LYING_POSES`): the head on
 the pillow, the blanket and the cover down to the foot board, so the clogs never show (in the
 box bed the figure lies 2 px left and up of the middle, so that its head is on the pillow);
-the bedroll at the camp (still 16 px) reaches the foot of its footprint for the same reason,
-and the classic set keeps the old, shorter bedroll with its own cover. The
-hearth keeps its flame's box, so the flame and its profile need no new numbers. The rooms'
-16 px art stays as the classic art. The chest, the stations and the grave marker placed
-indoors are still 16 px art, scaled up (task 111).
+the bedroll at the camp reaches the foot of its footprint for the same reason, and the classic
+set keeps the old, shorter bedroll with its own cover. The hearth keeps its flame's box, so the
+flame and its profile need no new numbers. The rooms' 16 px art stays as the classic art.
+
+The walls, fences, the dyke and the placed objects are drawn at 32 px since task 111
+(boundaries.py, camp.py, chest.py, crafts.py, church.py, landing.py, coast.py), each placed
+thing as big as its doubled picture was, so it stands where it stood. The lines across the
+land are solids worked out tile by tile (boundaries.py): the Knick a turfed bank with a low dark
+core of leaves and hazel and hawthorn bushes on it drawn as leafy domes (sprays of leaves lit on
+their upper left, rimmed in their darkest leaves; a tile draws the bushes standing on its own
+ground whole, so they never break at a seam); the wattle fence rods 2 px thick woven in and out
+round stakes; the fieldstone wall squat granite domes in two courses with grain and moss; the
+dyke a turfed bank with a flat crest and a sheep track along it, bending round each corner in a
+quarter circle, so a dyke on the slant is one bank winding along rather than terraces (the art
+review), and green in autumn like the marsh. The camp's fireplace: a ring of rounded field
+stones, ash with embers and three split logs with pale cut ends; the bedroll a quilted sack of
+linen ticking with the grey blanket rolled at its head. The chest of oak planks with iron bands
+and a brass lock, the carved chest painted blue-green with tulips, the workbench with its vice
+and saw, a beehive kiln in courses of clay and a brick oven on footings of field stones, the
+cupboard with raised panels, an oak cross, a sandstone headstone and a granite slab; the jetty's
+planks with grain and nails on weedy piles, the rowing boat, the net frame and the eel traps.
+The Ewer is in scale with the people: a hull about seven tiles long and a mast more than twice
+a person's height, a picture three cells of the object atlas wide on a 7×1 footprint. Each is
+rimmed in the darkest shade of its own colours (not the dyke, which is turf like the ground)
+and stands on a ground shadow. Their item icons are made from these pictures (`items.icon_of`).
+Their 16 px art stays as the classic art.
 
 The sizes in this guide (a 48×80 object cell) are those of the 16 px art, but for the
-characters' 32×64, the farm animals' (item 8 of "Props and animals") and the plants' 96×160.
+characters' 32×64, the farm animals' (item 8 of "Props and animals") and the object atlas's
+96×160.
 
 ## Materials
 
@@ -718,9 +737,9 @@ copper watering can. Kept here as the record of why.
    that floods the mud by a relief of its own (mud.gdshader); a Warft, a grass mound whose
    edges are lit and shaded slopes, with its Fething; and an Ewer on the mud (tools/art/
    coast.py): a tarred hull lying askew with a raised leeboard, the mast leaning, the brown
-   sail furled. No new colours. Still to do: mussel beds and seals as objects, a Stackdeich
-   and sluices, ice on the mud, an Ewer at full scale (it is held to an object cell), the
-   tide's water reaching up the tideways' banks, Halligen. Task 99 added the sea birds
+   sail furled; since task 111 in scale with the people, a picture three object cells wide.
+   No new colours. Still to do: mussel beds and seals as objects, a Stackdeich
+   and sluices, ice on the mud, the tide's water reaching up the tideways' banks, Halligen. Task 99 added the sea birds
    (tools/art/sea_birds.py): the oystercatcher, black above and white below (`ink` with an
    `ink` outline, `lime`) with a long orange-red bill (`flame`, `red_light`) and pink legs,
    about 20 px long at 32 px; the dunlin, small and grey (`stone`, `stone_light`, a `stone_dark`

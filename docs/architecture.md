@@ -146,14 +146,15 @@ Warft and an Ewer here and there.
   `TerrainTileset.ART_16_SCALE`; once its group is drawn at 32 px (the people, task 113; the
   farm animals, task 114; the wild animals, their shadows, the hit particles, the fire and the
   weather, task 116; the ground, task 107; the buildings, task 110; the plants and the trees'
-  `sprite_height`, task 108; the items on the ground and their hop, task 115), as the number
-  measured on the 32 px picture; and the shaders of
+  `sprite_height`, task 108; the items on the ground and their hop, task 115; the walls, fences,
+  the dyke, the camp and the placed objects, task 111), as the number measured on the 32 px
+  picture; and the shaders of
   the art work on its pixels through `art_scale` (`art_scale.gdshaderinc`), which
   `AmbientMotion` sets for the ground's and the plants' shaders by the art set (1, or 2 in the
   classic art; the plants' sway profiles are in the world's pixels and halved for the classic
   art) and to 2 for the crops, still 16 px art. The object atlas has cells of 3×5 tiles at 32
-  px; its rows not drawn anew yet (the camp, walls, fences, the dyke and the placed objects,
-  task 111) are scaled up in it by the generator (`DOUBLED_ROWS`). `WildlifeRules.TILE_SIZE`
+  px, every row drawn at 32 px; a type whose picture is wider (the Ewer, in scale with the
+  people) spans `cells_wide` cells of its row, one tile of the TileSet. `WildlifeRules.TILE_SIZE`
   is the same tile size for the state, which can't see the
   scenes (a test keeps the two equal).
 - **Item icons in the UI:** the icons are 32 px pictures and the classic ones 16 px; a slot

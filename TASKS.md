@@ -1630,7 +1630,53 @@ on the new windows' places, a few pixels off the old windows.
 
 ## 111. 32 px art: walls, fences, the dyke and placed objects (chests, stations, the landing, graves)
 
-- [ ] Done
+- [x] Done
+
+Done: every row of the object atlas is drawn at 32 px now, so `DOUBLED_ROWS` and `doubled` are gone,
+and so are the explicit doublings of the stations, the grave marker and the indoor chest
+(`write_interior`, `interior.chest_picture`) and `standing_outdoors`' 16 px shadow (it uses
+`trees.ground_shadow`); `bedroll_cover.png` left `DOUBLED`. Each placed thing is as big as its
+doubled picture was, so it stands where it stood and no number of the game changed (the fireplace's
+flame box, the bedroll's cover row and the jetty's deck are the same). The lines (boundaries.py):
+the Knick a turfed bank with a low dark core and hazel and hawthorn bushes drawn as leafy domes,
+each drawn whole by the tile it stands on so no bush breaks at a seam; the wattle fence's rods woven
+round stakes; the fieldstone wall's squat stones in two courses; the dyke (review task 5) a bank
+with a flat crest and a sheep track that bends round each corner in a quarter circle, which keeps a
+straight arm's distances across the tile's sides, so a dyke on the slant (a stair of corners, as the
+generator makes it) is one winding bank and needs no new masks or game data; green in autumn like
+the marsh. The camp (camp.py): a ring of field stones, ash, embers and three split logs; the quilted
+bedroll with its blanket roll and its cover. The chest, the carved chest with tulips, the workbench,
+the kiln, the oven and the cupboard (chest.py, crafts.py), the oak cross, headstone and granite slab
+(church.py), the landing (landing.py). The Ewer (coast.py) is in scale with the people (the review):
+a hull about seven tiles long and a mast more than twice a person's height, a picture three cells
+wide; a type's `cells_wide` makes ObjectTileset create one tile over that many cells (and
+WorldView's stand-in sprite take them), the Ewer's footprint is 7x1 (`MAX_FOOTPRINT` 7x2;
+landscape.cfg's Ewers need 7 tiles of mud) and generate.py's `atlas_cells` splits the picture. No
+save change: Ewers come from the seed, so an old world keeps those with 7 tiles of mud and loses the
+rest; a jetty or boat built far out on the mud of an old save could now overlap a kept Ewer's longer
+hull (rare, accepted). Snow lies twice as deep on all of them. Their item icons and ground items are
+made from the new pictures (task 115's `items.icon_of` takes a 32 px picture, halving one much
+bigger than an icon). fire.strip and fire.burning take every picture at the game's tile now.
+canvas.py's object cell is defined at 32 px (`GAME_OBJECT_*`); `OBJECT_*` stays for the classic
+art's old generators, which import it. The classic art (task 117): boundaries.py, camp.py (with the
+old bedroll and cover, replacing task 112's bedroll.py), chest.py, coast.py, crafts.py and
+landing.py of commit ec0b1af in tools/art/classic/, byte for byte the classic atlas before but for
+the Ewer, which lies in the middle of its three cells; the classic art also writes the stations and
+the grave marker placed indoors. New debug flag `--yard=<x>,<y>`: the chest and the stations in a
+row with a Knick, a wattle fence, a wall and a dyke on the slant behind them. Checked in screenshots
+at zoom 0.5, 1 and 2: the camp by day, at dusk and waking on the bedroll, the yard in summer,
+autumn, bare winter, snow and at night, the landing in summer and on a snowy winter night, the Ewer
+at high and low water beside the player, the river dykes of the marsh, the churchyard by day and on
+a snowy night, in both art sets; `make contrast-sheet` for the four lines. README pictures retaken:
+camp, stations, waking-in-bed (the bedroll), church (the graves and the wall), art-sets; new: ewer,
+landing.
+Left for later: the farm yard objects of review task 6 (task 122); where the dyke is two tiles wide
+(2x2 blocks at the river's bends, T-junctions) it shows a ring with a dip in the middle, as a 4-side
+mask cannot know the diagonal neighbour; the fisher-hut, landscape and coast pictures of the README
+were not retaken (the hut would not place by the water in the shots; the new landing and Ewer
+pictures show what changed); the classic Ewer stands on the new 7x1 footprint, which is wider than
+its picture; the wattle fence and the wall seen end-on (running north-south) are thin columns, as
+before.
 
 The objects atlas is shared with 108; see there.
 
@@ -1973,6 +2019,22 @@ closes), the ghost in the world follows the choice, and it reads in both art set
 Goes with task 120: the variant needs a saved style per placed building (a save version) and
 the variants' pictures; plan the data shape (a building and its styles in data/buildings.cfg)
 together.
+
+## 122. The farm yard: chicken coop, trough, hay rack, draw well and stork's nest
+
+- [ ] Done
+
+From review/art-review-2026-11-08 (its task 6 and buildings rows 1 to 3 and 16), left out of
+task 111 because each needs game data as well as art: a chicken coop (a building 2x2, low and
+boarded, a ramp with cleats to a hatch, a nest-box lid; the hens sleep in it and the eggs are
+collected there; an interior map), a trough (a hollowed oak log or a plank box with water) and a
+hay rack (oak posts with slanting slats, hay behind them), 2x1 world objects that feed and water
+the livestock (SPEC, Livestock), a draw well with a sweep (1x1 plus the sweep above it: an oak
+well head on a fieldstone ring, a forked post, the balanced pole, the bucket and a weight stone;
+water for the can, the animals and the house) and a stork's nest on a roof ridge (the
+`roof_stork` standing in it). Draw them at 32 px in the style of task 111 (tools/art/, a new
+yard.py), give them types, recipes and placement (data/, world_object_types.gd), and decide
+what each does for the animals.
 
 ## Later (not part of the prototype)
 

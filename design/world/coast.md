@@ -32,8 +32,9 @@
     top, in a ring of salt marsh. It is dry grass that can be walked and built on (not tilled), a
     spot for a later task to build on; nobody lives there yet.
   - **An Ewer** lies on the mud in one of every 70 rows (chance 0.6), 22 to 60 tiles out: a
-    world object on 3x1 tiles, to look at; it blocks the way and no tool takes it. At the object
-    atlas's scale it is smaller than a real Ewer.
+    world object on 7x1 tiles, to look at; it blocks the way and no tool takes it. Its hull is
+    about seven tiles long and its mast more than twice a person's height (task 111; it was held
+    to one object cell, 3x1 tiles, before), still a little smaller than a real one.
   - **Old worlds:** save version 18 lets the coast give way where the player has made a home
     within its reach (the foreshore and the marsh inland of the dyke), as version 10 did for the
     worked land: the ground there is grass and the generated objects are taken off. A home away

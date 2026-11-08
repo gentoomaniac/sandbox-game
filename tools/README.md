@@ -34,29 +34,30 @@ by topic. Where is a thing drawn?
 | Module | What it draws |
 |---|---|
 | `contrast_sheet.py` | `make contrast-sheet` (after `make assets`): the tall grass, fern and reeds (or the atlas rows named in `KINDS="willow shrub"`) over the grass, lush grass, dry grass and floodplain of every look (each season, frost, snow, and night) into `build/contrast_sheet.png`, to check contrast by eye. |
-| `generate.py` | The object atlas (`object_atlas()`, with the numbered table of its rows, and `DOUBLED_ROWS`: its rows still drawn at 16 px, scaled up in it), the writers, `main()`, and `DOUBLED` with `scale_up_16_px_art()`: the files still drawn at 16 px per tile, scaled up to the game's 32 px tile pixel for pixel (see [docs/art-style.md](../docs/art-style.md), "Resolution"). |
-| `canvas.py` | The shared basics: `TILE` (the 16 px the art is drawn at), `GAME_TILE` (the game's 32 px tile), the size of an object cell, `blank`, `filled`, `copy`, a clipped `rect`, and the two outline helpers: `outline` (a ring outside the drawing) and `outline_edge` (recolours the drawing's border). |
+| `generate.py` | The object atlas (`object_atlas()`, with the numbered table of its rows; `atlas_cells` splits a picture wider than a cell, the Ewer's, into its cells), the writers and `main()`; everything is drawn at the game's 32 px tile (see [docs/art-style.md](../docs/art-style.md), "Resolution"). |
+| `canvas.py` | The shared basics: `TILE` (the 16 px of the icons and the classic art), `GAME_TILE` (the game's 32 px tile), the size of an object cell at each (`GAME_OBJECT_*`, and `OBJECT_*` for the classic art), `blank`, `filled`, `copy`, a clipped `rect`, and the two outline helpers: `outline` (a ring outside the drawing) and `outline_edge` (recolours the drawing's border). |
 | `palette.py` | The palette, `DARKEST_OF` (the colour that outlines each ramp), `to_image`, `save` (one PNG under `assets/`) and the palette check. |
 | `terrain.py` | The ground, drawn at 32 px per tile: water, tidal mud, floodplain, wetland, grass, salt marsh, Warft, lush and dry grass, trodden grass, path and tilled soil, their decorations, and the wet look of tilled soil. |
 | `flowers.py` | The meadow flowers of the region: the flower row of the decoration atlas, drawn at 32 px. |
 | `trees.py` | Oak, spruce, pine, dead tree, bushes, ferns, stones, boulders and stumps, drawn at 32 px, and the shared plant parts (the cell, crowns of leaf sprays, trunks, bare limbs and twigs, blades, ground shadows, dense feet). |
 | `beech.py`, `birch.py`, `alder.py` | The beech, the birch and the alder, in leaf and bare. |
 | `willow.py` | The pollard willow, in leaf and bare. |
-| `camp.py` | The fireplace and the bedroll. |
+| `camp.py` | The fireplace and the bedroll with its cover, drawn at 32 px. |
 | `character.py` | The player's layers at 32 px per tile (body, breeches and stockings, clogs, shirt and waistcoat, jacket, hair, hats, and every tool in the hand: `HELD_TOOLS`), all drawn on one `Figure` (where the head, arms and legs are in a frame), their passing out, sitting on a horse and the sleeping "z". |
 | `villagers.py` | The villagers' layers on the same figure: the women's dress (bodice, skirt, apron, shawl, coif, headscarf), other skins, hair colours and cloth, the felt hat, the tricorne and the white stocking cap. |
 | `forms.py` | Rounded shapes as masks (ellipse, turned or not, capsule, polygon, rounded box) and their shading by the light from the top left, for the figures of character.py and villagers.py, the farm animals of livestock.py and the wild animals. |
 | `portraits.py` | The 32x32 chat portrait of every layer that shows in a bust: the top of its frame facing the viewer. |
 | `interior.py` | The room tiles and the furniture inside the buildings, the hearth too, drawn at 32 px; the bed covers. |
 | `buildings.py` | The shack, fisherman's hut, Kate, longhouse, hall house and barn at 32 px per tile, plain and with lit windows. |
-| `church.py` | The church and its bell frame (as buildings.py), and the graves of the churchyard (a row of the object atlas, still 16 px). |
+| `church.py` | The church and its bell frame (as buildings.py), and the graves of the churchyard (a row of the object atlas, drawn at 32 px). |
 | `seasons.py` | The other looks (spring, autumn, bare, frost, snow, dusting, leaf-out steps) made from the summer art by colour remaps and overlays, the ground's by terrain layer where they differ (`LAYER_REMAPS`: autumn straw only on the dry grass). Also adds its colours to the palette. |
 | `crops.py`, `crop_icons.py` | Crop sheets (growth stages and the dead one), seed bag and produce icons. |
-| `items.py`, `tool_icons.py`, `chest.py` | Item icons, the slot frames and the tools; the chest, which is drawn once for every use. |
-| `boundaries.py` | The lines across the land, drawn as solids tile by tile with a picture per connection mask: the Knick, the wattle fence, the fieldstone wall and the dyke. |
-| `coast.py` | The things of the Wadden coast: the Ewer lying on the mud. |
-| `landing.py` | The fisherman's landing: the jetty (a picture per connection mask), the rowing boat, the net frame and the eel traps, and their icons. |
-| `crafts.py` | The professions' art: the stations (workbench, kiln, bake oven) and the carved chest, each drawn once for the atlas, the interior and its icon, and the icons of what is made at them. |
+| `items.py`, `tool_icons.py` | Item icons, the slot frames and the tools; `icon_of` makes the icon of an item that places a world object from its picture. |
+| `chest.py` | The chest at 32 px, one picture outdoors, indoors and for its icon. |
+| `boundaries.py` | The lines across the land at 32 px, drawn as solids tile by tile with a picture per connection mask: the Knick (its bushes leafy domes on the bank), the wattle fence, the fieldstone wall and the dyke (bending round its corners). |
+| `coast.py` | The things of the Wadden coast: the Ewer lying on the mud, at 32 px, a picture three object cells wide. |
+| `landing.py` | The fisherman's landing at 32 px: the jetty (a picture per connection mask), the rowing boat, the net frame and the eel traps, and their icons. |
+| `crafts.py` | The professions' art: the stations (workbench, kiln, bake oven, cupboard) and the carved chest at 32 px, each drawn once for the atlas, the interior and its icon, and the icons of what is made at them. |
 | `trunks.py`, `meadow.py`, `reeds.py` | Felled trunks, tall grass, reeds and the clay hint (drawn at 32 px), the hay, clay and reeds items. |
 | `fire.py` | The animation frames of the campfire and the hearth, drawn at 32 px; `strip` scales up the 16 px fireplace around them (the hearth is drawn at 32 px). |
 | `animals.py` | One sheet per small wild animal (sparrow, rabbit, squirrel, roe deer, bee, butterflies, mouse, frog), drawn at 32 px per tile. |
@@ -99,18 +100,21 @@ graves of `church.py` are not written there; the looks are the shared `seasons.h
 pictures kept their sizes at 32 px; the plants (task 108), from commit e303759: `trees.py`,
 `trunks.py`, `beech.py`, `birch.py`, `alder.py`, `willow.py` and `flowers.py` (the meadow flowers
 of the classic decorations) unchanged, the plant parts of `meadow.py` and `reeds.py`, and
-`object_looks.py`, the object part of `seasons.py`. The object atlas is one picture, so the
-classic one (`object_atlas` there) has every row: the rows not drawn anew yet come from the
-shared modules, as the new atlas has them, the graves from `graves.py`, the graves part of
-`church.py`, and the bedroll from `bedroll.py`, the old bedroll and its cover of `camp.py`; the
-crops (task 109), from commit f2c24f8: `crops.py` unchanged (rye and buckwheat were first drawn
-at 32 px and have no classic sheet); the interiors (task 112), from commit f2c24f8:
-`interior.py` unchanged (its chest is the shared `chest.py`), whose pictures kept their sizes;
-the item icons and the items on the ground (task 115), from commit 91742f0: `items.py` as
-`item_icons.py` (so that the shared modules that import `items` get the new one),
+`object_looks.py`, the object part of `seasons.py`, which draws the looks of the whole classic
+object atlas (`object_atlas` there); the crops (task 109), from commit f2c24f8: `crops.py`
+unchanged (rye and buckwheat were first drawn at 32 px and have no classic sheet); the
+interiors (task 112), from commit f2c24f8: `interior.py` unchanged, whose pictures kept their
+sizes; the item icons and the items on the ground (task 115), from commit 91742f0: `items.py`
+as `item_icons.py` (so that the shared modules that import `items` get the new one),
 `tool_icons.py` and `crop_icons.py` unchanged but for that import, and `craft_icons.py`, the
 icon parts of `meadow.py`, `reeds.py`, `crafts.py`, `church.py` and `landing.py` (their world
-pictures are the shared ones, still 16 px); the buckwheat pancakes were first drawn at 32 px.
+pictures are the classic ones of task 111); the buckwheat pancakes were first drawn at 32 px;
+the walls, fences, the dyke and the placed objects (task 111), from commit ec0b1af:
+`boundaries.py`, `camp.py` (with the old, shorter bedroll and its cover), `chest.py`,
+`coast.py`, `crafts.py` and `landing.py` unchanged but for `item_icons` in place of `items`,
+and `graves.py`, the graves part of `church.py` of commit e303759; it also writes the stations
+and the grave marker placed indoors. The new Ewer's picture is three cells wide, so the classic
+one lies in the middle of three.
 The cow's, the horse's and the small wild animals' cells grew at 32 px, so `set_in_grown_cells`
 puts their classic cells in the new ones (bottom centre), as the classic files must have the
 new cell sizes.
@@ -152,8 +156,7 @@ When a group goes native (docs/art-style.md, "Resolution"), before its redraw ch
   `data/buildings.cfg`, and its interior ([maps/README.md](../maps/README.md)).
 - **A crop:** a section in `data/crops.cfg` and a sheet in `crops.py`; no game code.
 - **A new kind of file** (a new family of PNGs): a `write_...` function in `generate.py` that
-  calls `save` or `save_picture`, and a line in `main()`. If the world draws it and it is drawn
-  at 16 px per tile, add it to `DOUBLED`.
+  calls `save` or `save_picture`, and a line in `main()`.
 
 ### Seeds: why the art stays the same between runs
 
