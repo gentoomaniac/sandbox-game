@@ -6,7 +6,8 @@ output is deterministic, so a change that should not alter a picture leaves it b
 the same (`git status` after `make assets` shows what moved).
 
 ```sh
-make assets    # all art, all sounds, then the palette check and the sound check
+make assets    # all art (the classic art first), all sounds, then the palette and sound checks
+make classic-assets  # just the classic art under assets/classic/
 make venv      # just the Python environment (make assets does this itself)
 ```
 
@@ -72,6 +73,32 @@ into `PALETTE` (a name in both fails), and the palette is limited to `MAX_PALETT
 (when it is full, merge two similar colours to add one). A picture with a colour that is not
 in it fails with "unknown colour X in <the file being written>". After writing,
 `check_palette()` fails if any PNG under `assets/` has a colour outside the palette.
+
+### The classic art: tools/art/classic/
+
+The game can show the art of a group redrawn at 32 px per tile as it was before, the 16 px art
+doubled (Settings → Display, F7; see `ArtSet` in game/scenes/art_set.gd). That classic art is
+generated like the rest: tools/art/classic/ holds the old generators of the groups that went
+native, copied from git history as they were, and its `generate.py` writes their files under
+assets/classic/, with the same names as the new files under assets/, and doubles the world's
+ones by its own `DOUBLED`. The old modules import their siblings there first and the shared
+`canvas.py` and `palette.py` of tools/art/ after them; a later change to those two that an old
+module trips over (a colour renamed) is made in the old module too. So far: the people (task
+113), from commit 97e9736: `character.py`, `villagers.py` and `portraits.py` unchanged, and
+`bubbles.py`, the thought bubble part of `ui.py`.
+
+When a group goes native (docs/art-style.md, "Resolution"), before its redraw changes them:
+
+1. Copy each module the group's old drawing is in from the commit before the redraw:
+   `git show <commit>:tools/art/<module>.py > tools/art/classic/<module>.py`. Take a whole
+   module, or just the group's part of a shared one (as `bubbles.py`), and change nothing but
+   what it needs to run beside the others (an import, a path). If a module of that name is
+   already there (two groups drawn in one module), add the group's part to it.
+2. Add the group's old `write_...` lines to `main` in tools/art/classic/generate.py, writing to
+   `f"{CLASSIC}/<path>"`, and its doubled globs to `DOUBLED` there.
+3. `make assets`, and compare a few classic files with those of the commit
+   (`git show <commit>:assets/<path>`): they are the same picture, byte for byte while nothing
+   shared changed.
 
 ### Adding things
 

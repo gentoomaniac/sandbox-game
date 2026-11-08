@@ -468,6 +468,13 @@ Ctrl and the mouse wheel zoom smoothly in to 2×. The wheel alone steps through 
 
 ![Rebinding the controls](docs/screenshots/controls.png)
 
+The art is being redrawn at 32 px per tile, group by group. Settings → Display → Art, or F7
+while playing, switches between the new art and the classic art, the 16 px art it replaces
+(doubled); so far the player and the villagers have both. Everything not redrawn yet looks the
+same in both.
+
+![The camp with villagers in the new art and in the classic art](docs/screenshots/art-sets.png)
+
 ![Zoomed in to 2×](docs/screenshots/zoom.png)
 
 ### Console
@@ -518,6 +525,7 @@ These are the default keys; all of them can be changed under Settings → Contro
 | Escape | Pause menu |
 | `/` | Console |
 | F3 | Show coordinates and weather values |
+| F7 | Switch between the new and the classic art |
 
 ## Running the game
 

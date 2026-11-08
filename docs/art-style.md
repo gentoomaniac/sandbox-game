@@ -72,6 +72,16 @@ Tasks 107 to 116 redraw the art group by group at 32 px; the people are done (ta
 
 - draw it at 32 px per tile (its cells, frames and offsets are twice the numbers below) and
   take its files out of `DOUBLED`;
+- keep its 16 px art as the classic art (task 117; the player switches with F7): move its old
+  generator code, as it was before the redraw, to tools/art/classic/, call it from `main` there
+  and put its doubled files in that file's `DOUBLED`, so `make assets` writes them under
+  assets/classic/ with the names of the new files (tools/README.md says how). The classic files
+  need the new files' cell sizes; a picture with no classic version (one first drawn at 32 px)
+  shows the new art in both sets. In the game, load the group's pictures through
+  `ArtSet.path`; a view or tileset that keeps them joins the group `ArtSet.VIEWS` and loads them
+  anew (a tileset rebuilds, the chunks redraw) in `show_art_set()`. The numbers measured on the
+  art are the new art's; where the classic art is visibly off by them, choose by
+  `ArtSet.is_classic`;
 - in the game, a number measured on a picture is either its 16 px number times
   `TerrainTileset.ART_16_SCALE` (a frame size in `WildlifeSprites`, a hop in `Rabbit`) or, once
   its group is native, the number measured on the 32 px picture, without the factor. A number

@@ -1566,6 +1566,37 @@ and night in screenshots and the contrast sheet, and retakes the README pictures
 Order: 106 first; then 113 and 114 (what reads worst), 107 and 108 (what everything stands on),
 the rest after; a group may be split if it is large.
 
+## 117. Switch between the classic 16 px art and the new 32 px art
+
+- [x] Done
+
+The user, 2026-11-08: "Since you fixed the engine to run in both old and new textures, add a
+functionality to switch in-between those. You can recover the already changed ones from git
+history, make it a setting under the video settings and add an F-key to change it on the fly."
+And: "There's a script to generate the art, correct? Make sure there's a target that also
+generates the old art".
+
+Done: the old art is generated, not copied. tools/art/classic/ holds the people's generators of
+commit 97e9736 (`character.py`, `villagers.py` and `portraits.py` unchanged, the thought bubble
+part of `ui.py`), and `make classic-assets` (run first by `make assets`, so the palette check
+covers it) writes their pictures under assets/classic/ with the new files' names, doubled as
+then: byte for byte the art of 97e9736, with the new files' cell sizes. `ArtSet` loads the
+classic picture where there is one and the new one where there is none (the white stocking
+cap, the striped apron and the tricorne have none); every load of the people's art goes through
+it (the player, the villagers, the character screen, the chat portraits, the "z"s, the thought
+bubble). The setting is "Art: New 32 px / Classic 16 px" under Settings → Display
+(`classic_art` under [display] in settings.cfg; not in the save) and F7 ("Classic or new art"
+under Settings → Controls) switches it on the fly and saves it; the views that keep their
+pictures load them anew, the rest on their next frame. The numbers measured on the art stay the
+new art's: in the classic art the head and hat tops and the name tag are 2 to 3 pixels off and
+the "z"s start 8 pixels further left, still over the head, which does not show. Debug flags:
+`--classic-art` (not saved) and `--switch-art` (F7 just before a screenshot). Checked in
+screenshots at zoom 1 and 2: villagers and the player in both sets, F7 pressed in a running
+game, passing out with the "z"s, the Display and Controls pages; README picture added.
+Each of tasks 107 to 116 moves its group's old generators to tools/art/classic/ and loads its
+pictures through `ArtSet` (docs/art-style.md, "Resolution"; tools/README.md): 114 and 116 are
+running beside this task, so their classic art comes with them or right after.
+
 ## Later (not part of the prototype)
 
 - **The camp's bedroll and campfire can be taken down and built** (the user, 2026-11-08): today

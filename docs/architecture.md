@@ -145,6 +145,14 @@ Warft and an Ewer here and there.
   the number measured on the 32 px picture; and the shaders of the art work on its pixels through
   `art_scale` (`art_scale.gdshaderinc`). `WildlifeRules.TILE_SIZE` is the same tile size for
   the state, which can't see the scenes (a test keeps the two equal).
+- **Art sets:** the 16 px art of a group drawn anew at 32 px stays in the game as the classic
+  art, generated into `assets/classic/` by tools/art/classic/ under the new art's names.
+  `ArtSet` (`game/scenes/art_set.gd`) picks the picture of the chosen set: every load of a group
+  that has classic art goes through `ArtSet.path`, which gives the classic picture where there is
+  one. The setting is `GameSettings.is_classic_art` (Settings → Display, F7); on a switch Main
+  calls `ArtSet.show`, and the views that keep their pictures (`NpcView`, `CharacterPreview`,
+  `ChatScreen`: the group `ArtSet.VIEWS`, `show_art_set()`) load them anew, while the others load
+  theirs as they show them. The numbers measured on the art are the new art's in both sets.
 - Other views each draw one piece of state: `PlayerView`, `WeatherView`, `WildlifeView`,
   `BuildMode` (the ghost, and the red marking and hold of taking down; `Builder` holds the
   mode and what each target gives, `GameState.take_down_building` the rules for buildings),
