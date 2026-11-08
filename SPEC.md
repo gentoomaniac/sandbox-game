@@ -50,10 +50,15 @@ top of classic pixel art (details under "Lighting and look").
      pixels stay sharp, only one row of screen pixels blends at their edges. Zoom and
      camera movement stay smooth at any value, without uneven pixels.
 - **UI** is rendered separately at native resolution.
-- **Tiles: 16×16.** Default view about 320×180 art pixels (20×11 tiles).
-- **Stepless zoom** from 0.5× (about 640×360 art pixels) to about 2×; the game starts at
-  0.5× (the user zooms out fully anyway, 2026-11-08). Ctrl and the mouse wheel zoom; the wheel
-  alone steps through the hotbar.
+- **Tiles: 32×32** (decided 2026-11-08, after the mockup in review/resolution-mockup-2026-11-08:
+  the 16×16 art was "early PC, almost C64"; small animals and legs one pixel wide did not read).
+  The widest view is a native 640×360 art pixels (20×11 tiles, the area the 16 px art showed at
+  zoom 1), shown at a whole multiple on the usual screens (×3 at 1080p, ×4 at 1440p). Until all
+  art is redrawn at 32 px, the generators' 16 px output is doubled pixel for pixel (tasks 106 and
+  on). (Was: 16×16, 320×180 at zoom 1.)
+- **Stepless zoom** from the widest view (640×360 art pixels) in to about 2×; the game starts
+  at the widest (the user zooms out fully anyway, 2026-11-08). Ctrl and the mouse wheel zoom;
+  the wheel alone steps through the hotbar.
 - **Smooth camera following:** the camera follows the player's exact position, so the
   world scrolls at sub-pixel precision; the player, drawn on the pixel grid, may wobble by up
   to half an art pixel. Chosen over a pixel-locked camera (2026-11-05).

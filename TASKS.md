@@ -1427,6 +1427,67 @@ assignments, all green. The one failure found, `test_language_model_page` under 
 order but time: `CannedHttpTest` waited for the client by frame count, and a headless frame takes
 microseconds, so it gave up before the client connected; it now waits 5 s of clock time.
 
+## 106. The engine at 32×32 art pixels per tile, the 16 px art doubled for now
+
+- [ ] Done
+
+The user's decision of 2026-11-08, after review/resolution-mockup-2026-11-08: switch to 32×32
+art pixels per tile, with a native 640×360 view (20×11 tiles) at the widest zoom; "still retro
+enough, but things are actually visible". This first step changes the engine and leaves the
+look as it is: one tile size everywhere (TerrainTileset.TILE_SIZE and every pixel number that
+follows from it, the viewport and zoom range in ViewMath, frame and cell sizes, window light
+positions in data/buildings.cfg, ground item and shadow sizes, tests that pin sizes), and
+every generated picture doubled pixel for pixel at the end of the art pipeline, so the game
+plays and looks as today at zoom 1 while the art is redrawn group by group (tasks 107 to 116),
+each group dropping its doubling. UI icons and slots stay as they are until task 115.
+
+## 107. 32 px art: ground (terrain, paths, soil, water, mud, the dual-grid looks)
+
+- [ ] Done
+
+## 108. 32 px art: plants (trees, the willow, bushes, tall grass, fern, reeds, flowers, decorations)
+
+- [ ] Done
+
+## 109. 32 px art: crops and fields
+
+- [ ] Done
+
+## 110. 32 px art: buildings (shack, fisherman's hut, Kate, longhouse, hall house, barn, church, bell frame) and their seasonal and lit looks
+
+- [ ] Done
+
+## 111. 32 px art: walls, fences, the dyke and placed objects (chests, stations, the landing, graves)
+
+- [ ] Done
+
+## 112. 32 px art: interiors and furniture
+
+- [ ] Done
+
+## 113. 32 px art: the player and the villagers (character layers, every action, riding, collapse, portraits)
+
+- [ ] Done
+
+## 114. 32 px art: farm animals (cow, sheep, chicken, horse, dog, cat, rabbit), every action
+
+- [ ] Done
+
+## 115. 32 px art: items and icons (ground items, inventory icons, the UI slots that show them)
+
+- [ ] Done
+
+## 116. 32 px art: wild animals (birds, flocks, storks, geese, sea birds, deer, squirrels, rabbits, mice, frogs, bees, butterflies) and effects (fire, particles, rain splashes, hit effects)
+
+- [ ] Done
+
+Each of 107 to 116 redraws its group at 32 px in the style of the mockup (more detail, legs
+with joints, faces, small animals drawn a little larger than life, a calmer ground behind small
+figures, contact shadows), drops the doubling for it, checks every season, frost, snow, dusk
+and night in screenshots and the contrast sheet, and retakes the README pictures it shows.
+Order: 106 first; then 113 and 114 (what reads worst), 107 and 108 (what everything stands on),
+the rest after; a group may be split if it is large.
+
 ## Later (not part of the prototype)
 
 - **The camp's bedroll and campfire can be taken down and built** (the user, 2026-11-08): today
