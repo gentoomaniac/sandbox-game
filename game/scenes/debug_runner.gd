@@ -248,9 +248,12 @@ func _is_outside_and_drawn() -> bool:
 	return view.is_settled and not state.is_inside()
 
 
-## Waits for the first house and the world around, then walks in without a fade.
+## Waits for the first house (of the `--inside` type, if given) and the world around, then
+## walks in without a fade.
 func _enter_first_house() -> void:
-	var houses := state.world.buildings()
+	var houses := state.world.buildings().filter(
+		func(house: Building) -> bool: return _options.inside_building in [&"", house.type]
+	)
 	if houses.is_empty() or not view.is_settled:
 		return
 	_is_entering_first_house = false

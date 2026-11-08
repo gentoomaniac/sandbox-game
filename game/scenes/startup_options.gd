@@ -56,7 +56,8 @@ extends RefCounted
 ##                            horseback a column of the ridden horse: 0 standing, 1 to 4
 ##                            walking, 5 to 8 trotting)
 ##   --riding=<look>          sit on a saddled horse of that look (bay, black, grey, pony)
-##   --inside                 walk into the first house as soon as one exists (see --house)
+##   --inside[=<building>]    walk into the first house as soon as one exists (see --house), or
+##                            into the first building of that type (see --street)
 ##   --sleep                  go to bed as soon as the world is drawn (a new game starts beside
 ##                            the sleeping bag). With --time=00:59 and a --screenshot-delay of
 ##                            a second or more the player stays up too late instead.
@@ -175,6 +176,8 @@ var pose := ""
 var pose_column := -1
 var riding := &""
 var inside := false
+## The building type `--inside` walks into, or empty for the first house.
+var inside_building := &""
 var sleep := false
 
 # Screens and the console
@@ -291,6 +294,8 @@ func _init(args := PackedStringArray()) -> void:
 				riding = StringName(_value(arg))
 			"--inside":
 				inside = true
+				if "=" in arg:
+					inside_building = StringName(_value(arg))
 			"--sleep":
 				sleep = true
 			"--inventory":

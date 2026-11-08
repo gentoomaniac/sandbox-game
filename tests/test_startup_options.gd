@@ -35,6 +35,7 @@ func test_flags_with_a_value() -> void:
 					"--pose=left,2",
 					"--hair=1",
 					"--riding=pony",
+					"--inside=barn",
 				]
 			)
 		)
@@ -57,6 +58,8 @@ func test_flags_with_a_value() -> void:
 	assert_eq(options.pose_column, 2)
 	assert_eq(options.hair, 1)
 	assert_eq(options.riding, &"pony")
+	assert_true(options.inside)
+	assert_eq(options.inside_building, &"barn")
 
 
 func test_flags_without_a_value() -> void:
@@ -67,6 +70,7 @@ func test_flags_without_a_value() -> void:
 	assert_true(options.inventory)
 	assert_true(options.storage)
 	assert_true(options.inside)
+	assert_eq(options.inside_building, &"", "the first house")
 	assert_true(options.sleep)
 	assert_false(options.crafting)
 	assert_false(options.skills)
