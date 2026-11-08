@@ -59,8 +59,9 @@ extends RefCounted
 ##   --inside[=<building>]    walk into the first house as soon as one exists (see --house), or
 ##                            into the first building of that type (see --street)
 ##   --sleep                  go to bed as soon as the world is drawn (a new game starts beside
-##                            the sleeping bag). With --time=00:59 and a --screenshot-delay of
-##                            a second or more the player stays up too late instead.
+##                            the sleeping bag; with --inside, in the room's first bed). With
+##                            --time=00:59 and a --screenshot-delay of a second or more the
+##                            player stays up too late instead.
 ##
 ## Screens and the console
 ##   --inventory              open the character screen at start

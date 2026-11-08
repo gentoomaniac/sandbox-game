@@ -101,8 +101,10 @@ func is_clock_stopped() -> bool:
 func update(delta: float) -> void:
 	if _is_entering_first_house:
 		_enter_first_house()
-	if _is_sleeping and view.is_settled:
+	if _is_sleeping and _is_map_drawn():
 		_is_sleeping = false
+		if state.is_inside():
+			_go_to_first_bed()
 		try_sleep.call()
 	_place_chests()
 	if _churchyard_tile != StartupOptions.NO_TILE and view.is_settled and not state.is_inside():
@@ -259,6 +261,14 @@ func _enter_first_house() -> void:
 	_is_entering_first_house = false
 	state.player.position = Vector2(houses[0].door_tile()) + Vector2(0.5, 0.5)
 	pass_door.call()
+
+
+## Puts the player on the first bed of the room, so that it is in reach.
+func _go_to_first_bed() -> void:
+	for object in state.current_map.objects():
+		if object.is_bed():
+			state.player.position = Vector2(object.pos) + Vector2(0.5, 0.5)
+			return
 
 
 ## Puts the asked chests where they go once their map is drawn, and opens the storage screen of
