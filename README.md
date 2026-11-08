@@ -9,7 +9,7 @@ light change the world as you play.
 > walk, farm, fell, mine, gather, build and sleep through the seasons. There is no shop,
 > combat or story yet.
 
-![The starting camp on a summer morning](docs/screenshots/camp.png)
+![The starting camp on a summer morning, at the widest view](docs/screenshots/camp.png)
 
 ## Features
 
@@ -460,13 +460,13 @@ and windowed, scale the UI from 0.5× to 2× without touching the world view, an
 energy drain and the day length variation, and set the language model villagers talk
 through. Hover over a setting, a key or an item in the
 hotbar, inventory or equipment for a short explanation: an item's kind, weight, what food
-gives back, what seeds grow and where they are planted. The game starts zoomed out at
-0.5×; Ctrl and the mouse wheel zoom smoothly up to 2×. The wheel alone steps through the
-hotbar.
+gives back, what seeds grow and where they are planted. The game starts at its widest view,
+a native 640×360 art pixels (20×11 tiles of 32×32, ×3 on a 1080p screen and ×4 at 1440p);
+Ctrl and the mouse wheel zoom smoothly in to 2×. The wheel alone steps through the hotbar.
 
 ![Rebinding the controls](docs/screenshots/controls.png)
 
-![Zoomed out to 0.5×](docs/screenshots/zoom.png)
+![Zoomed in to 2×](docs/screenshots/zoom.png)
 
 ### Console
 

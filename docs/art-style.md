@@ -58,6 +58,37 @@ palette is full again; the next colour (for example a pale glowing `wisp` green-
 will-o'-the-wisps, about `c8f0c8`) needs a merge first. After the `lush` merge, lush grass
 differs from grass only by its darker blades: still a visible patch, but softer.
 
+## Resolution: 32 px per tile
+
+A tile is **32×32 art pixels** (decided 2026-11-08, task 106; see SPEC.md "Lighting and look"),
+and the widest view is a native 640×360: 20×11 tiles, shown ×3 on a 1080p screen and ×4 at
+1440p. The art was drawn at 16 px per tile, and the generators still draw at `canvas.TILE = 16`:
+`generate.py` scales every file of its `DOUBLED` list up to the game's tile (`canvas.GAME_TILE`,
+32) pixel for pixel, as the last step before the palette check. So until a group is redrawn
+the game looks as it did, every pixel 2×2.
+
+Tasks 107 to 116 redraw the art group by group at 32 px. To take a group native:
+
+- draw it at 32 px per tile (its cells, frames and offsets are twice the numbers below) and
+  take its files out of `DOUBLED`;
+- in the game, a number measured on a picture is either its 16 px number times
+  `TerrainTileset.ART_16_SCALE` (a frame size in `WildlifeSprites`, a seat in `PlayerView`, a
+  hop in `Rabbit`) or, once its group is native, the number measured on the 32 px picture,
+  without the factor. Grep for `ART_16_SCALE`; the factor also hides in `WildlifeSprites.SCALE`,
+  `BuildMode.OUTLINE_WIDTH` and `PROGRESS_HEIGHT`, and in the `draw_set_transform` of
+  `Animal.draw_contact_shadow`, `GroundShadows` and `HitParticles`, which draw on the 16 px grid. Numbers in the
+  pictures' own pixels in data (`sprite_height` in world_object_types.gd, `window_lights` in
+  data/buildings.cfg) are the pixels of the files, so they are measured anew too;
+- the shaders of its pictures (sway, fire, water, weather) work on the art's pixels through
+  `art_scale` (game/scenes/art_scale.gdshaderinc), which the code that makes their materials
+  sets to `ART_16_SCALE`: at 32 px it is 1 for them, and their numbers (sway profiles, flame
+  boxes) are measured anew.
+
+The UI's pictures (item icons, slots, the frames and the chat portraits) are drawn for the UI's
+own 640×360 base and scale, and are not doubled; task 115 decides about the item icons.
+
+The sizes in this guide (16×32 for a character, a 48×80 object cell) are those of the 16 px art.
+
 ## Materials
 
 Light from the top left, outline in the darkest colour of the object's own ramp, 2–4 px

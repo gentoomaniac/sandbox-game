@@ -56,9 +56,9 @@ top of classic pixel art (details under "Lighting and look").
   zoom 1), shown at a whole multiple on the usual screens (×3 at 1080p, ×4 at 1440p). Until all
   art is redrawn at 32 px, the generators' 16 px output is doubled pixel for pixel (tasks 106 and
   on). (Was: 16×16, 320×180 at zoom 1.)
-- **Stepless zoom** from the widest view (640×360 art pixels) in to about 2×; the game starts
-  at the widest (the user zooms out fully anyway, 2026-11-08). Ctrl and the mouse wheel zoom;
-  the wheel alone steps through the hotbar.
+- **Stepless zoom** from the widest view (640×360 art pixels, zoom 1) in to 2× (320×180); the
+  game starts at the widest (the user zooms out fully anyway, 2026-11-08). Ctrl and the mouse
+  wheel zoom; the wheel alone steps through the hotbar. (Was: 0.5× to 2×, starting at 0.5×.)
 - **Smooth camera following:** the camera follows the player's exact position, so the
   world scrolls at sub-pixel precision; the player, drawn on the pixel grid, may wobble by up
   to half an art pixel. Chosen over a pixel-locked camera (2026-11-05).
@@ -342,10 +342,10 @@ top of classic pixel art (details under "Lighting and look").
     period dress has it.
 - **Movement keys:** arrow keys and WASD (decided 2026-11-05). All keys can be changed in
   the settings (see Menus and settings).
-- **Scale between character and world:** character figure 27–28 px tall in its 16×32
-  frame; mature trees about 2–2.5× the character (60–66 px); a small house about 3.4× (5×3
-  footprint, ~96 px tall, door at least as tall as the character). Numbers in
-  `docs/archive/art-review-2026-11-05.md`.
+- **Scale between character and world** (in pixels of the 16 px art, doubled for now):
+  character figure 27–28 px tall in its 16×32 frame; mature trees about 2–2.5× the character
+  (60–66 px); a small house about 3.4× (5×3 footprint, ~96 px tall, door at least as tall as
+  the character). Numbers in `docs/archive/art-review-2026-11-05.md`.
 - **Character sprite: 16×32 pixels** (one tile wide, two tall), built from **layers**
   (body, clothes, head/hair, held tool or weapon, later gear), so equipment can be shown
   by swapping or adding a layer instead of redrawing the character.

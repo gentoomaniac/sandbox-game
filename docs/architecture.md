@@ -136,6 +136,14 @@ Warft and an Ewer here and there.
   object types are which station); a slow one (with `hours`, the kiln) is held by its station
   as **StationWork** in the object's `state` until it is done on the game clock. `Interaction`
   says which chest or station E opens; `CraftingScreen` shows the recipes of one place.
+- **Units:** the state works in tiles (positions, speeds, reach); the views turn tiles into
+  world pixels with `TerrainTileset.TILE_SIZE` (32: a tile is 32×32 art pixels, task 106).
+  `ViewMath` holds the numbers of the two-stage rendering: zoom 1 is the widest view, a native
+  640×360, zoom 2 the closest. While the art is the 16 px art doubled (see docs/art-style.md,
+  "Resolution"), a number measured on a picture is written as its 16 px number times
+  `TerrainTileset.ART_16_SCALE`, and the shaders of the art work on its pixels through
+  `art_scale` (`art_scale.gdshaderinc`). `WildlifeRules.TILE_SIZE` is the same tile size for
+  the state, which can't see the scenes (a test keeps the two equal).
 - Other views each draw one piece of state: `PlayerView`, `WeatherView`, `WildlifeView`,
   `BuildMode` (the ghost, and the red marking and hold of taking down; `Builder` holds the
   mode and what each target gives, `GameState.take_down_building` the rules for buildings),

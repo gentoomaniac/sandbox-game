@@ -1429,7 +1429,7 @@ microseconds, so it gave up before the client connected; it now waits 5 s of clo
 
 ## 106. The engine at 32×32 art pixels per tile, the 16 px art doubled for now
 
-- [ ] Done
+- [x] Done
 
 The user's decision of 2026-11-08, after review/resolution-mockup-2026-11-08: switch to 32×32
 art pixels per tile, with a native 640×360 view (20×11 tiles) at the widest zoom; "still retro
@@ -1441,6 +1441,26 @@ every generated picture doubled pixel for pixel at the end of the art pipeline, 
 plays and looks as today at zoom 1 while the art is redrawn group by group (tasks 107 to 116),
 each group dropping its doubling. UI icons and slots stay as they are until task 115.
 
+Done: `TerrainTileset.TILE_SIZE` is 32 and every pixel number of the game follows from it, or
+from `TerrainTileset.ART_16_SCALE` (2) where it is measured on a 16 px picture: frame sizes
+(`WildlifeSprites`), seats and poses (`PlayerView`), the object cell (3×5 tiles), the hops,
+flights and speeds of the wild animals, contact and flight shadows (drawn on the 16 px grid,
+scaled), hit particles, sweat, the thought bubble, the "z"s, ground items, the name tag, the
+build and take-down frames. The shaders of the art (sway, lily pads, water, mud, fire, rain
+splashes, rain and snow, fog) work on the art's pixels through a uniform `art_scale`
+(art_scale.gdshaderinc). `ViewMath`: zoom 1 is the widest view, a native 640×360 (20×11 tiles,
+×3 at 1080p and ×4 at 1440p; tested), where the game starts; zoom 2 is the closest (320×180);
+`make screenshot ZOOM=` takes 1 to 2. tools/art/generate.py scales the files of `DOUBLED` from
+`canvas.TILE` (16) to `canvas.GAME_TILE` (32) pixel for pixel as its last step; each of tasks
+107 to 116 takes its group out (docs/art-style.md, "Resolution", says how). Not doubled: item
+icons, UI slots and frames, the chat portraits (task 115). The doubled pictures' own pixels in
+data are doubled too (`sprite_height`, `window_lights`); the sound reach is in tiles. Positions,
+speeds and reach were in tiles already: no saved value is in pixels, the save format is the same.
+Screenshots at both zooms (summer, snow, rain, fog, night, the church and its lit windows,
+inside, livestock, wildlife, riding, passing out, sweat, the highlight, the build ghost, a felled
+tree, a chat, villagers, the console, the inventory) match the ones before pixel for pixel but
+for animation and random placement. The README's camp and zoom pictures are retaken.
+
 ## 107. 32 px art: ground (terrain, paths, soil, water, mud, the dual-grid looks)
 
 - [ ] Done
@@ -1448,6 +1468,12 @@ each group dropping its doubling. UI icons and slots stay as they are until task
 ## 108. 32 px art: plants (trees, the willow, bushes, tall grass, fern, reeds, flowers, decorations)
 
 - [ ] Done
+
+The objects atlas (assets/objects*.png) is shared by 108 and 111 and has one cell size for all
+its rows: do 108 and 111 together, or the first of them writes the whole atlas at 32 px, with a
+`DOUBLED_ROWS` set inside `object_atlas()` for the rows not yet redrawn (scaled up there instead
+of by `DOUBLED`), and the sway materials' `art_scale` per type (2 for the old rows, 1 for the
+native ones). contrast_sheet.py needs no change.
 
 ## 109. 32 px art: crops and fields
 
@@ -1460,6 +1486,8 @@ each group dropping its doubling. UI icons and slots stay as they are until task
 ## 111. 32 px art: walls, fences, the dyke and placed objects (chests, stations, the landing, graves)
 
 - [ ] Done
+
+The objects atlas is shared with 108; see there.
 
 ## 112. 32 px art: interiors and furniture
 
