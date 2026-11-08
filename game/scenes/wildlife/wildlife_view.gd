@@ -34,6 +34,8 @@ const SEA_BIRDS: Array[StringName] = [
 const FLOCK_ENTRY_DISTANCE := 240.0
 ## A stork flying to a roof comes from this far beside the view, in pixels.
 const ARRIVAL_MARGIN := 96.0
+## A stork on a roof stands this many pixels into the top of the roof, among the ridge sticks.
+const ROOF_FOOTING := 4.0
 
 var rules: WildlifeRules
 var world_view: WorldView
@@ -360,13 +362,11 @@ func _send_stork_to_roof(is_debug: bool) -> bool:
 
 
 ## How high above the point in front of a house (see `_in_front_of`) a stork stands on a column
-## of the house's picture as it is shown now: its feet among the ridge sticks, two pixels into the
-## top of the roof. Under snow the roof is a little higher.
+## of the house's picture as it is shown now: its feet among the ridge sticks, ROOF_FOOTING pixels
+## into the top of the roof. Under snow the roof is a little higher.
 func roof_lift(building: Building, column: int) -> float:
 	var heights := _roof_heights_of(world_view.building_picture(building))
-	var feet := (
-		BuildingViews.footprint_bottom(building) - heights[column] + 2 * TerrainTileset.ART_16_SCALE
-	)
+	var feet := BuildingViews.footprint_bottom(building) - heights[column] + ROOF_FOOTING
 	return _in_front_of(building, column).y - feet
 
 

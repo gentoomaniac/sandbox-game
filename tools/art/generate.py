@@ -36,8 +36,8 @@ portraits.py).
 assets/effects/sleep_z.png: the "z" that rises from a sleeping figure.
 
 assets/buildings/<type>.png: one picture per building type (drawn in buildings.py, the church and
-its bell frame in church.py), as wide as its footprint (16 px per tile) and as tall as the
-footprint plus the roof rising above it. The bottom edge is the footprint's bottom edge.
+its bell frame in church.py) at the game's tile (not doubled), as wide as its footprint and as
+tall as the footprint plus the roof rising above it. The bottom edge is the footprint's bottom edge.
 <type>_lit.png is the same with lit windows, for the night. Each also comes in the house looks
 of seasons.HOUSE_LOOKS (kate_autumn.png, kate_lit_snow.png). Sizes and door tiles are in
 data/buildings.cfg.
@@ -118,8 +118,6 @@ DOUBLED = (
     "bedroll_cover.png",
     # Crops (task 109).
     "crops/*.png",
-    # Buildings (task 110).
-    "buildings/*.png",
     # Interiors (task 112).
     "interior.png",
     "interior/*.png",
