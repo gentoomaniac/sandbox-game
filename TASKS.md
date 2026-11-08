@@ -1791,6 +1791,24 @@ saved style per placed building (a save version), a way to pick it with the hamm
 pictures per style; two more building types in data/buildings.cfg would need no code, but
 each needs its own interior map today (test_interior_maps) and the hammer's list grows.
 
+## 121. A building menu: the buildings and their variants, with a preview
+
+- [ ] Done
+
+The user, 2026-11-08: "we need a proper building menu which allows the different variants and
+maybe a small preview. It could look like a matrix on top of the quick bar where you see the
+main buildings and their variants popping up to the top when you selected a building."
+Today the hammer's Q and E step through data/buildings.cfg in file order, one building at a
+time. Instead, with the hammer held, a row of the main buildings sits just above the hotbar
+(each a small picture of the building, its name and cost); picking one makes its variants pop up
+in a column above it (task 120's brick and Geest Kate, later styles), and the chosen variant
+shows a larger preview with its materials and whether the inventory has them. Keys and mouse
+both work (arrows or Q/E along the row, up and down through the variants, a click picks; Esc
+closes), the ghost in the world follows the choice, and it reads in both art sets (task 117).
+Goes with task 120: the variant needs a saved style per placed building (a save version) and
+the variants' pictures; plan the data shape (a building and its styles in data/buildings.cfg)
+together.
+
 ## Later (not part of the prototype)
 
 - **The camp's bedroll and campfire can be taken down and built** (the user, 2026-11-08): today
