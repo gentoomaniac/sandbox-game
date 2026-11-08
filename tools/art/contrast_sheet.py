@@ -13,13 +13,17 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-from canvas import OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, TILE
+from canvas import GAME_TILE, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, TILE
 from palette import ASSETS
 from seasons import GROUND_LOOKS
 
 OUTPUT = Path(__file__).resolve().parents[2] / "build" / "contrast_sheet.png"
 DEFAULT_KINDS = ("tall_grass", "fern", "reeds")
 VARIANTS = 3
+# The assets are in the game's pixels: a tile is GAME_TILE, an object cell as many tiles as in
+# canvas.py. The sheet shows them as a 1080p screen does.
+CELL_WIDTH = OBJECT_CELL_WIDTH * GAME_TILE // TILE
+CELL_HEIGHT = OBJECT_CELL_HEIGHT * GAME_TILE // TILE
 SCALE = 3
 GAP = 4
 LABEL_HEIGHT = 12
@@ -47,15 +51,15 @@ def atlas_rows():
 
 
 def ground_tile(terrain, ground):
-    left, top = FULL_TILE_COLUMN * TILE, GROUNDS[ground] * TILE
-    return terrain.crop((left, top, left + TILE, top + TILE))
+    left, top = FULL_TILE_COLUMN * GAME_TILE, GROUNDS[ground] * GAME_TILE
+    return terrain.crop((left, top, left + GAME_TILE, top + GAME_TILE))
 
 
 def drawn_height(cells):
     """How many rows from the cells' bottom reach the highest drawn pixel in any of them, so
     the sheet leaves out the empty top of the tall cells."""
     top = min(cell.getchannel("A").getbbox()[1] for cell in cells)
-    return OBJECT_CELL_HEIGHT - top + 2
+    return CELL_HEIGHT - top + 2
 
 
 def look_block(look, kinds, rows):
@@ -64,21 +68,21 @@ def look_block(look, kinds, rows):
     terrain = look_file("terrain", look)
     cells = []
     for kind in kinds:
-        top = rows[kind] * OBJECT_CELL_HEIGHT
+        top = rows[kind] * CELL_HEIGHT
         for variant in range(VARIANTS):
-            left = variant * OBJECT_CELL_WIDTH
-            cells.append(objects.crop((left, top, left + OBJECT_CELL_WIDTH, top + OBJECT_CELL_HEIGHT)))
+            left = variant * CELL_WIDTH
+            cells.append(objects.crop((left, top, left + CELL_WIDTH, top + CELL_HEIGHT)))
     height = drawn_height(cells)
-    width = OBJECT_CELL_WIDTH * len(cells)
+    width = CELL_WIDTH * len(cells)
     block = Image.new("RGBA", (width, height * len(GROUNDS)))
     for row, ground in enumerate(GROUNDS):
         tile = ground_tile(terrain, ground)
-        for x in range(0, width, TILE):
-            for y in range(0, height, TILE):
+        for x in range(0, width, GAME_TILE):
+            for y in range(0, height, GAME_TILE):
                 block.paste(tile, (x, row * height + y))
         for column, cell in enumerate(cells):
-            bottom = cell.crop((0, OBJECT_CELL_HEIGHT - height, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT))
-            block.alpha_composite(bottom, (column * OBJECT_CELL_WIDTH, row * height))
+            bottom = cell.crop((0, CELL_HEIGHT - height, CELL_WIDTH, CELL_HEIGHT))
+            block.alpha_composite(bottom, (column * CELL_WIDTH, row * height))
     if look == "night":
         *colours, alpha = block.split()
         tinted = [channel.point(lambda value, tint=tint: round(value * tint)) for channel, tint in zip(colours, NIGHT_TINT)]

@@ -3,8 +3,11 @@
 Each topic has its module: terrain.py, trees.py, camp.py, character.py, interior.py and the
 others listed in tools/README.md. This file puts the objects together into the atlas, and
 `main` writes every file under assets/ (terrain, decorations, objects, character, interior,
-fire, buildings, wildlife, crops, items, ui and the palette), then checks them against the
-palette.
+fire, buildings, wildlife, crops, items, ui and the palette), scales the art drawn at 16 px per
+tile up to the game's tile (`scale_up_16_px_art`), then checks them against the palette.
+
+The sizes below are those of the art as drawn, at canvas.TILE = 16 px per tile. The files of
+DOUBLED are written GAME_TILE / TILE times as big.
 
 assets/objects.png: world objects, 48x80 cells (OBJECT_CELL_WIDTH x OBJECT_CELL_HEIGHT), one row per
 kind (the table above `object_atlas`).
@@ -96,8 +99,43 @@ import trunks
 import ui
 import villagers
 import willow
-from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, TILE, blank
+from canvas import GAME_TILE, OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, TILE, blank
+from PIL import Image
 from palette import ASSETS, PALETTE, check_palette, save, save_picture, write_palette
+
+# The files under assets/ that the world draws and that are still drawn at 16 px per tile:
+# `scale_up_16_px_art` scales them up to the game's tile, pixel for pixel. Each task that
+# redraws a group at 32 px (tasks 107 to 116) takes its files out of here. The UI's pictures
+# (items/, ui/ but for the thought bubbles, and the chat portraits) are drawn for the UI's own
+# scale and stay as they are.
+DOUBLED = (
+    # Ground (task 107).
+    "terrain*.png",
+    "decorations*.png",
+    "soil_wet.png",
+    "clay_hint.png",
+    # Plants, walls and placed things: one atlas (tasks 108 and 111).
+    "objects*.png",
+    "bedroll_cover.png",
+    "fire/*.png",
+    # Crops (task 109).
+    "crops/*.png",
+    # Buildings (task 110).
+    "buildings/*.png",
+    # Interiors (task 112).
+    "interior.png",
+    "interior/*.png",
+    # The player and the villagers (task 113).
+    "character/*.png",
+    "character/collapse/*.png",
+    "character/riding/*.png",
+    "effects/*.png",
+    "ui/bubble_*.png",
+    # Farm animals and wild animals (tasks 114 and 116).
+    "wildlife/*.png",
+    # Items on the ground (task 115).
+    "ground_items/*.png",
+)
 
 
 def standing_outdoors(picture):
@@ -332,6 +370,17 @@ def write_items():
         save_picture(picture, f"ui/{name}.png")
 
 
+def scale_up_16_px_art():
+    """Scales the files of DOUBLED up from the art's tile to the game's, pixel for pixel."""
+    factor = GAME_TILE // TILE
+    for pattern in DOUBLED:
+        paths = sorted(ASSETS.glob(pattern))
+        assert paths, f"DOUBLED: no file matches {pattern}"
+        for path in paths:
+            image = Image.open(path)
+            image.resize((image.width * factor, image.height * factor), Image.Resampling.NEAREST).save(path)
+
+
 def main():
     write_seasonal_art()
     write_character()
@@ -342,6 +391,7 @@ def main():
     write_crops()
     write_items()
     ui.write_ui_assets(ASSETS / "ui", PALETTE)
+    scale_up_16_px_art()
     write_palette()
     check_palette()
     print("Wrote every file under assets/ (palette check passed).")
