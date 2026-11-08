@@ -8,16 +8,17 @@ extends RefCounted
 ## hunting.
 
 const SHEET_PATH := "res://assets/wildlife/%s.png"
-## The frame sizes below are measured on the 16 px art, which is scaled up by this.
+## The wild animals' frame sizes below are measured on the 16 px art, which is scaled up by this.
+## The farm animals are drawn at 32 px per tile: theirs are the pictures' own.
 const SCALE := TerrainTileset.ART_16_SCALE
 const LIVESTOCK_ACTIONS := {&"idle": 2, &"walk": 4, &"graze": 2, &"sleep": 2, &"run": 4}
-const COW := {"size": Vector2i(32, 24) * SCALE, "actions": LIVESTOCK_ACTIONS}
-const SHEEP := {"size": Vector2i(22, 16) * SCALE, "actions": LIVESTOCK_ACTIONS}
-const CHICKEN := {"size": Vector2i(12, 12) * SCALE, "actions": LIVESTOCK_ACTIONS}
-const RABBIT := {"size": Vector2i(12, 10) * SCALE, "actions": LIVESTOCK_ACTIONS}
-const DOG := {"size": Vector2i(24, 18) * SCALE, "actions": LIVESTOCK_ACTIONS}
+const COW := {"size": Vector2i(72, 54), "actions": LIVESTOCK_ACTIONS}
+const SHEEP := {"size": Vector2i(44, 32), "actions": LIVESTOCK_ACTIONS}
+const CHICKEN := {"size": Vector2i(24, 24), "actions": LIVESTOCK_ACTIONS}
+const RABBIT := {"size": Vector2i(24, 20), "actions": LIVESTOCK_ACTIONS}
+const DOG := {"size": Vector2i(48, 36), "actions": LIVESTOCK_ACTIONS}
 const CAT := {
-	"size": Vector2i(16, 12) * SCALE,
+	"size": Vector2i(32, 24),
 	"actions":
 	{
 		&"idle": 2,
@@ -30,7 +31,7 @@ const CAT := {
 		&"pounce": 3,
 	},
 }
-const HORSE := {"size": Vector2i(44, 36) * SCALE, "actions": LIVESTOCK_ACTIONS}
+const HORSE := {"size": Vector2i(88, 76), "actions": LIVESTOCK_ACTIONS}
 
 ## Per kind: the size of a frame and the frames of each action, in the order of the rows.
 const SHEETS := {

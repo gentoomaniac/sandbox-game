@@ -51,9 +51,9 @@ assets/wildlife/<kind>.png: one sheet per animal kind, one row per action and on
 (see animals.py, birds.py for the stork and the goose, sea_birds.py for the birds of the coast, and
 game/scenes/wildlife/wildlife_sprites.gd).
 The farm animals have one sheet per species and look, assets/wildlife/<species>_<look>.png (see
-livestock.py); a horse also has horse_<look>_saddled.png, and horse_<look>_ridden.png and
-horse_<look>_ridden_over.png, the ridden horse behind and in front of the rider in the rows of the
-player's sheets (see `ridden_sheets`).
+livestock.py), drawn at the game's tile (not doubled); a horse also has horse_<look>_saddled.png,
+and horse_<look>_ridden.png and horse_<look>_ridden_over.png, the ridden horse behind and in front
+of the rider in the rows of the player's sheets (see `ridden_sheets`).
 
 assets/crops/<crop>.png: one sheet per crop, its four growth stages and the dead one side by side, 16 px
 wide cells and as tall as the sheet (see crops.py and data/crops.cfg). They have no seasonal variants.
@@ -127,14 +127,6 @@ DOUBLED = (
     # Interiors (task 112).
     "interior.png",
     "interior/*.png",
-    # Farm animals (task 114): a sheet per species and look (livestock.py).
-    "wildlife/cow_*.png",
-    "wildlife/sheep_*.png",
-    "wildlife/chicken_*.png",
-    "wildlife/rabbit_*.png",
-    "wildlife/dog_*.png",
-    "wildlife/cat_*.png",
-    "wildlife/horse_*.png",
     # Wild animals (task 116): a sheet per kind (animals.py, birds.py, sea_birds.py).
     "wildlife/bee.png",
     "wildlife/bird.png",
