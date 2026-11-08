@@ -36,6 +36,11 @@ func door_tile() -> Vector2i:
 	return origin + BuildingTypes.TYPES[type]["door_offset"]
 
 
+## Whether it has an inside to go into (the bell frame has none).
+func has_inside() -> bool:
+	return BuildingTypes.TYPES[type]["interior_map"] != ""
+
+
 func to_dict() -> Dictionary:
 	return {
 		"type": str(type),

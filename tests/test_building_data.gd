@@ -24,7 +24,7 @@ func _write(text: String) -> void:
 	file.close()
 
 
-func test_the_buildings_file_is_valid_and_has_the_five_buildings_in_order() -> void:
+func test_the_buildings_file_is_valid_and_has_the_seven_buildings_in_order() -> void:
 	var rules := BuildingRules.from_file(BuildingRules.DEFAULT_PATH)
 	assert_true(rules.is_valid(), str(rules.problems()))
 	assert_eq(
@@ -35,6 +35,8 @@ func test_the_buildings_file_is_valid_and_has_the_five_buildings_in_order() -> v
 			BuildingTypes.LONGHOUSE,
 			BuildingTypes.HALL_HOUSE,
 			BuildingTypes.BARN,
+			BuildingTypes.CHURCH,
+			BuildingTypes.BELL_FRAME,
 		]
 	)
 	assert_eq(BuildingTypes.ids(), rules.building_ids())

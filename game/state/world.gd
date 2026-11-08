@@ -367,12 +367,12 @@ func _emit_objects_changed(object: WorldObject) -> void:
 			objects_changed.emit(tile)
 
 
-## Tile rules, and buildings: only their door can be walked on.
+## Tile rules, and buildings: only their door can be walked on (none on one with no inside).
 func is_ground_walkable(world_pos: Vector2i) -> bool:
 	if not super(world_pos):
 		return false
 	var building := building_at(world_pos)
-	return building == null or building.door_tile() == world_pos
+	return building == null or (building.door_tile() == world_pos and building.has_inside())
 
 
 ## Must agree with placement_blockers: a tile is buildable if it would not block a building.

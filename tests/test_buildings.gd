@@ -76,6 +76,14 @@ func test_footprint_is_occupied_and_only_the_door_is_walkable() -> void:
 	assert_null(_world.building_at(ORIGIN + Vector2i(5, 0)))
 
 
+func test_the_bell_frame_has_no_inside_and_no_tile_of_it_can_be_walked_on() -> void:
+	var building := _world.place_building(BuildingTypes.BELL_FRAME, ORIGIN)
+	assert_false(building.has_inside())
+	assert_true(_world.place_building(HOUSE, ORIGIN + Vector2i(3, 0)).has_inside())
+	for pos in building.tiles():
+		assert_false(_world.is_walkable(pos), "walkable %s" % pos)
+
+
 func test_placement_emits_the_signal() -> void:
 	watch_signals(_world)
 	assert_null(_world.place_building(HOUSE, Vector2i(-1000, 0)))

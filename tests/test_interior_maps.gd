@@ -27,10 +27,13 @@ func _reachable_from_entry(interior: Interior) -> Dictionary:
 	return seen
 
 
-func test_every_building_has_its_own_interior_map() -> void:
+func test_every_building_but_the_bell_frame_has_its_own_interior_map() -> void:
 	var paths := []
 	for type: StringName in BuildingTypes.TYPES:
 		var path: String = BuildingTypes.TYPES[type]["interior_map"]
+		if type == BuildingTypes.BELL_FRAME:
+			assert_eq(path, "", "the bell frame has no inside")
+			continue
 		assert_true(path.ends_with("/%s.tmx" % type), "%s: %s" % [type, path])
 		assert_false(paths.has(path))
 		paths.append(path)
@@ -43,6 +46,7 @@ func test_each_interior_has_walls_around_and_its_door_in_the_front_wall() -> voi
 		BuildingTypes.LONGHOUSE: Vector2i(15, 8),
 		BuildingTypes.HALL_HOUSE: Vector2i(15, 13),
 		BuildingTypes.BARN: Vector2i(13, 8),
+		BuildingTypes.CHURCH: Vector2i(12, 9),
 	}
 	for type: StringName in sizes:
 		var interior := _load(type)
@@ -87,6 +91,25 @@ func test_the_barn_has_no_bed_and_no_hearth() -> void:
 	assert_null(_bed_of(barn))
 	for object in barn.objects():
 		assert_ne(object.type, WorldObjectTypes.HEARTH)
+
+
+func test_the_church_has_pews_either_side_of_the_aisle_and_the_altar_at_its_head() -> void:
+	var church := _load(BuildingTypes.CHURCH)
+	assert_null(_bed_of(church))
+	var aisle := church.exit_tile.x
+	var pews_left := 0
+	var pews_right := 0
+	for object in church.objects():
+		if object.type == WorldObjectTypes.BENCH:
+			if object.pos.x < aisle:
+				pews_left += 1
+			else:
+				pews_right += 1
+	assert_eq(pews_left, 6)
+	assert_eq(pews_right, 6)
+	var altar := church.object_at(Vector2i(aisle, 2))
+	assert_not_null(altar)
+	assert_eq(altar.type, WorldObjectTypes.TABLE)
 
 
 func test_the_longhouse_has_a_living_end_and_a_stall_end() -> void:
@@ -144,6 +167,8 @@ func test_the_hall_house_has_the_hearth_at_the_end_of_the_diele_and_stalls_on_bo
 
 func test_every_free_floor_tile_of_every_interior_is_reachable() -> void:
 	for type: StringName in BuildingTypes.TYPES:
+		if BuildingTypes.TYPES[type]["interior_map"] == "":
+			continue
 		var interior := _load(type)
 		var reachable := _reachable_from_entry(interior)
 		var floor_tiles := 0

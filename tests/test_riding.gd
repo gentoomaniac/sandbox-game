@@ -27,11 +27,16 @@ func _set_ground_around(terrain: Tile.Terrain) -> void:
 
 ## A shack below the tile, on grass, its door facing down on its bottom row.
 func _place_shack() -> Building:
+	_clear_below()
+	return _world.place_building(&"shack", _tile + Vector2i(-1, 3))
+
+
+## Grass with nothing on it below the tile, room for a small building.
+func _clear_below() -> void:
 	for y in range(2, 8):
 		for x in range(-2, 3):
 			_world.remove_object(_tile + Vector2i(x, y))
 			_world.set_terrain(_tile + Vector2i(x, y), Tile.Terrain.GRASS)
-	return _world.place_building(&"shack", _tile + Vector2i(-1, 3))
 
 
 func _ride(direction: Vector2, seconds: float) -> void:
@@ -161,6 +166,17 @@ func test_a_horse_is_not_ridden_through_a_door() -> void:
 	assert_false(PlayerState.touches_building(_world, _state.player.position))
 	assert_false(_state.door_underfoot())
 	assert_true(_state.is_door_ahead())
+
+
+func test_the_bell_frame_has_no_door_to_get_off_for() -> void:
+	_clear_below()
+	var door := _world.place_building(BuildingTypes.BELL_FRAME, _tile + Vector2i(0, 3)).door_tile()
+	_horse.position = Vector2(door) + Vector2(0.5, 1.5)
+	_state.mount(_horse)
+
+	_ride(Vector2.UP, 1.0)
+
+	assert_false(_state.is_door_ahead())
 
 
 func test_a_horse_in_a_doorway_is_ridden_out_not_in() -> void:

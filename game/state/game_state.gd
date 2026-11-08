@@ -98,7 +98,7 @@ func door_underfoot() -> bool:
 	if is_inside():
 		return tile == _building_inside.interior.exit_tile
 	var building := world.building_at(tile)
-	return building != null and building.door_tile() == tile
+	return building != null and building.door_tile() == tile and building.has_inside()
 
 
 ## Takes the player through the door under their feet: into the building (making its interior
@@ -170,10 +170,16 @@ func energy_cap() -> float:
 	return energy_rules.debuff_energy_max() if player.is_debuffed else PlayerState.MAX_ENERGY
 
 
-## Whether the tile the player faces is the door of a building (which they can't ride through).
+## Whether the tile the player faces is the door of a building (which they can't ride through);
+## the bell frame has none to go through.
 func is_door_ahead() -> bool:
 	var building := world.building_at(player.facing_tile())
-	return not is_inside() and building != null and building.door_tile() == player.facing_tile()
+	return (
+		not is_inside()
+		and building != null
+		and building.door_tile() == player.facing_tile()
+		and building.has_inside()
+	)
 
 
 ## How fast the player walks, as a fraction of full speed: the slowest of what low energy and
