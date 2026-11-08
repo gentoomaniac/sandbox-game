@@ -447,7 +447,7 @@ _KNICK_TWIGS = {
     "dry_light": "bare_light", "dry": "bare", "olive": "mud_dark",
 }
 _KNICK_FROST = {"dry_light": "snow_shadow", "dry": "frost", "olive": "snow_deep"}
-_KNICK_SNOW = ({"mud", "mud_dark", "soil_mid", "soil", "bare_light", "bare"}, set(), 3)
+_KNICK_SNOW = ({"mud", "mud_dark", "soil_mid", "soil", "bare_light", "bare"}, set(), 6)
 _KNICK_BLOSSOM = {"spring", "spring_dark"}
 _KNICK_HAWS = {"soil_light", "soil_mid"}
 
@@ -548,18 +548,18 @@ _WINTER_LOOKS = {
     "wattle_fence": {
         "frost_only": _FROST_STONE,
         "specks": {"sand_light", "sand"},
-        "snow": ({"sand_light", "sand", "mud", "soil_light", "soil_mid"}, set(), 1),
+        "snow": ({"sand_light", "sand", "mud", "soil_light", "soil_mid"}, set(), 2),
     },
     # The dyke is turf and turns like the grass on the ground.
     "dyke": {
         "bare": _BARE_GROUND,
         "frost": _FROST_GROUND,
         "snow_remap": _WINTER_GROUND,
-        "snow": ({"frost", "snow_shadow", "snow_light", "snow_deep"}, set(), 1),
+        "snow": ({"frost", "snow_shadow", "snow_light", "snow_deep"}, set(), 2),
     },
     "stone_wall": {
         "frost_only": _FROST_STONE,
-        "snow": ({"stone_light", "stone", "sand_light", "bare_light", "bare", "olive"}, set(), 2),
+        "snow": ({"stone_light", "stone", "sand_light", "bare_light", "bare", "olive", "dry"}, set(), 4),
     },
 }
 
@@ -577,10 +577,10 @@ def _season_object(look, kind, variant, canvas, redraw):
         canvas = buds(bare, canvas, rng) if look == "buds" else young_leaves(bare, canvas, rng)
     elif look == "spring" and kind == "knick":
         canvas = remap(canvas, _KNICK_SPRING)
-        _dot(canvas, rng, _KNICK_BLOSSOM, 12, "blossom")
+        _dot(canvas, rng, _KNICK_BLOSSOM, 40, "blossom")
     elif look == "autumn" and kind == "knick":
         canvas = remap(canvas, _KNICK_AUTUMN)
-        _dot(canvas, rng, _KNICK_HAWS, 8, "red_light")
+        _dot(canvas, rng, _KNICK_HAWS, 28, "red_light")
     elif look in ("spring", "autumn") and kind == "willow":
         canvas = remap(canvas, _WILLOW_SPRING if look == "spring" else _WILLOW_AUTUMN)
     elif look == "spring" and kind in _SPRING_KINDS:

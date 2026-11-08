@@ -149,8 +149,8 @@ def standing_outdoors(picture):
 # The plants are drawn at 32 px; task 111 draws the rest anew: the camp, the walls, fences, the
 # dyke and the placed objects.
 DOUBLED_ROWS = {
-    "fireplace", "sleeping_bag", "chest", "knick", "wattle_fence", "stone_wall", "dyke", "workbench",
-    "carved_chest", "kiln", "oven", "ewer", "grave", "jetty", "rowing_boat", "net_frame", "eel_traps",
+    "fireplace", "sleeping_bag", "chest", "workbench", "carved_chest", "kiln", "oven", "ewer", "grave",
+    "jetty", "rowing_boat", "net_frame", "eel_traps",
 }
 
 
