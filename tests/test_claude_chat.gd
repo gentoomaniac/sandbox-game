@@ -36,14 +36,16 @@ func _language_model(model := "claude-haiku-5-5") -> Dictionary:
 ## Asks the chat, answers its request with `response` and gives [the request as text, the
 ## chat's answer].
 func _ask_chat(response: String, model := "claude-haiku-5-5") -> Array:
-	var ask := func() -> String: return await _chat.answer(_language_model(model), REQUEST, 5.0)
+	var ask := func() -> String:
+		return await _chat.answer(_language_model(model), REQUEST, PATIENCE_SECONDS)
 	return await _ask_and_answer(ask, response)
 
 
 func test_the_max_tokens_set_for_claude_replace_its_thousand() -> void:
 	var language_model := _language_model()
 	language_model["max_tokens"] = "2000"
-	var ask := func() -> String: return await _chat.answer(language_model, REQUEST, 5.0)
+	var ask := func() -> String:
+		return await _chat.answer(language_model, REQUEST, PATIENCE_SECONDS)
 	var asked := await _ask_and_answer(ask, _response("200 OK", REPLY_BODY))
 	assert_eq(int(_body_of(asked[0])["max_tokens"]), 2000)
 
@@ -80,7 +82,8 @@ func test_turns_of_one_role_in_a_row_are_joined_and_the_first_turn_is_the_player
 			{"role": "user", "content": "The dyke?"},
 		],
 	}
-	var ask := func() -> String: return await _chat.answer(_language_model(), request, 5.0)
+	var ask := func() -> String:
+		return await _chat.answer(_language_model(), request, PATIENCE_SECONDS)
 	var sent := await _ask_and_answer(ask, _response("200 OK", REPLY_BODY))
 	assert_eq(
 		_body_of(sent[0])["messages"],
@@ -126,7 +129,7 @@ func test_a_redirect_is_not_followed_so_the_key_stays_here() -> void:
 
 func test_an_endpoint_that_cannot_be_reached_gives_no_answer() -> void:
 	var language_model := {"endpoint": CLOSED_ENDPOINT, "model": "any", "api_key": "secret"}
-	assert_eq(await _chat.answer(language_model, REQUEST, 5.0), "")
+	assert_eq(await _chat.answer(language_model, REQUEST, PATIENCE_SECONDS), "")
 
 
 func test_a_real_claude_answers() -> void:
@@ -148,7 +151,8 @@ func test_the_models_are_the_ids_claude_lists() -> void:
 		+ ' {"id": "claude-haiku-5-5", "display_name": "Claude Haiku 5.5"}],'
 		+ ' "has_more": false, "last_id": "claude-haiku-5-5"}'
 	)
-	var ask := func() -> Array[String]: return await _chat.models(_language_model(), 5.0)
+	var ask := func() -> Array[String]:
+		return await _chat.models(_language_model(), PATIENCE_SECONDS)
 	var asked := await _ask_and_answer(ask, _response("200 OK", list))
 	assert_string_starts_with(asked[0], "GET /v1/models?limit=1000 HTTP/1.1")
 	assert_string_contains(asked[0], "x-api-key: sk-ant-test")

@@ -5,10 +5,14 @@ extends GutTest
 
 ## Nothing listens here, so a request is refused at once.
 const CLOSED_ENDPOINT := "http://127.0.0.1:9/v1"
-## Waiting for the request gives up after this many milliseconds. Time, not frames: a headless
-## frame takes microseconds, so a busy machine (tests run in parallel) used up any frame count
-## before the client had connected.
-const WAIT_MSEC := 5000
+## How long the test waits for the client, and how long it lets the client wait for the server,
+## in seconds. Time, not frames: a headless frame takes microseconds, so a busy machine (tests
+## run in parallel) used up any frame count before the client had connected. And such a machine
+## can stall a process for seconds, so a client that gave up sooner (HTTPRequest closes its
+## connection when its timeout runs out) failed the test. Only a test that fails for real ever
+## waits this long.
+const PATIENCE_SECONDS := 60.0
+const WAIT_MSEC := int(PATIENCE_SECONDS * 1000)
 
 var _server: TCPServer
 var _port := 0
@@ -56,7 +60,7 @@ func _ask_and_answer(ask: Callable, response: String) -> Array:
 	if request != "":
 		_peer.put_data(response.to_utf8_buffer())
 		_peer.disconnect_from_host()
-	await wait_until(func() -> bool: return not results.is_empty(), 5.0)
+	await wait_until(func() -> bool: return not results.is_empty(), PATIENCE_SECONDS)
 	return [request, results[0] if not results.is_empty() else null]
 
 

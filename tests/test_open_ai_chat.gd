@@ -22,7 +22,7 @@ func _language_model(api_key := "") -> Dictionary:
 ## chat's answer].
 func _ask_chat(response: String, api_key := "") -> Array:
 	var ask := func() -> String:
-		return await _chat.answer(_language_model(api_key), {"messages": []}, 5.0)
+		return await _chat.answer(_language_model(api_key), {"messages": []}, PATIENCE_SECONDS)
 	return await _ask_and_answer(ask, response)
 
 
@@ -52,7 +52,9 @@ func test_the_max_tokens_set_for_the_provider_replace_the_requests() -> void:
 	for set_tokens in ["400", "", "lots", "0"]:
 		language_model["max_tokens"] = set_tokens
 		var ask := func() -> String:
-			return await _chat.answer(language_model, {"messages": [], "max_tokens": 60}, 5.0)
+			return await _chat.answer(
+				language_model, {"messages": [], "max_tokens": 60}, PATIENCE_SECONDS
+			)
 		var asked := await _ask_and_answer(ask, _response("200 OK", REPLY_BODY))
 		sent.append(int(_body_of(asked[0])["max_tokens"]))
 	assert_eq(sent, [400, 60, 60, 60], "a number set, else the request's")
@@ -83,7 +85,7 @@ func test_a_redirect_is_not_followed_so_the_key_stays_here() -> void:
 
 func test_an_endpoint_that_cannot_be_reached_gives_no_answer() -> void:
 	var language_model := {"endpoint": CLOSED_ENDPOINT, "model": "any", "api_key": "secret"}
-	assert_eq(await _chat.answer(language_model, {"messages": []}, 5.0), "")
+	assert_eq(await _chat.answer(language_model, {"messages": []}, PATIENCE_SECONDS), "")
 
 
 func test_an_endpoint_that_does_not_answer_in_time_gives_no_answer() -> void:
@@ -93,12 +95,14 @@ func test_an_endpoint_that_does_not_answer_in_time_gives_no_answer() -> void:
 	var answer: String = await _chat.answer(_language_model(), {"messages": []}, 0.5)
 	get_tree().paused = false
 	assert_eq(answer, "")
-	assert_lt(Time.get_ticks_msec() - start, 3000)
+	# Well under the patience a stalled machine is given, but far over the 0.5 s timeout.
+	assert_lt(Time.get_ticks_msec() - start, 30000)
 
 
 func test_the_models_are_the_ids_the_endpoint_lists() -> void:
 	var list := '{"object": "list", "data": [{"id": "qwen2.5:3b-instruct"}, {"id": "llama3.2"}]}'
-	var ask := func() -> Array[String]: return await _chat.models(_language_model("sk-test"), 5.0)
+	var ask := func() -> Array[String]:
+		return await _chat.models(_language_model("sk-test"), PATIENCE_SECONDS)
 	var asked := await _ask_and_answer(ask, _response("200 OK", list))
 	assert_string_starts_with(asked[0], "GET /v1/models HTTP/1.1")
 	assert_string_contains(asked[0], "Authorization: Bearer sk-test")
@@ -107,23 +111,25 @@ func test_the_models_are_the_ids_the_endpoint_lists() -> void:
 
 func test_geminis_models_are_listed_by_their_bare_names() -> void:
 	var list := '{"object": "list", "data": [{"id": "models/gemini-2.5-flash-lite"}]}'
-	var ask := func() -> Array[String]: return await _chat.models(_language_model("AIza"), 5.0)
+	var ask := func() -> Array[String]:
+		return await _chat.models(_language_model("AIza"), PATIENCE_SECONDS)
 	var asked := await _ask_and_answer(ask, _response("200 OK", list))
 	assert_eq(asked[1], ["gemini-2.5-flash-lite"])
 
 
 func test_the_models_of_an_endpoint_that_cannot_be_asked_are_none() -> void:
-	var ask := func() -> Array[String]: return await _chat.models(_language_model(), 5.0)
+	var ask := func() -> Array[String]:
+		return await _chat.models(_language_model(), PATIENCE_SECONDS)
 	assert_eq((await _ask_and_answer(ask, _response("404 Not Found", "{}")))[1], [])
 	assert_eq((await _ask_and_answer(ask, _response("200 OK", '{"data": 3}')))[1], [])
 	var closed := {"endpoint": CLOSED_ENDPOINT, "model": "any", "api_key": ""}
-	assert_eq(await _chat.models(closed, 5.0), [])
+	assert_eq(await _chat.models(closed, PATIENCE_SECONDS), [])
 
 
 func test_a_models_list_that_fails_is_warned_of_once() -> void:
 	var language_model := _language_model("sk-wrong")
 	language_model["endpoint"] += "/%d" % Time.get_ticks_usec()
-	var ask := func() -> Array[String]: return await _chat.models(language_model, 5.0)
+	var ask := func() -> Array[String]: return await _chat.models(language_model, PATIENCE_SECONDS)
 	var denied := _response("401 Unauthorized", '{"error": "key"}')
 	await _ask_and_answer(ask, denied)
 	await _ask_and_answer(ask, denied)

@@ -14,6 +14,7 @@ func before_each() -> void:
 	_settings = GameSettings.new(SETTINGS_PATH)
 	_settings.language_model["endpoint"] = "http://127.0.0.1:%d/v1" % _port
 	_page = LanguageModelPage.new(_settings)
+	_page._models_timeout = PATIENCE_SECONDS
 	add_child_autofree(_page)
 
 
@@ -108,6 +109,6 @@ func test_gemini_shows_its_own_tips_and_placeholders() -> void:
 func test_changing_the_endpoint_asks_again_after_a_moment() -> void:
 	var ask := func() -> Array:
 		_page._fields["endpoint"].text_changed.emit(_settings.language_model["endpoint"])
-		await wait_until(func() -> bool: return _names().size() == 2, 5.0)
+		await wait_until(func() -> bool: return _names().size() == 2, PATIENCE_SECONDS)
 		return _names()
 	assert_eq((await _ask_and_answer(ask, _response("200 OK", LIST)))[1].size(), 2)

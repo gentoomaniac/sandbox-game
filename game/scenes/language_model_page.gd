@@ -100,6 +100,8 @@ var _models_note := Label.new()
 ## Asks for the models once the endpoint or key has not been typed in for a moment.
 var _models_delay := Timer.new()
 var _models_asked := 0
+## Seconds to wait for the list of models before giving up on the endpoint.
+var _models_timeout: float = NpcTalkRules.default_rules().value("request", "models_timeout_seconds")
 var _history_label := Label.new()
 var _history_lines := HSlider.new()
 
@@ -205,8 +207,9 @@ func show_models() -> void:
 		_list_models([], "Enter the key to list the models.")
 		return
 	_models_note.text = "Asking for the models..."
-	var timeout: float = NpcTalkRules.default_rules().value("request", "models_timeout_seconds")
-	var names: Array[String] = await _chats[provider["protocol"]].models(language_model, timeout)
+	var names: Array[String] = await _chats[provider["protocol"]].models(
+		language_model, _models_timeout
+	)
 	if asked != _models_asked:
 		return
 	_list_models(
