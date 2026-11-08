@@ -148,8 +148,10 @@ func test_every_crop_has_a_sheet_with_four_stages_and_the_dead_one() -> void:
 	for crop_id in CROP_NAMES:
 		var sheet: Texture2D = load(WorldObjectTypes.TYPES[crop_id]["sheet"])
 		assert_not_null(sheet, str(crop_id))
-		assert_eq(sheet.get_width(), (CropRules.STAGES + 1) * 16, str(crop_id))
-		assert_eq(sheet.get_height() % 16, 0, str(crop_id))
+		assert_eq(
+			sheet.get_width(), (CropRules.STAGES + 1) * TerrainTileset.TILE_SIZE, str(crop_id)
+		)
+		assert_eq(sheet.get_height() % TerrainTileset.TILE_SIZE, 0, str(crop_id))
 
 
 func test_every_seed_and_produce_has_an_icon() -> void:
@@ -196,7 +198,7 @@ func test_a_crop_added_only_by_config_and_picture_gets_its_own_sheet_source() ->
 	assert_false(source_id in SeasonBlend.Look.values(), "after the look sources")
 	var source := tileset.tile_set.get_source(source_id) as TileSetAtlasSource
 	assert_eq(source.get_tiles_count(), CropRules.STAGES + 1)
-	assert_eq(source.texture_region_size, Vector2i(16, 16))
+	assert_eq(source.texture_region_size, Vector2i.ONE * TerrainTileset.TILE_SIZE)
 
 
 func test_each_crop_is_drawn_from_its_own_sheet_and_stage() -> void:
@@ -220,6 +222,6 @@ func test_each_crop_is_drawn_from_its_own_sheet_and_stage() -> void:
 func test_tall_crops_have_taller_sheets() -> void:
 	for crop_id in [&"wheat", &"peas", &"beans", &"flax"]:
 		var sheet: Texture2D = load(WorldObjectTypes.TYPES[crop_id]["sheet"])
-		assert_gt(sheet.get_height(), 16, str(crop_id))
+		assert_gt(sheet.get_height(), TerrainTileset.TILE_SIZE, str(crop_id))
 	var turnip: Texture2D = load(WorldObjectTypes.TYPES[WorldObjectTypes.TURNIP]["sheet"])
-	assert_eq(turnip.get_height(), 16)
+	assert_eq(turnip.get_height(), TerrainTileset.TILE_SIZE)

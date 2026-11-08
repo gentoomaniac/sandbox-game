@@ -28,7 +28,8 @@ func _flowers_on(layer: TerrainTileset.Layer, day: int, look := SUMMER_LOOK) -> 
 	for y in range(area.position.y, area.end.y):
 		for x in range(area.position.x, area.end.x):
 			_view.place(Vector2i(x, y), TerrainTileset.tile_code(layer, look, look), false)
-	return _view.flower_tiles_within(Rect2(area.position * 16, area.size * 16))
+	var tile_size := TerrainTileset.TILE_SIZE
+	return _view.flower_tiles_within(Rect2(area.position * tile_size, area.size * tile_size))
 
 
 func test_meadows_flower_in_summer() -> void:

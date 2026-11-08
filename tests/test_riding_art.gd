@@ -29,7 +29,9 @@ func _assert_riding_sheet(layer: Dictionary) -> void:
 	var texture: Texture2D = load(Appearance.riding_sheet_path(layer))
 	assert_not_null(texture, Appearance.riding_sheet_path(layer))
 	if texture != null:
-		assert_eq(texture.get_size(), Vector2(16, PlayerView.FRAME_HEIGHT * 4))
+		assert_eq(
+			texture.get_size(), Vector2(TerrainTileset.TILE_SIZE, PlayerView.FRAME_HEIGHT * 4)
+		)
 
 
 func test_every_horse_look_has_its_ridden_sheets() -> void:

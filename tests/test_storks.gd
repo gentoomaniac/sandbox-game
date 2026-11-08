@@ -50,7 +50,8 @@ func test_a_stork_stands_on_top_of_the_roof_as_it_is_shown() -> void:
 	while image.get_pixel(column, top).a < 0.5:
 		top += 1
 	var roof_top := BuildingViews.footprint_bottom(_house) - image.get_height() + top
-	assert_almost_eq(stork.position.y - stork._lift, roof_top + 2.0, 0.01, "two pixels in")
+	var two_pixels := 2.0 * TerrainTileset.ART_16_SCALE
+	assert_almost_eq(stork.position.y - stork._lift, roof_top + two_pixels, 0.01, "two pixels in")
 
 
 func test_a_stork_leaves_a_roof_whose_house_is_gone() -> void:

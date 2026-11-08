@@ -15,7 +15,7 @@ A building's section in [data/buildings.cfg](../data/buildings.cfg) names its ma
 
 ## Editing a room
 
-Open the `.tmx` in Tiled and paint with the tiles of `interior.tsx`. Tiles are 16 x 16.
+Open the `.tmx` in Tiled and paint with the tiles of `interior.tsx`. Tiles are 32 x 32.
 
 - The maps have two layers, `ground` and `furniture`. The loader reads every layer in the same
   way, so the names are a convention for the human: floor, walls and the door on `ground`,
@@ -52,5 +52,5 @@ Furniture tiles are generated, so a new one starts in the art code
    `assets/interior/`) and its footprint.
 3. Run `make assets`, then add a `<tile>` with the property `object_type` to `interior.tsx`
    at the next id (in Tiled, or copy a neighbouring entry), and enlarge the tileset's
-   `tilecount`, `columns` and image `width` by one tile (16 px).
+   `tilecount`, `columns` and image `width` by one tile (32 px).
 4. Paint it into a map.

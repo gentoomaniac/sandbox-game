@@ -7,7 +7,7 @@ A picture is a list of rows of palette colour names (None = clear), `picture[y][
 TILE = 16
 # The game's tile in pixels (TerrainTileset.TILE_SIZE). The art drawn at TILE is scaled up to it
 # pixel for pixel when it is written (DOUBLED in generate.py).
-GAME_TILE = 16
+GAME_TILE = 32
 # Every cell of the object atlas is this big: a tree fits, and smaller things are drawn at
 # the cell's bottom centre. A multi-tile object is centred on its footprint instead.
 OBJECT_CELL_WIDTH = 48

@@ -96,4 +96,8 @@ func test_every_worn_layer_has_collapse_frames() -> void:
 		var sheet: Texture2D = load(Appearance.collapse_sheet_path(layer))
 		assert_not_null(sheet, file)
 		if sheet != null:
-			assert_eq(sheet.get_width(), 32 * PlayerView.COLLAPSE_FRAME_STARTS.size(), file)
+			assert_eq(
+				sheet.get_width(),
+				PlayerView.FRAME_HEIGHT * PlayerView.COLLAPSE_FRAME_STARTS.size(),
+				file
+			)

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.12.0" name="interior" tilewidth="16" tileheight="16" tilecount="32" columns="32">
- <image source="../../assets/interior.png" width="512" height="16"/>
+<tileset version="1.10" tiledversion="1.12.0" name="interior" tilewidth="32" tileheight="32" tilecount="32" columns="32">
+ <image source="../../assets/interior.png" width="1024" height="32"/>
  <tile id="0">
   <properties>
    <property name="terrain" value="FLOOR"/>

@@ -118,9 +118,11 @@ func test_the_flame_strips_match_the_pictures() -> void:
 		var cells := AmbientMotion.FIRE_FRAMES + 2
 		assert_eq(strip.get_width() % cells, 0, "%s: a whole number of cells" % type)
 		var box := Vector2i(strip.get_width() / cells, strip.get_height())
-		var box_position := Vector2i(profile["box_position"])
+		# The profile is in pixels of the 16 px art, the pictures are scaled up.
+		var scale := TerrainTileset.ART_16_SCALE
+		var box_position := Vector2i(profile["box_position"]) * scale
 		for picture: Image in pictures[type]:
-			assert_eq(picture.get_size(), Vector2i(profile["cell_size"]), type)
+			assert_eq(picture.get_size(), Vector2i(profile["cell_size"]) * scale, type)
 			var differing := 0
 			for y in box.y:
 				for x in box.x:

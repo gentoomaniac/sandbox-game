@@ -26,8 +26,8 @@ const BUS_OF_KEY := {"effects": EFFECTS, "ambience": AMBIENCE, "ui": UI}
 ## The bus of each volume channel of the settings (see GameSettings).
 const CHANNEL_BUSES := {&"master": MASTER, &"effects": EFFECTS, &"ambience": AMBIENCE}
 const POOL_SIZE := 12
-## Beyond this many art pixels from the camera a positional sound is silent.
-const MAX_DISTANCE := 500.0
+## Beyond this far from the camera (31 tiles, in art pixels) a positional sound is silent.
+const MAX_DISTANCE := 31.25 * TerrainTileset.TILE_SIZE
 const SILENT_DB := -80.0
 
 ## Silent no matter the settings (the `--mute` flag, for test runs); sounds still play and

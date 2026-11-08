@@ -5,7 +5,7 @@ const WINDOW := Vector2(1920, 1080)
 
 
 func test_zoom_is_clamped_to_the_allowed_range() -> void:
-	assert_eq(ViewMath.clamp_zoom(0.1), 0.5)
+	assert_eq(ViewMath.clamp_zoom(0.1), 1.0)
 	assert_eq(ViewMath.clamp_zoom(7.0), 2.0)
 	assert_eq(ViewMath.clamp_zoom(1.37), 1.37)
 
@@ -14,25 +14,31 @@ func test_wheel_zooms_by_a_factor_per_notch_and_stays_clamped() -> void:
 	assert_almost_eq(ViewMath.zoom_after_wheel(1.0, 1), 1.1, 0.0001)
 	assert_almost_eq(ViewMath.zoom_after_wheel(1.1, -1), 1.0, 0.0001)
 	assert_eq(ViewMath.zoom_after_wheel(1.9, 5), 2.0)
-	assert_eq(ViewMath.zoom_after_wheel(0.55, -5), 0.5)
+	assert_eq(ViewMath.zoom_after_wheel(1.05, -5), 1.0)
 
 
-func test_default_view_is_320_by_180_art_pixels_at_1080p() -> void:
-	assert_eq(ViewMath.visible_size(WINDOW, 1.0), Vector2(320, 180))
-	assert_eq(ViewMath.screen_scale(WINDOW, 1.0), 6.0)
+func test_widest_view_is_640_by_360_art_pixels_at_a_whole_scale() -> void:
+	assert_eq(ViewMath.visible_size(WINDOW, 1.0), Vector2(640, 360))
+	assert_eq(ViewMath.screen_scale(WINDOW, 1.0), 3.0)
+	assert_eq(ViewMath.screen_scale(Vector2(2560, 1440), 1.0), 4.0)
 
 
-func test_widest_zoom_fills_the_viewport_minus_its_margin() -> void:
-	assert_eq(ViewMath.visible_size(WINDOW, 0.5), Vector2(640, 360))
+func test_widest_view_is_20_by_11_tiles() -> void:
+	var tiles := ViewMath.visible_size(WINDOW, ViewMath.MIN_ZOOM) / TerrainTileset.TILE_SIZE
+	assert_eq(Vector2i(tiles), Vector2i(20, 11))
+
+
+func test_closest_view_is_320_by_180_art_pixels() -> void:
+	assert_eq(ViewMath.visible_size(WINDOW, ViewMath.MAX_ZOOM), Vector2(320, 180))
 
 
 func test_a_wider_window_never_shows_more_than_the_viewport_holds() -> void:
 	var ultrawide := Vector2(3440, 1080)
-	assert_almost_eq(ViewMath.visible_size(ultrawide, 0.5).x, 640.0, 0.001)
+	assert_almost_eq(ViewMath.visible_size(ultrawide, 1.0).x, 640.0, 0.001)
 
 
 func test_whole_pixel_target_shows_the_viewport_centre() -> void:
-	var origin := ViewMath.region_origin(Vector2(100, 50), WINDOW, 1.0)
+	var origin := ViewMath.region_origin(Vector2(100, 50), WINDOW, 2.0)
 	assert_eq(origin, Vector2(ViewMath.VIEWPORT_SIZE) / 2.0 - Vector2(160, 90))
 
 
@@ -43,8 +49,8 @@ func test_fraction_of_the_target_shifts_the_shown_part() -> void:
 
 
 func test_shown_part_stays_inside_the_viewport() -> void:
-	var origin := ViewMath.region_origin(Vector2(0.5, 0.5), WINDOW, 0.5)
-	var end := origin + ViewMath.visible_size(WINDOW, 0.5)
+	var origin := ViewMath.region_origin(Vector2(0.5, 0.5), WINDOW, 1.0)
+	var end := origin + ViewMath.visible_size(WINDOW, 1.0)
 	assert_true(origin.x >= 0.0 and origin.y >= 0.0)
 	assert_true(end.x <= ViewMath.VIEWPORT_SIZE.x and end.y <= ViewMath.VIEWPORT_SIZE.y)
 
@@ -56,7 +62,7 @@ func test_window_centre_is_the_camera_target() -> void:
 
 func test_window_and_world_positions_convert_back_and_forth() -> void:
 	var target := Vector2(33.3, -12.7)
-	for zoom in [0.5, 1.0, 1.37, 2.0]:
+	for zoom in [1.0, 1.37, 2.0]:
 		var window_position := Vector2(1234, 321)
 		var world := ViewMath.window_to_world(window_position, WINDOW, target, zoom)
 		var back := ViewMath.world_to_window(world, WINDOW, target, zoom)

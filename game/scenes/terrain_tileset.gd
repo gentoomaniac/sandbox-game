@@ -40,7 +40,7 @@ enum Layer {
 enum FlowerVariant { SMALL, FEW, DRIFT, OTHER_DRIFT }
 
 ## World pixels per tile: the size of a tile in art pixels.
-const TILE_SIZE := 16
+const TILE_SIZE := 32
 ## World pixels per pixel of the art still drawn at 16 px per tile, which tools/art scales up
 ## to the tile (DOUBLED in tools/art/generate.py). A number measured on such a picture (a
 ## sprite's offset, a frame size, an animal's hop) is written in its pixels times this; the

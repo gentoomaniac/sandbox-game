@@ -90,5 +90,7 @@ func test_wheel_zoom_glides_toward_the_clamped_goal() -> void:
 
 
 func test_set_zoom_clamped_applies_at_once() -> void:
+	_rig.set_zoom_clamped(1.5)
+	assert_eq(_rig.zoom, 1.5)
 	_rig.set_zoom_clamped(0.1)
-	assert_eq(_rig.zoom, 0.5)
+	assert_eq(_rig.zoom, ViewMath.MIN_ZOOM)

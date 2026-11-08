@@ -174,7 +174,7 @@ func test_every_sheet_has_the_frame_grid() -> void:
 		assert_eq(
 			sheet.get_size(),
 			Vector2(
-				PlayerView.FRAMES_PER_FACING * 16,
+				PlayerView.FRAMES_PER_FACING * TerrainTileset.TILE_SIZE,
 				PlayerView.FACING_ROWS.size() * PlayerView.FRAME_HEIGHT
 			),
 			str(layer)

@@ -92,8 +92,8 @@ func test_every_building_has_pictures_as_wide_as_its_footprint() -> void:
 				var path := SeasonalArt.house_path(building_type[key], look)
 				var texture: Texture2D = load(path)
 				assert_not_null(texture, path)
-				assert_eq(texture.get_width(), FOOTPRINTS[id].x * 16, path)
-				assert_gt(texture.get_height(), FOOTPRINTS[id].y * 16, path)
+				assert_eq(texture.get_width(), FOOTPRINTS[id].x * TerrainTileset.TILE_SIZE, path)
+				assert_gt(texture.get_height(), FOOTPRINTS[id].y * TerrainTileset.TILE_SIZE, path)
 
 
 func test_every_interior_map_exists_and_every_window_light_is_on_its_picture() -> void:
