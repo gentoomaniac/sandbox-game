@@ -630,6 +630,7 @@ _SNOW_ON_ROOF = {
     "green_bright": "snow_light", "green_light": "snow_light", "green": "snow",
     "cream": "snow_light", "snow_light": "snow_light", "stone_light": "snow_light", "stone": "snow",
     "soil_mid": "snow", "soil": "snow_shadow",
+    "rust": "snow_light", "rust_dark": "snow", "russet_deep": "snow_shadow",
 }
 # The colours of snow on a roof, lit to deep.
 _SNOW_DEPTH = ("snow_light", "snow", "snow_shadow", "snow_deep")
