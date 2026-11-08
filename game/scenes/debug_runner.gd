@@ -49,6 +49,7 @@ var _is_entering_first_house: bool
 var _is_sleeping: bool
 var _chest_tile: Vector2i
 var _chest_inside_tile: Vector2i
+var _churchyard_tile: Vector2i
 var _is_storage_to_open: bool
 var _is_station_to_open: bool
 var _are_animals_to_spawn: bool
@@ -72,6 +73,7 @@ func _init(options: StartupOptions) -> void:
 	_is_sleeping = options.sleep
 	_chest_tile = options.chest
 	_chest_inside_tile = options.chest_inside
+	_churchyard_tile = options.churchyard
 	_is_storage_to_open = options.storage
 	_is_station_to_open = options.station
 	_are_animals_to_spawn = not options.wildlife.is_empty()
@@ -99,6 +101,9 @@ func update(delta: float) -> void:
 		_is_sleeping = false
 		try_sleep.call()
 	_place_chests()
+	if _churchyard_tile != StartupOptions.NO_TILE and view.is_settled and not state.is_inside():
+		DebugChurchyard.create(state, _churchyard_tile)
+		_churchyard_tile = StartupOptions.NO_TILE
 	if _is_station_to_open and _is_map_drawn():
 		_is_station_to_open = false
 		var station := Interaction.nearest_in_reach(
@@ -263,6 +268,7 @@ func _is_ready_to_shoot() -> bool:
 		and _harvest_tile == StartupOptions.NO_TILE
 		and _chest_tile == StartupOptions.NO_TILE
 		and _chest_inside_tile == StartupOptions.NO_TILE
+		and _churchyard_tile == StartupOptions.NO_TILE
 		and not _is_storage_to_open
 		and not _is_station_to_open
 	)

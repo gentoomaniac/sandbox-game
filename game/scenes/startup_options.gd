@@ -87,6 +87,7 @@ extends RefCounted
 ##   --drops=<x>,<y>          what a felled tree, a mined stone, a harvested crop and a picked
 ##                            bush drop
 ##   --forage=<x>,<y>         a stump, bushes and a sapling in a row, and some of every new item
+##   --churchyard=<x>,<y>     the church, its bell frame and graves in a walled churchyard
 ##   --felled=<x>,<y>         trees felled from each side, with stumps, trunks and tree seeds
 ##   --mow=<x>,<y>            mows twice with the scythe from that tile (--day=45 for summer)
 ##   --path=<x>,<y>           a desire path walked from that tile eastwards (see DebugPath)
@@ -186,6 +187,7 @@ var house := NO_TILE
 var field := NO_TILE
 var drops := NO_TILE
 var forage := NO_TILE
+var churchyard := NO_TILE
 var felled := NO_TILE
 var mow := NO_TILE
 var path := NO_TILE
@@ -304,6 +306,8 @@ func _init(args := PackedStringArray()) -> void:
 				drops = _tile(arg)
 			"--forage":
 				forage = _tile(arg)
+			"--churchyard":
+				churchyard = _tile(arg)
 			"--felled":
 				felled = _tile(arg)
 			"--mow":
