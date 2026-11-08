@@ -1,16 +1,18 @@
-"""The parish church of a marsh village.
+"""The parish church of a marsh village and its bell frame.
 
 The church (assets/buildings/church.png) is drawn like the houses in buildings.py, from the
 south in 3/4 view: a nave of grey-brown tuff ashlar with the lower chancel to the east, under
 steep roofs of red pantiles, small round-arched windows of leaded glass in brick arches, and a
 low porch on the south side whose gable faces the front, with the round-arched church door in
-it. An iron cross stands on the west gable and on the porch.
+it. An iron cross stands on the west gable and on the porch. The small marsh parishes had no
+tower: the bells hung in a free-standing wooden frame (Glockenstapel, bell_frame.png), an open
+oak frame on a brick base under a pyramid of oak shingles, the bell in it.
 """
 
 import math
 import random
 
-from buildings import LIME, SHADED, eaves_shadow, fieldstone_base, glass, ground_shadow, outline, plank_door
+from buildings import LIME, OAK, SHADED, eaves_shadow, fieldstone_base, brick_wall, glass, ground_shadow, outline, plank_door
 from canvas import TILE, blank, rect
 
 # Tuff ashlar: the blocks, mostly grey, some browner, each lit along its top, and the joints
@@ -18,6 +20,10 @@ from canvas import TILE, blank, rect
 TUFF = ("stone", "stone", "sand")
 TUFF_LIT = {"stone": "stone_light", "sand": "sand_light"}
 TUFF_JOINT = "stone_dark"
+# Weathered oak shingles, silver-grey: lit, in shade, and the gaps between them.
+SHINGLE = ("stone_light", "stone", "stone_dark")
+# A bronze bell: its lit edge, its body, its shade.
+BRONZE = ("gold", "ochre", "ochre_dark")
 # The colour of everything's outline, as on the houses.
 OUTLINE = "soil_dark"
 
@@ -204,6 +210,73 @@ def porch(picture, snowy, rng, left, right, apex, base_top, height):
         rect(picture, x, rake(x) + 1, x, height - 2, OUTLINE)
 
 
+def bell_frame(is_lit):
+    """The free-standing bell frame (Glockenstapel) on 2x2 tiles: an open oak frame on a brick
+    base, its two front posts leaning in under a pyramid roof of oak shingles with an iron
+    finial, braced crosswise below the rail; the bronze bell hangs from the head beam, the back
+    posts showing behind it. `is_lit` changes nothing: it has no windows."""
+    rng = random.Random(387)
+    width, height = 2 * TILE, 84
+    picture = blank(width, height)
+    snowy = set()
+    apex, eaves_y, sill, base_top = 5, 28, 64, 68
+    # The back posts, in shade, and the cross braces between the front posts below the rail.
+    for x in (11, 20):
+        rect(picture, x, eaves_y, x + 1, sill, "soil")
+        rect(picture, x + 1, eaves_y, x + 1, sill, OAK[1])
+    for step in range(13):
+        for x, colour in ((7 + step, "soil_mid"), (24 - step, "soil")):
+            rect(picture, x, 51 + step, x + 1, 51 + step, colour)
+    # The front posts, leaning in, lit on the left; the head beam, the rail and the sill.
+    for step, y in enumerate(range(eaves_y, sill + 1)):
+        lean = 4 - step * 4 // (sill - eaves_y)
+        for x0 in (3 + lean, 26 - lean):
+            rect(picture, x0, y, x0 + 2, y, "soil_mid")
+            picture[y][x0] = "soil_light"
+            picture[y][x0 + 2] = "soil"
+    for y in (eaves_y + 1, 48):
+        rect(picture, 6, y, 25, y + 1, "soil_mid")
+        rect(picture, 6, y, 25, y, "soil_light")
+        rect(picture, 6, y + 2, 25, y + 2, "soil")
+    rect(picture, 2, sill, 29, sill + 2, "soil_mid")
+    rect(picture, 2, sill, 29, sill, "soil_light")
+    # The bell, hung from the head beam, its mouth dark with the clapper in it.
+    rect(picture, 15, eaves_y + 4, 16, eaves_y + 5, "stone_dark")
+    halves = (2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 6)
+    for row, half in enumerate(halves):
+        y = eaves_y + 6 + row
+        for x in range(16 - half, 16 + half):
+            third = (x - 16 + half) * 3 // (2 * half)
+            picture[y][x] = BRONZE[2] if row == len(halves) - 1 else BRONZE[min(2, third)]
+        picture[y][16 - half] = BRONZE[0] if row < len(halves) - 1 else BRONZE[1]
+    mouth = eaves_y + 6 + len(halves)
+    rect(picture, 12, mouth, 19, mouth, "soil_dark")
+    rect(picture, 15, mouth, 16, mouth + 1, "stone_dark")
+    # The brick base, capped with a course of headers.
+    brick_wall(picture, rng, 2, 29, base_top, height - 2, ("rust", "rust", "red_light", "rust_dark"), "sand")
+    rect(picture, 1, base_top - 1, 30, base_top - 1, "red_light")
+    rect(picture, 1, base_top, 30, base_top, "rust_dark")
+    # The pyramid of shingles: courses of 3 rows, the shingles 3 px wide and staggered, the
+    # left face lit; a drip edge at the eaves and an iron finial on top.
+    for y in range(apex, eaves_y + 1):
+        half = (y - apex) * 15 // (eaves_y - apex) + 1
+        course = (y - apex) // 3
+        for x in range(16 - half, 16 + half):
+            lit = x < 16
+            if (y - apex) % 3 == 2 or (x + course * 2) % 4 == 0:
+                colour = SHINGLE[1] if lit else SHINGLE[2]
+            else:
+                colour = SHINGLE[0] if lit else SHINGLE[1]
+            picture[y][x] = colour
+            snowy.add((x, y))
+    rect(picture, 0, eaves_y + 1, width - 1, eaves_y + 1, SHINGLE[2])
+    rect(picture, 16, 0, 16, apex - 1, "stone_dark")
+    rect(picture, 14, 2, 18, 2, "stone_dark")
+    outline(picture, OUTLINE)
+    ground_shadow(picture)
+    return picture, snowy
+
+
 # How to draw each building, by its id in data/buildings.cfg (generate.py adds them to those of
 # buildings.py).
-PICTURES = {"church": church}
+PICTURES = {"church": church, "bell_frame": bell_frame}

@@ -30,8 +30,8 @@ assets/character/portrait/<slot>_<variant>.png: a 32x32 head-and-shoulders portr
 layer that shows in a bust, for the chat (see portraits.py).
 assets/effects/sleep_z.png: the "z" that rises from a sleeping figure.
 
-assets/buildings/<type>.png: one picture per building type (drawn in buildings.py, the church in
-church.py), as wide as its footprint (16 px per tile) and as tall as the
+assets/buildings/<type>.png: one picture per building type (drawn in buildings.py, the church and
+its bell frame in church.py), as wide as its footprint (16 px per tile) and as tall as the
 footprint plus the roof rising above it. The bottom edge is the footprint's bottom edge.
 <type>_lit.png is the same with lit windows, for the night. Each also comes in the house looks
 of seasons.HOUSE_LOOKS (kate_autumn.png, kate_lit_snow.png). Sizes and door tiles are in
