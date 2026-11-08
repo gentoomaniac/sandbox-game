@@ -61,6 +61,12 @@ func select(hotbar_slot: int) -> void:
 	changed.emit()
 
 
+## Selects the hotbar slot `steps` along from the selected one (back if negative), round from
+## the last slot to the first and back: the mouse wheel's step.
+func select_next(steps: int) -> void:
+	select(posmod(selected_slot + steps, HOTBAR_SIZE))
+
+
 func total_weight() -> float:
 	var total := 0.0
 	for stack in slots:

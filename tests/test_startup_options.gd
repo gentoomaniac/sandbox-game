@@ -7,7 +7,7 @@ func test_no_flags_leave_the_defaults() -> void:
 	assert_eq(options.at, StartupOptions.NO_TILE)
 	assert_eq(options.time_hour, -1)
 	assert_eq(options.energy, -1.0)
-	assert_eq(options.zoom, 1.0)
+	assert_eq(options.zoom, ViewMath.MIN_ZOOM)
 	assert_eq(options.menu, -1)
 	assert_eq(options.screenshot, "")
 	assert_false(options.inventory)

@@ -54,7 +54,7 @@ help:
 	@echo "  TEST_TIMEOUT test: seconds before a hung run is stopped (default: 600)."
 	@echo "  AT          screenshot: world tile to put the player on, e.g. AT=40,-20 (default: the camp)."
 	@echo "  TIME        screenshot: time of day, e.g. TIME=21:00 (default: the game start)."
-	@echo "  ZOOM        screenshot: camera zoom, 0.5 to 2 (default 1)."
+	@echo "  ZOOM        screenshot: camera zoom, 0.5 to 2 (default 0.5, as the game starts)."
 	@echo "  OUT         screenshot: file to write (default: build/screenshot.png)."
 	@echo "  SCREENSHOT_TIMEOUT  screenshot: seconds before a hung Godot is killed (default: 30)."
 	@echo "  KEEP_SAVE   screenshot: KEEP_SAVE=1 loads the real save instead of a new game."
@@ -128,7 +128,7 @@ run:
 # day (default: game start). The picture is the whole window, as the player sees it.
 AT ?=
 TIME ?=
-# Camera zoom, 0.5 to 2 (default 1).
+# Camera zoom, 0.5 to 2 (default 0.5, as the game starts).
 ZOOM ?=
 # Further debug flags, e.g. ARGS="--ghost=3,-5" (see game/scenes/startup_options.gd).
 ARGS ?=

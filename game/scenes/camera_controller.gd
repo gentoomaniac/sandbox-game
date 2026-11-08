@@ -4,8 +4,9 @@ extends Node
 ## nearest to the target and never zooms, and shows the matching part of the world viewport
 ## on the window through the sharp-bilinear shader (see ViewMath), shifted by the target's
 ## fraction. So the world scrolls at sub-pixel precision while everything in the viewport
-## stays on the art pixel grid. The mouse wheel zooms around the camera target. The camera
-## API is CameraRig's, reached through `rig`.
+## stays on the art pixel grid. Ctrl and the mouse wheel zoom around the camera target (the
+## wheel alone steps through the hotbar, see Main). The camera API is CameraRig's, reached
+## through `rig`.
 
 @export var world_viewport: SubViewport
 @export var world_camera: Camera2D
@@ -21,6 +22,8 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if rig.is_playing() or not event is InputEventMouseButton or not event.pressed:
+		return
+	if not event.ctrl_pressed:
 		return
 	if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 		rig.zoom_by_wheel(event.factor)

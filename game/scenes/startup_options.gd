@@ -145,7 +145,8 @@ var weather := &""
 var flash := false
 ## -1 for the snow cover of the game.
 var snow := -1.0
-var zoom := 1.0
+## The camera starts zoomed out as far as it goes, where the player keeps it.
+var zoom := ViewMath.MIN_ZOOM
 var camera_shift := Vector2.ZERO
 var coordinates := false
 var mouse_tile := NO_TILE

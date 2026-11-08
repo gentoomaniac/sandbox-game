@@ -51,8 +51,9 @@ top of classic pixel art (details under "Lighting and look").
      camera movement stay smooth at any value, without uneven pixels.
 - **UI** is rendered separately at native resolution.
 - **Tiles: 16×16.** Default view about 320×180 art pixels (20×11 tiles).
-- **Stepless zoom** from 0.5× (about 640×360 art pixels) to about 2×. The mouse wheel
-  zooms.
+- **Stepless zoom** from 0.5× (about 640×360 art pixels) to about 2×; the game starts at
+  0.5× (the user zooms out fully anyway, 2026-11-08). Ctrl and the mouse wheel zoom; the wheel
+  alone steps through the hotbar.
 - **Smooth camera following:** the camera follows the player's exact position, so the
   world scrolls at sub-pixel precision; the player, drawn on the pixel grid, may wobble by up
   to half an art pixel. Chosen over a pixel-locked camera (2026-11-05).

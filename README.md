@@ -434,8 +434,9 @@ and windowed, scale the UI from 0.5× to 2× without touching the world view, an
 energy drain and the day length variation, and set the language model villagers talk
 through. Hover over a setting, a key or an item in the
 hotbar, inventory or equipment for a short explanation: an item's kind, weight, what food
-gives back, what seeds grow and where they are planted. The mouse wheel zooms smoothly
-from 0.5× to 2×.
+gives back, what seeds grow and where they are planted. The game starts zoomed out at
+0.5×; Ctrl and the mouse wheel zoom smoothly up to 2×. The wheel alone steps through the
+hotbar.
 
 ![Rebinding the controls](docs/screenshots/controls.png)
 
@@ -484,7 +485,8 @@ These are the default keys; all of them can be changed under Settings → Contro
 | B | Take the hammer: build mode |
 | X | Switch the hammer between building and taking down (hold Space or click to take down) |
 | Q, E | Previous and next building (while holding the hammer) |
-| Mouse wheel | Zoom |
+| Mouse wheel | Next or previous hotbar slot |
+| Ctrl + mouse wheel | Zoom |
 | Escape | Pause menu |
 | `/` | Console |
 | F3 | Show coordinates and weather values |
