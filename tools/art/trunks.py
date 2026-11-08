@@ -11,7 +11,7 @@ colour names.
 import math
 import random
 
-from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank
+from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank, outline_edge
 
 # The log's rows, its outline included, ending a row above the cell's bottom.
 LOG_HEIGHT = 11
@@ -96,23 +96,8 @@ def log_picture(species, length, seed):
             else:
                 canvas[y][x] = RINGS[min(len(RINGS) - 1, int((0.82 - distance) / 0.82 * len(RINGS)))]
     canvas[math.floor(centre_y)][math.floor(face_centre_x)] = "soil_mid"
-    _outline(canvas, outline)
+    outline_edge(canvas, outline, ignoring=("shadow",))
     return canvas
-
-
-def _outline(canvas, colour):
-    """The edge pixels of everything but the ground shadow, in the outline colour."""
-    marked = []
-    for y in range(OBJECT_CELL_HEIGHT):
-        for x in range(OBJECT_CELL_WIDTH):
-            if canvas[y][x] in (None, "shadow"):
-                continue
-            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                if canvas[y + dy][x + dx] in (None, "shadow"):
-                    marked.append((x, y))
-                    break
-    for x, y in marked:
-        canvas[y][x] = colour
 
 
 def rows(species):
