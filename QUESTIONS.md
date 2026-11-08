@@ -129,4 +129,34 @@ Answered questions move into the [design](design/README.md) and are removed here
 
 ## Questions
 
-No open questions right now.
+25. **Relationships** (planned, no task yet; draft in
+    [design/villagers/relationships.md](design/villagers/relationships.md)). Nothing is built;
+    each answer below is what the draft assumes.
+    - Friendship shown as a level word with five hearts. Default: yes.
+    - One gift per villager per day. Default: yes.
+    - Courting and marriage: not in the first version; later for adult villagers whose sheet
+      allows it. Default: yes.
+    - Rating the player's words with a second small model request, capped per day, working
+      without a model. Default: yes.
+    - Stealing and damage cost friendship only if seen (or found out by the owner a day later at
+      half), with ownership by villager and home, not by plot. Default: yes.
+    - Events and trouble (dyke breach, stuck cow) left for later; first gifts, talking and small
+      jobs. Default: yes.
+    - Friendship fades after 10 days without contact, never below the level before. Default: yes.
+    - A friend teaches a craft or recipe; reputation opens or closes shops. Default: yes.
+
+26. **Economy and currency** (planned, no task yet; draft in
+    [design/economy/README.md](design/economy/README.md)). Nothing is built.
+    - Mark Courant, Schilling and Pfennig (16 Schilling to the Mark, 12 Pfennig to the
+      Schilling), held as whole Pfennig. Default: yes.
+    - A start purse of 2 Mark. Default: yes.
+    - Who sells in Wehlsbüll: the Krug and the mill get counters and a pedlar comes by; Husum
+      and the smith come later. Default: yes.
+    - Seeds from the pedlar by season, by barter with neighbours, and from the harvest. Default:
+      yes.
+    - Shops sell at 125 % and buy at 60 % of the base value; seasons change prices, last year's
+      weather later. Default: yes.
+    - Barter from the Neighbour level, up to 1 Mark a deal. Default: yes.
+    - The stall is a placed hand cart with a till and prices per slot, sales rolled by the day
+      whether or not the player is near. Default: yes.
+    - Villagers have no purses; wages and rent are left out. Default: yes.

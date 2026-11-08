@@ -1929,6 +1929,18 @@ together.
 
 ## Later (not part of the prototype)
 
+- **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
+  Valley, but actions count as well as gifts, in the manner of the Sims (helping, talking,
+  events, rudeness, theft, being there in trouble). A first draft is in
+  [design/villagers/relationships.md](design/villagers/relationships.md), planned and not
+  decided. Plan with the user (its open questions are in QUESTIONS.md), then split into tasks.
+
+- **Economy and currency** (the user, 2026-11-08): small trades with villagers, shops that buy and
+  sell for money, and the player's own little stall where villagers occasionally buy produce and
+  goods. A first draft is in [design/economy/README.md](design/economy/README.md), planned and
+  not decided. Plan with the user (its open questions are in QUESTIONS.md), then split into
+  tasks. It also settles where seeds come from once shops exist.
+
 - **The camp's bedroll and campfire can be taken down and built** (the user, 2026-11-08): today
   they come with the camp and stay where they are. Let the player take them down (as task 83
   does for buildings and placed things) and craft or build them again elsewhere, with sensible
