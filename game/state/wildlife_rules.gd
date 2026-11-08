@@ -27,9 +27,11 @@ const FLYING_GEESE := &"flying_geese"
 ## Small ones: a mouse by the fields and the houses, a frog by the water.
 const MOUSE := &"mouse"
 const FROG := &"frog"
-## The birds of the coast: oystercatchers and dunlin probing the tidal mud in flocks.
+## The birds of the coast: oystercatchers and dunlin probing the tidal mud in flocks, and herring
+## gulls on the mud, the salt marsh and the sea.
 const OYSTERCATCHER := &"oystercatcher"
 const DUNLIN := &"dunlin"
+const GULL := &"gull"
 const KINDS: Array[StringName] = [
 	BIRD,
 	RABBIT,
@@ -46,6 +48,7 @@ const KINDS: Array[StringName] = [
 	FROG,
 	OYSTERCATCHER,
 	DUNLIN,
+	GULL,
 ]
 
 const GENERAL_KEYS := [

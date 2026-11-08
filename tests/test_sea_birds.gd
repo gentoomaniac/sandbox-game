@@ -143,3 +143,67 @@ func test_the_waders_can_be_spawned_from_the_console() -> void:
 	assert_string_contains(listed, "oystercatcher")
 	assert_string_contains(listed, "dunlin")
 	assert_eq(console.complete("spawn dun"), "spawn dunlin ")
+
+
+func _gull_at(point: Vector2) -> Gull:
+	var gull := Gull.new()
+	gull.position = point
+	_wildlife._add(gull, true)
+	return gull
+
+
+func test_gulls_live_on_the_mud_the_salt_marsh_and_the_sea() -> void:
+	var gull := WildlifeRules.GULL
+	assert_true(_wildlife._is_habitat(gull, _point(0)), "the mud")
+	assert_true(_wildlife._is_habitat(gull, _point(SEA_EAST - 2)), "the sea")
+	assert_true(_wildlife._is_habitat(gull, _point(MARSH_WEST + 1)), "the salt marsh")
+	_state.world.set_terrain(_middle + Vector2i(MARSH_WEST + 1, 0), Tile.Terrain.GRASS)
+	assert_false(_wildlife._is_habitat(gull, _point(MARSH_WEST + 1)), "not the meadows")
+
+
+func test_a_gull_walks_and_pecks_on_the_mud_and_swims_on_the_sea() -> void:
+	var walker := _gull_at(_point(0))
+	var seen := {}
+	for _i in 30:
+		_run(walker, 1.0)
+		seen[walker._state] = true
+	assert_true(seen.has(Gull.PECK), "pecks")
+	assert_true(seen.has(Gull.WALK), "walks")
+	assert_false(seen.has(Gull.SWIM), "not on dry mud")
+	var swimmer := _gull_at(_point(SEA_EAST - 3))
+	_run(swimmer, 20.0)
+	assert_eq(swimmer._state, Gull.SWIM)
+	assert_true(_wildlife.is_water(swimmer.position), "keeps to the water")
+
+
+func test_a_gull_on_the_mud_swims_when_the_tide_comes_in() -> void:
+	var gull := _gull_at(_point(0))
+	_run(gull, STEP)
+	_state.clock.minute_of_day = HIGH_WATER
+	_run(gull, STEP)
+	assert_eq(gull._state, Gull.SWIM)
+	assert_eq(gull.shadow_half_width, 0, "no shadow on the water")
+
+
+func test_a_gull_flies_off_from_the_player_and_is_gone() -> void:
+	var gull := _gull_at(_point(0))
+	_wildlife.is_player_ignored = false
+	_wildlife.world_view.player_feet = gull.position + Vector2(2.0 * TerrainTileset.TILE_SIZE, 0)
+	_run(gull, STEP)
+	assert_eq(gull._state, Gull.FLY)
+	_run(gull, 3.0)
+	assert_almost_eq(gull._lift, Gull.FLIGHT_HEIGHT, 0.01, "up at its height")
+	_run(gull, 30.0)
+	assert_true(gull.is_done)
+
+
+func test_gulls_all_year_and_hardly_at_night() -> void:
+	var rules := _wildlife.rules
+	var clear := WeatherSample.new()
+	var noon := 12 * GameClock.MINUTES_PER_HOUR
+	for day in [15, 45, 75, 105]:
+		assert_eq(
+			rules.target_count(WildlifeRules.GULL, day, noon, clear), rules.cap(WildlifeRules.GULL)
+		)
+	assert_eq(rules.target_count(WildlifeRules.GULL, 45, 0, clear), 0, "night")
+	assert_eq(Console.new(_state).complete("spawn gu"), "spawn gull ")

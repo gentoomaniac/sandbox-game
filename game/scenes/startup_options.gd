@@ -106,7 +106,7 @@ extends RefCounted
 ##                            that (bird, rabbit, squirrel, deer, bee, butterfly, flock, stork,
 ##                            roof_stork: on the roof of the nearest house, see --house; geese,
 ##                            flying_geese: one flock of them; mouse, frog; on the coast
-##                            oystercatcher, dunlin: one flock of them)
+##                            oystercatcher, dunlin: one flock of them; gull)
 ##   --wildlife-calm          the animals take no notice of the player
 ##   --livestock=<species>[,<species>]  put a few farm animals of those species near the player
 ##                            (cow, sheep, chicken, rabbit, dog, cat, horse)

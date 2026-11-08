@@ -27,7 +27,9 @@ const DEBUG_DISTANCE := Vector2(24.0, 70.0)
 ## A bee made by hand picks one of this many flowers nearest to the player.
 const DEBUG_FLOWERS := 5
 ## The birds of the coast keep to it even when made by hand: none appear where it is not near.
-const SEA_BIRDS: Array[StringName] = [WildlifeRules.OYSTERCATCHER, WildlifeRules.DUNLIN]
+const SEA_BIRDS: Array[StringName] = [
+	WildlifeRules.OYSTERCATCHER, WildlifeRules.DUNLIN, WildlifeRules.GULL
+]
 ## A flock crossing the view starts this far behind the ring, in pixels.
 const FLOCK_ENTRY_DISTANCE := 120.0
 ## A stork flying to a roof comes from this far beside the view, in pixels.
@@ -256,9 +258,10 @@ func _spawn_somewhere(kind: StringName, flowers: Array[Vector2i]) -> void:
 
 
 ## Whether a kind can live at a point: its terrain, trees and water, and ground to stand on if
-## it walks.
+## it walks (or water, for a gull, which swims).
 func _is_habitat(kind: StringName, point: Vector2) -> bool:
-	if not _is_flying(kind) and not can_stand(point):
+	var is_swimming := kind == WildlifeRules.GULL and is_water(point)
+	if not _is_flying(kind) and not is_swimming and not can_stand(point):
 		return false
 	return rules.is_habitat_at(kind, world_view.world, _tile_at(point))
 
@@ -427,6 +430,8 @@ func _spawn(kind: StringName, point: Vector2, is_pinned: bool) -> void:
 			animal = Mouse.new()
 		WildlifeRules.FROG:
 			animal = Frog.new()
+		WildlifeRules.GULL:
+			animal = Gull.new()
 	animal.position = point
 	_add(animal, is_pinned)
 
