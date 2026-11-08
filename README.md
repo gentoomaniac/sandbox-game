@@ -313,12 +313,15 @@ tools and the hammer, so the materials for the first house have to be gathered f
 buildings, their sizes, costs and insides are in [data/buildings.cfg](data/buildings.cfg).
 
 The buildings follow the reed-thatched farmhouses of Denmark and northern Germany: the Kate
-with white lime walls and teal shutters, the brick longhouse with its arched barn door, the
+with white lime walls, a split door and braced teal shutters, the brick longhouse with its
+arched door on the long side, the
 half-timbered barn, and the shack: tarred black boards under a turf roof, which greens in
 spring, browns in autumn and winter and lies under snow like the thatch. The biggest is the
 Low German hall house of Holstein: its half-timbered gable to the front with red brick in
 herringbone, the big arched barn door (the Grote Door), the owl hole under a little hip and
-white bargeboards crossing in a pair of horse heads, under a huge thatch.
+white bargeboards crossing in a pair of horse heads, under a huge thatch. The doors are
+tall enough for the people to walk through, and the thatch lies in courses with hanging reed
+ends, moss and a rolled edge at the eaves.
 It is also the dearest: 100 logs, 40 stone, 50 clay and 80 reeds (the shack takes 20 logs
 and 5 stone, the Kate 30, 15, 15 and 25).
 
@@ -329,9 +332,9 @@ mooring posts at its head (a piece takes 3 planks and a log at the workbench); a
 boat to lie beside it (10 planks, 4 fibre); and, made by hand, a net frame with a tarred net
 hung to dry (2 logs, 8 fibre) and wicker eel traps (4 reeds, 1 fibre).
 
-![The fisherman's hut behind the sea dyke with its jetty, boat, net frame and eel traps at a tideway in summer, and on a winter night under snow, the player standing on the jetty](docs/screenshots/fisher-hut.png)
+![The shack, the fisherman's hut and the Kate at the shore with the jetty, boat, net frame and eel traps in summer, and on a winter night under snow with the windows lit](docs/screenshots/fisher-hut.png)
 
-![The Kate, the longhouse, the hall house, the barn and the shack in summer, and the hall house on a winter night](docs/screenshots/buildings.png)
+![Every building in a row in summer: the shack, the fisherman's hut, the Kate, the longhouse, the hall house, the barn, the church and the bell frame; and the same row on a winter night under snow with the windows lit](docs/screenshots/buildings.png)
 
 The village church follows the small marsh churches of North Frisia: a nave of grey-brown tuff
 with a lower chancel, steep red pantile roofs, small arched windows of leaded glass that light
@@ -341,7 +344,7 @@ on a brick base under a shingled pyramid, which nobody goes into. For the church
 workbench makes grave markers (2 planks, 2 stone), which stand outdoors as an oak cross, a
 headstone or a fieldstone slab.
 
-![The churchyard at noon in summer, with its bell frame and a Kate beside it, and on a winter night with the church windows lit](docs/screenshots/church.png)
+![The churchyard at noon in summer, with the church, its bell frame and graves, and on a winter night under snow with the church windows lit](docs/screenshots/church.png)
 
 ![Inside the Kate and the longhouse at night, by the hearth](docs/screenshots/interiors.png)
 

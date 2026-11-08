@@ -58,7 +58,8 @@ top of classic pixel art (details under "Lighting and look").
   on); the people are drawn at 32 px since task 113, the farm animals since task 114, the wild
   animals, the flames, the hit particles and the weather (rain, splashes, snow, wind, fog) since
   task 116, the small animals a little larger than life, and the ground (terrain, paths, soil,
-  water, mud and their decorations) since task 107, calm so that what stands on it reads. The
+  water, mud and their decorations) since task 107, calm so that what stands on it reads, and
+  the buildings since task 110, their doors about 60 px high so the people fit through. The
   16 px art of a redrawn group stays in the game as the classic art, a setting (see Settings).
   (Was: 16×16, 320×180 at zoom 1.)
 - **Stepless zoom** from the widest view (1280×720 art pixels, zoom 0.5) in to zoom 2
@@ -1240,8 +1241,8 @@ woodworker, the cook and the mason, and a UI for them.
     landing** below).
   - **Kate:** a small cottage, 5×3, door on the middle tile. It replaces the old small
     house (old saves map to it).
-  - **Longhouse:** a larger farmhouse with the big gable door of the Lower Saxon hall house;
-    7×3, door on the middle tile.
+  - **Longhouse:** a larger farmhouse, a Geesthardenhaus entered on its long side by a big
+    arched door like the hall house's Grote Door; 7×3, door on the middle tile.
   - **Hall house** (task 59, 2026-11-06, from docs/art-style.md): the Low German hall house
     (*Niederdeutsches Hallenhaus*, Niedersachsenhaus) of Holstein, the biggest and dearest
     building: 7×5, its gable end to the front with the door (the Grote Door) on the middle
@@ -1302,11 +1303,12 @@ woodworker, the cook and the mason, and a UI for them.
     thick reed thatch, weathered grey-brown with moss, hipped at both ends with heavy rounded
     eaves, and eyebrow dormers (the thatch swells in a wave over a half-round window). The
     roof is steep planes, not a dome (task 55): a lit left hip, the front slope and a shaded
-    right hip with a straight ridge; the reed lies in courses about 4 px high with wavy
-    edges, lit along their top in broken runs, with reed ends of mixed length hanging below,
-    and moss and weathering in patches. Under snow the planes show but no stripes. The Kate has lime-washed walls (`lime`), a
+    right hip with a straight ridge; the reed lies in courses 7 px high (at 32 px per tile)
+    with wavy edges, lit along their top in broken runs, with reed ends of mixed length
+    hanging below over a ragged shadow line, and moss and weathering in patches. Under snow the planes show but no stripes. The Kate has lime-washed walls (`lime`), a
     teal door and shutters (`paint_teal`), white window frames, crossed sticks on its ridge
-    (a turf ridge is an option in buildings.py) and a small white chimney. The longhouse has buff brick on a fieldstone base, crossed sticks
+    and a small white chimney; its door is a split door (Klöntür) and its shutters are
+    braced, on iron hinges. The longhouse has buff brick on a fieldstone base, crossed sticks
     on its ridge, two brick chimneys, white windows in dark green frames, climbing roses, and
     the big arched green barn door of the hall house as its door (the middle tile), the
     thatch sweeping up over it. The barn is half-timbered (dark oak beams, red brick) with big

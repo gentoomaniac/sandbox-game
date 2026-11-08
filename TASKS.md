@@ -1517,7 +1517,40 @@ native ones). contrast_sheet.py needs no change.
 
 ## 110. 32 px art: buildings (shack, fisherman's hut, Kate, longhouse, hall house, barn, church, bell frame) and their seasonal and lit looks
 
-- [ ] Done
+- [x] Done
+
+Done: every building is drawn at 32 px per tile (tools/art/buildings.py, church.py) after the
+Kate of the mockup, and left `DOUBLED`: thatch in 7 px courses with a broken lit top, reed ends
+of mixed length and a ragged shadow line, rolled eaves 12 rows deep with a ragged dark hem,
+eyebrow dormers, crossed ridge sticks and turf ridges; round fieldstones each lit on its own;
+windows of 5 px panes with a glint (lit, each pane one warm colour), braced shutters on hinges;
+the Kate's split teal door, the longhouse's arched green door, the barn's braced double doors,
+the ledged doors of the huts, the hall house's Grote Door with a carved beam, herringbone and
+slanting brick, bargeboards crossing in horse heads; brick 8 px long, half-timber 4 px wide,
+tarred boards with battens, a lime wash with flakes and rain splash; the church's tuff ashlar,
+pantiles 10 px wide, leaded windows in brick arches and the porch, the bell frame's oak, bronze
+bell and shingles. The doors are about 60 px high, so the people (61 px) fit through them;
+every picture keeps its size (the walls are taller, the roofs a little lower), so the classic
+pictures need no padding and stand where they stood. From the review: the buildings table's
+materials (thatch, timber, brick, lime, green and teal paint); the outline in the darkest shade
+of the roof's ramp, the eaves' shadow and a ground shadow kept; the longhouse door stays on its
+long side, as art-style.md says (a Geesthardenhaus), and SPEC now says so too. The window lights
+in data/buildings.cfg are measured on the new windows (a test checks they are on lit glass);
+the stork stands `ROOF_FOOTING` (4 px) into a roof, right in both sets; no other number in the
+game was measured on building art (the build ghost and the sprites take their size from the
+picture). The snow look is the shared `seasons.house`, unchanged. The classic art (task 117)
+has the old houses: buildings.py and church.py of commit e303759 in tools/art/classic/, the
+pictures loaded through `ArtSet` (`BuildingViews.picture_path`, the build ghost; WorldView
+shows the buildings anew on F7). New debug flag `--street=<x>,<y>`: every building in a row on
+a lane of grass. Checked in screenshots at zoom 0.5, 1 and 2: every building in spring,
+summer, autumn, bare winter, snow, at dusk and at night with the windows lit, in both art sets,
+the player at the doors; README pictures retaken (buildings, church, fisher-hut, build, take-down).
+Left for later: the Kate variants of the review (task 120); the graves in church.py are world
+objects (task 111) and still 16 px; `make contrast-sheet` draws atlas rows only, so the
+buildings' contrast was checked in screenshots on every ground; the snow look keeps 2 to 4 rows
+of the eaves' dark underside, which is thinner at 32 px than it was (a native snow look would
+mean a copy of `seasons.house`, which task 108 owns); in the classic art the window lights sit
+on the new windows' places, a few pixels off the old windows.
 
 ## 111. 32 px art: walls, fences, the dyke and placed objects (chests, stations, the landing, graves)
 
@@ -1742,6 +1775,21 @@ and pose the hoe has (idle, walk, and the use animation where there is one), set
 for each, and check them in screenshots in all four facings; classic art (task 117) falls back
 to the new picture for those without an old one. Task 115 (items and icons) redraws the
 icons; this task is the hand-held pictures, and may go with 115 if that is simpler.
+
+## 120. Kate variants: a brick Kate and a Geest Kate
+
+- [ ] Done
+
+From review/art-review-2026-11-08 (its task 7 and buildings row 7), left out of task 110: two
+more looks of the Kate, for Kerrin's house at the dyke foot, the mill house and the sexton's
+house: red brick walls (`rust`, `red_light`, joints `sand`) with white frames, green paint and
+a brick chimney; and a Geest look, lime-washed over a black tarred foot instead of the
+fieldstones, under a turf ridge. The art is cheap (`buildings.kate` takes the walls as a
+parameter; task 110 tried both looks); the open question is the game side. The review proposes
+a `style` per building in data/buildings.cfg (SPEC "presets with customisation"), which means a
+saved style per placed building (a save version), a way to pick it with the hammer and the
+pictures per style; two more building types in data/buildings.cfg would need no code, but
+each needs its own interior map today (test_interior_maps) and the hammer's list grows.
 
 ## Later (not part of the prototype)
 

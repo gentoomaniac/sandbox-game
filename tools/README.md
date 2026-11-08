@@ -48,8 +48,8 @@ by topic. Where is a thing drawn?
 | `forms.py` | Rounded shapes as masks (ellipse, turned or not, capsule, polygon, rounded box) and their shading by the light from the top left, for the figures of character.py and villagers.py, the farm animals of livestock.py and the wild animals. |
 | `portraits.py` | The 32x32 chat portrait of every layer that shows in a bust: the top of its frame facing the viewer. |
 | `interior.py` | The room tiles and the furniture inside the buildings, the hearth too. |
-| `buildings.py` | The shack, Kate, longhouse, hall house and barn, plain and with lit windows. |
-| `church.py` | The church and its bell frame (as buildings.py), and the graves of the churchyard (a row of the object atlas). |
+| `buildings.py` | The shack, fisherman's hut, Kate, longhouse, hall house and barn at 32 px per tile, plain and with lit windows. |
+| `church.py` | The church and its bell frame (as buildings.py), and the graves of the churchyard (a row of the object atlas, still 16 px). |
 | `seasons.py` | The other looks (spring, autumn, bare, frost, snow, dusting, leaf-out steps) made from the summer art by colour remaps and overlays, the ground's by terrain layer where they differ (`LAYER_REMAPS`: autumn straw only on the dry grass). Also adds its colours to the palette. |
 | `crops.py`, `crop_icons.py` | Crop sheets (growth stages and the dead one), seed bag and produce icons. |
 | `items.py`, `tool_icons.py`, `chest.py` | Item icons, the slot frames and the tools; the chest, which is drawn once for every use. |
@@ -94,7 +94,10 @@ shared, still 16 px `camp.py` and `interior.py`); the ground (task 107), from co
 `terrain.py` unchanged, `ground_looks.py`, the ground part of `seasons.py` (a module of that
 name would stand in for the shared one that `palette.py` imports), and `ground_overlays.py`,
 the wet soil of `crop_icons.py` (drawn without `crops.Surface`) and the clay hint of `meadow.py`
-(the meadow flowers of the decorations are the shared, still 16 px `flowers.py`). The cow's, the horse's and the small wild
+(the meadow flowers of the decorations are the shared, still 16 px `flowers.py`); the
+buildings (task 110), from commit e303759: `buildings.py` and `church.py` unchanged (the graves
+of `church.py` are not written there; the looks are the shared `seasons.house`), whose pictures
+kept their sizes at 32 px. The cow's, the horse's and the small wild
 animals' cells grew at 32 px, so `set_in_grown_cells` puts their classic cells in the new ones
 (bottom centre), as the classic files must have the new cell sizes.
 

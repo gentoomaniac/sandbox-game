@@ -70,8 +70,8 @@ the game looks as it did, every pixel 2×2.
 
 Tasks 107 to 116 redraw the art group by group at 32 px; the people are done (task 113, see
 "Clothing and characters"), the farm animals (task 114, see "Props and animals", item 8),
-the wild animals and the effects (task 116, below) and the ground (task 107, below). To take a
-group native:
+the wild animals and the effects (task 116, below), the ground (task 107, below) and the
+buildings (task 110, see "Buildings"). To take a group native:
 
 - draw it at 32 px per tile (its cells, frames and offsets are twice the numbers below) and
   take its files out of `DOUBLED`;
@@ -165,19 +165,20 @@ seasons.py (`_DARK_FOOT`, `_GOLDEN_REEDS`) so the foot stays dark in autumn, bar
 - **Reed thatch** (`THATCH` in buildings.py: `sand`, `bare_light`, `bare`, `mud_dark`,
   `soil_dark`). New thatch is golden (`straw`, `gold`); after a few years grey-brown, with
   moss (`MOSS`) on the north side and low on the slope. Thatch is thick (30–40 cm): draw
-  the eaves as a rolled edge 3–4 px tall with a dark shadow under it. Texture as **courses**:
-  horizontal bands 3–4 px high, each lighter at its top edge, with short vertical strokes in
-  groups, not single-pixel streaks over the whole roof. Ridge: a turf strip (`olive`,
+  the eaves as a rolled edge 12 px tall (at 32 px per tile: a lit lip over a shaded round and a
+  dark underside with a ragged hem). Texture as **courses**: horizontal bands 7 px high, each
+  lighter at its top edge, with reed ends of mixed length hanging below it and a shadow line
+  at its foot that the longest reed ends break, not single-pixel streaks over the whole roof. Ridge: a turf strip (`olive`,
   `green_dark`) in the west, or straw/heather held by **crossed ridge sticks**
   (*kragtræer*, split oak, every 30–40 cm: a row of little X's on the ridge).
 - **Lime-washed walls:** flat, almost no texture. `lime`/`cream` lit, `sand_light` in shade
   and under the eaves. A few grey-brown pixels where the wash has flaked near the base.
 - **Brick:** small, handmade, irregular. Red (`rust`, `red_light`) in Holstein and Denmark,
-  buff-yellow (`sand_light`, `sand`) in the marsh and on the islands. Draw courses as 2 px
-  rows with the joint every 4 px, offset per row; joints one step darker, not a grid of
-  bright lines. At 1× brick should read as a warm texture, not as a pattern.
-- **Half-timber** (*Fachwerk*, *bindingsværk*): oak frames, dark (`soil`, `soil_dark`), 2 px
-  wide; posts, sills, a rail at mid-height and **short** diagonal braces near the corners.
+  buff-yellow (`sand_light`, `sand`) in the marsh and on the islands. Draw bricks 8 px long
+  and 2 high in 1 px joints, each course offset by half a brick, a few with a lighter corner;
+  joints one step darker, not a grid of bright lines. At 1× brick should read as a warm texture, not as a pattern.
+- **Half-timber** (*Fachwerk*, *bindingsværk*): oak frames, dark (`soil`, `soil_dark`), 4 px
+  wide and lit on their top or left edge; posts, sills, a rail at mid-height and **short** diagonal braces near the corners.
   Infill brick or lime-washed wattle and daub. In Denmark the frame is often tarred black
   or washed over with the wall colour.
 - **Wood:** oak boards silver-grey when weathered (`bare_light`, `bare`), brown when
@@ -197,12 +198,20 @@ seasons.py (`_DARK_FOOT`, `_GOLDEN_REEDS`) so the foot stays dark in autumn, bar
 All buildings in the region share a long, low body, a huge roof and small windows. Draw
 the roof as two clear planes with a straight ridge and hip lines; the bulge of the thatch is
 in the eaves and the swells over dormers, not a dome over the whole house. Windows have
-**small panes** (6–9 per window, 1 px wooden bars), white or green frames, sometimes
-shutters.
+**small panes** (6–9 per window: panes 5 px square in 1 px white bars, a glint in the top
+left of each), white or green frames, sometimes braced shutters on iron hinges.
+
+Drawn at 32 px per tile since task 110, after the Kate of the 32 px mockup, each picture as
+big as its 16 px picture doubled. The doors are about 60 px high, so the 61 px people fit
+through them (a door of the 16 px art was some 20 px, doubled 40, a head shorter than a
+person). Every building keeps the outline in the darkest shade of its roof's ramp
+(`soil_dark`), the shadow under its eaves on the wall and a ground shadow two rows deep
+along its foot.
 
 - **Kate** (cottage of a day labourer or craftsman): 1 storey, lime-washed or brick, hipped
-  thatch, one eyebrow dormer, one door, a small chimney. Often at the foot of a dyke or on
-  the edge between marsh and Geest. Good as is.
+  thatch, one eyebrow dormer, one door (a split *Klöntür*), a small chimney. Often at the
+  foot of a dyke or on the edge between marsh and Geest. Ours is lime-washed; a brick Kate
+  and a Geest Kate (lime over a tarred foot) are task 120.
 - **Geesthardenhaus / Danish længehus:** a long house, eaves side to the road, living end and
   byre in one row, entered from the long side. Our longhouse is this type. Danish farms
   add wings around a yard (2, 3 or 4 wings, *firlænget gård*).
@@ -219,9 +228,9 @@ shutters.
 - **Shack:** boards tarred black or silver-grey with a turf roof (the user chose turf over
   reeds); a fisherman's or herdsman's hut, not a frontier log cabin.
 - **Church** (task 102, `church.py`): the small marsh churches had no tower. A nave of tuff
-  ashlar (grey-brown `stone` and `sand` blocks lit along their top, `stone_dark` joints)
-  with a lower chancel, steep roofs of red **pantiles** (columns 5 px wide, each roll lit on
-  the left and the trough dark, courses 5 px high with a lit lip over a shadow line; a few
+  ashlar (grey-brown `stone` and `sand` blocks 15x6 px lit along their top, `stone_dark`
+  joints) with a lower chancel, steep roofs of red **pantiles** (columns 10 px wide, each roll
+  lit on the left and the trough dark, courses 10 px high with a lit lip over a shadow line; a few
   darker replaced tiles, lichen and moss low down), small round-arched windows of diamond
   leaded glass in red brick arches, a lime-washed porch with its gable to the front (so it
   stands out from the grey nave) and an iron cross on the gables. Under snow the pantiles
@@ -241,8 +250,7 @@ shutters.
   4 px diamond meshes so the ground shows through, cork floats along the hem; wicker eel
   traps (`straw`, `sand_light`, `sand`, `mud`, hoops and outline `mud_dark`). Snow covers
   the deck and the boat's floor (a remap, as the planks lie flat), and caps the rest.
-- Details worth having: a bench by the door, a **stork's nest** on the ridge, the door
-  split in two halves (*Klöntür*), a date or initials in iron wall anchors, a sod-roofed
+- Details worth having: a bench by the door, a **stork's nest** on the ridge, a date or initials in iron wall anchors, a sod-roofed
   outhouse, a draw well with a sweep.
 
 ## Clothing and characters
