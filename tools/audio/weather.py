@@ -1,4 +1,4 @@
-"""Weather sounds: the rain and wind loops, wind gusts and thunder (see SPEC.md "Sound").
+"""Weather sounds: the rain and wind loops, wind gusts and thunder (see design/presentation/sound.md).
 
 The loops are built as circles (see generate.py), so every part of them uses loop=True.
 """

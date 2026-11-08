@@ -1,4 +1,4 @@
-"""Footsteps: one step per file, its sound chosen by the ground (see SPEC.md "Sound")."""
+"""Footsteps: one step per file, its sound chosen by the ground (see design/presentation/sound.md)."""
 
 from dsp import bandpass, bubble, burst, envelope, grains, knock, lowpass, noise, place, ring
 from dsp import rms, silence, swept_band, sweep, times

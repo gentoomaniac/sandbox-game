@@ -1,6 +1,6 @@
 """Animal sounds: birds, frogs and their chorus, deer, rabbits, squirrels and bees, the storks
-and the geese, and the cows, sheep, hens, dogs, cats and horses of the livestock (see SPEC.md
-"Sound")."""
+and the geese, and the cows, sheep, hens, dogs, cats and horses of the livestock (see
+design/presentation/sound.md)."""
 
 import numpy as np
 

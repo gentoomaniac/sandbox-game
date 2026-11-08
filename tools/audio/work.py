@@ -1,4 +1,4 @@
-"""Work sounds: tools, harvesting, building, and the "denied" blip (see SPEC.md "Sound")."""
+"""Work sounds: tools, harvesting, building, and the "denied" blip (see design/presentation/sound.md)."""
 
 import numpy as np
 

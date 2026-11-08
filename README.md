@@ -723,6 +723,6 @@ to look. `make help` lists the targets and their variables.
 - **Art style:** period, place, materials and what to avoid are in [docs/art-style.md](docs/art-style.md); `make contrast-sheet` shows plants over the ground of every look.
 - **Data files:** gameplay numbers you might want to tune live in
   [data/](data/) (energy, crops, buildings, recipes, weather, seasons, vegetation, flowers, wildlife, sounds, ambience).
-- **Design:** the design is in [SPEC.md](SPEC.md).
+- **Design:** the design is in [design/](design/README.md): one folder per category.
 - **Debug flags:** command-line flags for screenshots and debugging (time, day, weather,
   position and more) are listed in the header of [game/scenes/startup_options.gd](game/scenes/startup_options.gd).

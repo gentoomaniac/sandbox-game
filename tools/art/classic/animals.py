@@ -5,7 +5,7 @@ game/scenes/wildlife/wildlife_sprites.gd mirrors). Every cell has the size of it
 animal stands in the bottom centre, facing right (the game flips it to face left). Pictures
 are rows of characters mapped to palette colour names, as everywhere in the art. Land
 animals get a one pixel outline in the darkest colour of their coat; the butterfly goes
-without, and the bee has its dark outline drawn in (see the style rules in SPEC.md).
+without, and the bee has its dark outline drawn in (see the style rules in design/presentation/art-pipeline.md).
 """
 
 from canvas import blank, outline

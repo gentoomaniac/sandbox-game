@@ -1,11 +1,14 @@
 # Tasks: Prototype
 
-Implements milestone 1 from [SPEC.md](SPEC.md). Each task is small enough for one
+Implements milestone 1 from the [design](design/README.md). Each task is small enough for one
 developer brief. Tasks whose dependencies are done can run in parallel. The
 coordinator ticks a task off here when it is merged.
 
+SPEC.md became the [design/](design/README.md) tree on 2026-11-08. Old task notes below that say
+"SPEC" mean those pages; "SPEC.md" and its section names are history.
+
 Tasks 1 to 51 are finished and live in [docs/tasks-done.md](docs/tasks-done.md). Their
-numbers still mean the same: SPEC.md and code comments refer to them.
+numbers still mean the same: the design and code comments refer to them.
 
 Rules for every task:
 

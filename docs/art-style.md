@@ -1,9 +1,10 @@
 # Art style guide
 
 How the game should look, for whoever draws next (a person or an agent working in
-`tools/art/`). The general pixel rules (outlines, light, shadows, clusters) are in SPEC.md,
-"Art pipeline"; this guide adds the period, the place and the things that live there. It
-ends with a ranked list of art changes. Written 2026-11-06 from the art on `main` at 122ba59.
+`tools/art/`). The general pixel rules (outlines, light, shadows, clusters) are in
+[design/presentation/art-pipeline.md](../design/presentation/art-pipeline.md); this guide adds
+the period, the place and the things that live there. It ends with a ranked list of art
+changes. Written 2026-11-06 from the art on `main` at 122ba59.
 
 ## Period and place
 
@@ -60,7 +61,8 @@ differs from grass only by its darker blades: still a visible patch, but softer.
 
 ## Resolution: 32 px per tile
 
-A tile is **32×32 art pixels** (decided 2026-11-08, task 106; see SPEC.md "Lighting and look"),
+A tile is **32×32 art pixels** (decided 2026-11-08, task 106; see
+[design/presentation/look.md](../design/presentation/look.md)),
 and the widest view is 1280×720 art pixels: 40×22 tiles (task 118), shown ×1.5 on a 1080p screen
 (an art pixel is a window pixel at 1280×720; below that the view is averaged down), the closest
 320×180: 10×5.6 tiles. The art was drawn at 16 px per tile, and the generators still draw at `canvas.TILE = 16`:
@@ -466,7 +468,7 @@ not new art styles.
 
 Links only; no images are copied into the repo.
 
-- The first art review (2026-11-05), with the measured sizes behind SPEC.md's scale rules:
+- The first art review (2026-11-05), with the measured sizes behind the scale rules of the design:
   [archive/art-review-2026-11-05.md](archive/art-review-2026-11-05.md). It is a snapshot of
   that day; this guide is the current word.
 

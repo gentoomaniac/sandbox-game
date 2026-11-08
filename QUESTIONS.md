@@ -2,7 +2,7 @@
 
 Questions for the user that came up while they were away. Each has the default that work
 went ahead with, so nothing is blocked; answer or change any of them when you are back.
-Answered questions move into SPEC.md and are removed here.
+Answered questions move into the [design](design/README.md) and are removed here.
 
 ## Decisions taken without you (please confirm or change)
 

@@ -15,7 +15,7 @@ from canvas import TILE
 
 ASSETS = Path(__file__).resolve().parents[2] / "assets"
 
-# The darkest colour of each ramp, which outlines it (see the style rules in SPEC.md).
+# The darkest colour of each ramp, which outlines it (see the style rules in design/presentation/art-pipeline.md).
 DARKEST_OF = {
     "soil": "soil_dark",
     "soil_mid": "soil_dark",
