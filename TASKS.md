@@ -1300,6 +1300,26 @@ darkest shades with light shades on top, and the task-100 outline only round den
 never single blade tips; check every season, dusk, night and snow with the contrast sheet.
 The willow (TASKS Later, graphics review) is a task of its own.
 
+## 102. A church with a wooden bell frame and a churchyard
+
+- [ ] Done
+
+The user's word of 2026-11-08: the village needs a small church (review/art-review-2026-11-08,
+task 9 and buildings row 5). A small marsh-village church of North Frisia in 1750 for the
+parish of Wehlsbüll (data/village.cfg): a nave of brick (or tuff), a steep tiled roof, small
+arched windows, a south porch; beside it a free-standing wooden bell frame (Glockenstapel) on
+a brick base; the churchyard with a fieldstone wall and grave crosses, on the highest Warft.
+Buildable or placed, no interior yet.
+
+## 103. A fisherman's hut, a jetty, nets and a boat
+
+- [ ] Done
+
+The user's word of 2026-11-08 (review/art-review-2026-11-08, task 10 and buildings rows 6 and
+12): the Ketels' home at the landing by the sluice: a small turf-and-thatch hut of tarred
+boards, a net-drying frame and eel traps by the door, a plank jetty on posts at the water and a
+flat rowing boat beside it.
+
 ## Later (not part of the prototype)
 
 - **Graphics review: willows melt into the grass** (the user, 2026-11-06, with a screenshot;
