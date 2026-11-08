@@ -1634,6 +1634,35 @@ Each of tasks 107 to 116 moves its group's old generators to tools/art/classic/ 
 pictures through `ArtSet` (docs/art-style.md, "Resolution"; tools/README.md): 114 and 116 are
 running beside this task, so their classic art comes with them or right after.
 
+## 118. Zoom out as far as before the 32 px switch
+
+- [ ] Done
+
+The user, 2026-11-08: "we need the zoom back. Now we need to zoom even further to get the same
+effect as before". Before task 106 the widest view (zoom 0.5 of 16 px art) showed 640x360 art
+pixels, 40x22 tiles; since 106 the widest view (zoom 1, `ViewMath.MIN_ZOOM`) shows 640x360 of
+the 32 px art, only 20x11 tiles, so the same zoom-out shows a quarter of the world. Let the view
+zoom out to about 40x22 tiles again (1280x720 art pixels at the widest, each art pixel then
+smaller than a screen pixel at small windows: check it stays crisp, e.g. by the viewport size
+and `screen_scale`), keep zooming in to today's closest view, and start at the widest as now.
+Also check the zoom is easy to find since the wheel turns the hotbar: Ctrl and the wheel zoom
+today; list it on the Controls page and the README, and consider keys (+/-) as well. Mind the
+cost of the larger viewport (world, shadows, weather, lights drawn over 4x the pixels) and what
+assumes 640x360 (`VIEWPORT_SIZE`, `WIDEST_VISIBLE_HEIGHT`, the screenshot tool, tests).
+
+## 119. The tools in the character's hand
+
+- [ ] Done
+
+The user, 2026-11-08: "most tools don't show on the character". Only the hoe has a
+`held_sheet` (game/state/item_types.gd) and a held layer drawn (tools/art/character.py); the
+others (axe, pickaxe, shovel, watering can, scythe, hammer, fishing rod, and what else the
+player can hold) show nothing in the hand. Draw a held layer for each at 32 px in every facing
+and pose the hoe has (idle, walk, and the use animation where there is one), set `held_sheet`
+for each, and check them in screenshots in all four facings; classic art (task 117) falls back
+to the new picture for those without an old one. Task 115 (items and icons) redraws the
+icons; this task is the hand-held pictures, and may go with 115 if that is simpler.
+
 ## Later (not part of the prototype)
 
 - **The camp's bedroll and campfire can be taken down and built** (the user, 2026-11-08): today
