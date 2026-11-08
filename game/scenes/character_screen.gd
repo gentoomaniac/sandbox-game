@@ -24,7 +24,7 @@ const COLUMN_GAP := 4
 const PANEL_GAP := 12
 ## The backpack is 5 slots wide and 4 rows high.
 const BACKPACK_COLUMNS := 5
-const MAX_PREVIEW_SCALE := 4
+const MAX_PREVIEW_SCALE := 2
 ## Kept free round the panel, and the panel's own frame and padding (see ui_theme.tres).
 const WINDOW_MARGIN := 8
 const PANEL_PADDING := 20

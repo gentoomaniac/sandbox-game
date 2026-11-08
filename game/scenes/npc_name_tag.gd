@@ -4,8 +4,9 @@ extends CanvasLayer
 ## head. It is UI text, the size of the HUD's at any zoom, placed over the villager where the
 ## camera shows them. Main says which villager each frame.
 
-## The bottom of the name, in art pixels above the villager's feet: just over the head.
-const ABOVE_FEET := 30 * TerrainTileset.ART_16_SCALE
+## The bottom of the name, in art pixels above the villager's feet: just over the head, or over
+## the top of a hat (row 2 of the 64 of a character sheet).
+const ABOVE_FEET := 62
 const THEME := preload("res://game/scenes/ui_theme.tres")
 
 var _label := Label.new()

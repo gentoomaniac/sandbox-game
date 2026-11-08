@@ -1,26 +1,33 @@
 """The villagers' layers (assets/character/<slot>_<variant>.png), drawn like the player's.
 
 The villagers (game/state/npc.gd) are put together from the same kind of layer sheets as the
-player: the same 16x32 frames, facings and walk (see character.py), so any layer fits any
-figure and the player could wear them too. This module adds the women's dress of the period
-(a laced bodice over the chemise, a long wool skirt, an apron, a shawl, a white cap or a
-headscarf) and the other colours of the men's clothes, skins and hair. data/npcs.cfg says which
-of them a villager is dressed in. Every colour is one of the palette's.
+player: the same 32x64 frames, facings and walk on the same figure (see character.py), so any
+layer fits any figure and the player could wear them too. This module adds the women's dress of
+the period (a laced bodice over the chemise, a long wool skirt, an apron, a shawl, a white coif
+or a headscarf), and the other colours of the men's clothes, skins and hair. data/npcs.cfg says which of them a villager is dressed in. Every colour
+is one of the palette's.
 """
 
-from canvas import blank, rect
+import forms
+from canvas import blank
 from character import (
     CHARACTER_HEIGHT,
     CHARACTER_WIDTH,
+    FELT,
     SHIRT,
+    STRAW_HAT_SHAPES,
+    WAIST,
+    Figure,
     draw_body,
     draw_hair,
     draw_hat,
     draw_jacket,
     draw_legs,
-    draw_near_sleeve,
     draw_shirt,
+    draw_sleeves,
     draw_waistcoat,
+    mask,
+    ramp,
 )
 
 # The skins besides the player's ("0"): light, base of the face and its shade.
@@ -63,88 +70,93 @@ SHAWLS = {
     "cream": {"base": "cream", "light": "lime", "shade": "sand_light"},
     "heather": WOOL["heather"],
 }
+# The aprons: white or blue linen.
 APRONS = {
-    "white": {"base": "lime", "shade": "sand_light", "tie": "sand_light"},
-    "blue": {"base": "water_light", "shade": "water", "tie": "water"},
+    "white": {"base": "lime", "light": "snow_light", "shade": "sand_light", "tie": "sand_light"},
+    "blue": {"base": "water_light", "light": "foam", "shade": "water", "tie": "water"},
 }
-# The white linen cap and the headscarves, each with the colour of its edge.
+# The white linen coif and the headscarves, each with the colour of its turned edge.
 CAPS = {
-    "coif": {"base": "lime", "light": "snow_light", "shade": "sand_light", "edge": "cream"},
+    "coif": {"base": "lime", "light": "snow_light", "shade": "sand_light", "edge": "snow_light"},
     "scarf_red": WOOL["red"] | {"edge": "red_light"},
     "scarf_blue": WOOL["blue"] | {"edge": "water_light"},
 }
+# The cord that laces a bodice.
+LACING = "cream"
 
 
 def draw_bodice(facing, pose, base, light, shade, **_):
-    """A laced bodice over the linen chemise, whose sleeves and neck show: laced up the front
-    with a cream cord, closed at the back."""
+    """A laced bodice with straps over the linen chemise, whose sleeves and neck show: laced up
+    the front with a cream cord, closed at the back."""
     canvas = draw_shirt(facing, pose)
-    sink = pose["sink"]
-    if facing in ("down", "up"):
-        rect(canvas, 6, 15 + sink, 10, 22 + sink, base)
-        rect(canvas, 6, 15 + sink, 6, 21 + sink, light)
-        rect(canvas, 10, 15 + sink, 10, 22 + sink, shade)
-        rect(canvas, 6, 22 + sink, 10, 22 + sink, shade)
-        if facing == "down":
-            for y in (16, 18, 20):
-                canvas[y + sink][7] = canvas[y + sink][9] = "cream"
-                canvas[y + 1 + sink][8] = "cream"
+    figure = Figure(facing, pose)
+    top = figure.top
+    shades = (shade, base, light)
+    if figure.is_side:
+        forms.shade(canvas, mask(forms.polygon, [(11, 30 + top), (20, 30 + top), (21, 44 + top), (11, 44 + top)]), shades, 2)
+        forms.paint(canvas, mask(forms.box, 14, 26 + top, 15, 30 + top), base)
+        for y in range(32, 43, 2):
+            forms.dots(canvas, [(20, y + top)], LACING)
     else:
-        rect(canvas, 5, 15 + sink, 10, 22 + sink, base)
-        rect(canvas, 5, 15 + sink, 5, 22 + sink, shade)
-        rect(canvas, 10, 15 + sink, 10, 21 + sink, light)
-        rect(canvas, 5, 22 + sink, 10, 22 + sink, shade)
-        draw_near_sleeve(canvas, pose, SHIRT["base"], SHIRT["shade"])
+        forms.shade(canvas, mask(forms.rounded_box, 10, 30 + top, 21, 44 + top), shades, 2)
+        for x in (11, 12, 19, 20):
+            forms.dots(canvas, [(x, y + top) for y in range(26, 30)], light if x < 16 else base)
+        if facing == "down":
+            for y in range(31, 43, 2):
+                forms.dots(canvas, [(15, y + top), (16, y + 1 + top)], LACING)
+                forms.dots(canvas, [(16, y + top), (15, y + 1 + top)], shade)
+    draw_sleeves(canvas, figure, ramp(SHIRT))
     return canvas
 
 
 def draw_skirt(facing, pose, base, light, shade, **_):
-    """A long wool skirt from the waist to the ankles, flaring a little; its hem swings with
-    the stride. Kneeling, it pools on the ground."""
+    """A long wool skirt from the waist to the ankles, falling in folds; its hem swings with the
+    stride. Kneeling, it pools on the ground."""
     canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
+    figure = Figure(facing, pose)
+    top = figure.top
+    shades = (shade, base, light)
     if pose.get("kneel"):
-        rect(canvas, 3, 25, 12, 30, base)
-        rect(canvas, 3, 30, 12, 30, shade)
-        rect(canvas, 11, 25, 12, 29, light)
+        forms.shade(canvas, mask(forms.polygon, [(10, 50), (22, 50), (27, 62), (4, 62)]), shades, 3)
+        forms.dots(canvas, [(x, 62) for x in range(5, 27)], shade)
         return canvas
-    sink, stride = pose["sink"], pose["stride"]
+    stride = pose["stride"]
     sway = (stride > 0) - (stride < 0)
-    is_side = facing in ("left", "right")
-    left, right = (5, 10) if is_side else (5, 11)
-    for y in range(21 + sink, 29):
-        widen = 1 if y >= 24 + sink else 0
-        shift = sway if y >= 26 else 0
-        rect(canvas, left - widen + shift, y, right + widen + shift, y, base)
-        # Folds: lit to the front (or left), shaded to the back (or right), one down the middle.
-        canvas[y][left - widen + shift] = shade if is_side else light
-        canvas[y][right + widen + shift] = light if is_side else shade
-        if y >= 24 + sink and not is_side:
-            canvas[y][8 + shift] = shade
-    rect(canvas, left - 1 + sway, 28, right + 1 + sway, 28, shade)
+    if figure.is_side:
+        outline = [(11, WAIST + top), (21, WAIST + top), (23, 50), (24 + sway, 58), (8 + sway, 58), (9, 50)]
+        folds = ((12, 46), (16, 44), (20, 47))
+    else:
+        outline = [(9, WAIST + top), (22, WAIST + top), (24, 50), (25 + sway, 58), (6 + sway, 58), (7, 50)]
+        folds = ((10, 47), (13, 45), (18, 45), (21, 47))
+    forms.shade(canvas, mask(forms.polygon, outline), shades, 4)
+    for x, fold_top in folds:
+        for y in range(fold_top, 58):
+            forms.dots(canvas, [(x + (sway if y > 52 else 0), y)], shade)
+    forms.dots(canvas, [(x, 58) for x in range(6, 26) if canvas[58][x] is not None], shade)
     return canvas
 
 
-def draw_apron(facing, pose, base, shade, tie, **_):
+def draw_apron(facing, pose, base, light, shade, tie, **_):
     """A linen apron tied at the waist over the skirt: from behind only its ties and bow show."""
     canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
-    sink, stride = pose["sink"], pose["stride"]
+    figure = Figure(facing, pose)
+    top = figure.top
+    shades = (shade, base, light)
     if pose.get("kneel"):
-        rect(canvas, 9, 21 + sink, 11, 27, base)
+        cloth = mask(forms.polygon, [(17, 51), (24, 51), (26, 60), (19, 60)])
+    elif facing == "up":
+        forms.paint(canvas, mask(forms.box, 9, WAIST + top, 22, WAIST + 1 + top), tie)
+        forms.paint(canvas, mask(forms.ellipse, 14, 43 + top, 2, 1.5) | mask(forms.ellipse, 18, 43 + top, 2, 1.5), tie)
+        forms.paint(canvas, mask(forms.capsule, (15.5, 43 + top), (14, 50 + top), 1, 0.8) | mask(forms.capsule, (16.5, 43 + top), (18, 50 + top), 1, 0.8), tie)
         return canvas
-    if facing == "up":
-        rect(canvas, 6, 21 + sink, 10, 21 + sink, tie)
-        rect(canvas, 7, 22 + sink, 9, 23 + sink, tie)
-    elif facing == "down":
-        rect(canvas, 6, 21 + sink, 10, 21 + sink, tie)
-        rect(canvas, 6, 22 + sink, 10, 27, base)
-        rect(canvas, 10, 22 + sink, 10, 27, shade)
-        rect(canvas, 6, 27, 10, 27, shade)
+    elif figure.is_side:
+        sway = (pose["stride"] > 0) - (pose["stride"] < 0)
+        forms.paint(canvas, mask(forms.box, 11, WAIST + top, 21, WAIST + 1 + top), tie)
+        cloth = mask(forms.polygon, [(18, WAIST + 2 + top), (21, WAIST + 2 + top), (23, 50), (24 + sway, 56), (20 + sway, 56), (18, 49)])
     else:
-        sway = (stride > 0) - (stride < 0)
-        rect(canvas, 5, 21 + sink, 10, 21 + sink, tie)
-        rect(canvas, 10, 22 + sink, 11, 27, base)
-        rect(canvas, 11 + sway, 25, 11 + sway, 27, base)
-        rect(canvas, 10, 27, 11 + sway, 27, shade)
+        forms.paint(canvas, mask(forms.box, 9, WAIST + top, 22, WAIST + 1 + top), tie)
+        cloth = mask(forms.rounded_box, 11, WAIST + 2 + top, 20, 56)
+    forms.shade(canvas, cloth, shades, 2)
     return canvas
 
 
@@ -152,28 +164,20 @@ def draw_shawl(facing, pose, base, light, shade, **_):
     """A wool shawl over the shoulders, crossed over the chest and tucked into the bodice; from
     behind its point hangs down the back."""
     canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
-    sink = pose["sink"]
+    figure = Figure(facing, pose)
+    top = figure.top
+    shades = (shade, base, light)
     if facing == "down":
-        rect(canvas, 5, 13 + sink, 11, 14 + sink, base)
-        rect(canvas, 5, 13 + sink, 11, 13 + sink, light)
-        for dy in range(4):
-            canvas[15 + dy + sink][6 + dy // 2] = base
-            canvas[15 + dy + sink][10 - dy // 2] = shade
-        canvas[13 + sink][8] = "skin_shade"
+        shawl = mask(forms.polygon, [(8, 26 + top), (23, 26 + top), (23, 30 + top), (17, 38 + top), (15, 38 + top), (8, 30 + top)])
+        shawl &= ~mask(forms.polygon, [(13, 26 + top), (18, 26 + top), (16, 30 + top), (15, 30 + top)])
+        forms.shade(canvas, shawl, shades, 2)
+        # Where the ends cross.
+        forms.dots(canvas, [(16 + d, 31 + d + top) for d in range(6)], shade)
     elif facing == "up":
-        rect(canvas, 5, 13 + sink, 11, 15 + sink, base)
-        rect(canvas, 6, 16 + sink, 10, 17 + sink, base)
-        rect(canvas, 7, 18 + sink, 9, 19 + sink, base)
-        canvas[20 + sink][8] = shade
-        rect(canvas, 5, 13 + sink, 11, 13 + sink, light)
-        rect(canvas, 10, 14 + sink, 10, 17 + sink, shade)
+        forms.shade(canvas, mask(forms.polygon, [(8, 26 + top), (23, 26 + top), (23, 30 + top), (16, 41 + top), (15, 41 + top), (8, 30 + top)]), shades, 3)
+        forms.dots(canvas, [(16, y + top) for y in range(30, 40)], shade)
     else:
-        rect(canvas, 5, 13 + sink, 10, 15 + sink, base)
-        rect(canvas, 5, 13 + sink, 10, 13 + sink, light)
-        rect(canvas, 5, 16 + sink, 6, 18 + sink, base)
-        canvas[19 + sink][5] = shade
-        rect(canvas, 9, 16 + sink, 10, 17 + sink, base)
-        canvas[18 + sink][10] = shade
+        forms.shade(canvas, mask(forms.polygon, [(10, 26 + top), (19, 26 + top), (21, 31 + top), (19, 37 + top), (16, 32 + top), (11, 35 + top), (9, 30 + top)]), shades, 2)
     return canvas
 
 
@@ -181,28 +185,29 @@ def draw_cap(facing, pose, base, light, shade, edge, **_):
     """A cap of cloth over the whole head but the face, the white linen coif or a headscarf: a
     turned edge frames the face, and behind it covers the hair down to the nape."""
     canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
-    sink = pose["sink"]
-    rect(canvas, 5, 4 + sink, 11, 4 + sink, base)
-    rect(canvas, 4, 5 + sink, 12, 6 + sink, base)
-    rect(canvas, 5, 4 + sink, 7, 5 + sink, light)
+    figure = Figure(facing, pose)
+    top = figure.top
+    cx, cy = figure.head
+    shades = (shade, base, light)
     if facing == "down":
-        rect(canvas, 5, 7 + sink, 11, 7 + sink, edge)
-        for x in (3, 4, 12, 13):
-            rect(canvas, x, 6 + sink, x, 10 + sink, base)
-        rect(canvas, 3, 11 + sink, 4, 11 + sink, shade)
-        rect(canvas, 12, 11 + sink, 13, 11 + sink, shade)
-        rect(canvas, 4, 7 + sink, 4, 10 + sink, edge)
-        rect(canvas, 12, 7 + sink, 12, 10 + sink, edge)
+        face = mask(forms.ellipse, cx, cy + 2.5, 6.6, 7.2)
+        cap = mask(forms.ellipse, cx, cy - 1.5, 9.2, 8.6) & mask(forms.box, 0, 0, 31, 23 + top) & ~face
+        forms.shade(canvas, cap, shades, 3)
+        forms.paint(canvas, cap & mask(forms.ellipse, cx, cy + 2.5, 7.6, 8.2), edge)
     elif facing == "up":
-        rect(canvas, 3, 6 + sink, 13, 11 + sink, base)
-        rect(canvas, 4, 12 + sink, 12, 12 + sink, shade)
-        rect(canvas, 8, 7 + sink, 8, 11 + sink, shade)
-        rect(canvas, 5, 7 + sink, 5, 9 + sink, light)
+        cap = mask(forms.ellipse, cx, cy - 1, 9, 8.8) & mask(forms.box, 0, 0, 31, 24 + top)
+        cap |= mask(forms.rounded_box, 10, 20 + top, 21, 25 + top)
+        forms.shade(canvas, cap, shades, 3)
+        forms.dots(canvas, [(x, 22 + top) for x in range(11, 21)], shade)
     else:
-        rect(canvas, 3, 6 + sink, 9, 11 + sink, base)
-        rect(canvas, 4, 12 + sink, 8, 12 + sink, shade)
-        rect(canvas, 9, 5 + sink, 10, 10 + sink, edge)
-        rect(canvas, 4, 7 + sink, 4, 10 + sink, light)
+        face = mask(forms.ellipse, cx + 5, cy + 1, 6.2, 7.2)
+        cap = mask(forms.ellipse, cx - 1, cy - 3.5, 8.2, 7.8) | mask(forms.ellipse, cx - 6.5, cy - 0.5, 3.6, 4.2)
+        cap |= mask(forms.box, 9, 15 + top, 15, 25 + top)
+        cap &= ~face
+        forms.shade(canvas, cap, shades, 3)
+        forms.paint(canvas, cap & mask(forms.ellipse, cx + 5, cy + 1, 7.2, 8.2), edge)
+        # The seam where the crown piece meets the band.
+        forms.dots(canvas, [(15, y + top) for y in range(11, 21)], shade)
     return canvas
 
 
@@ -229,7 +234,7 @@ def layers():
         result[f"coat_jacket_{colour}"] = (draw_jacket, WOOL[colour])
     for name, colours in SHAWLS.items():
         result[f"coat_shawl_{name}"] = (draw_shawl, colours)
-    result["head_felt_hat"] = (draw_hat, {"hat": "felt_hat"})
+    result["head_felt_hat"] = (draw_hat, {"shapes": STRAW_HAT_SHAPES, "colours": FELT})
     for name, colours in CAPS.items():
         result[f"head_{name}"] = (draw_cap, colours)
     return result

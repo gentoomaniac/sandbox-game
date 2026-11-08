@@ -4,11 +4,11 @@ extends Control
 ## sheet (see Appearance), drawn at a whole-number `pixel_scale`.
 
 const FRAME_SIZE := Vector2i(TerrainTileset.TILE_SIZE, PlayerView.FRAME_HEIGHT)
-## Its size at `pixel_scale` 1, in UI pixels: as big as a frame of the 16 px art.
-const SHOWN_SIZE := FRAME_SIZE / TerrainTileset.ART_16_SCALE
+## Its size at `pixel_scale` 1, in UI pixels: a UI pixel per pixel of the frame.
+const SHOWN_SIZE := FRAME_SIZE
 const BACKGROUND_COLOR := Color("3a2920")  # palette soil_dark, see tools/art/palette.py
 
-var pixel_scale := 4:
+var pixel_scale := 2:
 	set(value):
 		pixel_scale = value
 		custom_minimum_size = Vector2(SHOWN_SIZE * pixel_scale)

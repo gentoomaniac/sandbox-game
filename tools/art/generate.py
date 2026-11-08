@@ -21,16 +21,18 @@ leaves), the building pictures in summer and snow: summer under the names above,
 with the look added, e.g. assets/terrain_snow.png, assets/objects_young_leaves.png and
 assets/buildings/kate_lit_snow.png.
 
-assets/character/<slot>_<variant>.png: one sheet per layer of the player character, 16x32 cells
-with the feet on the bottom row. One row per facing (down, up, left, right), columns: idle,
-walk 1 to 4 (see game/state/appearance.gd and game/scenes/player_view.gd).
-assets/character/collapse/<slot>_<variant>.png: the same layers passing out, one row of 32x32
+assets/character/<slot>_<variant>.png: one sheet per layer of the player character, 32x64 cells
+with the feet on the bottom row, drawn at the game's tile (not doubled). One row per facing
+(down, up, left, right), columns: idle, walk 1 to 4 (see game/state/appearance.gd and
+game/scenes/player_view.gd).
+assets/character/collapse/<slot>_<variant>.png: the same layers passing out, one row of 64x64
 cells facing right: kneeling, tipping over, lying and asleep (see `collapse_sheet`).
 The villagers' layers (villagers.py) are drawn the same way, under the same names.
-assets/character/riding/<slot>_<variant>.png: the player's layers sitting on a horse, one 16x32
+assets/character/riding/<slot>_<variant>.png: the player's layers sitting on a horse, one 32x64
 cell per facing in the rows above (see `riding_sheet`).
 assets/character/portrait/<slot>_<variant>.png: a 32x32 head-and-shoulders portrait of each
-layer that shows in a bust, for the chat (see portraits.py).
+layer that shows in a bust, for the chat: the top of its frame facing the viewer (see
+portraits.py).
 assets/effects/sleep_z.png: the "z" that rises from a sleeping figure.
 
 assets/buildings/<type>.png: one picture per building type (drawn in buildings.py, the church and
@@ -125,10 +127,7 @@ DOUBLED = (
     # Interiors (task 112).
     "interior.png",
     "interior/*.png",
-    # The player and the villagers (task 113).
-    "character/*.png",
-    "character/collapse/*.png",
-    "character/riding/*.png",
+    # The sleeping "z" and the thought bubbles over the player (task 113).
     "effects/*.png",
     "ui/bubble_*.png",
     # Farm animals and wild animals (tasks 114 and 116).

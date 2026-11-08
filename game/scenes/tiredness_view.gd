@@ -3,13 +3,13 @@ extends Node2D
 ## The signs that the player is tired (see TirednessSigns): the thought bubble over the head
 ## and the sweat that flies off it. A child of the PlayerView, so it follows the player.
 
-## Where the head is, relative to the feet, in pixels: the top of the bare head in the character
-## sheets (row 4 of 32 of the 16 px art), and the top of a hat (row 2; all hats are as tall). The
-## bubble's tail points at it from two pixels above; the sweat starts at the side of the head.
-const BARE_HEAD_TOP := -28 * TerrainTileset.ART_16_SCALE
-const HAT_TOP := -30 * TerrainTileset.ART_16_SCALE
-const BUBBLE_GAP := 2 * TerrainTileset.ART_16_SCALE
-const SWEAT_ORIGIN := Vector2(0, -24) * TerrainTileset.ART_16_SCALE
+## Where the head is, relative to the feet, in pixels: the top of the hair's outline in the
+## character sheets (row 6 of 64), and the top of a hat's (row 1; all hats are as tall). The
+## bubble's tail points at it from four pixels above; the sweat starts at the side of the head.
+const BARE_HEAD_TOP := -58
+const HAT_TOP := -63
+const BUBBLE_GAP := 4
+const SWEAT_ORIGIN := Vector2(0, -48)
 ## Above the player's layers and the things in front of them.
 const DRAW_ORDER := 100
 
