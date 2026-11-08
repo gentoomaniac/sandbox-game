@@ -36,7 +36,7 @@ COLOURS = {
     # Yellow grass of autumn.
     "autumn_light":   "a89a4c",
     # Autumn leaves: orange, red and yellow ramps, light to dark.
-    "maple_light":    "e8a244",
+    "leaf_orange":    "e8a244",
     "rust":           "b4532b",
     "rust_dark":      "7a3424",
     "russet_deep":    "4c2a22",

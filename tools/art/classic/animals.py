@@ -15,7 +15,7 @@ BIRD_KEYS = {"b": "soil_mid", "d": "soil", "s": "cream", "l": "sand_light", "k":
 RABBIT_KEYS = {"b": "mud", "l": "sand", "s": "sand_light", "p": "petal", "e": "ink"}
 # Red squirrel: rust coat, small cream belly, dark ear tufts; the tail shaded darker towards
 # the body, with a light rim.
-SQUIRREL_KEYS = {"r": "rust", "R": "rust_dark", "c": "cream", "e": "ink", "o": "maple_light"}
+SQUIRREL_KEYS = {"r": "rust", "R": "rust_dark", "c": "cream", "e": "ink", "o": "leaf_orange"}
 DEER_KEYS = {
     "b": "soil_mid",
     "l": "soil_light",
@@ -33,7 +33,7 @@ DEER_KEYS = {
 }
 BEE_KEYS = {"y": "gold", "k": "ink", "w": "snow_light"}
 BUTTERFLY_KEYS = {
-    "a": "maple_light",
+    "a": "leaf_orange",
     "b": "ink",
     "c": "cream",
     "p": "petal",

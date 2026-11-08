@@ -574,7 +574,7 @@ HEN_HEADS = {"up": (18, 5), "peck": (21, 17), "peck_up": (21, 11), "tucked": (17
 CHICKEN_LOOKS = {
     # A brown farm hen.
     "brown": {
-        "plumage": ("umber", "ochre_dark", "ochre", "maple_light"),
+        "plumage": ("umber", "ochre_dark", "ochre", "leaf_orange"),
         "wing": ("soil_dark", "umber", "ochre_dark"),
         "tail": ("soil_dark", "umber", "ochre_dark"),
         "scallop": "ochre",
@@ -589,7 +589,7 @@ CHICKEN_LOOKS = {
     },
     # The rooster: red-brown, golden hackles, a dark tail of sickle feathers and a big comb.
     "rooster": {
-        "plumage": ("rust_dark", "rust", "rust", "maple_light"),
+        "plumage": ("rust_dark", "rust", "rust", "leaf_orange"),
         "wing": ("russet_deep", "rust_dark", "rust"),
         "tail": ("ink", "green_deep", "green_dark"),
         "scallop": "red_light",
@@ -963,7 +963,7 @@ CAT_LOOKS = {
     # The grey-brown tabby, striped dark, with olive-green eyes.
     "tabby": {"coat": ("mud", "sand", "sand", "sand_light"), "stripe": "mud_dark", "eye": "olive", "outline": "mud_dark"},
     "black": {"coat": ("ink", "stone_dark", "stone_dark", "stone"), "eye": "gold", "outline": "ink"},
-    "ginger": {"coat": ("rust", "flame", "flame", "maple_light"), "stripe": "rust", "eye": "olive", "outline": "russet_deep"},
+    "ginger": {"coat": ("rust", "flame", "flame", "leaf_orange"), "stripe": "rust", "eye": "olive", "outline": "russet_deep"},
 }
 
 

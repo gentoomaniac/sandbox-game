@@ -487,7 +487,7 @@ CHICKEN_LOOKS = {
     # The rooster: red-brown, golden hackles, a dark tail of sickle feathers and a big comb.
     "rooster": {
         "keys": {
-            "l": "maple_light",
+            "l": "leaf_orange",
             "b": "rust",
             "d": "rust_dark",
             "t": "green_deep",
@@ -760,7 +760,7 @@ CAT_LOOKS = {
     # The grey-brown tabby, striped dark.
     "tabby": {"keys": {"l": "sand_light", "b": "sand", "d": "mud", "s": "mud_dark", "e": "olive"}, "outline": "mud_dark"},
     "black": {"keys": {"l": "stone_dark", "b": "bog_dark", "d": "ink", "s": "bog_dark", "e": "gold"}, "outline": "ink"},
-    "ginger": {"keys": {"l": "maple_light", "b": "flame", "d": "rust", "s": "rust", "e": "olive"}, "outline": "russet_deep"},
+    "ginger": {"keys": {"l": "leaf_orange", "b": "flame", "d": "rust", "s": "rust", "e": "olive"}, "outline": "russet_deep"},
 }
 
 

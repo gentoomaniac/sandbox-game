@@ -159,7 +159,7 @@ def rabbit_sheet():
 # Rust red with a cream belly, ear tufts and a bushy tail held up behind it in an S.
 
 SQUIRREL_SIZE = (28, 24)
-SQUIRREL_COAT = ["rust_dark", "rust", "maple_light"]
+SQUIRREL_COAT = ["rust_dark", "rust", "leaf_orange"]
 
 
 def squirrel_sitting(nose_up=0, tail_tip=(12.0, 2.0)):
@@ -359,7 +359,7 @@ def bee(wings_up):
 BUTTERFLY_SIZE = (14, 14)
 # The wings of each variant, dark to light: a small tortoiseshell's orange, a white, a pink.
 BUTTERFLY_WINGS = {
-    "flutter": ["rust", "maple_light", "gold"],
+    "flutter": ["rust", "leaf_orange", "gold"],
     "flutter_pale": ["sand", "cream", "snow_light"],
     "flutter_pink": ["heather", "petal", "blossom"],
 }

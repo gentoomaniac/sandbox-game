@@ -210,7 +210,7 @@ def chicken():
     w, h = 26, 26
     p = new(w, h)
     yy, xx = np.mgrid[0:h, 0:w]
-    ramp = ["umber", "ochre_dark", "ochre", "maple_light"]
+    ramp = ["umber", "ochre_dark", "ochre", "leaf_orange"]
     # Legs and toes, ochre, behind the body.
     for lx in (11, 14):
         px(p, [(lx, y) for y in range(19, 24)], "ochre_dark")

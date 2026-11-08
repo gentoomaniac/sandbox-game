@@ -42,7 +42,7 @@ SKINS = {
 HAIR_COLOURS = {
     "brown": {"base": "soil", "light": "soil_light", "shade": "soil_dark"},
     "blond": {"base": "straw", "light": "gold", "shade": "reed"},
-    "red": {"base": "rust", "light": "maple_light", "shade": "rust_dark"},
+    "red": {"base": "rust", "light": "leaf_orange", "shade": "rust_dark"},
     "grey": {"base": "stone_light", "light": "lime", "shade": "stone"},
     "black": {"base": "soil_dark", "light": "soil", "shade": "ink"},
 }
