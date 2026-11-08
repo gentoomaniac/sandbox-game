@@ -61,6 +61,7 @@ top of classic pixel art (details in [Lighting and look](presentation/look.md)).
     - [villagers.md](villagers/villagers.md): Who the villagers are, the village, sheets, behaviour, what is saved.
     - [dialogue.md](villagers/dialogue.md): Talking: the chat, the language model, the prompt, memory.
     - [reputation.md](villagers/reputation.md): Reputation, and how it spreads.
+    - [relationships.md](villagers/relationships.md): Friendship levels and what moves them. Planned, not decided.
     - [ideas.md](villagers/ideas.md): Ideas for NPCs, behaviour and LLM dialogue. Not decided.
 - [Presentation](presentation/README.md): How the game looks, sounds and is operated.
     - [look.md](presentation/look.md): Rendering, tile size, zoom, camera, lighting.
