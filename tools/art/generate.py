@@ -281,9 +281,8 @@ def write_seasonal_art():
             assert all(None not in line for line in tile), f"{layer.__name__}: full tile has holes"
         terrain_rows.append(tiles)
         decoration_rows.append(decorations)
-    # The meadow flowers have a row of their own, below the layers' (see flowers.py). They are
-    # still drawn at 16 px per tile (task 108), so they are scaled up here.
-    decoration_rows.append([doubled(tile) for tile in flowers.flower_row()])
+    # The meadow flowers have a row of their own, below the layers' (see flowers.py).
+    decoration_rows.append(flowers.flower_row())
     objects = object_atlas()
     write_object_rows(objects)
     redraws = {

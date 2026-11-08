@@ -126,8 +126,6 @@ var water := _material(WATER_SHADER)
 var mud := _material(MUD_SHADER)
 var splashes := _native_material(RAIN_SPLASH_SHADER)
 var decoration_sway := _material(DECORATION_SWAY_SHADER)
-## The meadow flowers sway like the other decorations, but are still 16 px art in either set.
-var flower_sway := _material(DECORATION_SWAY_SHADER)
 var lily_pads := _material(LILY_PAD_SHADER)
 ## The chance of a splash now (see MAX_SPLASH_CHANCE): 0 when it does not rain.
 var splash_chance := 0.0
@@ -135,14 +133,13 @@ var _object_materials: Dictionary[StringName, ShaderMaterial] = {}
 ## By cell size: crops of the same size bend alike.
 var _crop_materials: Dictionary[Vector2i, ShaderMaterial] = {}
 ## Every material that sways with the wind, and every fire that leans with it.
-var _sway_materials: Array[ShaderMaterial] = [decoration_sway, flower_sway]
+var _sway_materials: Array[ShaderMaterial] = [decoration_sway]
 var _fire_materials: Array[ShaderMaterial] = []
 var _water_drift := Vector2.ZERO
 
 
 func _init() -> void:
 	_set_parameters(decoration_sway, DECORATION_SWAY)
-	_set_parameters(flower_sway, DECORATION_SWAY)
 	_show_ground_art_set()
 	for type: StringName in SWAY_PROFILES:
 		var material := _material(OBJECT_SWAY_SHADER)
@@ -216,7 +213,7 @@ func decoration_material(atlas_cell: Vector2i) -> ShaderMaterial:
 	if atlas_cell.y == TerrainTileset.Layer.WATER:
 		return lily_pads
 	if atlas_cell.y == TerrainTileset.FLOWER_ROW:
-		return flower_sway
+		return decoration_sway
 	var sways: Array = SWAYING_DECORATIONS.get(atlas_cell.y, [])
 	if atlas_cell.x < sways.size() and sways[atlas_cell.x]:
 		return decoration_sway
