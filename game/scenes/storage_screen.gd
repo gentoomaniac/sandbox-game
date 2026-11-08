@@ -40,7 +40,7 @@ var _views := {INVENTORY: {}, CHEST: {}}
 var _pick := {}
 var _backdrop := ColorRect.new()
 var _panel := PanelContainer.new()
-var _picked_icon := TextureRect.new()
+var _picked_icon := ItemIcon.new()
 var _chest_column: VBoxContainer
 
 
@@ -70,7 +70,6 @@ func _init(hotbar: HotbarHud) -> void:
 	_panel.add_child(row)
 	_backdrop.add_child(_panel)
 
-	_picked_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_picked_icon.visible = false
 	# On a layer of its own, so the dragged icon is drawn above the hotbar too.
 	var icon_layer := CanvasLayer.new()
@@ -121,8 +120,8 @@ func close() -> void:
 
 func _process(_delta: float) -> void:
 	if _picked_icon.visible:
-		var icon_size := _picked_icon.texture.get_size()
-		_picked_icon.position = (_backdrop.get_local_mouse_position() - icon_size / 2).round()
+		var middle := _picked_icon.size / 2
+		_picked_icon.position = (_backdrop.get_local_mouse_position() - middle).round()
 
 
 ## Makes the grid of the chest's side, for a chest of this many slots.
@@ -220,6 +219,4 @@ func _refresh() -> void:
 			view.modulate.a = PICKED_ALPHA if is_picked else 1.0
 	_picked_icon.visible = not _pick.is_empty()
 	if not _pick.is_empty():
-		_picked_icon.texture = load(
-			ArtSet.path(ItemTypes.icon_path(_slots_of(_pick["side"]).item_in(_pick["slot"])))
-		)
+		_picked_icon.show_item(_slots_of(_pick["side"]).item_in(_pick["slot"]))

@@ -10,7 +10,8 @@ signal pressed
 signal secondary_pressed
 
 const SIZE := 20
-const ICON_OFFSET := Vector2(2, 2)
+## Where the item's icon is drawn, fitted into ItemIcon.SIZE whatever its own size.
+const ICON_RECT := Rect2(2, 2, ItemIcon.SIZE, ItemIcon.SIZE)
 ## Palette colour ink (see tools/art/palette.py); the pixel font is already cream.
 const COUNT_SHADOW_COLOR := Color("1d1b26")
 
@@ -31,6 +32,7 @@ var _is_selected := false
 func _init() -> void:
 	custom_minimum_size = Vector2(SIZE, SIZE)
 	add_to_group(ArtSet.VIEWS)
+	ItemIcon.sharpen(self)
 
 
 func show_stack(stack: Dictionary, is_selected: bool) -> void:
@@ -63,9 +65,9 @@ func _draw() -> void:
 	draw_texture(SELECTED_SLOT_TEXTURE if _is_selected else SLOT_TEXTURE, Vector2.ZERO)
 	if _stack.is_empty():
 		if hint != null:
-			draw_texture(hint, ICON_OFFSET)
+			draw_texture_rect(hint, ICON_RECT, false)
 		return
-	draw_texture(_icon, ICON_OFFSET)
+	draw_texture_rect(_icon, ICON_RECT, false)
 	if _stack["count"] > 1:
 		# The font comes from the theme set on a parent (see ui_theme.tres).
 		var font := get_theme_default_font()

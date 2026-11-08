@@ -52,7 +52,7 @@ var _left_column := VBoxContainer.new()
 var _right_column := VBoxContainer.new()
 var _weight_label := Label.new()
 var _note_label := Label.new()
-var _picked_icon := TextureRect.new()
+var _picked_icon := ItemIcon.new()
 var _tab := Tab.CHARACTER
 ## The page of each tab, and the button that shows it.
 var _pages := {}
@@ -124,7 +124,6 @@ func _init(hotbar: HotbarHud) -> void:
 	_panel.add_child(page_column)
 	_backdrop.add_child(_panel)
 
-	_picked_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_picked_icon.visible = false
 	# On a layer of its own, so the dragged icon is drawn above the hotbar too.
 	var icon_layer := CanvasLayer.new()
@@ -214,8 +213,8 @@ func _process(_delta: float) -> void:
 	# The held tool is synced into the appearance by PlayerView every frame.
 	_preview.queue_redraw()
 	if _picked_icon.visible:
-		var icon_size := _picked_icon.texture.get_size()
-		_picked_icon.position = (_backdrop.get_local_mouse_position() - icon_size / 2).round()
+		var middle := _picked_icon.size / 2
+		_picked_icon.position = (_backdrop.get_local_mouse_position() - middle).round()
 
 
 func _new_slot_grid(columns: int) -> GridContainer:
@@ -364,5 +363,5 @@ func _refresh() -> void:
 	var picked_item := _picked_item() if _has_pick() else ItemTypes.NONE
 	_picked_icon.visible = picked_item != ItemTypes.NONE
 	if _picked_icon.visible:
-		_picked_icon.texture = load(ArtSet.path(ItemTypes.icon_path(picked_item)))
+		_picked_icon.show_item(picked_item)
 	_weight_label.text = "Carrying %.1f kg" % _player.carried_weight()

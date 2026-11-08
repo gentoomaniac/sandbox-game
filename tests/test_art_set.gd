@@ -226,3 +226,13 @@ func test_a_slot_shown_switches_its_icon_with_the_art() -> void:
 	assert_eq(slot._icon.resource_path, "res://assets/classic/items/axe.png")
 	ArtSet.show(false, get_tree())
 	assert_eq(slot._icon.resource_path, "res://assets/items/axe.png")
+
+
+func test_an_icon_held_by_the_mouse_switches_with_the_art() -> void:
+	var icon := ItemIcon.new()
+	add_child_autofree(icon)
+	icon.show_item(ItemTypes.AXE)
+	ArtSet.show(true, get_tree())
+	assert_eq(icon.texture.resource_path, "res://assets/classic/items/axe.png")
+	ArtSet.show(false, get_tree())
+	assert_eq(icon.texture.resource_path, "res://assets/items/axe.png")
