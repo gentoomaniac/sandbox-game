@@ -58,16 +58,23 @@ func _init(animal: FarmAnimal) -> void:
 func _ready() -> void:
 	super()
 	_sprite.self_modulate = farm_animal.tint
+	add_to_group(ArtSet.VIEWS)
+	show_art_set()
+
+
+## Loads its sheet in the chosen art set (see ArtSet); the frames stay as they are.
+func show_art_set() -> void:
+	_sprite.texture = load(ArtSet.path(WildlifeSprites.SHEET_PATH % _sheet_kind))
 
 
 func _update(_delta: float) -> void:
 	# A ridden horse is drawn under its rider (see PlayerView).
 	visible = not farm_animal.is_ridden
 	position = _pixel_position()
-	# Saddling a horse, or taking its saddle off, changes its sheet; the frames stay as they are.
+	# Saddling a horse, or taking its saddle off, changes its sheet.
 	if sheet_kind(farm_animal) != _sheet_kind:
 		_sheet_kind = sheet_kind(farm_animal)
-		_sprite.texture = load(WildlifeSprites.SHEET_PATH % _sheet_kind)
+		show_art_set()
 
 	_face(farm_animal.facing)
 	if _prey != null:

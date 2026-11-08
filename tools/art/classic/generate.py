@@ -18,6 +18,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 import bubbles  # noqa: E402
 import character  # noqa: E402
+import livestock  # noqa: E402
 import portraits  # noqa: E402
 import villagers  # noqa: E402
 from canvas import GAME_TILE, TILE  # noqa: E402
@@ -35,7 +36,22 @@ DOUBLED = (
     "character/riding/*.png",
     "effects/*.png",
     "ui/bubble_*.png",
+    # The farm animals (task 114; livestock.py and animals.py of commit 2793065).
+    "wildlife/cow_*.png",
+    "wildlife/sheep_*.png",
+    "wildlife/chicken_*.png",
+    "wildlife/rabbit_*.png",
+    "wildlife/dog_*.png",
+    "wildlife/cat_*.png",
+    "wildlife/horse_*.png",
 )
+# The farm animals whose cells grew at 32 px per tile: the classic sheets, doubled, are set in
+# the new cells (bottom centre, as the animal stands in its cell), so that the game reads both
+# sets with the same frame sizes (WildlifeSprites). Their old and new cell sizes.
+GROWN_CELLS = {
+    "wildlife/cow_*.png": ((64, 48), (72, 54)),
+    "wildlife/horse_*.png": ((88, 72), (88, 76)),
+}
 
 
 def write_character():
@@ -59,6 +75,26 @@ def write_bubbles():
         bubbles.bubble(PALETTE, rows).save(ASSETS / CLASSIC / "ui" / f"bubble_{name}.png")
 
 
+def write_livestock():
+    for name, size, rows in livestock.sheets():
+        save(rows, f"{CLASSIC}/wildlife/{name}.png", *size)
+
+
+def set_in_grown_cells():
+    """Sets each cell of the sheets of GROWN_CELLS in the bottom centre of a cell of the new size."""
+    for pattern, ((width, height), (new_width, new_height)) in GROWN_CELLS.items():
+        for path in sorted((ASSETS / CLASSIC).glob(pattern)):
+            sheet = Image.open(path)
+            columns, rows = sheet.width // width, sheet.height // height
+            grown = Image.new("RGBA", (columns * new_width, rows * new_height), (0, 0, 0, 0))
+            for row in range(rows):
+                for column in range(columns):
+                    cell = sheet.crop((column * width, row * height, (column + 1) * width, (row + 1) * height))
+                    left = column * new_width + (new_width - width) // 2
+                    grown.paste(cell, (left, row * new_height + new_height - height))
+            grown.save(path)
+
+
 def scale_up_16_px_art():
     """Scales the files of DOUBLED up from the art's tile to the game's, pixel for pixel."""
     factor = GAME_TILE // TILE
@@ -73,7 +109,9 @@ def scale_up_16_px_art():
 def main():
     write_character()
     write_bubbles()
+    write_livestock()
     scale_up_16_px_art()
+    set_in_grown_cells()
     print("Wrote every file under assets/classic/.")
 
 

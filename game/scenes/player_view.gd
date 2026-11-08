@@ -93,6 +93,9 @@ const RIDE_LIFTS := [0, 0, 0, 0, 0, 0, 2, 0, 2]
 ## or down it is in the middle.
 const SEAT := Vector2(-3, -38)
 const PONY_SEAT := Vector2(-2, -27)
+## The same on the horses of the classic art (see ArtSet), the 16 px horse doubled.
+const CLASSIC_SEAT := Vector2(-6, -22)
+const CLASSIC_PONY_SEAT := Vector2(-4, -4)
 ## Half the width of the ridden horse's contact shadow seen from the front or from behind, from
 ## hoof to hoof (from the side it is that of FarmAnimalView), in pixels like the horse's art.
 const RIDDEN_SHADOW_HALF_WIDTH := 8
@@ -120,8 +123,9 @@ var _collapse_time := -1.0
 var _sleep_zs := SleepZs.new()
 var _horse_behind := Sprite2D.new()
 var _horse_in_front := Sprite2D.new()
-## The horse whose sheets the horse sprites show, to load them only when it changes.
-var _shown_horse: FarmAnimal
+## The sheet the horse sprite behind the rider shows, in the chosen art set, to load the horse's
+## sheets only when it changes.
+var _shown_horse_sheet := ""
 ## The sheets the sprites show now, bottom first. The sprites are rebuilt when they change.
 var _shown_sheets: Array[String] = []
 var _sprites: Array[Sprite2D] = []
@@ -255,15 +259,18 @@ func _draw() -> void:
 func _show_horse(horse: FarmAnimal) -> void:
 	_horse_behind.visible = horse != null
 	_horse_in_front.visible = horse != null
-	if horse == _shown_horse:
-		return
-	_shown_horse = horse
 	if horse == null:
+		_shown_horse_sheet = ""
 		return
-	_horse_behind.texture = load(RIDDEN_HORSE_PATH % [horse.look, ""])
-	_horse_in_front.texture = load(RIDDEN_HORSE_PATH % [horse.look, "_over"])
+	# Set every frame, before the early return: two horses of one look share a sheet but not a tint.
 	for sprite in [_horse_behind, _horse_in_front]:
 		sprite.self_modulate = horse.tint
+	var sheet := ArtSet.path(RIDDEN_HORSE_PATH % [horse.look, ""])
+	if sheet == _shown_horse_sheet:
+		return
+	_shown_horse_sheet = sheet
+	_horse_behind.texture = load(sheet)
+	_horse_in_front.texture = load(ArtSet.path(RIDDEN_HORSE_PATH % [horse.look, "_over"]))
 
 
 ## The rider on the horse: its frame of standing, walking or trotting, and the figure in the
@@ -278,7 +285,10 @@ func _show_riding(is_moving: bool) -> void:
 	_show_layers(_layers_without_held_item(), Pose.RIDING)
 	for sprite in _sprites:
 		sprite.frame = row
-	var seat := PONY_SEAT if _player.horse.look == &"pony" else SEAT
+	var is_pony := _player.horse.look == &"pony"
+	var seat := PONY_SEAT if is_pony else SEAT
+	if ArtSet.is_classic:
+		seat = CLASSIC_PONY_SEAT if is_pony else CLASSIC_SEAT
 	seat.x *= _player.facing.x
 	figure.position = seat - Vector2(0, RIDE_LIFTS[column])
 
