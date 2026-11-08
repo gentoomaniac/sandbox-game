@@ -20,11 +20,8 @@ var is_done := false
 ## Asleep: it makes no sound of its own accord (see AmbienceSounds).
 var is_asleep := false
 var kind: StringName
-## Half the width of the contact shadow in pixels of the animal's art; 0 for none.
-var shadow_half_width := 3
-## How many of the game's pixels a pixel of the animal's art is: 2 for the 16 px art that is
-## still doubled, 1 for the art drawn at 32 px per tile (the farm animals).
-var art_scale := TerrainTileset.ART_16_SCALE
+## Half the width of the contact shadow in pixels; 0 for none.
+var shadow_half_width := 6
 var _sprite: Sprite2D
 var _sheet_kind: StringName
 var _action := &""
@@ -68,19 +65,18 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	if shadow_half_width != 0:
-		draw_contact_shadow(self, shadow_half_width, art_scale)
+		draw_contact_shadow(self, shadow_half_width)
 
 
-## A flat ellipse of three rows of art pixels at the feet of what `canvas` draws, `half_width`
-## art pixels to either side; an art pixel is `scale` pixels of the game.
-static func draw_contact_shadow(
-	canvas: CanvasItem, half_width: int, scale := TerrainTileset.ART_16_SCALE
-) -> void:
-	canvas.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * scale)
-	for row in 3:
-		var half := half_width - (1 if row != 1 else 0)
-		canvas.draw_rect(Rect2(-half, row - 1, half * 2, 1), SHADOW_COLOR)
-	canvas.draw_set_transform(Vector2.ZERO)
+## A flat ellipse at the feet of what `canvas` draws, `half_width` pixels to either side and a
+## quarter of that (one to three rows) above and below, seen at the slant of the view.
+static func draw_contact_shadow(canvas: CanvasItem, half_width: int) -> void:
+	var half_height := clampf(half_width / 4.0, 1.0, 3.0)
+	var rows := floori(half_height)
+	for row in range(-rows, rows + 1):
+		var across := sqrt(1.0 - pow(row / (half_height + 0.5), 2.0))
+		var half := roundi(half_width * across)
+		canvas.draw_rect(Rect2(-half, row, half * 2, 1), SHADOW_COLOR)
 
 
 ## Leaves for good: runs or flies off, whatever it was doing. Each kind knows how.

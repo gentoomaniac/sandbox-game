@@ -28,7 +28,7 @@ var _is_dismissed := false
 
 func _init() -> void:
 	super(WildlifeRules.RABBIT)
-	shadow_half_width = 4
+	shadow_half_width = 8
 
 
 func _ready() -> void:

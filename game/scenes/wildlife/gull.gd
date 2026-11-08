@@ -22,7 +22,7 @@ const FLAP_SECONDS := 1.0
 const GLIDE_SECONDS := 2.0
 const GLIDE_FRAME := 1
 ## Half the width of its contact shadow on the ground; on the water it has none.
-const SHADOW_HALF_WIDTH := 4
+const SHADOW_HALF_WIDTH := 8
 ## It is gone once it is this far outside the view: far enough for its height and its wings.
 const LEAVE_MARGIN := 128.0
 

@@ -100,8 +100,8 @@ const CLASSIC_PONY_SEAT := Vector2(-4, -4)
 ## hoof to hoof (from the side it is that of FarmAnimalView), in pixels like the horse's art.
 const RIDDEN_SHADOW_HALF_WIDTH := 8
 ## Half the width of the contact shadow under a figure on its feet, a player's or a villager's, in
-## pixels of the 16 px art (see Animal `draw_contact_shadow`): as wide as the clogs.
-const FIGURE_SHADOW_HALF_WIDTH := 4
+## pixels (see Animal `draw_contact_shadow`): as wide as the clogs.
+const FIGURE_SHADOW_HALF_WIDTH := 8
 
 ## How fast the player walks (see GameState `walk_speed_factor`); the walk animation, and so the
 ## steps, keep that pace.
@@ -252,7 +252,7 @@ func _draw() -> void:
 		if _player.facing.x != 0
 		else RIDDEN_SHADOW_HALF_WIDTH
 	)
-	Animal.draw_contact_shadow(self, half_width, 1)
+	Animal.draw_contact_shadow(self, half_width)
 
 
 ## Shows the horse the player rides, if any, in the horse sprites.

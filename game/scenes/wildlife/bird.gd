@@ -24,7 +24,7 @@ var _flight_direction := Vector2.RIGHT
 
 func _init() -> void:
 	super(WildlifeRules.BIRD)
-	shadow_half_width = 2
+	shadow_half_width = 4
 
 
 func _ready() -> void:

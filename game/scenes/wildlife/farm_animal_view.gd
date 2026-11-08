@@ -22,7 +22,7 @@ const ACTIONS := {
 	FarmAnimal.Activity.POUNCE: [&"pounce", 9.0],
 }
 ## Half the width of each species' contact shadow, from its hind feet to its front ones, in
-## pixels: the farm animals are drawn at 32 px per tile (Animal `art_scale` 1).
+## pixels.
 const SHADOW_HALF_WIDTHS := {
 	LivestockRules.COW: 19,
 	LivestockRules.SHEEP: 12,
@@ -51,7 +51,6 @@ func _init(animal: FarmAnimal) -> void:
 	super(animal.species, sheet_kind(animal))
 	farm_animal = animal
 	shadow_half_width = SHADOW_HALF_WIDTHS[animal.species]
-	art_scale = 1
 	position = _pixel_position()
 
 

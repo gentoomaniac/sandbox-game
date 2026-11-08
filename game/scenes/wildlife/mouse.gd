@@ -20,7 +20,7 @@ var _direction := Vector2.RIGHT
 
 func _init() -> void:
 	super(WildlifeRules.MOUSE)
-	shadow_half_width = 2
+	shadow_half_width = 4
 
 
 func _ready() -> void:

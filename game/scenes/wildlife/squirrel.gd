@@ -29,7 +29,7 @@ var _is_dismissed := false
 
 func _init() -> void:
 	super(WildlifeRules.SQUIRREL)
-	shadow_half_width = 3
+	shadow_half_width = 6
 
 
 func _ready() -> void:

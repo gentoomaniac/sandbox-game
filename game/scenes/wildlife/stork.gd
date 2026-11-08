@@ -71,7 +71,7 @@ var _prey: Animal
 
 func _init(stork_kind: StringName) -> void:
 	super(stork_kind, WildlifeRules.STORK)
-	shadow_half_width = 4
+	shadow_half_width = 8
 
 
 func _ready() -> void:
