@@ -43,9 +43,10 @@ of seasons.HOUSE_LOOKS (kate_autumn.png, kate_lit_snow.png). Sizes and door tile
 data/buildings.cfg.
 
 assets/fire/<type>.png: the flame of the fireplace and of the hearth, burning (see fire.py and
-game/scenes/fire.gdshader). Cells the size of the box the flame burns in: what is behind the
-flame, what is in front of it, then the frames of the flame. The atlas cell and the hearth's
-picture show the first frame, for where the fire does not move.
+game/scenes/fire.gdshader), at the game's tile (not doubled). Cells the size of the box the
+flame burns in: what is behind the flame, what is in front of it (16 px art, scaled up in
+`fire.strip`), then the frames of the flame. The atlas cell and the hearth's picture show the
+first frame, for where the fire does not move.
 
 assets/wildlife/<kind>.png: one sheet per animal kind, one row per action and one column per frame
 (see animals.py, birds.py for the stork and the goose, sea_birds.py for the birds of the coast, and
@@ -119,7 +120,6 @@ DOUBLED = (
     # Plants, walls and placed things: one atlas (tasks 108 and 111).
     "objects*.png",
     "bedroll_cover.png",
-    "fire/*.png",
     # Crops (task 109).
     "crops/*.png",
     # Buildings (task 110).
@@ -337,7 +337,7 @@ def write_fire():
         ("hearth", interior.hearth_layers(), interior.HEARTH_FLAME),
     ):
         strip = fire.strip(behind, front, box, half_width, tall)
-        save([strip], f"fire/{name}.png", box[2], box[3])
+        save([strip], f"fire/{name}.png", len(strip[0][0]), len(strip[0]))
 
 
 def write_wildlife():

@@ -118,24 +118,19 @@ func test_the_flame_strips_match_the_pictures() -> void:
 		var cells := AmbientMotion.FIRE_FRAMES + 2
 		assert_eq(strip.get_width() % cells, 0, "%s: a whole number of cells" % type)
 		var box := Vector2i(strip.get_width() / cells, strip.get_height())
-		# The profile is in pixels of the 16 px art, the pictures are scaled up.
-		var scale := TerrainTileset.ART_16_SCALE
-		var box_position := Vector2i(profile["box_position"]) * scale
+		var box_position := Vector2i(profile["box_position"])
+		# The pictures show a still flame of the 16 px art, the strip one drawn at 32 px; what
+		# stands in front of the flame is the same in both.
 		for picture: Image in pictures[type]:
-			assert_eq(picture.get_size(), Vector2i(profile["cell_size"]) * scale, type)
+			assert_eq(picture.get_size(), Vector2i(profile["cell_size"]), type)
 			var differing := 0
 			for y in box.y:
 				for x in box.x:
-					var shown := _strip_pixel(strip, box, 1, x, y)
-					if shown.a == 0.0:
-						shown = _strip_pixel(strip, box, 2, x, y)
-					if shown.a == 0.0:
-						shown = _strip_pixel(strip, box, 0, x, y)
+					var front := _strip_pixel(strip, box, 1, x, y)
 					var drawn := picture.get_pixel(box_position.x + x, box_position.y + y)
-					# Clear pixels may differ in colour.
-					if drawn != shown and (drawn.a > 0.0 or shown.a > 0.0):
+					if front.a > 0.0 and drawn != front:
 						differing += 1
-			assert_eq(differing, 0, "%s: pixels of the box unlike the picture" % type)
+			assert_eq(differing, 0, "%s: pixels in front of the flame unlike the picture" % type)
 		assert_ne(
 			strip.get_region(Rect2i(Vector2i(2 * box.x, 0), box)).get_data(),
 			strip.get_region(Rect2i(Vector2i(3 * box.x, 0), box)).get_data(),

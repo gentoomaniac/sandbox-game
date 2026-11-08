@@ -1,6 +1,5 @@
 shader_type canvas_item;
 #include "res://game/scenes/hash.gdshaderinc"
-#include "res://game/scenes/art_scale.gdshaderinc"
 // A fire that burns: its flame plays a loop of frames (drawn by tools/art/fire.py), leans and
 // stretches downwind and throws sparks that rise, drift with the wind and fade. For a campfire
 // tile (cells of `cell_size` in an atlas without padding) or the hearth's sprite (one cell).
@@ -11,17 +10,19 @@ shader_type canvas_item;
 // for where the fire does not move), so the logs and stones stay still and only the flame
 // moves. Each fire starts its loop at its own frame, picked by its place, so two fires do not
 // burn in step (see AmbientMotion.fire_frame, which picks the same). Everything is in whole
-// art pixels. AmbientMotion sets `lean` and `stretch`; indoors they stay 0.
+// pixels of the world, which are those of the textures: the strip is drawn at the game's tile,
+// and the picture's 16 px art is scaled up to it. AmbientMotion sets `lean` and `stretch`;
+// indoors they stay 0.
 
-uniform vec2 cell_size = vec2(48.0, 80.0);
+uniform vec2 cell_size = vec2(96.0, 160.0);
 uniform sampler2D flames : filter_nearest;
 // The top left of the flame's box in the cell.
-uniform vec2 box_position = vec2(16.0, 51.0);
+uniform vec2 box_position = vec2(32.0, 102.0);
 uniform int frames = 6;
 uniform float frames_per_second = 9.0;
 // The row the flame's tip usually reaches, where the sparks fly from, and how high they rise.
-uniform float flame_top = 57.0;
-uniform float spark_rise = 16.0;
+uniform float flame_top = 114.0;
+uniform float spark_rise = 32.0;
 // Pixels the top of the box leans (signed, + is right), and how much taller the flame grows
 // (a share of its height).
 uniform float lean = 0.0;
@@ -51,9 +52,9 @@ void vertex() {
 	modulate = COLOR;
 }
 
-// The pixel of the strip `flames` at the art pixel `p`.
+// The pixel of the strip `flames` at `p`.
 vec4 flame_texel(ivec2 p) {
-	return texelFetch(flames, p * int(art_scale), 0);
+	return texelFetch(flames, p, 0);
 }
 
 // The flame, or what is in front of or behind it, at `in_box` (pixels in the box of size `box`)
@@ -90,8 +91,8 @@ vec4 spark(vec2 local, float centre_x, float seed) {
 		if (roll > 0.6 || age > 0.85) {
 			continue;
 		}
-		vec2 start = vec2(centre_x + floor((roll / 0.6 - 0.5) * 6.0), flame_top + 2.0);
-		vec2 at = start + vec2(lean * 1.5 * age + sin(age * 9.0 + h * 20.0) * 1.2, -spark_rise * age);
+		vec2 start = vec2(centre_x + floor((roll / 0.6 - 0.5) * 12.0), flame_top + 4.0);
+		vec2 at = start + vec2(lean * 1.5 * age + sin(age * 9.0 + h * 20.0) * 2.4, -spark_rise * age);
 		if (all(equal(floor(at + 0.5), local))) {
 			return vec4(age < 0.4 ? SPARK_HOT : SPARK_COOL, 1.0);
 		}
@@ -100,10 +101,10 @@ vec4 spark(vec2 local, float centre_x, float seed) {
 }
 
 void fragment() {
-	vec2 texel = floor(UV / TEXTURE_PIXEL_SIZE / art_scale);
+	vec2 texel = floor(UV / TEXTURE_PIXEL_SIZE);
 	vec2 local = mod(texel, cell_size);
-	vec2 origin = floor(world_position / art_scale) - local;
-	ivec2 box = textureSize(flames, 0) / int(art_scale) / ivec2(frames + 2, 1);
+	vec2 origin = floor(world_position) - local;
+	ivec2 box = textureSize(flames, 0) / ivec2(frames + 2, 1);
 	ivec2 in_box = ivec2(local - box_position);
 	vec4 shown = texture(TEXTURE, UV);
 	if (all(greaterThanEqual(in_box, ivec2(0))) && all(lessThan(in_box, box))) {

@@ -10,7 +10,8 @@ extends RefCounted
 ##
 ## Everything moves in whole art pixels, and on a calm day hardly at all. The static functions
 ## turn the weather into the shaders' numbers. The pixels here are those of the 16 px art, which
-## the shaders work on (see art_scale.gdshaderinc), so the motion keeps to its doubled pixels.
+## the shaders of the plants, the water and the mud work on (see art_scale.gdshaderinc), so their
+## motion keeps to its doubled pixels; the fire's are the world's, as its flame is drawn at 32 px.
 
 const OBJECT_SWAY_SHADER := preload("res://game/scenes/object_sway.gdshader")
 const DECORATION_SWAY_SHADER := preload("res://game/scenes/decoration_sway.gdshader")
@@ -43,8 +44,8 @@ const FIRE_FRAMES := 6
 const FIRE_FRAMES_PER_SECOND := 9.0
 ## Pixels the top of a flame's box leans per m/s of wind across the screen, and at most. Its tip
 ## leans about half as far.
-const FIRE_LEAN_PER_WIND := 0.3
-const MAX_FIRE_LEAN := 5.0
+const FIRE_LEAN_PER_WIND := 0.6
+const MAX_FIRE_LEAN := 10.0
 ## How much taller a flame grows in a storm across the screen (a share of its height).
 const MAX_FIRE_STRETCH := 0.3
 ## The chance that a cell of rain_splashes.gdshader (12×10 pixels) has a splash in a cycle
@@ -75,25 +76,25 @@ const CROP_SWAY := {"stem": 1.0, "strength": 0.6, "frequency": 0.8}
 const DECORATION_SWAY := {"strength": 0.5, "frequency": 0.9}
 
 ## The fires, by type: their cell, the strip of their flame and where its box is in the cell
-## (FIREPLACE_FLAME in tools/art/camp.py and HEARTH_FLAME in tools/art/interior.py), the row
-## the flame's tip usually reaches and how high the sparks rise from there (pixels).
+## (FIREPLACE_FLAME in tools/art/camp.py and HEARTH_FLAME in tools/art/interior.py, doubled), the
+## row the flame's tip usually reaches and how high the sparks rise from there, in the pixels of
+## the world: unlike the other shaders, fire.gdshader works on the flame drawn at 32 px per tile.
 const FIRE_PROFILES := {
 	WorldObjectTypes.FIREPLACE:
 	{
-		"cell_size":
-		Vector2(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT) / TerrainTileset.ART_16_SCALE,
+		"cell_size": Vector2(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT),
 		"flames": "res://assets/fire/fireplace.png",
-		"box_position": Vector2(16.0, 51.0),
-		"flame_top": 57.0,
-		"spark_rise": 16.0,
+		"box_position": Vector2(32.0, 102.0),
+		"flame_top": 114.0,
+		"spark_rise": 32.0,
 	},
 	WorldObjectTypes.HEARTH:
 	{
-		"cell_size": Vector2(32.0, 64.0),
+		"cell_size": Vector2(64.0, 128.0),
 		"flames": "res://assets/fire/hearth.png",
-		"box_position": Vector2(8.0, 26.0),
-		"flame_top": 34.0,
-		"spark_rise": 6.0,
+		"box_position": Vector2(16.0, 52.0),
+		"flame_top": 68.0,
+		"spark_rise": 12.0,
 	},
 }
 
@@ -145,7 +146,8 @@ func _init() -> void:
 ## A new material for a fire of `type` (see FIRE_PROFILES) that does not lean: the hearth's,
 ## indoors, needs no wind.
 static func fire_material(type: StringName) -> ShaderMaterial:
-	var material := _material(FIRE_SHADER)
+	var material := ShaderMaterial.new()
+	material.shader = FIRE_SHADER
 	var profile: Dictionary = FIRE_PROFILES[type].duplicate()
 	profile.erase("flames")
 	_set_parameters(material, profile)
@@ -166,7 +168,7 @@ func show_art_set() -> void:
 
 
 ## The frame of its flame's loop that a fire shows `seconds` into the shaders' clock, for the
-## fire whose cell is at `origin` (art pixels). The frame advances FIRE_FRAMES_PER_SECOND
+## fire whose cell is at `origin` (pixels). The frame advances FIRE_FRAMES_PER_SECOND
 ## times a second, and each fire starts its loop at a frame of its own, by its place, so
 ## neighbours do not burn in step. fire.gdshader picks the frame the same way, with its own
 ## copy of PositionHash.of (`position_hash`): change one, change the other.

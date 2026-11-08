@@ -10,7 +10,7 @@ then gold, flame and, at the cool tips, ember.
 
 import math
 
-from canvas import blank, copy
+from canvas import GAME_TILE, TILE, blank, copy
 
 # As many as AmbientMotion.FIRE_FRAMES.
 FRAMES = 6
@@ -21,10 +21,11 @@ HEAT_COLOURS = ((0.62, "cream"), (0.35, "gold"), (0.1, "flame"), (0.0, "ember"))
 TONGUES = ((-0.4, 0.8, 0.0), (0.05, 1.05, 1 / 3), (0.45, 0.75, 2 / 3))
 
 
-def flame(width, height, frame, half_width, tall):
+def flame(width, height, frame, half_width, tall, scale=1):
     """Frame `frame` of the loop: rows of colour names, `width` by `height`, the flame standing
     on the bottom row in the middle, `half_width` pixels to either side at its widest and about
-    `tall` pixels high (its licks rise higher)."""
+    `tall` pixels high (its licks rise higher). `scale` is how many of its pixels make one of the
+    16 px art, which the licks' sizes are measured on."""
     centre = width / 2
     canvas = blank(width, height)
     for y in range(height):
@@ -43,14 +44,14 @@ def flame(width, height, frame, half_width, tall):
                 if up < 1.0:
                     # It licks away from the middle while it grows, back while it falls.
                     lick = math.sin(2 * math.pi * phase) * (1.0 if at >= 0 else -1.0)
-                    middle = at * half_width + 1.6 * lick * up * up
+                    middle = at * half_width + 1.6 * scale * lick * up * up
                     reach = width_at_foot * (1.0 - up) ** 0.75
                     heat = max(heat, 0.95 - abs(across - middle) / reach - 0.45 * up)
                 # The tip that broke off as the tongue was tallest rises and shrinks.
                 if 0.0 < phase < 0.5:
-                    lick_rise = tall * tallest + phase * 12.0
-                    size = 1.6 * (1.0 - 1.2 * phase)
-                    distance = math.hypot(across - at * half_width - 2.0 * phase, (rise - lick_rise) / 1.6)
+                    lick_rise = tall * tallest + phase * 12.0 * scale
+                    size = 1.6 * scale * (1.0 - 1.2 * phase)
+                    distance = math.hypot(across - at * half_width - 2.0 * scale * phase, (rise - lick_rise) / 1.6)
                     heat = max(heat, 0.3 * (1.0 - distance / size))
             for threshold, colour in HEAT_COLOURS:
                 if heat > threshold:
@@ -60,12 +61,15 @@ def flame(width, height, frame, half_width, tall):
 
 
 def strip(behind, front, box, half_width, tall):
-    """The cells of a fire's strip (assets/fire/<type>.png), each the size of `box` (x, y,
-    width, height in the picture): what is behind the flame, what is in front of it, then the
-    flame's frames."""
+    """The cells of a fire's strip (assets/fire/<type>.png) at the game's tile: what is behind
+    the flame, what is in front of it, then the flame's frames. `box` (x, y, width, height),
+    `half_width` and `tall` are measured on the 16 px pictures `behind` and `front` (the
+    fireplace and the hearth are still drawn at 16 px per tile), which are scaled up pixel for
+    pixel; the flame is drawn at the game's tile, with twice the pixels."""
+    scale = GAME_TILE // TILE
     _, _, width, height = box
-    flames = [flame(width, height, frame, half_width, tall) for frame in range(FRAMES)]
-    return [_cropped(behind, box), _cropped(front, box)] + flames
+    flames = [flame(width * scale, height * scale, frame, half_width * scale, tall * scale, scale) for frame in range(FRAMES)]
+    return [_scaled_up(_cropped(behind, box), scale), _scaled_up(_cropped(front, box), scale)] + flames
 
 
 def burning(behind, front, box, half_width, tall):
@@ -87,3 +91,7 @@ def burning(behind, front, box, half_width, tall):
 def _cropped(canvas, box):
     x0, y0, width, height = box
     return [row[x0 : x0 + width] for row in canvas[y0 : y0 + height]]
+
+
+def _scaled_up(picture, scale):
+    return [[colour for colour in row for _ in range(scale)] for row in picture for _ in range(scale)]
