@@ -17,7 +17,7 @@ snow covers, which seasons.house uses for the snow look.
 import math
 import random
 
-from canvas import TILE, blank, rect
+from canvas import TILE, blank, outline_edge, rect
 
 # The thatch, lit to dark: weathered grey-brown reed, darkest in the shadow under the eaves.
 THATCH = ("sand", "bare_light", "bare", "mud_dark", "soil_dark")
@@ -347,24 +347,6 @@ def ground_shadow(picture):
             picture[height - 1][x] = "shadow"
 
 
-def outline(picture, colour):
-    """Gives the picture's border (pixels next to clear ones or the picture's sides and top)
-    `colour`; the bottom row stands on the ground and keeps its colours."""
-    height, width = len(picture), len(picture[0])
-    border = []
-    for y in range(height - 1):
-        for x in range(width):
-            if picture[y][x] is None:
-                continue
-            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                nx, ny = x + dx, y + dy
-                if not (0 <= nx < width and 0 <= ny < height) or picture[ny][nx] is None:
-                    border.append((x, y))
-                    break
-    for x, y in border:
-        picture[y][x] = colour
-
-
 def kate(is_lit, ridge_sticks=True):
     """A small cottage on 5x3 tiles: white lime walls, teal door and shutters, a big eyebrow
     dormer in the middle of the roof and a small white chimney. The ridge is held by crossed
@@ -389,7 +371,7 @@ def kate(is_lit, ridge_sticks=True):
     eaves_shadow(picture, eaves, wall_left, wall_right)
     eyebrow(picture, snowy, 40, 46, 16, is_lit)
     chimney(picture, snowy, 52, 3, 14, ("snow_light", "lime", "sand_light"))
-    outline(picture, THATCH[4])
+    outline_edge(picture, THATCH[4], keep_bottom=True)
     ground_shadow(picture)
     return picture, snowy
 
@@ -442,7 +424,7 @@ def longhouse(is_lit):
         eyebrow(picture, snowy, cx, 47, 14, is_lit)
     for left in (36, 70):
         chimney(picture, snowy, left, 5, 16, ("red_light", "rust", "rust_dark"))
-    outline(picture, THATCH[4])
+    outline_edge(picture, THATCH[4], keep_bottom=True)
     ground_shadow(picture)
     return picture, snowy
 
@@ -499,7 +481,7 @@ def barn(is_lit):
     eaves = thatch_roof(picture, snowy, rng, 0, width - 1, 13, 62, 26, swells=((40, 20, 5),))
     turf_ridge(picture, snowy, 26, width - 27, 13)
     eaves_shadow(picture, eaves, wall_left, wall_right)
-    outline(picture, THATCH[4])
+    outline_edge(picture, THATCH[4], keep_bottom=True)
     ground_shadow(picture)
     return picture, snowy
 
@@ -569,7 +551,7 @@ def shack(is_lit):
     ledged_door(picture, 18, 38, height - 4, 11, ("rust", "rust_dark", "russet_deep"))
     eaves = turf_roof(picture, snowy, rng, 0, width - 1, 9, 28)
     eaves_shadow(picture, eaves, wall_left, wall_right)
-    outline(picture, THATCH[4])
+    outline_edge(picture, THATCH[4], keep_bottom=True)
     ground_shadow(picture)
     return picture, snowy
 
@@ -927,7 +909,7 @@ def hall_house(is_lit):
             if gable[y][x] is not None:
                 picture[y][x] = gable[y][x]
     eaves_shadow(picture, {x: y - 1 for x, y in face_top.items()}, wall_left, wall_right)
-    outline(picture, THATCH[4])
+    outline_edge(picture, THATCH[4], keep_bottom=True)
     ground_shadow(picture)
     return picture, snowy
 

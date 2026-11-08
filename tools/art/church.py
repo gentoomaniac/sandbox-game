@@ -16,8 +16,8 @@ import random
 
 import crafts
 import interior
-from buildings import LIME, OAK, SHADED, eaves_shadow, fieldstone_base, brick_wall, glass, ground_shadow, outline, plank_door
-from canvas import TILE, blank, rect
+from buildings import LIME, OAK, SHADED, eaves_shadow, fieldstone_base, brick_wall, glass, ground_shadow, plank_door
+from canvas import TILE, blank, outline_edge, rect
 
 # Tuff ashlar: the blocks, mostly grey, some browner, each lit along its top, and the joints
 # between them.
@@ -149,7 +149,7 @@ def church(is_lit):
     eaves_shadow(picture, eaves, nave_left, chancel_right)
     iron_cross(picture, 4, 7)
     porch(picture, snowy, rng, 27, 53, 86, base_top, height)
-    outline(picture, OUTLINE)
+    outline_edge(picture, OUTLINE, keep_bottom=True)
     ground_shadow(picture)
     return picture, snowy
 
@@ -276,7 +276,7 @@ def bell_frame(is_lit):
     rect(picture, 0, eaves_y + 1, width - 1, eaves_y + 1, SHINGLE[2])
     rect(picture, 16, 0, 16, apex - 1, "stone_dark")
     rect(picture, 14, 2, 18, 2, "stone_dark")
-    outline(picture, OUTLINE)
+    outline_edge(picture, OUTLINE, keep_bottom=True)
     ground_shadow(picture)
     return picture, snowy
 
