@@ -1295,7 +1295,7 @@ the tide reaches its middle.
 
 ## 100. One shared outline helper for the art, and a contrast sheet
 
-- [ ] Done
+- [x] Done
 
 From the visual review of 2026-11-08 (Fable; the user started it): the art generators have
 eight outline helpers of their own (items.outlined has the only "darkest of the pixel's ramp"
@@ -1304,6 +1304,15 @@ boundaries). Move items' helper and its table to one place (e.g. `canvas.outline
 colour=None, keep_bottom=False)` and `palette.DARKEST_OF`) and use it where the others do the
 same; no change to how anything looks. Add a tool under tools/ that draws the vegetation atlas
 rows over the ground colours of every look (season, frost, snow), so contrast can be checked.
+
+Done: `canvas.outline` (outside ring; colour or a function of the surrounded pixel; `ignoring`
+for the ground shadow) and `canvas.outline_edge` (recolours the border; `keep_bottom`), and
+`palette.DARKEST_OF` / `palette.darkest_of`. `items.outlined` (now a thin wrapper), animals and
+livestock, trees' `outline_in_bark`, trunks, interior and crafts, buildings and the chest use
+them; every generated asset is byte-identical. Left alone: `character.outlined` (skips pixels
+the body already outlines), `trees.shaded_blob` (outlines circles while shading them) and the
+callbacks in boundaries.py (their own screen map, not a picture). `make contrast-sheet` writes
+build/contrast_sheet.png (tools/README.md).
 
 ## 101. Tall grass, fern and reeds stand out from the ground
 

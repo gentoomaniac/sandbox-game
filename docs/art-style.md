@@ -63,6 +63,14 @@ differs from grass only by its darker blades: still a visible patch, but softer.
 Light from the top left, outline in the darkest colour of the object's own ramp, 2–4 px
 clusters. One material gets one ramp of 3–4 colours; do not invent a ramp per building.
 
+Outlines come from `canvas.outline` (a ring outside the drawing; the colour is a name, or
+`palette.darkest_of`, which picks the darkest of the ramp of the pixel it surrounds, from
+`palette.DARKEST_OF`, ink for anything else) and `canvas.outline_edge` (recolours the drawing's
+own border; `keep_bottom` leaves the row that stands on the ground). Use them instead of a
+private loop. `character.outlined` and `trees.shaded_blob` stay their own: the first skips
+pixels the body already outlines, the second outlines a set of circles while it shades them.
+`make contrast-sheet` shows plants over the ground of every look (tools/README.md).
+
 - **Reed thatch** (`THATCH` in buildings.py: `sand`, `bare_light`, `bare`, `mud_dark`,
   `soil_dark`). New thatch is golden (`straw`, `gold`); after a few years grey-brown, with
   moss (`MOSS`) on the north side and low on the slope. Thatch is thick (30–40 cm): draw
