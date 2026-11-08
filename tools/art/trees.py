@@ -479,7 +479,10 @@ def fern_bush(seed):
     rng = random.Random(seed)
     canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 11)
-    # Fronds fan out from the base and droop at their tips, with leaflets along them.
+    # The body of the fern, where the fronds join: the dense part, in the dark greens.
+    dense_foot(canvas, ((75, 2, "green_dark"), (76, 4, "green_dark"), (77, 5, "green_dark"), (78, 4, "green_deep")))
+    # Fronds fan out from the base and droop at their tips, with leaflets along them. Their
+    # lower third is in shade.
     for angle in (-78, -58, -36, -14, 8, 30, 54, 76):
         angle = math.radians(angle + rng.uniform(-6, 6))
         length = rng.uniform(9, 12)
@@ -487,7 +490,7 @@ def fern_bush(seed):
             s = step / 2
             x = round(OBJECT_CENTRE + math.sin(angle) * s)
             y = round(77 - math.cos(angle) * s * 0.95 + s * s * 0.02 * abs(math.sin(angle)))
-            canvas[y][x] = "green_light" if step > length * 0.8 else "green"
+            canvas[y][x] = "green_bright" if step > length * 0.8 else "green_light" if s > length * 0.35 else "green_dark"
             if step % 3 == 1 and step > 3:
                 canvas[y + 1][x] = "green_dark"
                 canvas[y - 1][x + (1 if step % 2 else -1)] = "green"

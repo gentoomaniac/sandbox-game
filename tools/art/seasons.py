@@ -222,7 +222,7 @@ _BARE_BUSH = {
 _SNOW_MOUND = {
     "green_light": "snow_light", "green": "snow", "green_dark": "snow_shadow", "green_deep": "snow_deep",
 }
-_DRY_FERN = {"green_light": "straw", "green": "reed", "green_dark": "olive"}
+_DRY_FERN = {"green_bright": "straw", "green_light": "straw", "green": "reed", "green_dark": "olive", "green_deep": "umber"}
 
 # How the snow cap of each object is drawn: (surfaces, edges, depth in px).
 _SNOW_CONIFER = ({"green_light", "green", "green_dark", "olive"}, {"green_deep"}, 2)
@@ -401,7 +401,7 @@ _SNOW_REEDS = ({"sand_light", "straw", "reed"}, set(), 2)
 _FROST_CONIFER = {"green_light": "snow_shadow", "green": "green_light", "green_dark": "green"}
 _FROST_PINE = {"meadow_light": "snow_shadow", "meadow": "meadow_light", "green_deep": "meadow"}
 _FROST_BUSH = {"green_light": "snow_light", "green": "snow_shadow", "green_dark": "mud_dark", "green_bright": "snow_light"}
-_FROST_FERN = {"green_light": "snow_light", "green": "straw", "green_dark": "reed"}
+_FROST_FERN = {"green_bright": "snow_light", "green_light": "snow_light", "green": "straw", "green_dark": "reed", "green_deep": "umber"}
 _FROST_STONE = {"green_light": "snow", "green": "snow_shadow", "olive": "snow_shadow"}
 
 
