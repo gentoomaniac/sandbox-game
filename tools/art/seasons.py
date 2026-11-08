@@ -392,7 +392,7 @@ def blossoms(canvas, rng, surfaces, count):
 # Reeds are green in spring and summer; from autumn on they stand golden.
 _GOLDEN_REEDS = {
     "green_bright": "sand_light", "green_light": "sand_light", "green": "straw",
-    "green_dark": "reed", "green_deep": "reed",
+    "green_dark": "reed", "green_deep": "umber",
 }
 _SNOW_REEDS = ({"sand_light", "straw", "reed"}, set(), 2)
 
