@@ -14,6 +14,12 @@ OBJECT_CELL_WIDTH = 48
 OBJECT_CELL_HEIGHT = 80
 OBJECT_CENTRE = OBJECT_CELL_WIDTH // 2
 OBJECT_BOTTOM = OBJECT_CELL_HEIGHT - 1
+# The same cell at the game's tile, for the rows of the atlas drawn at 32 px (the plants); the
+# others are drawn in the cell above and scaled up (DOUBLED_ROWS in generate.py).
+GAME_OBJECT_CELL_WIDTH = OBJECT_CELL_WIDTH * GAME_TILE // TILE
+GAME_OBJECT_CELL_HEIGHT = OBJECT_CELL_HEIGHT * GAME_TILE // TILE
+GAME_OBJECT_CENTRE = GAME_OBJECT_CELL_WIDTH // 2
+GAME_OBJECT_BOTTOM = GAME_OBJECT_CELL_HEIGHT - 1
 
 NEIGHBOURS = ((1, 0), (-1, 0), (0, 1), (0, -1))
 

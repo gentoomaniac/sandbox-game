@@ -6,13 +6,14 @@ others listed in tools/README.md. This file puts the objects together into the a
 fire, buildings, wildlife, crops, items, ui and the palette), scales the art drawn at 16 px per
 tile up to the game's tile (`scale_up_16_px_art`), then checks them against the palette.
 
-The sizes below are those of the art as drawn, at canvas.TILE = 16 px per tile. The files of
-DOUBLED are written GAME_TILE / TILE times as big.
+The sizes below are those of the art as drawn, at canvas.TILE = 16 px per tile, unless they
+say otherwise. The files of DOUBLED are written GAME_TILE / TILE times as big.
 
-assets/objects.png: world objects, 48x80 cells (OBJECT_CELL_WIDTH x OBJECT_CELL_HEIGHT), one row per
-kind (the table above `object_atlas`).
-An object stands on one tile: the bottom centre 16x16 of its cell (x 16..31, y 64..79). A tree's
-crown rises above that, over the tiles around it. An object on several tiles (boulder 2x1,
+assets/objects.png: world objects, 96x160 cells (GAME_OBJECT_CELL_WIDTH x
+GAME_OBJECT_CELL_HEIGHT), one row per kind (the table above `object_atlas`). The rows of
+DOUBLED_ROWS are drawn in 48x80 cells at 16 px per tile and scaled up; the others at 32 px.
+An object stands on one tile: the bottom centre 32x32 of its cell (x 32..63, y 128..159). A
+tree's crown rises above that, over the tiles around it. An object on several tiles (boulder 2x1,
 bedroll 1x2) is centred on its footprint, with the cell's bottom on the footprint's bottom.
 
 Terrain, decorations and objects also exist per look (see seasons.py: spring, summer, autumn,
@@ -103,7 +104,7 @@ import trunks
 import ui
 import villagers
 import willow
-from canvas import GAME_TILE, OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, TILE, blank
+from canvas import GAME_OBJECT_CELL_HEIGHT, GAME_OBJECT_CELL_WIDTH, GAME_TILE, OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, TILE, blank
 from PIL import Image
 from palette import ASSETS, PALETTE, check_palette, save, save_picture, write_palette
 
@@ -113,8 +114,7 @@ from palette import ASSETS, PALETTE, check_palette, save, save_picture, write_pa
 # (items/ and ui/) are drawn for the UI's own scale and stay as they are; the thought bubbles in
 # ui/ are drawn at 32 px like the people.
 DOUBLED = (
-    # Plants, walls and placed things: one atlas (tasks 108 and 111).
-    "objects*.png",
+    # The bedroll (task 111); the object atlas doubles its rows itself (DOUBLED_ROWS).
     "bedroll_cover.png",
     # Crops (task 109).
     "crops/*.png",
@@ -137,6 +137,21 @@ def standing_outdoors(picture):
             if name is not None:
                 canvas[top + y][OBJECT_CENTRE - len(row) // 2 + x] = name
     return canvas
+
+
+# The rows of the object atlas still drawn at 16 px per tile: write_seasonal_art scales them up
+# to the game's tile in every look, after the looks are made from them, so they look as they did.
+# Task 111 takes out the walls, fences, the dyke and the placed objects.
+DOUBLED_ROWS = {
+    "oak", "stone", "fireplace", "sleeping_bag", "spruce", "pine", "dead_tree", "berry_bush",
+    "shrub", "sapling", "fern", "boulder", "stump", "tall_grass", "oak_trunk", "oak_short_trunk",
+    "spruce_trunk", "spruce_short_trunk", "pine_trunk", "pine_short_trunk", "dead_tree_trunk",
+    "dead_tree_short_trunk", "willow_trunk", "willow_short_trunk", "reeds", "dead_stump",
+    "chest", "knick", "wattle_fence", "stone_wall", "dyke", "willow", "beech", "beech_trunk",
+    "beech_short_trunk", "birch", "birch_trunk", "birch_short_trunk", "alder", "alder_trunk",
+    "alder_short_trunk", "workbench", "carved_chest", "kiln", "oven", "ewer", "grave", "jetty",
+    "rowing_boat", "net_frame", "eel_traps",
+}
 
 
 # The rows of assets/objects.png, as (kind, looks). `atlas_row` of each type in
@@ -289,7 +304,12 @@ def write_seasonal_art():
             save(seasons.terrain_rows(look, terrain_rows, layers), f"terrain{suffix}.png", GAME_TILE)
             decorations = seasons.ground_rows(look, decoration_rows, layers, seasons.STANDING.get(look))
             save(decorations, f"decorations{suffix}.png", GAME_TILE)
-        save(seasons.object_rows(look, objects, redraws), f"objects{suffix}.png", OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
+        rows = seasons.object_rows(look, objects, redraws)
+        rows = [
+            [doubled(cell) for cell in row] if kind in DOUBLED_ROWS else row
+            for (kind, _looks), row in zip(objects, rows)
+        ]
+        save(rows, f"objects{suffix}.png", GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)
         if look in seasons.HOUSE_LOOKS:
             for name, (picture, snowy) in houses.items():
                 save_picture(seasons.house(look, picture, snowy), f"buildings/{name}{suffix}.png")
