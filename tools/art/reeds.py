@@ -10,6 +10,7 @@ import random
 
 import items
 from canvas import blank
+from items import ICON
 from trees import BOTTOM, CENTRE, blade, cell, dense_foot, ground_shadow
 
 REEDS_SEEDS = (311, 312, 313)
@@ -68,27 +69,20 @@ def reeds_row():
 def reeds_item():
     """A bundle of long cut reeds lying on the diagonal, tied twice, with brown cattail heads at
     the top right."""
-    picture = blank()
-    # Five stalks on the diagonals x + y = 13..17, the upper left one lit. Each ends at its own
-    # length, so the ends are not cut square.
-    stalks = ((13, "sand_light", 1, 10), (14, "straw", 1, 11), (15, "straw", 2, 12), (16, "reed", 3, 12), (17, "olive", 4, 13))
-    for diagonal, colour, first, last in stalks:
+    picture = blank(ICON)
+    # Five stalks along the diagonal, the upper left one lit, each ending at its own length.
+    for offset, colour, first, last in ((-2, "sand_light", 3, 21), (-1, "straw", 2, 22), (0, "straw", 3, 24), (1, "reed", 4, 23), (2, "olive", 5, 25)):
         for x in range(first, last + 1):
-            picture[diagonal - x][x] = colour
-    # Cattail heads beyond the ends of three stalks, 2 px thick along them.
-    for diagonal, last in ((14, 11), (15, 12), (16, 12)):
-        for x in range(last + 1, last + 3):
-            picture[diagonal - x][x] = "soil_mid"
-            picture[diagonal - x - 1][x] = "soil_light" if diagonal == 14 else "soil"
-    # Two ties across the bundle.
-    for across in (-4, 4):
-        for x in range(16):
-            for y in range(16):
-                if x - y in (across, across + 1) and 13 <= x + y <= 17:
-                    picture[y][x] = "rust" if x + y < 16 else "rust_dark"
-    return items.outlined(picture, "ink")
+            items.dots(picture, [(x, 31 - x + offset)], colour)
+    for offset, last in ((-1, 22), (0, 24), (1, 23)):
+        head = items.capsule((last + 1, 31 - last - 1 + offset), (last + 5, 31 - last - 5 + offset), 1.4)
+        items.shade(picture, head, ("soil", "soil_mid", "soil_light"), radius=1)
+    for middle in (9, 17):
+        tie = items.capsule((middle - 2, 31 - middle - 2), (middle + 2, 31 - middle + 2), 1.2)
+        items.shade(picture, tie, ("rust_dark", "rust", "red_light"), radius=1)
+    return picture
 
 
 def icons():
-    """The 16x16 icons by item id."""
+    """The body of the reeds' icon, by item id."""
     return {"reeds": reeds_item()}

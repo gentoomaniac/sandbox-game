@@ -72,10 +72,11 @@ terrain.py).
 
 assets/clay_hint.png: the faint hint of a clay spot, one tile at the game's tile (see meadow.py).
 
-assets/items/<item id>.png (16x16) and assets/ui/slot.png, slot_selected.png (20x20): drawn in
-items.py, for tools in tool_icons.py and for crops in crop_icons.py. assets/ground_items/<item
-id>.png are their 8x8 versions for items lying on the ground (items.small), made for every icon
-(the tools too).
+assets/items/<item id>.png: the item icons, 32x32 at the game's tile (the UI shows them at half
+size), drawn in items.py, for tools in tool_icons.py, for crops in crop_icons.py and the rest
+in the module of their topic. assets/ground_items/<item id>.png are their 16x16 versions for
+items lying on the ground (items.ground_item), made for every icon (the tools too).
+assets/ui/slot.png and slot_selected.png (20x20) are drawn in items.py for the UI's own pixels.
 """
 
 import alder
@@ -111,20 +112,18 @@ import trunks
 import ui
 import villagers
 import willow
-from canvas import GAME_OBJECT_CELL_HEIGHT, GAME_OBJECT_CELL_WIDTH, GAME_TILE, OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, TILE, blank
+from canvas import GAME_OBJECT_CELL_HEIGHT, GAME_OBJECT_CELL_WIDTH, GAME_TILE, OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, TILE, blank, doubled
 from PIL import Image
 from palette import ASSETS, PALETTE, check_palette, save, save_picture, write_palette
 
 # The files under assets/ that the world draws and that are still drawn at 16 px per tile:
 # `scale_up_16_px_art` scales them up to the game's tile, pixel for pixel. Each task that
-# redraws a group at 32 px (tasks 107 to 116) takes its files out of here. The UI's pictures
-# (items/ and ui/) are drawn for the UI's own scale and stay as they are; the thought bubbles in
-# ui/ are drawn at 32 px like the people.
+# redraws a group at 32 px (tasks 107 to 116) takes its files out of here. The item icons and
+# the items on the ground are drawn at 32 px (items.py); the other pictures of ui/ are drawn for
+# the UI's own scale, except the thought bubbles, drawn at 32 px like the people.
 DOUBLED = (
     # The bedroll (task 111); the object atlas doubles its rows itself (DOUBLED_ROWS).
     "bedroll_cover.png",
-    # Items on the ground (task 115).
-    "ground_items/*.png",
 )
 
 
@@ -371,19 +370,12 @@ def write_crops():
 
 
 def write_items():
-    icons = items.ICONS | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons() | landing.icons()
-    for name, picture in icons.items():
-        save_picture(picture, f"items/{name}.png")
-        # The same icon at half size, for items lying on the ground.
-        save_picture(items.small(picture), f"ground_items/{name}.png")
+    bodies = items.icons() | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons() | landing.icons()
+    for name, body in bodies.items():
+        save_picture(items.icon(body), f"items/{name}.png")
+        save_picture(items.ground_item(body), f"ground_items/{name}.png")
     for name, picture in (items.SLOTS | items.SLOT_HINTS).items():
         save_picture(picture, f"ui/{name}.png")
-
-
-def doubled(picture):
-    """A picture drawn at 16 px per tile scaled up to the game's tile, pixel for pixel."""
-    factor = GAME_TILE // TILE
-    return [[colour for colour in row for _ in range(factor)] for row in picture for _ in range(factor)]
 
 
 def scale_up_16_px_art():

@@ -1,213 +1,178 @@
-"""The 16x16 icons of the tools: hoe, axe, pickaxe, watering can, scythe, shovel and hammer.
+"""The icons of the tools: hoe, axe, pickaxe, watering can, scythe, spade and hammer, at 32 px.
 
-Each lies on the diagonal from the bottom left to the top right, the classic item-icon pose: a
-wooden handle 2 px wide (lit on its upper left side) with the working end at the top right, in
-an ink outline so its silhouette reads on its own. The metal uses only the METAL ramp, so a
-better tool later is the same icon with that ramp swapped (copper, iron). The watering can is
-all copper, as cans were before tin-plate. Pictures are lists of rows of palette colour names,
-as in items.py.
+Each lies on the diagonal from the bottom left to the top right, the classic item-icon pose:
+a round wooden handle 3 px thick (ash, lit on its upper left, the grain in streaks) with the
+working end at the top right. As art-style.md has them, the tools are of wood with iron only
+where they cut or strike: the iron is in the IRON ramp with its edge bright, so a better tool
+later is the same icon with that ramp swapped. The pickaxe is the Geest's pick for grubbing
+out the fieldstones of the till and splitting them, a point on one side and a broad chisel on
+the other; the spade is wooden with an iron shoe. The watering can is all copper, as cans
+were before tin-plate. Bodies by item id, outlined by items.icon.
 """
 
 import math
 
-import items
+import numpy as np
+
+from items import COPPER, ICON, IRON, capsule, dots, edge_of, ellipse, limb, line, paint, polygon, shade
 from canvas import blank
 
-# Metal, lit to dark: the bright cutting edge, the lit face, the body, the shade.
-METAL = ("snow_light", "stone_light", "stone", "stone_dark")
-# Wood of the handles, lit to dark.
-WOOD = ("sand_light", "soil_light", "soil_mid")
-
-KEYS = {
-    "e": METAL[0], "m": METAL[1], "s": METAL[2], "k": METAL[3],
-    "l": WOOD[0], "w": WOOD[1], "d": WOOD[2],
-}
+# Ash for the handles, lit to dark... as a ramp, dark to light.
+ASH = ("soil_mid", "soil_light", "sand_light")
 
 
-def stamp(picture, x, y, *rows):
-    """Draws rows of key letters (see KEYS) with their top left at (x, y); "." stays as it is."""
-    for dy, row in enumerate(rows):
-        for dx, letter in enumerate(row):
-            if letter != ".":
-                picture[y + dy][x + dx] = KEYS[letter]
+def handle(picture, start, end, radius=1.6):
+    """A round handle from `start` to `end`, lit on its upper left, a streak of grain on it."""
+    mask = capsule(start, end, radius)
+    shade(picture, mask, ASH, radius=2)
+    (x0, y0), (x1, y1) = start, end
+    for t in (0.3, 0.62):
+        x, y = x0 + (x1 - x0) * t, y0 + (y1 - y0) * t
+        dots(picture, [(round(x), round(y)), (round(x + 1), round(y - 1))], "soil_mid")
+    return mask
 
 
-def handle(picture, top, bottom, diagonal=15):
-    """A handle along the diagonal x + y = `diagonal` from row `top` down to row `bottom`: per row
-    a lit pixel and a dark one right of it."""
-    for y in range(top, bottom + 1):
-        x = diagonal - y
-        picture[y][x] = WOOD[1]
-        picture[y][x + 1] = WOOD[2]
-    picture[top][diagonal - top] = WOOD[0]
+def along(start, end):
+    """The pixels' distance along the line from `start` towards `end` and across it (positive
+    to the left of the way), as arrays as big as the icon."""
+    ys, xs = np.mgrid[0:ICON, 0:ICON]
+    (x0, y0), (x1, y1) = start, end
+    length = math.hypot(x1 - x0, y1 - y0)
+    ux, uy = (x1 - x0) / length, (y1 - y0) / length
+    dx, dy = xs + 0.5 - x0, ys + 0.5 - y0
+    return dx * ux + dy * uy, dx * uy - dy * ux
 
 
-def curved_band(picture, start, control, end, widths, shades):
-    """A band along a quadratic curve from `start` over `control` to `end`, `widths[0]` px thick
-    at the start down to `widths[1]` at the end. `shades(t, side)` gives the colour of a pixel
-    `t` along the curve (0 to 1) and `side` across it (-1 to 1, positive on the left of the
-    direction of travel)."""
-    (x0, y0), (cx, cy), (x1, y1) = start, control, end
-    for step in range(200):
-        t = step / 199
-        x = (1 - t) ** 2 * x0 + 2 * (1 - t) * t * cx + t * t * x1
-        y = (1 - t) ** 2 * y0 + 2 * (1 - t) * t * cy + t * t * y1
-        dx = 2 * (1 - t) * (cx - x0) + 2 * t * (x1 - cx)
-        dy = 2 * (1 - t) * (cy - y0) + 2 * t * (y1 - cy)
-        length = math.hypot(dx, dy) or 1
-        normal = (dy / length, -dx / length)
-        half = (widths[0] + (widths[1] - widths[0]) * t) / 2
-        for offset in range(-8, 9):
-            side = offset / 8
-            px = x + normal[0] * side * half
-            py = y + normal[1] * side * half
-            picture[int(py)][int(px)] = shades(t, side)
+def iron(picture, mask):
+    """Forged iron, flat but for its rims: lit along its top and left, dark along its bottom
+    and right."""
+    paint(picture, mask, IRON[1])
+    paint(picture, edge_of(mask, "bottom") | edge_of(mask, "right"), IRON[0])
+    paint(picture, edge_of(mask, "top") | edge_of(mask, "left"), IRON[2])
+
+
+def bright_edge(picture, mask, side_mask):
+    """Gives the pixels of `mask` in `side_mask` the bright edge of the iron."""
+    paint(picture, mask & side_mask, IRON[3])
 
 
 def hoe():
-    """A long handle with a flat blade at right angles to its top end, its edge bright."""
-    picture = blank()
-    handle(picture, 3, 14)
-    stamp(
-        picture, 2, 1,
-        "kmmmmmmmmsk.",
-        "kmssssssssk.",
-        "mmsk........",
-        "mssk........",
-        "eeek........",
-    )
-    return items.outlined(picture, "ink")
+    """A long handle, a thin iron neck off its top to the right and a flat blade at the neck's
+    end, hanging down, its edge bright."""
+    picture = blank(ICON)
+    handle(picture, (4, 29), (21, 8))
+    iron(picture, capsule((20, 7), (26, 6), 1.3))
+    blade = polygon([(23, 6), (30, 6), (30, 18), (22, 17)])
+    iron(picture, blade)
+    line(picture, 22, 17, 30, 18, IRON[3])
+    line(picture, 25, 8, 25, 14, IRON[2])
+    return picture
 
 
 def axe():
-    """A wedge blade on the left of the handle's top, its curved cutting edge bright."""
-    picture = blank()
-    handle(picture, 2, 14)
-    stamp(
-        picture, 2, 1,
-        "...eek.....",
-        "..emmsk....",
-        ".emmmssk...",
-        "emmmmsskkkk",
-        "emmmmssssk.",
-        ".emmmsskk..",
-        "..emmsk....",
-        "...eek.....",
-    )
-    return items.outlined(picture, "ink")
+    """An axe head on the left of the handle's top, fanning out to a curved edge, bright; the
+    short poll on the right."""
+    picture = blank(ICON)
+    handle(picture, (5, 29), (21, 6))
+    head = polygon([(24, 3), (24, 10), (17, 10), (10, 15), (5, 16), (3, 10), (5, 2), (10, 1), (17, 4)])
+    iron(picture, head)
+    edge = ellipse(17, 8.5, 13, 10) & ~ellipse(18.5, 8.5, 13, 10)
+    bright_edge(picture, head, edge)
+    line(picture, 8, 6, 15, 6, IRON[2])
+    iron(picture, polygon([(24, 4), (27, 4), (27, 10), (24, 10)]))
+    return picture
 
 
 def pickaxe():
-    """A curved head with two points, crossing the top of the handle."""
-    picture = blank()
-    handle(picture, 5, 14)
-    curved_band(
-        picture, (2.5, 2.5), (13, 0.5), (13.5, 12.5), (1, 1),
-        lambda t, side: METAL[1] if side > 0.2 else METAL[2],
-    )
-    curved_band(
-        picture, (4, 2.6), (12, 1.6), (12.6, 10), (2.4, 2.4),
-        lambda t, side: METAL[1] if side > 0.3 else METAL[2] if side > -0.5 else METAL[3],
-    )
-    stamp(picture, 10, 3, "ksk", "skk")
-    return items.outlined(picture, "ink")
+    """The pick of the Geest: a curved iron head across the top of the handle, pointed on one
+    side and a broad chisel on the other."""
+    picture = blank(ICON)
+    handle(picture, (5, 29), (19, 11))
+    centre = np.array((19.0, 11.0))
+    way = np.array((0.707, 0.707))
+    bow = np.array((0.707, -0.707))
+    points = [tuple(centre + way * s + bow * 3.5 * (1 - (s / 13) ** 2)) for s in (-13, -7, 0, 7, 13)]
+    iron(picture, limb(points, [2.8, 2.4, 2.8, 1.7, 0.6]))
+    chisel = points[0]
+    line(picture, round(chisel[0]) - 3, round(chisel[1]) + 1, round(chisel[0]) + 1, round(chisel[1]) - 3, IRON[3])
+    dots(picture, [(round(points[-1][0]) - 1, round(points[-1][1]) - 1)], IRON[3])
+    return picture
 
 
 def scythe():
-    """A long snath with a grip peg, and a long curved blade off its top, the biggest icon."""
-    picture = blank()
-    handle(picture, 2, 14)
-    stamp(picture, 3, 7, "lw", ".lw")
-    curved_band(
-        picture, (13, 2.2), (6, -0.5), (1.2, 6.5), (2.6, 1),
-        lambda t, side: METAL[0] if side < -0.4 else METAL[1] if side < 0.3 else METAL[2],
-    )
-    stamp(picture, 12, 1, "kk", "k.")
-    return items.outlined(picture, "ink")
+    """A long snath with a grip peg, and a long curved blade off its top to the left, its
+    edge bright."""
+    picture = blank(ICON)
+    handle(picture, (5, 30), (24, 5), radius=1.4)
+    peg = capsule((10, 19), (14, 22), 1.2)
+    shade(picture, peg, ASH, radius=1)
+    points = [(25, 4), (17, 2), (9, 4), (4, 8), (2, 13)]
+    blade = limb(points, [2.6, 2.3, 1.8, 1.2, 0.5])
+    iron(picture, blade)
+    under = limb([(x + 0.7, y + 1.8) for x, y in points], [1.4, 1.2, 0.9, 0.6, 0.2])
+    bright_edge(picture, blade, under)
+    return picture
 
 
 def shovel():
-    """A pointed spade blade at the bottom left, a D-grip at the top right."""
-    picture = blank()
-    handle(picture, 3, 7)
-    stamp(
-        picture, 11, 0,
-        ".lww",
-        "lw.w",
-        "wwww",
-    )
-    # The blade, measured along the handle (`along`, from its socket towards the tip) and across
-    # it (`across`, positive on the lit upper left side).
-    for y in range(16):
-        for x in range(16):
-            along = ((8.5 - x) + (y - 7.5)) / math.sqrt(2)
-            across = ((8.5 - x) - (y - 7.5)) / math.sqrt(2)
-            reach = 2.9 if along < 5 else 2.9 * (8 - along) / 3
-            if 0 <= along < 8 and abs(across) <= reach:
-                if along > 6.2 or (across > 1.9 and along > 3):
-                    colour = METAL[0]
-                elif along < 0.8:
-                    colour = METAL[3]
-                else:
-                    colour = METAL[1] if across > 0.6 else METAL[2] if across > -1.6 else METAL[3]
-                picture[y][x] = colour
-    return items.outlined(picture, "ink")
+    """A wooden spade with an iron shoe: a T-grip at the top right, the square blade at the
+    bottom left, its iron-shod edge bright."""
+    picture = blank(ICON)
+    handle(picture, (14, 18), (24, 8))
+    shade(picture, capsule((21, 4), (28, 11), 1.5), ASH, radius=1)
+    run, across = along((15, 17), (4, 28))
+    half = np.minimum(1.8 + run * 1.6, 5.2)
+    blade = (run >= 0) & (run < 15) & (np.abs(across) < half)
+    shade(picture, blade, ASH, radius=2)
+    paint(picture, blade & (np.abs(across) < 0.8) & (run > 3) & (run < 10), "soil_mid")
+    iron(picture, blade & (run > 11))
+    bright_edge(picture, blade, run > 13.8)
+    return picture
 
 
 def hammer():
-    """A heavy, blocky head square on the top of the handle, its striking faces bright."""
-    picture = blank()
-    handle(picture, 7, 14)
-    stamp(
-        picture, 5, 1,
-        "emmmmmmk",
-        "emmsssmk",
-        "emsssssk",
-        "emsssssk",
-        "emsssssk",
-        "ekkkkkkk",
-    )
-    return items.outlined(picture, "ink")
-
-
-# Copper, lit to dark, for the watering can: a glint, the lit face, the body, the shade.
-COPPER = {"g": "gold", "o": "ochre", "a": "ochre_dark", "u": "umber"}
+    """A heavy iron head across the top of the handle, its striking faces bright, a wedge in
+    its eye."""
+    picture = blank(ICON)
+    handle(picture, (5, 29), (20, 11))
+    head = polygon([(27, 13), (23, 17), (13, 7), (17, 3)])
+    iron(picture, head)
+    line(picture, 13, 7, 17, 3, IRON[3])
+    line(picture, 14, 7, 17, 4, IRON[3])
+    dots(picture, [(20, 10), (21, 9)], "soil_light")
+    return picture
 
 
 def watering_can():
-    """A copper can of the old kind: a tall round body, a handle arching over the top, and a
-    spout rising to a big round rose, its face pricked with holes."""
-    picture = blank()
-    rows = (
-        "..........aaaa.",
-        ".........aoggoa",
-        "...aaa...aguoua",
-        "..o...a..aouoga",
-        ".o.....a..aaau.",
-        ".aoooooa..ou...",
-        "agoooaaau.ou...",
-        "agooaaaauou....",
-        "agooaaaaauu....",
-        "agoaaaaaau.....",
-        "agoaaaaaau.....",
-        ".aaaaaaau......",
-        "..uuuuuu.......",
-    )
-    for dy, row in enumerate(rows):
-        for dx, letter in enumerate(row):
-            if letter != ".":
-                picture[2 + dy][dx] = COPPER[letter]
-    return items.outlined(picture, "ink")
+    """A copper can of the old kind: a tall round body with bands, a handle arching over the
+    top, and a long spout from its foot to a big round rose, its face pricked with holes."""
+    picture = blank(ICON)
+    arch = limb([(4, 15), (6, 7), (12, 4), (18, 8), (19, 13)], [1.4] * 5)
+    shade(picture, arch, COPPER[:3], radius=1)
+    spout = capsule((18, 25), (26, 10), 1.7, 1.1)
+    shade(picture, spout, COPPER[:3], radius=1)
+    body = ellipse(11.5, 20, 8.5, 9.5)
+    shade(picture, body, COPPER, radius=4)
+    for y in (14, 26):
+        line(picture, 4, y, 19, y, "ochre_dark")
+    paint(picture, ellipse(11.5, 11.5, 4, 1.3), "umber")
+    rose = ellipse(27, 7.5, 3.8, 4.8, angle=-35)
+    shade(picture, rose, COPPER[1:], radius=1)
+    dots(picture, [(26, 6), (28, 7), (27, 9), (26, 8), (28, 5)], "umber")
+    return picture
+
+
+ICONS = {
+    "hoe": hoe,
+    "axe": axe,
+    "pickaxe": pickaxe,
+    "watering_can": watering_can,
+    "scythe": scythe,
+    "shovel": shovel,
+    "hammer": hammer,
+}
 
 
 def icons():
-    """The 16x16 icons by item id."""
-    return {
-        "hoe": hoe(),
-        "axe": axe(),
-        "pickaxe": pickaxe(),
-        "watering_can": watering_can(),
-        "scythe": scythe(),
-        "shovel": shovel(),
-        "hammer": hammer(),
-    }
+    """The bodies of the tools' icons, by item id."""
+    return {item: draw() for item, draw in ICONS.items()}

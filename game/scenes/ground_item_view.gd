@@ -1,13 +1,17 @@
 class_name GroundItemView
 extends Node
-## Draws the items lying on the ground of a World: a small icon each, standing among the
-## world's objects (see WorldView `entities`) so it sorts with them. Positions are rounded to
-## whole art pixels, so the sprites stay put on the world as the camera moves. Piles a harvest
-## drops hop out of their source (see ItemHop); the state has them where they land at once, so
-## a pile that is pulled towards the player or collected during its hop just ends the hop.
+## Draws the items lying on the ground of a World: a small picture each on a contact shadow,
+## standing among the world's objects (see WorldView `entities`) so it sorts with them.
+## Positions are rounded to whole art pixels, so the sprites stay put on the world as the camera
+## moves. Piles a harvest drops hop out of their source (see ItemHop); the state has them where
+## they land at once, so a pile that is pulled towards the player or collected during its hop
+## just ends the hop.
 
-## From the sprite's position (the pile's spot on the ground) to its top left corner.
-const SPRITE_OFFSET := Vector2(-4, -7) * TerrainTileset.ART_16_SCALE
+## From the sprite's position (the pile's spot on the ground) to the top left corner of its
+## 16x16 picture.
+const SPRITE_OFFSET := Vector2(-8, -14)
+## The contact shadow under a pile (see Animal `draw_contact_shadow`), in world pixels.
+const SHADOW_HALF_WIDTH := 6
 ## Between the hops of the piles of one drop.
 const STAGGER_SECONDS := 0.05
 
@@ -57,6 +61,12 @@ func _add_sprite(ground_item: GroundItem) -> void:
 	sprite.centered = false
 	sprite.offset = SPRITE_OFFSET
 	sprite.position = _pixel_position(ground_item)
+	# The sprite's position stays on the ground while it hops (the lift is in its offset), so
+	# the shadow under it stays there too.
+	var shadow := Node2D.new()
+	shadow.show_behind_parent = true
+	shadow.draw.connect(Animal.draw_contact_shadow.bind(shadow, SHADOW_HALF_WIDTH))
+	sprite.add_child(shadow)
 	_entities.add_child(sprite)
 	_sprites[ground_item] = sprite
 

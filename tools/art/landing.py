@@ -12,8 +12,7 @@ everywhere.
 import math
 
 import items
-from canvas import OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, TILE, blank, outline
-from palette import darkest_of
+from canvas import OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, TILE, blank, doubled
 
 # Weathered oak planks: the lit edge of a plank, its face and the joint.
 PLANKS = ("bare_light", "bare", "mud_dark")
@@ -255,28 +254,24 @@ def eel_traps_row():
 
 
 def _icon(picture):
-    """An item icon of a picture: halved if it is wider than an icon, its bottom rows if it is
-    taller, without its contact shadow, in the middle of 16x16 px and outlined."""
-    if len(picture[0]) > TILE:
-        size = len(picture[0])
-        square = blank(size)
-        top = (size - len(picture)) // 2
-        for y, row in enumerate(picture):
-            square[top + y] = list(row)
-        picture = items.small(square)
-    picture = [row for row in picture if any(name not in (None, "shadow") for name in row)][-(TILE - 2) :]
-    icon = blank()
-    top = (TILE - len(picture)) // 2
-    left = (TILE - len(picture[0])) // 2
+    """The body of an item's icon of a picture: without its contact shadow, its bottom rows if
+    it is taller than an icon, in the middle of it. The picture is still drawn at 16 px per
+    tile, so one as wide as a tile is doubled; a wider one is shown as it is."""
+    picture = [[None if name == "shadow" else name for name in row] for row in picture]
+    if len(picture[0]) <= TILE:
+        picture = doubled(picture)
+    picture = [row for row in picture if any(row)][-(items.ICON - 2) :]
+    body = blank(items.ICON)
+    top = (items.ICON - len(picture)) // 2
+    left = (items.ICON - len(picture[0])) // 2
     for y, row in enumerate(picture):
         for x, name in enumerate(row):
-            if name not in (None, "shadow"):
-                icon[top + y][left + x] = name
-    return outline(icon, darkest_of)
+            body[top + y][left + x] = name
+    return body
 
 
 def icons():
-    """The icons of the landing's items, by item id."""
+    """The bodies of the icons of the landing's items, by item id."""
     return {
         "jetty": _icon(jetty(EAST | WEST)),
         "rowing_boat": _icon(rowing_boat()),

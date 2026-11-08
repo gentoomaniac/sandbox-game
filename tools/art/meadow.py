@@ -11,7 +11,8 @@ and to dry stalks in winter.
 import random
 
 import items
-from canvas import GAME_TILE, blank, rect
+from canvas import GAME_TILE, blank
+from items import ICON
 from trees import BOTTOM, CENTRE, blade, cell, dense_foot, ground_shadow
 
 TALL_GRASS_SEEDS = (211, 212, 213)
@@ -93,52 +94,31 @@ def clay_hint():
 
 
 def hay():
-    """A golden sheaf: stalks fanning out from a red band, ears spread on top, lit from the
-    left."""
-    picture = blank()
-    band = 10
-    # The sheaf's shape in the shade colour, so gaps between the stalks read as depth.
-    for y in range(2, 15):
-        half = 1.8 + (band - y) * 0.55 if y < band else 1.8 + (y - band) * 0.4
-        for x in range(16):
-            if abs(x + 0.5 - 8) <= half:
-                picture[y][x] = "ochre_dark"
-    for stalk in range(-3, 4):
-        colour = "gold" if stalk < 0 else "straw" if stalk < 2 else "ochre"
-        items.line(picture, round(8 + stalk * 0.5), 14, round(8 + stalk * 1.8), 3, colour)
-        # The ear: a seed head leaning out at the top.
-        x = round(8 + stalk * 2)
-        picture[2][x] = picture[1][x + (stalk > 0) - (stalk < 0)] = "gold" if stalk < 1 else "straw"
-    rect(picture, 5, band - 1, 10, band, "rust")
-    rect(picture, 5, band - 1, 7, band - 1, "red_light")
-    rect(picture, 9, band, 10, band, "rust_dark")
-    return items.outlined(picture, "mud_dark")
+    """A golden sheaf of hay: stalks fanning out above and below a red band, the seed heads
+    spread on top, lit from the left."""
+    picture = blank(ICON)
+    band = 19
+    for stalk in range(-6, 7):
+        colour = "gold" if stalk < -2 else "straw" if stalk < 3 else "ochre"
+        top = (round(16 + stalk * 2.2), 3 + abs(stalk) // 2)
+        foot = (round(16 + stalk * 0.9), 29)
+        items.line(picture, *top, round(16 + stalk * 0.6), band, colour)
+        items.line(picture, round(16 + stalk * 0.6), band, *foot, colour if stalk % 2 else "ochre_dark")
+        items.dots(picture, [(top[0], top[1] - 1), (top[0] + (stalk > 0) - (stalk < 0), top[1] - 2)], "gold" if stalk < 1 else "straw")
+    items.shade(picture, items.box(9, band - 2, 23, band + 1), ("rust_dark", "rust", "red_light"), radius=1)
+    return picture
 
 
 def clay():
     """A smooth lump of reddish-grey clay with a thumb dent and a wet highlight."""
-    rows = [
-        "................",
-        "................",
-        "................",
-        "......hhll......",
-        "....hhllllll....",
-        "...hlllddlllb...",
-        "..hlllldbllllb..",
-        "..hlllllllllbb..",
-        ".hllllllllllbbb.",
-        ".llllllllllbbbs.",
-        ".lllllllbbbbbss.",
-        "..llbbbbbbbbss..",
-        "...ssbbbbbsss...",
-        ".....ssssss.....",
-        "................",
-        "................",
-    ]
-    keys = {"h": "bare_light", "l": "soil_light", "d": "soil_mid", "b": "soil_mid", "s": "rust_dark"}
-    return items.outlined(items.from_rows(rows, keys), "soil_dark")
+    picture = blank(ICON)
+    lump = items.ellipse(16, 18, 13, 9) | items.ellipse(13, 13, 8, 6)
+    items.shade(picture, lump, ("rust_dark", "soil_mid", "soil_light", "bare_light"), radius=5)
+    items.shade(picture, items.ellipse(18, 14, 4, 2.5), ("soil", "soil_mid", "soil_light"), radius=1)
+    items.dots(picture, [(9, 12), (10, 11), (11, 11)], "snow_light")
+    return picture
 
 
 def icons():
-    """The 16x16 icons by item id."""
+    """The bodies of the hay's and the clay's icons, by item id."""
     return {"hay": hay(), "clay": clay()}

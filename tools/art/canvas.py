@@ -38,6 +38,12 @@ def copy(picture):
     return [row[:] for row in picture]
 
 
+def doubled(picture):
+    """A picture drawn at TILE scaled up to GAME_TILE, pixel for pixel."""
+    factor = GAME_TILE // TILE
+    return [[colour for colour in row for _ in range(factor)] for row in picture for _ in range(factor)]
+
+
 def rect(picture, x0, y0, x1, y1, colour):
     """Fills x0..x1 and y0..y1, both ends included, clipped to the picture."""
     for y in range(max(0, y0), min(len(picture) - 1, y1) + 1):

@@ -15,7 +15,7 @@ drawn at 16 px per tile.
 import math
 import random
 
-import crafts
+import items
 from buildings import OAK, RED_BRICKS, SHADED, brick_wall, door, eaves_shadow, fieldstone_base, glass, ground_shadow, lime_wall
 from canvas import GAME_TILE, blank, outline_edge, rect
 
@@ -358,8 +358,8 @@ def graves():
 
 
 def icons():
-    """The icon of the grave marker, the item that places a grave: the oak cross."""
-    return {"grave_marker": crafts.icon_of(oak_cross())}
+    """The body of the icon of the grave marker, the item that places a grave: the oak cross."""
+    return {"grave_marker": items.icon_of(oak_cross())}
 
 
 # How to draw each building, by its id in data/buildings.cfg (generate.py adds them to those of

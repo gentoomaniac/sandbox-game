@@ -9,8 +9,8 @@ in colour; the meals in a bowl steam a little.
 """
 
 import chest
-from canvas import TILE, blank, outline_edge, rect
-from items import from_rows, outlined, pixel
+from canvas import blank, outline_edge, rect
+from items import ICON, LINEN, OAK, box, capsule, dots, ellipse, from_rows, grain, icon_of, line, paint, pixel, polygon, shade
 
 # The workbench: a thick beech top on four legs with a stretcher, a vice screw at its left end
 # and a saw lying on it.
@@ -39,53 +39,33 @@ WORKBENCH_KEYS = {
     "S": "soil_mid",
 }
 
-# A wooden bowl seen from the side and a little above; letters "a" and "b" are its contents.
-BOWL_ROWS = (
-    "................",
-    "................",
-    "................",
-    "................",
-    "................",
-    "................",
-    "....aabababa....",
-    "..aababbabbaba..",
-    ".lmmmmmmmmmmmmd.",
-    ".lmmmmmmmmmmmdd.",
-    "..lmmmmmmmmmdd..",
-    "...lmmmmmmmdd...",
-    "....llmmmmdd....",
-    "......dddd......",
-    "................",
-    "................",
-)
-BOWL_KEYS = {"l": "soil_light", "m": "soil_mid", "d": "soil"}
-# The wisps of steam over a hot meal.
-STEAM = ((6, 2), (7, 3), (6, 4), (9, 1), (10, 2), (9, 3))
-
-
-def bowl(food, bits):
-    """A steaming wooden bowl of a meal: `food` is the colour of the broth, `bits` that of what
-    floats in it."""
-    picture = outlined(from_rows(BOWL_ROWS, BOWL_KEYS | {"a": food, "b": bits}))
-    for x, y in STEAM:
-        pixel(picture, x, y, "stone_light")
+def bowl(broth, bits):
+    """A wooden bowl of a meal from the side and a little above: `broth` is its ramp, dark to
+    light, `bits` the colours of what floats in it."""
+    picture = blank(ICON)
+    wood = ellipse(16, 18, 14, 10) & ~box(0, 0, ICON - 1, 16)
+    shade(picture, wood, OAK, radius=4)
+    grain(picture, wood & ~box(0, 0, ICON - 1, 20), "soil", (23, 26))
+    paint(picture, ellipse(16, 16, 14, 5), "soil_light")
+    shade(picture, ellipse(16, 16.5, 12, 3.8), broth, radius=2)
+    for index, (x, y) in enumerate(((9, 16), (13, 15), (18, 17), (22, 15), (15, 18), (11, 18), (20, 14))):
+        dots(picture, [(x, y), (x + 1, y)], bits[index % len(bits)])
+    rect(picture, 11, 28, 21, 29, "soil")
     return picture
 
 
 def roast_turnip():
-    """A turnip roasted golden in the embers, its leaves cut off, with dark marks of the fire."""
-    picture = blank()
-    rect(picture, 7, 3, 8, 4, "umber")
-    rect(picture, 4, 5, 11, 6, "rust")
-    rect(picture, 3, 6, 12, 8, "ochre")
-    rect(picture, 4, 9, 11, 10, "ochre")
-    rect(picture, 5, 11, 10, 11, "ochre")
-    rect(picture, 7, 12, 8, 13, "ochre_dark")
-    rect(picture, 9, 8, 12, 9, "ochre_dark")
-    rect(picture, 10, 10, 11, 10, "ochre_dark")
-    for x, y in ((5, 7), (9, 6), (7, 9), (11, 8)):
-        pixel(picture, x, y, "umber")
-    return outlined(picture)
+    """A turnip roasted golden brown in the embers, its leaves burnt off, dark marks of the fire
+    on it."""
+    picture = blank(ICON)
+    body = ellipse(16, 18, 11, 9)
+    shade(picture, body, ("ochre_dark", "ochre", "leaf_orange"), radius=4)
+    shade(picture, body & ellipse(16, 11, 13, 6), ("rust_dark", "rust", "flame"), radius=2)
+    rect(picture, 15, 6, 17, 9, "umber")
+    line(picture, 16, 27, 17, 30, "ochre_dark")
+    for x, y in ((10, 17), (19, 13), (14, 22), (22, 19), (12, 13)):
+        dots(picture, [(x, y), (x + 1, y)], "umber")
+    return picture
 
 
 def workbench(is_standing=True):
@@ -115,14 +95,17 @@ def carved_chest(is_standing=True):
 
 
 def planks():
-    """Three sawn boards, stacked, their ends showing on the right."""
-    picture = blank()
-    for top in (3, 7, 11):
-        rect(picture, 1, top, 13, top + 2, "sand")
-        rect(picture, 1, top, 13, top, "sand_light")
-        rect(picture, 14, top, 14, top + 2, "soil_light")
-        pixel(picture, 4 + top % 5, top + 1, "straw")
-    return outlined(picture, "soil_dark")
+    """Three sawn boards stacked, their ends to the front right, the grain along them."""
+    picture = blank(ICON)
+    for top in (19, 12, 5):
+        face = polygon([(2, top + 4), (22, top + 4), (22, top + 8), (2, top + 8)])
+        shade(picture, face, ("sand", "sand_light", "lime"), radius=1)
+        grain(picture, face, "sand", (top + 6,), seed=top)
+        end = polygon([(22, top + 4), (29, top), (29, top + 4), (22, top + 8)])
+        shade(picture, end, ("soil_mid", "soil_light", "sand"), radius=1)
+        top_face = polygon([(2, top + 4), (9, top), (29, top), (22, top + 4)])
+        shade(picture, top_face, ("sand_light", "lime", "snow_light"), radius=1)
+    return picture
 
 
 KILN_WIDTH = 16
@@ -187,39 +170,41 @@ def oven(is_standing=True):
 
 def flour():
     """A small linen sack of flour, open at the top, with flour spilt in front."""
-    picture = blank()
-    rect(picture, 4, 5, 11, 13, "lime")
-    rect(picture, 3, 8, 12, 12, "lime")
-    rect(picture, 10, 6, 12, 13, "stone_light")
-    rect(picture, 5, 3, 10, 4, "cream")
-    rect(picture, 6, 3, 9, 3, "snow_light")
-    rect(picture, 4, 14, 7, 14, "cream")
-    pixel(picture, 9, 14, "cream")
-    return outlined(picture, "stone_dark")
+    picture = blank(ICON)
+    body = ellipse(16, 19, 10, 9) | box(6, 19, 26, 27)
+    shade(picture, body, LINEN, radius=4)
+    paint(picture, ellipse(16, 10, 8, 3), "lime")
+    paint(picture, ellipse(16, 10.5, 6, 2), "snow_light")
+    for x, y in ((9, 15), (12, 23), (22, 21)):
+        line(picture, x, y, x + 2, y - 3, "snow_shadow")
+    shade(picture, ellipse(9, 29, 5, 1.6) | ellipse(22, 29.5, 3, 1.2), LINEN, radius=1)
+    return picture
 
 
 def bread():
-    """A round rye loaf with cuts across its crust."""
-    picture = blank()
-    rect(picture, 4, 5, 11, 12, "ochre_dark")
-    rect(picture, 2, 7, 13, 11, "ochre_dark")
-    rect(picture, 3, 6, 12, 7, "ochre")
-    rect(picture, 3, 11, 12, 12, "umber")
-    for x in (5, 8, 11):
-        rect(picture, x - 1, 7, x, 8, "sand_light")
-    return outlined(picture, "soil_dark")
+    """A round rye loaf with a floured crust and cuts across it."""
+    picture = blank(ICON)
+    loaf = ellipse(16, 18, 14, 10)
+    shade(picture, loaf, ("umber", "ochre_dark", "ochre"), radius=5, top_light=0.1)
+    for x in (9, 15, 21):
+        line(picture, x, 12, x + 4, 18, "sand_light")
+        line(picture, x + 1, 12, x + 5, 18, "umber")
+    dots(picture, [(8, 20), (13, 22), (24, 15), (19, 23), (6, 15)], "sand_light")
+    return picture
 
 
 def berry_tart():
-    """A round tart in its pastry, full of berries."""
-    picture = blank()
-    rect(picture, 2, 7, 13, 11, "ochre")
-    rect(picture, 3, 6, 12, 6, "ochre")
-    rect(picture, 3, 11, 12, 12, "ochre_dark")
-    rect(picture, 4, 7, 11, 9, "heather_dark")
-    for x, y in ((5, 7), (8, 8), (10, 7), (6, 9)):
-        pixel(picture, x, y, "petal")
-    return outlined(picture, "soil_dark")
+    """A round tart in its pastry crust, full of berries."""
+    picture = blank(ICON)
+    shade(picture, ellipse(16, 19, 14, 8), ("ochre_dark", "ochre", "gold"), radius=3)
+    shade(picture, ellipse(16, 17.5, 11, 5), ("heather_dark", "heather", "petal"), radius=2)
+    for x, y in ((9, 17), (13, 15), (18, 16), (22, 18), (15, 19), (11, 19), (20, 14)):
+        shade(picture, ellipse(x, y, 1.8, 1.6), ("heather_dark", "heather", "petal"), radius=1)
+        dots(picture, [(x - 1, y - 1)], "cream")
+    rect(picture, 4, 22, 28, 22, "ochre")
+    for x in range(5, 28, 3):
+        dots(picture, [(x, 24)], "umber")
+    return picture
 
 
 def cupboard(is_standing=True):
@@ -250,59 +235,46 @@ def cupboard(is_standing=True):
 
 
 def feast_cake():
-    """A tall round cake, iced, with strawberries and berries on top."""
-    picture = blank()
-    rect(picture, 3, 6, 12, 13, "ochre")
-    rect(picture, 3, 6, 12, 7, "cream")
-    rect(picture, 3, 9, 12, 9, "red_light")
-    rect(picture, 11, 8, 12, 13, "ochre_dark")
-    rect(picture, 3, 13, 12, 13, "ochre_dark")
-    for x, y, colour in ((4, 5, "red_light"), (7, 4, "red_light"), (10, 5, "red_light"), (6, 5, "heather_dark"), (9, 5, "heather_dark")):
-        pixel(picture, x, y, colour)
-    pixel(picture, 7, 3, "green")
-    return outlined(picture, "soil_dark")
+    """A tall round cake for a feast, iced, with a band of jam, strawberries and berries on
+    top."""
+    picture = blank(ICON)
+    side = ellipse(16, 24, 12, 4) | box(4, 12, 27, 24)
+    shade(picture, side, ("ochre_dark", "ochre", "leaf_orange"), radius=3)
+    rect(picture, 4, 18, 27, 19, "rust")
+    shade(picture, ellipse(16, 12, 12, 4), ("lime", "cream", "snow_light"), radius=2)
+    for x in range(5, 28, 4):
+        rect(picture, x, 14, x + 1, 15 + x % 3, "cream")
+    strawberry, berry = ("rust_dark", "ember", "red_light"), ("heather_dark", "heather", "petal")
+    for x, y, ramp in ((10, 10, strawberry), (16, 8, strawberry), (22, 10, strawberry), (13, 12, berry), (19, 12, berry)):
+        shade(picture, ellipse(x, y, 2.2, 2), ramp, radius=1)
+    dots(picture, [(16, 5), (17, 5)], "green")
+    return picture
 
 
-def bricks(face, top, shade):
-    """Two bricks, one on the other and set back: `face` is their front, `top` the lit top and
-    `shade` the dark end."""
-    picture = blank()
-    for left, bottom in ((4, 8), (2, 13)):
-        rect(picture, left, bottom - 4, left + 10, bottom, face)
-        rect(picture, left, bottom - 4, left + 10, bottom - 4, top)
-        rect(picture, left + 10, bottom - 3, left + 11, bottom, shade)
-    return outlined(picture, "soil_dark")
+def bricks(face, top, end):
+    """Two bricks, one on the other and set back: `face` is their front, `top` their lit top
+    and `end` the dark end, with a few pits in the clay."""
+    picture = blank(ICON)
+    for left, bottom in ((7, 15), (3, 26)):
+        rect(picture, left, bottom - 8, left + 20, bottom, face)
+        rect(picture, left + 2, bottom - 10, left + 22, bottom - 9, top)
+        rect(picture, left + 21, bottom - 8, left + 22, bottom - 1, end)
+        for x, y in ((4, 3), (11, 5), (16, 2), (8, 6)):
+            dots(picture, [(left + x, bottom - 8 + y)], end)
+    return picture
 
 
 def stool():
-    """The stool of its item icon, 10x10: the stool of the 16 px interior (the room's is drawn at
-    32 px in interior.py)."""
-    picture = blank(10, 10)
-    rect(picture, 0, 0, 9, 4, "soil_light")
-    rect(picture, 0, 4, 9, 4, "soil_mid")
-    for x in (1, 7):
-        rect(picture, x, 5, x + 1, 9, "soil")
-    rect(picture, 4, 5, 5, 8, "soil_dark")
-    return outline_edge(picture, "soil_dark", keep_bottom=True)
-
-
-def icon_of(picture):
-    """An item icon: the picture, outlined all round, in the middle of 16x16 px."""
-    icon = blank()
-    top = (TILE - len(picture)) // 2
-    left = (TILE - len(picture[0])) // 2
-    for y, row in enumerate(picture):
-        for x, name in enumerate(row):
-            icon[top + y][left + x] = name
-    return icon
-
-
-def _shrunk(picture):
-    """The icon of a picture taller than one: rows from its middle left out until it fits."""
-    while len(picture) > TILE:
-        middle = len(picture) // 2
-        picture = picture[:middle] + picture[middle + 1 :]
-    return icon_of(picture)
+    """A three-legged milking stool of oak: a round seat lit on its top, the legs splayed."""
+    picture = blank(ICON)
+    for start, end in (((11, 14), (6, 29)), ((21, 14), (26, 29)), ((16, 15), (16, 27))):
+        shade(picture, capsule(start, end, 1.6), OAK, radius=1)
+    seat = ellipse(16, 12, 12, 4.5) | box(4, 12, 27, 15) | ellipse(16, 15, 12, 4.5)
+    shade(picture, seat, OAK, radius=2)
+    top = ellipse(16, 11.5, 11, 3.5)
+    shade(picture, top, ("soil_mid", "soil_light", "sand"), radius=1)
+    grain(picture, top, "soil_mid", (10, 12))
+    return picture
 
 
 def stations():
@@ -311,26 +283,25 @@ def stations():
 
 
 def icons():
-    """The icons of the professions' items, by item id."""
+    """The bodies of the icons of the professions' items, by item id."""
     return {
         "workbench": icon_of(workbench(is_standing=False)),
-        "kiln": _shrunk(kiln(is_standing=False)),
+        "kiln": icon_of(kiln(is_standing=False)),
         "oven": icon_of(oven(is_standing=False)),
         "planks": planks(),
-        "cupboard": _shrunk(cupboard(is_standing=False)),
+        "cupboard": icon_of(cupboard(is_standing=False)),
         # Dried clay, grey-brown, and fired, red.
         "raw_brick": bricks("mud", "sand", "mud_dark"),
         "brick": bricks("rust", "red_light", "rust_dark"),
-        "stool": icon_of(stool()),
+        "stool": stool(),
         "carved_chest": icon_of(carved_chest(is_standing=False)),
         "roast_turnip": roast_turnip(),
         # Cabbage, carrot and onion in a broth.
-        "pottage": bowl("green", "ochre"),
+        "pottage": bowl(("olive", "dry_light", "green_light"), ("ochre", "flame", "cream")),
         # Yellow split peas, thick.
-        "pea_soup": bowl("dry_light", "straw"),
+        "pea_soup": bowl(("reed", "straw", "dry_light"), ("straw", "gold")),
         "flour": flour(),
         "bread": bread(),
         "berry_tart": berry_tart(),
         "feast_cake": feast_cake(),
     }
-

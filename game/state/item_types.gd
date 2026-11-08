@@ -539,12 +539,12 @@ const _OTHER_TYPES := {
 static var TYPES := _with_crop_items(_OTHER_TYPES)  # gdlint: ignore=class-variable-name
 
 
-## The item's 16x16 picture (see tools/art/items.py).
+## The item's 32x32 icon, which the UI shows at half size (see tools/art/items.py).
 static func icon_path(item: StringName) -> String:
 	return ICON_PATH % item
 
 
-## The item's 8x8 picture for when it lies on the ground (see tools/art/items.py).
+## The item's 16x16 picture for when it lies on the ground (see tools/art/items.py).
 static func ground_icon_path(item: StringName) -> String:
 	return GROUND_ICON_PATH % item
 

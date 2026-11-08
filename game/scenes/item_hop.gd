@@ -5,9 +5,9 @@ extends RefCounted
 ## GroundItemView for the drawing. It waits `delay` seconds first (to stagger several piles).
 
 const SECONDS := 0.42
-## How high the arc and the bounce lift the pile, in art pixels.
-const HEIGHT := 7.0 * TerrainTileset.ART_16_SCALE
-const BOUNCE_HEIGHT := 2.0 * TerrainTileset.ART_16_SCALE
+## How high the arc and the bounce lift the pile, in world pixels.
+const HEIGHT := 14.0
+const BOUNCE_HEIGHT := 4.0
 ## The last share of the hop that is the bounce.
 const BOUNCE_SHARE := 0.25
 
