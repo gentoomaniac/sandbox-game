@@ -5,8 +5,10 @@ extends GutTest
 
 ## Nothing listens here, so a request is refused at once.
 const CLOSED_ENDPOINT := "http://127.0.0.1:9/v1"
-## Waiting for the request gives up after this many frames.
-const MAX_FRAMES := 600
+## Waiting for the request gives up after this many milliseconds. Time, not frames: a headless
+## frame takes microseconds, so a busy machine (tests run in parallel) used up any frame count
+## before the client had connected.
+const WAIT_MSEC := 5000
 
 var _server: TCPServer
 var _port := 0
@@ -61,7 +63,8 @@ func _ask_and_answer(ask: Callable, response: String) -> Array:
 ## The whole request the client sent, headers and body, or "" if none came.
 func _received_request() -> String:
 	var received := PackedByteArray()
-	for _frame in MAX_FRAMES:
+	var deadline := Time.get_ticks_msec() + WAIT_MSEC
+	while Time.get_ticks_msec() < deadline:
 		if _peer == null and _server.is_connection_available():
 			_peer = _server.take_connection()
 		if _peer != null:
