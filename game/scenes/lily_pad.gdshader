@@ -5,8 +5,6 @@ shader_type canvas_item;
 // (hashed from where it is). The wind (`drift`, set by AmbientMotion) widens the drift. Set on
 // the decoration tiles of water, in an atlas without padding.
 
-// A tile in art pixels, the 16 px art's.
-const float TILE = 16.0;
 // Art pixels the pads drift to either side and bob up and down, before rounding.
 uniform float drift = 0.6;
 const float BOB = 0.6;
@@ -20,8 +18,9 @@ void vertex() {
 }
 
 void fragment() {
+	float tile = GAME_TILE / art_scale;
 	vec2 texel = floor(UV / TEXTURE_PIXEL_SIZE / art_scale);
-	vec2 local = mod(texel, TILE);
+	vec2 local = mod(texel, tile);
 	float phase = hash(floor(world_position / art_scale) - local) * TAU;
 	vec2 offset = vec2(
 		drift * sin(TIME * 0.15 * TAU + phase),
@@ -29,7 +28,7 @@ void fragment() {
 	);
 	offset = sign(offset) * floor(abs(offset) + 0.5);
 	vec2 source = local - offset;
-	if (any(lessThan(source, vec2(0.0))) || any(greaterThanEqual(source, vec2(TILE)))) {
+	if (any(lessThan(source, vec2(0.0))) || any(greaterThanEqual(source, vec2(tile)))) {
 		COLOR = vec4(0.0);
 	} else {
 		COLOR = texture(TEXTURE, ((texel - offset) * art_scale + 0.5) * TEXTURE_PIXEL_SIZE) * modulate;

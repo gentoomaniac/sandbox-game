@@ -24,8 +24,8 @@ def blank(width=TILE, height=None):
     return [[None] * width for _ in range(height)]
 
 
-def filled(colour):
-    return [[colour] * TILE for _ in range(TILE)]
+def filled(colour, size=TILE):
+    return [[colour] * size for _ in range(size)]
 
 
 def copy(picture):

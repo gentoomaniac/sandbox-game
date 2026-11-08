@@ -9,10 +9,11 @@ extends RefCounted
 ## is kept here.
 ##
 ## Everything moves in whole art pixels, and on a calm day hardly at all. The static functions
-## turn the weather into the shaders' numbers. The pixels here are those of the 16 px art, which
-## the shaders of the plants, the water and the mud work on (see art_scale.gdshaderinc), so their
-## motion keeps to its doubled pixels; those of the fire and the rain's splashes are the world's,
-## as they are drawn at 32 px.
+## turn the weather into the shaders' numbers. The shaders work on the pixels of the art they move
+## (see art_scale.gdshaderinc): the plants' are those of the 16 px art, so their motion keeps to
+## its doubled pixels; the ground's (water, mud, lily pads and the plants of the decoration
+## layer) are the world's, as are the fire's and the rain's splashes, which are drawn at 32 px,
+## but in the classic art (see ArtSet) the ground's are the 16 px art's again.
 
 const OBJECT_SWAY_SHADER := preload("res://game/scenes/object_sway.gdshader")
 const DECORATION_SWAY_SHADER := preload("res://game/scenes/decoration_sway.gdshader")
@@ -120,6 +121,8 @@ var water := _material(WATER_SHADER)
 var mud := _material(MUD_SHADER)
 var splashes := _native_material(RAIN_SPLASH_SHADER)
 var decoration_sway := _material(DECORATION_SWAY_SHADER)
+## The meadow flowers sway like the other decorations, but are still 16 px art in either set.
+var flower_sway := _material(DECORATION_SWAY_SHADER)
 var lily_pads := _material(LILY_PAD_SHADER)
 ## The chance of a splash now (see MAX_SPLASH_CHANCE): 0 when it does not rain.
 var splash_chance := 0.0
@@ -127,13 +130,15 @@ var _object_materials: Dictionary[StringName, ShaderMaterial] = {}
 ## By cell size: crops of the same size bend alike.
 var _crop_materials: Dictionary[Vector2i, ShaderMaterial] = {}
 ## Every material that sways with the wind, and every fire that leans with it.
-var _sway_materials: Array[ShaderMaterial] = [decoration_sway]
+var _sway_materials: Array[ShaderMaterial] = [decoration_sway, flower_sway]
 var _fire_materials: Array[ShaderMaterial] = []
 var _water_drift := Vector2.ZERO
 
 
 func _init() -> void:
 	_set_parameters(decoration_sway, DECORATION_SWAY)
+	_set_parameters(flower_sway, DECORATION_SWAY)
+	_show_ground_art_set()
 	for type: StringName in SWAY_PROFILES:
 		var material := _material(OBJECT_SWAY_SHADER)
 		_set_parameters(material, SWAY_PROFILES[type])
@@ -162,9 +167,11 @@ static func show_flames(material: ShaderMaterial, type: StringName) -> void:
 	material.set_shader_parameter("flames", load(ArtSet.path(FIRE_PROFILES[type]["flames"])))
 
 
-## Shows the flames of the fires outdoors in the chosen art set (see WorldView `show_art_set`).
+## Shows the flames of the fires outdoors and moves the ground in the chosen art set (see
+## WorldView `show_art_set`).
 func show_art_set() -> void:
 	show_flames(_object_materials[WorldObjectTypes.FIREPLACE], WorldObjectTypes.FIREPLACE)
+	_show_ground_art_set()
 
 
 ## The frame of its flame's loop that a fire shows `seconds` into the shaders' clock, for the
@@ -200,7 +207,7 @@ func decoration_material(atlas_cell: Vector2i) -> ShaderMaterial:
 	if atlas_cell.y == TerrainTileset.Layer.WATER:
 		return lily_pads
 	if atlas_cell.y == TerrainTileset.FLOWER_ROW:
-		return decoration_sway
+		return flower_sway
 	var sways: Array = SWAYING_DECORATIONS.get(atlas_cell.y, [])
 	if atlas_cell.x < sways.size() and sways[atlas_cell.x]:
 		return decoration_sway
@@ -272,6 +279,14 @@ static func fire_stretch_for(wind: Vector2) -> float:
 ## `rain` (0 to 1).
 static func splash_chance_for(rain: float) -> float:
 	return MAX_SPLASH_CHANCE * clampf(rain, 0.0, 1.0)
+
+
+## The ground's shaders work on the pixels of its art: the world's, or the 16 px art's in the
+## classic art.
+func _show_ground_art_set() -> void:
+	var art_scale := float(TerrainTileset.ART_16_SCALE) if ArtSet.is_classic else 1.0
+	for material in [water, mud, decoration_sway, lily_pads]:
+		material.set_shader_parameter("art_scale", art_scale)
 
 
 ## A material for a shader of the 16 px art (see art_scale.gdshaderinc).

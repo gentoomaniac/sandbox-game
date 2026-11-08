@@ -1,10 +1,10 @@
 """The ground: the terrain layers of assets/terrain.png and their decorations in
-assets/decorations.png.
+assets/decorations.png, and the wet look of tilled soil in assets/soil_wet.png.
 
-Tiles are drawn as 16x16 grids of palette colour names (None = transparent). Each terrain layer
-has one function that returns its atlas row and its decorations; `LAYERS` lists them bottom to
-top: water, mud, floodplain, wetland, grass, salt marsh, Warft, lush grass, dry grass, trodden grass,
-path, soil. Both atlases are read by game/scenes/terrain_tileset.gd.
+Tiles are drawn at the game's tile, 32x32 grids of palette colour names (None = transparent).
+Each terrain layer has one function that returns its atlas row and its decorations; `LAYERS`
+lists them bottom to top: water, mud, floodplain, wetland, grass, salt marsh, Warft, lush grass,
+dry grass, trodden grass, path, soil. Both atlases are read by game/scenes/terrain_tileset.gd.
 
 assets/terrain.png, per row:
 - EDGE_VARIANTS blocks of 15 columns: the dual-grid edge shapes for masks 0..14 (mask 0
@@ -14,12 +14,20 @@ assets/terrain.png, per row:
 assets/decorations.png, per row: small visual-only sprites (pebbles, tufts, reeds...)
 drawn on top of world tiles of that layer. A row may be empty. Under the layers' rows comes
 one more, the meadow flowers of flowers.py.
+
+The ground is what everything stands on, so it is calm: a base colour with marks in the shades
+next to it, gathered in patches so the turf has quiet stretches and thick ones, and only a few
+light tips. People, animals and crops read on it without an outline. No terrain has an outline
+either; where one layer lies over another, its edge is a rim in its own dark shade.
 """
 
 import math
 import random
 
-from canvas import NEIGHBOURS, TILE, blank, copy, filled
+import numpy as np
+
+import forms
+from canvas import GAME_TILE, NEIGHBOURS, blank, filled
 
 # Dual-grid corner bits, shared with game/scenes/terrain_tileset.gd.
 TL, TR, BL, BR = 1, 2, 4, 8
@@ -29,56 +37,72 @@ EDGE_VARIANTS = 3
 
 
 def sprite(keys, *rows):
-    """A small picture: rows of characters, each mapped to a colour by `keys` ("." is clear)."""
-    return {"keys": keys, "rows": rows}
+    """A small picture from rows of characters, each mapped to a colour by `keys` ("." is clear)."""
+    width = max(len(row) for row in rows)
+    return [[keys[char] if char != "." else None for char in row.ljust(width, ".")] for row in rows]
+
+
+def shaded_sprite(width, height, shapes, ramp, shadow=None):
+    """A small rounded thing (a pebble, a lily pad, a cap) from forms masks, shaded by the light
+    from the top left in `ramp` (dark to light); `shadow`, a colour, is cast a pixel down and
+    right of it onto the ground."""
+    picture = blank(width, height)
+    mask = np.zeros((height, width), bool)
+    for shape in shapes:
+        mask |= shape
+    if shadow:
+        cast = np.zeros_like(mask)
+        cast[1:, 1:] = mask[:-1, :-1]
+        forms.paint(picture, cast & ~mask, shadow)
+    return forms.shade(picture, mask, ramp, radius=2)
+
+
+def size_of(picture):
+    return len(picture[0]), len(picture)
 
 
 def stamp(tile, picture, x, y):
-    """Draws a sprite. It wraps around the tile edges, so textures stay seamless."""
-    for dy, row in enumerate(picture["rows"]):
-        for dx, char in enumerate(row):
-            if char != ".":
-                tile[(y + dy) % TILE][(x + dx) % TILE] = picture["keys"][char]
+    """Draws a picture with its top left at (x, y), wrapping around the tile edges."""
+    for dy, row in enumerate(picture):
+        for dx, colour in enumerate(row):
+            if colour is not None:
+                tile[(y + dy) % GAME_TILE][(x + dx) % GAME_TILE] = colour
 
 
-def sprinkle(tile, rng, pictures, spacing, chance):
-    """Scatters sprites evenly but not in a grid: one chance per spacing x spacing cell,
-    at a random spot inside it. Sprites stay inside the tile, so every variant can have
-    its own scatter and still fit next to any other."""
-    for cell_y in range(0, TILE, spacing):
-        for cell_x in range(0, TILE, spacing):
-            if rng.random() < chance:
-                picture = rng.choice(pictures)
-                width = max(len(row) for row in picture["rows"])
-                height = len(picture["rows"])
-                x = min(cell_x + rng.randrange(spacing), TILE - width)
-                y = min(cell_y + rng.randrange(spacing), TILE - height)
-                stamp(tile, picture, x, y)
+def scatter(tile, rng, pictures, count, where=lambda x, y: True):
+    """Stamps `count` pictures picked from `pictures` at random spots inside the tile, so every
+    variant can have its own scatter and still fit next to any other. `where(x, y)` (the
+    picture's bottom middle) can turn a spot down: a patch where the turf is thick."""
+    for _ in range(count):
+        picture = rng.choice(pictures)
+        width, height = size_of(picture)
+        x = rng.randrange(GAME_TILE - width + 1)
+        y = rng.randrange(GAME_TILE - height + 1)
+        if where(x + width // 2, y + height - 1):
+            stamp(tile, picture, x, y)
 
 
 def details(texture, seed, *pictures):
-    """A full-tile variant: its own scatter of the terrain's texture, plus a few sprites
+    """A full-tile variant: its own scatter of the terrain's texture, plus a few pictures
     inside the tile, clear of the border. Nothing crosses the border, so any variant fits
     next to any other."""
     rng = random.Random(seed)
     tile = texture(seed)
     for picture in pictures:
-        width = max(len(row) for row in picture["rows"])
-        height = len(picture["rows"])
-        stamp(tile, picture, rng.randrange(1, TILE - width), rng.randrange(1, TILE - height))
+        width, height = size_of(picture)
+        stamp(tile, picture, rng.randrange(2, GAME_TILE - width - 1), rng.randrange(2, GAME_TILE - height - 1))
     return tile
 
 
 def decoration(seed, *pictures):
-    """A decoration: sprites on a clear tile, inside its middle so they stay on the
+    """A decoration: pictures on a clear tile, inside its middle so they stay on the
     terrain they belong to."""
-    return details(lambda seed: blank(), seed, *pictures)
+    return details(lambda seed: blank(GAME_TILE), seed, *pictures)
 
 
 def periodic_noise(seed, waves):
-    """A smooth noise field that repeats every TILE pixels on both axes, so it lines up
-    across neighbouring tiles. `waves` are (frequency, weight) pairs; result is about -1..1.
-    """
+    """A smooth noise field that repeats every tile on both axes, so it lines up across
+    neighbouring tiles. `waves` are (waves per tile, weight) pairs; result is about -1..1."""
     rng = random.Random(seed)
     terms = []
     for frequency, weight in waves:
@@ -91,8 +115,34 @@ def periodic_noise(seed, waves):
     total = sum(weight for *_, weight in terms)
 
     def noise(x, y):
-        value = sum(w * math.sin(math.tau * (fx * x + fy * y) / TILE + p) for fx, fy, p, w in terms)
+        value = sum(w * math.sin(math.tau * (fx * x + fy * y) / GAME_TILE + p) for fx, fy, p, w in terms)
         return value / total
+
+    return noise
+
+
+def patch_noise(seed, cell):
+    """A smooth noise of blobs about `cell` pixels across, about -1..1, that repeats every tile:
+    patches of bare earth or salt turf. Unlike `periodic_noise` it has no direction, so its
+    patches do not line up in stripes."""
+    rng = random.Random(seed)
+    count = GAME_TILE // cell
+    values = [[rng.uniform(-1, 1) for _ in range(count)] for _ in range(count)]
+
+    def smooth(t):
+        return t * t * (3 - 2 * t)
+
+    def noise(x, y):
+        fx, fy = (x % GAME_TILE) / cell, (y % GAME_TILE) / cell
+        ix, iy = int(fx), int(fy)
+        tx, ty = smooth(fx - ix), smooth(fy - iy)
+
+        def value(i, j):
+            return values[j % count][i % count]
+
+        top = value(ix, iy) * (1 - tx) + value(ix + 1, iy) * tx
+        bottom = value(ix, iy + 1) * (1 - tx) + value(ix + 1, iy + 1) * tx
+        return top * (1 - ty) + bottom * ty
 
     return noise
 
@@ -122,8 +172,8 @@ def coverage(mask, shared, own, roughness):
     corners = [1.0 if mask & bit else 0.0 for bit in (TL, TR, BL, BR)]
 
     def covered(x, y):
-        u = (x + 0.5) / TILE
-        v = (y + 0.5) / TILE
+        u = (x + 0.5) / GAME_TILE
+        v = (y + 0.5) / GAME_TILE
         top = corners[0] * (1 - u) + corners[1] * u
         bottom = corners[2] * (1 - u) + corners[3] * u
         value = top * (1 - v) + bottom * v
@@ -156,19 +206,20 @@ def edge_tiles(texture, shapes, seed, decorate):
         for mask, covered in enumerate(masks):
             tile_seed = seed * 1000 + variant * 100 + mask
             full = texture(tile_seed)
-            tile = [[full[y][x] if covered(x, y) else None for x in range(TILE)] for y in range(TILE)]
+            tile = [[full[y][x] if covered(x, y) else None for x in range(GAME_TILE)] for y in range(GAME_TILE)]
             if mask:
                 decorate(tile, covered, random.Random(tile_seed))
             tiles.append(tile)
     return tiles
 
 
-def blades(tile, covered, rng, colour, chance, direction, lengths):
+def blades(tile, covered, rng, colours, chance, direction, lengths):
     """Blades of grass sticking out of an edge, in `direction` (1 down, -1 up): uneven
-    lengths, irregular spacing and the odd gap, so the edge does not look combed."""
+    lengths, irregular spacing and the odd gap, so the edge does not look combed. A blade is
+    drawn in `colours` from its root out, the last colour to its tip."""
     skip = 0
-    for y in range(TILE):
-        for x in range(TILE):
+    for y in range(GAME_TILE):
+        for x in range(GAME_TILE):
             if covered(x, y) or not covered(x, y - direction):
                 continue
             if skip:
@@ -178,34 +229,106 @@ def blades(tile, covered, rng, colour, chance, direction, lengths):
                 continue
             for step in range(rng.choice(lengths)):
                 ty = y + step * direction
-                if not 0 <= ty < TILE or covered(x, ty):
+                if not 0 <= ty < GAME_TILE or covered(x, ty):
                     break
-                tile[ty][x] = colour
-            skip = rng.choice((0, 1, 1, 2, 4))
+                tile[ty][x] = colours[min(step, len(colours) - 1)]
+            skip = rng.choice((0, 1, 1, 2, 3, 5))
 
 
-# Terrains, bottom layer first. Each returns (atlas row, decorations). The atlas row is
-# the edge tiles followed by the full variants. Every terrain has a texture function;
-# each full variant is its own scatter of it plus details, edge tiles are cut from one.
+def fade_out(tile, covered, rng, depth):
+    """Thins a layer drawn over grass out towards its edge in a dither, `depth` pixels deep, so
+    its colour shifts softly into the grass beneath."""
+    for y in range(GAME_TILE):
+        for x in range(GAME_TILE):
+            if covered(x, y):
+                distance = edge_distance(covered, x, y, depth)
+                if distance == 1 or (distance < depth and rng.random() < 1 - distance / depth):
+                    tile[y][x] = None
+
+
+# Grass tufts: blades fanning up from a shaded root to lit tips (from the 32 px mockup).
+# k root, d blade, l lit blade, b the brightest tip.
+_TUFT_ROWS = (
+    ("l...l", ".d.l.", ".d.d.", "..k.."),
+    ("..b..", "l.l..", "d.l.l", ".dkd."),
+    ("l..", ".l.", "dd.", "k.."),
+    ("..l", "l.d", "dd.", ".k."),
+    (".l.l.", ".l.d.", "d.ld.", "dkdk."),
+    ("l.", "d.", ".k"),
+)
+
+
+def tufts(ramp):
+    """The tufts in a ramp of (root, blade, lit blade, brightest tip)."""
+    deep, dark, light, bright = ramp
+    keys = {"k": deep, "d": dark, "l": light, "b": bright}
+    return [sprite(keys, *rows) for rows in _TUFT_ROWS]
+
+
+def big_tuft(ramp):
+    """A thick tuft for a decoration: a fan of blades, longer in the middle."""
+    deep, dark, light, bright = ramp
+    return sprite(
+        {"k": deep, "d": dark, "l": light, "b": bright},
+        "...b.....",
+        "l..l..b..",
+        ".l.l.l..l",
+        ".d.ld.l.d",
+        "..dld.dd.",
+        "..ddkdd..",
+        "...kkk...",
+    )
+
+
+def grass_texture(base, ramp, tuft_count, root_count):
+    """A grass texture: the base colour, single dark blade roots, and tufts gathered where a
+    slow noise is high, so the turf has calm stretches and thick ones, never an even sprinkle."""
+    shapes = tufts(ramp)
+    dark = ramp[1]
+
+    def texture(seed):
+        rng = random.Random(seed)
+        tile = filled(base, GAME_TILE)
+        gather = patch_noise(seed, 8)
+        for _ in range(root_count):
+            x, y = rng.randrange(GAME_TILE), rng.randrange(GAME_TILE - 1)
+            tile[y][x] = dark
+            if rng.random() < 0.4:
+                tile[y + 1][x] = dark
+        scatter(tile, rng, shapes, tuft_count, lambda x, y: rng.random() < 0.2 + 0.8 * max(0.0, gather(x, y)))
+        return tile
+
+    return texture
+
+
+# Water ----------------------------------------------------------------------------------------
+
+
+def lily_pad(rx, ry, flower=False):
+    """A floating leaf with its notch, lit on the top left, and a white flower if asked."""
+    width, height = 2 * rx + 2, 2 * ry + 2
+    pad = forms.ellipse(width, height, rx + 0.5, ry + 0.5, rx, ry)
+    xs, ys = forms.grid(width, height)
+    notch = (xs > rx + 0.5) & (np.abs(ys - (ry + 0.5) - (xs - rx - 0.5) * 0.3) < 0.9)
+    picture = shaded_sprite(width, height, [pad & ~notch], ("green_dark", "green", "green_light"), shadow="water_deep")
+    if flower:
+        for x, y, colour in ((rx - 1, ry - 1, "cream"), (rx, ry - 2, "cream"), (rx + 1, ry - 1, "petal"),
+                             (rx, ry - 1, "gold"), (rx - 1, ry, "petal"), (rx + 1, ry, "cream")):
+            picture[y][x] = colour
+    return picture
 
 
 def water():
-    ripple = sprite({"d": "water_deep"}, "dddd")
-    short_ripple = sprite({"d": "water_deep"}, "dd")
-    glint = sprite({"l": "water_light"}, "ll")
-    crest = sprite({"l": "water_light", "f": "foam"}, ".lf", "l..")
-    lily = sprite({"g": "green_dark", "l": "green_light"}, ".ggg.", "gglgg", "gg.gg", ".ggg.")
-    lily_flower = sprite(
-        {"g": "green_dark", "l": "green_light", "p": "petal", "c": "cream"},
-        ".ggg.",
-        "gpcpg",
-        "gglgg",
-        ".ggg.",
-    )
+    """Calm water: the shader ripples its plain pixels (game/scenes/water.gdshader), so the tiles
+    have only a few marks that stay, all in the variants, so they never line up in a grid."""
+    ripple = sprite({"d": "water_deep", "l": "water_light"}, "..lll..", "ddddddd")
+    short_ripple = sprite({"d": "water_deep"}, "dddd")
+    glint = sprite({"l": "water_light"}, "lll")
+    crest = sprite({"l": "water_light", "f": "foam", "d": "water_deep"}, "..lf", "lll.", ".dd.")
+    eddy = sprite({"d": "water_deep", "l": "water_light"}, ".ddd..", "d...l.", ".lll..")
 
-    # Flat water: its few marks all sit in the variants, so they never line up in a grid.
     def texture(seed):
-        return filled("water")
+        return filled("water", GAME_TILE)
 
     fulls = [
         details(texture, 11),
@@ -214,72 +337,86 @@ def water():
         details(texture, 14, crest),
         details(texture, 15, ripple, short_ripple),
         details(texture, 16, glint),
-        details(texture, 17),
+        details(texture, 17, eddy),
         details(texture, 18, short_ripple),
     ]
-    decorations = [decoration(19, lily), decoration(20, lily, lily), decoration(21, lily_flower)]
+    decorations = [
+        decoration(19, lily_pad(5, 3)),
+        decoration(20, lily_pad(4, 3), lily_pad(3, 2)),
+        decoration(21, lily_pad(5, 3, flower=True)),
+    ]
     # Water is the bottom layer and always full, so it needs no edge shapes.
-    return [blank()] * (EDGE_VARIANTS * FULL) + fulls, decorations
+    return [blank(GAME_TILE)] * (EDGE_VARIANTS * FULL) + fulls, decorations
 
+
+# The tidal mud ----------------------------------------------------------------------------------
 
 # The ripple marks of the tidal mud follow one wave for every mud tile, so they run on in step
-# across tile borders: a trough every 4 rows, bent by a wave that repeats across the tile.
-_RIPPLE_BEND = periodic_noise(51, [(1, 1.0), (2, 0.4)])
+# across tile borders: a trough every 6 rows, bent by a wave that repeats across the tile.
+_RIPPLE_BEND = periodic_noise(51, [(1, 1.0), (2, 0.6), (3, 0.3)])
+_RIPPLE_SPACING = 6
 
 
-def _is_trough(x, y):
-    """Whether a pixel of the mud lies in the trough of a ripple."""
-    return (y + round(1.6 * _RIPPLE_BEND(x, y))) % 4 == 2
+def _trough_row(x, ripple):
+    """The row of a pixel column of the mud in which the trough of a ripple (0 at the top of the
+    tile) lies."""
+    top = ripple * _RIPPLE_SPACING + 3
+    return (top - round(4 * _RIPPLE_BEND(x, top))) % GAME_TILE
 
 
 def mud():
     """The tidal flats (Watt): wet grey-brown mud with ripple marks, the casts of lugworms,
     shells, a mussel bed and the water left in hollows at low tide. The tideways are the water
     beneath it; at their banks the mud is dark and soaked, with a glint on the water. All of
-    it lies in the tiles, none in decorations."""
-    cast = sprite({"l": "bare_light", "s": "sand", "d": "mud_dark"}, "ls.", ".sl", "d..")
-    coil = sprite({"l": "bare_light", "s": "sand"}, ".ls", "sl.")
-    hole = sprite({"d": "mud_dark"}, "d")
-    damp = sprite({"m": "mud"}, "mm")
-    wet = sprite({"m": "mud"}, "m", "m")
-    glint = sprite({"l": "water_light"}, "l")
+    it lies in the tiles, none in decorations. The dark troughs are where the tide's water
+    stands first (game/scenes/mud.gdshader)."""
+    cast = sprite({"l": "bare_light", "s": "sand", "d": "mud_dark"}, ".ls..", "l.sl.", ".s.ls", "..d..")
+    coil = sprite({"l": "bare_light", "s": "sand"}, ".ls", "s.l", ".s.")
+    hole = sprite({"d": "mud_dark", "m": "mud"}, "md")
     shells = [
-        sprite({"c": "cream", "s": "sand_light"}, "cs"),
-        sprite({"c": "sand_light", "s": "stone_light"}, "c", "s"),
-        sprite({"c": "cream"}, "c.c"),
+        sprite({"c": "cream", "s": "sand_light", "d": "mud_dark"}, ".cs", "csd", ".d."),
+        sprite({"c": "sand_light", "s": "stone_light", "d": "mud_dark"}, "cs", "sd"),
+        sprite({"c": "cream", "d": "mud_dark"}, "c..c", "d..d"),
     ]
-    puddle = sprite(
-        {"m": "mud_dark", "w": "water", "l": "water_light"},
-        ".mmmm.",
-        "mwwlwm",
-        ".mmmm.",
+    puddle = shaded_sprite(
+        12, 6, [forms.ellipse(12, 6, 6, 3, 5.5, 2.5)], ("water", "water", "water_light"), shadow=None
     )
+    for x in range(12):
+        column = [y for y in range(6) if puddle[y][x]]
+        if column:
+            puddle[column[0]][x] = "mud_dark"
     mussels = sprite(
         {"i": "ink", "d": "stone_dark", "l": "water_light", "m": "mud_dark"},
-        ".dd.d.",
-        "didlid",
-        "mdidd.",
-        "..mm..",
+        "..dd..d...",
+        ".dlid.dd..",
+        "didd.dlid.",
+        "mdidddidd.",
+        ".mm.dlid..",
+        "....mmm...",
     )
-    wrack = sprite({"o": "olive", "b": "bog", "y": "reed"}, "o.b", "boy", ".b.")
+    wrack = sprite({"o": "olive", "b": "bog", "y": "reed"}, "o..b.", ".obyo", "boy..", ".b.o.")
 
     def texture(seed):
-        # Ripples as short dashes along the troughs, lit on their crest above, in a scatter of
-        # their own per tile, so the flats are marked but not ruled.
+        # Ripples as wavy lines along the troughs, deeper and darker in stretches, broken where
+        # the flats lie smooth, and lit here and there on the crest above; soaked patches between.
         rng = random.Random(seed)
-        tile = filled("bare")
-        sprinkle(tile, rng, [damp, damp, wet], spacing=4, chance=0.35)
-        for y in range(TILE):
-            x = rng.randrange(4)
-            while x < TILE:
-                length = rng.randrange(2, 6)
-                for dx in range(length):
-                    if x + dx < TILE and _is_trough(x + dx, y):
-                        tile[y][x + dx] = "mud_dark"
-                        if y > 0 and rng.random() < 0.5:
-                            tile[y - 1][x + dx] = "bare_light"
-                x += length + rng.randrange(6, 16)
-        sprinkle(tile, rng, [hole, hole, coil, glint], spacing=8, chance=0.3)
+        tile = filled("bare", GAME_TILE)
+        damp = patch_noise(seed, 8)
+        for y in range(GAME_TILE):
+            for x in range(GAME_TILE):
+                if damp(x, y) > 0.45 and (x + y) % 2:
+                    tile[y][x] = "mud"
+        smooth = patch_noise(seed + 1, 8)
+        deep = patch_noise(seed + 2, 8)
+        for x in range(GAME_TILE):
+            for ripple in range(GAME_TILE // _RIPPLE_SPACING):
+                y = _trough_row(x, ripple)
+                if smooth(x, y) < -0.35:
+                    continue
+                tile[y][x] = "mud_dark" if deep(x, y) > -0.2 else "mud"
+                if rng.random() < 0.2:
+                    tile[y - 1][x] = "bare_light"
+        scatter(tile, rng, [hole, hole, coil], 4)
         return tile
 
     fulls = [
@@ -293,54 +430,78 @@ def mud():
         details(texture, 118, shells[2], cast),
         details(texture, 119, wrack),
         details(texture, 120),
-        details(texture, 121),
+        details(texture, 121, coil),
         details(texture, 122),
-        details(texture, 123),
+        details(texture, 123, hole),
         details(texture, 124),
     ]
     shapes = edge_shapes(110, [(1, 1.0), (2, 0.7), (4, 0.3)], 0.16)
 
     def decorate(tile, covered, rng):
         # The bank of a tideway: soaked dark mud running down into a glint of shallow water.
-        for y in range(TILE):
-            for x in range(TILE):
+        for y in range(GAME_TILE):
+            for x in range(GAME_TILE):
                 if covered(x, y):
-                    distance = edge_distance(covered, x, y, 3)
-                    if distance == 1:
+                    distance = edge_distance(covered, x, y, 5)
+                    if distance <= 2:
                         tile[y][x] = "mud_dark"
-                    elif distance == 2 and (x + y) % 2:
+                    elif distance <= 4 and (x + y) % 2:
                         tile[y][x] = "mud"
-                elif is_rim(lambda x, y: not covered(x, y), x, y) and rng.random() < 0.6:
+                elif is_rim(lambda x, y: not covered(x, y), x, y) and rng.random() < 0.5:
                     tile[y][x] = "water_light"
 
     return edge_tiles(texture, shapes, 110, decorate) + fulls, []
 
 
+# The floodplain and the wetland ------------------------------------------------------------------
+
+
+def reed_clump(seed, tall):
+    """Reeds of the bank: thin stems from a dark foot, some with a straw tip, a few leaves."""
+    rng = random.Random(seed)
+    width, height = 9, tall
+    picture = blank(width, height)
+    for stem in range(5):
+        x = 1 + stem * 2 - rng.randrange(2)
+        top = rng.randrange(0, height // 2)
+        lean = rng.choice((-1, 0, 0, 1))
+        for y in range(top, height):
+            column = x + (lean if y < top + (height - top) // 3 else 0)
+            if 0 <= column < width:
+                picture[y][column] = "straw" if y == top else "reed" if y < height - 3 else "olive"
+    for x in range(2, 7):
+        picture[height - 1][x] = "olive"
+    return picture
+
+
+def cattail(seed):
+    """Reeds with the brown velvet heads of the bulrush."""
+    picture = reed_clump(seed, 14)
+    for x, top in ((2, 1), (5, 0)):
+        for y in range(top, top + 4):
+            picture[y][x] = "soil_mid" if y > top else "soil_light"
+        picture[top + 4][x] = "reed"
+    return picture
+
+
 def floodplain():
-    blade = sprite({"l": "meadow_light", "d": "green_deep"}, "l", "d")
-    dark_blade = sprite({"d": "green_deep"}, "d.d", ".d.")
-    clover = sprite({"g": "green_light", "d": "green_deep"}, "g.g", "dgd")
-    puddle = sprite(
-        {"m": "mud_dark", "w": "water", "l": "water_light"},
-        ".mmm.",
-        "mwlwm",
-        ".mmm.",
+    """A lush, damp meadow: fertile land, darker and richer than ordinary grass."""
+    clover = sprite(
+        {"b": "green_bright", "l": "green_light", "d": "green_deep"}, ".bl..", "lll.l", ".lldl", "..dd.", "...d."
     )
+    puddle = shaded_sprite(10, 6, [forms.ellipse(10, 6, 5, 3, 4.5, 2.5)], ("water", "water", "water_light"))
+    for x in range(10):
+        column = [y for y in range(6) if puddle[y][x]]
+        if column:
+            puddle[column[0]][x] = "mud_dark"
+            puddle[column[-1]][x] = "mud"
     flowers = [
-        sprite({"c": "cream", "d": "green_deep"}, "c..c", "d.cd", "..d."),
-        sprite({"c": "gold", "d": "green_deep"}, ".c.", ".dc", "c.d", "d.."),
-        sprite({"c": "petal", "d": "green_deep"}, "c.c", "d.d"),
+        sprite({"c": "cream", "g": "gold", "d": "green_deep"}, ".c...", "cgc.c", ".d.cg", ".d..d"),
+        sprite({"c": "gold", "d": "green_deep"}, ".c..", "cc.c", ".d.d", ".d.."),
+        sprite({"c": "petal", "d": "green_deep"}, "c.c.", "d.dc", "d..d"),
     ]
-    reed_keys = {"t": "straw", "r": "reed", "o": "olive", "c": "soil_mid"}
-    reeds = sprite(reed_keys, "t..t.", "r.tr.", "rr.rt", "r.rr.", ".oro.")
-    cattails = sprite(reed_keys, ".c..", ".c.c", ".r.c", "rr.r", ".rr.", ".o..")
 
-    # A lush, damp meadow: fertile land, darker and richer than ordinary grass.
-    def texture(seed):
-        tile = filled("meadow")
-        sprinkle(tile, random.Random(seed), [blade, blade, dark_blade], spacing=4, chance=0.55)
-        return tile
-
+    texture = grass_texture("meadow", ("green_deep", "green_deep", "meadow_light", "meadow_light"), 10, 12)
     fulls = [
         details(texture, 21),
         details(texture, 22, clover),
@@ -357,74 +518,73 @@ def floodplain():
     def decorate(tile, covered, rng):
         # The floodplain only ever borders water below it: a narrow muddy bank, and a
         # line of foam on the water.
-        for y in range(TILE):
-            for x in range(TILE):
+        for y in range(GAME_TILE):
+            for x in range(GAME_TILE):
                 if covered(x, y):
-                    distance = edge_distance(covered, x, y, 4)
-                    if distance == 1:
+                    distance = edge_distance(covered, x, y, 6)
+                    if distance <= 2:
                         tile[y][x] = "mud_dark"
-                    elif distance == 2 or (distance == 3 and (x + y) % 2):
+                    elif distance <= 3 or (distance <= 5 and (x + y) % 2):
                         tile[y][x] = "mud"
                 elif is_rim(lambda x, y: not covered(x, y), x, y):
                     tile[y][x] = "foam" if foam_noise(x, y) > 0.3 else "water_light"
 
     decorations = [
-        decoration(30, reeds),
-        decoration(31, cattails),
-        decoration(34, clover),
+        decoration(30, reed_clump(30, 16)),
+        decoration(31, cattail(31)),
+        decoration(34, clover, clover),
         decoration(35, puddle),
     ]
     return edge_tiles(texture, shapes, 20, decorate) + fulls, decorations
 
 
 def wetland():
-    sedge = sprite({"g": "green_dark"}, "g", "g")
-    moss = sprite({"o": "olive"}, "o")
-    reed_keys = {"t": "straw", "r": "reed", "o": "olive", "c": "soil_mid"}
-    reeds = [
-        sprite(reed_keys, "..t..", "t.r..", "r.r.t", "r.r.r", "rrr.r", ".rrr.", ".oo.."),
-        sprite(reed_keys, "t..", "r.t", "rrr", "oro"),
-        # Cattails.
-        sprite(reed_keys, ".c..", ".c.c", ".r.c", "rr.r", ".rr.", ".o.."),
-    ]
-    pool = sprite(
-        {"w": "water_deep", "l": "water", "b": "bog_dark"},
-        ".bbbb..",
-        "bwwlwb.",
-        "bwwwwwb",
-        ".bbbbb.",
+    """Bog: dark wet ground with sedge and moss, reeds and pools of black water."""
+    sedge = sprite({"g": "green_dark", "o": "olive", "k": "bog_dark"}, "o.g", "g.g", ".k.")
+    pool = shaded_sprite(
+        14, 8, [forms.ellipse(14, 8, 7, 4, 6.5, 3.5)], ("water_deep", "water_deep", "water"), shadow=None
     )
-    toadstool = sprite({"e": "ember", "c": "cream", "s": "stone_light"}, ".eee.", "ecece", "..s..")
-    brown_caps = sprite({"m": "soil_mid", "l": "soil_light", "s": "cream"}, ".m..", "mlm.", ".sml", ".s.s")
+    for x in range(14):
+        column = [y for y in range(8) if pool[y][x]]
+        if column:
+            pool[column[0]][x] = "bog_dark"
+            pool[column[-1]][x] = "green_dark"
+    reeds = [reed_clump(32, 16), reed_clump(33, 11), cattail(34)]
+    toadstool = shaded_sprite(
+        7, 7, [forms.ellipse(7, 7, 3.5, 2.5, 3, 2)], ("rust_dark", "ember", "red_light"), shadow="bog_dark"
+    )
+    for x, y in ((2, 1), (4, 2)):
+        toadstool[y][x] = "cream"
+    for y in (4, 5):
+        toadstool[y][3] = "stone_light"
+    brown_caps = sprite(
+        {"m": "soil_mid", "l": "soil_light", "s": "cream", "d": "soil_dark"}, ".ll....", "lmmd.l.", ".s..lmd", ".s...s.", ".....s."
+    )
 
-    def texture(seed):
-        tile = filled("bog")
-        sprinkle(tile, random.Random(seed), [sedge, sedge, moss], spacing=4, chance=0.4)
-        return tile
-
+    texture = grass_texture("bog", ("bog_dark", "green_dark", "olive", "olive"), 8, 10)
     fulls = [
         details(texture, 31, reeds[0]),
         details(texture, 32, pool),
-        details(texture, 33, reeds[1], reeds[2]),
-        details(texture, 34, reeds[2]),
-        details(texture, 35, reeds[0], reeds[1]),
+        details(texture, 33, reeds[1], sedge),
+        details(texture, 34, sedge),
+        details(texture, 35, sedge),
         details(texture, 36),
-        details(texture, 37, reeds[1]),
-        details(texture, 38),
-        details(texture, 39, reeds[2], reeds[2]),
-        details(texture, 40, reeds[0]),
+        details(texture, 37),
+        details(texture, 38, sedge, sedge),
+        details(texture, 39, reeds[2]),
+        details(texture, 40, sedge),
     ]
     shapes = edge_shapes(30, [(2, 1.0), (3, 0.7), (4, 0.3)], 0.18)
 
     def decorate(tile, covered, rng):
         # A dark soaked rim, with sedge poking out on the north side and seeping mud on
         # the south side.
-        for y in range(TILE):
-            for x in range(TILE):
+        for y in range(GAME_TILE):
+            for x in range(GAME_TILE):
                 if is_rim(covered, x, y):
                     tile[y][x] = "bog_dark"
-        blades(tile, covered, rng, "mud_dark", 0.5, 1, (1, 1, 2))
-        blades(tile, covered, rng, "olive", 0.4, -1, (1, 2, 2, 3))
+        blades(tile, covered, rng, ("bog_dark", "mud_dark"), 0.5, 1, (1, 2, 2, 3))
+        blades(tile, covered, rng, ("green_dark", "olive"), 0.35, -1, (2, 3, 3, 4))
 
     decorations = [
         decoration(41, toadstool),
@@ -437,98 +597,120 @@ def wetland():
     return edge_tiles(texture, shapes, 30, decorate) + fulls, decorations
 
 
-# All grass layers share their edge shapes, so lush and dry grass never stick out of the
-# ordinary grass drawn beneath them.
+# Grass and what lies over it ---------------------------------------------------------------------
+
+# All grass layers share their edge shapes, so the layers over ordinary grass never stick out of
+# it.
 GRASS_SHAPES = edge_shapes(40, [(2, 1.0), (3, 0.6), (5, 0.3)], 0.18)
-
-
-def grass_texture(colours):
-    """A grass texture: short blades scattered over the base colour."""
-    base_colour, light, dark = colours
-    blade = sprite({"l": light, "d": dark}, "l", "d")
-    dark_blade = sprite({"d": dark}, "d.d", ".d.")
-
-    def texture(seed):
-        tile = filled(base_colour)
-        sprinkle(tile, random.Random(seed), [blade, blade, dark_blade], spacing=4, chance=0.45)
-        return tile
-
-    return texture
-
+GRASS_RAMP = ("green_deep", "green_dark", "green_light", "green_bright")
 
 # Dots in flower colours, which autumn turns into leaf colours (see seasons.py). The
 # game shows them only in autumn (see data/vegetation.cfg).
-fallen_leaves = sprite({"a": "gold", "b": "petal", "c": "cream"}, "aa..b", "..c.b", ".b..a", "c.aa.")
+fallen_leaves = sprite(
+    {"a": "gold", "b": "petal", "c": "cream"},
+    "aa.....b.",
+    ".a..c..bb",
+    ".....c...",
+    "b.......a",
+    "bb..aa...",
+    "....a..c.",
+)
+
+
+def clover_patch(ramp):
+    """Clover: round leaflets in threes, lit on the top left, the far ones in shade."""
+    deep, dark, light, bright = ramp
+    return sprite(
+        {"k": deep, "d": dark, "l": light, "b": bright},
+        ".bl...bl.",
+        "lll.l.lll",
+        ".lldl.ld.",
+        "..dd.lll.",
+        "...d..d..",
+        "......k..",
+    )
+
+
+def pebbles(shadow):
+    """A few pebbles, each lit on top with its shadow under it."""
+    ramp = ("stone_dark", "stone", "stone_light")
+    width, height = 10, 6
+    shapes = [forms.ellipse(width, height, 3, 2.5, 2.5, 2), forms.ellipse(width, height, 7.5, 3.5, 1.8, 1.5)]
+    return shaded_sprite(width, height, shapes, ramp, shadow=shadow)
+
+
+def fern_sprout(ramp):
+    deep, dark, light, bright = ramp
+    return sprite(
+        {"k": deep, "d": dark, "l": light},
+        "l.......l",
+        ".l..l..l.",
+        "l.l.l.l.l",
+        ".ldldld..",
+        "..dldd...",
+        "...kk....",
+    )
 
 
 def grass():
-    tufts = [
-        sprite({"b": "green_bright", "d": "green_dark"}, "b...b", ".d.d.", "..d.."),
-        sprite({"b": "green_bright", "d": "green_dark"}, ".b.", "bdb", "d.d"),
-        sprite({"b": "green_light", "d": "green_dark"}, "b.b", "d.d"),
-    ]
-    clover = sprite({"g": "green_bright", "d": "green_dark"}, ".g.g", "gdgd", ".dg.")
-    pebbles = sprite({"s": "stone_light", "m": "stone", "d": "stone_dark"}, ".s...", "smd.s", ".d..d")
-    fern = sprite({"l": "green_light", "g": "green_dark"}, "l...l", ".l.l.", "l.g.l", ".ggg.", "..g..")
-
-    texture = grass_texture(("green", "green_light", "green_dark"))
+    clover = clover_patch(GRASS_RAMP)
+    texture = grass_texture("green", GRASS_RAMP, 12, 14)
+    thick = big_tuft(GRASS_RAMP)
+    shapes = tufts(GRASS_RAMP)
     fulls = [
         details(texture, 41),
         details(texture, 42),
-        details(texture, 43, tufts[0]),
-        details(texture, 44, tufts[1]),
-        details(texture, 45, tufts[2]),
-        details(texture, 46, tufts[0], tufts[2]),
-        details(texture, 47, tufts[1]),
+        details(texture, 43, shapes[0]),
+        details(texture, 44, shapes[1]),
+        details(texture, 45, shapes[4]),
+        details(texture, 46, shapes[0], shapes[4]),
+        details(texture, 47, shapes[1]),
         details(texture, 48),
-        details(texture, 49, tufts[2]),
-        details(texture, 50, tufts[1], tufts[2]),
+        details(texture, 49, shapes[2], shapes[3]),
+        details(texture, 50, shapes[1], shapes[4]),
     ]
 
     def decorate(tile, covered, rng):
         # A dark rim, with blades of uneven length hanging over the lower terrain on the
         # south side and tips poking out on the north side.
-        for y in range(TILE):
-            for x in range(TILE):
+        for y in range(GAME_TILE):
+            for x in range(GAME_TILE):
                 if is_rim(covered, x, y):
                     tile[y][x] = "green_dark"
-        blades(tile, covered, rng, "green_deep", 0.7, 1, (1, 1, 2, 2, 3))
-        blades(tile, covered, rng, "green_dark", 0.45, -1, (1, 1, 2))
+        blades(tile, covered, rng, ("green_deep", "green_dark"), 0.6, 1, (1, 2, 2, 3, 4))
+        blades(tile, covered, rng, ("green_dark", "green_light"), 0.4, -1, (1, 2, 2, 3))
 
     decorations = [
         decoration(55, clover),
-        decoration(56, pebbles),
-        decoration(57, fern),
-        decoration(58, tufts[0], tufts[1]),
-        decoration(53, tufts[2]),
+        decoration(56, pebbles("green_dark")),
+        decoration(57, fern_sprout(GRASS_RAMP)),
+        decoration(58, thick, shapes[1]),
+        decoration(53, thick),
         decoration(59, fallen_leaves),
     ]
     return edge_tiles(texture, GRASS_SHAPES, 40, decorate) + fulls, decorations
 
 
-def tinted_grass(colours, seed, tufts, decorations):
+def tinted_grass(texture, seed, picks, decorations):
     """A grass family (lush or dry) drawn over ordinary grass. Its edge leaves the grass
     rim showing and fades out in a dither, so the colour shifts softly."""
-    texture = grass_texture(colours)
-    fulls = [details(texture, seed + n, *picks) for n, picks in enumerate(tufts)]
-
-    def decorate(tile, covered, rng):
-        for y in range(TILE):
-            for x in range(TILE):
-                if covered(x, y):
-                    distance = edge_distance(covered, x, y, 4)
-                    if distance == 1 or (distance < 4 and (x + y + distance) % 2):
-                        tile[y][x] = None
-
-    return edge_tiles(texture, GRASS_SHAPES, seed, decorate) + fulls, decorations
+    fulls = [details(texture, seed + n, *pictures) for n, pictures in enumerate(picks)]
+    return (
+        edge_tiles(texture, GRASS_SHAPES, seed, lambda tile, covered, rng: fade_out(tile, covered, rng, 7))
+        + fulls,
+        decorations,
+    )
 
 
 def lush_grass():
-    tuft = sprite({"b": "green_bright", "d": "green_deep"}, "b.b.b", ".d.d.", "..d..")
-    clover = sprite({"g": "green_bright", "d": "green_deep"}, ".g.g", "gdgd", ".dg.")
-    brown_caps = sprite({"m": "soil_mid", "l": "soil_light", "s": "cream"}, ".m..", "mlm.", ".sml", ".s.s")
-    fern = sprite({"l": "green_light", "g": "green_deep"}, "l...l", ".l.l.", "l.g.l", ".ggg.", "..g..")
-    tufts = [(), (tuft,), (clover,), (), (tuft, clover), (tuft,), (), (clover,)]
+    ramp = ("green_deep", "green_deep", "green_dark", "green_light")
+    tuft = big_tuft(ramp)
+    clover = clover_patch(("green_deep", "green_deep", "green_light", "green_bright"))
+    brown_caps = sprite(
+        {"m": "soil_mid", "l": "soil_light", "s": "cream", "d": "soil_dark"}, ".ll....", "lmmd.l.", ".s..lmd", ".s...s.", ".....s."
+    )
+    fern = fern_sprout(("green_deep", "green_dark", "green_light", "green_bright"))
+    picks = [(), (tuft,), (clover,), (), (tuft, clover), (tuft,), (), (clover,)]
     decorations = [
         decoration(61, clover, clover),
         decoration(64, fern),
@@ -536,22 +718,23 @@ def lush_grass():
         decoration(66, fern, clover),
         decoration(67, fallen_leaves),
     ]
-    return tinted_grass(("green", "green", "green_deep"), 60, tufts, decorations)
+    return tinted_grass(grass_texture("green", ramp, 16, 18), 60, picks, decorations)
 
 
 def dry_grass():
-    tuft = sprite({"s": "straw", "r": "reed"}, "s...s", ".r.r.", "..r..")
-    stalks = sprite({"s": "straw", "r": "reed"}, "s.s", "r.r", "rr.")
-    pebbles = sprite({"s": "stone_light", "m": "stone", "d": "stone_dark"}, ".s...", "smd.s", ".d..d")
-    tufts = [(), (tuft,), (stalks,), (), (tuft, stalks), (stalks,), (), (tuft,)]
+    ramp = ("olive", "olive", "dry_light", "straw")
+    tuft = big_tuft(ramp)
+    stalks = sprite({"s": "straw", "r": "reed", "o": "olive"}, "s..s.", "r.s.s", "r.r.r", ".rr.r", ".oro.")
+    stones = pebbles("olive")
+    picks = [(), (tuft,), (stalks,), (), (tuft, stalks), (stalks,), (), (tuft,)]
     decorations = [
         decoration(71, tuft, stalks),
-        decoration(72, pebbles),
+        decoration(72, stones),
         decoration(74, stalks, stalks),
-        decoration(75, pebbles, tuft),
+        decoration(75, stones, tuft),
         decoration(76, fallen_leaves),
     ]
-    return tinted_grass(("dry", "dry_light", "olive"), 70, tufts, decorations)
+    return tinted_grass(grass_texture("dry", ramp, 12, 14), 70, picks, decorations)
 
 
 def salt_marsh():
@@ -561,43 +744,34 @@ def salt_marsh():
     maps to the palette (seasons.SALT_MARSH_LOOKS). Like lush and dry grass it lies over ordinary
     grass and shares its edges: the grass's dark rim and blades are the low sod edge where it
     breaks off to the mud."""
-    purslane = sprite({"l": "salt_light", "d": "salt_dark"}, ".l.", "lld", ".d.")
-    glasswort = sprite({"g": "glasswort", "d": "glasswort_dark"}, "g.g", "dgd", ".d.")
-    sprig = sprite({"g": "glasswort", "d": "glasswort_dark"}, "g", "d")
-    tufts = [(), (purslane,), (glasswort,), (), (purslane, sprig), (glasswort, glasswort), (), (sprig,)]
-    blade = sprite({"l": "salt_light", "d": "salt_dark"}, "l", "d")
-    dark_blade = sprite({"d": "salt_dark"}, "d.d", ".d.")
-    patches = [sprite({"p": "salt_patch"}, "pp.", "ppp", ".p."), sprite({"p": "salt_patch"}, "ppp", ".pp")]
+    purslane = sprite({"l": "salt_light", "d": "salt_dark"}, ".l.l.", "llld.", ".dld.", "..d..")
+    glasswort = sprite({"g": "glasswort", "d": "glasswort_dark"}, "g..g", "dg.g", ".dgd", "..d.")
+    sprig = sprite({"g": "glasswort", "d": "glasswort_dark"}, "g", "g", "d")
+    picks = [(), (purslane,), (glasswort,), (), (purslane, sprig), (glasswort, glasswort), (), (sprig,)]
+    ramp = ("salt_dark", "salt_dark", "salt_light", "salt_light")
+    turf = grass_texture("salt", ramp, 8, 12)
 
     def texture(seed):
-        rng = random.Random(seed)
-        tile = filled("salt")
-        sprinkle(tile, rng, patches, spacing=5, chance=0.6)
-        sprinkle(tile, rng, [blade, blade, dark_blade, sprig], spacing=4, chance=0.5)
+        tile = turf(seed)
+        patches = patch_noise(seed + 7, 8)
+        for y in range(GAME_TILE):
+            for x in range(GAME_TILE):
+                patch = patches(x, y)
+                if tile[y][x] == "salt" and patch > 0.5:
+                    tile[y][x] = "salt_patch"
+        scatter(tile, random.Random(seed), [sprig], 3)
         return tile
-
-    fulls = [details(texture, 130 + n, *picks) for n, picks in enumerate(tufts)]
-
-    def decorate(tile, covered, rng):
-        for y in range(TILE):
-            for x in range(TILE):
-                if covered(x, y):
-                    distance = edge_distance(covered, x, y, 4)
-                    if distance == 1 or (distance < 4 and (x + y + distance) % 2):
-                        tile[y][x] = None
 
     clump = sprite(
         {"g": "glasswort", "d": "glasswort_dark", "s": "salt_dark"},
-        "g..g.",
-        "dg.gd",
-        ".dgd.",
-        "..s..",
+        "g...g..",
+        "dg.gd.g",
+        ".dgd.gd",
+        ".ddgdd.",
+        "...s...",
     )
-    bush = sprite(
-        {"l": "salt_light", "m": "salt", "d": "salt_dark"},
-        ".ll.",
-        "lmld",
-        "dmdd",
+    bush = shaded_sprite(
+        9, 6, [forms.ellipse(9, 6, 4.5, 3.5, 4, 2.5)], ("salt_dark", "salt", "salt_light"), shadow="salt_dark"
     )
     decorations = [
         decoration(141, clump),
@@ -605,11 +779,14 @@ def salt_marsh():
         decoration(143, bush),
         decoration(144, bush, clump),
     ]
-    return edge_tiles(texture, GRASS_SHAPES, 130, decorate) + fulls, decorations
+    return tinted_grass(texture, 130, picks, decorations)
 
 
-# How far down the slope of a Warft reaches from its edge, in pixels.
-_WARFT_SLOPE = 6
+# How far down the slope of a Warft reaches from its edge, in pixels, and its shades from the
+# foot up, lit where it faces the light and shaded where it does not.
+_WARFT_SLOPE = 12
+_WARFT_LIT = ("green_light",) * 3 + ("green_bright",) * 2 + ("green_light",) * 3 + ("green",) * 4
+_WARFT_SHADED = ("green_deep",) * 4 + ("green_dark",) * 5 + ("green",) * 3
 
 
 def warft():
@@ -619,16 +796,14 @@ def warft():
     the south side. Around a pond on top (the Fething) the same edges are the pond's banks, which
     face the other way and are lit and shaded the right way round by the same rule. It lies over
     ordinary grass and shares its edges, like lush and dry grass."""
-    texture = grass_texture(("green", "green_light", "green_dark"))
-    tuft = sprite({"b": "green_bright", "d": "green_dark"}, "b.b", "d.d")
-    fulls = [details(texture, 150 + n, *picks) for n, picks in enumerate([(), (tuft,), (), ()])]
-    lit = ("green_bright", "green_light", "green_light", "green", "green", "green")
-    shaded = ("green_deep", "green_deep", "green_dark", "green_dark", "green", "green")
+    texture = grass_texture("green", GRASS_RAMP, 12, 14)
+    tuft = big_tuft(GRASS_RAMP)
+    fulls = [details(texture, 150 + n, *pictures) for n, pictures in enumerate([(), (tuft,), (), ()])]
 
     def decorate(tile, covered, rng):
         slope = []
-        for y in range(TILE):
-            for x in range(TILE):
+        for y in range(GAME_TILE):
+            for x in range(GAME_TILE):
                 if not covered(x, y):
                     continue
                 # The nearest way down: to the north or west is a lit face, south or east shade.
@@ -640,16 +815,18 @@ def warft():
                         break
         for x, y, step, faces_light in slope:
             # The band thins out in a dither towards the top, so the slope has no hard line.
-            if step == _WARFT_SLOPE and (x + y) % 2:
+            if step > _WARFT_SLOPE - 3 and (x + y + step) % 2:
                 continue
-            tile[y][x] = (lit if faces_light else shaded)[step - 1]
-        for y in range(TILE):
-            for x in range(TILE):
+            tile[y][x] = (_WARFT_LIT if faces_light else _WARFT_SHADED)[step - 1]
+        for y in range(GAME_TILE):
+            for x in range(GAME_TILE):
                 # The shadow it casts on the low land at its southern foot.
-                if not covered(x, y) and (covered(x, y - 1) or covered(x, y - 2) and (x + y) % 2):
+                if not covered(x, y) and (
+                    any(covered(x, y - up) for up in (1, 2, 3)) or covered(x, y - 4) and (x + y) % 2
+                ):
                     tile[y][x] = "green_deep"
 
-    decorations = [decoration(161, tuft), decoration(162, tuft, tuft)]
+    decorations = [decoration(161, tuft), decoration(162, tuft, tufts(GRASS_RAMP)[1])]
     return edge_tiles(texture, GRASS_SHAPES, 150, decorate) + fulls, decorations
 
 
@@ -659,112 +836,162 @@ def warft():
 
 def trodden():
     """Thin, flattened grass with the earth showing through in patches."""
-    blade = sprite({"l": "green_light", "d": "green_dark"}, "l", "d")
-    flat_blades = sprite({"d": "dry", "l": "dry_light"}, "dl", ".d")
-    bare_spots = [
-        sprite({"m": "mud"}, "mm"),
-        sprite({"m": "mud", "d": "dry"}, ".m", "md"),
-        sprite({"m": "mud", "d": "mud_dark"}, "mm.", ".dm"),
-        sprite({"m": "mud"}, "m", "m"),
-    ]
-    pebble = sprite({"s": "stone", "d": "mud_dark"}, "s", "d")
+    flat = sprite({"d": "dry", "l": "dry_light"}, "dll", ".dd")
+    texture_of_grass = grass_texture("green", GRASS_RAMP, 6, 10)
+    pebble = pebbles("mud_dark")
 
     def texture(seed):
         rng = random.Random(seed)
-        tile = filled("green")
-        for y in range(TILE):
-            for x in range(TILE):
-                if rng.random() < 0.3:
+        tile = texture_of_grass(seed)
+        worn = patch_noise(seed + 5, 8)
+        for y in range(GAME_TILE):
+            for x in range(GAME_TILE):
+                wear = worn(x, y)
+                if wear > 0.55:
+                    tile[y][x] = "mud"
+                elif wear > 0.4:
+                    tile[y][x] = "mud" if (x + y) % 2 else "dry"
+                elif wear > 0.15 and (x + y) % 2:
                     tile[y][x] = "dry"
-        sprinkle(tile, rng, bare_spots, spacing=4, chance=0.7)
-        sprinkle(tile, rng, [flat_blades, blade], spacing=5, chance=0.4)
+        scatter(tile, rng, [flat], 5)
         return tile
 
-    fulls = [details(texture, 90 + n, *picks) for n, picks in enumerate([(), (pebble,), (), ()])]
+    fulls = [details(texture, 90 + n, *pictures) for n, pictures in enumerate([(), (pebble,), (), ()])]
     shapes = edge_shapes(90, [(2, 1.0), (3, 0.7), (5, 0.3)], 0.22)
 
-    def decorate(tile, covered, rng):
-        # Fades out in a dither into the grass around it, so no line marks where it ends.
-        for y in range(TILE):
-            for x in range(TILE):
-                if covered(x, y):
-                    distance = edge_distance(covered, x, y, 4)
-                    if distance == 1 or (distance < 4 and rng.random() < 0.6 / distance):
-                        tile[y][x] = None
-
     # A worn tile has no decorations: its flowers and tufts were trodden down.
-    return edge_tiles(texture, shapes, 90, decorate) + fulls, []
+    return edge_tiles(texture, shapes, 90, lambda tile, covered, rng: fade_out(tile, covered, rng, 7)) + fulls, []
 
 
 def path():
-    """Bare trodden earth, with grit and the odd stone; grass creeps in at the edges."""
+    """Packed bare earth, paler where most feet go, with grit, clog prints and the odd pebble lit
+    on top with its shadow under it. It lies a little below the turf: the grass beside it casts a
+    dark line along its edge and leans in over it."""
     grit = sprite({"l": "sand"}, "l")
-    dark = sprite({"d": "mud_dark"}, "d")
-    stone = sprite({"s": "stone_light", "d": "stone"}, "s", "d")
-    pebbles = sprite({"s": "stone", "d": "stone_dark", "l": "stone_light"}, "l.s", ".d.")
-    tuft = sprite({"b": "green_light", "d": "green_dark"}, "b.b", ".d.")
+    dent = sprite({"d": "mud_dark", "l": "sand"}, "dd", ".l")
+    clogs = sprite({"d": "mud_dark", "l": "sand_light"}, ".dd....", "dddl...", ".dl..dd", "....dddl", ".....dl.")
+    stones = pebbles("mud_dark")
+    tuft = tufts(GRASS_RAMP)[2]
 
     def texture(seed):
         rng = random.Random(seed)
-        tile = filled("mud")
-        sprinkle(tile, rng, [grit, dark, dark], spacing=3, chance=0.5)
+        tile = filled("mud", GAME_TILE)
+        worn = patch_noise(seed, 16)
+        for y in range(GAME_TILE):
+            for x in range(GAME_TILE):
+                if worn(x, y) > 0.5 or worn(x, y) > 0.3 and (x + y) % 2:
+                    tile[y][x] = "sand"
+        scatter(tile, rng, [grit, grit, dent], 12)
         return tile
 
     fulls = [
         details(texture, 101),
-        details(texture, 102, stone),
-        details(texture, 103),
-        details(texture, 104, pebbles),
+        details(texture, 102, stones),
+        details(texture, 103, clogs),
+        details(texture, 104, dent, dent),
         details(texture, 105),
         details(texture, 106, tuft),
     ]
     shapes = edge_shapes(100, [(2, 1.0), (3, 0.6), (4, 0.3)], 0.2)
 
     def decorate(tile, covered, rng):
-        # The grass beside it shows through a ragged rim, and blades of it lean in.
-        for y in range(TILE):
-            for x in range(TILE):
+        # The cut under the turf: dark where the grass beside it is to the north or west, which
+        # the light comes over, and blades of the grass leaning in over it.
+        for y in range(GAME_TILE):
+            for x in range(GAME_TILE):
                 if not covered(x, y):
                     continue
                 distance = edge_distance(covered, x, y, 4)
-                if distance == 1 and rng.random() < 0.7:
-                    tile[y][x] = None
-                elif distance == 2 and rng.random() < 0.3:
-                    tile[y][x] = rng.choice(("green_dark", "green", None))
-                elif distance == 3 and rng.random() < 0.12:
-                    tile[y][x] = "green_dark"
+                if distance == 1:
+                    tile[y][x] = "mud_dark"
+                elif distance == 2 and not (covered(x - 2, y) and covered(x, y - 2)):
+                    tile[y][x] = "mud_dark"
+                elif distance == 3 and tile[y][x] == "sand":
+                    tile[y][x] = "mud"
+        blades(tile, lambda x, y: not covered(x, y), rng, ("green_dark", "green_dark", "green_light"), 0.35, -1, (1, 2, 3))
+        blades(tile, lambda x, y: not covered(x, y), rng, ("green_dark", "green_deep"), 0.3, 1, (1, 2))
 
     return edge_tiles(texture, shapes, 100, decorate) + fulls, []
 
 
+# Tilled soil --------------------------------------------------------------------------------------
+
+# The ridges of tilled soil, four to a tile, run along the field: a lit crest, its slope and a dark
+# furrow, from the top of a ridge down. The furrow line wobbles by a pixel along the row, the same
+# in every tile, so the rows run on across tiles and the wet look (soil_wet) lies on them.
+_RIDGE = ("soil_mid", "soil_mid", "soil_mid", "soil", "soil", "soil", "soil_dark", "soil_dark")
+_RIDGE_WOBBLE = periodic_noise(81, [(2, 1.0), (3, 0.5)])
+# Crumbs: a pixel here and there a step up or down its ridge, so the bands are ragged like earth.
+_CRUMBS = [[random.Random(83 * GAME_TILE * y + x).choice((-1, 0, 0, 0, 0, 0, 1)) for x in range(GAME_TILE)]
+           for y in range(GAME_TILE)]
+# Where the crest catches the light: along most of it, in broken stretches.
+_CREST_LIGHT = periodic_noise(82, [(5, 1.0), (7, 0.7)])
+
+
+def _ridge_step(x, y):
+    """How far down its ridge a pixel of the soil lies, 0 (the crest) to 7 (the furrow)."""
+    crumb = _CRUMBS[y % GAME_TILE][x % GAME_TILE]
+    return (y + round(1.2 * _RIDGE_WOBBLE(x, y)) + crumb) % len(_RIDGE)
+
+
+def _tilled(seed):
+    rng = random.Random(seed)
+    tile = blank(GAME_TILE)
+    for y in range(GAME_TILE):
+        for x in range(GAME_TILE):
+            step = _ridge_step(x, y)
+            # One soft row of light on the crest, so the ridges read as earth and not as logs.
+            tile[y][x] = "soil_light" if step == 0 and _CREST_LIGHT(x, y) > -0.3 else _RIDGE[step]
+    # Clods on the crests and the odd stone in a furrow break the rows up.
+    for _ in range(rng.randrange(5, 9)):
+        x, y = rng.randrange(GAME_TILE - 3), rng.randrange(GAME_TILE - 2)
+        if _ridge_step(x, y) <= 1:
+            stamp(tile, sprite({"l": "soil_light", "m": "soil", "d": "soil_dark"}, "ll.", "mmd"), x, y)
+    for _ in range(rng.randrange(0, 3)):
+        x, y = rng.randrange(GAME_TILE - 2), rng.randrange(GAME_TILE)
+        if _ridge_step(x, y) == 6:
+            stamp(tile, sprite({"s": "stone", "d": "stone_dark"}, "sd"), x, y)
+    return tile
+
+
 def soil():
-    clod = sprite({"l": "soil_light", "m": "soil_mid"}, "l", "m")
-
-    # Tilled rows: a lit ridge, its body, and a dark furrow, every 4 pixels.
-    base = [[("soil_light", "soil_mid", "soil", "soil_dark")[y % 4]] * TILE for y in range(TILE)]
-
-    def variant(seed):
-        rng = random.Random(seed)
-        tile = copy(base)
-        # A few clods break up the rows.
-        for _ in range(rng.randrange(3, 6)):
-            stamp(tile, clod, rng.randrange(1, 15), rng.randrange(0, 4) * 4 + 1)
-        return tile
-
-    fulls = [variant(seed) for seed in (81, 82, 83, 84)]
-    shapes = edge_shapes(80, [(1, 1.0), (2, 0.5)], 0.08)
+    fulls = [_tilled(seed) for seed in (81, 82, 83, 84)]
+    shapes = edge_shapes(80, [(1, 1.0), (2, 0.5)], 0.06)
 
     def decorate(tile, covered, rng):
-        # A raised field border: dark on its south side, a lighter lip elsewhere.
-        for y in range(TILE):
-            for x in range(TILE):
-                if covered(x, y) and not covered(x, y + 1):
-                    tile[y][x] = "soil_dark"
-                elif is_rim(covered, x, y):
-                    tile[y][x] = "soil_mid"
+        # The field lies a little below the turf: dark along its edge where the turf beside it is
+        # to the north or west, a step of soil elsewhere.
+        for y in range(GAME_TILE):
+            for x in range(GAME_TILE):
+                if not is_rim(covered, x, y):
+                    continue
+                tile[y][x] = "soil_dark" if not covered(x, y - 1) or not covered(x - 1, y) else "soil"
 
     # A tilled field is the player's work, so it stays free of decorations.
-    return edge_tiles(lambda seed: copy(base), shapes, 80, decorate) + fulls, []
+    return edge_tiles(_tilled, shapes, 80, decorate) + fulls, []
+
+
+def soil_wet():
+    """The overlay of damp and of wet soil as two tiles of the plain tile grid: the soil's ridges
+    a shade darker in patches, which thin out towards the tile's border, so the edges of a field
+    stay clear and the tiles show no grid. Wet has more and bigger patches, which include the
+    damp ones, and its furrows hold the darkest soil. The terrain is drawn half a tile off the
+    tile grid (the dual grid), so the ridges are found half a tile on."""
+    darker = {"soil_light": "soil_mid", "soil_mid": "soil", "soil": "soil_dark", "soil_dark": "soil_dark"}
+    patches = patch_noise(85, 8)
+    half = GAME_TILE // 2
+    tiles = []
+    for level in (0.15, -0.3):
+        tile = blank(GAME_TILE)
+        for y in range(GAME_TILE):
+            for x in range(GAME_TILE):
+                to_border = min(x, y, GAME_TILE - 1 - x, GAME_TILE - 1 - y)
+                if patches(x, y) - 1.4 * max(0.0, 1 - to_border / 7) > level:
+                    step = _ridge_step(x + half, y + half)
+                    colour = "soil_dark" if level < 0 and step >= 5 else darker[_RIDGE[step]]
+                    tile[y][x] = colour
+        tiles.append(tile)
+    return tiles
 
 
 LAYERS = [

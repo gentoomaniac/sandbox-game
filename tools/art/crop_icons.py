@@ -1,11 +1,8 @@
 """Art for what crops give and need besides their sheets (see crops.py): the 16x16 icons of the
-seed bags and the produce, and the look of damp and wet soil.
+seed bags and the produce.
 """
 
-import random
-
 import items
-from canvas import TILE
 from crops import KEYS, Surface
 
 # What tells each crop's seed sack apart (see items.seed_sack): the colour of its string, the
@@ -171,19 +168,3 @@ def icons():
         pictures[crop] = items.outlined(draw().rows)
     return pictures
 
-
-def soil_wet():
-    """The overlay of damp and of wet soil as two tiles: dashes of darker soil, in the middle of
-    the tile only, so the rounded edges of a field stay clear. Wet has more of them and a few of
-    the darkest, and they include all of the damp ones. The light bands of the soil texture
-    turn dark where they lie."""
-    rng = random.Random("soil-wet")
-    spots = [(x, y) for y in range(2, TILE - 2) for x in range(2, TILE - 3)]
-    rng.shuffle(spots)
-    tiles = []
-    for count, darkest in ((14, 0), (36, 8)):
-        tile = Surface(TILE, TILE, (0, 0))
-        for index, (x, y) in enumerate(spots[:count]):
-            tile.stamp(("bb" if index >= darkest else "ss",), x, y)
-        tiles.append(tile.rows)
-    return tiles

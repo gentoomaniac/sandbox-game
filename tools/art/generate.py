@@ -59,9 +59,10 @@ of the rider in the rows of the player's sheets (see `ridden_sheets`).
 assets/crops/<crop>.png: one sheet per crop, its four growth stages and the dead one side by side, 16 px
 wide cells and as tall as the sheet (see crops.py and data/crops.cfg). They have no seasonal variants.
 
-assets/soil_wet.png: the damp and the wet look of tilled soil, two 16x16 tiles (see crop_icons.py).
+assets/soil_wet.png: the damp and the wet look of tilled soil, two tiles at the game's tile (see
+terrain.py).
 
-assets/clay_hint.png: the faint hint of a clay spot, one 16x16 tile (see meadow.py).
+assets/clay_hint.png: the faint hint of a clay spot, one tile at the game's tile (see meadow.py).
 
 assets/items/<item id>.png (16x16) and assets/ui/slot.png, slot_selected.png (20x20): drawn in
 items.py, for tools in tool_icons.py and for crops in crop_icons.py. assets/ground_items/<item
@@ -112,11 +113,6 @@ from palette import ASSETS, PALETTE, check_palette, save, save_picture, write_pa
 # (items/ and ui/) are drawn for the UI's own scale and stay as they are; the thought bubbles in
 # ui/ are drawn at 32 px like the people.
 DOUBLED = (
-    # Ground (task 107).
-    "terrain*.png",
-    "decorations*.png",
-    "soil_wet.png",
-    "clay_hint.png",
     # Plants, walls and placed things: one atlas (tasks 108 and 111).
     "objects*.png",
     "bedroll_cover.png",
@@ -272,8 +268,9 @@ def write_seasonal_art():
             assert all(None not in line for line in tile), f"{layer.__name__}: full tile has holes"
         terrain_rows.append(tiles)
         decoration_rows.append(decorations)
-    # The meadow flowers have a row of their own, below the layers' (see flowers.py).
-    decoration_rows.append(flowers.flower_row())
+    # The meadow flowers have a row of their own, below the layers' (see flowers.py). They are
+    # still drawn at 16 px per tile (task 108), so they are scaled up here.
+    decoration_rows.append([doubled(tile) for tile in flowers.flower_row()])
     objects = object_atlas()
     write_object_rows(objects)
     redraws = {
@@ -290,8 +287,9 @@ def write_seasonal_art():
     for look in seasons.LOOKS:
         suffix = "" if look == "summer" else f"_{look}"
         if look in seasons.GROUND_LOOKS:
-            save(seasons.terrain_rows(look, terrain_rows), f"terrain{suffix}.png")
-            save(seasons.ground_rows(look, decoration_rows, seasons.STANDING.get(look)), f"decorations{suffix}.png")
+            save(seasons.terrain_rows(look, terrain_rows), f"terrain{suffix}.png", GAME_TILE)
+            decorations = seasons.ground_rows(look, decoration_rows, seasons.STANDING.get(look))
+            save(decorations, f"decorations{suffix}.png", GAME_TILE)
         save(seasons.object_rows(look, objects, redraws), f"objects{suffix}.png", OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
         if look in seasons.HOUSE_LOOKS:
             for name, (picture, snowy) in houses.items():
@@ -348,7 +346,7 @@ def write_wildlife():
 def write_crops():
     for crop, cells in crops.sheets().items():
         save([cells], f"crops/{crop}.png", TILE, len(cells[0]))
-    save([crop_icons.soil_wet()], "soil_wet.png")
+    save([terrain.soil_wet()], "soil_wet.png", GAME_TILE)
     save_picture(meadow.clay_hint(), "clay_hint.png")
 
 
@@ -360,6 +358,12 @@ def write_items():
         save_picture(items.small(picture), f"ground_items/{name}.png")
     for name, picture in (items.SLOTS | items.SLOT_HINTS).items():
         save_picture(picture, f"ui/{name}.png")
+
+
+def doubled(picture):
+    """A picture drawn at 16 px per tile scaled up to the game's tile, pixel for pixel."""
+    factor = GAME_TILE // TILE
+    return [[colour for colour in row for _ in range(factor)] for row in picture for _ in range(factor)]
 
 
 def scale_up_16_px_art():

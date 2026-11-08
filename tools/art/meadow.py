@@ -10,7 +10,7 @@ stands out from it; seasons.py turns it golden in autumn and to dry stalks in wi
 import random
 
 import items
-from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank, rect
+from canvas import GAME_TILE, OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank, rect
 from trees import dense_foot, ground_shadow
 
 TALL_GRASS_SEEDS = (211, 212, 213)
@@ -76,16 +76,20 @@ def tall_grass_row():
 
 
 def clay_hint():
-    """A 16x16 tile with a few reddish-grey pixels: all that shows of a clay spot."""
-    tile = blank()
+    """A tile with a few reddish-grey crumbs in the grass: all that shows of a clay spot."""
+    tile = blank(GAME_TILE)
     for x, y, colour in (
-        (6, 8, "soil_light"),
-        (7, 8, "bare_light"),
-        (8, 9, "soil_light"),
-        (6, 10, "bare_light"),
-        (7, 10, "soil_light"),
-        (10, 7, "bare_light"),
-        (9, 11, "soil_light"),
+        (12, 16, "soil_light"),
+        (13, 16, "bare_light"),
+        (13, 17, "soil_mid"),
+        (16, 18, "soil_light"),
+        (17, 19, "soil_mid"),
+        (12, 20, "bare_light"),
+        (14, 20, "soil_light"),
+        (15, 21, "soil_mid"),
+        (20, 14, "bare_light"),
+        (21, 15, "soil_mid"),
+        (18, 22, "soil_light"),
     ):
         tile[y][x] = colour
     return tile

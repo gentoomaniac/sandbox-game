@@ -323,7 +323,7 @@ def dust(tile, rng):
         for x, name in enumerate(row):
             if name is None:
                 continue
-            sheet = math.sin(x * 0.7 + phase) * math.sin(y * 0.6 - phase) > 0.45 and (x + y) % 2 == 0
+            sheet = math.sin(x * 0.35 + phase) * math.sin(y * 0.3 - phase) > 0.45 and (x + y) % 2 == 0
             fleck_chance = 0.4 if (x and keep[y][x - 1]) or (y and keep[y - 1][x]) else 0.07
             keep[y][x] = sheet or rng.random() < fleck_chance
     # A tile that was drawn keeps at least a flake, so every look has the same tiles (the game
@@ -353,7 +353,7 @@ def terrain_rows(look, rows):
     if look == "frost":
         for r, row in enumerate(result[1:]):
             for c, tile in enumerate(row):
-                sparkle(tile, random.Random(f"rime-{r}-{c}"), 3)
+                sparkle(tile, random.Random(f"rime-{r}-{c}"), 8)
     return result
 
 

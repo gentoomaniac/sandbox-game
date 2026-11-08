@@ -76,6 +76,16 @@ func test_the_atlases_follow_the_art_set() -> void:
 	assert_eq(summer.texture.resource_path, TerrainTileset.TERRAIN_ATLAS_PATH)
 
 
+func test_the_ground_moves_on_the_pixels_of_its_art_in_either_set() -> void:
+	var motion := AmbientMotion.new()
+	assert_eq(motion.water.get_shader_parameter("art_scale"), 1.0, "drawn at 32 px")
+	assert_eq(motion.flower_sway.get_shader_parameter("art_scale"), 2.0, "still 16 px art")
+	ArtSet.is_classic = true
+	motion.show_art_set()
+	for material in [motion.water, motion.mud, motion.decoration_sway, motion.lily_pads]:
+		assert_eq(material.get_shader_parameter("art_scale"), 2.0, "the classic 16 px art")
+
+
 ## The atlas cells of an image that have a pixel drawn.
 func _drawn_cells(image: Image) -> Array[Vector2i]:
 	var size := TerrainTileset.TILE_SIZE

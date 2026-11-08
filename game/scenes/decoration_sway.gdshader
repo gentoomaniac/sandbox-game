@@ -8,8 +8,6 @@ shader_type canvas_item;
 #include "res://game/scenes/art_scale.gdshaderinc"
 #include "res://game/scenes/sway.gdshaderinc"
 
-// A tile in art pixels, the 16 px art's (in art pixels, as everything below).
-const float TILE = 16.0;
 // How far these plants bend, as a share of the wind's sway.
 uniform float strength = 0.5;
 
@@ -25,8 +23,10 @@ float shift_of(float height, float offset) {
 }
 
 void fragment() {
+	// A tile in art pixels, as everything below.
+	float tile = GAME_TILE / art_scale;
 	vec2 texel = floor(UV / TEXTURE_PIXEL_SIZE / art_scale);
-	vec2 local = mod(texel, TILE);
+	vec2 local = mod(texel, tile);
 	vec2 origin = floor(world_position / art_scale) - local;
 	float offset = sway_at(origin) * strength;
 	float direction = clamp(whole_pixels(offset), -1.0, 1.0);
@@ -40,7 +40,7 @@ void fragment() {
 	bool own_stem = true;
 	bool moved_stem = true;
 	for (float below = 0.0; below <= 2.0; below += 1.0) {
-		bool in_tile = local.y + below < TILE;
+		bool in_tile = local.y + below < tile;
 		vec2 own_source = (texel + vec2(0.0, below)) * art_scale + 0.5;
 		vec2 moved_source = (texel + vec2(-direction, below)) * art_scale + 0.5;
 		vec4 own_texel = texture(TEXTURE, own_source * TEXTURE_PIXEL_SIZE);
@@ -55,7 +55,7 @@ void fragment() {
 		own_height += own_stem ? 1.0 : 0.0;
 		moved_height += moved_stem ? 1.0 : 0.0;
 	}
-	bool is_moved_in_tile = moved_local.x >= 0.0 && moved_local.x < TILE;
+	bool is_moved_in_tile = moved_local.x >= 0.0 && moved_local.x < tile;
 	vec4 shown = vec4(0.0);
 	if (direction != 0.0 && is_moved_in_tile && moved.a > 0.0
 			&& shift_of(moved_height, offset) == direction) {

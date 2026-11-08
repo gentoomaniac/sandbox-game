@@ -21,9 +21,10 @@ const float HIGH_WATER = 1.06;
 const float TROUGH_DEPTH = 0.07;
 // How far below the water's edge (on the relief's scale) its light line reaches.
 const float SHORE = 0.025;
-// The relief: broad swells and smaller hollows, in art pixels across.
-const float SWELL_SIZE = 70.0;
-const float HOLLOW_SIZE = 23.0;
+// The relief: broad swells and smaller hollows, in world pixels across, so the tide spreads
+// alike over the art of either set (see ArtSet).
+const float SWELL_SIZE = 140.0;
+const float HOLLOW_SIZE = 46.0;
 
 varying vec2 world_position;
 varying vec4 modulate;
@@ -58,7 +59,9 @@ void fragment() {
 	vec4 base = texture(TEXTURE, UV);
 	if (base.a > 0.0) {
 		vec2 p = floor(world_position / art_scale);
-		float height = 0.65 * value_noise(p, SWELL_SIZE, 1u) + 0.35 * value_noise(p, HOLLOW_SIZE, 2u);
+		vec2 relief_position = p * art_scale;
+		float height = 0.65 * value_noise(relief_position, SWELL_SIZE, 1u)
+			+ 0.35 * value_noise(relief_position, HOLLOW_SIZE, 2u);
 		if (distance(base.rgb, MUD_DARK) < 0.02) {
 			height -= TROUGH_DEPTH;
 		}
