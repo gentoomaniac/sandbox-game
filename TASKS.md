@@ -1274,6 +1274,32 @@ terns plunge-diving for fish; cormorants diving and drying their wings. Ambient 
 task 60's geese: on Terrain.MUD, SEA and SALT_MARSH and their edges, by season and time of
 day, spawnable from the console.
 
+## 100. One shared outline helper for the art, and a contrast sheet
+
+- [ ] Done
+
+From the visual review of 2026-11-08 (Fable; the user started it): the art generators have
+eight outline helpers of their own (items.outlined has the only "darkest of the pixel's ramp"
+table; animals, character, trees.shaded_blob, trunks, interior, buildings, chest and four in
+boundaries). Move items' helper and its table to one place (e.g. `canvas.outline(picture,
+colour=None, keep_bottom=False)` and `palette.DARKEST_OF`) and use it where the others do the
+same; no change to how anything looks. Add a tool under tools/ that draws the vegetation atlas
+rows over the ground colours of every look (season, frost, snow), so contrast can be checked.
+
+## 101. Tall grass, fern and reeds stand out from the ground
+
+- [ ] Done
+
+The user's word of 2026-11-08: like the willows, some grass and reeds (and the bushes by a
+stream) have too little contrast against the ground; a slight outline would help. The review
+found tall grass, fern and reeds drawn in the two lightest shades of their ramp, 40-60 % empty,
+with no dark edge and a 1-2 px foot shadow: they vanish on olive and autumn ground. Fix, within
+the SPEC rule (no ink on vegetation, ramp-darkest outlines only, none on terrain): a ground
+shadow under each clump (`trees.ground_shadow()`), the bottom third of a clump in its two
+darkest shades with light shades on top, and the task-100 outline only round dense cores,
+never single blade tips; check every season, dusk, night and snow with the contrast sheet.
+The willow (TASKS Later, graphics review) is a task of its own.
+
 ## Later (not part of the prototype)
 
 - **Graphics review: willows melt into the grass** (the user, 2026-11-06, with a screenshot;
