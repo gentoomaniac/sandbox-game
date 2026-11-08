@@ -9,15 +9,17 @@ extends RefCounted
 ## a pixel: the world and the player stay on the art pixel grid, only the window's view of
 ## it moves by fractions.
 
-## Zoom 1 is the widest view, where the game starts; zoom 2 shows half as much each way.
-const MIN_ZOOM := 1.0
+## Zoom 1 shows 640×360 art pixels (20×11 tiles of the 32 px art, a whole ×3 at 1080p); the
+## game starts at the widest zoom, which shows twice that each way, 40×22 tiles as it did
+## before the art went to 32 px. Zoom 2 shows half as much each way as zoom 1.
+const MIN_ZOOM := 0.5
 const MAX_ZOOM := 2.0
-## At zoom 1 the window shows this many art pixels from top to bottom: a native 640×360 at 16:9
-## (20×11 tiles), a whole multiple of the usual screens (×3 at 1080p, ×4 at 1440p).
-const WIDEST_VISIBLE_HEIGHT := 360.0
-## Widest view (zoom 1 at 16:9) plus a margin on every side for the sub-pixel offset.
+const ZOOM_ONE_VISIBLE_HEIGHT := 360.0
+## What the widest view (zoom `MIN_ZOOM` at 16:9) shows, in art pixels.
+const WIDEST_VISIBLE_SIZE := Vector2i(1280, 720)
+## The widest view plus a margin on every side for the sub-pixel offset.
 const VIEWPORT_MARGIN := 4
-const VIEWPORT_SIZE := Vector2i(640 + 2 * VIEWPORT_MARGIN, 360 + 2 * VIEWPORT_MARGIN)
+const VIEWPORT_SIZE := WIDEST_VISIBLE_SIZE + Vector2i.ONE * 2 * VIEWPORT_MARGIN
 ## Zoom change of one mouse wheel notch.
 const WHEEL_ZOOM_FACTOR := 1.1
 
@@ -33,8 +35,8 @@ static func zoom_after_wheel(zoom: float, notches: float) -> float:
 ## Window pixels per art pixel. A window wider than 16:9 would need more width than the
 ## viewport has, so it shows a bit less than the zoom asks for instead.
 static func screen_scale(window_size: Vector2, zoom: float) -> float:
-	var for_height := window_size.y * zoom / WIDEST_VISIBLE_HEIGHT
-	var for_width := window_size.x / (VIEWPORT_SIZE.x - 2 * VIEWPORT_MARGIN)
+	var for_height := window_size.y * zoom / ZOOM_ONE_VISIBLE_HEIGHT
+	var for_width := window_size.x / WIDEST_VISIBLE_SIZE.x
 	return maxf(for_height, for_width)
 
 

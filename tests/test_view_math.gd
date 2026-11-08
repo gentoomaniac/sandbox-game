@@ -5,7 +5,7 @@ const WINDOW := Vector2(1920, 1080)
 
 
 func test_zoom_is_clamped_to_the_allowed_range() -> void:
-	assert_eq(ViewMath.clamp_zoom(0.1), 1.0)
+	assert_eq(ViewMath.clamp_zoom(0.1), 0.5)
 	assert_eq(ViewMath.clamp_zoom(7.0), 2.0)
 	assert_eq(ViewMath.clamp_zoom(1.37), 1.37)
 
@@ -14,27 +14,40 @@ func test_wheel_zooms_by_a_factor_per_notch_and_stays_clamped() -> void:
 	assert_almost_eq(ViewMath.zoom_after_wheel(1.0, 1), 1.1, 0.0001)
 	assert_almost_eq(ViewMath.zoom_after_wheel(1.1, -1), 1.0, 0.0001)
 	assert_eq(ViewMath.zoom_after_wheel(1.9, 5), 2.0)
-	assert_eq(ViewMath.zoom_after_wheel(1.05, -5), 1.0)
+	assert_eq(ViewMath.zoom_after_wheel(0.55, -5), 0.5)
 
 
-func test_widest_view_is_640_by_360_art_pixels_at_a_whole_scale() -> void:
+func test_zoom_one_is_640_by_360_art_pixels_at_a_whole_scale() -> void:
 	assert_eq(ViewMath.visible_size(WINDOW, 1.0), Vector2(640, 360))
 	assert_eq(ViewMath.screen_scale(WINDOW, 1.0), 3.0)
 	assert_eq(ViewMath.screen_scale(Vector2(2560, 1440), 1.0), 4.0)
 
 
-func test_widest_view_is_20_by_11_tiles() -> void:
+func test_widest_view_is_1280_by_720_art_pixels() -> void:
+	assert_eq(ViewMath.visible_size(WINDOW, ViewMath.MIN_ZOOM), Vector2(1280, 720))
+	assert_eq(ViewMath.screen_scale(WINDOW, ViewMath.MIN_ZOOM), 1.5)
+	# At 1280x720 an art pixel is a window pixel.
+	assert_eq(ViewMath.screen_scale(Vector2(1280, 720), ViewMath.MIN_ZOOM), 1.0)
+
+
+func test_widest_view_is_40_by_22_tiles() -> void:
 	var tiles := ViewMath.visible_size(WINDOW, ViewMath.MIN_ZOOM) / TerrainTileset.TILE_SIZE
-	assert_eq(Vector2i(tiles), Vector2i(20, 11))
+	assert_eq(Vector2i(tiles), Vector2i(40, 22))
 
 
 func test_closest_view_is_320_by_180_art_pixels() -> void:
 	assert_eq(ViewMath.visible_size(WINDOW, ViewMath.MAX_ZOOM), Vector2(320, 180))
 
 
+func test_the_viewport_holds_the_widest_view_and_a_margin() -> void:
+	var margin := Vector2i.ONE * 2 * ViewMath.VIEWPORT_MARGIN
+	assert_eq(ViewMath.VIEWPORT_SIZE - margin, ViewMath.WIDEST_VISIBLE_SIZE)
+
+
 func test_a_wider_window_never_shows_more_than_the_viewport_holds() -> void:
 	var ultrawide := Vector2(3440, 1080)
-	assert_almost_eq(ViewMath.visible_size(ultrawide, 1.0).x, 640.0, 0.001)
+	var widest := ViewMath.visible_size(ultrawide, ViewMath.MIN_ZOOM)
+	assert_almost_eq(widest.x, 1280.0, 0.001)
 
 
 func test_whole_pixel_target_shows_the_viewport_centre() -> void:
