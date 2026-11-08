@@ -240,8 +240,8 @@ _SNOW_MOUND = {
 }
 _DRY_FERN = {"green_bright": "straw", "green_light": "straw", "green": "reed", "green_dark": "olive", "green_deep": "umber"}
 
-# How the snow cap of each object is drawn: (surfaces, edges, depth in px). The plants are drawn
-# at 32 px per tile, the rest of the atlas still at 16 px (see DOUBLED_ROWS in generate.py).
+# How the snow cap of each object is drawn: (surfaces, edges, depth in px), on the art drawn at
+# 32 px per tile.
 _SNOW_CONIFER = ({"green_light", "green", "green_dark", "olive"}, {"green_deep"}, 4)
 _SNOW_PINE = ({"meadow_light", "meadow", "green_deep"}, {"bog_dark"}, 4)
 _SNOW_BUSH = ({"mud", "mud_dark", "soil_dark"}, {"green_deep"}, 9)
@@ -499,7 +499,7 @@ _WINTER_LOOKS = {
     "oven": {"frost_only": _FROST_STONE, "snow": ({"rust", "red_light", "rust_dark"}, set(), 4)},
     "workbench": {"frost_only": _FROST_STONE, "snow": ({"sand_light", "sand"}, set(), 3)},
     # The Ewer: snow on its deck and on the furled sail, a frost rimes the deck in specks.
-    "ewer": {"specks": {"bare_light", "bare"}, "snow": ({"bare_light", "bare", "umber", "rust_dark"}, set(), 2)},
+    "ewer": {"specks": {"bare_light", "bare"}, "snow": ({"bare_light", "bare", "ochre_dark", "umber", "rust_dark"}, set(), 3)},
     # Snow on the arms of a cross and the tops of the stones.
     "grave": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "soil_mid", "bare_light", "sand_light", "sand", "stone_light", "stone"}, set(), 4)},
     # The landing: snow covers the jetty's deck and the boat's floor boards (a dusting only caps

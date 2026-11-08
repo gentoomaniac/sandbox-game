@@ -70,7 +70,9 @@ func test_the_atlas_rows_are_those_of_the_art_generator() -> void:
 			var kind: String = ART_KINDS.get(type_name, String(type_name))
 			assert_eq(generated["kind"], kind, "row %d is drawn as %s" % [row, type_name])
 			assert_eq(
-				generated["looks"], ObjectTileset.looks_count(object_type), "%s looks" % type_name
+				generated["looks"],
+				ObjectTileset.looks_count(object_type) * object_type.get("cells_wide", 1),
+				"%s cells" % type_name
 			)
 	for row: int in rows:
 		assert_true(types_by_row.has(row), "row %d (%s) has a type" % [row, rows[row]["kind"]])

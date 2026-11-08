@@ -263,7 +263,8 @@ def object_atlas():
         ("carved_chest", [standing_outdoors(crafts.carved_chest())]),
         ("kiln", [standing_outdoors(crafts.kiln())]),
         ("oven", [standing_outdoors(crafts.oven())]),
-        ("ewer", coast.ewer_row()),
+        # The new Ewer's picture is three cells wide: the classic one lies in the middle one.
+        ("ewer", [blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT), *coast.ewer_row(), blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)]),
         ("grave", [standing_outdoors(picture) for picture in graves.graves()]),
         ("jetty", landing.jetty_row()),
         ("rowing_boat", landing.rowing_boat_row()),

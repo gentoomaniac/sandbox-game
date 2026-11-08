@@ -48,9 +48,10 @@ func _init(crop_rules := CropRules.default_rules(), motion: AmbientMotion = null
 			var object_type: Dictionary = WorldObjectTypes.TYPES[type]
 			if not object_type.has("atlas_row"):
 				continue
+			var cells_wide: int = object_type.get("cells_wide", 1)
 			for variant in looks_count(object_type):
-				var atlas_cell := Vector2i(variant, object_type["atlas_row"])
-				source.create_tile(atlas_cell)
+				var atlas_cell := Vector2i(variant * cells_wide, object_type["atlas_row"])
+				source.create_tile(atlas_cell, Vector2i(cells_wide, 1))
 				var tile_data := source.get_tile_data(atlas_cell, 0)
 				tile_data.texture_origin = cell_origin(object_type["footprint"])
 				# Sorted by the middle of the footprint's bottom row, like the player standing there;
@@ -124,7 +125,8 @@ func _show_crop_sheet(crop_id: StringName) -> void:
 
 
 ## How many pictures a type has in its atlas row: its variants, and for a bush that can be
-## picked the same again, picked; a line object has a picture per connection mask of each.
+## picked the same again, picked; a line object has a picture per connection mask of each. A
+## picture spans `cells_wide` cells.
 static func looks_count(object_type: Dictionary) -> int:
 	if object_type.has("connects"):
 		return object_type["variants"] * WorldObjectTypes.CONNECTION_LOOKS
@@ -159,4 +161,4 @@ static func atlas_cell(object: WorldObject, is_bare := false, connections := 0) 
 		return Vector2i(column, object_type["atlas_row"])
 	if object.is_picked() or is_bare:
 		variant += object_type["variants"]
-	return Vector2i(variant, object_type["atlas_row"])
+	return Vector2i(variant * object_type.get("cells_wide", 1), object_type["atlas_row"])

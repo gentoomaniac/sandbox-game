@@ -10,9 +10,8 @@ The sizes below are those of the art as drawn, at canvas.TILE = 16 px per tile, 
 say otherwise. The files of DOUBLED are written GAME_TILE / TILE times as big.
 
 assets/objects.png: world objects, 96x160 cells (GAME_OBJECT_CELL_WIDTH x
-GAME_OBJECT_CELL_HEIGHT), one row per kind (the table above `object_atlas`). The rows of
-DOUBLED_ROWS are drawn in 48x80 cells at 16 px per tile and scaled up; the others at 32 px.
-An object stands on one tile: the bottom centre 32x32 of its cell (x 32..63, y 128..159). A
+GAME_OBJECT_CELL_HEIGHT) drawn at 32 px per tile, one row per kind (the table above
+`object_atlas`); the Ewer's picture is three cells wide. An object stands on one tile: the bottom centre 32x32 of its cell (x 32..63, y 128..159). A
 tree's crown rises above that, over the tiles around it. An object on several tiles (boulder 2x1,
 bedroll 1x2) is centred on its footprint, with the cell's bottom on the footprint's bottom.
 
@@ -136,13 +135,6 @@ def standing_outdoors(picture):
     return canvas
 
 
-# The rows of the object atlas still drawn at 16 px per tile: write_seasonal_art scales them up
-# to the game's tile in every look, after the looks are made from them, so they look as they did.
-# The plants are drawn at 32 px; task 111 draws the rest anew: the camp, the walls, fences, the
-# dyke and the placed objects.
-DOUBLED_ROWS = {"ewer"}
-
-
 # The rows of assets/objects.png, as (kind, looks). `atlas_row` of each type in
 # game/state/world_object_types.gd is its number here, and tests/test_object_atlas.gd checks
 # it against assets/objects_rows.txt, which is written from the list below. A tree's trunks are
@@ -194,7 +186,7 @@ DOUBLED_ROWS = {"ewer"}
 # 42 carved_chest (1)
 # 43 kiln (1)
 # 44 oven (1)
-# 45 ewer (1)
+# 45 ewer (1, three cells wide)
 # 46 grave (3)
 # 47 jetty (16, one per connection mask, see landing.py)
 # 48 rowing_boat (1)
@@ -251,10 +243,16 @@ def object_atlas():
     ]
 
 
+def atlas_cells(picture):
+    """The cells of the object atlas a picture fills: one, or for a picture as wide as several
+    (the Ewer's, see its type's `cells_wide`) its parts, from the left."""
+    return [[row[left : left + GAME_OBJECT_CELL_WIDTH] for row in picture] for left in range(0, len(picture[0]), GAME_OBJECT_CELL_WIDTH)]
+
+
 def write_object_rows(objects):
-    """assets/objects_rows.txt: `row kind looks` per row of objects.png, which the test of the
+    """assets/objects_rows.txt: `row kind cells` per row of objects.png, which the test of the
     object atlas compares with the types of world_object_types.gd."""
-    lines = [f"{row} {kind} {len(looks)}" for row, (kind, looks) in enumerate(objects)]
+    lines = [f"{row} {kind} {sum(len(atlas_cells(look)) for look in looks)}" for row, (kind, looks) in enumerate(objects)]
     (ASSETS / "objects_rows.txt").write_text("\n".join(lines) + "\n")
 
 
@@ -292,11 +290,7 @@ def write_seasonal_art():
             save(seasons.terrain_rows(look, terrain_rows, layers), f"terrain{suffix}.png", GAME_TILE)
             decorations = seasons.ground_rows(look, decoration_rows, layers, seasons.STANDING.get(look))
             save(decorations, f"decorations{suffix}.png", GAME_TILE)
-        rows = seasons.object_rows(look, objects, redraws)
-        rows = [
-            [doubled(cell) for cell in row] if kind in DOUBLED_ROWS else row
-            for (kind, _looks), row in zip(objects, rows)
-        ]
+        rows = [[cell for picture in row for cell in atlas_cells(picture)] for row in seasons.object_rows(look, objects, redraws)]
         save(rows, f"objects{suffix}.png", GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)
         if look in seasons.HOUSE_LOOKS:
             for name, (picture, snowy) in houses.items():

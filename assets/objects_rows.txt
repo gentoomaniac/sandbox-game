@@ -43,7 +43,7 @@
 42 carved_chest 1
 43 kiln 1
 44 oven 1
-45 ewer 1
+45 ewer 3
 46 grave 3
 47 jetty 16
 48 rowing_boat 1

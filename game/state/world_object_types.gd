@@ -66,7 +66,9 @@ extends RefCounted
 ## - placed_on: the player places it on these terrains (and only on them) instead of on ground
 ##   that can be built on (see Tile `is_buildable`): the jetty over water and mud, the boat;
 ## - deck: it is walked on, whatever the ground under it (the jetty over water), and drawn under
-##   whoever stands on it.
+##   whoever stands on it;
+## - cells_wide: its picture spans this many cells of its atlas row side by side (the Ewer, in
+##   scale with the people), one cell without it.
 
 const OAK := &"oak"
 const STONE := &"stone"
@@ -136,7 +138,7 @@ const FRUIT := &"fruit"
 
 ## The largest footprint any type has, in tiles: what World looks back over to find the
 ## object that covers a tile.
-const MAX_FOOTPRINT := Vector2i(3, 2)
+const MAX_FOOTPRINT := Vector2i(7, 2)
 
 ## The atlas rows of the long trunks; the short one is the row after each. They follow the order
 ## in which tools/art/generate.py lays out the object atlas (assets/objects_rows.txt, checked by a
@@ -580,11 +582,12 @@ const _OTHER_TYPES := {
 	},
 	EWER:
 	{
-		"footprint": Vector2i(3, 1),
+		"footprint": Vector2i(7, 1),
 		"blocks_walking": true,
 		"harvest_level": 0,
 		"atlas_row": _EWER_ROW,
 		"variants": 1,
+		"cells_wide": 3,
 	},
 	# The grave marker the player places; its interior picture is the ghost (the oak cross).
 	GRAVE:

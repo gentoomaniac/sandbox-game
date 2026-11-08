@@ -133,7 +133,8 @@ func test_a_warft_stands_on_the_salt_marsh_with_a_pond_on_top() -> void:
 	assert_true(warft.is_walkable())
 
 
-func test_an_ewer_lies_on_three_tiles_of_mud_and_blocks_the_way() -> void:
+func test_an_ewer_lies_on_its_footprint_of_mud_and_blocks_the_way() -> void:
+	var length: int = WorldObjectTypes.TYPES[WorldObjectTypes.EWER]["footprint"].x
 	var ewers: Array[Vector2i] = []
 	for y in range(-600, 600):
 		for x in range(-360, -260):
@@ -141,12 +142,12 @@ func test_an_ewer_lies_on_three_tiles_of_mud_and_blocks_the_way() -> void:
 			var terrain := _generator.terrain_at(tile)
 			if _generator.object_type_at(tile, terrain) == WorldObjectTypes.EWER:
 				ewers.append(tile)
-				for dx in 3:
+				for dx in length:
 					assert_eq(_generator.terrain_at(tile + Vector2i(dx, 0)), Tile.Terrain.MUD)
 	assert_gt(ewers.size(), 3, "a few Ewers along 1200 rows of coast")
 	var world := World.new(SEED)
 	var ewer := ewers[0]
 	world.add_chunk(_generator.generate_chunk(Chunk.world_to_chunk(ewer)))
-	world.add_chunk(_generator.generate_chunk(Chunk.world_to_chunk(ewer + Vector2i(2, 0))))
-	for dx in 3:
+	world.add_chunk(_generator.generate_chunk(Chunk.world_to_chunk(ewer + Vector2i(length - 1, 0))))
+	for dx in length:
 		assert_false(world.is_walkable(ewer + Vector2i(dx, 0)), "under the Ewer")

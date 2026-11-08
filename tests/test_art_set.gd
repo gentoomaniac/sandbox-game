@@ -120,10 +120,26 @@ func test_the_classic_object_atlases_have_the_cells_of_the_new() -> void:
 		var path := SeasonalArt.path(ObjectTileset.ATLAS_PATH, look)
 		var classic := path.replace("res://assets/", ArtSet.CLASSIC_DIR)
 		assert_eq(
-			_drawn_cells(load(classic).get_image(), cell_size),
-			_drawn_cells(load(path).get_image(), cell_size),
+			_drawn_pictures(_drawn_cells(load(classic).get_image(), cell_size)),
+			_drawn_pictures(_drawn_cells(load(path).get_image(), cell_size)),
 			path
 		)
+
+
+## The pictures of the object atlas that the drawn `cells` belong to, by their first cell: a
+## picture `cells_wide` cells wide counts once (the classic Ewer fills only its middle cell).
+func _drawn_pictures(cells: Array[Vector2i]) -> Array[Vector2i]:
+	var cells_wide := {}
+	for object_type: Dictionary in WorldObjectTypes.TYPES.values():
+		if object_type.has("cells_wide"):
+			cells_wide[object_type["atlas_row"]] = object_type["cells_wide"]
+	var pictures: Array[Vector2i] = []
+	for cell in cells:
+		var width: int = cells_wide.get(cell.y, 1)
+		var picture := Vector2i(cell.x - cell.x % width, cell.y)
+		if not pictures.has(picture):
+			pictures.append(picture)
+	return pictures
 
 
 func test_the_object_atlases_follow_the_art_set() -> void:

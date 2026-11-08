@@ -755,7 +755,7 @@ func _swap_cell_for_sprite(object: WorldObject) -> void:
 ## as the tile map draws it (see ObjectTileset): sorted by the middle of the footprint's bottom
 ## row, the cell's bottom on the footprint's bottom edge.
 func _place_object_sprite(sprite: Sprite2D, object: WorldObject) -> void:
-	var cell_size := Vector2i(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT)
+	var cell_size := _picture_size(object)
 	sprite.texture = _object_texture(object)
 	sprite.centered = false
 	var footprint: Vector2i = WorldObjectTypes.TYPES[object.type]["footprint"]
@@ -772,8 +772,14 @@ func _object_texture(object: WorldObject) -> AtlasTexture:
 	var cell_size := Vector2i(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT)
 	var texture := AtlasTexture.new()
 	texture.atlas = load(ObjectTileset.picture(_object_look(object)))
-	texture.region = Rect2(_atlas_cell(object) * cell_size, cell_size)
+	texture.region = Rect2(_atlas_cell(object) * cell_size, _picture_size(object))
 	return texture
+
+
+## The size of an object's picture in the atlas: a cell, or `cells_wide` of them.
+func _picture_size(object: WorldObject) -> Vector2i:
+	var cells_wide: int = object.type_data().get("cells_wide", 1)
+	return Vector2i(cells_wide * ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT)
 
 
 ## The object's cell in its source as it looks now (see ObjectTileset.atlas_cell).
