@@ -22,13 +22,13 @@ const SWALLOW := &"swallow"
 const ARRIVE := &"arrive"
 const PERCH := &"perch"
 
-const WALK_SPEED := 6.0 * TerrainTileset.ART_16_SCALE
-const STALK_SPEED := 9.0 * TerrainTileset.ART_16_SCALE
-const FLY_SPEED := 32.0 * TerrainTileset.ART_16_SCALE
-const CLIMB_SPEED := 14.0 * TerrainTileset.ART_16_SCALE
+const WALK_SPEED := 12.0
+const STALK_SPEED := 18.0
+const FLY_SPEED := 64.0
+const CLIMB_SPEED := 28.0
 ## How high it flies over open ground, and above the roof it flies to or leaves.
-const FLIGHT_HEIGHT := 40.0 * TerrainTileset.ART_16_SCALE
-const ROOF_CLEARANCE := 24.0 * TerrainTileset.ART_16_SCALE
+const FLIGHT_HEIGHT := 80.0
+const ROOF_CLEARANCE := 48.0
 ## A wingbeat is the three frames of `fly` and back; between a few beats it glides.
 const WINGBEAT_FRAMES_PER_SECOND := 5.0
 const FLAP_SECONDS := 2.4
@@ -45,12 +45,12 @@ const SIGHT_TILES := 3.0
 const STALK_SECONDS := 15.0
 ## The tip of its bill in a strike is this many pixels ahead of its feet, and takes a frog this
 ## near to it.
-const BILL_REACH := 10.0 * TerrainTileset.ART_16_SCALE
-const CATCH_DISTANCE := 4.0 * TerrainTileset.ART_16_SCALE
+const BILL_REACH := 20.0
+const CATCH_DISTANCE := 8.0
 const STRIKE_SECONDS := 0.8
 const SWALLOW_SECONDS := 1.6
 ## It is gone once it is this far outside the view: far enough for its height and its wings.
-const LEAVE_MARGIN := 72.0 * TerrainTileset.ART_16_SCALE
+const LEAVE_MARGIN := 144.0
 
 ## The house whose roof it stands on or flies to, or null, and the column of the house's
 ## picture it stands on.

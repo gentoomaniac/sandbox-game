@@ -14,29 +14,29 @@ const BIRDS := {
 	{
 		"sheet": WildlifeRules.BIRD,
 		"count": Vector2i(3, 6),
-		"speed": 48.0 * TerrainTileset.ART_16_SCALE,
-		"height": 32.0 * TerrainTileset.ART_16_SCALE,
+		"speed": 96.0,
+		"height": 64.0,
 		"wingbeat": 10.0,
 		"ping_pong": false,
-		"spacing": Vector2(5.0, 6.0) * TerrainTileset.ART_16_SCALE,
+		"spacing": Vector2(10.0, 12.0),
 		"shadow": 2,
 	},
 	WildlifeRules.FLYING_GEESE:
 	{
 		"sheet": GroundFlock.FLOCKS[WildlifeRules.GEESE]["sheet"],
 		"count": Vector2i(7, 13),
-		"speed": 26.0 * TerrainTileset.ART_16_SCALE,
-		"height": 56.0 * TerrainTileset.ART_16_SCALE,
+		"speed": 52.0,
+		"height": 112.0,
 		"wingbeat": 5.0,
 		"ping_pong": true,
-		"spacing": Vector2(14.0, 12.0) * TerrainTileset.ART_16_SCALE,
+		"spacing": Vector2(28.0, 24.0),
 		"shadow": 4,
 	},
 }
 const ANIMATION := &"fly"
 ## Gone once this far outside the view, having been inside it, and beyond its height and the
 ## length of its V, so that no bird of it is still seen.
-const LEAVE_MARGIN := 24.0 * TerrainTileset.ART_16_SCALE
+const LEAVE_MARGIN := 48.0
 const MAX_SECONDS := 90.0
 
 var _birds_of_kind: Dictionary
@@ -116,7 +116,7 @@ func _update(delta: float) -> void:
 	var height: float = _birds_of_kind["height"]
 	var wingbeat: float = _birds_of_kind["wingbeat"]
 	for i in _birds.size():
-		var bob := sin(_state_time * 3.0 + i) * 1.5 * TerrainTileset.ART_16_SCALE
+		var bob := sin(_state_time * 3.0 + i) * 3.0
 		var offset := _offsets[i]
 		_birds[i].position = offset + Vector2(0.0, -height + bob)
 		# Each bird beats its wings a little out of step with the others.

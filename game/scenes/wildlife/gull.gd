@@ -11,11 +11,11 @@ const PECK := &"peck"
 const SWIM := &"swim"
 const FLY := &"fly"
 
-const WALK_SPEED := 8.0 * TerrainTileset.ART_16_SCALE
-const DRIFT_SPEED := 2.0 * TerrainTileset.ART_16_SCALE
-const FLY_SPEED := 36.0 * TerrainTileset.ART_16_SCALE
-const CLIMB_SPEED := 14.0 * TerrainTileset.ART_16_SCALE
-const FLIGHT_HEIGHT := 32.0 * TerrainTileset.ART_16_SCALE
+const WALK_SPEED := 16.0
+const DRIFT_SPEED := 4.0
+const FLY_SPEED := 72.0
+const CLIMB_SPEED := 28.0
+const FLIGHT_HEIGHT := 64.0
 ## A wingbeat is the three frames of `fly` and back; between a few beats it glides.
 const WINGBEAT_FRAMES_PER_SECOND := 6.0
 const FLAP_SECONDS := 1.0
@@ -24,7 +24,7 @@ const GLIDE_FRAME := 1
 ## Half the width of its contact shadow on the ground; on the water it has none.
 const SHADOW_HALF_WIDTH := 4
 ## It is gone once it is this far outside the view: far enough for its height and its wings.
-const LEAVE_MARGIN := 64.0 * TerrainTileset.ART_16_SCALE
+const LEAVE_MARGIN := 128.0
 
 var _state_seconds := 1.0
 ## Where it walks, drifts or flies.

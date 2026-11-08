@@ -8,12 +8,12 @@ const NIBBLE := &"nibble"
 const HOP := &"hop"
 const FLEE := &"flee"
 
-const HOP_LENGTH := 9.0 * TerrainTileset.ART_16_SCALE
+const HOP_LENGTH := 18.0
 const HOP_SECONDS := 0.3
-const HOP_HEIGHT := 3.0 * TerrainTileset.ART_16_SCALE
-const FLEE_HOP_LENGTH := 17.0 * TerrainTileset.ART_16_SCALE
+const HOP_HEIGHT := 6.0
+const FLEE_HOP_LENGTH := 34.0
 const FLEE_HOP_SECONDS := 0.26
-const FLEE_HOP_HEIGHT := 4.0 * TerrainTileset.ART_16_SCALE
+const FLEE_HOP_HEIGHT := 8.0
 ## Each flee hop turns this far off the straight way from the player, to the other side
 ## than the one before.
 const ZIGZAG := 0.7

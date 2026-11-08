@@ -14,11 +14,11 @@ const HOVER := &"hover"
 const DIVE := &"dive"
 const SPLASH := &"splash"
 
-const FLY_SPEED := 30.0 * TerrainTileset.ART_16_SCALE
-const CLIMB_SPEED := 16.0 * TerrainTileset.ART_16_SCALE
-const FLIGHT_HEIGHT := 28.0 * TerrainTileset.ART_16_SCALE
+const FLY_SPEED := 60.0
+const CLIMB_SPEED := 32.0
+const FLIGHT_HEIGHT := 56.0
 ## How fast it falls when it plunges, in pixels per second.
-const DIVE_SPEED := 80.0 * TerrainTileset.ART_16_SCALE
+const DIVE_SPEED := 160.0
 ## The seconds it flies along before it stops to hover, and hovers.
 const PATROL_SECONDS := Vector2(2.0, 5.0)
 const HOVER_SECONDS := Vector2(1.0, 2.5)
@@ -31,12 +31,12 @@ const SPLASH_SECONDS := 0.9
 const CATCH_CHANCE := 0.4
 const FISH_SECONDS := 4.0
 ## It looks this far ahead, in pixels, for where the water ends.
-const LOOK_AHEAD := 16.0 * TerrainTileset.ART_16_SCALE
+const LOOK_AHEAD := 32.0
 ## The frames per second of its wingbeat in flight and hovering.
 const WINGBEAT_FRAMES_PER_SECOND := 8.0
 const HOVER_FRAMES_PER_SECOND := 10.0
 ## It is gone once it is this far outside the view: far enough for its height and its wings.
-const LEAVE_MARGIN := 48.0 * TerrainTileset.ART_16_SCALE
+const LEAVE_MARGIN := 96.0
 
 var _state_seconds := 1.0
 var _direction := Vector2.RIGHT

@@ -8,15 +8,15 @@ const LEAVE := &"leave"
 ## The colours the sheet has, one row each.
 const VARIANTS: Array[StringName] = [&"flutter", &"flutter_pale", &"flutter_pink"]
 
-const SPEED := 11.0 * TerrainTileset.ART_16_SCALE
-const LEAVE_SPEED := 22.0 * TerrainTileset.ART_16_SCALE
+const SPEED := 22.0
+const LEAVE_SPEED := 44.0
 ## The most it turns per second, in radians, and how slowly the turning swings from one side
 ## to the other.
 const MAX_TURN := 1.3
 const TURN_SWING := 0.6
-const FLIGHT_HEIGHT := 7.0 * TerrainTileset.ART_16_SCALE
-const BOB := 3.0 * TerrainTileset.ART_16_SCALE
-const LEAVE_MARGIN := 12.0 * TerrainTileset.ART_16_SCALE
+const FLIGHT_HEIGHT := 14.0
+const BOB := 6.0
+const LEAVE_MARGIN := 24.0
 
 var _heading := 0.0
 var _swing_phase := 0.0

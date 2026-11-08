@@ -23,7 +23,7 @@ signal animal_added(animal: Animal)
 ## Tries to find a place for one animal before giving up until the next second.
 const SPAWN_TRIES := 10
 ## Where animals made by hand appear: this far from the player, in pixels.
-const DEBUG_DISTANCE := Vector2(24.0, 70.0) * TerrainTileset.ART_16_SCALE
+const DEBUG_DISTANCE := Vector2(48.0, 140.0)
 ## A bee made by hand picks one of this many flowers nearest to the player.
 const DEBUG_FLOWERS := 5
 ## The birds of the coast keep to it even when made by hand: none appear where it is not near.
@@ -31,9 +31,9 @@ const SEA_BIRDS: Array[StringName] = [
 	WildlifeRules.OYSTERCATCHER, WildlifeRules.DUNLIN, WildlifeRules.GULL, WildlifeRules.TERN
 ]
 ## A flock crossing the view starts this far behind the ring, in pixels.
-const FLOCK_ENTRY_DISTANCE := 120.0 * TerrainTileset.ART_16_SCALE
+const FLOCK_ENTRY_DISTANCE := 240.0
 ## A stork flying to a roof comes from this far beside the view, in pixels.
-const ARRIVAL_MARGIN := 48.0 * TerrainTileset.ART_16_SCALE
+const ARRIVAL_MARGIN := 96.0
 
 var rules: WildlifeRules
 var world_view: WorldView
