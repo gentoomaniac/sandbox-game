@@ -16,19 +16,19 @@ const FOG_SHADER := preload("res://game/scenes/weather_fog.gdshader")
 
 ## How fast what is shown follows the weather: the share of the way it covers per second.
 const FOLLOW_RATE := 1.5
-## Art pixels per second. The shaders work on the pixels of the 16 px art (see
-## art_scale.gdshaderinc), and so do all the numbers of pixels here.
-const RAIN_FALL_SPEED := 230.0
-const SNOW_FALL_SPEED := 24.0
+## Pixels per second. The shaders work on the world's pixels, as the art at 32 px per tile, and
+## so do all the numbers of pixels here.
+const RAIN_FALL_SPEED := 460.0
+const SNOW_FALL_SPEED := 48.0
 ## Pixels per second for every m/s of wind.
-const SNOW_DRIFT_PER_WIND := 5.0
-const STREAK_SPEED_PER_WIND := 14.0
-const FOG_DRIFT_PER_WIND := 1.0
+const SNOW_DRIFT_PER_WIND := 10.0
+const STREAK_SPEED_PER_WIND := 28.0
+const FOG_DRIFT_PER_WIND := 2.0
 ## Sideways pixels a raindrop moves for every pixel it falls, per m/s of wind.
 const RAIN_SLANT_PER_WIND := 0.03
 const MAX_RAIN_SLANT := 0.6
 ## Fog drifts a little even without wind, in pixels per second.
-const FOG_BASE_DRIFT := Vector2(1.5, 0.4)
+const FOG_BASE_DRIFT := Vector2(3.0, 0.8)
 ## Effects with less than this intensity are not drawn at all.
 const MIN_INTENSITY := 0.003
 
@@ -152,5 +152,4 @@ static func _shader_material(shader: Shader, view_size: Vector2) -> ShaderMateri
 	var material := ShaderMaterial.new()
 	material.shader = shader
 	material.set_shader_parameter("view_size", view_size)
-	material.set_shader_parameter("art_scale", float(TerrainTileset.ART_16_SCALE))
 	return material
