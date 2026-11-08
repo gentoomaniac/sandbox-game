@@ -86,16 +86,16 @@ const RIDE_TROT_COLUMNS := [5, 6, 7, 8]
 const RIDE_FRAMES_PER_SECOND := 6.0
 ## Pixels the horse is off the ground in each column: the moments of the trot when no hoof is down.
 ## The rider rises with it.
-const RIDE_LIFTS := [0, 0, 0, 0, 0, 0, 1, 0, 1]
+const RIDE_LIFTS := [0, 0, 0, 0, 0, 0, 2, 0, 2]
 ## Where the rider's feet (the bottom centre of a riding frame) are on a horse facing right, in
-## pixels from the horse's feet: the seat (row 46 of the riding frame) in its saddle. Facing left it
-## is mirrored, facing up or down it is in the middle. The pony is lower. The horse is still drawn
-## at 16 px per tile and doubled (task 114).
-const SEAT := Vector2(-6, -22)
-const PONY_SEAT := Vector2(-4, -4)
-## Half the width of the ridden horse's contact shadow seen from the front or from behind (from the
-## side it is that of FarmAnimalView).
-const RIDDEN_SHADOW_HALF_WIDTH := 6
+## pixels from the horse's feet: the seat (row 46 of the riding frame) on the saddle's lowest row
+## (row 20 of the horse's 76 px frame, row 31 of the pony's). Facing left it is mirrored, facing up
+## or down it is in the middle.
+const SEAT := Vector2(-3, -38)
+const PONY_SEAT := Vector2(-2, -27)
+## Half the width of the ridden horse's contact shadow seen from the front or from behind, from
+## hoof to hoof (from the side it is that of FarmAnimalView), in pixels like the horse's art.
+const RIDDEN_SHADOW_HALF_WIDTH := 8
 ## Half the width of the contact shadow under a figure on its feet, a player's or a villager's, in
 ## pixels of the 16 px art (see Animal `draw_contact_shadow`): as wide as the clogs.
 const FIGURE_SHADOW_HALF_WIDTH := 4
@@ -248,7 +248,7 @@ func _draw() -> void:
 		if _player.facing.x != 0
 		else RIDDEN_SHADOW_HALF_WIDTH
 	)
-	Animal.draw_contact_shadow(self, half_width)
+	Animal.draw_contact_shadow(self, half_width, 1)
 
 
 ## Shows the horse the player rides, if any, in the horse sprites.
@@ -280,7 +280,7 @@ func _show_riding(is_moving: bool) -> void:
 		sprite.frame = row
 	var seat := PONY_SEAT if _player.horse.look == &"pony" else SEAT
 	seat.x *= _player.facing.x
-	figure.position = seat - Vector2(0, RIDE_LIFTS[column] * TerrainTileset.ART_16_SCALE)
+	figure.position = seat - Vector2(0, RIDE_LIFTS[column])
 
 
 func _show_collapse(delta: float) -> void:
