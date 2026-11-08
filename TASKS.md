@@ -1320,6 +1320,17 @@ The user's word of 2026-11-08 (review/art-review-2026-11-08, task 10 and buildin
 boards, a net-drying frame and eel traps by the door, a plank jetty on posts at the water and a
 flat rowing boat beside it.
 
+## 104. Save upgrades for the last 10 versions only
+
+- [ ] Done
+
+The user's word of 2026-11-08: the game is in development and practically only the user plays
+it, so keep the code for save compatibility to the last 10 versions at most. With VERSION 23,
+saves of versions 13 to 23 load; older ones are rejected the existing way (renamed .bak, a new
+game). Drop `_upgrade_from_version_1` to `_12`, the constants and helpers only they use, and
+their tests; state the rule in save_file.gd's header (when VERSION goes up, the oldest step
+goes) and in SPEC "Saving".
+
 ## Later (not part of the prototype)
 
 - **The camp's bedroll and campfire can be taken down and built** (the user, 2026-11-08): today
