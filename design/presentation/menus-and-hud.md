@@ -1,0 +1,34 @@
+# Menus and settings
+
+Decided 2026-11-05.
+
+- **Escape opens the pause menu** (in build mode it first leaves build mode). The game
+  pauses while it is open: Resume, Settings, Save and quit. A title screen comes later.
+- **Settings:**
+  - **Controls:** every game action with its keys. Click a binding, then press a key or
+    mouse button to change it. Each action has up to two bindings. A key already used by
+    another action moves to the new one, and the menu says so. "Reset to defaults" restores
+    all keys.
+  - **Display:** fullscreen or windowed, and the art: new (drawn at 32 px per tile) or classic
+    (the 16 px art doubled, for the groups redrawn since; the rest is the same in both). F7
+    switches the art on the fly (task 117, the user's wish of 2026-11-08).
+  - **Game:** UI scale (a slider from 0.5× to 2×, the UI only, not the world), the
+    energy drain (Low, Normal, High) and the day length variation (0–100 %).
+  - **Audio:** Master, Effects and Ambience volume sliders, and "Sound in background"
+    (off: the game is silent while its window is not focused).
+  - Settings are saved in `user://settings.cfg`, separate from the save game.
+  - Gamepads later.
+- **Tooltips** (decided 2026-11-05): hovering a slot in the hotbar, the inventory or the
+  equipment shows a small framed panel by the cursor: the item's name, kind and weight
+  (each and stack), a one-line description, and what matters for its kind, from the data
+  files: food the energy it gives back (and health once food restores any), tools their type and level, seeds what
+  they grow and where they are planted, equipment its slot (stats once there are any).
+  Settings show a short explanation on hover too.
+- **UI look:** a pixel font and a framed panel (9-slice) in palette colours, in one shared
+  Godot Theme that all UI uses.
+
+## Coordinates display
+
+Decided 2026-11-05. The player's tile coordinates in the top right corner (inside a
+house: the room's, marked "House"). Off by default; F3 (rebindable, "Show coordinates")
+toggles it. Not saved.

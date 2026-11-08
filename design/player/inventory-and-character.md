@@ -1,0 +1,76 @@
+# Inventory, tools and character
+
+- **Tile targeting with the mouse:** the tile highlight follows the mouse cursor.
+  - Within reach (the 3×3 tiles around the player for hand tools; later tools may reach
+    further), the highlight shows normally, and the action (left click or Space) works on
+    that tile.
+  - Out of reach, the highlight turns translucent red and the action does nothing.
+  - When the mouse hasn't moved for a few seconds, the highlight fades out. Then the
+    keyboard action (Space) works on the tile the player faces, as before, and the
+    highlight shows that tile again once the player moves.
+- **Inventory and equipment** (decided 2026-11-05):
+  - The **hotbar** (8 slots, shown at the bottom of the screen; 10 until task 72) and the
+    **backpack** (20 slots) are separate (changed 2026-11-05): what is on the hotbar takes no
+    backpack space, so the player carries 28 slots. Screens show the backpack (4 rows of 5);
+    the hotbar is only the HUD's (changed 2026-11-06, task 88): while the character or chest
+    screen is open it stays lit, above the screens' dimmed backdrop, and is the quick bar
+    there (its slots take the clicks; the screens draw no copy of it). A version 10 save moves
+    what lay in the two dropped hotbar slots into the backpack (onto a stack of the same item
+    first), or onto the ground at the player's feet when the backpack is full.
+    Shift+click from a chest sends a stack to the backpack first, then the hotbar. Picked-up
+    items join a matching stack first, then take the first free slot, hotbar before backpack. Backpack upgrades later add rows to the backpack.
+  - The selected hotbar slot is what the player holds: keys 1–8 pick a slot. The use
+    action (left click or Space) acts with the held item.
+  - Items of the same kind stack, up to 99 per slot; tools don't stack.
+  - Every item has a weight; the total carried weight raises how much energy actions use
+    (see [Energy and sleep](energy-and-sleep.md)).
+  - An inventory screen shows all slots; items can be moved between slots. Putting the picked
+    stack on a different item swaps and the other item is picked up in turn (task 88); the same
+    item stacks. Shift+click on the character screen sends a stack from the backpack to the
+    hotbar and back (onto stacks of the same item first, then the first free slot, as far as
+    there is room); in a chest screen it sends it to the other side.
+  - **Dropping** (task 88): a left click outside the screen's panel with a backpack or hotbar
+    stack picked, or the rebindable `drop_item` action (T) for the held stack, puts the stack on
+    the ground in front of the player as piles like any drop (not inside a house). Such piles
+    are not pulled back until the player has walked out of reach of them; then they are
+    collected as usual.
+- **Character screen** (decided 2026-11-05): Tab opens one screen with the character and
+  their equipment on one side and the inventory on the other.
+  - Equipment slots: head, body, legs, feet, coat, back, main hand, off hand (coat added in
+    task 53, for a jacket over the body item). Clothes, armour
+    and later weapons, shields and backpacks are items with a slot; worn items show on the
+    character (each slot is a sprite layer).
+  - Items move between inventory slots and fitting equipment slots by clicking (pick up,
+    put down, swap); an item only goes into a slot it fits, and fitting slots light up
+    while an item is picked up. Right-click equips or unequips at once.
+  - Worn items count toward the carried weight.
+  - Hair and body are the character's look, not equipment.
+  - New game (period clothes since task 53, North Sea coast 1700–1800): a red waistcoat
+    over a linen shirt, brown knee breeches with white stockings and wooden clogs worn; a
+    straw hat, a knitted cap, a spare linen shirt and a short blue jacket in the inventory.
+    The clothes are light (0.3 to 0.6 kg) and the tools weigh nothing, so a new game carries
+    2.9 kg, far under the 40 kg that cost no extra energy. Three hair styles: short, shoulder length, and long tied back
+    with a ribbon. Old saves (version 8) get the tunic and trousers renamed to the waistcoat
+    and breeches and clogs on their bare feet. The straw hat has a low crown and a wide brim drooping at its ends (task 52,
+    it read as a pith helmet); the knitted cap is a red wool stocking cap, as the guide's
+    period dress has it.
+- **Movement keys:** arrow keys and WASD (decided 2026-11-05). All keys can be changed in
+  the settings (see [Menus and settings](../presentation/menus-and-hud.md)).
+- **Scale between character and world:** the character figure is 61 px tall (hat to soles)
+  in its 32×64 frame (task 113; 27–28 px in 16×32 before). Mature trees are about 2–2.5× the
+  character, a small house about 3.4× (5×3 footprint, door at least as tall as the
+  character); numbers in `docs/archive/art-review-2026-11-05.md`, in pixels of the 16 px art.
+- **Character sprite: 32×64 pixels** (one tile wide, two tall; 16×32 before task 113), built
+  from **layers** (body, clothes, head/hair, held tool or weapon, later gear), so equipment
+  can be shown by swapping or adding a layer instead of redrawing the character. Every layer
+  is drawn on the same figure, so they line up; the faces have eyes with a glint, brows, a
+  nose shadow, cheeks and a mouth. The player and the villagers stand on a small contact
+  shadow, as the animals do.
+- **Tools** are bought and upgraded (decided 2026-11-05):
+  - The player starts with a hoe, axe, pickaxe, watering can, scythe, shovel and a bag of
+    turnip seeds, all tools at level 1.
+  - Upgrades later come from a smith in a settlement, in tiers (level 2 copper, level 3
+    iron, as palette swaps of the same icon).
+  - The tool decides the action: hoe tills, seeds plant, axe fells, pickaxe mines, the
+    watering can wets tilled soil, the scythe mows tall grass, the shovel digs for clay,
+    an empty hand harvests crops, clears dead ones and picks bushes.
