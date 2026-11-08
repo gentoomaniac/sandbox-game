@@ -82,6 +82,12 @@ felled like the other trees.
 
 ![The Geest running into the marsh, with a Knick, a wood, ditches, reeds and pollard willows, in summer and in the first snow](docs/screenshots/landscape.png)
 
+Tall grass, ferns and reeds have a ground shadow and a dark, dense foot that is rimmed in the
+darkest green of their own ramp, so they stand out from the ground in every season (before on
+the left, after on the right; `make contrast-sheet` draws this sheet for any plant):
+
+![Tall grass, fern and reeds over grass, lush grass, dry grass and floodplain in spring, summer, autumn, bare winter, frost, snow and at night, before and after](docs/screenshots/outlines.png)
+
 ### The coast and the tidal flats
 
 In the west the land ends at the North Sea. A sea dyke runs along the coast, and beyond it lie
@@ -685,7 +691,7 @@ to look. `make help` lists the targets and their variables.
   [tools/audio/generate.py](tools/audio/generate.py).
 - **Interiors:** the rooms inside the buildings are Tiled maps, see
   [maps/README.md](maps/README.md).
-- **Art style:** period, place, materials and what to avoid are in [docs/art-style.md](docs/art-style.md).
+- **Art style:** period, place, materials and what to avoid are in [docs/art-style.md](docs/art-style.md); `make contrast-sheet` shows plants over the ground of every look.
 - **Data files:** gameplay numbers you might want to tune live in
   [data/](data/) (energy, crops, buildings, recipes, weather, seasons, vegetation, flowers, wildlife, sounds, ambience).
 - **Design:** the design is in [SPEC.md](SPEC.md).

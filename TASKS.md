@@ -1316,7 +1316,7 @@ build/contrast_sheet.png (tools/README.md).
 
 ## 101. Tall grass, fern and reeds stand out from the ground
 
-- [ ] Done
+- [x] Done
 
 The user's word of 2026-11-08: like the willows, some grass and reeds (and the bushes by a
 stream) have too little contrast against the ground; a slight outline would help. The review
@@ -1327,6 +1327,16 @@ shadow under each clump (`trees.ground_shadow()`), the bottom third of a clump i
 darkest shades with light shades on top, and the task-100 outline only round dense cores,
 never single blade tips; check every season, dusk, night and snow with the contrast sheet.
 The willow (TASKS Later, graphics review) is a task of its own.
+
+Done: tall grass, fern and reeds each have `trees.ground_shadow`, a dense foot
+(`trees.dense_foot`) in their two darkest shades rimmed with green_deep (no ink, no rim round
+blade tips) and the lower third of the blades dark, light shades above. seasons.py keeps the
+foot dark in autumn, bare, frost and snow (`_DARK_FOOT` for tall grass; `green_deep` is umber
+for the golden reeds and the dry and frosted fern). No new colours. Checked on the contrast
+sheet in every look and at night, and in screenshots of a stream with tall grass and reeds in
+summer and autumn (docs/screenshots/outlines.png is before and after). Open: at night and on
+autumn_light ground the light blades still sit close to the ground in value; the willow is its
+own task.
 
 ## 102. A church with a wooden bell frame and a churchyard
 

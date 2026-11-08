@@ -71,6 +71,14 @@ private loop. `character.outlined` and `trees.shaded_blob` stay their own: the f
 pixels the body already outlines, the second outlines a set of circles while it shades them.
 `make contrast-sheet` shows plants over the ground of every look (tools/README.md).
 
+**Plants with loose blades** (tall grass, fern, reeds) are thin and light, so they vanish on
+ground of a similar value. They get `trees.ground_shadow` (remapped per look), a dense foot
+from `trees.dense_foot` (the two darkest shades, rimmed in the darkest of the ramp: green_deep
+in green looks, umber from autumn on through the remaps in seasons.py), and the lower third of
+the blades in the dark shades with the light shades above. Never rim single blade tips: that
+clogs the sprite into a dark blot. The reeds' and tall grass' foot colours are remapped in
+seasons.py (`_DARK_FOOT`, `_GOLDEN_REEDS`) so the foot stays dark in autumn, bare, frost and snow.
+
 - **Reed thatch** (`THATCH` in buildings.py: `sand`, `bare_light`, `bare`, `mud_dark`,
   `soil_dark`). New thatch is golden (`straw`, `gold`); after a few years grey-brown, with
   moss (`MOSS`) on the north side and low on the slope. Thatch is thick (30–40 cm): draw

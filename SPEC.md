@@ -86,7 +86,10 @@ top of classic pixel art (details under "Lighting and look").
   instead of meeting as hard squares.
 - **Style rules** (from the art review):
   - outlines: outer outline in the darkest colour of the object's own colour ramp; ink only
-    for characters and interactable pickups; no outlines on terrain;
+    for characters and interactable pickups; no outlines on terrain; plants with loose blades
+    (tall grass, fern, reeds) get a ground shadow, a dense foot in the two darkest shades
+    rimmed in the ramp's darkest, and light shades above, never an outline round single blades;
+    the helpers are `canvas.outline` and `canvas.outline_edge`, the ramp table `palette.DARKEST_OF`;
   - light from the top left everywhere;
   - every standing thing gets a small contact shadow;
   - houses and interiors in 3/4 view like trees and characters;
