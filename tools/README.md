@@ -34,12 +34,12 @@ by topic. Where is a thing drawn?
 | Module | What it draws |
 |---|---|
 | `contrast_sheet.py` | `make contrast-sheet` (after `make assets`): the tall grass, fern and reeds (or the atlas rows named in `KINDS="willow shrub"`) over the grass, lush grass, dry grass and floodplain of every look (each season, frost, snow, and night) into `build/contrast_sheet.png`, to check contrast by eye. |
-| `generate.py` | The object atlas (`object_atlas()`, with the numbered table of its rows), the writers, `main()`, and `DOUBLED` with `scale_up_16_px_art()`: the files still drawn at 16 px per tile, scaled up to the game's 32 px tile pixel for pixel (see [docs/art-style.md](../docs/art-style.md), "Resolution"). |
+| `generate.py` | The object atlas (`object_atlas()`, with the numbered table of its rows, and `DOUBLED_ROWS`: its rows still drawn at 16 px, scaled up in it), the writers, `main()`, and `DOUBLED` with `scale_up_16_px_art()`: the files still drawn at 16 px per tile, scaled up to the game's 32 px tile pixel for pixel (see [docs/art-style.md](../docs/art-style.md), "Resolution"). |
 | `canvas.py` | The shared basics: `TILE` (the 16 px the art is drawn at), `GAME_TILE` (the game's 32 px tile), the size of an object cell, `blank`, `filled`, `copy`, a clipped `rect`, and the two outline helpers: `outline` (a ring outside the drawing) and `outline_edge` (recolours the drawing's border). |
 | `palette.py` | The palette, `DARKEST_OF` (the colour that outlines each ramp), `to_image`, `save` (one PNG under `assets/`) and the palette check. |
 | `terrain.py` | The ground, drawn at 32 px per tile: water, tidal mud, floodplain, wetland, grass, salt marsh, Warft, lush and dry grass, trodden grass, path and tilled soil, their decorations, and the wet look of tilled soil. |
-| `flowers.py` | The meadow flowers of the region: the flower row of the decoration atlas. |
-| `trees.py` | Oak, spruce, pine, dead tree, bushes, ferns, stones, boulders and stumps, and the shared tree parts (crowns of shaded blobs, trunks, bare twigs). |
+| `flowers.py` | The meadow flowers of the region: the flower row of the decoration atlas, drawn at 32 px. |
+| `trees.py` | Oak, spruce, pine, dead tree, bushes, ferns, stones, boulders and stumps, drawn at 32 px, and the shared plant parts (the cell, crowns of leaf sprays, trunks, bare limbs and twigs, blades, ground shadows, dense feet). |
 | `beech.py`, `birch.py`, `alder.py` | The beech, the birch and the alder, in leaf and bare. |
 | `willow.py` | The pollard willow, in leaf and bare. |
 | `camp.py` | The fireplace and the bedroll. |
@@ -57,7 +57,7 @@ by topic. Where is a thing drawn?
 | `coast.py` | The things of the Wadden coast: the Ewer lying on the mud. |
 | `landing.py` | The fisherman's landing: the jetty (a picture per connection mask), the rowing boat, the net frame and the eel traps, and their icons. |
 | `crafts.py` | The professions' art: the stations (workbench, kiln, bake oven) and the carved chest, each drawn once for the atlas, the interior and its icon, and the icons of what is made at them. |
-| `trunks.py`, `meadow.py`, `reeds.py` | Felled trunks, tall grass and the clay hint (drawn at 32 px), reeds. |
+| `trunks.py`, `meadow.py`, `reeds.py` | Felled trunks, tall grass, reeds and the clay hint (drawn at 32 px), the hay, clay and reeds items. |
 | `fire.py` | The animation frames of the campfire and the hearth, drawn at 32 px; `strip` scales up the 16 px fireplace and hearth around them. |
 | `animals.py` | One sheet per small wild animal (sparrow, rabbit, squirrel, roe deer, bee, butterflies, mouse, frog), drawn at 32 px per tile. |
 | `bird_forms.py` | Birds put together from rounded forms (body, tail, neck, head, bill, folded or open wings, legs), standing or flying, for the bird sheets of animals.py, birds.py and sea_birds.py. |
@@ -93,11 +93,16 @@ animals and the flames (task 116), from the same commit: `animals.py`, `birds.py
 shared, still 16 px `camp.py` and `interior.py`); the ground (task 107), from commit acf236e:
 `terrain.py` unchanged, `ground_looks.py`, the ground part of `seasons.py` (a module of that
 name would stand in for the shared one that `palette.py` imports), and `ground_overlays.py`,
-the wet soil of `crop_icons.py` (drawn without `crops.Surface`) and the clay hint of `meadow.py`
-(the meadow flowers of the decorations are the shared, still 16 px `flowers.py`); the
-buildings (task 110), from commit e303759: `buildings.py` and `church.py` unchanged (the graves
-of `church.py` are not written there; the looks are the shared `seasons.house`), whose pictures
-kept their sizes at 32 px. The cow's, the horse's and the small wild
+the wet soil of `crop_icons.py` (drawn without `crops.Surface`) and the clay hint of `meadow.py`;
+the buildings (task 110), from commit e303759: `buildings.py` and `church.py` unchanged (the
+graves of `church.py` are not written there; the looks are the shared `seasons.house`), whose
+pictures kept their sizes at 32 px; the plants (task 108), from commit e303759: `trees.py`,
+`trunks.py`, `beech.py`, `birch.py`, `alder.py`, `willow.py` and `flowers.py` (the meadow flowers
+of the classic decorations) unchanged, the plant parts of `meadow.py` and `reeds.py`, and
+`object_looks.py`, the object part of `seasons.py`. The object atlas is one picture, so the
+classic one (`object_atlas` there) has every row: the rows not drawn anew yet come from the
+shared modules, as the new atlas has them, and the graves from `graves.py`, the graves part of
+`church.py`. The cow's, the horse's and the small wild
 animals' cells grew at 32 px, so `set_in_grown_cells` puts their classic cells in the new ones
 (bottom centre), as the classic files must have the new cell sizes.
 

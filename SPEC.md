@@ -57,10 +57,12 @@ top of classic pixel art (details under "Lighting and look").
   art is redrawn at 32 px, the generators' 16 px output is doubled pixel for pixel (tasks 106 and
   on); the people are drawn at 32 px since task 113, the farm animals since task 114, the wild
   animals, the flames, the hit particles and the weather (rain, splashes, snow, wind, fog) since
-  task 116, the small animals a little larger than life, and the ground (terrain, paths, soil,
-  water, mud and their decorations) since task 107, calm so that what stands on it reads, and
-  the buildings since task 110, their doors about 60 px high so the people fit through. The
-  16 px art of a redrawn group stays in the game as the classic art, a setting (see Settings).
+  task 116, the small animals a little larger than life, the ground (terrain, paths, soil,
+  water, mud and their decorations) since task 107, calm so that what stands on it reads, the
+  buildings since task 110, their doors about 60 px high so the people fit through, and the
+  plants (trees, the pollard willow, bushes, tall grass, fern, reeds, the meadow flowers, rocks,
+  stumps and trunks) since task 108. The 16 px art of a redrawn group stays in the game as the
+  classic art, a setting (see Settings).
   (Was: 16×16, 320×180 at zoom 1.)
 - **Stepless zoom** from the widest view (1280×720 art pixels, zoom 0.5) in to zoom 2
   (320×180; zoom 1 is 640×360); the game starts at the widest (the user zooms out fully
@@ -100,7 +102,8 @@ top of classic pixel art (details under "Lighting and look").
   instead of meeting as hard squares.
 - **Style rules** (from the art review):
   - outlines: outer outline in the darkest colour of the object's own colour ramp; ink only
-    for characters and interactable pickups; no outlines on terrain; plants with loose blades
+    for characters and interactable pickups, never on vegetation (the dead tree and the trunks
+    too are rimmed in their darkest bark); no outlines on terrain; plants with loose blades
     (tall grass, fern, reeds) get a ground shadow, a dense foot in the two darkest shades
     rimmed in the ramp's darkest, and light shades above, never an outline round single blades;
     the helpers are `canvas.outline` and `canvas.outline_edge`, the ramp table `palette.DARKEST_OF`;
@@ -1431,10 +1434,13 @@ woodworker, the cook and the mason, and a UI for them.
     a boundary is a **ditch**, water terrain, which is how the marsh is drained and fenced. Beside
     the ditches stand **pollard willows** (10 % of the tiles) and reeds (30 %). Ditches block
     walking like the river (no jumping); their gap is the crossing. The willow (redrawn in task
-    56, as the first read as a sheaf of grain on a boulder in winter) is a gnarled grey-brown
-    trunk about a tile high with a knobbly brown head, and a dense crown of 30 to 38 thin rods
-    of mixed lengths: silver-green leaves along them in summer, muted yellow-olive with a few
-    straw tips in winter, a little snow on the head.
+    56, as the first read as a sheaf of grain on a boulder in winter, and in task 108 at 32 px
+    after the art review) is a gnarled brown trunk (mud, mud_dark) about a tile high on its
+    ground shadow, with a knobbly head, and 60 to 76 thin rods of mixed lengths: in summer their
+    upper parts carry a dense, rounded crown of narrow grey-green leaves with a dark edge and a
+    shaded underside, the rods showing below and over it and a few silver leaves; in winter they
+    stand bare, umber up to the middle, muted yellow-olive above with a few straw tips, a little
+    snow on the head.
   - **Dykes** run on the land side of the floodplain's edge, in stretches picked by a slow noise.
   - **Walking:** Knicks, walls, fences and ditches block it; dykes don't (they are walked on,
     sheep grazed on them). Willows block like the other trees.

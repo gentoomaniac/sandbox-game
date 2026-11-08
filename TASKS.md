@@ -1503,7 +1503,49 @@ far in the new art; the wet soil's patches are the same on every tile, as before
 
 ## 108. 32 px art: plants (trees, the willow, bushes, tall grass, fern, reeds, flowers, decorations)
 
-- [ ] Done
+- [x] Done
+
+Done: every plant row of the object atlas is drawn at 32 px per tile in the style of the mockup
+(trees.py, beech.py, birch.py, alder.py, willow.py, trunks.py, the tall grass in meadow.py,
+reeds.py), and so are the meadow flowers of the decoration atlas (flowers.py), which lose their
+own sway material. The oak, beech, alder, birch, the bushes and the sapling have crowns of leaf
+sprays (`trees.foliage`), round furrowed trunks spreading into roots, and bare limbs that fan out
+into twigs (`trees.crown_limb`); the spruce hangs in drooping tiers; the pine, the dead tree,
+stumps, trunks, stones and boulders keep their shapes with more detail; tall grass and reeds are
+two-pixel blades with a lit edge over the dense dark foot of task 101, the fern a fan of combs.
+From the art review: the pollard willow has a dense, rounded crown with a dark edge and a shaded
+underside, rods below and over it, silver leaves, a knobbly head and a mud-coloured trunk on its
+ground shadow (bare: umber rods up to the middle); tall grass, fern and reeds read on autumn
+ground (autumn tall grass turns `reed` where it was the dry grass' own `autumn_light`) and, a
+little weaker, at night; no vegetation is outlined in ink (the dead tree, its stump and the
+trunks are rimmed in their darkest bark); `maple_light` is `leaf_orange`. Snow caps are twice
+as deep on the plants, and snow lies along the bare oak's and beech's limbs. The atlas is
+written at 32 px (cells of 96×160, `canvas.GAME_OBJECT_CELL_*`); its rows not drawn anew are in
+`DOUBLED_ROWS` and scaled up after their looks are made (not in `object_atlas()` itself, so their
+snow caps and frost specks keep the 16 px grain): byte for byte the rows of before, in every look.
+The plants' sway profiles are measured on the new art in the world's pixels, and AmbientMotion
+gives their materials art_scale 1, or 2 with the profiles halved in the classic art; the crops
+keep 2. The plants now sway half as far on screen as before, on purpose (the user, 2026-11-08:
+the calmer world is better, the old one felt busy), and in an order (the user: "grass and crops
+usually move more than large trees"): tall grass, reeds, fern and the meadow flowers most, the
+bushes and the sapling less, the big trees least and slowest; in a light air the grass's tips
+flick while the trees stand still (a test checks the order). Task 109 matches it for the
+crops. The trees' `sprite_height` is measured anew. The classic art (task 117): the plant
+generators of commit e303759 under tools/art/classic/ (`object_looks.py` is the object part of
+seasons.py) write the whole classic object atlas, byte for byte the atlas before, and the
+classic decorations' flowers; the object tileset follows the art set (`ObjectTileset.show_art_set`,
+a test checks both sets have the same cells). Checked in screenshots at zoom 0.5, 1 and 2 (the
+camp, a wood, the marsh ditches with willows, a meadow through spring and summer, the forage and
+felled scenes) in spring, summer, autumn, a rainy autumn evening, the night, bare winter and
+snow, and in the classic art; `make contrast-sheet` for tall grass, fern, reeds and the willow.
+README pictures retaken: camp, zoom, seasons, meadows, landscape, outlines (the new art only),
+harvest (the stumps and trunks, without the fall), forage.
+Left for later: the camp (fireplace, bedroll), walls, fences, the dyke and the placed objects
+stay doubled for task 111 (it takes them out of `DOUBLED_ROWS`); on dry autumn grass the light
+blades of tall grass still sit close to the ground (the foot and the olive edges carry it). Not
+changed, as they are distances in the world's pixels and right in both art sets:
+`FallingTree.IMPACT_HEIGHT` and the see-through sprite's hop and edge. The screenshot window was
+1474×439, so the README pictures are wide strips stacked.
 
 The objects atlas (assets/objects*.png) is shared by 108 and 111 and has one cell size for all
 its rows: do 108 and 111 together, or the first of them writes the whole atlas at 32 px, with a

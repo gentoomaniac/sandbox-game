@@ -66,15 +66,19 @@ and the widest view is 1280×720 art pixels: 40×22 tiles (task 118), shown ×1.
 320×180: 10×5.6 tiles. The art was drawn at 16 px per tile, and the generators still draw at `canvas.TILE = 16`:
 `generate.py` scales every file of its `DOUBLED` list up to the game's tile (`canvas.GAME_TILE`,
 32) pixel for pixel, as the last step before the palette check. So until a group is redrawn
-the game looks as it did, every pixel 2×2.
+the game looks as it did, every pixel 2×2. The object atlas is one picture with cells of the
+game's tile (96×160) for every row: the rows still drawn at 16 px (`DOUBLED_ROWS` in
+`object_atlas`'s part of generate.py: the camp, the walls, fences, the dyke and the placed
+objects, task 111) are scaled up in it after their looks are made, so their snow and frost keep
+the 16 px grain.
 
 Tasks 107 to 116 redraw the art group by group at 32 px; the people are done (task 113, see
 "Clothing and characters"), the farm animals (task 114, see "Props and animals", item 8),
-the wild animals and the effects (task 116, below), the ground (task 107, below) and the
-buildings (task 110, see "Buildings"). To take a group native:
+the wild animals and the effects (task 116, below), the ground (task 107, below), the
+buildings (task 110, see "Buildings") and the plants (task 108, below). To take a group native:
 
 - draw it at 32 px per tile (its cells, frames and offsets are twice the numbers below) and
-  take its files out of `DOUBLED`;
+  take its files out of `DOUBLED` (or its rows of the object atlas out of `DOUBLED_ROWS`);
 - keep its 16 px art as the classic art (task 117; the player switches with F7): move its old
   generator code, as it was before the redraw, to tools/art/classic/, call it from `main` there
   and put its doubled files in that file's `DOUBLED`, so `make assets` writes them under
@@ -131,15 +135,39 @@ ridges in patches (`terrain.soil_wet`). The path is packed earth worn pale in pa
 under the turf at its edge with blades leaning in; the tidal mud has wavy ripple marks with
 dark troughs, which the tide fills first. In autumn the grass of the marsh stays green with
 olive tips and only the dry grass of the Geest turns straw (`seasons.LAYER_REMAPS`); the salt
-marsh keeps its olive turf, with patches of red-purple glasswort. The meadow flowers in the
-decoration atlas are still 16 px art, scaled up in their row (task 108). The ground's 16 px art
+marsh keeps its olive turf, with patches of red-purple glasswort. The ground's 16 px art
 stays as the classic art too.
+
+The plants (task 108: trees.py, beech.py, birch.py, alder.py, willow.py, trunks.py, the tall
+grass in meadow.py, reeds.py and the meadow flowers in flowers.py) are drawn at 32 px in the
+style of the mockup. A crown is `trees.foliage`: clumps drawn from the back (the top) to the
+front, each a ragged dome lit from the top left and broken into sprays of leaves, each spray lit
+on its own upper left with a dark seam where it meets the next, the crown darker towards its
+foot and rimmed in its darkest green (oak, beech, alder, birch, the bushes and the sapling; the
+leaf size and the clumps give each tree its build). Trunks are round, furrowed and spread into
+roots at the foot (`trees.tree_trunk`); a bare tree parts into thick, elbowed limbs fanning out
+into twigs (`trees.crown_limb`, `trees.twigs`). The spruce hangs in tiers of drooping sprays, the
+Scots pine keeps its flat umbrella of needle clumps. Tall grass and reeds are blades two pixels
+wide with a lit left edge (`trees.blade`), the fern's fronds combs of leaflets. The pollard
+willow (from the art review) has a dense, rounded crown with a dark edge and a shaded underside
+on the upper parts of its rods, the rods showing below it and over it, a few silver leaves, a
+knobbly head and a trunk in `mud` and `mud_dark`; bare, its rods are `umber` up to the middle so
+it does not fade into pale ground. No plant is outlined in ink, the dead tree and the trunks
+neither: they are rimmed in their darkest bark. The meadow flowers are a stem over a leaf or two
+and a head of a few pixels lit on its upper left. The plants' 16 px art stays as the classic
+art.
+
+In the wind the plants sway on their own pixels (`AmbientMotion.SWAY_PROFILES`), calmly: half as
+far on screen as the doubled 16 px art did (the user, 2026-11-08). Small plants move more than
+big ones: tall grass, reeds, fern and the meadow flowers most, so their tips flick in a light
+air; the bushes and the sapling less; the big trees least and slowest, still in a light air.
+The crops (task 109) bend like the grass.
 
 The UI's pictures (item icons, slots, the frames and the chat portraits) are drawn for the UI's
 own 640×360 base and scale, and are not doubled; task 115 decides about the item icons.
 
 The sizes in this guide (a 48×80 object cell) are those of the 16 px art, but for the
-characters' 32×64 and the farm animals' (item 8 of "Props and animals").
+characters' 32×64, the farm animals' (item 8 of "Props and animals") and the plants' 96×160.
 
 ## Materials
 
@@ -150,8 +178,8 @@ Outlines come from `canvas.outline` (a ring outside the drawing; the colour is a
 `palette.darkest_of`, which picks the darkest of the ramp of the pixel it surrounds, from
 `palette.DARKEST_OF`, ink for anything else) and `canvas.outline_edge` (recolours the drawing's
 own border; `keep_bottom` leaves the row that stands on the ground). Use them instead of a
-private loop. `character.outlined` and `trees.shaded_blob` stay their own: the first skips
-pixels the body already outlines, the second outlines a set of circles while it shades them.
+private loop. `character.outlined` and `trees.foliage` stay their own: the first skips
+pixels the body already outlines, the second rims a crown of clumps while it shades them.
 `make contrast-sheet` shows plants over the ground of every look (tools/README.md).
 
 **Plants with loose blades** (tall grass, fern, reeds) are thin and light, so they vanish on

@@ -43,7 +43,7 @@ leaves and then the full crown. Scots pines, tall with a loose flat crown, and s
 green all year; they are rare, in clumps on the dry Geest. Ground cover thins and fills over the year, ferns die back in
 winter, and berry bushes only bear fruit in their season.
 
-![A wood of beech, birch, oak and alder by a clump of pines on the Geest: on the second day of spring, in summer, on the third day of autumn and in the first snow](docs/screenshots/seasons.png)
+![A wood of oak, alder and birch by a meadow and a pollard willow: on the second day of spring, in summer, on the third day of autumn and in the first snow](docs/screenshots/seasons.png)
 
 The meadows flower from spring to late summer, in drifts and patches rather than sprinkled
 evenly: the first daisies, dandelions and, in the beech woods, wood anemones in early spring,
@@ -80,13 +80,14 @@ floodplain. Every boundary has a gap or a crossing, so no field is shut in. The 
 Knick down for logs and fibre, the pickaxe takes a wall apart for stone, and willows are
 felled like the other trees.
 
-![The Geest running into the marsh, with a Knick, a wood, ditches, reeds and pollard willows, in summer and in the first snow](docs/screenshots/landscape.png)
+![The marsh with its dykes, ditches, reeds and pollard willows by a wood, in summer, on a rainy autumn evening and in the first snow](docs/screenshots/landscape.png)
 
 Tall grass, ferns and reeds have a ground shadow and a dark, dense foot that is rimmed in the
-darkest green of their own ramp, so they stand out from the ground in every season (before on
-the left, after on the right; `make contrast-sheet` draws this sheet for any plant):
+darkest green of their own ramp, so they stand out from the ground in every season, and so does
+the pollard willow's dense crown with its dark edge (`make contrast-sheet` draws this sheet for
+any plant):
 
-![Tall grass, fern and reeds over grass, lush grass, dry grass and floodplain in spring, summer, autumn, bare winter, frost, snow and at night, before and after](docs/screenshots/outlines.png)
+![Tall grass, fern and reeds over grass, lush grass, dry grass and floodplain in spring, summer, autumn, bare winter, frost, snow and at night](docs/screenshots/outlines.png)
 
 ### The coast and the tidal flats
 
@@ -289,7 +290,7 @@ fibre.
 What you gather hops out onto the ground: logs, stone, clay, hay, reeds, seeds and produce
 lie there until you walk over them and pick them up.
 
-![Two oaks felled from either side: the fall, the landing and the trunks they leave](docs/screenshots/harvest.png)
+![Trees felled from either side: the stumps, the trunks they leave and their seeds](docs/screenshots/harvest.png)
 
 ![A stump, a picked and a ripe berry bush and a sapling](docs/screenshots/forage.png)
 
@@ -476,8 +477,8 @@ to 4× that, 320×180 art pixels. The wheel alone steps through the hotbar.
 
 The art is being redrawn at 32 px per tile, group by group. Settings → Display → Art, or F7
 while playing, switches between the new art and the classic art, the 16 px art it replaces
-(doubled); so far the people, the farm and the wild animals, the flames and the ground have
-both. Everything not redrawn yet looks the same in both.
+(doubled); so far the people, the farm and the wild animals, the flames, the ground and the
+plants have both. Everything not redrawn yet looks the same in both.
 
 ![The camp with villagers in the new art and in the classic art](docs/screenshots/art-sets.png)
 
