@@ -127,8 +127,29 @@ DOUBLED = (
     # Interiors (task 112).
     "interior.png",
     "interior/*.png",
-    # Farm animals and wild animals (tasks 114 and 116).
-    "wildlife/*.png",
+    # Farm animals (task 114): a sheet per species and look (livestock.py).
+    "wildlife/cow_*.png",
+    "wildlife/sheep_*.png",
+    "wildlife/chicken_*.png",
+    "wildlife/rabbit_*.png",
+    "wildlife/dog_*.png",
+    "wildlife/cat_*.png",
+    "wildlife/horse_*.png",
+    # Wild animals (task 116): a sheet per kind (animals.py, birds.py, sea_birds.py).
+    "wildlife/bee.png",
+    "wildlife/bird.png",
+    "wildlife/butterfly.png",
+    "wildlife/deer.png",
+    "wildlife/dunlin.png",
+    "wildlife/frog.png",
+    "wildlife/goose.png",
+    "wildlife/gull.png",
+    "wildlife/mouse.png",
+    "wildlife/oystercatcher.png",
+    "wildlife/rabbit.png",
+    "wildlife/squirrel.png",
+    "wildlife/stork.png",
+    "wildlife/tern.png",
     # Items on the ground (task 115).
     "ground_items/*.png",
 )
