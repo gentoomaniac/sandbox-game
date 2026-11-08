@@ -10,7 +10,8 @@ extends RefCounted
 ## Every crop has a sheet of its own, a source of its own in the same TileSet, built from the
 ## crop's `sheet` in data/crops.cfg: a growth stage per cell and then the dead one, side by
 ## side. Its cells are as tall as the sheet and as wide as the sheet is wide over the number of
-## cells, and stand with their bottom on the bottom of the crop's tile.
+## cells, and stand with their bottom on the bottom of the crop's tile. The sheets are those of
+## the chosen art set (see ArtSet), which WorldView shows anew by `show_art_set`.
 
 const ATLAS_PATH := "res://assets/objects.png"
 ## A cell is three tiles wide and five tall (as OBJECT_CELL_WIDTH and OBJECT_CELL_HEIGHT in
@@ -23,6 +24,8 @@ var tile_set := TileSet.new()
 var _crop_sources: Dictionary[StringName, int] = {}
 ## Whether the atlases shown are the classic art's (see ArtSet).
 var _is_classic := ArtSet.is_classic
+## The sheet of each crop type in the new art (see ArtSet).
+var _crop_sheets: Dictionary[StringName, String] = {}
 
 
 ## One atlas source per look (see SeasonBlend.Look), with the same tiles: a source's id is its
@@ -59,8 +62,8 @@ func _init(crop_rules := CropRules.default_rules(), motion: AmbientMotion = null
 		_add_crop_sheet(crop_id, crop_rules.crop(crop_id)["sheet"], motion)
 
 
-## Shows the atlases of the chosen art set (see ArtSet), if they are not shown yet. Both sets have
-## the same cells, so the tiles stay and only their pictures change.
+## Shows the atlases and the crops' sheets of the chosen art set (see ArtSet), if they are not
+## shown yet. Both sets have the same cells, so the tiles stay and only their pictures change.
 func show_art_set() -> void:
 	if _is_classic == ArtSet.is_classic:
 		return
@@ -68,6 +71,9 @@ func show_art_set() -> void:
 	for look: SeasonBlend.Look in SeasonBlend.Look.values():
 		var source: TileSetAtlasSource = tile_set.get_source(look)
 		source.texture = load(picture(look))
+	for crop_id in _crop_sources:
+		var source: TileSetAtlasSource = tile_set.get_source(_crop_sources[crop_id])
+		source.texture = load(ArtSet.path(_crop_sheets[crop_id]))
 
 
 ## The object atlas in a look, in the chosen art set.
@@ -84,7 +90,8 @@ func crop_source_id(crop_type: StringName) -> int:
 ## A crop's sheet is the same in every season.
 func _add_crop_sheet(crop_id: StringName, sheet_path: String, motion: AmbientMotion) -> void:
 	var source := TileSetAtlasSource.new()
-	var sheet: Texture2D = load(sheet_path)
+	_crop_sheets[crop_id] = sheet_path
+	var sheet: Texture2D = load(ArtSet.path(sheet_path))
 	source.texture = sheet
 	var cell_size := Vector2i(sheet.get_width() / (CropRules.STAGES + 1), sheet.get_height())
 	source.texture_region_size = cell_size

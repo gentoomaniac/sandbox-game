@@ -40,6 +40,29 @@ func test_the_classic_buildings_are_as_big_as_the_new() -> void:
 		assert_eq(classic.get_size(), load(path).get_size(), path)
 
 
+func test_the_classic_crops_are_as_big_as_the_new() -> void:
+	ArtSet.is_classic = true
+	var rules := CropRules.default_rules()
+	for crop_id in rules.crop_ids():
+		var path: String = rules.crop(crop_id)["sheet"]
+		var classic: Texture2D = load(ArtSet.path(path))
+		assert_ne(classic.resource_path, path, "%s has classic art" % crop_id)
+		assert_eq(classic.get_size(), load(path).get_size(), path)
+
+
+func test_the_crops_follow_the_art_set() -> void:
+	var tileset := ObjectTileset.new()
+	var source: TileSetAtlasSource = tileset.tile_set.get_source(
+		tileset.crop_source_id(WorldObjectTypes.TURNIP)
+	)
+	ArtSet.is_classic = true
+	tileset.show_art_set()
+	assert_eq(source.texture.resource_path, "res://assets/classic/crops/turnip.png")
+	ArtSet.is_classic = false
+	tileset.show_art_set()
+	assert_eq(source.texture.resource_path, "res://assets/crops/turnip.png")
+
+
 func test_a_villager_shown_switches_its_sheets_with_the_art() -> void:
 	var look := Appearance.new()
 	look.wear(Appearance.HEAD, "tricorne")

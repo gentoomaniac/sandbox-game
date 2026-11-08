@@ -30,6 +30,7 @@ import chest  # noqa: E402
 import church  # noqa: E402
 import coast  # noqa: E402
 import crafts  # noqa: E402
+import crops  # noqa: E402
 import fire  # noqa: E402
 import flowers  # noqa: E402
 import graves  # noqa: E402
@@ -105,6 +106,8 @@ DOUBLED = (
     # e303759). The atlas is one picture, so its other rows are here too: the walls, fences, the
     # dyke and the placed objects are the shared modules, still drawn at 16 px (task 111).
     "objects*.png",
+    # The crops (task 109; crops.py of commit f2c24f8).
+    "crops/*.png",
 )
 # The animals whose cells grew at 32 px per tile: the classic sheets, doubled, are set in
 # the new cells (bottom centre, as the animal stands in its cell), so that the game reads both
@@ -269,6 +272,11 @@ def write_objects():
         save(rows, f"{CLASSIC}/objects{suffix}.png", OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
 
 
+def write_crops():
+    for crop, cells in crops.sheets().items():
+        save([cells], f"{CLASSIC}/crops/{crop}.png", TILE, len(cells[0]))
+
+
 def set_in_grown_cells():
     """Sets each cell of the sheets of GROWN_CELLS in the bottom centre of a cell of the new size."""
     for pattern, ((width, height), (new_width, new_height)) in GROWN_CELLS.items():
@@ -304,6 +312,7 @@ def main():
     write_ground()
     write_buildings()
     write_objects()
+    write_crops()
     scale_up_16_px_art()
     set_in_grown_cells()
     print("Wrote every file under assets/classic/.")

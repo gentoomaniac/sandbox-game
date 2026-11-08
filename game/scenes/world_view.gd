@@ -173,8 +173,8 @@ func _ready() -> void:
 	add_child(_buildings)
 
 
-## Shows the ground, the objects, the campfires' flames and the buildings in the chosen art set
-## (see ArtSet).
+## Shows the ground, the objects and the crops, the campfires' flames and the buildings in the
+## chosen art set (see ArtSet).
 func show_art_set() -> void:
 	_tileset.show_art_set()
 	_object_tileset.show_art_set()
