@@ -23,7 +23,7 @@ IMPORT := $(GODOT) --headless --quiet --import
 # reproducible, and it keeps third-party code out of our history and diffs.
 # The cost is that a fresh clone needs `make setup` (and network) before it runs.
 
-.PHONY: help setup venv assets contrast-sheet run screenshot test lint format export clean llm-up llm-down llm-check \
+.PHONY: help setup venv assets classic-assets contrast-sheet run screenshot test lint format export clean llm-up llm-down llm-check \
 	llm-pull llm-models llm-rm llm-eval
 
 help:
@@ -37,6 +37,7 @@ help:
 	@echo "  lint        Run gdlint and gdformat --check, and check no API key is in the repo."
 	@echo "  format      Format the GDScript."
 	@echo "  assets      Regenerate all art and sounds, then check them (needs no Godot)."
+	@echo "  classic-assets  Regenerate only the classic art (the 16 px art of groups now drawn at 32 px)."
 	@echo "  contrast-sheet  Draw plants over the ground of every look into build/contrast_sheet.png."
 	@echo "  llm-up      Start the local test LLM (Ollama in a container) and pull its model; see tools/README.md."
 	@echo "  llm-down    Stop and remove the test LLM container (the model stays; PURGE=1 deletes it too)."
@@ -114,11 +115,16 @@ $(VENV_READY): tools/requirements.txt
 	touch $(VENV_READY)
 
 # Regenerates every PNG under assets/ and checks that they use only palette colours, then
-# every sound under assets/sounds/ and checks their levels and loops.
-assets: $(VENV_READY)
+# every sound under assets/sounds/ and checks their levels and loops. The classic art comes
+# first, so the palette check covers it too.
+assets: classic-assets
 	$(PYTHON) tools/art/generate.py
 	$(PYTHON) tools/audio/generate.py
 	$(PYTHON) tools/audio/check.py
+
+# The classic art under assets/classic/ (see tools/art/classic/generate.py).
+classic-assets: $(VENV_READY)
+	$(PYTHON) tools/art/classic/generate.py
 
 # Plants over the ground of every look, to check their contrast by eye (needs the assets):
 # make contrast-sheet, or make contrast-sheet KINDS="willow shrub" (atlas row names).
