@@ -11,7 +11,8 @@ extends RefCounted
 ## Everything moves in whole art pixels, and on a calm day hardly at all. The static functions
 ## turn the weather into the shaders' numbers. The pixels here are those of the 16 px art, which
 ## the shaders of the plants, the water and the mud work on (see art_scale.gdshaderinc), so their
-## motion keeps to its doubled pixels; the fire's are the world's, as its flame is drawn at 32 px.
+## motion keeps to its doubled pixels; those of the fire and the rain's splashes are the world's,
+## as they are drawn at 32 px.
 
 const OBJECT_SWAY_SHADER := preload("res://game/scenes/object_sway.gdshader")
 const DECORATION_SWAY_SHADER := preload("res://game/scenes/decoration_sway.gdshader")
@@ -48,7 +49,7 @@ const FIRE_LEAN_PER_WIND := 0.6
 const MAX_FIRE_LEAN := 10.0
 ## How much taller a flame grows in a storm across the screen (a share of its height).
 const MAX_FIRE_STRETCH := 0.3
-## The chance that a cell of rain_splashes.gdshader (12×10 pixels) has a splash in a cycle
+## The chance that a cell of rain_splashes.gdshader (24×20 pixels) has a splash in a cycle
 ## (0.6 s), in the heaviest rain.
 const MAX_SPLASH_CHANCE := 0.45
 
@@ -117,7 +118,7 @@ const SWAYING_DECORATIONS := {
 var water := _material(WATER_SHADER)
 ## On the mud layer of the terrain: the tide (see `show_tide`), whose water ripples like the river.
 var mud := _material(MUD_SHADER)
-var splashes := _material(RAIN_SPLASH_SHADER)
+var splashes := _native_material(RAIN_SPLASH_SHADER)
 var decoration_sway := _material(DECORATION_SWAY_SHADER)
 var lily_pads := _material(LILY_PAD_SHADER)
 ## The chance of a splash now (see MAX_SPLASH_CHANCE): 0 when it does not rain.
@@ -146,8 +147,7 @@ func _init() -> void:
 ## A new material for a fire of `type` (see FIRE_PROFILES) that does not lean: the hearth's,
 ## indoors, needs no wind.
 static func fire_material(type: StringName) -> ShaderMaterial:
-	var material := ShaderMaterial.new()
-	material.shader = FIRE_SHADER
+	var material := _native_material(FIRE_SHADER)
 	var profile: Dictionary = FIRE_PROFILES[type].duplicate()
 	profile.erase("flames")
 	_set_parameters(material, profile)
@@ -274,10 +274,17 @@ static func splash_chance_for(rain: float) -> float:
 	return MAX_SPLASH_CHANCE * clampf(rain, 0.0, 1.0)
 
 
+## A material for a shader of the 16 px art (see art_scale.gdshaderinc).
 static func _material(shader: Shader) -> ShaderMaterial:
+	var material := _native_material(shader)
+	material.set_shader_parameter("art_scale", float(TerrainTileset.ART_16_SCALE))
+	return material
+
+
+## A material for a shader that works in the world's pixels: the fire's and the rain's splashes.
+static func _native_material(shader: Shader) -> ShaderMaterial:
 	var material := ShaderMaterial.new()
 	material.shader = shader
-	material.set_shader_parameter("art_scale", float(TerrainTileset.ART_16_SCALE))
 	return material
 
 
