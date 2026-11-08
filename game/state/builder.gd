@@ -110,7 +110,11 @@ func take_down_gives(target: TakeDownTarget) -> Dictionary:
 
 ## Why the target can't be taken down now, or "".
 func why_not_take_down(target: TakeDownTarget) -> String:
-	return "" if target.building == null else _state.why_not_take_down(target.building)
+	if target.building != null:
+		return _state.why_not_take_down(target.building)
+	if ToolUse.new(_state).is_standing_on(target.object):
+		return "Step off it first."
+	return ""
 
 
 ## Takes the target down. A building's materials lie in front of its door; a placed thing goes
@@ -119,6 +123,8 @@ func why_not_take_down(target: TakeDownTarget) -> String:
 func take_down(target: TakeDownTarget) -> bool:
 	if target.building != null:
 		return _state.take_down_building(target.building)
+	if why_not_take_down(target) != "":
+		return false
 	var items := take_down_gives(target)
 	_state.world.remove_object(target.object.pos)
 	for item: StringName in items:

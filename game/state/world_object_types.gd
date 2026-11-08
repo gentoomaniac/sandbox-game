@@ -61,7 +61,11 @@ extends RefCounted
 ## - light: it shines: `color`, `energy` (of the brightest point) and `radius_tiles`;
 ## - connects: it is a line across the land (a Knick, a wall, a dyke), drawn tile by tile: it
 ##   joins the neighbours on its 4 sides whose `connects` is the same, and each of its variants
-##   has a picture per connection mask (see World `connections`) in its atlas row.
+##   has a picture per connection mask (see World `connections`) in its atlas row;
+## - placed_on: the player places it on these terrains (and only on them) instead of on ground
+##   that can be built on (see Tile `is_buildable`): the jetty over water and mud, the boat;
+## - deck: it is walked on, whatever the ground under it (the jetty over water), and drawn under
+##   whoever stands on it.
 
 const OAK := &"oak"
 const STONE := &"stone"
@@ -113,6 +117,12 @@ const KILN := &"kiln"
 const OVEN := &"oven"
 ## A flat-bottomed sailing barge of the Wadden coast, lying on the mud (task 61): only to look at.
 const EWER := &"ewer"
+## The landing of the fisherman's hut (task 103): a jetty laid a piece per tile, a flat rowing
+## boat (only to look at, like the Ewer), the frame the nets dry on, and wicker eel traps.
+const JETTY := &"jetty"
+const ROWING_BOAT := &"rowing_boat"
+const NET_FRAME := &"net_frame"
+const EEL_TRAPS := &"eel_traps"
 ## The woodworker's master piece (task 74): it stands only in a house.
 const CUPBOARD := &"cupboard"
 ## A grave in the churchyard (task 102): an oak cross, a headstone or a fieldstone slab, the
@@ -158,6 +168,10 @@ const _KILN_ROW := 43
 const _OVEN_ROW := 44
 const _EWER_ROW := 45
 const _GRAVE_ROW := 46
+const _JETTY_ROW := 47
+const _ROWING_BOAT_ROW := 48
+const _NET_FRAME_ROW := 49
+const _EEL_TRAPS_ROW := 50
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -584,6 +598,58 @@ const _OTHER_TYPES := {
 		"variants": 3,
 		"interior_sprite": "res://assets/interior/grave.png",
 		"outdoors_only": true,
+	},
+	JETTY:
+	{
+		"hp": 3,
+		"tool": &"axe",
+		"drops": {&"jetty": 1},
+		"connects": &"jetty",
+		"deck": true,
+		"placed_on":
+		[Tile.Terrain.WATER, Tile.Terrain.SEA, Tile.Terrain.MUD, Tile.Terrain.SALT_MARSH],
+		"outdoors_only": true,
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": false,
+		"harvest_level": 1,
+		"atlas_row": _JETTY_ROW,
+		"variants": 1,
+	},
+	ROWING_BOAT:
+	{
+		"hp": 3,
+		"tool": &"axe",
+		"drops": {&"rowing_boat": 1},
+		"placed_on":
+		[Tile.Terrain.WATER, Tile.Terrain.SEA, Tile.Terrain.MUD, Tile.Terrain.SALT_MARSH],
+		"outdoors_only": true,
+		"footprint": Vector2i(2, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _ROWING_BOAT_ROW,
+		"variants": 1,
+	},
+	NET_FRAME:
+	{
+		"hp": 2,
+		"tool": &"axe",
+		"drops": {&"net_frame": 1},
+		"outdoors_only": true,
+		"footprint": Vector2i(2, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _NET_FRAME_ROW,
+		"variants": 1,
+	},
+	EEL_TRAPS:
+	{
+		"drops": {&"eel_traps": 1},
+		"outdoors_only": true,
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"atlas_row": _EEL_TRAPS_ROW,
+		"variants": 1,
 	},
 	WORKBENCH:
 	{

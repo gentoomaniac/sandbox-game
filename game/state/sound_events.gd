@@ -67,7 +67,9 @@ static func use(result: ToolUse.Use, held_tool: StringName) -> StringName:
 		ToolUse.Use.SADDLE, ToolUse.Use.UNSADDLE:
 			return &"horse_whinny"
 
-		ToolUse.Use.NEEDS_BETTER_TOOL, ToolUse.Use.NO_ROOM, ToolUse.Use.RIDING:
+		ToolUse.Use.NEEDS_BETTER_TOOL, ToolUse.Use.NO_ROOM:
+			return &"denied"
+		ToolUse.Use.RIDING, ToolUse.Use.STANDING_ON:
 			return &"denied"
 		ToolUse.Use.NOTHING:
 			return &"scythe_swish" if held_tool == ItemTypes.SCYTHE else &""

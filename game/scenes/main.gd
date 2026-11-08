@@ -525,6 +525,8 @@ func _use_on(target: Targeting) -> void:
 		_harvest_hud.show_note(GET_OFF_FIRST)
 	if use == ToolUse.Use.NO_ROOM:
 		_harvest_hud.show_note("Not enough room in the inventory.")
+	if use == ToolUse.Use.STANDING_ON:
+		_harvest_hud.show_note("Step off it first.")
 	if use == ToolUse.Use.NEEDS_BETTER_TOOL:
 		var tool_name: String = ItemTypes.TYPES[_state.player.inventory.held_item()]["name"]
 		_harvest_hud.show_note("Needs a better %s." % tool_name.to_lower())

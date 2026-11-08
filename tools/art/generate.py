@@ -82,6 +82,7 @@ import fire
 import flowers
 import interior
 import items
+import landing
 import livestock
 import meadow
 import portraits
@@ -165,6 +166,10 @@ def standing_outdoors(picture):
 # 44 oven (1)
 # 45 ewer (1)
 # 46 grave (3)
+# 47 jetty (16, one per connection mask, see landing.py)
+# 48 rowing_boat (1)
+# 49 net_frame (1)
+# 50 eel_traps (1)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -209,6 +214,10 @@ def object_atlas():
         ("oven", [standing_outdoors(crafts.oven())]),
         ("ewer", coast.ewer_row()),
         ("grave", [standing_outdoors(picture) for picture in church.graves()]),
+        ("jetty", landing.jetty_row()),
+        ("rowing_boat", landing.rowing_boat_row()),
+        ("net_frame", landing.net_frame_row()),
+        ("eel_traps", landing.eel_traps_row()),
     ]
 
 
@@ -314,7 +323,7 @@ def write_crops():
 
 
 def write_items():
-    icons = items.ICONS | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons()
+    icons = items.ICONS | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons() | landing.icons()
     for name, picture in icons.items():
         save_picture(picture, f"items/{name}.png")
         # The same icon at half size, for items lying on the ground.

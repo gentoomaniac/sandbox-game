@@ -42,10 +42,12 @@ func _init(crop_rules := CropRules.default_rules(), motion: AmbientMotion = null
 				source.create_tile(atlas_cell)
 				var tile_data := source.get_tile_data(atlas_cell, 0)
 				tile_data.texture_origin = cell_origin(object_type["footprint"])
-				# Sorted by the middle of the footprint's bottom row, like the player standing there.
-				tile_data.y_sort_origin = (
-					(object_type["footprint"].y - 1) * TerrainTileset.TILE_SIZE
-				)
+				# Sorted by the middle of the footprint's bottom row, like the player standing there;
+				# a deck as if it lay a tile further up, so that whoever stands on it is drawn over it.
+				var rows_down: int = object_type["footprint"].y - 1
+				if object_type.get("deck", false):
+					rows_down -= 1
+				tile_data.y_sort_origin = rows_down * TerrainTileset.TILE_SIZE
 				if motion != null:
 					tile_data.material = motion.object_material(type)
 	for crop_id in crop_rules.crop_ids():

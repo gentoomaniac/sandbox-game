@@ -12,8 +12,9 @@ extends RefCounted
 ## axe or pickaxe taking down what the player placed inside a house (outdoors it is a HIT),
 ## NO_ROOM that, with too little room in the inventory for it and what it holds, GIVE_BONE a bone
 ## given to a dog, which then follows the player, SADDLE the saddle put on a horse and UNSADDLE an
-## empty hand taking it off again, RIDING anything on horseback (the player gets off first). What a
-## harvest, a pick or a final hit gives lies on the ground (see World `drop_items`).
+## empty hand taking it off again, RIDING anything on horseback (the player gets off first),
+## STANDING_ON a tool at a deck the player stands on (see `is_standing_on`). What a harvest, a pick
+## or a final hit gives lies on the ground (see World `drop_items`).
 enum Use {
 	NOTHING,
 	TILL,
@@ -33,6 +34,7 @@ enum Use {
 	SADDLE,
 	UNSADDLE,
 	RIDING,
+	STANDING_ON,
 }
 
 ## The tools the use action has something to do with.
@@ -222,19 +224,36 @@ func _dig(target: Vector2i) -> void:
 		_state.world.drop_items(target, CLAY_DIG_YIELD)
 
 
-## Whether the player can put an object of this type on a tile: it is free, the player's body is
-## not on it (they would be stuck in it), and the object goes on this map: furniture with only an
-## interior picture goes only inside a house, and what is `outdoors_only` only outdoors.
+## Whether the player can put an object of this type with its top left on a tile: every tile of
+## its footprint is free (and of a terrain of its `placed_on`, if it has that), the player's body
+## is not on them (they would be stuck in it), and the object goes on this map: furniture with
+## only an interior picture goes only inside a house, and what is `outdoors_only` only outdoors.
 func _can_place_on(pos: Vector2i, placed_type: StringName) -> bool:
 	var placed: Dictionary = WorldObjectTypes.TYPES[placed_type]
 	var fits_map: bool = (
 		not placed.get("outdoors_only", false) if _state.is_inside() else placed.has("atlas_row")
 	)
-	return (
-		fits_map
-		and _state.current_map.is_placeable(pos)
-		and not PlayerState.body_tiles(_state.player.position).has_point(pos)
-	)
+	var footprint := Rect2i(pos, placed["footprint"])
+	if not fits_map or footprint.intersects(PlayerState.body_tiles(_state.player.position)):
+		return false
+	for x in range(footprint.position.x, footprint.end.x):
+		for y in range(footprint.position.y, footprint.end.y):
+			if not _is_free_for(Vector2i(x, y), placed):
+				return false
+	return true
+
+
+## Whether one tile is free for an object of the type `placed`: where the map lets one tile
+## objects be placed, or, for a type with `placed_on` (only outdoors), free and of one of those
+## terrains. `placed_on` replaces the rule of buildable ground altogether, so the jetty and the
+## boat skip its other rule too: they may lie in front of a door.
+func _is_free_for(tile: Vector2i, placed: Dictionary) -> bool:
+	if not placed.has("placed_on"):
+		return _state.current_map.is_placeable(tile)
+	for terrain: Tile.Terrain in placed["placed_on"]:
+		if _state.world.is_free_on(tile, terrain):
+			return true
+	return false
 
 
 ## What an item does on a tile inside a house, other than placing: the tool that cuts or breaks
@@ -335,6 +354,8 @@ func _use_tool(tool_item: Dictionary, object: WorldObject, world_pos: Vector2i) 
 func _use_cutting_tool(tool_item: Dictionary, object: WorldObject) -> Use:
 	if object == null or object.type_data().get("tool", ItemTypes.NONE) != tool_item.get("tool"):
 		return Use.NOTHING
+	if is_standing_on(object):
+		return Use.STANDING_ON
 	if tool_item["level"] >= object.type_data()["harvest_level"]:
 		return Use.HIT
 	return Use.NEEDS_BETTER_TOOL
@@ -388,6 +409,16 @@ func _hit(object: WorldObject) -> void:
 ## rolls the same.
 func _rolls_seed(tree: WorldObject) -> bool:
 	return PositionHash.rolls(tree.pos, _state.clock.day, tree.type_data().get("seed_chance", 0.0))
+
+
+## Whether the player's body is on a deck (the jetty): taking it away would leave them standing
+## in the water, so neither a tool nor the hammer does.
+func is_standing_on(object: WorldObject) -> bool:
+	var footprint := Rect2i(object.pos, object.type_data()["footprint"])
+	return (
+		object.type_data().get("deck", false)
+		and footprint.intersects(PlayerState.body_tiles(_state.player.position))
+	)
 
 
 ## Uses the tile the player faces.

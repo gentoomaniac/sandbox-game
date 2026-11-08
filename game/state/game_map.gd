@@ -38,9 +38,12 @@ func is_ground_walkable(pos: Vector2i) -> bool:
 	return tile != null and tile.is_walkable()
 
 
-## The ground rules combined with the objects on the tile.
+## The ground rules combined with the objects on the tile; a deck (the jetty) is walked on
+## whatever the ground under it.
 func is_walkable(pos: Vector2i) -> bool:
+	var object := object_at(pos)
+	if object != null and object.type_data().get("deck", false):
+		return true
 	if not is_ground_walkable(pos):
 		return false
-	var object := object_at(pos)
 	return object == null or not object.blocks_walking()

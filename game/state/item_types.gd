@@ -60,6 +60,11 @@ const CARVED_CHEST := &"carved_chest"
 const CUPBOARD := &"cupboard"
 ## A cross or a stone for a grave in the churchyard (task 102).
 const GRAVE_MARKER := &"grave_marker"
+# The fisherman's landing (task 103).
+const JETTY := &"jetty"
+const ROWING_BOAT := &"rowing_boat"
+const NET_FRAME := &"net_frame"
+const EEL_TRAPS := &"eel_traps"
 # The mason's (task 74).
 const RAW_BRICK := &"raw_brick"
 const BRICK := &"brick"
@@ -424,6 +429,39 @@ const _OTHER_TYPES := {
 		"weight": 10.0,
 		"stack_limit": 5,
 		"places": WorldObjectTypes.GRAVE,
+	},
+	JETTY:
+	{
+		"name": "Jetty",
+		"description":
+		"A piece of plank jetty on oak piles. Laid over water or mud, it is walked on.",
+		"weight": 6.0,
+		"stack_limit": 20,
+		"places": WorldObjectTypes.JETTY,
+	},
+	ROWING_BOAT:
+	{
+		"name": "Rowing boat",
+		"description": "A flat-bottomed boat for the tideways. It lies on water or mud.",
+		"weight": 40.0,
+		"stack_limit": 1,
+		"places": WorldObjectTypes.ROWING_BOAT,
+	},
+	NET_FRAME:
+	{
+		"name": "Net frame",
+		"description": "Two forked posts and a pole, with a fishing net hung on it to dry.",
+		"weight": 8.0,
+		"stack_limit": 5,
+		"places": WorldObjectTypes.NET_FRAME,
+	},
+	EEL_TRAPS:
+	{
+		"name": "Eel traps",
+		"description": "Wicker traps for eels, laid in the tideways at night.",
+		"weight": 2.0,
+		"stack_limit": 10,
+		"places": WorldObjectTypes.EEL_TRAPS,
 	},
 	ROAST_TURNIP:
 	{
