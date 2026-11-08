@@ -9,7 +9,6 @@ in colour; the meals in a bowl steam a little.
 """
 
 import chest
-import interior
 from canvas import TILE, blank, outline_edge, rect
 from items import from_rows, outlined, pixel
 
@@ -275,6 +274,18 @@ def bricks(face, top, shade):
     return outlined(picture, "soil_dark")
 
 
+def stool():
+    """The stool of its item icon, 10x10: the stool of the 16 px interior (the room's is drawn at
+    32 px in interior.py)."""
+    picture = blank(10, 10)
+    rect(picture, 0, 0, 9, 4, "soil_light")
+    rect(picture, 0, 4, 9, 4, "soil_mid")
+    for x in (1, 7):
+        rect(picture, x, 5, x + 1, 9, "soil")
+    rect(picture, 4, 5, 5, 8, "soil_dark")
+    return outline_edge(picture, "soil_dark", keep_bottom=True)
+
+
 def icon_of(picture):
     """An item icon: the picture, outlined all round, in the middle of 16x16 px."""
     icon = blank()
@@ -310,7 +321,7 @@ def icons():
         # Dried clay, grey-brown, and fired, red.
         "raw_brick": bricks("mud", "sand", "mud_dark"),
         "brick": bricks("rust", "red_light", "rust_dark"),
-        "stool": icon_of(interior.stool()),
+        "stool": icon_of(stool()),
         "carved_chest": icon_of(carved_chest(is_standing=False)),
         "roast_turnip": roast_turnip(),
         # Cabbage, carrot and onion in a broth.

@@ -84,7 +84,7 @@ const CROP_SWAY := {"stem": 1.0, "strength": 1.3, "frequency": 0.8}
 const DECORATION_SWAY := {"strength": 0.5, "frequency": 0.9}
 
 ## The fires, by type: their cell, the strip of their flame and where its box is in the cell
-## (FIREPLACE_FLAME in tools/art/camp.py and HEARTH_FLAME in tools/art/interior.py, doubled), the
+## (FIREPLACE_FLAME in tools/art/camp.py, doubled, and HEARTH_FLAME in tools/art/interior.py), the
 ## row the flame's tip usually reaches and how high the sparks rise from there, in the pixels of
 ## the world: unlike the other shaders, fire.gdshader works on the flame drawn at 32 px per tile.
 const FIRE_PROFILES := {

@@ -169,8 +169,7 @@ func _add_furniture(object: WorldObject) -> void:
 		var light := ObjectLight.new(object.light(), object.pos)
 		# The fire, a bit above the middle of the footprint: it burns at the back of the hearth.
 		light.position = (
-			(Vector2(object.pos) + Vector2(footprint) / 2.0) * tile_size
-			+ Vector2(0, -4) * TerrainTileset.ART_16_SCALE
+			(Vector2(object.pos) + Vector2(footprint) / 2.0) * tile_size + Vector2(0, -8)
 		)
 		add_child(light)
 		_furniture.append(light)

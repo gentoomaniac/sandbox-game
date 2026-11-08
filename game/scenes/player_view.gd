@@ -53,7 +53,9 @@ const ASLEEP_FRAME := 3
 const COLLAPSE_SECONDS := 1.5
 ## How the asleep frame (head to the right, in the bottom half of the frame) is laid in a bed
 ## whose head end lies in this direction: how it is turned and moved, in art pixels, so that the
-## figure's middle is on the player's position, the middle of the bed.
+## figure's middle is on the player's position, the middle of the bed. In the box bed (head to
+## the left) it lies a little left and up, measured on its picture, so that the head is on the
+## pillow and the clogs stay under the blanket.
 const LYING_POSES := {
 	Vector2i.UP:
 	{
@@ -64,7 +66,7 @@ const LYING_POSES := {
 	Vector2i.LEFT:
 	{
 		"rotation": 0.0,
-		"shift": Vector2(0, 16),
+		"shift": Vector2(-2, 14),
 		"is_flipped": true,
 	},
 }

@@ -60,23 +60,25 @@ def flame(width, height, frame, half_width, tall, scale=1):
     return canvas
 
 
-def strip(behind, front, box, half_width, tall):
+def strip(behind, front, box, half_width, tall, scale=1):
     """The cells of a fire's strip (assets/fire/<type>.png) at the game's tile: what is behind
     the flame, what is in front of it, then the flame's frames. `box` (x, y, width, height),
-    `half_width` and `tall` are measured on the 16 px pictures `behind` and `front` (the
-    fireplace and the hearth are still drawn at 16 px per tile), which are scaled up pixel for
-    pixel; the flame is drawn at the game's tile, with twice the pixels."""
-    scale = GAME_TILE // TILE
+    `half_width` and `tall` are measured on the pictures `behind` and `front`, `scale` of whose
+    pixels make one of the 16 px art: the fireplace is still drawn at 16 px per tile (1), and
+    scaled up pixel for pixel here; the hearth at the game's tile (2). The flame is drawn at
+    the game's tile."""
+    up = GAME_TILE // TILE // scale
     _, _, width, height = box
-    flames = [flame(width * scale, height * scale, frame, half_width * scale, tall * scale, scale) for frame in range(FRAMES)]
-    return [_scaled_up(_cropped(behind, box), scale), _scaled_up(_cropped(front, box), scale)] + flames
+    flames = [flame(width * up, height * up, frame, half_width * up, tall * up, GAME_TILE // TILE) for frame in range(FRAMES)]
+    return [_scaled_up(_cropped(behind, box), up), _scaled_up(_cropped(front, box), up)] + flames
 
 
-def burning(behind, front, box, half_width, tall):
-    """The whole picture with the first frame of its flame, for where it does not move."""
+def burning(behind, front, box, half_width, tall, scale=1):
+    """The whole picture with the first frame of its flame, for where it does not move; `scale`
+    as for `strip`."""
     x0, y0, width, height = box
     canvas = copy(behind)
-    first = flame(width, height, 0, half_width, tall)
+    first = flame(width, height, 0, half_width, tall, scale)
     for y in range(height):
         for x in range(width):
             if first[y][x] is not None:

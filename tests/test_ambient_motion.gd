@@ -119,8 +119,8 @@ func test_the_flame_strips_match_the_pictures() -> void:
 		assert_eq(strip.get_width() % cells, 0, "%s: a whole number of cells" % type)
 		var box := Vector2i(strip.get_width() / cells, strip.get_height())
 		var box_position := Vector2i(profile["box_position"])
-		# The pictures show a still flame of the 16 px art, the strip one drawn at 32 px; what
-		# stands in front of the flame is the same in both.
+		# The pictures show a still flame, the fireplace's of the 16 px art, the strip one drawn
+		# at 32 px; what stands in front of the flame is the same in both.
 		for picture: Image in pictures[type]:
 			assert_eq(picture.get_size(), Vector2i(profile["cell_size"]), type)
 			var differing := 0

@@ -45,9 +45,13 @@ data/buildings.cfg.
 
 assets/fire/<type>.png: the flame of the fireplace and of the hearth, burning (see fire.py and
 game/scenes/fire.gdshader), at the game's tile (not doubled). Cells the size of the box the
-flame burns in: what is behind the flame, what is in front of it (16 px art, scaled up in
-`fire.strip`), then the frames of the flame. The atlas cell and the hearth's picture show the
-first frame, for where the fire does not move.
+flame burns in: what is behind the flame, what is in front of it (the fireplace's 16 px art
+scaled up in `fire.strip`, the hearth's drawn at the game's tile), then the frames of the flame.
+The atlas cell and the hearth's picture show the first frame, for where the fire does not move.
+
+assets/interior.png and assets/interior/<name>.png: the tiles of the rooms and the furniture,
+drawn at the game's tile (see interior.py); the stations and the grave marker placed indoors
+are still 16 px art, scaled up in `write_interior`.
 
 assets/wildlife/<kind>.png: one sheet per animal kind, one row per action and one column per frame
 (see animals.py, birds.py for the stork and the goose, sea_birds.py for the birds of the coast, and
@@ -117,9 +121,6 @@ from palette import ASSETS, PALETTE, check_palette, save, save_picture, write_pa
 DOUBLED = (
     # The bedroll (task 111); the object atlas doubles its rows itself (DOUBLED_ROWS).
     "bedroll_cover.png",
-    # Interiors (task 112).
-    "interior.png",
-    "interior/*.png",
     # Items on the ground (task 115).
     "ground_items/*.png",
 )
@@ -329,16 +330,17 @@ def write_character():
 
 def write_interior():
     furniture = interior.furniture()
-    save([interior.atlas_tiles(furniture)], "interior.png")
+    save([interior.atlas_tiles(furniture)], "interior.png", GAME_TILE)
     for name, (picture, _footprint) in furniture.items():
         save_picture(picture, f"interior/{name}.png")
     for name, picture in interior.covers(furniture).items():
         save_picture(picture, f"interior/{name}.png")
     # The stations the player places are no furniture of the maps: they have no marker tile.
+    # They are still drawn at 16 px per tile (task 111), so they are scaled up here.
     for name, picture in crafts.stations().items():
-        save_picture(picture, f"interior/{name}.png")
+        save_picture(doubled(picture), f"interior/{name}.png")
     # The ghost of the grave marker while it is placed (a grave stands only outdoors).
-    save_picture(church.graves()[0], "interior/grave.png")
+    save_picture(doubled(church.graves()[0]), "interior/grave.png")
 
 
 def write_bedroll_cover():
@@ -346,11 +348,11 @@ def write_bedroll_cover():
 
 
 def write_fire():
-    for name, (behind, front), (box, half_width, tall) in (
-        ("fireplace", camp.fireplace_layers(), camp.FIREPLACE_FLAME),
-        ("hearth", interior.hearth_layers(), interior.HEARTH_FLAME),
+    for name, (behind, front), (box, half_width, tall), scale in (
+        ("fireplace", camp.fireplace_layers(), camp.FIREPLACE_FLAME, 1),
+        ("hearth", interior.hearth_layers(), interior.HEARTH_FLAME, GAME_TILE // TILE),
     ):
-        strip = fire.strip(behind, front, box, half_width, tall)
+        strip = fire.strip(behind, front, box, half_width, tall, scale)
         save([strip], f"fire/{name}.png", len(strip[0][0]), len(strip[0]))
 
 
