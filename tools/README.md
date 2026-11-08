@@ -32,9 +32,10 @@ by topic. Where is a thing drawn?
 
 | Module | What it draws |
 |---|---|
+| `contrast_sheet.py` | `make contrast-sheet` (after `make assets`): the tall grass, fern and reeds (or the atlas rows named in `KINDS="willow shrub"`) over the grass, lush grass, dry grass and floodplain of every look (each season, frost, snow, and night) into `build/contrast_sheet.png`, to check contrast by eye. |
 | `generate.py` | The object atlas (`object_atlas()`, with the numbered table of its rows), the writers and `main()`. |
-| `canvas.py` | The shared basics: `TILE`, the size of an object cell, `blank`, `filled`, `copy` and a clipped `rect`. |
-| `palette.py` | The palette, `to_image`, `save` (one PNG under `assets/`) and the palette check. |
+| `canvas.py` | The shared basics: `TILE`, the size of an object cell, `blank`, `filled`, `copy`, a clipped `rect`, and the two outline helpers: `outline` (a ring outside the drawing) and `outline_edge` (recolours the drawing's border). |
+| `palette.py` | The palette, `DARKEST_OF` (the colour that outlines each ramp), `to_image`, `save` (one PNG under `assets/`) and the palette check. |
 | `terrain.py` | The ground: water, floodplain, wetland, grass, soil, and their decorations. |
 | `flowers.py` | The meadow flowers of the region: the flower row of the decoration atlas. |
 | `trees.py` | Oak, spruce, pine, dead tree, bushes, ferns, stones, boulders and stumps, and the shared tree parts (crowns of shaded blobs, trunks, bare twigs). |
