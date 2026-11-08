@@ -65,7 +65,9 @@
   can be shown by swapping or adding a layer instead of redrawing the character. Every layer
   is drawn on the same figure, so they line up; the faces have eyes with a glint, brows, a
   nose shadow, cheeks and a mouth. The player and the villagers stand on a small contact
-  shadow, as the animals do.
+  shadow, as the animals do. Every tool shows in the hand (its item's `held_sheet`), in
+  every facing and walk frame; there is no use animation yet, so a tool stays in the hand as
+  it is used.
 - **Tools** are bought and upgraded (decided 2026-11-05):
   - The player starts with a hoe, axe, pickaxe, watering can, scythe, shovel and a bag of
     turnip seeds, all tools at level 1.

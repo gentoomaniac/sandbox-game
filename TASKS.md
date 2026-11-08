@@ -1883,7 +1883,22 @@ assumes 640x360 (`VIEWPORT_SIZE`, `WIDEST_VISIBLE_HEIGHT`, the screenshot tool, 
 
 ## 119. The tools in the character's hand
 
-- [ ] Done
+- [x] Done
+
+Done: every tool shows in the hand (`HELD_TOOLS` in tools/art/character.py, one sheet
+assets/character/held_<tool>.png each, the item's `held_sheet`): the hoe, shovel, scythe, axe,
+pickaxe, hammer and watering can, at 32 px in every facing and walk frame, in the colours of
+their icons. One helper places them the hoe's way, in the right hand: the long tools (hoe,
+shovel on its blade, scythe) stand on the ground beside the figure, the short ones (axe and
+pickaxe at the throat, hammer, the copper can by its handle) hang in the hand with the head
+above it and, seen from the side, swing with the near hand; from behind the tool is behind the
+body, its head turned outward so it shows beside it. There is no fishing rod in the game, and
+the player has no use (swing) animation, so there was no swing for a tool to follow: a tool
+stays in the hand as it is used, and riding, passing out and lying in bed still let go of it.
+The classic art keeps its hoe; the other tools show the new picture in both sets (checked: they
+sit by the doubled 16 px figure's hand). A test checks every tool has a held sheet in the
+character's cells in both sets. Checked in screenshots of every tool in all four facings at
+zoom 1 and 2 in both sets; the README's build picture is retaken with the hammer in hand.
 
 The user, 2026-11-08: "most tools don't show on the character". Only the hoe has a
 `held_sheet` (game/state/item_types.gd) and a held layer drawn (tools/art/character.py); the

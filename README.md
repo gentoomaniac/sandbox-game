@@ -130,7 +130,8 @@ lets you shrink or switch off the change in day length.
 
 ### Farming
 
-You till the soil with the hoe, plant seeds, water them, and pick the crops by hand. There
+You till the soil with the hoe, plant seeds, water them, and pick the crops by hand; the tool
+you hold is in the character's hand. There
 are thirteen crops: turnips, potatoes, carrots, cabbage, onions, wheat, rye and buckwheat
 (the grains of the sandy Geest, ground to flour like wheat), peas, beans, flax (for its fibre,
 not to eat), wild strawberries and small green squashes (pumpkins). Each
@@ -350,7 +351,7 @@ headstone or a fieldstone slab.
 
 ![Inside the Kate and the longhouse at night, by the hearth](docs/screenshots/interiors.png)
 
-![Build mode: the ghost of a Kate and what it costs](docs/screenshots/build.png)
+![Build mode: the ghost of a Kate and what it costs, the hammer in hand](docs/screenshots/build.png)
 
 Press X with the hammer in hand to switch from building to taking down: the panel reads
 "Taking down", the tile under the mouse gets a red frame, and the building or the thing you
