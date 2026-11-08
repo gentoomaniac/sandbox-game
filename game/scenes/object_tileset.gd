@@ -21,16 +21,19 @@ const CELL_HEIGHT := 5 * TerrainTileset.TILE_SIZE
 var tile_set := TileSet.new()
 ## The source of each crop's sheet, by crop type.
 var _crop_sources: Dictionary[StringName, int] = {}
+## Whether the atlases shown are the classic art's (see ArtSet).
+var _is_classic := ArtSet.is_classic
 
 
 ## One atlas source per look (see SeasonBlend.Look), with the same tiles: a source's id is its
-## look. Then one source per crop, with the ids that follow. The tiles of plants and fires get
-## the materials of `motion` (none without it).
+## look; the classic art's atlases have the same cells (see `show_art_set`). Then one source per
+## crop, with the ids that follow. The tiles of plants and fires get the materials of `motion`
+## (none without it).
 func _init(crop_rules := CropRules.default_rules(), motion: AmbientMotion = null) -> void:
 	tile_set.tile_size = Vector2i(TerrainTileset.TILE_SIZE, TerrainTileset.TILE_SIZE)
 	for look: SeasonBlend.Look in SeasonBlend.Look.values():
 		var source := TileSetAtlasSource.new()
-		source.texture = load(SeasonalArt.path(ATLAS_PATH, look))
+		source.texture = load(picture(look))
 		source.texture_region_size = Vector2i(CELL_WIDTH, CELL_HEIGHT)
 		# The motion shaders find a pixel's place in its cell from its texture coordinates.
 		source.use_texture_padding = false
@@ -54,6 +57,22 @@ func _init(crop_rules := CropRules.default_rules(), motion: AmbientMotion = null
 					tile_data.material = motion.object_material(type)
 	for crop_id in crop_rules.crop_ids():
 		_add_crop_sheet(crop_id, crop_rules.crop(crop_id)["sheet"], motion)
+
+
+## Shows the atlases of the chosen art set (see ArtSet), if they are not shown yet. Both sets have
+## the same cells, so the tiles stay and only their pictures change.
+func show_art_set() -> void:
+	if _is_classic == ArtSet.is_classic:
+		return
+	_is_classic = ArtSet.is_classic
+	for look: SeasonBlend.Look in SeasonBlend.Look.values():
+		var source: TileSetAtlasSource = tile_set.get_source(look)
+		source.texture = load(picture(look))
+
+
+## The object atlas in a look, in the chosen art set.
+static func picture(look: SeasonBlend.Look) -> String:
+	return ArtSet.path(SeasonalArt.path(ATLAS_PATH, look))
 
 
 ## The source that has the sheet of a crop type. Everything else is drawn from the source of its

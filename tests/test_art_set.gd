@@ -85,6 +85,29 @@ func test_the_atlases_follow_the_art_set() -> void:
 	assert_eq(summer.texture.resource_path, TerrainTileset.TERRAIN_ATLAS_PATH)
 
 
+func test_the_classic_object_atlases_have_the_cells_of_the_new() -> void:
+	var cell_size := Vector2i(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT)
+	for look: SeasonBlend.Look in SeasonBlend.Look.values():
+		var path := SeasonalArt.path(ObjectTileset.ATLAS_PATH, look)
+		var classic := path.replace("res://assets/", ArtSet.CLASSIC_DIR)
+		assert_eq(
+			_drawn_cells(load(classic).get_image(), cell_size),
+			_drawn_cells(load(path).get_image(), cell_size),
+			path
+		)
+
+
+func test_the_object_atlases_follow_the_art_set() -> void:
+	var tileset := ObjectTileset.new()
+	var snow: TileSetAtlasSource = tileset.tile_set.get_source(SeasonBlend.Look.SNOW)
+	ArtSet.is_classic = true
+	tileset.show_art_set()
+	assert_eq(snow.texture.resource_path, "res://assets/classic/objects_snow.png")
+	ArtSet.is_classic = false
+	tileset.show_art_set()
+	assert_eq(snow.texture.resource_path, "res://assets/objects_snow.png")
+
+
 func test_the_ground_moves_on_the_pixels_of_its_art_in_either_set() -> void:
 	var motion := AmbientMotion.new()
 	assert_eq(motion.water.get_shader_parameter("art_scale"), 1.0, "drawn at 32 px")
@@ -95,12 +118,13 @@ func test_the_ground_moves_on_the_pixels_of_its_art_in_either_set() -> void:
 		assert_eq(material.get_shader_parameter("art_scale"), 2.0, "the classic 16 px art")
 
 
-## The atlas cells of an image that have a pixel drawn.
-func _drawn_cells(image: Image) -> Array[Vector2i]:
-	var size := TerrainTileset.TILE_SIZE
+## The atlas cells of an image that have a pixel drawn, cells of `size` (a tile by default).
+func _drawn_cells(
+	image: Image, size := Vector2i(TerrainTileset.TILE_SIZE, TerrainTileset.TILE_SIZE)
+) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []
-	for row in image.get_height() / size:
-		for column in image.get_width() / size:
-			if not image.get_region(Rect2i(column * size, row * size, size, size)).is_invisible():
+	for row in image.get_height() / size.y:
+		for column in image.get_width() / size.x:
+			if not image.get_region(Rect2i(Vector2i(column, row) * size, size)).is_invisible():
 				cells.append(Vector2i(column, row))
 	return cells

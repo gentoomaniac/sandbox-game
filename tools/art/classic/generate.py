@@ -16,25 +16,40 @@ from pathlib import Path
 # The old modules here come first, the new art's shared basics (canvas, palette) after them.
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+import alder  # noqa: E402
 import animals  # noqa: E402
+import beech  # noqa: E402
+import birch  # noqa: E402
 import birds  # noqa: E402
+import boundaries  # noqa: E402
 import bubbles  # noqa: E402
 import buildings  # noqa: E402
 import camp  # noqa: E402
 import character  # noqa: E402
+import chest  # noqa: E402
 import church  # noqa: E402
+import coast  # noqa: E402
+import crafts  # noqa: E402
 import fire  # noqa: E402
 import flowers  # noqa: E402
+import graves  # noqa: E402
 import ground_looks  # noqa: E402
 import ground_overlays  # noqa: E402
 import interior  # noqa: E402
+import landing  # noqa: E402
 import livestock  # noqa: E402
+import meadow  # noqa: E402
+import object_looks  # noqa: E402
+import reeds  # noqa: E402
 import sea_birds  # noqa: E402
 import seasons  # noqa: E402
 import terrain  # noqa: E402
 import portraits  # noqa: E402
+import trees  # noqa: E402
+import trunks  # noqa: E402
 import villagers  # noqa: E402
-from canvas import GAME_TILE, TILE  # noqa: E402
+import willow  # noqa: E402
+from canvas import GAME_TILE, OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, TILE, blank  # noqa: E402
 from palette import ASSETS, PALETTE, save, save_picture  # noqa: E402
 from PIL import Image  # noqa: E402
 
@@ -76,8 +91,8 @@ DOUBLED = (
     "wildlife/tern.png",
     "fire/*.png",
     # The ground (task 107; terrain.py, the ground looks of seasons.py, crop_icons.soil_wet and
-    # meadow.clay_hint of commit acf236e; the meadow flowers of its decorations are the shared
-    # flowers.py, still drawn at 16 px).
+    # meadow.clay_hint of commit acf236e; the meadow flowers of its decorations are flowers.py of
+    # commit e303759).
     "terrain*.png",
     "decorations*.png",
     "soil_wet.png",
@@ -85,6 +100,11 @@ DOUBLED = (
     # The buildings (task 110; buildings.py and church.py of commit e303759, their looks drawn by
     # the shared seasons.house).
     "buildings/*.png",
+    # The plants (task 108; trees.py, trunks.py, beech.py, birch.py, alder.py, willow.py, the
+    # plant parts of meadow.py and reeds.py and the object looks of seasons.py of commit
+    # e303759). The atlas is one picture, so its other rows are here too: the walls, fences, the
+    # dyke and the placed objects are the shared modules, still drawn at 16 px (task 111).
+    "objects*.png",
 )
 # The animals whose cells grew at 32 px per tile: the classic sheets, doubled, are set in
 # the new cells (bottom centre, as the animal stands in its cell), so that the game reads both
@@ -169,6 +189,86 @@ def write_buildings():
                 save_picture(seasons.house(look, picture, snowy), f"{CLASSIC}/buildings/{name}{lit_suffix}{look_suffix}.png")
 
 
+def standing_outdoors(picture):
+    """A picture that stands on the ground (the chest, a station) in its cell of the object atlas,
+    on a ground shadow, its bottom a pixel above the cell's."""
+    canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
+    trees.ground_shadow(canvas, 8)
+    top = OBJECT_BOTTOM - len(picture)
+    for y, row in enumerate(picture):
+        for x, name in enumerate(row):
+            if name is not None:
+                canvas[top + y][OBJECT_CENTRE - len(row) // 2 + x] = name
+    return canvas
+
+
+def object_atlas():
+    """The rows of assets/objects.png in order, each as (kind, its variants), as
+    tools/art/generate.py draws them (see the numbered table there)."""
+    spruces, pines, dead_trees, berry_bushes, shrubs, saplings, ferns = trees.vegetation()
+    return [
+        ("oak", [trees.oak(seed) for seed in trees.OAK_SEEDS]),
+        ("stone", [trees.stone(seed) for seed in (111, 112)]),
+        ("fireplace", [camp.fireplace()]),
+        ("sleeping_bag", [camp.bedroll()]),
+        ("spruce", spruces),
+        ("pine", pines),
+        ("dead_tree", dead_trees),
+        ("berry_bush", berry_bushes),
+        ("shrub", shrubs),
+        ("sapling", saplings),
+        ("fern", ferns),
+        ("boulder", [trees.boulder(seed) for seed in (191, 192)]),
+        ("stump", [trees.stump(seed) for seed in (201, 202)]),
+        ("tall_grass", meadow.tall_grass_row()),
+        *trunks.rows("oak"),
+        *trunks.rows("spruce"),
+        *trunks.rows("pine"),
+        *trunks.rows("dead_tree"),
+        *trunks.rows("willow"),
+        ("reeds", reeds.reeds_row()),
+        ("dead_stump", [trees.dead_stump(seed) for seed in (211, 212)]),
+        ("chest", [standing_outdoors(chest.chest())]),
+        ("knick", boundaries.knick_row()),
+        ("wattle_fence", boundaries.wattle_fence_row()),
+        ("stone_wall", boundaries.stone_wall_row()),
+        ("dyke", boundaries.dyke_row()),
+        ("willow", willow.willow_row()),
+        ("beech", beech.beech_row()),
+        *trunks.rows("beech"),
+        ("birch", birch.birch_row()),
+        *trunks.rows("birch"),
+        ("alder", alder.alder_row()),
+        *trunks.rows("alder"),
+        ("workbench", [standing_outdoors(crafts.workbench())]),
+        ("carved_chest", [standing_outdoors(crafts.carved_chest())]),
+        ("kiln", [standing_outdoors(crafts.kiln())]),
+        ("oven", [standing_outdoors(crafts.oven())]),
+        ("ewer", coast.ewer_row()),
+        ("grave", [standing_outdoors(picture) for picture in graves.graves()]),
+        ("jetty", landing.jetty_row()),
+        ("rowing_boat", landing.rowing_boat_row()),
+        ("net_frame", landing.net_frame_row()),
+        ("eel_traps", landing.eel_traps_row()),
+    ]
+
+
+def write_objects():
+    """The object atlas in every look, the bare trees drawn anew for winter."""
+    objects = object_atlas()
+    redraws = {
+        "oak": lambda variant: trees.bare_oak(trees.OAK_SEEDS[variant]),
+        "willow": lambda variant: willow.bare_willow(willow.WILLOW_SEEDS[variant]),
+        "beech": lambda variant: beech.bare_beech(beech.BEECH_SEEDS[variant]),
+        "birch": lambda variant: birch.bare_birch(birch.BIRCH_SEEDS[variant]),
+        "alder": lambda variant: alder.bare_alder(alder.ALDER_SEEDS[variant]),
+    }
+    for look in object_looks.LOOKS:
+        suffix = "" if look == "summer" else f"_{look}"
+        rows = object_looks.object_rows(look, objects, redraws)
+        save(rows, f"{CLASSIC}/objects{suffix}.png", OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
+
+
 def set_in_grown_cells():
     """Sets each cell of the sheets of GROWN_CELLS in the bottom centre of a cell of the new size."""
     for pattern, ((width, height), (new_width, new_height)) in GROWN_CELLS.items():
@@ -203,6 +303,7 @@ def main():
     write_fire()
     write_ground()
     write_buildings()
+    write_objects()
     scale_up_16_px_art()
     set_in_grown_cells()
     print("Wrote every file under assets/classic/.")

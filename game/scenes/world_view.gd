@@ -173,9 +173,11 @@ func _ready() -> void:
 	add_child(_buildings)
 
 
-## Shows the ground, the campfires' flames and the buildings in the chosen art set (see ArtSet).
+## Shows the ground, the objects, the campfires' flames and the buildings in the chosen art set
+## (see ArtSet).
 func show_art_set() -> void:
 	_tileset.show_art_set()
+	_object_tileset.show_art_set()
 	_soil_wetness.show_art_set()
 	ambient_motion.show_art_set()
 	_buildings.show_art_set()
@@ -769,7 +771,7 @@ func _place_object_sprite(sprite: Sprite2D, object: WorldObject) -> void:
 func _object_texture(object: WorldObject) -> AtlasTexture:
 	var cell_size := Vector2i(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT)
 	var texture := AtlasTexture.new()
-	texture.atlas = load(SeasonalArt.path(ObjectTileset.ATLAS_PATH, _object_look(object)))
+	texture.atlas = load(ObjectTileset.picture(_object_look(object)))
 	texture.region = Rect2(_atlas_cell(object) * cell_size, cell_size)
 	return texture
 
