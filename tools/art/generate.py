@@ -34,6 +34,8 @@ cell per facing in the rows above (see `riding_sheet`).
 assets/character/portrait/<slot>_<variant>.png: a 32x32 head-and-shoulders portrait of each
 layer that shows in a bust, for the chat: the top of its frame facing the viewer (see
 portraits.py).
+assets/character/held_<tool>.png: each tool in the hand, a layer in the same cells (see
+`HELD_TOOLS`).
 assets/effects/sleep_z.png: the "z" that rises from a sleeping figure.
 
 assets/buildings/<type>.png: one picture per building type (drawn in buildings.py, the church and
@@ -323,8 +325,8 @@ def write_character():
     # Only the player rides, so only the player's layers sit on a horse.
     for name, layer in character.layers().items():
         save(character.riding_sheet(*layer), f"character/riding/{name}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
-    held_hoe = character.character_sheet(character.draw_held_hoe, {})
-    save(held_hoe, "character/held_hoe.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
+    for tool, draw in character.HELD_TOOLS.items():
+        save(character.character_sheet(draw, {}), f"character/held_{tool}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
     save_picture(character.sleep_z(), "effects/sleep_z.png")
 
 

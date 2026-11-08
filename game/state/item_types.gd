@@ -115,6 +115,7 @@ const _OTHER_TYPES := {
 		"stack_limit": 1,
 		"tool": AXE,
 		"level": 1,
+		"held_sheet": "axe",
 	},
 	PICKAXE:
 	{
@@ -124,6 +125,7 @@ const _OTHER_TYPES := {
 		"stack_limit": 1,
 		"tool": PICKAXE,
 		"level": 1,
+		"held_sheet": "pickaxe",
 	},
 	WATERING_CAN:
 	{
@@ -133,6 +135,7 @@ const _OTHER_TYPES := {
 		"stack_limit": 1,
 		"tool": WATERING_CAN,
 		"level": 1,
+		"held_sheet": "watering_can",
 	},
 	SCYTHE:
 	{
@@ -142,6 +145,7 @@ const _OTHER_TYPES := {
 		"stack_limit": 1,
 		"tool": SCYTHE,
 		"level": 1,
+		"held_sheet": "scythe",
 	},
 	SHOVEL:
 	{
@@ -151,6 +155,7 @@ const _OTHER_TYPES := {
 		"stack_limit": 1,
 		"tool": SHOVEL,
 		"level": 1,
+		"held_sheet": "shovel",
 	},
 	HAMMER:
 	{
@@ -160,6 +165,7 @@ const _OTHER_TYPES := {
 		"stack_limit": 1,
 		"tool": HAMMER,
 		"level": 1,
+		"held_sheet": "hammer",
 	},
 	CHEST:
 	{

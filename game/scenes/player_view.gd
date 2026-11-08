@@ -331,7 +331,7 @@ func _lay(sprite: Sprite2D, frame: int, is_flipped: bool, angle: float, shift: V
 	sprite.position = shift
 
 
-## The hand shows the selected item, if it has art for the hand (the hoe); else it is empty.
+## The hand shows the selected item, if it has art for the hand (the tools); else it is empty.
 func _show_held_item() -> void:
 	var held: StringName = _player.inventory.held_item()
 	var held_sheet: Variant = ItemTypes.TYPES.get(held, {}).get("held_sheet")

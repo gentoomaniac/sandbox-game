@@ -16,6 +16,8 @@ a nose shadow, cheeks and a mouth.
 
 from collections import namedtuple
 
+import numpy as np
+
 import forms
 from canvas import NEIGHBOURS, blank
 
@@ -625,33 +627,135 @@ def draw_hat(facing, pose, shapes, colours, **_):
     return canvas
 
 
-# The hoe: an ash shaft and an iron blade.
-HOE_SHAFT = ("soil", "soil_mid", "soil_light")
-HOE_BLADE = ("stone_dark", "stone", "stone_light")
+# The tools in the hand (assets/character/held_<tool>.png): ash handles, iron heads with a bright
+# cutting edge, and the watering can in copper, as their icons are (tool_icons.py).
+HANDLE = ("soil", "soil_mid", "soil_light")
+IRON = ("stone_dark", "stone", "stone_light")
+CUTTING_EDGE = "snow_light"
+COPPER = ("umber", "ochre_dark", "ochre")
+COPPER_GLINT = "gold"
+HAND = ("skin_shade", "skin", "skin")
+# The row of the hands of a standing figure.
+HANDS_ROW = 41
 
 
-def draw_held_hoe(facing, pose, **_):
-    """A hoe in the right hand: from the front at the left of the picture, from behind at the
-    right (behind the figure), from the side in front of it, its blade at the top."""
-    canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
-    figure = Figure(facing, pose)
-    top = figure.top
-    arm = figure.arms[0] if facing == "down" else figure.arms[-1]
-    if figure.is_side:
-        shaft_x, blade = 23, (23, 25 + top, 28, 27 + top)
-    elif facing == "down":
-        shaft_x, blade = 7, (3, 23 + top, 8, 25 + top)
-    else:
-        shaft_x, blade = 24, (24, 23 + top, 29, 25 + top)
-    forms.shade(canvas, mask(forms.box, shaft_x, 24 + top, shaft_x + 1, 62), HOE_SHAFT, 1)
-    forms.shade(canvas, mask(forms.rounded_box, *blade), HOE_BLADE, 1)
-    forms.paint(canvas, mask(forms.box, blade[0], blade[1], blade[2], blade[1]), HOE_BLADE[2])
-    if facing != "up":
-        # The hand round the shaft.
-        x = shaft_x if not figure.is_side else 22
-        hand_y = int(arm.hand[1]) if not figure.is_side else 41 + top
-        forms.shade(canvas, mask(forms.rounded_box, x - 1, hand_y - 1, x + 2, hand_y + 1), ("skin_shade", "skin", "skin"), 1)
-    return canvas
+def held_tool(draw_tool, is_long):
+    """The layer of a tool in the right hand, drawn by `draw_tool(canvas, x, y, outward)`: `x`
+    is the left column of the 2 px handle, `y` the row of the hand round it, and `outward` (1 or
+    -1) the side away from the body, forward from the side. A long tool stands on the ground: from
+    the front at the left of the picture, from behind at the right (behind the figure), from the
+    side in front of it. A short one is held up by its handle in the hand that hangs at the side,
+    and swings with the near hand when seen from the side."""
+
+    def draw(facing, pose, **_):
+        canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
+        figure = Figure(facing, pose)
+        if facing == "down":
+            arm, outward = figure.arms[0], -1
+        else:
+            arm, outward = figure.arms[-1], 1
+        x, y = int(arm.hand[0]), int(arm.hand[1])
+        if is_long:
+            x, y = (23 if figure.is_side else x), HANDS_ROW + figure.top
+        draw_tool(canvas, x, y, outward)
+        if facing != "up":
+            forms.shade(canvas, mask(forms.rounded_box, x - 1, y - 1, x + 2, y + 1), HAND, 1)
+        return canvas
+
+    return draw
+
+
+def handle(canvas, x, top, bottom):
+    forms.shade(canvas, mask(forms.box, x, top, x + 1, bottom), HANDLE, 1)
+
+
+def hoe(canvas, x, y, outward):
+    """A long shaft with a flat iron blade at the top, turned outward."""
+    handle(canvas, x, y - 17, 62)
+    left = x - 4 if outward < 0 else x
+    forms.shade(canvas, mask(forms.rounded_box, left, y - 18, left + 5, y - 16), IRON, 1)
+    forms.paint(canvas, mask(forms.box, left, y - 18, left + 5, y - 18), IRON[2])
+
+
+def shovel(canvas, x, y, outward):
+    """A spade standing on its blade, a D-grip at the top of the shaft."""
+    handle(canvas, x, y - 12, 52)
+    grip = mask(forms.box, x - 1, y - 14, x + 2, y - 12) & ~mask(forms.box, x, y - 13, x + 1, y - 13)
+    forms.paint(canvas, grip, HANDLE[1])
+    forms.dots(canvas, [(x - 1, y - 14), (x, y - 14)], HANDLE[2])
+    blade = mask(forms.polygon, [(x - 2, 52), (x + 4, 52), (x + 4, 59), (x + 2, 62), (x, 62), (x - 2, 59)])
+    forms.shade(canvas, blade, IRON, 2)
+    forms.paint(canvas, mask(forms.box, x, 51, x + 1, 52), IRON[0])
+
+
+def scythe(canvas, x, y, outward):
+    """A snath taller than the figure with a grip peg, and a long curved blade off its top."""
+    handle(canvas, x, y - 26, 62)
+    peg = x - 3 if outward < 0 else x + 2
+    forms.shade(canvas, mask(forms.box, peg, y - 10, peg + 1, y - 9), HANDLE, 1)
+    middle = x + 0.5
+    points = [(middle, y - 26), (middle + outward * 4, y - 25.5), (middle + outward * 8, y - 21)]
+    blade = mask(forms.limb, points, (1.6, 1.3, 0.5))
+    forms.shade(canvas, blade, IRON, 1)
+    below = np.zeros_like(blade)
+    below[:-1] = blade[1:]
+    forms.paint(canvas, blade & ~below, CUTTING_EDGE)
+
+
+def axe(canvas, x, y, outward):
+    """Held at the throat of the handle: the head just above the hand, its blade flaring outward
+    to a bright edge, the handle down to the knee."""
+    handle(canvas, x, y - 4, y + 10)
+    middle = x + 1
+    tip = middle + outward * 6
+    head = mask(forms.polygon, [(middle - outward * 2, y - 6), (middle + outward * 2, y - 6), (tip, y - 9), (tip, y), (middle + outward * 2, y - 3), (middle - outward * 2, y - 3)])
+    forms.shade(canvas, head, IRON, 1)
+    edge_x = int(tip) - 1 if outward > 0 else int(tip)
+    forms.paint(canvas, head & mask(forms.box, edge_x, 0, edge_x, CHARACTER_HEIGHT - 1), CUTTING_EDGE)
+
+
+def pickaxe(canvas, x, y, outward):
+    """Held at the throat of the handle: the curved head across its top, both points down."""
+    handle(canvas, x, y - 4, y + 10)
+    middle = x + 1
+    head = mask(forms.limb, [(middle - 7, y), (middle - 4, y - 4), (middle, y - 5.5)], (0.6, 1.2, 1.6))
+    head |= mask(forms.limb, [(middle, y - 5.5), (middle + 4, y - 4), (middle + 7, y)], (1.6, 1.2, 0.6))
+    forms.shade(canvas, head, IRON, 1)
+
+
+def hammer(canvas, x, y, outward):
+    """Held by the end of a short handle, the heavy head on top with its bright faces, the
+    longer end outward (so it shows beside the body from behind)."""
+    handle(canvas, x, y - 3, y + 3)
+    left = x - 4 if outward < 0 else x - 1
+    right = left + 6
+    forms.shade(canvas, mask(forms.box, left, y - 7, right, y - 4), IRON, 1)
+    faces = mask(forms.box, left, y - 7, left, y - 4) | mask(forms.box, right, y - 7, right, y - 4)
+    forms.paint(canvas, faces, IRON[2])
+
+
+def watering_can(canvas, x, y, outward):
+    """A copper can hanging from the hand by its handle, its spout rising outward to the rose."""
+    middle = x + 1
+    forms.paint(canvas, mask(forms.box, x, y + 1, x + 1, y + 2), COPPER[0])
+    spout_foot = (middle + outward * 2.5, y + 8)
+    rose = (middle + outward * 7, y + 3.5)
+    forms.shade(canvas, mask(forms.capsule, spout_foot, rose, 1.0, 0.8), COPPER, 1)
+    forms.shade(canvas, mask(forms.ellipse, *rose, 1.4, 1.6), COPPER, 1)
+    forms.shade(canvas, mask(forms.rounded_box, x - 2, y + 3, x + 3, y + 10), COPPER, 2)
+    forms.dots(canvas, [(x - 1, y + 4), (x - 1, y + 5)], COPPER_GLINT)
+
+
+# The held layer of each tool by its sheet's name (see `held_tool`).
+HELD_TOOLS = {
+    "hoe": held_tool(hoe, is_long=True),
+    "shovel": held_tool(shovel, is_long=True),
+    "scythe": held_tool(scythe, is_long=True),
+    "axe": held_tool(axe, is_long=False),
+    "pickaxe": held_tool(pickaxe, is_long=False),
+    "hammer": held_tool(hammer, is_long=False),
+    "watering_can": held_tool(watering_can, is_long=False),
+}
 
 
 def mirrored(canvas):
@@ -679,7 +783,7 @@ def worn(draw, facing, pose, variant_colours):
     """A layer drawn on the figure. The near hands are in front of everything worn, so every
     layer but the body and the held tool leaves them clear for the body's hands to show."""
     canvas = draw(facing, pose, **variant_colours)
-    if draw not in (draw_body, draw_held_hoe):
+    if draw is not draw_body and draw not in HELD_TOOLS.values():
         for arm in Figure(facing, pose).arms:
             if not arm.far:
                 forms.paint(canvas, hand(arm), None)
