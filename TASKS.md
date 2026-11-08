@@ -1322,6 +1322,12 @@ flat rowing boat beside it.
 
 ## Later (not part of the prototype)
 
+- **The camp's bedroll and campfire can be taken down and built** (the user, 2026-11-08): today
+  they come with the camp and stay where they are. Let the player take them down (as task 83
+  does for buildings and placed things) and craft or build them again elsewhere, with sensible
+  materials (straw and a wool blanket; stones and wood), keeping the bed the player wakes in
+  (task 78) and the campfire's cooking station working wherever they stand.
+
 - **One folder per entity in data/** (the user, 2026-11-08): the data of one thing is spread
   over several files today; bread, for example, is an item in game/state/item_types.gd, its
   energy in data/energy.cfg, its recipe in data/recipes.cfg and its skill in data/skills.cfg. Restructure data/ by kind and entity, e.g. data/consumables/<consumable>.cfg
