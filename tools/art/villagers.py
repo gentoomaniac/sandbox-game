@@ -4,7 +4,8 @@ The villagers (game/state/npc.gd) are put together from the same kind of layer s
 player: the same 32x64 frames, facings and walk on the same figure (see character.py), so any
 layer fits any figure and the player could wear them too. This module adds the women's dress of
 the period (a laced bodice over the chemise, a long wool skirt, an apron, a shawl, a white coif
-or a headscarf), and the other colours of the men's clothes, skins and hair. data/npcs.cfg says which of them a villager is dressed in. Every colour
+or a headscarf), the tricorne and the white stocking cap, and the other colours of the men's
+clothes, skins and hair. data/npcs.cfg says which of them a villager is dressed in. Every colour
 is one of the palette's.
 """
 
@@ -14,6 +15,8 @@ from character import (
     CHARACTER_HEIGHT,
     CHARACTER_WIDTH,
     FELT,
+    KNITTED,
+    KNITTED_CAP_SHAPES,
     SHIRT,
     STRAW_HAT_SHAPES,
     WAIST,
@@ -70,10 +73,11 @@ SHAWLS = {
     "cream": {"base": "cream", "light": "lime", "shade": "sand_light"},
     "heather": WOOL["heather"],
 }
-# The aprons: white or blue linen.
+# The aprons: white or blue linen, and the striped one of blue and white.
 APRONS = {
     "white": {"base": "lime", "light": "snow_light", "shade": "sand_light", "tie": "sand_light"},
     "blue": {"base": "water_light", "light": "foam", "shade": "water", "tie": "water"},
+    "striped": {"base": "lime", "light": "snow_light", "shade": "sand_light", "tie": "water", "stripe": "water_light"},
 }
 # The white linen coif and the headscarves, each with the colour of its turned edge.
 CAPS = {
@@ -136,8 +140,9 @@ def draw_skirt(facing, pose, base, light, shade, **_):
     return canvas
 
 
-def draw_apron(facing, pose, base, light, shade, tie, **_):
-    """A linen apron tied at the waist over the skirt: from behind only its ties and bow show."""
+def draw_apron(facing, pose, base, light, shade, tie, stripe=None, **_):
+    """A linen apron tied at the waist over the skirt: from behind only its ties and bow show.
+    A striped apron has a stripe of `stripe` every third column."""
     canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
     figure = Figure(facing, pose)
     top = figure.top
@@ -157,6 +162,10 @@ def draw_apron(facing, pose, base, light, shade, tie, **_):
         forms.paint(canvas, mask(forms.box, 9, WAIST + top, 22, WAIST + 1 + top), tie)
         cloth = mask(forms.rounded_box, 11, WAIST + 2 + top, 20, 56)
     forms.shade(canvas, cloth, shades, 2)
+    if stripe:
+        for y, x in zip(*cloth.nonzero()):
+            if x % 3 == 0:
+                canvas[y][x] = stripe
     return canvas
 
 
@@ -211,6 +220,22 @@ def draw_cap(facing, pose, base, light, shade, edge, **_):
     return canvas
 
 
+# The tricorne: black felt with the brim turned up on three sides, edged in a pale braid.
+TRICORNE = {"felt_shade": "ink", "felt_base": "stone_dark", "felt_light": "stone", "braid": "stone_light"}
+TRICORNE_SHAPES = {
+    "front": (
+        ("box", (10, 3, 21, 9), "felt", 2),
+        ("polygon", [(2, 4), (9, 7), (16, 9), (22, 7), (29, 4), (28, 9), (22, 11), (16, 13), (9, 11), (3, 9)], "felt", 2),
+        ("polygon", [(2, 4), (9, 7), (16, 9), (22, 7), (29, 4), (29, 5), (22, 8), (16, 10), (9, 8), (2, 5)], "braid", 0),
+    ),
+    "side": (
+        ("box", (10, 3, 21, 9), "felt", 2),
+        ("polygon", [(3, 2), (10, 6), (16, 7), (22, 6), (28, 3), (27, 9), (21, 12), (11, 12), (5, 9)], "felt", 2),
+        ("polygon", [(3, 2), (10, 6), (16, 7), (22, 6), (28, 3), (28, 4), (22, 7), (16, 8), (10, 7), (3, 3)], "braid", 0),
+    ),
+}
+
+
 def layers():
     """The villagers' layer sheets by file name, each as the function that draws it and the
     colours of its variant (like `character.layers`)."""
@@ -235,6 +260,8 @@ def layers():
     for name, colours in SHAWLS.items():
         result[f"coat_shawl_{name}"] = (draw_shawl, colours)
     result["head_felt_hat"] = (draw_hat, {"shapes": STRAW_HAT_SHAPES, "colours": FELT})
+    result["head_knitted_cap_white"] = (draw_hat, {"shapes": KNITTED_CAP_SHAPES, "colours": KNITTED["white"]})
+    result["head_tricorne"] = (draw_hat, {"shapes": TRICORNE_SHAPES, "colours": TRICORNE})
     for name, colours in CAPS.items():
         result[f"head_{name}"] = (draw_cap, colours)
     return result

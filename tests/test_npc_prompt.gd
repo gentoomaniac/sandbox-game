@@ -161,7 +161,9 @@ func test_a_man_is_his_neighbour_s() -> void:
 		NpcPrompt.reply_messages(momme, [], "Moin", _moment(), _rules, false)[-1]["content"]
 	)
 	assert_string_contains(last, 'His neighbour says: "Moin"')
-	assert_string_contains(last, "a sun-tanned man with short grey hair, wearing a knitted cap,")
+	assert_string_contains(
+		last, "a sun-tanned man with short grey hair, wearing a red knitted cap,"
+	)
 	assert_string_ends_with(last, 'Momme\'s reply (in the language of "Moin"):')
 
 

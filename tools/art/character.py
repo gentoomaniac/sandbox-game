@@ -586,9 +586,11 @@ STRAW_HAT_SHAPES = {
 }
 # A black felt hat with a broad brim: the straw hat's shape in felt, with a band of ribbon.
 FELT = {"brim_shade": "ink", "brim_base": "stone_dark", "brim_light": "stone", "band": "soil_dark", "weave": "ink"}
-# The knitted stocking cap, red. The tip flops over to the side and hangs down with a tassel.
+# The knitted stocking caps: red, the player's, and white. The tip flops over to the side and
+# hangs down with a tassel.
 KNITTED = {
     "red": {"cap_shade": "rust_dark", "cap_base": "rust", "cap_light": "red_light", "band": "russet_deep", "rib": "ember"},
+    "white": {"cap_shade": "sand_light", "cap_base": "lime", "cap_light": "snow_light", "band": "sand", "rib": "cream"},
 }
 KNITTED_CAP_SHAPES = {
     "front": (
