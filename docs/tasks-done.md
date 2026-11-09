@@ -3647,3 +3647,28 @@ quits with the errors in the log on any problem (no window opens). `ItemTypes.TY
 them use their own catalog. `placeable_in` (INSIDE, OUTDOORS, ANYWHERE) says where an object may be
 placed and replaces `outdoors_only` and the atlas-row inference in `_can_place_on`. Same ids, data and
 game; no save change. Not done by design: per-item scripts, moving the definitions into folders.
+
+## 150. The test LLM finds the GPU by itself: NVIDIA or AMD
+
+- [x] Done
+
+`make llm-up` (tools/llm/llm.sh) must use whatever GPU the machine has, without being told: the
+NVIDIA GPU through its CDI spec (as today), or an AMD GPU through ROCm (`/dev/kfd` and a render
+node; the image `ollama/ollama:<version>-rocm`). The second machine has a Radeon RX 7900 GRE.
+- `LLM_GPU=auto` (default) picks NVIDIA, then AMD, else the CPU with a hint why; `nvidia` and `amd`
+  choose one, `1` means any GPU or fail, `0` the CPU. The container label records which one, so
+  a change recreates the container.
+- AMD: group access, an optional `LLM_HSA_OVERRIDE` for consumer cards ROCm does not list, the
+  detected gfx target printed with a hint for the known unsupported ones.
+- `make llm-gpu-setup` detects the vendor: NVIDIA writes the CDI spec, AMD checks what is missing
+  (no root).
+- Docs: Makefile help, tools/README.md (an AMD section), README.
+
+Done: `LLM_GPU=auto` in tools/llm/llm.sh takes NVIDIA (CDI spec), else AMD (`/dev/kfd` and a render
+node: the `-rocm` image of the same Ollama version, both devices, `keep-groups` or the device
+group ids, optional `LLM_HSA_OVERRIDE`), else the CPU with the reason; `LLM_GPU=nvidia|amd` choose
+one, `1` and `0` as before. The gfx target is printed, with the override for the known unsupported
+families. The container label holds nvidia, amd or cpu. `make llm-gpu-setup` detects the vendor
+(AMD only checks). The AMD path was tested by logic (a fake device tree, `LLM_DRY_RUN=1`), not
+on a real AMD card.
+

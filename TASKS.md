@@ -258,22 +258,6 @@ prep the soil for the next produce".
   clear it.
 - Tests: harvest of each crop, hoeing a dead crop gives plantable tilled soil, saved and loaded.
 
-## 150. The test LLM finds the GPU by itself: NVIDIA or AMD
-
-- [ ] Done
-
-`make llm-up` (tools/llm/llm.sh) must use whatever GPU the machine has, without being told: the
-NVIDIA GPU through its CDI spec (as today), or an AMD GPU through ROCm (`/dev/kfd` and a render
-node; the image `ollama/ollama:<version>-rocm`). The second machine has a Radeon RX 7900 GRE.
-- `LLM_GPU=auto` (default) picks NVIDIA, then AMD, else the CPU with a hint why; `nvidia` and `amd`
-  choose one, `1` means any GPU or fail, `0` the CPU. The container label records which one, so
-  a change recreates the container.
-- AMD: group access, an optional `LLM_HSA_OVERRIDE` for consumer cards ROCm does not list, the
-  detected gfx target printed with a hint for the known unsupported ones.
-- `make llm-gpu-setup` detects the vendor: NVIDIA writes the CDI spec, AMD checks what is missing
-  (no root).
-- Docs: Makefile help, tools/README.md (an AMD section), README.
-
 ## Later (not part of the prototype)
 
 - **Review R8: one owner for the simulation, its time and what is loaded** (review F2.4/F2.5, A4,
