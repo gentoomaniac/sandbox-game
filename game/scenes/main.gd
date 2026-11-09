@@ -41,6 +41,7 @@ var _notifications := NotificationHud.new()
 var _saves := SaveService.new()
 var _autosave_timer := AutosaveTimer.new()
 var _ground_item_view := GroundItemView.new()
+var _npc_views := NpcViews.new()
 var _coordinates_hud := CoordinatesHud.new()
 var _hotbar := HotbarHud.new()
 var _build_menu := BuildMenu.new()
@@ -172,6 +173,7 @@ func _load_game() -> void:
 ## Puts every view in the tree, in the order they are drawn and take input.
 func _make_views() -> void:
 	_view.add_child(_ground_item_view)
+	_view.add_child(_npc_views)
 	_view.add_child(_wildlife)
 	# Among the objects, so the player walks behind tree canopies.
 	_view.entities.add_child(_player_view)
@@ -209,9 +211,7 @@ func _connect_state_and_views() -> void:
 	_ground_item_view.show_items(_state.world, _view.entities)
 	_view.tree_felled.connect(_ground_item_view.hold_hops_from)
 	_wildlife.show_wildlife(_state, _view, _camera)
-	for npc in _state.npcs.all():
-		_show_npc(npc)
-	_state.npcs.added.connect(_show_npc)
+	_npc_views.show_npcs(_state.npcs, _view.entities)
 	# Chats longer than the setting (a saved game's, or one lowered in the menu, which is
 	# applied once it is closed rather than at every step) are compacted.
 	_chat_screen.dialogue.compact_all(_state)
@@ -440,6 +440,7 @@ func _process(delta: float) -> void:
 		)
 		_view.set_focus(_state.player.tile())
 		_ground_item_view.set_focus(_state.player.tile())
+		_npc_views.set_focus(_state.player.tile())
 	_debug.update(delta)
 
 
@@ -652,11 +653,6 @@ func _interact() -> void:
 		_storage_screen.open_chest(object, _state.player)
 	else:
 		_crafting_screen.open_station(object)
-
-
-## Puts a villager among the world's entities, where it stands among the objects like the player.
-func _show_npc(npc: Npc) -> void:
-	_view.entities.add_child(NpcView.new(npc))
 
 
 ## Opens the chat with a villager, who turns to the player (the chat pauses the game).

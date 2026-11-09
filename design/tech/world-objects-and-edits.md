@@ -32,3 +32,5 @@ Everything the player did stays saved for good, but drawing and scanning are bou
   Nothing expires or despawns.
 - **Pile sprites** exist only for piles within the chunks the world view draws (3 chunks of the
   player, kept until 4), made and freed as the player moves.
+- **Villagers** have a view only within the same chunks of the player. Their state goes on all the
+  time (they stroll, rest, remember); the view is made again from it when the player comes near.
