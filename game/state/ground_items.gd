@@ -77,7 +77,8 @@ func count_of(item: StringName) -> int:
 ## Lays a pile at an exact position (`drop` scatters instead).
 func add(ground_item: GroundItem) -> void:
 	_piles.append(ground_item)
-	_file(ground_item)
+	_file(ground_item, _next_serial)
+	_next_serial += 1
 	added.emit(ground_item)
 
 
@@ -93,8 +94,7 @@ func move(ground_item: GroundItem, position: Vector2) -> void:
 	var serial := _serial_of[ground_item]
 	_unfile(ground_item)
 	ground_item.position = position
-	_file(ground_item)
-	_serial_of[ground_item] = serial
+	_file(ground_item, serial)
 
 
 ## Puts items (item id to count) on the ground around a tile: each kind is split into piles of
@@ -134,20 +134,21 @@ func load_array(data: Array) -> void:
 	for ground_item_data: Dictionary in data:
 		var ground_item := GroundItem.from_dict(ground_item_data)
 		_piles.append(ground_item)
-		_file(ground_item)
+		_file(ground_item, _next_serial)
+		_next_serial += 1
 
 
-func _file(ground_item: GroundItem) -> void:
+func _file(ground_item: GroundItem, serial: int) -> void:
 	var chunk := Chunk.world_to_chunk(Vector2i(ground_item.position.floor()))
 	_chunk_of[ground_item] = chunk
-	_serial_of[ground_item] = _next_serial
-	_next_serial += 1
+	_serial_of[ground_item] = serial
 	if not _piles_by_chunk.has(chunk):
 		_piles_by_chunk[chunk] = []
 	_piles_by_chunk[chunk].append(ground_item)
 
 
 func _unfile(ground_item: GroundItem) -> void:
+	assert(_chunk_of.has(ground_item), "Not a pile on the ground")
 	var chunk := _chunk_of[ground_item]
 	_chunk_of.erase(ground_item)
 	_serial_of.erase(ground_item)
