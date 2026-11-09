@@ -71,3 +71,17 @@ func test_a_craft_with_no_room_says_so() -> void:
 	)
 	assert_eq(notes.size(), 1)
 	assert_true(notes[0].visible)
+
+
+func test_the_panel_never_gets_taller_than_the_window() -> void:
+	var window := SubViewport.new()
+	window.size = Vector2i(320, 120)
+	add_child_autofree(window)
+	remove_child(_screen)
+	window.add_child(_screen)
+	_screen.open()
+	await wait_process_frames(2)
+	var list: ScrollingList = _screen.find_children("*", "ScrollingList", true, false)[0]
+	assert_true(list.get_v_scroll_bar().visible, "the window is too small for the rows")
+	var panel: Control = _screen.find_children("*", "PanelContainer", true, false)[0]
+	assert_lte(panel.size.y, window.size.y - 2 * ScrollingList.MARGIN)

@@ -430,7 +430,8 @@ Beds don't block walking, so you can't get stuck behind one.
 Press C for the crafting menu of what you make by hand: a chest, the stations below and flour
 (from wheat, rye or buckwheat).
 It lists what you can make with what you carry; a recipe you can't afford yet is greyed, with
-the missing materials marked, and hovering shows what is missing. The recipes are in
+the missing materials marked, and hovering shows what is missing. A long list scrolls (mouse
+wheel, the bar, or the arrow keys) instead of outgrowing the window. The recipes are in
 [data/recipes.cfg](data/recipes.cfg).
 
 ![The crafting menu by hand: chest, workbench, kiln, bake oven, flour from wheat, rye or buckwheat, net frame and eel traps](docs/screenshots/crafting.png)

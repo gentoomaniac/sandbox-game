@@ -29,6 +29,13 @@ Decided 2026-11-05.
   files: food the energy it gives back (and health once food restores any), tools their type and level, seeds what
   they grow and where they are planted, equipment its slot (stats once there are any).
   Settings show a short explanation on hover too.
+- **Scrolling** (task 131): a panel never gets taller than the window. The growing part of it
+  (rows of recipes, items, buildings, settings) is a `ScrollingList`, shared by all panels: as
+  tall as its content while the panel fits, otherwise as tall as the window (at the current UI
+  scale) leaves room for, less a margin of 12 UI pixels above and below. Past that it scrolls by
+  mouse wheel, by dragging the bar (drawn in the UI theme), and by focus moving to a row; titles,
+  tabs and buttons stay in place. A window too small for even the rest of the panel still
+  leaves the list 48 UI pixels, so the panel then crosses the window's edge. It refits on window resizes and UI scale changes.
 - **UI look:** a pixel font and a framed panel (9-slice) in palette colours, in one shared
   Godot Theme that all UI uses.
 

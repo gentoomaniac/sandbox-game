@@ -29,6 +29,7 @@ var _title_label := Label.new()
 var _skills_label := Label.new()
 var _work_label := Label.new()
 var _rows_column := VBoxContainer.new()
+var _rows_list: ScrollingList
 var _rows: Array[RecipeRow] = []
 var _note_label := Label.new()
 
@@ -44,7 +45,9 @@ func _init() -> void:
 	for label in [_title_label, _skills_label, _work_label]:
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		column.add_child(label)
-	column.add_child(_rows_column)
+	_rows_list = ScrollingList.new(_panel, _rows_column)
+	_panel.minimum_size_changed.connect(_centre_panel)
+	column.add_child(_rows_list)
 	column.add_child(_note_label)
 	_panel.add_child(column)
 
@@ -112,7 +115,13 @@ func _show(is_shown: bool) -> void:
 	visible = is_shown
 	_show_note(NOTHING_NOTE if _rows.is_empty() else "")
 	_refresh()
-	# The panel is sized round its rows, which are only measured once it is shown.
+	_rows_list.scroll_vertical = 0
+	_rows_list.fit()
+	_centre_panel()
+
+
+## The panel is sized round its rows, which are only measured once it is shown.
+func _centre_panel() -> void:
 	_panel.reset_size()
 	_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
 
