@@ -30,6 +30,8 @@ GREENS = ("green_deep", "green_dark", "green", "green_light")
 BRIGHT_GREENS = ("green_dark", "green", "green_light", "green_bright")
 SHADED_GREENS = ("green_deep", "green_deep", "green_dark", "green")
 SOIL = ("soil", "soil_mid", "soil_mid", "soil_light")
+# Freshly turned earth is darker than the bed it lies on, whatever its moisture.
+MOUND_SOIL = ("soil_dark", "soil", "soil", "soil_mid")
 TUBER = ("mud", "sand", "sand_light")
 WITHERING = ("olive", "dry", "dry_light", "straw")
 
@@ -175,12 +177,13 @@ def blade(picture, x0, y0, height, lean, shades, droop=0.0):
 
 
 def mound(picture, centre=CENTRE):
-    """A low drill of fresh earth over the seed, lit on its top left."""
+    """A low drill of dark, fresh earth over the seed, lit on its top left, so that sown soil
+    reads against the bed at a glance."""
     ground = foot(picture)
     layer = cell(len(picture))
-    forms.shade(layer, mask(layer, forms.ellipse, centre, ground + 0.5, 9.5, 3.5), SOIL, radius=2)
+    forms.shade(layer, mask(layer, forms.ellipse, centre, ground + 0.5, 10.5, 4.0), MOUND_SOIL, radius=2)
     rimmed(layer)
-    forms.dots(layer, [(round(centre) - 4, ground - 1), (round(centre) + 1, ground - 2), (round(centre) + 4, ground)], "soil_light")
+    forms.dots(layer, [(round(centre) - 5, ground - 1), (round(centre) - 1, ground - 2), (round(centre) + 4, ground - 1)], "soil_light")
     paste(picture, layer)
 
 
@@ -188,7 +191,7 @@ def sown(height=SHORT):
     """The first stage of every crop: the seed under its mound."""
     picture = cell(height)
     mound(picture)
-    forms.dots(picture, [(13, foot(picture) - 1), (18, foot(picture))], "sand_light")
+    forms.dots(picture, [(12, foot(picture)), (15, foot(picture) - 1), (18, foot(picture) + 1), (20, foot(picture))], "cream")
     return picture
 
 

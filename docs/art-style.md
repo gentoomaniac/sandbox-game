@@ -172,7 +172,9 @@ the plants' feet 4 px above the cell's bottom, on the lowest ridge of the tilled
 shadow of dark earth. Leaves, heads, roots and fruit are rounded forms shaded from the top left
 (forms.py) and rimmed in the darkest shade of their own colours (`crops.RIMS`), never ink;
 stalks, awns, flowers, tendrils and pods, too thin for a rim, are drawn over them in their
-light shades. On the dark soil they read without more. The wheat is golden with paired grains
+light shades. The sown stage is a mound of dark earth (`crops.MOUND_SOIL`) with cream seeds on it,
+darker than the bed on all but the wettest step and with a lit top, so a sown tile reads as planted at the widest zoom;
+the plants' pictures read on soil from light brown to dark without more. The wheat is golden with paired grains
 and long awns, the rye of the Geest taller, blue-green when young and ripe a pale grey-yellow
 with nodding ears, the buckwheat on red stems with white and pink flowers; a crop dies to
 browns and greys (`crops.DEAD_COLOURS`). The crops' 16 px art stays as the classic art.

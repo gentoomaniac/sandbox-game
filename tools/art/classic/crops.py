@@ -113,13 +113,14 @@ def cell(height=TILE):
 
 
 # A mound of freshly sown soil: the first stage of every crop, and under the next ones.
-MOUND = ("..ehhe..", ".ehhmhm.", "ehhmmmms", "hmmmmmss", ".ssssss.")
+# Darker than the bed it lies on, whatever its moisture, with seeds on it.
+MOUND = ("...ssss...", "..sbhmbs..", ".sbhmcbbs.", "sbbmbbbcbs", ".ssbbbbss.", "...ssss...")
 
 
 def sown(height, *plants):
     """A cell with the seed mound and the plants on it, each as (rows, x, y)."""
     surface = cell(height)
-    surface.stamp(MOUND, 4, 11)
+    surface.stamp(MOUND, 3, 10)
     for rows, x, y in plants:
         surface.stamp(rows, x, y)
     return surface

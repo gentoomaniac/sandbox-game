@@ -2,7 +2,9 @@
 moisture steps."""
 
 import unittest
+from collections import Counter
 
+import crops
 import soil_beds
 import terrain
 from canvas import GAME_TILE
@@ -65,6 +67,14 @@ class MoistureStepsTest(unittest.TestCase):
             drawn = sum(pixel is not None for line in tile for pixel in line)
             self.assertLess(drawn, GAME_TILE * GAME_TILE * 0.6)
             self.assertGreater(drawn, 0)
+
+
+class SownSoilTest(unittest.TestCase):
+    def test_a_sown_mound_is_dark_earth_with_seeds_on_it_so_it_reads_on_every_step(self):
+        colours = Counter(colour for row in crops.sown() for colour in row if colour)
+        body, _ = colours.most_common(1)[0]
+        self.assertIn(body, ("soil", "soil_dark"))
+        self.assertGreaterEqual(colours["cream"], 3)
 
 
 if __name__ == "__main__":
