@@ -374,10 +374,11 @@ make llm-check                        # PROCESSOR should say 100% GPU
 ```
 
 `llm-gpu-setup` needs no root: it says what is missing. The first start pulls the ROCm image (a
-few GB to download). podman gets the groups with `--group-add keep-groups`, docker with the
-group ids of the two devices. podman's `keep-groups` works with the crun runtime (Gentoo's
-default for podman); with runc, use `CONTAINER=docker`. A Ryzen's built-in graphics shows up as
-a second AMD GPU; it does no harm, but then no override is suggested, as it would apply to both.
+few GB to download; not measured yet). podman gets the groups with `--group-add keep-groups`,
+docker with the group ids of the two devices. podman's `keep-groups` works with the crun runtime
+(Gentoo's default for podman); with runc, use `CONTAINER=docker`. A Ryzen's built-in graphics
+shows up as a second AMD GPU (not tried on such a machine yet); an override would then apply to
+both, so set one only if neither card is supported.
 
 ROCm supports a card by its gfx target, printed by `make llm-up` and `llm-gpu-setup` (from
 `/sys/class/kfd/kfd/topology/nodes/*/properties`). The RX 7900 GRE (RDNA3, `gfx1100`) is
