@@ -61,21 +61,13 @@ func craft(recipe_id: StringName, station: WorldObject = null) -> Result:
 		return Result.BUSY
 	if not shortfalls(recipe_id).is_empty():
 		return Result.MISSING_MATERIALS
-	var inventory := _state.player.inventory
 	var materials := {} if _state.cheats.is_cost_off else rules.materials(recipe_id)
-	# The materials leave first, so a full inventory can still hold what they were made into.
-	var trial := inventory.duplicate()
-	for item: StringName in materials:
-		trial.remove(item, materials[item])
-	if not is_slow and not trial.can_add({rules.result(recipe_id): rules.count(recipe_id)}):
+	var made := {} if is_slow else {rules.result(recipe_id): rules.count(recipe_id)}
+	if not _state.player.inventory.exchange(materials, made):
 		return Result.NO_ROOM
-	for item: StringName in materials:
-		inventory.remove(item, materials[item])
 	if is_slow:
 		var minutes := roundi(rules.hours(recipe_id) * GameClock.MINUTES_PER_HOUR)
 		StationWork.start(station, recipe_id, _state.clock.total_minutes() + minutes)
-	else:
-		inventory.add(rules.result(recipe_id), rules.count(recipe_id))
 	_practise(recipe_id)
 	return Result.STARTED if is_slow else Result.CRAFTED
 
@@ -97,9 +89,10 @@ func take_out(station: WorldObject) -> bool:
 	var result := StationWork.contents(station, _state.clock.total_minutes(), rules)
 	if not _state.player.inventory.can_add(result):
 		return false
-	for item: StringName in result:
-		_state.player.inventory.add(item, result[item])
+	# The station is empty before the inventory tells of the result, so a listener never sees it
+	# in both.
 	StationWork.clear(station)
+	_state.player.inventory.exchange({}, result)
 	return true
 
 

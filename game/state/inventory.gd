@@ -75,14 +75,6 @@ func total_weight() -> float:
 	return total
 
 
-## A copy to try things on: changing it leaves this inventory alone.
-func duplicate() -> Inventory:
-	var copy := Inventory.new()
-	copy.slots = slots.duplicate(true)
-	copy.selected_slot = selected_slot
-	return copy
-
-
 func to_dict() -> Dictionary:
 	return {"slots": slots_to_data(), "selected_slot": selected_slot}
 

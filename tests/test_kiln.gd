@@ -145,3 +145,51 @@ func test_the_kiln_menu_says_what_it_fires_and_takes_the_bricks_out_once_done() 
 	screen.open_station(_kiln)
 	assert_has(texts.call(), CraftingScreen.TAKEN_OUT_NOTE % "brick x6")
 	assert_eq(_count(ItemTypes.BRICK), 6)
+
+
+# --- One change at a time ---
+
+
+## What the inventory shows each time it says it changed while `action` runs.
+func _seen_during(action: Callable) -> Array:
+	var seen := []
+	var inventory := _state.player.inventory
+	var record := func() -> void:
+		(
+			seen
+			. append(
+				{
+					"clay": inventory.count_of(ItemTypes.CLAY),
+					"raw_bricks": _count(ItemTypes.RAW_BRICK),
+					"bricks": _count(ItemTypes.BRICK),
+					"busy": StationWork.is_busy(_kiln),
+				}
+			)
+		)
+	inventory.changed.connect(record)
+	action.call()
+	inventory.changed.disconnect(record)
+	return seen
+
+
+func test_a_craft_tells_of_the_materials_and_the_result_in_one_change() -> void:
+	_state.player.inventory.add(ItemTypes.CLAY, 4)
+	var seen := _seen_during(func() -> void: _crafting.craft(&"raw_bricks"))
+	assert_eq(seen.size(), 1)
+	assert_eq(seen[0]["clay"], 2, "clay paid, result in, in the one notification")
+	assert_eq(seen[0]["raw_bricks"], 6 + 2)
+
+
+func test_starting_a_firing_tells_of_the_materials_once() -> void:
+	var seen := _seen_during(func() -> void: _crafting.craft(&"bricks", _kiln))
+	assert_eq(seen.size(), 1)
+	assert_eq(seen[0]["raw_bricks"], 0)
+
+
+func test_taking_out_the_bricks_clears_the_kiln_before_the_inventory_tells() -> void:
+	_crafting.craft(&"bricks", _kiln)
+	_state.clock.advance(FIRING_MINUTES)
+	var seen := _seen_during(func() -> void: _crafting.take_out(_kiln))
+	assert_eq(seen.size(), 1)
+	assert_eq(seen[0]["bricks"], 6)
+	assert_false(seen[0]["busy"])

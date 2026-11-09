@@ -105,8 +105,7 @@ func place(origin: Vector2i) -> Building:
 	):
 		return null
 	if not _state.cheats.is_cost_off:
-		for item: StringName in costs():
-			_state.player.inventory.remove(item, costs()[item])
+		_state.player.inventory.exchange(costs(), {})
 	return _state.world.place_building(choice, origin, style)
 
 
