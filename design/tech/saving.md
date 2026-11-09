@@ -11,6 +11,17 @@
   starting restarts the count.
 - On start, the game loads the save if there is one, otherwise it starts a new game (`--new-game` forces
   one).
+- **Quick save and quick load** (task 145): F9 saves now in the background; F8 loads the last
+  save file without asking (the user: "quick load generally doesn't ask in games"), after
+  waiting for a save that runs. Both are rebindable actions (`quick_save`, `quick_load`) in the
+  controls page. F8 reads the save and starts the game scene again from it (`Main` hands the
+  loaded `GameState` to the new scene), so no view, window or paused state is left over; the
+  player keys and the settings are read afresh. Of the command line's debug flags only the harmless view ones carry over (the
+  paths, sound, zoom, coordinates, art; `StartupOptions.kept_for_quick_load`): the ones that
+  change the game or open windows (`--at`, `--time`, `--field`, `--console`, `--inventory`...)
+  would otherwise run again over the loaded game. No save file: a note says "No save to load".
+  They work with a window open, not in the pause menu or a chat (the game is paused there) nor
+  during a fade.
 - **Saving does not freeze the game** (task 145). A save takes the game's JSON text at once, on
   the main thread (`SaveFile.encode`), and writes it on a worker thread to the temporary file that
   is renamed over the save (`SaveService`). Only one save runs at a time; a second request

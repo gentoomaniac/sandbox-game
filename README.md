@@ -579,6 +579,8 @@ These are the default keys; all of them can be changed under Settings → Contro
 | `/` | Console |
 | F3 | Show coordinates and weather values |
 | F7 | Switch between the new and the classic art |
+| F9 | Quick save: save the game now, in the background |
+| F8 | Quick load: go back to the last save at once, without asking ("No save to load" if there is none) |
 
 ## Running the game
 

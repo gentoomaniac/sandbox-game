@@ -15,6 +15,7 @@ func _make_window() -> void:
 	add_child_autofree(_window)
 	for layer: Node in [
 		HarvestHud.new(),
+		NotificationHud.new(),
 		CoordinatesHud.new(),
 		NpcNameTag.new(),
 		ConsoleView.new(),

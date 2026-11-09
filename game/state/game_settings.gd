@@ -147,6 +147,8 @@ const ACTION_LABELS := {
 	&"toggle_fast_forward": "Fast forward",
 	&"toggle_coordinates": "Show coordinates",
 	&"toggle_art_set": "Classic or new art",
+	&"quick_save": "Quick save",
+	&"quick_load": "Quick load",
 	&"pause": "Pause menu",
 	&"console": "Console",
 }
@@ -178,6 +180,8 @@ const ACTION_DESCRIPTIONS := {
 	&"toggle_coordinates": "Show your tile coordinates in the top right corner.",
 	&"toggle_art_set":
 	"Switch between the new art, drawn at 32 px per tile, and the classic 16 px art.",
+	&"quick_save": "Save the game now, in the background.",
+	&"quick_load": "Load the last save at once, without asking. What you did since is lost.",
 	&"console": "Open the console for commands and cheats.",
 	&"pause": "Open the pause menu.",
 }

@@ -238,6 +238,25 @@ static func from_command_line() -> StartupOptions:
 	return StartupOptions.new(OS.get_cmdline_user_args())
 
 
+## The options that only show the game differently, for the game that F8 loads: the paths, sound,
+## zoom, the coordinates and the art. What changes the game or opens a window is left out.
+func kept_for_quick_load() -> StartupOptions:
+	var kept := StartupOptions.new()
+	for name in [
+		"save_path",
+		"settings_path",
+		"mute",
+		"background",
+		"sound_log",
+		"zoom",
+		"camera_shift",
+		"coordinates",
+		"classic_art"
+	]:
+		kept.set(name, get(name))
+	return kept
+
+
 func _init(args := PackedStringArray()) -> void:
 	for arg in args:
 		var name := arg.get_slice("=", 0)

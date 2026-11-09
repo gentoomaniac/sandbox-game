@@ -17,6 +17,8 @@ Decided 2026-11-05.
     (10 to 60 minutes of play in steps of 10, default 10; task 145).
   - **Audio:** Master, Effects and Ambience volume sliders, and "Sound in background"
     (off: the game is silent while its window is not focused).
+  - Two keys of the Controls page work in play: **F9** quick save, **F8** quick load (task 145,
+    see [saving](../tech/saving.md)); neither asks or shows a dialog, the notifications tell.
   - Settings are saved in `user://settings.cfg`, separate from the save game.
   - Gamepads later.
 - **Item icons** (task 115): drawn at 32 px like the world and shown at half size in the

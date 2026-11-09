@@ -28,7 +28,7 @@ const DAY_LENGTH_TIP := (
 )
 const AUTOSAVE_TIP := (
 	"How many minutes of play pass between two automatic saves. The game also saves when you"
-	+ " sleep, pass out and quit."
+	+ " sleep, pass out and quit; F9 saves at once."
 )
 
 var _settings: GameSettings

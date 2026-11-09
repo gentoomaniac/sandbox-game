@@ -19,8 +19,12 @@ const FAST_FORWARD_FACTOR := 60.0
 const GET_OFF_FIRST := "Get off the horse first."
 ## The key of the notification about a save (see NotificationHud).
 const SAVE_NOTE := &"save"
+const LOAD_NOTE := &"load"
 
 var _state: GameState
+## The game F8 has loaded, if this scene was started by it (see QuickLoad); the player is told
+## once the HUD is up.
+var _resumed_state: GameState
 var _builder: Builder
 var _settings: GameSettings
 var _audio := AudioService.new()
@@ -77,6 +81,10 @@ var _shown_map: GameMap
 
 
 func _ready() -> void:
+	_resumed_state = QuickLoad.take()
+	if _resumed_state != null:
+		# The game is the save's: no flag may change it or open a window again.
+		_options = _options.kept_for_quick_load()
 	# First thing, before anything else can raise or focus the window.
 	if _options.background:
 		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_NO_FOCUS, true)
@@ -120,6 +128,8 @@ func _ready() -> void:
 	_apply_start_options()
 	_start_sounds()
 	_show_clock()
+	if _resumed_state != null:
+		_notifications.post(LOAD_NOTE, "Loaded")
 	_shown_map = _state.current_map
 	if _state.is_inside():
 		_show_current_map()
@@ -331,7 +341,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	var can_use := _can_use()
 	# The art switches with a screen open too, so the character screen shows the switch.
-	if _switch_art_set(event) or _screens_take(event):
+	if _switch_art_set(event) or _quick_save_or_load(event) or _screens_take(event):
 		return
 	# A SubViewport only gets the events that are pushed into it. That does not mark the
 	# event as handled here, so Main still sees what BuildMode consumed.
@@ -787,15 +797,20 @@ func _ride(look: StringName) -> void:
 	_state.mount(horse)
 
 
-## The saved game, or a new one if there is no save or `--new-game` is given. The first
-## autosave after `--new-game` replaces the old save.
+## The game F8 has just loaded, else the saved game, or a new one if there is no save or
+## `--new-game` is given. The first autosave after `--new-game` replaces the old save.
 func _load_or_start_game() -> GameState:
+	if _resumed_state != null:
+		return _resumed_state
 	var saved := null if _options.new_game else SaveFile.read(_options.save_path)
 	return saved if saved != null else GameState.new_game(WORLD_SEED)
 
 
 ## The settings, with the player's key bindings applied to the input map.
 func _load_settings() -> GameSettings:
+	# The settings take the project's key bindings as the defaults, so after F8 restarted the scene
+	# they must not be the player's own.
+	InputMap.load_from_project_settings()
 	var settings := GameSettings.new(_options.settings_path)
 	settings.load_file()
 	return settings
@@ -818,6 +833,33 @@ func _show_save_result(succeeded: bool) -> void:
 		_notifications.post(SAVE_NOTE, "Saved")
 	else:
 		_notifications.post(SAVE_NOTE, "Could not save the game", NotificationHud.Tone.ERROR)
+
+
+## F9 saves now, F8 loads; whether it was one of those keys. Both work with a window open too.
+func _quick_save_or_load(event: InputEvent) -> bool:
+	if event.is_action_pressed("quick_save"):
+		_saves.save_in_background(_state, _options.save_path)
+	elif event.is_action_pressed("quick_load"):
+		_quick_load()
+	else:
+		return false
+	return true
+
+
+## F8: puts the player into the last save, without asking. The whole scene starts again from
+## it, which leaves no view, window or paused state of the game before behind. Waits for a save
+## that runs, so the file read is the newest.
+func _quick_load() -> void:
+	_saves.wait()
+	match QuickLoad.prepare(_options.save_path):
+		QuickLoad.Outcome.NO_SAVE:
+			_notifications.post(LOAD_NOTE, "No save to load")
+		QuickLoad.Outcome.UNREADABLE:
+			_notifications.post(LOAD_NOTE, "The save can't be loaded", NotificationHud.Tone.ERROR)
+		QuickLoad.Outcome.READY:
+			if get_tree().reload_current_scene() != OK:
+				QuickLoad.take()
+				_notifications.post(LOAD_NOTE, "Can't restart the game", NotificationHud.Tone.ERROR)
 
 
 func _force_weather(condition: StringName) -> void:
