@@ -46,8 +46,7 @@ collected there; an interior map), a trough (a hollowed oak log or a plank box w
 hay rack (oak posts with slanting slats, hay behind them), 2x1 world objects that feed and water
 the livestock (SPEC, Livestock), a draw well with a sweep (1x1 plus the sweep above it: an oak
 well head on a fieldstone ring, a forked post, the balanced pole, the bucket and a weight stone;
-water for the can, the animals and the house) and a stork's nest on a roof ridge (the
-`roof_stork` standing in it). Draw them at 32 px in the style of task 111 (tools/art/, a new
+water for the can, the animals and the house) (the stork's nest moved to task 152). Draw them at 32 px in the style of task 111 (tools/art/, a new
 yard.py), give them types, recipes and placement (data/, world_object_types.gd), and decide
 what each does for the animals.
 
@@ -216,6 +215,26 @@ prep the soil for the next produce".
   Say what the player gets from it (nothing, or a little), and whether the scythe or the hand also
   clear it.
 - Tests: harvest of each crop, hoeing a dead crop gives plantable tilled soil, saved and loaded.
+
+## 152. Storks nest on roofs and raise their young
+
+- [ ] Done
+
+The user, 2026-11-09: "Storks need nests, in breeding season you see offspring that eventually
+leaves." Today a `roof_stork` (data/wildlife.cfg) flies in, stands on a roof near the view in
+spring and summer and flies off again; there is no nest. Moved here from task 122.
+- Nests: a stork's nest (a wide heap of sticks) on a roof ridge of some village buildings, and
+  maybe on a pole or a dead tree; where they are comes from the world (seeded, the same in every
+  game of a seed), saved if the player can change it. Drawn at 32 px and in the classic art.
+- The year of a nest (the North Sea coast, GameClock seasons): empty in winter; the pair arrives
+  in early spring and stands on it, clattering (`SoundEvents.animal_alarm` gives the clatter);
+  in late spring the young appear, small grey heads over the rim, then larger and whiter through
+  summer; the parents fly off to the meadows and back (the hunting `stork`); in late summer the
+  young stand on the rim and flap, then leave one by one; in autumn the nest is empty again.
+  Numbers and days in data/wildlife.cfg, seeded per nest so not every nest is in step.
+- State that must last across days (the pair, the young, how far along) lives in game state and
+  is saved; what the player only sees (flaps, clatter) stays in the views.
+- Tests for the year of a nest by date, the seeding, save and load; a screenshot in the README.
 
 ## Later (not part of the prototype)
 
