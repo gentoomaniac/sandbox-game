@@ -59,7 +59,7 @@ static func footprint_bottom(building: Building) -> float:
 ## The picture a building is shown with now: its look (see `_house_look`), lit or not, in the
 ## chosen art set.
 func picture_path(building: Building, is_lit := false) -> String:
-	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
+	var building_type := building.type_data()
 	var summer_path: String = building_type["sprite_lit"] if is_lit else building_type["sprite"]
 	return ArtSet.path(SeasonalArt.house_path(summer_path, _house_look(building)))
 
@@ -101,7 +101,7 @@ func update_see_through(delta: float, player_feet: Vector2, occluding: Array[Bui
 
 ## Building windows: a lit sprite variant and a small warm light in each window, on at night.
 func _add_window_lights(building: Building, sprite: Sprite2D) -> void:
-	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
+	var building_type := building.type_data()
 	var lights: Array[ObjectLight] = []
 	for window_centre: Vector2i in building_type["window_lights"]:
 		var light := ObjectLight.new(building_type["window_light"], building.origin)

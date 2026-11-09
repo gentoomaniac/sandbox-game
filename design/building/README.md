@@ -54,4 +54,7 @@ The first buildings have a page of their own: [first-buildings.md](first-buildin
   A building can come in **styles** (tasks 120 and 121, 2026-11-09): other looks of the same
   house, each a section `[<building>.<style>]` after its building (`[kate.brick]`) with its
   own name and whatever it changes (pictures, window lights, costs). The footprint, the door
-  and the inside are the building's, so every style of it is the same house.
+  and the inside are the building's, so every style of it is the same house. A placed
+  building saves its style (save version 24; an older save's buildings have their own look,
+  and a style the file no longer has shows as the building's own); its name, pictures,
+  window lights and refund are its style's.

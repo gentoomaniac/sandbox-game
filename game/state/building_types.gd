@@ -41,9 +41,10 @@ static func styles(building_type: StringName) -> Array[StringName]:
 	return style_ids
 
 
-## The entry of one style of a building.
+## The entry of one style of a building. A style the file no longer has (a save of a building
+## placed before it was taken out) gives the building's own look.
 static func of(building_type: StringName, style: StringName) -> Dictionary:
-	return STYLES[building_type][style]
+	return STYLES[building_type].get(style, TYPES[building_type])
 
 
 static func _from_rules() -> Dictionary:

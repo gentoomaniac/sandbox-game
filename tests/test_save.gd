@@ -154,7 +154,15 @@ func test_building_without_an_interior_round_trip() -> void:
 	var restored := Building.from_dict(_through_json(building.to_dict()))
 	assert_eq(restored.origin, building.origin)
 	assert_eq(restored.type, building.type)
+	assert_eq(restored.style, &"")
 	assert_null(restored.interior)
+
+
+func test_a_building_keeps_its_style_and_one_the_file_no_longer_has_looks_as_its_own() -> void:
+	var building := Building.new(BuildingTypes.KATE, Vector2i(5, -6), &"taken_out")
+	var restored := Building.from_dict(_through_json(building.to_dict()))
+	assert_eq(restored.style, &"taken_out")
+	assert_eq(restored.type_data(), BuildingTypes.TYPES[BuildingTypes.KATE])
 
 
 func test_a_new_game_round_trip() -> void:

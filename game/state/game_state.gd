@@ -351,7 +351,7 @@ func refund_of_building(building: Building) -> Dictionary:
 	var refund := {}
 	if cheats.is_cost_off:
 		return refund
-	var costs: Dictionary = BuildingTypes.TYPES[building.type]["costs"]
+	var costs: Dictionary = building.type_data()["costs"]
 	for item: StringName in costs:
 		if costs[item] / 2 > 0:
 			refund[item] = costs[item] / 2

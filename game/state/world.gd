@@ -441,11 +441,12 @@ func placement_blockers(
 	return blockers
 
 
-## Places a building and returns it, or returns null if any footprint tile is blocked.
-func place_building(building_type: StringName, origin: Vector2i) -> Building:
+## Places a building in one of its styles and returns it, or returns null if any footprint
+## tile is blocked.
+func place_building(building_type: StringName, origin: Vector2i, style := &"") -> Building:
 	if not placement_blockers(building_type, origin).is_empty():
 		return null
-	var building := Building.new(building_type, origin)
+	var building := Building.new(building_type, origin, style)
 	for tile in building.tiles():
 		_clear_removable(tile)
 	_add_building(building)

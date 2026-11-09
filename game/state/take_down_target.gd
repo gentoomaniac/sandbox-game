@@ -21,7 +21,7 @@ static func of_object(target: WorldObject) -> TakeDownTarget:
 
 func display_name() -> String:
 	if building != null:
-		return BuildingTypes.TYPES[building.type]["name"]
+		return building.type_data()["name"]
 	return ItemTypes.TYPES[ItemTypes.item_placing(object.type)]["name"]
 
 

@@ -32,7 +32,7 @@ static func of(state: GameState, npc: Npc, reach: float) -> NpcMoment:
 		var distance := Vector2(building.door_tile()).distance_to(npc.position)
 		if distance <= nearest:
 			nearest = distance
-			moment.building = BuildingTypes.TYPES[building.type]["name"]
+			moment.building = building.type_data()["name"]
 	var centre := npc.tile()
 	var tiles := ceili(reach)
 	for y in range(-tiles, tiles + 1):

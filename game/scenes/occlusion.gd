@@ -47,7 +47,7 @@ static func object_sort_y(object: WorldObject) -> float:
 ## The picture of a building: as wide as its footprint, its bottom on the footprint's
 ## bottom edge, the roof rising above.
 static func building_rect(building: Building) -> Rect2:
-	var building_type: Dictionary = BuildingTypes.TYPES[building.type]
+	var building_type := building.type_data()
 	var texture_size: Vector2 = load(building_type["sprite"]).get_size()
 	var bottom_left := Vector2(building.origin + Vector2i(0, building_type["footprint"].y))
 	bottom_left *= TerrainTileset.TILE_SIZE

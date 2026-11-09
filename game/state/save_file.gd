@@ -18,10 +18,9 @@ extends RefCounted
 ##    which still upgrades it; load and save the game there, then move on to the latest.
 ## An upgrade step works on the parsed JSON, before any `from_dict` runs.
 
-const VERSION := 23
-## The oldest version we still upgrade. Nine steps back, for the next version (task 120) makes
-## its step the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 24
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 ## How far around the buildings and the player's objects, and around their tilled fields, the
 ## coast gives way in a version 17 world (see `_home_tiles`): an old farm keeps its yard.
 const UPGRADE_CLEARANCE := 3
@@ -103,6 +102,8 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 		_upgrade_from_version_21(parsed["game"])
 	if version <= 22:
 		_upgrade_from_version_22(parsed["game"])
+	if version <= 23:
+		_upgrade_from_version_23(parsed["game"])
 	return GameState.from_dict(parsed["game"])
 
 
@@ -243,6 +244,12 @@ static func _upgrade_from_version_22(game: Dictionary) -> void:
 			surname = rules.pick_surname(rng)
 			npc["name"] = "%s %s" % [npc["name"].get_slice(" ", 0), surname]
 		npc.merge(rules.pick_sheet(StringName(npc["sex"]), surname, rng), true)
+
+
+## Version 23 had no styles of buildings (task 120): every building has its own look.
+static func _upgrade_from_version_23(game: Dictionary) -> void:
+	for building: Dictionary in game["world"]["buildings"]:
+		building["style"] = ""
 
 
 static func _keep(kept: Dictionary[Vector2i, bool], area: Rect2i) -> void:
