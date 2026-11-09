@@ -37,7 +37,8 @@ const RIGHT_SLOTS := [Equipment.COAT, Equipment.BACK, Equipment.MAIN_HAND, Equip
 var _player: PlayerState
 var _hotbar: HotbarHud
 var _is_using_hotbar := false
-var _inventory_views: Array[SlotView] = []
+## The views of the backpack's slots below the hotbar, by slot; the hotbar draws its own.
+var _backpack_views := {}
 var _equipment_views := {}
 var _preview := CharacterPreview.new()
 var _left_column := VBoxContainer.new()
@@ -67,17 +68,13 @@ func _init(hotbar: HotbarHud) -> void:
 	_add_equipment_column(_right_column, RIGHT_SLOTS, character_row)
 
 	var backpack_grid := _new_slot_grid(BACKPACK_COLUMNS)
-	for slot in Inventory.SLOT_COUNT:
-		var view: SlotView
-		if slot < Inventory.HOTBAR_SIZE:
-			view = _hotbar.slot_view(slot)
-		else:
-			view = SlotView.new()
-			view.tooltip_id = "inventory_%d" % slot
-			backpack_grid.add_child(view)
-			view.quick_move_requested.connect(_on_inventory_slot_quick_move_requested.bind(slot))
-			view.secondary_pressed.connect(_on_inventory_slot_secondary_pressed.bind(slot))
-		_inventory_views.append(view)
+	for slot in range(Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT):
+		var view := SlotView.new()
+		view.tooltip_id = "inventory_%d" % slot
+		backpack_grid.add_child(view)
+		view.quick_move_requested.connect(_on_inventory_slot_quick_move_requested.bind(slot))
+		view.secondary_pressed.connect(_on_inventory_slot_secondary_pressed.bind(slot))
+		_backpack_views[slot] = view
 	var inventory_column := VBoxContainer.new()
 	inventory_column.add_theme_constant_override("separation", SLOT_GAP)
 	inventory_column.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -118,8 +115,8 @@ func show_player(player: PlayerState) -> void:
 	_player = player
 	_preview.show_appearance(player.appearance)
 	_skills_panel.show_skills(player.skills)
-	for slot in Inventory.SLOT_COUNT:
-		_inventory_views[slot].bind_to(player.inventory, slot)
+	for slot: int in _backpack_views:
+		_backpack_views[slot].bind_to(player.inventory, slot)
 	for slot: StringName in _equipment_views:
 		_equipment_views[slot].bind_to(player.equipment, slot)
 	player.inventory.changed.connect(_refresh)
@@ -177,14 +174,16 @@ func _on_close() -> void:
 ## Makes the HUD's hotbar this screen's quick bar, or gives it back: the screen listens to its
 ## clicks only while it is the one using it.
 func _use_hotbar(is_used: bool) -> void:
-	if is_used == _is_using_hotbar:
+	# The hotbar may have been freed first, when the whole scene goes.
+	if is_used == _is_using_hotbar or not is_instance_valid(_hotbar):
 		return
 	_is_using_hotbar = is_used
-	_hotbar.set_clickable(is_used)
 	if is_used:
+		_hotbar.acquire(self)
 		_hotbar.slot_quick_move_requested.connect(_on_inventory_slot_quick_move_requested)
 		_hotbar.slot_secondary_pressed.connect(_on_inventory_slot_secondary_pressed)
 	else:
+		_hotbar.release(self)
 		_hotbar.slot_quick_move_requested.disconnect(_on_inventory_slot_quick_move_requested)
 		_hotbar.slot_secondary_pressed.disconnect(_on_inventory_slot_secondary_pressed)
 
@@ -266,11 +265,8 @@ func _refresh() -> void:
 		return
 	_note_label.text = ""
 	var inventory := _player.inventory
-	for slot in Inventory.SLOT_COUNT:
-		# The HUD draws its own hotbar slots while this screen doesn't use them.
-		if slot < Inventory.HOTBAR_SIZE and not _is_using_hotbar:
-			continue
-		_inventory_views[slot].show_stack(inventory.slots[slot], slot == inventory.selected_slot)
+	for slot: int in _backpack_views:
+		_backpack_views[slot].show_stack(inventory.slots[slot], slot == inventory.selected_slot)
 	for slot: StringName in _equipment_views:
 		var item := _player.equipment.item_in(slot)
 		var stack := {} if item == ItemTypes.NONE else {"item": item, "count": 1}

@@ -14,8 +14,9 @@ func before_each() -> void:
 	var player := PlayerState.new()
 	player.inventory = _inventory
 	_make_window()
-	var hotbar := HotbarHud.new()
+	var hotbar := HotbarCase.new_hotbar()
 	_window.add_child(hotbar)
+	hotbar.show_inventory(_inventory)
 	_screen = StorageScreen.new(hotbar)
 	_window.add_child(_screen)
 	_screen.open_chest(_chest, player)
@@ -24,11 +25,13 @@ func before_each() -> void:
 	await wait_process_frames(2)
 
 
-## Drags 12 logs from slot 0 of `side` of the screen onto the trash can.
+## Drags 12 logs from the first slot the screen shows of `side` (the backpack's, under the hotbar)
+## onto the trash can.
 func _drag_logs_to_the_trash_can(side: int) -> void:
 	var slots: ItemSlots = _inventory if side == StorageScreen.INVENTORY else _chest.storage
-	slots.add(ItemTypes.LOGS, 12, [0])
-	_drag(_centre_of(_screen._views[side][0]), _centre_of(_trash_can._slot))
+	var slot := Inventory.HOTBAR_SIZE if side == StorageScreen.INVENTORY else 0
+	slots.add(ItemTypes.LOGS, 12, [slot])
+	_drag(_centre_of(_screen._views[side][slot]), _centre_of(_trash_can._slot))
 
 
 func _press_escape() -> void:
@@ -86,7 +89,7 @@ func test_a_click_on_a_slot_answers_keep_and_moves_nothing() -> void:
 	_drag_logs_to_the_trash_can(StorageScreen.INVENTORY)
 	_click(_centre_of(_screen._views[StorageScreen.CHEST][1]))
 	assert_false(_trash_can.is_asking())
-	assert_eq(_inventory.slots[0], {"item": ItemTypes.LOGS, "count": 12})
+	assert_eq(_inventory.slots[Inventory.HOTBAR_SIZE], {"item": ItemTypes.LOGS, "count": 12})
 	assert_true(_chest.storage.slots[1].is_empty())
 
 

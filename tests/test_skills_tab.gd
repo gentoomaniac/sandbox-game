@@ -8,7 +8,7 @@ var _screen: CharacterScreen
 
 func before_each() -> void:
 	_state = GameState.new_game(7)
-	_screen = CharacterScreen.new(autofree(HotbarHud.new()))
+	_screen = CharacterScreen.new(autofree(HotbarCase.new_hotbar()))
 	add_child_autofree(_screen)
 	_screen.show_player(_state.player)
 

@@ -71,6 +71,23 @@ func bind_to(slots: Object, slot_key: Variant) -> void:
 	slot = slot_key
 
 
+## Leaves the container, so nothing is dragged from or onto the slot.
+func unbind() -> void:
+	container = null
+	slot = null
+
+
+## Ends a pick-up of the slot's stack: the slot looks as it did before, the dragged icon is gone.
+func stop_dragging() -> void:
+	_is_drop_target = false
+	modulate.a = 1.0
+	if _drag_icon_layer != null:
+		_drag_icon_layer.queue_free()
+		_drag_icon_layer = null
+		set_process(false)
+	queue_redraw()
+
+
 func item() -> StringName:
 	return _stack.get("item", ItemTypes.NONE)
 
@@ -165,13 +182,7 @@ func _notification(what: int) -> void:
 		)
 		queue_redraw()
 	elif what == NOTIFICATION_DRAG_END:
-		_is_drop_target = false
-		modulate.a = 1.0
-		if _drag_icon_layer != null:
-			_drag_icon_layer.queue_free()
-			_drag_icon_layer = null
-			set_process(false)
-		queue_redraw()
+		stop_dragging()
 
 
 func _draw() -> void:

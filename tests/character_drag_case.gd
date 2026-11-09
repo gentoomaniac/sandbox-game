@@ -13,7 +13,7 @@ var _hotbar: HotbarHud
 func _open_character_screen() -> void:
 	_player = PlayerState.new()
 	_make_window()
-	_hotbar = HotbarHud.new()
+	_hotbar = HotbarCase.new_hotbar()
 	_window.add_child(_hotbar)
 	_hotbar.show_inventory(_player.inventory)
 	_window.add_child(FadeScreen.new())
@@ -25,7 +25,9 @@ func _open_character_screen() -> void:
 
 
 func _backpack_view(slot: int) -> SlotView:
-	return _screen._inventory_views[slot]
+	return (
+		_hotbar._slot_views[slot] if slot < Inventory.HOTBAR_SIZE else _screen._backpack_views[slot]
+	)
 
 
 func _equipment_view(slot: StringName) -> SlotView:

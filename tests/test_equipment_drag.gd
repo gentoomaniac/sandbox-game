@@ -64,7 +64,7 @@ func test_a_stack_let_go_outside_the_panel_is_dropped_on_the_ground() -> void:
 func test_a_hotbar_stack_let_go_outside_the_panel_is_dropped_on_the_ground() -> void:
 	_set_stack(0, ItemTypes.LOGS, 3)
 	watch_signals(_screen)
-	_drag(_centre_of(_hotbar.slot_view(0)), Vector2(4, 4))
+	_drag(_centre_of(_hotbar._slot_views[0]), Vector2(4, 4))
 	assert_signal_emitted_with_parameters(_screen, "drop_requested", [0])
 
 
@@ -89,7 +89,7 @@ func test_a_stack_let_go_on_the_panel_between_slots_goes_back() -> void:
 func test_a_stack_let_go_between_hotbar_slots_goes_back() -> void:
 	_set_stack(BACKPACK_SLOT, ItemTypes.LOGS, 7)
 	watch_signals(_screen)
-	var gap := _hotbar.slot_view(0).get_global_rect().end + Vector2(1, -5)
+	var gap := _hotbar._slot_views[0].get_global_rect().end + Vector2(1, -5)
 	assert_true(_hotbar.covers(gap))
 	_drag(_centre_of(_backpack_view(BACKPACK_SLOT)), gap)
 	assert_signal_not_emitted(_screen, "drop_requested")

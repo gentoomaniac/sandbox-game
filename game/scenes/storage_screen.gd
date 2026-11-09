@@ -52,9 +52,6 @@ func _init(hotbar: HotbarHud) -> void:
 		_new_grid(INVENTORY, Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT, INVENTORY_COLUMNS)
 	)
 	inventory_column.add_child(_trash_can)
-	for slot in Inventory.HOTBAR_SIZE:
-		var view := _hotbar.slot_view(slot)
-		_views[INVENTORY][slot] = view
 	row.add_child(inventory_column)
 	var chest_column := _new_column(CHEST_ICON)
 	_chest_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -83,7 +80,7 @@ func _on_open() -> void:
 	_inventory.changed.connect(_refresh)
 	_chest.changed.connect(_refresh)
 	_trash_can.keep()
-	_hotbar.set_clickable(true)
+	_hotbar.acquire(self)
 	_hotbar.slot_quick_move_requested.connect(_on_hotbar_slot_quick_move_requested)
 	_refresh()
 
@@ -93,8 +90,10 @@ func _on_close() -> void:
 	_inventory.changed.disconnect(_refresh)
 	_chest.changed.disconnect(_refresh)
 	_trash_can.keep()
-	_hotbar.set_clickable(false)
-	_hotbar.slot_quick_move_requested.disconnect(_on_hotbar_slot_quick_move_requested)
+	# The hotbar may have been freed first, when the whole scene goes.
+	if is_instance_valid(_hotbar):
+		_hotbar.release(self)
+		_hotbar.slot_quick_move_requested.disconnect(_on_hotbar_slot_quick_move_requested)
 
 
 ## Makes the grid of the chest's side, for a chest of this many slots. A chest of many slots is
@@ -163,6 +162,7 @@ func _on_dropped_outside(source: SlotView) -> void:
 func _refresh() -> void:
 	for side: int in _views:
 		var slots := _slots_of(side)
-		for slot in slots.slots.size():
+		# The hotbar draws its own slots, which are the first of the backpack's.
+		for slot: int in _views[side]:
 			var is_held := side == INVENTORY and slot == _inventory.selected_slot
 			_views[side][slot].show_stack(slots.slots[slot], is_held)

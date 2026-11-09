@@ -26,7 +26,7 @@ func test_a_windows_key_does_nothing_while_another_window_is_open() -> void:
 ## The rule with the real windows: what Main asks before it acts on C, Tab and K.
 func test_the_real_windows_keys_do_nothing_over_each_other_but_close_themselves() -> void:
 	var state := GameState.new_game(7)
-	var hotbar: HotbarHud = autofree(HotbarHud.new())
+	var hotbar: HotbarHud = autofree(HotbarCase.new_hotbar())
 	var character := CharacterScreen.new(hotbar)
 	add_child_autofree(character)
 	character.show_player(state.player)

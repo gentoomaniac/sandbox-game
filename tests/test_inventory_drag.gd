@@ -91,15 +91,15 @@ func test_the_stack_is_dragged_only_while_the_button_is_held() -> void:
 func test_the_hotbar_takes_stacks_while_the_screen_is_open() -> void:
 	_set_stack(BACKPACK_SLOT, ItemTypes.LOGS, 4)
 	_empty_slot(5)
-	_drag(_centre_of(_backpack_view(BACKPACK_SLOT)), _centre_of(_hotbar.slot_view(5)))
+	_drag(_centre_of(_backpack_view(BACKPACK_SLOT)), _centre_of(_hotbar._slot_views[5]))
 	assert_eq(_player.inventory.slots[5], {"item": ItemTypes.LOGS, "count": 4})
-	_drag(_centre_of(_hotbar.slot_view(5)), _centre_of(_backpack_view(BACKPACK_SLOT + 2)))
+	_drag(_centre_of(_hotbar._slot_views[5]), _centre_of(_backpack_view(BACKPACK_SLOT + 2)))
 	assert_eq(_player.inventory.slots[BACKPACK_SLOT + 2], {"item": ItemTypes.LOGS, "count": 4})
 
 
 func test_the_hotbar_is_not_dragged_once_the_screen_is_closed() -> void:
 	_screen.close()
-	var view := _hotbar.slot_view(0)
+	var view := _hotbar._slot_views[0]
 	var before := _player.inventory.slots[0].duplicate()
 	_drag(_centre_of(view), _centre_of(view) + Vector2(-60, 0))
 	assert_eq(_player.inventory.slots[0], before)
@@ -115,13 +115,13 @@ func test_shift_click_sends_a_stack_between_the_backpack_and_the_hotbar() -> voi
 	_click(_centre_of(_backpack_view(backpack_slot)), MOUSE_BUTTON_LEFT, true)
 	assert_true(_player.inventory.slots[backpack_slot].is_empty())
 	assert_eq(_player.inventory.slots[5], {"item": ItemTypes.LOGS, "count": 7})
-	_click(_centre_of(_hotbar.slot_view(5)), MOUSE_BUTTON_LEFT, true)
+	_click(_centre_of(_hotbar._slot_views[5]), MOUSE_BUTTON_LEFT, true)
 	assert_eq(_player.inventory.slots[BACKPACK_SLOT], {"item": ItemTypes.LOGS, "count": 7})
 	assert_true(_player.inventory.slots[5].is_empty())
 
 
 func test_the_hud_hotbar_is_clickable_only_while_the_character_page_is_open() -> void:
-	var slot := _hotbar.slot_view(0)
+	var slot := _hotbar._slot_views[0]
 	assert_true(slot.is_clickable)
 	_screen.close()
 	assert_false(slot.is_clickable)

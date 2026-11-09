@@ -45,7 +45,7 @@ func test_every_recipe_row_of_a_station_menu_is_hit_all_over() -> void:
 
 
 func test_every_slot_of_the_storage_screen_is_hit_all_over() -> void:
-	var hotbar := HotbarHud.new()
+	var hotbar := HotbarCase.new_hotbar()
 	_window.add_child(hotbar)
 	hotbar.show_inventory(_state.player.inventory)
 	var screen := StorageScreen.new(hotbar)
@@ -55,7 +55,7 @@ func test_every_slot_of_the_storage_screen_is_hit_all_over() -> void:
 
 
 func test_every_button_of_the_character_screen_tabs_is_hit_all_over() -> void:
-	var hotbar := HotbarHud.new()
+	var hotbar := HotbarCase.new_hotbar()
 	_window.add_child(hotbar)
 	hotbar.show_inventory(_state.player.inventory)
 	var screen := CharacterScreen.new(hotbar)

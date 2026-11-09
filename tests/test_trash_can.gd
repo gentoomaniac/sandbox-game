@@ -6,6 +6,7 @@ extends DragCase
 const BACKPACK_SLOT := Inventory.HOTBAR_SIZE
 
 var _player: PlayerState
+var _hotbar: HotbarHud
 var _screen: CharacterScreen
 var _trash_can: TrashCan
 
@@ -13,10 +14,10 @@ var _trash_can: TrashCan
 func before_each() -> void:
 	_player = PlayerState.new()
 	_make_window()
-	var hotbar := HotbarHud.new()
-	_window.add_child(hotbar)
-	hotbar.show_inventory(_player.inventory)
-	_screen = CharacterScreen.new(hotbar)
+	_hotbar = HotbarCase.new_hotbar()
+	_window.add_child(_hotbar)
+	_hotbar.show_inventory(_player.inventory)
+	_screen = CharacterScreen.new(_hotbar)
 	_window.add_child(_screen)
 	_screen.show_player(_player)
 	_screen.open()
@@ -31,7 +32,7 @@ func _drag_to_the_trash_can(view: SlotView) -> void:
 func _drag_logs_to_the_trash_can() -> void:
 	_player.inventory.slots[BACKPACK_SLOT] = {"item": ItemTypes.LOGS, "count": 12}
 	_player.inventory.changed.emit()
-	_drag_to_the_trash_can(_screen._inventory_views[BACKPACK_SLOT])
+	_drag_to_the_trash_can(_screen._backpack_views[BACKPACK_SLOT])
 
 
 func _press_escape() -> void:
@@ -71,7 +72,7 @@ func test_a_hotbar_stack_can_be_destroyed() -> void:
 	_player.inventory.slots[0] = {"item": ItemTypes.LOGS, "count": 3}
 	_player.inventory.changed.emit()
 	var before := _player.inventory.slots[1].duplicate()
-	_drag_to_the_trash_can(_screen._inventory_views[0])
+	_drag_to_the_trash_can(_hotbar._slot_views[0])
 	_trash_can._destroy_button.pressed.emit()
 	assert_true(_player.inventory.slots[0].is_empty())
 	assert_eq(_player.inventory.slots[1], before)
@@ -122,7 +123,7 @@ func test_a_click_elsewhere_answers_keep_and_drops_nothing() -> void:
 
 func test_a_click_on_another_slot_answers_keep_and_moves_nothing() -> void:
 	_drag_logs_to_the_trash_can()
-	_click(_centre_of(_screen._inventory_views[BACKPACK_SLOT + 1]))
+	_click(_centre_of(_screen._backpack_views[BACKPACK_SLOT + 1]))
 	_assert_logs_still_there()
 	assert_true(_player.inventory.slots[BACKPACK_SLOT + 1].is_empty())
 
@@ -130,7 +131,7 @@ func test_a_click_on_another_slot_answers_keep_and_moves_nothing() -> void:
 func test_one_item_is_asked_for_without_a_count() -> void:
 	_player.inventory.slots[BACKPACK_SLOT] = {"item": ItemTypes.AXE, "count": 1}
 	_player.inventory.changed.emit()
-	_drag_to_the_trash_can(_screen._inventory_views[BACKPACK_SLOT])
+	_drag_to_the_trash_can(_screen._backpack_views[BACKPACK_SLOT])
 	assert_eq(_trash_can._question.text, "Destroy Axe?")
 
 

@@ -21,7 +21,8 @@ func _open_screen() -> Array[SlotView]:
 	player.inventory = _inventory
 	var chest := WorldObject.new(WorldObjectTypes.CHEST, Vector2i.ZERO)
 	chest.storage = _chest
-	var hotbar: HotbarHud = autofree(HotbarHud.new())
+	var hotbar: HotbarHud = autofree(HotbarCase.new_hotbar())
+	hotbar.show_inventory(_inventory)
 	_screen = StorageScreen.new(hotbar)
 	add_child_autofree(_screen)
 	_screen.open_chest(chest, player)
@@ -30,7 +31,7 @@ func _open_screen() -> Array[SlotView]:
 	in_screen.erase(_screen._trash_can._slot)
 	var views: Array[SlotView] = in_screen.slice(0, Inventory.BACKPACK_SIZE)
 	for slot in Inventory.HOTBAR_SIZE:
-		views.append(hotbar.slot_view(slot))
+		views.append(hotbar._slot_views[slot])
 	views.append_array(in_screen.slice(Inventory.BACKPACK_SIZE))
 	return views
 
@@ -125,10 +126,10 @@ func test_shift_click_into_a_full_chest_leaves_the_rest() -> void:
 
 func test_closing_the_screen_stops_it_following_the_slots() -> void:
 	_open_screen()
-	assert_true(_inventory.changed.has_connections())
+	assert_true(_inventory.changed.is_connected(_screen._refresh))
 	_screen.close()
 	assert_false(_screen.is_open())
-	assert_false(_inventory.changed.has_connections())
+	assert_false(_inventory.changed.is_connected(_screen._refresh))
 	assert_false(_chest.changed.has_connections())
 
 
@@ -149,7 +150,7 @@ func test_a_chest_of_many_slots_scrolls_inside_a_small_window() -> void:
 	var player := PlayerState.new()
 	var chest := WorldObject.new(WorldObjectTypes.CHEST, Vector2i.ZERO)
 	chest.storage = _chest
-	_screen = StorageScreen.new(autofree(HotbarHud.new()))
+	_screen = StorageScreen.new(autofree(HotbarCase.new_hotbar()))
 	window.add_child(_screen)
 	_screen.open_chest(chest, player)
 	await wait_process_frames(2)

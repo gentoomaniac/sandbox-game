@@ -53,7 +53,7 @@ func test_a_grave_marker_stands_outdoors_and_the_pickaxe_takes_it_up_again() -> 
 func test_the_carved_chest_holds_twenty_slots_and_the_storage_screen_shows_them() -> void:
 	var carved := _place(WorldObjectTypes.CARVED_CHEST)
 	assert_eq(carved.storage.slots.size(), 20)
-	var screen := StorageScreen.new(autofree(HotbarHud.new()))
+	var screen := StorageScreen.new(autofree(HotbarCase.new_hotbar()))
 	add_child_autofree(screen)
 	screen.open_chest(carved, _state.player)
 	var views := screen.find_children("*", "SlotView", true, false)

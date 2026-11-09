@@ -92,7 +92,10 @@ E does nothing while it is open.
   `_drop_outside_panel(hotbar, on_drop)` in `_init` (with `_panel.mouse_filter` ignoring the
   mouse) to hear of a stack let go on the dimmed area, outside the panel and the HUD's hotbar,
   which the character and chest screen turn into a drop on the ground. A stack let go on
-  anything that refuses it goes back by itself: nothing moves while it is dragged.
+  anything that refuses it goes back by itself: nothing moves while it is dragged. The HUD's
+  hotbar owns its slot views: a screen takes the bar as its quick bar with `HotbarHud.acquire(self)`
+  (slots clickable and bound to the inventory, the bar above the screen) and gives it back with
+  `release(self)` in `_on_close`, which resets the slots too (a stack picked up is let go).
 - **Pause:** `pauses_game = true` (set in `_init`) pauses the tree while the window is open; the
   window then keeps running (`PROCESS_MODE_ALWAYS`). It unpauses when it closes, or is freed
   while open, whatever else asked for the pause, so only Modals pause the tree (the pause menu is
