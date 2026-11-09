@@ -282,36 +282,7 @@ passes every run; no game change.
   not decided. Plan with the user (its open questions are in QUESTIONS.md), then split into
   tasks. It also settles where seeds come from once shops exist.
 
-- **One folder per entity in data/** (the user, 2026-11-08): the data of one thing is spread
-  over several files today; bread, for example, is an item in game/state/item_types.gd, its
-  energy in data/energy.cfg, its recipe in data/recipes.cfg and its skill in data/skills.cfg. Restructure data/ by kind and entity, e.g. data/consumables/<consumable>.cfg
-  (or a folder per entity) holding everything about it: name, item, energy, crafting, sounds,
-  looks. The game still reads everything at load, but each entity is in one place, so adding or
-  extending one touches one file. Plan the kinds and the file shape first, then move one kind
-  at a time with the rules classes (and their validation and tests) reading the new layout.
-
-- **Graphics review: willows melt into the grass** (the user, 2026-11-06, with a screenshot;
-  was task 87, to look at in the next graphics review). The pollard's crown of thin, pale
-  yellow-green shoots has the same values as the meadow and lush grass under it, with no dark
-  edge and little shadow, so only the trunk reads. Ideas: a darker underside and outline of the
-  crown, a clearer silhouette of the rods against the ground, the ground shadow, and a check on
-  lush, dry and flowering grass in every season (tools/art/willow.py). No new colours.
-The user's word of 2026-11-08: the same problem as the willows affects some grass and reeds (and
-the bushes by a stream): too little contrast against the ground behind them. A slight outline
-for assets would be good. A visual review on Fable runs on 2026-11-08 (contrast and outlines,
-the art-style docs against the art, the villagers' and the village's places without art, and
-the buildings a village needs: house varieties, a small church, farm buildings such as a
-chicken coop and troughs for cows and horses).
-
-- **Test LLM on the GPU, and which models fit** (the user, 2026-11-06): set up CDI for the
-  RTX 4070 (tools/README.md, GPU), then try which models fit in its 8 GB of VRAM and how
-  their villager lines compare (e.g. qwen2.5:7b-instruct, llama3.1:8b, gemma2:9b).
-- **More hosted providers: OpenAI, others** (the user, 2026-11-07). Gemini is done (a row of
-  `GameSettings.LANGUAGE_MODEL_PROVIDERS` with its own settings, 2026-11-07); OpenAI and the
-  like would be one more row each, with a README line; a native adapter only where the
-  compatible endpoint falls short.
-
-- `WildlifeSprites.frame_index` and `max_frames` allocate on every call (`keys()`,
+- - `WildlifeSprites.frame_index` and `max_frames` allocate on every call (`keys()`,
   `values().max()`); the older animals call them per frame. Cache them per sheet. And rename
   `SoundEvents.animal_alarm`, which since task 60 also gives the stork's clatter, to something
   like `animal_state_sound`.
@@ -342,7 +313,6 @@ chicken coop and troughs for cows and horses).
   baseline; a mown tuft stays an object edit forever after it regrew (drop edits that are
   back to their generated state); ResourceCase `_hold` could just select a hotbar slot.
 - Held art and use poses for axe, pickaxe, scythe and shovel.
-- A planted sapling can be picked up again by hand for free; decide whether that's fine.
 - The shovel could later dig up a young sapling to move it.
 
 - Floodplain farming: floodplain is the most fertile farmland, but only grass can be tilled
@@ -376,9 +346,6 @@ Art scale pass notes (16a–16c reviews and look):
 
 Saving notes from the task 15 review:
 
-- A version-1 save with valid JSON but missing keys or bad references hits asserts in
-  `from_dict`; fine while only the game writes saves, but handle gracefully before players
-  edit or share saves.
 - Only closing the window saves; Ctrl-C/SIGTERM doesn't.
 - `--new-game` without `--save-path` replaces the real save on quit (intended); `make screenshot`
   uses build/screenshot.save, so test runs never touch it.
