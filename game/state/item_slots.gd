@@ -174,6 +174,20 @@ func send(from: int, target: ItemSlots, free_slots: Array = []) -> bool:
 	return left == 0
 
 
+## Moves the stack in `from` into the slots `targets` of these slots: onto stacks of the same
+## item there first, then into the first empty one. What does not fit stays in `from`. Returns
+## whether the whole stack went; a bad or empty slot moves nothing.
+func move_into(from: int, targets: Array) -> bool:
+	if not has_slot(from) or slots[from].is_empty():
+		return false
+	var left := _put(slots[from]["item"], slots[from]["count"], targets, targets)
+	slots[from]["count"] = left
+	if left == 0:
+		slots[from] = {}
+	changed.emit()
+	return left == 0
+
+
 ## The slots as plain data for a save: null for an empty slot.
 func slots_to_data() -> Array:
 	var slots_data: Array = []
@@ -204,16 +218,27 @@ func _free_slot_order() -> Array:
 ## `add` without the notification, for the operations that send `changed` once when they are
 ## done.
 func _add(item: StringName, count: int, free_slots: Array) -> int:
+	return _put(
+		item,
+		count,
+		range(slots.size()),
+		free_slots if not free_slots.is_empty() else _free_slot_order()
+	)
+
+
+## Puts `count` of `item` onto stacks of it in `stack_slots` that have room, then into the empty
+## ones of `free_slots` in order. Returns how many did not fit. No notification.
+func _put(item: StringName, count: int, stack_slots: Array, free_slots: Array) -> int:
 	var limit: int = ItemTypes.TYPES[item]["stack_limit"]
 	var left := count
-	for slot in slots.size():
+	for slot: int in stack_slots:
 		if left == 0:
 			break
 		if item_in(slot) == item:
 			var moved := mini(left, limit - slots[slot]["count"])
 			slots[slot]["count"] += moved
 			left -= moved
-	for slot: int in free_slots if not free_slots.is_empty() else _free_slot_order():
+	for slot: int in free_slots:
 		if left == 0:
 			break
 		if slots[slot].is_empty():

@@ -105,24 +105,8 @@ func _free_slot_order() -> Array:
 ## round, onto stacks of the same item there first, then into the first free slot. What does not
 ## fit stays in `slot`. Returns whether the whole stack went.
 func move_to_other_part(slot: int) -> bool:
-	if slots[slot].is_empty():
-		return false
-	var item := item_in(slot)
-	var limit: int = ItemTypes.TYPES[item]["stack_limit"]
 	var part := range(HOTBAR_SIZE, SLOT_COUNT) if slot < HOTBAR_SIZE else range(HOTBAR_SIZE)
-	var left: int = slots[slot]["count"]
-	for target: int in part:
-		if item_in(target) == item:
-			var moved := mini(left, limit - slots[target]["count"])
-			slots[target]["count"] += moved
-			left -= moved
-	for target: int in part:
-		if left > 0 and slots[target].is_empty():
-			slots[target] = {"item": item, "count": left}
-			left = 0
-	slots[slot] = {"item": item, "count": left} if left > 0 else {}
-	changed.emit()
-	return left == 0
+	return move_into(slot, part)
 
 
 ## The free slots for something coming out of a chest: the backpack before the hotbar, so the

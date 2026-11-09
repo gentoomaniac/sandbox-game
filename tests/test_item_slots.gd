@@ -147,3 +147,20 @@ func test_a_listener_that_changes_the_slots_again_sees_each_finished_state() -> 
 	assert_eq(seen, [[0, 4], [4, 0]])
 	chest.changed.disconnect(send_back)
 	assert_eq(inventory.count_of(ItemTypes.LOGS), 4)
+
+
+func test_moving_into_chosen_slots_stacks_first_notifies_once_and_leaves_the_rest() -> void:
+	var slots := ItemSlots.new(6)
+	slots.slots[0] = {"item": ItemTypes.LOGS, "count": 20}
+	slots.slots[4] = {"item": ItemTypes.LOGS, "count": 90}
+	var seen: Array = []
+	var record := func() -> void: seen.append(slots.count_of(ItemTypes.LOGS))
+	slots.changed.connect(record)
+	assert_true(slots.move_into(0, [3, 4, 5]))
+	assert_eq(slots.slots[4]["count"], 99)
+	assert_eq(slots.slots[3], {"item": ItemTypes.LOGS, "count": 11})
+	assert_eq(seen, [110])
+	assert_false(slots.move_into(0, [3]))
+	assert_false(slots.move_into(9, [3]))
+	assert_eq(seen, [110])
+	slots.changed.disconnect(record)
