@@ -588,12 +588,16 @@ The game uses Godot 4.7.2 with GDScript. Make targets wrap every multi-step job.
 
 ```sh
 make setup   # checks for Godot, Python 3, git and curl (Tiled is optional); downloads GUT;
-             # creates a Python venv
+             # creates a Python venv, builds assets/ and imports the project
 make run     # starts the game
 ```
 
-Start the game with `make run`: it imports new art first. Starting Godot directly after
-pulling new art makes the game stop with a list of pictures that aren't imported yet; run
+The pictures and sounds Godot reads are in `assets/`, which is not in git: `make assets` builds
+it from the art in `art/` (see [tools/README.md](tools/README.md)). `make setup`, `run`, `test`
+and `screenshot` do that themselves when `assets/` is missing or older than `art/`, so after
+pulling nothing needs doing by hand; the first Godot import of a fresh `assets/` takes about a
+minute. Start the game with `make run`: it imports new art first. Starting Godot directly
+makes the game stop with a list of pictures that aren't imported yet; run `make assets` and
 `godot --headless --import` once then.
 
 On Linux the game uses the X11 display driver (XWayland under a Wayland desktop), set in
@@ -769,7 +773,8 @@ and their variables.
 | `make test` | Runs the GUT test suite headless, in `TEST_JOBS` parallel Godot processes (default 8; `TEST_JOBS=1` runs one process). A shard running longer than `TEST_TIMEOUT` seconds (default 600) is killed and fails. `build/test.log` is the shard logs joined plus a summary; `build/test-<i>.log` are the single logs, and `build/test-times` the file durations that balance the next run. |
 | `make lint` | Runs `gdlint` and `gdformat --check`. |
 | `make format` | Formats the GDScript. |
-| `make assets` | Regenerates all pixel art from the palette and all sounds (deterministic). Needs Python only, not Godot. |
+| `make assets` | Builds assets/ (what Godot reads) from art/generated/ and the hand-drawn art in art/hand/, in seconds; `run`, `test` and `screenshot` do it when needed. Needs Python only, not Godot. |
+| `make art` | Draws all pixel art from the palette and all sounds into art/generated/ (deterministic, minutes). Needs Python only, not Godot. |
 | `make llm-up`, `llm-check`, `llm-down` | A local test LLM in a container (see above); no test needs it. |
 | `make llm-pull`, `llm-models`, `llm-rm` | Fetch, list and delete other models for it, e.g. `LLM_MODEL=qwen2.5:7b-instruct`; then set that model under Settings → Language model. |
 | `make clean` | Deletes build/ (test log, screenshots). |

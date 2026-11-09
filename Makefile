@@ -29,7 +29,7 @@ IMPORT := $(GODOT) --headless --quiet --import
 help:
 	@echo "Targets:"
 	@echo "  help        This list (the default)."
-	@echo "  setup       Check the tools, download GUT, create the Python venv, import the project."
+	@echo "  setup       Check the tools, download GUT, create the Python venv, build assets/, import the project."
 	@echo "  venv        Create the Python venv with the packages of tools/requirements.txt."
 	@echo "  run         Start the game."
 	@echo "  screenshot  Save one frame as PNG (a new game, muted, no focus, its own save)."
@@ -39,7 +39,7 @@ help:
 	@echo "  format      Format the GDScript."
 	@echo "  art         Draw all art and sounds into art/generated/, then check them (minutes; needs no Godot)."
 	@echo "  classic-art Draw only the classic art (the 16 px art of groups now drawn at 32 px)."
-	@echo "  assets      Build assets/ (what Godot reads) from art/generated/ and art/hand/ (seconds; needs no Godot)."
+	@echo "  assets      Build assets/ (what Godot reads; not tracked) from art/generated/ and art/hand/ (seconds, only when stale; needs no Godot)."
 	@echo "  contrast-sheet  Draw plants over the ground of every look into build/contrast_sheet.png."
 	@echo "  llm-up      Start the local test LLM (Ollama in a container) and pull its model; see tools/README.md."
 	@echo "  llm-down    Stop and remove the test LLM container (the model stays; PURGE=1 deletes it too)."
@@ -100,6 +100,7 @@ setup:
 		curl -fsSL https://github.com/bitwes/Gut/archive/refs/tags/v$(GUT_VERSION).tar.gz \
 			| tar xz --strip-components=1 "Gut-$(GUT_VERSION)/addons/gut" || missing=1; \
 	fi; \
+	if [ $$missing -eq 0 ]; then $(MAKE) --no-print-directory assets || missing=1; fi; \
 	if [ -d addons/gut ] && command -v "$(GODOT)" >/dev/null 2>&1; then \
 		$(IMPORT) || missing=1; \
 	fi; \
@@ -131,8 +132,17 @@ classic-art: $(VENV_READY)
 
 # Builds assets/ out of art/generated/ (see tools/art/pack.py): packs the atlases, scales the
 # classic art up, copies the rest. Draws nothing.
-assets: $(VENV_READY)
+# assets/ is build output, not tracked: a fresh clone builds it, and so does every target that
+# needs it once its sources (art/, a folder's own time changes when a file is removed) or the
+# packing code are newer than the stamp.
+ASSETS_STAMP := assets/.packed
+ASSET_SOURCES := $(shell find art -mindepth 1 -type f -o -type d) $(wildcard tools/art/pack.py tools/art/atlas.py tools/art/palette.py tools/art/classic/scaling.py)
+
+assets: $(ASSETS_STAMP)
+
+$(ASSETS_STAMP): $(VENV_READY) $(ASSET_SOURCES)
 	$(PYTHON) tools/art/pack.py
+	touch $@
 
 # Plants over the ground of every look, to check their contrast by eye (needs the assets):
 # make contrast-sheet, or make contrast-sheet KINDS="willow shrub" (atlas row names).
@@ -140,7 +150,7 @@ KINDS ?=
 contrast-sheet: $(VENV_READY)
 	$(PYTHON) tools/art/contrast_sheet.py $(KINDS)
 
-run:
+run: assets
 	$(IMPORT)
 	$(GODOT) --path .
 
@@ -174,7 +184,7 @@ QUIET_WINDOW := $(if $(WAYLAND_DISPLAY),--display-driver wayland)
 # exists and fails.
 SCREENSHOT_TIMEOUT ?= 30
 
-screenshot:
+screenshot: assets
 	$(IMPORT)
 	mkdir -p $(dir $(OUT))
 	rm -f $(OUT)
@@ -193,7 +203,7 @@ screenshot:
 # real save.
 TEST_JOBS ?= 8
 
-test:
+test: assets
 	@mkdir -p build/user-data
 	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT)
 	@GODOT=$(GODOT) python3 tools/run_tests.py $(TEST_JOBS)
@@ -224,7 +234,7 @@ lint:
 format:
 	$(GDFORMAT) $(GDSCRIPT_DIRS)
 
-export:
+export: assets
 	@echo "No export presets exist yet."
 	@exit 1
 

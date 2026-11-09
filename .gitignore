@@ -10,3 +10,6 @@ export/
 # The game's settings hold language model API keys; they live in the user data folder, but
 # never commit a copy.
 settings.cfg
+
+# Built by `make assets` from art/ (what Godot reads), see the Makefile.
+/assets
