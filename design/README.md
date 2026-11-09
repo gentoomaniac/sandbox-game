@@ -60,6 +60,7 @@ top of classic pixel art (details in [Lighting and look](presentation/look.md)).
 - [Villagers](villagers/README.md): The people of Wehlsbüll, what they say, and what they think of the player.
     - [villagers.md](villagers/villagers.md): Who the villagers are, the village, sheets, behaviour, what is saved.
     - [dialogue.md](villagers/dialogue.md): Talking: the chat, the language model, the prompt, memory.
+    - [gossip.md](villagers/gossip.md): What villagers see, remember and pass on. Decided, not built.
     - [reputation.md](villagers/reputation.md): Reputation, and how it spreads.
     - [relationships.md](villagers/relationships.md): Friendship levels and what moves them. Planned, not decided.
     - [ideas.md](villagers/ideas.md): Ideas for NPCs, behaviour and LLM dialogue. Not decided.

@@ -1,0 +1,178 @@
+# Gossip and memory
+
+**Decided, not built.** Worked out with the user on 2026-11-09. The tasks are 124 to 130 in
+[TASKS.md](../../TASKS.md). This page changes [dialogue.md](dialogue.md) (memory) and
+[villagers.md](villagers.md) (who knows the village) once the tasks are done; until then those
+pages describe the game as it is.
+
+## The idea
+
+What the player does near villagers is seen, remembered, judged and passed on. The villagers who
+see it know at once. Others hear it later from someone they met, sometimes a little changed, and
+say who told them: "Moiken told me you felled half the Boysen wood." What a villager thinks of
+the player follows from what they saw and heard.
+
+The same mechanism lets newcomers learn the village: what the locals know of Wehlsbüll spreads
+to them as stories, one meeting at a time.
+
+## Who does what
+
+| | Game code | Language model |
+|---|---|---|
+| What happened (the fact) | Yes, always | Never |
+| Who saw it, who heard it, when, from whom | Yes | Never |
+| How the story changes as it travels | Yes (seeded random, from a table) | Never |
+| The line in the villager's voice | A template line without a model | Yes, in the background |
+| What the villager thinks of it (opinion change) | A fixed change per deed without a model | Yes, capped |
+| Whether it touches them personally | Yes, where the game can tell | Yes, for what the game can't |
+
+The model judges and words things; it never makes up facts or moves them. Everything works
+without a model, only plainer.
+
+The language model is never waited for: its calls run in the background in a saved queue. A
+villager talked to before their line has come back still knows the plain fact. If the player
+talks to someone before a rumour has reached them, they simply don't know yet, which is natural.
+
+## Deeds
+
+- **The deed log** (game code, saved): each deed the player does within 20 tiles of a villager
+  is written down as `{day, minute, kind, count, place, witnesses}`. Deeds of the same kind and
+  place on the same day merge into one entry ("felled 7 trees by Antje's house"), so a day's
+  work makes a few entries, not hundreds.
+- **First kinds:** felled a tree, built a building, took down a building, placed a fence or
+  wall, tilled, sowed, harvested, dug clay, mowed. The list, its words and the fixed opinion
+  changes are in `data/gossip.cfg`. Gifts, theft and helping come with
+  [relationships](relationships.md).
+- **The place** in words: the house of the villager whose home is nearest within 20 tiles ("by
+  Antje's house"), else "out on the marsh" (a word per biome in the data file).
+- **Witnesses:** every villager within 20 tiles (6 at night, when they stand still) sees it, not
+  only the nearest. Each gets the deed as a story they **saw**, at once. No line of sight for
+  now.
+- **The deed log is also the base of an end-of-day screen** (later: "Today: 7 trees felled, a
+  Kate built, 12 beds sown").
+
+## Stories
+
+A story is what one villager knows of one thing:
+
+- **The fact:** a deed (kind, count, place, day) or a village topic (a section of
+  `data/village.cfg`).
+- **Where it came from:** `seen` (they saw it) or `heard`, with who told them (`told_by`) and
+  who first saw it (`seen_by`, kept in the data, not used in the line yet: the user wants only
+  the direct source at first).
+- **How far it has come:** hops from the one who saw it, and the day it was learned.
+- **Its line:** the plain template line at first; the model's voiced line once it has come back.
+- **Its weight** (see Memory) and whether it touches them.
+
+A villager knows one version of a story: hearing it again from someone else changes nothing.
+
+## How stories spread: meetings
+
+Stories spread when villagers **meet**, all day, not at a set time:
+
+- Two villagers within 3 tiles of each other meet. A pair meets at most once an hour of game
+  time, so two who stand together don't pass everything at once.
+- At a meeting, each may pass one story the other doesn't know, with a chance by how they are
+  tied: family and close friends high, neighbours (the 3 villagers whose anchors are nearest)
+  medium, anyone else low. Values in `data/gossip.cfg`.
+- A story is passed on only once it has been known for 2 game hours: gossip takes time.
+- The teller picks the weightiest and newest story the other lacks.
+- A deed's story stops after 3 hops or 7 days. A village topic never stops.
+
+Today villagers keep near their anchors, so few meet and rumours travel slowly. Once villagers
+have routines, friends who spend time together and families in one house spread news among
+themselves, and strangers run into locals at the inn or the church, without any change here.
+
+## Whispers
+
+At each hop there is a small chance (10%, in the data file) that one thing about a deed shifts,
+in code:
+
+- **The count grows:** 7 trees become "a dozen" or "half a wood" (a table of steps).
+- **The place moves** to a neighbouring house.
+- **The kind turns into a similar one:** felled into cleared, built into fenced in (a table).
+
+The model then words the changed fact in the hearer's voice. The drift stays believable and can
+be tuned and tested. Village topics don't drift.
+
+## Memory
+
+Today a villager has their sheet, the last lines of the chat, and up to 10 memories, with the
+oldest two merged. That becomes three layers:
+
+| Layer | What it holds | How it changes |
+|---|---|---|
+| **Knowledge** | What they know of the world: their sheet, and the village sheet for locals. Newcomers start without the village | Village topics learned as stories are added here and never forgotten |
+| **Short-term** | Two first-in, first-out buffers: **chat** (lines with the player, as today) and **gossip** (stories seen and heard) | When a buffer is full, its oldest entry leaves for long-term |
+| **Long-term** | Weighted memories, each `{day, text, weight}` | When full, the lightest goes; between equal weights, the oldest |
+
+- **Weights:** low for hearsay that doesn't touch them, medium for what they saw or said with the
+  player, high for what touches them: a deed by their own home or that of family on their sheet,
+  or one the model calls personal ("that was my favourite tree").
+- **Leaving the chat buffer:** summed up by the model into a memory (medium), as today.
+- **Leaving the gossip buffer:** no model. A low story is forgotten outright; any other moves its
+  line to long-term with its weight.
+- **What they think of the player** is a number, not a memory: it stays when the details fade.
+- **Sizes are settings:** "Lines a villager keeps" (chat, as today), "Stories a villager keeps"
+  (gossip, default 10) and "Memories a villager keeps" (long-term, default 20).
+- **The prompt** tells knowledge, long-term memories, the gossip buffer and the chat, in that
+  order. A story the model has not worded yet is told by its template line.
+- `/clear` in the chat forgets everything but knowledge.
+
+## Locals and newcomers
+
+- The villagers written by hand (`data/villagers.cfg`) are locals: they know the village sheet,
+  as today.
+- Made-up villagers know nothing of the village at the start, only the base line (they live in
+  Wehlsbüll on the North Frisian coast in 1750). They learn the village sheet topic by topic from
+  locals and from other newcomers who have learned it, as stories.
+- Later, hand-written characters from elsewhere bring knowledge of their own ("lived in Husum
+  for twelve years"): a sheet of their own place instead of the village's. Not part of these
+  tasks.
+
+## The judge: what the model is asked
+
+For each story a villager gets (seen or heard), one queued call returns:
+
+- `line`: one sentence in the villager's first person and voice, naming who told them if heard
+  ("Moiken told me ...").
+- `change`: -2 to +2, what this does to their opinion of the player.
+- `personal`: yes or no.
+
+It asks for JSON. A reply that doesn't parse, is out of range or doesn't come counts as no
+model: the template line, the deed's fixed change, `personal` no. The change is full for those
+who saw it and half for those who heard it, and the change a villager can take in a day is
+capped. One call at a time, like the memory summaries; the queue is saved.
+
+**Opinion** is the friendship points of [relationships](relationships.md) (one change step = 10
+points). Until that page is decided and built, the judge task adds just the points, saved, and
+the words for them in the prompt.
+
+## Bubbles
+
+Short lines over a villager's head, now and then:
+
+- Only villagers in view, at most one bubble on screen at a time and one a minute or so. Values
+  in the data file.
+- About the moment (weather, time of day, the place, what they do) or about the player when they
+  are near, with what the villager thinks of them and their newest stories: "There goes the one
+  who felled Antje's ash."
+- Asked of the model in the background, shown when it arrives (dropped if the villager is out of
+  view by then). Without a model, scripted lines per weather and part of the day.
+- Not saved, not remembered.
+
+## Settings
+
+Besides the memory sizes, a **temperature** setting per provider, like "most tokens an answer
+may take" (empty: the game's own, 0.5). It applies to what villagers say (chat and bubbles).
+Summaries and the judge keep their own, low temperatures in the data file, as they need to be
+steady rather than lively.
+
+## Deliberately left out
+
+- The model picking actions or reacting to events: rules do that better and cheaper.
+- A day plan from the model: random from tables does as well.
+- Line of sight for witnesses.
+- Gossip at a set time (the night): it spreads at meetings all day.
+- Naming the first witness in the line ("Antje saw it herself"): kept in the data for later.
+- The end-of-day screen (later, from the deed log).

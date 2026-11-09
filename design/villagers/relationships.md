@@ -13,6 +13,13 @@ So: a friendship level per villager, as in Stardew Valley, where gifts count. Fr
 comes the other half: what the player does counts too, whether it is talking, helping,
 being rude or being there when it matters.
 
+## Gossip
+
+[gossip.md](gossip.md) (decided 2026-11-09) feeds this page: what villagers see and hear of
+the player changes their friendship points (one step of its judge is 10 points), and its
+meetings are how a change reaches family and friends, instead of the one-hop rule of
+[reputation](reputation.md) applied at once.
+
 ## What exists today
 
 - Villagers have a sheet in `data/villagers.cfg` (hand-written ones) or are drawn from the tables
