@@ -2243,7 +2243,8 @@ Halted 2026-11-09 after the crafting screen and the chest (merged): the other pa
 onto the Modal base of task 132 once it is in.
 Paused by the user on 2026-11-09 after task 132 was merged: "pause 131 until i tell you to
 continue".
-When it goes on, the character screen (the inventory) moves first, so task 133 can start.
+Going on again on 2026-11-09 ("you can continue 131"): the character screen (the inventory)
+moves first, so task 133 can start.
 
 The build menu (the user, 2026-11-09: "the build menu should scroll sideways"): its row of
 buildings scrolls sideways when wider than the window, keeping the chosen building in view (see
