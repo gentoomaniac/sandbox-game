@@ -48,6 +48,7 @@ var _ground := TileMapLayer.new()
 var _atlas := TileSetAtlasSource.new()
 ## The interior shown, to show it anew in the other art set.
 var _interior: Interior
+var _is_redraw_queued := false
 ## The furniture sprites and the lights, to be replaced when another interior is shown.
 var _furniture: Array[Node] = []
 ## The covers of the beds that have one, by the bed's tile; shown while the player lies in it.
@@ -93,11 +94,15 @@ func show_interior(interior: Interior) -> void:
 	_draw_room()
 
 
+## An object covers several tiles and tells of each: the room is drawn once, after all of them.
 func _on_room_changed(_pos: Vector2i) -> void:
-	_draw_room()
+	if not _is_redraw_queued:
+		_is_redraw_queued = true
+		_draw_room.call_deferred()
 
 
 func _draw_room() -> void:
+	_is_redraw_queued = false
 	var interior := _interior
 	_ground.clear()
 	for node in _furniture:

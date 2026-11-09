@@ -230,18 +230,39 @@ func _drawn_furniture(view: InteriorView) -> int:
 	)
 
 
-func test_the_view_redraws_when_the_interior_tells_of_a_change_and_lets_go_of_the_old_room(
-) -> void:
+## The left tile of two free tiles side by side.
+func _free_pair_of_tiles(interior: Interior) -> Vector2i:
+	for y in interior.size.y:
+		for x in interior.size.x - 1:
+			var pos := Vector2i(x, y)
+			if interior.is_placeable(pos) and interior.is_placeable(pos + Vector2i.RIGHT):
+				return pos
+	fail_test("no room for a bench")
+	return Vector2i.ZERO
+
+
+func test_the_view_redraws_once_after_a_change_to_a_multi_tile_object() -> void:
 	var view := InteriorView.new()
 	add_child_autofree(view)
 	var interior := InteriorLoader.load_interior(KATE_MAP)
 	view.show_interior(interior)
 	var furniture := _drawn_furniture(view)
-	var chest := WorldObject.new(WorldObjectTypes.CHEST, interior.entry_tile() + Vector2i(1, 0))
-	interior.add_object(chest)
-	assert_eq(_drawn_furniture(view), furniture + 1, "the chest appears")
-	interior.remove_object(chest.pos)
-	assert_eq(_drawn_furniture(view), furniture, "and goes")
+	var bench := WorldObject.new(WorldObjectTypes.BENCH, _free_pair_of_tiles(interior))
+	assert_eq(bench.tiles().size(), 2, "a bench covers two tiles")
+	interior.add_object(bench)
+	assert_eq(_drawn_furniture(view), furniture, "not drawn while the object is half told")
+	await wait_frames(1)
+	assert_eq(_drawn_furniture(view), furniture + 1, "drawn once, whole")
+	interior.remove_object(bench.pos)
+	await wait_frames(1)
+	assert_eq(_drawn_furniture(view), furniture, "and gone")
+
+
+func test_the_view_lets_go_of_the_old_room_when_another_is_shown() -> void:
+	var view := InteriorView.new()
+	add_child_autofree(view)
+	var interior := InteriorLoader.load_interior(KATE_MAP)
+	view.show_interior(interior)
 	var other := InteriorLoader.load_interior(KATE_MAP)
 	view.show_interior(other)
 	assert_eq(interior.objects_changed.get_connections().size(), 0)
