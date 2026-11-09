@@ -2262,7 +2262,7 @@ those if they reach certain limits." First a later idea, then "start the scrolli
 
 ## 132. One way to build a window: a Modal base class
 
-- [ ] Done
+- [x] Done
 
 The user, 2026-11-09, during task 131: "are the modals currently coded separately? we might need
 to refactor to create our own little UI library that handles all that in one place", then "work
@@ -2298,7 +2298,12 @@ set of conditions in main.gd.
   window headless, and what is not a Modal; linked from docs/architecture.md and the README. Behaviour the player sees doesn't
   change, except where the old windows differed by accident.
 
-Progress: the Modal base and the crafting screen are done; the chest and main.gd are next.
+Done: `Modal` (game/scenes/modal.gd) with the interface in its class comments and in docs/ui.md
+(new, linked from architecture.md and the README). Windows with arguments have a method of their
+own that calls `open()` (`open_station`, `open_chest`), as GDScript allows no override with another
+signature. The crafting screen and the chest are on it; Main asks `Modal.is_any_open()` and the
+screens not yet on it. The open window is a static variable of the base, no registry. Escape is
+`ui_cancel` or the pause key, through the `_takes_escape()` hook.
 
 ## Later (not part of the prototype)
 

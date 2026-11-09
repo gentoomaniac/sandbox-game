@@ -452,9 +452,15 @@ func _is_use_event(event: InputEvent) -> bool:
 	return event.is_action_pressed("use") or event.is_action_pressed("use_click")
 
 
-## Whether a screen or the console is open: the player neither walks nor acts.
+## Whether a screen or the console is open: the player neither walks nor acts. The screens that
+## are not Modals yet are asked one by one.
 func _is_any_screen_open() -> bool:
-	return _screens.any(func(screen: Node) -> bool: return screen.is_open())
+	return (
+		Modal.is_any_open()
+		or _console_view.is_open()
+		or _chat_screen.is_open()
+		or _character_screen.is_open()
+	)
 
 
 ## Closes the first open screen of `_screens`. Returns whether there was one.
@@ -606,10 +612,10 @@ func _toggle_classic_art() -> void:
 ## Opens and closes the screens on their keys. Returns whether a screen took the event: one that
 ## is open takes all the input, so the player neither walks nor acts.
 func _screens_take(event: InputEvent) -> bool:
-	for screen: Node in [_storage_screen, _crafting_screen]:
-		if screen.is_open() and event.is_action_pressed("interact"):
-			screen.close()
-			return true
+	# The windows that are Modals (the chest and the crafting screen, so far).
+	if Modal.is_any_open() and event.is_action_pressed("interact"):
+		Modal.close_open()
+		return true
 	if _storage_screen.is_open():
 		return true
 	if event.is_action_pressed("crafting") and not _character_screen.is_open():
