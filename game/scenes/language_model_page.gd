@@ -1,7 +1,8 @@
 class_name LanguageModelPage
 extends VBoxContainer
 ## The settings of the language model villagers talk through (see NpcDialogue): the profile in
-## use, which has a provider (an OpenAI-compatible chat API, Claude or Gemini), its endpoint, the
+## use, picked from the list and added, copied, renamed or deleted here, which has a provider (an
+## OpenAI-compatible chat API, Claude or Gemini), its endpoint, the
 ## model's name, the most tokens and the temperature of an answer, and how many lines of a chat a
 ## villager keeps; and the key, if the provider needs one, which is the provider's, not the
 ## profile's. Each is stored as it is chosen or typed. The test LLM is the default; with the
@@ -18,10 +19,16 @@ const LABELS := {
 	"temperature": "Temperature",
 }
 const PROFILE_TIP := (
-	"The settings villagers talk with. By default a profile for each provider: OpenAI-compatible"
-	+ " (the test LLM of make llm-up, Ollama, LM Studio or a hosted API), Claude (Anthropic's"
-	+ " API, which needs an API key and costs money) and Gemini (Google's API, with a key from"
-	+ " AI Studio, free within its limits)."
+	"The settings villagers talk with. Add a profile to keep different settings, for a provider"
+	+ " you use twice, say Gemini with a pro and with a flash model. The key is not in the"
+	+ " profile: it belongs to the provider."
+)
+const NAME_TIP := "What the profile is called in the list. Every profile has a name of its own."
+const PROVIDER_TIP := (
+	"OpenAI-compatible: the test LLM of make llm-up, Ollama, LM Studio or a hosted API."
+	+ " Claude: Anthropic's API, which needs an API key and costs money."
+	+ " Gemini: Google's API, with a key from AI Studio (free within its limits)."
+	+ " Choosing another provider gives the profile that provider's endpoint and model."
 )
 ## What each field is for, by the provider, else by its protocol.
 const TIPS := {
@@ -103,6 +110,11 @@ var first_focus: Control
 
 var _settings: GameSettings
 var _profiles := OptionButton.new()
+var _new_button := Button.new()
+var _copy_button := Button.new()
+var _delete_button := Button.new()
+var _name := LineEdit.new()
+var _provider := OptionButton.new()
 var _labels := {}
 var _fields := {}
 ## Ask for the models, one for each protocol of the providers.
@@ -132,6 +144,8 @@ func _init(settings: GameSettings) -> void:
 	_profiles.item_selected.connect(_on_profile_selected)
 	TooltipView.set_text(_profiles, PROFILE_TIP, "setting_language_model_profile")
 	add_child(_profiles)
+	_add_profile_buttons()
+	_add_name_and_provider()
 	for key: String in LABELS:
 		var label := Label.new()
 		label.text = LABELS[key]
@@ -187,6 +201,10 @@ func show_settings() -> void:
 	var language_model := _settings.profiles.language_model()
 	var chosen: String = language_model["provider"]
 	_list_profiles()
+	_name.text = language_model["name"]
+	for index in _provider.item_count:
+		if _provider.get_item_metadata(index) == chosen:
+			_provider.select(index)
 	var provider: Dictionary = GameSettings.LANGUAGE_MODEL_PROVIDERS[chosen]
 	for key: String in _fields:
 		_fields[key].text = language_model[key]
@@ -228,6 +246,49 @@ func show_models() -> void:
 	)
 
 
+func _add_profile_buttons() -> void:
+	var row := HBoxContainer.new()
+	var buttons := [
+		[_new_button, "New", "A profile of the same provider, with its endpoint and model."],
+		[_copy_button, "Copy", "A copy of this profile, to change a setting or two."],
+		[_delete_button, "Delete", "Removes this profile. The last one stays."],
+	]
+	for each: Array in buttons:
+		var button: Button = each[0]
+		button.text = each[1]
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		TooltipView.set_text(button, each[2], "setting_language_model_%s" % each[1].to_lower())
+		row.add_child(button)
+	_new_button.pressed.connect(_on_new_pressed)
+	_copy_button.pressed.connect(_on_copy_pressed)
+	_delete_button.pressed.connect(_on_delete_pressed)
+	add_child(row)
+
+
+func _add_name_and_provider() -> void:
+	var name_label := Label.new()
+	name_label.text = "Name"
+	TooltipView.set_text(name_label, NAME_TIP)
+	name_label.mouse_filter = Control.MOUSE_FILTER_PASS
+	add_child(name_label)
+	_name.custom_minimum_size.x = FIELD_WIDTH
+	_name.text_submitted.connect(_rename)
+	_name.focus_exited.connect(func() -> void: _rename(_name.text))
+	TooltipView.set_text(_name, NAME_TIP, "setting_language_model_name")
+	add_child(_name)
+	var provider_label := Label.new()
+	provider_label.text = "Provider"
+	TooltipView.set_text(provider_label, PROVIDER_TIP)
+	provider_label.mouse_filter = Control.MOUSE_FILTER_PASS
+	add_child(provider_label)
+	for provider: String in GameSettings.LANGUAGE_MODEL_PROVIDERS:
+		_provider.add_item(GameSettings.LANGUAGE_MODEL_PROVIDERS[provider]["name"])
+		_provider.set_item_metadata(_provider.item_count - 1, provider)
+	_provider.item_selected.connect(_on_provider_selected)
+	TooltipView.set_text(_provider, PROVIDER_TIP, "setting_language_model_provider")
+	add_child(_provider)
+
+
 ## Lists the profiles to pick from, with the one in use selected.
 func _list_profiles() -> void:
 	_profiles.clear()
@@ -235,6 +296,7 @@ func _list_profiles() -> void:
 		_profiles.add_item(profile_name)
 		if profile_name == _settings.profiles.active["name"]:
 			_profiles.select(_profiles.item_count - 1)
+	_delete_button.disabled = _profiles.item_count == 1
 
 
 func _show_history_lines() -> void:
@@ -280,6 +342,33 @@ func _on_model_picked(index: int) -> void:
 
 func _on_profile_selected(index: int) -> void:
 	_settings.profiles.select(_profiles.get_item_text(index))
+	show_settings()
+
+
+func _on_new_pressed() -> void:
+	_settings.profiles.add(_settings.profiles.active["provider"])
+	show_settings()
+
+
+func _on_copy_pressed() -> void:
+	_settings.profiles.copy()
+	show_settings()
+
+
+func _on_delete_pressed() -> void:
+	_settings.profiles.delete()
+	show_settings()
+
+
+## Keeps `new_name` for the profile if it can; the field shows the name the profile has.
+func _rename(new_name: String) -> void:
+	_settings.profiles.rename(new_name)
+	_name.text = _settings.profiles.active["name"]
+	_list_profiles()
+
+
+func _on_provider_selected(index: int) -> void:
+	_settings.profiles.set_provider(_provider.get_item_metadata(index))
 	show_settings()
 
 

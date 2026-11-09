@@ -2094,7 +2094,14 @@ whitish brown when drying out."
 
 ## 124. Language model profiles, with a temperature setting for villager talk
 
-- [ ] Done
+- [x] Done
+
+Done: three commits. A "Temperature" setting per provider (empty: the game's 0.5, else 0 to 2),
+used for the reply only; the memory summary got its own `[memory] temperature` (0.3) in the data
+file, as before it borrowed the reply's. Then `LanguageModelProfiles` (`GameSettings.profiles`):
+profiles of a provider with its endpoint, model, tokens, temperature and chat length, the key per
+provider, the upgrade of old settings files (a profile per provider, the chat length into each),
+and the page with the profile list, New, Copy, Delete, a name and a provider.
 
 From the gossip plan (design/villagers/gossip.md, Settings; the user, 2026-11-09: "add a setting
 for LLM temperature so that it is easy to adjust"). A temperature per provider in Settings, kept

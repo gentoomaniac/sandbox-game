@@ -591,8 +591,8 @@ test LLM on `http://127.0.0.1:11434/v1` (see below); when nothing answers there,
 takes longer than 30 seconds, villagers say short scripted lines instead, so the game never
 needs a model.
 
-**Configuring it.** Settings → Language model has a choice of profile, five fields and the chat length, each
-stored as you type or pick. A profile is a provider (OpenAI-compatible, Claude or Gemini) with
+**Configuring it.** Settings → Language model has a choice of profile with New, Copy and Delete
+buttons, a name, a provider, five fields and the chat length, each stored as you type or pick. A profile is a provider (OpenAI-compatible, Claude or Gemini) with
 its own endpoint, model, max tokens, temperature and chat length, so the same provider can have
 several: say Gemini with a flash and with a pro model, or one model warm and one steady. There is
 one profile for each provider to begin with, named after it. The key belongs to the provider,
@@ -600,7 +600,9 @@ not to the profile: type it once, and it is only ever sent to that provider's en
 
 | Field | Default | What it is |
 |---|---|---|
-| Profile | OpenAI-compatible | The profile in use. The first three are OpenAI-compatible (the test LLM, Ollama, LM Studio, hosted APIs), Claude (starting with `https://api.anthropic.com/v1` and `claude-opus-5-5`) and Gemini; choosing one shows its endpoint, model, tokens, temperature and chat length, and the key of its provider. |
+| Profile | OpenAI-compatible | The profile in use; choosing one shows its settings and the key of its provider. The three to begin with are OpenAI-compatible (the test LLM, Ollama, LM Studio, hosted APIs), Claude (starting with `https://api.anthropic.com/v1` and `claude-opus-5-5`) and Gemini. New adds one of the same provider with that provider's endpoint and model, Copy one with the same settings (named "<name> copy"), Delete removes the one in use (the last stays). |
+| Name | the provider's | What the profile is called in the list; typed in and kept when you press Enter or leave the field. Every profile has a name of its own: an empty one or one another profile has is refused. |
+| Provider | OpenAI-compatible | OpenAI-compatible, Claude or Gemini. Choosing another gives the profile that provider's endpoint and model; the rest stays. |
 | Endpoint | `http://127.0.0.1:11434/v1` | The base address of the chat API; the game posts to `<endpoint>/chat/completions`. Empty it to turn the model off (villagers then always speak scripted lines). |
 | Model | `qwen2.5:7b-instruct` | The model name the endpoint should use: typed, or picked from the drop-down below it, which lists what `<endpoint>/models` answers (Claude's `/v1/models` with the key), asks again a moment after the endpoint or key is typed and by the Refresh button, and shows only the saved model with a note when the endpoint can't be asked. |
 | Lines a villager keeps | 24 | A number from 2 to 200, one for each profile: how many of the latest chat lines a villager keeps in the save and tells the model. Older lines are summed up in a memory; lowering it sums up the lines it drops, once the menu is closed. Every kept line is sent with each question, so higher values make the answers slower (and cost more with a hosted model). |

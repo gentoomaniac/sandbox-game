@@ -119,3 +119,81 @@ func test_changing_the_endpoint_asks_again_after_a_moment() -> void:
 		await wait_until(func() -> bool: return _names().size() == 2, PATIENCE_SECONDS)
 		return _names()
 	assert_eq((await _ask_and_answer(ask, _response("200 OK", LIST)))[1].size(), 2)
+
+
+## Brings the page up with the Claude profile in use, which asks no endpoint for models without
+## a key.
+func _show_claude() -> void:
+	_settings.profiles.select("Claude")
+	_page.show_settings()
+
+
+func _profile_list() -> Array:
+	var names := []
+	for index in _page._profiles.item_count:
+		names.append(_page._profiles.get_item_text(index))
+	return names
+
+
+func test_the_profile_list_shows_every_profile_with_the_one_in_use_selected() -> void:
+	_show_claude()
+	assert_eq(_profile_list(), ["OpenAI-compatible", "Claude", "Gemini"])
+	assert_eq(_page._profiles.selected, 1)
+	assert_eq(_page._name.text, "Claude")
+
+
+func test_new_adds_a_profile_of_the_same_provider_and_uses_it() -> void:
+	_show_claude()
+	_settings.profiles.set_value("model", "claude-haiku-5-5")
+	_page._new_button.pressed.emit()
+	assert_eq(_profile_list(), ["OpenAI-compatible", "Claude", "Gemini", "Claude 2"])
+	assert_eq(_page._profiles.selected, 3)
+	assert_eq(_page._name.text, "Claude 2")
+	assert_eq(_page._fields["model"].text, "claude-opus-5-5", "with the provider's own model")
+
+
+func test_copy_adds_a_profile_with_the_same_settings() -> void:
+	_show_claude()
+	_settings.profiles.set_value("model", "claude-haiku-5-5")
+	_page._copy_button.pressed.emit()
+	assert_eq(_page._name.text, "Claude copy")
+	assert_eq(_page._fields["model"].text, "claude-haiku-5-5")
+
+
+func test_delete_removes_the_profile_and_is_disabled_for_the_last_one() -> void:
+	_show_claude()
+	assert_false(_page._delete_button.disabled)
+	_page._delete_button.pressed.emit()
+	assert_eq(_profile_list(), ["OpenAI-compatible", "Gemini"])
+	assert_eq(_page._name.text, "OpenAI-compatible")
+	_settings.profiles.select("Gemini")
+	_page.show_settings()
+	_page._delete_button.pressed.emit()
+	_page._delete_button.pressed.emit()
+	assert_eq(_profile_list(), ["OpenAI-compatible"])
+	assert_true(_page._delete_button.disabled)
+
+
+func test_a_name_typed_renames_the_profile_unless_another_has_it() -> void:
+	_show_claude()
+	_page._name.text = "Haiku"
+	_page._name.text_submitted.emit("Haiku")
+	assert_eq(_profile_list(), ["OpenAI-compatible", "Haiku", "Gemini"])
+	assert_eq(_settings.profiles.active["name"], "Haiku")
+	_page._name.text_submitted.emit("Gemini")
+	assert_eq(_page._name.text, "Haiku", "the name stays")
+	_page._name.text_submitted.emit("  ")
+	assert_eq(_page._name.text, "Haiku")
+	assert_eq(_profile_list(), ["OpenAI-compatible", "Haiku", "Gemini"])
+
+
+func test_choosing_another_provider_gives_the_profile_its_endpoint_and_model() -> void:
+	_show_claude()
+	_page._provider.item_selected.emit(2)
+	assert_eq(_settings.profiles.active["provider"], "gemini")
+	assert_eq(
+		_page._fields["endpoint"].text, "https://generativelanguage.googleapis.com/v1beta/openai"
+	)
+	assert_eq(_page._fields["model"].text, "gemini-2.5-flash-lite")
+	assert_eq(_page._provider.selected, 2)
+	assert_eq(_page._name.text, "Claude", "the name stays")

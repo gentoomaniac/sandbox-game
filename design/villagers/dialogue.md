@@ -19,8 +19,10 @@
   with, or Gemini through its OpenAI-compatible endpoint, with `gemini-2.5-flash-lite`; each
   profile has a provider and its own endpoint, model, most tokens an answer may take, temperature of
   a reply (empty: the game's own) and lines a villager keeps, and the key is the provider's, so it
-  goes only to its own provider (`LanguageModelProfiles`; a profile is picked in Settings, and
-  several may share a provider); a model, picked from the endpoint's list of models or typed; an optional key; an
+  goes only to its own provider (`LanguageModelProfiles`; Settings picks the profile and adds,
+  copies, renames and deletes them, the last one stays, and several may share a provider, say
+  Gemini with a pro and a flash model; a file from before the profiles is upgraded: a profile
+  for each provider, named after it); a model, picked from the endpoint's list of models or typed; an optional key; an
   emptied endpoint is none) it asks the model; without one, when nothing answers, on an error
   or after 30 s it says a scripted line of `data/npc_talk.cfg` ("Aye.", "Is that so?"). The answer is trimmed to the
   spoken line: no quotes or name in front, its first line, at most two sentences. Only the
