@@ -257,6 +257,17 @@ joined patch of trodden earth, and the edges don't follow when more tiles wear.
 - Tests for the redraw when a neighbour's stage changes; before and after screenshots of a
   yard worn by many animals (the console can spawn them).
 
+## 156. Horses at 32 px: legs with upper legs
+
+- [ ] Done
+
+The user, 2026-11-10: "a review of the horse graphics. In 32 they look like they are missing
+upper legs as the leg starts slim and almost under the belly." Review the 32 px horse and pony
+(tools/art/livestock.py) in every look, pose and facing, as the cow was in task 151: the legs
+should start wide at the body (forearm and gaskin), set at the shoulder and the hip, not slim
+from under the belly. Fix the drawing, keep the sizes of the cells, and check the saddle and
+the riding sprites still fit. Before and after crops and an in-game screenshot.
+
 ## Later (not part of the prototype)
 
 - **Review R8: one owner for the simulation, its time and what is loaded** (review F2.4/F2.5, A4,
