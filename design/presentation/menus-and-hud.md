@@ -43,8 +43,8 @@ Decided 2026-11-05.
   when wider than the window it scrolls sideways in `ScrollingList.Row`, by dragging its bar and
   by following the chosen building, and the mouse wheel over it still turns the hotbar.
 - **Windows** (task 132): every window (crafting, chest, character, chat, the pause menu) is built
-  on one base, `Modal`: a dimmed backdrop and a framed panel centred in the window, refitted when
-  its content or the window changes. Escape closes the window (the pause menu goes back a page
+  on one base, `Modal`: a dimmed backdrop and a framed panel that stays centred in the window
+  whatever its content or the window does (the pause menu sat off centre once). Escape closes the window (the pause menu goes back a page
   first), only one window is open at a time (opening one closes the other), and the game pauses
   while a window that asks for it is open. HUDs, tooltips and the build menu are not windows. How
   to build one: [docs/ui.md](../../docs/ui.md).

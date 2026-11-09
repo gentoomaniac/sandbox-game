@@ -13,11 +13,12 @@ extends CanvasLayer
 ##   them and calls `open()`, e.g. `open_chest(chest, player)`. If that window can already be open,
 ##   the method calls `close()` first, so the close hook still sees the old arguments and
 ##   `open()`, which does nothing for a window that is open, starts afresh.
-## - Hooks, all optional: `_on_open()` (fill the contents; the panel is refitted after it),
+## - Hooks, all optional: `_on_open()` (fill the contents; the lists are fitted after it),
 ##   `_on_close()`, `_takes_escape()` (return true to use Escape yourself, e.g. to go back a page
 ##   instead of closing) and `_on_backdrop_input(event)` (a click on the dimmed area).
-## - Contents that change size need nothing: the panel refits when its minimum size changes, when
-##   the window is resized and when the UI scale changes. `refit()` forces it.
+## - Contents that change size need nothing: the panel sits in a centre container, so it stays
+##   round its contents and in the middle of the window through resizes and UI scale changes.
+##   The scrolling lists fit themselves; `refit()` makes them fit now.
 ## - Escape here is `ui_cancel` (not rebindable) or the rebindable pause key, as the pause menu
 ##   takes both. Other keys that close the window (E on the chest) are named in `close_actions`;
 ##   they close it at once, without `_takes_escape()`. Windows must stay children of Main, so that

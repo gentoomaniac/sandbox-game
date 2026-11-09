@@ -38,7 +38,7 @@ func open_book(book: Book) -> void:
 
 func _on_open() -> void:
 	_title.text = _book.title
-	# ... fill _rows; the panel is refitted afterwards
+	# ... fill _rows; the lists are fitted afterwards
 ```
 
 - `open()`, `close()`, `toggle()` and `is_open()` take no arguments, because GDScript does not
@@ -46,9 +46,10 @@ func _on_open() -> void:
   The signals `opened` and `closed` come after the hooks.
 - Hooks (all optional): `_on_open()`, `_on_close()`, `_takes_escape()`,
   `_on_backdrop_input(event)`.
-- Contents that change size need nothing: the panel refits itself when its minimum size
-  changes, when the window is resized and when the UI scale changes (that too is a resize of the
-  root). `refit()` forces it; the lists size themselves only while the window is shown.
+- Contents that change size need nothing: the panel sits in a centre container, so it stays
+  round its contents and in the middle of the window when they change, when the window is
+  resized and when the UI scale changes (that too is a resize of the root). The scrolling lists
+  fit themselves while the window is shown; `refit()` makes them fit now.
 
 ## The growing part: ScrollingList
 

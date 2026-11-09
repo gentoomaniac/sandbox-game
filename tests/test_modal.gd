@@ -1,6 +1,6 @@
 extends GutTest
 ## The base of the windows: opening and closing, one window at a time, Escape and the hook that
-## takes it first, the pause flag, a click on the backdrop, and the panel's refit.
+## takes it first, the pause flag, a click on the backdrop, the panel's centring and the lists' fit.
 
 const WINDOW := Vector2i(400, 300)
 
@@ -213,7 +213,7 @@ func test_a_click_on_the_backdrop_closes_only_if_the_window_wants_it() -> void:
 	assert_false(window.is_open())
 
 
-func test_the_panel_stays_centred_as_its_contents_grow_shrink_or_change_while_closed() -> void:
+func test_the_panel_stays_centred_as_its_contents_change() -> void:
 	var window := _window()
 	window.open()
 	# The centre container places the panel when it sorts its children, a frame later.
