@@ -23,11 +23,18 @@ static var _classic_paths := {}
 
 ## The picture to load for the picture `asset_path` under assets/ in the chosen set.
 static func path(asset_path: String) -> String:
-	if not is_classic:
+	return path_in(asset_path, is_classic)
+
+
+## The picture to load for the picture `asset_path` under assets/ in the new art or the classic.
+static func path_in(asset_path: String, classic: bool) -> String:
+	if not classic:
 		return asset_path
 	if not _classic_paths.has(asset_path):
-		var classic := CLASSIC_DIR + asset_path.trim_prefix(ASSETS_DIR)
-		_classic_paths[asset_path] = classic if ResourceLoader.exists(classic) else asset_path
+		var classic_path := CLASSIC_DIR + asset_path.trim_prefix(ASSETS_DIR)
+		_classic_paths[asset_path] = (
+			classic_path if ResourceLoader.exists(classic_path) else asset_path
+		)
 	return _classic_paths[asset_path]
 
 
