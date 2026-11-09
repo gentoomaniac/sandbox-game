@@ -1,7 +1,7 @@
 #!/bin/sh
 # A local LLM for testing NPC talk: Ollama in a container, OpenAI-compatible API on
 # http://127.0.0.1:11434/v1. See tools/README.md.
-# Usage: llm.sh up | down [--purge] | check | pull | models | rm | status | logs
+# Usage: llm.sh up | down [--purge] | check | pull | models | rm | status | logs | gpu-setup
 # LLM_GPU=auto (default: the NVIDIA GPU if a CDI spec for it exists) | 1 (GPU or fail) | 0 (CPU).
 set -eu
 
@@ -15,6 +15,7 @@ MODEL=${LLM_MODEL:-qwen2.5:7b-instruct}
 GPU=${LLM_GPU:-auto}
 GPU_DEVICE=nvidia.com/gpu=all
 GPU_LABEL=sandbox-game.gpu
+CDI_SPEC=/etc/cdi/nvidia.yaml
 
 if [ -z "${CONTAINER:-}" ]; then
 	if command -v podman >/dev/null 2>&1; then CONTAINER=podman; else CONTAINER=docker; fi
@@ -165,6 +166,29 @@ pull() {
 	echo "To use it: Settings -> Language model -> Model: $MODEL (and make llm-check LLM_MODEL=$MODEL)"
 }
 
+# Writes the CDI spec that lets containers have the NVIDIA GPU (root, via sudo). Run it once,
+# and again after each driver update: a spec of an older driver breaks the container's start.
+gpu_setup() {
+	if ! command -v nvidia-smi >/dev/null 2>&1; then
+		echo "llm.sh: no nvidia-smi: the NVIDIA driver is not installed" >&2
+		return 1
+	fi
+	if ! nvidia-smi >/dev/null 2>&1; then
+		echo "llm.sh: nvidia-smi fails (after a driver update, reboot first):" >&2
+		nvidia-smi >&2 || true
+		return 1
+	fi
+	if ! command -v nvidia-ctk >/dev/null 2>&1; then
+		echo "llm.sh: no nvidia-ctk: install the NVIDIA container toolkit first" >&2
+		echo "  (Gentoo: sudo emerge app-containers/nvidia-container-toolkit; see tools/README.md)" >&2
+		return 1
+	fi
+	echo "Writing $CDI_SPEC (needs root)"
+	sudo nvidia-ctk cdi generate --output="$CDI_SPEC"
+	nvidia-ctk cdi list
+	echo "Done: make llm-up now starts the container on the GPU"
+}
+
 case "${1:-}" in
 up) up ;;
 down) down "${2:-}" ;;
@@ -180,8 +204,9 @@ rm)
 	;;
 status) "$CONTAINER" ps --filter "name=^$NAME\$" --format '{{.Names}} {{.Status}} {{.Ports}}' ;;
 logs) "$CONTAINER" logs "$NAME" ;;
+gpu-setup) gpu_setup ;;
 *)
-	echo "Usage: $0 up | down [--purge] | check | pull | models | rm | status | logs" >&2
+	echo "Usage: $0 up | down [--purge] | check | pull | models | rm | status | logs | gpu-setup" >&2
 	exit 2
 	;;
 esac

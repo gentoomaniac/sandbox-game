@@ -201,7 +201,7 @@ of a generated sound, point the event's `files` in `data/sounds.cfg` at the reco
 
 `llm.sh` runs [Ollama](https://ollama.com) in a container (podman if present, else docker;
 `CONTAINER=docker` forces one) with Qwen2.5 7B Instruct, on the NVIDIA GPU when the host
-exposes it to containers (see below), else on the CPU. It serves an
+exposes it to containers (see "Setting up the GPU" below), else on the CPU. It serves an
 OpenAI-compatible API at `http://127.0.0.1:11434/v1` (this machine only). The game never
 needs it: `make test` does not touch it, unless `SANDBOX_LLM_URL=http://127.0.0.1:11434/v1`
 is set, which runs the two tests that ask a real model. It is the game's default endpoint
@@ -218,6 +218,7 @@ make llm-models   # the models it has, with their sizes
 make llm-check LLM_MODEL=qwen2.5:3b-instruct  # ask that one
 make llm-eval LLM_MODEL=qwen2.5:3b-instruct   # the villagers' prompts on it, see below
 make llm-rm LLM_MODEL=qwen2.5:3b-instruct     # delete it again
+make llm-gpu-setup   # once: let containers use the NVIDIA GPU (sudo), see below
 tools/llm/llm.sh status | logs
 ```
 
@@ -258,17 +259,35 @@ Which ones fit on the GPU (8 GB of VRAM here) is for later, with the GPU set up 
 - **GPU:** `llm.sh up` passes the GPU in (`--device nvidia.com/gpu=all`, CDI) when a CDI spec
   for `nvidia.com/gpu` is in `/etc/cdi` or `/var/run/cdi`. `LLM_GPU=1` insists on the GPU,
   `LLM_GPU=0` keeps the CPU; a container started with the other setting is recreated.
-  `make llm-check` ends with `ollama ps`, whose PROCESSOR column says `GPU` or `CPU`. One-time
-  host setup (root; Gentoo, the RTX 4070 here):
+  `make llm-check` ends with `ollama ps`, whose PROCESSOR column says `GPU` or `CPU`. With 8 GB
+  of VRAM, the default `qwen2.5:7b-instruct` (4.7 GB) should fit on the GPU (not tried yet).
 
-  ```sh
-  sudo emerge app-containers/nvidia-container-toolkit
-  sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml   # again after each driver update
-  nvidia-ctk cdi list   # should list nvidia.com/gpu=0 and nvidia.com/gpu=all
-  ```
+### Setting up the GPU (once per machine)
 
-  With 8 GB of VRAM, the default `qwen2.5:7b-instruct` (4.7 GB) should fit on the GPU (not tried
-  yet).
+A container only gets the NVIDIA GPU through a CDI spec (Container Device Interface): a file in
+`/etc/cdi` that tells podman and docker (28+) which device files and driver libraries to pass in.
+The NVIDIA container toolkit writes it. On Gentoo with the RTX 4070 here:
+
+1. The driver works on the host: `nvidia-smi` lists the GPU.
+2. Install the toolkit (root):
+
+   ```sh
+   sudo emerge app-containers/nvidia-container-toolkit
+   ```
+
+3. Write the spec: `make llm-gpu-setup`. It checks steps 1 and 2, runs
+   `sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml`, and lists the devices; it
+   should show `nvidia.com/gpu=0` and `nvidia.com/gpu=all`.
+4. Start the test LLM on the GPU and check it:
+
+   ```sh
+   make llm-up LLM_GPU=1   # fails loudly instead of falling back to the CPU
+   make llm-check          # PROCESSOR should say 100% GPU
+   ```
+
+**After each driver update** run `make llm-gpu-setup` again: the spec names the driver's library
+files by version, and a spec of the old driver makes the container fail to start. Plain
+`make llm-up` (`LLM_GPU=auto`) falls back to the CPU only when there is no spec at all.
 
 ### Trying the prompts: `make llm-eval`
 

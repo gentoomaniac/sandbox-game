@@ -24,7 +24,7 @@ IMPORT := $(GODOT) --headless --quiet --import
 # The cost is that a fresh clone needs `make setup` (and network) before it runs.
 
 .PHONY: help setup venv assets classic-assets contrast-sheet run screenshot test lint format export clean llm-up llm-down llm-check \
-	llm-pull llm-models llm-rm llm-eval
+	llm-pull llm-models llm-rm llm-eval llm-gpu-setup
 
 help:
 	@echo "Targets:"
@@ -46,6 +46,7 @@ help:
 	@echo "  llm-models  List the models the test LLM has."
 	@echo "  llm-eval    Try the villagers' prompts on LLM_MODEL (LLM_RUNS replies each); report in build/llm-eval/."
 	@echo "  llm-rm      Delete the model LLM_MODEL (required) from the test LLM."
+	@echo "  llm-gpu-setup  Let containers use the NVIDIA GPU: write its CDI spec (sudo); again after driver updates."
 	@echo "  clean       Delete build/ (test log, screenshots, the screenshot save); nothing is lost."
 	@echo "  export      Not set up yet: no export presets exist."
 	@echo
@@ -226,6 +227,10 @@ llm-eval: $(VENV_READY)
 llm-rm:
 	@test -n "$(LLM_MODEL)" || { echo "llm-rm needs LLM_MODEL=<tag>, e.g. make llm-rm LLM_MODEL=qwen2.5:7b-instruct" >&2; exit 1; }
 	tools/llm/llm.sh rm
+
+# One-time host setup (and again after each driver update): the GPU for llm-up.
+llm-gpu-setup:
+	tools/llm/llm.sh gpu-setup
 
 # Everything in build/ is made by the targets above, so deleting it loses nothing.
 clean:

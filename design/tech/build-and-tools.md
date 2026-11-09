@@ -23,7 +23,8 @@
 - Tools:
   - test LLM for NPC talk (decided 2026-11-06): `make llm-up`, `llm-check` and `llm-down`
     run Ollama (pinned tag) in a podman/docker container with Qwen2.5 7B Instruct (Apache-2.0;
-    the 3B has the Qwen Research License and was not as good, 2026-11-07) on the CPU,
+    the 3B has the Qwen Research License and was not as good, 2026-11-07) on the NVIDIA GPU
+    when the host has its CDI spec (`make llm-gpu-setup`, 2026-11-09), else on the CPU,
     OpenAI-compatible API on 127.0.0.1:11434/v1 (`tools/llm/llm.sh`); no test needs it;
     `make llm-eval` tries the villagers' prompts on a model (`tools/llm/`);
   - tests: **GUT**, run headless by `make test`;
