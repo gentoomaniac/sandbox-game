@@ -1,0 +1,15 @@
+cell 16 16
+looks spring summer autumn bare frost snow dusting
+water 3
+mud 0
+floodplain 4
+wetland 6
+grass 6
+salt_marsh 4
+warft 2
+lush_grass 5
+dry_grass 5
+trodden 0
+path 0
+soil 0
+flowers 56

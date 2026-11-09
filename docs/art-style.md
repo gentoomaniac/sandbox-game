@@ -82,7 +82,7 @@ art:
 - draw it at 32 px per tile (its cells, frames and offsets are twice the numbers below);
 - keep its 16 px art as the classic art (task 117; the player switches with F7): move its old
   generator code, as it was before the redraw, to tools/art/classic/, call it from `main` there
-  and put its doubled files in that file's `DOUBLED`, so `make assets` writes them under
+  and put its doubled files in that file's `DOUBLED`, so `make art` writes them under
   assets/classic/ with the names of the new files (tools/README.md says how). The classic files
   need the new files' cell sizes; a picture with no classic version (one first drawn at 32 px)
   shows the new art in both sets. In the game, load the group's pictures through

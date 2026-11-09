@@ -3,9 +3,10 @@
 
 The modules here are the old generators of those groups, copied from git history unchanged (the
 commit is in each group's comment below); they share canvas.py and palette.py with the new art.
-`main` writes their files under assets/classic/, under the names the new art has under assets/,
-and scales the world's up to the game's tile as tools/art/generate.py did then. The game shows a
-classic file where there is one and the new file where there is none.
+`main` writes their files under art/generated/classic/, under the names the new art has under
+art/generated/, as drawn at 16 px; `make assets` (pack.py) scales the world's up to the game's tile
+(scaling.py) into assets/classic/. The game shows a classic file where there is one and the new
+file where there is none.
 
 An art group that goes native moves its old generator here (see tools/README.md).
 """
@@ -17,6 +18,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 import alder  # noqa: E402
+import atlas  # noqa: E402
 import animals  # noqa: E402
 import beech  # noqa: E402
 import birch  # noqa: E402
@@ -54,92 +56,10 @@ import trees  # noqa: E402
 import trunks  # noqa: E402
 import villagers  # noqa: E402
 import willow  # noqa: E402
-from canvas import GAME_TILE, OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, TILE, blank  # noqa: E402
-from palette import ASSETS, PALETTE, save, save_picture  # noqa: E402
-from PIL import Image  # noqa: E402
+from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, TILE, blank  # noqa: E402
+from palette import GENERATED, PALETTE, save, save_picture, write_cell_sizes  # noqa: E402
 
 CLASSIC = "classic"
-
-# The files of the classic art that were drawn at 16 px per tile and doubled, as DOUBLED in
-# tools/art/generate.py; the portraits are drawn for the UI and are not.
-DOUBLED = (
-    # The player and the villagers (task 113; the generators of commit 97e9736).
-    "character/*.png",
-    "character/collapse/*.png",
-    "character/riding/*.png",
-    "effects/*.png",
-    "ui/bubble_*.png",
-    # The farm animals (task 114; livestock.py and animals.py of commit 2793065).
-    "wildlife/cow_*.png",
-    "wildlife/sheep_*.png",
-    "wildlife/chicken_*.png",
-    "wildlife/rabbit_*.png",
-    "wildlife/dog_*.png",
-    "wildlife/cat_*.png",
-    "wildlife/horse_*.png",
-    # The wild animals and the flames (task 116; animals.py, birds.py, sea_birds.py and fire.py
-    # of commit 2793065; the fireplace around its flames is the classic camp.py, the hearth the
-    # classic interior.py).
-    "wildlife/bee.png",
-    "wildlife/bird.png",
-    "wildlife/butterfly.png",
-    "wildlife/deer.png",
-    "wildlife/dunlin.png",
-    "wildlife/firefly.png",
-    "wildlife/frog.png",
-    "wildlife/goose.png",
-    "wildlife/gull.png",
-    "wildlife/mouse.png",
-    "wildlife/oystercatcher.png",
-    "wildlife/rabbit.png",
-    "wildlife/squirrel.png",
-    "wildlife/stork.png",
-    "wildlife/tern.png",
-    "fire/*.png",
-    # The ground (task 107; terrain.py, the ground looks of seasons.py, crop_icons.soil_wet and
-    # meadow.clay_hint of commit acf236e; the meadow flowers of its decorations are flowers.py of
-    # commit e303759).
-    "terrain*.png",
-    "decorations*.png",
-    "soil_wet.png",
-    "clay_hint.png",
-    # The buildings (task 110; buildings.py and church.py of commit e303759, their looks drawn by
-    # the shared seasons.house).
-    "buildings/*.png",
-    # The plants (task 108; trees.py, trunks.py, beech.py, birch.py, alder.py, willow.py, the
-    # plant parts of meadow.py and reeds.py and the object looks of seasons.py of commit
-    # e303759), and the other rows of the atlas (task 111): the walls, fences and the dyke
-    # (boundaries.py), the camp (camp.py), the chest (chest.py), the stations (crafts.py), the
-    # Ewer (coast.py), the landing (landing.py) of commit ec0b1af and the graves (graves.py).
-    "objects*.png",
-    # The crops (task 109; crops.py of commit f2c24f8).
-    "crops/*.png",
-    # The bedroll's cover, which matches the classic bedroll (camp.py of commit ec0b1af, before
-    # task 112 made the bedroll longer).
-    "bedroll_cover.png",
-    # The interiors and their furniture (task 112; interior.py of commit f2c24f8), with the
-    # chest of chest.py, and the stations and the grave marker placed indoors (task 111).
-    "interior.png",
-    "interior/*.png",
-    # The items lying on the ground (task 115; items.py, tool_icons.py and crop_icons.py of
-    # commit 91742f0, and the icon parts of meadow.py, reeds.py, crafts.py, church.py and
-    # landing.py). The item icons are drawn for the UI and are not doubled.
-    "ground_items/*.png",
-)
-# The animals whose cells grew at 32 px per tile: the classic sheets, doubled, are set in
-# the new cells (bottom centre, as the animal stands in its cell), so that the game reads both
-# sets with the same frame sizes (WildlifeSprites). Their old and new cell sizes.
-GROWN_CELLS = {
-    "wildlife/cow_*.png": ((64, 48), (72, 54)),
-    "wildlife/horse_*.png": ((88, 72), (88, 76)),
-    # The small wild animals drawn larger than life at 32 px.
-    "wildlife/bird.png": ((16, 16), (22, 18)),
-    "wildlife/rabbit.png": ((24, 20), (26, 22)),
-    "wildlife/bee.png": ((8, 8), (10, 10)),
-    "wildlife/butterfly.png": ((12, 12), (14, 14)),
-    "wildlife/firefly.png": ((3, 3), (6, 6)),
-    "wildlife/dunlin.png": ((20, 16), (22, 16)),
-}
 
 
 def write_character():
@@ -158,9 +78,9 @@ def write_character():
 
 
 def write_bubbles():
-    (ASSETS / CLASSIC / "ui").mkdir(parents=True, exist_ok=True)
+    (GENERATED / CLASSIC / "ui").mkdir(parents=True, exist_ok=True)
     for name, rows in bubbles.BUBBLE_ICONS.items():
-        bubbles.bubble(PALETTE, rows).save(ASSETS / CLASSIC / "ui" / f"bubble_{name}.png")
+        bubbles.bubble(PALETTE, rows).save(GENERATED / CLASSIC / "ui" / f"bubble_{name}.png")
 
 
 def write_livestock():
@@ -192,11 +112,13 @@ def write_ground():
         terrain_rows.append(tiles)
         decoration_rows.append(decorations)
     decoration_rows.append(flowers.flower_row())
+    decorations_by_look = {}
     for look in ground_looks.GROUND_LOOKS:
         suffix = "" if look == "summer" else f"_{look}"
         save(ground_looks.terrain_rows(look, terrain_rows), f"{CLASSIC}/terrain{suffix}.png")
-        decorations = ground_looks.ground_rows(look, decoration_rows, ground_looks.STANDING.get(look))
-        save(decorations, f"{CLASSIC}/decorations{suffix}.png")
+        decorations_by_look[look] = ground_looks.ground_rows(look, decoration_rows, ground_looks.STANDING.get(look))
+    layers = [layer.__name__ for layer in terrain.LAYERS]
+    atlas.save_sheets(f"{CLASSIC}/decorations", [*layers, "flowers"], ground_looks.GROUND_LOOKS, decorations_by_look, TILE, TILE)
     save([ground_overlays.soil_wet()], f"{CLASSIC}/soil_wet.png")
     save_picture(ground_overlays.clay_hint(), f"{CLASSIC}/clay_hint.png")
 
@@ -285,10 +207,8 @@ def write_objects():
         "birch": lambda variant: birch.bare_birch(birch.BIRCH_SEEDS[variant]),
         "alder": lambda variant: alder.bare_alder(alder.ALDER_SEEDS[variant]),
     }
-    for look in object_looks.LOOKS:
-        suffix = "" if look == "summer" else f"_{look}"
-        rows = object_looks.object_rows(look, objects, redraws)
-        save(rows, f"{CLASSIC}/objects{suffix}.png", OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
+    objects_by_look = {look: object_looks.object_rows(look, objects, redraws) for look in object_looks.LOOKS}
+    atlas.save_sheets(f"{CLASSIC}/objects", [kind for kind, _ in objects], object_looks.LOOKS, objects_by_look, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     save_picture(camp.bedroll_cover(), f"{CLASSIC}/bedroll_cover.png")
 
 
@@ -319,32 +239,6 @@ def write_items():
         save_picture(item_icons.small(picture), f"{CLASSIC}/ground_items/{name}.png")
 
 
-def set_in_grown_cells():
-    """Sets each cell of the sheets of GROWN_CELLS in the bottom centre of a cell of the new size."""
-    for pattern, ((width, height), (new_width, new_height)) in GROWN_CELLS.items():
-        for path in sorted((ASSETS / CLASSIC).glob(pattern)):
-            sheet = Image.open(path)
-            columns, rows = sheet.width // width, sheet.height // height
-            grown = Image.new("RGBA", (columns * new_width, rows * new_height), (0, 0, 0, 0))
-            for row in range(rows):
-                for column in range(columns):
-                    cell = sheet.crop((column * width, row * height, (column + 1) * width, (row + 1) * height))
-                    left = column * new_width + (new_width - width) // 2
-                    grown.paste(cell, (left, row * new_height + new_height - height))
-            grown.save(path)
-
-
-def scale_up_16_px_art():
-    """Scales the files of DOUBLED up from the art's tile to the game's, pixel for pixel."""
-    factor = GAME_TILE // TILE
-    for pattern in DOUBLED:
-        paths = sorted((ASSETS / CLASSIC).glob(pattern))
-        assert paths, f"DOUBLED: no file matches {CLASSIC}/{pattern}"
-        for path in paths:
-            image = Image.open(path)
-            image.resize((image.width * factor, image.height * factor), Image.Resampling.NEAREST).save(path)
-
-
 def main():
     write_character()
     write_bubbles()
@@ -357,9 +251,8 @@ def main():
     write_crops()
     write_interior()
     write_items()
-    scale_up_16_px_art()
-    set_in_grown_cells()
-    print("Wrote every file under assets/classic/.")
+    write_cell_sizes(GENERATED / CLASSIC)
+    print("Wrote every file under art/generated/classic/.")
 
 
 if __name__ == "__main__":

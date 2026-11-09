@@ -1,8 +1,11 @@
-"""Generates every PNG under assets/ (run it with `make assets`).
+"""Draws every PNG into art/generated/ (run it with `make art`); `make assets` builds assets/ from it.
+
+The paths below are those under assets/ and art/generated/ alike, but for the atlases: the object
+and decoration atlases are packed from one sheet per entity (atlas.py, pack.py).
 
 Each topic has its module: terrain.py, trees.py, camp.py, character.py, interior.py and the
 others listed in tools/README.md. This file puts the objects together into the atlas, and
-`main` writes every file under assets/ (terrain, decorations, objects, character, interior,
+`main` writes every file (terrain, decorations, objects, character, interior,
 fire, buildings, wildlife, crops, items, ui and the palette), then checks them against the
 palette. Everything is drawn at the game's tile, canvas.GAME_TILE = 32 px; the classic art, the
 16 px art doubled, is tools/art/classic/'s.
@@ -78,6 +81,7 @@ assets/ui/slot.png and slot_selected.png (20x20) are drawn in items.py for the U
 
 import alder
 import animals
+import atlas
 import beech
 import birch
 import birds
@@ -110,7 +114,7 @@ import ui
 import villagers
 import willow
 from canvas import GAME_OBJECT_BOTTOM, GAME_OBJECT_CELL_HEIGHT, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CENTRE, GAME_TILE
-from palette import ASSETS, PALETTE, check_palette, save, save_picture, write_palette
+from palette import GENERATED, PALETTE, check_palette, save, save_picture, write_cell_sizes, write_palette
 
 
 def standing_outdoors(picture):
@@ -240,13 +244,6 @@ def atlas_cells(picture):
     return [[row[left : left + GAME_OBJECT_CELL_WIDTH] for row in picture] for left in range(0, len(picture[0]), GAME_OBJECT_CELL_WIDTH)]
 
 
-def write_object_rows(objects):
-    """assets/objects_rows.txt: `row kind cells` per row of objects.png, which the test of the
-    object atlas compares with the types of world_object_types.gd."""
-    lines = [f"{row} {kind} {sum(len(atlas_cells(look)) for look in looks)}" for row, (kind, looks) in enumerate(objects)]
-    (ASSETS / "objects_rows.txt").write_text("\n".join(lines) + "\n")
-
-
 def write_seasonal_art():
     """The art that has a file per look: terrain, decorations, objects and buildings. Summer
     keeps the plain names; the other looks add theirs, e.g. terrain_snow.png."""
@@ -263,7 +260,6 @@ def write_seasonal_art():
     # The meadow flowers have a row of their own, below the layers' (see flowers.py).
     decoration_rows.append(flowers.flower_row())
     objects = object_atlas()
-    write_object_rows(objects)
     redraws = {
         "oak": lambda variant: trees.bare_oak(trees.OAK_SEEDS[variant]),
         "willow": lambda variant: willow.bare_willow(willow.WILLOW_SEEDS[variant]),
@@ -275,17 +271,19 @@ def write_seasonal_art():
     for name, draw in (buildings.PICTURES | church.PICTURES).items():
         houses[name] = draw(is_lit=False)
         houses[f"{name}_lit"] = draw(is_lit=True)
+    decorations_by_look = {}
+    objects_by_look = {}
     for look in seasons.LOOKS:
         suffix = "" if look == "summer" else f"_{look}"
         if look in seasons.GROUND_LOOKS:
             save(seasons.terrain_rows(look, terrain_rows, layers), f"terrain{suffix}.png", GAME_TILE)
-            decorations = seasons.ground_rows(look, decoration_rows, layers, seasons.STANDING.get(look))
-            save(decorations, f"decorations{suffix}.png", GAME_TILE)
-        rows = [[cell for picture in row for cell in atlas_cells(picture)] for row in seasons.object_rows(look, objects, redraws)]
-        save(rows, f"objects{suffix}.png", GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)
+            decorations_by_look[look] = seasons.ground_rows(look, decoration_rows, layers, seasons.STANDING.get(look))
+        objects_by_look[look] = [[cell for picture in row for cell in atlas_cells(picture)] for row in seasons.object_rows(look, objects, redraws)]
         if look in seasons.HOUSE_LOOKS:
             for name, (picture, snowy) in houses.items():
                 save_picture(seasons.house(look, picture, snowy), f"buildings/{name}{suffix}.png")
+    atlas.save_sheets("decorations", [*layers, "flowers"], seasons.GROUND_LOOKS, decorations_by_look, GAME_TILE, GAME_TILE)
+    atlas.save_sheets("objects", [kind for kind, _ in objects], seasons.LOOKS, objects_by_look, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)
 
 
 def write_character():
@@ -364,10 +362,11 @@ def main():
     write_wildlife()
     write_crops()
     write_items()
-    ui.write_ui_assets(ASSETS / "ui", PALETTE)
+    ui.write_ui_assets(GENERATED / "ui", PALETTE)
     write_palette()
+    write_cell_sizes(GENERATED)
     check_palette()
-    print("Wrote every file under assets/ (palette check passed).")
+    print("Wrote every file under art/generated/ (palette check passed).")
 
 
 if __name__ == "__main__":

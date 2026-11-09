@@ -2,7 +2,7 @@
 
 Pictures hold colour names, never RGB values, so this file and `seasons.COLOURS` are the only
 source of colours. `to_image` turns pictures into PNGs, and `check_palette` fails if any PNG
-under assets/ strays from the palette.
+under art/generated/ strays from the palette.
 """
 
 import math
@@ -13,7 +13,15 @@ from PIL import Image
 import seasons
 from canvas import TILE
 
-ASSETS = Path(__file__).resolve().parents[2] / "assets"
+ROOT = Path(__file__).resolve().parents[2]
+# What the generators write (`make art`) and what `make assets` builds for Godot out of it and out
+# of the hand-drawn art in art/hand/ (see pack.py).
+GENERATED = ROOT / "art" / "generated"
+ASSETS = ROOT / "assets"
+# The sheets saved by this process, by their path under GENERATED: their cell size, which
+# `write_cell_sizes` records so that pack.py can fill the empty cells of a hand-drawn sheet.
+CELL_SIZES = {}
+CELL_SIZES_FILE = "cell_sizes.txt"
 
 # The darkest colour of each ramp, which outlines it (see the style rules in design/presentation/art-pipeline.md).
 DARKEST_OF = {
@@ -128,16 +136,25 @@ def to_image(rows, size=TILE, height=None, *, asset):
 
 
 def save(rows, relative_path, size=TILE, height=None):
-    """Draws rows of tiles (see `to_image`) into `relative_path` under assets/, making its
-    directories."""
-    path = ASSETS / relative_path
+    """Draws rows of tiles (see `to_image`) into `relative_path` under art/generated/, making
+    its directories."""
+    path = GENERATED / relative_path
     path.parent.mkdir(parents=True, exist_ok=True)
     to_image(rows, size, height, asset=relative_path).save(path)
+    if len(rows) > 1 or len(rows[0]) > 1:
+        CELL_SIZES[relative_path] = (size, height or size)
 
 
 def save_picture(picture, relative_path):
     """Saves one picture of any size as a PNG of its own."""
     save([[picture]], relative_path, len(picture[0]), len(picture))
+
+
+def write_cell_sizes(folder):
+    """`cell_sizes.txt` in `folder` (under GENERATED): `path width height` of every sheet saved so
+    far, for the files in `folder`."""
+    lines = [f"{path} {width} {height}" for path, (width, height) in sorted(CELL_SIZES.items())]
+    (folder / CELL_SIZES_FILE).write_text("\n".join(lines) + "\n")
 
 
 def write_palette():
@@ -149,26 +166,31 @@ def write_palette():
     for index, name in enumerate(names):
         x, y = index % per_row * swatch, index // per_row * swatch
         image.paste((*bytes.fromhex(PALETTE[name]), 255), (x, y, x + swatch, y + swatch))
-    image.save(ASSETS / "palette.png")
+    image.save(GENERATED / "palette.png")
 
     lines = ["GIMP Palette", "Name: Sandbox Game", f"Columns: {per_row}", "#"]
     for name, hex_colour in PALETTE.items():
         r, g, b = bytes.fromhex(hex_colour)
         lines.append(f"{r:3d} {g:3d} {b:3d}\t{name}")
-    (ASSETS / "palette.gpl").write_text("\n".join(lines) + "\n")
+    (GENERATED / "palette.gpl").write_text("\n".join(lines) + "\n")
+
+
+def stray_colours(image):
+    """The visible colours of `image` that are not in the palette."""
+    allowed = {(*bytes.fromhex(hex_colour), 255) for hex_colour in PALETTE.values()}
+    colours = {colour for _, colour in image.convert("RGBA").getcolors(1 << 24)}
+    return {colour for colour in colours if colour[3] != 0 and colour not in allowed}
 
 
 def check_palette():
-    """Fails if any PNG under assets/ has a pixel that is neither transparent nor a
-    palette colour, so hand-drawn replacements are held to the palette too."""
+    """Fails if any PNG under art/generated/ has a pixel that is neither transparent nor a
+    palette colour (hand-drawn art is only warned about, see pack.py)."""
     assert len(PALETTE) <= MAX_PALETTE_COLOURS, f"{len(PALETTE)} palette colours, at most {MAX_PALETTE_COLOURS}"
-    allowed = {(*bytes.fromhex(hex_colour), 255) for hex_colour in PALETTE.values()}
     bad = []
-    for path in sorted(ASSETS.rglob("*.png")):
-        colours = {c for _, c in Image.open(path).convert("RGBA").getcolors(1 << 24)}
-        stray = {c for c in colours if c[3] != 0 and c not in allowed}
+    for path in sorted(GENERATED.rglob("*.png")):
+        stray = stray_colours(Image.open(path))
         if stray:
-            bad.append(f"{path.relative_to(ASSETS)}: {len(stray)} colours not in the palette")
+            bad.append(f"{path.relative_to(GENERATED)}: {len(stray)} colours not in the palette")
     if bad:
         raise SystemExit("Palette check failed:\n" + "\n".join(bad))
 

@@ -1,4 +1,4 @@
-"""Checks every sound under assets/sounds/ (run by `make assets`, after generate.py).
+"""Checks every sound under art/generated/sounds/ (run by `make art`, after generate.py).
 
 Each file must be 16-bit mono at the generator's rate, keep its peak below -1 dBFS (no
 clipping) and carry no DC offset. A one-shot sound must start and end at silence, so it

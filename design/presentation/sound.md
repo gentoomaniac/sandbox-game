@@ -2,7 +2,7 @@
 
 Decided 2026-11-05. Everything makes sound; no background music for now.
 
-- **All sounds are generated** by a script (`tools/audio/`, run by `make assets`), like
+- **All sounds are generated** by a script (`tools/audio/`, run by `make art`), like
   the art: deterministic, in the repo, retro in style, with a few variants per sound
   and a little pitch variation when played. **`data/sounds.cfg`** maps every sound event
   to its files, volume and pitch range, so any sound can later be replaced by a recording

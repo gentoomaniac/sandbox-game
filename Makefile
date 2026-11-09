@@ -23,7 +23,7 @@ IMPORT := $(GODOT) --headless --quiet --import
 # reproducible, and it keeps third-party code out of our history and diffs.
 # The cost is that a fresh clone needs `make setup` (and network) before it runs.
 
-.PHONY: help setup venv assets classic-assets contrast-sheet run screenshot test bench lint format export clean llm-up llm-down llm-check \
+.PHONY: help setup venv art classic-art assets contrast-sheet run screenshot test bench lint format export clean llm-up llm-down llm-check \
 	llm-pull llm-models llm-rm llm-eval llm-gpu-setup
 
 help:
@@ -37,8 +37,9 @@ help:
 	@echo "  bench       Time a heavy save headless (start-up, nodes, frame times, pile pick-up); see tools/README.md."
 	@echo "  lint        Run gdlint and gdformat --check, and check no API key is in the repo."
 	@echo "  format      Format the GDScript."
-	@echo "  assets      Regenerate all art and sounds, then check them (needs no Godot)."
-	@echo "  classic-assets  Regenerate only the classic art (the 16 px art of groups now drawn at 32 px)."
+	@echo "  art         Draw all art and sounds into art/generated/, then check them (minutes; needs no Godot)."
+	@echo "  classic-art Draw only the classic art (the 16 px art of groups now drawn at 32 px)."
+	@echo "  assets      Build assets/ (what Godot reads) from art/generated/ and art/hand/ (seconds; needs no Godot)."
 	@echo "  contrast-sheet  Draw plants over the ground of every look into build/contrast_sheet.png."
 	@echo "  llm-up      Start the local test LLM (Ollama in a container) and pull its model; see tools/README.md."
 	@echo "  llm-down    Stop and remove the test LLM container (the model stays; PURGE=1 deletes it too)."
@@ -116,17 +117,22 @@ $(VENV_READY): tools/requirements.txt
 	$(VENV)/bin/pip install --quiet --disable-pip-version-check -r tools/requirements.txt
 	touch $(VENV_READY)
 
-# Regenerates every PNG under assets/ and checks that they use only palette colours, then
-# every sound under assets/sounds/ and checks their levels and loops. The classic art comes
-# first, so the palette check covers it too.
-assets: classic-assets
+# Draws every PNG into art/generated/ and checks that they use only palette colours, then every
+# sound into art/generated/sounds/ and checks their levels and loops. The classic art comes
+# first, so the palette check covers it too. This is the slow part; `make assets` packs it.
+art: classic-art
 	$(PYTHON) tools/art/generate.py
 	$(PYTHON) tools/audio/generate.py
 	$(PYTHON) tools/audio/check.py
 
-# The classic art under assets/classic/ (see tools/art/classic/generate.py).
-classic-assets: $(VENV_READY)
+# The classic art under art/generated/classic/ (see tools/art/classic/generate.py).
+classic-art: $(VENV_READY)
 	$(PYTHON) tools/art/classic/generate.py
+
+# Builds assets/ out of art/generated/ (see tools/art/pack.py): packs the atlases, scales the
+# classic art up, copies the rest. Draws nothing.
+assets: $(VENV_READY)
+	$(PYTHON) tools/art/pack.py
 
 # Plants over the ground of every look, to check their contrast by eye (needs the assets):
 # make contrast-sheet, or make contrast-sheet KINDS="willow shrub" (atlas row names).
@@ -202,7 +208,7 @@ $(BENCH_DIR)/fixture.save: tools/bench/make_fixture.gd
 	mkdir -p $(BENCH_DIR)
 	$(BENCH_GODOT) -s tools/bench/make_fixture.gd -- $@
 
-bench:
+bench: assets
 	@mkdir -p build/user-data
 	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT)
 	$(MAKE) $(BENCH_DIR)/fixture.save

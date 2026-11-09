@@ -1,7 +1,7 @@
-"""Generates every sound under assets/sounds/ (run it with `make assets`).
+"""Generates every sound under art/generated/sounds/ (run it with `make art`).
 
 Each sound event (see EVENTS; the names are also the keys of data/sounds.cfg) is written as
-a few variants, assets/sounds/<event>_<n>.wav with n from 1: mono, 16 bit, 44.1 kHz.
+a few variants, art/generated/sounds/<event>_<n>.wav with n from 1: mono, 16 bit, 44.1 kHz.
 
 - The sounds are made in footsteps.py, work.py, ui.py, weather.py and animals.py, from the
   building blocks in dsp.py. Each variant is a function that takes a random generator and
@@ -23,7 +23,7 @@ a few variants, assets/sounds/<event>_<n>.wav with n from 1: mono, 16 bit, 44.1 
   default), so they loop with no setting on the Godot side. Godot then loops from the
   first to the last sample, as it does when loop_mode is set to Forward by hand.
 
-To tune one sound, change its function and run `make assets`; `tools/audio/check.py`
+To tune one sound, change its function and run `make art`; `tools/audio/check.py`
 reports lengths and levels, `tools/audio/preview.py` writes all events into one file to
 listen to. To replace a sound with a recording, point its event in data/sounds.cfg to the
 new file (or drop the event from EVENTS and write the recording under its name).
@@ -42,7 +42,7 @@ import weather
 import work
 from dsp import RATE, highpass, samples
 
-SOUNDS = Path(__file__).resolve().parents[2] / "assets" / "sounds"
+SOUNDS = Path(__file__).resolve().parents[2] / "art" / "generated" / "sounds"
 
 # event: (peak level in dBFS, the function of each variant)
 EVENTS = {

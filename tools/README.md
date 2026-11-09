@@ -1,18 +1,29 @@
 # Tools: the art and sound generators
 
-Every picture and every sound of the game is made by the Python code here. There are no
-hand-drawn files to edit: change the code, run `make assets`, and look at the result. The
-output is deterministic, so a change that should not alter a picture leaves it byte for byte
-the same (`git status` after `make assets` shows what moved).
+Every picture and every sound of the game is made by the Python code here. Change the code,
+run `make art`, and look at the result. The output is deterministic, so a change that should
+not alter a picture leaves it byte for byte the same (the working tree's status after `make art`
+shows what moved).
 
 ```sh
-make assets    # all art (the classic art first), all sounds, then the palette and sound checks
-make classic-assets  # just the classic art under assets/classic/
-make venv      # just the Python environment (make assets does this itself)
+make art          # draw all art (the classic art first) and sounds into art/generated/, then the palette and sound checks (minutes)
+make classic-art  # just the classic art under art/generated/classic/
+make assets       # build assets/, what Godot reads, from art/generated/ (seconds, draws nothing)
+make venv         # just the Python environment (the others do this themselves)
 ```
 
-`make assets` needs Python 3 and nothing else (no Godot). The pinned packages are in
-[requirements.txt](requirements.txt). After new art, `make run`, `make test` and
+Three places: `art/generated/` is what `make art` draws (only the generators write there; it
+is in version control), and `assets/` is what `make assets` builds out of it for Godot
+(`res://assets/`; build output, not in version control). The generated files have the paths the
+game reads. The object and decoration atlases are the exception:
+`art/generated/objects/<type>.png` and `art/generated/decorations/<layer>.png` hold one entity
+each, a row per look (season) and a cell per variant, and `make assets` packs them into the
+atlases (`objects*.png`, `decorations*.png`, one per look; see `atlas.py` and `pack.py`). The
+classic art is generated at 16 px as it was drawn, and `make assets` scales it up
+(`classic/scaling.py`).
+
+`make art` and `make assets` need Python 3 and nothing else (no Godot). The pinned packages are
+in [requirements.txt](requirements.txt). After new art, `make run`, `make test` and
 `make screenshot` import it themselves.
 
 ## Tests: tools/run_tests.py
@@ -39,8 +50,8 @@ way.
 
 ## Art: tools/art/
 
-`generate.py` is the entry point: it assembles the object atlas and `main()` writes every
-file under `assets/`, one small `write_...` function per family. The drawing is in the modules
+`generate.py` is the entry point: it assembles the object atlas's rows and `main()` writes every
+file under `art/generated/`, one small `write_...` function per family. The drawing is in the modules
 by topic. Where is a thing drawn?
 
 | Module | What it draws |
@@ -141,9 +152,9 @@ When a group goes native (docs/art-style.md, "Resolution"), before its redraw ch
    what it needs to run beside the others (an import, a path). If a module of that name is
    already there (two groups drawn in one module), add the group's part to it.
 2. Add the group's old `write_...` lines to `main` in tools/art/classic/generate.py, writing to
-   `f"{CLASSIC}/<path>"`, and its doubled globs to `DOUBLED` there.
-3. `make assets`, and compare a few classic files with those of the commit
-   (`git show <commit>:assets/<path>`): they are the same picture, byte for byte while nothing
+   `f"{CLASSIC}/<path>"`, and its doubled globs to `DOUBLED` in classic/scaling.py.
+3. `make art`, and compare a few classic files with those of the commit
+   (`git show <commit>:assets/<path>`, against the file under assets/ after `make assets`): they are the same picture, byte for byte while nothing
    shared changed.
 
 ### Adding things
@@ -160,7 +171,7 @@ When a group goes native (docs/art-style.md, "Resolution"), before its redraw ch
   (`trees.py` for most), add a row to `object_atlas()` and to the numbered table above it
   (the table says the order; new rows go at the end), and give its type an
   `atlas_row` in `game/state/world_object_types.gd`. `generate.py` writes
-  `assets/objects_rows.txt` from the rows it draws, and `tests/test_object_atlas.gd` compares
+  `art/generated/objects/atlas.txt` from the rows it draws (`make assets` copies them to assets/objects_rows.txt), and `tests/test_object_atlas.gd` compares
   it with every type's `atlas_row` and number of looks. A tree that leaves a trunk also has the
   two rows of `trunks.rows(<tree>)` (its bark in `trunks.SPECIES`), and its `trunk` names the
   first of them.
@@ -190,14 +201,14 @@ every time. So:
 ## Sound: tools/audio/
 
 `generate.py` is the entry point. `EVENTS` lists every sound event with its peak level in dBFS
-and the functions that make its variants; it writes `assets/sounds/<event>_<n>.wav`. The
+and the functions that make its variants; it writes `art/generated/sounds/<event>_<n>.wav`. The
 sounds themselves are in `footsteps.py`, `work.py`, `ui.py`, `weather.py` and `animals.py`,
 built from the filters, noise, tones and envelopes of `dsp.py`. A variant is a function that
 takes a random generator and returns samples.
 
 | Command | What it does |
 |---|---|
-| `make assets` | Generates the sounds, then runs `check.py` on them. |
+| `make art` | Generates the sounds, then runs `check.py` on them (`make assets` copies them to assets/sounds/). |
 | `.venv/bin/python tools/audio/check.py --table` | Checks every file (format, clipping, DC offset, clicks, loop seams) and prints length, peak and level of each. |
 | `.venv/bin/python tools/audio/preview.py out.wav` | Joins all sounds into one WAV to listen to, and prints when each starts. |
 
