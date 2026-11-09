@@ -916,46 +916,34 @@ def path():
 
 # Tilled soil --------------------------------------------------------------------------------------
 
-# The ridges of tilled soil, four to a tile, run along the field: a lit crest, its slope and a dark
-# furrow, from the top of a ridge down. The furrow line wobbles by a pixel along the row, the same
-# in every tile, so the rows run on across tiles and the wet look (soil_wet) lies on them.
+# The furrows of tilled soil run straight along the field, every 8 pixels: from the top of a ridge
+# down, a lit crest, its slope, its body and a dark furrow. Every pixel depends only on its place in
+# the 32 px tile, which repeats on both axes, so a bed of any size is one pattern and the tiles show
+# no seams, however the dual grid cuts them.
 _RIDGE = ("soil_mid", "soil_mid", "soil_mid", "soil", "soil", "soil", "soil_dark", "soil_dark")
-_RIDGE_WOBBLE = periodic_noise(81, [(2, 1.0), (3, 0.5)])
-# Crumbs: a pixel here and there a step up or down its ridge, so the bands are ragged like earth.
-_CRUMBS = [[random.Random(83 * GAME_TILE * y + x).choice((-1, 0, 0, 0, 0, 0, 1)) for x in range(GAME_TILE)]
-           for y in range(GAME_TILE)]
 # Where the crest catches the light: along most of it, in broken stretches.
 _CREST_LIGHT = periodic_noise(82, [(5, 1.0), (7, 0.7)])
+# Crumbs: a few single pixels of the next shade up or down, so the rows are earth and not stripes.
+_CRUMBS = [[random.Random(83 * GAME_TILE * y + x).choice((-1, 0, 0, 0, 0, 0, 0, 0, 0, 1)) for x in range(GAME_TILE)]
+           for y in range(GAME_TILE)]
+_RIDGE_SHADES = ("soil_dark", "soil", "soil_mid", "soil_light")
 
 
-def _ridge_step(x, y):
-    """How far down its ridge a pixel of the soil lies, 0 (the crest) to 7 (the furrow)."""
+def _soil_pixel(x, y):
+    """The colour of the tilled soil at a pixel of the tile; the same for every tile."""
+    step = y % len(_RIDGE)
+    if step == 0 and _CREST_LIGHT(x, y) > -0.3:
+        return "soil_light"
+    colour = _RIDGE[step]
     crumb = _CRUMBS[y % GAME_TILE][x % GAME_TILE]
-    return (y + round(1.2 * _RIDGE_WOBBLE(x, y)) + crumb) % len(_RIDGE)
+    return _RIDGE_SHADES[min(max(_RIDGE_SHADES.index(colour) + crumb, 0), len(_RIDGE_SHADES) - 1)]
 
 
 def _tilled(seed):
-    rng = random.Random(seed)
-    tile = blank(GAME_TILE)
-    for y in range(GAME_TILE):
-        for x in range(GAME_TILE):
-            step = _ridge_step(x, y)
-            # One soft row of light on the crest, so the ridges read as earth and not as logs.
-            tile[y][x] = "soil_light" if step == 0 and _CREST_LIGHT(x, y) > -0.3 else _RIDGE[step]
-    # Clods on the crests and the odd stone in a furrow break the rows up.
-    for _ in range(rng.randrange(5, 9)):
-        x, y = rng.randrange(GAME_TILE - 3), rng.randrange(GAME_TILE - 2)
-        if _ridge_step(x, y) <= 1:
-            stamp(tile, sprite({"l": "soil_light", "m": "soil", "d": "soil_dark"}, "ll.", "mmd"), x, y)
-    for _ in range(rng.randrange(0, 3)):
-        x, y = rng.randrange(GAME_TILE - 2), rng.randrange(GAME_TILE)
-        if _ridge_step(x, y) == 6:
-            stamp(tile, sprite({"s": "stone", "d": "stone_dark"}, "sd"), x, y)
-    return tile
+    return [[_soil_pixel(x, y) for x in range(GAME_TILE)] for y in range(GAME_TILE)]
 
 
 def soil():
-    fulls = [_tilled(seed) for seed in (81, 82, 83, 84)]
     shapes = edge_shapes(80, [(1, 1.0), (2, 0.5)], 0.06)
 
     def decorate(tile, covered, rng):
@@ -967,8 +955,9 @@ def soil():
                     continue
                 tile[y][x] = "soil_dark" if not covered(x, y - 1) or not covered(x - 1, y) else "soil"
 
-    # A tilled field is the player's work, so it stays free of decorations.
-    return edge_tiles(_tilled, shapes, 80, decorate) + fulls, []
+    # A tilled field is the player's work, so it stays free of decorations, and all its tiles
+    # are one: there is no variant to show where the tiles end.
+    return edge_tiles(_tilled, shapes, 80, decorate) + [_tilled(0)], []
 
 
 def soil_wet():
@@ -987,8 +976,8 @@ def soil_wet():
             for x in range(GAME_TILE):
                 to_border = min(x, y, GAME_TILE - 1 - x, GAME_TILE - 1 - y)
                 if patches(x, y) - 1.4 * max(0.0, 1 - to_border / 7) > level:
-                    step = _ridge_step(x + half, y + half)
-                    colour = "soil_dark" if level < 0 and step >= 5 else darker[_RIDGE[step]]
+                    is_furrow = (y + half) % len(_RIDGE) >= 5
+                    colour = "soil_dark" if level < 0 and is_furrow else darker[_soil_pixel(x + half, y + half)]
                     tile[y][x] = colour
         tiles.append(tile)
     return tiles

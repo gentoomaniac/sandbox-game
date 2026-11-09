@@ -738,20 +738,10 @@ def path():
 
 
 def soil():
-    clod = sprite({"l": "soil_light", "m": "soil_mid"}, "l", "m")
-
-    # Tilled rows: a lit ridge, its body, and a dark furrow, every 4 pixels.
-    base = [[("soil_light", "soil_mid", "soil", "soil_dark")[y % 4]] * TILE for y in range(TILE)]
-
-    def variant(seed):
-        rng = random.Random(seed)
-        tile = copy(base)
-        # A few clods break up the rows.
-        for _ in range(rng.randrange(3, 6)):
-            stamp(tile, clod, rng.randrange(1, 15), rng.randrange(0, 4) * 4 + 1)
-        return tile
-
-    fulls = [variant(seed) for seed in (81, 82, 83, 84)]
+    # Tilled rows: a lit ridge, its body, and a dark furrow, every 4 pixels. Every pixel depends
+    # only on its row, so the tiles of a bed show no seams, however the dual grid cuts them.
+    rows = ("soil_light", "soil_mid", "soil", "soil_dark")
+    plain = [[rows[y % 4]] * TILE for y in range(TILE)]
     shapes = edge_shapes(80, [(1, 1.0), (2, 0.5)], 0.08)
 
     def decorate(tile, covered, rng):
@@ -764,7 +754,7 @@ def soil():
                     tile[y][x] = "soil_mid"
 
     # A tilled field is the player's work, so it stays free of decorations.
-    return edge_tiles(lambda seed: copy(base), shapes, 80, decorate) + fulls, []
+    return edge_tiles(lambda seed: copy(plain), shapes, 80, decorate) + [copy(plain)], []
 
 
 LAYERS = [

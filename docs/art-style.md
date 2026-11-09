@@ -128,10 +128,10 @@ an outline: a base colour with single blade roots and small tufts (a dark root f
 lit tips, `terrain.tufts`) gathered in patches by a noise (`patch_noise`), few light pixels, no
 outline on any terrain; where a layer lies over another its edge is a rim in its own dark
 shade or a dither. Round things (pebbles with their shadow, lily pads with their notch,
-toadstools, pools) are shaded with forms.py. Tilled soil has four ridges to a tile, the crest
-one broken row of `soil_light`, the bands ragged by a pixel and the field's edge dark under
-the turf, so the rows read as earth and not as stacked logs; its wet look darkens the same
-ridges in patches (`terrain.soil_wet`). The path is packed earth worn pale in patches, dark
+toadstools, pools) are shaded with forms.py. Tilled soil is flat with straight furrows, four ridges to a tile: the crest
+one broken row of `soil_light`, a few single crumbs of the next shade, and the field's edge dark
+under the turf. Every pixel depends only on its place in the tile, so a bed is one pattern with no
+seams or variants; its wet look darkens the same ridges in patches (`terrain.soil_wet`). The path is packed earth worn pale in patches, dark
 under the turf at its edge with blades leaning in; the tidal mud has wavy ripple marks with
 dark troughs, which the tide fills first. In autumn the grass of the marsh stays green with
 olive tips and only the dry grass of the Geest turns straw (`seasons.LAYER_REMAPS`); the salt
