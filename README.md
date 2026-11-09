@@ -583,7 +583,7 @@ These are the default keys; all of them can be changed under Settings → Contro
 | F3 | Show coordinates and weather values |
 | F7 | Switch between the new and the classic art |
 | F9 | Quick save: save the game now, in the background |
-| F8 | Quick load: go back to the last save at once, without asking ("No save to load" if there is none) |
+| F8 | Quick load: go back to the last save at once, without asking ("No save to load" if there is none; a save that holds things the game no longer has asks first) |
 
 ## Running the game
 
@@ -621,8 +621,12 @@ background, so the game does not stop: "Saving..." and then "Saved" show at the 
 save in red. Quitting waits for a save that is running.
 
 A save is checked before the game is built from it. One that is damaged (a negative count, a
-missing field, a map that is not there...) is not loaded: the log says what is wrong and where, and
-the game keeps the file as `world.json.bak` and starts a new world.
+missing field, a map that is not there...) is not loaded: the game says what is wrong and where,
+moves the file to a dated backup such as `world.2026-11-09_21-45-03.json.bak` and starts
+a new world. A save that is whole but holds things the game no longer has (an item or object that
+was removed) asks you: load it anyway, leaving those things out (playing on may run into problems;
+the file only changes when the game next saves, and a copy of the old save is kept as a dated
+backup of that kind first), or cancel, which closes the game without touching the file.
 
 Saves go to `user://saves/world.json` and settings to `user://settings.cfg`. To start a
 fresh world, run `godot --path . -- --new-game`.

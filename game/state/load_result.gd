@@ -31,6 +31,9 @@ var missing: Array[String] = []
 ## Where the old save is copied to if the player loads it without what is missing (outcome ASK).
 var backup_path := ""
 
+## Why the backup copy could not be made, after `load_dropping_missing` gave null.
+var copy_error := ""
+
 var _path: String
 var _game: Dictionary
 var _validator: SaveValidator
@@ -81,7 +84,8 @@ static func lines(entries: Array[String]) -> String:
 ## it goes). Returns null, and loads nothing, if that copy can't be made.
 func load_dropping_missing() -> GameState:
 	assert(outcome == Outcome.ASK, "Nothing is missing from this save")
-	if not SaveFile.copy_aside(_path, backup_path):
+	copy_error = SaveFile.copy_aside(_path, backup_path)
+	if copy_error != "":
 		return null
 	_validator.drop_missing()
 	state = GameState.from_dict(_game)

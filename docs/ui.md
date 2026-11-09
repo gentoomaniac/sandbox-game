@@ -85,6 +85,10 @@ E does nothing while it is open.
 - **Backdrop click:** `closes_on_backdrop_click = true` closes on a left click outside the panel.
   A window that uses those clicks itself overrides `_on_backdrop_input(event)`; it should then
   set `_panel.mouse_filter` to ignore, so clicks on the panel reach it.
+- **Asking the player:** `ChoiceDialog` is a ready window for a question with a few answers:
+  `ask(title, text, choices, safe_choice)`, then `await dialog.answered` gives the index of the
+  button pressed; Escape and anything else that closes it answer `safe_choice`, which is also the
+  button that has the focus. It pauses the game and sits above the pause menu. Main owns one.
 - **Dragging stacks:** a window that moves inventory stacks (the character and the chest screen)
   uses SlotView, which is Godot's own drag and drop (`_get_drag_data`, `_can_drop_data`,
   `_drop_data`, `set_drag_preview`) on a slot bound to its ItemSlots or Equipment (`bind_to`),

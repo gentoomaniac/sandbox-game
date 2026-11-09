@@ -34,6 +34,22 @@ func test_agreeing_does_not_change_the_file_and_keeps_a_copy_of_it() -> void:
 	assert_eq(FileAccess.get_file_as_string(result.backup_path), before)
 
 
+func test_without_a_copy_of_the_old_save_nothing_is_loaded_and_the_file_stays() -> void:
+	var game := _current_game()
+	_slots(game)[4] = {"item": "old_seeds", "count": 3}
+	var result := _question_about(game)
+	var before := FileAccess.get_file_as_string(SAVE_PATH)
+	result.backup_path = "user://test_save_upgrade/no_such_folder/world.json.bak"
+
+	assert_null(result.load_dropping_missing())
+
+	assert_string_contains(result.copy_error, "Can't copy")
+	assert_eq(result.outcome, LoadResult.Outcome.ASK)
+	assert_eq(FileAccess.get_file_as_string(SAVE_PATH), before)
+	assert_push_error_count(1)
+	assert_engine_error("Condition")
+
+
 func test_a_copy_never_replaces_an_earlier_backup() -> void:
 	var game := _current_game()
 	_slots(game)[4] = {"item": "old_seeds", "count": 3}

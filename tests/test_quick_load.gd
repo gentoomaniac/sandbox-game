@@ -24,6 +24,7 @@ func test_a_save_that_cannot_be_read_leaves_nothing_waiting_and_is_moved_aside()
 	assert_eq(QuickLoad.prepare(PATH), QuickLoad.Outcome.UNREADABLE)
 	assert_null(QuickLoad.take())
 	assert_push_error_count(1)
+	assert_eq([QuickLoad.moved_to], SaveFile.backups_of(PATH))
 
 
 func test_the_saved_game_is_kept_for_the_new_scene_and_given_once() -> void:
@@ -80,3 +81,42 @@ func test_the_restarted_scene_keeps_the_view_flags_and_drops_the_rest() -> void:
 	assert_eq(kept.weather, &"")
 	assert_false(kept.inventory)
 	assert_eq(kept.field, StartupOptions.NO_TILE)
+
+
+func _write_save_missing_an_item() -> void:
+	var game: Dictionary = JSON.parse_string(JSON.stringify(GameState.new_game(7).to_dict()))
+	game["player"]["inventory"]["slots"][4] = {"item": "old_seeds", "count": 3}
+	DirAccess.make_dir_recursive_absolute(DIR)
+	var file := FileAccess.open(PATH, FileAccess.WRITE)
+	file.store_string(JSON.stringify({"version": SaveFile.VERSION, "game": game}))
+	file.close()
+
+
+func test_a_save_with_missing_content_waits_for_the_answer_and_the_file_stays() -> void:
+	_write_save_missing_an_item()
+
+	assert_eq(QuickLoad.prepare(PATH), QuickLoad.Outcome.MISSING_CONTENT)
+
+	assert_eq(QuickLoad.missing(), ["item old_seeds in player inventory slot 4"] as Array[String])
+	assert_null(QuickLoad.take(), "nothing is kept before the player agrees")
+	assert_true(FileAccess.file_exists(PATH))
+
+
+func test_agreeing_keeps_the_game_without_what_is_missing() -> void:
+	_write_save_missing_an_item()
+	QuickLoad.prepare(PATH)
+
+	assert_true(QuickLoad.backup_path().ends_with(".json.bak"))
+	assert_true(QuickLoad.load_dropping_missing())
+
+	assert_eq(QuickLoad.take().player.inventory.item_in(4), ItemTypes.NONE)
+
+
+func test_cancelling_keeps_nothing_and_the_file_stays() -> void:
+	_write_save_missing_an_item()
+	QuickLoad.prepare(PATH)
+
+	QuickLoad.cancel()
+
+	assert_null(QuickLoad.take())
+	assert_true(FileAccess.file_exists(PATH))

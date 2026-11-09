@@ -158,12 +158,14 @@ static func move_aside(path: String) -> String:
 
 
 ## Copies the save at `path` to `backup` (see `free_backup_path`), for a save that is about to be
-## loaded in a way that its next write changes. Returns whether it worked.
-static func copy_aside(path: String, backup: String) -> bool:
+## loaded in a way that its next write changes. Returns what went wrong, or "" if it worked.
+static func copy_aside(path: String, backup: String) -> String:
 	var error := DirAccess.copy_absolute(path, backup)
-	if error != OK:
-		push_error("Can't copy %s to %s: %s" % [path, backup, error_string(error)])
-	return error == OK
+	if error == OK:
+		return ""
+	var problem := "Can't copy %s to %s: %s" % [path, backup, error_string(error)]
+	push_error(problem)
+	return problem
 
 
 ## Brings the data of a save of `version` up to the current one.

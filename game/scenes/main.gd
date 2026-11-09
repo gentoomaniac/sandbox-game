@@ -31,6 +31,10 @@ var _audio := AudioService.new()
 var _sounds := GameSounds.new()
 var _ambience := AmbienceSounds.new()
 var _menu: PauseMenu
+## Asks the player what the game must not decide: a save with content the game no longer has, a
+## save that is refused, a save that failed before quitting.
+var _choice_dialog := ChoiceDialog.new()
+var _save_questions := SaveQuestions.new(_choice_dialog)
 var _tooltip_view := TooltipView.new()
 var _options := StartupOptions.from_command_line()
 var _player_view := PlayerView.new()
@@ -117,7 +121,14 @@ func _ready() -> void:
 		set_process_unhandled_input(false)
 		get_tree().quit(1)
 		return
-	_load_game()
+	await _load_game()
+	if _state == null:
+		# The player cancelled. Nothing else runs before the quit, which takes effect at the end
+		# of the frame: there is no game for `_process` to tick.
+		set_process(false)
+		set_process_unhandled_input(false)
+		get_tree().quit()
+		return
 	# The steps depend on each other in this order:
 	# - the views are made before they are connected, and all of them before the options act on
 	#   them;
@@ -140,6 +151,7 @@ func _ready() -> void:
 ## The settings, the audio and the game, with the flags that change the game applied.
 func _load_game() -> void:
 	_settings = _load_settings()
+	add_child(_choice_dialog)
 	_apply_ui_scale(_settings.ui_scale)
 	# Before add_child: AudioService._ready reads is_logging.
 	_audio.is_muted = _options.mute
@@ -154,7 +166,9 @@ func _load_game() -> void:
 	_settings.art_set_changed.connect(
 		func() -> void: ArtSet.show(_settings.is_classic_art, get_tree())
 	)
-	_state = _load_or_start_game()
+	_state = await _load_or_start_game()
+	if _state == null:
+		return
 	_state.energy_drain = _settings.energy_drain_factor()
 	_settings.drain_changed.connect(
 		func() -> void: _state.energy_drain = _settings.energy_drain_factor()
@@ -312,6 +326,10 @@ func _apply_start_options() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		# Closed while the question about the save is up: there is no game to save yet.
+		if _state == null:
+			get_tree().quit()
+			return
 		_save_game()
 		get_tree().quit()
 
@@ -792,12 +810,33 @@ func _ride(look: StringName) -> void:
 
 
 ## The game F8 has just loaded, else the saved game, or a new one if there is no save or
-## `--new-game` is given. The first autosave after `--new-game` replaces the old save.
+## `--new-game` is given. The first autosave after `--new-game` replaces the old save. A save
+## that is refused is moved aside, the player is told, and a new game starts. A save that holds
+## content the game no longer has is up to the player: null if they cancel (the game then quits,
+## with the file as it was).
 func _load_or_start_game() -> GameState:
 	if _resumed_state != null:
 		return _resumed_state
-	var saved := null if _options.new_game else SaveFile.read(_options.save_path)
-	return saved if saved != null else GameState.new_game(WORLD_SEED)
+	if _options.new_game:
+		return GameState.new_game(WORLD_SEED)
+	var loaded := SaveFile.load_game(_options.save_path)
+	match loaded.outcome:
+		LoadResult.Outcome.READY:
+			return loaded.state
+		LoadResult.Outcome.REFUSED:
+			push_error("Can't load %s: %s" % [_options.save_path, "; ".join(loaded.problems)])
+			var moved_to := SaveFile.move_aside(_options.save_path)
+			await _save_questions.tell_refused(loaded.reason, moved_to)
+		LoadResult.Outcome.ASK:
+			if await _save_questions.is_missing_content_loaded(
+				loaded.missing, loaded.backup_path, "Cancel and quit the game"
+			):
+				var dropped := loaded.load_dropping_missing()
+				if dropped == null:
+					await _save_questions.tell_copy_failed(loaded.copy_error)
+				return dropped
+			return null
+	return GameState.new_game(WORLD_SEED)
 
 
 ## The settings, with the player's key bindings applied to the input map.
@@ -840,16 +879,33 @@ func _quick_save_or_load(event: InputEvent) -> bool:
 	return true
 
 
-## F8: puts the player into the last save, without asking. The whole scene starts again from
-## it, which leaves no view, window or paused state of the game before behind. Waits for a save
-## that runs, so the file read is the newest.
+## F8: puts the player into the last save, without asking (but for a save that holds content the
+## game no longer has: then the player decides, and Cancel keeps the game they are in). The whole
+## scene starts again from it, which leaves no view, window or paused state of the game before
+## behind. Waits for a save that runs, so the file read is the newest.
 func _quick_load() -> void:
 	_saves.wait()
-	match QuickLoad.prepare(_options.save_path):
+	var outcome := QuickLoad.prepare(_options.save_path)
+	if outcome == QuickLoad.Outcome.MISSING_CONTENT:
+		if not await _save_questions.is_missing_content_loaded(
+			QuickLoad.missing(), QuickLoad.backup_path(), "Cancel"
+		):
+			QuickLoad.cancel()
+			return
+		if not QuickLoad.load_dropping_missing():
+			_notifications.post(
+				LOAD_NOTE, "Can't keep a copy of the save", NotificationHud.Tone.ERROR
+			)
+			return
+		outcome = QuickLoad.Outcome.READY
+	match outcome:
 		QuickLoad.Outcome.NO_SAVE:
 			_notifications.post(LOAD_NOTE, "No save to load")
 		QuickLoad.Outcome.UNREADABLE:
-			_notifications.post(LOAD_NOTE, "The save can't be loaded", NotificationHud.Tone.ERROR)
+			var note := "The save can't be loaded"
+			if QuickLoad.moved_to != "":
+				note += ": moved to %s" % QuickLoad.moved_to.get_file()
+			_notifications.post(LOAD_NOTE, note, NotificationHud.Tone.ERROR)
 		QuickLoad.Outcome.READY:
 			if get_tree().reload_current_scene() != OK:
 				QuickLoad.take()

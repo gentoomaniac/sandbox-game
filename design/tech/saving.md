@@ -12,7 +12,8 @@
 - On start, the game loads the save if there is one, otherwise it starts a new game (`--new-game` forces
   one).
 - **Quick save and quick load** (task 145): F9 saves now in the background; F8 loads the last
-  save file without asking (the user: "quick load generally doesn't ask in games"), after
+  save file without asking (the user: "quick load generally doesn't ask in games"; only a save
+  with content the game no longer has asks, see below), after
   waiting for a save that runs. Both are rebindable actions (`quick_save`, `quick_load`) in the
   controls page. F8 reads the save and starts the game scene again from it (`Main` hands the
   loaded `GameState` to the new scene), so no view, window or paused state is left over; the
@@ -48,9 +49,20 @@
   problem has its place, "player inventory slot 4: count -7 is not between 1 and 99". Nothing is
   built from a save with a problem: `SaveFile.load_game` gives a `LoadResult` (no save, refused,
   ready) and the file is not touched; `SaveFile.read` and the game's start move a refused save
-  aside to `world.json.bak` as before and start a new game. `from_dict` stays strict behind the
+  aside (as a dated backup, below) and start a new game. `from_dict` stays strict behind the
   validator (it asserts); assertions are for internal invariants, the validator is the input
   check. A new save field gets its check in the validator in the same commit.
 - **Content the game no longer has** (an item, object, tree, recipe or animal id that was
-  removed) is not damage: the validator lists it apart (`missing`). For now it is treated like
-  damage; the question to the player comes next.
+  removed) is not damage: the validator lists it apart (`missing`) and the player decides (the
+  user, 2026-11-09). A `ChoiceDialog` at the start says what is missing and offers "Load anyway,
+  dropping what is missing" (the game then leaves those things out; the text says plainly that
+  playing on may run into problems and that the file only changes when the game next saves, which
+  the autosave and the quit save also do) or "Cancel and quit the game", which leaves the file as
+  it is. Agreeing first copies the old save to a backup (the dialog names it),
+  so nothing is lost when that next save writes the game without the missing things; if the copy
+  can't be made the save is not loaded. Nothing is dropped silently. F8 asks the same when the last
+  save holds missing content (Cancel keeps the game being played); a save without missing content
+  still loads without a question. A damaged save is refused with a `ChoiceDialog` that lists what
+  is wrong and says where the file went (the F8 note says so too); the game then starts anew.
+  Backups are named with the date and time, `world.2026-11-09_21-45-03.json.bak` (a number is added
+  if two land in the same second), so they sort by age and one never replaces another.
