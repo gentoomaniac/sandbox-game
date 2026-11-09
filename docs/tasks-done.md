@@ -3472,3 +3472,22 @@ in progress."
   quit).
 
 Started 2026-11-09 ("Start implementing auto save and quick save/load").
+
+## 142. Review R7: only what is near is drawn and scanned
+
+- [x] Done
+
+Review A1 and package R7, moved up by the user on 2026-11-09 ("there's already some performance
+weakness"). Saved things stay saved; only drawing and scanning get bounded.
+- Ground piles: a spatial index by chunk, sprites only for piles near the player (created and freed
+  as the player moves, as farm animals already are), and pick-up and settling asking the index
+  instead of scanning every pile. Piles that are pulled toward the player move between cells.
+- Villagers: a view only for those near the player; their state goes on as now.
+- World edits replayed by chunk instead of scanning all edits on every chunk load; the wet-soil
+  marks counted in what stays resident.
+- No expiry or despawning of saved piles; no change to how far anything reaches in play.
+- Tests: 10,000 distant piles and a few near give sprites for the near ones only; leaving and
+  coming back, entering a house, saving and loading, picking up and switching art keep every pile
+  right. Measure before and after (node counts, frame time in a big save copy) and report it.
+
+Done: piles indexed by chunk (pick-up and settling look at the player's chunk and its neighbours); pile sprites and villager views only within the chunks the world view draws, kept one chunk further; edits replayed per chunk; wet-soil marks counted. Fixture save (9,939 piles, 154 villagers, 27,561 tilled tiles, headless Main): nodes 21,804 to 1,074; mean frame 37.2 ms to 7.3 ms; world settled 8.9 s to 5.9 s. See design/tech/world-objects-and-edits.md.

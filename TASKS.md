@@ -249,23 +249,6 @@ Review F2 and package R3 (plus A5 and the rest of R5).
   freeing an open chest window, world A then B), and counts of nodes settling after repeated
   open, close and free cycles.
 
-## 142. Review R7: only what is near is drawn and scanned
-
-- [ ] Done
-
-Review A1 and package R7, moved up by the user on 2026-11-09 ("there's already some performance
-weakness"). Saved things stay saved; only drawing and scanning get bounded.
-- Ground piles: a spatial index by chunk, sprites only for piles near the player (created and freed
-  as the player moves, as farm animals already are), and pick-up and settling asking the index
-  instead of scanning every pile. Piles that are pulled toward the player move between cells.
-- Villagers: a view only for those near the player; their state goes on as now.
-- World edits replayed by chunk instead of scanning all edits on every chunk load; the wet-soil
-  marks counted in what stays resident.
-- No expiry or despawning of saved piles; no change to how far anything reaches in play.
-- Tests: 10,000 distant piles and a few near give sprites for the near ones only; leaving and
-  coming back, entering a house, saving and loading, picking up and switching art keep every pile
-  right. Measure before and after (node counts, frame time in a big save copy) and report it.
-
 ## 143. Review R6: player actions are checked where they are done, and say what happened
 
 - [ ] Done
