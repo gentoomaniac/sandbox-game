@@ -377,12 +377,17 @@ placed (a chest, a workbench, a kiln) under it is tinted red, with a message of 
 Hold Space or the click for a second to take it down. A building gives back half of each
 material, rounded down, in front of its door; the furniture it came with goes with it. It
 stands while you are inside, or while anything you put in it is left (the message says so).
-If your bed was in it, you wake at the camp's sleeping bag again. A placed thing goes into the
+If your bed was in it, your home goes back to the spot of the camp's bedroll: you wake in it if
+it still lies there, else at the world's start point. A placed thing goes into the
 inventory whole, with what it holds, or onto the ground when the inventory is full. The
 camp's campfire and bedroll are taken down the same way and come back as items to set up
-elsewhere. X again goes back to building.
+elsewhere (the home bed follows a bedroll you set up when your own is gone; with no bed at
+all you wake at the world's start point, where a new game begins, decided 2026-11-09). Held
+like a chest, the bedroll shows its ghost where it fits. X again goes back to building.
 
 ![Taking down: a shack marked red, and what it gives](docs/screenshots/take-down.png)
+
+![The bedroll in hand: its ghost on the free ground below the camp](docs/screenshots/bedroll-ghost.png)
 
 ### Character, inventory and equipment
 

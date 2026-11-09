@@ -179,26 +179,6 @@ come earlier.
 - Not saved, not remembered. Bubbles drawn in palette colours, readable at every zoom; a
   screenshot in the README.
 
-## 137. The camp's bedroll and campfire: take them down, craft them, set them up elsewhere
-
-- [ ] Done
-
-The user, 2026-11-08 (a later idea then): today the bedroll and the campfire come with the camp
-and stay where they are; let the player take them down (as task 83 does for buildings and placed
-things) and build them again elsewhere, with sensible materials (straw and a wool blanket; stones
-and wood), keeping the bed the player wakes in (task 78) and the campfire's cooking station
-working wherever they stand. Started 2026-11-09 ("also start the deconstructible campfire and
-sleeping roll. Add to that task to be able to craft them"):
-- Taking down with the hammer gives the bedroll or the campfire back as an item (or its
-  materials, if that reads better; decide and say), like other placed things.
-- Both can be crafted (data/recipes.cfg, the crafting menu; by hand or at a station, whichever
-  fits the other recipes), and the item is placed like other placed things.
-- The bed the player wakes in follows a bedroll that is moved; if the only bed is taken down,
-  the player still has somewhere to wake (design/player/energy-and-sleep.md says there is always
-  a bed; keep that true or say what changes). The campfire cooks wherever it stands.
-- Saves keep working (a save upgrade if the camp's objects change shape); tests; docs (the
-  design pages for sleep, crafting and building) and README.
-
 ## 138. The chat window never gets bigger than the window
 
 - [ ] Done

@@ -51,7 +51,14 @@
       data file (`data/energy.cfg`).
     - The energy drain setting: Low ×0.5, Normal ×1, High ×1.5.
 - **Home is the last bed the player slept in**, like a spawn point. Passing out wakes the
-  player there.
+  player there. The bedroll can be taken down and set up elsewhere (task 137): if it was the
+  home bed, the home has no bed until one is set up, and that bed becomes home. **With no bed
+  at home** (taken down, or something else standing on its tile) passing out wakes the player
+  standing at the world's start point, the spot where a new game begins (like a world spawn;
+  `CampSite.spawn_of_seed`, derived from the seed, so nothing new is saved), and that spot is
+  home until a bed is set up or slept in (decided by the user, 2026-11-09). If something now
+  stands on the start point the player is put on the nearest free ground. A bedroll set up
+  while another bed is home leaves the home alone until the player sleeps in it.
 - **Waking in the bed** (decided 2026-11-06, after a player woke behind a bed and was stuck):
   after sleeping and after passing out the player wakes lying in the middle of the bed, head
   on the pillow and the body under the blanket (the asleep frame of the collapse, turned to
@@ -65,9 +72,10 @@
   bed) walks through objects, not walls, until they are free, so nobody is stuck.
   Nothing of this is saved: a game saved in bed loads with the player standing on it.
 - **Starting shelter:** the game starts at a small camp site with a fireplace and a
-  bedroll, so there is always a bed. The bedroll (task 52, replacing a modern sleeping bag)
-  is a straw sack with a rolled grey wool blanket; its type id stays `sleeping_bag`, so
-  saves and `data/energy.cfg` are unchanged. It has snow and frost looks.
+  bedroll, so there is a bed at the start (it is no longer always there: the player can take
+  it down, see Home above). The bedroll (task 52, replacing a modern sleeping bag) is a straw
+  sack with a rolled grey wool blanket; its type id stays `sleeping_bag`, so saves and
+  `data/energy.cfg` are unchanged. It has snow and frost looks.
 - **The player can sleep without a bed** (on the ground, anywhere), with a real penalty:
   - energy fills to only 50 %;
   - it does not set home;

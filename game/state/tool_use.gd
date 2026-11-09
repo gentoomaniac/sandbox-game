@@ -171,8 +171,10 @@ func _do_use(target: Vector2i) -> Use:
 			_dig(target)
 		Use.PLACE:
 			var held := _state.player.inventory.held_item()
-			_state.current_map.add_object(WorldObject.new(ItemTypes.TYPES[held]["places"], target))
+			var placed := WorldObject.new(ItemTypes.TYPES[held]["places"], target)
+			_state.current_map.add_object(placed)
 			_state.player.inventory.remove(held, 1)
+			_state.make_home_if_bedless(placed)
 		Use.TAKE_DOWN:
 			var items := items_of_placed(_state.current_map.remove_object(target))
 			# `use_at` already checked that it all fits (or answered NO_ROOM).

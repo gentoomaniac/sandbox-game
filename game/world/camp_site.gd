@@ -33,6 +33,13 @@ static func sleeping_bag_of_seed(world_seed: int) -> Vector2i:
 	return _find_clearing(scratch_world, WorldGenerator.new(world_seed)) + SLEEPING_BAG_OFFSET
 
 
+## Where a new game with this seed starts the player: the world's start point, where a player
+## with no bed to wake in wakes up.
+static func spawn_of_seed(world_seed: int) -> Vector2i:
+	var scratch_world := World.new(world_seed, GameClock.new())
+	return _find_clearing(scratch_world, WorldGenerator.new(world_seed)) + SPAWN_OFFSET
+
+
 ## The centre of the clearing nearest to the world centre.
 static func _find_clearing(world: World, generator: WorldGenerator) -> Vector2i:
 	for radius in MAX_SEARCH_RADIUS:

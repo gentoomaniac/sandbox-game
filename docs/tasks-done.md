@@ -3387,3 +3387,34 @@ and not planted by a player". The 32 px sapling (tools/art/trees.py, `sapling`) 
 band tying the stem to it; draw it without them, in every species and season look, and check the
 classic set (tools/art/classic/trees.py) has none either. Screenshots where the README shows
 saplings.
+
+## 137. The camp's bedroll and campfire: take them down, craft them, set them up elsewhere
+
+- [x] Done
+
+The user, 2026-11-08 (a later idea then): today the bedroll and the campfire come with the camp
+and stay where they are; let the player take them down (as task 83 does for buildings and placed
+things) and build them again elsewhere, with sensible materials (straw and a wool blanket; stones
+and wood), keeping the bed the player wakes in (task 78) and the campfire's cooking station
+working wherever they stand. Started 2026-11-09 ("also start the deconstructible campfire and
+sleeping roll. Add to that task to be able to craft them"):
+- Taking down with the hammer gives the bedroll or the campfire back as an item (or its
+  materials, if that reads better; decide and say), like other placed things.
+- Both can be crafted (data/recipes.cfg, the crafting menu; by hand or at a station, whichever
+  fits the other recipes), and the item is placed like other placed things.
+- The bed the player wakes in follows a bedroll that is moved; if the only bed is taken down,
+  the player still has somewhere to wake (design/player/energy-and-sleep.md says there is always
+  a bed; keep that true or say what changes). The campfire cooks wherever it stands.
+- Saves keep working (a save upgrade if the camp's objects change shape); tests; docs (the
+  design pages for sleep, crafting and building) and README.
+
+Done: the campfire and bedroll are items (`ItemTypes.FIREPLACE`, `SLEEPING_BAG`, ids of their
+objects) the hammer takes down whole and the player sets up outdoors; recipes by hand (campfire
+6 stone + 3 logs, bedroll 6 hay + 4 fibre: no wool or linen item exists); the home follows a
+bedroll set up while the home has no bed (`GameState.make_home_if_bedless`), and `_home_bed`
+ignores a non-bed on the old tile; with no bed at all the player wakes at the world's start
+point (`CampSite.spawn_of_seed`, decided by the user 2026-11-09), put on free ground if it is
+taken ("there is always a bed" holds only at the start, see energy-and-sleep.md). The campfire's
+cooking is the hearth station wherever it stands. No save change: the camp objects were
+already edits (tests/test_camp_objects.gd). The bedroll's ghost is in
+docs/screenshots/bedroll-ghost.png.

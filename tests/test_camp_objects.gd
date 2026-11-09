@@ -84,6 +84,63 @@ func test_the_bedroll_needs_both_its_tiles_free() -> void:
 	assert_ne(_state.use_at(_tile), ToolUse.Use.PLACE)
 
 
+func test_the_home_follows_the_bedroll_that_is_set_up_again() -> void:
+	_state.player.position = Vector2(_camp_bed.pos) + Vector2(2.5, 0.5)
+	_take_down(_camp_bed)
+	var moved := _set_up(ItemTypes.SLEEPING_BAG)
+	assert_eq(_state.player.home_bed, moved.pos)
+	_state.player.position += Vector2(6, 0)
+	_state.pass_out()
+	assert_eq(_state.player.bed_lying_in, moved)
+	assert_eq(_state.player.tile(), moved.pos + Vector2i(0, 1))
+
+
+func test_a_bedroll_set_up_while_another_bed_is_home_leaves_the_home_alone() -> void:
+	_set_up(ItemTypes.SLEEPING_BAG)
+	assert_eq(_state.player.home_bed, _camp_bed.pos)
+
+
+func test_without_any_bed_the_player_wakes_at_the_start_point_and_that_is_home() -> void:
+	var start := _camp_bed.pos + Vector2i(0, 2)
+	assert_eq(CampSite.spawn_of_seed(SEED), start)
+	_state.player.position = Vector2(_camp_bed.pos) + Vector2(2.5, 0.5)
+	_take_down(_camp_bed)
+	_state.pass_out()
+	assert_null(_state.player.bed_lying_in)
+	assert_eq(_state.player.tile(), start)
+	assert_eq(_state.player.home_bed, start)
+
+
+func test_something_else_on_the_old_bedroll_spot_is_no_bed() -> void:
+	_state.player.position = Vector2(_camp_bed.pos) + Vector2(2.5, 0.5)
+	_take_down(_camp_bed)
+	_world.add_object(WorldObject.new(WorldObjectTypes.CHEST, _camp_bed.pos))
+	_state.pass_out()
+	assert_null(_state.player.bed_lying_in)
+	assert_eq(_state.player.tile(), _camp_bed.pos + Vector2i(0, 2))
+
+
+func test_a_start_point_with_something_on_it_does_not_trap_the_player() -> void:
+	var start := _camp_bed.pos + Vector2i(0, 2)
+	_take_down(_camp_bed)
+	_world.add_object(WorldObject.new(WorldObjectTypes.STONE, start))
+	_state.pass_out()
+	assert_ne(_state.player.tile(), start)
+	assert_true(PlayerState.can_stand_at(_state.current_map, _state.player.position))
+
+
+func test_a_moved_campfire_still_opens_the_hearths_cooking_menu() -> void:
+	_take_down(_camp_fire)
+	var moved := _set_up(ItemTypes.FIREPLACE)
+	assert_eq(moved.type, CAMPFIRE)
+	assert_eq(StationRules.default_rules().station_of(moved.type), &"hearth")
+	_state.player.position = Vector2(_tile) + Vector2(0.5, -0.5)
+	assert_eq(Interaction.object_to_open(_state, _tile), moved)
+	assert_has(RecipeRules.default_rules().recipes_at(&"hearth"), &"roast_turnip")
+	_state.player.inventory.add(ItemTypes.TURNIP, 1)
+	assert_eq(Crafting.new(_state).craft(&"roast_turnip"), Crafting.Result.CRAFTED)
+
+
 func test_the_moved_objects_are_in_the_save() -> void:
 	_take_down(_camp_fire)
 	var fire := _set_up(ItemTypes.FIREPLACE)

@@ -117,7 +117,7 @@ func test_the_taken_down_building_is_not_saved() -> void:
 	assert_true(_state.world.to_dict()["buildings"].is_empty())
 
 
-func test_waking_after_the_home_house_is_gone_stands_on_the_camp_spot_when_the_bag_is_gone(
+func test_waking_after_the_home_house_is_gone_stands_at_the_start_point_when_the_bag_is_gone(
 ) -> void:
 	var bed := _go_in().object_at(Vector2i(1, 2))
 	_stand_on(Vector2i(2, 3))
@@ -125,8 +125,10 @@ func test_waking_after_the_home_house_is_gone_stands_on_the_camp_spot_when_the_b
 	_go_out()
 	_state.take_down_building(_house)
 	# The test world has no camp objects: the spot is empty, as when the bag was picked up.
+	var start := CampSite.spawn_of_seed(SEED)
+	_state.world.add_chunk(Chunk.new(Chunk.world_to_chunk(start)))
 	_state.go_to_home_bed()
-	assert_eq(_state.player.tile(), CampSite.sleeping_bag_of_seed(SEED))
+	assert_eq(_state.player.tile(), start)
 	assert_false(_state.is_inside())
 	assert_null(_state.player.bed_lying_in)
 

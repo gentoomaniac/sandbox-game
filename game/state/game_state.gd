@@ -137,6 +137,14 @@ func sleep_in(bed: WorldObject) -> void:
 	player.health = maxf(player.health, fill)
 
 
+## A bed set up while the home has no bed (the bedroll that was home was taken down) becomes the
+## home: the bed follows the bedroll to where it is set up again.
+func make_home_if_bedless(bed: WorldObject) -> void:
+	if bed.is_bed() and _home_bed() == null:
+		player.home_map = current_map
+		player.home_bed = bed.pos
+
+
 ## The weather the player sees: at their tile, or outside the door of the house they are in
 ## (they would see it through its windows). A forced condition (see Console) replaces the
 ## simulated one.
@@ -332,17 +340,23 @@ func pass_out() -> int:
 
 
 ## Puts the player in their home bed, on its map (the world or the inside of a house): lying in
-## its middle until they move. A home with no bed any more (a loaded game that lost it) has them
-## standing on its tile.
+## its middle until they move. With no bed at the home (taken down, or something else on its
+## tile) they stand at the world's start point, where a new game begins, and that is home until a
+## bed is set up or they sleep in one (decided by the user, 2026-11-09). If something now
+## stands on that spot they are put on the nearest free ground.
 func go_to_home_bed() -> void:
 	_leave_horse()
 	_building_inside = _building_with_interior(player.home_map)
 	var bed := _home_bed()
-	if bed == null:
-		player.position = _tile_centre(player.home_bed)
-		player.bed_lying_in = null
-	else:
+	if bed != null:
 		_lie_in(bed)
+		return
+	_building_inside = null
+	player.home_map = world
+	player.home_bed = CampSite.spawn_of_seed(world.world_seed)
+	player.position = _tile_centre(player.home_bed)
+	player.bed_lying_in = null
+	put_player_on_free_ground()
 
 
 ## What taking a building down gives, item id to count: half of what it cost, rounded down
@@ -539,16 +553,20 @@ func _on_new_day(_day: int) -> void:
 	NightUpkeep.pass_night(world, occupied, weather)
 
 
-## The bed object of the home bed. A bed in the world may be in a chunk that is not loaded: that
-## chunk is generated for the look and dropped again, as in the console's `tp`.
+## The bed object of the home bed, or null if there is none at that tile now (the bedroll was
+## taken down, perhaps for something else to stand there). A bed in the world may be in a chunk
+## that is not loaded: that chunk is generated for the look and dropped again, as in the
+## console's `tp`.
 func _home_bed() -> WorldObject:
 	var coords := Chunk.world_to_chunk(player.home_bed)
+	var object: WorldObject
 	if player.home_map != world or world.is_chunk_loaded(coords):
-		return player.home_map.object_at(player.home_bed)
-	world.add_chunk(WorldGenerator.new(world.world_seed).generate_chunk(coords))
-	var bed := world.object_at(player.home_bed)
-	world.remove_chunk(coords)
-	return bed
+		object = player.home_map.object_at(player.home_bed)
+	else:
+		world.add_chunk(WorldGenerator.new(world.world_seed).generate_chunk(coords))
+		object = world.object_at(player.home_bed)
+		world.remove_chunk(coords)
+	return object if object != null and object.is_bed() else null
 
 
 ## The building whose interior this is, or null for the world.
