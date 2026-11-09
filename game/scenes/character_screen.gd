@@ -111,7 +111,13 @@ func _init(hotbar: HotbarHud) -> void:
 	_panel.add_child(page_column)
 
 
+## Showing another player lets go of the old one.
 func show_player(player: PlayerState) -> void:
+	if _player != null:
+		close()
+		_player.inventory.changed.disconnect(_refresh)
+		_player.equipment.changed.disconnect(_refresh)
+		get_viewport().size_changed.disconnect(_fit_character)
 	_player = player
 	_preview.show_appearance(player.appearance)
 	_skills_panel.show_skills(player.skills)

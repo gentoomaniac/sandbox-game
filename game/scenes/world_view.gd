@@ -192,8 +192,15 @@ func _add_overlay(overlay_name: String) -> TileMapLayer:
 	return tile_map
 
 
-## Shows a world, including the chunks that are already loaded in it.
+## Shows a world, including the chunks that are already loaded in it. Showing the world it shows
+## again does nothing; another world is refused, as its chunks, objects and houses would stay
+## drawn: make a new view.
 func show_world(world_to_show: World) -> void:
+	if world == world_to_show:
+		return
+	if world != null:
+		push_error("WorldView already shows another world")
+		return
 	world = world_to_show
 	# The view was made before Main chose the art set.
 	show_art_set()

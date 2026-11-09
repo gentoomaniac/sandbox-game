@@ -33,10 +33,19 @@ var _fade_buttons := {}
 var _total_label := Label.new()
 
 
+## The rows are made for the first skills shown; showing others lets go of the old ones.
 func show_skills(skills: Skills) -> void:
+	if _skills == null:
+		_add_rows(skills.rules)
+	else:
+		_skills.changed.disconnect(_refresh)
 	_skills = skills
+	skills.changed.connect(_refresh)
+	_refresh()
+
+
+func _add_rows(rules: SkillRules) -> void:
 	add_theme_constant_override("separation", ROW_GAP)
-	var rules := skills.rules
 	for skill in rules.skill_ids():
 		add_child(_skill_row(skill, rules))
 	add_child(_total_label)
@@ -45,8 +54,6 @@ func show_skills(skills: Skills) -> void:
 	rule.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	rule.custom_minimum_size.x = RULE_WIDTH
 	add_child(rule)
-	skills.changed.connect(_refresh)
-	_refresh()
 
 
 func _skill_row(skill: StringName, rules: SkillRules) -> HBoxContainer:

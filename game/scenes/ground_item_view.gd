@@ -31,8 +31,15 @@ var _sprites: Dictionary[GroundItem, Sprite2D] = {}
 var _hops: Dictionary[GroundItem, ItemHop] = {}
 
 
-## Shows the items of the world as the focus gets near them (see `set_focus`).
+## Shows the items of the world as the focus gets near them (see `set_focus`). Showing the world
+## it shows again does nothing; another world is refused, as the sprites and hops of the first
+## would stay: make a new view.
 func show_items(world: World, entities: Node2D) -> void:
+	if _world == world:
+		return
+	if _world != null:
+		push_error("GroundItemView already shows the items of another world")
+		return
 	_world = world
 	_entities = entities
 	add_to_group(ArtSet.VIEWS)

@@ -42,7 +42,13 @@ func _init() -> void:
 	_panel.add_child(column)
 
 
+## Showing the crafting of another game lets go of the old one's.
 func show_crafting(crafting: Crafting, inventory: Inventory) -> void:
+	if _crafting != null:
+		close()
+		_inventory.changed.disconnect(_refresh)
+		_crafting.practised.disconnect(_on_practised)
+		_crafting.player_skills().changed.disconnect(_refresh)
 	_crafting = crafting
 	_inventory = inventory
 	inventory.changed.connect(_refresh)

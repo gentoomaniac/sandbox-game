@@ -82,8 +82,13 @@ func release(borrower: Object) -> void:
 		view.stop_dragging()
 
 
+## Showing another inventory lets go of the old one; a screen that has the bar gets the new one.
 func show_inventory(inventory: Inventory) -> void:
+	if _inventory != null:
+		_inventory.changed.disconnect(_refresh)
 	_inventory = inventory
+	if _borrower != null:
+		acquire(_borrower)
 	inventory.changed.connect(_refresh)
 	_refresh()
 
