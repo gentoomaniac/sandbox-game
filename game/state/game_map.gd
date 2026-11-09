@@ -4,6 +4,12 @@ extends RefCounted
 ## made of Tile state and WorldObjects, so walking and sleeping work the same on either. A
 ## subclass says where its tiles and objects are.
 
+## An object was added, removed or changed on this tile of the map: one signal for each tile it
+## covers. The views of the map redraw it; they need not know what did it.
+signal objects_changed(pos: Vector2i)
+## The terrain of this tile changed (World also tells of its grass wearing to a path).
+signal tile_changed(pos: Vector2i)
+
 
 ## The tile at a position, or null where there is none.
 func tile_at(_pos: Vector2i) -> Tile:

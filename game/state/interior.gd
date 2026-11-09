@@ -42,6 +42,7 @@ func set_terrain(pos: Vector2i, terrain: Tile.Terrain) -> void:
 	var tile := Tile.new()
 	tile.terrain = terrain
 	_tiles[pos] = tile
+	tile_changed.emit(pos)
 
 
 ## Puts an object on every tile it covers.
@@ -49,6 +50,7 @@ func add_object(object: WorldObject) -> void:
 	for tile in object.tiles():
 		assert(not _objects.has(tile), "Interior tile %s is taken" % tile)
 		_objects[tile] = object
+		objects_changed.emit(tile)
 
 
 ## Takes the object that covers a tile off its tiles and returns it, or returns null if there is
@@ -58,6 +60,7 @@ func remove_object(pos: Vector2i) -> WorldObject:
 	if object != null:
 		for tile in object.tiles():
 			_objects.erase(tile)
+			objects_changed.emit(tile)
 	return object
 
 

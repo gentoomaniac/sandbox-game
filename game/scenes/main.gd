@@ -520,8 +520,6 @@ func _use_on(target: Targeting) -> void:
 	var use := _state.use_tile(target.tile)
 	_sounds.used(use, target.tile)
 	_tiredness_view.acted(use)
-	if _state.is_inside() and use in [ToolUse.Use.PLACE, ToolUse.Use.TAKE_DOWN]:
-		_interior_view.show_interior(_state.current_map)
 	if use == ToolUse.Use.GIVE_BONE:
 		_harvest_hud.show_note("The dog follows you.")
 	if use == ToolUse.Use.SADDLE:

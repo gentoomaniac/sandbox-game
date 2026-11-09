@@ -52,7 +52,9 @@ Warft and an Ewer here and there.
   horseback the use is `RIDING`; so the UI, the debug scenes and tests all get the same answer.
 - **GameMap** is a place the player can walk: either **World** or **Interior** (the inside of
   one building). The player is on one map at a time; the world stands still while they are
-  inside.
+  inside. Both tell their views the same way: `objects_changed(pos)` and `tile_changed(pos)`
+  (one per tile an object covers), so `WorldView` and `InteriorView` redraw from the map's own
+  signals and Main redraws nothing for particular tool results.
 - **World** holds the loaded chunks of tiles (`Tile`, `Chunk`), the objects on them
   (`WorldObject`: trees, crops, furniture), buildings and, in `ground_items` (`GroundItems`),
   the items lying on the ground. Line objects (Knicks, walls, fences, dykes) are one object per

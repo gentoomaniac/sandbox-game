@@ -80,8 +80,25 @@ func show_art_set() -> void:
 		show_interior(_interior)
 
 
+## Shows a room, and redraws it whenever its tiles or objects change. Showing another room lets go
+## of the old one.
 func show_interior(interior: Interior) -> void:
-	_interior = interior
+	if _interior != interior:
+		if _interior != null:
+			_interior.objects_changed.disconnect(_on_room_changed)
+			_interior.tile_changed.disconnect(_on_room_changed)
+		_interior = interior
+		_interior.objects_changed.connect(_on_room_changed)
+		_interior.tile_changed.connect(_on_room_changed)
+	_draw_room()
+
+
+func _on_room_changed(_pos: Vector2i) -> void:
+	_draw_room()
+
+
+func _draw_room() -> void:
+	var interior := _interior
 	_ground.clear()
 	for node in _furniture:
 		node.queue_free()

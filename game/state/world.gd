@@ -9,12 +9,6 @@ extends GameMap
 ## The world is centred on the origin: with MAX_SIZE_CHUNKS = 64, chunk coordinates run
 ## from -32 to 31 on both axes, so world tile positions run from -1024 to 1023.
 
-## An object was added or removed at this world tile position: one signal for each tile it
-## covers.
-signal objects_changed(world_pos: Vector2i)
-## A tile's terrain was changed (see `set_terrain`), or its grass wore or grew to another stage
-## of a desire path (see `wear_tile`).
-signal tile_changed(world_pos: Vector2i)
 ## The moisture of a tilled tile changed (see `set_moisture`).
 signal soil_moisture_changed(world_pos: Vector2i)
 ## A tool hit an object (see `hit_object`). The finishing hit emits it too, after the object

@@ -218,3 +218,31 @@ func test_the_view_shows_furniture_and_lights_the_hearth() -> void:
 	assert_eq(view.entities.get_child_count(), 9, "furniture but the bed, which lies below")
 	var lights := view.get_children().filter(func(node: Node) -> bool: return node is ObjectLight)
 	assert_eq(lights.size(), 1)
+
+
+func _drawn_furniture(view: InteriorView) -> int:
+	return (
+		view
+		. entities
+		. get_children()
+		. filter(func(node: Node) -> bool: return not node.is_queued_for_deletion())
+		. size()
+	)
+
+
+func test_the_view_redraws_when_the_interior_tells_of_a_change_and_lets_go_of_the_old_room(
+) -> void:
+	var view := InteriorView.new()
+	add_child_autofree(view)
+	var interior := InteriorLoader.load_interior(KATE_MAP)
+	view.show_interior(interior)
+	var furniture := _drawn_furniture(view)
+	var chest := WorldObject.new(WorldObjectTypes.CHEST, interior.entry_tile() + Vector2i(1, 0))
+	interior.add_object(chest)
+	assert_eq(_drawn_furniture(view), furniture + 1, "the chest appears")
+	interior.remove_object(chest.pos)
+	assert_eq(_drawn_furniture(view), furniture, "and goes")
+	var other := InteriorLoader.load_interior(KATE_MAP)
+	view.show_interior(other)
+	assert_eq(interior.objects_changed.get_connections().size(), 0)
+	assert_eq(other.objects_changed.get_connections().size(), 1)
