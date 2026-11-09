@@ -179,24 +179,6 @@ come earlier.
 - Not saved, not remembered. Bubbles drawn in palette colours, readable at every zoom; a
   screenshot in the README.
 
-## 138. The chat window never gets bigger than the window
-
-- [ ] Done
-
-The user, 2026-11-09, on the chat being wider than the window at UI scale 2 (a fixed LOG_SIZE of
-340x176 plus the portraits): "it should never become bigger than the screen fits, but the text
-size might still increase based on uiscale".
-- The chat's log (game/scenes/chat_screen.gd, LOG_SIZE) gets as wide and tall as the window at
-  the current UI scale leaves, less the margin the other windows keep (ScrollingList.MARGIN), up
-  to today's size; the portraits and the input line keep their places. The bubbles' widths (at
-  most 70% of the log) follow the log's width, and the text wraps within them; the text itself
-  keeps scaling with the UI scale as all UI does.
-- It refits on window resize and UI scale change (Modal and ScrollingList show how), and the log
-  still follows the newest line.
-- Below the limit nothing changes. Tests in a small SubViewport (the window fits, bubbles narrower,
-  text wraps); a screenshot at UI scale 2 by hand; docs: design/villagers/dialogue.md, docs/ui.md
-  if something new for windows comes of it.
-
 ## Later (not part of the prototype)
 
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
