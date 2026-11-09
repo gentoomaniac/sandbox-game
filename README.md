@@ -715,14 +715,15 @@ check a key: `curl -s https://generativelanguage.googleapis.com/v1beta/openai/mo
 
 **The test LLM.** `make llm-up` runs Ollama with Qwen2.5 7B Instruct (4.7 GB, Apache-2.0) in a podman or docker container on `http://127.0.0.1:11434/v1`,
 the default endpoint, so villagers talk as soon as it is up; `make llm-check` asks it one
-question and `make llm-down` stops it. The container image (5.5 GB) and the model live in
-the container tool's storage and the volume `sandbox-game-llm-models`; `make llm-down PURGE=1`
-deletes the model. Details in [tools/README.md](tools/README.md). A reply takes a second or
-two on the GPU (NVIDIA or AMD, found by itself; `make llm-gpu-setup` prepares it, see the same
-page), a few seconds on the CPU; one that takes longer than 30 seconds, or fails, becomes a scripted line. To try another model, run
-`make llm-pull LLM_MODEL=qwen2.5:3b-instruct` (twice as fast, but its lines are less
-sensible) and set it as the model in Settings; [tools/README.md](tools/README.md) lists some
-that fit, and says how `make llm-eval` compares models on the villagers' prompts.
+question and `make llm-down` stops it. The container image (5.5 GB) and the model live in the
+container tool's storage and the volume `sandbox-game-llm-models`; `make llm-down PURGE=1`
+deletes the model. Details in [tools/README.md](tools/README.md). A reply takes a second or two
+on the GPU (NVIDIA or AMD, found by itself; `make llm-gpu-setup` prepares it, see the same
+page), a few seconds on the CPU; one that takes longer than 30 seconds, or fails, becomes a
+scripted line. To try another model, run `make llm-pull LLM_MODEL=qwen2.5:3b-instruct` (twice as
+fast, but its lines are less sensible) and set it as the model in Settings;
+[tools/README.md](tools/README.md) lists some that fit, and says how `make llm-eval` compares
+models on the villagers' prompts.
 
 What the model is told for each reply (the words are in [data/npc_talk.cfg](data/npc_talk.cfg),
 shaped like a prompt that worked well with the test model): a system line (1750 on the North

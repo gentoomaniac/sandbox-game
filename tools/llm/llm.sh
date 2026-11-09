@@ -82,14 +82,23 @@ amd_gfx_targets() {
 # Prints the detected gfx targets, with the LLM_HSA_OVERRIDE to try for the consumer cards
 # ROCm does not list: RDNA2 except the 6800/6900 (gfx1030), and the RDNA3 7600 (gfx1102).
 amd_describe() {
-	amd_gfx_targets | while read -r gfx _; do
+	targets=$(amd_gfx_targets)
+	count=$(printf '%s\n' "$targets" | grep -c . || true)
+	printf '%s\n' "$targets" | while read -r gfx _; do
+		[ -n "$gfx" ] || continue
 		echo "AMD GPU: $gfx"
+		# With several GPUs (a Ryzen's built-in graphics shows up too) the override would apply
+		# to all of them and could break a supported card, so it is only suggested for a lone one.
+		[ "$count" -eq 1 ] || continue
 		case "$gfx" in
 		gfx1030) ;;
 		gfx103?) echo "  not listed by ROCm; if it fails, try LLM_HSA_OVERRIDE=10.3.0 (RDNA2, as the 6800/6900)" ;;
 		gfx1102) echo "  not listed by ROCm; if it fails, try LLM_HSA_OVERRIDE=11.0.0 (RDNA3, as the 7900)" ;;
 		esac
 	done
+	if [ "$count" -gt 1 ]; then
+		echo "  several AMD GPUs (built-in graphics counts); an LLM_HSA_OVERRIDE would apply to all of them"
+	fi
 }
 
 # podman and docker (28+) both read CDI specs from these places; nvidia-ctk writes them.
