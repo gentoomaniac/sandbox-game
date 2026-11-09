@@ -228,27 +228,6 @@ Review F3 and package R2. Needs 139's stack rules.
   half loaded; injected write and rename failures keep the old save and don't quit; round trips
   stay whole; the oldest and newest supported versions.
 
-## 141. Review R3: windows and conversations can go away without leaving work behind
-
-- [ ] Done
-
-Review F2 and package R3 (plus A5 and the rest of R5).
-- The chat's reply is finished by the session's dialogue service (NpcDialogue), not by the
-  ChatScreen: closing or freeing the window can't leave a villager answering forever, and an old
-  reply never lands in another conversation or session. A normal close keeps today's behaviour
-  (the answer lands in the villager's chat).
-- Removing an open window runs the same cleanup as closing it (Modal `_exit_tree`), so a borrowed
-  hotbar gets its layer, clickability and look back.
-- The hotbar owns its slot views: screens ask it to be clickable and give it back, they don't
-  reach into `slot_view()` themselves.
-- Showing a view another world (WorldView, GroundItemView, the screens' `show_*`) disconnects the
-  old one, or is refused before anything changes; doing it twice with the same one doesn't
-  connect twice.
-- WildlifeView no longer sets `sun` on the shared default rules (A5): pass the session's sun.
-- Tests: the review's probes (a reply after the window is freed, chat A then B then A's answer,
-  freeing an open chest window, world A then B), and counts of nodes settling after repeated
-  open, close and free cycles.
-
 ## 143. Review R6: player actions are checked where they are done, and say what happened
 
 - [ ] Done

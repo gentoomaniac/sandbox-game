@@ -3491,3 +3491,36 @@ weakness"). Saved things stay saved; only drawing and scanning get bounded.
   right. Measure before and after (node counts, frame time in a big save copy) and report it.
 
 Done: piles indexed by chunk (pick-up and settling look at the player's chunk and its neighbours); pile sprites and villager views only within the chunks the world view draws, kept one chunk further; edits replayed per chunk; wet-soil marks counted. Fixture save (9,939 piles, 154 villagers, 27,561 tilled tiles, headless Main): nodes 21,804 to 1,074; mean frame 37.2 ms to 7.3 ms; world settled 8.9 s to 5.9 s. See design/tech/world-objects-and-edits.md.
+
+## 141. Review R3: windows and conversations can go away without leaving work behind
+
+- [x] Done
+
+Review F2 and package R3 (plus A5 and the rest of R5).
+- The chat's reply is finished by the session's dialogue service (NpcDialogue), not by the
+  ChatScreen: closing or freeing the window can't leave a villager answering forever, and an old
+  reply never lands in another conversation or session. A normal close keeps today's behaviour
+  (the answer lands in the villager's chat).
+- Removing an open window runs the same cleanup as closing it (Modal `_exit_tree`), so a borrowed
+  hotbar gets its layer, clickability and look back.
+- The hotbar owns its slot views: screens ask it to be clickable and give it back, they don't
+  reach into `slot_view()` themselves.
+- Showing a view another world (WorldView, GroundItemView, the screens' `show_*`) disconnects the
+  old one, or is refused before anything changes; doing it twice with the same one doesn't
+  connect twice.
+- WildlifeView no longer sets `sun` on the shared default rules (A5): pass the session's sun.
+- Tests: the review's probes (a reply after the window is freed, chat A then B then A's answer,
+  freeing an open chest window, world A then B), and counts of nodes settling after repeated
+  open, close and free cycles.
+
+Done: `NpcDialogue.say` commits the line and the reply and sends `answered(npc)`; the window only
+shows it. `Modal._exit_tree` calls `close()`. `HotbarHud.acquire(self)` / `release(self)` replace
+`slot_view()` and `set_clickable()` and reset the slots too. `show_inventory`, `show_player`,
+`show_skills` and `show_crafting` let go of the old model; `WorldView.show_world` and
+`GroundItemView.show_items` refuse another world with `push_error` (their drawn chunks and
+sprites belong to one world: make a new view), and the same one twice does nothing.
+`WildlifeRules.for_session(sun)` replaces writing the sun on the shared default rules. Tests:
+`test_chat_lifetime.gd`, `test_modal_removal.gd`, `test_shared_hotbar.gd`,
+`test_view_rebinding.gd`, `test_window_cycles.gd`, `test_wildlife_session_rules.gd`. A pending
+reply is dropped with the session (its NpcDialogue is freed with it); no generation counter was
+needed, as a reply goes to the villager object it was asked of.
