@@ -2346,6 +2346,52 @@ slots do), and `TrashCan` (game/scenes/trash_can.gd): a bin slot whose question 
 swallows any other click while up, Escape goes through `_takes_escape`. Used by the character
 screen and the chest's (tests/test_trash_can.gd, test_storage_trash_can.gd).
 
+## 134. Real drag and drop in the inventory screens, the trash can too
+
+- [ ] Done
+
+The user, 2026-11-09: "make the trash can really drag and drop. Also the whole menu drag and drop.
+clicking should not anchor the item to the mouse, wherever you drop it puts / swaps the item, on
+the trashcan it opens the deletion confirmation".
+- Today the screens pick a stack with a click and carry it on the mouse until the next click
+  (task 88, design/player/inventory-and-character.md). Instead: press on a stack and drag it; it
+  follows the mouse only while the button is held; releasing it over a slot puts it there, or
+  swaps with what is there, or adds to a stack of the same item; released over the trash can, it
+  asks "Destroy Logs (12)?" (task 133) and Keep puts it back where it came from; released outside
+  the panel, it drops on the ground as a click outside does today; released anywhere else, it goes
+  back. A click alone no longer picks anything up.
+- All the screens that move stacks: the character screen (backpack, equipment, the hotbar while
+  it is open) and the chest (both sides, the hotbar), the same way, in one place (SlotView and the
+  TrashCan, built on Godot's drag and drop where it fits), not a copy per screen.
+- Keep what works today unless it clashes with dragging: right-click equips or unequips, Shift and
+  a click sends a stack to the other side, the hotbar's number keys. Splitting a stack (dragging
+  half) is a later idea unless it falls out naturally; ask first.
+- Tests for drop on a slot, swap, merge, the trash can (asks, Destroy, Keep), outside the panel,
+  cancelled drags; docs and README, the controls table too.
+
+## 135. Fireflies on summer nights
+
+- [ ] Done
+
+The user, 2026-11-09: "add fireflies for the corresponding seasons and time of day". Ambient
+wildlife (design/world/wildlife.md, data and rules as the other animals): small glowing points
+that drift and blink, a few together, in the right season (early to late summer; the glow-worms
+of northern Germany, Lampyris and Lamprohiza, fly from about June to mid July) and the right hour
+(dusk and the first hours of the night), over meadows, hedges (Knicks) and the edges of woods and
+water, not in rain, wind or cold. Drawn as light (they glow at night like the other lights of the
+game, see design/presentation/look.md), in both art sets; a debug flag to see them; tests for when
+and where they come; docs and README.
+
+## 136. Saplings without a stake
+
+- [ ] Done
+
+The user, 2026-11-09: "saplings should not have a stabilizing rod since they often occur naturally
+and not planted by a player". The 32 px sapling (tools/art/trees.py, `sapling`) has a stake and a
+band tying the stem to it; draw it without them, in every species and season look, and check the
+classic set (tools/art/classic/trees.py) has none either. Screenshots where the README shows
+saplings.
+
 ## Later (not part of the prototype)
 
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
