@@ -31,7 +31,7 @@ Decided 2026-11-05.
   Settings show a short explanation on hover too.
 - **Scrolling** (task 131): a panel never gets taller than the window. The growing part of it
   is a `ScrollingList`, shared by the panels that have one: the crafting screen's recipes, the
-  chest's slots in the storage screen, and the rows of the Controls page
+  chest's slots in the storage screen, and the rows of the Controls and Language model pages
   (not the character screen, the build menu or the short pages of the pause menu, which do not
   grow). The list is as tall as its content while the panel fits, otherwise as tall as the
   window leaves room for, less a margin of 12 UI pixels above and below. Past that it scrolls by

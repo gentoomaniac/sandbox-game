@@ -130,6 +130,8 @@ var _history_label := Label.new()
 var _history_lines := HSlider.new()
 ## Says why a name typed was not taken; hidden while there is nothing to say.
 var _name_note := Label.new()
+## What scrolls: everything between the title and the note.
+var _rows := VBoxContainer.new()
 
 
 func _init(settings: GameSettings) -> void:
@@ -138,21 +140,22 @@ func _init(settings: GameSettings) -> void:
 	title.text = "Language model"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(title)
+	add_child(ScrollingList.new(_rows))
 	var profile_label := Label.new()
 	profile_label.text = "Profile"
 	TooltipView.set_text(profile_label, PROFILE_TIP)
 	profile_label.mouse_filter = Control.MOUSE_FILTER_PASS
-	add_child(profile_label)
+	_rows.add_child(profile_label)
 	_profiles.item_selected.connect(_on_profile_selected)
 	TooltipView.set_text(_profiles, PROFILE_TIP, "setting_language_model_profile")
-	add_child(_profiles)
+	_rows.add_child(_profiles)
 	_add_profile_buttons()
 	_add_name_and_provider()
 	for key: String in LABELS:
 		var label := Label.new()
 		label.text = LABELS[key]
 		label.mouse_filter = Control.MOUSE_FILTER_PASS
-		add_child(label)
+		_rows.add_child(label)
 		_labels[key] = label
 		var field := LineEdit.new()
 		field.custom_minimum_size.x = FIELD_WIDTH
@@ -162,7 +165,7 @@ func _init(settings: GameSettings) -> void:
 		)
 		if key in ["endpoint", "api_key"]:
 			field.text_changed.connect(func(_text: String) -> void: _models_delay.start())
-		add_child(field)
+		_rows.add_child(field)
 		_fields[key] = field
 		if key == "model":
 			_add_model_list()
@@ -175,7 +178,7 @@ func _init(settings: GameSettings) -> void:
 	add_child(_models_delay)
 	TooltipView.set_text(_history_label, HISTORY_TIP)
 	_history_label.mouse_filter = Control.MOUSE_FILTER_PASS
-	add_child(_history_label)
+	_rows.add_child(_history_label)
 	_history_lines.step = 1
 	_history_lines.min_value = LanguageModelProfiles.MIN_CHAT_HISTORY_LINES
 	_history_lines.max_value = LanguageModelProfiles.MAX_CHAT_HISTORY_LINES
@@ -185,7 +188,7 @@ func _init(settings: GameSettings) -> void:
 			_show_history_lines()
 	)
 	TooltipView.set_text(_history_lines, HISTORY_TIP, "setting_chat_history_lines")
-	add_child(_history_lines)
+	_rows.add_child(_history_lines)
 	var note := Label.new()
 	note.text = NOTE
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -265,7 +268,7 @@ func _add_profile_buttons() -> void:
 	_new_button.pressed.connect(_on_new_pressed)
 	_copy_button.pressed.connect(_on_copy_pressed)
 	_delete_button.pressed.connect(_on_delete_pressed)
-	add_child(row)
+	_rows.add_child(row)
 
 
 func _add_name_and_provider() -> void:
@@ -273,26 +276,26 @@ func _add_name_and_provider() -> void:
 	name_label.text = "Name"
 	TooltipView.set_text(name_label, NAME_TIP)
 	name_label.mouse_filter = Control.MOUSE_FILTER_PASS
-	add_child(name_label)
+	_rows.add_child(name_label)
 	_name.custom_minimum_size.x = FIELD_WIDTH
 	_name.text_submitted.connect(_rename)
 	_name.focus_exited.connect(func() -> void: _rename(_name.text))
 	_name.text_changed.connect(func(_text: String) -> void: _name_note.hide())
 	TooltipView.set_text(_name, NAME_TIP, "setting_language_model_name")
-	add_child(_name)
+	_rows.add_child(_name)
 	_name_note.visible = false
-	add_child(_name_note)
+	_rows.add_child(_name_note)
 	var provider_label := Label.new()
 	provider_label.text = "Provider"
 	TooltipView.set_text(provider_label, PROVIDER_TIP)
 	provider_label.mouse_filter = Control.MOUSE_FILTER_PASS
-	add_child(provider_label)
+	_rows.add_child(provider_label)
 	for provider: String in GameSettings.LANGUAGE_MODEL_PROVIDERS:
 		_provider.add_item(GameSettings.LANGUAGE_MODEL_PROVIDERS[provider]["name"])
 		_provider.set_item_metadata(_provider.item_count - 1, provider)
 	_provider.item_selected.connect(_on_provider_selected)
 	TooltipView.set_text(_provider, PROVIDER_TIP, "setting_language_model_provider")
-	add_child(_provider)
+	_rows.add_child(_provider)
 
 
 ## Lists the profiles to pick from, with the one in use selected.
@@ -321,9 +324,9 @@ func _add_model_list() -> void:
 	refresh.text = "Refresh"
 	refresh.pressed.connect(show_models)
 	row.add_child(refresh)
-	add_child(row)
+	_rows.add_child(row)
 	_models_note.autowrap_mode = TextServer.AUTOWRAP_WORD
-	add_child(_models_note)
+	_rows.add_child(_models_note)
 
 
 ## Lists `names` to pick from, with the saved model among them, and `note` below.

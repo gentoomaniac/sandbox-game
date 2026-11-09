@@ -39,3 +39,7 @@ func _check_page(page: PauseMenu.Page) -> void:
 
 func test_the_controls_page_scrolls_in_a_small_window() -> void:
 	await _check_page(PauseMenu.Page.CONTROLS)
+
+
+func test_the_language_model_page_scrolls_in_a_small_window() -> void:
+	await _check_page(PauseMenu.Page.LANGUAGE_MODEL)
