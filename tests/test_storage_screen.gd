@@ -155,3 +155,19 @@ func test_putting_an_item_on_another_across_the_sides_swaps_and_picks_that_one_u
 	_inventory_view(views, 6).pressed.emit()
 	assert_eq(_inventory.slots[6], {"item": ItemTypes.STONE, "count": 3}, "the stone was in hand")
 	assert_true(_inventory.slots[0].is_empty())
+
+
+func test_a_chest_of_many_slots_scrolls_inside_a_small_window() -> void:
+	_chest = ItemSlots.new(50)
+	var window := SubViewport.new()
+	window.size = Vector2i(320, 180)
+	add_child_autofree(window)
+	var player := PlayerState.new()
+	var chest := WorldObject.new(WorldObjectTypes.CHEST, Vector2i.ZERO)
+	chest.storage = _chest
+	_screen = StorageScreen.new(autofree(HotbarHud.new()))
+	window.add_child(_screen)
+	_screen.open(chest, player)
+	await wait_process_frames(2)
+	var panel: Control = _screen.find_children("*", "PanelContainer", true, false)[0]
+	assert_lte(panel.size.y, window.size.y)

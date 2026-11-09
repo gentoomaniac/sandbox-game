@@ -42,6 +42,7 @@ var _backdrop := ColorRect.new()
 var _panel := PanelContainer.new()
 var _picked_icon := ItemIcon.new()
 var _chest_column: VBoxContainer
+var _chest_list: ScrollingList
 
 
 func _init(hotbar: HotbarHud) -> void:
@@ -56,8 +57,8 @@ func _init(hotbar: HotbarHud) -> void:
 	row.add_theme_constant_override("separation", PANEL_GAP)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var inventory_column := _new_column(BACKPACK_ICON)
-	_add_grid(
-		inventory_column, INVENTORY, Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT, INVENTORY_COLUMNS
+	inventory_column.add_child(
+		_new_grid(INVENTORY, Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT, INVENTORY_COLUMNS)
 	)
 	for slot in Inventory.HOTBAR_SIZE:
 		var view := _hotbar.slot_view(slot)
@@ -68,6 +69,7 @@ func _init(hotbar: HotbarHud) -> void:
 	_panel.theme = THEME
 	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel.add_child(row)
+	_panel.minimum_size_changed.connect(_centre_panel)
 	_backdrop.add_child(_panel)
 
 	_picked_icon.visible = false
@@ -97,8 +99,9 @@ func open(chest: WorldObject, player: PlayerState) -> void:
 	_hotbar.set_clickable(true)
 	_hotbar.slot_pressed.connect(_on_hotbar_slot_pressed)
 	_refresh()
-	_panel.reset_size()
-	_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
+	_chest_list.scroll_vertical = 0
+	_chest_list.fit()
+	_centre_panel()
 
 
 ## Safe to call when it is closed. The screen listens to the inventory and the chest only
@@ -124,12 +127,19 @@ func _process(_delta: float) -> void:
 		_picked_icon.position = (_backdrop.get_local_mouse_position() - middle).round()
 
 
-## Makes the grid of the chest's side, for a chest of this many slots.
+## Makes the grid of the chest's side, for a chest of this many slots. A chest of many slots is
+## taller than a small window, so its grid scrolls.
 func _show_chest_slots(slot_count: int) -> void:
-	if _chest_column.get_child_count() > 1:
-		_chest_column.get_child(1).free()
+	if _chest_list != null:
+		_chest_list.free()
 	_views[CHEST] = {}
-	_add_grid(_chest_column, CHEST, 0, slot_count, COLUMNS)
+	_chest_list = ScrollingList.new(_panel, _new_grid(CHEST, 0, slot_count, COLUMNS))
+	_chest_column.add_child(_chest_list)
+
+
+func _centre_panel() -> void:
+	_panel.reset_size()
+	_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
 
 
 ## A column with an icon at the top.
@@ -144,8 +154,8 @@ func _new_column(icon: Texture2D) -> VBoxContainer:
 	return column
 
 
-## Adds a grid of the slots `first` to `last` - 1 of a side to a column.
-func _add_grid(column: VBoxContainer, side: int, first: int, last: int, columns: int) -> void:
+## A grid of the slots `first` to `last` - 1 of a side.
+func _new_grid(side: int, first: int, last: int, columns: int) -> GridContainer:
 	var grid := GridContainer.new()
 	grid.columns = columns
 	grid.add_theme_constant_override("h_separation", SLOT_GAP)
@@ -157,7 +167,7 @@ func _add_grid(column: VBoxContainer, side: int, first: int, last: int, columns:
 		view.pressed.connect(_on_slot_pressed.bind(side, slot))
 		grid.add_child(view)
 		_views[side][slot] = view
-	column.add_child(grid)
+	return grid
 
 
 func _slots_of(side: int) -> ItemSlots:
