@@ -308,8 +308,8 @@ more styles shows them in a column above it (the Kate: a brick Kate and a Geest 
 the up and down arrows or a click pick. Beside it a larger picture of your choice lists the
 logs, stone, clay and reeds it takes against what you carry. While the menu is open the arrows belong to it and you walk with
 WASD; Escape closes it. A ghost of the building follows the mouse; the spot is refused while
-something is missing, and a click or Space builds it and takes the materials. The ghost shows where it fits, and the game tells you why a spot doesn't work, for
-example when it is unsafe wetland. Hold something else (or press Escape or right click) to stop
+something is missing, and a click or Space builds it and takes the materials. The ghost shows where it fits, and a note beside the mouse pointer tells you why a spot
+doesn't work, for example when it is unsafe wetland. Hold something else (or press Escape or right click) to stop
 building. You can walk inside every building but the bell frame, and each has its own room: a
 bare shack with a straw mat on a clay floor, a cottage room in the Kate, the longhouse with a
 living end and an animal end, the hall house with its long Diele between the stalls and the
@@ -361,7 +361,7 @@ headstone or a fieldstone slab.
 
 ![Inside the Kate and the longhouse at night, by the hearth](docs/screenshots/interiors.png)
 
-![Build mode: the build menu above the hotbar with the Kate's brick and Geest styles over it, the preview of the brick Kate with what it takes and why the spot is refused, and its ghost on the land](docs/screenshots/build.png)
+![Build mode: the build menu above the hotbar with the Kate's brick and Geest styles over it, the preview of the brick Kate with what it takes, and its ghost on the land](docs/screenshots/build.png)
 
 Press X with the hammer in hand to switch from building to taking down: the menu gives way to
 a panel at the top left that reads

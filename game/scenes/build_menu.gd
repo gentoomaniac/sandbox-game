@@ -1,12 +1,12 @@
 class_name BuildMenu
 extends CanvasLayer
 ## While the player holds the hammer: the build menu just above the hotbar. A row of the
-## buildings, each a small picture with its name and what it takes, the chosen one marked;
-## above the chosen one, a column of its other styles, if it has any; and beside them a larger
-## preview of the chosen style with each material it takes as carried/needed, marked when
-## short, and why the spot under the ghost is refused (see `show_message`). Q and E or the
-## arrows pick (see BuildMode), and so does a click. While the hammer takes down, only the
-## preview's panel is up, at the top left, saying so. On its own canvas layer like the hotbar,
+## buildings, each a small picture with its name, the chosen one marked; above the chosen one,
+## a column of its other styles, if it has any; and beside them a larger preview of the chosen
+## style with each material it takes as carried/needed, marked when short. Why the spot under
+## the ghost is refused shows beside the mouse (see `show_message`). Q and E or the arrows pick
+## (see BuildMode), and so does a click. While the hammer takes down, only the preview's panel
+## is up, at the top left, saying so. On its own canvas layer like the hotbar,
 ## so the day/night tint doesn't touch it. It is drawn anew only when what it shows changes
 ## (see `_process`).
 
@@ -14,6 +14,8 @@ const THEME := preload("res://game/scenes/ui_theme.tres")
 # Palette colour (see tools/art/palette.py): what is short, and the mode that takes down.
 const SHORT_COLOR := Color("dc7a37")
 const TAKING_DOWN_TEXT := "Taking down (X: build)"
+## Where the note of a refused spot sits from the tip of the mouse pointer.
+const NOTE_OFFSET := Vector2(10, 12)
 ## A cell of the row or of a column: its width, and the box its picture is fitted into.
 const CELL_WIDTH := 70
 const CELL_PICTURE := Vector2(35, 23)
@@ -37,6 +39,8 @@ var _columns: Dictionary[StringName, VBoxContainer] = {}
 var _preview := PanelContainer.new()
 var _preview_picture := _picture(PREVIEW_PICTURE)
 var _preview_name := Label.new()
+## Why the spot is refused, in a small panel beside the mouse.
+var _note := PanelContainer.new()
 var _message := Label.new()
 ## One per material a building can take, in the order of BuildingTypes.COST_ITEMS.
 var _material_labels: Array[Label] = []
@@ -88,11 +92,22 @@ func takes_messages() -> bool:
 	return visible and not _builder.is_taking_down()
 
 
-## Shows why the spot under the ghost is refused, or nothing for "".
+## Shows why the spot under the ghost is refused beside the mouse, or nothing for "".
 func show_message(text: String) -> void:
 	if text != _message.text:
 		_message.text = text
-		_message.visible = text != ""
+		_note.visible = text != ""
+		_place_note()
+
+
+## Keeps the note beside the mouse, inside the window.
+func _place_note() -> void:
+	if not _note.visible:
+		return
+	_note.size = Vector2.ZERO
+	var screen := get_viewport().get_visible_rect().size
+	var spot := _note.get_global_mouse_position() + NOTE_OFFSET
+	_note.position = spot.clamp(Vector2.ZERO, (screen - _note.size).max(Vector2.ZERO)).round()
 
 
 ## Loads the pictures of the cells in the chosen art set (see ArtSet); the preview's follows
@@ -110,13 +125,13 @@ func show_art_set() -> void:
 func _process(_delta: float) -> void:
 	if not visible:
 		return
+	_place_note()
 	var shown := [
 		_builder.choice,
 		_builder.style,
 		_builder.is_taking_down(),
 		_builder.costs().keys().map(_inventory.count_of),
 		_builder.shortfalls(),
-		_message.text,
 		ArtSet.is_classic,
 		get_viewport().get_visible_rect().size,
 		_row.get_combined_minimum_size(),
@@ -243,6 +258,10 @@ func _build_preview() -> void:
 	style.content_margin_top = 6
 	style.content_margin_bottom = 6
 	_preview.add_theme_stylebox_override("panel", style)
+	_note.theme = THEME
+	_note.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_note.add_theme_stylebox_override("panel", style)
+	_note.visible = false
 	var rows := VBoxContainer.new()
 	rows.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	rows.add_child(_preview_picture)
@@ -251,13 +270,11 @@ func _build_preview() -> void:
 		var label := Label.new()
 		rows.add_child(label)
 		_material_labels.append(label)
-	_message.custom_minimum_size.x = PREVIEW_PICTURE.x
-	_message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_message.add_theme_color_override("font_color", SHORT_COLOR)
-	_message.visible = false
-	rows.add_child(_message)
 	_preview.add_child(rows)
 	add_child(_preview)
+	_message.add_theme_color_override("font_color", SHORT_COLOR)
+	_note.add_child(_message)
+	add_child(_note)
 
 
 static func _narrowed(box: StyleBox) -> StyleBox:

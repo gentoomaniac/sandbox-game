@@ -108,3 +108,21 @@ func test_taking_down_puts_the_row_away() -> void:
 	_builder.toggle_taking_down()
 	await get_tree().process_frame
 	assert_true(_cell(BuildingTypes.SHACK, &"").is_visible_in_tree())
+
+
+func test_why_a_spot_is_refused_shows_beside_the_mouse_not_in_the_preview() -> void:
+	var motion := InputEventMouseMotion.new()
+	motion.position = Vector2(100, 50)
+	_window.push_input(motion)
+	_menu.show_message("This land doesn't look safe to build on.")
+	await get_tree().process_frame
+	assert_true(_menu._note.is_visible_in_tree())
+	assert_false(_menu._preview.is_ancestor_of(_menu._message))
+	assert_eq(_menu._note.position, Vector2(100, 50) + BuildMenu.NOTE_OFFSET)
+	motion = InputEventMouseMotion.new()
+	motion.position = Vector2(140, 60)
+	_window.push_input(motion)
+	await get_tree().process_frame
+	assert_eq(_menu._note.position, Vector2(140, 60) + BuildMenu.NOTE_OFFSET, "it follows")
+	_menu.show_message("")
+	assert_false(_menu._note.visible)
