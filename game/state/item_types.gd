@@ -563,6 +563,10 @@ const _OTHER_TYPES := {
 	},
 }
 
+## What went wrong while the crop items were added to the fixed ones: an id used twice (see
+## CatalogCheck).
+static var build_problems: Array[String] = []
+
 ## Every type: the fixed ones above and the seeds and produce of the crops in data/crops.cfg.
 ## Read-only, all the way down.
 # The name is that of a constant, but the crop items are only known once the file is read.
@@ -601,6 +605,11 @@ static func tool_power(tool_item: StringName) -> int:
 static func _with_crop_items(other_types: Dictionary) -> Dictionary:
 	var types := other_types.duplicate()
 	var rules := CropRules.default_rules()
+	var crop_item_ids: Array[StringName] = []
+	for crop_id in rules.crop_ids():
+		crop_item_ids.append(StringName(rules.crop(crop_id)["seed"]))
+		crop_item_ids.append(StringName(rules.crop(crop_id)["produce"]))
+	build_problems.append_array(CatalogCheck.reused_ids("item", other_types, crop_item_ids))
 	for crop_id in rules.crop_ids():
 		var crop := rules.crop(crop_id)
 		types[StringName(crop["seed"])] = {

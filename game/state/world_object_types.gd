@@ -140,6 +140,7 @@ const FRUIT := &"fruit"
 const INSIDE := &"inside"
 const OUTDOORS := &"outdoors"
 const ANYWHERE := &"anywhere"
+const PLACEMENTS := [INSIDE, OUTDOORS, ANYWHERE]
 
 ## The largest footprint any type has, in tiles: what World looks back over to find the
 ## object that covers a tile.
@@ -775,6 +776,10 @@ const _OTHER_TYPES := {
 	},
 }
 
+## What went wrong while the crops and trunks were added to the fixed types: an id used twice
+## (see CatalogCheck).
+static var build_problems: Array[String] = []
+
 ## Every type: the fixed ones above and the crops of data/crops.cfg. Read-only, all the way down.
 # The name is that of a constant, but crop types are only known once the file is read.
 static var TYPES := _build_types()  # gdlint: ignore=class-variable-name
@@ -788,6 +793,7 @@ static func trunk_type(tree: StringName, is_short: bool) -> StringName:
 static func _with_crops(other_types: Dictionary) -> Dictionary:
 	var types := other_types.duplicate()
 	var rules := CropRules.default_rules()
+	build_problems.append_array(CatalogCheck.reused_ids("object", other_types, rules.crop_ids()))
 	for crop_id in rules.crop_ids():
 		var crop_type := rules.crop(crop_id).duplicate()
 		crop_type["seed"] = StringName(crop_type["seed"])
@@ -811,6 +817,12 @@ static func _build_types() -> Dictionary:
 ## Adds the trunk types of the trees that have a `trunk`, as the data of the tree says.
 static func _with_trunks(other_types: Dictionary) -> Dictionary:
 	var types := other_types.duplicate()
+	var trunk_ids: Array[StringName] = []
+	for tree: StringName in other_types:
+		if other_types[tree].has("trunk"):
+			trunk_ids.append(trunk_type(tree, false))
+			trunk_ids.append(trunk_type(tree, true))
+	build_problems.append_array(CatalogCheck.reused_ids("object", other_types, trunk_ids))
 	for tree: StringName in other_types:
 		var tree_data: Dictionary = other_types[tree]
 		if not tree_data.has("trunk"):

@@ -217,7 +217,15 @@ data/<topic>.cfg  ->  game/state/<topic>_rules.gd  ->  a Types class or the stat
   `is_valid()`) and serves the values. `Main._ready` refuses to start, and reports what is
   wrong, if any of them is invalid.
 - `BuildingTypes`, `WorldObjectTypes` and `ItemTypes` are the tables of kinds, built from the
-  rules and from definitions in code. Look there for what a kind of object or item is.
+  rules and from definitions in code. Look there for what a kind of object or item is. Their
+  entries are read-only all the way down (`ReadOnly`): a caller that changes what it gets back
+  fails loudly. A test that needs an item of its own swaps in a small catalog of its own for
+  `ItemTypes.TYPES` and restores it, it never adds to the shared one.
+- `CatalogCheck` checks every item and object with its references at start (fields in range,
+  wearables stack 1, what an item places or plants, what an object drops, leaves or seeds
+  exists, ids of crops and trunks don't collide); `Main._ready` refuses to start and reports
+  `item <id>: ...` or `object <id>: ...` for each mistake. Run `make test` after adding an entry:
+  its test runs the same check.
 
 Typical jobs:
 
@@ -227,10 +235,10 @@ Typical jobs:
 | New building | A section in `data/buildings.cfg`, its two pictures and an interior map ([maps/README.md](../maps/README.md)), or an empty `interior_map` for one nobody goes into (the bell frame). |
 | New building style | A section `[<building>.<style>]` after its building in `data/buildings.cfg` with its `name` and the keys it changes (its pictures, costs); it shares the building's footprint, door and inside. |
 | New recipe | A section in `data/recipes.cfg` for an item that exists in `ItemTypes`; `station`, `skill`, `level` and `hours` are optional. |
-| New station | A placed object kind (`WorldObjectTypes` with `drops`, `ItemTypes` with `places`, its picture in `tools/art/crafts.py`), a section in `data/stations.cfg`, and a recipe that makes it. |
+| New station | A placed object kind (`WorldObjectTypes` with `drops` and `placeable_in`, `ItemTypes` with `places`, its picture in `tools/art/crafts.py`), a section in `data/stations.cfg`, and a recipe that makes it. |
 | New skill (profession) | A section in `data/skills.cfg`, and recipes that name it. |
 | New sound | An event in `tools/audio/generate.py`, a section in `data/sounds.cfg` ([tools/README.md](../tools/README.md)). |
-| New object or item kind | An entry in `WorldObjectTypes` or `ItemTypes`, and its art ([tools/README.md](../tools/README.md)). |
+| New object or item kind | An entry in `WorldObjectTypes` or `ItemTypes` (an object an item places also needs `placeable_in`), and its art ([tools/README.md](../tools/README.md)). Start the game or run `make test`: `CatalogCheck` names what is missing or wrong, item and field. |
 
 ### Adding a data file
 
