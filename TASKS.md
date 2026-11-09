@@ -2230,6 +2230,14 @@ come earlier.
 
 ## Later (not part of the prototype)
 
+- **Scrolling for menus that outgrow the window** (the user, 2026-11-09): "UIs like crafting get
+  bigger than the screen. so we need scrolling for those if they reach certain limits." The
+  crafting screen first; check the other panels with lists that grow (inventory and chest, the
+  build menu, the character screen, Settings) at the smallest supported window size and the
+  largest UI scale. Past a height limit (the window less a margin) the list scrolls (mouse
+  wheel, drag, and keyboard or controller focus keeps the selected entry in view) while
+  headers and buttons stay put.
+
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
   Valley, but actions count as well as gifts, in the manner of the Sims (helping, talking,
   events, rudeness, theft, being there in trouble). A first draft is in
