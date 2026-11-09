@@ -38,7 +38,8 @@ func _hold_quietly(item: StringName) -> void:
 
 func _use_and_sound() -> void:
 	var tile := _state.player.facing_tile()
-	_sounds.used(_state.use_tile(tile), tile)
+	var result := _state.use_tile(tile)
+	_sounds.failed_use(result, tile)
 
 
 func test_a_step_sounds_like_the_ground_under_the_player() -> void:
@@ -103,13 +104,29 @@ func test_collecting_an_item_pops() -> void:
 	assert_eq(_events, [&"item_pickup"])
 
 
-func test_placing_a_building_is_heard() -> void:
+func test_placing_and_taking_down_a_building_are_heard() -> void:
+	var builder := Builder.new(_state)
+	builder.choose(BuildingTypes.SHACK)
+	for item: StringName in builder.costs():
+		_state.player.inventory.add(item, builder.costs()[item])
+	_events.clear()
+	var building: Building = null
 	for y in range(2, 20):
 		for x in range(-10, 10):
-			if _world.place_building(BuildingTypes.SHACK, _tile + Vector2i(x, y)) != null:
-				assert_eq(_events, [&"build_place"])
-				return
-	fail_test("no room for a shack near the camp")
+			if building == null:
+				building = builder.place(_tile + Vector2i(x, y))
+	assert_not_null(building, "no room for a shack near the camp")
+	assert_eq(_events, [&"build_place"])
+	_events.clear()
+	assert_true(builder.take_down(TakeDownTarget.of_building(building)))
+	assert_eq(_events, [&"axe_chop"])
+
+
+func test_the_world_placing_a_building_by_itself_is_silent() -> void:
+	for y in range(2, 20):
+		for x in range(-10, 10):
+			_world.place_building(BuildingTypes.SHACK, _tile + Vector2i(x, y))
+	assert_eq(_events, [])
 
 
 func test_a_refused_placement_is_denied() -> void:
@@ -149,9 +166,9 @@ func test_the_storage_screen_squeaks_open_and_thumps_shut() -> void:
 
 func test_placing_a_chest_and_taking_one_down_inside_are_heard() -> void:
 	_hold_quietly(ItemTypes.CHEST)
-	_sounds.used(ToolUse.Use.PLACE, _tile)
-	_sounds.used(ToolUse.Use.TAKE_DOWN, _tile)
-	_sounds.used(ToolUse.Use.NO_ROOM, _tile)
+	_state.report(ActionOutcome.PLACE, _tile, WorldObjectTypes.CHEST, {ItemTypes.CHEST: 1})
+	_state.report(ActionOutcome.TAKE_DOWN, _tile, WorldObjectTypes.CHEST, {ItemTypes.CHEST: 1})
+	_sounds.failed_use(ToolUse.Use.NO_ROOM, _tile)
 	assert_eq(_events, [&"build_place", &"axe_chop", &"denied"])
 
 

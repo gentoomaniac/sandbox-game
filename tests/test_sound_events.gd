@@ -51,37 +51,53 @@ func test_a_pickaxe_hits_and_a_stone_breaks() -> void:
 		assert_eq(SoundEvents.hit(data, true), &"stone_break", str(type))
 
 
-func test_each_use_has_its_sound() -> void:
+func test_each_action_has_its_sound() -> void:
 	var cases := {
-		ToolUse.Use.TILL: &"hoe_till",
-		ToolUse.Use.PLANT: &"plant",
-		ToolUse.Use.HARVEST: &"pick_bush",
-		ToolUse.Use.FORAGE: &"pick_bush",
-		ToolUse.Use.CLEAR: &"pick_bush",
-		ToolUse.Use.WATER: &"water_pour",
-		ToolUse.Use.MOW: &"scythe_swish",
-		ToolUse.Use.DIG: &"shovel_dig",
-		ToolUse.Use.NEEDS_BETTER_TOOL: &"denied",
-		ToolUse.Use.HIT: &"",
-		ToolUse.Use.GIVE_BONE: &"dog_bark",
-		ToolUse.Use.SADDLE: &"horse_whinny",
-		ToolUse.Use.UNSADDLE: &"horse_whinny",
-		ToolUse.Use.RIDING: &"denied",
-		ToolUse.Use.STANDING_ON: &"denied",
+		ActionOutcome.TILL: &"hoe_till",
+		ActionOutcome.PLANT: &"plant",
+		ActionOutcome.HARVEST: &"pick_bush",
+		ActionOutcome.FORAGE: &"pick_bush",
+		ActionOutcome.CLEAR: &"pick_bush",
+		ActionOutcome.WATER: &"water_pour",
+		ActionOutcome.MOW: &"scythe_swish",
+		ActionOutcome.DIG: &"shovel_dig",
+		ActionOutcome.PLACE: &"build_place",
+		ActionOutcome.BUILD: &"build_place",
+		ActionOutcome.TAKE_DOWN: &"axe_chop",
+		ActionOutcome.DEMOLISH: &"axe_chop",
+		ActionOutcome.GIVE_BONE: &"dog_bark",
+		ActionOutcome.SADDLE: &"horse_whinny",
+		ActionOutcome.UNSADDLE: &"horse_whinny",
+		ActionOutcome.PICK_UP: &"item_pickup",
+		ActionOutcome.HIT: &"",
+		ActionOutcome.BREAK: &"",
+		ActionOutcome.EAT: &"",
 	}
-	for use in cases:
-		assert_eq(SoundEvents.use(use, ItemTypes.HOE), cases[use], str(use))
+	for kind in cases:
+		assert_eq(SoundEvents.action(kind), cases[kind], str(kind))
+		assert_true(cases[kind] == &"" or SoundRules.EVENTS.has(cases[kind]), str(kind))
+
+
+func test_a_use_that_did_not_work_is_denied() -> void:
+	for use in [
+		ToolUse.Use.NEEDS_BETTER_TOOL,
+		ToolUse.Use.NO_ROOM,
+		ToolUse.Use.RIDING,
+		ToolUse.Use.STANDING_ON,
+	]:
+		assert_eq(SoundEvents.failed_use(use, ItemTypes.HOE), &"denied", str(use))
+	assert_eq(SoundEvents.failed_use(ToolUse.Use.OUT_OF_REACH, ItemTypes.SCYTHE), &"")
 
 
 func test_a_scythe_swishes_even_when_it_mows_nothing() -> void:
-	assert_eq(SoundEvents.use(ToolUse.Use.NOTHING, ItemTypes.SCYTHE), &"scythe_swish")
-	assert_eq(SoundEvents.use(ToolUse.Use.NOTHING, ItemTypes.AXE), &"")
+	assert_eq(SoundEvents.failed_use(ToolUse.Use.NOTHING, ItemTypes.SCYTHE), &"scythe_swish")
+	assert_eq(SoundEvents.failed_use(ToolUse.Use.NOTHING, ItemTypes.AXE), &"")
 
 
 func test_every_event_made_is_a_known_event() -> void:
 	var made: Array[StringName] = []
 	for use in ToolUse.Use.values():
-		made.append(SoundEvents.use(use, ItemTypes.SCYTHE))
+		made.append(SoundEvents.failed_use(use, ItemTypes.SCYTHE))
 	for type: Dictionary in WorldObjectTypes.TYPES.values():
 		made.append(SoundEvents.hit(type, true))
 		made.append(SoundEvents.hit(type, false))

@@ -16,8 +16,6 @@ extends Node2D
 signal message_changed(text: String)
 ## A click or Use tried to place the building and could not.
 signal placement_refused
-## A building or a placed thing was taken down; `tile` is one of its tiles.
-signal taken_down(tile: Vector2i)
 
 const UNSAFE_LAND_MESSAGE := "This land doesn't look safe to build on."
 const OCCUPIED_MESSAGE := "Something is in the way."
@@ -253,11 +251,9 @@ func _hold_to_take_down(delta: float) -> void:
 		_held_seconds + delta if is_same and is_using and _take_down_reason == "" else 0.0
 	)
 	if _held_seconds >= TAKE_DOWN_SECONDS:
-		var tile_taken := target.tiles()[0]
 		# Builder checks the reason again, so a message one frame behind can't take down a house
 		# that is not to go.
-		if builder.take_down(target):
-			taken_down.emit(tile_taken)
+		builder.take_down(target)
 		_take_down_target = null
 		_held_seconds = 0.0
 

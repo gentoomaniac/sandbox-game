@@ -16,6 +16,10 @@ Decided 2026-11-05. Everything makes sound; no background music for now.
   breaking, scythe swish, shovel dig, hoe, watering, planting, picking a bush, a soft pop
   when an item on the ground is collected, placing a building, and a short "denied" sound
   (e.g. needs a better tool).
+  What the player does is heard from its outcome (`GameState.action_done`, one per finished
+  action, see `ActionOutcome`), so a refusal makes no work sound; only "denied" (and the scythe's
+  swing at nothing) come from the use that did not work. Hits are heard from the object being hit,
+  and a tree's fall when it lands.
 - **UI:** clicks for menus, the inventory and the hotbar.
 - **Weather (ambience):** rain and wind as loops that follow their strength and fade like
   the weather visuals, wind gusts, and thunder after a flash, delayed as if far away.

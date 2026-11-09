@@ -518,7 +518,7 @@ func _hotbar_slot_of(event: InputEvent) -> int:
 ## Uses the targeted tile (the state refuses one out of reach).
 func _use_on(target: Targeting) -> void:
 	var use := _state.use_tile(target.tile)
-	_sounds.used(use, target.tile)
+	_sounds.failed_use(use, target.tile)
 	_tiredness_view.acted(use)
 	if use == ToolUse.Use.GIVE_BONE:
 		_harvest_hud.show_note("The dog follows you.")

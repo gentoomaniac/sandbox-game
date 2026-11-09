@@ -1,11 +1,11 @@
 class_name GameSounds
 extends Node
 ## Makes the sound of what happens in the game, by listening to it: the footsteps (on the
-## walk animation's steps), the hits and breaks of tools (the world's `object_hit`), items
-## collected and buildings placed (the world's signals), things taken down with the hammer, the
-## hotbar slot changing, and menus opening and closing. Main tells it the result of each use of
-## a tile (see `used`). Which event a happening makes is SoundEvents'; playing it is
-## AudioService's. The state knows nothing of sound.
+## walk animation's steps), the hits and breaks of tools (the world's `object_hit`), the
+## hotbar slot changing, and menus opening and closing. What the player does is heard from the
+## outcome of the action (GameState `action_done`: tills, picks, places, takes down, picks up, ...);
+## Main tells it the uses that did not work (see `failed_use`). Which event a happening makes is
+## SoundEvents'; playing it is AudioService's. The state knows nothing of sound.
 
 var _audio: AudioService
 var _state: GameState
@@ -37,18 +37,8 @@ func listen(
 		func(tree: WorldObject) -> void:
 			_audio.play(&"tree_fall", TerrainTileset.tile_centre(tree.pos))
 	)
-	state.world.ground_items.removed.connect(
-		func(item: GroundItem) -> void:
-			_audio.play(&"item_pickup", item.position * TerrainTileset.TILE_SIZE)
-	)
-	state.world.building_placed.connect(
-		func(building: Building) -> void:
-			_audio.play(&"build_place", TerrainTileset.tile_centre(building.origin))
-	)
+	state.action_done.connect(_on_action_done)
 	build_mode.placement_refused.connect(func() -> void: _audio.play(&"denied"))
-	build_mode.taken_down.connect(
-		func(tile: Vector2i) -> void: _audio.play(&"axe_chop", TerrainTileset.tile_centre(tile))
-	)
 	state.player.inventory.changed.connect(_on_inventory_changed)
 
 
@@ -70,12 +60,12 @@ func click_on_press_in(root: Node) -> void:
 		slot.quick_move_requested.connect(func() -> void: _audio.play(&"ui_click"))
 
 
-## Plays the sound of using `tile` with the held item, which had this `result` (see
-## GameState `use_tile`).
-func used(result: ToolUse.Use, tile: Vector2i) -> void:
+## Plays the sound of a use of `tile` with the held item that did not work, which had this
+## `result` (see GameState `use_tile`); the ones that did are heard as outcomes.
+func failed_use(result: ToolUse.Use, tile: Vector2i) -> void:
 	var held := _state.player.inventory.held_item()
 	var held_tool: StringName = ItemTypes.TYPES.get(held, {}).get("tool", &"")
-	var event := SoundEvents.use(result, held_tool)
+	var event := SoundEvents.failed_use(result, held_tool)
 	if event != &"":
 		_audio.play(event, TerrainTileset.tile_centre(tile))
 
@@ -86,6 +76,12 @@ func _process(_delta: float) -> void:
 		if is_open != _panel_was_open[index]:
 			_panel_was_open[index] = is_open
 			_audio.play(_panel_events[index][0 if is_open else 1])
+
+
+func _on_action_done(outcome: ActionOutcome) -> void:
+	var event := SoundEvents.action(outcome.kind)
+	if event != &"":
+		_audio.play(event, TerrainTileset.tile_centre(outcome.tile))
 
 
 func _on_step() -> void:

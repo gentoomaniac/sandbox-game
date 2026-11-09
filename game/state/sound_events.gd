@@ -42,31 +42,39 @@ static func hit(object_type: Dictionary, is_finished: bool) -> StringName:
 	return &""
 
 
-## The sound of a use of the held item that is not a hit (those are heard as the object being
-## hit, see `hit`). A scythe swings even when it mows nothing.
-static func use(result: ToolUse.Use, held_tool: StringName) -> StringName:
-	match result:
-		ToolUse.Use.TILL:
+## The sound of a finished action of the player (see ActionOutcome). A hit is heard as the object
+## being hit (see `hit`), and the actions that make no sound of their own are silent.
+static func action(kind: StringName) -> StringName:
+	match kind:
+		ActionOutcome.TILL:
 			return &"hoe_till"
-		ToolUse.Use.PLANT:
+		ActionOutcome.PLANT:
 			return &"plant"
-		ToolUse.Use.HARVEST, ToolUse.Use.FORAGE, ToolUse.Use.CLEAR:
+		ActionOutcome.HARVEST, ActionOutcome.FORAGE, ActionOutcome.CLEAR:
 			return &"pick_bush"
-		ToolUse.Use.WATER:
+		ActionOutcome.WATER:
 			return &"water_pour"
-		ToolUse.Use.MOW:
+		ActionOutcome.MOW:
 			return &"scythe_swish"
-		ToolUse.Use.DIG:
+		ActionOutcome.DIG:
 			return &"shovel_dig"
-		ToolUse.Use.PLACE:
+		ActionOutcome.PLACE, ActionOutcome.BUILD:
 			return &"build_place"
-		ToolUse.Use.TAKE_DOWN:
+		ActionOutcome.TAKE_DOWN, ActionOutcome.DEMOLISH:
 			return &"axe_chop"
-		ToolUse.Use.GIVE_BONE:
+		ActionOutcome.GIVE_BONE:
 			return &"dog_bark"
-		ToolUse.Use.SADDLE, ToolUse.Use.UNSADDLE:
+		ActionOutcome.SADDLE, ActionOutcome.UNSADDLE:
 			return &"horse_whinny"
+		ActionOutcome.PICK_UP:
+			return &"item_pickup"
+	return &""
 
+
+## The sound of a use of the held item that did not work (no outcome is told for it): a refusal
+## is denied, and a scythe swings even when it mows nothing.
+static func failed_use(result: ToolUse.Use, held_tool: StringName) -> StringName:
+	match result:
 		ToolUse.Use.NEEDS_BETTER_TOOL, ToolUse.Use.NO_ROOM:
 			return &"denied"
 		ToolUse.Use.RIDING, ToolUse.Use.STANDING_ON:
