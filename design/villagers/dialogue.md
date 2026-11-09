@@ -17,8 +17,10 @@
   set in Settings (a provider, an OpenAI-compatible chat endpoint by default, the test LLM's
   `http://127.0.0.1:11434/v1`, or Claude, whose endpoint and model, `claude-opus-5-5`, it starts
   with, or Gemini through its OpenAI-compatible endpoint, with `gemini-2.5-flash-lite`; each
-  provider keeps its own endpoint, model, key, most tokens an answer may take and temperature of
-  a reply (empty: the game's own), so a key goes only to its own provider; a model, picked from the endpoint's list of models or typed; an optional key; an
+  profile has a provider and its own endpoint, model, most tokens an answer may take, temperature of
+  a reply (empty: the game's own) and lines a villager keeps, and the key is the provider's, so it
+  goes only to its own provider (`LanguageModelProfiles`; a profile is picked in Settings, and
+  several may share a provider); a model, picked from the endpoint's list of models or typed; an optional key; an
   emptied endpoint is none) it asks the model; without one, when nothing answers, on an error
   or after 30 s it says a scripted line of `data/npc_talk.cfg` ("Aye.", "Is that so?"). The answer is trimmed to the
   spoken line: no quotes or name in front, its first line, at most two sentences. Only the
@@ -55,7 +57,7 @@
 - **The wait:** belongs to the villager: while one answers, the player can leave and talk to
   another (who shows no typing); the answer lands in the chat of the one asked.
 - **Chat history and memory (task 91):** a villager keeps the last N lines of the chat (the
-  setting "Lines a villager keeps", 2 to 200, default 24, one for all providers); all go to the
+  setting "Lines a villager keeps", 2 to 200, default 24, one for each profile); all go to the
   model as earlier turns, so a reopened chat goes on. Lines that drop out (after an exchange,
   when the setting is lowered, applied once the menu is closed, and on load) are made one dated memory ("On the 12th day of
   Spring, year 1 (mid spring): ..."): summed up by the model with a small prompt of its own (one sentence of at most 25 words, in

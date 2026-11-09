@@ -20,7 +20,7 @@ func after_each() -> void:
 func _chat_screen(seconds := 0.1) -> ChatScreen:
 	var screen := ChatScreen.new()
 	var settings := GameSettings.new("user://test_chat_bubbles/settings.cfg")
-	settings.language_model["endpoint"] = "http://fake/v1"
+	settings.profiles.active["endpoint"] = "http://fake/v1"
 	var chat := FakeChat.new()
 	chat.seconds = seconds
 	screen.dialogue = NpcDialogue.new(settings, chat)

@@ -19,7 +19,7 @@ func before_all() -> void:
 func before_each() -> void:
 	_settings = GameSettings.new(SETTINGS_PATH)
 	# No model unless a test sets one: the default endpoint is the test LLM, which may be up.
-	_settings.language_model["endpoint"] = ""
+	_settings.profiles.active["endpoint"] = ""
 	_antje = Npc.create_villager("antje", _state.player.position, VillagerRules.default_rules())
 
 
@@ -51,7 +51,7 @@ func test_without_a_model_a_villager_says_a_scripted_line_while_the_game_is_paus
 
 
 func test_with_a_model_its_answer_is_said_trimmed() -> void:
-	_settings.language_model["endpoint"] = "http://fake/v1"
+	_settings.profiles.active["endpoint"] = "http://fake/v1"
 	var chat := FakeChat.new()
 	chat.answers = ['Antje: "Aye, it held. My Hinrich saw to it. And the sluice too."']
 	var dialogue := _dialogue(chat)
@@ -69,7 +69,7 @@ func test_with_a_model_its_answer_is_said_trimmed() -> void:
 
 
 func test_a_model_that_gives_nothing_gets_a_scripted_line() -> void:
-	_settings.language_model["endpoint"] = "http://fake/v1"
+	_settings.profiles.active["endpoint"] = "http://fake/v1"
 	var chat := FakeChat.new()
 	chat.answers = ['  ""  ']
 	var answer: String = await _dialogue(chat).reply(_antje, [], "Moin", _state)
@@ -83,10 +83,10 @@ func _real_dialogue() -> NpcDialogue:
 	if url == "":
 		pass_test("SANDBOX_LLM_URL is not set: no real model to ask")
 		return null
-	_settings.language_model["endpoint"] = url
+	_settings.profiles.active["endpoint"] = url
 	var model := OS.get_environment("SANDBOX_LLM_MODEL")
 	if model != "":
-		_settings.language_model["model"] = model
+		_settings.profiles.active["model"] = model
 	return _dialogue(OpenAiChat.new())
 
 
@@ -106,7 +106,7 @@ func test_a_real_model_sums_up_a_conversation() -> void:
 	var dialogue := _real_dialogue()
 	if dialogue == null:
 		return
-	_settings.set_chat_history_lines(2)
+	_settings.profiles.set_chat_history_lines(2)
 	_antje.add_chat_line(1, 400, true, "Do you have butter to sell?")
 	_antje.add_chat_line(1, 400, false, "Aye, two pounds at the door.")
 	_antje.add_chat_line(1, 401, true, "Thank you.")
@@ -117,9 +117,9 @@ func test_a_real_model_sums_up_a_conversation() -> void:
 
 
 func test_gemini_is_asked_through_the_openai_compatible_chat_with_its_own_key() -> void:
-	_settings.set_language_model("api_key", "sk-openai")
-	_settings.set_language_model_provider("gemini")
-	_settings.set_language_model("api_key", "AIza-test")
+	_settings.profiles.set_value("api_key", "sk-openai")
+	_settings.profiles.select("Gemini")
+	_settings.profiles.set_value("api_key", "AIza-test")
 	var openai_chat := FakeChat.new()
 	var claude_chat := FakeChat.new()
 	var dialogue := NpcDialogue.new(_settings, openai_chat, claude_chat)
@@ -134,10 +134,10 @@ func test_gemini_is_asked_through_the_openai_compatible_chat_with_its_own_key() 
 func test_a_hosted_model_is_told_the_full_sheets_and_a_local_one_the_cut_down() -> void:
 	var openai_chat := FakeChat.new()
 	var dialogue := _dialogue(openai_chat)
-	_settings.set_language_model("endpoint", "http://fake/v1")
+	_settings.profiles.set_value("endpoint", "http://fake/v1")
 	assert_false(dialogue.has_full_sheets(), "the test LLM needs no key")
 	await dialogue.reply(_antje, [], "Hello", _state)
-	_settings.set_language_model_provider("gemini")
+	_settings.profiles.select("Gemini")
 	assert_true(dialogue.has_full_sheets())
 	await dialogue.reply(_antje, [], "Hello", _state)
 	var cut_down: String = openai_chat.requests[0]["messages"][0]["content"]
@@ -147,18 +147,18 @@ func test_a_hosted_model_is_told_the_full_sheets_and_a_local_one_the_cut_down() 
 
 
 func test_the_chat_of_the_provider_is_asked_with_the_key_of_that_provider() -> void:
-	_settings.set_language_model("endpoint", "http://fake/v1")
-	_settings.set_language_model("api_key", "sk-openai")
-	_settings.set_language_model_provider("claude")
-	_settings.set_language_model("api_key", "sk-ant-test")
+	_settings.profiles.set_value("endpoint", "http://fake/v1")
+	_settings.profiles.set_value("api_key", "sk-openai")
+	_settings.profiles.select("Claude")
+	_settings.profiles.set_value("api_key", "sk-ant-test")
 	var openai_chat := FakeChat.new()
 	var claude_chat := FakeChat.new()
 	var dialogue := NpcDialogue.new(_settings, openai_chat, claude_chat)
 	add_child_autoqfree(dialogue)
 	await dialogue.reply(_antje, [], "Hello", _state)
-	_settings.set_language_model_provider("openai")
+	_settings.profiles.select("OpenAI-compatible")
 	await dialogue.reply(_antje, [], "Hello", _state)
-	_settings.set_language_model_provider("claude")
+	_settings.profiles.select("Claude")
 	await dialogue.reply(_antje, [], "Hello", _state)
 	assert_eq(openai_chat.language_models.size(), 1)
 	assert_eq(openai_chat.language_models[0]["api_key"], "sk-openai")
@@ -170,13 +170,13 @@ func test_the_chat_of_the_provider_is_asked_with_the_key_of_that_provider() -> v
 
 
 func test_the_reply_asks_with_the_temperature_of_the_setting_else_the_data_files() -> void:
-	_settings.language_model["endpoint"] = "http://fake/v1"
+	_settings.profiles.active["endpoint"] = "http://fake/v1"
 	var chat := FakeChat.new()
 	var dialogue := _dialogue(chat)
 	await dialogue.reply(_antje, [], "Moin", _state)
-	_settings.set_language_model("temperature", "1.4")
+	_settings.profiles.set_value("temperature", "1.4")
 	await dialogue.reply(_antje, [], "Moin", _state)
-	_settings.set_language_model("temperature", "hot")
+	_settings.profiles.set_value("temperature", "hot")
 	await dialogue.reply(_antje, [], "Moin", _state)
 	var games_own: float = NpcTalkRules.default_rules().value("request", "temperature")
 	var asked: Array = []
@@ -186,12 +186,39 @@ func test_the_reply_asks_with_the_temperature_of_the_setting_else_the_data_files
 
 
 func test_the_summary_keeps_its_own_temperature_whatever_the_setting() -> void:
-	_settings.language_model["endpoint"] = "http://fake/v1"
-	_settings.set_language_model("temperature", "1.8")
-	_settings.set_chat_history_lines(2)
+	_settings.profiles.active["endpoint"] = "http://fake/v1"
+	_settings.profiles.set_value("temperature", "1.8")
+	_settings.profiles.set_chat_history_lines(2)
 	var chat := FakeChat.new()
 	for index in 3:
 		_antje.add_chat_line(1, 400, true, "line %d" % index)
 	await _dialogue(chat).compact(_antje, _state)
 	var rules := NpcTalkRules.default_rules()
 	assert_eq(chat.requests[0]["temperature"], rules.value("memory", "temperature"))
+
+
+func test_the_reply_is_asked_with_the_profile_in_use_and_the_key_of_its_provider() -> void:
+	_settings.profiles.select("Gemini")
+	_settings.profiles.set_value("api_key", "AIza-test")
+	_settings.profiles.set_value("model", "gemini-2.5-pro")
+	_settings.profiles.set_value("temperature", "0.2")
+	_settings.profiles.copy()
+	_settings.profiles.set_value("model", "gemini-2.5-flash")
+	_settings.profiles.set_value("temperature", "1.1")
+	var chat := FakeChat.new()
+	var dialogue := _dialogue(chat)
+	await dialogue.reply(_antje, [], "Moin", _state)
+	_settings.profiles.select("Gemini")
+	await dialogue.reply(_antje, [], "Moin", _state)
+	var models: Array = chat.language_models.map(
+		func(each: Dictionary) -> Variant: return each["model"]
+	)
+	var keys: Array = chat.language_models.map(
+		func(each: Dictionary) -> Variant: return each["api_key"]
+	)
+	var temperatures: Array = chat.requests.map(
+		func(each: Dictionary) -> Variant: return each["temperature"]
+	)
+	assert_eq(models, ["gemini-2.5-flash", "gemini-2.5-pro"])
+	assert_eq(keys, ["AIza-test", "AIza-test"])
+	assert_eq(temperatures, [1.1, 0.2])

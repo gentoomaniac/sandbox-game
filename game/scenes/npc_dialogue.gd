@@ -1,7 +1,7 @@
 class_name NpcDialogue
 extends Node
 ## What a villager says back to the player: the one place their words come from. With a language
-## model set in Settings (GameSettings `language_model`) it is asked through the chat of its
+## model set in Settings (GameSettings `profiles`) it is asked through the chat of its
 ## provider, with the prompt of NpcPrompt; without one, or when it fails or takes too long, the
 ## villager says one of the scripted lines of data/npc_talk.cfg instead. Only the words come from
 ## the model: nothing else in the game changes by what it says.
@@ -35,12 +35,12 @@ func _init(
 
 ## Whether a language model is set: else every answer is scripted.
 func has_model() -> bool:
-	return _settings.language_model["endpoint"] != ""
+	return _settings.profiles.active["endpoint"] != ""
 
 
 ## The row of GameSettings `LANGUAGE_MODEL_PROVIDERS` of the provider set.
 func _provider() -> Dictionary:
-	return GameSettings.LANGUAGE_MODEL_PROVIDERS[_settings.language_model["provider"]]
+	return GameSettings.LANGUAGE_MODEL_PROVIDERS[_settings.profiles.active["provider"]]
 
 
 func _chat_of_provider() -> ModelChat:
@@ -64,10 +64,10 @@ func reply(npc: Npc, history: Array[Dictionary], message: String, state: GameSta
 		)
 		# Only the reply takes the setting; the summary of compact() keeps its own temperature.
 		request["temperature"] = ModelChat.temperature_of(
-			_settings.language_model, request["temperature"]
+			_settings.profiles.active, request["temperature"]
 		)
 		var answer: String = await _chat_of_provider().answer(
-			_settings.language_model, request, rules.value("request", "timeout_seconds")
+			_settings.profiles.language_model(), request, rules.value("request", "timeout_seconds")
 		)
 		var language := NpcLanguage.name_of(message, history, rules)
 		var label := NpcPrompt.last_reply_label(npc, message, language, rules)
@@ -82,13 +82,13 @@ func reply(npc: Npc, history: Array[Dictionary], message: String, state: GameSta
 	return lines[rng.randi_range(0, lines.size() - 1)]
 
 
-## Keeps the villager's chat at the length of the setting (GameSettings `chat_history_lines`) and
+## Keeps the villager's chat at the length of the setting (`chat_history_lines` of the profile) and
 ## makes a memory of the lines that drop out of it (see Npc `add_memory`): summed up by the
 ## model, or the start of what the player said without one or when it gives nothing. Lines that
 ## drop out while a summary is asked for wait for the next one. The lines stay in the villager's
 ## `uncompacted_lines` until their memory is made, so a save made meanwhile loses none.
 func compact(npc: Npc, state: GameState) -> void:
-	npc.drop_old_lines(_settings.chat_history_lines)
+	npc.drop_old_lines(_settings.profiles.active["chat_history_lines"])
 	if npc.is_compacting:
 		return
 	npc.is_compacting = true
@@ -98,7 +98,9 @@ func compact(npc: Npc, state: GameState) -> void:
 		if has_model():
 			var request := NpcPrompt.memory_request(npc, lines, rules)
 			var answer: String = await _chat_of_provider().answer(
-				_settings.language_model, request, rules.value("request", "timeout_seconds")
+				_settings.profiles.language_model(),
+				request,
+				rules.value("request", "timeout_seconds")
 			)
 			summary = NpcPrompt.trimmed_reply(answer, npc, 1)
 		# The chat was cleared meanwhile: there is nothing to remember.

@@ -255,10 +255,11 @@ The default key bindings are the input map in `project.godot` (in the Godot edit
 Settings → Input Map). The player changes them under Settings → Controls; `GameSettings`
 applies them to Godot's `InputMap` and stores only the differences from the defaults in
 `user://settings.cfg`. The same file keeps the display, game and audio settings and the
-language model's provider (OpenAI-compatible, Claude or Gemini, which speaks the OpenAI
-protocol: a row of
-`GameSettings.LANGUAGE_MODEL_PROVIDERS`, with the protocol it speaks) and each provider's own
-endpoint, model and key (`GameSettings.language_model` is the chosen one's; the key in plain
+language model: the profiles (`LanguageModelProfiles`, held by `GameSettings.profiles`; a
+profile is a provider with its endpoint, model, tokens, temperature and chat length, and the
+provider is a row of `GameSettings.LANGUAGE_MODEL_PROVIDERS` with the protocol it speaks:
+OpenAI-compatible, Claude or Gemini, which speaks the OpenAI protocol) and each provider's key
+(`profiles.language_model()` is the profile in use with its provider's key; the key in plain
 text, never in the save, never sent to another provider). The page of it
 (`LanguageModelPage`) lists the models the endpoint offers in a drop-down.
 

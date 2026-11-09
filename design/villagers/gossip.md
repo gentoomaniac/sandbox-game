@@ -163,7 +163,7 @@ Short lines over a villager's head, now and then:
 
 ## Settings
 
-Besides the memory sizes, a **temperature** setting per provider, like "most tokens an answer
+Besides the memory sizes, a **temperature** setting per profile (task 124), like "most tokens an answer
 may take" (empty: the game's own, 0.5). It applies to what villagers say (chat and bubbles).
 Summaries and the judge keep their own, low temperatures in the data file, as they need to be
 steady rather than lively.

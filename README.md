@@ -591,32 +591,38 @@ test LLM on `http://127.0.0.1:11434/v1` (see below); when nothing answers there,
 takes longer than 30 seconds, villagers say short scripted lines instead, so the game never
 needs a model.
 
-**Configuring it.** Settings → Language model has a provider choice, four fields and the chat length, each
-stored as you type or pick:
+**Configuring it.** Settings → Language model has a choice of profile, five fields and the chat length, each
+stored as you type or pick. A profile is a provider (OpenAI-compatible, Claude or Gemini) with
+its own endpoint, model, max tokens, temperature and chat length, so the same provider can have
+several: say Gemini with a flash and with a pro model, or one model warm and one steady. There is
+one profile for each provider to begin with, named after it. The key belongs to the provider,
+not to the profile: type it once, and it is only ever sent to that provider's endpoint.
 
 | Field | Default | What it is |
 |---|---|---|
-| Provider | OpenAI-compatible | OpenAI-compatible (the test LLM, Ollama, LM Studio, hosted APIs), Claude or Gemini. Each provider keeps its own endpoint, model and key: choosing Claude shows Claude's (starting with `https://api.anthropic.com/v1` and `claude-opus-5-5`), Gemini Gemini's, choosing back shows the test LLM's again, and a key is only ever sent to the provider it was typed for. |
+| Profile | OpenAI-compatible | The profile in use. The first three are OpenAI-compatible (the test LLM, Ollama, LM Studio, hosted APIs), Claude (starting with `https://api.anthropic.com/v1` and `claude-opus-5-5`) and Gemini; choosing one shows its endpoint, model, tokens, temperature and chat length, and the key of its provider. |
 | Endpoint | `http://127.0.0.1:11434/v1` | The base address of the chat API; the game posts to `<endpoint>/chat/completions`. Empty it to turn the model off (villagers then always speak scripted lines). |
 | Model | `qwen2.5:7b-instruct` | The model name the endpoint should use: typed, or picked from the drop-down below it, which lists what `<endpoint>/models` answers (Claude's `/v1/models` with the key), asks again a moment after the endpoint or key is typed and by the Refresh button, and shows only the saved model with a note when the endpoint can't be asked. |
-| Lines a villager keeps | 24 | A number from 2 to 200, one for all providers: how many of the latest chat lines a villager keeps in the save and tells the model. Older lines are summed up in a memory; lowering it sums up the lines it drops, once the menu is closed. Every kept line is sent with each question, so higher values make the answers slower (and cost more with a hosted model). |
-| Key | empty | Only for endpoints that need one: sent as the header `Authorization: Bearer <key>`, and never sent along a redirect. |
+| Lines a villager keeps | 24 | A number from 2 to 200, one for each profile: how many of the latest chat lines a villager keeps in the save and tells the model. Older lines are summed up in a memory; lowering it sums up the lines it drops, once the menu is closed. Every kept line is sent with each question, so higher values make the answers slower (and cost more with a hosted model). |
+| Key | empty | Only for endpoints that need one: sent as the header `Authorization: Bearer <key>`, and never sent along a redirect. One for all the profiles of a provider. |
 | Max tokens per answer | empty | The most tokens a villager's line or memory may take, a number from 1 to 32000. Empty is the game's own: 60 for a line and 40 for a memory, 1000 with Claude. A model that thinks first counts its thinking too, so give one such as Gemini's Flash a few hundred or more. |
 | Temperature | empty | How freely a villager's reply varies, a number from 0 to 2: lower is steadier, higher more surprising. Empty is the game's own, 0.5. It does not change the memory summaries, which keep their own low temperature, and Claude's API takes none. |
 
 The same live in `settings.cfg` (in Godot's user folder, e.g.
-`~/.local/share/godot/app_userdata/Sandbox Game/settings.cfg` on Linux): the chosen provider
-and the OpenAI-compatible provider's endpoint, model and key under `[language_model]` (where
-they were before there was a choice), Claude's under `[language_model.claude]` and Gemini's
-under `[language_model.gemini]`. Only values
-that differ from the defaults are written (the chat length is `chat_history_lines` under
-`[language_model]`):
+`~/.local/share/godot/app_userdata/Sandbox Game/settings.cfg` on Linux): the profiles and the
+name of the one in use under `[language_model]`, the key of the OpenAI-compatible provider next
+to them (where it was before there was a choice), Claude's under `[language_model.claude]` and
+Gemini's under `[language_model.gemini]`. Only what differs from the defaults is written. A file
+from before the profiles is upgraded when it is read: each provider's endpoint, model and tokens
+become the profile named after it, the provider in use the profile in use, and the one number of
+chat lines goes into each profile.
 
 ```
 [language_model]
-provider="claude"
-endpoint="https://api.openai.com/v1"
-model="gpt-4o-mini"
+active="Gemini pro"
+profiles=[{"name": "OpenAI-compatible", ...}, {"name": "Gemini pro", "provider": "gemini",
+"endpoint": "https://generativelanguage.googleapis.com/v1beta/openai", "model": "gemini-2.5-pro",
+"max_tokens": "", "temperature": "0.3", "chat_history_lines": 24}]
 api_key="sk-..."
 
 [language_model.claude]
@@ -642,7 +648,7 @@ curl -s <endpoint>/chat/completions -H 'Content-Type: application/json' \
 (Leave out the `Authorization` line for an endpoint without a key, like the test LLM.) When
 the endpoint can't be reached, the game's output says so once, not for every line.
 
-**Claude.** Pick the provider Claude under Settings → Language model and paste an Anthropic
+**Claude.** Pick the profile Claude under Settings → Language model and paste an Anthropic
 API key (console.anthropic.com) into Key; the endpoint becomes `https://api.anthropic.com/v1`
 and the model `claude-opus-5-5`. Everything the villager is told and everything you say to
 villagers then goes to Anthropic over the internet, and the key sits in `settings.cfg` as plain
@@ -657,7 +663,7 @@ of `data/npc_talk.cfg`. `ANTHROPIC_API_KEY=... make test` also asks the real Cla
 
 **Gemini.** Free within Google's limits, with an API key from AI Studio
 (aistudio.google.com/apikey: Create API key, in an existing or new Google Cloud project; without
-billing the key stays on the free tier). Pick the provider Gemini under Settings → Language model
+billing the key stays on the free tier). Pick the profile Gemini under Settings → Language model
 and paste the key (it starts with `AIza`); the endpoint becomes Gemini's OpenAI-compatible
 `https://generativelanguage.googleapis.com/v1beta/openai` and the model `gemini-2.5-flash-lite`,
 which answers fast and doesn't think first: a model that thinks may spend a line's 60 tokens

@@ -14,7 +14,7 @@ func before_each() -> void:
 	_npc = Npc.create_villager("antje", Vector2(_tile) + Vector2(0.5, 0.5), _state.npcs.villagers)
 	_state.npcs.add(_npc)
 	_settings = GameSettings.new("user://test_npc_memory/settings.cfg")
-	_settings.language_model["endpoint"] = "http://fake/v1"
+	_settings.profiles.active["endpoint"] = "http://fake/v1"
 	_chat = FakeChat.new()
 
 
@@ -126,7 +126,7 @@ func _texts(lines: Array[Dictionary]) -> Array:
 
 
 func test_lines_beyond_the_setting_are_remembered_as_the_model_sums_them_up() -> void:
-	_settings.set_chat_history_lines(2)
+	_settings.profiles.set_chat_history_lines(2)
 	_chat.answers = ["Moin!", "Aye.", "The neighbour greeted me; I greeted back."]
 	var screen := _chat_screen()
 	screen.open(_npc, _state)
@@ -141,8 +141,8 @@ func test_lines_beyond_the_setting_are_remembered_as_the_model_sums_them_up() ->
 
 
 func test_without_a_model_the_dropped_lines_are_remembered_plainly() -> void:
-	_settings.language_model["endpoint"] = ""
-	_settings.set_chat_history_lines(2)
+	_settings.profiles.active["endpoint"] = ""
+	_settings.profiles.set_chat_history_lines(2)
 	var screen := _chat_screen()
 	screen.open(_npc, _state)
 	await _said(screen, "Moin, Antje")
@@ -173,7 +173,7 @@ func test_a_summary_asked_for_is_followed_by_one_for_the_lines_that_dropped_mean
 	add_child_autoqfree(dialogue)
 	for index in 4:
 		_npc.add_chat_line(1, 400, index % 2 == 0, "line %d" % index)
-	_settings.set_chat_history_lines(2)
+	_settings.profiles.set_chat_history_lines(2)
 	dialogue.compact(_npc, _state)
 	_npc.add_chat_line(1, 410, true, "line 4")
 	dialogue.compact(_npc, _state)
@@ -194,19 +194,19 @@ func test_the_dropped_lines_are_kept_while_their_summary_is_asked_for() -> void:
 	add_child_autoqfree(dialogue)
 	for index in 3:
 		_npc.add_chat_line(1, 400, true, "line %d" % index)
-	_settings.set_chat_history_lines(2)
+	_settings.profiles.set_chat_history_lines(2)
 	dialogue.compact(_npc, _state)
 	assert_eq(_texts(_npc.uncompacted_lines), ["line 0"], "a save would hold them")
 	await wait_until(func() -> bool: return _npc.memories.size() == 1, 3.0)
 
 
 func test_lowering_the_setting_compacts_every_villager_at_once() -> void:
-	_settings.language_model["endpoint"] = ""
+	_settings.profiles.active["endpoint"] = ""
 	var dialogue := NpcDialogue.new(_settings, _chat)
 	add_child_autoqfree(dialogue)
 	for index in 6:
 		_npc.add_chat_line(1, 400, index % 2 == 0, "line %d" % index)
-	_settings.set_chat_history_lines(4)
+	_settings.profiles.set_chat_history_lines(4)
 	dialogue.compact_all(_state)
 	assert_eq(_texts(_npc.chat_history), ["line 2", "line 3", "line 4", "line 5"])
 	assert_eq(_npc.memories.size(), 1)
@@ -221,12 +221,12 @@ func test_lines_a_memory_holds_are_dropped_without_a_new_summary() -> void:
 	for index in 8:
 		_npc.add_chat_line(1, 400, true, "line %d" % index)
 	_npc.remembered_lines = 5
-	_settings.set_chat_history_lines(3)
+	_settings.profiles.set_chat_history_lines(3)
 	await dialogue.compact(_npc, _state)
 	assert_eq(_texts(_npc.chat_history), ["line 5", "line 6", "line 7"])
 	assert_eq(_npc.remembered_lines, 0)
 	assert_eq(_chat.requests.size(), 0, "lines already remembered are not summed up again")
-	_settings.set_chat_history_lines(2)
+	_settings.profiles.set_chat_history_lines(2)
 	await dialogue.compact(_npc, _state)
 	assert_eq(_chat.requests.size(), 1, "line 5 was not in a memory")
 	assert_string_contains(_chat.requests[0]["messages"][1]["content"], "line 5")
@@ -234,13 +234,13 @@ func test_lines_a_memory_holds_are_dropped_without_a_new_summary() -> void:
 
 
 func test_lowering_the_setting_in_steps_then_compacting_once_makes_one_memory() -> void:
-	_settings.language_model["endpoint"] = ""
+	_settings.profiles.active["endpoint"] = ""
 	var dialogue := NpcDialogue.new(_settings, _chat)
 	add_child_autoqfree(dialogue)
 	for index in 24:
 		_npc.add_chat_line(1, 400, index % 2 == 0, "line %d" % index)
 	for lines in range(23, 9, -1):
-		_settings.set_chat_history_lines(lines)
+		_settings.profiles.set_chat_history_lines(lines)
 	dialogue.compact_all(_state)
 	assert_eq(_npc.chat_history.size(), 10)
 	assert_eq(_npc.memories.size(), 1)
@@ -253,9 +253,9 @@ func test_lowering_the_setting_while_a_summary_is_in_flight_loses_and_doubles_no
 	add_child_autoqfree(dialogue)
 	for index in 6:
 		_npc.add_chat_line(1, 400, index % 2 == 0, "line %d" % index)
-	_settings.set_chat_history_lines(5)
+	_settings.profiles.set_chat_history_lines(5)
 	dialogue.compact(_npc, _state)
-	_settings.set_chat_history_lines(2)
+	_settings.profiles.set_chat_history_lines(2)
 	dialogue.compact_all(_state)
 	assert_eq(_texts(_npc.uncompacted_lines), ["line 0", "line 1", "line 2", "line 3"])
 	await wait_until(func() -> bool: return _npc.memories.size() == 2, 3.0)
@@ -307,7 +307,7 @@ func test_a_summary_in_flight_when_the_chat_is_cleared_makes_no_memory() -> void
 	add_child_autoqfree(dialogue)
 	for index in 3:
 		_npc.add_chat_line(1, 400, true, "line %d" % index)
-	_settings.set_chat_history_lines(2)
+	_settings.profiles.set_chat_history_lines(2)
 	dialogue.compact(_npc, _state)
 	_npc.forget_chat()
 	await wait_until(func() -> bool: return not _npc.is_compacting, 3.0)
