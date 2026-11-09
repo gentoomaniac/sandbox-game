@@ -2212,6 +2212,17 @@ come earlier.
 
 ## Later (not part of the prototype)
 
+- **Language model profiles** (the user, 2026-11-09): "revamp the LLM settings to profiles: a
+  profile contains a provider and its settings. That way you can choose different settings for
+  any given provider, for instance Gemini with a pro or a flash model, the same model with
+  different history and temperature etc." Today Settings keeps one set per provider (endpoint,
+  model, key, most tokens, and the temperature of task 124) and "Lines a villager keeps" for all.
+  A profile is a name, a provider and all of those, the chat length and (with task 126) the
+  memory sizes among them; Settings picks the active profile and adds, copies, renames and
+  deletes them. The key stays per provider, not per profile, so it is entered once and only ever
+  sent to its provider. Plan the settings-file shape and its upgrade from the per-provider
+  settings first (each provider's settings become a profile named after it).
+
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
   Valley, but actions count as well as gifts, in the manner of the Sims (helping, talking,
   events, rudeness, theft, being there in trouble). A first draft is in
