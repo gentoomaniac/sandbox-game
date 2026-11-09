@@ -129,25 +129,38 @@ func test_every_building_has_the_footprint_and_a_door_on_its_bottom_row() -> voi
 		assert_eq(building.door_tile(), Vector2i(10, 20) + door)
 
 
-func test_every_building_has_pictures_as_wide_as_its_footprint() -> void:
+func test_every_style_has_pictures_as_wide_as_its_footprint() -> void:
 	for id: StringName in FOOTPRINTS:
-		var building_type: Dictionary = BuildingTypes.TYPES[id]
-		for key in ["sprite", "sprite_lit"]:
-			for look in SeasonalArt.HOUSE_LOOKS:
-				var path := SeasonalArt.house_path(building_type[key], look)
-				var texture: Texture2D = load(path)
-				assert_not_null(texture, path)
-				assert_eq(texture.get_width(), FOOTPRINTS[id].x * TerrainTileset.TILE_SIZE, path)
-				assert_gt(texture.get_height(), FOOTPRINTS[id].y * TerrainTileset.TILE_SIZE, path)
+		var size: Vector2i = FOOTPRINTS[id] * TerrainTileset.TILE_SIZE
+		for style in BuildingTypes.styles(id):
+			var building_type := BuildingTypes.of(id, style)
+			for key in ["sprite", "sprite_lit"]:
+				for look in SeasonalArt.HOUSE_LOOKS:
+					var path := SeasonalArt.house_path(building_type[key], look)
+					var texture: Texture2D = load(path)
+					assert_not_null(texture, path)
+					assert_eq(texture.get_width(), size.x, path)
+					assert_gt(texture.get_height(), size.y, path)
 
 
 func test_every_interior_map_exists_and_every_window_light_is_on_its_picture() -> void:
 	for id: StringName in FOOTPRINTS:
-		var building_type: Dictionary = BuildingTypes.TYPES[id]
-		assert_true(FileAccess.file_exists(building_type["interior_map"]), str(id))
-		var size: Vector2i = load(building_type["sprite"]).get_size()
-		for centre: Vector2i in building_type["window_lights"]:
-			assert_true(Rect2i(Vector2i.ZERO, size).has_point(centre), "%s %s" % [id, centre])
+		assert_true(FileAccess.file_exists(BuildingTypes.TYPES[id]["interior_map"]), str(id))
+		for style in BuildingTypes.styles(id):
+			var building_type := BuildingTypes.of(id, style)
+			var size: Vector2i = load(building_type["sprite"]).get_size()
+			for centre: Vector2i in building_type["window_lights"]:
+				var where := "%s %s %s" % [id, style, centre]
+				assert_true(Rect2i(Vector2i.ZERO, size).has_point(centre), where)
+
+
+func test_the_kate_comes_in_brick_and_in_the_geest_look() -> void:
+	assert_eq(BuildingTypes.styles(BuildingTypes.KATE), [&"", &"brick", &"geest"])
+	var brick := BuildingTypes.of(BuildingTypes.KATE, &"brick")
+	assert_eq(brick["name"], "Brick Kate")
+	assert_eq(brick["costs"][ItemTypes.CLAY], 30)
+	assert_eq(brick["window_lights"], BuildingTypes.TYPES[BuildingTypes.KATE]["window_lights"])
+	assert_eq(BuildingTypes.of(BuildingTypes.KATE, &"geest")["name"], "Geest Kate")
 
 
 func test_costs_are_the_materials_that_are_not_zero() -> void:

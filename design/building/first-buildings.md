@@ -10,7 +10,12 @@
     15 reeds. Its landing is made of world objects, not part of the building (see **The
     landing** below).
   - **Kate:** a small cottage, 5×3, door on the middle tile. It replaces the old small
-    house (old saves map to it).
+    house (old saves map to it). Two more styles (task 120, 2026-11-09, from
+    review/art-review-2026-11-08): the **brick Kate** (red brick in sand joints on the
+    fieldstones, white frames, green door and shutters, a brick chimney; 30 clay instead of
+    15), as Kerrin Paulsen's house at the dyke foot, the mill house or the sexton's; and the
+    **Geest Kate** (the lime wash over a foot tarred black instead of the fieldstones, a turf
+    ridge; 35 logs, 5 stone). Same rooms inside.
   - **Longhouse:** a larger farmhouse, a Geesthardenhaus entered on its long side by a big
     arched door like the hall house's Grote Door; 7×3, door on the middle tile.
   - **Hall house** (task 59, 2026-11-06, from docs/art-style.md): the Low German hall house

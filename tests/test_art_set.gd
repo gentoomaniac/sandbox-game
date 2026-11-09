@@ -34,10 +34,11 @@ func test_the_classic_art_has_the_cells_of_the_new() -> void:
 func test_the_classic_buildings_are_as_big_as_the_new() -> void:
 	ArtSet.is_classic = true
 	for building_id in BuildingTypes.ids():
-		var path: String = BuildingTypes.TYPES[building_id]["sprite"]
-		var classic: Texture2D = load(ArtSet.path(path))
-		assert_ne(classic.resource_path, path, "%s has classic art" % building_id)
-		assert_eq(classic.get_size(), load(path).get_size(), path)
+		for style in BuildingTypes.styles(building_id):
+			var path: String = BuildingTypes.of(building_id, style)["sprite"]
+			var classic: Texture2D = load(ArtSet.path(path))
+			assert_ne(classic.resource_path, path, "%s has classic art" % path)
+			assert_eq(classic.get_size(), load(path).get_size(), path)
 
 
 func test_the_classic_crops_are_as_big_as_the_new() -> void:

@@ -347,22 +347,51 @@ def ground_shadow(picture):
             picture[height - 1][x] = "shadow"
 
 
-def kate(is_lit, ridge_sticks=True):
+def tarred_foot(picture, rng, left, right, top, bottom):
+    """The foot of a wall tarred black (task 120, drawn here for the classic art): a lit lip
+    along its top and a few runs of the tar's sheen."""
+    rect(picture, left, top, right, bottom, "ink")
+    rect(picture, left, top, right, top, "stone_dark")
+    for y in range(top + 2, bottom + 1, 2):
+        x = left + rng.randrange(4)
+        while x <= right:
+            run = rng.randint(2, 6)
+            colour = "stone_dark" if rng.random() < 0.5 else "soil_dark"
+            rect(picture, x, y, min(right, x + run - 1), y, colour)
+            x += run + rng.randint(4, 10)
+
+
+def kate(is_lit, ridge_sticks=True, walls="fieldstone"):
     """A small cottage on 5x3 tiles: white lime walls, teal door and shutters, a big eyebrow
     dormer in the middle of the roof and a small white chimney. The ridge is held by crossed
-    sticks, or with `ridge_sticks` off capped with turf as in the west."""
+    sticks, or with `ridge_sticks` off capped with turf as in the west. The styles of task 120,
+    drawn here for the classic art, change the `walls`: "brick", red brick in sand joints with
+    green door and shutters and a brick chimney; "geest", the lime wash over a black tarred
+    foot instead of the fieldstones."""
     rng = random.Random(381)
     width, height = 5 * TILE, 96
     picture = blank(width, height)
     snowy = set()
     wall_left, wall_right, wall_top, base_top = 3, width - 4, 60, 89
-    rect(picture, wall_left, wall_top, wall_right, base_top - 1, LIME[0])
-    rect(picture, wall_right - 1, wall_top, wall_right, base_top - 1, LIME[1])
-    fieldstone_base(picture, rng, wall_left, wall_right, base_top, height - 2)
-    teal = ("paint_teal", "paint_teal", "water")
+    if walls == "brick":
+        bricks = ("rust", "rust", "red_light")
+        brick_wall(picture, rng, wall_left, wall_right, wall_top, base_top - 1, bricks, "sand")
+    else:
+        rect(picture, wall_left, wall_top, wall_right, base_top - 1, LIME[0])
+        rect(picture, wall_right - 1, wall_top, wall_right, base_top - 1, LIME[1])
+    if walls == "geest":
+        tarred_foot(picture, rng, wall_left, wall_right, base_top, height - 2)
+    else:
+        fieldstone_base(picture, rng, wall_left, wall_right, base_top, height - 2)
+    if walls == "brick":
+        paint = ("green", "green", "green_dark")
+        chimney_colours = ("red_light", "rust", "rust_dark")
+    else:
+        paint = ("paint_teal", "paint_teal", "water")
+        chimney_colours = ("snow_light", "lime", "sand_light")
     for left in (12, 57):
-        window(picture, left, 70, 10, 10, is_lit, shutters=("paint_teal", "water"))
-    plank_door(picture, 34, 68, height - 4, 12, teal)
+        window(picture, left, 70, 10, 10, is_lit, shutters=paint[1:])
+    plank_door(picture, 34, 68, height - 4, 12, paint)
     eaves = thatch_roof(picture, snowy, rng, 0, width - 1, 12, 63, 22)
     if ridge_sticks:
         crossed_ridge(picture, snowy, 22, width - 23, 12)
@@ -370,7 +399,7 @@ def kate(is_lit, ridge_sticks=True):
         turf_ridge(picture, snowy, 22, width - 23, 12)
     eaves_shadow(picture, eaves, wall_left, wall_right)
     eyebrow(picture, snowy, 40, 46, 16, is_lit)
-    chimney(picture, snowy, 52, 3, 14, ("snow_light", "lime", "sand_light"))
+    chimney(picture, snowy, 52, 3, 14, chimney_colours)
     outline_edge(picture, THATCH[4], keep_bottom=True)
     ground_shadow(picture)
     return picture, snowy
@@ -948,11 +977,13 @@ def hall_house(is_lit):
 
 
 # How to draw each building (is_lit to the picture and the pixels snow covers), by its id in
-# data/buildings.cfg.
+# data/buildings.cfg; a style's as <building>_<style>.
 PICTURES = {
     "shack": shack,
     "fisher_hut": fisher_hut,
     "kate": kate,
+    "kate_brick": lambda is_lit: kate(is_lit, walls="brick"),
+    "kate_geest": lambda is_lit: kate(is_lit, ridge_sticks=False, walls="geest"),
     "longhouse": longhouse,
     "barn": barn,
     "hall_house": hall_house,

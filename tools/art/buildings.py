@@ -51,8 +51,9 @@ LIT_GLASS = ("cream", "gold", "flame")
 TEAL = ("water_light", "paint_teal", "water", "water_deep")
 GREEN = ("green_light", "green", "green_dark", "green_deep")
 OX_BLOOD = ("red_light", "rust", "rust_dark", "russet_deep")
-# Bricks, red and buff, each brick one of them.
+# Bricks, red and buff, each brick one of them; the brick Kate's are all fresh red.
 RED_BRICKS = ("rust", "rust", "red_light", "rust_dark")
+KATE_BRICKS = ("rust", "rust", "red_light")
 BUFF_BRICKS = ("sand_light", "sand_light", "straw", "sand")
 # The lighter corner of a brick that catches the light.
 BRICK_LIT = {"rust_dark": "rust", "rust": "red_light", "sand": "sand_light", "straw": "sand_light", "sand_light": "lime"}
@@ -461,25 +462,59 @@ def lime_wall(picture, rng, left, right, top, bottom):
                 picture[y][x] = LIME[1]
 
 
-def kate(is_lit):
-    """A small cottage on 5x3 tiles: white lime walls on fieldstones, a teal split door and
-    braced teal shutters, a big eyebrow dormer in the middle of the roof, the thatch swelling up
-    over the door, and a small white chimney; the ridge held by crossed sticks."""
+def tarred_foot(picture, rng, left, right, top, bottom):
+    """The foot of a wall tarred black against the splash, as on the Geest instead of
+    fieldstones: a lit lip along its top, and runs of the tar's blue-grey sheen and of thinner,
+    browner tar across it."""
+    rect(picture, left, top, right, bottom, "ink")
+    rect(picture, left, top, right, top, "stone_dark")
+    rect(picture, left, top + 1, right, top + 1, "mud_dark")
+    for y in range(top + 3, bottom + 1, 2):
+        x = left + rng.randrange(8)
+        while x <= right:
+            run = rng.randint(4, 12)
+            colour = "stone_dark" if rng.random() < 0.5 else "soil_dark"
+            rect(picture, x, y, min(right, x + run - 1), y, colour)
+            x += run + rng.randint(8, 20)
+
+
+def kate(is_lit, walls="fieldstone"):
+    """A small cottage on 5x3 tiles, a big eyebrow dormer in the middle of the roof, the thatch
+    swelling up over the door. `walls` gives its look: "fieldstone", white lime walls on
+    fieldstones, a teal split door and braced teal shutters, a small white chimney and crossed
+    sticks on the ridge; "brick", red brick in sand joints on the fieldstones with white frames,
+    green door and shutters and a brick chimney; "geest", the lime wash over a black tarred foot
+    under a turf ridge."""
     rng = random.Random(381)
     width, height = 5 * GAME_TILE, 192
     picture = blank(width, height)
     snowy = set()
     wall_left, wall_right, wall_top, base_top = 6, width - 7, 102, height - 14
-    lime_wall(picture, rng, wall_left, wall_right, wall_top, base_top - 1)
-    fieldstone_base(picture, rng, wall_left, wall_right, base_top, height - 3)
+    if walls == "brick":
+        bottom = base_top - 1
+        brick_wall(picture, rng, wall_left, wall_right, wall_top, bottom, KATE_BRICKS, "sand")
+    else:
+        lime_wall(picture, rng, wall_left, wall_right, wall_top, base_top - 1)
+    if walls == "geest":
+        tarred_foot(picture, rng, wall_left, wall_right, base_top, height - 3)
+    else:
+        fieldstone_base(picture, rng, wall_left, wall_right, base_top, height - 3)
+    paint = GREEN if walls == "brick" else TEAL
     for left in (25, 116):
-        window(picture, left, 140, 3, 3, is_lit, shutters=TEAL)
-    door(picture, 67, 126, height - 6, 26, TEAL)
+        window(picture, left, 140, 3, 3, is_lit, shutters=paint)
+    door(picture, 67, 126, height - 6, 26, paint)
     eaves = thatch_roof(picture, snowy, rng, 0, width - 1, 22, 122, 44, swells=((80, 26, 12),))
-    crossed_ridge(picture, snowy, 44, width - 45, 22)
+    if walls == "geest":
+        turf_ridge(picture, snowy, 44, width - 45, 22)
+    else:
+        crossed_ridge(picture, snowy, 44, width - 45, 22)
     eaves_shadow(picture, eaves, wall_left, wall_right)
     eyebrow(picture, snowy, 80, 86, 32, is_lit)
-    chimney(picture, snowy, 104, 6, 30, ("snow_light", "lime", "sand_light"))
+    if walls == "brick":
+        brick_chimney = ("red_light", "rust", "rust_dark")
+        chimney(picture, snowy, 104, 6, 30, brick_chimney, bricks=KATE_BRICKS)
+    else:
+        chimney(picture, snowy, 104, 6, 30, ("snow_light", "lime", "sand_light"))
     outline_edge(picture, THATCH[4], keep_bottom=True)
     ground_shadow(picture)
     return picture, snowy
@@ -1120,11 +1155,13 @@ def hall_house(is_lit):
 
 
 # How to draw each building (is_lit to the picture and the pixels snow covers), by its id in
-# data/buildings.cfg.
+# data/buildings.cfg; a style's as <building>_<style>.
 PICTURES = {
     "shack": shack,
     "fisher_hut": fisher_hut,
     "kate": kate,
+    "kate_brick": lambda is_lit: kate(is_lit, walls="brick"),
+    "kate_geest": lambda is_lit: kate(is_lit, walls="geest"),
     "longhouse": longhouse,
     "barn": barn,
     "hall_house": hall_house,

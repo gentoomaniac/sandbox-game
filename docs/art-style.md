@@ -304,8 +304,10 @@ along its foot.
 
 - **Kate** (cottage of a day labourer or craftsman): 1 storey, lime-washed or brick, hipped
   thatch, one eyebrow dormer, one door (a split *Klöntür*), a small chimney. Often at the
-  foot of a dyke or on the edge between marsh and Geest. Ours is lime-washed; a brick Kate
-  and a Geest Kate (lime over a tarred foot) are task 120.
+  foot of a dyke or on the edge between marsh and Geest. Ours is lime-washed on fieldstones,
+  and comes in two more styles (task 120): the brick Kate, red brick in sand joints with
+  green paint and a brick chimney, and the Geest Kate, lime over a foot tarred black under a
+  turf ridge.
 - **Geesthardenhaus / Danish længehus:** a long house, eaves side to the road, living end and
   byre in one row, entered from the long side. Our longhouse is this type. Danish farms
   add wings around a yard (2, 3 or 4 wings, *firlænget gård*).
