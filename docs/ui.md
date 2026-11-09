@@ -89,6 +89,10 @@ E does nothing while it is open.
   window then keeps running (`PROCESS_MODE_ALWAYS`). It unpauses when it closes, or is freed
   while open, whatever else asked for the pause, so only Modals pause the tree (the pause menu is
   one; Main does not pause for it).
+- **Keys of other windows:** opening a window closes the open one, but the keys that open the
+  windows (C, Tab, K) do nothing while another window is open: Main asks `can_open_on_key()`,
+  which is true when the window is closed and none is open, or when it is itself the open one,
+  so its key closes it or switches its tab.
 - **One at a time:** opening a window closes the open one, so windows need not know of each
   other. `Modal.is_any_open()` says whether one is open (Main uses it instead of its own
   conditions: then the player neither walks nor acts) and `Modal.close_open()` closes it.

@@ -32,13 +32,13 @@ Warft and an Ewer here and there.
 - **Main** (`game/scenes/main.gd`, `main.tscn`) is the one scene. It owns the `GameState`,
   turns real time into game minutes, sends input to the state and creates the views and
   screens. Its `_ready` runs in steps: load the game, make the views, connect the state and
-  the views, apply the start options. Every screen (`CharacterScreen`, `CraftingScreen`,
-  `StorageScreen`, `ConsoleView`, `ChatScreen`) has `open()` (the chat's is
-  `open_chat(npc, state)`), `close()` and `is_open()`, and Main keeps them in one list
-  (`_screens`). The windows (so far the crafting screen, the chest, the character screen, which
-  opens on a tab with `open_tab`, the pause menu and the chat) extend `Modal`, which builds the backdrop and panel, opens, closes, takes Escape and keeps one window
-  open at a time; see [ui.md](ui.md). The debug flags are parsed by `StartupOptions`; `DebugRunner` does
-  the ones that wait for the world to be drawn (see below).
+  the views, apply the start options. The windows (`CharacterScreen`,
+  `CraftingScreen`, `StorageScreen`, `ChatScreen` and `PauseMenu`) extend `Modal`, which builds
+  the backdrop and panel, opens, closes, takes Escape and keeps one window open at a time; Main
+  asks `Modal.is_any_open()`, and a window's key does nothing while another is open (see
+  [ui.md](ui.md)). The console is a strip, not a window, and keeps its own code. The debug flags
+  are parsed by `StartupOptions`; `DebugRunner` does the ones that wait for the world to be drawn
+  (see below).
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
   weather, the snow cover and the player. It is the entry point for actions (`walk`, `use_at`,
   `sleep_in`, `pass_door`, `pass_out`, `go_to_home_bed`, `teleport_to`), and what gets saved (`to_dict`, see `SaveFile`). It owns

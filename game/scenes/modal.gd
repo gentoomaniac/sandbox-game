@@ -80,6 +80,12 @@ func is_open() -> bool:
 	return visible
 
 
+## Whether the window's own key may act on it: not while another window is open, as that one has
+## the input. The key of the open window itself still works (it closes it, or switches its tab).
+func can_open_on_key() -> bool:
+	return visible or not Modal.is_any_open()
+
+
 ## Opens the window, closing the one that is open. Does nothing if this one is.
 func open() -> void:
 	if visible:

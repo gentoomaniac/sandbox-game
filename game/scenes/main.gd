@@ -43,12 +43,6 @@ var _console_view := ConsoleView.new()
 var _chat_screen := ChatScreen.new()
 var _npc_name_tag := NpcNameTag.new()
 var _cheat_hud := CheatHud.new()
-## The screens, in the order Escape closes them. The pause menu is not among them: Escape
-## opens it, it is a Modal and takes its own input.
-## The chat is a Modal too, which takes Escape in its input line.
-var _screens: Array = [
-	_console_view, _chat_screen, _character_screen, _crafting_screen, _storage_screen
-]
 var _interior_view := InteriorView.new()
 var _object_cover := ObjectCover.new()
 var _weather_view := WeatherView.new()
@@ -310,9 +304,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		_console_view.open()
 		return
 	if event.is_action_pressed("pause"):
-		# Escape closes the topmost screen, then dismisses build mode (until the player holds
-		# the hammer again), then opens the menu.
-		if _close_topmost_screen():
+		# The windows close themselves on Escape (see Modal). Here it closes the console, then
+		# dismisses build mode (until the player holds the hammer again), then opens the menu.
+		if _console_view.is_open():
+			_console_view.close()
 			return
 		if _build_mode.is_active():
 			_builder.dismiss()
@@ -442,24 +437,9 @@ func _is_use_event(event: InputEvent) -> bool:
 	return event.is_action_pressed("use") or event.is_action_pressed("use_click")
 
 
-## Whether a window or the console is open: the player neither walks nor acts. The console is
-## the one that is not a Modal.
+## Whether a window or the console is open: the player neither walks nor acts.
 func _is_any_screen_open() -> bool:
 	return Modal.is_any_open() or _console_view.is_open()
-
-
-## Closes the first open screen of `_screens`. Returns whether there was one.
-func _close_topmost_screen() -> bool:
-	for screen in _screens:
-		if screen.is_open():
-			screen.close()
-			return true
-	return false
-
-
-func _close_all_screens() -> void:
-	for screen in _screens:
-		screen.close()
 
 
 func _can_open_console() -> bool:
@@ -541,7 +521,8 @@ func _use_on(target: Targeting) -> void:
 func _pass_out() -> void:
 	_is_in_transition = true
 	# Nothing else may move the player meanwhile.
-	_close_all_screens()
+	Modal.close_open()
+	_console_view.close()
 	# They slide off the horse first, if there is room beside it; else they collapse in the saddle.
 	if _state.player.horse != null:
 		_state.dismount()
@@ -594,22 +575,21 @@ func _toggle_classic_art() -> void:
 	_settings.set_classic_art(not ArtSet.is_classic)
 
 
-## Opens and closes the screens on their keys. Returns whether a screen took the event: one that
-## is open takes all the input, so the player neither walks nor acts.
+## Opens and closes the windows on their keys; a window's key does nothing while another window is
+## open (see Modal.can_open_on_key). Returns whether a window took the event: one that is open
+## takes all the input, so the player neither walks nor acts.
 func _screens_take(event: InputEvent) -> bool:
-	if _storage_screen.is_open():
-		return true
-	if event.is_action_pressed("crafting") and not _character_screen.is_open():
+	if event.is_action_pressed("crafting") and _crafting_screen.can_open_on_key():
 		# On horseback only the inventory and eating are possible; an open screen still closes.
 		if _crafting_screen.is_open() or _state.player.horse == null:
 			_crafting_screen.toggle()
 		else:
 			_harvest_hud.show_note(GET_OFF_FIRST)
 		return true
-	if event.is_action_pressed("inventory") and not _crafting_screen.is_open():
+	if event.is_action_pressed("inventory") and _character_screen.can_open_on_key():
 		_character_screen.toggle_tab(CharacterScreen.Tab.CHARACTER)
 		return true
-	if event.is_action_pressed("skills") and not _crafting_screen.is_open():
+	if event.is_action_pressed("skills") and _character_screen.can_open_on_key():
 		_character_screen.toggle_tab(CharacterScreen.Tab.SKILLS)
 		return true
 	return _is_any_screen_open()
@@ -708,15 +688,12 @@ func _show_current_map() -> void:
 func _start_sounds() -> void:
 	add_child(_sounds)
 	_sounds.listen(_audio, _state, _view, _player_view, _build_mode)
-	_sounds.click_on_press_in(_menu)
 	_sounds.click_on_press_in(_hotbar)
-	_sounds.watch_panel(_menu.is_open)
-	for screen in _screens:
-		_sounds.click_on_press_in(screen)
-		if screen == _storage_screen:
-			_sounds.watch_panel(screen.is_open, &"chest_open", &"chest_close")
-		else:
-			_sounds.watch_panel(screen.is_open)
+	for panel: Node in [_menu, _console_view, _chat_screen, _character_screen, _crafting_screen]:
+		_sounds.click_on_press_in(panel)
+		_sounds.watch_panel(panel.is_open)
+	_sounds.click_on_press_in(_storage_screen)
+	_sounds.watch_panel(_storage_screen.is_open, &"chest_open", &"chest_close")
 	add_child(_ambience)
 	_ambience.listen(_audio, _state, _wildlife, _weather_view)
 
