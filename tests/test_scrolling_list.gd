@@ -58,7 +58,7 @@ func test_a_window_too_small_still_leaves_the_list_some_height() -> void:
 func test_a_panel_with_many_rows_stays_inside_the_window_and_scrolls() -> void:
 	_add_rows(40)
 	await wait_process_frames(2)
-	assert_lte(_panel_height(), WINDOW.y - 2 * ScrollingList.MARGIN)
+	assert_lte(_panel_height(), float(WINDOW.y - 2 * ScrollingList.MARGIN))
 	assert_true(_list.get_v_scroll_bar().visible)
 	assert_gt(_list.get_v_scroll_bar().max_value, _list.get_v_scroll_bar().page)
 
@@ -70,7 +70,7 @@ func test_the_list_gives_way_when_the_rest_of_the_panel_grows() -> void:
 	_title.text = "Title\nand a note of\nthree lines"
 	await wait_process_frames(2)
 	assert_lt(_list.custom_minimum_size.y, before)
-	assert_lte(_panel_height(), WINDOW.y - 2 * ScrollingList.MARGIN)
+	assert_lte(_panel_height(), float(WINDOW.y - 2 * ScrollingList.MARGIN))
 
 
 func test_the_list_follows_the_window_being_resized() -> void:

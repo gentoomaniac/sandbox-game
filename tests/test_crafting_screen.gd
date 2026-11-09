@@ -84,7 +84,7 @@ func test_the_panel_never_gets_taller_than_the_window() -> void:
 	var list: ScrollingList = _screen.find_children("*", "ScrollingList", true, false)[0]
 	assert_true(list.get_v_scroll_bar().visible, "the window is too small for the rows")
 	var panel: Control = _screen.find_children("*", "PanelContainer", true, false)[0]
-	assert_lte(panel.size.y, window.size.y - 2 * ScrollingList.MARGIN)
+	assert_lte(panel.size.y, float(window.size.y - 2 * ScrollingList.MARGIN))
 
 
 func test_a_station_menu_shows_its_recipes_and_the_hand_menu_those_made_by_hand() -> void:
