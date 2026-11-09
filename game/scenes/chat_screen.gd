@@ -6,8 +6,9 @@ extends Modal
 ## the game time in its corner, and above each day's lines that day ("Today", "Yesterday" or the
 ## date), so a line of an earlier day doesn't look newer than the one after it. The window
 ## scrolls to the newest line, back with the mouse wheel or Page Up and Page Down, and a line to
-## type into is below. Enter sends, Escape leaves. The window has a fixed size (LOG_SIZE), which
-## the bubbles' widths are worked out from.
+## type into is below. Enter sends, Escape leaves. The log is LOG_SIZE, or smaller where the
+## window at the current UI scale leaves less room (see `_fit_log`), and the bubbles' widths
+## follow it.
 ##
 ## The game is paused while it is open (a Modal that pauses), so nothing moves and no key reaches
 ## the game but the art switch, which the chat passes on (`art_set_switch_pressed`): it keeps
@@ -33,7 +34,11 @@ const PORTRAIT_SCALE := 2
 const PORTRAIT_SIZE := 32 * PORTRAIT_SCALE
 ## A name under a portrait wraps to this width.
 const NAME_WIDTH := 76
+## The largest the log gets, in UI units.
 const LOG_SIZE := Vector2(340, 176)
+## The log is never squeezed below this, however small the window is: a window tinier than the
+## portraits and this loses the panel's edge before the log loses its lines.
+const MIN_LOG_SIZE := Vector2(128, 64)
 ## A bubble is at most this share of the window wide, so the two sides stay apart.
 const BUBBLE_MAX_SHARE := 0.7
 ## Space between the bubbles of one speaker, and where the speaker changes.
@@ -74,6 +79,7 @@ var _messages := VBoxContainer.new()
 var _scroll := ScrollContainer.new()
 ## Whether the window follows the newest line: not once the player has scrolled back.
 var _is_following := true
+var _log_size := LOG_SIZE
 var _input := LineEdit.new()
 
 
@@ -92,7 +98,7 @@ func _init() -> void:
 	ground_box.bg_color = LOG_GROUND
 	ground_box.set_content_margin_all(LOG_PADDING)
 	log_ground.add_theme_stylebox_override("panel", ground_box)
-	_scroll.custom_minimum_size = LOG_SIZE
+	_scroll.custom_minimum_size = _log_size
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_scroll.focus_mode = Control.FOCUS_NONE
 	var scroll_bar := _scroll.get_v_scroll_bar()
@@ -125,6 +131,15 @@ func open_chat(npc: Npc, state: GameState) -> void:
 	open()
 
 
+func _enter_tree() -> void:
+	get_viewport().size_changed.connect(refit)
+
+
+func _exit_tree() -> void:
+	super()
+	get_viewport().size_changed.disconnect(refit)
+
+
 func _on_open() -> void:
 	_show_portrait(_player_portrait, _state.player.appearance)
 	_show_portrait(_npc_portrait, _npc.appearance)
@@ -139,6 +154,24 @@ func _on_open() -> void:
 
 func _on_close() -> void:
 	_input.release_focus()
+
+
+## Fits the log to the window, which changes with the window's size and the UI scale. The bubbles
+## follow, and the newest line stays followed by the scroll bar's own `changed`.
+func refit() -> void:
+	super()
+	if not visible:
+		return
+	# What the panel is besides the log (portraits, the input line, padding), as the log's own
+	# size is part of the panel's.
+	var chrome := _panel.get_combined_minimum_size() - _scroll.get_combined_minimum_size()
+	var room := (
+		get_viewport().get_visible_rect().size - chrome - Vector2.ONE * (2 * ScrollingList.MARGIN)
+	)
+	_log_size = room.clamp(MIN_LOG_SIZE, LOG_SIZE)
+	_scroll.custom_minimum_size = _log_size
+	for body in _messages.find_children("Text", "Label", true, false):
+		_fit_text_width(body)
 
 
 ## Says a line to the villager and waits for the answer. Ignored while they still owe one.
@@ -250,14 +283,18 @@ func _add_bubble(text: String, time: String, is_player: bool, previous: Variant)
 	if previous != null:
 		gap = OTHER_SPEAKER_GAP if is_run_start else SAME_SPEAKER_GAP
 	_messages.add_child(_margin(bubble, gap))
-	# The text takes the width it needs up to the bubble's largest and wraps there; a word too
-	# long for it is broken.
-	var window_width := LOG_SIZE.x - _scroll.get_v_scroll_bar().get_combined_minimum_size().x
+	_fit_text_width(body)
+
+
+## The text takes the width it needs up to the bubble's largest and wraps there; a word too long
+## for it is broken.
+func _fit_text_width(body: Label) -> void:
+	var window_width := _log_size.x - _scroll.get_v_scroll_bar().get_combined_minimum_size().x
 	var max_width := int(window_width * BUBBLE_MAX_SHARE - BUBBLE_PADDING.x * 2)
 	var font := body.get_theme_font("font")
 	var font_size := body.get_theme_font_size("font_size")
 	var text_size := font.get_multiline_string_size(
-		text, HORIZONTAL_ALIGNMENT_LEFT, max_width, font_size
+		body.text, HORIZONTAL_ALIGNMENT_LEFT, max_width, font_size
 	)
 	body.custom_minimum_size.x = ceili(minf(text_size.x, max_width))
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

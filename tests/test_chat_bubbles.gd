@@ -3,6 +3,7 @@ extends ResourceCase
 ## villager typing and the scrolling to the newest line.
 
 var _npc: Npc
+var _window: SubViewport
 
 
 func before_each() -> void:
@@ -17,7 +18,7 @@ func after_each() -> void:
 
 
 ## A chat screen whose villagers answer through a fake language model after `seconds`.
-func _chat_screen(seconds := 0.1) -> ChatScreen:
+func _chat_screen(seconds := 0.1, parent: Node = self) -> ChatScreen:
 	var screen := ChatScreen.new()
 	var settings := GameSettings.new("user://test_chat_bubbles/settings.cfg")
 	settings.profiles.active["endpoint"] = "http://fake/v1"
@@ -25,8 +26,19 @@ func _chat_screen(seconds := 0.1) -> ChatScreen:
 	chat.seconds = seconds
 	screen.dialogue = NpcDialogue.new(settings, chat)
 	add_child_autofree(screen.dialogue)
-	add_child_autofree(screen)
+	parent.add_child(screen)
+	if parent != self:
+		return screen
+	autofree(screen)
 	return screen
+
+
+## A chat screen in a window of its own of this size.
+func _chat_screen_in_window(window_size: Vector2i) -> ChatScreen:
+	_window = SubViewport.new()
+	_window.size = window_size
+	add_child_autofree(_window)
+	return _chat_screen(0.1, _window)
 
 
 # --- Whom E speaks to ---
@@ -183,3 +195,46 @@ func test_each_days_lines_have_the_day_above_them() -> void:
 	assert_eq(GameClock.date_text_of(3), "3rd day of Spring Year 1")
 	assert_eq(GameClock.date_text_of(12), _state.clock.date_text())
 	assert_eq(_bubbles(screen).size(), 4, "the day lines are not bubbles")
+
+
+func test_the_log_is_full_size_in_a_window_with_room() -> void:
+	var screen := _chat_screen_in_window(Vector2i(1000, 700))
+	screen.open_chat(_npc, _state)
+	await wait_frames(2)
+	assert_eq(screen._scroll.size, ChatScreen.LOG_SIZE)
+	screen.close()
+
+
+func test_the_panel_fits_a_small_window_less_the_margin_with_narrower_bubbles() -> void:
+	var screen := _chat_screen_in_window(Vector2i(400, 240))
+	_npc.add_chat_line(1, 480, false, "word ".repeat(80))
+	screen.open_chat(_npc, _state)
+	await wait_frames(3)
+	var panel_rect := screen._panel.get_global_rect()
+	assert_lte(panel_rect.size.x, 400.0 - 2 * ScrollingList.MARGIN)
+	assert_lte(panel_rect.size.y, 240.0 - 2 * ScrollingList.MARGIN)
+	assert_lt(screen._scroll.size.x, ChatScreen.LOG_SIZE.x)
+	assert_lt(screen._scroll.size.y, ChatScreen.LOG_SIZE.y)
+	var bubble := _bubbles(screen)[0]
+	assert_lte(bubble.size.x, screen._scroll.size.x * ChatScreen.BUBBLE_MAX_SHARE)
+	assert_gt(bubble.size.y, 60.0, "the long line wraps to several lines")
+	screen.close()
+
+
+func test_a_resize_refits_the_log_and_the_bubbles_and_the_newest_line_stays_followed() -> void:
+	var screen := _chat_screen_in_window(Vector2i(1000, 700))
+	for index in 30:
+		_npc.add_chat_line(1, 480 + index, index % 2 == 0, "Line %d " % index + "word ".repeat(20))
+	screen.open_chat(_npc, _state)
+	await wait_frames(2)
+	var full_bubble_width := _bubbles(screen)[0].size.x
+	_window.size = Vector2i(400, 240)
+	await wait_frames(3)
+	assert_lt(screen._scroll.size.x, ChatScreen.LOG_SIZE.x)
+	assert_lt(_bubbles(screen)[0].size.x, full_bubble_width)
+	var scroll_bar := screen._scroll.get_v_scroll_bar()
+	assert_almost_eq(scroll_bar.value, scroll_bar.max_value - scroll_bar.page, 1.0)
+	_window.size = Vector2i(1000, 700)
+	await wait_frames(3)
+	assert_eq(screen._scroll.size, ChatScreen.LOG_SIZE)
+	screen.close()

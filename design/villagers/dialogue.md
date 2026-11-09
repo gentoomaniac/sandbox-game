@@ -12,7 +12,10 @@
   (palette colours only). Above each day's lines a small centred line says the day ("Today",
   "Yesterday" or the date, decided 2026-11-09), so a line of an earlier day doesn't look newer
   than the next. The window scrolls to the newest line (and back with the wheel or
-  Page Up/Down), and a one-line input. Enter sends; while the answer is awaited the villager
+  Page Up/Down), and a one-line input. The log is 340x176 UI pixels at most and never bigger than
+  the window leaves at the current UI scale (less the margin other windows keep), down to a
+  minimum of 128x64; the bubbles' widths follow it and the text wraps within them, while the
+  text still grows with the UI scale (decided 2026-11-09). Enter sends; while the answer is awaited the villager
   has a "..." bubble; Escape leaves (and doesn't open the
   pause menu). The villager turns to the player and stands a while.
 - **Answers:** one function, `NpcDialogue.reply`, awaited by the chat. With a language model

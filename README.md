@@ -228,8 +228,9 @@ Face a villager and press E to talk: the name over their head shows whom E speak
 chat is laid out like a messenger: the villager's portrait on the left and yours on the
 right, and between them the talk as bubbles, the villager's on the left under their name,
 yours on the right, each with the game time in its corner; a "..." bubble shows the villager
-is still answering. Type a line and press Enter; Escape leaves. The game stands still
-while you talk. A villager keeps the latest lines of your chat (24 by default, set under
+is still answering. The chat never outgrows the window, also at a larger UI scale: it gets
+narrower and shorter and the lines wrap. Type a line and press Enter; Escape leaves. The game
+stands still while you talk. A villager keeps the latest lines of your chat (24 by default, set under
 Settings → Language model) for the next time, so a reopened chat goes on where it left off;
 the older lines are summed up in one remembered line (by the model, else it is what you
 said), and later talks build on it. Type `/clear` in a chat to make that villager forget
