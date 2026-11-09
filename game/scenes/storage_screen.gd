@@ -7,8 +7,11 @@ extends Modal
 ## slot of either side to put it down: a different item swaps places and is picked up in turn
 ## (it sticks to the mouse), the same item stacks.
 ## Clicking the picked slot again, or on the panel outside the slots, lets go of the pick; a left
-## click outside the panel puts a picked inventory stack on the ground. Shift+click sends a whole
-## stack to the other side (from the chest into the backpack first, so the hotbar isn't flooded).
+## click outside the panel puts a picked inventory stack on the ground. A click on the trash can
+## under the backpack with a stack picked (of either side) asks "Destroy Logs (12)?" (see
+## TrashCan); a click elsewhere or Escape answers Keep, and the stack stays picked. Shift+click
+## sends a whole stack to the other side (from the chest into the backpack first, so the hotbar
+## isn't flooded).
 ## Like the character screen, it takes the input while it is open (Main sees to that, and closes it
 ## on E; Escape is the Modal's).
 
@@ -40,6 +43,7 @@ var _pick := {}
 var _picked_icon := ItemIcon.new()
 ## What the chest's grid of slots is swapped in and out of: the part that grows.
 var _chest_holder := VBoxContainer.new()
+var _trash_can := TrashCan.new()
 
 
 func _init(hotbar: HotbarHud) -> void:
@@ -54,6 +58,9 @@ func _init(hotbar: HotbarHud) -> void:
 	inventory_column.add_child(
 		_new_grid(INVENTORY, Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT, INVENTORY_COLUMNS)
 	)
+	inventory_column.add_child(_trash_can)
+	_trash_can.pressed.connect(_on_trash_can_pressed)
+	_trash_can.destroy_confirmed.connect(_on_destroy_confirmed)
 	for slot in Inventory.HOTBAR_SIZE:
 		var view := _hotbar.slot_view(slot)
 		_views[INVENTORY][slot] = view
@@ -89,6 +96,7 @@ func _on_open() -> void:
 	_inventory.changed.connect(_refresh)
 	_chest.changed.connect(_refresh)
 	_pick = {}
+	_trash_can.keep()
 	_hotbar.set_clickable(true)
 	_hotbar.slot_pressed.connect(_on_hotbar_slot_pressed)
 	_refresh()
@@ -99,6 +107,7 @@ func _on_close() -> void:
 	_inventory.changed.disconnect(_refresh)
 	_chest.changed.disconnect(_refresh)
 	_pick = {}
+	_trash_can.keep()
 	_picked_icon.visible = false
 	_hotbar.set_clickable(false)
 	_hotbar.slot_pressed.disconnect(_on_hotbar_slot_pressed)
@@ -180,6 +189,23 @@ func _on_hotbar_slot_pressed(slot: int) -> void:
 	_on_slot_pressed(INVENTORY, slot)
 
 
+func _on_trash_can_pressed() -> void:
+	if not _pick.is_empty():
+		var slots := _slots_of(_pick["side"])
+		_trash_can.ask(slots.item_in(_pick["slot"]), slots.slots[_pick["slot"]]["count"])
+
+
+func _on_destroy_confirmed() -> void:
+	_slots_of(_pick["side"]).destroy(_pick["slot"])
+	_pick = {}
+	_refresh()
+
+
+## Escape answers the trash can's question with Keep, and only then closes the screen.
+func _takes_escape() -> bool:
+	return _trash_can.keep()
+
+
 func _on_backdrop_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		var is_drop: bool = (
@@ -197,6 +223,7 @@ func _refresh() -> void:
 	# Keeps the picked icon valid whatever changed underneath.
 	if not _pick.is_empty() and _slots_of(_pick["side"]).item_in(_pick["slot"]) == ItemTypes.NONE:
 		_pick = {}
+		_trash_can.keep()
 	for side: int in _views:
 		var slots := _slots_of(side)
 		for slot in slots.slots.size():

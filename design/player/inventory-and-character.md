@@ -35,11 +35,12 @@
     are not pulled back until the player has walked out of reach of them; then they are
     collected as usual.
   - **Trash can** (task 133): a slot with a bin icon in the inventory column of the character
-    screen. Putting a picked stack on it (from the backpack, the hotbar or an equipment slot)
-    asks "Destroy Logs (12)?" (just "Destroy Waistcoat?" for one) in a small panel over the
-    screen, with Destroy and Keep (Keep has the focus). Destroy removes the stack for good, with
-    no drop on the ground; Keep, Escape (which then does not close the screen) or any other click
-    leaves the stack picked as it was. The state classes do the removal (`ItemSlots.destroy`,
+    screen and under the backpack on the chest's screen. Putting a picked stack on it (from the
+    backpack, the hotbar, an equipment slot or the chest) asks "Destroy Logs (12)?" (just
+    "Destroy Waistcoat?" for one) in a small panel over the screen, with Destroy and Keep (Keep
+    has the focus). Destroy removes the stack for good, with no drop on the ground; Keep, Escape
+    (which then does not close the screen) or any other click or wheel turn leaves the stack
+    picked as it was. The state classes do the removal (`ItemSlots.destroy`,
     `Equipment.destroy`); the screen only asks and sends it.
 - **Character screen** (decided 2026-11-05): Tab opens one screen with the character and
   their equipment on one side and the inventory on the other.

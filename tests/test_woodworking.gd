@@ -57,13 +57,13 @@ func test_the_carved_chest_holds_twenty_slots_and_the_storage_screen_shows_them(
 	add_child_autofree(screen)
 	screen.open_chest(carved, _state.player)
 	var views := screen.find_children("*", "SlotView", true, false)
-	assert_eq(views.size(), Inventory.BACKPACK_SIZE + 20)
+	assert_eq(views.size(), Inventory.BACKPACK_SIZE + 20 + 1, "with the trash can")
 	screen.close()
 	screen.open_chest(
 		WorldObject.new(WorldObjectTypes.CHEST, _tile + Vector2i.RIGHT), _state.player
 	)
 	views = screen.find_children("*", "SlotView", true, false)
-	assert_eq(views.size(), Inventory.BACKPACK_SIZE + 15, "a plain chest again")
+	assert_eq(views.size(), Inventory.BACKPACK_SIZE + 15 + 1, "a plain chest again")
 
 
 func test_the_joined_cupboard_stands_only_in_a_house_and_holds_twenty_five_slots() -> void:

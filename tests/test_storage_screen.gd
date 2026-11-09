@@ -39,6 +39,7 @@ func _open_screen() -> Array[SlotView]:
 	_screen.open_chest(chest, player)
 	var in_screen: Array[SlotView] = []
 	in_screen.assign(_screen.find_children("*", "SlotView", true, false))
+	in_screen.erase(_screen._trash_can._slot)
 	var views: Array[SlotView] = in_screen.slice(0, Inventory.BACKPACK_SIZE)
 	for slot in Inventory.HOTBAR_SIZE:
 		views.append(hotbar.slot_view(slot))

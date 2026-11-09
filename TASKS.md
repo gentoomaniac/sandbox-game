@@ -2317,7 +2317,7 @@ screens not yet on it. The open window is a static variable of the base, no regi
 
 ## 133. A trash can in the inventory
 
-- [ ] Done
+- [x] Done
 
 The user, 2026-11-09: "once i tell you to resume 131, start in parallel: a trash can for the
 inventory dragging items on it will destroy them after confirmation." Then: "do 133 after 131
@@ -2334,6 +2334,13 @@ the character screen (the inventory) onto Modal first, and this task starts once
 - Game state: the inventory's removal is an explicit action with a test; the screen only asks
   and sends it. Docs: the inventory design page and the README.
 - It builds on the character screen as task 131 left it on Modal.
+
+Done: `ItemSlots.destroy` and `Equipment.destroy` (tests/test_item_slots.gd, test_equipment.gd),
+the bin icon `assets/ui/trash_icon.png` (UI icons have one version for both art sets, as the
+slots do), and `TrashCan` (game/scenes/trash_can.gd): a bin slot whose question "Destroy Logs
+(12)?" floats over the screen with Destroy and Keep, so the screen does not change size. It
+swallows any other click while up, Escape goes through `_takes_escape`. Used by the character
+screen and the chest's (tests/test_trash_can.gd, test_storage_trash_can.gd).
 
 ## Later (not part of the prototype)
 

@@ -394,7 +394,7 @@ whole stack from the backpack to the hotbar and back (onto the same item first, 
 room). Let go of a picked stack outside the screen, or press T for the held stack, and it lies
 on the ground in front of you; walk away and back to pick it up again (a game saved right
 after a drop picks the pile up when it loads). To get rid of a stack for good, put it on the
-trash can (the bin slot under the backpack on the character screen): the game asks "Destroy
+trash can (the bin slot under the backpack, on the character screen and the chest's): the game asks "Destroy
 Logs (12)?" and Destroy removes the stack; Keep, Escape or a click elsewhere leaves it picked,
 and Escape does not close the screen while the question is up. A worn item or a hotbar stack
 can be thrown away the same way. Energy and health bars track how tired you are,
@@ -482,8 +482,8 @@ door). Use it to place the chest, outdoors or inside a house. Press E in front o
 to open it: your backpack is on the left (the hotbar below stays usable) and the chest's 15
 slots (20 in a carved chest) on the right. Click an item and click a slot to move it, or
 Shift+click to send a whole stack across (from the chest it goes to the backpack first, so the
-hotbar isn't flooded). A
-chest too big for the window scrolls its slots (mouse wheel or bar). The
+hotbar isn't flooded). Put a picked stack of either side on the trash can under the backpack
+to destroy it, after the same question. A chest too big for the window scrolls its slots (mouse wheel or bar). The
 axe takes a chest down: outdoors what it held spills onto the ground, inside a house the
 chest and its contents go into your inventory (or you are told there is no room).
 
