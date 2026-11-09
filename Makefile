@@ -49,7 +49,7 @@ help:
 	@echo "  llm-models  List the models the test LLM has."
 	@echo "  llm-eval    Try the villagers' prompts on LLM_MODEL (LLM_RUNS replies each); report in build/llm-eval/."
 	@echo "  llm-rm      Delete the model LLM_MODEL (required) from the test LLM."
-	@echo "  llm-gpu-setup  Let containers use the NVIDIA GPU: write its CDI spec (sudo); again after driver updates."
+	@echo "  llm-gpu-setup  Prepare the GPU for llm-up: NVIDIA writes its CDI spec (sudo, again after driver updates); AMD checks the devices and groups."
 	@echo "  clean       Delete build/ (test log, screenshots, the screenshot save); nothing is lost."
 	@echo "  export      Not set up yet: no export presets exist."
 	@echo
@@ -68,7 +68,8 @@ help:
 	@echo "  CONTAINER   llm-*: container tool, podman or docker (default: podman if present)."
 	@echo "  LLM_MODEL   llm-*: Ollama model tag (default: qwen2.5:7b-instruct)."
 	@echo "  LLM_RUNS    llm-eval: replies per scenario (default: 3)."
-	@echo "  LLM_GPU     llm-up: auto (GPU if a CDI spec exists), 1 (GPU or fail), 0 (CPU)."
+	@echo "  LLM_GPU     llm-up: auto (NVIDIA via CDI spec, else AMD via ROCm, else CPU), nvidia, amd, 1 (any GPU or fail), 0 (CPU)."
+	@echo "  LLM_HSA_OVERRIDE  llm-up on AMD: HSA_OVERRIDE_GFX_VERSION for cards ROCm does not list, e.g. 10.3.0."
 	@echo "  ARGS        screenshot: more debug flags, e.g. ARGS=\"--weather=rain\" (see game/scenes/startup_options.gd)."
 
 setup:

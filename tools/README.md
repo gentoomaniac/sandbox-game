@@ -254,8 +254,8 @@ of a generated sound, point the event's `files` in `data/sounds.cfg` at the reco
 ## A local LLM for testing NPC talk: tools/llm/
 
 `llm.sh` runs [Ollama](https://ollama.com) in a container (podman if present, else docker;
-`CONTAINER=docker` forces one) with Qwen2.5 7B Instruct, on the NVIDIA GPU when the host
-exposes it to containers (see "Setting up the GPU" below), else on the CPU. It serves an
+`CONTAINER=docker` forces one) with Qwen2.5 7B Instruct, on the NVIDIA or AMD GPU when the
+host exposes it to containers (see "Setting up the GPU" below), else on the CPU. It serves an
 OpenAI-compatible API at `http://127.0.0.1:11434/v1` (this machine only). The game never
 needs it: `make test` does not touch it, unless `SANDBOX_LLM_URL=http://127.0.0.1:11434/v1`
 is set, which runs the two tests that ask a real model. It is the game's default endpoint
@@ -272,7 +272,7 @@ make llm-models   # the models it has, with their sizes
 make llm-check LLM_MODEL=qwen2.5:3b-instruct  # ask that one
 make llm-eval LLM_MODEL=qwen2.5:3b-instruct   # the villagers' prompts on it, see below
 make llm-rm LLM_MODEL=qwen2.5:3b-instruct     # delete it again
-make llm-gpu-setup   # once: let containers use the NVIDIA GPU (sudo), see below
+make llm-gpu-setup   # once: prepare the GPU (NVIDIA: sudo, AMD: only checks), see below
 tools/llm/llm.sh status | logs
 ```
 
@@ -290,7 +290,8 @@ plus 1-2 GB while it answers (RAM on the CPU, VRAM on the GPU):
 | `llama3.2:3b` | 2.0 GB | Llama 3.2 Community | |
 | `gemma2:2b` | 1.6 GB | Gemma Terms of Use | |
 
-Which ones fit on the GPU (8 GB of VRAM here) is for later, with the GPU set up as below.
+What fits on the GPU depends on its VRAM: the 7B (4.7 GB) on the 8 GB RTX 4070, and on the
+16 GB RX 7900 GRE also `qwen2.5:14b-instruct` (9.0 GB), which follows the chat better still.
 
 - **Model:** `qwen2.5:7b-instruct` (override with `LLM_MODEL=<ollama tag>`), 7.6B parameters,
   Q4_K_M, 4.7 GB, Apache-2.0. It is the default because, with the refined prompts, the 3B
@@ -310,13 +311,27 @@ Which ones fit on the GPU (8 GB of VRAM here) is for later, with the GPU set up 
   (or `docker rmi`).
 - On 22 CPU cores the 7B answers a short line in two to four seconds (the 3B in one to two);
   speed is not a goal.
-- **GPU:** `llm.sh up` passes the GPU in (`--device nvidia.com/gpu=all`, CDI) when a CDI spec
-  for `nvidia.com/gpu` is in `/etc/cdi` or `/var/run/cdi`. `LLM_GPU=1` insists on the GPU,
-  `LLM_GPU=0` keeps the CPU; a container started with the other setting is recreated.
-  `make llm-check` ends with `ollama ps`, whose PROCESSOR column says `GPU` or `CPU`. With 8 GB
-  of VRAM, the default `qwen2.5:7b-instruct` (4.7 GB) should fit on the GPU (not tried yet).
+- **GPU:** `llm.sh up` finds the GPU by itself (`LLM_GPU=auto`, the default):
+  - **NVIDIA** when a CDI spec for `nvidia.com/gpu` is in `/etc/cdi` or `/var/run/cdi`: the
+    container gets `--device nvidia.com/gpu=all`.
+  - **AMD** when `/dev/kfd` and a render node in `/dev/dri` exist and the user may open them:
+    the container runs the `-rocm` image of the same Ollama version with both devices.
+  - else the **CPU**, and it says why (no CDI spec, `/dev/kfd` missing or not accessible).
+
+  With both GPUs usable it takes NVIDIA and says so. `LLM_GPU=nvidia` or `amd` choose one and
+  fail if it is not usable, `LLM_GPU=1` means any GPU or fail, `LLM_GPU=0` the CPU. The
+  container is labelled with what it was started with (nvidia, amd or cpu); a change of
+  `LLM_GPU` or of the machine recreates it. `LLM_DRY_RUN=1 tools/llm/llm.sh up` only prints
+  the run command. `make llm-check` ends with `ollama ps`, whose PROCESSOR column says `GPU`
+  or `CPU`.
 
 ### Setting up the GPU (once per machine)
+
+`make llm-gpu-setup` looks at the machine: with `nvidia-smi` it does the NVIDIA setup below,
+else with an AMD driver it checks the AMD one (`LLM_GPU=nvidia` or `amd` pick one), else it says
+there is nothing to set up.
+
+#### NVIDIA
 
 A container only gets the NVIDIA GPU through a CDI spec (Container Device Interface): a file in
 `/etc/cdi` that tells podman and docker (28+) which device files and driver libraries to pass in.
@@ -342,6 +357,42 @@ The NVIDIA container toolkit writes it. On Gentoo with the RTX 4070 here:
 **After each driver update** run `make llm-gpu-setup` again: the spec names the driver's library
 files by version, and a spec of the old driver makes the container fail to start. Plain
 `make llm-up` (`LLM_GPU=auto`) falls back to the CPU only when there is no spec at all.
+
+#### AMD
+
+ROCm runs inside the `-rocm` image, so the host needs no ROCm, only the `amdgpu` kernel driver
+(in the mainline kernel; on Gentoo `CONFIG_DRM_AMDGPU` and `CONFIG_HSA_AMD`, plus the
+`sys-kernel/linux-firmware` files for the card) and access to two device files: `/dev/kfd` and
+a render node (`/dev/dri/renderD128`). Both belong to the `video` or `render` group, so the user
+must be in them:
+
+```sh
+sudo usermod -aG video,render $USER   # then log out and in again
+make llm-gpu-setup                    # checks the devices, the groups and the gfx target
+make llm-up                           # picks AMD by itself; LLM_GPU=amd insists
+make llm-check                        # PROCESSOR should say 100% GPU
+```
+
+`llm-gpu-setup` needs no root: it says what is missing. The first start pulls the ROCm image
+(about 1.4 GB to download). podman gets the
+groups with `--group-add keep-groups`, docker with the group ids of the two devices.
+
+ROCm supports a card by its gfx target, printed by `make llm-up` and `llm-gpu-setup` (from
+`/sys/class/kfd/kfd/topology/nodes/*/properties`). The RX 7900 GRE (RDNA3, `gfx1100`) is
+supported as it is. Consumer cards ROCm does not list may work when told to pose as a
+supported one with `LLM_HSA_OVERRIDE` (passed as `HSA_OVERRIDE_GFX_VERSION`); the script
+suggests it for the known cases:
+
+| Card | gfx target | `LLM_HSA_OVERRIDE` |
+|---|---|---|
+| RX 6800, 6900 | `gfx1030` | not needed |
+| other RDNA2 (6600, 6700, ...) | `gfx1031` to `gfx1036` | `10.3.0` |
+| RX 7900 XT/XTX/GRE | `gfx1100` | not needed |
+| RX 7600 | `gfx1102` | `11.0.0` |
+
+An override that does not fit crashes the server instead of falling back: remove it then
+(`make llm-up` recreates the container only when the GPU setting changes, so run
+`make llm-down` first).
 
 ### Trying the prompts: `make llm-eval`
 

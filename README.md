@@ -718,8 +718,8 @@ the default endpoint, so villagers talk as soon as it is up; `make llm-check` as
 question and `make llm-down` stops it. The container image (5.5 GB) and the model live in
 the container tool's storage and the volume `sandbox-game-llm-models`; `make llm-down PURGE=1`
 deletes the model. Details in [tools/README.md](tools/README.md). A reply takes a second or
-two on the GPU (set up once with `make llm-gpu-setup`, see the same page), a few seconds on
-the CPU; one that takes longer than 30 seconds, or fails, becomes a scripted line. To try another model, run
+two on the GPU (NVIDIA or AMD, found by itself; `make llm-gpu-setup` prepares it, see the same
+page), a few seconds on the CPU; one that takes longer than 30 seconds, or fails, becomes a scripted line. To try another model, run
 `make llm-pull LLM_MODEL=qwen2.5:3b-instruct` (twice as fast, but its lines are less
 sensible) and set it as the model in Settings; [tools/README.md](tools/README.md) lists some
 that fit, and says how `make llm-eval` compares models on the villagers' prompts.

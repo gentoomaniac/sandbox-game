@@ -2,11 +2,16 @@
 # A local LLM for testing NPC talk: Ollama in a container, OpenAI-compatible API on
 # http://127.0.0.1:11434/v1. See tools/README.md.
 # Usage: llm.sh up | down [--purge] | check | pull | models | rm | status | logs | gpu-setup
-# LLM_GPU=auto (default: the NVIDIA GPU if a CDI spec for it exists) | 1 (GPU or fail) | 0 (CPU).
+# LLM_GPU=auto (default: NVIDIA if a CDI spec for it exists, else AMD if ROCm can reach the
+# card, else the CPU) | nvidia | amd | 1 (any GPU or fail) | 0 (CPU).
+# LLM_HSA_OVERRIDE=10.3.0 passes HSA_OVERRIDE_GFX_VERSION to the AMD container (see tools/README.md).
+# LLM_DRY_RUN=1 llm.sh up only prints the command that would start the container.
 set -eu
 
-# Pinned, so the test setup does not change under us.
-IMAGE=docker.io/ollama/ollama:0.35.0
+# Pinned, so the test setup does not change under us. The AMD image is the same version with ROCm.
+VERSION=0.35.0
+IMAGE=docker.io/ollama/ollama:$VERSION
+IMAGE_AMD=docker.io/ollama/ollama:$VERSION-rocm
 NAME=sandbox-game-llm
 VOLUME=sandbox-game-llm-models
 PORT=11434
@@ -16,6 +21,11 @@ GPU=${LLM_GPU:-auto}
 GPU_DEVICE=nvidia.com/gpu=all
 GPU_LABEL=sandbox-game.gpu
 CDI_SPEC=/etc/cdi/nvidia.yaml
+# Where the AMD GPU shows up; the variables let a test point them at a fake tree.
+KFD_DEVICE=${LLM_KFD_DEVICE:-/dev/kfd}
+DRI_DIR=${LLM_DRI_DIR:-/dev/dri}
+KFD_NODES=${LLM_KFD_NODES:-/sys/class/kfd/kfd/topology/nodes}
+AMDGPU_MODULE=${LLM_AMDGPU_MODULE:-/sys/module/amdgpu}
 
 if [ -z "${CONTAINER:-}" ]; then
 	if command -v podman >/dev/null 2>&1; then CONTAINER=podman; else CONTAINER=docker; fi
@@ -25,31 +35,111 @@ is_running() {
 	[ "$("$CONTAINER" inspect --format '{{.State.Running}}' "$NAME" 2>/dev/null)" = true ]
 }
 
+# The first render node in /dev/dri, if there is one.
+render_node() {
+	for node in "$DRI_DIR"/renderD*; do
+		if [ -e "$node" ]; then
+			echo "$node"
+			return 0
+		fi
+	done
+	return 1
+}
+
+# Says what keeps ROCm from the AMD GPU; says nothing if it can use it.
+amd_problem() {
+	if [ ! -e "$KFD_DEVICE" ]; then
+		echo "no $KFD_DEVICE: the amdgpu kernel driver is not loaded, or there is no AMD GPU"
+		return 0
+	fi
+	if ! node=$(render_node); then
+		echo "no render node in $DRI_DIR"
+		return 0
+	fi
+	for device in "$KFD_DEVICE" "$node"; do
+		if [ ! -r "$device" ] || [ ! -w "$device" ]; then
+			group=$(stat -c %G "$device")
+			echo "$device is not accessible: join its group with sudo usermod -aG $group $(id -un), then log in again"
+			return 0
+		fi
+	done
+}
+
+# Prints the gfx targets of the GPUs ROCm sees, as "gfx1100 11.0.0" lines (name, HSA version).
+# The kernel gives them as one number, major*10000 + minor*100 + step; the CPU node says 0.
+amd_gfx_targets() {
+	for properties in "$KFD_NODES"/*/properties; do
+		[ -r "$properties" ] || continue
+		version=$(sed -n 's/^gfx_target_version  *//p' "$properties")
+		[ "${version:-0}" -gt 0 ] || continue
+		major=$((version / 10000))
+		minor=$((version / 100 % 100))
+		step=$((version % 100))
+		printf 'gfx%d%x%x %d.%d.%d\n' "$major" "$minor" "$step" "$major" "$minor" "$step"
+	done
+}
+
+# Prints the detected gfx targets, with the LLM_HSA_OVERRIDE to try for the consumer cards
+# ROCm does not list: RDNA2 except the 6800/6900 (gfx1030), and the RDNA3 7600 (gfx1102).
+amd_describe() {
+	amd_gfx_targets | while read -r gfx _; do
+		echo "AMD GPU: $gfx"
+		case "$gfx" in
+		gfx1030) ;;
+		gfx103?) echo "  not listed by ROCm; if it fails, try LLM_HSA_OVERRIDE=10.3.0 (RDNA2, as the 6800/6900)" ;;
+		gfx1102) echo "  not listed by ROCm; if it fails, try LLM_HSA_OVERRIDE=11.0.0 (RDNA3, as the 7900)" ;;
+		esac
+	done
+}
+
 # podman and docker (28+) both read CDI specs from these places; nvidia-ctk writes them.
 has_gpu_spec() {
 	grep -qsF 'nvidia.com/gpu' /etc/cdi/*.yaml /etc/cdi/*.json /var/run/cdi/*.yaml /var/run/cdi/*.json
 }
 
-# Prints 1 if the container gets the GPU, 0 if not; fails if LLM_GPU=1 cannot be met.
-want_gpu() {
+# Prints nvidia, amd or cpu: what the container gets. Fails if LLM_GPU asks for a GPU that is
+# not there. Says on stderr why a GPU is not used.
+choose_gpu() {
 	case "$GPU" in
-	0) echo 0 ;;
-	1 | auto)
-		if has_gpu_spec; then
-			echo 1
-			return 0
-		fi
-		if [ "$GPU" = 1 ]; then
-			echo "llm.sh: LLM_GPU=1 but there is no CDI spec for nvidia.com/gpu (see tools/README.md)" >&2
+	0) echo cpu ;;
+	nvidia)
+		has_gpu_spec || {
+			echo "llm.sh: LLM_GPU=nvidia but there is no CDI spec for nvidia.com/gpu (see tools/README.md)" >&2
+			return 1
+		}
+		echo nvidia
+		;;
+	amd)
+		problem=$(amd_problem)
+		if [ -n "$problem" ]; then
+			echo "llm.sh: LLM_GPU=amd but $problem (see tools/README.md)" >&2
 			return 1
 		fi
-		if command -v nvidia-smi >/dev/null 2>&1; then
-			echo "llm.sh: the NVIDIA GPU has no CDI spec, using the CPU (see tools/README.md)" >&2
+		echo amd
+		;;
+	1 | auto)
+		problem=$(amd_problem)
+		if has_gpu_spec; then
+			[ -n "$problem" ] || echo "llm.sh: NVIDIA and AMD GPUs are both usable, taking NVIDIA (LLM_GPU=amd picks the other)" >&2
+			echo nvidia
+		elif [ -z "$problem" ]; then
+			echo amd
+		elif [ "$GPU" = 1 ]; then
+			echo "llm.sh: LLM_GPU=1 but no GPU is usable: no CDI spec for nvidia.com/gpu; AMD: $problem (see tools/README.md)" >&2
+			return 1
+		else
+			if command -v nvidia-smi >/dev/null 2>&1; then
+				echo "llm.sh: the NVIDIA GPU has no CDI spec, using the CPU (see tools/README.md)" >&2
+			fi
+			# Without any sign of an AMD GPU there is nothing to say about one.
+			if [ -e "$KFD_DEVICE" ] || [ -d "$AMDGPU_MODULE" ]; then
+				echo "llm.sh: the AMD GPU is not usable, using the CPU: $problem (see tools/README.md)" >&2
+			fi
+			echo cpu
 		fi
-		echo 0
 		;;
 	*)
-		echo "llm.sh: LLM_GPU must be auto, 1 or 0, not '$GPU'" >&2
+		echo "llm.sh: LLM_GPU must be auto, nvidia, amd, 1 or 0, not '$GPU'" >&2
 		return 1
 		;;
 	esac
@@ -82,7 +172,35 @@ ensure_model() {
 }
 
 up() {
-	gpu=$(want_gpu)
+	gpu=$(choose_gpu)
+	case "$gpu" in
+	nvidia)
+		set -- --device "$GPU_DEVICE"
+		image=$IMAGE
+		;;
+	amd)
+		amd_describe
+		set -- --device "$KFD_DEVICE" --device "$DRI_DIR"
+		# The devices belong to groups the container may not have by name.
+		if [ "$CONTAINER" = podman ]; then
+			set -- "$@" --group-add keep-groups
+		else
+			set -- "$@" --group-add "$(stat -c %g "$KFD_DEVICE")" --group-add "$(stat -c %g "$(render_node)")"
+		fi
+		if [ -n "${LLM_HSA_OVERRIDE:-}" ]; then
+			set -- "$@" -e "HSA_OVERRIDE_GFX_VERSION=$LLM_HSA_OVERRIDE"
+		fi
+		image=$IMAGE_AMD
+		;;
+	cpu)
+		set --
+		image=$IMAGE
+		;;
+	esac
+	if [ -n "${LLM_DRY_RUN:-}" ]; then
+		echo "$CONTAINER run -d --name $NAME --label $GPU_LABEL=$gpu $* -p 127.0.0.1:$PORT:11434 -v $VOLUME:/root/.ollama $image"
+		return 0
+	fi
 	# The label records how the container was started, so a GPU change recreates it.
 	if is_running && [ "$("$CONTAINER" inspect --format "{{index .Config.Labels \"$GPU_LABEL\"}}" "$NAME")" != "$gpu" ]; then
 		echo "Recreating $NAME: it runs with a different GPU setting"
@@ -91,16 +209,9 @@ up() {
 	if ! is_running; then
 		# A stopped container of that name would block the new one.
 		"$CONTAINER" rm -f "$NAME" >/dev/null 2>&1 || true
-		if [ "$gpu" = 1 ]; then
-			set -- --device "$GPU_DEVICE"
-			where=GPU
-		else
-			set --
-			where=CPU
-		fi
-		echo "Starting $NAME ($IMAGE, using $CONTAINER, on the $where)"
+		echo "Starting $NAME ($image, using $CONTAINER, on $gpu)"
 		"$CONTAINER" run -d --name "$NAME" --label "$GPU_LABEL=$gpu" "$@" \
-			-p "127.0.0.1:$PORT:11434" -v "$VOLUME:/root/.ollama" "$IMAGE" >/dev/null
+			-p "127.0.0.1:$PORT:11434" -v "$VOLUME:/root/.ollama" "$image" >/dev/null
 	fi
 	wait_for_api
 	ensure_model
@@ -168,7 +279,7 @@ pull() {
 
 # Writes the CDI spec that lets containers have the NVIDIA GPU (root, via sudo). Run it once,
 # and again after each driver update: a spec of an older driver breaks the container's start.
-gpu_setup() {
+nvidia_setup() {
 	if ! command -v nvidia-smi >/dev/null 2>&1; then
 		echo "llm.sh: no nvidia-smi: the NVIDIA driver is not installed" >&2
 		return 1
@@ -187,6 +298,36 @@ gpu_setup() {
 	sudo nvidia-ctk cdi generate --output="$CDI_SPEC"
 	nvidia-ctk cdi list
 	echo "Done: make llm-up now starts the container on the GPU"
+}
+
+# AMD needs no spec, only a driver and access to two device files: this checks them (no root).
+amd_setup() {
+	problem=$(amd_problem)
+	if [ -n "$problem" ]; then
+		echo "llm.sh: $problem (see tools/README.md)" >&2
+		return 1
+	fi
+	amd_describe
+	echo "Done: $KFD_DEVICE and $(render_node) are usable; make llm-up now starts the container on the GPU"
+}
+
+# Sets up the GPU the host has: NVIDIA first, or the one LLM_GPU names.
+gpu_setup() {
+	case "$GPU" in
+	nvidia) nvidia_setup ;;
+	amd) amd_setup ;;
+	0) echo "llm.sh: LLM_GPU=0 asks for the CPU, nothing to set up" >&2 ;;
+	*)
+		if command -v nvidia-smi >/dev/null 2>&1; then
+			nvidia_setup
+		elif [ -e "$KFD_DEVICE" ] || [ -d "$AMDGPU_MODULE" ]; then
+			amd_setup
+		else
+			echo "llm.sh: no NVIDIA driver (nvidia-smi) and no AMD driver (amdgpu) found: nothing to set up, the CPU is used" >&2
+			return 1
+		fi
+		;;
+	esac
 }
 
 case "${1:-}" in
