@@ -13,8 +13,9 @@ extends RefCounted
 ## NO_ROOM that, with too little room in the inventory for it and what it holds, GIVE_BONE a bone
 ## given to a dog, which then follows the player, SADDLE the saddle put on a horse and UNSADDLE an
 ## empty hand taking it off again, RIDING anything on horseback (the player gets off first),
-## STANDING_ON a tool at a deck the player stands on (see `is_standing_on`). What a harvest, a pick
-## or a final hit gives lies on the ground (see World `drop_items`).
+## STANDING_ON a tool at a deck the player stands on (see `is_standing_on`), OUT_OF_REACH a tile
+## beyond the player's reach (Targeting.REACH) or not on their map: nothing is done there. What a
+## harvest, a pick or a final hit gives lies on the ground (see World `drop_items`).
 enum Use {
 	NOTHING,
 	TILL,
@@ -35,6 +36,7 @@ enum Use {
 	UNSADDLE,
 	RIDING,
 	STANDING_ON,
+	OUT_OF_REACH,
 }
 
 ## The tools the use action has something to do with.
@@ -118,8 +120,11 @@ func can_use_held_item() -> bool:
 
 ## Uses a tile (see `use_at`) and returns what was done, which costs energy (more the
 ## heavier the load, unless a cheat says otherwise). A use with too little energy left still
-## happens; the energy ends at 0 (see `is_out_of_energy`).
+## happens; the energy ends at 0 (see `is_out_of_energy`). A tile out of reach, or not on the
+## player's map, is refused with nothing changed (OUT_OF_REACH).
 func use_tile(target: Vector2i) -> Use:
+	if not _is_in_reach(target):
+		return Use.OUT_OF_REACH
 	var weight_factor := 1.0
 	if not _state.cheats.is_weight_off:
 		weight_factor = _state.energy_rules.weight_factor(_state.player.carried_weight())
@@ -129,6 +134,13 @@ func use_tile(target: Vector2i) -> Use:
 		var cost := _state.energy_rules.cost_of(COST_KINDS[use]) * weight_factor * drain
 		_state.player.energy = maxf(0.0, _state.player.energy - cost)
 	return use
+
+
+func _is_in_reach(target: Vector2i) -> bool:
+	var offset := (target - _state.player.tile()).abs()
+	return (
+		maxi(offset.x, offset.y) <= Targeting.REACH and _state.current_map.tile_at(target) != null
+	)
 
 
 func _do_use(target: Vector2i) -> Use:

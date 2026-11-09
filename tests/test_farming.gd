@@ -59,11 +59,20 @@ func test_using_grass_tills_it_to_soil() -> void:
 	assert_eq(_world.tile_at(_tile).terrain, Tile.Terrain.SOIL)
 
 
-func test_use_tile_works_on_any_tile_as_reach_is_not_the_states_concern() -> void:
+func test_use_tile_refuses_a_tile_out_of_reach_and_changes_nothing() -> void:
 	var far := _tile + Vector2i(0, 1)
 	assert_true(Vector2i(far - _state.player.tile()).abs().y > Targeting.REACH)
-	var expected := _state.use_at(far)
-	assert_eq(_state.use_tile(far), expected)
+	var energy := _state.player.energy
+	_hold(ItemTypes.HOE)
+	assert_eq(_state.use_tile(far), ToolUse.Use.OUT_OF_REACH)
+	assert_eq(_world.tile_at(far).terrain, Tile.Terrain.GRASS)
+	assert_eq(_state.player.energy, energy)
+
+
+func test_use_tile_refuses_a_tile_the_players_map_does_not_have() -> void:
+	var outside_the_world := Vector2i(100000, 100000)
+	_state.player.position = Vector2(outside_the_world) + Vector2(0.5, 0.5)
+	assert_eq(_state.use_tile(outside_the_world), ToolUse.Use.OUT_OF_REACH)
 
 
 func test_water_cannot_be_tilled() -> void:

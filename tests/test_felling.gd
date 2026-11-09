@@ -135,6 +135,7 @@ func test_a_generated_tree_keeps_its_damage_when_its_chunk_reloads() -> void:
 				generated = object
 	assert_not_null(generated, "no oak near the camp")
 	_hold(ItemTypes.AXE)
+	_state.player.position = Vector2(generated.pos) + Vector2(0.5, 1.5)
 	_state.use_tile(generated.pos)
 	_state.use_tile(generated.pos)
 	var coords := Chunk.world_to_chunk(generated.pos)

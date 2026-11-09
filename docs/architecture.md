@@ -47,7 +47,9 @@ Warft and an Ewer here and there.
   each tool does on a tile, and the energy it costs. GameState makes one per call
   and forwards `use_at`, `use_tile`, `use_facing_tile` and `can_use_held_item` to it (kept in a
   field, the two would hold each other and never be freed). To change what a hoe
-  does, open this file.
+  does, open this file. `use_tile` checks its own conditions: a tile beyond `Targeting.REACH` or
+  not on the player's map is refused (`OUT_OF_REACH`, nothing changed, no energy), and on
+  horseback the use is `RIDING`; so the UI, the debug scenes and tests all get the same answer.
 - **GameMap** is a place the player can walk: either **World** or **Interior** (the inside of
   one building). The player is on one map at a time; the world stands still while they are
   inside.

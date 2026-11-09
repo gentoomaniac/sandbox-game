@@ -58,6 +58,7 @@ func _dig_all(state: GameState, day: int) -> Array[bool]:
 	var gave_clay: Array[bool] = []
 	for spot in _spots:
 		var before := state.world.ground_items.count_of(ItemTypes.CLAY)
+		state.player.position = Vector2(spot) + Vector2(0.5, 0.5)
 		state.use_tile(spot)
 		gave_clay.append(state.world.ground_items.count_of(ItemTypes.CLAY) > before)
 	return gave_clay
@@ -69,6 +70,12 @@ func _shovel_slot(state: GameState) -> int:
 			return slot
 	fail_test("no shovel")
 	return 0
+
+
+## The player stands on the tile and digs it.
+func _dig(tile: Vector2i) -> ToolUse.Use:
+	_state.player.position = Vector2(tile) + Vector2(0.5, 0.5)
+	return _state.use_tile(tile)
 
 
 func _hold_shovel() -> void:
@@ -187,7 +194,7 @@ func test_a_dug_spot_is_spent_whether_or_not_it_gave_clay() -> void:
 func test_a_spent_spot_recovers_over_nights() -> void:
 	var spot := _spots[0]
 	_hold_shovel()
-	_state.use_tile(spot)
+	_dig(spot)
 	for night in World.CLAY_SPENT_NIGHTS - 1:
 		_state.clock.advance(GameClock.MINUTES_PER_DAY)
 		assert_false(_state.world.has_clay(spot), "night %d" % (night + 1))
@@ -200,7 +207,7 @@ func test_digging_elsewhere_gives_nothing_and_spends_nothing() -> void:
 	var elsewhere := _grass_tile_without_clay()
 	for day in range(MIDSUMMER, MIDSUMMER + 30):
 		_state.clock.day = day
-		assert_eq(_state.use_tile(elsewhere), ToolUse.Use.DIG)
+		assert_eq(_dig(elsewhere), ToolUse.Use.DIG)
 	assert_eq(_state.world.ground_items.count_of(ItemTypes.CLAY), 0)
 	assert_lt(_state.player.energy, PlayerState.MAX_ENERGY, "digging still costs energy")
 
@@ -211,7 +218,7 @@ func test_digging_elsewhere_gives_nothing_and_spends_nothing() -> void:
 func test_a_spent_spot_stays_spent_through_the_save() -> void:
 	var spot := _spots[0]
 	_hold_shovel()
-	_state.use_tile(spot)
+	_dig(spot)
 	_state.clock.advance(GameClock.MINUTES_PER_DAY)
 	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
 	_load_chunks_of(restored, _spots)
@@ -234,7 +241,7 @@ func test_a_clay_spot_shows_a_faint_hint_until_it_is_dug() -> void:
 		view.decorations._clay_hints.get_cell_source_id(spot), TerrainTileset.CLAY_HINT_SOURCE_ID
 	)
 	_hold_shovel()
-	_state.use_tile(spot)
+	_dig(spot)
 	assert_eq(
 		view.decorations._clay_hints.get_cell_source_id(spot), -1, "a spent spot shows nothing"
 	)

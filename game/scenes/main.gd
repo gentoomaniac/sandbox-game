@@ -514,10 +514,8 @@ func _hotbar_slot_of(event: InputEvent) -> int:
 	return -1
 
 
-## Uses the targeted tile if the player can reach it.
+## Uses the targeted tile (the state refuses one out of reach).
 func _use_on(target: Targeting) -> void:
-	if not target.is_in_reach:
-		return
 	var use := _state.use_tile(target.tile)
 	_sounds.used(use, target.tile)
 	_tiredness_view.acted(use)

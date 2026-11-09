@@ -4,7 +4,7 @@
   - Within reach (the 3×3 tiles around the player for hand tools; later tools may reach
     further), the highlight shows normally, and the action (left click or Space) works on
     that tile.
-  - Out of reach, the highlight turns translucent red and the action does nothing.
+  - Out of reach, the highlight turns translucent red and the action does nothing (the use rules refuse it themselves, so the same goes for any caller, not only a click).
   - When the mouse hasn't moved for a few seconds, the highlight fades out. Then the
     keyboard action (Space) works on the tile the player faces, as before, and the
     highlight shows that tile again once the player moves.

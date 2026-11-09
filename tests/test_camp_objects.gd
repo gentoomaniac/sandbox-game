@@ -22,6 +22,7 @@ func _take_down(object: WorldObject) -> bool:
 
 
 func _set_up(item: StringName) -> WorldObject:
+	_state.player.position = Vector2(_tile) + Vector2(0.5, -0.5)
 	_state.player.inventory.add(item, 1)
 	_hold(item)
 	assert_eq(_state.use_tile(_tile), ToolUse.Use.PLACE)
