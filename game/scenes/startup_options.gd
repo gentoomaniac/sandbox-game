@@ -199,6 +199,8 @@ var chat_script := PackedStringArray()
 
 # Building
 var building := &""
+## The style of `building`, &"" for its own look.
+var building_style := &""
 var ghost := NO_TILE
 var taking_down := false
 var house := NO_TILE
@@ -324,7 +326,9 @@ func _init(args := PackedStringArray()) -> void:
 			"--chat-script":
 				chat_script = _value(arg).split(";")
 			"--building":
-				building = StringName(_value(arg))
+				var parts := _value(arg).split(BuildingRules.STYLE_SEPARATOR)
+				building = StringName(parts[0])
+				building_style = StringName(parts[1]) if parts.size() > 1 else &""
 			"--ghost":
 				ghost = _tile(arg)
 			"--taking-down":

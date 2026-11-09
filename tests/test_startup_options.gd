@@ -62,6 +62,13 @@ func test_flags_with_a_value() -> void:
 	assert_eq(options.inside_building, &"barn")
 
 
+func test_the_building_can_come_with_a_style() -> void:
+	var own := StartupOptions.new(PackedStringArray(["--building=kate"]))
+	assert_eq([own.building, own.building_style], [&"kate", &""])
+	var brick := StartupOptions.new(PackedStringArray(["--building=kate.brick"]))
+	assert_eq([brick.building, brick.building_style], [&"kate", &"brick"])
+
+
 func test_flags_without_a_value() -> void:
 	var options := StartupOptions.new(
 		PackedStringArray(["--new-game", "--inventory", "--storage", "--inside", "--sleep"])
