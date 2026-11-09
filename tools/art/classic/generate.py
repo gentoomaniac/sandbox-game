@@ -4,9 +4,9 @@
 The modules here are the old generators of those groups, copied from git history unchanged (the
 commit is in each group's comment below); they share canvas.py and palette.py with the new art.
 `main` writes their files under art/generated/ with the postfix _16x16, where the new art has
-_32x32 (items/axe_16x16.png), as drawn at 16 px; `make assets` (pack.py) scales the world's up to the game's tile
-(scaling.py) into assets/classic/. The game shows a classic file where there is one and the new
-file where there is none.
+_32x32 (items/axe_16x16.png), as drawn at 16 px; `make assets` (pack.py) scales the world's up to
+the game's tile (scaling.py) into assets/classic/. The game shows a classic file where there is one
+and the new file where there is none.
 
 An art group that goes native moves its old generator here (see tools/README.md).
 """
@@ -71,8 +71,8 @@ def write_character():
     for name, layer in character.layers().items():
         save(character.riding_sheet(*layer), f"character/riding/{name}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
     held_hoe = character.character_sheet(character.draw_held_hoe, {})
-    save(held_hoe, f"character/held_hoe.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
-    save_picture(character.sleep_z(), f"effects/sleep_z.png")
+    save(held_hoe, "character/held_hoe.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
+    save_picture(character.sleep_z(), "effects/sleep_z.png")
 
 
 def write_bubbles():
@@ -116,9 +116,9 @@ def write_ground():
         save(ground_looks.terrain_rows(look, terrain_rows), f"terrain{suffix}.png")
         decorations_by_look[look] = ground_looks.ground_rows(look, decoration_rows, ground_looks.STANDING.get(look))
     layers = [layer.__name__ for layer in terrain.LAYERS]
-    atlas.save_sheets(f"decorations", [*layers, "flowers"], ground_looks.GROUND_LOOKS, decorations_by_look, TILE, TILE)
-    save([ground_overlays.soil_wet()], f"soil_wet.png")
-    save_picture(ground_overlays.clay_hint(), f"clay_hint.png")
+    atlas.save_sheets("decorations", [*layers, "flowers"], ground_looks.GROUND_LOOKS, decorations_by_look, TILE, TILE)
+    save([ground_overlays.soil_wet()], "soil_wet.png")
+    save_picture(ground_overlays.clay_hint(), "clay_hint.png")
 
 
 def write_buildings():
@@ -206,8 +206,8 @@ def write_objects():
         "alder": lambda variant: alder.bare_alder(alder.ALDER_SEEDS[variant]),
     }
     objects_by_look = {look: object_looks.object_rows(look, objects, redraws) for look in object_looks.LOOKS}
-    atlas.save_sheets(f"objects", [kind for kind, _ in objects], object_looks.LOOKS, objects_by_look, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
-    save_picture(camp.bedroll_cover(), f"bedroll_cover.png")
+    atlas.save_sheets("objects", [kind for kind, _ in objects], object_looks.LOOKS, objects_by_look, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
+    save_picture(camp.bedroll_cover(), "bedroll_cover.png")
 
 
 def write_crops():
@@ -217,16 +217,16 @@ def write_crops():
 
 def write_interior():
     furniture = interior.furniture()
-    save([interior.atlas_tiles(furniture)], f"interior.png")
+    save([interior.atlas_tiles(furniture)], "interior.png")
     for name, (picture, _footprint) in furniture.items():
         save_picture(picture, f"interior/{name}.png")
     for name, picture in interior.covers(furniture).items():
         save_picture(picture, f"interior/{name}.png")
     for name, picture in crafts.stations().items():
         save_picture(picture, f"interior/{name}.png")
-    save_picture(camp.ghost(camp.fireplace(), 25, 26), f"interior/fireplace.png")
-    save_picture(camp.ghost(camp.bedroll(), 18, 30), f"interior/sleeping_bag.png")
-    save_picture(graves.graves()[0], f"interior/grave.png")
+    save_picture(camp.ghost(camp.fireplace(), 25, 26), "interior/fireplace.png")
+    save_picture(camp.ghost(camp.bedroll(), 18, 30), "interior/sleeping_bag.png")
+    save_picture(graves.graves()[0], "interior/grave.png")
 
 
 def write_items():

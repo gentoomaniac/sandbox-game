@@ -127,7 +127,7 @@ art: classic-art
 	$(PYTHON) tools/audio/generate.py
 	$(PYTHON) tools/audio/check.py
 
-# The classic art under art/generated/classic/ (see tools/art/classic/generate.py).
+# The classic art: the _16x16 files of art/generated/ (see tools/art/classic/generate.py).
 classic-art: $(VENV_READY)
 	$(PYTHON) tools/art/classic/generate.py
 
