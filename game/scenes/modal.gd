@@ -22,7 +22,7 @@ extends CanvasLayer
 ##   takes both. Other keys that close the window (E on the chest) are named in `close_actions`;
 ##   they close it at once, without `_takes_escape()`. Windows must stay children of Main, so that
 ##   these keys reach them before Main.
-## - Only Modals pause the game, once all windows are on this base (the pause menu is one).
+## - Only Modals pause the game (the pause menu is one).
 
 ## The window was opened, after `_on_open()`.
 signal opened

@@ -68,9 +68,10 @@ func test_every_button_of_the_character_screen_tabs_is_hit_all_over() -> void:
 
 func test_every_button_of_every_pause_menu_page_is_hit_all_over() -> void:
 	var menu := PauseMenu.new(GameSettings.new("user://test_click_areas_settings.cfg"))
+	menu.pauses_game = false
 	_window.add_child(menu)
 	for page in PauseMenu.Page.values():
-		menu.open(page)
+		menu.open_page(page)
 		await _assert_all_buttons_hit(menu, "pause menu page %d" % page)
 
 

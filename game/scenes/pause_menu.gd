@@ -1,15 +1,12 @@
 class_name PauseMenu
-extends CanvasLayer
-## The pause menu and the settings under it. It keeps running while the game is paused;
-## Main pauses the game when it opens the menu and resumes when `resumed` comes. Escape (or
-## the pause key) goes back one level, and closes the menu from the first one.
+extends Modal
+## The pause menu and the settings under it, a Modal that pauses the game while it is open.
+## Escape (or the pause key) goes back one page, and closes the menu from the first one.
 
-signal resumed
 signal save_and_quit_requested
 
 enum Page { PAUSE, SETTINGS, CONTROLS, DISPLAY, GAME, AUDIO, LANGUAGE_MODEL }
 
-const THEME := preload("res://game/scenes/ui_theme.tres")
 const PANEL_WIDTH := 280
 ## The explanations of the settings, shown as tooltips.
 const DISPLAY_TIP := "Switch between fullscreen and a window."
@@ -36,6 +33,8 @@ var _first_focus := {}
 ## The pages left behind on the way to the current one.
 var _history: Array[Page] = []
 var _current: Page
+## The page the menu opens on: the pause page, unless `open_page` says otherwise.
+var _opening_page := Page.PAUSE
 var _display_button: Button
 var _art_button: Button
 var _ui_scale_label: Label
@@ -47,27 +46,13 @@ var _day_length_slider: HSlider
 
 
 func _init(settings: GameSettings) -> void:
+	super()
 	_settings = settings
+	pauses_game = true
 	layer = 10
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	visible = false
-
-	var root := Control.new()
-	root.theme = THEME
-	root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(root)
-	var dim := ColorRect.new()
-	dim.color = UiColors.BACKDROP
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-	root.add_child(dim)
-	var centre := CenterContainer.new()
-	centre.set_anchors_preset(Control.PRESET_FULL_RECT)
-	root.add_child(centre)
-	var panel := PanelContainer.new()
-	panel.custom_minimum_size.x = PANEL_WIDTH
-	centre.add_child(panel)
+	_panel.custom_minimum_size.x = PANEL_WIDTH
 	var pages := VBoxContainer.new()
-	panel.add_child(pages)
+	_panel.add_child(pages)
 
 	var pause := _add_page(pages, Page.PAUSE, "Paused")
 	_first_focus[Page.PAUSE] = _add_button(
@@ -154,31 +139,28 @@ func _init(settings: GameSettings) -> void:
 	_first_focus[Page.LANGUAGE_MODEL] = language_model.first_focus
 
 
-## Opens the menu on the pause page, or on `page` (a debug flag uses that).
-func open(page: Page = Page.PAUSE) -> void:
-	visible = true
+## Opens the menu on `page` (a debug flag uses that), or shows that page when it is open; `open()`
+## opens it on the pause page.
+func open_page(page: Page) -> void:
+	_opening_page = page
+	if visible:
+		_on_open()
+	else:
+		open()
+
+
+func _on_open() -> void:
 	_history.clear()
-	_show_page(page)
+	_show_page(_opening_page)
+	_opening_page = Page.PAUSE
 
 
-func is_open() -> bool:
-	return visible
-
-
-## Safe to call when it is closed: the game is only resumed by closing an open menu.
-func close() -> void:
-	if not visible:
-		return
-	visible = false
-	resumed.emit()
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	# ui_cancel is Escape and not rebindable, so Escape still leaves the menu when the
-	# pause action has been moved to another key.
-	if visible and (event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause")):
-		get_viewport().set_input_as_handled()
-		_back()
+## A page that is not the first is left by Escape, which goes back to the page before.
+func _takes_escape() -> bool:
+	if _history.is_empty():
+		return false
+	_back()
+	return true
 
 
 func _add_page(parent: Control, page: Page, title: String) -> VBoxContainer:

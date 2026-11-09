@@ -63,14 +63,14 @@ func test_pause_menu() -> void:
 	_opened_and_closed(screen, screen.open)
 
 
-func test_closing_a_closed_pause_menu_does_not_resume() -> void:
+func test_closing_a_closed_pause_menu_does_not_say_closed() -> void:
 	var menu := _pause_menu()
 	watch_signals(menu)
 	menu.close()
-	assert_signal_not_emitted(menu, "resumed")
+	assert_signal_not_emitted(menu, "closed")
 	menu.open()
 	menu.close()
-	assert_signal_emitted(menu, "resumed")
+	assert_signal_emitted(menu, "closed")
 
 
 func test_storage_screen() -> void:

@@ -83,8 +83,8 @@ E does nothing while it is open.
   on the panel reach it.
 - **Pause:** `pauses_game = true` (set in `_init`) pauses the tree while the window is open; the
   window then keeps running (`PROCESS_MODE_ALWAYS`). It unpauses when it closes, or is freed
-  while open, whatever else asked for the pause, so once the migration is done only Modals pause
-  the tree: the pause menu becomes one, and Main stops pausing for it.
+  while open, whatever else asked for the pause, so only Modals pause the tree (the pause menu is
+  one; Main does not pause for it).
 - **One at a time:** opening a window closes the open one, so windows need not know of each
   other. `Modal.is_any_open()` says whether one is open (Main uses it instead of its own
   conditions: then the player neither walks nor acts) and `Modal.close_open()` closes it.

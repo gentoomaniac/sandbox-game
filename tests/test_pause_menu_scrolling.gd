@@ -14,6 +14,8 @@ func before_each() -> void:
 	_window.size = SMALL_WINDOW
 	add_child_autofree(_window)
 	_menu = PauseMenu.new(GameSettings.new(SETTINGS_PATH))
+	# The test waits for frames, which stand still while the game is paused.
+	_menu.pauses_game = false
 	_window.add_child(_menu)
 
 
@@ -31,7 +33,7 @@ func _bar_of(page: Control) -> VScrollBar:
 
 
 func _check_page(page: PauseMenu.Page) -> void:
-	_menu.open(page)
+	_menu.open_page(page)
 	await wait_process_frames(2)
 	assert_true(_bar_of(_menu._pages[page]).visible, "the window is too small for the page")
 	assert_lte(_panel().size.y, float(SMALL_WINDOW.y - 2 * ScrollingList.MARGIN))
@@ -46,11 +48,11 @@ func test_the_language_model_page_scrolls_in_a_small_window() -> void:
 
 
 func test_a_page_opens_scrolled_to_the_top() -> void:
-	_menu.open(PauseMenu.Page.CONTROLS)
+	_menu.open_page(PauseMenu.Page.CONTROLS)
 	await wait_process_frames(2)
 	var list: ScrollingList = (
 		_menu._pages[PauseMenu.Page.CONTROLS].find_children("*", "ScrollingList", true, false)[0]
 	)
 	list.scroll_vertical = 40
-	_menu.open(PauseMenu.Page.CONTROLS)
+	_menu.open_page(PauseMenu.Page.CONTROLS)
 	assert_eq(list.scroll_vertical, 0)

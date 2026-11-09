@@ -44,7 +44,7 @@ var _chat_screen := ChatScreen.new()
 var _npc_name_tag := NpcNameTag.new()
 var _cheat_hud := CheatHud.new()
 ## The screens, in the order Escape closes them. The pause menu is not among them: Escape
-## opens it, it pauses the game, and it has its own input.
+## opens it, it is a Modal and takes its own input.
 ## The chat pauses the game like the pause menu, but takes Escape itself.
 var _screens: Array = [
 	_console_view, _chat_screen, _character_screen, _crafting_screen, _storage_screen
@@ -205,7 +205,7 @@ func _connect_state_and_views() -> void:
 	# Chats longer than the setting (a saved game's, or one lowered in the menu, which is
 	# applied once it is closed rather than at every step) are compacted.
 	_chat_screen.dialogue.compact_all(_state)
-	_menu.resumed.connect(func() -> void: _chat_screen.dialogue.compact_all(_state))
+	_menu.closed.connect(func() -> void: _chat_screen.dialogue.compact_all(_state))
 	_builder = Builder.new(_state)
 	_build_mode.world = _state.world
 	_build_mode.builder = _builder
@@ -233,7 +233,6 @@ func _connect_state_and_views() -> void:
 				_show_current_map()
 			_show_clock()
 	)
-	_menu.resumed.connect(_resume)
 	_menu.save_and_quit_requested.connect(_save_and_quit)
 
 
@@ -290,7 +289,7 @@ func _apply_start_options() -> void:
 	_debug.open_chat = _open_chat
 	_debug.try_sleep = _try_sleep
 	_debug.pass_door = _pass_door
-	_debug.open_menu = _open_menu
+	_debug.open_menu = _menu.open_page
 	_debug.save_screenshot_and_quit = _save_screenshot_and_quit
 
 
@@ -318,7 +317,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if _build_mode.is_active():
 			_builder.dismiss()
 		else:
-			_open_menu()
+			_menu.open()
 		return
 	# The open console takes the input: the player neither walks nor acts.
 	if _console_view.is_open():
@@ -423,15 +422,6 @@ func _process(delta: float) -> void:
 		)
 		_view.set_focus(_state.player.tile())
 	_debug.update(delta)
-
-
-func _open_menu(page := PauseMenu.Page.PAUSE) -> void:
-	get_tree().paused = true
-	_menu.open(page)
-
-
-func _resume() -> void:
-	get_tree().paused = false
 
 
 func _save_and_quit() -> void:
