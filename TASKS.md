@@ -2237,7 +2237,7 @@ come earlier.
 
 ## 131. Scrolling for menus that outgrow the window
 
-- [ ] Done
+- [x] Done
 
 Halted 2026-11-09 after the crafting screen and the chest (merged): the other panels move
 onto the Modal base of task 132 once it is in.
@@ -2267,8 +2267,12 @@ those if they reach certain limits." First a later idea, then "start the scrolli
 - Check each panel at the smallest supported window size and the largest UI scale; tests for what
   can be tested (the limit, focus kept in view), screenshots by hand. Docs: the UI page of the
   design (design/presentation/menus-and-hud.md) and the README.
-- Progress: the crafting screen, the chest, the Controls and Language model pages are done on the
-  scrolling list; the character screen is on Modal.
+
+Done: one commit per panel. `ScrollingList` (and `ScrollingList.Row` for the build menu's row)
+is the one helper, used by the crafting screen, the chest, the Controls and Language model pages
+and the build menu; every window is on Modal. Skipped as they cannot grow: the character screen's
+fixed grids, the skills tab (a few rows), the short pause menu pages. Open: the chat window is a
+fixed size (340 units wide plus portraits), wider than the window at a UI scale of 2.
 
 ## 132. One way to build a window: a Modal base class
 

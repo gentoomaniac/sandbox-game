@@ -32,14 +32,16 @@ Decided 2026-11-05.
 - **Scrolling** (task 131): a panel never gets taller than the window. The growing part of it
   is a `ScrollingList`, shared by the panels that have one: the crafting screen's recipes, the
   chest's slots in the storage screen, and the rows of the Controls and Language model pages
-  (not the character screen, the build menu or the short pages of the pause menu, which do not
-  grow). The list is as tall as its content while the panel fits, otherwise as tall as the
-  window leaves room for, less a margin of 12 UI pixels above and below. Past that it scrolls by
-  mouse wheel, by dragging the bar (drawn in the UI theme), and by focus moving to a row; titles,
-  tabs and buttons stay in place. A window too small for even the rest of the panel still leaves
-  the list 48 UI pixels, so the panel then crosses the window's edge. It refits on its own when
+  (not the character screen or the short pages of the pause menu, which do not grow). The list
+  is as tall as its content while the panel fits, otherwise as tall as the window leaves room
+  for, less a margin of 12 UI pixels above and below. Past that it scrolls by mouse wheel, by
+  dragging the bar (drawn in the UI theme), and by focus moving to a row; titles, tabs and
+  buttons stay in place. A window too small for even the rest of the panel still leaves the
+  list 48 UI pixels, so the panel then crosses the window's edge. It refits on its own when
   the window is resized or the UI scale changes (both change the viewport's visible rect) and
-  when anything in the panel changes size.
+  when anything in the panel changes size. The build menu's row of buildings is not a window:
+  when wider than the window it scrolls sideways in `ScrollingList.Row`, by dragging its bar and
+  by following the chosen building, and the mouse wheel over it still turns the hotbar.
 - **Windows** (task 132): every window (crafting, chest, character, chat, the pause menu) is built
   on one base, `Modal`: a dimmed backdrop and a framed panel centred in the window, refitted when
   its content or the window changes. Escape closes the window (the pause menu goes back a page

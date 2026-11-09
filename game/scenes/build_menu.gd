@@ -5,8 +5,9 @@ extends CanvasLayer
 ## a column of its other styles, if it has any; and beside them a larger preview of the chosen
 ## style with each material it takes as carried/needed, marked when short. Why the spot under
 ## the ghost is refused shows beside the mouse (see `show_message`). Q and E or the arrows pick
-## (see BuildMode), and so does a click. While the hammer takes down, only the preview's panel
-## is up, at the top left, saying so. On its own canvas layer like the hotbar,
+## (see BuildMode), and so does a click. A row wider than the window scrolls sideways and keeps
+## the chosen building in view (ScrollingList.Row). While the hammer takes down, only the
+## preview's panel is up, at the top left, saying so. On its own canvas layer like the hotbar,
 ## so the day/night tint doesn't touch it. It is drawn anew only when what it shows changes
 ## (see `_process`).
 
@@ -32,6 +33,8 @@ const OWN_LOOK := &""
 var _builder: Builder
 var _inventory: Inventory
 var _row := HBoxContainer.new()
+## The row, scrolling sideways when it is wider than the window.
+var _row_scroll := ScrollingList.Row.new(_row)
 ## {building: {style: cell}}: the row's cell of each building is its OWN_LOOK's.
 var _cells: Dictionary[StringName, Dictionary] = {}
 ## The column of the other styles of each building that has any.
@@ -51,14 +54,17 @@ var _chosen_box := _narrowed(THEME.get_stylebox("hover", "Button"))
 var _chosen_color := THEME.get_color("font_hover_color", "Button")
 ## What the menu was last drawn for (see `_process`).
 var _shown: Array = []
+## What the chosen building was last brought into view for: dragging the row's bar changes
+## neither, so a drag stays where it is.
+var _viewed: Array = []
 
 
 func _init() -> void:
 	add_to_group(ArtSet.VIEWS)
-	_row.theme = THEME
+	_row_scroll.theme = THEME
 	_row.add_theme_constant_override("separation", GAP)
 	_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_row)
+	add_child(_row_scroll)
 	for building in BuildingTypes.ids():
 		_cells[building] = {}
 		var styles := BuildingTypes.styles(building)
@@ -137,13 +143,15 @@ func _process(_delta: float) -> void:
 		ArtSet.is_classic,
 		get_viewport().get_visible_rect().size,
 		_row.get_combined_minimum_size(),
+		_row_scroll.scroll_horizontal,
+		_cells[_builder.choice][OWN_LOOK].get_global_rect(),
 		_preview.get_combined_minimum_size(),
 	]
 	if shown == _shown:
 		return
 	_shown = shown
 	var is_choosing := not _builder.is_taking_down()
-	_row.visible = is_choosing
+	_row_scroll.visible = is_choosing
 	for building in _columns:
 		_columns[building].visible = is_choosing and building == _builder.choice
 	if is_choosing:
@@ -203,26 +211,33 @@ func _show_taking_down() -> void:
 ## top left.
 func _place_on_screen(is_choosing: bool) -> void:
 	var screen := get_viewport().get_visible_rect().size
-	_row.size = Vector2.ZERO
-	_row.position = Vector2(
-		roundf((screen.x - _row.size.x) / 2), screen.y - ROW_BOTTOM - _row.size.y
+	_row_scroll.fit()
+	_row_scroll.size = Vector2.ZERO
+	_row_scroll.position = Vector2(
+		roundf((screen.x - _row_scroll.size.x) / 2), screen.y - ROW_BOTTOM - _row_scroll.size.y
 	)
 	# Shrinks round fewer rows of materials.
 	_preview.size = Vector2.ZERO
 	if not is_choosing:
 		_preview.position = TAKING_DOWN_POSITION
 		return
-	var stack: Rect2 = _cells[_builder.choice][OWN_LOOK].get_global_rect()
+	# The chosen building stays in view when the row scrolls (the keys move along it, and wrap).
+	var chosen_cell: Control = _cells[_builder.choice][OWN_LOOK]
+	var viewed := [_builder.choice, screen, _row.get_combined_minimum_size(), chosen_cell.position]
+	if viewed != _viewed:
+		_viewed = viewed
+		_row_scroll.show_in_view(chosen_cell)
+	var stack: Rect2 = chosen_cell.get_global_rect()
 	if _columns.has(_builder.choice):
 		var column := _columns[_builder.choice]
 		column.custom_minimum_size.x = stack.size.x
 		column.size = Vector2.ZERO
-		column.position = Vector2(stack.position.x, _row.position.y - GAP - column.size.y)
+		column.position = Vector2(stack.position.x, _row_scroll.position.y - GAP - column.size.y)
 		stack = stack.merge(column.get_global_rect())
 	var x := stack.end.x + GAP
 	if x + _preview.size.x > screen.x:
 		x = stack.position.x - GAP - _preview.size.x
-	_preview.position = Vector2(x, _row.position.y - GAP - _preview.size.y)
+	_preview.position = Vector2(x, _row_scroll.position.y - GAP - _preview.size.y)
 
 
 ## A cell of the menu: the picture of the building in a style and its name. What it takes shows

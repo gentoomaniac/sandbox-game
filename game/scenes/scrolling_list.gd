@@ -76,3 +76,114 @@ func fit() -> void:
 	var size_wanted := Vector2(content_size.x + bar_width, height)
 	if size_wanted != custom_minimum_size:
 		custom_minimum_size = size_wanted
+
+
+## The sideways sibling of the list, for a row that outgrows the window's width (the build menu's
+## row of buildings): as wide as its content until the window, at the current UI scale and less
+## `MARGIN` on each side, has no room; past that it scrolls by dragging its bar, and
+## `show_in_view` brings a control into view. It has no wheel: a ScrollContainer and its bar take
+## every wheel event over them, and over the build menu the wheel keeps turning the hotbar, so the
+## row is its own small control. Its owner calls `fit()` when the content or the window changes,
+## and places it.
+class Row:
+	extends Control
+
+	## The row is never squeezed below this, however narrow the window is.
+	const MIN_WIDTH := 96
+	const BAR_HEIGHT := 8
+	const MIN_GRABBER_WIDTH := 16
+
+	## How far the content is scrolled, in UI units.
+	var scroll_horizontal := 0.0:
+		set(value):
+			scroll_horizontal = clampf(value, 0.0, _max_scroll())
+			_layout()
+
+	var _content: Control
+	var _bar := Control.new()
+	var _is_dragging := false
+	## Where in the grabber the mouse took hold of it.
+	var _grab_x := 0.0
+
+	func _init(content: Control) -> void:
+		_content = content
+		clip_contents = true
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(content)
+		_bar.draw.connect(_draw_bar)
+		_bar.gui_input.connect(_on_bar_input)
+		add_child(_bar)
+		resized.connect(_clamp_and_layout)
+
+	## The width a row of `content_width` gets in a window of `window_width`.
+	static func width_for(content_width: float, window_width: float) -> float:
+		return minf(content_width, maxf(window_width - 2 * ScrollingList.MARGIN, MIN_WIDTH))
+
+	func is_scrolling() -> bool:
+		return _content.get_combined_minimum_size().x > size.x
+
+	func fit() -> void:
+		var content_size := _content.get_combined_minimum_size()
+		var width := width_for(content_size.x, get_viewport().get_visible_rect().size.x)
+		# The bar sits under the content, so the row is taller by its height.
+		var bar_height := BAR_HEIGHT if width < content_size.x else 0
+		custom_minimum_size = Vector2(width, content_size.y + bar_height)
+		_clamp_and_layout()
+
+	func show_in_view(control: Control) -> void:
+		var left := control.global_position.x - _content.global_position.x
+		var right := left + control.size.x
+		if left < scroll_horizontal:
+			scroll_horizontal = left
+		elif right > scroll_horizontal + size.x:
+			scroll_horizontal = right - size.x
+
+	func _max_scroll() -> float:
+		return maxf(_content.get_combined_minimum_size().x - size.x, 0.0)
+
+	## A wider window leaves less to scroll: the setter clamps, and lays out.
+	func _clamp_and_layout() -> void:
+		scroll_horizontal = scroll_horizontal
+
+	func _layout() -> void:
+		_content.size = _content.get_combined_minimum_size()
+		_content.position = Vector2(-scroll_horizontal, 0)
+		_bar.visible = is_scrolling()
+		_bar.position = Vector2(0, size.y - BAR_HEIGHT)
+		_bar.size = Vector2(size.x, BAR_HEIGHT)
+		_bar.queue_redraw()
+
+	func _grabber() -> Rect2:
+		var content_width := _content.get_combined_minimum_size().x
+		var width := maxf(size.x * size.x / content_width, MIN_GRABBER_WIDTH)
+		var travel := size.x - width
+		var x := travel * scroll_horizontal / _max_scroll() if _max_scroll() > 0.0 else 0.0
+		return Rect2(x, 0, width, BAR_HEIGHT)
+
+	func _draw_bar() -> void:
+		_bar.draw_style_box(
+			_bar.get_theme_stylebox("scroll", "HScrollBar"), Rect2(Vector2.ZERO, _bar.size)
+		)
+		var look := "grabber_pressed" if _is_dragging else "grabber"
+		_bar.draw_style_box(_bar.get_theme_stylebox(look, "HScrollBar"), _grabber())
+
+	## Only the left button drags; the wheel is not taken, so it reaches the game.
+	func _on_bar_input(event: InputEvent) -> void:
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+			_is_dragging = event.pressed
+			if event.pressed:
+				var grabber := _grabber()
+				_grab_x = event.position.x - grabber.position.x
+				if not grabber.has_point(event.position):
+					_grab_x = grabber.size.x / 2
+					_drag_to(event.position.x)
+			_bar.queue_redraw()
+			_bar.accept_event()
+		elif event is InputEventMouseMotion and _is_dragging:
+			_drag_to(event.position.x)
+			_bar.accept_event()
+
+	func _drag_to(mouse_x: float) -> void:
+		var travel := size.x - _grabber().size.x
+		if travel > 0.0:
+			scroll_horizontal = (mouse_x - _grab_x) / travel * _max_scroll()
