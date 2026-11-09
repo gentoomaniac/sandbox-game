@@ -45,6 +45,11 @@ The first buildings have a page of their own: [first-buildings.md](first-buildin
   message above the hotbar would give but the row covers. The chosen cell is lit, its name in
   gold. The ghost is the chosen style's. A click on a cell picks it and never builds on the
   land under the menu. Both art sets show in it (F7).
+- **A row wider than the window scrolls sideways** (the user, 2026-11-09): the row of buildings
+  never gets wider than the window at the current UI scale, less a margin; past that it
+  scrolls left and right (wheel, dragging the bar), and the chosen building is always kept in
+  view, also when Q, E or the arrows move along the row or wrap round. The styles' column and
+  the preview stay with the chosen building. Below that width nothing changes. Task 131.
 - **Keys of the build menu** (rebindable): Q and E or the arrows left and right move along
   the row (wrapping round); up and down move through the styles (stopping at the ends), and
   picking another building starts it in its own look. While building the arrows belong to

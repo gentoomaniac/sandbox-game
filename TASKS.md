@@ -2242,6 +2242,11 @@ come earlier.
 Halted 2026-11-09 after the crafting screen and the chest (merged): the other panels move
 onto the Modal base of task 132 once it is in.
 
+The build menu (the user, 2026-11-09: "the build menu should scroll sideways"): its row of
+buildings scrolls sideways when wider than the window, keeping the chosen building in view (see
+design/building/README.md, the build menu). It is an overlay, not a Modal; ScrollingList (or a
+horizontal sibling of it) handles the width.
+
 The user, 2026-11-09: "UIs like crafting get bigger than the screen. so we need scrolling for
 those if they reach certain limits." First a later idea, then "start the scrolling".
 - The crafting screen first; then every panel with content that grows: inventory and chest, the
