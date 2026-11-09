@@ -63,7 +63,8 @@ func craft(recipe_id: StringName, station: WorldObject = null) -> Result:
 		return Result.MISSING_MATERIALS
 	var materials := {} if _state.cheats.is_cost_off else rules.materials(recipe_id)
 	var made := {} if is_slow else {rules.result(recipe_id): rules.count(recipe_id)}
-	if not _state.player.inventory.exchange(materials, made):
+	var is_exchange_needed := not (materials.is_empty() and made.is_empty())
+	if is_exchange_needed and not _state.player.inventory.exchange(materials, made):
 		return Result.NO_ROOM
 	if is_slow:
 		var minutes := roundi(rules.hours(recipe_id) * GameClock.MINUTES_PER_HOUR)

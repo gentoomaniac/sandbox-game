@@ -59,6 +59,16 @@ func test_clay_makes_raw_bricks_and_a_practised_hand_more_of_them() -> void:
 # --- Firing ---
 
 
+func test_a_firing_without_cost_does_not_tell_of_an_inventory_change() -> void:
+	_state.cheats.is_cost_off = true
+	var changes := []
+	var count_change := func() -> void: changes.append(true)
+	_state.player.inventory.changed.connect(count_change)
+	assert_eq(_crafting.craft(&"bricks", _kiln), Crafting.Result.STARTED)
+	_state.player.inventory.changed.disconnect(count_change)
+	assert_eq(changes, [])
+
+
 func test_a_firing_takes_the_materials_into_the_kiln_and_teaches_masonry() -> void:
 	assert_eq(_crafting.craft(&"bricks", _kiln), Crafting.Result.STARTED)
 	assert_eq(_count(ItemTypes.RAW_BRICK), 0)

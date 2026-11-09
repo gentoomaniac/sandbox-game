@@ -105,7 +105,8 @@ func place(origin: Vector2i) -> Building:
 	):
 		return null
 	if not _state.cheats.is_cost_off:
-		_state.player.inventory.exchange(costs(), {})
+		var is_paid := _state.player.inventory.exchange(costs(), {})
+		assert(is_paid, "The shortfalls were checked, so the costs can be paid")
 	return _state.world.place_building(choice, origin, style)
 
 
