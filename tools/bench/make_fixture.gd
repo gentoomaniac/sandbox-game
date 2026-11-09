@@ -4,6 +4,7 @@ extends SceneTree
 ## away from the player and 12 at their feet, and about 155 villagers.
 ## godot --headless --path . -s tools/bench/make_fixture.gd -- <save file>
 
+
 func _init() -> void:
 	var out: String = OS.get_cmdline_user_args()[0]
 	var state := GameState.new_game(7)
@@ -35,11 +36,26 @@ func _init() -> void:
 		if p.distance_to(state.player.position) > 150:
 			world.ground_items.add(GroundItem.new(items[i % 3], 1 + i % 5, p))
 	for i in 12:
-		world.ground_items.add(GroundItem.new(items[i % 3], 2, state.player.position + Vector2(rng.randf_range(-8, 8), rng.randf_range(-8, 8))))
-	var placed := state.npcs.spawn(5, state.player.position, world)
+		world.ground_items.add(
+			GroundItem.new(
+				items[i % 3],
+				2,
+				state.player.position + Vector2(rng.randf_range(-8, 8), rng.randf_range(-8, 8))
+			)
+		)
+	state.npcs.spawn(5, state.player.position, world)
 	for i in 150:
 		var near := Vector2(lo) + Vector2(rng.randf_range(0, span), rng.randf_range(0, span))
-		placed += state.npcs.spawn(1, near, world)
-	print("piles ", world.ground_items.all().size(), " npcs ", state.npcs.all().size(), " tilled ", world.tilled_tiles().size(), " object removals ", removed)
+		state.npcs.spawn(1, near, world)
+	print(
+		"piles ",
+		world.ground_items.all().size(),
+		" npcs ",
+		state.npcs.all().size(),
+		" tilled ",
+		world.tilled_tiles().size(),
+		" object removals ",
+		removed
+	)
 	print("saved ", SaveFile.write(state, out))
 	quit()

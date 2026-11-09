@@ -34,7 +34,9 @@ func _process(_d: float) -> bool:
 		for c in main._view.entities.get_children():
 			if c is Sprite2D:
 				sprites += 1
-		print("entities children ", main._view.entities.get_child_count(), " pile sprites ", sprites)
+		print(
+			"entities children ", main._view.entities.get_child_count(), " pile sprites ", sprites
+		)
 	if settled_at >= 0 and frame == settled_at + 300:
 		var sum := 0.0
 		var mx := 0.0
