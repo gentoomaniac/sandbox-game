@@ -286,6 +286,25 @@ Needs 139.
 
 ## Later (not part of the prototype)
 
+- **Autosave on a timer, quick save and quick load** (the user, 2026-11-09): "automatic save,
+  players can configure the time in the settings from 10 min to 60 min in 10 min steps. F8 will
+  be a quick load from the last save, F9 a quick save (can both be changed in the key config). A
+  save in progress should be indicated in the notifications, the game can't quit while a save is
+  in progress."
+  - A setting "Autosave every" of 10 to 60 minutes in steps of 10 (real minutes of play; paused
+    time doesn't count), besides today's autosaves on sleep, passing out and quitting
+    (design/tech/saving.md).
+  - F9 saves, F8 loads the last save; both rebindable in the controls page like the other keys.
+  - While a save is written, a notice says so; quitting waits until it is done (or is refused
+    until then). Today the save is written at once in one call, so "in progress" first needs the
+    write to run without freezing the game (a thread, or the save data taken at once and written
+    in the background), keeping the temporary file and rename.
+  - Ties in with Review R2 (task 140): a failed save, timed or quick, is shown and asked about the
+    same way.
+  - Open points to settle when it is planned: whether F8 asks first, as it throws away what was
+    done since the last save; and where "the notifications" are shown, as the game has notes above
+    the hotbar but no notification area yet.
+
 - **Review R8: one owner for the simulation, its time and what is loaded** (review F2.4/F2.5, A4,
   package R8): hunting moves out of FarmAnimalView, the simulation and its time advance in one
   place with one catch-up rule, chunk residency is decided apart from drawing, and PlayerView stops
