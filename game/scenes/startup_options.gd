@@ -118,6 +118,7 @@ extends RefCounted
 ##                            particles last about a second: use a short --screenshot-delay.
 ##   --wildlife=<kind>[,<kind>]  put a few animals of those kinds near the player and leave it at
 ##                            that (bird, rabbit, squirrel, deer, bee, butterfly, flock, stork,
+##                            firefly: shines only at night, so add --day=45 --time=22:00;
 ##                            roof_stork: on the roof of the nearest house, see --house; geese,
 ##                            flying_geese: one flock of them; mouse, frog; on the coast
 ##                            oystercatcher, dunlin: one flock of them; gull, tern)

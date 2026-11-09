@@ -23,7 +23,7 @@ func _init(light: Dictionary, world_pos: Vector2i) -> void:
 	color = light["color"]
 	_energy = light["energy"]
 	_phase = PositionHash.of(world_pos) % 1000
-	texture = _radial_texture()
+	texture = radial_texture()
 	texture_scale = light["radius_tiles"] * TerrainTileset.TILE_SIZE * 2.0 / TEXTURE_SIZE
 	# A little above the tile's centre, where the flame is.
 	position = TerrainTileset.tile_centre(world_pos)
@@ -39,7 +39,7 @@ func _process(_delta: float) -> void:
 
 
 ## White in the middle, fading smoothly to nothing at the edge.
-static func _radial_texture() -> GradientTexture2D:
+static func radial_texture() -> GradientTexture2D:
 	if _texture == null:
 		var gradient := Gradient.new()
 		gradient.offsets = PackedFloat32Array([0.0, 0.35, 1.0])

@@ -424,6 +424,8 @@ func _spawn(kind: StringName, point: Vector2, is_pinned: bool) -> void:
 			animal = Bee.new()
 		WildlifeRules.BUTTERFLY:
 			animal = Butterfly.new()
+		WildlifeRules.FIREFLY:
+			animal = Firefly.new()
 		WildlifeRules.STORK:
 			animal = Stork.new(WildlifeRules.STORK)
 		WildlifeRules.GEESE, WildlifeRules.OYSTERCATCHER, WildlifeRules.DUNLIN:
@@ -488,7 +490,10 @@ func _remove_gone_animals() -> void:
 
 
 func _is_flying(kind: StringName) -> bool:
-	return kind in [WildlifeRules.BEE, WildlifeRules.BUTTERFLY, WildlifeRules.TERN]
+	return (
+		kind
+		in [WildlifeRules.BEE, WildlifeRules.BUTTERFLY, WildlifeRules.FIREFLY, WildlifeRules.TERN]
+	)
 
 
 func _tile_at(point: Vector2) -> Vector2i:

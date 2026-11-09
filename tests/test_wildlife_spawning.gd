@@ -194,3 +194,35 @@ func test_farmland_is_looked_for_around_a_tile() -> void:
 	world.remove_object(Vector2i(7, 10))
 	world.place_building(BuildingTypes.KATE, Vector2i(9, 10))
 	assert_true(WildlifeRules.has_farm_near(world, origin, 2), "a house")
+
+
+func test_fireflies_live_on_meadows_by_trees_hedges_and_water_only() -> void:
+	var firefly := WildlifeRules.FIREFLY
+	assert_true(_rules.is_habitat(firefly, Tile.Terrain.GRASS, 0, false, false, true), "an edge")
+	assert_false(_rules.is_habitat(firefly, Tile.Terrain.GRASS, 0, false), "open meadow")
+	assert_true(_rules.is_habitat(firefly, Tile.Terrain.FLOODPLAIN, 0, false, false, true))
+	assert_true(_rules.is_habitat(firefly, Tile.Terrain.WETLAND, 0, false, false, true))
+	assert_false(_rules.is_habitat(firefly, Tile.Terrain.SOIL, 0, false, false, true), "a field")
+	assert_false(_rules.is_habitat(firefly, Tile.Terrain.WATER, 0, true, false, true))
+
+
+func test_an_edge_is_a_tree_a_hedge_or_water_within_reach() -> void:
+	var world := World.new(SEED)
+	world.add_chunk(WorldGenerator.new(SEED).generate_chunk(Vector2i(0, 0)))
+	var origin := Vector2i(8, 8)
+	for y in range(0, 16):
+		for x in range(0, 16):
+			world.set_terrain(Vector2i(x, y), Tile.Terrain.GRASS)
+			world.remove_object(Vector2i(x, y))
+	assert_false(WildlifeRules.has_edge_near(world, origin, 3))
+	assert_false(_rules.is_habitat_at(WildlifeRules.FIREFLY, world, origin), "open meadow")
+	world.add_object(WorldObject.new(WorldObjectTypes.KNICK, Vector2i(10, 8)))
+	assert_true(WildlifeRules.has_edge_near(world, origin, 3), "a Knick")
+	assert_true(_rules.is_habitat_at(WildlifeRules.FIREFLY, world, origin))
+	assert_false(WildlifeRules.has_edge_near(world, origin, 1), "not that near")
+	world.remove_object(Vector2i(10, 8))
+	world.add_object(WorldObject.new(WorldObjectTypes.BIRCH, Vector2i(8, 5)))
+	assert_true(WildlifeRules.has_edge_near(world, origin, 3), "a tree")
+	world.remove_object(Vector2i(8, 5))
+	world.set_terrain(Vector2i(6, 9), Tile.Terrain.WATER)
+	assert_true(WildlifeRules.has_edge_near(world, origin, 3), "water")

@@ -250,6 +250,11 @@ func finish_refresh() -> void:
 		_refresh_step()
 
 
+## How brightly the lights shine now (see ObjectLight.strength).
+func light_strength() -> float:
+	return _light_strength
+
+
 ## Sets how brightly every light shines (see ObjectLight.strength).
 func set_light_strength(strength: float) -> void:
 	_light_strength = strength

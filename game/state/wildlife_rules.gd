@@ -27,6 +27,8 @@ const FLYING_GEESE := &"flying_geese"
 ## Small ones: a mouse by the fields and the houses, a frog by the water.
 const MOUSE := &"mouse"
 const FROG := &"frog"
+## Glow-worms flying at dusk: small lights that blink.
+const FIREFLY := &"firefly"
 ## The birds of the coast: oystercatchers and dunlin probing the tidal mud in flocks, herring
 ## gulls on the mud, the salt marsh and the sea, and common terns fishing over the sea.
 const OYSTERCATCHER := &"oystercatcher"
@@ -40,6 +42,7 @@ const KINDS: Array[StringName] = [
 	DEER,
 	BEE,
 	BUTTERFLY,
+	FIREFLY,
 	FLOCK,
 	STORK,
 	ROOF_STORK,
@@ -80,9 +83,26 @@ const KIND_KEYS := [
 	"alert_tiles",
 	"flee_tiles",
 ]
+## Optional keys, which only some kinds have (the value of a kind without them is the default):
+##   edge_radius          it needs a tree, a hedge or open water within this many tiles (0: none)
+##   after_sunset_minutes it is only about from the dusk until this long after sunset (0: all day)
+##   wind_limit           it hides at this much wind (0 to 1; default: never)
+##   min_temperature      it hides below this many degrees Celsius (default: never)
+const NO_LIMIT := 1000.0
 ## What squirrels and deer call a forest.
 const TREE_TYPES: Array[StringName] = [
 	WorldObjectTypes.OAK, WorldObjectTypes.SPRUCE, WorldObjectTypes.PINE
+]
+## What marks the edge of a meadow for the fireflies: the woods and the hedges, and water.
+const EDGE_OBJECTS: Array[StringName] = [
+	WorldObjectTypes.OAK,
+	WorldObjectTypes.SPRUCE,
+	WorldObjectTypes.PINE,
+	WorldObjectTypes.BEECH,
+	WorldObjectTypes.BIRCH,
+	WorldObjectTypes.ALDER,
+	WorldObjectTypes.WILLOW,
+	WorldObjectTypes.KNICK,
 ]
 ## The field boundaries mice live in: hedge banks and fieldstone walls.
 const FIELD_BANKS: Array[StringName] = [WorldObjectTypes.KNICK, WorldObjectTypes.STONE_WALL]
@@ -143,6 +163,17 @@ static func has_water_near(map: GameMap, centre: Vector2i, radius: int) -> bool:
 			):
 				return true
 	return false
+
+
+## Whether a tree, a hedge or open water stands within `radius` tiles (a square) of a tile (see
+## EDGE_OBJECTS). It stops at the first.
+static func has_edge_near(world: World, centre: Vector2i, radius: int) -> bool:
+	for y in range(centre.y - radius, centre.y + radius + 1):
+		for x in range(centre.x - radius, centre.x + radius + 1):
+			var object := world.object_at(Vector2i(x, y))
+			if object != null and EDGE_OBJECTS.has(object.type):
+				return true
+	return has_water_near(world, centre, radius)
 
 
 ## Whether there is farmland within `radius` tiles (a square) of a tile: tilled soil, a crop, a
@@ -221,18 +252,23 @@ func phase(day: int, minute: int) -> Phase:
 func activity(kind: StringName, day: int, minute: int, weather: WeatherSample) -> float:
 	if is_hiding(kind, weather):
 		return 0.0
+	if not _is_in_hours(kind, day, minute):
+		return 0.0
 	var season := (day - 1) % GameClock.DAYS_PER_YEAR / GameClock.DAYS_PER_SEASON
 	var season_factors: Array = _value(kind, "season_factors")
 	var phase_weights: Array = _value(kind, "phase_weights")
 	return float(season_factors[season]) * float(phase_weights[phase(day, minute)])
 
 
-## Whether the weather is too much for a kind: rain, a storm or dense fog.
+## Whether the weather is too much for a kind: rain, a storm, dense fog, and for the kinds that
+## have those limits strong wind and cold.
 func is_hiding(kind: StringName, weather: WeatherSample) -> bool:
 	return (
 		weather.rain >= _value(kind, "rain_limit")
 		or weather.fog >= _value(kind, "fog_limit")
 		or weather.storm >= _value(kind, "storm_limit")
+		or weather.wind >= _optional(kind, "wind_limit", NO_LIMIT)
+		or weather.temperature < _optional(kind, "min_temperature", -NO_LIMIT)
 	)
 
 
@@ -256,12 +292,18 @@ func spawn_chance(kind: StringName, day: int, minute: int, weather: WeatherSampl
 ## Whether a kind lives on a terrain with this many trees around, and water and farmland near or
 ## not (see `trees_radius`, `water_radius` and `farm_radius`).
 func is_habitat(
-	kind: StringName, terrain: Tile.Terrain, tree_count: int, is_by_water: bool, is_by_farm := false
+	kind: StringName,
+	terrain: Tile.Terrain,
+	tree_count: int,
+	is_by_water: bool,
+	is_by_farm := false,
+	is_by_edge := false
 ) -> bool:
 	return (
 		_lives_on(kind, terrain)
 		and (_water_radius(kind) == 0 or is_by_water)
 		and (_farm_radius(kind) == 0 or is_by_farm)
+		and (_edge_radius(kind) == 0 or is_by_edge)
 		and tree_count >= int(_value(kind, "min_trees"))
 	)
 
@@ -278,7 +320,9 @@ func is_habitat_at(kind: StringName, world: World, tile: Vector2i) -> bool:
 	var is_by_water := water > 0 and has_water_near(world, tile, water)
 	var farm := _farm_radius(kind)
 	var is_by_farm := farm > 0 and has_farm_near(world, tile, farm)
-	return is_habitat(kind, ground.terrain, tree_count, is_by_water, is_by_farm)
+	var edge := _edge_radius(kind)
+	var is_by_edge := edge > 0 and has_edge_near(world, tile, edge)
+	return is_habitat(kind, ground.terrain, tree_count, is_by_water, is_by_farm, is_by_edge)
 
 
 func _lives_on(kind: StringName, terrain: Tile.Terrain) -> bool:
@@ -292,6 +336,21 @@ func _water_radius(kind: StringName) -> int:
 
 func _farm_radius(kind: StringName) -> int:
 	return int(_value(kind, "farm_radius"))
+
+
+func _edge_radius(kind: StringName) -> int:
+	return int(_optional(kind, "edge_radius", 0))
+
+
+## Whether the time is in the hours a kind keeps to: from the start of the dusk until
+## `after_sunset_minutes` after sunset, if it keeps to any.
+func _is_in_hours(kind: StringName, day: int, minute: int) -> bool:
+	var after_sunset: float = _optional(kind, "after_sunset_minutes", 0.0)
+	if after_sunset == 0.0:
+		return true
+	var dusk := sun.sunset(day) - general("twilight_minutes")
+	var minutes_since_dusk := fposmod(minute - dusk, GameClock.MINUTES_PER_DAY)
+	return minutes_since_dusk <= general("twilight_minutes") + after_sunset
 
 
 ## How a kind reacts to the player at a distance in tiles: it runs off when the player is as near as
@@ -353,6 +412,10 @@ func is_beyond_view(point: Vector2, view: Rect2) -> bool:
 
 func _value(kind: StringName, key: String) -> Variant:
 	return _values[String(kind)][key]
+
+
+func _optional(kind: StringName, key: String, default: Variant) -> Variant:
+	return _values[String(kind)].get(key, default)
 
 
 func _terrain_name(terrain: Tile.Terrain) -> String:
