@@ -70,9 +70,14 @@ func craft(recipe_id: StringName, station: WorldObject = null) -> Result:
 	var is_exchange_needed := not (materials.is_empty() and made.is_empty())
 	if is_exchange_needed and not _state.player.inventory.exchange(materials, made):
 		return Result.NO_ROOM
+	var result := {rules.result(recipe_id): rules.count(recipe_id)}
 	if is_slow:
 		var minutes := roundi(rules.hours(recipe_id) * GameClock.MINUTES_PER_HOUR)
 		StationWork.start(station, recipe_id, _state.clock.total_minutes() + minutes)
+		_state.report(ActionOutcome.START_CRAFT, station.pos, station.type, result)
+	else:
+		var at: Vector2i = _state.player.tile() if station == null else station.pos
+		_state.report(ActionOutcome.CRAFT, at, _station_type(station), result)
 	_practise(recipe_id)
 	return Result.STARTED if is_slow else Result.CRAFTED
 
@@ -100,6 +105,7 @@ func take_out(station: WorldObject) -> bool:
 	# in both.
 	StationWork.clear(station)
 	_state.player.inventory.exchange({}, result)
+	_state.report(ActionOutcome.TAKE_OUT, station.pos, station.type, result)
 	return true
 
 
@@ -118,6 +124,11 @@ func _is_in_reach_as(station: WorldObject, kind: StringName) -> bool:
 			!= null
 		)
 	)
+
+
+## The type of the station a recipe is made at, or empty for one made by hand.
+func _station_type(station: WorldObject) -> StringName:
+	return &"" if station == null else station.type
 
 
 func _practise(recipe_id: StringName) -> void:

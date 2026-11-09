@@ -9,6 +9,10 @@ extends RefCounted
 ## The player is on one map at a time: the world, or the interior of a building. The world
 ## stays as it is while they are inside.
 
+## The player finished an action that worked (see ActionOutcome). Told once, after it is done;
+## nothing is told for a refusal or for loading a game.
+signal action_done(outcome: ActionOutcome)
+
 ## Sleeping and passing out wake the player the next time the clock shows this.
 const WAKE_UP_MINUTE := 6 * GameClock.MINUTES_PER_HOUR + 30
 ## Passing out sleeps at least this long, even when the morning comes sooner.
@@ -309,7 +313,14 @@ func eat_held() -> bool:
 		return false
 	player.inventory.consume_held()
 	player.energy = minf(player.energy + energy_rules.food_restore(food), energy_cap())
+	report(ActionOutcome.EAT, player.tile(), &"", {food: 1})
 	return true
+
+
+## Tells that an action of the player worked: what it did on the player's map at `tile`, to the
+## `object` type (if any), and with `items` (item id to count).
+func report(kind: StringName, tile: Vector2i, object := &"", items := {}) -> void:
+	action_done.emit(ActionOutcome.new(kind, current_map, tile, object, items))
 
 
 func is_out_of_energy() -> bool:
@@ -404,8 +415,10 @@ func take_down_building(building: Building) -> bool:
 	if player.home_map == building.interior:
 		player.home_map = world
 		player.home_bed = CampSite.sleeping_bag_of_seed(world.world_seed)
+	var refund := refund_of_building(building)
 	world.remove_building(building)
-	world.drop_items(building.door_tile() + Vector2i.DOWN, refund_of_building(building))
+	world.drop_items(building.door_tile() + Vector2i.DOWN, refund)
+	report(ActionOutcome.DEMOLISH, building.origin, building.type, refund)
 	return true
 
 
@@ -465,12 +478,21 @@ func collect_ground_items(delta: float) -> void:
 				ground_item, ground_item.position + to_player.normalized() * PULL_SPEED * delta
 			)
 			continue
+		var picked_up := ground_item.count
 		player.inventory.hold_notifications(
 			func() -> void:
 				ground_item.count = player.inventory.add(ground_item.item, ground_item.count)
 				if ground_item.count == 0:
 					world.ground_items.remove(ground_item)
 		)
+		picked_up -= ground_item.count
+		if picked_up > 0:
+			report(
+				ActionOutcome.PICK_UP,
+				Vector2i(ground_item.position.floor()),
+				&"",
+				{ground_item.item: picked_up}
+			)
 
 
 ## Puts the stack in inventory slot `slot` on the ground in front of the player, as drops of
@@ -484,12 +506,14 @@ func drop_from_inventory(slot: int) -> bool:
 	):
 		return false
 	var stack := player.inventory.slots[slot]
+	var target := player.facing_tile()
 	player.inventory.hold_notifications(
 		func() -> void:
 			player.inventory.destroy(slot)
-			for pile in world.drop_items(player.facing_tile(), {stack["item"]: stack["count"]}):
+			for pile in world.drop_items(target, {stack["item"]: stack["count"]}):
 				pile.is_dropped_by_player = true
 	)
+	report(ActionOutcome.DROP, target, &"", {stack["item"]: stack["count"]})
 	return true
 
 

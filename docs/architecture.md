@@ -50,6 +50,14 @@ Warft and an Ewer here and there.
   does, open this file. `use_tile` checks its own conditions: a tile beyond `Targeting.REACH` or
   not on the player's map is refused (`OUT_OF_REACH`, nothing changed, no energy), and on
   horseback the use is `RIDING`; so the UI, the debug scenes and tests all get the same answer.
+- **ActionOutcome** (`game/state/action_outcome.gd`) is what one finished action of the player
+  did: who, the kind (till, plant, harvest, break, place, build, craft, eat, pick up ...), the
+  tile on its map, the object type and the items with counts. GameState tells it once through
+  `action_done`, after the action worked (`ToolUse`, `Builder`, `Crafting`, `eat_held`,
+  `drop_from_inventory`, `collect_ground_items`, `take_down_building`): never for a refusal and
+  never for loading a game. Whoever reacts (the sounds, later the deed log of the gossip)
+  listens to it; there is no global event bus. Low-level setters (`World.set_terrain`, console
+  and debug commands) tell nothing.
 - **GameMap** is a place the player can walk: either **World** or **Interior** (the inside of
   one building). The player is on one map at a time; the world stands still while they are
   inside. Both tell their views the same way: `objects_changed(pos)` and `tile_changed(pos)`

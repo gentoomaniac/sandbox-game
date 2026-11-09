@@ -107,7 +107,9 @@ func place(origin: Vector2i) -> Building:
 	if not _state.cheats.is_cost_off:
 		var is_paid := _state.player.inventory.exchange(costs(), {})
 		assert(is_paid, "The shortfalls were checked, so the costs can be paid")
-	return _state.world.place_building(choice, origin, style)
+	var building := _state.world.place_building(choice, origin, style)
+	_state.report(ActionOutcome.BUILD, origin, choice, {} if _state.cheats.is_cost_off else costs())
+	return building
 
 
 ## What the hammer would take down on a tile, or null if there is nothing to take down.
@@ -154,6 +156,7 @@ func take_down(target: TakeDownTarget) -> bool:
 		var left := _state.player.inventory.add(item, items[item])
 		if left > 0:
 			_state.world.drop_items(target.object.pos, {item: left})
+	_state.report(ActionOutcome.TAKE_DOWN, target.object.pos, target.object.type, items)
 	return true
 
 

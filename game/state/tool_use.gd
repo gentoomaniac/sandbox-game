@@ -72,6 +72,8 @@ const CLAY_DIG_CHANCE := 0.4
 const ANIMAL_REACH := 1.0
 
 var _state: GameState
+## What the use in `_do_use` did, told when it has cost its energy (see `use_tile`).
+var _outcome: ActionOutcome
 
 
 func _init(state: GameState) -> void:
@@ -133,6 +135,8 @@ func use_tile(target: Vector2i) -> Use:
 	if COST_KINDS.has(use):
 		var cost := _state.energy_rules.cost_of(COST_KINDS[use]) * weight_factor * drain
 		_state.player.energy = maxf(0.0, _state.player.energy - cost)
+	if _outcome != null:
+		_state.action_done.emit(_outcome)
 	return use
 
 
@@ -145,15 +149,18 @@ func _is_in_reach(target: Vector2i) -> bool:
 
 func _do_use(target: Vector2i) -> Use:
 	var use := use_at(target)
+	_outcome = null
 	match use:
 		Use.TILL:
 			_state.world.set_terrain(target, Tile.Terrain.SOIL)
+			_done(ActionOutcome.TILL, target)
 		Use.PLANT:
 			var seeds := _state.player.inventory.held_item()
 			var planted := WorldObject.new(ItemTypes.TYPES[seeds]["plants"], target)
 			planted.state = ItemTypes.TYPES[seeds].get("plants_state", {}).duplicate()
 			_state.world.add_object(planted)
 			_state.player.inventory.consume_held()
+			_done(ActionOutcome.PLANT, target, planted.type, {seeds: 1})
 		Use.HARVEST:
 			var crop := _state.world.object_at(target)
 			if CropLife.regrows(crop):
@@ -161,11 +168,15 @@ func _do_use(target: Vector2i) -> Use:
 				_state.world.change_object(crop)
 			else:
 				_state.world.remove_object(target)
-			_state.world.drop_items(target, CropLife.harvest_of(crop))
+			var harvest := CropLife.harvest_of(crop)
+			_state.world.drop_items(target, harvest)
+			_done(ActionOutcome.HARVEST, target, crop.type, harvest)
 		Use.CLEAR:
-			_state.world.remove_object(target)
+			var dead_crop := _state.world.remove_object(target)
+			_done(ActionOutcome.CLEAR, target, dead_crop.type)
 		Use.WATER:
 			_state.world.set_moisture(target, 1.0)
+			_done(ActionOutcome.WATER, target)
 		Use.FORAGE:
 			var plant := _state.world.object_at(target)
 			if plant.type_data().has("regrow_days"):
@@ -173,37 +184,54 @@ func _do_use(target: Vector2i) -> Use:
 				_state.world.change_object(plant)
 			else:
 				_state.world.remove_object(target)
-			_state.world.drop_items(target, plant.picked_drops())
+			var picked := plant.picked_drops()
+			_state.world.drop_items(target, picked)
+			_done(ActionOutcome.FORAGE, target, plant.type, picked)
 		Use.MOW:
+			var mown := {}
 			for plant in _plants_to_mow(target):
 				plant.pick()
 				_state.world.change_object(plant)
-				_state.world.drop_items(plant.pos, plant.picked_drops())
+				var cut := plant.picked_drops()
+				_state.world.drop_items(plant.pos, cut)
+				for item: StringName in cut:
+					mown[item] = mown.get(item, 0) + cut[item]
+			_done(ActionOutcome.MOW, target, &"", mown)
 		Use.DIG:
-			_dig(target)
+			_done(ActionOutcome.DIG, target, &"", _dig(target))
 		Use.PLACE:
 			var held := _state.player.inventory.held_item()
 			var placed := WorldObject.new(ItemTypes.TYPES[held]["places"], target)
 			_state.current_map.add_object(placed)
 			_state.player.inventory.consume_held()
 			_state.make_home_if_bedless(placed)
+			_done(ActionOutcome.PLACE, target, placed.type, {held: 1})
 		Use.TAKE_DOWN:
-			var items := items_of_placed(_state.current_map.remove_object(target))
+			var taken_down := _state.current_map.remove_object(target)
+			var items := items_of_placed(taken_down)
 			# `use_at` already checked that it all fits (or answered NO_ROOM).
 			for item: StringName in items:
 				_state.player.inventory.add(item, items[item])
+			_done(ActionOutcome.TAKE_DOWN, target, taken_down.type, items)
 		Use.HIT:
 			_hit(_state.world.object_at(target))
 		Use.GIVE_BONE:
 			_state.livestock.start_following(_dog_at(target), _state.clock.total_minutes())
 			_state.player.inventory.consume_held()
+			_done(ActionOutcome.GIVE_BONE, target, LivestockRules.DOG, {ItemTypes.BONE: 1})
 		Use.SADDLE:
 			_horse_at(target).is_saddled = true
 			_state.player.inventory.consume_held()
+			_done(ActionOutcome.SADDLE, target, LivestockRules.HORSE, {ItemTypes.SADDLE: 1})
 		Use.UNSADDLE:
 			_horse_at(target).is_saddled = false
 			_state.player.inventory.add(ItemTypes.SADDLE, 1)
+			_done(ActionOutcome.UNSADDLE, target, LivestockRules.HORSE, {ItemTypes.SADDLE: 1})
 	return use
+
+
+func _done(kind: StringName, tile: Vector2i, object := &"", items := {}) -> void:
+	_outcome = ActionOutcome.new(kind, _state.current_map, tile, object, items)
 
 
 ## The 4 tiles one swing of the scythe mows, aimed at `target`: it, the tile beyond it in the
@@ -229,13 +257,15 @@ func _is_mowable(object: WorldObject) -> bool:
 
 
 ## Digs the grass at `target`: a clay spot is spent, and gives clay with some chance. Anywhere
-## else the shovel finds nothing.
-func _dig(target: Vector2i) -> void:
+## else the shovel finds nothing. Returns what it found.
+func _dig(target: Vector2i) -> Dictionary:
 	if not _state.world.has_clay(target):
-		return
+		return {}
 	_state.world.spend_clay_spot(target)
-	if PositionHash.rolls(target, _state.clock.day, CLAY_DIG_CHANCE):
-		_state.world.drop_items(target, CLAY_DIG_YIELD)
+	if not PositionHash.rolls(target, _state.clock.day, CLAY_DIG_CHANCE):
+		return {}
+	_state.world.drop_items(target, CLAY_DIG_YIELD)
+	return CLAY_DIG_YIELD
 
 
 ## Whether the player can put an object of this type with its top left on a tile: every tile of
@@ -405,6 +435,7 @@ func _hit(object: WorldObject) -> void:
 	var power := ItemTypes.tool_power(_state.player.inventory.held_item())
 	if not object.is_finished_by(power):
 		_state.world.hit_object(object, power)
+		_done(ActionOutcome.HIT, object.pos, object.type)
 		return
 	var object_type := object.type_data()
 	# What it holds (a chest's items, a kiln's load) comes out with it.
@@ -423,6 +454,7 @@ func _hit(object: WorldObject) -> void:
 	# The finishing hit replaces or removes the object instead of `hit_object`, which emits
 	# this for the other hits; the view still shakes and throws particles for it.
 	_state.world.object_hit.emit(object)
+	_done(ActionOutcome.BREAK, object.pos, object.type, drops)
 
 
 ## Whether felling this tree today also gives its seed. The same tree on the same day always
