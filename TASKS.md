@@ -23,19 +23,14 @@ Rules for every task:
 - Visuals come from the art generator (task 5 on). Until a task adds art for something,
   use simple placeholder shapes in palette colours.
 
-## 62. Post mill and draw well
+## 62. Post mill
 
 - [ ] Done
 
-docs/art-style.md bigger item 10: a post mill and a draw well as landmark props, placed by
-the world generator near settlements or on rises.
+docs/art-style.md bigger item 10: a post mill as a landmark prop, placed by the world generator
+near settlements or on rises. (The draw well is part of task 122.)
 
-## 87. Willows that stand out from the grass
-
-Dropped as a task (the user, 2026-11-07): kept as a point for the next graphics review, see
-Later.
-
-## 122. The farm yard: chicken coop, trough, hay rack, draw well and stork's nest
+## 122. The farm yard: chicken coop, trough, hay rack and draw well
 
 - [ ] Done
 
@@ -76,8 +71,9 @@ whitish brown when drying out."
 
 - [ ] Done
 
-Waits for the review tasks 139 to 143 (the user, 2026-11-09: review items first); the deeds
-come from the action outcomes of task 143.
+The deeds come from the action outcomes of task 143: listen to `GameState.action_done` (see
+game/state/action_outcome.gd; a hammer take-down is `take_down` for a placed object and
+`demolish` for a building).
 
 From design/villagers/gossip.md (Deeds). No language model in this task.
 - A `data/gossip.cfg` with the deed kinds (felled a tree, built a building, took down a building,
@@ -173,6 +169,8 @@ From design/villagers/gossip.md (Bubbles). Needs 128 for lines about the player;
 come earlier.
 - Now and then a villager in view says a short line in a bubble over their head for a few
   seconds: at most one on screen and about one a minute (data file).
+- Reuse what exists: ThoughtBubble (game/scenes/thought_bubble.gd, the player's icon bubbles)
+  for the look, NpcMoment (game/state/npc_moment.gd) for the weather and part of the day.
 - About the moment (weather, part of the day, the place, what they do), or about the player when
   near, with their opinion and newest stories.
 - Asked of the model in the background with the chat's temperature (task 124), dropped if the
@@ -192,6 +190,11 @@ The user, 2026-11-09: once all current tasks are done. After task 142 the mean f
   bench save and while walking across chunk borders.
 - Spread the heavy work over frames (a budget per frame, or a worker thread for pure data) so no
   frame goes over about 33 ms on the bench save; same pictures, same game.
+- Merged from Later (task 6 review): a chunk load took about 8 ms, spikes 16 ms at a chunk
+  border; generation is pure and could run on a `WorkerThreadPool` task, drawing could be split
+  over frames, and `set_cell` skipped for layers a cell doesn't use. Also per frame:
+  `Occlusion.building_rect` calls `load()` for a size, and `World.buildings()` copies the array
+  (task 14 review): cache them.
 - `make bench` reports the longest frame and how many frames went over 33 ms, before and after.
 
 ## 148. The ambience test is flaky: seed its wildlife
@@ -208,13 +211,13 @@ passes every run; no game change.
 
 The user, 2026-11-09: "make sure plants can get harvested and dead plants can be hoed away to
 prep the soil for the next produce".
-- Check every crop can be harvested when ripe (each crop of the crop data, in every season it
-  grows), and what the player gets; fix what doesn't work.
-- A withered or dead crop (frost, drought, past its season, see the crop withering rules) can be
-  cleared with the hoe: the tile is tilled soil again, ready to plant, with no dead plant left.
-  Say what the player gets from it (nothing, or a little), and whether the scythe or the hand also
-  clear it.
-- Tests: harvest of each crop, hoeing a dead crop gives plantable tilled soil, saved and loaded.
+- Already there (tasks review, 2026-11-09): the empty hand harvests a ripe crop and clears a dead
+  one, which leaves tilled soil (tool_use.gd); every crop ripens (test_crops.gd). The hoe only
+  tills free grass and the scythe only mows, so neither clears a dead crop.
+- The hoe clears a dead crop too (and decide with the user whether the scythe should): the tile
+  is tilled soil again, ready to plant. Say what the player gets from it (nothing, or a little).
+- Tests: each crop of the crop data harvested through a use when ripe, and what the player gets;
+  a cleared tile (by hand and by hoe) can be planted, also after save and load.
 
 ## 152. Storks nest on roofs and raise their young
 
@@ -267,87 +270,64 @@ spring and summer and flies off again; there is no nest. Moved here from task 12
   buildings and clay share the same edits). Getting under 20 would take one more split, most
   likely buildings and their placement rules.
 
-- Season looks follow-ups (from the task 29 review): SeasonBlend's four boundaries
-  as a loop over SeasonRules.BOUNDARIES; `frost_at` belongs with the season rules, not
-  SnowCover. SnowCover's cold start (~80 ms for a fresh region in late winter) could be
+- Season looks follow-ups (from the task 29 review): SeasonBlend `_season_look` indexes the
+  shares by hand, a loop would do (`conditions()` already loops); `frost_at` belongs with the
+  season rules, not SnowCover. SnowCover's cold start (~80 ms for a fresh region in late winter) could be
   spread over frames. Snow cover of the player's region is applied to the whole loaded
   world for now.
 
-- Split the object edits and regrowth (`_object_edits`, `replace_object`, `hit_object`,
-  `change_object`, `pass_night`) out of `World` into their own class with their own tests,
-  and drop the `max-public-methods` lint exception in world.gd.
-- Edits of objects that are back to their generated state (a healed tree) stay in the
-  save; harmless, bounded by what the player touched.
-- Ground items (task 33 review): `World.ground_items_near` scans every pile each frame
-  (fine for tens, not hundreds; piles never expire): bucket per tile or chunk. A pile that
-  falls back onto a non-walkable source may be out of reach. A pulled pile moves straight
-  through walls and water (the pull reaches 1.25 tiles since 2026-11-05).
-- Task 35 review: time a chunk load with the clay probe and hint layer against the ~14 ms
-  baseline; a mown tuft stays an object edit forever after it regrew (drop edits that are
-  back to their generated state); ResourceCase `_hold` could just select a hotbar slot.
-- Held art and use poses for axe, pickaxe, scythe and shovel.
+- Split the object edits (`_object_edits`, `replace_object`, `hit_object`, `change_object`,
+  `take_off`) out of `World` into their own class with their own tests, and drop the
+  `max-public-methods` lint exception in world.gd (the regrowth is in NightUpkeep already).
+- Edits of objects that are back to their generated state (a healed tree, a mown tuft that
+  regrew) stay in the save forever; drop them. Harmless, bounded by what the player touched.
+- Ground items (task 33 review): a pile that falls back onto a non-walkable source may be out of
+  reach (`_scatter_tiles` returns the source). A pulled pile moves straight through walls and
+  water (the pull reaches 1.25 tiles since 2026-11-05).
+- Use (swing) poses for the axe, pickaxe, scythe and shovel; the held art is done (task 119).
 - The shovel could later dig up a young sapling to move it.
 
 - Floodplain farming: floodplain is the most fertile farmland, but only grass can be tilled
   now. Tilling it needs a "tilled" tile property that keeps the floodplain flag, so floods
   can still act on it.
 
-Art notes from the art round 2 review and look:
+Art notes (reviewed 2026-11-09; the rest was redone by tasks 101 to 119):
 
-- Extra vegetation (done, branch `extra-vegetation`): spruce, pine, dead tree, berry bush,
-  shrub, sapling, fern bush; joined trunks, ground shadows, 32×48 object cells. Fern and
-  sapling sprites are still plain.
-- Dusk (18:30) comes out olive and muddy rather than warm orange; tune the tint gradient.
-- Lush and dry grass areas look blotchy; dry should differ in hue (yellower), not only
-  brightness.
-- The grass texture is busy (many dark marks).
-- `tools/art/generate.py`: shared sprites (pebbles, fern, clover, brown caps) are defined
-  several times; move them to module level. Add a small `size(picture)` helper.
-- No test yet that `redraw_tile` redraws decorations and unload erases them.
-
-Art scale pass notes (16a–16c reviews and look):
-
-- Pines read as olive-brown blobs with stubby trunks inside forests (redrawn in task 51).
-- The sleeping bag (1×2, vertical) reads like an upright sign behind the player; it should
-  look flat on the ground. The character's face turns slightly pink at night.
-- Seed mound and sprout stages are plain; the hoe is a thin stick from front/back.
-- A grass tuft can stay under a boulder's right half at the load frontier (hidden).
-- Saves from before 16a put the 1×1 bag where the new spawn is; `add_chunk` replay checks
-  only the origin tile of multi-tile objects.
-- Interior: the table reads like a chest, the chest is hard to identify, the bed is flat,
-  the floor boards are very high contrast.
+- The late-evening tint (DAY to DUSK_GLOW, day_night_tint.gd) over green grass reads olive
+  rather than warm; check at the sunset hour of summer and autumn. Also check the player's face
+  at 20:30 to 22:00 next to the fire (an old note said it turns pink at night).
+- Lush and dry grass looked blotchy (dry has its own yellower colours since task 107); keep only
+  if a fresh screenshot still shows it.
+- tools/art/terrain.py: `brown_caps` is defined twice (and twice in classic/terrain.py); make it
+  one module-level sprite. Add `canvas.size(picture)` for the repeated
+  `len(picture), len(picture[0])`.
+- A test that `_unload_chunk` leaves the decoration cells empty (redrawing is tested by the path
+  tests).
+- A grass tuft can stay under a boulder's right half at the load frontier (hidden): after a chunk
+  loads, recheck the decorations under its objects' tiles that reach into loaded right or bottom
+  neighbours.
+- `World.add_chunk` replay removes a generated object only at the origin tile of a replayed
+  multi-tile object, not at the other tiles it covers.
 
 Saving notes from the task 15 review:
 
-- Only closing the window saves; Ctrl-C/SIGTERM doesn't.
-- `--new-game` without `--save-path` replaces the real save on quit (intended); `make screenshot`
-  uses build/screenshot.save, so test runs never touch it.
+- Ctrl-C/SIGTERM doesn't save; only play since the last autosave (or quick save) is lost.
+- `--new-game` without `--save-path` replaces the real save at the first autosave or on quit
+  (intended); `make screenshot` uses build/screenshot.save, so test runs never touch it.
 
 See-through notes from the task 14 review:
 
-- `sprite_height` on tree types is hand-set and 1–2 px under the art for oak and dead tree.
-  Add a test that each declared height is at least the opaque height in the atlas.
-- `Occlusion.building_rect` calls `load()` and `world.buildings()` copies the array every
-  frame; cache texture sizes per building sprite.
-- A swapped sprite may change draw order against a same-row neighbour tree (small pop).
-- Skip `_update_see_through` while inside a building.
-
-Performance notes from the task 6 review:
-
-- Loading a chunk takes about 8 ms on average, with spikes up to 16 ms when crossing a
-  chunk border. Profile `_load_chunk` first. Likely fixes, cheapest first: generate
-  chunks on a `WorkerThreadPool` task (generation is pure); split drawing over frames;
-  skip `set_cell` for layers a cell doesn't use.
+- A swapped sprite may change draw order against a same-row neighbour tree (small pop): walk
+  behind a tree with a neighbour in the same row to see it.
 
 World generation notes from the task 3 review:
 
 - The river is measured by vertical distance to its centre line, so it gets thin (about
   2 tiles) in steep bends. Use perpendicular distance, or a smaller meander.
-- The wetland noise seed is `seed + 1`, which equals the river noise of the next seed.
-  Use a large constant offset.
-- More rivers, lakes or biomes: split `terrain_at` into one helper per feature instead of
-  growing its if-chain.
+- The noise seeds use offsets 1 to 18 from the world seed (the wetland's `seed + 1` equals the
+  river noise of the next seed; its comment says "independent"), so every noise collides with
+  another noise of a nearby seed. Give them large distinct offsets. This changes every world:
+  it needs a world version note.
 
-Harvesting trees and rocks (tools, harvest levels, regrowth), saving and loading,
-inventory, energy, weather, biomes, combat, reputation, building
-customisation and expansions, real art.
+Still missing from the old feature list: combat, reputation (see tasks 125 to 128 and the
+relationship system), building expansions, more distinct biomes.

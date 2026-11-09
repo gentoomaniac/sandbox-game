@@ -3732,3 +3732,13 @@ refusals ("denied", the scythe at nothing) still come from the result of a use. 
 (once per change), so Main rebuilds nothing. Player-visible changes: a kiln recipe at a workbench is
 refused ("Made at the Kiln"), a craft out of reach says "Too far from the station", the pick-up pop
 also plays for a pile taken only in part, and a building placed by world code alone is silent.
+
+## 87. Willows that stand out from the grass
+
+- [x] Done
+
+Dropped as a task (the user, 2026-11-07) and kept as a point for the next graphics review.
+
+Done: by task 108 (the willow's crown closed with an edge, the rods and warmer bark, as the art
+review of 2026-11-08 asked) and task 101 (grass and reeds stand out from the ground: a ground
+shadow, a dark foot, an outline only round dense cores). Closed in the tasks review of 2026-11-09.
