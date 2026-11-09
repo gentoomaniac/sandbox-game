@@ -3750,3 +3750,44 @@ shadow, a dark foot, an outline only round dense cores). Closed in the tasks rev
 The user, 2026-11-09: "32x32 cows look weirdly twisted as if the head is upside down."
 
 Done: the grazing head was the ahead head transposed (a mirror, so forehead and eye sat on the jaw side). It is drawn on its own now (`COW_HEAD_DOWN` in `tools/art/livestock.py`). The standing head is unchanged; the other 32 px animals and the 16 px cow were checked and are fine.
+
+## 153. Villagers wear desire paths too
+
+- [x] Done
+
+The user's words of 2026-11-10: "The tracks that show up on tiles that you walk often are good.
+NPCs should contribute to those."
+
+- Every villager that steps onto a new tile outdoors wears it, like the player and the farm
+  animals, with its own step amount in data/paths.cfg; their daily routes slowly become paths.
+- The same on and off screen; the wear fades as before when nobody walks there.
+- Tests, and the design page and README say it.
+
+## 154. Skipping time moves the whole world forward, like the clock ticking
+
+- [ ] Done
+
+The user, 2026-11-10: "Time skip seems to not affect crops. It should. Also other stuff should
+get affected like NPCs' schedules once that gets implemented, or birds' movement. Skipping time
+should be like moving the game engine's tick clock forward for everything."
+- Today the console's `skip` (game/state/console.gd `_skip`), sleeping and passing out only call
+  `clock.advance(minutes)`; what happens per day runs on `new_day` (NightUpkeep), and what runs
+  per frame (crop growth by the minute?, soil drying, weather, livestock, villagers, wildlife,
+  stations' work) doesn't see the skipped minutes. Find out exactly what does and doesn't follow
+  a skip of minutes, hours and days.
+- One way to move time for everything: a skip, a night's sleep and a pass-out advance the same
+  simulation step by step (or in catch-up steps a system declares), so after it the world is as
+  if the time had been played: crops grown or withered, soil dried, weather moved on, kilns done,
+  animals and villagers where their day puts them, birds gone or arrived. Views follow from the
+  new state.
+- This is the core of Review R8 (Later: one owner for the simulation and its time, one catch-up
+  rule); do that part here and leave the rest of R8 in Later.
+- Tests: skip 1 h, 1 d and 30 d against the same time played in small steps, for crops, soil,
+  weather, stations and animals; sleep and pass-out go the same way.
+
+Done: `Npcs._walk` wears the tile a villager steps onto (`World.wear_tile` at `villager_step`,
+half a step, in data/paths.cfg beside `animal_step`; `PathRules.villager_step`), for every
+loaded villager, on screen or off, since they all move in `Npcs.update`; only on a tile change,
+so it costs nothing measurable (`make bench` frame mean 7.19 ms before, 7.15 after). Nothing
+while they rest at night or while the player is inside (the world stands still); the wear
+table and its save format are unchanged and the nightly regrowth fades it as before.
