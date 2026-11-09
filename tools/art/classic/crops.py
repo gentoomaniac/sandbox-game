@@ -113,7 +113,7 @@ def cell(height=TILE):
 
 
 # A mound of freshly sown soil: the first stage of every crop, and under the next ones.
-# Darker than the bed it lies on, whatever its moisture, with seeds on it.
+# Dark earth with cream seeds and an outline, so it stands out on every moisture step of the bed.
 MOUND = ("...ssss...", "..sbhmbs..", ".sbhmcbbs.", "sbbmbbbcbs", ".ssbbbbss.", "...ssss...")
 
 

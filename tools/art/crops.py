@@ -30,7 +30,8 @@ GREENS = ("green_deep", "green_dark", "green", "green_light")
 BRIGHT_GREENS = ("green_dark", "green", "green_light", "green_bright")
 SHADED_GREENS = ("green_deep", "green_deep", "green_dark", "green")
 SOIL = ("soil", "soil_mid", "soil_mid", "soil_light")
-# Freshly turned earth is darker than the bed it lies on, whatever its moisture.
+# Freshly turned earth: dark, with cream seeds and an outline, so it stands out on every moisture
+# step of the bed (on the wettest the bed is darker; the seeds and the lit top carry it).
 MOUND_SOIL = ("soil_dark", "soil", "soil", "soil_mid")
 TUBER = ("mud", "sand", "sand_light")
 WITHERING = ("olive", "dry", "dry_light", "straw")
