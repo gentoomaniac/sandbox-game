@@ -155,7 +155,9 @@ func _on_open() -> void:
 
 
 func _on_close() -> void:
-	_input.release_focus()
+	# A window removed while open is closed on its way out of the tree, where releasing fails.
+	if _input.is_inside_tree():
+		_input.release_focus()
 
 
 ## Fits the log to the window, which changes with the window's size and the UI scale. The bubbles

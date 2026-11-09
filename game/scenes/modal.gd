@@ -64,11 +64,9 @@ func _init() -> void:
 	_centre.add_child(_panel)
 
 
+## Removing an open window cleans up as closing it does (borrowed HUD, listeners, the pause).
 func _exit_tree() -> void:
-	if _open_modal == self:
-		_open_modal = null
-		if pauses_game:
-			get_tree().paused = false
+	close()
 
 
 ## Whether any window is open: then the player neither walks nor acts.

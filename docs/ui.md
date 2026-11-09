@@ -104,7 +104,9 @@ E does nothing while it is open.
 - **One at a time:** opening a window closes the open one, so windows need not know of each
   other. `Modal.is_any_open()` says whether one is open (Main uses it instead of its own
   conditions: then the player neither walks nor acts) and `Modal.close_open()` closes it.
-  The open window is one static variable of the base, no registry.
+  The open window is one static variable of the base, no registry. A window removed from the tree
+  while open is closed on its way out (`_exit_tree` calls `close()`), so `_on_close` is its one
+  clean-up and runs where its dependencies are still there.
 
 ## Theme and palette
 
