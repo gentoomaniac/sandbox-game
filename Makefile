@@ -23,7 +23,7 @@ IMPORT := $(GODOT) --headless --quiet --import
 # reproducible, and it keeps third-party code out of our history and diffs.
 # The cost is that a fresh clone needs `make setup` (and network) before it runs.
 
-.PHONY: help setup venv assets classic-assets contrast-sheet run screenshot test lint format export clean llm-up llm-down llm-check \
+.PHONY: help setup venv assets classic-assets contrast-sheet run screenshot test bench lint format export clean llm-up llm-down llm-check \
 	llm-pull llm-models llm-rm llm-eval llm-gpu-setup
 
 help:
@@ -34,6 +34,7 @@ help:
 	@echo "  run         Start the game."
 	@echo "  screenshot  Save one frame as PNG (a new game, muted, no focus, its own save)."
 	@echo "  test        Run the GUT tests headless, in TEST_JOBS parallel processes."
+	@echo "  bench       Time a heavy save headless (start-up, nodes, frame times, pile pick-up); see tools/README.md."
 	@echo "  lint        Run gdlint and gdformat --check, and check no API key is in the repo."
 	@echo "  format      Format the GDScript."
 	@echo "  assets      Regenerate all art and sounds, then check them (needs no Godot)."
@@ -190,6 +191,24 @@ test:
 	@mkdir -p build/user-data
 	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT)
 	@GODOT=$(GODOT) python3 tools/run_tests.py $(TEST_JOBS)
+
+# The fixture save is written once (again when its script changes); each run plays a copy, since
+# the game saves over the file it loaded. user:// points into build/, so the real save and
+# settings are never touched.
+BENCH_DIR := $(CURDIR)/build/bench
+BENCH_GODOT := XDG_DATA_HOME=$(CURDIR)/build/user-data $(GODOT) --headless --path .
+
+$(BENCH_DIR)/fixture.save: tools/bench/make_fixture.gd
+	mkdir -p $(BENCH_DIR)
+	$(BENCH_GODOT) -s tools/bench/make_fixture.gd -- $@
+
+bench:
+	@mkdir -p build/user-data
+	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT)
+	$(MAKE) $(BENCH_DIR)/fixture.save
+	cp $(BENCH_DIR)/fixture.save $(BENCH_DIR)/run.save
+	$(BENCH_GODOT) -s tools/bench/frames.gd -- --save-path=$(BENCH_DIR)/run.save --settings-path=$(BENCH_DIR)/settings.cfg --mute
+	$(BENCH_GODOT) -s tools/bench/pickup.gd -- $(BENCH_DIR)/fixture.save
 
 lint:
 	$(GDLINT) $(GDSCRIPT_DIRS)

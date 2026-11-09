@@ -25,6 +25,17 @@ run (`build/test-times`, from GUT's junit output), by file size until a file has
 `build/test.log` is the shard logs joined plus a summary (Passing Tests, Failing Tests,
 `[Failed] file: test`, time); the exit status is non-zero if any shard or check fails.
 
+## Performance: tools/bench/
+
+`make bench` times the game on a heavy save, headless and muted. The first run writes the save
+with `make_fixture.gd` into `build/bench/fixture.save` (seed 7: about 10,000 item piles, 155
+villagers, 30,000 tilled tiles and thousands of removed objects round the camp); later runs reuse
+it until that script changes. Then `frames.gd` starts Main on a copy of it and prints how long
+the world view took to settle, the node and entity counts, and the mean and longest frame over
+300 frames; `pickup.gd` prints the cost of the per-frame pile pick-up. Nothing is asserted: run
+it before and after a change and compare. Task 142 took the mean frame from 37.2 to 7.3 ms this
+way.
+
 ## Art: tools/art/
 
 `generate.py` is the entry point: it assembles the object atlas and `main()` writes every
