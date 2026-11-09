@@ -91,6 +91,12 @@ func remove(item: StringName, count: int) -> int:
 	return count - left
 
 
+## Destroys the stack in `slot` for good (the trash can); the other slots stay as they are.
+func destroy(slot: int) -> void:
+	slots[slot] = {}
+	changed.emit()
+
+
 ## Moves what is in slot `from` to slot `to` of `target` (these slots themselves for a move
 ## inside). Stacks of the same item merge, up to the stack limit, and what doesn't fit stays in
 ## `from`; anything else swaps places. Returns whether it swapped two items, so `from` now holds

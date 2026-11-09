@@ -64,6 +64,11 @@ func unequip(slot: StringName) -> StringName:
 	return item
 
 
+## Destroys what is worn in `slot` for good (the trash can).
+func destroy(slot: StringName) -> void:
+	unequip(slot)
+
+
 ## Moves the item in inventory slot `from` onto `slot`; what was worn there goes to `from`.
 func move_to_equipment(inventory: Inventory, from: int, slot: StringName) -> bool:
 	var item := inventory.item_in(from)

@@ -136,3 +136,13 @@ func test_moves_tell_the_inventory_and_the_equipment_changed() -> void:
 	_equipment.quick_equip(_inventory, 0)
 	assert_signal_emitted(_inventory, "changed")
 	assert_signal_emitted(_equipment, "changed")
+
+
+func test_destroying_a_worn_item_empties_its_slot_and_leaves_the_rest() -> void:
+	_equipment.equip(Equipment.HEAD, ItemTypes.STRAW_HAT)
+	_equipment.equip(Equipment.BODY, ItemTypes.SHIRT)
+	watch_signals(_equipment)
+	_equipment.destroy(Equipment.HEAD)
+	assert_eq(_equipment.item_in(Equipment.HEAD), ItemTypes.NONE)
+	assert_eq(_equipment.item_in(Equipment.BODY), ItemTypes.SHIRT)
+	assert_signal_emitted(_equipment, "changed")
