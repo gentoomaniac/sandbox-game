@@ -392,15 +392,16 @@ open the character screen, where you move items between the inventory and the eq
 slots. The hotbar (the eight slots at the bottom of the screen, keys 1 to 8) holds your tools
 and seeds and is extra room: it takes nothing from the backpack's 20 slots (4 rows of 5), so
 you carry 28 stacks. New items fill the free hotbar slots first. The screen shows the backpack
-and the hotbar stays lit at the bottom, where you use it as the quick bar: click an item, then
-a slot of the backpack, the hotbar or the equipment to put it there. A different item in that
-slot swaps places and sticks to the mouse in turn, the same item stacks. Shift+click sends a
-whole stack from the backpack to the hotbar and back (onto the same item first, if there is
-room). Let go of a picked stack outside the screen, or press T for the held stack, and it lies
+and the hotbar stays lit at the bottom, where you use it as the quick bar: drag an item with
+the mouse onto a slot of the backpack, the hotbar or the equipment to put it there (it follows
+the mouse only while you hold the button; a click alone picks nothing up). A different item in
+that slot swaps places, the same item stacks, and a stack let go anywhere else goes back.
+Shift+click sends a whole stack from the backpack to the hotbar and back (onto the same item first, if there is
+room). Let go of a dragged stack outside the screen, or press T for the held stack, and it lies
 on the ground in front of you; walk away and back to pick it up again (a game saved right
-after a drop picks the pile up when it loads). To get rid of a stack for good, put it on the
+after a drop picks the pile up when it loads). To get rid of a stack for good, drag it onto the
 trash can (the bin slot under the backpack, on the character screen and the chest's): the game asks "Destroy
-Logs (12)?" and Destroy removes the stack; Keep, Escape or a click elsewhere leaves it picked,
+Logs (12)?" and Destroy removes the stack; Keep, Escape or a click elsewhere leaves it where it was,
 and Escape does not close the screen while the question is up. A worn item or a hotbar stack
 can be thrown away the same way. Energy and health bars track how tired you are,
 and the more you carry, the more each action costs: up to 40 kg is free, and tools weigh
@@ -485,9 +486,9 @@ Hold a chest and a ghost shows where it would go: green where it fits, red where
 doesn't (not on water, wetland or floodplain, not on something else, not in front of a
 door). Use it to place the chest, outdoors or inside a house. Press E in front of a chest
 to open it: your backpack is on the left (the hotbar below stays usable) and the chest's 15
-slots (20 in a carved chest) on the right. Click an item and click a slot to move it, or
+slots (20 in a carved chest) on the right. Drag an item onto a slot to move it, or
 Shift+click to send a whole stack across (from the chest it goes to the backpack first, so the
-hotbar isn't flooded). Put a picked stack of either side on the trash can under the backpack
+hotbar isn't flooded). Drag a stack of either side onto the trash can under the backpack
 to destroy it, after the same question. A chest too big for the window scrolls its slots (mouse wheel or bar). The
 axe takes a chest down: outdoors what it held spills onto the ground, inside a house the
 chest and its contents go into your inventory (or you are told there is no room).
@@ -552,6 +553,8 @@ These are the default keys; all of them can be changed under Settings → Contro
 | WASD or arrow keys | Walk (with the hammer building, only WASD: the arrows pick in the build menu until Escape) |
 | Space or left click | Use the held item on the targeted tile |
 | 1–8 | Pick a hotbar slot |
+| Left mouse button, dragged | In the character and chest screens: move a stack onto a slot, the trash can, or (let go outside the screen) the ground |
+| Shift + left click, right click | In the character and chest screens: send a stack to the other side; on the character screen right click wears or takes off an item |
 | T | Drop the held stack on the ground in front of you (picked up again by walking away and back) |
 | Tab | Character screen and inventory |
 | K | Skills tab of the character screen |

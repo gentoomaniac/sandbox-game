@@ -6,8 +6,9 @@ extends CanvasLayer
 ## dimmed backdrop: it stays lit and is their quick bar, its slots clickable (see
 ## `set_clickable`); otherwise clicks on it go to the game.
 
-## A slot was clicked while the slots are clickable; one screen at a time listens (while open).
-signal slot_pressed(slot: int)
+## A slot was Shift+clicked, or right clicked, while the slots are clickable; one screen at a
+## time listens (while open).
+signal slot_quick_move_requested(slot: int)
 signal slot_secondary_pressed(slot: int)
 
 ## While the slots are clickable: above the screens (1), under the fade (2, added later) and
@@ -35,7 +36,7 @@ func _init() -> void:
 		view.mouse_filter = Control.MOUSE_FILTER_PASS
 		view.is_clickable = false
 		view.tooltip_id = "hotbar_%d" % slot
-		view.pressed.connect(slot_pressed.emit.bind(slot))
+		view.quick_move_requested.connect(slot_quick_move_requested.emit.bind(slot))
 		view.secondary_pressed.connect(slot_secondary_pressed.emit.bind(slot))
 		_row.add_child(view)
 		_slot_views.append(view)

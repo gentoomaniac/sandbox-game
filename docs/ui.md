@@ -83,9 +83,16 @@ E does nothing while it is open.
   `_takes_escape()` is asked for Escape and the pause key only, not for these. A key not listed
   does nothing to the window.
 - **Backdrop click:** `closes_on_backdrop_click = true` closes on a left click outside the panel.
-  A window that uses those clicks itself (the chest lets go of the picked stack) overrides
-  `_on_backdrop_input(event)`; it should then set `_panel.mouse_filter` to ignore, so clicks
-  on the panel reach it.
+  A window that uses those clicks itself overrides `_on_backdrop_input(event)`; it should then
+  set `_panel.mouse_filter` to ignore, so clicks on the panel reach it.
+- **Dragging stacks:** a window that moves inventory stacks (the character and the chest screen)
+  uses SlotView, which is Godot's own drag and drop (`_get_drag_data`, `_can_drop_data`,
+  `_drop_data`, `set_drag_preview`) on a slot bound to its ItemSlots or Equipment (`bind_to`),
+  and TrashCan, a drop target of its own that asks before it destroys. The window only calls
+  `_drop_outside_panel(hotbar, on_drop)` in `_init` (with `_panel.mouse_filter` ignoring the
+  mouse) to hear of a stack let go on the dimmed area, outside the panel and the HUD's hotbar,
+  which the character and chest screen turn into a drop on the ground. A stack let go on
+  anything that refuses it goes back by itself: nothing moves while it is dragged.
 - **Pause:** `pauses_game = true` (set in `_init`) pauses the tree while the window is open; the
   window then keeps running (`PROCESS_MODE_ALWAYS`). It unpauses when it closes, or is freed
   while open, whatever else asked for the pause, so only Modals pause the tree (the pause menu is

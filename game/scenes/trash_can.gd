@@ -1,23 +1,23 @@
 class_name TrashCan
 extends HBoxContainer
-## The trash can of an inventory screen: a slot with a bin. The screen sends the picked stack to
-## it with `ask`, which shows "Destroy Logs (12)?" with Destroy and Keep buttons in a small panel
-## over the screen (it floats, so the screen does not change size while it is up). Keep has the
-## focus, so a stray Enter keeps the stack. Destroy emits `destroy_confirmed` and the screen does
-## the destroying. While the question is up, any click or wheel turn outside its panel answers
-## Keep and is swallowed, so it does nothing else, and so does the window changing size (the
-## screen moves, the question would not); Escape is the screen's to hand to `keep()` (see Modal
-## `_takes_escape`). The question is part of the screen, not a window of its own: only one
-## Modal can be open.
-
-## The bin slot was clicked.
-signal pressed
-signal destroy_confirmed
+## The trash can of an inventory screen: a slot with a bin. A stack dragged onto it shows
+## "Destroy Logs (12)?" with Destroy and Keep buttons in a small panel over the screen (it floats,
+## so the screen does not change size while it is up). Keep has the focus, so a stray Enter keeps
+## the stack, which has not moved from its slot. Destroy destroys the stack that was asked
+## about, if it is still there. While the question is up, any click or wheel turn outside its
+## panel answers Keep and is swallowed, so it does nothing else, and so does the window changing
+## size (the screen moves, the question would not); Escape is the screen's to hand to `keep()`
+## (see Modal `_takes_escape`). The question is part of the screen, not a window of its own: only
+## one Modal can be open.
 
 const BIN_ICON := preload("res://assets/ui/trash_icon.png")
 const GAP := 4
 
 var _slot := SlotView.new()
+## The slot of the stack the question is about, and what the stack was when it was asked.
+var _source: SlotView
+var _asked_item: StringName
+var _asked_count: int
 var _question := Label.new()
 var _destroy_button := Button.new()
 var _keep_button := Button.new()
@@ -28,7 +28,7 @@ func _init() -> void:
 	add_theme_constant_override("separation", GAP)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_slot.hint = BIN_ICON
-	_slot.pressed.connect(pressed.emit)
+	_slot.set_drag_forwarding(Callable(), _can_drop_on_slot, _drop_on_slot)
 	add_child(_slot)
 
 	_destroy_button.text = "Destroy"
@@ -54,11 +54,20 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(keep)
 
 
-## Asks whether to destroy `count` of `item`, over the slot's lower left corner.
-func ask(item: StringName, count: int) -> void:
-	var item_name: String = ItemTypes.TYPES[item]["name"]
+func _can_drop_on_slot(_at_position: Vector2, data: Variant) -> bool:
+	return SlotView.source_of(data) != null
+
+
+## Asks whether to destroy the dropped stack, over the slot's lower left corner.
+func _drop_on_slot(_at_position: Vector2, data: Variant) -> void:
+	_source = SlotView.source_of(data)
+	_asked_item = _source.item()
+	_asked_count = _source.count()
+	var item_name: String = ItemTypes.TYPES[_asked_item]["name"]
 	_question.text = (
-		"Destroy %s (%d)?" % [item_name, count] if count > 1 else "Destroy %s?" % item_name
+		"Destroy %s (%d)?" % [item_name, _asked_count]
+		if _asked_count > 1
+		else "Destroy %s?" % item_name
 	)
 	_prompt.visible = true
 	_prompt.reset_size()
@@ -90,4 +99,5 @@ func _input(event: InputEvent) -> void:
 
 func _on_destroy_pressed() -> void:
 	keep()
-	destroy_confirmed.emit()
+	if _source.item() == _asked_item and _source.count() == _asked_count:
+		_source.destroy()

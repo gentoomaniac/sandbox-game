@@ -2348,7 +2348,7 @@ screen and the chest's (tests/test_trash_can.gd, test_storage_trash_can.gd).
 
 ## 134. Real drag and drop in the inventory screens, the trash can too
 
-- [ ] Done
+- [x] Done
 
 The user, 2026-11-09: "make the trash can really drag and drop. Also the whole menu drag and drop.
 clicking should not anchor the item to the mouse, wherever you drop it puts / swaps the item, on
@@ -2368,6 +2368,19 @@ the trashcan it opens the deletion confirmation".
   half) is a later idea unless it falls out naturally; ask first.
 - Tests for drop on a slot, swap, merge, the trash can (asks, Destroy, Keep), outside the panel,
   cancelled drags; docs and README, the controls table too.
+
+Done: `SlotView` is Godot's drag and drop (`_get_drag_data`, `_can_drop_data`, `_drop_data`,
+`set_drag_preview`) on a slot bound to an `ItemSlots` or the `Equipment` (`bind_to`): drop onto an
+empty slot, a different item (swap), the same item (merge), an equipment slot that fits; the
+source slot fades while dragged and the fitting equipment slots light up. `TrashCan` is a drop
+target that asks and destroys the dragged slot's stack itself (no screen code); `Modal.
+_drop_outside_panel` turns a drop on the dimmed area outside the panel and the hotbar into the
+ground drop; anything else goes back, as nothing moves during the drag. A click picks nothing
+up; Shift+click (`quick_move_requested`) and right click stay. The old pick state, the icon
+following the mouse and the backdrop click handlers are gone from both screens. Tests:
+tests/test_inventory_drag.gd, test_equipment_drag.gd (real mouse events in a SubViewport),
+test_trash_can.gd, test_storage_trash_can.gd, test_storage_screen.gd. Docs, README and controls
+table updated.
 
 ## 135. Fireflies on summer nights
 

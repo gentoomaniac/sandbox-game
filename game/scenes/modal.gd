@@ -157,6 +157,22 @@ func _on_backdrop_input(event: InputEvent) -> void:
 		close()
 
 
+## For a window where stacks are dragged (see SlotView): `on_drop.call(source)` runs when the
+## stack of the SlotView `source` is let go on the dimmed area outside the panel and outside the
+## HUD's `hotbar`. Let go anywhere else, such as between the panel's slots, it stays where it was.
+func _drop_outside_panel(hotbar: HotbarHud, on_drop: Callable) -> void:
+	_backdrop.set_drag_forwarding(
+		Callable(),
+		func(at_position: Vector2, data: Variant) -> bool:
+			return (
+				SlotView.source_of(data) != null
+				and not _panel.get_rect().has_point(at_position)
+				and not hotbar.covers(at_position)
+			),
+		func(_at_position: Vector2, data: Variant) -> void: on_drop.call(SlotView.source_of(data))
+	)
+
+
 func _is_left_press(event: InputEvent) -> bool:
 	return (
 		event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT

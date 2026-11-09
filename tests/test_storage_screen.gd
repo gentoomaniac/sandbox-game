@@ -1,5 +1,6 @@
 extends GutTest
-## The storage screen: the inventory and the slots of a chest, clicks that move items, Shift+click.
+## The storage screen: the inventory and the slots of a chest, dragging that moves items,
+## Shift+click.
 
 var _inventory: Inventory
 var _chest: ItemSlots
@@ -11,19 +12,6 @@ func before_each() -> void:
 	# Holding the last hotbar slot, so items are added from the first slot on.
 	_inventory.select(Inventory.HOTBAR_SIZE - 1)
 	_chest = WorldObject.new(WorldObjectTypes.CHEST, Vector2i.ZERO).storage
-
-
-func after_each() -> void:
-	_hold_shift(false)
-
-
-func _hold_shift(is_held := true) -> void:
-	var event := InputEventKey.new()
-	event.keycode = KEY_SHIFT
-	event.physical_keycode = KEY_SHIFT
-	event.pressed = is_held
-	Input.parse_input_event(event)
-	Input.flush_buffered_events()
 
 
 ## The storage screen open on a chest with `_chest`'s slots, for `_inventory`'s player. Returns
@@ -60,49 +48,51 @@ func _chest_view(views: Array[SlotView], slot: int) -> SlotView:
 	return views[Inventory.SLOT_COUNT + slot]
 
 
+## Drags the stack of `from` onto `to` and lets go, as the mouse does (see test_inventory_drag.gd
+## for real mouse events).
+func _drag(from: SlotView, to: SlotView) -> void:
+	var data := {"from": from}
+	if to._can_drop_data(Vector2.ZERO, data):
+		to._drop_data(Vector2.ZERO, data)
+
+
 func test_the_screen_has_the_backpack_slots_the_hotbars_and_then_the_five_by_three_of_the_chest(
 ) -> void:
 	var views := _open_screen()
 	assert_eq(views.size(), Inventory.SLOT_COUNT + 15)
 
 
-func test_clicking_an_item_and_then_a_chest_slot_moves_it() -> void:
+func test_dragging_an_item_onto_a_chest_slot_moves_it() -> void:
 	_inventory.add(ItemTypes.LOGS, 8)
 	var views := _open_screen()
-	_inventory_view(views, 0).pressed.emit()
-	_chest_view(views, 2).pressed.emit()
+	_drag(_inventory_view(views, 0), _chest_view(views, 2))
 	assert_true(_inventory.slots[0].is_empty())
 	assert_eq(_chest.slots[2], {"item": ItemTypes.LOGS, "count": 8})
 
 
-func test_clicking_a_chest_item_and_then_an_inventory_slot_moves_it_back() -> void:
+func test_dragging_a_chest_item_onto_an_inventory_slot_moves_it_back() -> void:
 	_chest.add(ItemTypes.STONE, 3)
 	var views := _open_screen()
-	_chest_view(views, 0).pressed.emit()
-	_inventory_view(views, 5).pressed.emit()
+	_drag(_chest_view(views, 0), _inventory_view(views, 5))
 	assert_true(_chest.slots[0].is_empty())
 	assert_eq(_inventory.slots[5], {"item": ItemTypes.STONE, "count": 3})
 
 
-func test_clicking_the_picked_slot_again_puts_it_back_where_it_was() -> void:
+func test_dragging_a_stack_onto_its_own_slot_changes_nothing() -> void:
 	_inventory.add(ItemTypes.LOGS, 8)
 	var views := _open_screen()
-	_inventory_view(views, 0).pressed.emit()
-	_inventory_view(views, 0).pressed.emit()
-	_inventory_view(views, 1).pressed.emit()
-	assert_eq(_inventory.slots[0], {"item": ItemTypes.LOGS, "count": 8}, "nothing was picked")
-	assert_true(_inventory.slots[1].is_empty())
+	_drag(_inventory_view(views, 0), _inventory_view(views, 0))
+	assert_eq(_inventory.slots[0], {"item": ItemTypes.LOGS, "count": 8})
 
 
 func test_shift_click_sends_the_whole_stack_to_the_other_side() -> void:
 	_inventory.add(ItemTypes.LOGS, 8)
 	_chest.add(ItemTypes.STONE, 3)
 	var views := _open_screen()
-	_hold_shift()
-	_inventory_view(views, 0).pressed.emit()
+	_inventory_view(views, 0).quick_move_requested.emit()
 	assert_true(_inventory.slots[0].is_empty())
 	assert_eq(_chest.count_of(ItemTypes.LOGS), 8)
-	_chest_view(views, 0).pressed.emit()
+	_chest_view(views, 0).quick_move_requested.emit()
 	assert_eq(_inventory.count_of(ItemTypes.STONE), 3, "and back again")
 	assert_eq(_chest.count_of(ItemTypes.STONE), 0)
 
@@ -110,8 +100,7 @@ func test_shift_click_sends_the_whole_stack_to_the_other_side() -> void:
 func test_shift_click_from_the_chest_fills_the_backpack_before_the_hotbar() -> void:
 	_chest.add(ItemTypes.STONE, 3)
 	var views := _open_screen()
-	_hold_shift()
-	_chest_view(views, 0).pressed.emit()
+	_chest_view(views, 0).quick_move_requested.emit()
 	assert_eq(_inventory.slots[Inventory.HOTBAR_SIZE], {"item": ItemTypes.STONE, "count": 3})
 	assert_true(_inventory.slots[0].is_empty())
 
@@ -119,8 +108,7 @@ func test_shift_click_from_the_chest_fills_the_backpack_before_the_hotbar() -> v
 func test_items_move_between_the_hotbar_and_the_backpack() -> void:
 	_inventory.add(ItemTypes.LOGS, 8)
 	var views := _open_screen()
-	_inventory_view(views, 0).pressed.emit()
-	_inventory_view(views, 12).pressed.emit()
+	_drag(_inventory_view(views, 0), _inventory_view(views, 12))
 	assert_true(_inventory.slots[0].is_empty())
 	assert_eq(_inventory.slots[12], {"item": ItemTypes.LOGS, "count": 8})
 
@@ -130,8 +118,7 @@ func test_shift_click_into_a_full_chest_leaves_the_rest() -> void:
 		_chest.slots[slot] = {"item": ItemTypes.HOE, "count": 1}
 	_inventory.add(ItemTypes.LOGS, 8)
 	var views := _open_screen()
-	_hold_shift()
-	_inventory_view(views, 0).pressed.emit()
+	_inventory_view(views, 0).quick_move_requested.emit()
 	assert_eq(_inventory.slots[0], {"item": ItemTypes.LOGS, "count": 8})
 	assert_eq(_chest.count_of(ItemTypes.LOGS), 0)
 
@@ -145,17 +132,13 @@ func test_closing_the_screen_stops_it_following_the_slots() -> void:
 	assert_false(_chest.changed.has_connections())
 
 
-func test_putting_an_item_on_another_across_the_sides_swaps_and_picks_that_one_up() -> void:
+func test_dragging_an_item_onto_another_across_the_sides_swaps_them() -> void:
 	_inventory.add(ItemTypes.LOGS, 8)
 	_chest.add(ItemTypes.STONE, 3)
 	var views := _open_screen()
-	_inventory_view(views, 0).pressed.emit()
-	_chest_view(views, 0).pressed.emit()
+	_drag(_inventory_view(views, 0), _chest_view(views, 0))
 	assert_eq(_chest.slots[0], {"item": ItemTypes.LOGS, "count": 8})
 	assert_eq(_inventory.slots[0], {"item": ItemTypes.STONE, "count": 3})
-	_inventory_view(views, 6).pressed.emit()
-	assert_eq(_inventory.slots[6], {"item": ItemTypes.STONE, "count": 3}, "the stone was in hand")
-	assert_true(_inventory.slots[0].is_empty())
 
 
 func test_a_chest_of_many_slots_scrolls_inside_a_small_window() -> void:

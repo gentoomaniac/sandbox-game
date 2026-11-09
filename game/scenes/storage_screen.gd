@@ -3,15 +3,12 @@ extends Modal
 ## The storage screen over the game, for a chest: the player's backpack on the left (no
 ## equipment) and the chest's slots on the right (as many as the chest has, 5 to a row), each
 ## under a small icon. The hotbar is the HUD's, which stays lit and clickable while the screen is
-## open, and is used like the backpack's slots. Click an item to pick it up, then click a
-## slot of either side to put it down: a different item swaps places and is picked up in turn
-## (it sticks to the mouse), the same item stacks.
-## Clicking the picked slot again, or on the panel outside the slots, lets go of the pick; a left
-## click outside the panel puts a picked inventory stack on the ground. A click on the trash can
-## under the backpack with a stack picked (of either side) asks "Destroy Logs (12)?" (see
-## TrashCan); a click elsewhere or Escape answers Keep, and the stack stays picked. Shift+click
-## sends a whole stack to the other side (from the chest into the backpack first, so the hotbar
-## isn't flooded).
+## open, and is used like the backpack's slots. Items are moved by dragging them onto a slot of
+## either side (see SlotView): a different item swaps places, the same item stacks. Let go
+## outside the panel, a backpack or hotbar stack lands on the ground; let go on the trash can
+## under the backpack, a stack of either side is asked about, "Destroy Logs (12)?" (see
+## TrashCan); let go anywhere else it stays where it was. Shift+click sends a whole stack to the
+## other side (from the chest into the backpack first, so the hotbar isn't flooded).
 ## Like the character screen, it takes the input while it is open (Main sees to that, and closes it
 ## on E; Escape is the Modal's).
 
@@ -28,8 +25,6 @@ const PANEL_GAP := 16
 const COLUMNS := 5
 ## The backpack is 5 slots wide and 4 rows high.
 const INVENTORY_COLUMNS := 5
-const PICKED_ALPHA := 0.4
-const PICKED_ICON_LAYER := 3
 const BACKPACK_ICON := preload("res://assets/ui/backpack_icon.png")
 const CHEST_ICON := preload("res://assets/ui/chest_icon.png")
 
@@ -38,9 +33,6 @@ var _inventory: Inventory
 var _chest: ItemSlots
 ## The slot views of each side, by slot.
 var _views := {INVENTORY: {}, CHEST: {}}
-## The slot that is picked up, as {side, slot}; empty for none.
-var _pick := {}
-var _picked_icon := ItemIcon.new()
 ## What the chest's grid of slots is swapped in and out of: the part that grows.
 var _chest_holder := VBoxContainer.new()
 var _trash_can := TrashCan.new()
@@ -50,6 +42,7 @@ func _init(hotbar: HotbarHud) -> void:
 	super()
 	close_actions = [&"interact"]
 	_hotbar = hotbar
+	_drop_outside_panel(_hotbar, _on_dropped_outside)
 
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", PANEL_GAP)
@@ -59,8 +52,6 @@ func _init(hotbar: HotbarHud) -> void:
 		_new_grid(INVENTORY, Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT, INVENTORY_COLUMNS)
 	)
 	inventory_column.add_child(_trash_can)
-	_trash_can.pressed.connect(_on_trash_can_pressed)
-	_trash_can.destroy_confirmed.connect(_on_destroy_confirmed)
 	for slot in Inventory.HOTBAR_SIZE:
 		var view := _hotbar.slot_view(slot)
 		_views[INVENTORY][slot] = view
@@ -69,16 +60,9 @@ func _init(hotbar: HotbarHud) -> void:
 	_chest_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	chest_column.add_child(_scrolling(_chest_holder))
 	row.add_child(chest_column)
-	# Clicks on the panel outside the slots let go of the pick, so they reach the backdrop.
+	# Stacks let go on the panel outside the slots reach the backdrop, which sends them back.
 	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel.add_child(row)
-
-	_picked_icon.visible = false
-	# On a layer of its own, so the dragged icon is drawn above the hotbar too.
-	var icon_layer := CanvasLayer.new()
-	icon_layer.layer = PICKED_ICON_LAYER
-	icon_layer.add_child(_picked_icon)
-	add_child(icon_layer)
 
 
 ## Shows the chest next to the player's inventory. Opening it again moves it to that chest.
@@ -93,12 +77,14 @@ func open_chest(chest: WorldObject, player: PlayerState) -> void:
 func _on_open() -> void:
 	if _views[CHEST].size() != _chest.slots.size():
 		_show_chest_slots(_chest.slots.size())
+	for side: int in _views:
+		for slot: int in _views[side]:
+			_views[side][slot].bind_to(_slots_of(side), slot)
 	_inventory.changed.connect(_refresh)
 	_chest.changed.connect(_refresh)
-	_pick = {}
 	_trash_can.keep()
 	_hotbar.set_clickable(true)
-	_hotbar.slot_pressed.connect(_on_hotbar_slot_pressed)
+	_hotbar.slot_quick_move_requested.connect(_on_hotbar_slot_quick_move_requested)
 	_refresh()
 
 
@@ -106,20 +92,9 @@ func _on_open() -> void:
 func _on_close() -> void:
 	_inventory.changed.disconnect(_refresh)
 	_chest.changed.disconnect(_refresh)
-	_pick = {}
 	_trash_can.keep()
-	_picked_icon.visible = false
 	_hotbar.set_clickable(false)
-	_hotbar.slot_pressed.disconnect(_on_hotbar_slot_pressed)
-	# The screen no longer refreshes, so a picked hotbar slot would stay faded.
-	for slot in Inventory.HOTBAR_SIZE:
-		_hotbar.slot_view(slot).modulate.a = 1.0
-
-
-func _process(_delta: float) -> void:
-	if _picked_icon.visible:
-		var middle := _picked_icon.size / 2
-		_picked_icon.position = (_backdrop.get_local_mouse_position() - middle).round()
+	_hotbar.slot_quick_move_requested.disconnect(_on_hotbar_slot_quick_move_requested)
 
 
 ## Makes the grid of the chest's side, for a chest of this many slots. A chest of many slots is
@@ -153,7 +128,7 @@ func _new_grid(side: int, first: int, last: int, columns: int) -> GridContainer:
 	for slot in range(first, last):
 		var view := SlotView.new()
 		view.tooltip_id = "%s_%d" % ["inventory" if side == INVENTORY else "chest", slot]
-		view.pressed.connect(_on_slot_pressed.bind(side, slot))
+		view.quick_move_requested.connect(_on_slot_quick_move_requested.bind(side, slot))
 		grid.add_child(view)
 		_views[side][slot] = view
 	return grid
@@ -163,42 +138,15 @@ func _slots_of(side: int) -> ItemSlots:
 	return _inventory if side == INVENTORY else _chest
 
 
-func _on_slot_pressed(side: int, slot: int) -> void:
-	var slots := _slots_of(side)
-	if Input.is_key_pressed(KEY_SHIFT):
-		_pick = {}
-		if side == CHEST:
-			slots.send(slot, _inventory, _inventory.backpack_first_order())
-		else:
-			slots.send(slot, _chest)
-	elif _pick.is_empty():
-		if not slots.slots[slot].is_empty():
-			_pick = {"side": side, "slot": slot}
+func _on_slot_quick_move_requested(side: int, slot: int) -> void:
+	if side == CHEST:
+		_chest.send(slot, _inventory, _inventory.backpack_first_order())
 	else:
-		# Dropped first: the move refreshes the screen, which shows a pick that is still there.
-		var picked := _pick
-		_pick = {}
-		var is_swap: bool = _slots_of(picked["side"]).move_to(picked["slot"], slots, slot)
-		# After a swap the picked slot holds what was in `slot`: that is the pick now.
-		if is_swap:
-			_pick = picked
-	_refresh()
+		_inventory.send(slot, _chest)
 
 
-func _on_hotbar_slot_pressed(slot: int) -> void:
-	_on_slot_pressed(INVENTORY, slot)
-
-
-func _on_trash_can_pressed() -> void:
-	if not _pick.is_empty():
-		var slots := _slots_of(_pick["side"])
-		_trash_can.ask(slots.item_in(_pick["slot"]), slots.slots[_pick["slot"]]["count"])
-
-
-func _on_destroy_confirmed() -> void:
-	_slots_of(_pick["side"]).destroy(_pick["slot"])
-	_pick = {}
-	_refresh()
+func _on_hotbar_slot_quick_move_requested(slot: int) -> void:
+	_on_slot_quick_move_requested(INVENTORY, slot)
 
 
 ## Escape answers the trash can's question with Keep, and only then closes the screen.
@@ -206,34 +154,15 @@ func _takes_escape() -> bool:
 	return _trash_can.keep()
 
 
-func _on_backdrop_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed:
-		var is_drop: bool = (
-			event.button_index == MOUSE_BUTTON_LEFT
-			and not _panel.get_rect().has_point(event.position)
-			and not _hotbar.covers(event.position)
-		)
-		if not _pick.is_empty() and _pick["side"] == INVENTORY and is_drop:
-			drop_requested.emit(_pick["slot"])
-		_pick = {}
-		_refresh()
+## A stack was let go outside the panel: a backpack or hotbar one lands on the ground.
+func _on_dropped_outside(source: SlotView) -> void:
+	if source.container == _inventory:
+		drop_requested.emit(source.slot)
 
 
 func _refresh() -> void:
-	# Keeps the picked icon valid whatever changed underneath.
-	if not _pick.is_empty() and _slots_of(_pick["side"]).item_in(_pick["slot"]) == ItemTypes.NONE:
-		_pick = {}
-		_trash_can.keep()
 	for side: int in _views:
 		var slots := _slots_of(side)
 		for slot in slots.slots.size():
-			var view: SlotView = _views[side][slot]
 			var is_held := side == INVENTORY and slot == _inventory.selected_slot
-			view.show_stack(slots.slots[slot], is_held)
-			var is_picked: bool = (
-				not _pick.is_empty() and _pick["side"] == side and _pick["slot"] == slot
-			)
-			view.modulate.a = PICKED_ALPHA if is_picked else 1.0
-	_picked_icon.visible = not _pick.is_empty()
-	if not _pick.is_empty():
-		_picked_icon.show_item(_slots_of(_pick["side"]).item_in(_pick["slot"]))
+			_views[side][slot].show_stack(slots.slots[slot], is_held)

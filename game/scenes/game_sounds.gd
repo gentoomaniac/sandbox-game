@@ -60,12 +60,14 @@ func watch_panel(is_open: Callable, open_event := &"ui_open", close_event := &"u
 	_panel_events.append([open_event, close_event])
 
 
-## Plays ui_click when a button, or an inventory slot, under `root` is pressed.
+## Plays ui_click when a button under `root` is pressed, or a stack is dragged onto or
+## Shift+clicked on an inventory slot.
 func click_on_press_in(root: Node) -> void:
 	for button in root.find_children("*", "BaseButton", true, false):
 		button.pressed.connect(func() -> void: _audio.play(&"ui_click"))
 	for slot in root.find_children("*", "SlotView", true, false):
-		slot.pressed.connect(func() -> void: _audio.play(&"ui_click"))
+		slot.stack_dropped_here.connect(func() -> void: _audio.play(&"ui_click"))
+		slot.quick_move_requested.connect(func() -> void: _audio.play(&"ui_click"))
 
 
 ## Plays the sound of using `tile` with the held item, which had this `result` (see

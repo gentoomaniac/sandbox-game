@@ -24,33 +24,38 @@
   - Items of the same kind stack, up to 99 per slot; tools don't stack.
   - Every item has a weight; the total carried weight raises how much energy actions use
     (see [Energy and sleep](energy-and-sleep.md)).
-  - An inventory screen shows all slots; items can be moved between slots. Putting the picked
-    stack on a different item swaps and the other item is picked up in turn (task 88); the same
-    item stacks. Shift+click on the character screen sends a stack from the backpack to the
-    hotbar and back (onto stacks of the same item first, then the first free slot, as far as
-    there is room); in a chest screen it sends it to the other side.
-  - **Dropping** (task 88): a left click outside the screen's panel with a backpack or hotbar
-    stack picked, or the rebindable `drop_item` action (T) for the held stack, puts the stack on
+  - An inventory screen shows all slots; items are moved between slots by dragging (task 134,
+    before that by clicking: pick up, put down, task 88). Press on a stack and drag it: its icon
+    follows the mouse only while the button is held, and a plain click picks nothing up. Let go
+    over a slot and the stack goes there; on a different item it swaps places, on the same item
+    it merges (as far as the stack limit allows). Let go over nothing that takes it (the gaps of
+    the panel, a slot that refuses it) and it stays where it was. Shift+click on the character
+    screen sends a stack from the backpack to the hotbar and back (onto stacks of the same item
+    first, then the first free slot, as far as there is room); in a chest screen it sends it to
+    the other side.
+  - **Dropping** (task 88): a backpack or hotbar stack dragged and let go outside the screen's
+    panel, or the rebindable `drop_item` action (T) for the held stack, puts the stack on
     the ground in front of the player as piles like any drop (not inside a house). Such piles
     are not pulled back until the player has walked out of reach of them; then they are
     collected as usual.
   - **Trash can** (task 133): a slot with a bin icon in the inventory column of the character
-    screen and under the backpack on the chest's screen. Putting a picked stack on it (from the
-    backpack, the hotbar, an equipment slot or the chest) asks "Destroy Logs (12)?" (just
+    screen and under the backpack on the chest's screen. Letting go of a dragged stack on it (from
+    the backpack, the hotbar, an equipment slot or the chest) asks "Destroy Logs (12)?" (just
     "Destroy Waistcoat?" for one) in a small panel over the screen, with Destroy and Keep (Keep
     has the focus). Destroy removes the stack for good, with no drop on the ground; Keep, Escape
     (which then does not close the screen) or any other click or wheel turn leaves the stack
-    picked as it was. The state classes do the removal (`ItemSlots.destroy`,
-    `Equipment.destroy`); the screen only asks and sends it.
+    where it was (it never left its slot while it was dragged). The state classes do the
+    removal (`ItemSlots.destroy`, `Equipment.destroy`); the trash can only asks and sends it,
+    and does nothing if the stack asked about is no longer in its slot.
 - **Character screen** (decided 2026-11-05): Tab opens one screen with the character and
   their equipment on one side and the inventory on the other.
   - Equipment slots: head, body, legs, feet, coat, back, main hand, off hand (coat added in
     task 53, for a jacket over the body item). Clothes, armour
     and later weapons, shields and backpacks are items with a slot; worn items show on the
     character (each slot is a sprite layer).
-  - Items move between inventory slots and fitting equipment slots by clicking (pick up,
-    put down, swap); an item only goes into a slot it fits, and fitting slots light up
-    while an item is picked up. Right-click equips or unequips at once.
+  - Items move between inventory slots and fitting equipment slots by dragging (swap
+    included); an item only goes into a slot it fits, and fitting slots light up
+    while an item is dragged. Right-click equips or unequips at once.
   - Keys: Tab opens the screen (and closes it from the character tab), K opens the skills tab
     and closes it from there; Escape and the pause key close it. E does nothing while it is open.
   - Worn items count toward the carried weight.

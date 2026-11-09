@@ -1,12 +1,21 @@
 class_name SlotView
 extends Control
 ## One inventory slot on screen: the slot art, the item's icon and, for more than one, its
-## count. Left click emits `pressed`, right click `secondary_pressed` (unless it is not
-## `is_clickable`, then the click goes on to the game). An empty slot can show
-## a faint `hint` of what belongs in it. A slot with an item has its tooltip (see TooltipView);
-## `tooltip_id` names it for the debug flag.
+## count. A slot that is bound (`bind_to`) to a row of item slots (a backpack, a chest) or to the
+## equipment is where stacks are moved, by dragging, which is all the inventory screens do with
+## the left mouse button: press on a stack and drag it (its icon follows the mouse while the
+## button is held), and let go over a slot to put it there. A different item swaps places, the
+## same item merges, and an equipment slot only takes an item that fits (those light up while
+## one is dragged). Letting go anywhere else is up to the screen (see Modal `_drop_outside_panel`)
+## and the TrashCan; a stack let go over nothing stays where it was. Shift+left click emits
+## `quick_move_requested` and right click `secondary_pressed` (unless it is not `is_clickable`,
+## then the click goes on to the game). An empty slot can show a faint `hint` of what belongs in
+## it. A slot with an item has its tooltip (see TooltipView); `tooltip_id` names it for the debug
+## flag.
 
-signal pressed
+## A stack was dragged onto this slot and moved.
+signal stack_dropped_here
+signal quick_move_requested
 signal secondary_pressed
 
 const SIZE := 20
@@ -14,6 +23,11 @@ const SIZE := 20
 const ICON_RECT := Rect2(2, 2, ItemIcon.SIZE, ItemIcon.SIZE)
 ## Palette colour ink (see tools/art/palette.py); the pixel font is already cream.
 const COUNT_SHADOW_COLOR := Color("1d1b26")
+## The slot a stack is dragged from fades, as it is the icon that moves.
+const DRAGGED_ALPHA := 0.4
+## The layer of the dragged icon: above the screens and the HUD's hotbar, which Godot's own drag
+## preview would not be (it stays on the canvas layer of the slot it comes from).
+const DRAG_ICON_LAYER := 3
 
 const SLOT_TEXTURE := preload("res://assets/ui/slot.png")
 const SELECTED_SLOT_TEXTURE := preload("res://assets/ui/slot_selected.png")
@@ -23,16 +37,51 @@ var hint: Texture2D
 var tooltip_id := ""
 ## The hotbar of the HUD is not clickable until a screen that moves items is open.
 var is_clickable := true
+## What the slot shows and moves stacks of: an ItemSlots (`slot` is an index) or an Equipment
+## (`slot` is a slot name). Without a container, nothing is dragged from or onto the slot.
+var container: Object
+var slot: Variant
 
 var _stack := {}
 var _icon: Texture2D
 var _is_selected := false
+## Lit while a stack that fits this slot is dragged.
+var _is_drop_target := false
+var _drag_icon_layer: CanvasLayer
 
 
 func _init() -> void:
 	custom_minimum_size = Vector2(SIZE, SIZE)
 	add_to_group(ArtSet.VIEWS)
 	ItemIcon.sharpen(self)
+
+
+## Only a dragged stack's icon needs following the mouse every frame.
+func _ready() -> void:
+	set_process(false)
+
+
+## The slot a drag came from, or null if `data` is not a drag of a slot's stack.
+static func source_of(data: Variant) -> SlotView:
+	return data.get("from") if data is Dictionary else null
+
+
+func bind_to(slots: Object, slot_key: Variant) -> void:
+	container = slots
+	slot = slot_key
+
+
+func item() -> StringName:
+	return _stack.get("item", ItemTypes.NONE)
+
+
+func count() -> int:
+	return _stack.get("count", 0)
+
+
+## Destroys the stack for good (the trash can).
+func destroy() -> void:
+	container.destroy(slot)
 
 
 func show_stack(stack: Dictionary, is_selected: bool) -> void:
@@ -54,15 +103,81 @@ func _gui_input(event: InputEvent) -> void:
 	if not is_clickable:
 		return
 	if event.button_index == MOUSE_BUTTON_LEFT:
-		pressed.emit()
+		if event.shift_pressed:
+			quick_move_requested.emit()
 		accept_event()
 	elif event.button_index == MOUSE_BUTTON_RIGHT:
 		secondary_pressed.emit()
 		accept_event()
 
 
+func _get_drag_data(_at_position: Vector2) -> Variant:
+	if not is_clickable or container == null or _stack.is_empty():
+		return null
+	var icon := ItemIcon.new()
+	icon.show_item(item())
+	_drag_icon_layer = CanvasLayer.new()
+	_drag_icon_layer.layer = DRAG_ICON_LAYER
+	_drag_icon_layer.add_child(icon)
+	add_child(_drag_icon_layer)
+	_center_drag_icon_on_mouse()
+	set_process(true)
+	modulate.a = DRAGGED_ALPHA
+	return {"from": self}
+
+
+func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
+	var source := source_of(data)
+	if container == null or source == null or source == self or source.item() == ItemTypes.NONE:
+		return false
+	if container is Equipment:
+		return source.container is Inventory and Equipment.fits(slot, source.item())
+	if source.container is Equipment:
+		return container is Inventory and (_stack.is_empty() or Equipment.fits(source.slot, item()))
+	return true
+
+
+func _drop_data(_at_position: Vector2, data: Variant) -> void:
+	var source := source_of(data)
+	if container is Equipment:
+		container.move_to_equipment(source.container, source.slot, slot)
+	elif source.container is Equipment:
+		source.container.move_to_inventory(container, source.slot, slot)
+	else:
+		source.container.move_to(source.slot, container, slot)
+	stack_dropped_here.emit()
+
+
+func _process(_delta: float) -> void:
+	_center_drag_icon_on_mouse()
+
+
+func _center_drag_icon_on_mouse() -> void:
+	var icon: ItemIcon = _drag_icon_layer.get_child(0)
+	icon.position = (icon.get_global_mouse_position() - icon.size / 2).round()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_DRAG_BEGIN:
+		_is_drop_target = (
+			container is Equipment
+			and _can_drop_data(Vector2.ZERO, get_viewport().gui_get_drag_data())
+		)
+		queue_redraw()
+	elif what == NOTIFICATION_DRAG_END:
+		_is_drop_target = false
+		modulate.a = 1.0
+		if _drag_icon_layer != null:
+			_drag_icon_layer.queue_free()
+			_drag_icon_layer = null
+			set_process(false)
+		queue_redraw()
+
+
 func _draw() -> void:
-	draw_texture(SELECTED_SLOT_TEXTURE if _is_selected else SLOT_TEXTURE, Vector2.ZERO)
+	draw_texture(
+		SELECTED_SLOT_TEXTURE if _is_selected or _is_drop_target else SLOT_TEXTURE, Vector2.ZERO
+	)
 	if _stack.is_empty():
 		if hint != null:
 			draw_texture_rect(hint, ICON_RECT, false)
