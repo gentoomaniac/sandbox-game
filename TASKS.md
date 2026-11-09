@@ -182,24 +182,6 @@ come earlier.
 - Not saved, not remembered. Bubbles drawn in palette colours, readable at every zoom; a
   screenshot in the README.
 
-## 143. Review R6: player actions are checked where they are done, and say what happened
-
-- [ ] Done
-
-Review A2, A3 and package R6; the base for the gossip work (task 125's deed log listens to it).
-Needs 139.
-- Player-facing commands check their own conditions: crafting checks the station's kind, map and
-  reach (today a kiln recipe starts on any workbench); using a tile checks reach, the horse and the
-  map, not only Main. Trusted low-level setters stay as they are; debug bypasses are explicit.
-- One outcome for each finished action (who, what kind, where and on which map, the object and the
-  items with counts), published once after it succeeded and never for a refusal or on load.
-  Sounds move onto it; the deed log of task 125 will use it. No global event bus.
-- World and Interior tell their views about object and terrain changes the same way, so Main stops
-  rebuilding the interior for particular tool results.
-- Tests: the kiln-on-a-workbench probe and an out-of-reach use are refused without side effects; the
-  same action from the UI and from code gives the same state and one outcome; loading a save gives
-  no outcomes.
-
 ## 147. Frame spikes: find and smooth the long frames
 
 - [ ] Done

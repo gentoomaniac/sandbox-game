@@ -3701,3 +3701,34 @@ game no longer has asks (load anyway, dropping it, or cancel; F8 asks too); ever
 checked and `SaveBeforeQuit` asks after a failed save before quitting. Object state entries are
 checked as numbers, but positions on the map, skill ids and appearance variants are not (the strict
 `from_dict` still trusts them).
+
+## 143. Review R6: player actions are checked where they are done, and say what happened
+
+- [x] Done
+
+Review A2, A3 and package R6; the base for the gossip work (task 125's deed log listens to it).
+Needs 139.
+- Player-facing commands check their own conditions: crafting checks the station's kind, map and
+  reach (today a kiln recipe starts on any workbench); using a tile checks reach, the horse and the
+  map, not only Main. Trusted low-level setters stay as they are; debug bypasses are explicit.
+- One outcome for each finished action (who, what kind, where and on which map, the object and the
+  items with counts), published once after it succeeded and never for a refusal or on load.
+  Sounds move onto it; the deed log of task 125 will use it. No global event bus.
+- World and Interior tell their views about object and terrain changes the same way, so Main stops
+  rebuilding the interior for particular tool results.
+- Tests: the kiln-on-a-workbench probe and an out-of-reach use are refused without side effects; the
+  same action from the UI and from code gives the same state and one outcome; loading a save gives
+  no outcomes.
+
+Done: the pick-up order, shift-click and the cost-off craft follow-ups of task 139 first. Then
+`Crafting.craft` needs a station of the recipe's kind on the player's map in reach (`WRONG_STATION`,
+`NO_STATION`; `take_out` needs reach), and `ToolUse.use_tile` refuses a tile out of reach or off the
+map (`OUT_OF_REACH`, nothing changed, no energy; Main's own check is gone; one rule,
+`Targeting.is_tile_in_reach`). `ActionOutcome` (who, kind, tile and map, object, items) is told once
+through `GameState.action_done` by tool uses, the hammer, crafting, eating, dropping, picking up and
+taking a building down: never for a refusal or a load. The work sounds listen to it; only the
+refusals ("denied", the scythe at nothing) still come from the result of a use. `GameMap` declares
+`objects_changed` and `tile_changed`, `Interior` emits them and `InteriorView` redraws from them
+(once per change), so Main rebuilds nothing. Player-visible changes: a kiln recipe at a workbench is
+refused ("Made at the Kiln"), a craft out of reach says "Too far from the station", the pick-up pop
+also plays for a pile taken only in part, and a building placed by world code alone is silent.
