@@ -303,33 +303,6 @@ check, which catches the cross-file mistakes adding an item invites today:
   has an atlas row (tool_use.gd `_can_place_on`).
 - Same ids, same data, same game; no save change.
 
-## 145. Autosave on a timer, quick save and quick load
-
-- [ ] Done
-
-The user, 2026-11-09: "automatic save,
-players can configure the time in the settings from 10 min to 60 min in 10 min steps. F8 will
-be a quick load from the last save, F9 a quick save (can both be changed in the key config). A
-save in progress should be indicated in the notifications, the game can't quit while a save is
-in progress."
-- A setting "Autosave every" of 10 to 60 minutes in steps of 10 (real minutes of play; paused
-  time doesn't count), besides today's autosaves on sleep, passing out and quitting
-  (design/tech/saving.md).
-- F9 saves, F8 loads the last save; both rebindable in the controls page like the other keys.
-- While a save is written, a notice says so; quitting waits until it is done (or is refused
-  until then). Today the save is written at once in one call, so "in progress" first needs the
-  write to run without freezing the game (a thread, or the save data taken at once and written
-  in the background), keeping the temporary file and rename.
-- A failed timed or quick save shows a red message in the notifications and nothing else (see the
-  decision below); asking the player about a failed save is for saving on quit, in task 140.
-- Decided by the user, 2026-11-09: F8 does not ask first ("quick load generally doesn't ask in
-  games"). Notifications appear at the top left of the screen (the game has no notification
-  area yet; this makes one). A failed quick save shows a message in red there; quick save and
-  quick load get no dialog of their own (the failed-save question of task 140 is for saving on
-  quit).
-
-Started 2026-11-09 ("Start implementing auto save and quick save/load").
-
 ## 146. One image per entity, packed into the atlases by make assets
 
 - [ ] Done
