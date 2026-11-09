@@ -223,25 +223,6 @@ Needs 139.
   same action from the UI and from code gives the same state and one outcome; loading a save gives
   no outcomes.
 
-## 144. Review R4: one checked catalog of items and objects
-
-- [ ] Done
-
-Review F3.3/F3.4, section 4 and package R4, cut down after talking it over with the user on
-2026-11-09: no per-item scripts and no move of the definitions into folders now ("there's not much
-to win with a restructure"; the "one folder per entity" idea stays under Later). What stays is the
-check, which catches the cross-file mistakes adding an item invites today:
-- At start, before anything uses them, every item and object definition is checked with its
-  references, with a message naming the item and the field: stack limits, weights and tool power in
-  range, wearables stack 1, what an item places, plants or drops exists, recipes and stations name
-  real items and objects, crop items don't collide with fixed ones, footprints are sane, and every
-  item and object has its picture (an art manifest check, in both art sets).
-- Callers can't change the definitions through what they get back; tests use their own small
-  catalogs instead of adding to and erasing from the shared dictionaries.
-- Where something may be placed is an explicit field of the object, not inferred from whether it
-  has an atlas row (tool_use.gd `_can_place_on`).
-- Same ids, same data, same game; no save change.
-
 ## 147. Frame spikes: find and smooth the long frames
 
 - [ ] Done

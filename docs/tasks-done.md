@@ -3620,3 +3620,30 @@ Hand art (`art/hand/`): path of the generated file plus `_32x32` / `_16x16` (sou
 empty cells stay generated (not the default look, as the task text first said), a listing of the hand
 files used, palette warnings, an error for a hand file that replaces nothing. A hand sound is not
 level-checked. Tests: `tools/art/test_pack.py` (`make test-tools`, part of `make test`).
+
+## 144. Review R4: one checked catalog of items and objects
+
+- [x] Done
+
+Review F3.3/F3.4, section 4 and package R4, cut down after talking it over with the user on
+2026-11-09: no per-item scripts and no move of the definitions into folders now ("there's not much
+to win with a restructure"; the "one folder per entity" idea stays under Later). What stays is the
+check, which catches the cross-file mistakes adding an item invites today:
+- At start, before anything uses them, every item and object definition is checked with its
+  references, with a message naming the item and the field: stack limits, weights and tool power in
+  range, wearables stack 1, what an item places, plants or drops exists, recipes and stations name
+  real items and objects, crop items don't collide with fixed ones, footprints are sane, and every
+  item and object has its picture (an art manifest check, in both art sets).
+- Callers can't change the definitions through what they get back; tests use their own small
+  catalogs instead of adding to and erasing from the shared dictionaries.
+- Where something may be placed is an explicit field of the object, not inferred from whether it
+  has an atlas row (tool_use.gd `_can_place_on`).
+- Same ids, same data, same game; no save change.
+
+Done: `CatalogCheck` (game/state/catalog_check.gd) checks every item and object with its references at
+start; `AssetCheck.catalog_problems` checks their pictures and atlas cells in both art sets; `Main`
+quits with the errors in the log on any problem (no window opens). `ItemTypes.TYPES` and
+`WorldObjectTypes.TYPES` are read-only all the way down (`ReadOnly.deep`); two tests that added to
+them use their own catalog. `placeable_in` (INSIDE, OUTDOORS, ANYWHERE) says where an object may be
+placed and replaces `outdoors_only` and the atlas-row inference in `_can_place_on`. Same ids, data and
+game; no save change. Not done by design: per-item scripts, moving the definitions into folders.
