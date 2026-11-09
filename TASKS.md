@@ -77,6 +77,9 @@ whitish brown when drying out."
 
 - [ ] Done
 
+Waits for the review tasks 139 to 143 (the user, 2026-11-09: review items first); the deeds
+come from the action outcomes of task 143.
+
 From design/villagers/gossip.md (Deeds). No language model in this task.
 - A `data/gossip.cfg` with the deed kinds (felled a tree, built a building, took down a building,
   placed a fence or wall, tilled, sowed, harvested, dug clay, mowed), each with its words and a
@@ -179,7 +182,114 @@ come earlier.
 - Not saved, not remembered. Bubbles drawn in palette colours, readable at every zoom; a
   screenshot in the README.
 
+## 139. Review R1: item operations are committed transactions
+
+- [ ] Done
+
+From the architecture review of 2026-11-09 ([review/code-review-2026-11-09/README.md](review/code-review-2026-11-09/README.md), F1 and package R1; the user: review
+items come before the gossip work). Make conservation, slot identity and notification timing
+properties of the item API:
+- One internal "change, then notify once" path in ItemSlots that transfers, payments, equipment
+  moves and crafting all use: a listener on any `changed` never sees an item twice or missing
+  (today `send` fills the target and notifies before emptying the source; `move_to_equipment`
+  notifies between unequip, write and equip; crafting removes each material and adds the output
+  in separate steps; `take_out` adds before it clears the station).
+- `send` to its own container is refused or harmless (today it empties the stack). Bad counts and
+  indices are refused without partial change.
+- Using the held item takes from the selected slot: eating, planting, placing, the bone and the
+  saddle (today `remove(item, 1)` takes from the last stack of that item). Paying a cost across
+  the inventory stays its own operation.
+- Outside code stops writing `slots` or emitting another object's `changed` (Equipment,
+  GameState). Destination order and overflow rules stay exactly as they are.
+- Tests look at the state from inside the signal callbacks, two containers in one operation, a
+  re-entrant listener, and the two-stacks-of-berries case.
+- Out of scope: item attributes, a new stack type, moving content into data files.
+
+## 140. Review R2: a broken save is caught before it becomes the game; a failed save says so
+
+- [ ] Done
+
+Review F3 and package R2. Needs 139's stack rules.
+- One validator runs on the upgraded save before anything is built from it, with the path of
+  what is wrong ("inventory slot 3: count -7"): item ids, counts and stack limits, the selected
+  slot, object and building and map references, field types, station recipes. Assertions stay for
+  internal invariants only; `from_dict` stays strict behind the validator.
+- **Missing content** (the user, 2026-11-09): when a save holds things the game no longer has (an
+  item or object id that was removed), loading asks the player: load anyway, dropping what is
+  missing, with a plain warning that playing on may run into problems, or cancel. Nothing is
+  dropped silently; the file on disk is not changed until the player saves. Other broken data is
+  refused with the message, and the file is left as it is.
+- **A failed save** (the user, 2026-11-09): the game says so and asks the player; "Save and quit"
+  doesn't quit after a failed save unless the player chooses to, and that choice says very plainly
+  that the progress since the last save will be lost. The previous good save stays (the write
+  already goes to a temporary file and renames it; check every step's result).
+- Tests: the review's broken saves (-7 logs, slot 999, unknown ids, missing fields, a wrong map
+  reference, a bad station recipe, `game` of the wrong type) are refused or asked about, never
+  half loaded; injected write and rename failures keep the old save and don't quit; round trips
+  stay whole; the oldest and newest supported versions.
+
+## 141. Review R3: windows and conversations can go away without leaving work behind
+
+- [ ] Done
+
+Review F2 and package R3 (plus A5 and the rest of R5).
+- The chat's reply is finished by the session's dialogue service (NpcDialogue), not by the
+  ChatScreen: closing or freeing the window can't leave a villager answering forever, and an old
+  reply never lands in another conversation or session. A normal close keeps today's behaviour
+  (the answer lands in the villager's chat).
+- Removing an open window runs the same cleanup as closing it (Modal `_exit_tree`), so a borrowed
+  hotbar gets its layer, clickability and look back.
+- The hotbar owns its slot views: screens ask it to be clickable and give it back, they don't
+  reach into `slot_view()` themselves.
+- Showing a view another world (WorldView, GroundItemView, the screens' `show_*`) disconnects the
+  old one, or is refused before anything changes; doing it twice with the same one doesn't
+  connect twice.
+- WildlifeView no longer sets `sun` on the shared default rules (A5): pass the session's sun.
+- Tests: the review's probes (a reply after the window is freed, chat A then B then A's answer,
+  freeing an open chest window, world A then B), and counts of nodes settling after repeated
+  open, close and free cycles.
+
+## 142. Review R7: only what is near is drawn and scanned
+
+- [ ] Done
+
+Review A1 and package R7, moved up by the user on 2026-11-09 ("there's already some performance
+weakness"). Saved things stay saved; only drawing and scanning get bounded.
+- Ground piles: a spatial index by chunk, sprites only for piles near the player (created and freed
+  as the player moves, as farm animals already are), and pick-up and settling asking the index
+  instead of scanning every pile. Piles that are pulled toward the player move between cells.
+- Villagers: a view only for those near the player; their state goes on as now.
+- World edits replayed by chunk instead of scanning all edits on every chunk load; the wet-soil
+  marks counted in what stays resident.
+- No expiry or despawning of saved piles; no change to how far anything reaches in play.
+- Tests: 10,000 distant piles and a few near give sprites for the near ones only; leaving and
+  coming back, entering a house, saving and loading, picking up and switching art keep every pile
+  right. Measure before and after (node counts, frame time in a big save copy) and report it.
+
+## 143. Review R6: player actions are checked where they are done, and say what happened
+
+- [ ] Done
+
+Review A2, A3 and package R6; the base for the gossip work (task 125's deed log listens to it).
+Needs 139.
+- Player-facing commands check their own conditions: crafting checks the station's kind, map and
+  reach (today a kiln recipe starts on any workbench); using a tile checks reach, the horse and the
+  map, not only Main. Trusted low-level setters stay as they are; debug bypasses are explicit.
+- One outcome for each finished action (who, what kind, where and on which map, the object and the
+  items with counts), published once after it succeeded and never for a refusal or on load.
+  Sounds move onto it; the deed log of task 125 will use it. No global event bus.
+- World and Interior tell their views about object and terrain changes the same way, so Main stops
+  rebuilding the interior for particular tool results.
+- Tests: the kiln-on-a-workbench probe and an out-of-reach use are refused without side effects; the
+  same action from the UI and from code gives the same state and one outcome; loading a save gives
+  no outcomes.
+
 ## Later (not part of the prototype)
+
+- **Review R8: one owner for the simulation, its time and what is loaded** (review F2.4/F2.5, A4,
+  package R8): hunting moves out of FarmAnimalView, the simulation and its time advance in one
+  place with one catch-up rule, chunk residency is decided apart from drawing, and PlayerView stops
+  setting the held layer every frame. Large; in small commits, after tasks 141 to 143.
 
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
   Valley, but actions count as well as gifts, in the manner of the Sims (helping, talking,
