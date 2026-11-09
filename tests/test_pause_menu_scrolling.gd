@@ -43,3 +43,14 @@ func test_the_controls_page_scrolls_in_a_small_window() -> void:
 
 func test_the_language_model_page_scrolls_in_a_small_window() -> void:
 	await _check_page(PauseMenu.Page.LANGUAGE_MODEL)
+
+
+func test_a_page_opens_scrolled_to_the_top() -> void:
+	_menu.open(PauseMenu.Page.CONTROLS)
+	await wait_process_frames(2)
+	var list: ScrollingList = (
+		_menu._pages[PauseMenu.Page.CONTROLS].find_children("*", "ScrollingList", true, false)[0]
+	)
+	list.scroll_vertical = 40
+	_menu.open(PauseMenu.Page.CONTROLS)
+	assert_eq(list.scroll_vertical, 0)

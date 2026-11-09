@@ -214,6 +214,8 @@ func _show_page(page: Page) -> void:
 		_pages[page].show_bindings()
 	elif page == Page.AUDIO or page == Page.LANGUAGE_MODEL:
 		_pages[page].show_settings()
+	for list: ScrollingList in _pages[page].find_children("*", "ScrollingList", true, false):
+		list.scroll_vertical = 0
 	_first_focus[page].grab_focus()
 
 
