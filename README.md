@@ -478,7 +478,8 @@ door). Use it to place the chest, outdoors or inside a house. Press E in front o
 to open it: your backpack is on the left (the hotbar below stays usable) and the chest's 15
 slots (20 in a carved chest) on the right. Click an item and click a slot to move it, or
 Shift+click to send a whole stack across (from the chest it goes to the backpack first, so the
-hotbar isn't flooded). The
+hotbar isn't flooded). A
+chest too big for the window scrolls its slots (mouse wheel or bar). The
 axe takes a chest down: outdoors what it held spills onto the ground, inside a house the
 chest and its contents go into your inventory (or you are told there is no room).
 
