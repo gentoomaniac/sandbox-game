@@ -7,9 +7,9 @@ Decided 2026-11-05.
   with the missing materials marked. Clicking an affordable one takes the materials and puts
   the item in the inventory. Recipes are in `data/recipes.cfg` (result, count, materials),
   validated like the other data files. C shows the recipes made by hand (the chest, the
-  stations, flour); the others are made at a station (see [Professions](professions.md)); the hammer is a later
-  recipe. When the result would not fit in the inventory
-  (once the materials are taken) crafting is refused and the menu says so; nothing is
+  campfire and the bedroll, the stations, flour); the others are made at a station (see
+  [Professions](professions.md)); the hammer is a later recipe. When the result would not fit
+  in the inventory (once the materials are taken) crafting is refused and the menu says so; nothing is
   dropped. The game does not pause while the menu is open (as with the character screen),
   but the player neither walks nor acts. C or Escape closes it.
 - **First recipe: the chest**, 5 logs. A chest holds 15 slots (5×3).

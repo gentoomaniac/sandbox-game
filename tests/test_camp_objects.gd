@@ -50,6 +50,20 @@ func test_one_lying_in_the_bedroll_gets_up_before_it_is_taken_down() -> void:
 	assert_false(_take_down(_camp_bed))
 
 
+func test_both_are_crafted_by_hand_from_materials_that_exist() -> void:
+	var rules := RecipeRules.default_rules()
+	var crafting := Crafting.new(_state)
+	for item in [ItemTypes.FIREPLACE, ItemTypes.SLEEPING_BAG]:
+		assert_has(rules.recipes_at(&""), item)
+		assert_eq(rules.result(item), item)
+		assert_eq(crafting.craft(item), Crafting.Result.MISSING_MATERIALS, item)
+		for material in rules.materials(item):
+			assert_has(ItemTypes.TYPES, material)
+			_state.player.inventory.add(material, rules.materials(item)[material])
+		assert_eq(crafting.craft(item), Crafting.Result.CRAFTED, item)
+		assert_eq(_state.player.inventory.count_of(item), 1)
+
+
 func test_they_are_set_up_outdoors_where_the_ghost_can_be_drawn() -> void:
 	assert_eq(_set_up(ItemTypes.SLEEPING_BAG).type, BEDROLL)
 	assert_eq(_state.player.inventory.count_of(ItemTypes.SLEEPING_BAG), 0)

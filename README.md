@@ -439,8 +439,8 @@ Beds don't block walking, so you can't get stuck behind one.
 
 ### Crafting and professions
 
-Press C for the crafting menu of what you make by hand: a chest, the stations below and flour
-(from wheat, rye or buckwheat).
+Press C for the crafting menu of what you make by hand: a chest, a campfire (6 stone, 3 logs),
+a bedroll (6 hay, 4 fibre), the stations below and flour (from wheat, rye or buckwheat).
 It lists what you can make with what you carry; a recipe you can't afford yet is greyed, with
 the missing materials marked, and hovering shows what is missing. A long list scrolls (mouse
 wheel, the bar, or the arrow keys) instead of outgrowing the window. The recipes are in
