@@ -128,6 +128,8 @@ var _models_asked := 0
 var _models_timeout: float = NpcTalkRules.default_rules().value("request", "models_timeout_seconds")
 var _history_label := Label.new()
 var _history_lines := HSlider.new()
+## Says why a name typed was not taken; hidden while there is nothing to say.
+var _name_note := Label.new()
 
 
 func _init(settings: GameSettings) -> void:
@@ -276,6 +278,8 @@ func _add_name_and_provider() -> void:
 	_name.focus_exited.connect(func() -> void: _rename(_name.text))
 	TooltipView.set_text(_name, NAME_TIP, "setting_language_model_name")
 	add_child(_name)
+	_name_note.visible = false
+	add_child(_name_note)
 	var provider_label := Label.new()
 	provider_label.text = "Provider"
 	TooltipView.set_text(provider_label, PROVIDER_TIP)
@@ -362,7 +366,12 @@ func _on_delete_pressed() -> void:
 
 ## Keeps `new_name` for the profile if it can; the field shows the name the profile has.
 func _rename(new_name: String) -> void:
-	_settings.profiles.rename(new_name)
+	new_name = new_name.strip_edges()
+	_name_note.visible = not _settings.profiles.rename(new_name)
+	if new_name == "":
+		_name_note.text = "A profile needs a name."
+	else:
+		_name_note.text = "Another profile is already called %s." % new_name
 	_name.text = _settings.profiles.active["name"]
 	_list_profiles()
 

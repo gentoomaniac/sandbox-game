@@ -107,7 +107,9 @@ func copy() -> void:
 ## is refused: the name stays and this is false.
 func rename(new_name: String) -> bool:
 	new_name = new_name.strip_edges()
-	if new_name == "" or (new_name != active["name"] and new_name in names()):
+	if new_name == active["name"]:
+		return true
+	if new_name == "" or new_name in names():
 		return false
 	active["name"] = new_name
 	changed.emit()

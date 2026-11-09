@@ -180,11 +180,17 @@ func test_a_name_typed_renames_the_profile_unless_another_has_it() -> void:
 	_page._name.text_submitted.emit("Haiku")
 	assert_eq(_profile_list(), ["OpenAI-compatible", "Haiku", "Gemini"])
 	assert_eq(_settings.profiles.active["name"], "Haiku")
+	assert_false(_page._name_note.visible)
 	_page._name.text_submitted.emit("Gemini")
 	assert_eq(_page._name.text, "Haiku", "the name stays")
+	assert_true(_page._name_note.visible, "and the page says why")
+	assert_string_contains(_page._name_note.text, "Gemini")
 	_page._name.text_submitted.emit("  ")
 	assert_eq(_page._name.text, "Haiku")
+	assert_eq(_page._name_note.text, "A profile needs a name.")
 	assert_eq(_profile_list(), ["OpenAI-compatible", "Haiku", "Gemini"])
+	_page._name.text_submitted.emit("Haiku")
+	assert_false(_page._name_note.visible, "an unchanged name clears it")
 
 
 func test_choosing_another_provider_gives_the_profile_its_endpoint_and_model() -> void:
