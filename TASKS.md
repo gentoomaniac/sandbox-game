@@ -273,12 +273,6 @@ should be like moving the game engine's tick clock forward for everything."
 - Tests: skip 1 h, 1 d and 30 d against the same time played in small steps, for crops, soil,
   weather, stations and animals; sleep and pass-out go the same way.
 
-## 151. Cows at 32 px: the head the right way up
-
-- [ ] Done
-
-The user, 2026-11-09: "32x32 cows look weirdly twisted as if the head is upside down."
-
 ## Later (not part of the prototype)
 
 - **Review R8: one owner for the simulation, its time and what is loaded** (review F2.4/F2.5, A4,

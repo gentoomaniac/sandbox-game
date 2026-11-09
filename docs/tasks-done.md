@@ -3742,3 +3742,11 @@ Dropped as a task (the user, 2026-11-07) and kept as a point for the next graphi
 Done: by task 108 (the willow's crown closed with an edge, the rods and warmer bark, as the art
 review of 2026-11-08 asked) and task 101 (grass and reeds stand out from the ground: a ground
 shadow, a dark foot, an outline only round dense cores). Closed in the tasks review of 2026-11-09.
+
+## 151. Cows at 32 px: the head the right way up
+
+- [x] Done
+
+The user, 2026-11-09: "32x32 cows look weirdly twisted as if the head is upside down."
+
+Done: the grazing head was the ahead head transposed (a mirror, so forehead and eye sat on the jaw side). It is drawn on its own now (`COW_HEAD_DOWN` in `tools/art/livestock.py`). The standing head is unchanged; the other 32 px animals and the 16 px cow were checked and are fine.
