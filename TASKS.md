@@ -2392,6 +2392,26 @@ band tying the stem to it; draw it without them, in every species and season loo
 classic set (tools/art/classic/trees.py) has none either. Screenshots where the README shows
 saplings.
 
+## 137. The camp's bedroll and campfire: take them down, craft them, set them up elsewhere
+
+- [ ] Done
+
+The user, 2026-11-08 (a later idea then): today the bedroll and the campfire come with the camp
+and stay where they are; let the player take them down (as task 83 does for buildings and placed
+things) and build them again elsewhere, with sensible materials (straw and a wool blanket; stones
+and wood), keeping the bed the player wakes in (task 78) and the campfire's cooking station
+working wherever they stand. Started 2026-11-09 ("also start the deconstructible campfire and
+sleeping roll. Add to that task to be able to craft them"):
+- Taking down with the hammer gives the bedroll or the campfire back as an item (or its
+  materials, if that reads better; decide and say), like other placed things.
+- Both can be crafted (data/recipes.cfg, the crafting menu; by hand or at a station, whichever
+  fits the other recipes), and the item is placed like other placed things.
+- The bed the player wakes in follows a bedroll that is moved; if the only bed is taken down,
+  the player still has somewhere to wake (design/player/energy-and-sleep.md says there is always
+  a bed; keep that true or say what changes). The campfire cooks wherever it stands.
+- Saves keep working (a save upgrade if the camp's objects change shape); tests; docs (the
+  design pages for sleep, crafting and building) and README.
+
 ## Later (not part of the prototype)
 
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
@@ -2405,12 +2425,6 @@ saplings.
   goods. A first draft is in [design/economy/README.md](design/economy/README.md), planned and
   not decided. Plan with the user (its open questions are in QUESTIONS.md), then split into
   tasks. It also settles where seeds come from once shops exist.
-
-- **The camp's bedroll and campfire can be taken down and built** (the user, 2026-11-08): today
-  they come with the camp and stay where they are. Let the player take them down (as task 83
-  does for buildings and placed things) and craft or build them again elsewhere, with sensible
-  materials (straw and a wool blanket; stones and wood), keeping the bed the player wakes in
-  (task 78) and the campfire's cooking station working wherever they stand.
 
 - **One folder per entity in data/** (the user, 2026-11-08): the data of one thing is spread
   over several files today; bread, for example, is an item in game/state/item_types.gd, its
