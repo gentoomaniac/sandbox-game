@@ -51,3 +51,7 @@ The first buildings have a page of their own: [first-buildings.md](first-buildin
   if one is missing): name, footprint, door tile, picture and lit picture (the season and
   snow looks are found by name), the interior map, window lights, costs, and documented
   places for future attributes (beds, storage, warmth, comfort) that have no effect yet.
+  A building can come in **styles** (tasks 120 and 121, 2026-11-09): other looks of the same
+  house, each a section `[<building>.<style>]` after its building (`[kate.brick]`) with its
+  own name and whatever it changes (pictures, window lights, costs). The footprint, the door
+  and the inside are the building's, so every style of it is the same house.

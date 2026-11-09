@@ -66,6 +66,51 @@ func test_a_door_off_the_bottom_row_is_reported() -> void:
 	assert_push_error_count(1)
 
 
+func test_a_style_is_its_building_with_its_own_keys_over_it() -> void:
+	var text := FileAccess.get_file_as_string(BuildingRules.DEFAULT_PATH)
+	_write(text + '\n[shack.tarred]\nname="Tarred shack"\ncost_logs=25\n')
+	var rules := BuildingRules.from_file(DATA_FILE)
+	assert_true(rules.is_valid(), str(rules.problems()))
+	assert_false(rules.building_ids().has(&"shack.tarred"))
+	assert_eq(rules.style_ids(BuildingTypes.SHACK), [&"", &"tarred"])
+	assert_eq(rules.style(BuildingTypes.SHACK, &""), rules.building(BuildingTypes.SHACK))
+	var tarred := rules.style(BuildingTypes.SHACK, &"tarred")
+	assert_eq(tarred["name"], "Tarred shack")
+	assert_eq(tarred["cost_logs"], 25)
+	assert_eq(tarred["footprint"], Vector2i(3, 2))
+	assert_eq(rules.building(BuildingTypes.SHACK)["cost_logs"], 20)
+
+
+func test_a_style_without_a_name_one_word_id_or_building_or_that_changes_it_is_reported() -> void:
+	var text := FileAccess.get_file_as_string(BuildingRules.DEFAULT_PATH)
+	var styles := (
+		'\n[shack.tarred]\nfootprint=Vector2i(4, 2)\ninterior_map=""\n'
+		+ '\n[cottage.brick]\nname="Brick cottage"\n'
+		+ '\n[shack.]\nname="Shack"\n'
+		+ '\n[shack.tarred.old]\nname="Old tarred shack"\n'
+	)
+	_write(text + styles)
+	var rules := BuildingRules.from_file(DATA_FILE)
+	assert_eq(
+		rules.problems(),
+		[
+			"[shack.tarred] no name",
+			"[shack.tarred] footprint is the building's",
+			"[shack.tarred] interior_map is the building's",
+			"[cottage.brick] is a style of no building",
+			"[shack.] style id must be one word",
+			"[shack.tarred.old] style id must be one word",
+		]
+	)
+	assert_push_error_count(6)
+
+
+func test_every_building_has_its_own_look_as_its_first_style() -> void:
+	for id in BuildingTypes.ids():
+		assert_eq(BuildingTypes.styles(id)[0], &"", str(id))
+		assert_eq(BuildingTypes.of(id, &""), BuildingTypes.TYPES[id], str(id))
+
+
 func test_a_missing_file_is_reported() -> void:
 	var rules := BuildingRules.from_file(DATA_DIR + "/nothing.cfg")
 	assert_false(rules.is_valid())
