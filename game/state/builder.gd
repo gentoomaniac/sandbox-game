@@ -1,14 +1,16 @@
 class_name Builder
 extends RefCounted
-## What the hammer does. Holding it is build mode: `choice` is the building it would place,
-## Q and E move it along BuildingTypes, and `place` builds it where the player points,
-## taking the materials from the inventory. Plain logic; BuildMode draws the ghost and the
+## What the hammer does. Holding it is build mode: `choice` is the building it would place and
+## `style` its look, Q and E move along BuildingTypes, and `place` builds it where the player
+## points, taking the materials from the inventory. Plain logic; BuildMode draws the ghost and the
 ## panel. X switches to taking down: the hammer takes down the building or the thing the player
 ## placed (a chest, a workbench) on a tile, and gives back what it held.
 ## Dismissing build mode (Escape, right click) lasts until the player holds something else, or
 ## selects the hammer again.
 
 var choice: StringName = BuildingTypes.ids()[0]
+## Which of the styles of `choice` it would place (see BuildingTypes `styles`).
+var style := &""
 
 var _state: GameState
 var _is_dismissed := false
@@ -51,15 +53,28 @@ func select_hammer() -> bool:
 	return false
 
 
-## Moves `choice` by `step` buildings along the file's order, wrapping round.
+## Moves `choice` by `step` buildings along the file's order, wrapping round, in the
+## building's own style.
 func pick(step: int) -> void:
 	var ids := BuildingTypes.ids()
 	choice = ids[posmod(ids.find(choice) + step, ids.size())]
+	style = &""
+
+
+## Moves `style` by `step` along the styles of the chosen building, stopping at either end.
+func pick_style(step: int) -> void:
+	var styles := BuildingTypes.styles(choice)
+	style = styles[clampi(styles.find(style) + step, 0, styles.size() - 1)]
+
+
+## The entry of the chosen building in the chosen style (see BuildingTypes `of`).
+func type_data() -> Dictionary:
+	return BuildingTypes.of(choice, style)
 
 
 ## What the chosen building takes, item id to count.
 func costs() -> Dictionary:
-	return BuildingTypes.TYPES[choice]["costs"]
+	return type_data()["costs"]
 
 
 ## What the player lacks for the chosen building, item id to the count short; empty when they
@@ -75,7 +90,8 @@ func shortfalls() -> Dictionary:
 	return short
 
 
-## Places the chosen building with its top left tile at `origin` and takes its materials.
+## Places the chosen building in the chosen style with its top left tile at `origin` and takes
+## its materials.
 ## Returns it, or null if the land is blocked or something is missing.
 func place(origin: Vector2i) -> Building:
 	if (
@@ -86,7 +102,7 @@ func place(origin: Vector2i) -> Building:
 	if not _state.cheats.is_cost_off:
 		for item: StringName in costs():
 			_state.player.inventory.remove(item, costs()[item])
-	return _state.world.place_building(choice, origin)
+	return _state.world.place_building(choice, origin, style)
 
 
 ## What the hammer would take down on a tile, or null if there is nothing to take down.

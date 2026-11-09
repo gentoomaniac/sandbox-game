@@ -124,7 +124,7 @@ func _process(delta: float) -> void:
 		and house != StartupOptions.NO_TILE
 		and _is_footprint_loaded(house)
 	):
-		if world.place_building(builder.choice, house) == null:
+		if world.place_building(builder.choice, house, builder.style) == null:
 			push_error("--house: can't place a house at %s" % house)
 		_is_debug_house_placed = true
 	var is_now_active := is_active()
@@ -145,7 +145,7 @@ func _process(delta: float) -> void:
 	_texture = load(
 		ArtSet.path(
 			SeasonalArt.house_path(
-				BuildingTypes.TYPES[builder.choice]["sprite"],
+				builder.type_data()["sprite"],
 				SeasonBlend.Look.SNOW if _is_snowy else SeasonBlend.Look.SUMMER
 			)
 		)

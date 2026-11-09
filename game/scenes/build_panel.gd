@@ -53,7 +53,7 @@ func _process(_delta: float) -> void:
 	_name_label.remove_theme_color_override("font_color")
 	var costs := _builder.costs()
 	var short := _builder.shortfalls()
-	_name_label.text = BuildingTypes.TYPES[_builder.choice]["name"]
+	_name_label.text = _builder.type_data()["name"]
 	var items: Array = costs.keys()
 	for index in _material_labels.size():
 		var label := _material_labels[index]

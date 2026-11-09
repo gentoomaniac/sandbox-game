@@ -77,6 +77,30 @@ func test_picking_goes_through_the_buildings_in_order_and_wraps() -> void:
 	assert_eq(_builder.choice, ids[0], "after the last is the first")
 
 
+func test_picking_a_style_stops_at_either_end_and_a_new_building_starts_in_its_own() -> void:
+	_builder.choice = BuildingTypes.KATE
+	_builder.pick_style(-1)
+	assert_eq(_builder.style, &"")
+	_builder.pick_style(1)
+	assert_eq(_builder.style, &"brick")
+	_builder.pick_style(5)
+	assert_eq(_builder.style, &"geest")
+	_builder.pick(1)
+	assert_eq(_builder.style, &"")
+	_builder.pick_style(1)
+	assert_eq(_builder.style, &"", "a building with one style keeps it")
+
+
+func test_placing_a_style_takes_its_costs_and_keeps_its_look() -> void:
+	_builder.choice = BuildingTypes.KATE
+	_builder.style = &"brick"
+	assert_eq(_builder.costs()[ItemTypes.CLAY], 30)
+	_stock_up(3)
+	var building := _builder.place(_open_origin())
+	assert_eq(building.style, &"brick")
+	assert_eq(_count(ItemTypes.CLAY), 3)
+
+
 func test_the_costs_are_the_buildings_from_the_file() -> void:
 	_builder.choice = BuildingTypes.KATE
 	assert_eq(

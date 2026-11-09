@@ -241,11 +241,17 @@ func _connect_state_and_views() -> void:
 ## drawn world to the DebugRunner.
 func _apply_start_options() -> void:
 	if _options.building != &"":
-		if BuildingTypes.TYPES.has(_options.building):
-			_builder.choice = _options.building
+		var building := StringName(str(_options.building).get_slice(".", 0))
+		var style := StringName(str(_options.building).get_slice(".", 1))
+		if BuildingTypes.TYPES.has(building) and style in BuildingTypes.styles(building):
+			_builder.choice = building
+			_builder.style = style
 		else:
 			push_error(
-				"--building expects one of %s, got '%s'" % [BuildingTypes.ids(), _options.building]
+				(
+					"--building expects one of %s, or one with a style (kate.brick), got '%s'"
+					% [BuildingTypes.ids(), _options.building]
+				)
 			)
 	# BuildMode pins the ghost there; here the hammer is taken to see it.
 	if _options.ghost != StartupOptions.NO_TILE:

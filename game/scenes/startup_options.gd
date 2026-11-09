@@ -80,7 +80,8 @@ extends RefCounted
 ##                            line of `...` leaves the villager typing.
 ##
 ## Building
-##   --building=<id>          the building the hammer places
+##   --building=<id>[.<style>]  the building the hammer places, in its own look or a style
+##                            (kate.brick)
 ##   --ghost=<x>,<y>          hold the hammer, its ghost pinned on that tile (see BuildMode)
 ##   --taking-down            with --ghost: the hammer takes down instead of building
 ##   --house=<x>,<y>          place the chosen building there once its chunks are loaded
