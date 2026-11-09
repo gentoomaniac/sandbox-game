@@ -238,7 +238,8 @@ func _add_equipment_column(column: VBoxContainer, slots: Array, parent: Containe
 
 
 ## Makes the character as large as the window allows (the window gets smaller with the UI
-## scale) and spreads the equipment slots over its height. The panel refits by itself after it.
+## scale) and spreads the equipment slots over its height. The panel follows its contents and
+## stays centred by itself (see Modal).
 func _fit_character() -> void:
 	var room := get_viewport().get_visible_rect().size.y - 2 * (WINDOW_MARGIN + PANEL_PADDING / 2)
 	_preview.pixel_scale = clampi(int(room / CharacterPreview.SHOWN_SIZE.y), 1, MAX_PREVIEW_SCALE)

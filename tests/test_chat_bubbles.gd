@@ -32,7 +32,8 @@ func _chat_screen(seconds := 0.1) -> ChatScreen:
 # --- Whom E speaks to ---
 
 
-## The bubbles of the chat, top to bottom (the wrappers' first child).
+## The bubbles of the chat, top to bottom (the wrappers' first child), without the day and notice
+## lines.
 func _bubbles(screen: ChatScreen) -> Array[Control]:
 	var bubbles: Array[Control] = []
 	for message in screen._messages.get_children():

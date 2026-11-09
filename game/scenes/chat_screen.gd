@@ -6,8 +6,8 @@ extends Modal
 ## the game time in its corner, and above each day's lines that day ("Today", "Yesterday" or the
 ## date), so a line of an earlier day doesn't look newer than the one after it. The window
 ## scrolls to the newest line, back with the mouse wheel or Page Up and Page Down, and a line to
-## type into is below. Enter sends, Escape leaves. The
-## window has a fixed size (LOG_SIZE), which the bubbles' widths are worked out from.
+## type into is below. Enter sends, Escape leaves. The window has a fixed size (LOG_SIZE), which
+## the bubbles' widths are worked out from.
 ##
 ## The game is paused while it is open (a Modal that pauses), so nothing moves and no key reaches
 ## the game but the art switch, which the chat passes on (`art_set_switch_pressed`): it keeps
@@ -218,7 +218,7 @@ func _add_centred_line(label_name: String, text: String) -> void:
 
 ## Adds the bubble of a line: on the right for the player, on the left for the villager, who has
 ## their name above the first bubble of a run. `previous` is whether the line above was the
-## player's (null if none), which sets the space above.
+## player's (null if no line is above it on this day), which sets the space above.
 func _add_bubble(text: String, time: String, is_player: bool, previous: Variant) -> void:
 	var is_run_start: bool = previous != is_player
 	var content := VBoxContainer.new()

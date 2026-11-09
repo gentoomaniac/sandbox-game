@@ -17,7 +17,7 @@ extends CanvasLayer
 ##   `_on_close()`, `_takes_escape()` (return true to use Escape yourself, e.g. to go back a page
 ##   instead of closing) and `_on_backdrop_input(event)` (a click on the dimmed area).
 ## - Contents that change size need nothing: the panel sits in a centre container, so it stays
-##   round its contents and in the middle of the window through resizes and UI scale changes.
+##   around its contents and in the middle of the window through resizes and UI scale changes.
 ##   The scrolling lists fit themselves; `refit()` makes them fit now.
 ## - Escape here is `ui_cancel` (not rebindable) or the rebindable pause key, as the pause menu
 ##   takes both. Other keys that close the window (E on the chest) are named in `close_actions`;

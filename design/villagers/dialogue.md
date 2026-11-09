@@ -7,9 +7,11 @@
   together from the same layers, each the top of the layer's frame facing the viewer, drawn at
   2x), names under them, and between them the lines as
   bubbles: the villager's on the left with their name above the first of a run, the player's
-  on the right, each with the game time small in its bottom corner, and above each day's lines a small centred line with that day ("Today", "Yesterday" or the date, so a line of an earlier day doesn't look newer than the next; the user, 2026-11-09), at most 70% of the window
+  on the right, each with the game time small in its bottom corner, at most 70% of the window
   wide with the text wrapped, closer together within one speaker's run than between speakers
-  (palette colours only), the window scrolling to the newest line (and back with the wheel or
+  (palette colours only). Above each day's lines a small centred line says the day ("Today",
+  "Yesterday" or the date, decided 2026-11-09), so a line of an earlier day doesn't look newer
+  than the next. The window scrolls to the newest line (and back with the wheel or
   Page Up/Down), and a one-line input. Enter sends; while the answer is awaited the villager
   has a "..." bubble; Escape leaves (and doesn't open the
   pause menu). The villager turns to the player and stands a while.

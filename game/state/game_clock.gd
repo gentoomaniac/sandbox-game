@@ -50,17 +50,17 @@ func set_time(hour: int, minute: int) -> void:
 
 
 func season() -> Season:
-	return ((day - 1) % DAYS_PER_YEAR / DAYS_PER_SEASON) as Season
+	return season_of(day)
 
 
 ## 1 to DAYS_PER_SEASON.
 func day_of_season() -> int:
-	return (day - 1) % DAYS_PER_SEASON + 1
+	return day_of_season_of(day)
 
 
 ## Starts at 1.
 func year() -> int:
-	return (day - 1) / DAYS_PER_YEAR + 1
+	return year_of(day)
 
 
 ## "10th day of Spring Year 2"
@@ -68,13 +68,23 @@ func date_text() -> String:
 	return date_text_of(day)
 
 
-## The date of game day `of_day` (1 is the first), as `date_text` gives it.
+## The calendar of any game day (1 is the first), which the clock's own methods give for today.
+static func season_of(of_day: int) -> Season:
+	return ((of_day - 1) % DAYS_PER_YEAR / DAYS_PER_SEASON) as Season
+
+
+static func day_of_season_of(of_day: int) -> int:
+	return (of_day - 1) % DAYS_PER_SEASON + 1
+
+
+static func year_of(of_day: int) -> int:
+	return (of_day - 1) / DAYS_PER_YEAR + 1
+
+
 static func date_text_of(of_day: int) -> String:
-	var day_of_season := (of_day - 1) % DAYS_PER_SEASON + 1
-	var season_index := ((of_day - 1) / DAYS_PER_SEASON) % SEASON_NAMES.size()
-	var year_number := (of_day - 1) / DAYS_PER_YEAR + 1
 	return (
-		"%s day of %s Year %d" % [ordinal(day_of_season), SEASON_NAMES[season_index], year_number]
+		"%s day of %s Year %d"
+		% [ordinal(day_of_season_of(of_day)), SEASON_NAMES[season_of(of_day)], year_of(of_day)]
 	)
 
 

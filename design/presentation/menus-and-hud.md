@@ -37,16 +37,16 @@ Decided 2026-11-05.
   for, less a margin of 12 UI pixels above and below. Past that it scrolls by mouse wheel, by
   dragging the bar (drawn in the UI theme), and by focus moving to a row; titles, tabs and
   buttons stay in place. A window too small for even the rest of the panel still leaves the
-  list 48 UI pixels, so the panel then crosses the window's edge. It refits on its own when
+  list 48 UI pixels, so the panel then crosses the window's edge. The list fits itself when
   the window is resized or the UI scale changes (both change the viewport's visible rect) and
   when anything in the panel changes size. The build menu's row of buildings is not a window:
   when wider than the window it scrolls sideways in `ScrollingList.Row`, by dragging its bar and
   by following the chosen building, and the mouse wheel over it still turns the hotbar.
 - **Windows** (task 132): every window (crafting, chest, character, chat, the pause menu) is built
   on one base, `Modal`: a dimmed backdrop and a framed panel that stays centred in the window
-  whatever its content or the window does (the pause menu sat off centre once). Escape closes the window (the pause menu goes back a page
-  first), only one window is open at a time (opening one closes the other), and the game pauses
-  while a window that asks for it is open. HUDs, tooltips and the build menu are not windows. How
+  whatever its content or the window does. Escape closes the window (the pause menu goes back
+  a page first), only one window is open at a time (opening one closes the other), and the
+  game pauses while a window that asks for it is open. HUDs, tooltips and the build menu are not windows. How
   to build one: [docs/ui.md](../../docs/ui.md).
 - **UI look:** a pixel font and a framed panel (9-slice) in palette colours, in one shared
   Godot Theme that all UI uses.
