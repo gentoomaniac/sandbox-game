@@ -2092,6 +2092,124 @@ whitish brown when drying out."
 - Both art sets (task 117), every season, frost and snow; crops on it stay readable. At dusk
   and night the steps may fade: "that's how darkness works" (the user).
 
+## 124. A temperature setting for villager talk
+
+- [ ] Done
+
+From the gossip plan (design/villagers/gossip.md, Settings; the user, 2026-11-09: "add a setting
+for LLM temperature so that it is easy to adjust"). A temperature per provider in Settings, kept
+like "most tokens an answer may take": empty is the game's own (`temperature` of
+data/npc_talk.cfg, 0.5), else 0 to 2. It applies to the chat replies (and later the bubbles of
+task 130); the memory summary keeps its own value in the data file. Saved in the settings file
+per provider, read by NpcDialogue. Tests for the setting and that the request carries it; docs
+in design/villagers/dialogue.md and the README.
+
+## 125. The deed log: what the player does near villagers, and who saw it
+
+- [ ] Done
+
+From design/villagers/gossip.md (Deeds). No language model in this task.
+- A `data/gossip.cfg` with the deed kinds (felled a tree, built a building, took down a building,
+  placed a fence or wall, tilled, sowed, harvested, dug clay, mowed), each with its words and a
+  fixed opinion change for later, the radius (20 tiles, 6 at night) and the place words per biome.
+- A deed log in the game state, saved (save version bump): each deed within 20 tiles of any
+  villager as `{day, minute, kind, count, place, witnesses}`; the same kind and place on the
+  same day merge, adding up the count and the witnesses. Kept for 7 days.
+- The place in words: "by <name>'s house" for the villager whose home is nearest within 20 tiles,
+  else the biome's word.
+- Every villager within the radius is a witness and gets the deed as a story they saw at once,
+  for now kept in a plain list on the villager (task 126 makes it the gossip buffer). The chat
+  prompt tells it as a template line ("Today you saw the newcomer fell 7 trees by Antje's house.").
+- Console: `deeds` lists the log.
+- Tests: logging, merging, witnesses by radius and night, the place words, save and load.
+
+## 126. Villager memory in three layers: knowledge, short-term, long-term
+
+- [ ] Done
+
+From design/villagers/gossip.md (Memory). Needs 125.
+- Knowledge: the sheet, and the village sheet for villagers of data/villagers.cfg (as today).
+- Short-term: the chat buffer (`chat_history`, as today) and a gossip buffer of stories (the
+  witnessed deeds of 125; a story as on the design page: fact, seen or heard, told_by, seen_by,
+  hops, day learned, line, weight, personal), both first in, first out.
+- Long-term: memories become `{day, text, weight}` (low, medium, high). Full: the lightest goes,
+  between equal weights the oldest. This replaces the merge of the oldest two.
+- Leaving the chat buffer: summed up as today, weight medium. Leaving the gossip buffer: low is
+  forgotten, else the line moves to long-term with its weight. High: a deed by their own home or
+  that of family or friends on their sheet.
+- Settings "Stories a villager keeps" (default 10) and "Memories a villager keeps" (default 20),
+  next to "Lines a villager keeps".
+- The prompt tells knowledge, long-term, gossip and chat in that order; `/clear` forgets all but
+  knowledge.
+- Save version bump; old memories load as medium.
+- Console: `gossip <villager>` lists their stories and memories with weights.
+- Tests for the buffers, eviction by weight, save and upgrade; docs in dialogue.md.
+
+## 127. Rumours spread when villagers meet, and change on the way
+
+- [ ] Done
+
+From design/villagers/gossip.md (How stories spread, Whispers). Needs 126. No language model.
+- Two villagers within 3 tiles meet, a pair at most once an hour of game time. Each may pass one
+  story the other lacks: the weightiest and newest that it has known for at least 2 game hours,
+  with a chance by tie (family and friends from the sheet, the 3 nearest neighbours by anchor,
+  anyone), values in data/gossip.cfg. The hearer gets it as heard, `told_by` the teller, one hop
+  more. A deed's story stops after 3 hops or 7 days.
+- Whispers: at each hop a chance (10%) that one thing shifts: the count grows by a table of steps
+  ("a dozen", "half a wood"), the place moves to a neighbouring house, or the kind turns into a
+  similar one (a table). Seeded, so tests can fix it.
+- The template line for heard stories names the teller ("Moiken told me ...").
+- Works for all loaded villagers (the moment they come into view or not), not only the ones on
+  screen.
+- Tests: meetings, chances by tie, the 2-hour wait, the stop, whispers with fixed seeds, saving.
+
+## 128. The judge: villagers word what they saw and heard, and think of the player by it
+
+- [ ] Done
+
+From design/villagers/gossip.md (The judge). Needs 127.
+- A background queue, saved, of stories without a voiced line. One call at a time (like the
+  memory summary), its prompt in data/npc_talk.cfg with a low temperature of its own: the
+  villager's sheet (cut down for a local model), the fact, who told them. It returns JSON
+  `{line, change, personal}`; anything that doesn't parse, is out of range or doesn't come is
+  the template line, the deed's fixed change and not personal.
+- Opinion of the player per villager, saved: one change step is 10 friendship points of
+  design/villagers/relationships.md; full for who saw it, half for who heard it; a daily cap in
+  data/gossip.cfg. Personal raises the story to high weight.
+- The chat prompt tells the opinion in words (the levels of relationships.md, or a plain
+  warm/neutral/cold until those are decided).
+- Console: `opinion <villager> [points]`.
+- Tests with a fake model: parsing, fallbacks, caps, the queue across save and load.
+
+## 129. Newcomers learn the village from the locals
+
+- [ ] Done
+
+From design/villagers/gossip.md (Locals and newcomers). Needs 127.
+- Made-up villagers start with no village sheet, only its base line (Wehlsbüll, the North
+  Frisian coast, 1750). The sections of data/village.cfg are topics; a villager who knows a topic
+  passes it at a meeting as a story, like a deed, with no hops limit and no whispers.
+- A learned topic goes into knowledge and is never forgotten; the prompt carries only the topics
+  a villager knows (full or cut down by provider, as today).
+- Saved (version bump): made-up villagers of older saves start with no topics.
+- Tests: learning, the prompt, saving. Docs in villagers.md.
+
+## 130. Bubbles: villagers say a line now and then
+
+- [ ] Done
+
+From design/villagers/gossip.md (Bubbles). Needs 128 for lines about the player; the rest can
+come earlier.
+- Now and then a villager in view says a short line in a bubble over their head for a few
+  seconds: at most one on screen and about one a minute (data file).
+- About the moment (weather, part of the day, the place, what they do), or about the player when
+  near, with their opinion and newest stories.
+- Asked of the model in the background with the chat's temperature (task 124), dropped if the
+  villager is out of view when it comes; without a model, scripted lines per weather and part of
+  the day in data/npc_talk.cfg.
+- Not saved, not remembered. Bubbles drawn in palette colours, readable at every zoom; a
+  screenshot in the README.
+
 ## Later (not part of the prototype)
 
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
