@@ -189,8 +189,24 @@ func test_a_name_typed_renames_the_profile_unless_another_has_it() -> void:
 	assert_eq(_page._name.text, "Haiku")
 	assert_eq(_page._name_note.text, "A profile needs a name.")
 	assert_eq(_profile_list(), ["OpenAI-compatible", "Haiku", "Gemini"])
-	_page._name.text_submitted.emit("Haiku")
-	assert_false(_page._name_note.visible, "an unchanged name clears it")
+	_page._name.focus_exited.emit()
+	assert_true(_page._name_note.visible, "leaving the field keeps it")
+	_page._name.text_changed.emit("Haiku ")
+	assert_false(_page._name_note.visible, "typing clears it")
+	_page._name.text_submitted.emit("Haiku ")
+	assert_eq(_page._name.text, "Haiku", "its own name, as it is")
+	assert_false(_page._name_note.visible)
+
+
+func test_the_note_on_a_refused_name_goes_with_the_profile() -> void:
+	_show_claude()
+	_page._name.text = "Gemini"
+	_page._name.focus_exited.emit()
+	assert_eq(_page._name.text, "Claude")
+	assert_true(_page._name_note.visible)
+	_page._profiles.item_selected.emit(2)
+	assert_eq(_page._name.text, "Gemini")
+	assert_false(_page._name_note.visible)
 
 
 func test_choosing_another_provider_gives_the_profile_its_endpoint_and_model() -> void:

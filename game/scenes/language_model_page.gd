@@ -204,6 +204,7 @@ func show_settings() -> void:
 	var chosen: String = language_model["provider"]
 	_list_profiles()
 	_name.text = language_model["name"]
+	_name_note.visible = false
 	for index in _provider.item_count:
 		if _provider.get_item_metadata(index) == chosen:
 			_provider.select(index)
@@ -276,6 +277,7 @@ func _add_name_and_provider() -> void:
 	_name.custom_minimum_size.x = FIELD_WIDTH
 	_name.text_submitted.connect(_rename)
 	_name.focus_exited.connect(func() -> void: _rename(_name.text))
+	_name.text_changed.connect(func(_text: String) -> void: _name_note.hide())
 	TooltipView.set_text(_name, NAME_TIP, "setting_language_model_name")
 	add_child(_name)
 	_name_note.visible = false
@@ -364,14 +366,22 @@ func _on_delete_pressed() -> void:
 	show_settings()
 
 
-## Keeps `new_name` for the profile if it can; the field shows the name the profile has.
+## Keeps `new_name` for the profile if it can; the field shows the name the profile has. A name
+## refused leaves a note that says why, until the name is typed in again or another profile is
+## shown. The profile's own name changes nothing (the field gives it back on every focus loss).
 func _rename(new_name: String) -> void:
 	new_name = new_name.strip_edges()
-	_name_note.visible = not _settings.profiles.rename(new_name)
-	if new_name == "":
-		_name_note.text = "A profile needs a name."
-	else:
-		_name_note.text = "Another profile is already called %s." % new_name
+	if new_name == _settings.profiles.active["name"]:
+		_name.text = new_name
+		return
+	var renamed := _settings.profiles.rename(new_name)
+	_name_note.visible = not renamed
+	if not renamed:
+		_name_note.text = (
+			"A profile needs a name."
+			if new_name == ""
+			else "Another profile is already called %s." % new_name
+		)
 	_name.text = _settings.profiles.active["name"]
 	_list_profiles()
 
