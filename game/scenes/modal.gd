@@ -150,7 +150,7 @@ func _is_left_press(event: InputEvent) -> bool:
 ## Wraps the part of the window that grows in a ScrollingList, and returns that to put where
 ## the part belongs. The list starts at the top each time the window opens.
 func _scrolling(growing_part: Control) -> ScrollingList:
-	var list := ScrollingList.new(_panel, growing_part)
+	var list := ScrollingList.new(growing_part)
 	_lists.append(list)
 	return list
 

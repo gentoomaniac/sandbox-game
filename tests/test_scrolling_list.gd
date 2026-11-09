@@ -20,7 +20,7 @@ func before_each() -> void:
 	_title.text = "Title"
 	column.add_child(_title)
 	_rows = VBoxContainer.new()
-	_list = ScrollingList.new(_frame, _rows)
+	_list = ScrollingList.new(_rows)
 	column.add_child(_list)
 	_frame.add_child(column)
 	_window.add_child(_frame)

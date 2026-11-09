@@ -12,13 +12,14 @@ const MARGIN := 12
 ## panel's other parts loses the panel's edge before the list loses its rows.
 const MIN_HEIGHT := 48
 
-## The panel the list sits in; what it holds besides the list is what the list must leave room for.
-var _frame: Control
+## The panel the list sits in (its nearest PanelContainer); what it holds besides the list is
+## what the list must leave room for. Null for a list outside any panel, which has the window to
+## itself.
+var _frame: PanelContainer
 var _content: Control
 
 
-func _init(frame: Control, content: Control) -> void:
-	_frame = frame
+func _init(content: Control) -> void:
 	_content = content
 	horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	follow_focus = true
@@ -26,16 +27,25 @@ func _init(frame: Control, content: Control) -> void:
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	add_child(content)
 	content.minimum_size_changed.connect(fit)
-	# The rest of the panel changes too (a note, a label), and a page of a menu only counts
-	# once it is shown.
-	frame.minimum_size_changed.connect(fit)
 
 
 func _enter_tree() -> void:
+	var ancestor := get_parent()
+	while ancestor != null and not ancestor is PanelContainer:
+		ancestor = ancestor.get_parent()
+	_frame = ancestor
+	# No fit() here: a panel entering the tree is sized by its own minimum size changing, or by
+	# the screen's explicit fit() when it opens.
+	if _frame != null:
+		# The rest of the panel changes too (a note, a label), and a page of a menu only counts
+		# once it is shown.
+		_frame.minimum_size_changed.connect(fit)
 	get_viewport().size_changed.connect(fit)
 
 
 func _exit_tree() -> void:
+	if _frame != null:
+		_frame.minimum_size_changed.disconnect(fit)
 	get_viewport().size_changed.disconnect(fit)
 
 
@@ -51,8 +61,11 @@ static func height_for(content_height: float, chrome_height: float, window_heigh
 func fit() -> void:
 	if not is_visible_in_tree():
 		return
-	# What the panel is without the list, as the list's own height is part of the panel's.
-	var chrome_height := _frame.get_combined_minimum_size().y - get_combined_minimum_size().y
+	# What the panel is without the list, as the list's own height is part of the panel's. It
+	# assumes the list is in the panel's tallest column; in a shorter one the rest is overstated.
+	var chrome_height := 0.0
+	if _frame != null:
+		chrome_height = _frame.get_combined_minimum_size().y - get_combined_minimum_size().y
 	var content_size := _content.get_combined_minimum_size()
 	var height := height_for(
 		content_size.y, chrome_height, get_viewport().get_visible_rect().size.y
