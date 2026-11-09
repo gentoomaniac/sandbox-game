@@ -222,12 +222,12 @@ data/<topic>.cfg  ->  game/state/<topic>_rules.gd  ->  a Types class or the stat
   fails loudly. A test that needs an item of its own swaps in a small catalog of its own for
   `ItemTypes.TYPES` and restores it, it never adds to the shared one.
 - `CatalogCheck` checks every item and object with its references at start (fields in range,
-  wearables stack 1, what an item places or plants, what an object drops, leaves or seeds
-  exists, ids of crops and trunks don't collide); `Main._ready` refuses to start and reports
-  `item <id>: ...` or `object <id>: ...` for each mistake (as errors in the log: the game quits
-  before it opens a window). `AssetCheck` does the same for the pictures: every item and object has
-  its icons, sprites, sheet and atlas cells in both art sets (a line names the art set). Run `make test` after adding an entry:
-  its test runs the same check.
+  wearables stack 1, what an item places or plants, what an object drops, leaves or seeds exists,
+  ids of crops and trunks don't collide); `Main._ready` refuses to start and reports `item <id>:
+  ...` or `object <id>: ...` for each mistake (as errors in the log: the game quits before it
+  opens a window). `AssetCheck` does the same for the pictures: every item and object has its
+  icons, sprites, sheet and atlas cells in both art sets (a line names the art set). Run `make
+  test` after adding an entry: its test runs the same check.
 
 Typical jobs:
 

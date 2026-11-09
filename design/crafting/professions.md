@@ -26,8 +26,8 @@ woodworker, the cook and the mason, and a UI for them.
   (task 137). Where one is placed is the object's `placeable_in`: the kiln is OUTDOORS only, the
   stool and the cupboard INSIDE a house only, the others ANYWHERE. The axe takes down the
   workbench, the stool and the chests, the pickaxe the kiln and the oven (inside a house one
-  swing, into the inventory). The house's own
-  furniture can't be taken down; the stools of the maps can (a free stool, accepted).
+  swing, into the inventory). The house's own furniture can't be taken down; the stools of the
+  maps can (a free stool, accepted).
 - **E on a station** opens the crafting menu of its recipes, titled with its name, with the
   player's points in the skills they practise; E or Escape closes it. A note after a craft
   says what it taught. The tooltip of a recipe says what a craft teaches, or what it needs.
