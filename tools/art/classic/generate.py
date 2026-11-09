@@ -3,8 +3,8 @@
 
 The modules here are the old generators of those groups, copied from git history unchanged (the
 commit is in each group's comment below); they share canvas.py and palette.py with the new art.
-`main` writes their files under art/generated/classic/, under the names the new art has under
-art/generated/, as drawn at 16 px; `make assets` (pack.py) scales the world's up to the game's tile
+`main` writes their files under art/generated/ with the postfix _16x16, where the new art has
+_32x32 (items/axe_16x16.png), as drawn at 16 px; `make assets` (pack.py) scales the world's up to the game's tile
 (scaling.py) into assets/classic/. The game shows a classic file where there is one and the new
 file where there is none.
 
@@ -57,42 +57,40 @@ import trunks  # noqa: E402
 import villagers  # noqa: E402
 import willow  # noqa: E402
 from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, TILE, blank  # noqa: E402
-from palette import GENERATED, PALETTE, save, save_picture, write_cell_sizes  # noqa: E402
-
-CLASSIC = "classic"
+from palette import CLASSIC_ART, GENERATED, PALETTE, save, save_picture, set_file, use_art_set, write_cell_sizes  # noqa: E402
 
 
 def write_character():
     layers = character.layers() | villagers.layers()
     for name, layer in layers.items():
-        save(character.character_sheet(*layer), f"{CLASSIC}/character/{name}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
-        save(character.collapse_sheet(*layer), f"{CLASSIC}/character/collapse/{name}.png", character.COLLAPSE_SIZE)
+        save(character.character_sheet(*layer), f"character/{name}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
+        save(character.collapse_sheet(*layer), f"character/collapse/{name}.png", character.COLLAPSE_SIZE)
     for name, picture in portraits.portraits(layers).items():
-        save_picture(picture, f"{CLASSIC}/character/portrait/{name}.png")
+        save_picture(picture, f"character/portrait/{name}.png")
     # Only the player rides, so only the player's layers sit on a horse.
     for name, layer in character.layers().items():
-        save(character.riding_sheet(*layer), f"{CLASSIC}/character/riding/{name}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
+        save(character.riding_sheet(*layer), f"character/riding/{name}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
     held_hoe = character.character_sheet(character.draw_held_hoe, {})
-    save(held_hoe, f"{CLASSIC}/character/held_hoe.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
-    save_picture(character.sleep_z(), f"{CLASSIC}/effects/sleep_z.png")
+    save(held_hoe, f"character/held_hoe.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
+    save_picture(character.sleep_z(), f"effects/sleep_z.png")
 
 
 def write_bubbles():
-    (GENERATED / CLASSIC / "ui").mkdir(parents=True, exist_ok=True)
+    (GENERATED / "ui").mkdir(parents=True, exist_ok=True)
     for name, rows in bubbles.BUBBLE_ICONS.items():
-        bubbles.bubble(PALETTE, rows).save(GENERATED / CLASSIC / "ui" / f"bubble_{name}.png")
+        bubbles.bubble(PALETTE, rows).save(GENERATED / "ui" / set_file(f"bubble_{name}.png"))
 
 
 def write_livestock():
     for name, size, rows in livestock.sheets():
-        save(rows, f"{CLASSIC}/wildlife/{name}.png", *size)
+        save(rows, f"wildlife/{name}.png", *size)
 
 
 def write_wildlife():
     for kind in animals.SHEETS:
-        save(animals.sheet_rows(kind), f"{CLASSIC}/wildlife/{kind}.png", *animals.cell_size(kind))
+        save(animals.sheet_rows(kind), f"wildlife/{kind}.png", *animals.cell_size(kind))
     for name, size, rows in [*birds.sheets(), *sea_birds.sheets()]:
-        save(rows, f"{CLASSIC}/wildlife/{name}.png", *size)
+        save(rows, f"wildlife/{name}.png", *size)
 
 
 def write_fire():
@@ -101,7 +99,7 @@ def write_fire():
         ("hearth", interior.hearth_layers(), interior.HEARTH_FLAME),
     ):
         strip = fire.strip(behind, front, box, half_width, tall)
-        save([strip], f"{CLASSIC}/fire/{name}.png", box[2], box[3])
+        save([strip], f"fire/{name}.png", box[2], box[3])
 
 
 def write_ground():
@@ -115,12 +113,12 @@ def write_ground():
     decorations_by_look = {}
     for look in ground_looks.GROUND_LOOKS:
         suffix = "" if look == "summer" else f"_{look}"
-        save(ground_looks.terrain_rows(look, terrain_rows), f"{CLASSIC}/terrain{suffix}.png")
+        save(ground_looks.terrain_rows(look, terrain_rows), f"terrain{suffix}.png")
         decorations_by_look[look] = ground_looks.ground_rows(look, decoration_rows, ground_looks.STANDING.get(look))
     layers = [layer.__name__ for layer in terrain.LAYERS]
-    atlas.save_sheets(f"{CLASSIC}/decorations", [*layers, "flowers"], ground_looks.GROUND_LOOKS, decorations_by_look, TILE, TILE)
-    save([ground_overlays.soil_wet()], f"{CLASSIC}/soil_wet.png")
-    save_picture(ground_overlays.clay_hint(), f"{CLASSIC}/clay_hint.png")
+    atlas.save_sheets(f"decorations", [*layers, "flowers"], ground_looks.GROUND_LOOKS, decorations_by_look, TILE, TILE)
+    save([ground_overlays.soil_wet()], f"soil_wet.png")
+    save_picture(ground_overlays.clay_hint(), f"clay_hint.png")
 
 
 def write_buildings():
@@ -129,7 +127,7 @@ def write_buildings():
             picture, snowy = draw(is_lit=is_lit)
             for look in seasons.HOUSE_LOOKS:
                 look_suffix = "" if look == "summer" else f"_{look}"
-                save_picture(seasons.house(look, picture, snowy), f"{CLASSIC}/buildings/{name}{lit_suffix}{look_suffix}.png")
+                save_picture(seasons.house(look, picture, snowy), f"buildings/{name}{lit_suffix}{look_suffix}.png")
 
 
 def standing_outdoors(picture):
@@ -208,38 +206,39 @@ def write_objects():
         "alder": lambda variant: alder.bare_alder(alder.ALDER_SEEDS[variant]),
     }
     objects_by_look = {look: object_looks.object_rows(look, objects, redraws) for look in object_looks.LOOKS}
-    atlas.save_sheets(f"{CLASSIC}/objects", [kind for kind, _ in objects], object_looks.LOOKS, objects_by_look, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
-    save_picture(camp.bedroll_cover(), f"{CLASSIC}/bedroll_cover.png")
+    atlas.save_sheets(f"objects", [kind for kind, _ in objects], object_looks.LOOKS, objects_by_look, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
+    save_picture(camp.bedroll_cover(), f"bedroll_cover.png")
 
 
 def write_crops():
     for crop, cells in crops.sheets().items():
-        save([cells], f"{CLASSIC}/crops/{crop}.png", TILE, len(cells[0]))
+        save([cells], f"crops/{crop}.png", TILE, len(cells[0]))
 
 
 def write_interior():
     furniture = interior.furniture()
-    save([interior.atlas_tiles(furniture)], f"{CLASSIC}/interior.png")
+    save([interior.atlas_tiles(furniture)], f"interior.png")
     for name, (picture, _footprint) in furniture.items():
-        save_picture(picture, f"{CLASSIC}/interior/{name}.png")
+        save_picture(picture, f"interior/{name}.png")
     for name, picture in interior.covers(furniture).items():
-        save_picture(picture, f"{CLASSIC}/interior/{name}.png")
+        save_picture(picture, f"interior/{name}.png")
     for name, picture in crafts.stations().items():
-        save_picture(picture, f"{CLASSIC}/interior/{name}.png")
-    save_picture(camp.ghost(camp.fireplace(), 25, 26), f"{CLASSIC}/interior/fireplace.png")
-    save_picture(camp.ghost(camp.bedroll(), 18, 30), f"{CLASSIC}/interior/sleeping_bag.png")
-    save_picture(graves.graves()[0], f"{CLASSIC}/interior/grave.png")
+        save_picture(picture, f"interior/{name}.png")
+    save_picture(camp.ghost(camp.fireplace(), 25, 26), f"interior/fireplace.png")
+    save_picture(camp.ghost(camp.bedroll(), 18, 30), f"interior/sleeping_bag.png")
+    save_picture(graves.graves()[0], f"interior/grave.png")
 
 
 def write_items():
     icons = item_icons.ICONS | crop_icons.icons() | tool_icons.icons() | craft_icons.icons()
     for name, picture in icons.items():
-        save_picture(picture, f"{CLASSIC}/items/{name}.png")
+        save_picture(picture, f"items/{name}.png")
         # The same icon at half size, for items lying on the ground.
-        save_picture(item_icons.small(picture), f"{CLASSIC}/ground_items/{name}.png")
+        save_picture(item_icons.small(picture), f"ground_items/{name}.png")
 
 
 def main():
+    use_art_set(CLASSIC_ART)
     write_character()
     write_bubbles()
     write_livestock()
@@ -251,8 +250,8 @@ def main():
     write_crops()
     write_interior()
     write_items()
-    write_cell_sizes(GENERATED / CLASSIC)
-    print("Wrote every file under art/generated/classic/.")
+    write_cell_sizes()
+    print("Wrote the classic art (the _16x16 files) under art/generated/.")
 
 
 if __name__ == "__main__":

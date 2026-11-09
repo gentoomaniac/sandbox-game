@@ -3,8 +3,8 @@ pack.py (`make assets`) out of one small sheet per entity, which the generators 
 artists can redraw one at a time.
 
 An entity is an object type (`oak`, `chest`) or a ground layer's decorations (`grass`). Its sheet,
-`<folder>/<entity>.png`, has a row per look (the seasons, see seasons.LOOKS) and a cell per
-variant in a column, cells of the atlas's cell size. `<folder>/atlas.txt` lists the entities in
+`<folder>/<entity><art set>.png`, has a row per look (the seasons, see seasons.LOOKS) and a cell per
+variant in a column, cells of the atlas's cell size. `<folder>/atlas<art set>.txt` lists the entities in
 the order of the atlas's rows, each with the number of cells in a row of its sheet:
 
     cell 96 160
@@ -13,9 +13,10 @@ the order of the atlas's rows, each with the number of cells in a row of its she
     stone 2
 """
 
+import palette
 from palette import GENERATED, save
 
-MANIFEST = "atlas.txt"
+MANIFESTS = "atlas_*.txt"
 
 
 def save_sheets(folder, entities, looks, cells_by_look, cell_width, cell_height):
@@ -29,7 +30,7 @@ def save_sheets(folder, entities, looks, cells_by_look, cell_width, cell_height)
         if count:
             save([cells_by_look[look][index] for look in looks], f"{folder}/{entity}.png", cell_width, cell_height)
     (GENERATED / folder).mkdir(parents=True, exist_ok=True)
-    (GENERATED / folder / MANIFEST).write_text("\n".join(lines) + "\n")
+    (GENERATED / folder / f"atlas{palette.art_set}.txt").write_text("\n".join(lines) + "\n")
 
 
 def read_manifest(path):

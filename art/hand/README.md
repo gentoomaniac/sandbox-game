@@ -3,13 +3,13 @@
 Drop a picture or a sound here to use it instead of the generated one; `make assets` finds it.
 No tool ever writes in this folder.
 
-A file has the path and name of the generated file in `art/generated/`, with a postfix for the
-art set it replaces:
+A file has the same path and name as the generated file in `art/generated/`, which has a postfix
+for its art set:
 
 - `_32x32` for the new art, drawn at 32 px per tile: `objects/oak_32x32.png` replaces
-  `art/generated/objects/oak.png`.
+  `art/generated/objects/oak_32x32.png`.
 - `_16x16` for the classic art, drawn at 16 px per tile: `objects/oak_16x16.png` replaces
-  `art/generated/classic/objects/oak.png`.
+  `art/generated/objects/oak_16x16.png`.
 - Sounds have no postfix: `sounds/axe_chop_1.wav` replaces `art/generated/sounds/axe_chop_1.wav`.
 
 A picture has the generated one's size exactly. In a sheet (the rows and columns of an object's

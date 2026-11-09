@@ -21,6 +21,8 @@ The Theme that uses them is game/scenes/ui_theme.tres.
 
 from PIL import Image
 
+from palette import set_file
+
 GLYPH_COLOUR = "cream"
 CELL_WIDTH = 7
 CELL_HEIGHT = 10
@@ -541,4 +543,4 @@ def write_ui_assets(folder, palette):
     atlas.save(folder / "font.png")
     (folder / "font.fnt").write_text(descriptor)
     for name, image in ui_images(palette).items():
-        image.save(folder / name)
+        image.save(folder / set_file(name))

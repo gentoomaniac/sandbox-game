@@ -9,8 +9,9 @@
   `art/hand/` is what artists drop in (no tool writes there), and `assets/` is what Godot reads,
   built by `make assets` from both (packing the entity images into the atlases, scaling the
   classic art up) and kept out of the repository.
-- **Hand-drawn art replaces generated art** file by file: the same path under `art/hand/` with a
-  `_32x32` (new art) or `_16x16` (classic art) postfix, sounds without one. A hand picture has
+- **Hand-drawn art replaces generated art** file by file: the same path and name under
+  `art/hand/` as under `art/generated/`, where every picture of an art set has a `_32x32` (new
+  art) or `_16x16` (classic art) postfix (decided 2026-11-09), and sounds have none. A hand picture has
   the generated one's size exactly; of a sheet it takes the cells it draws and leaves the empty
   ones to the generated art. `make assets` lists the hand files it used, warns about colours
   outside the palette and fails on a hand file that replaces nothing.

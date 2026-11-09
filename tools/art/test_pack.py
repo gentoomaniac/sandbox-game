@@ -39,12 +39,12 @@ class PackTest(unittest.TestCase):
             patcher.start()
             self.addCleanup(patcher.stop)
         # An atlas of objects with two looks: oak has two variants, stone one.
-        self.write_text("objects/atlas.txt", "cell 2 2\nlooks spring summer\noak 2\nstone 1\n")
-        self.write_text("cell_sizes.txt", "objects/oak.png 2 2\nobjects/stone.png 2 2\n")
-        self.save(solid(2 * CELL, 2 * CELL, FIRST_COLOUR), self.generated / "objects/oak.png")
-        self.save(solid(CELL, 2 * CELL, FIRST_COLOUR), self.generated / "objects/stone.png")
-        self.save(solid(CELL, CELL, FIRST_COLOUR), self.generated / "items/axe.png")
-        self.save(solid(CELL, CELL, FIRST_COLOUR), self.generated / "classic/items/axe.png")
+        self.write_text("objects/atlas_32x32.txt", "cell 2 2\nlooks spring summer\noak 2\nstone 1\n")
+        self.write_text("cell_sizes_32x32.txt", "objects/oak_32x32.png 2 2\nobjects/stone_32x32.png 2 2\n")
+        self.save(solid(2 * CELL, 2 * CELL, FIRST_COLOUR), self.generated / "objects/oak_32x32.png")
+        self.save(solid(CELL, 2 * CELL, FIRST_COLOUR), self.generated / "objects/stone_32x32.png")
+        self.save(solid(CELL, CELL, FIRST_COLOUR), self.generated / "items/axe_32x32.png")
+        self.save(solid(CELL, CELL, FIRST_COLOUR), self.generated / "items/axe_16x16.png")
         (self.generated / "sounds").mkdir()
         (self.generated / "sounds/chop_1.wav").write_bytes(b"generated sound")
 
@@ -70,13 +70,13 @@ class PackTest(unittest.TestCase):
         self.assertEqual(outputs["objects_rows.txt"], b"0 oak 2\n1 stone 1\n")
 
     def test_a_missing_atlas_manifest_says_what_to_do(self):
-        (self.generated / "objects/atlas.txt").unlink()
+        (self.generated / "objects/atlas_32x32.txt").unlink()
         with self.assertRaises(SystemExit) as raised:
             self.build()
         self.assertIn("make art", str(raised.exception))
 
     def test_a_missing_source_image_names_the_entity(self):
-        (self.generated / "objects/stone.png").unlink()
+        (self.generated / "objects/stone_32x32.png").unlink()
         sources, _ = self.build()
         self.assertEqual(len(sources.errors), 1)
         self.assertIn("objects/stone", sources.errors[0])
@@ -112,8 +112,7 @@ class PackTest(unittest.TestCase):
         self.save(solid(CELL, CELL, FIRST_COLOUR), self.hand / "items/axe.png")
         sources, _ = self.build()
         self.assertEqual(len(sources.errors), 2)
-        self.assertTrue(any("matches no generated file" in error for error in sources.errors))
-        self.assertTrue(any("neither _32x32.png nor _16x16.png" in error for error in sources.errors))
+        self.assertTrue(all("matches no generated file" in error for error in sources.errors))
 
     def test_hand_art_outside_the_palette_is_only_a_warning(self):
         self.save(solid(CELL, CELL, NOT_IN_PALETTE), self.hand / "items/axe_32x32.png")

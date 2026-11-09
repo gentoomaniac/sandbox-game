@@ -7,7 +7,7 @@ shows what moved).
 
 ```sh
 make art          # draw all art (the classic art first) and sounds into art/generated/, then the palette and sound checks (minutes)
-make classic-art  # just the classic art under art/generated/classic/
+make classic-art  # just the classic art (the _16x16 files of art/generated/)
 make assets       # build assets/, what Godot reads, from art/generated/ (seconds, draws nothing)
 make venv         # just the Python environment (the others do this themselves)
 ```
@@ -15,12 +15,15 @@ make venv         # just the Python environment (the others do this themselves)
 Three places: `art/generated/` is what `make art` draws (only the generators write there; it
 is in version control), and `assets/` is what `make assets` builds out of it for Godot
 (`res://assets/`; build output, not in version control). The generated files have the paths the
-game reads. The object and decoration atlases are the exception:
-`art/generated/objects/<type>.png` and `art/generated/decorations/<layer>.png` hold one entity
-each, a row per look (season) and a cell per variant, and `make assets` packs them into the
-atlases (`objects*.png`, `decorations*.png`, one per look; see `atlas.py` and `pack.py`). The
-classic art is generated at 16 px as it was drawn, and `make assets` scales it up
-(`classic/scaling.py`).
+game reads, plus the postfix of the art set a picture is drawn for: `_32x32` for the new art
+and `_16x16` for the classic art (`art/generated/items/axe_32x32.png` becomes assets/items/axe.png,
+`art/generated/items/axe_16x16.png` becomes assets/classic/items/axe.png). Files that exist once
+(the palette, the font's page, the sounds) have none. The object and decoration atlases are the
+exception: `art/generated/objects/<type>_32x32.png` and
+`art/generated/decorations/<layer>_32x32.png` hold one entity each, a row per look (season) and a
+cell per variant, and `make assets` packs them into the atlases (`objects*.png`,
+`decorations*.png`, one per look; see `atlas.py` and `pack.py`). The classic art is generated at
+16 px as it was drawn, and `make assets` scales it up (`classic/scaling.py`).
 
 `make art` and `make assets` need Python 3 and nothing else (no Godot). The pinned packages are
 in [requirements.txt](requirements.txt). After new art, `make run`, `make test` and
@@ -31,11 +34,11 @@ in [requirements.txt](requirements.txt). After new art, `make run`, `make test` 
 Hand-drawn files go in `art/hand/` and `make assets` uses them over the generated ones (nothing
 generates into that folder). To redraw the oak, for example:
 
-1. Copy `art/generated/objects/oak.png` to `art/hand/objects/oak_32x32.png` (the same path and
-   name, plus the postfix of the art set: `_32x32` for the new art, `_16x16` for the classic
-   art, whose cells are 48x80 and whose files are drawn at 16 px per tile).
+1. Copy `art/generated/objects/oak_32x32.png` to `art/hand/objects/oak_32x32.png` (the same path
+   and name: `_32x32` is the new art, `_16x16` the classic art, whose cells are 48x80 and whose
+   files are drawn at 16 px per tile).
 2. Open it in any pixel editor. The sheet has a row per look (the order is in
-   `art/generated/objects/atlas.txt`: spring, summer, autumn, bare, frost, snow, dusting, buds,
+   `art/generated/objects/atlas_32x32.txt`: spring, summer, autumn, bare, frost, snow, dusting, buds,
    young_leaves) and a column per variant, cells of 96x160 px; the object stands on the bottom
    centre of its cell. Keep the picture's size and the palette (`art/generated/palette.png`,
    `.gpl`).
@@ -84,7 +87,7 @@ by topic. Where is a thing drawn?
 | `generate.py` | The object atlas (`object_atlas()`, with the numbered table of its rows; `atlas_cells` splits a picture wider than a cell, the Ewer's, into its cells), the writers and `main()`; everything is drawn at the game's 32 px tile (see [docs/art-style.md](../docs/art-style.md), "Resolution"). |
 | `canvas.py` | The shared basics: `TILE` (the 16 px of the icons and the classic art), `GAME_TILE` (the game's 32 px tile), the size of an object cell at each (`GAME_OBJECT_*`, and `OBJECT_*` for the classic art), `blank`, `filled`, `copy`, a clipped `rect`, and the two outline helpers: `outline` (a ring outside the drawing) and `outline_edge` (recolours the drawing's border). |
 | `palette.py` | The palette, `DARKEST_OF` (the colour that outlines each ramp), `to_image`, `save` (one PNG under `art/generated/`, remembering the cell size of a sheet) and the palette check. |
-| `atlas.py` | Writes the sheets of the object and decoration atlases (one image per entity, a row per look) and their `atlas.txt`, and reads it. |
+| `atlas.py` | Writes the sheets of the object and decoration atlases (one image per entity, a row per look) and their `atlas_<art set>.txt`, and reads it. |
 | `pack.py` | `make assets`: builds assets/ from art/generated/ and art/hand/ (packs the atlases, lays hand-drawn cells over generated ones, scales the classic art up through `classic/scaling.py`). Draws nothing. Its tests: `test_pack.py`. |
 | `terrain.py` | The ground, drawn at 32 px per tile: water, tidal mud, floodplain, wetland, grass, salt marsh, Warft, lush and dry grass, trodden grass, path and tilled soil, their decorations, and the wet look of tilled soil. |
 | `flowers.py` | The meadow flowers of the region: the flower row of the decoration atlas, drawn at 32 px. |
@@ -132,7 +135,7 @@ The game can show the art of a group redrawn at 32 px per tile as it was before,
 doubled (Settings → Display, F7; see `ArtSet` in game/scenes/art_set.gd). That classic art is
 generated like the rest: tools/art/classic/ holds the old generators of the groups that went
 native, copied from git history as they were, and its `generate.py` writes their files under
-art/generated/classic/, with the same names as the new files under art/generated/, at 16 px;
+art/generated/ as the `_16x16` files (the new art's are `_32x32`), at 16 px;
 `make assets` doubles the world's ones by `DOUBLED` in `classic/scaling.py`. The old modules
 import their siblings there first and the shared `canvas.py` and `palette.py` of tools/art/
 after them; a later change to those two that an old module trips over (a colour renamed) is made
@@ -197,7 +200,7 @@ When a group goes native (docs/art-style.md, "Resolution"), before its redraw ch
   (`trees.py` for most), add a row to `object_atlas()` and to the numbered table above it
   (the table says the order; new rows go at the end), and give its type an
   `atlas_row` in `game/state/world_object_types.gd`. `generate.py` writes
-  `art/generated/objects/atlas.txt` from the rows it draws (`make assets` copies them to assets/objects_rows.txt), and `tests/test_object_atlas.gd` compares
+  `art/generated/objects/atlas_32x32.txt` from the rows it draws (`make assets` copies them to assets/objects_rows.txt), and `tests/test_object_atlas.gd` compares
   it with every type's `atlas_row` and number of looks. A tree that leaves a trunk also has the
   two rows of `trunks.rows(<tree>)` (its bark in `trunks.SPECIES`), and its `trunk` names the
   first of them.

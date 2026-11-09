@@ -8,10 +8,9 @@ atlases are packed here out of the sheet of each entity (see atlas.py), one atla
 are only written where they changed, so Godot does not import again what did not change, and files
 no source makes any more are removed. assets/ is build output and not in version control.
 
-Hand-drawn art goes over the generated art. A hand file has the path of the generated file under
-art/hand/ and a postfix for the art set it replaces: `objects/oak_32x32.png` for
-art/generated/objects/oak.png, `objects/oak_16x16.png` for art/generated/classic/objects/oak.png.
-Sounds have no postfix (`sounds/axe_chop_1.wav`). A hand picture has the generated one's size
+Hand-drawn art goes over the generated art: a hand file has the path and name of the generated
+file under art/hand/ (`objects/oak_32x32.png` for art/generated/objects/oak_32x32.png, the new art;
+`_16x16` is the classic art; sounds have no postfix). A hand picture has the generated one's size
 exactly; of a sheet (looks, variants, frames) it takes the cells it draws, and a cell it leaves
 empty stays the generated one, so art is replaced bit by bit. Hand art outside the palette is
 warned about, a hand file that replaces nothing is an error.
@@ -25,10 +24,11 @@ from PIL import Image
 
 import atlas
 from classic.scaling import classic_size
-from palette import ASSETS, CELL_SIZES_FILE, GENERATED, HAND, ROOT, stray_colours
+from palette import ASSETS, CELL_SIZES_FILES, CLASSIC_ART, GENERATED, HAND, NEW_ART, ROOT, stray_colours
 
 CLASSIC = "classic"
-SET_POSTFIXES = {"_32x32": "", "_16x16": f"{CLASSIC}/"}
+# Where the pictures of each art set go under assets/.
+ART_SET_FOLDERS = {NEW_ART: "", CLASSIC_ART: f"{CLASSIC}/"}
 # Files of art/hand/ that are no art.
 NOT_ART = ("README.md",)
 
@@ -48,16 +48,14 @@ def look_suffix(look):
     return "" if look == "summer" else f"_{look}"
 
 
-def replaced_file(hand_relative):
-    """The path under art/generated/ of the file the hand file at `hand_relative` (under art/hand/)
-    replaces, or None if its name says nothing."""
-    path = Path(hand_relative)
-    if path.parts[0] == "sounds":
-        return path.as_posix()
-    for postfix, folder in SET_POSTFIXES.items():
+def asset_path(relative):
+    """The path under assets/ of the generated file at `relative`: without its art set's postfix,
+    the classic art in classic/."""
+    path = Path(relative)
+    for postfix, folder in ART_SET_FOLDERS.items():
         if path.suffix == ".png" and path.stem.endswith(postfix):
             return folder + path.with_name(path.stem.removesuffix(postfix) + ".png").as_posix()
-    return None
+    return relative
 
 
 class Sources:
@@ -69,7 +67,7 @@ class Sources:
         self.warnings = []
         self.used = []
         self.cell_sizes = {}
-        for sizes_file in GENERATED.rglob(CELL_SIZES_FILE):
+        for sizes_file in GENERATED.glob(CELL_SIZES_FILES):
             for line in sizes_file.read_text().split("\n"):
                 if line:
                     path, width, height = line.split()
@@ -80,14 +78,14 @@ class Sources:
                 self._add_hand_file(path)
 
     def _add_hand_file(self, path):
-        name = path.relative_to(ROOT).as_posix()
-        replaced = replaced_file(path.relative_to(HAND))
-        if replaced is None:
-            self.errors.append(f"{name}: the name ends in neither _32x32.png nor _16x16.png (sounds in sounds/ have no postfix)")
-        elif not (GENERATED / replaced).is_file():
-            self.errors.append(f"{name}: matches no generated file (art/generated/{replaced} does not exist); a typo in the path or postfix?")
+        relative = path.relative_to(HAND).as_posix()
+        if (GENERATED / relative).is_file():
+            self.hand[relative] = path
         else:
-            self.hand[replaced] = path
+            self.errors.append(
+                f"{path.relative_to(ROOT).as_posix()}: matches no generated file "
+                f"(art/generated/{relative} does not exist); a typo in the path or the postfix?"
+            )
 
     def image(self, relative):
         """The picture at `relative` (under art/generated/), its hand-drawn cells laid over it."""
@@ -128,16 +126,20 @@ class Sources:
         return (GENERATED / relative).read_bytes()
 
 
-def packed_atlases(folder, sources):
-    """The files of the atlas in `folder` (under art/generated/), by path under assets/: one
-    picture per look, a row of cells per entity, as many rows as there are entities."""
-    (cell_width, cell_height), looks, rows = atlas.read_manifest(GENERATED / folder / atlas.MANIFEST)
+def packed_atlases(manifest, sources, sheets):
+    """The files of the atlas whose manifest is at `manifest` (under art/generated/), by path under
+    assets/: one picture per look, a row of cells per entity, as many rows as there are entities.
+    Adds the sheets it takes to `sheets`."""
+    folder = manifest.parent.relative_to(GENERATED).as_posix()
+    postfix = manifest.stem.removeprefix("atlas")
+    (cell_width, cell_height), looks, rows = atlas.read_manifest(manifest)
     width = max(count for _, count in rows) * cell_width
     pictures = {look: Image.new("RGBA", (width, len(rows) * cell_height), (0, 0, 0, 0)) for look in looks}
     for row, (entity, count) in enumerate(rows):
-        relative = f"{folder}/{entity}.png"
+        relative = f"{folder}/{entity}{postfix}.png"
         if not count:
             continue
+        sheets.add(relative)
         if not (GENERATED / relative).exists():
             sources.errors.append(f"{folder}/{entity}: source image missing (art/generated/{relative}); `make art` draws it")
             continue
@@ -149,29 +151,28 @@ def packed_atlases(folder, sources):
         for index, look in enumerate(looks):
             cells = sheet.crop((0, index * cell_height, sheet.width, (index + 1) * cell_height))
             pictures[look].paste(cells, (0, row * cell_height))
-    parent, name = Path(folder).parent, Path(folder).name
-    return {(parent / f"{name}{look_suffix(look)}.png").as_posix(): picture for look, picture in pictures.items()}
+    prefix = ART_SET_FOLDERS[postfix]
+    return {f"{prefix}{folder}{look_suffix(look)}.png": picture for look, picture in pictures.items()}
 
 
 def build_outputs(sources):
     """Everything assets/ is made of: its paths and their contents, bytes or images."""
-    if not (GENERATED / "objects" / atlas.MANIFEST).exists():
-        sys.exit("make assets: art/generated/objects/atlas.txt is missing; art/generated/ is incomplete, `make art` draws it")
-    manifests = sorted(GENERATED.rglob(atlas.MANIFEST))
-    atlas_folders = [manifest.parent.relative_to(GENERATED).as_posix() for manifest in manifests]
+    objects_manifest = GENERATED / "objects" / f"atlas{NEW_ART}.txt"
+    if not objects_manifest.exists():
+        sys.exit(f"make assets: {objects_manifest.relative_to(ROOT)} is missing; art/generated/ is incomplete, `make art` draws it")
     outputs = {"ui/font.png.import": FONT_PAGE_IMPORT.encode()}
-    for folder in atlas_folders:
-        outputs.update(packed_atlases(folder, sources))
+    sheets = set()
+    for manifest in sorted(GENERATED.rglob(atlas.MANIFESTS)):
+        outputs.update(packed_atlases(manifest, sources, sheets))
     # The object atlas's row of each type, which tests/test_object_atlas.gd compares with the
     # game's `atlas_row`s.
-    _, _, object_rows = atlas.read_manifest(GENERATED / "objects" / atlas.MANIFEST)
+    _, _, object_rows = atlas.read_manifest(objects_manifest)
     outputs["objects_rows.txt"] = "".join(f"{row} {entity} {count}\n" for row, (entity, count) in enumerate(object_rows)).encode()
     for path in sorted(GENERATED.rglob("*")):
         relative = path.relative_to(GENERATED).as_posix()
-        is_sheet = any(relative.startswith(f"{folder}/") for folder in atlas_folders)
-        if not path.is_file() or path.name in (atlas.MANIFEST, CELL_SIZES_FILE) or is_sheet:
-            continue
-        outputs[relative] = sources.content(relative)
+        is_manifest = path.match(atlas.MANIFESTS) or path.match(CELL_SIZES_FILES)
+        if path.is_file() and not is_manifest and relative not in sheets:
+            outputs[asset_path(relative)] = sources.content(relative)
     return outputs
 
 

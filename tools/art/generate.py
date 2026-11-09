@@ -364,7 +364,7 @@ def main():
     write_items()
     ui.write_ui_assets(GENERATED / "ui", PALETTE)
     write_palette()
-    write_cell_sizes(GENERATED)
+    write_cell_sizes()
     check_palette()
     print("Wrote every file under art/generated/ (palette check passed).")
 

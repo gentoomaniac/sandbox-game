@@ -17,13 +17,30 @@ ROOT = Path(__file__).resolve().parents[2]
 # What the generators write (`make art`) and what `make assets` builds for Godot out of it and out
 # of the hand-drawn art in art/hand/ (see pack.py).
 GENERATED = ROOT / "art" / "generated"
-# What artists drop in, with the paths of the generated files and a postfix (see pack.py).
+# What artists drop in: the same paths and names as under art/generated/ (see pack.py).
 HAND = ROOT / "art" / "hand"
 ASSETS = ROOT / "assets"
 # The sheets saved by this process, by their path under GENERATED: their cell size, which
 # `write_cell_sizes` records so that pack.py can fill the empty cells of a hand-drawn sheet.
 CELL_SIZES = {}
-CELL_SIZES_FILE = "cell_sizes.txt"
+CELL_SIZES_FILES = "cell_sizes_*.txt"
+# The pictures of an art set have its postfix, `_32x32` for the new art and `_16x16` for the classic
+# art: art/generated/objects/oak_32x32.png. This process draws one art set; classic/generate.py
+# switches to the classic one. Files that exist once (the palette, the font's page, sounds) have none.
+NEW_ART = "_32x32"
+CLASSIC_ART = "_16x16"
+art_set = NEW_ART
+
+
+def use_art_set(postfix):
+    global art_set
+    art_set = postfix
+
+
+def set_file(relative_path):
+    """`relative_path`, a PNG, with the postfix of the art set being drawn: `items/axe.png` is
+    `items/axe_32x32.png`."""
+    return f"{relative_path.removesuffix('.png')}{art_set}.png"
 
 # The darkest colour of each ramp, which outlines it (see the style rules in design/presentation/art-pipeline.md).
 DARKEST_OF = {
@@ -140,6 +157,7 @@ def to_image(rows, size=TILE, height=None, *, asset):
 def save(rows, relative_path, size=TILE, height=None):
     """Draws rows of tiles (see `to_image`) into `relative_path` under art/generated/, making
     its directories."""
+    relative_path = set_file(relative_path)
     path = GENERATED / relative_path
     path.parent.mkdir(parents=True, exist_ok=True)
     to_image(rows, size, height, asset=relative_path).save(path)
@@ -152,11 +170,10 @@ def save_picture(picture, relative_path):
     save([[picture]], relative_path, len(picture[0]), len(picture))
 
 
-def write_cell_sizes(folder):
-    """`cell_sizes.txt` in `folder` (under GENERATED): `path width height` of every sheet saved so
-    far, for the files in `folder`."""
+def write_cell_sizes():
+    """`cell_sizes<art set>.txt` in GENERATED: `path width height` of every sheet saved so far."""
     lines = [f"{path} {width} {height}" for path, (width, height) in sorted(CELL_SIZES.items())]
-    (folder / CELL_SIZES_FILE).write_text("\n".join(lines) + "\n")
+    (GENERATED / f"cell_sizes{art_set}.txt").write_text("\n".join(lines) + "\n")
 
 
 def write_palette():
