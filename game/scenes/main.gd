@@ -402,7 +402,8 @@ func _process(delta: float) -> void:
 	if not _is_in_transition:
 		var direction := Vector2.ZERO
 		if not _is_any_screen_open():
-			direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")
+			var is_menu_up := _build_mode.is_active() and not _builder.is_taking_down()
+			direction = BuildMode.walk_direction(is_menu_up)
 		_player_view.walk_speed = _state.walk_speed_factor()
 		_player_view.is_trotting = _state.is_trotting()
 		_state.walk(direction, delta, _player_view.walk_speed)

@@ -31,10 +31,13 @@ The first buildings have a page of their own: [first-buildings.md](first-buildin
   the camp: the materials for a first house have to be gathered.
 - **The hammer builds:** holding the hammer is build mode (the ghost follows the cursor,
   use places the building); Q and E (rebindable) pick the building, and B selects the
-  hammer. Escape or a right click dismisses build mode until something else is held or B is
-  pressed again. With the hammer in hand E picks buildings and does not put the player to
-  bed. The `nocost` console cheat waives the costs (`god` and `noweight` don't). The player
-  starts with a hammer (later it is crafted); `give hammer` works too.
+  hammer. The arrows pick too (task 121): left and right the building, up and down its
+  style. While building they belong to the menu and the player walks with WASD only (the
+  keys the menu's actions share with walking, `GameSettings.SHARING_PAIRS`). Escape or a
+  right click dismisses build mode, and gives the arrows back to walking, until something
+  else is held or B is pressed again. With the hammer in hand E picks buildings and does not
+  put the player to bed. The `nocost` console cheat waives the costs (`god` and `noweight`
+  don't). The player starts with a hammer (later it is crafted); `give hammer` works too.
 - **The hammer takes down:** X (rebindable, `take_down_mode`) switches the hammer between
   building and taking down; the panel says "Taking down", the tile under the mouse has a red
   frame and the building or placed thing there is tinted red, with the message saying what it

@@ -2,8 +2,9 @@ class_name BuildMode
 extends Node2D
 ## Placing a building. While the player holds the hammer (see Builder) a ghost of the chosen
 ## building follows the mouse, snapped to tiles: green where it can be built, with the blocked
-## tiles marked red. A click or Use places it, Q and E pick the building, a right click
-## dismisses build mode. The land's rules are World's, the materials' Builder's.
+## tiles marked red. A click or Use places it, Q and E (and the left and right arrows) pick the
+## building, the up and down arrows its style, a right click dismisses build mode. The land's
+## rules are World's, the materials' Builder's.
 ##
 ## X switches to taking down: the building or placed thing under the mouse is marked red, the
 ## message says what taking it down gives, and holding Use for a second does it.
@@ -36,6 +37,20 @@ const PROGRESS_COLOR := Color("dc7a37")
 const PROGRESS_HEIGHT := 4.0 * TerrainTileset.ART_16_SCALE
 ## The red frames are an art pixel wide.
 const OUTLINE_WIDTH := TerrainTileset.ART_16_SCALE
+## Where each walking action steps, and the action of the build menu that shares its key (see
+## `walk_direction`).
+const WALK_STEPS := {
+	&"move_left": Vector2.LEFT,
+	&"move_right": Vector2.RIGHT,
+	&"move_up": Vector2.UP,
+	&"move_down": Vector2.DOWN,
+}
+const MENU_ACTION_OF_WALK := {
+	&"move_left": &"build_previous",
+	&"move_right": &"build_next",
+	&"move_up": &"build_style_up",
+	&"move_down": &"build_style_down",
+}
 
 var world: World
 var builder: Builder
@@ -75,6 +90,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		builder.pick(-1)
 	elif event.is_action_pressed("build_next"):
 		builder.pick(1)
+	elif event.is_action_pressed("build_style_up"):
+		builder.pick_style(1)
+	elif event.is_action_pressed("build_style_down"):
+		builder.pick_style(-1)
 	elif event.is_action_pressed("use") or event.is_action_pressed("use_click"):
 		_place()
 	elif _is_right_click(event):
@@ -178,6 +197,36 @@ func _draw() -> void:
 	for pos in _blockers:
 		if pos not in footprint:
 			draw_rect(Rect2(Vector2(pos * tile_size), Vector2(tile_size, tile_size)), BLOCKED_TINT)
+
+
+## Where the walking keys point. While the build menu is up, the keys its actions share with
+## walking (the arrows, see GameSettings.SHARING_PAIRS) pick in the menu instead, and the player
+## walks with the others (WASD); Escape dismisses build mode and gives them back. Only key
+## bindings walk while the menu is up: a mouse or pad binding of a move action does not.
+static func walk_direction(is_menu_up: bool) -> Vector2:
+	if not is_menu_up:
+		return Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	var direction := Vector2.ZERO
+	for action: StringName in WALK_STEPS:
+		var menu_keys := InputMap.action_get_events(MENU_ACTION_OF_WALK[action])
+		for event in InputMap.action_get_events(action):
+			var is_menu_key := menu_keys.any(
+				func(menu_key: InputEvent) -> bool: return menu_key.is_match(event)
+			)
+			if not is_menu_key and _is_held(event):
+				direction += WALK_STEPS[action]
+				break
+	return direction.normalized()
+
+
+## Whether the key of a binding is held down.
+static func _is_held(event: InputEvent) -> bool:
+	if not event is InputEventKey:
+		return false
+	var key := event as InputEventKey
+	if key.physical_keycode != KEY_NONE:
+		return Input.is_physical_key_pressed(key.physical_keycode)
+	return Input.is_key_pressed(key.keycode)
 
 
 ## Whether the ghost is up: the player holds the hammer, and build mode is on screen (not

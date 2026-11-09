@@ -530,7 +530,7 @@ These are the default keys; all of them can be changed under Settings → Contro
 
 | Key | Action |
 |---|---|
-| WASD or arrow keys | Walk |
+| WASD or arrow keys | Walk (with the hammer building, only WASD: the arrows pick in the build menu until Escape) |
 | Space or left click | Use the held item on the targeted tile |
 | 1–8 | Pick a hotbar slot |
 | T | Drop the held stack on the ground in front of you (picked up again by walking away and back) |
@@ -541,7 +541,8 @@ These are the default keys; all of them can be changed under Settings → Contro
 | Enter, Escape | In a chat: send the line, leave the chat (Page Up and Down scroll back); `/clear` makes the villager forget the chat |
 | B | Take the hammer: build mode |
 | X | Switch the hammer between building and taking down (hold Space or click to take down) |
-| Q, E | Previous and next building (while holding the hammer) |
+| Q, E or left and right arrows | Previous and next building (while holding the hammer) |
+| Up and down arrows | The building's next and previous style (while holding the hammer) |
 | Mouse wheel | Next or previous hotbar slot |
 | `=`, `-` (also keypad + and −) | Zoom in, zoom out (hold to keep zooming) |
 | Ctrl + mouse wheel | Zoom |

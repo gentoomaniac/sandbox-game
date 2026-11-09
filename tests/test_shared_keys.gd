@@ -37,11 +37,14 @@ func _write_file(text: String) -> void:
 	file.close()
 
 
-func test_interact_and_build_next_keep_their_shared_key_when_a_file_is_loaded() -> void:
+func test_actions_of_a_sharing_pair_keep_their_shared_key_when_a_file_is_loaded() -> void:
 	_write_file('[controls]\ntoggle_coordinates=["key:%d"]\n' % KEY_F5)
 	_settings.load_file()
 	assert_eq(_texts(&"interact"), ["E"])
-	assert_eq(_texts(&"build_next"), ["E"])
+	assert_eq(_texts(&"build_next"), ["E", "Right arrow"])
+	assert_eq(_texts(&"move_right"), ["Right arrow", "D"])
+	assert_eq(_texts(&"build_style_up"), ["Up arrow"])
+	assert_eq(_texts(&"move_up"), ["Up arrow", "W"])
 
 
 func test_binding_a_key_to_one_of_a_sharing_pair_leaves_the_other() -> void:
@@ -49,4 +52,4 @@ func test_binding_a_key_to_one_of_a_sharing_pair_leaves_the_other() -> void:
 	var note := _settings.bind(&"interact", 0, _key(KEY_X))
 	assert_eq(note, "")
 	assert_eq(_texts(&"interact"), ["X"])
-	assert_eq(_texts(&"build_next"), ["X"])
+	assert_eq(_texts(&"build_next"), ["X", "Right arrow"])

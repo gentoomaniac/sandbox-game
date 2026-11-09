@@ -38,8 +38,16 @@ const MAX_BINDINGS := 2
 const ALWAYS_BOUND: Array[StringName] = [&"pause"]
 
 ## Actions that may share a key because they never apply at the same time: sleeping happens
-## indoors at a bed, picking a building outdoors with the hammer.
-const SHARING_PAIRS := [[&"interact", &"build_next"]]
+## indoors at a bed, picking a building outdoors with the hammer; while the build menu is up,
+## the keys it shares with walking (the arrows) pick in it and the player walks with the others
+## (see BuildMode `walk_direction`).
+const SHARING_PAIRS := [
+	[&"interact", &"build_next"],
+	[&"move_left", &"build_previous"],
+	[&"move_right", &"build_next"],
+	[&"move_up", &"build_style_up"],
+	[&"move_down", &"build_style_down"],
+]
 
 const CONTROLS_SECTION := "controls"
 const DISPLAY_SECTION := "display"
@@ -129,6 +137,8 @@ const ACTION_LABELS := {
 	&"drop_item": "Drop held item",
 	&"build_previous": "Previous building",
 	&"build_next": "Next building",
+	&"build_style_up": "Next style",
+	&"build_style_down": "Previous style",
 	&"take_down_mode": "Build or take down",
 	&"zoom_in": "Zoom in",
 	&"zoom_out": "Zoom out",
@@ -150,8 +160,10 @@ const ACTION_DESCRIPTIONS := {
 	&"use": "Use the held item on the tile in front of you, or eat held food.",
 	&"use_click": "Use the held item on the tile under the mouse, or eat held food.",
 	&"select_hammer": "Take the hammer from the hotbar to build.",
-	&"build_previous": "Pick the previous building while building.",
-	&"build_next": "Pick the next building while building.",
+	&"build_previous": "Pick the building to the left in the build menu.",
+	&"build_next": "Pick the building to the right in the build menu.",
+	&"build_style_up": "Pick the style above in the build menu.",
+	&"build_style_down": "Pick the style below in the build menu.",
 	&"take_down_mode":
 	"With the hammer, switch between building and taking down. Hold Use to take down.",
 	&"inventory": "Open or close the character screen with the inventory.",
