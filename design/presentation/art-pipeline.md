@@ -57,7 +57,8 @@
     blooms nothing, its ordinary decoration shows.
 - **Desire paths** (decided 2026-11-06, task 77): ways walked often wear into paths with
   less grass. Every tile the player steps onto outdoors takes a step of wear (a farm animal
-  half a step); a tile turns trodden (thin, flattened grass with the earth showing) and then
+  or a villager half a step, wherever they are in the loaded world, so the rounds of the
+  villagers wear paths too); a tile turns trodden (thin, flattened grass with the earth showing) and then
   a path of bare earth, and each night takes some wear off, so an unused path grows back to
   grass in about two weeks. Numbers in `data/paths.cfg`: trodden from 8 steps, a path from
   24, at most 32, 2 a night; walking the same line about eight times a day makes a path in

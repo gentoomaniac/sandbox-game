@@ -30,6 +30,7 @@ var rules := NpcRules.default_rules()
 var villagers := VillagerRules.default_rules()
 var rng := RandomNumberGenerator.new()
 var _sun: Sun
+var _villager_step := PathRules.default_rules().villager_step()
 var _npcs: Array[Npc] = []
 
 
@@ -180,7 +181,7 @@ func _stand(npc: Npc) -> void:
 ## Takes a step along the villager's heading, or as near to it as it can turn; returns whether
 ## it moved. Its body must stand on walkable tiles, it must keep within its anchor's circle (one
 ## outside it only steps back towards it), and it must not come closer to the player than
-## `personal_space`.
+## `personal_space`. The tile it steps onto wears towards a desire path.
 func _walk(npc: Npc, delta: float, map: GameMap, player_feet: Vector2) -> bool:
 	var radius := rules.behaviour("anchor_radius")
 	var personal_space := rules.behaviour("personal_space")
@@ -197,6 +198,9 @@ func _walk(npc: Npc, delta: float, map: GameMap, player_feet: Vector2) -> bool:
 			return false
 		if not _fits(npc, feet, map):
 			continue
+		var feet_tile := Vector2i(feet.floor())
+		if feet_tile != npc.tile() and map is World and _villager_step > 0.0:
+			(map as World).wear_tile(feet_tile, _villager_step)
 		npc.position = feet
 		npc.heading = way
 		npc.facing = Npc.facing_of(way)

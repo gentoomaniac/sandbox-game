@@ -26,6 +26,7 @@ func test_the_data_file_holds_every_rule_with_the_first_values() -> void:
 	assert_eq(rules.most(), 32.0)
 	assert_eq(rules.regrowth_per_night(), 2.0)
 	assert_eq(rules.animal_step(), 0.5)
+	assert_eq(rules.villager_step(), 0.5)
 
 
 func test_the_stage_follows_the_steps() -> void:
@@ -54,6 +55,7 @@ func test_numbers_out_of_order_or_range_are_reported() -> void:
 		"regrowth_per_night=2", "regrowth_per_night=0"
 	)
 	text = text.replace("animal_step=0.5", "animal_step=-1")
+	text = text.replace("villager_step=0.5", "villager_step=-1")
 	var rules := _write(text)
 	assert_eq(
 		rules.problems(),
@@ -61,9 +63,10 @@ func test_numbers_out_of_order_or_range_are_reported() -> void:
 			"[wear] needs 0 < trodden_from < path_from <= most",
 			"[wear] regrowth_per_night must be above 0",
 			"[wear] animal_step must not be below 0",
+			"[wear] villager_step must not be below 0",
 		]
 	)
-	assert_push_error_count(3)
+	assert_push_error_count(4)
 
 
 func test_a_missing_file_is_reported() -> void:

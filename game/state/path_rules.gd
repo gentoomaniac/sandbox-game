@@ -10,7 +10,8 @@ enum Stage { UNWORN, TRODDEN, PATH }
 const DEFAULT_PATH := "res://data/paths.cfg"
 
 const REQUIRED_KEYS := {
-	"wear": ["trodden_from", "path_from", "most", "regrowth_per_night", "animal_step"],
+	"wear":
+	["trodden_from", "path_from", "most", "regrowth_per_night", "animal_step", "villager_step"],
 }
 
 static var _default: PathRules
@@ -52,6 +53,8 @@ func problems() -> Array[String]:
 		found.append("[wear] regrowth_per_night must be above 0")
 	if animal_step() < 0.0:
 		found.append("[wear] animal_step must not be below 0")
+	if villager_step() < 0.0:
+		found.append("[wear] villager_step must not be below 0")
 	return found
 
 
@@ -79,6 +82,11 @@ func regrowth_per_night() -> float:
 ## The steps of wear a farm animal leaves on a tile it walks onto; 0 if animals make no tracks.
 func animal_step() -> float:
 	return _value("animal_step")
+
+
+## The steps of wear a villager leaves on a tile it walks onto; 0 if villagers make no tracks.
+func villager_step() -> float:
+	return _value("villager_step")
 
 
 ## How a tile with this many steps of wear looks.
