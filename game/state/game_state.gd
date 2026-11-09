@@ -440,11 +440,14 @@ func use_facing_tile() -> ToolUse.Use:
 
 ## Pulls the items on the ground near the player towards them and picks up those that
 ## arrive. What the inventory has no room for stays on the ground, and so do all piles of an
-## item while it has no room at all. Does nothing inside a building or on horseback.
+## item while it has no room at all. Does nothing inside a building or on horseback. Only the
+## piles in the player's chunk and next to it are looked at: a pile out of reach has no business
+## being settled or released here, and the player cannot get further than that in a frame.
 func collect_ground_items(delta: float) -> void:
 	if is_inside():
 		return
-	for ground_item in world.ground_items.all():
+	var player_chunk := Chunk.world_to_chunk(player.tile())
+	for ground_item in world.ground_items.in_chunks_around(player_chunk, 1):
 		ground_item.settle_seconds = maxf(ground_item.settle_seconds - delta, 0.0)
 		if ground_item.position.distance_to(player.position) > PULL_RADIUS:
 			ground_item.is_dropped_by_player = false
@@ -458,7 +461,9 @@ func collect_ground_items(delta: float) -> void:
 			continue
 		var to_player := player.position - ground_item.position
 		if to_player.length() > maxf(PICKUP_RADIUS, PULL_SPEED * delta):
-			ground_item.position += to_player.normalized() * PULL_SPEED * delta
+			world.ground_items.move(
+				ground_item, ground_item.position + to_player.normalized() * PULL_SPEED * delta
+			)
 			continue
 		ground_item.count = player.inventory.add(ground_item.item, ground_item.count)
 		if ground_item.count == 0:
