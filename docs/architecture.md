@@ -34,9 +34,9 @@ Warft and an Ewer here and there.
   screens. Its `_ready` runs in steps: load the game, make the views, connect the state and
   the views, apply the start options. Every screen (`CharacterScreen`, `CraftingScreen`,
   `StorageScreen`, `ConsoleView`, `ChatScreen`) has `open()`, `close()` and `is_open()`, and
-  Main keeps them in one list (`_screens`). The windows (so far the crafting screen) extend
-  `Modal`, which builds the backdrop and panel, opens, closes, takes Escape and keeps one window
-  open at a time; see [ui.md](ui.md). The debug flags are parsed by `StartupOptions`; `DebugRunner` does
+  Main keeps them in one list (`_screens`). The windows (so far the crafting screen and the
+  chest) extend `Modal`, which builds the backdrop and panel, opens, closes, takes Escape and
+  keeps one window open at a time; see [ui.md](ui.md). The debug flags are parsed by `StartupOptions`; `DebugRunner` does
   the ones that wait for the world to be drawn (see below).
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
   weather, the snow cover and the player. It is the entry point for actions (`walk`, `use_at`,

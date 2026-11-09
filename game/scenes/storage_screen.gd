@@ -1,5 +1,5 @@
 class_name StorageScreen
-extends CanvasLayer
+extends Modal
 ## The storage screen over the game, for a chest: the player's backpack on the left (no
 ## equipment) and the chest's slots on the right (as many as the chest has, 5 to a row), each
 ## under a small icon. The hotbar is the HUD's, which stays lit and clickable while the screen is
@@ -10,7 +10,7 @@ extends CanvasLayer
 ## click outside the panel puts a picked inventory stack on the ground. Shift+click sends a whole
 ## stack to the other side (from the chest into the backpack first, so the hotbar isn't flooded).
 ## Like the character screen, it takes the input while it is open (Main sees to that, and closes it
-## on E and Escape).
+## on E; Escape is the Modal's).
 
 ## The player let go of a picked backpack or hotbar stack outside the screen (see GameState
 ## `drop_from_inventory`).
@@ -27,7 +27,6 @@ const COLUMNS := 5
 const INVENTORY_COLUMNS := 5
 const PICKED_ALPHA := 0.4
 const PICKED_ICON_LAYER := 3
-const THEME := preload("res://game/scenes/ui_theme.tres")
 const BACKPACK_ICON := preload("res://assets/ui/backpack_icon.png")
 const CHEST_ICON := preload("res://assets/ui/chest_icon.png")
 
@@ -38,20 +37,14 @@ var _chest: ItemSlots
 var _views := {INVENTORY: {}, CHEST: {}}
 ## The slot that is picked up, as {side, slot}; empty for none.
 var _pick := {}
-var _backdrop := ColorRect.new()
-var _panel := PanelContainer.new()
 var _picked_icon := ItemIcon.new()
-var _chest_column: VBoxContainer
-var _chest_list: ScrollingList
+## What the chest's grid of slots is swapped in and out of: the part that grows.
+var _chest_holder := VBoxContainer.new()
 
 
 func _init(hotbar: HotbarHud) -> void:
+	super()
 	_hotbar = hotbar
-	visible = false
-	_backdrop.color = UiColors.BACKDROP
-	_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_backdrop.gui_input.connect(_on_backdrop_input)
-	add_child(_backdrop)
 
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", PANEL_GAP)
@@ -64,13 +57,13 @@ func _init(hotbar: HotbarHud) -> void:
 		var view := _hotbar.slot_view(slot)
 		_views[INVENTORY][slot] = view
 	row.add_child(inventory_column)
-	_chest_column = _new_column(CHEST_ICON)
-	row.add_child(_chest_column)
-	_panel.theme = THEME
+	var chest_column := _new_column(CHEST_ICON)
+	_chest_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chest_column.add_child(_scrolling(_chest_holder))
+	row.add_child(chest_column)
+	# Clicks on the panel outside the slots let go of the pick, so they reach the backdrop.
 	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel.add_child(row)
-	_panel.minimum_size_changed.connect(_centre_panel)
-	_backdrop.add_child(_panel)
 
 	_picked_icon.visible = false
 	# On a layer of its own, so the dragged icon is drawn above the hotbar too.
@@ -80,38 +73,30 @@ func _init(hotbar: HotbarHud) -> void:
 	add_child(icon_layer)
 
 
-func is_open() -> bool:
-	return visible
-
-
 ## Shows the chest next to the player's inventory. Opening it again moves it to that chest.
-func open(chest: WorldObject, player: PlayerState) -> void:
+func open_chest(chest: WorldObject, player: PlayerState) -> void:
 	assert(chest.storage != null, "Not a chest: %s" % chest.type)
 	close()
 	_inventory = player.inventory
 	_chest = chest.storage
+	open()
+
+
+func _on_open() -> void:
 	if _views[CHEST].size() != _chest.slots.size():
 		_show_chest_slots(_chest.slots.size())
 	_inventory.changed.connect(_refresh)
 	_chest.changed.connect(_refresh)
 	_pick = {}
-	visible = true
 	_hotbar.set_clickable(true)
 	_hotbar.slot_pressed.connect(_on_hotbar_slot_pressed)
 	_refresh()
-	_chest_list.scroll_vertical = 0
-	_chest_list.fit()
-	_centre_panel()
 
 
-## Safe to call when it is closed. The screen listens to the inventory and the chest only
-## while it is open.
-func close() -> void:
-	if not visible:
-		return
+## The screen listens to the inventory and the chest only while it is open.
+func _on_close() -> void:
 	_inventory.changed.disconnect(_refresh)
 	_chest.changed.disconnect(_refresh)
-	visible = false
 	_pick = {}
 	_picked_icon.visible = false
 	_hotbar.set_clickable(false)
@@ -130,16 +115,10 @@ func _process(_delta: float) -> void:
 ## Makes the grid of the chest's side, for a chest of this many slots. A chest of many slots is
 ## taller than a small window, so its grid scrolls.
 func _show_chest_slots(slot_count: int) -> void:
-	if _chest_list != null:
-		_chest_list.free()
+	for grid in _chest_holder.get_children():
+		grid.free()
 	_views[CHEST] = {}
-	_chest_list = ScrollingList.new(_panel, _new_grid(CHEST, 0, slot_count, COLUMNS))
-	_chest_column.add_child(_chest_list)
-
-
-func _centre_panel() -> void:
-	_panel.reset_size()
-	_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
+	_chest_holder.add_child(_new_grid(CHEST, 0, slot_count, COLUMNS))
 
 
 ## A column with an icon at the top.

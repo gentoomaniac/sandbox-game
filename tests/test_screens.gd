@@ -76,14 +76,14 @@ func test_closing_a_closed_pause_menu_does_not_resume() -> void:
 func test_storage_screen() -> void:
 	var screen := StorageScreen.new(autofree(HotbarHud.new()))
 	add_child_autofree(screen)
-	_opened_and_closed(screen, screen.open.bind(_chest, _state.player))
+	_opened_and_closed(screen, screen.open_chest.bind(_chest, _state.player))
 
 
 func test_storage_screen_listens_once_however_often_it_is_opened() -> void:
 	var screen := StorageScreen.new(autofree(HotbarHud.new()))
 	add_child_autofree(screen)
-	screen.open(_chest, _state.player)
-	screen.open(_chest, _state.player)
+	screen.open_chest(_chest, _state.player)
+	screen.open_chest(_chest, _state.player)
 	assert_eq(_state.player.inventory.changed.get_connections().size(), 1)
 	screen.close()
 	assert_eq(_state.player.inventory.changed.get_connections().size(), 0)

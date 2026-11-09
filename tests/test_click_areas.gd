@@ -50,7 +50,7 @@ func test_every_slot_of_the_storage_screen_is_hit_all_over() -> void:
 	hotbar.show_inventory(_state.player.inventory)
 	var screen := StorageScreen.new(hotbar)
 	_window.add_child(screen)
-	screen.open(WorldObject.new(WorldObjectTypes.CHEST, Vector2i.ZERO), _state.player)
+	screen.open_chest(WorldObject.new(WorldObjectTypes.CHEST, Vector2i.ZERO), _state.player)
 	await _assert_all_buttons_hit(screen, "storage")
 
 

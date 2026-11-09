@@ -36,7 +36,7 @@ func _open_screen() -> Array[SlotView]:
 	var hotbar: HotbarHud = autofree(HotbarHud.new())
 	_screen = StorageScreen.new(hotbar)
 	add_child_autofree(_screen)
-	_screen.open(chest, player)
+	_screen.open_chest(chest, player)
 	var in_screen: Array[SlotView] = []
 	in_screen.assign(_screen.find_children("*", "SlotView", true, false))
 	var views: Array[SlotView] = in_screen.slice(0, Inventory.BACKPACK_SIZE)
@@ -167,7 +167,17 @@ func test_a_chest_of_many_slots_scrolls_inside_a_small_window() -> void:
 	chest.storage = _chest
 	_screen = StorageScreen.new(autofree(HotbarHud.new()))
 	window.add_child(_screen)
-	_screen.open(chest, player)
+	_screen.open_chest(chest, player)
 	await wait_process_frames(2)
 	var panel: Control = _screen.find_children("*", "PanelContainer", true, false)[0]
 	assert_lte(panel.size.y, window.size.y)
+
+
+func test_opening_the_chest_closes_the_window_that_was_open() -> void:
+	var crafting := CraftingScreen.new()
+	add_child_autofree(crafting)
+	crafting.show_crafting(Crafting.new(GameState.new_game(7)), _inventory)
+	crafting.open()
+	_open_screen()
+	assert_false(crafting.is_open())
+	assert_true(_screen.is_open())

@@ -287,7 +287,7 @@ func _place_chests() -> void:
 		_chest_inside_tile = StartupOptions.NO_TILE
 	if _is_storage_to_open and _opened_chest != null:
 		_is_storage_to_open = false
-		storage_screen.open(_opened_chest, state.player)
+		storage_screen.open_chest(_opened_chest, state.player)
 
 
 func _is_ready_to_shoot() -> bool:

@@ -648,7 +648,7 @@ func _interact() -> void:
 	if object == null:
 		_try_sleep()
 	elif object.storage != null:
-		_storage_screen.open(object, _state.player)
+		_storage_screen.open_chest(object, _state.player)
 	else:
 		_crafting_screen.open_station(object)
 
