@@ -62,6 +62,11 @@ than `MIN_HEIGHT` (48 UI pixels), so a tiny window crosses the panel's edge rath
 rows. The base puts every list back to the top when the window opens. To swap what is in the
 growing part (a chest with other slots), keep the part as a fixed container and swap its children.
 
+The character screen is another window whose methods take arguments: `open_tab(tab)` stores the
+tab and calls `open()` (or switches tab when the screen is open), and `toggle_tab(tab)` closes it
+when it is open on that tab. Its tab keys (Tab, K) are Main's; it registers no `close_actions`, so
+E does nothing while it is open.
+
 ## Escape, backdrop clicks, pause, one at a time
 
 - **Escape** is `ui_cancel` (not rebindable) or the rebindable pause key, and closes the window.

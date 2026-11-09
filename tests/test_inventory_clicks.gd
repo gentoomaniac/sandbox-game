@@ -85,7 +85,7 @@ func test_the_hud_hotbar_is_clickable_only_while_the_character_page_is_open() ->
 	assert_true(slot.is_clickable)
 	_screen.close()
 	assert_false(slot.is_clickable)
-	_screen.open(CharacterScreen.Tab.SKILLS)
+	_screen.open_tab(CharacterScreen.Tab.SKILLS)
 	assert_false(slot.is_clickable, "the skills page moves no items")
 
 

@@ -62,7 +62,7 @@ func test_every_button_of_the_character_screen_tabs_is_hit_all_over() -> void:
 	_window.add_child(screen)
 	screen.show_player(_state.player)
 	for tab in [CharacterScreen.Tab.CHARACTER, CharacterScreen.Tab.SKILLS]:
-		screen.open(tab)
+		screen.open_tab(tab)
 		await _assert_all_buttons_hit(screen, "character tab %d" % tab)
 
 

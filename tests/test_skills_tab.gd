@@ -28,15 +28,37 @@ func _fade_buttons() -> Array:
 
 
 func test_the_screen_opens_on_the_tab_asked_for_and_toggles_per_tab() -> void:
-	_screen.open(CharacterScreen.Tab.SKILLS)
+	_screen.open_tab(CharacterScreen.Tab.SKILLS)
 	assert_eq(_screen.current_tab(), CharacterScreen.Tab.SKILLS)
 	assert_true(_panel().visible)
-	_screen.toggle(CharacterScreen.Tab.CHARACTER)
+	_screen.toggle_tab(CharacterScreen.Tab.CHARACTER)
 	assert_true(_screen.is_open(), "the other tab's key switches tabs")
 	assert_eq(_screen.current_tab(), CharacterScreen.Tab.CHARACTER)
 	assert_false(_panel().visible)
-	_screen.toggle(CharacterScreen.Tab.CHARACTER)
+	_screen.toggle_tab(CharacterScreen.Tab.CHARACTER)
 	assert_false(_screen.is_open(), "its own key closes it")
+
+
+func test_a_plain_open_shows_the_character_even_after_the_skills() -> void:
+	_screen.toggle_tab(CharacterScreen.Tab.SKILLS)
+	_screen.close()
+	_screen.open()
+	assert_eq(_screen.current_tab(), CharacterScreen.Tab.CHARACTER)
+
+
+func test_the_screen_closes_on_escape_and_when_another_window_opens() -> void:
+	_screen.open()
+	var escape := InputEventAction.new()
+	escape.action = "ui_cancel"
+	escape.pressed = true
+	_screen._unhandled_input(escape)
+	assert_false(_screen.is_open())
+	_screen.open()
+	var other := CraftingScreen.new()
+	add_child_autofree(other)
+	other.show_crafting(Crafting.new(_state), _state.player.inventory)
+	other.open()
+	assert_false(_screen.is_open())
 
 
 func test_every_skill_shows_its_name_and_points_and_the_total_its_cap() -> void:

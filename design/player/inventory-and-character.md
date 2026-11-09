@@ -43,6 +43,8 @@
   - Items move between inventory slots and fitting equipment slots by clicking (pick up,
     put down, swap); an item only goes into a slot it fits, and fitting slots light up
     while an item is picked up. Right-click equips or unequips at once.
+  - Keys: Tab opens the screen (and closes it from the character tab), K opens the skills tab
+    and closes it from there; Escape and the pause key close it. E does nothing while it is open.
   - Worn items count toward the carried weight.
   - Hair and body are the character's look, not equipment.
   - New game (period clothes since task 53, North Sea coast 1700–1800): a red waistcoat

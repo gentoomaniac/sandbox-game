@@ -271,7 +271,7 @@ func _apply_start_options() -> void:
 	if _options.inventory:
 		_character_screen.open()
 	if _options.skills:
-		_character_screen.open(CharacterScreen.Tab.SKILLS)
+		_character_screen.open_tab(CharacterScreen.Tab.SKILLS)
 	if _options.crafting:
 		_crafting_screen.open()
 	if not _options.console.is_empty():
@@ -452,15 +452,10 @@ func _is_use_event(event: InputEvent) -> bool:
 	return event.is_action_pressed("use") or event.is_action_pressed("use_click")
 
 
-## Whether a screen or the console is open: the player neither walks nor acts. The screens that
+## Whether a window or the console is open: the player neither walks nor acts. The windows that
 ## are not Modals yet are asked one by one.
 func _is_any_screen_open() -> bool:
-	return (
-		Modal.is_any_open()
-		or _console_view.is_open()
-		or _chat_screen.is_open()
-		or _character_screen.is_open()
-	)
+	return Modal.is_any_open() or _console_view.is_open() or _chat_screen.is_open()
 
 
 ## Closes the first open screen of `_screens`. Returns whether there was one.
@@ -622,10 +617,10 @@ func _screens_take(event: InputEvent) -> bool:
 			_harvest_hud.show_note(GET_OFF_FIRST)
 		return true
 	if event.is_action_pressed("inventory") and not _crafting_screen.is_open():
-		_character_screen.toggle()
+		_character_screen.toggle_tab(CharacterScreen.Tab.CHARACTER)
 		return true
 	if event.is_action_pressed("skills") and not _crafting_screen.is_open():
-		_character_screen.toggle(CharacterScreen.Tab.SKILLS)
+		_character_screen.toggle_tab(CharacterScreen.Tab.SKILLS)
 		return true
 	return _is_any_screen_open()
 

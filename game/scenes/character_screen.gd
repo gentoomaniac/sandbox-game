@@ -1,5 +1,5 @@
 class_name CharacterScreen
-extends CanvasLayer
+extends Modal
 ## The character screen over the game: the character with the equipment slots around it on the
 ## left and the backpack with the carried weight on the right. The hotbar is the HUD's, which
 ## stays lit and clickable while the screen is open, and is used like the backpack's slots.
@@ -11,7 +11,7 @@ extends CanvasLayer
 ## whole stack from the backpack to the hotbar or back (onto the same item first), if there is
 ## room. Right click wears an inventory item, or takes a worn one off into the first free slot.
 ## A second tab beside it shows the skills (see SkillsPanel); Tab opens the screen on the
-## character, K on the skills.
+## character, K on the skills (`open_tab`, `toggle_tab`; `open()` opens the character).
 
 ## The player let go of the picked backpack or hotbar stack outside the screen (see
 ## GameState `drop_from_inventory`).
@@ -25,13 +25,12 @@ const PANEL_GAP := 12
 ## The backpack is 5 slots wide and 4 rows high.
 const BACKPACK_COLUMNS := 5
 const MAX_PREVIEW_SCALE := 2
-## Kept free round the panel, and the panel's own frame and padding (see ui_theme.tres).
+## Kept free round the character, and the panel's own frame and padding (see ui_theme.tres).
 const WINDOW_MARGIN := 8
 const PANEL_PADDING := 20
 const PICKED_ALPHA := 0.4
 const PICKED_ICON_LAYER := 3
 const HINT_PATH := "res://assets/ui/equip_%s.png"
-const THEME := preload("res://game/scenes/ui_theme.tres")
 
 ## The equipment slots left and right of the character, top to bottom.
 const LEFT_SLOTS := [Equipment.HEAD, Equipment.BODY, Equipment.LEGS, Equipment.FEET]
@@ -45,8 +44,6 @@ var _equipment_views := {}
 ## What is picked up: an inventory slot (an index) or an equipment slot (a name), else none.
 var _picked_inventory_slot := -1
 var _picked_equipment_slot := ItemTypes.NONE
-var _backdrop := ColorRect.new()
-var _panel := PanelContainer.new()
 var _preview := CharacterPreview.new()
 var _left_column := VBoxContainer.new()
 var _right_column := VBoxContainer.new()
@@ -61,12 +58,8 @@ var _skills_panel := SkillsPanel.new()
 
 
 func _init(hotbar: HotbarHud) -> void:
+	super()
 	_hotbar = hotbar
-	visible = false
-	_backdrop.color = UiColors.BACKDROP
-	_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_backdrop.gui_input.connect(_on_backdrop_input)
-	add_child(_backdrop)
 
 	var character_row := HBoxContainer.new()
 	character_row.add_theme_constant_override("separation", COLUMN_GAP)
@@ -119,10 +112,9 @@ func _init(hotbar: HotbarHud) -> void:
 	page_column.add_child(tabs)
 	page_column.add_child(row)
 	page_column.add_child(_skills_panel)
-	_panel.theme = THEME
+	# Clicks on the panel outside the slots let go of the pick, so they reach the backdrop.
 	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel.add_child(page_column)
-	_backdrop.add_child(_panel)
 
 	_picked_icon.visible = false
 	# On a layer of its own, so the dragged icon is drawn above the hotbar too.
@@ -138,31 +130,26 @@ func show_player(player: PlayerState) -> void:
 	_skills_panel.show_skills(player.skills)
 	player.inventory.changed.connect(_refresh)
 	player.equipment.changed.connect(_refresh)
-	get_viewport().size_changed.connect(_fit_to_window)
-	_fit_to_window()
+	get_viewport().size_changed.connect(_fit_character)
+	_fit_character()
 	_refresh()
 
 
-func is_open() -> bool:
-	return visible
-
-
-func open(tab := Tab.CHARACTER) -> void:
-	_show_tab(tab)
-	_show(true)
-
-
-## Safe to call when it is closed.
-func close() -> void:
-	_show(false)
+## Opens the screen on `tab`, or switches to it when the screen is open.
+func open_tab(tab: Tab) -> void:
+	if visible:
+		_show_tab(tab)
+	else:
+		_tab = tab
+		open()
 
 
 ## Closes the screen if it is open on `tab`, else opens it there.
-func toggle(tab := Tab.CHARACTER) -> void:
+func toggle_tab(tab: Tab) -> void:
 	if visible and _tab == tab:
 		close()
 	else:
-		open(tab)
+		open_tab(tab)
 
 
 func current_tab() -> Tab:
@@ -179,12 +166,17 @@ func _show_tab(tab: Tab) -> void:
 	_use_hotbar(visible and tab == Tab.CHARACTER)
 	_refresh()
 	if is_inside_tree():
-		_fit_to_window()
+		_fit_character()
 
 
-func _show(is_shown: bool) -> void:
-	visible = is_shown
-	_use_hotbar(is_shown and _tab == Tab.CHARACTER)
+func _on_open() -> void:
+	_show_tab(_tab)
+
+
+## `open()` opens the character, so the tab is back to it once the screen is closed.
+func _on_close() -> void:
+	_tab = Tab.CHARACTER
+	_use_hotbar(false)
 	_drop_pick()
 	_note_label.text = ""
 	_refresh()
@@ -240,8 +232,8 @@ func _add_equipment_column(column: VBoxContainer, slots: Array, parent: Containe
 
 
 ## Makes the character as large as the window allows (the window gets smaller with the UI
-## scale), spreads the equipment slots over its height, and centres the panel.
-func _fit_to_window() -> void:
+## scale) and spreads the equipment slots over its height. The panel refits by itself after it.
+func _fit_character() -> void:
 	var room := get_viewport().get_visible_rect().size.y - 2 * (WINDOW_MARGIN + PANEL_PADDING / 2)
 	_preview.pixel_scale = clampi(int(room / CharacterPreview.SHOWN_SIZE.y), 1, MAX_PREVIEW_SCALE)
 	for column: VBoxContainer in [_left_column, _right_column]:
@@ -249,8 +241,6 @@ func _fit_to_window() -> void:
 		var column_height := maxi(int(_preview.custom_minimum_size.y), _tallest_column_height())
 		var free_height := column_height - slot_count * SlotView.SIZE
 		column.add_theme_constant_override("separation", int(free_height / float(slot_count - 1)))
-	_panel.reset_size()
-	_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
 
 
 ## The height of the column with the most slots, with its slots packed closely.

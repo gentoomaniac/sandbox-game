@@ -2267,6 +2267,8 @@ those if they reach certain limits." First a later idea, then "start the scrolli
 - Check each panel at the smallest supported window size and the largest UI scale; tests for what
   can be tested (the limit, focus kept in view), screenshots by hand. Docs: the UI page of the
   design (design/presentation/menus-and-hud.md) and the README.
+- Progress: the crafting screen, the chest, the Controls and Language model pages are done on the
+  scrolling list; the character screen is on Modal.
 
 ## 132. One way to build a window: a Modal base class
 
