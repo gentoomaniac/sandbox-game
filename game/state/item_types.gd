@@ -564,6 +564,7 @@ const _OTHER_TYPES := {
 }
 
 ## Every type: the fixed ones above and the seeds and produce of the crops in data/crops.cfg.
+## Read-only, all the way down.
 # The name is that of a constant, but the crop items are only known once the file is read.
 static var TYPES := _with_crop_items(_OTHER_TYPES)  # gdlint: ignore=class-variable-name
 
@@ -615,4 +616,5 @@ static func _with_crop_items(other_types: Dictionary) -> Dictionary:
 			"weight": crop["produce_weight"],
 			"stack_limit": DEFAULT_STACK_LIMIT,
 		}
+	ReadOnly.deep(types)
 	return types

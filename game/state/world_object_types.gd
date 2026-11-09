@@ -775,7 +775,7 @@ const _OTHER_TYPES := {
 	},
 }
 
-## Every type: the fixed ones above and the crops of data/crops.cfg.
+## Every type: the fixed ones above and the crops of data/crops.cfg. Read-only, all the way down.
 # The name is that of a constant, but crop types are only known once the file is read.
 static var TYPES := _build_types()  # gdlint: ignore=class-variable-name
 
@@ -803,7 +803,9 @@ static func _with_crops(other_types: Dictionary) -> Dictionary:
 static func _build_types() -> Dictionary:
 	var types := _with_crops(_OTHER_TYPES)
 	types[REEDS] = types[REEDS].merged(CropRules.default_rules().reeds())
-	return _with_trunks(types)
+	var all_types := _with_trunks(types)
+	ReadOnly.deep(all_types)
+	return all_types
 
 
 ## Adds the trunk types of the trees that have a `trunk`, as the data of the tree says.

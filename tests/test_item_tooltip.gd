@@ -50,16 +50,20 @@ func test_equipment_shows_its_slot() -> void:
 
 
 func test_equipment_stats_are_listed_when_an_item_has_them() -> void:
-	ItemTypes.TYPES[&"test_cloak"] = {
-		"name": "Cloak",
-		"description": "Test.",
-		"weight": 1.0,
-		"stack_limit": 1,
-		"equip_slot": Equipment.BACK,
-		"stats": {"Warmth": 2},
+	var shared_catalog := ItemTypes.TYPES
+	ItemTypes.TYPES = {
+		&"test_cloak":
+		{
+			"name": "Cloak",
+			"description": "Test.",
+			"weight": 1.0,
+			"stack_limit": 1,
+			"equip_slot": Equipment.BACK,
+			"stats": {"Warmth": 2},
+		},
 	}
 	assert_has(ItemTooltip.text_for(&"test_cloak").split("\n"), "Warmth +2")
-	ItemTypes.TYPES.erase(&"test_cloak")
+	ItemTypes.TYPES = shared_catalog
 
 
 func test_a_stack_shows_its_weight_each_and_together() -> void:

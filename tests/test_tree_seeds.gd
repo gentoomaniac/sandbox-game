@@ -13,23 +13,34 @@ const SEEDS := {
 }
 const STRONG_AXE := &"strong_axe"
 
+var _shared_catalog: Dictionary
+
 
 func before_each() -> void:
 	super.before_each()
 	_make_room()
-	# The pine needs a level 2 axe, which the game doesn't have yet.
-	ItemTypes.TYPES[STRONG_AXE] = {
-		"name": "Strong axe",
-		"description": "Test.",
-		"weight": 3.0,
-		"stack_limit": 1,
-		"tool": ItemTypes.AXE,
-		"level": 2
-	}
+	# The pine needs a level 2 axe, which the game doesn't have yet: the test's own catalog has one.
+	_shared_catalog = ItemTypes.TYPES
+	ItemTypes.TYPES = (
+		_shared_catalog
+		. merged(
+			{
+				STRONG_AXE:
+				{
+					"name": "Strong axe",
+					"description": "Test.",
+					"weight": 3.0,
+					"stack_limit": 1,
+					"tool": ItemTypes.AXE,
+					"level": 2
+				},
+			}
+		)
+	)
 
 
 func after_each() -> void:
-	ItemTypes.TYPES.erase(STRONG_AXE)
+	ItemTypes.TYPES = _shared_catalog
 
 
 ## The seeds dropped by felling a tree of this type on each of the days 1 to `days`, in that
