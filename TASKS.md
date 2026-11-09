@@ -45,28 +45,6 @@ water for the can, the animals and the house) (the stork's nest moved to task 15
 yard.py), give them types, recipes and placement (data/, world_object_types.gd), and decide
 what each does for the animals.
 
-## 123. Tilled soil: seamless, flat furrows, and its colour follows the moisture
-
-- [ ] Done
-
-The user, 2026-11-08, with screenshots of hoed patches: "the patches of soil don't look
-seemless. Also the wavy pattern is weird, fresh prepped soil looks rather flat or has straight
-lines but certainly not waves." And: "watered soil looks almost identical to unwatered one. Dry
-soil should look rather bright brown like the middle 'cross' that comes from the pattern. Only
-when watered it should get this dark. If there is a humidity level for the soil, that should be
-reflected by the brightness of the brown so from dark brown when humid turn slowly to a bright
-whitish brown when drying out."
-- Seamless: neighbouring tilled tiles join into one bed, with no seams or lighter cross where
-  four tiles meet (the soil terrain in tools/art/terrain.py and its autotile edges).
-- Flat: fresh soil is flat or has straight furrows, no waves.
-- Moisture: there is one (World `moisture_at`, 0 to 1). Today SoilWetness only lays dark dashes
-  over the soil from 0.35 (damp) and 0.7 (wet). Instead the whole tile's brown follows the
-  moisture in several steps: bright, whitish brown when dry, darkening to dark brown when wet,
-  and lightening again day by day as it dries. The dry look is the base; watering visibly
-  darkens it at once.
-- Both art sets (task 117), every season, frost and snow; crops on it stay readable. At dusk
-  and night the steps may fade: "that's how darkness works" (the user).
-
 ## 125. The deed log: what the player does near villagers, and who saw it
 
 - [ ] Done

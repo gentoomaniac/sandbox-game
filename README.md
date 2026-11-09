@@ -146,6 +146,14 @@ in [data/crops.cfg](data/crops.cfg).
 
 ![A field with every crop in every growth stage and dead](docs/screenshots/field.png)
 
+Tilled soil is flat with straight furrows, and the whole tile's brown shows its moisture in four
+steps: light brown when dry, darker with rain and the watering can, dark brown when soaked, and
+lightening again day by day as the sun and wind dry it. A sown tile is a mound of dark earth with
+seeds on it, so it reads as planted before anything shows. The shots show a row of soil from dry to
+soaked and sown and growing crops on it, at noon, in the evening and in the classic art.
+
+![Tilled soil from dry to soaked with sown and growing crops, at noon, in the evening and in the classic art](docs/screenshots/soil.png)
+
 ### Livestock
 
 Cows, sheep, chickens and rabbits of the region: red-brown Angler, black pied and red pied

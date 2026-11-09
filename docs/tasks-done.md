@@ -3791,3 +3791,35 @@ loaded villager, on screen or off, since they all move in `Npcs.update`; only on
 so it costs nothing measurable (`make bench` frame mean 7.19 ms before, 7.15 after). Nothing
 while they rest at night or while the player is inside (the world stands still); the wear
 table and its save format are unchanged and the nightly regrowth fades it as before.
+
+## 123. Tilled soil: seamless, flat furrows, and its colour follows the moisture
+
+- [x] Done
+
+The user, 2026-11-08, with screenshots of hoed patches: "the patches of soil don't look
+seemless. Also the wavy pattern is weird, fresh prepped soil looks rather flat or has straight
+lines but certainly not waves." And: "watered soil looks almost identical to unwatered one. Dry
+soil should look rather bright brown like the middle 'cross' that comes from the pattern. Only
+when watered it should get this dark. If there is a humidity level for the soil, that should be
+reflected by the brightness of the brown so from dark brown when humid turn slowly to a bright
+whitish brown when drying out."
+- Seamless: neighbouring tilled tiles join into one bed, with no seams or lighter cross where
+  four tiles meet (the soil terrain in tools/art/terrain.py and its autotile edges).
+- Flat: fresh soil is flat or has straight furrows, no waves.
+- Moisture: there is one (World `moisture_at`, 0 to 1). Today SoilWetness only lays dark dashes
+  over the soil from 0.35 (damp) and 0.7 (wet). Instead the whole tile's brown follows the
+  moisture in several steps: bright, whitish brown when dry, darkening to dark brown when wet,
+  and lightening again day by day as it dries. The dry look is the base; watering visibly
+  darkens it at once.
+- Both art sets (task 117), every season, frost and snow; crops on it stay readable. At dusk
+  and night the steps may fade: "that's how darkness works" (the user).
+
+Done: the soil terrain is the driest look (flat, straight furrows, one tile, so no seams) and
+`SoilWetness` lays the whole tile's brown over it in four steps by moisture (0.25, 0.5, 0.75;
+fresh soil is on the second), cut to the bed's shape by the 47 neighbour masks of
+tools/art/soil_beds.py so field edges keep their rim and the tiles inside show no seam; the old
+dashes (which left the lighter cross where four tiles met) are gone. The browns are existing palette colours
+(`soil_dark` to `soil_light`, a `sand_light` crest on the driest; no new palette colour). Both art sets. Snow-covered soil is
+not drawn moist, as before. The user's 2026-11-09 addition: the sown mound is dark earth with
+cream seeds (`crops.MOUND_SOIL`), so a sown tile reads as planted at zoom 0.5. Screenshot of the
+states: docs/screenshots/soil.png.
