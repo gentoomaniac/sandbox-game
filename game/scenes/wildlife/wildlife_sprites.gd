@@ -43,6 +43,7 @@ const SHEETS := {
 		"size": Vector2i(14, 14),
 		"actions": {&"flutter": 3, &"flutter_pale": 3, &"flutter_pink": 3},
 	},
+	&"firefly": {"size": Vector2i(6, 6), "actions": {&"dark": 1, &"glow": 1, &"bright": 1}},
 	&"stork":
 	{
 		"size": Vector2i(64, 52),

@@ -386,6 +386,37 @@ def butterfly(ramp, opening):
     return picture
 
 
+# --- Firefly ------------------------------------------------------------------------------
+#
+# A glow-worm flying at dusk, drawn as three states of one point of light: dark between its
+# flashes, glowing, and at its brightest. The game lays a real light over it (see Firefly).
+
+FIREFLY_SIZE = (6, 6)
+FIREFLY_CORE = [(2, 2), (3, 2), (2, 3), (3, 3)]
+FIREFLY_HALO = [(2, 1), (3, 1), (1, 2), (1, 3), (4, 2), (4, 3), (2, 4), (3, 4)]
+FIREFLY_CORNERS = [(1, 1), (4, 1), (1, 4), (4, 4)]
+
+
+def firefly(core, halo, corners=None):
+    """The point of light: a 2x2 core in the colour `core`, with a halo around it."""
+    width, height = FIREFLY_SIZE
+    picture = blank(width, height)
+    if halo:
+        forms.dots(picture, FIREFLY_HALO, halo)
+    if corners:
+        forms.dots(picture, FIREFLY_CORNERS, corners)
+    forms.dots(picture, FIREFLY_CORE, core)
+    return picture
+
+
+def firefly_sheet():
+    return {
+        "dark": [firefly("green_dark", None)],
+        "glow": [firefly("gold", "green_bright")],
+        "bright": [firefly("cream", "gold", "green_bright")],
+    }
+
+
 # --- Mouse --------------------------------------------------------------------------------
 #
 # A wood mouse, drawn larger than life: grey-brown, a pale belly, a big round ear pink inside,
@@ -506,6 +537,7 @@ def sheets():
             BUTTERFLY_SIZE,
             {name: [butterfly(ramp, opening) for opening in (1.0, 0.5, 0.0)] for name, ramp in BUTTERFLY_WINGS.items()},
         ),
+        "firefly": (FIREFLY_SIZE, firefly_sheet()),
         "mouse": (MOUSE_SIZE, mouse_sheet()),
         "frog": (FROG_SIZE, {"sit": [frog_sitting(), frog_sitting(croaking=True)], "hop": [frog_hopping(False), frog_hopping(True)]}),
     }

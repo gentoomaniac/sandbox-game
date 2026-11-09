@@ -162,6 +162,20 @@ BEE = {
     },
 }
 
+FIREFLY_KEYS = {"g": "green_dark", "b": "green_bright", "y": "gold", "c": "cream"}
+
+# Three states of one point of light: dark between its flashes, glowing, and at its brightest.
+FIREFLY = {
+    "size": (3, 3),
+    "outline": None,
+    "keys": FIREFLY_KEYS,
+    "actions": {
+        "dark": [["...", ".g.", "..."]],
+        "glow": [[".b.", "byb", ".b."]],
+        "bright": [[".y.", "ycy", ".y."]],
+    },
+}
+
 BUTTERFLY = {
     "size": (6, 6),
     "outline": None,
@@ -402,6 +416,7 @@ SHEETS = {
     "deer": DEER,
     "bee": BEE,
     "butterfly": BUTTERFLY,
+    "firefly": FIREFLY,
     "mouse": MOUSE,
     "frog": FROG,
 }

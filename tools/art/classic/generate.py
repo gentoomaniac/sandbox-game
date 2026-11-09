@@ -85,6 +85,7 @@ DOUBLED = (
     "wildlife/butterfly.png",
     "wildlife/deer.png",
     "wildlife/dunlin.png",
+    "wildlife/firefly.png",
     "wildlife/frog.png",
     "wildlife/goose.png",
     "wildlife/gull.png",
@@ -136,6 +137,7 @@ GROWN_CELLS = {
     "wildlife/rabbit.png": ((24, 20), (26, 22)),
     "wildlife/bee.png": ((8, 8), (10, 10)),
     "wildlife/butterfly.png": ((12, 12), (14, 14)),
+    "wildlife/firefly.png": ((3, 3), (6, 6)),
     "wildlife/dunlin.png": ((20, 16), (22, 16)),
 }
 
