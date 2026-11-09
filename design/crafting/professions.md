@@ -23,7 +23,7 @@ woodworker, the cook and the mason, and a UI for them.
   like a chest; the house hearth and the camp's fire are the hearth station, which everyone
   has, wherever it stands. The campfire (6 stone, 3 logs) and the bedroll (6 hay, 4 fibre: no
   wool or linen item exists yet) are made by hand too and placed like a chest, outdoors only
-  (task 137). The kiln stands only outdoors (`outdoors_only`), the others also in a house; a stool
+  (task 137). The kiln stands only outdoors (`placeable_in`), the others also in a house; a stool
   only in a house. The axe takes down the workbench, the stool and the chests, the pickaxe
   the kiln and the oven (inside a house one swing, into the inventory). The house's own
   furniture can't be taken down; the stools of the maps can (a free stool, accepted).

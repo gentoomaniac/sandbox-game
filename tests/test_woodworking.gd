@@ -44,7 +44,8 @@ func test_a_grave_marker_stands_outdoors_and_the_pickaxe_takes_it_up_again() -> 
 	_hold(ItemTypes.GRAVE_MARKER)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.PLACE)
 	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.GRAVE)
-	assert_true(WorldObjectTypes.TYPES[WorldObjectTypes.GRAVE]["outdoors_only"])
+	var grave: Dictionary = WorldObjectTypes.TYPES[WorldObjectTypes.GRAVE]
+	assert_eq(grave["placeable_in"], WorldObjectTypes.OUTDOORS)
 	_state.player.inventory.add(ItemTypes.PICKAXE, 1)
 	_hit(ItemTypes.PICKAXE, 2)
 	assert_eq(_dropped(ItemTypes.GRAVE_MARKER), 1)

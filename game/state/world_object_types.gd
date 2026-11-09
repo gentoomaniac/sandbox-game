@@ -12,9 +12,9 @@ extends RefCounted
 ## assets/interior/) instead of atlas_row and variants. The picture is centred on the
 ## footprint, its bottom on the footprint's bottom edge. The chest stands in both places, so it
 ## has both, and the ghost of an object the player places uses the interior picture. What the
-## player places goes only where it has a picture for: furniture with only `interior_sprite` only
-## inside a house, and one that is `outdoors_only` (the kiln: its fire would burn the house down)
-## only outdoors. Optional:
+## player places has `placeable_in`: INSIDE (only in a house, furniture with only an
+## `interior_sprite`), OUTDOORS (only outdoors, like the kiln: its fire would burn the house
+## down) or ANYWHERE. Optional:
 ## - storage_slots: it holds items, this many slots (a chest, see WorldObject `storage`);
 ## - bed: the object is a bed (what sleeping in it fills is in data/energy.cfg, [sleep]); the
 ##   value is the direction its head end lies in (the pillow). The player wakes lying
@@ -136,6 +136,11 @@ const GRAVE := &"grave"
 const DORMANCY := &"dormancy"
 const FRUIT := &"fruit"
 
+## The values of `placeable_in`.
+const INSIDE := &"inside"
+const OUTDOORS := &"outdoors"
+const ANYWHERE := &"anywhere"
+
 ## The largest footprint any type has, in tiles: what World looks back over to find the
 ## object that covers a tile.
 const MAX_FOOTPRINT := Vector2i(7, 2)
@@ -217,7 +222,7 @@ const _OTHER_TYPES := {
 		# bleaches the player.
 		"light": {"color": Color(1.0, 0.5, 0.22), "energy": 1.4, "radius_tiles": 7.0},
 		"interior_sprite": "res://assets/interior/fireplace.png",
-		"outdoors_only": true,
+		"placeable_in": OUTDOORS,
 	},
 	SLEEPING_BAG:
 	{
@@ -229,7 +234,7 @@ const _OTHER_TYPES := {
 		"object_cover": "res://assets/bedroll_cover.png",
 		"bed": Vector2i.UP,
 		"interior_sprite": "res://assets/interior/sleeping_bag.png",
-		"outdoors_only": true,
+		"placeable_in": OUTDOORS,
 	},
 	SPRUCE:
 	{
@@ -520,6 +525,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 0,
 		"interior_sprite": "res://assets/interior/stool.png",
+		"placeable_in": INSIDE,
 	},
 	CHEST:
 	{
@@ -533,6 +539,7 @@ const _OTHER_TYPES := {
 		"atlas_row": _CHEST_ROW,
 		"variants": 1,
 		"interior_sprite": "res://assets/interior/chest.png",
+		"placeable_in": ANYWHERE,
 	},
 	CARVED_CHEST:
 	{
@@ -546,6 +553,7 @@ const _OTHER_TYPES := {
 		"atlas_row": _CARVED_CHEST_ROW,
 		"variants": 1,
 		"interior_sprite": "res://assets/interior/carved_chest.png",
+		"placeable_in": ANYWHERE,
 	},
 	# Its interior picture is the ghost while it is placed: it stands only outdoors.
 	KILN:
@@ -559,7 +567,7 @@ const _OTHER_TYPES := {
 		"atlas_row": _KILN_ROW,
 		"variants": 1,
 		"interior_sprite": "res://assets/interior/kiln.png",
-		"outdoors_only": true,
+		"placeable_in": OUTDOORS,
 	},
 	CUPBOARD:
 	{
@@ -571,6 +579,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"interior_sprite": "res://assets/interior/cupboard.png",
+		"placeable_in": INSIDE,
 	},
 	OVEN:
 	{
@@ -583,6 +592,7 @@ const _OTHER_TYPES := {
 		"atlas_row": _OVEN_ROW,
 		"variants": 1,
 		"interior_sprite": "res://assets/interior/oven.png",
+		"placeable_in": ANYWHERE,
 	},
 	EWER:
 	{
@@ -605,7 +615,7 @@ const _OTHER_TYPES := {
 		"atlas_row": _GRAVE_ROW,
 		"variants": 3,
 		"interior_sprite": "res://assets/interior/grave.png",
-		"outdoors_only": true,
+		"placeable_in": OUTDOORS,
 	},
 	JETTY:
 	{
@@ -616,12 +626,12 @@ const _OTHER_TYPES := {
 		"deck": true,
 		"placed_on":
 		[Tile.Terrain.WATER, Tile.Terrain.SEA, Tile.Terrain.MUD, Tile.Terrain.SALT_MARSH],
-		"outdoors_only": true,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": false,
 		"harvest_level": 1,
 		"atlas_row": _JETTY_ROW,
 		"variants": 1,
+		"placeable_in": OUTDOORS,
 	},
 	ROWING_BOAT:
 	{
@@ -630,34 +640,34 @@ const _OTHER_TYPES := {
 		"drops": {&"rowing_boat": 1},
 		"placed_on":
 		[Tile.Terrain.WATER, Tile.Terrain.SEA, Tile.Terrain.MUD, Tile.Terrain.SALT_MARSH],
-		"outdoors_only": true,
 		"footprint": Vector2i(2, 1),
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": _ROWING_BOAT_ROW,
 		"variants": 1,
+		"placeable_in": OUTDOORS,
 	},
 	NET_FRAME:
 	{
 		"hp": 2,
 		"tool": &"axe",
 		"drops": {&"net_frame": 1},
-		"outdoors_only": true,
 		"footprint": Vector2i(2, 1),
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": _NET_FRAME_ROW,
 		"variants": 1,
+		"placeable_in": OUTDOORS,
 	},
 	EEL_TRAPS:
 	{
 		"drops": {&"eel_traps": 1},
-		"outdoors_only": true,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": true,
 		"harvest_level": 0,
 		"atlas_row": _EEL_TRAPS_ROW,
 		"variants": 1,
+		"placeable_in": OUTDOORS,
 	},
 	WORKBENCH:
 	{
@@ -670,6 +680,7 @@ const _OTHER_TYPES := {
 		"atlas_row": _WORKBENCH_ROW,
 		"variants": 1,
 		"interior_sprite": "res://assets/interior/workbench.png",
+		"placeable_in": ANYWHERE,
 	},
 	HEARTH:
 	{

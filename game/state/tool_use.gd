@@ -228,12 +228,15 @@ func _dig(target: Vector2i) -> void:
 
 ## Whether the player can put an object of this type with its top left on a tile: every tile of
 ## its footprint is free (and of a terrain of its `placed_on`, if it has that), the player's body
-## is not on them (they would be stuck in it), and the object goes on this map: furniture with
-## only an interior picture goes only inside a house, and what is `outdoors_only` only outdoors.
+## is not on them (they would be stuck in it), and the object goes on this map (its `placeable_in`).
 func _can_place_on(pos: Vector2i, placed_type: StringName) -> bool:
 	var placed: Dictionary = WorldObjectTypes.TYPES[placed_type]
 	var fits_map: bool = (
-		not placed.get("outdoors_only", false) if _state.is_inside() else placed.has("atlas_row")
+		placed["placeable_in"]
+		in [
+			WorldObjectTypes.ANYWHERE,
+			WorldObjectTypes.INSIDE if _state.is_inside() else WorldObjectTypes.OUTDOORS,
+		]
 	)
 	var footprint := Rect2i(pos, placed["footprint"])
 	if not fits_map or footprint.intersects(PlayerState.body_tiles(_state.player.position)):

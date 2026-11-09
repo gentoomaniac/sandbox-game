@@ -68,7 +68,7 @@ func test_they_are_set_up_outdoors_where_the_ghost_can_be_drawn() -> void:
 	assert_eq(_set_up(ItemTypes.SLEEPING_BAG).type, BEDROLL)
 	assert_eq(_state.player.inventory.count_of(ItemTypes.SLEEPING_BAG), 0)
 	for type in [BEDROLL, CAMPFIRE]:
-		assert_true(WorldObjectTypes.TYPES[type]["outdoors_only"], type)
+		assert_eq(WorldObjectTypes.TYPES[type]["placeable_in"], WorldObjectTypes.OUTDOORS, type)
 		var ghost: Texture2D = load(WorldObjectTypes.TYPES[type]["interior_sprite"])
 		var footprint: Vector2i = WorldObjectTypes.TYPES[type]["footprint"]
 		var tile := TerrainTileset.TILE_SIZE
