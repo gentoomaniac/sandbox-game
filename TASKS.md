@@ -364,6 +364,26 @@ compiles it into the atlas that Godot can natively read."
 - Check: packing today's generated art gives atlases identical to today's committed ones, pixel for
   pixel, before the old files leave git.
 
+Hand-drawn art drops in over the generated art (the user, 2026-11-09: "We want a way so that we can
+drop in hand drawn data, the flow detects it and uses those over the generated art"):
+- **Three places:** `art/generated/` is what `make art` draws (only the generators write there);
+  `art/hand/` is what artists drop in (no tool ever writes there); `assets/` is what Godot reads,
+  built by `make assets` and no longer in git. Both source folders are in git.
+- **Naming** (the user): a hand-drawn file has the path and name of the generated one with a postfix
+  for the art set it replaces: `_32x32` for the 32 px set, `_16x16` for the classic set (e.g.
+  `art/hand/objects/oak_32x32.png`). A hand file for one set leaves the other set's generated art
+  as it is.
+- **Choice per file and per state:** `make assets` takes the hand-drawn file where there is one,
+  else the generated one; in a sheet of states (season looks, variants, frames) a cell the hand file
+  leaves empty (fully transparent) is filled from the generated file, so art can be replaced bit by
+  bit.
+- **Everything, not only the atlases:** items, buildings, furniture, animals, crops and the UI art
+  the same way; sounds too (`art/hand/sounds/`), so recorded sounds can replace generated ones.
+- **Visible:** `make assets` lists which files came from `art/hand/`; a hand file that matches no
+  generated file (a typo in the path or postfix) is an error.
+- Defaults until the user decides otherwise: hand art outside the palette is warned about, not
+  refused; a hand file must have the generated file's size exactly (no scaling of pixel art).
+
 ## Later (not part of the prototype)
 
 - **Review R8: one owner for the simulation, its time and what is loaded** (review F2.4/F2.5, A4,
