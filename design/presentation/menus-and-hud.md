@@ -13,7 +13,8 @@ Decided 2026-11-05.
     (the 16 px art doubled, for the groups redrawn since; the rest is the same in both). F7
     switches the art on the fly (task 117, the user's wish of 2026-11-08).
   - **Game:** UI scale (a slider from 0.5× to 2×, the UI only, not the world), the
-    energy drain (Low, Normal, High) and the day length variation (0–100 %).
+    energy drain (Low, Normal, High), the day length variation (0–100 %) and "Autosave every"
+    (10 to 60 minutes of play in steps of 10, default 10; task 145).
   - **Audio:** Master, Effects and Ambience volume sliders, and "Sound in background"
     (off: the game is silent while its window is not focused).
   - Settings are saved in `user://settings.cfg`, separate from the save game.

@@ -26,6 +26,10 @@ const DAY_LENGTH_TIP := (
 	"How much the length of the day changes through the year."
 	+ " At 0 % every day is equally long."
 )
+const AUTOSAVE_TIP := (
+	"How many minutes of play pass between two automatic saves. The game also saves when you"
+	+ " sleep, pass out and quit."
+)
 
 var _settings: GameSettings
 var _pages := {}
@@ -43,6 +47,8 @@ var _is_dragging_slider := false
 var _drain_button: Button
 var _day_length_label: Label
 var _day_length_slider: HSlider
+var _autosave_label: Label
+var _autosave_slider: HSlider
 
 
 func _init(settings: GameSettings) -> void:
@@ -68,7 +74,10 @@ func _init(settings: GameSettings) -> void:
 		settings_page, "Controls", _go_to.bind(Page.CONTROLS), "Change which keys do what."
 	)
 	_add_button(
-		settings_page, "Game", _go_to.bind(Page.GAME), "UI scale, energy drain and day length."
+		settings_page,
+		"Game",
+		_go_to.bind(Page.GAME),
+		"UI scale, energy drain, day length and autosave."
 	)
 	_add_button(
 		settings_page, "Audio", _go_to.bind(Page.AUDIO), "Volumes and sound in the background."
@@ -118,6 +127,18 @@ func _init(settings: GameSettings) -> void:
 	_day_length_slider.value_changed.connect(_on_day_length_changed)
 	TooltipView.set_text(_day_length_slider, DAY_LENGTH_TIP, "setting_day_length")
 	game.add_child(_day_length_slider)
+	_autosave_label = Label.new()
+	_autosave_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	TooltipView.set_text(_autosave_label, AUTOSAVE_TIP)
+	_autosave_label.mouse_filter = Control.MOUSE_FILTER_PASS
+	game.add_child(_autosave_label)
+	_autosave_slider = HSlider.new()
+	_autosave_slider.min_value = GameSettings.MIN_AUTOSAVE_MINUTES
+	_autosave_slider.max_value = GameSettings.MAX_AUTOSAVE_MINUTES
+	_autosave_slider.step = GameSettings.AUTOSAVE_STEP
+	_autosave_slider.value_changed.connect(_on_autosave_changed)
+	TooltipView.set_text(_autosave_slider, AUTOSAVE_TIP, "setting_autosave")
+	game.add_child(_autosave_slider)
 	_add_button(game, "Back", _back)
 
 	var controls := ControlsPage.new(_settings)
@@ -236,6 +257,8 @@ func _show_game_settings() -> void:
 	)
 	_day_length_slider.set_value_no_signal(_settings.day_length_variation)
 	_show_day_length(_settings.day_length_variation)
+	_autosave_slider.set_value_no_signal(_settings.autosave_minutes)
+	_show_autosave(_settings.autosave_minutes)
 
 
 func _show_ui_scale(value: float) -> void:
@@ -267,3 +290,12 @@ func _show_day_length(percent: float) -> void:
 func _on_day_length_changed(percent: float) -> void:
 	_show_day_length(percent)
 	_settings.set_day_length_variation(roundi(percent))
+
+
+func _show_autosave(minutes: float) -> void:
+	_autosave_label.text = "Autosave every %d min" % roundi(minutes)
+
+
+func _on_autosave_changed(minutes: float) -> void:
+	_show_autosave(minutes)
+	_settings.set_autosave_minutes(roundi(minutes))

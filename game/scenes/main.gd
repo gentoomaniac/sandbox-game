@@ -35,6 +35,7 @@ var _use_highlight := UseHighlight.new()
 var _harvest_hud := HarvestHud.new()
 var _notifications := NotificationHud.new()
 var _saves := SaveService.new()
+var _autosave_timer := AutosaveTimer.new()
 var _ground_item_view := GroundItemView.new()
 var _coordinates_hud := CoordinatesHud.new()
 var _hotbar := HotbarHud.new()
@@ -233,7 +234,11 @@ func _connect_state_and_views() -> void:
 			_show_clock()
 	)
 	_menu.save_and_quit_requested.connect(_save_and_quit)
-	_saves.started.connect(func() -> void: _notifications.hold(SAVE_NOTE, "Saving..."))
+	_saves.started.connect(
+		func() -> void:
+			_notifications.hold(SAVE_NOTE, "Saving...")
+			_autosave_timer.restart()
+	)
 	_saves.finished.connect(_show_save_result)
 
 
@@ -367,6 +372,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	_tick_clock(delta)
+	_autosave_on_time(delta)
 	_tiredness_view.is_awake = not _is_in_transition
 	_weather_view.show_weather(_weather, _tint.color)
 	_view.ambient_motion.update(delta, _weather_view.wind, _weather_view.rain)
@@ -551,6 +557,16 @@ func _pass_out() -> void:
 ## against the screen (the user chose this over a pixel-locked camera).
 func _camera_target() -> Vector2:
 	return _state.player.position * TerrainTileset.TILE_SIZE + _options.camera_shift
+
+
+## Saves in the background when the player's interval of play has passed. A fade, a collapse or
+## an open window (the console too) holds it back to the next frame that is free of them; time that
+## the game is paused for (the pause menu, a chat) is not counted, as `_process` does not run.
+func _autosave_on_time(delta: float) -> void:
+	_autosave_timer.tick(delta)
+	var is_free := not _is_in_transition and not _is_any_screen_open()
+	if is_free and _autosave_timer.is_due(_settings.autosave_minutes):
+		_saves.save_in_background(_state, _options.save_path)
 
 
 ## Real time to whole game minutes; the fraction carries over to the next frame.

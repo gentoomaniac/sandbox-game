@@ -1,16 +1,18 @@
 class_name GameSettings
 extends RefCounted
 ## The player's settings: key bindings, display mode, art set, UI scale, energy drain, day length
-## variation, audio and the language model villagers talk through. Bindings live in Godot's
-## InputMap (that is what the game reads); this class edits them, remembers the project's
-## defaults and keeps them in a ConfigFile, written on every change. It has no UI code.
+## variation, the autosave interval, audio and the language model villagers talk through.
+## Bindings live in Godot's InputMap (that is what the game reads); this class edits them,
+## remembers the project's defaults and keeps them in a ConfigFile, written on every change. It
+## has no UI code.
 ##
 ## The file only holds what differs from the defaults, so an action added later, or one the
 ## file doesn't mention, keeps its default binding. The display mode is only stored once the
 ## player has chosen it; until then the window stays as the command line or project left it.
-## The art set, the UI scale, the energy drain, the day length variation, the audio settings and
-## the language model are stored when they differ from their defaults. The model's key is kept in
-## the file as plain text (Settings says so); it is never saved with the game or logged.
+## The art set, the UI scale, the energy drain, the day length variation, the autosave interval,
+## the audio settings and the language model are stored when they differ from their defaults.
+## The model's key is kept in the file as plain text (Settings says so); it is never saved with
+## the game or logged.
 
 ## Emitted when the player changes the energy drain; loading it does not, so whoever connects
 ## reads `energy_drain_factor()` once at start and then follows this.
@@ -57,6 +59,7 @@ const GAME_SECTION := "game"
 const UI_SCALE_KEY := "ui_scale"
 const ENERGY_DRAIN_KEY := "energy_drain"
 const DAY_LENGTH_KEY := "day_length_variation"
+const AUTOSAVE_KEY := "autosave_minutes"
 const AUDIO_SECTION := "audio"
 const SOUND_IN_BACKGROUND_KEY := "in_background"
 
@@ -75,6 +78,12 @@ const ENERGY_DRAIN_FACTORS := {EnergyDrain.LOW: 0.5, EnergyDrain.NORMAL: 1.0, En
 const MAX_DAY_LENGTH_VARIATION := 100
 const DAY_LENGTH_VARIATION_STEP := 10
 const DEFAULT_DAY_LENGTH_VARIATION := 100
+
+## Minutes of play between two timed autosaves, in steps.
+const MIN_AUTOSAVE_MINUTES := 10
+const MAX_AUTOSAVE_MINUTES := 60
+const AUTOSAVE_STEP := 10
+const DEFAULT_AUTOSAVE_MINUTES := 10
 
 ## The volume sliders (also the keys in the file): percent, in steps.
 const VOLUME_CHANNELS: Array[StringName] = [&"master", &"effects", &"ambience"]
@@ -195,6 +204,7 @@ var is_classic_art := false
 var ui_scale := DEFAULT_UI_SCALE
 var energy_drain := DEFAULT_ENERGY_DRAIN
 var day_length_variation := DEFAULT_DAY_LENGTH_VARIATION
+var autosave_minutes := DEFAULT_AUTOSAVE_MINUTES
 var sound_in_background := DEFAULT_SOUND_IN_BACKGROUND
 ## The profiles of the language model villagers talk through, and the one in use.
 var profiles := LanguageModelProfiles.new()
@@ -380,6 +390,13 @@ func day_length_variation_factor() -> float:
 	return day_length_variation / 100.0
 
 
+## Minutes of play between timed autosaves, kept in range and on the slider's steps. The timer
+## reads it as it counts, so there is no signal.
+func set_autosave_minutes(minutes: int) -> void:
+	autosave_minutes = _clamped_autosave(minutes)
+	_save()
+
+
 ## A volume in percent, 0 to 100.
 func volume_percent(channel: StringName) -> int:
 	return _volumes[channel]
@@ -452,6 +469,12 @@ func _load_game_section(file: ConfigFile) -> void:
 			day_length_variation = _clamped_variation(value)
 		else:
 			push_warning("Ignoring day length variation in %s: not a whole number 0 to 100" % _path)
+	if file.has_section_key(GAME_SECTION, AUTOSAVE_KEY):
+		var value: Variant = file.get_value(GAME_SECTION, AUTOSAVE_KEY)
+		if value is int and value >= MIN_AUTOSAVE_MINUTES and value <= MAX_AUTOSAVE_MINUTES:
+			autosave_minutes = _clamped_autosave(value)
+		else:
+			push_warning("Ignoring autosave interval in %s: not a whole number 10 to 60" % _path)
 
 
 func _load_audio_section(file: ConfigFile) -> void:
@@ -546,6 +569,8 @@ func _save() -> void:
 		file.set_value(GAME_SECTION, ENERGY_DRAIN_KEY, ENERGY_DRAIN_NAMES[energy_drain])
 	if day_length_variation != DEFAULT_DAY_LENGTH_VARIATION:
 		file.set_value(GAME_SECTION, DAY_LENGTH_KEY, day_length_variation)
+	if autosave_minutes != DEFAULT_AUTOSAVE_MINUTES:
+		file.set_value(GAME_SECTION, AUTOSAVE_KEY, autosave_minutes)
 	for channel in VOLUME_CHANNELS:
 		if _volumes[channel] != DEFAULT_VOLUME:
 			file.set_value(AUDIO_SECTION, channel, _volumes[channel])
@@ -584,6 +609,14 @@ static func _clamped_variation(percent: int) -> int:
 		roundi(float(percent) / DAY_LENGTH_VARIATION_STEP) * DAY_LENGTH_VARIATION_STEP,
 		0,
 		MAX_DAY_LENGTH_VARIATION
+	)
+
+
+static func _clamped_autosave(minutes: int) -> int:
+	return clampi(
+		roundi(float(minutes) / AUTOSAVE_STEP) * AUTOSAVE_STEP,
+		MIN_AUTOSAVE_MINUTES,
+		MAX_AUTOSAVE_MINUTES
 	)
 
 

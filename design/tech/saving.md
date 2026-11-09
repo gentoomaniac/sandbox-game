@@ -3,8 +3,13 @@
 - Save format: seed + world edits (terrain, objects and the wear of desire paths) + buildings with their interiors +
   player state (position, current map, home, appearance, inventory) + clock. One JSON
   file per world under `user://saves/`.
-- **Autosave when the player sleeps, passes out and when the game quits.** On start, the
-  game loads the save if there is one, otherwise it starts a new game (`--new-game` forces
+- **Autosave when the player sleeps, passes out and when the game quits, and on a timer** (task
+  145): every `autosave_minutes` of play (Settings → Game, "Autosave every", 10 to 60 in steps of
+  10, default 10), counted by `AutosaveTimer` from `Main._process`, so time the game is paused
+  for (pause menu, chat) does not count. A save that comes due during a fade, a sleep, a collapse
+  or while a window or the console is open waits for the next frame free of them. Any save
+  starting restarts the count.
+- On start, the game loads the save if there is one, otherwise it starts a new game (`--new-game` forces
   one).
 - **Saving does not freeze the game** (task 145). A save takes the game's JSON text at once, on
   the main thread (`SaveFile.encode`), and writes it on a worker thread to the temporary file that

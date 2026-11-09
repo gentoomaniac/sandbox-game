@@ -506,10 +506,10 @@ chest and its contents go into your inventory (or you are told there is no room)
 
 You can rebind every key, including mouse buttons. You can also switch between fullscreen
 and windowed, scale the UI from 0.5× to 2× without touching the world view, and set the
-energy drain and the day length variation, and set the language model villagers talk
-through. Hover over a setting, a key or an item in the
-hotbar, inventory or equipment for a short explanation: an item's kind, weight, what food
-gives back, what seeds grow and where they are planted. The game starts at its widest view,
+energy drain, the day length variation and how often the game saves by itself (every 10 to
+60 minutes of play), and set the language model villagers talk through. Hover over a setting, a
+key or an item in the hotbar, inventory or equipment for a short explanation: an item's kind,
+weight, what food gives back, what seeds grow and where they are planted. The game starts at its widest view,
 1280×720 art pixels (40×22 tiles of 32×32, an art pixel is 1.5 screen pixels on a 1080p
 screen); `=` and `-` (also the keypad's + and −) or Ctrl and the mouse wheel zoom smoothly in
 to 4× that, 320×180 art pixels. The wheel alone steps through the hotbar.
@@ -602,6 +602,12 @@ window open. The game has saved by then. To try Wayland anyway:
 `make setup` never installs system packages. If something is missing, it prints what to
 install, with Gentoo package names where there are some. If your Godot binary has a
 different name, pass its path: `make GODOT=/path/to/godot run`.
+
+The game saves when you sleep, pass out and quit, and by itself every 10 minutes of play (Settings
+→ Game → Autosave every, 10 to 60 minutes in steps of 10; time in the pause menu or a chat does not
+count, and a save waits for a fade or an open window to end). The save is written in the
+background, so the game does not stop: "Saving..." and then "Saved" show at the top left, a failed
+save in red. Quitting waits for a save that is running.
 
 Saves go to `user://saves/world.json` and settings to `user://settings.cfg`. To start a
 fresh world, run `godot --path . -- --new-game`.
