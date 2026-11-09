@@ -267,6 +267,10 @@ upper legs as the leg starts slim and almost under the belly." Review the 32 px 
 should start wide at the body (forearm and gaskin), set at the shoulder and the hip, not slim
 from under the belly. Fix the drawing, keep the sizes of the cells, and check the saddle and
 the riding sprites still fit. Before and after crops and an in-game screenshot.
+- The user, 2026-11-10: "when head down eating grass, the head is way too long and they look
+  more like ant eaters." The grazing head and neck: a horse's head is about as long as its
+  neck is deep; lowered, the neck slopes down from the withers and the muzzle reaches the grass
+  in front of the forelegs, not a long thin snout.
 
 ## Later (not part of the prototype)
 
