@@ -76,6 +76,30 @@ func test_a_failing_write_is_reported_and_leaves_the_previous_save() -> void:
 	assert_false(_service.last_succeeded)
 	assert_signal_emitted_with_parameters(_service, "finished", [false])
 	assert_eq(FileAccess.get_file_as_string(PATH), before)
+	assert_string_contains(_service.last_error, "Can't write")
+	assert_push_error_count(1)
+
+
+func test_a_failing_rename_is_reported_and_leaves_nothing_behind() -> void:
+	# A folder with something in it where the save should go: nothing can be renamed over it.
+	var blocker := PATH.path_join("keep.txt")
+	DirAccess.make_dir_recursive_absolute(PATH)
+	FileAccess.open(blocker, FileAccess.WRITE).close()
+	assert_false(_service.save_and_wait(_state, PATH))
+	assert_string_contains(_service.last_error, "Can't replace")
+	assert_false(FileAccess.file_exists(PATH + ".tmp"), "the temporary file is removed")
+	assert_true(FileAccess.file_exists(blocker))
+	assert_push_error_count(1)
+	DirAccess.remove_absolute(blocker)
+	DirAccess.remove_absolute(PATH)
+
+
+func test_a_save_that_works_clears_the_last_error() -> void:
+	DirAccess.make_dir_recursive_absolute(PATH + ".tmp")
+	_service.save_and_wait(_state, PATH)
+	DirAccess.remove_absolute(PATH + ".tmp")
+	assert_true(_service.save_and_wait(_state, PATH))
+	assert_eq(_service.last_error, "")
 	assert_push_error_count(1)
 
 

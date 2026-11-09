@@ -330,8 +330,7 @@ func _notification(what: int) -> void:
 		if _state == null:
 			get_tree().quit()
 			return
-		_save_game()
-		get_tree().quit()
+		_save_and_quit()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -463,9 +462,11 @@ func _process(delta: float) -> void:
 	_debug.update(delta)
 
 
+## Quits once the game is saved, or the player chose to quit without (see SaveBeforeQuit).
 func _save_and_quit() -> void:
-	_save_game()
-	get_tree().quit()
+	var saving := SaveBeforeQuit.new(_saves, _state, _options.save_path, _choice_dialog)
+	if await saving.is_quit_allowed():
+		get_tree().quit()
 
 
 ## Eats the held food, if any, and says how much energy it gave. Returns whether it ate.

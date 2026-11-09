@@ -182,29 +182,6 @@ come earlier.
 - Not saved, not remembered. Bubbles drawn in palette colours, readable at every zoom; a
   screenshot in the README.
 
-## 140. Review R2: a broken save is caught before it becomes the game; a failed save says so
-
-- [ ] Done
-
-Review F3 and package R2. Needs 139's stack rules.
-- One validator runs on the upgraded save before anything is built from it, with the path of
-  what is wrong ("inventory slot 3: count -7"): item ids, counts and stack limits, the selected
-  slot, object and building and map references, field types, station recipes. Assertions stay for
-  internal invariants only; `from_dict` stays strict behind the validator.
-- **Missing content** (the user, 2026-11-09): when a save holds things the game no longer has (an
-  item or object id that was removed), loading asks the player: load anyway, dropping what is
-  missing, with a plain warning that playing on may run into problems, or cancel. Nothing is
-  dropped silently; the file on disk is not changed until the player saves. Other broken data is
-  refused with the message, and the file is left as it is.
-- **A failed save** (the user, 2026-11-09): the game says so and asks the player; "Save and quit"
-  doesn't quit after a failed save unless the player chooses to, and that choice says very plainly
-  that the progress since the last save will be lost. The previous good save stays (the write
-  already goes to a temporary file and renames it; check every step's result).
-- Tests: the review's broken saves (-7 logs, slot 999, unknown ids, missing fields, a wrong map
-  reference, a bad station recipe, `game` of the wrong type) are refused or asked about, never
-  half loaded; injected write and rename failures keep the old save and don't quit; round trips
-  stay whole; the oldest and newest supported versions.
-
 ## 143. Review R6: player actions are checked where they are done, and say what happened
 
 - [ ] Done

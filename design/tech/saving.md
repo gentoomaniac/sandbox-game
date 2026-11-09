@@ -30,8 +30,17 @@
   "Saving..." while it runs, then "Saved", or a red line if it failed (a failed save leaves the
   previous one as it was). The saves that must not be lost (sleeping, passing out, save and
   quit, closing the window) wait for a running save and then write at once. Quitting never
-  happens mid-write. `SaveService.last_succeeded` has the result of the last save, for the
-  question about a failed save on quit (task 140).
+  happens mid-write. `SaveService.last_succeeded` and `last_error` have the result of the last
+  save.
+- **A failed save is never quietly given up** (the user, 2026-11-09, task 140). Every step of the
+  write is checked (the folder, the open, the store and flush, the rename); a failure removes the
+  temporary file, leaves the previous save as it was and says what went wrong (`SaveFile.write_text`
+  returns the text). A failed timed or quick save shows the red note. "Save and quit" and closing
+  the window go through `SaveBeforeQuit`: after a failed save the game does not quit; a
+  `ChoiceDialog` says "The game could not be saved", what went wrong, that the last save is still
+  there but that quitting now loses the progress since it, and offers "Try saving again", "Keep
+  playing" (the focus, and what Escape does) and "Quit anyway and lose the progress since the last
+  save". Only the last one quits.
 - **Upgrades kept for ten steps** (the user, 2026-11-08): the game is in
   development, so a save of version `VERSION - 10` to `VERSION` is upgraded step by step on
   load (13 to 23 today); an older one is refused like any unreadable save (renamed `.bak`,

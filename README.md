@@ -618,7 +618,10 @@ The game saves when you sleep, pass out and quit, and by itself every 10 minutes
 → Game → Autosave every, 10 to 60 minutes in steps of 10; time in the pause menu or a chat does not
 count, and a save waits for a fade or an open window to end). The save is written in the
 background, so the game does not stop: "Saving..." and then "Saved" show at the top left, a failed
-save in red. Quitting waits for a save that is running.
+save in red. Quitting waits for a save that is running. If the save before quitting fails (disk
+full, no permission), the game does not quit: it says so and asks whether to try again, keep
+playing, or quit anyway, which loses the progress since the last save and says so. The last
+good save is never replaced by a failed one.
 
 A save is checked before the game is built from it. One that is damaged (a negative count, a
 missing field, a map that is not there...) is not loaded: the game says what is wrong and where,

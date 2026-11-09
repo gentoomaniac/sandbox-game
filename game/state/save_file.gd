@@ -39,7 +39,7 @@ const BACKUP_SUFFIX := ".bak"
 
 ## Writes the game to `path`. Returns whether it worked.
 static func write(state: GameState, path: String = DEFAULT_PATH) -> bool:
-	return write_text(encode(state), path)
+	return write_text(encode(state), path) == ""
 
 
 ## The game as the text of a save file. Taking it is the part that must happen on the main
@@ -48,25 +48,35 @@ static func encode(state: GameState) -> String:
 	return JSON.stringify({"version": VERSION, "game": state.to_dict()}, "\t")
 
 
-## Writes the text of a save to `path`. Returns whether it worked. Safe to call from a thread.
-static func write_text(text: String, path: String) -> bool:
+## Writes the text of a save to `path`. Returns what went wrong, or "" when it is written (also
+## reported as an error). Safe to call from a thread. It is written beside the save and renamed
+## over it, and every step is checked: whatever fails, the save that was there stays as it was.
+static func write_text(text: String, path: String) -> String:
 	var error := DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	if error != OK:
-		push_error("Can't create the save folder: %s" % error_string(error))
-		return false
-	# Written beside the save and renamed over it, so a crash never leaves half a save.
+		return _write_failed("Can't create the save folder: %s" % error_string(error))
 	var temp_path := path + ".tmp"
 	var file := FileAccess.open(temp_path, FileAccess.WRITE)
 	if file == null:
-		push_error("Can't write %s: %s" % [temp_path, error_string(FileAccess.get_open_error())])
-		return false
-	file.store_string(text)
+		var reason := error_string(FileAccess.get_open_error())
+		return _write_failed("Can't write %s: %s" % [temp_path, reason])
+	var is_stored := file.store_string(text)
+	file.flush()
+	error = file.get_error()
 	file.close()
+	if not is_stored or error != OK:
+		DirAccess.remove_absolute(temp_path)
+		return _write_failed("Can't write %s: %s" % [temp_path, error_string(error)])
 	error = DirAccess.rename_absolute(temp_path, path)
 	if error != OK:
-		push_error("Can't replace %s: %s" % [path, error_string(error)])
-		return false
-	return true
+		DirAccess.remove_absolute(temp_path)
+		return _write_failed("Can't replace %s: %s" % [path, error_string(error)])
+	return ""
+
+
+static func _write_failed(problem: String) -> String:
+	push_error(problem)
+	return problem
 
 
 ## Reads the save at `path` and checks it (see SaveValidator). The file is not changed: what

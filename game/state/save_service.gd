@@ -13,15 +13,17 @@ signal started
 signal finished(succeeded: bool)
 
 ## Whether the last save that ended was written; true before any. It is what the question about a
-## failed save on quit reads (task 140).
+## failed save on quit reads (see SaveBeforeQuit).
 var last_succeeded := true
+## What went wrong in the last save that failed, for the player to read; "" if it did not.
+var last_error := ""
 
 var _task_id := -1
 ## Counts the saves, so that the worker's call of a save already joined by `wait` does not
 ## end the next one.
 var _save_number := 0
-## Set by the worker, read after it is done.
-var _is_written := false
+## What the worker's write came to (see SaveFile `write_text`), read after it is done.
+var _write_error := ""
 
 
 func is_running() -> bool:
@@ -44,8 +46,7 @@ func save_in_background(state: GameState, path: String) -> bool:
 func save_and_wait(state: GameState, path: String) -> bool:
 	wait()
 	started.emit()
-	last_succeeded = SaveFile.write(state, path)
-	finished.emit(last_succeeded)
+	_end_with(SaveFile.write_text(SaveFile.encode(state), path))
 	return last_succeeded
 
 
@@ -57,7 +58,7 @@ func wait() -> void:
 
 ## Runs on the worker; tells the main thread when it is done.
 func _write(text: String, path: String, save_number: int) -> void:
-	_is_written = SaveFile.write_text(text, path)
+	_write_error = SaveFile.write_text(text, path)
 	_finish_save.call_deferred(save_number)
 
 
@@ -71,5 +72,11 @@ func _finish_save(save_number: int) -> void:
 func _finish() -> void:
 	WorkerThreadPool.wait_for_task_completion(_task_id)
 	_task_id = -1
-	last_succeeded = _is_written
+	_end_with(_write_error)
+
+
+## Records how the save came out (`error` is "" for a written one) and tells whoever listens.
+func _end_with(error: String) -> void:
+	last_error = error
+	last_succeeded = error == ""
 	finished.emit(last_succeeded)
