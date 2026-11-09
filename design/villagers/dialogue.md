@@ -17,14 +17,15 @@
   set in Settings (a provider, an OpenAI-compatible chat endpoint by default, the test LLM's
   `http://127.0.0.1:11434/v1`, or Claude, whose endpoint and model, `claude-opus-5-5`, it starts
   with, or Gemini through its OpenAI-compatible endpoint, with `gemini-2.5-flash-lite`; each
-  provider keeps its own endpoint, model, key and most tokens an answer may take (empty: the
-  game's own), so a key goes only to its own provider; a model, picked from the endpoint's list of models or typed; an optional key; an
+  provider keeps its own endpoint, model, key, most tokens an answer may take and temperature of
+  a reply (empty: the game's own), so a key goes only to its own provider; a model, picked from the endpoint's list of models or typed; an optional key; an
   emptied endpoint is none) it asks the model; without one, when nothing answers, on an error
   or after 30 s it says a scripted line of `data/npc_talk.cfg` ("Aye.", "Is that so?"). The answer is trimmed to the
   spoken line: no quotes or name in front, its first line, at most two sentences. Only the
   words come from the model; nothing else in the game changes by what it says.
 - **The prompt** (`data/npc_talk.cfg`, the user's working example of 2026-11-06 in shape;
-  temperature 0.5 since task 96 (was 0.7), at most 60 tokens): a system line (dialogue for one
+  temperature 0.5 since task 96 (was 0.7; the Temperature of Settings replaces it for a
+  provider, 0 to 2, but not for the memory summary, which has its own 0.3), at most 60 tokens): a system line (dialogue for one
   villager of Wehlsbüll on the North Frisian coast in 1750, one or two short sentences of small
   talk that answer what was said, in the language of the neighbour's latest line (English if that
   is English), never break character or act as an assistant, keep to the sheets and to what was

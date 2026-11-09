@@ -134,3 +134,10 @@ func test_a_models_list_that_fails_is_warned_of_once() -> void:
 	await _ask_and_answer(ask, denied)
 	await _ask_and_answer(ask, denied)
 	assert_push_warning_count(1)
+
+
+func test_a_temperature_is_one_from_0_to_2_else_the_games_own() -> void:
+	var chosen := []
+	for set_temperature in ["1.2", "0", "2", "", "warm", "2.5", "-0.1"]:
+		chosen.append(ModelChat.temperature_of({"temperature": set_temperature}, 0.5))
+	assert_eq(chosen, [1.2, 0.0, 2.0, 0.5, 0.5, 0.5, 0.5])

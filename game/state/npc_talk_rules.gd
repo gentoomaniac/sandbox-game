@@ -98,6 +98,7 @@ const KEYS := {
 		"conversation": TYPE_STRING,
 		"neighbour_line": TYPE_STRING,
 		"villager_line": TYPE_STRING,
+		"temperature": TYPE_FLOAT,
 		"max_tokens": TYPE_INT,
 		"plain": TYPE_STRING,
 		"plain_length": TYPE_INT,

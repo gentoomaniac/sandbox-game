@@ -147,7 +147,7 @@ static func memory_request(npc: Npc, lines: Array[Dictionary], rules: NpcTalkRul
 			_message("system", rules.value("memory", "system")),
 			_message("user", rules.value("memory", "conversation").format(words)),
 		],
-		"temperature": float(rules.value("request", "temperature")),
+		"temperature": float(rules.value("memory", "temperature")),
 		"max_tokens": int(rules.value("memory", "max_tokens")),
 	}
 

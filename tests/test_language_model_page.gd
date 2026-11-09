@@ -98,6 +98,12 @@ func test_the_max_tokens_field_shows_the_games_own_number_until_one_is_set() -> 
 	assert_eq(_page._fields["max_tokens"].placeholder_text, "1000")
 
 
+func test_the_temperature_field_shows_the_games_own_until_one_is_set() -> void:
+	_page.show_settings()
+	assert_eq(_page._fields["temperature"].placeholder_text, "0.5")
+	assert_eq(_page._fields["temperature"].text, "")
+
+
 func test_gemini_shows_its_own_tips_and_placeholders() -> void:
 	_settings.set_language_model_provider("gemini")
 	_page.show_settings()

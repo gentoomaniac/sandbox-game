@@ -167,3 +167,31 @@ func test_the_chat_of_the_provider_is_asked_with_the_key_of_that_provider() -> v
 	for language_model in claude_chat.language_models:
 		assert_eq(language_model["api_key"], "sk-ant-test")
 		assert_eq(language_model["endpoint"], "https://api.anthropic.com/v1")
+
+
+func test_the_reply_asks_with_the_temperature_of_the_setting_else_the_data_files() -> void:
+	_settings.language_model["endpoint"] = "http://fake/v1"
+	var chat := FakeChat.new()
+	var dialogue := _dialogue(chat)
+	await dialogue.reply(_antje, [], "Moin", _state)
+	_settings.set_language_model("temperature", "1.4")
+	await dialogue.reply(_antje, [], "Moin", _state)
+	_settings.set_language_model("temperature", "hot")
+	await dialogue.reply(_antje, [], "Moin", _state)
+	var games_own: float = NpcTalkRules.default_rules().value("request", "temperature")
+	var asked: Array = []
+	for request in chat.requests:
+		asked.append(request["temperature"])
+	assert_eq(asked, [games_own, 1.4, games_own])
+
+
+func test_the_summary_keeps_its_own_temperature_whatever_the_setting() -> void:
+	_settings.language_model["endpoint"] = "http://fake/v1"
+	_settings.set_language_model("temperature", "1.8")
+	_settings.set_chat_history_lines(2)
+	var chat := FakeChat.new()
+	for index in 3:
+		_antje.add_chat_line(1, 400, true, "line %d" % index)
+	await _dialogue(chat).compact(_antje, _state)
+	var rules := NpcTalkRules.default_rules()
+	assert_eq(chat.requests[0]["temperature"], rules.value("memory", "temperature"))

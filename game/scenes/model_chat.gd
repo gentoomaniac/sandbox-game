@@ -9,6 +9,8 @@ extends Node
 
 ## The most tokens that can be set for an answer.
 const MAX_TOKENS := 32000
+## The highest temperature that can be set for an answer.
+const MAX_TEMPERATURE := 2.0
 
 ## What was warned of this session by `_warn_once`: each is said once.
 static var _warned := {}
@@ -48,6 +50,15 @@ static func max_tokens_of(language_model: Dictionary, fallback: int) -> int:
 	var text: String = language_model.get("max_tokens", "")
 	if text.is_valid_int() and int(text) >= 1 and int(text) <= MAX_TOKENS:
 		return int(text)
+	return fallback
+
+
+## The temperature of a villager's reply: the number set in Settings for the provider, else
+## `fallback`, the game's own. Not a number from 0 to MAX_TEMPERATURE is the same as none set.
+static func temperature_of(language_model: Dictionary, fallback: float) -> float:
+	var text: String = language_model.get("temperature", "")
+	if text.is_valid_float() and float(text) >= 0.0 and float(text) <= MAX_TEMPERATURE:
+		return float(text)
 	return fallback
 
 

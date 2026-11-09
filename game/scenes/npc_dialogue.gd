@@ -62,6 +62,10 @@ func reply(npc: Npc, history: Array[Dictionary], message: String, state: GameSta
 		var request := NpcPrompt.reply_request(
 			npc, history, message, moment, rules, has_full_sheets()
 		)
+		# Only the reply takes the setting; the summary of compact() keeps its own temperature.
+		request["temperature"] = ModelChat.temperature_of(
+			_settings.language_model, request["temperature"]
+		)
 		var answer: String = await _chat_of_provider().answer(
 			_settings.language_model, request, rules.value("request", "timeout_seconds")
 		)

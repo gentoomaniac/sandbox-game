@@ -602,6 +602,7 @@ stored as you type or pick:
 | Lines a villager keeps | 24 | A number from 2 to 200, one for all providers: how many of the latest chat lines a villager keeps in the save and tells the model. Older lines are summed up in a memory; lowering it sums up the lines it drops, once the menu is closed. Every kept line is sent with each question, so higher values make the answers slower (and cost more with a hosted model). |
 | Key | empty | Only for endpoints that need one: sent as the header `Authorization: Bearer <key>`, and never sent along a redirect. |
 | Max tokens per answer | empty | The most tokens a villager's line or memory may take, a number from 1 to 32000. Empty is the game's own: 60 for a line and 40 for a memory, 1000 with Claude. A model that thinks first counts its thinking too, so give one such as Gemini's Flash a few hundred or more. |
+| Temperature | empty | How freely a villager's reply varies, a number from 0 to 2: lower is steadier, higher more surprising. Empty is the game's own, 0.5. It does not change the memory summaries, which keep their own low temperature, and Claude's API takes none. |
 
 The same live in `settings.cfg` (in Godot's user folder, e.g.
 `~/.local/share/godot/app_userdata/Sandbox Game/settings.cfg` on Linux): the chosen provider

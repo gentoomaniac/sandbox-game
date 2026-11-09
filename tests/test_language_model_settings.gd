@@ -44,6 +44,7 @@ func test_the_endpoint_model_and_key_survive_a_restart() -> void:
 			"model": "llama3.2",
 			"api_key": "sk-test",
 			"max_tokens": "",
+			"temperature": "",
 		}
 	)
 
@@ -218,3 +219,17 @@ func test_the_page_shows_the_chat_history_lines_and_stores_a_change() -> void:
 	assert_eq(page._history_label.text, "Lines a villager keeps: 10")
 	page._history_lines.value = 12
 	assert_eq(_reloaded().chat_history_lines, 12)
+
+
+func test_the_temperature_is_each_providers_own_and_stored_only_when_set() -> void:
+	assert_eq(_settings.language_model["temperature"], "", "the game's own")
+	_settings.set_language_model_provider("gemini")
+	_settings.set_language_model("temperature", " 0.9 ")
+	var file := ConfigFile.new()
+	file.load(PATH)
+	assert_eq(file.get_value("language_model.gemini", "temperature"), "0.9")
+	assert_false(file.has_section_key("language_model", "temperature"))
+	var loaded := _reloaded()
+	assert_eq(loaded.language_model["temperature"], "0.9")
+	loaded.set_language_model_provider("openai")
+	assert_eq(loaded.language_model["temperature"], "")

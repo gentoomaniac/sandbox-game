@@ -14,6 +14,7 @@ const LABELS := {
 	"model": "Model",
 	"api_key": "Key (if it needs one)",
 	"max_tokens": "Max tokens per answer",
+	"temperature": "Temperature",
 }
 const PROVIDER_TIP := (
 	"OpenAI-compatible: the test LLM of make llm-up, Ollama, LM Studio or a hosted API."
@@ -58,6 +59,15 @@ const TIPS := {
 			"The most tokens a villager's line or memory may take, thinking included. Empty: the"
 			+ " game's own."
 		),
+	},
+	"temperature":
+	{
+		"openai":
+		(
+			"How freely a villager's line varies, 0 to 2: lower is steadier, higher more surprising."
+			+ " Empty: the game's own."
+		),
+		"claude": "Claude's API takes no temperature, so this has no effect.",
 	},
 	"api_key":
 	{
@@ -190,6 +200,9 @@ func show_settings() -> void:
 	_fields["endpoint"].placeholder_text = provider["endpoint"]
 	_fields["model"].placeholder_text = provider["model"]
 	_fields["max_tokens"].placeholder_text = str(_game_max_tokens(provider["protocol"]))
+	_fields["temperature"].placeholder_text = str(
+		NpcTalkRules.default_rules().value("request", "temperature")
+	)
 	show_models()
 
 
