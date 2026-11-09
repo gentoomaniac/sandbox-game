@@ -34,7 +34,7 @@ var _harvest_hud := HarvestHud.new()
 var _ground_item_view := GroundItemView.new()
 var _coordinates_hud := CoordinatesHud.new()
 var _hotbar := HotbarHud.new()
-var _build_panel := BuildPanel.new()
+var _build_menu := BuildMenu.new()
 var _vitals := VitalsHud.new()
 var _character_screen := CharacterScreen.new(_hotbar)
 var _crafting_screen := CraftingScreen.new()
@@ -173,7 +173,7 @@ func _make_views() -> void:
 	add_child(_coordinates_hud)
 	add_child(_npc_name_tag)
 	add_child(_hotbar)
-	add_child(_build_panel)
+	add_child(_build_menu)
 	add_child(_vitals)
 	add_child(_character_screen)
 	add_child(_crafting_screen)
@@ -218,7 +218,7 @@ func _connect_state_and_views() -> void:
 	_tiredness_view.watch(_state.player, _state.clock, _state.energy_rules)
 	_use_highlight.show_for(_state, _camera)
 	_hotbar.show_inventory(_state.player.inventory)
-	_build_panel.bind(_builder, _state.player.inventory)
+	_build_menu.bind(_builder, _state.player.inventory)
 	_vitals.show_state(_state)
 	_character_screen.show_player(_state.player)
 	_crafting_screen.show_crafting(Crafting.new(_state), _state.player.inventory)
@@ -244,8 +244,7 @@ func _apply_start_options() -> void:
 		var building := _options.building
 		var style := _options.building_style
 		if BuildingTypes.TYPES.has(building) and style in BuildingTypes.styles(building):
-			_builder.choice = building
-			_builder.style = style
+			_builder.choose(building, style)
 		else:
 			push_error(
 				(
@@ -393,7 +392,7 @@ func _process(delta: float) -> void:
 	# Build mode only counts outdoors, in play and not during a transition; it keeps processing,
 	# to clear its message when it goes off.
 	_build_mode.visible = is_in_play and not _state.is_inside() and not _is_in_transition
-	_build_panel.visible = _build_mode.is_active()
+	_build_menu.visible = _build_mode.is_active()
 	# Out of energy after a use (or in a game saved while passing out), or up too late. A game
 	# that starts so shows the world first.
 	var is_drawn := _view.is_settled or _state.is_inside()
@@ -847,8 +846,12 @@ func _weather_and_sun_text(weather: WeatherSample) -> String:
 	)
 
 
+## The message of build mode: in the build menu while it picks, as under its row the HUD's
+## message would be hidden; taking down, the HUD's above the hotbar.
 func _show_build_message(text: String) -> void:
-	_message.text = text
+	var in_menu := _build_menu.takes_messages()
+	_build_menu.show_message(text if in_menu else "")
+	_message.text = "" if in_menu else text
 
 
 func _show_clock() -> void:

@@ -77,7 +77,7 @@ func test_every_button_of_every_pause_menu_page_is_hit_all_over() -> void:
 ## A box that only passes the mouse on (`MOUSE_FILTER_PASS`, the default of containers) leaves
 ## the click to the game, so only a stopping control is a fault.
 func test_the_huds_that_need_a_game_state_stop_no_clicks() -> void:
-	for hud: Node in [BuildPanel.new(), VitalsHud.new(), CheatHud.new()]:
+	for hud: Node in [VitalsHud.new(), CheatHud.new()]:
 		for control: Control in hud.find_children("*", "Control", true, false):
 			assert_ne(control.mouse_filter, Control.MOUSE_FILTER_STOP, "%s of %s" % [control, hud])
 		hud.free()

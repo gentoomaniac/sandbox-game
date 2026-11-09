@@ -301,11 +301,15 @@ lie there until you walk over them and pick them up.
 
 ### Build anywhere
 
-Hold the hammer (press B to take it from the hotbar) and a ghost of a building follows the
-mouse. Q and E pick the building: shack, Kate, longhouse, hall house, barn, church or bell
-frame. A small panel lists the logs, stone, clay and reeds it takes against what you carry; the
-spot is refused while something is missing, and a click or Space builds it and takes the
-materials. The ghost shows where it fits, and the game tells you why a spot doesn't work, for
+Hold the hammer (press B to take it from the hotbar) and the build menu opens just above the
+hotbar: a row of the buildings, each with a small picture, its name and the logs, stone, clay
+and reeds it takes (shack, fisherman's hut, Kate, longhouse, hall house, barn, church and bell
+frame). Pick one with Q and E, the left and right arrows or a click; a building that comes in
+more styles shows them in a column above it (the Kate: a brick Kate and a Geest Kate), which
+the up and down arrows or a click pick. Beside it a larger picture of your choice lists what it
+takes against what you carry. While the menu is open the arrows belong to it and you walk with
+WASD; Escape closes it. A ghost of the building follows the mouse; the spot is refused while
+something is missing, and a click or Space builds it and takes the materials. The ghost shows where it fits, and the game tells you why a spot doesn't work, for
 example when it is unsafe wetland. Hold something else (or press Escape or right click) to stop
 building. You can walk inside every building but the bell frame, and each has its own room: a
 bare shack with a straw mat on a clay floor, a cottage room in the Kate, the longhouse with a
@@ -319,7 +323,9 @@ tools and the hammer, so the materials for the first house have to be gathered f
 buildings, their sizes, costs and insides are in [data/buildings.cfg](data/buildings.cfg).
 
 The buildings follow the reed-thatched farmhouses of Denmark and northern Germany: the Kate
-with white lime walls, a split door and braced teal shutters, the brick longhouse with its
+with white lime walls, a split door and braced teal shutters (or, as the brick Kate, red brick
+with green paint and a brick chimney, or as the Geest Kate, lime over a foot tarred black
+under a turf ridge), the brick longhouse with its
 arched door on the long side, the
 half-timbered barn, and the shack: tarred black boards under a turf roof, which greens in
 spring, browns in autumn and winter and lies under snow like the thatch. The biggest is the
@@ -356,9 +362,10 @@ headstone or a fieldstone slab.
 
 ![Inside the Kate and the longhouse at night, by the hearth](docs/screenshots/interiors.png)
 
-![Build mode: the ghost of a Kate and what it costs, the hammer in hand](docs/screenshots/build.png)
+![Build mode: the build menu above the hotbar with the Kate's brick and Geest styles over it, the preview of the brick Kate with what it takes and why the spot is refused, and its ghost on the land](docs/screenshots/build.png)
 
-Press X with the hammer in hand to switch from building to taking down: the panel reads
+Press X with the hammer in hand to switch from building to taking down: the menu gives way to
+a panel at the top left that reads
 "Taking down", the tile under the mouse gets a red frame, and the building or the thing you
 placed (a chest, a workbench, a kiln) under it is tinted red, with a message of what it gives.
 Hold Space or the click for a second to take it down. A building gives back half of each

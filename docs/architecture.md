@@ -169,7 +169,8 @@ Warft and an Ewer here and there.
   calls `ArtSet.show`, and the views that keep their pictures (`NpcView`, `CharacterPreview`,
   `ChatScreen`, every `Animal` with the flocks' birds, `WorldView` the ground, the objects, the
   fires' flames and the buildings, `ObjectCover` the bedroll's cover, `InteriorView` its
-  room, which it shows anew, and `SlotView`, `ItemIcon` and `GroundItemView` the item icons
+  room, which it shows anew, `BuildMenu` the pictures of its cells, and `SlotView`, `ItemIcon`
+  and `GroundItemView` the item icons
   and the items on the ground: the group `ArtSet.VIEWS`, `show_art_set()`) load them anew, while
   the others load theirs as they show them (`PlayerView` its layers and the ridden horse,
   `BuildMode` the ghost). The classic buildings are as big as the new ones, so a building's
@@ -183,7 +184,10 @@ Warft and an Ewer here and there.
   (`PlayerView.CLASSIC_SEAT`, `CLASSIC_PONY_SEAT`).
 - Other views each draw one piece of state: `PlayerView`, `WeatherView`, `WildlifeView`,
   `BuildMode` (the ghost, and the red marking and hold of taking down; `Builder` holds the
-  mode and what each target gives, `GameState.take_down_building` the rules for buildings),
+  mode, the chosen building and style and what each target gives,
+  `GameState.take_down_building` the rules for buildings), `BuildMenu` (the row of buildings
+  above the hotbar, the chosen one's styles and the preview; its cells take the clicks on
+  them, so they never reach the land, and it shows build mode's messages while it is up),
   `GroundItemView`, and the HUDs and screens (`HotbarHud`, `CharacterScreen`,
   `CraftingScreen`, `PauseMenu`, `ConsoleView` and so on). The hotbar is on a layer above the
   character and chest screens and is their quick bar: they take it in their constructor and

@@ -1,10 +1,10 @@
 class_name Builder
 extends RefCounted
 ## What the hammer does. Holding it is build mode: `choice` is the building it would place and
-## `style` its look, Q and E move along BuildingTypes, and `place` builds it where the player
-## points, taking the materials from the inventory. Plain logic; BuildMode draws the ghost and the
-## panel. X switches to taking down: the hammer takes down the building or the thing the player
-## placed (a chest, a workbench) on a tile, and gives back what it held.
+## `style` its look, picked in the build menu, and `place` builds it where the player points,
+## taking the materials from the inventory. Plain logic; BuildMode draws the ghost and BuildMenu
+## the menu. X switches to taking down: the hammer takes down the building or the thing the
+## player placed (a chest, a workbench) on a tile, and gives back what it held.
 ## Dismissing build mode (Escape, right click) lasts until the player holds something else, or
 ## selects the hammer again.
 
@@ -57,8 +57,13 @@ func select_hammer() -> bool:
 ## building's own style.
 func pick(step: int) -> void:
 	var ids := BuildingTypes.ids()
-	choice = ids[posmod(ids.find(choice) + step, ids.size())]
-	style = &""
+	choose(ids[posmod(ids.find(choice) + step, ids.size())])
+
+
+## Chooses a building, in one of its styles.
+func choose(building_type: StringName, building_style := &"") -> void:
+	choice = building_type
+	style = building_style
 
 
 ## Moves `style` by `step` along the styles of the chosen building, stopping at either end.

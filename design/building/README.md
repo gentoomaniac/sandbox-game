@@ -30,26 +30,40 @@ The first buildings have a page of their own: [first-buildings.md](first-buildin
   the most of every material (100 logs, 40 stone, 50 clay, 80 reeds). A new game starts at
   the camp: the materials for a first house have to be gathered.
 - **The hammer builds:** holding the hammer is build mode (the ghost follows the cursor,
-  use places the building); Q and E (rebindable) pick the building, and B selects the
-  hammer. The arrows pick too (task 121): left and right the building, up and down its
-  style. While building they belong to the menu and the player walks with WASD only (the
-  keys the menu's actions share with walking, `GameSettings.SHARING_PAIRS`). Escape or a
-  right click dismisses build mode, and gives the arrows back to walking, until something
-  else is held or B is pressed again. With the hammer in hand E picks buildings and does not
-  put the player to bed. The `nocost` console cheat waives the costs (`god` and `noweight`
-  don't). The player starts with a hammer (later it is crafted); `give hammer` works too.
+  use places the building); the build menu picks the building, and B selects the hammer.
+  Escape or a right click dismisses build mode until something else is held or B is pressed
+  again. The `nocost` console cheat waives the costs (`god` and `noweight` don't). The
+  player starts with a hammer (later it is crafted); `give hammer` works too.
+- **The build menu** (task 121, 2026-11-09, the user: "a matrix on top of the quick bar where
+  you see the main buildings and their variants popping up to the top"): with the hammer
+  held, a row of the buildings stands just above the hotbar, in the order of
+  data/buildings.cfg, each a small picture with its name and its materials (icon and count).
+  Above the chosen one its other styles stand in a column, the first just above the row (the
+  Kate: brick, then Geest); a building with one style has none. Beside them, on the right
+  unless the window ends there, a larger preview of the chosen style with each material as
+  carried/needed (marked and red when short) and the reason a spot is refused, which the
+  message above the hotbar would give but the row covers. The chosen cell is lit, its name in
+  gold. The ghost is the chosen style's. A click on a cell picks it and never builds on the
+  land under the menu. Both art sets show in it (F7).
+- **Keys of the build menu** (rebindable): Q and E or the arrows left and right move along
+  the row (wrapping round); up and down move through the styles (stopping at the ends), and
+  picking another building starts it in its own look. While building the arrows belong to
+  the menu and the player walks with WASD only (the keys the menu's actions share with
+  walking, `GameSettings.SHARING_PAIRS`); dismissing build mode gives them back to walking.
+  With the hammer in hand E picks buildings and does not put the player to bed.
 - **The hammer takes down:** X (rebindable, `take_down_mode`) switches the hammer between
-  building and taking down; the panel says "Taking down", the tile under the mouse has a red
-  frame and the building or placed thing there is tinted red, with the message saying what it
-  gives. Holding Use for a second (`BuildMode.TAKE_DOWN_SECONDS`, with a progress bar) takes
-  it down, with the axe's chop. A building gives half of each material, rounded down, dropped
-  in front of its door (`GameState.take_down_building`; `nocost` gives nothing). It stays while
-  the player is inside, or while anything they put in it is left: a thing they placed, or
-  what a chest or station holds; the message says so. The furniture the house came with goes
-  with it. A home bed in it falls back to the camp's sleeping bag, and a stork on its roof flies
-  off. A placed thing (what an item places: chest, workbench, kiln, oven, stool, carved chest,
-  cupboard) outdoors goes whole, with what it holds, into the inventory, or onto the ground
-  where it stood when that is full. Crafted items are not broken down into materials.
+  building and taking down; the build menu gives way to a panel at the top left that says
+  "Taking down", the tile under the mouse has a red frame and the building or placed thing
+  there is tinted red, with the message saying what it gives. Holding Use for a second
+  (`BuildMode.TAKE_DOWN_SECONDS`, with a progress bar) takes it down, with the axe's chop. A
+  building gives half of each material, rounded down, dropped in front of its door
+  (`GameState.take_down_building`; `nocost` gives nothing). It stays while the player is
+  inside, or while anything they put in it is left: a thing they placed, or what a chest or
+  station holds; the message says so. The furniture the house came with goes with it. A home
+  bed in it falls back to the camp's sleeping bag, and a stork on its roof flies off. A placed
+  thing (what an item places: chest, workbench, kiln, oven, stool, carved chest, cupboard)
+  outdoors goes whole, with what it holds, into the inventory, or onto the ground where it
+  stood when that is full. Crafted items are not broken down into materials.
 - **`data/buildings.cfg`** defines the buildings (required keys, the game refuses to start
   if one is missing): name, footprint, door tile, picture and lit picture (the season and
   snow looks are found by name), the interior map, window lights, costs, and documented
