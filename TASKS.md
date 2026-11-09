@@ -2286,7 +2286,11 @@ set of conditions in main.gd.
   then moves the rest (Controls and the other Settings pages, the language model page, the
   character screen, chat, the pause menu) straight onto it.
 - The interface is written down in the class's comments and docs/architecture.md; tests for the
-  base (open and close, one at a time, Escape, pause, refit). Behaviour the player sees doesn't
+  base (open and close, one at a time, Escape, pause, refit).
+- A guide, docs/ui.md (the user, 2026-11-09: "add documentation for the ui lib so that future
+  workers/humans know how to use it"): how to make a window with one short example, the growing
+  part and scrolling, Escape, backdrop, pause and one at a time, theme and builders, testing a
+  window headless, and what is not a Modal; linked from docs/architecture.md and the README. Behaviour the player sees doesn't
   change, except where the old windows differed by accident.
 
 ## Later (not part of the prototype)
