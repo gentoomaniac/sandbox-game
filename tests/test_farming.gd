@@ -64,9 +64,11 @@ func test_use_tile_refuses_a_tile_out_of_reach_and_changes_nothing() -> void:
 	assert_true(Vector2i(far - _state.player.tile()).abs().y > Targeting.REACH)
 	var energy := _state.player.energy
 	_hold(ItemTypes.HOE)
+	watch_signals(_state.player.inventory)
 	assert_eq(_state.use_tile(far), ToolUse.Use.OUT_OF_REACH)
 	assert_eq(_world.tile_at(far).terrain, Tile.Terrain.GRASS)
 	assert_eq(_state.player.energy, energy)
+	assert_signal_not_emitted(_state.player.inventory, "changed")
 
 
 func test_use_tile_refuses_a_tile_the_players_map_does_not_have() -> void:

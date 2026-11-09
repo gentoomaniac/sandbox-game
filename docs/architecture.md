@@ -152,8 +152,8 @@ Warft and an Ewer here and there.
   object types are which station); a slow one (with `hours`, the kiln) is held by its station
   as **StationWork** in the object's `state` until it is done on the game clock. `craft` checks
   its own conditions: a recipe made at a station needs one of that kind on the player's map in
-  their reach (`NO_STATION` otherwise), whatever the menu showed. `Interaction`
-  says which chest or station E opens; `CraftingScreen` shows the recipes of one place.
+  their reach (`NO_STATION`, or `WRONG_STATION` for another kind), whatever the menu showed.
+  `Interaction` says which chest or station E opens; `CraftingScreen` shows the recipes of one place.
 - **Units:** the state works in tiles (positions, speeds, reach); the views turn tiles into
   world pixels with `TerrainTileset.TILE_SIZE` (32: a tile is 32×32 art pixels, task 106).
   `ViewMath` holds the numbers of the two-stage rendering: zoom 0.5 is the widest view,

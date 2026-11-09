@@ -26,8 +26,11 @@ static func nearest_in_reach(state: GameState, is_wanted: Callable) -> WorldObje
 ## opened.
 static func object_to_open(state: GameState, target: Vector2i) -> WorldObject:
 	var targeted := state.current_map.object_at(target)
-	var offset := (target - state.player.tile()).abs()
-	if targeted != null and _opens(targeted) and maxi(offset.x, offset.y) <= Targeting.REACH:
+	if (
+		targeted != null
+		and _opens(targeted)
+		and Targeting.is_tile_in_reach(state.player.tile(), target)
+	):
 		return targeted
 	if state.bed_in_reach() != null:
 		return null
@@ -54,8 +57,7 @@ static func npc_to_chat(state: GameState, target: Vector2i) -> Npc:
 	var facing := Vector2(state.player.facing)
 	var nearest: Npc = null
 	for npc in state.npcs.all():
-		var offset := (npc.tile() - player_tile).abs()
-		if maxi(offset.x, offset.y) > Targeting.REACH:
+		if not Targeting.is_tile_in_reach(player_tile, npc.tile()):
 			continue
 		if npc.tile() == target:
 			return npc
@@ -71,8 +73,7 @@ static func npc_to_chat(state: GameState, target: Vector2i) -> Npc:
 ## The saddled horse E gets on, or null: the one nearest the middle of the targeted tile, within
 ## ToolUse.ANIMAL_REACH of it, if that tile is in reach. None indoors, where there are none.
 static func horse_to_mount(state: GameState, target: Vector2i) -> FarmAnimal:
-	var offset := (target - state.player.tile()).abs()
-	if state.is_inside() or maxi(offset.x, offset.y) > Targeting.REACH:
+	if state.is_inside() or not Targeting.is_tile_in_reach(state.player.tile(), target):
 		return null
 	var horse := state.livestock.nearest(
 		LivestockRules.HORSE, Vector2(target) + Vector2(0.5, 0.5), ToolUse.ANIMAL_REACH

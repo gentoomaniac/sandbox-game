@@ -25,6 +25,11 @@ static func resolve(
 		return targeting
 	targeting.tile = mouse_tile
 	targeting.source = Source.MOUSE
-	var offset := (mouse_tile - player_tile).abs()
-	targeting.is_in_reach = maxi(offset.x, offset.y) <= REACH
+	targeting.is_in_reach = is_tile_in_reach(player_tile, mouse_tile)
 	return targeting
+
+
+## Whether `tile` is within REACH of the player's tile: the 3x3 tiles around them.
+static func is_tile_in_reach(player_tile: Vector2i, tile: Vector2i) -> bool:
+	var offset := (tile - player_tile).abs()
+	return maxi(offset.x, offset.y) <= REACH

@@ -141,9 +141,9 @@ func use_tile(target: Vector2i) -> Use:
 
 
 func _is_in_reach(target: Vector2i) -> bool:
-	var offset := (target - _state.player.tile()).abs()
 	return (
-		maxi(offset.x, offset.y) <= Targeting.REACH and _state.current_map.tile_at(target) != null
+		Targeting.is_tile_in_reach(_state.player.tile(), target)
+		and _state.current_map.tile_at(target) != null
 	)
 
 

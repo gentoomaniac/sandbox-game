@@ -7,7 +7,8 @@ extends RefCounted
 ## `kind` is one of the constants below. `tile` is where it happened, on `map`; `object` the
 ## type of the object (a world object, a building or an animal kind) it was about, or empty; `items`
 ## (item id to count) what changed hands or lay down: what was planted, paid, picked up, made or
-## given by the thing it was done to.
+## given by the thing it was done to. Listeners only read an outcome: `items` is a dictionary that
+## the action may have used for its own work, so a listener must not change it.
 
 const TILL := &"till"
 const PLANT := &"plant"

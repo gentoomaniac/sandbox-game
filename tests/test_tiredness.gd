@@ -66,7 +66,7 @@ func test_every_use_that_costs_energy_makes_a_tired_player_sweat() -> void:
 
 
 func test_a_use_that_costs_nothing_makes_no_sweat() -> void:
-	for use in [ToolUse.Use.NOTHING, ToolUse.Use.NEEDS_BETTER_TOOL]:
+	for use in [ToolUse.Use.NOTHING, ToolUse.Use.NEEDS_BETTER_TOOL, ToolUse.Use.OUT_OF_REACH]:
 		assert_eq(_signs.sweat_for(use, 5.0), KINDS.NONE)
 
 

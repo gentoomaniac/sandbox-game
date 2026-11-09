@@ -12,9 +12,19 @@ extends RefCounted
 ## at the total cap, see Skills).
 signal practised(skill: StringName, gained: float, wanted: float)
 
-## NO_STATION: the recipe is made at a station and the one given is none, is of another kind, is
-## not on the player's map or is out of their reach.
-enum Result { CRAFTED, STARTED, MISSING_MATERIALS, NO_ROOM, LOCKED, BUSY, NO_STATION }
+## WRONG_STATION: the recipe is made at a station of another kind than the one given. NO_STATION:
+## it is made at a station and there is none, or the one given is not on the player's map or is out
+## of their reach.
+enum Result {
+	CRAFTED,
+	STARTED,
+	MISSING_MATERIALS,
+	NO_ROOM,
+	LOCKED,
+	BUSY,
+	WRONG_STATION,
+	NO_STATION,
+}
 
 ## The recipes there are.
 var rules: RecipeRules
@@ -57,8 +67,9 @@ func is_locked(recipe_id: StringName) -> bool:
 ## kind in the player's reach; one made by hand ignores `station`.
 func craft(recipe_id: StringName, station: WorldObject = null) -> Result:
 	var is_slow := rules.hours(recipe_id) > 0.0
-	if not _is_in_reach_as(station, rules.station_of(recipe_id)):
-		return Result.NO_STATION
+	var station_refusal := _station_refusal(recipe_id, station)
+	if station_refusal != Result.CRAFTED:
+		return station_refusal
 	if is_locked(recipe_id):
 		return Result.LOCKED
 	if is_slow and StationWork.is_busy(station):
@@ -96,7 +107,7 @@ func minutes_left(station: WorldObject) -> int:
 ## station, when it does not fit or the station is out of the player's reach.
 func take_out(station: WorldObject) -> bool:
 	assert(is_work_done(station), "Nothing done to take out")
-	if not _is_in_reach_as(station, rules.station_of(StationWork.recipe(station))):
+	if not _is_station_in_reach(station):
 		return false
 	var result := StationWork.contents(station, _state.clock.total_minutes(), rules)
 	if not _state.player.inventory.can_add(result):
@@ -109,21 +120,25 @@ func take_out(station: WorldObject) -> bool:
 	return true
 
 
-## Whether `station` is a station of the kind `kind` on the player's map within their reach.
-## No kind (a recipe made by hand) needs no station.
-func _is_in_reach_as(station: WorldObject, kind: StringName) -> bool:
+## WRONG_STATION or NO_STATION when `station` will not do for the recipe; CRAFTED (nothing is
+## refused) when it will, or when the recipe is made by hand.
+func _station_refusal(recipe_id: StringName, station: WorldObject) -> Result:
+	var kind := rules.station_of(recipe_id)
 	if kind == &"":
-		return true
-	return (
-		station != null
-		and StationRules.default_rules().station_of(station.type) == kind
-		and (
-			Interaction.nearest_in_reach(
-				_state, func(object: WorldObject) -> bool: return object == station
-			)
-			!= null
-		)
+		return Result.CRAFTED
+	if station != null and StationRules.default_rules().station_of(station.type) != kind:
+		return Result.WRONG_STATION
+	return Result.CRAFTED if _is_station_in_reach(station) else Result.NO_STATION
+
+
+## Whether `station` is an object on the player's map within their reach.
+func _is_station_in_reach(station: WorldObject) -> bool:
+	if station == null:
+		return false
+	var found := Interaction.nearest_in_reach(
+		_state, func(object: WorldObject) -> bool: return object == station
 	)
+	return found != null
 
 
 ## The type of the station a recipe is made at, or empty for one made by hand.

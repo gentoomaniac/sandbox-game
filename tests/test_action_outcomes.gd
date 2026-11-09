@@ -1,29 +1,7 @@
-extends ResourceCase
+extends OutcomeCase
 ## What the player did is told once, after it worked, with who, what, where and on which map, the
 ## object and the items: for every kind of action, from the screen and from code alike. A
 ## refusal and a loaded game tell nothing.
-
-var _outcomes: Array[ActionOutcome] = []
-
-
-func before_each() -> void:
-	super.before_each()
-	_outcomes.clear()
-	_state.action_done.connect(func(outcome: ActionOutcome) -> void: _outcomes.append(outcome))
-
-
-func _assert_one(kind: StringName, tile: Vector2i, object := &"", items := {}) -> void:
-	assert_eq(_outcomes.size(), 1, "one outcome for %s" % kind)
-	if _outcomes.size() != 1:
-		return
-	var outcome := _outcomes[0]
-	assert_eq(outcome.actor, ActionOutcome.PLAYER)
-	assert_eq(outcome.kind, kind)
-	assert_eq(outcome.tile, tile)
-	assert_same(outcome.map, _state.current_map)
-	assert_eq(outcome.object, object)
-	assert_eq(outcome.items, items)
-
 
 # --- Tool uses ---
 
@@ -213,7 +191,7 @@ func test_refusals_tell_nothing() -> void:
 	var workbench := _place_beside(WorldObjectTypes.WORKBENCH)
 	_state.player.inventory.add(ItemTypes.RAW_BRICK, 6)
 	_state.player.inventory.add(ItemTypes.LOGS, 2)
-	assert_eq(Crafting.new(_state).craft(&"bricks", workbench), Crafting.Result.NO_STATION)
+	assert_eq(Crafting.new(_state).craft(&"bricks", workbench), Crafting.Result.WRONG_STATION)
 	assert_false(_state.drop_from_inventory(Inventory.SLOT_COUNT))
 	assert_eq(_outcomes, [] as Array[ActionOutcome])
 

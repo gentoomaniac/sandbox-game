@@ -41,8 +41,9 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   work makes a few entries, not hundreds.
 - **Where deeds come from:** the deed log listens to `GameState.action_done`, which tells an
   `ActionOutcome` (who, kind, tile and map, object, items with counts) once for each finished action
-  of the player (task 143): a felled tree is a `break` of a tree, a building a `build`. A refusal
-  or a loaded game tells nothing.
+  of the player (task 143): a felled tree is a `break` of a tree, a building a `build`. The log
+  maps both `take_down` (a placed object, with the axe or the hammer) and `demolish` (a building).
+  A refusal or a loaded game tells nothing.
 - **First kinds:** felled a tree, built a building, took down a building, placed a fence or
   wall, tilled, sowed, harvested, dug clay, mowed. The list, its words and the fixed opinion
   changes are in `data/gossip.cfg`. Gifts, theft and helping come with

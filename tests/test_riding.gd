@@ -107,6 +107,13 @@ func test_no_tool_and_no_building_on_horseback() -> void:
 	assert_false(builder.is_building())
 
 
+func test_a_tile_out_of_reach_is_out_of_reach_first_on_horseback_too() -> void:
+	_hold(ItemTypes.HOE)
+	_state.mount(_horse)
+	assert_eq(_state.use_tile(_state.player.tile() + Vector2i(5, 0)), ToolUse.Use.OUT_OF_REACH)
+	assert_eq(_state.use_tile(_state.player.tile()), ToolUse.Use.RIDING)
+
+
 func test_nothing_is_picked_up_on_horseback_until_the_rider_gets_off() -> void:
 	_state.mount(_horse)
 	var pile := GroundItem.new(ItemTypes.LOGS, 2, _state.player.position)
