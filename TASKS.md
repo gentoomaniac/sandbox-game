@@ -286,6 +286,27 @@ check, which catches the cross-file mistakes adding an item invites today:
   has an atlas row (tool_use.gd `_can_place_on`).
 - Same ids, same data, same game; no save change.
 
+## 147. Frame spikes: find and smooth the long frames
+
+- [ ] Done
+
+The user, 2026-11-09: once all current tasks are done. After task 142 the mean frame on the
+`make bench` save is about 8 ms, but single frames still take 120 to 190 ms (before 142 too).
+- Find what the long frames do (chunk loading and drawing in WorldView, villager or wildlife
+  updates, autosave, GC of big arrays): Godot's profiler or timing around the suspects, on the
+  bench save and while walking across chunk borders.
+- Spread the heavy work over frames (a budget per frame, or a worker thread for pure data) so no
+  frame goes over about 33 ms on the bench save; same pictures, same game.
+- `make bench` reports the longest frame and how many frames went over 33 ms, before and after.
+
+## 148. The ambience test is flaky: seed its wildlife
+
+- [ ] Done
+
+`tests/test_ambience_sounds.gd` sometimes fails because the wildlife it runs isn't seeded (an
+extra `frog_croak`). Give the test a fixed seed, or count only the sounds it asserts about, so it
+passes every run; no game change.
+
 ## 146. One image per entity, packed into the atlases by make assets
 
 - [ ] Done
