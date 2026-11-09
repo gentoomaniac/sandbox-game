@@ -330,6 +330,40 @@ in progress."
 
 Started 2026-11-09 ("Start implementing auto save and quick save/load").
 
+## 146. One image per entity, packed into the atlases by make assets
+
+- [ ] Done
+
+The user, 2026-11-09: "don't have a shared file with item images but rather single images per item
+with all its states. That'll make it easier to eventually swap out with hand crafted artwork.
+Instead of changing one big map we can change single files one entity at a time." "Map artwork
+stays in a big tilemap." Then: "add a make assets that's separate from the image generation. It
+compiles the maps so that artists can edit single images and for optimisation make assets
+compiles it into the atlas that Godot can natively read."
+- Today the world objects (trees, bushes, stones, stumps, reeds, chests, stations...) are drawn
+  straight into nine shared sheets (assets/objects*.png, one per season look, 4608x8160) and the
+  decorations into assets/decorations*.png, the same for the classic set. Items, buildings,
+  interiors, wildlife and crops already have files of their own; terrain stays in its tile sheets.
+- **Source images:** one PNG per object type and per decoration in each art set, with all its
+  states: a row per season look, a column per variant, cells of the fixed size the game uses (96x160;
+  48x80 in the classic set), the object standing on the cell's bottom centre. These are the files
+  artists edit, and they are kept in git.
+- **Hand-drawn art with fewer states:** a source image may leave season looks or variants out; a
+  missing look falls back to the default look, a missing variant to the first.
+- **`make art`** (today's `make assets`, renamed; `make classic-art` likewise): the generators
+  write the source images (and the other generated art and sounds as today).
+- **`make assets`** (new, fast, no drawing): packs the source images into the atlases the game reads
+  (the same grid as today, so ObjectTileset, the motion shaders and batching stay as they are) and
+  runs the palette check. The packed atlases are build output, ignored by git; `make setup`, and
+  the targets that need them (run, test, screenshot, export), build them when they are missing or
+  older than their sources.
+- A missing source image fails `make assets` with a message naming the object type (and task 144's
+  start-up check can rely on it).
+- Docs: tools/README.md (the two targets and how to replace one entity's art by hand),
+  design/presentation/art-pipeline.md, README (setup), and the briefs' "make assets" lines.
+- Check: packing today's generated art gives atlases identical to today's committed ones, pixel for
+  pixel, before the old files leave git.
+
 ## Later (not part of the prototype)
 
 - **Review R8: one owner for the simulation, its time and what is loaded** (review F2.4/F2.5, A4,
