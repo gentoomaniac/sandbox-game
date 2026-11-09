@@ -439,6 +439,7 @@ func _process(delta: float) -> void:
 			Occlusion.RIDER_SIZE if _state.player.horse != null else Occlusion.PLAYER_SIZE
 		)
 		_view.set_focus(_state.player.tile())
+		_ground_item_view.set_focus(_state.player.tile())
 	_debug.update(delta)
 
 

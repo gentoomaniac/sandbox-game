@@ -24,6 +24,7 @@ func _show_views() -> void:
 	_items = GroundItemView.new()
 	add_child_autofree(_items)
 	_items.show_items(_world, _entities)
+	_items.set_focus(_tile)
 
 
 ## Fells an oak on the tile from the side of it (LEFT: the player stands left of it).
