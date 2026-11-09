@@ -261,9 +261,8 @@ def scaled(animal, factor, size=None):
 # A small cow of the period, 66 px long and 40 px to the top of the back (a person is 61 px
 # tall): a long straight back with the hip and pin bones showing, a deep belly, an udder, short
 # legs with cloven hooves and a tail with a tuft. The head is drawn by hand, a pixel at a time,
-# since a head put together from shapes reads badly: looking ahead, and transposed (its rows as
-# columns) to look down at the grass, which keeps the light from the top left. The cow is drawn
-# in a 64x48 cell and set in its own cell 15 % larger (`scaled`).
+# since a head put together from shapes reads badly: looking ahead, and another to look down at the
+# grass. The cow is drawn in a 64x48 cell and set in its own cell 15 % larger (`scaled`).
 
 COW_SIZE = (72, 54)
 # The head facing right: d, b coat dark and base; F, f, W the face's shade, base and light (the
@@ -285,11 +284,40 @@ COW_HEAD = (
     ".......FMmmmmmM",
     "........MMMMM..",
 )
-# The parts around the head, from its top left corner (looking ahead): the ear out to the side
-# behind the eye with its pink inside, and the horn curving up and forward.
-COW_EAR = [(3, 2), (-3, 1), (-2, 4), (3, 5)]
-COW_EAR_INSIDE = [(-1, 2), (0, 2), (1, 3)]
-COW_HORN = [(4, 1), (3, -2), (5, -4)]
+# The head facing down to the grass, forehead to the front (right), jaw to the back; the same
+# legend. It is drawn, not the one above turned: transposing the ahead head mirrors it, which
+# puts the forehead on the jaw side and the eye on the underside.
+COW_HEAD_DOWN = (
+    "....ddbbF......",
+    "...dbbbbbFW....",
+    "...dbbbbbbFWf..",
+    "...dbbbbebFWWf.",
+    "...dbbbbegFWWf.",
+    "...FdbbbbbFWWf.",
+    "....FfffffFWWf.",
+    "....FfffffffWf.",
+    ".....FfffffffWf",
+    ".....FFffffffWf",
+    "......FfffffWWf",
+    "......FmmmmmmmM",
+    ".....FMmmmmmmmM",
+    ".....FMmmmnmmmM",
+    "......MMMMMMMM.",
+)
+# The parts around each head, from its top left corner: the ear out to the side behind the eye
+# with its pink inside, and the horn curving up and forward.
+COW_HEAD_PARTS = {
+    "ahead": {
+        "ear": [(3, 2), (-3, 1), (-2, 4), (3, 5)],
+        "ear_inside": [(-1, 2), (0, 2), (1, 3)],
+        "horn": [(4, 1), (3, -2), (5, -4)],
+    },
+    "down": {
+        "ear": [(3, 1), (-2, 2), (-2, 5), (3, 5)],
+        "ear_inside": [(0, 2), (0, 3), (1, 4)],
+        "horn": [(7, 0), (9, -2), (12, -2)],
+    },
+}
 COW_SMALL = {
     "size": (64, 48),
     "torso": [
@@ -300,7 +328,7 @@ COW_SMALL = {
     # The neck, and where the head's top left corner is; grazing, the head hangs to the grass.
     "heads": {
         "ahead": {"shape": [[(44, 12), (51, 12), (55, 18), (55, 27), (50, 33), (45, 24)]], "at": (48, 13)},
-        "down": {"shape": [[(44, 12), (50, 13), (55, 20), (57, 29), (53, 34), (47, 26)]], "at": (49, 31), "down": True},
+        "down": {"shape": [[(44, 12), (50, 13), (55, 20), (57, 29), (53, 34), (47, 26)]], "at": (48, 31), "down": True},
     },
     "legs": {
         "near_front": {"joints": [(47, 30), (48, 38), (48, 44)], "radii": [3.4, 2.1, 2.1], "bend": 1, "front": True},
@@ -391,29 +419,27 @@ def draw_cow_coat(picture, look, animal, body, level, dy):
 
 
 def draw_cow_head(picture, look, animal, head, asleep):
-    """The hand-drawn head at its place, the ear and the horn; transposed for looking down."""
+    """The hand-drawn head at its place, the ear and the horn."""
     left, top = rounded([head["at"]])[0]
-    down = head.get("down", False)
+    pose = "down" if head.get("down") else "ahead"
     keys = {"d": look["head_coat"][0], "b": look["head_coat"][1], "e": "ink", "g": "stone_light", "n": "rust_dark"}
     keys |= look["face"] | {"m": look["muzzle"][0], "M": look["muzzle"][1]}
     if asleep:
         keys |= {"e": look["head_coat"][0], "g": look["head_coat"][0]}
-    rows = COW_HEAD
-    if down:
-        rows = ["".join(row[x] for row in COW_HEAD) for x in range(len(COW_HEAD[0]))]
+    parts = COW_HEAD_PARTS[pose]
 
     def place(points):
-        return [(left + (y if down else x), top + (x if down else y)) for x, y in points]
+        return [(left + x, top + y) for x, y in points]
 
     width, height = animal["size"]
-    forms.shade(picture, forms.polygon(width, height, place(COW_EAR)), (look["head_coat"][0], look["head_coat"][1]), 1)
-    forms.dots(picture, place(COW_EAR_INSIDE), "petal")
-    for y, row in enumerate(rows):
+    forms.shade(picture, forms.polygon(width, height, place(parts["ear"])), (look["head_coat"][0], look["head_coat"][1]), 1)
+    forms.dots(picture, place(parts["ear_inside"]), "petal")
+    for y, row in enumerate(COW_HEAD_DOWN if pose == "down" else COW_HEAD):
         for x, key in enumerate(row):
             if key != ".":
                 forms.dots(picture, [(left + x, top + y)], keys[key])
-    forms.paint(picture, forms.limb(width, height, place(COW_HORN), [1.2, 1.0, 0.7]), "cream")
-    forms.dots(picture, place(COW_HORN[-1:]), "stone")
+    forms.paint(picture, forms.limb(width, height, place(parts["horn"]), [1.2, 1.0, 0.7]), "cream")
+    forms.dots(picture, place(parts["horn"][-1:]), "stone")
 
 
 COW = scaled(
