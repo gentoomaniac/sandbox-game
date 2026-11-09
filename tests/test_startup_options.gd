@@ -106,6 +106,7 @@ func test_every_tile_flag_reads_its_tile() -> void:
 					"--hit=23,24",
 					"--path=25,26",
 					"--path-days=3,4",
+					"--worn-ground=-12,-7",
 				]
 			)
 		)
@@ -124,6 +125,7 @@ func test_every_tile_flag_reads_its_tile() -> void:
 	assert_eq(options.hit, Vector2i(23, 24))
 	assert_eq(options.path, Vector2i(25, 26))
 	assert_eq(options.path_days, Vector2i(3, 4))
+	assert_eq(options.worn_ground, Vector2i(-12, -7))
 
 
 func test_a_console_line_may_contain_an_equals_sign() -> void:

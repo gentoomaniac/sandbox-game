@@ -100,6 +100,8 @@ extends RefCounted
 ##   --path=<x>,<y>           a desire path walked from that tile eastwards (see DebugPath)
 ##   --path-days=<walked>,<left>  the days --path is walked and then left to grow back
 ##                            (default 6,0)
+##   --worn-ground=<x>,<y>    a yard worn by many feet from that tile: a path, a trodden rim, a
+##                            few worn islands (see DebugWornGround)
 ##   --chest=<x>,<y>          a chest with some items on that tile
 ##   --chest-inside=<x>,<y>   a chest on that tile of the first house's room (with --inside)
 ##   --landing=<x>,<y>        the fisherman's landing: a jetty from that tile west over the water,
@@ -217,6 +219,7 @@ var felled := NO_TILE
 var mow := NO_TILE
 var path := NO_TILE
 var path_days := Vector2i(6, 0)
+var worn_ground := NO_TILE
 var chest := NO_TILE
 var chest_inside := NO_TILE
 var landing := NO_TILE
@@ -377,6 +380,8 @@ func _init(args := PackedStringArray()) -> void:
 				var days := _tile(arg)
 				if days != NO_TILE:
 					path_days = days
+			"--worn-ground":
+				worn_ground = _tile(arg)
 			"--chest":
 				chest = _tile(arg)
 			"--chest-inside":
