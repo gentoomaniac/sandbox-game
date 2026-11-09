@@ -221,8 +221,13 @@ func load_slots(slots_data: Array) -> void:
 		slots[slot] = {}
 		if stack != null:
 			var item := StringName(stack["item"])
+			var count := int(stack["count"])
 			assert(ItemTypes.TYPES.has(item), "Unknown item in save: %s" % item)
-			slots[slot] = {"item": item, "count": int(stack["count"])}
+			assert(
+				count >= 1 and count <= ItemTypes.TYPES[item]["stack_limit"],
+				"Bad count in save: %d %s" % [count, item]
+			)
+			slots[slot] = {"item": item, "count": count}
 
 
 ## The slots to fill when an item has no stack to join, in order of preference.

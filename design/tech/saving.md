@@ -39,3 +39,18 @@
   To rescue an older save, find that commit with `git log --grep '^Save: drop'`, check out
   its parent (which still upgrades it), load and save the game there, then move on.
 - No save menu or multiple slots yet; revisit when there is a main menu.
+- **A save is checked before anything is built from it** (task 140, review R2). After the upgrades,
+  `SaveValidator` walks the whole game data once: field types, counts and stack limits of every
+  item slot (inventory, chests), the selected hotbar slot, equipment slots, object, building and
+  animal data, object state (every entry but a stump's `tree` and a station's `work` is a number),
+  the map references (the current and home map must name the world or a building
+  that has an inside), station work (a known, slow recipe) and the villagers' fields. Each
+  problem has its place, "player inventory slot 4: count -7 is not between 1 and 99". Nothing is
+  built from a save with a problem: `SaveFile.load_game` gives a `LoadResult` (no save, refused,
+  ready) and the file is not touched; `SaveFile.read` and the game's start move a refused save
+  aside to `world.json.bak` as before and start a new game. `from_dict` stays strict behind the
+  validator (it asserts); assertions are for internal invariants, the validator is the input
+  check. A new save field gets its check in the validator in the same commit.
+- **Content the game no longer has** (an item, object, tree, recipe or animal id that was
+  removed) is not damage: the validator lists it apart (`missing`). For now it is treated like
+  damage; the question to the player comes next.

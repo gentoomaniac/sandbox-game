@@ -88,7 +88,7 @@ func to_dict() -> Dictionary:
 static func from_dict(data: Dictionary) -> Inventory:
 	var inventory := Inventory.new()
 	inventory.load_slots(data["slots"])
-	inventory.selected_slot = int(data["selected_slot"])
+	inventory.select(int(data["selected_slot"]))
 	return inventory
 
 

@@ -16,7 +16,9 @@ extends RefCounted
 ##    `Save: drop the upgrade from version <N> (oldest read: <N+1>)`: to rescue a save older
 ##    than that, find the commit with `git log --grep '^Save: drop'` and check out its parent,
 ##    which still upgrades it; load and save the game there, then move on to the latest.
-## An upgrade step works on the parsed JSON, before any `from_dict` runs.
+## An upgrade step works on the parsed JSON, before any `from_dict` runs. After the upgrades the
+## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
+## So a field added in step 1 is checked there too: add its check to the validator.
 
 const VERSION := 24
 ## The oldest version we still upgrade.
@@ -30,7 +32,8 @@ const COAST_TERRAINS: Array[Tile.Terrain] = [
 	Tile.Terrain.MUD, Tile.Terrain.SALT_MARSH, Tile.Terrain.SEA, Tile.Terrain.WARFT
 ]
 const DEFAULT_PATH := "user://saves/world.json"
-## What a save we can't use is renamed to, so it is never overwritten silently.
+## What ends the name of a backup (see `free_backup_path`): a save we can't use is
+## moved there, and one loaded without its missing content is copied there.
 const BACKUP_SUFFIX := ".bak"
 
 
@@ -66,20 +69,19 @@ static func write_text(text: String, path: String) -> bool:
 	return true
 
 
-## The saved game, or null if there is no save. A save that can't be read (broken, or from
-## another version) is reported, moved aside to `<path>.bak` and also gives null: the caller
-## starts a new game.
-static func read(path: String = DEFAULT_PATH) -> GameState:
+## Reads the save at `path` and checks it (see SaveValidator). The file is not changed: what
+## becomes of a refused one is the caller's to decide (`move_aside`). A save that is whole but
+## holds things the game no longer has is told apart from a refused one (see LoadResult).
+static func load_game(path: String = DEFAULT_PATH) -> LoadResult:
 	if not FileAccess.file_exists(path):
-		return null
+		return LoadResult.no_save()
 	# Not parse_string: it prints an engine error of its own for broken text.
 	var json := JSON.new()
 	var parsed: Variant = (
 		json.data if json.parse(FileAccess.get_file_as_string(path)) == OK else null
 	)
 	if not parsed is Dictionary:
-		_reject(path, "not a save file")
-		return null
+		return LoadResult.refused(["not a save file"] as Array[String])
 	# JSON parsing gives numbers as floats.
 	var version: Variant = parsed.get("version")
 	var is_supported: bool = (
@@ -90,32 +92,102 @@ static func read(path: String = DEFAULT_PATH) -> GameState:
 	)
 	if not is_supported:
 		var reason := "save version %s, this game reads versions %d to %d"
-		_reject(path, reason % [version, OLDEST_VERSION, VERSION])
-		return null
-	if not parsed.has("game"):
-		_reject(path, "no game in the save")
-		return null
+		return LoadResult.refused([reason % [version, OLDEST_VERSION, VERSION]] as Array[String])
+	if not parsed.get("game") is Dictionary:
+		return LoadResult.refused(["no game in the save"] as Array[String])
+	var game: Dictionary = parsed["game"]
+	_upgrade(game, int(version))
+	var validator := SaveValidator.check(game)
+	if not validator.problems.is_empty():
+		return LoadResult.refused(validator.problems)
+	if not validator.missing.is_empty():
+		return LoadResult.asking(game, validator, path)
+	return LoadResult.ready(GameState.from_dict(game))
+
+
+## The saved game, or null if there is no save, it is refused or it holds content the game no
+## longer has (`load_game` tells these apart, for a caller that asks the player). A save that
+## gives no game is reported and moved aside (`move_aside`): the caller starts a new game.
+static func read(path: String = DEFAULT_PATH) -> GameState:
+	var result := load_game(path)
+	match result.outcome:
+		LoadResult.Outcome.REFUSED:
+			push_error("Can't load %s: %s" % [path, "; ".join(result.problems)])
+			move_aside(path)
+		LoadResult.Outcome.ASK:
+			push_error("Can't load %s: it holds %s" % [path, "; ".join(result.missing)])
+			move_aside(path)
+	return result.state
+
+
+## Where a backup of the save at `path` goes, named with the date and time so that backups sort
+## by age: `user://saves/world.2026-11-09_21-45-03.json.bak`. A second one in the same second gets
+## a number (`..._21-45-03-2.json.bak`), so that a backup never replaces another.
+static func free_backup_path(path: String) -> String:
+	var stamp := Time.get_datetime_string_from_system().replace("T", "_").replace(":", "-")
+	var stem := "%s.%s" % [path.get_basename(), stamp]
+	var backup := "%s.%s%s" % [stem, path.get_extension(), BACKUP_SUFFIX]
+	var number := 2
+	while FileAccess.file_exists(backup):
+		backup = "%s-%d.%s%s" % [stem, number, path.get_extension(), BACKUP_SUFFIX]
+		number += 1
+	return backup
+
+
+## The backups of the save at `path` that exist, oldest first.
+static func backups_of(path: String) -> Array[String]:
+	var prefix := path.get_file().get_basename() + "."
+	var suffix := "." + path.get_extension() + BACKUP_SUFFIX
+	var found: Array[String] = []
+	for file_name in DirAccess.get_files_at(path.get_base_dir()):
+		if file_name.begins_with(prefix) and file_name.ends_with(suffix):
+			found.append(path.get_base_dir().path_join(file_name))
+	found.sort()
+	return found
+
+
+## Renames a save we can't use out of the way, so that it is never overwritten silently. Returns
+## where it went, or "" if it could not be moved.
+static func move_aside(path: String) -> String:
+	var backup := free_backup_path(path)
+	var error := DirAccess.rename_absolute(path, backup)
+	if error != OK:
+		push_error("Can't move %s to %s: %s" % [path, backup, error_string(error)])
+		return ""
+	return backup
+
+
+## Copies the save at `path` to `backup` (see `free_backup_path`), for a save that is about to be
+## loaded in a way that its next write changes. Returns whether it worked.
+static func copy_aside(path: String, backup: String) -> bool:
+	var error := DirAccess.copy_absolute(path, backup)
+	if error != OK:
+		push_error("Can't copy %s to %s: %s" % [path, backup, error_string(error)])
+	return error == OK
+
+
+## Brings the data of a save of `version` up to the current one.
+static func _upgrade(game: Dictionary, version: int) -> void:
 	if version <= 14:
-		_upgrade_from_version_14(parsed["game"])
+		_upgrade_from_version_14(game)
 	if version <= 15:
-		_upgrade_from_version_15(parsed["game"])
+		_upgrade_from_version_15(game)
 	if version <= 16:
-		_upgrade_from_version_16(parsed["game"])
+		_upgrade_from_version_16(game)
 	if version <= 17:
-		_upgrade_from_version_17(parsed["game"])
+		_upgrade_from_version_17(game)
 	if version <= 18:
-		_upgrade_from_version_18(parsed["game"])
+		_upgrade_from_version_18(game)
 	if version <= 19:
-		_upgrade_from_version_19(parsed["game"])
+		_upgrade_from_version_19(game)
 	if version <= 20:
-		_upgrade_from_version_20(parsed["game"])
+		_upgrade_from_version_20(game)
 	if version <= 21:
-		_upgrade_from_version_21(parsed["game"])
+		_upgrade_from_version_21(game)
 	if version <= 22:
-		_upgrade_from_version_22(parsed["game"])
+		_upgrade_from_version_22(game)
 	if version <= 23:
-		_upgrade_from_version_23(parsed["game"])
-	return GameState.from_dict(parsed["game"])
+		_upgrade_from_version_23(game)
 
 
 ## Version 14 had no desire paths: all its grass is unworn.
@@ -267,11 +339,3 @@ static func _keep(kept: Dictionary[Vector2i, bool], area: Rect2i) -> void:
 	for y in range(area.position.y, area.end.y):
 		for x in range(area.position.x, area.end.x):
 			kept[Vector2i(x, y)] = true
-
-
-static func _reject(path: String, reason: String) -> void:
-	var backup := path + BACKUP_SUFFIX
-	push_error(
-		"Can't load %s (%s). Moving it to %s and starting a new game." % [path, reason, backup]
-	)
-	DirAccess.rename_absolute(path, backup)

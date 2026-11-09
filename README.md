@@ -620,6 +620,10 @@ count, and a save waits for a fade or an open window to end). The save is writte
 background, so the game does not stop: "Saving..." and then "Saved" show at the top left, a failed
 save in red. Quitting waits for a save that is running.
 
+A save is checked before the game is built from it. One that is damaged (a negative count, a
+missing field, a map that is not there...) is not loaded: the log says what is wrong and where, and
+the game keeps the file as `world.json.bak` and starts a new world.
+
 Saves go to `user://saves/world.json` and settings to `user://settings.cfg`. To start a
 fresh world, run `godot --path . -- --new-game`.
 

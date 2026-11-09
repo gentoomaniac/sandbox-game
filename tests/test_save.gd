@@ -259,7 +259,7 @@ func test_a_newer_version_is_refused_and_kept_as_backup() -> void:
 	assert_null(SaveFile.read(SAVE_PATH))
 	assert_push_error_count(1)
 	assert_false(FileAccess.file_exists(SAVE_PATH))
-	assert_true(FileAccess.file_exists(SAVE_PATH + SaveFile.BACKUP_SUFFIX))
+	assert_eq(SaveFile.backups_of(SAVE_PATH).size(), 1)
 
 
 func test_a_broken_file_is_refused_and_kept_as_backup() -> void:
@@ -269,4 +269,4 @@ func test_a_broken_file_is_refused_and_kept_as_backup() -> void:
 	file.close()
 	assert_null(SaveFile.read(SAVE_PATH))
 	assert_push_error_count(1)
-	assert_true(FileAccess.file_exists(SAVE_PATH + SaveFile.BACKUP_SUFFIX))
+	assert_eq(SaveFile.backups_of(SAVE_PATH).size(), 1)

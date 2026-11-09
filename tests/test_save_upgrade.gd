@@ -16,7 +16,7 @@ func test_a_save_older_than_the_oldest_supported_version_is_refused_and_kept_as_
 
 	assert_push_error_count(1)
 	assert_false(FileAccess.file_exists(SAVE_PATH))
-	assert_true(FileAccess.file_exists(SAVE_PATH + SaveFile.BACKUP_SUFFIX))
+	assert_eq(SaveFile.backups_of(SAVE_PATH).size(), 1)
 
 
 func test_a_current_save_keeps_its_ground_items() -> void:
@@ -28,13 +28,3 @@ func test_a_current_save_keeps_its_ground_items() -> void:
 
 	assert_eq(restored.world.ground_items.count_of(ItemTypes.LOGS), 2)
 	assert_eq(restored.world.ground_items.all()[0].position, Vector2(1.5, 2.25))
-
-
-func test_a_current_save_missing_a_field_fails_loudly() -> void:
-	var game := _current_game()
-	game["player"].erase("energy")
-	_write_save(SaveFile.VERSION, game)
-
-	SaveFile.read(SAVE_PATH)
-
-	assert_engine_error("energy")
