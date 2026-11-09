@@ -133,6 +133,8 @@ func open_chat(npc: Npc, state: GameState) -> void:
 
 func _enter_tree() -> void:
 	get_viewport().size_changed.connect(refit)
+	if not dialogue.answered.is_connected(_on_answered):
+		dialogue.answered.connect(_on_answered)
 
 
 func _exit_tree() -> void:
@@ -174,7 +176,7 @@ func refit() -> void:
 		_fit_text_width(body)
 
 
-## Says a line to the villager and waits for the answer. Ignored while they still owe one.
+## Says a line to the villager, who answers it in time. Ignored while they still owe one.
 func say(text: String) -> void:
 	var npc := _npc
 	var line := text.strip_edges()
@@ -186,18 +188,13 @@ func say(text: String) -> void:
 		_show_lines()
 		return
 	_notice = ""
-	var clock := _state.clock
-	# The chat so far: the model only follows a conversation it is told.
-	var history := npc.chat_history.duplicate()
-	npc.add_chat_line(clock.day, clock.minute_of_day, true, line)
-	npc.is_answering = true
+	# The dialogue finishes the exchange, whether this window is still there or not.
+	dialogue.say(npc, line, _state)
 	_show_lines()
-	var answer: String = await dialogue.reply(npc, history, line, _state)
-	# Said even when the player has left meanwhile: it is there when they come back.
-	npc.add_chat_line(clock.day, clock.minute_of_day, false, answer)
-	npc.is_answering = false
-	# Once per exchange, not per line: the two lines that drop out are one memory.
-	dialogue.compact(npc, _state)
+
+
+## An answer was committed to the chat of `npc`: shown if that is the villager of the open chat.
+func _on_answered(npc: Npc) -> void:
 	if npc == _npc and visible:
 		_show_lines()
 	answered.emit()

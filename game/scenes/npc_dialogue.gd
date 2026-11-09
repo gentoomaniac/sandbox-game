@@ -9,8 +9,13 @@ extends Node
 ## The villager keeps the latest lines of the chat, and the older ones are summed up in a memory
 ## (`compact`); later prompts tell both.
 ##
+## `say` takes a line of the player and sees the exchange through: the answer is committed to the
+## villager's chat by this service, so it doesn't depend on a window still being there.
 ## `reply` is a coroutine: callers `await` it. It runs while the game is paused, as it is during a
 ## chat.
+
+## The answer to a line said with `say` was committed to the chat of `npc`.
+signal answered(npc: Npc)
 
 ## Ask the model, one for each protocol of the providers (GameSettings
 ## `LANGUAGE_MODEL_PROVIDERS`); tests put fakes in their place.
@@ -52,6 +57,24 @@ func _chat_of_provider() -> ModelChat:
 ## (the test LLM, a 3B or 7B) gets the cut-down sheets, which keep it fast.
 func has_full_sheets() -> bool:
 	return _provider()["needs_key"]
+
+
+## Adds the player's `line` to the chat of the villager and waits for the answer, which is added
+## when it comes, also when the player has left meanwhile: it is there when they come back.
+## The wait is the villager's (Npc `is_answering`), so it ends only here. Not for a villager who
+## still owes an answer.
+func say(npc: Npc, line: String, state: GameState) -> void:
+	var clock := state.clock
+	# The chat so far: the model only follows a conversation it is told.
+	var history := npc.chat_history.duplicate()
+	npc.add_chat_line(clock.day, clock.minute_of_day, true, line)
+	npc.is_answering = true
+	var answer: String = await reply(npc, history, line, state)
+	npc.add_chat_line(clock.day, clock.minute_of_day, false, answer)
+	npc.is_answering = false
+	# Once per exchange, not per line: the two lines that drop out are one memory.
+	compact(npc, state)
+	answered.emit(npc)
 
 
 ## The villager's answer to `message`, said after the lines of `history` (the chat so far, as

@@ -62,7 +62,9 @@
   (Swedish has a word list of its own so that it is not taken for Danish), the prompt only asks
   for "the language the neighbour just spoke in". Derived from the chat, so nothing is saved.
 - **The wait:** belongs to the villager: while one answers, the player can leave and talk to
-  another (who shows no typing); the answer lands in the chat of the one asked.
+  another (who shows no typing); the answer lands in the chat of the one asked. `NpcDialogue.say`
+  sees the exchange through (line, wait, answer, memory), not the window, so freeing the window
+  leaves no villager answering.
 - **Chat history and memory (task 91):** a villager keeps the last N lines of the chat (the
   setting "Lines a villager keeps", 2 to 200, default 24, one for each profile); all go to the
   model as earlier turns, so a reopened chat goes on. Lines that drop out (after an exchange,

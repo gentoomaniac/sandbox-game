@@ -116,7 +116,8 @@ Warft and an Ewer here and there.
   chat as bubbles between both portraits (`Appearance.portrait_layers`) and pauses the game
   while it is open.
 - **What villagers say** comes from one place, `NpcDialogue.reply` (`game/scenes/`, a node, as
-  it talks to the network), which the chat awaits; the wait is the villager's
+  it talks to the network); `NpcDialogue.say` commits the player's line and the answer to the
+  villager's chat, so no window has to survive it, and the wait is the villager's
   (`Npc.is_answering`). With a language model set in Settings the chat of the
   provider (`ModelChat`: `OpenAiChat`, one POST to an OpenAI-compatible `/chat/completions`, or
   `ClaudeChat`, one POST to Anthropic's `/messages` with the system lines on top; both run while
