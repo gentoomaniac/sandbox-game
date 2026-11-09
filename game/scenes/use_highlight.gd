@@ -38,6 +38,8 @@ var _drawn_color := Color.TRANSPARENT
 var _is_drawn_filled := false
 ## Held here, not loaded in `_draw`: a picture nobody holds is freed under the draw commands.
 var _drawn_ghost: Texture2D
+## The footprint of the object the ghost shows, taken with it so `_draw` needs nothing else.
+var _drawn_ghost_footprint := Vector2i.ONE
 
 
 func show_for(state: GameState, camera: CameraController) -> void:
@@ -84,6 +86,7 @@ func _process(_delta: float) -> void:
 		_drawn_color = color
 		_is_drawn_filled = is_filled
 		_drawn_ghost = ghost
+		_drawn_ghost_footprint = _ghost_footprint()
 		queue_redraw()
 
 
@@ -96,11 +99,7 @@ func _draw() -> void:
 		# The picture over the tint, so it stays easy to make out.
 		draw_rect(rect, _drawn_color)
 		# Centred on the footprint, its bottom on the footprint's, like the object itself.
-		var footprint: Vector2i = (
-			WorldObjectTypes
-			. TYPES[ItemTypes.placed_object(_state.player.inventory.held_item())]["footprint"]
-		)
-		var size := Vector2(footprint * tile_size)
+		var size := Vector2(_drawn_ghost_footprint * tile_size)
 		var corner := Vector2(
 			(size.x - _drawn_ghost.get_width()) / 2.0, size.y - _drawn_ghost.get_height()
 		)
@@ -119,6 +118,13 @@ func _ghost_texture() -> Texture2D:
 	if placed == &"":
 		return null
 	return load(ArtSet.path(WorldObjectTypes.TYPES[placed]["interior_sprite"]))
+
+
+func _ghost_footprint() -> Vector2i:
+	var placed := ItemTypes.placed_object(_state.player.inventory.held_item())
+	if placed == &"":
+		return Vector2i.ONE
+	return WorldObjectTypes.TYPES[placed]["footprint"]
 
 
 func _ghost_tint(target: Targeting) -> Color:
