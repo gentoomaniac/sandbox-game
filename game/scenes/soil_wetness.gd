@@ -52,6 +52,12 @@ static func look_for(moisture: float) -> int:
 	return 0 if moisture >= DAMP_FROM else -1
 
 
+## How many tiles are drawn damp or wet. The marks stay wherever the soil is, loaded chunks or
+## not, so this is part of what the world view keeps resident.
+func mark_count() -> int:
+	return get_used_cells().size()
+
+
 ## Draws one tile again.
 func redraw_tile(world_pos: Vector2i) -> void:
 	_draw_tile(world_pos)

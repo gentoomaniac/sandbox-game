@@ -378,9 +378,8 @@ func _load_chunk(coords: Vector2i) -> void:
 	world.add_chunk(chunk)
 	_draw_chunk(chunk)
 	# The tilled soil of the chunk now knows whether snow lies on it.
-	for pos in world.tilled_tiles():
-		if Chunk.world_to_chunk(pos) == coords:
-			_soil_wetness.redraw_tile(pos)
+	for pos in world.tilled_tiles_in_chunk(coords):
+		_soil_wetness.redraw_tile(pos)
 
 
 func _draw_chunk(chunk: Chunk) -> void:

@@ -189,3 +189,19 @@ func test_the_wetness_layer_draws_soil_that_is_wet_already() -> void:
 	add_child_autofree(layer)
 	layer.show_world(_world)
 	assert_eq(layer.get_cell_atlas_coords(_tile), Vector2i(1, 0))
+
+
+func test_the_wetness_layer_counts_the_damp_and_wet_tiles_beyond_loaded_chunks() -> void:
+	var far := _tile + Vector2i(Chunk.CHUNK_SIZE * 20, 0)
+	var layer := SoilWetness.new()
+	add_child_autofree(layer)
+	layer.show_world(_world)
+	_world.set_moisture(_tile, 0.0)
+	assert_eq(layer.mark_count(), 0)
+	_world.set_moisture(_tile, 0.9)
+	assert_eq(layer.mark_count(), 1)
+	_world._edit_terrain(far, Tile.Terrain.SOIL)
+	_world.set_moisture(far, 0.5)
+	assert_eq(layer.mark_count(), 2, "a tilled tile of an unloaded chunk is drawn too")
+	_world.set_moisture(_tile, 0.0)
+	assert_eq(layer.mark_count(), 1)

@@ -77,3 +77,49 @@ func test_edits_do_not_leak_into_other_chunks() -> void:
 	assert_eq(
 		_world.chunk_at(other).objects().size(), _generator.generate_chunk(other).objects().size()
 	)
+
+
+func test_edits_made_in_an_unloaded_chunk_are_replayed_when_it_loads_after_a_save() -> void:
+	var near_tree := _generated_tree()
+	_world.remove_object(near_tree.pos)
+	var tilled := _free_tile()
+	_world.set_terrain(tilled, Tile.Terrain.SOIL)
+	var restored := World.from_dict(_world.to_dict(), GameClock.new())
+	assert_eq(restored.tilled_tiles_in_chunk(COORDS), [tilled] as Array[Vector2i])
+	assert_eq(restored.tilled_tiles_in_chunk(Vector2i(-3, -2)).size(), 0)
+	restored.add_chunk(_generator.generate_chunk(COORDS))
+	assert_null(restored.object_at(near_tree.pos))
+	assert_eq(restored.tile_at(tilled).terrain, Tile.Terrain.SOIL)
+
+
+func test_tilled_tiles_of_a_chunk_leave_out_what_was_grassed_over() -> void:
+	var tilled := _free_tile()
+	_world.set_terrain(tilled, Tile.Terrain.SOIL)
+	_world.set_terrain(tilled + Vector2i.RIGHT, Tile.Terrain.SOIL)
+	_world.set_terrain(tilled, Tile.Terrain.GRASS)
+	assert_eq(_world.tilled_tiles_in_chunk(COORDS), [tilled + Vector2i.RIGHT] as Array[Vector2i])
+	assert_eq(_world.tilled_tiles(), _world.tilled_tiles_in_chunk(COORDS))
+
+
+func test_edits_in_other_chunks_do_not_change_what_a_chunk_replays() -> void:
+	var tree := _generated_tree()
+	_world.remove_object(tree.pos)
+	var other := Vector2i(-3, -2)
+	_world.add_chunk(_generator.generate_chunk(other))
+	var elsewhere := Chunk.to_world(other, Vector2i(3, 3))
+	_world.set_terrain(elsewhere, Tile.Terrain.SOIL)
+	_reload()
+	assert_null(_world.object_at(tree.pos))
+	assert_eq(_world.tilled_tiles_in_chunk(COORDS).size(), 0)
+	assert_eq(_world.tilled_tiles_in_chunk(other), [elsewhere] as Array[Vector2i])
+
+
+func test_an_object_edited_twice_is_replayed_once_as_the_latest() -> void:
+	var tree := _generated_tree()
+	_world.remove_object(tree.pos)
+	_world.add_object(WorldObject.new(WorldObjectTypes.STONE, tree.pos))
+	_world.remove_object(tree.pos)
+	var stone := WorldObject.new(WorldObjectTypes.STONE, tree.pos)
+	_world.add_object(stone)
+	_reload()
+	assert_same(_world.object_at(tree.pos), stone)

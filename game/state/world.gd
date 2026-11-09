@@ -69,6 +69,12 @@ var _object_edits: Dictionary[Vector2i, WorldObject] = {}
 ## Terrain the player changed (e.g. grass tilled to soil), by world position. Replayed on
 ## chunks before the objects, which may depend on the ground.
 var _terrain_edits: Dictionary[Vector2i, Tile.Terrain] = {}
+## The world positions of the terrain edits and of the object edits by the chunk they are in, in
+## the order they were first made (the keys of a dictionary, which keeps it), so that a chunk
+## replays its own edits, in that order, without looking at the others. Not saved: `from_dict`
+## builds them again.
+var _terrain_edit_positions_by_chunk: Dictionary[Vector2i, Dictionary] = {}
+var _object_edit_positions_by_chunk: Dictionary[Vector2i, Dictionary] = {}
 ## The moisture (0 to 1) of tilled tiles that differs from the default (see `moisture_at`), by
 ## world position.
 var _soil_moisture: Dictionary[Vector2i, float] = {}
@@ -106,12 +112,9 @@ static func is_in_bounds(world_pos: Vector2i) -> bool:
 func add_chunk(chunk: Chunk) -> void:
 	assert(is_chunk_in_bounds(chunk.coords), "Chunk out of bounds: %s" % chunk.coords)
 	_chunks[chunk.coords] = chunk
-	for pos in _terrain_edits:
-		if Chunk.world_to_chunk(pos) == chunk.coords:
-			chunk.set_terrain(Chunk.local_pos(pos), _terrain_edits[pos])
-	for pos in _object_edits:
-		if Chunk.world_to_chunk(pos) != chunk.coords:
-			continue
+	for pos: Vector2i in _terrain_edit_positions_by_chunk.get(chunk.coords, {}):
+		chunk.set_terrain(Chunk.local_pos(pos), _terrain_edits[pos])
+	for pos: Vector2i in _object_edit_positions_by_chunk.get(chunk.coords, {}):
 		chunk.remove_object(Chunk.local_pos(pos))
 		if _object_edits[pos] != null:
 			chunk.add_object(_object_edits[pos])
@@ -236,7 +239,7 @@ func set_terrain(world_pos: Vector2i, terrain: Tile.Terrain) -> void:
 	assert(chunk != null, "Chunk not loaded for tile at %s" % world_pos)
 	_clear_removable(world_pos)
 	chunk.set_terrain(Chunk.local_pos(world_pos), terrain)
-	_terrain_edits[world_pos] = terrain
+	_edit_terrain(world_pos, terrain)
 	# New ground starts unworn: a path that is tilled and later grassed over is grass.
 	_wear.erase(world_pos)
 	tile_changed.emit(world_pos)
@@ -281,7 +284,7 @@ func add_object(object: WorldObject) -> void:
 		"Tiles already have an object: %s" % object.pos
 	)
 	chunk.add_object(object)
-	_object_edits[object.pos] = object
+	_edit_object(object.pos, object)
 	for tile in object.tiles():
 		objects_changed.emit(tile)
 
@@ -303,7 +306,7 @@ func replace_object(old: WorldObject, replacement: WorldObject) -> void:
 	if chunk != null:
 		chunk.remove_object(Chunk.local_pos(old.pos))
 		chunk.add_object(replacement)
-	_object_edits[old.pos] = replacement
+	_edit_object(old.pos, replacement)
 	_emit_objects_changed(old)
 
 
@@ -311,13 +314,13 @@ func replace_object(old: WorldObject, replacement: WorldObject) -> void:
 ## makes it an edit, so it outlives the chunk. Draws nothing new, but the view shakes it.
 func hit_object(object: WorldObject, power: int) -> void:
 	object.take_hit(power)
-	_object_edits[object.pos] = object
+	_edit_object(object.pos, object)
 	object_hit.emit(object)
 
 
 ## Records that an object's state changed, so it outlives its chunk, and has it redrawn.
 func change_object(object: WorldObject) -> void:
-	_object_edits[object.pos] = object
+	_edit_object(object.pos, object)
 	_emit_objects_changed(object)
 
 
@@ -336,7 +339,7 @@ func take_off(object: WorldObject) -> void:
 	var chunk := chunk_at(Chunk.world_to_chunk(object.pos))
 	if chunk != null:
 		chunk.remove_object(Chunk.local_pos(object.pos))
-	_object_edits[object.pos] = null
+	_edit_object(object.pos, null)
 	for tile in object.tiles():
 		objects_changed.emit(tile)
 
@@ -598,9 +601,7 @@ func to_dict() -> Dictionary:
 static func from_dict(data: Dictionary, game_clock: GameClock) -> World:
 	var world := World.new(int(data["seed"]), game_clock)
 	for edit: Array in data["terrain_edits"]:
-		world._terrain_edits[SaveCodec.vector_from_json(edit)] = SaveCodec.terrain_from_json(
-			edit[2]
-		)
+		world._edit_terrain(SaveCodec.vector_from_json(edit), SaveCodec.terrain_from_json(edit[2]))
 	for entry: Array in data["soil_moisture"]:
 		world._soil_moisture[SaveCodec.vector_from_json(entry)] = float(entry[2])
 	for entry: Array in data["spent_clay_spots"]:
@@ -609,13 +610,43 @@ static func from_dict(data: Dictionary, game_clock: GameClock) -> World:
 		world._wear[SaveCodec.vector_from_json(entry)] = float(entry[2])
 	for edit: Dictionary in data["object_edits"]:
 		var object_data: Variant = edit["object"]
-		world._object_edits[SaveCodec.vector_from_json(edit["pos"])] = (
+		world._edit_object(
+			SaveCodec.vector_from_json(edit["pos"]),
 			null if object_data == null else WorldObject.from_dict(object_data)
 		)
 	for building_data: Dictionary in data["buildings"]:
 		world._add_building(Building.from_dict(building_data))
 	world.ground_items.load_array(data["ground_items"])
 	return world
+
+
+## The tilled tiles of a chunk, loaded or not.
+func tilled_tiles_in_chunk(chunk_coords: Vector2i) -> Array[Vector2i]:
+	var tiles: Array[Vector2i] = []
+	for pos: Vector2i in _terrain_edit_positions_by_chunk.get(chunk_coords, {}):
+		if is_tilled(pos):
+			tiles.append(pos)
+	return tiles
+
+
+func _edit_terrain(world_pos: Vector2i, terrain: Tile.Terrain) -> void:
+	_terrain_edits[world_pos] = terrain
+	_note_edited(_terrain_edit_positions_by_chunk, world_pos)
+
+
+## `object` is null where the generated object was removed.
+func _edit_object(world_pos: Vector2i, object: WorldObject) -> void:
+	_object_edits[world_pos] = object
+	_note_edited(_object_edit_positions_by_chunk, world_pos)
+
+
+func _note_edited(
+	positions_by_chunk: Dictionary[Vector2i, Dictionary], world_pos: Vector2i
+) -> void:
+	var chunk_coords := Chunk.world_to_chunk(world_pos)
+	if not positions_by_chunk.has(chunk_coords):
+		positions_by_chunk[chunk_coords] = {}
+	positions_by_chunk[chunk_coords][world_pos] = true
 
 
 func _add_building(building: Building) -> void:

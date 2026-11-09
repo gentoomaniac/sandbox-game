@@ -34,3 +34,7 @@ Everything the player did stays saved for good, but drawing and scanning are bou
   player, kept until 4), made and freed as the player moves.
 - **Villagers** have a view only within the same chunks of the player. Their state goes on all the
   time (they stroll, rest, remember); the view is made again from it when the player comes near.
+- **Edits** are also indexed by chunk (positions only, not saved, rebuilt on load): a chunk that
+  loads replays its own terrain and object edits, and the world view redraws only its tilled
+  tiles, instead of every chunk load going through all the edits of the world. The wet-soil marks
+  stay wherever the soil is, loaded or not, and are counted (`SoilWetness.mark_count`).
