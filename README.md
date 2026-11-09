@@ -730,7 +730,8 @@ model.
 ### For developers
 
 Start with [docs/architecture.md](docs/architecture.md): how the code is organised and where
-to look. `make help` lists the targets and their variables.
+to look, and [docs/ui.md](docs/ui.md) for how to build a window. `make help` lists the targets
+and their variables.
 
 | Command | What it does |
 |---|---|

@@ -85,3 +85,11 @@ func test_the_panel_never_gets_taller_than_the_window() -> void:
 	assert_true(list.get_v_scroll_bar().visible, "the window is too small for the rows")
 	var panel: Control = _screen.find_children("*", "PanelContainer", true, false)[0]
 	assert_lte(panel.size.y, window.size.y - 2 * ScrollingList.MARGIN)
+
+
+func test_a_station_menu_shows_its_recipes_and_the_hand_menu_those_made_by_hand() -> void:
+	_screen.open_station(WorldObject.new(WorldObjectTypes.WORKBENCH, Vector2i.ZERO))
+	assert_ne(_row().recipe_id, &"chest")
+	_screen.close()
+	_screen.toggle()
+	assert_eq(_row().recipe_id, &"chest")

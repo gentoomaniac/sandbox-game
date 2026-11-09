@@ -1,15 +1,14 @@
 class_name CraftingScreen
-extends CanvasLayer
+extends Modal
 ## The crafting menu over the game: a panel with a row for every recipe of one place (see
 ## RecipeRow). C opens it for the recipes made by hand; E on a station opens it for that station's
 ## recipes, under the station's name and the player's points in the skills they practise. A click
 ## on a row the player can make crafts it, and a note says what the craft taught. A station that
 ## holds slow work (the kiln's firing, see StationWork) says what it holds and when it is ready;
 ## opening its menu once the work is done takes the result out into the inventory. Like the
-## character screen, it takes the input while it is open (Main sees to that, and closes it on C,
-## E and Escape).
+## character screen, it takes the input while it is open (Main sees to that, and closes it on C
+## and E; Escape is the Modal's).
 
-const THEME := preload("res://game/scenes/ui_theme.tres")
 const NO_ROOM_NOTE := "Inventory full"
 const HAND_TITLE := "Crafting"
 const NOTHING_NOTE := "Nothing to make here yet."
@@ -23,31 +22,21 @@ var _crafting: Crafting
 var _inventory: Inventory
 ## The station whose recipes are shown, or null for those made by hand.
 var _station: WorldObject
-var _backdrop := ColorRect.new()
-var _panel := PanelContainer.new()
 var _title_label := Label.new()
 var _skills_label := Label.new()
 var _work_label := Label.new()
 var _rows_column := VBoxContainer.new()
-var _rows_list: ScrollingList
 var _rows: Array[RecipeRow] = []
 var _note_label := Label.new()
 
 
 func _init() -> void:
-	visible = false
-	_backdrop.color = UiColors.BACKDROP
-	_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(_backdrop)
-	_panel.theme = THEME
-	_backdrop.add_child(_panel)
+	super()
 	var column := VBoxContainer.new()
 	for label in [_title_label, _skills_label, _work_label]:
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		column.add_child(label)
-	_rows_list = ScrollingList.new(_panel, _rows_column)
-	_panel.minimum_size_changed.connect(_centre_panel)
-	column.add_child(_rows_list)
+	column.add_child(_scrolling(_rows_column))
 	column.add_child(_note_label)
 	_panel.add_child(column)
 
@@ -61,16 +50,18 @@ func show_crafting(crafting: Crafting, inventory: Inventory) -> void:
 	_show_recipes()
 
 
-func is_open() -> bool:
-	return visible
-
-
-## Opens the menu of `station` (an object that is a station, see StationRules), or of the recipes
-## made by hand.
-func open(station: WorldObject = null) -> void:
+## Opens the menu of `station` (an object that is a station, see StationRules); `open()` opens
+## that of the recipes made by hand.
+func open_station(station: WorldObject) -> void:
+	close()
 	_station = station
+	open()
+
+
+func _on_open() -> void:
 	_show_recipes()
-	_show(true)
+	_show_note(NOTHING_NOTE if _rows.is_empty() else "")
+	_refresh()
 	if _station != null and _crafting.is_work_done(_station):
 		var title := _work_title()
 		if _crafting.take_out(_station):
@@ -78,17 +69,8 @@ func open(station: WorldObject = null) -> void:
 		_refresh()
 
 
-## Safe to call when it is closed.
-func close() -> void:
-	_show(false)
-
-
-## Opens the menu of the recipes made by hand, or closes it.
-func toggle() -> void:
-	if visible:
-		close()
-	else:
-		open()
+func _on_close() -> void:
+	_station = null
 
 
 func _station_id() -> StringName:
@@ -109,21 +91,6 @@ func _show_recipes() -> void:
 		row.pressed.connect(_craft.bind(recipe_id))
 		_rows_column.add_child(row)
 		_rows.append(row)
-
-
-func _show(is_shown: bool) -> void:
-	visible = is_shown
-	_show_note(NOTHING_NOTE if _rows.is_empty() else "")
-	_refresh()
-	_rows_list.scroll_vertical = 0
-	_rows_list.fit()
-	_centre_panel()
-
-
-## The panel is sized round its rows, which are only measured once it is shown.
-func _centre_panel() -> void:
-	_panel.reset_size()
-	_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
 
 
 func _craft(recipe_id: StringName) -> void:

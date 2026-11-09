@@ -650,7 +650,7 @@ func _interact() -> void:
 	elif object.storage != null:
 		_storage_screen.open(object, _state.player)
 	else:
-		_crafting_screen.open(object)
+		_crafting_screen.open_station(object)
 
 
 ## Puts a villager among the world's entities, where it stands among the objects like the player.

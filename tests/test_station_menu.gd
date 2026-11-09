@@ -53,7 +53,7 @@ func _visible_texts() -> Array:
 
 
 func _open_at_the_hearth() -> void:
-	_screen.open(_place(WorldObjectTypes.FIREPLACE))
+	_screen.open_station(_place(WorldObjectTypes.FIREPLACE))
 
 
 # --- What E opens ---
@@ -132,7 +132,7 @@ func test_a_station_with_no_recipes_says_so() -> void:
 	add_child_autofree(screen)
 	var hand_only := {"box": RECIPES["box"]}
 	screen.show_crafting(Crafting.new(_state, RecipeRules.new(hand_only)), _state.player.inventory)
-	screen.open(_place(WorldObjectTypes.FIREPLACE))
+	screen.open_station(_place(WorldObjectTypes.FIREPLACE))
 	var texts := screen.find_children("*", "Label", true, false).map(
 		func(label: Label) -> String: return label.text
 	)

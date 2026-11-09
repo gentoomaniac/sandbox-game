@@ -36,6 +36,12 @@ Decided 2026-11-05.
   mouse wheel, by dragging the bar (drawn in the UI theme), and by focus moving to a row; titles,
   tabs and buttons stay in place. A window too small for even the rest of the panel still
   leaves the list 48 UI pixels, so the panel then crosses the window's edge. It refits on window resizes and UI scale changes.
+- **Windows** (task 132): every window (crafting, chest, character, chat, the pause menu) is built
+  on one base, `Modal`: a dimmed backdrop and a framed panel centred in the window, refitted when
+  its content or the window changes. Escape closes the window (the pause menu goes back a page
+  first), only one window is open at a time (opening one closes the other), and the game pauses
+  while a window that asks for it is open. HUDs, tooltips and the build menu are not windows. How
+  to build one: [docs/ui.md](../../docs/ui.md).
 - **UI look:** a pixel font and a framed panel (9-slice) in palette colours, in one shared
   Godot Theme that all UI uses.
 

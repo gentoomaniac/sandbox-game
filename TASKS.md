@@ -2298,6 +2298,8 @@ set of conditions in main.gd.
   window headless, and what is not a Modal; linked from docs/architecture.md and the README. Behaviour the player sees doesn't
   change, except where the old windows differed by accident.
 
+Progress: the Modal base and the crafting screen are done; the chest and main.gd are next.
+
 ## Later (not part of the prototype)
 
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew

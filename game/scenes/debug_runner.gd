@@ -121,7 +121,7 @@ func update(delta: float) -> void:
 				return StationRules.default_rules().station_of(object.type) != &""
 		)
 		if station != null:
-			crafting_screen.open(station)
+			crafting_screen.open_station(station)
 	if _are_animals_to_spawn and _is_outside_and_drawn():
 		for kind in _options.wildlife:
 			var count := 1 if StringName(kind) in WILDLIFE_GROUPS else WILDLIFE_COUNT
