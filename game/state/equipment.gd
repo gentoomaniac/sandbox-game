@@ -70,29 +70,33 @@ func destroy(slot: StringName) -> void:
 
 
 ## Moves the item in inventory slot `from` onto `slot`; what was worn there goes to `from`.
+## Both sides are done before either one sends `changed`.
 func move_to_equipment(inventory: Inventory, from: int, slot: StringName) -> bool:
-	var item := inventory.item_in(from)
-	if not fits(slot, item):
+	if not inventory.has_slot(from) or not fits(slot, inventory.item_in(from)):
 		return false
-	var previous := unequip(slot)
-	inventory.slots[from] = {} if previous == ItemTypes.NONE else {"item": previous, "count": 1}
-	equip(slot, item)
-	inventory.changed.emit()
+	var item := inventory.item_in(from)
+	var previous := item_in(slot)
+	_worn[slot] = item
+	inventory.replace_with_one(from, previous)
+	changed.emit()
 	return true
 
 
 ## Moves what is worn in `slot` to inventory slot `to`: onto a free slot, or swapping with
-## an item there that fits `slot`.
+## an item there that fits `slot`. Both sides are done before either one sends `changed`.
 func move_to_inventory(inventory: Inventory, slot: StringName, to: int) -> bool:
+	if not inventory.has_slot(to):
+		return false
 	var worn := item_in(slot)
 	var other := inventory.item_in(to)
 	if worn == ItemTypes.NONE or (other != ItemTypes.NONE and not fits(slot, other)):
 		return false
-	unequip(slot)
-	if other != ItemTypes.NONE:
-		equip(slot, other)
-	inventory.slots[to] = {"item": worn, "count": 1}
-	inventory.changed.emit()
+	if other == ItemTypes.NONE:
+		_worn.erase(slot)
+	else:
+		_worn[slot] = other
+	inventory.replace_with_one(to, worn)
+	changed.emit()
 	return true
 
 
@@ -104,7 +108,7 @@ func quick_equip(inventory: Inventory, from: int) -> bool:
 ## Right click on an equipment slot: takes the item off into the first free inventory slot.
 func quick_unequip(inventory: Inventory, slot: StringName) -> bool:
 	for to in Inventory.SLOT_COUNT:
-		if inventory.slots[to].is_empty():
+		if inventory.item_in(to) == ItemTypes.NONE:
 			return move_to_inventory(inventory, slot, to)
 	return false
 

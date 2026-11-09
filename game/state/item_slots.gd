@@ -43,6 +43,10 @@ func totals() -> Dictionary:
 	return totals_by_item
 
 
+func has_slot(slot: int) -> bool:
+	return slot >= 0 and slot < slots.size()
+
+
 func is_empty() -> bool:
 	return slots.all(func(stack: Dictionary) -> bool: return stack.is_empty())
 
@@ -76,7 +80,7 @@ func remove(item: StringName, count: int) -> int:
 ## using the held item needs). Returns false and changes nothing for a bad slot, a bad count, or
 ## a stack with fewer than `count`.
 func take_from(slot: int, count: int) -> bool:
-	if not _is_slot(slot) or count < 1 or slots[slot].get("count", 0) < count:
+	if not has_slot(slot) or count < 1 or slots[slot].get("count", 0) < count:
 		return false
 	slots[slot]["count"] -= count
 	if slots[slot]["count"] == 0:
@@ -112,9 +116,16 @@ func exchange(paid: Dictionary, received: Dictionary) -> bool:
 	return true
 
 
+## Puts a single `item` in `slot`, replacing what is there; NONE empties the slot. For the
+## equipment, which has already changed what it wears (see Equipment `move_to_equipment`).
+func replace_with_one(slot: int, item: StringName) -> void:
+	slots[slot] = {} if item == ItemTypes.NONE else {"item": item, "count": 1}
+	changed.emit()
+
+
 ## Destroys the stack in `slot` for good (the trash can); the other slots stay as they are.
 func destroy(slot: int) -> void:
-	if not _is_slot(slot):
+	if not has_slot(slot):
 		return
 	slots[slot] = {}
 	changed.emit()
@@ -126,8 +137,8 @@ func destroy(slot: int) -> void:
 ## the one that was in `to` (a screen lets that one stick to the mouse). Bad slots move nothing.
 func move_to(from: int, target: ItemSlots, to: int) -> bool:
 	if (
-		not _is_slot(from)
-		or not target._is_slot(to)
+		not has_slot(from)
+		or not target.has_slot(to)
 		or (target == self and from == to)
 		or slots[from].is_empty()
 	):
@@ -153,7 +164,7 @@ func move_to(from: int, target: ItemSlots, to: int) -> bool:
 ## whether the whole stack went. Sending to these slots themselves, or from a bad slot, moves
 ## nothing.
 func send(from: int, target: ItemSlots, free_slots: Array = []) -> bool:
-	if target == self or not _is_slot(from) or slots[from].is_empty():
+	if target == self or not has_slot(from) or slots[from].is_empty():
 		return false
 	var left: int = target._add(slots[from]["item"], slots[from]["count"], free_slots)
 	slots[from]["count"] = left
@@ -188,10 +199,6 @@ func load_slots(slots_data: Array) -> void:
 ## The slots to fill when an item has no stack to join, in order of preference.
 func _free_slot_order() -> Array:
 	return range(slots.size())
-
-
-func _is_slot(slot: int) -> bool:
-	return slot >= 0 and slot < slots.size()
 
 
 ## `add` without the notification, for the operations that send `changed` once when they are
