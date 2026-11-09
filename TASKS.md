@@ -2239,6 +2239,9 @@ come earlier.
 
 - [ ] Done
 
+Halted 2026-11-09 after the crafting screen and the chest (merged): the other panels move
+onto the Modal base of task 132 once it is in.
+
 The user, 2026-11-09: "UIs like crafting get bigger than the screen. so we need scrolling for
 those if they reach certain limits." First a later idea, then "start the scrolling".
 - The crafting screen first; then every panel with content that grows: inventory and chest, the
@@ -2251,6 +2254,40 @@ those if they reach certain limits." First a later idea, then "start the scrolli
 - Check each panel at the smallest supported window size and the largest UI scale; tests for what
   can be tested (the limit, focus kept in view), screenshots by hand. Docs: the UI page of the
   design (design/presentation/menus-and-hud.md) and the README.
+
+## 132. One way to build a window: a Modal base class
+
+- [ ] Done
+
+The user, 2026-11-09, during task 131: "are the modals currently coded separately? we might need
+to refactor to create our own little UI library that handles all that in one place", then "work
+on that first, halt the other scrolling refactor. Once the interface is clear the other worker
+can continue using the new modal/ui lib and only build the contents for it".
+
+Today each window (crafting, chest, character, chat, the pause menu and its Settings pages) is
+its own CanvasLayer that builds its own backdrop and themed PanelContainer, centres itself (three
+copies of `_centre_panel`, the character screen's `_fit_to_window`, the Controls page's
+`_fit_list_to_screen`), has its own open, close, is_open and toggle, and handles Escape one of
+three ways; pausing is per window (only chat pauses), and which window may open over which is a
+set of conditions in main.gd.
+
+- A `Modal` base class in game/scenes/ that does all of that once: the dimmed backdrop, a themed
+  panel centred in the window that refits on window resize, UI scale and content changes;
+  opening, closing, is_open and toggle, with `opened` and `closed` signals; Escape (ui_cancel)
+  closes it, a window may take Escape for itself first (the pause menu goes back a page);
+  a click on the backdrop closes it if the window wants that; a flag whether the game pauses while
+  it is open; one window at a time (opening one closes the one that is open), so main.gd asks
+  the base whether any window is open instead of keeping its own conditions.
+- The growing part of a window is given to the base, which wraps it in ScrollingList (task 131).
+- A window only builds its contents. Small builders (a title, a row of buttons) go into the base
+  only if two windows or more use them.
+- Not windows, so not part of it: the HUDs, tooltips, the build menu (an overlay while building).
+- The crafting screen and the chest move onto it in this task, to prove the interface; task 131
+  then moves the rest (Controls and the other Settings pages, the language model page, the
+  character screen, chat, the pause menu) straight onto it.
+- The interface is written down in the class's comments and docs/architecture.md; tests for the
+  base (open and close, one at a time, Escape, pause, refit). Behaviour the player sees doesn't
+  change, except where the old windows differed by accident.
 
 ## Later (not part of the prototype)
 
