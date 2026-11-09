@@ -17,6 +17,8 @@ const GAME_MINUTES_PER_REAL_SECOND := 1.5
 const FAST_FORWARD_FACTOR := 60.0
 ## What the player is told when they try on horseback what needs them on foot.
 const GET_OFF_FIRST := "Get off the horse first."
+## The key of the notification about a save (see NotificationHud).
+const SAVE_NOTE := &"save"
 
 var _state: GameState
 var _builder: Builder
@@ -31,6 +33,8 @@ var _player_view := PlayerView.new()
 var _tiredness_view := TirednessView.new()
 var _use_highlight := UseHighlight.new()
 var _harvest_hud := HarvestHud.new()
+var _notifications := NotificationHud.new()
+var _saves := SaveService.new()
 var _ground_item_view := GroundItemView.new()
 var _coordinates_hud := CoordinatesHud.new()
 var _hotbar := HotbarHud.new()
@@ -164,6 +168,7 @@ func _make_views() -> void:
 	_player_view.figure.add_child(_tiredness_view)
 	_view.add_child(_use_highlight)
 	add_child(_harvest_hud)
+	add_child(_notifications)
 	add_child(_coordinates_hud)
 	add_child(_npc_name_tag)
 	add_child(_hotbar)
@@ -228,6 +233,8 @@ func _connect_state_and_views() -> void:
 			_show_clock()
 	)
 	_menu.save_and_quit_requested.connect(_save_and_quit)
+	_saves.started.connect(func() -> void: _notifications.hold(SAVE_NOTE, "Saving..."))
+	_saves.finished.connect(_show_save_result)
 
 
 ## Applies the flags that put the views in a situation, and hands the ones that wait for the
@@ -784,8 +791,17 @@ func _apply_ui_scale(ui_scale: float) -> void:
 	get_tree().root.content_scale_factor = ui_scale
 
 
+## Saves now, after the save that runs, if any: for the moments that must not lose the game
+## (sleeping, passing out, quitting). Whether it was written is `_saves.last_succeeded`.
 func _save_game() -> void:
-	SaveFile.write(_state, _options.save_path)
+	_saves.save_and_wait(_state, _options.save_path)
+
+
+func _show_save_result(succeeded: bool) -> void:
+	if succeeded:
+		_notifications.post(SAVE_NOTE, "Saved")
+	else:
+		_notifications.post(SAVE_NOTE, "Could not save the game", NotificationHud.Tone.ERROR)
 
 
 func _force_weather(condition: StringName) -> void:

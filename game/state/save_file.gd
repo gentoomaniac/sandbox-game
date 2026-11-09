@@ -36,6 +36,17 @@ const BACKUP_SUFFIX := ".bak"
 
 ## Writes the game to `path`. Returns whether it worked.
 static func write(state: GameState, path: String = DEFAULT_PATH) -> bool:
+	return write_text(encode(state), path)
+
+
+## The game as the text of a save file. Taking it is the part that must happen on the main
+## thread, at the moment of saving; writing it (`write_text`) can run anywhere.
+static func encode(state: GameState) -> String:
+	return JSON.stringify({"version": VERSION, "game": state.to_dict()}, "\t")
+
+
+## Writes the text of a save to `path`. Returns whether it worked. Safe to call from a thread.
+static func write_text(text: String, path: String) -> bool:
 	var error := DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	if error != OK:
 		push_error("Can't create the save folder: %s" % error_string(error))
@@ -46,7 +57,7 @@ static func write(state: GameState, path: String = DEFAULT_PATH) -> bool:
 	if file == null:
 		push_error("Can't write %s: %s" % [temp_path, error_string(FileAccess.get_open_error())])
 		return false
-	file.store_string(JSON.stringify({"version": VERSION, "game": state.to_dict()}, "\t"))
+	file.store_string(text)
 	file.close()
 	error = DirAccess.rename_absolute(temp_path, path)
 	if error != OK:
