@@ -141,7 +141,7 @@ func _do_use(target: Vector2i) -> Use:
 			var planted := WorldObject.new(ItemTypes.TYPES[seeds]["plants"], target)
 			planted.state = ItemTypes.TYPES[seeds].get("plants_state", {}).duplicate()
 			_state.world.add_object(planted)
-			_state.player.inventory.remove(seeds, 1)
+			_state.player.inventory.consume_held()
 		Use.HARVEST:
 			var crop := _state.world.object_at(target)
 			if CropLife.regrows(crop):
@@ -173,7 +173,7 @@ func _do_use(target: Vector2i) -> Use:
 			var held := _state.player.inventory.held_item()
 			var placed := WorldObject.new(ItemTypes.TYPES[held]["places"], target)
 			_state.current_map.add_object(placed)
-			_state.player.inventory.remove(held, 1)
+			_state.player.inventory.consume_held()
 			_state.make_home_if_bedless(placed)
 		Use.TAKE_DOWN:
 			var items := items_of_placed(_state.current_map.remove_object(target))
@@ -184,10 +184,10 @@ func _do_use(target: Vector2i) -> Use:
 			_hit(_state.world.object_at(target))
 		Use.GIVE_BONE:
 			_state.livestock.start_following(_dog_at(target), _state.clock.total_minutes())
-			_state.player.inventory.remove(ItemTypes.BONE, 1)
+			_state.player.inventory.consume_held()
 		Use.SADDLE:
 			_horse_at(target).is_saddled = true
-			_state.player.inventory.remove(ItemTypes.SADDLE, 1)
+			_state.player.inventory.consume_held()
 		Use.UNSADDLE:
 			_horse_at(target).is_saddled = false
 			_state.player.inventory.add(ItemTypes.SADDLE, 1)

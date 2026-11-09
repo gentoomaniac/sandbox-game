@@ -307,7 +307,7 @@ func eat_held() -> bool:
 	var food := player.inventory.held_item()
 	if not energy_rules.is_food(food) or player.energy >= energy_cap():
 		return false
-	player.inventory.remove(food, 1)
+	player.inventory.consume_held()
 	player.energy = minf(player.energy + energy_rules.food_restore(food), energy_cap())
 	return true
 

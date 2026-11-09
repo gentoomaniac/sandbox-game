@@ -55,6 +55,12 @@ func held_item() -> StringName:
 	return item_in(selected_slot)
 
 
+## Uses up one of the held item: it comes out of the selected slot, not out of the last stack of
+## that item. Returns false when the hand is empty.
+func consume_held() -> bool:
+	return take_from(selected_slot, 1)
+
+
 func select(hotbar_slot: int) -> void:
 	assert(hotbar_slot >= 0 and hotbar_slot < HOTBAR_SIZE, "Not a hotbar slot: %d" % hotbar_slot)
 	selected_slot = hotbar_slot
