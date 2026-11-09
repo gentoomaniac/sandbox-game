@@ -65,7 +65,7 @@ func test_the_villager_comes_before_a_chest_and_a_bed_in_reach() -> void:
 func test_the_chat_pauses_the_game_until_it_is_closed() -> void:
 	var screen := _chat_screen()
 	assert_false(screen.is_open())
-	screen.open(_npc, _state)
+	screen.open_chat(_npc, _state)
 	assert_true(screen.is_open())
 	assert_true(get_tree().paused)
 	screen.close()
@@ -78,7 +78,7 @@ func test_the_chat_pauses_the_game_until_it_is_closed() -> void:
 func test_a_line_said_is_answered_and_both_are_kept_with_the_game_time() -> void:
 	var screen := _chat_screen()
 	_state.clock.set_time(8, 15)
-	screen.open(_npc, _state)
+	screen.open_chat(_npc, _state)
 	screen.say("Good morning")
 	assert_eq(_npc.chat_history.size(), 1, "the answer is awaited")
 	await wait_for_signal(screen.answered, 2.0)
@@ -92,7 +92,7 @@ func test_a_line_said_is_answered_and_both_are_kept_with_the_game_time() -> void
 
 func test_nothing_more_is_sent_while_an_answer_is_awaited() -> void:
 	var screen := _chat_screen()
-	screen.open(_npc, _state)
+	screen.open_chat(_npc, _state)
 	screen.say("One")
 	screen.say("Two")
 	await wait_for_signal(screen.answered, 2.0)
@@ -102,7 +102,7 @@ func test_nothing_more_is_sent_while_an_answer_is_awaited() -> void:
 
 func test_the_answer_is_kept_when_the_player_leaves_before_it_comes() -> void:
 	var screen := _chat_screen()
-	screen.open(_npc, _state)
+	screen.open_chat(_npc, _state)
 	screen.say("Farewell")
 	screen.close()
 	await wait_for_signal(screen.answered, 2.0)
@@ -113,11 +113,11 @@ func test_leaving_a_villager_who_is_answering_leaves_another_free_to_talk() -> v
 	var screen := _chat_screen(0.3)
 	var other := Npc.create(6, _npc.position + Vector2(1, 0), _state.npcs.rules)
 	_state.npcs.add(other)
-	screen.open(_npc, _state)
+	screen.open_chat(_npc, _state)
 	screen.say("One")
 	assert_eq(screen._messages.get_child_count(), 2, "the line and the dots")
 	screen.close()
-	screen.open(other, _state)
+	screen.open_chat(other, _state)
 	assert_eq(screen._messages.get_child_count(), 0, "the other one owes no answer")
 	screen.say("Two")
 	assert_eq(other.chat_history.size(), 1, "and may be spoken to")
@@ -133,7 +133,7 @@ func test_leaving_a_villager_who_is_answering_leaves_another_free_to_talk() -> v
 func test_the_held_key_that_opened_the_chat_types_nothing_until_it_is_let_go() -> void:
 	var screen := _chat_screen()
 	Input.action_press("interact")
-	screen.open(_npc, _state)
+	screen.open_chat(_npc, _state)
 	var key := InputEventKey.new()
 	key.keycode = KEY_E
 	key.physical_keycode = KEY_E
@@ -152,7 +152,7 @@ func test_the_held_key_that_opened_the_chat_types_nothing_until_it_is_let_go() -
 
 func test_escape_closes_the_chat_and_goes_no_further() -> void:
 	var screen := _chat_screen()
-	screen.open(_npc, _state)
+	screen.open_chat(_npc, _state)
 	var escape := InputEventKey.new()
 	escape.keycode = KEY_ESCAPE
 	escape.physical_keycode = KEY_ESCAPE
@@ -165,7 +165,7 @@ func test_escape_closes_the_chat_and_goes_no_further() -> void:
 
 func test_the_art_switch_key_is_passed_on_from_the_open_chat() -> void:
 	var screen := _chat_screen()
-	screen.open(_npc, _state)
+	screen.open_chat(_npc, _state)
 	watch_signals(screen)
 	var f7 := InputEventKey.new()
 	f7.keycode = KEY_F7
@@ -177,3 +177,80 @@ func test_the_art_switch_key_is_passed_on_from_the_open_chat() -> void:
 	assert_eq(screen._input.text, "")
 	assert_true(screen.is_open())
 	screen.close()
+
+
+func test_opening_the_chat_closes_the_open_window_and_the_chat_is_a_window() -> void:
+	var crafting := CraftingScreen.new()
+	add_child_autofree(crafting)
+	crafting.show_crafting(Crafting.new(_state), _state.player.inventory)
+	crafting.open()
+	var screen := _chat_screen()
+	screen.open_chat(_npc, _state)
+	assert_false(crafting.is_open())
+	assert_true(Modal.is_any_open())
+	screen.close()
+	assert_false(Modal.is_any_open())
+
+
+func test_opening_the_chat_again_moves_it_to_the_other_villager() -> void:
+	var screen := _chat_screen()
+	var other := Npc.create(6, _npc.position + Vector2(1, 0), _state.npcs.rules)
+	_state.npcs.add(other)
+	screen.open_chat(_npc, _state)
+	screen.open_chat(other, _state)
+	assert_true(screen.is_open())
+	assert_true(get_tree().paused)
+	assert_eq(screen._npc_name.text, other.name)
+	screen.close()
+
+
+## Pushes a key into a window of its own, so the input goes where a player's would.
+func _press_in_window(screen: ChatScreen, key: Key) -> Array:
+	var window := SubViewport.new()
+	add_child_autofree(window)
+	var seen_by_game := GameKeyProbe.new()
+	window.add_child(seen_by_game)
+	remove_child(screen)
+	window.add_child(screen)
+	screen.open_chat(_npc, _state)
+	var event := InputEventKey.new()
+	event.keycode = key
+	event.physical_keycode = key
+	event.unicode = key + 32
+	event.pressed = true
+	window.push_input(event)
+	return [seen_by_game.keys_seen, screen._input.text]
+
+
+class GameKeyProbe:
+	extends Node
+	var keys_seen := 0
+
+	func _unhandled_input(event: InputEvent) -> void:
+		if event is InputEventKey:
+			keys_seen += 1
+
+
+func test_a_game_key_typed_in_the_line_neither_closes_the_chat_nor_reaches_the_game() -> void:
+	for key: Key in [KEY_E, KEY_C, KEY_K]:
+		var screen := _chat_screen()
+		var result := _press_in_window(screen, key)
+		assert_true(screen.is_open(), "the chat stays open for %s" % OS.get_keycode_string(key))
+		assert_eq(result[0], 0, "the game does not see the key")
+		assert_eq(result[1], char(key + 32), "it is typed")
+		screen.close()
+
+
+func test_escape_leaves_the_chat_also_with_the_pause_key_rebound() -> void:
+	var pause_events := InputMap.action_get_events("pause")
+	InputMap.action_erase_events("pause")
+	var screen := _chat_screen()
+	screen.open_chat(_npc, _state)
+	var escape := InputEventKey.new()
+	escape.keycode = KEY_ESCAPE
+	escape.physical_keycode = KEY_ESCAPE
+	escape.pressed = true
+	screen._on_input_gui_input(escape)
+	for event in pause_events:
+		InputMap.action_add_event("pause", event)
+	assert_false(screen.is_open())

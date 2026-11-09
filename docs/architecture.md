@@ -33,10 +33,10 @@ Warft and an Ewer here and there.
   turns real time into game minutes, sends input to the state and creates the views and
   screens. Its `_ready` runs in steps: load the game, make the views, connect the state and
   the views, apply the start options. Every screen (`CharacterScreen`, `CraftingScreen`,
-  `StorageScreen`, `ConsoleView`, `ChatScreen`) has `open()`, `close()` and `is_open()`, and
-  Main keeps them in one list (`_screens`). The windows (so far the crafting screen, the
-  chest, the character screen, which opens on a tab with `open_tab`, and the pause menu) extend
-  `Modal`, which builds the backdrop and panel, opens, closes, takes Escape and keeps one window
+  `StorageScreen`, `ConsoleView`, `ChatScreen`) has `open()` (the chat's is
+  `open_chat(npc, state)`), `close()` and `is_open()`, and Main keeps them in one list
+  (`_screens`). The windows (so far the crafting screen, the chest, the character screen, which
+  opens on a tab with `open_tab`, the pause menu and the chat) extend `Modal`, which builds the backdrop and panel, opens, closes, takes Escape and keeps one window
   open at a time; see [ui.md](ui.md). The debug flags are parsed by `StartupOptions`; `DebugRunner` does
   the ones that wait for the world to be drawn (see below).
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the

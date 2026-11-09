@@ -45,7 +45,7 @@ var _npc_name_tag := NpcNameTag.new()
 var _cheat_hud := CheatHud.new()
 ## The screens, in the order Escape closes them. The pause menu is not among them: Escape
 ## opens it, it is a Modal and takes its own input.
-## The chat pauses the game like the pause menu, but takes Escape itself.
+## The chat is a Modal too, which takes Escape in its input line.
 var _screens: Array = [
 	_console_view, _chat_screen, _character_screen, _crafting_screen, _storage_screen
 ]
@@ -442,10 +442,10 @@ func _is_use_event(event: InputEvent) -> bool:
 	return event.is_action_pressed("use") or event.is_action_pressed("use_click")
 
 
-## Whether a window or the console is open: the player neither walks nor acts. The windows that
-## are not Modals yet are asked one by one.
+## Whether a window or the console is open: the player neither walks nor acts. The console is
+## the one that is not a Modal.
 func _is_any_screen_open() -> bool:
-	return Modal.is_any_open() or _console_view.is_open() or _chat_screen.is_open()
+	return Modal.is_any_open() or _console_view.is_open()
 
 
 ## Closes the first open screen of `_screens`. Returns whether there was one.
@@ -648,7 +648,7 @@ func _show_npc(npc: Npc) -> void:
 ## Opens the chat with a villager, who turns to the player (the chat pauses the game).
 func _open_chat(npc: Npc) -> void:
 	_state.npcs.talk_to(npc, _state.player.position)
-	_chat_screen.open(npc, _state)
+	_chat_screen.open_chat(npc, _state)
 
 
 ## Sleeps in the bed in reach until the morning: the new day shows on the black for a moment.

@@ -1,5 +1,5 @@
 class_name ChatScreen
-extends CanvasLayer
+extends Modal
 ## The chat with a villager, laid out like a messenger: the villager's portrait on the left and
 ## the player's on the right, each with the name under it, and between them the lines so far as
 ## bubbles, the villager's on the left under their name and the player's on the right, each with
@@ -7,9 +7,10 @@ extends CanvasLayer
 ## or Page Up and Page Down, and a line to type into is below. Enter sends, Escape leaves. The
 ## window has a fixed size (LOG_SIZE), which the bubbles' widths are worked out from.
 ##
-## The game is paused while it is open, so nothing moves and no key reaches the game but the art
-## switch, which the chat passes on (`art_set_switch_pressed`): it keeps running itself, and its
-## input line takes every other key. A line sent is answered by NpcDialogue;
+## The game is paused while it is open (a Modal that pauses), so nothing moves and no key reaches
+## the game but the art switch, which the chat passes on (`art_set_switch_pressed`): it keeps
+## running itself, and its input line takes every other key, Escape included (see
+## `_on_input_gui_input`). A line sent is answered by NpcDialogue;
 ## while the answer is awaited the villager is shown typing ("..."), and nothing more is sent to
 ## them. The wait is the villager's (Npc `is_answering`): the player may leave and talk to
 ## another, and the answer is kept in the chat of the one who was asked. Typing `/clear` makes
@@ -23,7 +24,6 @@ signal answered
 ## pauses the game and so Main's input.
 signal art_set_switch_pressed
 
-const THEME := preload("res://game/scenes/ui_theme.tres")
 ## What the player is called in the chat.
 const PLAYER_NAME := "You"
 ## Portraits are drawn at this many screen pixels per art pixel.
@@ -76,23 +76,13 @@ var _input := LineEdit.new()
 
 
 func _init() -> void:
+	super()
 	add_to_group(ArtSet.VIEWS)
+	pauses_game = true
 	layer = 5
-	visible = false
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	var backdrop := ColorRect.new()
-	backdrop.color = UiColors.BACKDROP
-	backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(backdrop)
-	var centre := CenterContainer.new()
-	centre.set_anchors_preset(Control.PRESET_FULL_RECT)
-	backdrop.add_child(centre)
-	var panel := PanelContainer.new()
-	panel.theme = THEME
-	centre.add_child(panel)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", GAP)
-	panel.add_child(row)
+	_panel.add_child(row)
 	row.add_child(_portrait_column(_npc_portrait, _npc_name))
 	var chat := VBoxContainer.new()
 	var log_ground := PanelContainer.new()
@@ -124,20 +114,19 @@ func _init() -> void:
 	row.add_child(_portrait_column(_player_portrait, player_name))
 
 
-func is_open() -> bool:
-	return visible
-
-
-## Opens the chat with a villager of the game of `state`, its lines so far shown, and pauses the
-## game.
-func open(npc: Npc, state: GameState) -> void:
+## Opens the chat with a villager of the game of `state`, its lines so far shown. Opening it again
+## moves it to that villager.
+func open_chat(npc: Npc, state: GameState) -> void:
+	close()
 	_npc = npc
 	_state = state
-	_show_portrait(_player_portrait, state.player.appearance)
-	_show_portrait(_npc_portrait, npc.appearance)
-	_npc_name.text = npc.name
-	visible = true
-	get_tree().paused = true
+	open()
+
+
+func _on_open() -> void:
+	_show_portrait(_player_portrait, _state.player.appearance)
+	_show_portrait(_npc_portrait, _npc.appearance)
+	_npc_name.text = _npc.name
 	_input.clear()
 	_notice = ""
 	_show_lines()
@@ -146,12 +135,8 @@ func open(npc: Npc, state: GameState) -> void:
 	_input.edit()
 
 
-func close() -> void:
-	if not visible:
-		return
-	visible = false
+func _on_close() -> void:
 	_input.release_focus()
-	get_tree().paused = false
 
 
 ## Says a line to the villager and waits for the answer. Ignored while they still owe one.
@@ -333,9 +318,9 @@ func _on_input_gui_input(event: InputEvent) -> void:
 		return
 	if not event is InputEventKey or not event.pressed:
 		return
-	# A LineEdit consumes ui_cancel while editing, so the pause key is caught here; accepting it
-	# keeps it from opening the pause menu once the game runs again.
-	if event.is_action_pressed("pause"):
+	# A LineEdit consumes ui_cancel while editing, so Modal never sees Escape and the pause key
+	# is caught here; accepting it keeps it from opening the pause menu once the game runs again.
+	if event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel"):
 		close()
 		_input.accept_event()
 		return

@@ -73,6 +73,10 @@ E does nothing while it is open.
   A window that wants it first returns true from `_takes_escape()` (the pause menu goes back a
   page and stays open). A window must stay a child of Main: input reaches children before their
   parent, which is why Escape gets to the window first and is not handled twice.
+- **A text field takes Escape:** a window whose input line has the focus does not get Escape
+  (a LineEdit consumes `ui_cancel` while editing, and the pause key is caught by its owner).
+  The chat closes itself from its line's `gui_input` on `pause` and `ui_cancel`, not through
+  `_takes_escape`.
 - **Other keys:** `close_actions` (set in `_init`) lists input actions that close the window at
   once, as Escape does: the crafting screen and the chest register `interact`, so E closes them.
   `_takes_escape()` is asked for Escape and the pause key only, not for these. A key not listed

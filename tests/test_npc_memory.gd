@@ -39,7 +39,7 @@ func _line(from_player: bool, text: String) -> Dictionary:
 
 ## Opens the chat, says `text`, waits for the answer and closes the chat.
 func _talk(screen: ChatScreen, text: String) -> void:
-	screen.open(_npc, _state)
+	screen.open_chat(_npc, _state)
 	screen.say(text)
 	await wait_for_signal(screen.answered, 2.0)
 	screen.close()
@@ -129,7 +129,7 @@ func test_lines_beyond_the_setting_are_remembered_as_the_model_sums_them_up() ->
 	_settings.profiles.set_chat_history_lines(2)
 	_chat.answers = ["Moin!", "Aye.", "The neighbour greeted me; I greeted back."]
 	var screen := _chat_screen()
-	screen.open(_npc, _state)
+	screen.open_chat(_npc, _state)
 	await _said(screen, "Moin, Antje")
 	assert_eq(_npc.memories.size(), 0, "both lines are still kept")
 	await _said(screen, "Rain today?")
@@ -144,7 +144,7 @@ func test_without_a_model_the_dropped_lines_are_remembered_plainly() -> void:
 	_settings.profiles.active["endpoint"] = ""
 	_settings.profiles.set_chat_history_lines(2)
 	var screen := _chat_screen()
-	screen.open(_npc, _state)
+	screen.open_chat(_npc, _state)
 	await _said(screen, "Moin, Antje")
 	await _said(screen, "Rain today?")
 	assert_eq(_npc.memories.size(), 1)
@@ -274,7 +274,7 @@ func test_lowering_the_setting_while_a_summary_is_in_flight_loses_and_doubles_no
 func test_clear_forgets_the_chat_and_the_memories_and_says_so() -> void:
 	_chat.answers = ["Moin!"]
 	var screen := _chat_screen()
-	screen.open(_npc, _state)
+	screen.open_chat(_npc, _state)
 	await _said(screen, "Moin")
 	_npc.add_memory("On the 1st day: one.")
 	_npc.uncompacted_lines.append(_line(true, "old"))
@@ -296,7 +296,7 @@ func test_clear_forgets_the_chat_and_the_memories_and_says_so() -> void:
 
 func test_other_text_with_a_slash_is_said_as_it_is() -> void:
 	var screen := _chat_screen()
-	screen.open(_npc, _state)
+	screen.open_chat(_npc, _state)
 	await _said(screen, "/dance")
 	assert_eq(_npc.chat_history[0]["text"], "/dance")
 
