@@ -48,7 +48,7 @@ by topic. Where is a thing drawn?
 | `forms.py` | Rounded shapes as masks (ellipse, turned or not, capsule, polygon, rounded box) and their shading by the light from the top left, for the figures of character.py and villagers.py, the farm animals of livestock.py and the wild animals. |
 | `portraits.py` | The 32x32 chat portrait of every layer that shows in a bust: the top of its frame facing the viewer. |
 | `interior.py` | The room tiles and the furniture inside the buildings, the hearth too, drawn at 32 px; the bed covers. |
-| `buildings.py` | The shack, fisherman's hut, Kate, longhouse, hall house and barn at 32 px per tile, plain and with lit windows. |
+| `buildings.py` | The shack, fisherman's hut, Kate (and its brick and Geest styles, `kate(walls=...)`, as kate_brick and kate_geest), longhouse, hall house and barn at 32 px per tile, plain and with lit windows. |
 | `church.py` | The church and its bell frame (as buildings.py), and the graves of the churchyard (a row of the object atlas, drawn at 32 px). |
 | `seasons.py` | The other looks (spring, autumn, bare, frost, snow, dusting, leaf-out steps) made from the summer art by colour remaps and overlays, the ground's by terrain layer where they differ (`LAYER_REMAPS`: autumn straw only on the dry grass). Also adds its colours to the palette. |
 | `crops.py`, `crop_icons.py` | Crop sheets (growth stages and the dead one), seed bag and produce icons. |
@@ -97,7 +97,9 @@ name would stand in for the shared one that `palette.py` imports), and `ground_o
 the wet soil of `crop_icons.py` (drawn without `crops.Surface`) and the clay hint of `meadow.py`;
 the buildings (task 110), from commit e303759: `buildings.py` and `church.py` unchanged (the
 graves of `church.py` are not written there; the looks are the shared `seasons.house`), whose
-pictures kept their sizes at 32 px; the plants (task 108), from commit e303759: `trees.py`,
+pictures kept their sizes at 32 px, but for the Kate's brick and Geest styles (task 120),
+drawn into the old Kate after the fact (its `walls`, a brick wall and a small tarred foot) so
+that they have a classic look too; the plants (task 108), from commit e303759: `trees.py`,
 `trunks.py`, `beech.py`, `birch.py`, `alder.py`, `willow.py` and `flowers.py` (the meadow flowers
 of the classic decorations) unchanged, the plant parts of `meadow.py` and `reeds.py`, and
 `object_looks.py`, the object part of `seasons.py`, which draws the looks of the whole classic

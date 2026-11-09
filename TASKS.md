@@ -1989,7 +1989,24 @@ icons; this task is the hand-held pictures, and may go with 115 if that is simpl
 
 ## 120. Kate variants: a brick Kate and a Geest Kate
 
-- [ ] Done
+- [x] Done
+
+Done (with task 121): a building has styles, sections `[<building>.<style>]` after it in
+data/buildings.cfg with their own `name` and the keys they change; the footprint, the door
+and the interior map stay the building's (checked), so a style needs no interior map of its
+own and the hammer's row does not grow. `BuildingTypes.of(type, style)` gives a style's entry,
+the building's own look being style &"". A placed building saves its `style` (save version
+24; a version 23 building has its own look, a style later taken out of the file shows as the
+own look; the upgrade from version 13 dropped in a commit of its own, before the bump). Its
+picture, window lights, name and refund are its style's. The art: `buildings.kate(walls=)`,
+"brick" red brick (rust, red_light) in sand joints on the fieldstones, white frames, green
+door and shutters, a brick chimney (30 clay instead of 15); "geest" the lime wash over a foot
+tarred black (`tarred_foot`) under a turf ridge (35 logs, 5 stone). The windows stand where
+the Kate's do, so the window lights are its own. The classic set has both too, drawn into
+the frozen classic Kate by the same `walls` parameter (its brick wall and a small tarred
+foot); every old picture stays byte-identical. `--street` shows every style. Checked in
+screenshots at zoom 0.5, 1 and 2: summer, autumn, a winter night under snow with lit windows,
+in both art sets.
 
 From review/art-review-2026-11-08 (its task 7 and buildings row 7), left out of task 110: two
 more looks of the Kate, for Kerrin's house at the dyke foot, the mill house and the sexton's
@@ -2004,7 +2021,24 @@ each needs its own interior map today (test_interior_maps) and the hammer's list
 
 ## 121. A building menu: the buildings and their variants, with a preview
 
-- [ ] Done
+- [x] Done
+
+Done (with task 120): `BuildMenu` replaces the small build panel. With the hammer held, a
+row of the buildings stands just above the hotbar in the order of data/buildings.cfg, each a
+small picture with its name and its materials (icon and count); the chosen building's other
+styles stand in a column above its cell, the first nearest the row; beside them (right, or
+left at the window's edge) a larger preview of the chosen style with each material as
+carried/needed, red when short, and why the spot is refused (the row covers the message
+above the hotbar). The chosen cell is lit like a hovered button, its name in gold. Q and E or
+the left and right arrows move along the row (wrapping, a new building in its own look), the
+up and down arrows through the styles (`build_style_up`, `build_style_down`, stopping at the
+ends); a click on a cell picks it (`Builder.choose`) and never reaches the land. While the
+menu is up the arrows are the menu's and the player walks with WASD only
+(`BuildMode.walk_direction`, `GameSettings.SHARING_PAIRS`); Escape dismisses build mode and
+gives them back. The ghost is the chosen style's; `--building=kate.brick` picks a style for
+screenshots. Taking down, the menu gives way to its "Taking down" panel at the top left. Its
+pictures follow F7. Checked in screenshots at zoom 0.5, 1 and 2, both art sets, day, a winter
+night and taking down; README's build screenshot retaken.
 
 The user, 2026-11-08: "we need a proper building menu which allows the different variants and
 maybe a small preview. It could look like a matrix on top of the quick bar where you see the
