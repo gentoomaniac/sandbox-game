@@ -19,7 +19,9 @@ extends CanvasLayer
 ## - Contents that change size need nothing: the panel refits when its minimum size changes, when
 ##   the window is resized and when the UI scale changes. `refit()` forces it.
 ## - Escape here is `ui_cancel` (not rebindable) or the rebindable pause key, as the pause menu
-##   takes both. Windows must stay children of Main, so that Escape reaches them before Main.
+##   takes both. Other keys that close the window (E on the chest) are named in `close_actions`;
+##   they close it at once, without `_takes_escape()`. Windows must stay children of Main, so that
+##   these keys reach them before Main.
 ## - Only Modals pause the game, once all windows are on this base (the pause menu is one).
 
 ## The window was opened, after `_on_open()`.
@@ -37,6 +39,8 @@ var pauses_game := false
 ## Whether a click outside the panel closes the window. A window that uses those clicks itself
 ## overrides `_on_backdrop_input` instead.
 var closes_on_backdrop_click := false
+## The input actions, besides Escape and the pause key, that close the window. Set it in `_init`.
+var close_actions: Array[StringName] = []
 
 var _backdrop := ColorRect.new()
 var _panel := PanelContainer.new()
@@ -156,10 +160,17 @@ func _scrolling(growing_part: Control) -> ScrollingList:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if visible and (event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause")):
+	if not visible:
+		return
+	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
 		get_viewport().set_input_as_handled()
 		if not _takes_escape():
 			close()
+	elif close_actions.any(
+		func(action: StringName) -> bool: return event.is_action_pressed(action)
+	):
+		get_viewport().set_input_as_handled()
+		close()
 
 
 func _centre_panel() -> void:

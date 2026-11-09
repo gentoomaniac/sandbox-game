@@ -68,6 +68,10 @@ growing part (a chest with other slots), keep the part as a fixed container and 
   A window that wants it first returns true from `_takes_escape()` (the pause menu goes back a
   page and stays open). A window must stay a child of Main: input reaches children before their
   parent, which is why Escape gets to the window first and is not handled twice.
+- **Other keys:** `close_actions` (set in `_init`) lists input actions that close the window at
+  once, as Escape does: the crafting screen and the chest register `interact`, so E closes them.
+  `_takes_escape()` is asked for Escape and the pause key only, not for these. A key not listed
+  does nothing to the window.
 - **Backdrop click:** `closes_on_backdrop_click = true` closes on a left click outside the panel.
   A window that uses those clicks itself (the chest lets go of the picked stack) overrides
   `_on_backdrop_input(event)`; it should then set `_panel.mouse_filter` to ignore, so clicks

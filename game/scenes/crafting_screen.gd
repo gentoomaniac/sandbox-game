@@ -32,6 +32,7 @@ var _note_label := Label.new()
 
 func _init() -> void:
 	super()
+	close_actions = [&"interact"]
 	var column := VBoxContainer.new()
 	for label in [_title_label, _skills_label, _work_label]:
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

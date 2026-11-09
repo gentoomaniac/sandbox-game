@@ -612,10 +612,6 @@ func _toggle_classic_art() -> void:
 ## Opens and closes the screens on their keys. Returns whether a screen took the event: one that
 ## is open takes all the input, so the player neither walks nor acts.
 func _screens_take(event: InputEvent) -> bool:
-	# The windows that are Modals (the chest and the crafting screen, so far).
-	if Modal.is_any_open() and event.is_action_pressed("interact"):
-		Modal.close_open()
-		return true
 	if _storage_screen.is_open():
 		return true
 	if event.is_action_pressed("crafting") and not _character_screen.is_open():

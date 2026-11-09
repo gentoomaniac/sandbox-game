@@ -93,3 +93,12 @@ func test_a_station_menu_shows_its_recipes_and_the_hand_menu_those_made_by_hand(
 	_screen.close()
 	_screen.toggle()
 	assert_eq(_row().recipe_id, &"chest")
+
+
+func test_e_closes_the_menu() -> void:
+	_screen.open()
+	var event := InputEventAction.new()
+	event.action = &"interact"
+	event.pressed = true
+	_screen._unhandled_input(event)
+	assert_false(_screen.is_open())

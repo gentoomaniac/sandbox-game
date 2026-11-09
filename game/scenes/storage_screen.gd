@@ -44,6 +44,7 @@ var _chest_holder := VBoxContainer.new()
 
 func _init(hotbar: HotbarHud) -> void:
 	super()
+	close_actions = [&"interact"]
 	_hotbar = hotbar
 
 	var row := HBoxContainer.new()

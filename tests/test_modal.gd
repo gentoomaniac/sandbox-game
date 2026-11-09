@@ -138,6 +138,26 @@ func test_escape_does_nothing_in_a_closed_window() -> void:
 	assert_eq(window.escapes_taken, 0)
 
 
+func test_a_registered_key_closes_the_window_and_another_does_not() -> void:
+	var window := _window()
+	window.close_actions = [&"interact"]
+	window.open()
+	_press(&"crafting")
+	assert_true(window.is_open())
+	_press(&"interact")
+	assert_false(window.is_open())
+
+
+func test_a_registered_key_does_not_ask_the_escape_hook() -> void:
+	var window := _window()
+	window.close_actions = [&"interact"]
+	window.is_taking_escape = true
+	window.open()
+	_press(&"interact")
+	assert_false(window.is_open())
+	assert_eq(window.escapes_taken, 0)
+
+
 func test_a_window_can_take_escape_before_the_base() -> void:
 	var window := _window()
 	window.is_taking_escape = true
