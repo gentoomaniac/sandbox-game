@@ -65,7 +65,17 @@ func year() -> int:
 
 ## "10th day of Spring Year 2"
 func date_text() -> String:
-	return "%s day of %s Year %d" % [ordinal(day_of_season()), SEASON_NAMES[season()], year()]
+	return date_text_of(day)
+
+
+## The date of game day `of_day` (1 is the first), as `date_text` gives it.
+static func date_text_of(of_day: int) -> String:
+	var day_of_season := (of_day - 1) % DAYS_PER_SEASON + 1
+	var season_index := ((of_day - 1) / DAYS_PER_SEASON) % SEASON_NAMES.size()
+	var year_number := (of_day - 1) / DAYS_PER_YEAR + 1
+	return (
+		"%s day of %s Year %d" % [ordinal(day_of_season), SEASON_NAMES[season_index], year_number]
+	)
 
 
 ## "06:00"

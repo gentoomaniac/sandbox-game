@@ -3,8 +3,10 @@ extends Modal
 ## The chat with a villager, laid out like a messenger: the villager's portrait on the left and
 ## the player's on the right, each with the name under it, and between them the lines so far as
 ## bubbles, the villager's on the left under their name and the player's on the right, each with
-## the game time in its corner. The window scrolls to the newest line, back with the mouse wheel
-## or Page Up and Page Down, and a line to type into is below. Enter sends, Escape leaves. The
+## the game time in its corner, and above each day's lines that day ("Today", "Yesterday" or the
+## date), so a line of an earlier day doesn't look newer than the one after it. The window
+## scrolls to the newest line, back with the mouse wheel or Page Up and Page Down, and a line to
+## type into is below. Enter sends, Escape leaves. The
 ## window has a fixed size (LOG_SIZE), which the bubbles' widths are worked out from.
 ##
 ## The game is paused while it is open (a Modal that pauses), so nothing moves and no key reaches
@@ -175,22 +177,43 @@ func _show_lines() -> void:
 		# Out of the tree first, so nothing counts it as a line while it is freed.
 		_messages.remove_child(message)
 		message.free()
-	# Whether the line above was the player's; null before the first.
+	# Whether the line above was the player's; null before the first and after a date.
 	var previous: Variant = null
+	var shown_day := 0
 	for line in _npc.chat_history:
+		if line["day"] != shown_day:
+			shown_day = line["day"]
+			_add_centred_line("Date", _day_text(shown_day))
+			previous = null
 		_add_bubble(line["text"], Sun.time_text(line["minute"]), line["from_player"], previous)
 		previous = line["from_player"]
 	if _npc.is_answering:
 		_add_bubble(TYPING_TEXT, "", false, previous)
 	if _notice != "":
-		var notice := Label.new()
-		notice.name = "Notice"
-		notice.text = _notice
-		notice.add_theme_color_override("font_color", TIME_COLOR)
-		notice.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		notice.autowrap_mode = TextServer.AUTOWRAP_WORD
-		_messages.add_child(_margin(notice, OTHER_SPEAKER_GAP))
+		_add_centred_line("Notice", _notice)
 	_is_following = true
+
+
+## The day a run of lines was said, above it as in a messenger: "Today", "Yesterday" or the date.
+func _day_text(day: int) -> String:
+	var today := _state.clock.day
+	if day == today:
+		return "Today"
+	if day == today - 1:
+		return "Yesterday"
+	return GameClock.date_text_of(day)
+
+
+## A small line in the middle of the chat, such as the day of the lines below it or a notice.
+func _add_centred_line(label_name: String, text: String) -> void:
+	var label := Label.new()
+	label.name = label_name
+	label.text = text
+	label.add_theme_color_override("font_color", TIME_COLOR)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD
+	var gap := OTHER_SPEAKER_GAP if _messages.get_child_count() > 0 else 0
+	_messages.add_child(_margin(label, gap))
 
 
 ## Adds the bubble of a line: on the right for the player, on the left for the villager, who has

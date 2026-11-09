@@ -115,14 +115,18 @@ func test_leaving_a_villager_who_is_answering_leaves_another_free_to_talk() -> v
 	_state.npcs.add(other)
 	screen.open_chat(_npc, _state)
 	screen.say("One")
-	assert_eq(screen._messages.get_child_count(), 2, "the line and the dots")
+	assert_eq(screen._messages.get_child_count(), 3, "the day, the line and the dots")
 	screen.close()
 	screen.open_chat(other, _state)
 	assert_eq(screen._messages.get_child_count(), 0, "the other one owes no answer")
 	screen.say("Two")
 	assert_eq(other.chat_history.size(), 1, "and may be spoken to")
 	await wait_for_signal(screen.answered, 2.0)
-	assert_eq(screen._messages.get_child_count(), 2, "the first answer is not shown here")
+	assert_eq(
+		screen._messages.get_child_count(),
+		3,
+		"the day, the line and the dots: not the first answer"
+	)
 	# GUT's waiting stands still while the game is paused.
 	screen.close()
 	await wait_until(func() -> bool: return not other.is_answering, 2.0)

@@ -36,8 +36,17 @@ func _chat_screen(seconds := 0.1) -> ChatScreen:
 func _bubbles(screen: ChatScreen) -> Array[Control]:
 	var bubbles: Array[Control] = []
 	for message in screen._messages.get_children():
-		bubbles.append(message.get_child(0))
+		if message.get_child(0) is not Label:
+			bubbles.append(message.get_child(0))
 	return bubbles
+
+
+## The day lines of the chat, top to bottom.
+func _day_lines(screen: ChatScreen) -> Array[String]:
+	var lines: Array[String] = []
+	for label in screen._messages.find_children("Date", "Label", true, false):
+		lines.append(label.text)
+	return lines
 
 
 func _text_in(bubble: Control, part: String) -> String:
@@ -83,7 +92,8 @@ func test_a_run_of_one_speaker_is_named_once_and_set_closer_than_a_change_of_spe
 	var gaps: Array[int] = []
 	for message in screen._messages.get_children():
 		gaps.append(message.get_theme_constant("margin_top"))
-	assert_eq(gaps, [0, ChatScreen.SAME_SPEAKER_GAP, ChatScreen.OTHER_SPEAKER_GAP])
+	# The day above them first, then the bubbles.
+	assert_eq(gaps, [0, 0, ChatScreen.SAME_SPEAKER_GAP, ChatScreen.OTHER_SPEAKER_GAP])
 	screen.close()
 
 
@@ -155,3 +165,20 @@ func test_the_window_scrolls_to_the_newest_line() -> void:
 	assert_gt(scroll_bar.max_value, scroll_bar.page, "there is something to scroll")
 	assert_almost_eq(scroll_bar.value, scroll_bar.max_value - scroll_bar.page, 1.0)
 	screen.close()
+
+
+func test_each_days_lines_have_the_day_above_them() -> void:
+	_state.clock.day = 12
+	_npc.add_chat_line(3, 600, true, "Long ago.")
+	_npc.add_chat_line(11, 600, true, "Yesterday's word.")
+	_npc.add_chat_line(11, 610, false, "And my answer.")
+	_npc.add_chat_line(12, 480, true, "Good morning.")
+	var screen := _chat_screen()
+	screen.open_chat(_npc, _state)
+	assert_eq(
+		_day_lines(screen),
+		[GameClock.date_text_of(3), "Yesterday", "Today"] as Array[String],
+	)
+	assert_eq(GameClock.date_text_of(3), "3rd day of Spring Year 1")
+	assert_eq(GameClock.date_text_of(12), _state.clock.date_text())
+	assert_eq(_bubbles(screen).size(), 4, "the day lines are not bubbles")
