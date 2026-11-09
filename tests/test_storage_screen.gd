@@ -169,8 +169,10 @@ func test_a_chest_of_many_slots_scrolls_inside_a_small_window() -> void:
 	window.add_child(_screen)
 	_screen.open_chest(chest, player)
 	await wait_process_frames(2)
+	var list: ScrollingList = _screen.find_children("*", "ScrollingList", true, false)[0]
+	assert_true(list.get_v_scroll_bar().visible, "the window is too small for the slots")
 	var panel: Control = _screen.find_children("*", "PanelContainer", true, false)[0]
-	assert_lte(panel.size.y, window.size.y)
+	assert_lte(panel.size.y, float(window.size.y - 2 * ScrollingList.MARGIN))
 
 
 func test_opening_the_chest_closes_the_window_that_was_open() -> void:
