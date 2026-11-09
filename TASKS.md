@@ -2307,6 +2307,26 @@ signature. The crafting screen and the chest are on it; Main asks `Modal.is_any_
 screens not yet on it. The open window is a static variable of the base, no registry. Escape is
 `ui_cancel` or the pause key, through the `_takes_escape()` hook.
 
+## 133. A trash can in the inventory
+
+- [ ] Done
+
+The user, 2026-11-09: "once i tell you to resume 131, start in parallel: a trash can for the
+inventory dragging items on it will destroy them after confirmation." Starts when task 131
+resumes, alongside it.
+- A trash can slot on the inventory screen (character screen), and on the chest's screen, where
+  the backpack shows. It looks like a slot with a bin icon (palette colours, both art sets).
+- Putting a picked stack on it (the screens pick and place with clicks, see
+  design/player/inventory-and-character.md; a real drag counts the same if dragging comes later)
+  asks first: "Destroy 12 logs?" with Destroy and Keep. Destroy removes the stack for good; Keep,
+  Escape or a click elsewhere leaves it picked as it was. Equipped items and the hotbar's stacks
+  can be thrown away the same way once picked.
+- The confirmation is part of the screen, not a second window (one Modal at a time, task 132).
+- Game state: the inventory's removal is an explicit action with a test; the screen only asks
+  and sends it. Docs: the inventory design page and the README.
+- Task 131 moves the character screen onto Modal at the same time: whichever lands second
+  rebases onto the other; the trash can doesn't move the screen itself.
+
 ## Later (not part of the prototype)
 
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
