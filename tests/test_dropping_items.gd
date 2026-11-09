@@ -66,3 +66,8 @@ func test_nothing_is_dropped_inside_a_house() -> void:
 	var slot := _slot_with(ItemTypes.STONE, 6)
 	assert_false(_state.drop_from_inventory(slot))
 	assert_eq(_state.player.inventory.slots[slot]["count"], 6)
+
+
+func test_dropping_from_a_slot_that_does_not_exist_does_nothing() -> void:
+	assert_false(_state.drop_from_inventory(-1))
+	assert_false(_state.drop_from_inventory(Inventory.SLOT_COUNT))

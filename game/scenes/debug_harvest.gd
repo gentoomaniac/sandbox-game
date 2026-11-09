@@ -68,7 +68,5 @@ static func _hold(state: GameState, item: StringName) -> void:
 	inventory.add(item, 1)
 	for slot in Inventory.SLOT_COUNT:
 		if inventory.item_in(slot) == item:
-			var displaced := inventory.slots[inventory.selected_slot]
-			inventory.slots[inventory.selected_slot] = inventory.slots[slot]
-			inventory.slots[slot] = displaced
+			inventory.move_to(slot, inventory, inventory.selected_slot)
 			return

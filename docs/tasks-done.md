@@ -3524,3 +3524,32 @@ sprites belong to one world: make a new view), and the same one twice does nothi
 `test_view_rebinding.gd`, `test_window_cycles.gd`, `test_wildlife_session_rules.gd`. A pending
 reply is dropped with the session (its NpcDialogue is freed with it); no generation counter was
 needed, as a reply goes to the villager object it was asked of.
+
+## 139. Review R1: item operations are committed transactions
+
+- [x] Done
+
+From the architecture review of 2026-11-09 ([review/code-review-2026-11-09/README.md](review/code-review-2026-11-09/README.md), F1 and package R1; the user: review
+items come before the gossip work). Make conservation, slot identity and notification timing
+properties of the item API:
+- One internal "change, then notify once" path in ItemSlots that transfers, payments, equipment
+  moves and crafting all use: a listener on any `changed` never sees an item twice or missing
+  (today `send` fills the target and notifies before emptying the source; `move_to_equipment`
+  notifies between unequip, write and equip; crafting removes each material and adds the output
+  in separate steps; `take_out` adds before it clears the station).
+- `send` to its own container is refused or harmless (today it empties the stack). Bad counts and
+  indices are refused without partial change.
+- Using the held item takes from the selected slot: eating, planting, placing, the bone and the
+  saddle (today `remove(item, 1)` takes from the last stack of that item). Paying a cost across
+  the inventory stays its own operation.
+- Outside code stops writing `slots` or emitting another object's `changed` (Equipment,
+  GameState). Destination order and overflow rules stay exactly as they are.
+- Tests look at the state from inside the signal callbacks, two containers in one operation, a
+  re-entrant listener, and the two-stacks-of-berries case.
+- Out of scope: item attributes, a new stack type, moving content into data files.
+
+Done: ItemSlots finishes every change before it notifies (`send`, `move_to`, `add`, `remove`, the
+new `take_from` and `exchange`); Equipment moves update both sides, then notify; crafting and
+building pay with `exchange`, `take_out` clears the station first; `Inventory.consume_held` takes
+from the selected slot; GameState and the debug harvest no longer write `slots` or emit
+`changed`.

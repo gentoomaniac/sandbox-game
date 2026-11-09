@@ -474,11 +474,14 @@ func collect_ground_items(delta: float) -> void:
 ## the world lie (see `World.drop_items`); the player picks it up again by walking away and back.
 ## Does nothing inside a building (nothing lies on the ground there). Returns whether it did.
 func drop_from_inventory(slot: int) -> bool:
-	var stack := player.inventory.slots[slot]
-	if is_inside() or stack.is_empty():
+	if (
+		is_inside()
+		or not player.inventory.has_slot(slot)
+		or player.inventory.item_in(slot) == ItemTypes.NONE
+	):
 		return false
-	player.inventory.slots[slot] = {}
-	player.inventory.changed.emit()
+	var stack := player.inventory.slots[slot]
+	player.inventory.destroy(slot)
 	for pile in world.drop_items(player.facing_tile(), {stack["item"]: stack["count"]}):
 		pile.is_dropped_by_player = true
 	return true
