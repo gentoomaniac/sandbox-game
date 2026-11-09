@@ -51,6 +51,17 @@ Decided 2026-11-05.
 - **UI look:** a pixel font and a framed panel (9-slice) in palette colours, in one shared
   Godot Theme that all UI uses.
 
+## Notifications
+
+Decided 2026-11-09 (task 145). A few short lines at the top left, below the clock and the harvest
+note, for what happens beside the player's play: "Saving...", "Saved" and a failed save.
+`NotificationHud` is on its own canvas layer, in the UI theme: each line sits on a plate, dim for
+news and the palette's ember red for trouble, so it reads over any ground and at every UI scale.
+A line fades after two seconds (a failure after six, so it is not missed); one that is kept (a
+save under way) stays until the line of the same key replaces it, so "Saving..." turns into
+"Saved" in place. At most four lines; the oldest goes first. It keeps running while the game is
+paused. No dialogs: a failed timed or quick save is a red line and nothing else.
+
 ## Coordinates display
 
 Decided 2026-11-05. The player's tile coordinates in the top right corner (inside a
