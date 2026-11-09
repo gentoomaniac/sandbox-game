@@ -67,8 +67,8 @@ assets/crops/<crop>.png: one sheet per crop, its four growth stages and the dead
 tile wide (32 px) and as tall as the sheet (see crops.py and data/crops.cfg), drawn at the game's tile. They
 have no seasonal variants.
 
-assets/soil_wet.png: the damp and the wet look of tilled soil, two tiles at the game's tile (see
-terrain.py).
+assets/soil_wet.png: the moister looks of tilled soil, a row of overlay tiles for each moisture step
+above the dry soil of the terrain and a tile for each bed shape, at the game's tile (see soil_beds.py).
 
 assets/clay_hint.png: the faint hint of a clay spot, one tile at the game's tile (see meadow.py).
 
@@ -340,7 +340,7 @@ def write_wildlife():
 def write_crops():
     for crop, cells in crops.sheets().items():
         save([cells], f"crops/{crop}.png", crops.WIDTH, len(cells[0]))
-    save([terrain.soil_wet()], "soil_wet.png", GAME_TILE)
+    save(terrain.soil_wet(), "soil_wet.png", GAME_TILE)
     save_picture(meadow.clay_hint(), "clay_hint.png")
 
 

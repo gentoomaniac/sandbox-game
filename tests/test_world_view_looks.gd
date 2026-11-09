@@ -237,7 +237,9 @@ func test_soil_that_snow_lies_on_is_not_drawn_wet() -> void:
 		tiles.append(pos)
 	_show(SUMMER, 0.0)
 	for pos in tiles:
-		assert_eq(_view._soil_wetness.get_cell_atlas_coords(pos), Vector2i(1, 0), "wet in summer")
+		assert_eq(
+			_view._soil_wetness.get_cell_atlas_coords(pos).y, SoilWetness.LOOKS - 2, "wet in summer"
+		)
 	_show(WINTER, 1.0)
 	var snowed := 0
 	for pos in tiles:
@@ -247,4 +249,6 @@ func test_soil_that_snow_lies_on_is_not_drawn_wet() -> void:
 	assert_gt(snowed, 0, "some of the soil is under snow")
 	_show(SUMMER, 0.0)
 	for pos in tiles:
-		assert_eq(_view._soil_wetness.get_cell_atlas_coords(pos), Vector2i(1, 0), "wet again")
+		assert_eq(
+			_view._soil_wetness.get_cell_atlas_coords(pos).y, SoilWetness.LOOKS - 2, "wet again"
+		)

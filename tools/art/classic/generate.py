@@ -117,7 +117,7 @@ def write_ground():
         decorations_by_look[look] = ground_looks.ground_rows(look, decoration_rows, ground_looks.STANDING.get(look))
     layers = [layer.__name__ for layer in terrain.LAYERS]
     atlas.save_sheets("decorations", [*layers, "flowers"], ground_looks.GROUND_LOOKS, decorations_by_look, TILE, TILE)
-    save([ground_overlays.soil_wet()], "soil_wet.png")
+    save(ground_overlays.soil_wet(), "soil_wet.png")
     save_picture(ground_overlays.clay_hint(), "clay_hint.png")
 
 

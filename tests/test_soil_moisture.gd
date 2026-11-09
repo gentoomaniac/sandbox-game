@@ -160,27 +160,31 @@ func test_moisture_survives_a_save_and_a_chunk_reload() -> void:
 	assert_almost_eq(restored.world.moisture_at(_tile), 0.77, 0.0001)
 
 
-func test_soil_looks_damp_and_wet_from_their_moistures() -> void:
-	assert_eq(SoilWetness.look_for(0.0), -1)
-	assert_eq(SoilWetness.look_for(SoilWetness.DAMP_FROM - 0.01), -1)
-	assert_eq(SoilWetness.look_for(SoilWetness.DAMP_FROM), 0)
-	assert_eq(SoilWetness.look_for(SoilWetness.WET_FROM - 0.01), 0)
-	assert_eq(SoilWetness.look_for(SoilWetness.WET_FROM), 1)
-	assert_eq(SoilWetness.look_for(1.0), 1)
-
-
 func test_the_wetness_layer_follows_the_moisture_of_tilled_soil() -> void:
 	var layer := SoilWetness.new()
 	add_child_autofree(layer)
 	layer.show_world(_world)
+	var alone := SoilWetness._columns[0]
 	_world.set_moisture(_tile, 0.0)
-	assert_eq(layer.get_cell_source_id(_tile), -1, "dry soil looks as it is")
+	assert_eq(layer.get_cell_source_id(_tile), -1, "the driest soil is the terrain's own look")
 	_world.set_moisture(_tile, 0.5)
-	assert_eq(layer.get_cell_atlas_coords(_tile), Vector2i(0, 0))
+	assert_eq(layer.get_cell_atlas_coords(_tile), Vector2i(alone, 1))
 	_world.set_moisture(_tile, 1.0)
-	assert_eq(layer.get_cell_atlas_coords(_tile), Vector2i(1, 0))
+	assert_eq(layer.get_cell_atlas_coords(_tile), Vector2i(alone, SoilWetness.LOOKS - 2))
 	_world.set_moisture(_tile, 0.0)
 	assert_eq(layer.get_cell_source_id(_tile), -1)
+
+
+func test_the_wetness_layer_cuts_a_tile_to_the_bed_around_it() -> void:
+	var layer := SoilWetness.new()
+	add_child_autofree(layer)
+	layer.show_world(_world)
+	_world.set_moisture(_tile, 1.0)
+	var alone := layer.get_cell_atlas_coords(_tile).x
+	_world.set_terrain(_tile + Vector2i.RIGHT, Tile.Terrain.SOIL)
+	assert_ne(layer.get_cell_atlas_coords(_tile).x, alone, "a tilled neighbour changes the shape")
+	_world.set_terrain(_tile + Vector2i.RIGHT, Tile.Terrain.GRASS)
+	assert_eq(layer.get_cell_atlas_coords(_tile).x, alone)
 
 
 func test_the_wetness_layer_draws_soil_that_is_wet_already() -> void:
@@ -188,10 +192,10 @@ func test_the_wetness_layer_draws_soil_that_is_wet_already() -> void:
 	var layer := SoilWetness.new()
 	add_child_autofree(layer)
 	layer.show_world(_world)
-	assert_eq(layer.get_cell_atlas_coords(_tile), Vector2i(1, 0))
+	assert_eq(layer.get_cell_atlas_coords(_tile).y, SoilWetness.LOOKS - 2)
 
 
-func test_the_wetness_layer_counts_the_damp_and_wet_tiles_beyond_loaded_chunks() -> void:
+func test_the_wetness_layer_counts_the_moist_tiles_beyond_loaded_chunks() -> void:
 	var far := _tile + Vector2i(Chunk.CHUNK_SIZE * 20, 0)
 	var layer := SoilWetness.new()
 	add_child_autofree(layer)

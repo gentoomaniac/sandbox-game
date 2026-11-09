@@ -36,7 +36,8 @@
     `ripe_wait_factor` in the config (1 for all crops for now). One day more and it
     withers: it dies, shows its dead stage and gives nothing. The player harvests by hand.
   - **Soil moisture** belongs to each tilled tile: rain wets it, the watering can fills
-    it, and warmth, sun and wind dry it out over the day. Watered soil looks darker.
+    it, and warmth, sun and wind dry it out over the day. The whole tile's brown shows it in four
+    steps: light brown when dry, dark brown when soaked, lightening day by day as it dries.
   - The calendar no longer gates planting: the weather does. Seeds plant on tilled soil
     any time; a crop planted in the wrong season simply won't thrive.
   - Each crop has its own seeds (a seed bag item, seed potatoes for potatoes) and its

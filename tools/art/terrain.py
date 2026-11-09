@@ -1,5 +1,5 @@
 """The ground: the terrain layers of assets/terrain.png and their decorations in
-assets/decorations.png, and the wet look of tilled soil in assets/soil_wet.png.
+assets/decorations.png, and the moister looks of tilled soil in assets/soil_wet.png.
 
 Tiles are drawn at the game's tile, 32x32 grids of palette colour names (None = transparent).
 Each terrain layer has one function that returns its atlas row and its decorations; `LAYERS`
@@ -27,6 +27,7 @@ import random
 import numpy as np
 
 import forms
+import soil_beds
 from canvas import GAME_TILE, NEIGHBOURS, blank, filled
 
 # Dual-grid corner bits, shared with game/scenes/terrain_tileset.gd.
@@ -916,36 +917,49 @@ def path():
 
 # Tilled soil --------------------------------------------------------------------------------------
 
-# The furrows of tilled soil run straight along the field, every 8 pixels: from the top of a ridge
-# down, a lit crest, its slope, its body and a dark furrow. Every pixel depends only on its place in
-# the 32 px tile, which repeats on both axes, so a bed of any size is one pattern and the tiles show
-# no seams, however the dual grid cuts them.
-_RIDGE = ("soil_mid", "soil_mid", "soil_mid", "soil", "soil", "soil", "soil_dark", "soil_dark")
+# The furrows of tilled soil run straight along the field, every 8 pixels: a lit crest, the body of
+# the ridge and two rows of furrow. Every pixel depends only on its place in the tile, which repeats
+# on both axes, so a bed of any size is one pattern and the tiles show no seams, however the dual
+# grid cuts them. The terrain is the dry soil; the moister steps are overlays (see soil_beds.py).
+_FURROW_ROWS = (6, 7)
 # Where the crest catches the light: along most of it, in broken stretches.
 _CREST_LIGHT = periodic_noise(82, [(5, 1.0), (7, 0.7)])
-# Crumbs: a few single pixels of the next shade up or down, so the rows are earth and not stripes.
+# Crumbs: a few single pixels of crest on the ridge and of furrow on its foot, so the rows are
+# earth and not stripes. 1 is a light one, -1 a dark one.
 _CRUMBS = [[random.Random(83 * GAME_TILE * y + x).choice((-1, 0, 0, 0, 0, 0, 0, 0, 0, 1)) for x in range(GAME_TILE)]
            for y in range(GAME_TILE)]
-_RIDGE_SHADES = ("soil_dark", "soil", "soil_mid", "soil_light")
 
 
-def _soil_pixel(x, y):
-    """The colour of the tilled soil at a pixel of the tile; the same for every tile."""
-    step = y % len(_RIDGE)
-    if step == 0 and _CREST_LIGHT(x, y) > -0.3:
-        return "soil_light"
-    colour = _RIDGE[step]
-    crumb = _CRUMBS[y % GAME_TILE][x % GAME_TILE]
-    return _RIDGE_SHADES[min(max(_RIDGE_SHADES.index(colour) + crumb, 0), len(_RIDGE_SHADES) - 1)]
+def soil_pixel_of(ramp):
+    """The function of the colour of the soil at a pixel of the tile, for a ramp of colours
+    (furrow, body, crest) of one moisture step."""
+    furrow, body, crest = ramp
+
+    def pixel(x, y):
+        row = y % 8
+        if row == 0:
+            return crest if _CREST_LIGHT(x, y) > -0.3 else body
+        if row in _FURROW_ROWS:
+            return furrow
+        crumb = _CRUMBS[y % GAME_TILE][x % GAME_TILE]
+        if crumb == 1 and row in (1, 2):
+            return crest
+        if crumb == -1 and row in (4, 5):
+            return furrow
+        return body
+
+    return pixel
+
+
+_DRY_SOIL = soil_pixel_of(soil_beds.RAMPS[0])
+_SOIL_SHAPES = edge_shapes(80, [(1, 1.0), (2, 0.5)], 0.06)
 
 
 def _tilled(seed):
-    return [[_soil_pixel(x, y) for x in range(GAME_TILE)] for y in range(GAME_TILE)]
+    return [[_DRY_SOIL(x, y) for x in range(GAME_TILE)] for y in range(GAME_TILE)]
 
 
 def soil():
-    shapes = edge_shapes(80, [(1, 1.0), (2, 0.5)], 0.06)
-
     def decorate(tile, covered, rng):
         # The field lies a little below the turf: dark along its edge where the turf beside it is
         # to the north or west, a step of soil elsewhere.
@@ -957,30 +971,12 @@ def soil():
 
     # A tilled field is the player's work, so it stays free of decorations, and all its tiles
     # are one: there is no variant to show where the tiles end.
-    return edge_tiles(_tilled, shapes, 80, decorate) + [_tilled(0)], []
+    return edge_tiles(_tilled, _SOIL_SHAPES, 80, decorate) + [_tilled(0)], []
 
 
 def soil_wet():
-    """The overlay of damp and of wet soil as two tiles of the plain tile grid: the soil's ridges
-    a shade darker in patches, which thin out towards the tile's border, so the edges of a field
-    stay clear and the tiles show no grid. Wet has more and bigger patches, which include the
-    damp ones, and its furrows hold the darkest soil. The terrain is drawn half a tile off the
-    tile grid (the dual grid), so the ridges are found half a tile on."""
-    darker = {"soil_light": "soil_mid", "soil_mid": "soil", "soil": "soil_dark", "soil_dark": "soil_dark"}
-    patches = patch_noise(85, 8)
-    half = GAME_TILE // 2
-    tiles = []
-    for level in (0.15, -0.3):
-        tile = blank(GAME_TILE)
-        for y in range(GAME_TILE):
-            for x in range(GAME_TILE):
-                to_border = min(x, y, GAME_TILE - 1 - x, GAME_TILE - 1 - y)
-                if patches(x, y) - 1.4 * max(0.0, 1 - to_border / 7) > level:
-                    is_furrow = (y + half) % len(_RIDGE) >= 5
-                    colour = "soil_dark" if level < 0 and is_furrow else darker[_soil_pixel(x + half, y + half)]
-                    tile[y][x] = colour
-        tiles.append(tile)
-    return tiles
+    """The overlays of the moister steps of tilled soil (see soil_beds.py)."""
+    return soil_beds.overlay_rows(GAME_TILE, _SOIL_SHAPES, soil_pixel_of)
 
 
 LAYERS = [

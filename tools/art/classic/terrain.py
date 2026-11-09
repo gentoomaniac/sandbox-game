@@ -19,6 +19,7 @@ one more, the meadow flowers of flowers.py.
 import math
 import random
 
+import soil_beds
 from canvas import NEIGHBOURS, TILE, blank, copy, filled
 
 # Dual-grid corner bits, shared with game/scenes/terrain_tileset.gd.
@@ -737,12 +738,22 @@ def path():
     return edge_tiles(texture, shapes, 100, decorate) + fulls, []
 
 
+def soil_pixel_of(ramp):
+    """The function of the colour of the soil at a pixel of the tile, for a ramp of colours
+    (furrow, body, crest) of one moisture step: tilled rows, a lit ridge, its body and a dark
+    furrow, every 4 pixels. A pixel depends only on its row, so the tiles of a bed show no seams,
+    however the dual grid cuts them."""
+    furrow, body, crest = ramp
+    rows = (crest, body, body, furrow)
+    return lambda x, y: rows[y % 4]
+
+
+_DRY_SOIL = soil_pixel_of(soil_beds.RAMPS[0])
+SOIL_SHAPES = edge_shapes(80, [(1, 1.0), (2, 0.5)], 0.08)
+
+
 def soil():
-    # Tilled rows: a lit ridge, its body, and a dark furrow, every 4 pixels. Every pixel depends
-    # only on its row, so the tiles of a bed show no seams, however the dual grid cuts them.
-    rows = ("soil_light", "soil_mid", "soil", "soil_dark")
-    plain = [[rows[y % 4]] * TILE for y in range(TILE)]
-    shapes = edge_shapes(80, [(1, 1.0), (2, 0.5)], 0.08)
+    plain = [[_DRY_SOIL(x, y) for x in range(TILE)] for y in range(TILE)]
 
     def decorate(tile, covered, rng):
         # A raised field border: dark on its south side, a lighter lip elsewhere.
@@ -751,10 +762,10 @@ def soil():
                 if covered(x, y) and not covered(x, y + 1):
                     tile[y][x] = "soil_dark"
                 elif is_rim(covered, x, y):
-                    tile[y][x] = "soil_mid"
+                    tile[y][x] = soil_beds.RAMPS[0][0]
 
     # A tilled field is the player's work, so it stays free of decorations.
-    return edge_tiles(lambda seed: copy(plain), shapes, 80, decorate) + [copy(plain)], []
+    return edge_tiles(lambda seed: copy(plain), SOIL_SHAPES, 80, decorate) + [copy(plain)], []
 
 
 LAYERS = [
