@@ -213,17 +213,30 @@ func test_a_click_on_the_backdrop_closes_only_if_the_window_wants_it() -> void:
 	assert_false(window.is_open())
 
 
-func test_the_panel_is_centred_and_follows_its_contents() -> void:
+func test_the_panel_stays_centred_as_its_contents_grow_shrink_or_change_while_closed() -> void:
 	var window := _window()
 	window.open()
+	# The centre container places the panel when it sorts its children, a frame later.
+	await wait_process_frames(1)
 	var panel := window.panel()
-	var small_height := panel.size.y
+	var small_size := panel.size
 	assert_eq(panel.get_rect().get_center().round(), Vector2(WINDOW / 2))
-	var tall_label := Label.new()
-	tall_label.custom_minimum_size = Vector2(0, 100)
-	window.growing_rows.add_child(tall_label)
+	var big_label := Label.new()
+	big_label.custom_minimum_size = Vector2(300, 100)
+	window.growing_rows.add_child(big_label)
 	await wait_process_frames(2)
-	assert_gt(panel.size.y, small_height)
+	assert_gt(panel.size.y, small_size.y)
+	assert_eq(panel.get_rect().get_center().round(), Vector2(WINDOW / 2))
+	# Like a page of the pause menu going away: the panel gets smaller again.
+	big_label.visible = false
+	await wait_process_frames(2)
+	assert_eq(panel.size, small_size)
+	assert_eq(panel.get_rect().get_center().round(), Vector2(WINDOW / 2))
+	window.close()
+	big_label.visible = true
+	window.open()
+	await wait_process_frames(2)
+	assert_gt(panel.size.x, small_size.x)
 	assert_eq(panel.get_rect().get_center().round(), Vector2(WINDOW / 2))
 
 

@@ -43,6 +43,8 @@ var closes_on_backdrop_click := false
 var close_actions: Array[StringName] = []
 
 var _backdrop := ColorRect.new()
+## Keeps the panel in the middle of the window, whatever its size and the window's.
+var _centre := CenterContainer.new()
 var _panel := PanelContainer.new()
 var _lists: Array[ScrollingList] = []
 
@@ -53,9 +55,12 @@ func _init() -> void:
 	_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_backdrop.gui_input.connect(_on_backdrop_input)
 	add_child(_backdrop)
+	# Clicks beside the panel reach the backdrop.
+	_centre.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_centre.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_backdrop.add_child(_centre)
 	_panel.theme = THEME
-	_panel.minimum_size_changed.connect(_centre_panel)
-	_backdrop.add_child(_panel)
+	_centre.add_child(_panel)
 
 
 func _exit_tree() -> void:
@@ -122,12 +127,12 @@ func toggle() -> void:
 		open()
 
 
-## Sizes the panel round its contents and centres it. The lists size themselves only while the
-## window is shown, and the CanvasLayer's visibility does not trigger it, so `open()` calls it.
+## Sizes the lists to the window. They size themselves only while the window is shown, and the
+## CanvasLayer's visibility does not trigger it, so `open()` calls it. The panel stays round its
+## contents and in the middle of the window by itself.
 func refit() -> void:
 	for list in _lists:
 		list.fit()
-	_centre_panel()
 
 
 ## Fills the contents when the window opens.
@@ -177,8 +182,3 @@ func _unhandled_input(event: InputEvent) -> void:
 	):
 		get_viewport().set_input_as_handled()
 		close()
-
-
-func _centre_panel() -> void:
-	_panel.reset_size()
-	_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)

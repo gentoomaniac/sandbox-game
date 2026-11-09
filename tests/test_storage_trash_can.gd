@@ -17,6 +17,8 @@ func before_each() -> void:
 	add_child_autofree(_screen)
 	_screen.open_chest(_chest, player)
 	_trash_can = _screen._trash_can
+	# The window's centre container places the panel a frame later.
+	await wait_process_frames(1)
 
 
 ## Picks 12 logs from slot 0 of `side` of the screen and puts them on the trash can.
