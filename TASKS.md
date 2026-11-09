@@ -2092,7 +2092,7 @@ whitish brown when drying out."
 - Both art sets (task 117), every season, frost and snow; crops on it stay readable. At dusk
   and night the steps may fade: "that's how darkness works" (the user).
 
-## 124. A temperature setting for villager talk
+## 124. Language model profiles, with a temperature setting for villager talk
 
 - [ ] Done
 
@@ -2103,6 +2103,24 @@ data/npc_talk.cfg, 0.5), else 0 to 2. It applies to the chat replies (and later 
 task 130); the memory summary keeps its own value in the data file. Saved in the settings file
 per provider, read by NpcDialogue. Tests for the setting and that the request carries it; docs
 in design/villagers/dialogue.md and the README.
+
+Then, in the same task (the user, 2026-11-09: "revamp the LLM settings to profiles: a profile
+contains a provider and its settings. That way you can choose different settings for any given
+provider, for instance Gemini with a pro or a flash model, the same model with different history
+and temperature etc."; first a later idea, then "put this into the current task and expand its
+scope"):
+- A profile is a name, a provider and that provider's settings: endpoint, model, most tokens,
+  temperature, and "Lines a villager keeps" (today one for all; later the memory sizes of task
+  126 too). Several profiles may use the same provider.
+- Settings picks the active profile and adds, copies, renames and deletes them (at least one
+  stays). The game uses the active one wherever it reads the provider's settings today.
+- The key stays per provider, not per profile: entered once, only ever sent to its own provider.
+- The settings file gets a new shape with an upgrade: each provider's settings of today become a
+  profile named after the provider, the active provider's the active profile, and the global
+  chat length goes into each.
+- Tests for profiles, the upgrade and that a key goes only to its provider; docs and README.
+  The temperature setting is its own commit first; the profiles follow as further atomic
+  commits.
 
 ## 125. The deed log: what the player does near villagers, and who saw it
 
@@ -2211,17 +2229,6 @@ come earlier.
   screenshot in the README.
 
 ## Later (not part of the prototype)
-
-- **Language model profiles** (the user, 2026-11-09): "revamp the LLM settings to profiles: a
-  profile contains a provider and its settings. That way you can choose different settings for
-  any given provider, for instance Gemini with a pro or a flash model, the same model with
-  different history and temperature etc." Today Settings keeps one set per provider (endpoint,
-  model, key, most tokens, and the temperature of task 124) and "Lines a villager keeps" for all.
-  A profile is a name, a provider and all of those, the chat length and (with task 126) the
-  memory sizes among them; Settings picks the active profile and adds, copies, renames and
-  deletes them. The key stays per provider, not per profile, so it is entered once and only ever
-  sent to its provider. Plan the settings-file shape and its upgrade from the per-provider
-  settings first (each provider's settings become a profile named after it).
 
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
   Valley, but actions count as well as gifts, in the manner of the Sims (helping, talking,
