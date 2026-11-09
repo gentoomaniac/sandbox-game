@@ -7,9 +7,11 @@ extends Modal
 ## and is picked up in turn (it sticks to the mouse), the same item stacks, and an equipment
 ## slot only takes an item that fits (those light up while an item is picked up). Clicking the
 ## picked slot again, or on the screen's panel outside the slots, lets go of the pick; a left click
-## outside the panel puts a picked backpack or hotbar stack on the ground. Shift+click sends a
-## whole stack from the backpack to the hotbar or back (onto the same item first), if there is
-## room. Right click wears an inventory item, or takes a worn one off into the first free slot.
+## outside the panel puts a picked backpack or hotbar stack on the ground. A click on the trash can
+## with a stack picked asks "Destroy Logs (12)?" (see TrashCan); a click elsewhere or Escape
+## answers Keep, and the stack stays picked. Shift+click sends a whole stack from the backpack
+## to the hotbar or back (onto the same item first), if there is room. Right click wears an
+## inventory item, or takes a worn one off into the first free slot.
 ## A second tab beside it shows the skills (see SkillsPanel); Tab opens the screen on the
 ## character, K on the skills (`open_tab`, `toggle_tab`; `open()` opens the character).
 
@@ -49,6 +51,7 @@ var _left_column := VBoxContainer.new()
 var _right_column := VBoxContainer.new()
 var _weight_label := Label.new()
 var _note_label := Label.new()
+var _trash_can := TrashCan.new()
 var _picked_icon := ItemIcon.new()
 var _tab := Tab.CHARACTER
 ## The page of each tab, and the button that shows it.
@@ -90,6 +93,9 @@ func _init(hotbar: HotbarHud) -> void:
 	inventory_column.add_child(backpack_grid)
 	inventory_column.add_child(_weight_label)
 	inventory_column.add_child(_note_label)
+	inventory_column.add_child(_trash_can)
+	_trash_can.pressed.connect(_on_trash_can_pressed)
+	_trash_can.destroy_confirmed.connect(_on_destroy_confirmed)
 
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", PANEL_GAP)
@@ -301,6 +307,26 @@ func _on_equipment_slot_secondary_pressed(slot: StringName) -> void:
 	_refresh()
 
 
+func _on_trash_can_pressed() -> void:
+	_note_label.text = ""
+	if _has_pick():
+		_trash_can.ask(_picked_item(), _picked_count())
+
+
+func _on_destroy_confirmed() -> void:
+	if _picked_inventory_slot != -1:
+		_player.inventory.destroy(_picked_inventory_slot)
+	else:
+		_player.equipment.destroy(_picked_equipment_slot)
+	_drop_pick()
+	_refresh()
+
+
+## Escape answers the trash can's question with Keep, and only then closes the screen.
+func _takes_escape() -> bool:
+	return _trash_can.keep()
+
+
 func _on_backdrop_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		var is_outside := not _panel.get_rect().has_point(event.position)
@@ -321,8 +347,15 @@ func _has_pick() -> bool:
 
 
 func _drop_pick() -> void:
+	_trash_can.keep()
 	_picked_inventory_slot = -1
 	_picked_equipment_slot = ItemTypes.NONE
+
+
+func _picked_count() -> int:
+	if _picked_inventory_slot != -1:
+		return _player.inventory.slots[_picked_inventory_slot]["count"]
+	return 1
 
 
 func _picked_item() -> StringName:
@@ -352,6 +385,8 @@ func _refresh() -> void:
 	# A move that emptied the picked slot refreshes the screen before the pick is dropped.
 	var picked_item := _picked_item() if _has_pick() else ItemTypes.NONE
 	_picked_icon.visible = picked_item != ItemTypes.NONE
+	if picked_item == ItemTypes.NONE:
+		_trash_can.keep()
 	if _picked_icon.visible:
 		_picked_icon.show_item(picked_item)
 	_weight_label.text = "Carrying %.1f kg" % _player.carried_weight()

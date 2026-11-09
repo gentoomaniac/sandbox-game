@@ -393,7 +393,11 @@ slot swaps places and sticks to the mouse in turn, the same item stacks. Shift+c
 whole stack from the backpack to the hotbar and back (onto the same item first, if there is
 room). Let go of a picked stack outside the screen, or press T for the held stack, and it lies
 on the ground in front of you; walk away and back to pick it up again (a game saved right
-after a drop picks the pile up when it loads). Energy and health bars track how tired you are,
+after a drop picks the pile up when it loads). To get rid of a stack for good, put it on the
+trash can (the bin slot under the backpack on the character screen): the game asks "Destroy
+Logs (12)?" and Destroy removes the stack; Keep, Escape or a click elsewhere leaves it picked,
+and Escape does not close the screen while the question is up. A worn item or a hotbar stack
+can be thrown away the same way. Energy and health bars track how tired you are,
 and the more you carry, the more each action costs: up to 40 kg is free, and tools weigh
 nothing. Below 20 % energy the character sweats with every action, and below 10 % even more. A "zzz" thought bubble pops up over the
 head at midnight and again at half past, while you are still awake: you pass out an hour

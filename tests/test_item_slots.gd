@@ -13,3 +13,11 @@ func test_destroying_a_stack_empties_its_slot_and_leaves_the_rest() -> void:
 	assert_eq(slots.slots[1], {"item": ItemTypes.LOGS, "count": 3})
 	assert_eq(slots.slots[9], {"item": ItemTypes.STONE, "count": 5})
 	assert_signal_emitted(slots, "changed")
+
+
+func test_destroying_an_empty_slot_changes_nothing() -> void:
+	var slots := ItemSlots.new(3)
+	slots.slots[1] = {"item": ItemTypes.LOGS, "count": 3}
+	slots.destroy(0)
+	assert_true(slots.slots[0].is_empty())
+	assert_eq(slots.slots[1], {"item": ItemTypes.LOGS, "count": 3})

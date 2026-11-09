@@ -11,6 +11,8 @@ Written to assets/ui/:
 - button_normal.png, button_hover.png, button_pressed.png, button_focus.png: 12x12 frames,
   4 px corners (margin 4). The focus frame has no fill and is drawn over the others;
 - energy_icon.png and health_icon.png: 12x12 icons for the bars next to the hotbar;
+- backpack_icon.png and chest_icon.png: 12x12 headers of the storage screen's sides;
+- trash_icon.png: 16x16, drawn into the trash can's slot like the equip_* hints (items.py);
 - bar_frame.png (48x8) and energy_fill.png, health_fill.png (46x6, the frame's inside): the
   bars. The game draws as much of a fill as the bar is full;
 - bubble_<id>.png: the thought bubbles over the player's head, one per id of BUBBLE_ICONS.
