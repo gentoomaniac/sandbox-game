@@ -53,6 +53,9 @@ const CLOGS := &"clogs"
 const WORKBENCH := &"workbench"
 const KILN := &"kiln"
 const OVEN := &"oven"
+## The campfire and the bedroll are the items of the camp objects, which keep their ids.
+const FIREPLACE := &"fireplace"
+const SLEEPING_BAG := &"sleeping_bag"
 # Made at the workbench (task 74).
 const PLANKS := &"planks"
 const STOOL := &"stool"
@@ -382,6 +385,24 @@ const _OTHER_TYPES := {
 		"weight": 15.0,
 		"stack_limit": 5,
 		"places": WorldObjectTypes.OVEN,
+	},
+	FIREPLACE:
+	{
+		"name": "Campfire",
+		"description":
+		"A ring of stones round a fire; cook at it. It stands outdoors; the hammer takes it down.",
+		"weight": 6.0,
+		"stack_limit": 5,
+		"places": WorldObjectTypes.FIREPLACE,
+	},
+	SLEEPING_BAG:
+	{
+		"name": "Bedroll",
+		"description":
+		"A straw sack and a wool blanket to sleep on. It lies outdoors; the hammer takes it down.",
+		"weight": 3.0,
+		"stack_limit": 5,
+		"places": WorldObjectTypes.SLEEPING_BAG,
 	},
 	PLANKS:
 	{

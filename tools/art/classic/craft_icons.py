@@ -5,6 +5,7 @@ but for their imports and `icons`, which gathers them. The stations, the grave m
 landing's items are icons of their world pictures, which are still drawn at 16 px (task 111).
 """
 
+import camp
 import item_icons as items
 from canvas import TILE, blank, outline, outline_edge, rect
 from crafts import carved_chest, cupboard, kiln, oven, workbench
@@ -259,6 +260,19 @@ def _icon(picture):
     return outline(icon, darkest_of)
 
 
+def _icon_of_camp_object(picture):
+    """The icon of the campfire or the bedroll: what is drawn of it, without its shadow, halved
+    and outlined in the middle of 16x16 px."""
+    drawn = [(x, y) for y, row in enumerate(picture) for x, name in enumerate(row) if name not in (None, "shadow")]
+    left, right = min(x for x, _ in drawn), max(x for x, _ in drawn)
+    top, bottom = min(y for _, y in drawn), max(y for _, y in drawn)
+    size = max(right - left, bottom - top) // 2 * 2 + 2
+    square = blank(size)
+    for x, y in drawn:
+        square[y - top][x - left] = picture[y][x]
+    return _icon(items.small(square))
+
+
 def icons():
     """The 16x16 icons by item id."""
     return {
@@ -268,6 +282,8 @@ def icons():
         "workbench": icon_of(workbench(is_standing=False)),
         "kiln": _shrunk(kiln(is_standing=False)),
         "oven": icon_of(oven(is_standing=False)),
+        "fireplace": _icon_of_camp_object(camp.fireplace()),
+        "sleeping_bag": _icon_of_camp_object(camp.bedroll()),
         "planks": planks(),
         "cupboard": _shrunk(cupboard(is_standing=False)),
         # Dried clay, grey-brown, and fired, red.

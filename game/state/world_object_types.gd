@@ -216,6 +216,8 @@ const _OTHER_TYPES := {
 		# Deep orange at a moderate energy: brighter or paler turns the grass lime and
 		# bleaches the player.
 		"light": {"color": Color(1.0, 0.5, 0.22), "energy": 1.4, "radius_tiles": 7.0},
+		"interior_sprite": "res://assets/interior/fireplace.png",
+		"outdoors_only": true,
 	},
 	SLEEPING_BAG:
 	{
@@ -226,6 +228,8 @@ const _OTHER_TYPES := {
 		"variants": 1,
 		"object_cover": "res://assets/bedroll_cover.png",
 		"bed": Vector2i.UP,
+		"interior_sprite": "res://assets/interior/sleeping_bag.png",
+		"outdoors_only": true,
 	},
 	SPRUCE:
 	{

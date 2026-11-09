@@ -306,6 +306,8 @@ def write_interior():
         save_picture(picture, f"{CLASSIC}/interior/{name}.png")
     for name, picture in crafts.stations().items():
         save_picture(picture, f"{CLASSIC}/interior/{name}.png")
+    save_picture(camp.ghost(camp.fireplace(), 25, 26), f"{CLASSIC}/interior/fireplace.png")
+    save_picture(camp.ghost(camp.bedroll(), 18, 30), f"{CLASSIC}/interior/sleeping_bag.png")
     save_picture(graves.graves()[0], f"{CLASSIC}/interior/grave.png")
 
 

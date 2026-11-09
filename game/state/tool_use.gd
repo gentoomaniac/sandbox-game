@@ -272,10 +272,13 @@ func _use_inside(item: Dictionary, pos: Vector2i) -> Use:
 
 
 ## What the player placed and what it holds (a chest's items, a kiln's load), item id to count:
-## what taking it down gives.
+## what taking it down gives. What has no `drops` (the campfire and the bedroll, which only the
+## hammer takes down) gives its item.
 func items_of_placed(placed: WorldObject) -> Dictionary:
 	var items := items_held_by(placed)
-	var drops: Dictionary = placed.type_data()["drops"]
+	var drops: Dictionary = placed.type_data().get(
+		"drops", {ItemTypes.item_placing(placed.type): 1}
+	)
 	for item: StringName in drops:
 		items[item] = items.get(item, 0) + drops[item]
 	return items

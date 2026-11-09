@@ -135,6 +135,8 @@ func why_not_take_down(target: TakeDownTarget) -> String:
 		return _state.why_not_take_down(target.building)
 	if ToolUse.new(_state).is_standing_on(target.object):
 		return "Step off it first."
+	if _state.player.bed_lying_in == target.object:
+		return "Get up first."
 	return ""
 
 

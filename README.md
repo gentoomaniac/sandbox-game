@@ -378,8 +378,9 @@ Hold Space or the click for a second to take it down. A building gives back half
 material, rounded down, in front of its door; the furniture it came with goes with it. It
 stands while you are inside, or while anything you put in it is left (the message says so).
 If your bed was in it, you wake at the camp's sleeping bag again. A placed thing goes into the
-inventory whole, with what it holds, or onto the ground when the inventory is full. X again
-goes back to building.
+inventory whole, with what it holds, or onto the ground when the inventory is full. The
+camp's campfire and bedroll are taken down the same way and come back as items to set up
+elsewhere. X again goes back to building.
 
 ![Taking down: a shack marked red, and what it gives](docs/screenshots/take-down.png)
 

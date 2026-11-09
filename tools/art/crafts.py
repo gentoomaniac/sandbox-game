@@ -11,6 +11,7 @@ Cooked food is warm in colour; the meals in a bowl steam a little.
 
 import random
 
+import camp
 import chest
 import forms
 from canvas import blank, outline_edge, rect
@@ -359,12 +360,20 @@ def stations():
     return {"workbench": workbench(), "carved_chest": carved_chest(), "kiln": kiln(), "oven": oven(), "cupboard": cupboard()}
 
 
+def _without_clear_columns(picture):
+    """The picture of a camp object, drawn on a cell as wide as a tree's, cut to what is drawn."""
+    drawn = [x for x in range(len(picture[0])) if any(row[x] not in (None, "shadow") for row in picture)]
+    return [row[drawn[0] : drawn[-1] + 1] for row in picture]
+
+
 def icons():
     """The bodies of the icons of the professions' items, by item id."""
     return {
         "workbench": icon_of(workbench()),
         "kiln": icon_of(kiln()),
         "oven": icon_of(oven()),
+        "fireplace": icon_of(_without_clear_columns(camp.fireplace())),
+        "sleeping_bag": icon_of(_without_clear_columns(camp.bedroll())),
         "planks": planks(),
         "cupboard": icon_of(cupboard()),
         # Dried clay, grey-brown, and fired, red.

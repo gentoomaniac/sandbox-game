@@ -70,9 +70,13 @@ The first buildings have a page of their own: [first-buildings.md](first-buildin
   inside, or while anything they put in it is left: a thing they placed, or what a chest or
   station holds; the message says so. The furniture the house came with goes with it. A home
   bed in it falls back to the camp's sleeping bag, and a stork on its roof flies off. A placed
-  thing (what an item places: chest, workbench, kiln, oven, stool, carved chest, cupboard)
-  outdoors goes whole, with what it holds, into the inventory, or onto the ground where it
-  stood when that is full. Crafted items are not broken down into materials.
+  thing (what an item places: chest, workbench, kiln, oven, stool, carved chest, cupboard, and
+  the camp's campfire and bedroll, task 137) outdoors goes whole, with what it holds, into the
+  inventory, or onto the ground where it stood when that is full. The campfire and the bedroll
+  come back as their items rather than as their materials, like the rest, so they can be set up
+  elsewhere; only the hammer takes them down (they have no `drops`, `ToolUse.items_of_placed`
+  gives their item). One lying in the bedroll gets up first. Crafted items are not broken down
+  into materials.
 - **`data/buildings.cfg`** defines the buildings (required keys, the game refuses to start
   if one is missing): name, footprint, door tile, picture and lit picture (the season and
   snow looks are found by name), the interior map, window lights, costs, and documented

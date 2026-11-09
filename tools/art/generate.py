@@ -313,6 +313,10 @@ def write_interior():
     # The stations the player places are no furniture of the maps: they have no marker tile.
     for name, picture in crafts.stations().items():
         save_picture(picture, f"interior/{name}.png")
+    # The ghosts of the campfire and the bedroll while they are placed (they stand only
+    # outdoors).
+    save_picture(camp.ghost(camp.fireplace(), 50, 52), "interior/fireplace.png")
+    save_picture(camp.ghost(camp.bedroll(), 36, 60), "interior/sleeping_bag.png")
     # The ghost of the grave marker while it is placed (a grave stands only outdoors).
     save_picture(church.graves()[0], "interior/grave.png")
 

@@ -94,6 +94,23 @@ def fireplace():
     return fire.burning(*fireplace_layers(), *FIREPLACE_FLAME)
 
 
+def ghost(picture, width, height):
+    """The picture of an object as the ghost of placing it shows it: without its shadow, in a
+    picture of `width` x `height` px, its drawing in the middle and its bottom rows on the
+    bottom, so that the bottom edge is the footprint's, like the other pictures of
+    assets/interior/. The sizes are the same in both looks (see test_art_set.gd)."""
+    picture = [[None if colour == "shadow" else colour for colour in row] for row in picture]
+    rows = [y for y, row in enumerate(picture) if any(row)]
+    columns = [x for x in range(len(picture[0])) if any(row[x] for row in picture)]
+    drawn = [row[columns[0] : columns[-1] + 1] for row in picture[rows[0] :]]
+    left = (width - len(drawn[0])) // 2
+    result = [[None] * width for _ in range(height)]
+    for y, row in enumerate(drawn):
+        for x, colour in enumerate(row):
+            result[height - len(drawn) + y][left + x] = colour
+    return result
+
+
 # The bedroll: 28x56 px on its 1x2 tiles (the cell's bottom edge is the footprint's), as long as a
 # person lying on it, so its foot hides their clogs (see BEDROLL_COVER_FROM_ROW).
 _BEDROLL_LEFT, _BEDROLL_TOP, _BEDROLL_BOTTOM = CENTRE - 14, 102, 156

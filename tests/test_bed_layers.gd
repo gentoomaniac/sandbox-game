@@ -54,7 +54,11 @@ func test_every_bed_has_a_head_end_the_player_can_lie_with() -> void:
 func test_every_bed_in_a_house_has_a_cover_of_the_size_of_its_picture() -> void:
 	for type: StringName in WorldObjectTypes.TYPES:
 		var data: Dictionary = WorldObjectTypes.TYPES[type]
-		if not data.has("bed") or not data.has("interior_sprite"):
+		# What is `outdoors_only` has an interior picture only for its ghost.
+		var is_in_houses: bool = (
+			data.has("interior_sprite") and not data.get("outdoors_only", false)
+		)
+		if not data.has("bed") or not is_in_houses:
 			continue
 		assert_true(data.has("interior_cover"), type)
 		var picture: Texture2D = load(data["interior_sprite"])

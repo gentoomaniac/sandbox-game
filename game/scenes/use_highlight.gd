@@ -95,11 +95,16 @@ func _draw() -> void:
 	if _drawn_ghost != null:
 		# The picture over the tint, so it stays easy to make out.
 		draw_rect(rect, _drawn_color)
-		draw_texture(
-			_drawn_ghost,
-			rect.position + Vector2(0, tile_size - _drawn_ghost.get_height()),
-			BuildMode.GHOST_MODULATE
+		# Centred on the footprint, its bottom on the footprint's, like the object itself.
+		var footprint: Vector2i = (
+			WorldObjectTypes
+			. TYPES[ItemTypes.placed_object(_state.player.inventory.held_item())]["footprint"]
 		)
+		var size := Vector2(footprint * tile_size)
+		var corner := Vector2(
+			(size.x - _drawn_ghost.get_width()) / 2.0, size.y - _drawn_ghost.get_height()
+		)
+		draw_texture(_drawn_ghost, rect.position + corner, BuildMode.GHOST_MODULATE)
 		return
 	if _is_drawn_filled:
 		draw_rect(rect, Color(_drawn_color, _drawn_color.a * OUT_OF_REACH_FILL_SHARE))
