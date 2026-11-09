@@ -25,11 +25,13 @@ const RECIPES := {
 
 var _state: GameState
 var _crafting: Crafting
+var _hearth: WorldObject
 
 
 func before_each() -> void:
 	_state = GameState.new_game(7)
 	_crafting = Crafting.new(_state, RecipeRules.new(RECIPES))
+	_hearth = StationFinder.in_reach(_state, &"hearth")
 	_state.player.inventory.add(ItemTypes.BERRIES, 10)
 
 
@@ -80,11 +82,11 @@ func test_bad_stations_skills_and_levels_are_reported() -> void:
 
 func test_a_recipe_below_its_level_is_locked_and_refused() -> void:
 	assert_true(_crafting.is_locked(&"feast"))
-	assert_eq(_crafting.craft(&"feast"), Crafting.Result.LOCKED)
+	assert_eq(_crafting.craft(&"feast", _hearth), Crafting.Result.LOCKED)
 	assert_eq(_state.player.inventory.count_of(ItemTypes.BERRIES), 10)
 	_state.player.skills.set_points(&"cooking", 25.0)
 	assert_false(_crafting.is_locked(&"feast"))
-	assert_eq(_crafting.craft(&"feast"), Crafting.Result.CRAFTED)
+	assert_eq(_crafting.craft(&"feast", _hearth), Crafting.Result.CRAFTED)
 
 
 func test_a_recipe_without_a_skill_is_never_locked() -> void:
@@ -93,7 +95,7 @@ func test_a_recipe_without_a_skill_is_never_locked() -> void:
 
 func test_a_craft_practises_its_skill_and_says_so() -> void:
 	watch_signals(_crafting)
-	assert_eq(_crafting.craft(&"stew"), Crafting.Result.CRAFTED)
+	assert_eq(_crafting.craft(&"stew", _hearth), Crafting.Result.CRAFTED)
 	assert_eq(_state.player.skills.points(&"cooking"), 2.0)
 	assert_signal_emitted_with_parameters(_crafting, "practised", [&"cooking", 2.0, 2.0])
 
@@ -103,7 +105,7 @@ func test_a_craft_at_the_total_cap_says_what_it_would_have_taught() -> void:
 	skills.set_points(&"woodworking", 100.0)
 	skills.set_points(&"masonry", 100.0)
 	watch_signals(_crafting)
-	_crafting.craft(&"stew")
+	_crafting.craft(&"stew", _hearth)
 	assert_eq(skills.points(&"cooking"), 0.0)
 	assert_signal_emitted_with_parameters(_crafting, "practised", [&"cooking", 0.0, 2.0])
 
@@ -117,7 +119,7 @@ func test_a_craft_without_a_skill_practises_nothing() -> void:
 
 func test_a_refused_craft_practises_nothing() -> void:
 	_state.player.inventory.remove(ItemTypes.BERRIES, 10)
-	assert_eq(_crafting.craft(&"stew"), Crafting.Result.MISSING_MATERIALS)
+	assert_eq(_crafting.craft(&"stew", _hearth), Crafting.Result.MISSING_MATERIALS)
 	assert_eq(_state.player.skills.points(&"cooking"), 0.0)
 
 

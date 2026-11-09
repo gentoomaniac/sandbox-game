@@ -10,6 +10,7 @@ extends Modal
 ## and E; Escape is the Modal's).
 
 const NO_ROOM_NOTE := "Inventory full"
+const NO_STATION_NOTE := "Too far from the station"
 const HAND_TITLE := "Crafting"
 const NOTHING_NOTE := "Nothing to make here yet."
 const AT_CAP_NOTE := "%s is held at the skill cap: let a skill fade (K)."
@@ -102,8 +103,11 @@ func _show_recipes() -> void:
 
 func _craft(recipe_id: StringName) -> void:
 	_show_note("")
-	if _crafting.craft(recipe_id, _station) == Crafting.Result.NO_ROOM:
-		_show_note(NO_ROOM_NOTE)
+	match _crafting.craft(recipe_id, _station):
+		Crafting.Result.NO_ROOM:
+			_show_note(NO_ROOM_NOTE)
+		Crafting.Result.NO_STATION:
+			_show_note(NO_STATION_NOTE)
 	_refresh()
 
 

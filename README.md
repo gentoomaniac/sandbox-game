@@ -467,6 +467,9 @@ Three crafts can be learnt, each at its own **station**: press E at one for its 
   afterwards to take the bricks out; a skilled mason fires more for the same fuel. The bake
   oven is built of those bricks.
 
+A recipe is only made at a station of its kind within your reach: the kiln's firing is not started
+at a workbench, and walking away from a station stops its menu from crafting.
+
 The workbench, kiln and bake oven are made by hand and placed like a chest (the kiln only
 outdoors); the axe or the pickaxe takes them down again.
 

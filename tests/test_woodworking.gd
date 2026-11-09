@@ -28,7 +28,8 @@ func test_the_workbench_makes_the_woodworkers_recipes_in_rising_levels() -> void
 
 func test_a_log_makes_two_planks_and_teaches_woodworking() -> void:
 	_state.player.inventory.add(ItemTypes.LOGS, 1)
-	assert_eq(Crafting.new(_state).craft(&"planks"), Crafting.Result.CRAFTED)
+	var workbench := _place_beside(WorldObjectTypes.WORKBENCH)
+	assert_eq(Crafting.new(_state).craft(&"planks", workbench), Crafting.Result.CRAFTED)
 	assert_eq(_count(ItemTypes.PLANKS), 2)
 	assert_eq(_state.player.skills.points(&"woodworking"), 2.0)
 

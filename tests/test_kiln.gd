@@ -7,12 +7,14 @@ const FIRING_MINUTES := 12 * GameClock.MINUTES_PER_HOUR
 
 var _crafting: Crafting
 var _kiln: WorldObject
+var _workbench: WorldObject
 
 
 func before_each() -> void:
 	super.before_each()
 	_crafting = Crafting.new(_state)
 	_kiln = _place(WorldObjectTypes.KILN)
+	_workbench = _place_beside(WorldObjectTypes.WORKBENCH)
 	_state.player.inventory.add(ItemTypes.RAW_BRICK, 6)
 	_state.player.inventory.add(ItemTypes.LOGS, 2)
 
@@ -48,12 +50,49 @@ func test_bad_hours_are_reported() -> void:
 
 func test_clay_makes_raw_bricks_and_a_practised_hand_more_of_them() -> void:
 	_state.player.inventory.add(ItemTypes.CLAY, 4)
-	assert_eq(_crafting.craft(&"raw_bricks"), Crafting.Result.CRAFTED)
+	assert_eq(_crafting.craft(&"raw_bricks", _workbench), Crafting.Result.CRAFTED)
 	assert_eq(_count(ItemTypes.RAW_BRICK), 6 + 2)
 	assert_true(_crafting.is_locked(&"raw_bricks_true"))
 	_state.player.skills.set_points(&"masonry", 25.0)
-	assert_eq(_crafting.craft(&"raw_bricks_true"), Crafting.Result.CRAFTED)
+	assert_eq(_crafting.craft(&"raw_bricks_true", _workbench), Crafting.Result.CRAFTED)
 	assert_eq(_count(ItemTypes.RAW_BRICK), 6 + 2 + 3)
+
+
+# --- Where a recipe is made ---
+
+
+func _assert_refused_without_side_effects(station: WorldObject, message: String) -> void:
+	var before := _state.player.inventory.totals()
+	assert_eq(_crafting.craft(&"bricks", station), Crafting.Result.NO_STATION, message)
+	assert_eq(_state.player.inventory.totals(), before, message)
+	assert_false(StationWork.is_busy(_kiln), message)
+	assert_eq(_state.player.skills.points(&"masonry"), 0.0, message)
+
+
+func test_a_firing_is_refused_at_a_workbench_without_taking_anything() -> void:
+	_assert_refused_without_side_effects(_workbench, "a workbench is no kiln")
+	assert_false(StationWork.is_busy(_workbench), "nothing was started at the workbench")
+
+
+func test_a_firing_is_refused_without_a_station_or_at_one_that_is_not_on_the_map() -> void:
+	_assert_refused_without_side_effects(null, "no station")
+	var unattached := WorldObject.new(WorldObjectTypes.KILN, Vector2i(999, 999))
+	_assert_refused_without_side_effects(unattached, "a kiln that stands nowhere")
+
+
+func test_a_firing_is_refused_out_of_reach_and_works_again_in_reach() -> void:
+	_state.player.position += Vector2(5.0, 0.0)
+	_assert_refused_without_side_effects(_kiln, "a kiln five tiles away")
+	_state.player.position -= Vector2(5.0, 0.0)
+	assert_eq(_crafting.craft(&"bricks", _kiln), Crafting.Result.STARTED)
+
+
+func test_the_finished_firing_stays_in_the_kiln_while_the_player_is_out_of_reach() -> void:
+	_crafting.craft(&"bricks", _kiln)
+	_state.clock.advance(FIRING_MINUTES)
+	_state.player.position += Vector2(5.0, 0.0)
+	assert_false(_crafting.take_out(_kiln))
+	assert_true(StationWork.is_busy(_kiln))
 
 
 # --- Firing ---
@@ -184,7 +223,7 @@ func _seen_during(action: Callable) -> Array:
 
 func test_a_craft_tells_of_the_materials_and_the_result_in_one_change() -> void:
 	_state.player.inventory.add(ItemTypes.CLAY, 4)
-	var seen := _seen_during(func() -> void: _crafting.craft(&"raw_bricks"))
+	var seen := _seen_during(func() -> void: _crafting.craft(&"raw_bricks", _workbench))
 	assert_eq(seen.size(), 1)
 	assert_eq(seen[0]["clay"], 2, "clay paid, result in, in the one notification")
 	assert_eq(seen[0]["raw_bricks"], 6 + 2)

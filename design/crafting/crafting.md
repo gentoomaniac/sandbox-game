@@ -10,7 +10,9 @@ Decided 2026-11-05.
   campfire and the bedroll, the stations, flour); the others are made at a station (see
   [Professions](professions.md)); the hammer is a later recipe. When the result would not fit
   in the inventory (once the materials are taken) crafting is refused and the menu says so; nothing is
-  dropped. The game does not pause while the menu is open (as with the character screen),
+  dropped. A recipe made at a station is also refused (nothing taken, nothing started) when the
+  station is of another kind (a kiln firing at a workbench), not on the player's map or
+  out of their reach: the menu says "Too far from the station". The game does not pause while the menu is open (as with the character screen),
   but the player neither walks nor acts. C or Escape closes it.
 - **First recipe: the chest**, 5 logs. A chest holds 15 slots (5×3).
 - **Placing a chest:** held like seeds; while it is held a ghost of the chest follows the

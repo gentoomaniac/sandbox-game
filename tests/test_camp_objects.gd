@@ -138,7 +138,7 @@ func test_a_moved_campfire_still_opens_the_hearths_cooking_menu() -> void:
 	assert_eq(Interaction.object_to_open(_state, _tile), moved)
 	assert_has(RecipeRules.default_rules().recipes_at(&"hearth"), &"roast_turnip")
 	_state.player.inventory.add(ItemTypes.TURNIP, 1)
-	assert_eq(Crafting.new(_state).craft(&"roast_turnip"), Crafting.Result.CRAFTED)
+	assert_eq(Crafting.new(_state).craft(&"roast_turnip", moved), Crafting.Result.CRAFTED)
 
 
 func test_the_moved_objects_are_in_the_save() -> void:

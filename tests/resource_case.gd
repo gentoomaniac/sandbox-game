@@ -71,6 +71,14 @@ func _place(type: StringName, tree := "") -> WorldObject:
 	return object
 
 
+## Puts an object on the tile beside the one in front of the player: in their reach, and not in
+## the way of what a test does in front of them.
+func _place_beside(type: StringName) -> WorldObject:
+	var object := WorldObject.new(type, _tile + Vector2i.RIGHT)
+	_world.add_object(object)
+	return object
+
+
 ## Uses the tile in front of the player `times` times with `tool_item`; returns the last use.
 func _hit(tool_item: StringName, times: int) -> ToolUse.Use:
 	_hold(tool_item)

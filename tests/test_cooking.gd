@@ -37,11 +37,12 @@ func test_a_dish_restores_more_energy_than_its_ingredients_eaten_raw() -> void:
 func test_anyone_can_roast_a_turnip_at_the_campfire_and_learns_from_it() -> void:
 	var state := GameState.new_game(7)
 	var crafting := Crafting.new(state)
+	var campfire := StationFinder.in_reach(state, &"hearth")
 	assert_has(RecipeRules.default_rules().recipes_at(&"hearth"), &"roast_turnip")
 	assert_false(crafting.is_locked(&"roast_turnip"))
-	assert_eq(crafting.craft(&"roast_turnip"), Crafting.Result.MISSING_MATERIALS)
+	assert_eq(crafting.craft(&"roast_turnip", campfire), Crafting.Result.MISSING_MATERIALS)
 	state.player.inventory.add(ItemTypes.TURNIP, 1)
-	assert_eq(crafting.craft(&"roast_turnip"), Crafting.Result.CRAFTED)
+	assert_eq(crafting.craft(&"roast_turnip", campfire), Crafting.Result.CRAFTED)
 	assert_eq(state.player.inventory.count_of(ItemTypes.ROAST_TURNIP), 1)
 	assert_gt(state.player.skills.points(&"cooking"), 0.0)
 

@@ -138,7 +138,9 @@ Warft and an Ewer here and there.
   player's **Skills** (`skills.gd`: points per skill, the total cap and the skills that fade,
   rules from `SkillRules`). A recipe is made by hand or at a station (`StationRules`: which
   object types are which station); a slow one (with `hours`, the kiln) is held by its station
-  as **StationWork** in the object's `state` until it is done on the game clock. `Interaction`
+  as **StationWork** in the object's `state` until it is done on the game clock. `craft` checks
+  its own conditions: a recipe made at a station needs one of that kind on the player's map in
+  their reach (`NO_STATION` otherwise), whatever the menu showed. `Interaction`
   says which chest or station E opens; `CraftingScreen` shows the recipes of one place.
 - **Units:** the state works in tiles (positions, speeds, reach); the views turn tiles into
   world pixels with `TerrainTileset.TILE_SIZE` (32: a tile is 32×32 art pixels, task 106).
