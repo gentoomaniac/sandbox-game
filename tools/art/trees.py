@@ -609,8 +609,8 @@ def shrub(seed):
 
 
 def sapling(seed):
-    """A young tree a tile wide and about 44 px tall: a thin trunk tied to a stake, a small crown
-    of fresh leaves."""
+    """A young tree a tile wide and about 44 px tall: a thin leaning trunk that stands on its own,
+    a small crown of fresh leaves."""
     rng = random.Random(seed)
     canvas = cell()
     ground_shadow(canvas, 14)
@@ -620,14 +620,11 @@ def sapling(seed):
         canvas[y][x - 1] = "soil_mid"
         canvas[y][x] = "soil"
         canvas[y][x + 1] = "soil_dark"
-    # The stake, lit on the left, and the band that ties the stem to it.
-    for y in range(128, BOTTOM - 1):
-        canvas[y][CENTRE + 6] = "straw"
-        canvas[y][CENTRE + 7] = "reed"
-    canvas[127][CENTRE + 6] = canvas[127][CENTRE + 7] = "sand"
-    for x in range(CENTRE + 1, CENTRE + 8):
-        canvas[140][x] = "sand_light"
-        canvas[141][x] = "sand"
+    # The foot is a little wider, so the stem looks rooted without a support.
+    for y in range(BOTTOM - 5, BOTTOM - 1):
+        x = CENTRE + lean * (BOTTOM - 2 - y) // 14
+        canvas[y][x - 2] = "soil_mid"
+        canvas[y][x + 2] = "soil_dark"
     top = CENTRE + lean * 4
     foliage(canvas, rng, [(top, 120, 8), (top - 6, 128, 5), (top + 6, 127, 5), (top, 112, 5)], ("green_bright", "green_light", "green", "green_dark"), "green_deep", leaf_size=2.2)
     return canvas

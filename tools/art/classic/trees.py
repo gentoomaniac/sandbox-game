@@ -457,7 +457,7 @@ def shrub(seed):
 
 
 def sapling(seed):
-    """A young tree 13 px wide and about 22 tall: a thin trunk tied to a stake."""
+    """A young tree 13 px wide and about 22 tall: a thin trunk that stands on its own."""
     rng = random.Random(seed)
     canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 7)
@@ -466,9 +466,6 @@ def sapling(seed):
         x = OBJECT_CENTRE + lean * (OBJECT_BOTTOM - 2 - y) // 10
         canvas[y][x] = "soil_mid"
         canvas[y][x + 1] = "soil_dark"
-    for y in range(64, OBJECT_BOTTOM - 1):
-        canvas[y][OBJECT_CENTRE + 3] = "straw"
-    canvas[70][OBJECT_CENTRE + 2] = canvas[70][OBJECT_CENTRE + 3] = "sand_light"
     top = OBJECT_CENTRE + lean * 2
     blobs = [(top, 61, 4), (top - 3, 65, 2.5), (top + 3, 64, 2.5)]
     shaded_blob(canvas, rng, blobs, ("green_bright", "green_light", "green"), "green_dark")

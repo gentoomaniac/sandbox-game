@@ -2386,7 +2386,8 @@ and where they come; docs and README.
 
 ## 136. Saplings without a stake
 
-- [ ] Done
+- [x] Done: the 32 px sapling lost its stake and band and got a slightly wider foot so the stem stands on
+  its own; the classic 16 px sapling lost its stake too; art regenerated; the README forage picture retaken.
 
 The user, 2026-11-09: "saplings should not have a stabilizing rod since they often occur naturally
 and not planted by a player". The 32 px sapling (tools/art/trees.py, `sapling`) has a stake and a
