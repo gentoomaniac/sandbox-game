@@ -64,13 +64,13 @@ run (`build/test-times`, from GUT's junit output), by file size until a file has
 
 `make bench` times the game on a heavy save, headless and muted. The first run writes the save
 with `make_fixture.gd` into `build/bench/fixture.save` (seed 7: about 10,000 item piles, 155
-villagers, 30,000 tilled tiles and thousands of removed objects round the camp); later runs reuse
-it until that script changes (after a save format or world generator change, delete
-`build/bench/fixture.save` so it is written again). Then `frames.gd` starts Main on a copy of it and prints how long
-the world view took to settle, the node and entity counts, and the mean and longest frame over
-300 frames; `pickup.gd` prints the cost of the per-frame pile pick-up. Nothing is asserted: run
-it before and after a change and compare. Task 142 took the mean frame from 37.2 to 7.3 ms this
-way.
+villagers, 30,000 tilled tiles and thousands of removed objects round the camp); later runs
+reuse it until that script changes (after a save format or world generator change, delete
+`build/bench/fixture.save` so it is written again). Then `frames.gd` starts Main on a copy of it
+and prints how long the world view took to settle, the node and entity counts, and the mean and
+longest frame over 300 frames; `pickup.gd` prints the cost of the per-frame pile pick-up.
+Nothing is asserted: run it before and after a change and compare. Task 142 took the mean frame
+from 37.2 to 7.3 ms this way.
 
 ## Art: tools/art/
 
@@ -123,7 +123,8 @@ values. The colours are `BASE_COLOURS` in `palette.py` plus `COLOURS` in `season
 into `PALETTE` (a name in both fails), and the palette is limited to `MAX_PALETTE_COLOURS`
 (when it is full, merge two similar colours to add one). A picture with a colour that is not
 in it fails with "unknown colour X in <the file being written>". After writing,
-`check_palette()` fails if any PNG under `art/generated/` has a colour outside the palette; hand-drawn files are only warned about, by `make assets`.
+`check_palette()` fails if any PNG under `art/generated/` has a colour outside the palette;
+hand-drawn files are only warned about, by `make assets`.
 
 ### The classic art: tools/art/classic/
 
@@ -132,43 +133,42 @@ doubled (Settings → Display, F7; see `ArtSet` in game/scenes/art_set.gd). That
 generated like the rest: tools/art/classic/ holds the old generators of the groups that went
 native, copied from git history as they were, and its `generate.py` writes their files under
 art/generated/classic/, with the same names as the new files under art/generated/, at 16 px;
-`make assets` doubles the world's ones by `DOUBLED` in `classic/scaling.py`. The old modules import their siblings there first and the shared
-`canvas.py` and `palette.py` of tools/art/ after them; a later change to those two that an old
-module trips over (a colour renamed) is made in the old module too. So far: the people (task
-113), from commit 97e9736: `character.py`, `villagers.py` and `portraits.py` unchanged, and
-`bubbles.py`, the thought bubble part of `ui.py`; the farm animals (task 114), from commit
-2793065: `livestock.py` and `animals.py` (whose tame rabbit it draws from) unchanged; the wild
-animals and the flames (task 116), from the same commit: `animals.py`, `birds.py`,
-`sea_birds.py` and `fire.py` unchanged (the fireplace around the flames is the shared, still
-16 px `camp.py`, the hearth the classic `interior.py`); the ground (task 107), from commit acf236e:
-`terrain.py` unchanged, `ground_looks.py`, the ground part of `seasons.py` (a module of that
-name would stand in for the shared one that `palette.py` imports), and `ground_overlays.py`,
-the wet soil of `crop_icons.py` (drawn without `crops.Surface`) and the clay hint of `meadow.py`;
-the buildings (task 110), from commit e303759: `buildings.py` and `church.py` unchanged (the
-graves of `church.py` are not written there; the looks are the shared `seasons.house`), whose
-pictures kept their sizes at 32 px, but for the Kate's brick and Geest styles (task 120),
-drawn into the old Kate after the fact (its `walls`, a brick wall and a small tarred foot) so
-that they have a classic look too; the plants (task 108), from commit e303759: `trees.py`,
-`trunks.py`, `beech.py`, `birch.py`, `alder.py`, `willow.py` and `flowers.py` (the meadow flowers
-of the classic decorations) unchanged, the plant parts of `meadow.py` and `reeds.py`, and
-`object_looks.py`, the object part of `seasons.py`, which draws the looks of the whole classic
-object atlas (`object_atlas` there); the crops (task 109), from commit f2c24f8: `crops.py`
-unchanged (rye and buckwheat were first drawn at 32 px and have no classic sheet); the
-interiors (task 112), from commit f2c24f8: `interior.py` unchanged, whose pictures kept their
-sizes; the item icons and the items on the ground (task 115), from commit 91742f0: `items.py`
-as `item_icons.py` (so that the shared modules that import `items` get the new one),
-`tool_icons.py` and `crop_icons.py` unchanged but for that import, and `craft_icons.py`, the
-icon parts of `meadow.py`, `reeds.py`, `crafts.py`, `church.py` and `landing.py` (their world
-pictures are the classic ones of task 111); the buckwheat pancakes were first drawn at 32 px;
-the walls, fences, the dyke and the placed objects (task 111), from commit ec0b1af:
-`boundaries.py`, `camp.py` (with the old, shorter bedroll and its cover), `chest.py`,
-`coast.py`, `crafts.py` and `landing.py` unchanged but for `item_icons` in place of `items`,
-and `graves.py`, the graves part of `church.py` of commit e303759; it also writes the stations
-and the grave marker placed indoors. The new Ewer's picture is three cells wide, so the classic
-one lies in the middle of three.
-The cow's, the horse's and the small wild animals' cells grew at 32 px, so `set_in_grown_cells`
-puts their classic cells in the new ones (bottom centre), as the classic files must have the
-new cell sizes.
+`make assets` doubles the world's ones by `DOUBLED` in `classic/scaling.py`. The old modules
+import their siblings there first and the shared `canvas.py` and `palette.py` of tools/art/
+after them; a later change to those two that an old module trips over (a colour renamed) is made
+in the old module too. So far: the people (task 113), from commit 97e9736: `character.py`,
+`villagers.py` and `portraits.py` unchanged, and `bubbles.py`, the thought bubble part of
+`ui.py`; the farm animals (task 114), from commit 2793065: `livestock.py` and `animals.py`
+(whose tame rabbit it draws from) unchanged; the wild animals and the flames (task 116), from
+the same commit: `animals.py`, `birds.py`, `sea_birds.py` and `fire.py` unchanged (the fireplace
+around the flames is the shared, still 16 px `camp.py`, the hearth the classic `interior.py`);
+the ground (task 107), from commit acf236e: `terrain.py` unchanged, `ground_looks.py`, the
+ground part of `seasons.py` (a module of that name would stand in for the shared one that
+`palette.py` imports), and `ground_overlays.py`, the wet soil of `crop_icons.py` (drawn without
+`crops.Surface`) and the clay hint of `meadow.py`; the buildings (task 110), from commit
+e303759: `buildings.py` and `church.py` unchanged (the graves of `church.py` are not written
+there; the looks are the shared `seasons.house`), whose pictures kept their sizes at 32 px, but
+for the Kate's brick and Geest styles (task 120), drawn into the old Kate after the fact (its
+`walls`, a brick wall and a small tarred foot) so that they have a classic look too; the plants
+(task 108), from commit e303759: `trees.py`, `trunks.py`, `beech.py`, `birch.py`, `alder.py`,
+`willow.py` and `flowers.py` (the meadow flowers of the classic decorations) unchanged, the
+plant parts of `meadow.py` and `reeds.py`, and `object_looks.py`, the object part of
+`seasons.py`, which draws the looks of the whole classic object atlas (`object_atlas` there);
+the crops (task 109), from commit f2c24f8: `crops.py` unchanged (rye and buckwheat were first
+drawn at 32 px and have no classic sheet); the interiors (task 112), from commit f2c24f8:
+`interior.py` unchanged, whose pictures kept their sizes; the item icons and the items on the
+ground (task 115), from commit 91742f0: `items.py` as `item_icons.py` (so that the shared
+modules that import `items` get the new one), `tool_icons.py` and `crop_icons.py` unchanged but
+for that import, and `craft_icons.py`, the icon parts of `meadow.py`, `reeds.py`, `crafts.py`,
+`church.py` and `landing.py` (their world pictures are the classic ones of task 111); the
+buckwheat pancakes were first drawn at 32 px; the walls, fences, the dyke and the placed objects
+(task 111), from commit ec0b1af: `boundaries.py`, `camp.py` (with the old, shorter bedroll and
+its cover), `chest.py`, `coast.py`, `crafts.py` and `landing.py` unchanged but for `item_icons`
+in place of `items`, and `graves.py`, the graves part of `church.py` of commit e303759; it also
+writes the stations and the grave marker placed indoors. The new Ewer's picture is three cells
+wide, so the classic one lies in the middle of three. The cow's, the horse's and the small wild
+animals' cells grew at 32 px, so `set_in_grown_cells` puts their classic cells in the new ones
+(bottom centre), as the classic files must have the new cell sizes.
 
 When a group goes native (docs/art-style.md, "Resolution"), before its redraw changes them:
 

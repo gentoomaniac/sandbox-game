@@ -597,9 +597,10 @@ it from the art in `art/` (see [tools/README.md](tools/README.md)). `make setup`
 and `screenshot` do that themselves when `assets/` is missing or older than `art/`, so after
 pulling nothing needs doing by hand; the first Godot import of a fresh `assets/` takes about a
 minute. To replace the art of one entity by hand, drop a file in `art/hand/` (see
-[art/hand/README.md](art/hand/README.md)); `make assets` uses it over the generated one. Start the game with `make run`: it imports new art first. Starting Godot directly
-makes the game stop with a list of pictures that aren't imported yet; run `make assets` and
-`godot --headless --import` once then.
+[art/hand/README.md](art/hand/README.md)); `make assets` uses it over the generated one. Start
+the game with `make run`: it imports new art first. Starting Godot directly makes the game stop
+with a list of pictures that aren't imported yet; run `make assets` and `godot --headless
+--import` once then.
 
 On Linux the game uses the X11 display driver (XWayland under a Wayland desktop), set in
 project.godot: Godot 4.7.2's Wayland driver sometimes never finishes quitting, leaving the
