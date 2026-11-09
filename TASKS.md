@@ -2245,6 +2245,10 @@ Paused by the user on 2026-11-09 after task 132 was merged: "pause 131 until i t
 continue".
 Going on again on 2026-11-09 ("you can continue 131"): the character screen (the inventory)
 moves first, so task 133 can start.
+The keys that close a window are the window's own (the user, 2026-11-09, when moving the
+character screen made E close it: "The old behaviour should stay the same. Maybe the modal should
+handle it but the instance can decide which key to use. You register a key with the modal and the
+modal uses it for shared closing code"): crafting and the chest register E, the inventory doesn't.
 
 The build menu (the user, 2026-11-09: "the build menu should scroll sideways"): its row of
 buildings scrolls sideways when wider than the window, keeping the chosen building in view (see
