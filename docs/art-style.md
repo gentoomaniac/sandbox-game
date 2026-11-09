@@ -723,7 +723,8 @@ copper watering can. Kept here as the record of why.
    rings, the dun's dark stripe, a bay's black points and white blaze, tabby stripes, wool
    curls, the collie's white collar) on top. The cow's head is drawn by hand, one for looking
    ahead and one for grazing (turning the first one over mirrors it). Sizes against the
-   61 px people: the horse 88 px long and 57 px to the withers (88×76 cell), the pony four fifths of it, the cow 40 px to its back (72×54), the sheep
+   61 px people: the horse 88 px long and 57 px to the withers (88×76 cell), the pony four
+   fifths of it, the cow 40 px to its back (72×54), the sheep
    22 px (44×32), the dog 48×36; the hen (24×24), the cat (32×24) and the rabbit (24×20) a
    little larger than life. The outline is the darkest colour of the coat (ink for the black
    and dark ones) and goes round the legs too; every animal stands on a contact shadow. The
