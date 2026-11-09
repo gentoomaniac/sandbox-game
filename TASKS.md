@@ -2243,6 +2243,7 @@ Halted 2026-11-09 after the crafting screen and the chest (merged): the other pa
 onto the Modal base of task 132 once it is in.
 Paused by the user on 2026-11-09 after task 132 was merged: "pause 131 until i tell you to
 continue".
+When it goes on, the character screen (the inventory) moves first, so task 133 can start.
 
 The build menu (the user, 2026-11-09: "the build menu should scroll sideways"): its row of
 buildings scrolls sideways when wider than the window, keeping the chosen building in view (see
@@ -2312,8 +2313,9 @@ screens not yet on it. The open window is a static variable of the base, no regi
 - [ ] Done
 
 The user, 2026-11-09: "once i tell you to resume 131, start in parallel: a trash can for the
-inventory dragging items on it will destroy them after confirmation." Starts when task 131
-resumes, alongside it.
+inventory dragging items on it will destroy them after confirmation." Then: "do 133 after 131
+has done the inventory, but tell 131 to do the inventory first". So task 131, once resumed, moves
+the character screen (the inventory) onto Modal first, and this task starts once that is merged.
 - A trash can slot on the inventory screen (character screen), and on the chest's screen, where
   the backpack shows. It looks like a slot with a bin icon (palette colours, both art sets).
 - Putting a picked stack on it (the screens pick and place with clicks, see
@@ -2324,8 +2326,7 @@ resumes, alongside it.
 - The confirmation is part of the screen, not a second window (one Modal at a time, task 132).
 - Game state: the inventory's removal is an explicit action with a test; the screen only asks
   and sends it. Docs: the inventory design page and the README.
-- Task 131 moves the character screen onto Modal at the same time: whichever lands second
-  rebases onto the other; the trash can doesn't move the screen itself.
+- It builds on the character screen as task 131 left it on Modal.
 
 ## Later (not part of the prototype)
 
