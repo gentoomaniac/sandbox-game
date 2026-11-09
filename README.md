@@ -266,11 +266,15 @@ oystercatchers in black and white probe the tidal mud all year, and tight flocks
 the spring and autumn migration, swinging round together when you come near; herring gulls
 walk and peck on the mud and swim on the sea, and in summer common terns fish over the
 tideways, hovering and plunging in with a splash. When the tide comes in the waders leave the
-mud and the gulls swim where they stood. The animals
+mud and the gulls swim where they stood. On warm, calm, dry summer evenings fireflies
+drift over the meadows by the trees, the Knicks and the water from dusk until a few hours after
+sunset, each blinking its own light on and off. The animals
 come and go around you by the season, the time of day and the weather; the numbers are in
 [data/wildlife.cfg](data/wildlife.cfg).
 
 ![White storks by the camp, a stork on the roof of the shack, geese grazing in autumn and a flock of them flying over](docs/screenshots/wildlife.png)
+
+![Fireflies blinking over a meadow on a summer night](docs/screenshots/fireflies.png)
 
 ![Storks striking at frogs by the camp on a summer evening, and mice in the grass](docs/screenshots/mice-and-frogs.png)
 

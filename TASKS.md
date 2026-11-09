@@ -2371,7 +2371,9 @@ the trashcan it opens the deletion confirmation".
 
 ## 135. Fireflies on summer nights
 
-- [ ] Done
+- [x] Done: fireflies in summer from dusk to four hours after sunset, over meadows by trees, Knicks and
+  water, not in rain, storm, fog, wind or cold (rules and numbers in data/wildlife.cfg, tests,
+  `--wildlife=firefly`, art in both sets, README and design/world/wildlife.md).
 
 The user, 2026-11-09: "add fireflies for the corresponding seasons and time of day". Ambient
 wildlife (design/world/wildlife.md, data and rules as the other animals): small glowing points

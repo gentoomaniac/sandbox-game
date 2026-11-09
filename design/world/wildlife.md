@@ -14,6 +14,19 @@ atmosphere only: no player impact, not hunted, not saved.
     of flowers around the view (up to the cap), none where nothing blooms; they hop from
     flower to flower within a few tiles and fly off when none is left near (task 75);
   - butterflies: over meadows and flowers by day in spring and summer;
+  - fireflies (task 135): the glow-worms of northern Germany (Lampyris and Lamprohiza), which
+    fly from about June to mid July. In the game: summer (day 31 to 60), from the start of the
+    dusk until 4 hours after sunset (past midnight in midsummer), up to 6 together, on grass, the
+    floodplain and wetland within 3 tiles of a tree, a Knick or open water: over meadows, hedges
+    and the edges of woods and water, not over open ground. They stay in for rain, a storm, fog,
+    strong wind (above 0.3) and cold (below 10 degrees). Each drifts slowly in lazy curves,
+    bobbing, and blinks: its point of light swells and fades every 2 to 4 seconds, with a real
+    light over it (soft yellow-green, small radius) that shines as strongly as the other lights of
+    the night (see [Look](../presentation/look.md)); in daylight it is a dim speck. They take no
+    notice of the player. One is a 6x6 px sheet of three states (dark, glowing, brightest) in both
+    art sets. `--wildlife=firefly` with `--day=45 --time=22:00` shows them. The rules have optional
+    keys only fireflies use so far (`edge_radius`, `after_sunset_minutes`, `wind_limit`,
+    `min_temperature`);
   - white storks (task 60): in spring and summer, by day only. They hunt on wetland, the
     floodplain and grass with open water within a few tiles (the wet meadows of the marsh),
     walking slowly with the head down and stabbing into the grass, and fly off with slow
