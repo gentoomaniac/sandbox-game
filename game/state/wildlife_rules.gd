@@ -114,8 +114,8 @@ const RING_TRIES := 12
 
 static var _default: WildlifeRules
 
-## Gives the times of dawn and dusk. The game sets its own, which follows the day length
-## setting.
+## Gives the times of dawn and dusk. A game's own (see `for_session`), which follows the day
+## length setting.
 var sun: Sun
 ## {section: {key: value}}, as in the file.
 var _values: Dictionary
@@ -131,6 +131,12 @@ static func default_rules() -> WildlifeRules:
 	if _default == null:
 		_default = from_file(DEFAULT_PATH)
 	return _default
+
+
+## The rules of the data file for a game whose day is that of `day_sun`. The file's values are
+## shared, the sun is this game's own: the default rules stay as they were loaded.
+static func for_session(day_sun: Sun) -> WildlifeRules:
+	return WildlifeRules.new(default_rules()._values, day_sun)
 
 
 static func from_file(path: String) -> WildlifeRules:

@@ -64,8 +64,7 @@ func show_wildlife(state: GameState, view: WorldView, camera: CameraController) 
 	_state = state
 	world_view = view
 	_camera = camera
-	rules = WildlifeRules.default_rules()
-	rules.sun = state.sun
+	rules = WildlifeRules.for_session(state.sun)
 	state.livestock.added.connect(_show_farm_animal_if_near)
 	ground.name = "Ground"
 	view.add_child(ground)
