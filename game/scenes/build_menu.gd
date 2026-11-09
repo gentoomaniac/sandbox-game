@@ -104,6 +104,7 @@ func show_message(text: String) -> void:
 func _place_note() -> void:
 	if not _note.visible:
 		return
+	# Shrunk to its text first: a shorter message than the last leaves the panel as wide as before.
 	_note.size = Vector2.ZERO
 	var screen := get_viewport().get_visible_rect().size
 	var spot := _note.get_global_mouse_position() + NOTE_OFFSET
@@ -120,8 +121,9 @@ func show_art_set() -> void:
 
 
 ## Draws the menu anew when what it shows has changed: the choice, the mode, what the player
-## carries of the materials, the message, the art set, the window, or the size the containers
-## need (a label that wraps grows a line only once it has been laid out).
+## carries of the materials, the art set, the window, or the size the containers need (a label
+## that wraps grows a line only once it has been laid out). The note of a refused spot is placed
+## every frame before that, as it follows the mouse, which redraws nothing else.
 func _process(_delta: float) -> void:
 	if not visible:
 		return

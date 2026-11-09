@@ -44,8 +44,8 @@ The first buildings have a page of their own: [first-buildings.md](first-buildin
   Kate: brick, then Geest); a building with one style has none. Beside them, on the right
   unless the window ends there, a larger preview of the chosen style with each material as
   carried/needed (marked and red when short). The reason a spot is refused shows in a small
-  panel beside the mouse pointer and follows it (the user, 2026-11-09), as the message above the
-  hotbar would be under the row. The chosen cell is lit, its name in
+  panel beside the mouse pointer and follows it, on one line (the user, 2026-11-09); the row
+  covers the message above the hotbar. The chosen cell is lit, its name in
   gold. The ghost is the chosen style's. A click on a cell picks it and never builds on the
   land under the menu. Both art sets show in it (F7).
 - **A row wider than the window scrolls sideways** (the user, 2026-11-09): the row of buildings

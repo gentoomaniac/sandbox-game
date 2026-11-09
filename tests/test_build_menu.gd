@@ -126,3 +126,15 @@ func test_why_a_spot_is_refused_shows_beside_the_mouse_not_in_the_preview() -> v
 	assert_eq(_menu._note.position, Vector2(140, 60) + BuildMenu.NOTE_OFFSET, "it follows")
 	_menu.show_message("")
 	assert_false(_menu._note.visible)
+
+
+func test_the_note_stays_inside_the_window_at_its_edges() -> void:
+	var screen := Vector2(_window.size)
+	var motion := InputEventMouseMotion.new()
+	motion.position = screen - Vector2(5, 5)
+	_window.push_input(motion)
+	# Taking down hides it, but that is main.gd's (BuildMenu.takes_messages), not the menu's.
+	_menu.show_message("This land doesn't look safe to build on.")
+	await get_tree().process_frame
+	var note := _menu._note.get_rect()
+	assert_true(Rect2(Vector2.ZERO, screen).encloses(note), "%s in %s" % [note, screen])

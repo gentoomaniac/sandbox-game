@@ -302,24 +302,26 @@ lie there until you walk over them and pick them up.
 ### Build anywhere
 
 Hold the hammer (press B to take it from the hotbar) and the build menu opens just above the
-hotbar: a row of the buildings, each with a small picture and its name (shack, fisherman's
-hut, Kate, longhouse, hall house, barn, church and bell frame). Pick one with Q and E, the left and right arrows or a click; a building that comes in
-more styles shows them in a column above it (the Kate: a brick Kate and a Geest Kate), which
-the up and down arrows or a click pick. Beside it a larger picture of your choice lists the
-logs, stone, clay and reeds it takes against what you carry. While the menu is open the arrows belong to it and you walk with
-WASD; Escape closes it. A ghost of the building follows the mouse; the spot is refused while
-something is missing, and a click or Space builds it and takes the materials. The ghost shows where it fits, and a note beside the mouse pointer tells you why a spot
-doesn't work, for example when it is unsafe wetland. Hold something else (or press Escape or right click) to stop
-building. You can walk inside every building but the bell frame, and each has its own room: a
-bare shack with a straw mat on a clay floor, a cottage room in the Kate, the longhouse with a
-living end and an animal end, the hall house with its long Diele between the stalls and the
-Flett with the hearth at its end, the barn with stalls and hay, and the church with its pews
-and altar. The rooms are furnished like 18th-century farmhouses of the coast: brick floors in
-the living rooms and beaten clay in the work rooms, an open hearth under a smoke hood with
-Dutch tiles behind the fire, plate racks with Delft and pewter, a wall bench and box beds with
-curtains. The last bed you slept in becomes your home. A new game starts at the camp with your
-tools and the hammer, so the materials for the first house have to be gathered first. The
-buildings, their sizes, costs and insides are in [data/buildings.cfg](data/buildings.cfg).
+hotbar: a row of the buildings, each with a small picture and its name (shack, fisherman's hut,
+Kate, longhouse, hall house, barn, church and bell frame). Pick one with Q and E, the left and
+right arrows or a click; a building that comes in more styles shows them in a column above it
+(the Kate: a brick Kate and a Geest Kate), which the up and down arrows or a click pick. Beside
+it a larger picture of your choice lists the logs, stone, clay and reeds it takes against what
+you carry. While the menu is open the arrows belong to it and you walk with WASD; Escape closes
+it. A ghost of the building follows the mouse; the spot is refused while something is missing,
+and a click or Space builds it and takes the materials. The ghost shows where it fits, and a
+note beside the mouse pointer tells you why a spot doesn't work, for example when it is unsafe
+wetland. Hold something else (or press Escape or right click) to stop building. You can walk
+inside every building but the bell frame, and each has its own room: a bare shack with a straw
+mat on a clay floor, a cottage room in the Kate, the longhouse with a living end and an animal
+end, the hall house with its long Diele between the stalls and the Flett with the hearth at its
+end, the barn with stalls and hay, and the church with its pews and altar. The rooms are
+furnished like 18th-century farmhouses of the coast: brick floors in the living rooms and beaten
+clay in the work rooms, an open hearth under a smoke hood with Dutch tiles behind the fire,
+plate racks with Delft and pewter, a wall bench and box beds with curtains. The last bed you
+slept in becomes your home. A new game starts at the camp with your tools and the hammer, so the
+materials for the first house have to be gathered first. The buildings, their sizes, costs and
+insides are in [data/buildings.cfg](data/buildings.cfg).
 
 The buildings follow the reed-thatched farmhouses of Denmark and northern Germany: the Kate
 with white lime walls, a split door and braced teal shutters (or, as the brick Kate, red brick
