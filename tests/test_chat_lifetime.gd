@@ -49,3 +49,24 @@ func test_the_answer_of_a_chat_left_for_another_lands_only_in_its_own() -> void:
 	assert_eq(_other.chat_history.size(), 0, "the other one's has nothing")
 	assert_eq(_screen._messages.get_child_count(), 0, "and the window shows the other chat")
 	_screen.close()
+
+
+func test_a_reply_pending_when_the_session_is_freed_never_reaches_the_next_session() -> void:
+	_screen.open_chat(_npc, _state)
+	_screen.say("One")
+	remove_child(_screen)
+	_screen.free()
+	remove_child(_dialogue)
+	_dialogue.free()
+	# The game is reloaded: the same villager, new objects.
+	var reloaded := Npc.create(5, _npc.position, _state.npcs.rules)
+	var settings := GameSettings.new("user://test_chat/settings.cfg")
+	settings.profiles.active["endpoint"] = "http://fake/v1"
+	var chat := FakeChat.new()
+	chat.seconds = 0.2
+	var next_dialogue := NpcDialogue.new(settings, chat)
+	add_child_autofree(next_dialogue)
+	next_dialogue.answered.connect(func(_answered: Npc) -> void: fail_test("an old answer arrived"))
+	await wait_seconds(0.5)
+	assert_eq(reloaded.chat_history.size(), 0)
+	assert_false(reloaded.is_answering)

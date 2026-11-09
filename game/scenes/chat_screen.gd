@@ -128,13 +128,13 @@ func open_chat(npc: Npc, state: GameState) -> void:
 	close()
 	_npc = npc
 	_state = state
+	if not dialogue.answered.is_connected(_on_answered):
+		dialogue.answered.connect(_on_answered)
 	open()
 
 
 func _enter_tree() -> void:
 	get_viewport().size_changed.connect(refit)
-	if not dialogue.answered.is_connected(_on_answered):
-		dialogue.answered.connect(_on_answered)
 
 
 func _exit_tree() -> void:
