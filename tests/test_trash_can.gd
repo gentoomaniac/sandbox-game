@@ -155,6 +155,20 @@ func test_closing_the_screen_or_switching_tabs_while_asking_destroys_nothing() -
 	assert_eq(_player.inventory.slots[BACKPACK_SLOT], {"item": ItemTypes.LOGS, "count": 12})
 
 
+func test_the_question_stays_inside_a_small_window() -> void:
+	_window.size = Vector2i(200, 140)
+	await wait_process_frames(2)
+	_put_picked_logs_on_the_trash_can()
+	assert_true(_window.get_visible_rect().encloses(_trash_can._prompt.get_global_rect()))
+
+
+func test_resizing_the_window_answers_keep() -> void:
+	_put_picked_logs_on_the_trash_can()
+	_window.size = Vector2i(500, 300)
+	assert_false(_trash_can.is_asking())
+	assert_eq(_screen._picked_inventory_slot, BACKPACK_SLOT)
+
+
 func test_the_buttons_take_focus() -> void:
 	_put_picked_logs_on_the_trash_can()
 	assert_true(_trash_can._keep_button.has_focus())

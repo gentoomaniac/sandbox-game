@@ -4,9 +4,10 @@ extends HBoxContainer
 ## it with `ask`, which shows "Destroy Logs (12)?" with Destroy and Keep buttons in a small panel
 ## over the screen (it floats, so the screen does not change size while it is up). Keep has the
 ## focus, so a stray Enter keeps the stack. Destroy emits `destroy_confirmed` and the screen does
-## the destroying. While the question is up, any click outside its panel answers Keep and is
-## swallowed, so it does nothing else; Escape is the screen's to hand to `keep()` (see
-## Modal `_takes_escape`). The question is part of the screen, not a window of its own: only one
+## the destroying. While the question is up, any click or wheel turn outside its panel answers
+## Keep and is swallowed, so it does nothing else, and so does the window changing size (the
+## screen moves, the question would not); Escape is the screen's to hand to `keep()` (see Modal
+## `_takes_escape`). The question is part of the screen, not a window of its own: only one
 ## Modal can be open.
 
 ## The bin slot was clicked.
@@ -49,6 +50,10 @@ func _init() -> void:
 	set_process_input(false)
 
 
+func _ready() -> void:
+	get_viewport().size_changed.connect(keep)
+
+
 ## Asks whether to destroy `count` of `item`, over the slot's lower left corner.
 func ask(item: StringName, count: int) -> void:
 	var item_name: String = ItemTypes.TYPES[item]["name"]
@@ -57,7 +62,9 @@ func ask(item: StringName, count: int) -> void:
 	)
 	_prompt.visible = true
 	_prompt.reset_size()
-	_prompt.global_position = _slot.global_position + Vector2(0, SlotView.SIZE - _prompt.size.y)
+	var window := get_viewport().get_visible_rect()
+	var corner := _slot.global_position + Vector2(0, SlotView.SIZE - _prompt.size.y)
+	_prompt.global_position = corner.clamp(window.position, window.end - _prompt.size)
 	_keep_button.grab_focus()
 	set_process_input(true)
 
