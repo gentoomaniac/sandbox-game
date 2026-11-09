@@ -465,9 +465,12 @@ func collect_ground_items(delta: float) -> void:
 				ground_item, ground_item.position + to_player.normalized() * PULL_SPEED * delta
 			)
 			continue
-		ground_item.count = player.inventory.add(ground_item.item, ground_item.count)
-		if ground_item.count == 0:
-			world.ground_items.remove(ground_item)
+		player.inventory.hold_notifications(
+			func() -> void:
+				ground_item.count = player.inventory.add(ground_item.item, ground_item.count)
+				if ground_item.count == 0:
+					world.ground_items.remove(ground_item)
+		)
 
 
 ## Puts the stack in inventory slot `slot` on the ground in front of the player, as drops of
@@ -481,9 +484,12 @@ func drop_from_inventory(slot: int) -> bool:
 	):
 		return false
 	var stack := player.inventory.slots[slot]
-	player.inventory.destroy(slot)
-	for pile in world.drop_items(player.facing_tile(), {stack["item"]: stack["count"]}):
-		pile.is_dropped_by_player = true
+	player.inventory.hold_notifications(
+		func() -> void:
+			player.inventory.destroy(slot)
+			for pile in world.drop_items(player.facing_tile(), {stack["item"]: stack["count"]}):
+				pile.is_dropped_by_player = true
+	)
 	return true
 
 

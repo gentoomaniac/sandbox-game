@@ -16,6 +16,10 @@ signal changed
 
 var slots: Array[Dictionary] = []
 
+## While above 0, a change is only noted and `changed` is sent when the last hold ends.
+var _hold_depth := 0
+var _is_change_pending := false
+
 
 func _init(slot_count: int) -> void:
 	for slot in slot_count:
@@ -51,6 +55,17 @@ func is_empty() -> bool:
 	return slots.all(func(stack: Dictionary) -> bool: return stack.is_empty())
 
 
+## Runs `work`, which may change these slots and what the items come from or go to (a pile on the
+## ground), and sends `changed` once when it is done, so a listener of either sees both finished.
+func hold_notifications(work: Callable) -> void:
+	_hold_depth += 1
+	work.call()
+	_hold_depth -= 1
+	if _hold_depth == 0 and _is_change_pending:
+		_is_change_pending = false
+		changed.emit()
+
+
 ## Puts `count` of `item` in: first onto stacks of it that have room, then into free slots in
 ## the order of `free_slots` (empty: `_free_slot_order`). Returns how many did not fit (all of
 ## them for a count below 1).
@@ -58,7 +73,7 @@ func add(item: StringName, count: int, free_slots: Array = []) -> int:
 	if count < 1:
 		return count
 	var left := _add(item, count, free_slots)
-	changed.emit()
+	_notify()
 	return left
 
 
@@ -72,7 +87,7 @@ func remove(item: StringName, count: int) -> int:
 	if count < 1:
 		return 0
 	var taken := _remove(item, count)
-	changed.emit()
+	_notify()
 	return taken
 
 
@@ -85,7 +100,7 @@ func take_from(slot: int, count: int) -> bool:
 	slots[slot]["count"] -= count
 	if slots[slot]["count"] == 0:
 		slots[slot] = {}
-	changed.emit()
+	_notify()
 	return true
 
 
@@ -112,7 +127,7 @@ func exchange(paid: Dictionary, received: Dictionary) -> bool:
 		_remove(item, paid[item])
 	for item: StringName in received:
 		_add(item, received[item], [])
-	changed.emit()
+	_notify()
 	return true
 
 
@@ -120,7 +135,7 @@ func exchange(paid: Dictionary, received: Dictionary) -> bool:
 ## equipment, which has already changed what it wears (see Equipment `move_to_equipment`).
 func replace_with_one(slot: int, item: StringName) -> void:
 	slots[slot] = {} if item == ItemTypes.NONE else {"item": item, "count": 1}
-	changed.emit()
+	_notify()
 
 
 ## Destroys the stack in `slot` for good (the trash can); the other slots stay as they are.
@@ -128,7 +143,7 @@ func destroy(slot: int) -> void:
 	if not has_slot(slot):
 		return
 	slots[slot] = {}
-	changed.emit()
+	_notify()
 
 
 ## Moves what is in slot `from` to slot `to` of `target` (these slots themselves for a move
@@ -184,7 +199,7 @@ func move_into(from: int, targets: Array) -> bool:
 	slots[from]["count"] = left
 	if left == 0:
 		slots[from] = {}
-	changed.emit()
+	_notify()
 	return left == 0
 
 
@@ -265,6 +280,14 @@ func _remove(item: StringName, count: int) -> int:
 
 ## Tells of a change made to these slots and `other` together, once both are done.
 func _notify_with(other: ItemSlots) -> void:
-	changed.emit()
+	_notify()
 	if other != self:
-		other.changed.emit()
+		other._notify()
+
+
+## Sends `changed`, or notes that it is due when a hold is on.
+func _notify() -> void:
+	if _hold_depth > 0:
+		_is_change_pending = true
+	else:
+		changed.emit()

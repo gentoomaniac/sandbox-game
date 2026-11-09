@@ -71,3 +71,42 @@ func test_nothing_is_dropped_inside_a_house() -> void:
 func test_dropping_from_a_slot_that_does_not_exist_does_nothing() -> void:
 	assert_false(_state.drop_from_inventory(-1))
 	assert_false(_state.drop_from_inventory(Inventory.SLOT_COUNT))
+
+
+func test_a_listener_of_the_inventory_sees_the_dropped_pile_already_on_the_ground() -> void:
+	var slot := _slot_with(ItemTypes.STONE, 6)
+	var seen := []
+	var look := func() -> void:
+		seen.append(
+			[
+				_state.player.inventory.count_of(ItemTypes.STONE),
+				_world.ground_items.count_of(ItemTypes.STONE)
+			]
+		)
+	_state.player.inventory.changed.connect(look)
+	_state.drop_from_inventory(slot)
+	_state.player.inventory.changed.disconnect(look)
+	assert_eq(seen, [[0, 6]])
+
+
+func test_a_listener_of_the_inventory_sees_the_picked_up_pile_already_gone() -> void:
+	var slot := _slot_with(ItemTypes.STONE, 4)
+	_state.drop_from_inventory(slot)
+	var pile: GroundItem = _world.ground_items.all()[0]
+	_state.player.position = pile.position + Vector2(0, -6)
+	_walk_frames(SETTLE_FRAMES)
+	_state.player.position = pile.position
+	var seen := []
+	var look := func() -> void:
+		seen.append(
+			[
+				_state.player.inventory.count_of(ItemTypes.STONE),
+				_world.ground_items.count_of(ItemTypes.STONE)
+			]
+		)
+	_state.player.inventory.changed.connect(look)
+	_walk_frames(SETTLE_FRAMES)
+	_state.player.inventory.changed.disconnect(look)
+	assert_false(seen.is_empty())
+	for counts: Array in seen:
+		assert_eq(counts[0] + counts[1], 4, "an item is in the inventory or on the ground, once")
