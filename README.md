@@ -60,13 +60,13 @@ the flowers grow is in [data/flowers.cfg](data/flowers.cfg), when they bloom in
 ![The same meadow on the 8th and the 25th day of spring and the 15th and the 27th day of summer](docs/screenshots/meadows.png)
 
 Where you walk often, the grass wears: first it is trodden, thin and flattened with the earth
-showing through, then a path of bare earth with grass creeping in at its edges, and the
-flowers and tufts on it are gone. Walk the same line a few times a day and a path forms in a
-few days; leave it and it grows back over a week or two. Paths fade softly into the grass
-around them, change with the seasons, lie dark in a winter without snow and show as a faint
-trodden track under snow. Cows and the other farm animals wear the ground too where they keep
-walking, and so do the villagers on their rounds. A path is only a look: it walks, tills and builds like grass. The numbers are in
-[data/paths.cfg](data/paths.cfg).
+showing through, then a path of bare earth with grass creeping in at its edges, and the flowers
+and tufts on it are gone. Walk the same line a few times a day and a path forms in a few days;
+leave it and it grows back over a week or two. Paths fade softly into the grass around them,
+change with the seasons, lie dark in a winter without snow and show as a faint trodden track
+under snow. Cows and the other farm animals wear the ground too where they keep walking, and so
+do the villagers on their rounds. A path is only a look: it walks, tills and builds like grass.
+The numbers are in [data/paths.cfg](data/paths.cfg).
 
 ![A desire path through a meadow after three days, after eight days, five days after it was last walked, and under snow](docs/screenshots/desire-paths.png)
 

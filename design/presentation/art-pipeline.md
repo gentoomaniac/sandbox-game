@@ -55,19 +55,19 @@
     colour with the weeks; a species' first and last flowers are small ones. Early spring has
     few, late spring and summer are full, autumn fades and winter has none. When a tile
     blooms nothing, its ordinary decoration shows.
-- **Desire paths** (decided 2026-11-06, task 77): ways walked often wear into paths with
-  less grass. Every tile the player steps onto outdoors takes a step of wear (a farm animal
-  or a villager half a step, wherever they are in the loaded world, so the rounds of the
-  villagers wear paths too); a tile turns trodden (thin, flattened grass with the earth showing) and then
+- **Desire paths** (decided 2026-11-06, task 77): ways walked often wear into paths with less
+  grass. Every tile the player steps onto outdoors takes a step of wear (a farm animal or a
+  villager half a step, wherever they are in the loaded world, so the rounds of the villagers
+  wear paths too); a tile turns trodden (thin, flattened grass with the earth showing) and then
   a path of bare earth, and each night takes some wear off, so an unused path grows back to
-  grass in about two weeks. Numbers in `data/paths.cfg`: trodden from 8 steps, a path from
-  24, at most 32, 2 a night; walking the same line about eight times a day makes a path in
-  four or five days. Only grass (ordinary, lush, dry) and the floodplain wear; fields,
-  wetland, water, buildings (their doors too) and interiors don't. Worn tiles lose their
-  flowers and tufts. A path is a look only: no change to speed or farming, and tilling it
-  works as on grass (and clears the wear). Drawn as two dual-grid layers over the grass,
-  with soft dithered edges, in every season's look and the frost; snow covers paths, with a
-  faint trodden track over them; in a bare winter the earth lies dark. The wear is saved
-  (only worn tiles, dropped once they have grown back).
+  grass in about two weeks. Numbers in `data/paths.cfg`: trodden from 8 steps, a path from 24,
+  at most 32, 2 a night; walking the same line about eight times a day makes a path in four or
+  five days. Only grass (ordinary, lush, dry) and the floodplain wear; fields, wetland, water,
+  buildings (their doors too) and interiors don't. Worn tiles lose their flowers and tufts. A
+  path is a look only: no change to speed or farming, and tilling it works as on grass (and
+  clears the wear). Drawn as two dual-grid layers over the grass, with soft dithered edges, in
+  every season's look and the frost; snow covers paths, with a faint trodden track over them; in
+  a bare winter the earth lies dark. The wear is saved (only worn tiles, dropped once they have
+  grown back).
 - **Floodplain looks fertile:** lush, damp meadow, with a narrow muddy bank right at the
   water. It must not read as barren sand.
