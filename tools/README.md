@@ -26,6 +26,30 @@ classic art is generated at 16 px as it was drawn, and `make assets` scales it u
 in [requirements.txt](requirements.txt). After new art, `make run`, `make test` and
 `make screenshot` import it themselves.
 
+### Replacing one entity's art by hand
+
+Hand-drawn files go in `art/hand/` and `make assets` uses them over the generated ones (nothing
+generates into that folder). To redraw the oak, for example:
+
+1. Copy `art/generated/objects/oak.png` to `art/hand/objects/oak_32x32.png` (the same path and
+   name, plus the postfix of the art set: `_32x32` for the new art, `_16x16` for the classic
+   art, whose cells are 48x80 and whose files are drawn at 16 px per tile).
+2. Open it in any pixel editor. The sheet has a row per look (the order is in
+   `art/generated/objects/atlas.txt`: spring, summer, autumn, bare, frost, snow, dusting, buds,
+   young_leaves) and a column per variant, cells of 96x160 px; the object stands on the bottom
+   centre of its cell. Keep the picture's size and the palette (`art/generated/palette.png`,
+   `.gpl`).
+3. Draw only the cells you want to replace and leave the rest fully transparent: those cells stay
+   the generated ones, so you can start with the summer row and add the other looks later.
+4. `make assets`. It lists the hand files it used (with how many cells each draws), warns about
+   colours outside the palette (the art is still used), and fails if a hand file has another size
+   than the generated one or replaces no generated file (a typo in the path or the postfix).
+
+The same goes for every other picture (`art/hand/items/axe_32x32.png`, an animal's sheet, a
+building) and for sounds, which have no postfix: `art/hand/sounds/axe_chop_1.wav` replaces
+`art/generated/sounds/axe_chop_1.wav` (it is not checked for level or loops; the file is used as
+it is). The tests of this are `tools/art/test_pack.py` (`make test-tools`, part of `make test`).
+
 ## Tests: tools/run_tests.py
 
 `make test` runs it. It spreads tests/test_*.gd over `TEST_JOBS` headless Godot processes
@@ -59,7 +83,9 @@ by topic. Where is a thing drawn?
 | `contrast_sheet.py` | `make contrast-sheet` (after `make assets`): the tall grass, fern and reeds (or the atlas rows named in `KINDS="willow shrub"`) over the grass, lush grass, dry grass and floodplain of every look (each season, frost, snow, and night) into `build/contrast_sheet.png`, to check contrast by eye. |
 | `generate.py` | The object atlas (`object_atlas()`, with the numbered table of its rows; `atlas_cells` splits a picture wider than a cell, the Ewer's, into its cells), the writers and `main()`; everything is drawn at the game's 32 px tile (see [docs/art-style.md](../docs/art-style.md), "Resolution"). |
 | `canvas.py` | The shared basics: `TILE` (the 16 px of the icons and the classic art), `GAME_TILE` (the game's 32 px tile), the size of an object cell at each (`GAME_OBJECT_*`, and `OBJECT_*` for the classic art), `blank`, `filled`, `copy`, a clipped `rect`, and the two outline helpers: `outline` (a ring outside the drawing) and `outline_edge` (recolours the drawing's border). |
-| `palette.py` | The palette, `DARKEST_OF` (the colour that outlines each ramp), `to_image`, `save` (one PNG under `assets/`) and the palette check. |
+| `palette.py` | The palette, `DARKEST_OF` (the colour that outlines each ramp), `to_image`, `save` (one PNG under `art/generated/`, remembering the cell size of a sheet) and the palette check. |
+| `atlas.py` | Writes the sheets of the object and decoration atlases (one image per entity, a row per look) and their `atlas.txt`, and reads it. |
+| `pack.py` | `make assets`: builds assets/ from art/generated/ and art/hand/ (packs the atlases, lays hand-drawn cells over generated ones, scales the classic art up through `classic/scaling.py`). Draws nothing. Its tests: `test_pack.py`. |
 | `terrain.py` | The ground, drawn at 32 px per tile: water, tidal mud, floodplain, wetland, grass, salt marsh, Warft, lush and dry grass, trodden grass, path and tilled soil, their decorations, and the wet look of tilled soil. |
 | `flowers.py` | The meadow flowers of the region: the flower row of the decoration atlas, drawn at 32 px. |
 | `trees.py` | Oak, spruce, pine, dead tree, bushes, ferns, stones, boulders and stumps, drawn at 32 px, and the shared plant parts (the cell, crowns of leaf sprays, trunks, bare limbs and twigs, blades, ground shadows, dense feet). |
@@ -97,7 +123,7 @@ values. The colours are `BASE_COLOURS` in `palette.py` plus `COLOURS` in `season
 into `PALETTE` (a name in both fails), and the palette is limited to `MAX_PALETTE_COLOURS`
 (when it is full, merge two similar colours to add one). A picture with a colour that is not
 in it fails with "unknown colour X in <the file being written>". After writing,
-`check_palette()` fails if any PNG under `assets/` has a colour outside the palette.
+`check_palette()` fails if any PNG under `art/generated/` has a colour outside the palette; hand-drawn files are only warned about, by `make assets`.
 
 ### The classic art: tools/art/classic/
 
@@ -105,8 +131,8 @@ The game can show the art of a group redrawn at 32 px per tile as it was before,
 doubled (Settings → Display, F7; see `ArtSet` in game/scenes/art_set.gd). That classic art is
 generated like the rest: tools/art/classic/ holds the old generators of the groups that went
 native, copied from git history as they were, and its `generate.py` writes their files under
-assets/classic/, with the same names as the new files under assets/, and doubles the world's
-ones by its own `DOUBLED`. The old modules import their siblings there first and the shared
+art/generated/classic/, with the same names as the new files under art/generated/, at 16 px;
+`make assets` doubles the world's ones by `DOUBLED` in `classic/scaling.py`. The old modules import their siblings there first and the shared
 `canvas.py` and `palette.py` of tools/art/ after them; a later change to those two that an old
 module trips over (a colour renamed) is made in the old module too. So far: the people (task
 113), from commit 97e9736: `character.py`, `villagers.py` and `portraits.py` unchanged, and
@@ -153,9 +179,9 @@ When a group goes native (docs/art-style.md, "Resolution"), before its redraw ch
    already there (two groups drawn in one module), add the group's part to it.
 2. Add the group's old `write_...` lines to `main` in tools/art/classic/generate.py, writing to
    `f"{CLASSIC}/<path>"`, and its doubled globs to `DOUBLED` in classic/scaling.py.
-3. `make art`, and compare a few classic files with those of the commit
-   (`git show <commit>:assets/<path>`, against the file under assets/ after `make assets`): they are the same picture, byte for byte while nothing
-   shared changed.
+3. `make art` and `make assets`, and compare a few classic files under assets/classic/ with those
+   of the commit (`git show <commit>:assets/<path>`): they are the same picture, byte for byte
+   while nothing shared changed.
 
 ### Adding things
 

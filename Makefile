@@ -23,7 +23,7 @@ IMPORT := $(GODOT) --headless --quiet --import
 # reproducible, and it keeps third-party code out of our history and diffs.
 # The cost is that a fresh clone needs `make setup` (and network) before it runs.
 
-.PHONY: help setup venv art classic-art assets contrast-sheet run screenshot test bench lint format export clean llm-up llm-down llm-check \
+.PHONY: help setup venv art classic-art assets contrast-sheet run screenshot test test-tools bench lint format export clean llm-up llm-down llm-check \
 	llm-pull llm-models llm-rm llm-eval llm-gpu-setup
 
 help:
@@ -33,7 +33,8 @@ help:
 	@echo "  venv        Create the Python venv with the packages of tools/requirements.txt."
 	@echo "  run         Start the game."
 	@echo "  screenshot  Save one frame as PNG (a new game, muted, no focus, its own save)."
-	@echo "  test        Run the GUT tests headless, in TEST_JOBS parallel processes."
+	@echo "  test        Run the GUT tests headless, in TEST_JOBS parallel processes, and the tests of the Python tools."
+	@echo "  test-tools  Run only the tests of the Python tools (tools/art/test_*.py)."
 	@echo "  bench       Time a heavy save headless (start-up, nodes, frame times, pile pick-up); see tools/README.md."
 	@echo "  lint        Run gdlint and gdformat --check, and check no API key is in the repo."
 	@echo "  format      Format the GDScript."
@@ -203,7 +204,11 @@ screenshot: assets
 # real save.
 TEST_JOBS ?= 8
 
-test: assets
+# The tests of the Python tools (tools/art/test_*.py), part of `make test`.
+test-tools: $(VENV_READY)
+	$(PYTHON) -m unittest discover -s tools/art -p "test_*.py"
+
+test: assets test-tools
 	@mkdir -p build/user-data
 	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT)
 	@GODOT=$(GODOT) python3 tools/run_tests.py $(TEST_JOBS)

@@ -1,8 +1,19 @@
 # Art pipeline
 
 - Assets are created by Claude for now, in a **semi-fantasy/medieval pixel style**.
-- They come from a **generator script** (`make assets`). The generated PNGs are
-  committed. Hand-drawn PNGs may replace single files later.
+- They come from a **generator script** (`make art`), which draws into `art/generated/`
+  (committed). The world's objects and the ground's decorations are one image per entity
+  there: a row per season look, a column per variant, cells of a fixed size (96x160 for objects),
+  so one entity's art can be redrawn on its own. Map terrain stays in its tile sheets.
+- **Three places** (decided 2026-11-09, task 146): `art/generated/` is what `make art` draws,
+  `art/hand/` is what artists drop in (no tool writes there), and `assets/` is what Godot reads,
+  built by `make assets` from both (packing the entity images into the atlases, scaling the
+  classic art up) and kept out of the repository.
+- **Hand-drawn art replaces generated art** file by file: the same path under `art/hand/` with a
+  `_32x32` (new art) or `_16x16` (classic art) postfix, sounds without one. A hand picture has
+  the generated one's size exactly; of a sheet it takes the cells it draws and leaves the empty
+  ones to the generated art. `make assets` lists the hand files it used, warns about colours
+  outside the palette and fails on a hand file that replaces nothing.
 - **One fixed palette** (own palette, see Style rules for its size): earthy greens and browns,
   muted blue water, warm accents for fire and light, room for magic colours. All assets
   use only palette colours.

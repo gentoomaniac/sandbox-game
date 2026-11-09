@@ -17,6 +17,8 @@ ROOT = Path(__file__).resolve().parents[2]
 # What the generators write (`make art`) and what `make assets` builds for Godot out of it and out
 # of the hand-drawn art in art/hand/ (see pack.py).
 GENERATED = ROOT / "art" / "generated"
+# What artists drop in, with the paths of the generated files and a postfix (see pack.py).
+HAND = ROOT / "art" / "hand"
 ASSETS = ROOT / "assets"
 # The sheets saved by this process, by their path under GENERATED: their cell size, which
 # `write_cell_sizes` records so that pack.py can fill the empty cells of a hand-drawn sheet.
