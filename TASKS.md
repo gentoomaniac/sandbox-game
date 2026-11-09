@@ -263,6 +263,20 @@ The user, 2026-11-09: once all current tasks are done. After task 142 the mean f
 extra `frog_croak`). Give the test a fixed seed, or count only the sounds it asserts about, so it
 passes every run; no game change.
 
+## 149. Harvesting works, and dead plants are hoed away for the next crop
+
+- [ ] Done
+
+The user, 2026-11-09: "make sure plants can get harvested and dead plants can be hoed away to
+prep the soil for the next produce".
+- Check every crop can be harvested when ripe (each crop of the crop data, in every season it
+  grows), and what the player gets; fix what doesn't work.
+- A withered or dead crop (frost, drought, past its season, see the crop withering rules) can be
+  cleared with the hoe: the tile is tilled soil again, ready to plant, with no dead plant left.
+  Say what the player gets from it (nothing, or a little), and whether the scythe or the hand also
+  clear it.
+- Tests: harvest of each crop, hoeing a dead crop gives plantable tilled soil, saved and loaded.
+
 ## Later (not part of the prototype)
 
 - **Review R8: one owner for the simulation, its time and what is loaded** (review F2.4/F2.5, A4,
@@ -282,7 +296,7 @@ passes every run; no game change.
   not decided. Plan with the user (its open questions are in QUESTIONS.md), then split into
   tasks. It also settles where seeds come from once shops exist.
 
-- - `WildlifeSprites.frame_index` and `max_frames` allocate on every call (`keys()`,
+- `WildlifeSprites.frame_index` and `max_frames` allocate on every call (`keys()`,
   `values().max()`); the older animals call them per frame. Cache them per sheet. And rename
   `SoundEvents.animal_alarm`, which since task 60 also gives the stork's clatter, to something
   like `animal_state_sound`.
