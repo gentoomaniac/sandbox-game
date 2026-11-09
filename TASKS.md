@@ -2235,15 +2235,24 @@ come earlier.
 - Not saved, not remembered. Bubbles drawn in palette colours, readable at every zoom; a
   screenshot in the README.
 
-## Later (not part of the prototype)
+## 131. Scrolling for menus that outgrow the window
 
-- **Scrolling for menus that outgrow the window** (the user, 2026-11-09): "UIs like crafting get
-  bigger than the screen. so we need scrolling for those if they reach certain limits." The
-  crafting screen first; check the other panels with lists that grow (inventory and chest, the
-  build menu, the character screen, Settings) at the smallest supported window size and the
-  largest UI scale. Past a height limit (the window less a margin) the list scrolls (mouse
-  wheel, drag, and keyboard or controller focus keeps the selected entry in view) while
-  headers and buttons stay put.
+- [ ] Done
+
+The user, 2026-11-09: "UIs like crafting get bigger than the screen. so we need scrolling for
+those if they reach certain limits." First a later idea, then "start the scrolling".
+- The crafting screen first; then every panel with content that grows: inventory and chest, the
+  build menu, the character screen, the pause menu's Settings pages (the language model page with
+  its profiles is close to the window height already).
+- Past a height limit (the window less a margin) the growing part scrolls, by mouse wheel and by
+  dragging the bar, while titles, tabs and buttons stay put. Keyboard or controller focus keeps the
+  selected entry in view. Below the limit nothing changes: no bar, the panel as it is today.
+- One shared way to do it (a helper or a scene used by all panels), not a copy per panel.
+- Check each panel at the smallest supported window size and the largest UI scale; tests for what
+  can be tested (the limit, focus kept in view), screenshots by hand. Docs: the UI page of the
+  design (design/presentation/menus-and-hud.md) and the README.
+
+## Later (not part of the prototype)
 
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
   Valley, but actions count as well as gifts, in the manner of the Sims (helping, talking,
