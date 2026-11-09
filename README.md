@@ -302,12 +302,11 @@ lie there until you walk over them and pick them up.
 ### Build anywhere
 
 Hold the hammer (press B to take it from the hotbar) and the build menu opens just above the
-hotbar: a row of the buildings, each with a small picture, its name and the logs, stone, clay
-and reeds it takes (shack, fisherman's hut, Kate, longhouse, hall house, barn, church and bell
-frame). Pick one with Q and E, the left and right arrows or a click; a building that comes in
+hotbar: a row of the buildings, each with a small picture and its name (shack, fisherman's
+hut, Kate, longhouse, hall house, barn, church and bell frame). Pick one with Q and E, the left and right arrows or a click; a building that comes in
 more styles shows them in a column above it (the Kate: a brick Kate and a Geest Kate), which
-the up and down arrows or a click pick. Beside it a larger picture of your choice lists what it
-takes against what you carry. While the menu is open the arrows belong to it and you walk with
+the up and down arrows or a click pick. Beside it a larger picture of your choice lists the
+logs, stone, clay and reeds it takes against what you carry. While the menu is open the arrows belong to it and you walk with
 WASD; Escape closes it. A ghost of the building follows the mouse; the spot is refused while
 something is missing, and a click or Space builds it and takes the materials. The ghost shows where it fits, and the game tells you why a spot doesn't work, for
 example when it is unsafe wetland. Hold something else (or press Escape or right click) to stop

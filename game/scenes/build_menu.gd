@@ -16,8 +16,8 @@ const SHORT_COLOR := Color("dc7a37")
 const TAKING_DOWN_TEXT := "Taking down (X: build)"
 ## A cell of the row or of a column: its width, and the box its picture is fitted into.
 const CELL_WIDTH := 70
-const CELL_PICTURE := Vector2(52, 34)
-const PREVIEW_PICTURE := Vector2(100, 96)
+const CELL_PICTURE := Vector2(35, 23)
+const PREVIEW_PICTURE := Vector2(67, 64)
 const GAP := 2
 ## Where the panel is while the hammer takes down: out of the way of the message of what taking
 ## down gives, which is above the hotbar.
@@ -58,7 +58,7 @@ func _init() -> void:
 	for building in BuildingTypes.ids():
 		_cells[building] = {}
 		var styles := BuildingTypes.styles(building)
-		_cells[building][OWN_LOOK] = _cell(building, OWN_LOOK, true)
+		_cells[building][OWN_LOOK] = _cell(building, OWN_LOOK)
 		_row.add_child(_cells[building][OWN_LOOK])
 		if styles.size() == 1:
 			continue
@@ -68,7 +68,7 @@ func _init() -> void:
 		column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		# The first style above the row's cell, the last at the top.
 		for index in range(styles.size() - 1, 0, -1):
-			_cells[building][styles[index]] = _cell(building, styles[index], false)
+			_cells[building][styles[index]] = _cell(building, styles[index])
 			column.add_child(_cells[building][styles[index]])
 		_columns[building] = column
 		add_child(column)
@@ -208,9 +208,9 @@ func _place_on_screen(is_choosing: bool) -> void:
 	_preview.position = Vector2(x, _row.position.y - GAP - _preview.size.y)
 
 
-## A cell of the menu: the picture of the building in a style and its name, and in the row
-## (`with_costs`) what it takes. A click on it picks that building and style.
-func _cell(building: StringName, style: StringName, with_costs: bool) -> PanelContainer:
+## A cell of the menu: the picture of the building in a style and its name. What it takes shows
+## only in the preview of the chosen one. A click on it picks that building and style.
+func _cell(building: StringName, style: StringName) -> PanelContainer:
 	var entry := BuildingTypes.of(building, style)
 	var cell := PanelContainer.new()
 	cell.custom_minimum_size.x = CELL_WIDTH
@@ -229,23 +229,6 @@ func _cell(building: StringName, style: StringName, with_costs: bool) -> PanelCo
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	rows.add_child(label)
-	if with_costs:
-		var costs := GridContainer.new()
-		costs.columns = 2
-		costs.add_theme_constant_override("h_separation", 3)
-		costs.add_theme_constant_override("v_separation", 0)
-		costs.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		for item: StringName in entry["costs"]:
-			var pair := HBoxContainer.new()
-			pair.add_theme_constant_override("separation", 1)
-			var icon := ItemIcon.new()
-			icon.show_item(item)
-			pair.add_child(icon)
-			var count := Label.new()
-			count.text = str(entry["costs"][item])
-			pair.add_child(count)
-			costs.add_child(pair)
-		rows.add_child(costs)
 	cell.add_child(rows)
 	return cell
 

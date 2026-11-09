@@ -37,7 +37,9 @@ The first buildings have a page of their own: [first-buildings.md](first-buildin
 - **The build menu** (task 121, 2026-11-09, the user: "a matrix on top of the quick bar where
   you see the main buildings and their variants popping up to the top"): with the hammer
   held, a row of the buildings stands just above the hotbar, in the order of
-  data/buildings.cfg, each a small picture with its name and its materials (icon and count).
+  data/buildings.cfg, each a small picture with its name (what it takes shows only in the
+  preview of the chosen one: the user, 2026-11-09, "the costs only need to show when a building
+  is selected"; the pictures at 2/3 of their first size, "it is very big").
   Above the chosen one its other styles stand in a column, the first just above the row (the
   Kate: brick, then Geest); a building with one style has none. Beside them, on the right
   unless the window ends there, a larger preview of the chosen style with each material as
