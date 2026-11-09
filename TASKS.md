@@ -239,6 +239,18 @@ spring and summer and flies off again; there is no nest. Moved here from task 12
   is saved; what the player only sees (flaps, clatter) stays in the views.
 - Tests for the year of a nest by date, the seeding, save and load; a screenshot in the README.
 
+## 153. Villagers wear desire paths too
+
+- [ ] Not done
+
+The user's words of 2026-11-10: "The tracks that show up on tiles that you walk often are good.
+NPCs should contribute to those."
+
+- Every villager that steps onto a new tile outdoors wears it, like the player and the farm
+  animals, with its own step amount in data/paths.cfg; their daily routes slowly become paths.
+- The same on and off screen; the wear fades as before when nobody walks there.
+- Tests, and the design page and README say it.
+
 ## Later (not part of the prototype)
 
 - **Review R8: one owner for the simulation, its time and what is loaded** (review F2.4/F2.5, A4,
