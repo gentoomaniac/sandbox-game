@@ -17,6 +17,7 @@ var world: World
 ## While true, `update` loads and drops nothing: the world is held still (a sleep that is made up
 ## for, a player indoors).
 var is_held := false
+## The chunk streaming centres on; WorldView reads it for which chunk to draw first.
 var focus_chunk := Vector2i.ZERO
 ## True when `update` found every chunk around the focus loaded (before it loaded the next).
 var is_complete := false
