@@ -203,6 +203,7 @@ objects/ewer_32x32.png 96 160
 objects/fern_32x32.png 96 160
 objects/fireplace_32x32.png 96 160
 objects/grave_32x32.png 96 160
+objects/hay_rack_32x32.png 96 160
 objects/jetty_32x32.png 96 160
 objects/kiln_32x32.png 96 160
 objects/knick_32x32.png 96 160
@@ -226,6 +227,7 @@ objects/stone_32x32.png 96 160
 objects/stone_wall_32x32.png 96 160
 objects/stump_32x32.png 96 160
 objects/tall_grass_32x32.png 96 160
+objects/trough_32x32.png 96 160
 objects/wattle_fence_32x32.png 96 160
 objects/willow_32x32.png 96 160
 objects/willow_short_trunk_32x32.png 96 160

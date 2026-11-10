@@ -191,6 +191,8 @@ def standing_outdoors(picture, shadow_half_width=None):
 # 49 net_frame (1)
 # 50 eel_traps (1)
 # 51 draw_well (1)
+# 52 trough (4, its fills: empty, low, half, full, see yard.py)
+# 53 hay_rack (4, the same)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -240,6 +242,8 @@ def object_atlas():
         ("net_frame", landing.net_frame_row()),
         ("eel_traps", landing.eel_traps_row()),
         ("draw_well", [standing_outdoors(yard.draw_well(), yard.WELL_SHADOW)]),
+        ("trough", [standing_outdoors(picture) for picture in yard.trough_looks()]),
+        ("hay_rack", [standing_outdoors(picture) for picture in yard.hay_rack_looks()]),
     ]
 
 

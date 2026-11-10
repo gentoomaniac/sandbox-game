@@ -165,6 +165,10 @@ made at the workbench with masonry 20 from 12 stone, 3 planks, 2 logs and 2 fibr
 outdoors) or at fresh water: a river, a pond or a ditch, never the sea or the salt marsh. With
 an empty can the use key says so and waters nothing. The water in the can is saved.
 
+A **trough** (a plank box on two feet, woodworking 10: 5 planks and a log) and a **hay rack**
+(oak posts with slats, woodworking 15: 4 planks and 2 logs) stand outdoors on two tiles and hold
+a stock of up to 100 units. Their pictures show how full they are: empty, low, half and full.
+
 ### Livestock
 
 Cows, sheep, chickens and rabbits of the region: red-brown Angler, black pied and red pied

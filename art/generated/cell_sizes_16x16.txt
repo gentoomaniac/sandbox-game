@@ -189,6 +189,7 @@ objects/ewer_16x16.png 48 80
 objects/fern_16x16.png 48 80
 objects/fireplace_16x16.png 48 80
 objects/grave_16x16.png 48 80
+objects/hay_rack_16x16.png 48 80
 objects/jetty_16x16.png 48 80
 objects/kiln_16x16.png 48 80
 objects/knick_16x16.png 48 80
@@ -212,6 +213,7 @@ objects/stone_16x16.png 48 80
 objects/stone_wall_16x16.png 48 80
 objects/stump_16x16.png 48 80
 objects/tall_grass_16x16.png 48 80
+objects/trough_16x16.png 48 80
 objects/wattle_fence_16x16.png 48 80
 objects/willow_16x16.png 48 80
 objects/willow_short_trunk_16x16.png 48 80

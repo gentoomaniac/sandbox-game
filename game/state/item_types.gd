@@ -70,6 +70,8 @@ const NET_FRAME := &"net_frame"
 const EEL_TRAPS := &"eel_traps"
 # The farm yard (task 122).
 const DRAW_WELL := &"draw_well"
+const TROUGH := &"trough"
+const HAY_RACK := &"hay_rack"
 # The mason's (task 74).
 const RAW_BRICK := &"raw_brick"
 const BRICK := &"brick"
@@ -500,6 +502,22 @@ const _OTHER_TYPES := {
 		"weight": 40.0,
 		"stack_limit": 1,
 		"places": WorldObjectTypes.DRAW_WELL,
+	},
+	TROUGH:
+	{
+		"name": "Trough",
+		"description": "An oak plank trough for the animals' water. It stands outdoors.",
+		"weight": 25.0,
+		"stack_limit": 2,
+		"places": WorldObjectTypes.TROUGH,
+	},
+	HAY_RACK:
+	{
+		"name": "Hay rack",
+		"description": "Oak posts with slats to keep hay for the animals. It stands outdoors.",
+		"weight": 25.0,
+		"stack_limit": 2,
+		"places": WorldObjectTypes.HAY_RACK,
 	},
 	ROAST_TURNIP:
 	{

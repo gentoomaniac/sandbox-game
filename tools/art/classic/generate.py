@@ -195,6 +195,8 @@ def object_atlas():
         ("net_frame", landing.net_frame_row()),
         ("eel_traps", landing.eel_traps_row()),
         ("draw_well", [standing_outdoors(yard.draw_well())]),
+        ("trough", [standing_outdoors(yard.trough(level)) for level in range(yard.STOCK_LOOKS)]),
+        ("hay_rack", [standing_outdoors(yard.hay_rack(level)) for level in range(yard.STOCK_LOOKS)]),
     ]
 
 

@@ -105,3 +105,12 @@ chicken coop. All are made at the workbench or built with the hammer and stand o
   it is full. With the can empty the use key at dry soil does nothing and says so. The water in the
   can is saved (save version 25). The well gives the water for the can, and so for the troughs and
   the soil; water for the house (cooking, washing) comes with those.
+- **Trough and hay rack** (2x1 world objects; the trough holds water, the hay rack feed; a feeding
+  trough for pigs and the like is the same code with `stock_kind` feed, task 165): each holds a
+  **stock** of up to 100 units (`stock_capacity` in WorldObjectTypes; the `stock` in its state,
+  saved with the object) and starts empty. Its picture shows how full it is in four steps: empty,
+  low (up to 35% of the capacity), half (35% to 70%) and full (70% and over). The trough is a
+  plank box on two feet made at the workbench (woodworking 10: 5 planks, 1 log), the hay rack
+  oak posts with slats and the hay behind them (woodworking 15: 4 planks, 2 logs); both stand
+  outdoors and the axe takes them down (3 hits). Filling them, and what the animals do with
+  them, are in the next section.

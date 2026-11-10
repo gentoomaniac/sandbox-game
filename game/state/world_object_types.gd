@@ -67,6 +67,10 @@ extends RefCounted
 ##   that can be built on (see Tile `is_buildable`): the jetty over water and mud, the boat;
 ## - deck: it is walked on, whatever the ground under it (the jetty over water), and drawn under
 ##   whoever stands on it;
+## - stock_capacity, stock_kind: it holds a stock, from 0 to this many units, of water (a trough)
+##   or of feed (a hay rack), which the animals take from it and the player refills (see
+##   ObjectStock). Its atlas row has the STOCK_LOOKS pictures of how full it is, in place of
+##   variants;
 ## - cells_wide: its picture spans this many cells of its atlas row side by side (the Ewer, in
 ##   scale with the people), one cell without it.
 
@@ -131,8 +135,11 @@ const CUPBOARD := &"cupboard"
 ## A grave in the churchyard (task 102): an oak cross, always (the user, 2026-11-10). A headstone
 ## and a fieldstone slab (tools/art/church.py) wait for tombstone items to come.
 const GRAVE := &"grave"
-## The farm yard (task 122): a draw well with its sweep.
+## The farm yard (task 122): a draw well with its sweep, and the trough and the hay rack, which
+## hold a stock the animals drink and eat.
 const DRAW_WELL := &"draw_well"
+const TROUGH := &"trough"
+const HAY_RACK := &"hay_rack"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -143,6 +150,13 @@ const INSIDE := &"inside"
 const OUTDOORS := &"outdoors"
 const ANYWHERE := &"anywhere"
 const PLACEMENTS := [INSIDE, OUTDOORS, ANYWHERE]
+
+## The pictures of an object that holds a stock: empty, low, half and full (see ObjectStock
+## `look`), in this order in its atlas row.
+const STOCK_LOOKS := 4
+## From this fraction of its capacity it looks half full, and from this one full.
+const STOCK_HALF_FROM := 0.35
+const STOCK_FULL_FROM := 0.7
 
 ## The largest footprint any type has, in tiles: what World looks back over to find the
 ## object that covers a tile.
@@ -184,6 +198,8 @@ const _ROWING_BOAT_ROW := 48
 const _NET_FRAME_ROW := 49
 const _EEL_TRAPS_ROW := 50
 const _DRAW_WELL_ROW := 51
+const _TROUGH_ROW := 52
+const _HAY_RACK_ROW := 53
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -685,6 +701,35 @@ const _OTHER_TYPES := {
 		"atlas_row": _DRAW_WELL_ROW,
 		"sprite_height": 82,
 		"variants": 1,
+		"placeable_in": OUTDOORS,
+	},
+	# The trough and the hay rack: what they hold is `stock` in their state.
+	TROUGH:
+	{
+		"hp": 3,
+		"tool": &"axe",
+		"drops": {&"trough": 1},
+		"footprint": Vector2i(2, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _TROUGH_ROW,
+		"variants": 1,
+		"stock_capacity": 100,
+		"stock_kind": &"water",
+		"placeable_in": OUTDOORS,
+	},
+	HAY_RACK:
+	{
+		"hp": 3,
+		"tool": &"axe",
+		"drops": {&"hay_rack": 1},
+		"footprint": Vector2i(2, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _HAY_RACK_ROW,
+		"variants": 1,
+		"stock_capacity": 100,
+		"stock_kind": &"feed",
 		"placeable_in": OUTDOORS,
 	},
 	WORKBENCH:

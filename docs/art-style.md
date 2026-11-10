@@ -347,6 +347,11 @@ along its foot.
   `water`, `water_light`), a forked oak post, the balanced pole with an iron-hooped oak bucket on a
   rope from its long end and a round weight stone on its short one. Rimmed in `soil_dark`, on a
   ground shadow under the ring only; it is see-through like a tree when the player stands behind it.
+  The trough (64x26 px) is a box of oak planks with two iron bands on two feet, seen from the front
+  and a little above, and the hay rack (64x44 px) two oak posts with a rail and a manger board,
+  slats between them and the hay (`ochre_dark`, `ochre`, `straw`, `gold`) behind. Each has four
+  pictures by its fill, empty, low, half and full (water in the `water` ramp, hay up to the rail),
+  one cell each in its atlas row, chosen by `WorldObject.stock_look`.
 - **Fisherman's hut** (*Fischerkate*, task 103): the shack's boards and fieldstones on 4x2
   tiles under a hipped reed thatch with a turf ridge (`turf_ridge`), one small white window,
   a low door in faded teal (`water_light`, `paint_teal`, `water_deep`) and an oar against

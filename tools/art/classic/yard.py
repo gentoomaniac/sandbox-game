@@ -91,4 +91,61 @@ def _icon(picture):
 
 def icons():
     """The icons of the yard's items, by item id."""
-    return {"draw_well": _icon(draw_well())}
+    return {"draw_well": _icon(draw_well()), "trough": _icon(trough(3)), "hay_rack": _icon(hay_rack(3))}
+
+
+# What the trough and the hay rack look like at each of their four fills: empty, low, half, full.
+STOCK_LOOKS = 4
+
+
+def trough(level):
+    """The trough, 32x13 px: a box of oak planks on two feet, seen from the front and a little above,
+    with water inside by `level` (0 empty, 1 low, 2 half, 3 full)."""
+    picture = blank(32, 13)
+    for x0 in (3, 26):
+        rect(picture, x0, 11, x0 + 2, 12, OAK[2])
+    rect(picture, 0, 5, 31, 10, OAK[1])
+    rect(picture, 0, 5, 31, 5, "sand_light")
+    rect(picture, 0, 8, 31, 8, OAK[2])
+    rect(picture, 0, 10, 31, 10, OAK[2])
+    rect(picture, 3, 5, 3, 10, "stone")
+    rect(picture, 28, 5, 28, 10, "stone")
+    rect(picture, 0, 0, 31, 4, OAK[2])
+    rect(picture, 0, 0, 31, 0, OAK[0])
+    rect(picture, 1, 1, 30, 1, OAK[3])
+    rect(picture, 0, 0, 0, 10, OAK[0])
+    rect(picture, 31, 0, 31, 10, OAK[2])
+    water = {1: (12, 3, 19, 4), 2: (4, 2, 27, 4), 3: (2, 2, 29, 4)}.get(level)
+    if water:
+        x0, y0, x1, y1 = water
+        rect(picture, x0, y0, x1, y1, "water")
+        rect(picture, x0, y0, x1, y0, "water_deep")
+        rect(picture, x0 + 2, y0 + 1, x0 + 4, y0 + 1, "water_light")
+    return outline_edge(picture, "soil_dark", keep_bottom=True)
+
+
+def hay_rack(level):
+    """The hay rack, 32x22 px: two oak posts, a rail and a manger board, slats between them and the
+    hay behind them by `level` (0 empty, 1 low, 2 half, 3 full)."""
+    picture = blank(32, 22)
+    rect(picture, 4, 3, 27, 14, OAK[3])
+    top = {0: 15, 1: 11, 2: 7, 3: 3}[level]
+    for y in range(top, 15):
+        for x in range(4, 28):
+            picture[y][x] = ("straw", "gold", "ochre")[(x * 3 + y * 5) % 3] if (x + y) % 4 else "ochre_dark"
+    for x0 in (1, 28):
+        rect(picture, x0, 0, x0 + 2, 19, OAK[1])
+        rect(picture, x0, 0, x0, 19, OAK[0])
+        rect(picture, x0 + 2, 1, x0 + 2, 19, OAK[2])
+    rect(picture, 1, 2, 30, 3, OAK[1])
+    rect(picture, 1, 2, 30, 2, OAK[0])
+    rect(picture, 1, 15, 30, 17, OAK[1])
+    rect(picture, 1, 15, 30, 15, "sand_light")
+    rect(picture, 1, 17, 30, 17, OAK[2])
+    for x in range(5, 28, 3):
+        rect(picture, x, 4, x, 14, OAK[0])
+        rect(picture, x + 1, 4, x + 1, 14, OAK[2])
+    if level:
+        for x, y in ((6, 19), (11, 20), (17, 19), (22, 20)):
+            rect(picture, x, y, x + 1, y, "straw")
+    return outline_edge(picture, "soil_dark", keep_bottom=True)

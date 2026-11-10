@@ -358,6 +358,8 @@ _WINTER_LOOKS = {
     "eel_traps": {"specks": {"sand_light", "sand"}, "snow": ({"sand_light", "sand"}, set(), 2)},
     # The yard: snow lies on the well's coping, its sweep and the weight stone.
     "draw_well": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "stone_light"}, set(), 1)},
+    "trough": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "sand_light"}, set(), 1)},
+    "hay_rack": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "sand_light", "gold", "straw"}, set(), 1)},
     "oak_trunk": _TRUNK_WINTER,
     "oak_short_trunk": _TRUNK_WINTER,
     "spruce_trunk": _TRUNK_WINTER,
