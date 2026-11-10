@@ -841,6 +841,15 @@ func is_snowed_over(world_pos: Vector2i) -> bool:
 	return look == SeasonBlend.Look.SNOW or look == SeasonBlend.Look.DUSTING
 
 
+## Tells whether snow lies on a tile on game day `day` with this snow cover and frost, as it
+## will be drawn once the view is refreshed for them: `func(world_pos: Vector2i) -> bool`.
+func snow_checker_for(day: int, snow_cover: float, frost: float) -> Callable:
+	var conditions := _blend.conditions(day, snow_cover, frost)
+	return func(world_pos: Vector2i) -> bool:
+		var look := conditions.weather_look(_blend.thresholds(world_pos).y)
+		return look == SeasonBlend.Look.SNOW
+
+
 func _layer_of_tile(terrain: Tile.Terrain, world_pos: Vector2i) -> int:
 	var variety := _variety_noise.get_noise_2dv(Vector2(world_pos))
 	return TerrainTileset.terrain_layer(terrain, variety, world.wear_stage(world_pos))

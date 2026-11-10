@@ -5,6 +5,10 @@ extends RefCounted
 ## time follows from it. The clock is cut at every full hour, so a span of any length passes as
 ## the same hours played one after the other.
 
+## Time passed without being played, and the systems have made up for it (see `skip`): what shows
+## the world follows.
+signal skipped(minutes: int)
+
 ## A skip plays this many minutes through, 2 seconds of play, before it makes up for the rest.
 const WALKED_MINUTES := 3
 
@@ -36,6 +40,7 @@ func skip(minutes: int) -> void:
 		advance(rest)
 		for system in _systems:
 			system.skipped(rest, clock)
+	skipped.emit(minutes)
 
 
 ## Lets `minutes` game minutes of play pass, in whole-hour steps.

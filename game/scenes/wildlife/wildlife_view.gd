@@ -186,15 +186,47 @@ func flowers_near(point: Vector2, tiles: int) -> Array[Vector2i]:
 	return world_view.decorations.flower_tiles_within(Rect2(point, Vector2.ZERO).grow(reach))
 
 
-## Adds or sends away animals until each kind has the number the rules ask for. The flowers in
-## bloom in and around the view are looked up once, for the kinds that live at them.
+## Time has skipped (see Simulation `skip`): the animals that suit the new hour, weather and season
+## are here at once and the others gone, instead of coming and going over the next seconds. Nothing
+## of the wildlife is simulated, so this is all there is to catch up. Animals made by hand stay.
+func settle() -> void:
+	if not is_spawning_naturally or _state.is_inside():
+		return
+	for animal in _animals:
+		if not animal.is_pinned:
+			animal.is_done = true
+	_remove_gone_animals()
+	var clock := _state.clock
+	var weather := _state.current_weather()
+	var flowers := _flowers_near_view(clock.day)
+	for kind in WildlifeRules.KINDS:
+		var target := rules.target_count(
+			kind, clock.day, clock.minute_of_day, weather, flowers.size()
+		)
+		for _i in target:
+			if _animals.size() >= rules.general("max_total"):
+				return
+			_spawn_somewhere(kind, flowers, true)
+
+
+## The flowers in bloom in and around the view, for the kinds that live at them: today's, or on
+## game day `on_day` if given.
+func _flowers_near_view(on_day := 0) -> Array[Vector2i]:
+	var area := view_rect().grow(rules.general("spawn_margin_tiles") * WildlifeRules.TILE_SIZE)
+	if on_day == 0:
+		return world_view.decorations.flower_tiles_within(area)
+	var is_snowed := world_view.snow_checker_for(
+		on_day, _state.current_snow_cover(), _state.current_frost()
+	)
+	return world_view.decorations.flower_tiles_within(area, on_day, is_snowed)
+
+
+## Adds or sends away animals until each kind has the number the rules ask for.
 func _match_counts() -> void:
 	var clock := _state.clock
 	var weather := _state.current_weather()
 	var chance_seconds := rules.general("tick_seconds")
-	var flowers := world_view.decorations.flower_tiles_within(
-		view_rect().grow(rules.general("spawn_margin_tiles") * WildlifeRules.TILE_SIZE)
-	)
+	var flowers := _flowers_near_view()
 	for kind in WildlifeRules.KINDS:
 		var count := _count_of(kind)
 		var target := rules.target_count(
@@ -233,13 +265,14 @@ func _send_away(kind: StringName, excess: int) -> void:
 
 
 ## Spawns an animal of a kind at a suitable place in the ring around the view, if it finds
-## one: one that lives at flowers at one of `flowers`, the flowers in bloom around the view.
-func _spawn_somewhere(kind: StringName, flowers: Array[Vector2i]) -> void:
+## one (a flock or a stork that is `is_instant` is already in the view or on its roof): one that
+## lives at flowers at one of `flowers`, the flowers in bloom around the view.
+func _spawn_somewhere(kind: StringName, flowers: Array[Vector2i], is_instant := false) -> void:
 	if kind in Flock.BIRDS:
-		_spawn_flock(kind, false)
+		_spawn_flock(kind, false, is_instant)
 		return
 	if kind == WildlifeRules.ROOF_STORK:
-		_send_stork_to_roof(false)
+		_send_stork_to_roof(false, is_instant)
 		return
 	var view := view_rect()
 	var player := world_view.player_feet
@@ -300,10 +333,10 @@ func _spawn_near_player(kind: StringName) -> bool:
 
 ## A flock enters the view from beyond its ring and crosses it. One made by hand starts inside
 ## the view, on its left, so that it can be seen at once.
-func _spawn_flock(kind: StringName, is_debug: bool) -> void:
+func _spawn_flock(kind: StringName, is_debug: bool, is_instant := false) -> void:
 	var view := view_rect()
 	var start := rules.random_ring_point(view, rng)
-	if is_debug:
+	if is_debug or is_instant:
 		start = view.position + view.size * Vector2(0.2, rng.randf_range(0.25, 0.75))
 	var goal := (
 		view.get_center()
@@ -312,7 +345,7 @@ func _spawn_flock(kind: StringName, is_debug: bool) -> void:
 		)
 	)
 	var end := goal * 2.0 - start
-	if not is_debug:
+	if not is_debug and not is_instant:
 		# High up, the birds would be seen at once from the ring: they start further back.
 		start -= (goal - start).normalized() * FLOCK_ENTRY_DISTANCE
 	var flock := Flock.new(kind)
@@ -321,9 +354,10 @@ func _spawn_flock(kind: StringName, is_debug: bool) -> void:
 
 
 ## Sends a stork to the roof of a house near the view that has none: it flies in from beside
-## the view. One made by hand stands on the roof nearest to the player at once. Returns
+## the view. One made by hand stands on the roof nearest to the player at once, and one that is
+## `is_instant` (see `settle`) on a roof as it would have settled, not made by hand. Returns
 ## whether there was a roof for it.
-func _send_stork_to_roof(is_debug: bool) -> bool:
+func _send_stork_to_roof(is_debug: bool, is_instant := false) -> bool:
 	var near := view_rect().grow(rules.general("spawn_margin_tiles") * WildlifeRules.TILE_SIZE)
 	var houses: Array[Building] = []
 	for building in world_view.world.buildings():
@@ -344,7 +378,7 @@ func _send_stork_to_roof(is_debug: bool) -> bool:
 	var footprint: Vector2i = BuildingTypes.TYPES[house.type]["footprint"]
 	var width := footprint.x * WildlifeRules.TILE_SIZE
 	var column := rng.randi_range(width / 3, width * 2 / 3)
-	if is_debug:
+	if is_debug or is_instant:
 		stork.stand_on(house, column, _in_front_of(house, column))
 	else:
 		# From beyond the left or right edge of the view, where it can't be seen high up as it is.

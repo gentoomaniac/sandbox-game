@@ -226,6 +226,7 @@ func _connect_state_and_views() -> void:
 	_ground_item_view.show_items(_state.world, _view.entities)
 	_view.tree_felled.connect(_ground_item_view.hold_hops_from)
 	_wildlife.show_wildlife(_state, _view, _camera)
+	_state.simulation.skipped.connect(_on_time_skipped)
 	_npc_views.show_npcs(_state.npcs, _view.entities)
 	# Chats longer than the setting (a saved game's, or one lowered in the menu, which is
 	# applied once it is closed rather than at every step) are compacted.
@@ -265,6 +266,13 @@ func _connect_state_and_views() -> void:
 			_autosave_timer.restart()
 	)
 	_saves.finished.connect(_show_save_result)
+
+
+## Time passed without being played (a sleep, passing out, the console's skip): the ambient
+## animals and the weather show the new time at once.
+func _on_time_skipped(_minutes: int) -> void:
+	_wildlife.settle()
+	_weather_view.snap()
 
 
 ## Applies the flags that put the views in a situation, and hands the ones that wait for the

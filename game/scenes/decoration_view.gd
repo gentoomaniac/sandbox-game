@@ -144,14 +144,24 @@ func has_flower(world_pos: Vector2i) -> bool:
 	)
 
 
-## The tiles within a rectangle (in world pixels) where a flower is in bloom today.
-func flower_tiles_within(area: Rect2) -> Array[Vector2i]:
+## The tiles within a rectangle (in world pixels) where a flower is in bloom today, or on game
+## day `on_day` if given, with `is_snowed` (a Callable taking a tile) telling where snow lies on
+## it: worked out from the flowers, not read from what is drawn, which may not have caught up
+## with the date yet.
+func flower_tiles_within(
+	area: Rect2, on_day := 0, is_snowed := func(_pos: Vector2i) -> bool: return false
+) -> Array[Vector2i]:
 	var tiles: Array[Vector2i] = []
 	var first := Vector2i((area.position / TerrainTileset.TILE_SIZE).floor())
 	var last := Vector2i((area.end / TerrainTileset.TILE_SIZE).floor())
 	for y in range(first.y, last.y + 1):
 		for x in range(first.x, last.x + 1):
-			if has_flower(Vector2i(x, y)):
+			var is_in_bloom := (
+				has_flower(Vector2i(x, y))
+				if on_day == 0
+				else _has_flower_on(Vector2i(x, y), on_day, is_snowed)
+			)
+			if is_in_bloom:
 				tiles.append(Vector2i(x, y))
 	return tiles
 
@@ -196,16 +206,29 @@ func _sow_flowers(spot: DecorationSpot, world_pos: Vector2i) -> void:
 		)
 
 
+## Whether a flower is in bloom on a tile on game day `on_day` and not under snow (`is_snowed`).
+func _has_flower_on(world_pos: Vector2i, on_day: int, is_snowed: Callable) -> bool:
+	var spot: DecorationSpot = _spots.get(world_pos)
+	if spot == null or _cell_for(spot, on_day).y != TerrainTileset.FLOWER_ROW:
+		return false
+	var snow := SeasonBlend.Look.SNOW if is_snowed.call(world_pos) else SeasonBlend.Look.SUMMER
+	return TerrainTileset.shown_weather_look(spot.layer, snow) != SeasonBlend.Look.SNOW
+
+
 ## The atlas cell a spot shows today: of its flowers in bloom the one furthest into its bloom
 ## (its density furthest above the spot's threshold), so the species in bloom mix within a
 ## drift, as a small plant while it is only just in bloom; else its decoration while its kind
 ## is present; else none.
 func _cell_for_today(spot: DecorationSpot) -> Vector2i:
+	return _cell_for(spot, day)
+
+
+func _cell_for(spot: DecorationSpot, on_day: int) -> Vector2i:
 	var flower := &""
 	var best_margin := 0.0
 	for index in spot.flowers.size():
 		var species := spot.flowers[index]
-		var margin := _world.vegetation.density(species, day) - spot.flower_thresholds[index]
+		var margin := _world.vegetation.density(species, on_day) - spot.flower_thresholds[index]
 		if margin > best_margin:
 			flower = species
 			best_margin = margin
@@ -213,7 +236,7 @@ func _cell_for_today(spot: DecorationSpot) -> Vector2i:
 		return TerrainTileset.flower_cell(flower, spot.flower_variant)
 	if flower != &"":
 		return TerrainTileset.flower_cell(flower, TerrainTileset.FlowerVariant.SMALL)
-	if spot.kind == &"" or _world.vegetation.shows(spot.kind, spot.threshold, day):
+	if spot.kind == &"" or _world.vegetation.shows(spot.kind, spot.threshold, on_day):
 		return spot.atlas_cell
 	return TerrainTileset.NO_DECORATION
 

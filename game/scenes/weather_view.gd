@@ -57,6 +57,7 @@ var _snow_scroll := Vector2.ZERO
 var _streak_scroll := Vector2.ZERO
 var _fog_drift := Vector2.ZERO
 var _seconds := 0.0
+var _is_snap_due := false
 var _flash_tween: Tween
 
 
@@ -76,11 +77,19 @@ func _init() -> void:
 ## wear too. The first weather shown appears at once; later changes fade in and out.
 func show_weather(sample: WeatherSample, tint: Color) -> void:
 	_target = sample
+	if _is_snap_due:
+		_is_snap_due = false
+		_follow_target(1.0)
 	_precipitation.material.set_shader_parameter("tint", tint)
 	_fog.material.set_shader_parameter("tint", tint)
 	if not _has_weather:
 		_has_weather = true
 		_follow_target(1.0)
+
+
+## Time has skipped: the next weather shown appears at once, with no fade from the old.
+func snap() -> void:
+	_is_snap_due = true
 
 
 ## Game minutes have passed: each one may bring a flash of lightning.
