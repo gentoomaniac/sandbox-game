@@ -198,20 +198,6 @@ and running (task 158 had to hold the world view over a sleep for this).
   defined result (no cat stranded in a crouch); camera movement alone doesn't change what a saved
   animal does. Same hunts, same looks as now.
 
-## 162. Chunk loading is decided apart from drawing
-
-- [ ] Done
-
-The user, 2026-11-10: R8 deliverable 3. Today WorldView, the renderer, decides which chunks are
-loaded and unloaded.
-- Chunk residency moves to a session controller apart from drawing, keeping `ChunkStreaming.plan`
-  and today's budgets (task 147's drawing budget stays in WorldView). Gameplay can ask for the
-  chunks an action needs whether or not a renderer is attached.
-- Acceptance: a headless controller loads the chunks an action needs without a WorldView;
-  detaching or replacing the renderer doesn't unload state the game needs; the hold over a sleep
-  (task 158) holds the controller. Screenshots: streaming, seasons, occlusion, tree fall,
-  interiors and the art switch as now; `make bench` no worse.
-
 ## 163. PlayerView and the wildlife rules stop repairing and sharing state
 
 - [ ] Done

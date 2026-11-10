@@ -4141,3 +4141,35 @@ picture docs/screenshots/livestock.png was re-taken in its old size, 2756x1040: 
 SIZE=1520x1360 ZOOM=2 TIME=09:00` and `TIME=01:00` with
 `ARGS="--livestock=cow,sheep,chicken,rabbit --day=40"`, each cropped to 1376x1040 at x=125, y=38
 and set side by side with a 4 px seam.
+
+## 162. Chunk loading is decided apart from drawing
+
+- [x] Done
+
+The user, 2026-11-10: R8 deliverable 3. Today WorldView, the renderer, decides which chunks are
+loaded and unloaded.
+- Chunk residency moves to a session controller apart from drawing, keeping `ChunkStreaming.plan`
+  and today's budgets (task 147's drawing budget stays in WorldView). Gameplay can ask for the
+  chunks an action needs whether or not a renderer is attached.
+- Acceptance: a headless controller loads the chunks an action needs without a WorldView;
+  detaching or replacing the renderer doesn't unload state the game needs; the hold over a sleep
+  (task 158) holds the controller. Screenshots: streaming, seasons, occlusion, tree fall,
+  interiors and the art switch as now; `make bench` no worse.
+
+Done: `ChunkResidency` (`game/world/chunk_residency.gd`, a plain class made by Main, no nodes)
+decides and does the loading: it follows the focus, plans with `ChunkStreaming.plan` (radius 3 to
+load, 5 to unload, nearest first), generates one missing chunk per update (when the view has drawn
+the last one) and drops the far ones, and tells by `chunk_loaded` and `chunk_unloaded`. WorldView
+only shows a residency: it queues the loaded chunks and draws them in task 147's steps and budgets
+(8 ms, 16 ms next to the player), erases the unloaded ones, and refreshes the looks and settles as
+before (`is_settled`). `require(tiles)` loads the chunks an action needs at once, with no view;
+a view that goes leaves the chunks loaded, and a new one draws them when it starts. The hold over
+a sleep (task 158) and indoors sets `ChunkResidency.is_held`: a held residency loads and drops
+nothing (tests/test_chunk_residency.gd, tests/test_sleeping_in_bed.gd). Left as it was: the few
+places that load a chunk by hand for a look (`GameState._home_bed`, the console's `tp`,
+`CampSite`) still call `World.add_chunk` themselves. `make bench` before and after (longest
+frame, frames over 33 ms; standing, passing out, sleeping, walking): 26.1 ms (0), 25.8 (0), 42.4
+(2), 31.0 (0) before; 18.4 (0), 23.1 (0), 26.1 (0), 23.1 (0) after (a noisy machine); settle 345
+frames, 6.9 s before and 318 frames, 6.3 s after. Screenshots at 1000x1040 (camp, night at
+23:00, the inside of a house) are the same terrain and objects before and after; only the
+animated bits differ.
