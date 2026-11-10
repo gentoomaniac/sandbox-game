@@ -114,15 +114,17 @@ import trunks
 import ui
 import villagers
 import willow
+import yard
 from canvas import GAME_OBJECT_BOTTOM, GAME_OBJECT_CELL_HEIGHT, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CENTRE, GAME_TILE
 from palette import GENERATED, PALETTE, check_palette, save, save_picture, write_cell_sizes, write_palette
 
 
-def standing_outdoors(picture):
+def standing_outdoors(picture, shadow_half_width=None):
     """A picture that stands on the ground (the chest, a station, a grave) in its cell of the
-    object atlas, on a ground shadow, its bottom two pixels above the cell's."""
+    object atlas, on a ground shadow (as wide as the picture, or `shadow_half_width` to each
+    side of its middle), its bottom two pixels above the cell's."""
     canvas = trees.cell()
-    trees.ground_shadow(canvas, len(picture[0]) // 2 + 4, rows=6)
+    trees.ground_shadow(canvas, shadow_half_width or len(picture[0]) // 2 + 4, rows=6)
     top = GAME_OBJECT_BOTTOM - 1 - len(picture)
     for y, row in enumerate(picture):
         for x, name in enumerate(row):
@@ -188,6 +190,7 @@ def standing_outdoors(picture):
 # 48 rowing_boat (1)
 # 49 net_frame (1)
 # 50 eel_traps (1)
+# 51 draw_well (1)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -236,6 +239,7 @@ def object_atlas():
         ("rowing_boat", landing.rowing_boat_row()),
         ("net_frame", landing.net_frame_row()),
         ("eel_traps", landing.eel_traps_row()),
+        ("draw_well", [standing_outdoors(yard.draw_well(), yard.WELL_SHADOW)]),
     ]
 
 
@@ -346,7 +350,7 @@ def write_crops():
 
 
 def write_items():
-    bodies = items.icons() | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons() | landing.icons()
+    bodies = items.icons() | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons() | landing.icons() | yard.icons()
     for name, body in bodies.items():
         save_picture(items.icon(body), f"items/{name}.png")
         save_picture(items.ground_item(body), f"ground_items/{name}.png")

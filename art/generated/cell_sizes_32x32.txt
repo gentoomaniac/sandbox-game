@@ -196,6 +196,7 @@ objects/dead_stump_32x32.png 96 160
 objects/dead_tree_32x32.png 96 160
 objects/dead_tree_short_trunk_32x32.png 96 160
 objects/dead_tree_trunk_32x32.png 96 160
+objects/draw_well_32x32.png 96 160
 objects/dyke_32x32.png 96 160
 objects/eel_traps_32x32.png 96 160
 objects/ewer_32x32.png 96 160

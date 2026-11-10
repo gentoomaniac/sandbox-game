@@ -341,6 +341,12 @@ along its foot.
   an oak cross (the grave marker always places it); a sandstone headstone (`sand` ramp, a cut
   cross and lines of letters) and a low granite slab are drawn in church.py for later tombstone
   items but not in the atlas yet.
+- **The farm yard** (task 122, tools/art/yard.py, and at 16 px classic/yard.py): the draw well, 60x80 px
+  with its sweep reaching over the tile beside it: a ring of fieldstones in courses (`stone_dark`,
+  `stone`, `stone_light`) under an oak coping (the `soil` ramp) round dark water (`water_deep`,
+  `water`, `water_light`), a forked oak post, the balanced pole with an iron-hooped oak bucket on a
+  rope from its long end and a round weight stone on its short one. Rimmed in `soil_dark`, on a
+  ground shadow under the ring only; it is see-through like a tree when the player stands behind it.
 - **Fisherman's hut** (*Fischerkate*, task 103): the shack's boards and fieldstones on 4x2
   tiles under a hipped reed thatch with a turf ridge (`turf_ridge`), one small white window,
   a low door in faded teal (`water_light`, `paint_teal`, `water_deep`) and an oar against

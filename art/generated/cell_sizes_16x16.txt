@@ -182,6 +182,7 @@ objects/dead_stump_16x16.png 48 80
 objects/dead_tree_16x16.png 48 80
 objects/dead_tree_short_trunk_16x16.png 48 80
 objects/dead_tree_trunk_16x16.png 48 80
+objects/draw_well_16x16.png 48 80
 objects/dyke_16x16.png 48 80
 objects/eel_traps_16x16.png 48 80
 objects/ewer_16x16.png 48 80

@@ -51,3 +51,4 @@ jetty 16
 rowing_boat 1
 net_frame 1
 eel_traps 1
+draw_well 1

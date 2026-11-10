@@ -87,3 +87,14 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   is doing is not.
 - Animals don't avoid each other or the player yet. No hoofbeats are heard while riding yet.
 - **Later:** milk, wool and eggs, pens, feeding, owning and breeding.
+
+## The farm yard (task 122, decided 2026-11-10)
+
+Four things for the farm, each its own commits: the draw well, the trough, the hay rack and the
+chicken coop. All are made at the workbench or built with the hammer and stand outdoors.
+
+- **Draw well:** a 1x1 world object, an oak well head on a fieldstone ring with a forked post and
+  the balanced sweep (a pole with a bucket on its long end and a weight stone on its short one)
+  drawn above it, reaching over the tile beside it, and see-through when the player stands behind
+  it. Its ring blocks walking. Made at the workbench (masonry 20) from 12 stone, 3 planks, 2 logs
+  and 2 fibre; the pickaxe takes it up again (4 hits) and it drops the well.

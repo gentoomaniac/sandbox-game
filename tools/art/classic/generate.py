@@ -57,6 +57,7 @@ import trees  # noqa: E402
 import trunks  # noqa: E402
 import villagers  # noqa: E402
 import willow  # noqa: E402
+import yard  # noqa: E402
 from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, TILE, blank  # noqa: E402
 from palette import CLASSIC_ART, GENERATED, PALETTE, save, save_picture, set_file, use_art_set, write_cell_sizes  # noqa: E402
 
@@ -193,6 +194,7 @@ def object_atlas():
         ("rowing_boat", landing.rowing_boat_row()),
         ("net_frame", landing.net_frame_row()),
         ("eel_traps", landing.eel_traps_row()),
+        ("draw_well", [standing_outdoors(yard.draw_well())]),
     ]
 
 
@@ -231,7 +233,7 @@ def write_interior():
 
 
 def write_items():
-    icons = item_icons.ICONS | crop_icons.icons() | tool_icons.icons() | craft_icons.icons()
+    icons = item_icons.ICONS | crop_icons.icons() | tool_icons.icons() | craft_icons.icons() | yard.icons()
     for name, picture in icons.items():
         save_picture(picture, f"items/{name}.png")
         # The same icon at half size, for items lying on the ground.

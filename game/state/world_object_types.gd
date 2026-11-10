@@ -131,6 +131,8 @@ const CUPBOARD := &"cupboard"
 ## A grave in the churchyard (task 102): an oak cross, always (the user, 2026-11-10). A headstone
 ## and a fieldstone slab (tools/art/church.py) wait for tombstone items to come.
 const GRAVE := &"grave"
+## The farm yard (task 122): a draw well with its sweep.
+const DRAW_WELL := &"draw_well"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -181,6 +183,7 @@ const _JETTY_ROW := 47
 const _ROWING_BOAT_ROW := 48
 const _NET_FRAME_ROW := 49
 const _EEL_TRAPS_ROW := 50
+const _DRAW_WELL_ROW := 51
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -667,6 +670,20 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 0,
 		"atlas_row": _EEL_TRAPS_ROW,
+		"variants": 1,
+		"placeable_in": OUTDOORS,
+	},
+	# The ring of the well blocks walking; the sweep above it is only drawn.
+	DRAW_WELL:
+	{
+		"hp": 4,
+		"tool": &"pickaxe",
+		"drops": {&"draw_well": 1},
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _DRAW_WELL_ROW,
+		"sprite_height": 82,
 		"variants": 1,
 		"placeable_in": OUTDOORS,
 	},

@@ -68,6 +68,8 @@ const JETTY := &"jetty"
 const ROWING_BOAT := &"rowing_boat"
 const NET_FRAME := &"net_frame"
 const EEL_TRAPS := &"eel_traps"
+# The farm yard (task 122).
+const DRAW_WELL := &"draw_well"
 # The mason's (task 74).
 const RAW_BRICK := &"raw_brick"
 const BRICK := &"brick"
@@ -490,6 +492,14 @@ const _OTHER_TYPES := {
 		"weight": 2.0,
 		"stack_limit": 10,
 		"places": WorldObjectTypes.EEL_TRAPS,
+	},
+	DRAW_WELL:
+	{
+		"name": "Draw well",
+		"description": "A fieldstone well with a sweep and a bucket. It stands outdoors.",
+		"weight": 40.0,
+		"stack_limit": 1,
+		"places": WorldObjectTypes.DRAW_WELL,
 	},
 	ROAST_TURNIP:
 	{
