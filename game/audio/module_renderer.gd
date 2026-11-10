@@ -21,10 +21,12 @@ extends RefCounted
 ## portamento, 4xy vibrato, Axy volume slide, Cxx volume, Dxx pattern break, ECx note cut, Fxx
 ## speed and tempo); TrackerModule refuses modules with others. Arpeggios step through ProTracker's
 ## period table as ProTracker does; the vibrato's sine is worked out where ProTracker looks it up
-## in a table, which differs by a period step at most. Samples play as
-## the Amiga did: no interpolation and no volume ramps. In stereo the Amiga's channels 1 and 4 are
-## to the left and 2 and 3 to the right, each with a quarter of it on the other side, as hard Amiga
-## panning tires on headphones.
+## in a table, which differs by a period step at most. Samples are interpolated linearly: the
+## Amiga plays a looped wave exactly periodic, but taking the nearest sample at the mix rate moves
+## the wave's steps by up to a frame, which put a 32-sample saw's sound only 22 dB above what it
+## had off its harmonics (heard as a rough note that can't hold its pitch); interpolated, 47 dB.
+## No volume ramps. In stereo the Amiga's channels 1 and 4 are to the left and 2 and 3 to the
+## right, each with a quarter of it on the other side, as hard Amiga panning tires on headphones.
 
 ## Half the Amiga's PAL clock: a sample plays at this many samples a second over its period.
 const PAL_RATE := 3546894.6
@@ -252,8 +254,12 @@ func _mix(
 	var position := channel.position
 	var loop_length := float(channel.sample.loop_length)
 	var end := float(data.size())
+	# What the last sample leads into: the loop's start, or silence after a one-shot.
+	var after_end := 0.0
 	if loop_length > 0.0:
 		end = channel.sample.loop_start + loop_length
+		after_end = data[channel.sample.loop_start]
+	var last_index := int(end) - 1
 	var frame := first
 	var last := first + frame_count
 	if is_stereo:
@@ -266,7 +272,9 @@ func _mix(
 					break
 				# Once round the loop, or more where a short loop plays at a high pitch.
 				position = channel.sample.loop_start + fmod(position - end, loop_length)
-			var value := data[int(position)]
+			var at := int(position)
+			var next := data[at + 1] if at < last_index else after_end
+			var value := lerpf(data[at], next, position - at)
 			mix[frame * 2] += value * left
 			mix[frame * 2 + 1] += value * right
 			position += step
@@ -279,7 +287,9 @@ func _mix(
 					break
 				# Once round the loop, or more where a short loop plays at a high pitch.
 				position = channel.sample.loop_start + fmod(position - end, loop_length)
-			mix[frame] += data[int(position)] * gain
+			var at := int(position)
+			var next := data[at + 1] if at < last_index else after_end
+			mix[frame] += lerpf(data[at], next, position - at) * gain
 			position += step
 			frame += 1
 	channel.position = position

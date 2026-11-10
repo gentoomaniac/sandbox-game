@@ -161,6 +161,21 @@ func test_a_short_loop_stepped_past_more_than_once_a_sample_stays_in_it() -> voi
 	assert_eq(stream.data.size(), 2 * 6 * (8000 * 5 / (2 * 125)) * 2, "rendered whole")
 
 
+func test_a_note_plays_between_its_samples_and_its_loop_end_leads_into_the_loop_start() -> void:
+	var module := _module({Vector3i(0, 0, 0): [C_2, 1, 0, 0]})
+	var wave := PackedFloat32Array([0.0, 1.0, 0.0, -1.0])
+	module.samples[0].data = wave
+	module.samples[0].loop_length = 4
+	var data := ModuleRenderer.new(module, RATE).render([Vector2i(0, 1)]).data
+	var step := ModuleRenderer.PAL_RATE / (C_2 * RATE)
+	for frame in 200:
+		var position := fmod(frame * step, 4.0)
+		var index := int(position)
+		var expected := lerpf(wave[index], wave[(index + 1) % 4], position - index)
+		var played := data.decode_s16(frame * 2) / 32767.0 / ModuleRenderer.CHANNEL_GAIN
+		assert_almost_eq(played, expected, 0.001, "frame %d" % frame)
+
+
 func test_a_part_outside_the_order_list_renders_nothing() -> void:
 	assert_null(_renderer.render([Vector2i(2, 4)]))
 	assert_push_error("outside the order list")
