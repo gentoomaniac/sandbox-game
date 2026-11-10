@@ -1,0 +1,57 @@
+# The test piece of task 169: a reel of our own in A dorian, at 106 beats a minute (speed 6,
+# tempo 106: a row is about 141.5 ms, a beat 4 rows, a bar 16; the user found 150 too fast for the
+# game). A tick at tempo 106 is no whole number of samples (1040.09 at 44.1 kHz), so the piece also
+# tries how ticks are cut. An 8-bar loop and a 1-bar fill that leads back into it. The format is
+# described in tools/music/generate.py.
+
+speed 6
+tempo 106
+order loop fill
+
+section loop 128
+lead saw:
+  E-2:2 A-2:2 A-2:2 B-2:2 C-3:2 B-2:2 A-2:2 G-2:2
+  E-3:2 D-3:2 C-3:2 B-2:2 A-2:6:452 G-2:2
+  E-2:2 A-2:2 A-2:2 B-2:2 C-3:2 D-3:2 E-3:2 G-3:2
+  F#3:2 E-3:2 D-3:2 B-2:2 A-2:8:452
+  A-3:2 G-3:2 E-3:2 G-3:2 A-3:2 G-3:2 E-3:2 D-3:2
+  E-3:2 D-3:2 B-2:2 G-2:2 A-2:4 B-2:4:452
+  C-3:2 B-2:2 A-2:2 G-2:2 E-2:2 G-2:2 A-2:2 B-2:2
+  A-2:12:452 B-2:2 G-2:2
+chords pulse:
+  ^:2 A-2:2:037 ^:2 A-2:2:037 ^:2 A-2:2:037 ^:2 A-2:2:037
+  ^:2 E-2:2:037 ^:2 E-2:2:037 ^:2 E-2:2:037 ^:2 E-2:2:037
+  ^:2 A-2:2:037 ^:2 A-2:2:037 ^:2 A-2:2:037 ^:2 A-2:2:037
+  ^:2 D-2:2:047 ^:2 D-2:2:047 ^:2 D-2:2:047 ^:2 D-2:2:047
+  ^:2 A-2:2:037 ^:2 A-2:2:037 ^:2 A-2:2:037 ^:2 A-2:2:037
+  ^:2 G-2:2:047 ^:2 G-2:2:047 ^:2 G-2:2:047 ^:2 G-2:2:047
+  ^:2 C-2:2:047 ^:2 C-2:2:047 ^:2 C-2:2:047 ^:2 C-2:2:047
+  ^:2 A-2:2:037 ^:2 A-2:2:037 ^:2 A-2:2:037 ^:2 A-2:2:037
+bass triangle:
+  A-1:3 A-1:1 E-2:2 A-1:2 A-2:2 A-1:2 E-2:2 A-1:2
+  E-1:3 E-1:1 B-1:2 E-1:2 E-2:2 E-1:2 B-1:2 E-1:2
+  A-1:3 A-1:1 E-2:2 A-1:2 A-2:2 A-1:2 E-2:2 A-1:2
+  D-1:3 D-1:1 A-1:2 D-1:2 D-2:2 D-1:2 A-1:2 D-1:2
+  A-1:3 A-1:1 E-2:2 A-1:2 A-2:2 A-1:2 E-2:2 A-1:2
+  G-1:3 G-1:1 D-2:2 G-1:2 G-2:2 G-1:2 D-2:2 G-1:2
+  C-1:3 C-1:1 G-1:2 C-1:2 C-2:2 C-1:2 G-1:2 C-1:2
+  A-1:3 A-1:1 E-2:2 A-1:2 A-2:2 A-1:2 E-2:2 A-1:2
+drums noise:
+  C-1:2:EC4 B-3:2:C18 G-2:2 B-3:2:C18 C-1:2:EC4 B-3:2:C18 G-2:2 B-3:1:C18 B-3:1:C10
+  C-1:2:EC4 B-3:2:C18 G-2:2 B-3:2:C18 C-1:2:EC4 B-3:2:C18 G-2:2 B-3:1:C18 B-3:1:C10
+  C-1:2:EC4 B-3:2:C18 G-2:2 B-3:2:C18 C-1:2:EC4 B-3:2:C18 G-2:2 B-3:1:C18 B-3:1:C10
+  C-1:2:EC4 B-3:2:C18 G-2:2 B-3:2:C18 C-1:2:EC4 B-3:2:C18 G-2:2 B-3:1:C18 B-3:1:C10
+  C-1:2:EC4 B-3:2:C18 G-2:2 B-3:2:C18 C-1:2:EC4 B-3:2:C18 G-2:2 B-3:1:C18 B-3:1:C10
+  C-1:2:EC4 B-3:2:C18 G-2:2 B-3:2:C18 C-1:2:EC4 B-3:2:C18 G-2:2 B-3:1:C18 B-3:1:C10
+  C-1:2:EC4 B-3:2:C18 G-2:2 B-3:2:C18 C-1:2:EC4 B-3:2:C18 G-2:2 B-3:1:C18 B-3:1:C10
+  C-1:2:EC4 B-3:2:C18 G-2:2 B-3:2:C18 C-1:2:EC4 G-2:2 G-2:1 G-2:1 G-2:2
+
+section fill 16
+lead saw:
+  G-2:2 A-2:2 B-2:2 C-3:2 D-3:2 E-3:4:308 E-3:2:A02
+chords pulse:
+  A-2:8:102 ^:8
+bass triangle:
+  A-1:2 A-1:2 G-1:2 G-1:2 E-1:2 E-1:2 D-1:2 E-1:2
+drums noise:
+  G-2:1 G-2:1 G-2:2 C-2:2:210 C-2:2:210 G-2:1 G-2:1 G-2:1 G-2:1 C-1:2:220 G-2:2

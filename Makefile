@@ -34,11 +34,11 @@ help:
 	@echo "  run         Start the game."
 	@echo "  screenshot  Save one frame as PNG (a new game, muted, no focus, its own save)."
 	@echo "  test        Run the GUT tests headless, in TEST_JOBS parallel processes, and the tests of the Python tools."
-	@echo "  test-tools  Run only the tests of the Python tools (tools/art/test_*.py)."
+	@echo "  test-tools  Run only the tests of the Python tools (tools/art/, tools/llm/, tools/music/ test_*.py)."
 	@echo "  bench       Time a heavy save headless (start-up, nodes, frame times standing and walking, pile pick-up, save); see tools/README.md."
 	@echo "  lint        Run gdlint and gdformat --check, and check no API key is in the repo."
 	@echo "  format      Format the GDScript."
-	@echo "  art         Draw all art and sounds into art/generated/, then check them (minutes; needs no Godot)."
+	@echo "  art         Draw all art, sounds and music into art/generated/, then check them (minutes; needs no Godot)."
 	@echo "  classic-art Draw only the classic art (the 16 px art of groups now drawn at 32 px)."
 	@echo "  assets      Build assets/ (what Godot reads; not tracked) from art/generated/ and art/hand/ (seconds, only when stale; needs no Godot)."
 	@echo "  contrast-sheet  Draw plants over the ground of every look into build/contrast_sheet.png."
@@ -122,12 +122,15 @@ $(VENV_READY): tools/requirements.txt
 	touch $(VENV_READY)
 
 # Draws every PNG into art/generated/ and checks that they use only palette colours, then every
-# sound into art/generated/sounds/ and checks their levels and loops. The classic art comes
+# sound into art/generated/sounds/ and checks their levels and loops, then every piece of music
+# into art/generated/music/ and checks it with an independent player. The classic art comes
 # first, so the palette check covers it too. This is the slow part; `make assets` packs it.
 art: classic-art
 	$(PYTHON) tools/art/generate.py
 	$(PYTHON) tools/audio/generate.py
 	$(PYTHON) tools/audio/check.py
+	$(PYTHON) tools/music/generate.py
+	$(PYTHON) tools/music/check.py
 
 # The classic art: the _16x16 files of art/generated/ (see tools/art/classic/generate.py).
 classic-art: $(VENV_READY)
@@ -214,10 +217,11 @@ screenshot: assets
 # real save.
 TEST_JOBS ?= 8
 
-# The tests of the Python tools (tools/art/test_*.py, tools/llm/test_*.py), part of `make test`.
+# The tests of the Python tools (tools/art/, tools/llm/ and tools/music/ test_*.py), part of `make test`.
 test-tools: $(VENV_READY)
 	$(PYTHON) -m unittest discover -s tools/art -p "test_*.py"
 	$(PYTHON) -m unittest discover -s tools/llm -p "test_*.py"
+	$(PYTHON) -m unittest discover -s tools/music -p "test_*.py"
 
 test: assets test-tools
 	@mkdir -p build/user-data

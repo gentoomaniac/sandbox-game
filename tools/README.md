@@ -257,6 +257,19 @@ add the event to `SoundRules.EVENTS` (`game/state/sound_rules.gd`) and a section
 event a happening makes; `GameSounds` and `AudioService` play it). To use a recording instead
 of a generated sound, point the event's `files` in `data/sounds.cfg` at the recording.
 
+## Music: tools/music/
+
+A trial (task 169), not played in the game yet. `generate.py` turns each piece of
+`pieces/<name>.txt`, plain text of sections, voices and tokens (its docstring has the format and
+the effect set), into a 4-channel ProTracker module, `art/generated/music/<name>.mod`, which
+`make assets` copies to assets/music/. Godot doesn't import `.mod` files, so the game reads them
+as bytes; an export preset, once there is one, needs `*.mod` in its "Filters to export non-resource
+files" (`include_filter`), or the exported game has no music.
+
+| Command | What it does |
+|---|---|
+| `make art` | Writes the modules, then runs `check.py`: libmodplug (an independent player, through `modplug.py`) must play every row of each piece in its order, at its speed and tempo, and stop. Without libmodplug the check says it was skipped. |
+
 ## A local LLM for testing NPC talk: tools/llm/
 
 `llm.sh` runs [Ollama](https://ollama.com) in a container (podman if present, else docker;
