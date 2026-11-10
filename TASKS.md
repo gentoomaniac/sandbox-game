@@ -191,21 +191,6 @@ spring and summer and flies off again; there is no nest. Moved here from task 12
   is saved; what the player only sees (flaps, clatter) stays in the views.
 - Tests for the year of a nest by date, the seeding, save and load; a screenshot in the README.
 
-## 156. Horses at 32 px: legs with upper legs
-
-- [ ] Done
-
-The user, 2026-11-10: "a review of the horse graphics. In 32 they look like they are missing
-upper legs as the leg starts slim and almost under the belly." Review the 32 px horse and pony
-(tools/art/livestock.py) in every look, pose and facing, as the cow was in task 151: the legs
-should start wide at the body (forearm and gaskin), set at the shoulder and the hip, not slim
-from under the belly. Fix the drawing, keep the sizes of the cells, and check the saddle and
-the riding sprites still fit. Before and after crops and an in-game screenshot.
-- The user, 2026-11-10: "when head down eating grass, the head is way too long and they look
-  more like ant eaters." The grazing head and neck: a horse's head is about as long as its
-  neck is deep; lowered, the neck slopes down from the withers and the muzzle reaches the grass
-  in front of the forelegs, not a long thin snout.
-
 ## Later (not part of the prototype)
 
 - **Review R8: what is left** (review F2.4/F2.5, A4, package R8; the simulation and its time are

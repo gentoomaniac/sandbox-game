@@ -724,21 +724,24 @@ copper watering can. Kept here as the record of why.
    body and the neck with the head shaded as one form with more light on top, legs as limbs
    through their joints (a horse's forearm, knee, cannon, fetlock and hoof, its hind leg with
    the hock pointing back; the forearm and the thigh and gaskin are big and run down from the
-   front and the rear of the barrel, shaded with the body so that the belly shadow stops between the
-   legs, with a clear knee and hock and slim cannons below), the far legs a step darker, an eye with a glint, nostrils, ears,
-   manes and tails in strands; each look's marks (pied patches shaded with the body, dapple
-   rings, the dun's dark stripe, a bay's black points and white blaze, tabby stripes, wool
-   curls, the collie's white collar) on top. The cow's head is drawn by hand, one for looking
-   ahead and one for grazing (turning the first one over mirrors it). Sizes against the
-   61 px people: the horse 88 px long and 57 px to the withers (88×76 cell), the pony four
-   fifths of it, the cow 40 px to its back (72×54), the sheep
-   22 px (44×32), the dog 48×36; the hen (24×24), the cat (32×24) and the rabbit (24×20) a
-   little larger than life. The outline is the darkest colour of the coat (ink for the black
-   and dark ones) and goes round the legs too; every animal stands on a contact shadow. The
-   saddle sits on a blue wool cloth (`water_deep`, `water`), so that the rider's brown
-   breeches don't merge with a bay. From the front and behind the ridden horse is 28 px wide.
-   Readable on summer grass, snow, at dusk and at night (checked in screenshots). No new
-   colours.
+   front and the rear of the barrel, shaded with the body so that the belly shadow stops between
+   the legs, with a clear knee and hock and slim cannons below), the far legs a step darker, an
+   eye with a glint, nostrils, ears, manes and tails in strands; each look's marks (pied patches
+   shaded with the body, dapple rings, the dun's dark stripe, a bay's black points and white
+   blaze, tabby stripes, wool curls, the collie's white collar) on top. The cow's head is drawn
+   by hand, one for looking ahead and one for grazing (turning the first one over mirrors it).
+   The grazing horse's neck drops nearly straight down in front of the chest and the head is
+   short and wedge-shaped, about as long as the neck is deep, with a cheek and a narrowing
+   muzzle that reaches the grass just in front of the forelegs and never further forward than
+   the standing head (neck and head about 43 px from the shoulder, not one long snout). Sizes
+   against the 61 px people: the horse 88 px long and 57 px to the withers (88×76 cell), the
+   pony four fifths of it, the cow 40 px to its back (72×54), the sheep 22 px (44×32), the dog
+   48×36; the hen (24×24), the cat (32×24) and the rabbit (24×20) a little larger than life. The
+   outline is the darkest colour of the coat (ink for the black and dark ones) and goes round
+   the legs too; every animal stands on a contact shadow. The saddle sits on a blue wool cloth
+   (`water_deep`, `water`), so that the rider's brown breeches don't merge with a bay. From the
+   front and behind the ridden horse is 28 px wide. Readable on summer grass, snow, at dusk and
+   at night (checked in screenshots). No new colours.
 9. ~~**Coast and flats**~~ done (task 61). The world had no sea. Now the Wadden coast lies
    in the west: a sea dyke, then the salt marsh (grey-green turf with silvery sea purslane and
    glasswort, drawn in logical colours that each look maps: red-purple in autumn, with thrift

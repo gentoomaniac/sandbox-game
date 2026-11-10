@@ -3953,3 +3953,26 @@ an incremental or cached snapshot would cut; generation (8 ms) stays on the main
 `WorkerThreadPool` task was not needed to stay under 33 ms; the building size cache and the
 `buildings()` copy were left as they are (they cost nothing measurable); the start takes about
 a second longer as the chunks round the player are drawn within a budget.
+
+## 156. Horses at 32 px: legs with upper legs
+
+- [x] Done
+
+The user, 2026-11-10: "a review of the horse graphics. In 32 they look like they are missing
+upper legs as the leg starts slim and almost under the belly." Review the 32 px horse and pony
+(tools/art/livestock.py) in every look, pose and facing, as the cow was in task 151: the legs
+should start wide at the body (forearm and gaskin), set at the shoulder and the hip, not slim
+from under the belly. Fix the drawing, keep the sizes of the cells, and check the saddle and
+the riding sprites still fit. Before and after crops and an in-game screenshot.
+- The user, 2026-11-10: "when head down eating grass, the head is way too long and they look
+  more like ant eaters." The grazing head and neck: a horse's head is about as long as its
+  neck is deep; lowered, the neck slopes down from the withers and the muzzle reaches the grass
+  in front of the forelegs, not a long thin snout.
+
+Done (second go after the user's reference picture): the forelegs start at the chest and the
+hind legs at the rump with a big forearm and thigh (an extra joint mid-forearm and mid-gaskin
+keeps them thick down to the knee and hock, shaded with the body so the belly shadow stops
+between the legs), the flank is tucked up, and the cannons stay slim. The grazing head is short
+and wedge-shaped on a neck that drops nearly straight down, the muzzle just in front of the
+forelegs (fifth go, approved by the user). Horse, pony and the saddle and riding sheets; the 16 px
+horse had neither fault.
