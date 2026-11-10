@@ -274,7 +274,12 @@ entry state, tempo, meter, loop points and allowed exits.
 After task 170. A music director (a scene service) loops a section, plays a fill now and then
 and returns on the bar, switches between two loops (later by time of day, season, weather,
 indoors) with a minimum time before switching again. A "music" bus with its own slider in
-Settings (and off), muted in test runs. Rules in data/music.cfg; tests; README. Later: stems
+Settings (and off), muted in test runs. Rules in data/music.cfg; tests; README.
+- The user, 2026-11-10: the chiptune sound fits the classic 16 px graphics. Each piece gets two
+  versions that switch with the graphics setting: the chiptune one with the classic art, a
+  fuller one (more channels, softer instruments, still in the folk style) with the 32 px art,
+  following the setting when it changes (a crossfade on the bar). The test piece's tempo was too
+  fast for the game: calm tempos, around 100-110 BPM. Later: stems
 (AudioStreamSynchronized), more pieces, the season and weather choices.
 
 ## Later (not part of the prototype)
