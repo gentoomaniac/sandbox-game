@@ -2,7 +2,7 @@ class_name SaveFile
 extends RefCounted
 ## The save on disk: one JSON file per world, `{"version": VERSION, "game": <GameState.to_dict>}`.
 ## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step
-## (see `_upgrade_from_version_14` and so on). Older ones are refused.
+## (see `_upgrade_from_version_15` and so on). Older ones are refused.
 ##
 ## How to add a save field (or change one):
 ## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
@@ -22,8 +22,9 @@ extends RefCounted
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
 const VERSION := 24
-## The oldest version we still upgrade.
-const OLDEST_VERSION := VERSION - 10
+## The oldest version we still upgrade. Nine steps back, for the next version (task 122) makes
+## its step the tenth.
+const OLDEST_VERSION := VERSION - 9
 ## How far around the buildings and the player's objects, and around their tilled fields, the
 ## coast gives way in a version 17 world (see `_home_tiles`): an old farm keeps its yard.
 const UPGRADE_CLEARANCE := 3
@@ -195,8 +196,6 @@ static func copy_aside(path: String, backup: String) -> String:
 
 ## Brings the data of a save of `version` up to the current one.
 static func _upgrade(game: Dictionary, version: int) -> void:
-	if version <= 14:
-		_upgrade_from_version_14(game)
 	if version <= 15:
 		_upgrade_from_version_15(game)
 	if version <= 16:
@@ -215,11 +214,6 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_22(game)
 	if version <= 23:
 		_upgrade_from_version_23(game)
-
-
-## Version 14 had no desire paths: all its grass is unworn.
-static func _upgrade_from_version_14(game: Dictionary) -> void:
-	game["world"]["wear"] = []
 
 
 ## Version 15 had no bones for the dogs: no animal follows the player.

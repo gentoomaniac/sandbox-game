@@ -1,5 +1,5 @@
 extends SaveUpgradeCase
-## The wear of desire paths is saved, and a save from before them (version 14) loads with none.
+## The wear of desire paths is saved.
 
 
 func test_the_wear_is_kept() -> void:
@@ -13,14 +13,3 @@ func test_the_wear_is_kept() -> void:
 	var restored := SaveFile.read(SAVE_PATH)
 
 	assert_eq(restored.world.to_dict()["wear"], state.world.to_dict()["wear"])
-
-
-func test_a_version_14_save_loads_with_no_wear() -> void:
-	var game := _current_game()
-	game["world"].erase("wear")
-	_write_save(14, game)
-
-	var restored := SaveFile.read(SAVE_PATH)
-
-	assert_not_null(restored)
-	assert_eq(restored.world.to_dict()["wear"], [])
