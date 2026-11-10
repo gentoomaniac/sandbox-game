@@ -112,3 +112,25 @@ func test_the_workers_call_of_a_save_already_waited_for_does_not_end_the_next_on
 	_service.wait()
 	await wait_frames(3)
 	assert_signal_emit_count(_service, "finished", 2)
+
+
+## The worker makes the text of the snapshot while the game goes on, so the snapshot must share no
+## array or dictionary with the game.
+func test_the_snapshot_shares_nothing_with_the_game_that_goes_on() -> void:
+	var npc := Npc.create(42, Vector2(3.25, -4.5), _state.npcs.rules)
+	npc.add_chat_line(3, 495, true, "hello")
+	npc.add_memory("A memory.")
+	_state.npcs.add(npc)
+	var tree := WorldObject.new(&"oak", Vector2i(2, 2))
+	tree.state["damage"] = 1.0
+	_state.world.add_chunk(WorldGenerator.new(7).generate_chunk(Vector2i.ZERO))
+	_state.world.add_object(tree)
+
+	var before := SaveFile.snapshot(_state)
+	var text_before := SaveFile.text_of(before)
+	npc.add_chat_line(3, 496, false, "and more")
+	npc.add_memory("Another.")
+	npc.samples.append("a new line")
+	tree.state["damage"] = 5.0
+
+	assert_eq(SaveFile.text_of(before), text_before)

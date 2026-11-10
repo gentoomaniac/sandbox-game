@@ -1,11 +1,11 @@
 class_name SaveService
 extends RefCounted
-## Saves the game without freezing it. A save takes the game's text at once (on the main thread,
-## so it is the game of that moment) and writes it on a worker thread, to the temporary file that
-## is then renamed (see SaveFile). Only one save runs at a time: asking for another while one runs
-## is skipped, not queued, as the one running holds the game of a moment ago and the next timed
-## or quick save follows soon. Whoever must not lose a save (quitting, loading) calls `wait`
-## or `save_and_wait`.
+## Saves the game without freezing it. A save takes a snapshot of the game at once (on the main
+## thread, so it is the game of that moment) and makes its text and writes it on a worker thread,
+## to the temporary file that is then renamed (see SaveFile). Only one save runs at a time:
+## asking for another while one runs is skipped, not queued, as the one running holds the game of
+## a moment ago and the next timed or quick save follows soon. Whoever must not lose a save
+## (quitting, loading) calls `wait` or `save_and_wait`.
 
 ## A save began (also one that `save_and_wait` writes at once).
 signal started
@@ -37,7 +37,7 @@ func save_in_background(state: GameState, path: String) -> bool:
 		return false
 	started.emit()
 	_save_number += 1
-	_task_id = WorkerThreadPool.add_task(_write.bind(SaveFile.encode(state), path, _save_number))
+	_task_id = WorkerThreadPool.add_task(_write.bind(SaveFile.snapshot(state), path, _save_number))
 	return true
 
 
@@ -57,8 +57,8 @@ func wait() -> void:
 
 
 ## Runs on the worker; tells the main thread when it is done.
-func _write(text: String, path: String, save_number: int) -> void:
-	_write_error = SaveFile.write_text(text, path)
+func _write(snapshot: Dictionary, path: String, save_number: int) -> void:
+	_write_error = SaveFile.write_text(SaveFile.text_of(snapshot), path)
 	_finish_save.call_deferred(save_number)
 
 

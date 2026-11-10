@@ -42,10 +42,21 @@ static func write(state: GameState, path: String = DEFAULT_PATH) -> bool:
 	return write_text(encode(state), path) == ""
 
 
-## The game as the text of a save file. Taking it is the part that must happen on the main
-## thread, at the moment of saving; writing it (`write_text`) can run anywhere.
+## The game of this moment as plain data that shares nothing with the running game, so another
+## thread can make text of it (`text_of`) while the game goes on. Taking it must happen on the
+## main thread.
+static func snapshot(state: GameState) -> Dictionary:
+	return {"version": VERSION, "game": state.to_dict()}
+
+
+## The text of a save file for a snapshot. Safe to call from a thread.
+static func text_of(snapshot_data: Dictionary) -> String:
+	return JSON.stringify(snapshot_data, "\t")
+
+
+## The game as the text of a save file, all on this thread.
 static func encode(state: GameState) -> String:
-	return JSON.stringify({"version": VERSION, "game": state.to_dict()}, "\t")
+	return text_of(snapshot(state))
 
 
 ## Writes the text of a save to `path`. Returns what went wrong, or "" when it is written (also

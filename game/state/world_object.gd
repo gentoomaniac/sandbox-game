@@ -23,7 +23,7 @@ func _init(object_type: StringName, world_pos: Vector2i) -> void:
 
 func to_dict() -> Dictionary:
 	var data := {
-		"type": str(type), "pos": SaveCodec.vector_to_json(pos), "state": state.duplicate()
+		"type": str(type), "pos": SaveCodec.vector_to_json(pos), "state": state.duplicate(true)
 	}
 	if storage != null:
 		data["storage"] = storage.slots_to_data()

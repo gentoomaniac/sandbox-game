@@ -35,7 +35,7 @@ help:
 	@echo "  screenshot  Save one frame as PNG (a new game, muted, no focus, its own save)."
 	@echo "  test        Run the GUT tests headless, in TEST_JOBS parallel processes, and the tests of the Python tools."
 	@echo "  test-tools  Run only the tests of the Python tools (tools/art/test_*.py)."
-	@echo "  bench       Time a heavy save headless (start-up, nodes, frame times standing and walking, pile pick-up); see tools/README.md."
+	@echo "  bench       Time a heavy save headless (start-up, nodes, frame times standing and walking, pile pick-up, save); see tools/README.md."
 	@echo "  lint        Run gdlint and gdformat --check, and check no API key is in the repo."
 	@echo "  format      Format the GDScript."
 	@echo "  art         Draw all art and sounds into art/generated/, then check them (minutes; needs no Godot)."
@@ -232,6 +232,7 @@ bench: assets
 	cp $(BENCH_DIR)/fixture.save $(BENCH_DIR)/run.save
 	$(BENCH_GODOT) -s tools/bench/frames.gd -- --save-path=$(BENCH_DIR)/run.save --settings-path=$(BENCH_DIR)/settings.cfg --mute
 	$(BENCH_GODOT) -s tools/bench/pickup.gd -- $(BENCH_DIR)/fixture.save
+	$(BENCH_GODOT) -s tools/bench/save.gd -- $(BENCH_DIR)/fixture.save
 
 lint:
 	$(GDLINT) $(GDSCRIPT_DIRS)

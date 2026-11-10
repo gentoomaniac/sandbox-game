@@ -181,8 +181,8 @@ func to_dict() -> Dictionary:
 		"background": background,
 		"home": home,
 		"speech": speech,
-		"samples": samples,
-		"people": people,
+		"samples": samples.duplicate(),
+		"people": people.duplicate(true),
 		"likes": likes,
 		"wants": wants,
 		"day": day,
@@ -191,9 +191,9 @@ func to_dict() -> Dictionary:
 		"secrets": secrets,
 		"position": SaveCodec.float_vector_to_json(position),
 		"anchor": SaveCodec.float_vector_to_json(anchor),
-		"chat_history": chat_history,
-		"memories": memories,
-		"uncompacted_lines": uncompacted_lines,
+		"chat_history": chat_history.duplicate(true),
+		"memories": memories.duplicate(),
+		"uncompacted_lines": uncompacted_lines.duplicate(true),
 		"remembered_lines": remembered_lines,
 	}
 
