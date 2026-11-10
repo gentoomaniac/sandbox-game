@@ -80,6 +80,12 @@ what a save costs: the snapshot on the main thread and the save data and JSON te
 Nothing is asserted: run it before and after a change and compare. Task 142 took the mean frame
 from 37.2 to 7.3 ms this way, task 147 the longest frame while walking from 82 to 22 ms.
 
+`make bench-music` times the prototype music renderer of task 169 (`music.gd`): renders of the test
+piece on their own (8 bars and a minute, 22.05 and 44.1 kHz, mono and stereo, with the memory of
+each), then Main on a copy of the same save standing, while renders run on a worker, and while
+they run and a timed save is made, with the frame counts as above and what the main thread spends
+per finished render; docs/music-viability.md has its results.
+
 ## Art: tools/art/
 
 `generate.py` is the entry point: it assembles the object atlas's rows and `main()` writes every

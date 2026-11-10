@@ -97,6 +97,11 @@ func start(parts: Array[Vector2i]) -> void:
 	_task_id = WorkerThreadPool.add_task(func() -> void: _rendered = render(parts))
 
 
+## Whether a render was started and not taken yet.
+func is_rendering() -> bool:
+	return _task_id >= 0
+
+
 func is_done() -> bool:
 	return _task_id >= 0 and WorkerThreadPool.is_task_completed(_task_id)
 
