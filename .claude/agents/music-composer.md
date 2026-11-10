@@ -42,9 +42,9 @@ agent gives you a brief; a reviewer checks your branch; the coordinator merges i
 - **Clean held notes (the user, 2026-11-10):** the first sketches sounded "like a voice
   breaking while trying to keep a note". Causes found: the renderer took the nearest sample
   (now linear interpolation), deep vibratos (4x3/4x4, about half a semitone) and 3FF slurs that
-  played a tick of the old note. So: strike each note clean at its own volume; vibrato only light
-  (about 10 cents, e.g. 481) and only late in long notes; none on pads or bass; no slur into a
-  note unless the brief asks. Measure pitch stability of held notes (cents rms/max) against
+  played a tick of the old note. So: strike each note clean at its own volume; no vibrato (the user
+  chose plain notes after hearing both) and no slur into a note unless the brief asks; the
+  instrument tone of the first sketches is fine. Note switches must not click (volume ramping). Measure pitch stability of held notes (cents rms/max) against
   libmodplug before delivering, since you can't hear.
 - **Loops:** loops must be seamless (test the wrap sample for sample); fills/transitions land
   on the bar.
