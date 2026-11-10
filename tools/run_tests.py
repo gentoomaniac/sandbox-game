@@ -5,8 +5,9 @@ Usage: run_tests.py JOBS   (called by `make test`, which imports the project fir
 
 The test files are spread over the shards by their duration in the last run
 (build/test-times), or by their size when a file has no time yet. Each shard has its own
-user:// folder (build/user-data-<i>), so parallel runs never touch each other's files and no
-test can reach the real save. build/test.log is the shard logs joined, ending with a summary
+user:// folder (build/user-data-<i>), emptied at the start of a run, so parallel runs never touch
+each other's files, no save of an earlier run (another commit's) is found and no test can reach the
+real save. build/test.log is the shard logs joined, ending with a summary
 in GUT's own words (Passing Tests, Failing Tests, ...), so greps for them keep working.
 The exit status is non-zero when any shard or any check fails, or a shard runs longer than
 TEST_TIMEOUT seconds (default 600).
@@ -14,6 +15,7 @@ TEST_TIMEOUT seconds (default 600).
 
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -57,7 +59,10 @@ def make_shards(files, jobs, times):
 
 def start_shard(i, shard):
     user_data = BUILD / f"user-data-{i}"
-    user_data.mkdir(parents=True, exist_ok=True)
+    # Nothing of an earlier run stays: a save left by the tests of another commit (a newer version)
+    # is refused by the game that a test starts, which then waits for an answer for good.
+    shutil.rmtree(user_data, ignore_errors=True)
+    user_data.mkdir(parents=True)
     command = [
         GODOT, "--headless", "--path", str(ROOT), "-s", "addons/gut/gut_cmdln.gd",
         "-gtest=" + ",".join(f"res://{f}" for f in shard),
