@@ -3763,28 +3763,6 @@ NPCs should contribute to those."
 - The same on and off screen; the wear fades as before when nobody walks there.
 - Tests, and the design page and README say it.
 
-## 154. Skipping time moves the whole world forward, like the clock ticking
-
-- [ ] Done
-
-The user, 2026-11-10: "Time skip seems to not affect crops. It should. Also other stuff should
-get affected like NPCs' schedules once that gets implemented, or birds' movement. Skipping time
-should be like moving the game engine's tick clock forward for everything."
-- Today the console's `skip` (game/state/console.gd `_skip`), sleeping and passing out only call
-  `clock.advance(minutes)`; what happens per day runs on `new_day` (NightUpkeep), and what runs
-  per frame (crop growth by the minute?, soil drying, weather, livestock, villagers, wildlife,
-  stations' work) doesn't see the skipped minutes. Find out exactly what does and doesn't follow
-  a skip of minutes, hours and days.
-- One way to move time for everything: a skip, a night's sleep and a pass-out advance the same
-  simulation step by step (or in catch-up steps a system declares), so after it the world is as
-  if the time had been played: crops grown or withered, soil dried, weather moved on, kilns done,
-  animals and villagers where their day puts them, birds gone or arrived. Views follow from the
-  new state.
-- This is the core of Review R8 (Later: one owner for the simulation and its time, one catch-up
-  rule); do that part here and leave the rest of R8 in Later.
-- Tests: skip 1 h, 1 d and 30 d against the same time played in small steps, for crops, soil,
-  weather, stations and animals; sleep and pass-out go the same way.
-
 Done: `Npcs._walk` wears the tile a villager steps onto (`World.wear_tile` at `villager_step`,
 half a step, in data/paths.cfg beside `animal_step`; `PathRules.villager_step`), for every
 loaded villager, on screen or off, since they all move in `Npcs.update`; only on a tile change,
@@ -3818,11 +3796,11 @@ Done: the soil terrain is the driest look (flat, straight furrows, one tile, so 
 `SoilWetness` lays the whole tile's brown over it in four steps by moisture (0.25, 0.5, 0.75;
 fresh soil is on the second), cut to the bed's shape by the 47 neighbour masks of
 tools/art/soil_beds.py so field edges keep their rim and the tiles inside show no seam; the old
-dashes (which left the lighter cross where four tiles met) are gone. The browns are existing palette colours
-(`soil_dark` to `soil_light`, a `sand_light` crest on the driest; no new palette colour). Both art sets. Snow-covered soil is
-not drawn moist, as before. The user's 2026-11-09 addition: the sown mound is dark earth with
-cream seeds (`crops.MOUND_SOIL`), so a sown tile reads as planted at zoom 0.5. Screenshot of the
-states: docs/screenshots/soil.png.
+dashes (which left the lighter cross where four tiles met) are gone. The browns are existing
+palette colours (`soil_dark` to `soil_light`, a `sand_light` crest on the driest; no new palette
+colour). Both art sets. Snow-covered soil is not drawn moist, as before. The user's 2026-11-09
+addition: the sown mound is dark earth with cream seeds (`crops.MOUND_SOIL`), so a sown tile reads
+as planted at zoom 0.5. Screenshot of the states: docs/screenshots/soil.png.
 
 ## 155. Worn ground tiles join up: desire paths without a pattern of shapes
 
