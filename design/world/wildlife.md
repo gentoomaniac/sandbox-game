@@ -46,7 +46,16 @@ atmosphere only: no player impact, not hunted, not saved.
     60 at the latest); empty in autumn. Each nest has its own days, drawn again every
     year, so they are not in step. Nothing of it is saved: the nests and who is in them follow from
     the world seed and the date (as the weather does), and the player changes one only by taking
-    its building down, which takes the nest with it;
+    its building down, which takes the nest with it. On screen (`StorkNestView`, one for each nest
+    near the view, drawn over its roof, sorted with the house) the heap of sticks shows all year;
+    the pair are roof storks standing on its rim, which fly off to the meadows (out of the view) and
+    back as the date has them, and clatter now and then; the young are small grey heads over the
+    rim (hatchlings), then larger, then white with a red bill, and the grown ones stand on the
+    rim, look round, flap and hop, and fly off one by one. A nest that comes near the view, or
+    after a skip of time, has everyone on it at once. The random roof storks (`roof_stork`) stay
+    where there is no nest: they keep off roofs with one, and the pair of a nest are not counted
+    among them. Flaps and clatter are only seen, not kept. Only roofs: no nests on a pole or a
+    dead tree yet;
   - greylag geese (task 60): flocks of 6 to 12 (fewer where a narrow shore has no room for them
     all) graze the marsh and the floodplain (grass within 7 tiles of water) in autumn and winter,
     fewer in spring, by day. They raise their heads together when the player comes near and take

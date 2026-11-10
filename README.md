@@ -271,6 +271,12 @@ squirrels dart between the trees, roe deer come out at the edge of the woods at 
 dusk, and bees and butterflies keep to the flowers. On the marsh and the wet meadows white
 storks hunt in spring and summer, stepping slowly with the head down; they come to stand on
 the roofs of the houses, clatter their bills now and then and fly off on slow wingbeats.
+Some houses (about four in ten of the kates, longhouses, hall houses and barns, by where they
+stand) carry a stork's nest on the ridge. It is empty in winter; in early spring a pair flies in
+and clatters on it, in late spring the young hatch, grey heads over the rim that grow larger and
+whiter through the summer while the parents fly off to the meadows and back, in late summer the
+grown young stand on the rim and flap and leave one by one, and in autumn the nest is empty
+again. Each nest has its own days, so they are not in step.
 In autumn and winter flocks of greylag geese graze the marsh and the floodplain, raise their
 heads when you come near and take off together, and skeins of them fly over in a V. Mice
 live by the fields, the Knicks, the walls and the houses, out mostly at dusk and at night, and
@@ -288,6 +294,8 @@ come and go around you by the season, the time of day and the weather; the numbe
 [data/wildlife.cfg](data/wildlife.cfg).
 
 ![White storks by the camp, a stork on the roof of the shack, geese grazing in autumn and a flock of them flying over](docs/screenshots/wildlife.png)
+
+![A stork's nest on a roof ridge: the pair in early spring, grey heads over the rim in late spring, larger and whiter ones in summer, a grown young standing on the rim in late summer, and the empty nest under winter snow](docs/screenshots/stork-nest.png)
 
 ![Fireflies blinking over a meadow on a summer night](docs/screenshots/fireflies.png)
 

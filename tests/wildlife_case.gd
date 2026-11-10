@@ -19,6 +19,9 @@ func before_each() -> void:
 	_wildlife = WildlifeView.new()
 	_wildlife.rng.seed = SEED
 	_wildlife.rules = WildlifeRules.default_rules()
+	_wildlife.nests = StorkNests.new(
+		StorkNestRules.default_rules(), _state.sun, _state.world.world_seed
+	)
 	_wildlife.is_player_ignored = true
 	_wildlife._state = _state
 	_wildlife.world_view = WorldView.new()

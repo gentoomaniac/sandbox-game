@@ -55,6 +55,10 @@ const LEAVE_MARGIN := 144.0
 ## The house whose roof it stands on or flies to, or null, and the column of the house's
 ## picture it stands on.
 var roof: Building
+## Whether it is one of the pair of a nest on the roof (see StorkNestView), which stands `nest_lift`
+## pixels higher than the roof, on the nest's rim.
+var is_nest_parent := false
+var nest_lift := 0.0
 var _roof_column := 0
 var _state_seconds := 1.0
 var _walk_direction := Vector2.RIGHT
@@ -80,7 +84,7 @@ func _ready() -> void:
 	_shadow.hide()
 	wildlife.ground.add_child(_shadow)
 	if roof != null:
-		_landing_lift = wildlife.roof_lift(roof, _roof_column)
+		_landing_lift = wildlife.roof_lift(roof, _roof_column) + nest_lift
 		_arrival_lift = _landing_lift + ROOF_CLEARANCE
 		_lift = _arrival_lift if _state == ARRIVE else _landing_lift
 	if _state == ARRIVE:
@@ -228,7 +232,7 @@ func _choose_on_roof() -> void:
 	if not wildlife.is_standing(roof):
 		_take_off(_away_from_view_centre())
 		return
-	_landing_lift = wildlife.roof_lift(roof, _roof_column)
+	_landing_lift = wildlife.roof_lift(roof, _roof_column) + nest_lift
 	_lift = _landing_lift
 	if _state != CLATTER and wildlife.rng.randf() < ROOF_CLATTER_CHANCE:
 		_clatter()
