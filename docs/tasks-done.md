@@ -4218,3 +4218,20 @@ waking to a mouse, the walked minutes of a skip) and tests/test_cats_and_mice.gd
 cat's view freed mid-hunt, the wildlife cleared mid-hunt). Screenshots (`--hunt` at 19:00,
 1000x1040) look the same before and after.
 
+## 163. PlayerView and the wildlife rules stop repairing and sharing state
+
+- [x] Done
+
+The user, 2026-11-10: R8 deliverable 4 (review A5).
+- PlayerView stops setting the held layer every frame; the held look follows the state when it
+  changes, and the character preview works when PlayerView isn't processing.
+- `WildlifeView.show_wildlife()` stops writing `rules.sun` into the shared
+  `WildlifeRules.default_rules()`: the cached rules stay unchanged, the session's sun is passed in
+  or held by a small session-bound rules object.
+- Acceptance: two sessions with different suns don't change each other's rules; same looks.
+
+Done: the held layer of the appearance now follows the selected item in PlayerState (it listens to
+its inventory, as it does to the equipment); PlayerView and CharacterScreen no longer sync it
+every frame. The wildlife rules already had `WildlifeRules.for_session(day_sun)` (the only caller,
+`WildlifeView.show_wildlife`, uses it, nothing writes `sun` into the default rules); a test now
+pins two sessions of different suns. New tests: tests/test_held_layer.gd.

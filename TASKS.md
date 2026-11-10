@@ -184,18 +184,6 @@ spring and summer and flies off again; there is no nest. Moved here from task 12
   is saved; what the player only sees (flaps, clatter) stays in the views.
 - Tests for the year of a nest by date, the seeding, save and load; a screenshot in the README.
 
-## 163. PlayerView and the wildlife rules stop repairing and sharing state
-
-- [ ] Done
-
-The user, 2026-11-10: R8 deliverable 4 (review A5).
-- PlayerView stops setting the held layer every frame; the held look follows the state when it
-  changes, and the character preview works when PlayerView isn't processing.
-- `WildlifeView.show_wildlife()` stops writing `rules.sun` into the shared
-  `WildlifeRules.default_rules()`: the cached rules stay unchanged, the session's sun is passed in
-  or held by a small session-bound rules object.
-- Acceptance: two sessions with different suns don't change each other's rules; same looks.
-
 ## 165. Pigs, and pig pens the player builds
 
 - [ ] Done
