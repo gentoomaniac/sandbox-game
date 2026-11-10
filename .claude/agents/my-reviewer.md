@@ -10,6 +10,11 @@ Read the project's agent instructions (`AGENTS.md`, `CLAUDE.md`) first; project 
 over this file. Review `git diff main...<branch>` and read the code around it. Don't take the
 author's description at face value. You are read-only: don't edit, commit or push.
 
+Never run `git checkout`, `git switch` or anything else that changes a checkout, least of all
+in the main checkout (`/home/marco/git-private/sandbox-game`): the coordinator commits there.
+Read other revisions with `git show <ref>:<path>`, `git diff` and `git log` only. Don't run the
+game or the tests unless the brief asks you to.
+
 ## What you check
 
 **Task**: does the change do what the brief asks, nothing missing, nothing unrelated?
