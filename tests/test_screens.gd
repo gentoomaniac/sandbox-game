@@ -82,9 +82,12 @@ func test_storage_screen() -> void:
 func test_storage_screen_listens_once_however_often_it_is_opened() -> void:
 	var screen := StorageScreen.new(autofree(HotbarCase.new_hotbar()))
 	add_child_autofree(screen)
+	var changed := _state.player.inventory.changed
+	# The player's own look of the held item listens too.
+	var listeners := changed.get_connections().size()
 	screen.open_chest(_chest, _state.player)
 	screen.open_chest(_chest, _state.player)
-	assert_eq(_state.player.inventory.changed.get_connections().size(), 1)
+	assert_eq(changed.get_connections().size(), listeners + 1)
 	screen.close()
-	assert_eq(_state.player.inventory.changed.get_connections().size(), 0)
+	assert_eq(changed.get_connections().size(), listeners)
 	assert_eq(_chest.storage.changed.get_connections().size(), 0)

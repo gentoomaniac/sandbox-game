@@ -38,8 +38,15 @@ var is_debuffed := false
 ## What they are good at (see Skills).
 var skills := Skills.new()
 
-## What they carry; the selected hotbar slot is what they hold.
-var inventory := Inventory.new()
+## What they carry; the selected hotbar slot is what they hold. Replace it only through the
+## setter, so the held layer of the appearance follows.
+var inventory: Inventory:
+	set(value):
+		if inventory != null:
+			inventory.changed.disconnect(_show_held_item)
+		inventory = value
+		inventory.changed.connect(_show_held_item)
+		_show_held_item()
 ## What they wear. Replace it only through the setter, so the appearance follows.
 var equipment: Equipment:
 	set(value):
@@ -55,6 +62,7 @@ var appearance := Appearance.new()
 
 
 func _init() -> void:
+	inventory = Inventory.new()
 	equipment = Equipment.new()
 
 
@@ -66,6 +74,15 @@ func carried_weight() -> float:
 
 func _dress() -> void:
 	appearance.dress(equipment)
+
+
+## The hand shows the selected item, if it has art for the hand (the tools); else it is empty.
+func _show_held_item() -> void:
+	var held_sheet: Variant = ItemTypes.TYPES.get(inventory.held_item(), {}).get("held_sheet")
+	if held_sheet == null:
+		appearance.take_off(Appearance.HELD)
+	else:
+		appearance.wear(Appearance.HELD, held_sheet)
 
 
 ## The tile the player's feet are on.
@@ -185,6 +202,7 @@ static func from_dict(data: Dictionary, home_map: GameMap) -> PlayerState:
 	player.facing = SaveCodec.vector_from_json(data["facing"])
 	player.home_map = home_map
 	player.home_bed = SaveCodec.vector_from_json(data["home_bed"])
+	# The appearance comes first: setting the inventory wears its held item on it.
 	player.appearance = Appearance.from_dict(data["appearance"])
 	player.inventory = Inventory.from_dict(data["inventory"])
 	player.equipment = Equipment.from_dict(data["equipment"])

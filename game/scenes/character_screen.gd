@@ -197,7 +197,6 @@ func _use_hotbar(is_used: bool) -> void:
 func _process(_delta: float) -> void:
 	if not visible:
 		return
-	# The held tool is synced into the appearance by PlayerView every frame.
 	_preview.queue_redraw()
 
 

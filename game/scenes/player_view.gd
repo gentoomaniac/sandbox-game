@@ -234,7 +234,6 @@ func _process(delta: float) -> void:
 	if column != _last_column and column in STEP_COLUMNS:
 		stepped.emit()
 	_last_column = column
-	_show_held_item()
 	_show_layers(_player.appearance.layers_for(_player.facing), Pose.STANDING)
 	for sprite in _sprites:
 		sprite.frame = frame_index(_player.facing, column)
@@ -329,16 +328,6 @@ func _lay(sprite: Sprite2D, frame: int, is_flipped: bool, angle: float, shift: V
 	sprite.flip_h = is_flipped
 	sprite.rotation = angle
 	sprite.position = shift
-
-
-## The hand shows the selected item, if it has art for the hand (the tools); else it is empty.
-func _show_held_item() -> void:
-	var held: StringName = _player.inventory.held_item()
-	var held_sheet: Variant = ItemTypes.TYPES.get(held, {}).get("held_sheet")
-	if held_sheet == null:
-		_player.appearance.take_off(Appearance.HELD)
-	else:
-		_player.appearance.wear(Appearance.HELD, held_sheet)
 
 
 func _wear_hair(hair: int) -> void:
