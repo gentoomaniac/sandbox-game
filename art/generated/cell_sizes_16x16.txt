@@ -272,4 +272,5 @@ wildlife/sheep_grey_16x16.png 22 16
 wildlife/sheep_white_16x16.png 22 16
 wildlife/squirrel_16x16.png 14 12
 wildlife/stork_16x16.png 32 26
+wildlife/stork_chick_16x16.png 20 17
 wildlife/tern_16x16.png 20 14

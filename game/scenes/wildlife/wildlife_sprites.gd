@@ -49,6 +49,14 @@ const SHEETS := {
 		"size": Vector2i(64, 52),
 		"actions": {&"stand": 2, &"walk": 4, &"strike": 2, &"clatter": 2, &"swallow": 2, &"fly": 3},
 	},
+	# The stork's nest on a roof, and a young stork over its rim (tools/art/stork_nest.py).
+	&"stork_nest": {"size": Vector2i(48, 14), "actions": {&"nest": 1}},
+	&"stork_chick":
+	{
+		"size": Vector2i(40, 34),
+		"actions":
+		{&"head_small": 1, &"head_half_grown": 1, &"head_grown": 1, &"stand": 2, &"flap": 3},
+	},
 	&"mouse": {"size": Vector2i(24, 14), "actions": {&"sit": 2, &"scurry": 2}},
 	&"frog": {"size": Vector2i(24, 16), "actions": {&"sit": 2, &"hop": 2}},
 	&"goose":

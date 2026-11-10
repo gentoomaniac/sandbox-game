@@ -685,8 +685,8 @@ copper watering can. Kept here as the record of why.
    courses running along the side eaves, with a reed ridge; white bargeboards cross over the
    hip in a pair of horse heads, clear of snow in winter. Inside, the Diele between rows of
    stall posts, and the Flett with the open hearth, box beds and plate rack at its end. No
-   new colours. Still to do: a Haubarg on a mound for a rich marsh farm, a stork's nest on
-   the ridge, a Klöntür in the Grote Door, side doors to the Flett, cattle in the stalls.
+   new colours. Still to do: a Haubarg on a mound for a rich marsh farm, a
+   Klöntür in the Grote Door, side doors to the Flett, cattle in the stalls.
 8. ~~**Animals of the region**~~ done (tasks 73 and 60). Task 73 drew the livestock
    (tools/art/livestock.py): Angler, black pied and red pied cattle; white, grey
    (Heidschnucke) and black-faced sheep; brown and white hens and a rooster; agouti, white and
@@ -701,8 +701,8 @@ copper watering can. Kept here as the record of why.
    small ones (tools/art/animals.py): a grey-brown mouse (`mud`, a pale belly, pink ears, a
    bare `skin_shade` tail drawn over the outline so that it stays thin), sitting and
    scurrying, and an olive common frog (`dry_light` with `olive` blotches, a pale throat that
-   puffs out), sitting and hopping; and a stork swallowing a frog. Still to do: a
-   stork's nest on a ridge, lapwings, seals on the sandbanks, pigs. Task 79
+   puffs out), sitting and hopping; and a stork swallowing a frog. Task 152 drew the stork's nest (tools/art/stork_nest.py): a wide heap of crossed sticks (`mud_dark`, `soil_dark`, `mud`, `bare`, `bare_light`, outline `ink`) 48 px wide with a few sticks poking out, and the young over its rim: a hatchling's grey head and neck (`stone`, `stone_light`, `bare_light`, a dark bill), a half-grown one's paler head, a nearly grown one's white head with a red bill, the grown young standing on the rim and flapping (the storks' colours, no new ones). The nest is drawn over the chicks' lower part so that their heads come up out of the sticks. Still to do: a
+   lapwings, seals on the sandbanks, pigs. Task 79
    added dogs (a collie in brown with a white collar, a grey spitz with its tail curled over its
    back, a liver-and-white hunting dog with drop ears), cats (tabby, black with gold eyes,
    ginger) and horses: a heavy marsh horse about 32 px long in bay (black mane, tail and lower

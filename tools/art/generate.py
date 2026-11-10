@@ -85,6 +85,7 @@ import atlas
 import beech
 import birch
 import birds
+import stork_nest
 import boundaries
 import buildings
 import camp
@@ -333,7 +334,7 @@ def write_fire():
 
 
 def write_wildlife():
-    for name, size, rows in [*animals.sheets(), *birds.sheets(), *sea_birds.sheets(), *livestock.sheets()]:
+    for name, size, rows in [*animals.sheets(), *birds.sheets(), *stork_nest.sheets(), *sea_birds.sheets(), *livestock.sheets()]:
         save(rows, f"wildlife/{name}.png", *size)
 
 

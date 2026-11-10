@@ -45,6 +45,9 @@ DOUBLED = (
     "wildlife/rabbit.png",
     "wildlife/squirrel.png",
     "wildlife/stork.png",
+    # The stork nest and its young (task 152; stork_nest.py).
+    "wildlife/stork_chick.png",
+    "wildlife/stork_nest.png",
     "wildlife/tern.png",
     "fire/*.png",
     # The ground (task 107; terrain.py, the ground looks of seasons.py, crop_icons.soil_wet and

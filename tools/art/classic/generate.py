@@ -48,6 +48,7 @@ import meadow  # noqa: E402
 import object_looks  # noqa: E402
 import reeds  # noqa: E402
 import sea_birds  # noqa: E402
+import stork_nest  # noqa: E402
 import seasons  # noqa: E402
 import terrain  # noqa: E402
 import tool_icons  # noqa: E402
@@ -89,7 +90,7 @@ def write_livestock():
 def write_wildlife():
     for kind in animals.SHEETS:
         save(animals.sheet_rows(kind), f"wildlife/{kind}.png", *animals.cell_size(kind))
-    for name, size, rows in [*birds.sheets(), *sea_birds.sheets()]:
+    for name, size, rows in [*birds.sheets(), *stork_nest.sheets(), *sea_birds.sheets()]:
         save(rows, f"wildlife/{name}.png", *size)
 
 
