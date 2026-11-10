@@ -28,7 +28,9 @@
     crop grows by a 24th of how well its day met its needs (good days count fully, poor
     days partly, bad days not at all; changed 2026-11-10, before it was once a night, with
     the same totals) and moves to the next stage after enough growth. A crop is counted as
-    a day older at midnight (decided 2026-11-10).
+    a day older at midnight (decided 2026-11-10). It grows from the hour it is planted
+    (decided 2026-11-10): planted at 15:00 it gets the rest of that day pro rata, so it
+    ripens at 15:00 nine days later instead of at a midnight, and waits that much longer.
   - **Crops can die:** days without enough sun or water, frost below the crop's
     minimum, or wind above its tolerance (beans and flax are fragile, wheat bends)
     damage the crop; enough damage and it dies and shows its dead stage, which the empty
