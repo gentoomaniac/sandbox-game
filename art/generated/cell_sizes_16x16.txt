@@ -267,6 +267,10 @@ wildlife/horse_pony_ridden_over_16x16.png 44 36
 wildlife/horse_pony_saddled_16x16.png 44 36
 wildlife/mouse_16x16.png 12 7
 wildlife/oystercatcher_16x16.png 16 12
+wildlife/pig_red_16x16.png 26 16
+wildlife/pig_saddleback_16x16.png 26 16
+wildlife/pig_sandy_16x16.png 26 16
+wildlife/pig_spotted_16x16.png 26 16
 wildlife/rabbit_16x16.png 12 10
 wildlife/rabbit_agouti_16x16.png 12 10
 wildlife/rabbit_dutch_16x16.png 12 10

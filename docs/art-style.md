@@ -765,11 +765,31 @@ copper watering can. Kept here as the record of why.
    and the head is short and wedge-shaped, about as long as the neck is deep, with a cheek and a
    narrowing muzzle that reaches the grass just in front of the forelegs and never further
    forward than the standing head (neck and head about 43 px from the shoulder, not one long
-   snout). Sizes against the 61 px people: the horse 88 px long and 57 px to the withers (88×76
-   cell), the pony four fifths of it, the cow 64 px long and 35 px to the withers (72×54), the
-   sheep 22 px (44×32), the dog 48×36; the hen (24×24), the cat (32×24) and the rabbit (24×20) a
-   little larger than life. The outline is the darkest colour of the coat (ink for the black and
-   dark ones) and goes round the legs too; every animal stands on a contact shadow. The saddle
+   snout). Task 165 drew the pig the same way, by hand as maps of letters (`PIG_TORSO` and the
+   pieces after it) after the user's reference picture: a short, deep body (not a long tube, the
+   user's first verdict) whose back arches over the loin and the shoulders, the rump rounding
+   down to a curly tail that grows out of its top (in the coat's colours with a lit pixel,
+   outlined like the body), the belly curving up between the legs; a big head hanging forward
+   with its top below the back line, wedge-shaped down to the snout's flat disc as its lowest
+   point, a big ear flopping forward over the eye (a flap of its own, shaded darker, its
+   underside dark over the face); legs over a third of its height as limbs out of the body, as
+   the cow's (task 159): the hind leg from the big ham of the rump narrowing to a hock that
+   points back and slanting back down a slim cannon, the foreleg from a wide forearm in the
+   chest to a knee halfway down and a slim leg, small dark trotters, their tops shaded with the
+   body so that the belly's shadow stops between them, the far legs behind and a step darker
+   (the far hind leg partly hidden by the near ham), swinging well in the walk; rooting, the
+   snout's disc is on the ground in front of the forelegs. The back gets less light on top than
+   the other animals (`PIG_TOP_LIGHT`), so it is no bright band. The old breeds were bristly and
+   of many colours, so there are four looks (red-brown, sandy, a black saddleback with a white
+   saddle over the shoulders and forelegs, pale with black spots) and the bristles are broken
+   tones by hand: their tips catching the light along the back and short dark strokes lying back
+   in the flank, not an outline; the belly, the snout and the lower legs are a tone darker. The
+   classic pig is 20 px long and 13 px tall with the same looks. Sizes against the 61 px people:
+   the horse 88 px long and 57 px to the withers (88×76 cell), the pony four fifths of it, the
+   cow 64 px long and 35 px to the withers (72×54), the pig 40 px long and 23 px tall (52×32),
+   the sheep 22 px (44×32), the dog 48×36; the hen (24×24), the cat (32×24) and the rabbit
+   (24×20) a little larger than life. The outline is the darkest colour of the coat (ink for the
+   black and dark ones) and goes round the legs too; every animal stands on a contact shadow. The saddle
    sits on a blue wool cloth (`water_deep`, `water`), so that the rider's brown breeches don't
    merge with a bay. From the front and behind the ridden horse is 28 px wide. Readable on
    summer grass, snow, at dusk and at night (checked in screenshots). No new colours.

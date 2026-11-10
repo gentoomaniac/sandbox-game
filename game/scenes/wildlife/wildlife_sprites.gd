@@ -10,6 +10,7 @@ extends RefCounted
 const SHEET_PATH := "res://assets/wildlife/%s.png"
 const LIVESTOCK_ACTIONS := {&"idle": 2, &"walk": 4, &"graze": 2, &"sleep": 2, &"run": 4}
 const COW := {"size": Vector2i(72, 54), "actions": LIVESTOCK_ACTIONS}
+const PIG := {"size": Vector2i(52, 32), "actions": LIVESTOCK_ACTIONS}
 const SHEEP := {"size": Vector2i(44, 32), "actions": LIVESTOCK_ACTIONS}
 const CHICKEN := {"size": Vector2i(24, 24), "actions": LIVESTOCK_ACTIONS}
 const RABBIT := {"size": Vector2i(24, 20), "actions": LIVESTOCK_ACTIONS}
@@ -78,6 +79,10 @@ const SHEETS := {
 	&"cow_angler": COW,
 	&"cow_black_pied": COW,
 	&"cow_red_pied": COW,
+	&"pig_red": PIG,
+	&"pig_sandy": PIG,
+	&"pig_saddleback": PIG,
+	&"pig_spotted": PIG,
 	&"sheep_white": SHEEP,
 	&"sheep_grey": SHEEP,
 	&"sheep_black_faced": SHEEP,

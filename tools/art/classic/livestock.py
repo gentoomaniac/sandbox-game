@@ -20,8 +20,8 @@ from canvas import outline
 # The rows of every sheet, with their frames.
 ACTIONS = {"idle": 2, "walk": 4, "graze": 2, "sleep": 2, "run": 4}
 # Characters that are drawn over the outline instead of being outlined: the near leg and its
-# shade, the far legs, hooves or paws, and the dark lower legs of a bay horse.
-LEGS = {"L", "M", "N", "K", "P"}
+# shade, the far legs, hooves or paws, the dark lower legs of a bay horse and a pig's thin tail.
+LEGS = {"L", "M", "N", "K", "P", "T"}
 # The far legs are drawn in the far leg's colour.
 FAR_LEG = str.maketrans("LMP", "NNN")
 
@@ -337,6 +337,134 @@ def cow_sheet(look):
         # Pied cattle have white stockings.
         keys |= {"L": "lime", "M": "stone_light", "N": "stone_light"}
     return four_legged_sheet(COW, style, keys)
+
+
+# --- Pigs ---------------------------------------------------------------------------------
+#
+# A pig of the old breeds (task 165), about 20 px from the tail to the snout and 13 px tall: a
+# short, deep body with an arched back and a belly curving up between the legs, a big head
+# hanging below the back line with the ear flopping forward over the eye, legs that grow out of
+# the body (their tops in the coat, so the belly's shade stops between them) and a low-set curly
+# tail. Bristles show as specks of light along the back and of shade in
+# the flank. Keys: l, b, d light, base and shade of the coat; x, w, W of its second colour (a
+# saddle, spots); r ear; e eye; n the snout's disc; L, M near leg, N far leg, K trotter; T the
+# tail.
+
+PIG_SIZE = (26, 16)
+PIG_TORSO = (
+    "...lblllbl....",
+    ".llbbbbbbbbl..",
+    "lbbbbbbdbbbbbl",
+    "bbbdbbbbbbdbbb",
+    "bbbbbbbbbbbbbb",
+    "bbbbbdbbbbbbbb",
+    "dbbbbddddbbbbd",
+    ".ddd.....dddd.",
+)
+PIG = {
+    "size": PIG_SIZE,
+    "torso": PIG_TORSO,
+    "torso_at": (5, 3),
+    "lying_drop": 5,
+    "heads": {
+        "ahead": (
+            (
+                "ll......",
+                "bbll....",
+                "bbbrrl..",
+                "bbebbrbd",
+                "bbbbbddn",
+                "bbbbbddn",
+                ".dbbddn.",
+            ),
+            (11, 1),
+        ),
+        "down": (
+            (
+                "ll.....",
+                "bbll...",
+                "bbbrrl.",
+                "bbbbrrb",
+                "bbebbbd",
+                ".bbbbdd",
+                "..bbddd",
+                "...bddd",
+                "....ddd",
+                "....ddn",
+                "....nnn",
+            ),
+            (11, 2),
+        ),
+    },
+    "tails": {"hanging": ("TT.", "T.T", ".TT", "..T"), "swishing": ("T..", ".T.", ".TT", "..T")},
+    "tail_at": (-3, 1),
+    "legs": {
+        "stand": ("bbb", ".LM", ".LM", ".L.", ".L.", ".L.", ".KK"),
+        "forward": ("bbb", ".LM", ".LM", "..L", "..L", "..L", "..KK"),
+        "back": ("bbb", ".LM", ".LM", "L..", "L..", "L..", "KK."),
+    },
+    "leg_x": (1, 10),
+    "far_shift": (3, -2),
+    "folded": (("KKLM",), (5, len(PIG_TORSO) - 1)),
+    "closed_eye": "r",
+}
+PIG_LOOKS = {
+    # Red-brown and bristly.
+    "red": {
+        "keys": {"l": "leaf_orange", "b": "rust", "d": "rust_dark", "r": "russet_deep", "e": "ink", "n": "rust_dark"},
+        "legs": ("rust_dark", "russet_deep", "russet_deep"),
+        "outline": "russet_deep",
+    },
+    # Sandy, a pale yellow-brown.
+    "sandy": {
+        "keys": {"l": "sand_light", "b": "sand", "d": "mud", "r": "mud", "e": "ink", "n": "skin_shade"},
+        "legs": ("mud", "mud_dark", "mud_dark"),
+        "outline": "mud_dark",
+    },
+    # Black with a white saddle over the shoulders.
+    "saddleback": {
+        "keys": {"l": "stone", "b": "stone_dark", "d": "ink", "r": "ink", "e": "stone_light", "n": "stone_dark"},
+        "legs": ("stone_dark", "ink", "ink"),
+        "outline": "ink",
+        "pattern": (
+            "........ww....",
+            ".......www....",
+            ".......wwww...",
+            ".......wwww...",
+            "......wwwww...",
+            "......wwwww...",
+            ".......wwww...",
+            "........www...",
+        ),
+        "white": ("lime", "stone_light", "stone"),
+    },
+    # Pale with black spots.
+    "spotted": {
+        "keys": {"l": "cream", "b": "skin", "d": "skin_shade", "r": "skin_shade", "e": "ink", "n": "skin_shade"},
+        "legs": ("skin_shade", "soil", "soil"),
+        "outline": "soil",
+        "pattern": (
+            "..............",
+            "..ww......ww..",
+            ".www.....www..",
+            "..w...........",
+            "......ww......",
+            ".ww..www......",
+            "..............",
+            "..............",
+        ),
+        "white": ("stone_dark", "stone_dark", "ink"),
+    },
+}
+
+
+def pig_sheet(look):
+    style = PIG_LOOKS[look]
+    near, near_shade, far = style["legs"]
+    keys = style["keys"] | {"L": near, "M": near_shade, "N": far, "K": "soil_dark", "T": style["outline"]}
+    if "white" in style:
+        keys |= dict(zip("xwW", style["white"]))
+    return four_legged_sheet(PIG, style, keys)
 
 
 # --- Sheep --------------------------------------------------------------------------------
@@ -1231,6 +1359,7 @@ def ridden_sheets(look):
 
 SPECIES = {
     "cow": (COW_SIZE, COW_LOOKS, cow_sheet),
+    "pig": (PIG_SIZE, PIG_LOOKS, pig_sheet),
     "sheep": (SHEEP_SIZE, SHEEP_LOOKS, sheep_sheet),
     "chicken": (CHICKEN_SIZE, CHICKEN_LOOKS, chicken_sheet),
     "rabbit": (RABBIT_SIZE, RABBIT_LOOKS, rabbit_sheet),

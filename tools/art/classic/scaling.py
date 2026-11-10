@@ -28,6 +28,8 @@ DOUBLED = (
     "wildlife/dog_*.png",
     "wildlife/cat_*.png",
     "wildlife/horse_*.png",
+    # The pigs (task 165).
+    "wildlife/pig_*.png",
     # The wild animals and the flames (task 116; animals.py, birds.py, sea_birds.py and fire.py
     # of commit 2793065; the fireplace around its flames is the classic camp.py, the hearth the
     # classic interior.py).
