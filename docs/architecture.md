@@ -303,9 +303,10 @@ class that is saved has an explicit `to_dict` and a strict `from_dict` (`data["x
 upgrade step that gives old saves the new field (the rule is at the top of `save_file.gd`, which
 keeps ten upgrade steps: versions VERSION - 10 to VERSION load). Things marked "not saved" in a
 comment (cheats, a forced weather) live only for the session. A timed or quick save
-(`SaveService`) takes `SaveFile.snapshot` on the main thread (the game of that moment as
-plain data) and makes its text and writes it on a worker thread, so a `to_dict` must copy
-every array or dictionary of the running game that it hands out instead of sharing it.
+(`SaveService`) takes `SaveFile.snapshot` on the main thread (the game of that moment, copied: the
+big maps as they are, the rest as save data) and makes the save data of that, the text and the
+write on a worker thread (`GameState.dict_of`, `SaveFile.text_of`), so a `snapshot` must copy
+every array, dictionary or object of the running game that it hands out instead of sharing it.
 
 ## Settings and key bindings
 

@@ -22,14 +22,6 @@ func _init(item_id: StringName, item_count: int, world_position: Vector2) -> voi
 	position = world_position
 
 
-func to_dict() -> Dictionary:
-	return {
-		"item": str(item),
-		"count": count,
-		"position": SaveCodec.float_vector_to_json(position),
-	}
-
-
 static func from_dict(data: Dictionary) -> GroundItem:
 	var item_id := StringName(data["item"])
 	assert(ItemTypes.TYPES.has(item_id), "Unknown item in save: %s" % item_id)

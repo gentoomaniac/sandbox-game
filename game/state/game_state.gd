@@ -551,6 +551,12 @@ func drop_from_inventory(slot: int) -> bool:
 ## `{"kind": "interior", "building": [x, y]}` for the interior of the building with that
 ## origin. So the current map and the home map stay the very objects they point at.
 func to_dict() -> Dictionary:
+	return GameState.dict_of(snapshot())
+
+
+## A copy of what `to_dict` writes that is quick to take and shares nothing with the game, and
+## that `dict_of` makes save data of: the part of saving that has to stop the game, a moment.
+func snapshot() -> Dictionary:
 	var player_data := player.to_dict()
 	# A game saved on horseback loads with the player standing beside the horse (or, with no room
 	# there, on its spot).
@@ -558,7 +564,7 @@ func to_dict() -> Dictionary:
 	if spot != Vector2.INF:
 		player_data["position"] = SaveCodec.float_vector_to_json(spot)
 	return {
-		"world": world.to_dict(),
+		"world": world.snapshot(),
 		"clock": clock.to_dict(),
 		"player": player_data,
 		"livestock": livestock.to_array(),
@@ -566,6 +572,13 @@ func to_dict() -> Dictionary:
 		"current_map": _map_to_ref(current_map),
 		"home_map": _map_to_ref(player.home_map),
 	}
+
+
+## The save data of a `snapshot`. Safe to call from a thread.
+static func dict_of(snapshot_data: Dictionary) -> Dictionary:
+	var data := snapshot_data.duplicate()
+	data["world"] = World.dict_of(snapshot_data["world"])
+	return data
 
 
 ## The chunks of the restored world are not loaded yet: whoever shows it streams them in.

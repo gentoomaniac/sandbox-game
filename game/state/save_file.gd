@@ -6,7 +6,8 @@ extends RefCounted
 ##
 ## How to add a save field (or change one):
 ## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
-##    with a default: a save without the field is a bug to see, not to hide.
+##    with a default: a save without the field is a bug to see, not to hide. A big map is copied in
+##    `snapshot` instead and made data in `dict_of` (see World), which the worker thread does.
 ## 2. Raise VERSION by one.
 ## 3. Add `_upgrade_from_version_<old VERSION>` here, which gives the field to a save of the old
 ##    version (its default, or computed from what the save has), and call it from `read`.
@@ -42,16 +43,19 @@ static func write(state: GameState, path: String = DEFAULT_PATH) -> bool:
 	return write_text(encode(state), path) == ""
 
 
-## The game of this moment as plain data that shares nothing with the running game, so another
-## thread can make text of it (`text_of`) while the game goes on. Taking it must happen on the
-## main thread.
+## The game of this moment, copied so that it shares nothing with the running game: another thread
+## can make text of it (`text_of`) while the game goes on. Taking it must happen on the main
+## thread, and it takes little of it: the big parts of the game are copied as they are, not made
+## into save data yet (see GameState `snapshot`).
 static func snapshot(state: GameState) -> Dictionary:
-	return {"version": VERSION, "game": state.to_dict()}
+	return {"version": VERSION, "game": state.snapshot()}
 
 
 ## The text of a save file for a snapshot. Safe to call from a thread.
 static func text_of(snapshot_data: Dictionary) -> String:
-	return JSON.stringify(snapshot_data, "\t")
+	var data := snapshot_data.duplicate()
+	data["game"] = GameState.dict_of(snapshot_data["game"])
+	return JSON.stringify(data, "\t")
 
 
 ## The game as the text of a save file, all on this thread.

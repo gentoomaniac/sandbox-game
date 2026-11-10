@@ -124,9 +124,39 @@ func drop(source: Vector2i, drops: Dictionary, world: World) -> Array[GroundItem
 
 
 func to_array() -> Array[Dictionary]:
-	var data: Array[Dictionary] = []
+	return GroundItems.array_of(snapshot())
+
+
+## A copy of the piles, in the order they were laid, for `array_of` (see World `snapshot`): as
+## packed arrays, which take far less time to fill than the save data does.
+func snapshot() -> Dictionary:
+	var items := PackedStringArray()
+	var counts := PackedInt32Array()
+	var positions := PackedVector2Array()
 	for ground_item in _piles:
-		data.append(ground_item.to_dict())
+		items.append(ground_item.item)
+		counts.append(ground_item.count)
+		positions.append(ground_item.position)
+	return {"items": items, "counts": counts, "positions": positions}
+
+
+## The save data of a `snapshot`. Safe to call from a thread.
+static func array_of(snapshot_data: Dictionary) -> Array[Dictionary]:
+	var items: PackedStringArray = snapshot_data["items"]
+	var counts: PackedInt32Array = snapshot_data["counts"]
+	var positions: PackedVector2Array = snapshot_data["positions"]
+	var data: Array[Dictionary] = []
+	for index in items.size():
+		(
+			data
+			. append(
+				{
+					"item": items[index],
+					"count": counts[index],
+					"position": SaveCodec.float_vector_to_json(positions[index]),
+				}
+			)
+		)
 	return data
 
 

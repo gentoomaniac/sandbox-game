@@ -1,7 +1,7 @@
 extends SceneTree
 ## Times what a save costs on a save: the snapshot of the game, the part of a timed or quick save
-## that stops the main thread, and the JSON text of it, which a worker thread makes (the same
-## two together are what quitting, passing out and the pause menu's save take at once).
+## that stops the main thread, and the save data and JSON text made of it, which a worker thread
+## makes (the same two together are what quitting and the pause menu's save take at once).
 ## godot --headless --path . -s tools/bench/save.gd -- <save file>
 
 const RUNS := 5

@@ -563,43 +563,73 @@ func drop_items(source: Vector2i, drops: Dictionary) -> Array[GroundItem]:
 ## The seed and what the player changed. The chunks are not saved: they are generated again
 ## from the seed, with the edits replayed on top (see `add_chunk`).
 func to_dict() -> Dictionary:
+	return World.dict_of(snapshot())
+
+
+## A copy of what `to_dict` writes, quick to take and in the types the world keeps it in, which
+## shares nothing with the world: it is made into save data by `dict_of` (on a thread, while the
+## game goes on), which takes most of the time. The soil is brought up to now first.
+func snapshot() -> Dictionary:
+	soil.catch_up_all()
+	var buildings_data: Array[Dictionary] = []
+	for building in _buildings:
+		buildings_data.append(building.to_dict())
+	# The objects are the one thing that changes after the copy, so each is made data at once.
+	var object_edits := []
+	for object: WorldObject in _object_edits.values():
+		object_edits.append(null if object == null else object.to_dict())
+	return {
+		"seed": world_seed,
+		"ground_items": ground_items.snapshot(),
+		"spent_clay_spots": _spent_clay_spots.duplicate(),
+		"wear": _wear.duplicate(),
+		"terrain_edits": _terrain_edits.duplicate(),
+		"soil_moisture": soil.snapshot(),
+		"object_edit_positions": _object_edits.keys(),
+		"object_edits": object_edits,
+		"buildings": buildings_data,
+	}
+
+
+## The save data of a `snapshot`. Safe to call from a thread.
+static func dict_of(snapshot_data: Dictionary) -> Dictionary:
 	var terrain_edits: Array[Array] = []
-	for pos in _terrain_edits:
+	var terrain_edits_made: Dictionary = snapshot_data["terrain_edits"]
+	for pos: Vector2i in terrain_edits_made:
 		terrain_edits.append(
-			SaveCodec.vector_to_json(pos) + [SaveCodec.terrain_to_json(_terrain_edits[pos])]
+			SaveCodec.vector_to_json(pos) + [SaveCodec.terrain_to_json(terrain_edits_made[pos])]
 		)
 	# A removed object is saved as `{"pos": [x, y], "object": null}`.
 	var object_edits: Array[Dictionary] = []
-	for pos in _object_edits:
-		var object := _object_edits[pos]
+	var object_edit_positions: Array = snapshot_data["object_edit_positions"]
+	var object_edits_made: Array = snapshot_data["object_edits"]
+	for index in object_edit_positions.size():
 		(
 			object_edits
 			. append(
 				{
-					"pos": SaveCodec.vector_to_json(pos),
-					"object": null if object == null else object.to_dict(),
+					"pos": SaveCodec.vector_to_json(object_edit_positions[index]),
+					"object": object_edits_made[index],
 				}
 			)
 		)
-	var buildings_data: Array[Dictionary] = []
-	for building in _buildings:
-		buildings_data.append(building.to_dict())
-	soil.catch_up_all()
 	var clay_spots_data: Array[Array] = []
-	for pos in _spent_clay_spots:
-		clay_spots_data.append(SaveCodec.vector_to_json(pos) + [_spent_clay_spots[pos]])
+	var spent_clay_spots: Dictionary = snapshot_data["spent_clay_spots"]
+	for pos: Vector2i in spent_clay_spots:
+		clay_spots_data.append(SaveCodec.vector_to_json(pos) + [spent_clay_spots[pos]])
 	var wear_data: Array[Array] = []
-	for pos in _wear:
-		wear_data.append(SaveCodec.vector_to_json(pos) + [_wear[pos]])
+	var wear: Dictionary = snapshot_data["wear"]
+	for pos: Vector2i in wear:
+		wear_data.append(SaveCodec.vector_to_json(pos) + [wear[pos]])
 	return {
-		"seed": world_seed,
-		"ground_items": ground_items.to_array(),
+		"seed": snapshot_data["seed"],
+		"ground_items": GroundItems.array_of(snapshot_data["ground_items"]),
 		"spent_clay_spots": clay_spots_data,
 		"wear": wear_data,
 		"terrain_edits": terrain_edits,
-		"soil_moisture": soil.to_array(),
+		"soil_moisture": SoilMoisture.array_of(snapshot_data["soil_moisture"]),
 		"object_edits": object_edits,
-		"buildings": buildings_data,
+		"buildings": snapshot_data["buildings"],
 	}
 
 

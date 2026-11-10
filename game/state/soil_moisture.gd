@@ -24,6 +24,9 @@ var _as_of_hour: Dictionary[Vector2i, int] = {}
 var _steps: Dictionary[Vector3i, Step] = {}
 var _earliest_step_hour: Dictionary[Vector2i, int] = {}
 var _steps_to_hour := -1
+## The hour `catch_up_all` last brought every tile up to: while it is the hour now, no tile is
+## behind (a tile only gets a moisture as of now), and a save need not look at them all.
+var _all_caught_up_hour := -1
 
 
 func _init(game_clock: GameClock) -> void:
@@ -79,15 +82,24 @@ func prepare() -> void:
 ## Brings every tile up to now, so that what is saved is as of the save.
 func catch_up_all() -> void:
 	var now := _now()
+	if _all_caught_up_hour == now:
+		return
 	for pos in _moisture:
 		if _as_of_hour[pos] != now:
 			_catch_up(pos)
+	_all_caught_up_hour = now
 
 
-func to_array() -> Array[Array]:
+## A copy of the moisture of every tile, for `array_of` (see World `snapshot`).
+func snapshot() -> Dictionary:
+	return _moisture.duplicate()
+
+
+## The save entries of a `snapshot`. Safe to call from a thread.
+static func array_of(moisture: Dictionary) -> Array[Array]:
 	var entries: Array[Array] = []
-	for pos in _moisture:
-		entries.append(SaveCodec.vector_to_json(pos) + [_moisture[pos]])
+	for pos: Vector2i in moisture:
+		entries.append(SaveCodec.vector_to_json(pos) + [moisture[pos]])
 	return entries
 
 

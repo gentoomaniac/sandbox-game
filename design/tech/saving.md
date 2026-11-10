@@ -23,9 +23,13 @@
   would otherwise run again over the loaded game. No save file: a note says "No save to load".
   They work with a window open, not in the pause menu or a chat (the game is paused there) nor
   during a fade.
-- **Saving does not freeze the game** (task 145). A save takes the game's JSON text at once, on
-  the main thread (`SaveFile.encode`), and writes it on a worker thread to the temporary file that
-  is renamed over the save (`SaveService`). Only one save runs at a time; a second request
+- **Saving does not freeze the game** (tasks 145, 147, 158). A save takes a snapshot of the game
+  at once on the main thread (`SaveFile.snapshot`: the big maps, such as the tilled soil, the
+  soil moisture and the piles, are copied as they are, which takes about a fifth of what making
+  save data of them does; about 10 ms on the bench save with 30,000 tilled tiles, 10,000 piles
+  and 155 villagers, before 55), and a worker thread makes the save data and the JSON text of it
+  (`SaveFile.text_of`) and writes it to the temporary file that is renamed over the save
+  (`SaveService`). Only one save runs at a time; a second request
   while one runs is skipped (the next timed or quick save follows). The notifications say
   "Saving..." while it runs, then "Saved", or a red line if it failed (a failed save leaves the
   previous one as it was). Sleeping in a bed and passing out save in the background too
