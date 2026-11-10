@@ -9,9 +9,9 @@ docs/art-style.md, "Props and animals").
 
 The animals are drawn in the style of the people (character.py): rounded forms (forms.py)
 shaded by the light from the top left, faces with an eye and its glint, and the outline in the
-darkest colour of the coat. The four-legged ones (cattle, sheep, dogs, cats, horses) share one
-way of putting a frame together (`quadruped_frame`); the hen and the rabbit are drawn whole for
-each pose.
+darkest colour of the coat. The sheep, dogs, cats and horses share one way of putting a frame
+together (`quadruped_frame`); the cow is drawn by hand as maps of letters, laid over each other
+for a pose (`cow_frame`); the hen and the rabbit are drawn whole for each pose.
 """
 
 import math
@@ -241,7 +241,7 @@ def quadruped_frame(
 def quadruped_sheet(animal, look, saddle=None):
     """The rows of cells of a four-legged animal's sheet (ACTIONS): it flicks its tail standing,
     chews with its head down, breathes lying down and gallops, or hurries at a walk if it has no
-    gallop (cattle and sheep)."""
+    gallop (sheep)."""
 
     def frame(**pose):
         return quadruped_frame(animal, look, saddle=saddle, **pose)
@@ -277,199 +277,370 @@ def scaled(animal, factor, size=None):
 
 # --- Cattle -------------------------------------------------------------------------------
 #
-# A small cow of the period, 66 px long and 40 px to the top of the back (a person is 61 px
-# tall): a long straight back with the hip and pin bones showing, a deep belly, an udder, short
-# legs with cloven hooves and a tail with a tuft. The head is drawn by hand, a pixel at a time,
-# since a head put together from shapes reads badly: looking ahead, and another to look down at the
-# grass. The cow is drawn in a 64x48 cell and set in its own cell 15 % larger (`scaled`).
+# A cow of the period after the user's reference picture of a Holstein (task 159), 64 px from the
+# rump to the muzzle and 35 px to the withers (a person is 61 px tall): a deep body with a level
+# back, a deep neck sloping from the withers to a big head that hangs a little below the back
+# line, the udder far back under the belly between the hind legs, forelegs from the chest with a
+# wide forearm, a knee and a slim cannon, and hind legs from a big thigh with a slight hock.
+#
+# It is drawn by hand, a pixel at a time, as maps of letters, since a cow put together from
+# shapes read as a box with a head stuck on: the body, the neck and the head looking ahead or
+# down to the grass, each leg, the tail and the udder, every one at its place in the cell. A frame
+# lays them over each other and shades them by their letters: the body, the neck, the head and
+# the near legs as one form lit from the top left (so that the belly's shadow stops between the
+# legs), the patches of a pied coat with it, the far legs a step darker.
+#
+# The letters: b the coat, k a patch (the coat in a whole-coloured look), s a shadow in the coat,
+# f a far leg, h and H a near and a far hoof, u the udder and t a teat, T the tail and K its
+# tuft; on the head e the eye and g its glint, p the pink inside an ear, c a horn and C its tip,
+# m the muzzle, M its shade and o the nostril.
 
 COW_SIZE = (72, 54)
-# The head facing right: d, b coat dark and base; F, f, W the face's shade, base and light (the
-# white of a pied face); m, M muzzle and its shade; n nostril; e eye; g its glint.
-COW_HEAD = (
-    "...ddbF........",
-    "..dbbbFf.......",
-    ".dbbbbFWf......",
-    "dbbeebFWWf.....",
-    "dbbegbFffWf....",
-    "FdbbbFffffWf...",
-    "FFdbFffffffWf..",
-    ".FFffffffffWf..",
-    "..FFfffffffWWf.",
-    "...FFfffffffWf.",
-    "....FFfffffmmm.",
-    ".....FFffmmmmmm",
-    "......FFMmmmnmm",
-    ".......FMmmmmmM",
-    "........MMMMM..",
-)
-# The head facing down to the grass, forehead to the front (right), jaw to the back; the same
-# legend. It is drawn, not the one above turned: transposing the ahead head mirrors it, which
-# puts the forehead on the jaw side and the eye on the underside.
-COW_HEAD_DOWN = (
-    "....ddbbF......",
-    "...dbbbbbFW....",
-    "...dbbbbbbFWf..",
-    "...dbbbbebFWWf.",
-    "...dbbbbegFWWf.",
-    "...FdbbbbbFWWf.",
-    "....FfffffFWWf.",
-    "....FfffffffWf.",
-    ".....FfffffffWf",
-    ".....FFffffffWf",
-    "......FfffffWWf",
-    "......FmmmmmmmM",
-    ".....FMmmmmmmmM",
-    ".....FMmmmnmmmM",
-    "......MMMMMMMM.",
-)
-# The parts around each head, from its top left corner: the ear out to the side behind the eye
-# with its pink inside, and the horn curving up and forward.
-COW_HEAD_PARTS = {
-    "ahead": {
-        "ear": [(3, 2), (-3, 1), (-2, 4), (3, 5)],
-        "ear_inside": [(-1, 2), (0, 2), (1, 3)],
-        "horn": [(4, 1), (3, -2), (5, -4)],
-    },
-    "down": {
-        "ear": [(3, 1), (-2, 2), (-2, 5), (3, 5)],
-        "ear_inside": [(0, 2), (0, 3), (1, 4)],
-        "horn": [(7, 0), (9, -2), (12, -2)],
-    },
+# The body without the legs below the belly and without the neck: the near forearm and thigh
+# are in it, and so are the shadows of the flank before the thigh and behind the elbow.
+COW_TORSO = ((4, 16), (
+    ".........bbbbb....................bbbbbbb",
+    "..kkkkkkkbbbbbbbbkkkkkkkkkkkkkkkbbbbbbbkkkkkk",
+    ".kkkkkkkkkbbbbbbkkkkkkkkkkkkkkkkkbbbbbkkkkkkk",
+    "kkkkkkkkkkbbbbbkkkkkkkkkkkkkkkkkkkbbbbkkkkkkk",
+    "kkkkkkkkkkbbbbbkkkkkkkkkkkkkkkkkkkbbbbkkkkkkk",
+    "kkkkkkkkkbbbbbbkkkkkkkkkkkkkkkkkkkkbbbbkkkkkk",
+    "kkkkkkkkbbbbbbbbkkkkkkkkkkkkkkkkkkkbbbbkkkkkk",
+    "bkkkkkkkbbbbbbbbkkkkkkkkkkkkkkkkkkbbbbbbkkkkk",
+    "bbkkkkkbbbbbbbbbbkkkkkkkkkkkkkkkkkbbbbbbkkkkk",
+    "bbbkkkbbbbbbbbbbbkkkkkkkkkkkkkkkkkbbbbbbbkkkk",
+    "bbbbbbbbbbbbbbbbbbkkkkkkkkkkkkkkkbbbbbbbbkkkk",
+    "bbbbbbbbbbbbbbbbbbkkkkkkkkkkkkkkkbbbbbbbbbkkb",
+    "bbbbbbbbbbbbbbbbbbbkkkkkkkkkkkkkbbbbbbbbbbbbb",
+    "bbbbbbbbbbbbbbbbbbbkkkkkkkkkkkkkbbbbbbbbbbbbb",
+    "bbbbbbbbbbbbbbbbbbbbkkkkkkkkkkkkbbbbbbbbbbbbb",
+    "bbbbbbbbbbbbbbbbbbbbkkkkkkkkkkkbbbbbbbbbbbbbb",
+    ".bbbbbbbbbbbbbbbbbbbbkkkkkkkkkkbbbbbbbbbbbbbb",
+    ".bbbbbbbbbbbbbssbbbbbbkkkkkkkkbbbbbbbbbbbbbbb",
+    ".bbbbbbbbbbbbssssbbbbbbkkkkkkbbbbbbbbbbbbbbbb",
+    ".bbbbbbbbbbbbsssssbbbbbbbkkkbbbbbbbbbbbbbbbbb",
+    "..bbbbbbbbbbbssssssbbbbbbbbbbbbbbbbssbbbbbbbb",
+    "..bbbbbbbbbbb......bbbbbbbbbbbbbbbbsssbbbbbbb",
+    "..bbbbbbbbbbb......bbbbbbbbbbbbbbbbbssbbbbbbb",
+    "...bbbbbbbbb........bbbbbbbbbbbbbbbb..bbbbbbb",
+    "...bbbbbbbb...........................bbbbbb",
+))
+# The neck from the shoulder to the head: deep at the shoulder, its top sloping gently from the
+# withers, the throat running into the chest with a soft dewlap; grazing, it reaches down in
+# front of the forelegs.
+COW_NECKS = {
+    "ahead": ((49, 18), (
+        "k",
+        "kbbb",
+        "kbbbbbb",
+        "kbbbbbb",
+        "kbbbbbbb",
+        "kkbbbbbb",
+        "kbbbbbbb",
+        "kbbbbbbb",
+        "bbbbbbbb",
+        "bbbbbbbb",
+        "bbbbbbbb",
+        "bbbbbbbb",
+        "bbbbbbbb",
+        "bbbbbbbb",
+        "bbbbbbb",
+        "bbbbbb",
+        "bbbbb",
+        "bbbb",
+        "bbb",
+        "bbb",
+        "bb",
+    )),
+    "down": ((49, 18), (
+        "k",
+        "kb",
+        "kkb",
+        "kkb",
+        "kkkb",
+        "kkkb",
+        "kkbbb",
+        "kbbbb",
+        "bbbbbb",
+        "bbbbbb",
+        "bbbbbbb",
+        "bbbbbbb",
+        "bbbbbbbb",
+        "bbbbbbbb",
+        "bbbbbbbb",
+        "bbbbbbbbb",
+        "bbbbbbbbb",
+        "bbbbbbbbbb",
+        "bbbbbbbbbb",
+        "bbbbbbbb",
+        "bbbbbbb",
+        ".bbbbbb",
+        "...bbbb",
+        "....bbb",
+        ".....bb",
+    )),
 }
-COW_SMALL = {
-    "size": (64, 48),
-    "torso": [
-        [(10, 12), (14, 10), (40, 11), (47, 12), (51, 18), (50, 30), (44, 34), (20, 35), (12, 31), (9, 22)],
-        ((30, 27), [17, 9]),
-        ((14, 15), [6, 5]),
-    ],
-    # The neck, and where the head's top left corner is; grazing, the head hangs to the grass.
-    "heads": {
-        "ahead": {"shape": [[(44, 12), (51, 12), (55, 18), (55, 27), (50, 33), (45, 24)]], "at": (48, 13)},
-        "down": {"shape": [[(44, 12), (50, 13), (55, 20), (57, 29), (53, 34), (47, 26)]], "at": (48, 31), "down": True},
-    },
-    "legs": {
-        "near_front": {"joints": [(47, 30), (48, 38), (48, 44)], "radii": [3.4, 2.1, 2.1], "bend": 1, "front": True},
-        "far_front": {"joints": [(44, 30), (45, 38), (45, 44)], "radii": [3.0, 1.9, 1.9], "bend": 1, "front": True},
-        "near_hind": {"joints": [(21, 28), (23, 33), (18, 39), (19, 44)], "radii": [4.6, 3.4, 2.1, 2.1], "bend": 2, "front": False},
-        "far_hind": {"joints": [(17, 30), (15, 38), (16, 44)], "radii": [3.6, 1.9, 1.9], "bend": 1, "front": False},
-    },
-    "hoof": [2.7, 1.8],
-    # The tail, a thin rope from the tail head down the back of the thigh, and its tuft.
-    "tails": {
-        "hanging": ([(9, 13), (7, 22), (7, 33)], (7, 35)),
-        "swishing": ([(9, 13), (5, 21), (2, 30)], (2, 32)),
-        "lying": ([(9, 13), (5, 19), (1, 24)], (1, 26)),
-    },
-    # The patches of a pied coat, by look.
-    "spots": {
-        "black_pied": [((22, 18), [9, 7]), ((38, 15), [7, 5.5]), ((13, 25), [4.5, 6]), ((47, 21), [3.5, 6]), ((31, 24), [4, 3])],
-        "red_pied": [((16, 16), [7, 6]), ((34, 14), [8, 4.5]), ((49, 17), [5, 7]), ((26, 23), [4, 3])],
-    },
-    "udder": ((18, 35), [4.5, 3.4]),
-    "teats": [(16, 38), (19, 38)],
-    "bones": [(15, 11), (16, 11), (17, 12), (11, 13)],
-    "folded": [
-        ([(47, 30), (51, 35), (43, 36)], [2.8, 2.0, 1.8]),
-        ([(21, 29), (27, 34), (34, 36)], [3.0, 2.2, 1.8]),
-    ],
-    "shade_radius": 5,
-    "lying_drop": 10,
-    "gallops": False,
+# The head, a quarter of the cow's length, looking ahead and down to the grass: black round the
+# eye and white down the face, the pink muzzle, short horns, and the ears out to the sides, the
+# near one behind the head and the far one in front of the face.
+COW_HEADS = {
+    "ahead": ((51, 16), (
+        "......C.....C",
+        ".......c...c",
+        ".......kkkkb",
+        ".bbbbkkkkkkkb.kkk",
+        "bppbbkkkkkkkbbkppk",
+        ".bbbkkkkkkkkbbkkk",
+        "....kkkkkkkkbb",
+        "....kkkkkgekbb",
+        "....kkkkkeekbbb",
+        ".....kkkkkkkbbb",
+        ".....kkkkkkkbbb",
+        "......kkkkkkbbbb",
+        "......bkkkkkbbbm",
+        ".......bkkkbbbmmm",
+        ".......bbbbbbmmmo",
+        "........bbbbbmmmm",
+        "........bbbbmmmmm",
+        ".........bbMMMMb",
+    )),
+    "down": ((50, 34), (
+        ".......C....C",
+        "........c..c",
+        ".......kkkkk",
+        ".....kkkkkkkb",
+        ".kkkkkkkkkkkbbkkk",
+        "kppkkkkkkkkkbbkppk",
+        ".kkkkkkkkgebbbkkk",
+        "....kkkkkeebbb",
+        ".....kkkkkkbbb",
+        ".....kkkkkbbbb",
+        ".....bkkkkbbbb",
+        "......bkkbbbbb",
+        "......bbbbbbbb",
+        "......bbbbbmmm",
+        "......bbbmmmmm",
+        ".......bmmmmmo",
+        ".......bmmmmm",
+        "........MMMM",
+    )),
 }
+# The legs below the body, standing: the near ones with their knee and hock, the far ones behind
+# them, the far hind leg showing under the udder in front of the near one.
+COW_LEGS = {
+    "near_front": ((42, 41), (
+        "bbbbbb",
+        ".bbbbb",
+        ".bbbbb",
+        ".bbbbb",
+        ".bbbbb",
+        "..bbb",
+        "..bbb",
+        "..bbb",
+        "..bbb",
+        "..bbb",
+        ".hhhhh",
+        ".hhhhh",
+    )),
+    "near_hind": ((7, 41), (
+        ".bbbbbb",
+        ".bbbbb",
+        "bbbbbb",
+        ".bbbbb",
+        "...bbb",
+        "...bbb",
+        "...bbb",
+        "...bbb",
+        "...bbb",
+        "...bbb",
+        "..hhhhh",
+        "..hhhhh",
+    )),
+    "far_front": ((38, 39), (
+        "ffff",
+        "ffff",
+        "ffff",
+        "ffff",
+        ".ffff",
+        ".ffff",
+        ".ffff",
+        "..fff",
+        "..fff",
+        "..fff",
+        "..fff",
+        ".HHHH",
+        ".HHHH",
+    )),
+    "far_hind": ((14, 40), (
+        "fff",
+        "fff",
+        "fff",
+        "fff",
+        "ffff",
+        "fff",
+        "fff",
+        "fff",
+        "fff",
+        "fff",
+        "HHHH",
+        "HHHH",
+    )),
+}
+# Lying, the near legs folded under the body: the foreleg with its knee forward under the chest,
+# the hind leg's cannon along the ground under the belly.
+COW_FOLDED_LEGS = [
+    ((42, 50), (
+        ".....bbbbbb",
+        "hhhhbbbbbbbb",
+        "hhhhbbbbbbb",
+    )),
+    ((7, 50), (
+        ".bbbbbbbbb..hhh",
+        "bbbbbbbbbbbbhhh",
+        ".bbbbbbbbbbbhhh",
+    )),
+]
+COW_UDDER = ((15, 37), (
+    ".uuuuuuu",
+    "uuuuuuuu",
+    "uuuuuuuu",
+    "uuuuuuu",
+    ".uuuuu",
+    "..t..t",
+))
+# The tail behind the rump with its tuft: hanging, flicked up, and lying on the ground.
+COW_TAILS = {
+    "hanging": ((1, 18), ("..TT",) + (".T",) * 18 + (".KK", "KKK", "KKK", "KKK", ".K")),
+    "swishing": ((1, 18), ("..TT",) + (".T",) * 6 + ("T",) * 9 + ("KK", "KKK", "KKK", "KKK", ".K")),
+    "lying": ((1, 30), ("..TT",) + (".T",) * 17 + (".KK", "KKKK", "KKKKK", ".KKKK")),
+}
+# How far a leg's hoof is set forward of its top for a step of a walk (WALK_STEPS).
+COW_STRIDES = {"stand": 0, "forward": 2, "back": -2}
+# Lying, the body is this much lower, the belly on the ground.
+COW_LYING_DROP = 12
+# The letters of the one form lit from the top left.
+COW_BODY = "bkseglpcmMo"
 
 COW_LOOKS = {
-    # Angler: the dark red cattle of Angeln on the Baltic side, red in the face too.
+    # Angler: the dark red cattle of Angeln on the Baltic side, red all over.
     "angler": {
         "coat": ("russet_deep", "rust_dark", "rust_dark", "rust"),
-        "face": {"F": "russet_deep", "f": "rust_dark", "W": "rust"},
         "muzzle": ("skin_shade", "russet_deep"),
         "outline": "russet_deep",
+        "lid": "russet_deep",
     },
     # Black and white marsh cattle of the North Sea coast, a white face with black round the eye.
     "black_pied": {
         "coat": ("stone_light", "lime", "lime", "snow_light"),
         "patches": ("bog_dark", "stone_dark", "stone"),
-        "head_coat": ("bog_dark", "stone_dark"),
         "outline": "ink",
+        "lid": "stone",
     },
     # Red pied: mostly white with red patches, the cattle of the marsh farms.
     "red_pied": {
         "coat": ("stone_light", "lime", "lime", "snow_light"),
         "patches": ("rust_dark", "rust", "red_light"),
-        "head_coat": ("rust_dark", "rust"),
         "outline": "russet_deep",
+        "lid": "russet_deep",
     },
 }
-COW_WHITE_FACE = {"F": "stone_light", "f": "lime", "W": "snow_light"}
-COW_SHARED = {"hoof": ("ink", "bog_dark", "stone_dark"), "muzzle": ("petal", "skin_shade"), "face": COW_WHITE_FACE}
+COW_SHARED = {"hoof": ("ink", "bog_dark", "stone_dark"), "muzzle": ("petal", "skin_shade")}
 
 
-def cow_look(look):
-    style = COW_SHARED | COW_LOOKS[look] | {"name": look}
-    coat = style["coat"]
-    head_coat = style.get("head_coat", coat[:2])
-    style |= {"legs": coat, "far_legs": (coat[0], coat[0], coat[1], coat[2]), "head_coat": head_coat}
-    return style
+def cow_letters(steps, head, tail, lying, head_drop):
+    """The letters of a frame: the pieces laid over each other from the far legs to the near
+    ones, a lying cow `COW_LYING_DROP` lower with its legs folded and its eyes shut."""
+    width, height = COW_SIZE
+    letters = np.full((height, width), ".")
+
+    def place(piece, dy=0, stride=0):
+        """Lays a piece `dy` lower, a leg's rows leaning so its hoof is `stride` forward."""
+        (left, top), rows = piece
+        for row_index, row in enumerate(rows):
+            dx = round(stride * row_index / (len(rows) - 1))
+            for column, key in enumerate(row):
+                x, y = left + dx + column, top + dy + row_index
+                if key != "." and 0 <= x < width and 0 <= y < height:
+                    letters[y, x] = key
+
+    (near_hind, near_front), (far_hind, far_front) = steps
+    dy = COW_LYING_DROP if lying else 0
+    if not lying:
+        place(COW_LEGS["far_front"], stride=COW_STRIDES[far_front])
+        place(COW_LEGS["far_hind"], stride=COW_STRIDES[far_hind])
+    place(COW_TAILS[tail])
+    if not lying:
+        place(COW_UDDER)
+    place(COW_TORSO, dy)
+    place(COW_NECKS[head], dy)
+    place(COW_HEADS[head], dy + head_drop)
+    if lying:
+        for leg in COW_FOLDED_LEGS:
+            place(leg)
+        # The eye shut: its lid a line where the bottom of the eye was.
+        letters[letters == "g"] = "k"
+        eye = letters == "e"
+        letters[eye & (np.arange(height)[:, None] == np.nonzero(eye)[0].min())] = "k"
+        letters[letters == "e"] = "l"
+    else:
+        place(COW_LEGS["near_front"], stride=COW_STRIDES[near_front])
+        place(COW_LEGS["near_hind"], stride=COW_STRIDES[near_hind])
+    return letters
 
 
-def draw_cow_tail(picture, look, animal, tail, dy):
-    width, height = animal["size"]
-    rope, tuft = moved(animal["tails"][tail], 0, dy)
-    dark = look.get("patches", look["coat"])[0]
-    forms.paint(picture, forms.limb(width, height, rope, [1.2, 0.9, 0.9]), look["head_coat"][1])
-    forms.paint(picture, forms.ellipse(width, height, tuft[0], tuft[1], 1.8, 3), dark)
+def cow_frame(look, steps=WALK_STEPS[1], head="ahead", tail="hanging", lying=False, head_drop=0):
+    """One frame of a cow facing right (see COW_TORSO and the pieces after it)."""
+    letters = cow_letters(steps, head, tail, lying, head_drop)
+    picture = blank(*COW_SIZE)
 
+    def mask(keys):
+        return np.isin(letters, list(keys))
 
-def draw_cow_coat(picture, look, animal, body, level, dy):
-    """The patches of a pied coat, shaded with the body, the hip bones, and the udder of a cow on
-    its feet."""
-    width, height = animal["size"]
-    if "patches" in look:
-        top = np.arange(height)[:, None] < animal["udder"][0][1] - 6 + dy
-        patches = shapes_mask(animal["size"], moved(animal["spots"][look["name"]], 0, dy)) & body & top
-        forms.shade_by_level(picture, patches, look["patches"], level)
-    forms.dots(picture, rounded(moved(animal["bones"], 0, dy)), look["coat"][0])
-    if dy <= 0:
-        (x, y), (rx, ry) = moved(animal["udder"], 0, dy)
-        forms.shade(picture, forms.ellipse(width, height, x, y, rx, ry), ("skin_shade", "petal", "petal"), 2)
-        forms.dots(picture, rounded(moved(animal["teats"], 0, dy)), "skin_shade")
-
-
-def draw_cow_head(picture, look, animal, head, asleep):
-    """The hand-drawn head at its place, the ear and the horn."""
-    left, top = rounded([head["at"]])[0]
-    pose = "down" if head.get("down") else "ahead"
-    keys = {"d": look["head_coat"][0], "b": look["head_coat"][1], "e": "ink", "g": "stone_light", "n": "rust_dark"}
-    keys |= look["face"] | {"m": look["muzzle"][0], "M": look["muzzle"][1]}
-    if asleep:
-        keys |= {"e": look["head_coat"][0], "g": look["head_coat"][0]}
-    parts = COW_HEAD_PARTS[pose]
-
-    def place(points):
-        return [(left + x, top + y) for x, y in points]
-
-    width, height = animal["size"]
-    forms.shade(picture, forms.polygon(width, height, place(parts["ear"])), (look["head_coat"][0], look["head_coat"][1]), 1)
-    forms.dots(picture, place(parts["ear_inside"]), "petal")
-    for y, row in enumerate(COW_HEAD_DOWN if pose == "down" else COW_HEAD):
-        for x, key in enumerate(row):
-            if key != ".":
-                forms.dots(picture, [(left + x, top + y)], keys[key])
-    forms.paint(picture, forms.limb(width, height, place(parts["horn"]), [1.2, 1.0, 0.7]), "cream")
-    forms.dots(picture, place(parts["horn"][-1:]), "stone")
-
-
-COW = scaled(
-    COW_SMALL | {"draw_tail": draw_cow_tail, "draw_coat": draw_cow_coat, "draw_head": draw_cow_head},
-    1.15,
-    COW_SIZE,
-)
+    coat = look["coat"]
+    patches = look.get("patches")
+    body = mask(COW_BODY)
+    level = forms.light_level(body, 4, TOP_LIGHT)
+    forms.shade_by_level(picture, mask("b" if patches else "bk"), coat, level)
+    if patches:
+        # Mostly the darkest shade, lit only along the very top.
+        forms.shade_by_level(picture, mask("k"), (patches[0], patches[0], patches[0], patches[1]), level - 0.12)
+    forms.paint(picture, mask("s"), coat[0])
+    forms.shade(picture, mask("f"), (coat[0], coat[0], coat[1], coat[2]), 2)
+    forms.shade(picture, mask("h"), look["hoof"], 1)
+    forms.shade(picture, mask("H"), look["hoof"], 1)
+    forms.shade(picture, mask("u"), ("skin_shade", "petal", "petal"), 2)
+    forms.paint(picture, mask("T"), coat[1])
+    forms.paint(picture, mask("K"), (patches or coat)[0])
+    colours = {
+        "t": "skin_shade",
+        "e": "ink",
+        "g": "snow_light",
+        "l": look["lid"],
+        "p": "petal",
+        "c": "cream",
+        "C": "stone",
+        "m": look["muzzle"][0],
+        "M": look["muzzle"][1],
+        "o": "rust_dark",
+    }
+    for key, colour in colours.items():
+        forms.paint(picture, mask(key), colour)
+    return outline(picture, look["outline"])
 
 
 def cow_sheet(look):
-    return quadruped_sheet(COW, cow_look(look))
+    """The rows of a cow's sheet (ACTIONS): it flicks its tail standing, chews with its head down,
+    breathes lying down and hurries at a walk (it has no gallop)."""
+    style = COW_SHARED | COW_LOOKS[look]
+    walk = [cow_frame(style, steps=steps) for steps in WALK_STEPS]
+    frames = {
+        "idle": [cow_frame(style), cow_frame(style, tail="swishing")],
+        "walk": walk,
+        "graze": [cow_frame(style, head="down"), cow_frame(style, head="down", head_drop=-1)],
+        "sleep": [cow_frame(style, lying=True, tail="lying"), cow_frame(style, lying=True, tail="lying", head_drop=1)],
+        "run": walk,
+    }
+    return [frames[action] for action in ACTIONS]
 
 
 # --- Sheep --------------------------------------------------------------------------------

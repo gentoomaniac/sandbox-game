@@ -120,7 +120,7 @@ by topic. Where is a thing drawn?
 | `animals.py` | One sheet per small wild animal (sparrow, rabbit, squirrel, roe deer, bee, butterflies, mouse, frog), drawn at 32 px per tile. |
 | `bird_forms.py` | Birds put together from rounded forms (body, tail, neck, head, bill, folded or open wings, legs), standing or flying, for the bird sheets of animals.py, birds.py and sea_birds.py. |
 | `birds.py` | The sheets of the big birds of the marsh: the white stork and the greylag goose, drawn at 32 px per tile. |
-| `livestock.py` | One sheet per farm animal and look (cows, sheep, hens, tame rabbits, dogs, cats, horses), drawn at 32 px per tile with forms.py: the four-legged ones share `quadruped_frame` (body and head as shaded polygons, legs through their joints set for each step, the face and marks by hand), the hen and the rabbit are drawn whole per pose. A horse also has a saddled sheet and the ridden horse's sheets (side, front and back, walking and trotting). |
+| `livestock.py` | One sheet per farm animal and look (cows, sheep, hens, tame rabbits, dogs, cats, horses), drawn at 32 px per tile with forms.py: the sheep, dogs, cats and horses share `quadruped_frame` (body and head as shaded polygons, legs through their joints set for each step, the face and marks by hand), the cow is drawn by hand as maps of letters laid over each other for a pose (`cow_frame`), the hen and the rabbit are drawn whole per pose. A horse also has a saddled sheet and the ridden horse's sheets (side, front and back, walking and trotting). |
 | `ui.py` | The pixel font, the panel frame and the button frames. |
 
 `generate.py` imports all the others and none of them imports it; most import `canvas.py`, and

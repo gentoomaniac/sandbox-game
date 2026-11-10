@@ -728,20 +728,29 @@ copper watering can. Kept here as the record of why.
    the legs, with a clear knee and hock and slim cannons below), the far legs a step darker, an
    eye with a glint, nostrils, ears, manes and tails in strands; each look's marks (pied patches
    shaded with the body, dapple rings, the dun's dark stripe, a bay's black points and white
-   blaze, tabby stripes, wool curls, the collie's white collar) on top. The cow's head is drawn
-   by hand, one for looking ahead and one for grazing (turning the first one over mirrors it).
-   The grazing horse's neck drops nearly straight down in front of the chest and the head is
-   short and wedge-shaped, about as long as the neck is deep, with a cheek and a narrowing
-   muzzle that reaches the grass just in front of the forelegs and never further forward than
-   the standing head (neck and head about 43 px from the shoulder, not one long snout). Sizes
-   against the 61 px people: the horse 88 px long and 57 px to the withers (88×76 cell), the
-   pony four fifths of it, the cow 40 px to its back (72×54), the sheep 22 px (44×32), the dog
-   48×36; the hen (24×24), the cat (32×24) and the rabbit (24×20) a little larger than life. The
-   outline is the darkest colour of the coat (ink for the black and dark ones) and goes round
-   the legs too; every animal stands on a contact shadow. The saddle sits on a blue wool cloth
-   (`water_deep`, `water`), so that the rider's brown breeches don't merge with a bay. From the
-   front and behind the ridden horse is 28 px wide. Readable on summer grass, snow, at dusk and
-   at night (checked in screenshots). No new colours.
+   blaze, tabby stripes, wool curls, the collie's white collar) on top. Task 159 drew the cow
+   anew by hand after the user's reference picture of a Holstein, a pixel at a time as maps of
+   letters (`COW_TORSO` and the pieces after it), since a cow put together from shapes read as a
+   box with a head stuck on: a deep body with a level back, a deep neck sloping gently from the
+   withers to a big head (a quarter of the cow's length, horns, the ears out to the sides, white
+   down the face) that hangs a little below the back line in front of the chest, the throat
+   running into the chest with a soft dewlap; the udder far back under the belly, the near thigh
+   in front of it and the far hind leg behind it; forelegs from the chest with a wide forearm, a
+   knee halfway down and a slim cannon, hind legs from a big thigh with a slight hock. Grazing,
+   the same head hangs on the neck reaching down in front of the forelegs; lying, the legs fold
+   under the body. The body, the neck, the head and the near legs are shaded as one form, the
+   patches with it. The grazing horse's neck drops nearly straight down in front of the chest
+   and the head is short and wedge-shaped, about as long as the neck is deep, with a cheek and a
+   narrowing muzzle that reaches the grass just in front of the forelegs and never further
+   forward than the standing head (neck and head about 43 px from the shoulder, not one long
+   snout). Sizes against the 61 px people: the horse 88 px long and 57 px to the withers (88×76
+   cell), the pony four fifths of it, the cow 64 px long and 35 px to the withers (72×54), the
+   sheep 22 px (44×32), the dog 48×36; the hen (24×24), the cat (32×24) and the rabbit (24×20) a
+   little larger than life. The outline is the darkest colour of the coat (ink for the black and
+   dark ones) and goes round the legs too; every animal stands on a contact shadow. The saddle
+   sits on a blue wool cloth (`water_deep`, `water`), so that the rider's brown breeches don't
+   merge with a bay. From the front and behind the ridden horse is 28 px wide. Readable on
+   summer grass, snow, at dusk and at night (checked in screenshots). No new colours.
 9. ~~**Coast and flats**~~ done (task 61). The world had no sea. Now the Wadden coast lies
    in the west: a sea dyke, then the salt marsh (grey-green turf with silvery sea purslane and
    glasswort, drawn in logical colours that each look maps: red-purple in autumn, with thrift
