@@ -9,6 +9,7 @@ const DEFAULT_PATH := "res://data/energy.cfg"
 
 const REQUIRED_KEYS := {
 	"cost": ["till", "hit", "water", "plant", "pick", "mow", "dig"],
+	"can": ["capacity"],
 	"weight": ["free_kg", "step_kg", "extra_per_step"],
 	"walk": ["slow_energy", "slow_speed", "very_slow_energy", "very_slow_speed"],
 	"debuff": ["walk_speed", "energy_max", "health"],
@@ -58,6 +59,11 @@ func is_valid() -> bool:
 ## before the weight and drain factors.
 func cost_of(use_kind: StringName) -> float:
 	return _value("cost", use_kind)
+
+
+## How much water the watering can holds.
+func can_capacity() -> int:
+	return int(_value("can", "capacity"))
 
 
 ## How much more a use costs while carrying this many kilograms: 1 up to the free weight,

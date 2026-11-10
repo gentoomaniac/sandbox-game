@@ -33,6 +33,12 @@ const STARTING_BACKPACK := [
 
 ## The hotbar slot the player holds.
 var selected_slot := 0
+## The water in the watering can (see PlayerState `can_water`), kept here so that the hotbar shows
+## it on the can when it changes.
+var can_water := EnergyRules.default_rules().can_capacity():
+	set(value):
+		can_water = value
+		changed.emit()
 
 
 func _init() -> void:

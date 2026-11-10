@@ -286,6 +286,8 @@ func _check_player(player: Dictionary) -> void:
 	_field(player, "energy", Kind.NUMBER, "player")
 	_field(player, "health", Kind.NUMBER, "player")
 	_field(player, "is_debuffed", Kind.BOOL, "player")
+	var can_water: Variant = _field(player, "can_water", Kind.WHOLE, "player")
+	_check_between(can_water, 0, EnergyRules.default_rules().can_capacity(), "player", "can_water")
 	var appearance: Variant = _field(player, "appearance", Kind.DICT, "player")
 	if appearance != null:
 		_check_appearance(appearance, "player appearance")
@@ -366,6 +368,8 @@ func _check_livestock(animals: Array) -> void:
 		_field(animal, "position", Kind.POINT, path)
 		_field(animal, "follow_until_minute", Kind.WHOLE, path)
 		_field(animal, "is_saddled", Kind.BOOL, path)
+		_field(animal, "hunger", Kind.NUMBER, path)
+		_field(animal, "thirst", Kind.NUMBER, path)
 		if tint != null and not Color.html_is_valid(tint):
 			_report(path, "tint %s is not a colour" % tint)
 		if species == null or look == null:
@@ -442,6 +446,12 @@ func _check_map_reference(game: Dictionary, key: String) -> void:
 
 
 # --- What the checks share ---
+
+
+## Reports a number that is there (`value` is not null) and outside `low` to `high`.
+func _check_between(value: Variant, low: Variant, high: Variant, path: String, key: String) -> void:
+	if value != null and (value < low or value > high):
+		_report(path, "%s %s is not between %s and %s" % [key, value, low, high])
 
 
 ## The value of `owner[key]` if it is there and of `kind`; else null, with a problem reported

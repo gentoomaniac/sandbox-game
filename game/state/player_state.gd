@@ -37,6 +37,13 @@ var health := MAX_HEALTH
 var is_debuffed := false
 ## What they are good at (see Skills).
 var skills := Skills.new()
+## The water in the watering can, from 0 to EnergyRules `can_capacity` (see the well); the
+## inventory keeps it, for the hotbar to show.
+var can_water: int:
+	get:
+		return inventory.can_water
+	set(value):
+		inventory.can_water = value
 
 ## What they carry; the selected hotbar slot is what they hold. Replace it only through the
 ## setter, so the held layer of the appearance follows.
@@ -192,6 +199,7 @@ func to_dict() -> Dictionary:
 		"health": health,
 		"is_debuffed": is_debuffed,
 		"skills": skills.to_dict(),
+		"can_water": can_water,
 	}
 
 
@@ -210,6 +218,7 @@ static func from_dict(data: Dictionary, home_map: GameMap) -> PlayerState:
 	player.health = data["health"]
 	player.is_debuffed = data["is_debuffed"]
 	player.skills = Skills.from_dict(data["skills"])
+	player.can_water = data["can_water"]
 	return player
 
 

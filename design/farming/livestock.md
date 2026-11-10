@@ -83,8 +83,8 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
 - **Sound:** now and then a moo, a baa, a cluck, a bark, a whinny or a snort, quiet and rare
   (a cat's meow rarer still); none while asleep.
 - **Saved:** species, look, tint and position (save version 13), until when a dog follows the
-  player (save version 16) and whether a horse wears a saddle (save version 22); what an animal
-  is doing is not.
+  player (save version 16), whether a horse wears a saddle (save version 22) and how hungry and
+  thirsty it is (save version 25); what an animal is doing is not.
 - Animals don't avoid each other or the player yet. No hoofbeats are heard while riding yet.
 - **Later:** milk, wool and eggs, pens, feeding, owning and breeding.
 

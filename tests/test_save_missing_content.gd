@@ -92,6 +92,8 @@ func test_a_pile_a_tree_a_recipe_and_an_animal_the_game_no_longer_has_are_asked_
 				"position": [1.5, 2.5],
 				"follow_until_minute": 0,
 				"is_saddled": false,
+				"hunger": 0.0,
+				"thirst": 0.0,
 			}
 		)
 	)
