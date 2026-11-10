@@ -23,13 +23,6 @@ Rules for every task:
 - Visuals come from the art generator (task 5 on). Until a task adds art for something,
   use simple placeholder shapes in palette colours.
 
-## 62. Post mill
-
-- [ ] Done
-
-docs/art-style.md bigger item 10: a post mill as a landmark prop, placed by the world generator
-near settlements or on rises. (The draw well is part of task 122.)
-
 ## 122. The farm yard: chicken coop, trough, hay rack and draw well
 
 - [ ] Done
@@ -228,6 +221,11 @@ down from the chest and the rump).
   goods. A first draft is in [design/economy/README.md](design/economy/README.md), planned and
   not decided. Plan with the user (its open questions are in QUESTIONS.md), then split into
   tasks. It also settles where seeds come from once shops exist.
+
+- **A windmill to build** (the user, 2026-11-10, replacing task 62, a post mill as a landmark
+  prop placed by the world generator): the player builds a windmill as a building and grinds
+  grain into flour there (the flour recipe moves from the oven to the mill). Art notes on the post
+  mill are in docs/art-style.md (Mills, bigger item 10) and review/art-review-2026-11-08 (item 4).
 
 - `WildlifeSprites.frame_index` and `max_frames` allocate on every call (`keys()`,
   `values().max()`); the older animals call them per frame. Cache them per sheet. And rename
