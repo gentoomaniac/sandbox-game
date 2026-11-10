@@ -18,12 +18,13 @@ func after_each() -> void:
 
 
 ## A chat screen whose villagers answer through a fake language model after `seconds`.
-func _chat_screen(seconds := 0.1) -> ChatScreen:
+func _chat_screen(seconds := 0.1, answer := "Aye.") -> ChatScreen:
 	var screen := ChatScreen.new()
 	var settings := GameSettings.new("user://test_chat/settings.cfg")
 	settings.profiles.active["endpoint"] = "http://fake/v1"
 	var chat := FakeChat.new()
 	chat.seconds = seconds
+	chat.answers = [answer]
 	screen.dialogue = NpcDialogue.new(settings, chat)
 	add_child_autofree(screen.dialogue)
 	add_child_autofree(screen)
@@ -97,6 +98,21 @@ func test_nothing_more_is_sent_while_an_answer_is_awaited() -> void:
 	screen.say("Two")
 	await wait_for_signal(screen.answered, 2.0)
 	assert_eq(_npc.chat_history.size(), 2)
+	screen.close()
+
+
+func test_a_failed_request_takes_away_the_dots_and_leaves_the_player_free_to_write() -> void:
+	var screen := _chat_screen(0.1, "")
+	screen.open_chat(_npc, _state)
+	screen.say("One")
+	assert_eq(screen._messages.get_child_count(), 3, "the day, the line and the dots")
+	await wait_for_signal(screen.answered, 2.0)
+	assert_eq(screen._messages.get_child_count(), 2, "the day and the line: no dots, no answer")
+	assert_eq(_npc.chat_history.size(), 1)
+	assert_false(_npc.is_answering)
+	screen.say("Two")
+	assert_eq(_npc.chat_history.size(), 2, "and a line may be said again")
+	await wait_for_signal(screen.answered, 2.0)
 	screen.close()
 
 

@@ -68,12 +68,40 @@ func test_with_a_model_its_answer_is_said_trimmed() -> void:
 	assert_eq(chat.requests[0]["max_tokens"], 60)
 
 
-func test_a_model_that_gives_nothing_gets_a_scripted_line() -> void:
+func test_a_model_the_player_set_that_gives_nothing_gives_no_line_at_all() -> void:
 	_settings.profiles.active["endpoint"] = "http://fake/v1"
 	var chat := FakeChat.new()
-	chat.answers = ['  ""  ']
+	var dialogue := _dialogue(chat)
+	for nothing in ["", '  ""  ']:
+		chat.answers = [nothing]
+		assert_eq(await dialogue.reply(_antje, [], "Moin", _state), "", "no scripted line")
+
+
+func test_the_default_endpoint_that_gives_nothing_gets_a_scripted_line() -> void:
+	_settings.profiles.active["endpoint"] = GameSettings.DEFAULT_LANGUAGE_MODEL["endpoint"]
+	var chat := FakeChat.new()
+	chat.answers = [""]
 	var answer: String = await _dialogue(chat).reply(_antje, [], "Moin", _state)
 	assert_has(_scripted_replies(), answer)
+
+
+func test_a_failed_exchange_leaves_the_players_line_and_the_villager_free_to_be_spoken_to() -> void:
+	_settings.profiles.active["endpoint"] = "http://fake/v1"
+	var chat := FakeChat.new()
+	var dialogue := _dialogue(chat)
+	chat.answers = [""]
+	dialogue.say(_antje, "Moin", _state)
+	assert_true(_antje.is_answering)
+	await wait_for_signal(dialogue.answered, 2.0)
+	assert_false(_antje.is_answering)
+	assert_eq(_antje.chat_history.size(), 1, "only the player's line")
+	assert_true(_antje.chat_history[0]["from_player"])
+	assert_eq(_antje.uncompacted_lines.size(), 0)
+	chat.answers = ["Moin!"]
+	dialogue.say(_antje, "Again", _state)
+	await wait_for_signal(dialogue.answered, 2.0)
+	assert_eq(_antje.chat_history.size(), 3, "the player may write again, and is answered")
+	assert_eq(_antje.chat_history[2]["text"], "Moin!")
 
 
 ## A dialogue with the real model of SANDBOX_LLM_URL (and SANDBOX_LLM_MODEL, if set), or null

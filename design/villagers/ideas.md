@@ -169,8 +169,9 @@ small. Without an LLM: no summary, only the game's own memory events.
   in Settings. The game never ships or bundles a key.
 - **Licences:** the player downloads the model, so its licence is between them and the
   model's maker. Prefer recommending openly licensed models (e.g. Apache-2.0 ones).
-- **Failure:** time-outs and errors fall back to a scripted line, never a hang; the
-  conversation stays usable.
+- **Failure:** time-outs and errors never hang the chat and it stays usable. On the default
+  test endpoint they fall back to a scripted line; with a model the player set up the villager
+  says nothing, the player's line stays and a notice says why (task 168).
 
 ## 8. Tie-ins with the rest of the game
 

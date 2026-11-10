@@ -28,8 +28,11 @@
   copies, renames and deletes them, the last one stays, and several may share a provider, say
   Gemini with a pro and a flash model; a file from before the profiles is upgraded: a profile
   for each provider, named after it); a model, picked from the endpoint's list of models or typed; an optional key; an
-  emptied endpoint is none) it asks the model; without one, when nothing answers, on an error
-  or after 30 s it says a scripted line of `data/npc_talk.cfg` ("Aye.", "Is that so?"). When the model
+  emptied endpoint is none) it asks the model; without one it says a scripted line of `data/npc_talk.cfg` ("Aye.", "Is that so?"), and so it
+  does on the default test endpoint when nothing answers, on an error or after 30 s. With any
+  other endpoint, such a failure (also an empty answer) gives no line at all: nothing is added
+  to the chat, the typing bubble is removed at once, the player's line stays and they may write
+  again (`NpcDialogue.say`; a failed exchange is not compacted). When the model
   of an endpoint the player set fails, `ModelChat` sends `failed` and `ModelNotices` shows it in
   the notifications (task 168): one key, "Villagers' language model is busy (HTTP 503): <API
   message, cut>", the same trouble not again for `notice_repeat_seconds`, "... answers again"

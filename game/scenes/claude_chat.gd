@@ -58,7 +58,7 @@ func _body(language_model: Dictionary, request: Dictionary) -> Dictionary:
 ## The text blocks of the answer joined; its thinking is left out. A refusal gives no text.
 func _text_of(answer: Dictionary) -> Variant:
 	if answer.get("stop_reason") == "refusal":
-		push_warning("Claude refused to answer; the villager speaks a scripted line")
+		push_warning("Claude refused to answer")
 		return ""
 	var content: Variant = answer.get("content")
 	if not content is Array:

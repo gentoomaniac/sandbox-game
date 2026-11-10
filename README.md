@@ -654,7 +654,8 @@ fresh world, run `godot --path . -- --new-game`.
 Villagers talk through an OpenAI-compatible chat endpoint, or through Claude. Out of the box the game asks the
 test LLM on `http://127.0.0.1:11434/v1` (see below); when nothing answers there, or a reply
 takes longer than 30 seconds, villagers say short scripted lines instead, so the game never
-needs a model.
+needs a model. With a model you set up yourself it is different: if it fails, the villager says
+nothing (see "When the model fails" below).
 
 **Configuring it.** Settings → Language model has a choice of profile with New, Copy and Delete
 buttons, a name, a provider, five fields and the chat length, each stored as you type or pick. A profile is a provider (OpenAI-compatible, Claude or Gemini) with
@@ -720,8 +721,9 @@ reached, takes too long or gives nothing, a red notice at the top left says so, 
 language model is busy (HTTP 503): This model is currently experiencing high demand." (the
 message is the API's own, cut short; the game's output has it in full). The model's notices
 share one line, the same trouble is shown again only after 5 minutes, and a quiet "Villagers'
-language model answers again" follows when it works again. The test LLM on the default endpoint
-never shows one. The times are in `[request]` of `data/npc_talk.cfg`.
+language model answers again" follows when it works again. A failed request adds nothing to the chat:
+your line stays, the "..." of the villager typing goes at once and you can write again. The test
+LLM on the default endpoint never shows a notice and, as before, gets a scripted line. The times are in `[request]` of `data/npc_talk.cfg`.
 
 **Claude.** Pick the profile Claude under Settings → Language model and paste an Anthropic
 API key (console.anthropic.com) into Key; the endpoint becomes `https://api.anthropic.com/v1`
@@ -733,7 +735,7 @@ which is plenty for small talk: pick it from the model list. The game sends the 
 `x-api-key` and `anthropic-version` headers, no temperature (current models refuse it), low
 effort and room for 1000 tokens (a model's thinking counts against that; the reply is trimmed
 to two sentences anyway); on Opus and Sonnet a refusal falls back server-side. A refusal, an
-error or a time-out gives a scripted line, as with any endpoint. The numbers are in `[claude]`
+error or a time-out gives no line and a notice, as with any endpoint you set up. The numbers are in `[claude]`
 of `data/npc_talk.cfg`. `ANTHROPIC_API_KEY=... make test` also asks the real Claude once.
 
 **Gemini.** Free within Google's limits, with an API key from AI Studio

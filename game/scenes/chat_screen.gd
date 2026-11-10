@@ -15,13 +15,15 @@ extends Modal
 ## running itself, and its input line takes every other key, Escape included (see
 ## `_on_input_gui_input`). A line sent is answered by NpcDialogue;
 ## while the answer is awaited the villager is shown typing ("..."), and nothing more is sent to
-## them. The wait is the villager's (Npc `is_answering`): the player may leave and talk to
-## another, and the answer is kept in the chat of the one who was asked. Typing `/clear` makes
-## the villager forget the chat and their memories (for debugging); other text, also with a "/",
-## is said as it is.
+## them; if no answer comes (the model failed), the dots go at once and the player's line stays,
+## and they may write again. The wait is the villager's (Npc `is_answering`): the player may leave
+## and talk to another, and the answer is kept in the chat of the one who was asked. Typing
+## `/clear` makes the villager forget the chat and their memories (for debugging); other text, also
+## with a "/", is said as it is.
 ## The villager keeps the latest lines; the older ones become a memory (NpcDialogue `compact`).
 
-## The answer to a line came and is shown (for tests and the debug runner).
+## The exchange of a line is over, with the answer shown or without one (for tests and the debug
+## runner).
 signal answered
 ## The art switch key (the `toggle_art_set` action, F7 by default) was pressed in the chat, which
 ## pauses the game and so Main's input.
@@ -195,7 +197,8 @@ func say(text: String) -> void:
 	_show_lines()
 
 
-## An answer was committed to the chat of `npc`: shown if that is the villager of the open chat.
+## An exchange with `npc` ended: shown if that is the villager of the open chat, the dots of an
+## answer that did not come gone.
 func _on_answered(npc: Npc) -> void:
 	if npc == _npc and visible:
 		_show_lines()
