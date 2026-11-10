@@ -135,6 +135,17 @@ func bed_in_reach() -> WorldObject:
 func sleep_in(bed: WorldObject) -> void:
 	assert(bed.is_bed(), "Not a bed: %s" % bed.type)
 	_pass_time(clock.minutes_until(WAKE_UP_MINUTE), false)
+	_wake_up_in(bed)
+
+
+## `sleep_in` spread over frames (see Simulation `skip_over_frames`): `await` it.
+func sleep_in_over_frames(bed: WorldObject, next_frame: Callable) -> void:
+	assert(bed.is_bed(), "Not a bed: %s" % bed.type)
+	await _skip_time_over_frames(clock.minutes_until(WAKE_UP_MINUTE), next_frame)
+	_wake_up_in(bed)
+
+
+func _wake_up_in(bed: WorldObject) -> void:
 	is_up_too_late = false
 	_lie_in(bed)
 	player.home_map = current_map
@@ -342,15 +353,31 @@ func pass_awake_time(minutes: int) -> void:
 ## PASS_OUT_MINUTES, and wake in the home bed with the debuff of that day (it ends at the next
 ## new day) and no items lost. Returns how many minutes they slept.
 func pass_out() -> int:
-	var minutes := maxi(clock.minutes_until(WAKE_UP_MINUTE), PASS_OUT_MINUTES)
+	var minutes := _pass_out_minutes()
 	_pass_time(minutes, false)
+	_wake_up_after_pass_out()
+	return minutes
+
+
+## `pass_out` spread over frames (see Simulation `skip_over_frames`): `await` it.
+func pass_out_over_frames(next_frame: Callable) -> int:
+	var minutes := _pass_out_minutes()
+	await _skip_time_over_frames(minutes, next_frame)
+	_wake_up_after_pass_out()
+	return minutes
+
+
+func _pass_out_minutes() -> int:
+	return maxi(clock.minutes_until(WAKE_UP_MINUTE), PASS_OUT_MINUTES)
+
+
+func _wake_up_after_pass_out() -> void:
 	is_up_too_late = false
 	go_to_home_bed()
 	player.is_debuffed = true
 	player.energy = energy_rules.debuff_energy_max()
 	if not cheats.is_god:
 		player.health = energy_rules.debuff_health()
-	return minutes
 
 
 ## Puts the player in their home bed, on its map (the world or the inside of a house): lying in
@@ -593,6 +620,16 @@ func _pass_time(minutes: int, is_played: bool) -> void:
 		simulation.advance(minutes)
 	else:
 		simulation.skip(minutes)
+	_end_debuff_on_new_day(day_before)
+
+
+func _skip_time_over_frames(minutes: int, next_frame: Callable) -> void:
+	var day_before := clock.day
+	await simulation.skip_over_frames(minutes, next_frame)
+	_end_debuff_on_new_day(day_before)
+
+
+func _end_debuff_on_new_day(day_before: int) -> void:
 	if clock.day != day_before:
 		player.is_debuffed = false
 

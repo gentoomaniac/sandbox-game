@@ -29,6 +29,9 @@ var rules := NpcRules.default_rules()
 ## The villagers written by hand (see `spawn_villager`).
 var villagers := VillagerRules.default_rules()
 var rng := RandomNumberGenerator.new()
+## How long `catch_up_over_frames` works in a frame, in microseconds: a villager takes a millisecond
+## or so, and a frame of this and the rest of the game stays under 33 ms.
+var catch_up_frame_usec := 8000
 var _sun: Sun
 var _villager_step := PathRules.default_rules().villager_step()
 var _npcs: Array[Npc] = []
@@ -152,20 +155,21 @@ func update(
 ## `seed_value`.
 func catch_up(map: GameMap, seed_value: int) -> void:
 	rng.seed = seed_value
-	var radius := rules.behaviour("anchor_radius") * STROLL_REACH
 	for npc in _npcs:
-		if not _is_in_loaded_chunk(npc, map):
-			continue
-		var is_free := func(tile: Vector2i) -> bool:
-			var centre := Vector2(tile) + Vector2(0.5, 0.5)
-			return (
-				centre.distance_to(npc.anchor) <= radius and PlayerState.can_stand_at(map, centre)
-			)
-		var tiles := ReachableTiles.within(npc.tile(), radius * 2.0, is_free)
-		if tiles.size() > 1 or is_free.call(npc.tile()):
-			npc.position = Vector2(tiles[rng.randi() % tiles.size()]) + Vector2(0.5, 0.5)
-			npc.free_body_tiles = PlayerState.body_tiles(npc.position)
-		_stand(npc)
+		_catch_up_one(npc, map)
+
+
+## `catch_up` spread over frames: it lets go of the frame every `catch_up_frame_usec`, and goes on
+## in the next. `await` it, and keep `update` from moving the villagers meanwhile, so that they end
+## up as in one go. `next_frame` is a Callable that gives the signal of the next frame.
+func catch_up_over_frames(map: GameMap, seed_value: int, next_frame: Callable) -> void:
+	rng.seed = seed_value
+	var frame_started := Time.get_ticks_usec()
+	for npc in _npcs:
+		if Time.get_ticks_usec() - frame_started > catch_up_frame_usec:
+			await next_frame.call()
+			frame_started = Time.get_ticks_usec()
+		_catch_up_one(npc, map)
 
 
 ## The player speaks to a villager: they turn to the player and stand a while.
@@ -173,6 +177,20 @@ func talk_to(npc: Npc, player_feet: Vector2) -> void:
 	npc.turn_to(player_feet)
 	npc.activity = Npc.Activity.IDLE
 	npc.seconds_left = rules.behaviour("linger_seconds")
+
+
+func _catch_up_one(npc: Npc, map: GameMap) -> void:
+	if not _is_in_loaded_chunk(npc, map):
+		return
+	var radius := rules.behaviour("anchor_radius") * STROLL_REACH
+	var is_free := func(tile: Vector2i) -> bool:
+		var centre := Vector2(tile) + Vector2(0.5, 0.5)
+		return centre.distance_to(npc.anchor) <= radius and PlayerState.can_stand_at(map, centre)
+	var tiles := ReachableTiles.within(npc.tile(), radius * 2.0, is_free)
+	if tiles.size() > 1 or is_free.call(npc.tile()):
+		npc.position = Vector2(tiles[rng.randi() % tiles.size()]) + Vector2(0.5, 0.5)
+		npc.free_body_tiles = PlayerState.body_tiles(npc.position)
+	_stand(npc)
 
 
 ## Whether the chunk a villager stands in is loaded: the world beyond it is not there to walk on.

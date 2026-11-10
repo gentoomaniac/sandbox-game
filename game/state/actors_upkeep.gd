@@ -40,6 +40,11 @@ func skipped(_minutes: int, clock: GameClock) -> void:
 	_npcs.catch_up(_world, _seed_of(clock, 3))
 
 
+func skipped_over_frames(_minutes: int, clock: GameClock, next_frame: Callable) -> void:
+	_livestock.catch_up(_world, clock, _player_feet.call(), _seed_of(clock, 2))
+	await _npcs.catch_up_over_frames(_world, _seed_of(clock, 3), next_frame)
+
+
 ## The dice of `purpose` at the time of `clock` in this world.
 func _seed_of(clock: GameClock, purpose: int) -> int:
 	return hash([_world.world_seed, clock.total_minutes(), purpose])

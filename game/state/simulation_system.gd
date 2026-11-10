@@ -22,6 +22,13 @@ func skipped(_minutes: int, _clock: GameClock) -> void:
 	pass
 
 
+## `skipped` for a skip spread over frames (see Simulation `skip_over_frames`): a system with much
+## to do awaits `next_frame` (a Callable that gives the signal of the next frame) when it has used
+## up its share of one.
+func skipped_over_frames(minutes: int, clock: GameClock, _next_frame: Callable) -> void:
+	skipped(minutes, clock)
+
+
 static func is_hour_end(clock: GameClock) -> bool:
 	return clock.minute_of_day % GameClock.MINUTES_PER_HOUR == 0
 

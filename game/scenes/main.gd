@@ -68,6 +68,9 @@ var _wheel_progress := 0.0
 ## A fade (through a door, into sleep) or passing out is running: the player neither walks nor
 ## acts.
 var _is_in_transition := false
+## The time of a sleep is being made up for over some frames (see Simulation `skip_over_frames`):
+## the animals and villagers must not move meanwhile.
+var _is_making_up_time := false
 var _fade_screen := FadeScreen.new()
 var _debug: DebugRunner
 var _pending_minutes := 0.0
@@ -460,8 +463,9 @@ func _process(delta: float) -> void:
 		_object_cover.cover(_state.player.bed_lying_in)
 		if _state.door_underfoot():
 			_fade_through(_pass_door)
-	# The world, its animals and villagers too, stands still while the player is in a house.
-	if not _state.is_inside():
+	# The world, its animals and villagers too, stands still while the player is in a house, and
+	# while the sleep is made up for in steps.
+	if not _state.is_inside() and not _is_making_up_time:
 		_state.livestock.update(delta, _state.world, _state.player.position, _state.clock)
 		_state.npcs.update(delta, _state.world, _state.player.position, _state.clock)
 		_view.player_feet = _player_view.position
@@ -583,15 +587,22 @@ func _pass_out() -> void:
 	_player_view.collapse()
 	await get_tree().create_timer(PlayerView.COLLAPSE_SECONDS).timeout
 	await _fade_screen.fade_out()
-	var minutes_slept := _state.pass_out()
+	_is_making_up_time = true
+	var minutes_slept: int = await _state.pass_out_over_frames(_next_frame)
+	_is_making_up_time = false
 	_player_view.stand_up()
 	_show_current_map()
-	# The sleep and the save are a frame each, under the black screen.
+	# The sleep takes some frames and the save one, under the black screen.
 	await get_tree().process_frame
 	await _saves.save_without_stalling(_state, _options.save_path)
 	await _fade_screen.show_message(PassOutMessage.text(_state, was_up_too_late, minutes_slept))
 	await _fade_screen.fade_in()
 	_is_in_transition = false
+
+
+## The signal of the next frame, for the work that is spread over frames.
+func _next_frame() -> Signal:
+	return get_tree().process_frame
 
 
 ## Where the camera looks. The player is drawn on the art pixel grid (rounded), the camera
@@ -694,14 +705,17 @@ func _open_chat(npc: Npc) -> void:
 
 
 ## Sleeps in the bed in reach until the morning, and saves: the new day shows on the black for a
-## moment. As when passing out, the sleep and the save are a frame each under the black screen.
+## moment. As when passing out, the sleep takes some frames and the save one, under the black
+## screen.
 func _try_sleep() -> void:
 	var bed := _state.bed_in_reach()
 	if bed == null:
 		return
 	_fade_through(
 		func() -> String:
-			_state.sleep_in(bed)
+			_is_making_up_time = true
+			await _state.sleep_in_over_frames(bed, _next_frame)
+			_is_making_up_time = false
 			_show_clock()
 			await get_tree().process_frame
 			await _saves.save_without_stalling(_state, _options.save_path)

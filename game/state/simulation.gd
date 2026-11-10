@@ -30,17 +30,36 @@ func add_system(system: SimulationSystem) -> void:
 ## are played through minute by minute for what the frames of play move (see SimulationSystem
 ## `walked_minute`) and the rest is made up for in one go (`skipped`).
 func skip(minutes: int) -> void:
-	var walked := mini(minutes, WALKED_MINUTES)
-	for _minute in walked:
-		advance(1)
-		for system in _systems:
-			system.walked_minute(clock)
-	var rest := minutes - walked
+	var rest := _walk_through(minutes)
 	if rest > 0:
 		advance(rest)
 		for system in _systems:
 			system.skipped(rest, clock)
 	skipped.emit(minutes)
+
+
+## The same as `skip`, spread over frames so that none is long: `await` it, and keep whatever moves
+## the world still meanwhile, as the world ends the same only then. `next_frame` is a Callable
+## that gives the signal of the next frame.
+func skip_over_frames(minutes: int, next_frame: Callable) -> void:
+	var rest := _walk_through(minutes)
+	if rest > 0:
+		advance(rest)
+		for system in _systems:
+			await system.skipped_over_frames(rest, clock, next_frame)
+	# What shows the world follows (`skipped`) in a frame of its own.
+	await next_frame.call()
+	skipped.emit(minutes)
+
+
+## Plays the first WALKED_MINUTES of a skip through; returns the minutes left to make up for.
+func _walk_through(minutes: int) -> int:
+	var walked := mini(minutes, WALKED_MINUTES)
+	for _minute in walked:
+		advance(1)
+		for system in _systems:
+			system.walked_minute(clock)
+	return minutes - walked
 
 
 ## Lets `minutes` game minutes of play pass, in whole-hour steps.
