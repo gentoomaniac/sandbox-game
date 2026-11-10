@@ -33,11 +33,14 @@ func _ready() -> void:
 	_sit()
 
 
+## Freed with its view (a clear, or far from the view): nothing calls `sync_prey` any more, so
+## the cats are told here that it is gone.
 func _exit_tree() -> void:
 	prey.is_about = false
 
 
-## Tells the cats where it is and whether it is still about.
+## Tells the cats where it is and whether it is still about. Run after the mouse has moved, so
+## that a cat's landing is judged by where it is, and by whether it is done (see `_update`).
 func sync_prey() -> void:
 	prey.position = position / WildlifeRules.TILE_SIZE
 	if is_done:
@@ -57,7 +60,6 @@ func flee_from(point: Vector2) -> void:
 
 
 func _update(delta: float) -> void:
-	sync_prey()
 	match prey.fate:
 		Prey.Fate.CAUGHT:
 			is_done = true
@@ -76,6 +78,7 @@ func _update(delta: float) -> void:
 		FLEE:
 			if not _walk(_direction, FLEE_SPEED, delta) or _state_time >= FLEE_SECONDS:
 				is_done = true
+	sync_prey()
 
 
 func _sit() -> void:

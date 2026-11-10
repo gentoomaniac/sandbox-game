@@ -149,7 +149,7 @@ Warft and an Ewer here and there.
   frame. A cat's hunt is Livestock's alone, so it needs no view and no camera: the mice are
   ambient wildlife (nodes of the `WildlifeView`, near the camera, not saved), and each `Mouse`
   reports itself to Livestock as a `Prey` (`add_prey`; its position in tiles, `is_about`, kept up
-  to date by `Mouse.sync_prey`). When a cat picks what to do next Livestock looks for the nearest
+  to date by `Mouse.sync_prey`, after the mouse has moved). When a cat picks what to do next Livestock looks for the nearest
   `Prey` in sight, and `start_hunt` has it crouch, creep and pounce by the `[hunting]` numbers of
   `data/livestock.cfg`, rolling the catch with Livestock's dice. Its outcome is left in
   `Prey.fate` (caught, or scared off from a point) for the mouse to show, and the cat's
@@ -157,7 +157,8 @@ Warft and an Ewer here and there.
   goes (run off, or its view freed) is no longer about, which ends the hunt of any cat after it:
   the cat rests and idles where it stands. With no wildlife view there are no mice, so nothing
   hunts and nothing is left half done; a cat far from the camera hunts a mouse in sight all the
-  same. `catch_up` looks for no mouse. Nothing of a hunt is saved.
+  same. Skipped time (the walked minutes of a skip and `catch_up`) looks for no mouse and gives up
+  a hunt in progress with no outcome for the mouse. Nothing of a hunt is saved.
 - **Npcs** (`game/state/npcs.gd`) holds the villagers (`Npc`: name, sex, look as an
   `Appearance`, who they are (their whole sheet: age, trade, personality, background, home,
   speech, sample lines, people, likes, wants, day, habits, avoids, secrets), position, anchor,

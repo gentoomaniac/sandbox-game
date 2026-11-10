@@ -54,14 +54,14 @@ func _catch_chance(chance: float) -> void:
 func _run_cat(seconds: float, minute := NOON) -> void:
 	for _i in roundi(seconds / CAT_STEP):
 		_state.clock.minute_of_day = minute
-		if is_instance_valid(_mouse):
-			_mouse.sync_prey()
 		_livestock.update(CAT_STEP, _state.world, Vector2(1000, 1000), _state.clock)
 		if is_instance_valid(_cat_view):
 			_cat_view._process(CAT_STEP)
 		if (
 			is_instance_valid(_mouse)
-			and (_mouse._state == Mouse.FLEE or _mouse.prey.fate != Prey.Fate.NONE)
+			and (
+				_mouse._state == Mouse.FLEE or _mouse.is_done or _mouse.prey.fate != Prey.Fate.NONE
+			)
 		):
 			_mouse._process(CAT_STEP)
 
@@ -127,7 +127,8 @@ func test_a_cat_gives_up_a_mouse_that_is_gone() -> void:
 	_mouse_ahead(3.0)
 	_run_cat(1.0)
 	_mouse.is_done = true
-	_run_cat(CAT_STEP)
+	# The mouse tells the cat in its next frame, and the cat gives up in the step after.
+	_run_cat(2 * CAT_STEP)
 	assert_eq(_cat.activity, FarmAnimal.Activity.IDLE)
 
 
@@ -141,6 +142,7 @@ func test_a_cat_rests_after_a_hunt_with_another_mouse_in_sight() -> void:
 	while hunted_at < 0.0 and seconds < _livestock.rules.hunting("rest_seconds") + 30.0:
 		# Two tiles ahead of the cat wherever it wanders, always in sight.
 		_mouse.position = _cat_view.position + Vector2(2.0 * WildlifeRules.TILE_SIZE, 0.0)
+		_mouse.sync_prey()
 		_run_cat(CAT_STEP)
 		seconds += CAT_STEP
 		if _cat.activity == FarmAnimal.Activity.CROUCH:
@@ -177,3 +179,15 @@ func test_a_cat_ends_its_hunt_where_it_stands_when_the_mice_go_with_their_view()
 	assert_eq(_cat.activity, FarmAnimal.Activity.IDLE)
 	assert_null(_cat.hunted)
 	assert_gt(_cat.hunt_rest_seconds, 0.0)
+
+
+func test_a_mouse_tells_the_cats_where_it_is_after_it_has_moved_and_when_it_is_done() -> void:
+	_mouse_ahead(3.0)
+	_mouse.flee_from(_cat_view.position)
+	while not _mouse.is_done:
+		_mouse._process(CAT_STEP)
+		var is_there := _mouse.prey.position.is_equal_approx(
+			_mouse.position / WildlifeRules.TILE_SIZE
+		)
+		assert_true(is_there, "where it is now, not where it was")
+	assert_false(_mouse.prey.is_about, "gone in the frame it was done in")

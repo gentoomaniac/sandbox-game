@@ -41,7 +41,7 @@ var is_ridden := false
 ## either).
 var hunted: Prey
 ## Where that mouse was when the cat last looked, in tiles of the world: a pounce lands there.
-var prey := Vector2.ZERO
+var pounce_at := Vector2.ZERO
 ## Seconds before a cat hunts again (see `rest_seconds` in data/livestock.cfg).
 var hunt_rest_seconds := 0.0
 

@@ -278,7 +278,7 @@ func _doings_of(game: GameState) -> Array:
 				animal.last_step,
 				animal.facing,
 				animal.stuck_seconds,
-				animal.prey,
+				animal.pounce_at,
 				animal.hunt_rest_seconds
 			]
 		)

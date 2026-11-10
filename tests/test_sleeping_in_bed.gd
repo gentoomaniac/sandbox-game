@@ -9,6 +9,20 @@ const SLEEP_SECONDS := 10.0
 var _main: Node
 
 
+## Sets something up once, at the first minute a skip walks through (the `advance` of that minute
+## comes before the `walked_minute` of every system).
+class WalkedMinuteProbe:
+	extends SimulationSystem
+	var is_held: Callable
+	var setup: Callable
+	var has_run := false
+
+	func advance(_minutes: int, _clock: GameClock) -> void:
+		if not has_run and is_held.call():
+			has_run = true
+			setup.call()
+
+
 func before_each() -> void:
 	_main = MAIN_SCENE.instantiate()
 	add_child(_main)
@@ -113,6 +127,17 @@ func test_a_cat_beside_a_mouse_starts_no_hunt_over_the_frames_of_a_sleep() -> vo
 	_main._wildlife.place(
 		WildlifeRules.MOUSE, (cat.position + Vector2(1.5, 0)) * WildlifeRules.TILE_SIZE
 	)
+	# At the first walked minute of the sleep the cat creeps within pounce reach of the mouse,
+	# rested: the livestock that is stepped for those minutes must not pounce, nor look about.
+	var mouse: Mouse = _main._wildlife._animals.back()
+	var probe := WalkedMinuteProbe.new()
+	probe.is_held = func() -> bool: return _main._is_making_up_time
+	probe.setup = func() -> void:
+		cat.hunt_rest_seconds = 0.0
+		cat.position = mouse.prey.position - Vector2(1.0, 0.0)
+		state.livestock.start_hunt(cat, mouse.prey)
+		cat.activity = FarmAnimal.Activity.CREEP
+	state.simulation.add_system(probe)
 	_go_to_bed()
 	_main._try_sleep()
 	var activities := []
@@ -134,3 +159,9 @@ func test_a_cat_beside_a_mouse_starts_no_hunt_over_the_frames_of_a_sleep() -> vo
 	assert_false(could_process.has(true), "the cat's view is held on every frame of the sleep")
 	assert_false(activities.has(FarmAnimal.Activity.CROUCH), "the cat did not crouch")
 	assert_false(activities.has(FarmAnimal.Activity.CREEP), "the cat did not creep")
+	# The probe's lambdas hold the state, which holds the probe: let go, or the state leaks.
+	probe.setup = Callable()
+	probe.is_held = Callable()
+	assert_true(probe.has_run, "the cat was set creeping at the first walked minute")
+	assert_eq(mouse.prey.fate, Prey.Fate.NONE, "no pounce on the held mouse")
+	assert_true(mouse.prey.is_about)

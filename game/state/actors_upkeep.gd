@@ -23,6 +23,8 @@ func _init(world: World, livestock: Livestock, npcs: Npcs, player_feet: Callable
 	_player_feet = player_feet
 
 
+## No hunts: a skip's walked minutes keep the cats from looking for a mouse of a view that is
+## held, and end a hunt that was on.
 func walked_minute(clock: GameClock) -> void:
 	var seed_value := _seed_of(clock, 1)
 	_livestock.rng.seed = seed_value
@@ -30,7 +32,7 @@ func walked_minute(clock: GameClock) -> void:
 	var seconds := 1.0 / GameClock.GAME_MINUTES_PER_REAL_SECOND
 	while seconds > 0.0:
 		var step := minf(seconds, Livestock.MAX_STEP_SECONDS)
-		_livestock.update(step, _world, _player_feet.call(), clock, true)
+		_livestock.update(step, _world, _player_feet.call(), clock, true, false)
 		_npcs.update(step, _world, _player_feet.call(), clock, true)
 		seconds -= step
 

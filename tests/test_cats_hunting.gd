@@ -34,27 +34,41 @@ func _run_hunt() -> Array[FarmAnimal.Activity]:
 	return done
 
 
-## What six hunts of one cat come to, with a catch roll that goes either way, on fresh dice.
+## What six hunts of one cat come to, with a catch roll that goes either way, on fresh dice. Each
+## reaches the pounce and ends with the mouse caught or scared.
 func _fates_of_six_hunts() -> Array[Prey.Fate]:
 	var values := DataFile.read_sections(LivestockRules.DEFAULT_PATH)
 	values["hunting"]["catch_chance"] = 0.5
 	var herd := Livestock.new(_state.sun)
 	herd.rules = LivestockRules.new(values)
 	herd.rng.seed = SEED
-	var cat := FarmAnimal.new(LivestockRules.CAT, &"tabby", _cat.position)
+	var cat := FarmAnimal.new(LivestockRules.CAT, &"tabby", _pen_middle())
 	herd.add(cat)
+	_state.clock.day = DAY
+	_state.clock.minute_of_day = NOON
 	var fates: Array[Prey.Fate] = []
 	for _hunt in 6:
 		var mouse := Prey.new()
 		mouse.position = cat.position + Vector2(2.0, 0.0)
 		cat.hunt_rest_seconds = 0.0
 		herd.start_hunt(cat, mouse)
+		var has_pounced := false
 		for _i in roundi(30.0 / STEP_SECONDS):
 			herd.update(STEP_SECONDS, _world, _state.player.position, _state.clock)
+			has_pounced = has_pounced or cat.activity == FarmAnimal.Activity.POUNCE
 			if cat.activity in LivestockRules.CHOSEN_ACTIVITIES:
 				break
+		assert_true(has_pounced, "hunt %d reached the pounce" % _hunt)
+		assert_ne(mouse.fate, Prey.Fate.NONE, "hunt %d came to something" % _hunt)
 		fates.append(mouse.fate)
+		cat.position = _pen_middle()
 	return fates
+
+
+## The upkeep of a skip, the player far from everything.
+func _upkeep() -> ActorsUpkeep:
+	var far_off := func() -> Vector2: return Vector2(1e6, 1e6)
+	return ActorsUpkeep.new(_world, _livestock, _state.npcs, far_off)
 
 
 ## Rules whose pounces always catch (1) or never do (0).
@@ -139,12 +153,12 @@ func test_a_cat_follows_its_mouse_until_it_pounces() -> void:
 	var moved := _mouse() + Vector2(0.0, 1.0)
 	_prey.position = moved
 	_run(STEP_SECONDS)
-	assert_eq(_cat.prey, moved)
+	assert_eq(_cat.pounce_at, moved)
 	_run_until(FarmAnimal.Activity.POUNCE)
 	assert_eq(_cat.activity, FarmAnimal.Activity.POUNCE)
 	_prey.position = _mouse()
 	_run(STEP_SECONDS)
-	assert_eq(_cat.prey, moved, "a leap is not turned in the air")
+	assert_eq(_cat.pounce_at, moved, "a leap is not turned in the air")
 
 
 func test_a_cat_rests_after_a_hunt() -> void:
@@ -247,3 +261,34 @@ func test_a_game_saved_mid_hunt_loads_with_the_cat_looking_about() -> void:
 	assert_eq(cat.activity, FarmAnimal.Activity.IDLE)
 	assert_eq(cat.position, _cat.position)
 	assert_true(loaded.can_hunt(cat))
+
+
+func test_a_cat_wakes_to_a_mouse_in_sight_and_hunts_it() -> void:
+	_livestock.add_prey(_prey)
+	_cat.activity = FarmAnimal.Activity.SLEEP
+	_step()
+	assert_eq(_cat.activity, FarmAnimal.Activity.CROUCH)
+
+
+func test_the_walked_minutes_of_a_skip_give_up_a_hunt_with_no_outcome() -> void:
+	_set_catch_chance(1.0)
+	_livestock.start_hunt(_cat, _prey)
+	_cat.activity = FarmAnimal.Activity.CREEP
+	_cat.position = _mouse() - Vector2(1.0, 0.0)
+	_state.clock.minute_of_day = NOON
+	var upkeep := _upkeep()
+	upkeep.walked_minute(_state.clock)
+	assert_eq(_prey.fate, Prey.Fate.NONE)
+	assert_true(_prey.is_about)
+	assert_null(_cat.hunted)
+	assert_false(_cat.activity in Livestock.HUNT_ACTIVITIES)
+
+
+func test_the_walked_minutes_of_a_skip_start_no_hunt() -> void:
+	_livestock.add_prey(_prey)
+	_state.clock.minute_of_day = NOON
+	var upkeep := _upkeep()
+	for _minute in 3:
+		upkeep.walked_minute(_state.clock)
+	assert_null(_cat.hunted)
+	assert_eq(_prey.fate, Prey.Fate.NONE)
