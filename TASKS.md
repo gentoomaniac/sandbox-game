@@ -175,14 +175,6 @@ The user, 2026-11-09: once all current tasks are done. After task 142 the mean f
   (task 14 review): cache them.
 - `make bench` reports the longest frame and how many frames went over 33 ms, before and after.
 
-## 148. The ambience test is flaky: seed its wildlife
-
-- [ ] Done
-
-`tests/test_ambience_sounds.gd` sometimes fails because the wildlife it runs isn't seeded (an
-extra `frog_croak`). Give the test a fixed seed, or count only the sounds it asserts about, so it
-passes every run; no game change.
-
 ## 149. Harvesting works, and dead plants are hoed away for the next crop
 
 - [ ] Done

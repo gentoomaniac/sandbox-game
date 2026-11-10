@@ -3887,3 +3887,14 @@ Done: a parse error was already caught, but only as "a script failed to load", w
 a test file that parses but doesn't extend GutTest passed the run with a GUT warning. Both now
 fail and are named (checked with a broken and a non-GutTest file in a scratch copy).
 
+## 148. The ambience test is flaky: seed its wildlife
+
+- [x] Done
+
+`tests/test_ambience_sounds.gd` sometimes fails because the wildlife it runs isn't seeded (an
+extra `frog_croak`). Give the test a fixed seed, or count only the sounds it asserts about, so it
+passes every run; no game change.
+
+Done: the test seeds the ambience's dice, and the storm test's second step asserts that no new
+loop starts instead of that nothing at all sounds: a bird, a gust or a frog at water near the
+player may come in any second, and that was the extra `frog_croak`.

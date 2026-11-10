@@ -32,6 +32,9 @@ func before_each() -> void:
 	_ambience = AmbienceSounds.new()
 	add_child_autofree(_ambience)
 	_ambience.listen(_audio, _state, _wildlife, _weather_view)
+	# The same dice every run: the chance sounds (a bird, a gust, a frog at water near the
+	# player) come the same way each time.
+	_ambience._rng.seed = 7
 	_events.clear()
 
 
@@ -43,8 +46,13 @@ func test_rain_and_wind_loops_start_with_a_storm_and_stop_when_it_clears() -> vo
 	_events.clear()
 	_state.weather_override = &"clear"
 	_ambience._process(1.0)
-	assert_eq(_events, [], "nothing new starts")
+	assert_eq(_loops(_events), [], "no new loop starts")
 	assert_null(_ambience._rain_loop)
+
+
+## The loops among `events`: a chance sound (a bird, a gust, a frog) may come at any second.
+func _loops(events: Array[StringName]) -> Array:
+	return events.filter(func(event: StringName) -> bool: return event.ends_with("_loop"))
 
 
 func test_a_clear_calm_day_has_no_loops() -> void:
