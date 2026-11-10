@@ -98,3 +98,10 @@ chicken coop. All are made at the workbench or built with the hammer and stand o
   drawn above it, reaching over the tile beside it, and see-through when the player stands behind
   it. Its ring blocks walking. Made at the workbench (masonry 20) from 12 stone, 3 planks, 2 logs
   and 2 fibre; the pickaxe takes it up again (4 hits) and it drops the well.
+- **The watering can's water** (decided 2026-11-10): the can holds `[can] capacity` (20) in
+  data/energy.cfg and a new game starts with it full; wetting a tile of soil takes 1. The use
+  key with the can at a draw well or at fresh water (`Tile.is_fresh_water`: the terrain WATER, so
+  the rivers, ponds and ditches; never the sea, the tidal mud or the salt marsh) fills it, unless
+  it is full. With the can empty the use key at dry soil does nothing and says so. The water in the
+  can is saved (save version 25). The well gives the water for the can, and so for the troughs and
+  the soil; water for the house (cooking, washing) comes with those.

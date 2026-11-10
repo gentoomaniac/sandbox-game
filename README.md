@@ -159,6 +159,12 @@ soaked and sown and growing crops on it, at noon, in the evening and in the clas
 
 ![Tilled soil from dry to soaked with sown and growing crops, at noon, in the evening and in the classic art](docs/screenshots/soil.png)
 
+The watering can holds water: 20 waterings (a new game starts with it full), one for each tile
+of soil you wet. Fill it with the use key at a **draw well** (a fieldstone ring under an oak sweep,
+made at the workbench with masonry 20 from 12 stone, 3 planks, 2 logs and 2 fibre, and put down
+outdoors) or at fresh water: a river, a pond or a ditch, never the sea or the salt marsh. With
+an empty can the use key says so and waters nothing. The water in the can is saved.
+
 ### Livestock
 
 Cows, sheep, chickens and rabbits of the region: red-brown Angler, black pied and red pied

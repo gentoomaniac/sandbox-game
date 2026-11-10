@@ -23,6 +23,13 @@ func is_walkable() -> bool:
 	return (not is_water or frozen) and terrain != Terrain.WALL
 
 
+## Water an animal or the watering can may drink or draw: the rivers, ponds and ditches. The sea
+## (the open sea, the tideways, the river's mouth) is salt, and the tidal mud and the salt marsh
+## are not water at all.
+func is_fresh_water() -> bool:
+	return terrain == Terrain.WATER
+
+
 ## Only grass (ordinary, lush or dry) and the floodplain wear to a desire path where they are
 ## walked often (see World.wear_tile).
 func wears() -> bool:

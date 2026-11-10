@@ -15,6 +15,17 @@ const SNOWY_GHOST_COVER := 0.5
 const FAST_FORWARD_FACTOR := 60.0
 ## What the player is told when they try on horseback what needs them on foot.
 const GET_OFF_FIRST := "Get off the horse first."
+## What the note says about a use of the held item, for the uses that have one.
+const USE_NOTES := {
+	ToolUse.Use.GIVE_BONE: "The dog follows you.",
+	ToolUse.Use.SADDLE: "The horse is saddled: E to get on.",
+	ToolUse.Use.UNSADDLE: "You take the saddle off.",
+	ToolUse.Use.FILL_CAN: "You fill the watering can.",
+	ToolUse.Use.CAN_EMPTY: "The watering can is empty: fill it at a well or at fresh water.",
+	ToolUse.Use.RIDING: GET_OFF_FIRST,
+	ToolUse.Use.NO_ROOM: "Not enough room in the inventory.",
+	ToolUse.Use.STANDING_ON: "Step off it first.",
+}
 ## The key of the notification about a save (see NotificationHud).
 const SAVE_NOTE := &"save"
 const LOAD_NOTE := &"load"
@@ -540,18 +551,8 @@ func _use_on(target: Targeting) -> void:
 	var use := _state.use_tile(target.tile)
 	_sounds.failed_use(use, target.tile)
 	_tiredness_view.acted(use)
-	if use == ToolUse.Use.GIVE_BONE:
-		_harvest_hud.show_note("The dog follows you.")
-	if use == ToolUse.Use.SADDLE:
-		_harvest_hud.show_note("The horse is saddled: E to get on.")
-	if use == ToolUse.Use.UNSADDLE:
-		_harvest_hud.show_note("You take the saddle off.")
-	if use == ToolUse.Use.RIDING:
-		_harvest_hud.show_note(GET_OFF_FIRST)
-	if use == ToolUse.Use.NO_ROOM:
-		_harvest_hud.show_note("Not enough room in the inventory.")
-	if use == ToolUse.Use.STANDING_ON:
-		_harvest_hud.show_note("Step off it first.")
+	if USE_NOTES.has(use):
+		_harvest_hud.show_note(USE_NOTES[use])
 	if use == ToolUse.Use.NEEDS_BETTER_TOOL:
 		var tool_name: String = ItemTypes.TYPES[_state.player.inventory.held_item()]["name"]
 		_harvest_hud.show_note("Needs a better %s." % tool_name.to_lower())

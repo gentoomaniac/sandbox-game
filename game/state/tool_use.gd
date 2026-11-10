@@ -6,10 +6,12 @@ extends RefCounted
 
 ## What the use action does on a tile. HARVEST is a ripe crop, FORAGE something a hand picks
 ## (a bush, a fern), CLEAR a dead crop that a hand pulls up, WATER a watering can wetting tilled
-## soil, HIT a tool cut or mined at an object, NEEDS_BETTER_TOOL a tool that is too weak for the
-## object, MOW a scythe cutting the tall grass and reeds around the target, DIG a shovel in grass
-## (which may find clay), PLACE an item that puts an object down (a chest, a station), TAKE_DOWN an
-## axe or pickaxe taking down what the player placed inside a house (outdoors it is a HIT),
+## soil, FILL_CAN the can filled at a well or at fresh water, CAN_EMPTY a can with no water to
+## water with (nothing is done), HIT a tool cut or mined at an object, NEEDS_BETTER_TOOL a tool
+## that is too weak for the object, MOW a scythe cutting the tall grass and reeds around the
+## target, DIG a shovel in grass (which may find clay), PLACE an item that puts an object down (a
+## chest, a station), TAKE_DOWN an axe or pickaxe taking down what the player placed inside a house
+## (outdoors it is a HIT),
 ## NO_ROOM that, with too little room in the inventory for it and what it holds, GIVE_BONE a bone
 ## given to a dog, which then follows the player, SADDLE the saddle put on a horse and UNSADDLE an
 ## empty hand taking it off again, RIDING anything on horseback (the player gets off first),
@@ -26,6 +28,8 @@ enum Use {
 	NEEDS_BETTER_TOOL,
 	CLEAR,
 	WATER,
+	FILL_CAN,
+	CAN_EMPTY,
 	MOW,
 	DIG,
 	PLACE,
@@ -183,7 +187,12 @@ func _do_use(target: Vector2i) -> Use:
 			_done(ActionOutcome.CLEAR, target, dead_crop.type)
 		Use.WATER:
 			_state.world.set_moisture(target, 1.0)
+			_state.player.can_water -= 1
 			_done(ActionOutcome.WATER, target)
+		Use.FILL_CAN:
+			_state.player.can_water = EnergyRules.default_rules().can_capacity()
+			var well := _state.world.object_at(target)
+			_done(ActionOutcome.FILL_CAN, target, &"" if well == null else well.type)
 		Use.FORAGE:
 			var plant := _state.world.object_at(target)
 			if plant.type_data().has("regrow_days"):
@@ -400,12 +409,29 @@ func _use_tool(tool_item: Dictionary, object: WorldObject, world_pos: Vector2i) 
 			var is_dead_crop := object != null and object.is_crop() and CropLife.is_dead(object)
 			return Use.TILL if is_grass_free or is_dead_crop else Use.NOTHING
 		ItemTypes.WATERING_CAN:
-			return Use.WATER if _is_dry_soil(world_pos) else Use.NOTHING
+			return _use_watering_can(object, world_pos)
 		ItemTypes.SCYTHE:
 			return Use.MOW if not _plants_to_mow(world_pos).is_empty() else Use.NOTHING
 		ItemTypes.SHOVEL:
 			return Use.DIG if is_grass_free else Use.NOTHING
 	return _use_cutting_tool(tool_item, object)
+
+
+## What the watering can does on a tile: it is filled at a well or at fresh water (unless it is
+## full), and waters dry tilled soil while it has water.
+func _use_watering_can(object: WorldObject, world_pos: Vector2i) -> Use:
+	var has_water := _state.player.can_water > 0
+	var is_full := _state.player.can_water >= EnergyRules.default_rules().can_capacity()
+	var tile := _state.world.tile_at(world_pos)
+	var is_water_source := (
+		(object != null and object.type == WorldObjectTypes.DRAW_WELL)
+		or (tile != null and tile.is_fresh_water())
+	)
+	if is_water_source:
+		return Use.NOTHING if is_full else Use.FILL_CAN
+	if not _is_dry_soil(world_pos):
+		return Use.NOTHING
+	return Use.WATER if has_water else Use.CAN_EMPTY
 
 
 ## What an axe or a pickaxe does to the object: hit it if it is cut or mined with that tool.

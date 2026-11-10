@@ -23,6 +23,9 @@ const SIZE := 20
 const ICON_RECT := Rect2(2, 2, ItemIcon.SIZE, ItemIcon.SIZE)
 ## Palette colour ink (see tools/art/palette.py); the pixel font is already cream.
 const COUNT_SHADOW_COLOR := Color("1d1b26")
+## The small number on a watering can (foam of the palette) and its size.
+const BADGE_COLOR := Color("92b4bd")
+const BADGE_FONT_SIZE := 8
 ## The slot a stack is dragged from fades, as it is the icon that moves.
 const DRAGGED_ALPHA := 0.4
 ## The layer of the dragged icon: above the screens and the HUD's hotbar, which Godot's own drag
@@ -35,6 +38,8 @@ const SELECTED_SLOT_TEXTURE := preload("res://assets/ui/slot_selected.png")
 ## Drawn in an empty slot, if set.
 var hint: Texture2D
 var tooltip_id := ""
+## A small number in the top left corner, if not empty (see `show_stack`).
+var badge := ""
 ## The hotbar of the HUD is not clickable until a screen that moves items is open.
 var is_clickable := true
 ## What the slot shows and moves stacks of: an ItemSlots (`slot` is an index) or an Equipment
@@ -101,8 +106,10 @@ func destroy() -> void:
 	container.destroy(slot)
 
 
-func show_stack(stack: Dictionary, is_selected: bool) -> void:
+## `badge`, if given, is drawn small in the top left corner: the water in a watering can.
+func show_stack(stack: Dictionary, is_selected: bool, new_badge := "") -> void:
 	_stack = stack
+	badge = new_badge
 	_icon = null if stack.is_empty() else load(ArtSet.path(ItemTypes.icon_path(stack["item"])))
 	_is_selected = is_selected
 	var text := "" if stack.is_empty() else ItemTooltip.text_for(stack["item"], stack["count"])
@@ -111,7 +118,7 @@ func show_stack(stack: Dictionary, is_selected: bool) -> void:
 
 
 func show_art_set() -> void:
-	show_stack(_stack, _is_selected)
+	show_stack(_stack, _is_selected, badge)
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -194,6 +201,21 @@ func _draw() -> void:
 			draw_texture_rect(hint, ICON_RECT, false)
 		return
 	draw_texture_rect(_icon, ICON_RECT, false)
+	if badge != "":
+		var badge_font := get_theme_default_font()
+		var top_left := Vector2(2, badge_font.get_ascent(BADGE_FONT_SIZE) + 1)
+		draw_string(
+			badge_font,
+			top_left + Vector2.ONE,
+			badge,
+			HORIZONTAL_ALIGNMENT_LEFT,
+			-1,
+			BADGE_FONT_SIZE,
+			COUNT_SHADOW_COLOR
+		)
+		draw_string(
+			badge_font, top_left, badge, HORIZONTAL_ALIGNMENT_LEFT, -1, BADGE_FONT_SIZE, BADGE_COLOR
+		)
 	if _stack["count"] > 1:
 		# The font comes from the theme set on a parent (see ui_theme.tres).
 		var font := get_theme_default_font()

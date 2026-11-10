@@ -52,7 +52,7 @@ static func action(kind: StringName) -> StringName:
 			return &"plant"
 		ActionOutcome.HARVEST, ActionOutcome.FORAGE, ActionOutcome.CLEAR:
 			return &"pick_bush"
-		ActionOutcome.WATER:
+		ActionOutcome.WATER, ActionOutcome.FILL_CAN:
 			return &"water_pour"
 		ActionOutcome.MOW:
 			return &"scythe_swish"
@@ -77,7 +77,7 @@ static func failed_use(result: ToolUse.Use, held_tool: StringName) -> StringName
 	match result:
 		ToolUse.Use.NEEDS_BETTER_TOOL, ToolUse.Use.NO_ROOM:
 			return &"denied"
-		ToolUse.Use.RIDING, ToolUse.Use.STANDING_ON:
+		ToolUse.Use.RIDING, ToolUse.Use.STANDING_ON, ToolUse.Use.CAN_EMPTY:
 			return &"denied"
 		ToolUse.Use.NOTHING:
 			return &"scythe_swish" if held_tool == ItemTypes.SCYTHE else &""
