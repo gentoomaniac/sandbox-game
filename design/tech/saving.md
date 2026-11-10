@@ -28,8 +28,10 @@
   is renamed over the save (`SaveService`). Only one save runs at a time; a second request
   while one runs is skipped (the next timed or quick save follows). The notifications say
   "Saving..." while it runs, then "Saved", or a red line if it failed (a failed save leaves the
-  previous one as it was). The saves that must not be lost (sleeping, passing out, save and
-  quit, closing the window) wait for a running save and then write at once. Quitting never
+  previous one as it was). Sleeping in a bed and passing out save in the background too
+  (`SaveService.save_without_stalling`), a frame after the sleep, under the black screen. The saves
+  that must not be lost (save and quit, closing the window) wait for a running save and then
+  write at once. Quitting never
   happens mid-write. `SaveService.last_succeeded` and `last_error` have the result of the last
   save.
 - **A failed save is never quietly given up** (the user, 2026-11-09, task 140). Every step of the

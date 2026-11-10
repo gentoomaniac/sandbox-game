@@ -693,7 +693,8 @@ func _open_chat(npc: Npc) -> void:
 	_chat_screen.open_chat(npc, _state)
 
 
-## Sleeps in the bed in reach until the morning: the new day shows on the black for a moment.
+## Sleeps in the bed in reach until the morning, and saves: the new day shows on the black for a
+## moment. As when passing out, the sleep and the save are a frame each under the black screen.
 func _try_sleep() -> void:
 	var bed := _state.bed_in_reach()
 	if bed == null:
@@ -702,19 +703,20 @@ func _try_sleep() -> void:
 		func() -> String:
 			_state.sleep_in(bed)
 			_show_clock()
-			_save_game()
+			await get_tree().process_frame
+			await _saves.save_without_stalling(_state, _options.save_path)
 			return _state.clock.date_text()
 	)
 
 
-## Fades to black, runs `change` while the screen is black, and fades back in. A `change` that
-## returns text has it shown on the black for a moment first.
+## Fades to black, runs `change` while the screen is black (it may await), and fades back in. A
+## `change` that returns text has it shown on the black for a moment first.
 func _fade_through(change: Callable) -> void:
 	_is_in_transition = true
 	# No command runs during a fade: a teleport would meet a door half way through.
 	_console_view.close()
 	await _fade_screen.fade_out()
-	var note: Variant = change.call()
+	var note: Variant = await change.call()
 	if note is String:
 		await _fade_screen.show_note(note)
 	await _fade_screen.fade_in()
@@ -872,12 +874,6 @@ func _load_settings() -> GameSettings:
 ## TextureRect drawn through UV, so it keeps filling the window and the world view is unchanged.
 func _apply_ui_scale(ui_scale: float) -> void:
 	get_tree().root.content_scale_factor = ui_scale
-
-
-## Saves now, after the save that runs, if any: for the moments that must not lose the game
-## (sleeping, quitting). Whether it was written is `_saves.last_succeeded`.
-func _save_game() -> void:
-	_saves.save_and_wait(_state, _options.save_path)
 
 
 func _show_save_result(succeeded: bool) -> void:
