@@ -4061,3 +4061,43 @@ choice; llm.sh got `LLM_CDI_DIRS` for it. The picture was not re-taken: the old 
 1000x1040, but the compositor decides the window size here (`--resolution 1000x1040`, also with
 `--windowed` and `--position`, still gave 882x1372), and a picture of another shape would not
 fit the README. It became task 164 (a screenshot size option).
+
+## 164. Screenshots in the size asked for, whatever the window
+
+- [x] Done
+
+The user, 2026-11-10: "Yes, do that, start it now" (a size option for screenshots inside the
+game). `make screenshot` saves the window as it is, and on Wayland the compositor decides the
+window's size (882x1372 or 882x439 here, whatever is asked for), so a README picture can't be
+re-taken in its old size (task 160).
+- A `SIZE=WxH` for `make screenshot` (a game option under it) makes the picture exactly that size,
+  the same view and HUD as a window of that size would show, whatever the compositor does with the
+  window (e.g. the world and UI drawn into a viewport of that size, or the root viewport's size
+  forced); muted and without stealing focus, as now.
+- Then re-take docs/screenshots/dogs-cats-horses.png with the horse of task 156 in its old size
+  (1000x1040), the same scene as before (the item task 160 left to Later).
+- The user, 2026-11-10: "I run KDE with Krohnkite tiling script. So the opening window gets
+  tiled immediately ... the window always pops up in the foreground. If we can identify test runs
+  of the game I can add rules to not tile the window and maybe put it in the background." Every
+  window a tool or an agent opens (`make screenshot`, and any other target that opens one for a
+  check) carries a fixed title and, where the display driver allows it, its own app id or window
+  class (for example `sandbox-game-test`), different from the game the user plays; documented in
+  tools/README.md with a KWin rule and the Krohnkite ignore setting to match it.
+
+Done: `make screenshot SIZE=WxH` (game option `--screenshot-size=WxH`) runs the game in a viewport
+of exactly that size (game/scenes/screenshot_frame.tscn, which the Makefile starts instead of the
+main scene), stretched as the project's window is (base size, aspect `expand`, the UI scale of
+the settings); `ViewMath.window_size` gives the camera and the wildlife view that size instead of
+the window's. Tried first: a real window resized (the compositor ignores it), the root window's
+size forced, and an embedded Window (its picture came out at the compositor's scale or
+unstretched). The window of a check is titled exactly "Sandbox Game (test)" by the game flag
+`--with-working-window-title`, which `make screenshot` passes and `make run` does not
+(`make run ARGS=--with-working-window-title` does); tools/README.md names it as the text the
+user's KWin and Krohnkite rules match. Godot's Wayland driver sets the app id `Sandbox Game`
+(the project's name) before the window shows, and the title "Godot" first, then the project's;
+the game sets the working title once its first scene starts. docs/screenshots/dogs-cats-horses.png
+was re-taken in its old size, 1000x1040, with the 32 px horse: `make screenshot SIZE=1280x1200
+ZOOM=1.165 TIME=11:00 ARGS="--livestock=dog,cat,horse --day=40"`, cropped to the 1000x1040 at
+x=200, y=100 (the player is then where he was in the old picture, and the HUD is cut off, as in
+the old one). The animals are placed at random, so their places differ from the old picture's.
+

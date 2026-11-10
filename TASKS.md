@@ -246,28 +246,6 @@ The user, 2026-11-10: R8 deliverable 4 (review A5).
   or held by a small session-bound rules object.
 - Acceptance: two sessions with different suns don't change each other's rules; same looks.
 
-## 164. Screenshots in the size asked for, whatever the window
-
-- [ ] Done
-
-The user, 2026-11-10: "Yes, do that, start it now" (a size option for screenshots inside the
-game). `make screenshot` saves the window as it is, and on Wayland the compositor decides the
-window's size (882x1372 or 882x439 here, whatever is asked for), so a README picture can't be
-re-taken in its old size (task 160).
-- A `SIZE=WxH` for `make screenshot` (a game option under it) makes the picture exactly that size,
-  the same view and HUD as a window of that size would show, whatever the compositor does with the
-  window (e.g. the world and UI drawn into a viewport of that size, or the root viewport's size
-  forced); muted and without stealing focus, as now.
-- Then re-take docs/screenshots/dogs-cats-horses.png with the horse of task 156 in its old size
-  (1000x1040), the same scene as before (the item task 160 left to Later).
-- The user, 2026-11-10: "I run KDE with Krohnkite tiling script. So the opening window gets
-  tiled immediately ... the window always pops up in the foreground. If we can identify test runs
-  of the game I can add rules to not tile the window and maybe put it in the background." Every
-  window a tool or an agent opens (`make screenshot`, and any other target that opens one for a
-  check) carries a fixed title and, where the display driver allows it, its own app id or window
-  class (for example `sandbox-game-test`), different from the game the user plays; documented in
-  tools/README.md with a KWin rule and the Krohnkite ignore setting to match it.
-
 ## Later (not part of the prototype)
 
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
