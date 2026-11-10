@@ -835,29 +835,30 @@ def warft():
 # data/paths.cfg). Both are drawn over whatever grass they wore, so their edges fade into it.
 
 
-def trodden():
-    """Thin, flattened grass with the earth showing through in patches."""
-    flat = sprite({"d": "dry", "l": "dry_light"}, "dll", ".dd")
-    texture_of_grass = grass_texture("green", GRASS_RAMP, 6, 10)
-    pebble = pebbles("mud_dark")
+# The share of pixels of worn ground that are a speck.
+SPECK_CHANCE = 0.03
+
+
+def worn_earth(base, specks):
+    """The texture of worn ground: an even `base` colour with a few single pixels of `specks`,
+    so that the full tiles, picked at random, show no shape of their own where they meet."""
 
     def texture(seed):
         rng = random.Random(seed)
-        tile = texture_of_grass(seed)
-        worn = patch_noise(seed + 5, 8)
+        tile = filled(base, GAME_TILE)
         for y in range(GAME_TILE):
             for x in range(GAME_TILE):
-                wear = worn(x, y)
-                if wear > 0.55:
-                    tile[y][x] = "mud"
-                elif wear > 0.4:
-                    tile[y][x] = "mud" if (x + y) % 2 else "dry"
-                elif wear > 0.15 and (x + y) % 2:
-                    tile[y][x] = "dry"
-        scatter(tile, rng, [flat], 5)
+                if rng.random() < SPECK_CHANCE:
+                    tile[y][x] = rng.choice(specks)
         return tile
 
-    fulls = [details(texture, 90 + n, *pictures) for n, pictures in enumerate([(), (pebble,), (), ()])]
+    return texture
+
+
+def trodden():
+    """Flattened grass worn down to even dark earth, with the odd speck of dry blade or bare mud."""
+    texture = worn_earth("mud_dark", ("mud", "mud", "dry"))
+    fulls = [texture(90 + n) for n in range(4)]
     shapes = edge_shapes(90, [(2, 1.0), (3, 0.7), (5, 0.3)], 0.22)
 
     # A worn tile has no decorations: its flowers and tufts were trodden down.
@@ -865,34 +866,10 @@ def trodden():
 
 
 def path():
-    """Packed bare earth, paler where most feet go, with grit, clog prints and the odd pebble lit
-    on top with its shadow under it. It lies a little below the turf: the grass beside it casts a
-    dark line along its edge and leans in over it."""
-    grit = sprite({"l": "sand"}, "l")
-    dent = sprite({"d": "mud_dark", "l": "sand"}, "dd", ".l")
-    clogs = sprite({"d": "mud_dark", "l": "sand_light"}, ".dd....", "dddl...", ".dl..dd", "....dddl", ".....dl.")
-    stones = pebbles("mud_dark")
-    tuft = tufts(GRASS_RAMP)[2]
-
-    def texture(seed):
-        rng = random.Random(seed)
-        tile = filled("mud", GAME_TILE)
-        worn = patch_noise(seed, 16)
-        for y in range(GAME_TILE):
-            for x in range(GAME_TILE):
-                if worn(x, y) > 0.5 or worn(x, y) > 0.3 and (x + y) % 2:
-                    tile[y][x] = "sand"
-        scatter(tile, rng, [grit, grit, dent], 12)
-        return tile
-
-    fulls = [
-        details(texture, 101),
-        details(texture, 102, stones),
-        details(texture, 103, clogs),
-        details(texture, 104, dent, dent),
-        details(texture, 105),
-        details(texture, 106, tuft),
-    ]
+    """Packed bare earth, an even colour with a few specks of grit. It lies a little below the
+    turf: the grass beside it casts a dark line along its edge and leans in over it."""
+    texture = worn_earth("mud", ("sand", "sand", "mud_dark"))
+    fulls = [texture(101 + n) for n in range(6)]
     shapes = edge_shapes(100, [(2, 1.0), (3, 0.6), (4, 0.3)], 0.2)
 
     def decorate(tile, covered, rng):

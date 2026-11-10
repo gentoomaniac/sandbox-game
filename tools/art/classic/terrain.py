@@ -658,30 +658,30 @@ def warft():
 # data/paths.cfg). Both are drawn over whatever grass they wore, so their edges fade into it.
 
 
-def trodden():
-    """Thin, flattened grass with the earth showing through in patches."""
-    blade = sprite({"l": "green_light", "d": "green_dark"}, "l", "d")
-    flat_blades = sprite({"d": "dry", "l": "dry_light"}, "dl", ".d")
-    bare_spots = [
-        sprite({"m": "mud"}, "mm"),
-        sprite({"m": "mud", "d": "dry"}, ".m", "md"),
-        sprite({"m": "mud", "d": "mud_dark"}, "mm.", ".dm"),
-        sprite({"m": "mud"}, "m", "m"),
-    ]
-    pebble = sprite({"s": "stone", "d": "mud_dark"}, "s", "d")
+# The share of pixels of worn ground that are a speck.
+SPECK_CHANCE = 0.03
+
+
+def worn_earth(base, specks):
+    """The texture of worn ground: an even `base` colour with a few single pixels of `specks`,
+    so that the full tiles, picked at random, show no shape of their own where they meet."""
 
     def texture(seed):
         rng = random.Random(seed)
-        tile = filled("green")
+        tile = filled(base)
         for y in range(TILE):
             for x in range(TILE):
-                if rng.random() < 0.3:
-                    tile[y][x] = "dry"
-        sprinkle(tile, rng, bare_spots, spacing=4, chance=0.7)
-        sprinkle(tile, rng, [flat_blades, blade], spacing=5, chance=0.4)
+                if rng.random() < SPECK_CHANCE:
+                    tile[y][x] = rng.choice(specks)
         return tile
 
-    fulls = [details(texture, 90 + n, *picks) for n, picks in enumerate([(), (pebble,), (), ()])]
+    return texture
+
+
+def trodden():
+    """Flattened grass worn down to even dark earth, with the odd speck of dry blade or bare mud."""
+    texture = worn_earth("mud_dark", ("mud", "mud", "dry"))
+    fulls = [texture(90 + n) for n in range(4)]
     shapes = edge_shapes(90, [(2, 1.0), (3, 0.7), (5, 0.3)], 0.22)
 
     def decorate(tile, covered, rng):
@@ -698,27 +698,9 @@ def trodden():
 
 
 def path():
-    """Bare trodden earth, with grit and the odd stone; grass creeps in at the edges."""
-    grit = sprite({"l": "sand"}, "l")
-    dark = sprite({"d": "mud_dark"}, "d")
-    stone = sprite({"s": "stone_light", "d": "stone"}, "s", "d")
-    pebbles = sprite({"s": "stone", "d": "stone_dark", "l": "stone_light"}, "l.s", ".d.")
-    tuft = sprite({"b": "green_light", "d": "green_dark"}, "b.b", ".d.")
-
-    def texture(seed):
-        rng = random.Random(seed)
-        tile = filled("mud")
-        sprinkle(tile, rng, [grit, dark, dark], spacing=3, chance=0.5)
-        return tile
-
-    fulls = [
-        details(texture, 101),
-        details(texture, 102, stone),
-        details(texture, 103),
-        details(texture, 104, pebbles),
-        details(texture, 105),
-        details(texture, 106, tuft),
-    ]
+    """Bare trodden earth, an even colour with a few specks of grit; grass creeps in at the edges."""
+    texture = worn_earth("mud", ("sand", "sand", "mud_dark"))
+    fulls = [texture(101 + n) for n in range(6)]
     shapes = edge_shapes(100, [(2, 1.0), (3, 0.6), (4, 0.3)], 0.2)
 
     def decorate(tile, covered, rng):
