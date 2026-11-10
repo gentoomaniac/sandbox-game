@@ -90,6 +90,7 @@ func test_the_chunks_stay_as_they_are_over_the_frames_of_a_sleep() -> void:
 	var chunks_at_start := state.world.loaded_chunk_coords()
 	# The camera would stream chunks round a far focus.
 	_main._residency.set_focus(state.player.tile() + Vector2i(320, 0))
+	_main._residency.update()
 	await wait_until(func() -> bool: return not _main._is_in_transition, SLEEP_SECONDS)
 
 	assert_eq(could_process_at_skip, [false] as Array[bool])

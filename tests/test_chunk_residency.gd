@@ -55,3 +55,14 @@ func test_listeners_hear_of_the_chunks_loaded_and_unloaded() -> void:
 	_residency.unload_chunk(HOME)
 	assert_eq(unloaded, [HOME] as Array[Vector2i])
 	assert_false(_world.is_chunk_loaded(HOME), "the chunk is gone when the listener hears of it")
+
+
+func test_a_held_residency_loads_and_drops_nothing() -> void:
+	var far := Vector2i(ChunkResidency.UNLOAD_RADIUS + 1, 0)
+	_residency.load_chunk(far)
+	_residency.is_held = true
+	_residency.update()
+	assert_eq(_world.loaded_chunk_coords(), [far] as Array[Vector2i])
+	_residency.is_held = false
+	_residency.update()
+	assert_false(_world.is_chunk_loaded(far))

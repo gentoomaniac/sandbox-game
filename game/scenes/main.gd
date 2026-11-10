@@ -585,11 +585,13 @@ func _pass_out() -> void:
 
 
 ## Holds everything that changes the world by itself while the time of a sleep is made up for
-## over frames, or lets it go: the views (chunks streaming in and out, the animals' hunts, the
-## wildlife) and the animals and villagers of the state. So the world is the one a skip in one go
-## would have, and the game is not saved or quit half way (see `_is_saved_for_quit`).
+## over frames, or lets it go: the chunk residency (chunks loading and unloading), the views (the
+## animals' hunts, the wildlife) and the animals and villagers of the state. So the world is the
+## one a skip in one go would have, and the game is not saved or quit half way (see
+## `_is_saved_for_quit`).
 func _hold_world(is_held: bool) -> void:
 	_is_making_up_time = is_held
+	_residency.is_held = is_held or _state.is_inside()
 	_view.process_mode = (
 		PROCESS_MODE_DISABLED if is_held or _state.is_inside() else PROCESS_MODE_INHERIT
 	)
@@ -746,6 +748,7 @@ func _show_current_map() -> void:
 	_view.visible = not is_inside
 	_weather_view.visible = not is_inside
 	_view.process_mode = PROCESS_MODE_DISABLED if is_inside else PROCESS_MODE_INHERIT
+	_residency.is_held = is_inside or _is_making_up_time
 	_interior_view.visible = is_inside
 	if is_inside:
 		_wildlife.clear()

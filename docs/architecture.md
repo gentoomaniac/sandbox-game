@@ -53,8 +53,8 @@ Warft and an Ewer here and there.
   is the same spread over frames, for the sleep and passing out under their black screen (the
   villagers in steps of 8 ms, `Npcs.catch_up_over_frames`, and the soil moisture, which a save
   would else catch up in one go, `SoilMoisture.catch_up_all_over_frames`), each within
-  `Simulation.frame_budget_usec` a frame. Main holds the world still meanwhile, the views too
-  (chunk streaming, hunts, wildlife), until the player has woken, and a quit waits for that: so
+  `Simulation.frame_budget_usec` a frame. Main holds the world still meanwhile, the chunk residency
+  (no chunk loads or drops) and the views too (hunts, wildlife), until the player has woken, and a quit waits for that: so
   the world ends as after `skip` and a save is of a whole morning. The systems:
   `FarmingUpkeep` (every hour: the crops live through the hour, a 24th of a day's growth in the
   weather of its day; the end of the day counts for them), `NightUpkeep` (at midnight: reeds,

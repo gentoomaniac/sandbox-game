@@ -14,6 +14,9 @@ const LOAD_RADIUS := 3
 const UNLOAD_RADIUS := 5
 
 var world: World
+## While true, `update` loads and drops nothing: the world is held still (a sleep that is made up
+## for, a player indoors).
+var is_held := false
 var focus_chunk := Vector2i.ZERO
 ## True when `update` found every chunk around the focus loaded (before it loaded the next).
 var is_complete := false
@@ -33,6 +36,8 @@ func set_focus(world_pos: Vector2i) -> void:
 ## Drops the chunks that are far from the focus, and loads the nearest missing one if
 ## `may_load` (the renderer says it can take another).
 func update(may_load := true) -> void:
+	if is_held:
+		return
 	var plan := ChunkStreaming.plan(
 		focus_chunk, world.loaded_chunk_coords(), LOAD_RADIUS, UNLOAD_RADIUS
 	)
