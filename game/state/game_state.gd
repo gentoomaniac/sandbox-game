@@ -596,6 +596,7 @@ func _pass_time(minutes: int) -> void:
 ## Puts what changes with time under the simulation, once the world and the weather exist. The
 ## order is the order they run in.
 func _start_simulation() -> void:
+	simulation.add_system(FarmingUpkeep.new(world, weather))
 	simulation.add_system(NightUpkeep.new(world, weather, _tiles_kept_clear))
 
 

@@ -12,6 +12,9 @@ var max_temperature := 0.0
 var sunlight_hours := 0.0
 ## Hours of the heaviest rain: every hour counts as much as its rain intensity.
 var rain_hours := 0.0
+## The rain of each of the day's 24 hours, as its intensity at the hour's start (`rain_hours` is
+## their sum).
+var rain_by_hour := PackedFloat32Array()
 ## Metres per second: the strongest wind of the day's hours.
 var max_wind_speed := 0.0
 

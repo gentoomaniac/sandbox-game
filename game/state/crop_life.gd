@@ -3,17 +3,18 @@ extends RefCounted
 ## What a crop (a WorldObject whose type has `growth_stages`) does over its life, as functions
 ## of the object. Its state has `growth`, the points gathered (a perfect day gives 1; each
 ## stage takes `growth_per_stage` of them), and `crop_damage`, from 0 to 1, where 1 is dead.
-## Every night it lives through the day that ended: its weather and the moisture of its soil
-## give a score, or trouble (see `troubles` and `live_through_day`). The numbers of each crop
-## are in data/crops.cfg (see CropRules).
+## Every hour it lives through: the weather of its day and the moisture of its soil give a
+## score, or trouble (see `troubles` and `live_through_hour`), a 24th of a day's worth each.
+## The numbers of each crop are in data/crops.cfg (see CropRules).
 ##
 ## A ripe crop waits for the harvest only for the days it took to ripen (`days_growing`,
 ## counted since planting or since it regrew) times its `ripe_wait_factor`; one day more
 ## (`days_ripe`) and it withers: it dies, and gives nothing.
 
-## Growth is a sum of fractions, so a crop that gathered exactly a stage's worth may be a hair
-## short of it.
+## Growth and damage are sums of fractions, so a crop that gathered exactly a stage's worth, or
+## took exactly a death's worth of damage, may be a hair short of it.
 const GROWTH_EPSILON := 0.0001
+const HOURS_PER_DAY := 24
 
 
 static func growth(crop: WorldObject) -> float:
@@ -42,7 +43,7 @@ static func days_ripe(crop: WorldObject) -> int:
 
 
 static func is_dead(crop: WorldObject) -> bool:
-	return damage(crop) >= 1.0
+	return damage(crop) >= 1.0 - GROWTH_EPSILON
 
 
 static func is_ripe(crop: WorldObject) -> bool:
@@ -71,6 +72,7 @@ static func regrow(crop: WorldObject) -> void:
 	assert(regrows(crop), "Does not regrow: %s" % crop.type)
 	crop.state["growth"] = crop.type_data()["regrow_stage"] * crop.type_data()["growth_per_stage"]
 	crop.state["days_growing"] = 0
+	crop.state.erase("ripe_at_dawn")
 	crop.state["days_ripe"] = 0
 
 
@@ -118,30 +120,51 @@ static func score(crop: WorldObject, day: WeatherDay, moisture: float) -> float:
 	return minf(weather_score(crop_type, day), water)
 
 
-## Lets a crop live through a day of this weather on soil of this moisture. A bad day (see
-## `troubles`) does it damage and gives no growth; any other grows it by the day's score, and a
-## good one (see CropRules `good_day_score`) also heals it. A ripe crop left too long withers
-## (see the top). Returns whether its look changed.
-static func live_through_day(crop: WorldObject, day: WeatherDay, moisture: float) -> bool:
+## What the end of a day does to a crop, as the night that ended it did: the day is counted as
+## growing, or as ripe for a crop that was ripe when the day began, and a ripe crop left too long
+## withers (see the top). Whether it was ripe at dawn is kept (`ripe_at_dawn`), as it grows by the
+## hour through the day. Returns whether its look changed.
+static func end_day(crop: WorldObject) -> bool:
 	if is_dead(crop):
 		return false
 	var crop_type := crop.type_data()
-	var look_before := look(crop)
-	if is_ripe(crop):
+	var was_ripe_at_dawn: int = crop.state.get("ripe_at_dawn", int(is_ripe(crop)))
+	crop.state["ripe_at_dawn"] = int(is_ripe(crop))
+	if was_ripe_at_dawn == 1:
 		crop.state["days_ripe"] = days_ripe(crop) + 1
 		if days_ripe(crop) > days_growing(crop) * crop_type["ripe_wait_factor"]:
 			crop.state["crop_damage"] = 1.0
 			return true
 	else:
 		crop.state["days_growing"] = days_growing(crop) + 1
+	return false
+
+
+## Lets a crop live through one hour of a day of this weather on soil of this moisture, which
+## is 1/HOURS_PER_DAY of what a day does: a bad hour (see `troubles`) does it that much of the
+## damage and gives no growth; any other grows it by that share of the score, and a good one
+## (see CropRules `good_day_score`) also heals it by that share. Returns whether its look changed.
+static func live_through_hour(crop: WorldObject, day: WeatherDay, moisture: float) -> bool:
+	if is_dead(crop):
+		return false
+	var crop_type := crop.type_data()
+	var look_before := look(crop)
+	# A crop from before the hours (a saved game's) has not been counted by the day yet: what it
+	# has is how it stood at dawn, before it grows today.
+	if not crop.state.has("ripe_at_dawn"):
+		crop.state["days_growing"] = days_growing(crop)
+		crop.state["ripe_at_dawn"] = int(is_ripe(crop))
 	if not troubles(crop, day, moisture).is_empty():
-		crop.state["crop_damage"] = minf(damage(crop) + crop_type["damage_per_bad_day"], 1.0)
+		var bad_hour_damage: float = crop_type["damage_per_bad_day"] / HOURS_PER_DAY
+		var damaged := damage(crop) + bad_hour_damage
+		crop.state["crop_damage"] = 1.0 if damaged >= 1.0 - GROWTH_EPSILON else damaged
 		return look(crop) != look_before
-	var day_score := score(crop, day, moisture)
+	var hour_score := score(crop, day, moisture)
 	var ripe_growth: float = (crop_type["growth_stages"] - 1) * crop_type["growth_per_stage"]
-	crop.state["growth"] = minf(growth(crop) + day_score, ripe_growth)
-	if day_score >= CropRules.default_rules().farming("good_day_score"):
-		crop.state["crop_damage"] = maxf(damage(crop) - crop_type["heal_per_good_day"], 0.0)
+	crop.state["growth"] = minf(growth(crop) + hour_score / HOURS_PER_DAY, ripe_growth)
+	if hour_score >= CropRules.default_rules().farming("good_day_score"):
+		var hour_healing: float = crop_type["heal_per_good_day"] / HOURS_PER_DAY
+		crop.state["crop_damage"] = maxf(damage(crop) - hour_healing, 0.0)
 	return look(crop) != look_before
 
 

@@ -49,7 +49,7 @@ func test_a_poor_day_grows_in_proportion() -> void:
 	var day := _best_day(crop)
 	# Half way from the minimum to the best temperature.
 	day.mean_temperature = (_need(crop, "temperature_min") + _need(crop, "temperature_best")) / 2.0
-	CropLife.live_through_day(crop, day, _best_moisture(crop))
+	_live_through_day(crop, day, _best_moisture(crop))
 	assert_almost_eq(CropLife.growth(crop), 0.5, 0.0001)
 	assert_eq(CropLife.damage(crop), 0.0, "a poor day is not a bad one")
 
@@ -90,8 +90,10 @@ func test_each_cause_of_a_bad_day_damages_and_stops_growth() -> void:
 		var day: WeatherDay = causes[cause][0]
 		var moisture: float = causes[cause][1]
 		assert_eq(CropLife.troubles(crop, day, moisture), [cause] as Array[StringName], str(cause))
-		CropLife.live_through_day(crop, day, moisture)
-		assert_eq(CropLife.damage(crop), _need(crop, "damage_per_bad_day"), str(cause))
+		_live_through_day(crop, day, moisture)
+		assert_almost_eq(
+			CropLife.damage(crop), _need(crop, "damage_per_bad_day"), 0.00001, str(cause)
+		)
 		assert_eq(CropLife.growth(crop), 0.0, str(cause))
 
 
@@ -100,10 +102,10 @@ func test_a_crop_dies_after_enough_bad_days_and_shows_its_dead_stage() -> void:
 	var drought := _best_day(crop)
 	var days := ceili(1.0 / _need(crop, "damage_per_bad_day"))
 	for _i in days - 1:
-		CropLife.live_through_day(crop, drought, 0.0)
+		_live_through_day(crop, drought, 0.0)
 	assert_false(CropLife.is_dead(crop))
 	assert_ne(CropLife.look(crop), CropRules.STAGES)
-	assert_true(CropLife.live_through_day(crop, drought, 0.0), "its look changed")
+	assert_true(_live_through_day(crop, drought, 0.0), "its look changed")
 	assert_true(CropLife.is_dead(crop))
 	assert_eq(CropLife.damage(crop), 1.0)
 	assert_eq(CropLife.look(crop), CropRules.STAGES, "the dead stage follows the growth stages")
@@ -144,7 +146,7 @@ func test_beans_and_flax_die_in_a_gale_but_wheat_stands_it() -> void:
 		var day := _best_day(crop)
 		day.max_wind_speed = gale_speed
 		for _i in 4:
-			CropLife.live_through_day(crop, day, _best_moisture(crop))
+			_live_through_day(crop, day, _best_moisture(crop))
 		assert_eq(CropLife.is_dead(crop), crop_id != &"wheat", str(crop_id))
 	assert_lt(_need(_crop(&"beans"), "wind_max"), gale_speed)
 	assert_gt(_need(_crop(&"wheat"), "wind_max"), gale_speed)
@@ -196,9 +198,7 @@ func test_crops_planted_in_season_ripen_in_a_fortnight_or_so_under_the_real_weat
 			# Watered every day, so that the soil is damp (a little under its best) all day.
 			var moisture := _best_moisture(crop)
 			while not CropLife.is_ripe(crop) and not CropLife.is_dead(crop):
-				CropLife.live_through_day(
-					crop, weather.day_summary(Vector2i.ZERO, day_number), moisture
-				)
+				_live_through_day(crop, weather.day_summary(Vector2i.ZERO, day_number), moisture)
 				day_number += 1
 			var days: int = day_number - crops_and_day[1]
 			assert_false(CropLife.is_dead(crop), "%s died" % crop_id)

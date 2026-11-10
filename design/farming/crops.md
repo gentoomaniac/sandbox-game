@@ -24,9 +24,11 @@
     spilled in front.
   - **Crops need light, water and warmth to grow**, with the needs per crop in the
     config: a temperature range (minimum, best, maximum), the sunlight they need per
-    day, the soil moisture they need, and how much wind they stand. Each night a crop
-    grows by how well the day met its needs (good days count fully, poor days partly,
-    bad days not at all) and moves to the next stage after enough growth.
+    day, the soil moisture they need, and how much wind they stand. Every game hour a
+    crop grows by a 24th of how well its day met its needs (good days count fully, poor
+    days partly, bad days not at all; changed 2026-11-10, before it was once a night, with
+    the same totals) and moves to the next stage after enough growth. A crop is counted as
+    a day older at midnight (decided 2026-11-10).
   - **Crops can die:** days without enough sun or water, frost below the crop's
     minimum, or wind above its tolerance (beans and flax are fragile, wheat bends)
     damage the crop; enough damage and it dies and shows its dead stage, which the empty
@@ -36,7 +38,10 @@
     `ripe_wait_factor` in the config (1 for all crops for now). One day more and it
     withers: it dies, shows its dead stage and gives nothing. The player harvests by hand.
   - **Soil moisture** belongs to each tilled tile: rain wets it, the watering can fills
-    it, and warmth, sun and wind dry it out over the day. The whole tile's brown shows it in four
+    it, and warmth, sun and wind dry it out, hour by hour (changed 2026-11-10, a 24th of a
+    day's drying each hour; it is worked out when it is looked at, so a month passes quickly).
+    Clamping hour by hour is not the nightly clamp: soil that is already soaked loses the early
+    rain of a day and then dries. The whole tile's brown shows it in four
     steps: light brown when dry, dark brown when soaked, lightening day by day as it dries.
   - The calendar no longer gates planting: the weather does. Seeds plant on tilled soil
     any time; a crop planted in the wrong season simply won't thrive.

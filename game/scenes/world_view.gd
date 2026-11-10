@@ -275,6 +275,20 @@ func set_focus(world_pos: Vector2i) -> void:
 	_focus_chunk = Chunk.world_to_chunk(world_pos)
 
 
+## The soil of the loaded chunks shows the moisture it has now, those around the focus first: it
+## changes with the hours, quietly, and a few tiles are drawn every frame. Chunks that load later
+## are drawn when they load.
+func refresh_soil() -> void:
+	if world == null:
+		return
+	var coords := world.loaded_chunk_coords()
+	coords.sort_custom(
+		func(a: Vector2i, b: Vector2i) -> bool:
+			return (a - _focus_chunk).length_squared() < (b - _focus_chunk).length_squared()
+	)
+	_soil_wetness.refresh_looks(coords)
+
+
 func _process(delta: float) -> void:
 	if world == null:
 		return

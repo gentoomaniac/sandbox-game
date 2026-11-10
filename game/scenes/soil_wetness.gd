@@ -17,6 +17,8 @@ const TILE_SIZE := TerrainTileset.TILE_SIZE
 ## step or a little more (data/crops.cfg), so soaked soil is dry again in about three days.
 const LOOK_FROM: Array[float] = [0.25, 0.5, 0.75]
 const LOOKS := 4
+## A frame spends this long at the most on drawing the soil again after an hour has passed.
+const REFRESH_BUDGET_USEC := 1500
 ## The neighbours of a tile as bits of its bed shape, as in tools/art/soil_beds.py.
 const NORTH := 1
 const EAST := 2
@@ -48,6 +50,10 @@ static var _columns := _bed_columns()
 
 var _world: World
 var _is_covered: Callable
+var _chunks_to_refresh: Array[Vector2i] = []
+var _next_chunk_to_refresh := 0
+var _tiles_to_refresh: Array[Vector2i] = []
+var _next_tile_to_refresh := 0
 
 
 func _init() -> void:
@@ -104,6 +110,38 @@ func mark_count() -> int:
 	return get_used_cells().size()
 
 
+## Draws the soil of the chunks again, in the order given, a few tiles every frame: those that
+## now have another step of wetness than the one drawn. The weather wets and dries the soil by
+## the hour, and the world tells nothing of it (see SoilMoisture). Chunks still waiting from
+## before are dropped: these are newer.
+func refresh_looks(chunks: Array[Vector2i]) -> void:
+	_chunks_to_refresh = chunks
+	_next_chunk_to_refresh = 0
+	_tiles_to_refresh = []
+	_next_tile_to_refresh = 0
+
+
+func _process(_delta: float) -> void:
+	var started := Time.get_ticks_usec()
+	while true:
+		if _next_tile_to_refresh >= _tiles_to_refresh.size():
+			if _next_chunk_to_refresh >= _chunks_to_refresh.size():
+				return
+			_tiles_to_refresh = _world.tilled_tiles_in_chunk(
+				_chunks_to_refresh[_next_chunk_to_refresh]
+			)
+			_next_chunk_to_refresh += 1
+			_next_tile_to_refresh = 0
+			continue
+		var pos := _tiles_to_refresh[_next_tile_to_refresh]
+		_next_tile_to_refresh += 1
+		# The row of a cell is its look less one; an empty cell is (-1, -1).
+		if _look_at(pos) != get_cell_atlas_coords(pos).y + 1:
+			_draw_tile(pos)
+		if Time.get_ticks_usec() - started > REFRESH_BUDGET_USEC:
+			return
+
+
 ## Draws one tile again.
 func redraw_tile(world_pos: Vector2i) -> void:
 	_draw_tile(world_pos)
@@ -136,9 +174,13 @@ func _draw_surroundings(world_pos: Vector2i) -> void:
 		_draw_tile(world_pos + offset)
 
 
-func _draw_tile(world_pos: Vector2i) -> void:
+func _look_at(world_pos: Vector2i) -> int:
 	var is_wettable: bool = _world.is_tilled(world_pos) and not _is_covered.call(world_pos)
-	var look := look_for(_world.moisture_at(world_pos)) if is_wettable else 0
+	return look_for(_world.moisture_at(world_pos)) if is_wettable else 0
+
+
+func _draw_tile(world_pos: Vector2i) -> void:
+	var look := _look_at(world_pos)
 	if look == 0:
 		erase_cell(world_pos)
 		return

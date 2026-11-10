@@ -158,6 +158,9 @@ func _do_use(target: Vector2i) -> Use:
 			var seeds := _state.player.inventory.held_item()
 			var planted := WorldObject.new(ItemTypes.TYPES[seeds]["plants"], target)
 			planted.state = ItemTypes.TYPES[seeds].get("plants_state", {}).duplicate()
+			if planted.is_crop():
+				# Counted from the planting: the crop grows by the hour from now on.
+				planted.state["days_growing"] = 0
 			_state.world.add_object(planted)
 			_state.player.inventory.consume_held()
 			_done(ActionOutcome.PLANT, target, planted.type, {seeds: 1})

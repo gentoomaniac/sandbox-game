@@ -48,6 +48,8 @@ var clock: GameClock
 var vegetation := Vegetation.default_vegetation()
 ## What lies on the ground (see `drop_items`).
 var ground_items := GroundItems.new()
+## The moisture of the tilled soil (see `moisture_at`).
+var soil: SoilMoisture
 ## The clay spots that were dug, with the nights left until they hold clay again (see
 ## `recover_clay_spots`).
 var _spent_clay_spots: Dictionary[Vector2i, int] = {}
@@ -60,6 +62,8 @@ var _chunks: Dictionary[Vector2i, Chunk] = {}
 ## position the object that stands there now, or null where the generated object was
 ## removed. Together with the seed this is the whole world (the future save format).
 var _object_edits: Dictionary[Vector2i, WorldObject] = {}
+## The positions of the crops among them, which every hour of the simulation visits.
+var _crop_positions: Dictionary[Vector2i, bool] = {}
 ## Terrain the player changed (e.g. grass tilled to soil), by world position. Replayed on
 ## chunks before the objects, which may depend on the ground.
 var _terrain_edits: Dictionary[Vector2i, Tile.Terrain] = {}
@@ -69,9 +73,6 @@ var _terrain_edits: Dictionary[Vector2i, Tile.Terrain] = {}
 ## builds them again.
 var _terrain_edit_positions_by_chunk: Dictionary[Vector2i, Dictionary] = {}
 var _object_edit_positions_by_chunk: Dictionary[Vector2i, Dictionary] = {}
-## The moisture (0 to 1) of tilled tiles that differs from the default (see `moisture_at`), by
-## world position.
-var _soil_moisture: Dictionary[Vector2i, float] = {}
 ## Buildings are the player's work and must outlive the chunks they stand on, and one can
 ## cross a chunk border, so they live here and not in chunks.
 var _buildings: Array[Building] = []
@@ -83,6 +84,7 @@ var _building_by_tile: Dictionary[Vector2i, Building] = {}
 func _init(seed_value: int, game_clock := GameClock.new()) -> void:
 	world_seed = seed_value
 	clock = game_clock
+	soil = SoilMoisture.new(game_clock)
 	_generator = WorldGenerator.new(seed_value)
 
 
@@ -234,6 +236,10 @@ func set_terrain(world_pos: Vector2i, terrain: Tile.Terrain) -> void:
 	_clear_removable(world_pos)
 	chunk.set_terrain(Chunk.local_pos(world_pos), terrain)
 	_edit_terrain(world_pos, terrain)
+	if terrain == Tile.Terrain.SOIL:
+		soil.start(world_pos)
+	else:
+		soil.forget(world_pos)
 	# New ground starts unworn: a path that is tilled and later grassed over is grass.
 	_wear.erase(world_pos)
 	tile_changed.emit(world_pos)
@@ -242,13 +248,13 @@ func set_terrain(world_pos: Vector2i, terrain: Tile.Terrain) -> void:
 ## How wet the soil of a tile is, 0 (dry) to 1 (soaked). Tiles never wetted or dried have the
 ## default of data/crops.cfg. Only tilled soil has moisture that means anything.
 func moisture_at(world_pos: Vector2i) -> float:
-	return _soil_moisture.get(world_pos, CropRules.default_rules().farming("default_moisture"))
+	return soil.at(world_pos)
 
 
 ## Sets the moisture of a tilled tile (kept between 0 and 1) and remembers it, so it survives
 ## the chunk unloading.
 func set_moisture(world_pos: Vector2i, moisture: float) -> void:
-	_soil_moisture[world_pos] = clampf(moisture, 0.0, 1.0)
+	soil.set_at(world_pos, moisture)
 	soil_moisture_changed.emit(world_pos)
 
 
@@ -326,6 +332,14 @@ func edited_objects() -> Array[WorldObject]:
 		if object != null:
 			objects.append(object)
 	return objects
+
+
+## The crops the player planted and that are still there, in loaded chunks or not.
+func crops() -> Array[WorldObject]:
+	var crops_planted: Array[WorldObject] = []
+	for pos in _crop_positions:
+		crops_planted.append(_object_edits[pos])
+	return crops_planted
 
 
 ## Takes an object off its tiles, in an unloaded chunk too (the edit keeps it off).
@@ -570,9 +584,7 @@ func to_dict() -> Dictionary:
 	var buildings_data: Array[Dictionary] = []
 	for building in _buildings:
 		buildings_data.append(building.to_dict())
-	var soil_moisture: Array[Array] = []
-	for pos in _soil_moisture:
-		soil_moisture.append(SaveCodec.vector_to_json(pos) + [_soil_moisture[pos]])
+	soil.catch_up_all()
 	var clay_spots_data: Array[Array] = []
 	for pos in _spent_clay_spots:
 		clay_spots_data.append(SaveCodec.vector_to_json(pos) + [_spent_clay_spots[pos]])
@@ -585,7 +597,7 @@ func to_dict() -> Dictionary:
 		"spent_clay_spots": clay_spots_data,
 		"wear": wear_data,
 		"terrain_edits": terrain_edits,
-		"soil_moisture": soil_moisture,
+		"soil_moisture": soil.to_array(),
 		"object_edits": object_edits,
 		"buildings": buildings_data,
 	}
@@ -597,7 +609,7 @@ static func from_dict(data: Dictionary, game_clock: GameClock) -> World:
 	for edit: Array in data["terrain_edits"]:
 		world._edit_terrain(SaveCodec.vector_from_json(edit), SaveCodec.terrain_from_json(edit[2]))
 	for entry: Array in data["soil_moisture"]:
-		world._soil_moisture[SaveCodec.vector_from_json(entry)] = float(entry[2])
+		world.soil.load_entry(entry)
 	for entry: Array in data["spent_clay_spots"]:
 		world._spent_clay_spots[SaveCodec.vector_from_json(entry)] = int(entry[2])
 	for entry: Array in data["wear"]:
@@ -608,6 +620,13 @@ static func from_dict(data: Dictionary, game_clock: GameClock) -> World:
 			SaveCodec.vector_from_json(edit["pos"]),
 			null if object_data == null else WorldObject.from_dict(object_data)
 		)
+	# A save from before untilled soil forgot its moisture may still hold some; soil with none saved is
+	# at the default.
+	for pos in world.soil.tiles():
+		if not world.is_tilled(pos):
+			world.soil.forget(pos)
+	for pos in world.tilled_tiles():
+		world.soil.start(pos)
 	for building_data: Dictionary in data["buildings"]:
 		world._add_building(Building.from_dict(building_data))
 	world.ground_items.load_array(data["ground_items"])
@@ -631,6 +650,10 @@ func _edit_terrain(world_pos: Vector2i, terrain: Tile.Terrain) -> void:
 ## `object` is null where the generated object was removed.
 func _edit_object(world_pos: Vector2i, object: WorldObject) -> void:
 	_object_edits[world_pos] = object
+	if object != null and object.is_crop():
+		_crop_positions[world_pos] = true
+	else:
+		_crop_positions.erase(world_pos)
 	_note_edited(_object_edit_positions_by_chunk, world_pos)
 
 

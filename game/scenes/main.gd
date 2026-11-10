@@ -73,6 +73,8 @@ var _is_in_transition := false
 var _fade_screen := FadeScreen.new()
 var _debug: DebugRunner
 var _pending_minutes := 0.0
+## The game hour the wetness of the soil was last shown for.
+var _soil_shown_hour := -1
 ## The map the views show: the world or the interior of a house.
 var _shown_map: GameMap
 
@@ -400,6 +402,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	_tick_clock(delta)
+	var hour := _state.clock.total_minutes() / GameClock.MINUTES_PER_HOUR
+	if hour != _soil_shown_hour:
+		_soil_shown_hour = hour
+		_view.refresh_soil()
 	_autosave_on_time(delta)
 	_tiredness_view.is_awake = not _is_in_transition
 	_weather_view.show_weather(_weather, _tint.color)

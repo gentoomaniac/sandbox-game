@@ -149,9 +149,16 @@ func day_summary(position: Vector2i, day: int) -> WeatherDay:
 		summary.mean_temperature += sample.temperature / 24.0
 		summary.sunlight_hours += sample.sunlight / 100.0
 		summary.rain_hours += sample.rain
+		summary.rain_by_hour.append(sample.rain)
 		summary.max_wind_speed = maxf(summary.max_wind_speed, sample.wind_speed)
 	_day_summaries[key] = summary
 	return summary
+
+
+## How much it rains in an hour of a day at a world tile: its rain intensity at the start of the
+## hour, as the hours of a day's summary count it (see `day_summary`).
+func rain_in_hour(position: Vector2i, day: int, hour: int) -> float:
+	return day_summary(position, day).rain_by_hour[hour]
 
 
 ## The sample with the condition made true, for tests and screenshots: `condition` is one of

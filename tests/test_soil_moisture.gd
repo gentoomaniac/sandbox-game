@@ -11,18 +11,30 @@ class SteadyWeather:
 	func day_summary(_position: Vector2i, _day: int) -> WeatherDay:
 		return day
 
+	func rain_in_hour(_position: Vector2i, _day: int, _hour: int) -> float:
+		return day.rain_hours / CropLife.HOURS_PER_DAY
+
 
 var _weather: SteadyWeather
+## Kept, as the soil only knows its weather by it.
+var _farming_upkeep: FarmingUpkeep
 
 
 func before_each() -> void:
 	super.before_each()
 	_weather = SteadyWeather.new(SEED)
-	_world.set_terrain(_tile, Tile.Terrain.SOIL)
 	_state.clock.day = 5
+	_world.set_terrain(_tile, Tile.Terrain.SOIL)
 
 
+## A whole day over the soil and the crops, hour by hour, then the night.
 func _pass_night() -> void:
+	_farming_upkeep = FarmingUpkeep.new(_world, _weather)
+	var first_hour := (_state.clock.day - 1) * CropLife.HOURS_PER_DAY
+	for hour in range(first_hour, first_hour + CropLife.HOURS_PER_DAY):
+		_state.clock.advance(GameClock.MINUTES_PER_HOUR)
+		_farming_upkeep.pass_hour(hour)
+	_farming_upkeep.end_day()
 	NightUpkeep.new(_world, _weather, func() -> Array: return []).pass_night()
 
 

@@ -26,6 +26,17 @@ func _best_moisture(crop: WorldObject) -> float:
 	return _need(crop, "moisture_best")
 
 
+## A whole day, as one night used to give it: its 24 hours on the same moisture and its end.
+## Returns whether the look changed.
+func _live_through_day(crop: WorldObject, day: WeatherDay, moisture: float) -> bool:
+	# A crop that was not planted by the player counts its days from what it has grown.
+	crop.state["days_growing"] = CropLife.days_growing(crop)
+	var has_changed := false
+	for _hour in CropLife.HOURS_PER_DAY:
+		has_changed = CropLife.live_through_hour(crop, day, moisture) or has_changed
+	return CropLife.end_day(crop) or has_changed
+
+
 func _live(crop: WorldObject, day: WeatherDay, days := 1) -> void:
 	for _i in days:
-		CropLife.live_through_day(crop, day, _best_moisture(crop))
+		_live_through_day(crop, day, _best_moisture(crop))
