@@ -15,9 +15,6 @@ var default_moisture: float = CropRules.default_rules().farming("default_moistur
 ## day 1), before it is kept within 0 to 1: `func(pos: Vector2i, hour: int) -> float`.
 var hourly_change := func(_pos: Vector2i, _hour: int) -> float: return 0.0
 
-## How long `catch_up_all_over_frames` works in a frame, in microseconds.
-var catch_up_frame_usec := 8000
-
 var _clock: GameClock
 ## Per tile: its moisture and the hour that is as of.
 var _moisture: Dictionary[Vector2i, float] = {}
@@ -93,13 +90,14 @@ func catch_up_all() -> void:
 	_all_caught_up_hour = now
 
 
-## `catch_up_all` spread over frames: it lets go of the frame every `catch_up_frame_usec`, and goes
-## on in the next. `await` it. `next_frame` is a Callable that gives the signal of the next frame.
+## `catch_up_all` spread over frames: it lets go of the frame every `Simulation.frame_budget_usec`,
+## and goes on in the next. `await` it. `next_frame` is a Callable that gives the signal of the next
+## frame.
 func catch_up_all_over_frames(next_frame: Callable) -> void:
 	var now := _now()
 	var frame_started := Time.get_ticks_usec()
 	for pos in _moisture.keys():
-		if Time.get_ticks_usec() - frame_started > catch_up_frame_usec:
+		if Time.get_ticks_usec() - frame_started > Simulation.frame_budget_usec:
 			await next_frame.call()
 			frame_started = Time.get_ticks_usec()
 		if _as_of_hour.get(pos, now) != now:

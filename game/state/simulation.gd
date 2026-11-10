@@ -12,6 +12,13 @@ signal skipped(minutes: int)
 ## A skip plays this many minutes through, 2 seconds of play, before it makes up for the rest.
 const WALKED_MINUTES := 3
 
+## How long a part of `skip_over_frames` works in one frame, in microseconds: a frame of this and
+## the rest of the game stays under 33 ms.
+const DEFAULT_FRAME_BUDGET_USEC := 8000
+
+## The budget in use. Only the tests change it, to 0, to have every step in a frame of its own.
+static var frame_budget_usec := DEFAULT_FRAME_BUDGET_USEC
+
 var clock: GameClock
 ## In the order they run after each span: a system may rely on those before it.
 var _systems: Array[SimulationSystem] = []

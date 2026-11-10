@@ -29,9 +29,6 @@ var rules := NpcRules.default_rules()
 ## The villagers written by hand (see `spawn_villager`).
 var villagers := VillagerRules.default_rules()
 var rng := RandomNumberGenerator.new()
-## How long `catch_up_over_frames` works in a frame, in microseconds: a villager takes a millisecond
-## or so, and a frame of this and the rest of the game stays under 33 ms.
-var catch_up_frame_usec := 8000
 var _sun: Sun
 var _villager_step := PathRules.default_rules().villager_step()
 var _npcs: Array[Npc] = []
@@ -159,14 +156,14 @@ func catch_up(map: GameMap, seed_value: int) -> void:
 		_catch_up_one(npc, map)
 
 
-## `catch_up` spread over frames: it lets go of the frame every `catch_up_frame_usec`, and goes on
-## in the next. `await` it, and keep `update` from moving the villagers meanwhile, so that they end
-## up as in one go. `next_frame` is a Callable that gives the signal of the next frame.
+## `catch_up` spread over frames: it lets go of the frame every `Simulation.frame_budget_usec`, and
+## goes on in the next. `await` it, and keep `update` from moving the villagers meanwhile, so that
+## they end up as in one go. `next_frame` is a Callable that gives the signal of the next frame.
 func catch_up_over_frames(map: GameMap, seed_value: int, next_frame: Callable) -> void:
 	rng.seed = seed_value
 	var frame_started := Time.get_ticks_usec()
 	for npc in _npcs:
-		if Time.get_ticks_usec() - frame_started > catch_up_frame_usec:
+		if Time.get_ticks_usec() - frame_started > Simulation.frame_budget_usec:
 			await next_frame.call()
 			frame_started = Time.get_ticks_usec()
 		_catch_up_one(npc, map)

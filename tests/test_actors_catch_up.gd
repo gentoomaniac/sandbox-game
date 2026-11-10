@@ -9,6 +9,15 @@ const VILLAGERS := 6
 const SOIL_TILES := 5
 
 
+func before_each() -> void:
+	super()
+	Simulation.frame_budget_usec = 0
+
+
+func after_each() -> void:
+	Simulation.frame_budget_usec = Simulation.DEFAULT_FRAME_BUDGET_USEC
+
+
 func _noon() -> void:
 	_state.clock.day = DAY
 	_state.clock.set_time(12, 0)
@@ -249,6 +258,37 @@ func _assert_island_poses(hour: int) -> void:
 		)
 
 
+## The games are the same: what is saved, the dice, and what the animals and villagers are in the
+## middle of, which a save leaves out.
+func _assert_same_game(game: GameState, expected: GameState) -> void:
+	assert_eq(game.to_dict(), expected.to_dict())
+	assert_eq(game.npcs.rng.state, expected.npcs.rng.state, "the villagers' dice")
+	assert_eq(game.livestock.rng.state, expected.livestock.rng.state, "the animals' dice")
+	assert_eq(_doings_of(game), _doings_of(expected))
+
+
+func _doings_of(game: GameState) -> Array:
+	var doings := []
+	for animal in game.livestock.all():
+		doings.append(
+			[
+				animal.activity,
+				animal.seconds_left,
+				animal.heading,
+				animal.last_step,
+				animal.facing,
+				animal.stuck_seconds,
+				animal.prey,
+				animal.hunt_rest_seconds
+			]
+		)
+	for npc in game.npcs.all():
+		doings.append(
+			[npc.activity, npc.seconds_left, npc.heading, npc.facing, npc.free_body_tiles]
+		)
+	return doings
+
+
 func _next_frame() -> Signal:
 	return get_tree().process_frame
 
@@ -275,8 +315,6 @@ func test_a_skip_over_frames_ends_as_the_skip_in_one_go() -> void:
 	_crowd_the_pen()
 	var in_one_go := _reloaded()
 	var over_frames := _reloaded()
-	over_frames.npcs.catch_up_frame_usec = 0
-	over_frames.world.soil.catch_up_frame_usec = 0
 	var frame_before := Engine.get_process_frames()
 
 	in_one_go.simulation.skip(5 * GameClock.MINUTES_PER_HOUR)
@@ -284,7 +322,7 @@ func test_a_skip_over_frames_ends_as_the_skip_in_one_go() -> void:
 
 	var frames := Engine.get_process_frames() - frame_before
 	assert_gt(frames, VILLAGERS + SOIL_TILES, "a frame for every villager and tile of soil")
-	assert_eq(over_frames.to_dict(), in_one_go.to_dict())
+	_assert_same_game(over_frames, in_one_go)
 	assert_ne(over_frames.npcs.to_array(), _state.npcs.to_array(), "and they did move")
 
 
@@ -292,24 +330,20 @@ func test_passing_out_over_frames_ends_as_passing_out_in_one_go() -> void:
 	_crowd_the_pen()
 	var in_one_go := _reloaded()
 	var over_frames := _reloaded()
-	over_frames.npcs.catch_up_frame_usec = 0
-	over_frames.world.soil.catch_up_frame_usec = 0
 
 	var minutes := in_one_go.pass_out()
 	var minutes_over_frames: int = await over_frames.pass_out_over_frames(_next_frame)
 
 	assert_eq(minutes_over_frames, minutes)
-	assert_eq(over_frames.to_dict(), in_one_go.to_dict())
+	_assert_same_game(over_frames, in_one_go)
 
 
 func test_sleeping_over_frames_ends_as_sleeping_in_one_go() -> void:
 	_crowd_the_pen()
 	var in_one_go := _reloaded()
 	var over_frames := _reloaded()
-	over_frames.npcs.catch_up_frame_usec = 0
-	over_frames.world.soil.catch_up_frame_usec = 0
 
 	in_one_go.sleep_in(_home_bed_of(in_one_go))
 	await over_frames.sleep_in_over_frames(_home_bed_of(over_frames), _next_frame)
 
-	assert_eq(over_frames.to_dict(), in_one_go.to_dict())
+	_assert_same_game(over_frames, in_one_go)

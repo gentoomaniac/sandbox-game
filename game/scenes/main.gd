@@ -68,8 +68,8 @@ var _wheel_progress := 0.0
 ## A fade (through a door, into sleep) or passing out is running: the player neither walks nor
 ## acts.
 var _is_in_transition := false
-## The time of a sleep is being made up for over some frames (see Simulation `skip_over_frames`):
-## the animals and villagers must not move meanwhile.
+## The time of a sleep is being made up for over some frames (see Simulation `skip_over_frames`),
+## up to the player's waking: the world is held, and quitting waits (see `_hold_world`).
 var _is_making_up_time := false
 var _fade_screen := FadeScreen.new()
 var _debug: DebugRunner
@@ -480,9 +480,18 @@ func _process(delta: float) -> void:
 
 ## Quits once the game is saved, or the player chose to quit without (see SaveBeforeQuit).
 func _save_and_quit() -> void:
-	var saving := SaveBeforeQuit.new(_saves, _state, _options.save_path, _choice_dialog)
-	if await saving.is_quit_allowed():
+	if await _is_saved_for_quit():
 		get_tree().quit()
+
+
+## Whether quitting may go on: the game is saved, or the player chose to quit without (see
+## SaveBeforeQuit). A sleep that is being made up for ends first, the waking included, so that the
+## save is of a whole morning.
+func _is_saved_for_quit() -> bool:
+	while _is_making_up_time:
+		await get_tree().process_frame
+	var saving := SaveBeforeQuit.new(_saves, _state, _options.save_path, _choice_dialog)
+	return await saving.is_quit_allowed()
 
 
 ## Eats the held food, if any, and says how much energy it gave. Returns whether it ate.
@@ -556,9 +565,9 @@ func _pass_out() -> void:
 	_player_view.collapse()
 	await get_tree().create_timer(PlayerView.COLLAPSE_SECONDS).timeout
 	await _fade_screen.fade_out()
-	_is_making_up_time = true
+	_hold_world(true)
 	var minutes_slept: int = await _state.pass_out_over_frames(_next_frame)
-	_is_making_up_time = false
+	_hold_world(false)
 	_player_view.stand_up()
 	_show_current_map()
 	# The sleep takes some frames and the save one, under the black screen.
@@ -567,6 +576,17 @@ func _pass_out() -> void:
 	await _fade_screen.show_message(PassOutMessage.text(_state, was_up_too_late, minutes_slept))
 	await _fade_screen.fade_in()
 	_is_in_transition = false
+
+
+## Holds everything that changes the world by itself while the time of a sleep is made up for
+## over frames, or lets it go: the views (chunks streaming in and out, the animals' hunts, the
+## wildlife) and the animals and villagers of the state. So the world is the one a skip in one go
+## would have, and the game is not saved or quit half way (see `_is_saved_for_quit`).
+func _hold_world(is_held: bool) -> void:
+	_is_making_up_time = is_held
+	_view.process_mode = (
+		PROCESS_MODE_DISABLED if is_held or _state.is_inside() else PROCESS_MODE_INHERIT
+	)
 
 
 ## The signal of the next frame, for the work that is spread over frames.
@@ -682,9 +702,9 @@ func _try_sleep() -> void:
 		return
 	_fade_through(
 		func() -> String:
-			_is_making_up_time = true
+			_hold_world(true)
 			await _state.sleep_in_over_frames(bed, _next_frame)
-			_is_making_up_time = false
+			_hold_world(false)
 			_show_clock()
 			await get_tree().process_frame
 			await _saves.save_without_stalling(_state, _options.save_path)
