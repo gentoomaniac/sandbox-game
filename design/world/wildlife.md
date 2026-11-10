@@ -33,8 +33,20 @@ atmosphere only: no player impact, not hunted, not saved.
     wingbeats and glides when the player comes near. Others fly in and stand on the ridge of a
     house near the view (one per roof; where they stand is read from the top of the house's
     picture as it is shown, snow and all) and take no notice of the player, leaving if the
-    house is gone; storks clatter their bills now and then. No
-    nest yet;
+    house is gone; storks clatter their bills now and then;
+  - stork nests (task 152): a heap of sticks on the ridge of some houses (a kate, longhouse,
+    hall house or barn; about 4 in 10, by where it stands and the world seed, so every game of a
+    seed has the same nests) and the year of each, by the date (`StorkNests`, numbers in the
+    `[stork_nest]` section of `data/wildlife.cfg`). Empty in winter; the pair flies in in early
+    spring (days 3 to 8) and stands on the nest, clattering; the young (2 to 4) hatch in
+    late spring (days 17 to 26) and grow through the summer; the parents
+    go to the meadows by day for a few hours at a time (one always stays by the newly hatched)
+    and are home at night; in late summer (days 41 to 52) the young stand on the rim and flap,
+    and from two days later leave one by one, one every two days, the pair with the last (by day
+    60 at the latest); empty in autumn. Each nest has its own days, drawn again every
+    year, so they are not in step. Nothing of it is saved: the nests and who is in them follow from
+    the world seed and the date (as the weather does), and the player changes one only by taking
+    its building down, which takes the nest with it;
   - greylag geese (task 60): flocks of 6 to 12 (fewer where a narrow shore has no room for them
     all) graze the marsh and the floodplain (grass within 7 tiles of water) in autumn and winter,
     fewer in spring, by day. They raise their heads together when the player comes near and take
