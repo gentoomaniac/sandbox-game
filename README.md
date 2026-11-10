@@ -351,7 +351,7 @@ lie there until you walk over them and pick them up.
 
 Hold the hammer (press B to take it from the hotbar) and the build menu opens just above the
 hotbar: a row of the buildings, each with a small picture and its name (shack, fisherman's hut,
-Kate, longhouse, hall house, barn, church and bell frame). Pick one with Q and E, the left and
+Kate, longhouse, hall house, barn, church, bell frame and chicken coop). Pick one with Q and E, the left and
 right arrows or a click; a building that comes in more styles shows them in a column above it
 (the Kate: a brick Kate and a Geest Kate), which the up and down arrows or a click pick. Beside
 it a larger picture of your choice lists the logs, stone, clay and reeds it takes against what

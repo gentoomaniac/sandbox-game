@@ -12,6 +12,7 @@ import random
 
 import forms
 import items
+from buildings import fieldstone_base, ground_shadow
 from canvas import GAME_TILE, blank, outline_edge, rect
 
 # The wet oak of posts, poles and planks, lit to dark.
@@ -117,12 +118,25 @@ def draw_well():
     return outline_edge(picture, "soil_dark", keep_bottom=True)
 
 
+def egg_icon():
+    """The body of the egg's icon: two hen's eggs, a brown one and a white one lying against each
+    other, shaded from the top left."""
+    body = blank(items.ICON)
+    brown = items.ellipse(12, 19, 6.5, 8.5, 20)
+    white = items.ellipse(20, 16, 6.5, 8.5, -15)
+    items.shade(body, brown, ("sand", "straw", "sand_light"), radius=4)
+    items.shade(body, white, ("stone_light", "lime", "snow_light"), radius=4)
+    items.dots(body, [(10, 15), (11, 14), (18, 11), (19, 10)], "snow_light")
+    return body
+
+
 def icons():
     """The bodies of the icons of the yard's items, by item id: their pictures."""
     return {
         "draw_well": items.icon_of(draw_well()),
         "trough": items.icon_of(trough(3)),
         "hay_rack": items.icon_of(hay_rack(3)),
+        "egg": egg_icon(),
     }
 
 
@@ -245,3 +259,105 @@ def hay_rack(level):
 
 def hay_rack_looks():
     return [hay_rack(level) for level in range(STOCK_LOOKS)]
+
+
+# The boards of the coop's walls: tarred oak, lit edge, face, joint.
+TARRED = ("soil_mid", "soil", "soil_dark")
+# The weathered grey boards of its roof: lit edge, face, joint.
+ROOF_BOARDS = ("bare_light", "bare", "mud")
+COOP_HEIGHT = 80
+
+
+def _coop_roof(picture, snowy):
+    """The shed roof, low and sloping to the front: boards laid down the slope, 5 px wide, each
+    lit on its first pixel, a ridge board along the top, a drip edge with its shadow at the eaves."""
+    width = len(picture[0])
+    ridge, eaves = 6, 31
+    for y in range(ridge, eaves + 1):
+        # The left end is cut at a slant, so that the roof has an end to it.
+        left = max(0, 6 - (y - ridge) // 4)
+        for x in range(left, width - left):
+            board = (x - left) % 5
+            colour = ROOF_BOARDS[0] if board == 0 else ROOF_BOARDS[2] if board == 4 else ROOF_BOARDS[1]
+            if (x * 7 + y * 3) % 23 == 0:
+                colour = ROOF_BOARDS[2]
+            picture[y][x] = colour
+            snowy.add((x, y))
+    rect(picture, 4, ridge - 1, width - 5, ridge, "sand_light")
+    rect(picture, 4, ridge + 1, width - 5, ridge + 1, "bare")
+    rect(picture, 0, eaves + 1, width - 1, eaves + 2, "mud_dark")
+    rect(picture, 2, eaves + 3, width - 3, eaves + 4, "shadow")
+
+
+def _coop_wall(picture, rng, left, right, top, bottom):
+    """The wall of upright tarred boards, 4 px wide, each lit on its left edge, the grain in them."""
+    for x in range(left, right + 1):
+        board = (x - left) % 4
+        colour = TARRED[0] if board == 0 else TARRED[2] if board == 3 else TARRED[1]
+        rect(picture, x, top, x, bottom, colour)
+    for _ in range(40):
+        x, y = rng.randrange(left, right), rng.randrange(top + 2, bottom - 2)
+        if (x - left) % 4 in (1, 2):
+            rect(picture, x, y, x, y + rng.randrange(1, 4), TARRED[2])
+
+
+def chicken_coop(is_lit):
+    """The chicken coop on 2x2 tiles, low and boarded: tarred upright boards on a footing of field
+    stones under a low shed roof of grey boards. On the left the plank door with its strap hinges
+    and latch, the player's way in (the door tile of the building); in the middle the hen's hatch, a
+    small dark opening, with a ramp up to it, a plank with cleats across it; on the right the nest
+    box, boarded like the wall, its lid a hinged plank propped a little open. `is_lit` changes nothing: it has no windows."""
+    rng = random.Random(1222)
+    width, height = 2 * GAME_TILE, COOP_HEIGHT
+    picture = blank(width, height)
+    snowy = set()
+    wall_top, foot_top = 34, 70
+    _coop_wall(picture, rng, 1, width - 2, wall_top, foot_top - 1)
+    rect(picture, 1, wall_top, width - 2, wall_top + 1, "soil_dark")
+    fieldstone_base(picture, rng, 0, width - 1, foot_top, height - 3)
+    # The hatch: a dark square opening in a lit frame, a little roost bar behind it.
+    rect(picture, 36, 42, 47, 55, "bare_light")
+    rect(picture, 38, 44, 45, 55, "ink")
+    rect(picture, 38, 44, 45, 44, "soil_dark")
+    rect(picture, 38, 53, 45, 53, "soil_mid")
+    # The ramp up to it: a plank widening towards the ground, cleats across it every 4 px.
+    for y in range(56, foot_top + 5):
+        half = 4 + (y - 56) // 6
+        rect(picture, 41 - half, y, 41 + half, y, "bare")
+        picture[y][41 - half] = "bare_light"
+        picture[y][41 + half] = "mud"
+        if (y - 56) % 4 == 2:
+            rect(picture, 41 - half, y, 41 + half, y, "soil_dark")
+            rect(picture, 41 - half, y - 1, 41 + half, y - 1, "soil_light")
+    # The door: planks 4 px wide, a Z of braces across, iron strap hinges, a latch.
+    left, top, right = 8, 42, 23
+    rect(picture, left - 2, top - 2, right + 2, foot_top - 1, "bare_light")
+    rect(picture, right + 1, top - 2, right + 2, foot_top - 1, "mud")
+    for x in range(left, right + 1):
+        rect(picture, x, top, x, foot_top - 1, "soil_mid" if (x - left) % 4 else "soil_light")
+        picture[top][x] = "soil_dark"
+    for step in range(right - left + 1):
+        picture[top + 4 + step * 18 // (right - left)][left + step] = "soil_dark"
+        picture[top + 5 + step * 18 // (right - left)][left + step] = "soil_dark"
+    for y in (top + 4, foot_top - 8):
+        rect(picture, left, y, left + 8, y + 1, "stone")
+        rect(picture, left, y, left + 8, y, "stone_light")
+    rect(picture, right - 3, top + 14, right - 2, top + 17, "stone_light")
+    rect(picture, right - 3, top + 17, right - 2, top + 17, "stone_dark")
+    # The nest box: boarded like the wall, standing out a little from it, its lid propped open.
+    rect(picture, 50, 52, 62, foot_top - 1, TARRED[1])
+    rect(picture, 50, 52, 50, foot_top - 1, TARRED[0])
+    rect(picture, 62, 52, 62, foot_top - 1, TARRED[2])
+    rect(picture, 55, 58, 55, foot_top - 1, TARRED[2])
+    rect(picture, 49, 48, 63, 51, "bare_light")
+    rect(picture, 49, 51, 63, 51, "bare")
+    rect(picture, 49, 47, 63, 47, "sand_light")
+    rect(picture, 51, 52, 52, 53, "stone")
+    rect(picture, 60, 52, 61, 53, "stone")
+    _coop_roof(picture, snowy)
+    outline_edge(picture, "soil_dark", keep_bottom=True, ignoring=("shadow",))
+    ground_shadow(picture)
+    return picture, snowy
+
+
+PICTURES = {"chicken_coop": chicken_coop}

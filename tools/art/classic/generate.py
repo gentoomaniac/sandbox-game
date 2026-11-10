@@ -124,7 +124,7 @@ def write_ground():
 
 
 def write_buildings():
-    for name, draw in (buildings.PICTURES | church.PICTURES).items():
+    for name, draw in (buildings.PICTURES | church.PICTURES | yard.PICTURES).items():
         for lit_suffix, is_lit in (("", False), ("_lit", True)):
             picture, snowy = draw(is_lit=is_lit)
             for look in seasons.HOUSE_LOOKS:

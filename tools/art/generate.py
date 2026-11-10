@@ -277,7 +277,7 @@ def write_seasonal_art():
         "alder": lambda variant: alder.bare_alder(alder.ALDER_SEEDS[variant]),
     }
     houses = {}
-    for name, draw in (buildings.PICTURES | church.PICTURES).items():
+    for name, draw in (buildings.PICTURES | church.PICTURES | yard.PICTURES).items():
         houses[name] = draw(is_lit=False)
         houses[f"{name}_lit"] = draw(is_lit=True)
     decorations_by_look = {}

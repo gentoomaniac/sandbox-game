@@ -72,6 +72,7 @@ const EEL_TRAPS := &"eel_traps"
 const DRAW_WELL := &"draw_well"
 const TROUGH := &"trough"
 const HAY_RACK := &"hay_rack"
+const EGG := &"egg"
 # The mason's (task 74).
 const RAW_BRICK := &"raw_brick"
 const BRICK := &"brick"
@@ -502,6 +503,13 @@ const _OTHER_TYPES := {
 		"weight": 40.0,
 		"stack_limit": 1,
 		"places": WorldObjectTypes.DRAW_WELL,
+	},
+	EGG:
+	{
+		"name": "Egg",
+		"description": "A hen's egg, still warm from the nest.",
+		"weight": 0.06,
+		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 	TROUGH:
 	{

@@ -117,10 +117,7 @@ func pass_door() -> void:
 		_building_inside = null
 		return
 	_building_inside = world.building_at(player.tile())
-	if _building_inside.interior == null:
-		var map_path: String = BuildingTypes.TYPES[_building_inside.type]["interior_map"]
-		_building_inside.interior = InteriorLoader.load_interior(map_path)
-	player.position = _tile_centre(_building_inside.interior.entry_tile())
+	player.position = _tile_centre(_building_inside.inside().entry_tile())
 
 
 ## The nearest bed the player can reach, or null. Their own tile counts.

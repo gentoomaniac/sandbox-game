@@ -351,7 +351,14 @@ along its foot.
   and a little above, and the hay rack (64x44 px) two oak posts with a rail and a manger board,
   slats between them and the hay (`ochre_dark`, `ochre`, `straw`, `gold`) behind. Each has four
   pictures by its fill, empty, low, half and full (water in the `water` ramp, hay up to the rail),
-  one cell each in its atlas row, chosen by `WorldObject.stock_look`.
+  one cell each in its atlas row, chosen by `ObjectStock.look`. The chicken coop (a building, 64x80 px
+  with its roof, `PICTURES` of yard.py like the bell frame's, lit and unlit alike as it has no
+  windows) is upright boards tarred `soil_mid`/`soil`/`soil_dark` on a field-stone footing under a low
+  shed roof of weathered grey boards (`bare_light`, `bare`, `mud`, snow takes the roof like the
+  houses'), a door of planks with a Z of braces, strap hinges and a latch, the hatch a dark opening in
+  a lit frame with a plank ramp and its cleats, and the nest box with its lid propped open (a
+  `bare_light` plank with `stone` hinges); the egg's icon is a brown and a white egg shaded from the top
+  left. The classic art has the same things at 16 px.
 - **Fisherman's hut** (*Fischerkate*, task 103): the shack's boards and fieldstones on 4x2
   tiles under a hipped reed thatch with a turf ridge (`turf_ridge`), one small white window,
   a low door in faded teal (`water_light`, `paint_teal`, `water_deep`) and an oar against

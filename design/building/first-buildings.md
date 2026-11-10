@@ -42,6 +42,13 @@
     item); the pickaxe takes them up. The world generator places no church yet: there is no
     village in the world to put it in (the Warften on the salt marsh are empty); `--churchyard=<x>,<y>` puts one in
     view for screenshots.
+  - **Chicken coop** (task 122, 2026-11-10; behaviour in design/farming/livestock.md): 2×2, low
+    and boarded, door on the bottom left tile: upright tarred boards on a footing of field stones
+    under a low shed roof of grey boards, a ramp with cleats up to the hens' hatch, a nest box
+    with its lid propped open; no window (so no lit picture of its own and no snow-time light), no
+    bed. Costs 12 logs and 4 stone. Its inside is 6×6 (clay floor, one window, two hay piles for
+    nests, sacks and a crate); it is made when the coop is first needed (`Building.inside`: the
+    first time someone goes in, or a hen lays an egg in it), not only when entered.
   - **Insides** (decided 2026-11-05): each is a Tiled map, `maps/interiors/<id>.tmx`, a little
     larger than the footprint: shack 6×6 (straw sleeping mat, crate, stool), fisherman's hut
     7×6 (the shack's room a tile wider: sleeping mat, stool, barrel, sacks), Kate 9×8 (hearth,

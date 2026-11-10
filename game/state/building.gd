@@ -20,6 +20,14 @@ func _init(building_type: StringName, origin_tile: Vector2i, building_style := &
 	style = building_style
 
 
+## The inside, made from the building type's map the first time it is needed (someone goes in, or a
+## hen lays an egg in it).
+func inside() -> Interior:
+	if interior == null:
+		interior = InteriorLoader.load_interior(BuildingTypes.TYPES[type]["interior_map"])
+	return interior
+
+
 ## The entry of its style in BuildingTypes: its name, pictures and costs.
 func type_data() -> Dictionary:
 	return BuildingTypes.of(type, style)
