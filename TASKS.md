@@ -285,7 +285,10 @@ Settings (and off), muted in test runs. Rules in data/music.cfg; tests; README.
   naval flair. Take inspiration from the German band Santiano." So the default (everyday) pieces
   are calm and ambient: slow sustained pads and drones, sparse melody, the sea and the coast in
   them (shanty-like modal tunes, a slow sway like a rolling ship, a low bass like a capstan
-  song), our own tunes only, no melody of the band's or anyone else's songs. Lively, festive
+  song), our own tunes only, no melody of the band's or anyone else's songs. A second
+  inspiration (the user, the same day): the German folk band Faun: medieval and pagan folk,
+  hypnotic repeating figures, drones like a hurdy-gurdy or bagpipe, modal melodies like a
+  nyckelharpa or flute, frame-drum pulses; again style only, our own tunes. Lively, festive
   pieces like the test reel are kept for special events (festivals, a market day). Later: stems
 (AudioStreamSynchronized), more pieces, the season and weather choices.
 
