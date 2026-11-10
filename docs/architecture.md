@@ -43,6 +43,31 @@ Warft and an Ewer here and there.
   weather, the snow cover and the player. It is the entry point for actions (`walk`, `use_at`,
   `sleep_in`, `pass_door`, `pass_out`, `go_to_home_bed`, `teleport_to`), and what gets saved (`to_dict`, see `SaveFile`). It owns
   the clock and gives it to the World; `current_map` follows from the building the player is in.
+- **Simulation** (`game/state/simulation.gd`) is the one owner of game time, and the rule is:
+  whatever moves the clock goes through it, and whatever changes with time is a
+  `SimulationSystem` it runs, in a fixed order, after each span. `advance(minutes)` is played
+  time (Main's frames), cut at every full hour so a long span passes as the same hours one after
+  the other; `skip(minutes)` is time the player does not live through (the console's `skip`,
+  sleeping, passing out): the first 3 minutes are played through minute by minute for what the
+  frames move (`walked_minute`) and the rest is made up for in one go (`skipped`). The systems:
+  `FarmingUpkeep` (every hour: the crops live through the hour, a 24th of a day's growth in the
+  weather of its day; the end of the day counts for them), `NightUpkeep` (at midnight: reeds,
+  saplings, stumps, bushes, clay spots, desire paths) and `ActorsUpkeep` (the farm animals and
+  villagers, in loaded chunks only: short skips are walked, long ones put each on a tile it could
+  have walked to, `ReachableTiles`, with dice from the world seed and the time). Three kinds of
+  time-dependent state, and what each needs: (1) a pure function of the clock (weather, sun,
+  tide, snow cover, station work by `total_minutes`, which plants are dormant): nothing, it
+  follows by itself, so such state must stay a function of the clock; (2) state that must catch
+  up (crops, tilled soil moisture, animals, villagers): a system; the soil is not stepped tile
+  by tile but kept as of the hour each tile was last looked at and caught up when asked
+  (`SoilMoisture`), so a month costs about its crops; (3) what only shows (wildlife, weather
+  fade, clouds): the views re-show from the state, and after a skip `Simulation.skipped` has
+  `WildlifeView.settle` and `WeatherView.snap` do it at once. Played time (`advance`) never moves
+  animals by itself: they walk by the frame in real seconds (`Livestock.update`,
+  `Npcs.update`), outdoors only. A new system (a villager schedule, a gossip meeting) is a
+  `SimulationSystem` added in `GameState._start_simulation`, with the hook it needs.
+  The game's speed is `GameClock.GAME_MINUTES_PER_REAL_SECOND`. Tests compare skips of an
+  hour, a day and a month with the same time played in steps (`tests/test_time_skip.gd`).
 - **ToolUse** (`game/state/tool_use.gd`) is what the use action does: the `Use` outcomes, what
   each tool does on a tile, and the energy it costs. GameState makes one per call
   and forwards `use_at`, `use_tile`, `use_facing_tile` and `can_use_held_item` to it (kept in a
@@ -71,8 +96,9 @@ Warft and an Ewer here and there.
   (`wear_tile`, `wear_stage`, `regrow_paths`; numbers in `data/paths.cfg`, `PathRules`):
   `GameState.walk` and `Livestock` wear each tile entered, and a tile that turns trodden or
   a path emits `tile_changed`, so the view redraws the cells around it as for a tilling. The
-  view draws worn tiles on the `TRODDEN` and `PATH` layers of `TerrainTileset`. The nightly upkeep of what the player changed is
-  `NightUpkeep`, which is given the world. Every change goes through it, and it emits signals that the views follow.
+  view draws worn tiles on the `TRODDEN` and `PATH` layers of `TerrainTileset`. What changes with time is run by
+  the Simulation's systems (`NightUpkeep` at midnight, `FarmingUpkeep` every hour) on the world.
+  Every change goes through World, and it emits signals that the views follow.
 - **WorldView** (`game/scenes/world_view.gd`) draws a `World` into a SubViewport at one art
   pixel per screen pixel; `CameraController` shows that viewport on the window, so the world
   scrolls smoothly. `InteriorView` draws an `Interior` in its place while the player is inside.

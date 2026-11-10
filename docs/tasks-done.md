@@ -3828,3 +3828,48 @@ grass kind exist (tests added for the cells between worn tiles). A full tile is 
 (trodden dark earth, path earth) with single specks of 3 percent and no stamps, in both art sets
 and all looks (palette unchanged; the user asked for it calmer still). `--worn-ground=<x>,<y>`
 wears a yard for screenshots (`DebugWornGround`); screenshot docs/screenshots/worn-ground.png.
+
+## 154. Skipping time moves the whole world forward, like the clock ticking
+
+- [x] Done
+
+The user, 2026-11-10: "Time skip seems to not affect crops. It should. Also other stuff should
+get affected like NPCs' schedules once that gets implemented, or birds' movement. Skipping time
+should be like moving the game engine's tick clock forward for everything."
+- Today the console's `skip` (game/state/console.gd `_skip`), sleeping and passing out only call
+  `clock.advance(minutes)`; what happens per day runs on `new_day` (NightUpkeep), and what runs
+  per frame (crop growth by the minute?, soil drying, weather, livestock, villagers, wildlife,
+  stations' work) doesn't see the skipped minutes. Find out exactly what does and doesn't follow
+  a skip of minutes, hours and days.
+- One way to move time for everything: a skip, a night's sleep and a pass-out advance the same
+  simulation step by step (or in catch-up steps a system declares), so after it the world is as
+  if the time had been played: crops grown or withered, soil dried, weather moved on, kilns done,
+  animals and villagers where their day puts them, birds gone or arrived. Views follow from the
+  new state.
+- This is the core of Review R8 (Later: one owner for the simulation and its time, one catch-up
+  rule); do that part here and leave the rest of R8 in Later.
+- Tests: skip 1 h, 1 d and 30 d against the same time played in small steps, for crops, soil,
+  weather, stations and animals; sleep and pass-out go the same way.
+
+Done (the user's answers of 2026-11-10: the player is unaffected by a console skip, a time
+traveller; crops and soil update gradually in 1 h intervals; unloaded chunks do not matter):
+`Simulation` (game/state) is the one owner of game time: Main's frames, sleeping, passing out
+and the console's `skip` all go through `advance` (played, cut at every full hour) or `skip`
+(not lived through: the first 3 minutes are played minute by minute, the rest made up for at
+once), and what changes with time is a `SimulationSystem` run in a fixed order. Crops grow, are
+hurt and heal every hour (a 24th of a day, in the weather of its day; the end of the day counts
+for them by what they were at dawn, so ripening and withering take the days they took); the
+tilled soil follows the weather by the hour but is worked out when looked at (`SoilMoisture`), so
+an hour costs nothing for 27,000 tiles and a 30-day skip about a second for 250 crops (a
+1,000-tile field); reeds, saplings, stumps, bushes, clay spots and desire paths stay nightly
+(`NightUpkeep`). Weather, sun, tide, snow and a kiln's work are pure functions of the clock and
+needed nothing (tests prove it). Farm animals and villagers in loaded chunks are put on a
+tile they could have walked to (`ReachableTiles`) with dice from the world seed and the time,
+followers beside the player; the wildlife and the weather show the new time at once. A console
+`skip` leaves the player alone; sleeping and passing out keep their player effects. Tests:
+`tests/test_time_skip.gd` (1 h, 1 d, 30 d against 5-minute steps; sleep; pass-out; timing),
+`test_farming_upkeep`, `test_actors_catch_up`, `test_wildlife_settle`. Left in Later (Review R8):
+hunting out of FarmAnimalView, chunk residency apart from drawing, PlayerView's per-frame state,
+shared wildlife rules. Pending with the user: a crop planted mid-day now grows pro rata from its
+planting hour instead of a full day at the next midnight (about half a day later to ripen on
+average, same totals per full day).

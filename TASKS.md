@@ -217,28 +217,6 @@ spring and summer and flies off again; there is no nest. Moved here from task 12
   is saved; what the player only sees (flaps, clatter) stays in the views.
 - Tests for the year of a nest by date, the seeding, save and load; a screenshot in the README.
 
-## 154. Skipping time moves the whole world forward, like the clock ticking
-
-- [ ] Done
-
-The user, 2026-11-10: "Time skip seems to not affect crops. It should. Also other stuff should
-get affected like NPCs' schedules once that gets implemented, or birds' movement. Skipping time
-should be like moving the game engine's tick clock forward for everything."
-- Today the console's `skip` (game/state/console.gd `_skip`), sleeping and passing out only call
-  `clock.advance(minutes)`; what happens per day runs on `new_day` (NightUpkeep), and what runs
-  per frame (crop growth by the minute?, soil drying, weather, livestock, villagers, wildlife,
-  stations' work) doesn't see the skipped minutes. Find out exactly what does and doesn't follow
-  a skip of minutes, hours and days.
-- One way to move time for everything: a skip, a night's sleep and a pass-out advance the same
-  simulation step by step (or in catch-up steps a system declares), so after it the world is as
-  if the time had been played: crops grown or withered, soil dried, weather moved on, kilns done,
-  animals and villagers where their day puts them, birds gone or arrived. Views follow from the
-  new state.
-- This is the core of Review R8 (Later: one owner for the simulation and its time, one catch-up
-  rule); do that part here and leave the rest of R8 in Later.
-- Tests: skip 1 h, 1 d and 30 d against the same time played in small steps, for crops, soil,
-  weather, stations and animals; sleep and pass-out go the same way.
-
 ## 156. Horses at 32 px: legs with upper legs
 
 - [ ] Done
@@ -256,10 +234,10 @@ the riding sprites still fit. Before and after crops and an in-game screenshot.
 
 ## Later (not part of the prototype)
 
-- **Review R8: one owner for the simulation, its time and what is loaded** (review F2.4/F2.5, A4,
-  package R8): hunting moves out of FarmAnimalView, the simulation and its time advance in one
-  place with one catch-up rule, chunk residency is decided apart from drawing, and PlayerView stops
-  setting the held layer every frame. Large; in small commits, after tasks 141 to 143.
+- **Review R8: what is left** (review F2.4/F2.5, A4, package R8; the simulation and its time are
+  done, task 154): hunting moves out of FarmAnimalView, chunk residency is decided apart from
+  drawing, PlayerView stops setting the held layer every frame, and the wildlife rules stop being
+  mutated per session. Large; in small commits.
 
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
   Valley, but actions count as well as gifts, in the manner of the Sims (helping, talking,
