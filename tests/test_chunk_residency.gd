@@ -22,7 +22,7 @@ func test_an_update_loads_one_chunk_at_the_focus_first() -> void:
 
 
 func test_an_update_that_may_not_load_loads_nothing() -> void:
-	_residency.update(false)
+	_residency.update(_never)
 	assert_eq(_world.loaded_chunk_coords().size(), 0)
 	assert_false(_residency.is_complete)
 
@@ -41,7 +41,7 @@ func test_the_chunks_around_the_focus_load_until_it_is_complete() -> void:
 func test_a_chunk_beyond_the_unload_radius_is_dropped() -> void:
 	var far := Vector2i(ChunkResidency.UNLOAD_RADIUS + 1, 0)
 	_residency.load_chunk(far)
-	_residency.update(false)
+	_residency.update(_never)
 	assert_false(_world.is_chunk_loaded(far))
 
 
@@ -92,7 +92,7 @@ func test_a_view_that_goes_leaves_the_chunks_loaded_and_the_next_one_draws_them(
 	_residency.load_chunk(HOME)
 	first.finish_drawing()
 	first.free()
-	_residency.update(false)
+	_residency.update(_never)
 	assert_true(_world.is_chunk_loaded(HOME), "the game still has its chunk")
 	var second: WorldView = add_child_autofree(WorldView.new())
 	second.show_world(_residency)
@@ -109,3 +109,8 @@ func test_a_chunk_required_while_another_is_drawn_is_drawn_after_it() -> void:
 	view.finish_drawing()
 	assert_false(view.is_drawing())
 	assert_eq(view._chunk_looks.size(), 2, "both chunks are drawn")
+
+
+## A renderer that can't take a chunk.
+func _never() -> bool:
+	return false

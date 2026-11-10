@@ -61,6 +61,15 @@ func test_a_chunk_is_drawn_for_a_budget_a_frame_and_the_next_loads_when_it_is_dr
 	assert_eq(_view.world.loaded_chunk_coords().size(), 2)
 
 
+func test_a_jump_away_from_a_chunk_being_drawn_loads_the_new_place_in_the_same_frame() -> void:
+	_frame()
+	assert_true(_view.is_drawing(), "the first chunk is being drawn")
+	var far := Vector2i(ChunkResidency.UNLOAD_RADIUS + 2, 0)
+	_residency.set_focus(Chunk.to_world(far, Vector2i.ZERO))
+	_frame()
+	assert_eq(_view.world.loaded_chunk_coords(), [far] as Array[Vector2i])
+
+
 func test_a_tree_that_hides_the_player_before_its_chunk_is_drawn_stays_a_sprite() -> void:
 	_residency.load_chunk(RIGHT)
 	_view._draw_next_step()
@@ -115,7 +124,7 @@ func test_an_object_removed_while_its_chunk_is_drawn_shows_the_decoration_it_cov
 
 ## What Main does in a frame: the residency loads a chunk if the view can take it, the view draws.
 func _frame() -> void:
-	_residency.update(not _view.is_drawing())
+	_residency.update(func() -> bool: return not _view.is_drawing())
 	_view._process(0.0)
 
 

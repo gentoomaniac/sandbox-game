@@ -33,9 +33,10 @@ func set_focus(world_pos: Vector2i) -> void:
 	focus_chunk = Chunk.world_to_chunk(world_pos)
 
 
-## Drops the chunks that are far from the focus, and loads the nearest missing one if
-## `may_load` (the renderer says it can take another).
-func update(may_load := true) -> void:
+## Drops the chunks that are far from the focus, then loads the nearest missing one if
+## `can_load` returns true (the renderer can take another; no Callable means it always can). It is
+## asked after the drop, as a dropped chunk may have been the one being drawn.
+func update(can_load := Callable()) -> void:
 	if is_held:
 		return
 	var plan := ChunkStreaming.plan(
@@ -44,7 +45,7 @@ func update(may_load := true) -> void:
 	for coords: Vector2i in plan["unload"]:
 		unload_chunk(coords)
 	var to_load: Array = plan["load"]
-	if may_load and not to_load.is_empty():
+	if not to_load.is_empty() and (not can_load.is_valid() or can_load.call()):
 		load_chunk(to_load[0])
 	is_complete = to_load.is_empty()
 

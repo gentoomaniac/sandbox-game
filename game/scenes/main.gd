@@ -478,7 +478,7 @@ func _process(delta: float) -> void:
 			Occlusion.RIDER_SIZE if _state.player.horse != null else Occlusion.PLAYER_SIZE
 		)
 		_residency.set_focus(_state.player.tile())
-		_residency.update(not _view.is_drawing())
+		_residency.update(func() -> bool: return not _view.is_drawing())
 		_ground_item_view.set_focus(_state.player.tile())
 		_npc_views.set_focus(_state.player.tile())
 	_debug.update(delta)
