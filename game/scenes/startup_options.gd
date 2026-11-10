@@ -114,7 +114,9 @@ extends RefCounted
 ##                            and --house for the hut)
 ##   --yard=<x>,<y>           the chest and the stations in a row from that tile eastwards, and
 ##                            behind them a Knick, a wattle fence, a fieldstone wall and a dyke on
-##                            the slant (see DebugYard)
+##                            the slant (see DebugYard), and 22 tiles east of it the farm yard: a
+##                            chicken coop with hens, a draw well, four troughs and four hay racks
+##                            from empty to full, a cow and a sheep (see DebugFarmYard)
 ##
 ## Done once the world is drawn (see DebugRunner)
 ##   --harvest=<x>,<y>        fell two oaks, cut a trunk, break a stone and mow a patch in a row

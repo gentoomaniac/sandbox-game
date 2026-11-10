@@ -20,9 +20,12 @@ const LINES: Array[StringName] = [
 	WorldObjectTypes.KNICK, WorldObjectTypes.WATTLE_FENCE, WorldObjectTypes.STONE_WALL
 ]
 const LINE_SPACING := 5
+## Where the farm yard stands (see DebugFarmYard), from the tile.
+const FARM_YARD_AT := Vector2i(22, 0)
 
 
-static func create(world: World, origin: Vector2i) -> void:
+static func create(state: GameState, origin: Vector2i) -> void:
+	var world := state.world
 	var objects: Array[WorldObject] = []
 	for index in STATIONS.size():
 		objects.append(WorldObject.new(STATIONS[index], origin + Vector2i(2 * index, 0)))
@@ -46,3 +49,4 @@ static func create(world: World, origin: Vector2i) -> void:
 				world.add_chunk(generator.generate_chunk(coords))
 			world.remove_object(tile)
 		world.add_object(object)
+	DebugFarmYard.create(state, origin + FARM_YARD_AT)
