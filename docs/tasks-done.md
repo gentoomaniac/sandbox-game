@@ -4041,3 +4041,23 @@ cache of the save data would cut that further but needs every writer of the cach
 and the save would then list the edits by chunk instead of in the order they were made; it was
 not done. The worker does more than before (it makes the save data), which nothing waits for.
 
+## 160. Small leftovers: the pony on the command line, a test of the AMD path, the herd picture
+
+- [x] Done
+
+The user, 2026-11-10: "implement the rest from Small leftovers" (and drop the cached save
+snapshot left from task 158: not done).
+- `--livestock` accepts `pony`, as it does the other farm animals.
+- A committed test of tools/llm/llm.sh's GPU choice (task 150): a fake device tree and
+  `LLM_DRY_RUN=1` for NVIDIA, AMD (with and without `LLM_HSA_OVERRIDE`) and the CPU fallback,
+  run by `make test`.
+- The README picture docs/screenshots/dogs-cats-horses.png re-taken with the horse of task 156.
+
+Done: `--livestock=pony` puts horses of the pony look near the player (`Livestock.spawn` takes an
+optional look; tests/test_livestock.gd). tools/llm/test_llm_gpu.py, run by `make test`, runs
+`LLM_DRY_RUN=1 llm.sh up` against a fake device tree for NVIDIA, AMD (with and without
+`LLM_HSA_OVERRIDE`, the RDNA2 and 7600 hints, two cards), the CPU fallback and every `LLM_GPU`
+choice; llm.sh got `LLM_CDI_DIRS` for it. The picture was not re-taken: the old one is
+1000x1040, but the compositor decides the window size here (`--resolution 1000x1040`, also with
+`--windowed` and `--position`, still gave 882x1372), and a picture of another shape would not
+fit the README. It became task 164 (a screenshot size option).
