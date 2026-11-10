@@ -723,7 +723,9 @@ copper watering can. Kept here as the record of why.
    kept: rounded forms shaded from the top left with `tools/art/forms.py` (as the people), the
    body and the neck with the head shaded as one form with more light on top, legs as limbs
    through their joints (a horse's forearm, knee, cannon, fetlock and hoof, its hind leg with
-   the hock pointing back), the far legs a step darker, an eye with a glint, nostrils, ears,
+   the hock pointing back; the forearm and the thigh and gaskin are big and run down from the
+   front and the rear of the barrel, shaded with the body so that the belly shadow stops between the
+   legs, with a clear knee and hock and slim cannons below), the far legs a step darker, an eye with a glint, nostrils, ears,
    manes and tails in strands; each look's marks (pied patches shaded with the body, dapple
    rings, the dun's dark stripe, a bay's black points and white blaze, tabby stripes, wool
    curls, the collie's white collar) on top. The cow's head is drawn by hand, one for looking

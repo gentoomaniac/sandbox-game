@@ -202,19 +202,38 @@ def quadruped_frame(
             draw_leg(picture, animal, legs[name], leg_joints(legs[name], step, dy), look, far=True)
     animal["draw_tail"](picture, look, animal, tail, dy)
     torso = shapes_mask(animal["size"], moved(animal["torso"], 0, dy))
+    near_joints = {
+        name: leg_joints(legs[name], step, dy)
+        for name, step in (("near_hind", near_hind), ("near_front", near_front))
+    }
+    # The top of a near leg (its forearm or thigh) is shaded with the body, so that the belly's
+    # shadow stops at the legs and the leg flows into the shoulder or the haunch.
+    upper_legs = np.zeros_like(torso)
+    if not lying:
+        for name, count in animal.get("upper_legs", {}).items():
+            upper_legs |= forms.limb(width, height, near_joints[name][:count], legs[name]["radii"][:count])
     parts = moved(animal["heads"][head], 0, dy + head_drop)
-    body = torso | shapes_mask(animal["size"], parts["shape"])
+    body = torso | upper_legs | shapes_mask(animal["size"], parts["shape"])
     level = forms.light_level(body, animal["shade_radius"], TOP_LIGHT)
     forms.shade_by_level(picture, body, look["coat"], level)
     animal["draw_coat"](picture, look, animal, body, level, dy)
+    if not lying:
+        for name, count in animal.get("upper_legs", {}).items():
+            # A gleam on the lit front of the shoulder or the haunch and the line of its muscle
+            # behind it, so that they read as the body's front and rear ends.
+            muscle = near_joints[name][:count]
+            radii = [0.6] * count
+            lit = forms.limb(width, height, moved(muscle, -1.5, 0), radii) & upper_legs & (level > 0.35)
+            forms.paint(picture, lit, look["coat"][2])
+            line = forms.limb(width, height, moved(muscle, 1.5, 1), radii) & upper_legs & (level > 0.3)
+            forms.paint(picture, line, look["line"])
     if saddle is not None:
         draw_saddle(picture, animal, saddle, dy)
     if lying:
         draw_folded(picture, animal, look, dy)
     else:
-        for name, step in (("near_hind", near_hind), ("near_front", near_front)):
-            joints = leg_joints(legs[name], step, dy)
-            draw_leg(picture, animal, legs[name], joints, look, far=False, hidden=torso)
+        for name in ("near_hind", "near_front"):
+            draw_leg(picture, animal, legs[name], near_joints[name], look, far=False, hidden=torso | upper_legs)
     animal["draw_head"](picture, look, animal, parts, lying)
     return outline(picture, look["outline"])
 
@@ -1080,7 +1099,7 @@ def cat_sheet(look):
 HORSE_SIZE = (88, 76)
 HORSE_TORSO = [
     (20, 22), (24, 19), (30, 18), (37, 20), (44, 22), (50, 21), (55, 19), (60, 19), (64, 23),
-    (67, 30), (66, 37), (63, 43), (58, 45), (46, 47), (36, 45), (31, 45), (26, 46), (21, 45),
+    (67, 30), (66, 37), (63, 43), (58, 45), (46, 47), (38, 45), (32, 43), (27, 44), (22, 45),
     (18, 40), (17, 33), (18, 27),
 ]
 # The neck and head, looking ahead and grazing, with the parts drawn on them: the mane's crest
@@ -1123,10 +1142,10 @@ HORSE_HEADS = {
 # The legs through their joints, standing, and the joint the lower leg folds at and from which
 # it is in the colour of the points (a bay's black from the knee and the hock down).
 HORSE_LEGS = {
-    "near_front": {"joints": [(62, 38), (62, 57), (62, 67), (63, 71)], "radii": [3.6, 2.2, 1.6, 1.9], "bend": 1, "points": 1, "front": True},
-    "far_front": {"joints": [(57, 40), (57, 57), (57, 67), (58, 71)], "radii": [3.0, 2.0, 1.5, 1.8], "bend": 1, "points": 1, "front": True},
-    "near_hind": {"joints": [(27, 40), (30, 46), (22, 58), (24, 67), (24, 71)], "radii": [5.0, 3.6, 2.2, 1.6, 1.9], "bend": 2, "points": 2, "front": False},
-    "far_hind": {"joints": [(32, 40), (31, 46), (28, 58), (30, 67), (30, 71)], "radii": [3.8, 3.0, 2.0, 1.5, 1.8], "bend": 2, "points": 2, "front": False},
+    "near_front": {"joints": [(62, 36), (62, 47), (62, 57), (62, 67), (63, 71)], "radii": [5.6, 4.6, 2.4, 1.6, 1.9], "bend": 2, "points": 2, "front": True},
+    "far_front": {"joints": [(56, 38), (57, 47), (57, 57), (57, 67), (58, 71)], "radii": [4.6, 3.8, 2.2, 1.5, 1.8], "bend": 2, "points": 2, "front": True},
+    "near_hind": {"joints": [(24, 38), (28, 47), (26, 53), (22, 58), (24, 67), (24, 71)], "radii": [6.4, 5.4, 4.0, 2.4, 1.6, 1.9], "bend": 3, "points": 3, "front": False},
+    "far_hind": {"joints": [(30, 40), (31, 47), (29, 53), (28, 58), (30, 67), (30, 71)], "radii": [5.0, 4.4, 3.4, 2.2, 1.5, 1.8], "bend": 3, "points": 3, "front": False},
 }
 # The tail falling from the dock in a long switch: where its strands start and end, how they bow
 # and how wide they spread.
@@ -1293,6 +1312,8 @@ HORSE = {
     "saddle": HORSE_SADDLE,
     "views": HORSE_VIEWS,
     "shade_radius": 9,
+    # The near legs whose forearm and thigh (their first joints) are shaded with the body.
+    "upper_legs": {"near_front": 2, "near_hind": 3},
     # Lying, the body is this much lower, the belly on the ground.
     "lying_drop": 25,
     "gallops": True,
