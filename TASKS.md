@@ -235,63 +235,67 @@ drier tilled tile meets it in a hard straight line.
 - Performance: redrawing after an hour stays within REFRESH_BUDGET_USEC.
 - Tests for which edges fade; before/after crops at 1x and 4x and a README picture.
 
-## 169. Music: chiptune modules generated from folk-tune data
+## 169. Music: can the game play generated modules? Measurements and viability tests
 
 - [ ] Done
 
 The user, 2026-11-10: background music in the style of 1980s home-computer game music (the
-user's reference is the C64 game Robin of the Wood): sharp sawtooth leads, short, repetitive
-parts that loop, with transition parts now and then or a crossfade between looping pieces.
-Melodies lean on old folk tunes that are free to use. This replaces "no background music for
-now" (design/presentation/sound.md, 2026-11-05). This task is the first step: generating the
-music in a form trackers can open; tasks 170 and 171 play it in the game.
-- Format: ProTracker MOD (4 channels; the 8-channel "8CHN" variant if needed), so the files
-  open and can be edited in OpenMPT or MilkyTracker. The instruments are short looped
-  single-cycle waveforms the generator draws: sawtooth (the lead), pulse at a few widths,
-  triangle (bass), and noise for drums. Use only a stated set of effects, written down in the
-  design page: arpeggio, portamento, vibrato, volume slide, set volume, set speed/tempo,
-  pattern break and position jump. Task 170 plays exactly that set.
-- Source: songs as small hand-editable text data (e.g. data/music/<piece>.txt, or tools/music/;
-  decide which): the tune, the bass and drum pattern, the arrangement, tempo, and named
-  sections, each one a loop or a transition between loops. tools/music/ turns them into
-  assets/music/<piece>.mod with `make art`, deterministically. A sidecar (data/music.cfg) lists
-  each piece's sections as ranges of the order list, so the game can loop one section and play
-  a transition.
-- Tunes: traditional tunes only, in the public domain, with where each comes from (the title,
-  the region, the source collection) in docs/music-sources.md. Check each one: e.g. "Son ar
-  chistr", which the user named, is a 20th-century song by named authors, not an anonymous folk
-  tune, so it needs checking before it is used. No melody from the reference game or any other
-  game.
-- Start with two or three short pieces (day, evening, indoors?), each 8 to 32 bars of loops and
-  one transition.
-- `make music-preview` renders the pieces to WAV in tools/ (Python, not the game's player) so
-  they can be listened to; tests that the .mod files are valid (header, the order list,
-  pattern data, the effects only from the stated set) and that the generator is deterministic.
-- design/presentation/sound.md gets the music section; README a line.
+user's reference is the C64 game Robin of the Wood): sharp sawtooth leads, short repetitive
+parts that loop, with transition parts now and then or a crossfade between looping pieces. The
+music is generated as cheap tracker modules from simple data and rendered in the game on a
+background thread. Old folk music is the inspiration for the style; the tunes are our own (no
+existing song, no melody from any game). This replaces "no background music for now"
+(design/presentation/sound.md, 2026-11-05) once tasks 170 and 171 land. A second opinion
+(GPT 6.1 Sol, 2026-11-10) shaped this task: measure first, decide after.
 
-## 170. Music: the game plays the modules, rendered on a background thread
+This task answers whether the plan works, with numbers, before the music is built:
+- A minimal generator in tools/music/ (Python, deterministic, writing into art/generated/ and
+  packed into assets/ like the other generated files; check that the raw .mod files are
+  exported, as Godot doesn't import them): one short folk-style test piece of our own as a
+  4-channel ProTracker MOD, an 8-bar loop and a 1 or 2-bar fill, with single-cycle instruments
+  (sawtooth lead, pulse, triangle bass, noise drums) and a small stated effect set with exact
+  opcodes (e.g. arpeggio 0xy, portamento 1xx/2xx/3xx, vibrato 4xy, volume slide Axy, set volume
+  Cxx, note cut ECx, set speed/tempo Fxx, pattern break Dxx). It must open in OpenMPT or
+  MilkyTracker; check it against an independent player (libopenmpt / openmpt123 if available,
+  or say how else) rather than a second player of our own.
+- A prototype MOD renderer in GDScript (game/audio/ or similar, kept apart from AudioService and
+  data/sounds.cfg) that renders a section (an order/row range with a defined entry state) to an
+  AudioStreamWAV, on WorkerThreadPool.
+- Measurements, written into a report (docs/music-viability.md): render time of the 8-bar
+  section and of a 1-minute piece at 22.05 and 44.1 kHz, mono and stereo; memory per minute;
+  what the main thread spends (attaching the stream, copies) and whether a frame goes over task
+  158's frame budget while rendering, also during a save; on this machine, with the CPU named.
+- Viability checks, each a GUT test or a recorded result in the report:
+  - the loop is seamless (the samples at the wrap match the continuation, no click);
+  - a fill can follow the loop and the loop resume, landing on the bar;
+  - AudioStreamInteractive (or AudioStreamPlaylist / two players) can switch and crossfade
+    generated AudioStreamWAVs on the beat on Godot 4.7.2 (AudioStreamWAV exposes no BPM: find
+    whether a subclass or another stream type is needed);
+  - the render matches the independent player within a tolerance (pitch, length, events).
+- The report ends with a recommendation: GDScript rendering at runtime, a native renderer
+  (GDExtension around libopenmpt), or build-time renders of the generated modules; and the
+  numbers behind it. Tasks 170 and 171 are then rewritten from it with the user.
+- Not in this task: the Music bus and slider, the director, stems, 8 channels, more pieces.
+  Test runs stay muted; nothing plays in the game yet.
+
+## 170. Music: the game plays the modules (after 169's decision)
 
 - [ ] Done
 
-After task 169. A MOD player in GDScript: it parses the module and renders a section (or a
-whole piece) to an AudioStreamWAV in memory, on a background thread (WorkerThreadPool), so the
-main thread never mixes audio. Channels are resampled with linear interpolation; volume, panning
-(Amiga hard left/right or softer), and exactly the effects of task 169. The same piece can be
-rendered with channels muted, as layers that stay in sync. Tests: each effect against known
-output, a module's sections rendering to the expected length, a whole piece rendering in well
-under its playing time, and nothing touched on the main thread.
+To be rewritten from task 169's report with the user. The plan so far: render sections in the
+background with a bounded cache (user:// keyed by the module hash, renderer version and mix
+settings), never wait for a late render during play (keep looping), sections with explicit
+entry state, tempo, meter, loop points and allowed exits.
 
 ## 171. Music: what plays when, with loops, transitions and crossfades
 
 - [ ] Done
 
-After task 170. A music director (a scene service, no state in the views beyond what plays)
-picks the piece by the game state (time of day, season, weather, indoors), loops its section,
-plays a transition section now and then, and crossfades to another piece when the state
-changes (AudioStreamPlayers, or Godot's AudioStreamInteractive/AudioStreamSynchronized for
-layers). The next piece is rendered ahead in the background. A "music" bus with its own slider
-in Settings (and off), muffled indoors like the ambience; muted in test runs. Rules in
-data/music.cfg; tests for the choices and the switching; README.
+After task 170. A music director (a scene service) loops a section, plays a fill now and then
+and returns on the bar, switches between two loops (later by time of day, season, weather,
+indoors) with a minimum time before switching again. A "music" bus with its own slider in
+Settings (and off), muted in test runs. Rules in data/music.cfg; tests; README. Later: stems
+(AudioStreamSynchronized), more pieces, the season and weather choices.
 
 ## Later (not part of the prototype)
 
