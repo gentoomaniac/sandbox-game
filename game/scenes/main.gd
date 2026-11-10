@@ -585,7 +585,7 @@ func _pass_out() -> void:
 
 
 ## Holds everything that changes the world by itself while the time of a sleep is made up for
-## over frames, or lets it go: the views (the animals' hunts, the wildlife) and the animals and
+## over frames, or lets it go: the views (the wildlife) and the animals (their hunts too) and
 ## villagers of the state; `_process` doesn't stream chunks meanwhile, and the residency's own
 ## streaming (`update`) is held as well, a guard for anything else that would call it
 ## (`require` still loads what an action needs). So the world is the one a skip in one go would
