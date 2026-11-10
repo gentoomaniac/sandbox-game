@@ -102,10 +102,11 @@ Warft and an Ewer here and there.
 - **WorldView** (`game/scenes/world_view.gd`) draws a `World` into a SubViewport at one art
   pixel per screen pixel; `CameraController` shows that viewport on the window, so the world
   scrolls smoothly. `InteriorView` draws an `Interior` in its place while the player is inside.
-  WorldView streams chunks and draws terrain, objects, falling trees and the see-through
-  effect; it owns two small views, `BuildingViews` (building sprites, window lights, snowy
-  roofs) and `DecorationView` (flowers, pebbles, clay hints; the wildlife asks it where flowers
-  bloom). The meadow flowers are sown per tile when a chunk is drawn, by `FlowerRules`
+  WorldView streams chunks (a chunk is generated, then drawn a few rows of cells at a time
+  within a per-frame time budget, so no frame holds a whole chunk's drawing) and draws
+  terrain, objects, falling trees and the see-through effect; it owns two small views,
+  `BuildingViews` (building sprites, window lights, snowy roofs) and `DecorationView` (flowers,
+  pebbles, clay hints; the wildlife asks it where flowers bloom). The meadow flowers are sown per tile when a chunk is drawn, by `FlowerRules`
   (`data/flowers.cfg`) from two noises and the tile's habitat, and bloom by the curves of
   `Vegetation`; nothing about them is saved. What a tile looks like is one int, its tile code: layer, season look and weather look
   packed together (`TerrainTileset.tile_code`, read with `layer_of`, `season_of`, `weather_of`;

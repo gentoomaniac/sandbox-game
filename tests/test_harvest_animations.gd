@@ -19,6 +19,7 @@ func _show_views() -> void:
 	add_child_autofree(_view)
 	_view.show_world(_world)
 	_view._load_chunk(Chunk.world_to_chunk(_tile))
+	_view.finish_drawing()
 	_entities = Node2D.new()
 	add_child_autofree(_entities)
 	_items = GroundItemView.new()

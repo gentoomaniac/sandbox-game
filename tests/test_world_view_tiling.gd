@@ -79,6 +79,7 @@ func _mask_of(atlas_coords: Vector2i) -> int:
 func test_lush_and_dry_overlays_have_the_shape_of_their_grass() -> void:
 	for coords in CHUNKS:
 		_view._load_chunk(coords)
+		_view.finish_drawing()
 	var checked := 0
 	for day: int in DAYS:
 		_set_day(day)
@@ -121,6 +122,7 @@ func test_loading_in_any_order_matches_a_full_redraw() -> void:
 			_set_day(day)
 			for coords: Vector2i in order:
 				_view._load_chunk(coords)
+				_view.finish_drawing()
 			_assert_matches_full_redraw("day %d, order %s" % [day, order])
 			for coords: Vector2i in order:
 				_view._unload_chunk(coords)
@@ -130,14 +132,18 @@ func test_chunks_loading_between_refresh_steps_match_a_full_redraw() -> void:
 	for day: int in DAYS:
 		_set_day(day - 20)
 		_view._load_chunk(CHUNKS[0])
+		_view.finish_drawing()
 		_view._load_chunk(CHUNKS[1])
+		_view.finish_drawing()
 		_view.finish_refresh()
 		_set_day(day)
 		_view._refresh_step()
 		_view._load_chunk(CHUNKS[2])
+		_view.finish_drawing()
 		_view._refresh_step()
 		_view._refresh_step()
 		_view._load_chunk(CHUNKS[3])
+		_view.finish_drawing()
 		_assert_matches_full_redraw("day %d" % day)
 		for coords: Vector2i in CHUNKS:
 			_view._unload_chunk(coords)
@@ -153,6 +159,7 @@ func test_unloading_a_chunk_erases_every_layer_and_overlay_in_it() -> void:
 	for day: int in DAYS:
 		_set_day(day)
 		_view._load_chunk(CHUNKS[0])
+		_view.finish_drawing()
 		_view.finish_refresh()
 		assert_gt(_cells_in(layers, area), 0, "day %d: the chunk is drawn" % day)
 		_view._unload_chunk(CHUNKS[0])

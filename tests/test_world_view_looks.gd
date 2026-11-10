@@ -44,6 +44,7 @@ func _share_of_tiles_with_weather(coords: Vector2i, look: SeasonBlend.Look) -> f
 
 func test_snow_comes_in_patches_that_grow_with_the_cover() -> void:
 	_view._load_chunk(RIGHT)
+	_view.finish_drawing()
 	_show(WINTER, 0.0)
 	assert_eq(_view._overlays[SeasonBlend.Look.SNOW].get_used_cells().size(), 0)
 	var last_cells := 0
@@ -57,6 +58,7 @@ func test_snow_comes_in_patches_that_grow_with_the_cover() -> void:
 
 func test_frost_is_drawn_where_it_has_not_snowed() -> void:
 	_view._load_chunk(RIGHT)
+	_view.finish_drawing()
 	_show(WINTER, 0.0, 0.6)
 	assert_gt(_view._overlays[SeasonBlend.Look.FROST].get_used_cells().size(), 0)
 	assert_eq(_view._overlays[SeasonBlend.Look.SNOW].get_used_cells().size(), 0)
@@ -67,6 +69,7 @@ func test_frost_is_drawn_where_it_has_not_snowed() -> void:
 
 func test_the_season_overlays_follow_the_blend() -> void:
 	_view._load_chunk(RIGHT)
+	_view.finish_drawing()
 	_show(SUMMER, 0.0)
 	for look: SeasonBlend.Look in TerrainTileset.OVERLAY_LOOKS:
 		assert_eq(_view._overlays[look].get_used_cells().size(), 0, "no overlay in summer")
@@ -78,6 +81,7 @@ func test_the_season_overlays_follow_the_blend() -> void:
 
 func test_a_refresh_only_touches_the_cells_of_tiles_that_flipped() -> void:
 	_view._load_chunk(RIGHT)
+	_view.finish_drawing()
 	_show(WINTER, 0.5)
 	var before: PackedInt32Array = _view._chunk_looks[RIGHT].codes.duplicate()
 	_view.refresh_looks(WINTER, 0.52, 0.0)
@@ -97,6 +101,7 @@ func test_a_refresh_only_touches_the_cells_of_tiles_that_flipped() -> void:
 func test_a_chunk_that_loads_later_is_drawn_for_the_current_looks() -> void:
 	_show(WINTER, 0.7)
 	_view._load_chunk(RIGHT)
+	_view.finish_drawing()
 	assert_almost_eq(_share_of_tiles_with_weather(RIGHT, SeasonBlend.Look.SNOW), 0.7, 0.06)
 	assert_gt(_view._overlays[SeasonBlend.Look.SNOW].get_used_cells().size(), 0)
 	assert_false(_view._is_refreshing())
@@ -104,6 +109,7 @@ func test_a_chunk_that_loads_later_is_drawn_for_the_current_looks() -> void:
 
 func test_unloading_a_chunk_clears_its_overlays_and_looks() -> void:
 	_view._load_chunk(RIGHT)
+	_view.finish_drawing()
 	_show(WINTER, 0.7)
 	_view._unload_chunk(RIGHT)
 	assert_false(_view._chunk_looks.has(RIGHT))
@@ -113,6 +119,7 @@ func test_unloading_a_chunk_clears_its_overlays_and_looks() -> void:
 func test_a_refresh_is_spread_over_frames() -> void:
 	for coords in [LEFT, RIGHT, BELOW]:
 		_view._load_chunk(coords)
+		_view.finish_drawing()
 	_view.refresh_looks(WINTER, 0.5, 0.0)
 	assert_true(_view._is_refreshing())
 	assert_eq(_view._refresh_queue.size(), 3)
@@ -123,6 +130,7 @@ func test_a_refresh_is_spread_over_frames() -> void:
 func test_an_oak_is_in_leaf_bare_snowy_or_frosty_by_the_look() -> void:
 	_show(SUMMER, 0.0)
 	_view._load_chunk(RIGHT)
+	_view.finish_drawing()
 	var oak := _find_object(RIGHT, WorldObjectTypes.OAK)
 	assert_eq(_view._objects.get_cell_source_id(oak.pos), SeasonBlend.Look.SUMMER)
 	_show(WINTER, 0.0)
@@ -135,6 +143,7 @@ func test_an_oak_is_in_leaf_bare_snowy_or_frosty_by_the_look() -> void:
 
 func test_trees_turn_one_by_one_across_autumn() -> void:
 	_view._load_chunk(RIGHT)
+	_view.finish_drawing()
 	_show(SUMMER, 0.0)
 	var summer_looks := _foliage_looks(RIGHT)
 	assert_eq(summer_looks.size(), 1, "all alike in summer")
@@ -152,6 +161,7 @@ func _foliage_looks(coords: Vector2i) -> Dictionary:
 
 func test_a_see_through_stand_in_has_the_look_of_its_cell() -> void:
 	_view._load_chunk(RIGHT)
+	_view.finish_drawing()
 	_show(WINTER, 1.0)
 	var oak := _find_object(RIGHT, WorldObjectTypes.OAK)
 	_view._swap_cell_for_sprite(oak)
@@ -188,6 +198,7 @@ func test_a_house_roof_takes_the_season_of_its_tile() -> void:
 
 func test_decorations_take_the_look_of_their_tile() -> void:
 	_view._load_chunk(RIGHT)
+	_view.finish_drawing()
 	_show(SUMMER, 0.0)
 	var source_ids := {}
 	for pos in _view.decorations._decorations.get_used_cells():
@@ -206,6 +217,7 @@ func test_decorations_take_the_look_of_their_tile() -> void:
 
 func test_a_crop_is_drawn_from_its_own_sheet_in_every_look() -> void:
 	_view._load_chunk(RIGHT)
+	_view.finish_drawing()
 	var pos := Vector2i(-20, -20)
 	_view.world.set_terrain(pos, Tile.Terrain.SOIL)
 	var crop := WorldObject.new(&"carrot", pos)
@@ -229,6 +241,7 @@ func test_wet_soil_is_drawn_under_the_look_overlays() -> void:
 
 func test_soil_that_snow_lies_on_is_not_drawn_wet() -> void:
 	_view._load_chunk(RIGHT)
+	_view.finish_drawing()
 	var tiles: Array[Vector2i] = []
 	for x in range(-20, -10):
 		var pos := Vector2i(x, -20)

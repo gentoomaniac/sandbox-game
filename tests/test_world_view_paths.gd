@@ -23,6 +23,7 @@ func before_each() -> void:
 	_view.refresh_looks(SUMMER, 0.0, 0.0)
 	_view.finish_refresh()
 	_view._load_chunk(CHUNK)
+	_view.finish_drawing()
 
 
 func _wear(tile: Vector2i, steps: float) -> void:

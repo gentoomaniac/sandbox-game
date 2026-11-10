@@ -17,6 +17,7 @@ func _show_world_in_view() -> void:
 	add_child_autofree(_view)
 	_view.show_world(_world)
 	_view._load_chunk(Chunk.world_to_chunk(_tile))
+	_view.finish_drawing()
 
 
 func test_a_tree_with_foliage_drops_leaves_of_its_look() -> void:

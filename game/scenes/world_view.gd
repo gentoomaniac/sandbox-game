@@ -38,10 +38,15 @@ const REFRESH_BUDGET_USEC := 3000
 const CANOPY_HEIGHT_SHARE := 0.45
 const LOAD_RADIUS := 3
 const UNLOAD_RADIUS := 5
-## Loading a chunk (generating it, placing objects and drawing its layers and look overlays)
-## takes ~14 ms. One per frame keeps a frame under 16 ms and still streams far faster than
-## the camera moves; the look refresh waits for frames without a load (see `_process`).
-const MAX_LOADS_PER_FRAME := 1
+## Loading a chunk generates it (about 8 ms) and draws it (about 45 ms): the drawing is cut into
+## steps (a row of cells, the objects, the borders) that a frame runs until it has spent this
+## long. A new chunk is loaded when the one before is drawn; the look refresh waits for
+## frames without either (see `_process`). The chunks load well ahead of the view, so the
+## world around the player is drawn long before they get there.
+const DRAW_BUDGET_USEC := 8000
+## The budget while a chunk next to the player's is still undrawn (at the start, after a jump
+## to another place): it is on the screen, so it is drawn sooner, at the cost of longer frames.
+const URGENT_DRAW_BUDGET_USEC := 16000
 ## An object state (see `_object_states`) for a plant that is dormant and not drawn.
 const DORMANT := -1
 ## Added to an object state for a bush that is out of its fruit season.
@@ -57,6 +62,20 @@ const CORNER_OFFSETS: Array[Vector2i] = [
 ## Variety: grass turns lush or dry over patches about this many tiles across.
 const VARIETY_SEED_OFFSET := 7919
 const VARIETY_FREQUENCY := 0.008
+
+
+## A chunk that is loaded and is being drawn, a step per call of `_draw_chunk_step`.
+class ChunkDrawing:
+	extends RefCounted
+	var chunk: Chunk
+	## 0 is the looks, then a step for each row of cells, the objects, the borders.
+	var step := 0
+
+	func _init(chunk_to_draw: Chunk) -> void:
+		chunk = chunk_to_draw
+
+	func is_done() -> bool:
+		return step > Chunk.CHUNK_SIZE + 2
 
 
 ## What a chunk's tiles need for their looks, all by tile index (local y * CHUNK_SIZE + x).
@@ -107,6 +126,8 @@ var _blend: SeasonBlend
 var _look_state := Vector3(-1, 0, 0)
 var _conditions: SeasonBlend.Conditions
 var _chunk_looks: Dictionary[Vector2i, ChunkLooks] = {}
+## The chunk that is loaded and being drawn, if any: the next one loads when it is drawn.
+var _drawing: ChunkDrawing
 ## Chunks whose looks are not brought up to date yet, the nearest to the focus last.
 var _refresh_queue: Array[Vector2i] = []
 ## Cells whose overlays must be drawn again after a refresh found their tiles' looks changed.
@@ -251,7 +272,13 @@ func building_picture(building: Building) -> String:
 	return _buildings.picture_path(building)
 
 
-## Brings every queued chunk up to date at once (for tests and for a screenshot).
+## Draws the chunk that is loaded and not drawn yet, at once (for tests).
+func finish_drawing() -> void:
+	while _drawing != null:
+		_draw_next_step()
+
+
+## Brings every queued chunk up to date at once (for tests).
 func finish_refresh() -> void:
 	while not _refresh_queue.is_empty() or not _cells_to_redraw.is_empty():
 		_refresh_step()
@@ -298,14 +325,15 @@ func _process(delta: float) -> void:
 	for coords: Vector2i in plan["unload"]:
 		_unload_chunk(coords)
 	var to_load: Array = plan["load"]
-	for coords: Vector2i in to_load.slice(0, MAX_LOADS_PER_FRAME):
-		_load_chunk(coords)
-	# A load already fills most of a frame, so the look refresh only runs in frames without one.
-	if to_load.is_empty():
+	if _drawing == null and not to_load.is_empty():
+		_load_chunk(to_load[0])
+	_draw_within_budget()
+	# Loading and drawing fill most of a frame, so the look refresh only runs in frames without.
+	if to_load.is_empty() and _drawing == null:
 		var deadline := Time.get_ticks_usec() + REFRESH_BUDGET_USEC
 		while Time.get_ticks_usec() < deadline and _is_refreshing():
 			_refresh_step()
-	is_settled = to_load.is_empty() and not _is_refreshing()
+	is_settled = to_load.is_empty() and _drawing == null and not _is_refreshing()
 	_update_see_through(delta)
 	_update_falling_trees(delta)
 
@@ -394,59 +422,94 @@ func _shake_object(object: WorldObject) -> void:
 	_object_sprites[object.pos].shake()
 
 
+## Generates a chunk and adds it to the world; `_draw_within_budget` draws it.
 func _load_chunk(coords: Vector2i) -> void:
 	var chunk := _generator.generate_chunk(coords)
 	world.add_chunk(chunk)
-	_draw_chunk(chunk)
-	# The tilled soil of the chunk now knows whether snow lies on it.
-	for pos in world.tilled_tiles_in_chunk(coords):
-		_soil_wetness.redraw_tile(pos)
+	_drawing = ChunkDrawing.new(chunk)
 
 
+## Runs the steps of the drawing, one at least, until the budget of the frame is spent.
+func _draw_within_budget() -> void:
+	if _drawing == null:
+		return
+	var offset := (_drawing.chunk.coords - _focus_chunk).abs()
+	var is_urgent := maxi(offset.x, offset.y) <= 1
+	var budget := URGENT_DRAW_BUDGET_USEC if is_urgent else DRAW_BUDGET_USEC
+	var deadline := Time.get_ticks_usec() + budget
+	_draw_next_step()
+	while _drawing != null and Time.get_ticks_usec() < deadline:
+		_draw_next_step()
+
+
+## Does the next step of the drawing.
+func _draw_next_step() -> void:
+	_draw_chunk_step(_drawing)
+	if _drawing.is_done():
+		_drawing = null
+
+
+## Draws a whole chunk at once.
 func _draw_chunk(chunk: Chunk) -> void:
+	var drawing := ChunkDrawing.new(chunk)
+	while not drawing.is_done():
+		_draw_chunk_step(drawing)
+
+
+## Does the next step of drawing a chunk. The cells read the tiles' looks as they are when
+## their row is drawn, as the world can change between the steps.
+func _draw_chunk_step(drawing: ChunkDrawing) -> void:
+	var chunk := drawing.chunk
 	var coords := chunk.coords
 	var origin := Chunk.to_world(coords, Vector2i.ZERO)
-	var chunk_looks := _make_chunk_looks(chunk)
-	_chunk_looks[coords] = chunk_looks
-	_refresh_queue.erase(coords)
-	var covered := _covered_tiles(chunk)
-	# The corners of the chunk's cells: its own tiles plus the row above and the column to
-	# the left. Reading them once, mostly straight from the chunk, is several times faster
-	# than looking up 4 corners per cell through the world.
-	var size := Chunk.CHUNK_SIZE + 1
-	var corner_codes := PackedInt32Array()
-	corner_codes.resize(size * size)
-	for y in size:
-		for x in size:
-			var local := Vector2i(x - 1, y - 1)
-			if x == 0 or y == 0:
-				corner_codes[y * size + x] = _code_at(origin + local)
-			else:
-				corner_codes[y * size + x] = chunk_looks.codes[ChunkLooks.index_of(local)]
-	for y in Chunk.CHUNK_SIZE:
-		for x in Chunk.CHUNK_SIZE:
-			var top_left := y * size + x
-			var codes := PackedInt32Array(
-				[
-					corner_codes[top_left],
-					corner_codes[top_left + 1],
-					corner_codes[top_left + size],
-					corner_codes[top_left + size + 1]
-				]
-			)
-			_draw_cell_corners(origin + Vector2i(x, y), codes, true)
-			# The bottom-right corner is this chunk's tile (x, y).
-			decorations.place(
-				origin + Vector2i(x, y), codes[3], covered.has(origin + Vector2i(x, y))
-			)
-	for object in chunk.objects():
-		_draw_object(object.pos)
-	# The right and bottom neighbours' border cells drew this chunk's tiles with a fallback
-	# while it was missing. Now they can blend properly.
-	for i in Chunk.CHUNK_SIZE + 1:
-		_redraw_cell(origin + Vector2i(Chunk.CHUNK_SIZE, i))
-	for i in Chunk.CHUNK_SIZE:
-		_redraw_cell(origin + Vector2i(i, Chunk.CHUNK_SIZE))
+	if drawing.step == 0:
+		_chunk_looks[coords] = _make_chunk_looks(chunk)
+		_refresh_queue.erase(coords)
+	elif drawing.step <= Chunk.CHUNK_SIZE:
+		_draw_row(drawing, drawing.step - 1)
+	elif drawing.step == Chunk.CHUNK_SIZE + 1:
+		for object in chunk.objects():
+			_draw_object(object.pos)
+	else:
+		# The right and bottom neighbours' border cells drew this chunk's tiles with a fallback
+		# while it was missing. Now they can blend properly.
+		for i in Chunk.CHUNK_SIZE + 1:
+			_redraw_cell(origin + Vector2i(Chunk.CHUNK_SIZE, i))
+		for i in Chunk.CHUNK_SIZE:
+			_redraw_cell(origin + Vector2i(i, Chunk.CHUNK_SIZE))
+		# The tilled soil of the chunk now knows whether snow lies on it.
+		for pos in world.tilled_tiles_in_chunk(coords):
+			_soil_wetness.redraw_tile(pos)
+	drawing.step += 1
+
+
+## Draws the cells of row `y` of a chunk (and their decorations).
+func _draw_row(drawing: ChunkDrawing, y: int) -> void:
+	var origin := Chunk.to_world(drawing.chunk.coords, Vector2i.ZERO)
+	var chunk_looks: ChunkLooks = _chunk_looks[drawing.chunk.coords]
+	# The corners of the row's cells: the codes of the row above and of this row, starting one
+	# column to the left. Reading them once, mostly straight from the chunk, is several times
+	# faster than looking up 4 corners per cell through the world.
+	var above := _code_row(chunk_looks, origin, y - 1)
+	var below := _code_row(chunk_looks, origin, y)
+	for x in Chunk.CHUNK_SIZE:
+		var codes := PackedInt32Array([above[x], above[x + 1], below[x], below[x + 1]])
+		var pos := origin + Vector2i(x, y)
+		_draw_cell_corners(pos, codes, true)
+		# The bottom-right corner is this chunk's tile (x, y).
+		decorations.place(pos, codes[3], world.object_at(pos) != null)
+
+
+## The codes of the tiles of row `y` of a chunk, from the column left of it to its last.
+func _code_row(chunk_looks: ChunkLooks, origin: Vector2i, y: int) -> PackedInt32Array:
+	var codes := PackedInt32Array()
+	codes.resize(Chunk.CHUNK_SIZE + 1)
+	for x in range(-1, Chunk.CHUNK_SIZE):
+		if x < 0 or y < 0:
+			codes[x + 1] = _code_at(origin + Vector2i(x, y))
+		else:
+			codes[x + 1] = chunk_looks.codes[ChunkLooks.index_of(Vector2i(x, y))]
+	return codes
 
 
 ## The thresholds of a chunk's tiles and the looks they have now.
@@ -513,24 +576,9 @@ func _refresh_chunk(coords: Vector2i) -> void:
 			_on_objects_changed(object.pos)
 
 
-## The tiles of a chunk that objects cover: those of its own objects, and those of objects
-## from the loaded chunks above and to the left that reach in. Cheaper for a whole chunk than
-## asking the world about every tile.
-func _covered_tiles(chunk: Chunk) -> Dictionary[Vector2i, bool]:
-	var covered: Dictionary[Vector2i, bool] = {}
-	for offset in [Vector2i.ZERO, Vector2i.LEFT, Vector2i.UP, Vector2i(-1, -1)]:
-		var neighbour := world.chunk_at(chunk.coords + offset)
-		if neighbour == null:
-			continue
-		for object in neighbour.objects():
-			if world.is_dormant(object):
-				continue
-			for tile in object.tiles():
-				covered[tile] = true
-	return covered
-
-
 func _unload_chunk(coords: Vector2i) -> void:
+	if _drawing != null and _drawing.chunk.coords == coords:
+		_drawing = null
 	for object in world.chunk_at(coords).objects():
 		_drop_object_sprite(object.pos)
 		_objects.erase_cell(object.pos)
@@ -700,7 +748,13 @@ func _draw_object(world_pos: Vector2i) -> void:
 		_objects.erase_cell(world_pos)
 		_object_states.erase(world_pos)
 		return
-	_set_object_cell(object)
+	if _object_sprites.has(world_pos):
+		# A stand-in sprite is showing it (the player stands behind it before its chunk is
+		# drawn): the cell stays empty until the sprite goes, and the sprite shows it as it is now.
+		_place_object_sprite(_object_sprites[world_pos], object)
+		_object_states[world_pos] = _object_state(object)
+	else:
+		_set_object_cell(object)
 	if not object.light().is_empty():
 		var light := ObjectLight.new(object.light(), world_pos)
 		light.strength = _light_strength

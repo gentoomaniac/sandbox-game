@@ -20,6 +20,7 @@ func before_each() -> void:
 	_view.refresh_looks(SUMMER, 0.0, 0.0)
 	_view.finish_refresh()
 	_view._load_chunk(CHUNK)
+	_view.finish_drawing()
 
 
 ## Lays a 3x3 patch of `terrain` around the middle of the chunk and gives its middle tile.
