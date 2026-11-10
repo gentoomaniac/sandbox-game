@@ -3976,3 +3976,68 @@ between the legs), the flank is tucked up, and the cannons stay slim. The grazin
 and wedge-shaped on a neck that drops nearly straight down, the muzzle just in front of the
 forelegs (fifth go, approved by the user). Horse, pony and the saddle and riding sheets; the 16 px
 horse had neither fault.
+
+## 158. Frame spikes left after task 147: the save snapshot, the bed's save, the pass-out
+
+- [x] Done
+
+The user, 2026-11-10: "start the performance follow ups" (the leftovers of task 147, see its
+Done note in docs/tasks-done.md).
+- The snapshot of a timed or quick save (`to_dict` on the main thread) takes about 50 ms on the
+  `make bench` save: make it cheap in the frame (for example cache the dict of what didn't change
+  since the last save, such as chunks, and rebuild only what did), so a save costs well under
+  16.7 ms on the main thread. The snapshot still shares nothing with the game, and a save
+  written that way loads the same as one written in full.
+- Sleeping in a bed still saves synchronously in one frame: save as passing out does, in the
+  background without stalling.
+- Passing out still has two long frames under the fade (about 67 and 102 ms: the villagers'
+  skip in `ActorsUpkeep`, the wildlife settle, the snapshot): spread them so no frame goes over
+  33 ms, the same world after the skip.
+- `make bench` before and after (a scenario for the bed if it has none); same game, same saves.
+
+Done: `make bench` now times four scenarios on the bench save (standing, passing out with the
+energy set to 0, sleeping in the camp's bed, walking), starting at 10:00 so that no late night
+passes out by itself. What the long frames were (headless, ms):
+
+| Frame | ms | What it did |
+|---|---|---|
+| Sleeping in a bed, the one frame | 196 | the skipped time (about 70) and the synchronous save: snapshot 52, JSON text 60, write 10 |
+| Passing out, first frame | 69 | walked minutes 5, farming 5, `ActorsUpkeep.skipped` (villagers, about 42), wildlife settle 18 |
+| Passing out, second frame | 84 | the snapshot: `to_dict` 52, of which about 25 was the soil catching up its 27,000 tiles after the skip |
+| A timed or quick save | 52 | the snapshot on the main thread (the bench save is heavy: 30,000 tilled tiles, 10,000 piles, 155 villagers) |
+
+Fixed: the bed sleeps like passing out: the sleep (`GameState.sleep_in_over_frames`) and the
+save (`SaveService.save_without_stalling`) under the black screen. The time of a sleep is made
+up for over frames (`Simulation.skip_over_frames`): the villagers in steps of 8 ms (`Npcs
+.catch_up_over_frames`), the soil caught up in steps (`SoilMoisture.catch_up_all_over_frames`),
+the wildlife settle, the wake-up and the snapshot a frame each; the same dice in the same order,
+and Main holds the world still meanwhile (`_hold_world`): the animals and villagers, and the views
+that change it by themselves (chunks streaming in and out, the cats' hunts, the wildlife), until
+the player has woken; a quit waits for that, so a save is of a whole morning. So the world ends
+as after `skip` (tests/test_actors_catch_up.gd compares whole games, their dice and what the
+animals and villagers are in the middle of; tests/test_sleeping_in_bed.gd, on Main, a quit in the
+middle of a sleep, the chunks staying as they are, and a cat beside a mouse starting no hunt).
+Both steps share one budget, `Simulation.frame_budget_usec` (8 ms a frame). The hotbar wheel's
+arithmetic moved out of Main into `HotbarWheel`, as Main reached its 1000 lines. The snapshot copies the big maps as they
+are (the terrain edits, soil moisture, wear and clay spots as dictionary copies, the piles as
+packed arrays) and a worker makes the save data of them (`GameState.dict_of`), so nothing is
+cached and no writer can be missed; `SoilMoisture.catch_up_all` is skipped within the hour it
+was done in. A save is byte for byte the one written before (checked on the bench save), and
+tests/test_save_snapshot.gd changes every kind of thing after a snapshot and checks the snapshot
+is still the game of its moment. Before and after, `make bench`:
+
+| | before | after |
+|---|---|---|
+| passing out, longest frame | 84 ms (2 frames over 33) | 25 ms (0) |
+| sleeping in a bed, longest frame | 196 ms (1 over 33) | 21 ms (0) |
+| walking, longest frame | 23 ms | 23 ms |
+| standing, walking: mean frame | 6.9, 7.1 ms | 7.1, 7.2 ms |
+| snapshot of a save on the main thread | 52 ms | 10 ms |
+| JSON text and save data on the worker | 60 ms | 91 ms |
+
+Left: the snapshot is 10 ms, not a few: copying the 30,000 terrain edits and 27,000 moistures
+as dictionaries (2 ms each), the piles (3 ms) and the villagers (2 ms) is most of it. A per-chunk
+cache of the save data would cut that further but needs every writer of the cached maps hooked,
+and the save would then list the edits by chunk instead of in the order they were made; it was
+not done. The worker does more than before (it makes the save data), which nothing waits for.
+
