@@ -8,6 +8,8 @@ const SUMMER := 45
 ## Deep in autumn, when every tile has its autumn look.
 const AUTUMN := 75
 const WINTER := 105
+## The tiles of a 2x2 block, from its top-left one.
+const BLOCK: Array[Vector2i] = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]
 
 var _view: WorldView
 var _rules := PathRules.default_rules()
@@ -101,3 +103,42 @@ func test_snow_covers_a_path_and_shows_a_trodden_track() -> void:
 		TerrainTileset.Layer.TRODDEN,
 		"the track: trodden snow"
 	)
+
+
+## The top-left tile of a 2x2 block of tiles of the chunk that all wear, or fails the test.
+func _wearing_block() -> Vector2i:
+	var origin := Chunk.to_world(CHUNK, Vector2i.ZERO)
+	for y in range(1, Chunk.CHUNK_SIZE - 2):
+		for x in range(1, Chunk.CHUNK_SIZE - 2):
+			var block := origin + Vector2i(x, y)
+			if BLOCK.all(
+				func(offset: Vector2i) -> bool: return _view.world.tile_at(block + offset).wears()
+			):
+				return block
+	fail_test("no 2x2 block of grass in chunk %s" % CHUNK)
+	return origin
+
+
+func test_the_cell_between_worn_tiles_joins_up_as_they_all_wear() -> void:
+	var block := _wearing_block()
+	var middle := block + Vector2i.ONE
+	var trodden := _view._layers[TerrainTileset.Layer.TRODDEN]
+	for offset in BLOCK.slice(0, 3):
+		_wear(block + offset, _rules.trodden_from())
+		assert_lt(trodden.get_cell_atlas_coords(middle).x, TerrainTileset.FULL_COLUMN, "an edge")
+	_wear(block + BLOCK[3], _rules.trodden_from())
+	assert_gte(trodden.get_cell_atlas_coords(middle).x, TerrainTileset.FULL_COLUMN, "a full tile")
+
+
+func test_a_path_among_trodden_tiles_is_an_edge_over_a_full_trodden_cell() -> void:
+	var block := _wearing_block()
+	var middle := block + Vector2i.ONE
+	for offset in BLOCK:
+		_wear(block + offset, _rules.trodden_from())
+	_wear(block, _rules.path_from())
+	var trodden := _view._layers[TerrainTileset.Layer.TRODDEN]
+	var path := _view._layers[TerrainTileset.Layer.PATH]
+	assert_gte(
+		trodden.get_cell_atlas_coords(middle).x, TerrainTileset.FULL_COLUMN, "trodden all over"
+	)
+	assert_lt(path.get_cell_atlas_coords(middle).x, TerrainTileset.FULL_COLUMN, "the path's rim")
