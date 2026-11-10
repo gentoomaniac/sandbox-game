@@ -120,3 +120,57 @@ chicken coop. All are made at the workbench or built with the hammer and stand o
   in the inventory), an empty can says so. Hay is the only feed so far: any item in `feed_items`
   of data/livestock.cfg feeds, so grain for the hens or a swill for the pigs is a line there.
   What was put in stays until the animals take it (see the needs below); nothing spoils.
+- **The needs of the animals** (decided 2026-11-10, the user's decisions; task 122): every farm
+  animal has a **hunger** and a **thirst**, each from 0 (it just ate or drank) to 1, that rise with
+  game time by the hours of its species (`hunger_hours` and `thirst_hours` in data/livestock.cfg:
+  a cow 12 and 8 hours from fed to hungriest, a hen 8 and 10) and are saved with it (save version
+  25). **They have no consequence at all**: nothing suffers, nothing dies, nothing slows down.
+  This is the basic need system; later (Stardew Valley's way) animals that are neither hungry nor
+  thirsty will give better milk, wool and eggs, and that is where to put it: read `hunger` and
+  `thirst` of the animal where the product is worked out (task 165 and the milk, wool and egg
+  tasks). Nothing reads them yet but the animal itself.
+  - **They follow the game clock**, not the frames: the animals are brought up to the clock once
+    each `update` (`Livestock._account_needs`), so a slow frame, a fast-forward and a skip all give
+    the same rise, a frozen clock (`freeze`) gives none and a ridden horse gets hungry too. The player
+    in a house stops the animals' updates while the clock runs, so a save brings them up to the
+    clock first (`Livestock.account_needs` in `GameState.snapshot`): the hours indoors are in the
+    saved game, and the game loaded from it.
+  - **Looking for what meets a need:** when an awake animal picks what to do next and a need has
+    reached `seek_at` (0.5), it looks within `search_tiles` (10) of where it stands, over the
+    ground it can walk to, for the nearest thing that meets it and walks there at its own pace
+    (giving up after `trip_seconds`, 30 s, or when it is blocked). There it stands with its head
+    down for `drink_seconds` or `eat_seconds` and the need is 0. A search that finds nothing is not
+    repeated for `retry_seconds` (30 s), nor is one whose trip was blocked or took too long: it walks
+    straight at its goal (round small things, as every animal's step turns), has no way to find a long
+    one, and gives up. No more than `searches_per_update` (2) searches are made in one update of the
+    animals, counted search by search (an animal with two needs and one search left makes one; each
+    is a flood fill), so a herd's searches spread over frames; an animal that did not
+    get one asks when it next picks what to do. None are made in the minutes of a skip that are
+    walked through. The stronger need goes first. Asleep, following the
+    player or running from them, it looks for nothing.
+  - **Thirst is met** at **fresh water** in the map: the terrain `WATER`, which is the rivers,
+    ponds and ditches (`Tile.is_fresh_water`, the same the watering can fills at); **never** the
+    sea, the tideways, the tidal mud (the Wadden), the salt marsh or the coast; or at a **trough
+    with water**. Every species drinks.
+  - **Hunger is met** at a **hay rack with feed** by those that eat feed (`eats_feed`: cows,
+    sheep, horses and rabbits), and by **grazing** by those that graze for food
+    (`grazes_for_food`: the same and the hens, which peck for seeds and worms): while it grazes its
+    hunger falls by `graze_relief_per_second` (0.003) a second. Chosen from what they do today: the
+    animals that graze already eat grass; dogs and cats only sniff about, so they eat nothing there,
+    and have no feeder yet (a bowl, a caught mouse for the cat, grain for the hens come later), so
+    their hunger just rises to 1 and stays. The trough holds water only; a feeding trough for pigs is
+    the same object with `stock_kind` feed.
+  - **Stocks go down:** each drink or meal takes the species' `drink_units` or `eat_units` (a cow
+    5 of each, a sheep 3, a hen 3 drink, a rabbit 1, a dog 3 drink and a cat 1) out of the trough or
+    the rack, whose picture follows. The player refills them (see above). Nothing is used up by the
+    animals' own watering at a river.
+  - **Skipped time:** a skip (sleeping, `skip`) raises the needs by the minutes that passed and
+    counts the meals of the animals in loaded chunks: an animal that could reach fresh water or a
+    trough with water (or a rack, or grass for a grazer) has met each need that rose to `seek_at`
+    at some point in them, so the need ends somewhere between 0 and `seek_at` by the dice, and a
+    trough or rack loses that many drinks or meals (at least one); one that could reach nothing
+    stays as risen, up to 1. The skip is made up for over frames, a few animals a frame
+    (`Livestock.catch_up_over_frames`, `Simulation.frame_budget_usec`), in the same order and with the
+    same dice as in one go.
+  - **Console:** `noneeds` toggles the rise off and on again (the HUD shows "No needs"); like the
+    other cheats it lasts for the session and is not saved. What is already risen stays.

@@ -209,17 +209,26 @@ func _check_object(object: Variant, path: String, drop: Callable) -> void:
 		_add_missing("object %s" % type, path, drop)
 		return
 	if state != null:
-		_check_object_state(state, path, drop)
+		_check_object_state(state, WorldObjectTypes.TYPES[StringName(type)], path, drop)
 	var slot_count: int = WorldObjectTypes.TYPES[StringName(type)].get("storage_slots", 0)
 	if slot_count > 0:
 		_check_stacks(object, "storage", slot_count, path)
 
 
-func _check_object_state(state: Dictionary, path: String, drop_object: Callable) -> void:
+func _check_object_state(
+	state: Dictionary, type_data: Dictionary, path: String, drop_object: Callable
+) -> void:
 	# Every other entry (growth, days_growing, damage, days_until_bears...) is a number.
 	for key: Variant in state:
 		if key != "tree" and key != "work" and not _is_kind(state[key], Kind.NUMBER):
 			_report(path + " state", "%s should be a number" % key)
+	# What a trough or a hay rack holds: a whole number up to its capacity.
+	if state.has("stock") and _is_kind(state["stock"], Kind.WHOLE):
+		_check_between(
+			state["stock"], 0, type_data.get("stock_capacity", 0), path + " state", "stock"
+		)
+	elif state.has("stock"):
+		_report(path + " state", "stock should be a whole number")
 	# The tree a stump or sapling comes from.
 	if state.has("tree"):
 		if not state["tree"] is String:
@@ -368,8 +377,8 @@ func _check_livestock(animals: Array) -> void:
 		_field(animal, "position", Kind.POINT, path)
 		_field(animal, "follow_until_minute", Kind.WHOLE, path)
 		_field(animal, "is_saddled", Kind.BOOL, path)
-		_field(animal, "hunger", Kind.NUMBER, path)
-		_field(animal, "thirst", Kind.NUMBER, path)
+		for need in ["hunger", "thirst"]:
+			_check_between(_field(animal, need, Kind.NUMBER, path), 0.0, 1.0, path, need)
 		if tint != null and not Color.html_is_valid(tint):
 			_report(path, "tint %s is not a colour" % tint)
 		if species == null or look == null:

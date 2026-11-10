@@ -40,7 +40,6 @@ const HUNTING_KEYS := [
 	"catch_tiles",
 	"rest_seconds",
 ]
-const YARD_KEYS := ["pour_units", "feed_items"]
 const SPECIES_KEYS := [
 	"looks",
 	"look_weights",
@@ -105,9 +104,6 @@ func problems() -> Array[String]:
 	for key: String in HUNTING_KEYS:
 		if not _values.get("hunting", {}).has(key):
 			found.append("[hunting] no %s" % key)
-	for key: String in YARD_KEYS:
-		if not _values.get("yard", {}).has(key):
-			found.append("[yard] no %s" % key)
 	for species in SPECIES:
 		var values: Dictionary = _values.get(String(species), {})
 		var missing := SPECIES_KEYS.filter(func(key: String) -> bool: return not values.has(key))
@@ -142,16 +138,6 @@ func general(key: String) -> float:
 ## A number of how a cat hunts (see [hunting]).
 func hunting(key: String) -> float:
 	return float(_values["hunting"][key])
-
-
-## How much water one pour of the watering can puts into a trough, in units.
-func pour_units() -> int:
-	return int(_values["yard"]["pour_units"])
-
-
-## How many units of feed one of this item puts into a hay rack; 0 for an item that is no feed.
-func feed_units(item: StringName) -> int:
-	return int(_values["yard"]["feed_items"].get(String(item), 0))
 
 
 func looks(species: StringName) -> Array:

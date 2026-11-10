@@ -33,9 +33,17 @@ var follow_until_minute := 0
 ## Seconds a follower has got no nearer the player for something in its way (see Livestock).
 var stuck_seconds := 0.0
 ## How much it wants to eat and to drink, from 0 (it just did) to 1 (the most). They rise with
-## game time and have no other effect yet.
+## game time and have no other effect yet (see Livestock).
 var hunger := 0.0
 var thirst := 0.0
+## Where it is walking to meet a need (its feet, in tiles of the world), Vector2.INF when it is
+## going nowhere in particular; the tile of the water or the stock it will use there; and which
+## need it is, `hunger` or `thirst`. Not saved: a loaded animal looks about again.
+var goal := Vector2.INF
+var goal_source := Vector2i.ZERO
+var goal_need := &""
+## Seconds before it looks for what it needs again, after a search that found nothing.
+var search_seconds := 0.0
 ## A horse wears a saddle (see ToolUse `SADDLE`): it can be ridden.
 var is_saddled := false
 ## The player rides it (see GameState `mount`): it goes where they ride, and does nothing of its

@@ -126,7 +126,7 @@ func can_use_held_item() -> bool:
 		or item.has("places")
 		or ACTIVE_TOOLS.has(item.get("tool"))
 		or held in ANIMAL_ITEMS
-		or LivestockRules.default_rules().feed_units(held) > 0
+		or YardRules.default_rules().feed_units(held) > 0
 	)
 
 
@@ -196,14 +196,14 @@ func _do_use(target: Vector2i) -> Use:
 			_done(ActionOutcome.WATER, target)
 		Use.POUR:
 			var trough := _state.world.object_at(target)
-			ObjectStock.add(trough, LivestockRules.default_rules().pour_units())
+			ObjectStock.add(trough, YardRules.default_rules().pour_units())
 			_state.world.change_object(trough)
 			_state.player.can_water -= 1
 			_done(ActionOutcome.WATER, target, trough.type)
 		Use.FEED:
 			var rack := _state.world.object_at(target)
 			var feed := _state.player.inventory.held_item()
-			ObjectStock.add(rack, LivestockRules.default_rules().feed_units(feed))
+			ObjectStock.add(rack, YardRules.default_rules().feed_units(feed))
 			_state.world.change_object(rack)
 			_state.player.inventory.consume_held()
 			_done(ActionOutcome.FEED, target, rack.type, {feed: 1})
@@ -419,7 +419,7 @@ func _use_outdoors(item: Dictionary, pos: Vector2i) -> Use:
 		return Use.PLANT
 	var object := _state.world.object_at(pos)
 	var held := _state.player.inventory.held_item()
-	if LivestockRules.default_rules().feed_units(held) > 0:
+	if YardRules.default_rules().feed_units(held) > 0:
 		return Use.FEED if _can_take_stock(object, &"feed") else Use.NOTHING
 	return _use_tool(item, object, pos)
 

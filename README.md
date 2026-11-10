@@ -171,6 +171,15 @@ a stock of up to 100 units. Their pictures show how full they are: empty, low, h
 Fill a trough with the watering can (a pour is 10 units and takes one of the can's 20) and a hay
 rack with hay (10 units each) by the use key; a full one takes no more.
 
+The farm animals get hungry and thirsty as game time passes (a cow takes 12 hours to go from fed
+to hungriest, 8 to thirstiest; the numbers are in [data/livestock.cfg](data/livestock.cfg)); the
+needs are saved and, for now, have no other effect. A thirsty animal walks to fresh water nearby
+(a river, a pond or a ditch; never the sea, the mud flats or the salt marsh) or to a trough with
+water, and drinks; a hungry one that eats hay goes to a hay rack, and those that graze eat as they
+graze. Each drink and meal takes a few units from the trough or rack (a cow 5, a hen 3), whose
+picture shows what is left. Sleeping counts the meals of the animals that could reach food and
+water. `noneeds` in the console stops the needs from rising.
+
 ### Livestock
 
 Cows, sheep, chickens and rabbits of the region: red-brown Angler, black pied and red pied
@@ -575,6 +584,7 @@ arguments.
 | `reset` | Put yourself in your bed, the one you wake in, inside or out. |
 | `give <item> [count]` | Put items in the inventory (e.g. `give bone` for a dog, `give saddle` for a horse). |
 | `god`, `nodrain`, `noweight`, `nocost` | Toggle invincibility, free actions, weight costing nothing, and buildings and crafting needing no materials. |
+| `noneeds` | Toggle the farm animals' hunger and thirst standing still (they rise with game time otherwise). |
 | `freeze` | Toggle time standing still: the clock, the day, the crops and the weather wait; you and the animals still move. `skip`, sleeping and passing out still move time on (the animals and villagers move on with it, as below). |
 | `noclip` | Toggle walking through anything: water, trees, rocks, buildings, furniture (indoors within the room, outdoors on loaded ground). Turned off where you don't fit, it puts you on the nearest free ground. |
 | `weather`, `weather <condition>`, `weather auto` | Show the weather, force a condition, or go back to the simulation. |

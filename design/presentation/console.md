@@ -7,7 +7,8 @@ Decided 2026-11-05. A text console for testing and cheats.
 - Commands: `help`; `tp <x> <y>` (teleport to a world tile; from inside a house the player steps out there); `give <item>
   [count]` (into the inventory); `god` (toggle invincibility:
   health doesn't drop); `nodrain` (toggle: actions cost no energy); `noweight` (toggle:
-  carried weight doesn't raise costs); `noclip` (toggle: nothing blocks the player, who stays
+  carried weight doesn't raise costs); `noneeds` (toggle: the farm animals' hunger and thirst
+  don't rise, task 122); `noclip` (toggle: nothing blocks the player, who stays
   on the map's tiles; turned off where they don't fit, they are put on the nearest free
   ground); `freeze` (toggle: the game clock stands still, so the day, crops and weather
   wait, while the player and the animals still move; `skip`, sleep and passing out still move

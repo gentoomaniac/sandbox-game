@@ -43,15 +43,15 @@ var weather_override := &""
 ## The snow on the ground, from the weather (see SnowCover); built with `weather`.
 var snow_cover: SnowCover
 var player := PlayerState.new()
+## Session-only cheats (see Console): not saved.
+var cheats := CheatFlags.new()
 ## The farm animals of the world. Main moves them while the player is out in the world.
-var livestock := Livestock.new(sun)
+var livestock := Livestock.new(sun, cheats)
 ## The villagers of the world, moved like the farm animals.
 var npcs := Npcs.new(sun)
 var energy_rules := EnergyRules.default_rules()
 ## What every use costs is multiplied by this (the Game setting: 0.5, 1 or 1.5).
 var energy_drain := 1.0
-## Session-only cheats (see Console): not saved.
-var cheats := CheatFlags.new()
 ## The player was awake when the clock reached LATE_NIGHT_MINUTE (see `pass_awake_time`) and has
 ## not slept since: they pass out. Not saved.
 var is_up_too_late := false
@@ -557,6 +557,7 @@ func to_dict() -> Dictionary:
 ## A copy of what `to_dict` writes that is quick to take and shares nothing with the game, and
 ## that `dict_of` makes save data of: the part of saving that has to stop the game, a moment.
 func snapshot() -> Dictionary:
+	livestock.account_needs(clock)
 	var player_data := player.to_dict()
 	# A game saved on horseback loads with the player standing beside the horse (or, with no room
 	# there, on its spot).
@@ -650,6 +651,8 @@ func _end_debuff_on_new_day(day_before: int) -> void:
 ## Puts what changes with time under the simulation, once the world and the weather exist. The
 ## order is the order they run in.
 func _start_simulation() -> void:
+	# The needs of the animals count from the clock as it is now (as loaded, for a loaded game).
+	livestock.account_needs(clock)
 	simulation.add_system(FarmingUpkeep.new(world, weather))
 	simulation.add_system(NightUpkeep.new(world, weather, _tiles_kept_clear))
 	simulation.add_system(ActorsUpkeep.new(world, livestock, npcs, _player_feet))

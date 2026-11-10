@@ -26,6 +26,8 @@ func before_each() -> void:
 	_camera.rig.position = TerrainTileset.tile_centre(MEADOW)
 	_state.clock.minute_of_day = NOON
 	_livestock = _state.livestock
+	# The needs of the cat count from this clock, not from the game's start.
+	_livestock.account_needs(_state.clock)
 	# This test keeps the seed it had before WildlifeCase seeded the view: its own, not SEED.
 	_livestock.rng.seed = 3
 	_wildlife.rng.seed = 3

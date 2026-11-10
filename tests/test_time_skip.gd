@@ -184,7 +184,9 @@ func test_a_short_skip_is_the_frames_of_play_with_the_clock_between_them() -> vo
 		var seconds := 1.0 / GameClock.GAME_MINUTES_PER_REAL_SECOND
 		while seconds > 0.0:
 			var step := minf(seconds, Livestock.MAX_STEP_SECONDS)
-			played.livestock.update(step, played.world, played.player.position, played.clock, true)
+			played.livestock.update(
+				step, played.world, played.player.position, played.clock, true, false
+			)
 			seconds -= step
 	assert_eq(first_sheep.activity, FarmAnimal.Activity.SLEEP, "it went to bed meanwhile")
 	var has_moved := false

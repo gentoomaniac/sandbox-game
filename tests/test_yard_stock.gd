@@ -77,7 +77,7 @@ func test_a_pour_of_the_can_puts_ten_units_of_water_into_the_trough_up_to_its_ca
 	_hold(ItemTypes.WATERING_CAN)
 	var can_before := _state.player.can_water
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.POUR)
-	assert_eq(ObjectStock.units(trough), LivestockRules.default_rules().pour_units())
+	assert_eq(ObjectStock.units(trough), YardRules.default_rules().pour_units())
 	assert_eq(_state.player.can_water, can_before - 1)
 	for _pour in 9:
 		assert_eq(_state.use_facing_tile(), ToolUse.Use.POUR)
@@ -133,7 +133,7 @@ func test_a_hay_item_puts_its_feed_units_into_the_hay_rack_and_is_used_up() -> v
 	_state.player.inventory.add(ItemTypes.HAY, 3)
 	_hold(ItemTypes.HAY)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.FEED)
-	assert_eq(ObjectStock.units(rack), LivestockRules.default_rules().feed_units(ItemTypes.HAY))
+	assert_eq(ObjectStock.units(rack), YardRules.default_rules().feed_units(ItemTypes.HAY))
 	assert_eq(_count(ItemTypes.HAY), 2)
 	assert_eq(ObjectStock.look(rack), 1)
 
@@ -157,7 +157,7 @@ func test_hay_goes_into_the_rack_only_and_other_things_are_not_feed() -> void:
 	_state.player.inventory.add(ItemTypes.REEDS, 1)
 	_hold(ItemTypes.REEDS)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING, "reeds are no feed")
-	assert_eq(LivestockRules.default_rules().feed_units(ItemTypes.REEDS), 0)
+	assert_eq(YardRules.default_rules().feed_units(ItemTypes.REEDS), 0)
 
 
 func test_feeding_tells_the_rack_and_the_feed_and_is_heard() -> void:

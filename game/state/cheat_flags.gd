@@ -8,6 +8,8 @@ var is_drain_off := false
 var is_weight_off := false
 var is_cost_off := false
 var is_noclip := false
+## The needs of the farm animals (hunger and thirst) do not rise.
+var are_needs_off := false
 ## The game clock stands still: no minutes pass, so the day, the crops and the weather wait.
 var is_time_stopped := false
 
@@ -25,6 +27,8 @@ func active_names() -> Array[String]:
 		names.append("No cost")
 	if is_noclip:
 		names.append("No clip")
+	if are_needs_off:
+		names.append("No needs")
 	if is_time_stopped:
 		names.append("Time stopped")
 	return names
