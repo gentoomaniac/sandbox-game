@@ -50,6 +50,16 @@ func save_and_wait(state: GameState, path: String) -> bool:
 	return last_succeeded
 
 
+## Returns when the game of now is saved, for a moment when nothing else runs (under a fade). The
+## main thread only takes the snapshot, in a frame of its own: a save that is still running is
+## waited for first, not joined by blocking.
+func save_without_stalling(state: GameState, path: String) -> void:
+	if is_running():
+		await finished
+	save_in_background(state, path)
+	await finished
+
+
 ## Returns when no save is running.
 func wait() -> void:
 	if is_running():

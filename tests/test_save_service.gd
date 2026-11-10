@@ -134,3 +134,15 @@ func test_the_snapshot_shares_nothing_with_the_game_that_goes_on() -> void:
 	tree.state["damage"] = 5.0
 
 	assert_eq(SaveFile.text_of(before), text_before)
+
+
+func test_a_save_without_stalling_waits_for_the_running_save_and_saves_the_game_of_then() -> void:
+	watch_signals(_service)
+	_service.save_in_background(_state, PATH)
+	_state.player.position = Vector2(30.5, 30.5)
+	_service.save_without_stalling(_state, PATH)
+	assert_signal_emit_count(_service, "started", 1, "no second snapshot while one save runs")
+	var is_second_done := func() -> bool: return get_signal_emit_count(_service, "finished") == 2
+	await wait_until(is_second_done, 5.0)
+	assert_eq(get_signal_emit_count(_service, "started"), 2)
+	assert_eq(SaveFile.read(PATH).player.position, Vector2(30.5, 30.5))

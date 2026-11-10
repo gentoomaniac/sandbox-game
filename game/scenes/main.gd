@@ -586,7 +586,9 @@ func _pass_out() -> void:
 	var minutes_slept := _state.pass_out()
 	_player_view.stand_up()
 	_show_current_map()
-	_save_game()
+	# The sleep and the save are a frame each, under the black screen.
+	await get_tree().process_frame
+	await _saves.save_without_stalling(_state, _options.save_path)
 	await _fade_screen.show_message(PassOutMessage.text(_state, was_up_too_late, minutes_slept))
 	await _fade_screen.fade_in()
 	_is_in_transition = false
@@ -873,7 +875,7 @@ func _apply_ui_scale(ui_scale: float) -> void:
 
 
 ## Saves now, after the save that runs, if any: for the moments that must not lose the game
-## (sleeping, passing out, quitting). Whether it was written is `_saves.last_succeeded`.
+## (sleeping, quitting). Whether it was written is `_saves.last_succeeded`.
 func _save_game() -> void:
 	_saves.save_and_wait(_state, _options.save_path)
 
