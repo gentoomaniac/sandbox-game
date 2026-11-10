@@ -63,7 +63,7 @@ var _weather: WeatherSample
 var _snow_cover := 0.0
 var _frost := 0.0
 var _fast_forward := false
-## The mouse wheel's turns not yet a whole hotbar slot (see `_wheel_turn`).
+## The mouse wheel's turns not yet a whole hotbar slot (see HotbarWheel).
 var _wheel_progress := 0.0
 ## A fade (through a door, into sleep) or passing out is running: the player neither walks nor
 ## acts.
@@ -382,9 +382,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		_fast_forward = not _fast_forward
 	elif hotbar_slot != -1:
 		_state.player.inventory.select(hotbar_slot)
-	elif _is_hotbar_wheel(event):
-		_wheel_progress = _wheel_turned(_wheel_progress, _wheel_turn(event))
-		var steps := _whole_slots(_wheel_progress)  # the rest waits for more turning
+	elif HotbarWheel.is_hotbar_wheel(event):
+		_wheel_progress = HotbarWheel.turned(_wheel_progress, HotbarWheel.turn_of(event))
+		var steps := HotbarWheel.whole_slots(_wheel_progress)  # the rest waits for more turning
 		_wheel_progress -= steps
 		if steps != 0:
 			_state.player.inventory.select_next(steps)
@@ -509,37 +509,6 @@ func _can_open_console() -> bool:
 
 func _can_use() -> bool:
 	return not _is_in_transition and not _build_mode.is_active()
-
-
-## Whether `event` turns the mouse wheel without Ctrl (which zooms, see CameraController).
-static func _is_hotbar_wheel(event: InputEvent) -> bool:
-	return (
-		event is InputEventMouseButton
-		and event.pressed
-		and not event.ctrl_pressed
-		and event.button_index in [MOUSE_BUTTON_WHEEL_DOWN, MOUSE_BUTTON_WHEEL_UP]
-	)
-
-
-## How far a wheel event turns, in hotbar slots: down towards the next slot, up towards the one
-## before. A notch is one; a touchpad sends many small turns (`factor` below 1), which add up in
-## `_wheel_progress`.
-static func _wheel_turn(event: InputEventMouseButton) -> float:
-	var turn := event.factor if event.factor > 0.0 else 1.0
-	return turn if event.button_index == MOUSE_BUTTON_WHEEL_DOWN else -turn
-
-
-## The wheel's progress after a `turn`. What is left of turning the other way is dropped
-## first, so a notch after some touchpad turning the other way still moves a whole slot.
-static func _wheel_turned(progress: float, turn: float) -> float:
-	if progress * turn < 0.0:
-		progress = 0.0
-	return progress + turn
-
-
-## The whole slots in `progress`, towards zero; ten turns of 0.1 make one despite rounding.
-static func _whole_slots(progress: float) -> int:
-	return int(snappedf(progress, 0.0001))
 
 
 ## The hotbar slot (0 to 7) whose key `event` presses, or -1.
