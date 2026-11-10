@@ -262,7 +262,39 @@ Settings (and off), muted in test runs. Rules in data/music.cfg; tests; README.
   pieces like the test reel are kept for special events (festivals, a market day). Later: stems
 (AudioStreamSynchronized), more pieces, the season and weather choices.
 
+## 172. Inside a house the weather is faint, and the hearth crackles
+
+- [ ] Done
+
+The user, 2026-11-10: "inside the house the weather sounds should be muffled and very faint. In
+a house with a hearth we should rather hear fire crackling as the main thing. Later, once
+implemented, the ambient music." Run after task 167, before the gossip tasks.
+- Today AudioService muffles the world outside indoors with a low-pass that fades in
+  (`Muffle`, game/scenes/audio_service.gd; design/presentation/sound.md): the weather is duller
+  but still about as loud. Indoors it should be much quieter as well (rain on the roof and wind
+  only faintly), the numbers in data/ (e.g. sounds.cfg or a [muffle] section), fading as now.
+- A building with a burning hearth or fireplace (HEARTH, FIREPLACE in world_object_types.gd;
+  check how a fire is lit or burns, and whether the oven counts) plays a fire-crackle loop as
+  the main indoor sound: positional or by distance to the fire in the room, made by the sound
+  generator (tools/audio, a new `*_loop` event, a sound-designer job) in the style of the other
+  sounds; silent when the fire is out.
+- Later, with tasks 170 and 171: the music indoors (the indoor piece or a quieter mix) — note it
+  in task 171, not done here.
+- Tests for the indoor volume, the crackle following the fire's state and the player's
+  building; listening files for the user (the crackle, and rain heard from inside).
+
 ## Later (not part of the prototype)
+
+- **Animal breeding** (the user, 2026-11-10): a cheap way to get new animals, but the young take
+  at least a year to grow up. With simple traits per animal (one cow gives more milk, another more
+  meat) that the young may inherit, as in Palworld, and the looks (breeding only brown cows).
+
+- **Keeping animals is costly** (the user, 2026-11-10): animals should take real work and
+  resources, to fit the period.
+
+- **Hired hands** (the user, 2026-11-10): money is hard to come by, so people could be taken on to
+  live on the player's plot if the player builds them somewhere to live and produces enough food
+  for them.
 
 - **Tombstones** (the user, 2026-11-10): a placed grave marker is always the oak cross; a
   headstone and a fieldstone slab could come as crafted items of their own (their art is already
