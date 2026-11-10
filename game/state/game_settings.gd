@@ -236,6 +236,11 @@ func _init(path: String = DEFAULT_PATH) -> void:
 	)
 
 
+## Whether `endpoint` is the test LLM's, which a player who set none is left with.
+static func is_default_language_model_endpoint(endpoint: String) -> bool:
+	return endpoint == DEFAULT_LANGUAGE_MODEL["endpoint"]
+
+
 ## The game's actions: everything in the input map except Godot's own `ui_*` ones.
 static func actions() -> Array[StringName]:
 	var game_actions: Array[StringName] = []

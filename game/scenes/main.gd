@@ -216,6 +216,7 @@ func _make_views() -> void:
 	add_child(_console_view)
 	_chat_screen.dialogue = NpcDialogue.new(_settings)
 	add_child(_chat_screen.dialogue)
+	add_child(ModelNotices.new(_chat_screen.dialogue, _notifications))
 	add_child(_chat_screen)
 	_chat_screen.art_set_switch_pressed.connect(_toggle_classic_art)
 	_menu = PauseMenu.new(_settings)

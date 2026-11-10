@@ -29,7 +29,11 @@
   Gemini with a pro and a flash model; a file from before the profiles is upgraded: a profile
   for each provider, named after it); a model, picked from the endpoint's list of models or typed; an optional key; an
   emptied endpoint is none) it asks the model; without one, when nothing answers, on an error
-  or after 30 s it says a scripted line of `data/npc_talk.cfg` ("Aye.", "Is that so?"). The answer is trimmed to the
+  or after 30 s it says a scripted line of `data/npc_talk.cfg` ("Aye.", "Is that so?"). When the model
+  of an endpoint the player set fails, `ModelChat` sends `failed` and `ModelNotices` shows it in
+  the notifications (task 168): one key, "Villagers' language model is busy (HTTP 503): <API
+  message, cut>", the same trouble not again for `notice_repeat_seconds`, "... answers again"
+  after it works; the default test endpoint stays silent. The answer is trimmed to the
   spoken line: no quotes or name in front, its first line, at most two sentences. Only the
   words come from the model; nothing else in the game changes by what it says.
 - **The prompt** (`data/npc_talk.cfg`, the user's working example of 2026-11-06 in shape;

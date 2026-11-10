@@ -15,6 +15,8 @@ const KEYS := {
 		"timeout_seconds": TYPE_FLOAT,
 		"models_timeout_seconds": TYPE_FLOAT,
 		"models_delay_seconds": TYPE_FLOAT,
+		"notice_repeat_seconds": TYPE_FLOAT,
+		"notice_detail_length": TYPE_INT,
 	},
 	"claude":
 	{

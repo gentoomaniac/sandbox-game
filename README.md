@@ -715,6 +715,14 @@ curl -s <endpoint>/chat/completions -H 'Content-Type: application/json' \
 (Leave out the `Authorization` line for an endpoint without a key, like the test LLM.) When
 the endpoint can't be reached, the game's output says so once, not for every line.
 
+**When the model fails.** If a model you set up yourself is busy, refuses the key, can't be
+reached, takes too long or gives nothing, a red notice at the top left says so, like "Villagers'
+language model is busy (HTTP 503): This model is currently experiencing high demand." (the
+message is the API's own, cut short; the game's output has it in full). The model's notices
+share one line, the same trouble is shown again only after 5 minutes, and a quiet "Villagers'
+language model answers again" follows when it works again. The test LLM on the default endpoint
+never shows one. The times are in `[request]` of `data/npc_talk.cfg`.
+
 **Claude.** Pick the profile Claude under Settings → Language model and paste an Anthropic
 API key (console.anthropic.com) into Key; the endpoint becomes `https://api.anthropic.com/v1`
 and the model `claude-opus-5-5`. Everything the villager is told and everything you say to
