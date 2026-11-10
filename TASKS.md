@@ -243,6 +243,8 @@ Settings (and off), muted in test runs. Rules in data/music.cfg; tests; README.
   wavered like a voice breaking, not like vibrato; the instruments must hold notes cleanly.
   After the fix: plain notes, no vibrato; the instrument tone is fine; note switches must not
   click.
+  Approved the same day: "Tide" and "Harbour evening" (plain notes, held notes fading out
+  rather than stopping) are the first everyday pieces (their data on the sketch branch of 2026-11-10).
 - The user, 2026-11-10: the chiptune sound fits the classic 16 px graphics. Each piece gets two
   versions that switch with the graphics setting: the chiptune one with the classic art, a
   fuller one (more channels, softer instruments, still in the folk style) with the 32 px art,
