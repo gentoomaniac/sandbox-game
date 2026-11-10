@@ -11,6 +11,11 @@
     - **Energy and health bars**, 100 points each, next to the hotbar. A bar at 20 % or
       less pulses to show it is low. Health matters once combat exists; for now only the
       pass-out debuff and sleep change it.
+    - **Sleeping moves the world on** (decided 2026-11-10): a night's sleep and passing out
+      pass the time as the console's `skip` does, so the crops, the soil, the weather, the kilns,
+      the animals and villagers and the wildlife are as if the hours had been played (see
+      [Livestock](../farming/livestock.md) and [Villagers](../villagers/villagers.md)); the world
+      moves on even while the player sleeps in a house.
     - **Costs per action** live in a hand-editable data file (`data/energy.cfg`). First
       values: tool use (till, hit, water) 2, planting and picking 0.5; walking is free.
     - **Weight:** up to 40 kg costs nothing extra (changed 2026-11-06, was 20 kg); above

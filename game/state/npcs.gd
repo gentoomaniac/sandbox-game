@@ -123,15 +123,21 @@ func is_rest_time(day: int, minute: int) -> bool:
 	return minute >= rest or minute < up
 
 
-## Lets `delta` seconds pass for every villager on `map` at the time of the game clock.
+## Lets `delta` seconds pass for every villager on `map` (only those in loaded chunks with
+## `only_loaded`) at the time of the game clock.
 ## Villagers stop short of the player's feet.
-func update(delta: float, map: GameMap, player_feet: Vector2, clock: GameClock) -> void:
+func update(
+	delta: float, map: GameMap, player_feet: Vector2, clock: GameClock, only_loaded := false
+) -> void:
 	if is_rest_time(clock.day, clock.minute_of_day):
 		for npc in _npcs:
-			npc.activity = Npc.Activity.IDLE
+			if not only_loaded or _is_in_loaded_chunk(npc, map):
+				npc.activity = Npc.Activity.IDLE
 		return
 	delta = minf(delta, MAX_STEP_SECONDS)
 	for npc in _npcs:
+		if only_loaded and not _is_in_loaded_chunk(npc, map):
+			continue
 		npc.seconds_left -= delta
 		if npc.seconds_left <= 0.0:
 			_start_next_activity(npc)
@@ -139,11 +145,39 @@ func update(delta: float, map: GameMap, player_feet: Vector2, clock: GameClock) 
 			_stand(npc)
 
 
+## Puts the villagers where time that was skipped (see Simulation `skip`) has left them: each
+## one in a loaded chunk on a tile of the circle it keeps to around its anchor that it could have
+## walked to (see ReachableTiles), standing, as `update` has them at that hour. Where the day
+## will put a villager (a schedule) is decided here, not in `update`. The dice are thrown from
+## `seed_value`.
+func catch_up(map: GameMap, seed_value: int) -> void:
+	rng.seed = seed_value
+	var radius := rules.behaviour("anchor_radius") * STROLL_REACH
+	for npc in _npcs:
+		if not _is_in_loaded_chunk(npc, map):
+			continue
+		var is_free := func(tile: Vector2i) -> bool:
+			var centre := Vector2(tile) + Vector2(0.5, 0.5)
+			return (
+				centre.distance_to(npc.anchor) <= radius and PlayerState.can_stand_at(map, centre)
+			)
+		var tiles := ReachableTiles.within(npc.tile(), radius * 2.0, is_free)
+		if tiles.size() > 1 or is_free.call(npc.tile()):
+			npc.position = Vector2(tiles[rng.randi() % tiles.size()]) + Vector2(0.5, 0.5)
+			npc.free_body_tiles = PlayerState.body_tiles(npc.position)
+		_stand(npc)
+
+
 ## The player speaks to a villager: they turn to the player and stand a while.
 func talk_to(npc: Npc, player_feet: Vector2) -> void:
 	npc.turn_to(player_feet)
 	npc.activity = Npc.Activity.IDLE
 	npc.seconds_left = rules.behaviour("linger_seconds")
+
+
+## Whether the chunk a villager stands in is loaded: the world beyond it is not there to walk on.
+func _is_in_loaded_chunk(npc: Npc, map: GameMap) -> bool:
+	return not map is World or (map as World).is_chunk_loaded(Chunk.world_to_chunk(npc.tile()))
 
 
 func _spawn_spot(near: Vector2) -> Vector2:

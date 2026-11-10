@@ -62,6 +62,20 @@ func forget(pos: Vector2i) -> void:
 	_as_of_hour.erase(pos)
 
 
+## Works out what the hours since the oldest tile was looked at did, so that the first look at
+## a tile after a long skip is as quick as the next.
+func prepare() -> void:
+	var now := _now()
+	var oldest := now
+	var oldest_pos := Vector2i.ZERO
+	for pos in _as_of_hour:
+		if _as_of_hour[pos] < oldest:
+			oldest = _as_of_hour[pos]
+			oldest_pos = pos
+	if oldest < now:
+		_step_between(oldest_pos, oldest, now)
+
+
 ## Brings every tile up to now, so that what is saved is as of the save.
 func catch_up_all() -> void:
 	var now := _now()

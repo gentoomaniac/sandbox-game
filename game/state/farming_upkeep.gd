@@ -34,6 +34,10 @@ func pass_hour(hour: int) -> void:
 			_world.change_object(crop)
 
 
+func skipped(_minutes: int, _clock: GameClock) -> void:
+	_world.soil.prepare()
+
+
 ## Counts the day that ended for every crop.
 func end_day() -> void:
 	for crop in _world.crops():

@@ -5,6 +5,9 @@ extends RefCounted
 ## time follows from it. The clock is cut at every full hour, so a span of any length passes as
 ## the same hours played one after the other.
 
+## A skip plays this many minutes through, 2 seconds of play, before it makes up for the rest.
+const WALKED_MINUTES := 3
+
 var clock: GameClock
 ## In the order they run after each span: a system may rely on those before it.
 var _systems: Array[SimulationSystem] = []
@@ -18,7 +21,24 @@ func add_system(system: SimulationSystem) -> void:
 	_systems.append(system)
 
 
-## Lets `minutes` game minutes pass, in whole-hour steps.
+## Lets `minutes` game minutes pass without the player living through them (sleep, passing out,
+## the console's `skip`): what changes with time follows as in `advance`. The first WALKED_MINUTES
+## are played through minute by minute for what the frames of play move (see SimulationSystem
+## `walked_minute`) and the rest is made up for in one go (`skipped`).
+func skip(minutes: int) -> void:
+	var walked := mini(minutes, WALKED_MINUTES)
+	for _minute in walked:
+		advance(1)
+		for system in _systems:
+			system.walked_minute(clock)
+	var rest := minutes - walked
+	if rest > 0:
+		advance(rest)
+		for system in _systems:
+			system.skipped(rest, clock)
+
+
+## Lets `minutes` game minutes of play pass, in whole-hour steps.
 func advance(minutes: int) -> void:
 	assert(minutes >= 0, "Time only moves forward")
 	var left := minutes

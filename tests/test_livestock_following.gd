@@ -69,13 +69,20 @@ func test_a_dog_is_put_only_where_its_nose_is_on_dry_ground_too() -> void:
 	_world.set_terrain(_middle + Vector2i.LEFT, Tile.Terrain.GRASS)
 	_state.player.position = _pen_middle() + Vector2(0.3, 0.0)
 
-	for _try in 20:
-		dog.position = _pen_middle() + Vector2(0.0, 30.0)
+	var placements := 0
+	for _try in 60:
+		var start := _pen_middle() + Vector2(0.0, 30.0)
+		dog.position = start
 		_step()
+		# With so few tiles to stand on, the dice may find none in the tries it has.
+		if dog.position == start:
+			continue
+		placements += 1
 		var nose := dog.position + Vector2(dog.facing * _livestock.rules.body_tiles(dog.species), 0)
 		assert_lt(dog.position.distance_to(_state.player.position), 2.5, "beside the player")
 		assert_true(_world.is_walkable(dog.tile()), "feet on %s" % dog.tile())
 		assert_true(_world.is_walkable(Vector2i(nose.floor())), "nose at %s" % nose)
+	assert_gt(placements, 0, "it was put beside the player at least once")
 
 
 func test_once_its_time_is_up_the_dog_wanders_again() -> void:

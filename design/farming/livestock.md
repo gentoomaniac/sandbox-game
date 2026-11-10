@@ -70,6 +70,14 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   sleeps where it stands (lying down, or tucked in): from a while after sunset (hens go to
   roost before it) until about sunrise, each animal up to half an hour later than its
   species. They stand still while the player is in a house, like the rest of the world.
+  **Skipping time** (the console's `skip`, sleeping, passing out; decided 2026-11-10): the
+  first 3 game minutes are walked through as the same seconds of play; for the rest of it
+  each animal in a loaded chunk is put on a random tile it could have walked to (as its steps,
+  never across water, fences or walls) up to 6 tiles from where it was, asleep or doing
+  something new as the hour has it. A dog that follows is put beside the player, and the
+  horse they ride stays with them. Animals in chunks that are not loaded stay as they are,
+  as in play. The dice come from the world seed and the time, so the same game skipped the
+  same way ends the same.
 - **Sound:** now and then a moo, a baa, a cluck, a bark, a whinny or a snort, quiet and rare
   (a cat's meow rarer still); none while asleep.
 - **Saved:** species, look, tint and position (save version 13), until when a dog follows the

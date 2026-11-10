@@ -54,6 +54,12 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   them; the player walks through villagers, so they never shut the player in. At night (from
   half an hour after sunset to sunrise) it stands still. Like the animals it stands still
   while the player is in a house.
+  **Skipping time** (the console's `skip`, sleeping, passing out; decided 2026-11-10): the
+  first 3 game minutes are walked through as the same seconds of play; for the rest each
+  villager in a loaded chunk is put on a random tile of the circle it keeps to around its
+  anchor that it could have walked to, standing, as the hour has it; those in chunks that are
+  not loaded stay as they are. This is the place where a villager's schedule (where they are
+  at what time) will put them for the new time, once there is one.
 
 - **Saved:** name, sex, look, who they are (id, age, trade, personality, background, habits;
   save version 19; the rest of the sheet, version 23), the chat's kept lines (version 17), the

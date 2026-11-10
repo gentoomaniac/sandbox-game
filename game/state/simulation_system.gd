@@ -10,6 +10,18 @@ func advance(_minutes: int, _clock: GameClock) -> void:
 	pass
 
 
+## One minute of a skip that is played through like the frames of play would (see Simulation
+## `skip`): `clock` shows the time at its end.
+func walked_minute(_clock: GameClock) -> void:
+	pass
+
+
+## The rest of a skip has passed without being played: `minutes` of it, and `clock` shows the time
+## it ended at. After the `advance` of the same minutes.
+func skipped(_minutes: int, _clock: GameClock) -> void:
+	pass
+
+
 static func is_hour_end(clock: GameClock) -> bool:
 	return clock.minute_of_day % GameClock.MINUTES_PER_HOUR == 0
 

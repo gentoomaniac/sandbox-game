@@ -134,7 +134,7 @@ func bed_in_reach() -> WorldObject:
 ## health as far as the bed does (and a debuff still allows).
 func sleep_in(bed: WorldObject) -> void:
 	assert(bed.is_bed(), "Not a bed: %s" % bed.type)
-	_pass_time(clock.minutes_until(WAKE_UP_MINUTE))
+	_pass_time(clock.minutes_until(WAKE_UP_MINUTE), false)
 	is_up_too_late = false
 	_lie_in(bed)
 	player.home_map = current_map
@@ -335,7 +335,7 @@ func is_out_of_energy() -> bool:
 func pass_awake_time(minutes: int) -> void:
 	if minutes >= clock.minutes_until(LATE_NIGHT_MINUTE):
 		is_up_too_late = true
-	_pass_time(minutes)
+	_pass_time(minutes, true)
 
 
 ## The player passes out: they sleep until the next morning (WAKE_UP_MINUTE) but at least
@@ -343,7 +343,7 @@ func pass_awake_time(minutes: int) -> void:
 ## new day) and no items lost. Returns how many minutes they slept.
 func pass_out() -> int:
 	var minutes := maxi(clock.minutes_until(WAKE_UP_MINUTE), PASS_OUT_MINUTES)
-	_pass_time(minutes)
+	_pass_time(minutes, false)
 	is_up_too_late = false
 	go_to_home_bed()
 	player.is_debuffed = true
@@ -584,11 +584,15 @@ func _building_of_ref(ref: Dictionary) -> Building:
 	return null
 
 
-## The player lives through `minutes`, awake or asleep: a new day ends the debuff of the last
-## one. The console's `skip` does not come this way, it leaves the player alone.
-func _pass_time(minutes: int) -> void:
+## The player lives through `minutes`, awake (played: the frames move the animals) or asleep
+## (skipped: they are made up for): a new day ends the debuff of the last one. The console's
+## `skip` does not come this way, it leaves the player alone.
+func _pass_time(minutes: int, is_played: bool) -> void:
 	var day_before := clock.day
-	simulation.advance(minutes)
+	if is_played:
+		simulation.advance(minutes)
+	else:
+		simulation.skip(minutes)
 	if clock.day != day_before:
 		player.is_debuffed = false
 
@@ -598,12 +602,19 @@ func _pass_time(minutes: int) -> void:
 func _start_simulation() -> void:
 	simulation.add_system(FarmingUpkeep.new(world, weather))
 	simulation.add_system(NightUpkeep.new(world, weather, _tiles_kept_clear))
+	simulation.add_system(ActorsUpkeep.new(world, livestock, npcs, _player_feet))
 
 
 ## The tiles where a sapling does not grow into a tree, for it would be under the player's feet.
 ## A named method: a lambda would keep the whole game alive from the simulation it belongs to.
 func _tiles_kept_clear() -> Array:
 	return [] if is_inside() else [player.tile()]
+
+
+## Where the player is for the animals and villagers of the world, which an indoor player is
+## not part of: infinitely far.
+func _player_feet() -> Vector2:
+	return Vector2.INF if is_inside() else player.position
 
 
 ## The bed object of the home bed, or null if there is none at that tile now (the bedroll was

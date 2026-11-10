@@ -45,9 +45,15 @@ func all() -> Array[FarmAnimal]:
 	return _animals.duplicate()
 
 
-## Puts an animal into the world as it is, doing what it is doing.
+## Puts an animal into the world as it is, doing what it is doing. How much later than its
+## species it goes to bed follows from what it is and its place in the herd, so that the same
+## saved game has the same animals going to bed at the same times.
 func add(animal: FarmAnimal) -> void:
-	animal.bedtime_delay = rng.randf() * rules.general("bedtime_spread_minutes")
+	# (An API that removes animals would need the delay saved, or a stable id of the animal.)
+	var identity := hash([animal.species, animal.look, animal.tint.to_html(), _animals.size()])
+	animal.bedtime_delay = (
+		float(identity % 1000) / 1000.0 * rules.general("bedtime_spread_minutes")
+	)
 	_animals.append(animal)
 	added.emit(animal)
 
@@ -140,18 +146,22 @@ func stop_hunt(animal: FarmAnimal) -> void:
 		_end_hunt(animal)
 
 
-## Lets `delta` seconds pass for every animal on `map` at the time of the game clock. The
-## player's feet are where the rabbits run from and the followers go.
-func update(delta: float, map: GameMap, player_feet: Vector2, clock: GameClock) -> void:
+## Lets `delta` seconds pass for every animal on `map` at the time of the game clock (only those
+## in loaded chunks with `only_loaded`). The player's feet are where the rabbits run from and the
+## followers go.
+func update(
+	delta: float, map: GameMap, player_feet: Vector2, clock: GameClock, only_loaded := false
+) -> void:
 	delta = minf(delta, MAX_STEP_SECONDS)
 	var minute := clock.minute_of_day
 	var now := clock.total_minutes()
 	var sunrise := _sun.sunrise(clock.day)
 	var sunset := _sun.sunset(clock.day)
 	for animal in _animals:
-		if animal.is_ridden:
+		if animal.is_ridden or (only_loaded and not _is_in_loaded_chunk(animal, map)):
 			continue
-		if now < animal.follow_until_minute:
+		# A player who is indoors (`player_feet` infinite) is not followed.
+		if now < animal.follow_until_minute and player_feet.is_finite():
 			_follow(animal, delta, map, player_feet)
 		elif _is_sleep_time(animal, minute, sunrise, sunset):
 			animal.activity = FarmAnimal.Activity.SLEEP
@@ -159,6 +169,39 @@ func update(delta: float, map: GameMap, player_feet: Vector2, clock: GameClock) 
 			_start_activity(animal, FarmAnimal.Activity.IDLE)
 		else:
 			_update_awake_animal(animal, delta, map, player_feet)
+
+
+## Puts the animals where time that was skipped (see Simulation `skip`) has left them, at the
+## time of the game clock: each animal in a loaded chunk is up to `catch_up_wander_tiles` from
+## where it was, on a tile it could have walked to, and sleeping or doing something new as the hour
+## has it. A follower is put beside the player, and the horse that is ridden stays with them; a
+## player who is indoors (`player_feet` infinite) is not followed, and the follower is caught up
+## like the others. The dice are thrown from `seed_value`.
+func catch_up(map: GameMap, clock: GameClock, player_feet: Vector2, seed_value: int) -> void:
+	rng.seed = seed_value
+	var sunrise := _sun.sunrise(clock.day)
+	var sunset := _sun.sunset(clock.day)
+	for animal in _animals:
+		if animal.is_ridden or not _is_in_loaded_chunk(animal, map):
+			continue
+		animal.hunt_rest_seconds = 0.0
+		if clock.total_minutes() < animal.follow_until_minute and player_feet.is_finite():
+			_put_beside(animal, player_feet, map)
+			continue
+		_wander_off(animal, map)
+		if _is_sleep_time(animal, clock.minute_of_day, sunrise, sunset):
+			animal.activity = FarmAnimal.Activity.SLEEP
+		else:
+			# The heading it was left with is one its nose is clear on; a new activity picks its
+			# own, which a step turns away from ground it cannot walk on.
+			var heading := animal.heading
+			_start_next_activity(animal)
+			animal.heading = heading
+
+
+## Whether the chunk an animal stands in is loaded: the world beyond it is not there to walk on.
+func _is_in_loaded_chunk(animal: FarmAnimal, map: GameMap) -> bool:
+	return not map is World or (map as World).is_chunk_loaded(Chunk.world_to_chunk(animal.tile()))
 
 
 ## Whether an animal sleeps at a time of day: from `sleep_minutes` after sunset until
@@ -297,6 +340,27 @@ func _put_beside(animal: FarmAnimal, player_feet: Vector2, map: GameMap) -> void
 func _point_around(near: Vector2, distances: Vector2) -> Vector2:
 	var distance := rng.randf_range(distances.x, distances.y)
 	return near + Vector2.from_angle(rng.randf() * TAU) * distance
+
+
+## Moves the animal to a random spot on a tile within `catch_up_wander_tiles` that it could have
+## walked to (see ReachableTiles), standing as a step would leave it: feet and nose (a way it
+## faces) on walkable ground. It stays where it is if five spots have no such way.
+func _wander_off(animal: FarmAnimal, map: GameMap) -> void:
+	var reach := rules.body_tiles(animal.species)
+	var tiles := ReachableTiles.within(
+		animal.tile(), rules.general("catch_up_wander_tiles"), map.is_walkable
+	)
+	for _spot in 5:
+		var tile := tiles[rng.randi() % tiles.size()]
+		var feet := Vector2(tile) + Vector2(rng.randf(), rng.randf())
+		for _try in 5:
+			var way := Vector2.from_angle(rng.randf() * TAU)
+			if map.is_walkable(Vector2i((feet + way * reach).floor())):
+				animal.position = feet
+				animal.heading = way
+				animal.facing = signf(way.x) if absf(way.x) > 0.1 else animal.facing
+				animal.last_step = Vector2.ZERO
+				return
 
 
 func _start_next_activity(animal: FarmAnimal) -> void:

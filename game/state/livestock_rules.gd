@@ -23,6 +23,7 @@ const GENERAL_KEYS := [
 	"follow_far_tiles",
 	"follow_run_tiles",
 	"follow_lost_tiles",
+	"catch_up_wander_tiles",
 	"follow_stuck_seconds",
 	"ride_walk_factor",
 	"ride_trot_factor",

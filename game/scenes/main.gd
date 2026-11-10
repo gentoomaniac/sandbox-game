@@ -11,8 +11,6 @@ extends Node2D
 const WORLD_SEED := 1
 ## The build ghost has snow on its roof while the snow cover is above this.
 const SNOWY_GHOST_COVER := 0.5
-## One game day lasts 16 real minutes (24 h * 60 min / 1.5 / 60 s).
-const GAME_MINUTES_PER_REAL_SECOND := 1.5
 ## Debug speed-up, toggled with F2: a game day in 16 real seconds.
 const FAST_FORWARD_FACTOR := 60.0
 ## What the player is told when they try on horseback what needs them on foot.
@@ -610,7 +608,9 @@ func _tick_clock(delta: float) -> void:
 	# while the console's freeze is on.
 	if _debug.is_clock_stopped() or _fade_screen.is_black() or _state.cheats.is_time_stopped:
 		return
-	var rate := GAME_MINUTES_PER_REAL_SECOND * (FAST_FORWARD_FACTOR if _fast_forward else 1.0)
+	var rate := (
+		GameClock.GAME_MINUTES_PER_REAL_SECOND * (FAST_FORWARD_FACTOR if _fast_forward else 1.0)
+	)
 	_pending_minutes += delta * rate
 	var whole_minutes := int(_pending_minutes)
 	if whole_minutes > 0:
