@@ -218,12 +218,47 @@ snapshot left from task 158: not done).
   run by `make test`.
 - The README picture docs/screenshots/dogs-cats-horses.png re-taken with the horse of task 156.
 
-## Later (not part of the prototype)
+## 161. Hunting moves out of FarmAnimalView
 
-- **Review R8: what is left** (review F2.4/F2.5, A4, package R8; the simulation and its time are
-  done, task 154): hunting moves out of FarmAnimalView, chunk residency is decided apart from
-  drawing, PlayerView stops setting the held layer every frame, and the wildlife rules stop being
-  mutated per session. Large; in small commits.
+- [ ] Done
+
+The user, 2026-11-10: the rest of review R8 as three tasks (review/code-review-2026-11-09, R8
+deliverable 1). Today a cat's hunt is started, tracked and stopped by its FarmAnimalView
+(`start_hunt`, `track_prey`, `stop_hunt`), so whether a cat hunts depends on its view existing
+and running (task 158 had to hold the world view over a sleep for this).
+- The hunt is decided in the game state (Livestock or a small controller); the view only shows
+  it. Decide the lifecycle of the ambient prey (mice) it hunts.
+- Acceptance: hunting tests run without a FarmAnimalView; a view removed mid-hunt leaves a
+  defined result (no cat stranded in a crouch); camera movement alone doesn't change what a saved
+  animal does. Same hunts, same looks as now.
+
+## 162. Chunk loading is decided apart from drawing
+
+- [ ] Done
+
+The user, 2026-11-10: R8 deliverable 3. Today WorldView, the renderer, decides which chunks are
+loaded and unloaded.
+- Chunk residency moves to a session controller apart from drawing, keeping `ChunkStreaming.plan`
+  and today's budgets (task 147's drawing budget stays in WorldView). Gameplay can ask for the
+  chunks an action needs whether or not a renderer is attached.
+- Acceptance: a headless controller loads the chunks an action needs without a WorldView;
+  detaching or replacing the renderer doesn't unload state the game needs; the hold over a sleep
+  (task 158) holds the controller. Screenshots: streaming, seasons, occlusion, tree fall,
+  interiors and the art switch as now; `make bench` no worse.
+
+## 163. PlayerView and the wildlife rules stop repairing and sharing state
+
+- [ ] Done
+
+The user, 2026-11-10: R8 deliverable 4 (review A5).
+- PlayerView stops setting the held layer every frame; the held look follows the state when it
+  changes, and the character preview works when PlayerView isn't processing.
+- `WildlifeView.show_wildlife()` stops writing `rules.sun` into the shared
+  `WildlifeRules.default_rules()`: the cached rules stay unchanged, the session's sun is passed in
+  or held by a small session-bound rules object.
+- Acceptance: two sessions with different suns don't change each other's rules; same looks.
+
+## Later (not part of the prototype)
 
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
   Valley, but actions count as well as gifts, in the manner of the Sims (helping, talking,
