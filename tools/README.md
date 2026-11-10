@@ -72,8 +72,10 @@ with `make_fixture.gd` into `build/bench/fixture.save` (seed 7: about 10,000 ite
 villagers, 30,000 tilled tiles and thousands of removed objects round the camp); later runs
 reuse it until that script changes (after a save format or world generator change, delete
 `build/bench/fixture.save` so it is written again). Then `frames.gd` starts Main on a copy of it
-and prints how long the world view took to settle, the node and entity counts, and the mean and
-longest frame over 300 frames; `pickup.gd` prints the cost of the per-frame pile pick-up.
+and prints how long the world view took to settle, the node and entity counts, and for two
+scenarios (standing for 300 frames, walking 70 tiles east across chunk borders) the mean and
+longest frame and how many frames went over 33 and over 16.7 ms, listing the frames over 33 ms
+with their numbers; `pickup.gd` prints the cost of the per-frame pile pick-up.
 Nothing is asserted: run it before and after a change and compare. Task 142 took the mean frame
 from 37.2 to 7.3 ms this way.
 
