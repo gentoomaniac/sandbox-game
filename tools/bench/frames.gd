@@ -3,7 +3,8 @@ extends SceneTree
 ## that took, the node count, the entity count, and the frame times of two scenarios: standing
 ## still for 300 frames, then walking east for WALK_TILES tiles (across chunk borders, at the
 ## normal pace, through everything). Each prints the mean and the longest frame and how many
-## frames went over 33 and over 16.7 ms; the frames over 33 ms are listed with their number.
+## frames went over 33 and over 16.7 ms; the frames over 33 ms are listed with their number, and
+## a note if the player was passing out then. The first frames after the settle are left out.
 ## `make bench` runs it on a copy of the fixture save.
 ## godot --headless --path . -s tools/bench/frames.gd -- --save-path=<save> --settings-path=<s> --mute
 
@@ -47,9 +48,10 @@ func _process(delta: float) -> bool:
 	var since_settled := frame - settled_at
 	if since_settled == SKIPPED_FRAMES:
 		_print_counts()
-	if ms > LONG_MS:
+	if ms > LONG_MS and since_settled >= SKIPPED_FRAMES:
 		var scenario := "standing" if since_settled <= STAND_FRAMES else "walking"
-		long_frames.append("%s frame %d: %.1f ms" % [scenario, since_settled, ms])
+		var cause := " (passing out or a fade)" if main._is_in_transition else ""
+		long_frames.append("%s frame %d: %.1f ms%s" % [scenario, since_settled, ms, cause])
 	if since_settled <= STAND_FRAMES:
 		standing.append(ms)
 		if since_settled == STAND_FRAMES:
