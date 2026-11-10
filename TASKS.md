@@ -235,6 +235,64 @@ drier tilled tile meets it in a hard straight line.
 - Performance: redrawing after an hour stays within REFRESH_BUDGET_USEC.
 - Tests for which edges fade; before/after crops at 1x and 4x and a README picture.
 
+## 169. Music: chiptune modules generated from folk-tune data
+
+- [ ] Done
+
+The user, 2026-11-10: background music in the style of 1980s home-computer game music (the
+user's reference is the C64 game Robin of the Wood): sharp sawtooth leads, short, repetitive
+parts that loop, with transition parts now and then or a crossfade between looping pieces.
+Melodies lean on old folk tunes that are free to use. This replaces "no background music for
+now" (design/presentation/sound.md, 2026-11-05). This task is the first step: generating the
+music in a form trackers can open; tasks 170 and 171 play it in the game.
+- Format: ProTracker MOD (4 channels; the 8-channel "8CHN" variant if needed), so the files
+  open and can be edited in OpenMPT or MilkyTracker. The instruments are short looped
+  single-cycle waveforms the generator draws: sawtooth (the lead), pulse at a few widths,
+  triangle (bass), and noise for drums. Use only a stated set of effects, written down in the
+  design page: arpeggio, portamento, vibrato, volume slide, set volume, set speed/tempo,
+  pattern break and position jump. Task 170 plays exactly that set.
+- Source: songs as small hand-editable text data (e.g. data/music/<piece>.txt, or tools/music/;
+  decide which): the tune, the bass and drum pattern, the arrangement, tempo, and named
+  sections, each one a loop or a transition between loops. tools/music/ turns them into
+  assets/music/<piece>.mod with `make art`, deterministically. A sidecar (data/music.cfg) lists
+  each piece's sections as ranges of the order list, so the game can loop one section and play
+  a transition.
+- Tunes: traditional tunes only, in the public domain, with where each comes from (the title,
+  the region, the source collection) in docs/music-sources.md. Check each one: e.g. "Son ar
+  chistr", which the user named, is a 20th-century song by named authors, not an anonymous folk
+  tune, so it needs checking before it is used. No melody from the reference game or any other
+  game.
+- Start with two or three short pieces (day, evening, indoors?), each 8 to 32 bars of loops and
+  one transition.
+- `make music-preview` renders the pieces to WAV in tools/ (Python, not the game's player) so
+  they can be listened to; tests that the .mod files are valid (header, the order list,
+  pattern data, the effects only from the stated set) and that the generator is deterministic.
+- design/presentation/sound.md gets the music section; README a line.
+
+## 170. Music: the game plays the modules, rendered on a background thread
+
+- [ ] Done
+
+After task 169. A MOD player in GDScript: it parses the module and renders a section (or a
+whole piece) to an AudioStreamWAV in memory, on a background thread (WorkerThreadPool), so the
+main thread never mixes audio. Channels are resampled with linear interpolation; volume, panning
+(Amiga hard left/right or softer), and exactly the effects of task 169. The same piece can be
+rendered with channels muted, as layers that stay in sync. Tests: each effect against known
+output, a module's sections rendering to the expected length, a whole piece rendering in well
+under its playing time, and nothing touched on the main thread.
+
+## 171. Music: what plays when, with loops, transitions and crossfades
+
+- [ ] Done
+
+After task 170. A music director (a scene service, no state in the views beyond what plays)
+picks the piece by the game state (time of day, season, weather, indoors), loops its section,
+plays a transition section now and then, and crossfades to another piece when the state
+changes (AudioStreamPlayers, or Godot's AudioStreamInteractive/AudioStreamSynchronized for
+layers). The next piece is rendered ahead in the background. A "music" bus with its own slider
+in Settings (and off), muffled indoors like the ambience; muted in test runs. Rules in
+data/music.cfg; tests for the choices and the switching; README.
+
 ## Later (not part of the prototype)
 
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
