@@ -159,6 +159,17 @@ Warft and an Ewer here and there.
   hunts and nothing is left half done; a cat far from the camera hunts a mouse in sight all the
   same. Skipped time (the walked minutes of a skip and `catch_up`) looks for no mouse and gives up
   a hunt in progress with no outcome for the mouse. Nothing of a hunt is saved.
+  The farm yard (task 122): each animal has a `hunger` and a `thirst` (saved) that `Livestock` raises
+  with game time (`YardRules`, the `[needs]` section of the same data file; the console's `noneeds`
+  cheat stops it) and no other code reads yet. When a need reaches `seek_at` and the animal next
+  picks what to do, `Livestock._start_trip_to_need` looks for the nearest tile it can walk to
+  with fresh water (`Tile.is_fresh_water`) or an `ObjectStock` of the right `stock_kind` beside it
+  (the trough: water, the hay rack: feed; the stock is `stock` in the object's state), walks there
+  and takes its `drink_units` or `eat_units`; `catch_up` counts the meals of a skip. The player
+  fills a stock in `ToolUse` (the can's water is `PlayerState.can_water`, filled at a draw well or at
+  fresh water). `Coop` is the chicken coop: at bedtime a hen walks to one with a free roost and goes
+  in (`FarmAnimal.is_housed`, derived from where she stands, so not saved), lays an egg in a nest (a
+  hay pile of `Building.inside`, `eggs` in its state) and the empty hand takes them (`Use.COLLECT`).
 - **Npcs** (`game/state/npcs.gd`) holds the villagers (`Npc`: name, sex, look as an
   `Appearance`, who they are (their whole sheet: age, trade, personality, background, home,
   speech, sample lines, people, likes, wants, day, habits, avoids, secrets), position, anchor,
