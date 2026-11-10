@@ -23,7 +23,7 @@ IMPORT := $(GODOT) --headless --quiet --import
 # reproducible, and it keeps third-party code out of our history and diffs.
 # The cost is that a fresh clone needs `make setup` (and network) before it runs.
 
-.PHONY: help setup venv art classic-art assets contrast-sheet run screenshot test test-tools bench lint format export clean llm-up llm-down llm-check \
+.PHONY: help setup venv art classic-art assets contrast-sheet run screenshot test test-tools bench music-check lint format export clean llm-up llm-down llm-check \
 	llm-pull llm-models llm-rm llm-eval llm-gpu-setup
 
 help:
@@ -36,6 +36,7 @@ help:
 	@echo "  test        Run the GUT tests headless, in TEST_JOBS parallel processes, and the tests of the Python tools."
 	@echo "  test-tools  Run only the tests of the Python tools (tools/art/, tools/llm/, tools/music/ test_*.py)."
 	@echo "  bench       Time a heavy save headless (start-up, nodes, frame times standing and walking, pile pick-up, save); see tools/README.md."
+	@echo "  music-check Render the test piece with the game's prototype music renderer and compare it with libmodplug's (headless, silent)."
 	@echo "  lint        Run gdlint and gdformat --check, and check no API key is in the repo."
 	@echo "  format      Format the GDScript."
 	@echo "  art         Draw all art, sounds and music into art/generated/, then check them (minutes; needs no Godot)."
@@ -246,6 +247,14 @@ bench: assets
 	$(BENCH_GODOT) -s tools/bench/frames.gd -- --save-path=$(BENCH_DIR)/run.save --settings-path=$(BENCH_DIR)/settings.cfg --mute
 	$(BENCH_GODOT) -s tools/bench/pickup.gd -- $(BENCH_DIR)/fixture.save
 	$(BENCH_GODOT) -s tools/bench/save.gd -- $(BENCH_DIR)/fixture.save
+
+# The game's prototype music renderer (task 169) against libmodplug, an independent player: the
+# test piece rendered headless into build/music/, then compared by tools/music/check.py.
+music-check: assets
+	@mkdir -p build/user-data
+	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT)
+	XDG_DATA_HOME=$(CURDIR)/build/user-data $(GODOT) --headless --path . -s tools/music/render.gd -- $(CURDIR)/build/music
+	$(PYTHON) tools/music/check.py --against build/music
 
 lint:
 	$(GDLINT) $(GDSCRIPT_DIRS)

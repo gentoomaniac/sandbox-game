@@ -269,6 +269,7 @@ files" (`include_filter`), or the exported game has no music.
 | Command | What it does |
 |---|---|
 | `make art` | Writes the modules, then runs `check.py`: libmodplug (an independent player, through `modplug.py`) must play every row of each piece in its order, at its speed and tempo, and stop. Without libmodplug the check says it was skipped. |
+| `make music-check` | Renders the test piece with the game's prototype renderer (`game/audio/module_renderer.gd`, through `render.gd`, headless) into build/music/, and `check.py --against build/music` compares it with libmodplug's: length, timing, loudness tick by tick, pitch and spectrum row by row. |
 
 ## A local LLM for testing NPC talk: tools/llm/
 

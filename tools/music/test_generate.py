@@ -1,8 +1,12 @@
 """Tests of generate.py and check.py (`make test` runs them): the text of a piece, what is refused,
 and the bytes of the module."""
 
+import contextlib
+import io
 import struct
 import unittest
+
+import numpy as np
 
 import check
 import modplug
@@ -153,6 +157,25 @@ class CheckTest(unittest.TestCase):
         piece = parse_piece(PIECE.replace("tempo 125", "tempo 127"))
         self.assertEqual(check.tick_frames(127), 868)
         self.assertEqual(check.problems(module_bytes("test", piece), piece), [])
+
+    def test_a_render_like_libmodplugs_passes_and_silence_does_not(self):
+        piece = parse_piece(PIECE)
+        module = module_bytes("test", piece)
+        rows = len(check.expected_rows(piece))
+        length = rows * piece["speed"] * check.tick_frames(piece["tempo"])
+        reference = modplug.play(module, check.RATE, 882)[0][:length]
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(check.render_problems(module, piece, reference), [])
+            found = check.render_problems(module, piece, np.zeros(length))
+        self.assertTrue(any("loudness" in problem for problem in found), found)
+        self.assertTrue(any("unlike" in problem for problem in found), found)
+
+    def test_a_render_too_short_to_compare_is_said_so(self):
+        piece = parse_piece(PIECE)
+        module = module_bytes("test", piece)
+        with contextlib.redirect_stdout(io.StringIO()):
+            found = check.render_problems(module, piece, np.zeros(1000))
+        self.assertTrue(any("too short to compare" in problem for problem in found), found)
 
     def test_finds_a_section_played_longer_than_it_is(self):
         piece = parse_piece(PIECE)
