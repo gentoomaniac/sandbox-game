@@ -59,22 +59,25 @@ func test_renders_stereo_as_two_samples_a_frame() -> void:
 
 
 func test_the_loop_wraps_into_its_own_start_without_a_seam() -> void:
-	var once := _render([LOOP]).data
+	var looping := ModuleRenderer.new(_module, RATE).render([LOOP], true).data
 	var twice := _render([LOOP, LOOP]).data
-	# The loop played on into itself sounds as its start, sample for sample: so a stream of the
-	# loop wrapping from its last sample to its first plays what the music would, no click.
-	assert_true(twice.slice(once.size()) == once, "the second time through is the first")
+	# A looping stream is the loop's second time through, sample for sample: so wrapping from its
+	# last sample to its first plays what the music would, the end's notes fading into the start.
+	assert_eq(looping.size(), twice.size() / 2)
+	assert_true(twice.slice(looping.size()) == looping, "the second time through")
+	var once := _render([LOOP]).data
+	var ramp_bytes := roundi(RATE * ModuleRenderer.RAMP_SECONDS) * 2
+	assert_false(looping == once, "the end's notes fade out into the start")
+	assert_true(looping.slice(ramp_bytes) == once.slice(ramp_bytes), "then it is the first")
 
 
 func test_the_fill_breaks_after_a_bar_and_the_loop_resumes_on_the_bar() -> void:
-	var loop := _render([LOOP]).data
-	var fill := _render([FILL]).data
 	# The order list from the start: the loop, the fill (a bar, then its pattern break), and the
-	# order list's start again.
+	# order list's start again: as the three parts played one after the other.
 	var played := _render([Vector2i(0, LOOP_ROWS + FILL_ROWS + LOOP_ROWS)]).data
-	assert_eq(played.size(), loop.size() * 2 + fill.size())
-	assert_true(played.slice(loop.size(), loop.size() + fill.size()) == fill, "the fill on the bar")
-	assert_true(played.slice(loop.size() + fill.size()) == loop, "then the loop from its start")
+	var parts := _render([LOOP, FILL, LOOP]).data
+	assert_eq(played.size(), (LOOP_ROWS * 2 + FILL_ROWS) * ROW_FRAMES * 2)
+	assert_true(played == parts, "the fill on the bar, then the loop from its start")
 
 
 func test_a_render_on_a_worker_thread_is_the_same() -> void:

@@ -163,17 +163,73 @@ func test_a_short_loop_stepped_past_more_than_once_a_sample_stays_in_it() -> voi
 
 func test_a_note_plays_between_its_samples_and_its_loop_end_leads_into_the_loop_start() -> void:
 	var module := _module({Vector3i(0, 0, 0): [C_2, 1, 0, 0]})
-	var wave := PackedFloat32Array([0.0, 1.0, 0.0, -1.0])
+	# Starting at 0.5, the loop's end can't pass for leading into silence.
+	var wave := PackedFloat32Array([0.5, 1.0, 0.0, -1.0])
 	module.samples[0].data = wave
 	module.samples[0].loop_length = 4
 	var data := ModuleRenderer.new(module, RATE).render([Vector2i(0, 1)]).data
 	var step := ModuleRenderer.PAL_RATE / (C_2 * RATE)
-	for frame in 200:
+	# From when the note has faded in.
+	for frame in range(100, 300):
 		var position := fmod(frame * step, 4.0)
 		var index := int(position)
 		var expected := lerpf(wave[index], wave[(index + 1) % 4], position - index)
 		var played := data.decode_s16(frame * 2) / 32767.0 / ModuleRenderer.CHANNEL_GAIN
 		assert_almost_eq(played, expected, 0.001, "frame %d" % frame)
+
+
+func test_a_struck_note_fades_the_note_before_out_instead_of_cutting_it() -> void:
+	var data := _sine_rows([[C_2, 1, 0, 0], [E_3, 1, 0, 0]])
+	var row := 6 * (RATE * 5 / (2 * 125))
+	# The sine is half way up when E-3 is struck: cut there, it would jump by a quarter of the
+	# channel's range; fading, no step is steeper than the higher note's own.
+	assert_lte(_steepest_step(data, row - 10, row + 200), _steepest_step(data, row + 200, row * 2))
+
+
+func test_volume_changes_and_cuts_ramp() -> void:
+	var data := _sine_rows([[C_2, 1, 0, 0], [0, 0, 0xC, 0x10], [0, 0, 0xC, 0]])
+	var row := 6 * (RATE * 5 / (2 * 125))
+	var own := _steepest_step(data, 200, row) + _ramp_step()
+	assert_lte(_steepest_step(data, row - 10, row + 200), own, "to a quarter of the volume")
+	assert_lte(_steepest_step(data, row * 2 - 10, row * 2 + 200), own, "to silence")
+	assert_eq(data.decode_s16((row * 2 + 200) * 2), 0, "silent after the ramp")
+
+
+func test_note_cuts_and_volume_slides_ramp() -> void:
+	var row := 6 * (RATE * 5 / (2 * 125))
+	var cut := _sine_rows([[C_2, 1, 0, 0], [0, 0, 0xE, 0xC2]])
+	var own := _steepest_step(cut, 200, row) + _ramp_step()
+	assert_lte(_steepest_step(cut, row - 10, row * 2), own, "cut on tick 2")
+	assert_eq(cut.decode_s16((row * 2 - 1) * 2), 0, "silent after it")
+	var slide := _sine_rows([[C_2, 1, 0, 0], [0, 0, 0xA, 0x0F]])
+	assert_lte(_steepest_step(slide, row - 10, row * 2), own, "down 15 a tick")
+
+
+## Mono 16-bit data of a module playing a 32-sample sine on channel 1, a row for each of `cells`.
+func _sine_rows(cells: Array) -> PackedByteArray:
+	var placed := {}
+	for row in cells.size():
+		placed[Vector3i(0, row, 0)] = cells[row]
+	var module := _module(placed)
+	var sine := PackedFloat32Array()
+	for index in 32:
+		sine.append(sin(index * TAU / 32))
+	module.samples[0].data = sine
+	return ModuleRenderer.new(module, RATE).render([Vector2i(0, cells.size())]).data
+
+
+## How far a ramp of a full channel over 1 ms (at least) moves a 16-bit sample in a frame: a step
+## may be the wave's own and this.
+func _ramp_step() -> int:
+	return ceili(32767 * ModuleRenderer.CHANNEL_GAIN / (RATE * 0.001))
+
+
+## The largest change from one sample to the next in frames `from` to `to` of mono 16-bit data.
+func _steepest_step(data: PackedByteArray, from: int, to: int) -> int:
+	var steepest := 0
+	for frame in range(from + 1, to):
+		steepest = maxi(steepest, absi(data.decode_s16(frame * 2) - data.decode_s16(frame * 2 - 2)))
+	return steepest
 
 
 func test_a_part_outside_the_order_list_renders_nothing() -> void:

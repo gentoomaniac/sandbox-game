@@ -13,8 +13,8 @@ order list once through, written by render.gd; `make music-check` runs both), wi
 - the pitch: in each row the strongest frequency is the same within MAX_PITCH_CENTS in nearly every
   row, and the spectra are alike (cosine similarity at least MIN_ROW_SIMILARITY in every row); a row
   silent in both counts as alike, a row silent in only one as unlike.
-They differ in what ModPlug adds and the game's renderer leaves out: volume ramps against clicks (see
-game/audio/module_renderer.gd). Both interpolate linearly between samples.
+Both interpolate linearly between samples and ramp volumes against clicks, ModPlug's ramps a little
+different (see game/audio/module_renderer.gd).
 """
 
 import argparse

@@ -28,7 +28,7 @@ subclass of AudioStreamWAV to know the beat, and such a stream, once played, cra
 | Sections stand alone | the generator | A section sounds the same whatever played before it: no effect memory (300, 4x0), and every voice starts a section by striking a note (not with 3xx) or with `^`; before its first note it may only rest or cut. |
 | Test piece | `tools/music/pieces/test_reel.txt` | Our own reel in A dorian at **106 beats a minute** (speed 6, tempo 106: a row of 141.5 ms, 16 rows a bar; the user found the first 150 too fast for the game): an 8-bar loop (18.1 s) and a 1-bar fill (2.3 s) that leads back into it. Sawtooth lead with vibrato on the long notes, arpeggio chords on the off-beats, a walking triangle bass, noise kick, snare and hats; the fill has a pulse sweep up (1xx), toms falling (2xx), a slide (3xx) and a fade (Axy). A tick at tempo 106 is no whole number of samples, so the piece also tries how ticks are cut. |
 | Independent check | `tools/music/check.py` with `modplug.py`, run by `make art` | Plays each module with **libmodplug** (the system's ModPlug library, through ctypes) and checks it is 4 channels with its patterns, and plays every row of the piece in its order, each for `speed` ticks, the fill broken off after its 16 rows, and then stops. |
-| Renderer | `game/audio/tracker_module.gd`, `game/audio/module_renderer.gd` | Reads the module, refusing what it can't play (another format, a cut-off file, an empty order list, finetunes, loops past a sample's end, effects outside the set or with memory, breaks past row 63). Renders parts of the order list (an order and a row count, from a defined entry state: speed 6, tempo 125, all channels silent) into a plain 16-bit mono or stereo AudioStreamWAV, at once or whole on a WorkerThreadPool thread, and tells its beat (`beat_seconds`). Arpeggios step through ProTracker's period table as ProTracker does. Samples interpolated linearly (since task 171, see "Clean held notes" below), no volume ramps; channels 1+4 left, 2+3 right with a quarter on the other side. Apart from AudioService. |
+| Renderer | `game/audio/tracker_module.gd`, `game/audio/module_renderer.gd` | Reads the module, refusing what it can't play (another format, a cut-off file, an empty order list, finetunes, loops past a sample's end, effects outside the set or with memory, breaks past row 63). Renders parts of the order list (an order and a row count, from a defined entry state: speed 6, tempo 125, all channels silent) into a plain 16-bit mono or stereo AudioStreamWAV, at once or whole on a WorkerThreadPool thread, and tells its beat (`beat_seconds`). Arpeggios step through ProTracker's period table as ProTracker does. Samples interpolated linearly, volumes ramped over 2 ms (since task 171, see "Clean held notes" below); channels 1+4 left, 2+3 right with a quarter on the other side. Apart from AudioService. |
 | Crossfade on the beat | `game/audio/music_crossfade.gd` | Two AudioStreamPlayers; see "Switching on the beat" below. |
 | AudioStreamInteractive trial | `game/audio/music_stream_wav.gd` | `MusicStreamWAV extends AudioStreamWAV` and overrides `_get_bpm`, `_get_beat_count`, `_get_bar_beats`. Not used by the renderer (the crash, below). |
 | Tests | `tests/test_module_renderer.gd`, `test_module_effects.gd`, `test_music_crossfade.gd`, `test_music_stream_wav.gd`, `tools/music/test_generate.py` | See the checks below. |
@@ -77,7 +77,11 @@ at the first tempo, 150 beats a minute): about 100 times faster than the GDScrip
 take about a third longer: the 8-bar loop at 44.1 kHz stereo 379 ms (48x real time), mono 272 ms;
 a minute at 44.1 kHz stereo 1.28 s (47x), 22.05 kHz mono 472 ms (127x); in the game on a worker a
 minute took 1.31 to 1.32 s. The frames stayed as they were (rendering: mean 6.89 ms, longest 7.1
-ms; with a save, longest 10.7 ms; none over 16.7 ms).
+ms; with a save, longest 10.7 ms; none over 16.7 ms). **With volume ramps** (the same day, the
+machine busy with other work, load 8.6): the loop at 44.1 kHz stereo 442 ms (41x), a minute 1.48 s
+(40x), 22.05 kHz mono 548 ms (110x); the frames again as they were (mean 6.90 ms, longest 7.0 ms).
+A stream that loops renders its parts twice: the test reel's loop at 44.1 kHz stereo took 416 ms
+once and 796 ms looping (best of 3, load 6.5).
 
 ## Memory
 
@@ -114,16 +118,19 @@ first version of the bench.
 
 ## Viability checks
 
-- **The loop is seamless** (GUT, `test_the_loop_wraps_into_its_own_start_without_a_seam`): the loop
-  rendered twice in a row is, in its second half, the loop rendered once, sample for sample. So a
-  stream of the loop that wraps from its last sample to its first plays exactly what the music
-  would; there is no click at the wrap beyond what the music itself has. This holds because every
-  voice starts the section with a struck note or a cut and nothing depends on effect memory, which
-  the generator enforces.
+- **The loop is seamless** (GUT, `test_the_loop_wraps_into_its_own_start_without_a_seam` and
+  `tests/test_module_loops.gd`): a stream that loops (`render(parts, true)`) is the parts rendered
+  twice in a row, keeping the second time through. So it starts as the parts sound after their
+  own end, the notes left sounding there fading out into it (a ramp's length, 2 ms), and a stream
+  that wraps from its last sample to its first plays exactly what the music would, also where a
+  part's start depends on what played before (a cut note raised again, a sample named without a
+  note, a tone portamento without a note): the tests render three times through and compare. With
+  the generator's sections, which start every voice with a struck note or a cut and use no effect
+  memory, the looping stream is from 2 ms on the loop rendered once.
 - **Fill, then the loop on the bar** (GUT, `test_the_fill_breaks_after_a_bar_and_the_loop_resumes_on_the_bar`):
-  playing the order list from the start (loop, fill, and round again) gives the loop, then the fill
-  sample for sample as rendered alone, exactly one bar long (its D00 breaks after row 16), then the
-  loop again from its start, sample for sample. Ticks are whole numbers of samples (the convention
+  playing the order list from the start (loop, fill, and round again) gives, sample for sample, the
+  loop, the fill and the loop rendered as parts one after the other: the fill exactly one bar long
+  (its D00 breaks after row 16), then the loop again from its start. Ticks are whole numbers of samples (the convention
   above), so bars land on exact samples.
 - **The effects one by one** (GUT, `tests/test_module_effects.gd`): each effect's periods and volumes
   tick by tick, an arpeggio after a slide (from 852 it plays E-1 678 and G#1 538, as ProTracker,
@@ -136,12 +143,12 @@ first version of the bench.
   |---|---|---|
   | Length | 898,560 samples = 144 rows x 6 ticks x 1040; libmodplug's rows run at the same times (`check.py`) | exact |
   | Offset between the two | 1 sample; 0 with interpolation | at most 2 |
-  | Loudness tick by tick (23.6 ms), correlation | 0.936; 0.968 with interpolation | at least 0.9 |
+  | Loudness tick by tick (23.6 ms), correlation | 0.936; 0.968 with interpolation; 0.975 with volume ramps | at least 0.9 |
   | Spectrum row by row (141.5 ms), cosine similarity | min 0.977, median 0.996; with interpolation min 0.982, median 1.000 | at least 0.95 in every row; rows silent in both count as alike |
   | Strongest frequency row by row | the same (within 50 cents) in 100 % of the 144 rows | 95 % |
 
-  The differences are what libmodplug adds and the renderer leaves out: volume ramps at note
-  starts, and (until task 171) interpolation between samples. With the arpeggio switched off in the renderer the check
+  The differences were what libmodplug adds and the renderer left out until task 171: interpolation
+  between samples and volume ramps; what is left is how libmodplug's ramps differ. With the arpeggio switched off in the renderer the check
   fails (loudness correlation 0.815), so it does see a missing effect.
 
 ## Switching on the beat
@@ -221,6 +228,25 @@ against the note): a rough tone a few cents unsteady, which libmodplug, interpol
 The renderer now interpolates linearly. **The music**: vibrato of depth 3 and 4 at speed 2 swings
 the pitch about half a semitone each way once or twice a second: not a vibrato but a drifting
 note, the same in libmodplug.
+
+## Clicks between notes (task 171)
+
+The user then heard "slight cracking in between note switches". The renderer cut the old note and
+started the new one from its first sample, and set a new volume at once: a jump from wherever the
+wave was. Measured per voice alone at each row that strikes, cuts or sets a volume: the steepest
+step from one sample to the next there, against the steepest the voice makes elsewhere (over 1x
+is a step steeper than the wave itself: a click).
+
+| Voice (sketch) | Before: steepest / median, share over 1x | With ramps | libmodplug |
+|---|---|---|---|
+| Triangle bass (Harbour, 36 notes) | 82x / 32x, 97 % | 1.9x / 1.0x, 47 % | 1.9x / 1.0x, 50 % |
+| Triangle drone (Tide) | 36x / 5.7x, 2 of 3 | 0.4x / 0.3x, none | 0.7x / 0.5x, none |
+| Pulse (Tide, 96 notes) | 5.5x / 1.0x, 50 % | 0.7x / 0.06x, none | 0.6x / 0.08x, none |
+| Saw lead (Harbour) | 1.8x / 0.7x, 28 % | 0.8x / 0.03x, none | 0.05x / 0.02x, none |
+
+Now a channel's gain moves to a new volume over 2 ms, a struck note starts from silence, and the
+note before fades out beside it over the same 2 ms: libmodplug's figures. What is left over 1x on
+the bass is the 2 ms fade itself, about as steep as the low triangle's own slope.
 
 ## Recommendation
 

@@ -25,8 +25,11 @@ extends RefCounted
 ## Amiga plays a looped wave exactly periodic, but taking the nearest sample at the mix rate moves
 ## the wave's steps by up to a frame, which put a 32-sample saw's sound only 22 dB above what it
 ## had off its harmonics (heard as a rough note that can't hold its pitch); interpolated, 47 dB.
-## No volume ramps. In stereo the Amiga's channels 1 and 4 are to the left and 2 and 3 to the
-## right, each with a quarter of it on the other side, as hard Amiga panning tires on headphones.
+## Volumes ramp, as in libmodplug: a channel's gain moves to a new volume over RAMP_SECONDS, and a
+## struck note starts from silence while the note before fades out beside it, so a note change
+## doesn't jump from wherever the old wave was (a click). In stereo the Amiga's channels 1 and 4
+## are to the left and 2 and 3 to the right, each with a quarter of it on the other side, as hard
+## Amiga panning tires on headphones.
 
 ## Half the Amiga's PAL clock: a sample plays at this many samples a second over its period.
 const PAL_RATE := 3546894.6
@@ -46,6 +49,8 @@ const OWN_SIDE := 0.75
 const LEFT_CHANNELS: Array[int] = [0, 3]
 ## The generator's beat: four rows, and four beats a bar.
 const ROWS_PER_BEAT := 4
+## How long a volume change, a note's start and the fade of the note before take.
+const RAMP_SECONDS := 0.002
 
 const EFFECT_ARPEGGIO := 0x0
 const EFFECT_PORTAMENTO_UP := 0x1
@@ -76,6 +81,14 @@ class Channel:
 	var effect := 0
 	var parameter := 0
 	var vibrato_position := 0
+	## The gain the channel mixes at, moving to `ramp_target` by `gain_step` a frame for
+	## `ramp_frames` more frames.
+	var gain := 0.0
+	var ramp_target := 0.0
+	var gain_step := 0.0
+	var ramp_frames := 0
+	## The note before the last struck one, while it fades out.
+	var fading: Channel
 
 
 static var _periods := PackedInt32Array(
@@ -91,18 +104,21 @@ var beat_seconds := 0.0
 
 var _task_id := -1
 var _rendered: AudioStreamWAV
+var _ramp_length := 1
 
 
 func _init(tracker_module: TrackerModule, rate := 44100, stereo := false) -> void:
 	module = tracker_module
 	mix_rate = rate
 	is_stereo = stereo
+	_ramp_length = maxi(1, roundi(mix_rate * RAMP_SECONDS))
 
 
-## Starts rendering `parts` on a WorkerThreadPool thread; `is_done` tells when `take` has it.
-func start(parts: Array[Vector2i]) -> void:
+## Starts rendering `parts` (see `render`) on a WorkerThreadPool thread; `is_done` tells when
+## `take` has it.
+func start(parts: Array[Vector2i], loops := false) -> void:
 	assert(_task_id < 0, "one render at a time")
-	_task_id = WorkerThreadPool.add_task(func() -> void: _rendered = render(parts))
+	_task_id = WorkerThreadPool.add_task(func() -> void: _rendered = render(parts, loops))
 
 
 ## Whether a render was started and not taken yet.
@@ -124,11 +140,18 @@ func take() -> AudioStreamWAV:
 
 
 ## `parts` rendered, one after the other; null, with an error, for a part outside the order list.
-func render(parts: Array[Vector2i]) -> AudioStreamWAV:
+## A stream that `loops` is the parts' second time through, rendered after the first: it starts as
+## they sound after their own end, the notes left sounding there fading out into it, so its wrap
+## is the music repeating, sample for sample. It takes twice as long to render.
+func render(parts: Array[Vector2i], loops := false) -> AudioStreamWAV:
 	for part in parts:
 		if part.x < 0 or part.x >= module.order.size() or part.y < 0:
 			push_error("ModuleRenderer: part %s is outside the order list" % part)
 			return null
+	var played := parts.duplicate()
+	if loops:
+		played.append_array(parts)
+	var second_start := 0
 	var channels: Array[Channel] = []
 	for index in TrackerModule.CHANNELS:
 		channels.append(Channel.new())
@@ -137,7 +160,10 @@ func render(parts: Array[Vector2i]) -> AudioStreamWAV:
 	var mix := PackedFloat32Array()
 	var frames := 0
 	var first_row_frames := 0
-	for part in parts:
+	for part_index in played.size():
+		if part_index == parts.size():
+			second_start = frames
+		var part: Vector2i = played[part_index]
 		var order := part.x
 		var row := 0
 		for row_number in part.y:
@@ -164,12 +190,23 @@ func render(parts: Array[Vector2i]) -> AudioStreamWAV:
 						_play_tick(channel, tick)
 				mix.resize((frames + tick_frames) * (2 if is_stereo else 1))
 				for index in TrackerModule.CHANNELS:
-					_mix(channels[index], index, mix, frames, tick_frames)
+					var channel := channels[index]
+					var gain := CHANNEL_GAIN * channel.volume / 64.0
+					if gain != channel.ramp_target:
+						_ramp(channel, gain)
+					_mix(channel, index, mix, frames, tick_frames)
+					if channel.fading:
+						var fading := channel.fading
+						_mix(fading, index, mix, frames, mini(tick_frames, fading.ramp_frames))
+						if fading.ramp_frames == 0 or not fading.is_playing:
+							channel.fading = null
 				frames += tick_frames
 			row += 1
 			if break_row >= 0 or row == TrackerModule.PATTERN_ROWS:
 				order = (order + 1) % module.order.size()
 				row = maxi(break_row, 0)
+	if loops:
+		mix = mix.slice(second_start * (2 if is_stereo else 1))
 	beat_seconds = first_row_frames * ROWS_PER_BEAT / float(mix_rate)
 	return _stream(mix)
 
@@ -183,6 +220,11 @@ func _start_row(channel: Channel, period: int, sample: int, effect: int, paramet
 		if effect == EFFECT_TONE_PORTAMENTO:
 			channel.target_period = period
 		else:
+			if channel.is_playing and (channel.gain > 0.0 or channel.ramp_frames > 0):
+				channel.fading = _fading_copy(channel)
+			channel.gain = 0.0
+			channel.ramp_target = 0.0
+			channel.ramp_frames = 0
 			channel.sample = channel.next_sample
 			channel.period = period
 			channel.position = 0.0
@@ -195,6 +237,25 @@ func _start_row(channel: Channel, period: int, sample: int, effect: int, paramet
 		channel.volume = mini(parameter, 64)
 	elif effect == EFFECT_EXTENDED and parameter == EXTENDED_NOTE_CUT << 4:
 		channel.volume = 0
+
+
+## The note `channel` plays, going on beside it while it fades out.
+func _fading_copy(channel: Channel) -> Channel:
+	var fading := Channel.new()
+	fading.sample = channel.sample
+	fading.position = channel.position
+	fading.is_playing = true
+	fading.played_period = channel.played_period
+	fading.gain = channel.gain
+	_ramp(fading, 0.0)
+	return fading
+
+
+## Moves the channel's gain to `target` over a ramp.
+func _ramp(channel: Channel, target: float) -> void:
+	channel.ramp_target = target
+	channel.gain_step = (target - channel.gain) / _ramp_length
+	channel.ramp_frames = _ramp_length
 
 
 ## What a channel's effect does on a later tick of its row.
@@ -250,7 +311,9 @@ func _mix(
 		return
 	var data := channel.sample.data
 	var step := PAL_RATE / (channel.played_period * mix_rate)
-	var gain := CHANNEL_GAIN * channel.volume / 64.0
+	var gain := channel.gain
+	var gain_step := channel.gain_step
+	var ramp_frames := channel.ramp_frames
 	var position := channel.position
 	var loop_length := float(channel.sample.loop_length)
 	var end := float(data.size())
@@ -263,8 +326,8 @@ func _mix(
 	var frame := first
 	var last := first + frame_count
 	if is_stereo:
-		var left := gain * (OWN_SIDE if LEFT_CHANNELS.has(index) else 1.0 - OWN_SIDE)
-		var right := gain - left
+		var left := OWN_SIDE if LEFT_CHANNELS.has(index) else 1.0 - OWN_SIDE
+		var right := 1.0 - left
 		while frame < last:
 			if position >= end:
 				if loop_length <= 0.0:
@@ -274,7 +337,10 @@ func _mix(
 				position = channel.sample.loop_start + fmod(position - end, loop_length)
 			var at := int(position)
 			var next := data[at + 1] if at < last_index else after_end
-			var value := lerpf(data[at], next, position - at)
+			if ramp_frames > 0:
+				ramp_frames -= 1
+				gain = channel.ramp_target if ramp_frames == 0 else gain + gain_step
+			var value := lerpf(data[at], next, position - at) * gain
 			mix[frame * 2] += value * left
 			mix[frame * 2 + 1] += value * right
 			position += step
@@ -289,10 +355,15 @@ func _mix(
 				position = channel.sample.loop_start + fmod(position - end, loop_length)
 			var at := int(position)
 			var next := data[at + 1] if at < last_index else after_end
+			if ramp_frames > 0:
+				ramp_frames -= 1
+				gain = channel.ramp_target if ramp_frames == 0 else gain + gain_step
 			mix[frame] += lerpf(data[at], next, position - at) * gain
 			position += step
 			frame += 1
 	channel.position = position
+	channel.gain = gain
+	channel.ramp_frames = ramp_frames
 
 
 ## The mix as a 16-bit AudioStreamWAV.
