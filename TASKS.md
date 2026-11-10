@@ -197,6 +197,44 @@ in". Run after task 122 (the farm yard), before the gossip tasks.
 - Tests: the pig's state, roaming that stays in its pen, building a pen, save and load; the
   README livestock picture and a pen screenshot.
 
+## 166. Tilled soil that isn't used grows back over
+
+- [ ] Done
+
+The user, 2026-11-10: "tilled tiles that don't get maintained, used for crops etc eventually
+turn back to their untilled style". Today tilled soil stays soil for ever.
+- Tilled soil with nothing planted on it (no crop, living or dead, no sapling or placed object)
+  goes back over the days: first a few weeds and grass tufts on it, then the grass (or the
+  ground the tile had before tilling, e.g. the Geest's sand or the marsh) is back. Working the
+  tile again (hoeing, planting, watering) starts the count anew. The days (and whether frost or
+  winter pauses it) in data/crops.cfg.
+- What the tile goes back to must be the tile's own untilled ground, not always grass; what
+  lies on it (dropped items) stays.
+- Game state, saved, and caught up over skipped time (sleep, pass-out) in the per-frame budget
+  of task 158; the views only follow the terrain change (and the in-between weedy look, if any,
+  is drawn in the 32 px and classic art).
+- Tests: the days to grow back, the reset on work, a planted tile never grows back, the ground it
+  goes back to, save and load, catch-up over a sleep; a README note.
+
+## 167. Watered soil fades out at its edge to dry soil
+
+- [ ] Done
+
+The user, 2026-11-10: "watered tiles have sharp edges towards other tilled tiles. the watering
+needs some fading out unless the neighbouring tile is also watered". Today SoilWetness
+(game/scenes/soil_wetness.gd, atlas from tools/art/soil_beds.py) lays a darker brown over each
+moister tile on the plain tile grid, cut only by the bed's outline, so a wet tile beside a
+drier tilled tile meets it in a hard straight line.
+- Where a tile is wetter than its tilled neighbour, its darker brown fades out over a few pixels
+  towards that side (a dithered or stepped edge in palette browns, in the style of
+  docs/art-style.md); where the neighbour is as wet, there is no edge, as today. Corners too.
+  The bed's outer rim stays as it is.
+- Both arts (32 px and classic). The atlas will need the neighbours' wetness, not only which
+  tiles are tilled: keep its size sensible (e.g. a fade overlay per side and corner drawn on top
+  of the step, instead of every combination).
+- Performance: redrawing after an hour stays within REFRESH_BUDGET_USEC.
+- Tests for which edges fade; before/after crops at 1x and 4x and a README picture.
+
 ## Later (not part of the prototype)
 
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
