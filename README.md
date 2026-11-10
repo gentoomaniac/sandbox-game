@@ -138,8 +138,9 @@ lets you shrink or switch off the change in day length.
 
 ### Farming
 
-You till the soil with the hoe, plant seeds, water them, and pick the crops by hand; the tool
-you hold is in the character's hand. There
+You till the soil with the hoe, plant seeds, water them, and pick the crops by hand; a dead
+crop is pulled up by hand or hoed away, which leaves tilled soil ready for the next crop; the
+tool you hold is in the character's hand. There
 are thirteen crops: turnips, potatoes, carrots, cabbage, onions, wheat, rye and buckwheat
 (the grains of the sandy Geest, ground to flour like wheat), peas, beans, flax (for its fibre,
 not to eat), wild strawberries and small green squashes (pumpkins). Each

@@ -34,7 +34,10 @@
   - **Crops can die:** days without enough sun or water, frost below the crop's
     minimum, or wind above its tolerance (beans and flax are fragile, wheat bends)
     damage the crop; enough damage and it dies and shows its dead stage, which the empty
-    hand clears. Damage heals slowly on good days.
+    hand or the hoe clears (default, the user may change; decided 2026-11-10): the tile is
+    tilled soil again, ready to plant, and the player gets nothing. The hoe's swing costs what
+    tilling costs, the hand's what picking costs. The scythe leaves a dead crop alone. Damage
+    heals slowly on good days.
   - **Ripe crops must be harvested in time** (decided 2026-11-05): a ripe crop waits as
     many days as it took to ripen (since planting, or since it regrew), times its
     `ripe_wait_factor` in the config (1 for all crops for now). One day more and it
