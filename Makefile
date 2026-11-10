@@ -37,7 +37,7 @@ help:
 	@echo "  test-tools  Run only the tests of the Python tools (tools/art/, tools/llm/, tools/music/ test_*.py)."
 	@echo "  bench       Time a heavy save headless (start-up, nodes, frame times standing and walking, pile pick-up, save); see tools/README.md."
 	@echo "  bench-music Time the prototype music renderer: renders on their own, then frame times in the game while it renders (headless, muted)."
-	@echo "  music-check Render the test piece with the game's prototype music renderer and compare it with libmodplug's (headless, silent)."
+	@echo "  music-check Render every piece with the game's prototype music renderer and compare it with libmodplug's (headless, silent)."
 	@echo "  lint        Run gdlint and gdformat --check, and check no API key is in the repo."
 	@echo "  format      Format the GDScript."
 	@echo "  art         Draw all art, sounds and music into art/generated/, then check them (minutes; needs no Godot)."
@@ -259,7 +259,7 @@ bench-music: assets
 	$(BENCH_GODOT) -s tools/bench/music.gd -- --save-path=$(BENCH_DIR)/run.save --settings-path=$(BENCH_DIR)/settings.cfg --mute
 
 # The game's prototype music renderer (task 169) against libmodplug, an independent player: the
-# test piece rendered headless into build/music/, then compared by tools/music/check.py.
+# pieces rendered headless into build/music/, then compared by tools/music/check.py.
 music-check: assets
 	@mkdir -p build/user-data
 	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT)
