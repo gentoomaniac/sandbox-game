@@ -112,8 +112,14 @@ def main():
         combined.append(f"===== shard {i}: {len(shard)} files =====\n{text}")
         for label in totals:
             totals[label] += count(text, label)
-        if re.search(r'Failed to load script "res://(game|tests)/', text):
-            problems.append(f"shard {i}: a script in game/ or tests/ failed to load")
+        # A broken script must fail the run, never just drop its tests: one that doesn't load (a
+        # parse error), and a test file GUT skips because it doesn't extend GutTest.
+        not_loaded = set(re.findall(r'Failed to load script "res://((?:game|tests)/[^"]+)"', text))
+        for path in sorted(not_loaded):
+            problems.append(f"shard {i}: {path} failed to load (see build/test-{i}.log)")
+        skipped = set(re.findall(r"Ignoring script res://(tests/\S+) because", text))
+        for path in sorted(skipped - not_loaded):
+            problems.append(f"shard {i}: {path} was skipped: it does not extend GutTest")
         if count(text, "Tests") == 0:
             problems.append(f"shard {i}: GUT ran no tests")
         if "leaked at exit" in text:

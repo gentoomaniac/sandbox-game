@@ -3873,3 +3873,17 @@ hunting out of FarmAnimalView, chunk residency apart from drawing, PlayerView's 
 shared wildlife rules. Pending with the user: a crop planted mid-day now grows pro rata from its
 planting hour instead of a full day at the next midnight (about half a day later to ripen on
 average, same totals per full day).
+
+## 157. `make test` fails on a test file it skips
+
+- [x] Done
+
+The user, 2026-11-10: "it should fall on broken tests so that they get fixed". A review of task
+154 found a test file with a parse error whose tests silently didn't run.
+- tools/run_tests.py names each script that failed to load (a parse error) and each test file
+  GUT skips because it doesn't extend GutTest, and fails the run for either.
+
+Done: a parse error was already caught, but only as "a script failed to load", without the file;
+a test file that parses but doesn't extend GutTest passed the run with a GUT warning. Both now
+fail and are named (checked with a broken and a non-GutTest file in a scratch copy).
+

@@ -197,9 +197,10 @@ screenshot: assets
 # On Godot builds without navigation (e.g. some Gentoo builds) GUT prints a harmless
 # 'Identifier "NavigationMeshGenerator" not declared' parse error. Tests still run.
 # tools/run_tests.py spreads the test files over TEST_JOBS headless Godot processes (1 = one
-# process, like a plain GUT run) and checks every shard: a script that failed to load (GUT skips
-# it without failing the run), no test run at all, failing tests, "leaked at exit". It ends with
-# the warning and orphan counts of GUT's summary and leaves the joined logs in build/test.log.
+# process, like a plain GUT run) and checks every shard: a script that failed to load and a test
+# file that doesn't extend GutTest (GUT skips both without failing the run; each is named), no
+# test run at all, failing tests, "leaked at exit". It ends with the warning and orphan counts of
+# GUT's summary and leaves the joined logs in build/test.log.
 # user:// of each shard points into build/ (Godot finds it under XDG_DATA_HOME on Linux): runs
 # in two worktrees at once don't delete each other's test files, and no test can reach the
 # real save.

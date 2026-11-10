@@ -61,7 +61,9 @@ and log (`build/test-<i>.log`), and kills them after `TEST_TIMEOUT` seconds (def
 whole run), counting that as a failure. The files are balanced by their duration in the last
 run (`build/test-times`, from GUT's junit output), by file size until a file has a time.
 `build/test.log` is the shard logs joined plus a summary (Passing Tests, Failing Tests,
-`[Failed] file: test`, time); the exit status is non-zero if any shard or check fails.
+`[Failed] file: test`, time); the exit status is non-zero if any shard or check fails. A test
+file that GUT skips, because a script failed to load (a parse error) or because it doesn't extend
+GutTest, fails the run and is named, so a broken file can't quietly drop its tests.
 
 ## Performance: tools/bench/
 
