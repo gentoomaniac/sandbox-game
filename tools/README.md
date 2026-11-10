@@ -73,7 +73,8 @@ villagers, 30,000 tilled tiles and thousands of removed objects round the camp);
 reuse it until that script changes (after a save format or world generator change, delete
 `build/bench/fixture.save` so it is written again). Then `frames.gd` starts Main on a copy of it
 and prints how long the world view took to settle, the node and entity counts, and for two
-scenarios (standing for 300 frames, walking 70 tiles east across chunk borders) the mean and
+scenarios (standing for 300 frames, sleeping in the camp's bed, walking 70 tiles east across chunk
+borders) the mean and
 longest frame and how many frames went over 33 and over 16.7 ms, listing the frames over 33 ms
 with their numbers; `pickup.gd` prints the cost of the per-frame pile pick-up; `save.gd` prints
 what a save costs: the snapshot on the main thread and the JSON text a worker makes.

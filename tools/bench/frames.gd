@@ -1,7 +1,7 @@
 extends SceneTree
 ## Starts Main headless on a save, waits until the world view has settled and prints the time
 ## that took, the node count, the entity count, and the frame times of two scenarios: standing
-## still for 300 frames, then walking east for WALK_TILES tiles (across chunk borders, at the
+## still for 300 frames, then sleeping in the camp's bed until the day is back, then walking east for WALK_TILES tiles (across chunk borders, at the
 ## normal pace, through everything). Each prints the mean and the longest frame and how many
 ## frames went over 33 and over 16.7 ms; the frames over 33 ms are listed with their number, and
 ## a note if the player was passing out then. The first frames after the settle are left out.
@@ -20,7 +20,10 @@ var t0 := 0
 var settled_at := -1
 var last := 0
 var standing: Array[float] = []
+var sleeping: Array[float] = []
 var walking: Array[float] = []
+var sleep_started := false
+var sleeping_done := false
 var long_frames: Array[String] = []
 var walk_start := Vector2.ZERO
 
@@ -49,15 +52,16 @@ func _process(delta: float) -> bool:
 	if since_settled == SKIPPED_FRAMES:
 		_print_counts()
 	if ms > LONG_MS and since_settled >= SKIPPED_FRAMES:
-		var scenario := "standing" if since_settled <= STAND_FRAMES else "walking"
+		var scenario := _scenario(since_settled)
 		var cause := " (passing out or a fade)" if main._is_in_transition else ""
 		long_frames.append("%s frame %d: %.1f ms%s" % [scenario, since_settled, ms, cause])
 	if since_settled <= STAND_FRAMES:
 		standing.append(ms)
 		if since_settled == STAND_FRAMES:
 			_report("standing", standing)
-			main._state.cheats.is_noclip = true
-			walk_start = main._state.player.position
+		return false
+	if not sleeping_done:
+		_sleep(ms)
 		return false
 	walking.append(ms)
 	main._state.walk(Vector2.RIGHT, delta)
@@ -67,6 +71,31 @@ func _process(delta: float) -> bool:
 			print(line)
 		quit()
 	return false
+
+
+func _scenario(since_settled: int) -> String:
+	if since_settled <= STAND_FRAMES:
+		return "standing"
+	return "walking" if sleeping_done else "sleeping"
+
+
+## Sleeps in the bed once nothing else fades (the pass-out's message gets its key), times the
+## frames until the fade is over, then readies the walk.
+func _sleep(ms: float) -> void:
+	if not sleep_started:
+		if main._fade_screen.is_waiting_for_key():
+			main._fade_screen.continued.emit()
+		if main._is_in_transition:
+			return
+		sleep_started = true
+		main._try_sleep()
+		return
+	sleeping.append(ms)
+	if not main._is_in_transition:
+		sleeping_done = true
+		_report("sleeping", sleeping)
+		main._state.cheats.is_noclip = true
+		walk_start = main._state.player.position
 
 
 func _print_counts() -> void:
