@@ -209,6 +209,25 @@ Done note in docs/tasks-done.md).
   33 ms, the same world after the skip.
 - `make bench` before and after (a scenario for the bed if it has none); same game, same saves.
 
+## 159. Cows at 32 px: a neck, the udder between the legs, legs from the body
+
+- [ ] Done
+
+The user, 2026-11-10: "The cows don't have a neck, the utter is on top of the leg instead of
+inbetween" and "they also have a similar shading and leg position issue as the horses", with a
+reference picture (a Holstein from the side: a short deep neck dipping from the withers, a
+dewlap, the udder under the belly between the hind legs and in front of them, the legs running
+down from the chest and the rump).
+- A short, thick neck that dips from the withers to the head, with a dewlap under the throat; the
+  grazing head on that neck too.
+- The udder under the belly between the hind legs, the far hind leg showing behind it, not
+  drawn on the thigh.
+- As the horse in task 156: the forelegs start at the chest and the hind legs at the rump, wide
+  forearm and thigh shaded with the body so the belly shadow stops between the legs, then knee
+  and hock and slim cannons.
+- Every look, pose, facing and season of the 32 px cow (tools/art/livestock.py), cell sizes
+  kept; before and after crops and an in-game screenshot.
+
 ## Later (not part of the prototype)
 
 - **Review R8: what is left** (review F2.4/F2.5, A4, package R8; the simulation and its time are
