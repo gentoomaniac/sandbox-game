@@ -184,20 +184,6 @@ spring and summer and flies off again; there is no nest. Moved here from task 12
   is saved; what the player only sees (flaps, clatter) stays in the views.
 - Tests for the year of a nest by date, the seeding, save and load; a screenshot in the README.
 
-## 161. Hunting moves out of FarmAnimalView
-
-- [ ] Done
-
-The user, 2026-11-10: the rest of review R8 as three tasks (review/code-review-2026-11-09, R8
-deliverable 1). Today a cat's hunt is started, tracked and stopped by its FarmAnimalView
-(`start_hunt`, `track_prey`, `stop_hunt`), so whether a cat hunts depends on its view existing
-and running (task 158 had to hold the world view over a sleep for this).
-- The hunt is decided in the game state (Livestock or a small controller); the view only shows
-  it. Decide the lifecycle of the ambient prey (mice) it hunts.
-- Acceptance: hunting tests run without a FarmAnimalView; a view removed mid-hunt leaves a
-  defined result (no cat stranded in a crouch); camera movement alone doesn't change what a saved
-  animal does. Same hunts, same looks as now.
-
 ## 163. PlayerView and the wildlife rules stop repairing and sharing state
 
 - [ ] Done

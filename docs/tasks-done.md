@@ -4173,3 +4173,48 @@ frame, frames over 33 ms; standing, passing out, sleeping, walking): 26.1 ms (0)
 frames, 6.9 s before and 318 frames, 6.3 s after. Screenshots at 1000x1040 (camp, night at
 23:00, the inside of a house) are the same terrain and objects before and after; only the
 animated bits differ.
+
+## 161. Hunting moves out of FarmAnimalView
+
+- [x] Done
+
+The user, 2026-11-10: the rest of review R8 as three tasks (review/code-review-2026-11-09, R8
+deliverable 1). Today a cat's hunt is started, tracked and stopped by its FarmAnimalView
+(`start_hunt`, `track_prey`, `stop_hunt`), so whether a cat hunts depends on its view existing
+and running (task 158 had to hold the world view over a sleep for this).
+- The hunt is decided in the game state (Livestock or a small controller); the view only shows
+  it. Decide the lifecycle of the ambient prey (mice) it hunts.
+- Acceptance: hunting tests run without a FarmAnimalView; a view removed mid-hunt leaves a
+  defined result (no cat stranded in a crouch); camera movement alone doesn't change what a saved
+  animal does. Same hunts, same looks as now.
+
+Done: a cat's hunt is decided in Livestock (`game/state/livestock.gd`): when a cat picks what to
+do next it looks for the nearest `Prey` (`game/state/prey.gd`) within `sight_tiles`, `start_hunt`
+makes it crouch, creep and pounce, the catch is rolled with Livestock's dice as the pounce
+starts, and a cat that lands catches the mouse still under it. A `Mouse` (still ambient wildlife
+of the WildlifeView, near the camera, not saved) owns a `Prey` it keeps up to date (position in
+tiles, `is_about`) and registers with `Livestock.add_prey`; the hunt's outcome is left in
+`Prey.fate` (caught, or scared from a point) for the mouse to show. Prey lifecycle: a mouse is
+about while its node lives; once it is done, caught or freed (`_exit_tree`, so a cleared or
+freed wildlife view too) it is no longer about and any cat after it ends its hunt, rests and
+idles where it stands. With no wildlife view there are no mice, so nothing hunts and nothing is
+stranded; a freed FarmAnimalView changes nothing of a hunt, and a cat far from the camera hunts a
+mouse in sight like any other. FarmAnimalView only plays the frames of the activity.
+`start_hunt` takes a `Prey`; `track_prey` and `stop_hunt` are gone (the state tracks, and ends
+the hunt by itself); `FarmAnimal.prey` is now `pounce_at`, and `hunted` is the mouse. A cat looks
+for a mouse at every pick of what to do next, and on waking and after a blocked walk, as the view
+did; the state's track of the mouse is one step earlier than the view's was, and a mouse tells
+the cats where it is after it has moved (the cats see it a frame late). Skipped time hunts
+nothing: `Livestock.update(..., may_hunt)` is off for the walked minutes of a skip
+(`ActorsUpkeep.walked_minute`) and `catch_up` abandons any hunt, with no outcome for the mouse.
+Task 158's hold stays: the livestock is held over a sleep, which now
+holds the hunts; the view stays held for the wildlife. The cat test of
+tests/test_sleeping_in_bed.gd now sets a rested cat creeping within pounce reach of a mouse at the
+first walked minute of the sleep (and about to pick what to do next on each held frame), and
+tests/test_actors_catch_up.gd (sameness) stays green. New tests:
+tests/test_cats_hunting.gd (no view: nearest mouse in sight, no mouse, scare, catch, a mouse
+moved off, the same dice give the same hunts with each hunt reaching its pounce, a mouse gone,
+waking to a mouse, the walked minutes of a skip) and tests/test_cats_and_mice.gd (the
+cat's view freed mid-hunt, the wildlife cleared mid-hunt). Screenshots (`--hunt` at 19:00,
+1000x1040) look the same before and after.
+
