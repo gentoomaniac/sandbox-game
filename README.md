@@ -384,8 +384,7 @@ with a lower chancel, steep red pantile roofs, small arched windows of leaded gl
 at night, and a white porch on the south side with the door (70 logs, 35 stone, 45 clay).
 These parishes had no tower; the bell hangs in a wooden bell frame of its own, an oak frame
 on a brick base under a shingled pyramid, which nobody goes into. For the churchyard, the
-workbench makes grave markers (2 planks, 2 stone), which stand outdoors as an oak cross, a
-headstone or a fieldstone slab.
+workbench makes grave markers (2 planks, 2 stone), which stand outdoors as an oak cross.
 
 ![The churchyard at noon in summer, with the church, its bell frame and graves, and on a winter night under snow with the church windows lit](docs/screenshots/church.png)
 

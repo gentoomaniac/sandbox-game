@@ -46,7 +46,7 @@ carved_chest 1
 kiln 1
 oven 1
 ewer 3
-grave 3
+grave 1
 jetty 16
 rowing_boat 1
 net_frame 1

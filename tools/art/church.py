@@ -7,8 +7,9 @@ arches, and a low porch on the south side whose gable faces the front, with the 
 church door in it. An iron cross stands on the west gable and on the porch. The small marsh
 parishes had no tower: the bells hung in a free-standing wooden frame (Glockenstapel,
 bell_frame.png), an open oak frame on a brick base under a pyramid of oak shingles, the bell in
-it. The churchyard wall is the fieldstone wall of boundaries.py; the graves (an oak cross, a
-sandstone headstone and a fieldstone slab) are world objects, a row of the object atlas.
+it. The churchyard wall is the fieldstone wall of boundaries.py; the grave (an oak cross) is a
+world object, a row of the object atlas; a sandstone headstone and a fieldstone slab are drawn
+here for tombstone items to come.
 """
 
 import math
@@ -385,8 +386,9 @@ def fieldstone_slab():
 
 
 def graves():
-    """The looks of a grave, standing: the variants of the world object `grave`."""
-    return [oak_cross(), headstone(), fieldstone_slab()]
+    """The looks of a grave, standing: the variants of the world object `grave`, the oak cross only
+    (the user, 2026-11-10). headstone() and fieldstone_slab() wait for tombstone items to come."""
+    return [oak_cross()]
 
 
 def icons():

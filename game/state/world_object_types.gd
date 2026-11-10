@@ -128,8 +128,8 @@ const NET_FRAME := &"net_frame"
 const EEL_TRAPS := &"eel_traps"
 ## The woodworker's master piece (task 74): it stands only in a house.
 const CUPBOARD := &"cupboard"
-## A grave in the churchyard (task 102): an oak cross, a headstone or a fieldstone slab, the
-## look by its tile.
+## A grave in the churchyard (task 102): an oak cross, always (the user, 2026-11-10). A headstone
+## and a fieldstone slab (tools/art/church.py) wait for tombstone items to come.
 const GRAVE := &"grave"
 
 ## Values of a type's `seasonal` entry.
@@ -614,7 +614,7 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": _GRAVE_ROW,
-		"variants": 3,
+		"variants": 1,
 		"interior_sprite": "res://assets/interior/grave.png",
 		"placeable_in": OUTDOORS,
 	},

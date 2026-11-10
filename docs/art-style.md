@@ -228,7 +228,7 @@ stones, ash with embers and three split logs with pale cut ends; the bedroll a q
 linen ticking with the grey blanket rolled at its head. The chest of oak planks with iron bands
 and a brass lock, the carved chest painted blue-green with tulips, the workbench with its vice
 and saw, a beehive kiln in courses of clay and a brick oven on footings of field stones, the
-cupboard with raised panels, an oak cross, a sandstone headstone and a granite slab; the jetty's
+cupboard with raised panels, the oak cross of a grave; the jetty's
 planks with grain and nails on weedy piles, the rowing boat, the net frame and the eel traps.
 The Ewer is in scale with the people: a hull about seven tiles long and a mast more than twice
 a person's height, a picture three cells of the object atlas wide on a 7×1 footprint. Each is
@@ -338,8 +338,9 @@ along its foot.
   keep their light and shade. Beside it the **bell frame** (*Glockenstapel*): an open oak
   frame on a brick base under a pyramid of silver-grey oak shingles (`stone` ramp), the
   bell in `gold`, `ochre`, `ochre_dark`. The churchyard has the fieldstone wall and graves:
-  an oak cross, a sandstone headstone (`sand` ramp, a cut cross and lines of letters) and a
-  low granite slab.
+  an oak cross (the grave marker always places it); a sandstone headstone (`sand` ramp, a cut
+  cross and lines of letters) and a low granite slab are drawn in church.py for later tombstone
+  items but not in the atlas yet.
 - **Fisherman's hut** (*Fischerkate*, task 103): the shack's boards and fieldstones on 4x2
   tiles under a hipped reed thatch with a turf ridge (`turf_ridge`), one small white window,
   a low door in faded teal (`water_light`, `paint_teal`, `water_deep`) and an oar against

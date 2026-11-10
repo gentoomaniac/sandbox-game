@@ -52,6 +52,12 @@ func test_a_grave_marker_stands_outdoors_and_the_pickaxe_takes_it_up_again() -> 
 	assert_eq(_dropped(ItemTypes.GRAVE_MARKER), 1)
 
 
+func test_a_placed_grave_is_the_oak_cross_wherever_it_stands() -> void:
+	for x in 12:
+		var grave := WorldObject.new(WorldObjectTypes.GRAVE, Vector2i(x * 7, x * 3))
+		assert_eq(ObjectTileset.atlas_cell(grave).x, 0, "the oak cross at %s" % grave.pos)
+
+
 func test_the_carved_chest_holds_twenty_slots_and_the_storage_screen_shows_them() -> void:
 	var carved := _place(WorldObjectTypes.CARVED_CHEST)
 	assert_eq(carved.storage.slots.size(), 20)

@@ -51,5 +51,6 @@ def fieldstone_slab():
 
 
 def graves():
-    """The looks of a grave, standing: the variants of the world object `grave`."""
-    return [oak_cross(), headstone(), fieldstone_slab()]
+    """The looks of a grave, standing: the variants of the world object `grave`, the oak cross only
+    (the user, 2026-11-10). headstone() and fieldstone_slab() wait for tombstone items to come."""
+    return [oak_cross()]

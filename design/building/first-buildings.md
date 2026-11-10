@@ -38,9 +38,9 @@
     `interior_map` is empty, none of its tiles can be walked on and nobody goes in. The
     **churchyard**: the fieldstone wall of the fields, and **grave markers** made at the
     workbench (woodworking 15: 2 planks, 2 stone) and placed outdoors only, which stand as an
-    oak cross, a sandstone headstone or a fieldstone slab by their tile; the pickaxe takes
-    them up. The world generator places no church yet: there is no village in the world to
-    put it in (the Warften on the salt marsh are empty); `--churchyard=<x>,<y>` puts one in
+    oak cross (always: the user, 2026-11-10; headstones may come later as their own crafted
+    item); the pickaxe takes them up. The world generator places no church yet: there is no
+    village in the world to put it in (the Warften on the salt marsh are empty); `--churchyard=<x>,<y>` puts one in
     view for screenshots.
   - **Insides** (decided 2026-11-05): each is a Tiled map, `maps/interiors/<id>.tmx`, a little
     larger than the footprint: shack 6×6 (straw sleeping mat, crate, stool), fisherman's hut

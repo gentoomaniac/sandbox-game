@@ -453,7 +453,7 @@ const _OTHER_TYPES := {
 	GRAVE_MARKER:
 	{
 		"name": "Grave marker",
-		"description": "An oak cross or a stone for a grave. It stands outdoors.",
+		"description": "An oak cross for a grave. It stands outdoors.",
 		"weight": 10.0,
 		"stack_limit": 5,
 		"places": WorldObjectTypes.GRAVE,

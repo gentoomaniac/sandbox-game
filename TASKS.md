@@ -264,6 +264,10 @@ Settings (and off), muted in test runs. Rules in data/music.cfg; tests; README.
 
 ## Later (not part of the prototype)
 
+- **Tombstones** (the user, 2026-11-10): a placed grave marker is always the oak cross; a
+  headstone and a fieldstone slab could come as crafted items of their own (their art is already
+  drawn in tools/art/church.py).
+
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
   Valley, but actions count as well as gifts, in the manner of the Sims (helping, talking,
   events, rudeness, theft, being there in trouble). A first draft is in
