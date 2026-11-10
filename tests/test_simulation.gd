@@ -44,3 +44,10 @@ class SpanSpyClock:
 	func advance(minutes: int) -> void:
 		spans.append(minutes)
 		super.advance(minutes)
+
+
+func test_a_game_that_is_let_go_of_is_freed_with_its_simulation() -> void:
+	var state := GameState.new_game(7)
+	var watcher: WeakRef = weakref(state)
+	state = null
+	assert_null(watcher.get_ref(), "no system of the simulation holds on to the game")

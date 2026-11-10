@@ -23,7 +23,7 @@ func before_each() -> void:
 
 
 func _pass_night() -> void:
-	NightUpkeep.pass_night(_world, [], _weather)
+	NightUpkeep.new(_world, _weather, func() -> Array: return []).pass_night()
 
 
 func _farming(key: String) -> float:

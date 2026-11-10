@@ -6,10 +6,16 @@ extends RefCounted
 ## the same hours played one after the other.
 
 var clock: GameClock
+## In the order they run after each span: a system may rely on those before it.
+var _systems: Array[SimulationSystem] = []
 
 
 func _init(game_clock: GameClock) -> void:
 	clock = game_clock
+
+
+func add_system(system: SimulationSystem) -> void:
+	_systems.append(system)
 
 
 ## Lets `minutes` game minutes pass, in whole-hour steps.
@@ -23,3 +29,5 @@ func advance(minutes: int) -> void:
 		var span := mini(left, to_full_hour)
 		clock.advance(span)
 		left -= span
+		for system in _systems:
+			system.advance(span, clock)

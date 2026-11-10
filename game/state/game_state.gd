@@ -72,7 +72,6 @@ var _moving_seconds := 0.0
 func _init(game_clock := GameClock.new()) -> void:
 	clock = game_clock
 	simulation = Simulation.new(clock)
-	clock.new_day.connect(_on_new_day)
 
 
 ## A new game: the player starts at a camp site near the world centre, with home set to its
@@ -82,6 +81,7 @@ static func new_game(world_seed: int) -> GameState:
 	state.world = World.new(world_seed, state.clock)
 	state.weather = Weather.new(world_seed, state.sun)
 	state.snow_cover = SnowCover.new(state.weather)
+	state._start_simulation()
 	var camp := CampSite.create(state.world, WorldGenerator.new(world_seed))
 	state.player.position = Vector2(camp.spawn_pos) + Vector2(0.5, 0.5)
 	state.player.home_map = state.world
@@ -547,6 +547,7 @@ static func from_dict(data: Dictionary) -> GameState:
 	state.world = World.from_dict(data["world"], state.clock)
 	state.weather = Weather.new(state.world.world_seed, state.sun)
 	state.snow_cover = SnowCover.new(state.weather)
+	state._start_simulation()
 	state.player = PlayerState.from_dict(data["player"], state._map_from_ref(data["home_map"]))
 	state.livestock.load_array(data["livestock"])
 	state.npcs.load_array(data["npcs"])
@@ -592,14 +593,16 @@ func _pass_time(minutes: int) -> void:
 		player.is_debuffed = false
 
 
-func _on_new_day(_day: int) -> void:
-	# The clock has already counted the new day, so the night that just ended is the day before:
-	# `NightUpkeep.pass_night` works from the weather of `clock.day - 1`.
-	# A stump or sapling doesn't grow into a tree under the player's feet.
-	var occupied: Array[Vector2i] = []
-	if not is_inside():
-		occupied.append(player.tile())
-	NightUpkeep.pass_night(world, occupied, weather)
+## Puts what changes with time under the simulation, once the world and the weather exist. The
+## order is the order they run in.
+func _start_simulation() -> void:
+	simulation.add_system(NightUpkeep.new(world, weather, _tiles_kept_clear))
+
+
+## The tiles where a sapling does not grow into a tree, for it would be under the player's feet.
+## A named method: a lambda would keep the whole game alive from the simulation it belongs to.
+func _tiles_kept_clear() -> Array:
+	return [] if is_inside() else [player.tile()]
 
 
 ## The bed object of the home bed, or null if there is none at that tile now (the bedroll was
