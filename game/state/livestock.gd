@@ -71,8 +71,9 @@ func load_array(data: Array) -> void:
 
 
 ## Puts up to `count` new animals of a species on ground of `map` they can stand on, a few tiles
-## around `near`. Returns how many found a place.
-func spawn(species: StringName, count: int, near: Vector2, map: GameMap) -> int:
+## around `near`, all of one `look` if given (else each of a look drawn by the species' weights).
+## Returns how many found a place.
+func spawn(species: StringName, count: int, near: Vector2, map: GameMap, look := &"") -> int:
 	var placed := 0
 	for _try in SPAWN_TRIES:
 		if placed == count:
@@ -81,6 +82,8 @@ func spawn(species: StringName, count: int, near: Vector2, map: GameMap) -> int:
 		if not map.is_walkable(Vector2i(feet.floor())):
 			continue
 		var animal := FarmAnimal.create(species, rng.randi(), feet, rules)
+		if look != &"":
+			animal.look = look
 		animal.facing = 1.0 if rng.randf() < 0.5 else -1.0
 		_start_next_activity(animal)
 		add(animal)

@@ -92,6 +92,14 @@ func test_spawned_animals_stand_on_walkable_ground_near_the_point() -> void:
 		assert_lte(animal.position.distance_to(_pen_middle()), Livestock.SPAWN_DISTANCE.y)
 
 
+func test_spawned_animals_can_all_be_of_one_look() -> void:
+	_livestock.spawn(LivestockRules.HORSE, 6, _pen_middle(), _world, &"pony")
+
+	assert_eq(_livestock.all().size(), 6)
+	for animal in _livestock.all():
+		assert_eq(animal.look, &"pony")
+
+
 func test_no_animal_is_put_where_nothing_can_stand() -> void:
 	for y in range(-PEN_RADIUS, PEN_RADIUS + 1):
 		for x in range(-PEN_RADIUS, PEN_RADIUS + 1):

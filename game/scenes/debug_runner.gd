@@ -219,13 +219,15 @@ func _put_script_in_chat(villager: Npc, script: PackedStringArray) -> void:
 
 
 func _spawn_livestock() -> void:
-	for species in _options.livestock:
-		if not LivestockRules.SPECIES.has(StringName(species)):
-			push_error("--livestock expects %s, got '%s'" % [LivestockRules.SPECIES, species])
+	for name in _options.livestock:
+		# The pony is a look of the horse, so it is asked for by its look.
+		var is_pony := name == "pony"
+		var species := LivestockRules.HORSE if is_pony else StringName(name)
+		if not LivestockRules.SPECIES.has(species):
+			push_error("--livestock expects %s or pony, got '%s'" % [LivestockRules.SPECIES, name])
 			continue
-		state.livestock.spawn(
-			StringName(species), LIVESTOCK_COUNT, state.player.position, state.world
-		)
+		var look := &"pony" if is_pony else &""
+		state.livestock.spawn(species, LIVESTOCK_COUNT, state.player.position, state.world, look)
 
 
 ## A cat of each look and a mouse ahead of each (see `--hunt`). A new cat picks what to do next at
