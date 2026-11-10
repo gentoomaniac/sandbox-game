@@ -66,9 +66,13 @@ leave it and it grows back over a week or two. Paths fade softly into the grass 
 change with the seasons, lie dark in a winter without snow and show as a faint trodden track
 under snow. Cows and the other farm animals wear the ground too where they keep walking, and so
 do the villagers on their rounds. A path is only a look: it walks, tills and builds like grass.
+Where many feet have worn a whole yard, the trodden and path ground joins into one calm patch of
+earth with no repeating shapes, and its edge follows at once as tiles wear or grow back.
 The numbers are in [data/paths.cfg](data/paths.cfg).
 
 ![A desire path through a meadow after three days, after eight days, five days after it was last walked, and under snow](docs/screenshots/desire-paths.png)
+
+![A yard worn by many feet: one joined patch of trodden and bare earth](docs/screenshots/worn-ground.png)
 
 ### Knicks, ditches and dykes
 

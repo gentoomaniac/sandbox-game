@@ -66,7 +66,9 @@
   buildings (their doors too) and interiors don't. Worn tiles lose their flowers and tufts. A
   path is a look only: no change to speed or farming, and tilling it works as on grass (and
   clears the wear). Drawn as two dual-grid layers over the grass, with soft dithered edges, in
-  every season's look and the frost; snow covers paths, with a faint trodden track over them; in
+  every season's look and the frost. The full tiles of both layers are an even colour (dark earth, path earth) with
+  single specks of 3 percent and no stamps (`tools/art/test_worn_ground.py`, both art sets), so a
+  worn yard reads as one joined patch and not as a grid of per-tile shapes (task 155); snow covers paths, with a faint trodden track over them; in
   a bare winter the earth lies dark. The wear is saved (only worn tiles, dropped once they have
   grown back).
 - **Floodplain looks fertile:** lush, damp meadow, with a narrow muddy bank right at the

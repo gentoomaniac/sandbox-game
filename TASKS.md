@@ -217,24 +217,6 @@ spring and summer and flies off again; there is no nest. Moved here from task 12
   is saved; what the player only sees (flaps, clatter) stays in the views.
 - Tests for the year of a nest by date, the seeding, save and load; a screenshot in the README.
 
-## 155. Worn ground tiles join up: desire paths without a pattern of shapes
-
-- [ ] Done
-
-The user, 2026-11-10, with a screenshot of a well-walked yard (100 rabbits from the console):
-"The wear actually looks weird. The tiling doesn't fit, it doesn't adjust when new wear is
-added." The worn ground shows a repeating grid of hourglass and oval shapes instead of a
-joined patch of trodden earth, and the edges don't follow when more tiles wear.
-- Find the cause: the dual-grid terrain (WorldView `redraw_tile` redraws the 4 cells around a
-  tile) and the trodden and path stages of `World.wear_tile`: are there edge tiles between
-  trodden and path, and between both and every grass kind (lush, dry, floodplain), in both art
-  sets and every season? Is the stage of a tile, or of its neighbours, read from stale chunk
-  looks (ChunkLooks codes), so cells are drawn from an old neighbour?
-- Worn ground joins into one patch with its rim against grass, like the tilled soil of task
-  123 (no seams, no shapes repeating per tile), and adjusts at once as tiles wear or regrow.
-- Tests for the redraw when a neighbour's stage changes; before and after screenshots of a
-  yard worn by many animals (the console can spawn them).
-
 ## 156. Horses at 32 px: legs with upper legs
 
 - [ ] Done

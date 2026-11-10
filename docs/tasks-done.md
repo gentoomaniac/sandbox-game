@@ -3823,3 +3823,30 @@ dashes (which left the lighter cross where four tiles met) are gone. The browns 
 not drawn moist, as before. The user's 2026-11-09 addition: the sown mound is dark earth with
 cream seeds (`crops.MOUND_SOIL`), so a sown tile reads as planted at zoom 0.5. Screenshot of the
 states: docs/screenshots/soil.png.
+
+## 155. Worn ground tiles join up: desire paths without a pattern of shapes
+
+- [x] Done
+
+The user, 2026-11-10, with a screenshot of a well-walked yard (100 rabbits from the console):
+"The wear actually looks weird. The tiling doesn't fit, it doesn't adjust when new wear is
+added." The worn ground shows a repeating grid of hourglass and oval shapes instead of a
+joined patch of trodden earth, and the edges don't follow when more tiles wear.
+- Find the cause: the dual-grid terrain (WorldView `redraw_tile` redraws the 4 cells around a
+  tile) and the trodden and path stages of `World.wear_tile`: are there edge tiles between
+  trodden and path, and between both and every grass kind (lush, dry, floodplain), in both art
+  sets and every season? Is the stage of a tile, or of its neighbours, read from stale chunk
+  looks (ChunkLooks codes), so cells are drawn from an old neighbour?
+- Worn ground joins into one patch with its rim against grass, like the tilled soil of task
+  123 (no seams, no shapes repeating per tile), and adjusts at once as tiles wear or regrow.
+- Tests for the redraw when a neighbour's stage changes; before and after screenshots of a
+  yard worn by many animals (the console can spawn them).
+
+Done: the cause was the 32 px full tiles of `trodden` and `path` (tools/art/terrain.py): they were
+patterned with tile-wide noise blobs (cells of 8 and 16 px) and stamps, picked at random per tile, so every worn
+tile showed its own oval or hourglass and the tiles did not join. The redraw was not stale:
+`redraw_tile` redraws the 4 cells around a tile and the edge tiles between stages and every grass
+kind exist (tests added for the cells between worn tiles). A full tile is now an even colour
+(trodden dark earth, path earth) with single specks of 3 percent and no stamps, in both art sets
+and all looks (palette unchanged; the user asked for it calmer still). `--worn-ground=<x>,<y>` wears a yard for screenshots (`DebugWornGround`);
+screenshot docs/screenshots/worn-ground.png.
