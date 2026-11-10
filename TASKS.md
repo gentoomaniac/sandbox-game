@@ -257,8 +257,17 @@ the game somehow as a notification like the "saving ..." etc messages".
   silent as today (said once in the log), unless the player has set an endpoint themselves.
 - ModelChat stays free of HUD code: it sends a signal (or reports through the session) that Main
   wires to the notifications; the settings page's own notes stay as they are.
+- The user, 2026-11-10: "don't show the default text when the request fails. In a chat remove
+  the "is typing" message when a request failed." With a language model set, a failed request
+  (any of the above, a refusal of ClaudeChat, or an answer that is empty after trimming) no
+  longer falls back to a scripted line of data/npc_talk.cfg (NpcDialogue `reply`): the villager
+  says nothing, nothing is added to their chat, and the chat screen takes away its typing
+  bubble ("...") at once; the player's own line stays, and the player can write again. Scripted
+  lines stay for a game with no model set, as today. Check every caller of `reply`/`say` (the
+  chat screen, greetings or bubbles) for what an answer of nothing must do.
 - Tests with a fake endpoint (503 with an API message, 401, timeout, success after failure,
-  the throttling and the silent default endpoint); a README line.
+  the throttling and the silent default endpoint); no scripted line and no typing bubble after
+  a failure, scripted lines with no model; a README line.
 
 ## Later (not part of the prototype)
 
