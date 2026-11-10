@@ -23,11 +23,14 @@ func test_skip_lets_minutes_hours_and_days_pass() -> void:
 	assert_string_contains(lines[0], clock.date_text())
 
 
-func test_skipping_past_midnight_passes_the_night() -> void:
+func test_skipping_past_midnight_leaves_the_player_alone() -> void:
 	_state.player.is_debuffed = true
+	_state.player.energy = 33.0
 	_state.clock.set_time(23, 0)
 	_console.run("skip 2h")
-	assert_false(_state.player.is_debuffed, "a new day ends the debuff")
+	assert_true(_state.player.is_debuffed, "only the world moves on")
+	assert_eq(_state.player.energy, 33.0)
+	assert_false(_state.is_up_too_late)
 
 
 func test_skip_rejects_bad_amounts() -> void:

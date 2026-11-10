@@ -141,7 +141,7 @@ func test_starting_a_firing_and_taking_the_bricks_out_are_two_outcomes() -> void
 	assert_eq(_outcomes[0].kind, ActionOutcome.START_CRAFT)
 	assert_eq(_outcomes[0].object, WorldObjectTypes.KILN)
 	_outcomes.clear()
-	_state.clock.advance(12 * GameClock.MINUTES_PER_HOUR)
+	_state.simulation.advance(12 * GameClock.MINUTES_PER_HOUR)
 	assert_true(crafting.take_out(kiln))
 	assert_eq(_outcomes.size(), 1)
 	assert_eq(_outcomes[0].kind, ActionOutcome.TAKE_OUT)

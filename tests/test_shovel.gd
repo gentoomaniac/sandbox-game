@@ -196,9 +196,9 @@ func test_a_spent_spot_recovers_over_nights() -> void:
 	_hold_shovel()
 	_dig(spot)
 	for night in World.CLAY_SPENT_NIGHTS - 1:
-		_state.clock.advance(GameClock.MINUTES_PER_DAY)
+		_state.simulation.advance(GameClock.MINUTES_PER_DAY)
 		assert_false(_state.world.has_clay(spot), "night %d" % (night + 1))
-	_state.clock.advance(GameClock.MINUTES_PER_DAY)
+	_state.simulation.advance(GameClock.MINUTES_PER_DAY)
 	assert_true(_state.world.has_clay(spot))
 
 
@@ -219,12 +219,12 @@ func test_a_spent_spot_stays_spent_through_the_save() -> void:
 	var spot := _spots[0]
 	_hold_shovel()
 	_dig(spot)
-	_state.clock.advance(GameClock.MINUTES_PER_DAY)
+	_state.simulation.advance(GameClock.MINUTES_PER_DAY)
 	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
 	_load_chunks_of(restored, _spots)
 	assert_false(restored.world.has_clay(spot))
 	for night in World.CLAY_SPENT_NIGHTS - 1:
-		restored.clock.advance(GameClock.MINUTES_PER_DAY)
+		restored.simulation.advance(GameClock.MINUTES_PER_DAY)
 	assert_true(restored.world.has_clay(spot), "it recovers on schedule")
 
 

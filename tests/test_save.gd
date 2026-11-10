@@ -56,7 +56,7 @@ func _lived_in_state() -> GameState:
 	crop.state["growth"] = 4.0
 	_state.world.add_object(crop)
 	_state.world.set_moisture(tiles[1], 0.9)
-	_state.clock.advance(GameClock.MINUTES_PER_DAY)
+	_state.simulation.advance(GameClock.MINUTES_PER_DAY)
 	_state.player.inventory.add(ItemTypes.TURNIP, 3)
 	_state.player.inventory.select(4)
 	var house := _place_house()
@@ -112,7 +112,7 @@ func test_world_object_round_trip_keeps_its_growth() -> void:
 
 
 func test_clock_round_trip() -> void:
-	_state.clock.advance(GameClock.MINUTES_PER_DAY + 95)
+	_state.simulation.advance(GameClock.MINUTES_PER_DAY + 95)
 	var restored := GameClock.from_dict(_through_json(_state.clock.to_dict()))
 	assert_eq(restored.day, 2)
 	assert_eq(restored.minute_of_day, _state.clock.minute_of_day)
@@ -227,7 +227,7 @@ func test_the_restored_game_carries_on() -> void:
 	_load_chunks_like(_state.world, restored.world)
 	var crop := _crop_in(restored.world)
 	var growth_before := CropLife.growth(crop)
-	restored.clock.advance(GameClock.MINUTES_PER_DAY)
+	restored.simulation.advance(GameClock.MINUTES_PER_DAY)
 	assert_true(CropLife.growth(crop) != growth_before or CropLife.damage(crop) > 0.0)
 
 

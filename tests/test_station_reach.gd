@@ -82,7 +82,7 @@ func test_a_firing_is_refused_at_a_kiln_of_the_other_map() -> void:
 
 func test_the_finished_firing_stays_in_the_kiln_while_the_player_is_out_of_reach() -> void:
 	_crafting.craft(&"bricks", _kiln)
-	_state.clock.advance(FIRING_MINUTES)
+	_state.simulation.advance(FIRING_MINUTES)
 	_state.player.position += Vector2(5.0, 0.0)
 	assert_false(_crafting.take_out(_kiln))
 	assert_true(StationWork.is_busy(_kiln))

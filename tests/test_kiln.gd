@@ -91,9 +91,9 @@ func test_a_busy_kiln_takes_no_second_firing() -> void:
 
 func test_the_firing_is_done_after_its_hours_and_the_bricks_come_out() -> void:
 	_crafting.craft(&"bricks", _kiln)
-	_state.clock.advance(FIRING_MINUTES - 1)
+	_state.simulation.advance(FIRING_MINUTES - 1)
 	assert_false(_crafting.is_work_done(_kiln))
-	_state.clock.advance(1)
+	_state.simulation.advance(1)
 	assert_true(_crafting.is_work_done(_kiln))
 	assert_true(_crafting.take_out(_kiln))
 	assert_eq(_count(ItemTypes.BRICK), 6)
@@ -102,7 +102,7 @@ func test_the_firing_is_done_after_its_hours_and_the_bricks_come_out() -> void:
 
 func test_bricks_that_do_not_fit_stay_in_the_kiln() -> void:
 	_crafting.craft(&"bricks", _kiln)
-	_state.clock.advance(FIRING_MINUTES)
+	_state.simulation.advance(FIRING_MINUTES)
 	_fill_inventory()
 	assert_false(_crafting.take_out(_kiln))
 	assert_true(StationWork.is_busy(_kiln))
@@ -110,7 +110,7 @@ func test_bricks_that_do_not_fit_stay_in_the_kiln() -> void:
 
 func test_the_firing_goes_on_through_a_save_and_while_the_player_is_away() -> void:
 	_crafting.craft(&"bricks", _kiln)
-	_state.clock.advance(60)
+	_state.simulation.advance(60)
 	var restored := _through_save()
 	var kiln := restored.world.object_at(_tile)
 	assert_true(StationWork.is_busy(kiln))
@@ -118,7 +118,7 @@ func test_the_firing_goes_on_through_a_save_and_while_the_player_is_away() -> vo
 	var crafting := Crafting.new(restored)
 	assert_eq(crafting.minutes_left(kiln), FIRING_MINUTES - 60)
 	restored.player.position += Vector2(500, 0)
-	restored.clock.advance(FIRING_MINUTES)
+	restored.simulation.advance(FIRING_MINUTES)
 	assert_true(crafting.is_work_done(kiln), "done without the kiln being looked at")
 
 
@@ -153,7 +153,7 @@ func test_the_kiln_menu_says_what_it_fires_and_takes_the_bricks_out_once_done() 
 	assert_has(texts.call(), "Brick x6: ready in 12 h 0 min")
 	assert_true(rows[0].disabled, "busy")
 	screen.close()
-	_state.clock.advance(FIRING_MINUTES)
+	_state.simulation.advance(FIRING_MINUTES)
 	screen.open_station(_kiln)
 	assert_has(texts.call(), CraftingScreen.TAKEN_OUT_NOTE % "brick x6")
 	assert_eq(_count(ItemTypes.BRICK), 6)
@@ -200,7 +200,7 @@ func test_starting_a_firing_tells_of_the_materials_once() -> void:
 
 func test_taking_out_the_bricks_clears_the_kiln_before_the_inventory_tells() -> void:
 	_crafting.craft(&"bricks", _kiln)
-	_state.clock.advance(FIRING_MINUTES)
+	_state.simulation.advance(FIRING_MINUTES)
 	var seen := _seen_during(func() -> void: _crafting.take_out(_kiln))
 	assert_eq(seen.size(), 1)
 	assert_eq(seen[0]["bricks"], 6)

@@ -59,7 +59,7 @@ func test_a_picked_bush_survives_the_chunk_and_the_save() -> void:
 	assert_true(_world.object_at(_tile).is_picked())
 	var restored := _through_save()
 	assert_true(restored.world.object_at(_tile).is_picked())
-	restored.clock.advance(2 * GameClock.MINUTES_PER_DAY)
+	restored.simulation.advance(2 * GameClock.MINUTES_PER_DAY)
 	assert_false(restored.world.object_at(_tile).is_picked())
 
 

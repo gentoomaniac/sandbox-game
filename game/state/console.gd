@@ -415,7 +415,7 @@ func _skip(arguments: PackedStringArray) -> Array[String]:
 	var minutes: int = int(amount) * SKIP_UNITS[unit]
 	if minutes > MAX_SKIP_MINUTES:
 		return ["At most a year (%dd) at once" % GameClock.DAYS_PER_YEAR]
-	_state.clock.advance(minutes)
+	_state.simulation.advance(minutes)
 	return ["Skipped to %s, %s" % [_state.clock.date_text(), _state.clock.time_text()]]
 
 

@@ -51,7 +51,7 @@ func _ripen(crop: WorldObject) -> void:
 
 
 func _sleep_days(days: int) -> void:
-	_state.clock.advance(days * GameClock.MINUTES_PER_DAY)
+	_state.simulation.advance(days * GameClock.MINUTES_PER_DAY)
 
 
 func test_using_grass_tills_it_to_soil() -> void:

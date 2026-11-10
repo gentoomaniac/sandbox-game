@@ -20,12 +20,14 @@
       but at least 10 hours (collapsing at 22:00 wakes at 08:00, at 15:00 at 06:30), and
       wakes in the home bed. That day: half walking speed, energy only up to 50 %, health
       25. Speed effects don't stack; the slowest wins. The debuff lasts until the next
-      midnight; sleeping does not end it early.
+      midnight the player lives through (awake or asleep, a console `skip` is not that);
+      sleeping does not end it early.
     - **Staying up too late** (decided 2026-11-05): a player still awake at 01:00 passes
       out as well, with the same flow and debuff (the 10-hour minimum wakes them at 11:00);
       the message says they stayed up too late instead of running out of energy. Only time
       the player lives through counts: a console `skip` over 01:00 does not make them pass
-      out (like it costs no energy), and sleeping over it of course doesn't either.
+      out (like it costs no energy and ends no debuff: the player is a time traveller, and a
+      `skip` moves only the world), and sleeping over it of course doesn't either.
     - **How passing out looks** (decided 2026-11-05): the player stops, can't be
       controlled, sinks to the knees, tips over and lies asleep with rising "z"s (about
       1.5 s, the world keeps running), then the screen fades to black. A short message fades

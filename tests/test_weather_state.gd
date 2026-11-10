@@ -19,7 +19,7 @@ func test_the_weather_is_the_one_at_the_players_place_and_time() -> void:
 
 func test_the_weather_follows_the_clock() -> void:
 	var before := _state.current_weather().temperature
-	_state.clock.advance(5 * GameClock.MINUTES_PER_DAY + 400)
+	_state.simulation.advance(5 * GameClock.MINUTES_PER_DAY + 400)
 	assert_ne(_state.current_weather().temperature, before)
 
 

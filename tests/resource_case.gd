@@ -90,7 +90,7 @@ func _hit(tool_item: StringName, times: int) -> ToolUse.Use:
 
 func _sleep_days(days: int) -> void:
 	for _i in days:
-		_state.clock.advance(GameClock.MINUTES_PER_DAY)
+		_state.simulation.advance(GameClock.MINUTES_PER_DAY)
 
 
 ## Unloads the chunk of the tile and generates it again, as walking away and back does.

@@ -31,6 +31,8 @@ const DISMOUNT_REACH := 2
 
 var world: World
 var clock: GameClock
+## Moves the clock and what follows it (see Simulation); time only passes through it.
+var simulation: Simulation
 ## Where the sun is over the year; the weather follows it.
 var sun := Sun.new()
 ## Built from the world seed (see `new_game` and `from_dict`).
@@ -69,6 +71,7 @@ var _moving_seconds := 0.0
 ## the world from it passes the same clock on (see `new_game` and `from_dict`).
 func _init(game_clock := GameClock.new()) -> void:
 	clock = game_clock
+	simulation = Simulation.new(clock)
 	clock.new_day.connect(_on_new_day)
 
 
@@ -131,7 +134,7 @@ func bed_in_reach() -> WorldObject:
 ## health as far as the bed does (and a debuff still allows).
 func sleep_in(bed: WorldObject) -> void:
 	assert(bed.is_bed(), "Not a bed: %s" % bed.type)
-	clock.advance(clock.minutes_until(WAKE_UP_MINUTE))
+	_pass_time(clock.minutes_until(WAKE_UP_MINUTE))
 	is_up_too_late = false
 	_lie_in(bed)
 	player.home_map = current_map
@@ -332,7 +335,7 @@ func is_out_of_energy() -> bool:
 func pass_awake_time(minutes: int) -> void:
 	if minutes >= clock.minutes_until(LATE_NIGHT_MINUTE):
 		is_up_too_late = true
-	clock.advance(minutes)
+	_pass_time(minutes)
 
 
 ## The player passes out: they sleep until the next morning (WAKE_UP_MINUTE) but at least
@@ -340,7 +343,7 @@ func pass_awake_time(minutes: int) -> void:
 ## new day) and no items lost. Returns how many minutes they slept.
 func pass_out() -> int:
 	var minutes := maxi(clock.minutes_until(WAKE_UP_MINUTE), PASS_OUT_MINUTES)
-	clock.advance(minutes)
+	_pass_time(minutes)
 	is_up_too_late = false
 	go_to_home_bed()
 	player.is_debuffed = true
@@ -580,10 +583,18 @@ func _building_of_ref(ref: Dictionary) -> Building:
 	return null
 
 
+## The player lives through `minutes`, awake or asleep: a new day ends the debuff of the last
+## one. The console's `skip` does not come this way, it leaves the player alone.
+func _pass_time(minutes: int) -> void:
+	var day_before := clock.day
+	simulation.advance(minutes)
+	if clock.day != day_before:
+		player.is_debuffed = false
+
+
 func _on_new_day(_day: int) -> void:
 	# The clock has already counted the new day, so the night that just ended is the day before:
 	# `NightUpkeep.pass_night` works from the weather of `clock.day - 1`.
-	player.is_debuffed = false
 	# A stump or sapling doesn't grow into a tree under the player's feet.
 	var occupied: Array[Vector2i] = []
 	if not is_inside():

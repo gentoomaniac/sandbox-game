@@ -138,7 +138,7 @@ func test_rotting_goes_on_in_unloaded_chunks_and_through_a_save() -> void:
 	var restored := _through_save()
 	assert_eq(restored.world.object_at(_tile).type, WorldObjectTypes.STUMP)
 	assert_eq(restored.world.object_at(_tile).days_grown(), ROT_DAYS - 2)
-	restored.clock.advance(2 * GameClock.MINUTES_PER_DAY)
+	restored.simulation.advance(2 * GameClock.MINUTES_PER_DAY)
 	var left := restored.world.object_at(_tile)
 	assert_true(left == null or left.type == WorldObjectTypes.SAPLING)
 

@@ -13,7 +13,7 @@ func test_a_bone_given_to_the_dog_in_front_is_used_up_and_the_dog_follows() -> v
 	var dog := _put_dog_on_target()
 	_state.player.inventory.add(ItemTypes.BONE, 2)
 	_hold(ItemTypes.BONE)
-	_state.clock.advance(100)
+	_state.simulation.advance(100)
 	var now := _state.clock.total_minutes()
 
 	assert_true(_state.can_use_held_item())

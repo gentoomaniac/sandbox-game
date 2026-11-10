@@ -61,9 +61,9 @@ func test_passing_out_keeps_the_items() -> void:
 func test_the_debuff_ends_at_the_next_new_day() -> void:
 	_state.clock.set_time(20, 0)
 	_state.pass_out()
-	_state.clock.advance(GameClock.MINUTES_PER_DAY - _state.clock.minute_of_day - 1)
+	_state.pass_awake_time(GameClock.MINUTES_PER_DAY - _state.clock.minute_of_day - 1)
 	assert_true(_state.player.is_debuffed, "still the same day")
-	_state.clock.advance(1)
+	_state.pass_awake_time(1)
 	assert_false(_state.player.is_debuffed)
 	assert_eq(_state.energy_cap(), PlayerState.MAX_ENERGY)
 
@@ -73,9 +73,9 @@ func test_passing_out_after_midnight_keeps_the_debuff_until_the_next_midnight() 
 	_state.pass_out()
 	assert_eq(_state.clock.time_text(), "11:00")
 	assert_true(_state.player.is_debuffed)
-	_state.clock.advance(_state.clock.minutes_until(0) - 1)
+	_state.pass_awake_time(_state.clock.minutes_until(0) - 1)
 	assert_true(_state.player.is_debuffed, "23:59")
-	_state.clock.advance(1)
+	_state.pass_awake_time(1)
 	assert_false(_state.player.is_debuffed)
 
 

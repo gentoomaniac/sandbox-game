@@ -31,7 +31,7 @@ var bed_lying_in: WorldObject
 var horse: FarmAnimal
 
 ## Both run from 0 to MAX_*. A player who passed out is `is_debuffed` until the next new day
-## (see GameState).
+## the player lives through (see GameState).
 var energy := MAX_ENERGY
 var health := MAX_HEALTH
 var is_debuffed := false
