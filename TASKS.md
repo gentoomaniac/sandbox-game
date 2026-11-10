@@ -279,7 +279,14 @@ Settings (and off), muted in test runs. Rules in data/music.cfg; tests; README.
   versions that switch with the graphics setting: the chiptune one with the classic art, a
   fuller one (more channels, softer instruments, still in the folk style) with the 32 px art,
   following the setting when it changes (a crossfade on the bar). The test piece's tempo was too
-  fast for the game: calm tempos, around 100-110 BPM. Later: stems
+  fast for the game: calm tempos, around 100-110 BPM.
+- The user, 2026-11-10, after hearing the 106 BPM test reel: "it still sounds like festive music
+  for special events. The default music should probably be more of an ambient style music with a
+  naval flair. Take inspiration from the German band Santiano." So the default (everyday) pieces
+  are calm and ambient: slow sustained pads and drones, sparse melody, the sea and the coast in
+  them (shanty-like modal tunes, a slow sway like a rolling ship, a low bass like a capstan
+  song), our own tunes only, no melody of the band's or anyone else's songs. Lively, festive
+  pieces like the test reel are kept for special events (festivals, a market day). Later: stems
 (AudioStreamSynchronized), more pieces, the season and weather choices.
 
 ## Later (not part of the prototype)
