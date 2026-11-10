@@ -235,6 +235,31 @@ drier tilled tile meets it in a hard straight line.
 - Performance: redrawing after an hour stays within REFRESH_BUDGET_USEC.
 - Tests for which edges fade; before/after crops at 1x and 4x and a README picture.
 
+## 168. The language model's trouble shows as a notice in the game
+
+- [ ] Done
+
+The user, 2026-11-10, after a run with Gemini printed "WARNING: Language model at
+https://generativelanguage.googleapis.com/v1beta/openai/chat/completions: no answer (result 0,
+HTTP 503) ... This model is currently experiencing high demand ...": "We need to bring that into
+the game somehow as a notification like the "saving ..." etc messages".
+- Today ModelChat (game/scenes/model_chat.gd `_send`) only calls `push_warning` (can't send, not
+  reachable, no answer); the player sees nothing and the villager quietly speaks a scripted line.
+- Show it in NotificationHud (game/scenes/notification_hud.gd, `post` with a key, as "Saving..."
+  does): a short line the player understands, e.g. "Villagers' language model is busy (HTTP 503);
+  they speak their own lines for now", "... not reachable", "... key refused (HTTP 401/403)",
+  "... no answer (timeout)". Use the API's message (`error.message` of the JSON body) when
+  there is one, cut short; the full text stays in the log warning.
+- One key for the model's notices, so a new one replaces the old and a burst of failed lines
+  shows once, not once per villager line; not shown again for the same trouble within a few
+  minutes (in data/, e.g. npc_talk.cfg), and a quiet "Villagers' language model answers again"
+  once it works after a failure. The default test endpoint that is often not running stays
+  silent as today (said once in the log), unless the player has set an endpoint themselves.
+- ModelChat stays free of HUD code: it sends a signal (or reports through the session) that Main
+  wires to the notifications; the settings page's own notes stay as they are.
+- Tests with a fake endpoint (503 with an API message, 401, timeout, success after failure,
+  the throttling and the silent default endpoint); a README line.
+
 ## Later (not part of the prototype)
 
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
