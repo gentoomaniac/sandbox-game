@@ -262,6 +262,11 @@ This task answers whether the plan works, with numbers, before the music is buil
 
 - [ ] Done
 
+Known limitation from 169: MusicCrossfade counts a fade's progress across loop wraps from the time
+between audio mixes, which is when they happened, not how much they mixed; an audio thread held up
+and then mixing one block looks like a long stretch of play, so a fade into a short loop may end
+early by the hold-up (docs/music-viability.md, "Switching on the beat").
+
 To be rewritten from task 169's report with the user. The plan so far: render sections in the
 background with a bounded cache (user:// keyed by the module hash, renderer version and mix
 settings), never wait for a late render during play (keep looping), sections with explicit

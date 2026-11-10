@@ -6,7 +6,8 @@ extends SceneTree
 ## minute running one after the other on a worker thread, and with a timed save in the middle of
 ## them, each with the mean and longest frame and how many frames went over 33 and over 16.7 ms
 ## (listed with what was done the frame before); and what the main thread spends on each finished
-## render.
+## render: taking the stream the worker made and handing it to a MusicCrossfade, which plays it or
+## crossfades to it on the next beat (muted), and the crossfade's own work in a frame.
 ## `make bench-music` runs it on a copy of the bench save:
 ## godot --headless --path . -s tools/bench/music.gd --
 ##     --save-path=<save> --settings-path=<settings> --mute
@@ -29,13 +30,16 @@ const GAME_STEREO := true
 var main: Node
 var module: TrackerModule
 var renderer: ModuleRenderer
-var player: AudioStreamPlayer
-var interactive := AudioStreamInteractive.new()
+var crossfade: MusicCrossfade
 var render_started := 0
 var render_ms: Array[float] = []
-## Per render taken in the game, the main thread's microseconds to take it, to set it as a clip, to
-## copy it into a plain AudioStreamWAV, and to set that on a player and play it.
-var attach_usec: Array[PackedFloat64Array] = []
+## Per render taken in the game, the main thread's microseconds to take it and to hand it to the
+## crossfade.
+var handoff_usec: Array[Vector2] = []
+## The longest the crossfade worked in a frame (starting a stream on the beat, fading), in
+## microseconds, and how late after their beats the crossfades began, in ms.
+var longest_crossfade_usec := 0
+var lateness_ms: Array[float] = []
 var long_frames: Array[String] = []
 ## What `_keep_rendering` did in the frame before, which the next frame's time includes.
 var last_frame_did := ""
@@ -53,13 +57,13 @@ var save_succeeded := false
 
 func _initialize() -> void:
 	module = TrackerModule.from_bytes(FileAccess.get_file_as_bytes(MODULE))
-	interactive.clip_count = 1
 	_print_render_times()
 	main = load("res://game/scenes/main.tscn").instantiate()
 	root.add_child(main)
-	player = AudioStreamPlayer.new()
-	player.volume_db = -80.0
-	root.add_child(player)
+	crossfade = MusicCrossfade.new()
+	# Its frame work is timed here, in _process.
+	crossfade.set_process(false)
+	root.add_child(crossfade)
 	renderer = ModuleRenderer.new(module, GAME_RATE, GAME_STEREO)
 	last = Time.get_ticks_usec()
 
@@ -73,7 +77,7 @@ func _print_render_times() -> void:
 		for rate in [22050, 44100]:
 			for stereo in [false, true]:
 				var best := INF
-				var stream: MusicStreamWAV
+				var stream: AudioStreamWAV
 				for run in RUNS:
 					started = Time.get_ticks_usec()
 					stream = ModuleRenderer.new(module, rate, stereo).render([Vector2i(0, rows)])
@@ -141,37 +145,32 @@ func _process(_delta: float) -> bool:
 	return false
 
 
-## While rendering or saving, a render runs on a worker all the time: a finished one is taken, set
-## as a clip of an AudioStreamInteractive, copied into a plain AudioStreamWAV and that played
-## (muted), and the next started. Returns what it did, for the list of long frames. The player
-## plays the copy because a played MusicStreamWAV (any script subclass of AudioStreamWAV) crashes
-## the quit with Main running (see docs/music-viability.md).
+## While rendering or saving, a render runs on a worker all the time: a finished one is taken and
+## handed to the crossfade (played at first, then crossfaded to on the next beat over a beat), and
+## the next started. Also runs the crossfade's frame. Returns what it did, for the list of long
+## frames.
 func _keep_rendering() -> String:
-	if scenario == Scenario.STANDING:
-		return ""
 	var did := ""
+	var was_waiting := crossfade._next != null
+	var started := Time.get_ticks_usec()
+	crossfade._process(0.0)
+	longest_crossfade_usec = maxi(longest_crossfade_usec, Time.get_ticks_usec() - started)
+	if was_waiting and crossfade._next == null:
+		lateness_ms.append(crossfade.lateness * 1000.0)
+		did = "a crossfade began"
+	if scenario == Scenario.STANDING:
+		return did
 	if renderer.is_done():
-		var started := Time.get_ticks_usec()
+		started = Time.get_ticks_usec()
 		var stream := renderer.take()
 		var taken := Time.get_ticks_usec()
-		interactive.set_clip_stream(0, stream)
-		var clipped := Time.get_ticks_usec()
-		var plain := AudioStreamWAV.new()
-		plain.format = AudioStreamWAV.FORMAT_16_BITS
-		plain.mix_rate = stream.mix_rate
-		plain.stereo = stream.stereo
-		plain.data = stream.data
-		var copied := Time.get_ticks_usec()
-		player.stream = plain
-		player.play()
-		var playing := Time.get_ticks_usec()
-		attach_usec.append(
-			PackedFloat64Array(
-				[taken - started, clipped - taken, copied - clipped, playing - copied]
-			)
-		)
+		if crossfade._players[crossfade._current].playing:
+			crossfade.crossfade(stream, renderer.beat_seconds, renderer.beat_seconds)
+		else:
+			crossfade.play(stream, renderer.beat_seconds)
+		handoff_usec.append(Vector2(taken - started, Time.get_ticks_usec() - taken))
 		render_ms.append((started - render_started) / 1000.0)
-		did = "a render taken and played"
+		did += " a render taken and handed over"
 	if not renderer.is_rendering():
 		render_started = Time.get_ticks_usec()
 		renderer.start([Vector2i(0, MINUTE_ROWS)])
@@ -208,10 +207,9 @@ func _end_scenario() -> void:
 
 
 func _report_renders() -> void:
-	var longest := PackedFloat64Array([0, 0, 0, 0])
-	for usec in attach_usec:
-		for step in usec.size():
-			longest[step] = maxf(longest[step], usec[step] / 1000.0)
+	var longest := Vector2.ZERO
+	for usec in handoff_usec:
+		longest = longest.max(usec)
 	print(
 		(
 			"in the game: %d renders of a minute at %d Hz stereo on a worker, ms: %s"
@@ -220,10 +218,14 @@ func _report_renders() -> void:
 	)
 	print(
 		(
-			"main thread per render, longest ms: take %.3f, as a clip %.3f, copy %.3f, play %.3f"
-			% Array(longest)
+			(
+				"main thread per render, longest ms: take %.3f, hand to the crossfade %.3f;"
+				+ " the crossfade's frame work, longest %.3f ms"
+			)
+			% [longest.x / 1000.0, longest.y / 1000.0, longest_crossfade_usec / 1000.0]
 		)
 	)
+	print("crossfades began after their beats by ms: ", lateness_ms)
 	for line in long_frames:
 		print(line)
 	if renderer.is_rendering():

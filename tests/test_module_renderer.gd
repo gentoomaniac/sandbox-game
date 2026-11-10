@@ -21,7 +21,7 @@ func before_all() -> void:
 	_module = TrackerModule.from_bytes(FileAccess.get_file_as_bytes(MODULE))
 
 
-func _render(parts: Array[Vector2i], stereo := false) -> MusicStreamWAV:
+func _render(parts: Array[Vector2i], stereo := false) -> AudioStreamWAV:
 	return ModuleRenderer.new(_module, RATE, stereo).render(parts)
 
 
@@ -43,12 +43,11 @@ func test_refuses_bytes_that_are_no_module() -> void:
 
 
 func test_renders_a_section_to_its_rows_and_tells_its_beat() -> void:
-	var stream := _render([LOOP])
+	var renderer := ModuleRenderer.new(_module, RATE)
+	var stream := renderer.render([LOOP])
 	assert_eq(stream.data.size(), LOOP_ROWS * ROW_FRAMES * 2, "16 bit mono, whole ticks")
 	assert_eq(stream.mix_rate, RATE)
-	assert_almost_eq(stream.bpm, 60.0 * RATE / (4 * ROW_FRAMES), 0.001, "4 rows a beat")
-	assert_eq(stream.beat_count, LOOP_ROWS / 4)
-	assert_eq(stream.bar_beats, 4)
+	assert_almost_eq(renderer.beat_seconds, 4 * ROW_FRAMES / float(RATE), 0.000001, "4 rows")
 	assert_gt(_peak(stream.data), 0.1, "it is not silent")
 
 

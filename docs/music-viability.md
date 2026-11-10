@@ -1,43 +1,49 @@
 # Music: can the game play generated modules? (task 169)
 
 Measured 2026-11-10 on an Intel Core Ultra 9 185H (22 threads), Linux 6.18, Godot 4.7.2 (the
-Gentoo build, `4.7.2.stable.gentoo`), headless and muted. Nothing here plays in the game yet.
-
-**Which piece the numbers are of:** every number below was measured with the test piece's first
-version, at 150 beats a minute (speed 5, tempo 125: 100 ms a row, the 8-bar loop 12.8 s, a minute
-600 rows). The piece is now at 106 beats a minute (the user found 150 too fast), so `make
-bench-music` and `make music-check` print other lengths and times than these; the next report
-measures again.
+Gentoo build, `4.7.2.stable.gentoo`), headless and muted, with Godot's Dummy audio driver (it
+mixes in real time, in blocks of about 93 ms, and sends nothing to a device). Nothing here plays in
+the game yet.
 
 The question: background music in the style of 1980s home-computer games, generated as small
 tracker modules from text and rendered by the game on a background thread. Is that fast, cheap and
 exact enough, and can Godot switch and crossfade the renders on the beat?
 
-**Answer: yes, with one open problem.** A GDScript renderer renders a minute of 44.1 kHz stereo in
-about 1.1 s on a worker thread (an 8-bar loop in 0.2 s), costs the main thread well under 0.1 ms
-per render, leaves the frame times as they are (also during a save), and matches an independent
-player. AudioStreamInteractive switches the renders on the next beat or bar once the stream tells
-its BPM, which takes a script subclass of AudioStreamWAV; but such a stream, once played with Main
-running, crashes the game when it quits. The recommendation (at the end) avoids that subclass.
+**Answer: yes, on the Dummy driver; the beat timing on a real audio driver is still to be
+measured.** A GDScript renderer renders a minute of 44.1 kHz stereo in about 1 s on a worker thread
+(the 8-bar loop of the test piece, 18 s, in 0.3 s) and matches an independent player. The stream is
+made whole on the worker; the main thread spends under 0.2 ms per render to take it and hand it to
+a two-player crossfade, which starts the new stream on the next beat with its beats on the old
+ones to the frame. The frames stay as they are, also while a save is written, and the game quits
+cleanly. Two things don't work: making a copy of a rendered stream on the main thread (12 to 21 ms a
+minute, over the frame budget), and AudioStreamInteractive with rendered streams (it needs a script
+subclass of AudioStreamWAV to know the beat, and such a stream, once played, crashes the quit).
 
 ## What was built
 
 | Part | Where | What it does |
 |---|---|---|
 | Generator | `tools/music/generate.py`, run by `make art` | Plain text (`tools/music/pieces/*.txt`: speed, tempo, order, sections of four voices, tokens `NOTE:ROWS[:EFFECT]`) to a 4-channel ProTracker module (`M.K.`), `art/generated/music/<name>.mod`, packed into `assets/music/`. Deterministic. Single-cycle instruments made in code: a 32-sample sawtooth (lead), a 25 % pulse (arpeggio chords), a 64-sample triangle (bass), one-shot decaying noise (drums). |
-| Effect set | the generator's docstring | 0xy arpeggio, 1xx/2xx portamento, 3xx tone portamento, 4xy vibrato, Axy volume slide, Cxx volume, ECx note cut; Fxx speed/tempo and Dxx pattern break are written by the generator only (every section starts with its speed and tempo, a section shorter than its pattern ends with D00). Anything else is refused, and so is effect memory (300, 4x0), so a section sounds the same whatever played before it. |
-| Test piece | `tools/music/pieces/test_reel.txt` | Our own reel in A dorian, now at 106 beats a minute (speed 6, tempo 106: about 141.5 ms a row, 16 rows a bar; measured below at its first 150): an 8-bar loop and a 1-bar fill that leads back into it. Sawtooth lead with vibrato on the long notes, arpeggio chords on the off-beats, a walking triangle bass, noise kick, snare and hats; the fill has a pulse sweep up (1xx), toms falling (2xx), a slide (3xx) and a fade (Axy). |
-| Independent check | `tools/music/check.py` with `modplug.py`, run by `make art` | Plays each module with **libmodplug** (the system's ModPlug library, through ctypes) and checks it is 4 channels with its patterns, and plays every row of the piece in its order, each for `speed` ticks of 2.5 / `tempo` s, the fill broken off after its 16 rows, and then stops. |
-| Renderer | `game/audio/tracker_module.gd`, `game/audio/module_renderer.gd` | Reads the module; renders parts of the order list (an order and a row count, from a defined entry state: speed 6, tempo 125, all channels silent) into a 16-bit mono or stereo `MusicStreamWAV`, at once or on WorkerThreadPool. Amiga style: no interpolation, no volume ramps; channels 1+4 left, 2+3 right with a quarter on the other side. Apart from AudioService; nothing plays it. |
-| Beat for AudioStreamInteractive | `game/audio/music_stream_wav.gd` | `MusicStreamWAV extends AudioStreamWAV` and overrides `_get_bpm`, `_get_beat_count`, `_get_bar_beats`. |
-| Tests | `tests/test_module_renderer.gd`, `tests/test_music_stream_wav.gd`, `tools/music/test_generate.py` | See the checks below. |
+| Effect set | the generator's docstring | 0xy arpeggio, 1xx/2xx portamento, 3xx tone portamento, 4xy vibrato, Axy volume slide, Cxx volume, ECx note cut; Fxx speed/tempo and Dxx pattern break are written by the generator only (every section starts with its speed and tempo, a section shorter than its pattern ends with D00). Anything else is refused. |
+| Sections stand alone | the generator | A section sounds the same whatever played before it: no effect memory (300, 4x0), and every voice starts a section by striking a note (not with 3xx) or with `^`; before its first note it may only rest or cut. |
+| Test piece | `tools/music/pieces/test_reel.txt` | Our own reel in A dorian at **106 beats a minute** (speed 6, tempo 106: a row of 141.5 ms, 16 rows a bar; the user found the first 150 too fast for the game): an 8-bar loop (18.1 s) and a 1-bar fill (2.3 s) that leads back into it. Sawtooth lead with vibrato on the long notes, arpeggio chords on the off-beats, a walking triangle bass, noise kick, snare and hats; the fill has a pulse sweep up (1xx), toms falling (2xx), a slide (3xx) and a fade (Axy). A tick at tempo 106 is no whole number of samples, so the piece also tries how ticks are cut. |
+| Independent check | `tools/music/check.py` with `modplug.py`, run by `make art` | Plays each module with **libmodplug** (the system's ModPlug library, through ctypes) and checks it is 4 channels with its patterns, and plays every row of the piece in its order, each for `speed` ticks, the fill broken off after its 16 rows, and then stops. |
+| Renderer | `game/audio/tracker_module.gd`, `game/audio/module_renderer.gd` | Reads the module, refusing what it can't play (another format, a cut-off file, an empty order list, finetunes, loops past a sample's end, effects outside the set or with memory, breaks past row 63). Renders parts of the order list (an order and a row count, from a defined entry state: speed 6, tempo 125, all channels silent) into a plain 16-bit mono or stereo AudioStreamWAV, at once or whole on a WorkerThreadPool thread, and tells its beat (`beat_seconds`). Arpeggios step through ProTracker's period table as ProTracker does. Amiga style: no interpolation, no volume ramps; channels 1+4 left, 2+3 right with a quarter on the other side. Apart from AudioService. |
+| Crossfade on the beat | `game/audio/music_crossfade.gd` | Two AudioStreamPlayers; see "Switching on the beat" below. |
+| AudioStreamInteractive trial | `game/audio/music_stream_wav.gd` | `MusicStreamWAV extends AudioStreamWAV` and overrides `_get_bpm`, `_get_beat_count`, `_get_bar_beats`. Not used by the renderer (the crash, below). |
+| Tests | `tests/test_module_renderer.gd`, `test_module_effects.gd`, `test_music_crossfade.gd`, `test_music_stream_wav.gd`, `tools/music/test_generate.py` | See the checks below. |
 | Measurements | `make bench-music` (`tools/bench/music.gd`), `make music-check` (`tools/music/render.gd` + `check.py --against`) | The numbers below. |
 
 No other player is installed here: no `openmpt123`/libopenmpt, MilkyTracker, xmp or mikmod, and this
 ffmpeg is built without libopenmpt and libmodplug. libmodplug (`/usr/lib64/libmodplug.so`) is, and
-it is independent of our code, so it is the check. libopenmpt descends from the same ModPlug code
-and plays MOD files the same way in what matters here. Whether OpenMPT or MilkyTracker open the file
-was not tried on this machine: the file is a plain `M.K.` module, which both read.
+it is independent of our code, so it is the check. libopenmpt descends from the same ModPlug code.
+Whether OpenMPT or MilkyTracker open the file was not tried on this machine: it is a plain `M.K.`
+module, which both read.
+
+**Timing convention:** a tick lasts `mix rate x 2.5 / tempo` samples cut to a whole number, as
+libmodplug plays it (checked: at tempo 106 libmodplug's rows start every 6 x 1040 samples at 44.1
+kHz, not 6 x 1040.09). The renderer and `check.py` both count so. At tempo 106 the ticks are
+0.009 % short of the exact 2.5 / 106 s, so the piece runs at 106.01 beats a minute.
 
 **Export:** Godot doesn't import `.mod` files, so they are read as bytes
 (`FileAccess.get_file_as_bytes`). There is no `export_presets.cfg` yet; the preset, once made, needs
@@ -46,57 +52,59 @@ music (also in tools/README.md).
 
 ## Render times
 
-`make bench-music`, best of 3 runs on the main thread, the test piece (two runs of the bench,
-both shown):
+`make bench-music`, best of 3 renders on the main thread, two runs of the bench:
 
 | Rendered | Rate | Channels | Time | Faster than real time | Stream |
 |---|---|---|---|---|---|
-| 8-bar loop, 12.8 s | 22.05 kHz | mono | 64 / 69 ms | 190-200x | 0.54 MB |
-| 8-bar loop, 12.8 s | 22.05 kHz | stereo | 106 / 113 ms | 115-120x | 1.08 MB |
-| 8-bar loop, 12.8 s | 44.1 kHz | mono | 132 / 136 ms | 95x | 1.08 MB |
-| 8-bar loop, 12.8 s | 44.1 kHz | stereo | 205 / 241 ms | 55-60x | 2.15 MB |
-| 1 minute (600 rows) | 22.05 kHz | mono | 307 / 332 ms | 180-195x | 2.52 MB |
-| 1 minute | 22.05 kHz | stereo | 498 / 549 ms | 110-120x | 5.05 MB |
-| 1 minute | 44.1 kHz | mono | 599 / 658 ms | 90-100x | 5.05 MB |
-| 1 minute | 44.1 kHz | stereo | 1083 / 1079 ms | 55x | 10.09 MB |
+| 8-bar loop, 18.1 s | 22.05 kHz | mono | 87 / 91 ms | 200-210x | 0.76 MB |
+| 8-bar loop, 18.1 s | 22.05 kHz | stereo | 144 / 145 ms | 125x | 1.52 MB |
+| 8-bar loop, 18.1 s | 44.1 kHz | mono | 170 / 170 ms | 105x | 1.52 MB |
+| 8-bar loop, 18.1 s | 44.1 kHz | stereo | 289 / 278 ms | 63-65x | 3.05 MB |
+| 1 minute (424 rows) | 22.05 kHz | mono | 296 / 292 ms | 205x | 2.52 MB |
+| 1 minute | 22.05 kHz | stereo | 479 / 467 ms | 125x | 5.05 MB |
+| 1 minute | 44.1 kHz | mono | 575 / 612 ms | 100x | 5.05 MB |
+| 1 minute | 44.1 kHz | stereo | 955 / 938 ms | 63x | 10.09 MB |
 
-Reading the module: 0.25 ms. In the game (Main running on the bench save) a minute at 44.1 kHz
-stereo took 1.0 to 1.2 s on a worker thread. The time goes into the inner loop over the samples
-(four channels, one add each per output sample; stereo two), then the conversion to 16 bit.
+Reading the module: 0.4 ms. In the game (Main running on the bench save) a minute at 44.1 kHz stereo
+took 0.96 to 1.1 s on a worker thread. The time goes into the inner loop over the samples (four
+channels, one add each per output sample; stereo two), then the conversion to 16 bit.
 
-For comparison, native code: libmodplug (C++, linear interpolation, through ctypes) plays the same
-module about 5,000 to 12,000 times faster than real time: a minute in roughly 5 to 12 ms. A native
-renderer would be about 100 times faster than the GDScript one.
+For comparison, native code: libmodplug (C++, linear interpolation, through ctypes) plays the
+module roughly 5,000 to 12,000 times faster than real time, a minute in about 5 to 12 ms (measured
+at the first tempo, 150 beats a minute): about 100 times faster than the GDScript renderer.
 
 ## Memory
 
 The stream is 16-bit PCM: **2.5 MB a minute** at 22.05 kHz mono, 5 MB at 44.1 kHz mono or 22.05
 kHz stereo, **10 MB a minute at 44.1 kHz stereo**. While rendering, the float mix buffer (4 bytes a
-sample) and the 16-bit data exist together: about 3 times the stream at the peak, briefly. The
-music is short loops, so what is kept is small: the 8-bar loop at 44.1 kHz stereo is 2.2 MB, its
-fill 0.3 MB.
+sample) and the 16-bit data exist together: about 3 times the stream at the peak, briefly, on the
+worker. The music is short loops, so what is kept is small: the 8-bar loop at 44.1 kHz stereo is
+3.05 MB, its fill 0.4 MB.
 
 ## The main thread and the frame budget
 
 Task 158's budget is 8 ms of spread-out work a frame, so that a frame stays under 33 ms. From
 `make bench-music` (Main on the bench save, standing; 300 frames each; renders of a minute at
-44.1 kHz stereo one after the other on a worker; a timed save started in the middle of them):
+44.1 kHz stereo one after the other on a worker, each handed to the crossfade; in the third a timed
+save started at frame 10, which was written, ending in frame 37 and 31 of the two runs):
 
 | Scenario | Mean frame | Longest | Over 16.7 ms | Over 33 ms |
 |---|---|---|---|---|
-| Standing, no render (runs 1, 2) | 7.01 / 7.02 ms | 14.5 / 20.2 ms | 0 / 1 | 0 / 0 |
-| Rendering on a worker | 6.92 / 6.89 ms | 17.7 / 9.7 ms | 1 / 0 | 0 / 0 |
-| Rendering, and a timed save | 6.90 / 6.94 ms | 14.2 / 24.6 ms | 0 / 1 | 0 / 0 |
+| Standing, no render (runs 1, 2) | 7.01 / 7.02 ms | 18.8 / 23.8 ms | 1 / 1 | 0 / 0 |
+| Rendering on a worker, crossfading | 6.90 / 6.90 ms | 8.0 / 9.9 ms | 0 / 0 | 0 / 0 |
+| The same and a timed save | 6.90 / 6.91 ms | 9.7 / 17.3 ms | 0 / 1 | 0 / 0 |
 
-The rendering changes nothing measurable: the odd frame over 16.7 ms happens standing without music
-as well (`make bench` shows such frames too). A third run, while the machine was busy with other
-work, had spikes up to 370 ms in all three scenarios and a render took 4.3 s; it is left out.
+On these runs the rendering changed nothing measurable; the odd frame over 16.7 ms happens standing
+without music as well (`make bench` shows such frames too). An earlier run while the machine was
+busy with other work had spikes up to 370 ms in all scenarios, music or not; it is left out. That is
+two runs of 300 frames each on one machine, not a guarantee for slower ones.
 
-What the main thread spends per finished render (the longest of the runs): **take it from the
-worker 0.01 ms, set it as a clip of an AudioStreamInteractive 0.01 ms, set it on a player and play
-0.05 ms.** Nothing is copied: the stream is made on the worker. Copying the data into another
-AudioStreamWAV (`stream.data = other.data`) is a real copy: **12 to 21 ms** for a minute at 44.1
-kHz stereo, over the 8 ms budget, so any such copy belongs on the worker too.
+What the main thread spends per finished render, the longest of the runs: **taking the stream from
+the worker 0.03 ms, handing it to the crossfade 0.14 ms; the crossfade's own work in a frame
+(starting the new stream on the beat, setting the volumes) at most 0.18 ms, 0.4 ms in a later run.** No data is copied on
+the main thread: the worker makes the AudioStreamWAV whole. A copy would not fit: assigning a
+minute's data to another AudioStreamWAV (`stream.data = other.data`) took **12 to 21 ms** in the
+first version of the bench.
 
 ## Viability checks
 
@@ -104,78 +112,118 @@ kHz stereo, over the 8 ms budget, so any such copy belongs on the worker too.
   rendered twice in a row is, in its second half, the loop rendered once, sample for sample. So a
   stream of the loop that wraps from its last sample to its first plays exactly what the music
   would; there is no click at the wrap beyond what the music itself has. This holds because every
-  voice strikes a note or is cut on the loop's first row and nothing depends on effect memory (the
-  generator enforces the latter).
+  voice starts the section with a struck note or a cut and nothing depends on effect memory, which
+  the generator enforces.
 - **Fill, then the loop on the bar** (GUT, `test_the_fill_breaks_after_a_bar_and_the_loop_resumes_on_the_bar`):
   playing the order list from the start (loop, fill, and round again) gives the loop, then the fill
   sample for sample as rendered alone, exactly one bar long (its D00 breaks after row 16), then the
-  loop again from its start, sample for sample. Rows are a whole number of samples at both rates
-  (each tick is cut to a whole number of samples, as libmodplug does), so bars land on exact
-  samples.
-- **AudioStreamInteractive on the beat** (GUT, `tests/test_music_stream_wav.gd`, mixed offline with
-  `AudioStreamPlayback.mix_audio`): with two `MusicStreamWAV` clips at 150 BPM, a switch asked for
-  at 0.1 s and set to "next beat" starts its crossfade at 0.4 s and ends it at 0.8 s (a beat's
-  fade); set to "next bar" it starts at 1.6 s. A plain AudioStreamWAV has no BPM (its `get_bpm` is 0)
-  and switches at once, whatever the transition says (AudioStreamPlaylist takes its BPM from its
-  streams too; not tried). So a script subclass overriding `_get_bpm`, `_get_beat_count` and
-  `_get_bar_beats` is needed, and enough; no engine change.
-- **The crash:** a played script subclass of AudioStreamWAV (`MusicStreamWAV`, and as well an empty
-  `extends AudioStreamWAV`), played by an AudioStreamPlayer directly or inside an
-  AudioStreamInteractive, makes Godot abort when it quits while Main is in the tree (SIGSEGV in
-  `pthread_mutex_lock` during shutdown; exit status 134). The same scene with a plain
-  AudioStreamWAV quits cleanly, and so does a scene without Main, or one where the player was
-  stopped and its stream cleared some frames before the quit (but not in the benchmark, where it
-  crashed even then). Reproduced with a headless script that adds Main and a player, plays a
-  rendered MusicStreamWAV and quits 40 frames later. The cause is not found; it looks like an engine
-  problem with script-backed streams at shutdown. That is why `make bench-music` plays a plain copy.
+  loop again from its start, sample for sample. Ticks are whole numbers of samples (the convention
+  above), so bars land on exact samples.
+- **The effects one by one** (GUT, `tests/test_module_effects.gd`): each effect's periods and volumes
+  tick by tick, an arpeggio after a slide (from 852 it plays E-1 678 and G#1 538, as ProTracker,
+  not 716 and 568 as a ratio would), speed, tempo, a tempo whose tick is no whole number of samples,
+  a pattern break to a row of the next pattern, each channel's stereo side, and malformed files.
 - **The render matches an independent player** (`make music-check`, the order list once through,
   mono 44.1 kHz, against libmodplug's play):
 
   | Measure | Result | Tolerance |
   |---|---|---|
-  | Length | 635,040 samples = 144 rows x 100 ms exactly; libmodplug's rows run at the same times (`check.py`) | exact |
+  | Length | 898,560 samples = 144 rows x 6 ticks x 1040; libmodplug's rows run at the same times (`check.py`) | exact |
   | Offset between the two | 1 sample | at most 2 |
-  | Loudness tick by tick (20 ms), correlation | 0.917 | at least 0.9 |
-  | Spectrum row by row (100 ms), cosine similarity | min 0.968, median 0.996 | at least 0.95 in every row |
+  | Loudness tick by tick (23.6 ms), correlation | 0.936 | at least 0.9 |
+  | Spectrum row by row (141.5 ms), cosine similarity | min 0.977, median 0.996 | at least 0.95 in every row; rows silent in both count as alike |
   | Strongest frequency row by row | the same (within 50 cents) in 100 % of the 144 rows | 95 % |
 
   The differences are what libmodplug adds and the renderer leaves out: interpolation between
   samples and volume ramps at note starts. With the arpeggio switched off in the renderer the check
-  fails (correlation 0.79, a row at similarity 0.945), so it does see a missing effect.
+  fails (loudness correlation 0.815), so it does see a missing effect.
+
+## Switching on the beat
+
+**Two players (`MusicCrossfade`), what the recommendation uses.** Each frame it reads how far the
+playing player has been mixed. On the first frame past the next beat it starts the new stream on the
+other player from as far into it as the old one is past the beat, holding the audio thread
+(`AudioServer.lock()`) between reading and starting, so that no mix falls in between; then it fades
+the new one in and the old one out over the fade, counting the new stream's play on across its
+loop's wraps (so a fade may be longer than the loop, and a stalled frame or a loop shorter than a
+mix block doesn't hold it back). A crossfade asked for during a fade waits
+until the fade is over (the newest request only), so no gain jumps. A player's position runs 128
+frames ahead of
+what it has mixed (Godot's resampling reads the stream ahead in blocks of 128); without taking that
+off, the new beats fell 127 to 128 frames early. Measured:
+
+- **Beat grids** (GUT, `tests/test_music_crossfade.gd`, the bus captured with AudioEffectCapture,
+  two click tracks of the same beat): the new stream's clicks fall on the old stream's beats within
+  one frame (the start position is given in seconds and may round to the frame beside), also when
+  the beat is a loop's wrap. Five runs in a row passed. This holds for streams at the mix rate
+  (44.1 kHz here); at another rate the read-ahead is 128 frames of the stream but not at a fixed
+  phase, so the grids may be up to 128 of its frames apart (up to 5.8 ms at 22.05 kHz; not
+  measured).
+- **Fades in a row and long fades** (GUT): a crossfade asked for halfway through a fade waits for it
+  and then runs, each player's gain never moving by more than a mix block's share of the fade from
+  one frame to the next, and it ends on the last stream asked for with the other player stopped.
+  A fade's progress is how far the new stream has played: the positions to the sample, its loop's
+  whole wraps from the time between the mixes (`MusicCrossfade.played_seconds`, tested on its own
+  with no wrap, one, several in a loop shorter than a mix block, and a stalled frame). In real time
+  a 2 s fade into a 1.6 s loop ends, and takes no less than its length less a block and a frame.
+- **Known limit**: the time between mixes is when they happened, not how much they mixed. If the
+  audio thread itself is held up (say 400 ms) and then mixes one block, that looks like 400 ms of
+  play, and a fade into a short loop may end early by about that much. Godot exposes no count of
+  mixed frames, so this is left to task 170 (noted in TASKS.md).
+- **Lateness** (`lateness`): how long after the beat the new stream was scheduled, up to a frame and
+  a mix block; the new stream's first moments are skipped. With the Dummy driver's 93 ms blocks it
+  was 58 to 75 ms (three crossfades in `make bench-music`). This is scheduling, not when the fade is
+  heard: the new stream starts at gain 0, and the crossfade raises the gain from its next frame on,
+  following how far the new stream has been mixed, so the fade is heard from about a further frame
+  and block on and reaches full level a fade's length after it was scheduled. The audible onset was
+  not measured. A real driver mixes in much smaller blocks (Godot's default output buffer is about
+  15 ms), so both should shrink to a frame and a block, but **that was not measured either**: the
+  tests and benchmarks may not play sound out loud, and no silent real-driver setup was tried.
+- **Quit**: `make bench-music` quits cleanly with streams played by the crossfade (exit status 0,
+  all four runs).
+
+**AudioStreamInteractive** (GUT, `tests/test_music_stream_wav.gd`, mixed offline with
+`AudioStreamPlayback.mix_audio`): with two `MusicStreamWAV` clips at 150 BPM, a switch asked for at
+0.1 s and set to "next beat" starts its crossfade at 0.4 s and ends it at 0.8 s; set to "next bar" it
+starts at 1.6 s. A plain AudioStreamWAV has no BPM (0) and switches at once. So the script subclass
+is needed, and it works, but **the crash**: a played script subclass of AudioStreamWAV
+(`MusicStreamWAV`, and as well an empty `extends AudioStreamWAV`), played by an AudioStreamPlayer
+directly or inside an AudioStreamInteractive, makes Godot abort when it quits while Main is in the
+tree (SIGSEGV in `pthread_mutex_lock` during shutdown; exit status 134). The same scene with a plain
+AudioStreamWAV quits cleanly, and so does a scene without Main. Reproduced with a headless script
+that adds Main and a player, plays a rendered MusicStreamWAV and quits 40 frames later. The cause
+was not found.
 
 ## Recommendation
 
-**Render at runtime in GDScript, on a WorkerThreadPool thread, into plain AudioStreamWAVs; switch
-and crossfade with two AudioStreamPlayers that the director times on the beat; render transitions
-that must be sample-exact (fill into loop) into one stream.**
+**Render at runtime in GDScript, on a WorkerThreadPool thread, into plain AudioStreamWAVs made whole
+there; switch with two players crossfaded on the beat (`MusicCrossfade`); render transitions that
+must be sample-exact (fill into loop) into one stream.** Provisional on one measurement: how late
+the crossfade begins on a real audio driver.
 
-- **Speed is no problem.** The music is short loops: an 8-bar loop at 44.1 kHz stereo renders in
-  about 0.2 s, a fill in 0.03 s, on a worker, while the frames stay as they are. Even a whole
-  minute takes 1.1 s. A native renderer would be 100 times faster, but nothing here needs that.
-- **The main thread pays almost nothing** (0.06 ms per render to take and play it), as long as no
-  copy of the data is made on it (a copy of a minute costs 12 to 21 ms).
-- **Memory:** 2.2 MB per 8-bar loop at 44.1 kHz stereo; 22.05 kHz mono would quarter it, if memory
+- **Speed is no problem.** An 8-bar loop at 44.1 kHz stereo renders in about 0.3 s, a fill in 0.04
+  s, on a worker, and the frames stayed as they were. A native renderer would be 100 times faster,
+  but nothing here needs that.
+- **The main thread pays almost nothing**: at most 0.2 ms per render, and under 0.5 ms in a frame of the
+  crossfade, as the stream is made whole on the worker. A copy of the data on the main thread (12
+  to 21 ms a minute) must not happen.
+- **Memory:** 3 MB per 8-bar loop at 44.1 kHz stereo; 22.05 kHz mono would quarter it, if memory
   ever matters (the renderer plays samples without interpolation, as the Amiga did, so the lower
-  rate keeps the style).
+  rate keeps the style), but the crossfade lines beats up exactly only for streams at the mix rate.
 - **Exact:** it matches libmodplug, loops seamlessly, and lands the fill and the loop on the bar,
-  sample for sample, because the renderer can play parts one after the other (`[fill, loop]`) into
-  one stream.
-- **Switching:** AudioStreamInteractive would do beat-synced crossfades by itself, but only with the
-  script subclass, which crashes the quit (above). Until that is understood, keep the subclass out
-  of anything that plays: the director (task 171) knows the BPM and the playback position
-  (`get_playback_position()` plus `AudioServer.get_time_since_last_mix()`), so it can start a
-  crossfade between two players at the next beat within a mix buffer (about 10 ms at a 400 ms
-  beat), and hard cuts that need to be exact are rendered into one stream. If the crash is found to
-  be avoidable (for example by freeing the music player in a set order before quitting), switching
-  to AudioStreamInteractive with `MusicStreamWAV` is a small change.
-- **Not a native GDExtension around libopenmpt:** it would be about 100 times faster, but it needs a
-  C++ build per platform and a third-party library in the export, for speed the game doesn't need.
+  sample for sample, because the renderer plays parts one after the other (`[fill, loop]`) into one
+  stream. Between pieces, the two players line the beats up to a frame.
+- **To do first in task 170:** measure the crossfade's lateness on the real driver, silently (for
+  example a muted bus with the capture effect before the mute). If it is late by more than a few
+  tens of ms, start the crossfade a block earlier from a predicted position.
+- **Not AudioStreamInteractive** while a played script-subclassed stream crashes the quit; if that is
+  found to be avoidable, switching to it with `MusicStreamWAV` is a small change.
+- **Not a native GDExtension around libopenmpt:** about 100 times faster, but it needs a C++ build
+  per platform and a third-party library in the export, for speed the game doesn't need.
 - **Build-time renders** (OGG files made by `make art`, which Godot imports with BPM and loop
   settings, so AudioStreamInteractive works with no subclass) remain the fallback: no runtime cost
-  at all, about 1 MB a minute on disk, but every variation has to be rendered ahead, and the
-  modules become a build step only.
+  at all, about 1 MB a minute on disk, but every variation has to be rendered ahead.
 
 Numbers to watch when task 170 builds it: render time on the slowest machine the game should run
-on (GDScript is about 55x real time at 44.1 kHz stereo here, so a machine 10 times slower still
-renders a loop in 2 s), and whether the crash on quit also happens in the editor and in an exported
-game.
+on (GDScript is about 63x real time at 44.1 kHz stereo here, so a machine 10 times slower still
+renders a loop in 3 s), and the crossfade's lateness on the real driver.

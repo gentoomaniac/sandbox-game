@@ -1,7 +1,10 @@
 class_name ModuleRenderer
 extends RefCounted
-## Renders parts of a TrackerModule into a MusicStreamWAV (16 bit, mono or stereo), at once or on a
-## WorkerThreadPool thread. A prototype of task 169, kept apart from AudioService: nothing plays it.
+## Renders parts of a TrackerModule into an AudioStreamWAV (16 bit, mono or stereo), at once or on
+## a WorkerThreadPool thread, where the stream is made whole, so the main thread only takes it. A
+## prototype of task 169, kept apart from AudioService; MusicCrossfade plays it in the benchmark.
+## The streams are plain AudioStreamWAVs: a script subclass that tells AudioStreamInteractive its
+## beat (MusicStreamWAV) crashes the game's quit once played, so the beat is in `beat_seconds`.
 ##
 ## A part is Vector2i(order, rows): from row 0 of that place in the order list, that many rows,
 ## following the order list (a pattern break goes on to the next order, the end of the list back to
@@ -80,9 +83,12 @@ static var _periods := PackedInt32Array(
 var module: TrackerModule
 var mix_rate := 44100
 var is_stereo := false
+## The length of a beat in the last render, in seconds: four rows at the speed and tempo of its
+## first row, in whole samples (see the ticks above).
+var beat_seconds := 0.0
 
 var _task_id := -1
-var _rendered: MusicStreamWAV
+var _rendered: AudioStreamWAV
 
 
 func _init(tracker_module: TrackerModule, rate := 44100, stereo := false) -> void:
@@ -107,7 +113,7 @@ func is_done() -> bool:
 
 
 ## The stream of the render `start` began (waiting for it if it isn't done).
-func take() -> MusicStreamWAV:
+func take() -> AudioStreamWAV:
 	WorkerThreadPool.wait_for_task_completion(_task_id)
 	_task_id = -1
 	var stream := _rendered
@@ -116,7 +122,7 @@ func take() -> MusicStreamWAV:
 
 
 ## `parts` rendered, one after the other; null, with an error, for a part outside the order list.
-func render(parts: Array[Vector2i]) -> MusicStreamWAV:
+func render(parts: Array[Vector2i]) -> AudioStreamWAV:
 	for part in parts:
 		if part.x < 0 or part.x >= module.order.size() or part.y < 0:
 			push_error("ModuleRenderer: part %s is outside the order list" % part)
@@ -129,7 +135,6 @@ func render(parts: Array[Vector2i]) -> MusicStreamWAV:
 	var mix := PackedFloat32Array()
 	var frames := 0
 	var first_row_frames := 0
-	var rows := 0
 	for part in parts:
 		var order := part.x
 		var row := 0
@@ -149,7 +154,7 @@ func render(parts: Array[Vector2i]) -> MusicStreamWAV:
 				elif effect == EFFECT_BREAK:
 					break_row = (parameter >> 4) * 10 + (parameter & 0x0F)
 			var tick_frames := mix_rate * 5 / (2 * tempo)
-			if rows == 0:
+			if first_row_frames == 0:
 				first_row_frames = speed * tick_frames
 			for tick in speed:
 				if tick > 0:
@@ -159,12 +164,12 @@ func render(parts: Array[Vector2i]) -> MusicStreamWAV:
 				for index in TrackerModule.CHANNELS:
 					_mix(channels[index], index, mix, frames, tick_frames)
 				frames += tick_frames
-			rows += 1
 			row += 1
 			if break_row >= 0 or row == TrackerModule.PATTERN_ROWS:
 				order = (order + 1) % module.order.size()
 				row = maxi(break_row, 0)
-	return _stream(mix, rows, first_row_frames)
+	beat_seconds = first_row_frames * ROWS_PER_BEAT / float(mix_rate)
+	return _stream(mix)
 
 
 ## What a row's cell does on its first tick.
@@ -280,17 +285,15 @@ func _mix(
 	channel.position = position
 
 
-## The mix as a 16-bit MusicStreamWAV that knows its beat.
-func _stream(mix: PackedFloat32Array, rows: int, row_frames: int) -> MusicStreamWAV:
+## The mix as a 16-bit AudioStreamWAV.
+func _stream(mix: PackedFloat32Array) -> AudioStreamWAV:
 	var data := PackedByteArray()
 	data.resize(mix.size() * 2)
 	for index in mix.size():
 		data.encode_s16(index * 2, int(mix[index] * 32767.0))
-	var stream := MusicStreamWAV.new()
+	var stream := AudioStreamWAV.new()
 	stream.format = AudioStreamWAV.FORMAT_16_BITS
 	stream.mix_rate = mix_rate
 	stream.stereo = is_stereo
 	stream.data = data
-	stream.bpm = 60.0 * mix_rate / (row_frames * ROWS_PER_BEAT)
-	stream.beat_count = rows / ROWS_PER_BEAT
 	return stream

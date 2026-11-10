@@ -83,8 +83,10 @@ from 37.2 to 7.3 ms this way, task 147 the longest frame while walking from 82 t
 `make bench-music` times the prototype music renderer of task 169 (`music.gd`): renders of the test
 piece on their own (8 bars and a minute, 22.05 and 44.1 kHz, mono and stereo, with the memory of
 each), then Main on a copy of the same save standing, while renders run on a worker, and while
-they run and a timed save is made, with the frame counts as above and what the main thread spends
-per finished render; docs/music-viability.md has its results.
+they run and a timed save is made (and whether it was written), with the frame counts as above,
+what the main thread spends per finished render (taking it and handing it to a MusicCrossfade that
+crossfades to it on the beat) and how late after their beats the crossfades began;
+docs/music-viability.md has its results.
 
 ## Art: tools/art/
 

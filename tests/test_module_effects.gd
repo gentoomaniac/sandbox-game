@@ -112,18 +112,20 @@ func test_volume_slides_set_volume_and_note_cut() -> void:
 
 func test_speed_and_tempo_set_the_row_length() -> void:
 	var cells := {Vector3i(0, 0, 0): [C_2, 1, 0xF, 3], Vector3i(0, 0, 1): [0, 0, 0xF, 250]}
-	var stream := ModuleRenderer.new(_module(cells), RATE).render([Vector2i(0, 4)])
+	var renderer := ModuleRenderer.new(_module(cells), RATE)
+	var stream := renderer.render([Vector2i(0, 4)])
 	# Tempo 250: a tick of 10 ms, 441 samples; speed 3.
 	assert_eq(stream.data.size(), 4 * 3 * 441 * 2)
-	assert_almost_eq(stream.bpm, 60.0 / (4 * 0.03), 0.001)
+	assert_almost_eq(renderer.beat_seconds, 4 * 0.03, 0.000001)
 
 
 func test_a_tick_that_is_no_whole_number_of_samples_is_cut_as_libmodplug_cuts_it() -> void:
 	var cells := {Vector3i(0, 0, 0): [C_2, 1, 0xF, 5], Vector3i(0, 0, 1): [0, 0, 0xF, 127]}
-	var stream := ModuleRenderer.new(_module(cells), RATE).render([Vector2i(0, 10)])
+	var renderer := ModuleRenderer.new(_module(cells), RATE)
+	var stream := renderer.render([Vector2i(0, 10)])
 	# 44100 * 2.5 / 127 is 868.1 samples: 868 a tick, every tick.
 	assert_eq(stream.data.size(), 10 * 5 * 868 * 2)
-	assert_almost_eq(stream.bpm, 60.0 * RATE / (4 * 5 * 868), 0.001)
+	assert_almost_eq(renderer.beat_seconds, 4 * 5 * 868 / float(RATE), 0.000001)
 
 
 func test_a_pattern_break_goes_on_at_its_row_of_the_next_pattern() -> void:
