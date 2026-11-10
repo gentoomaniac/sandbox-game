@@ -153,3 +153,27 @@ func test_an_asleep_cat_hunts_no_mouse() -> void:
 	_run_cat(10.0, MIDNIGHT)
 	assert_eq(_cat.activity, FarmAnimal.Activity.SLEEP)
 	assert_false(_mouse.is_done)
+
+
+func test_a_hunt_goes_on_when_the_cats_view_is_freed() -> void:
+	_catch_chance(1.0)
+	_mouse_ahead(3.0)
+	_run_cat(1.0)
+	assert_eq(_cat.activity, FarmAnimal.Activity.CROUCH)
+	_wildlife._farm_animals.erase(_cat)
+	_cat_view.free()
+	_run_cat(10.0)
+	assert_eq(_cat.activity, FarmAnimal.Activity.IDLE)
+	assert_true(_mouse.is_done, "caught, with no view of the cat to show it")
+
+
+func test_a_cat_ends_its_hunt_where_it_stands_when_the_mice_go_with_their_view() -> void:
+	_mouse_ahead(3.0)
+	_run_cat(1.0)
+	assert_eq(_cat.activity, FarmAnimal.Activity.CROUCH)
+	_wildlife.clear()
+	await wait_process_frames(2)
+	_livestock.update(CAT_STEP, _state.world, Vector2(1000, 1000), _state.clock)
+	assert_eq(_cat.activity, FarmAnimal.Activity.IDLE)
+	assert_null(_cat.hunted)
+	assert_gt(_cat.hunt_rest_seconds, 0.0)
