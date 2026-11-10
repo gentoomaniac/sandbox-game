@@ -49,7 +49,11 @@ Warft and an Ewer here and there.
   time (Main's frames), cut at every full hour so a long span passes as the same hours one after
   the other; `skip(minutes)` is time the player does not live through (the console's `skip`,
   sleeping, passing out): the first 3 minutes are played through minute by minute for what the
-  frames move (`walked_minute`) and the rest is made up for in one go (`skipped`). The systems:
+  frames move (`walked_minute`) and the rest is made up for in one go (`skipped`); `skip_over_frames`
+  is the same spread over frames, for the sleep and passing out under their black screen (the
+  villagers in steps of 8 ms, `Npcs.catch_up_over_frames`, and the soil moisture, which a save
+  would else catch up in one go, `SoilMoisture.catch_up_all_over_frames`; Main holds the animals
+  and villagers still meanwhile so that the world ends as after `skip`). The systems:
   `FarmingUpkeep` (every hour: the crops live through the hour, a 24th of a day's growth in the
   weather of its day; the end of the day counts for them), `NightUpkeep` (at midnight: reeds,
   saplings, stumps, bushes, clay spots, desire paths) and `ActorsUpkeep` (the farm animals and

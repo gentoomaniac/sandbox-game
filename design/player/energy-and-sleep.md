@@ -15,7 +15,8 @@
       pass the time as the console's `skip` does, so the crops, the soil, the weather, the kilns,
       the animals and villagers and the wildlife are as if the hours had been played (see
       [Livestock](../farming/livestock.md) and [Villagers](../villagers/villagers.md)); the world
-      moves on even while the player sleeps in a house.
+      moves on even while the player sleeps in a house. Under the black screen the catching up
+      takes a few frames and the save one, none long (task 158).
     - **Costs per action** live in a hand-editable data file (`data/energy.cfg`). First
       values: tool use (till, hit, water) 2, planting and picking 0.5; walking is free.
     - **Weight:** up to 40 kg costs nothing extra (changed 2026-11-06, was 20 kg); above

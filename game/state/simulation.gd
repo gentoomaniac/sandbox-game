@@ -43,13 +43,16 @@ func skip(minutes: int) -> void:
 ## that gives the signal of the next frame.
 func skip_over_frames(minutes: int, next_frame: Callable) -> void:
 	var rest := _walk_through(minutes)
+	await next_frame.call()
 	if rest > 0:
 		advance(rest)
 		for system in _systems:
 			await system.skipped_over_frames(rest, clock, next_frame)
-	# What shows the world follows (`skipped`) in a frame of its own.
+	# What shows the world follows (`skipped`) in a frame of its own, and what the caller does
+	# after it in the next.
 	await next_frame.call()
 	skipped.emit(minutes)
+	await next_frame.call()
 
 
 ## Plays the first WALKED_MINUTES of a skip through; returns the minutes left to make up for.

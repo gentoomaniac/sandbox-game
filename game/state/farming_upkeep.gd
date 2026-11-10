@@ -38,6 +38,12 @@ func skipped(_minutes: int, _clock: GameClock) -> void:
 	_world.soil.prepare()
 
 
+## The soil is brought up to now as well, which the next save would otherwise do in one go.
+func skipped_over_frames(minutes: int, clock: GameClock, next_frame: Callable) -> void:
+	skipped(minutes, clock)
+	await _world.soil.catch_up_all_over_frames(next_frame)
+
+
 ## Counts the day that ended for every crop.
 func end_day() -> void:
 	for crop in _world.crops():

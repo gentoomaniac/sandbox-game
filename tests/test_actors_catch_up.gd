@@ -4,6 +4,10 @@ extends LivestockCase
 ## ground they could have walked to, asleep or awake as the hour has them, and only those in loaded
 ## chunks.
 
+## How many villagers and tiles of soil the tests of a skip over frames put on the pen.
+const VILLAGERS := 6
+const SOIL_TILES := 5
+
 
 func _noon() -> void:
 	_state.clock.day = DAY
@@ -252,10 +256,14 @@ func _next_frame() -> Signal:
 ## Puts animals and villagers on the pen and the clock at noon, for games to be loaded from.
 func _crowd_the_pen() -> void:
 	_livestock.spawn(LivestockRules.COW, 4, _pen_middle(), _world)
-	for seed_value in 6:
+	for seed_value in VILLAGERS:
 		var villager := Npc.create(seed_value, _pen_middle(), _state.npcs.rules)
 		villager.anchor = _pen_middle()
 		_state.npcs.add(villager)
+	for index in SOIL_TILES:
+		var tile := _middle + Vector2i(index - 2, -2)
+		_world.set_terrain(tile, Tile.Terrain.SOIL)
+		_world.set_moisture(tile, 0.1 * index)
 	_noon()
 
 
@@ -268,12 +276,14 @@ func test_a_skip_over_frames_ends_as_the_skip_in_one_go() -> void:
 	var in_one_go := _reloaded()
 	var over_frames := _reloaded()
 	over_frames.npcs.catch_up_frame_usec = 0
+	over_frames.world.soil.catch_up_frame_usec = 0
 	var frame_before := Engine.get_process_frames()
 
 	in_one_go.simulation.skip(5 * GameClock.MINUTES_PER_HOUR)
 	await over_frames.simulation.skip_over_frames(5 * GameClock.MINUTES_PER_HOUR, _next_frame)
 
-	assert_gt(Engine.get_process_frames() - frame_before, 5, "a frame for every villager")
+	var frames := Engine.get_process_frames() - frame_before
+	assert_gt(frames, VILLAGERS + SOIL_TILES, "a frame for every villager and tile of soil")
 	assert_eq(over_frames.to_dict(), in_one_go.to_dict())
 	assert_ne(over_frames.npcs.to_array(), _state.npcs.to_array(), "and they did move")
 
@@ -283,6 +293,7 @@ func test_passing_out_over_frames_ends_as_passing_out_in_one_go() -> void:
 	var in_one_go := _reloaded()
 	var over_frames := _reloaded()
 	over_frames.npcs.catch_up_frame_usec = 0
+	over_frames.world.soil.catch_up_frame_usec = 0
 
 	var minutes := in_one_go.pass_out()
 	var minutes_over_frames: int = await over_frames.pass_out_over_frames(_next_frame)
@@ -296,6 +307,7 @@ func test_sleeping_over_frames_ends_as_sleeping_in_one_go() -> void:
 	var in_one_go := _reloaded()
 	var over_frames := _reloaded()
 	over_frames.npcs.catch_up_frame_usec = 0
+	over_frames.world.soil.catch_up_frame_usec = 0
 
 	in_one_go.sleep_in(_home_bed_of(in_one_go))
 	await over_frames.sleep_in_over_frames(_home_bed_of(over_frames), _next_frame)
