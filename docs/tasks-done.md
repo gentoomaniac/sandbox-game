@@ -3843,10 +3843,10 @@ joined patch of trodden earth, and the edges don't follow when more tiles wear.
   yard worn by many animals (the console can spawn them).
 
 Done: the cause was the 32 px full tiles of `trodden` and `path` (tools/art/terrain.py): they were
-patterned with tile-wide noise blobs (cells of 8 and 16 px) and stamps, picked at random per tile, so every worn
-tile showed its own oval or hourglass and the tiles did not join. The redraw was not stale:
-`redraw_tile` redraws the 4 cells around a tile and the edge tiles between stages and every grass
-kind exist (tests added for the cells between worn tiles). A full tile is now an even colour
+patterned with tile-wide noise blobs (cells of 8 and 16 px) and stamps, picked at random per tile,
+so every worn tile showed its own oval or hourglass and the tiles did not join. The redraw was not
+stale: `redraw_tile` redraws the 4 cells around a tile and the edge tiles between stages and every
+grass kind exist (tests added for the cells between worn tiles). A full tile is now an even colour
 (trodden dark earth, path earth) with single specks of 3 percent and no stamps, in both art sets
-and all looks (palette unchanged; the user asked for it calmer still). `--worn-ground=<x>,<y>` wears a yard for screenshots (`DebugWornGround`);
-screenshot docs/screenshots/worn-ground.png.
+and all looks (palette unchanged; the user asked for it calmer still). `--worn-ground=<x>,<y>`
+wears a yard for screenshots (`DebugWornGround`); screenshot docs/screenshots/worn-ground.png.
