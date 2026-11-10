@@ -23,21 +23,6 @@ Rules for every task:
 - Visuals come from the art generator (task 5 on). Until a task adds art for something,
   use simple placeholder shapes in palette colours.
 
-## 122. The farm yard: chicken coop, trough, hay rack and draw well
-
-- [ ] Done
-
-From review/art-review-2026-11-08 (its task 6 and buildings rows 1 to 3 and 16), left out of
-task 111 because each needs game data as well as art: a chicken coop (a building 2x2, low and
-boarded, a ramp with cleats to a hatch, a nest-box lid; the hens sleep in it and the eggs are
-collected there; an interior map), a trough (a hollowed oak log or a plank box with water) and a
-hay rack (oak posts with slanting slats, hay behind them), 2x1 world objects that feed and water
-the livestock (SPEC, Livestock), a draw well with a sweep (1x1 plus the sweep above it: an oak
-well head on a fieldstone ring, a forked post, the balanced pole, the bucket and a weight stone;
-water for the can, the animals and the house) (the stork's nest moved to task 152). Draw them at 32 px in the style of task 111 (tools/art/, a new
-yard.py), give them types, recipes and placement (data/, world_object_types.gd), and decide
-what each does for the animals.
-
 ## 125. The deed log: what the player does near villagers, and who saw it
 
 - [ ] Done

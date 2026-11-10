@@ -4426,3 +4426,56 @@ sound out loud): GDScript rendering at runtime on a worker into plain AudioStrea
 crossfaded on the beat, sample-exact transitions rendered into one stream; not a native GDExtension
 (100 times faster, not needed); build-time OGG renders as the fallback. Tasks 170 and 171 are to be
 rewritten from it with the user.
+
+## 122. The farm yard: chicken coop, trough, hay rack and draw well
+
+- [x] Done
+
+From review/art-review-2026-11-08 (its task 6 and buildings rows 1 to 3 and 16), left out of
+task 111 because each needs game data as well as art: a chicken coop (a building 2x2, low and
+boarded, a ramp with cleats to a hatch, a nest-box lid; the hens sleep in it and the eggs are
+collected there; an interior map), a trough (a hollowed oak log or a plank box with water) and a
+hay rack (oak posts with slanting slats, hay behind them), 2x1 world objects that feed and water
+the livestock (SPEC, Livestock), a draw well with a sweep (1x1 plus the sweep above it: an oak
+well head on a fieldstone ring, a forked post, the balanced pole, the bucket and a weight stone;
+water for the can, the animals and the house) (the stork's nest moved to task 152). Draw them at 32 px in the style of task 111 (tools/art/, a new
+yard.py), give them types, recipes and placement (data/, world_object_types.gd), and decide
+what each does for the animals.
+
+
+Done (2026-11-10): the four things are in, in parts of their own, with the user's decisions of the same
+day for the animals (see design/farming/livestock.md, "The farm yard"):
+- **Draw well** (1x1 plus the sweep above it, see-through from behind): masonry 20 at the workbench
+  from 12 stone, 3 planks, 2 logs and 2 fibre; the pickaxe takes it up. It fills the watering can,
+  which now holds water (20 waterings, `[can] capacity` in data/energy.cfg, saved): the use key at the
+  well or at fresh water (the terrain WATER: rivers, ponds, ditches; never the sea, the mud or the salt
+  marsh) fills it, wetting soil takes 1, an empty can says so. Water for the house comes with cooking
+  and washing (nothing uses it yet).
+- **Trough and hay rack** (2x1, woodworking 10 and 15): each holds a stock of up to 100 units (the
+  `stock` in the object's state, saved), shown in four pictures by the fill (empty, low, half from 35%,
+  full from 70%), at 32 px and in the classic art. The can pours 10 units into a trough, hay 10 into a
+  rack; the trough holds water, the rack feed (any item of `[yard] feed_items`, hay so far), and a
+  feeding trough for the pigs of task 165 is the same object with `stock_kind` feed, any kind of
+  livestock using it by its species' numbers.
+- **Needs** (the user's decisions): every farm animal has a hunger and a thirst that rise with game time
+  by species hours, are saved (save version 25) and have NO consequence yet (the place for the later
+  better produce is named in the design page). Thirst is met at fresh water or a trough with water, hunger
+  at a hay rack by those that eat feed (cow, sheep, horse, rabbit) and by grazing by those that graze
+  (those and the hens); dogs and cats eat nothing yet (no feeder). Each drink or meal takes the
+  species' units from the stock (cow 5, sheep 3, hen 3 a drink, ...); a skip counts the meals of animals
+  that could reach what they need; the console's `noneeds` stops the rise (session only, not saved).
+- **Chicken coop** (building 2x2, 12 logs and 4 stone, inside 6x6 with two hay piles as nests): a hen
+  within 12 tiles of one with a free roost (6) walks to it at bedtime, sleeps in it out of sight and comes
+  out in the morning; going in she lays an egg (0.7) in a nest (4 eggs each); the use key with an empty
+  hand at a nest takes the eggs (new item: egg); a skip over her bedtime counts the egg.
+Art: tools/art/yard.py and classic/yard.py (rows 51 to 53 of the object atlas, the coop among the
+building pictures, icons for the four items and the egg). Save version 25 (the can's water and each
+animal's hunger and thirst), the version 14 step dropped in its own commit first. Tests:
+tests/test_draw_well.gd, test_yard_stock.gd, test_livestock_needs.gd, test_chicken_coop.gd,
+test_save_upgrade_needs.gd. README section "The farm yard" with docs/screenshots/farm-yard.png
+(`--yard` shows it, 22 tiles east of the stations).
+Chosen as the mildest, the user may change: the can has a limit at all (20; the old can was
+bottomless); a coop that is taken down loses its eggs; hens far from any coop sleep outdoors; dogs and
+cats just get hungrier with nothing to eat. Open: nothing in the room shows the hens or the eggs
+(animals are only drawn outdoors); the eggs have no use yet; a bowl for dogs and cats and grain for
+the hens come with the feeding trough of task 165.
