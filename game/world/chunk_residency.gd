@@ -49,6 +49,15 @@ func update(may_load := true) -> void:
 	is_complete = to_load.is_empty()
 
 
+## Loads, at once, the chunks that hold these world tiles and are not loaded: what an action needs
+## to find its tiles, whether or not anything draws them. Tiles out of the world are skipped.
+func require(tiles: Array[Vector2i]) -> void:
+	for tile in tiles:
+		var coords := Chunk.world_to_chunk(tile)
+		if World.is_chunk_in_bounds(coords) and not world.is_chunk_loaded(coords):
+			load_chunk(coords)
+
+
 ## Generates a chunk and adds it to the world.
 func load_chunk(coords: Vector2i) -> void:
 	var chunk := _generator.generate_chunk(coords)

@@ -66,3 +66,46 @@ func test_a_held_residency_loads_and_drops_nothing() -> void:
 	_residency.is_held = false
 	_residency.update()
 	assert_false(_world.is_chunk_loaded(far))
+
+
+func test_the_chunks_an_action_needs_load_at_once_without_a_view() -> void:
+	var tiles: Array[Vector2i] = [Vector2i(5, 5), Vector2i(Chunk.CHUNK_SIZE + 1, 5)]
+	_residency.require(tiles)
+	assert_not_null(_world.tile_at(tiles[0]))
+	assert_not_null(_world.tile_at(tiles[1]))
+	assert_eq(_world.loaded_chunk_coords().size(), 2)
+	_residency.require(tiles)
+	assert_eq(_world.loaded_chunk_coords().size(), 2, "loaded chunks are not loaded again")
+
+
+func test_a_tile_out_of_the_world_needs_no_chunk() -> void:
+	var out_of_the_world: Array[Vector2i] = [
+		Chunk.to_world(Vector2i(World.MAX_SIZE_CHUNKS, 0), Vector2i.ZERO)
+	]
+	_residency.require(out_of_the_world)
+	assert_eq(_world.loaded_chunk_coords().size(), 0)
+
+
+func test_a_view_that_goes_leaves_the_chunks_loaded_and_the_next_one_draws_them() -> void:
+	var first: WorldView = add_child_autofree(WorldView.new())
+	first.show_world(_residency)
+	_residency.load_chunk(HOME)
+	first.finish_drawing()
+	first.free()
+	_residency.update(false)
+	assert_true(_world.is_chunk_loaded(HOME), "the game still has its chunk")
+	var second: WorldView = add_child_autofree(WorldView.new())
+	second.show_world(_residency)
+	assert_false(second.is_drawing(), "a chunk that is loaded is drawn when the view starts")
+	assert_true(second._chunk_looks.has(HOME))
+
+
+func test_a_chunk_required_while_another_is_drawn_is_drawn_after_it() -> void:
+	var view: WorldView = add_child_autofree(WorldView.new())
+	view.show_world(_residency)
+	_residency.load_chunk(HOME)
+	_residency.load_chunk(Vector2i(-1, -1))
+	assert_true(view.is_drawing())
+	view.finish_drawing()
+	assert_false(view.is_drawing())
+	assert_eq(view._chunk_looks.size(), 2, "both chunks are drawn")
