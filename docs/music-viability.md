@@ -227,7 +227,11 @@ samples was no longer exactly periodic (its steps moved by up to a frame, in a p
 against the note): a rough tone a few cents unsteady, which libmodplug, interpolating, doesn't have.
 The renderer now interpolates linearly. **The music**: vibrato of depth 3 and 4 at speed 2 swings
 the pitch about half a semitone each way once or twice a second: not a vibrato but a drifting
-note, the same in libmodplug.
+note, the same in libmodplug. The sketches now strike each note clean and hold it plain: the user
+chose that after hearing it beside a light vibrato late in the longer notes (481: 10 cents at 4 to
+4.5 a second; 5 / 10 / 14 cents rms / p95 / max).
+Tone portamento slurs (3FF) were dropped as well: each played a tick of the old note at the start
+of the new one.
 
 ## Clicks between notes (task 171)
 

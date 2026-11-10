@@ -1,0 +1,79 @@
+# Sketch "Tide" (task 171, a draft for the user to choose from): ambient, a slow rolling 6/8 in
+# D dorian. Speed 6, tempo 90: a row of 166.7 ms, an eighth 2 rows, a bar of 6/8 12 rows (2 s), so
+# the sway (a dotted quarter) is 60 a minute. One loop of 16 bars (192 rows, 32 s): a triangle drone
+# that swells and ebbs once a bar like a swell under the hull (D, two bars on C), a soft pulse
+# rocking through the chord in eighths, a sparse sawtooth line, each note struck clean and held
+# plain (no vibrato, no slurs), and a distant noise thud and hiss per bar.
+
+speed 6
+tempo 90
+order loop
+
+section loop 192
+lead saw:
+  ^:24                                              # bars 1-2: the sea alone
+  A-1:4:C1C D-2:2:C1C E-2:6:C1C                     # 3
+  F-2:4:C1C E-2:2:C1C D-2:6:C1C                     # 4
+  C-2:4:C1C D-2:2:C1C A-1:6:C1C                     # 5
+  .:6:A01 ^:6                                       # 6
+  ^:6 A-1:4:C18 B-1:2:C18                           # 7
+  C-2:6:C1C A-1:2:C1C .:4:A01                       # 8
+  G-2:6:C1C F-2:4:C1C E-2:2:C1C                     # 9 over C
+  C-2:8:C1C .:4:A01                                 # 10
+  D-2:4:C1C E-2:2:C1C F-2:4:C1C G-2:2:C1C           # 11
+  A-2:8:C1C .:4:A01                                 # 12
+  G-2:4:C18 F-2:2:C18 E-2:6:C18                     # 13
+  D-2:4:C18 C-2:2:C18 D-2:6:C18                     # 14
+  .:6 .:6:A01                                       # 15
+  ^:12                                              # 16
+sway pulse:
+  D-1:2 A-1:2:C10 D-2:2:C12 F-2:2:C0E D-2:2:C0C A-1:2:C0A
+  D-1:2 A-1:2:C10 D-2:2:C12 F-2:2:C0E D-2:2:C0C A-1:2:C0A
+  D-1:2 A-1:2:C10 D-2:2:C12 F-2:2:C0E D-2:2:C0C A-1:2:C0A
+  D-1:2 A-1:2:C10 D-2:2:C12 F-2:2:C0E D-2:2:C0C A-1:2:C0A
+  D-1:2 A-1:2:C10 D-2:2:C12 F-2:2:C0E D-2:2:C0C A-1:2:C0A
+  D-1:2 A-1:2:C10 D-2:2:C12 F-2:2:C0E D-2:2:C0C A-1:2:C0A
+  D-1:2 A-1:2:C10 D-2:2:C12 F-2:2:C0E D-2:2:C0C A-1:2:C0A
+  D-1:2 A-1:2:C10 D-2:2:C12 F-2:2:C0E D-2:2:C0C A-1:2:C0A
+  C-1:2 G-1:2:C10 C-2:2:C12 E-2:2:C0E C-2:2:C0C G-1:2:C0A
+  C-1:2 G-1:2:C10 C-2:2:C12 E-2:2:C0E C-2:2:C0C G-1:2:C0A
+  D-1:2 A-1:2:C10 D-2:2:C12 F-2:2:C0E D-2:2:C0C A-1:2:C0A
+  D-1:2 A-1:2:C10 D-2:2:C12 F-2:2:C0E D-2:2:C0C A-1:2:C0A
+  F-1:2 C-2:2:C10 F-2:2:C12 A-2:2:C0E F-2:2:C0C C-2:2:C0A
+  C-1:2 G-1:2:C10 C-2:2:C12 E-2:2:C0E C-2:2:C0C G-1:2:C0A
+  D-1:2 A-1:2:C10 D-2:2:C12 F-2:2:C0E D-2:2:C0C A-1:2:C0A
+  D-1:2 A-1:2:C10 D-2:2:C12 F-2:2:C0E D-2:2:C0C A-1:2:C0A
+drone triangle:
+  D-1:1:C14 .:5:A10 .:6:A01
+  .:6:A10 .:6:A01
+  .:6:A10 .:6:A01
+  .:6:A10 .:6:A01
+  .:6:A10 .:6:A01
+  .:6:A10 .:6:A01
+  .:6:A10 .:6:A01
+  .:6:A10 .:6:A01
+  C-1:1:C14 .:5:A10 .:6:A01
+  .:6:A10 .:6:A01
+  D-1:1:C14 .:5:A10 .:6:A01
+  .:6:A10 .:6:A01
+  .:6:A10 .:6:A01
+  .:6:A10 .:6:A01
+  .:6:A10 .:6:A01
+  .:6:A10 .:6:A01
+sea noise:
+  C-1:6 A-2:6:C06
+  C-1:6 A-2:6:C06
+  C-1:6 A-2:6:C06
+  C-1:6 A-2:6:C06
+  C-1:6 A-2:6:C06
+  C-1:6 A-2:6:C06
+  C-1:6 A-2:6:C06
+  C-1:6 A-2:6:C06
+  C-1:6 A-2:6:C06
+  C-1:6 A-2:6:C06
+  C-1:6 A-2:6:C06
+  C-1:6 A-2:6:C06
+  C-1:6 A-2:6:C06
+  C-1:6 A-2:6:C06
+  C-1:6 A-2:6:C06
+  C-1:6 A-2:6:C06

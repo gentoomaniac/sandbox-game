@@ -1,0 +1,59 @@
+# Sketch "Harbour evening" (task 171, a draft for the user to choose from): a calm shanty-like
+# tune in A aeolian over a capstan bass, 4/4. Speed 6, tempo 80: a row of 187.5 ms, a beat 4 rows
+# (80 a minute), a bar 16 rows (3 s). An 8-bar loop (24 s) and a 1-bar fill that leads back into
+# it. The triangle bass walks round the capstan (root, root, the fifth below, root); the pulse
+# holds soft chord tones that swell in like a concertina's bellows; the sawtooth sings the tune,
+# a phrase and a held note each two bars, each note struck clean and held plain, the held notes of
+# bars 2 and 4 fading out over their second half; a soft noise thud on 1 and 3.
+
+speed 6
+tempo 80
+order loop fill
+
+section loop 128
+lead saw:
+  E-2:6 D-2:2 C-2:4 D-2:4                           # 1 Am
+  E-2:8 .:8:A01                                     # 2 Am
+  F-2:6 E-2:2 D-2:4 C-2:4                           # 3 F
+  D-2:8 .:8:A01                                     # 4 G
+  A-2:6 G-2:2 E-2:4 D-2:4                           # 5 Am
+  E-2:6 G-2:2 C-2:8                                 # 6 C
+  F-2:6 E-2:2 C-2:4 A-1:4                           # 7 F
+  B-1:12 C-2:2 D-2:2                                # 8 Em
+pad pulse:
+  E-1:1:C0C .:2:A10 .:5 A-1:1:C0C .:2:A10 .:5
+  C-2:1:C0C .:2:A10 .:5 A-1:1:C0C .:2:A10 .:5
+  A-1:1:C0C .:2:A10 .:5 F-1:1:C0C .:2:A10 .:5
+  G-1:1:C0C .:2:A10 .:5 B-1:1:C0C .:2:A10 .:5
+  A-1:1:C0C .:2:A10 .:5 E-1:1:C0C .:2:A10 .:5
+  G-1:1:C0C .:2:A10 .:5 E-1:1:C0C .:2:A10 .:5
+  F-1:1:C0C .:2:A10 .:5 A-1:1:C0C .:2:A10 .:5
+  G-1:1:C0C .:2:A10 .:5 B-1:1:C0C .:2:A10 .:5
+bass triangle:
+  A-1:6 A-1:2 E-1:4 A-1:4
+  A-1:6 A-1:2 E-1:4 A-1:4
+  F-1:6 F-1:2 C-1:4 F-1:4
+  G-1:6 G-1:2 D-1:4 G-1:4
+  A-1:6 A-1:2 E-1:4 A-1:4
+  C-2:6 C-2:2 G-1:4 C-2:4
+  F-1:6 F-1:2 C-1:4 F-1:4
+  E-1:6 E-1:2 B-1:4 E-1:4
+deck noise:
+  C-1:8:C18 C-1:6:C0E B-3:2:C06
+  C-1:8:C18 C-1:6:C0E B-3:2:C06
+  C-1:8:C18 C-1:6:C0E B-3:2:C06
+  C-1:8:C18 C-1:6:C0E B-3:2:C06
+  C-1:8:C18 C-1:6:C0E B-3:2:C06
+  C-1:8:C18 C-1:6:C0E B-3:2:C06
+  C-1:8:C18 C-1:6:C0E B-3:2:C06
+  C-1:8:C18 C-1:6:C0E B-3:2:C06
+
+section fill 16
+lead saw:
+  B-1:4 D-2:4 E-2:8
+pad pulse:
+  G-1:1:C0C .:2:A10 .:5 B-1:1:C0C .:2:A10 .:5
+bass triangle:
+  E-1:6 E-1:2 B-1:4 G-1:4
+deck noise:
+  C-1:4:C0C C-1:4:C10 C-1:4:C14 C-1:2:C14 C-1:2:C18
