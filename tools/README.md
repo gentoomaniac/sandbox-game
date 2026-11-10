@@ -78,7 +78,7 @@ longest frame and how many frames went over 33 and over 16.7 ms, listing the fra
 with their numbers; `pickup.gd` prints the cost of the per-frame pile pick-up; `save.gd` prints
 what a save costs: the snapshot on the main thread and the JSON text a worker makes.
 Nothing is asserted: run it before and after a change and compare. Task 142 took the mean frame
-from 37.2 to 7.3 ms this way.
+from 37.2 to 7.3 ms this way, task 147 the longest frame while walking from 82 to 22 ms.
 
 ## Art: tools/art/
 

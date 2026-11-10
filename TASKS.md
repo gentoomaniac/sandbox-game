@@ -157,24 +157,6 @@ come earlier.
 - Not saved, not remembered. Bubbles drawn in palette colours, readable at every zoom; a
   screenshot in the README.
 
-## 147. Frame spikes: find and smooth the long frames
-
-- [ ] Done
-
-The user, 2026-11-09: once all current tasks are done. After task 142 the mean frame on the
-`make bench` save is about 8 ms, but single frames still take 120 to 190 ms (before 142 too).
-- Find what the long frames do (chunk loading and drawing in WorldView, villager or wildlife
-  updates, autosave, GC of big arrays): Godot's profiler or timing around the suspects, on the
-  bench save and while walking across chunk borders.
-- Spread the heavy work over frames (a budget per frame, or a worker thread for pure data) so no
-  frame goes over about 33 ms on the bench save; same pictures, same game.
-- Merged from Later (task 6 review): a chunk load took about 8 ms, spikes 16 ms at a chunk
-  border; generation is pure and could run on a `WorkerThreadPool` task, drawing could be split
-  over frames, and `set_cell` skipped for layers a cell doesn't use. Also per frame:
-  `Occlusion.building_rect` calls `load()` for a size, and `World.buildings()` copies the array
-  (task 14 review): cache them.
-- `make bench` reports the longest frame and how many frames went over 33 ms, before and after.
-
 ## 149. Harvesting works, and dead plants are hoed away for the next crop
 
 - [ ] Done

@@ -3898,3 +3898,58 @@ passes every run; no game change.
 Done: the test seeds the ambience's dice, and the storm test's second step asserts that no new
 loop starts instead of that nothing at all sounds: a bird, a gust or a frog at water near the
 player may come in any second, and that was the extra `frog_croak`.
+
+## 147. Frame spikes: find and smooth the long frames
+
+- [x] Done
+
+The user, 2026-11-09: once all current tasks are done. After task 142 the mean frame on the
+`make bench` save is about 8 ms, but single frames still take 120 to 190 ms (before 142 too).
+- Find what the long frames do (chunk loading and drawing in WorldView, villager or wildlife
+  updates, autosave, GC of big arrays): Godot's profiler or timing around the suspects, on the
+  bench save and while walking across chunk borders.
+- Spread the heavy work over frames (a budget per frame, or a worker thread for pure data) so no
+  frame goes over about 33 ms on the bench save; same pictures, same game.
+- Merged from Later (task 6 review): a chunk load took about 8 ms, spikes 16 ms at a chunk
+  border; generation is pure and could run on a `WorkerThreadPool` task, drawing could be split
+  over frames, and `set_cell` skipped for layers a cell doesn't use. Also per frame:
+  `Occlusion.building_rect` calls `load()` for a size, and `World.buildings()` copies the array
+  (task 14 review): cache them.
+- `make bench` reports the longest frame and how many frames went over 33 ms, before and after.
+
+Done: `make bench` now times two scenarios on the bench save (standing for 300 frames, walking
+70 tiles east across chunk borders) and lists the frames over 33 ms; `save.gd` times a save.
+What the long frames did, headless on the bench save (ms; how often):
+
+| Suspect | ms | How often |
+|---|---|---|
+| Chunk load: generate (8) + draw (45) + soil (1) | 55 | 7 in a row at each chunk border while walking |
+| Passing out: `ActorsUpkeep.skipped` 42, wildlife settle 18, farming 3 | 68 | once, under the fade |
+| Passing out: the synchronous save (snapshot 74, JSON text 62, write 10) | 148 | once, under the fade |
+| A timed or quick save: snapshot + JSON text on the main thread | 106 | every 10 minutes |
+| `FarmingUpkeep` every hour, `NightUpkeep` at midnight, soil refresh queue | 0.005, 0.6, 0.03 | no suspect (the bench save has no crops) |
+| `Occlusion.building_rect` `load()` and `World.buildings()` copy | 0.0007 | per frame, no buildings on the bench save; grows with the buildings, not a spike |
+
+Fixed: a chunk is drawn in steps (a row, the objects, the borders) of at most 8 ms a frame (16
+ms next to the player's chunk) and the next one loads when it is drawn; the JSON text of a
+save is made on the worker (the main thread keeps the snapshot, which shares nothing with the
+game); passing out gives the sleep and the save a frame each, the save in the background.
+Before and after, `make bench`:
+
+| | before | after |
+|---|---|---|
+| walking, longest frame | 82 ms | 22 ms |
+| walking, frames over 33 / over 16.7 ms | 14 / 14 | 0 / 14 |
+| standing, longest frame | 223 ms (the pass-out) | 102 ms (the pass-out) |
+| standing, frames over 33 ms | 1 | 2 (both the pass-out, under the fade) |
+| mean frame | 7.6 ms | 7.2 ms |
+| autosave stall on the main thread | 106 ms | 50 ms |
+| world settled at the start | 4.9 s | 5.8 s |
+
+Left: the pass-out under its fade still has two frames of 67 and 102 ms (the villagers' skip,
+`ActorsUpkeep`, and the snapshot; sleeping in a bed (`_try_sleep`) still saves synchronously);
+the snapshot of a heavy save (50 ms) is one frame of `to_dict` on the main thread, which only
+an incremental or cached snapshot would cut; generation (8 ms) stays on the main thread, a
+`WorkerThreadPool` task was not needed to stay under 33 ms; the building size cache and the
+`buildings()` copy were left as they are (they cost nothing measurable); the start takes about
+a second longer as the chunks round the player are drawn within a budget.
