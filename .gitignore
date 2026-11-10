@@ -13,3 +13,6 @@ settings.cfg
 
 # Built by `make assets` from art/ (what Godot reads), see the Makefile.
 /assets
+
+# The coordinating agent's log of second-opinion reviews (opencode, another model): when and what for.
+/second-opinions.md
