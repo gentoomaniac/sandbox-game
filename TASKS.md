@@ -202,6 +202,21 @@ down from the chest and the rump).
   and hock and slim cannons.
 - Every look, pose, facing and season of the 32 px cow (tools/art/livestock.py), cell sizes
   kept; before and after crops and an in-game screenshot.
+- The user, 2026-11-10, after three goes that each changed the old drawing ("cows third go
+  looks even worse"): "drop the current version entirely and start from scratch with my provided
+  image as a reference". The cow is drawn anew from the user's references, not from the old cow.
+
+## 160. Small leftovers: the pony on the command line, a test of the AMD path, the herd picture
+
+- [ ] Done
+
+The user, 2026-11-10: "implement the rest from Small leftovers" (and drop the cached save
+snapshot left from task 158: not done).
+- `--livestock` accepts `pony`, as it does the other farm animals.
+- A committed test of tools/llm/llm.sh's GPU choice (task 150): a fake device tree and
+  `LLM_DRY_RUN=1` for NVIDIA, AMD (with and without `LLM_HSA_OVERRIDE`) and the CPU fallback,
+  run by `make test`.
+- The README picture docs/screenshots/dogs-cats-horses.png re-taken with the horse of task 156.
 
 ## Later (not part of the prototype)
 
