@@ -1,7 +1,8 @@
 extends WildlifeCase
-## A cat hunting the mice of the view: it sees a mouse within its sight and not beyond; it
-## crouches, creeps up and pounces, and the mouse is caught or dashes off into cover; it rests
-## after a hunt, and an asleep cat hunts nothing. Time passes in steps of the livestock and the
+## A cat hunting the mice of the view (Livestock decides the hunt, the views show it): it sees a
+## mouse within its sight and not beyond; it crouches, creeps up and pounces, and the mouse is
+## caught or dashes off into cover; it rests after a hunt, and an asleep cat hunts nothing; a hunt
+## ends cleanly when the cat's view or the mice go. Time passes in steps of the livestock and the
 ## views together, never by the frame rate.
 
 const MEADOW := Vector2i(-12, 8)
@@ -48,21 +49,26 @@ func _catch_chance(chance: float) -> void:
 	_livestock.rules = LivestockRules.new(values)
 
 
-## Lets this many seconds pass for the cat (Livestock moves it, its view shows it and hunts). The
-## mouse is left sitting where it is, unless it was sent off.
+## Lets this many seconds pass for the cat (Livestock moves it and hunts, its view shows it). The
+## mouse is left sitting where it is, unless a cat's hunt has made it flee or be caught.
 func _run_cat(seconds: float, minute := NOON) -> void:
 	for _i in roundi(seconds / CAT_STEP):
 		_state.clock.minute_of_day = minute
+		if is_instance_valid(_mouse):
+			_mouse.sync_prey()
 		_livestock.update(CAT_STEP, _state.world, Vector2(1000, 1000), _state.clock)
-		_cat_view._process(CAT_STEP)
-		if is_instance_valid(_mouse) and _mouse._state == Mouse.FLEE:
+		if is_instance_valid(_cat_view):
+			_cat_view._process(CAT_STEP)
+		if (
+			is_instance_valid(_mouse)
+			and (_mouse._state == Mouse.FLEE or _mouse.prey.fate != Prey.Fate.NONE)
+		):
 			_mouse._process(CAT_STEP)
 
 
 ## Runs the cat until its hunt is over (for at most 30 s) and returns the states its view went
-## through from the first step on: what it was doing when it saw the mouse is left out.
+## through, from the first step on.
 func _run_hunt() -> Array[StringName]:
-	_run_cat(CAT_STEP)
 	var states: Array[StringName] = []
 	_cat_view.state_entered.connect(func(state: StringName) -> void: states.append(state))
 	for _i in roundi(30.0 / CAT_STEP):

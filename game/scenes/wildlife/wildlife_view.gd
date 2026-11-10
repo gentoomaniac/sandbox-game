@@ -6,6 +6,9 @@ extends Node
 ## The animals are nodes in the world view's y-sorted `entities`. Nothing is saved: it is
 ## atmosphere, drawn with a random number generator.
 ##
+## The mice report themselves to the game's Livestock, whose cats hunt them (see Prey): they live
+## and die with this view, and with no view there are none to hunt.
+##
 ## It also shows the farm animals of the game's Livestock, which are state and saved: one
 ## FarmAnimalView each while it is near the view (in the ring or within it), looked at every
 ## second like the wild ones.
@@ -114,8 +117,7 @@ func place(kind: StringName, point: Vector2) -> void:
 
 
 ## The nearest animal of a kind that is still about within `reach` pixels of a point, or null:
-## how a hunter finds its prey (a stork its frogs, a cat its mice). It looks only at the few wild
-## animals.
+## how a stork finds its frogs. It looks only at the few wild animals.
 func nearest_animal(kind: StringName, point: Vector2, reach: float) -> Animal:
 	var nearest: Animal = null
 	var nearest_distance := reach
@@ -126,11 +128,6 @@ func nearest_animal(kind: StringName, point: Vector2, reach: float) -> Animal:
 				nearest = animal
 				nearest_distance = distance
 	return nearest
-
-
-## The farm animals of the game, which it shows (a cat asks it for mice to hunt).
-func livestock() -> Livestock:
-	return _state.livestock
 
 
 ## The part of the world the camera shows, in world pixels.
@@ -479,6 +476,10 @@ func _add(animal: Animal, is_pinned: bool) -> void:
 	animal.wildlife = self
 	animal.is_pinned = is_pinned
 	_animals.append(animal)
+	if animal is Mouse:
+		var mouse := animal as Mouse
+		mouse.sync_prey()
+		_state.livestock.add_prey(mouse.prey)
 	world_view.entities.add_child(animal)
 	animal_added.emit(animal)
 

@@ -22,9 +22,11 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   the player) or that it hasn't come near in 12 s, and after a hunt it rests for a minute. An
   asleep cat hunts nothing; mice are out mostly at dusk and at night and cats sleep from two
   hours after sunset, so they hunt mostly at dusk and before dawn. The mice are wildlife and the
-  cats livestock: the view finds the mouse and draws the catch, Livestock moves the cat, and
-  nothing of a hunt is saved (a game saved mid-hunt loads with the cat looking about). The
-  numbers are in `data/livestock.cfg` (`[hunting]`).
+  cats livestock: each mouse tells Livestock where it is (`Prey`), Livestock decides and moves
+  the whole hunt, the views only show it, and nothing of a hunt is saved (a game saved mid-hunt
+  loads with the cat looking about). Mice live only in the wildlife near the camera, so with
+  no mice about nothing hunts, and a hunt whose mouse goes ends with the cat resting where it
+  stands. The numbers are in `data/livestock.cfg` (`[hunting]`).
 - **The bone:** an item (from the console for now). The use key at a dog in front of the
   player gives it the bone, which is used up; the dog follows the player for 3 game hours,
   day and night, then wanders again. It waits within 2 tiles of the player, walks after them

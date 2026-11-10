@@ -5,8 +5,9 @@ extends RefCounted
 ## player. At night they sleep where they are, from a while after sunset until about sunrise
 ## (each species has its hours, and each animal is a little later than the rest). A dog given a
 ## bone follows the player for a while instead, day and night. A horse the player rides does
-## nothing of its own: it goes where they ride it. A cat hunts the mice it is shown (see
-## `start_hunt`).
+## nothing of its own: it goes where they ride it. A cat hunts the mice that report themselves (see
+## `add_prey`): it looks for one when it picks what to do next, and the whole hunt is decided
+## here, with no view needed.
 ## GameState owns it and moves the animals with `update` while the player is out in the world.
 ##
 ## It does not know the world, so the two never hold each other: the map the animals walk on is
@@ -33,6 +34,7 @@ var rng := RandomNumberGenerator.new()
 var _animal_step := PathRules.default_rules().animal_step()
 var _sun: Sun
 var _animals: Array[FarmAnimal] = []
+var _mice: Array[Prey] = []
 
 
 ## `sun` gives the times of sunrise and sunset that the animals sleep by.
@@ -116,8 +118,15 @@ func stand_still(animal: FarmAnimal) -> void:
 	animal.last_step = Vector2.ZERO
 
 
+## A mouse is about for the cats to hunt. Whoever shows it keeps its Prey up to date, and sets it
+## no longer about once the mouse is gone; with no mouse about no cat hunts.
+func add_prey(mouse: Prey) -> void:
+	_mice.assign(_mice.filter(func(known: Prey) -> bool: return known.is_about))
+	_mice.append(mouse)
+
+
 ## Whether an animal would hunt a mouse now: a cat that is up and about, rested since its last
-## hunt. The mice are the wildlife's, so the WildlifeView finds one for it (see FarmAnimalView).
+## hunt.
 func can_hunt(animal: FarmAnimal) -> bool:
 	return (
 		animal.species == LivestockRules.CAT
@@ -126,27 +135,15 @@ func can_hunt(animal: FarmAnimal) -> bool:
 	)
 
 
-## The cat starts to hunt a mouse at `prey` (in tiles): it crouches facing it, creeps up on it
-## and pounces from `pounce_tiles`. Then it rests for `rest_seconds`.
-func start_hunt(animal: FarmAnimal, prey: Vector2) -> void:
+## The cat starts to hunt a mouse: it crouches facing it, creeps up on it and pounces from
+## `pounce_tiles`. The mouse sees the pounce coming and dashes off, or is caught where the cat
+## lands (`catch_chance`). A mouse that is gone before the pounce ends the hunt. Then the cat
+## rests for `rest_seconds`.
+func start_hunt(animal: FarmAnimal, mouse: Prey) -> void:
 	animal.activity = FarmAnimal.Activity.CROUCH
 	animal.seconds_left = rules.hunting("crouch_seconds")
-	track_prey(animal, prey)
-
-
-## The mouse the cat crouches at or creeps up on is at `prey` now. A pounce goes where the mouse
-## was when the cat leapt.
-func track_prey(animal: FarmAnimal, prey: Vector2) -> void:
-	if animal.activity in [FarmAnimal.Activity.CROUCH, FarmAnimal.Activity.CREEP]:
-		animal.prey = prey
-		if absf(prey.x - animal.position.x) > 0.1:
-			animal.facing = signf(prey.x - animal.position.x)
-
-
-## The cat gives up its hunt before it pounces: the mouse is gone.
-func stop_hunt(animal: FarmAnimal) -> void:
-	if animal.activity in [FarmAnimal.Activity.CROUCH, FarmAnimal.Activity.CREEP]:
-		_end_hunt(animal)
+	animal.hunted = mouse
+	_track_prey(animal)
 
 
 ## Lets `delta` seconds pass for every animal on `map` at the time of the game clock (only those
@@ -196,9 +193,10 @@ func catch_up(map: GameMap, clock: GameClock, player_feet: Vector2, seed_value: 
 			animal.activity = FarmAnimal.Activity.SLEEP
 		else:
 			# The heading it was left with is one its nose is clear on; a new activity picks its
-			# own, which a step turns away from ground it cannot walk on.
+			# own, which a step turns away from ground it cannot walk on. A cat catching up
+			# looks for no mouse: the mice are not caught up.
 			var heading := animal.heading
-			_start_next_activity(animal)
+			_start_activity(animal, rules.pick_activity(animal.species, rng))
 			animal.heading = heading
 
 
@@ -228,6 +226,11 @@ func _update_awake_animal(
 	if flee_tiles > 0.0 and player_distance <= flee_tiles:
 		animal.activity = FarmAnimal.Activity.FLEE
 	animal.hunt_rest_seconds = maxf(0.0, animal.hunt_rest_seconds - delta)
+	if animal.activity in [FarmAnimal.Activity.CROUCH, FarmAnimal.Activity.CREEP]:
+		if animal.hunted == null or not animal.hunted.is_about:
+			_end_hunt(animal)
+			return
+		_track_prey(animal)
 	match animal.activity:
 		FarmAnimal.Activity.CROUCH:
 			animal.seconds_left -= delta
@@ -269,6 +272,8 @@ func _creep(animal: FarmAnimal, delta: float, map: GameMap) -> void:
 	var to_prey := animal.prey - animal.position
 	if to_prey.length() <= rules.hunting("pounce_tiles"):
 		animal.activity = FarmAnimal.Activity.POUNCE
+		if rng.randf() >= rules.hunting("catch_chance"):
+			_scare_prey(animal)
 	elif (
 		animal.seconds_left <= 0.0
 		or not _walk(animal, to_prey.normalized(), rules.hunting("creep_speed"), delta, map)
@@ -288,7 +293,34 @@ func _pounce(animal: FarmAnimal, delta: float, map: GameMap) -> void:
 		_end_hunt(animal)
 
 
+## The mouse the cat crouches at or creeps up on is where it is now. A pounce goes where the
+## mouse was when the cat leapt.
+func _track_prey(animal: FarmAnimal) -> void:
+	animal.prey = animal.hunted.position
+	if absf(animal.prey.x - animal.position.x) > 0.1:
+		animal.facing = signf(animal.prey.x - animal.position.x)
+
+
+## The mouse sees the pounce coming and dashes off; the cat leaps at where it was.
+func _scare_prey(animal: FarmAnimal) -> void:
+	animal.hunted.fate = Prey.Fate.SCARED
+	animal.hunted.scare_point = animal.position
+	animal.hunted.is_about = false
+	animal.hunted = null
+
+
+## The hunt is over: a cat that has landed catches the mouse if it is still under it.
 func _end_hunt(animal: FarmAnimal) -> void:
+	var mouse := animal.hunted
+	if (
+		animal.activity == FarmAnimal.Activity.POUNCE
+		and mouse != null
+		and mouse.is_about
+		and mouse.position.distance_to(animal.position) <= rules.hunting("catch_tiles")
+	):
+		mouse.fate = Prey.Fate.CAUGHT
+		mouse.is_about = false
+	animal.hunted = null
 	animal.hunt_rest_seconds = rules.hunting("rest_seconds")
 	_start_activity(animal, FarmAnimal.Activity.IDLE)
 
@@ -366,8 +398,20 @@ func _wander_off(animal: FarmAnimal, map: GameMap) -> void:
 				return
 
 
+## A new activity, and a look about for a mouse to hunt instead.
 func _start_next_activity(animal: FarmAnimal) -> void:
 	_start_activity(animal, rules.pick_activity(animal.species, rng))
+	if not can_hunt(animal):
+		return
+	var nearest: Prey = null
+	var nearest_distance := rules.hunting("sight_tiles")
+	for mouse in _mice:
+		var distance := mouse.position.distance_to(animal.position)
+		if mouse.is_about and distance <= nearest_distance:
+			nearest = mouse
+			nearest_distance = distance
+	if nearest != null:
+		start_hunt(animal, nearest)
 
 
 func _start_activity(animal: FarmAnimal, activity: FarmAnimal.Activity) -> void:

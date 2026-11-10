@@ -4,6 +4,9 @@ extends Animal
 ## scurries a short way now and then; when the player comes near (or it is sent away, or a cat
 ## pounces on it and misses) it dashes off and is gone into the grass. It takes no notice of a cat
 ## creeping up on it.
+##
+## It tells the cats of Livestock where it is (`prey`) and shows what their hunt makes of it: it
+## dashes off when a cat pounces and misses, and is gone when it is caught.
 
 const SIT := &"sit"
 const SCURRY := &"scurry"
@@ -14,6 +17,8 @@ const FLEE_SPEED := 140.0
 ## A dash lasts this long before the mouse is gone into cover, sooner if its way is blocked.
 const FLEE_SECONDS := 0.6
 
+## What the cats hunt: it is kept up to date from `_update`, and ends with the mouse.
+var prey := Prey.new()
 var _state_seconds := 1.0
 var _direction := Vector2.RIGHT
 
@@ -26,6 +31,17 @@ func _init() -> void:
 func _ready() -> void:
 	super()
 	_sit()
+
+
+func _exit_tree() -> void:
+	prey.is_about = false
+
+
+## Tells the cats where it is and whether it is still about.
+func sync_prey() -> void:
+	prey.position = position / WildlifeRules.TILE_SIZE
+	if is_done:
+		prey.is_about = false
 
 
 func dismiss() -> void:
@@ -41,6 +57,13 @@ func flee_from(point: Vector2) -> void:
 
 
 func _update(delta: float) -> void:
+	sync_prey()
+	match prey.fate:
+		Prey.Fate.CAUGHT:
+			is_done = true
+		Prey.Fate.SCARED:
+			flee_from(prey.scare_point * WildlifeRules.TILE_SIZE)
+	prey.fate = Prey.Fate.NONE
 	if _state != FLEE and _reaction() == WildlifeRules.Reaction.FLEE:
 		_dash(_away_from_player())
 	match _state:

@@ -55,7 +55,7 @@ Warft and an Ewer here and there.
   would else catch up in one go, `SoilMoisture.catch_up_all_over_frames`), each within
   `Simulation.frame_budget_usec` a frame. Main holds the world still meanwhile, the chunk
   residency's streaming (no chunk loads or drops by `update`; `require` still loads what an
-  action needs) and the views too (hunts, wildlife), until the player has woken, and a quit waits
+  action needs) and the views too (wildlife), until the player has woken, and a quit waits
   for that: so the world ends as after `skip` and a save is of a whole morning. The systems:
   `FarmingUpkeep` (every hour: the crops live through the hour, a 24th of a day's growth in the
   weather of its day; the end of the day counts for them), `NightUpkeep` (at midnight: reeds,
@@ -144,13 +144,20 @@ Warft and an Ewer here and there.
   water, so nothing stands on it (`can_stand`), a `Gull` swims there and a `Tern` dives.
   Storks on roofs (`Stork`) stand on the top edge of the house's picture as it is shown
   (`WorldView.building_picture`, so snow is counted), just in front of where the house sorts
-  (`BuildingViews.sort_position`); flying birds cast `GroundShadows`. A hunter finds its prey
-  with `WildlifeView.nearest_animal` (a stork its frogs, `Frog`; a cat its `Mouse`), asked when
-  it picks what to do next, not every frame. A cat is state and a mouse is not, so a hunt is
-  split: the cat's `FarmAnimalView` finds the mouse, starts the hunt in Livestock
-  (`start_hunt`, `track_prey`, `stop_hunt`: the cat crouches, creeps and pounces, by the
-  `[hunting]` numbers of `data/livestock.cfg`) and draws the catch as the cat pounces (the mouse
-  is caught, or dashes off with `Mouse.flee_from`). Nothing of a hunt is saved.
+  (`BuildingViews.sort_position`); flying birds cast `GroundShadows`. A stork finds its frogs
+  (`Frog`) with `WildlifeView.nearest_animal`, asked when it picks what to do next, not every
+  frame. A cat's hunt is Livestock's alone, so it needs no view and no camera: the mice are
+  ambient wildlife (nodes of the `WildlifeView`, near the camera, not saved), and each `Mouse`
+  reports itself to Livestock as a `Prey` (`add_prey`; its position in tiles, `is_about`, kept up
+  to date by `Mouse.sync_prey`). When a cat picks what to do next Livestock looks for the nearest
+  `Prey` in sight, and `start_hunt` has it crouch, creep and pounce by the `[hunting]` numbers of
+  `data/livestock.cfg`, rolling the catch with Livestock's dice. Its outcome is left in
+  `Prey.fate` (caught, or scared off from a point) for the mouse to show, and the cat's
+  `FarmAnimalView` only plays the crouch, creep and pounce frames of its activity. A mouse that
+  goes (run off, or its view freed) is no longer about, which ends the hunt of any cat after it:
+  the cat rests and idles where it stands. With no wildlife view there are no mice, so nothing
+  hunts and nothing is left half done; a cat far from the camera hunts a mouse in sight all the
+  same. `catch_up` looks for no mouse. Nothing of a hunt is saved.
 - **Npcs** (`game/state/npcs.gd`) holds the villagers (`Npc`: name, sex, look as an
   `Appearance`, who they are (their whole sheet: age, trade, personality, background, home,
   speech, sample lines, people, likes, wants, day, habits, avoids, secrets), position, anchor,

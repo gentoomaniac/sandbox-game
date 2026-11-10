@@ -121,9 +121,11 @@ func test_a_cat_beside_a_mouse_starts_no_hunt_over_the_frames_of_a_sleep() -> vo
 		if not _main._is_making_up_time:
 			return not activities.is_empty()
 		could_process.append(cat_view.can_process())
-		# What its view would turn into a hunt: an idle cat, rested, a mouse in sight.
+		# What the livestock would turn into a hunt if it ran: an idle cat, rested, about to pick
+		# what to do next, a mouse in sight.
 		activities.append(cat.activity)
 		cat.activity = FarmAnimal.Activity.IDLE
+		cat.seconds_left = 0.0
 		cat.hunt_rest_seconds = 0.0
 		return false
 	await wait_until(is_done, SLEEP_SECONDS)

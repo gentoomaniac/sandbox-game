@@ -37,9 +37,10 @@ var is_saddled := false
 ## The player rides it (see GameState `mount`): it goes where they ride, and does nothing of its
 ## own accord. Not saved, as the riding isn't.
 var is_ridden := false
-## Where the mouse a hunting cat is after is, in tiles of the world. Not saved, as the hunt isn't
-## (the mice are not either). A cat whose view is freed mid-hunt creeps to this last spot and
-## pounces there with no catch drawn: harmless, and the hunt ends by itself.
+## The mouse a hunting cat is after, or null. Not saved, as the hunt isn't (the mice are not
+## either).
+var hunted: Prey
+## Where that mouse was when the cat last looked, in tiles of the world: a pounce lands there.
 var prey := Vector2.ZERO
 ## Seconds before a cat hunts again (see `rest_seconds` in data/livestock.cfg).
 var hunt_rest_seconds := 0.0
