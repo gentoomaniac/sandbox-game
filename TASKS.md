@@ -191,6 +191,24 @@ spring and summer and flies off again; there is no nest. Moved here from task 12
   is saved; what the player only sees (flaps, clatter) stays in the views.
 - Tests for the year of a nest by date, the seeding, save and load; a screenshot in the README.
 
+## 158. Frame spikes left after task 147: the save snapshot, the bed's save, the pass-out
+
+- [ ] Done
+
+The user, 2026-11-10: "start the performance follow ups" (the leftovers of task 147, see its
+Done note in docs/tasks-done.md).
+- The snapshot of a timed or quick save (`to_dict` on the main thread) takes about 50 ms on the
+  `make bench` save: make it cheap in the frame (for example cache the dict of what didn't change
+  since the last save, such as chunks, and rebuild only what did), so a save costs well under
+  16.7 ms on the main thread. The snapshot still shares nothing with the game, and a save
+  written that way loads the same as one written in full.
+- Sleeping in a bed still saves synchronously in one frame: save as passing out does, in the
+  background without stalling.
+- Passing out still has two long frames under the fade (about 67 and 102 ms: the villagers'
+  skip in `ActorsUpkeep`, the wildlife settle, the snapshot): spread them so no frame goes over
+  33 ms, the same world after the skip.
+- `make bench` before and after (a scenario for the bed if it has none); same game, same saves.
+
 ## Later (not part of the prototype)
 
 - **Review R8: what is left** (review F2.4/F2.5, A4, package R8; the simulation and its time are
