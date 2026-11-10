@@ -61,6 +61,7 @@ help:
 	@echo "  AT          screenshot: world tile to put the player on, e.g. AT=40,-20 (default: the camp)."
 	@echo "  TIME        screenshot: time of day, e.g. TIME=21:00 (default: the game start)."
 	@echo "  ZOOM        screenshot: camera zoom, 0.5 (the widest, 40x22 tiles, as the game starts) to 2 (the closest); 1 is 20x11 tiles."
+	@echo "  SIZE        screenshot: picture size in pixels, e.g. SIZE=1000x1040 (default: the window as it is)."
 	@echo "  OUT         screenshot: file to write (default: build/screenshot.png)."
 	@echo "  SCREENSHOT_TIMEOUT  screenshot: seconds before a hung Godot is killed (default: 30)."
 	@echo "  KEEP_SAVE   screenshot: KEEP_SAVE=1 loads the real save instead of a new game."
@@ -163,6 +164,10 @@ AT ?=
 TIME ?=
 # Camera zoom, 0.5 (the widest, 40x22 tiles, as the game starts) to 2 (the closest).
 ZOOM ?=
+# The picture's size in pixels, e.g. SIZE=1000x1040. Without it the picture is the window as the
+# window manager sized it, which is not what was asked for on Wayland; with it the game runs in a
+# viewport of that size and the picture shows what a window of that size shows.
+SIZE ?=
 # Further debug flags, e.g. ARGS="--ghost=3,-5" (see game/scenes/startup_options.gd).
 ARGS ?=
 OUT ?= $(CURDIR)/build/screenshot.png
@@ -190,7 +195,7 @@ screenshot: assets
 	$(IMPORT)
 	mkdir -p $(dir $(OUT))
 	rm -f $(OUT)
-	timeout -s KILL $(SCREENSHOT_TIMEOUT) $(GODOT) $(QUIET_WINDOW) --path . -- $(if $(SOUND),,--mute) --background $(if $(KEEP_SAVE),,--new-game --save-path=$(CURDIR)/build/screenshot.save) $(if $(AT),--at=$(AT)) --settings-path=$(CURDIR)/build/settings.cfg --screenshot=$(OUT) $(if $(TIME),--time=$(TIME)) $(if $(ZOOM),--zoom=$(ZOOM)) $(ARGS); status=$$?; \
+	timeout -s KILL $(SCREENSHOT_TIMEOUT) $(GODOT) $(QUIET_WINDOW) --path . $(if $(SIZE),res://game/scenes/screenshot_frame.tscn) -- $(if $(SOUND),,--mute) --background $(if $(KEEP_SAVE),,--new-game --save-path=$(CURDIR)/build/screenshot.save) $(if $(AT),--at=$(AT)) --settings-path=$(CURDIR)/build/settings.cfg --screenshot=$(OUT) $(if $(TIME),--time=$(TIME)) $(if $(ZOOM),--zoom=$(ZOOM)) $(if $(SIZE),--screenshot-size=$(SIZE)) $(ARGS); status=$$?; \
 	if [ $$status -eq 137 ] && [ -s $(OUT) ]; then echo "make screenshot: Godot hung on quit, after the screenshot"; exit 0; fi; \
 	exit $$status
 

@@ -70,4 +70,4 @@ func world_to_ui(world_position: Vector2) -> Vector2:
 
 
 func _window_size() -> Vector2:
-	return Vector2(get_window().size)
+	return ViewMath.window_size(get_window())

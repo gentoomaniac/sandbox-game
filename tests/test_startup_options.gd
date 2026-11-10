@@ -149,3 +149,17 @@ func test_a_malformed_time_is_an_error_and_leaves_the_time() -> void:
 	var options := StartupOptions.new(PackedStringArray(["--time=25:00", "--time=noon"]))
 	assert_push_error_count(2)
 	assert_eq(options.time_hour, -1)
+
+
+func test_the_screenshot_size_is_width_by_height() -> void:
+	var options := StartupOptions.new(PackedStringArray(["--screenshot-size=1000x1040"]))
+	assert_eq(options.screenshot_size, Vector2i(1000, 1040))
+	assert_eq(StartupOptions.new(PackedStringArray()).screenshot_size, Vector2i.ZERO)
+
+
+func test_a_malformed_screenshot_size_is_an_error_and_leaves_no_size() -> void:
+	var options := StartupOptions.new(
+		PackedStringArray(["--screenshot-size=1000", "--screenshot-size=axb"])
+	)
+	assert_push_error_count(2)
+	assert_eq(options.screenshot_size, Vector2i.ZERO)

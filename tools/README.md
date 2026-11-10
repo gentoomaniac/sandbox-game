@@ -440,3 +440,13 @@ scenarios. `tools/llm/eval_prompts.py --compare <tag> <tag>` puts the
 replies of two earlier runs side by side in `build/llm-eval/compare.md`. It takes about 2
 minutes for the 3B and 4 for the 7B with 5 replies each. When the prompt words in
 `data/npc_talk.cfg` change, run it on both and read the reports.
+
+## Screenshots in a size
+
+`make screenshot` saves the window as the window manager sized it, and on Wayland that is not the
+size asked for. `make screenshot SIZE=1000x1040` runs the game in a viewport of exactly that size
+(`game/scenes/screenshot_frame.tscn` instead of the main scene, with `--screenshot-size`), stretched
+as the project's window is (the base size, the aspect `expand`, the UI scale of the settings), so
+the picture is exactly 1000x1040 and shows the view, the HUD and the UI scale a window of that size
+would. The viewport's UI size is a whole number, so a UI layout can be a pixel off the real
+window's. Without `SIZE` nothing changes.

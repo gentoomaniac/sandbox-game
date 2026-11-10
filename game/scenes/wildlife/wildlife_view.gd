@@ -135,7 +135,7 @@ func livestock() -> Livestock:
 
 ## The part of the world the camera shows, in world pixels.
 func view_rect() -> Rect2:
-	var size := ViewMath.visible_size(Vector2(get_window().size), _camera.rig.zoom)
+	var size := ViewMath.visible_size(ViewMath.window_size(get_window()), _camera.rig.zoom)
 	return Rect2(_camera.rig.position - size / 2.0, size)
 
 

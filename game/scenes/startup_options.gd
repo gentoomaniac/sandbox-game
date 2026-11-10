@@ -18,6 +18,8 @@ extends RefCounted
 ##
 ## The screenshot
 ##   --screenshot=<path>      save one frame as PNG once streaming has settled, then quit
+##   --screenshot-size=<w>x<h>  make the picture exactly that size, showing what a window of that
+##                            size shows, whatever size the window manager gives the window
 ##   --screenshot-delay=<s>   wait that many real seconds more, with the clock running (to see
 ##                            what a midnight changes: `--day=30 --time=23:50
 ##                            --screenshot-delay=10`)
@@ -152,6 +154,8 @@ var sound_log := false
 # The screenshot
 var screenshot := ""
 var screenshot_delay := 0.0
+## Zero when the picture is the window as it is.
+var screenshot_size := Vector2i.ZERO
 ## A `PauseMenu.Page`, or -1 for none.
 var menu := -1
 var tooltip := ""
@@ -279,6 +283,8 @@ func _init(args := PackedStringArray()) -> void:
 				sound_log = true
 			"--screenshot":
 				screenshot = _value(arg)
+			"--screenshot-size":
+				screenshot_size = _size(arg)
 			"--screenshot-delay":
 				screenshot_delay = float(_value(arg))
 			"--menu":
@@ -424,6 +430,14 @@ func _tile(arg: String) -> Vector2i:
 		push_error("%s expects <x>,<y>, got '%s'" % [arg.get_slice("=", 0), _value(arg)])
 		return NO_TILE
 	return Vector2i(int(parts[0]), int(parts[1]))
+
+
+func _size(arg: String) -> Vector2i:
+	var parts := _value(arg).split("x")
+	if parts.size() != 2 or not parts[0].is_valid_int() or not parts[1].is_valid_int():
+		push_error("%s expects <w>x<h>, got '%s'" % [arg.get_slice("=", 0), _value(arg)])
+		return Vector2i.ZERO
+	return Vector2i(maxi(int(parts[0]), 1), maxi(int(parts[1]), 1))
 
 
 func _parse_time(arg: String) -> void:

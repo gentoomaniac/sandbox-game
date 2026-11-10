@@ -23,6 +23,15 @@ const VIEWPORT_SIZE := WIDEST_VISIBLE_SIZE + Vector2i.ONE * 2 * VIEWPORT_MARGIN
 ## Zoom change of one mouse wheel notch.
 const WHEEL_ZOOM_FACTOR := 1.1
 
+## The size of the screen when it is a viewport of its own (`make screenshot SIZE=...`), as the
+## window is not the screen then; zero otherwise.
+static var screen_size := Vector2i.ZERO
+
+
+## The pixels the screen has: the window's, or the viewport the screenshot is taken of.
+static func window_size(window: Window) -> Vector2:
+	return Vector2(screen_size if screen_size != Vector2i.ZERO else window.size)
+
 
 static func clamp_zoom(zoom: float) -> float:
 	return clampf(zoom, MIN_ZOOM, MAX_ZOOM)

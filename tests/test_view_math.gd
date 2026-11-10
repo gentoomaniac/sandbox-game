@@ -92,3 +92,13 @@ func test_mouse_position_converts_at_every_ui_scale() -> void:
 		assert_eq(ViewMath.window_to_world(window_position, WINDOW, target, 1.0), target)
 		# A quarter of the way across the UI is a quarter of the way across the window.
 		assert_eq(ViewMath.ui_to_window(ui_size / 4.0, WINDOW, ui_size), WINDOW / 4.0)
+
+
+func test_the_screen_is_the_window_unless_a_screenshot_has_its_own_size() -> void:
+	var window := Window.new()
+	window.size = Vector2i(882, 1372)
+	assert_eq(ViewMath.window_size(window), Vector2(882, 1372))
+	ViewMath.screen_size = Vector2i(1000, 1040)
+	assert_eq(ViewMath.window_size(window), Vector2(1000, 1040))
+	ViewMath.screen_size = Vector2i.ZERO
+	window.free()
