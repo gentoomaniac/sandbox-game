@@ -260,6 +260,13 @@ re-taken in its old size (task 160).
   forced); muted and without stealing focus, as now.
 - Then re-take docs/screenshots/dogs-cats-horses.png with the horse of task 156 in its old size
   (1000x1040), the same scene as before (the item task 160 left to Later).
+- The user, 2026-11-10: "I run KDE with Krohnkite tiling script. So the opening window gets
+  tiled immediately ... the window always pops up in the foreground. If we can identify test runs
+  of the game I can add rules to not tile the window and maybe put it in the background." Every
+  window a tool or an agent opens (`make screenshot`, and any other target that opens one for a
+  check) carries a fixed title and, where the display driver allows it, its own app id or window
+  class (for example `sandbox-game-test`), different from the game the user plays; documented in
+  tools/README.md with a KWin rule and the Krohnkite ignore setting to match it.
 
 ## Later (not part of the prototype)
 
