@@ -4310,3 +4310,41 @@ greetings or bubbles that use `reply`. Decision, the user may change it: on the 
 is not mute. Not covered: an answer that is empty only after NpcPrompt's trimming (such as a lone
 "Name:") gives no line and no notice. Docs: README "When the model fails", design/villagers/
 dialogue.md and ideas.md. Tests: tests/test_model_notices.gd, test_npc_dialogue.gd, test_chat.gd.
+
+## 152. Storks nest on roofs and raise their young
+
+- [x] Done
+
+The user, 2026-11-09: "Storks need nests, in breeding season you see offspring that eventually
+leaves." Today a `roof_stork` (data/wildlife.cfg) flies in, stands on a roof near the view in
+spring and summer and flies off again; there is no nest. Moved here from task 122.
+- Nests: a stork's nest (a wide heap of sticks) on a roof ridge of some village buildings, and
+  maybe on a pole or a dead tree; where they are comes from the world (seeded, the same in every
+  game of a seed), saved if the player can change it. Drawn at 32 px and in the classic art.
+- The year of a nest (the North Sea coast, GameClock seasons): empty in winter; the pair arrives
+  in early spring and stands on it, clattering (`SoundEvents.animal_alarm` gives the clatter);
+  in late spring the young appear, small grey heads over the rim, then larger and whiter through
+  summer; the parents fly off to the meadows and back (the hunting `stork`); in late summer the
+  young stand on the rim and flap, then leave one by one; in autumn the nest is empty again.
+  Numbers and days in data/wildlife.cfg, seeded per nest so not every nest is in step.
+- State that must last across days (the pair, the young, how far along) lives in game state and
+  is saved; what the player only sees (flaps, clatter) stays in the views.
+- Tests for the year of a nest by date, the seeding, save and load; a screenshot in the README.
+
+Done: nests are on roofs only (a kate, longhouse, hall house or barn; about 4 in 10 by the world seed
+and where the building stands); no pole or dead tree yet. Nothing is saved, which the task allowed
+("saved only if the player can change it"): `StorkNests` derives which buildings have a nest and who
+is in it (pair, young, how grown, how many parents are home) from the world seed, the building's
+place, the year and the date and sun, so every game of a seed has the same nests, a load finds them
+as they were, no save format changed and no upgrade step is needed, and the player changes a nest
+only by taking its house down. Numbers and days: the `[stork_nest]` section of data/wildlife.cfg
+(pair days 3 to 8, hatching days 17 to 26, young on the rim days 41 to 52, the last leaves by day
+60), each nest and year with its own spread. The view (`StorkNestView`, one per nest near the view)
+shows the nest all year, the pair as roof storks that fly off to the meadows and back and clatter,
+the young as heads over the rim (small grey, half grown, white) and then standing, flapping and
+flying off one by one. Choice: the random `roof_stork` stays but keeps off roofs with a nest, and the
+pair of a nest are not counted among the roof storks. Art: tools/art/stork_nest.py and
+classic/stork_nest.py (sheets `stork_nest` and `stork_chick`). Design page: design/world/wildlife.md;
+README wildlife paragraph and docs/screenshots/stork-nest.png. Tests: tests/test_stork_nests.gd (rules,
+seeding, the year, save and load) and tests/test_stork_nest_view.gd. Open: parents do not hunt as a
+visible `stork` on the meadows (they leave the view), and weather does not keep them on the nest.

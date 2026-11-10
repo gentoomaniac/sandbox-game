@@ -150,26 +150,6 @@ come earlier.
 - Not saved, not remembered. Bubbles drawn in palette colours, readable at every zoom; a
   screenshot in the README.
 
-## 152. Storks nest on roofs and raise their young
-
-- [ ] Done
-
-The user, 2026-11-09: "Storks need nests, in breeding season you see offspring that eventually
-leaves." Today a `roof_stork` (data/wildlife.cfg) flies in, stands on a roof near the view in
-spring and summer and flies off again; there is no nest. Moved here from task 122.
-- Nests: a stork's nest (a wide heap of sticks) on a roof ridge of some village buildings, and
-  maybe on a pole or a dead tree; where they are comes from the world (seeded, the same in every
-  game of a seed), saved if the player can change it. Drawn at 32 px and in the classic art.
-- The year of a nest (the North Sea coast, GameClock seasons): empty in winter; the pair arrives
-  in early spring and stands on it, clattering (`SoundEvents.animal_alarm` gives the clatter);
-  in late spring the young appear, small grey heads over the rim, then larger and whiter through
-  summer; the parents fly off to the meadows and back (the hunting `stork`); in late summer the
-  young stand on the rim and flap, then leave one by one; in autumn the nest is empty again.
-  Numbers and days in data/wildlife.cfg, seeded per nest so not every nest is in step.
-- State that must last across days (the pair, the young, how far along) lives in game state and
-  is saved; what the player only sees (flaps, clatter) stays in the views.
-- Tests for the year of a nest by date, the seeding, save and load; a screenshot in the README.
-
 ## 165. Pigs, and pig pens the player builds
 
 - [ ] Done
