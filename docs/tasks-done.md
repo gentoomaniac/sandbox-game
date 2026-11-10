@@ -4235,3 +4235,25 @@ its inventory, as it does to the equipment); PlayerView and CharacterScreen no l
 every frame. The wildlife rules already had `WildlifeRules.for_session(day_sun)` (the only caller,
 `WildlifeView.show_wildlife`, uses it, nothing writes `sun` into the default rules); a test now
 pins two sessions of different suns. New tests: tests/test_held_layer.gd.
+
+## 149. Harvesting works, and dead plants are hoed away for the next crop
+
+- [x] Done
+
+The user, 2026-11-09: "make sure plants can get harvested and dead plants can be hoed away to
+prep the soil for the next produce".
+- Already there (tasks review, 2026-11-09): the empty hand harvests a ripe crop and clears a dead
+  one, which leaves tilled soil (tool_use.gd); every crop ripens (test_crops.gd). The hoe only
+  tills free grass and the scythe only mows, so neither clears a dead crop.
+- The hoe clears a dead crop too (and decide with the user whether the scythe should): the tile
+  is tilled soil again, ready to plant. Say what the player gets from it (nothing, or a little).
+- Tests: each crop of the crop data harvested through a use when ripe, and what the player gets;
+  a cleared tile (by hand and by hoe) can be planted, also after save and load.
+
+Done: the hoe now clears a dead crop (the use is the till use, so it costs what tilling costs
+(`till`, 2.0), and has the same swing and sound); the tile is tilled soil again, ready to plant.
+Defaults, the user may change them: the scythe does not clear dead crops, and clearing a dead
+crop (by hand or hoe) gives the player nothing. The empty-hand harvest and clear are unchanged.
+Design page: design/farming/crops.md; README farming paragraph. Tests: tests/test_clearing_crops.gd
+(every crop harvested when ripe and what it gives, hand and hoe clearing, plantable again also
+after save and load, the scythe leaving the crop).

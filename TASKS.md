@@ -150,20 +150,6 @@ come earlier.
 - Not saved, not remembered. Bubbles drawn in palette colours, readable at every zoom; a
   screenshot in the README.
 
-## 149. Harvesting works, and dead plants are hoed away for the next crop
-
-- [ ] Done
-
-The user, 2026-11-09: "make sure plants can get harvested and dead plants can be hoed away to
-prep the soil for the next produce".
-- Already there (tasks review, 2026-11-09): the empty hand harvests a ripe crop and clears a dead
-  one, which leaves tilled soil (tool_use.gd); every crop ripens (test_crops.gd). The hoe only
-  tills free grass and the scythe only mows, so neither clears a dead crop.
-- The hoe clears a dead crop too (and decide with the user whether the scythe should): the tile
-  is tilled soil again, ready to plant. Say what the player gets from it (nothing, or a little).
-- Tests: each crop of the crop data harvested through a use when ripe, and what the player gets;
-  a cleared tile (by hand and by hoe) can be planted, also after save and load.
-
 ## 152. Storks nest on roofs and raise their young
 
 - [ ] Done
