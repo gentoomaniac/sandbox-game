@@ -78,7 +78,7 @@ func test_a_side_in_an_unloaded_chunk_counts_its_edits() -> void:
 func test_the_view_draws_the_picture_of_the_connections_and_redraws_the_neighbours() -> void:
 	var view := WorldView.new()
 	add_child_autofree(view)
-	view.show_world(_world)
+	view.show_world(ChunkResidency.new(_world))
 	var west := _knick(Vector2i(5, 5))
 	assert_eq(
 		view._objects.get_cell_atlas_coords(west.pos), ObjectTileset.atlas_cell(west, false, 0)

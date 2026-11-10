@@ -12,17 +12,19 @@ const WINTER := 105
 const BLOCK: Array[Vector2i] = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]
 
 var _view: WorldView
+var _residency: ChunkResidency
 var _rules := PathRules.default_rules()
 
 
 func before_each() -> void:
 	_view = WorldView.new()
 	add_child_autofree(_view)
-	_view.show_world(World.new(SEED))
+	_residency = ChunkResidency.new(World.new(SEED))
+	_view.show_world(_residency)
 	_view.world.clock.day = SUMMER
 	_view.refresh_looks(SUMMER, 0.0, 0.0)
 	_view.finish_refresh()
-	_view._load_chunk(CHUNK)
+	_residency.load_chunk(CHUNK)
 	_view.finish_drawing()
 
 

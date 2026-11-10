@@ -20,7 +20,7 @@ const STAGGER_SECONDS := 0.05
 ## Piles get a sprite within this many chunks of the focus, the ones the world view draws. They
 ## keep it until they are further than one chunk more, so a focus on a chunk border does not
 ## make and free the sprites of a row of chunks again and again.
-const NEAR_CHUNKS := WorldView.LOAD_RADIUS
+const NEAR_CHUNKS := ChunkResidency.LOAD_RADIUS
 const KEPT_CHUNKS := NEAR_CHUNKS + 1
 
 var _world: World

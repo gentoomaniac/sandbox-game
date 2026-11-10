@@ -16,9 +16,10 @@ func _connections_to(model_signal: Signal, receiver: Object) -> int:
 func test_the_world_view_shown_the_same_world_twice_connects_once() -> void:
 	var view: WorldView = add_child_autofree(WorldView.new())
 	var world := World.new(1)
-	view.show_world(world)
+	var residency := ChunkResidency.new(world)
+	view.show_world(residency)
 	var count := _connections_to(world.tile_changed, view)
-	view.show_world(world)
+	view.show_world(residency)
 	assert_eq(count, 1)
 	assert_eq(_connections_to(world.tile_changed, view), count)
 
@@ -27,8 +28,8 @@ func test_the_world_view_refuses_another_world_and_stays_on_the_first() -> void:
 	var view: WorldView = add_child_autofree(WorldView.new())
 	var first := World.new(1)
 	var second := World.new(2)
-	view.show_world(first)
-	view.show_world(second)
+	view.show_world(ChunkResidency.new(first))
+	view.show_world(ChunkResidency.new(second))
 	assert_push_error_count(1)
 	assert_eq(view.world, first)
 	assert_eq(_connections_to(second.tile_changed, view), 0)

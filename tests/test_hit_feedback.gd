@@ -10,13 +10,15 @@ const BROADLEAVES: Array[StringName] = [
 ]
 
 var _view: WorldView
+var _residency: ChunkResidency
 
 
 func _show_world_in_view() -> void:
 	_view = WorldView.new()
 	add_child_autofree(_view)
-	_view.show_world(_world)
-	_view._load_chunk(Chunk.world_to_chunk(_tile))
+	_residency = ChunkResidency.new(_world)
+	_view.show_world(_residency)
+	_residency.load_chunk(Chunk.world_to_chunk(_tile))
 	_view.finish_drawing()
 
 

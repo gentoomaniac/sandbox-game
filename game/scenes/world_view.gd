@@ -1,6 +1,6 @@
 class_name WorldView
 extends Node2D
-## Renders a World and streams chunks in and out around a focus.
+## Renders a World, drawing the chunks that a ChunkResidency loads and erasing those it drops.
 ##
 ## One TileMapLayer per terrain layer for the whole world (not per chunk), drawn as a dual
 ## grid (see TerrainTileset): cell (x, y) of every layer is shifted half a tile up and left,
@@ -36,13 +36,11 @@ const REFRESH_BUDGET_USEC := 3000
 ## The lower part of a tree's canopy, as a share of its picture's height above the picture's
 ## bottom: what falls from there passes the trunk and shows against the ground.
 const CANOPY_HEIGHT_SHARE := 0.45
-const LOAD_RADIUS := 3
-const UNLOAD_RADIUS := 5
-## Loading a chunk generates it (about 8 ms) and draws it (about 45 ms): the drawing is cut into
-## steps (a row of cells, the objects, the borders) that a frame runs until it has spent this
-## long. A new chunk is loaded when the one before is drawn; the look refresh waits for
-## frames without either (see `_process`). The chunks load well ahead of the view, so the
-## world around the player is drawn long before they get there.
+## Drawing a chunk takes about 45 ms: it is cut into steps (a row of cells, the objects, the
+## borders) that a frame runs until it has spent this long. The next chunk is loaded when the one
+## before is drawn (Main asks `is_drawing`); the look refresh waits for frames without drawing
+## (see `_process`). The chunks load well ahead of the view, so the world around the player is
+## drawn long before they get there.
 const DRAW_BUDGET_USEC := 8000
 ## The budget while a chunk next to the player's is still undrawn (at the start, after a jump
 ## to another place): it is on the screen, so it is drawn sooner, at the cost of longer frames.
@@ -108,10 +106,9 @@ var ambient_motion := AmbientMotion.new()
 ## The flowers and pebbles on the ground and the hints of clay spots; the wildlife asks it where
 ## flowers bloom.
 var decorations: DecorationView
-var _generator: WorldGenerator
+var _residency: ChunkResidency
 var _hit_particles := HitParticles.new()
 var _variety_noise := FastNoiseLite.new()
-var _focus_chunk := Vector2i.ZERO
 var _tileset := TerrainTileset.new(ambient_motion)
 var _object_tileset := ObjectTileset.new(CropRules.default_rules(), ambient_motion)
 ## Indexed by TerrainTileset.Layer.
@@ -126,8 +123,10 @@ var _blend: SeasonBlend
 var _look_state := Vector3(-1, 0, 0)
 var _conditions: SeasonBlend.Conditions
 var _chunk_looks: Dictionary[Vector2i, ChunkLooks] = {}
-## The chunk that is loaded and being drawn, if any: the next one loads when it is drawn.
+## The chunk that is loaded and being drawn, if any.
 var _drawing: ChunkDrawing
+## The loaded chunks that wait to be drawn, the oldest first.
+var _to_draw: Array[Chunk] = []
 ## Chunks whose looks are not brought up to date yet, the nearest to the focus last.
 var _refresh_queue: Array[Vector2i] = []
 ## Cells whose overlays must be drawn again after a refresh found their tiles' looks changed.
@@ -213,16 +212,17 @@ func _add_overlay(overlay_name: String) -> TileMapLayer:
 	return tile_map
 
 
-## Shows a world, including the chunks that are already loaded in it. Showing the world it shows
-## again does nothing; another world is refused, as its chunks, objects and houses would stay
-## drawn: make a new view.
-func show_world(world_to_show: World) -> void:
-	if world == world_to_show:
+## Shows the world of a residency, including the chunks that are already loaded in it, and draws
+## the chunks it loads from now on. Showing the residency it shows again does nothing; another
+## one is refused, as its chunks, objects and houses would stay drawn: make a new view.
+func show_world(residency: ChunkResidency) -> void:
+	if _residency == residency:
 		return
-	if world != null:
+	if _residency != null:
 		push_error("WorldView already shows another world")
 		return
-	world = world_to_show
+	_residency = residency
+	world = residency.world
 	# The view was made before Main chose the art set.
 	show_art_set()
 	world.objects_changed.connect(_on_objects_changed)
@@ -232,7 +232,8 @@ func show_world(world_to_show: World) -> void:
 	_soil_wetness.show_world(world, is_snowed_over)
 	world.building_placed.connect(_buildings.add)
 	world.building_removed.connect(_buildings.remove)
-	_generator = WorldGenerator.new(world.world_seed)
+	residency.chunk_loaded.connect(_on_chunk_loaded)
+	residency.chunk_unloaded.connect(_on_chunk_unloaded)
 	_variety_noise.seed = world.world_seed + VARIETY_SEED_OFFSET
 	_variety_noise.frequency = VARIETY_FREQUENCY
 	decorations.show_world(world)
@@ -259,7 +260,7 @@ func refresh_looks(day: int, snow_cover: float, frost: float) -> void:
 	decorations.day = day
 	_conditions = _blend.conditions(day, snow_cover, frost)
 	_refresh_queue.assign(world.loaded_chunk_coords())
-	var focus := _focus_chunk
+	var focus := _residency.focus_chunk
 	_refresh_queue.sort_custom(
 		func(a: Vector2i, b: Vector2i) -> bool:
 			return (a - focus).length_squared() > (b - focus).length_squared()
@@ -272,9 +273,14 @@ func building_picture(building: Building) -> String:
 	return _buildings.picture_path(building)
 
 
-## Draws the chunk that is loaded and not drawn yet, at once (for tests).
+## Whether a loaded chunk is not drawn yet.
+func is_drawing() -> bool:
+	return _drawing != null
+
+
+## Draws the chunks that are loaded and not drawn yet, at once (for tests).
 func finish_drawing() -> void:
-	while _drawing != null:
+	while is_drawing():
 		_draw_next_step()
 
 
@@ -297,11 +303,6 @@ func set_light_strength(strength: float) -> void:
 	_buildings.set_light_strength(strength)
 
 
-## Streaming follows this world tile position.
-func set_focus(world_pos: Vector2i) -> void:
-	_focus_chunk = Chunk.world_to_chunk(world_pos)
-
-
 ## The soil of the loaded chunks shows the moisture it has now, those around the focus first: it
 ## changes with the hours, quietly, and a few tiles are drawn every frame. Chunks that load later
 ## are drawn when they load.
@@ -309,9 +310,10 @@ func refresh_soil() -> void:
 	if world == null:
 		return
 	var coords := world.loaded_chunk_coords()
+	var focus := _residency.focus_chunk
 	coords.sort_custom(
 		func(a: Vector2i, b: Vector2i) -> bool:
-			return (a - _focus_chunk).length_squared() < (b - _focus_chunk).length_squared()
+			return (a - focus).length_squared() < (b - focus).length_squared()
 	)
 	_soil_wetness.refresh_looks(coords)
 
@@ -319,21 +321,14 @@ func refresh_soil() -> void:
 func _process(delta: float) -> void:
 	if world == null:
 		return
-	var plan := ChunkStreaming.plan(
-		_focus_chunk, world.loaded_chunk_coords(), LOAD_RADIUS, UNLOAD_RADIUS
-	)
-	for coords: Vector2i in plan["unload"]:
-		_unload_chunk(coords)
-	var to_load: Array = plan["load"]
-	if _drawing == null and not to_load.is_empty():
-		_load_chunk(to_load[0])
 	_draw_within_budget()
 	# Loading and drawing fill most of a frame, so the look refresh only runs in frames without.
-	if to_load.is_empty() and _drawing == null:
+	var is_drawn := _residency.is_complete and not is_drawing()
+	if is_drawn:
 		var deadline := Time.get_ticks_usec() + REFRESH_BUDGET_USEC
 		while Time.get_ticks_usec() < deadline and _is_refreshing():
 			_refresh_step()
-	is_settled = to_load.is_empty() and _drawing == null and not _is_refreshing()
+	is_settled = is_drawn and not _is_refreshing()
 	_update_see_through(delta)
 	_update_falling_trees(delta)
 
@@ -422,23 +417,16 @@ func _shake_object(object: WorldObject) -> void:
 	_object_sprites[object.pos].shake()
 
 
-## Generates a chunk and adds it to the world; `_draw_within_budget` draws it.
-func _load_chunk(coords: Vector2i) -> void:
-	var chunk := _generator.generate_chunk(coords)
-	world.add_chunk(chunk)
-	_drawing = ChunkDrawing.new(chunk)
-
-
 ## Runs the steps of the drawing, one at least, until the budget of the frame is spent.
 func _draw_within_budget() -> void:
 	if _drawing == null:
 		return
-	var offset := (_drawing.chunk.coords - _focus_chunk).abs()
+	var offset := (_drawing.chunk.coords - _residency.focus_chunk).abs()
 	var is_urgent := maxi(offset.x, offset.y) <= 1
 	var budget := URGENT_DRAW_BUDGET_USEC if is_urgent else DRAW_BUDGET_USEC
 	var deadline := Time.get_ticks_usec() + budget
 	_draw_next_step()
-	while _drawing != null and Time.get_ticks_usec() < deadline:
+	while is_drawing() and Time.get_ticks_usec() < deadline:
 		_draw_next_step()
 
 
@@ -446,7 +434,7 @@ func _draw_within_budget() -> void:
 func _draw_next_step() -> void:
 	_draw_chunk_step(_drawing)
 	if _drawing.is_done():
-		_drawing = null
+		_drawing = _next_drawing()
 
 
 ## Draws a whole chunk at once.
@@ -576,10 +564,25 @@ func _refresh_chunk(coords: Vector2i) -> void:
 			_on_objects_changed(object.pos)
 
 
-func _unload_chunk(coords: Vector2i) -> void:
-	if _drawing != null and _drawing.chunk.coords == coords:
-		_drawing = null
-	for object in world.chunk_at(coords).objects():
+## The drawing of the oldest chunk that waits, or null if none does.
+func _next_drawing() -> ChunkDrawing:
+	return null if _to_draw.is_empty() else ChunkDrawing.new(_to_draw.pop_front())
+
+
+func _on_chunk_loaded(chunk: Chunk) -> void:
+	if _drawing == null:
+		_drawing = ChunkDrawing.new(chunk)
+	else:
+		_to_draw.append(chunk)
+
+
+## Erases a chunk that was dropped from the world.
+func _on_chunk_unloaded(chunk: Chunk) -> void:
+	var coords := chunk.coords
+	if _drawing != null and _drawing.chunk == chunk:
+		_drawing = _next_drawing()
+	_to_draw.erase(chunk)
+	for object in chunk.objects():
 		_drop_object_sprite(object.pos)
 		_objects.erase_cell(object.pos)
 		_object_states.erase(object.pos)
@@ -595,7 +598,6 @@ func _unload_chunk(coords: Vector2i) -> void:
 			for tile_map in overlays:
 				tile_map.erase_cell(origin + Vector2i(x, y))
 			decorations.forget(origin + Vector2i(x, y))
-	world.remove_chunk(coords)
 	for fall in _falling_trees.duplicate():
 		if Chunk.world_to_chunk(fall.tree.pos) == coords:
 			_end_fall(fall)

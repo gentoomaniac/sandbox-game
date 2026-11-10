@@ -7,7 +7,7 @@ extends Node
 ## Villagers get a view within this many chunks of the focus, the ones the world view draws, and
 ## keep it until they are further than one chunk more, so one who strolls over a chunk border
 ## does not get a view and lose it again and again.
-const NEAR_CHUNKS := WorldView.LOAD_RADIUS
+const NEAR_CHUNKS := ChunkResidency.LOAD_RADIUS
 const KEPT_CHUNKS := NEAR_CHUNKS + 1
 
 var _entities: Node2D

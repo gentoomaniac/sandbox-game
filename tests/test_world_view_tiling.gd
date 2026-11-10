@@ -10,12 +10,14 @@ const CHUNKS: Array[Vector2i] = [
 const DAYS := [2, 3, 32, 33, 45, 62, 63, 92, 93]
 
 var _view: WorldView
+var _residency: ChunkResidency
 
 
 func before_each() -> void:
 	_view = WorldView.new()
 	add_child_autofree(_view)
-	_view.show_world(World.new(SEED))
+	_residency = ChunkResidency.new(World.new(SEED))
+	_view.show_world(_residency)
 
 
 func _set_day(day: int) -> void:
@@ -78,7 +80,7 @@ func _mask_of(atlas_coords: Vector2i) -> int:
 ## the edge of the layer below them (a fringe round the patches of another look).
 func test_lush_and_dry_overlays_have_the_shape_of_their_grass() -> void:
 	for coords in CHUNKS:
-		_view._load_chunk(coords)
+		_residency.load_chunk(coords)
 		_view.finish_drawing()
 	var checked := 0
 	for day: int in DAYS:
@@ -121,32 +123,32 @@ func test_loading_in_any_order_matches_a_full_redraw() -> void:
 		for order in [CHUNKS, reversed]:
 			_set_day(day)
 			for coords: Vector2i in order:
-				_view._load_chunk(coords)
+				_residency.load_chunk(coords)
 				_view.finish_drawing()
 			_assert_matches_full_redraw("day %d, order %s" % [day, order])
 			for coords: Vector2i in order:
-				_view._unload_chunk(coords)
+				_residency.unload_chunk(coords)
 
 
 func test_chunks_loading_between_refresh_steps_match_a_full_redraw() -> void:
 	for day: int in DAYS:
 		_set_day(day - 20)
-		_view._load_chunk(CHUNKS[0])
+		_residency.load_chunk(CHUNKS[0])
 		_view.finish_drawing()
-		_view._load_chunk(CHUNKS[1])
+		_residency.load_chunk(CHUNKS[1])
 		_view.finish_drawing()
 		_view.finish_refresh()
 		_set_day(day)
 		_view._refresh_step()
-		_view._load_chunk(CHUNKS[2])
+		_residency.load_chunk(CHUNKS[2])
 		_view.finish_drawing()
 		_view._refresh_step()
 		_view._refresh_step()
-		_view._load_chunk(CHUNKS[3])
+		_residency.load_chunk(CHUNKS[3])
 		_view.finish_drawing()
 		_assert_matches_full_redraw("day %d" % day)
 		for coords: Vector2i in CHUNKS:
-			_view._unload_chunk(coords)
+			_residency.unload_chunk(coords)
 
 
 func test_unloading_a_chunk_erases_every_layer_and_overlay_in_it() -> void:
@@ -158,11 +160,11 @@ func test_unloading_a_chunk_erases_every_layer_and_overlay_in_it() -> void:
 	var area := Rect2i(first, Vector2i.ONE * Chunk.CHUNK_SIZE)
 	for day: int in DAYS:
 		_set_day(day)
-		_view._load_chunk(CHUNKS[0])
+		_residency.load_chunk(CHUNKS[0])
 		_view.finish_drawing()
 		_view.finish_refresh()
 		assert_gt(_cells_in(layers, area), 0, "day %d: the chunk is drawn" % day)
-		_view._unload_chunk(CHUNKS[0])
+		_residency.unload_chunk(CHUNKS[0])
 		assert_eq(_cells_in(layers, area), 0, "day %d: nothing is left after unloading" % day)
 
 

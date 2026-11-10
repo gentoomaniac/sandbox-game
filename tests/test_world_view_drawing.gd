@@ -10,17 +10,19 @@ const WINTER := 105
 
 var _generator := WorldGenerator.new(SEED)
 var _view: WorldView
+var _residency: ChunkResidency
 
 
 func before_each() -> void:
 	_view = WorldView.new()
 	add_child_autofree(_view)
-	_view.show_world(World.new(SEED))
+	_residency = ChunkResidency.new(World.new(SEED))
+	_view.show_world(_residency)
 
 
 func test_a_chunk_drawn_step_by_step_looks_like_one_drawn_at_once() -> void:
 	var at_once := _view_drawn_at_once(RIGHT, Vector2i(-1, -1))
-	_view._load_chunk(RIGHT)
+	_residency.load_chunk(RIGHT)
 	var steps := 0
 	while _view._drawing != null:
 		_view._draw_next_step()
@@ -32,7 +34,7 @@ func test_a_chunk_drawn_step_by_step_looks_like_one_drawn_at_once() -> void:
 func test_a_tile_that_changes_while_its_chunk_is_drawn_is_drawn_as_it_is_now() -> void:
 	var tile := Chunk.to_world(RIGHT, Vector2i(5, 9))
 	var at_once := _view_drawn_at_once(RIGHT, tile)
-	_view._load_chunk(RIGHT)
+	_residency.load_chunk(RIGHT)
 	_view._draw_next_step()
 	_view._draw_next_step()
 	_view.world.set_terrain(tile, Tile.Terrain.WATER)
@@ -41,26 +43,26 @@ func test_a_tile_that_changes_while_its_chunk_is_drawn_is_drawn_as_it_is_now() -
 
 
 func test_unloading_a_chunk_that_is_still_drawn_stops_its_drawing() -> void:
-	_view._load_chunk(RIGHT)
+	_residency.load_chunk(RIGHT)
 	_view._draw_next_step()
-	_view._unload_chunk(RIGHT)
+	_residency.unload_chunk(RIGHT)
 	assert_null(_view._drawing)
 	assert_eq(_drawn(Chunk.to_world(RIGHT, Vector2i(3, 3))), _empty())
 
 
 func test_a_chunk_is_drawn_for_a_budget_a_frame_and_the_next_loads_when_it_is_drawn() -> void:
-	_view._process(0.0)
-	assert_not_null(_view._drawing, "one frame's budget does not draw the whole chunk")
+	_frame()
+	assert_true(_view.is_drawing(), "one frame's budget does not draw the whole chunk")
 	assert_eq(_view.world.loaded_chunk_coords().size(), 1)
-	_view._process(0.0)
+	_frame()
 	assert_eq(_view.world.loaded_chunk_coords().size(), 1, "no second chunk while one is drawn")
 	_view.finish_drawing()
-	_view._process(0.0)
+	_frame()
 	assert_eq(_view.world.loaded_chunk_coords().size(), 2)
 
 
 func test_a_tree_that_hides_the_player_before_its_chunk_is_drawn_stays_a_sprite() -> void:
-	_view._load_chunk(RIGHT)
+	_residency.load_chunk(RIGHT)
 	_view._draw_next_step()
 	var tree := _first_tall_object(RIGHT)
 	_view.player_feet = (Vector2(tree.pos) + Vector2(0.5, 0.1)) * TerrainTileset.TILE_SIZE
@@ -72,7 +74,7 @@ func test_a_tree_that_hides_the_player_before_its_chunk_is_drawn_stays_a_sprite(
 
 func test_the_stand_in_of_a_tree_shows_the_look_it_has_when_the_chunk_is_drawn() -> void:
 	_set_day(SUMMER)
-	_view._load_chunk(RIGHT)
+	_residency.load_chunk(RIGHT)
 	_view._draw_next_step()
 	var tree := _first_tall_object(RIGHT)
 	_view.player_feet = (Vector2(tree.pos) + Vector2(0.5, 0.1)) * TerrainTileset.TILE_SIZE
@@ -90,7 +92,7 @@ func test_the_stand_in_of_a_tree_shows_the_look_it_has_when_the_chunk_is_drawn()
 func test_an_object_added_while_its_chunk_is_drawn_covers_the_decoration_under_it() -> void:
 	var at_once := _view_drawn_at_once(RIGHT, Vector2i(-1, -1))
 	var pos := _free_tile_with_decoration(at_once, RIGHT)
-	_view._load_chunk(RIGHT)
+	_residency.load_chunk(RIGHT)
 	_view._draw_next_step()
 	_view.world.add_object(WorldObject.new(WorldObjectTypes.STONE, pos))
 	_view.finish_drawing()
@@ -109,6 +111,12 @@ func test_an_object_removed_while_its_chunk_is_drawn_shows_the_decoration_it_cov
 	_view.world.remove_object(pos)
 	_view.finish_drawing()
 	assert_true(_view.decorations._spots.has(pos))
+
+
+## What Main does in a frame: the residency loads a chunk if the view can take it, the view draws.
+func _frame() -> void:
+	_residency.update(not _view.is_drawing())
+	_view._process(0.0)
 
 
 func _atlas_path(texture: Texture2D) -> String:
@@ -140,7 +148,7 @@ func _view_drawn_at_once(coords: Vector2i, water_tile: Vector2i) -> WorldView:
 	world.add_chunk(_generator.generate_chunk(coords))
 	if Chunk.world_to_chunk(water_tile) == coords:
 		world.set_terrain(water_tile, Tile.Terrain.WATER)
-	view.show_world(world)
+	view.show_world(ChunkResidency.new(world))
 	return view
 
 

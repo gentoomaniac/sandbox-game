@@ -23,7 +23,7 @@ func before_each() -> void:
 	_wildlife._state = _state
 	_wildlife.world_view = WorldView.new()
 	add_child_autofree(_wildlife.world_view)
-	_wildlife.world_view.show_world(_state.world)
+	_wildlife.world_view.show_world(ChunkResidency.new(_state.world))
 	_wildlife.world_view.set_process(false)
 	# As show_wildlife does: the ground is a Node2D nobody frees unless the world view owns it.
 	_wildlife.world_view.add_child(_wildlife.ground)

@@ -3,6 +3,7 @@ extends ResourceCase
 ## The state changes at once; these tests look at what the views do meanwhile.
 
 var _view: WorldView
+var _residency: ChunkResidency
 var _items: GroundItemView
 var _entities: Node2D
 
@@ -17,8 +18,9 @@ func before_each() -> void:
 func _show_views() -> void:
 	_view = WorldView.new()
 	add_child_autofree(_view)
-	_view.show_world(_world)
-	_view._load_chunk(Chunk.world_to_chunk(_tile))
+	_residency = ChunkResidency.new(_world)
+	_view.show_world(_residency)
+	_residency.load_chunk(Chunk.world_to_chunk(_tile))
 	_view.finish_drawing()
 	_entities = Node2D.new()
 	add_child_autofree(_entities)
@@ -109,7 +111,7 @@ func test_unloading_the_chunk_cancels_the_fall() -> void:
 	_show_views()
 	_fell_oak_from(Vector2i.LEFT)
 	var fall: FallingTree = _view._falling_trees[0]
-	_view._unload_chunk(Chunk.world_to_chunk(_tile))
+	_residency.unload_chunk(Chunk.world_to_chunk(_tile))
 	assert_true(_view._falling_trees.is_empty())
 	assert_true(_view._hidden_trunks.is_empty())
 	assert_true(fall.is_queued_for_deletion())

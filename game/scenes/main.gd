@@ -78,6 +78,8 @@ var _pending_minutes := 0.0
 var _soil_shown_hour := -1
 ## The map the views show: the world or the interior of a house.
 var _shown_map: GameMap
+## Which chunks of the world are loaded; the world view draws them.
+var _residency: ChunkResidency
 
 @onready var _world: SubViewport = $WorldViewport
 @onready var _view: WorldView = $WorldViewport/WorldView
@@ -227,7 +229,8 @@ func _make_views() -> void:
 
 ## Shows the state in the views and wires what they report back.
 func _connect_state_and_views() -> void:
-	_view.show_world(_state.world)
+	_residency = ChunkResidency.new(_state.world)
+	_view.show_world(_residency)
 	_ground_item_view.show_items(_state.world, _view.entities)
 	_view.tree_felled.connect(_ground_item_view.hold_hops_from)
 	_wildlife.show_wildlife(_state, _view, _camera)
@@ -474,7 +477,8 @@ func _process(delta: float) -> void:
 		_view.player_size = (
 			Occlusion.RIDER_SIZE if _state.player.horse != null else Occlusion.PLAYER_SIZE
 		)
-		_view.set_focus(_state.player.tile())
+		_residency.set_focus(_state.player.tile())
+		_residency.update(not _view.is_drawing())
 		_ground_item_view.set_focus(_state.player.tile())
 		_npc_views.set_focus(_state.player.tile())
 	_debug.update(delta)

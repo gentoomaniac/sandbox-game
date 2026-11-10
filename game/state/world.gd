@@ -181,7 +181,7 @@ func is_bare(object: WorldObject) -> bool:
 ## only, so look back from the tile over the largest footprint: in its own chunk, and only
 ## near the chunk's top and left border in the neighbours. A big object whose own chunk is not
 ## loaded is not seen; that is safe because the player only acts on tiles well inside the
-## loaded area (see WorldView.LOAD_RADIUS and UNLOAD_RADIUS).
+## loaded area (see ChunkResidency.LOAD_RADIUS and UNLOAD_RADIUS).
 func _stored_object_at(world_pos: Vector2i) -> WorldObject:
 	var own_chunk := chunk_at(Chunk.world_to_chunk(world_pos))
 	var local := Chunk.local_pos(world_pos)

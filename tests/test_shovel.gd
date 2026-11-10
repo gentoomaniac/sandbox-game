@@ -234,7 +234,7 @@ func test_a_spent_spot_stays_spent_through_the_save() -> void:
 func test_a_clay_spot_shows_a_faint_hint_until_it_is_dug() -> void:
 	var view := WorldView.new()
 	add_child_autofree(view)
-	view.show_world(_state.world)
+	view.show_world(ChunkResidency.new(_state.world))
 	var spot := _spots[0]
 	view.decorations.redraw(spot, view._code_at(spot))
 	assert_eq(

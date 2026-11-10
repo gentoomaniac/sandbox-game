@@ -108,8 +108,12 @@ Warft and an Ewer here and there.
 - **WorldView** (`game/scenes/world_view.gd`) draws a `World` into a SubViewport at one art
   pixel per screen pixel; `CameraController` shows that viewport on the window, so the world
   scrolls smoothly. `InteriorView` draws an `Interior` in its place while the player is inside.
-  WorldView streams chunks (a chunk is generated, then drawn a few rows of cells at a time
-  within a per-frame time budget, so no frame holds a whole chunk's drawing) and draws
+  Which chunks are loaded is not its business: a `ChunkResidency` (`game/world/chunk_residency.gd`,
+  made by Main, no nodes) follows the player's tile, plans with `ChunkStreaming`, generates the
+  nearest missing chunk and drops the far ones, and tells by `chunk_loaded` and `chunk_unloaded`.
+  WorldView draws what is loaded (a chunk a few rows of cells at a time within a per-frame time
+  budget, so no frame holds a whole chunk's drawing; Main lets the residency load the next one
+  when the view has drawn the last) and erases what is dropped; it also draws
   terrain, objects, falling trees and the see-through effect; it owns two small views,
   `BuildingViews` (building sprites, window lights, snowy roofs) and `DecorationView` (flowers,
   pebbles, clay hints; the wildlife asks it where flowers bloom). The meadow flowers are sown per tile when a chunk is drawn, by `FlowerRules`
