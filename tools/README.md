@@ -450,3 +450,20 @@ as the project's window is (the base size, the aspect `expand`, the UI scale of 
 the picture is exactly 1000x1040 and shows the view, the HUD and the UI scale a window of that size
 would. The viewport's UI size is a whole number, so a UI layout can be a pixel off the real
 window's. Without `SIZE` nothing changes.
+
+## The window of a check
+
+Every window a make target opens for a check, today `make screenshot`, is titled exactly
+`Sandbox Game (test)`, with the game flag `--with-working-window-title` (the target passes it by
+default). `make run` does not: your own runs keep the normal title, and
+`make run ARGS=--with-working-window-title` titles one like a check's.
+
+The user's KDE rules match that title (a KWin rule, keep below on a virtual desktop of its own,
+and a Krohnkite exclude), so do not change the text, add a suffix or vary it by target.
+`StartupOptions.WORKING_WINDOW_TITLE` is the one place that has it.
+
+Godot gives the window its title only when the game's first scene starts: until then the window,
+which the Wayland driver has already given the app id `Sandbox Game` (the project's name), is
+called `Godot`, and for a short while `Sandbox Game (DEBUG)`. A rule that applies once, when the
+window appears, sees one of those; one that is checked again when the title changes sees the
+working title. Godot sets `Sandbox Game (DEBUG)` again as the window closes.

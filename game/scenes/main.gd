@@ -96,6 +96,8 @@ func _ready() -> void:
 	# First thing, before anything else can raise or focus the window.
 	if _options.background:
 		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_NO_FOCUS, true)
+	if _options.with_working_window_title:
+		DisplayServer.window_set_title(StartupOptions.WORKING_WINDOW_TITLE)
 	if (
 		not EnergyRules.default_rules().is_valid()
 		or not CropRules.default_rules().is_valid()

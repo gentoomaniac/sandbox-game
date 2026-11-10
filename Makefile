@@ -71,7 +71,7 @@ help:
 	@echo "  LLM_RUNS    llm-eval: replies per scenario (default: 3)."
 	@echo "  LLM_GPU     llm-up: auto (NVIDIA via CDI spec, else AMD via ROCm, else CPU), nvidia, amd, 1 (any GPU or fail), 0 (CPU)."
 	@echo "  LLM_HSA_OVERRIDE  llm-up on AMD: HSA_OVERRIDE_GFX_VERSION for cards ROCm does not list, e.g. 10.3.0."
-	@echo "  ARGS        screenshot: more debug flags, e.g. ARGS=\"--weather=rain\" (see game/scenes/startup_options.gd)."
+	@echo "  ARGS        screenshot, run: more debug flags, e.g. ARGS=\"--weather=rain\" (see game/scenes/startup_options.gd)."
 
 setup:
 	@missing=0; \
@@ -155,7 +155,7 @@ contrast-sheet: $(VENV_READY)
 
 run: assets
 	$(IMPORT)
-	$(GODOT) --path .
+	$(GODOT) --path . $(if $(ARGS),-- $(ARGS))
 
 # Saves one frame of the game as PNG, e.g. make screenshot AT=40,-20 OUT=/tmp/shot.png
 # (AT is a world tile to put the player on; default: the camp). TIME=hh:mm sets the time of
@@ -190,12 +190,15 @@ QUIET_WINDOW := $(if $(WAYLAND_DISPLAY),--display-driver wayland)
 # A long --screenshot-delay needs a larger SCREENSHOT_TIMEOUT, or the run is killed before the PNG
 # exists and fails.
 SCREENSHOT_TIMEOUT ?= 30
+# The window is named so that window rules (KWin, a tiling script) can keep test windows out of
+# the way (see tools/README.md). `make run` doesn't name its window so: add the flag with
+# ARGS=--with-working-window-title if a run is a check.
 
 screenshot: assets
 	$(IMPORT)
 	mkdir -p $(dir $(OUT))
 	rm -f $(OUT)
-	timeout -s KILL $(SCREENSHOT_TIMEOUT) $(GODOT) $(QUIET_WINDOW) --path . $(if $(SIZE),res://game/scenes/screenshot_frame.tscn) -- $(if $(SOUND),,--mute) --background $(if $(KEEP_SAVE),,--new-game --save-path=$(CURDIR)/build/screenshot.save) $(if $(AT),--at=$(AT)) --settings-path=$(CURDIR)/build/settings.cfg --screenshot=$(OUT) $(if $(TIME),--time=$(TIME)) $(if $(ZOOM),--zoom=$(ZOOM)) $(if $(SIZE),--screenshot-size=$(SIZE)) $(ARGS); status=$$?; \
+	timeout -s KILL $(SCREENSHOT_TIMEOUT) $(GODOT) $(QUIET_WINDOW) --path . $(if $(SIZE),res://game/scenes/screenshot_frame.tscn) -- $(if $(SOUND),,--mute) --background --with-working-window-title $(if $(KEEP_SAVE),,--new-game --save-path=$(CURDIR)/build/screenshot.save) $(if $(AT),--at=$(AT)) --settings-path=$(CURDIR)/build/settings.cfg --screenshot=$(OUT) $(if $(TIME),--time=$(TIME)) $(if $(ZOOM),--zoom=$(ZOOM)) $(if $(SIZE),--screenshot-size=$(SIZE)) $(ARGS); status=$$?; \
 	if [ $$status -eq 137 ] && [ -s $(OUT) ]; then echo "make screenshot: Godot hung on quit, after the screenshot"; exit 0; fi; \
 	exit $$status
 

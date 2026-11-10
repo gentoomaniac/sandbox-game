@@ -14,6 +14,9 @@ extends RefCounted
 ##   --mute                   silence all sound (events still play and log)
 ##   --background             make the window unfocusable, so it takes no focus but no keyboard
 ##                            input either: not for playing. `make screenshot` passes both.
+##   --with-working-window-title  name the window "Sandbox Game (test)", as every window the
+##                            make targets open for a check is named (not `make run`'s), so
+##                            window rules can tell it from the game being played
 ##   --sound-log              print every sound event as it plays (see AudioService)
 ##
 ## The screenshot
@@ -140,6 +143,9 @@ extends RefCounted
 ##                            the switch in a running game. The switch is saved in the
 ##                            settings: give it a --settings-path of its own.
 
+## The title of the windows the make targets open for a check. The user's window rules (KWin,
+## a tiling script) match this exact text: do not change it.
+const WORKING_WINDOW_TITLE := "Sandbox Game (test)"
 ## The value of a tile flag that was not given.
 const NO_TILE := Vector2i(1 << 30, 1 << 30)
 
@@ -149,6 +155,7 @@ var save_path := SaveFile.DEFAULT_PATH
 var settings_path := GameSettings.DEFAULT_PATH
 var mute := false
 var background := false
+var with_working_window_title := false
 var sound_log := false
 
 # The screenshot
@@ -279,6 +286,8 @@ func _init(args := PackedStringArray()) -> void:
 				mute = true
 			"--background":
 				background = true
+			"--with-working-window-title":
+				with_working_window_title = true
 			"--sound-log":
 				sound_log = true
 			"--screenshot":

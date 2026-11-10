@@ -69,6 +69,13 @@ func test_the_building_can_come_with_a_style() -> void:
 	assert_eq([brick.building, brick.building_style], [&"kate", &"brick"])
 
 
+func test_the_working_window_title_is_a_flag_and_off_by_default() -> void:
+	assert_false(StartupOptions.new(PackedStringArray()).with_working_window_title)
+	var options := StartupOptions.new(PackedStringArray(["--with-working-window-title"]))
+	assert_true(options.with_working_window_title)
+	assert_eq(StartupOptions.WORKING_WINDOW_TITLE, "Sandbox Game (test)")
+
+
 func test_flags_without_a_value() -> void:
 	var options := StartupOptions.new(
 		PackedStringArray(["--new-game", "--inventory", "--storage", "--inside", "--sleep"])
