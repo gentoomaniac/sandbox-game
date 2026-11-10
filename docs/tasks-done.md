@@ -4101,3 +4101,43 @@ ZOOM=1.165 TIME=11:00 ARGS="--livestock=dog,cat,horse --day=40"`, cropped to the
 x=200, y=100 (the player is then where he was in the old picture, and the HUD is cut off, as in
 the old one). The animals are placed at random, so their places differ from the old picture's.
 
+## 159. Cows at 32 px: a neck, the udder between the legs, legs from the body
+
+- [x] Done
+
+The user, 2026-11-10: "The cows don't have a neck, the utter is on top of the leg instead of
+inbetween" and "they also have a similar shading and leg position issue as the horses", with a
+reference picture (a Holstein from the side: a short deep neck dipping from the withers, a
+dewlap, the udder under the belly between the hind legs and in front of them, the legs running
+down from the chest and the rump).
+- A short, thick neck that dips from the withers to the head, with a dewlap under the throat; the
+  grazing head on that neck too.
+- The udder under the belly between the hind legs, the far hind leg showing behind it, not
+  drawn on the thigh.
+- As the horse in task 156: the forelegs start at the chest and the hind legs at the rump, wide
+  forearm and thigh shaded with the body so the belly shadow stops between the legs, then knee
+  and hock and slim cannons.
+- Every look, pose, facing and season of the 32 px cow (tools/art/livestock.py), cell sizes
+  kept; before and after crops and an in-game screenshot.
+- The user, 2026-11-10, after three goes that each changed the old drawing ("cows third go
+  looks even worse"): "drop the current version entirely and start from scratch with my provided
+  image as a reference". The cow is drawn anew from the user's references, not from the old cow.
+
+Done: the cow is drawn anew by hand in tools/art/livestock.py, after the user's reference
+picture (a pixel Holstein): maps of letters for the body, the neck and the head looking ahead or
+grazing, each leg, the tail and the udder (`COW_TORSO` and the pieces after it), laid over each
+other for a pose by `cow_frame` and shaded by their letters, the body, neck, head and near legs
+as one form lit from the top left, the pied patches with it, the far legs a step darker. The cow
+is 64 px from the rump to the muzzle and 35 px to the withers: a deep neck sloping from the
+withers to a big head with horns and the ears out to the sides, hanging a little below the back
+line in front of the chest, a soft dewlap; the udder far back under the belly, the near thigh in
+front of it and the far hind leg behind it; forelegs from the chest with a wide forearm, a knee
+and a slim cannon, hind legs from a big thigh with a slight hock. Walking, the legs lean;
+grazing, the same head hangs on a neck reaching down in front of the forelegs; lying, the legs
+fold under the body and the eyes shut. The user approved the standing pose first ("Those cows
+look perfect!"), then the rest was drawn in its style. Every look, action and frame of the 72x54
+sheet is kept; every other animal's sheet and the 16 px classic cow are unchanged. The README
+picture docs/screenshots/livestock.png was re-taken in its old size, 2756x1040: `make screenshot
+SIZE=1520x1360 ZOOM=2 TIME=09:00` and `TIME=01:00` with
+`ARGS="--livestock=cow,sheep,chicken,rabbit --day=40"`, each cropped to 1376x1040 at x=125, y=38
+and set side by side with a 4 px seam.

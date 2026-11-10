@@ -184,28 +184,6 @@ spring and summer and flies off again; there is no nest. Moved here from task 12
   is saved; what the player only sees (flaps, clatter) stays in the views.
 - Tests for the year of a nest by date, the seeding, save and load; a screenshot in the README.
 
-## 159. Cows at 32 px: a neck, the udder between the legs, legs from the body
-
-- [ ] Done
-
-The user, 2026-11-10: "The cows don't have a neck, the utter is on top of the leg instead of
-inbetween" and "they also have a similar shading and leg position issue as the horses", with a
-reference picture (a Holstein from the side: a short deep neck dipping from the withers, a
-dewlap, the udder under the belly between the hind legs and in front of them, the legs running
-down from the chest and the rump).
-- A short, thick neck that dips from the withers to the head, with a dewlap under the throat; the
-  grazing head on that neck too.
-- The udder under the belly between the hind legs, the far hind leg showing behind it, not
-  drawn on the thigh.
-- As the horse in task 156: the forelegs start at the chest and the hind legs at the rump, wide
-  forearm and thigh shaded with the body so the belly shadow stops between the legs, then knee
-  and hock and slim cannons.
-- Every look, pose, facing and season of the 32 px cow (tools/art/livestock.py), cell sizes
-  kept; before and after crops and an in-game screenshot.
-- The user, 2026-11-10, after three goes that each changed the old drawing ("cows third go
-  looks even worse"): "drop the current version entirely and start from scratch with my provided
-  image as a reference". The cow is drawn anew from the user's references, not from the old cow.
-
 ## 161. Hunting moves out of FarmAnimalView
 
 - [ ] Done
