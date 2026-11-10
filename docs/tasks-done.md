@@ -4348,3 +4348,81 @@ classic/stork_nest.py (sheets `stork_nest` and `stork_chick`). Design page: desi
 README wildlife paragraph and docs/screenshots/stork-nest.png. Tests: tests/test_stork_nests.gd (rules,
 seeding, the year, save and load) and tests/test_stork_nest_view.gd. Open: parents do not hunt as a
 visible `stork` on the meadows (they leave the view), and weather does not keep them on the nest.
+
+## 169. Music: can the game play generated modules? Measurements and viability tests
+
+- [x] Done
+
+The user, 2026-11-10: background music in the style of 1980s home-computer game music (the
+user's reference is the C64 game Robin of the Wood): sharp sawtooth leads, short repetitive
+parts that loop, with transition parts now and then or a crossfade between looping pieces. The
+music is generated as cheap tracker modules from simple data and rendered in the game on a
+background thread. Old folk music is the inspiration for the style; the tunes are our own (no
+existing song, no melody from any game). This replaces "no background music for now"
+(design/presentation/sound.md, 2026-11-05) once tasks 170 and 171 land. A second opinion
+(GPT 6.1 Sol, 2026-11-10) shaped this task: measure first, decide after.
+
+This task answers whether the plan works, with numbers, before the music is built:
+- A minimal generator in tools/music/ (Python, deterministic, writing into art/generated/ and
+  packed into assets/ like the other generated files; check that the raw .mod files are
+  exported, as Godot doesn't import them): one short folk-style test piece of our own as a
+  4-channel ProTracker MOD, an 8-bar loop and a 1 or 2-bar fill, with single-cycle instruments
+  (sawtooth lead, pulse, triangle bass, noise drums) and a small stated effect set with exact
+  opcodes (e.g. arpeggio 0xy, portamento 1xx/2xx/3xx, vibrato 4xy, volume slide Axy, set volume
+  Cxx, note cut ECx, set speed/tempo Fxx, pattern break Dxx). It must open in OpenMPT or
+  MilkyTracker; check it against an independent player (libopenmpt / openmpt123 if available,
+  or say how else) rather than a second player of our own.
+- A prototype MOD renderer in GDScript (game/audio/ or similar, kept apart from AudioService and
+  data/sounds.cfg) that renders a section (an order/row range with a defined entry state) to an
+  AudioStreamWAV, on WorkerThreadPool.
+- Measurements, written into a report (docs/music-viability.md): render time of the 8-bar
+  section and of a 1-minute piece at 22.05 and 44.1 kHz, mono and stereo; memory per minute;
+  what the main thread spends (attaching the stream, copies) and whether a frame goes over task
+  158's frame budget while rendering, also during a save; on this machine, with the CPU named.
+- Viability checks, each a GUT test or a recorded result in the report:
+  - the loop is seamless (the samples at the wrap match the continuation, no click);
+  - a fill can follow the loop and the loop resume, landing on the bar;
+  - AudioStreamInteractive (or AudioStreamPlaylist / two players) can switch and crossfade
+    generated AudioStreamWAVs on the beat on Godot 4.7.2 (AudioStreamWAV exposes no BPM: find
+    whether a subclass or another stream type is needed);
+  - the render matches the independent player within a tolerance (pitch, length, events).
+- The report ends with a recommendation: GDScript rendering at runtime, a native renderer
+  (GDExtension around libopenmpt), or build-time renders of the generated modules; and the
+  numbers behind it. Tasks 170 and 171 are then rewritten from it with the user.
+- Not in this task: the Music bus and slider, the director, stems, 8 channels, more pieces.
+  Test runs stay muted; nothing plays in the game yet.
+
+Done: report in docs/music-viability.md (Intel Core Ultra 9 185H, Godot 4.7.2, headless, Dummy
+audio driver). tools/music/generate.py writes pieces of plain text (tools/music/pieces/, the format
+and the effect set with its opcodes in the docstring; other effects, effect memory and voices that
+start a section without a struck note or a cut are refused) as 4-channel M.K. modules into
+art/generated/music/, packed into assets/music/ by `make art`/`make assets`; the test piece
+test_reel is our own reel in A dorian at 106 BPM (the user found 150 too fast), an 8-bar loop and a
+1-bar fill. No libopenmpt, openmpt123, MilkyTracker, xmp or mikmod is installed, so
+tools/music/check.py checks every module with the system's libmodplug through ctypes (rows, order,
+speed, tempo, pattern break; ticks cut to whole samples as libmodplug does; part of `make art`,
+skipped where libmodplug is missing). There are no export presets yet: one will need `*.mod` in its
+non-resource filter (tools/README.md). The GDScript prototype (game/audio/tracker_module.gd, which
+refuses what it can't play, and module_renderer.gd, apart from AudioService) renders parts of the
+order list from a defined entry state into plain AudioStreamWAVs, made whole on WorkerThreadPool;
+game/audio/music_crossfade.gd crossfades them on the beat with two players. Numbers (`make
+bench-music`): the 8-bar loop (18.1 s) in 87 ms (22.05 kHz mono) to 289 ms (44.1 kHz stereo), a
+minute in 0.3 to 0.96 s; 2.5 to 10 MB a minute; the main thread spends at most 0.2 ms per render
+(take, hand to the crossfade) and under 0.5 ms in a crossfade's frame, and the frames while rendering,
+also during a timed save that was written, were as without (mean 6.9 ms, nothing over 33 ms in two
+runs); a copy of a minute's data on the main thread would cost 12 to 21 ms. Checks: the loop played
+into itself is its start sample for sample, the fill breaks after a bar and the loop resumes on the
+bar (tests/test_module_renderer.gd); every effect tick by tick, an arpeggio after a slide as
+ProTracker plays it, a tick of no whole number of samples, malformed files
+(tests/test_module_effects.gd); the crossfade's new beats fall on the old ones within a frame, also
+across a loop's wrap (tests/test_music_crossfade.gd, the mixed bus captured), beginning 58 to 75 ms
+after the beat on the Dummy driver's 93 ms blocks; `make music-check` against libmodplug: exact
+length, 1 sample offset, loudness correlation 0.94 per tick, spectra 0.98 to 1.0 per row, the
+strongest frequency the same in every row. AudioStreamInteractive switches on the beat only with a
+script subclass of AudioStreamWAV that tells its BPM (tests/test_music_stream_wav.gd), and such a
+stream, once played with Main running, makes the game abort on quit (cause not found).
+Recommendation, provisional on the crossfade's lateness on a real audio driver (not measured: no
+sound out loud): GDScript rendering at runtime on a worker into plain AudioStreamWAVs, two players
+crossfaded on the beat, sample-exact transitions rendered into one stream; not a native GDExtension
+(100 times faster, not needed); build-time OGG renders as the fallback. Tasks 170 and 171 are to be
+rewritten from it with the user.
