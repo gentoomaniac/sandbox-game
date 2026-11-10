@@ -18,6 +18,8 @@ const CLEAR := &"clear"
 const WATER := &"water"
 ## The watering can filled at a well or at fresh water: `object` is the well, or empty for water.
 const FILL_CAN := &"fill_can"
+## Feed put into a hay rack: `object` is the rack and `items` the feed.
+const FEED := &"feed"
 const MOW := &"mow"
 const DIG := &"dig"
 ## A hit that did not finish the object.

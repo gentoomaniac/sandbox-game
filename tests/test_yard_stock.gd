@@ -70,3 +70,105 @@ func test_a_stock_is_filled_up_to_its_capacity_and_emptied_to_nothing() -> void:
 func test_the_stock_is_saved_with_the_object() -> void:
 	ObjectStock.add(_place(WorldObjectTypes.TROUGH), 45)
 	assert_eq(ObjectStock.units(_through_save().world.object_at(_tile)), 45)
+
+
+func test_a_pour_of_the_can_puts_ten_units_of_water_into_the_trough_up_to_its_capacity() -> void:
+	var trough := _place(WorldObjectTypes.TROUGH)
+	_hold(ItemTypes.WATERING_CAN)
+	var can_before := _state.player.can_water
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.POUR)
+	assert_eq(ObjectStock.units(trough), LivestockRules.default_rules().pour_units())
+	assert_eq(_state.player.can_water, can_before - 1)
+	for _pour in 9:
+		assert_eq(_state.use_facing_tile(), ToolUse.Use.POUR)
+	assert_eq(ObjectStock.units(trough), 100)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING, "a full trough takes no more")
+	assert_eq(_state.player.can_water, can_before - 10)
+
+
+func test_an_empty_can_pours_nothing_and_says_so() -> void:
+	var trough := _place(WorldObjectTypes.TROUGH)
+	_hold(ItemTypes.WATERING_CAN)
+	_state.player.can_water = 0
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.CAN_EMPTY)
+	assert_eq(ObjectStock.units(trough), 0)
+
+
+func test_pouring_costs_the_energy_of_watering_and_tells_the_trough() -> void:
+	var outcomes: Array[ActionOutcome] = []
+	_state.action_done.connect(func(outcome: ActionOutcome) -> void: outcomes.append(outcome))
+	_place(WorldObjectTypes.TROUGH)
+	_hold(ItemTypes.WATERING_CAN)
+	_state.player.energy = 50.0
+	_state.cheats.is_weight_off = true
+	_state.use_facing_tile()
+	assert_almost_eq(_state.player.energy, 50.0 - _state.energy_rules.cost_of(&"water"), 0.0001)
+	assert_eq(outcomes.size(), 1)
+	assert_eq(outcomes[0].kind, ActionOutcome.WATER)
+	assert_eq(outcomes[0].object, WorldObjectTypes.TROUGH)
+
+
+func test_the_can_pours_into_a_trough_and_not_into_a_hay_rack() -> void:
+	var rack := _place(WorldObjectTypes.HAY_RACK)
+	_hold(ItemTypes.WATERING_CAN)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
+	assert_eq(ObjectStock.units(rack), 0)
+
+
+func test_the_trough_shows_what_was_poured_in() -> void:
+	var trough := _place(WorldObjectTypes.TROUGH)
+	_hold(ItemTypes.WATERING_CAN)
+	_state.use_facing_tile()
+	assert_eq(ObjectStock.look(trough), 1)
+	for _pour in 3:
+		_state.use_facing_tile()
+	assert_eq(ObjectStock.look(trough), 2)
+	for _pour in 3:
+		_state.use_facing_tile()
+	assert_eq(ObjectStock.look(trough), 3)
+
+
+func test_a_hay_item_puts_its_feed_units_into_the_hay_rack_and_is_used_up() -> void:
+	var rack := _place(WorldObjectTypes.HAY_RACK)
+	_state.player.inventory.add(ItemTypes.HAY, 3)
+	_hold(ItemTypes.HAY)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.FEED)
+	assert_eq(ObjectStock.units(rack), LivestockRules.default_rules().feed_units(ItemTypes.HAY))
+	assert_eq(_count(ItemTypes.HAY), 2)
+	assert_eq(ObjectStock.look(rack), 1)
+
+
+func test_a_full_hay_rack_takes_no_more_hay() -> void:
+	var rack := _place(WorldObjectTypes.HAY_RACK)
+	ObjectStock.add(rack, 100)
+	_state.player.inventory.add(ItemTypes.HAY, 3)
+	_hold(ItemTypes.HAY)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
+	assert_eq(_count(ItemTypes.HAY), 3, "the hay is kept")
+
+
+func test_hay_goes_into_the_rack_only_and_other_things_are_not_feed() -> void:
+	_place(WorldObjectTypes.TROUGH)
+	_state.player.inventory.add(ItemTypes.HAY, 1)
+	_hold(ItemTypes.HAY)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING, "not into a trough")
+	_world.remove_object(_tile)
+	_place(WorldObjectTypes.HAY_RACK)
+	_state.player.inventory.add(ItemTypes.REEDS, 1)
+	_hold(ItemTypes.REEDS)
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING, "reeds are no feed")
+	assert_eq(LivestockRules.default_rules().feed_units(ItemTypes.REEDS), 0)
+
+
+func test_feeding_tells_the_rack_and_the_feed_and_is_heard() -> void:
+	var outcomes: Array[ActionOutcome] = []
+	_state.action_done.connect(func(outcome: ActionOutcome) -> void: outcomes.append(outcome))
+	_place(WorldObjectTypes.HAY_RACK)
+	_state.player.inventory.add(ItemTypes.HAY, 1)
+	_hold(ItemTypes.HAY)
+	_state.use_facing_tile()
+	assert_eq(outcomes.size(), 1)
+	assert_eq(outcomes[0].kind, ActionOutcome.FEED)
+	assert_eq(outcomes[0].object, WorldObjectTypes.HAY_RACK)
+	assert_eq(outcomes[0].items, {ItemTypes.HAY: 1})
+	assert_ne(SoundEvents.action(ActionOutcome.FEED), &"")

@@ -7,7 +7,8 @@ extends RefCounted
 ## What the use action does on a tile. HARVEST is a ripe crop, FORAGE something a hand picks
 ## (a bush, a fern), CLEAR a dead crop that a hand pulls up, WATER a watering can wetting tilled
 ## soil, FILL_CAN the can filled at a well or at fresh water, CAN_EMPTY a can with no water to
-## water with (nothing is done), HIT a tool cut or mined at an object, NEEDS_BETTER_TOOL a tool
+## water with (nothing is done), POUR the can emptied a little into a trough, FEED a feed item put
+## into a hay rack, HIT a tool cut or mined at an object, NEEDS_BETTER_TOOL a tool
 ## that is too weak for the object, MOW a scythe cutting the tall grass and reeds around the
 ## target, DIG a shovel in grass (which may find clay), PLACE an item that puts an object down (a
 ## chest, a station), TAKE_DOWN an axe or pickaxe taking down what the player placed inside a house
@@ -30,6 +31,8 @@ enum Use {
 	WATER,
 	FILL_CAN,
 	CAN_EMPTY,
+	POUR,
+	FEED,
 	MOW,
 	DIG,
 	PLACE,
@@ -61,6 +64,7 @@ const COST_KINDS := {
 	Use.FORAGE: &"pick",
 	Use.CLEAR: &"pick",
 	Use.WATER: &"water",
+	Use.POUR: &"water",
 	Use.HIT: &"hit",
 	Use.MOW: &"mow",
 	Use.DIG: &"dig",
@@ -122,6 +126,7 @@ func can_use_held_item() -> bool:
 		or item.has("places")
 		or ACTIVE_TOOLS.has(item.get("tool"))
 		or held in ANIMAL_ITEMS
+		or LivestockRules.default_rules().feed_units(held) > 0
 	)
 
 
@@ -189,6 +194,19 @@ func _do_use(target: Vector2i) -> Use:
 			_state.world.set_moisture(target, 1.0)
 			_state.player.can_water -= 1
 			_done(ActionOutcome.WATER, target)
+		Use.POUR:
+			var trough := _state.world.object_at(target)
+			ObjectStock.add(trough, LivestockRules.default_rules().pour_units())
+			_state.world.change_object(trough)
+			_state.player.can_water -= 1
+			_done(ActionOutcome.WATER, target, trough.type)
+		Use.FEED:
+			var rack := _state.world.object_at(target)
+			var feed := _state.player.inventory.held_item()
+			ObjectStock.add(rack, LivestockRules.default_rules().feed_units(feed))
+			_state.world.change_object(rack)
+			_state.player.inventory.consume_held()
+			_done(ActionOutcome.FEED, target, rack.type, {feed: 1})
 		Use.FILL_CAN:
 			_state.player.can_water = EnergyRules.default_rules().can_capacity()
 			var well := _state.world.object_at(target)
@@ -399,7 +417,11 @@ func _use_outdoors(item: Dictionary, pos: Vector2i) -> Use:
 		and _state.world.is_free_on(pos, item.get("plants_on", Tile.Terrain.SOIL))
 	):
 		return Use.PLANT
-	return _use_tool(item, _state.world.object_at(pos), pos)
+	var object := _state.world.object_at(pos)
+	var held := _state.player.inventory.held_item()
+	if LivestockRules.default_rules().feed_units(held) > 0:
+		return Use.FEED if _can_take_stock(object, &"feed") else Use.NOTHING
+	return _use_tool(item, object, pos)
 
 
 func _use_tool(tool_item: Dictionary, object: WorldObject, world_pos: Vector2i) -> Use:
@@ -429,9 +451,21 @@ func _use_watering_can(object: WorldObject, world_pos: Vector2i) -> Use:
 	)
 	if is_water_source:
 		return Use.NOTHING if is_full else Use.FILL_CAN
+	if _can_take_stock(object, &"water"):
+		return Use.POUR if has_water else Use.CAN_EMPTY
 	if not _is_dry_soil(world_pos):
 		return Use.NOTHING
 	return Use.WATER if has_water else Use.CAN_EMPTY
+
+
+## Whether the object holds a stock of this kind and has room in it.
+func _can_take_stock(object: WorldObject, kind: StringName) -> bool:
+	return (
+		object != null
+		and ObjectStock.is_stocked(object)
+		and object.type_data()["stock_kind"] == kind
+		and ObjectStock.units(object) < ObjectStock.capacity(object)
+	)
 
 
 ## What an axe or a pickaxe does to the object: hit it if it is cut or mined with that tool.

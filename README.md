@@ -168,6 +168,8 @@ an empty can the use key says so and waters nothing. The water in the can is sav
 A **trough** (a plank box on two feet, woodworking 10: 5 planks and a log) and a **hay rack**
 (oak posts with slats, woodworking 15: 4 planks and 2 logs) stand outdoors on two tiles and hold
 a stock of up to 100 units. Their pictures show how full they are: empty, low, half and full.
+Fill a trough with the watering can (a pour is 10 units and takes one of the can's 20) and a hay
+rack with hay (10 units each) by the use key; a full one takes no more.
 
 ### Livestock
 

@@ -112,5 +112,11 @@ chicken coop. All are made at the workbench or built with the hammer and stand o
   low (up to 35% of the capacity), half (35% to 70%) and full (70% and over). The trough is a
   plank box on two feet made at the workbench (woodworking 10: 5 planks, 1 log), the hay rack
   oak posts with slats and the hay behind them (woodworking 15: 4 planks, 2 logs); both stand
-  outdoors and the axe takes them down (3 hits). Filling them, and what the animals do with
-  them, are in the next section.
+  outdoors and the axe takes them down (3 hits).
+- **Filling them** (decided 2026-11-10): the use key with the watering can at a trough pours
+  `[yard] pour_units` (10) units of water in and takes 1 from the can (and the energy of
+  watering); the use key with hay at a hay rack puts `[yard] feed_items` (hay: 10) units in and
+  uses the item up. A full trough or rack takes no more (the can keeps its water, the hay stays
+  in the inventory), an empty can says so. Hay is the only feed so far: any item in `feed_items`
+  of data/livestock.cfg feeds, so grain for the hens or a swill for the pigs is a line there.
+  What was put in stays until the animals take it (see the needs below); nothing spoils.
