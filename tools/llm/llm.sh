@@ -21,6 +21,9 @@ GPU=${LLM_GPU:-auto}
 GPU_DEVICE=nvidia.com/gpu=all
 GPU_LABEL=sandbox-game.gpu
 CDI_SPEC=/etc/cdi/nvidia.yaml
+# Where container tools look for CDI specs (podman and docker 28+ read both); a test points it
+# at a fake tree.
+CDI_DIRS=${LLM_CDI_DIRS:-/etc/cdi:/var/run/cdi}
 # Where the AMD GPU shows up; the variables let a test point them at a fake tree.
 KFD_DEVICE=${LLM_KFD_DEVICE:-/dev/kfd}
 DRI_DIR=${LLM_DRI_DIR:-/dev/dri}
@@ -100,9 +103,12 @@ amd_describe() {
 	fi
 }
 
-# podman and docker (28+) both read CDI specs from these places; nvidia-ctk writes them.
+# nvidia-ctk writes the spec into one of the CDI directories.
 has_gpu_spec() {
-	grep -qsF 'nvidia.com/gpu' /etc/cdi/*.yaml /etc/cdi/*.json /var/run/cdi/*.yaml /var/run/cdi/*.json
+	for dir in $(echo "$CDI_DIRS" | tr : ' '); do
+		grep -qsF 'nvidia.com/gpu' "$dir"/*.yaml "$dir"/*.json && return 0
+	done
+	return 1
 }
 
 # Prints nvidia, amd or cpu: what the container gets. Fails if LLM_GPU asks for a GPU that is

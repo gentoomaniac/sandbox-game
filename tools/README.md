@@ -327,8 +327,10 @@ What fits on the GPU depends on its VRAM: the 7B (4.7 GB) on the 8 GB RTX 4070, 
   fail if it is not usable, `LLM_GPU=1` means any GPU or fail, `LLM_GPU=0` the CPU. The
   container is labelled with what it was started with (nvidia, amd or cpu); a change of
   `LLM_GPU` or of the machine recreates it. `LLM_DRY_RUN=1 tools/llm/llm.sh up` only prints
-  the run command. `make llm-check` ends with `ollama ps`, whose PROCESSOR column says `GPU`
-  or `CPU`.
+  the run command (tools/llm/test_llm_gpu.py, part of `make test`, checks the choice that way
+  against a fake device tree; `LLM_CDI_DIRS`, `LLM_KFD_DEVICE`, `LLM_DRI_DIR`, `LLM_KFD_NODES` and
+  `LLM_AMDGPU_MODULE` point llm.sh at it). `make llm-check` ends with `ollama ps`, whose PROCESSOR
+  column says `GPU` or `CPU`.
 
 ### Setting up the GPU (once per machine)
 

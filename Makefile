@@ -206,9 +206,10 @@ screenshot: assets
 # real save.
 TEST_JOBS ?= 8
 
-# The tests of the Python tools (tools/art/test_*.py), part of `make test`.
+# The tests of the Python tools (tools/art/test_*.py, tools/llm/test_*.py), part of `make test`.
 test-tools: $(VENV_READY)
 	$(PYTHON) -m unittest discover -s tools/art -p "test_*.py"
+	$(PYTHON) -m unittest discover -s tools/llm -p "test_*.py"
 
 test: assets test-tools
 	@mkdir -p build/user-data
