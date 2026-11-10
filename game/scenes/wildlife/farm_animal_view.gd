@@ -55,8 +55,8 @@ func _ready() -> void:
 
 
 func _update(_delta: float) -> void:
-	# A ridden horse is drawn under its rider (see PlayerView).
-	visible = not farm_animal.is_ridden
+	# A ridden horse is drawn under its rider (see PlayerView), a hen in a coop is not seen.
+	visible = not farm_animal.is_ridden and not farm_animal.is_housed
 	position = _pixel_position()
 	# Saddling a horse, or taking its saddle off, changes its sheet.
 	if sheet_kind(farm_animal) != _sheet_kind:

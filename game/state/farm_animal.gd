@@ -42,6 +42,12 @@ var thirst := 0.0
 var goal := Vector2.INF
 var goal_source := Vector2i.ZERO
 var goal_need := &""
+## A hen is in a chicken coop (see Coop): she stands on a tile of its footprint and is not shown.
+## Worked out from where she stands, so it is not saved.
+var is_housed := false
+## A hen could not walk to a coop at bedtime (it came in the minutes of a skip that are walked
+## through) and sleeps outdoors: she goes when play goes on. Not saved.
+var missed_roost := false
 ## Seconds before it looks for what it needs again, after a search that found nothing.
 var search_seconds := 0.0
 ## A horse wears a saddle (see ToolUse `SADDLE`): it can be ridden.

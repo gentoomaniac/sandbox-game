@@ -8,11 +8,11 @@ extends RefCounted
 ## (a bush, a fern), CLEAR a dead crop that a hand pulls up, WATER a watering can wetting tilled
 ## soil, FILL_CAN the can filled at a well or at fresh water, CAN_EMPTY a can with no water to
 ## water with (nothing is done), POUR the can emptied a little into a trough, FEED a feed item put
-## into a hay rack, HIT a tool cut or mined at an object, NEEDS_BETTER_TOOL a tool
-## that is too weak for the object, MOW a scythe cutting the tall grass and reeds around the
-## target, DIG a shovel in grass (which may find clay), PLACE an item that puts an object down (a
-## chest, a station), TAKE_DOWN an axe or pickaxe taking down what the player placed inside a house
-## (outdoors it is a HIT),
+## into a hay rack, COLLECT an empty hand taking the eggs out of a coop's nest, HIT a tool cut or
+## mined at an object, NEEDS_BETTER_TOOL a tool that is too weak for the object, MOW a scythe
+## cutting the tall grass and reeds around the target, DIG a shovel in grass (which may find clay),
+## PLACE an item that puts an object down (a chest, a station), TAKE_DOWN an axe or pickaxe taking
+## down what the player placed inside a house (outdoors it is a HIT),
 ## NO_ROOM that, with too little room in the inventory for it and what it holds, GIVE_BONE a bone
 ## given to a dog, which then follows the player, SADDLE the saddle put on a horse and UNSADDLE an
 ## empty hand taking it off again, RIDING anything on horseback (the player gets off first),
@@ -33,6 +33,7 @@ enum Use {
 	CAN_EMPTY,
 	POUR,
 	FEED,
+	COLLECT,
 	MOW,
 	DIG,
 	PLACE,
@@ -101,7 +102,7 @@ func use_at(pos: Vector2i) -> Use:
 		return Use.RIDING
 	var held := _state.player.inventory.held_item()
 	if held == ItemTypes.NONE:
-		return Use.NOTHING if _state.is_inside() else _use_by_hand(pos)
+		return _use_by_hand_inside(pos) if _state.is_inside() else _use_by_hand(pos)
 	var item: Dictionary = ItemTypes.TYPES[held]
 	if item.has("places") and _can_place_on(pos, item["places"]):
 		return Use.PLACE
@@ -207,6 +208,11 @@ func _do_use(target: Vector2i) -> Use:
 			_state.world.change_object(rack)
 			_state.player.inventory.consume_held()
 			_done(ActionOutcome.FEED, target, rack.type, {feed: 1})
+		Use.COLLECT:
+			var nest := _state.current_map.object_at(target)
+			var eggs := Coop.take_eggs(nest)
+			_state.player.inventory.add(ItemTypes.EGG, eggs)
+			_done(ActionOutcome.COLLECT, target, nest.type, {ItemTypes.EGG: eggs})
 		Use.FILL_CAN:
 			_state.player.can_water = EnergyRules.default_rules().can_capacity()
 			var well := _state.world.object_at(target)
@@ -477,6 +483,13 @@ func _use_cutting_tool(tool_item: Dictionary, object: WorldObject) -> Use:
 	if tool_item["level"] >= object.type_data()["harvest_level"]:
 		return Use.HIT
 	return Use.NEEDS_BETTER_TOOL
+
+
+## What an empty hand does on a tile inside a house: it takes the eggs out of a nest that has some
+## (a nest holds fewer than a stack, and the empty hand's slot always has room for them: see Coop).
+func _use_by_hand_inside(pos: Vector2i) -> Use:
+	var nest := _state.current_map.object_at(pos)
+	return Use.COLLECT if nest != null and Coop.eggs_in(nest) > 0 else Use.NOTHING
 
 
 ## What an empty hand does on a tile outdoors: it takes the saddle off a horse (the hand's empty

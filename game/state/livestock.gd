@@ -49,9 +49,12 @@ var _sun: Sun
 var _animals: Array[FarmAnimal] = []
 ## The game minute the needs of the animals were last brought up to (see `account_needs`), or -1.
 var _needs_minute := -1
-## How many more searches for water or feed an `update` may make (see [needs]
+## How many more searches for water, feed or a coop an `update` may make (see [needs]
 ## `searches_per_update`): each is a flood fill of the ground around an animal.
 var _searches_left := 0
+## The roosts of each coop (by its origin) that hens settled in this skip have used up and are not
+## in now, because the skip ended in the morning. Only for the length of one catch-up.
+var _roost_taken := {}
 var _mice: Array[Prey] = []
 
 
@@ -190,16 +193,21 @@ func update(
 		if not may_hunt:
 			_abandon_hunt(animal)
 		animal.search_seconds = maxf(0.0, animal.search_seconds - delta)
+		if animal.species == LivestockRules.CHICKEN and map is World:
+			animal.is_housed = Coop.housing(map as World, animal.tile(), yard) != null
 		# A player who is indoors (`player_feet` infinite) is not followed.
 		if now < animal.follow_until_minute and player_feet.is_finite():
 			animal.goal = Vector2.INF
 			_follow(animal, delta, map, player_feet)
 		elif _is_sleep_time(animal, minute, sunrise, sunset):
-			animal.goal = Vector2.INF
-			animal.activity = FarmAnimal.Activity.SLEEP
+			_go_to_sleep(animal, delta, map, may_hunt)
+		elif animal.is_housed:
+			_leave_coop(animal, map)
 		elif animal.activity == FarmAnimal.Activity.SLEEP:
 			_start_activity(animal, FarmAnimal.Activity.IDLE, may_hunt)
 		else:
+			if animal.goal_need == Coop.ROOST:
+				animal.goal = Vector2.INF
 			_update_awake_animal(animal, delta, map, player_feet, may_hunt)
 
 
@@ -217,6 +225,7 @@ func catch_up(
 	_begin_catch_up(clock, seed_value)
 	for animal in _animals:
 		_catch_up_one(animal, map, clock, player_feet, minutes)
+	_roost_taken.clear()
 
 
 ## The same, spread over frames: every animal after `Simulation.frame_budget_usec` of a frame is
@@ -237,6 +246,7 @@ func catch_up_over_frames(
 			await next_frame.call()
 			frame_started = Time.get_ticks_usec()
 		_catch_up_one(animal, map, clock, player_feet, minutes)
+	_roost_taken.clear()
 
 
 func _begin_catch_up(clock: GameClock, seed_value: int) -> void:
@@ -253,8 +263,14 @@ func _catch_up_one(
 	animal.hunt_rest_seconds = 0.0
 	animal.goal = Vector2.INF
 	animal.search_seconds = 0.0
+	animal.missed_roost = false
 	if clock.total_minutes() < animal.follow_until_minute and player_feet.is_finite():
 		_put_beside(animal, player_feet, map)
+		return
+	if (
+		animal.species == LivestockRules.CHICKEN
+		and _settle_hen_in_skip(animal, map, clock, minutes)
+	):
 		return
 	_wander_off(animal, map)
 	_meet_needs_in_skip(animal, map, minutes)
@@ -269,6 +285,157 @@ func _catch_up_one(
 		var heading := animal.heading
 		_start_next_activity(animal)
 		animal.heading = heading
+
+
+## A hen in a skip of `minutes` that ends at the time of `clock`. If she is in a coop or could walk
+## to one with a free roost (see `Coop.nearest_free`) she laid an egg in it (by `egg_chance`) for
+## each bedtime of hers since the skip began, the walked minutes before it included (no hen goes to
+## a coop while they are walked), met her needs from its front like the others, and is in it if it
+## is time to sleep, else she has come out in front of its door. Returns whether she was settled so
+## (one with no coop is left to the others' rules).
+func _settle_hen_in_skip(hen: FarmAnimal, map: GameMap, clock: GameClock, minutes: int) -> bool:
+	if not map is World:
+		return false
+	var world := map as World
+	var coop := Coop.housing(world, hen.tile(), yard)
+	hen.is_housed = coop != null
+	if coop == null:
+		coop = _reachable_free_coop(hen, world)
+	if coop == null:
+		return false
+	var now := clock.total_minutes()
+	var from := now - minutes - Simulation.WALKED_MINUTES
+	for _night in _bedtimes_between(hen, from, now):
+		Coop.lay_egg(coop, yard, rng)
+	hen.position = Coop.door_front(coop)
+	hen.is_housed = false
+	_meet_needs_in_skip(hen, map, minutes)
+	hen.goal = Vector2.INF
+	var is_asleep := _is_sleep_time(
+		hen, clock.minute_of_day, _sun.sunrise(clock.day), _sun.sunset(clock.day)
+	)
+	if is_asleep:
+		hen.position = Coop.roost_spot(coop)
+		hen.is_housed = true
+		hen.activity = FarmAnimal.Activity.SLEEP
+	else:
+		# The night took a roost that nobody is in now.
+		_roost_taken[coop.origin] = int(_roost_taken.get(coop.origin, 0)) + 1
+		_start_activity(hen, FarmAnimal.Activity.IDLE)
+	return true
+
+
+## The coop with a free roost nearest to the hen that she can walk to (see `Coop.nearest_free`), or
+## null. It costs a flood fill of the ground round her.
+func _reachable_free_coop(hen: FarmAnimal, world: World) -> Building:
+	_searches_left -= 1
+	search_count += 1
+	var reach := {}
+	for tile in ReachableTiles.within(
+		hen.tile(), float(yard.coop("call_tiles")) + 1.0, world.is_walkable
+	):
+		reach[tile] = true
+	var can_reach := func(front: Vector2i) -> bool: return reach.has(front)
+	return Coop.nearest_free(world, _animals, hen.position, yard, _roost_taken, can_reach)
+
+
+## How many times the animal's bedtime (see `_is_sleep_time`) came after the game minute `from` and
+## up to `to`.
+func _bedtimes_between(animal: FarmAnimal, from: int, to: int) -> int:
+	var count := 0
+	var first_day := floori(from / float(GameClock.MINUTES_PER_DAY)) + 1
+	var last_day := floori(to / float(GameClock.MINUTES_PER_DAY)) + 2
+	for day in range(first_day, last_day):
+		var bedtime := (
+			(day - 1) * GameClock.MINUTES_PER_DAY
+			+ ceili(_sun.sunset(day) + rules.sleep_minutes(animal.species) + animal.bedtime_delay)
+		)
+		if bedtime > from and bedtime <= to:
+			count += 1
+	return count
+
+
+## What an animal does when it is time to sleep: a hen walks to a coop with a free roost and goes in
+## (see `_roost`), any other animal, or a hen with no coop to go to, sleeps where it is.
+func _go_to_sleep(animal: FarmAnimal, delta: float, map: GameMap, may_walk: bool) -> void:
+	var may_roost := map is World and (animal.is_housed or may_walk)
+	if animal.species == LivestockRules.CHICKEN and may_roost and _roost(animal, delta, map):
+		return
+	# A hen that could not walk to a coop (the walked minutes of a skip) tries again once play goes on.
+	if animal.species == LivestockRules.CHICKEN and not may_walk:
+		animal.missed_roost = true
+	animal.goal = Vector2.INF
+	animal.activity = FarmAnimal.Activity.SLEEP
+
+
+## Makes a hen go to roost: she stays in the coop she is in, or walks to the front of the door of
+## the nearest one with a free roost and goes in. Returns false if she has nowhere to go: she sleeps
+## where she is. A hen that is already asleep outdoors stays there, and one that found no coop does
+## not look again for `retry_seconds`.
+func _roost(hen: FarmAnimal, delta: float, map: GameMap) -> bool:
+	if hen.is_housed:
+		hen.activity = FarmAnimal.Activity.SLEEP
+		return true
+	if hen.goal_need == Coop.ROOST and hen.goal.is_finite():
+		return _walk_to_coop(hen, delta, map)
+	# A roost that is due (see `missed_roost`) is not held up by the cooldown of a failed search.
+	var is_waiting := hen.search_seconds > 0.0 and not hen.missed_roost
+	if (hen.activity == FarmAnimal.Activity.SLEEP and not hen.missed_roost) or is_waiting:
+		return false
+	if _searches_left <= 0:
+		# Not this time: she goes on as she is and looks in a later update.
+		return true
+	hen.missed_roost = false
+	var coop := _reachable_free_coop(hen, map as World)
+	if coop == null:
+		hen.search_seconds = yard.needs("retry_seconds")
+		return false
+	hen.goal = Coop.door_front(coop)
+	hen.goal_need = Coop.ROOST
+	hen.goal_source = coop.origin
+	hen.activity = FarmAnimal.Activity.WALK
+	hen.seconds_left = yard.needs("trip_seconds")
+	return true
+
+
+## A step of a hen on her way to the front of a coop's door, and in when she is there. Returns false
+## when she gives up: it took too long, the coop is gone, or her way is blocked.
+func _walk_to_coop(hen: FarmAnimal, delta: float, map: GameMap) -> bool:
+	hen.seconds_left -= delta
+	var coop := Coop.of((map as World).building_at(hen.goal_source), yard)
+	var speed := rules.walk_speed(hen.species)
+	var to_door := hen.goal - hen.position
+	var is_arrived := to_door.length() <= speed * delta + GOAL_REACHED_TILES
+	if (
+		coop == null
+		or hen.seconds_left <= 0.0
+		or (is_arrived and not Coop.has_room(map as World, coop, _animals, yard))
+		or not (is_arrived or _walk(hen, to_door.normalized(), speed, delta, map))
+	):
+		hen.goal = Vector2.INF
+		return false
+	if is_arrived:
+		_enter_coop(hen, coop)
+	else:
+		hen.activity = FarmAnimal.Activity.WALK
+	return true
+
+
+## The hen goes in: she is on a tile of the coop, asleep, and lays an egg by the dice.
+func _enter_coop(hen: FarmAnimal, coop: Building) -> void:
+	hen.position = Coop.roost_spot(coop)
+	hen.goal = Vector2.INF
+	hen.is_housed = true
+	hen.activity = FarmAnimal.Activity.SLEEP
+	Coop.lay_egg(coop, yard, rng)
+
+
+## The hen comes out in the morning, to the front of the door.
+func _leave_coop(hen: FarmAnimal, map: GameMap) -> void:
+	var coop := Coop.housing(map as World, hen.tile(), yard)
+	hen.is_housed = false
+	hen.position = Coop.door_front(coop)
+	_start_activity(hen, FarmAnimal.Activity.IDLE)
 
 
 ## Whether the chunk an animal stands in is loaded: the world beyond it is not there to walk on.

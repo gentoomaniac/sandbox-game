@@ -159,27 +159,6 @@ soaked and sown and growing crops on it, at noon, in the evening and in the clas
 
 ![Tilled soil from dry to soaked with sown and growing crops, at noon, in the evening and in the classic art](docs/screenshots/soil.png)
 
-The watering can holds water: 20 waterings (a new game starts with it full), one for each tile
-of soil you wet. Fill it with the use key at a **draw well** (a fieldstone ring under an oak sweep,
-made at the workbench with masonry 20 from 12 stone, 3 planks, 2 logs and 2 fibre, and put down
-outdoors) or at fresh water: a river, a pond or a ditch, never the sea or the salt marsh. With
-an empty can the use key says so and waters nothing. The water in the can is saved.
-
-A **trough** (a plank box on two feet, woodworking 10: 5 planks and a log) and a **hay rack**
-(oak posts with slats, woodworking 15: 4 planks and 2 logs) stand outdoors on two tiles and hold
-a stock of up to 100 units. Their pictures show how full they are: empty, low, half and full.
-Fill a trough with the watering can (a pour is 10 units and takes one of the can's 20) and a hay
-rack with hay (10 units each) by the use key; a full one takes no more.
-
-The farm animals get hungry and thirsty as game time passes (a cow takes 12 hours to go from fed
-to hungriest, 8 to thirstiest; the numbers are in [data/livestock.cfg](data/livestock.cfg)); the
-needs are saved and, for now, have no other effect. A thirsty animal walks to fresh water nearby
-(a river, a pond or a ditch; never the sea, the mud flats or the salt marsh) or to a trough with
-water, and drinks; a hungry one that eats hay goes to a hay rack, and those that graze eat as they
-graze. Each drink and meal takes a few units from the trough or rack (a cow 5, a hen 3), whose
-picture shows what is left. Sleeping counts the meals of the animals that could reach food and
-water. `noneeds` in the console stops the needs from rising.
-
 ### Livestock
 
 Cows, sheep, chickens and rabbits of the region: red-brown Angler, black pied and red pied
@@ -187,8 +166,8 @@ cattle; white, grey and black-faced sheep; brown and white hens and a rooster; a
 and Dutch rabbits, each with a slight tint of its own. They wander, graze (the hens peck for
 seeds and worms), keep out of water and away from anything solid, and the rabbits hop off
 when you come close. At night they lie down and sleep until the morning. For now they come
-from the console (`spawn cow 3`); they are saved with the game. Milk, wool, eggs, pens and
-feeding come later. The numbers are in [data/livestock.cfg](data/livestock.cfg). Like the
+from the console (`spawn cow 3`); they are saved with the game. Milk, wool and pens come later
+(see the farm yard below for eggs, food and water). The numbers are in [data/livestock.cfg](data/livestock.cfg). Like the
 people, the animals are drawn at 32 pixels per tile, with legs that bend at the joints, an eye
 with a glint and the marks of their coats.
 
@@ -223,6 +202,42 @@ crafting, no doors, and nothing is picked up from the ground. Get off first. A g
 saved on horseback loads with you standing beside the horse.
 
 ![Trotting on a bay horse, walking a grey towards the viewer, and on a pony from behind](docs/screenshots/riding.png)
+
+### The farm yard
+
+The watering can holds water: 20 waterings (a new game starts with it full), one for each tile
+of soil you wet. Fill it with the use key at a **draw well** (a fieldstone ring under an oak sweep,
+made at the workbench with masonry 20 from 12 stone, 3 planks, 2 logs and 2 fibre, and put down
+outdoors) or at fresh water: a river, a pond or a ditch, never the sea or the salt marsh. With
+an empty can the use key says so and waters nothing. The water in the can is saved and shows as a
+small number on the can in the hotbar.
+
+A **trough** (a plank box on two feet, woodworking 10: 5 planks and a log) and a **hay rack**
+(oak posts with slats, woodworking 15: 4 planks and 2 logs) stand outdoors on two tiles and hold
+a stock of up to 100 units. Their pictures show how full they are: empty, low, half and full.
+Fill a trough with the watering can (a pour is 10 units and takes one of the can's 20) and a hay
+rack with hay (10 units each) by the use key; a full one takes no more.
+
+The farm animals get hungry and thirsty as game time passes (a cow takes 12 hours to go from fed
+to hungriest, 8 to thirstiest; the numbers are in [data/livestock.cfg](data/livestock.cfg)); the
+needs are saved and, for now, have no other effect. A thirsty animal walks to fresh water nearby
+(a river, a pond or a ditch; never the sea, the mud flats or the salt marsh) or to a trough with
+water, and drinks; a hungry one that eats hay goes to a hay rack, and those that graze eat as they
+graze. Each drink and meal takes a few units from the trough or rack (a cow 5, a hen 3), whose
+picture shows what is left. Sleeping counts the meals of the animals that could reach food and
+water. `noneeds` in the console stops the needs from rising.
+
+The **chicken coop** (a building: 12 logs and 4 stone, 2x2, low and boarded with a ramp up to the
+hens' hatch and a nest box with its lid propped open) is where the hens sleep: at bedtime each hen
+within twelve tiles of a coop with a free roost (six to a coop) walks to it and goes in, out of
+sight, and comes out in the morning; going in she lays an egg, 7 times in 10, in a nest (a hay
+pile of the room inside, four eggs to a nest). Go in and press the use key at a nest with an empty
+hand to take the eggs. A night of sleeping or skipping counts the eggs too.
+
+![The farm yard at noon: the chicken coop with its hens, the draw well, four troughs and four hay racks from empty to full, a cow at the water and a sheep at the hay](docs/screenshots/farm-yard.png)
+
+`make screenshot SIZE=1000x700 AT=69,-15 TIME=12:00 ZOOM=0.75 ARGS="--yard=40,-20 --day=45"` puts
+it in view (`--yard` also shows the stations and the lines across the land, 22 tiles west of it).
 
 ### Villagers
 

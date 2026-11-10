@@ -18,6 +18,7 @@ const NEEDS_KEYS := [
 	"searches_per_update",
 ]
 const YARD_KEYS := ["pour_units", "feed_items"]
+const COOP_KEYS := ["building", "roosts", "call_tiles", "egg_chance", "nest_eggs"]
 const SPECIES_KEYS := [
 	"hunger_hours",
 	"thirst_hours",
@@ -60,6 +61,9 @@ func problems() -> Array[String]:
 	for key: String in YARD_KEYS:
 		if not _values.get("yard", {}).has(key):
 			found.append("[yard] no %s" % key)
+	for key: String in COOP_KEYS:
+		if not _values.get("coop", {}).has(key):
+			found.append("[coop] no %s" % key)
 	for species in LivestockRules.SPECIES:
 		for key: String in SPECIES_KEYS:
 			if not _values.get(String(species), {}).has(key):
@@ -96,6 +100,11 @@ func eats_feed(species: StringName) -> bool:
 ## `thirst`).
 func units_per_need(species: StringName, need: StringName) -> int:
 	return int(_species(species, "eat_units" if need == &"hunger" else "drink_units"))
+
+
+## A number or name of the chicken coop (see [coop]).
+func coop(key: String) -> Variant:
+	return _values["coop"][key]
 
 
 ## How much water one pour of the watering can puts into a trough, in units.

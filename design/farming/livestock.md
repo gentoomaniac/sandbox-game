@@ -69,7 +69,8 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   chickens peck for seeds and worms. Grazing doesn't change the grass. It walks only onto
   walkable ground under its feet and its nose, so it keeps out of water and away from
   anything solid. Rabbits hop and run from a player who comes close. At night every animal
-  sleeps where it stands (lying down, or tucked in): from a while after sunset (hens go to
+  sleeps where it stands (lying down, or tucked in; hens go into a chicken coop if there is one, see
+  the farm yard): from a while after sunset (hens go to
   roost before it) until about sunrise, each animal up to half an hour later than its
   species. They stand still while the player is in a house, like the rest of the world.
   **Skipping time** (the console's `skip`, sleeping, passing out; decided 2026-11-10): the
@@ -86,7 +87,8 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   player (save version 16), whether a horse wears a saddle (save version 22) and how hungry and
   thirsty it is (save version 25); what an animal is doing is not.
 - Animals don't avoid each other or the player yet. No hoofbeats are heard while riding yet.
-- **Later:** milk, wool and eggs, pens, feeding, owning and breeding.
+- **Later:** milk and wool, pens (task 165), owning and breeding, and animals that are neither
+  hungry nor thirsty giving better produce (eggs, feeding and drinking are in the farm yard below).
 
 ## The farm yard (task 122, decided 2026-11-10)
 
@@ -103,7 +105,7 @@ chicken coop. All are made at the workbench or built with the hammer and stand o
   key with the can at a draw well or at fresh water (`Tile.is_fresh_water`: the terrain WATER, so
   the rivers, ponds and ditches; never the sea, the tidal mud or the salt marsh) fills it, unless
   it is full. With the can empty the use key at dry soil does nothing and says so. The water in the
-  can is saved (save version 25). The well gives the water for the can, and so for the troughs and
+  can is saved (save version 25) and shown as a small number on the can in the hotbar. The well gives the water for the can, and so for the troughs and
   the soil; water for the house (cooking, washing) comes with those.
 - **Trough and hay rack** (2x1 world objects; the trough holds water, the hay rack feed; a feeding
   trough for pigs and the like is the same code with `stock_kind` feed, task 165): each holds a
@@ -174,3 +176,39 @@ chicken coop. All are made at the workbench or built with the hammer and stand o
     same dice as in one go.
   - **Console:** `noneeds` toggles the rise off and on again (the HUD shows "No needs"); like the
     other cheats it lasts for the session and is not saved. What is already risen stays.
+- **Chicken coop** (decided 2026-11-10; task 122; the building is in design/building/first-buildings.md,
+  the numbers in the `[coop]` section of data/livestock.cfg): the hens sleep in it and the eggs are
+  collected in it.
+  - **Roosting:** when it is time to sleep (they go before sunset, see above), a hen within
+    `call_tiles` (12) of the front of a coop's door that she can walk to (not across a river or a
+    fence) and that has a free roost (`roosts`, 6 hens a coop; those on their way count, and the
+    capacity is checked again at the door) walks to it, goes in and sleeps on a tile of its footprint, **not shown** while she is in; she
+    comes out in front of the door in the morning, when her sleep time ends. A hen with no coop to
+    go to (none near, or every roost taken) sleeps where she stands, as before; no other animal
+    goes in, and only a building of the coop's type houses hens (not a house whose door she
+    stands on). Nor is a hen standing on the coop's own door tile, which is walked on, inside it:
+    only entering puts her on a tile of its footprint other than the door's, and then the roost
+    count applies. A coop taken down leaves its hens standing where it was. Hens in a coop are not
+    saved as such: they are saved at their place on its footprint and are inside after the load
+    (`FarmAnimal.is_housed` is worked out from where she stands). They are not drawn in the room
+    when the player is inside either (nothing in a house shows animals yet).
+  - **Eggs:** going in, a hen lays an egg with the chance `egg_chance` (0.7) in a **nest** of the
+    coop with room, the hay piles of its inside (`Coop.nests`), each holding up to `nest_eggs` (4)
+    in `eggs` in its state, so saved with the building's inside. The use key with an empty hand at a
+    nest takes all its eggs (the eggs item, a stack in the inventory; the empty hand's slot always
+    has room). The inside is made when the first egg is laid if nobody has been in. Nothing spoils,
+    nothing else uses the eggs yet (cooking comes later). Whether a hen was hungry or thirsty makes
+    no difference yet: that is where the later production effect of the needs goes, in
+    `Coop.lay_egg`.
+  - **Skipped time:** a skip that lasts over a hen's bedtime counts the egg of that night for her
+    (by `egg_chance`), if she is in a coop or could go to one; she then is in the coop if it is
+    time to sleep when the skip ends, else out in front of its door. The walked minutes at the start
+    of a skip count too (no hen goes to a coop in them, she sleeps where she stands until the skip
+    settles her), a night's roost is used up even when the skip ends in the morning (only for that
+    skip: nothing is kept after it), and a hen settled in a coop meets her needs like the others.
+    The hens' bedtimes are counted one by one, so a two-day skip lays two nights' eggs, as many as
+    the nests have room for. A skip shorter than the walked minutes has no catch-up: a hen that
+    fell asleep outdoors in it goes to the coop when play goes on (`FarmAnimal.missed_roost`).
+  - **Left open (decided as the mildest, the user may change):** a coop taken down loses its eggs
+    (they are not what the player put in, so they do not stop it); a hen far from any coop sleeps
+    outdoors as ever.

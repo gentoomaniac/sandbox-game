@@ -20,6 +20,8 @@ const WATER := &"water"
 const FILL_CAN := &"fill_can"
 ## Feed put into a hay rack: `object` is the rack and `items` the feed.
 const FEED := &"feed"
+## The eggs taken out of a coop's nest: `object` is the nest and `items` the eggs.
+const COLLECT := &"collect"
 const MOW := &"mow"
 const DIG := &"dig"
 ## A hit that did not finish the object.

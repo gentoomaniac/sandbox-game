@@ -66,7 +66,7 @@ static func action(kind: StringName) -> StringName:
 			return &"dog_bark"
 		ActionOutcome.SADDLE, ActionOutcome.UNSADDLE:
 			return &"horse_whinny"
-		ActionOutcome.PICK_UP, ActionOutcome.FEED:
+		ActionOutcome.PICK_UP, ActionOutcome.FEED, ActionOutcome.COLLECT:
 			return &"item_pickup"
 	return &""
 

@@ -222,13 +222,17 @@ func _check_object_state(
 	for key: Variant in state:
 		if key != "tree" and key != "work" and not _is_kind(state[key], Kind.NUMBER):
 			_report(path + " state", "%s should be a number" % key)
-	# What a trough or a hay rack holds: a whole number up to its capacity.
+	# What a trough or a hay rack holds and the eggs in a nest: whole numbers up to what they hold.
+	var capacity: int = type_data.get("stock_capacity", 0)
 	if state.has("stock") and _is_kind(state["stock"], Kind.WHOLE):
-		_check_between(
-			state["stock"], 0, type_data.get("stock_capacity", 0), path + " state", "stock"
-		)
+		_check_between(state["stock"], 0, capacity, path + " state", "stock")
 	elif state.has("stock"):
 		_report(path + " state", "stock should be a whole number")
+	if state.has("eggs") and _is_kind(state["eggs"], Kind.WHOLE):
+		var nest_eggs: int = YardRules.default_rules().coop("nest_eggs")
+		_check_between(state["eggs"], 0, nest_eggs, path + " state", "eggs")
+	elif state.has("eggs"):
+		_report(path + " state", "eggs should be a whole number")
 	# The tree a stump or sapling comes from.
 	if state.has("tree"):
 		if not state["tree"] is String:
