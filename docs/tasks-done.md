@@ -4257,3 +4257,56 @@ crop (by hand or hoe) gives the player nothing. The empty-hand harvest and clear
 Design page: design/farming/crops.md; README farming paragraph. Tests: tests/test_clearing_crops.gd
 (every crop harvested when ripe and what it gives, hand and hoe clearing, plantable again also
 after save and load, the scythe leaving the crop).
+
+## 168. The language model's trouble shows as a notice in the game
+
+- [x] Done
+
+The user, 2026-11-10, after a run with Gemini printed "WARNING: Language model at
+https://generativelanguage.googleapis.com/v1beta/openai/chat/completions: no answer (result 0,
+HTTP 503) ... This model is currently experiencing high demand ...": "We need to bring that into
+the game somehow as a notification like the "saving ..." etc messages".
+- Today ModelChat (game/scenes/model_chat.gd `_send`) only calls `push_warning` (can't send, not
+  reachable, no answer); the player sees nothing and the villager quietly speaks a scripted line.
+- Show it in NotificationHud (game/scenes/notification_hud.gd, `post` with a key, as "Saving..."
+  does): a short line the player understands, e.g. "Villagers' language model is busy (HTTP 503);
+  they speak their own lines for now", "... not reachable", "... key refused (HTTP 401/403)",
+  "... no answer (timeout)". Use the API's message (`error.message` of the JSON body) when
+  there is one, cut short; the full text stays in the log warning.
+- One key for the model's notices, so a new one replaces the old and a burst of failed lines
+  shows once, not once per villager line; not shown again for the same trouble within a few
+  minutes (in data/, e.g. npc_talk.cfg), and a quiet "Villagers' language model answers again"
+  once it works after a failure. The default test endpoint that is often not running stays
+  silent as today (said once in the log), unless the player has set an endpoint themselves.
+- ModelChat stays free of HUD code: it sends a signal (or reports through the session) that Main
+  wires to the notifications; the settings page's own notes stay as they are.
+- The user, 2026-11-10: "don't show the default text when the request fails. In a chat remove
+  the "is typing" message when a request failed." With a language model set, a failed request
+  (any of the above, a refusal of ClaudeChat, or an answer that is empty after trimming) no
+  longer falls back to a scripted line of data/npc_talk.cfg (NpcDialogue `reply`): the villager
+  says nothing, nothing is added to their chat, and the chat screen takes away its typing
+  bubble ("...") at once; the player's own line stays, and the player can write again. Scripted
+  lines stay for a game with no model set, as today. Check every caller of `reply`/`say` (the
+  chat screen, greetings or bubbles) for what an answer of nothing must do.
+- Tests with a fake endpoint (503 with an API message, 401, timeout, success after failure,
+  the throttling and the silent default endpoint); no scripted line and no typing bubble after
+  a failure, scripted lines with no model; a README line.
+
+Done: ModelChat sends `failed(endpoint, trouble, detail)` and `worked(endpoint)` (the detail is the
+`error.message` of the API's JSON, also Gemini's list-wrapped one); ModelNotices (game/scenes/
+model_notices.gd, one line in Main) shows them in NotificationHud under the one key
+`language_model`: a red "Villagers' language model is busy (HTTP 503): <message cut to 60>", "refused
+the key (HTTP 401)", "answered with an error (HTTP n)", "gave no answer in time", "is not
+reachable", "can't be asked", "gave an empty answer", "gave an answer the game can't read", and
+a plain "Villagers' language model answers again" once it works after a shown failure. The same
+trouble is not shown again for 300 s; the numbers are `notice_repeat_seconds` and
+`notice_detail_length` of [request] in data/npc_talk.cfg. The default test endpoint is silent.
+With a model the player set, NpcDialogue `reply` gives "" on any failure (also an empty answer):
+`say` adds nothing to the chat, resets `is_answering`, skips `compact` and emits `answered`, so
+ChatScreen redraws without the typing bubble and the player may write again; their line stays.
+The only caller of `say` is the chat screen (and the debug runner through it); there are no
+greetings or bubbles that use `reply`. Decision, the user may change it: on the default endpoint
+(the test LLM that is often not running) a failure still gives a scripted line, so a fresh game
+is not mute. Not covered: an answer that is empty only after NpcPrompt's trimming (such as a lone
+"Name:") gives no line and no notice. Docs: README "When the model fails", design/villagers/
+dialogue.md and ideas.md. Tests: tests/test_model_notices.gd, test_npc_dialogue.gd, test_chat.gd.
