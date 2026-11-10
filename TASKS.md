@@ -196,6 +196,33 @@ The user, 2026-11-10: R8 deliverable 4 (review A5).
   or held by a small session-bound rules object.
 - Acceptance: two sessions with different suns don't change each other's rules; same looks.
 
+## 165. Pigs, and pig pens the player builds
+
+- [ ] Done
+
+The user, 2026-11-10: "add pigs to the list and pig pens that can be build where pigs can be
+in". Run after task 122 (the farm yard), before the gossip tasks.
+- Art: a pig at 32 px (and the classic 16 px) in tools/art/livestock.py, with the frames the
+  other livestock have (stand, walk, graze or root, sleep, the walk used as run). The user's
+  reference is a pixel-art pig from the side (kept in the coordinator's scratchpad as
+  pig/user_reference.png; proportions only, not its pixels, not its watermark): a long, deep
+  barrel with a nearly level back, a big head held low with a long snout and a big ear flopping
+  forward over the eye, short legs, a curly tail, light shading from the top and darker tones on
+  the snout, ears, belly and legs.
+- Older breeds, not today's pink pig: a bit more furry, which means more colour and more variety,
+  as with the cows. Several looks in palette colours, e.g. a bristly red-brown, a sandy one, a
+  black-and-white saddleback, a spotted one; bristles shown by a few broken tones along the back
+  and flank, not by an outline.
+- Game data: a `[pig]` section in data/livestock.cfg like the other animals (speed, what it eats,
+  roaming, sleep), in Livestock and the save; what it gives the player is decided with the user
+  (none, or meat later with the economy).
+- Pig pen: a building the player builds (recipe, placement, data/buildings.cfg or a world object
+  set): a low fence of split oak rails or wattle around a few tiles, with a gate and a small
+  shelter, plus a trough (task 122). Pigs stay inside the pen they belong to: their roaming is
+  bounded by it, they don't walk through its fence, and the gate lets the player in and out.
+- Tests: the pig's state, roaming that stays in its pen, building a pen, save and load; the
+  README livestock picture and a pen screenshot.
+
 ## Later (not part of the prototype)
 
 - **A relationship system** (the user, 2026-11-08): friendship levels per villager, like Stardew
