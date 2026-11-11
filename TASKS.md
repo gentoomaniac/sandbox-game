@@ -185,25 +185,8 @@ Settings (and off), muted in test runs (comes with task 184). Rules in data/musi
   pieces like the test reel are kept for special events (festivals, a market day). Later: stems
 (AudioStreamSynchronized), more pieces, the season and weather choices.
 
-## 184. Console: /play and /stop the music, and a music volume in the audio settings
-
-- [ ] Done
-
-The user, 2026-11-11: "add a command /play <trackname> to play the background music. add /stop to
-stop it. add settings in the audio settings about volume."
-- A first, small way to hear the music in the game before the music director (tasks 170 and 171):
-  the console's `play <track>` renders a piece (art/generated/music/*.mod: today sketch_tide,
-  sketch_harbour, test_reel; the names without the prefix may do) with the ModuleRenderer on the
-  worker thread pool (game/audio/, task 169) and loops it; `stop` fades it out. An unknown name
-  lists the tracks. Playing another track while one plays crossfades or stops the old one
-  (MusicCrossfade exists: use it if simple).
-- A "music" audio bus and a Music volume slider in the audio settings (game/scenes/audio_page.gd),
-  saved with the other settings, with mute at 0; test runs stay muted. This takes over task 171's
-  "a music bus with its own slider in Settings" (note it there).
-- No automatic music yet: nothing plays unless the console says so.
-- Tests for the commands (known, unknown, stop), the bus and the slider's setting; README and
-  design/presentation/console.md lines.
-
+- Task 184 (done 2026-11-11) already added the Music bus and its volume slider in the audio
+  settings, and a MusicPlayer behind the console `play`/`stop`; build on those.
 ## 185. Seasons change the ground gradually, as overlays: dark green, fallen leaves, frost, snow
 
 - [ ] Done

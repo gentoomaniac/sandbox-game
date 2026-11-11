@@ -5050,3 +5050,24 @@ The user, 2026-11-11: "The console needs scrolling. Use shared code for it. Star
   scrolled up it stays, the cap. README or docs/ui.md line.
 
 Done: 2026-11-11. The console log sits in a ScrollingList (new opt-in `fixed_height`, `keeps_bottom`, `scroll_pages`, `scroll_to_bottom`): the wheel, the bar and Page Up/Down scroll it, a new line keeps the view at the bottom unless the player scrolled up, opening shows the bottom, the visible height is the old 8 lines, and the log keeps at most 500 lines.
+
+## 184. Console: /play and /stop the music, and a music volume in the audio settings
+
+- [x] Done
+
+The user, 2026-11-11: "add a command /play <trackname> to play the background music. add /stop to
+stop it. add settings in the audio settings about volume."
+- A first, small way to hear the music in the game before the music director (tasks 170 and 171):
+  the console's `play <track>` renders a piece (art/generated/music/*.mod: today sketch_tide,
+  sketch_harbour, test_reel; the names without the prefix may do) with the ModuleRenderer on the
+  worker thread pool (game/audio/, task 169) and loops it; `stop` fades it out. An unknown name
+  lists the tracks. Playing another track while one plays crossfades or stops the old one
+  (MusicCrossfade exists: use it if simple).
+- A "music" audio bus and a Music volume slider in the audio settings (game/scenes/audio_page.gd),
+  saved with the other settings, with mute at 0; test runs stay muted. This takes over task 171's
+  "a music bus with its own slider in Settings" (note it there).
+- No automatic music yet: nothing plays unless the console says so.
+- Tests for the commands (known, unknown, stop), the bus and the slider's setting; README and
+  design/presentation/console.md lines.
+
+Done: 2026-11-11. The console `play <track>` (names with or without their prefix; Tab completes) renders the module on the worker thread pool and loops it on a new Music bus, `stop` fades it out over 2 s, another `play` crossfades on the beat over 4 s, a repeated `play` of the same track starts nothing new; an unknown name lists the tracks. A Music volume slider in the audio settings (0 mutes). Console reaches the MusicPlayer only through injected Callables (layering), and says "No music here" when unwired. Nothing plays on its own.
