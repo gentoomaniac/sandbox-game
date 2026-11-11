@@ -40,7 +40,7 @@ woodworker, the cook and the mason, and a UI for them.
   menu says what and for how long, and the slow recipes are greyed. A kiln broken down gives
   back its unfired load, or the bricks once done. No new save field: the work is in the
   object's `state`, which is saved already.
-- **The skills tab** is a second tab of the character screen (Tab opens the character, K the
+- **The skills tab** is a second tab of the character screen (B opens the character, K the
   skills; the key of the shown tab closes it): a row per skill with a bar, the points and the
   Fade button, the total against 200, and the rule of the cap in a sentence.
 - **Recipes** (levels in brackets):

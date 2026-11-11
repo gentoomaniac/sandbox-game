@@ -435,7 +435,7 @@ lie there until you walk over them and pick them up.
 
 ### Build anywhere
 
-Hold the hammer (press B to take it from the hotbar) and the build menu opens just above the
+Take the hammer from the hotbar (its slot key or the mouse wheel; B is the bag now) and the build menu opens just above the
 hotbar: a row of the buildings, each with a small picture and its name (shack, fisherman's hut,
 Kate, longhouse, hall house, barn, church, bell frame and chicken coop). Pick one with Q and E, the left and
 right arrows or a click; a building that comes in more styles shows them in a column above it
@@ -527,8 +527,7 @@ like a chest, the bedroll shows its ghost where it fits. X again goes back to bu
 
 The character is drawn in layers, so anything they wear shows in the world. They dress as
 on the North Sea coast in the 18th century: a red waistcoat over a linen shirt, knee breeches
-with white stockings, wooden clogs, and a short blue jacket and hats to put on. Press Tab to
-open the character screen, where you move items between the inventory and the equipment
+with white stockings, wooden clogs, and a short blue jacket and hats to put on. Press B to open the bag, the character screen, where you move items between the inventory and the equipment
 slots. The hotbar (the eight slots at the bottom of the screen, keys 1 to 8) holds your tools
 and seeds and is extra room: it takes nothing from the backpack's 20 slots (4 rows of 5), so
 you carry 28 stacks. New items fill the hotbar first (onto the same item, then free slots,
@@ -714,16 +713,15 @@ These are the default keys; all of them can be changed under Settings → Contro
 |---|---|
 | WASD or arrow keys | Walk (with the hammer building, only WASD: the arrows pick in the build menu until Escape) |
 | Space or left click | Use the held item on the targeted tile |
-| 1–8 | Pick a hotbar slot |
+| 1–8 | Pick a hotbar slot; the hammer's slot starts build mode, and a hotbar key or the mouse wheel takes build mode up again after Escape or a right click |
 | Left mouse button, dragged | In the character and chest screens: move a stack onto a slot, the trash can, or (let go outside the screen) the ground |
 | Shift + left click, right click | In the character and chest screens: send a stack to the other side; on the character screen right click wears or takes off an item |
 | T | Drop the held stack on the ground in front of you (picked up again by walking away and back) |
-| Tab | Character screen and inventory |
+| B | The bag: character screen and inventory (the same key closes it) |
 | K | Skills tab of the character screen |
 | C | Crafting menu (by hand) |
 | E | Get off the horse you ride; else talk to the villager in front of you, else get on the saddled horse in front of you, else open the chest or the station (its crafting menu) in front of you, else sleep until morning (next to a bed); with the hammer in hand it picks the next building |
 | Enter, Escape | In a chat: send the line, leave the chat (Page Up and Down scroll back); `/clear` makes the villager forget the chat |
-| B | Take the hammer: build mode |
 | X | Switch the hammer between building and taking down (hold Space or click to take down) |
 | Q, E or left and right arrows | Previous and next building (while holding the hammer) |
 | Up and down arrows | The building's next and previous style (while holding the hammer) |

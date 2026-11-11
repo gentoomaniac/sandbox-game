@@ -399,14 +399,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		_fast_forward = not _fast_forward
 	elif hotbar_slot != -1:
 		_state.player.inventory.select(hotbar_slot)
+		_builder.resume()
 	elif HotbarWheel.is_hotbar_wheel(event):
 		_wheel_progress = HotbarWheel.turned(_wheel_progress, HotbarWheel.turn_of(event))
 		var steps := HotbarWheel.whole_slots(_wheel_progress)  # the rest waits for more turning
 		_wheel_progress -= steps
 		if steps != 0:
 			_state.player.inventory.select_next(steps)
-	elif event.is_action_pressed("select_hammer"):
-		_builder.select_hammer()
+			_builder.resume()
 	elif event.is_action_pressed("drop_item") and can_use:
 		_state.drop_from_inventory(_state.player.inventory.selected_slot)
 	# E also picks the next building (outdoors), so the hammer in hand doesn't open a chest or put

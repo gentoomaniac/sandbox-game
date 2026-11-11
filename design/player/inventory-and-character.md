@@ -50,7 +50,7 @@
     where it was (it never left its slot while it was dragged). The state classes do the
     removal (`ItemSlots.destroy`, `Equipment.destroy`); the trash can only asks and sends it,
     and does nothing if the stack asked about is no longer in its slot.
-- **Character screen** (decided 2026-11-05): Tab opens one screen with the character and
+- **Character screen** (decided 2026-11-05; the bag since task 190, B instead of Tab): B opens one screen with the character and
   their equipment on one side and the inventory on the other.
   - Equipment slots: head, body, legs, feet, coat, back, main hand, off hand (coat added in
     task 53, for a jacket over the body item). Clothes, armour
@@ -59,7 +59,7 @@
   - Items move between inventory slots and fitting equipment slots by dragging (swap
     included); an item only goes into a slot it fits, and fitting slots light up
     while an item is dragged. Right-click equips or unequips at once.
-  - Keys: Tab opens the screen (and closes it from the character tab), K opens the skills tab
+  - Keys: B opens the screen (and closes it from the character tab; Tab is unbound), K opens the skills tab
     and closes it from there; Escape and the pause key close it. E does nothing while it is open.
   - Worn items count toward the carried weight.
   - Hair and body are the character's look, not equipment.

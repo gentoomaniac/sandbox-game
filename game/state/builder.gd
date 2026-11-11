@@ -6,7 +6,7 @@ extends RefCounted
 ## the menu. X switches to taking down: the hammer takes down the building or the thing the
 ## player placed (a chest, a workbench) on a tile, and gives back what it held.
 ## Dismissing build mode (Escape, right click) lasts until the player holds something else, or
-## selects the hammer again.
+## presses a hotbar key again (`resume`).
 
 var choice: StringName = BuildingTypes.ids()[0]
 ## Which of the styles of `choice` it would place (see BuildingTypes `styles`).
@@ -51,6 +51,11 @@ func select_hammer() -> bool:
 			inventory.select(slot)
 			return true
 	return false
+
+
+## Takes build mode up again after it was dismissed with the hammer still in hand.
+func resume() -> void:
+	_is_dismissed = false
 
 
 ## Moves `choice` by `step` buildings along the file's order, wrapping round, in the

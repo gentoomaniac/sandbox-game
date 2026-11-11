@@ -52,6 +52,13 @@ func test_select_hammer_does_nothing_without_a_hammer() -> void:
 	assert_eq(_state.player.inventory.held_item(), ItemTypes.HOE)
 
 
+func test_resume_takes_build_mode_up_again_with_the_hammer_in_hand() -> void:
+	_builder.select_hammer()
+	_builder.dismiss()
+	_builder.resume()
+	assert_true(_builder.is_building())
+
+
 func test_dismissing_lasts_until_something_else_is_held_or_the_hammer_is_selected() -> void:
 	_builder.select_hammer()
 	_builder.dismiss()
@@ -176,9 +183,9 @@ func test_the_other_cheats_do_not_waive_the_costs() -> void:
 	assert_null(_builder.place(_open_origin()))
 
 
-func test_q_and_e_are_rebindable_actions_and_b_selects_the_hammer() -> void:
+func test_q_and_e_are_rebindable_actions() -> void:
 	var actions := GameSettings.actions()
-	for action in [&"build_previous", &"build_next", &"select_hammer"]:
+	for action in [&"build_previous", &"build_next"]:
 		assert_true(actions.has(action), str(action))
 		assert_ne(GameSettings.action_label(action), "", str(action))
 	assert_eq(
@@ -187,6 +194,7 @@ func test_q_and_e_are_rebindable_actions_and_b_selects_the_hammer() -> void:
 	assert_eq(
 		(InputMap.action_get_events(&"build_next")[0] as InputEventKey).physical_keycode, KEY_E
 	)
-	assert_eq(
-		(InputMap.action_get_events(&"select_hammer")[0] as InputEventKey).physical_keycode, KEY_B
-	)
+
+
+func test_the_hammer_has_no_key_of_its_own() -> void:
+	assert_false(GameSettings.actions().has(&"select_hammer"))

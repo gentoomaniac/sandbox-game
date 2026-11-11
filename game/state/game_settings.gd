@@ -135,7 +135,7 @@ const LANGUAGE_MODEL_PROVIDERS := {
 const ACTION_LABELS := {
 	&"use": "Use",
 	&"use_click": "Use (mouse)",
-	&"select_hammer": "Select hammer",
+	&"inventory": "Open the bag",
 	&"drop_item": "Drop held item",
 	&"build_previous": "Previous building",
 	&"build_next": "Next building",
@@ -163,14 +163,13 @@ const ACTION_DESCRIPTIONS := {
 	"Open the chest or the crafting station in front of you, or sleep in the bed next to you.",
 	&"use": "Use the held item on the tile in front of you, or eat held food.",
 	&"use_click": "Use the held item on the tile under the mouse, or eat held food.",
-	&"select_hammer": "Take the hammer from the hotbar to build.",
 	&"build_previous": "Pick the building to the left in the build menu.",
 	&"build_next": "Pick the building to the right in the build menu.",
 	&"build_style_up": "Pick the style above in the build menu.",
 	&"build_style_down": "Pick the style below in the build menu.",
 	&"take_down_mode":
 	"With the hammer, switch between building and taking down. Hold Use to take down.",
-	&"inventory": "Open or close the character screen with the inventory.",
+	&"inventory": "Open or close the bag: the character screen with the inventory.",
 	&"skills": "Open or close the skills tab of the character screen.",
 	&"crafting": "Open or close the crafting menu.",
 	&"drop_item": "Drop the held stack on the ground in front of you.",
@@ -185,9 +184,9 @@ const ACTION_DESCRIPTIONS := {
 	&"console": "Open the console for commands and cheats.",
 	&"pause": "Open the pause menu.",
 }
-## Actions older settings files may still bind (the hotbar had ten slots): skipped without a
-## warning.
-const RETIRED_ACTIONS: Array[StringName] = [&"hotbar_9", &"hotbar_10"]
+## Actions older settings files may still bind (the hotbar had ten slots; the hammer had a key
+## until B became the bag's): skipped without a warning.
+const RETIRED_ACTIONS: Array[StringName] = [&"hotbar_9", &"hotbar_10", &"select_hammer"]
 const HOTBAR_DESCRIPTION := "Select this hotbar slot."
 const MOUSE_BUTTON_LABELS := {
 	MOUSE_BUTTON_LEFT: "Left mouse",
@@ -525,11 +524,16 @@ func _load_action(file: ConfigFile, action: StringName) -> void:
 
 ## A hand-edited file can bind one key twice or leave the pause menu without a key. The first
 ## action in the input map keeps a shared key (except for actions that may share one, see
-## SHARING_PAIRS); the pause menu gets its defaults back.
+## SHARING_PAIRS), but for the bag, which is looked at first; the pause menu gets its defaults back.
 func _resolve_loaded_bindings() -> void:
 	# Each event seen so far, with the action that has it.
 	var seen: Array[Array] = []
-	for action in actions():
+	# The bag is first: its default key B was the hammer's, which an old file may have given to
+	# another action; that one loses it, unless the file moved the bag to another key.
+	var order := actions()
+	order.erase(&"inventory")
+	order.push_front(&"inventory")
+	for action in order:
 		var kept: Array[InputEvent] = []
 		for event in bindings(action):
 			if seen.any(

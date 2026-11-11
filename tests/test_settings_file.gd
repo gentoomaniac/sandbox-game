@@ -57,14 +57,14 @@ func _restart_with_saved_file() -> void:
 func test_bindings_survive_a_restart() -> void:
 	_settings.bind(&"interact", 0, _key(KEY_W))
 	_settings.bind(&"use", 1, _button(MOUSE_BUTTON_MIDDLE))
-	_settings.clear(&"select_hammer", 0)
+	_settings.clear(&"drop_item", 0)
 	_settings.set_fullscreen(true)
 	_restart_with_saved_file()
 	assert_true(_settings.is_fullscreen)
 	assert_eq(_texts(&"interact"), ["W"])
 	assert_eq(_texts(&"move_up"), ["Up arrow"])
 	assert_eq(_texts(&"use"), ["Space", "Middle mouse"])
-	assert_eq(_texts(&"select_hammer"), [])
+	assert_eq(_texts(&"drop_item"), [])
 
 
 func test_the_file_holds_only_what_differs_from_the_defaults() -> void:
@@ -107,16 +107,21 @@ func test_unknown_actions_and_unreadable_entries_are_ignored() -> void:
 	assert_push_warning_count(3)
 
 
-func test_the_bindings_of_the_retired_hotbar_slots_9_and_10_are_skipped_quietly() -> void:
+func test_the_bindings_of_the_retired_actions_are_skipped_quietly() -> void:
 	_write_file(
 		(
-			'[controls]\nhotbar_1=["key:%d"]\nhotbar_9=["key:%d"]\nhotbar_10=["key:%d"]\n'
-			% [KEY_F, KEY_G, KEY_H]
+			(
+				'[controls]\nhotbar_1=["key:%d"]\nhotbar_9=["key:%d"]\nhotbar_10=["key:%d"]\n'
+				+ 'select_hammer=["key:%d"]\n'
+			)
+			% [KEY_F, KEY_G, KEY_H, KEY_Z]
 		)
 	)
 	_settings.load_file()
 	assert_eq(_texts(&"hotbar_1"), ["F"])
 	assert_false(InputMap.has_action(&"hotbar_9"))
+	assert_false(InputMap.has_action(&"select_hammer"))
+	assert_eq(_texts(&"inventory"), ["B"], "the bag keeps its key")
 	assert_push_warning_count(0)
 
 

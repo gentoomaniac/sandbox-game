@@ -71,7 +71,7 @@ growing part (a chest with other slots), keep the part as a fixed container and 
 
 The character screen is another window whose methods take arguments: `open_tab(tab)` stores the
 tab and calls `open()` (or switches tab when the screen is open), and `toggle_tab(tab)` closes it
-when it is open on that tab. Its tab keys (Tab, K) are Main's; it registers no `close_actions`, so
+when it is open on that tab. Its tab keys (B, K) are Main's; it registers no `close_actions`, so
 E does nothing while it is open.
 
 ## Escape, backdrop clicks, pause, one at a time
@@ -111,7 +111,7 @@ E does nothing while it is open.
   while open, whatever else asked for the pause, so only Modals pause the tree (the pause menu is
   one; Main does not pause for it).
 - **Keys of other windows:** opening a window closes the open one, but the keys that open the
-  windows (C, Tab, K) do nothing while another window is open: Main asks `can_open_on_key()`,
+  windows (C, B, K) do nothing while another window is open: Main asks `can_open_on_key()`,
   which is true when the window is closed and none is open, or when it is itself the open one,
   so its key closes it or switches its tab.
 - **One at a time:** opening a window closes the open one, so windows need not know of each

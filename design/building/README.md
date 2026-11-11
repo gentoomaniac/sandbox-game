@@ -30,9 +30,9 @@ The first buildings have a page of their own: [first-buildings.md](first-buildin
   the most of every material (100 logs, 40 stone, 50 clay, 80 reeds). A new game starts at
   the camp: the materials for a first house have to be gathered.
 - **The hammer builds:** holding the hammer is build mode (the ghost follows the cursor,
-  use places the building); the build menu picks the building, and B selects the hammer.
-  Escape or a right click dismisses build mode until something else is held or B is pressed
-  again. The `nocost` console cheat waives the costs (`god` and `noweight` don't). The
+  use places the building); the build menu picks the building. The hammer has no key of its
+  own: it is selected on the hotbar (slot key or wheel). Escape or a right click dismisses build
+  mode until something else is held or the hammer's slot key is pressed again. The `nocost` console cheat waives the costs (`god` and `noweight` don't). The
   player starts with a hammer (later it is crafted); `give hammer` works too.
 - **The build menu** (task 121, 2026-11-09, the user: "a matrix on top of the quick bar where
   you see the main buildings and their variants popping up to the top"): with the hammer
