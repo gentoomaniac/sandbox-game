@@ -24,6 +24,12 @@ Decided 2026-11-05. Everything makes sound; no background music for now.
 - **UI:** clicks for menus, the inventory and the hotbar.
 - **Weather (ambience):** rain and wind as loops that follow their strength and fade like
   the weather visuals, wind gusts, and thunder after a flash, delayed as if far away.
+- **Fire:** `fire_crackle_loop` (task 172, `tools/audio/fire.py`), an 8-second circle of
+  crackling only, no bed of noise under it (the user, 2026-11-11): fine flecks of the embers
+  all through, ticks and snaps of all sizes over them (short, bright and dry, nothing low or
+  ringing: a first version's hollow knock sounded like a drum), the loud ones kept clear of the
+  loop's seam. Louder than the weather loops, as it is the main sound of a room with a fire.
+  On the Effects bus, not the muffled ones.
 - **Animals:** birds sometimes chirp where they are; frogs croak near rivers and ponds in
   spring and summer, mostly in the evening and at night and when it is warm, louder the
   closer the player is; deer snort now and then and their hooves sound when they bound

@@ -247,9 +247,9 @@ every time. So:
 
 `generate.py` is the entry point. `EVENTS` lists every sound event with its peak level in dBFS
 and the functions that make its variants; it writes `art/generated/sounds/<event>_<n>.wav`. The
-sounds themselves are in `footsteps.py`, `work.py`, `ui.py`, `weather.py` and `animals.py`,
-built from the filters, noise, tones and envelopes of `dsp.py`. A variant is a function that
-takes a random generator and returns samples.
+sounds themselves are in `footsteps.py`, `work.py`, `ui.py`, `weather.py`, `fire.py` and
+`animals.py`, built from the filters, noise, tones and envelopes of `dsp.py`. A variant is a
+function that takes a random generator and returns samples.
 
 | Command | What it does |
 |---|---|
