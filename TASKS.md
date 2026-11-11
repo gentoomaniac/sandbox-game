@@ -218,13 +218,13 @@ for game mechanics." Run after task 172, before the gossip tasks.
   can never go lower than 0 (no loss, sleeping or daily, takes it below 0).
 - Awake: the first petting of the day adds 10 (capped at 100) and shows a small heart above the
   animal's head; more pettings that day do nothing and show nothing.
-- Asleep: petting takes 5 (floored at 0) and shows a small swirl above its head. Defaults to
-  confirm with the user: the swirl and the loss come once a day too, and a sleeping petting
+- Asleep: petting takes 5 (floored at 0) and shows a small swirl above its head. Confirmed by
+  the user, 2026-11-11: the swirl and the loss come once a day too, and a sleeping petting
   doesn't count as the day's petting.
 - A day without a petting takes 5 (at the day change, caught up over skipped time in the frame
   budget of task 158).
-- Confirmed by the user, 2026-11-11: the farm animals and the pets (cows, horses, sheep, pigs, hens, dogs,
-  cats), not wildlife; a new animal starts at 0. The numbers in data/livestock.cfg.
+- Confirmed by the user, 2026-11-11: the farm animals and the pets (cows, horses, sheep, pigs,
+  hens, dogs, cats), not wildlife; a new animal starts at 0. The numbers in data/livestock.cfg.
 - Saved with the animal (a save version bump, following the upgrade-window rule); the heart and
   the swirl drawn in both arts (pixel-artist job), a short sound for the petting maybe reused.
 - Nothing uses the value yet; it is for later game mechanics. A console command to show an
