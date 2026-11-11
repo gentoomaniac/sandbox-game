@@ -11,6 +11,10 @@ extends SimulationSystem
 var _world: World
 var _weather: Weather
 var _occupied_tiles: Callable
+## In a skip the nights are counted over the fallow soil, and it is seen to at the end (see
+## `skipped_over_frames`): a skip of many nights can have tens of thousands of tiles whose days
+## are up.
+var _is_skipping := false
 
 
 func _init(world: World, weather: Weather, occupied_tiles: Callable) -> void:
@@ -52,4 +56,19 @@ func pass_night() -> void:
 				_world.take_off(object)
 			else:
 				_world.replace_object(object, sapling)
+	if not _is_skipping:
+		_world.settle_fallow_soil()
+
+
+func skip_begins(_minutes: int) -> void:
+	_is_skipping = true
+
+
+func skipped(_minutes: int, _clock: GameClock) -> void:
 	_world.settle_fallow_soil()
+	_is_skipping = false
+
+
+func skipped_over_frames(_minutes: int, _clock: GameClock, next_frame: Callable) -> void:
+	await _world.settle_fallow_soil_over_frames(next_frame)
+	_is_skipping = false

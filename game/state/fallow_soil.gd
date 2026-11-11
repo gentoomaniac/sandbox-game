@@ -8,7 +8,8 @@ extends RefCounted
 ## A world has tens of thousands of tilled tiles, so no night visits them all. The nights that
 ## count are numbered, each tile keeps the number of the night it was last tended at, and the
 ## tiles are filed by it, so that a night finds the few whose days are up at once. A night is
-## counted (`count_night`) and then seen to (`settle_next_night`).
+## counted (`count_night`) and then seen to (`settle_next_night`): at once in played time, and at
+## the end of a skip, over frames for a sleep (see NightUpkeep).
 
 var weedy_days := int(CropRules.default_rules().farming("fallow_weedy_days"))
 var grass_days := int(CropRules.default_rules().farming("fallow_grass_days"))
@@ -27,6 +28,13 @@ var _tiles_by_night: Dictionary[int, Dictionary] = {}
 func tend(pos: Vector2i) -> void:
 	forget(pos)
 	_file(pos, nights)
+
+
+## A tile that something stands on when its days are up: it was tended on the night seen to, as
+## played time would have it when the night is seen to later, at the end of a skip.
+func tend_on_settled_night(pos: Vector2i) -> void:
+	forget(pos)
+	_file(pos, settled_nights)
 
 
 ## A tile that is soil no more.

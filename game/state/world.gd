@@ -272,7 +272,23 @@ func settle_fallow_soil() -> void:
 			_settle_fallow_tile(pos)
 
 
+## `settle_fallow_soil` spread over frames: it lets go of the frame every
+## `Simulation.frame_budget_usec`, and goes on in the next. `await` it. `next_frame` is a Callable
+## that gives the signal of the next frame.
+func settle_fallow_soil_over_frames(next_frame: Callable) -> void:
+	var frame_started := Time.get_ticks_usec()
+	while fallow.settled_nights < fallow.nights:
+		for pos in fallow.settle_next_night():
+			if Time.get_ticks_usec() - frame_started > Simulation.frame_budget_usec:
+				await next_frame.call()
+				frame_started = Time.get_ticks_usec()
+			_settle_fallow_tile(pos)
+
+
 func _settle_fallow_tile(world_pos: Vector2i) -> void:
+	# Over frames, a tile can stop being soil after its night's tiles were taken.
+	if not is_tilled(world_pos):
+		return
 	# An object in a chunk that is not loaded is an edit: what the player put there.
 	var is_in_use := (
 		building_at(world_pos) != null
@@ -280,7 +296,7 @@ func _settle_fallow_tile(world_pos: Vector2i) -> void:
 		or _stored_object_at(world_pos) != null
 	)
 	if is_in_use:
-		fallow.tend(world_pos)
+		fallow.tend_on_settled_night(world_pos)
 	elif fallow.is_grown_over(world_pos):
 		_grow_over(world_pos)
 	elif is_chunk_loaded(Chunk.world_to_chunk(world_pos)):

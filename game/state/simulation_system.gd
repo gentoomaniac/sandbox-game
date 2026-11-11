@@ -16,6 +16,13 @@ func walked_minute(_clock: GameClock) -> void:
 	pass
 
 
+## The rest of a skip, `minutes` of it, is about to be made up for: its `advance` and then
+## `skipped` (or `skipped_over_frames`) follow. For a system that leaves what the skip's spans
+## would do for its end, to spread it over frames.
+func skip_begins(_minutes: int) -> void:
+	pass
+
+
 ## The rest of a skip has passed without being played: `minutes` of it, and `clock` shows the time
 ## it ended at. After the `advance` of the same minutes.
 func skipped(_minutes: int, _clock: GameClock) -> void:

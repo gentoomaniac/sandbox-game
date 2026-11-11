@@ -52,8 +52,11 @@ Warft and an Ewer here and there.
   frames move (`walked_minute`) and the rest is made up for in one go (`skipped`); `skip_over_frames`
   is the same spread over frames, for the sleep and passing out under their black screen (the
   villagers in steps of 8 ms, `Npcs.catch_up_over_frames`, and the soil moisture, which a save
-  would else catch up in one go, `SoilMoisture.catch_up_all_over_frames`), each within
-  `Simulation.frame_budget_usec` a frame. Main holds the world still meanwhile, the chunk
+  would else catch up in one go, `SoilMoisture.catch_up_all_over_frames`, and the fallow soil whose
+  days are up in the skip's nights: `NightUpkeep` counts the nights and, told by `skip_begins` that
+  a skip's rest is about to be made up for, sees to the soil at its end,
+  `World.settle_fallow_soil_over_frames`), each within `Simulation.frame_budget_usec` a frame.
+  Main holds the world still meanwhile, the chunk
   residency's streaming (no chunk loads or drops by `update`; `require` still loads what an
   action needs) and the views too (wildlife), until the player has woken, and a quit waits
   for that: so the world ends as after `skip` and a save is of a whole morning. The systems:

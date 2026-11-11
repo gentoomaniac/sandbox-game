@@ -39,6 +39,8 @@ func add_system(system: SimulationSystem) -> void:
 func skip(minutes: int) -> void:
 	var rest := _walk_through(minutes)
 	if rest > 0:
+		for system in _systems:
+			system.skip_begins(rest)
 		advance(rest)
 		for system in _systems:
 			system.skipped(rest, clock)
@@ -52,6 +54,8 @@ func skip_over_frames(minutes: int, next_frame: Callable) -> void:
 	var rest := _walk_through(minutes)
 	await next_frame.call()
 	if rest > 0:
+		for system in _systems:
+			system.skip_begins(rest)
 		advance(rest)
 		for system in _systems:
 			await system.skipped_over_frames(rest, clock, next_frame)
