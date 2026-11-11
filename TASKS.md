@@ -655,6 +655,43 @@ The user, 2026-11-11: "The chicken need a rooster that's occasionally shouting"
 - Tests: a flock has a rooster, it lays no eggs, it crows at dawn and not at night, save and load;
   a listening file and a picture of the rooster in both arts for the user; README, design pages.
 
+## 206. Tool designs: rusty iron tools redrawn from scratch, and four better grades (design only)
+
+- [ ] Done
+
+The user, 2026-11-11: "We need better tools. Redesign the tools to be rusty ones, let the agent
+design them from scratch. The current ones still look distorted. Then design 4 more quality
+levels. The current ones will be 'rusty iron <tool>', then we'll have 'iron', 'brittle steel',
+'steel' and 'sharp steel'. Only do the designs and give them to me for approval. Make sure the
+tools don't look distorted or in any other way deformed." Run by a worker on Fable with the
+pixel-artist instructions (.claude/agents/pixel-artist.md), at the user's request.
+- The tools: hoe, axe, pickaxe, watering can, scythe, shovel, hammer (game/state/item_types.gd;
+  check for others). Today's art comes from the generator (tools/art: items.py and the held-tool
+  code) and looks distorted.
+- Design every tool from scratch, not by patching the old drawing: clean, straight, true shapes,
+  no warping, skew, broken lines or squashed parts; each sprite in every view it has today (the
+  inventory icon and the held/in-hand frames, in both art sets, 32 px new and 16 px classic).
+- Five grades of each tool, told apart at a glance by the metal (and the handle where it helps),
+  same silhouette per tool: rusty iron (today's tools: rust-brown, pitted, dull), iron (plain grey
+  iron), brittle steel (lighter, cold bluish, a hint of a crack or a rough edge), steel (bright,
+  clean), sharp steel (bright with a keen highlight on the edge). Wooden handles may age too.
+- Design only: render contact sheets (all tools by grade, at 1x and an enlarged view, both arts,
+  icon and held) into the scratchpad for the user's approval. Changes to the generator code are
+  fine on the worker's branch so the sheets come from the generator, but nothing is merged, no
+  items or game code are added, and the current art stays until the user approves.
+- Task 207 then makes them items.
+
+## 207. The tool grades as items, given with the console
+
+- [ ] Done
+
+After task 206's designs are approved: the five grades of each tool (rusty iron, iron, brittle
+steel, steel, sharp steel) as items in the game, named "Rusty iron hoe", "Iron hoe" and so on; the
+current tools become the rusty iron ones (renamed; old saves keep working). For now they come only
+through the console `give` (no recipes, no shops). How the grades differ in play (the tool `level`
+of item_types.gd, hit points per hit, durability if any) is to be proposed in the brief with the
+numbers in data/ (the user tunes them). Both arts from the approved generator code.
+
 ## Later (not part of the prototype)
 
 - **Villagers go inside** (the user, 2026-11-11): villagers enter their houses (and the church,
