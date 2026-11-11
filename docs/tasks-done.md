@@ -5148,3 +5148,19 @@ From the user's words under task 188.
 - Tests for the keys, the button and the window place; screenshots for the user; README.
 
 Done: 2026-11-11. A bag button (a light leather satchel, one picture for both arts) sits a little apart, right of the hotbar; clicking it or pressing B opens the bag, placed right of the screen centre. Tab is unbound. The hammer has no key of its own: the build menu opens with the hammer selected in the hotbar. Old settings that bound B to another action give B back to the bag (with the usual "bound twice" warning). A hotbar key or the mouse wheel resumes build mode after Escape or a right click.
+
+## 191. The character window on C
+
+- [x] Done
+
+From the user's words under task 188. Before task 187, whose attributes it will show.
+- The character part of today's inventory screen (the figure, equipment) moves into its own
+  window opened with C; the bag (task 190) keeps the items.
+- C is the crafting key today (`crafting`): crafting needs another key or a place in the bag
+  window. The user, 2026-11-11: crafting moves to Shift+C for now; a better place is to be found
+  later, maybe no hotkey at all but something like Minecraft (crafting at a table or in the
+  inventory's own grid).
+- Escape closes it as the others; it uses Modal (and is movable once task 189 is in).
+- Tests for the key and the window; screenshots for the user; README and controls page.
+
+Done: 2026-11-12. The bag (B, the satchel button) keeps the backpack, the weight, the trash can and dropping on the ground; the new character window (C) has the figure, the equipment slots, a trash can and the skills tab (K). Both are Modals that lend the HUD hotbar as their quick bar (HotbarWindow). Crafting is on Shift+C: settings can now store Shift ("key:67:shift"), but a Controls-page rebind still binds without Shift. Old settings give C to the character window. With one window at a time, equipping is by right click in the bag or a drag from the hotbar in the character window. A TrashCan bug that swallowed the first click is fixed.

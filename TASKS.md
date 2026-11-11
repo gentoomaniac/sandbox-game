@@ -252,20 +252,6 @@ later."
 - Save version bump with the upgrade rule; tests for the derived stats, the save and the base
   values matching today; README and design notes (design/player/).
 
-## 191. The character window on C
-
-- [ ] Done
-
-From the user's words under task 188. Before task 187, whose attributes it will show.
-- The character part of today's inventory screen (the figure, equipment) moves into its own
-  window opened with C; the bag (task 190) keeps the items.
-- C is the crafting key today (`crafting`): crafting needs another key or a place in the bag
-  window. The user, 2026-11-11: crafting moves to Shift+C for now; a better place is to be found
-  later, maybe no hotkey at all but something like Minecraft (crafting at a table or in the
-  inventory's own grid).
-- Escape closes it as the others; it uses Modal (and is movable once task 189 is in).
-- Tests for the key and the window; screenshots for the user; README and controls page.
-
 ## 194. Cloud shadows drift over the ground
 
 - [ ] Done
