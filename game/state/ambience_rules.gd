@@ -22,7 +22,15 @@ const REQUIRED_KEYS := {
 		"gust_seconds",
 		"gust_fade_seconds",
 	],
-	"indoors": ["outside_db"],
+	"indoors":
+	[
+		"outside_db",
+		"fire_level",
+		"fire_small_room_tiles",
+		"fire_small_reach_tiles",
+		"fire_big_reach_tiles",
+		"fire_fade_seconds",
+	],
 	"thunder": ["min_delay_seconds", "max_delay_seconds"],
 	"birds":
 	["chirp_chance", "radius_tiles", "tries", "season_factors", "phase_weights", "rain_limit"],
@@ -96,6 +104,9 @@ func problems() -> Array[String]:
 		bad.append("[loops] wind_max_level must be above 0")
 	if value("indoors", "outside_db") > 0.0:
 		bad.append("[indoors] outside_db must not be above 0")
+	for key in ["fire_small_reach_tiles", "fire_big_reach_tiles"]:
+		if value("indoors", key) <= 0.0:
+			bad.append("[indoors] %s must be above 0" % key)
 	if value("frog_chorus", "full_frogs") <= 0.0:
 		bad.append("[frog_chorus] full_frogs must be above 0")
 	if value("bees", "hear_tiles") <= 0.0:
@@ -118,6 +129,13 @@ func is_valid() -> bool:
 
 func value(section: String, key: String) -> float:
 	return float(_values[section][key])
+
+
+## How far a fire's crackle reaches, in tiles, in a room of this size (its whole map): a small
+## room hears it all through, a big one only near the fire.
+func fire_reach(room_size: Vector2i) -> float:
+	var is_small := room_size.x * room_size.y <= value("indoors", "fire_small_room_tiles")
+	return value("indoors", "fire_small_reach_tiles" if is_small else "fire_big_reach_tiles")
 
 
 ## How loud the rain loop is for this weather.

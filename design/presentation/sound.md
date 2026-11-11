@@ -34,6 +34,21 @@ Decided 2026-11-05. Everything makes sound; no background music for now.
   ringing: a first version's hollow knock sounded like a drum), the loud ones kept clear of the
   loop's seam. Louder than the weather loops, as it is the main sound of a room with a fire.
   On the Effects bus, not the muffled ones.
+  **Indoors a fire crackles** (task 172, `AmbienceSounds`, numbers in `[indoors]` of
+  `data/ambience.cfg`): a building's room with a hearth (or a fireplace) plays the loop from the
+  fire. It is a positional sound effect heard only near the fire, on top of the other ambient
+  sounds, at `fire_level` (0.8) beside it and falling off with the distance to its reach. The
+  reach comes from the size of the room (the user, 2026-11-11: heard all the time in smaller
+  houses, but not at the door of the big longhouse). Kate's room (9x8, 72 tiles) is small: the
+  fire is 3.5 tiles from the door and at most 4.9 from anywhere to stand, and it reaches 9. The
+  longhouse (15x8, 120) and the hall house (15x13) are big: their fires are 4.3 and 8.5 tiles
+  from the door, and they reach 4 (a room of at most 100 tiles is small). A fire is whatever
+  has flames drawn (`AmbientMotion.has_flames`: the hearth and the fireplace); the oven shows
+  no fire and is silent. Every fire burns for good today (nothing lights or puts one out), so
+  a room with a fire always crackles; the loops follow the room's fires every second, so one
+  built or taken out is heard or gone within a second. The loop fades in and out over
+  `fire_fade_seconds` as the player enters and leaves, and is stopped on leaving. No music
+  indoors yet: see task 171.
 - **Animals:** birds sometimes chirp where they are; frogs croak near rivers and ponds in
   spring and summer, mostly in the evening and at night and when it is warm, louder the
   closer the player is; deer snort now and then and their hooves sound when they bound

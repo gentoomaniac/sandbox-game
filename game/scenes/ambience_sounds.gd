@@ -14,6 +14,9 @@ extends Node
 ## and when they run, so it never scans them either. Everything of the outside world goes through
 ## the audio service's outside routing, so it is muffled while the player is in a house.
 ## Birds and frogs are silent indoors, where the map around the player is not the world's.
+## Indoors the fire of a hearth crackles as the main sound: one positional loop per fire in the
+## room, there while the player is in it (a fire is what AmbientMotion draws flames for; the oven
+## burns none, and no fire goes out yet).
 
 ## The seconds between its looks at the weather and its rolls of the dice.
 const TICK_SECONDS := 1.0
@@ -32,6 +35,10 @@ var _rain_target := 0.0
 var _wind_target := 0.0
 var _chorus_target := 0.0
 var _gust_seconds_left := 0.0
+## The room the fire loops belong to (null in the world).
+var _fire_room: Interior
+## The loop of each fire that crackles.
+var _fire_loops: Dictionary[WorldObject, SoundLoop] = {}
 var _animals: Array[Animal] = []
 ## The loop of each bee that buzzes.
 var _bee_loops: Dictionary[Animal, SoundLoop] = {}
@@ -54,6 +61,8 @@ func listen(
 
 
 func _process(delta: float) -> void:
+	if (_state.current_map as Interior) != _fire_room:
+		_follow_fires()
 	for animal in _bee_loops:
 		_bee_loops[animal].move_to(animal.position)
 	_seconds_to_tick -= delta
@@ -67,6 +76,7 @@ func _tick() -> void:
 	_follow_weather(weather)
 	_buzz_bees()
 	_follow_frogs(weather)
+	_follow_fires()
 	if _state.is_inside():
 		return
 	var clock := _state.clock
@@ -76,6 +86,30 @@ func _tick() -> void:
 		_chirp()
 	_croak(season, phase, weather)
 	_make_animal_sound()
+
+
+## Makes the fires of the room the player is in crackle, and those of a room they left (or that
+## are gone) go quiet. Run when the player changes rooms, and every tick.
+func _follow_fires() -> void:
+	_fire_room = _state.current_map as Interior
+	var fade_seconds := rules.value("indoors", "fire_fade_seconds")
+	var fires: Array[WorldObject] = []
+	if _fire_room != null:
+		fires = _fire_room.objects().filter(
+			func(object: WorldObject) -> bool: return AmbientMotion.has_flames(object.type)
+		)
+	for fire in _fire_loops.keys():
+		if not fires.has(fire):
+			_fire_loops[fire].stop(fade_seconds)
+			_fire_loops.erase(fire)
+	for fire in fires:
+		if not _fire_loops.has(fire):
+			var footprint: Vector2i = fire.type_data()["footprint"]
+			var middle := (Vector2(fire.pos) + Vector2(footprint) / 2.0) * TerrainTileset.TILE_SIZE
+			var reach := rules.fire_reach(_fire_room.size) * TerrainTileset.TILE_SIZE
+			var loop := _audio.start_loop(&"fire_crackle_loop", middle, 0.0, reach)
+			loop.fade_to(rules.value("indoors", "fire_level"), fade_seconds)
+			_fire_loops[fire] = loop
 
 
 ## Makes the loops follow the weather, and starts a gust now and then.

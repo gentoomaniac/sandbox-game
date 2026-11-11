@@ -155,6 +155,11 @@ func _init() -> void:
 	_fire_materials.append(fireplace)
 
 
+## Whether an object of this type burns with a visible fire: the hearth and the fireplace.
+static func has_flames(type: StringName) -> bool:
+	return FIRE_PROFILES.has(type)
+
+
 ## A new material for a fire of `type` (see FIRE_PROFILES) that does not lean: the hearth's,
 ## indoors, needs no wind.
 static func fire_material(type: StringName) -> ShaderMaterial:

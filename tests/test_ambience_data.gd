@@ -38,6 +38,11 @@ func test_an_indoor_drop_that_makes_the_weather_louder_is_bad() -> void:
 	_assert_bad(_rules_with("indoors", "outside_db", 6.0), "outside_db")
 
 
+func test_a_fire_that_reaches_nowhere_is_bad() -> void:
+	_assert_bad(_rules_with("indoors", "fire_small_reach_tiles", 0.0), "fire_small_reach_tiles")
+	_assert_bad(_rules_with("indoors", "fire_big_reach_tiles", 0.0), "fire_big_reach_tiles")
+
+
 func test_bees_heard_nowhere_are_bad() -> void:
 	_assert_bad(_rules_with("bees", "hear_tiles", 0.0), "hear_tiles")
 

@@ -172,7 +172,7 @@ func _add_furniture(object: WorldObject) -> void:
 		(object.pos.y + footprint.y - 0.5) * tile_size
 	)
 	sprite.offset = Vector2(-texture.get_width() / 2.0, tile_size / 2.0 - texture.get_height())
-	if AmbientMotion.FIRE_PROFILES.has(object.type):
+	if AmbientMotion.has_flames(object.type):
 		sprite.material = AmbientMotion.fire_material(object.type)
 	(_beds if object.is_bed() else entities).add_child(sprite)
 	_furniture.append(sprite)

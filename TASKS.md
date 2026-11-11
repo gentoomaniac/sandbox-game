@@ -157,6 +157,9 @@ After task 170. A music director (a scene service) loops a section, plays a fill
 and returns on the bar, switches between two loops (later by time of day, season, weather,
 indoors) with a minimum time before switching again. A "music" bus with its own slider in
 Settings (and off), muted in test runs. Rules in data/music.cfg; tests; README.
+- Indoors (from task 172, which leaves the music to this task): inside a building the director
+  switches to an indoor piece or a quieter mix of the current one (the weather is faint there
+  and a hearth crackles, task 172), crossfading as the player passes the door.
 - The user, 2026-11-10, on three ambient sketches: "Tide" (6/8 sway, D dorian) and "Harbour
   evening" (80 BPM capstan bass, A aeolian) are great compositions; "Heath at dawn" is dropped; the
   tempos (60 dotted-quarter, 80 and 92 BPM) are right. The sound quality was bad: held notes
