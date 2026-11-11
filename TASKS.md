@@ -435,6 +435,19 @@ and in autumn gets leaves on top gradually and in winter frost and/or snow."
 - Keep what works: the season timing and the weather that drives snow, frost and thaw.
 - Tests and before/after screenshots for each season and in a snowfall and a thaw, both arts.
 
+## 186. Footsteps are silent on snow
+
+- [ ] Done
+
+The user, 2026-11-11: "there is no sound walking on snow". SoundEvents.footstep returns
+`step_snow` when `is_snowed`, the step_snow files exist and are as loud as the others, and
+data/sounds.cfg has the event; so find where it goes wrong: what passes `is_snowed` (SnowCover's
+cover at the tile, maybe only partly snowed tiles or the dusting look), whether a snowed tile
+makes no step event at all (e.g. the walk sound keyed on the terrain or a look that has no
+entry), or the playback. Fix it; a test with a snowed tile giving the snow step in play, not only
+the pure function. Coordinate with task 185 (snow as an overlay): the step should follow the snow
+cover there too.
+
 ## Later (not part of the prototype)
 
 - **Villagers go inside** (the user, 2026-11-11): villagers enter their houses (and the church,
