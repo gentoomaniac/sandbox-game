@@ -84,6 +84,31 @@ func test_particles_are_few_and_gone_in_little_more_than_a_second() -> void:
 		assert_lt(HitParticles.SPECS[kind]["life"], 1.3)
 
 
+func test_a_drifting_particle_flies_its_own_way_and_tumbles_up_and_down() -> void:
+	var particles: HitParticles = autofree(HitParticles.new())
+	particles.emit_drifting(KINDS.LEAVES_AUTUMN, Vector2(10, 20), Vector2(30, 0), 0.0, 4.0, 3.0)
+	var leaf: HitParticles.Particle = particles._particles[0]
+	assert_eq(leaf.life, 3.0)
+	var lowest := 0.0
+	var highest := 0.0
+	for step in 60:
+		leaf.age = step * 0.05
+		var offset := leaf.position_now() - leaf.start
+		assert_almost_eq(offset.x, 30.0 * leaf.age, 0.001, "drifts at its velocity")
+		lowest = minf(lowest, offset.y)
+		highest = maxf(highest, offset.y)
+	assert_lt(lowest, -2.0)
+	assert_gt(highest, 2.0)
+	assert_lte(highest, 4.0)
+
+
+func test_clearing_takes_every_particle_away() -> void:
+	var particles: HitParticles = autofree(HitParticles.new())
+	particles.emit(KINDS.LEAVES_GREEN, Vector2.ZERO)
+	particles.clear()
+	assert_eq(particles.particle_count(), 0)
+
+
 func test_no_effect_emits_no_particles() -> void:
 	var particles: HitParticles = autofree(HitParticles.new())
 	particles.emit(KINDS.NONE, Vector2.ZERO)

@@ -21,6 +21,8 @@ const DUST_COLORS: Array[Color] = [Color("e4e4dc"), Color("c8c8c0")]
 const SWEAT_COLORS: Array[Color] = [Color("92b4bd"), Color("92b4bd"), Color("e6eef2")]
 ## Frequency of the sway of falling leaves, in radians per second.
 const SWAY_RATE := 7.0
+## How much slower a particle tumbles up and down than it sways to the sides.
+const TUMBLE_RATE_FACTOR := 0.6
 ## The last share of a particle's life in which it fades out.
 const FADE_SHARE := 0.3
 ## How much darker the shaded side of a particle is (its bottom row and right column, away from
@@ -155,6 +157,8 @@ class Particle:
 	var velocity: Vector2
 	var gravity: float
 	var sway: float
+	## How far a particle swings up and down, a little slower than it sways to the sides.
+	var tumble := 0.0
 	var phase: float
 	var life: float
 	var color: Color
@@ -164,11 +168,18 @@ class Particle:
 
 	func position_now() -> Vector2:
 		var swing := sway * sin(phase + age * SWAY_RATE)
-		return start + velocity * age + Vector2(swing, 0.5 * gravity * age * age)
+		var bob := tumble * sin(phase * 1.7 + age * SWAY_RATE * TUMBLE_RATE_FACTOR)
+		return start + velocity * age + Vector2(swing, 0.5 * gravity * age * age + bob)
 
 
 func particle_count() -> int:
 	return _particles.size()
+
+
+## Takes away every particle in the air.
+func clear() -> void:
+	_particles.clear()
+	queue_redraw()
 
 
 ## Starts the particles of `kind` around `origin`, in world pixels. Splinters raise a little
@@ -179,11 +190,9 @@ func emit(kind: HitEffect.Kind, origin: Vector2) -> void:
 	var spec: Dictionary = SPECS[kind]
 	var spread: Vector2 = spec["spread"]
 	var vertical: Vector2 = spec["vertical"]
-	var colors: Array[Color] = spec["colors"]
-	var sizes: Array = spec["sizes"]
 	var first_side := _random.randi() % 2
 	for i in _random.randi_range(spec["count"].x, spec["count"].y):
-		var particle := Particle.new()
+		var particle := _new_particle(spec)
 		# Outward particles alternate sides, so two drops never fly off the same one.
 		var side := 1.0 if (first_side + i) % 2 == 0 else -1.0
 		var offset_x := _random.randf_range(-spread.x, spread.x)
@@ -193,17 +202,46 @@ func emit(kind: HitEffect.Kind, origin: Vector2) -> void:
 			speed_x = side * _random.randf_range(spec["sideways"] / 2.0, spec["sideways"])
 		particle.start = origin + Vector2(offset_x, _random.randf_range(-spread.y, spread.y))
 		particle.velocity = Vector2(speed_x, _random.randf_range(vertical.x, vertical.y))
-		particle.gravity = spec["gravity"]
-		particle.sway = spec["sway"]
-		particle.phase = _random.randf_range(0.0, TAU)
-		particle.life = spec["life"]
-		particle.color = colors[_random.randi() % colors.size()]
-		particle.size = sizes[_random.randi() % sizes.size()]
-		particle.is_shaded = spec["is_shaded"]
 		_particles.append(particle)
 	queue_redraw()
 	if kind == HitEffect.Kind.SPLINTERS:
 		emit(HitEffect.Kind.DUST, origin)
+
+
+## Starts one particle of `kind` (its colours and sizes, as `emit` picks them) at `origin` that
+## flies its own way: at `velocity` (pixels per second), swinging `sway` pixels to the sides and
+## `tumble` up and down, for `life` seconds. Leaves blown about the world are these.
+func emit_drifting(
+	kind: HitEffect.Kind,
+	origin: Vector2,
+	velocity: Vector2,
+	sway: float,
+	tumble: float,
+	life: float
+) -> void:
+	var particle := _new_particle(SPECS[kind])
+	particle.start = origin
+	particle.velocity = velocity
+	particle.sway = sway
+	particle.tumble = tumble
+	particle.life = life
+	_particles.append(particle)
+	queue_redraw()
+
+
+## A particle of the spec's look and gravity, sway and life, which the caller sets going.
+func _new_particle(spec: Dictionary) -> Particle:
+	var colors: Array[Color] = spec["colors"]
+	var sizes: Array = spec["sizes"]
+	var particle := Particle.new()
+	particle.gravity = spec["gravity"]
+	particle.sway = spec["sway"]
+	particle.phase = _random.randf_range(0.0, TAU)
+	particle.life = spec["life"]
+	particle.color = colors[_random.randi() % colors.size()]
+	particle.size = sizes[_random.randi() % sizes.size()]
+	particle.is_shaded = spec["is_shaded"]
+	return particle
 
 
 func advance(delta: float) -> void:
