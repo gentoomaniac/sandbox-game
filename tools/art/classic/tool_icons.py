@@ -11,7 +11,7 @@ metal.
 
 import item_icons as items
 from canvas import blank
-from tool_grades import GRADES, stamp
+from tool_grades import GRADES, numeral, stamp
 
 # fmt: off
 MAPS = {
@@ -53,17 +53,17 @@ MAPS = {
     ),
     "pickaxe": (
         "................",
-        ".....e..........",
-        "......m.........",
+        "................",
+        ".....em.........",
         "......mmm.......",
         "........mm......",
         ".........mm.....",
         ".........lmm....",
         "........wd.mm...",
-        ".......wd...mm..",
-        "......wd.....m..",
-        ".....wd......me.",
-        "....wd..........",
+        ".......wd...m...",
+        "......wd....mm..",
+        ".....wd......m..",
+        "....wd........e.",
         "...wd...........",
         "..wd............",
         ".wd.............",
@@ -126,18 +126,18 @@ MAPS = {
     "watering_can": (
         "................",
         "................",
-        "..mmm...........",
-        ".m...k......mm..",
-        ".m...k.....mssk.",
-        ".m.mkm.....mksk.",
-        "..msssk.....kk..",
-        ".msssssk...ms...",
-        ".msssssk..ms....",
-        ".mkkkkkk.ms.....",
-        ".msssssms.......",
-        ".msssssk........",
-        ".msssssk........",
-        "..kkkkk.........",
+        "...........mmm..",
+        "..mm......m...k.",
+        ".mssk.....m...k.",
+        ".mskk.....mkm.k.",
+        "..kk.....msssk..",
+        "...ms...msssssk.",
+        "....ms..msssssk.",
+        ".....ms.mkkkkkk.",
+        ".......smsssssk.",
+        "........msssssk.",
+        "........msssssk.",
+        ".........kkkkk..",
         "................",
         "................",
     ),
@@ -147,16 +147,18 @@ MAPS = {
 MARKS = {
     "hoe": {"p": [(11, 6)], "q": [(12, 7)], "c": [(12, 6), (13, 7)], "g": [(13, 8)]},
     "axe": {"p": [(8, 4)], "q": [(9, 4)], "c": [(7, 3), (8, 4)], "g": [(8, 2), (7, 3), (6, 4)]},
-    "pickaxe": {"p": [(8, 4)], "q": [(9, 5)], "c": [(11, 7), (12, 8)], "g": [(6, 2), (14, 10)]},
+    "pickaxe": {"p": [(8, 4)], "q": [(9, 5)], "c": [(11, 7), (12, 8)], "g": [(6, 2), (14, 11)]},
     "hammer": {"p": [(8, 4)], "q": [(9, 4)], "c": [(10, 5), (10, 6)], "g": [(8, 3), (11, 7)]},
     "shovel": {"p": [(4, 10), (3, 12)], "q": [(5, 10)], "c": [(4, 11), (5, 12)], "g": [(2, 12), (2, 13), (3, 13)]},
     "scythe": {"p": [(6, 2)], "q": [(7, 2)], "c": [(10, 4), (11, 4)], "g": [(8, 2), (9, 2)]},
-    "watering_can": {"p": [(3, 8), (5, 11)], "q": [(4, 8)], "c": [(4, 11), (4, 12)], "g": [(2, 7), (2, 8), (12, 4)]},
+    "watering_can": {"p": [(12, 8), (10, 11)], "q": [(11, 8)], "c": [(11, 11), (11, 12)], "g": [(13, 7), (13, 8), (3, 4)]},
 }
 
 
 def icon(item, grade):
-    return items.outlined(stamp(blank(), 0, 0, MAPS[item], grade, MARKS[item]), "ink")
+    """The tool with the grade's numeral in its bottom left corner."""
+    body = numeral(stamp(blank(), 0, 0, MAPS[item], grade, MARKS[item]), grade, 1)
+    return items.outlined(body, "ink")
 
 
 def icons(grade=GRADES[0]):

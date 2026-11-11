@@ -716,8 +716,9 @@ AXE_HEAD = (
     "....kke",
 )
 PICK_HEAD = (
-    ".mmmmmmm.",
-    "ssskkssss",
+    "..mmmmm..",
+    ".mskkssm.",
+    "ks.....sk",
     "e.......e",
 )
 HAMMER_HEAD = (

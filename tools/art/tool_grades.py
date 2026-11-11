@@ -43,6 +43,39 @@ def marks(grade):
     return MARKS.get(grade, {})
 
 
+# The grade's Roman numeral, I to V, in the bottom left corner of the icons (the slot draws the
+# count bottom right and the can's water badge top left): tiny glyphs 4 px tall with 1 px
+# strokes, in cream on an ink backing with a 1 px margin, so they read on any slot and over the
+# tool. Drawn at `scale` 2 in the 32 px icons, which the UI shows at half size, and 1 in the
+# classic 16 px icons.
+NUMERALS = {
+    "rusty_iron": ("#", "#", "#", "#"),
+    "iron": ("#.#", "#.#", "#.#", "#.#"),
+    "brittle_steel": ("#.#.#", "#.#.#", "#.#.#", "#.#.#"),
+    "steel": ("#.#.#", "#.#.#", "#.#.#", "#..#."),
+    "sharp_steel": ("#.#", "#.#", "#.#", ".#."),
+}
+NUMERAL_COLOUR = "cream"
+NUMERAL_BACKING = "ink"
+
+
+def numeral(picture, grade, scale):
+    """Draws the grade's numeral on its backing, flush with the picture's bottom left corner."""
+    glyph = NUMERALS[grade]
+    width, height = (len(glyph[0]) + 2) * scale, (len(glyph) + 2) * scale
+    left, top = 0, len(picture) - height
+    for y in range(top, top + height):
+        for x in range(left, left + width):
+            picture[y][x] = NUMERAL_BACKING
+    for gy, row in enumerate(glyph):
+        for gx, cell in enumerate(row):
+            if cell == "#":
+                for dy in range(scale):
+                    for dx in range(scale):
+                        picture[top + (gy + 1) * scale + dy][left + (gx + 1) * scale + dx] = NUMERAL_COLOUR
+    return picture
+
+
 def stamp(picture, x, y, rows, grade, marks_at=None):
     """Draws a map of letters with its top left at (x, y) in the colours of `grade`; "." leaves a
     pixel as it is. `marks_at` is {letter: [(x, y), ...]} in the map's own pixels, drawn over it
