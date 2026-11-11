@@ -219,6 +219,10 @@ and in autumn gets leaves on top gradually and in winter frost and/or snow."
     rather than per-tile atlas swaps every hour).
 - Keep what works: the season timing and the weather that drives snow, frost and thaw.
 - Tests and before/after screenshots for each season and in a snowfall and a thaw, both arts.
+- Plan done 2026-11-11 and approved by the user with Sol's changes, for later: see
+  [docs/plans/185-season-overlays.md](docs/plans/185-season-overlays.md) (the plan, Sol's
+  changes and the user's decisions: smooth colour mix, a little straw on the dry grass in autumn,
+  ice later). The queue goes on with 186 first.
 
 ## 186. Footsteps are silent on snow
 
@@ -698,6 +702,9 @@ and start spinning left right for a long time."
   following dog.
 
 ## Later (not part of the prototype)
+
+- Ice on rivers and ponds in winter (an overlay on water when it is cold enough; frozen water
+  can be walked on, see `Tile.frozen`). Split off task 185 by the user, 2026-11-11.
 
 - **Villagers go inside** (the user, 2026-11-11): villagers enter their houses (and the church,
   workplaces) through the door instead of waiting in front of it, and are seen in the interior.
