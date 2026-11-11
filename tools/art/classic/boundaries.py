@@ -69,9 +69,11 @@ def draw_line(mask, layers, colour, outline, shadow_reach=1, joints=False, has_f
 
     `layers(mask, x, y)` gives the layers that stand on ground pixel (x, y) of the tile (outside
     0..15 on the neighbours), bottom first, as (height of its top, material); heights are whole
-    pixels and grow. `colour(material, x, y, z, light, is_top)` picks a pixel's colour, `light`
-    -1 to 1, and `outline(material)` the colour of the silhouette (None for none). With `joints`
-    the outline also runs where a material meets another above or beside it (between stones).
+    pixels and grow, and a layer of material None is a gap, through which what is behind shows
+    (the ground under a fence's rails). `colour(material, x, y, z, light, is_top)` picks a pixel's
+    colour, `light` -1 to 1, and `outline(material)` the colour of the silhouette (None for none).
+    With `joints` the outline also runs where a material meets another above or beside it (between
+    stones).
     Steep layers have a face that looks to the front (a hedge, a fence); without `has_faces`
     every pixel is shaded by its slope (round stones)."""
     span = range(-_REACH, TILE + _REACH)
@@ -94,6 +96,10 @@ def draw_line(mask, layers, colour, outline, shadow_reach=1, joints=False, has_f
                 continue
             bottom = 0
             for index, (top, material) in enumerate(stack):
+                # A layer of no material is a gap: what is behind shows through it.
+                if material is None:
+                    bottom = top
+                    continue
                 gradient_x = (height(x + 1, y, index) - height(x - 1, y, index)) / 2
                 gradient_y = (height(x, y + 1, index) - height(x, y - 1, index)) / 2
                 light = _brightness(gradient_x, gradient_y)
