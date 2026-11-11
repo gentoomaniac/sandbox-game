@@ -4788,3 +4788,32 @@ relative extends/preload, scenes, resources and shader includes transitively; a 
 a deleted script and any unknown path run everything, keeping the art check. tools/run_tests.py
 takes a file list. Reviewed twice by Sol (six false-negative paths found and fixed). Measured:
 task 174's range selects 41 of 261 files, 175 and 177 almost all (the game code is coupled).
+
+## 193. Console: `killall <kind>` removes everything of a kind
+
+- [x] Done
+
+The user, 2026-11-11: "we need a way to easily remove things. add a /killall which then takes the
+list of the spawn command and removes all of that type from game and savegame."
+- `killall <kind>` takes the same kinds as `spawn <kind>` (game/state/console.gd: the farm animals
+  and pets, the wild animals spawn knows, `npc` with a villager id, the wild rabbit's own name)
+  with the same completion and the same "unknown kind lists the kinds" answer, and removes every
+  one of that kind: from the running game (views freed, followers, hunts, coop roosts, pen and
+  trough reservations released) and from the state that is saved, so the next save no longer has
+  them. It says how many it removed.
+- Villagers: `killall npc <id>` removes that named villager (data/villagers.cfg); `killall npc`
+  alone removes every villager without an id (made up from the tables or by `spawn npc`) and keeps
+  the named ones, which need their id (the user, 2026-11-11, replacing "asks for an id"). Removing a villager the story or a building depends on
+  must not break the save or the game (check homes, work places, gossip, chat history).
+- Wild animals are not saved (task 173), so for them it clears the ones alive now (they may come
+  back by the spawn rules); say so in the answer.
+- A ridden horse: unmount first, or refuse; say which.
+- Tests for each kind group (a farm animal, a pet, a wild animal, a villager), the count, the save
+  after removal, and unknown kinds; design/presentation/console.md line.
+
+Done 2026-11-11: `killall <kind>` shares spawn's kinds and completion (KIND_COMMANDS) and removes
+every one of the kind from the game and the save (Livestock.remove_species, Npcs.remove,
+WildlifeView.remove_kind; views freed by `removed` signals), answering with the count; wild animals
+are cleared for now and may come back. `killall npc <id>` removes a named villager; a bare
+`killall npc` removes the villagers without an id and keeps the named ones. Riding a horse:
+`killall horse` refuses ("get off first").

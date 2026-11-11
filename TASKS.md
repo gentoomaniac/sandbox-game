@@ -185,28 +185,6 @@ Settings (and off), muted in test runs (comes with task 184). Rules in data/musi
   pieces like the test reel are kept for special events (festivals, a market day). Later: stems
 (AudioStreamSynchronized), more pieces, the season and weather choices.
 
-## 193. Console: `killall <kind>` removes everything of a kind
-
-- [ ] Done
-
-The user, 2026-11-11: "we need a way to easily remove things. add a /killall which then takes the
-list of the spawn command and removes all of that type from game and savegame."
-- `killall <kind>` takes the same kinds as `spawn <kind>` (game/state/console.gd: the farm animals
-  and pets, the wild animals spawn knows, `npc` with a villager id, the wild rabbit's own name)
-  with the same completion and the same "unknown kind lists the kinds" answer, and removes every
-  one of that kind: from the running game (views freed, followers, hunts, coop roosts, pen and
-  trough reservations released) and from the state that is saved, so the next save no longer has
-  them. It says how many it removed.
-- Villagers: `killall npc <id>` removes that named villager (data/villagers.cfg); `killall npc`
-  alone removes every villager without an id (made up from the tables or by `spawn npc`) and keeps
-  the named ones, which need their id (the user, 2026-11-11, replacing "asks for an id"). Removing a villager the story or a building depends on
-  must not break the save or the game (check homes, work places, gossip, chat history).
-- Wild animals are not saved (task 173), so for them it clears the ones alive now (they may come
-  back by the spawn rules); say so in the answer.
-- A ridden horse: unmount first, or refuse; say which.
-- Tests for each kind group (a farm animal, a pet, a wild animal, a villager), the count, the save
-  after removal, and unknown kinds; design/presentation/console.md line.
-
 ## 189. Windows can be dragged
 
 - [ ] Done
