@@ -38,6 +38,28 @@ func is_placeable(pos: Vector2i) -> bool:
 	)
 
 
+## Piles lie on floor you can walk on, but not on the doormat: whoever leaves would walk over
+## them.
+func can_hold_pile(pos: Vector2i) -> bool:
+	return pos != exit_tile and is_walkable(pos)
+
+
+## Every tile of the room that can hold a pile, nearest to `source` first.
+func far_pile_tiles(source: Vector2i) -> Array[Vector2i]:
+	var tiles: Array[Vector2i] = []
+	for y in size.y:
+		for x in size.x:
+			if can_hold_pile(Vector2i(x, y)):
+				tiles.append(Vector2i(x, y))
+	tiles.sort_custom(
+		func(a: Vector2i, b: Vector2i) -> bool:
+			var distance_a := (a - source).length_squared()
+			var distance_b := (b - source).length_squared()
+			return distance_a < distance_b or (distance_a == distance_b and a < b)
+	)
+	return tiles
+
+
 func set_terrain(pos: Vector2i, terrain: Tile.Terrain) -> void:
 	var tile := Tile.new()
 	tile.terrain = terrain

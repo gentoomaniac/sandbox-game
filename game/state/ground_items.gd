@@ -188,7 +188,8 @@ func _unfile(ground_item: GroundItem) -> void:
 
 
 ## The free walkable tiles near `source`, in the order the piles of the `kind_index`th kind of
-## a drop go to them. With none free, the source itself.
+## a drop go to them. With none free near, those the map names (`far_pile_tiles`), or the source
+## itself.
 func _scatter_tiles(source: Vector2i, kind_index: int, map: GameMap) -> Array[Vector2i]:
 	var tiles: Array[Vector2i] = []
 	for scatter_range: int in SCATTER_RANGES:
@@ -199,7 +200,8 @@ func _scatter_tiles(source: Vector2i, kind_index: int, map: GameMap) -> Array[Ve
 		if not tiles.is_empty():
 			break
 	if tiles.is_empty():
-		return [source]
+		var far_tiles := map.far_pile_tiles(source)
+		return [source] if far_tiles.is_empty() else far_tiles
 	var salt := PositionHash.of(source, kind_index)
 	tiles.sort_custom(
 		func(a: Vector2i, b: Vector2i) -> bool:

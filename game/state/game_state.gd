@@ -514,28 +514,28 @@ func use_facing_tile() -> ToolUse.Use:
 
 ## Pulls the items on the ground near the player towards them and picks up those that
 ## arrive. What the inventory has no room for stays on the ground, and so do all piles of an
-## item while it has no room at all. Does nothing inside a building or on horseback. Only the
-## piles in the player's chunk and next to it are looked at: a pile out of reach has no business
-## being settled or released here, and the player cannot get further than that in a frame.
+## item while it has no room at all. The piles are those of the map the player is on. Does nothing
+## on horseback. Only the piles in the player's chunk and next to it are looked at: a pile out of
+## reach has no business being settled or released here, and the player cannot get further than
+## that in a frame.
 func collect_ground_items(delta: float) -> void:
-	if is_inside():
-		return
+	var ground_items := current_map.ground_items
 	var player_chunk := Chunk.world_to_chunk(player.tile())
-	for ground_item in world.ground_items.in_chunks_around(player_chunk, 1):
+	for ground_item in ground_items.in_chunks_around(player_chunk, 1):
 		ground_item.settle_seconds = maxf(ground_item.settle_seconds - delta, 0.0)
 		if ground_item.position.distance_to(player.position) > PULL_RADIUS:
 			ground_item.is_dropped_by_player = false
 	# On horseback nothing is picked up: only the inventory and eating are possible.
 	if player.horse != null:
 		return
-	for ground_item in world.ground_items.near(player.position, PULL_RADIUS):
+	for ground_item in ground_items.near(player.position, PULL_RADIUS):
 		if ground_item.settle_seconds > 0.0 or ground_item.is_dropped_by_player:
 			continue
 		if not player.inventory.can_add({ground_item.item: 1}):
 			continue
 		var to_player := player.position - ground_item.position
 		if to_player.length() > maxf(PICKUP_RADIUS, PULL_SPEED * delta):
-			world.ground_items.move(
+			ground_items.move(
 				ground_item, ground_item.position + to_player.normalized() * PULL_SPEED * delta
 			)
 			continue
@@ -544,7 +544,7 @@ func collect_ground_items(delta: float) -> void:
 			func() -> void:
 				ground_item.count = player.inventory.add(ground_item.item, ground_item.count)
 				if ground_item.count == 0:
-					world.ground_items.remove(ground_item)
+					ground_items.remove(ground_item)
 		)
 		picked_up -= ground_item.count
 		if picked_up > 0:
@@ -556,22 +556,18 @@ func collect_ground_items(delta: float) -> void:
 			)
 
 
-## Puts the stack in inventory slot `slot` on the ground in front of the player, as drops of
-## the world lie (see `GameMap.drop_items`); the player picks it up again by walking away and back.
-## Does nothing inside a building (nothing lies on the ground there). Returns whether it did.
+## Puts the stack in inventory slot `slot` on the ground of the player's map in front of them, as
+## drops lie (see `GameMap.drop_items`); the player picks it up again by walking away and back.
+## Returns whether it did.
 func drop_from_inventory(slot: int) -> bool:
-	if (
-		is_inside()
-		or not player.inventory.has_slot(slot)
-		or player.inventory.item_in(slot) == ItemTypes.NONE
-	):
+	if not player.inventory.has_slot(slot) or player.inventory.item_in(slot) == ItemTypes.NONE:
 		return false
 	var stack := player.inventory.slots[slot]
 	var target := player.facing_tile()
 	player.inventory.hold_notifications(
 		func() -> void:
 			player.inventory.destroy(slot)
-			for pile in world.drop_items(target, {stack["item"]: stack["count"]}):
+			for pile in current_map.drop_items(target, {stack["item"]: stack["count"]}):
 				pile.is_dropped_by_player = true
 	)
 	report(ActionOutcome.DROP, target, &"", {stack["item"]: stack["count"]})

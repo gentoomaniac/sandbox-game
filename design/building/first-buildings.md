@@ -66,6 +66,13 @@
     is taller than the screen at zoom 1, so the camera follows the player through it as
     outside. Sleep fills: mat 80, bed and box bed 100.
     The barn and the church have no bed, so they can't be slept in.
+  - **Items on the floor** (task 200, 2026-11-11): an interior has its own piles of items, like
+    the world's (`GameMap.ground_items`), saved with the interior. Dropping works inside
+    (the drop key, a stack dragged out of a window); the piles lie on free floor only (never on a
+    wall, on furniture that blocks or on the doormat), within the room, show on the floor in
+    both arts, are picked up as outside and stay when the player leaves and comes back. Piles have no
+    wind, rot, animal or rain behaviour anywhere, so nothing is left out indoors; the settle after a
+    drop and the auto pickup work indoors as outside.
   - **Furnished in the period** (task 57, 2026-11-06, from docs/art-style.md): the rooms look
     like 18th-century North Frisian and Danish farmhouses. Floors: red brick in a herringbone
     in the living rooms (the Kate, the longhouse's living end), beaten clay in the work rooms

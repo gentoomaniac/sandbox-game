@@ -37,7 +37,8 @@
     the other side.
   - **Dropping** (task 88): a backpack or hotbar stack dragged and let go outside the screen's
     panel, or the rebindable `drop_item` action (T) for the held stack, puts the stack on
-    the ground in front of the player as piles like any drop (not inside a house). Such piles
+    the ground in front of the player as piles like any drop (inside a house, on its floor: see
+    [first buildings](../building/first-buildings.md)). Such piles
     are not pulled back until the player has walked out of reach of them; then they are
     collected as usual.
   - **Trash can** (task 133): a slot with a bin icon in the inventory column of the character

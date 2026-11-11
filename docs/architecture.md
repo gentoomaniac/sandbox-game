@@ -96,13 +96,15 @@ Warft and an Ewer here and there.
   and debug commands) tell nothing.
 - **GameMap** is a place the player can walk: either **World** or **Interior** (the inside of
   one building). The player is on one map at a time; the world stands still while they are
-  inside. Both tell their views the same way: `objects_changed(pos)` and `tile_changed(pos)`
-  (one per tile an object covers), so `WorldView` and `InteriorView` redraw from the map's own
-  signals and Main redraws nothing for particular tool results.
+  inside. Each map has its own `ground_items` (`GroundItems`, the items lying on its ground or
+  floor) and `drop_items`; where a pile may lie is `can_hold_pile`. Both tell their views the
+  same way: `objects_changed(pos)` and `tile_changed(pos)` (one per tile an object covers), so
+  `WorldView` and `InteriorView` redraw from the map's own signals and Main redraws nothing for
+  particular tool results.
 - **World** holds the loaded chunks of tiles (`Tile`, `Chunk`), the objects on them
-  (`WorldObject`: trees, crops, furniture), buildings and, in `ground_items` (`GroundItems`),
-  the items lying on the ground. Line objects (Knicks, walls, fences, dykes) are one object per
-  tile whose type `connects`; `World.connections` says which neighbours a tile joins, and the
+  (`WorldObject`: trees, crops, furniture), buildings and the items lying on the ground. Line
+  objects (Knicks, walls, fences, dykes) are one object per tile whose type `connects`;
+  `World.connections` says which neighbours a tile joins, and the
   view draws the picture of that connection mask. The wear of desire paths is World's too
   (`wear_tile`, `wear_stage`, `regrow_paths`; numbers in `data/paths.cfg`, `PathRules`):
   `GameState.walk` and `Livestock` wear each tile entered, and a tile that turns trodden or

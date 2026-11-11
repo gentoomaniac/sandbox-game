@@ -53,21 +53,6 @@ func test_an_empty_slot_drops_nothing() -> void:
 	assert_true(_world.ground_items.all().is_empty())
 
 
-func test_nothing_is_dropped_inside_a_house() -> void:
-	var house: Building = null
-	for y in range(-12, 13):
-		for x in range(-12, 13):
-			var origin := _state.player.tile() + Vector2i(x, y)
-			if house == null and _world.placement_blockers(BuildingTypes.KATE, origin).is_empty():
-				house = _world.place_building(BuildingTypes.KATE, origin)
-	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
-	assert_true(_state.is_inside())
-	var slot := _slot_with(ItemTypes.STONE, 6)
-	assert_false(_state.drop_from_inventory(slot))
-	assert_eq(_state.player.inventory.slots[slot]["count"], 6)
-
-
 func test_dropping_from_a_slot_that_does_not_exist_does_nothing() -> void:
 	assert_false(_state.drop_from_inventory(-1))
 	assert_false(_state.drop_from_inventory(Inventory.SLOT_COUNT))

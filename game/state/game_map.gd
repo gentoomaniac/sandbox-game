@@ -76,6 +76,12 @@ func can_hold_pile(pos: Vector2i) -> bool:
 	return is_walkable(pos)
 
 
+## Where piles can lie when no tile near their source can hold one, nearest to `source` first.
+## None by default: the pile then lies on the source.
+func far_pile_tiles(_source: Vector2i) -> Array[Vector2i]:
+	return []
+
+
 ## What makes the placing of piles differ from map to map (see `GroundItems.drop`).
 func pile_seed() -> int:
 	return 0
