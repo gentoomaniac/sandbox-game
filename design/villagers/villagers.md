@@ -51,7 +51,10 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   never walks further than 6 tiles from it (one outside the circle only walks back in).
 - **Behaviour:** by day it stands about and strolls (at a third of the player's speed) only
   where its body fits on walkable tiles, and stops short of the player rather than walk into
-  them; the player walks through villagers, so they never shut the player in. At night (from
+  them; the player walks through villagers, so they never shut the player in. It never stands
+  on a tile of a building: the door is walkable for the player, not for a villager, which stops
+  on the tile in front of it (drawn in front of the wall). One found on a building (an old
+  save, a building built round it) is put on the nearest free tile. At night (from
   half an hour after sunset to sunrise) it stands still. Like the animals it stands still
   while the player is in a house.
   **Skipping time** (the console's `skip`, sleeping, passing out; decided 2026-11-10): the

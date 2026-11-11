@@ -7,7 +7,8 @@ extends RefCounted
 ## out in the world.
 ##
 ## The player walks through villagers, so none can shut the player in; a villager stops short
-## of the player instead of walking into them.
+## of the player instead of walking into them. A villager never stands on a tile of a building,
+## its door included (the player walks in through it): it stops in front of the door.
 
 ## A villager came into the world.
 signal added(npc: Npc)
@@ -26,6 +27,8 @@ const MAX_STEP_SECONDS := 0.05
 ## A stroll heads for a point this far into the anchor's circle, at the most, so it turns back
 ## before it reaches the edge.
 const STROLL_REACH := 0.8
+## A villager found on a building looks this many tiles around for a free tile.
+const STEP_OFF_REACH := 8.0
 
 var rules := NpcRules.default_rules()
 ## The villagers written by hand (see `spawn_villager`).
@@ -80,7 +83,7 @@ func spawn(count: int, near: Vector2, world: World) -> int:
 		if placed == count:
 			break
 		var feet := _spawn_spot(near)
-		if PlayerState.can_stand_at(world, feet):
+		if can_stand_at(world, feet):
 			_settle(Npc.create(rng.randi(), feet, rules), world)
 			placed += 1
 	return placed
@@ -91,7 +94,7 @@ func spawn(count: int, near: Vector2, world: World) -> int:
 func spawn_villager(villager_id: String, near: Vector2, world: World) -> Npc:
 	for _try in SPAWN_TRIES:
 		var feet := _spawn_spot(near)
-		if PlayerState.can_stand_at(world, feet):
+		if can_stand_at(world, feet):
 			return _settle(Npc.create_villager(villager_id, feet, villagers), world)
 	return null
 
@@ -126,6 +129,12 @@ static func anchor_near(feet: Vector2, world: World, search: float) -> Vector2:
 	return anchor
 
 
+## Whether a villager fits with their feet at `feet`: as the player does (see
+## `PlayerState.can_stand_at`), but never on a tile of a building, even the door.
+static func can_stand_at(map: GameMap, feet: Vector2) -> bool:
+	return PlayerState.can_stand_at(map, feet) and not PlayerState.touches_building(map, feet)
+
+
 ## Whether the villagers stand still for the night at a time of the game clock.
 func is_rest_time(day: int, minute: int) -> bool:
 	var rest := _sun.sunset(day) + rules.behaviour("rest_minutes_after_sunset")
@@ -148,6 +157,8 @@ func update(
 	for npc in _npcs:
 		if only_loaded and not _is_in_loaded_chunk(npc, map):
 			continue
+		if npc.free_body_tiles == Rect2i():
+			_step_off_buildings(npc, map)
 		npc.seconds_left -= delta
 		if npc.seconds_left <= 0.0:
 			_start_next_activity(npc)
@@ -189,15 +200,42 @@ func talk_to(npc: Npc, player_feet: Vector2) -> void:
 func _catch_up_one(npc: Npc, map: GameMap) -> void:
 	if not _is_in_loaded_chunk(npc, map):
 		return
+	_step_off_buildings(npc, map)
 	var radius := rules.behaviour("anchor_radius") * STROLL_REACH
 	var is_free := func(tile: Vector2i) -> bool:
 		var centre := Vector2(tile) + Vector2(0.5, 0.5)
-		return centre.distance_to(npc.anchor) <= radius and PlayerState.can_stand_at(map, centre)
+		return centre.distance_to(npc.anchor) <= radius and can_stand_at(map, centre)
 	var tiles := ReachableTiles.within(npc.tile(), radius * 2.0, is_free)
 	if tiles.size() > 1 or is_free.call(npc.tile()):
 		npc.position = Vector2(tiles[rng.randi() % tiles.size()]) + Vector2(0.5, 0.5)
 		npc.free_body_tiles = PlayerState.body_tiles(npc.position)
 	_stand(npc)
+
+
+## Notes the tiles a villager's body stands on, and puts one who stands on a tile of a building
+## (a game saved so, or a building built round them) on the free tile nearest to them, which is
+## the one in front of the door when that is near.
+func _step_off_buildings(npc: Npc, map: GameMap) -> void:
+	if can_stand_at(map, npc.position):
+		npc.free_body_tiles = PlayerState.body_tiles(npc.position)
+		return
+	if not PlayerState.touches_building(map, npc.position):
+		return
+	var is_free := func(tile: Vector2i) -> bool:
+		return can_stand_at(map, Vector2(tile) + Vector2(0.5, 0.5))
+	var nearest := npc.position
+	var nearest_distance := INF
+	var reach := ceili(STEP_OFF_REACH)
+	var centre := Vector2i(npc.position.floor())
+	for y in range(-reach, reach + 1):
+		for x in range(-reach, reach + 1):
+			var tile := centre + Vector2i(x, y)
+			var spot := Vector2(tile) + Vector2(0.5, 0.5)
+			if spot.distance_to(npc.position) < nearest_distance and is_free.call(tile):
+				nearest = spot
+				nearest_distance = spot.distance_to(npc.position)
+	npc.position = nearest
+	npc.free_body_tiles = PlayerState.body_tiles(nearest)
 
 
 ## Whether the chunk a villager stands in is loaded: the world beyond it is not there to walk on.
@@ -275,7 +313,7 @@ func _fits(npc: Npc, feet: Vector2, map: GameMap) -> bool:
 	var body := PlayerState.body_tiles(feet)
 	if body == npc.free_body_tiles:
 		return true
-	if not PlayerState.can_stand_at(map, feet):
+	if not can_stand_at(map, feet):
 		return false
 	npc.free_body_tiles = body
 	return true
