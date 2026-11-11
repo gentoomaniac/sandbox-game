@@ -5086,3 +5086,20 @@ the pure function. Coordinate with task 185 (snow as an overlay): the step shoul
 cover there too.
 
 Done: 2026-11-11. Full snow already gave the snow step; the silence was light snow, where a spot drawn snowy (the dual-grid blend of 4 corner tiles) still counted as grass by its own tile. `WorldView.is_snow_drawn_at(position)` now decides the step from the cell drawn under the feet: snow or dusting on at least 2 of its 4 corners gives `step_snow`. Frost stays a grass step; riding has none. Task 185's GroundCover replaces it later. An end-to-end test with a real WorldView.
+
+## 188. The energy and health bars move to the top right
+
+- [x] Done
+
+The user, 2026-11-11 (to run before task 187): "Move energy and health indicator to the top right
+of the screen. add a bag icon right next to the quick bar, a bit separated. this icon when clicked
+or b is pressed should open the bag which is the inventory (the build menu now only opens when the
+hammer is in hand). The bag opens a bit on the right of the screen, the character part (and later
+the character attributes) get their own window that opens on C." Split into 188, 190 and 191 at
+the user's word the same day (they don't depend on each other).
+- The energy and health bars move to the top right corner of the screen (mind the notifications
+  and the clock that may sit there; say where those go). Both window sizes the game supports.
+- Tests for the placement if the HUD has them; a screenshot for the user; README picture if it
+  shows the HUD.
+
+Done: 2026-11-11. VitalsHud is anchored to the top right (4 px in, growing leftwards); `BOTTOM` follows `BAR_COUNT`, and the F3 coordinates readout starts under the bars. The clock and notifications stay top left. Only docs/screenshots/build.png was re-taken; about 30 hand-made README composites still show the bars beside the hotbar (no recipe exists for them).

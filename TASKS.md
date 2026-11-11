@@ -252,21 +252,6 @@ later."
 - Save version bump with the upgrade rule; tests for the derived stats, the save and the base
   values matching today; README and design notes (design/player/).
 
-## 188. The energy and health bars move to the top right
-
-- [ ] Done
-
-The user, 2026-11-11 (to run before task 187): "Move energy and health indicator to the top right
-of the screen. add a bag icon right next to the quick bar, a bit separated. this icon when clicked
-or b is pressed should open the bag which is the inventory (the build menu now only opens when the
-hammer is in hand). The bag opens a bit on the right of the screen, the character part (and later
-the character attributes) get their own window that opens on C." Split into 188, 190 and 191 at
-the user's word the same day (they don't depend on each other).
-- The energy and health bars move to the top right corner of the screen (mind the notifications
-  and the clock that may sit there; say where those go). Both window sizes the game supports.
-- Tests for the placement if the HUD has them; a screenshot for the user; README picture if it
-  shows the HUD.
-
 ## 190. A bag button by the hotbar, and B opens the bag
 
 - [ ] Done
