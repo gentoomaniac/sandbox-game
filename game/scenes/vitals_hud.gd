@@ -1,11 +1,15 @@
 class_name VitalsHud
 extends CanvasLayer
-## The energy and health bars, right of the hotbar and level with its bottom. Each is a 12x12
+## The energy and health bars in the top right corner, one above the other. Each is a 12x12
 ## icon and a 48x8 bar (art in tools/art/ui.py). A bar at or below the warning level pulses.
 
-## Gap between the hotbar and the bars.
-const HOTBAR_GAP := 6
+## Gap to the top and right edges of the window, as the clock has on the left.
+const MARGIN := 4
 const ROW_GAP := 1
+const BAR_COUNT := 2
+## Where the bars end, for what sits below them (the coordinates). A test checks it against the
+## column's real size, so a bar added without raising BAR_COUNT fails there.
+const BOTTOM := MARGIN + BAR_COUNT * VitalBar.ICON_SIZE + (BAR_COUNT - 1) * ROW_GAP
 const PULSE_HZ := 1.0
 const PULSE_LOW_ALPHA := 0.5
 
@@ -26,30 +30,23 @@ func _init() -> void:
 		bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_column.add_child(bar)
 	add_child(_column)
-	# Anchored to the same bottom centre as the hotbar, so it follows the UI scale with it.
-	_column.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+
+
+func _ready() -> void:
+	# Anchored to the top right, so it follows the window and the UI scale, and growing to the
+	# left, so a wider row keeps the right edge. Placed in the tree: the row gap, and with it the
+	# column's height, is only known once the theme override applies.
+	var size := _column.get_combined_minimum_size()
+	_column.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_column.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_column.offset_right = -MARGIN
+	_column.offset_left = -MARGIN - size.x
+	_column.offset_top = MARGIN
+	_column.offset_bottom = MARGIN + size.y
 
 
 func show_state(state: GameState) -> void:
 	_state = state
-	get_viewport().size_changed.connect(_place)
-	_place()
-
-
-## Beside the hotbar if the window is wide enough for it (the hotbar stays centred), else
-## above its right end, so the bars never run off the screen.
-func _place() -> void:
-	var size := _column.get_combined_minimum_size()
-	var half_window := get_viewport().get_visible_rect().size.x / 2.0
-	var is_beside := HotbarHud.WIDTH / 2.0 + HOTBAR_GAP + size.x <= half_window
-	if is_beside:
-		_column.offset_left = HotbarHud.WIDTH / 2.0 + HOTBAR_GAP
-		_column.offset_bottom = -HotbarHud.BOTTOM_MARGIN
-	else:
-		_column.offset_left = HotbarHud.WIDTH / 2.0 - size.x
-		_column.offset_bottom = -HotbarHud.BOTTOM_MARGIN - SlotView.SIZE - HOTBAR_GAP
-	_column.offset_right = _column.offset_left + size.x
-	_column.offset_top = _column.offset_bottom - size.y
 
 
 func _process(_delta: float) -> void:

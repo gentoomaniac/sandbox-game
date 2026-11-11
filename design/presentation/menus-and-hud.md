@@ -72,5 +72,5 @@ paused. No dialogs: a failed timed or quick save is a red line and nothing else.
 ## Coordinates display
 
 Decided 2026-11-05. The player's tile coordinates in the top right corner (inside a
-house: the room's, marked "House"). Off by default; F3 (rebindable, "Show coordinates")
+house: the room's, marked "House"), under the energy and health bars (task 188). Off by default; F3 (rebindable, "Show coordinates")
 toggles it. Not saved.

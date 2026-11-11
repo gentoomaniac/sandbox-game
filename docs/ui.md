@@ -149,9 +149,13 @@ pausing window.
 
 ## Not windows
 
-The HUDs (hotbar, harvest notes, notifications, coordinates), tooltips and the build menu are not `Modal`s:
+The HUDs (hotbar, vitals, harvest notes, notifications, coordinates), tooltips and the build menu are not `Modal`s:
 they are overlays that stay up while the player plays, take no input away from the game and
-need neither a backdrop nor one-at-a-time. The build menu's row of buildings scrolls sideways
+need neither a backdrop nor one-at-a-time. Where they sit: the hotbar at the bottom centre; the
+clock, the harvest note and the notifications at the top left; the energy and health bars
+(`VitalsHud`) at the top right, `VitalsHud.MARGIN` from the edges, and the coordinates (F3)
+below them, at `VitalsHud.BOTTOM`. All are anchored to a corner or an edge, so they follow the
+window size and the UI scale. The build menu's row of buildings scrolls sideways
 with `ScrollingList.Row` when it is wider than the window: by dragging its bar and by keeping
 the chosen building in view, never by the wheel, which keeps turning the hotbar. The console
 takes the input like a window, but is a strip, not a centred panel, and keeps its own code; only its

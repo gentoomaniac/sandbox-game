@@ -1,7 +1,8 @@
 class_name CoordinatesHud
 extends CanvasLayer
-## The player's tile coordinates in the top right corner, for finding places again (and for
-## the console's `tp`). Off by default; the `toggle_coordinates` action shows and hides it.
+## The player's tile coordinates in the top right corner, under the energy and health bars, for
+## finding places again (and for the console's `tp`). Off by default; the `toggle_coordinates`
+## action shows and hides it.
 ## Inside a house the coordinates are the room's, marked as such. Below them: the weather, and
 ## when the sun rises and sets.
 
@@ -17,7 +18,7 @@ func _init() -> void:
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_label.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	_label.offset_right = -4
-	_label.offset_top = 2
+	_label.offset_top = VitalsHud.BOTTOM + 2
 	add_child(_label)
 
 

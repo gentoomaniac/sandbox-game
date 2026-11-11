@@ -8,7 +8,7 @@
     untended.
   - A game setting scales how fast energy drains.
   - Details (decided 2026-11-05):
-    - **Energy and health bars**, 100 points each, next to the hotbar. A bar at 20 % or
+    - **Energy and health bars**, 100 points each, in the top right corner of the screen (moved there in task 188). A bar at 20 % or
       less pulses to show it is low. Health matters once combat exists; for now only the
       pass-out debuff and sleep change it.
     - **Sleeping moves the world on** (decided 2026-11-10): a night's sleep and passing out

@@ -554,7 +554,7 @@ can be thrown away the same way.
 Windows (crafting, chest, character screen, chat) can be dragged aside by their frame, to see the
 game behind them (buttons, slots and the rows of a list are not handles; the empty area of a list
 and the gaps between rows are). They stay on the screen and open in the middle again each time.
-The pause menu, the settings and the questions stay where they are. Energy and health bars track how tired you are,
+The pause menu, the settings and the questions stay where they are. Energy and health bars in the top right corner track how tired you are,
 and the more you carry, the more each action costs: up to 40 kg is free, and tools weigh
 nothing. Below 20 % energy the character sweats with every action, and below 10 % even more. A "zzz" thought bubble pops up over the
 head at midnight and again at half past, while you are still awake: you pass out an hour
