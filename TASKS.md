@@ -566,7 +566,8 @@ inventory. Additional things in the killin turn into ash."
   firing gives extra bricks besides the ones selected, automatically. The old recipes gave one
   brick per raw brick at every level and saved wood (6 bricks for 2 logs, 12 for 3, 18 for 3);
   the new bonus is extra bricks instead (e.g. a share of the load at level 50 and a larger one at
-  70; propose the exact rule and numbers, put them in data/). Other kiln recipes
+  70; pick the rule and numbers and put them in data/, where the user tunes them; no need to
+  ask). Other kiln recipes
   that unlock at skill levels come later; the recipe `level` lock stays for them.
 - While it fires: a progress bar above the grid, the grid greyed out and locked (nothing in or out),
   the time from the recipe's `hours`; the kiln shows its fire in the world (the existing lit look and
