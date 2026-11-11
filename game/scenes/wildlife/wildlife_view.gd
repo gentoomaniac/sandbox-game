@@ -76,6 +76,7 @@ func show_wildlife(state: GameState, view: WorldView, camera: CameraController) 
 	rules = WildlifeRules.for_session(state.sun)
 	nests = StorkNests.new(StorkNestRules.default_rules(), state.sun, state.world.world_seed)
 	state.livestock.added.connect(_show_farm_animal_if_near)
+	state.livestock.petted.connect(_show_pet_reaction)
 	ground.name = "Ground"
 	view.add_child(ground)
 	# Below the entities (objects, player, animals), above the terrain.
@@ -555,6 +556,12 @@ func _show_farm_animal_if_near(animal: FarmAnimal) -> void:
 	_farm_animals[animal] = animal_view
 	world_view.entities.add_child(animal_view)
 	animal_added.emit(animal_view)
+
+
+## Lets the heart or the anger mark rise over a petted animal, if it is in view.
+func _show_pet_reaction(animal: FarmAnimal, shows: Livestock.PetShows) -> void:
+	if _farm_animals.has(animal):
+		_farm_animals[animal].show_pet_reaction(shows)
 
 
 ## Shows the farm animals that came near the view, and takes away those far from it.

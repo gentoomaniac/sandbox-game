@@ -135,6 +135,11 @@ data/livestock.cfg.
   and the searches, which are not part of this). `pet` counts the days that ended first, since it
   needs the day the animal was last petted. The day is the game clock's: a petting at 01:00 is of
   the new day.
+- **Shown:** a heart or the anger mark (effects/pet_heart.png and pet_annoyed.png, see docs/art-style.md)
+  rises from over the animal's head for 1.6 s, drifting up 14 px and fading (`PetReaction`, made
+  by the `FarmAnimalView` when `Livestock` tells `petted`). It stands 2 px above the top of the
+  head, which is measured on each species' sheets for standing, grazing (head down) and asleep
+  (`FarmAnimalView.HEADS`), so it sits low over a lying cow and high over a standing horse.
 - **Sound:** an awake animal answers a petting with its own sound (a moo, a bark; the kinds that
   make one while they go about their day), a sleeping one makes none. A petting sound of its own
   is left for the sound designer.

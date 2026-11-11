@@ -31,6 +31,23 @@ const SHADOW_HALF_WIDTHS := {
 	LivestockRules.HORSE: 22,
 }
 
+## Where the top of each species' head is, as measured on its sheets (idle, graze and sleep frames):
+## in pixels in front of its feet toward the way it faces, and up from them. For standing (and
+## walking and running), grazing (the head down) and asleep, in that order. What a heart or the
+## anger mark rises over.
+const HEADS := {
+	LivestockRules.COW: [Vector2(26, 39), Vector2(21, 24), Vector2(26, 27)],
+	LivestockRules.PIG: [Vector2(13, 22), Vector2(13, 18), Vector2(13, 15)],
+	LivestockRules.SHEEP: [Vector2(14, 26), Vector2(11, 22), Vector2(14, 20)],
+	LivestockRules.CHICKEN: [Vector2(7, 24), Vector2(7, 18), Vector2(6, 19)],
+	LivestockRules.RABBIT: [Vector2(5, 20), Vector2(7, 11), Vector2(7, 12)],
+	LivestockRules.DOG: [Vector2(17, 36), Vector2(16, 24), Vector2(17, 19)],
+	LivestockRules.CAT: [Vector2(12, 24), Vector2(12, 18), Vector2(12, 16)],
+	LivestockRules.HORSE: [Vector2(29, 75), Vector2(22, 51), Vector2(29, 50)],
+}
+## The pixels between a head and what rises over it.
+const HEAD_GAP := 2
+
 var farm_animal: FarmAnimal
 ## The activity it shows, to start the frames of a new one only when it changes.
 var _activity := -1
@@ -73,6 +90,20 @@ func _update(_delta: float) -> void:
 	_play(action[0], action[1])
 	# Its state (see Animal) is the activity's name: running off is `flee`, as for a wild rabbit.
 	_enter(StringName(FarmAnimal.Activity.find_key(_activity).to_lower()))
+
+
+## A heart or the anger mark rises over its head (see Livestock `petted`), standing on it.
+func show_pet_reaction(shows: Livestock.PetShows) -> void:
+	var poses: Array = HEADS[farm_animal.species]
+	var pose := 0
+	if farm_animal.activity == FarmAnimal.Activity.SLEEP:
+		pose = 2
+	elif farm_animal.activity == FarmAnimal.Activity.GRAZE:
+		pose = 1
+	var head: Vector2 = poses[pose]
+	var reaction := PetReaction.new(shows)
+	reaction.position = Vector2(head.x * farm_animal.facing, -head.y - HEAD_GAP)
+	add_child(reaction)
 
 
 ## Rounded to whole art pixels, so the animal stays put on the world as the camera moves.

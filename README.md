@@ -222,6 +222,18 @@ saved on horseback loads with you standing beside the horse.
 
 ![Trotting on a bay horse, walking a grey towards the viewer, and on a pony from behind](docs/screenshots/riding.png)
 
+You can pet the cows, horses, sheep, pigs, hens, tame rabbits, dogs and cats: the use key with an empty hand at
+the animal (it comes last of what an empty hand does: a saddled horse is unsaddled first, a pen
+gate opens, a ripe crop is picked). Each animal keeps a **friendship** with you from 0 to 100,
+starting at 0. The first petting of a day while it is awake adds 10 and a small heart floats up
+over its head; more that day show and change nothing. Petted while it sleeps, it loses 5 and a
+black comic anger mark rises over it, once a day too. Each day you don't pet it takes 5, even over the nights you
+sleep through, and it never goes below 0. Nothing uses the friendship yet, but the console's
+`friendship` shows it (or sets it, `friendship 80`) for the animal nearest to you. The numbers are
+in the `[friendship]` section of [data/livestock.cfg](data/livestock.cfg).
+
+![The heart over petted cows and cats by day, and the anger mark over sleeping ones at night, in the 32 px art (top) and in the classic art (bottom)](docs/screenshots/petting.png)
+
 ### The farm yard
 
 The watering can holds water: 20 waterings (a new game starts with it full), one for each tile
