@@ -11,7 +11,9 @@ extends TileMapLayer
 ## it is at, drawn over the drier tile in a layer of its own for each side and corner (see `fades`
 ## and the fade atlas of tools/art/soil_beds.py). It follows the world's moisture and tilling
 ## signals, so it needs nothing from chunk streaming: tilled tiles are drawn wherever they are.
-## Soil that snow lies on (see `show_world`) is not drawn and has no fades.
+## Soil that snow lies on (see `show_world`) is not drawn and has no fades. After an hour of rain
+## the soil's surface is wet: it looks a step wetter than its moisture until a dry hour has passed
+## (see `refresh_looks`), so the rain shows on the soil at once.
 
 const TEXTURE_PATH := "res://assets/soil_wet.png"
 const FADE_TEXTURE_PATH := "res://assets/soil_fade.png"
@@ -21,6 +23,8 @@ const TILE_SIZE := TerrainTileset.TILE_SIZE
 ## step or a little more (data/crops.cfg), so soaked soil is dry again in about three days.
 const LOOK_FROM: Array[float] = [0.25, 0.5, 0.75]
 const LOOKS := 4
+## The rain of an hour (see Weather.rain_in_hour) from which the soil's surface is wet after it.
+const RAIN_WETS_SURFACE_FROM := 0.1
 ## A frame spends this long at the most on drawing the soil again after an hour has passed.
 const REFRESH_BUDGET_USEC := 1500
 ## The neighbours of a tile as bits of its bed shape, as in tools/art/soil_beds.py.
@@ -78,6 +82,7 @@ var _chunks_to_refresh: Array[Vector2i] = []
 var _next_chunk_to_refresh := 0
 var _tiles_to_refresh: Array[Vector2i] = []
 var _next_tile_to_refresh := 0
+var _is_surface_wet := false
 
 
 func _init() -> void:
@@ -181,9 +186,11 @@ func mark_count() -> int:
 
 ## Draws the soil of the chunks again, in the order given, a few tiles every frame: those that
 ## now have another step of wetness than the one drawn. The weather wets and dries the soil by
-## the hour, and the world tells nothing of it (see SoilMoisture). Chunks still waiting from
+## the hour, and the world tells nothing of it (see SoilMoisture). `last_hour_rain` is the rain
+## of the hour that has just ended, which wets the soil's surface. Chunks still waiting from
 ## before are dropped: these are newer.
-func refresh_looks(chunks: Array[Vector2i]) -> void:
+func refresh_looks(chunks: Array[Vector2i], last_hour_rain := 0.0) -> void:
+	_is_surface_wet = last_hour_rain >= RAIN_WETS_SURFACE_FROM
 	_chunks_to_refresh = chunks
 	_next_chunk_to_refresh = 0
 	_tiles_to_refresh = []
@@ -279,14 +286,17 @@ func _is_wettable(world_pos: Vector2i) -> bool:
 
 
 func _look_at(world_pos: Vector2i) -> int:
-	return look_for(_world.moisture_at(world_pos)) if _is_wettable(world_pos) else 0
+	if not _is_wettable(world_pos):
+		return 0
+	var look := look_for(_world.moisture_at(world_pos))
+	return mini(look + 1, LOOKS - 1) if _is_surface_wet else look
 
 
 func _draw_tile(world_pos: Vector2i) -> void:
 	var wet_tile := NO_TILE
 	var fade_tiles: Dictionary[int, Vector2i] = {}
 	if _is_wettable(world_pos):
-		var look := look_for(_world.moisture_at(world_pos))
+		var look := _look_at(world_pos)
 		var shape := bed_shape(_world.is_tilled, world_pos)
 		if look > 0:
 			wet_tile = Vector2i(_columns[shape], look - 1)

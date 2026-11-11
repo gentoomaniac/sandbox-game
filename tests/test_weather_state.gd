@@ -54,6 +54,16 @@ func test_the_rain_of_an_hour_is_the_rain_seen_through_it() -> void:
 	assert_gt(rainy_hours, 5, "it rained in some hours")
 
 
+## The soil's surface shows the rain of the hour that has just ended (see SoilWetness).
+func test_the_last_hours_rain_is_that_of_the_hour_that_ended_or_the_forced_one() -> void:
+	_state.clock.day = 3
+	_state.clock.set_time(0, 20)
+	var rain := _state.weather.rain_in_hour(_state.player.tile(), 2, 23)
+	assert_eq(_state.last_hour_rain(), rain, "the last hour of the day before")
+	_state.weather_override = &"rain"
+	assert_eq(_state.last_hour_rain(), Weather.FORCED[&"rain"]["rain"])
+
+
 func test_a_new_game_and_a_loaded_one_have_the_same_weather() -> void:
 	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
 	assert_eq(restored.current_weather().temperature, _state.current_weather().temperature)

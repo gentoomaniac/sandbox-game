@@ -179,6 +179,19 @@ func current_frost() -> float:
 	return snow_cover.frost_at(weather.at(_outdoor_tile(), clock.day, _hour_start()).temperature)
 
 
+## How much it rained in the hour that has just ended, where the player sees the weather (see
+## `current_weather`): the rain the soil there was wet by in that hour (see FarmingUpkeep). A
+## forced condition gives its own rain.
+func last_hour_rain() -> float:
+	if weather_override != &"":
+		return current_weather().rain
+	# The first hour of the game has none before it, so it counts its own.
+	var hour := maxi(clock.total_minutes() / GameClock.MINUTES_PER_HOUR - 1, 0)
+	return weather.rain_in_hour(
+		_outdoor_tile(), hour / CropLife.HOURS_PER_DAY + 1, hour % CropLife.HOURS_PER_DAY
+	)
+
+
 ## The tile whose weather the player sees: theirs, or outside the door of the house they are in.
 func _outdoor_tile() -> Vector2i:
 	return _building_inside.door_tile() if is_inside() else player.tile()

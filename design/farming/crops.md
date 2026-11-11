@@ -53,7 +53,10 @@
     of the heaviest rain adds 0.2 (`rain_wets`, 0.1 before task 175), so two hours soak fresh
     soil. The crops' needs stay: over a year of the camp's weather, unwatered soil is below a
     turnip's `moisture_min` on 75 of 120 days (84 before) and still near dry all summer, so
-    watering stays the player's work in dry spells.
+    watering stays the player's work in dry spells. After an hour with at least a light rain
+    (0.1) the soil's surface is wet: it looks a step darker than its moisture until a dry hour
+    has passed (`SoilWetness.RAIN_WETS_SURFACE_FROM`), so the rain shows on the soil within the
+    hour, while the crops only know the moisture.
     Clamping hour by hour is not the nightly clamp: soil that is already soaked loses the early
     rain of a day and then dries. The whole tile's brown shows it in four
     steps: light brown when dry, dark brown when soaked, lightening day by day as it dries.

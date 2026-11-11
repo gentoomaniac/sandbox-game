@@ -163,7 +163,9 @@ in [data/crops.cfg](data/crops.cfg).
 
 Tilled soil is flat with straight furrows, and the whole tile's brown shows its moisture in four
 steps: light brown when dry, darker with rain and the watering can, dark brown when soaked, and
-lightening again day by day as the sun and wind dry it. A bed comes to a pixel or two of its tiles'
+lightening again day by day as the sun and wind dry it. Rain shows at once: after an hour of rain
+the soil's wet surface is a step darker, a heavy shower soaks it in two hours, and a rainy hour
+never dries it. A bed comes to a pixel or two of its tiles'
 edges, ragged and softly rounded at its corners. A sown tile is a mound of dark earth with seeds on
 it in the middle of the tile, so it reads as planted before anything shows, and the crops stand
 centred on their tiles too. The shots show a row of soil from dry to soaked and sown and growing

@@ -303,10 +303,11 @@ func set_light_strength(strength: float) -> void:
 	_buildings.set_light_strength(strength)
 
 
-## The soil of the loaded chunks shows the moisture it has now, those around the focus first: it
-## changes with the hours, quietly, and a few tiles are drawn every frame. Chunks that load later
-## are drawn when they load.
-func refresh_soil() -> void:
+## The soil of the loaded chunks shows the moisture it has now, and the rain of the hour that has
+## just ended on its surface (see SoilWetness), those around the focus first: it changes with the
+## hours, quietly, and a few tiles are drawn every frame. Chunks that load later are drawn when
+## they load.
+func refresh_soil(last_hour_rain: float) -> void:
 	if world == null:
 		return
 	var coords := world.loaded_chunk_coords()
@@ -315,7 +316,7 @@ func refresh_soil() -> void:
 		func(a: Vector2i, b: Vector2i) -> bool:
 			return (a - focus).length_squared() < (b - focus).length_squared()
 	)
-	_soil_wetness.refresh_looks(coords)
+	_soil_wetness.refresh_looks(coords, last_hour_rain)
 
 
 func _process(delta: float) -> void:
