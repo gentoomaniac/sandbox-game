@@ -155,16 +155,18 @@ func test_the_slot_the_materials_free_takes_the_result_before_anything_is_droppe
 	assert_eq(_state.world.ground_items.all().size(), 0)
 
 
-func test_a_craft_that_does_not_fit_indoors_is_refused_and_changes_nothing() -> void:
+func test_a_craft_that_does_not_fit_indoors_drops_the_result_on_the_floor() -> void:
 	var house := _state.world.place_building(BuildingTypes.KATE, _free_house_origin())
 	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
 	_state.pass_door()
 	assert_true(_state.is_inside())
 	_fill_inventory()
 	_inventory().slots[3] = {"item": ItemTypes.LOGS, "count": 6}
-	assert_eq(_crafting.craft(&"chest"), Crafting.Result.NO_ROOM)
-	assert_eq(_inventory().count_of(ItemTypes.LOGS), 6)
+	assert_eq(_crafting.craft(&"chest"), Crafting.Result.DROPPED)
+	assert_eq(_inventory().count_of(ItemTypes.LOGS), 1)
 	assert_eq(_inventory().count_of(ItemTypes.CHEST), 0)
+	assert_eq(house.interior.ground_items.count_of(ItemTypes.CHEST), 1)
+	assert_eq(_state.world.ground_items.count_of(ItemTypes.CHEST), 0)
 
 
 func test_the_room_the_materials_leave_is_enough() -> void:

@@ -3,9 +3,8 @@ extends RefCounted
 ## What the crafting menu does: `craft` takes a recipe's materials from the inventory and puts
 ## its result in. Plain logic; CraftingScreen only shows the recipes and sends the click. The
 ## materials go first, so the room they leave is used; what of the result does not fit lies on the
-## ground (see GameMap `drop_items`): at the player's feet for a craft, by the station for work
-## taken out of it. Inside a building nothing lies on the ground, so there a craft or take-out
-## that does not fit is refused (NO_ROOM) and changes nothing. A recipe with a skill needs its
+## ground of the map the player is on (see GameMap `drop_items`): at the player's feet for a craft,
+## by the station for work taken out of it, in a house too. A recipe with a skill needs its
 ## level in that skill (it is locked below it), and each craft practises the skill (see Skills).
 ## A slow recipe (with `hours`, the kiln's firing) is started at its station instead, which holds
 ## it until it is done (see StationWork); `take_out` then puts the result in the inventory.
@@ -25,7 +24,6 @@ enum Result {
 	DROPPED_OUT,
 	STARTED,
 	MISSING_MATERIALS,
-	NO_ROOM,
 	LOCKED,
 	BUSY,
 	WRONG_STATION,
@@ -84,8 +82,6 @@ func craft(recipe_id: StringName, station: WorldObject = null) -> Result:
 		return Result.MISSING_MATERIALS
 	var materials := {} if _state.cheats.is_cost_off else rules.materials(recipe_id)
 	var made := {} if is_slow else {rules.result(recipe_id): rules.count(recipe_id)}
-	if _state.is_inside() and not _state.player.inventory.can_exchange(materials, made):
-		return Result.NO_ROOM
 	var dropped := _exchange_dropping_rest(materials, made, _state.player.tile())
 	var result := {rules.result(recipe_id): rules.count(recipe_id)}
 	var outcome := Result.STARTED
@@ -113,15 +109,12 @@ func minutes_left(station: WorldObject) -> int:
 
 ## Takes the done work out of the station into the inventory: TAKEN_OUT, or DROPPED_OUT when some
 ## of it did not fit and lies by the station, on the player's side. NO_STATION when the station is
-## out of the player's reach; NO_ROOM, with the work left in the station, when it does not fit
-## and the player is inside.
+## out of the player's reach.
 func take_out(station: WorldObject) -> Result:
 	assert(is_work_done(station), "Nothing done to take out")
 	if not _is_station_in_reach(station):
 		return Result.NO_STATION
 	var result := StationWork.contents(station, _state.clock.total_minutes(), rules)
-	if _state.is_inside() and not _state.player.inventory.can_add(result):
-		return Result.NO_ROOM
 	# The station is empty before the inventory tells of the result, so a listener never sees it
 	# in both.
 	StationWork.clear(station)
@@ -147,7 +140,7 @@ func _exchange_dropping_rest(
 				if left > 0:
 					dropped[item] = left
 			if not dropped.is_empty():
-				_state.world.drop_items(drop_source, dropped)
+				_state.current_map.drop_items(drop_source, dropped)
 	)
 	return dropped
 
