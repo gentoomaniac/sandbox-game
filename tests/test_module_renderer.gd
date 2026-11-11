@@ -80,6 +80,10 @@ func test_the_fill_breaks_after_a_bar_and_the_loop_resumes_on_the_bar() -> void:
 	assert_true(played == parts, "the fill on the bar, then the loop from its start")
 
 
+func test_the_rows_once_through_stop_at_the_fills_break() -> void:
+	assert_eq(ModuleRenderer.new(_module).rows_once_through(), LOOP_ROWS + FILL_ROWS)
+
+
 func test_a_render_on_a_worker_thread_is_the_same() -> void:
 	var renderer := ModuleRenderer.new(_module, RATE)
 	renderer.start([FILL])

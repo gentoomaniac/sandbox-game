@@ -139,6 +139,19 @@ func take() -> AudioStreamWAV:
 	return stream
 
 
+## The rows the order list plays once through: each pattern up to its break (D00), or all 64.
+func rows_once_through() -> int:
+	var rows := 0
+	for pattern in module.order:
+		var played := TrackerModule.PATTERN_ROWS
+		for row in TrackerModule.PATTERN_ROWS:
+			if _breaks(module.patterns[pattern], row):
+				played = row + 1
+				break
+		rows += played
+	return rows
+
+
 ## `parts` rendered, one after the other; null, with an error, for a part outside the order list.
 ## A stream that `loops` is the parts' second time through, rendered after the first: it starts as
 ## they sound after their own end, the notes left sounding there fading out into it, so its wrap
@@ -378,3 +391,11 @@ func _stream(mix: PackedFloat32Array) -> AudioStreamWAV:
 	stream.stereo = is_stereo
 	stream.data = data
 	return stream
+
+
+static func _breaks(cells: PackedInt32Array, row: int) -> bool:
+	for channel in TrackerModule.CHANNELS:
+		var at := (row * TrackerModule.CHANNELS + channel) * TrackerModule.CELL_SIZE
+		if cells[at + 2] == EFFECT_BREAK:
+			return true
+	return false
