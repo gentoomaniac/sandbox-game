@@ -1,3 +1,4 @@
+# gdlint: disable=max-public-methods
 class_name Livestock
 extends RefCounted
 ## The farm animals of the world (FarmAnimal) and how they go about their day: they stand idle,
@@ -15,6 +16,8 @@ extends RefCounted
 
 ## An animal came into the world.
 signal added(animal: FarmAnimal)
+## An animal left the world for good (see `remove_species`); whoever shows it stops.
+signal removed(animal: FarmAnimal)
 ## An animal was petted and shows what `pet` returned (a heart or the anger mark, never nothing).
 signal petted(animal: FarmAnimal, shows: PetShows)
 
@@ -82,13 +85,27 @@ func all() -> Array[FarmAnimal]:
 ## species it goes to bed follows from what it is and its place in the herd, so that the same
 ## saved game has the same animals going to bed at the same times.
 func add(animal: FarmAnimal) -> void:
-	# (An API that removes animals would need the delay saved, or a stable id of the animal.)
+	# (The delay follows from the animal's place in the herd, so after `remove_species` and a reload
+	# the animals that were behind the removed ones go to bed a little differently.)
 	var identity := hash([animal.species, animal.look, animal.tint.to_html(), _animals.size()])
 	animal.bedtime_delay = (
 		float(identity % 1000) / 1000.0 * rules.general("bedtime_spread_minutes")
 	)
 	_animals.append(animal)
 	added.emit(animal)
+
+
+## Takes every animal of a species out of the world, and so out of the next save. Returns how many.
+## The player riding a horse is not Livestock's to undo: GameState `dismount` comes first.
+func remove_species(species: StringName) -> int:
+	var gone: Array[FarmAnimal] = []
+	var staying: Array[FarmAnimal] = []
+	for animal in _animals:
+		(gone if animal.species == species else staying).append(animal)
+	_animals = staying
+	for animal in gone:
+		removed.emit(animal)
+	return gone.size()
 
 
 func to_array() -> Array[Dictionary]:
