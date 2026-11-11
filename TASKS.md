@@ -714,6 +714,23 @@ different distances. Also some different varieties like the occasional close lig
 - Tests: the delay grows with distance, loudness falls with it, close strikes are rare and use the
   crack variety; listening files (far, middle, close) for the user.
 
+## 215. Character window: no trash can; the bag can be open beside it to drag gear onto the figure
+
+- [ ] Done
+
+The user, 2026-11-12, after task 191: "The character window doesn't need a trash can. Dragging
+into an item slot should happen when the bag is open at the same time."
+- Remove the trash can from the character window (CharacterScreen); the bag keeps its own.
+- The bag (B) and the character window (C) may be open together, side by side without overlapping
+  (both stay movable). Dragging a stack from the backpack onto an equipment slot wears it;
+  dragging worn gear back into the backpack takes it off. Hotbar drags and right click keep working.
+- Today only one Modal is open at a time ("other windows' keys do nothing"): allow this one pair
+  (B over the character window opens the bag and C over the bag opens the character window; each
+  key closes only its own window; Escape closes the top one, or both: pick one and document it).
+  Other windows keep the one-at-a-time rule.
+- Tests for both windows open, the drags both ways and the keys; screenshots for the user; README
+  and docs (docs/ui.md, design/presentation/menus-and-hud.md, design/player/inventory-and-character.md).
+
 ## Later (not part of the prototype)
 
 - Ice on rivers and ponds in winter (an overlay on water when it is cold enough; frozen water
