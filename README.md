@@ -159,6 +159,13 @@ soaked and sown and growing crops on it, at noon, in the evening and in the clas
 
 ![Tilled soil from dry to soaked with sown and growing crops, at noon, in the evening and in the classic art](docs/screenshots/soil.png)
 
+Where a tile is wetter than the tilled soil beside it, as after the watering can, its dark brown
+fades out into the drier soil over a few pixels, at the sides and the corners; tiles as wet as
+each other show no edge, and the field's rim against the turf stays as it is. The close-up shows
+the row from dry to soaked over fresh soil, four times enlarged, in the 32 px and the classic art.
+
+![Tilled soil from dry to soaked, each tile's brown fading out into the drier soil beside it, four times enlarged, in the 32 px and the classic art](docs/screenshots/soil-fade.png)
+
 Tilled soil that nobody tends goes back over the days: with nothing on it, after 5 days a few
 weeds and tufts of grass come up, and after 10 it is grass again, with the look its place had (the
 items lying on it stay). Hoeing the weeds away, sowing, harvesting and watering start the count
