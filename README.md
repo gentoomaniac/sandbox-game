@@ -179,7 +179,7 @@ between and rounds off at its corners, so a few watered tiles never read as a sq
 as wet as each other show no edge, and the field's rim against the turf stays as it is. The close-up shows
 the row from dry to soaked over fresh soil, four times enlarged, in the 32 px and the classic art.
 
-![Tilled soil from dry to soaked, each tile's brown fading out into the drier soil beside it, four times enlarged, in the 32 px and the classic art](docs/screenshots/soil-fade.png)
+![Tilled soil from dry to soaked, the wetter soil in patches whose edges wander across the tiles, four times enlarged, in the 32 px and the classic art](docs/screenshots/soil-patch.png)
 
 Tilled soil that nobody tends goes back over the days: with nothing on it, after 5 days a few
 weeds and tufts of grass come up, and after 10 it is grass again, with the look its place had (the
