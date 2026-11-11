@@ -205,6 +205,26 @@ the house."
   over play and over a skip; README not needed unless something visible changes.
 - Later (a separate task, see Later): villagers go inside their houses.
 
+## 200. Items can lie on the floor indoors
+
+- [ ] Done
+
+The user, 2026-11-11: "Dropping items inside should work"
+- Today ground items live only in `world.ground_items`: interiors (game/state/interior.gd) have
+  none, so `GameState.drop_from_inventory` refuses indoors (`is_inside()`), and task 198 kept a
+  full-inventory craft indoors refused ("Inventory full, and nothing can be dropped indoors").
+- Give interiors their own ground items (the same GroundItems, per map, saved with the interior;
+  save version bump with its upgrade, per the save rules): dropping (the drop key and dragging a
+  stack out of a window onto the floor) works inside, piles show on the floor in both arts, the
+  player picks them up as outside, and they stay when the player leaves and comes back.
+- Then the indoor case of task 198: a craft that doesn't fit drops the rest at the player's feet
+  indoors too; the NO_ROOM refusal and its indoor note go if nothing else needs them.
+- Anything outdoor-only about ground items (wind, rot, animals eating, rain, the item settle and
+  auto pickup) is checked and either works indoors or is left out on purpose; say which.
+- Floor tiles only: never on walls or furniture that blocks; scatter stays inside the room.
+- Tests: drop and pick up inside, saved and loaded, leaving and coming back, a full-inventory craft
+  indoors drops, the drop tiles stay on the floor. README, design pages, docs.
+
 ## 182. Leaves fall and blow in autumn wind
 
 - [ ] Done
