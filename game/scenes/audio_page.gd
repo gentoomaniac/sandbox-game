@@ -1,16 +1,19 @@
 class_name AudioPage
 extends VBoxContainer
-## The audio settings: a volume slider each for Master, Effects and Ambience, and whether the
-## game keeps playing sound while its window is not focused. The rules are GameSettings'.
+## The audio settings: a volume slider each for Master, Effects, Ambience and Music, and whether
+## the game keeps playing sound while its window is not focused. The rules are GameSettings'.
 
 signal back_requested
 
-const CHANNEL_LABELS := {&"master": "Master", &"effects": "Effects", &"ambience": "Ambience"}
+const CHANNEL_LABELS := {
+	&"master": "Master", &"effects": "Effects", &"ambience": "Ambience", &"music": "Music"
+}
 
 const VOLUME_TIPS := {
 	&"master": "How loud everything is.",
 	&"effects": "Footsteps, tools and other sounds of what you do.",
 	&"ambience": "Weather and the animals around you.",
+	&"music": "The background music.",
 }
 const BACKGROUND_TIP := "Off: the game is silent while its window is not in focus."
 

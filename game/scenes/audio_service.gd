@@ -5,8 +5,8 @@ extends Node
 ## data/sounds.cfg (see SoundRules) with a random variant and pitch; with a position the
 ## sound comes from there in the world (AudioStreamPlayer2D), else it is plain.
 ##
-## Buses: Master with Effects, Ambience and UI under it; OutsideEffects sends to Effects. While
-## the player is inside a building (`set_inside`) a low-pass filter fades in on Ambience and
+## Buses: Master with Effects, Ambience, Music and UI under it; OutsideEffects sends to Effects.
+## While the player is inside a building (`set_inside`) a low-pass filter fades in on Ambience and
 ## OutsideEffects, which is where the sounds of the world outside go, and they get quieter (the
 ## drop is `outside_db` of data/ambience.cfg's [indoors]).
 ## Players come from two small pools; when all are busy the next in turn is cut off.
@@ -19,13 +19,16 @@ signal played(event: StringName, position: Variant)
 const MASTER := &"Master"
 const EFFECTS := &"Effects"
 const AMBIENCE := &"Ambience"
+const MUSIC := &"Music"
 const UI := &"UI"
 ## Where the world's own effects play: muffled indoors, then on to Effects.
 const OUTSIDE_EFFECTS := &"OutsideEffects"
 ## The bus of each `bus` value in sounds.cfg.
 const BUS_OF_KEY := {"effects": EFFECTS, "ambience": AMBIENCE, "ui": UI}
 ## The bus of each volume channel of the settings (see GameSettings).
-const CHANNEL_BUSES := {&"master": MASTER, &"effects": EFFECTS, &"ambience": AMBIENCE}
+const CHANNEL_BUSES := {
+	&"master": MASTER, &"effects": EFFECTS, &"ambience": AMBIENCE, &"music": MUSIC
+}
 const POOL_SIZE := 12
 ## Beyond this far from the camera (31 tiles, in art pixels) a positional sound is silent, unless
 ## its event has a `reach_tiles` of its own.
@@ -226,7 +229,7 @@ func _update_silence() -> void:
 ## Makes the buses (unless they exist: another service made them) and puts a low-pass filter on
 ## and an amplifier (to turn the volume down) on the two that are muffled.
 func _set_up_buses() -> void:
-	for bus in [EFFECTS, AMBIENCE, UI, OUTSIDE_EFFECTS]:
+	for bus in [EFFECTS, AMBIENCE, MUSIC, UI, OUTSIDE_EFFECTS]:
 		if AudioServer.get_bus_index(bus) != -1:
 			continue
 		AudioServer.add_bus()

@@ -37,7 +37,7 @@ func _playing(player_class: String) -> Node:
 
 
 func test_the_buses_exist_and_end_in_master() -> void:
-	for bus in [AudioService.EFFECTS, AudioService.AMBIENCE, AudioService.UI]:
+	for bus in [AudioService.EFFECTS, AudioService.AMBIENCE, AudioService.MUSIC, AudioService.UI]:
 		assert_ne(_bus(bus), -1, str(bus))
 		assert_eq(AudioServer.get_bus_send(_bus(bus)), AudioService.MASTER)
 	assert_eq(AudioServer.get_bus_send(_bus(AudioService.OUTSIDE_EFFECTS)), AudioService.EFFECTS)
@@ -138,10 +138,12 @@ func test_the_volume_settings_set_the_buses() -> void:
 	var settings := GameSettings.new(SETTINGS_PATH)
 	settings.set_volume(&"master", 50)
 	settings.set_volume(&"effects", 0)
+	settings.set_volume(&"music", 0)
 	_service.apply_settings(settings)
 	assert_almost_eq(AudioServer.get_bus_volume_db(_bus(AudioService.MASTER)), -6.02, 0.01)
 	assert_eq(AudioServer.get_bus_volume_db(_bus(AudioService.EFFECTS)), AudioService.SILENT_DB)
 	assert_eq(AudioServer.get_bus_volume_db(_bus(AudioService.AMBIENCE)), 0.0)
+	assert_eq(AudioServer.get_bus_volume_db(_bus(AudioService.MUSIC)), AudioService.SILENT_DB)
 
 
 func test_silent_only_when_unfocused_and_not_to_play_in_the_background() -> void:

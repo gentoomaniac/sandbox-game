@@ -33,8 +33,9 @@ extends RefCounted
 ##                            --inventory); recipe_<id> (with --crafting); inventory_<8..27>
 ##                            and chest_<n> (with --storage); setting_ui_scale and
 ##                            setting_day_length (with --menu=game); setting_master_volume,
-##                            setting_effects_volume, setting_ambience_volume and
-##                            setting_sound_in_background (with --menu=audio);
+##                            setting_effects_volume, setting_ambience_volume,
+##                            setting_music_volume and setting_sound_in_background
+##                            (with --menu=audio);
 ##                            action_<action> (with --menu=controls)
 ##
 ## Where and when

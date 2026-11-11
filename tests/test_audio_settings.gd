@@ -55,11 +55,13 @@ func test_audio_settings_survive_a_restart() -> void:
 	_settings.set_volume(&"master", 60)
 	_settings.set_volume(&"effects", 0)
 	_settings.set_volume(&"ambience", 35)
+	_settings.set_volume(&"music", 0)
 	_settings.set_sound_in_background(false)
 	var loaded := _reloaded()
 	assert_eq(loaded.volume_percent(&"master"), 60)
 	assert_eq(loaded.volume_percent(&"effects"), 0)
 	assert_eq(loaded.volume_percent(&"ambience"), 35)
+	assert_eq(loaded.volume_percent(&"music"), 0)
 	assert_false(loaded.sound_in_background)
 
 

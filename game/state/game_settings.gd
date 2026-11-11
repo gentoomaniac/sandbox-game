@@ -86,7 +86,7 @@ const AUTOSAVE_STEP := 10
 const DEFAULT_AUTOSAVE_MINUTES := 10
 
 ## The volume sliders (also the keys in the file): percent, in steps.
-const VOLUME_CHANNELS: Array[StringName] = [&"master", &"effects", &"ambience"]
+const VOLUME_CHANNELS: Array[StringName] = [&"master", &"effects", &"ambience", &"music"]
 const MAX_VOLUME := 100
 const VOLUME_STEP := 5
 const DEFAULT_VOLUME := 100
