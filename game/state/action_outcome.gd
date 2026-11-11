@@ -47,6 +47,8 @@ const TAKE_OUT := &"take_out"
 const EAT := &"eat"
 const DROP := &"drop"
 const PICK_UP := &"pick_up"
+## The held lantern lit or put out.
+const SWITCH_LANTERN := &"switch_lantern"
 
 ## Who did it. Only the player so far.
 const PLAYER := &"player"

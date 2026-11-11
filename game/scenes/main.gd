@@ -413,8 +413,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	# the player to bed.
 	elif event.is_action_pressed("interact") and not _build_mode.is_active():
 		_interact()
-	elif _is_use_event(event) and can_use and _eat_held():
-		pass  # Eating needs no target: a held food is eaten instead of used on a tile.
+	elif _is_use_event(event) and can_use and (_eat_held() or _state.switch_held_lantern()):
+		pass  # No target: a held food is eaten, the lantern lit or put out, instead of a tile used.
 	elif event.is_action_pressed("use") and can_use:
 		_use_on(_use_highlight.targeting())
 	elif event.is_action_pressed("use_click") and can_use:
@@ -442,9 +442,7 @@ func _process(delta: float) -> void:
 			_state.player.tile(), _state.is_inside(), _weather_and_sun_text(_weather)
 		)
 	var is_in_play := not _is_any_screen_open()
-	_use_highlight.is_enabled = (
-		is_in_play and not _builder.is_building() and not _is_in_transition
-	)
+	_use_highlight.is_enabled = is_in_play and not _builder.is_building() and not _is_in_transition
 	# On horseback E gets off instead.
 	var can_chat := (
 		is_in_play
@@ -980,6 +978,7 @@ func _show_clock() -> void:
 	else:
 		_tint.show_time(_state.clock, _weather.cloud_cover)
 	_view.set_light_strength(_tint.light_strength())
+	_player_view.light_strength = _tint.light_strength()
 	# Snow and frost are those of the start of the hour, so the view redraws once an hour.
 	_snow_cover = _state.current_snow_cover()
 	_frost = _state.current_frost()

@@ -55,6 +55,7 @@ extends RefCounted
 ##   --energy=<0..100>        start with that much energy; 0 passes out at start
 ##   --health=<0..100>        start with that much health
 ##   --hold=<item>            put 5 of an item in the inventory and hold it
+##   --lantern-lit            hold a lit lantern, in place of the selected item
 ##   --wear=<item>            put a wearable item on (straw_hat, shirt, ...)
 ##   --hair=<n>               the hair style (F6 cycles it)
 ##   --pose=<direction>[,<column>]  face that way, optionally frozen on that walking frame (on
@@ -193,6 +194,7 @@ var mouse_tile := NO_TILE
 var energy := -1.0
 var health := -1.0
 var hold := &""
+var is_lantern_lit := false
 var wear := &""
 ## -1 for the hair of the game.
 var hair := -1
@@ -334,6 +336,8 @@ func _init(args := PackedStringArray()) -> void:
 				health = float(_value(arg))
 			"--hold":
 				hold = StringName(_value(arg))
+			"--lantern-lit":
+				is_lantern_lit = true
 			"--wear":
 				wear = StringName(_value(arg))
 			"--hair":

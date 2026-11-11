@@ -54,6 +54,12 @@ var inventory: Inventory:
 		inventory = value
 		inventory.changed.connect(_show_held_item)
 		_show_held_item()
+## Whether their lantern is lit (see `is_lantern_shining`). It stays lit in the bag and in a
+## chest, and shines again once it is held.
+var is_lantern_lit := false:
+	set(value):
+		is_lantern_lit = value
+		_show_held_item()
 ## What they wear. Replace it only through the setter, so the appearance follows.
 var equipment: Equipment:
 	set(value):
@@ -83,9 +89,19 @@ func _dress() -> void:
 	appearance.dress(equipment)
 
 
-## The hand shows the selected item, if it has art for the hand (the tools); else it is empty.
+## Whether they hold a lit lantern, which lights the dark around them. Only the lantern in the
+## hand shines: one put away in the bag gives no light.
+func is_lantern_shining() -> bool:
+	return is_lantern_lit and inventory.held_item() == ItemTypes.LANTERN
+
+
+## The hand shows the selected item, if it has art for the hand (the tools, the lantern lit or
+## not); else it is empty.
 func _show_held_item() -> void:
-	var held_sheet: Variant = ItemTypes.TYPES.get(inventory.held_item(), {}).get("held_sheet")
+	var held := inventory.held_item()
+	var held_sheet: Variant = ItemTypes.TYPES.get(held, {}).get("held_sheet")
+	if held == ItemTypes.LANTERN and is_lantern_lit:
+		held_sheet += "_lit"
 	if held_sheet == null:
 		appearance.take_off(Appearance.HELD)
 	else:

@@ -316,6 +316,16 @@ func _dismount_spot() -> Vector2:
 	return nearest
 
 
+## Lights the held lantern or puts it out, on any map, also on horseback. Does nothing, and
+## returns false, unless the held item is the lantern.
+func switch_held_lantern() -> bool:
+	if player.inventory.held_item() != ItemTypes.LANTERN:
+		return false
+	player.is_lantern_lit = not player.is_lantern_lit
+	report(ActionOutcome.SWITCH_LANTERN, player.tile(), &"", {ItemTypes.LANTERN: 1})
+	return true
+
+
 ## Eats one of the held food, on any map: it restores energy up to the cap. Does nothing, and
 ## returns false, unless the held item is food and the energy is below the cap.
 func eat_held() -> bool:

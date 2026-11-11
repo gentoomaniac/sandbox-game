@@ -94,3 +94,12 @@
     the Geest, which grubbed the fieldstones of the till out of the fields) breaks stones, the
     watering can wets tilled soil, the scythe mows tall grass, the shovel digs for clay,
     an empty hand harvests crops, clears dead ones and picks bushes.
+- **The lantern** (task 177): a horn lantern with a tallow candle, for the dark nights. No
+  recipe yet: the console's `give lantern` hands it out. Held and selected, the use key (space,
+  or a click) lights it or puts it out, anywhere, with a soft pop; it needs no fuel for now. Lit,
+  it casts a warm, softly flickering circle of light around the player (5 tiles, numbers in
+  `data/lighting.cfg` [lantern]), one PointLight2D on the figure, as strong as the fires at that
+  hour (so nothing by day, and only a faint glow in a house, whose tint stays as it was). It
+  shines only in the hand (the user, 2026-11-11): put away in the bag, in a chest or on the
+  ground it gives no light but stays lit, and shines again once it is selected. The hand shows
+  it lit or unlit.

@@ -1,8 +1,8 @@
 class_name LightingRules
 extends RefCounted
-## How dark the night gets and when dusk and dawn come, read from data/lighting.cfg (see there
-## for what each value means). `from_file` reports every key that is missing or wrong, and
-## `is_valid` says whether any was.
+## How dark the night gets, when dusk and dawn come and how the lantern shines, read from
+## data/lighting.cfg (see there for what each value means). `from_file` reports every key that
+## is missing or wrong, and `is_valid` says whether any was.
 
 const DEFAULT_PATH := "res://data/lighting.cfg"
 
@@ -17,6 +17,8 @@ const TINT_HOURS := [
 	"night_after_sunset",
 	"min_night_hours",
 ]
+## The lantern's light, in the shape of a world object's `light` (see ObjectLight).
+const LANTERN_KEYS := ["color", "energy", "radius_tiles"]
 
 static var _default: LightingRules
 
@@ -49,8 +51,17 @@ func problems() -> Array[String]:
 	for key: String in TINT_COLOURS + TINT_HOURS:
 		if not tint.has(key):
 			found.append("[day_and_night] no %s" % key)
+	var lantern: Dictionary = _values.get("lantern", {})
+	for key: String in LANTERN_KEYS:
+		if not lantern.has(key):
+			found.append("[lantern] no %s" % key)
 	if not found.is_empty():
 		return found
+	if not lantern["color"] is Color:
+		found.append("[lantern] color must be a Color(r, g, b, a)")
+	for key: String in ["energy", "radius_tiles"]:
+		if float(lantern[key]) <= 0.0:
+			found.append("[lantern] %s must be above 0" % key)
 	for key: String in TINT_COLOURS:
 		if not tint[key] is Color:
 			found.append("[day_and_night] %s must be a Color(r, g, b, a)" % key)
@@ -79,3 +90,13 @@ func tint_colour(stop: String) -> Color:
 ## Hours that place the stops of the day (one of TINT_HOURS).
 func tint_hours(key: String) -> float:
 	return float(_values["day_and_night"][key])
+
+
+## The light of a lit lantern: {color, energy, radius_tiles}, as ObjectLight takes it.
+func lantern_light() -> Dictionary:
+	var lantern: Dictionary = _values["lantern"]
+	return {
+		"color": lantern["color"],
+		"energy": float(lantern["energy"]),
+		"radius_tiles": float(lantern["radius_tiles"]),
+	}

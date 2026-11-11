@@ -7,8 +7,8 @@ extends Node2D
 ## Debug: `--hair=<n>` wears variant "n" of the hair (F6 cycles 0 to 2; what the
 ## character wears comes from the equipment, see `--wear`);
 ## `--pose=<up|down|left|right>[,<column>]` turns the player and optionally freezes the
-## animation on a column of the sheet (0 idle, 1 to 4 the walk frames). Both are in
-## StartupOptions, which `show_player` reads.
+## animation on a column of the sheet (0 idle, 1 to 4 the walk frames); `--lantern-lit` puts a lit
+## lantern in the hand. They are in StartupOptions, which `show_player` reads.
 ##
 ## Passing out (`collapse`) shows the collapse sheets instead (see Appearance): the player sinks
 ## to the knees, tips over and lies asleep with rising "z"s, until `stand_up`. A player in a bed
@@ -19,6 +19,9 @@ extends Node2D
 ## sheets (see tools/art/livestock.py): the horse behind the rider, and what of it is in front of
 ## them (its head, coming towards the viewer). The horse stands, walks or trots, and the rider sits
 ## in its saddle and rises with the trot.
+##
+## A lit lantern with the player (PlayerState `is_lantern_shining`) casts its light around them
+## from the hand: one ObjectLight on the figure, flickering like the fires.
 
 ## A foot came down: time for a footstep sound.
 signal stepped
@@ -104,12 +107,17 @@ const RIDDEN_SHADOW_HALF_WIDTH := 8
 ## Half the width of the contact shadow under a figure on its feet, a player's or a villager's, in
 ## pixels (see Animal `draw_contact_shadow`): as wide as the clogs.
 const FIGURE_SHADOW_HALF_WIDTH := 8
+## Where the lantern's light is, from the feet: the lantern hanging from the hand.
+const LANTERN_POSITION := Vector2(0, -16)
 
 ## How fast the player walks (see GameState `walk_speed_factor`); the walk animation, and so the
 ## steps, keep that pace.
 var walk_speed := 1.0
 ## The horse the player rides trots (see GameState `is_trotting`).
 var is_trotting := false
+## How brightly the lights shine now (see ObjectLight.strength), set by whoever knows the time of
+## day: the lantern shines as strongly as the fires and the windows.
+var light_strength := 0.0
 ## The figure: the layers' sprites and what goes with them (the "z"s; Main adds the signs of
 ## tiredness). On horseback it sits in the saddle.
 var figure := Node2D.new()
@@ -131,6 +139,7 @@ var _shown_horse_sheet := ""
 ## The sheets the sprites show now, bottom first. The sprites are rebuilt when they change.
 var _shown_sheets: Array[String] = []
 var _sprites: Array[Sprite2D] = []
+var _lantern := ObjectLight.new(LightingRules.default_rules().lantern_light(), Vector2i.ZERO)
 
 
 ## The sheet column of a frame: idle when standing, else a step of the walk cycle.
@@ -172,6 +181,9 @@ func _init() -> void:
 	add_child(figure)
 	add_child(_horse_in_front)
 	figure.add_child(_sleep_zs)
+	_lantern.position = LANTERN_POSITION
+	_lantern.strength = 0.0
+	figure.add_child(_lantern)
 
 
 func show_player(player: PlayerState, options := StartupOptions.new()) -> void:
@@ -183,6 +195,9 @@ func show_player(player: PlayerState, options := StartupOptions.new()) -> void:
 	if options.pose != "":
 		player.facing = FACINGS_BY_NAME[options.pose]
 		_frozen_column = options.pose_column
+	if options.is_lantern_lit:
+		player.inventory.replace_with_one(player.inventory.selected_slot, ItemTypes.LANTERN)
+		player.is_lantern_lit = true
 
 
 ## The player passes out where they stand (see the collapse sheets).
@@ -212,6 +227,9 @@ func _process(delta: float) -> void:
 	else:
 		_walk_time = 0.0
 	_show_horse(_player.horse)
+	var lantern_strength := light_strength if _player.is_lantern_shining() else 0.0
+	if _lantern.strength != lantern_strength:
+		_lantern.strength = lantern_strength
 	# The contact shadow depends on riding, the collapse and the bed, so draw it anew every frame.
 	queue_redraw()
 	figure.position = Vector2.ZERO

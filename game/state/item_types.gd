@@ -93,6 +93,9 @@ const FEAST_CAKE := &"feast_cake"
 const BONE := &"bone"
 ## Put on a horse, it lets the player ride the horse (task 81).
 const SADDLE := &"saddle"
+## Carried and lit, it lights the dark around the player (task 177; see PlayerState
+## `is_lantern_lit`).
+const LANTERN := &"lantern"
 
 ## Stands for an empty hand or slot where an item id is expected.
 const NONE := &""
@@ -625,6 +628,14 @@ const _OTHER_TYPES := {
 		"description": "A riding saddle of leather. Put it on a horse, and you can ride it.",
 		"weight": 8.0,
 		"stack_limit": 1,
+	},
+	LANTERN:
+	{
+		"name": "Lantern",
+		"description": "A horn lantern with a tallow candle. Hold it and use it to light it.",
+		"weight": 1.0,
+		"stack_limit": 1,
+		"held_sheet": "lantern",
 	},
 	FEAST_CAKE:
 	{

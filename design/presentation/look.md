@@ -42,7 +42,8 @@
     shapes away from a light, but not black). Its colours and when dusk and dawn come are in
     `data/lighting.cfg` (`LightingRules`). The lights are added on top of the tint (Godot's
     CanvasModulate with additive PointLight2Ds), so they shine as brightly in the darkest night;
-  - **point lights:** campfire, torches, lit windows at night, with a slight flicker.
+  - **point lights:** campfire, torches, lit windows at night, the lantern the player carries
+    (task 177), with a slight flicker.
     Dark nights make light sources valuable, which ties in with keeping creatures away;
   - **subtle glow/bloom** on bright light sources. Keep it subtle.
 - **Later: normal maps** on sprites and tiles, so light gives the pixel art relief. This

@@ -71,7 +71,8 @@ static func action(kind: StringName, object := &"") -> StringName:
 			return animal_idle(object)
 		ActionOutcome.SADDLE, ActionOutcome.UNSADDLE:
 			return &"horse_whinny"
-		ActionOutcome.PICK_UP, ActionOutcome.FEED, ActionOutcome.COLLECT:
+		# A lantern lit or put out pops softly like an item picked up, until it has a sound of its own.
+		ActionOutcome.PICK_UP, ActionOutcome.FEED, ActionOutcome.COLLECT, ActionOutcome.SWITCH_LANTERN:
 			return &"item_pickup"
 	return &""
 

@@ -25,6 +25,10 @@ func test_the_data_file_holds_every_rule_with_the_first_values() -> void:
 	assert_eq(rules.tint_colour("day"), Color.WHITE)
 	assert_eq(rules.tint_hours("night_before_sunrise"), 1.5)
 	assert_eq(rules.tint_hours("night_after_sunset"), 4.0)
+	assert_eq(
+		rules.lantern_light(),
+		{"color": Color(1, 0.66, 0.36), "energy": 1.3, "radius_tiles": 5.0},
+	)
 
 
 func test_every_missing_key_is_reported() -> void:
@@ -33,6 +37,7 @@ func test_every_missing_key_is_reported() -> void:
 	assert_false(rules.is_valid())
 	assert_true(missing.has("[day_and_night] no dawn"))
 	assert_true(missing.has("[day_and_night] no min_night_hours"))
+	assert_true(missing.has("[lantern] no radius_tiles"))
 	assert_false(missing.has("[day_and_night] no night"))
 	assert_push_error_count(missing.size())
 
@@ -42,11 +47,13 @@ func test_wrong_values_are_reported() -> void:
 	text = text.replace("dawn=Color(1, 0.82, 0.7, 1)", "dawn=0.8")
 	text = text.replace("day_after_sunrise=2.0", "day_after_sunrise=-1.0")
 	text = text.replace("purple_after_sunset=2.5", "purple_after_sunset=5.0")
+	text = text.replace("radius_tiles=5.0", "radius_tiles=0")
 	var rules := _write(text)
 	assert_eq(
 		rules.problems(),
 		(
 			[
+				"[lantern] radius_tiles must be above 0",
 				"[day_and_night] dawn must be a Color(r, g, b, a)",
 				"[day_and_night] day_after_sunrise must not be below 0",
 				"[day_and_night] needs glow_after_sunset < purple_after_sunset < night_after_sunset",
@@ -54,4 +61,4 @@ func test_wrong_values_are_reported() -> void:
 			as Array[String]
 		)
 	)
-	assert_push_error_count(3)
+	assert_push_error_count(4)
