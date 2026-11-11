@@ -197,8 +197,9 @@ list of the spawn command and removes all of that type from game and savegame."
   one of that kind: from the running game (views freed, followers, hunts, coop roosts, pen and
   trough reservations released) and from the state that is saved, so the next save no longer has
   them. It says how many it removed.
-- Villagers: `killall npc <id>` removes that villager; `killall npc` alone asks for an id (the
-  user, 2026-11-11) and removes nothing. Removing a villager the story or a building depends on
+- Villagers: `killall npc <id>` removes that named villager (data/villagers.cfg); `killall npc`
+  alone removes every villager without an id (made up from the tables or by `spawn npc`) and keeps
+  the named ones, which need their id (the user, 2026-11-11, replacing "asks for an id"). Removing a villager the story or a building depends on
   must not break the save or the game (check homes, work places, gossip, chat history).
 - Wild animals are not saved (task 173), so for them it clears the ones alive now (they may come
   back by the spawn rules); say so in the answer.
