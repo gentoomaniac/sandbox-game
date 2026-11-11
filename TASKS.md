@@ -516,7 +516,9 @@ From the user's words under task 188. Before task 187, whose attributes it will 
 - The character part of today's inventory screen (the figure, equipment) moves into its own
   window opened with C; the bag (task 190) keeps the items.
 - C is the crafting key today (`crafting`): crafting needs another key or a place in the bag
-  window. Ask the user (proposal: a key of its own such as V or R, or a tab in the bag window).
+  window. The user, 2026-11-11: crafting moves to Shift+C for now; a better place is to be found
+  later, maybe no hotkey at all but something like Minecraft (crafting at a table or in the
+  inventory's own grid).
 - Escape closes it as the others; it uses Modal (and is movable once task 189 is in).
 - Tests for the key and the window; screenshots for the user; README and controls page.
 
@@ -545,6 +547,10 @@ From the user's words under task 188. Before task 187, whose attributes it will 
 - **Hired hands** (the user, 2026-11-10): money is hard to come by, so people could be taken on to
   live on the player's plot if the player builds them somewhere to live and produces enough food
   for them.
+
+- **Where crafting lives** (the user, 2026-11-11): Shift+C is a stop-gap (task 191); find a
+  better place, maybe no hotkey but something like Minecraft (a crafting table, or a small grid in
+  the inventory).
 
 - **Tombstones** (the user, 2026-11-10): a placed grave marker is always the oak cross; a
   headstone and a fieldstone slab could come as crafted items of their own (their art is already
