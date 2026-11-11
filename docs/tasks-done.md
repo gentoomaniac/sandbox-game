@@ -5028,3 +5028,25 @@ around however they like."
 - Numbers in data/wildlife.cfg. Tests for the heading by season and none in winter.
 
 Done: 2026-11-11. The sky flock (its V) flies south within 25 degrees in autumn and north in spring, any way in summer, and not at all in winter (`season_factors` [1, 1, 1, 0]); twice as often in the middle 14 days of autumn and spring; a 6-day fade at the season edges. Keys `migration_spread_degrees`, `migration_days`, `migration_boost`, `fade_days` in [flock] of data/wildlife.cfg. The greylag geese and dunlin keep their own rules. Later the same day the user asked for the geese to migrate too: the skein of flying geese got the same keys (south in autumn, north in spring, any way in winter, none in summer as before).
+
+## 205. The console log scrolls
+
+- [x] Done
+
+The user, 2026-11-11: "The console needs scrolling. Use shared code for it. Start this now"
+- Today the console (game/scenes/console_view.gd) shows only the last `VISIBLE_LOG_LINES` lines
+  of `_log_lines` in a clipped Label; older lines (long `help` output, spawn lists, the track
+  list of task 184) can't be seen.
+- Make the log scroll with the shared scrolling code (ScrollingList, game/scenes/scrolling_list.gd,
+  as the panels use it; extend it rather than writing a second scroller, if the console's case
+  needs something it lacks): the mouse wheel and the scroll bar, and Page Up / Page Down (or
+  Shift+Up/Down if those are free; keep Up/Down for the input history) while the input line has
+  focus. A new line scrolls to the bottom unless the player has scrolled up to read (then it
+  stays, as chat windows do); opening the console shows the bottom. The visible height stays
+  `VISIBLE_LOG_LINES`. Keep a cap on the kept lines (e.g. 500) so the log can't grow forever.
+- The log text stays selectable or not as today; the console stays on top and keeps its focus
+  rules.
+- Tests: long output can be scrolled to its first line, a new line keeps the view at the bottom,
+  scrolled up it stays, the cap. README or docs/ui.md line.
+
+Done: 2026-11-11. The console log sits in a ScrollingList (new opt-in `fixed_height`, `keeps_bottom`, `scroll_pages`, `scroll_to_bottom`): the wheel, the bar and Page Up/Down scroll it, a new line keeps the view at the bottom unless the player scrolled up, opening shows the bottom, the visible height is the old 8 lines, and the log keeps at most 500 lines.

@@ -204,26 +204,6 @@ stop it. add settings in the audio settings about volume."
 - Tests for the commands (known, unknown, stop), the bus and the slider's setting; README and
   design/presentation/console.md lines.
 
-## 205. The console log scrolls
-
-- [ ] Done
-
-The user, 2026-11-11: "The console needs scrolling. Use shared code for it. Start this now"
-- Today the console (game/scenes/console_view.gd) shows only the last `VISIBLE_LOG_LINES` lines
-  of `_log_lines` in a clipped Label; older lines (long `help` output, spawn lists, the track
-  list of task 184) can't be seen.
-- Make the log scroll with the shared scrolling code (ScrollingList, game/scenes/scrolling_list.gd,
-  as the panels use it; extend it rather than writing a second scroller, if the console's case
-  needs something it lacks): the mouse wheel and the scroll bar, and Page Up / Page Down (or
-  Shift+Up/Down if those are free; keep Up/Down for the input history) while the input line has
-  focus. A new line scrolls to the bottom unless the player has scrolled up to read (then it
-  stays, as chat windows do); opening the console shows the bottom. The visible height stays
-  `VISIBLE_LOG_LINES`. Keep a cap on the kept lines (e.g. 500) so the log can't grow forever.
-- The log text stays selectable or not as today; the console stays on top and keeps its focus
-  rules.
-- Tests: long output can be scrolled to its first line, a new line keeps the view at the bottom,
-  scrolled up it stays, the cap. README or docs/ui.md line.
-
 ## 185. Seasons change the ground gradually, as overlays: dark green, fallen leaves, frost, snow
 
 - [ ] Done
