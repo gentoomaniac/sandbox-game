@@ -4940,3 +4940,25 @@ The user, 2026-11-11: "Crafting with full inventory: items will get dropped on t
   with a full inventory drops.
 
 Done: 2026-11-11. Outdoors a craft that does not fit goes ahead: the materials are taken first, what fits goes in (hotbar first) and the rest drops at the player's feet (`Result.DROPPED`, "Inventory full: the rest was dropped on the ground"). Taking done work out of a station drops what does not fit by the station, on the player's side (`take_out` returns a Result). Indoors nothing can lie on the floor, so the refusal (NO_ROOM, "Inventory full, and nothing can be dropped indoors") stays there.
+
+## 181. Villagers never stand in a doorway
+
+- [x] Done
+
+The user, 2026-11-11, with a screenshot of a villager drawn standing in the door of a thatched
+house (in the door's frame, the wall around them): "this should not be possible, a villager
+standing on top of a door. they should always be in front or eventually (task for later) be inside
+the house."
+- Find why a villager ends up on a building's door tile (or another tile of the building): their
+  walk target or schedule spot (home, work, the door as a destination), pathing that treats the
+  door tile as walkable for them (the player walks through doors into interiors), spawning or
+  catch-up placing them there, or the draw order making a villager in front of the door look as if
+  they stand in it.
+- Villagers stop on the tile in front of the door (outside the building's footprint) and are drawn
+  in front of the wall; any villager found on a building tile (old saves, catch-up) is moved to
+  the nearest free tile in front. Same for the animals if they can end up there.
+- Tests: a villager going home or to work ends in front of the door, never on a building tile,
+  over play and over a skip; README not needed unless something visible changes.
+- Later (a separate task, see Later): villagers go inside their houses.
+
+Done: 2026-11-11. The cause was placement: a door tile is walkable (the player walks in), and villagers used the player's `can_stand_at` for spawn, strolls and catch-up. `Npcs.can_stand_at` now excludes every building tile, and a villager found on one is moved to the nearest free tile (normally in front of the door). Farm animals and pets: `World.is_walkable_for_animals` excludes building tiles, and a skip moves an animal off. Not covered: wild animals (WildlifeView uses `world.is_walkable`), which can still stand on a door.
