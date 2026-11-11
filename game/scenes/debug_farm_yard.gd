@@ -4,9 +4,15 @@ extends RefCounted
 ## task 122 on a patch of grass. From the tile: the chicken coop (2x2) with three hens in front of
 ## its door and the draw well beside it; below them a row of four troughs and a row of four hay
 ## racks, each stocked as empty, low, half and full; a cow at the full trough and a sheep at the
-## full rack. Loads the chunks it covers itself.
+## full rack. Below them the pig pen of task 165: a ring of fence with its gate shut in the bottom
+## side, the pigs' shelter, a trough and a feeding trough in it, and a pig of each look. Loads the
+## chunks it covers itself.
 
-const SIZE := Vector2i(14, 10)
+const SIZE := Vector2i(14, 18)
+## The pen's fence runs round this rectangle (its top left from the tile), and its gate is on this
+## tile of it, in the middle of its bottom side.
+const PEN := Rect2i(1, 11, 9, 6)
+const PEN_GATE := Vector2i(4, 5)
 ## How full each of the four troughs and four racks is: empty, low, half, full.
 const STOCKS := [0, 20, 50, 100]
 
@@ -40,3 +46,27 @@ static func create(state: GameState, origin: Vector2i) -> void:
 		LivestockRules.SHEEP, &"white", Vector2(origin) + Vector2(10.5, 8.0)
 	)
 	state.livestock.add(sheep)
+	_add_pig_pen(state, origin + PEN.position)
+
+
+static func _add_pig_pen(state: GameState, corner: Vector2i) -> void:
+	var world := state.world
+	var gate := corner + PEN_GATE
+	for y in PEN.size.y:
+		for x in PEN.size.x:
+			var tile := corner + Vector2i(x, y)
+			var is_ring := x in [0, PEN.size.x - 1] or y in [0, PEN.size.y - 1]
+			if is_ring:
+				var type := (
+					WorldObjectTypes.PEN_GATE if tile == gate else WorldObjectTypes.PEN_FENCE
+				)
+				world.add_object(WorldObject.new(type, tile))
+	world.add_object(WorldObject.new(WorldObjectTypes.PIG_SHELTER, corner + Vector2i(1, 1)))
+	for row in [[WorldObjectTypes.TROUGH, 5], [WorldObjectTypes.FEED_TROUGH, 3]]:
+		var trough := WorldObject.new(row[0], corner + Vector2i(row[1], 1))
+		ObjectStock.add(trough, 80)
+		world.add_object(trough)
+	var looks := state.livestock.rules.looks(LivestockRules.PIG)
+	for index in looks.size():
+		var feet := Vector2(corner) + Vector2(1.6 + 1.8 * index, 3.4 + 0.6 * (index % 2))
+		state.livestock.add(FarmAnimal.new(LivestockRules.PIG, looks[index], feet))

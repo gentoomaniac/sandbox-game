@@ -170,13 +170,14 @@ anew, and a planted tile never grows over. The days of winter don't count. The n
 
 ### Livestock
 
-Cows, sheep, chickens and rabbits of the region: red-brown Angler, black pied and red pied
-cattle; white, grey and black-faced sheep; brown and white hens and a rooster; agouti, white
-and Dutch rabbits, each with a slight tint of its own. They wander, graze (the hens peck for
+Cows, pigs, sheep, chickens and rabbits of the region: red-brown Angler, black pied and red pied
+cattle; bristly pigs of the old breeds, red-brown, sandy, saddleback and spotted; white, grey and
+black-faced sheep; brown and white hens and a rooster; agouti, white and Dutch rabbits, each with
+a slight tint of its own. They wander, graze (the hens peck for
 seeds and worms), keep out of water and away from anything solid, and the rabbits hop off
 when you come close. At night they lie down and sleep until the morning. For now they come
-from the console (`spawn cow 3`); they are saved with the game. Milk, wool and pens come later
-(see the farm yard below for eggs, food and water). The numbers are in [data/livestock.cfg](data/livestock.cfg). Like the
+from the console (`spawn cow 3`); they are saved with the game. Milk and wool come later (see
+the farm yard below for eggs, food, water and the pig pen). The numbers are in [data/livestock.cfg](data/livestock.cfg). Like the
 people, the animals are drawn at 32 pixels per tile, with legs that bend at the joints, an eye
 with a glint and the marks of their coats.
 
@@ -252,6 +253,11 @@ workbench and put them down piece by piece round a few tiles, with a trough and 
 inside. The fence joins up as you lay it. You walk through the gate whether it is shut or open; the
 animals only through an open one, so a pen with its gate shut keeps its pigs in, whatever they
 look for and however long you sleep. The use key with an empty hand opens and shuts the gate.
+
+![A pig pen at noon, in the 32 px art and in the classic art: the fence of split oak rails with its gate, the pigs' shelter, a feeding trough and a trough, and a pig of each look](docs/screenshots/pig-pen.png)
+
+`make screenshot SIZE=1120x500 AT=73,-6 TIME=12:00 ZOOM=1.25 ARGS="--yard=40,-20 --day=45"` (and
+with `--classic-art`) puts the pen in view, each cropped to its left 700 px.
 
 ![The farm yard at noon: the chicken coop with its hens, the draw well, four troughs and four hay racks from empty to full, a cow at the water and a sheep at the hay](docs/screenshots/farm-yard.png)
 
