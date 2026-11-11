@@ -5,6 +5,7 @@ extends GutTest
 const MAIN_SCENE := preload("res://game/scenes/main.tscn")
 const SETTLE_SECONDS := 30.0
 const SLEEP_SECONDS := 10.0
+const MAX_FRAMES_TO_WAIT := 1200
 
 var _main: Node
 
@@ -73,11 +74,21 @@ func _go_to_bed() -> void:
 	state.player.position = Vector2(state.player.home_bed) + Vector2(0.5, 0.5)
 
 
+## Waits for the world to be held for a sleep. Looks at every frame: `wait_until` polls on the
+## physics ticks, which a sleep of a few frames may pass between.
+func _wait_until_world_is_held() -> void:
+	for _frame in MAX_FRAMES_TO_WAIT:
+		if _main._is_making_up_time:
+			return
+		await get_tree().process_frame
+	fail_test("the world was not held for the sleep")
+
+
 func test_quitting_in_the_middle_of_the_sleep_waits_and_saves_the_whole_morning() -> void:
 	var state: GameState = _main._state
 	_go_to_bed()
 	_main._try_sleep()
-	await wait_until(func() -> bool: return _main._is_making_up_time, SLEEP_SECONDS)
+	await _wait_until_world_is_held()
 
 	var is_saved: bool = await _main._is_saved_for_quit()
 
@@ -100,7 +111,7 @@ func test_the_chunks_stay_as_they_are_over_the_frames_of_a_sleep() -> void:
 	)
 	_go_to_bed()
 	_main._try_sleep()
-	await wait_until(func() -> bool: return _main._is_making_up_time, SLEEP_SECONDS)
+	await _wait_until_world_is_held()
 	var chunks_at_start := state.world.loaded_chunk_coords()
 	# The camera would stream chunks round a far focus.
 	_main._residency.set_focus(state.player.tile() + Vector2i(320, 0))
@@ -122,6 +133,9 @@ func test_a_cat_beside_a_mouse_starts_no_hunt_over_the_frames_of_a_sleep() -> vo
 	cat.hunt_rest_seconds = 3600.0
 	var cat_view: FarmAnimalView = _main._wildlife._farm_animals.get(cat)
 	assert_not_null(cat_view, "the cat has a view")
+	# The cat wanders about the player, and a mouse put beside it within the mouse's flee
+	# distance of the player dashes off and is freed before the probe runs.
+	_main._wildlife.is_player_ignored = true
 	# The cat walks off its spawn spot: the mouse goes beside it where it stands.
 	await wait_process_frames(30)
 	_main._wildlife.place(
@@ -139,12 +153,13 @@ func test_a_cat_beside_a_mouse_starts_no_hunt_over_the_frames_of_a_sleep() -> vo
 		cat.activity = FarmAnimal.Activity.CREEP
 	state.simulation.add_system(probe)
 	_go_to_bed()
-	_main._try_sleep()
 	var activities := []
 	var could_process: Array[bool] = []
-	var is_done := func() -> bool:
+	# Every frame is sampled as it begins: the wait's own polling is on the physics ticks, which
+	# a quick sleep of a few frames may pass between.
+	var sample_held_frame := func() -> void:
 		if not _main._is_making_up_time:
-			return not activities.is_empty()
+			return
 		could_process.append(cat_view.can_process())
 		# What the livestock would turn into a hunt if it ran: an idle cat, rested, about to pick
 		# what to do next, a mouse in sight.
@@ -152,8 +167,11 @@ func test_a_cat_beside_a_mouse_starts_no_hunt_over_the_frames_of_a_sleep() -> vo
 		cat.activity = FarmAnimal.Activity.IDLE
 		cat.seconds_left = 0.0
 		cat.hunt_rest_seconds = 0.0
-		return false
+	get_tree().process_frame.connect(sample_held_frame)
+	_main._try_sleep()
+	var is_done := func() -> bool: return not activities.is_empty() and not _main._is_making_up_time
 	await wait_until(is_done, SLEEP_SECONDS)
+	get_tree().process_frame.disconnect(sample_held_frame)
 
 	assert_gt(activities.size(), 1, "frames were held")
 	assert_false(could_process.has(true), "the cat's view is held on every frame of the sleep")
