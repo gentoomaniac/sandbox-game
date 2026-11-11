@@ -185,36 +185,6 @@ Settings (and off), muted in test runs (comes with task 184). Rules in data/musi
   pieces like the test reel are kept for special events (festivals, a market day). Later: stems
 (AudioStreamSynchronized), more pieces, the season and weather choices.
 
-## 192. Smarter test runs: only the tests a change touches, and a full run now and then
-
-- [ ] Done
-
-The user, 2026-11-11, after the merge check moved to testing the branch tip only: "Can we run
-tests in a smarter way? some tests might not have to run all the time, resp tests probably have to
-run only for specific parts that they touch. If assets change we might want to only run the asset
-tests. every now and then we run a global test and if that one would fail we bisect test again."
-And: "make sure that the whole branch is considered not only a commit: if we merge a new feature
-but the last commit only adds docs, we still want to run tests for all touched code paths."
-- A selector (e.g. tools/select_tests.py) and `make test-changed BASE=<ref>` that looks at every
-  file changed between BASE (main) and HEAD, the whole range, never just the last commit:
-  - docs only (README, docs/, design/, TASKS.md, *.md): no tests;
-  - tools/: the Python tool tests (and the art check `make art` when a generator or art/generated
-    changes);
-  - art/generated, assets, data/*.cfg: the asset and data tests and the GUT tests that read them;
-  - game/ and tests/: the GUT tests that reach a changed script through class_name references,
-    preload/load paths and scenes, followed transitively; a changed test file runs itself.
-  - Anything it can't place (project.godot, addons/, the Makefile, run_tests.py, an unresolvable
-    reference) runs everything. When in doubt, run more.
-- tools/run_tests.py takes a list of test files (sharded as today by build/test-times).
-- A periodic full run on main (e.g. `make test` after every 5 merges or at the end of a batch, the
-  coordinator's job): if it fails, bisect over the merges since the last green full run.
-- Workers use `make test-changed` while developing and one full `make test` before reporting.
-- Tests for the selector (docs-only, tools-only, a data file, a game script reaching its tests, an
-  unknown path running all, a docs-only tip of a branch that changed code still selecting that
-  code's tests); README/docs: how to run it.
-- Measure: how many tests and how long for a few recent branches (e.g. 174, 175, 177) against the
-  full run.
-
 ## 193. Console: `killall <kind>` removes everything of a kind
 
 - [ ] Done
