@@ -11,6 +11,9 @@ extends Node
 
 ## The windows of buildings are lit (and shine) once the light strength is at least this.
 const WINDOW_LIT_STRENGTH := 0.3
+const BELL_STRIP := "res://assets/buildings/bell_frame_swing.png"
+## Where a bell hangs from, in the frame's picture (both arts draw it there).
+const BELL_HANGS_AT := Vector2(8, 64)
 
 var _entities: Node2D
 var _blend: SeasonBlend
@@ -19,6 +22,10 @@ var _light_strength := 1.0
 var _sprites: Dictionary[Building, SeeThroughSprite] = {}
 ## The lights in the windows of each building.
 var _window_lights: Dictionary[Building, Array] = {}
+## The bell of each bell frame, a strip of pictures of it swinging (BellSwing.FRAMES), and how it
+## swings now. It is laid over the frame's picture, which has no bell of its own.
+var _bells: Dictionary[Building, Sprite2D] = {}
+var _swings: Dictionary[Building, BellSwing] = {}
 
 
 func _init(entities: Node2D) -> void:
@@ -75,21 +82,43 @@ func add(building: Building) -> void:
 	sprite.offset = Vector2(0, bottom - sprite.texture.get_height())
 	_entities.add_child(sprite)
 	_add_window_lights(building, sprite)
+	if building.type == BuildingTypes.BELL_FRAME:
+		_add_bell(building, sprite)
 
 
 ## Shows every building in the chosen art set (see ArtSet).
 func show_art_set() -> void:
 	for building in _sprites:
 		_show_windows(building)
+	for bell in _bells.values():
+		bell.texture = load(ArtSet.path(BELL_STRIP))
 
 
 ## Takes down the sprite and the window lights of a building.
 func remove(building: Building) -> void:
 	_sprites[building].queue_free()
 	_sprites.erase(building)
+	_bells.erase(building)
+	_swings.erase(building)
 	for light: ObjectLight in _window_lights[building]:
 		light.queue_free()
 	_window_lights.erase(building)
+
+
+## Sets the bell of a bell frame swinging (again).
+func swing_bell(building: Building) -> void:
+	if not _swings.has(building):
+		_swings[building] = BellSwing.new()
+	_swings[building].ring()
+
+
+func _process(delta: float) -> void:
+	for building in _swings.keys():
+		var swing := _swings[building]
+		swing.step(delta)
+		_bells[building].frame = swing.frame()
+		if not swing.is_swinging():
+			_swings.erase(building)
 
 
 ## Fades the buildings in `occluding` and puts back the others.
@@ -97,6 +126,19 @@ func update_see_through(delta: float, player_feet: Vector2, occluding: Array[Bui
 	for building in _sprites:
 		_sprites[building].is_occluding = building in occluding
 		_sprites[building].update(delta, player_feet)
+
+
+func _add_bell(building: Building, sprite: Sprite2D) -> void:
+	var bell := Sprite2D.new()
+	bell.texture = load(ArtSet.path(BELL_STRIP))
+	bell.hframes = BellSwing.FRAMES
+	bell.frame = BellSwing.MIDDLE
+	bell.centered = false
+	bell.position = sprite.offset + BELL_HANGS_AT
+	# It fades with the frame when the frame hides the player.
+	bell.use_parent_material = true
+	sprite.add_child(bell)
+	_bells[building] = bell
 
 
 ## Building windows: a lit sprite variant and a small warm light in each window, on at night.

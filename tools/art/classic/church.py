@@ -15,7 +15,7 @@ import math
 import random
 
 from buildings import LIME, OAK, SHADED, eaves_shadow, fieldstone_base, brick_wall, glass, ground_shadow, plank_door
-from canvas import TILE, blank, outline_edge, rect
+from canvas import TILE, blank, outline_edge, rect, swinging
 
 # Tuff ashlar: the blocks, mostly grey, some browner, each lit along its top, and the joints
 # between them.
@@ -215,8 +215,9 @@ def porch(picture, snowy, rng, left, right, apex, base_top, height):
 def bell_frame(is_lit):
     """The free-standing bell frame (Glockenstapel) on 2x2 tiles: an open oak frame on a brick
     base, its two front posts leaning in under a pyramid roof of oak shingles with an iron
-    finial, braced crosswise below the rail; the bronze bell hangs from the head beam, the back
-    posts showing behind it. `is_lit` changes nothing: it has no windows."""
+    finial, braced crosswise below the rail, the back posts showing behind the bell. The bronze
+    bell is not in it: it is drawn by bell_swing, which the game lays over the frame. `is_lit`
+    changes nothing: it has no windows."""
     rng = random.Random(387)
     width, height = 2 * TILE, 84
     picture = blank(width, height)
@@ -242,18 +243,6 @@ def bell_frame(is_lit):
         rect(picture, 6, y + 2, 25, y + 2, "soil")
     rect(picture, 2, sill, 29, sill + 2, "soil_mid")
     rect(picture, 2, sill, 29, sill, "soil_light")
-    # The bell, hung from the head beam, its mouth dark with the clapper in it.
-    rect(picture, 15, eaves_y + 4, 16, eaves_y + 5, "stone_dark")
-    halves = (2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 6)
-    for row, half in enumerate(halves):
-        y = eaves_y + 6 + row
-        for x in range(16 - half, 16 + half):
-            third = (x - 16 + half) * 3 // (2 * half)
-            picture[y][x] = BRONZE[2] if row == len(halves) - 1 else BRONZE[min(2, third)]
-        picture[y][16 - half] = BRONZE[0] if row < len(halves) - 1 else BRONZE[1]
-    mouth = eaves_y + 6 + len(halves)
-    rect(picture, 12, mouth, 19, mouth, "soil_dark")
-    rect(picture, 15, mouth, 16, mouth + 1, "stone_dark")
     # The brick base, capped with a course of headers.
     brick_wall(picture, rng, 2, 29, base_top, height - 2, ("rust", "rust", "red_light", "rust_dark"), "sand")
     rect(picture, 1, base_top - 1, 30, base_top - 1, "red_light")
@@ -277,6 +266,30 @@ def bell_frame(is_lit):
     outline_edge(picture, OUTLINE, keep_bottom=True)
     ground_shadow(picture)
     return picture, snowy
+
+
+# The frames of the bell swinging, side by side (see church.py).
+BELL_SWING_FRAMES = 11
+BELL_SWING_DEGREES = 15
+
+
+def bell_swing():
+    """The bronze bell of the bell frame swinging, as a strip of BELL_SWING_FRAMES pictures 24 px
+    wide, hanging from the middle of the top row, which the game puts at x 16, y 32 of the bell
+    frame's picture (under the head beam)."""
+    bell = blank(24, 15)
+    rect(bell, 11, 0, 12, 1, "stone_dark")
+    halves = (2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 6)
+    for row, half in enumerate(halves):
+        y = 2 + row
+        for x in range(12 - half, 12 + half):
+            third = (x - 12 + half) * 3 // (2 * half)
+            bell[y][x] = BRONZE[2] if row == len(halves) - 1 else BRONZE[min(2, third)]
+        bell[y][12 - half] = BRONZE[0] if row < len(halves) - 1 else BRONZE[1]
+    mouth = 2 + len(halves)
+    rect(bell, 8, mouth, 15, mouth, "soil_dark")
+    rect(bell, 11, mouth, 12, mouth + 1, "stone_dark")
+    return swinging(bell, OUTLINE, BELL_SWING_FRAMES, BELL_SWING_DEGREES)
 
 
 # How to draw each building, by its id in data/buildings.cfg (generate.py adds them to those of

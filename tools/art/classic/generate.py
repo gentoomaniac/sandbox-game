@@ -136,6 +136,7 @@ def write_buildings():
             for look in seasons.HOUSE_LOOKS:
                 look_suffix = "" if look == "summer" else f"_{look}"
                 save_picture(seasons.house(look, picture, snowy), f"buildings/{name}{lit_suffix}{look_suffix}.png")
+    save_picture(church.bell_swing(), "buildings/bell_frame_swing.png")
 
 
 def standing_outdoors(picture):

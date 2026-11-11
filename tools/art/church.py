@@ -18,7 +18,7 @@ import random
 import forms
 import items
 from buildings import OAK, RED_BRICKS, SHADED, brick_wall, door, eaves_shadow, fieldstone_base, glass, ground_shadow, lime_wall
-from canvas import GAME_TILE, blank, outline_edge, rect
+from canvas import GAME_TILE, blank, outline_edge, rect, swinging
 
 # Tuff ashlar: the blocks, mostly grey, some browner, each lit along its top, and the joints
 # between them.
@@ -235,8 +235,9 @@ def porch(picture, snowy, rng, left, right, apex, base_top, height):
 def bell_frame(is_lit):
     """The free-standing bell frame (Glockenstapel) on 2x2 tiles: an open oak frame on a brick
     base, its two front posts leaning in under a pyramid roof of oak shingles with an iron
-    finial, braced crosswise below the rail; the bronze bell hangs from the head beam, the back
-    posts showing behind it. `is_lit` changes nothing: it has no windows."""
+    finial, braced crosswise below the rail, the back posts showing behind the bell. The bronze
+    bell is not in it: it is drawn by bell_swing, which the game lays over the frame. `is_lit`
+    changes nothing: it has no windows."""
     rng = random.Random(387)
     width, height = 2 * GAME_TILE, 168
     picture = blank(width, height)
@@ -264,25 +265,9 @@ def bell_frame(is_lit):
     rect(picture, 4, sill, 59, sill + 5, OAK[0])
     rect(picture, 4, sill, 59, sill, "soil_light")
     rect(picture, 4, sill + 5, 59, sill + 5, OAK[2])
-    # The bell, hung from the head beam, its mouth dark with the clapper in it; lit on the left
-    # and shaded round to the right, with a ring round its waist and a lip at its mouth.
-    rect(picture, 29, eaves_y + 7, 34, eaves_y + 8, "stone_dark")
-    rect(picture, 30, eaves_y + 9, 33, eaves_y + 11, "stone_dark")
-    halves = (5, 6, 6, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 9, 10, 10, 11, 12, 13, 13)
-    for row, half in enumerate(halves):
-        y = eaves_y + 12 + row
-        for x in range(32 - half, 32 + half):
-            across = (x - 32 + half) / (2 * half)
-            shade = 0 if across < 0.18 else 1 if across < 0.5 else 2 if across < 0.82 else 3
-            if row in (8, len(halves) - 3):
-                shade = min(3, shade + 1)
-            if row == len(halves) - 1:
-                shade = 2
-            picture[y][x] = BRONZE[shade]
-    mouth = eaves_y + 12 + len(halves)
-    rect(picture, 21, mouth, 42, mouth + 1, "soil_dark")
-    rect(picture, 30, mouth, 33, mouth + 3, "stone_dark")
-    rect(picture, 30, mouth, 30, mouth + 2, "stone")
+    # The bell hangs from the head beam on a headstock, whose top row is part of the frame (the
+    # rest is bell_swing).
+    rect(picture, 29, eaves_y + 7, 34, eaves_y + 7, "stone_dark")
     # The brick base, capped with a course of headers.
     brick_wall(picture, rng, 4, 59, base_top, height - 3, RED_BRICKS, "sand")
     rect(picture, 2, base_top - 2, 61, base_top - 1, "red_light")
@@ -309,6 +294,39 @@ def bell_frame(is_lit):
     outline_edge(picture, OUTLINE, keep_bottom=True)
     ground_shadow(picture)
     return picture, snowy
+
+
+# The frames of the bell swinging, side by side: from leaning 15 degrees left to 15 right in 11
+# steps, the middle one hanging straight (the game steps through them, see BuildingViews).
+BELL_SWING_FRAMES = 11
+BELL_SWING_DEGREES = 15
+
+
+def bell_swing():
+    """The bronze bell of the bell frame swinging, as a strip of BELL_SWING_FRAMES pictures 48 px
+    wide: its headstock under the head beam, the bell lit on the left and shaded round to the
+    right, with a ring round its waist and a lip at its mouth, its mouth dark with the clapper in
+    it. The middle of its top row is where it hangs: the game puts that at x 32, y 64 of the bell
+    frame's picture (under the head beam)."""
+    bell = blank(48, 30)
+    rect(bell, 21, 0, 26, 0, "stone_dark")
+    rect(bell, 22, 1, 25, 3, "stone_dark")
+    halves = (5, 6, 6, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 9, 10, 10, 11, 12, 13, 13)
+    for row, half in enumerate(halves):
+        y = 4 + row
+        for x in range(24 - half, 24 + half):
+            across = (x - 24 + half) / (2 * half)
+            shade = 0 if across < 0.18 else 1 if across < 0.5 else 2 if across < 0.82 else 3
+            if row in (8, len(halves) - 3):
+                shade = min(3, shade + 1)
+            if row == len(halves) - 1:
+                shade = 2
+            bell[y][x] = BRONZE[shade]
+    mouth = 4 + len(halves)
+    rect(bell, 13, mouth, 34, mouth + 1, "soil_dark")
+    rect(bell, 22, mouth, 25, mouth + 3, "stone_dark")
+    rect(bell, 22, mouth, 22, mouth + 2, "stone")
+    return swinging(bell, OUTLINE, BELL_SWING_FRAMES, BELL_SWING_DEGREES)
 
 
 def oak_cross():

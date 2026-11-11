@@ -3,6 +3,8 @@
 A picture is a list of rows of palette colour names (None = clear), `picture[y][x]`.
 """
 
+import math
+
 # The tile of the 16 px art, in pixels: the classic art (tools/art/classic/) is drawn on it and
 # scaled up to the game's tile pixel for pixel when it is written (DOUBLED there).
 TILE = 16
@@ -50,6 +52,26 @@ def centred_on_tile(picture, tile):
     if lift >= 0:
         return picture[lift:] + blank(width, lift)
     return blank(width, -lift) + picture[:lift]
+
+
+def swinging(hanging, outline_colour, frames, max_degrees):
+    """The frames of something that hangs from its top middle and swings, side by side in one
+    picture: `hanging` outlined (but not along its top, where it hangs from something), then
+    leaning from -max_degrees to +max_degrees in `frames` steps, the middle one upright. Each row
+    slides sideways by its distance from the top times the lean, so the rows stay crisp, as
+    pixel art wants, where turning the pixels would blur their edges."""
+    width, height = len(hanging[0]), len(hanging)
+    # A row above keeps the top edge from being outlined, and is cut off again.
+    outlined = outline_edge([[outline_colour] * width] + copy(hanging), outline_colour)[1:]
+    strip = blank(width * frames, height)
+    for frame in range(frames):
+        lean = math.tan(math.radians(max_degrees * (2 * frame / (frames - 1) - 1)))
+        for y, row in enumerate(outlined):
+            shift = round(y * lean)
+            for x, colour in enumerate(row):
+                if colour is not None and 0 <= x + shift < width:
+                    strip[y][frame * width + x + shift] = colour
+    return strip
 
 
 def rect(picture, x0, y0, x1, y1, colour):

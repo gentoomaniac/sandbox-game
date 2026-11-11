@@ -56,7 +56,7 @@ Decided 2026-11-05. Everything makes sound; no background music for now.
   as two pitches a hair apart that beat slowly. The low partials die away over many seconds and the
   high ones in a second or two, so a bright clang turns into a dark hum. A short knock of the
   clapper starts it. On the Effects bus, as a sound of the world outside.
-  **Ringing it** (task 180, `GameState.ring_bell_in_reach`, heard by `GameSounds`): E or a click on the bell
+  **Ringing it** (task 180, `GameState.ring_bell`, heard by `GameSounds`): E or a click on the bell
   frame with a footprint tile within a tile of the player (`Interaction.bell_frame_to_ring`) plays
   it (E gives way to a bed in reach, so the player can still sleep next to the frame; a click gives
   way to a use the held item has on the tile, which no item has on a building today, and to eating
@@ -68,7 +68,12 @@ Decided 2026-11-05. Everything makes sound; no background music for now.
   would cut an 11-second tail off, which is the one thing a bell never does, and waiting would make
   a click that does nothing. At most three strikes sound at once (`voices` of its section in
   `data/sounds.cfg`): a fourth ring cuts off the oldest strike, never a footstep or another sound,
-  so a bell rung over and over cannot crowd the pool of twelve players. No game effect yet: calling the villagers, gossip and events come later.
+  so a bell rung over and over cannot crowd the pool of twelve players. The swing is a damped pendulum (`BellSwing`, a 1.1 s period fading over 4 s)
+  that a ring kicks to a full swing from wherever the bell is, so a second ring never makes it
+  jump (`BuildingViews`). The bell is not in the bell frame's picture: `bell_swing` (both arts,
+  `tools/art/church.py` and `classic/church.py`) draws it as 11 frames leaning 15 degrees left to
+  15 right, each row slid sideways so the pixels stay crisp, and the game lays the strip over the
+  frame, fading with it. No game effect yet: calling the villagers, gossip and events come later.
 - **Animals:** birds sometimes chirp where they are; frogs croak near rivers and ponds in
   spring and summer, mostly in the evening and at night and when it is warm, louder the
   closer the player is; deer snort now and then and their hooves sound when they bound

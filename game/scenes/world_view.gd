@@ -232,6 +232,7 @@ func show_world(residency: ChunkResidency) -> void:
 	_soil_wetness.show_world(world, is_snowed_over)
 	world.building_placed.connect(_buildings.add)
 	world.building_removed.connect(_buildings.remove)
+	world.bell_rung.connect(_buildings.swing_bell)
 	residency.chunk_loaded.connect(_on_chunk_loaded)
 	residency.chunk_unloaded.connect(_on_chunk_unloaded)
 	_variety_noise.seed = world.world_seed + VARIETY_SEED_OFFSET

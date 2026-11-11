@@ -308,6 +308,7 @@ def write_seasonal_art():
         if look in seasons.HOUSE_LOOKS:
             for name, (picture, snowy) in houses.items():
                 save_picture(seasons.house(look, picture, snowy), f"buildings/{name}{suffix}.png")
+    save_picture(church.bell_swing(), "buildings/bell_frame_swing.png")
     atlas.save_sheets("decorations", [*layers, "flowers"], seasons.GROUND_LOOKS, decorations_by_look, GAME_TILE, GAME_TILE)
     atlas.save_sheets("objects", [kind for kind, _ in objects], seasons.LOOKS, objects_by_look, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)
 
