@@ -562,8 +562,11 @@ inventory. Additional things in the killin turn into ash."
   into the grid. A small fire button starts the firing when the grid holds a recipe's materials and
   fuel; one recipe per firing.
 - The masonry levels that made bricks_large and bricks_master pay off (more bricks for the same
-  clay and wood) need a new home with one recipe: e.g. a skill bonus on the yield, or less wood per
-  brick at higher levels. Propose it, keep the numbers close to today's, and say what changed.
+  clay and wood) become a bonus on the one recipe (the user, 2026-11-11): at a high enough skill a
+  firing gives extra bricks besides the ones selected, automatically. Keep the numbers close to
+  today's (level 50 about twice, level 70 about three times the bricks per load of raw bricks and
+  logs, as the old recipes gave; propose the exact rule and put it in data/). Other kiln recipes
+  that unlock at skill levels come later; the recipe `level` lock stays for them.
 - While it fires: a progress bar above the grid, the grid greyed out and locked (nothing in or out),
   the time from the recipe's `hours`; the kiln shows its fire in the world (the existing lit look and
   light, if any). The firing goes on with the window closed and with the player away (game time).
