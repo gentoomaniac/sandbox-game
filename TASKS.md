@@ -306,6 +306,43 @@ now, but holding it pressing space will turn it on and off."
 - Tests for the night darkness, the switching and the light following the player; screenshots
   for the user at night with and without the lantern, both arts; README note.
 
+## 178. Harvests vary a little, and now and then give a seed
+
+- [ ] Done
+
+The user, 2026-11-11: "harvesting gives different amounts of produce with a slight variance, for
+instance 2-3 carrots with an average of 2. seeds happen occasionally, both configurable in the
+config."
+- Today each crop's `yield` in data/crops.cfg is a fixed count, and a harvest gives one seed back
+  every time ("How many produce items one harvest gives (and one seed back)").
+- Per crop in data/crops.cfg: the yield becomes a small range around an average (e.g. carrots 2
+  to 3, averaging 2; an average and a spread, or min, max and average; pick the clearest config
+  shape and say why), drawn per harvest; and a seed chance per crop (the seed back is occasional,
+  not every time). Keep the farm's economy in mind: say what the seed chance means for keeping a
+  crop going, and pick sensible defaults per crop for the user to confirm.
+- A crop's damage or quality, if it changes the yield today, keeps working with the range.
+- Deterministic in tests (a seeded or injected random source). Tests for the range, the average
+  over many harvests, the seed chance, and the config check; README and design/farming notes.
+
+## 179. Picked-up items go into the hotbar first, then the backpack
+
+- [ ] Done
+
+The user, 2026-11-11: "picked up items should first be placed in the quick bar, if that one is
+full in the inventory."
+- Check what happens today: Inventory.add (game/state/item_slots.gd) puts items onto existing
+  stacks with room first (anywhere, the backpack too), then into free slots in
+  `_free_slot_order`, which lists the hotbar first but moves the selected slot to the very end;
+  ground pickups, harvests, foraging and other gains may go through other paths. Find where the
+  user's case differs (e.g. a stack in the backpack taking the item before a free hotbar slot, or
+  the selected slot being skipped) and decide with the rule: hotbar first (stacks there, then free
+  hotbar slots), then the backpack. Whether the held (selected) slot should take new items or stay
+  last, and whether a matching stack in the backpack should beat a free hotbar slot: pick a
+  default, explain, and the user confirms.
+- Same rule for every way the player gains items (pickups, harvest, forage, eggs, crafting
+  output if it goes to the inventory).
+- Tests for the order; README line.
+
 ## Later (not part of the prototype)
 
 - **Taming wild animals** (the user, 2026-11-11): wild animals already carry a friendship value
