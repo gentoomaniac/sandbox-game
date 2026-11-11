@@ -225,7 +225,7 @@ Movable modals don't save their position."
   sliders and drag-and-drop of items keep working), with the mouse; it stays within the screen.
 - A flag on Modal (e.g. `is_movable`, on by default) turns it off; the Escape (pause) menu and the
   options/settings menu set it off and keep their fixed places. Check every window that uses Modal
-  and list which stay fixed (e.g. confirmations in the middle may also want to stay put: ask).
+  and list which stay fixed. The user, the same day: confirmation dialogs stay fixed too.
 - Positions are not saved: a window opens where it opens today every time (also after a resize
   of the game window).
 - Tests for dragging, the flag, the screen bounds and not saving; README line.
