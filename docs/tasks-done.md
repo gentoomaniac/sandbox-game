@@ -4589,3 +4589,32 @@ a fade atlas assets/soil_fade.png (40 columns: 4 sides x 9 end cuts and 4 corner
 rows) on 8 TileMapLayers of SoilWetness; equal wetness and snow give no edge. The hourly refresh
 does about 5x the work of before, spread over frames within REFRESH_BUDGET_USEC.
 
+## 172. Inside a house the weather is faint, and the hearth crackles
+
+- [x] Done
+
+The user, 2026-11-10: "inside the house the weather sounds should be muffled and very faint. In
+a house with a hearth we should rather hear fire crackling as the main thing. Later, once
+implemented, the ambient music." Run after task 167, before the gossip tasks.
+- Today AudioService muffles the world outside indoors with a low-pass that fades in
+  (`Muffle`, game/scenes/audio_service.gd; design/presentation/sound.md): the weather is duller
+  but still about as loud. Indoors it should be much quieter as well (rain on the roof and wind
+  only faintly), the numbers in data/ (e.g. sounds.cfg or a [muffle] section), fading as now.
+- A building with a burning hearth or fireplace (HEARTH, FIREPLACE in world_object_types.gd;
+  check how a fire is lit or burns, and whether the oven counts) plays a fire-crackle loop as
+  the main indoor sound: positional or by distance to the fire in the room, made by the sound
+  generator (tools/audio, a new `*_loop` event, a sound-designer job) in the style of the other
+  sounds; silent when the fire is out.
+- Later, with tasks 170 and 171: the music indoors (the indoor piece or a quieter mix) — note it
+  in task 171, not done here.
+- Tests for the indoor volume, the crackle following the fire's state and the player's
+  building; listening files for the user (the crackle, and rain heard from inside).
+
+Done 2026-11-11: indoors the Ambience and OutsideEffects buses fade to -24 dB on top of the 700 Hz
+low-pass (data/ambience.cfg [indoors] outside_db). A hearth or fireplace (AmbientMotion.has_flames;
+the oven has no flames and stays silent) plays a positional fire_crackle_loop on the Effects bus,
+on top of the ambience; its reach goes by the room's size (a room of up to 100 tiles: 9 tiles, so
+the whole kate hears it; a bigger one: 4 tiles, so the longhouse is silent at the door). The user,
+the same day: no noise bed, only crackling; the pops were drum-like (a hollow knock, removed, now
+dry bright snaps); the walk renders' seams were a render artifact; "crackling sounds are good".
+Fires have no lit or out state yet, so a room with a hearth always crackles.
