@@ -5071,3 +5071,18 @@ stop it. add settings in the audio settings about volume."
   design/presentation/console.md lines.
 
 Done: 2026-11-11. The console `play <track>` (names with or without their prefix; Tab completes) renders the module on the worker thread pool and loops it on a new Music bus, `stop` fades it out over 2 s, another `play` crossfades on the beat over 4 s, a repeated `play` of the same track starts nothing new; an unknown name lists the tracks. A Music volume slider in the audio settings (0 mutes). Console reaches the MusicPlayer only through injected Callables (layering), and says "No music here" when unwired. Nothing plays on its own.
+
+## 186. Footsteps are silent on snow
+
+- [x] Done
+
+The user, 2026-11-11: "there is no sound walking on snow". SoundEvents.footstep returns
+`step_snow` when `is_snowed`, the step_snow files exist and are as loud as the others, and
+data/sounds.cfg has the event; so find where it goes wrong: what passes `is_snowed` (SnowCover's
+cover at the tile, maybe only partly snowed tiles or the dusting look), whether a snowed tile
+makes no step event at all (e.g. the walk sound keyed on the terrain or a look that has no
+entry), or the playback. Fix it; a test with a snowed tile giving the snow step in play, not only
+the pure function. Coordinate with task 185 (snow as an overlay): the step should follow the snow
+cover there too.
+
+Done: 2026-11-11. Full snow already gave the snow step; the silence was light snow, where a spot drawn snowy (the dual-grid blend of 4 corner tiles) still counted as grass by its own tile. `WorldView.is_snow_drawn_at(position)` now decides the step from the cell drawn under the feet: snow or dusting on at least 2 of its 4 corners gives `step_snow`. Frost stays a grass step; riding has none. Task 185's GroundCover replaces it later. An end-to-end test with a real WorldView.
