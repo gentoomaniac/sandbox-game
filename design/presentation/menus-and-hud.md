@@ -26,6 +26,10 @@ Decided 2026-11-05.
   zoom; the classic 16 px icons fill the same 16 UI pixels. Slots of 36 UI pixels for the icons
   at full size were tried and turned down: the hotbar took over a third of the screen's width.
   A shader keeps the icon's pixels square at 1.5 window pixels each (1080p).
+- **The bag** (task 190, 2026-11-11): a bag icon beside the hotbar, set a little apart from it
+  (the same icon in both arts); clicking it or pressing B opens the character screen and
+  inventory, which opens a bit right of the middle of the window. Tab is unbound; the hammer has
+  no key (it is selected on the hotbar).
 - **Tooltips** (decided 2026-11-05): hovering a slot in the hotbar, the inventory or the
   equipment shows a small framed panel by the cursor: the item's name, kind and weight
   (each and stack), a one-line description, and what matters for its kind, from the data

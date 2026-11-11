@@ -56,6 +56,8 @@ func _on_open() -> void:
   rows do. The panel stays on the screen, also after a resize, and is back in the
   middle every time the window opens (positions are not saved). `is_movable = false` in `_init`
   keeps a window in place: the pause menu with its settings pages and `ChoiceDialog` do.
+  `opening_shift` (set in `_init`) makes it open off the middle instead: the bag, the character
+  screen, opens 48 px right of it.
 
 ## The growing part: ScrollingList
 
@@ -151,7 +153,8 @@ pausing window.
 
 The HUDs (hotbar, vitals, harvest notes, notifications, coordinates), tooltips and the build menu are not `Modal`s:
 they are overlays that stay up while the player plays, take no input away from the game and
-need neither a backdrop nor one-at-a-time. Where they sit: the hotbar at the bottom centre; the
+need neither a backdrop nor one-at-a-time. Where they sit: the hotbar at the bottom centre, with the bag button (`HotbarHud.bag_requested`,
+the same as the bag key) a gap to its right; the
 clock, the harvest note and the notifications at the top left; the energy and health bars
 (`VitalsHud`) at the top right, `VitalsHud.MARGIN` from the edges, and the coordinates (F3)
 below them, at `VitalsHud.BOTTOM`. All are anchored to a corner or an edge, so they follow the

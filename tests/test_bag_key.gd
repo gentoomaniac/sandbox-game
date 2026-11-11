@@ -66,3 +66,10 @@ func test_the_hammer_is_taken_from_the_hotbar_and_its_key_resumes_a_dismissed_bu
 	_main._builder.dismiss()
 	_press(&"hotbar_%d" % (slot + 1))
 	assert_true(_main._builder.is_building(), "and takes build mode up again")
+
+
+func test_the_bag_button_opens_and_closes_the_bag_like_its_key() -> void:
+	_main._hotbar.bag_requested.emit()
+	assert_true(_main._character_screen.is_open())
+	_main._hotbar.bag_requested.emit()
+	assert_false(_main._character_screen.is_open())

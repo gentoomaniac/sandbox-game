@@ -22,8 +22,8 @@ extends CanvasLayer
 ## - The player drags the window by what is not content: the panel's frame and the gaps and labels
 ##   in it that take no clicks. Never by a button, slider, text field or slot, or by the rows of a
 ##   list (the empty area of a list and the gaps between its rows do drag). It stays on the
-##   screen, and opens in the middle again each time. A window that must stay put (the pause menu,
-##   a question) sets `is_movable` to false in `_init`.
+##   screen, and opens in its place (the middle unless `opening_shift` says otherwise) each time.
+##   A window that must stay put (the pause menu, a question) sets `is_movable` to false in `_init`.
 ## - Escape here is `ui_cancel` (not rebindable) or the rebindable pause key, as the pause menu
 ##   takes both. Other keys that close the window (E on the chest) are named in `close_actions`;
 ##   they close it at once, without `_takes_escape()`. Windows must stay children of Main, so that
@@ -49,12 +49,15 @@ var closes_on_backdrop_click := false
 var close_actions: Array[StringName] = []
 ## Whether the player can drag the window about. Set it in `_init`.
 var is_movable := true
+## How far from the middle of the window the panel opens, in canvas pixels (kept on the screen).
+## Set it in `_init`.
+var opening_shift := Vector2.ZERO
 
 var _backdrop := ColorRect.new()
 var _centre := Control.new()
 var _panel := PanelContainer.new()
 var _lists: Array[ScrollingList] = []
-## How far the player has dragged the panel from the middle of the window.
+## How far the panel is from the middle of the window: where it opened plus the player's drag.
 var _drag_shift := Vector2.ZERO
 var _is_dragging := false
 ## Where the panel was when the drag started, and where the mouse was.
@@ -117,7 +120,7 @@ func open() -> void:
 	close_open()
 	_open_modal = self
 	visible = true
-	_drag_shift = Vector2.ZERO
+	_drag_shift = opening_shift
 	_apply_drag_shift()
 	get_viewport().size_changed.connect(_apply_drag_shift)
 	if pauses_game:

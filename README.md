@@ -527,7 +527,8 @@ like a chest, the bedroll shows its ghost where it fits. X again goes back to bu
 
 The character is drawn in layers, so anything they wear shows in the world. They dress as
 on the North Sea coast in the 18th century: a red waistcoat over a linen shirt, knee breeches
-with white stockings, wooden clogs, and a short blue jacket and hats to put on. Press B to open the bag, the character screen, where you move items between the inventory and the equipment
+with white stockings, wooden clogs, and a short blue jacket and hats to put on. Press B (or click the bag icon
+beside the hotbar) to open the bag, the character screen, where you move items between the inventory and the equipment
 slots. The hotbar (the eight slots at the bottom of the screen, keys 1 to 8) holds your tools
 and seeds and is extra room: it takes nothing from the backpack's 20 slots (4 rows of 5), so
 you carry 28 stacks. New items fill the hotbar first (onto the same item, then free slots,
@@ -717,7 +718,7 @@ These are the default keys; all of them can be changed under Settings → Contro
 | Left mouse button, dragged | In the character and chest screens: move a stack onto a slot, the trash can, or (let go outside the screen) the ground |
 | Shift + left click, right click | In the character and chest screens: send a stack to the other side; on the character screen right click wears or takes off an item |
 | T | Drop the held stack on the ground in front of you (picked up again by walking away and back) |
-| B | The bag: character screen and inventory (the same key closes it) |
+| B, or click the bag icon beside the hotbar | The bag: character screen and inventory (opens a bit right of the middle; the same key closes it) |
 | K | Skills tab of the character screen |
 | C | Crafting menu (by hand) |
 | E | Get off the horse you ride; else talk to the villager in front of you, else get on the saddled horse in front of you, else open the chest or the station (its crafting menu) in front of you, else sleep until morning (next to a bed); with the hammer in hand it picks the next building |

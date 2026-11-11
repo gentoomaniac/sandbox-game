@@ -5,12 +5,15 @@ extends CanvasLayer
 ## touch it. While the character or the storage screen is open the hotbar moves above their
 ## dimmed backdrop: it stays lit and is their quick bar, its slots clickable (see `acquire`);
 ## otherwise clicks on it go to the game. The hotbar owns its slot views: a screen borrows the
-## whole bar with `acquire` and gives it back with `release`.
+## whole bar with `acquire` and gives it back with `release`. The bag button sits beside the bar,
+## set a little apart from it: clicking it asks for the bag (`bag_requested`).
 
 ## A slot was Shift+clicked, or right clicked, while the slots are clickable; one screen at a
 ## time listens (while open).
 signal slot_quick_move_requested(slot: int)
 signal slot_secondary_pressed(slot: int)
+## The bag button was clicked.
+signal bag_requested
 
 ## While the slots are clickable: above the screens (1), under the fade (2, added later) and
 ## the menus. Otherwise the hotbar is on layer 1 with the other HUDs.
@@ -18,14 +21,18 @@ const CLICKABLE_LAYER := 2
 const IDLE_LAYER := 1
 const BOTTOM_MARGIN := 4
 const SLOT_GAP := 2
+## Between the last slot and the bag button.
+const BAG_GAP := 8
 const WIDTH := Inventory.HOTBAR_SIZE * SlotView.SIZE + (Inventory.HOTBAR_SIZE - 1) * SLOT_GAP
 const THEME := preload("res://game/scenes/ui_theme.tres")
+const BAG_ICON := preload("res://assets/ui/bag_icon.png")
 
 var _inventory: Inventory
 ## The screen that has the bar as its quick bar, if any.
 var _borrower: Object
 var _slot_views: Array[SlotView] = []
 var _row := HBoxContainer.new()
+var _bag_button := Button.new()
 
 
 func _init() -> void:
@@ -51,10 +58,31 @@ func _init() -> void:
 	_row.offset_top = -BOTTOM_MARGIN - SlotView.SIZE
 	_row.offset_bottom = -BOTTOM_MARGIN
 
+	# Space is the game's use key: a focused button would take it.
+	_bag_button.theme = THEME
+	_bag_button.focus_mode = Control.FOCUS_NONE
+	# The picture is a child, not the button's icon, which the button's frame would shrink.
+	var picture := TextureRect.new()
+	picture.texture = BAG_ICON
+	picture.position = SlotView.ICON_RECT.position
+	picture.size = SlotView.ICON_RECT.size
+	picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ItemIcon.sharpen(picture)
+	_bag_button.add_child(picture)
+	_bag_button.pressed.connect(bag_requested.emit)
+	TooltipView.set_text(_bag_button, "Open the bag", "bag")
+	add_child(_bag_button)
+	_bag_button.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_bag_button.offset_left = WIDTH / 2.0 + BAG_GAP
+	_bag_button.offset_right = _bag_button.offset_left + SlotView.SIZE
+	_bag_button.offset_top = _row.offset_top
+	_bag_button.offset_bottom = _row.offset_bottom
 
-## Whether a point of the window (in canvas coordinates) is on the hotbar, between slots too.
+
+## Whether a point of the window (in canvas coordinates) is on the hotbar, between slots too, or
+## on the bag button.
 func covers(point: Vector2) -> bool:
-	return _row.get_global_rect().has_point(point)
+	return _row.get_global_rect().has_point(point) or _bag_button.get_global_rect().has_point(point)
 
 
 ## Makes the bar the quick bar of `borrower` (a screen that moves items): its slots take clicks

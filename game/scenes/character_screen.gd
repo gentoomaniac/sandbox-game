@@ -10,8 +10,9 @@ extends Modal
 ## (see TrashCan); let go anywhere else it stays where it was. Shift+click sends a whole stack
 ## from the backpack to the hotbar or back (onto the same item first), if there is room. Right
 ## click wears an inventory item, or takes a worn one off into the first free slot.
-## A second tab beside it shows the skills (see SkillsPanel); Tab opens the screen on the
-## character, K on the skills (`open_tab`, `toggle_tab`; `open()` opens the character).
+## A second tab beside it shows the skills (see SkillsPanel); B (or the bag button on the hotbar)
+## opens the screen on the character, K on the skills (`open_tab`, `toggle_tab`; `open()` opens
+## the character). It is the bag: it opens a bit right of the middle of the window.
 
 ## The player let go of the picked backpack or hotbar stack outside the screen (see
 ## GameState `drop_from_inventory`).
@@ -22,6 +23,8 @@ enum Tab { CHARACTER, SKILLS }
 const SLOT_GAP := 2
 const COLUMN_GAP := 4
 const PANEL_GAP := 12
+## The bag opens a bit right of the middle of the window, clear of the world's centre.
+const OPENING_SHIFT := Vector2(48, 0)
 ## The backpack is 5 slots wide and 4 rows high.
 const BACKPACK_COLUMNS := 5
 const MAX_PREVIEW_SCALE := 2
@@ -55,8 +58,10 @@ var _skills_panel := SkillsPanel.new()
 
 func _init(hotbar: HotbarHud) -> void:
 	super()
+	opening_shift = OPENING_SHIFT
 	_hotbar = hotbar
 	_drop_outside_panel(_hotbar, _on_dropped_outside)
+	_hotbar.bag_requested.connect(_on_bag_requested)
 
 	var character_row := HBoxContainer.new()
 	character_row.add_theme_constant_override("separation", COLUMN_GAP)
@@ -175,6 +180,12 @@ func _on_close() -> void:
 	_use_hotbar(false)
 	_trash_can.keep()
 	_refresh()
+
+
+## The bag button on the hotbar does what the bag's key does (see Main `_screens_take`).
+func _on_bag_requested() -> void:
+	if can_open_on_key():
+		toggle_tab(Tab.CHARACTER)
 
 
 ## Makes the HUD's hotbar this screen's quick bar, or gives it back: the screen listens to its
