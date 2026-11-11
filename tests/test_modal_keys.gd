@@ -23,10 +23,13 @@ func test_a_windows_key_does_nothing_while_another_window_is_open() -> void:
 	assert_true(second.can_open_on_key())
 
 
-## The rule with the real windows: what Main asks before it acts on C, B and K.
+## The rule with the real windows: what Main asks before it acts on Shift+C, C, B and K.
 func test_the_real_windows_keys_do_nothing_over_each_other_but_close_themselves() -> void:
 	var state := GameState.new_game(7)
 	var hotbar: HotbarHud = autofree(HotbarCase.new_hotbar())
+	var bag := BagScreen.new(hotbar)
+	add_child_autofree(bag)
+	bag.show_player(state.player)
 	var character := CharacterScreen.new(hotbar)
 	add_child_autofree(character)
 	character.show_player(state.player)
@@ -37,14 +40,22 @@ func test_the_real_windows_keys_do_nothing_over_each_other_but_close_themselves(
 	add_child_autofree(storage)
 	var chest := WorldObject.new(WorldObjectTypes.CHEST, Vector2i.ZERO)
 
+	bag.open()
+	assert_false(crafting.can_open_on_key(), "Shift+C does nothing over the bag")
+	assert_false(character.can_open_on_key(), "C and K do nothing over the bag")
+	assert_true(bag.can_open_on_key(), "B closes it")
+	bag.close()
 	character.open()
-	assert_false(crafting.can_open_on_key(), "C does nothing over the inventory")
-	assert_true(character.can_open_on_key(), "B and K still switch or close it")
+	assert_false(crafting.can_open_on_key(), "Shift+C does nothing over the character window")
+	assert_false(bag.can_open_on_key(), "B does nothing over it")
+	assert_true(character.can_open_on_key(), "C and K switch or close it")
 	character.close()
 	crafting.open()
-	assert_false(character.can_open_on_key(), "B and K do nothing over crafting")
-	assert_true(crafting.can_open_on_key(), "C closes crafting")
+	assert_false(bag.can_open_on_key(), "B does nothing over crafting")
+	assert_false(character.can_open_on_key(), "C and K do nothing over crafting")
+	assert_true(crafting.can_open_on_key(), "Shift+C closes crafting")
 	crafting.close()
 	storage.open_chest(chest, state.player)
 	assert_false(character.can_open_on_key(), "everything is swallowed with a chest open")
+	assert_false(bag.can_open_on_key())
 	assert_false(crafting.can_open_on_key())

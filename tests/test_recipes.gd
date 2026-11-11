@@ -186,7 +186,7 @@ func test_the_no_cost_cheat_crafts_for_nothing() -> void:
 # --- The key ---
 
 
-func test_shift_c_opens_the_crafting_menu_and_c_is_left_free() -> void:
+func test_shift_c_opens_the_crafting_menu_and_c_is_the_character_windows() -> void:
 	var events := InputMap.action_get_events(&"crafting")
 	assert_eq(events.size(), 1)
 	var key := events[0] as InputEventKey
@@ -194,6 +194,8 @@ func test_shift_c_opens_the_crafting_menu_and_c_is_left_free() -> void:
 	assert_true(key.shift_pressed)
 	assert_eq(GameSettings.binding_text(key), "Shift+C")
 	for action in GameSettings.actions():
+		if action == &"character":
+			continue
 		for event in InputMap.action_get_events(action):
 			if event is InputEventKey and not event.shift_pressed:
 				assert_ne(event.physical_keycode, KEY_C, str(action))

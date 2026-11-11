@@ -61,6 +61,22 @@ func test_the_hotbar_lets_go_of_the_old_inventory() -> void:
 	assert_eq(_connections_to(second.changed, hotbar), 1)
 
 
+func test_the_bag_lets_go_of_the_old_player() -> void:
+	var hotbar: HotbarHud = add_child_autofree(HotbarHud.new())
+	var screen: BagScreen = add_child_autofree(BagScreen.new(hotbar))
+	var first := PlayerState.new()
+	var second := PlayerState.new()
+	screen.show_player(first)
+	screen.show_player(first)
+	assert_eq(_connections_to(first.inventory.changed, screen), 1)
+	assert_eq(_connections_to(first.equipment.changed, screen), 1)
+	screen.show_player(second)
+	assert_eq(_connections_to(first.inventory.changed, screen), 0)
+	assert_eq(_connections_to(first.equipment.changed, screen), 0)
+	assert_eq(_connections_to(second.inventory.changed, screen), 1)
+	assert_eq(_connections_to(second.equipment.changed, screen), 1)
+
+
 func test_the_character_screen_lets_go_of_the_old_player() -> void:
 	var hotbar: HotbarHud = add_child_autofree(HotbarHud.new())
 	var screen: CharacterScreen = add_child_autofree(CharacterScreen.new(hotbar))
@@ -68,14 +84,13 @@ func test_the_character_screen_lets_go_of_the_old_player() -> void:
 	var second := PlayerState.new()
 	screen.show_player(first)
 	screen.show_player(first)
-	assert_eq(_connections_to(first.inventory.changed, screen), 1)
+	assert_eq(_connections_to(first.equipment.changed, screen), 1)
 	assert_eq(_connections_to(get_viewport().size_changed, screen), 1)
 	screen.show_player(second)
-	assert_eq(_connections_to(first.inventory.changed, screen), 0)
 	assert_eq(_connections_to(first.equipment.changed, screen), 0)
 	assert_eq(_connections_to(first.skills.changed, screen._skills_panel), 0)
 	assert_eq(_connections_to(second.skills.changed, screen._skills_panel), 1)
-	assert_eq(_connections_to(second.inventory.changed, screen), 1)
+	assert_eq(_connections_to(second.equipment.changed, screen), 1)
 	assert_eq(_connections_to(get_viewport().size_changed, screen), 1)
 
 

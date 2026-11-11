@@ -1,11 +1,11 @@
 extends CharacterDragCase
-## The character screen's slots are moved by dragging: a stack follows the mouse while the button
+## The bag's slots are moved by dragging: a stack follows the mouse while the button
 ## is held and lands where it is let go, with real mouse events. The hotbar slots of the HUD are
 ## among them.
 
 
 func before_each() -> void:
-	_open_character_screen()
+	_open_bag_screen()
 	await wait_process_frames(2)
 
 
@@ -98,7 +98,7 @@ func test_the_hotbar_takes_stacks_while_the_screen_is_open() -> void:
 
 
 func test_the_hotbar_is_not_dragged_once_the_screen_is_closed() -> void:
-	_screen.close()
+	_bag.close()
 	var view := _hotbar._slot_views[0]
 	var before := _player.inventory.slots[0].duplicate()
 	_drag(_centre_of(view), _centre_of(view) + Vector2(-60, 0))
@@ -120,14 +120,46 @@ func test_shift_click_sends_a_stack_between_the_backpack_and_the_hotbar() -> voi
 	assert_true(_player.inventory.slots[5].is_empty())
 
 
-func test_the_hud_hotbar_is_clickable_only_while_the_character_page_is_open() -> void:
+func test_the_hud_hotbar_is_clickable_only_while_the_bag_is_open() -> void:
 	var slot := _hotbar._slot_views[0]
 	assert_true(slot.is_clickable)
-	_screen.close()
+	_bag.close()
 	assert_false(slot.is_clickable)
-	_screen.open_tab(CharacterScreen.Tab.SKILLS)
-	assert_false(slot.is_clickable, "the skills page moves no items")
 
 
 func test_the_hotbar_is_drawn_above_the_dimmed_backdrop_of_the_screen() -> void:
-	assert_gt(_hotbar.layer, _screen.layer)
+	assert_gt(_hotbar.layer, _bag.layer)
+
+
+func test_a_stack_let_go_outside_the_panel_is_dropped_on_the_ground() -> void:
+	_set_stack(BACKPACK_SLOT, ItemTypes.LOGS, 7)
+	watch_signals(_bag)
+	_drag(_centre_of(_backpack_view(BACKPACK_SLOT)), Vector2(4, 4))
+	assert_signal_emitted_with_parameters(_bag, "drop_requested", [BACKPACK_SLOT])
+
+
+func test_a_hotbar_stack_let_go_outside_the_panel_is_dropped_on_the_ground() -> void:
+	_set_stack(0, ItemTypes.LOGS, 3)
+	watch_signals(_bag)
+	_drag(_centre_of(_hotbar._slot_views[0]), Vector2(4, 4))
+	assert_signal_emitted_with_parameters(_bag, "drop_requested", [0])
+
+
+func test_a_stack_let_go_on_the_panel_between_slots_goes_back() -> void:
+	_set_stack(BACKPACK_SLOT, ItemTypes.LOGS, 7)
+	watch_signals(_bag)
+	_drag(
+		_centre_of(_backpack_view(BACKPACK_SLOT)), _bag._panel.get_rect().position + Vector2(2, 2)
+	)
+	assert_signal_not_emitted(_bag, "drop_requested")
+	assert_eq(_player.inventory.slots[BACKPACK_SLOT], {"item": ItemTypes.LOGS, "count": 7})
+
+
+func test_a_stack_let_go_between_hotbar_slots_goes_back() -> void:
+	_set_stack(BACKPACK_SLOT, ItemTypes.LOGS, 7)
+	watch_signals(_bag)
+	var gap := _hotbar._slot_views[0].get_global_rect().end + Vector2(1, -5)
+	assert_true(_hotbar.covers(gap))
+	_drag(_centre_of(_backpack_view(BACKPACK_SLOT)), gap)
+	assert_signal_not_emitted(_bag, "drop_requested")
+	assert_eq(_player.inventory.slots[BACKPACK_SLOT], {"item": ItemTypes.LOGS, "count": 7})

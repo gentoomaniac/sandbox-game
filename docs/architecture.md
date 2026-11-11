@@ -32,8 +32,8 @@ Warft and an Ewer here and there.
 - **Main** (`game/scenes/main.gd`, `main.tscn`) is the one scene. It owns the `GameState`,
   turns real time into game minutes, sends input to the state and creates the views and
   screens. Its `_ready` runs in steps: load the game, make the views, connect the state and
-  the views, apply the start options. The windows (`CharacterScreen`,
-  `CraftingScreen`, `StorageScreen`, `ChatScreen` and `PauseMenu`) extend `Modal`, which builds
+  the views, apply the start options. The windows (`BagScreen`,
+  `CharacterScreen`, `CraftingScreen`, `StorageScreen`, `ChatScreen` and `PauseMenu`) extend `Modal`, which builds
   the backdrop and panel, opens, closes, takes Escape and keeps one window open at a time; Main
   asks `Modal.is_any_open()`, and a window's key does nothing while another is open (see
   [ui.md](ui.md)). The console is a strip, not a window, and keeps its own code. The debug flags
@@ -280,8 +280,8 @@ Warft and an Ewer here and there.
   `GameState.take_down_building` the rules for buildings), `BuildMenu` (the row of buildings
   above the hotbar, the chosen one's styles and the preview; its cells take the clicks on
   them, so they never reach the land, and it shows build mode's messages while it is up),
-  `GroundItemView`, and the HUDs and screens (`HotbarHud`, `CharacterScreen`,
-  `CraftingScreen`, `PauseMenu`, `ConsoleView` and so on). The hotbar is on a layer above the
+  `GroundItemView`, and the HUDs and screens (`HotbarHud`, `BagScreen`,
+  `CharacterScreen`, `CraftingScreen`, `PauseMenu`, `ConsoleView` and so on). The hotbar is on a layer above the
   character and chest screens and is their quick bar: they take it in their constructor and
   listen to its slot views, and it passes clicks on to the game when none of them is open.
   A stack let go outside a screen reaches the world as `drop_requested`, which Main hands to

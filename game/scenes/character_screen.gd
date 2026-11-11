@@ -1,32 +1,18 @@
 class_name CharacterScreen
-extends Modal
-## The character screen over the game: the character with the equipment slots around it on the
-## left and the backpack with the carried weight on the right. The hotbar is the HUD's, which
-## stays lit and clickable while the screen is open, and is used like the backpack's slots.
-## Items are moved by dragging them (see SlotView): onto another slot, where a different item
-## swaps places and the same item stacks, and an equipment slot only takes an item that fits
-## (those light up while one is dragged). Let go outside the panel, a backpack or hotbar stack
-## lands on the ground; let go on the trash can, a stack is asked about, "Destroy Logs (12)?"
-## (see TrashCan); let go anywhere else it stays where it was. Shift+click sends a whole stack
-## from the backpack to the hotbar or back (onto the same item first), if there is room. Right
-## click wears an inventory item, or takes a worn one off into the first free slot.
-## A second tab beside it shows the skills (see SkillsPanel); B (or the bag button on the hotbar)
-## opens the screen on the character, K on the skills (`open_tab`, `toggle_tab`; `open()` opens
-## the character). It is the bag: it opens a bit right of the middle of the window.
-
-## The player let go of the picked backpack or hotbar stack outside the screen (see
-## GameState `drop_from_inventory`).
-signal drop_requested(slot: int)
+extends HotbarWindow
+## The character window over the game, opened with C: the character with the equipment slots
+## around it. The items are the bag's (see BagScreen). The hotbar is the HUD's, which stays lit and
+## clickable while the window is open on the character: a stack dragged from it onto an equipment
+## slot is worn, a worn item dragged onto it is taken off, and right click wears or takes off.
+## An equipment slot only takes an item that fits (those light up while one is dragged). A worn
+## item let go on the trash can is asked about, as in the bag (see TrashCan).
+## A second tab beside it shows the skills (see SkillsPanel); C opens the window on the character,
+## K on the skills (`open_tab`, `toggle_tab`; `open()` opens the character).
 
 enum Tab { CHARACTER, SKILLS }
 
 const SLOT_GAP := 2
 const COLUMN_GAP := 4
-const PANEL_GAP := 12
-## The bag opens a bit right of the middle of the window, clear of the world's centre.
-const OPENING_SHIFT := Vector2(48, 0)
-## The backpack is 5 slots wide and 4 rows high.
-const BACKPACK_COLUMNS := 5
 const MAX_PREVIEW_SCALE := 2
 ## Kept free round the character, and the panel's own frame and padding (see ui_theme.tres).
 const WINDOW_MARGIN := 8
@@ -37,16 +23,10 @@ const HINT_PATH := "res://assets/ui/equip_%s.png"
 const LEFT_SLOTS := [Equipment.HEAD, Equipment.BODY, Equipment.LEGS, Equipment.FEET]
 const RIGHT_SLOTS := [Equipment.COAT, Equipment.BACK, Equipment.MAIN_HAND, Equipment.OFF_HAND]
 
-var _player: PlayerState
-var _hotbar: HotbarHud
-var _is_using_hotbar := false
-## The views of the backpack's slots below the hotbar, by slot; the hotbar draws its own.
-var _backpack_views := {}
 var _equipment_views := {}
 var _preview := CharacterPreview.new()
 var _left_column := VBoxContainer.new()
 var _right_column := VBoxContainer.new()
-var _weight_label := Label.new()
 var _note_label := Label.new()
 var _trash_can := TrashCan.new()
 var _tab := Tab.CHARACTER
@@ -57,11 +37,7 @@ var _skills_panel := SkillsPanel.new()
 
 
 func _init(hotbar: HotbarHud) -> void:
-	super()
-	opening_shift = OPENING_SHIFT
-	_hotbar = hotbar
-	_drop_outside_panel(_hotbar, _on_dropped_outside)
-	_hotbar.bag_requested.connect(_on_bag_requested)
+	super(hotbar)
 
 	var character_row := HBoxContainer.new()
 	character_row.add_theme_constant_override("separation", COLUMN_GAP)
@@ -71,31 +47,14 @@ func _init(hotbar: HotbarHud) -> void:
 	_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	character_row.add_child(_preview)
 	_add_equipment_column(_right_column, RIGHT_SLOTS, character_row)
+	_note_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var character_page := VBoxContainer.new()
+	character_page.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	character_page.add_child(character_row)
+	character_page.add_child(_note_label)
+	character_page.add_child(_trash_can)
 
-	var backpack_grid := _new_slot_grid(BACKPACK_COLUMNS)
-	for slot in range(Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT):
-		var view := SlotView.new()
-		view.tooltip_id = "inventory_%d" % slot
-		backpack_grid.add_child(view)
-		view.quick_move_requested.connect(_on_inventory_slot_quick_move_requested.bind(slot))
-		view.secondary_pressed.connect(_on_inventory_slot_secondary_pressed.bind(slot))
-		_backpack_views[slot] = view
-	var inventory_column := VBoxContainer.new()
-	inventory_column.add_theme_constant_override("separation", SLOT_GAP)
-	inventory_column.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for label in [_weight_label, _note_label]:
-		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	inventory_column.add_child(backpack_grid)
-	inventory_column.add_child(_weight_label)
-	inventory_column.add_child(_note_label)
-	inventory_column.add_child(_trash_can)
-
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", PANEL_GAP)
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(character_row)
-	row.add_child(inventory_column)
-	_pages = {Tab.CHARACTER: row, Tab.SKILLS: _skills_panel}
+	_pages = {Tab.CHARACTER: character_page, Tab.SKILLS: _skills_panel}
 	var tabs := HBoxContainer.new()
 	var tab_group := ButtonGroup.new()
 	for tab: Tab in [Tab.CHARACTER, Tab.SKILLS]:
@@ -109,10 +68,8 @@ func _init(hotbar: HotbarHud) -> void:
 	var page_column := VBoxContainer.new()
 	page_column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	page_column.add_child(tabs)
-	page_column.add_child(row)
+	page_column.add_child(character_page)
 	page_column.add_child(_skills_panel)
-	# Stacks let go on the panel outside the slots reach the backdrop, which sends them back.
-	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel.add_child(page_column)
 
 
@@ -120,24 +77,20 @@ func _init(hotbar: HotbarHud) -> void:
 func show_player(player: PlayerState) -> void:
 	if _player != null:
 		close()
-		_player.inventory.changed.disconnect(_refresh)
 		_player.equipment.changed.disconnect(_refresh)
 		get_viewport().size_changed.disconnect(_fit_character)
 	_player = player
 	_preview.show_appearance(player.appearance)
 	_skills_panel.show_skills(player.skills)
-	for slot: int in _backpack_views:
-		_backpack_views[slot].bind_to(player.inventory, slot)
 	for slot: StringName in _equipment_views:
 		_equipment_views[slot].bind_to(player.equipment, slot)
-	player.inventory.changed.connect(_refresh)
 	player.equipment.changed.connect(_refresh)
 	get_viewport().size_changed.connect(_fit_character)
 	_fit_character()
 	_refresh()
 
 
-## Opens the screen on `tab`, or switches to it when the screen is open.
+## Opens the window on `tab`, or switches to it when the window is open.
 func open_tab(tab: Tab) -> void:
 	if visible:
 		_show_tab(tab)
@@ -146,7 +99,7 @@ func open_tab(tab: Tab) -> void:
 		open()
 
 
-## Closes the screen if it is open on `tab`, else opens it there.
+## Closes the window if it is open on `tab`, else opens it there.
 func toggle_tab(tab: Tab) -> void:
 	if visible and _tab == tab:
 		close()
@@ -174,7 +127,7 @@ func _on_open() -> void:
 	_show_tab(_tab)
 
 
-## `open()` opens the character, so the tab is back to it once the screen is closed.
+## `open()` opens the character, so the tab is back to it once the window is closed.
 func _on_close() -> void:
 	_tab = Tab.CHARACTER
 	_use_hotbar(false)
@@ -182,42 +135,15 @@ func _on_close() -> void:
 	_refresh()
 
 
-## The bag button on the hotbar does what the bag's key does (see Main `_screens_take`).
-func _on_bag_requested() -> void:
-	if can_open_on_key():
-		toggle_tab(Tab.CHARACTER)
-
-
-## Makes the HUD's hotbar this screen's quick bar, or gives it back: the screen listens to its
-## clicks only while it is the one using it.
-func _use_hotbar(is_used: bool) -> void:
-	# The hotbar may have been freed first, when the whole scene goes.
-	if is_used == _is_using_hotbar or not is_instance_valid(_hotbar):
-		return
-	_is_using_hotbar = is_used
-	if is_used:
-		_hotbar.acquire(self)
-		_hotbar.slot_quick_move_requested.connect(_on_inventory_slot_quick_move_requested)
-		_hotbar.slot_secondary_pressed.connect(_on_inventory_slot_secondary_pressed)
-	else:
-		_hotbar.release(self)
-		_hotbar.slot_quick_move_requested.disconnect(_on_inventory_slot_quick_move_requested)
-		_hotbar.slot_secondary_pressed.disconnect(_on_inventory_slot_secondary_pressed)
+## Escape answers the trash can's question with Keep, and only then closes the window.
+func _takes_escape() -> bool:
+	return _trash_can.keep()
 
 
 func _process(_delta: float) -> void:
 	if not visible:
 		return
 	_preview.queue_redraw()
-
-
-func _new_slot_grid(columns: int) -> GridContainer:
-	var grid := GridContainer.new()
-	grid.columns = columns
-	grid.add_theme_constant_override("h_separation", SLOT_GAP)
-	grid.add_theme_constant_override("v_separation", SLOT_GAP)
-	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	return grid
 
 
 func _add_equipment_column(column: VBoxContainer, slots: Array, parent: Container) -> void:
@@ -251,40 +177,17 @@ func _tallest_column_height() -> int:
 	return slot_count * SlotView.SIZE + (slot_count - 1) * SLOT_GAP
 
 
-func _on_inventory_slot_quick_move_requested(slot: int) -> void:
-	_player.inventory.move_to_other_part(slot)
-
-
-func _on_inventory_slot_secondary_pressed(slot: int) -> void:
-	_player.equipment.quick_equip(_player.inventory, slot)
-
-
 func _on_equipment_slot_secondary_pressed(slot: StringName) -> void:
 	var is_worn := _player.equipment.item_in(slot) != ItemTypes.NONE
 	var is_off := _player.equipment.quick_unequip(_player.inventory, slot)
 	_note_label.text = "Inventory full" if is_worn and not is_off else ""
 
 
-## Escape answers the trash can's question with Keep, and only then closes the screen.
-func _takes_escape() -> bool:
-	return _trash_can.keep()
-
-
-## A stack was let go outside the panel: a backpack or hotbar one lands on the ground.
-func _on_dropped_outside(source: SlotView) -> void:
-	if source.container == _player.inventory:
-		drop_requested.emit(source.slot)
-
-
 func _refresh() -> void:
 	if _player == null:
 		return
 	_note_label.text = ""
-	var inventory := _player.inventory
-	for slot: int in _backpack_views:
-		_backpack_views[slot].show_stack(inventory.slots[slot], slot == inventory.selected_slot)
 	for slot: StringName in _equipment_views:
 		var item := _player.equipment.item_in(slot)
 		var stack := {} if item == ItemTypes.NONE else {"item": item, "count": 1}
 		_equipment_views[slot].show_stack(stack, false)
-	_weight_label.text = "Carrying %.1f kg" % _player.carried_weight()

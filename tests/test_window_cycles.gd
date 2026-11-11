@@ -52,6 +52,19 @@ func test_storage_screens_opened_and_freed_leave_no_nodes() -> void:
 	assert_eq(_hotbar.layer, HotbarHud.IDLE_LAYER)
 
 
+func test_bag_screens_opened_and_freed_leave_no_nodes() -> void:
+	await _assert_settles(
+		func() -> void:
+			var screen := BagScreen.new(_hotbar)
+			add_child(screen)
+			screen.show_player(_player)
+			screen.open()
+			remove_child(screen)
+			screen.free()
+	)
+	assert_eq(_hotbar.layer, HotbarHud.IDLE_LAYER)
+
+
 func test_character_screens_opened_and_freed_leave_no_nodes() -> void:
 	await _assert_settles(
 		func() -> void:

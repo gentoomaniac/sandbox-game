@@ -1,6 +1,7 @@
 extends GutTest
-## Crafting is on Shift+C; a settings file may name that key, and an old one that gave crafting
-## the plain C gets Shift+C.
+## Crafting is on Shift+C and C is the character window's: a settings file may name Shift+C, an old
+## one that gave crafting the plain C gets Shift+C, and one that gave C to another action takes it
+## away.
 
 const DIR := "user://test_settings_crafting_key"
 const PATH := DIR + "/settings.cfg"
@@ -56,3 +57,19 @@ func test_a_file_that_moved_crafting_elsewhere_keeps_it_there() -> void:
 	_write_file('[controls]\ncrafting=["key:%d"]\n' % KEY_V)
 	_settings.load_file()
 	assert_eq(_texts(&"crafting"), ["V"])
+
+
+func test_the_action_that_an_old_file_gave_c_loses_it_to_the_character_window() -> void:
+	_write_file('[controls]\ndrop_item=["key:%d"]\n' % KEY_C)
+	_settings.load_file()
+	assert_eq(_texts(&"character"), ["C"])
+	assert_eq(_texts(&"drop_item"), [])
+	assert_push_warning_count(1)
+
+
+func test_a_character_window_the_file_moved_elsewhere_leaves_c_to_the_other_action() -> void:
+	_write_file('[controls]\ncharacter=["key:%d"]\ndrop_item=["key:%d"]\n' % [KEY_F, KEY_C])
+	_settings.load_file()
+	assert_eq(_texts(&"character"), ["F"])
+	assert_eq(_texts(&"drop_item"), ["C"])
+	assert_push_warning_count(0)

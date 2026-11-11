@@ -54,6 +54,17 @@ func test_every_slot_of_the_storage_screen_is_hit_all_over() -> void:
 	await _assert_all_buttons_hit(screen, "storage")
 
 
+func test_every_button_of_the_bag_is_hit_all_over() -> void:
+	var hotbar := HotbarCase.new_hotbar()
+	_window.add_child(hotbar)
+	hotbar.show_inventory(_state.player.inventory)
+	var screen := BagScreen.new(hotbar)
+	_window.add_child(screen)
+	screen.show_player(_state.player)
+	screen.open()
+	await _assert_all_buttons_hit(screen, "bag")
+
+
 func test_every_button_of_the_character_screen_tabs_is_hit_all_over() -> void:
 	var hotbar := HotbarCase.new_hotbar()
 	_window.add_child(hotbar)

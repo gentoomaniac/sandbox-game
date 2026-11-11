@@ -56,8 +56,8 @@ func _on_open() -> void:
   rows do. The panel stays on the screen, also after a resize, and is back in the
   middle every time the window opens (positions are not saved). `is_movable = false` in `_init`
   keeps a window in place: the pause menu with its settings pages and `ChoiceDialog` do.
-  `opening_shift` (set in `_init`) makes it open off the middle instead: the bag, the character
-  screen, opens 48 px right of it.
+  `opening_shift` (set in `_init`) makes it open off the middle instead: the bag (`BagScreen`)
+  opens 48 px right of it.
 
 ## The growing part: ScrollingList
 
@@ -71,10 +71,11 @@ than `MIN_HEIGHT` (48 UI pixels), so a tiny window crosses the panel's edge rath
 rows. The base puts every list back to the top when the window opens. To swap what is in the
 growing part (a chest with other slots), keep the part as a fixed container and swap its children.
 
-The character screen is another window whose methods take arguments: `open_tab(tab)` stores the
-tab and calls `open()` (or switches tab when the screen is open), and `toggle_tab(tab)` closes it
-when it is open on that tab. Its tab keys (B, K) are Main's; it registers no `close_actions`, so
-E does nothing while it is open.
+The character window (`CharacterScreen`, C) is another window whose methods take arguments:
+`open_tab(tab)` stores the tab and calls `open()` (or switches tab when the window is open), and
+`toggle_tab(tab)` closes it when it is open on that tab. Its keys (C, K) are Main's, as the bag's
+(`BagScreen`, B); neither registers `close_actions`, so E does nothing while one is open. Both
+extend `HotbarWindow`, which lends them the HUD's hotbar as their quick bar.
 
 ## Escape, backdrop clicks, pause, one at a time
 
@@ -97,13 +98,13 @@ E does nothing while it is open.
   `ask(title, text, choices, safe_choice)`, then `await dialog.answered` gives the index of the
   button pressed; Escape and anything else that closes it answer `safe_choice`, which is also the
   button that has the focus. It pauses the game and sits above the pause menu. Main owns one.
-- **Dragging stacks:** a window that moves inventory stacks (the character and the chest screen)
+- **Dragging stacks:** a window that moves inventory stacks (the bag, the character and the chest screen)
   uses SlotView, which is Godot's own drag and drop (`_get_drag_data`, `_can_drop_data`,
   `_drop_data`, `set_drag_preview`) on a slot bound to its ItemSlots or Equipment (`bind_to`),
   and TrashCan, a drop target of its own that asks before it destroys. The window only calls
   `_drop_outside_panel(hotbar, on_drop)` in `_init` (with `_panel.mouse_filter` ignoring the
   mouse) to hear of a stack let go on the dimmed area, outside the panel and the HUD's hotbar,
-  which the character and chest screen turn into a drop on the ground. A stack let go on
+  which the bag and chest screen turn into a drop on the ground. A stack let go on
   anything that refuses it goes back by itself: nothing moves while it is dragged. The HUD's
   hotbar owns its slot views: a screen takes the bar as its quick bar with `HotbarHud.acquire(self)`
   (slots clickable and bound to the inventory, the bar above the screen) and gives it back with

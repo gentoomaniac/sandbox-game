@@ -54,7 +54,7 @@ var world: World
 var builder: Builder
 ## Turns the mouse position into a world position.
 var camera: CameraController
-## The `--ghost` and `--house` flags.
+## The `--building`, `--ghost` and `--house` flags.
 var start_options := StartupOptions.new()
 
 var _origin := Vector2i.ZERO
@@ -130,6 +130,27 @@ func _is_right_click(event: InputEvent) -> bool:
 func _dismiss() -> void:
 	builder.dismiss()
 	message_changed.emit("")
+
+
+## Applies the `--building` and `--ghost` flags to the builder. The ghost is pinned there by
+## `_process`; here the hammer is taken to see it.
+func apply_start_options() -> void:
+	if start_options.building != &"":
+		var building := start_options.building
+		var style := start_options.building_style
+		if BuildingTypes.TYPES.has(building) and style in BuildingTypes.styles(building):
+			builder.choose(building, style)
+		else:
+			push_error(
+				(
+					"--building expects one of %s, or one with a style (kate.brick), got '%s.%s'"
+					% [BuildingTypes.ids(), building, style]
+				)
+			)
+	if start_options.ghost != StartupOptions.NO_TILE:
+		builder.select_hammer()
+		if start_options.taking_down:
+			builder.toggle_taking_down()
 
 
 func _process(delta: float) -> void:

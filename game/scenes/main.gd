@@ -59,6 +59,7 @@ var _coordinates_hud := CoordinatesHud.new()
 var _hotbar := HotbarHud.new()
 var _build_menu := BuildMenu.new()
 var _vitals := VitalsHud.new()
+var _bag_screen := BagScreen.new(_hotbar)
 var _character_screen := CharacterScreen.new(_hotbar)
 var _crafting_screen := CraftingScreen.new()
 var _storage_screen := StorageScreen.new(_hotbar)
@@ -220,6 +221,7 @@ func _make_views() -> void:
 	add_child(_hotbar)
 	add_child(_build_menu)
 	add_child(_vitals)
+	add_child(_bag_screen)
 	add_child(_character_screen)
 	add_child(_crafting_screen)
 	add_child(_storage_screen)
@@ -257,7 +259,7 @@ func _connect_state_and_views() -> void:
 	_build_mode.builder = _builder
 	_build_mode.camera = _camera
 	_build_mode.message_changed.connect(_show_build_message)
-	_character_screen.drop_requested.connect(_state.drop_from_inventory)
+	_bag_screen.drop_requested.connect(_state.drop_from_inventory)
 	_storage_screen.drop_requested.connect(_state.drop_from_inventory)
 	_camera.rig.follow(_camera_target)
 	_player_view.show_player(_state.player, _options)
@@ -266,6 +268,7 @@ func _connect_state_and_views() -> void:
 	_hotbar.show_inventory(_state.player.inventory)
 	_build_menu.bind(_builder, _state.player.inventory)
 	_vitals.show_state(_state)
+	_bag_screen.show_player(_state.player)
 	_character_screen.show_player(_state.player)
 	_crafting_screen.show_crafting(Crafting.new(_state), _state.player.inventory)
 	_cheat_hud.show_cheats(_state.cheats)
@@ -298,24 +301,8 @@ func _on_time_skipped(_minutes: int) -> void:
 ## Applies the flags that put the views in a situation, and hands the ones that wait for the
 ## drawn world to the DebugRunner.
 func _apply_start_options() -> void:
-	if _options.building != &"":
-		var building := _options.building
-		var style := _options.building_style
-		if BuildingTypes.TYPES.has(building) and style in BuildingTypes.styles(building):
-			_builder.choose(building, style)
-		else:
-			push_error(
-				(
-					"--building expects one of %s, or one with a style (kate.brick), got '%s.%s'"
-					% [BuildingTypes.ids(), building, style]
-				)
-			)
-	# BuildMode pins the ghost there; here the hammer is taken to see it.
-	if _options.ghost != StartupOptions.NO_TILE:
-		_builder.select_hammer()
-		if _options.taking_down:
-			_builder.toggle_taking_down()
 	_build_mode.start_options = _options
+	_build_mode.apply_start_options()
 	_camera.rig.set_zoom_clamped(_options.zoom)
 	if _options.coordinates:
 		_coordinates_hud.toggle()
@@ -327,6 +314,8 @@ func _apply_start_options() -> void:
 	_wildlife.is_player_ignored = _options.wildlife_calm
 	_weather_view.is_flash_held = _options.flash
 	if _options.inventory:
+		_bag_screen.open()
+	if _options.character:
 		_character_screen.open()
 	if _options.skills:
 		_character_screen.open_tab(CharacterScreen.Tab.SKILLS)
@@ -662,7 +651,10 @@ func _screens_take(event: InputEvent) -> bool:
 		else:
 			_harvest_hud.show_note(GET_OFF_FIRST)
 		return true
-	if event.is_action_pressed("inventory") and _character_screen.can_open_on_key():
+	if event.is_action_pressed("inventory") and _bag_screen.can_open_on_key():
+		_bag_screen.toggle()
+		return true
+	if event.is_action_pressed("character", false, true) and _character_screen.can_open_on_key():
 		_character_screen.toggle_tab(CharacterScreen.Tab.CHARACTER)
 		return true
 	if event.is_action_pressed("skills") and _character_screen.can_open_on_key():
@@ -767,7 +759,9 @@ func _start_sounds() -> void:
 	add_child(_sounds)
 	_sounds.listen(_audio, _state, _view, _player_view, _build_mode)
 	_sounds.click_on_press_in(_hotbar)
-	for panel: Node in [_menu, _console_view, _chat_screen, _character_screen, _crafting_screen]:
+	for panel: Node in [
+		_menu, _console_view, _chat_screen, _bag_screen, _character_screen, _crafting_screen
+	]:
 		_sounds.click_on_press_in(panel)
 		_sounds.watch_panel(panel.is_open)
 	_sounds.click_on_press_in(_storage_screen)

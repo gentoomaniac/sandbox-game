@@ -17,6 +17,13 @@ func _character_screen() -> CharacterScreen:
 	return screen
 
 
+func _bag_screen() -> BagScreen:
+	var screen := BagScreen.new(autofree(HotbarCase.new_hotbar()))
+	add_child_autofree(screen)
+	screen.show_player(_state.player)
+	return screen
+
+
 func _crafting_screen() -> CraftingScreen:
 	var screen := CraftingScreen.new()
 	add_child_autofree(screen)
@@ -44,6 +51,11 @@ func _opened_and_closed(screen: Node, open_screen: Callable) -> void:
 
 func test_character_screen() -> void:
 	var screen := _character_screen()
+	_opened_and_closed(screen, screen.open)
+
+
+func test_bag_screen() -> void:
+	var screen := _bag_screen()
 	_opened_and_closed(screen, screen.open)
 
 

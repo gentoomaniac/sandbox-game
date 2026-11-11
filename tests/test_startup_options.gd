@@ -88,7 +88,9 @@ func test_flags_without_a_value() -> void:
 	assert_true(options.sleep)
 	assert_false(options.crafting)
 	assert_false(options.skills)
-	var screens := StartupOptions.new(PackedStringArray(["--skills", "--station"]))
+	assert_false(options.character)
+	var screens := StartupOptions.new(PackedStringArray(["--skills", "--station", "--character"]))
+	assert_true(screens.character)
 	assert_true(screens.skills)
 	assert_true(screens.station)
 

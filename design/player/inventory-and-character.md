@@ -50,17 +50,21 @@
     where it was (it never left its slot while it was dragged). The state classes do the
     removal (`ItemSlots.destroy`, `Equipment.destroy`); the trash can only asks and sends it,
     and does nothing if the stack asked about is no longer in its slot.
-- **Character screen** (decided 2026-11-05; the bag since task 190, B instead of Tab): B opens one screen with the character and
-  their equipment on one side and the inventory on the other.
+- **Character window and bag** (decided 2026-11-05 as one screen; B instead of Tab since task 190;
+  split in two windows in task 191, 2026-11-12): C opens the character window with the character
+  and their equipment, B opens the bag with the backpack. Both are Modals, so one is open at a
+  time: from the backpack a worn item is chosen by right click in the bag, and from the hotbar
+  (the quick bar of both) by dragging onto the slot in the character window.
   - Equipment slots: head, body, legs, feet, coat, back, main hand, off hand (coat added in
     task 53, for a jacket over the body item). Clothes, armour
     and later weapons, shields and backpacks are items with a slot; worn items show on the
     character (each slot is a sprite layer).
   - Items move between inventory slots and fitting equipment slots by dragging (swap
-    included); an item only goes into a slot it fits, and fitting slots light up
+    included; from the hotbar, as the backpack is in the other window); an item only goes into a slot it fits, and fitting slots light up
     while an item is dragged. Right-click equips or unequips at once.
-  - Keys: B opens the screen (and closes it from the character tab; Tab is unbound), K opens the skills tab
-    and closes it from there; Escape and the pause key close it. E does nothing while it is open.
+  - Keys: C opens the character window and closes it, K opens its skills tab and closes it from
+    there; B opens the bag and closes it (Tab is unbound); Escape and the pause key close either.
+    E does nothing while one is open. Crafting is Shift+C.
   - Worn items count toward the carried weight.
   - Hair and body are the character's look, not equipment.
   - New game (period clothes since task 53, North Sea coast 1700–1800): a red waistcoat

@@ -1,5 +1,5 @@
 extends DragCase
-## The character screen's trash can: a stack let go on it is destroyed only after the question
+## The bag's trash can: a stack let go on it is destroyed only after the question
 ## "Destroy Logs (12)?" is answered with Destroy; Keep, Escape or a click elsewhere leave it where
 ## it was.
 
@@ -7,7 +7,7 @@ const BACKPACK_SLOT := Inventory.HOTBAR_SIZE
 
 var _player: PlayerState
 var _hotbar: HotbarHud
-var _screen: CharacterScreen
+var _screen: BagScreen
 var _trash_can: TrashCan
 
 
@@ -17,7 +17,7 @@ func before_each() -> void:
 	_hotbar = HotbarCase.new_hotbar()
 	_window.add_child(_hotbar)
 	_hotbar.show_inventory(_player.inventory)
-	_screen = CharacterScreen.new(_hotbar)
+	_screen = BagScreen.new(_hotbar)
 	_window.add_child(_screen)
 	_screen.show_player(_player)
 	_screen.open()
@@ -86,18 +86,6 @@ func test_destroy_does_nothing_if_the_stack_asked_about_changed_meanwhile() -> v
 	assert_eq(_player.inventory.slots[BACKPACK_SLOT], {"item": ItemTypes.STONE, "count": 3})
 
 
-func test_a_worn_item_can_be_destroyed() -> void:
-	_player.equipment.equip(Equipment.BODY, ItemTypes.WAISTCOAT)
-	_player.equipment.equip(Equipment.LEGS, ItemTypes.BREECHES)
-	var layers_before := _player.appearance.layers.size()
-	_drag_to_the_trash_can(_screen._equipment_views[Equipment.BODY])
-	assert_eq(_trash_can._question.text, "Destroy Waistcoat?")
-	_trash_can._destroy_button.pressed.emit()
-	assert_eq(_player.equipment.item_in(Equipment.BODY), ItemTypes.NONE)
-	assert_eq(_player.equipment.item_in(Equipment.LEGS), ItemTypes.BREECHES)
-	assert_eq(_player.appearance.layers.size(), layers_before - 1, "the look loses the waistcoat")
-
-
 func test_keep_leaves_the_stack_where_it_was() -> void:
 	_drag_logs_to_the_trash_can()
 	_trash_can._keep_button.pressed.emit()
@@ -142,11 +130,7 @@ func test_asking_does_not_change_the_size_of_the_panel() -> void:
 	assert_eq(_screen._panel.size, size_before)
 
 
-func test_closing_the_screen_or_switching_tabs_while_asking_destroys_nothing() -> void:
-	_drag_logs_to_the_trash_can()
-	_screen.open_tab(CharacterScreen.Tab.SKILLS)
-	assert_false(_trash_can.is_asking())
-	_screen.open_tab(CharacterScreen.Tab.CHARACTER)
+func test_closing_the_screen_while_asking_destroys_nothing() -> void:
 	_drag_logs_to_the_trash_can()
 	_screen.close()
 	assert_false(_trash_can.is_asking())

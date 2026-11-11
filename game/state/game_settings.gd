@@ -136,6 +136,7 @@ const ACTION_LABELS := {
 	&"use": "Use",
 	&"use_click": "Use (mouse)",
 	&"inventory": "Open the bag",
+	&"character": "Open the character window",
 	&"drop_item": "Drop held item",
 	&"build_previous": "Previous building",
 	&"build_next": "Next building",
@@ -169,8 +170,9 @@ const ACTION_DESCRIPTIONS := {
 	&"build_style_down": "Pick the style below in the build menu.",
 	&"take_down_mode":
 	"With the hammer, switch between building and taking down. Hold Use to take down.",
-	&"inventory": "Open or close the bag: the character screen with the inventory.",
-	&"skills": "Open or close the skills tab of the character screen.",
+	&"inventory": "Open or close the bag with the inventory.",
+	&"character": "Open or close the character window: the equipment you wear.",
+	&"skills": "Open or close the skills tab of the character window.",
 	&"crafting": "Open or close the crafting menu.",
 	&"drop_item": "Drop the held stack on the ground in front of you.",
 	&"zoom_in": "Zoom the camera in. Ctrl and the mouse wheel zoom too.",
@@ -528,15 +530,18 @@ func _load_action(file: ConfigFile, action: StringName) -> void:
 
 ## A hand-edited file can bind one key twice or leave the pause menu without a key. The first
 ## action in the input map keeps a shared key (except for actions that may share one, see
-## SHARING_PAIRS), but for the bag, which is looked at first; the pause menu gets its defaults back.
+## SHARING_PAIRS), but for the bag and the character window, which are looked at first; the pause
+## menu gets its defaults back.
 func _resolve_loaded_bindings() -> void:
 	# Each event seen so far, with the action that has it.
 	var seen: Array[Array] = []
-	# The bag is first: its default key B was the hammer's, which an old file may have given to
-	# another action; that one loses it, unless the file moved the bag to another key.
+	# The bag and the character window are first: their default keys, B and C, were the hammer's
+	# and crafting's, which an old file may have given to other actions; those lose them, unless the
+	# file moved the window to another key.
 	var order := actions()
-	order.erase(&"inventory")
-	order.push_front(&"inventory")
+	for window_action in [&"character", &"inventory"]:
+		order.erase(window_action)
+		order.push_front(window_action)
 	for action in order:
 		var kept: Array[InputEvent] = []
 		for event in bindings(action):

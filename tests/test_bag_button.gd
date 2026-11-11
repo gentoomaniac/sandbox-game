@@ -43,7 +43,7 @@ func test_the_button_takes_no_focus_so_space_still_uses_the_held_item() -> void:
 
 func test_the_bag_opens_right_of_the_middle_on_the_screen_and_again_after_being_closed() -> void:
 	var state := GameState.new_game(7)
-	var screen := CharacterScreen.new(autofree(HotbarCase.new_hotbar(state.player.inventory)))
+	var screen := BagScreen.new(autofree(HotbarCase.new_hotbar(state.player.inventory)))
 	_viewport.add_child(screen)
 	screen.show_player(state.player)
 	for time in 2:

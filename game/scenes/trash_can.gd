@@ -47,10 +47,11 @@ func _init() -> void:
 	_prompt.z_index = 1
 	_prompt.visible = false
 	add_child(_prompt)
-	set_process_input(false)
 
 
 func _ready() -> void:
+	# Having `_input` turns input processing on when the node is ready; it is only for the question.
+	set_process_input(false)
 	get_viewport().size_changed.connect(keep)
 
 

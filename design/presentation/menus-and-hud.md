@@ -28,9 +28,14 @@ Decided 2026-11-05.
   at full size were tried and turned down: the hotbar took over a third of the screen's width.
   A shader keeps the icon's pixels square at 1.5 window pixels each (1080p).
 - **The bag** (task 190, 2026-11-11): a bag icon beside the hotbar, set a little apart from it
-  (the same icon in both arts); clicking it or pressing B opens the character screen and
-  inventory, which opens a bit right of the middle of the window. Tab is unbound; the hammer has
-  no key (it is selected on the hotbar).
+  (the same icon in both arts); clicking it or pressing B opens the bag (the backpack
+  with its weight and a trash can), which opens a bit right of the middle of the window. Tab is
+  unbound; the hammer has no key (it is selected on the hotbar).
+- **The character window** (task 191, 2026-11-12): C opens a window of its own with the figure,
+  the equipment slots round it, a trash can and a Skills tab (K opens it there). It is a Modal
+  like the bag, so only one of the two is open at a time; the HUD's hotbar is the quick bar of
+  both, so a stack is dragged from it onto an equipment slot, and right click wears or takes off
+  in either. Crafting is on Shift+C until it gets a better place.
 - **Tooltips** (decided 2026-11-05): hovering a slot in the hotbar, the inventory or the
   equipment shows a small framed panel by the cursor: the item's name, kind and weight
   (each and stack), a one-line description, and what matters for its kind, from the data

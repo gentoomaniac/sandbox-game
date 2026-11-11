@@ -29,10 +29,11 @@ extends RefCounted
 ##   --menu=<page>            open that menu page (pause, settings, controls, display, game,
 ##                            audio, language_model); with --screenshot the shot is of the menu
 ##   --tooltip=<id>           show the tooltip of a control as if the mouse rested on it:
-##                            hotbar_<0..7>; inventory_<8..27> and equipment_<slot> (with
-##                            --inventory); recipe_<id> (with --crafting); inventory_<8..27>
-##                            and chest_<n> (with --storage); setting_ui_scale and
-##                            setting_day_length (with --menu=game); setting_master_volume,
+##                            hotbar_<0..7>; inventory_<8..27> (with --inventory),
+##                            equipment_<slot> (with --character); recipe_<id> (with
+##                            --crafting); inventory_<8..27> and chest_<n> (with --storage);
+##                            setting_ui_scale and setting_day_length (with --menu=game);
+##                            setting_master_volume,
 ##                            setting_effects_volume, setting_ambience_volume,
 ##                            setting_music_volume and setting_sound_in_background
 ##                            (with --menu=audio);
@@ -71,8 +72,9 @@ extends RefCounted
 ##                            player stays up too late instead.
 ##
 ## Screens and the console
-##   --inventory              open the character screen at start
-##   --skills                 open the character screen at start, on the skills tab
+##   --inventory              open the bag at start
+##   --character              open the character window at start
+##   --skills                 open the character window at start, on the skills tab
 ##   --crafting               open the crafting menu at start
 ##   --station                open the crafting menu of the nearest station in reach, once the
 ##                            map is drawn (with --inside, in the house)
@@ -212,6 +214,7 @@ var sleep := false
 
 # Screens and the console
 var inventory := false
+var character := false
 var skills := false
 var crafting := false
 var station := false
@@ -361,6 +364,8 @@ func _init(args := PackedStringArray()) -> void:
 				sleep = true
 			"--inventory":
 				inventory = true
+			"--character":
+				character = true
 			"--skills":
 				skills = true
 			"--crafting":
