@@ -237,6 +237,27 @@ low in their tile (near its bottom edge) rather than in the middle of it.
   tall crops may still stand from the tile's lower part if that reads better, say so).
 - Before/after crops at 1x and 4x and an in-game shot for the user; README pictures re-taken.
 
+## 175. Rain visibly wets the soil, and wet soil is a patch, not a square
+
+- [ ] Done
+
+The user, 2026-11-11, with two screenshots in the rain (32 px art): "rain doesn't seem to wet the
+soil? and wet soil has a clear border, it should be more like a patch not like a square."
+- Rain: find out why a bed stays dry-looking in the rain. Leads: data/crops.cfg `rain_wets` is
+  0.1 an hour only for the heaviest rain (lighter rain adds less), the moisture steps of
+  SoilWetness (game/scenes/soil_wetness.gd) need a whole step's worth before the brown changes,
+  and the view follows the moisture only at its hourly refresh. Rain should darken the soil
+  noticeably within the first hour or so of steady rain, and heavy rain soak it; maybe a quick
+  surface darkening while it rains. Keep the growth balance of the crops in mind (moisture_min
+  and moisture_best) and say what changes there.
+- Wet patches: a watered tile (or a few) beside drier soil still reads as a square block with a
+  clear edge, even with the fade of task 167. Wetness should look like an organic patch: an
+  irregular, blotchy outline that wanders across the tile edge (varied per tile, seeded by
+  position), not a straight dithered band along the grid. Both arts. Works together with task
+  174's new bed edge.
+- Tests for the rain wetting and the patch edges; before/after crops and in-game shots in the
+  rain for the user.
+
 ## Later (not part of the prototype)
 
 - **Taming wild animals** (the user, 2026-11-11): wild animals already carry a friendship value
