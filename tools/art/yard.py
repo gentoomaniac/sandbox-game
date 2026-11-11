@@ -135,6 +135,7 @@ def icons():
     return {
         "draw_well": items.icon_of(draw_well()),
         "trough": items.icon_of(trough(3)),
+        "feed_trough": items.icon_of(trough(3, "feed")),
         "hay_rack": items.icon_of(hay_rack(3)),
         "egg": egg_icon(),
     }
@@ -161,10 +162,31 @@ def _hay(picture, mask, rng):
                     picture[ny][nx] = colour
 
 
-def trough(level):
+# The feed in a feeding trough (task 165): a brown mash of acorns, beech mast and chopped turnip.
+FEED = ("umber", "ochre_dark", "ochre", "straw")
+
+
+def _feed(picture, x0, y0, x1, y1):
+    """The feed lying in the trough from x0 to x1 and from y0 down to the floor at y1: a lumpy
+    mash lit along its top, with acorns and bits of turnip in it."""
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            if y == y0 and x % 6 in (0, 5):
+                continue
+            light = 2 if y == y0 or (y == y0 + 1 and x % 6 in (0, 5)) else 0 if y == y1 else 1
+            colour = FEED[light]
+            if (x * 7 + y * 3) % 11 == 0 and y > y0:
+                colour = "soil"
+            elif (x * 5 + y) % 9 == 0:
+                colour = FEED[3]
+            picture[y][x] = colour
+
+
+def trough(level, fill="water"):
     """The trough, 64x26 px: a box of oak planks on two feet, seen from the front and a little
-    above, its end boards lit on the left. Inside, water by `level` (0 empty, 1 low, 2 half, 3
-    full): none, a puddle in the middle, a pool along the floor, water up to the rim."""
+    above, its end boards lit on the left. Inside, `fill` ("water", or "feed" in a feeding trough)
+    by `level` (0 empty, 1 low, 2 half, 3 full): none, a puddle or a heap in the middle, a pool
+    or a layer along the floor, up to the rim."""
     width, height = 2 * GAME_TILE, 26
     picture = blank(width, height)
     # The feet, then the front of the box in planks with two seams and an iron band at each end.
@@ -198,7 +220,9 @@ def trough(level):
         2: (7, 5, 56, 9),
         3: (4, 3, 59, 9),
     }.get(level)
-    if water:
+    if water and fill == "feed":
+        _feed(picture, *water)
+    elif water:
         x0, y0, x1, y1 = water
         rect(picture, x0, y0, x1, y1, "water_deep")
         rect(picture, x0 + 1, y0 + 1, x1 - 1, y1, "water")
@@ -211,8 +235,8 @@ def trough(level):
     return outline_edge(picture, "soil_dark", keep_bottom=True)
 
 
-def trough_looks():
-    return [trough(level) for level in range(STOCK_LOOKS)]
+def trough_looks(fill="water"):
+    return [trough(level, fill) for level in range(STOCK_LOOKS)]
 
 
 def hay_rack(level):

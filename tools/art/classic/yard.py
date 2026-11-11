@@ -105,6 +105,7 @@ def icons():
     return {
         "draw_well": _icon(draw_well()),
         "trough": _icon(trough(3)),
+        "feed_trough": _icon(trough(3, "feed")),
         "hay_rack": _icon(hay_rack(3)),
         "egg": egg_icon(),
     }
@@ -114,9 +115,10 @@ def icons():
 STOCK_LOOKS = 4
 
 
-def trough(level):
+def trough(level, fill="water"):
     """The trough, 32x13 px: a box of oak planks on two feet, seen from the front and a little above,
-    with water inside by `level` (0 empty, 1 low, 2 half, 3 full)."""
+    with `fill` inside ("water", or "feed" in a feeding trough) by `level` (0 empty, 1 low, 2 half,
+    3 full)."""
     picture = blank(32, 13)
     for x0 in (3, 26):
         rect(picture, x0, 11, x0 + 2, 12, OAK[2])
@@ -132,7 +134,13 @@ def trough(level):
     rect(picture, 0, 0, 0, 10, OAK[0])
     rect(picture, 31, 0, 31, 10, OAK[2])
     water = {1: (12, 3, 19, 4), 2: (4, 2, 27, 4), 3: (2, 2, 29, 4)}.get(level)
-    if water:
+    if water and fill == "feed":
+        x0, y0, x1, y1 = water
+        rect(picture, x0, y0, x1, y1, "ochre_dark")
+        rect(picture, x0, y0, x1, y0, "ochre")
+        for x in range(x0 + 1, x1, 4):
+            picture[y1][x] = "soil"
+    elif water:
         x0, y0, x1, y1 = water
         rect(picture, x0, y0, x1, y1, "water")
         rect(picture, x0, y0, x1, y0, "water_deep")

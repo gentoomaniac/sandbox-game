@@ -187,6 +187,7 @@ objects/draw_well_16x16.png 48 80
 objects/dyke_16x16.png 48 80
 objects/eel_traps_16x16.png 48 80
 objects/ewer_16x16.png 48 80
+objects/feed_trough_16x16.png 48 80
 objects/fern_16x16.png 48 80
 objects/fireplace_16x16.png 48 80
 objects/grave_16x16.png 48 80

@@ -225,14 +225,16 @@ A **trough** (a plank box on two feet, woodworking 10: 5 planks and a log) and a
 (oak posts with slats, woodworking 15: 4 planks and 2 logs) stand outdoors on two tiles and hold
 a stock of up to 100 units. Their pictures show how full they are: empty, low, half and full.
 Fill a trough with the watering can (a pour is 10 units and takes one of the can's 20) and a hay
-rack with hay (10 units each) by the use key; a full one takes no more.
+rack with hay (10 units each) by the use key; a full one takes no more. A **feeding trough** (made
+as the trough) holds feed instead of water: hay, turnips, acorns or beech mast, for the pigs and any
+that eat feed.
 
 The farm animals get hungry and thirsty as game time passes (a cow takes 12 hours to go from fed
 to hungriest, 8 to thirstiest; the numbers are in [data/livestock.cfg](data/livestock.cfg)); the
 needs are saved and, for now, have no other effect. A thirsty animal walks to fresh water nearby
 (a river, a pond or a ditch; never the sea, the mud flats or the salt marsh) or to a trough with
-water, and drinks; a hungry one that eats hay goes to a hay rack, and those that graze eat as they
-graze. Each drink and meal takes a few units from the trough or rack (a cow 5, a hen 3), whose
+water, and drinks; a hungry one that eats feed goes to a hay rack or a feeding trough, and those
+that graze eat as they graze. Each drink and meal takes a few units from the trough or rack (a cow 5, a hen 3), whose
 picture shows what is left. Sleeping counts the meals of the animals that could reach food and
 water. `noneeds` in the console stops the needs from rising.
 

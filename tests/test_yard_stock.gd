@@ -1,9 +1,11 @@
 extends ResourceCase
-## The trough and the hay rack of the farm yard (task 122): made at the workbench, put down
-## outdoors on two tiles, and each holds a stock that shows in one of four pictures by how full it
-## is.
+## The trough and the hay rack of the farm yard (task 122) and the feeding trough (task 165): made
+## at the workbench, put down outdoors on two tiles, and each holds a stock that shows in one of
+## four pictures by how full it is.
 
-const STOCK_TYPES: Array[StringName] = [WorldObjectTypes.TROUGH, WorldObjectTypes.HAY_RACK]
+const STOCK_TYPES: Array[StringName] = [
+	WorldObjectTypes.TROUGH, WorldObjectTypes.HAY_RACK, WorldObjectTypes.FEED_TROUGH
+]
 
 
 func test_the_workbench_makes_the_trough_and_the_hay_rack_from_planks_and_logs() -> void:
@@ -172,3 +174,25 @@ func test_feeding_tells_the_rack_and_the_feed_and_is_heard() -> void:
 	assert_eq(outcomes[0].object, WorldObjectTypes.HAY_RACK)
 	assert_eq(outcomes[0].items, {ItemTypes.HAY: 1})
 	assert_ne(SoundEvents.action(ActionOutcome.FEED), &"")
+
+
+func test_the_workbench_makes_the_feeding_trough_as_the_trough() -> void:
+	var rules := RecipeRules.default_rules()
+	assert_eq(rules.materials(&"feed_trough"), rules.materials(&"trough"))
+	assert_true(rules.recipes_at(&"workbench").has(&"feed_trough"))
+	assert_eq(ObjectStock.capacity(_place(WorldObjectTypes.FEED_TROUGH)), 100)
+
+
+func test_acorns_beech_mast_and_turnips_go_into_a_feeding_trough_and_not_water() -> void:
+	var trough := _place(WorldObjectTypes.FEED_TROUGH)
+	var yard := YardRules.default_rules()
+	var units := 0
+	for item in [ItemTypes.ACORN, ItemTypes.BEECHNUT, ItemTypes.TURNIP, ItemTypes.HAY]:
+		_state.player.inventory.add(item, 1)
+		_hold(item)
+		assert_eq(_state.use_facing_tile(), ToolUse.Use.FEED, str(item))
+		units += yard.feed_units(item)
+		assert_eq(ObjectStock.units(trough), units)
+	_state.player.inventory.add(ItemTypes.WATERING_CAN, 1)
+	_hold(ItemTypes.WATERING_CAN)
+	assert_ne(_state.use_facing_tile(), ToolUse.Use.POUR, "no water into the feed")

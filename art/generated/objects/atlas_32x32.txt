@@ -54,3 +54,4 @@ eel_traps 1
 draw_well 1
 trough 4
 hay_rack 4
+feed_trough 4

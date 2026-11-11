@@ -72,6 +72,7 @@ const EEL_TRAPS := &"eel_traps"
 const DRAW_WELL := &"draw_well"
 const TROUGH := &"trough"
 const HAY_RACK := &"hay_rack"
+const FEED_TROUGH := &"feed_trough"
 const EGG := &"egg"
 # The mason's (task 74).
 const RAW_BRICK := &"raw_brick"
@@ -526,6 +527,14 @@ const _OTHER_TYPES := {
 		"weight": 25.0,
 		"stack_limit": 2,
 		"places": WorldObjectTypes.HAY_RACK,
+	},
+	FEED_TROUGH:
+	{
+		"name": "Feeding trough",
+		"description": "An oak plank trough for the animals' feed. It stands outdoors.",
+		"weight": 25.0,
+		"stack_limit": 2,
+		"places": WorldObjectTypes.FEED_TROUGH,
 	},
 	ROAST_TURNIP:
 	{

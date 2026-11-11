@@ -360,6 +360,7 @@ _WINTER_LOOKS = {
     "draw_well": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "stone_light"}, set(), 1)},
     "trough": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "sand_light"}, set(), 1)},
     "hay_rack": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "sand_light", "gold", "straw"}, set(), 1)},
+    "feed_trough": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "sand_light"}, set(), 1)},
     "oak_trunk": _TRUNK_WINTER,
     "oak_short_trunk": _TRUNK_WINTER,
     "spruce_trunk": _TRUNK_WINTER,

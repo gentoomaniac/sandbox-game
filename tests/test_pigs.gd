@@ -33,16 +33,16 @@ func test_rooting_feeds_a_pig() -> void:
 	assert_lt(pig.hunger, 0.4)
 
 
-func test_a_hungry_pig_eats_at_a_stock_of_feed_and_takes_its_meal_out_of_it() -> void:
-	var rack := WorldObject.new(WorldObjectTypes.HAY_RACK, _middle + Vector2i(-1, -1))
-	_world.add_object(rack)
-	ObjectStock.add(rack, 100)
+func test_a_hungry_pig_eats_at_a_feeding_trough_and_takes_its_meal_out_of_it() -> void:
+	var trough := WorldObject.new(WorldObjectTypes.FEED_TROUGH, _middle + Vector2i(-1, -1))
+	_world.add_object(trough)
+	ObjectStock.add(trough, 100)
 	var pig := _pig()
 	pig.hunger = 0.6
 	_state.cheats.are_needs_off = true
 	_run(40.0)
 	assert_eq(pig.hunger, 0.0)
-	assert_eq(ObjectStock.units(rack), 100 - 4, "a pig eats 4")
+	assert_eq(ObjectStock.units(trough), 100 - 4, "a pig eats 4")
 
 
 func test_a_thirsty_pig_drinks_at_the_water() -> void:

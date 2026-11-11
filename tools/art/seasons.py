@@ -520,6 +520,7 @@ _WINTER_LOOKS = {
     # Snow lies on the rims of the trough and on the hay rack's rail and hay.
     "trough": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "sand_light"}, set(), 2)},
     "hay_rack": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "sand_light", "gold", "straw"}, set(), 2)},
+    "feed_trough": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "sand_light"}, set(), 2)},
     "eel_traps": {"specks": {"sand_light", "sand"}, "snow": ({"sand_light", "sand", "straw"}, set(), 4)},
     "oak_trunk": _TRUNK_WINTER,
     "oak_short_trunk": _TRUNK_WINTER,

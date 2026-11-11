@@ -197,6 +197,7 @@ def object_atlas():
         ("draw_well", [standing_outdoors(yard.draw_well())]),
         ("trough", [standing_outdoors(yard.trough(level)) for level in range(yard.STOCK_LOOKS)]),
         ("hay_rack", [standing_outdoors(yard.hay_rack(level)) for level in range(yard.STOCK_LOOKS)]),
+        ("feed_trough", [standing_outdoors(yard.trough(level, "feed")) for level in range(yard.STOCK_LOOKS)]),
     ]
 
 

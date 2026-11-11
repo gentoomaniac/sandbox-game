@@ -140,6 +140,8 @@ const GRAVE := &"grave"
 const DRAW_WELL := &"draw_well"
 const TROUGH := &"trough"
 const HAY_RACK := &"hay_rack"
+## The feeding trough (task 165): the trough with feed in it, for the pigs and any that eat feed.
+const FEED_TROUGH := &"feed_trough"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -200,6 +202,7 @@ const _EEL_TRAPS_ROW := 50
 const _DRAW_WELL_ROW := 51
 const _TROUGH_ROW := 52
 const _HAY_RACK_ROW := 53
+const _FEED_TROUGH_ROW := 54
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -727,6 +730,20 @@ const _OTHER_TYPES := {
 		"blocks_walking": true,
 		"harvest_level": 1,
 		"atlas_row": _HAY_RACK_ROW,
+		"variants": 1,
+		"stock_capacity": 100,
+		"stock_kind": &"feed",
+		"placeable_in": OUTDOORS,
+	},
+	FEED_TROUGH:
+	{
+		"hp": 3,
+		"tool": &"axe",
+		"drops": {&"feed_trough": 1},
+		"footprint": Vector2i(2, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _FEED_TROUGH_ROW,
 		"variants": 1,
 		"stock_capacity": 100,
 		"stock_kind": &"feed",

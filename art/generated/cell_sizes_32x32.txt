@@ -201,6 +201,7 @@ objects/draw_well_32x32.png 96 160
 objects/dyke_32x32.png 96 160
 objects/eel_traps_32x32.png 96 160
 objects/ewer_32x32.png 96 160
+objects/feed_trough_32x32.png 96 160
 objects/fern_32x32.png 96 160
 objects/fireplace_32x32.png 96 160
 objects/grave_32x32.png 96 160

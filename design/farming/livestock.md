@@ -113,20 +113,22 @@ chicken coop. All are made at the workbench or built with the hammer and stand o
   it is full. With the can empty the use key at dry soil does nothing and says so. The water in the
   can is saved (save version 25) and shown as a small number on the can in the hotbar. The well gives the water for the can, and so for the troughs and
   the soil; water for the house (cooking, washing) comes with those.
-- **Trough and hay rack** (2x1 world objects; the trough holds water, the hay rack feed; a feeding
-  trough for pigs and the like is the same code with `stock_kind` feed, task 165): each holds a
+- **Trough, hay rack and feeding trough** (2x1 world objects; the trough holds water, the hay rack
+  and the feeding trough of task 165 feed, its `stock_kind`): each holds a
   **stock** of up to 100 units (`stock_capacity` in WorldObjectTypes; the `stock` in its state,
   saved with the object) and starts empty. Its picture shows how full it is in four steps: empty,
   low (up to 35% of the capacity), half (35% to 70%) and full (70% and over). The trough is a
   plank box on two feet made at the workbench (woodworking 10: 5 planks, 1 log), the hay rack
-  oak posts with slats and the hay behind them (woodworking 15: 4 planks, 2 logs); both stand
-  outdoors and the axe takes them down (3 hits).
+  oak posts with slats and the hay behind them (woodworking 15: 4 planks, 2 logs), the feeding
+  trough the trough with feed in it, made as the trough (decided 2026-11-11, task 165, for the
+  pigs); all stand outdoors and the axe takes them down (3 hits).
 - **Filling them** (decided 2026-11-10): the use key with the watering can at a trough pours
   `[yard] pour_units` (10) units of water in and takes 1 from the can (and the energy of
   watering); the use key with hay at a hay rack puts `[yard] feed_items` (hay: 10) units in and
   uses the item up. A full trough or rack takes no more (the can keeps its water, the hay stays
-  in the inventory), an empty can says so. Hay is the only feed so far: any item in `feed_items`
-  of data/livestock.cfg feeds, so grain for the hens or a swill for the pigs is a line there.
+  in the inventory), an empty can says so. Any item in `feed_items` of data/livestock.cfg feeds,
+  into a hay rack or a feeding trough alike: hay (10 units), and since task 165 the pigs' old food,
+  turnips (8), acorns and beech mast (4 each); grain for the hens is a line there.
   What was put in stays until the animals take it (see the needs below); nothing spoils.
 - **The needs of the animals** (decided 2026-11-10, the user's decisions; task 122): every farm
   animal has a **hunger** and a **thirst**, each from 0 (it just ate or drank) to 1, that rise with
@@ -160,14 +162,13 @@ chicken coop. All are made at the workbench or built with the hammer and stand o
     ponds and ditches (`Tile.is_fresh_water`, the same the watering can fills at); **never** the
     sea, the tideways, the tidal mud (the Wadden), the salt marsh or the coast; or at a **trough
     with water**. Every species drinks.
-  - **Hunger is met** at a **hay rack with feed** by those that eat feed (`eats_feed`: cows,
-    sheep, horses and rabbits), and by **grazing** by those that graze for food
+  - **Hunger is met** at a **hay rack or a feeding trough with feed** by those that eat feed
+    (`eats_feed`: cows, pigs, sheep, horses and rabbits), and by **grazing** by those that graze for food
     (`grazes_for_food`: the same and the hens, which peck for seeds and worms): while it grazes its
     hunger falls by `graze_relief_per_second` (0.003) a second. Chosen from what they do today: the
     animals that graze already eat grass; dogs and cats only sniff about, so they eat nothing there,
     and have no feeder yet (a bowl, a caught mouse for the cat, grain for the hens come later), so
-    their hunger just rises to 1 and stays. The trough holds water only; a feeding trough for pigs is
-    the same object with `stock_kind` feed.
+    their hunger just rises to 1 and stays. The trough holds water only, the feeding trough feed.
   - **Stocks go down:** each drink or meal takes the species' `drink_units` or `eat_units` (a cow
     5 of each, a sheep 3, a hen 3 drink, a rabbit 1, a dog 3 drink and a cat 1) out of the trough or
     the rack, whose picture follows. The player refills them (see above). Nothing is used up by the

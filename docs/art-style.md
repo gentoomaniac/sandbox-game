@@ -354,7 +354,9 @@ along its foot.
   and a little above, and the hay rack (64x44 px) two oak posts with a rail and a manger board,
   slats between them and the hay (`ochre_dark`, `ochre`, `straw`, `gold`) behind. Each has four
   pictures by its fill, empty, low, half and full (water in the `water` ramp, hay up to the rail),
-  one cell each in its atlas row, chosen by `ObjectStock.look`. The chicken coop (a building, 64x80 px
+  one cell each in its atlas row, chosen by `ObjectStock.look`. The feeding trough (task 165) is
+  the trough with a lumpy brown mash in it in place of the water (`FEED`: `umber`, `ochre_dark`,
+  `ochre`, flecks of `straw` and dark acorns in `soil`), at the same four fills. The chicken coop (a building, 64x80 px
   with its roof, `PICTURES` of yard.py like the bell frame's, lit and unlit alike as it has no
   windows) is upright boards tarred `soil_mid`/`soil`/`soil_dark` on a field-stone footing under a low
   shed roof of weathered grey boards (`bare_light`, `bare`, `mud`, snow takes the roof like the
