@@ -553,6 +553,26 @@ If not they should"
 - Tests: crafting, placing, joining a generated run, taking down, saving. README (building or
   crafting section), design pages.
 
+## 204. A rooster among the chickens, crowing now and then
+
+- [ ] Done
+
+The user, 2026-11-11: "The chicken need a rooster that's occasionally shouting"
+- Today the chickens (data/livestock.cfg, the chicken coop of task 122) are all hens with a cluck
+  (`chicken_cluck` in data/sounds.cfg).
+- Add a rooster: a chicken flock has one (a flock that gets its first hens gets a rooster too;
+  `spawn rooster` in the console; old saves get one per coop or flock, with the save upgrade per
+  the save rules). Bigger than a hen, upright tail and red comb and wattles: art in both sets, the
+  same moves as the hens (a pixel-artist job); it walks and pecks with them, sleeps in the coop,
+  lays no eggs, can be petted (friendship, task 173) and counts as a chicken where the game counts
+  them (or say where it doesn't).
+- It crows now and then: most at dawn (a run of crows around sunrise), a few times through the
+  day, never at night while asleep. A new generated cock-a-doodle sound (2 or 3 variants, a
+  sound-designer job), positional, heard across the farm, faint indoors like other outside
+  sounds. How often: pick it, numbers in data/ (the user tunes them).
+- Tests: a flock has a rooster, it lays no eggs, it crows at dawn and not at night, save and load;
+  a listening file and a picture of the rooster in both arts for the user; README, design pages.
+
 ## Later (not part of the prototype)
 
 - **Villagers go inside** (the user, 2026-11-11): villagers enter their houses (and the church,
