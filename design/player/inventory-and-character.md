@@ -102,4 +102,4 @@
   hour (so nothing by day, and only a faint glow in a house, whose tint stays as it was). It
   shines only in the hand (the user, 2026-11-11): put away in the bag, in a chest or on the
   ground it gives no light but stays lit, and shines again once it is selected. The hand shows
-  it lit or unlit.
+  it lit or unlit. Whether it is lit is saved (save version 28).

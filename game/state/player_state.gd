@@ -54,8 +54,8 @@ var inventory: Inventory:
 		inventory = value
 		inventory.changed.connect(_show_held_item)
 		_show_held_item()
-## Whether their lantern is lit (see `is_lantern_shining`). It stays lit in the bag and in a
-## chest, and shines again once it is held.
+## Whether their lantern is lit (see `is_lantern_shining`); saved. It stays lit in the bag and
+## in a chest, and shines again once it is held.
 var is_lantern_lit := false:
 	set(value):
 		is_lantern_lit = value
@@ -216,6 +216,7 @@ func to_dict() -> Dictionary:
 		"is_debuffed": is_debuffed,
 		"skills": skills.to_dict(),
 		"can_water": can_water,
+		"is_lantern_lit": is_lantern_lit,
 	}
 
 
@@ -235,6 +236,7 @@ static func from_dict(data: Dictionary, home_map: GameMap) -> PlayerState:
 	player.is_debuffed = data["is_debuffed"]
 	player.skills = Skills.from_dict(data["skills"])
 	player.can_water = data["can_water"]
+	player.is_lantern_lit = data["is_lantern_lit"]
 	return player
 
 

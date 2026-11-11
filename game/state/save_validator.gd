@@ -301,6 +301,7 @@ func _check_player(player: Dictionary) -> void:
 	_field(player, "energy", Kind.NUMBER, "player")
 	_field(player, "health", Kind.NUMBER, "player")
 	_field(player, "is_debuffed", Kind.BOOL, "player")
+	_field(player, "is_lantern_lit", Kind.BOOL, "player")
 	var can_water: Variant = _field(player, "can_water", Kind.WHOLE, "player")
 	_check_between(can_water, 0, EnergyRules.default_rules().can_capacity(), "player", "can_water")
 	var appearance: Variant = _field(player, "appearance", Kind.DICT, "player")
