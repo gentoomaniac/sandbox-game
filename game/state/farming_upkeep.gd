@@ -52,10 +52,15 @@ func end_day() -> void:
 
 
 ## How much the moisture of the soil at a tile changes in the hour `hour` (counted from the start
-## of day 1): the rain of the hour wets it, and a 24th of what the weather of the day dries.
+## of day 1): the rain of the hour wets it, and a dry hour dries it by a 24th of what the weather of
+## the day dries. An hour with rain doesn't dry: the day's sun and wind are taken over the whole
+## day, and they would outweigh a light rain, so that soil got drier in the rain.
 func moisture_change(pos: Vector2i, hour: int) -> float:
 	var rules := CropRules.default_rules()
 	var day := hour / CropLife.HOURS_PER_DAY + 1
+	var rain := _weather.rain_in_hour(pos, day, hour % CropLife.HOURS_PER_DAY)
+	if rain > 0.0:
+		return rules.farming("rain_wets") * rain
 	var weather_day := _weather.day_summary(pos, day)
 	var drying := (
 		rules.farming("drying_base")
@@ -63,5 +68,4 @@ func moisture_change(pos: Vector2i, hour: int) -> float:
 		+ rules.farming("drying_per_sun_hour") * weather_day.sunlight_hours
 		+ rules.farming("drying_per_wind") * weather_day.max_wind_speed
 	)
-	var rain := _weather.rain_in_hour(pos, day, hour % CropLife.HOURS_PER_DAY)
-	return rules.farming("rain_wets") * rain - drying / CropLife.HOURS_PER_DAY
+	return -drying / CropLife.HOURS_PER_DAY

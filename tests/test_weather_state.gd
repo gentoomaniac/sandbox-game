@@ -34,6 +34,26 @@ func test_inside_a_house_the_weather_is_the_one_outside_its_door() -> void:
 	assert_eq(_state.current_weather().temperature, outside.temperature)
 
 
+## The soil is wet by the rain of each hour (see FarmingUpkeep): that is the rain the player sees
+## through the hour, wherever they are, not only at the hour's start.
+func test_the_rain_of_an_hour_is_the_rain_seen_through_it() -> void:
+	_state.player.position = Vector2(5000.5, -3000.5)
+	var rainy_hours := 0
+	for day in range(70, 74):
+		_state.clock.day = day
+		for hour in 24:
+			var seen := 0.0
+			for minute in GameClock.MINUTES_PER_HOUR:
+				_state.clock.set_time(hour, minute)
+				seen += _state.current_weather().rain / GameClock.MINUTES_PER_HOUR
+			var rain := _state.weather.rain_in_hour(_state.player.tile(), day, hour)
+			assert_almost_eq(rain, seen, 0.05, "day %d, hour %d" % [day, hour])
+			if seen > 0.02:
+				assert_gt(rain, 0.0, "day %d, hour %d" % [day, hour])
+				rainy_hours += 1
+	assert_gt(rainy_hours, 5, "it rained in some hours")
+
+
 func test_a_new_game_and_a_loaded_one_have_the_same_weather() -> void:
 	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
 	assert_eq(restored.current_weather().temperature, _state.current_weather().temperature)

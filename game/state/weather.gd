@@ -55,6 +55,10 @@ const DIRECTION_OCTAVES := [[4320, 1.0], [360, 0.3]]
 const MAX_OCTAVES := 8
 ## Averaged octaves seldom come near -1 or 1, so the noise is stretched (and cut off at 1).
 const NOISE_GAIN := 1.8
+## The rain of an hour is the mean of this many samples, one in the middle of each part of the
+## hour: showers come and go within the hour (the quickest of GUST_OCTAVES lasts 20 minutes), and
+## the hour's start alone may miss one that is seen.
+const RAIN_SAMPLES_PER_HOUR := 3
 
 var _world_seed: int
 var _sun: Sun
@@ -132,8 +136,8 @@ func at(position: Vector2i, day: int, minute: int) -> WeatherSample:
 	return sample
 
 
-## The weather of a whole day (as GameClock.day) at a world tile, from its 24 hourly samples.
-## Cached: asking again is free.
+## The weather of a whole day (as GameClock.day) at a world tile, from its 24 hourly samples
+## (and, for the rain, samples within each hour). Cached: asking again is free.
 func day_summary(position: Vector2i, day: int) -> WeatherDay:
 	var region := region_of(position)
 	var key := Vector3i(region.x, region.y, day)
@@ -148,17 +152,27 @@ func day_summary(position: Vector2i, day: int) -> WeatherDay:
 		summary.max_temperature = maxf(summary.max_temperature, sample.temperature)
 		summary.mean_temperature += sample.temperature / 24.0
 		summary.sunlight_hours += sample.sunlight / 100.0
-		summary.rain_hours += sample.rain
-		summary.rain_by_hour.append(sample.rain)
+		var rain := _mean_rain_in_hour(position, day, hour)
+		summary.rain_hours += rain
+		summary.rain_by_hour.append(rain)
 		summary.max_wind_speed = maxf(summary.max_wind_speed, sample.wind_speed)
 	_day_summaries[key] = summary
 	return summary
 
 
-## How much it rains in an hour of a day at a world tile: its rain intensity at the start of the
-## hour, as the hours of a day's summary count it (see `day_summary`).
+## How much it rains in an hour of a day at a world tile: the mean rain intensity over the hour,
+## as the hours of a day's summary count it (see `day_summary`).
 func rain_in_hour(position: Vector2i, day: int, hour: int) -> float:
 	return day_summary(position, day).rain_by_hour[hour]
+
+
+## The mean rain over an hour of a day (see RAIN_SAMPLES_PER_HOUR).
+func _mean_rain_in_hour(position: Vector2i, day: int, hour: int) -> float:
+	var part := GameClock.MINUTES_PER_HOUR / RAIN_SAMPLES_PER_HOUR
+	var total := 0.0
+	for index in RAIN_SAMPLES_PER_HOUR:
+		total += at(position, day, hour * GameClock.MINUTES_PER_HOUR + part * index + part / 2).rain
+	return total / RAIN_SAMPLES_PER_HOUR
 
 
 ## The sample with the condition made true, for tests and screenshots: `condition` is one of

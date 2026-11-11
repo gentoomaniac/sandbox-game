@@ -61,13 +61,36 @@ func test_a_day_of_hours_grows_a_crop_as_much_as_the_day_does() -> void:
 	assert_eq(CropLife.days_growing(crop), 1, "the new day at midnight is counted")
 
 
-func test_rain_in_an_hour_wets_and_the_hour_dries_the_soil() -> void:
+func test_rain_in_an_hour_wets_the_soil() -> void:
 	_state.world.set_moisture(_tile, 0.5)
 	_weather.day.rain_hours = 24.0
 	_simulation.advance(60)
 	var change := _farming.moisture_change(_tile, 0)
-	assert_gt(change, -0.01, "the rain wets more than the hour dries")
+	assert_almost_eq(change, CropRules.default_rules().farming("rain_wets"), 0.0001)
 	assert_almost_eq(_state.world.moisture_at(_tile), 0.5 + change, 0.0001)
+
+
+## The day's sun and wind would dry it more than a light rain wets it, if a rainy hour dried.
+func test_soil_gets_wetter_in_light_rain_on_a_sunny_windy_day() -> void:
+	_weather.day.mean_temperature = 25.0
+	_weather.day.sunlight_hours = 12.0
+	_weather.day.max_wind_speed = 15.0
+	_weather.day.rain_hours = 0.5
+	_state.world.set_moisture(_tile, 0.5)
+	_simulation.advance(60)
+	assert_gt(_state.world.moisture_at(_tile), 0.5)
+
+
+func test_a_dry_hour_dries_the_soil_by_a_24th_of_the_day() -> void:
+	_weather.day.sunlight_hours = 10.0
+	_weather.day.mean_temperature = 10.0
+	var rules := CropRules.default_rules()
+	var day_drying := (
+		rules.farming("drying_base")
+		+ rules.farming("drying_per_degree") * 10.0
+		+ rules.farming("drying_per_sun_hour") * 10.0
+	)
+	assert_almost_eq(_farming.moisture_change(_tile, 0), -day_drying / 24.0, 0.000001)
 
 
 func test_the_soil_of_an_unloaded_chunk_changes_hourly_too() -> void:

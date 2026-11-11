@@ -48,6 +48,8 @@
   - **Soil moisture** belongs to each tilled tile: rain wets it, the watering can fills
     it, and warmth, sun and wind dry it out, hour by hour (changed 2026-11-10, a 24th of a
     day's drying each hour; it is worked out when it is looked at, so a month passes quickly).
+    An hour with rain doesn't dry at all, and its rain is the mean of the rain seen through
+    the hour, not only at its start (task 175: the user saw soil dry out in the rain).
     Clamping hour by hour is not the nightly clamp: soil that is already soaked loses the early
     rain of a day and then dries. The whole tile's brown shows it in four
     steps: light brown when dry, dark brown when soaked, lightening day by day as it dries.

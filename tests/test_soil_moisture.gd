@@ -112,12 +112,12 @@ func test_a_hot_sunny_windy_day_dries_more_than_a_cold_dull_calm_one() -> void:
 	assert_lt(_world.moisture_at(_tile), after_cold)
 
 
-func test_rain_wets_the_soil() -> void:
+func test_rain_wets_the_soil_and_a_rainy_hour_does_not_dry_it() -> void:
 	_weather.day.rain_hours = 4.0
+	_weather.day.sunlight_hours = 6.0
 	_world.set_moisture(_tile, 0.2)
 	_pass_night()
-	var drying := _farming("drying_base")
-	assert_almost_eq(_world.moisture_at(_tile), 0.2 + _farming("rain_wets") * 4.0 - drying, 0.0001)
+	assert_almost_eq(_world.moisture_at(_tile), 0.2 + _farming("rain_wets") * 4.0, 0.0001)
 
 
 func test_a_long_rain_soaks_the_soil_but_not_beyond_full() -> void:
