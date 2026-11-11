@@ -223,7 +223,7 @@ for game mechanics." Run after task 172, before the gossip tasks.
   doesn't count as the day's petting.
 - A day without a petting takes 5 (at the day change, caught up over skipped time in the frame
   budget of task 158).
-- Defaults to confirm: the farm animals and the pets (cows, horses, sheep, pigs, hens, dogs,
+- Confirmed by the user, 2026-11-11: the farm animals and the pets (cows, horses, sheep, pigs, hens, dogs,
   cats), not wildlife; a new animal starts at 0. The numbers in data/livestock.cfg.
 - Saved with the animal (a save version bump, following the upgrade-window rule); the heart and
   the swirl drawn in both arts (pixel-artist job), a short sound for the petting maybe reused.
