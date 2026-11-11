@@ -127,6 +127,11 @@ the campfire and the hearth burn, their flames licking up and falling back, and 
 sparks; the campfire's flames lean and stretch downwind, more in a strong wind; rain
 splashes on the ground; lily pads drift and bob.
 
+In windy autumn weather, and a little in late summer and early winter, the trees near you shed
+leaves in the colours of their season: some drop and sway down beside the tree, some are carried
+off downwind, tumbling, more in a gust and none in calm. Spruces and pines only drop a rare
+needle. The numbers are in `data/leaf_fall.cfg`.
+
 ![Rain in autumn, snow in winter, morning fog and a thunderstorm](docs/screenshots/weather.png)
 
 ### Day, night and light

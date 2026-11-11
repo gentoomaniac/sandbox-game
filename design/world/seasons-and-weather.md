@@ -100,6 +100,17 @@
     there is no wind inside, so it does not lean. Dead trees (bare snags), pebbles, fallen
     leaves, toadstools and puddles stay still; so does a tree while it is see-through or
     falling (it is a sprite then).
+  - **Falling leaves** (task 182, view only, numbers in data/leaf_fall.cfg): in wind, broadleaved
+    trees near the player shed leaves now and then, in the colours of their season look (the
+    felling leaves of the hit particles). Not every tree is watched: a few tiles are picked at
+    random around the player each second, and a pick on a tree may shed. The chance is the
+    foliage the tree still has (autumn colours in full, so early winter too until the tree is
+    bare; a little for green trees from late summer; none while bare or in spring leaf; spruce and
+    pine only a rare needle) times the wind (none at or below a calm speed, full at a strong one),
+    and more while a gust front, the same fronts the plants sway in, is over the tree. Most
+    leaves drop and sway down beside the tree; in wind some are carried off downwind, tumbling,
+    for a few tiles before they fade out. At most 24 leaves are in the air at once. Nothing is
+    saved and nothing falls indoors. Task 176's audible gusts are not tied in yet.
   - **Effects for now are visual only:** rain and snow particles (slanted by the wind),
     fog drifting over the world, wind streaks and blowing leaves, lightning flashes, and
     overcast skies dimming daylight. Nothing in the game reacts yet (crops, floods,

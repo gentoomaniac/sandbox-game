@@ -135,6 +135,9 @@ var mud := _material(MUD_SHADER)
 var splashes := _native_material(RAIN_SPLASH_SHADER)
 var decoration_sway := _material(DECORATION_SWAY_SHADER)
 var lily_pads := _material(LILY_PAD_SHADER)
+## The wind (m/s, the way it blows) as it was shown last (see `update`), which the leaves of the
+## trees follow too.
+var wind := Vector2.ZERO
 ## The chance of a splash now (see MAX_SPLASH_CHANCE): 0 when it does not rain.
 var splash_chance := 0.0
 var _object_materials: Dictionary[StringName, ShaderMaterial] = {}
@@ -239,7 +242,8 @@ func decoration_material(atlas_cell: Vector2i) -> ShaderMaterial:
 
 ## Shows the wind (m/s, the way it blows) and the rain (0 to 1) as they are now, `delta`
 ## seconds after the last time.
-func update(delta: float, wind: Vector2, rain: float) -> void:
+func update(delta: float, new_wind: Vector2, rain: float) -> void:
+	wind = new_wind
 	var speed := wind.length()
 	for material in _sway_materials:
 		material.set_shader_parameter("sway", sway_for(speed))

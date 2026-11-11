@@ -108,6 +108,7 @@ var ambient_motion := AmbientMotion.new()
 var decorations: DecorationView
 var _residency: ChunkResidency
 var _hit_particles := HitParticles.new()
+var _falling_leaves := FallingLeaves.new()
 var _variety_noise := FastNoiseLite.new()
 var _tileset := TerrainTileset.new(ambient_motion)
 var _object_tileset := ObjectTileset.new(CropRules.default_rules(), ambient_motion)
@@ -190,6 +191,7 @@ func _ready() -> void:
 	entities.add_child(_objects)
 	add_child(entities)
 	add_child(_hit_particles)
+	add_child(_falling_leaves)
 	add_child(_buildings)
 
 
@@ -333,6 +335,7 @@ func _process(delta: float) -> void:
 	is_settled = is_drawn and not _is_refreshing()
 	_update_see_through(delta)
 	_update_falling_trees(delta)
+	_shed_leaves(delta)
 
 
 ## Redraws one tile after its state changed. World's `tile_changed` calls it.
@@ -392,10 +395,28 @@ func _on_object_hit(object: WorldObject) -> void:
 
 
 func _hit_effect(object: WorldObject) -> HitEffect.Kind:
+	return HitEffect.kind_for(object.type, _foliage_look(object))
+
+
+## The look of an object's foliage: as it shows, but a frosty tree counts as its season's look, as
+## the frost says nothing about its foliage.
+func _foliage_look(object: WorldObject) -> SeasonBlend.Look:
 	var look := _object_look(object)
 	if look == SeasonBlend.Look.FROST:
-		look = _conditions.foliage_season_look(_blend.thresholds(object.pos).x)
-	return HitEffect.kind_for(object.type, look)
+		return _conditions.foliage_season_look(_blend.thresholds(object.pos).x)
+	return look
+
+
+## Lets the trees among a few tiles picked around the player shed leaves into the wind.
+func _shed_leaves(delta: float) -> void:
+	var centre := Vector2i((player_feet / TerrainTileset.TILE_SIZE).floor())
+	for tile in _falling_leaves.tiles_to_look_at(delta, centre):
+		var tree := world.object_at(tile)
+		if tree == null:
+			continue
+		var look := _foliage_look(tree)
+		var kind := HitEffect.kind_for(tree.type, look)
+		_falling_leaves.shed(kind, look, world.clock.day, _hit_origin(tree), ambient_motion.wind)
 
 
 ## Where a hit object throws its particles, in world pixels: the canopy of a tree, else the
