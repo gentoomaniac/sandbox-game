@@ -499,9 +499,12 @@ are a forge, a smokehouse, a saw mill and a fish pond.
   - It goes on with the window closed and with the player away, in game time.
 - **When done:**
   - The materials of the amount made are used up, and the result is in the grid.
-  - Extra items of a kind stay in the grid as they were. Nothing turns into ash or anything else.
-  - Leave a clear place in the code where a station could later change leftovers: ash for the
-    kiln, burnt food for the oven. It does nothing for now.
+  - With the filter there are no leftovers (the user, 2026-11-11: "This way we should also never
+    have too much of anything in the station"): the grid can only hold parts of one recipe's
+    loads, and the activation button runs only when it holds whole loads (n full loads of the open
+    recipe, no part load), so a run uses up everything that is in the grid. A part load keeps the
+    button greyed out with a short note of what is missing. Nothing turns into ash or anything
+    else; leftover handling (ash, burnt food) is not needed and not built.
   - The player takes the results out like from a chest, only as much as fits. The rest stays in
     the station.
 - **Skill:**
@@ -533,7 +536,8 @@ are a forge, a smokehouse, a saw mill and a fish pond.
   - the amount limits;
   - the button refused without a full recipe;
   - locked while running;
-  - the result after the time, with leftovers untouched;
+  - the button greyed out on a part load, a run using up the whole grid, the result after the
+    time;
   - taking out only what fits;
   - the kiln and the oven.
 - **Docs and screenshots:**
