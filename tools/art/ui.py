@@ -13,6 +13,8 @@ Written to assets/ui/:
 - energy_icon.png and health_icon.png: 12x12 icons for the bars next to the hotbar;
 - backpack_icon.png and chest_icon.png: 12x12 headers of the storage screen's sides;
 - trash_icon.png: 16x16, drawn into the trash can's slot like the equip_* hints (items.py);
+- bag_icon.png: 16x16, the picture on the bag button beside the hotbar; like the other icons it is
+  drawn from ICON_ROWS, and one picture serves both arts;
 - bar_frame.png (48x8) and energy_fill.png, health_fill.png (46x6, the frame's inside): the
   bars. The game draws as much of a fill as the bar is full;
 - bubble_<id>.png: the thought bubbles over the player's head, one per id of BUBBLE_ICONS.
@@ -312,6 +314,8 @@ ICON_COLOURS = {
     "s": "soil",
     "i": "stone",
     "j": "stone_light",
+    "a": "sand",
+    "b": "sand_light",
     "d": "stone_dark",
 }
 ICON_ROWS = {
@@ -371,6 +375,25 @@ kmmdmmmmdmmk
 kssssssssssk
 .kkkkkkkkkk.
 ............
+""",
+    # The bag button beside the hotbar: a pale leather satchel with a handle and a buckled flap.
+    "bag_icon": """
+................
+.....kkkkkk.....
+....kabbbbak....
+....ka....ak....
+....ka....ak....
+..kkkkkkkkkkkk..
+.kcccccccccccck.
+.kbbbbbggbbbbbk.
+.kbbbbbggbbbbbk.
+.kaaaaaaaaaaaak.
+.kbbbbbbbbbbbbk.
+.kbbbbbbbbbbbak.
+.kbbbbbbbbbbbak.
+.kaaaaaaaaaaaak.
+..kkkkkkkkkkkk..
+................
 """,
     # Shown in the trash can's slot (16x16 like the equipment hints, drawn into the slot).
     "trash_icon": """
