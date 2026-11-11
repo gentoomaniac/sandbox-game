@@ -31,11 +31,59 @@ func test_hotbar_and_backpack_together_hold_twenty_eight_stacks() -> void:
 	assert_eq(_inventory.add(ItemTypes.AXE, 1), 1)
 
 
-func test_a_matching_stack_in_the_backpack_is_joined_before_a_free_hotbar_slot() -> void:
+func test_a_free_hotbar_slot_is_used_before_a_matching_stack_in_the_backpack() -> void:
 	_inventory.slots[15] = {"item": ItemTypes.TURNIP, "count": 5}
 	_inventory.add(ItemTypes.TURNIP, 3)
-	assert_eq(_inventory.slots[15]["count"], 8)
-	assert_true(_inventory.slots[0].is_empty())
+	assert_eq(_inventory.slots[15]["count"], 5)
+	assert_eq(_inventory.slots[0], {"item": ItemTypes.TURNIP, "count": 3})
+
+
+func test_gained_items_fill_hotbar_stacks_hotbar_free_backpack_stacks_backpack_free() -> void:
+	var hotbar_slots := Inventory.HOTBAR_SIZE
+	_inventory.select(hotbar_slots - 1)
+	_inventory.slots[2] = {"item": ItemTypes.TURNIP, "count": 98}
+	_inventory.slots[hotbar_slots + 3] = {"item": ItemTypes.TURNIP, "count": 98}
+	for slot in hotbar_slots - 1:
+		if slot != 2:
+			_inventory.slots[slot] = {"item": ItemTypes.STONE, "count": 1}
+	# One tops up the hotbar stack, one the backpack stack, 99 go into the first free backpack slot.
+	_inventory.add(ItemTypes.TURNIP, 1 + 1 + 99)
+	assert_eq(_inventory.slots[2]["count"], 99)
+	assert_eq(_inventory.slots[hotbar_slots + 3]["count"], 99)
+	assert_eq(_inventory.slots[hotbar_slots]["count"], 99)
+	assert_true(_inventory.slots[hotbar_slots - 1].is_empty(), "the empty held slot stays last")
+
+
+func test_crafted_items_take_the_same_order() -> void:
+	_inventory.slots[15] = {"item": ItemTypes.TURNIP, "count": 5}
+	assert_true(_inventory.exchange({}, {ItemTypes.TURNIP: 2}))
+	assert_eq(_inventory.slots[0], {"item": ItemTypes.TURNIP, "count": 2})
+	assert_eq(_inventory.slots[15]["count"], 5)
+
+
+func test_exchange_never_loses_an_item_when_the_slots_are_nearly_full() -> void:
+	for slot in Inventory.SLOT_COUNT:
+		_inventory.slots[slot] = {"item": ItemTypes.STONE, "count": 99}
+	_inventory.slots[3] = {}
+	var received := {ItemTypes.TURNIP: 1, ItemTypes.BERRIES: 1}
+	assert_false(_inventory.exchange({}, received))
+	assert_eq(_inventory.count_of(ItemTypes.TURNIP), 0)
+
+
+func test_a_hotbar_stack_is_topped_up_and_the_rest_goes_to_the_next_free_slot() -> void:
+	_inventory.slots[0] = {"item": ItemTypes.TURNIP, "count": 97}
+	_inventory.slots[1] = {"item": ItemTypes.STONE, "count": 1}
+	_inventory.add(ItemTypes.TURNIP, 5)
+	assert_eq(_inventory.slots[0]["count"], 99)
+	assert_eq(_inventory.slots[2], {"item": ItemTypes.TURNIP, "count": 3})
+
+
+func test_the_empty_selected_slot_is_used_last_when_everything_else_is_full() -> void:
+	for slot in Inventory.SLOT_COUNT:
+		_inventory.slots[slot] = {"item": ItemTypes.STONE, "count": 99}
+	_inventory.slots[Inventory.HOTBAR_SIZE - 1] = {}
+	assert_eq(_inventory.add(ItemTypes.TURNIP, 1), 0)
+	assert_eq(_inventory.held_item(), ItemTypes.TURNIP)
 
 
 func test_backpack_first_order_puts_the_backpack_before_the_hotbar_and_the_held_slot_last() -> void:

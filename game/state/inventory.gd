@@ -98,8 +98,29 @@ static func from_dict(data: Dictionary) -> Inventory:
 	return inventory
 
 
-## Free slots are taken hotbar first, and the selected slot only when nothing else is free (so
-## an empty hand stays empty after a harvest).
+## What a pickup, a harvest, a crafted item or anything else the player gains fills, in order:
+## the stacks of the item on the hotbar, the free hotbar slots, the stacks in the backpack, the
+## free backpack slots, and the selected slot only if it is empty and nothing else is left (so an
+## empty hand stays empty after a harvest; a held stack of the item still fills in turn). With
+## `free_slots` given (a chest take) the plain order applies.
+func _add(item: StringName, count: int, free_slots: Array) -> int:
+	if not free_slots.is_empty():
+		return super(item, count, free_slots)
+	var hotbar := range(HOTBAR_SIZE)
+	var backpack := range(HOTBAR_SIZE, SLOT_COUNT)
+	var free_hotbar := hotbar.filter(func(slot: int) -> bool: return slot != selected_slot)
+	var left := _put(item, count, hotbar, free_hotbar)
+	left = _put(item, left, backpack, backpack)
+	return _put(item, left, [], [selected_slot])
+
+
+func _new_trial() -> ItemSlots:
+	var trial := Inventory.new()
+	trial.selected_slot = selected_slot
+	return trial
+
+
+## The free slots, hotbar first and the selected slot last.
 func _free_slot_order() -> Array:
 	var order := super()
 	order.erase(selected_slot)

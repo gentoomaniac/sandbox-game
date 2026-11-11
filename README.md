@@ -518,7 +518,8 @@ with white stockings, wooden clogs, and a short blue jacket and hats to put on. 
 open the character screen, where you move items between the inventory and the equipment
 slots. The hotbar (the eight slots at the bottom of the screen, keys 1 to 8) holds your tools
 and seeds and is extra room: it takes nothing from the backpack's 20 slots (4 rows of 5), so
-you carry 28 stacks. New items fill the free hotbar slots first. The screen shows the backpack
+you carry 28 stacks. New items fill the hotbar first (onto the same item, then free slots,
+except the one in your hand), then the backpack. The screen shows the backpack
 and the hotbar stays lit at the bottom, where you use it as the quick bar: drag an item with
 the mouse onto a slot of the backpack, the hotbar or the equipment to put it there (it follows
 the mouse only while you hold the button; a click alone picks nothing up). A different item in

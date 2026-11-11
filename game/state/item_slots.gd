@@ -104,9 +104,14 @@ func take_from(slot: int, count: int) -> bool:
 	return true
 
 
+## An empty copy of these slots that fills in the same order, for trying an exchange.
+func _new_trial() -> ItemSlots:
+	return ItemSlots.new(slots.size())
+
+
 ## Whether `exchange` would work.
 func can_exchange(paid: Dictionary, received: Dictionary) -> bool:
-	var trial := ItemSlots.new(slots.size())
+	var trial := _new_trial()
 	trial.load_slots(slots_to_data())
 	for item: StringName in paid:
 		if paid[item] < 1 or trial._remove(item, paid[item]) < paid[item]:

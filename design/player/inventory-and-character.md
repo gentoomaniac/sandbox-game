@@ -18,7 +18,9 @@
     what lay in the two dropped hotbar slots into the backpack (onto a stack of the same item
     first), or onto the ground at the player's feet when the backpack is full.
     Shift+click from a chest sends a stack to the backpack first, then the hotbar. Picked-up
-    items join a matching stack first, then take the first free slot, hotbar before backpack. Backpack upgrades later add rows to the backpack.
+    items (and anything else gained) fill the hotbar first: a matching stack there, then a free
+    slot, then the backpack the same way; the held slot only when it is empty and nothing else is
+    free. Backpack upgrades later add rows to the backpack.
   - The selected hotbar slot is what the player holds: keys 1–8 pick a slot. The use
     action (left click or Space) acts with the held item.
   - Items of the same kind stack, up to 99 per slot; tools don't stack.
