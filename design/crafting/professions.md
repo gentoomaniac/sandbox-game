@@ -36,7 +36,7 @@ woodworker, the cook and the mason, and a UI for them.
   saved state) until it is taken out; the bricks take 12 game hours, so a firing started in
   the evening is done in the morning. Nothing runs while the player is away: the clock is
   compared with that minute. Opening the station's menu when the work is done takes the
-  result into the inventory (or says there is no room, and it stays). While it fires, the
+  result into the inventory; what does not fit is dropped by the station, on the player's side. While it fires, the
   menu says what and for how long, and the slow recipes are greyed. A kiln broken down gives
   back its unfired load, or the bricks once done. No new save field: the work is in the
   object's `state`, which is saved already.

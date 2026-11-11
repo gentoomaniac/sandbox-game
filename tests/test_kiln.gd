@@ -95,17 +95,22 @@ func test_the_firing_is_done_after_its_hours_and_the_bricks_come_out() -> void:
 	assert_false(_crafting.is_work_done(_kiln))
 	_state.simulation.advance(1)
 	assert_true(_crafting.is_work_done(_kiln))
-	assert_true(_crafting.take_out(_kiln))
+	assert_eq(_crafting.take_out(_kiln), Crafting.Result.TAKEN_OUT)
 	assert_eq(_count(ItemTypes.BRICK), 6)
 	assert_false(StationWork.is_busy(_kiln))
 
 
-func test_bricks_that_do_not_fit_stay_in_the_kiln() -> void:
+func test_bricks_that_do_not_fit_are_dropped_by_the_kiln_on_the_players_side() -> void:
 	_crafting.craft(&"bricks", _kiln)
 	_state.simulation.advance(FIRING_MINUTES)
 	_fill_inventory()
-	assert_false(_crafting.take_out(_kiln))
-	assert_true(StationWork.is_busy(_kiln))
+	_state.player.inventory.slots[0] = {"item": ItemTypes.BRICK, "count": 95}
+	assert_eq(_crafting.take_out(_kiln), Crafting.Result.DROPPED_OUT)
+	assert_false(StationWork.is_busy(_kiln))
+	assert_eq(_count(ItemTypes.BRICK), 99)
+	assert_eq(_world.ground_items.count_of(ItemTypes.BRICK), 2)
+	var by_the_kiln := _world.ground_items.all()[0]
+	assert_lt(by_the_kiln.position.distance_to(Vector2(_state.player.tile())), 2.5)
 
 
 func test_the_firing_goes_on_through_a_save_and_while_the_player_is_away() -> void:

@@ -9,7 +9,8 @@ extends Modal
 ## character screen, it takes the input while it is open (Main sees to that, and closes it on C
 ## and E; Escape is the Modal's).
 
-const NO_ROOM_NOTE := "Inventory full"
+const NO_ROOM_NOTE := "Inventory full, and nothing can be dropped indoors"
+const DROPPED_NOTE := "Inventory full: the rest was dropped on the ground"
 const NO_STATION_NOTE := "Too far from the station"
 const WRONG_STATION_NOTE := "Made at the %s"
 const HAND_TITLE := "Crafting"
@@ -17,6 +18,7 @@ const NOTHING_NOTE := "Nothing to make here yet."
 const AT_CAP_NOTE := "%s is held at the skill cap: let a skill fade (K)."
 const LEARNT_ALL_NOTE := "This teaches you no more %s."
 const TAKEN_OUT_NOTE := "Took out %s."
+const DROPPED_OUT_NOTE := "Took out %s: the rest was dropped by the station."
 const WORK_TEXT := "%s: ready in %s"
 const NO_ROOM_FOR_WORK_TEXT := "%s are ready: no room in the inventory"
 
@@ -73,8 +75,11 @@ func _on_open() -> void:
 	_refresh()
 	if _station != null and _crafting.is_work_done(_station):
 		var title := _work_title()
-		if _crafting.take_out(_station):
-			_show_note(TAKEN_OUT_NOTE % title.to_lower())
+		match _crafting.take_out(_station):
+			Crafting.Result.TAKEN_OUT:
+				_show_note(TAKEN_OUT_NOTE % title.to_lower())
+			Crafting.Result.DROPPED_OUT:
+				_show_note(DROPPED_OUT_NOTE % title.to_lower())
 		_refresh()
 
 
@@ -105,6 +110,8 @@ func _show_recipes() -> void:
 func _craft(recipe_id: StringName) -> void:
 	_show_note("")
 	match _crafting.craft(recipe_id, _station):
+		Crafting.Result.DROPPED:
+			_show_note(DROPPED_NOTE)
 		Crafting.Result.NO_ROOM:
 			_show_note(NO_ROOM_NOTE)
 		Crafting.Result.NO_STATION:
@@ -140,7 +147,8 @@ func _refresh() -> void:
 	_work_label.visible = is_busy
 
 
-## "Bricks x6: ready in 7 h 20 min", or that it is ready but does not fit the inventory.
+## "Bricks x6: ready in 7 h 20 min", or that it is ready but does not fit the
+## inventory (indoors, where nothing can be dropped).
 func _work_text() -> String:
 	if _crafting.is_work_done(_station):
 		return NO_ROOM_FOR_WORK_TEXT % _work_title()

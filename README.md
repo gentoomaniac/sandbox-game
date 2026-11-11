@@ -579,7 +579,7 @@ Beds don't block walking, so you can't get stuck behind one.
 Press C for the crafting menu of what you make by hand: a chest, a campfire (6 stone, 3 logs),
 a bedroll (6 hay, 4 fibre), the stations below and flour (from wheat, rye or buckwheat).
 It lists what you can make with what you carry; a recipe you can't afford yet is greyed, with
-the missing materials marked, and hovering shows what is missing. A long list scrolls (mouse
+the missing materials marked, and hovering shows what is missing. With a full inventory a craft still goes ahead: what does not fit is dropped at your feet, and the menu says so. A long list scrolls (mouse
 wheel, the bar, or the arrow keys) instead of outgrowing the window. The recipes are in
 [data/recipes.cfg](data/recipes.cfg).
 
@@ -595,7 +595,7 @@ Three crafts can be learnt, each at its own **station**: press E at one for its 
   joined cupboard with 25.
 - **Masonry**: clay is moulded into raw bricks at the workbench and fired in the **kiln**.
   A firing takes 12 game hours and goes on while you are away; open the kiln's menu
-  afterwards to take the bricks out; a skilled mason fires more for the same fuel. The bake
+  afterwards to take the bricks out (what does not fit your inventory is dropped by the kiln); a skilled mason fires more for the same fuel. The bake
   oven is built of those bricks.
 
 A recipe is only made at a station of its kind within your reach: the kiln's firing is not

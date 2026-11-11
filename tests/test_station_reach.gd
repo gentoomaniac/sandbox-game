@@ -84,5 +84,15 @@ func test_the_finished_firing_stays_in_the_kiln_while_the_player_is_out_of_reach
 	_crafting.craft(&"bricks", _kiln)
 	_state.simulation.advance(FIRING_MINUTES)
 	_state.player.position += Vector2(5.0, 0.0)
-	assert_false(_crafting.take_out(_kiln))
+	assert_eq(_crafting.take_out(_kiln), Crafting.Result.NO_STATION)
 	assert_true(StationWork.is_busy(_kiln))
+
+
+func test_a_result_that_partly_fits_goes_in_and_the_rest_is_dropped() -> void:
+	for slot in Inventory.SLOT_COUNT:
+		_state.player.inventory.slots[slot] = {"item": ItemTypes.HOE, "count": 1}
+	_state.player.inventory.slots[3] = {"item": ItemTypes.LOGS, "count": 2}
+	_state.player.inventory.slots[4] = {"item": ItemTypes.PLANKS, "count": 98}
+	assert_eq(_crafting.craft(&"planks", _workbench), Crafting.Result.DROPPED)
+	assert_eq(_state.player.inventory.count_of(ItemTypes.PLANKS), 99)
+	assert_eq(_world.ground_items.count_of(ItemTypes.PLANKS), 1)

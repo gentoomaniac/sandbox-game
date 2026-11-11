@@ -40,6 +40,17 @@ func _fill_inventory() -> void:
 		_inventory().slots[slot] = {"item": ItemTypes.HOE, "count": 1}
 
 
+## Where a house fits near the player.
+func _free_house_origin() -> Vector2i:
+	for y in range(-12, 13):
+		for x in range(-12, 13):
+			var origin := _state.player.tile() + Vector2i(x, y)
+			if _state.world.placement_blockers(BuildingTypes.KATE, origin).is_empty():
+				return origin
+	fail_test("no room for a house near the player")
+	return Vector2i.ZERO
+
+
 # --- The data ---
 
 
@@ -127,7 +138,28 @@ func test_the_materials_can_be_spread_over_stacks() -> void:
 	assert_eq(_inventory().count_of(ItemTypes.LOGS), 97)
 
 
-func test_a_craft_the_inventory_has_no_room_for_is_refused_and_changes_nothing() -> void:
+func test_a_craft_the_inventory_has_no_room_for_takes_the_materials_and_drops_the_result() -> void:
+	_fill_inventory()
+	_inventory().slots[3] = {"item": ItemTypes.LOGS, "count": 6}
+	assert_eq(_crafting.craft(&"chest"), Crafting.Result.DROPPED)
+	assert_eq(_inventory().count_of(ItemTypes.LOGS), 1)
+	assert_eq(_inventory().count_of(ItemTypes.CHEST), 0)
+	assert_eq(_state.world.ground_items.count_of(ItemTypes.CHEST), 1)
+
+
+func test_the_slot_the_materials_free_takes_the_result_before_anything_is_dropped() -> void:
+	_fill_inventory()
+	_inventory().slots[3] = {"item": ItemTypes.LOGS, "count": 5}
+	assert_eq(_crafting.craft(&"chest"), Crafting.Result.CRAFTED)
+	assert_eq(_inventory().item_in(3), ItemTypes.CHEST)
+	assert_eq(_state.world.ground_items.all().size(), 0)
+
+
+func test_a_craft_that_does_not_fit_indoors_is_refused_and_changes_nothing() -> void:
+	var house := _state.world.place_building(BuildingTypes.KATE, _free_house_origin())
+	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
+	_state.pass_door()
+	assert_true(_state.is_inside())
 	_fill_inventory()
 	_inventory().slots[3] = {"item": ItemTypes.LOGS, "count": 6}
 	assert_eq(_crafting.craft(&"chest"), Crafting.Result.NO_ROOM)

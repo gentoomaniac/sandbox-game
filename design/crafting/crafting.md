@@ -9,8 +9,11 @@ Decided 2026-11-05.
   validated like the other data files. C shows the recipes made by hand (the chest, the
   campfire and the bedroll, the stations, flour); the others are made at a station (see
   [Professions](professions.md)); the hammer is a later recipe. When the result would not fit
-  in the inventory (once the materials are taken) crafting is refused and the menu says so;
-  nothing is dropped. A recipe made at a station is also refused, with nothing taken and nothing started,
+  in the inventory, the craft goes ahead: the materials are taken first (the room they leave is
+  used), the result goes in as other gains do, and what does not fit is dropped at the player's
+  feet, with a note in the menu. Work taken out of a station drops by the station, on the player's
+  side. Inside a building nothing can lie on the floor, so there a craft whose result does not fit
+  is refused and the menu says so. A recipe made at a station is also refused, with nothing taken and nothing started,
   when the station is of another kind (a kiln firing at a workbench: "Made at the Kiln"), or not
   on the player's map or out of their reach ("Too far from the station"). The menu is modal, so
   the player cannot walk off with it open; the check guards code that crafts (tests, later

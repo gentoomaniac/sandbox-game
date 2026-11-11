@@ -61,13 +61,13 @@ func test_clicking_an_affordable_recipe_crafts_it() -> void:
 	assert_true(_row().disabled, "and the rest no longer pays for another")
 
 
-func test_a_craft_with_no_room_says_so() -> void:
+func test_a_craft_with_no_room_says_the_rest_was_dropped() -> void:
 	for slot in Inventory.SLOT_COUNT:
 		_state.player.inventory.slots[slot] = {"item": ItemTypes.HOE, "count": 1}
 	_state.player.inventory.slots[3] = {"item": ItemTypes.LOGS, "count": 6}
 	_row().pressed.emit()
 	var notes := _screen.find_children("*", "Label", true, false).filter(
-		func(label: Label) -> bool: return label.text == CraftingScreen.NO_ROOM_NOTE
+		func(label: Label) -> bool: return label.text == CraftingScreen.DROPPED_NOTE
 	)
 	assert_eq(notes.size(), 1)
 	assert_true(notes[0].visible)
