@@ -4962,3 +4962,25 @@ the house."
 - Later (a separate task, see Later): villagers go inside their houses.
 
 Done: 2026-11-11. The cause was placement: a door tile is walkable (the player walks in), and villagers used the player's `can_stand_at` for spawn, strolls and catch-up. `Npcs.can_stand_at` now excludes every building tile, and a villager found on one is moved to the nearest free tile (normally in front of the door). Farm animals and pets: `World.is_walkable_for_animals` excludes building tiles, and a skip moves an animal off. Not covered: wild animals (WildlifeView uses `world.is_walkable`), which can still stand on a door.
+
+## 200. Items can lie on the floor indoors
+
+- [x] Done
+
+The user, 2026-11-11: "Dropping items inside should work"
+- Today ground items live only in `world.ground_items`: interiors (game/state/interior.gd) have
+  none, so `GameState.drop_from_inventory` refuses indoors (`is_inside()`), and task 198 kept a
+  full-inventory craft indoors refused ("Inventory full, and nothing can be dropped indoors").
+- Give interiors their own ground items (the same GroundItems, per map, saved with the interior;
+  save version bump with its upgrade, per the save rules): dropping (the drop key and dragging a
+  stack out of a window onto the floor) works inside, piles show on the floor in both arts, the
+  player picks them up as outside, and they stay when the player leaves and comes back.
+- Then the indoor case of task 198: a craft that doesn't fit drops the rest at the player's feet
+  indoors too; the NO_ROOM refusal and its indoor note go if nothing else needs them.
+- Anything outdoor-only about ground items (wind, rot, animals eating, rain, the item settle and
+  auto pickup) is checked and either works indoors or is left out on purpose; say which.
+- Floor tiles only: never on walls or furniture that blocks; scatter stays inside the room.
+- Tests: drop and pick up inside, saved and loaded, leaving and coming back, a full-inventory craft
+  indoors drops, the drop tiles stay on the floor. README, design pages, docs.
+
+Done: 2026-11-11. Ground items belong to each map (GameMap): interiors keep their own piles, saved with them (save version 29; the upgrade from 18 dropped). Dropping, dragging a stack out of a window, pickup, settle and pull work inside; piles lie only on free floor (never walls, blocking furniture or the doormat; a crowded room uses its nearest free floor) and show in both arts. A craft or take-out that does not fit drops the rest indoors too; Crafting.Result.NO_ROOM is gone. No wind, rot, animal or rain behaviour exists for piles anywhere. A `--floor-items` screenshot option.
