@@ -108,6 +108,23 @@ func clear() -> void:
 	_nest_views.clear()
 
 
+## Takes every wild animal of a kind away at once, in view or not (the `killall` console command).
+## Nothing is saved of them: the spawn rules may bring others. Returns how many it took.
+func remove_kind(kind: StringName) -> int:
+	var removed := 0
+	var staying: Array[Animal] = []
+	for animal in _animals:
+		if animal.kind != kind:
+			staying.append(animal)
+			continue
+		# A frog a stork is after, or a mouse a cat is after, is gone before it is freed.
+		animal.is_done = true
+		animal.queue_free()
+		removed += 1
+	_animals = staying
+	return removed
+
+
 ## Puts `count` animals of a kind in view, near the player. Returns how many it could place.
 func spawn_in_view(kind: StringName, count: int) -> int:
 	var spawned := 0
