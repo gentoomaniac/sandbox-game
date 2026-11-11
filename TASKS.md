@@ -252,21 +252,6 @@ later."
 - Save version bump with the upgrade rule; tests for the derived stats, the save and the base
   values matching today; README and design notes (design/player/).
 
-## 190. A bag button by the hotbar, and B opens the bag
-
-- [ ] Done
-
-From the user's words under task 188.
-- A bag icon (both arts, pixel-artist job) beside the hotbar, set a little apart from it; clicking
-  it or pressing B opens the bag. The bag is today's inventory screen (Tab), placed a bit to the
-  right of the screen centre instead of where it is now. Tab no longer opens it: only B (the user,
-  2026-11-11); Tab is left free (unbound) for later.
-- B is the hammer key today (`select_hammer`, which puts the hammer in hand and opens building).
-  The build menu now only opens with the hammer in hand (the hammer selected in the hotbar, then
-  the build key/use); B no longer selects the hammer. Update the controls page and the README's
-  key list.
-- Tests for the keys, the button and the window place; screenshots for the user; README.
-
 ## 191. The character window on C
 
 - [ ] Done

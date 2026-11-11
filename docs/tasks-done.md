@@ -5131,3 +5131,20 @@ pixel-artist instructions (.claude/agents/pixel-artist.md), at the user's reques
 - Task 207 then makes them items.
 
 Done: 2026-11-11, approved by the user on the third try (worker on Fable at the user's request). The old tools looked distorted because handles were rasterised at 51 degrees, heads were curves at odd angles with dome shading, and outline colours changed along the shape. All seven tools are now hand-drawn letter maps with each head square to its handle in the handle's 45-degree view (the can upright, mirrored), in five grades told apart by the metal: rusty iron (rust pits, dull handle), iron, brittle steel (cold blue, a hairline crack), steel, sharp steel (near white, a keen edge); the pick's arms bend gently. The can is of the grade's metal, the spade all iron. The generator code is on branch `tools-206-designs`, not merged: task 207 builds on it. The user chose the Roman numeral to be drawn by the inventory UI.
+
+## 190. A bag button by the hotbar, and B opens the bag
+
+- [x] Done
+
+From the user's words under task 188.
+- A bag icon (both arts, pixel-artist job) beside the hotbar, set a little apart from it; clicking
+  it or pressing B opens the bag. The bag is today's inventory screen (Tab), placed a bit to the
+  right of the screen centre instead of where it is now. Tab no longer opens it: only B (the user,
+  2026-11-11); Tab is left free (unbound) for later.
+- B is the hammer key today (`select_hammer`, which puts the hammer in hand and opens building).
+  The build menu now only opens with the hammer in hand (the hammer selected in the hotbar, then
+  the build key/use); B no longer selects the hammer. Update the controls page and the README's
+  key list.
+- Tests for the keys, the button and the window place; screenshots for the user; README.
+
+Done: 2026-11-11. A bag button (a light leather satchel, one picture for both arts) sits a little apart, right of the hotbar; clicking it or pressing B opens the bag, placed right of the screen centre. Tab is unbound. The hammer has no key of its own: the build menu opens with the hammer selected in the hotbar. Old settings that bound B to another action give B back to the bag (with the usual "bound twice" warning). A hotbar key or the mouse wheel resumes build mode after Escape or a right click.
