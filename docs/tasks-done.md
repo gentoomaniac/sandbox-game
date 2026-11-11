@@ -4984,3 +4984,26 @@ The user, 2026-11-11: "Dropping items inside should work"
   indoors drops, the drop tiles stay on the floor. README, design pages, docs.
 
 Done: 2026-11-11. Ground items belong to each map (GameMap): interiors keep their own piles, saved with them (save version 29; the upgrade from 18 dropped). Dropping, dragging a stack out of a window, pickup, settle and pull work inside; piles lie only on free floor (never walls, blocking furniture or the doormat; a crowded room uses its nearest free floor) and show in both arts. A craft or take-out that does not fit drops the rest indoors too; Crafting.Result.NO_ROOM is gone. No wind, rot, animal or rain behaviour exists for piles anywhere. A `--floor-items` screenshot option.
+
+## 182. Leaves fall and blow in autumn wind
+
+- [x] Done
+
+The user, 2026-11-11: "in autumn, there should be falling leaves when windy. we should have the
+animation from lumbering, we could use that for blowing some leaves around? Some just falling,
+some carried off by the wind."
+- Reuse the falling-leaf particles of tree felling (game/scenes/hit_particles.gd,
+  HitEffect.Kind.LEAVES_AUTUMN and LEAVES_GREEN: palette leaves with a sway as they fall).
+- In autumn (and a little in late summer and early winter, by how much foliage the trees still
+  carry in the season looks), deciduous trees near the player shed leaves now and then: more in
+  stronger wind and in gusts (task 176's gusts when they exist, the sway shader's fronts), none in
+  calm. Some drop and sway down beside the tree; in wind, some are carried off downwind, drifting
+  and tumbling for a while before they land or leave the view. Conifers shed none (or a rare
+  needle). Leaf colours follow the tree's season look.
+- Cheap: a cap on the leaves alive at once, spawned only for trees on screen near the player,
+  nothing per tile per frame; nothing saved. Numbers in data/ (a new section or ambience.cfg).
+- Off indoors. Both arts.
+- Tests for the rate by season and wind, the cap, and the drift direction; a short clip or a few
+  frames for the user.
+
+Done: 2026-11-11. In wind above 3 m/s, deciduous trees near the player shed leaves by their season look (autumn colours fully, green trees a little from summer day 20, conifers a rare needle, none under snow), more in stronger wind and the shader's gust fronts (`AmbientMotion.gust_front` copies sway.gdshaderinc). Some drop beside the tree, some drift downwind up to about 10 tiles. At most 24 alive; random tile picks near the player; nothing saved; off indoors. Numbers in data/leaf_fall.cfg. The user merged it to try in game (the leaves are small, 3 to 5 px).
