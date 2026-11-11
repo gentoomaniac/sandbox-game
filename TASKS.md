@@ -185,22 +185,6 @@ Settings (and off), muted in test runs (comes with task 184). Rules in data/musi
   pieces like the test reel are kept for special events (festivals, a market day). Later: stems
 (AudioStreamSynchronized), more pieces, the season and weather choices.
 
-## 174. Tilled soil reaches nearer the tile edges, and seeds and plants sit centred
-
-- [ ] Done
-
-The user, 2026-11-11, with a screenshot of a 2x2 bed (32 px art): "tilled soil needs to be closer
-to the tile edges but not a straight line. The seeds and plants need to sit a bit more centered."
-Today the bed's outer rim (tools/art/soil_beds.py, the bed shapes) is drawn well inside the
-tiles, so a small bed reads as a rounded blob with a wide border of grass; and the sown seeds sit
-low in their tile (near its bottom edge) rather than in the middle of it.
-- The bed's outer edge comes close to the tile edges (a pixel or two in, not a wide margin), still
-  ragged and organic rather than a straight ruled line; corners stay softly rounded. Both arts;
-  the wetness overlay and the fade of task 167 and the weeds of task 166 follow the new shape.
-- Seeds, sprouts and crops are drawn centred on their tile (check every crop stage and both arts;
-  tall crops may still stand from the tile's lower part if that reads better, say so).
-- Before/after crops at 1x and 4x and an in-game shot for the user; README pictures re-taken.
-
 ## 175. Rain visibly wets the soil, and wet soil is a patch, not a square
 
 - [ ] Done

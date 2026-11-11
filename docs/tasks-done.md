@@ -4663,3 +4663,26 @@ a petting takes 5, worked out in closed form over skips. The marks stand 2 px ab
 measured head per pose. Save version 27 (the upgrade from 16 dropped). Wild ground animals (wild
 rabbit, squirrel, deer, mouse, frog; WildlifeRules.GROUND_KINDS) carry a friendship value that is 0
 and stays 0, not saved; the saved store comes with taming (see Later). Console `friendship [n]`.
+
+## 174. Tilled soil reaches nearer the tile edges, and seeds and plants sit centred
+
+- [x] Done
+
+The user, 2026-11-11, with a screenshot of a 2x2 bed (32 px art): "tilled soil needs to be closer
+to the tile edges but not a straight line. The seeds and plants need to sit a bit more centered."
+Today the bed's outer rim (tools/art/soil_beds.py, the bed shapes) is drawn well inside the
+tiles, so a small bed reads as a rounded blob with a wide border of grass; and the sown seeds sit
+low in their tile (near its bottom edge) rather than in the middle of it.
+- The bed's outer edge comes close to the tile edges (a pixel or two in, not a wide margin), still
+  ragged and organic rather than a straight ruled line; corners stay softly rounded. Both arts;
+  the wetness overlay and the fade of task 167 and the weeds of task 166 follow the new shape.
+- Seeds, sprouts and crops are drawn centred on their tile (check every crop stage and both arts;
+  tall crops may still stand from the tile's lower part if that reads better, say so).
+- Before/after crops at 1x and 4x and an in-game shot for the user; README pictures re-taken.
+
+Done 2026-11-11: the soil edge (tools/art/terrain.py and classic, `edge_shapes`/`coverage` with an
+inset and a ramp) runs 1 to 4 px inside the tile edge, ragged, and only the corners round off over
+about 6 px (3 in classic); the wet overlay, the fade of 167 and the fallow weeds (now placed on the
+bed by `soil_beds.spot_on_bed`) follow it. Crop stages that fit their tile are centred on it
+(`canvas.centred_on_tile`); tall grown crops still stand from the tile's lower part. README
+pictures re-taken.
