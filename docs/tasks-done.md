@@ -4503,3 +4503,63 @@ Done 2026-11-11: fallow soil (game/state/fallow_soil.gd, World.fallow); weeds af
 after 10 (data/crops.cfg [farming]), winter days don't count, a frost day in another season does;
 the hoe only tills grass, so the tile goes back to grass in its place's own look. Save version 26
 (the upgrade from 15 dropped). The user approved the weeds and the rules the same day.
+
+## 165. Pigs, and pig pens the player builds
+
+- [x] Done
+
+The user, 2026-11-10: "add pigs to the list and pig pens that can be build where pigs can be
+in". Run after task 122 (the farm yard), before the gossip tasks.
+- Art: a pig at 32 px (and the classic 16 px) in tools/art/livestock.py, with the frames the
+  other livestock have (stand, walk, graze or root, sleep, the walk used as run). The user's
+  reference is a pixel-art pig from the side (kept in the coordinator's scratchpad as
+  pig/user_reference.png; proportions only, not its pixels, not its watermark): a long, deep
+  barrel with a nearly level back, a big head held low with a long snout and a big ear flopping
+  forward over the eye, short legs, a curly tail, light shading from the top and darker tones on
+  the snout, ears, belly and legs.
+- Older breeds, not today's pink pig: a bit more furry, which means more colour and more variety,
+  as with the cows. Several looks in palette colours, e.g. a bristly red-brown, a sandy one, a
+  black-and-white saddleback, a spotted one; bristles shown by a few broken tones along the back
+  and flank, not by an outline.
+- Game data: a `[pig]` section in data/livestock.cfg like the other animals (speed, what it eats,
+  roaming, sleep), in Livestock and the save; what it gives the player is decided with the user
+  (none, or meat later with the economy).
+- Pig pen: a building the player builds (recipe, placement, data/buildings.cfg or a world object
+  set): a low fence of split oak rails or wattle around a few tiles, with a gate and a small
+  shelter, plus a trough (task 122). Pigs stay inside the pen they belong to: their roaming is
+  bounded by it, they don't walk through its fence, and the gate lets the player in and out.
+- Tests: the pig's state, roaming that stays in its pen, building a pen, save and load; the
+  README livestock picture and a pen screenshot.
+
+Done (2026-11-11), the art approved by the user ("Not perfect but let's take them the pigs for now",
+after two redraws: a short, deep body with the head below the back line, then legs as limbs out of
+the body and a tail grown out of the rump), with these decisions (chosen as the simplest, the user
+may change them; see design/farming/livestock.md, "Pigs" and "The pig pen"):
+- **Pigs:** four looks (red-brown, sandy, saddleback, spotted), drawn by hand as maps of letters at
+  32 px (52x32 cell, 40 px long, 23 px tall) and in the classic art, with every livestock frame.
+  `[pig]` in data/livestock.cfg: they root for most of the day (the graze, which feeds them), never
+  run about, eat at a stock of feed and drink like the others (the needs of task 122: hunger 10 h,
+  thirst 8 h, 4 units a meal or drink). They give nothing yet, and have no sound of their own yet.
+  Spawned with the console (`spawn pig`).
+- **Feeding trough:** the trough with `stock_kind` feed, made as the trough (woodworking 10), drawn
+  with a mash of feed at four fills (atlas row 54). Turnips (8), acorns and beech mast (4 each) join
+  hay in `[yard] feed_items`, into a feeding trough or a hay rack alike.
+- **Pig pen:** not a building but pieces the player makes at the workbench and puts down one by one:
+  the pen fence (split oak rails; a log makes two, level 10), the pen gate (3 planks and a log, level
+  10) and the pig shelter (a reed-thatched lean-to, 2x1; 6 planks, 2 logs, 6 reeds, level 15),
+  atlas rows 55 to 58 (`tools/art/pen.py`, `classic/pen.py`). The fence and the gate join as a line.
+  The player walks through the gate shut or open; the farm animals only through an open one
+  (`stops_animals`, `GameMap.is_walkable_for_animals`, which Livestock now uses for its steps,
+  searches, catch-up and coops; one put under an animal does not trap it), so a pen with its gate
+  shut keeps its animals in with the reachability and needs code of task 122 unchanged; the wild
+  animals take no notice of it. The use key with an empty hand opens and shuts the gate (it turns
+  into the other type, `turns_into`), with the knock of wood put down until it has a sound of its
+  own (a job for the sound designer): no save version bump, nothing new is saved.
+- `--yard` shows a pig pen with a pig of each look below the farm yard; README pictures
+  docs/screenshots/pig-pen.png (both arts) and livestock.png re-taken with pigs. Tests:
+  tests/test_pigs.gd, test_livestock_stopped.gd (with a test-only stile), test_pig_pen.gd,
+  test_pig_pen_building.gd, and additions to test_yard_stock, test_save_livestock,
+  test_chicken_coop and test_woodworking.
+Left open: the pigs do not go into their shelter (they sleep where they are); a pen is not a thing
+of its own (no owner, no count of its pigs); a ridden horse goes through a shut gate; rooting does
+not wear the ground.
