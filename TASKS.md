@@ -211,6 +211,9 @@ for game mechanics." Run after task 172, before the gossip tasks.
   friendship value but can't be petted (it stays at 0 for now); a later feature may let the player
   tame wild animals. Birds are left out. A wild animal is only tracked and saved once its value
   is above 0 (later: the player tried to tame it); all the others are not saved.
+  Decided 2026-11-11 after a second opinion: for now only the attribute (a friendship value fixed
+  at 0 on wild rabbits, squirrels, deer, mice and frogs, not pettable, not saved); the sparse saved
+  store comes with taming (see Later).
 - Saved with the animal (a save version bump, following the upgrade-window rule); the heart and
   the swirl drawn in both arts (pixel-artist job), a short sound for the petting maybe reused.
 - Nothing uses the value yet; it is for later game mechanics. A console command to show an
@@ -221,7 +224,14 @@ for game mechanics." Run after task 172, before the gossip tasks.
 ## Later (not part of the prototype)
 
 - **Taming wild animals** (the user, 2026-11-11): wild animals already carry a friendship value
-  (task 173); a later feature could let the player tame them.
+  (task 173); a later feature could let the player tame them. Design notes (second opinion,
+  2026-11-11): a sparse store on GameState holds only wild animals whose value is above 0, ships
+  together with bringing a tracked animal back near its last tile (wildlife nodes vanish indoors,
+  over skips and with distance, so despawn is not death); one live node per id; ids from a saved
+  allocator; records {id, kind, friendship, last tile, accounted_day}, decay counted in the state;
+  a record goes when the animal dies (cats catch mice, storks catch frogs), drops back to 0 or is
+  tamed into the livestock; wild-kind rules with the wildlife rules, not the livestock species
+  (both have a "rabbit").
 
 - **Animal breeding** (the user, 2026-11-10): a cheap way to get new animals, but the young take
   at least a year to grow up. With simple traits per animal (one cow gives more milk, another more
