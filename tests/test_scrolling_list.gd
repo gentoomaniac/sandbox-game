@@ -34,6 +34,11 @@ func _add_rows(count: int) -> void:
 	_list.fit()
 
 
+func _bottom() -> int:
+	var bar := _list.get_v_scroll_bar()
+	return int(bar.max_value - bar.page)
+
+
 func _panel_height() -> float:
 	return _frame.get_combined_minimum_size().y
 
@@ -97,3 +102,46 @@ func test_focus_moving_to_a_row_scrolls_it_into_view() -> void:
 func test_the_bar_does_not_squeeze_the_rows() -> void:
 	_add_rows(40)
 	assert_gt(_list.custom_minimum_size.x, _rows.get_combined_minimum_size().x)
+
+
+func test_a_fixed_height_beats_the_content_and_the_window() -> void:
+	_list.fixed_height = 80.0
+	_add_rows(2)
+	assert_eq(_list.custom_minimum_size.y, 80.0)
+	_add_rows(40)
+	assert_eq(_list.custom_minimum_size.y, 80.0)
+
+
+func test_a_page_is_the_height_of_the_list() -> void:
+	_list.fixed_height = 80.0
+	_add_rows(40)
+	await wait_process_frames(2)
+	_list.scroll_pages(1)
+	assert_eq(_list.scroll_vertical, int(_list.size.y))
+	_list.scroll_pages(-1)
+	assert_eq(_list.scroll_vertical, 0)
+
+
+func test_a_list_that_keeps_the_bottom_follows_new_rows() -> void:
+	_list.fixed_height = 80.0
+	_list.keeps_bottom = true
+	_add_rows(10)
+	await wait_process_frames(2)
+	_add_rows(5)
+	await wait_process_frames(2)
+	assert_eq(_list.scroll_vertical, _bottom())
+
+
+func test_a_list_scrolled_up_stays_when_rows_come_and_follows_again_at_the_bottom() -> void:
+	_list.fixed_height = 80.0
+	_list.keeps_bottom = true
+	_add_rows(10)
+	await wait_process_frames(2)
+	_list.scroll_vertical = 0
+	_add_rows(5)
+	await wait_process_frames(2)
+	assert_eq(_list.scroll_vertical, 0)
+	_list.scroll_to_bottom()
+	_add_rows(5)
+	await wait_process_frames(2)
+	assert_eq(_list.scroll_vertical, _bottom())

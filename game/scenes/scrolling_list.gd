@@ -5,6 +5,8 @@ extends ScrollContainer
 ## panel never outgrows it; past that the list scrolls (wheel, bar, and focus moving to a row)
 ## while the titles and buttons round it stay in place. The window is the one at the current UI
 ## scale, so a larger UI gives the list less room, and the list follows resizes of the window.
+## A list can also have a fixed height (a log), and can keep the view at the bottom while its
+## content grows, unless the player scrolled up.
 
 ## Room left empty above and below the panel, in UI units.
 const MARGIN := 12
@@ -12,11 +14,18 @@ const MARGIN := 12
 ## panel's other parts loses the panel's edge before the list loses its rows.
 const MIN_HEIGHT := 48
 
+## Not zero: the list is this tall, whatever its content and the window.
+var fixed_height := 0.0
+## Whether the view stays at the bottom as the content grows. It lets go when the player
+## scrolls up and takes hold again when they are back at the bottom.
+var keeps_bottom := false
+
 ## The panel the list sits in (its nearest PanelContainer); what it holds besides the list is
 ## what the list must leave room for. Null for a list outside any panel, which has the window to
 ## itself.
 var _frame: PanelContainer
 var _content: Control
+var _is_at_bottom := true
 
 
 func _init(content: Control) -> void:
@@ -27,6 +36,9 @@ func _init(content: Control) -> void:
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	add_child(content)
 	content.minimum_size_changed.connect(fit)
+	var bar := get_v_scroll_bar()
+	bar.changed.connect(_on_bar_range_changed)
+	bar.value_changed.connect(_on_bar_value_changed)
 
 
 func _enter_tree() -> void:
@@ -67,15 +79,36 @@ func fit() -> void:
 	if _frame != null:
 		chrome_height = _frame.get_combined_minimum_size().y - get_combined_minimum_size().y
 	var content_size := _content.get_combined_minimum_size()
-	var height := height_for(
-		content_size.y, chrome_height, get_viewport().get_visible_rect().size.y
-	)
+	var height := fixed_height
+	if height == 0.0:
+		height = height_for(content_size.y, chrome_height, get_viewport().get_visible_rect().size.y)
 	var is_scrolling := height < content_size.y
 	# The bar takes its width from the list, which would squeeze the rows.
 	var bar_width := get_v_scroll_bar().get_combined_minimum_size().x if is_scrolling else 0.0
 	var size_wanted := Vector2(content_size.x + bar_width, height)
 	if size_wanted != custom_minimum_size:
 		custom_minimum_size = size_wanted
+
+
+## Scrolls by whole pages: -1 up, 1 down.
+func scroll_pages(pages: int) -> void:
+	scroll_vertical += pages * int(size.y)
+
+
+func scroll_to_bottom() -> void:
+	_is_at_bottom = true
+	scroll_vertical = int(get_v_scroll_bar().max_value)
+
+
+func _on_bar_value_changed(value: float) -> void:
+	var bar := get_v_scroll_bar()
+	_is_at_bottom = value >= bar.max_value - bar.page
+
+
+## The bar's range changes after the content did, which is when the view can follow it.
+func _on_bar_range_changed() -> void:
+	if keeps_bottom and _is_at_bottom:
+		scroll_to_bottom.call_deferred()
 
 
 ## The sideways sibling of the list, for a row that outgrows the window's width (the build menu's
