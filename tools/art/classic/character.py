@@ -537,6 +537,38 @@ def draw_held_hoe(facing, pose, **_):
     return canvas
 
 
+def held_lantern(is_lit):
+    """The horn lantern hanging from the hand by its ring (a tool hand: the left of the picture
+    from the front, the right from behind, the swinging near hand from the side): a tin roof, a
+    pane of horn with the candle, a tin foot. Lit, the horn glows round the flame."""
+
+    def draw(facing, pose, **_):
+        canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
+        sink, swing = pose["sink"], pose["swing"]
+        if facing == "down":
+            left, hand = 3, 20 + sink
+        elif facing == "up":
+            left, hand = 11, 20 + sink + swing // 2
+        else:
+            left, hand = 6 + swing, 20 + sink
+        rect(canvas, left + 1, hand + 1, left + 2, hand + 1, "stone_dark")
+        rect(canvas, left, hand + 2, left + 3, hand + 2, "stone")
+        rect(canvas, left, hand + 3, left + 3, hand + 6, "gold" if is_lit else "sand")
+        rect(canvas, left + 1, hand + 4, left + 2, hand + 5, "flame" if is_lit else "lime")
+        if is_lit:
+            canvas[hand + 5][left + 1] = "cream"
+        rect(canvas, left, hand + 7, left + 3, hand + 7, "stone")
+        if facing != "up":
+            rect(canvas, left + 1, hand, left + 2, hand, "skin")
+        return canvas
+
+    return draw
+
+
+draw_held_lantern = held_lantern(is_lit=False)
+draw_held_lantern_lit = held_lantern(is_lit=True)
+
+
 def mirrored(canvas):
     return [row[::-1] for row in canvas]
 

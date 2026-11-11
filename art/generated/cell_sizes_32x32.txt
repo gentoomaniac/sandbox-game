@@ -130,6 +130,8 @@ character/head_tricorne_32x32.png 32 64
 character/held_axe_32x32.png 32 64
 character/held_hammer_32x32.png 32 64
 character/held_hoe_32x32.png 32 64
+character/held_lantern_32x32.png 32 64
+character/held_lantern_lit_32x32.png 32 64
 character/held_pickaxe_32x32.png 32 64
 character/held_scythe_32x32.png 32 64
 character/held_shovel_32x32.png 32 64

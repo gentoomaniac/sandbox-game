@@ -509,6 +509,31 @@ def saddle():
     return outlined(from_rows(rows, keys), "soil_dark")
 
 
+def lantern():
+    """A horn lantern, unlit: the ring and the tin roof, a pane of horn between two tin bars with
+    the candle showing through, and the tin foot."""
+    rows = [
+        "................",
+        "................",
+        ".......rr.......",
+        "......r..r......",
+        ".......rr.......",
+        "......tttt......",
+        ".....tttttt.....",
+        "....bhhhhhhb....",
+        "....bhhhhhhb....",
+        "....bhhkchhb....",
+        "....bhhcchhb....",
+        "....bhhcchhb....",
+        "....bhhcchhb....",
+        "...tttttttttt...",
+        "................",
+        "................",
+    ]
+    keys = {"r": "stone", "t": "stone_light", "b": "stone", "h": "sand", "c": "cream", "k": "soil_dark"}
+    return outlined(from_rows(rows, keys), "stone_dark")
+
+
 def small(picture):
     """The icon at half size, for items lying on the ground: each 2x2 block of pixels becomes
     the colour that most of its opaque pixels have (the first of them on a tie), or clear
@@ -547,6 +572,7 @@ ICONS = {
     "clogs": clogs(),
     "bone": bone(),
     "saddle": saddle(),
+    "lantern": lantern(),
 }
 
 

@@ -122,6 +122,8 @@ character/head_scarf_blue_16x16.png 16 32
 character/head_scarf_red_16x16.png 16 32
 character/head_straw_hat_16x16.png 16 32
 character/held_hoe_16x16.png 16 32
+character/held_lantern_16x16.png 16 32
+character/held_lantern_lit_16x16.png 16 32
 character/legs_0_16x16.png 16 32
 character/legs_breeches_black_16x16.png 16 32
 character/legs_breeches_blue_16x16.png 16 32

@@ -428,8 +428,14 @@ so there was no single male costume; that gives freedom, as long as it is 18th-c
   watering can) hang in the hand, the head just above it, and from the side swing with the
   near hand. From the front a tool is at the left of the figure, from behind at the right and
   behind it, from the side in front of it; the head points away from the body (forward from
-  the side), so it shows beside the figure. The classic art has only the hoe; the others show
-  the new picture in both sets.
+  the side), so it shows beside the figure. The classic art has only the hoe and the lantern;
+  the others show the new picture in both sets.
+- **The lantern** (task 177): a horn lantern as carried about 1750, a tin cylinder with a
+  pierced cone of a roof and a ring, a pane of horn (`mud`, `sand`, `sand_light`) with the
+  tallow candle (`lime`, `cream`) showing through, a wider tin foot. In the hand it hangs from
+  the ring like the short tools; lit (`held_lantern_lit`) the horn glows `ochre`, `gold` and
+  `cream` round a `flame` wick. The light it throws is the game's (a PointLight2D), not drawn.
+  The icon is drawn unlit. No new colours.
 - **Not period:** baseball-cap shapes, pith helmets, modern long trousers with belts as the
   default (long trousers are fine for sailors and farmhands later in the century), T-shirt
   cuts, sneakers.

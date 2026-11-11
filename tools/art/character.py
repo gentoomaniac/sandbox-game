@@ -746,6 +746,32 @@ def watering_can(canvas, x, y, outward):
     forms.dots(canvas, [(x - 1, y + 4), (x - 1, y + 5)], COPPER_GLINT)
 
 
+# The horn lantern (its icon is in items.py): tin, and panes of horn that glow when it is lit.
+HORN = ("mud", "sand", "sand_light")
+LIT_HORN = ("ochre", "gold", "cream")
+
+
+def lantern(is_lit):
+    """The horn lantern hanging from the hand by the ring on its roof: a cone of tin, a pane of
+    horn between two upright bars, and a wider foot. Lit, the horn glows and the flame shows
+    through it; the light it throws is the game's (a PointLight2D)."""
+
+    def draw(canvas, x, y, outward):
+        forms.paint(canvas, mask(forms.box, x, y + 1, x + 1, y + 2), IRON[0])
+        forms.shade(canvas, mask(forms.polygon, [(x + 0.5, y + 2), (x + 4.5, y + 6), (x - 3.5, y + 6)]), IRON, 1)
+        forms.shade(canvas, mask(forms.box, x - 2, y + 6, x + 3, y + 13), LIT_HORN if is_lit else HORN, 2)
+        if is_lit:
+            forms.dots(canvas, [(x, y + 8), (x + 1, y + 9), (x, y + 9), (x, y + 10), (x + 1, y + 10)], "flame")
+            forms.dots(canvas, [(x, y + 10), (x + 1, y + 11), (x, y + 11)], "cream")
+        else:
+            forms.paint(canvas, mask(forms.box, x, y + 9, x + 1, y + 12), "lime")
+            forms.dots(canvas, [(x, y + 8)], "soil_dark")
+        forms.paint(canvas, mask(forms.box, x - 2, y + 6, x - 2, y + 13) | mask(forms.box, x + 3, y + 6, x + 3, y + 13), IRON[1])
+        forms.shade(canvas, mask(forms.box, x - 3, y + 14, x + 4, y + 15), IRON, 1)
+
+    return draw
+
+
 # The held layer of each tool by its sheet's name (see `held_tool`).
 HELD_TOOLS = {
     "hoe": held_tool(hoe, is_long=True),
@@ -755,6 +781,8 @@ HELD_TOOLS = {
     "pickaxe": held_tool(pickaxe, is_long=False),
     "hammer": held_tool(hammer, is_long=False),
     "watering_can": held_tool(watering_can, is_long=False),
+    "lantern": held_tool(lantern(is_lit=False), is_long=False),
+    "lantern_lit": held_tool(lantern(is_lit=True), is_long=False),
 }
 
 

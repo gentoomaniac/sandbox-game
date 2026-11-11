@@ -492,6 +492,27 @@ def saddle():
     return picture
 
 
+def lantern():
+    """A horn lantern, as carried at night about 1750: a tin cylinder with upright bars at its
+    sides, a pane of thin horn between them through which the tallow candle shows, a cone of a roof with
+    a ring to carry it by, and a wider foot. Drawn unlit (lit, it shows in the hand: see
+    character.py `lantern`)."""
+    picture = blank(ICON)
+    shade(picture, ellipse(16, 4, 2.5, 2.5) & ~ellipse(16, 4, 1.2, 1.2), IRON[:3], radius=1)
+    shade(picture, polygon([(16, 6), (22, 12), (10, 12)]), IRON[:3], radius=2)
+    shade(picture, box(10, 12, 21, 25), ("mud", "sand", "sand_light"), radius=3)
+    candle = box(15, 17, 16, 24)
+    shade(picture, candle, ("lime", "cream"), radius=1)
+    dots(picture, [(15, 16), (16, 15)], "soil_dark")
+    # The roof is pierced to let the smoke out.
+    dots(picture, [(14, 10), (16, 10), (18, 10), (15, 8), (17, 8)], "stone_dark")
+    for x in (10, 21):
+        shade(picture, box(x, 12, x, 25), IRON[:2], radius=1)
+    shade(picture, box(9, 12, 22, 13), IRON[:3], radius=1)
+    shade(picture, box(9, 25, 22, 27), IRON[:3], radius=1)
+    return picture
+
+
 ICONS = {
     "chest": chest_icon,
     "logs": logs,
@@ -514,6 +535,7 @@ ICONS = {
     "clogs": clogs,
     "bone": bone,
     "saddle": saddle,
+    "lantern": lantern,
 }
 
 
