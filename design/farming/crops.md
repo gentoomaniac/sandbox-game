@@ -49,7 +49,11 @@
     it, and warmth, sun and wind dry it out, hour by hour (changed 2026-11-10, a 24th of a
     day's drying each hour; it is worked out when it is looked at, so a month passes quickly).
     An hour with rain doesn't dry at all, and its rain is the mean of the rain seen through
-    the hour, not only at its start (task 175: the user saw soil dry out in the rain).
+    the hour, not only at its start (task 175: the user saw soil dry out in the rain). An hour
+    of the heaviest rain adds 0.2 (`rain_wets`, 0.1 before task 175), so two hours soak fresh
+    soil. The crops' needs stay: over a year of the camp's weather, unwatered soil is below a
+    turnip's `moisture_min` on 75 of 120 days (84 before) and still near dry all summer, so
+    watering stays the player's work in dry spells.
     Clamping hour by hour is not the nightly clamp: soil that is already soaked loses the early
     rain of a day and then dries. The whole tile's brown shows it in four
     steps: light brown when dry, dark brown when soaked, lightening day by day as it dries.

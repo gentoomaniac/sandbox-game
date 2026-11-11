@@ -120,6 +120,17 @@ func test_rain_wets_the_soil_and_a_rainy_hour_does_not_dry_it() -> void:
 	assert_almost_eq(_world.moisture_at(_tile), 0.2 + _farming("rain_wets") * 4.0, 0.0001)
 
 
+## The user, 2026-11-11 (task 175): the soil didn't seem to get wet in the rain.
+func test_two_hours_of_heavy_rain_soak_fresh_soil_to_the_wettest_look() -> void:
+	_weather.day.rain_hours = 24.0
+	_farming_upkeep = FarmingUpkeep.new(_world, _weather)
+	var first_hour := (_state.clock.day - 1) * CropLife.HOURS_PER_DAY
+	for hour in range(first_hour, first_hour + 2):
+		_state.clock.advance(GameClock.MINUTES_PER_HOUR)
+		_farming_upkeep.pass_hour(hour)
+	assert_eq(SoilWetness.look_for(_world.moisture_at(_tile)), SoilWetness.LOOKS - 1)
+
+
 func test_a_long_rain_soaks_the_soil_but_not_beyond_full() -> void:
 	_weather.day.rain_hours = 24.0
 	_pass_night()
