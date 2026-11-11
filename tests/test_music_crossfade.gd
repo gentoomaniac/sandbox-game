@@ -197,3 +197,33 @@ func test_a_fade_longer_than_its_loop_ends_and_takes_its_length() -> void:
 	var duration := await _fade_duration(1.6, 2.0)
 	assert_false(_crossfade.is_crossfading(), "the fade ended")
 	assert_gt(duration, 2.0 - 0.2, "not faster than its length")
+
+
+func test_fade_out_turns_the_music_down_and_stops_it() -> void:
+	_crossfade.play(_clicks(CLICK), BEAT_SECONDS)
+	var playing := _crossfade._players[_crossfade._current]
+	await wait_seconds(0.1)
+	_crossfade.fade_out(FADE_SECONDS)
+	await wait_seconds(FADE_SECONDS / 2)
+	assert_true(playing.playing, "still fading")
+	assert_lt(playing.volume_db, 0.0)
+	await wait_seconds(FADE_SECONDS)
+	assert_false(playing.playing)
+
+
+func test_play_after_a_fade_out_is_at_full_volume() -> void:
+	_crossfade.play(_clicks(CLICK), BEAT_SECONDS)
+	_crossfade.fade_out(FADE_SECONDS)
+	await wait_seconds(FADE_SECONDS / 2)
+	_crossfade.play(_clicks(CLICK), BEAT_SECONDS)
+	await wait_seconds(FADE_SECONDS)
+	var playing := _crossfade._players[_crossfade._current]
+	assert_true(playing.playing)
+	assert_eq(playing.volume_db, 0.0)
+
+
+func test_fade_out_with_nothing_playing_does_nothing() -> void:
+	_crossfade.fade_out(FADE_SECONDS)
+	await wait_seconds(FADE_SECONDS * 1.5)
+	assert_false(_crossfade._players[0].playing)
+	assert_false(_crossfade._players[1].playing)

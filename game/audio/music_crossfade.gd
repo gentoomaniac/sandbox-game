@@ -15,7 +15,7 @@ extends Node
 ## a fade may be longer than the loop and a stalled frame doesn't hold it back),
 ## and the old player stops. A crossfade asked for while one waits for its beat replaces it; one
 ## asked for while a fade runs waits until the fade is over (the newest only), so the gains never
-## jump.
+## jump. `fade_out` fades whatever plays down to silence and stops it.
 ##
 ## A player's position runs READ_AHEAD_FRAMES ahead of what it has mixed (Godot's resampling reads
 ## its stream ahead in blocks), so that much is taken off. With that the beat grids line up within
@@ -28,6 +28,8 @@ extends Node
 ## How far a player's position runs ahead of its mix, in frames of a stream at the mix rate: the
 ## block Godot 4.7.2's resampling reads ahead (AudioStreamPlaybackResampled), as measured.
 const READ_AHEAD_FRAMES := 128
+## What `fade_out` fades to: silent to the ear, and a number a tween can move towards.
+const SILENT_DB := -80.0
 
 ## How late the last crossfade began after its beat, in seconds.
 var lateness := 0.0
@@ -50,6 +52,7 @@ var _fade_played := 0.0
 var _last_mix_seconds := 0.0
 ## A crossfade asked for during a fade: [stream, beat seconds, fade seconds], or empty.
 var _queued := []
+var _fade_out: Tween
 
 
 func _init(bus := &"Master") -> void:
@@ -62,6 +65,8 @@ func _init(bus := &"Master") -> void:
 
 ## Plays `stream` at once, alone, at full volume; `beat_seconds` is its beat.
 func play(stream: AudioStreamWAV, beat_seconds: float) -> void:
+	if _fade_out:
+		_fade_out.kill()
 	for player in _players:
 		player.stop()
 	_next = null
@@ -71,6 +76,25 @@ func play(stream: AudioStreamWAV, beat_seconds: float) -> void:
 	_players[_current].volume_db = 0.0
 	_players[_current].stream = stream
 	_players[_current].play()
+
+
+## Fades what plays (a crossfade too, from where it has got to) out over `seconds` and stops it. A
+## crossfade asked for meanwhile would fade in over the old stream: `play` first.
+func fade_out(seconds: float) -> void:
+	_next = null
+	_queued = []
+	_is_fading = false
+	if _fade_out:
+		_fade_out.kill()
+	_fade_out = create_tween().set_parallel()
+	for player in _players:
+		if player.playing:
+			_fade_out.tween_property(player, "volume_db", SILENT_DB, seconds)
+	_fade_out.chain().tween_callback(
+		func() -> void:
+			for player in _players:
+				player.stop()
+	)
 
 
 ## Crossfades to `stream` (whose beat is `beat_seconds`) from the next beat of what plays, over
