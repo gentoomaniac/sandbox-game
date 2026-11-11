@@ -162,25 +162,6 @@ in". Run after task 122 (the farm yard), before the gossip tasks.
 - Tests: the pig's state, roaming that stays in its pen, building a pen, save and load; the
   README livestock picture and a pen screenshot.
 
-## 166. Tilled soil that isn't used grows back over
-
-- [ ] Done
-
-The user, 2026-11-10: "tilled tiles that don't get maintained, used for crops etc eventually
-turn back to their untilled style". Today tilled soil stays soil for ever.
-- Tilled soil with nothing planted on it (no crop, living or dead, no sapling or placed object)
-  goes back over the days: first a few weeds and grass tufts on it, then the grass (or the
-  ground the tile had before tilling, e.g. the Geest's sand or the marsh) is back. Working the
-  tile again (hoeing, planting, watering) starts the count anew. The days (and whether frost or
-  winter pauses it) in data/crops.cfg.
-- What the tile goes back to must be the tile's own untilled ground, not always grass; what
-  lies on it (dropped items) stays.
-- Game state, saved, and caught up over skipped time (sleep, pass-out) in the per-frame budget
-  of task 158; the views only follow the terrain change (and the in-between weedy look, if any,
-  is drawn in the 32 px and classic art).
-- Tests: the days to grow back, the reset on work, a planted tile never grows back, the ground it
-  goes back to, save and load, catch-up over a sleep; a README note.
-
 ## 167. Watered soil fades out at its edge to dry soil
 
 - [ ] Done
