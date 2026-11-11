@@ -359,7 +359,30 @@ data/buildings.cfg, design/building/first-buildings.md) has no inside and no use
   why. No game effect yet (later: calling the villagers, gossip, events).
 - Tests for the reach, the input and the sound; a listening file for the user; README line.
 
+## 181. Villagers never stand in a doorway
+
+- [ ] Done
+
+The user, 2026-11-11, with a screenshot of a villager drawn standing in the door of a thatched
+house (in the door's frame, the wall around them): "this should not be possible, a villager
+standing on top of a door. they should always be in front or eventually (task for later) be inside
+the house."
+- Find why a villager ends up on a building's door tile (or another tile of the building): their
+  walk target or schedule spot (home, work, the door as a destination), pathing that treats the
+  door tile as walkable for them (the player walks through doors into interiors), spawning or
+  catch-up placing them there, or the draw order making a villager in front of the door look as if
+  they stand in it.
+- Villagers stop on the tile in front of the door (outside the building's footprint) and are drawn
+  in front of the wall; any villager found on a building tile (old saves, catch-up) is moved to
+  the nearest free tile in front. Same for the animals if they can end up there.
+- Tests: a villager going home or to work ends in front of the door, never on a building tile,
+  over play and over a skip; README not needed unless something visible changes.
+- Later (a separate task, see Later): villagers go inside their houses.
+
 ## Later (not part of the prototype)
+
+- **Villagers go inside** (the user, 2026-11-11): villagers enter their houses (and the church,
+  workplaces) through the door instead of waiting in front of it, and are seen in the interior.
 
 - **Taming wild animals** (the user, 2026-11-11): wild animals already carry a friendship value
   (task 173); a later feature could let the player tame them. Design notes (second opinion,
