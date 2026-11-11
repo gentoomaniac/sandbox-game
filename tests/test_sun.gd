@@ -65,6 +65,10 @@ func _distance(first: Color, second: Color) -> float:
 	return absf(first.r - second.r) + absf(first.g - second.g) + absf(first.b - second.b)
 
 
+func _stop(stop: String) -> Color:
+	return LightingRules.default_rules().tint_colour(stop)
+
+
 func _tint_at(day: int, hour: int, minute: int, cloud_cover := 0.0) -> Color:
 	var tint: DayNightTint = autofree(DayNightTint.new())
 	var clock := GameClock.new()
@@ -78,13 +82,13 @@ func test_the_dawn_tint_comes_at_sunrise() -> void:
 	# Mid-winter: sunrise about 08:15.
 	var sunrise := roundi(Sun.new().sunrise(105))
 	var at_sunrise := _tint_at(105, sunrise / 60, sunrise % 60)
-	assert_lt(_distance(at_sunrise, DayNightTint.DAWN), 0.02)
-	assert_eq(_tint_at(105, 6, 0), DayNightTint.NIGHT)
+	assert_lt(_distance(at_sunrise, _stop("dawn")), 0.02)
+	assert_eq(_tint_at(105, 6, 0), _stop("night"))
 	assert_eq(_tint_at(105, 12, 0), Color.WHITE)
 
 
 func test_a_short_summer_night_still_gets_dark() -> void:
-	assert_lt(_distance(_tint_at(45, 2, 0), DayNightTint.NIGHT), 0.01)
+	assert_lt(_distance(_tint_at(45, 2, 0), _stop("night")), 0.01)
 	assert_eq(_tint_at(45, 12, 0), Color.WHITE)
 
 
@@ -98,4 +102,4 @@ func test_the_tint_has_no_jump_at_midnight_in_any_season() -> void:
 func test_clouds_darken_the_day_but_not_the_night() -> void:
 	assert_lt(_tint_at(45, 12, 0, 1.0).get_luminance(), 1.0)
 	assert_gt(_tint_at(45, 12, 0, 1.0).get_luminance(), 0.7)
-	assert_lt(_distance(_tint_at(45, 2, 0, 1.0), DayNightTint.NIGHT), 0.01)
+	assert_lt(_distance(_tint_at(45, 2, 0, 1.0), _stop("night")), 0.01)

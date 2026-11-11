@@ -1,0 +1,81 @@
+class_name LightingRules
+extends RefCounted
+## How dark the night gets and when dusk and dawn come, read from data/lighting.cfg (see there
+## for what each value means). `from_file` reports every key that is missing or wrong, and
+## `is_valid` says whether any was.
+
+const DEFAULT_PATH := "res://data/lighting.cfg"
+
+## The colours of the day's stops and the hours that place them (see DayNightTint).
+const TINT_COLOURS := ["night", "dawn", "day", "dusk_glow", "dusk_purple"]
+const TINT_HOURS := [
+	"night_before_sunrise",
+	"day_after_sunrise",
+	"day_before_sunset",
+	"glow_after_sunset",
+	"purple_after_sunset",
+	"night_after_sunset",
+	"min_night_hours",
+]
+
+static var _default: LightingRules
+
+## {section: {key: value}}, as in the file.
+var _values: Dictionary
+
+
+func _init(values: Dictionary) -> void:
+	_values = values
+
+
+## The rules of the data file, loaded the first time they are asked for.
+static func default_rules() -> LightingRules:
+	if _default == null:
+		_default = from_file(DEFAULT_PATH)
+	return _default
+
+
+static func from_file(path: String) -> LightingRules:
+	var rules := LightingRules.new(DataFile.read_sections(path))
+	for problem in rules.problems():
+		push_error("%s: %s" % [path, problem])
+	return rules
+
+
+## What is missing or wrong, as "[section] what".
+func problems() -> Array[String]:
+	var found: Array[String] = []
+	var tint: Dictionary = _values.get("day_and_night", {})
+	for key: String in TINT_COLOURS + TINT_HOURS:
+		if not tint.has(key):
+			found.append("[day_and_night] no %s" % key)
+	if not found.is_empty():
+		return found
+	for key: String in TINT_COLOURS:
+		if not tint[key] is Color:
+			found.append("[day_and_night] %s must be a Color(r, g, b, a)" % key)
+	for key: String in TINT_HOURS:
+		if float(tint[key]) < 0.0:
+			found.append("[day_and_night] %s must not be below 0" % key)
+	if not (
+		tint_hours("glow_after_sunset") < tint_hours("purple_after_sunset")
+		and tint_hours("purple_after_sunset") < tint_hours("night_after_sunset")
+	):
+		found.append(
+			"[day_and_night] needs glow_after_sunset < purple_after_sunset < night_after_sunset"
+		)
+	return found
+
+
+func is_valid() -> bool:
+	return problems().is_empty()
+
+
+## The tint at a stop of the day (one of TINT_COLOURS).
+func tint_colour(stop: String) -> Color:
+	return _values["day_and_night"][stop]
+
+
+## Hours that place the stops of the day (one of TINT_HOURS).
+func tint_hours(key: String) -> float:
+	return float(_values["day_and_night"][key])

@@ -38,7 +38,8 @@
   zoom to a value, chain moves in a sequence. The mouse wheel and the zoom keys use the same zoom.
 - **Standard effects:**
   - **day and night tint:** the whole picture changes colour with the time of day (warm
-    morning, neutral noon, orange dusk, blue night);
+    morning, neutral noon, orange dusk, blue night). Its colours and when dusk and dawn come
+    are in `data/lighting.cfg` (`LightingRules`);
   - **point lights:** campfire, torches, lit windows at night, with a slight flicker.
     Dark nights make light sources valuable, which ties in with keeping creatures away;
   - **subtle glow/bloom** on bright light sources. Keep it subtle.
