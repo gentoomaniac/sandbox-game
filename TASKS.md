@@ -222,6 +222,34 @@ implemented, the ambient music." Run after task 167, before the gossip tasks.
 - Tests for the indoor volume, the crackle following the fire's state and the player's
   building; listening files for the user (the crackle, and rain heard from inside).
 
+## 173. Petting animals: a heart once a day, and a friendship value
+
+- [ ] Done
+
+The user, 2026-11-11: "you can pet animals. They'll show a small heart above their head. it
+increases an internal friendship value by 10 which can increase to 100. you can pet animals as
+often as you want but only once a day you'll see the heart and it will increase that value. The
+value decreases by 5 a day if not petted. When you pet animals while they are sleeping the
+counter decreases by 5 and you see a little swirl above their head. We'll use that value later
+for game mechanics." Run after task 172, before the gossip tasks.
+- Petting: the use key with an empty hand on an animal (it must not clash with feeding, the gate
+  or riding). Each animal keeps a friendship value, 0 to 100.
+- Awake: the first petting of the day adds 10 (capped at 100) and shows a small heart above the
+  animal's head; more pettings that day do nothing and show nothing.
+- Asleep: petting takes 5 (floored at 0) and shows a small swirl above its head. Defaults to
+  confirm with the user: the swirl and the loss come once a day too, and a sleeping petting
+  doesn't count as the day's petting.
+- A day without a petting takes 5 (at the day change, caught up over skipped time in the frame
+  budget of task 158).
+- Defaults to confirm: the farm animals and the pets (cows, horses, sheep, pigs, hens, dogs,
+  cats), not wildlife; a new animal starts at 0. The numbers in data/livestock.cfg.
+- Saved with the animal (a save version bump, following the upgrade-window rule); the heart and
+  the swirl drawn in both arts (pixel-artist job), a short sound for the petting maybe reused.
+- Nothing uses the value yet; it is for later game mechanics. A console command to show an
+  animal's value helps testing.
+- Tests: the daily cap, +10 and the 100 cap, the sleeping loss, the daily loss and its catch-up,
+  save and load; a README note.
+
 ## Later (not part of the prototype)
 
 - **Animal breeding** (the user, 2026-11-10): a cheap way to get new animals, but the young take
