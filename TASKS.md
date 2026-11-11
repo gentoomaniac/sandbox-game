@@ -225,6 +225,9 @@ for game mechanics." Run after task 172, before the gossip tasks.
   budget of task 158).
 - Confirmed by the user, 2026-11-11: the farm animals and the pets (cows, horses, sheep, pigs,
   hens, dogs, cats), not wildlife; a new animal starts at 0. The numbers in data/livestock.cfg.
+- The user, 2026-11-11: the tame rabbits can be petted too. Wild animals get the same
+  friendship value but can't be petted (it stays at 0 for now); a later feature may let the player
+  tame wild animals.
 - Saved with the animal (a save version bump, following the upgrade-window rule); the heart and
   the swirl drawn in both arts (pixel-artist job), a short sound for the petting maybe reused.
 - Nothing uses the value yet; it is for later game mechanics. A console command to show an
@@ -233,6 +236,9 @@ for game mechanics." Run after task 172, before the gossip tasks.
   save and load; a README note.
 
 ## Later (not part of the prototype)
+
+- **Taming wild animals** (the user, 2026-11-11): wild animals already carry a friendship value
+  (task 173); a later feature could let the player tame them.
 
 - **Animal breeding** (the user, 2026-11-10): a cheap way to get new animals, but the young take
   at least a year to grow up. With simple traits per animal (one cow gives more milk, another more
