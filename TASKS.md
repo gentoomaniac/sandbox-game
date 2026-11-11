@@ -436,6 +436,8 @@ cover there too.
 
 - [ ] Done
 
+Run after task 188 (the character window it shows in).
+
 The user, 2026-11-11: "we want some basic rpg elements, character attributes specifically
 Strength, agility, hp, stamina. strength increases carrying capacity, agility i don't know yet, hp
 is obvious and stamina increases energy max. build the system so that we can easily expand on it
@@ -457,6 +459,33 @@ later."
 - Plan first: a short plan for the user (the data shape, the strength question), then build.
 - Save version bump with the upgrade rule; tests for the derived stats, the save and the base
   values matching today; README and design notes (design/player/).
+
+## 188. The HUD: energy and health top right, a bag button by the hotbar, B for the bag, C for the character
+
+- [ ] Done
+
+The user, 2026-11-11 (to run before task 187): "Move energy and health indicator to the top right
+of the screen. add a bag icon right next to the quick bar, a bit separated. this icon when clicked
+or b is pressed should open the bag which is the inventory (the build menu now only opens when the
+hammer is in hand). The bag opens a bit on the right of the screen, the character part (and later
+the character attributes) get their own window that opens on C."
+- The energy and health bars move to the top right corner (mind the notifications and the clock
+  that may sit there; say where they go).
+- A bag icon (both arts, pixel-artist job) beside the hotbar, set a little apart from it;
+  clicking it or pressing B opens the bag. The bag is today's inventory screen (Tab), placed a bit
+  to the right of the screen centre instead of where it is now; Tab keeps working too unless the
+  user says otherwise.
+- B is the hammer key today (`select_hammer`, which puts the hammer in hand and opens building).
+  The build menu now only opens with the hammer in hand (the hammer selected in the hotbar, then
+  the build key/use); B no longer selects the hammer. Check the controls page and the README's
+  key list.
+- The character part of today's inventory screen (the figure, equipment, and later task 187's
+  attributes) moves into its own window opened with C. C is the crafting key today (`crafting`):
+  crafting needs another key; ask the user (default proposal: keep crafting on its own key such as
+  V or R, or put crafting into the bag window as a tab).
+- Window placement works in both window sizes the game supports; Escape closes them as today.
+- Tests for the keys and the windows, screenshots for the user, README and design/presentation
+  notes.
 
 ## Later (not part of the prototype)
 
