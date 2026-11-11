@@ -717,6 +717,38 @@ The user, 2026-11-11: "Add a command to bypass the up too late penalty"
   cheat toggles; shown in `help` and the README cheat row.
 - Tests: with it on, the clock passes 01:00 awake with no pass-out and no warning; off, as today.
 
+## 211. Sleeping animals show a "zzz" now and then
+
+- [ ] Done
+
+The user, 2026-11-11: "Add the zzz bubbles occasionally to sleeping animals."
+- The player's "zzz..." bubble exists (game/scenes/tiredness_signs.gd, BUBBLE_ICON `zzz`); farm
+  animals and pets know they are asleep (FarmAnimalView `is_asleep`, FarmAnimal.Activity.SLEEP),
+  and the petting marks of task 173 already sit over each kind's head (FarmAnimalView.HEADS).
+- A sleeping animal shows a small "zzz" rising over its head now and then (not all at once and not
+  all the time: a random gap per animal, a few seconds shown), sized for the animal, in both arts;
+  reuse the bubble art or the petting-mark placement. Farm animals and pets; wild animals too if
+  they sleep in the game (say which do). Nothing while awake; it goes when the animal wakes or is
+  petted (the anger mark of task 173 wins). Numbers (gap, duration) in data/.
+- Cheap: a timer per sleeping animal on screen, nothing for animals off screen.
+- Tests: a sleeping animal shows it within the gap and not while awake; screenshots of a sleeping
+  cow and chicken in both arts for the user.
+
+## 212. Wild rabbits flee even when asleep
+
+- [ ] Done
+
+The user, 2026-11-11: "Wild rabbits should run away even when sleeping"
+- Find out what the user saw: a wild rabbit (WildlifeRules RABBIT, `flee_tiles`) that rests or
+  sleeps (by its phase weights at night, or a resting state) and then ignores the player, or the
+  tame rabbit (a farm animal, task 173) asleep. Fix it so a sleeping or resting wild rabbit wakes
+  and flees when the player comes within its flee distance (maybe a little closer than when
+  awake: a startled jump first). Check the other wild ground animals (squirrel, deer, mouse, frog)
+  for the same gap and give them the same rule if they have it. The tame rabbit and the farm
+  animals keep sleeping (they are used to the player).
+- Tests: a sleeping wild rabbit flees when the player comes near; a sleeping tame rabbit does
+  not.
+
 ## Later (not part of the prototype)
 
 - Ice on rivers and ponds in winter (an overlay on water when it is cold enough; frozen water
