@@ -60,6 +60,11 @@ static func sheet_kind(animal: FarmAnimal) -> StringName:
 	return StringName(kind + "_saddled" if animal.is_saddled else kind)
 
 
+## Its friendship is its FarmAnimal's, not the wild animals' of this kind's name (a rabbit).
+func has_friendship() -> bool:
+	return false
+
+
 func _init(animal: FarmAnimal) -> void:
 	super(animal.species, sheet_kind(animal))
 	farm_animal = animal

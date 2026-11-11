@@ -148,6 +148,11 @@ data/livestock.cfg.
   friendship 0.
 - **Console:** `friendship` shows the friendship and the last petting of the nearest animal that can
   be petted within 3 tiles of the player, and `friendship <0..100>` sets it.
+- **Wild animals** (decided 2026-11-11): the wild ground animals (`WildlifeRules.GROUND_KINDS`: wild
+  rabbit, squirrel, deer, mouse, frog; no birds or insects) carry a friendship too, `Animal.friendship`,
+  which is 0 and stays 0: they cannot be petted (only `pettable` livestock can, and the wild rabbit is
+  not the tame one), nothing raises it, and it is not saved. Taming, which will keep and save the
+  animals whose value rises above 0, is in the Later section of TASKS.md.
 - **Left open:** what the friendship does; whether a petted dog or horse follows or lets the player
   ride more easily; that a cow in the middle of a herd cannot be picked out (the nearest to the
   target's middle is petted).

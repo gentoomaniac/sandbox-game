@@ -55,6 +55,10 @@ const KINDS: Array[StringName] = [
 	GULL,
 	TERN,
 ]
+## The wild animals that walk the ground (task 173): each carries a friendship with the player, 0
+## for now (see Animal `friendship`). The birds, bees, butterflies and fireflies have none. The tame
+## rabbit of the livestock is another animal with the same name (see LivestockRules `pettable`).
+const GROUND_KINDS: Array[StringName] = [RABBIT, SQUIRREL, DEER, MOUSE, FROG]
 
 const GENERAL_KEYS := [
 	"twilight_minutes",

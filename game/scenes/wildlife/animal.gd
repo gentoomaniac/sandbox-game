@@ -20,6 +20,10 @@ var is_done := false
 ## Asleep: it makes no sound of its own accord (see AmbienceSounds).
 var is_asleep := false
 var kind: StringName
+## How fond of the player a wild ground animal is (see WildlifeRules `GROUND_KINDS`), from 0 to 100.
+## It is 0 and nothing raises it: it can't be petted, and it is not saved. Taming is for later (see
+## the Later section of TASKS.md), which will keep and save the animals whose value rises above 0.
+var friendship := 0
 ## Half the width of the contact shadow in pixels; 0 for none.
 var shadow_half_width := 6
 var _sprite: Sprite2D
@@ -43,6 +47,11 @@ var _hop_to := Vector2.ZERO
 var _hop_seconds := 1.0
 var _hop_height := 0.0
 var _hop_time := 0.0
+
+
+## Whether it has a `friendship`: wild ground animals do, birds and insects do not.
+func has_friendship() -> bool:
+	return WildlifeRules.GROUND_KINDS.has(kind)
 
 
 ## `sheet_kind` is the kind whose pictures it shows, if another than its own.
