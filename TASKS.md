@@ -458,15 +458,36 @@ are a forge, a smokehouse, a saw mill and a fish pond.
   - The grid is the station's own storage. It is saved with the station, with a save version
     bump and its upgrade per the save rules.
   - The player moves stacks in and out as with a chest: drag and shift-click.
-- **Only what fits a recipe goes in.** The grid accepts only items that are a material of one of
-  the station's recipes. Anything else is refused, as a full slot refuses.
+- **Only what fits a recipe goes in, filtered as the grid fills.** The user, 2026-11-11: "once you
+  add ingredients, the materials you can add is filtered by the recipes. If you have one that
+  needs wood and stone and one that needs coal and stone, you can add stone and still be able to
+  put in wood and coal. But if you start with coal, you can only put in [stone]. Grey out items in
+  your inventory part that you can't put in. Materials not in a recipe are of course greyed out
+  from the beginning. Quantities work similarly: you can only put in as much stone as you have
+  either coal or wood. If you put in too much stone for the wood recipe but have enough coal, the
+  wood recipe gets greyed out." (Their example says "only wood" after coal; read it as the other
+  material of the coal recipe, stone. Say so in the report.)
+  - The rule: the grid's contents must always be part of one load of at least one of the
+    station's recipes, at some amount that fits the grid (the ratios of its materials kept). A
+    recipe still possible is "open"; one the contents rule out is greyed out in the list.
+  - An item, or a count of it, that would leave no open recipe is refused: a drag or shift-click
+    moves only as many as keep a recipe open (none if no count does).
+  - The player's inventory beside the grid greys out the stacks that can't go in now. Items in no
+    recipe of the station are greyed out from the start.
+  - Taking items back out of the grid opens recipes again.
+  - Keep this rule in the shared code as one plain function over the recipes and the contents
+    (pure state code, well tested), so the window only asks it.
 - **The recipe list:**
   - There is one recipe per kind of result: one "Bricks", not today's three brick recipes.
   - Under each recipe is an amount: a small number field to type in, and +/- buttons.
   - The +/- buttons only go as high as the player's materials allow and as fits the grid. A
     typed number is held to the same limit.
-  - A recipe the player can't make even once is greyed out and can't be clicked.
-  - Clicking a recipe moves the materials for the chosen amount from the inventory into the grid.
+  - A Max button by each recipe sets the amount to the most the player's materials, the grid and
+    what is already in the grid allow.
+  - A recipe the player can't make even once, or one the grid's contents rule out, is greyed out
+    and can't be clicked.
+  - Clicking a recipe moves the materials for the chosen amount from the inventory into the grid,
+    counting what is already in it.
 - **The activation button:**
   - It starts the run when the grid holds at least one recipe's materials, one recipe per run.
     Which recipe the grid matches when it could hold more than one is up to you; say which.
@@ -504,7 +525,10 @@ are a forge, a smokehouse, a saw mill and a fish pond.
 - **Tests:**
   - the shared code with a station defined only in test config;
   - the grid saved and loaded;
-  - only recipe materials accepted;
+  - only recipe materials accepted, the filtering as the grid fills (the user's wood/coal/stone
+    example as a test, with quantities), recipes greyed out by the contents, inventory items
+    greyed out, taking out reopening recipes;
+  - the Max button;
   - a recipe click moving materials;
   - the amount limits;
   - the button refused without a full recipe;
