@@ -38,6 +38,9 @@ drying_per_degree=0.005
 drying_per_sun_hour=0.015
 drying_per_wind=0.005
 good_day_score=0.6
+fallow_weedy_days=5
+fallow_grass_days=10
+fallow_rests_in_winter=1
 """
 const REEDS := """
 [reeds]

@@ -141,6 +141,8 @@ func test_soil_that_is_untilled_forgets_its_moisture() -> void:
 
 func test_tiles_last_seen_in_different_hours_catch_up_as_hour_by_hour() -> void:
 	var state := GameState.new_game(7)
+	# The soil must not grow over in the month.
+	state.world.fallow.grass_days = 1000
 	var seen_in_hour: Dictionary[Vector2i, int] = {}
 	var start_hour := state.clock.total_minutes() / GameClock.MINUTES_PER_HOUR
 	for index in 40:

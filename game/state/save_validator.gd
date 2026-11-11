@@ -89,6 +89,8 @@ func _check_world(world: Dictionary) -> void:
 	_field(world, "seed", Kind.WHOLE, "world")
 	_check_entries(world, "terrain_edits", Kind.TEXT)
 	_check_entries(world, "soil_moisture", Kind.NUMBER)
+	_field(world, "fallow_nights", Kind.WHOLE, "world")
+	_check_entries(world, "fallow_soil", Kind.WHOLE)
 	_check_entries(world, "spent_clay_spots", Kind.WHOLE)
 	_check_entries(world, "wear", Kind.NUMBER)
 	var terrain_edits: Variant = world.get("terrain_edits")

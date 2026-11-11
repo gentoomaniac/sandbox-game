@@ -89,14 +89,14 @@ func _init(state: GameState) -> void:
 	_state = state
 
 
-## What `use` would do on a tile with the held item: a hoe tills grass or hoes a dead crop away,
-## crop seeds plant on soil and tree seeds on grass, a watering can wets dry tilled soil, an empty
-## hand harvests a ripe crop, clears a dead one or picks a bush, an axe or pickaxe hits what it cuts
-## or mines, a scythe mows if there is tall grass or reeds in its reach, a shovel digs in any free
-## grass (the player can't tell a clay spot from the cursor), an item that places an object puts it
-## on a free tile, a bone goes to a dog on the tile and a saddle on a horse, and an empty hand takes
-## the saddle off a horse. Inside, only placing and taking a chest down are possible; on horseback,
-## nothing.
+## What `use` would do on a tile with the held item: a hoe tills grass or hoes a dead crop or the
+## weeds of fallow soil away, crop seeds plant on soil and tree seeds on grass, a watering can wets
+## dry tilled soil, an empty hand harvests a ripe crop, clears a dead one or picks a bush, an axe or
+## pickaxe hits what it cuts or mines, a scythe mows if there is tall grass or reeds in its reach, a
+## shovel digs in any free grass (the player can't tell a clay spot from the cursor), an item that
+## places an object puts it on a free tile, a bone goes to a dog on the tile and a saddle on a
+## horse, and an empty hand takes the saddle off a horse. Inside, only placing and taking a chest
+## down are possible; on horseback, nothing.
 func use_at(pos: Vector2i) -> Use:
 	if _state.player.horse != null:
 		return Use.RIDING
@@ -163,7 +163,7 @@ func _do_use(target: Vector2i) -> Use:
 	_outcome = null
 	match use:
 		Use.TILL:
-			# A dead crop is hoed away: the soil under it is tilled again.
+			# A dead crop or the weeds are hoed away: the soil under them is tilled again.
 			if _state.world.object_at(target) != null:
 				_state.world.remove_object(target)
 			_state.world.set_terrain(target, Tile.Terrain.SOIL)
@@ -435,7 +435,8 @@ func _use_tool(tool_item: Dictionary, object: WorldObject, world_pos: Vector2i) 
 	match tool_item.get("tool"):
 		ItemTypes.HOE:
 			var is_dead_crop := object != null and object.is_crop() and CropLife.is_dead(object)
-			return Use.TILL if is_grass_free or is_dead_crop else Use.NOTHING
+			var is_weedy := _state.world.fallow.is_weedy(world_pos)
+			return Use.TILL if is_grass_free or is_dead_crop or is_weedy else Use.NOTHING
 		ItemTypes.WATERING_CAN:
 			return _use_watering_can(object, world_pos)
 		ItemTypes.SCYTHE:

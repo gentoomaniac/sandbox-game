@@ -397,6 +397,13 @@ func decoration_cell(layer: int, tile_pos: Vector2i, cluster: float) -> Vector2i
 	return Vector2i(roll / 1000 % count, layer)
 
 
+## The weeds on a tile of tilled soil left fallow (see FallowSoil): one of the decorations of the
+## soil's row, by the tile.
+func weed_cell(tile_pos: Vector2i) -> Vector2i:
+	var roll := PositionHash.of(tile_pos, 1)
+	return Vector2i(roll % _decoration_counts[Layer.SOIL], Layer.SOIL)
+
+
 ## The decoration atlas cell of a meadow flower of FLOWER_SPECIES.
 static func flower_cell(species: StringName, variant: FlowerVariant) -> Vector2i:
 	var index := FLOWER_SPECIES.find(species)

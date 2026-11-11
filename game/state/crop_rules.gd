@@ -46,6 +46,9 @@ const REQUIRED_FARMING_KEYS: Array[String] = [
 	"drying_per_sun_hour",
 	"drying_per_wind",
 	"good_day_score",
+	"fallow_weedy_days",
+	"fallow_grass_days",
+	"fallow_rests_in_winter",
 ]
 const REQUIRED_REEDS_KEYS: Array[String] = [
 	"regrow_growth",

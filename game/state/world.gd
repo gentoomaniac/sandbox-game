@@ -50,6 +50,8 @@ var vegetation := Vegetation.default_vegetation()
 var ground_items := GroundItems.new()
 ## The moisture of the tilled soil (see `moisture_at`).
 var soil: SoilMoisture
+## The tilled soil that nobody tends, and grows over (see `settle_fallow_soil`).
+var fallow := FallowSoil.new()
 ## The clay spots that were dug, with the nights left until they hold clay again (see
 ## `recover_clay_spots`).
 var _spent_clay_spots: Dictionary[Vector2i, int] = {}
@@ -238,8 +240,10 @@ func set_terrain(world_pos: Vector2i, terrain: Tile.Terrain) -> void:
 	_edit_terrain(world_pos, terrain)
 	if terrain == Tile.Terrain.SOIL:
 		soil.start(world_pos)
+		fallow.tend(world_pos)
 	else:
 		soil.forget(world_pos)
+		fallow.forget(world_pos)
 	# New ground starts unworn: a path that is tilled and later grassed over is grass.
 	_wear.erase(world_pos)
 	tile_changed.emit(world_pos)
@@ -256,6 +260,53 @@ func moisture_at(world_pos: Vector2i) -> float:
 func set_moisture(world_pos: Vector2i, moisture: float) -> void:
 	soil.set_at(world_pos, moisture)
 	soil_moisture_changed.emit(world_pos)
+	_tend_soil(world_pos)
+
+
+## Sees to the fallow soil for the nights counted since it was last seen to (see FallowSoil): a
+## tilled tile whose untended days are up comes up in weeds, or is grass again, unless something
+## stands on it, which tends it.
+func settle_fallow_soil() -> void:
+	while fallow.settled_nights < fallow.nights:
+		for pos in fallow.settle_next_night():
+			_settle_fallow_tile(pos)
+
+
+func _settle_fallow_tile(world_pos: Vector2i) -> void:
+	# An object in a chunk that is not loaded is an edit: what the player put there.
+	var is_in_use := (
+		building_at(world_pos) != null
+		or _object_edits.get(world_pos) != null
+		or _stored_object_at(world_pos) != null
+	)
+	if is_in_use:
+		fallow.tend(world_pos)
+	elif fallow.is_grown_over(world_pos):
+		_grow_over(world_pos)
+	elif is_chunk_loaded(Chunk.world_to_chunk(world_pos)):
+		tile_changed.emit(world_pos)
+
+
+## Tilled soil that has grown over is grass again, the one ground a hoe tills (see ToolUse), with
+## the look of its place (lush, dry) as before.
+func _grow_over(world_pos: Vector2i) -> void:
+	if is_chunk_loaded(Chunk.world_to_chunk(world_pos)):
+		set_terrain(world_pos, Tile.Terrain.GRASS)
+		return
+	_edit_terrain(world_pos, Tile.Terrain.GRASS)
+	soil.forget(world_pos)
+	fallow.forget(world_pos)
+
+
+## Working a tilled tile (watering it, putting something on it or taking it off) tends it: its days
+## of lying fallow count anew, and weeds on it are gone.
+func _tend_soil(world_pos: Vector2i) -> void:
+	if not is_tilled(world_pos):
+		return
+	var was_weedy := fallow.is_weedy(world_pos)
+	fallow.tend(world_pos)
+	if was_weedy and is_chunk_loaded(Chunk.world_to_chunk(world_pos)):
+		tile_changed.emit(world_pos)
 
 
 ## Whether the player tilled a tile: it is soil by their hand.
@@ -286,6 +337,7 @@ func add_object(object: WorldObject) -> void:
 	chunk.add_object(object)
 	_edit_object(object.pos, object)
 	for tile in object.tiles():
+		_tend_soil(tile)
 		objects_changed.emit(tile)
 
 
@@ -349,6 +401,7 @@ func take_off(object: WorldObject) -> void:
 		chunk.remove_object(Chunk.local_pos(object.pos))
 	_edit_object(object.pos, null)
 	for tile in object.tiles():
+		_tend_soil(tile)
 		objects_changed.emit(tile)
 
 
@@ -568,9 +621,11 @@ func to_dict() -> Dictionary:
 
 ## A copy of what `to_dict` writes, quick to take and in the types the world keeps it in, which
 ## shares nothing with the world: it is made into save data by `dict_of` (on a thread, while the
-## game goes on), which takes most of the time. The soil is brought up to now first.
+## game goes on), which takes most of the time. The soil is brought up to now first, and the
+## fallow soil seen to.
 func snapshot() -> Dictionary:
 	soil.catch_up_all()
+	settle_fallow_soil()
 	var buildings_data: Array[Dictionary] = []
 	for building in _buildings:
 		buildings_data.append(building.to_dict())
@@ -585,6 +640,8 @@ func snapshot() -> Dictionary:
 		"wear": _wear.duplicate(),
 		"terrain_edits": _terrain_edits.duplicate(),
 		"soil_moisture": soil.snapshot(),
+		"fallow_nights": fallow.nights,
+		"fallow_soil": fallow.snapshot(),
 		"object_edit_positions": _object_edits.keys(),
 		"object_edits": object_edits,
 		"buildings": buildings_data,
@@ -628,6 +685,8 @@ static func dict_of(snapshot_data: Dictionary) -> Dictionary:
 		"wear": wear_data,
 		"terrain_edits": terrain_edits,
 		"soil_moisture": SoilMoisture.array_of(snapshot_data["soil_moisture"]),
+		"fallow_nights": snapshot_data["fallow_nights"],
+		"fallow_soil": FallowSoil.array_of(snapshot_data["fallow_soil"]),
 		"object_edits": object_edits,
 		"buildings": snapshot_data["buildings"],
 	}
@@ -640,6 +699,7 @@ static func from_dict(data: Dictionary, game_clock: GameClock) -> World:
 		world._edit_terrain(SaveCodec.vector_from_json(edit), SaveCodec.terrain_from_json(edit[2]))
 	for entry: Array in data["soil_moisture"]:
 		world.soil.load_entry(entry)
+	world.fallow.load_array(int(data["fallow_nights"]), data["fallow_soil"])
 	for entry: Array in data["spent_clay_spots"]:
 		world._spent_clay_spots[SaveCodec.vector_from_json(entry)] = int(entry[2])
 	for entry: Array in data["wear"]:

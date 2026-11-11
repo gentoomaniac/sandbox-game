@@ -89,6 +89,7 @@ func _change_everything() -> void:
 	_state.player.inventory.add(ItemTypes.LOGS, 4)
 	_state.player.position += Vector2(3, 3)
 	_state.clock.advance(125)
+	_world.fallow.count_night(_state.clock.day)
 	_state.livestock.spawn(LivestockRules.SHEEP, 1, Vector2(_free_tile(12)), _world)
 
 

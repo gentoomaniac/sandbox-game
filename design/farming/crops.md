@@ -48,6 +48,16 @@
     Clamping hour by hour is not the nightly clamp: soil that is already soaked loses the early
     rain of a day and then dries. The whole tile's brown shows it in four
     steps: light brown when dry, dark brown when soaked, lightening day by day as it dries.
+  - **Fallow soil grows over** (the user, 2026-11-10, task 166): tilled soil with nothing on
+    it (no crop, living or dead, no sapling or placed object, no building) that nobody tends
+    comes up in a few weeds and grass tufts after `fallow_weedy_days` (5) and is grass again after
+    `fallow_grass_days` (10), counted at midnight; the days of winter don't count
+    (`fallow_rests_in_winter`), all in `data/crops.cfg` (defaults to be confirmed by the user).
+    Hoeing (the hoe hoes the weeds away), sowing, planting, harvesting, clearing and watering
+    tend the tile and the count starts anew; so does anything standing on it, so a planted tile
+    never grows over. It goes back to grass, the one ground a hoe tills, with the look its place
+    has (lush, dry); items lying on it stay. Saved, and seen to in loaded and unloaded chunks
+    alike.
   - The calendar no longer gates planting: the weather does. Seeds plant on tilled soil
     any time; a crop planted in the wrong season simply won't thrive.
   - Each crop has its own seeds (a seed bag item, seed potatoes for potatoes) and its

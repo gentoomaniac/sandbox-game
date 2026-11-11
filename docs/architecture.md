@@ -59,7 +59,8 @@ Warft and an Ewer here and there.
   for that: so the world ends as after `skip` and a save is of a whole morning. The systems:
   `FarmingUpkeep` (every hour: the crops live through the hour, a 24th of a day's growth in the
   weather of its day; the end of the day counts for them), `NightUpkeep` (at midnight: reeds,
-  saplings, stumps, bushes, clay spots, desire paths) and `ActorsUpkeep` (the farm animals and
+  saplings, stumps, bushes, clay spots, desire paths, fallow soil) and
+  `ActorsUpkeep` (the farm animals and
   villagers, in loaded chunks only: short skips are walked, long ones put each on a tile it could
   have walked to, `ReachableTiles`, with dice from the world seed and the time). Three kinds of
   time-dependent state, and what each needs: (1) a pure function of the clock (weather, sun,
@@ -103,7 +104,13 @@ Warft and an Ewer here and there.
   (`wear_tile`, `wear_stage`, `regrow_paths`; numbers in `data/paths.cfg`, `PathRules`):
   `GameState.walk` and `Livestock` wear each tile entered, and a tile that turns trodden or
   a path emits `tile_changed`, so the view redraws the cells around it as for a tilling. The
-  view draws worn tiles on the `TRODDEN` and `PATH` layers of `TerrainTileset`. What changes with time is run by
+  view draws worn tiles on the `TRODDEN` and `PATH` layers of `TerrainTileset`. Tilled soil that
+  nobody tends grows over (`World.fallow`, `FallowSoil`; numbers in `data/crops.cfg`): no night
+  visits every tilled tile, the nights that count are numbered and the tiles filed by the night
+  they were last tended at, so a night (`World.settle_fallow_soil`) sees only to those whose days
+  are up: weedy (a `tile_changed`; `DecorationView` draws the soil's weeds), or grass again (the
+  terrain edit is grass). Working a tile (`set_terrain`, `set_moisture`, `add_object`, `take_off`)
+  tends it. What changes with time is run by
   the Simulation's systems (`NightUpkeep` at midnight, `FarmingUpkeep` every hour) on the world.
   Every change goes through World, and it emits signals that the views follow.
 - **WorldView** (`game/scenes/world_view.gd`) draws a `World` into a SubViewport at one art

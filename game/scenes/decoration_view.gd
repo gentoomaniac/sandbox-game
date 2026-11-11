@@ -5,7 +5,8 @@ extends Node2D
 ## objects, and never under an object. WorldView owns it and tells it which tiles to draw.
 ##
 ## A decoration comes from a tile's layer and the decoration noise (see TerrainTileset), and
-## a plant's decoration is there only in the days of its Vegetation kind. Meadow flowers grow in
+## a plant's decoration is there only in the days of its Vegetation kind. Tilled soil shows the
+## weeds of its row only while it lies fallow (see FallowSoil). Meadow flowers grow in
 ## drifts (see FlowerRules) and, while one of them is in bloom, show instead of the tile's other
 ## decoration. The picture is the look of its tile (the season, snow, frost). The wildlife asks
 ## it where flowers bloom.
@@ -103,7 +104,10 @@ func place(world_pos: Vector2i, code: int, is_covered: bool) -> void:
 	var spot := DecorationSpot.new()
 	spot.layer = TerrainTileset.layer_of(code)
 	var cluster := _decoration_noise.get_noise_2dv(Vector2(world_pos))
-	spot.atlas_cell = _tileset.decoration_cell(spot.layer, world_pos, cluster)
+	if spot.layer != TerrainTileset.Layer.SOIL:
+		spot.atlas_cell = _tileset.decoration_cell(spot.layer, world_pos, cluster)
+	elif _world.fallow.is_weedy(world_pos):
+		spot.atlas_cell = _tileset.weed_cell(world_pos)
 	if spot.atlas_cell != TerrainTileset.NO_DECORATION:
 		spot.kind = TerrainTileset.decoration_kind(spot.atlas_cell)
 		if spot.kind != &"":

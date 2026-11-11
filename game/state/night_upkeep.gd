@@ -2,10 +2,11 @@ class_name NightUpkeep
 extends SimulationSystem
 ## What a night does to everything the player changed in a world, in unloaded chunks too: cut
 ## reeds grow back by the day that ended (in the weather of their tile), damage heals, picked
-## bushes bear again, saplings grow up, stumps rot away, dug clay spots recover and desire paths
-## grow back. The soil and the crops change every hour instead (see FarmingUpkeep). Only edits
-## change like this (a hit, a tilling, a planting or a step makes one), so they are all in the
-## world's edits (or, for the wear of desire paths, in its own small table beside them).
+## bushes bear again, saplings grow up, stumps rot away, dug clay spots recover, desire paths
+## grow back and tilled soil that nobody tends grows over (see FallowSoil). The soil and the crops
+## change every hour instead (see FarmingUpkeep). Only edits change like this (a hit, a tilling, a
+## planting or a step makes one), so they are all in the world's edits (or, for the wear of desire
+## paths and the fallow soil, in their own small tables beside them).
 
 var _world: World
 var _weather: Weather
@@ -31,6 +32,7 @@ func pass_night() -> void:
 	_world.recover_clay_spots()
 	_world.regrow_paths()
 	var yesterday := _world.clock.day - 1
+	_world.fallow.count_night(yesterday)
 	for object in _world.edited_objects():
 		var has_changed := false
 		if ReedLife.is_reeds(object):
@@ -50,3 +52,4 @@ func pass_night() -> void:
 				_world.take_off(object)
 			else:
 				_world.replace_object(object, sapling)
+	_world.settle_fallow_soil()

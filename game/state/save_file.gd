@@ -21,10 +21,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 25
-## The oldest version we still upgrade. Nine steps back, for the next version (task 166) makes
-## its step the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 26
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 ## How far around the buildings and the player's objects, and around their tilled fields, the
 ## coast gives way in a version 17 world (see `_home_tiles`): an old farm keeps its yard.
 const UPGRADE_CLEARANCE := 3
@@ -214,6 +213,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_23(game)
 	if version <= 24:
 		_upgrade_from_version_24(game)
+	if version <= 25:
+		_upgrade_from_version_25(game)
 
 
 ## Version 16 had no villagers.
@@ -357,6 +358,18 @@ static func _upgrade_from_version_24(game: Dictionary) -> void:
 	for animal: Dictionary in game["livestock"]:
 		animal["hunger"] = 0.0
 		animal["thirst"] = 0.0
+
+
+## Version 25 had no fallow soil (task 166): every tilled tile was tended on the night of the
+## upgrade, and its days count from there.
+static func _upgrade_from_version_25(game: Dictionary) -> void:
+	var world: Dictionary = game["world"]
+	var fallow_soil: Array[Array] = []
+	for edit: Array in world["terrain_edits"]:
+		if SaveCodec.terrain_from_json(edit[2]) == Tile.Terrain.SOIL:
+			fallow_soil.append([edit[0], edit[1], 0])
+	world["fallow_nights"] = 0
+	world["fallow_soil"] = fallow_soil
 
 
 static func _keep(kept: Dictionary[Vector2i, bool], area: Rect2i) -> void:
