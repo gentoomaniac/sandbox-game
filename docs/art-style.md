@@ -356,7 +356,14 @@ along its foot.
   pictures by its fill, empty, low, half and full (water in the `water` ramp, hay up to the rail),
   one cell each in its atlas row, chosen by `ObjectStock.look`. The feeding trough (task 165) is
   the trough with a lumpy brown mash in it in place of the water (`FEED`: `umber`, `ochre_dark`,
-  `ochre`, flecks of `straw` and dark acorns in `soil`), at the same four fills. The chicken coop (a building, 64x80 px
+  `ochre`, flecks of `straw` and dark acorns in `soil`), at the same four fills. The pig pen
+  (task 165, `pen.py`): a fence of three split oak rails (weathered grey, `bare_light` to
+  `mud_dark`, a grain in streaks along them) on posts of the dark wet oak every half tile, 24 px
+  high, the ground showing between the rails (a line drawn as layers with gaps); its gate of paler
+  boards (`sand_light` to `mud_dark`) with a brace, between two taller posts; the shelter a lean-to
+  two tiles wide of boards under reed thatch in courses with ragged reed ends (`sand`,
+  `bare_light`, `bare`, `mud_dark`), open to the front, straw (`gold`, `straw`, `ochre`) on its
+  dark floor. All at 16 px as well (`classic/pen.py`). The chicken coop (a building, 64x80 px
   with its roof, `PICTURES` of yard.py like the bell frame's, lit and unlit alike as it has no
   windows) is upright boards tarred `soil_mid`/`soil`/`soil_dark` on a field-stone footing under a low
   shed roof of weathered grey boards (`bare_light`, `bare`, `mud`, snow takes the roof like the

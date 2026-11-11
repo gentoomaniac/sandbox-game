@@ -73,6 +73,9 @@ const DRAW_WELL := &"draw_well"
 const TROUGH := &"trough"
 const HAY_RACK := &"hay_rack"
 const FEED_TROUGH := &"feed_trough"
+const PEN_FENCE := &"pen_fence"
+const PEN_GATE := &"pen_gate"
+const PIG_SHELTER := &"pig_shelter"
 const EGG := &"egg"
 # The mason's (task 74).
 const RAW_BRICK := &"raw_brick"
@@ -535,6 +538,30 @@ const _OTHER_TYPES := {
 		"weight": 25.0,
 		"stack_limit": 2,
 		"places": WorldObjectTypes.FEED_TROUGH,
+	},
+	PEN_FENCE:
+	{
+		"name": "Pen fence",
+		"description": "Split oak rails on a post, a piece of fence for a pig pen.",
+		"weight": 4.0,
+		"stack_limit": 20,
+		"places": WorldObjectTypes.PEN_FENCE,
+	},
+	PEN_GATE:
+	{
+		"name": "Pen gate",
+		"description": "A gate for a pig pen. It lets you through and keeps the animals in.",
+		"weight": 10.0,
+		"stack_limit": 4,
+		"places": WorldObjectTypes.PEN_GATE,
+	},
+	PIG_SHELTER:
+	{
+		"name": "Pig shelter",
+		"description": "A lean-to of boards under reed thatch for the pigs. It stands outdoors.",
+		"weight": 40.0,
+		"stack_limit": 1,
+		"places": WorldObjectTypes.PIG_SHELTER,
 	},
 	ROAST_TURNIP:
 	{

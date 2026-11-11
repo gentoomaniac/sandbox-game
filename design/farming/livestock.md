@@ -13,7 +13,8 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   saddleback with a white saddle over the shoulders and forelegs, and pale with black spots. A pig
   roots about with its snout for most of its day (its graze, which feeds it as grazing does),
   never runs about, eats at a stock of feed and drinks like the others (`[pig]` in
-  data/livestock.cfg). It gives nothing yet (meat may come with the economy).
+  data/livestock.cfg). It gives nothing yet (meat may come with the economy). Kept in a pig pen
+  it stays inside its fence (see the pig pen below).
 - **Dogs, cats and horses** (decided 2026-11-06, task 79): dogs (a farm collie, a spitz, a
   pointer-like hunting dog), cats (tabby, black, ginger) and horses (a heavy marsh horse of the
   Oldenburg kind in bay, black and grey, and a dun pony). Dogs and cats sniff about (their
@@ -219,3 +220,35 @@ chicken coop. All are made at the workbench or built with the hammer and stand o
   - **Left open (decided as the mildest, the user may change):** a coop taken down loses its eggs
     (they are not what the player put in, so they do not stop it); a hen far from any coop sleeps
     outdoors as ever.
+
+## The pig pen (task 165, decided 2026-11-11)
+
+The user, 2026-11-10: "pig pens that can be built where pigs can be in". Chosen as the simplest that
+does it (the user may change): the pen is not a building but what the player puts together from
+pieces, so it can be of any size and shape, and it keeps the animals in because they cannot walk
+through it.
+
+- **The pieces**, made at the workbench (woodworking) and put down outdoors one tile at a time
+  like the trough: the **pen fence** (split oak rails on posts, about a pig's height; a log makes
+  two pieces, level 10), the **pen gate** (a gate of paler boards with a brace between two taller
+  posts; 3 planks and a log, level 10) and the **pig shelter** (a lean-to of boards under reed
+  thatch, open to the front, with straw in it, 2x1; 6 planks, 2 logs and 6 reeds, level 15). The
+  fence and the gate are a line across the land like the wattle fence: each joins the fence and
+  gates beside it (`connects` "pen"). A trough and a feeding trough (see the farm yard) stand
+  in it for water and feed. The axe takes every piece down (2 hits, the shelter 4) and it drops
+  its item.
+- **The gate:** the player walks through it (they open it and shut it behind them as they go);
+  the farm animals do not (`stops_animals`, `GameMap.is_walkable_for_animals`). The wild animals
+  (deer, rabbits, birds) take no notice of a pen at all: they are wildlife, which keeps to its own
+  rules of where it goes.
+- **The pigs in it:** a pig (or any farm animal) inside a ring of fence with its gate stays in
+  it: its steps, the tiles it looks over for water and feed, where a skip puts it and a hen's way
+  to her coop all keep to the ground an animal can walk on, and the fence and the gate are not
+  that (the reachability and the needs of task 122, unchanged). So a pig in a pen drinks and eats
+  only at the troughs in it, and one in a pen without them stays thirsty or hungry (it can still
+  root, which feeds it a little). Pigs have no pen of their own: a pig is in the pen it stands in,
+  and a pig put down outside one wanders like the other animals.
+- **Left open:** the pigs do not go into the shelter yet (they sleep where they are, the shelter is
+  where the player would look for them); a pen is not a thing of its own (no owner, no count of its
+  pigs); the ridden horse goes through a gate with its rider. The user may change any of it.
+

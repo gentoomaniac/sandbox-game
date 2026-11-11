@@ -68,9 +68,9 @@ extends RefCounted
 ## - deck: it is walked on, whatever the ground under it (the jetty over water), and drawn under
 ##   whoever stands on it;
 ## - stock_capacity, stock_kind: it holds a stock, from 0 to this many units, of water (a trough)
-##   or of feed (a hay rack), which the animals take from it and the player refills (see
-##   ObjectStock). Its atlas row has the STOCK_LOOKS pictures of how full it is, in place of
-##   variants;
+##   or of feed (a hay rack, a feeding trough), which the animals take from it and the player
+##   refills (see ObjectStock). Its atlas row has the STOCK_LOOKS pictures of how full it is, in
+##   place of variants;
 ## - cells_wide: its picture spans this many cells of its atlas row side by side (the Ewer, in
 ##   scale with the people), one cell without it;
 ## - stops_animals: the player walks through it but the farm animals do not (see GameMap
@@ -144,6 +144,11 @@ const TROUGH := &"trough"
 const HAY_RACK := &"hay_rack"
 ## The feeding trough (task 165): the trough with feed in it, for the pigs and any that eat feed.
 const FEED_TROUGH := &"feed_trough"
+## The pig pen (task 165), put together by the player piece by piece: a fence of split oak rails,
+## a gate in it and a shelter for the pigs.
+const PEN_FENCE := &"pen_fence"
+const PEN_GATE := &"pen_gate"
+const PIG_SHELTER := &"pig_shelter"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -205,6 +210,9 @@ const _DRAW_WELL_ROW := 51
 const _TROUGH_ROW := 52
 const _HAY_RACK_ROW := 53
 const _FEED_TROUGH_ROW := 54
+const _PEN_FENCE_ROW := 55
+const _PEN_GATE_ROW := 56
+const _PIG_SHELTER_ROW := 57
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -749,6 +757,48 @@ const _OTHER_TYPES := {
 		"variants": 1,
 		"stock_capacity": 100,
 		"stock_kind": &"feed",
+		"placeable_in": OUTDOORS,
+	},
+	# Split oak rails between posts, about a pig's height: it keeps the animals in (or out).
+	PEN_FENCE:
+	{
+		"hp": 2,
+		"tool": &"axe",
+		"drops": {&"pen_fence": 1},
+		"connects": &"pen",
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _PEN_FENCE_ROW,
+		"variants": 1,
+		"placeable_in": OUTDOORS,
+	},
+	# The gate of a pen: the player goes through it (and shuts it behind them), the animals do not.
+	PEN_GATE:
+	{
+		"hp": 2,
+		"tool": &"axe",
+		"drops": {&"pen_gate": 1},
+		"connects": &"pen",
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": false,
+		"stops_animals": true,
+		"harvest_level": 1,
+		"atlas_row": _PEN_GATE_ROW,
+		"variants": 1,
+		"placeable_in": OUTDOORS,
+	},
+	# A lean-to of boards under reed thatch, for the pigs to lie in out of the weather.
+	PIG_SHELTER:
+	{
+		"hp": 4,
+		"tool": &"axe",
+		"drops": {&"pig_shelter": 1},
+		"footprint": Vector2i(2, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _PIG_SHELTER_ROW,
+		"variants": 1,
 		"placeable_in": OUTDOORS,
 	},
 	WORKBENCH:

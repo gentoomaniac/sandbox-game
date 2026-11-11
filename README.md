@@ -245,6 +245,13 @@ sight, and comes out in the morning; going in she lays an egg, 7 times in 10, in
 pile of the room inside, four eggs to a nest). Go in and press the use key at a nest with an empty
 hand to take the eggs. A night of sleeping or skipping counts the eggs too.
 
+**Pigs** of the old breeds (red-brown, sandy, a black saddleback and a spotted one) root about with
+their snouts for most of the day, which feeds them a little, and eat at a feeding trough. Keep them
+in a **pig pen**: make pen fences (a log splits into two), a pen gate and a pig shelter at the
+workbench and put them down piece by piece round a few tiles, with a trough and a feeding trough
+inside. The fence joins up as you lay it. You walk through the gate; the animals do not, so a pen
+keeps its pigs in, whatever they look for and however long you sleep.
+
 ![The farm yard at noon: the chicken coop with its hens, the draw well, four troughs and four hay racks from empty to full, a cow at the water and a sheep at the hay](docs/screenshots/farm-yard.png)
 
 `make screenshot SIZE=1000x700 AT=69,-15 TIME=12:00 ZOOM=0.75 ARGS="--yard=40,-20 --day=45"` puts

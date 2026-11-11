@@ -103,6 +103,7 @@ import items
 import landing
 import livestock
 import meadow
+import pen
 import portraits
 import reeds
 import sea_birds
@@ -194,6 +195,9 @@ def standing_outdoors(picture, shadow_half_width=None):
 # 52 trough (4, its fills: empty, low, half, full, see yard.py)
 # 53 hay_rack (4, the same)
 # 54 feed_trough (4, the same: the trough with feed in it)
+# 55 pen_fence (16, one per connection mask, see pen.py)
+# 56 pen_gate (16, the same)
+# 57 pig_shelter (1)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -246,6 +250,9 @@ def object_atlas():
         ("trough", [standing_outdoors(picture) for picture in yard.trough_looks()]),
         ("hay_rack", [standing_outdoors(picture) for picture in yard.hay_rack_looks()]),
         ("feed_trough", [standing_outdoors(picture) for picture in yard.trough_looks("feed")]),
+        ("pen_fence", pen.pen_fence_row()),
+        ("pen_gate", pen.pen_gate_row()),
+        ("pig_shelter", [standing_outdoors(pen.pig_shelter())]),
     ]
 
 
@@ -356,7 +363,7 @@ def write_crops():
 
 
 def write_items():
-    bodies = items.icons() | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons() | landing.icons() | yard.icons()
+    bodies = items.icons() | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons() | landing.icons() | yard.icons() | pen.icons()
     for name, body in bodies.items():
         save_picture(items.icon(body), f"items/{name}.png")
         save_picture(items.ground_item(body), f"ground_items/{name}.png")

@@ -46,6 +46,7 @@ import landing  # noqa: E402
 import livestock  # noqa: E402
 import meadow  # noqa: E402
 import object_looks  # noqa: E402
+import pen  # noqa: E402
 import reeds  # noqa: E402
 import sea_birds  # noqa: E402
 import stork_nest  # noqa: E402
@@ -198,6 +199,9 @@ def object_atlas():
         ("trough", [standing_outdoors(yard.trough(level)) for level in range(yard.STOCK_LOOKS)]),
         ("hay_rack", [standing_outdoors(yard.hay_rack(level)) for level in range(yard.STOCK_LOOKS)]),
         ("feed_trough", [standing_outdoors(yard.trough(level, "feed")) for level in range(yard.STOCK_LOOKS)]),
+        ("pen_fence", pen.pen_fence_row()),
+        ("pen_gate", pen.pen_gate_row()),
+        ("pig_shelter", [standing_outdoors(pen.pig_shelter())]),
     ]
 
 
@@ -236,7 +240,7 @@ def write_interior():
 
 
 def write_items():
-    icons = item_icons.ICONS | crop_icons.icons() | tool_icons.icons() | craft_icons.icons() | yard.icons()
+    icons = item_icons.ICONS | crop_icons.icons() | tool_icons.icons() | craft_icons.icons() | yard.icons() | pen.icons()
     for name, picture in icons.items():
         save_picture(picture, f"items/{name}.png")
         # The same icon at half size, for items lying on the ground.

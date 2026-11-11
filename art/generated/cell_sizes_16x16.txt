@@ -200,6 +200,9 @@ objects/oak_16x16.png 48 80
 objects/oak_short_trunk_16x16.png 48 80
 objects/oak_trunk_16x16.png 48 80
 objects/oven_16x16.png 48 80
+objects/pen_fence_16x16.png 48 80
+objects/pen_gate_16x16.png 48 80
+objects/pig_shelter_16x16.png 48 80
 objects/pine_16x16.png 48 80
 objects/pine_short_trunk_16x16.png 48 80
 objects/pine_trunk_16x16.png 48 80

@@ -55,3 +55,6 @@ draw_well 1
 trough 4
 hay_rack 4
 feed_trough 4
+pen_fence 16
+pen_gate 16
+pig_shelter 1

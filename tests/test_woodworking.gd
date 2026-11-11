@@ -1,8 +1,8 @@
 extends ResourceCase
 ## The woodworker's recipes at the workbench: planks, a stool for the house, a trough, a feeding
-## trough and a hay rack for the yard, a grave marker for the churchyard, a piece of jetty, clogs,
-## a rowing boat, the carved chest, which holds more than the plain one, and the joined cupboard,
-## the master's piece.
+## trough, a hay rack and a pig pen's fence, gate and shelter for the yard, a grave marker for the
+## churchyard, a piece of jetty, clogs, a rowing boat, the carved chest, which holds more than the
+## plain one, and the joined cupboard, the master's piece.
 
 
 func test_the_workbench_makes_the_woodworkers_recipes_in_rising_levels() -> void:
@@ -17,8 +17,11 @@ func test_the_workbench_makes_the_woodworkers_recipes_in_rising_levels() -> void
 			&"stool",
 			&"trough",
 			&"feed_trough",
+			&"pen_fence",
+			&"pen_gate",
 			&"grave_marker",
 			&"hay_rack",
+			&"pig_shelter",
 			&"jetty",
 			&"clogs",
 			&"rowing_boat",
@@ -27,7 +30,9 @@ func test_the_workbench_makes_the_woodworkers_recipes_in_rising_levels() -> void
 		]
 	)
 	var levels := recipes.map(func(recipe_id: StringName) -> float: return rules.level(recipe_id))
-	assert_eq(levels, [0.0, 10.0, 10.0, 10.0, 15.0, 15.0, 20.0, 25.0, 35.0, 45.0, 70.0])
+	assert_eq(
+		levels, [0.0, 10.0, 10.0, 10.0, 10.0, 10.0, 15.0, 15.0, 15.0, 20.0, 25.0, 35.0, 45.0, 70.0]
+	)
 
 
 func test_a_log_makes_two_planks_and_teaches_woodworking() -> void:

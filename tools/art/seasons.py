@@ -521,6 +521,10 @@ _WINTER_LOOKS = {
     "trough": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "sand_light"}, set(), 2)},
     "hay_rack": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "sand_light", "gold", "straw"}, set(), 2)},
     "feed_trough": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "sand_light"}, set(), 2)},
+    # The pig pen: snow lies on the rails, the gate's boards and the thatch of the shelter.
+    "pen_fence": {"frost_only": _FROST_STONE, "snow": ({"bare_light", "bare", "soil_light"}, set(), 2)},
+    "pen_gate": {"frost_only": _FROST_STONE, "snow": ({"sand_light", "sand", "soil_light"}, set(), 2)},
+    "pig_shelter": {"frost_only": _FROST_STONE, "snow": ({"sand", "bare_light", "bare"}, set(), 4)},
     "eel_traps": {"specks": {"sand_light", "sand"}, "snow": ({"sand_light", "sand", "straw"}, set(), 4)},
     "oak_trunk": _TRUNK_WINTER,
     "oak_short_trunk": _TRUNK_WINTER,
