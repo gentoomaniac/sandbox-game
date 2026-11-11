@@ -32,6 +32,13 @@ const MAX_LEAN := 1.5
 const SWAY_CURVE := 0.8
 ## Gusts start above this wind (m/s) and are at their strongest at STORM_WIND.
 const GUSTS_FROM := 3.0
+## Gusts are fronts that sweep downwind across the world this far apart, at this speed (pixels
+## and pixels per second): the same numbers as sway.gdshaderinc, change one, change the other.
+const GUST_SPACING := 360.0
+const GUST_SPEED := 90.0
+## The shaders' clock starts over after this many seconds (Godot's default rollover), which
+## the front's period divides evenly, so the fronts do not jump.
+const SHADER_TIME_ROLLOVER := 3600.0
 ## Water is at its choppiest at this wind (m/s).
 const CHOPPY_WIND := 14.0
 ## Ripples drift a little even without wind, and with it this many pixels per second per m/s.
@@ -273,6 +280,20 @@ static func lean_for(wind: Vector2) -> float:
 ## How much the gusts add to the sway, 0 (none) to 1 (in a storm).
 static func gust_for(speed: float) -> float:
 	return clampf((speed - GUSTS_FROM) / (STORM_WIND - GUSTS_FROM), 0.0, 1.0)
+
+
+## How far a gust front is over the cell whose top left is `origin` (world pixels), 0 (between
+## fronts) to 1, `shader_seconds` into the shaders' clock (see `shader_time`): as the plants
+## see it, times the gust's strength, which `gust_for` gives. Left out is the shader's small
+## offset between neighbours.
+static func gust_front(origin: Vector2, wind_direction: Vector2, shader_seconds: float) -> float:
+	var front := (origin.dot(wind_direction) - shader_seconds * GUST_SPEED) / GUST_SPACING
+	return pow(0.5 + 0.5 * sin(TAU * front), 6.0)
+
+
+## The shaders' clock now, in seconds (TIME in the shaders).
+static func shader_time() -> float:
+	return fmod(Time.get_ticks_msec() / 1000.0, SHADER_TIME_ROLLOVER)
 
 
 ## How choppy the water is, 0 (still) to 1.

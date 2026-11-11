@@ -13,7 +13,8 @@ uniform vec2 wind_direction = vec2(1.0, 0.0);
 uniform float frequency = 0.5;
 
 // Gusts are fronts that sweep downwind across the world this far apart, at this speed
-// (pixels and pixels per second).
+// (pixels and pixels per second). AmbientMotion.gust_front copies these numbers and the front's
+// formula below (the leaves of the trees follow the fronts): change both together.
 const float GUST_SPACING = 360.0;
 const float GUST_SPEED = 90.0;
 
