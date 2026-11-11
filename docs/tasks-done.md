@@ -4618,3 +4618,48 @@ the whole kate hears it; a bigger one: 4 tiles, so the longhouse is silent at th
 the same day: no noise bed, only crackling; the pops were drum-like (a hollow knock, removed, now
 dry bright snaps); the walk renders' seams were a render artifact; "crackling sounds are good".
 Fires have no lit or out state yet, so a room with a hearth always crackles.
+
+## 173. Petting animals: a heart once a day, and a friendship value
+
+- [x] Done
+
+The user, 2026-11-11: "you can pet animals. They'll show a small heart above their head. it
+increases an internal friendship value by 10 which can increase to 100. you can pet animals as
+often as you want but only once a day you'll see the heart and it will increase that value. The
+value decreases by 5 a day if not petted. When you pet animals while they are sleeping the
+counter decreases by 5 and you see a little swirl above their head. We'll use that value later
+for game mechanics." Run after task 172, before the gossip tasks.
+- Petting: the use key with an empty hand on an animal (it must not clash with feeding, the gate
+  or riding). Each animal keeps a friendship value, 0 to 100. The user, 2026-11-11: the value
+  can never go lower than 0 (no loss, sleeping or daily, takes it below 0).
+- Awake: the first petting of the day adds 10 (capped at 100) and shows a small heart above the
+  animal's head; more pettings that day do nothing and show nothing.
+- Asleep: petting takes 5 (floored at 0) and shows a small swirl above its head. Confirmed by
+  the user, 2026-11-11: the swirl and the loss come once a day too, and a sleeping petting
+  doesn't count as the day's petting.
+- A day without a petting takes 5 (at the day change, caught up over skipped time in the frame
+  budget of task 158).
+- Confirmed by the user, 2026-11-11: the farm animals and the pets (cows, horses, sheep, pigs,
+  hens, dogs, cats), not wildlife; a new animal starts at 0. The numbers in data/livestock.cfg.
+- The user, 2026-11-11: the tame rabbits can be petted too. Wild animals get the same
+  friendship value but can't be petted (it stays at 0 for now); a later feature may let the player
+  tame wild animals. Birds are left out. A wild animal is only tracked and saved once its value
+  is above 0 (later: the player tried to tame it); all the others are not saved.
+  Decided 2026-11-11 after a second opinion: for now only the attribute (a friendship value fixed
+  at 0 on wild rabbits, squirrels, deer, mice and frogs, not pettable, not saved); the sparse saved
+  store comes with taming (see Later).
+- Saved with the animal (a save version bump, following the upgrade-window rule); the heart and
+  the swirl drawn in both arts (pixel-artist job), a short sound for the petting maybe reused.
+- Nothing uses the value yet; it is for later game mechanics. A console command to show an
+  animal's value helps testing.
+- Tests: the daily cap, +10 and the 100 cap, the sleeping loss, the daily loss and its catch-up,
+  save and load; a README note.
+
+Done 2026-11-11: petting with the use key and an empty hand, last of the empty-hand uses (cow,
+horse, sheep, pig, hen, dog, cat and the tame rabbit; not a hen in its coop or a ridden horse).
+Awake, the first petting of a day adds 10 (to 100) with a heart; asleep, at most once a day, it
+takes 5 (to 0) with a black anime anger mark (the user's swirl replaced, drawn thin); a day without
+a petting takes 5, worked out in closed form over skips. The marks stand 2 px above each species'
+measured head per pose. Save version 27 (the upgrade from 16 dropped). Wild ground animals (wild
+rabbit, squirrel, deer, mouse, frog; WildlifeRules.GROUND_KINDS) carry a friendship value that is 0
+and stays 0, not saved; the saved store comes with taming (see Later). Console `friendship [n]`.
