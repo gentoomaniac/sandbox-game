@@ -73,6 +73,53 @@ class MoistureStepsTest(unittest.TestCase):
             self.assertGreater(drawn, 0)
 
 
+class FadeTest(unittest.TestCase):
+    def setUp(self):
+        self.rows = terrain.soil_fade()
+
+    def drawn(self, steps, column):
+        return self.rows[soil_beds.STEP_PAIRS.index(steps)][column]
+
+    def test_the_atlas_has_a_row_for_each_pair_of_steps_and_a_tile_for_each_cut_side_and_corner(self):
+        self.assertEqual(len(self.rows), 6)
+        self.assertEqual({len(row) for row in self.rows}, {4 * 9 + 4})
+
+    def test_a_fade_thins_out_away_from_its_side_and_stays_within_its_depth(self):
+        west_inside_the_bed = 3 * 9 + 8
+        tile = self.drawn((3, 0), west_inside_the_bed)
+        drawn_in_column = [sum(tile[y][x] is not None for y in range(GAME_TILE)) for x in range(GAME_TILE)]
+        depth = terrain._SOIL_FADE_DEPTH
+        self.assertEqual(drawn_in_column[0], GAME_TILE)
+        self.assertEqual(drawn_in_column, sorted(drawn_in_column, reverse=True))
+        self.assertGreater(sum(drawn_in_column[depth // 2 : depth]), 0)
+        self.assertEqual(set(drawn_in_column[depth:]), {0})
+
+    def test_a_fade_steps_through_the_browns_between_its_steps_only(self):
+        tile = self.drawn((3, 0), 0 * 9 + 8)
+        colours = {colour for row in tile for colour in row if colour}
+        self.assertTrue(colours <= {*soil_beds.RAMPS[1], *soil_beds.RAMPS[2], *soil_beds.RAMPS[3]}, colours)
+        self.assertIn(soil_beds.RAMPS[2][1], colours, "the body of the step between")
+        one_step = self.drawn((2, 1), 0 * 9 + 8)
+        self.assertTrue({colour for row in one_step for colour in row if colour} <= set(soil_beds.RAMPS[2]))
+
+    def test_a_fade_stops_short_of_the_rim_where_the_bed_ends_beside_it(self):
+        inside = self.drawn((3, 0), 0 * 9 + 8)
+        north_with_no_bed_west = self.drawn((3, 0), 0 * 9 + 0 * 3 + 2)
+        for tile in inside, north_with_no_bed_west:
+            self.assertTrue(all(pixel is not None for pixel in tile[0][GAME_TILE // 2 :]))
+        self.assertIsNotNone(inside[0][0])
+        self.assertIsNone(north_with_no_bed_west[0][0])
+
+    def test_a_corner_fade_meets_the_fades_of_the_sides_beside_it(self):
+        # The tile north of a corner fading from the north-west fades from the west: the corner
+        # fade's top row goes on from that fade's bottom row, which is like its top row.
+        north_west = self.drawn((3, 0), 4 * 9 + 3)
+        west = self.drawn((3, 0), 3 * 9 + 8)
+        north = self.drawn((3, 0), 0 * 9 + 8)
+        self.assertEqual(north_west[0][: GAME_TILE // 2], west[0][: GAME_TILE // 2])
+        self.assertEqual([row[0] for row in north_west[: GAME_TILE // 2]], [row[0] for row in north[: GAME_TILE // 2]])
+
+
 class SownSoilTest(unittest.TestCase):
     def test_a_sown_mound_is_dark_earth_with_seeds_on_it_so_it_reads_on_every_step(self):
         colours = Counter(colour for row in crops.sown() for colour in row if colour)

@@ -48,6 +48,9 @@
     Clamping hour by hour is not the nightly clamp: soil that is already soaked loses the early
     rain of a day and then dries. The whole tile's brown shows it in four
     steps: light brown when dry, dark brown when soaked, lightening day by day as it dries.
+    Where a tile is wetter than a tilled neighbour, its brown fades out into the neighbour over
+    a few pixels, at the sides and the corners (the user, 2026-11-10, task 167); between tiles
+    as wet there is no edge, and the bed's rim against the turf stays as it is.
   - **Fallow soil grows over** (the user, 2026-11-10, task 166): tilled soil with nothing on
     it (no crop, living or dead, no sapling or placed object, no building) that nobody tends
     comes up in a few weeds and grass tufts after `fallow_weedy_days` (5) and is grass again after

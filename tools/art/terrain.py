@@ -1000,6 +1000,15 @@ def soil_wet():
     return soil_beds.overlay_rows(GAME_TILE, _SOIL_SHAPES, soil_pixel_of)
 
 
+# How many pixels deep a wetter tile's brown fades out into a drier one.
+_SOIL_FADE_DEPTH = 6
+
+
+def soil_fade():
+    """The fades of wetter tilled soil into drier (see soil_beds.py)."""
+    return soil_beds.fade_rows(GAME_TILE, _SOIL_FADE_DEPTH, _SOIL_SHAPES, soil_pixel_of)
+
+
 LAYERS = [
     water, mud, floodplain, wetland, grass, salt_marsh, warft, lush_grass, dry_grass, trodden, path, soil
 ]

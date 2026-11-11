@@ -134,7 +134,11 @@ field's edge dark under the turf. Every pixel depends only on its place in the t
 one pattern with no seams or variants. The terrain is the driest soil, a light `soil_light`
 brown; the four moisture steps are the same rows in the browns of `soil_beds.RAMPS`, down to
 `soil_dark` when soaked, drawn as overlays cut to the bed (`soil_beds`, `terrain.soil_wet`) so
-the field's edge and rim stay. Soil left fallow comes up in weeds (task 166, `terrain.weeds`, the
+the field's edge and rim stay. Where a tile is wetter than a tilled neighbour, its brown runs on
+into the neighbour and fades out over 6 pixels (4 in the classic art) in an ordered dither, through
+the browns of the steps between (task 167, `soil_beds.fade_rows`, `terrain.soil_fade`): a fade
+along each side, cut to the bed at its ends, and a quarter round at each corner, drawn over the
+drier tile. Soil left fallow comes up in weeds (task 166, `terrain.weeds`, the
 decorations of the soil row, which the game shows only on fallow soil): four or five small things
 to a tile, low weed rosettes and chickweed seedlings with a pixel of `soil` shadow, and the grass
 tufts of the turf, all in the grass ramp. The path is packed earth worn pale in patches, dark

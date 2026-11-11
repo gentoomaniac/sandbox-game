@@ -58,6 +58,7 @@ DOUBLED = (
     "terrain*.png",
     "decorations*.png",
     "soil_wet.png",
+    "soil_fade.png",
     "clay_hint.png",
     # The buildings (task 110; buildings.py and church.py of commit e303759, their looks drawn by
     # the shared seasons.house).
