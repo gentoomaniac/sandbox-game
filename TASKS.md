@@ -569,8 +569,8 @@ inventory. Additional things in the killin turn into ash."
   light, if any). The firing goes on with the window closed and with the player away (game time).
 - When done: the grid holds the result (as many stacks as needed in the 9 slots). Anything in the
   grid that wasn't part of the recipe (extra raw bricks, extra logs, other items) has turned into
-  ash: a new item `ash` (art in both sets, a pixel-artist job; how much ash per item: pick and say
-  why, e.g. one ash per stack). The player takes the results out like from a chest, only as much as
+  ash: a new item `ash` (art in both sets, a pixel-artist job): one ash per item burnt (the user,
+  2026-11-11), so 5 extra logs give 5 ash. The player takes the results out like from a chest, only as much as
   fits (the rest stays in the kiln).
 - Skills: the masonry levels still unlock the bigger loads and each firing practises the skill.
 - Tests: the grid saved and loaded, a recipe click moving materials, the fire button refused without
