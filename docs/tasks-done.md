@@ -4817,3 +4817,23 @@ WildlifeView.remove_kind; views freed by `removed` signals), answering with the 
 are cleared for now and may come back. `killall npc <id>` removes a named villager; a bare
 `killall npc` removes the villagers without an id and keeps the named ones. Riding a horse:
 `killall horse` refuses ("get off first").
+
+## 189. Windows can be dragged
+
+- [x] Done
+
+The user, 2026-11-11 (next in the queue, after 177 and 175): "make our Modal UI movable. since
+all dialogs use it already it should then replicate for all windows. add a flag to enable or
+disable that, have the esc and options menus disable it so that those have their fixed positions.
+Movable modals don't save their position."
+- In Modal (game/scenes/modal.gd), which every window and dialog uses: the player drags a window
+  by its title bar (or its frame, if there is no title bar; not by its content, so buttons, lists,
+  sliders and drag-and-drop of items keep working), with the mouse; it stays within the screen.
+- A flag on Modal (e.g. `is_movable`, on by default) turns it off; the Escape (pause) menu and the
+  options/settings menu set it off and keep their fixed places. Check every window that uses Modal
+  and list which stay fixed. The user, the same day: confirmation dialogs stay fixed too.
+- Positions are not saved: a window opens where it opens today every time (also after a resize
+  of the game window).
+- Tests for dragging, the flag, the screen bounds and not saving; README line.
+
+Done: 2026-11-11. Modal windows are dragged by their frame or by any spot that takes no clicks; `is_movable` (on by default) is off for PauseMenu with its settings pages and for ChoiceDialog (every yes/no question). Kept on screen on drag and resize, reset to the middle on open, never saved. ChatScreen's `_input` LineEdit became `_line_edit`. Tests in tests/test_modal_dragging.gd.
