@@ -371,9 +371,10 @@ dashes and « » ¿ ¡ …, so the villagers' German, Danish and Dutch show as w
 
 ### Wildlife
 
-Birds hop and peck on open ground and small flocks cross the sky, rabbits graze the meadows,
-squirrels dart between the trees, roe deer come out at the edge of the woods at dawn and
-dusk, and bees and butterflies keep to the flowers. On the marsh and the wet meadows white
+Birds hop and peck on open ground and small flocks cross the sky: south in autumn, north in
+spring, any way in summer and not at all in winter. Rabbits graze the meadows, squirrels dart
+between the trees, roe deer come out at the edge of the woods at dawn and dusk, and bees and
+butterflies keep to the flowers. On the marsh and the wet meadows white
 storks hunt in spring and summer, stepping slowly with the head down; they come to stand on
 the roofs of the houses, clatter their bills now and then and fly off on slow wingbeats.
 Some houses (about four in ten of the kates, longhouses, hall houses and barns, by where they

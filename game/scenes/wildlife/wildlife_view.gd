@@ -402,8 +402,9 @@ func _spawn_near_player(kind: StringName) -> bool:
 	return false
 
 
-## A flock enters the view from beyond its ring and crosses it. One made by hand starts inside
-## the view, on its left, so that it can be seen at once.
+## A flock enters the view from beyond its ring and crosses it. One made by hand or `is_instant`
+## starts inside the view so that it can be seen at once: on its left, or at its goal when it
+## migrates.
 func _spawn_flock(kind: StringName, is_debug: bool, is_instant := false) -> void:
 	var view := view_rect()
 	var start := rules.random_ring_point(view, rng)
@@ -416,6 +417,11 @@ func _spawn_flock(kind: StringName, is_debug: bool, is_instant := false) -> void
 		)
 	)
 	var end := goal * 2.0 - start
+	var heading := rules.migration_heading(kind, _state.clock.day, rng)
+	if heading != Vector2.ZERO:
+		var reach := view.size.length() / 2.0
+		start = goal if is_debug or is_instant else goal - heading * reach
+		end = goal + heading * reach
 	if not is_debug and not is_instant:
 		# High up, the birds would be seen at once from the ring: they start further back.
 		start -= (goal - start).normalized() * FLOCK_ENTRY_DISTANCE

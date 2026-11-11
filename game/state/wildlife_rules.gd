@@ -1,3 +1,4 @@
+# gdlint: disable=max-public-methods
 class_name WildlifeRules
 extends RefCounted
 ## Where and when ambient wildlife appears, and when it reacts to the player: the plain logic
@@ -92,6 +93,12 @@ const KIND_KEYS := [
 ##   after_sunset_minutes it is only about from the dusk until this long after sunset (0: all day)
 ##   wind_limit           it hides at this much wind (0 to 1; default: never)
 ##   min_temperature      it hides below this many degrees Celsius (default: never)
+##   fade_days            its season factor fades over this many days either side of a season
+##                        boundary instead of stepping (default: it steps)
+##   migration_days       it flies south in autumn and north in spring, within
+##                        `migration_spread_degrees` of due south or north (default: any way);
+##                        in the middle `migration_days` of those seasons it comes
+##                        `migration_boost` times as often
 const NO_LIMIT := 1000.0
 ## What squirrels and deer call a forest.
 const TREE_TYPES: Array[StringName] = [
@@ -264,10 +271,54 @@ func activity(kind: StringName, day: int, minute: int, weather: WeatherSample) -
 		return 0.0
 	if not _is_in_hours(kind, day, minute):
 		return 0.0
-	var season := (day - 1) % GameClock.DAYS_PER_YEAR / GameClock.DAYS_PER_SEASON
-	var season_factors: Array = _value(kind, "season_factors")
 	var phase_weights: Array = _value(kind, "phase_weights")
-	return float(season_factors[season]) * float(phase_weights[phase(day, minute)])
+	return season_factor(kind, day) * float(phase_weights[phase(day, minute)])
+
+
+## How much of its best a kind is about on a day, from 0 to 1: its factor of the season. Within
+## its `fade_days` of a season boundary the factor draws from the neighbouring season's towards
+## the boundary, where it is the mean of the two, instead of stepping there.
+func season_factor(kind: StringName, day: int) -> float:
+	var season_factors: Array = _value(kind, "season_factors")
+	var season: int = GameClock.season_of(day)
+	var factor := float(season_factors[season])
+	var fade_days := float(_optional(kind, "fade_days", 0))
+	# Days from the boundary to the middle of this day.
+	var since_start := GameClock.day_of_season_of(day) - 0.5
+	var until_end := GameClock.DAYS_PER_SEASON - since_start
+	if since_start < fade_days:
+		var before := float(season_factors[posmod(season - 1, 4)])
+		return lerpf(before, factor, 0.5 + since_start / (2.0 * fade_days))
+	if until_end < fade_days:
+		var after := float(season_factors[(season + 1) % 4])
+		return lerpf(after, factor, 0.5 + until_end / (2.0 * fade_days))
+	return factor
+
+
+## Whether a day is in the migration weeks of a kind that migrates: the middle
+## `migration_days` of spring and of autumn.
+func is_migrating(kind: StringName, day: int) -> bool:
+	var migration_days: int = _optional(kind, "migration_days", 0)
+	var season := GameClock.season_of(day)
+	if season != GameClock.Season.SPRING and season != GameClock.Season.AUTUMN:
+		return false
+	var first := (GameClock.DAYS_PER_SEASON - migration_days) / 2 + 1
+	return GameClock.day_of_season_of(day) in range(first, first + migration_days)
+
+
+## The way a migrating kind flies on a day, or ZERO if it flies any way: south in autumn and
+## north in spring, up to `migration_spread_degrees` off. The map has north up.
+func migration_heading(kind: StringName, day: int, rng: RandomNumberGenerator) -> Vector2:
+	var way := Vector2.ZERO
+	match GameClock.season_of(day):
+		GameClock.Season.SPRING:
+			way = Vector2.UP
+		GameClock.Season.AUTUMN:
+			way = Vector2.DOWN
+	if way == Vector2.ZERO or not _values[String(kind)].has("migration_days"):
+		return Vector2.ZERO
+	var spread := deg_to_rad(float(_value(kind, "migration_spread_degrees")))
+	return way.rotated(rng.randf_range(-spread, spread))
 
 
 ## Whether the weather is too much for a kind: rain, a storm, dense fog, and for the kinds that
@@ -296,7 +347,8 @@ func target_count(
 
 ## The chance per second that a missing animal of a kind appears.
 func spawn_chance(kind: StringName, day: int, minute: int, weather: WeatherSample) -> float:
-	return float(_value(kind, "spawn_chance")) * activity(kind, day, minute, weather)
+	var boost := float(_optional(kind, "migration_boost", 1.0)) if is_migrating(kind, day) else 1.0
+	return float(_value(kind, "spawn_chance")) * activity(kind, day, minute, weather) * boost
 
 
 ## Whether a kind lives on a terrain with this many trees around, and water and farmland near or

@@ -5,7 +5,13 @@ atmosphere only: no player impact, not hunted, not saved.
 
 - **Who and where:**
   - birds: hop and peck on open ground, fly off when the player comes close; small flocks
-    cross the sky now and then (a shadow on the ground);
+    cross the sky now and then (a shadow on the ground), in a V. They migrate (task 183): in
+    autumn they fly south only, within 25 degrees of due south, in spring north only, in summer
+    any way, and in winter there are none. They come twice as often in the middle two weeks of
+    spring and autumn, and the season factor fades over 6 days either side of a season boundary
+    (the factor is the mean of the two seasons at the boundary), so they thin out and return
+    rather than stop and start. The greylag geese and the dunlin keep their own seasons and
+    rules, and a skein of geese flies any way;
   - rabbits: grassland and forest edges, hop about, flee in zigzags from the player;
   - squirrels: forests, dart between trees, sit up, scurry off;
   - deer: rare, in forests and at forest edges, mostly at dawn and dusk; graze, look up,
