@@ -212,6 +212,24 @@ soil? and wet soil has a clear border, it should be more like a patch not like a
 - Tests for the rain wetting and the patch edges; before/after crops and in-game shots in the
   rain for the user.
 
+## 189. Windows can be dragged
+
+- [ ] Done
+
+The user, 2026-11-11 (next in the queue, after 177 and 175): "make our Modal UI movable. since
+all dialogs use it already it should then replicate for all windows. add a flag to enable or
+disable that, have the esc and options menus disable it so that those have their fixed positions.
+Movable modals don't save their position."
+- In Modal (game/scenes/modal.gd), which every window and dialog uses: the player drags a window
+  by its title bar (or its frame, if there is no title bar; not by its content, so buttons, lists,
+  sliders and drag-and-drop of items keep working), with the mouse; it stays within the screen.
+- A flag on Modal (e.g. `is_movable`, on by default) turns it off; the Escape (pause) menu and the
+  options/settings menu set it off and keep their fixed places. Check every window that uses Modal
+  and list which stay fixed (e.g. confirmations in the middle may also want to stay put: ask).
+- Positions are not saved: a window opens where it opens today every time (also after a resize
+  of the game window).
+- Tests for dragging, the flag, the screen bounds and not saving; README line.
+
 ## 176. Wind gusts are heard with the wind you see, and as loud as the wind
 
 - [ ] Done
