@@ -59,6 +59,12 @@ const COMMANDS := {
 		"friendship [0..100]",
 		"Show the friendship of the animal nearest to you, or set it.",
 	],
+	"play":
+	[
+		"play <track>",
+		"Play a piece of music in a loop (another one crossfades), rendered first; stop ends it.",
+	],
+	"stop": ["stop", "Fade the music out."],
 }
 ## The kind of each argument a command takes, in order, for Tab completion (see candidates).
 ## Numbers have no candidates; commands not listed take no arguments. `help <command>` and a
@@ -72,6 +78,7 @@ const ARGUMENTS := {
 	"weather": [&"weather"],
 	"snow": [&"snow"],
 	"skill": [&"skill", &"number"],
+	"play": [&"track"],
 }
 ## The commands that take an animal kind, or `npc` and the id of a villager written by hand (see
 ## VillagerRules): `spawn` puts them in the world and `killall` takes them out.
@@ -81,7 +88,7 @@ const KIND_COMMANDS: Array[String] = ["spawn", "killall"]
 const NPC_ARGUMENTS: Array[StringName] = [&"animal", &"villager"]
 ## The argument kinds whose candidates `_candidates_text` lists: the names a command takes. Items
 ## are too many to list (Tab completes them) and the other kinds are numbers.
-const LISTED_KINDS: Array[StringName] = [&"animal", &"villager", &"weather", &"snow"]
+const LISTED_KINDS: Array[StringName] = [&"animal", &"villager", &"weather", &"snow", &"track"]
 ## The most characters of a listed line, so the log shows it whole.
 const LIST_LINE_LENGTH := 70
 ## Minutes per unit of the `skip` command, and the longest skip (a year).
@@ -98,6 +105,8 @@ const NPC := "npc"
 ## What `spawn` calls the wild rabbit (WildlifeRules.RABBIT): a plain rabbit is a tame one of the
 ## livestock.
 const WILD_RABBIT := "wild_rabbit"
+## What `play` and `stop` say when the game scene gave the console no music.
+const NO_MUSIC := "No music here"
 ## Item ids this similar to a misspelt one (see String.similarity) are offered as a guess.
 const CLOSE_MATCH_SIMILARITY := 0.4
 
@@ -107,6 +116,14 @@ var wildlife_spawner := Callable()
 ## Takes the wild animals of a kind away: takes a kind, returns how many it took. Set by the game
 ## scene, as the spawner is.
 var wildlife_clearer := Callable()
+
+## The names of the pieces `play` takes: returns an Array[String]. Set by the game scene, which
+## finds the music; the console is plain logic.
+var music_tracks := Callable()
+## Starts a piece of music: takes its name (one of `music_tracks`), returns the line to show.
+var music_player := Callable()
+## Fades the music out.
+var music_stopper := Callable()
 
 var _state: GameState
 
@@ -180,6 +197,14 @@ func run(line: String) -> Array[String]:
 			output = _skill(arguments)
 		"friendship":
 			output = _friendship(arguments)
+		"play":
+			output = _play(arguments)
+		"stop":
+			if music_stopper.is_valid():
+				music_stopper.call()
+				output = ["Music fading out"]
+			else:
+				output = [NO_MUSIC]
 		_:
 			output = ["Unknown command: %s (try help)" % words[0]]
 	return output
@@ -233,6 +258,9 @@ func candidates(kind: StringName) -> Array[String]:
 		&"skill":
 			for skill in _state.player.skills.rules.skill_ids():
 				values.append(String(skill))
+		&"track":
+			if music_tracks.is_valid():
+				values.assign(music_tracks.call())
 	return values
 
 
@@ -528,6 +556,29 @@ func _snow(arguments: PackedStringArray) -> Array[String]:
 	if snow.forced >= 0.0:
 		lines.append("Forced: %s" % snow.forced)
 	return lines
+
+
+func _play(arguments: PackedStringArray) -> Array[String]:
+	if not music_player.is_valid():
+		return [NO_MUSIC]
+	if arguments.size() != 1:
+		var lines: Array[String] = ["Usage: %s" % COMMANDS["play"][0]]
+		lines.append_array(_candidates_text("play"))
+		return lines
+	var track := track_named(arguments[0], candidates(&"track"))
+	if track.is_empty():
+		return _unknown("track", arguments[0], "play")
+	var line: String = music_player.call(track)
+	return [line]
+
+
+## The track `name` stands for among `tracks`: the whole name, or the name without its first word
+## ("tide" for "sketch_tide"); "" when there is none, or more than one.
+static func track_named(name: String, tracks: Array[String]) -> String:
+	var matches := tracks.filter(
+		func(track: String) -> bool: return name == track or track.ends_with("_" + name)
+	)
+	return matches[0] if matches.size() == 1 else ""
 
 
 func _skip(arguments: PackedStringArray) -> Array[String]:

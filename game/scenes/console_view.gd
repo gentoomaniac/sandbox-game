@@ -22,6 +22,8 @@ var _history: Array[String] = []
 var _history_index := 0
 var _log := Label.new()
 var _log_list := ScrollingList.new(_log)
+## Plays what `play` asks for; the log says when a piece, rendered after the command ran, begins.
+var _music := MusicPlayer.new()
 var _input := LineEdit.new()
 
 
@@ -45,6 +47,8 @@ func _init() -> void:
 	_input.gui_input.connect(_on_input_gui_input)
 	_input.focus_exited.connect(_on_input_focus_exited)
 	box.add_child(_input)
+	add_child(_music)
+	_music.started.connect(func(track: String) -> void: _log_line("Playing %s" % track))
 
 
 func _ready() -> void:
@@ -57,6 +61,9 @@ func show_state(
 	state: GameState, wildlife_spawner := Callable(), wildlife_clearer := Callable()
 ) -> void:
 	_console = Console.new(state)
+	_console.music_tracks = _music.tracks
+	_console.music_player = _music.play
+	_console.music_stopper = _music.stop
 	_console.wildlife_spawner = wildlife_spawner
 	_console.wildlife_clearer = wildlife_clearer
 
@@ -83,12 +90,21 @@ func close() -> void:
 func run_line(line: String) -> void:
 	_log_lines.append("> " + line)
 	_log_lines.append_array(_console.run(line))
-	_log_lines = _log_lines.slice(-MAX_LOG_LINES)
-	_log.text = "\n".join(_log_lines)
+	_show_log()
 	if _history.is_empty() or _history[-1] != line:
 		_history.append(line)
 	_history_index = _history.size()
 	command_ran.emit()
+
+
+func _log_line(text: String) -> void:
+	_log_lines.append(text)
+	_show_log()
+
+
+func _show_log() -> void:
+	_log_lines = _log_lines.slice(-MAX_LOG_LINES)
+	_log.text = "\n".join(_log_lines)
 
 
 func _on_submitted(line: String) -> void:

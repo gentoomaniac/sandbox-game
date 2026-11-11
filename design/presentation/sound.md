@@ -1,6 +1,8 @@
 # Sound
 
-Decided 2026-11-05. Everything makes sound; no background music for now.
+Decided 2026-11-05. Everything makes sound; no background music for now (the console's `play` and
+`stop` start a piece by hand, task 184, on a Music bus under Master with its own volume slider in
+Settings → Audio, saved with the others; 0 mutes it).
 
 - **All sounds are generated** by a script (`tools/audio/`, run by `make art`), like
   the art: deterministic, in the repo, retro in style, with a few variants per sound

@@ -29,9 +29,14 @@ Decided 2026-11-05. A text console for testing and cheats.
   inside or out), and
   `skip <n>m|h|d` (let minutes, hours or days pass, at most a year; only the world
   moves on, as when sleeping, so crops grow; the player's energy, tiredness, debuff and
-  position are left alone).
+  position are left alone), `play <track>` and `stop` (task 184: the pieces of
+  `assets/music/`, by file name with or without its first word, `play tide`; the piece is rendered
+  on a worker thread, the log says `Rendering...` and then `Playing ...` when it begins, and it loops
+  on the Music bus; another piece crossfades on the beat; an unknown name lists the tracks; `stop`
+  fades the music out; nothing plays unless the console asks, until the music director of tasks
+  170 and 171).
 - Tab completes command names and every argument with a fixed set of values: item ids,
-  animal kinds (also for `killall`), weather conditions, snow values. Each command lists its
+  animal kinds (also for `killall`), weather conditions, snow values, track names. Each command lists its
   argument kinds in one table in the console code; numbers are not completed. `help <command>` and a missing
   or unknown name (`spawn`, `spawn unicorn`) list the animal kinds, weather conditions and
   snow values from that same table.

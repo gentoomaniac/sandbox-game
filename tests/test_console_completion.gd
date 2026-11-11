@@ -63,6 +63,7 @@ func test_numbers_and_extra_words_complete_nothing() -> void:
 
 
 func test_the_argument_table_names_real_commands_and_kinds() -> void:
+	_console.music_tracks = func() -> Array[String]: return ["sketch_tide"]
 	for command: String in Console.ARGUMENTS:
 		assert_true(Console.COMMANDS.has(command), command)
 		for kind: StringName in Console.ARGUMENTS[command]:
