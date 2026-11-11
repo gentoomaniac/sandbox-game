@@ -185,26 +185,6 @@ Settings (and off), muted in test runs (comes with task 184). Rules in data/musi
   pieces like the test reel are kept for special events (festivals, a market day). Later: stems
 (AudioStreamSynchronized), more pieces, the season and weather choices.
 
-## 197. Harvests: the usual amount, now and then one more or one less
-
-- [ ] Done
-
-The user, 2026-11-11, on task 178 (merged with a range and an average, e.g. carrots 2 to 3
-averaging 2.3): "what I meant is carrots give mostly 2, rarely only 1 or 3. Same should be the case
-for most crops. Normally they get a median amount, sometimes there's a good or a bad harvest of one
-plant"
-- Replace `yield_min`, `yield_max` and `yield_average` in data/crops.cfg with the usual count per
-  crop (`yield`) and the chances of a bad and a good harvest of that plant (one less, one more),
-  e.g. `poor_harvest_chance` and `good_harvest_chance`; a defaults section or a shared default so
-  most crops just use it (start with about 0.15 each, so 70 % of plants give the usual amount).
-  Never below 1: a crop whose usual count is 1 (pumpkin) can only have a good harvest.
-- Usual counts: today's averages rounded (turnip, cabbage and others: pick and list them); carrots
-  2. Keep `seed_chance` as it is.
-- Keep `CropLife.harvest_of(crop, rng)` and `GameState.harvest_rng`; CropRules checks the new keys
-  (chances 0 to 1, together at most 1, usual count at least 1).
-- Tests: the usual count is the most common, one less and one more occur at about their chances,
-  never 0, the config check. README, design/farming/crops.md, the crops.cfg header.
-
 ## 198. Crafting with a full inventory drops the result on the ground
 
 - [ ] Done
