@@ -2,6 +2,9 @@ extends ResourceCase
 ## The sounds the game makes by itself: steps, tool hits and uses, pickups, the hotbar, panels
 ## opening and closing. The audio service is real; what it plays is recorded.
 
+## Deep in winter, when snow can lie.
+const WINTER := 105
+
 var _audio: AudioService
 var _sounds: GameSounds
 var _player_view: PlayerView
@@ -216,3 +219,21 @@ func _repeat(event: StringName, times: int) -> Array[StringName]:
 	events.resize(times)
 	events.fill(event)
 	return events
+
+
+func test_a_step_on_snow_sounds_like_snow_and_on_clear_ground_like_the_ground() -> void:
+	var residency := ChunkResidency.new(_world)
+	_view.show_world(residency)
+	residency.load_chunk(Chunk.world_to_chunk(_state.player.tile()))
+	_view.finish_drawing()
+	_state.clock.day = WINTER
+	_view.refresh_looks(WINTER, 1.0, 0.0)
+	_view.finish_refresh()
+	_events.clear()
+	_player_view.stepped.emit()
+	assert_eq(_events, [&"step_snow"], "full snow cover")
+	_events.clear()
+	_view.refresh_looks(MIDSUMMER, 0.0, 0.0)
+	_view.finish_refresh()
+	_player_view.stepped.emit()
+	assert_eq(_events, [&"step_grass"], "no snow")
