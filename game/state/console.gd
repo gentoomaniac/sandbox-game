@@ -24,6 +24,15 @@ const COMMANDS := {
 			+ " you; farm animals and villagers stay."
 		),
 	],
+	"killall":
+	[
+		"killall <kind> | killall npc [<id>]",
+		(
+			"Remove every animal of a kind (the same kinds as spawn), or villagers (npc: those made"
+			+ " up; npc <id>: one named), from the game and the save. Wild animals are not saved:"
+			+ " others may come by the usual rules."
+		),
+	],
 	"weather":
 	[
 		"weather [clear|rain|snow|fog|wind|storm|thunder|auto]",
@@ -59,13 +68,17 @@ const ARGUMENTS := {
 	"tp": [&"number", &"number"],
 	"give": [&"item", &"number"],
 	"spawn": [&"animal", &"number"],
+	"killall": [&"animal"],
 	"weather": [&"weather"],
 	"snow": [&"snow"],
 	"skill": [&"skill", &"number"],
 }
-## `spawn npc` takes the id of a villager written by hand (see VillagerRules) where the other
-## kinds take a count, or a count.
-const SPAWN_NPC_ARGUMENTS: Array[StringName] = [&"animal", &"villager"]
+## The commands that take an animal kind, or `npc` and the id of a villager written by hand (see
+## VillagerRules): `spawn` puts them in the world and `killall` takes them out.
+const KIND_COMMANDS: Array[String] = ["spawn", "killall"]
+## `spawn npc` takes the id of a villager written by hand where the other kinds take a count, or a
+## count; `killall npc` takes that id.
+const NPC_ARGUMENTS: Array[StringName] = [&"animal", &"villager"]
 ## The argument kinds whose candidates `_candidates_text` lists: the names a command takes. Items
 ## are too many to list (Tab completes them) and the other kinds are numbers.
 const LISTED_KINDS: Array[StringName] = [&"animal", &"villager", &"weather", &"snow"]
@@ -91,6 +104,9 @@ const CLOSE_MATCH_SIMILARITY := 0.4
 ## Puts animals in view: takes a kind and a count, returns how many it placed. Set by the game
 ## scene, which has the animals; the console is plain logic.
 var wildlife_spawner := Callable()
+## Takes the wild animals of a kind away: takes a kind, returns how many it took. Set by the game
+## scene, as the spawner is.
+var wildlife_clearer := Callable()
 
 var _state: GameState
 
@@ -141,6 +157,8 @@ func run(line: String) -> Array[String]:
 		"reset":
 			_state.go_to_home_bed()
 			output = ["Back in bed"]
+		"killall":
+			output = _killall(arguments)
 		"spawn":
 			if arguments.is_empty():
 				output = _candidates_text("spawn")
@@ -177,11 +195,11 @@ func complete(line: String) -> String:
 	var kind := &"command"  # Past the last argument the kind stays empty: nothing to offer.
 	if word_index > 0:
 		var kinds: Array = ARGUMENTS.get(words[0], [])
-		if words[0] == "spawn" and words.size() > 1 and words[1] == NPC:
-			kinds = SPAWN_NPC_ARGUMENTS
+		if words[0] in KIND_COMMANDS and words.size() > 1 and words[1] == NPC:
+			kinds = NPC_ARGUMENTS
 		kind = kinds[word_index - 1] if word_index <= kinds.size() else &""
 	var offered := candidates(kind)
-	if word_index == 1 and words[0] == "spawn":
+	if word_index == 1 and words[0] in KIND_COMMANDS:
 		offered.append_array(candidates(&"villager"))  # `spawn antje` as well as `spawn npc antje`
 	offered = offered.filter(func(name: String) -> bool: return name.begins_with(typed))
 	if offered.is_empty():
@@ -243,18 +261,24 @@ func _help(arguments: PackedStringArray) -> Array[String]:
 func _candidates_text(command: String) -> Array[String]:
 	var lines: Array[String] = []
 	var kinds: Array = ARGUMENTS.get(command, [])
-	if command == "spawn":
+	if command in KIND_COMMANDS:
 		kinds = kinds + [&"villager"]
 	for kind: StringName in kinds:
-		if not LISTED_KINDS.has(kind):
-			continue
-		var line := "%s:" % kind
-		for name in candidates(kind):
-			if line.length() + name.length() + 2 > LIST_LINE_LENGTH:
-				lines.append(line)
-				line = " "
-			line += " %s," % name
-		lines.append(line.trim_suffix(","))
+		if LISTED_KINDS.has(kind):
+			lines.append_array(_candidates_lines(kind))
+	return lines
+
+
+## The names of one kind of argument, wrapped into lines that fit the log.
+func _candidates_lines(kind: StringName) -> Array[String]:
+	var lines: Array[String] = []
+	var line := "%s:" % kind
+	for name in candidates(kind):
+		if line.length() + name.length() + 2 > LIST_LINE_LENGTH:
+			lines.append(line)
+			line = " "
+		line += " %s," % name
+	lines.append(line.trim_suffix(","))
 	return lines
 
 
@@ -363,21 +387,25 @@ func _spawn(arguments: PackedStringArray) -> Array[String]:
 		return ["Spawned %d of %d %s" % [spawned, count, word]]
 	var kind := WildlifeRules.RABBIT if word == WILD_RABBIT else StringName(word)
 	if not WildlifeRules.KINDS.has(kind):
-		var lines: Array[String] = ["Unknown animal: %s" % word]
-		lines.append_array(_candidates_text("spawn"))
-		return lines
+		return _unknown("animal", word, "spawn")
 	if _state.is_inside() or not wildlife_spawner.is_valid():
 		return ["No animals here"]
 	var placed: int = wildlife_spawner.call(kind, count)
 	return ["Spawned %d of %d %s" % [placed, count, word]]
 
 
+## The answer to a name that is not a kind (`what` is "animal" or "villager"): it and the names that
+## the command takes.
+func _unknown(what: String, word: String, command: String) -> Array[String]:
+	var lines: Array[String] = ["Unknown %s: %s" % [what, word]]
+	lines.append_array(_candidates_text(command))
+	return lines
+
+
 func _spawn_villager(villager_id: String) -> Array[String]:
 	var npcs := _state.npcs
 	if not npcs.villagers.has(villager_id):
-		var lines: Array[String] = ["Unknown villager: %s" % villager_id]
-		lines.append_array(_candidates_text("spawn"))
-		return lines
+		return _unknown("villager", villager_id, "spawn")
 	var here := npcs.find(villager_id)
 	if here != null:
 		return ["%s is already here" % here.name]
@@ -387,6 +415,65 @@ func _spawn_villager(villager_id: String) -> Array[String]:
 	if npc == null:
 		return ["No room for %s here" % villager_id]
 	return ["Spawned %s" % npc.name]
+
+
+## Takes the animals of a kind, or one villager, out of the game and the state that is saved.
+## A bare `killall npc` removes the villagers made up (those with no id): the ones written by hand
+## are the village's, so each needs its id. A ridden horse is not removed from under the
+## player: they get off first, as the dismount needs a free spot that is theirs to choose.
+func _killall(arguments: PackedStringArray) -> Array[String]:
+	if arguments.is_empty():
+		return _candidates_text("killall")
+	var word := arguments[0]
+	if arguments.size() > 2 or (arguments.size() == 2 and word != NPC):
+		return ["Usage: %s" % COMMANDS["killall"][0]]
+	if word == NPC and arguments.size() == 1:
+		return _kill_made_up_villagers()
+	if word == NPC:
+		return _kill_villager(arguments[1])
+	if _state.npcs.villagers.has(word):
+		return _kill_villager(word)
+	return _kill_animals(word)
+
+
+func _kill_animals(word: String) -> Array[String]:
+	if LivestockRules.SPECIES.has(StringName(word)):
+		var horse := _state.player.horse
+		if horse != null and horse.species == StringName(word):
+			return ["You are riding a %s: get off first" % word]
+		return [_removed_text(_state.livestock.remove_species(StringName(word)), word)]
+	var kind := WildlifeRules.RABBIT if word == WILD_RABBIT else StringName(word)
+	if not WildlifeRules.KINDS.has(kind):
+		return _unknown("animal", word, "killall")
+	var cleared: int = wildlife_clearer.call(kind) if wildlife_clearer.is_valid() else 0
+	return [_removed_text(cleared, word) + " (wild animals are not saved: more may come)"]
+
+
+func _kill_made_up_villagers() -> Array[String]:
+	var removed := 0
+	var named: Array[String] = []
+	for npc in _state.npcs.all():
+		if npc.id.is_empty():
+			_state.npcs.remove(npc)
+			removed += 1
+		else:
+			named.append(npc.id)
+	var line := _removed_text(removed, NPC) + " (the named villagers stay: killall npc <id>"
+	return [line + (", here: %s)" % ", ".join(named) if not named.is_empty() else ")")]
+
+
+func _kill_villager(villager_id: String) -> Array[String]:
+	if not _state.npcs.villagers.has(villager_id):
+		return _unknown("villager", villager_id, "killall")
+	var npc := _state.npcs.find(villager_id)
+	if npc == null:
+		return ["%s is not in the world" % villager_id]
+	_state.npcs.remove(npc)
+	return ["Removed %s" % npc.name]
+
+
+func _removed_text(count: int, word: String) -> String:
+	return "Removed %d %s" % [count, word] if count > 0 else "No %s to remove" % word
 
 
 func _weather(arguments: PackedStringArray) -> Array[String]:

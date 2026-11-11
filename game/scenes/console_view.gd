@@ -47,10 +47,14 @@ func _ready() -> void:
 	_log.custom_minimum_size.y = VISIBLE_LOG_LINES * _log.get_line_height()
 
 
-## `wildlife_spawner` puts animals in view for the `spawn` command (see Console).
-func show_state(state: GameState, wildlife_spawner := Callable()) -> void:
+## `wildlife_spawner` puts animals in view for the `spawn` command and `wildlife_clearer` takes
+## them away for `killall` (see Console).
+func show_state(
+	state: GameState, wildlife_spawner := Callable(), wildlife_clearer := Callable()
+) -> void:
 	_console = Console.new(state)
 	_console.wildlife_spawner = wildlife_spawner
+	_console.wildlife_clearer = wildlife_clearer
 
 
 func is_open() -> bool:

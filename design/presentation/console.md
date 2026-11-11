@@ -15,7 +15,15 @@ Decided 2026-11-05. A text console for testing and cheats.
   it on). Later commands: `spawn` (villagers: `npc`; farm
   animals: `cow`, `sheep`, `chicken`, `rabbit`, `dog`, `cat`, `horse`; wild ones: `bird`,
   `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork`,
-  `geese`, `flying_geese`, `mouse`, `frog`), `weather`, `snow`, `crop`
+  `geese`, `flying_geese`, `mouse`, `frog`), `killall <kind>` (task 193: removes every animal of a
+  kind `spawn` knows, from the running game and from the saved state, and says how many;
+  `killall npc <id>`, or just `killall <id>`, removes that one villager of data/villagers.cfg with
+  their chat and memories; a bare `killall npc` removes every villager without an id (those made
+  up by `spawn npc` or the tables), says how many, and that the named ones stay and need their id;
+  a villager's home, trade and relatives are text in data/villagers.cfg, so nothing else holds on
+  to them; wild animals are not saved, so only those alive now go and the spawn rules may bring
+  others, which the answer says; a horse the player rides is not removed, the player gets off
+  first), `weather`, `snow`, `crop`
   (see `help`), `friendship [0..100]` (shows the friendship of the nearest animal that can be
   petted within 3 tiles, or sets it; task 173), `reset` (puts the player in the bed they wake in,
   inside or out), and
@@ -23,8 +31,8 @@ Decided 2026-11-05. A text console for testing and cheats.
   moves on, as when sleeping, so crops grow; the player's energy, tiredness, debuff and
   position are left alone).
 - Tab completes command names and every argument with a fixed set of values: item ids,
-  animal kinds, weather conditions, snow values. Each command lists its argument kinds in
-  one table in the console code; numbers are not completed. `help <command>` and a missing
+  animal kinds (also for `killall`), weather conditions, snow values. Each command lists its
+  argument kinds in one table in the console code; numbers are not completed. `help <command>` and a missing
   or unknown name (`spawn`, `spawn unicorn`) list the animal kinds, weather conditions and
   snow values from that same table.
 - Cheat toggles last for the session; they are not saved. A line in the HUD shows which

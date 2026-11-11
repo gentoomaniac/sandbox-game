@@ -269,7 +269,7 @@ func _connect_state_and_views() -> void:
 	_character_screen.show_player(_state.player)
 	_crafting_screen.show_crafting(Crafting.new(_state), _state.player.inventory)
 	_cheat_hud.show_cheats(_state.cheats)
-	_console_view.show_state(_state, _wildlife.spawn_in_view)
+	_console_view.show_state(_state, _wildlife.spawn_in_view, _wildlife.remove_kind)
 	# A teleport moves the player far: the camera jumps with them instead of gliding.
 	_console_view.command_ran.connect(
 		func() -> void:
