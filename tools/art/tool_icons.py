@@ -1,178 +1,323 @@
-"""The icons of the tools: hoe, axe, pickaxe, watering can, scythe, spade and hammer, at 32 px.
+"""The icons of the tools: hoe, axe, pickaxe, watering can, scythe, spade and hammer, at 32 px,
+in the five grades of tool_grades.py.
 
-Each lies on the diagonal from the bottom left to the top right, the classic item-icon pose:
-a round wooden handle 3 px thick (ash, lit on its upper left, the grain in streaks) with the
-working end at the top right. As art-style.md has them, the tools are of wood with iron only
-where they cut or strike: the iron is in the IRON ramp with its edge bright, so a better tool
-later is the same icon with that ramp swapped. The pickaxe is the Geest's pick for grubbing
-out the fieldstones of the till and splitting them, a point on one side and a broad chisel on
-the other; the spade is wooden with an iron shoe. The watering can is all copper, as cans
-were before tin-plate. Bodies by item id, outlined by items.icon.
+Each is a hand-drawn map of letters (see tool_grades.py for what they mean and `MAPS` below)
+on the diagonal from the bottom left to the top right, the classic item-icon pose: a round
+wooden handle, 4 px a row at a true 45 degrees (so its sides are even stairs), with the working
+end at the top right. The heads are built of straight lines at 45 degrees or square to the
+picture, never of turned or curved shapes rasterised at odd angles, so nothing is bent or
+smeared; the metal is flat, lit along its top and left, shaded along its bottom and right, with
+the edge its own line. The pickaxe is the Geest's pick for grubbing out the fieldstones of the
+till and splitting them, a point on one side and a broad chisel on the other; the spade is
+all iron, so its grade shows. The watering can is of the grade's metal too, a tinker's can of
+sheet iron with a hoop handle and a round rose. Bodies by item id, outlined by items.icon.
 """
 
-import math
-
-import numpy as np
-
-from items import COPPER, ICON, IRON, capsule, dots, edge_of, ellipse, limb, line, paint, polygon, shade
 from canvas import blank
+from items import ICON
+from tool_grades import GRADES, stamp
 
-# Ash for the handles, lit to dark... as a ramp, dark to light.
-ASH = ("soil_mid", "soil_light", "sand_light")
+# fmt: off
+MAPS = {
+    # A long handle, an iron neck off its top and the blade hanging from the neck's end as a
+    # flat plate, face to the viewer, its edge at the bottom.
+    "hoe": (
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "........................mmmmmmm.",
+        "........................msssssk.",
+        "......................mssssssk..",
+        ".....................mskmsssssk.",
+        "....................lwwdmsssssk.",
+        "...................lwwd.msssssk.",
+        "..................lwwd..eeeeeee.",
+        ".................lwwd...........",
+        "................ldwd............",
+        "...............ldwd.............",
+        "..............lwwd..............",
+        ".............lwwd...............",
+        "............lwwd................",
+        "...........lwwd.................",
+        "..........lwwd..................",
+        ".........ldwd...................",
+        "........ldwd....................",
+        ".......lwwd.....................",
+        "......lwwd......................",
+        ".....lwwd.......................",
+        "....lwwd........................",
+        "...lwwd.........................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+    ),
+    # The bit flares up-left of the handle's top to a straight edge, the eye block wraps the
+    # handle's top and the poll is its short end down-right.
+    "axe": (
+        "................................",
+        "................................",
+        "....................e...........",
+        "...................emm..........",
+        "..................essm..........",
+        ".................esssm..........",
+        "................esssssm.........",
+        "...............essssssm.........",
+        "..............esssssssm.........",
+        ".............esssssssssm........",
+        "..............kkssssssssm.......",
+        ".................kksssssssk.....",
+        "...................ksssssk......",
+        ".....................kssk.......",
+        ".................lwwd...........",
+        "................lwwd............",
+        "...............ldwd.............",
+        "..............ldwd..............",
+        ".............lwwd...............",
+        "............lwwd................",
+        "...........lwwd.................",
+        "..........lwwd..................",
+        ".........ldwd...................",
+        "........ldwd....................",
+        ".......lwwd.....................",
+        "......lwwd......................",
+        ".....lwwd.......................",
+        "....lwwd........................",
+        "...lwwd.........................",
+        "................................",
+        "................................",
+        "................................",
+    ),
+    # A bar across the handle's top, both arms bending down towards the handle's foot, a
+    # chisel on the upper left and a point on the lower right.
+    "pickaxe": (
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "..........mm....................",
+        "...........kssm.................",
+        ".............kssm...............",
+        "..............kssm..............",
+        "...............kssm.............",
+        "................ksssm...........",
+        ".................kssssm.........",
+        "..................ksssssm.......",
+        "....................kssssm......",
+        "..................lwwdkssm......",
+        ".................lwwd..kssm.....",
+        "................lwwd....kssm....",
+        "...............ldwd......ksm....",
+        "..............ldwd.......ksm....",
+        ".............lwwd.........km....",
+        "............lwwd..........ke....",
+        "...........lwwd.................",
+        "..........lwwd..................",
+        ".........ldwd...................",
+        "........ldwd....................",
+        ".......lwwd.....................",
+        "......lwwd......................",
+        ".....lwwd.......................",
+        "....lwwd........................",
+        "...lwwd.........................",
+        "................................",
+        "................................",
+        "................................",
+    ),
+    # A heavy head across the handle's top, a block at 45 degrees with the striking faces at
+    # its ends and the handle's end showing through the eye.
+    "hammer": (
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "...................emm..........",
+        "..................esssm.........",
+        ".................esssssmw.......",
+        ".................kssssssmw......",
+        "..................ksssssssm.....",
+        "...................ksssssssm....",
+        "....................ksssssssm...",
+        ".....................ksssssse...",
+        "..................lwwdkssssse...",
+        ".................lwwd..kssse....",
+        "................lwwd....kse.....",
+        "...............ldwd.............",
+        "..............ldwd..............",
+        ".............lwwd...............",
+        "............lwwd................",
+        "...........lwwd.................",
+        "..........lwwd..................",
+        ".........ldwd...................",
+        "........ldwd....................",
+        ".......lwwd.....................",
+        "......lwwd......................",
+        ".....lwwd.......................",
+        "....lwwd........................",
+        "...lwwd.........................",
+        "................................",
+        "................................",
+        "................................",
+    ),
+    # An iron spade blade on the lower left of a short handle, a T grip across its top.
+    "shovel": (
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "..................lw............",
+        "...................lw...........",
+        "....................lw..........",
+        ".....................lw.........",
+        "..................lwwdlw........",
+        ".................lwwd..lw.......",
+        "................lwwd....ld......",
+        "...............ldwd.............",
+        "..............ldwd..............",
+        ".............lwwd...............",
+        "............lwwd................",
+        "...........lwwd.................",
+        "........mmmmm...................",
+        ".......msssssk..................",
+        "......mssssssk..................",
+        ".....msssssssk..................",
+        "....msssssssk...................",
+        "...msssssssk....................",
+        "..mssssssssk....................",
+        ".mssssssssk.....................",
+        ".essssssssk.....................",
+        "..eessssssk.....................",
+        "...eeeeessk.....................",
+        "......eeeek.....................",
+        "................................",
+    ),
+    # A long snath with a nib, the blade off its top sweeping left and down in a thin crescent,
+    # its back lit and its edge along the inner side.
+    "scythe": (
+        "................................",
+        "................................",
+        "................................",
+        ".................mmmmmmmmm......",
+        ".............mmmmssssssssk......",
+        "..........mmmsssssseeesssk......",
+        "........mmssssseeee...sssk......",
+        "......mmsssseee.......lwwd......",
+        "....mmssseee.........lwwd.......",
+        "...msseee...........lwwd........",
+        "....ee.............lwwd.........",
+        "..............lw..lwwd..........",
+        "...............lwlwwd...........",
+        "................ldwd............",
+        "...............ldwd.............",
+        "..............lwwd..............",
+        ".............lwwd...............",
+        "............lwwd................",
+        "...........lwwd.................",
+        "..........lwwd..................",
+        ".........lwwd...................",
+        "........ldwd....................",
+        ".......ldwd.....................",
+        "......lwwd......................",
+        ".....lwwd.......................",
+        "....lwwd........................",
+        "...lwwd.........................",
+        "..lwwd..........................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+    ),
+    # A tall round can with two bands and an open top, a hoop handle arching over it, a spout
+    # from its lower right rising at 45 degrees to a round rose pricked with holes.
+    "watering_can": (
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        ".........................mmmm...",
+        "........................mmsssk..",
+        "........mmmmmmm.........mksksk..",
+        "......mm.......sk.......mssksk..",
+        ".....ms.........sk......mkskkk..",
+        ".....ms.........sk.......kkkk...",
+        ".....ms.........sk........msk...",
+        "......mmmmmmmmmmm........msk....",
+        "......mkkkkkkkkks.......msk.....",
+        ".....msssssssssssk.....msk......",
+        ".....msssssssssssk....msk.......",
+        ".....msssssssssssk...msk........",
+        ".....mkkkkkkkkkkkk..msk.........",
+        ".....msssssssssssk.msk..........",
+        ".....mssssssssssskmsk...........",
+        ".....msssssssssssmsk............",
+        ".....mssssssssssssk.............",
+        ".....msssssssssssk..............",
+        ".....mkkkkkkkkkkkk..............",
+        ".....msssssssssssk..............",
+        ".....msssssssssssk..............",
+        ".....msssssssssssk..............",
+        ".....msssssssssssk..............",
+        "......kkkkkkkkkkk...............",
+        "................................",
+        "................................",
+        "................................",
+    ),
+}
+# fmt: on
 
-
-def handle(picture, start, end, radius=1.6):
-    """A round handle from `start` to `end`, lit on its upper left, a streak of grain on it."""
-    mask = capsule(start, end, radius)
-    shade(picture, mask, ASH, radius=2)
-    (x0, y0), (x1, y1) = start, end
-    for t in (0.3, 0.62):
-        x, y = x0 + (x1 - x0) * t, y0 + (y1 - y0) * t
-        dots(picture, [(round(x), round(y)), (round(x + 1), round(y - 1))], "soil_mid")
-    return mask
-
-
-def along(start, end):
-    """The pixels' distance along the line from `start` towards `end` and across it (positive
-    to the left of the way), as arrays as big as the icon."""
-    ys, xs = np.mgrid[0:ICON, 0:ICON]
-    (x0, y0), (x1, y1) = start, end
-    length = math.hypot(x1 - x0, y1 - y0)
-    ux, uy = (x1 - x0) / length, (y1 - y0) / length
-    dx, dy = xs + 0.5 - x0, ys + 0.5 - y0
-    return dx * ux + dy * uy, dx * uy - dy * ux
-
-
-def iron(picture, mask):
-    """Forged iron, flat but for its rims: lit along its top and left, dark along its bottom
-    and right."""
-    paint(picture, mask, IRON[1])
-    paint(picture, edge_of(mask, "bottom") | edge_of(mask, "right"), IRON[0])
-    paint(picture, edge_of(mask, "top") | edge_of(mask, "left"), IRON[2])
-
-
-def bright_edge(picture, mask, side_mask):
-    """Gives the pixels of `mask` in `side_mask` the bright edge of the iron."""
-    paint(picture, mask & side_mask, IRON[3])
-
-
-def hoe():
-    """A long handle, a thin iron neck off its top to the right and a flat blade at the neck's
-    end, hanging down, its edge bright."""
-    picture = blank(ICON)
-    handle(picture, (4, 29), (21, 8))
-    iron(picture, capsule((20, 7), (26, 6), 1.3))
-    blade = polygon([(23, 6), (30, 6), (30, 18), (22, 17)])
-    iron(picture, blade)
-    line(picture, 22, 17, 30, 18, IRON[3])
-    line(picture, 25, 8, 25, 14, IRON[2])
-    return picture
-
-
-def axe():
-    """An axe head on the left of the handle's top, fanning out to a curved edge, bright; the
-    short poll on the right."""
-    picture = blank(ICON)
-    handle(picture, (5, 29), (21, 6))
-    head = polygon([(24, 3), (24, 10), (17, 10), (10, 15), (5, 16), (3, 10), (5, 2), (10, 1), (17, 4)])
-    iron(picture, head)
-    edge = ellipse(17, 8.5, 13, 10) & ~ellipse(18.5, 8.5, 13, 10)
-    bright_edge(picture, head, edge)
-    line(picture, 8, 6, 15, 6, IRON[2])
-    iron(picture, polygon([(24, 4), (27, 4), (27, 10), (24, 10)]))
-    return picture
-
-
-def pickaxe():
-    """The pick of the Geest: a curved iron head across the top of the handle, pointed on one
-    side and a broad chisel on the other."""
-    picture = blank(ICON)
-    handle(picture, (5, 29), (19, 11))
-    centre = np.array((19.0, 11.0))
-    way = np.array((0.707, 0.707))
-    bow = np.array((0.707, -0.707))
-    points = [tuple(centre + way * s + bow * 3.5 * (1 - (s / 13) ** 2)) for s in (-13, -7, 0, 7, 13)]
-    iron(picture, limb(points, [2.8, 2.4, 2.8, 1.7, 0.6]))
-    chisel = points[0]
-    line(picture, round(chisel[0]) - 3, round(chisel[1]) + 1, round(chisel[0]) + 1, round(chisel[1]) - 3, IRON[3])
-    dots(picture, [(round(points[-1][0]) - 1, round(points[-1][1]) - 1)], IRON[3])
-    return picture
-
-
-def scythe():
-    """A long snath with a grip peg, and a long curved blade off its top to the left, its
-    edge bright."""
-    picture = blank(ICON)
-    handle(picture, (5, 30), (24, 5), radius=1.4)
-    peg = capsule((10, 19), (14, 22), 1.2)
-    shade(picture, peg, ASH, radius=1)
-    points = [(25, 4), (17, 2), (9, 4), (4, 8), (2, 13)]
-    blade = limb(points, [2.6, 2.3, 1.8, 1.2, 0.5])
-    iron(picture, blade)
-    under = limb([(x + 0.7, y + 1.8) for x, y in points], [1.4, 1.2, 0.9, 0.6, 0.2])
-    bright_edge(picture, blade, under)
-    return picture
-
-
-def shovel():
-    """A wooden spade with an iron shoe: a T-grip at the top right, the square blade at the
-    bottom left, its iron-shod edge bright."""
-    picture = blank(ICON)
-    handle(picture, (14, 18), (24, 8))
-    shade(picture, capsule((21, 4), (28, 11), 1.5), ASH, radius=1)
-    run, across = along((15, 17), (4, 28))
-    half = np.minimum(1.8 + run * 1.6, 5.2)
-    blade = (run >= 0) & (run < 15) & (np.abs(across) < half)
-    shade(picture, blade, ASH, radius=2)
-    paint(picture, blade & (np.abs(across) < 0.8) & (run > 3) & (run < 10), "soil_mid")
-    iron(picture, blade & (run > 11))
-    bright_edge(picture, blade, run > 13.8)
-    return picture
-
-
-def hammer():
-    """A heavy iron head across the top of the handle, its striking faces bright, a wedge in
-    its eye."""
-    picture = blank(ICON)
-    handle(picture, (5, 29), (20, 11))
-    head = polygon([(27, 13), (23, 17), (13, 7), (17, 3)])
-    iron(picture, head)
-    line(picture, 13, 7, 17, 3, IRON[3])
-    line(picture, 14, 7, 17, 4, IRON[3])
-    dots(picture, [(20, 10), (21, 9)], "soil_light")
-    return picture
-
-
-def watering_can():
-    """A copper can of the old kind: a tall round body with bands, a handle arching over the
-    top, and a long spout from its foot to a big round rose, its face pricked with holes."""
-    picture = blank(ICON)
-    arch = limb([(4, 15), (6, 7), (12, 4), (18, 8), (19, 13)], [1.4] * 5)
-    shade(picture, arch, COPPER[:3], radius=1)
-    spout = capsule((18, 25), (26, 10), 1.7, 1.1)
-    shade(picture, spout, COPPER[:3], radius=1)
-    body = ellipse(11.5, 20, 8.5, 9.5)
-    shade(picture, body, COPPER, radius=4)
-    for y in (14, 26):
-        line(picture, 4, y, 19, y, "ochre_dark")
-    paint(picture, ellipse(11.5, 11.5, 4, 1.3), "umber")
-    rose = ellipse(27, 7.5, 3.8, 4.8, angle=-35)
-    shade(picture, rose, COPPER[1:], radius=1)
-    dots(picture, [(26, 6), (28, 7), (27, 9), (26, 8), (28, 5)], "umber")
-    return picture
-
-
-ICONS = {
-    "hoe": hoe,
-    "axe": axe,
-    "pickaxe": pickaxe,
-    "watering_can": watering_can,
-    "scythe": scythe,
-    "shovel": shovel,
-    "hammer": hammer,
+# Where the grades' marks go on each body: the rust's pits in clusters of one or two, the
+# crack a short hairline, the keen edge a second line just inside the edge and a glint or two.
+MARKS = {
+    "hoe": {
+        "p": [(26, 8), (28, 10)], "q": [(27, 8)],
+        "c": [(27, 8), (27, 9), (28, 10)],
+        "g": [(25, 11), (26, 11), (27, 11), (28, 11)],
+    },
+    "axe": {
+        "p": [(18, 7), (21, 9)], "q": [(19, 7)],
+        "c": [(17, 6), (17, 7), (18, 8)],
+        "g": [(19, 4), (18, 5), (17, 6), (16, 7), (15, 8)],
+    },
+    "pickaxe": {
+        "p": [(19, 10), (22, 12)], "q": [(20, 10)],
+        "c": [(21, 10), (21, 11)],
+        "g": [(10, 4), (11, 4), (27, 18)],
+    },
+    "hammer": {
+        "p": [(20, 8), (24, 11)], "q": [(21, 8)],
+        "c": [(22, 9), (23, 10), (23, 11)],
+        "g": [(19, 6), (18, 7), (27, 13), (26, 14)],
+    },
+    "shovel": {
+        "p": [(8, 22), (5, 25), (8, 27)], "q": [(9, 22)],
+        "c": [(7, 23), (7, 24), (8, 25)],
+        "g": [(2, 27), (4, 28), (5, 28), (6, 28), (8, 29)],
+    },
+    "scythe": {
+        "p": [(13, 5), (19, 4)], "q": [(14, 5)],
+        "c": [(17, 4), (18, 5)],
+        "g": [(12, 6), (13, 6), (14, 6), (15, 5), (16, 5), (17, 5)],
+    },
+    "watering_can": {
+        "p": [(8, 15), (14, 21), (7, 25)], "q": [(9, 15)],
+        "c": [(11, 19), (11, 20), (12, 21)],
+        "g": [(26, 6), (6, 14), (6, 15)],
+    },
 }
 
 
-def icons():
-    """The bodies of the tools' icons, by item id."""
-    return {item: draw() for item, draw in ICONS.items()}
+def icon_body(item, grade):
+    return stamp(blank(ICON), 0, 0, MAPS[item], grade, MARKS[item])
+
+
+def icons(grade=GRADES[0]):
+    """The bodies of the tools' icons in one grade, by item id."""
+    return {item: icon_body(item, grade) for item in MAPS}

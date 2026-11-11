@@ -209,9 +209,18 @@ with its folds, iron flat but for a lit top and left rim, a dark bottom and righ
 bright edge, copper for the watering can. Each is a body outlined all round in the darkest shade
 of its own ramp (`items.RIMS`), none where its edge already is that shade. The UI shows them at
 half size, in the 20 UI pixel slots, so an icon's pixel is as big as a world pixel at the
-widest zoom. The tools lie on the diagonal, wooden with iron only at the edge: the spade has an
-iron shoe, and the pickaxe is the Geest's pick (a point and a chisel) that grubbed the
-fieldstones of the till out of the fields and split them. The seed sacks are one linen sack,
+widest zoom. The tools (task 206, tool_icons.py in both art sets and tool_grades.py) are
+hand-drawn maps of letters, one per region, on the diagonal from the bottom left to the top
+right: the handle at a true 45 degrees, the heads of straight lines at 45 degrees or square to
+the picture, never curves or turned shapes rasterised at odd angles, which is what made the
+earlier tools look bent and smeared. The metal is flat, lit on its top and left, shaded on its
+bottom and right, with the edge its own line. The same map comes in five grades, told apart at
+a glance by the metal: rusty iron (dull brown-grey with pits of rust on an old dark handle),
+iron (plain grey), brittle steel (lighter, cold blue, with a hairline crack), steel (bright and
+clean) and sharp steel (near white with a keen two-pixel edge). So the spade is all iron and
+the watering can a tinker's can of the grade's metal, and the pickaxe is the Geest's pick (a
+point and a chisel) that grubbed the fieldstones of the till out of the fields and split them.
+The game shows the grades once they are items (task 207). The seed sacks are one linen sack,
 told apart by the crop's string, its produce painted on the front at half size and its seeds
 spilled in front. An item on the ground is its icon's body at half size (16 px), outlined the
 same way, on a contact shadow the game draws. The items that place a world object (the chest,
