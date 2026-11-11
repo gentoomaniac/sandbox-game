@@ -211,10 +211,13 @@ of its own ramp (`items.RIMS`), none where its edge already is that shade. The U
 half size, in the 20 UI pixel slots, so an icon's pixel is as big as a world pixel at the
 widest zoom. The tools (task 206, tool_icons.py in both art sets and tool_grades.py) are
 hand-drawn maps of letters, one per region, on the diagonal from the bottom left to the top
-right: the handle at a true 45 degrees, the heads of straight lines at 45 degrees or square to
-the picture, never curves or turned shapes rasterised at odd angles, which is what made the
-earlier tools look bent and smeared. The metal is flat, lit on its top and left, shaded on its
-bottom and right, with the edge its own line. The same map comes in five grades, told apart at
+right: the handle at a true 45 degrees and the head square to it in the same view, built of
+lines along the handle and across it (true 45 degree stairs both ways, the scythe's blade one
+even arc), never a face-on head on a diagonal handle and never curves or turned shapes
+rasterised at odd angles, which is what made the earlier tools look bent, twisted and smeared.
+The watering can stands upright: a round body, a straight spout, the rose on the spout's line.
+The metal is flat, lit on its top and left, shaded on its bottom and right, with the edge its
+own line. The same map comes in five grades, told apart at
 a glance by the metal: rusty iron (dull brown-grey with pits of rust on an old dark handle),
 iron (plain grey), brittle steel (lighter, cold blue, with a hairline crack), steel (bright and
 clean) and sharp steel (near white with a keen two-pixel edge). So the spade is all iron and

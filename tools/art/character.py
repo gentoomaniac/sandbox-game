@@ -681,16 +681,13 @@ def head(canvas, x, top, outward, rows, handle_column, grade):
 
 # fmt: off
 HOE_HEAD = (
-    "..mmmmm",
-    "kkssssk",
-    "..ssssk",
-    "..eeeee",
+    "..mmmmme",
+    "kkssssse",
 )
 SPADE_GRIP = ("lwwd",)
 SPADE_BLADE = (
     ".kssk.",
-    "mssssk",
-    "mssssk",
+    ".mssk.",
     "mssssk",
     "mssssk",
     "mssssk",
@@ -699,12 +696,13 @@ SPADE_BLADE = (
     "mssssk",
     "eeeeek",
     ".eeee.",
+    "..ee..",
 )
 SCYTHE_BLADE = (
-    ".mmmmm..",
-    "kkesssmm",
-    "...eesss",
-    ".....eee",
+    "..mmmm..",
+    "kkeessm.",
+    "....eesm",
+    "......ee",
 )
 SCYTHE_NIB = (
     "..lw",
@@ -718,10 +716,9 @@ AXE_HEAD = (
     "....kke",
 )
 PICK_HEAD = (
-    "..mmmm..",
-    ".mskksm.",
-    "ks....sk",
-    "e......e",
+    ".mmmmmmm.",
+    "ssskkssss",
+    "e.......e",
 )
 HAMMER_HEAD = (
     "emmmmme",
@@ -732,22 +729,23 @@ HAMMER_HEAD = (
 CAN = (
     "..kk.....",
     ".kkkk....",
-    "mmmmmm.mm",
+    ".mmmm..mm",
     "mkkkkk.sk",
     "mssssk..s",
     "mkkkkk.s.",
     "mssssks..",
     "mssssk...",
     "mssssk...",
-    "kkkkkk...",
+    ".kkkk....",
 )
 # fmt: on
 
 
 def hoe(canvas, x, y, outward, grade):
-    """A long shaft, an iron neck off its top and the flat blade hanging from it outward."""
+    """A long shaft with an iron socket at its top and the blade a bar square to it, pointing
+    outward, its edge at the far end."""
     handle(canvas, x, y - 17, 62, grade)
-    head(canvas, x, y - 21, outward, HOE_HEAD, 0, grade)
+    head(canvas, x, y - 19, outward, HOE_HEAD, 0, grade)
 
 
 def shovel(canvas, x, y, outward, grade):
@@ -758,8 +756,8 @@ def shovel(canvas, x, y, outward, grade):
 
 
 def scythe(canvas, x, y, outward, grade):
-    """A snath taller than the figure with a nib, the blade off its top sweeping outward and
-    down, its edge on the inner side."""
+    """A snath taller than the figure with a nib, the blade an even curve off its top sweeping
+    outward and down, its edge on the inner side."""
     handle(canvas, x, y - 27, 62, grade)
     head(canvas, x, y - 29, outward, SCYTHE_BLADE, 0, grade)
     head(canvas, x, y - 11, outward, SCYTHE_NIB, 0, grade)
@@ -773,8 +771,8 @@ def axe(canvas, x, y, outward, grade):
 
 
 def pickaxe(canvas, x, y, outward, grade):
-    """Held at the throat of the handle: the head across its top, both arms bent down to their
-    points."""
+    """Held at the throat of the handle: the head a bar square across its top, the points at
+    both ends turned down."""
     handle(canvas, x, y - 7, y + 10, grade)
     head(canvas, x, y - 9, outward, PICK_HEAD, 3, grade)
 
