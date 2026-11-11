@@ -4857,3 +4857,24 @@ config."
   over many harvests, the seed chance, and the config check; README and design/farming notes.
 
 Done: 2026-11-11. data/crops.cfg gives each crop `yield_min`, `yield_max`, `yield_average` and `seed_chance` (replacing `yield`); a harvest draws a whole number in the range whose long-run mean is the average, and a seed only by chance. The dice are `GameState.harvest_rng` (not saved), injected in tests. Defaults: grains and pumpkin 0.7 seed chance, roots and flax 0.5 to 0.6, regrowing crops 0.2; carrots 2 to 3 averaging 2.3. Values open to the user's tuning.
+
+## 179. Picked-up items go into the hotbar first, then the backpack
+
+- [x] Done
+
+The user, 2026-11-11: "picked up items should first be placed in the quick bar, if that one is
+full in the inventory."
+- Check what happens today: Inventory.add (game/state/item_slots.gd) puts items onto existing
+  stacks with room first (anywhere, the backpack too), then into free slots in
+  `_free_slot_order`, which lists the hotbar first but moves the selected slot to the very end;
+  ground pickups, harvests, foraging and other gains may go through other paths. Find where the
+  user's case differs (e.g. a stack in the backpack taking the item before a free hotbar slot, or
+  the selected slot being skipped) and decide with the rule: hotbar first (stacks there, then free
+  hotbar slots), then the backpack. Whether the held (selected) slot should take new items or stay
+  last, and whether a matching stack in the backpack should beat a free hotbar slot: pick a
+  default, explain, and the user confirms.
+- Same rule for every way the player gains items (pickups, harvest, forage, eggs, crafting
+  output if it goes to the inventory).
+- Tests for the order; README line.
+
+Done: 2026-11-11. Before, a matching stack anywhere (the backpack too) took an item before a free hotbar slot. `Inventory._add` now fills: hotbar stacks, free hotbar slots but the selected one, backpack stacks, free backpack slots, and the empty selected slot last (an empty hand stays empty; the user to confirm). Every gain path goes through it; chest takes, drag and shift-click keep their explicit order. `can_exchange` tries the same order (`_new_trial()`).

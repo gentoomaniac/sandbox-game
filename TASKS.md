@@ -185,25 +185,6 @@ Settings (and off), muted in test runs (comes with task 184). Rules in data/musi
   pieces like the test reel are kept for special events (festivals, a market day). Later: stems
 (AudioStreamSynchronized), more pieces, the season and weather choices.
 
-## 179. Picked-up items go into the hotbar first, then the backpack
-
-- [ ] Done
-
-The user, 2026-11-11: "picked up items should first be placed in the quick bar, if that one is
-full in the inventory."
-- Check what happens today: Inventory.add (game/state/item_slots.gd) puts items onto existing
-  stacks with room first (anywhere, the backpack too), then into free slots in
-  `_free_slot_order`, which lists the hotbar first but moves the selected slot to the very end;
-  ground pickups, harvests, foraging and other gains may go through other paths. Find where the
-  user's case differs (e.g. a stack in the backpack taking the item before a free hotbar slot, or
-  the selected slot being skipped) and decide with the rule: hotbar first (stacks there, then free
-  hotbar slots), then the backpack. Whether the held (selected) slot should take new items or stay
-  last, and whether a matching stack in the backpack should beat a free hotbar slot: pick a
-  default, explain, and the user confirms.
-- Same rule for every way the player gains items (pickups, harvest, forage, eggs, crafting
-  output if it goes to the inventory).
-- Tests for the order; README line.
-
 ## 180. Ringing the bell in the bell frame
 
 - [ ] Done
