@@ -435,12 +435,6 @@ func _is_tideway(world_pos: Vector2i, out: float) -> bool:
 	return absf(world_pos.y + 0.5 - middle) < width / 2.0
 
 
-## Whether a tile is on the coast or within the reach of its marsh: where the coast changed the
-## land of the worlds made before it (see SaveFile).
-func is_by_the_coast(world_pos: Vector2i) -> bool:
-	return _is_within_coast(world_pos, _marsh_reach)
-
-
 ## Whether a tile is in the marsh: the low land along the floodplain and behind the sea dyke, as
 ## far as its reach.
 func _is_marsh(world_pos: Vector2i, river_distance: float) -> bool:

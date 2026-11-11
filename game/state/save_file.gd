@@ -2,7 +2,7 @@ class_name SaveFile
 extends RefCounted
 ## The save on disk: one JSON file per world, `{"version": VERSION, "game": <GameState.to_dict>}`.
 ## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step
-## (see `_upgrade_from_version_17` and so on). Older ones are refused.
+## (see `_upgrade_from_version_18` and so on). Older ones are refused.
 ##
 ## How to add a save field (or change one):
 ## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
@@ -22,16 +22,9 @@ extends RefCounted
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
 const VERSION := 27
-## The oldest version we still upgrade.
-const OLDEST_VERSION := VERSION - 10
-## How far around the buildings and the player's objects, and around their tilled fields, the
-## coast gives way in a version 17 world (see `_home_tiles`): an old farm keeps its yard.
-const UPGRADE_CLEARANCE := 3
-const UPGRADE_FIELD_MARGIN := 2
-## The ground of the coast, which an old home gives back as grass (see `_clear_new_land`).
-const COAST_TERRAINS: Array[Tile.Terrain] = [
-	Tile.Terrain.MUD, Tile.Terrain.SALT_MARSH, Tile.Terrain.SEA, Tile.Terrain.WARFT
-]
+## The oldest version we still upgrade. Nine steps back, for the next version (task 177) makes
+## its step the tenth.
+const OLDEST_VERSION := VERSION - 9
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -195,8 +188,6 @@ static func copy_aside(path: String, backup: String) -> String:
 
 ## Brings the data of a save of `version` up to the current one.
 static func _upgrade(game: Dictionary, version: int) -> void:
-	if version <= 17:
-		_upgrade_from_version_17(game)
 	if version <= 18:
 		_upgrade_from_version_18(game)
 	if version <= 19:
@@ -215,71 +206,6 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_25(game)
 	if version <= 26:
 		_upgrade_from_version_26(game)
-
-
-## Where the player has made a home in a world: around the buildings and around what the player
-## put down or changed (UPGRADE_CLEARANCE tiles out), over the tilled fields (their bounding box
-## and UPGRADE_FIELD_MARGIN tiles more), under the items on the ground and where the player
-## stands.
-static func _home_tiles(game: Dictionary) -> Dictionary[Vector2i, bool]:
-	var world: Dictionary = game["world"]
-	var kept: Dictionary[Vector2i, bool] = {}
-	for building: Dictionary in world["buildings"]:
-		var type := StringName(building["type"])
-		var footprint: Vector2i = BuildingTypes.TYPES[type]["footprint"]
-		var origin := SaveCodec.vector_from_json(building["origin"])
-		_keep(kept, Rect2i(origin, footprint).grow(UPGRADE_CLEARANCE))
-	for edit: Dictionary in world["object_edits"]:
-		if edit["object"] != null:
-			var object := WorldObject.from_dict(edit["object"])
-			var footprint: Vector2i = object.type_data()["footprint"]
-			_keep(kept, Rect2i(object.pos, footprint).grow(UPGRADE_CLEARANCE))
-	var terrain_edits: Array = world["terrain_edits"]
-	var fields := Rect2i()
-	for edit: Array in terrain_edits:
-		var tile := Rect2i(SaveCodec.vector_from_json(edit), Vector2i.ONE)
-		fields = tile if fields.size == Vector2i.ZERO else fields.merge(tile)
-	if not terrain_edits.is_empty():
-		_keep(kept, fields.grow(UPGRADE_FIELD_MARGIN))
-	for ground_item: Dictionary in world["ground_items"]:
-		kept[Vector2i(SaveCodec.float_vector_from_json(ground_item["position"]).floor())] = true
-	_keep(
-		kept, PlayerState.body_tiles(SaveCodec.float_vector_from_json(game["player"]["position"]))
-	)
-	return kept
-
-
-## Clears the land the generator makes now off `tiles` of a saved world, as if the player had
-## cleared it: the generated objects are taken off, and a ditch or the ground of the coast (the
-## foreshore, a Warft) is grass. What the player changed on a tile stays as it is.
-static func _clear_new_land(world: Dictionary, generator: WorldGenerator, tiles: Array) -> void:
-	var edited_terrain: Dictionary[Vector2i, bool] = {}
-	for edit: Array in world["terrain_edits"]:
-		edited_terrain[SaveCodec.vector_from_json(edit)] = true
-	var edited_objects: Dictionary[Vector2i, bool] = {}
-	for edit: Dictionary in world["object_edits"]:
-		edited_objects[SaveCodec.vector_from_json(edit["pos"])] = true
-	for tile: Vector2i in tiles:
-		var terrain := generator.terrain_at(tile)
-		var is_new_ground := generator.is_ditch(tile) or terrain in COAST_TERRAINS
-		if not edited_terrain.has(tile) and is_new_ground:
-			world["terrain_edits"].append(
-				SaveCodec.vector_to_json(tile) + [SaveCodec.terrain_to_json(Tile.Terrain.GRASS)]
-			)
-		if not edited_objects.has(tile) and generator.object_type_at(tile, terrain) != &"":
-			world["object_edits"].append({"pos": SaveCodec.vector_to_json(tile), "object": null})
-
-
-## Version 17 worlds were generated without the coast (task 61): the foreshore with its salt
-## marsh, tidal mud, tideways and sea, the sea dyke, Warften and Ewers, and the marsh reaching
-## inland from the dyke with its ditches and alders. Where the player has made a home within its
-## reach (see `_home_tiles`), it gives way: the ground is
-## grass and what the generator puts there now is taken off. Further from home an old world gets
-## the coast; a home away from it is left as it was.
-static func _upgrade_from_version_17(game: Dictionary) -> void:
-	var generator := WorldGenerator.new(int(game["world"]["seed"]))
-	var by_the_coast := _home_tiles(game).keys().filter(generator.is_by_the_coast)
-	_clear_new_land(game["world"], generator, by_the_coast)
 
 
 ## Version 18 kept no more of who a villager is than their name, sex and look: each is given an
@@ -373,9 +299,3 @@ static func _upgrade_from_version_26(game: Dictionary) -> void:
 		animal["friendship"] = 0
 		animal["last_petted_day"] = 0
 		animal["last_petted_asleep_day"] = 0
-
-
-static func _keep(kept: Dictionary[Vector2i, bool], area: Rect2i) -> void:
-	for y in range(area.position.y, area.end.y):
-		for x in range(area.position.x, area.end.x):
-			kept[Vector2i(x, y)] = true

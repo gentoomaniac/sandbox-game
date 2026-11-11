@@ -35,7 +35,6 @@
     world object on 7x1 tiles, to look at; it blocks the way and no tool takes it. Its hull is
     about seven tiles long and its mast more than twice a person's height (task 111; it was held
     to one object cell, 3x1 tiles, before), still a little smaller than a real one.
-  - **Old worlds:** save version 18 lets the coast give way where the player has made a home
-    within its reach (the foreshore and the marsh inland of the dyke), as version 10 did for the
-    worked land: the ground there is grass and the generated objects are taken off. A home away
-    from the coast is left as it was.
+  - **Old worlds:** saves from before the coast (version 17 and older) are no longer read (see
+    [Saving](../tech/saving.md)); the upgrade that let the coast give way around an old home went
+    with them.
