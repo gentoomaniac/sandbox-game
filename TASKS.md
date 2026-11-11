@@ -490,6 +490,23 @@ should stay away from NPC's and buildings, except mice maybe."
 - Tests: no wild animal on a building tile over play and spawning; a rabbit or deer moves away from
   a villager; mice may stay near a house; the config check. Design note on wildlife.
 
+## 202. Storks come too often
+
+- [ ] Done
+
+The user, 2026-11-11: "Storks spawn too frequent"
+- Wild storks today (data/wildlife.cfg): `[stork]` (hunting on wet ground, cap 2, spawn_chance
+  0.03, spring and summer) and `[roof_stork]` (on a roof near the view, cap 2, spawn_chance 0.02);
+  plus the nest pairs of task 152, which belong to their nest and are not counted.
+- Find out what the player sees as "too often": how many storks are about at once and how often a
+  new one flies in, in spring and summer, near the village and the wet meadows; whether settle on
+  skip or chunk streaming tops them up again and again, or a stork that flies off is replaced at
+  once. Measure it (a short headless run counting stork arrivals per game hour) before and after.
+- Make them rarer: a lower cap and spawn chance, a longer gap before one comes back after leaving,
+  and roof storks only now and then; numbers in data/ (the user tunes them). Keep the nest pairs
+  as they are.
+- Tests for the rate (arrivals per hour within a bound) and the cap; design note.
+
 ## Later (not part of the prototype)
 
 - **Villagers go inside** (the user, 2026-11-11): villagers enter their houses (and the church,
