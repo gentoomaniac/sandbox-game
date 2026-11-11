@@ -507,6 +507,10 @@ are a forge, a smokehouse, a saw mill and a fish pond.
     else; leftover handling (ash, burnt food) is not needed and not built.
   - The player takes the results out like from a chest, only as much as fits. The rest stays in
     the station.
+  - Nothing new goes in, and nothing new starts, until every produced item is taken out (the user,
+    2026-11-11: "You can't start anything new in the crafting station unless the produced items
+    are all taken out"): while results are in the grid, the recipe list and the inventory beside
+    it are greyed out with a short note, and the grid only lets things out.
 - **Skill:**
   - Recipe `level` locks stay, for later recipes that unlock at a skill level, and each run
     practises the recipe's skill.
@@ -538,7 +542,7 @@ are a forge, a smokehouse, a saw mill and a fish pond.
   - locked while running;
   - the button greyed out on a part load, a run using up the whole grid, the result after the
     time;
-  - taking out only what fits;
+  - taking out only what fits, and nothing going in or starting while results are left;
   - the kiln and the oven.
 - **Docs and screenshots:**
   - README, the design pages on crafting, the kiln and the oven, and docs/ui.md.
