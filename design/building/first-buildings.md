@@ -35,7 +35,9 @@
     (the pantiles are fired clay). The small marsh parishes had no tower: the **bell frame**
     (*Glockenstapel*), 2×2, is an open oak frame on a brick base under a pyramid of oak
     shingles, the bronze bell in it; 25 logs, 5 stone, 10 clay. It has no inside: its
-    `interior_map` is empty, none of its tiles can be walked on and nobody goes in. The
+    `interior_map` is empty, none of its tiles can be walked on and nobody goes in. It can be rung (task 180,
+    2026-11-11): E or a click on it within one tile rings the bell (see
+    `design/presentation/sound.md`), with no effect on the game yet. The
     **churchyard**: the fieldstone wall of the fields, and **grave markers** made at the
     workbench (woodworking 15: 2 planks, 2 stone) and placed outdoors only, which stand as an
     oak cross (always: the user, 2026-11-10; headstones may come later as their own crafted

@@ -47,6 +47,12 @@ func tiles() -> Array[Vector2i]:
 	return footprint_tiles(type, origin)
 
 
+## The middle of its footprint, in tiles.
+func centre() -> Vector2:
+	var size: Vector2i = BuildingTypes.TYPES[type]["footprint"]
+	return Vector2(origin) + Vector2(size) / 2.0
+
+
 func door_tile() -> Vector2i:
 	return origin + BuildingTypes.TYPES[type]["door_offset"]
 

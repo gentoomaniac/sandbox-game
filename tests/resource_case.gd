@@ -40,6 +40,18 @@ func _make_room() -> void:
 		_world.set_terrain(pos, Tile.Terrain.GRASS)
 
 
+## Places a building of the type on the first free ground a few tiles south of the camp, and
+## returns it.
+func _place_building_nearby(building_type: StringName) -> Building:
+	for y in range(2, 20):
+		for x in range(-10, 10):
+			var origin := _state.player.tile() + Vector2i(x, y)
+			if _world.placement_blockers(building_type, origin).is_empty():
+				return _world.place_building(building_type, origin)
+	fail_test("no room for a %s near the camp" % building_type)
+	return null
+
+
 ## Berry bushes bear and ferns stand, whatever their thresholds.
 func _set_midsummer() -> void:
 	_state.clock.day = MIDSUMMER

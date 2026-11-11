@@ -4,7 +4,8 @@ extends RefCounted
 ## within reach of them (Targeting.REACH, the same as the use action's). Plain rules; Main asks and
 ## then chats, gets on the horse, sleeps, opens the storage screen or opens the crafting menu of
 ## the station. A villager E speaks to (`npc_to_chat`) comes first, then a horse to get on
-## (`horse_to_mount`), before any chest, station or bed.
+## (`horse_to_mount`), before any chest, station or bed; a bell frame to ring (`bell_frame_to_ring`)
+## comes after the chests and stations.
 
 
 ## The nearest object on the player's map within reach that `is_wanted` says yes to, or null.
@@ -19,6 +20,30 @@ static func nearest_in_reach(state: GameState, is_wanted: Callable) -> WorldObje
 			if nearest == null or _distance(state, object) < _distance(state, nearest):
 				nearest = object
 	return nearest
+
+
+## The bell frame a click on `clicked` or E rings, or null: outdoors on foot, one with a tile of its
+## footprint in reach (within Targeting.REACH of the player's tile) and, for a click, with the
+## clicked tile in its footprint. E passes no tile and leaves it to a bed in reach (to sleep in); a
+## click leaves it to the held item when that has a use on the tile.
+static func bell_frame_to_ring(state: GameState, clicked: Variant = null) -> Building:
+	if state.is_inside() or state.player.horse != null:
+		return null
+	if clicked == null and state.bed_in_reach() != null:
+		return null
+	if clicked != null and state.use_at(clicked) != ToolUse.Use.NOTHING:
+		return null
+	var player_tile := state.player.tile()
+	for y in range(-Targeting.REACH, Targeting.REACH + 1):
+		for x in range(-Targeting.REACH, Targeting.REACH + 1):
+			var building := state.world.building_at(player_tile + Vector2i(x, y))
+			if (
+				building != null
+				and building.type == BuildingTypes.BELL_FRAME
+				and (clicked == null or building.tiles().has(clicked))
+			):
+				return building
+	return null
 
 
 ## The chest or station E opens, or null. One on `target` (the targeted tile) wins; with a bed

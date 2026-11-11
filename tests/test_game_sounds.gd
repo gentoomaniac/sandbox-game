@@ -122,6 +122,20 @@ func test_placing_and_taking_down_a_building_are_heard() -> void:
 	assert_eq(_events, [&"axe_chop"])
 
 
+func test_a_ringing_bell_frame_is_heard_from_the_frame_and_muffled_indoors() -> void:
+	var frame := _place_building_nearby(BuildingTypes.BELL_FRAME)
+	_state.player.position = frame.centre() + Vector2(-1.5, 0)
+	assert_true(_state.ring_bell_in_reach())
+	assert_eq(_events, [&"bell_ring"])
+	var player: AudioStreamPlayer2D = null
+	for node in _audio.get_children():
+		if node is AudioStreamPlayer2D and node.playing:
+			player = node
+	assert_not_null(player)
+	assert_eq(player.position, frame.centre() * TerrainTileset.TILE_SIZE)
+	assert_eq(player.bus, AudioService.OUTSIDE_EFFECTS)
+
+
 func test_the_world_placing_a_building_by_itself_is_silent() -> void:
 	for y in range(2, 20):
 		for x in range(-10, 10):

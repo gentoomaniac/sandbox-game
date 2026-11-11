@@ -27,8 +27,10 @@ const BUS_OF_KEY := {"effects": EFFECTS, "ambience": AMBIENCE, "ui": UI}
 ## The bus of each volume channel of the settings (see GameSettings).
 const CHANNEL_BUSES := {&"master": MASTER, &"effects": EFFECTS, &"ambience": AMBIENCE}
 const POOL_SIZE := 12
-## Beyond this far from the camera (31 tiles, in art pixels) a positional sound is silent.
-const MAX_DISTANCE := 31.25 * TerrainTileset.TILE_SIZE
+## Beyond this far from the camera (31 tiles, in art pixels) a positional sound is silent, unless
+## its event has a `reach_tiles` of its own.
+const DEFAULT_REACH_TILES := 31.25
+const MAX_DISTANCE := DEFAULT_REACH_TILES * TerrainTileset.TILE_SIZE
 const SILENT_DB := -80.0
 
 ## Silent no matter the settings (the `--mute` flag, for test runs); sounds still play and
@@ -47,6 +49,10 @@ var _outside_db: float = AmbienceRules.default_rules().value("indoors", "outside
 var _plain_players: Array[AudioStreamPlayer] = []
 var _world_players: Array[AudioStreamPlayer2D] = []
 var _world_root: Node = self
+## The players that play each event that has `voices`, the oldest first, and the event each pool
+## player was started for (a player may be cut off for another sound).
+var _voices: Dictionary[StringName, Array] = {}
+var _event_of: Dictionary[Node, StringName] = {}
 var _next_plain := 0
 var _next_world := 0
 var _is_focused := true
@@ -139,8 +145,14 @@ func play(event: StringName, position: Variant = null, is_from_outside := false)
 	if not _rules.has_event(event):
 		push_error("No sound event '%s'" % event)
 		return
-	var player := _free_player(position != null)
+	var player := _oldest_voice_over_the_limit(event)
+	if player == null:
+		player = _free_player(position != null)
+	if position != null:
+		player.max_distance = _reach_of(event)
 	_start(player, event, position, is_from_outside)
+	if _rules.event(event).has("voices"):
+		_voices[event].append(player)
 
 
 ## Starts a looping sound event at `level` (0 to 1) and returns its handle, to fade or stop it.
@@ -156,9 +168,30 @@ func start_loop(
 	return SoundLoop.new(player, _rules.event(event)["volume_db"], level)
 
 
+## The player to cut off for a new play of an event that has a `voices` limit (see sounds.cfg), the
+## oldest still playing it, once as many as the limit are; else null.
+func _oldest_voice_over_the_limit(event: StringName) -> Node:
+	var limit: int = _rules.event(event).get("voices", 0)
+	if limit == 0:
+		return null
+	var playing: Array = _voices.get(event, []).filter(
+		func(player: Node) -> bool: return player.playing and _event_of[player] == event
+	)
+	_voices[event] = playing
+	return playing.pop_front() if playing.size() >= limit else null
+
+
+## How far a positional event is heard, in art pixels: `reach_tiles` of its section in
+## sounds.cfg, else MAX_DISTANCE.
+func _reach_of(event: StringName) -> float:
+	var reach_tiles: float = _rules.event(event).get("reach_tiles", DEFAULT_REACH_TILES)
+	return reach_tiles * TerrainTileset.TILE_SIZE
+
+
 func _start(player: Node, event: StringName, position: Variant, is_from_outside: bool) -> void:
 	var values := _rules.event(event)
 	var bus: StringName = BUS_OF_KEY[values["bus"]]
+	_event_of[player] = event
 	player.stream = load(_rules.pick_file(event, _rng))
 	player.volume_db = values["volume_db"]
 	player.pitch_scale = _rules.pick_pitch(event, _rng)

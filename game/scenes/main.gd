@@ -419,7 +419,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_use_on(_use_highlight.targeting())
 	elif event.is_action_pressed("use_click") and can_use:
 		var target := _use_highlight.targeting()
-		if target.source == Targeting.Source.MOUSE:
+		if target.source == Targeting.Source.MOUSE and not _state.ring_bell_in_reach(target.tile):
 			_use_on(target)
 		# A click also counts as the mouse being in use. One that wakes an idle mouse (the target
 		# is then the facing tile) does not act.
@@ -671,8 +671,8 @@ func _screens_take(event: InputEvent) -> bool:
 	return _is_any_screen_open()
 
 
-## E: on horseback, gets off. Else speaks to the villager in front, else gets on the saddled horse
-## in front, else opens the chest or the station in reach, else sleeps in the bed in reach.
+## E: on horseback, gets off. Else speaks to the villager in front, gets on the saddled horse in
+## front, opens the chest or station in reach, rings the bell frame in reach or sleeps in the bed.
 func _interact() -> void:
 	if _state.player.horse != null:
 		if not _state.dismount():
@@ -689,7 +689,8 @@ func _interact() -> void:
 		return
 	var object := Interaction.object_to_open(_state, target)
 	if object == null:
-		_try_sleep()
+		if not _state.ring_bell_in_reach():
+			_try_sleep()
 	elif object.storage != null:
 		_storage_screen.open_chest(object, _state.player)
 	else:

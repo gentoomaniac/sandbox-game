@@ -280,6 +280,15 @@ func is_trotting() -> bool:
 	return player.horse != null and _moving_seconds >= livestock.rules.general("trot_after_seconds")
 
 
+## Rings the bell frame in reach, the one with the clicked tile (see Interaction). Returns whether
+## there was one. Only heard and seen so far: it changes nothing in the game.
+func ring_bell_in_reach(clicked: Variant = null) -> bool:
+	var frame := Interaction.bell_frame_to_ring(self, clicked)
+	if frame != null:
+		world.bell_rung.emit(frame)
+	return frame != null
+
+
 ## Gets on a saddled horse: the player sits on it where it stands, facing its way, and it goes where
 ## they ride until they get off (see `dismount`).
 func mount(horse: FarmAnimal) -> void:

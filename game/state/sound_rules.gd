@@ -138,5 +138,9 @@ func _check_event(event_id: String) -> void:
 				_problems.append("[%s] file %s does not exist" % [event_id, path])
 	if values["pitch_min"] <= 0.0 or values["pitch_min"] > values["pitch_max"]:
 		_problems.append("[%s] pitch_min must be above 0 and at most pitch_max" % event_id)
+	if values.get("reach_tiles", 1.0) <= 0.0:
+		_problems.append("[%s] reach_tiles must be above 0" % event_id)
+	if values.get("voices", 1) < 1:
+		_problems.append("[%s] voices must be at least 1" % event_id)
 	if not BUSES.has(values["bus"]):
 		_problems.append("[%s] bus must be one of %s" % [event_id, BUSES])

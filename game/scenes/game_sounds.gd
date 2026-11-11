@@ -2,10 +2,11 @@ class_name GameSounds
 extends Node
 ## Makes the sound of what happens in the game, by listening to it: the footsteps (on the
 ## walk animation's steps), the hits and breaks of tools (the world's `object_hit`), the
-## hotbar slot changing, and menus opening and closing. What the player does is heard from the
-## outcome of the action (GameState `action_done`: tills, picks, places, takes down, picks up, ...);
-## Main tells it the uses that did not work (see `failed_use`). Which event a happening makes is
-## SoundEvents'; playing it is AudioService's. The state knows nothing of sound.
+## hotbar slot changing, the bell frame ringing, and menus opening and closing. What the player
+## does is heard from the outcome of the action (GameState `action_done`: tills, picks, places,
+## takes down, picks up, ...); Main tells it the uses that did not work (see `failed_use`). Which
+## event a happening makes is SoundEvents'; playing it is AudioService's. The state knows nothing
+## of sound.
 
 var _audio: AudioService
 var _state: GameState
@@ -38,6 +39,7 @@ func listen(
 			_audio.play(&"tree_fall", TerrainTileset.tile_centre(tree.pos))
 	)
 	state.action_done.connect(_on_action_done)
+	state.world.bell_rung.connect(_on_bell_rung)
 	build_mode.placement_refused.connect(func() -> void: _audio.play(&"denied"))
 	state.player.inventory.changed.connect(_on_inventory_changed)
 
@@ -82,6 +84,12 @@ func _on_action_done(outcome: ActionOutcome) -> void:
 	var event := SoundEvents.action(outcome.kind, outcome.object)
 	if event != &"":
 		_audio.play(event, TerrainTileset.tile_centre(outcome.tile))
+
+
+## Every ring is a new strike on top of what still sounds, heard from where the bell hangs
+## (its reach is `reach_tiles` in data/sounds.cfg).
+func _on_bell_rung(building: Building) -> void:
+	_audio.play(&"bell_ring", building.centre() * TerrainTileset.TILE_SIZE, true)
 
 
 func _on_step() -> void:

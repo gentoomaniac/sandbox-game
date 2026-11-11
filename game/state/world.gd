@@ -20,6 +20,8 @@ signal clay_spot_changed(world_pos: Vector2i)
 signal building_placed(building: Building)
 ## A building was taken down.
 signal building_removed(building: Building)
+## The player rang a bell frame (see GameState `ring_bell_in_reach`).
+signal bell_rung(building: Building)
 ## Why a footprint tile can't be built on.
 enum Blocked {
 	## Water, wetland or floodplain, or the tile is not loaded.

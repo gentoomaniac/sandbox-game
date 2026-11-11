@@ -482,7 +482,11 @@ The village church follows the small marsh churches of North Frisia: a nave of g
 with a lower chancel, steep red pantile roofs, small arched windows of leaded glass that light
 at night, and a white porch on the south side with the door (70 logs, 35 stone, 45 clay).
 These parishes had no tower; the bell hangs in a wooden bell frame of its own, an oak frame
-on a brick base under a shingled pyramid, which nobody goes into. For the churchyard, the
+on a brick base under a shingled pyramid, which nobody goes into. Stand within a tile of it and
+press E, or click on it, to ring the bell: a bronze strike that rings on for ten seconds and is
+heard far across the marsh (and faintly from inside a house); ring again and the strikes add up (up to three sound at once; a fourth cuts off the
+oldest). E leaves the bell to a bed in reach (it sleeps), and a click while holding food eats it
+instead of ringing. Nothing else happens yet. For the churchyard, the
 workbench makes grave markers (2 planks, 2 stone), which stand outdoors as an oak cross.
 
 ![The churchyard at noon in summer, with the church, its bell frame and graves, and on a winter night under snow with the church windows lit](docs/screenshots/church.png)

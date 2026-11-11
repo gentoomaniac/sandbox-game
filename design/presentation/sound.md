@@ -56,6 +56,19 @@ Decided 2026-11-05. Everything makes sound; no background music for now.
   as two pitches a hair apart that beat slowly. The low partials die away over many seconds and the
   high ones in a second or two, so a bright clang turns into a dark hum. A short knock of the
   clapper starts it. On the Effects bus, as a sound of the world outside.
+  **Ringing it** (task 180, `GameState.ring_bell_in_reach`, heard by `GameSounds`): E or a click on the bell
+  frame with a footprint tile within a tile of the player (`Interaction.bell_frame_to_ring`) plays
+  it (E gives way to a bed in reach, so the player can still sleep next to the frame; a click gives
+  way to a use the held item has on the tile, which no item has on a building today, and to eating
+  a held food or lighting a held lantern, which come first in Main) from the middle of the frame, 120 tiles of reach (`reach_tiles` of its section in
+  `data/sounds.cfg`, outdoors a bit under four times the 31 tiles of the other effects, fading
+  evenly over it), and it is muffled and faint indoors like the other sounds of the outside
+  (`is_from_outside`). **Ringing again while it sounds: the strikes overlap**, each a new play on
+  top of the ones still ringing. A real bell struck again rings on under the new stroke; restarting
+  would cut an 11-second tail off, which is the one thing a bell never does, and waiting would make
+  a click that does nothing. At most three strikes sound at once (`voices` of its section in
+  `data/sounds.cfg`): a fourth ring cuts off the oldest strike, never a footstep or another sound,
+  so a bell rung over and over cannot crowd the pool of twelve players. No game effect yet: calling the villagers, gossip and events come later.
 - **Animals:** birds sometimes chirp where they are; frogs croak near rivers and ponds in
   spring and summer, mostly in the evening and at night and when it is warm, louder the
   closer the player is; deer snort now and then and their hooves sound when they bound
