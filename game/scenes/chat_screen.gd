@@ -82,7 +82,7 @@ var _scroll := ScrollContainer.new()
 ## Whether the window follows the newest line: not once the player has scrolled back.
 var _is_following := true
 var _log_size := LOG_SIZE
-var _input := LineEdit.new()
+var _line_edit := LineEdit.new()
 
 
 func _init() -> void:
@@ -111,13 +111,13 @@ func _init() -> void:
 	_scroll.add_child(_messages)
 	log_ground.add_child(_scroll)
 	chat.add_child(log_ground)
-	_input.max_length = MAX_LINE_LENGTH
-	_input.placeholder_text = "Enter sends, Esc leaves, /clear forgets."
-	_input.keep_editing_on_text_submit = true
-	_input.text_submitted.connect(_on_submitted)
-	_input.gui_input.connect(_on_input_gui_input)
-	_input.focus_exited.connect(_on_input_focus_exited)
-	chat.add_child(_input)
+	_line_edit.max_length = MAX_LINE_LENGTH
+	_line_edit.placeholder_text = "Enter sends, Esc leaves, /clear forgets."
+	_line_edit.keep_editing_on_text_submit = true
+	_line_edit.text_submitted.connect(_on_submitted)
+	_line_edit.gui_input.connect(_on_input_gui_input)
+	_line_edit.focus_exited.connect(_on_input_focus_exited)
+	chat.add_child(_line_edit)
 	row.add_child(chat)
 	var player_name := Label.new()
 	player_name.text = PLAYER_NAME
@@ -148,18 +148,18 @@ func _on_open() -> void:
 	_show_portrait(_player_portrait, _state.player.appearance)
 	_show_portrait(_npc_portrait, _npc.appearance)
 	_npc_name.text = _npc.name
-	_input.clear()
+	_line_edit.clear()
 	_notice = ""
 	_show_lines()
 	_is_opening_key_held = Input.is_action_pressed("interact")
-	_input.grab_focus()
-	_input.edit()
+	_line_edit.grab_focus()
+	_line_edit.edit()
 
 
 func _on_close() -> void:
 	# A window removed while open is closed on its way out of the tree, where releasing fails.
-	if _input.is_inside_tree():
-		_input.release_focus()
+	if _line_edit.is_inside_tree():
+		_line_edit.release_focus()
 
 
 ## Fits the log to the window, which changes with the window's size and the UI scale. The bubbles
@@ -368,7 +368,7 @@ func _show_portrait(portrait: Control, look: Appearance) -> void:
 func _on_submitted(text: String) -> void:
 	if _npc.is_answering:
 		return
-	_input.clear()
+	_line_edit.clear()
 	say(text)
 
 
@@ -376,7 +376,7 @@ func _on_input_gui_input(event: InputEvent) -> void:
 	# The key that opened the chat may still be held: its repeats would type into the input.
 	if _is_opening_key_held and event is InputEventKey and event.is_action("interact"):
 		_is_opening_key_held = event.pressed
-		_input.accept_event()
+		_line_edit.accept_event()
 		return
 	if not event is InputEventKey or not event.pressed:
 		return
@@ -384,11 +384,11 @@ func _on_input_gui_input(event: InputEvent) -> void:
 	# is caught here; accepting it keeps it from opening the pause menu once the game runs again.
 	if event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel"):
 		close()
-		_input.accept_event()
+		_line_edit.accept_event()
 		return
 	if event.is_action_pressed("toggle_art_set"):
 		art_set_switch_pressed.emit()
-		_input.accept_event()
+		_line_edit.accept_event()
 		return
 	var scroll_bar := _scroll.get_v_scroll_bar()
 	match event.keycode:
@@ -398,10 +398,10 @@ func _on_input_gui_input(event: InputEvent) -> void:
 			scroll_bar.value += scroll_bar.page
 		_:
 			return
-	_input.accept_event()
+	_line_edit.accept_event()
 
 
 ## The input never loses focus while the chat is open, e.g. to a click elsewhere.
 func _on_input_focus_exited() -> void:
 	if visible:
-		_input.grab_focus.call_deferred()
+		_line_edit.grab_focus.call_deferred()

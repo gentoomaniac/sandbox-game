@@ -160,11 +160,11 @@ func test_the_held_key_that_opened_the_chat_types_nothing_until_it_is_let_go() -
 	key.pressed = true
 	key.echo = true
 	assert_true(key.is_action("interact"))
-	screen._input.gui_input.emit(key)
+	screen._line_edit.gui_input.emit(key)
 	assert_true(screen._is_opening_key_held, "a repeat of the held key is swallowed")
 	key.pressed = false
 	key.echo = false
-	screen._input.gui_input.emit(key)
+	screen._line_edit.gui_input.emit(key)
 	Input.action_release("interact")
 	assert_false(screen._is_opening_key_held, "let go: E types again")
 	screen.close()
@@ -178,7 +178,7 @@ func test_escape_closes_the_chat_and_goes_no_further() -> void:
 	escape.physical_keycode = KEY_ESCAPE
 	escape.pressed = true
 	assert_true(escape.is_action_pressed("pause"))
-	screen._input.gui_input.emit(escape)
+	screen._line_edit.gui_input.emit(escape)
 	assert_false(screen.is_open())
 	assert_false(get_tree().paused)
 
@@ -192,9 +192,9 @@ func test_the_art_switch_key_is_passed_on_from_the_open_chat() -> void:
 	f7.physical_keycode = KEY_F7
 	f7.pressed = true
 	assert_true(f7.is_action_pressed("toggle_art_set"))
-	screen._input.gui_input.emit(f7)
+	screen._line_edit.gui_input.emit(f7)
 	assert_signal_emitted(screen, "art_set_switch_pressed")
-	assert_eq(screen._input.text, "")
+	assert_eq(screen._line_edit.text, "")
 	assert_true(screen.is_open())
 	screen.close()
 
@@ -239,7 +239,7 @@ func _press_in_window(screen: ChatScreen, key: Key) -> Array:
 	event.unicode = key + 32
 	event.pressed = true
 	window.push_input(event)
-	return [seen_by_game.keys_seen, screen._input.text]
+	return [seen_by_game.keys_seen, screen._line_edit.text]
 
 
 class GameKeyProbe:
