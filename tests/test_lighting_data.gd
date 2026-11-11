@@ -21,7 +21,7 @@ func _write(text: String) -> LightingRules:
 func test_the_data_file_holds_every_rule_with_the_first_values() -> void:
 	var rules := LightingRules.from_file(LightingRules.DEFAULT_PATH)
 	assert_true(rules.is_valid(), "problems: %s" % [rules.problems()])
-	assert_eq(rules.tint_colour("night"), Color(0.4, 0.46, 0.74))
+	assert_eq(rules.tint_colour("night"), Color(0.13, 0.16, 0.3))
 	assert_eq(rules.tint_colour("day"), Color.WHITE)
 	assert_eq(rules.tint_hours("night_before_sunrise"), 1.5)
 	assert_eq(rules.tint_hours("night_after_sunset"), 4.0)

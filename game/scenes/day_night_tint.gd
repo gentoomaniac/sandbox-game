@@ -4,8 +4,8 @@ extends CanvasModulate
 ## LightingRules). Dawn comes with the sunrise and dusk with the sunset of the day (see Sun), and
 ## cloud cover dims and greys the day a little.
 
-## Lights fade out as the tint gets brighter: full strength at this multiple of the darkness
-## (1 - luminance) of the night tint, which is about 0.5.
+## Lights fade out as the tint gets brighter: full strength once the tint's darkness
+## (1 - luminance) times this is 1, in the late dusk, before full night.
 const LIGHT_STRENGTH_PER_DARKNESS := 2.0
 
 ## Inside there is no day and night: a fixed warm tint, as from lamps and a hearth.
