@@ -185,22 +185,6 @@ Settings (and off), muted in test runs (comes with task 184). Rules in data/musi
   pieces like the test reel are kept for special events (festivals, a market day). Later: stems
 (AudioStreamSynchronized), more pieces, the season and weather choices.
 
-## 180. Ringing the bell in the bell frame
-
-- [ ] Done
-
-The user, 2026-11-11: "clicking / e on the belltower while being close (1 tile) should ring the
-bell." The bell frame (the church's free-standing wooden bell tower, task 102; building_types.gd,
-data/buildings.cfg, design/building/first-buildings.md) has no inside and no use today.
-- Within 1 tile of the bell frame, a click on it or the interact key (E) rings the bell: a bell
-  sound (none exists yet: a bronze church bell strike with a long decay, made by the sound
-  generator in tools/audio in the style of the other sounds, a sound-designer job), heard far
-  (positional, with a long reach outdoors and faint indoors as the other outside sounds), and the
-  bell swinging in the frame for a moment if the art allows it (both arts).
-- Ringing again while it still sounds: decide (restart, overlap, or wait for the swing), and say
-  why. No game effect yet (later: calling the villagers, gossip, events).
-- Tests for the reach, the input and the sound; a listening file for the user; README line.
-
 ## 197. Harvests: the usual amount, now and then one more or one less
 
 - [ ] Done

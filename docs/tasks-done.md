@@ -4878,3 +4878,21 @@ full in the inventory."
 - Tests for the order; README line.
 
 Done: 2026-11-11. Before, a matching stack anywhere (the backpack too) took an item before a free hotbar slot. `Inventory._add` now fills: hotbar stacks, free hotbar slots but the selected one, backpack stacks, free backpack slots, and the empty selected slot last (an empty hand stays empty; the user to confirm). Every gain path goes through it; chest takes, drag and shift-click keep their explicit order. `can_exchange` tries the same order (`_new_trial()`).
+
+## 180. Ringing the bell in the bell frame
+
+- [x] Done
+
+The user, 2026-11-11: "clicking / e on the belltower while being close (1 tile) should ring the
+bell." The bell frame (the church's free-standing wooden bell tower, task 102; building_types.gd,
+data/buildings.cfg, design/building/first-buildings.md) has no inside and no use today.
+- Within 1 tile of the bell frame, a click on it or the interact key (E) rings the bell: a bell
+  sound (none exists yet: a bronze church bell strike with a long decay, made by the sound
+  generator in tools/audio in the style of the other sounds, a sound-designer job), heard far
+  (positional, with a long reach outdoors and faint indoors as the other outside sounds), and the
+  bell swinging in the frame for a moment if the art allows it (both arts).
+- Ringing again while it still sounds: decide (restart, overlap, or wait for the swing), and say
+  why. No game effect yet (later: calling the villagers, gossip, events).
+- Tests for the reach, the input and the sound; a listening file for the user; README line.
+
+Done: 2026-11-11. E or a click within 1 tile of the bell frame rings it (E leaves it to a bed in reach; food in hand eats on a click). A new generated bronze bell strike (tools/audio/bell.py, 2 variants, about 11 s), positional with `reach_tiles=120`, faint indoors on the OutsideEffects bus; a new ring overlaps the old, at most 3 bell voices (`voices` in data/sounds.cfg). The bell is its own sprite and swings as a damped pendulum, in both arts. The user approved the sound and the art.
