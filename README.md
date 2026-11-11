@@ -159,9 +159,10 @@ down or damages it. A ripe crop doesn't wait forever: left unpicked for as long 
 to ripen, it withers and gives nothing. The growing times, seasons and the withering are
 in [data/crops.cfg](data/crops.cfg).
 
-A harvest gives a slightly different amount each time (carrots, say, 2 or 3 and 2.3 on average),
-and only now and then a seed back, so a field replanted from its own seeds slowly shrinks: keep
-a few spare seeds. Each crop's range, average and seed chance are in the same file.
+A harvest gives each crop's usual amount (carrots, say, 2), with now and then a poor harvest of
+one less or a good one of one more (never below 1), and only now and then a seed back, so a field
+replanted from its own seeds slowly shrinks: keep a few spare seeds. Each crop's usual amount, the
+chances of a poor and of a good harvest and the seed chance are in the same file.
 
 ![A field with every crop in every growth stage and dead](docs/screenshots/field.png)
 

@@ -14,9 +14,7 @@ seed="dandelion_seeds"
 produce="dandelion"
 seed_weight=0.01
 produce_weight=0.1
-yield_min=1
-yield_max=2
-yield_average=1.5
+yield=2
 seed_chance=0.5
 regrow_stage=0
 ripe_wait_factor=1.0
@@ -35,6 +33,8 @@ wind_max=10.0
 const FARMING := """
 [farming]
 default_moisture=0.3
+poor_harvest_chance=0.1
+good_harvest_chance=0.2
 rain_wets=0.1
 drying_base=0.04
 drying_per_degree=0.005
@@ -88,7 +88,7 @@ func test_the_crops_file_is_valid_and_has_the_thirteen_crops() -> void:
 	assert_true(rules.is_valid(), str(rules.problems()))
 	assert_eq(rules.crop_ids(), CROP_NAMES)
 	assert_eq(rules.crop(&"potato")["seed_name"], "Seed potatoes")
-	assert_eq(rules.crop(&"potato")["yield_average"], 3.0)
+	assert_eq(rules.crop(&"potato")["yield"], 3)
 	assert_eq(rules.farming("good_day_score"), 0.6)
 
 
@@ -124,8 +124,10 @@ func test_a_regrow_stage_outside_the_stages_is_reported() -> void:
 
 func test_a_harvest_that_cannot_be_drawn_is_reported() -> void:
 	var wrong := {
-		"yield_min=1": "yield_min=0",
-		"yield_average=1.5": "yield_average=2.5",
+		"yield=2": "yield=0",
+		"wind_max=10.0": "wind_max=10.0\npoor_harvest_chance=-0.1",
+		"ripe_wait_factor=1.0":
+		"ripe_wait_factor=1.0\npoor_harvest_chance=0.6\ngood_harvest_chance=0.5",
 		"seed_chance=0.5": "seed_chance=1.5",
 	}
 	var reported := 0
@@ -135,6 +137,13 @@ func test_a_harvest_that_cannot_be_drawn_is_reported() -> void:
 		assert_false(rules.is_valid(), wrong[right])
 		reported += rules.problems().size()
 	assert_push_error_count(reported)
+
+
+func test_a_crop_takes_the_harvest_chances_of_the_farming_section_unless_it_has_its_own() -> void:
+	_write(FARMING + REEDS + FAKE_CROP.replace("yield=2", "yield=2\ngood_harvest_chance=0.4"))
+	var crop := CropRules.from_file(DATA_FILE).crop(&"dandelion")
+	assert_eq(crop["poor_harvest_chance"], 0.1)
+	assert_eq(crop["good_harvest_chance"], 0.4)
 
 
 func test_a_missing_file_is_reported() -> void:

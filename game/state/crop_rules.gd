@@ -23,9 +23,7 @@ const REQUIRED_CROP_KEYS: Array[String] = [
 	"produce",
 	"seed_weight",
 	"produce_weight",
-	"yield_min",
-	"yield_max",
-	"yield_average",
+	"yield",
 	"seed_chance",
 	"regrow_stage",
 	"ripe_wait_factor",
@@ -41,8 +39,12 @@ const REQUIRED_CROP_KEYS: Array[String] = [
 	"moisture_best",
 	"wind_max",
 ]
+## Keys of a crop that it may leave out, to get the value of the [farming] section.
+const HARVEST_CHANCE_KEYS: Array[String] = ["poor_harvest_chance", "good_harvest_chance"]
 const REQUIRED_FARMING_KEYS: Array[String] = [
 	"default_moisture",
+	"poor_harvest_chance",
+	"good_harvest_chance",
 	"rain_wets",
 	"drying_base",
 	"drying_per_degree",
@@ -82,6 +84,9 @@ func _init(crops: Dictionary, farming: Dictionary, reeds: Dictionary) -> void:
 		if not _reeds.has(key):
 			_problems.append("[%s] no %s" % [REEDS, key])
 	for crop_id: String in _crops:
+		for key in HARVEST_CHANCE_KEYS:
+			if not _crops[crop_id].has(key) and _farming.has(key):
+				_crops[crop_id][key] = _farming[key]
 		for key in REQUIRED_CROP_KEYS:
 			if not _crops[crop_id].has(key):
 				_problems.append("[%s] no %s" % [crop_id, key])
@@ -93,17 +98,16 @@ func _init(crops: Dictionary, farming: Dictionary, reeds: Dictionary) -> void:
 
 
 func _check_harvest(crop_id: String, values: Dictionary) -> void:
-	for key in ["yield_min", "yield_max", "yield_average", "seed_chance"]:
+	for key in ["yield", "seed_chance"] + HARVEST_CHANCE_KEYS:
 		if not values.has(key):
 			return
-	var low: int = values["yield_min"]
-	var high: int = values["yield_max"]
-	if low < 1 or low > high:
-		_problems.append("[%s] yield_min must be 1 or more, and at most yield_max" % crop_id)
-	elif values["yield_average"] < low or values["yield_average"] > high:
-		_problems.append("[%s] yield_average must lie from yield_min to yield_max" % crop_id)
-	if values["seed_chance"] < 0.0 or values["seed_chance"] > 1.0:
-		_problems.append("[%s] seed_chance must be 0 to 1" % crop_id)
+	if values["yield"] < 1:
+		_problems.append("[%s] yield must be 1 or more" % crop_id)
+	for key in HARVEST_CHANCE_KEYS + ["seed_chance"]:
+		if values[key] < 0.0 or values[key] > 1.0:
+			_problems.append("[%s] %s must be 0 to 1" % [crop_id, key])
+	if values["poor_harvest_chance"] + values["good_harvest_chance"] > 1.0:
+		_problems.append("[%s] the two harvest chances must add up to 1 at most" % crop_id)
 
 
 ## The rules of the data file, loaded the first time they are asked for.

@@ -56,29 +56,20 @@ static func look(crop: WorldObject) -> int:
 	return crop.type_data()["growth_stages"] if is_dead(crop) else stage(crop)
 
 
-## What harvesting a crop gives, item id to count: a drawn yield, and now and then one seed back.
+## What harvesting a crop gives, item id to count: the crop's usual amount, one more or one less
+## now and then (never below 1), and now and then one seed back.
 static func harvest_of(crop: WorldObject, rng: RandomNumberGenerator) -> Dictionary:
 	var crop_type := crop.type_data()
-	var harvest := {crop_type["produce"]: _draw_yield(crop_type, rng)}
+	var count: int = crop_type["yield"]
+	var roll := rng.randf()
+	if roll < crop_type["good_harvest_chance"]:
+		count += 1
+	elif roll < crop_type["good_harvest_chance"] + crop_type["poor_harvest_chance"]:
+		count = maxi(count - 1, 1)
+	var harvest := {crop_type["produce"]: count}
 	if rng.randf() < crop_type["seed_chance"]:
 		harvest[crop_type["seed"]] = 1
 	return harvest
-
-
-## A whole number from yield_min to yield_max that averages yield_average over many draws: a
-## draw of the whole range, but with a chance of the nearer end instead, which pulls the average
-## to the wanted side of the range's middle (that chance is how far the average lies from the
-## middle, over how far the end does).
-static func _draw_yield(crop_type: Dictionary, rng: RandomNumberGenerator) -> int:
-	var low: int = crop_type["yield_min"]
-	var high: int = crop_type["yield_max"]
-	var middle := (low + high) / 2.0
-	var average: float = crop_type["yield_average"]
-	if average < middle and rng.randf() < (middle - average) / (middle - low):
-		return low
-	if average > middle and rng.randf() < (average - middle) / (high - middle):
-		return high
-	return rng.randi_range(low, high)
 
 
 ## Whether a crop stays in the ground after a harvest, to ripen again.

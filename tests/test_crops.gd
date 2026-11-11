@@ -192,24 +192,29 @@ func _harvests(crop_id: StringName, count: int) -> Array[Dictionary]:
 	return harvests
 
 
-func test_a_harvest_gives_a_yield_within_the_crops_range() -> void:
+func test_the_usual_count_is_the_most_common_and_one_more_or_less_come_at_their_chances() -> void:
+	const HARVESTS := 4000
 	for crop_id in CropRules.default_rules().crop_ids():
 		var crop_type := _crop(crop_id).type_data()
-		var seen := {}
-		for harvest in _harvests(crop_id, 300):
+		var usual: int = crop_type["yield"]
+		var counts := {}
+		for harvest in _harvests(crop_id, HARVESTS):
 			var count: int = harvest[crop_type["produce"]]
-			assert_between(count, crop_type["yield_min"], crop_type["yield_max"], str(crop_id))
-			seen[count] = true
-		assert_eq(seen.size(), crop_type["yield_max"] - crop_type["yield_min"] + 1, str(crop_id))
+			counts[count] = counts.get(count, 0) + 1
+		for count: int in counts:
+			assert_between(count, maxi(usual - 1, 1), usual + 1, str(crop_id))
+			assert_gte(count, 1, str(crop_id))
+		var poor: float = crop_type["poor_harvest_chance"] if usual > 1 else 0.0
+		var good: float = crop_type["good_harvest_chance"]
+		assert_almost_eq(counts.get(usual + 1, 0) / float(HARVESTS), good, 0.03, str(crop_id))
+		assert_almost_eq(counts.get(usual - 1, 0) / float(HARVESTS), poor, 0.03, str(crop_id))
+		assert_gt(counts[usual], counts.get(usual + 1, 0), str(crop_id))
 
 
-func test_the_yield_averages_the_crops_average_over_many_harvests() -> void:
-	for crop_id in CropRules.default_rules().crop_ids():
-		var crop_type := _crop(crop_id).type_data()
-		var total := 0
-		for harvest in _harvests(crop_id, 4000):
-			total += harvest[crop_type["produce"]]
-		assert_almost_eq(total / 4000.0, crop_type["yield_average"], 0.07, str(crop_id))
+func test_carrots_give_two_mostly_and_a_pumpkin_never_less_than_one() -> void:
+	assert_eq(CropRules.default_rules().crop(&"carrot")["yield"], 2)
+	for harvest in _harvests(&"pumpkin", 500):
+		assert_gte(harvest["pumpkin"], 1)
 
 
 func test_the_seed_comes_back_by_the_crops_seed_chance() -> void:
