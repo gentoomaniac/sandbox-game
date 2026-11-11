@@ -185,32 +185,6 @@ Settings (and off), muted in test runs (comes with task 184). Rules in data/musi
   pieces like the test reel are kept for special events (festivals, a market day). Later: stems
 (AudioStreamSynchronized), more pieces, the season and weather choices.
 
-## 195. Tidal water can't be walked on (bug)
-
-- [ ] Done
-
-The user, 2026-11-11 (a screenshot of the player standing far out in high water): "bug: you can
-walk on tidal areas while water is there. right now you should not be able to walk on or in the
-water, we'll add something later"
-- Today the tide is a look only (game/state/tide.gd, game/scenes/mud.gdshader): MUD is walkable at
-  any tide. Make it follow the water: a MUD tile under water at the current tide can't be walked
-  onto, the same as SEA. Wading or swimming comes later, so keep the rule in one place that a later
-  task can change.
-- Which tiles are under water must match what the player sees. The shader floods each pixel where a
-  relief (two layers of integer-hashed value noise, the dark troughs a bit lower) lies below
-  `mix(LOW_WATER, HIGH_WATER, tide)`. Move that relief into state code (a GDScript port that gives
-  the same numbers, with a test that pins it against the shader's constants), and call a tile
-  flooded when the water covers its centre, or most of it. Pick whichever looks right at the edges,
-  and show both in screenshots.
-- No one is cut off by the rising water. Someone standing on a tile that floods can still walk off
-  it, but can't step from dry ground onto flooded mud. Villagers, farm animals and wild ground
-  animals obey the same rule; wading birds may stay. Pathing avoids flooded tiles. A path that was
-  open when it started and floods on the way stops at the water's edge.
-- Placing, building, dropping items and tilling on flooded mud are refused, as on water.
-- Update the comments in tile.gd and tide.gd ("walked on at any tide"), and the design and README.
-- Tests: tiles flood and dry with the tide, no stepping onto flooded mud, walking off a tile that
-  floods, NPC and animal paths avoid the water. Screenshots at high and low water for the user.
-
 ## 176. Wind gusts are heard with the wind you see, and as loud as the wind
 
 - [ ] Done
@@ -506,6 +480,57 @@ affect the visuals, they have no effect on the plants etc."
   darkening) in data/ (lighting.cfg or ambience).
 - Tests for no shadows when clear or at night, darkness under a closed sky, drift following the
   wind, no state effect; screenshots and a short clip or frames for the user; README note.
+
+## 196. Windows get a close button, and a click outside closes them
+
+- [ ] Done
+
+The user, 2026-11-11: "add a close button to the modal. clicking outside it should have the same
+effect as the registered close key"
+- Modal (game/scenes/modal.gd) gets a close button (a small X in the panel's top right corner,
+  both arts, palette colours, a hover look) on every window. Pressing it does exactly what Escape
+  does in that window: it goes through `_takes_escape()`, so where Escape first goes back a page
+  (the pause menu's settings pages, the storage screen's and the character screen's own steps, the
+  trash-can question) the button does the same. One code path for Escape, the button and the
+  outside click.
+- A left click on the dimmed area outside the panel does the same as Escape, for every window,
+  including the fixed ones (the pause menu and ChoiceDialog, where Escape's answer, such as "no",
+  is what the click gives). `closes_on_backdrop_click` and the windows' own `_on_backdrop_input`
+  give way to it, or are dropped if nothing else needs them.
+- Must not break: letting a dragged stack go on the dimmed area still drops it (`_drop_outside_panel`)
+  and doesn't close the window. A window drag (189) whose release ends outside the panel doesn't
+  close it. A press that starts inside the panel and ends outside doesn't count as a click outside.
+  Clicks on the HUD's hotbar while a window is open keep working.
+- The close button takes no part in the window drag (pressing it doesn't start one).
+- Tests: the button and the outside click match Escape (closing, going back a page, the dialog's
+  answer); a stack dropped outside still drops; a drag ending outside doesn't close. README, docs/ui.md
+  and design/presentation/menus-and-hud.md. Screenshots of the button on a few windows, both arts.
+
+## 195. Tidal water can't be walked on (bug)
+
+- [ ] Done
+
+The user, 2026-11-11 (a screenshot of the player standing far out in high water): "bug: you can
+walk on tidal areas while water is there. right now you should not be able to walk on or in the
+water, we'll add something later"
+- Today the tide is a look only (game/state/tide.gd, game/scenes/mud.gdshader): MUD is walkable at
+  any tide. Make it follow the water: a MUD tile under water at the current tide can't be walked
+  onto, the same as SEA. Wading or swimming comes later, so keep the rule in one place that a later
+  task can change.
+- Which tiles are under water must match what the player sees. The shader floods each pixel where a
+  relief (two layers of integer-hashed value noise, the dark troughs a bit lower) lies below
+  `mix(LOW_WATER, HIGH_WATER, tide)`. Move that relief into state code (a GDScript port that gives
+  the same numbers, with a test that pins it against the shader's constants), and call a tile
+  flooded when the water covers its centre, or most of it. Pick whichever looks right at the edges,
+  and show both in screenshots.
+- No one is cut off by the rising water. Someone standing on a tile that floods can still walk off
+  it, but can't step from dry ground onto flooded mud. Villagers, farm animals and wild ground
+  animals obey the same rule; wading birds may stay. Pathing avoids flooded tiles. A path that was
+  open when it started and floods on the way stops at the water's edge.
+- Placing, building, dropping items and tilling on flooded mud are refused, as on water.
+- Update the comments in tile.gd and tide.gd ("walked on at any tide"), and the design and README.
+- Tests: tiles flood and dry with the tide, no stepping onto flooded mud, walking off a tile that
+  floods, NPC and animal paths avoid the water. Screenshots at high and low water for the user.
 
 ## Later (not part of the prototype)
 
