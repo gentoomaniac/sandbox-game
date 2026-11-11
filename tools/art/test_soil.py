@@ -44,6 +44,34 @@ class TilledSoilTest(unittest.TestCase):
                 self.assertEqual(set(row), {furrow}, f"row {y} is a furrow")
 
 
+class BedShapeTest(unittest.TestCase):
+    # In a cell of the dual grid the tile border runs across the middle, and a tile's corner is at
+    # the cell's middle.
+    BORDER = GAME_TILE // 2
+
+    def test_a_beds_side_runs_a_pixel_or_a_few_inside_the_tiles_edge(self):
+        for shapes in terrain._SOIL_SHAPES:
+            north_tiles_tilled = shapes[terrain.TL | terrain.TR]
+            for x in range(GAME_TILE):
+                last_row = max(y for y in range(GAME_TILE) if north_tiles_tilled(x, y))
+                self.assertIn(self.BORDER - 1 - last_row, range(5), f"column {x}")
+
+    def test_a_beds_corner_is_rounded_off_but_reaches_near_the_tiles_corner(self):
+        corner = self.BORDER - 1
+        for shapes in terrain._SOIL_SHAPES:
+            only_north_west_tilled = shapes[terrain.TL]
+            self.assertFalse(only_north_west_tilled(corner, corner))
+            self.assertTrue(only_north_west_tilled(corner - 6, corner - 6))
+
+    def test_the_weeds_of_fallow_soil_stay_on_the_bed_of_a_tile_tilled_alone(self):
+        _, weeds = terrain.soil()
+        on_bed = soil_beds.inside_bed(GAME_TILE, 0, terrain._SOIL_SHAPES)
+        for weed in weeds:
+            for y, row in enumerate(weed):
+                for x, colour in enumerate(row):
+                    self.assertTrue(colour is None or on_bed[y][x], (x, y))
+
+
 class MoistureStepsTest(unittest.TestCase):
     def test_each_step_is_darker_than_the_one_before_it(self):
         def lightness(name):

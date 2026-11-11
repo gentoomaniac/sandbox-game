@@ -130,9 +130,11 @@ outline on any terrain; where a layer lies over another its edge is a rim in its
 shade or a dither. Round things (pebbles with their shadow, lily pads with their notch,
 toadstools, pools) are shaded with forms.py. Tilled soil is flat with straight furrows, four
 ridges to a tile: a broken lit crest row, a body, a dark furrow, a few single crumbs, and the
-field's edge dark under the turf. Every pixel depends only on its place in the tile, so a bed is
-one pattern with no seams or variants. The terrain is the driest soil, a light `soil_light`
-brown; the four moisture steps are the same rows in the browns of `soil_beds.RAMPS`, down to
+field's edge dark under the turf. A bed fills its tiles to a pixel or two of their edge (one in the
+classic art), ragged rather than ruled, and rounds off softly only at its corners, so a small bed
+reads as a bed and not as a blob (task 174: `edge_shapes` with an `inset` and a short `ramp`).
+Every pixel depends only on its place in the tile, so a bed is one pattern with no seams or
+variants. The terrain is the driest soil, a light `soil_light` brown; the four moisture steps are the same rows in the browns of `soil_beds.RAMPS`, down to
 `soil_dark` when soaked, drawn as overlays cut to the bed (`soil_beds`, `terrain.soil_wet`) so
 the field's edge and rim stay. Where a tile is wetter than a tilled neighbour, its brown runs on
 into the neighbour and fades out over 6 pixels (4 in the classic art) in an ordered dither, through
@@ -141,7 +143,8 @@ along each side, cut to the bed at its ends, and a quarter round at each corner,
 drier tile. Soil left fallow comes up in weeds (task 166, `terrain.weeds`, the
 decorations of the soil row, which the game shows only on fallow soil): four or five small things
 to a tile, low weed rosettes and chickweed seedlings with a pixel of `soil` shadow, and the grass
-tufts of the turf, all in the grass ramp. The path is packed earth worn pale in patches, dark
+tufts of the turf, all in the grass ramp, placed where they stay on the bed even of a tile tilled
+alone (`soil_beds.spot_on_bed`). The path is packed earth worn pale in patches, dark
 under the turf at its edge with blades leaning in; the tidal mud has wavy ripple marks with
 dark troughs, which the tide fills first. In autumn the grass of the marsh stays green with
 olive tips and only the dry grass of the Geest turns straw (`seasons.LAYER_REMAPS`); the salt

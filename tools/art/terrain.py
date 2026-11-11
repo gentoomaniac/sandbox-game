@@ -148,7 +148,7 @@ def patch_noise(seed, cell):
     return noise
 
 
-def edge_shapes(seed, waves, roughness):
+def edge_shapes(seed, waves, roughness, inset=0, ramp=None):
     """The coverage functions of a terrain's edge tiles: shapes[variant][mask](x, y).
 
     The cell's corners sit on the centres of its 4 world tiles. Corner coverage is blended
@@ -156,6 +156,11 @@ def edge_shapes(seed, waves, roughness):
     corners. A periodic noise shared by all variants bends it into an irregular line that
     meets the neighbouring cells' edges; each variant adds its own noise, faded out
     towards the cell border, so variants differ inside but still fit together.
+
+    A `ramp` (in pixels) sharpens the blend: a corner's share falls from all to none only over
+    that many pixels across the tile border, so the edge runs straight along the border and
+    rounds off only near the tile's corner, over about a quarter of the ramp. The edge then lies
+    `inset` pixels inside the tiles that are on the layer, all round.
 
     covered(x, y) also answers for pixels just outside the cell, by extrapolating, so rims
     and overhangs along the cell border match the neighbour's. It only grows as corners
@@ -165,21 +170,29 @@ def edge_shapes(seed, waves, roughness):
     shapes = []
     for variant in range(EDGE_VARIANTS):
         own = periodic_noise(seed * 10 + variant, waves)
-        shapes.append([coverage(mask, shared, own, roughness) for mask in range(FULL)])
+        shapes.append([coverage(mask, shared, own, roughness, inset, ramp) for mask in range(FULL)])
     return shapes
 
 
-def coverage(mask, shared, own, roughness):
+def coverage(mask, shared, own, roughness, inset=0, ramp=None):
     corners = [1.0 if mask & bit else 0.0 for bit in (TL, TR, BL, BR)]
+    threshold = 0.5 + inset / (ramp or GAME_TILE)
+
+    def share(t):
+        """The share of the right or the bottom corners at `t` across the cell (0 to 1)."""
+        if ramp is None:
+            return t
+        return min(1.0, max(0.0, 0.5 + (t - 0.5) * GAME_TILE / ramp))
 
     def covered(x, y):
         u = (x + 0.5) / GAME_TILE
         v = (y + 0.5) / GAME_TILE
-        top = corners[0] * (1 - u) + corners[1] * u
-        bottom = corners[2] * (1 - u) + corners[3] * u
-        value = top * (1 - v) + bottom * v
+        across, down = share(u), share(v)
+        top = corners[0] * (1 - across) + corners[1] * across
+        bottom = corners[2] * (1 - across) + corners[3] * across
+        value = top * (1 - down) + bottom * down
         fade = math.sin(math.pi * u) * math.sin(math.pi * v)
-        return value + roughness * (shared(x, y) + 1.5 * fade * own(x, y)) > 0.5
+        return value + roughness * (shared(x, y) + 1.5 * fade * own(x, y)) > threshold
 
     return covered
 
@@ -929,7 +942,9 @@ def soil_pixel_of(ramp):
 
 
 _DRY_SOIL = soil_pixel_of(soil_beds.RAMPS[0])
-_SOIL_SHAPES = edge_shapes(80, [(1, 1.0), (2, 0.5)], 0.06)
+# A bed fills its tiles to a pixel or two of their edge, straight along the sides but ragged, and
+# rounds off softly at its corners (task 174).
+_SOIL_SHAPES = edge_shapes(80, [(1, 1.0), (2, 0.6), (4, 0.4)], 0.07, inset=1.5, ramp=22)
 
 
 def _tilled(seed):
@@ -969,15 +984,26 @@ def seedlings(ramp):
 def weeds():
     """What comes up on tilled soil left fallow (see game/state/fallow_soil.gd): a few weeds and
     tufts of grass. The decorations of the soil row, which the game draws only on soil nobody has
-    tended for some days, never by the decoration noise."""
+    tended for some days, never by the decoration noise. They stay on the bed even of a tile tilled
+    alone."""
     rosette = weed_rosette(GRASS_RAMP)
     sprouts = seedlings(GRASS_RAMP)
     shapes = tufts(GRASS_RAMP)
+    on_bed = soil_beds.inside_bed(GAME_TILE, 0, _SOIL_SHAPES)
+
+    def weeds_on_bed(seed, *pictures):
+        rng = random.Random(seed)
+        tile = blank(GAME_TILE)
+        for picture in pictures:
+            drawn = [(x, y) for y, row in enumerate(picture) for x, colour in enumerate(row) if colour]
+            stamp(tile, picture, *soil_beds.spot_on_bed(rng, on_bed, drawn))
+        return tile
+
     return [
-        decoration(84, rosette, shapes[2], shapes[5], sprouts, shapes[0]),
-        decoration(85, shapes[0], sprouts, shapes[3], shapes[4], sprouts),
-        decoration(86, sprouts, rosette, shapes[4], shapes[1]),
-        decoration(87, shapes[1], shapes[5], sprouts, rosette, shapes[3]),
+        weeds_on_bed(84, rosette, shapes[2], shapes[5], sprouts, shapes[0]),
+        weeds_on_bed(85, shapes[0], sprouts, shapes[3], shapes[4], sprouts),
+        weeds_on_bed(86, sprouts, rosette, shapes[4], shapes[1]),
+        weeds_on_bed(87, shapes[1], shapes[5], sprouts, rosette, shapes[3]),
     ]
 
 

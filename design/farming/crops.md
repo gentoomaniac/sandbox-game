@@ -50,7 +50,9 @@
     steps: light brown when dry, dark brown when soaked, lightening day by day as it dries.
     Where a tile is wetter than a tilled neighbour, its brown fades out into the neighbour over
     a few pixels, at the sides and the corners (the user, 2026-11-10, task 167); between tiles
-    as wet there is no edge, and the bed's rim against the turf stays as it is.
+    as wet there is no edge, and the bed's rim against the turf stays as it is. The bed itself
+    comes to a pixel or two of its tiles' edges, ragged, its corners softly rounded (the user,
+    2026-11-11, task 174).
   - **Fallow soil grows over** (the user, 2026-11-10, task 166): tilled soil with nothing on
     it (no crop, living or dead, no sapling or placed object, no building) that nobody tends
     comes up in a few weeds and grass tufts after `fallow_weedy_days` (5) and is grass again after

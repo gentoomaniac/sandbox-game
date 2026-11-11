@@ -61,7 +61,7 @@ def _quadrant_masks(mask):
     }
 
 
-def _inside_bed(size, mask, shapes):
+def inside_bed(size, mask, shapes):
     """Which pixels of a tile of a bed `mask` lie well inside the bed, as rows of booleans: where
     every variant of the terrain's edge shapes (see terrain.edge_shapes) covers the pixel and its
     neighbours, the terrain's rim excluded."""
@@ -80,6 +80,19 @@ def _inside_bed(size, mask, shapes):
     return inside
 
 
+def spot_on_bed(rng, inside, drawn):
+    """A random spot (the top left corner) for a small picture on a tile, where all its `drawn`
+    pixels ((x, y) in the picture) lie on `inside`: the weeds of fallow soil stay on the bed even
+    of a tile tilled alone (see inside_bed with the mask 0)."""
+    size = len(inside)
+    width = max(x for x, _ in drawn) + 1
+    height = max(y for _, y in drawn) + 1
+    while True:
+        x, y = rng.randrange(size - width + 1), rng.randrange(size - height + 1)
+        if all(inside[y + dy][x + dx] for dx, dy in drawn):
+            return x, y
+
+
 def _soil_at(size, pixel, x, y):
     """The colour of the soil of `pixel(x, y)` (see terrain.soil_pixel_of) at a pixel of a tile
     of the plain grid: the terrain is drawn on the dual grid, half a tile off."""
@@ -91,7 +104,7 @@ def overlay_tile(size, mask, shapes, pixel):
     """One tile of the overlay for a bed `mask`: `pixel(x, y)` is the colour of the soil at a
     pixel of the terrain, and `shapes` its edge shapes. It is drawn where it lies well inside the
     bed."""
-    inside = _inside_bed(size, mask, shapes)
+    inside = inside_bed(size, mask, shapes)
     return [[_soil_at(size, pixel, x, y) if inside[y][x] else None for x in range(size)] for y in range(size)]
 
 
@@ -160,7 +173,7 @@ def _distance_from(direction, size, x, y):
 def fade_tile(size, direction, inside, depth, steps, pixels):
     """The fade from a wetter tile at the side or corner `direction` into a drier one, `depth`
     pixels deep, between the `steps` (wetter, drier); `inside` are the pixels well inside the bed
-    (see `_inside_bed`) and `pixels` the pixel functions of the steps. Where it has come down to
+    (see `inside_bed`) and `pixels` the pixel functions of the steps. Where it has come down to
     the drier step, the tile is empty: that step is drawn under it."""
     wetter, drier = steps
     tile = [[None] * size for _ in range(size)]
@@ -182,7 +195,7 @@ def fade_rows(size, depth, shapes, pixel_of_ramp):
     (SIDES), a tile for each pair of end cuts (see `fade_masks`), then the fade at each corner
     (CORNERS)."""
     pixels = [pixel_of_ramp(ramp) for ramp in RAMPS]
-    cuts = [(side, _inside_bed(size, mask, shapes)) for side in SIDES for mask in fade_masks(side)]
-    whole_tile = _inside_bed(size, 255, shapes)
+    cuts = [(side, inside_bed(size, mask, shapes)) for side in SIDES for mask in fade_masks(side)]
+    whole_tile = inside_bed(size, 255, shapes)
     cuts += [(corner, whole_tile) for corner in CORNERS]
     return [[fade_tile(size, direction, inside, depth, steps, pixels) for direction, inside in cuts] for steps in STEP_PAIRS]
