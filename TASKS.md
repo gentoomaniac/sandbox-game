@@ -419,7 +419,7 @@ nothing is moving. feels like the sound is off."
 - Tests: no gust below the threshold, gust volume grows with wind, the gust timing matches the
   shader's front at the player's place; a listening file at 5, 10 and 15 m/s for the user.
 
-## 199. Fired stations: the kiln and the oven get a 3x3 load, fuel, a fire button and a progress bar; leftovers turn to ash
+## 199. Process stations: the kiln and the oven get a 3x3 load, an activation button and a progress bar
 
 - [ ] Done
 
@@ -427,64 +427,94 @@ The user, 2026-11-11: "The killing [kiln] does the recipes on the side and offer
 slots. You put in raw material and fuel (wood for now) and after some time you'll get the resulting
 material. Only one recipe per craft. Add a little fire button to start the process with a progress
 bar above the greyed out inventory. Clicking a recipe adds the required materials from your
-inventory. Additional things in the killin turn into ash."
-- Today the kiln is a crafting station: picking a recipe (bricks, bricks_large, bricks_master in
-  data/recipes.cfg, `hours=12`, logs as part of the materials) takes the materials and starts the
-  firing (StationWork); opening the menu when it is done takes the whole result out, or nothing if
-  it doesn't fit (task 198 drops what doesn't fit by the kiln; this task replaces that path for the
-  kiln).
-- The kiln's window: the kiln's recipes in a list on the side, and a 3x3 slot grid, the kiln's own
-  storage (saved with the kiln; save version bump with its upgrade, per the save rules). The player
-  moves stacks in and out as with a chest (drag, shift-click). Fuel is wood (logs) for now, put in
-  the same grid; a recipe says how much fuel it needs (keep today's log counts).
-- One recipe per kind of result in the list (one "Bricks", not today's bricks, bricks_large and
-  bricks_master), each with an amount under it: a small number field to type in and +/- buttons
-  (the user, 2026-11-11). The +/- buttons only go as high as the player's materials (and fuel)
-  allow, and as fits the 3x3 grid; a typed number is held to the same limit. A recipe the player
-  can't make even once is greyed out and can't be clicked (nothing moves).
-- Clicking a recipe moves the materials and fuel for the chosen amount from the player's inventory
-  into the grid. A small fire button starts the firing when the grid holds a recipe's materials and
-  fuel; one recipe per firing.
-- The masonry levels that made bricks_large and bricks_master pay off (more bricks for the same
-  clay and wood) become a bonus on the one recipe (the user, 2026-11-11): at a high enough skill a
-  firing gives extra bricks besides the ones selected, automatically. The old recipes gave one
-  brick per raw brick at every level and saved wood (6 bricks for 2 logs, 12 for 3, 18 for 3);
-  the new bonus is extra bricks instead (e.g. a share of the load at level 50 and a larger one at
-  70; pick the rule and numbers and put them in data/, where the user tunes them; no need to
-  ask). Other kiln recipes
-  that unlock at skill levels come later; the recipe `level` lock stays for them.
-- While it fires: a progress bar above the grid, the grid greyed out and locked (nothing in or out),
-  the time from the recipe's `hours`; the kiln shows its fire in the world (the existing lit look and
-  light, if any). The firing goes on with the window closed and with the player away (game time).
-- When done: the grid holds the result (as many stacks as needed in the 9 slots). Anything in the
-  grid that wasn't part of the recipe (extra raw bricks, extra logs, other items) has turned into
-  ash: a new item `ash` (art in both sets, a pixel-artist job): one ash per item burnt (the user,
-  2026-11-11), so 5 extra logs give 5 ash. The player takes the results out like from a chest, only as much as
-  fits (the rest stays in the kiln).
-- Skills: the masonry levels still unlock the bigger loads and each firing practises the skill.
-- The user, 2026-11-11, on top: "the oven should work the same. Make that a type of crafting
-  station code that's reusable. We'll have more use for it in the future". So:
-  - Build it as one reusable kind of station, a fired station (name it to fit the code), not
-    kiln code: the 3x3 load grid, the fuel, the fire button, the timed firing with its progress
-    bar and greyed grid, the result in the grid, leftovers to ash, the take-out of what fits,
-    the recipe list with amounts and greying, the save of the grid and the firing. A station
-    becomes one by its config (data/stations.cfg: e.g. a `fired=true` with its grid size, its
-    fuel items and how much fuel a firing needs), so a later station (a smithy's forge, a
-    smokehouse, a charcoal clamp) is a config section plus its recipes, with no new code.
-  - The kiln and the oven both use it. The oven's recipes (bread, berry_tart, feast_cake in
-    data/recipes.cfg, today made at once with no fuel) get a baking time and wood as fuel (pick
-    them: bread about an hour, numbers in data/); their cooking levels stay as recipe locks.
-    The oven works indoors and outdoors, as it is placed today.
-  - Skill bonuses (the kiln's extra bricks at high masonry) are a per-recipe or per-station
-    setting of the shared code, so the oven could get extra loaves the same way later; the
-    oven gets none for now unless it falls out for free.
-  - Other stations (workbench, hearth) keep today's instant crafting menu.
-  - Tests for the shared code with a station defined only in test config, plus the kiln and the
-    oven; screenshots of both windows.
-- Tests: the grid saved and loaded, a recipe click moving materials, the fire button refused without
-  a full recipe or fuel, locked while firing, the result and the ash after the time, taking out only
-  what fits. README, design pages on crafting and the kiln, docs/ui.md. Screenshots of the window,
-  empty, loaded, firing and done.
+inventory." Then: "the oven should work the same. Make that a type of crafting station code that's
+reusable. We'll have more use for it in the future." And: "leave out the ash. Only allow to put in
+what fits a recipe. If there's too much of a kind leave it in as is. That'll make the code easier
+and better reusable. We can later expand on it. Maybe the kiln implementation can turn it to ash,
+the cooking station to burnt food. The 'fire button' should just be an activation button where the
+implementation can add a symbol. So the cooking station and kiln might add a fire, a saw mill might
+add a saw blade, a fish breeding pond might add a fish."
+
+Today:
+- The kiln is a crafting station. Picking a recipe takes the materials and starts the firing.
+  - Its recipes are bricks, bricks_large and bricks_master in data/recipes.cfg, with `hours=12`
+    and logs among the materials.
+  - The firing runs in StationWork. Opening the menu when it's done takes the result out.
+  - Task 198 drops what doesn't fit by the kiln. This task replaces that path.
+- The oven's recipes are made at once, with no time and no fuel: bread, berry_tart and feast_cake.
+
+**One reusable kind of station, a process station** (name it to fit the code). The kiln and the
+oven both use it. A later station is a config section plus its recipes, with no new code. Examples
+are a forge, a smokehouse, a saw mill and a fish pond.
+- A station becomes one by its config in data/stations.cfg:
+  - that it is a process station;
+  - its grid size (3x3 for both);
+  - the icon of its activation button (a fire for the kiln and the oven).
+- There is no separate fuel concept. Wood is simply one of a recipe's materials, as the logs are
+  in the brick recipes today. A saw mill or a fish pond then needs nothing special.
+- **The window:**
+  - The station's recipes are listed on the side, with the grid and the activation button
+    beside them.
+  - The grid is the station's own storage. It is saved with the station, with a save version
+    bump and its upgrade per the save rules.
+  - The player moves stacks in and out as with a chest: drag and shift-click.
+- **Only what fits a recipe goes in.** The grid accepts only items that are a material of one of
+  the station's recipes. Anything else is refused, as a full slot refuses.
+- **The recipe list:**
+  - There is one recipe per kind of result: one "Bricks", not today's three brick recipes.
+  - Under each recipe is an amount: a small number field to type in, and +/- buttons.
+  - The +/- buttons only go as high as the player's materials allow and as fits the grid. A
+    typed number is held to the same limit.
+  - A recipe the player can't make even once is greyed out and can't be clicked.
+  - Clicking a recipe moves the materials for the chosen amount from the inventory into the grid.
+- **The activation button:**
+  - It starts the run when the grid holds at least one recipe's materials, one recipe per run.
+    Which recipe the grid matches when it could hold more than one is up to you; say which.
+  - The button shows the station's icon.
+- **While it runs:**
+  - A progress bar shows above the grid, and the grid is greyed out and locked.
+  - The time comes from the recipe's `hours`.
+  - The station shows its activity in the world, using the existing lit look and light, if any.
+  - It goes on with the window closed and with the player away, in game time.
+- **When done:**
+  - The materials of the amount made are used up, and the result is in the grid.
+  - Extra items of a kind stay in the grid as they were. Nothing turns into ash or anything else.
+  - Leave a clear place in the code where a station could later change leftovers: ash for the
+    kiln, burnt food for the oven. It does nothing for now.
+  - The player takes the results out like from a chest, only as much as fits. The rest stays in
+    the station.
+- **Skill:**
+  - Recipe `level` locks stay, for later recipes that unlock at a skill level, and each run
+    practises the recipe's skill.
+  - The masonry levels that made bricks_large and bricks_master pay off become a bonus on the one
+    Bricks recipe: at a high enough skill a run gives extra bricks besides the ones selected,
+    automatically.
+  - The old recipes gave one brick per raw brick and saved wood (6 bricks for 2 logs, 12 for 3,
+    18 for 3). The new bonus is extra bricks instead, for example a share of the load at level 50
+    and a larger one at 70.
+  - Pick the rule and the numbers and put them in data/, where the user tunes them; no need to ask.
+  - Make the bonus a setting of the shared code, per recipe or per station, so the oven could get
+    extra loaves the same way later. The oven gets none for now.
+- **The oven:**
+  - Its recipes get a baking time and wood among their materials. Pick them (bread about an hour)
+    and put the numbers in data/.
+  - Their cooking levels stay as recipe locks.
+  - It works indoors and outdoors, as it is placed today.
+- Other stations (the workbench and the hearth) keep today's instant crafting menu.
+- **Tests:**
+  - the shared code with a station defined only in test config;
+  - the grid saved and loaded;
+  - only recipe materials accepted;
+  - a recipe click moving materials;
+  - the amount limits;
+  - the button refused without a full recipe;
+  - locked while running;
+  - the result after the time, with leftovers untouched;
+  - taking out only what fits;
+  - the kiln and the oven.
+- **Docs and screenshots:**
+  - README, the design pages on crafting, the kiln and the oven, and docs/ui.md.
+  - Screenshots of the kiln and the oven windows: empty, loaded, running and done.
 
 ## 201. Wild animals keep away from villagers and buildings (mice excepted)
 
