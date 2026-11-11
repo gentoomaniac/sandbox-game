@@ -14,7 +14,10 @@ seed="dandelion_seeds"
 produce="dandelion"
 seed_weight=0.01
 produce_weight=0.1
-yield=1
+yield_min=1
+yield_max=2
+yield_average=1.5
+seed_chance=0.5
 regrow_stage=0
 ripe_wait_factor=1.0
 growth_per_stage=2.0
@@ -85,7 +88,7 @@ func test_the_crops_file_is_valid_and_has_the_thirteen_crops() -> void:
 	assert_true(rules.is_valid(), str(rules.problems()))
 	assert_eq(rules.crop_ids(), CROP_NAMES)
 	assert_eq(rules.crop(&"potato")["seed_name"], "Seed potatoes")
-	assert_eq(rules.crop(&"potato")["yield"], 3)
+	assert_eq(rules.crop(&"potato")["yield_average"], 3.0)
 	assert_eq(rules.farming("good_day_score"), 0.6)
 
 
@@ -117,6 +120,21 @@ func test_a_regrow_stage_outside_the_stages_is_reported() -> void:
 	assert_eq(rules.problems().size(), 1)
 	assert_true("regrow_stage" in rules.problems()[0])
 	assert_push_error_count(1)
+
+
+func test_a_harvest_that_cannot_be_drawn_is_reported() -> void:
+	var wrong := {
+		"yield_min=1": "yield_min=0",
+		"yield_average=1.5": "yield_average=2.5",
+		"seed_chance=0.5": "seed_chance=1.5",
+	}
+	var reported := 0
+	for right: String in wrong:
+		_write(FARMING + REEDS + FAKE_CROP.replace(right, wrong[right]))
+		var rules := CropRules.from_file(DATA_FILE)
+		assert_false(rules.is_valid(), wrong[right])
+		reported += rules.problems().size()
+	assert_push_error_count(reported)
 
 
 func test_a_missing_file_is_reported() -> void:

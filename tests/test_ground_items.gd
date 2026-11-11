@@ -61,9 +61,13 @@ func test_mining_picking_and_harvesting_drop_on_the_ground() -> void:
 	crop.state["growth"] = 3.0 * crop.type_data()["growth_per_stage"]
 	_world.remove_object(_tile)
 	_world.add_object(crop)
+	_state.harvest_rng.seed = 1
+	var dice := RandomNumberGenerator.new()
+	dice.seed = 1
+	var harvest := CropLife.harvest_of(crop, dice)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.HARVEST)
-	assert_eq(_dropped(ItemTypes.TURNIP), 1)
-	assert_eq(_dropped(ItemTypes.TURNIP_SEEDS), 1)
+	assert_eq(_dropped(ItemTypes.TURNIP), harvest[ItemTypes.TURNIP])
+	assert_eq(_dropped(ItemTypes.TURNIP_SEEDS), harvest.get(ItemTypes.TURNIP_SEEDS, 0))
 	assert_eq(_count(ItemTypes.TURNIP), 0)
 
 

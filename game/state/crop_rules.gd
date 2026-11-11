@@ -23,7 +23,10 @@ const REQUIRED_CROP_KEYS: Array[String] = [
 	"produce",
 	"seed_weight",
 	"produce_weight",
-	"yield",
+	"yield_min",
+	"yield_max",
+	"yield_average",
+	"seed_chance",
 	"regrow_stage",
 	"ripe_wait_factor",
 	"growth_per_stage",
@@ -82,10 +85,25 @@ func _init(crops: Dictionary, farming: Dictionary, reeds: Dictionary) -> void:
 		for key in REQUIRED_CROP_KEYS:
 			if not _crops[crop_id].has(key):
 				_problems.append("[%s] no %s" % [crop_id, key])
+		_check_harvest(crop_id, _crops[crop_id])
 		if _crops[crop_id].has("regrow_stage"):
 			var regrow_stage: int = _crops[crop_id]["regrow_stage"]
 			if regrow_stage < 0 or regrow_stage >= STAGES:
 				_problems.append("[%s] regrow_stage must be 0 up to %d" % [crop_id, STAGES - 1])
+
+
+func _check_harvest(crop_id: String, values: Dictionary) -> void:
+	for key in ["yield_min", "yield_max", "yield_average", "seed_chance"]:
+		if not values.has(key):
+			return
+	var low: int = values["yield_min"]
+	var high: int = values["yield_max"]
+	if low < 1 or low > high:
+		_problems.append("[%s] yield_min must be 1 or more, and at most yield_max" % crop_id)
+	elif values["yield_average"] < low or values["yield_average"] > high:
+		_problems.append("[%s] yield_average must lie from yield_min to yield_max" % crop_id)
+	if values["seed_chance"] < 0.0 or values["seed_chance"] > 1.0:
+		_problems.append("[%s] seed_chance must be 0 to 1" % crop_id)
 
 
 ## The rules of the data file, loaded the first time they are asked for.

@@ -190,7 +190,7 @@ func _do_use(target: Vector2i) -> Use:
 				_state.world.change_object(crop)
 			else:
 				_state.world.remove_object(target)
-			var harvest := CropLife.harvest_of(crop)
+			var harvest := CropLife.harvest_of(crop, _state.harvest_rng)
 			_state.world.drop_items(target, harvest)
 			_done(ActionOutcome.HARVEST, target, crop.type, harvest)
 		Use.CLEAR:

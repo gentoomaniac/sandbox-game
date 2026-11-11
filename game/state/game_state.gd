@@ -45,6 +45,8 @@ var snow_cover: SnowCover
 var player := PlayerState.new()
 ## Session-only cheats (see Console): not saved.
 var cheats := CheatFlags.new()
+## The dice of the harvests: how much a crop gives and whether it gives a seed. Tests seed it.
+var harvest_rng := RandomNumberGenerator.new()
 ## The farm animals of the world. Main moves them while the player is out in the world.
 var livestock := Livestock.new(sun, cheats)
 ## The villagers of the world, moved like the farm animals.

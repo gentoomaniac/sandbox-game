@@ -79,13 +79,20 @@ func test_the_last_seed_leaves_an_empty_hand() -> void:
 	assert_eq(_state.player.inventory.held_item(), ItemTypes.NONE)
 
 
-func test_an_empty_hand_harvests_a_ripe_crop_and_gets_a_seed_back() -> void:
+func test_an_empty_hand_harvests_a_ripe_crop_and_gets_what_the_dice_give() -> void:
 	_plant_and_ripen()
+	_state.harvest_rng.seed = SEED
+	var dice := RandomNumberGenerator.new()
+	dice.seed = SEED
+	var expected := CropLife.harvest_of(_world.object_at(_tile), dice)
 	_hold(ItemTypes.NONE)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.HARVEST)
 	assert_null(_world.object_at(_tile))
-	assert_eq(_world.ground_items.count_of(ItemTypes.TURNIP), 1)
-	assert_eq(_world.ground_items.count_of(ItemTypes.TURNIP_SEEDS), 1)
+	assert_eq(_world.ground_items.count_of(ItemTypes.TURNIP), expected[ItemTypes.TURNIP])
+	assert_eq(
+		_world.ground_items.count_of(ItemTypes.TURNIP_SEEDS),
+		expected.get(ItemTypes.TURNIP_SEEDS, 0)
+	)
 
 
 func test_an_empty_hand_does_not_harvest_an_unripe_crop() -> void:

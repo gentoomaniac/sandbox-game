@@ -81,8 +81,17 @@
     any time; a crop planted in the wrong season simply won't thrive.
   - Each crop has its own seeds (a seed bag item, seed potatoes for potatoes) and its
     produce item; produce can be eaten (food values in `data/energy.cfg`).
-  - Until a shop exists, seeds come from the console (`give`), and a harvest still gives
+  - Until a shop exists, seeds come from the console (`give`), and a harvest sometimes gives
     one seed back.
+  - **Harvests vary** (the user, 2026-11-11, task 178): each harvest draws a whole number of
+    produce from `yield_min` to `yield_max` that averages `yield_average` over many harvests
+    (a draw of the whole range, with a chance of the nearer end to pull the average off the
+    middle), and gives one seed back with the crop's `seed_chance`. Replanting only your own
+    seeds shrinks a field by the harvests that leave none, so a crop with a chance of 0.6 keeps
+    a field at about six tenths of its size each round: seeds have to be found or bought too.
+    The grains and the pumpkin have the highest chance (0.7), the roots and flax 0.5 to 0.6,
+    and the peas, beans and strawberries, which regrow and are picked again, 0.2. The dice are
+    `GameState.harvest_rng`, seeded in tests; saves are not affected.
 - Wild crops can be foraged.
 - The biome decides which resources are available and what the land is good for
   agriculturally (see [Biomes](../world/generation.md)).

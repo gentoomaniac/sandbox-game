@@ -182,11 +182,43 @@ func test_a_regrowing_crop_goes_back_to_its_regrow_stage_and_ripens_again() -> v
 		assert_true(CropLife.is_ripe(crop), str(crop_id))
 
 
-func test_a_harvest_gives_the_yield_and_one_seed() -> void:
-	var potato := CropLife.harvest_of(_crop(&"potato"))
-	assert_eq(potato, {&"potato": 3, &"potato_seeds": 1})
-	var turnip := CropLife.harvest_of(_crop(WorldObjectTypes.TURNIP))
-	assert_eq(turnip, {ItemTypes.TURNIP: 1, ItemTypes.TURNIP_SEEDS: 1})
+func _harvests(crop_id: StringName, count: int) -> Array[Dictionary]:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = SEED
+	var crop := _crop(crop_id)
+	var harvests: Array[Dictionary] = []
+	for _i in count:
+		harvests.append(CropLife.harvest_of(crop, rng))
+	return harvests
+
+
+func test_a_harvest_gives_a_yield_within_the_crops_range() -> void:
+	for crop_id in CropRules.default_rules().crop_ids():
+		var crop_type := _crop(crop_id).type_data()
+		var seen := {}
+		for harvest in _harvests(crop_id, 300):
+			var count: int = harvest[crop_type["produce"]]
+			assert_between(count, crop_type["yield_min"], crop_type["yield_max"], str(crop_id))
+			seen[count] = true
+		assert_eq(seen.size(), crop_type["yield_max"] - crop_type["yield_min"] + 1, str(crop_id))
+
+
+func test_the_yield_averages_the_crops_average_over_many_harvests() -> void:
+	for crop_id in CropRules.default_rules().crop_ids():
+		var crop_type := _crop(crop_id).type_data()
+		var total := 0
+		for harvest in _harvests(crop_id, 4000):
+			total += harvest[crop_type["produce"]]
+		assert_almost_eq(total / 4000.0, crop_type["yield_average"], 0.07, str(crop_id))
+
+
+func test_the_seed_comes_back_by_the_crops_seed_chance() -> void:
+	for crop_id in CropRules.default_rules().crop_ids():
+		var crop_type := _crop(crop_id).type_data()
+		var with_seed := 0
+		for harvest in _harvests(crop_id, 4000):
+			with_seed += harvest.get(crop_type["seed"], 0)
+		assert_almost_eq(with_seed / 4000.0, crop_type["seed_chance"], 0.04, str(crop_id))
 
 
 func test_crops_planted_in_season_ripen_in_a_fortnight_or_so_under_the_real_weather() -> void:

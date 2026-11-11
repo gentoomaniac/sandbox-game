@@ -23,7 +23,7 @@ static func create(world: World, origin: Vector2i) -> void:
 	world.drop_items(oak_pos, oak_trunk["drops"])
 	world.drop_items(stone_pos, WorldObjectTypes.TYPES[WorldObjectTypes.STONE]["drops"])
 	var crop := WorldObject.new(WorldObjectTypes.TURNIP, crop_pos)
-	world.drop_items(crop_pos, CropLife.harvest_of(crop))
+	world.drop_items(crop_pos, CropLife.harvest_of(crop, RandomNumberGenerator.new()))
 	var bush := WorldObject.new(WorldObjectTypes.BERRY_BUSH, bush_pos)
 	bush.pick()
 	world.add_object(bush)

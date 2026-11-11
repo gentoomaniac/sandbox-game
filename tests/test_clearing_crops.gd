@@ -21,7 +21,10 @@ func test_every_crop_is_harvested_by_a_use_when_ripe() -> void:
 		var crop := WorldObject.new(crop_id, _tile)
 		_ripen(crop)
 		_world.add_object(crop)
-		var expected := CropLife.harvest_of(crop)
+		_state.harvest_rng.seed = SEED
+		var dice := RandomNumberGenerator.new()
+		dice.seed = SEED
+		var expected := CropLife.harvest_of(crop, dice)
 		var before := {}
 		for item: StringName in expected:
 			before[item] = _world.ground_items.count_of(item)
