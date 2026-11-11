@@ -535,6 +535,43 @@ nothing is moving. feels like the sound is off."
 - Tests: no gust below the threshold, gust volume grows with wind, the gust timing matches the
   shader's front at the player's place; a listening file at 5, 10 and 15 m/s for the user.
 
+## 199. The kiln gets a 3x3 load, fuel, a fire button and a progress bar; leftovers turn to ash
+
+- [ ] Done
+
+The user, 2026-11-11: "The killing [kiln] does the recipes on the side and offers an inventory 3x3
+slots. You put in raw material and fuel (wood for now) and after some time you'll get the resulting
+material. Only one recipe per craft. Add a little fire button to start the process with a progress
+bar above the greyed out inventory. Clicking a recipe adds the required materials from your
+inventory. Additional things in the killin turn into ash."
+- Today the kiln is a crafting station: picking a recipe (bricks, bricks_large, bricks_master in
+  data/recipes.cfg, `hours=12`, logs as part of the materials) takes the materials and starts the
+  firing (StationWork); opening the menu when it is done takes the whole result out, or nothing if
+  it doesn't fit (task 198 drops what doesn't fit by the kiln; this task replaces that path for the
+  kiln).
+- The kiln's window: the kiln's recipes in a list on the side, and a 3x3 slot grid, the kiln's own
+  storage (saved with the kiln; save version bump with its upgrade, per the save rules). The player
+  moves stacks in and out as with a chest (drag, shift-click). Fuel is wood (logs) for now, put in
+  the same grid; a recipe says how much fuel it needs (keep today's log counts).
+- Clicking a recipe moves its materials and fuel from the player's inventory into the grid (what's
+  missing is shown as with today's shortfalls; nothing moves if it can't be made, or move what there
+  is: pick and say why). A small fire button starts the firing when the grid holds one recipe's
+  materials and fuel; only one recipe per firing: which recipe fires is the one the grid matches
+  (the largest one the load covers, or the one last clicked: pick and say why).
+- While it fires: a progress bar above the grid, the grid greyed out and locked (nothing in or out),
+  the time from the recipe's `hours`; the kiln shows its fire in the world (the existing lit look and
+  light, if any). The firing goes on with the window closed and with the player away (game time).
+- When done: the grid holds the result (as many stacks as needed in the 9 slots). Anything in the
+  grid that wasn't part of the recipe (extra raw bricks, extra logs, other items) has turned into
+  ash: a new item `ash` (art in both sets, a pixel-artist job; how much ash per item: pick and say
+  why, e.g. one ash per stack). The player takes the results out like from a chest, only as much as
+  fits (the rest stays in the kiln).
+- Skills: the masonry levels still unlock the bigger loads and each firing practises the skill.
+- Tests: the grid saved and loaded, a recipe click moving materials, the fire button refused without
+  a full recipe or fuel, locked while firing, the result and the ash after the time, taking out only
+  what fits. README, design pages on crafting and the kiln, docs/ui.md. Screenshots of the window,
+  empty, loaded, firing and done.
+
 ## Later (not part of the prototype)
 
 - **Villagers go inside** (the user, 2026-11-11): villagers enter their houses (and the church,
