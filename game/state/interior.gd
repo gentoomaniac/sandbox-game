@@ -87,6 +87,7 @@ func to_dict() -> Dictionary:
 		"exit_tile": SaveCodec.vector_to_json(exit_tile),
 		"tiles": tiles,
 		"objects": objects_data,
+		"ground_items": ground_items.to_array(),
 	}
 
 
@@ -99,4 +100,5 @@ static func from_dict(data: Dictionary) -> Interior:
 		interior.set_terrain(SaveCodec.vector_from_json(tile), SaveCodec.terrain_from_json(tile[2]))
 	for object_data: Dictionary in data["objects"]:
 		interior.add_object(WorldObject.from_dict(object_data))
+	interior.ground_items.load_array(data["ground_items"])
 	return interior

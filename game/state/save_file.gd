@@ -21,10 +21,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 28
-## The oldest version we still upgrade. Nine steps back, for the next version (task 200) makes
-## its step the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 29
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -206,6 +205,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_26(game)
 	if version <= 27:
 		_upgrade_from_version_27(game)
+	if version <= 28:
+		_upgrade_from_version_28(game)
 
 
 ## Version 19 kept no memories of villagers: they remember no conversation.
@@ -293,3 +294,10 @@ static func _upgrade_from_version_26(game: Dictionary) -> void:
 ## Version 27 had no lantern (task 177): it is out.
 static func _upgrade_from_version_27(game: Dictionary) -> void:
 	game["player"]["is_lantern_lit"] = false
+
+
+## Version 28 kept no items on the floors of interiors (task 200): nothing lies there.
+static func _upgrade_from_version_28(game: Dictionary) -> void:
+	for building: Dictionary in game["world"]["buildings"]:
+		if building["interior"] != null:
+			building["interior"]["ground_items"] = []

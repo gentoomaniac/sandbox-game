@@ -99,10 +99,7 @@ func _check_world(world: Dictionary) -> void:
 			var edit: Variant = terrain_edits[index]
 			if edit is Array and edit.size() == 3 and not Tile.Terrain.has(str(edit[2])):
 				_report("world terrain_edits %d" % index, "unknown terrain %s" % edit[2])
-	var piles: Variant = _field(world, "ground_items", Kind.LIST, "world")
-	if piles != null:
-		for index in piles.size():
-			_check_ground_item(piles[index], "world ground_items %d" % index, piles)
+	_check_ground_items(world, "world")
 	var object_edits: Variant = _field(world, "object_edits", Kind.LIST, "world")
 	if object_edits != null:
 		for index in object_edits.size():
@@ -125,6 +122,14 @@ func _check_entries(owner: Dictionary, key: String, value_kind: Kind) -> void:
 			_report(path, "should be [x, y, value]")
 		elif not (_is_kind(entry.slice(0, 2), Kind.VECTOR) and _is_kind(entry[2], value_kind)):
 			_report(path, "should be [x, y, %s]" % KIND_NAMES[value_kind])
+
+
+## The piles on the ground of a map (the world, or an interior), at `path`.
+func _check_ground_items(map: Dictionary, path: String) -> void:
+	var piles: Variant = _field(map, "ground_items", Kind.LIST, path)
+	if piles != null:
+		for index in piles.size():
+			_check_ground_item(piles[index], "%s ground_items %d" % [path, index], piles)
 
 
 func _check_ground_item(pile: Variant, path: String, piles: Array) -> void:
@@ -189,6 +194,7 @@ func _check_interior(interior: Variant, path: String) -> void:
 			)
 			if not is_tile:
 				_report("%s tiles %d" % [path, index], "should be [x, y, terrain]")
+	_check_ground_items(interior, path)
 	var objects: Variant = _field(interior, "objects", Kind.LIST, path)
 	if objects != null:
 		for index in objects.size():

@@ -139,5 +139,6 @@ func _house_with_interior_object(type: String) -> Dictionary:
 			"exit_tile": [1, 3],
 			"tiles": [[1, 1, "FLOOR"]],
 			"objects": [{"type": type, "pos": [1, 1], "state": {}}],
+			"ground_items": [],
 		},
 	}
