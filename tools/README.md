@@ -55,7 +55,8 @@ it is). The tests of this are `tools/art/test_pack.py` (`make test-tools`, part 
 
 ## Tests: tools/run_tests.py
 
-`make test` runs it. It spreads tests/test_*.gd over `TEST_JOBS` headless Godot processes
+`make test` runs it. `tools/run_tests.py JOBS tests/test_x.gd ...` runs only the files named (what
+`make test-changed` does); their times are merged into `build/test-times`. It spreads tests/test_*.gd over `TEST_JOBS` headless Godot processes
 (default 8; `TEST_JOBS=1` is one process), each with its own `user://` (`build/user-data-<i>`)
 and log (`build/test-<i>.log`), and kills them after `TEST_TIMEOUT` seconds (default 600, the
 whole run), counting that as a failure. The files are balanced by their duration in the last

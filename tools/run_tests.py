@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Runs the GUT tests of tests/ in parallel: one headless Godot process per shard.
 
-Usage: run_tests.py JOBS   (called by `make test`, which imports the project first)
+Usage: run_tests.py JOBS [FILE...]   (called by `make test` and `make test-changed`, which import the
+project first)
+
+Without files every tests/test_*.gd runs; with files (like tests/test_x.gd) only those do.
 
 The test files are spread over the shards by their duration in the last run
 (build/test-times), or by their size when a file has no time yet. Each shard has its own
@@ -82,9 +85,11 @@ def count(text, label):
 def main():
     jobs = int(sys.argv[1])
     started = time.monotonic()
-    files = sorted(str(f.relative_to(ROOT)) for f in (ROOT / "tests").glob("test_*.gd"))
-    if jobs < 1 or not files:
-        sys.exit(f"make test: needs TEST_JOBS >= 1 and test files (jobs {jobs}, {len(files)} files)")
+    all_files = sorted(str(f.relative_to(ROOT)) for f in (ROOT / "tests").glob("test_*.gd"))
+    files = sorted(set(sys.argv[2:])) or all_files
+    unknown = [f for f in files if f not in all_files]
+    if jobs < 1 or not files or unknown:
+        sys.exit(f"make test: needs TEST_JOBS >= 1 and test files (jobs {jobs}, {len(files)} files, unknown {unknown})")
     # Output of an earlier run must never stand in for a shard that died before writing its own.
     for stale in [*BUILD.glob("test-*.xml"), *BUILD.glob("test-*.log")]:
         stale.unlink()
@@ -139,7 +144,7 @@ def main():
                 for case in suite.iter("testcase"):
                     if case.get("status") == "fail":
                         failed.append(f"{suite.get('name')}: {case.get('name')}")
-    TIMES.write_text("".join(f"{name}\t{seconds}\n" for name, seconds in sorted(times.items()) if name in files))
+    TIMES.write_text("".join(f"{name}\t{seconds}\n" for name, seconds in sorted(times.items()) if name in all_files))
 
     summary = ["", "Totals", "------"]
     summary += [f"{label:<18}{n}" for label, n in totals.items() if n or label == "Tests"]
