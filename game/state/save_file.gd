@@ -2,7 +2,7 @@ class_name SaveFile
 extends RefCounted
 ## The save on disk: one JSON file per world, `{"version": VERSION, "game": <GameState.to_dict>}`.
 ## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step
-## (see `_upgrade_from_version_18` and so on). Older ones are refused.
+## (see `_upgrade_from_version_19` and so on). Older ones are refused.
 ##
 ## How to add a save field (or change one):
 ## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
@@ -22,8 +22,9 @@ extends RefCounted
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
 const VERSION := 28
-## The oldest version we still upgrade.
-const OLDEST_VERSION := VERSION - 10
+## The oldest version we still upgrade. Nine steps back, for the next version (task 200) makes
+## its step the tenth.
+const OLDEST_VERSION := VERSION - 9
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -187,8 +188,6 @@ static func copy_aside(path: String, backup: String) -> String:
 
 ## Brings the data of a save of `version` up to the current one.
 static func _upgrade(game: Dictionary, version: int) -> void:
-	if version <= 18:
-		_upgrade_from_version_18(game)
 	if version <= 19:
 		_upgrade_from_version_19(game)
 	if version <= 20:
@@ -207,17 +206,6 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_26(game)
 	if version <= 27:
 		_upgrade_from_version_27(game)
-
-
-## Version 18 kept no more of who a villager is than their name, sex and look: each is given an
-## age, trade and the rest made up from the tables of data/npcs.cfg, the same for the same name.
-static func _upgrade_from_version_18(game: Dictionary) -> void:
-	var rules := NpcRules.default_rules()
-	for npc: Dictionary in game["npcs"]:
-		var rng := RandomNumberGenerator.new()
-		rng.seed = hash(npc["name"])
-		npc.merge(rules.pick_sheet(StringName(npc["sex"]), npc["name"].get_slice(" ", 1), rng))
-		npc["id"] = ""
 
 
 ## Version 19 kept no memories of villagers: they remember no conversation.

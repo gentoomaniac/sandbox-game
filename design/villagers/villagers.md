@@ -72,8 +72,7 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   doing, and an answer still owed, are not. The file wins for a villager written by hand (decided
   2026-11-07, as the user will edit the sheets): a loaded one takes their sheet from
   `data/villagers.cfg` as it is now, and the saved sheet only stands in when their id has left
-  the file. A version 18 villager is given a background from the tables, the same for the same
-  name. A version 22 made-up villager is made up anew from the tables by their name (the old
+  the file. A version 22 made-up villager is made up anew from the tables by their name (the old
   tables had "Says Aye"), with another surname if theirs is now a family of the village sheet.
 - **Later:** homes, schedules, intentions, suggestions from the model, NPC to NPC talk (see
   the ideas doc).
