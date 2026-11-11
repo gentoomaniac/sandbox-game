@@ -132,11 +132,19 @@ splashes on the ground; lily pads drift and bob.
 ### Day, night and light
 
 The days follow a Nordic year: about 16 hours of daylight in midsummer and 8 in
-midwinter, with dawn and dusk following sunrise and sunset. When it gets dark, the
-campfire, the hearth and the lit windows glow, and clouds dim the daylight. A setting
-lets you shrink or switch off the change in day length.
+midwinter, with dawn and dusk following sunrise and sunset. The night is dark: away from a
+light you see little more than shapes. When it gets dark, the campfire, the hearth and the lit
+windows glow, and clouds dim the daylight. A setting lets you shrink or switch off the change in
+day length. How dark the night gets and when dusk and dawn come is in
+[data/lighting.cfg](data/lighting.cfg).
 
-![Morning, dusk at the camp, a house at night and the interior by the hearth](docs/screenshots/day-and-night.png)
+![Evening and dusk at the camp, houses after midnight and the interior by the hearth](docs/screenshots/day-and-night.png)
+
+To see in the dark, carry a lantern (for now from the console: `give lantern`). Select it and
+press the use key (space) to light it or put it out; lit, it casts a warm, flickering circle of
+light around you while you hold it. It needs no fuel.
+
+![At night without a light, with the lantern lit, with the lantern by the campfire, and lit in the classic art](docs/screenshots/lantern.png)
 
 ### Farming
 
