@@ -3,9 +3,9 @@ extends RefCounted
 ## What the crafting menu does: `craft` takes a recipe's materials from the inventory and puts
 ## its result in. Plain logic; CraftingScreen only shows the recipes and sends the click. The
 ## materials go first, so the room they leave is used; what of the result does not fit lies on the
-## ground (see World `drop_items`): at the player's feet for a craft, by the station for work taken
-## out of it. Inside a building nothing lies on the ground, so there a craft or take-out that does
-## not fit is refused (NO_ROOM) and changes nothing. A recipe with a skill needs its
+## ground (see GameMap `drop_items`): at the player's feet for a craft, by the station for work
+## taken out of it. Inside a building nothing lies on the ground, so there a craft or take-out
+## that does not fit is refused (NO_ROOM) and changes nothing. A recipe with a skill needs its
 ## level in that skill (it is locked below it), and each craft practises the skill (see Skills).
 ## A slow recipe (with `hours`, the kiln's firing) is started at its station instead, which holds
 ## it until it is done (see StationWork); `take_out` then puts the result in the inventory.

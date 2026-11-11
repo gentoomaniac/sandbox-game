@@ -48,8 +48,6 @@ var world_seed: int
 ## GameState, which gives it in.
 var clock: GameClock
 var vegetation := Vegetation.default_vegetation()
-## What lies on the ground (see `drop_items`).
-var ground_items := GroundItems.new()
 ## The moisture of the tilled soil (see `moisture_at`).
 var soil: SoilMoisture
 ## The tilled soil that nobody tends, and grows over (see `settle_fallow_soil`).
@@ -627,11 +625,8 @@ func regrow_paths() -> void:
 # --- Ground items ---
 
 
-## Puts items (item id to count) on the ground around a tile (see `GroundItems.drop`). The one
-## entry point for whatever gives items to the world; it is here, and not on `ground_items`,
-## because where a pile can lie is up to the world's terrain and buildings. Returns the piles.
-func drop_items(source: Vector2i, drops: Dictionary) -> Array[GroundItem]:
-	return ground_items.drop(source, drops, self)
+func pile_seed() -> int:
+	return world_seed
 
 
 # --- Saving ---

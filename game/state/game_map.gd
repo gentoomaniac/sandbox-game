@@ -10,6 +10,9 @@ signal objects_changed(pos: Vector2i)
 ## The terrain of this tile changed (World also tells of its grass wearing to a path).
 signal tile_changed(pos: Vector2i)
 
+## What lies on the ground of this map (see `drop_items`).
+var ground_items := GroundItems.new()
+
 
 ## The tile at a position, or null where there is none.
 func tile_at(_pos: Vector2i) -> Tile:
@@ -66,3 +69,20 @@ func is_walkable_for_animals(pos: Vector2i) -> bool:
 	if not type.get("deck", false) and not (is_ground_walkable(pos) and not type["blocks_walking"]):
 		return false
 	return not type.get("stops_animals", false)
+
+
+## Whether a pile of dropped items can lie on a tile: where the player can walk.
+func can_hold_pile(pos: Vector2i) -> bool:
+	return is_walkable(pos)
+
+
+## What makes the placing of piles differ from map to map (see `GroundItems.drop`).
+func pile_seed() -> int:
+	return 0
+
+
+## Puts items (item id to count) on the ground around a tile (see `GroundItems.drop`). The one
+## entry point for whatever gives items to a map; it is here, and not on `ground_items`, because
+## where a pile can lie is up to the map's terrain and objects. Returns the piles.
+func drop_items(source: Vector2i, drops: Dictionary) -> Array[GroundItem]:
+	return ground_items.drop(source, drops, self)

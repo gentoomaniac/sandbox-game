@@ -557,7 +557,7 @@ func collect_ground_items(delta: float) -> void:
 
 
 ## Puts the stack in inventory slot `slot` on the ground in front of the player, as drops of
-## the world lie (see `World.drop_items`); the player picks it up again by walking away and back.
+## the world lie (see `GameMap.drop_items`); the player picks it up again by walking away and back.
 ## Does nothing inside a building (nothing lies on the ground there). Returns whether it did.
 func drop_from_inventory(slot: int) -> bool:
 	if (

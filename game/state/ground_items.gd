@@ -1,10 +1,10 @@
 class_name GroundItems
 extends RefCounted
-## What lies on the ground of a world: the piles that were dropped by whatever the player
-## harvested, until collected. The world owns it (`World.ground_items`).
+## What lies on the ground of a map: the piles that were dropped by whatever the player
+## harvested or let go of, until collected. The map owns it (`GameMap.ground_items`).
 ##
-## It does not know the world, so the two never hold each other. The one thing it needs from
-## the world, where a pile can lie, is given to `drop` per call.
+## It does not know the map, so the two never hold each other. The one thing it needs from
+## the map, where a pile can lie, is given to `drop` per call.
 ##
 ## The piles are also kept by the chunk they lie in, so that what is near a point is found
 ## without looking at every pile. That index is not saved: `load_array` builds it again. A pile
@@ -98,21 +98,21 @@ func move(ground_item: GroundItem, position: Vector2) -> void:
 
 
 ## Puts items (item id to count) on the ground around a tile: each kind is split into piles of
-## about the same size over the tiles of `world` near `source` that can be walked on, in an
-## order that depends on the tile, the kind and the world's seed only. Call it after the source
+## about the same size over the tiles of `map` near `source` that can hold a pile, in an
+## order that depends on the tile, the kind and the map's `pile_seed` only. Call it after the source
 ## was removed or replaced, so its own tile counts if it is free now. Returns the piles.
-func drop(source: Vector2i, drops: Dictionary, world: World) -> Array[GroundItem]:
+func drop(source: Vector2i, drops: Dictionary, map: GameMap) -> Array[GroundItem]:
 	var kind_index := 0
 	var dropped_piles: Array[GroundItem] = []
 	for item: StringName in drops:
-		var tiles := _scatter_tiles(source, kind_index, world)
+		var tiles := _scatter_tiles(source, kind_index, map)
 		var total: int = drops[item]
 		var piles := mini(total, tiles.size())
 		for pile in piles:
 			var count := total / piles + (1 if pile < total % piles else 0)
 			var offset := Vector2(
-				_hash_fraction(tiles[pile], 2 * kind_index, world.world_seed),
-				_hash_fraction(tiles[pile], 2 * kind_index + 1, world.world_seed)
+				_hash_fraction(tiles[pile], 2 * kind_index, map.pile_seed()),
+				_hash_fraction(tiles[pile], 2 * kind_index + 1, map.pile_seed())
 			)
 			var ground_item := GroundItem.new(item, count, Vector2(tiles[pile]) + offset)
 			ground_item.settle_seconds = DROP_SETTLE_SECONDS
@@ -189,12 +189,12 @@ func _unfile(ground_item: GroundItem) -> void:
 
 ## The free walkable tiles near `source`, in the order the piles of the `kind_index`th kind of
 ## a drop go to them. With none free, the source itself.
-func _scatter_tiles(source: Vector2i, kind_index: int, world: World) -> Array[Vector2i]:
+func _scatter_tiles(source: Vector2i, kind_index: int, map: GameMap) -> Array[Vector2i]:
 	var tiles: Array[Vector2i] = []
 	for scatter_range: int in SCATTER_RANGES:
 		for y in range(-scatter_range, scatter_range + 1):
 			for x in range(-scatter_range, scatter_range + 1):
-				if world.is_walkable(source + Vector2i(x, y)):
+				if map.can_hold_pile(source + Vector2i(x, y)):
 					tiles.append(source + Vector2i(x, y))
 		if not tiles.is_empty():
 			break
@@ -209,6 +209,6 @@ func _scatter_tiles(source: Vector2i, kind_index: int, world: World) -> Array[Ve
 
 
 ## A value from PILE_MARGIN to 1 - PILE_MARGIN, always the same for the same tile and salt.
-func _hash_fraction(tile: Vector2i, salt: int, world_seed: int) -> float:
-	var fraction := float(PositionHash.of(tile, salt + world_seed)) / (PositionHash.MASK + 1)
+func _hash_fraction(tile: Vector2i, salt: int, seed_value: int) -> float:
+	var fraction := float(PositionHash.of(tile, salt + seed_value)) / (PositionHash.MASK + 1)
 	return PILE_MARGIN + fraction * (1.0 - 2.0 * PILE_MARGIN)

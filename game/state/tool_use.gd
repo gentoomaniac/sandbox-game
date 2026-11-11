@@ -20,7 +20,7 @@ extends RefCounted
 ## `pet`), RIDING anything on horseback (the player gets off first),
 ## STANDING_ON a tool at a deck the player stands on (see `is_standing_on`), OUT_OF_REACH a tile
 ## beyond the player's reach (Targeting.REACH) or not on their map: nothing is done there. What a
-## harvest, a pick or a final hit gives lies on the ground (see World `drop_items`).
+## harvest, a pick or a final hit gives lies on the ground (see GameMap `drop_items`).
 enum Use {
 	NOTHING,
 	TILL,
