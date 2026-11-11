@@ -379,6 +379,27 @@ the house."
   over play and over a skip; README not needed unless something visible changes.
 - Later (a separate task, see Later): villagers go inside their houses.
 
+## 182. Leaves fall and blow in autumn wind
+
+- [ ] Done
+
+The user, 2026-11-11: "in autumn, there should be falling leaves when windy. we should have the
+animation from lumbering, we could use that for blowing some leaves around? Some just falling,
+some carried off by the wind."
+- Reuse the falling-leaf particles of tree felling (game/scenes/hit_particles.gd,
+  HitEffect.Kind.LEAVES_AUTUMN and LEAVES_GREEN: palette leaves with a sway as they fall).
+- In autumn (and a little in late summer and early winter, by how much foliage the trees still
+  carry in the season looks), deciduous trees near the player shed leaves now and then: more in
+  stronger wind and in gusts (task 176's gusts when they exist, the sway shader's fronts), none in
+  calm. Some drop and sway down beside the tree; in wind, some are carried off downwind, drifting
+  and tumbling for a while before they land or leave the view. Conifers shed none (or a rare
+  needle). Leaf colours follow the tree's season look.
+- Cheap: a cap on the leaves alive at once, spawned only for trees on screen near the player,
+  nothing per tile per frame; nothing saved. Numbers in data/ (a new section or ambience.cfg).
+- Off indoors. Both arts.
+- Tests for the rate by season and wind, the cap, and the drift direction; a short clip or a few
+  frames for the user.
+
 ## Later (not part of the prototype)
 
 - **Villagers go inside** (the user, 2026-11-11): villagers enter their houses (and the church,
