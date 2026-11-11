@@ -101,80 +101,85 @@ class MoistureStepsTest(unittest.TestCase):
             self.assertGreater(drawn, 0)
 
 
-class FadeTest(unittest.TestCase):
-    def setUp(self):
-        self.rows = terrain.soil_fade()
+class PatchEdgeTest(unittest.TestCase):
+    """The edges of wet patches (task 175): the user saw wet tiles as square blocks."""
 
-    def drawn(self, steps, column):
-        return self.rows[soil_beds.STEP_PAIRS.index(steps)][column]
+    @classmethod
+    def setUpClass(cls):
+        cls.rows = terrain.soil_edge()
 
-    def test_the_atlas_has_a_row_for_each_pair_of_steps_and_a_tile_for_each_cut_side_and_corner(self):
-        self.assertEqual(len(self.rows), 6)
+    def piece(self, piece, column, phase=0):
+        return self.rows[soil_beds.PIECES.index(piece) * soil_beds.PHASES + phase][column]
+
+    @staticmethod
+    def north_side(first_end, second_end):
+        return first_end * soil_beds.END_KINDS + second_end
+
+    @staticmethod
+    def corner(index):
+        return 4 * 9 + index
+
+    @staticmethod
+    def depths(tile):
+        """How many pixels each column of a piece along the north side draws."""
+        return [sum(tile[y][x] is not None for y in range(GAME_TILE)) for x in range(GAME_TILE)]
+
+    def test_the_atlas_has_a_row_for_each_phase_of_each_piece_and_a_tile_for_each_side_and_corner(self):
+        self.assertEqual(len(self.rows), len(soil_beds.PIECES) * soil_beds.PHASES)
         self.assertEqual({len(row) for row in self.rows}, {4 * 9 + 4})
 
-    def test_a_fade_thins_out_away_from_its_side_and_stays_within_its_depth(self):
-        west_inside_the_bed = 3 * 9 + 8
-        tile = self.drawn((3, 0), west_inside_the_bed)
-        drawn_in_column = [sum(tile[y][x] is not None for y in range(GAME_TILE)) for x in range(GAME_TILE)]
-        depth = terrain._SOIL_FADE_DEPTH
-        self.assertEqual(drawn_in_column[0], GAME_TILE)
-        self.assertEqual(drawn_in_column, sorted(drawn_in_column, reverse=True))
-        self.assertGreater(sum(drawn_in_column[depth // 2 : depth]), 0)
-        self.assertEqual(set(drawn_in_column[depth:]), {0})
+    def test_the_line_wanders_beyond_the_tile_edge_and_short_of_it(self):
+        running_on = self.north_side(soil_beds.END_RUNS_ON, soil_beds.END_RUNS_ON)
+        beyond = short = 0
+        for phase in range(soil_beds.PHASES):
+            beyond += sum(self.depths(self.piece((True, 2), running_on, phase)))
+            short += sum(self.depths(self.piece((False, 1), running_on, phase)))
+        self.assertGreater(beyond, 0, "a bulge of the wetter brown over the drier tile")
+        self.assertGreater(short, 0, "a bite of the drier brown out of the wetter tile")
 
-    def test_a_fade_steps_through_the_browns_between_its_steps_only(self):
-        tile = self.drawn((3, 0), 0 * 9 + 8)
-        colours = {colour for row in tile for colour in row if colour}
-        self.assertTrue(colours <= {*soil_beds.RAMPS[1], *soil_beds.RAMPS[2], *soil_beds.RAMPS[3]}, colours)
-        self.assertIn(soil_beds.RAMPS[2][1], colours, "the body of the step between")
-        one_step = self.drawn((2, 1), 0 * 9 + 8)
-        self.assertTrue({colour for row in one_step for colour in row if colour} <= set(soil_beds.RAMPS[2]))
+    def test_the_line_is_no_straight_band_and_runs_on_from_tile_to_tile(self):
+        running_on = self.north_side(soil_beds.END_RUNS_ON, soil_beds.END_RUNS_ON)
+        line = []
+        for phase in range(soil_beds.PHASES):
+            beyond = self.depths(self.piece((True, 1), running_on, phase))
+            short = self.depths(self.piece((False, 0), running_on, phase))
+            line += [out - back for out, back in zip(beyond, short)]
+        self.assertGreaterEqual(max(line) - min(line), 12)
+        for x in range(len(line)):
+            self.assertLessEqual(abs(line[x] - line[x - 1]), 3, f"column {x}")
 
-    def test_a_fade_stops_short_of_the_rim_where_the_bed_ends_beside_it(self):
-        inside = self.drawn((3, 0), 0 * 9 + 8)
-        north_with_no_bed_west = self.drawn((3, 0), 0 * 9 + 0 * 3 + 2)
-        for tile in inside, north_with_no_bed_west:
-            self.assertTrue(all(pixel is not None for pixel in tile[0][GAME_TILE // 2 :]))
-        self.assertIsNotNone(inside[0][0])
-        self.assertIsNone(north_with_no_bed_west[0][0])
+    def test_where_a_side_turns_its_line_comes_to_the_tiles_corner(self):
+        turning = self.north_side(soil_beds.END_TURNS, soil_beds.END_TURNS)
+        for phase in range(soil_beds.PHASES):
+            beyond = self.depths(self.piece((True, 1), turning, phase))
+            short = self.depths(self.piece((False, 0), turning, phase))
+            for x in (*range(10), *range(GAME_TILE - 10, GAME_TILE)):
+                self.assertEqual((beyond[x], short[x]), (0, 0), f"phase {phase}, column {x}")
 
-    def test_a_corner_fade_meets_the_fades_of_the_sides_beside_it(self):
-        # The tile north of a corner fading from the north-west fades from the west: the corner
-        # fade's top row goes on from that fade's bottom row, which is like its top row.
-        north_west = self.drawn((3, 0), 4 * 9 + 3)
-        west = self.drawn((3, 0), 3 * 9 + 8)
-        north = self.drawn((3, 0), 0 * 9 + 8)
-        self.assertEqual(north_west[0][: GAME_TILE // 2], west[0][: GAME_TILE // 2])
-        self.assertEqual([row[0] for row in north_west[: GAME_TILE // 2]], [row[0] for row in north[: GAME_TILE // 2]])
+    def test_at_the_beds_rim_a_side_stops_short_of_it(self):
+        rim_to_the_west = self.north_side(soil_beds.END_RIM, soil_beds.END_RUNS_ON)
+        running_on = self.north_side(soil_beds.END_RUNS_ON, soil_beds.END_RUNS_ON)
+        for column, is_cut in (rim_to_the_west, True), (running_on, False):
+            west_columns = [
+                row[0] for phase in range(soil_beds.PHASES) for row in self.piece((False, 2), column, phase)
+            ]
+            self.assertEqual(all(pixel is None for pixel in west_columns), is_cut)
 
+    def test_a_piece_is_drawn_in_the_browns_of_its_step(self):
+        for piece in soil_beds.PIECES:
+            for column in range(4 * 9 + 4):
+                colours = {colour for row in self.piece(piece, column) for colour in row if colour}
+                self.assertTrue(colours <= set(soil_beds.RAMPS[piece[1]]), (piece, column))
 
-class SownSoilTest(unittest.TestCase):
-    def test_a_sown_mound_is_dark_earth_with_seeds_on_it_so_it_reads_on_every_step(self):
-        colours = Counter(colour for row in crops.sown() for colour in row if colour)
-        body, _ = colours.most_common(1)[0]
-        self.assertIn(body, ("soil", "soil_dark"))
-        self.assertGreaterEqual(colours["cream"], 3)
-
-
-class CropsOnTheirTileTest(unittest.TestCase):
-    @staticmethod
-    def drawn_rows_in_tile(cell):
-        """The first and the last drawn row of a crop's cell, counted from the top of its tile."""
-        tile_top = len(cell) - GAME_TILE
-        drawn = [y - tile_top for y, row in enumerate(cell) if any(row)]
-        return drawn[0], drawn[-1]
-
-    def test_every_stage_that_fits_its_tile_sits_in_its_middle(self):
-        for crop in crops.ARTISTS:
-            for stage, cell in enumerate(crops.sheet_rows(crop)):
-                top, bottom = self.drawn_rows_in_tile(cell)
-                if top >= 0:
-                    self.assertLessEqual(abs(top - (GAME_TILE - 1 - bottom)), 1, (crop, stage))
-
-    def test_a_stage_that_reaches_above_its_tile_stands_on_its_lower_part(self):
-        _, bottom = self.drawn_rows_in_tile(crops.sheet_rows("wheat")[3])
-        self.assertGreater(bottom, GAME_TILE * 3 // 4)
-
-
-if __name__ == "__main__":
-    unittest.main()
+    def test_a_patchs_corner_is_rounded_off_and_a_hollow_filled_in(self):
+        north_east = self.corner(0)
+        corner_pixel = (0, GAME_TILE - 1)
+        rounded = self.piece((False, 0), north_east)
+        filled = self.piece((True, 1), north_east)
+        for tile in rounded, filled:
+            y, x = corner_pixel
+            self.assertIsNotNone(tile[y][x])
+            for y in range(GAME_TILE):
+                for x in range(GAME_TILE):
+                    is_far = y >= terrain._PATCH_EDGE.convex or GAME_TILE - 1 - x >= terrain._PATCH_EDGE.convex
+                    self.assertTrue(tile[y][x] is None or not is_far, (x, y))

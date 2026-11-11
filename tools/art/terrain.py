@@ -1026,13 +1026,13 @@ def soil_wet():
     return soil_beds.overlay_rows(GAME_TILE, _SOIL_SHAPES, soil_pixel_of)
 
 
-# How many pixels deep a wetter tile's brown fades out into a drier one.
-_SOIL_FADE_DEPTH = 6
+# The line between wetter and drier soil wanders 9 pixels each way across the tile edge.
+_PATCH_EDGE = soil_beds.PatchEdge(GAME_TILE, amplitude=9, blotch=2.2, blotch_cell=8, gap=3, convex=10, concave=8, taper=4)
 
 
-def soil_fade():
-    """The fades of wetter tilled soil into drier (see soil_beds.py)."""
-    return soil_beds.fade_rows(GAME_TILE, _SOIL_FADE_DEPTH, _SOIL_SHAPES, soil_pixel_of)
+def soil_edge():
+    """The edges of wet patches of tilled soil (see soil_beds.py)."""
+    return soil_beds.edge_rows(_PATCH_EDGE, _SOIL_SHAPES, soil_pixel_of)
 
 
 LAYERS = [

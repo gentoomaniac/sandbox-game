@@ -173,9 +173,10 @@ crops on it, at noon, in the evening and in the classic art.
 
 ![Tilled soil from dry to soaked with sown and growing crops, at noon, in the evening and in the classic art](docs/screenshots/soil.png)
 
-Where a tile is wetter than the tilled soil beside it, as after the watering can, its dark brown
-fades out into the drier soil over a few pixels, at the sides and the corners; tiles as wet as
-each other show no edge, and the field's rim against the turf stays as it is. The close-up shows
+Where a tile is wetter than the tilled soil beside it, as after the watering can, the wet soil is a
+patch: its edge wanders in and out across the tiles' edges, blotchy, steps through the browns
+between and rounds off at its corners, so a few watered tiles never read as a square block; tiles
+as wet as each other show no edge, and the field's rim against the turf stays as it is. The close-up shows
 the row from dry to soaked over fresh soil, four times enlarged, in the 32 px and the classic art.
 
 ![Tilled soil from dry to soaked, each tile's brown fading out into the drier soil beside it, four times enlarged, in the 32 px and the classic art](docs/screenshots/soil-fade.png)

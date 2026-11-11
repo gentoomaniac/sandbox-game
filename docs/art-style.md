@@ -136,11 +136,16 @@ reads as a bed and not as a blob (task 174: `edge_shapes` with an `inset` and a 
 Every pixel depends only on its place in the tile, so a bed is one pattern with no seams or
 variants. The terrain is the driest soil, a light `soil_light` brown; the four moisture steps are the same rows in the browns of `soil_beds.RAMPS`, down to
 `soil_dark` when soaked, drawn as overlays cut to the bed (`soil_beds`, `terrain.soil_wet`) so
-the field's edge and rim stay. Where a tile is wetter than a tilled neighbour, its brown runs on
-into the neighbour and fades out over 6 pixels (4 in the classic art) in an ordered dither, through
-the browns of the steps between (task 167, `soil_beds.fade_rows`, `terrain.soil_fade`): a fade
-along each side, cut to the bed at its ends, and a quarter round at each corner, drawn over the
-drier tile. Soil left fallow comes up in weeds (task 166, `terrain.weeds`, the
+the field's edge and rim stay. Where a tile is wetter than a tilled neighbour, the line between
+their browns is the edge of a wet patch, not a band along the grid (task 175, `soil_beds.edge_rows`,
+`terrain.soil_edge`): it wanders up to 9 pixels (4 in the classic art) either way across the tile
+edge, blotchy along its length, and the browns between step down from it into the wetter tile in
+bands 3 pixels (2) apart.
+Each grid line has one smooth line four tiles long repeating along it, so the edge runs on from
+tile to tile; where the patch turns or the bed ends the line comes to the tile corner, and the
+patch's corner is rounded off (radius 10, 6 in the classic art) or its hollow filled in (8, 4).
+It is drawn in pieces of one step each over both tiles: bulges of the wetter browns over the drier
+tile, bites of the drier browns out of the wetter one. Soil left fallow comes up in weeds (task 166, `terrain.weeds`, the
 decorations of the soil row, which the game shows only on fallow soil): four or five small things
 to a tile, low weed rosettes and chickweed seedlings with a pixel of `soil` shadow, and the grass
 tufts of the turf, all in the grass ramp, placed where they stay on the bed even of a tile tilled

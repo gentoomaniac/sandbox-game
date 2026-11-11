@@ -1,6 +1,6 @@
 """The brown of tilled soil as the moisture steps (see game/scenes/soil_wetness.gd): the ramps of
-colour of each step, the overlay atlas that draws a step over the soil terrain, and the fade atlas
-that softens the edge between a wetter tile and a drier one.
+colour of each step, the overlay atlas that draws a step over the soil terrain, and the atlas of
+the pieces that draw the edge between a wetter tile and a drier one as the edge of a wet patch.
 
 The terrain (terrain.py, classic/terrain.py) is the dry soil, the base. A moister tile gets an
 overlay of its step on the plain tile grid, cut like the bed under it: its pixels are those of
@@ -8,11 +8,12 @@ the terrain that lie well inside the bed, so a bed's outer edge, with its rim, s
 the tiles inside it, wet or dry, show no seam of the plain grid against the dual grid the terrain
 is drawn on. Which tiles around a tile are tilled decides the cut: BED_MASKS lists the 47 shapes
 that can matter, and the overlay of step n is the row n - 1 of the atlas, one column per mask.
-Where a tile is wetter than a tilled neighbour, a fade from the fade atlas lies over the
-neighbour (see `fade_rows`).
+Where a tile is wetter than a tilled neighbour, the edge between their browns wanders across the
+tile edge like the edge of a wet patch (see `edge_rows`).
 """
 
 import math
+import random
 
 from canvas import NEIGHBOURS
 
@@ -117,85 +118,201 @@ def overlay_rows(size, shapes, pixel_of_ramp):
     return rows
 
 
-# The fades (task 167): where a tile is wetter than a tilled neighbour, its brown runs on into
-# the neighbour and fades out there over a few pixels, through the browns of the steps between,
-# in an ordered dither. A fade is drawn over the drier tile, on top of its own step, along the
-# side or at the corner the wetter tile is at; on a side, it is cut to the bed at its two ends,
-# where the bed may have its rim. A corner fades only when the tiles at both its sides are tilled
-# (else the bed's rim lies there) and are not as wet; then it is a quarter round the corner that
-# meets the fades of those sides.
-# The order of the atlas and the ends of a fade are shared with game/scenes/soil_wetness.gd.
+# The edges of wet patches (task 175): where a tile is wetter than a tilled neighbour, the line
+# between their browns wanders across the tile edge, in and out, blotchy along its length, and
+# steps through the browns between in bands a few pixels apart. Each line of the tile grid has a
+# long wavy line PHASES tiles long that repeats along it; a tile's edge is the part of it at the
+# tile's place along the line (its phase), so the line runs on from tile to tile as far as the
+# patch's edge does. Where it doesn't (the patch's edge turns there, or the bed ends), the line
+# comes to the tile's corner, and a corner piece rounds the patch off there over its wetter tile,
+# or fills in a hollow of the patch over its drier tile.
+# A side's edge is drawn in pieces over its two tiles: over the drier tile a bulge for each wetter
+# step, where the line lies beyond the tile edge, and over the wetter tile a bite for each drier
+# step, where it lies short of it. A piece is one step in its brown; the game stacks those of an
+# edge (the wettest bulge and the driest bite on top), so each pixel shows its step of the line.
+# The order of the atlas and the ends of a side are shared with game/scenes/soil_wetness.gd.
 SIDES = (N, E, S, W)
 CORNERS = (NE, SE, SW, NW)
-# The two ends of a fade along each side: the side across it there and the corner between them.
-_FADE_ENDS = {N: ((W, NW), (E, NE)), E: ((N, NE), (S, SE)), S: ((W, SW), (E, SE)), W: ((N, NW), (S, SW))}
-# How an end of a fade along a side is cut: the side across is not tilled, it is but the corner is
-# not, or both are; a fade along a side has a column for each of the 3 x 3 pairs, in this order.
-END_CUTS = 3
-# The pairs of steps a fade runs between, (wetter, drier): a row of the fade atlas each.
-STEP_PAIRS = [(wetter, drier) for wetter in range(1, len(RAMPS)) for drier in range(wetter)]
-# The thresholds of a 4 x 4 ordered dither: a tile is a multiple of 4 wide, so the pattern runs on
-# from tile to tile.
-_BAYER = ((0, 8, 2, 10), (12, 4, 14, 6), (3, 11, 1, 9), (15, 7, 13, 5))
+# The two ends of each side: the side across it there and the corner between them.
+_SIDE_ENDS = {N: ((W, NW), (E, NE)), E: ((N, NE), (S, SE)), S: ((W, SW), (E, SE)), W: ((N, NW), (S, SW))}
+# How a side's edge ends, in this order: at the bed's rim (the tile across is not tilled: the line
+# runs into the rim, cut to the bed), running on into the next tiles (as wet as these two), or
+# turning (the line comes to the corner). The tile beyond, across the edge from the one across,
+# never cuts a tile: the bed's notch where it is not tilled lies in it.
+END_KINDS = 3
+END_RIM, END_RUNS_ON, END_TURNS = range(END_KINDS)
+PHASES = 4
+# What the rows of the atlas draw, a row for each phase: the bites of the steps 0 to 2 and the
+# bulges of the steps 1 to 3, as (is a bulge, step).
+PIECES = [(False, 0), (False, 1), (False, 2), (True, 1), (True, 2), (True, 3)]
 
 
-def fade_masks(side):
-    """The bed masks a fade along `side` is cut to, one for each pair of end cuts (see
-    END_CUTS): the rest of the tile's neighbours tilled, as they don't reach the fade."""
+def _smooth(t):
+    return t * t * (3 - 2 * t)
+
+
+def _value_noise(seed, cell, period, reach):
+    """A smooth noise of blobs `cell` pixels across, -1..1, that repeats every `period` pixels
+    along x (a multiple of `cell`), for y within `reach` of 0."""
+    rng = random.Random(seed)
+    columns = period // cell
+    rows = range(-(reach // cell) - 1, reach // cell + 2)
+    values = {(i, j): rng.uniform(-1, 1) for j in rows for i in range(columns)}
+
+    def noise(x, y):
+        fx, fy = x / cell, y / cell
+        ix, iy = math.floor(fx), math.floor(fy)
+        tx, ty = _smooth(fx - ix), _smooth(fy - iy)
+
+        def value(i, j):
+            return values[i % columns, j]
+
+        top = value(ix, iy) * (1 - tx) + value(ix + 1, iy) * tx
+        bottom = value(ix, iy + 1) * (1 - tx) + value(ix + 1, iy + 1) * tx
+        return top * (1 - ty) + bottom * ty
+
+    return noise
+
+
+def _wavy_line(seed, period):
+    """A smooth line, -1..1 at its farthest, that repeats every `period` pixels."""
+    rng = random.Random(seed)
+    waves = [(cycles, weight, rng.uniform(0, math.tau)) for cycles, weight in ((1, 1.0), (2, 0.8), (3, 0.5), (5, 0.3))]
+
+    def raw(t):
+        return sum(weight * math.sin(math.tau * cycles * t / period + phase) for cycles, weight, phase in waves)
+
+    farthest = max(abs(raw(t)) for t in range(period))
+    return lambda t: raw(t) / farthest
+
+
+class PatchEdge:
+    """How the edge of a wet patch is drawn at a tile `size`: its line wanders up to `amplitude`
+    pixels across the tile edge and blotches by up to `blotch` pixels in blobs `blotch_cell`
+    across; the browns between step down from it into the wetter tile `gap` pixels apart; a
+    patch's corner is rounded off with a radius of `convex` and a hollow filled in with one of
+    `concave`, and towards a corner the line comes to the tile's corner over `taper` pixels
+    before it."""
+
+    def __init__(self, size, amplitude, blotch, blotch_cell, gap, convex, concave, taper):
+        self.size = size
+        self.amplitude = amplitude
+        self.blotch = blotch
+        self.gap = gap
+        self.convex = convex
+        self.concave = concave
+        self.taper = taper
+        self.line = _wavy_line(91, PHASES * size)
+        self.line_blotch = _value_noise(92, blotch_cell, PHASES * size, size)
+        self.corner_blotches = [_value_noise(93 + variant, blotch_cell, size, size) for variant in range(PHASES)]
+
+    def wet_steps(self, line_offset, distance):
+        """How many steps of the wetter tile (0 to 3) reach a pixel `distance` pixels beyond the
+        tile edge (towards the drier tile), where the line lies `line_offset` pixels beyond it."""
+        return sum(1 for step in (1, 2, 3) if distance < line_offset - (step - 1) * self.gap)
+
+    def reach(self, along, ends):
+        """How far the line may stray from the tile edge `along` a side whose ends are `ends`,
+        0 to 1: near an end where the patch turns it lies on the tile edge, where a corner piece
+        may round it, and it comes away over `taper` pixels; at the bed's rim it runs into the
+        rim as it is."""
+        factor = 1.0
+        corner_size = max(self.convex, self.concave)
+        for kind, distance in zip(ends, (along + 0.5, self.size - along - 0.5)):
+            if kind == END_TURNS:
+                factor *= _smooth(min(1.0, max(0.0, (distance - corner_size) / self.taper)))
+        return factor
+
+
+def _is_drawn(piece, wet_steps):
+    """Whether a piece (see PIECES) draws a pixel that `wet_steps` steps reach."""
+    is_bulge, step = piece
+    return wet_steps >= step if is_bulge else wet_steps <= step
+
+
+def _from_side(side, size, x, y):
+    """Where a pixel of a tile lies from its `side`: how far along it (from its north or west
+    end) and how far in, both to the pixel's middle."""
+    far = size - 0.5
+    return {N: (x, y + 0.5), S: (x, far - y), W: (y, x + 0.5), E: (y, far - x)}[side]
+
+
+def side_masks(side):
+    """The bed masks a side's pieces are cut to, one for each pair of end kinds (see END_KINDS):
+    at the bed's rim the tile across is not tilled, else all are."""
     masks = []
-    for first_cut in range(END_CUTS):
-        for second_cut in range(END_CUTS):
+    for first in range(END_KINDS):
+        for second in range(END_KINDS):
             mask = 255
-            for (across, corner), cut in zip(_FADE_ENDS[side], (first_cut, second_cut)):
-                if cut == 0:
+            for (across, _), kind in zip(_SIDE_ENDS[side], (first, second)):
+                if kind == END_RIM:
                     mask &= ~across
-                if cut < 2:
-                    mask &= ~corner
             masks.append(canonical(mask))
     return masks
 
 
-def _distance_from(direction, size, x, y):
-    """How far a pixel of a tile lies from the side or the corner `direction` of the tile."""
-    far = size - 1
-    return {
-        N: y,
-        E: far - x,
-        S: far - y,
-        W: x,
-        NE: math.hypot(far - x, y),
-        SE: math.hypot(far - x, far - y),
-        SW: math.hypot(x, far - y),
-        NW: math.hypot(x, y),
-    }[direction]
-
-
-def fade_tile(size, direction, inside, depth, steps, pixels):
-    """The fade from a wetter tile at the side or corner `direction` into a drier one, `depth`
-    pixels deep, between the `steps` (wetter, drier); `inside` are the pixels well inside the bed
-    (see `inside_bed`) and `pixels` the pixel functions of the steps. Where it has come down to
-    the drier step, the tile is empty: that step is drawn under it."""
-    wetter, drier = steps
+def side_piece(edge, side, ends, phase, piece, inside, pixel):
+    """A piece (see PIECES) of the edge along `side` of a tile, whose ends are `ends` (see
+    END_KINDS), at `phase` of its line, in the colours `pixel(x, y)` of its step; `inside` are
+    the pixels well inside the bed."""
+    size = edge.size
     tile = [[None] * size for _ in range(size)]
     for y in range(size):
         for x in range(size):
-            distance = _distance_from(direction, size, x, y)
-            if not inside[y][x] or distance >= depth:
-                continue
-            level = wetter - (wetter - drier) * (distance + 0.5) / depth
-            threshold = (_BAYER[y % 4][x % 4] + 0.5) / 16
-            step = math.ceil(level) if level % 1 > threshold else math.floor(level)
-            if step > drier:
-                tile[y][x] = _soil_at(size, pixels[step], x, y)
+            along, depth = _from_side(side, size, x, y)
+            distance = depth if piece[0] else -depth
+            place = phase * size + along
+            wander = edge.amplitude * edge.line(place) + edge.blotch * edge.line_blotch(place, distance)
+            line_offset = edge.reach(along, ends) * wander
+            if inside[y][x] and _is_drawn(piece, edge.wet_steps(line_offset, distance)):
+                tile[y][x] = _soil_at(size, pixel, x, y)
     return tile
 
 
-def fade_rows(size, depth, shapes, pixel_of_ramp):
-    """The fade atlas: a row for each pair of steps (STEP_PAIRS); in it the fades along each side
-    (SIDES), a tile for each pair of end cuts (see `fade_masks`), then the fade at each corner
-    (CORNERS)."""
+def corner_piece(edge, corner, variant, piece, inside, pixel):
+    """A piece (see `side_piece`) at `corner` of a tile: a bite rounds off a patch's corner over
+    its wetter tile, a bulge fills in a hollow of a patch over its drier tile. Within its radius
+    of the corner it draws every pixel of its step, over the pieces of the sides there."""
+    is_bulge, _ = piece
+    size = edge.size
+    radius = edge.concave if is_bulge else edge.convex
+    first, second = (side for side in SIDES if side & _SIDES_OF_CORNER[corner])
+    tile = [[None] * size for _ in range(size)]
+    for y in range(size):
+        for x in range(size):
+            _, a = _from_side(first, size, x, y)
+            _, b = _from_side(second, size, x, y)
+            if not inside[y][x] or a >= radius or b >= radius:
+                continue
+            # How far the pixel lies inside the patch: beyond the arc round the patch's corner,
+            # or short of the arc that fills in its hollow.
+            rounded = radius - math.hypot(radius - a, radius - b)
+            distance = rounded if is_bulge else -rounded
+            # The blotches fade out towards the sides, where the sides' line lies on the tile edge.
+            fade = min(1.0, (radius - max(a, b)) / edge.taper)
+            line_offset = fade * edge.blotch * edge.corner_blotches[variant](a, b)
+            if _is_drawn(piece, edge.wet_steps(line_offset, distance)):
+                tile[y][x] = _soil_at(size, pixel, x, y)
+    return tile
+
+
+def edge_rows(edge, shapes, pixel_of_ramp):
+    """The atlas of the edges of wet patches: a row for each phase of each piece (see PIECES); in
+    it a tile for each side (SIDES) and pair of end kinds (see `side_masks`), then for each corner
+    (CORNERS), where both sides are tilled."""
     pixels = [pixel_of_ramp(ramp) for ramp in RAMPS]
-    cuts = [(side, inside_bed(size, mask, shapes)) for side in SIDES for mask in fade_masks(side)]
-    whole_tile = inside_bed(size, 255, shapes)
-    cuts += [(corner, whole_tile) for corner in CORNERS]
-    return [[fade_tile(size, direction, inside, depth, steps, pixels) for direction, inside in cuts] for steps in STEP_PAIRS]
+    sides = [
+        (side, divmod(index, END_KINDS), inside_bed(edge.size, mask, shapes))
+        for side in SIDES
+        for index, mask in enumerate(side_masks(side))
+    ]
+    whole_tile = inside_bed(edge.size, 255, shapes)
+    rows = []
+    for piece in PIECES:
+        pixel = pixels[piece[1]]
+        for phase in range(PHASES):
+            rows.append(
+                [side_piece(edge, side, ends, phase, piece, inside, pixel) for side, ends, inside in sides]
+                + [corner_piece(edge, corner, phase, piece, whole_tile, pixel) for corner in CORNERS]
+            )
+    return rows

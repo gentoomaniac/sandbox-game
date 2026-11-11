@@ -241,7 +241,7 @@ objects/willow_32x32.png 96 160
 objects/willow_short_trunk_32x32.png 96 160
 objects/willow_trunk_32x32.png 96 160
 objects/workbench_32x32.png 96 160
-soil_fade_32x32.png 32 32
+soil_edge_32x32.png 32 32
 soil_wet_32x32.png 32 32
 terrain_32x32.png 32 32
 terrain_autumn_32x32.png 32 32

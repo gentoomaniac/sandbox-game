@@ -1,5 +1,5 @@
 """The pictures of the classic 16 px ground that are not in the terrain atlas: the moister looks
-of tilled soil and their fades (soil_beds.py), and the hint of a clay spot (`clay_hint` of
+of tilled soil and the edges of their wet patches (soil_beds.py), and the hint of a clay spot (`clay_hint` of
 meadow.py at commit acf236e, unchanged)."""
 
 import soil_beds
@@ -12,13 +12,13 @@ def soil_wet():
     return soil_beds.overlay_rows(TILE, terrain.SOIL_SHAPES, terrain.soil_pixel_of)
 
 
-# How many pixels deep a wetter tile's brown fades out into a drier one.
-_SOIL_FADE_DEPTH = 4
+# The line between wetter and drier soil wanders 4 pixels each way across the tile edge.
+_PATCH_EDGE = soil_beds.PatchEdge(TILE, amplitude=4, blotch=0.6, blotch_cell=4, gap=2, convex=6, concave=4, taper=2)
 
 
-def soil_fade():
-    """The fades of wetter tilled soil into drier (see soil_beds.py)."""
-    return soil_beds.fade_rows(TILE, _SOIL_FADE_DEPTH, terrain.SOIL_SHAPES, terrain.soil_pixel_of)
+def soil_edge():
+    """The edges of wet patches of tilled soil (see soil_beds.py)."""
+    return soil_beds.edge_rows(_PATCH_EDGE, terrain.SOIL_SHAPES, terrain.soil_pixel_of)
 
 
 def clay_hint():

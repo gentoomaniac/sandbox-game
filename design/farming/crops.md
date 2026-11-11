@@ -60,9 +60,11 @@
     Clamping hour by hour is not the nightly clamp: soil that is already soaked loses the early
     rain of a day and then dries. The whole tile's brown shows it in four
     steps: light brown when dry, dark brown when soaked, lightening day by day as it dries.
-    Where a tile is wetter than a tilled neighbour, its brown fades out into the neighbour over
-    a few pixels, at the sides and the corners (the user, 2026-11-10, task 167); between tiles
-    as wet there is no edge, and the bed's rim against the turf stays as it is. The bed itself
+    Where a tile is wetter than a tilled neighbour, the line between their browns is the edge of
+    a wet patch: it wanders across the tile edge, blotchy, steps through the browns between,
+    runs on along the patch and rounds off its corners, so wet tiles read as a patch and not as a
+    square (the user, 2026-11-11, task 175; it replaced the dithered fade along each side of task
+    167); between tiles as wet there is no edge, and the bed's rim against the turf stays as it is. The bed itself
     comes to a pixel or two of its tiles' edges, ragged, its corners softly rounded (the user,
     2026-11-11, task 174).
   - **Fallow soil grows over** (the user, 2026-11-10, task 166): tilled soil with nothing on

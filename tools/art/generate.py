@@ -72,8 +72,9 @@ have no seasonal variants.
 assets/soil_wet.png: the moister looks of tilled soil, a row of overlay tiles for each moisture step
 above the dry soil of the terrain and a tile for each bed shape, at the game's tile (see soil_beds.py).
 
-assets/soil_fade.png: the fades of wetter tilled soil into a drier neighbour, a row for each pair of
-moisture steps and a tile for each side (cut to the bed at its ends) and corner (see soil_beds.py).
+assets/soil_edge.png: the edges of wet patches of tilled soil, where a tile is wetter than its
+neighbour: a row for each phase of each piece (a bite of a drier step, a bulge of a wetter one) and
+a tile for each side (by how it ends) and corner (see soil_beds.py).
 
 assets/clay_hint.png: the faint hint of a clay spot, one tile at the game's tile (see meadow.py).
 
@@ -368,7 +369,7 @@ def write_crops():
     for crop, cells in crops.sheets().items():
         save([cells], f"crops/{crop}.png", crops.WIDTH, len(cells[0]))
     save(terrain.soil_wet(), "soil_wet.png", GAME_TILE)
-    save(terrain.soil_fade(), "soil_fade.png", GAME_TILE)
+    save(terrain.soil_edge(), "soil_edge.png", GAME_TILE)
     save_picture(meadow.clay_hint(), "clay_hint.png")
 
 
