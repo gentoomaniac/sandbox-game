@@ -227,7 +227,8 @@ for game mechanics." Run after task 172, before the gossip tasks.
   hens, dogs, cats), not wildlife; a new animal starts at 0. The numbers in data/livestock.cfg.
 - The user, 2026-11-11: the tame rabbits can be petted too. Wild animals get the same
   friendship value but can't be petted (it stays at 0 for now); a later feature may let the player
-  tame wild animals.
+  tame wild animals. Birds are left out. A wild animal is only tracked and saved once its value
+  is above 0 (later: the player tried to tame it); all the others are not saved.
 - Saved with the animal (a save version bump, following the upgrade-window rule); the heart and
   the swirl drawn in both arts (pixel-artist job), a short sound for the petting maybe reused.
 - Nothing uses the value yet; it is for later game mechanics. A console command to show an
