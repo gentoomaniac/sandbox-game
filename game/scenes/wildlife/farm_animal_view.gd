@@ -22,6 +22,7 @@ const ACTIONS := {
 ## pixels.
 const SHADOW_HALF_WIDTHS := {
 	LivestockRules.COW: 19,
+	LivestockRules.PIG: 14,
 	LivestockRules.SHEEP: 12,
 	LivestockRules.CHICKEN: 6,
 	LivestockRules.RABBIT: 7,

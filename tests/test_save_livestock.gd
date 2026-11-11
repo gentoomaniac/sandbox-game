@@ -33,3 +33,19 @@ func test_a_version_21_save_loads_with_no_horse_saddled() -> void:
 
 	assert_eq(animals.size(), 1)
 	assert_false(animals[0].is_saddled)
+
+
+func test_a_pig_is_kept_with_its_look_and_its_needs() -> void:
+	var state := GameState.new_game(7)
+	var pig := FarmAnimal.new(LivestockRules.PIG, &"saddleback", Vector2(1.5, -2.25))
+	pig.hunger = 0.25
+	pig.thirst = 0.75
+	state.livestock.add(pig)
+	assert_true(SaveFile.write(state, SAVE_PATH))
+
+	var animals := SaveFile.read(SAVE_PATH).livestock.all()
+
+	assert_eq(animals[0].species, LivestockRules.PIG)
+	assert_eq(animals[0].look, &"saddleback")
+	assert_almost_eq(animals[0].hunger, 0.25, 0.001)
+	assert_almost_eq(animals[0].thirst, 0.75, 0.001)

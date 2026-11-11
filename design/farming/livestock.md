@@ -8,6 +8,12 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   (brown and white hens, a rooster) and tame rabbits (agouti, white, Dutch). Each animal draws
   its look and a slight tint from a seed, so no two look quite alike; how often each look
   comes up and the tints are in `data/livestock.cfg`.
+- **Pigs** (decided 2026-11-10, task 165; the user: "add pigs to the list"): pigs of the old
+  breeds, bristly and of many colours rather than today's pink pig: red-brown, sandy, a black
+  saddleback with a white saddle over the shoulders and forelegs, and pale with black spots. A pig
+  roots about with its snout for most of its day (its graze, which feeds it as grazing does),
+  never runs about, eats at a stock of feed and drinks like the others (`[pig]` in
+  data/livestock.cfg). It gives nothing yet (meat may come with the economy).
 - **Dogs, cats and horses** (decided 2026-11-06, task 79): dogs (a farm collie, a spitz, a
   pointer-like hunting dog), cats (tabby, black, ginger) and horses (a heavy marsh horse of the
   Oldenburg kind in bay, black and grey, and a dun pony). Dogs and cats sniff about (their
@@ -35,7 +41,7 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   in `data/livestock.cfg`.
 - **Size** (drawn at 32 px per tile since task 114, in scale with the 61 px people): a cow
   about 66 px long and 40 px to its back, a sheep about 38 px long and 22 px to its back, a
-  dog about 40 px long, a horse about 88 px long (nearly three tiles) and 57 px to the
+  pig about 40 px long and 23 px tall, a dog about 40 px long, a horse about 88 px long (nearly three tiles) and 57 px to the
   withers, its back free of the neck and head for a saddle and a rider, the pony four fifths
   of it; the hen (about 22 px), the cat (about 28 px) and the rabbit (about 20 px) are drawn a
   little larger than life. They are rounded forms shaded from the top left like the people,
@@ -87,7 +93,7 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   player (save version 16), whether a horse wears a saddle (save version 22) and how hungry and
   thirsty it is (save version 25); what an animal is doing is not.
 - Animals don't avoid each other or the player yet. No hoofbeats are heard while riding yet.
-- **Later:** milk and wool, pens (task 165), owning and breeding, and animals that are neither
+- **Later:** milk and wool, meat from the pigs, owning and breeding, and animals that are neither
   hungry nor thirsty giving better produce (eggs, feeding and drinking are in the farm yard below).
 
 ## The farm yard (task 122, decided 2026-11-10)
