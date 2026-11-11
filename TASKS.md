@@ -185,26 +185,6 @@ Settings (and off), muted in test runs (comes with task 184). Rules in data/musi
   pieces like the test reel are kept for special events (festivals, a market day). Later: stems
 (AudioStreamSynchronized), more pieces, the season and weather choices.
 
-## 198. Crafting with a full inventory drops the result on the ground
-
-- [ ] Done
-
-The user, 2026-11-11: "Crafting with full inventory: items will get dropped on the ground"
-- Today a craft whose result doesn't fit is refused (Crafting.Result.NO_ROOM, the "Inventory full"
-  note in CraftingScreen; game/state/crafting.gd says "nothing is dropped on the ground"), and
-  `take_out` leaves done work in the kiln when it doesn't fit.
-- Instead: the craft goes ahead. The materials are taken, the result goes into the inventory in the
-  usual order (task 179), and what doesn't fit is dropped on the ground at the player's feet, as
-  other drops are (World.drop_items / GroundItems.drop). The same for taking done work out of a
-  station: what doesn't fit lands at the station, by the player. A short note says it was dropped.
-  Works indoors too, wherever ground items can lie; if a map can't hold them, say so and keep the
-  refusal there.
-- NO_ROOM and its note go if nothing else uses them; update the class comment, the README and
-  design pages on crafting.
-- Tests: a craft with a full inventory drops the result and takes the materials; a part that fits
-  goes in and the rest drops; the materials freeing a slot is used first; taking out from a station
-  with a full inventory drops.
-
 ## 181. Villagers never stand in a doorway
 
 - [ ] Done

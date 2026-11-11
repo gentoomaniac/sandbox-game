@@ -4918,3 +4918,25 @@ plant"
   never 0, the config check. README, design/farming/crops.md, the crops.cfg header.
 
 Done: 2026-11-11. Each crop has `yield`, its usual count (cabbage and pumpkin 1; turnip, carrot, onion, buckwheat, peas, beans, strawberries 2; potato, wheat, rye, flax 3); `[farming]` holds `poor_harvest_chance` and `good_harvest_chance` (0.15 each), which a crop may override. One roll gives one less or one more, never below 1. The range keys of task 178 are gone; `seed_chance` stays.
+
+## 198. Crafting with a full inventory drops the result on the ground
+
+- [x] Done
+
+The user, 2026-11-11: "Crafting with full inventory: items will get dropped on the ground"
+- Today a craft whose result doesn't fit is refused (Crafting.Result.NO_ROOM, the "Inventory full"
+  note in CraftingScreen; game/state/crafting.gd says "nothing is dropped on the ground"), and
+  `take_out` leaves done work in the kiln when it doesn't fit.
+- Instead: the craft goes ahead. The materials are taken, the result goes into the inventory in the
+  usual order (task 179), and what doesn't fit is dropped on the ground at the player's feet, as
+  other drops are (World.drop_items / GroundItems.drop). The same for taking done work out of a
+  station: what doesn't fit lands at the station, by the player. A short note says it was dropped.
+  Works indoors too, wherever ground items can lie; if a map can't hold them, say so and keep the
+  refusal there.
+- NO_ROOM and its note go if nothing else uses them; update the class comment, the README and
+  design pages on crafting.
+- Tests: a craft with a full inventory drops the result and takes the materials; a part that fits
+  goes in and the rest drops; the materials freeing a slot is used first; taking out from a station
+  with a full inventory drops.
+
+Done: 2026-11-11. Outdoors a craft that does not fit goes ahead: the materials are taken first, what fits goes in (hotbar first) and the rest drops at the player's feet (`Result.DROPPED`, "Inventory full: the rest was dropped on the ground"). Taking done work out of a station drops what does not fit by the station, on the player's side (`take_out` returns a Result). Indoors nothing can lie on the floor, so the refusal (NO_ROOM, "Inventory full, and nothing can be dropped indoors") stays there.
