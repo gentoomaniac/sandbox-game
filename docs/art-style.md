@@ -441,9 +441,10 @@ so there was no single male costume; that gives freedom, as long as it is 18th-c
   own colour; every layer is drawn on one `Figure` (character.py), so they line up, and only
   the silhouette has the ink outline. A small contact shadow is drawn under the feet in the
   game.
-- **Tools in the hand** (task 119, `HELD_TOOLS` in character.py): every tool is in the right
-  hand, in the colours of its icon (ash handle, iron head with a `snow_light` cutting edge, the
-  watering can copper). The long ones (hoe, shovel, scythe) stand on the ground beside the
+- **Tools in the hand** (task 119, `held_tools` in character.py): every tool is in the right
+  hand, a 2 px handle with a hand-drawn head beside it, a map of letters in the colours of the
+  tool's grade like its icon (task 206, tool_grades.py), mirrored to point the other way; the
+  classic hoe the same at 16 px. The long ones (hoe, shovel, scythe) stand on the ground beside the
   figure, their working end up (the shovel on its blade); the short ones (axe, pickaxe, hammer,
   watering can) hang in the hand, the head just above it, and from the side swing with the
   near hand. From the front a tool is at the left of the figure, from behind at the right and

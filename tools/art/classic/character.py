@@ -10,6 +10,7 @@ rows (y 5..12), torso 10 (13..22), legs 8 (23..30). Only the outer silhouette ha
 outline; inside it, parts are separated by darker shades of their own colour.
 """
 
+import tool_grades
 from canvas import NEIGHBOURS, blank, rect
 
 CHARACTER_WIDTH = 16
@@ -515,26 +516,33 @@ def draw_hat(facing, pose, hat, **_):
     return canvas
 
 
-def draw_held_hoe(facing, pose, **_):
-    """A hoe in the right hand, in dark soil colours with a light edge on the blade."""
-    canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
-    sink = pose["sink"]
-    if facing in ("down", "up"):
-        shaft = 3 if facing == "down" else 13
-        top = 13 + sink
-        rect(canvas, shaft, top, shaft, 30, "soil_dark")
-        blade = (shaft - 2, shaft) if facing == "down" else (shaft, shaft + 2)
-        rect(canvas, blade[0], top - 1, blade[1], top, "soil_dark")
-        rect(canvas, blade[0], top - 1, blade[1], top - 1, "soil_light")
+def held_hoe(grade):
+    """A hoe in the right hand: a 1 px shaft of the grade's wood, its 3x2 blade of the grade's
+    metal turned outward at the top (see tool_grades.py), the hand on the shaft."""
+
+    def draw(facing, pose, **_):
+        canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
+        colours = tool_grades.keys(grade)
+        top = 13 + pose["sink"]
+        if facing == "down":
+            shaft, blade = 3, 1
+        elif facing == "up":
+            shaft, blade = 13, 13
+        else:
+            shaft, blade = 12, 12
+        rect(canvas, shaft, top + 1, shaft, 30, colours["d"])
+        rect(canvas, blade, top - 1, blade + 2, top - 1, colours["m"])
+        rect(canvas, blade, top, blade + 2, top, colours["e"])
         if facing == "down":
             rect(canvas, shaft, 19, shaft, 20, "skin")
-    else:
-        top = 13 + sink
-        rect(canvas, 12, top, 12, 30, "soil_dark")
-        rect(canvas, 12, top + 1, 14, top + 2, "soil_dark")
-        rect(canvas, 12, top + 1, 14, top + 1, "soil_light")
-        rect(canvas, 11, 19, 12, 20, "skin")
-    return canvas
+        elif facing != "up":
+            rect(canvas, 11, 19, 12, 20, "skin")
+        return canvas
+
+    return draw
+
+
+draw_held_hoe = held_hoe(tool_grades.GRADES[0])
 
 
 def held_lantern(is_lit):

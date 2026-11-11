@@ -16,9 +16,8 @@ a nose shadow, cheeks and a mouth.
 
 from collections import namedtuple
 
-import numpy as np
-
 import forms
+import tool_grades
 from canvas import NEIGHBOURS, blank
 
 CHARACTER_WIDTH = 32
@@ -627,25 +626,23 @@ def draw_hat(facing, pose, shapes, colours, **_):
     return canvas
 
 
-# The tools in the hand (assets/character/held_<tool>.png): ash handles, iron heads with a bright
-# cutting edge, and the watering can in copper, as their icons are (tool_icons.py).
-HANDLE = ("soil", "soil_mid", "soil_light")
+# The tools in the hand (assets/character/held_<tool>.png): a 2 px wooden handle and a hand-drawn
+# head beside it, a map of letters in the colours of the tool's grade (tool_grades.py), as the
+# icons are (tool_icons.py). Each head is drawn with the handle's columns at `HANDLE_COLUMN` of
+# the map, pointing to the right, and is mirrored to point the other way.
 IRON = ("stone_dark", "stone", "stone_light")
-CUTTING_EDGE = "snow_light"
-COPPER = ("umber", "ochre_dark", "ochre")
-COPPER_GLINT = "gold"
 HAND = ("skin_shade", "skin", "skin")
 # The row of the hands of a standing figure.
 HANDS_ROW = 41
 
 
-def held_tool(draw_tool, is_long):
-    """The layer of a tool in the right hand, drawn by `draw_tool(canvas, x, y, outward)`: `x`
-    is the left column of the 2 px handle, `y` the row of the hand round it, and `outward` (1 or
-    -1) the side away from the body, forward from the side. A long tool stands on the ground: from
-    the front at the left of the picture, from behind at the right (behind the figure), from the
-    side in front of it. A short one is held up by its handle in the hand that hangs at the side,
-    and swings with the near hand when seen from the side."""
+def held_tool(draw_tool, is_long, grade=tool_grades.GRADES[0]):
+    """The layer of a tool in the right hand, drawn by `draw_tool(canvas, x, y, outward, grade)`:
+    `x` is the left column of the 2 px handle, `y` the row of the hand round it, and `outward`
+    (1 or -1) the side away from the body, forward from the side. A long tool stands on the
+    ground: from the front at the left of the picture, from behind at the right (behind the
+    figure), from the side in front of it. A short one is held up by its handle in the hand that
+    hangs at the side, and swings with the near hand when seen from the side."""
 
     def draw(facing, pose, **_):
         canvas = blank(CHARACTER_WIDTH, CHARACTER_HEIGHT)
@@ -657,93 +654,141 @@ def held_tool(draw_tool, is_long):
         x, y = int(arm.hand[0]), int(arm.hand[1])
         if is_long:
             x, y = (23 if figure.is_side else x), HANDS_ROW + figure.top
-        draw_tool(canvas, x, y, outward)
+        draw_tool(canvas, x, y, outward, grade)
         if facing != "up":
             forms.shade(canvas, mask(forms.rounded_box, x - 1, y - 1, x + 2, y + 1), HAND, 1)
         return canvas
 
+    draw.holds_tool = True
     return draw
 
 
-def handle(canvas, x, top, bottom):
-    forms.shade(canvas, mask(forms.box, x, top, x + 1, bottom), HANDLE, 1)
+def handle(canvas, x, top, bottom, grade):
+    """The handle's two columns, the left one lit."""
+    wood = tool_grades.keys(grade)
+    forms.paint(canvas, mask(forms.box, x, top, x, bottom), wood["l"])
+    forms.paint(canvas, mask(forms.box, x + 1, top, x + 1, bottom), wood["d"])
 
 
-def hoe(canvas, x, y, outward):
-    """A long shaft with a flat iron blade at the top, turned outward."""
-    handle(canvas, x, y - 17, 62)
-    left = x - 4 if outward < 0 else x
-    forms.shade(canvas, mask(forms.rounded_box, left, y - 18, left + 5, y - 16), IRON, 1)
-    forms.paint(canvas, mask(forms.box, left, y - 18, left + 5, y - 18), IRON[2])
+def head(canvas, x, top, outward, rows, handle_column, grade):
+    """Stamps a head map whose handle columns are `handle_column` and the next, pointing right,
+    over the handle at `x` from row `top` down; mirrored if `outward` points left."""
+    if outward < 0:
+        rows = [row[::-1] for row in rows]
+        handle_column = len(rows[0]) - 2 - handle_column
+    tool_grades.stamp(canvas, x - handle_column, top, rows, grade)
 
 
-def shovel(canvas, x, y, outward):
-    """A spade standing on its blade, a D-grip at the top of the shaft."""
-    handle(canvas, x, y - 12, 52)
-    grip = mask(forms.box, x - 1, y - 14, x + 2, y - 12) & ~mask(forms.box, x, y - 13, x + 1, y - 13)
-    forms.paint(canvas, grip, HANDLE[1])
-    forms.dots(canvas, [(x - 1, y - 14), (x, y - 14)], HANDLE[2])
-    blade = mask(forms.polygon, [(x - 2, 52), (x + 4, 52), (x + 4, 59), (x + 2, 62), (x, 62), (x - 2, 59)])
-    forms.shade(canvas, blade, IRON, 2)
-    forms.paint(canvas, mask(forms.box, x, 51, x + 1, 52), IRON[0])
+# fmt: off
+HOE_HEAD = (
+    "..mmmmm",
+    "kkssssk",
+    "..ssssk",
+    "..eeeee",
+)
+SPADE_GRIP = ("lwwd",)
+SPADE_BLADE = (
+    ".kssk.",
+    "mssssk",
+    "mssssk",
+    "mssssk",
+    "mssssk",
+    "mssssk",
+    "mssssk",
+    "mssssk",
+    "mssssk",
+    "eeeeek",
+    ".eeee.",
+)
+SCYTHE_BLADE = (
+    ".mmmmm..",
+    "kkesssmm",
+    "...eesss",
+    ".....eee",
+)
+SCYTHE_NIB = (
+    "..lw",
+    "..ld",
+)
+AXE_HEAD = (
+    "....mme",
+    "kssssse",
+    "kssssse",
+    "kssssse",
+    "....kke",
+)
+PICK_HEAD = (
+    "..mmmm..",
+    ".mskksm.",
+    "ks....sk",
+    "e......e",
+)
+HAMMER_HEAD = (
+    "emmmmme",
+    "essssse",
+    "essssse",
+    "ekkkkke",
+)
+CAN = (
+    "..kk.....",
+    ".kkkk....",
+    "mmmmmm.mm",
+    "mkkkkk.sk",
+    "mssssk..s",
+    "mkkkkk.s.",
+    "mssssks..",
+    "mssssk...",
+    "mssssk...",
+    "kkkkkk...",
+)
+# fmt: on
 
 
-def scythe(canvas, x, y, outward):
-    """A snath taller than the figure with a grip peg, and a long curved blade off its top."""
-    handle(canvas, x, y - 26, 62)
-    peg = x - 3 if outward < 0 else x + 2
-    forms.shade(canvas, mask(forms.box, peg, y - 10, peg + 1, y - 9), HANDLE, 1)
-    middle = x + 0.5
-    points = [(middle, y - 26), (middle + outward * 4, y - 25.5), (middle + outward * 8, y - 21)]
-    blade = mask(forms.limb, points, (1.6, 1.3, 0.5))
-    forms.shade(canvas, blade, IRON, 1)
-    below = np.zeros_like(blade)
-    below[:-1] = blade[1:]
-    forms.paint(canvas, blade & ~below, CUTTING_EDGE)
+def hoe(canvas, x, y, outward, grade):
+    """A long shaft, an iron neck off its top and the flat blade hanging from it outward."""
+    handle(canvas, x, y - 17, 62, grade)
+    head(canvas, x, y - 21, outward, HOE_HEAD, 0, grade)
 
 
-def axe(canvas, x, y, outward):
-    """Held at the throat of the handle: the head just above the hand, its blade flaring outward
-    to a bright edge, the handle down to the knee."""
-    handle(canvas, x, y - 4, y + 10)
-    middle = x + 1
-    tip = middle + outward * 6
-    head = mask(forms.polygon, [(middle - outward * 2, y - 6), (middle + outward * 2, y - 6), (tip, y - 9), (tip, y), (middle + outward * 2, y - 3), (middle - outward * 2, y - 3)])
-    forms.shade(canvas, head, IRON, 1)
-    edge_x = int(tip) - 1 if outward > 0 else int(tip)
-    forms.paint(canvas, head & mask(forms.box, edge_x, 0, edge_x, CHARACTER_HEIGHT - 1), CUTTING_EDGE)
+def shovel(canvas, x, y, outward, grade):
+    """A spade standing on its iron blade, a T grip at the top of the shaft."""
+    handle(canvas, x, y - 13, 51, grade)
+    head(canvas, x, y - 14, outward, SPADE_GRIP, 1, grade)
+    head(canvas, x, 52, outward, SPADE_BLADE, 2, grade)
 
 
-def pickaxe(canvas, x, y, outward):
-    """Held at the throat of the handle: the curved head across its top, both points down."""
-    handle(canvas, x, y - 4, y + 10)
-    middle = x + 1
-    head = mask(forms.limb, [(middle - 7, y), (middle - 4, y - 4), (middle, y - 5.5)], (0.6, 1.2, 1.6))
-    head |= mask(forms.limb, [(middle, y - 5.5), (middle + 4, y - 4), (middle + 7, y)], (1.6, 1.2, 0.6))
-    forms.shade(canvas, head, IRON, 1)
+def scythe(canvas, x, y, outward, grade):
+    """A snath taller than the figure with a nib, the blade off its top sweeping outward and
+    down, its edge on the inner side."""
+    handle(canvas, x, y - 27, 62, grade)
+    head(canvas, x, y - 29, outward, SCYTHE_BLADE, 0, grade)
+    head(canvas, x, y - 11, outward, SCYTHE_NIB, 0, grade)
 
 
-def hammer(canvas, x, y, outward):
-    """Held by the end of a short handle, the heavy head on top with its bright faces, the
-    longer end outward (so it shows beside the body from behind)."""
-    handle(canvas, x, y - 3, y + 3)
-    left = x - 4 if outward < 0 else x - 1
-    right = left + 6
-    forms.shade(canvas, mask(forms.box, left, y - 7, right, y - 4), IRON, 1)
-    faces = mask(forms.box, left, y - 7, left, y - 4) | mask(forms.box, right, y - 7, right, y - 4)
-    forms.paint(canvas, faces, IRON[2])
+def axe(canvas, x, y, outward, grade):
+    """Held at the throat of the handle: the head just above the hand, its bit flaring outward
+    to the edge, the poll behind, the handle down to the knee."""
+    handle(canvas, x, y - 4, y + 10, grade)
+    head(canvas, x, y - 9, outward, AXE_HEAD, 1, grade)
 
 
-def watering_can(canvas, x, y, outward):
-    """A copper can hanging from the hand by its handle, its spout rising outward to the rose."""
-    middle = x + 1
-    forms.paint(canvas, mask(forms.box, x, y + 1, x + 1, y + 2), COPPER[0])
-    spout_foot = (middle + outward * 2.5, y + 8)
-    rose = (middle + outward * 7, y + 3.5)
-    forms.shade(canvas, mask(forms.capsule, spout_foot, rose, 1.0, 0.8), COPPER, 1)
-    forms.shade(canvas, mask(forms.ellipse, *rose, 1.4, 1.6), COPPER, 1)
-    forms.shade(canvas, mask(forms.rounded_box, x - 2, y + 3, x + 3, y + 10), COPPER, 2)
-    forms.dots(canvas, [(x - 1, y + 4), (x - 1, y + 5)], COPPER_GLINT)
+def pickaxe(canvas, x, y, outward, grade):
+    """Held at the throat of the handle: the head across its top, both arms bent down to their
+    points."""
+    handle(canvas, x, y - 7, y + 10, grade)
+    head(canvas, x, y - 9, outward, PICK_HEAD, 3, grade)
+
+
+def hammer(canvas, x, y, outward, grade):
+    """Held by the end of a short handle, the heavy head across its top with a striking face at
+    each end."""
+    handle(canvas, x, y - 3, y + 3, grade)
+    head(canvas, x, y - 7, outward, HAMMER_HEAD, 2, grade)
+
+
+def watering_can(canvas, x, y, outward, grade):
+    """A can hanging from the hand by its hoop, its spout rising outward to the rose."""
+    head(canvas, x, y + 1, outward, CAN, 2, grade)
 
 
 # The horn lantern (its icon is in items.py): tin, and panes of horn that glow when it is lit.
@@ -756,7 +801,7 @@ def lantern(is_lit):
     horn between two upright bars, and a wider foot. Lit, the horn glows and the flame shows
     through it; the light it throws is the game's (a PointLight2D)."""
 
-    def draw(canvas, x, y, outward):
+    def draw(canvas, x, y, outward, _grade):
         forms.paint(canvas, mask(forms.box, x, y + 1, x + 1, y + 2), IRON[0])
         forms.shade(canvas, mask(forms.polygon, [(x + 0.5, y + 2), (x + 4.5, y + 6), (x - 3.5, y + 6)]), IRON, 1)
         forms.shade(canvas, mask(forms.box, x - 2, y + 6, x + 3, y + 13), LIT_HORN if is_lit else HORN, 2)
@@ -772,15 +817,22 @@ def lantern(is_lit):
     return draw
 
 
-# The held layer of each tool by its sheet's name (see `held_tool`).
-HELD_TOOLS = {
-    "hoe": held_tool(hoe, is_long=True),
-    "shovel": held_tool(shovel, is_long=True),
-    "scythe": held_tool(scythe, is_long=True),
-    "axe": held_tool(axe, is_long=False),
-    "pickaxe": held_tool(pickaxe, is_long=False),
-    "hammer": held_tool(hammer, is_long=False),
-    "watering_can": held_tool(watering_can, is_long=False),
+def held_tools(grade):
+    """The held layer of each tool in one grade, by the tool's name."""
+    return {
+        "hoe": held_tool(hoe, True, grade),
+        "shovel": held_tool(shovel, True, grade),
+        "scythe": held_tool(scythe, True, grade),
+        "axe": held_tool(axe, False, grade),
+        "pickaxe": held_tool(pickaxe, False, grade),
+        "hammer": held_tool(hammer, False, grade),
+        "watering_can": held_tool(watering_can, False, grade),
+    }
+
+
+# The held layer of each tool by its sheet's name (see `held_tool`): the tools in their first
+# grade, and the lantern.
+HELD_TOOLS = held_tools(tool_grades.GRADES[0]) | {
     "lantern": held_tool(lantern(is_lit=False), is_long=False),
     "lantern_lit": held_tool(lantern(is_lit=True), is_long=False),
 }
@@ -811,7 +863,7 @@ def worn(draw, facing, pose, variant_colours):
     """A layer drawn on the figure. The near hands are in front of everything worn, so every
     layer but the body and the held tool leaves them clear for the body's hands to show."""
     canvas = draw(facing, pose, **variant_colours)
-    if draw is not draw_body and draw not in HELD_TOOLS.values():
+    if draw is not draw_body and not getattr(draw, "holds_tool", False):
         for arm in Figure(facing, pose).arms:
             if not arm.far:
                 forms.paint(canvas, hand(arm), None)
