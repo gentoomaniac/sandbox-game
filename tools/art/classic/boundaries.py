@@ -130,7 +130,7 @@ def draw_line(mask, layers, colour, outline, shadow_reach=1, joints=False, has_f
     return canvas
 
 
-def _cluster(x, y, z, salt):
+def cluster_value(x, y, z, salt):
     """A value in [-1, 1) that is the same over 2x2 clusters of pixels and repeats every tile,
     for the texture of leaves and turf."""
     cell = (x // 2 % (TILE // 2), y // 2 % (TILE // 2), z // 2, salt)
@@ -141,7 +141,7 @@ def _cluster(x, y, z, salt):
     return value % 2000 / 1000 - 1
 
 
-def _ramp(shades, light):
+def ramp_shade(shades, light):
     """The shade of a ramp (lightest first) for a light of -1 to 1."""
     index = round((0.85 - light) / 1.25 * (len(shades) - 1))
     return shades[min(len(shades) - 1, max(0, index))]
@@ -245,13 +245,13 @@ def _knick_layers(bushes, mask, x, y):
 
 def _knick_colour(material, x, y, z, light, is_top):
     if material == "bank":
-        return _ramp(TURF, light - 0.15)
+        return ramp_shade(TURF, light - 0.15)
     shades = HAZEL if material == "hazel" else HAWTHORN
     # Leaves in clusters, darker low in the hedge where the crowns shade it.
     # The clusters of a face lie on the screen, so they don't run down it in streaks.
-    cluster = _cluster(x, y, z, 2) if is_top else _cluster(x, y - z, 0, 3)
+    cluster = cluster_value(x, y, z, 2) if is_top else cluster_value(x, y - z, 0, 3)
     light += 0.35 * cluster - (0.25 if z < BANK_HEIGHT + 2 else 0)
-    return _ramp(shades, light)
+    return ramp_shade(shades, light)
 
 
 def _knick_outline(material):
@@ -287,7 +287,7 @@ RODS = ("sand_light", "sand", "mud", "mud_dark")
 POSTS = ("soil_light", "soil_mid", "soil", "soil_dark")
 
 
-def _along(x, y):
+def along_line(x, y):
     """Where a pixel lies along the line: x on an arm running east-west, y on one running
     north-south."""
     return y if abs(x + 0.5 - _CENTRE) < abs(y + 0.5 - _CENTRE) else x
@@ -296,19 +296,19 @@ def _along(x, y):
 def _wattle_layers(mask, x, y):
     if skeleton_distance(mask, x + 0.5, y + 0.5) >= WATTLE_REACH:
         return []
-    if _along(x, y) % POST_SPACING in (0, POST_SPACING - 1):
+    if along_line(x, y) % POST_SPACING in (0, POST_SPACING - 1):
         return [(POST_HEIGHT, "post")]
     return [(WATTLE_HEIGHT, "rods")]
 
 
 def _wattle_colour(material, x, y, z, light, is_top):
     if material == "post":
-        return _ramp(POSTS, light)
+        return ramp_shade(POSTS, light)
     # The rods lie in bands of 2 px, lit on top and dark below; they go in front of and behind
     # the stakes in turn, so the bands are lighter where they come out in front.
-    is_out = (_along(x, y) // 4 + z // 2) % 2 == 0
+    is_out = (along_line(x, y) // 4 + z // 2) % 2 == 0
     band = 0.25 if z % 2 == 0 else -0.25
-    return _ramp(RODS, light + band + (0.12 if is_out else -0.12) + (0.3 if is_top else 0.0))
+    return ramp_shade(RODS, light + band + (0.12 if is_out else -0.12) + (0.3 if is_top else 0.0))
 
 
 def _wattle_outline(material):
@@ -386,9 +386,9 @@ def _wall_layers(stones, mask, x, y):
 
 def _wall_colour(material, x, y, z, light, is_top):
     is_warm = material[2]
-    if is_top and light > 0.5 and _cluster(x, y, z, 4) > 0.6:
+    if is_top and light > 0.5 and cluster_value(x, y, z, 4) > 0.6:
         return "olive"
-    return _ramp(WARM_STONE if is_warm else COOL_STONE, light)
+    return ramp_shade(WARM_STONE if is_warm else COOL_STONE, light)
 
 
 def _wall_outline(material):
@@ -431,7 +431,7 @@ def _dyke_layers(mask, x, y):
 
 def _dyke_colour(material, x, y, z, light, is_top):
     # Grazed short: a turf of tufts in clusters, smoother than the hedge's leaves.
-    return _ramp(DYKE_TURF, light + 0.1 * _cluster(x, y, z, 5))
+    return ramp_shade(DYKE_TURF, light + 0.1 * cluster_value(x, y, z, 5))
 
 
 def _dyke_outline(material):

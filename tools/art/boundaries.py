@@ -132,7 +132,7 @@ def draw_line(mask, layers, colour, outline, shadow_reach=2, joints=False, has_f
     return canvas
 
 
-def _hash(*parts):
+def pixel_hash(*parts):
     """A value in [-1, 1) for whole numbers `parts`, the same every run."""
     value = 0
     for part in parts:
@@ -144,10 +144,10 @@ def _hash(*parts):
 def _cluster(x, y, z, salt, size=2):
     """A value in [-1, 1) that is the same over size x size clusters of pixels and repeats every
     tile, for the texture of turf and stone."""
-    return _hash(x // size % (TILE // size), y // size % (TILE // size), z // size, salt)
+    return pixel_hash(x // size % (TILE // size), y // size % (TILE // size), z // size, salt)
 
 
-def _ramp(shades, light):
+def ramp_shade(shades, light):
     """The shade of a ramp (lightest first) for a light of -1 to 1."""
     index = round((0.85 - light) / 1.25 * (len(shades) - 1))
     return shades[min(len(shades) - 1, max(0, index))]
@@ -245,7 +245,7 @@ def _knick_colour(material, x, y, z, light, is_top):
     if material == "bank":
         # Turf in tufts: the face's tufts lie on the screen, so they don't run down it.
         tuft = _cluster(x, y, z, 1) if is_top else _cluster(x, y - z, 0, 1)
-        return _ramp(TURF, light - 0.15 + 0.25 * tuft)
+        return ramp_shade(TURF, light - 0.15 + 0.25 * tuft)
     # The core of the hedge, in the shade of the bushes over it: dark leaves and stems.
     return "green_dark" if _cluster(x, y - z, 0, 2) > 0.2 else "green_deep"
 
@@ -334,7 +334,7 @@ RODS = ("sand_light", "sand", "mud", "mud_dark")
 POSTS = ("soil_light", "soil_mid", "soil", "soil_dark")
 
 
-def _along(x, y):
+def along_line(x, y):
     """Where a pixel lies along the line: x on an arm running east-west, y on one running
     north-south."""
     return y if abs(x + 0.5 - _CENTRE) < abs(y + 0.5 - _CENTRE) else x
@@ -343,7 +343,7 @@ def _along(x, y):
 def _wattle_layers(mask, x, y):
     if skeleton_distance(mask, x + 0.5, y + 0.5) >= WATTLE_REACH:
         return []
-    along = _along(x, y)
+    along = along_line(x, y)
     if (along + 1) % POST_SPACING < POST_WIDTH:
         return [(POST_HEIGHT, "post")]
     if along % WEAVE == WEAVE - 1:
@@ -352,12 +352,12 @@ def _wattle_layers(mask, x, y):
 
 
 def _wattle_colour(material, x, y, z, light, is_top):
-    along = _along(x, y)
+    along = along_line(x, y)
     if material in ("post", "stake"):
         # A split post, its top cut flat and lit, its left side catching the light.
         side = (along + 1) % POST_SPACING if material == "post" else 1
         side_light = 0.2 if side == 0 else -0.2 if side == POST_WIDTH - 1 else 0.0
-        return _ramp(POSTS, light + (0.3 if is_top else 0.0) + side_light)
+        return ramp_shade(POSTS, light + (0.3 if is_top else 0.0) + side_light)
     # The rods are 2 px thick, lit on top and dark below. Between two stakes a rod comes out in
     # front, bulging lit in the middle, or lies behind in the shade, in turn along it and from one
     # rod to the next, so the weave shows.
@@ -367,8 +367,8 @@ def _wattle_colour(material, x, y, z, light, is_top):
     band = 0.25 if z % 2 == 0 else -0.2
     weave = 0.35 * middle if is_out else -0.3
     # Some rods are older and greyer than others.
-    age = 0.15 * _hash(along // WEAVE % (TILE // WEAVE), rod, 9)
-    return _ramp(RODS, light + band + weave + age + (0.1 if is_top else 0.0))
+    age = 0.15 * pixel_hash(along // WEAVE % (TILE // WEAVE), rod, 9)
+    return ramp_shade(RODS, light + band + weave + age + (0.1 if is_top else 0.0))
 
 
 def _wattle_outline(material):
@@ -454,7 +454,7 @@ def _wall_colour(material, x, y, z, light, is_top):
         return "olive" if _cluster(x, y, z, 6, 1) > -0.3 else "dry"
     # The grain of the granite, in specks of the next shade.
     light += 0.22 * _cluster(x, y - z, 0, 5, 1)
-    return _ramp(WARM_STONE if is_warm else COOL_STONE, light)
+    return ramp_shade(WARM_STONE if is_warm else COOL_STONE, light)
 
 
 def _wall_outline(material):
@@ -532,7 +532,7 @@ def _dyke_colour(material, x, y, z, light, is_top):
     if material == "track" and is_top:
         return "dry_light" if _cluster(x, y, z, 7, 1) > -0.4 else "dry"
     tuft = 0.12 * _cluster(x, y, z, 5) + 0.1 * _cluster(x, y, z, 8, 1)
-    return _ramp(DYKE_TURF, light + tuft)
+    return ramp_shade(DYKE_TURF, light + tuft)
 
 
 def _dyke_outline(material):

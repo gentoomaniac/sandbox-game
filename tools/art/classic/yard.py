@@ -63,7 +63,7 @@ def draw_well():
     return outline_edge(picture, "soil_dark", keep_bottom=True)
 
 
-def _icon(picture):
+def icon_of(picture):
     """The icon of a picture drawn at a tile's size or bigger: halved if it is wider than an icon,
     cut to what is drawn, rows and columns from its middle left out until it fits, in the middle of
     16x16 px and outlined."""
@@ -103,10 +103,10 @@ def egg_icon():
 def icons():
     """The icons of the yard's items, by item id."""
     return {
-        "draw_well": _icon(draw_well()),
-        "trough": _icon(trough(3)),
-        "feed_trough": _icon(trough(3, "feed")),
-        "hay_rack": _icon(hay_rack(3)),
+        "draw_well": icon_of(draw_well()),
+        "trough": icon_of(trough(3)),
+        "feed_trough": icon_of(trough(3, "feed")),
+        "hay_rack": icon_of(hay_rack(3)),
         "egg": egg_icon(),
     }
 
