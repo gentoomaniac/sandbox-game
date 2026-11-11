@@ -677,7 +677,8 @@ both.
 ### Console
 
 Press `/` to open a console for testing and cheats. Tab completes commands and their
-arguments.
+arguments. The log scrolls with the mouse wheel and its bar, and with Page Up and Page Down;
+it keeps the newest 500 lines and follows new output unless you scrolled up to read.
 
 | Command | What it does |
 |---|---|

@@ -8,6 +8,8 @@ signal command_ran
 
 const THEME := preload("res://game/scenes/ui_theme.tres")
 const VISIBLE_LOG_LINES := 8
+## The oldest lines go when the log is longer.
+const MAX_LOG_LINES := 500
 const MARGIN := 4
 ## Keeps the clock and the cheat line (see CheatHud) in view above the panel.
 const TOP_OFFSET := 34
@@ -19,6 +21,7 @@ var _log_lines: Array[String] = []
 var _history: Array[String] = []
 var _history_index := 0
 var _log := Label.new()
+var _log_list := ScrollingList.new(_log)
 var _input := LineEdit.new()
 
 
@@ -35,7 +38,8 @@ func _init() -> void:
 	var box := VBoxContainer.new()
 	panel.add_child(box)
 	_log.clip_text = true
-	box.add_child(_log)
+	_log_list.keeps_bottom = true
+	box.add_child(_log_list)
 	_input.keep_editing_on_text_submit = true
 	_input.text_submitted.connect(_on_submitted)
 	_input.gui_input.connect(_on_input_gui_input)
@@ -44,7 +48,7 @@ func _init() -> void:
 
 
 func _ready() -> void:
-	_log.custom_minimum_size.y = VISIBLE_LOG_LINES * _log.get_line_height()
+	_log_list.fixed_height = VISIBLE_LOG_LINES * _log.get_line_height()
 
 
 ## `wildlife_spawner` puts animals in view for the `spawn` command and `wildlife_clearer` takes
@@ -65,6 +69,8 @@ func open() -> void:
 	visible = true
 	_input.clear()
 	_history_index = _history.size()
+	_log_list.fit()
+	_log_list.scroll_to_bottom()
 	_focus_input()
 
 
@@ -77,7 +83,8 @@ func close() -> void:
 func run_line(line: String) -> void:
 	_log_lines.append("> " + line)
 	_log_lines.append_array(_console.run(line))
-	_log.text = "\n".join(_log_lines.slice(-VISIBLE_LOG_LINES))
+	_log_lines = _log_lines.slice(-MAX_LOG_LINES)
+	_log.text = "\n".join(_log_lines)
 	if _history.is_empty() or _history[-1] != line:
 		_history.append(line)
 	_history_index = _history.size()
@@ -106,6 +113,10 @@ func _on_input_gui_input(event: InputEvent) -> void:
 			_browse_history(-1)
 		KEY_DOWN:
 			_browse_history(1)
+		KEY_PAGEUP:
+			_log_list.scroll_pages(-1)
+		KEY_PAGEDOWN:
+			_log_list.scroll_pages(1)
 		KEY_TAB:
 			_input.text = _console.complete(_input.text)
 			_input.caret_column = _input.text.length()

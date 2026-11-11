@@ -154,4 +154,5 @@ they are overlays that stay up while the player plays, take no input away from t
 need neither a backdrop nor one-at-a-time. The build menu's row of buildings scrolls sideways
 with `ScrollingList.Row` when it is wider than the window: by dragging its bar and by keeping
 the chosen building in view, never by the wheel, which keeps turning the hotbar. The console
-takes the input like a window, but is a strip, not a centred panel, and keeps its own code.
+takes the input like a window, but is a strip, not a centred panel, and keeps its own code; only its
+log is a `ScrollingList` (fixed height, keeping the bottom).
