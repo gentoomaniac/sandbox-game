@@ -66,3 +66,7 @@ func test_asking_again_replaces_the_buttons() -> void:
 	await wait_frames(1)
 
 	assert_eq(_buttons().size(), 1)
+
+
+func test_the_dialog_is_fixed_in_place() -> void:
+	assert_false(_dialog.is_movable)

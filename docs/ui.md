@@ -46,10 +46,16 @@ func _on_open() -> void:
   The signals `opened` and `closed` come after the hooks.
 - Hooks (all optional): `_on_open()`, `_on_close()`, `_takes_escape()`,
   `_on_backdrop_input(event)`.
-- Contents that change size need nothing: the panel sits in a centre container, so it stays
-  around its contents and in the middle of the window when they change, when the window is
+- Contents that change size need nothing: the panel is anchored to the middle of the window and
+  grows round its contents, so it stays there when they change, when the window is
   resized and when the UI scale changes (that too is a resize of the root). The scrolling lists
   fit themselves while the window is shown; `refit()` makes them fit now.
+- **Dragging:** the player drags a window by the panel's frame and by the gaps and labels in it
+  that take no clicks. Content (buttons, sliders, text fields, slots and the rows of a list) takes
+  its own clicks, so it never starts a drag; the empty area of a list and the gaps between its
+  rows do. The panel stays on the screen, also after a resize, and is back in the
+  middle every time the window opens (positions are not saved). `is_movable = false` in `_init`
+  keeps a window in place: the pause menu with its settings pages and `ChoiceDialog` do.
 
 ## The growing part: ScrollingList
 

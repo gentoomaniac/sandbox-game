@@ -16,9 +16,14 @@ extends CanvasLayer
 ## - Hooks, all optional: `_on_open()` (fill the contents; the lists are fitted after it),
 ##   `_on_close()`, `_takes_escape()` (return true to use Escape yourself, e.g. to go back a page
 ##   instead of closing) and `_on_backdrop_input(event)` (a click on the dimmed area).
-## - Contents that change size need nothing: the panel sits in a centre container, so it stays
-##   around its contents and in the middle of the window through resizes and UI scale changes.
+## - Contents that change size need nothing: the panel is anchored to the middle of the window and
+##   grows round its contents, so it stays there through resizes and UI scale changes.
 ##   The scrolling lists fit themselves; `refit()` makes them fit now.
+## - The player drags the window by what is not content: the panel's frame and the gaps and labels
+##   in it that take no clicks. Never by a button, slider, text field or slot, or by the rows of a
+##   list (the empty area of a list and the gaps between its rows do drag). It stays on the
+##   screen, and opens in the middle again each time. A window that must stay put (the pause menu,
+##   a question) sets `is_movable` to false in `_init`.
 ## - Escape here is `ui_cancel` (not rebindable) or the rebindable pause key, as the pause menu
 ##   takes both. Other keys that close the window (E on the chest) are named in `close_actions`;
 ##   they close it at once, without `_takes_escape()`. Windows must stay children of Main, so that
@@ -42,12 +47,19 @@ var pauses_game := false
 var closes_on_backdrop_click := false
 ## The input actions, besides Escape and the pause key, that close the window. Set it in `_init`.
 var close_actions: Array[StringName] = []
+## Whether the player can drag the window about. Set it in `_init`.
+var is_movable := true
 
 var _backdrop := ColorRect.new()
-## Keeps the panel in the middle of the window, whatever its size and the window's.
-var _centre := CenterContainer.new()
+var _centre := Control.new()
 var _panel := PanelContainer.new()
 var _lists: Array[ScrollingList] = []
+## How far the player has dragged the panel from the middle of the window.
+var _drag_shift := Vector2.ZERO
+var _is_dragging := false
+## Where the panel was when the drag started, and where the mouse was.
+var _drag_start_shift := Vector2.ZERO
+var _drag_start_mouse := Vector2.ZERO
 
 
 func _init() -> void:
@@ -61,6 +73,14 @@ func _init() -> void:
 	_centre.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_backdrop.add_child(_centre)
 	_panel.theme = THEME
+	# Anchored to the middle and growing both ways, the panel stays centred round its contents;
+	# the offsets are the drag.
+	_panel.set_anchors_preset(Control.PRESET_CENTER)
+	_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_panel.gui_input.connect(_on_frame_input)
+	_panel.minimum_size_changed.connect(_apply_drag_shift)
+	_backdrop.gui_input.connect(_on_frame_input)
 	_centre.add_child(_panel)
 
 
@@ -97,6 +117,9 @@ func open() -> void:
 	close_open()
 	_open_modal = self
 	visible = true
+	_drag_shift = Vector2.ZERO
+	_apply_drag_shift()
+	get_viewport().size_changed.connect(_apply_drag_shift)
 	if pauses_game:
 		process_mode = Node.PROCESS_MODE_ALWAYS
 		get_tree().paused = true
@@ -113,6 +136,8 @@ func close() -> void:
 		return
 	visible = false
 	_open_modal = null
+	_is_dragging = false
+	get_viewport().size_changed.disconnect(_apply_drag_shift)
 	if pauses_game:
 		get_tree().paused = false
 	_on_close()
@@ -171,9 +196,53 @@ func _drop_outside_panel(hotbar: HotbarHud, on_drop: Callable) -> void:
 	)
 
 
+## A press the content did not take, on the panel itself or (for a panel that lets clicks through
+## to the backdrop) on the backdrop over the panel: the player has hold of the window.
+func _on_frame_input(event: InputEvent) -> void:
+	if not is_movable or not _is_left_press(event):
+		return
+	var press := event as InputEventMouseButton
+	if not _panel.get_global_rect().has_point(press.global_position):
+		return
+	_is_dragging = true
+	_drag_start_shift = _drag_shift
+	_drag_start_mouse = press.global_position
+
+
+## The drag goes on outside the panel, so it listens to the whole window.
+func _input(event: InputEvent) -> void:
+	if not _is_dragging:
+		return
+	if event is InputEventMouseMotion:
+		_drag_shift = _drag_start_shift + event.global_position - _drag_start_mouse
+		_apply_drag_shift()
+	elif _is_left_release(event):
+		_is_dragging = false
+
+
+## Places the panel at the drag, keeping it on the screen: also after the window or the panel
+## changed size. The offsets give the panel exactly its minimum size, which is what it takes.
+func _apply_drag_shift() -> void:
+	var panel_size := _panel.get_combined_minimum_size()
+	var room := ((get_viewport().get_visible_rect().size - panel_size) / 2).max(Vector2.ZERO)
+	_drag_shift = _drag_shift.clamp(-room, room)
+	_panel.offset_left = _drag_shift.x - panel_size.x / 2
+	_panel.offset_right = _drag_shift.x + panel_size.x / 2
+	_panel.offset_top = _drag_shift.y - panel_size.y / 2
+	_panel.offset_bottom = _drag_shift.y + panel_size.y / 2
+
+
 func _is_left_press(event: InputEvent) -> bool:
 	return (
 		event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+	)
+
+
+func _is_left_release(event: InputEvent) -> bool:
+	return (
+		event is InputEventMouseButton
+		and not event.pressed
+		and event.button_index == MOUSE_BUTTON_LEFT
 	)
 
 

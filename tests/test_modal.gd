@@ -216,7 +216,7 @@ func test_a_click_on_the_backdrop_closes_only_if_the_window_wants_it() -> void:
 func test_the_panel_stays_centred_as_its_contents_change() -> void:
 	var window := _window()
 	window.open()
-	# The centre container places the panel when it sorts its children, a frame later.
+	# The panel is laid out a frame after it is shown.
 	await wait_process_frames(1)
 	var panel := window.panel()
 	var small_size := panel.size

@@ -55,6 +55,7 @@ func _init(settings: GameSettings) -> void:
 	super()
 	_settings = settings
 	pauses_game = true
+	is_movable = false
 	layer = 10
 	_panel.custom_minimum_size.x = PANEL_WIDTH
 	var pages := VBoxContainer.new()

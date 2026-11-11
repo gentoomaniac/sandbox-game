@@ -22,6 +22,7 @@ var _is_leaving := false
 func _init() -> void:
 	super()
 	pauses_game = true
+	is_movable = false
 	# Over the pause menu, which a quit can come from.
 	layer = 20
 	_panel.custom_minimum_size.x = PANEL_WIDTH

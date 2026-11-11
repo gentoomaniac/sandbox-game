@@ -55,3 +55,7 @@ func test_escape_goes_back_a_page_at_a_time_and_then_closes_the_menu() -> void:
 	_press_escape()
 	assert_false(_menu.is_open())
 	assert_false(get_tree().paused)
+
+
+func test_the_menu_is_fixed_in_place_on_every_page() -> void:
+	assert_false(_menu.is_movable)

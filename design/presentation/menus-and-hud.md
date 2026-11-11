@@ -47,10 +47,14 @@ Decided 2026-11-05.
   by following the chosen building, and the mouse wheel over it still turns the hotbar.
 - **Windows** (task 132): every window (crafting, chest, character, chat, the pause menu) is built
   on one base, `Modal`: a dimmed backdrop and a framed panel that stays centred in the window
-  whatever its content or the window does. Escape closes the window (the pause menu goes back
-  a page first), only one window is open at a time (opening one closes the other), and the
-  game pauses while a window that asks for it is open. HUDs, tooltips and the build menu are not windows. How
-  to build one: [docs/ui.md](../../docs/ui.md).
+  whatever its content or the window does. The player can drag a window by its frame to move it
+  aside (task 189; it stays on the screen and is centred again when reopened, nothing is saved).
+  Buttons, slots, text fields and the rows of a list take their own clicks and never drag; the
+  empty area of a list and the gaps between rows do. The pause menu with its settings and the
+  confirmation dialogs set `is_movable` off and stay put. Escape closes the window (the pause
+  menu goes back a page first), only one window is open at a time (opening one closes the other),
+  and the game pauses while a window that asks for it is open. HUDs, tooltips and the build menu
+  are not windows. How to build one: [docs/ui.md](../../docs/ui.md).
 - **UI look:** a pixel font and a framed panel (9-slice) in palette colours, in one shared
   Godot Theme that all UI uses.
 
