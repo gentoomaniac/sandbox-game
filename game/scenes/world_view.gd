@@ -920,6 +920,20 @@ func is_snowed_over(world_pos: Vector2i) -> bool:
 	return look == SeasonBlend.Look.SNOW or look == SeasonBlend.Look.DUSTING
 
 
+## Whether snow or a dusting of it is drawn under a point of the world, `position` in tiles: at
+## least half of the 4 corner tiles of the cell drawn there show it (cells lie on the corners
+## between tiles, see CORNER_OFFSETS), which is how the overlay blends them. A tile's own look is
+## not enough: with patchy snow a tile can look snowy and still count as bare. Task 185's
+## GroundCover replaces this with its own coverage query.
+func is_snow_drawn_at(position: Vector2) -> bool:
+	var cell := Vector2i(position.round())
+	var snowy_corners := 0
+	for offset: Vector2i in CORNER_OFFSETS:
+		if is_snowed_over(cell + offset):
+			snowy_corners += 1
+	return snowy_corners >= 2
+
+
 ## Tells whether snow lies on a tile on game day `day` with this snow cover and frost, as it
 ## will be drawn once the view is refreshed for them: `func(world_pos: Vector2i) -> bool`.
 func snow_checker_for(day: int, snow_cover: float, frost: float) -> Callable:

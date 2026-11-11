@@ -98,7 +98,7 @@ func _on_step() -> void:
 	if tile == null:
 		return
 	var is_indoors := _state.is_inside()
-	var is_snowed := not is_indoors and _view.is_snowed_over(player.tile())
+	var is_snowed := not is_indoors and _view.is_snow_drawn_at(player.position)
 	_audio.play(
 		SoundEvents.footstep(tile.terrain, tile.frozen, is_snowed, is_indoors),
 		player.position * TerrainTileset.TILE_SIZE
