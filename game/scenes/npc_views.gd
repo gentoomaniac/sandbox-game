@@ -22,6 +22,7 @@ func show_npcs(npcs: Npcs, entities: Node2D) -> void:
 	_npcs = npcs
 	_entities = entities
 	npcs.added.connect(_update_view)
+	npcs.removed.connect(_free_view)
 
 
 ## Follows the world tile the player is at.
@@ -46,5 +47,11 @@ func _update_view(npc: Npc) -> void:
 		_views[npc] = NpcView.new(npc)
 		_entities.add_child(_views[npc])
 	elif chunks_away > KEPT_CHUNKS and _views.has(npc):
+		_views[npc].queue_free()
+		_views.erase(npc)
+
+
+func _free_view(npc: Npc) -> void:
+	if _views.has(npc):
 		_views[npc].queue_free()
 		_views.erase(npc)

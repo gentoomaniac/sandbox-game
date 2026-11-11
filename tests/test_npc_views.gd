@@ -90,3 +90,15 @@ func test_the_state_of_a_villager_without_a_view_goes_on() -> void:
 	_npcs.update(0.05, World.new(1), Vector2.ZERO, clock)
 	assert_eq(_entities.get_child_count(), 0)
 	assert_ne(npc.seconds_left, 5.0)
+
+
+func test_a_villager_who_leaves_the_world_loses_the_view_at_once() -> void:
+	var gone := _villager_at(Vector2(3, 3))
+	var stays := _villager_at(Vector2(5, 5))
+	_focus_and_update(Vector2i(2, 2))
+	_npcs.remove(gone)
+	await get_tree().process_frame
+	assert_eq(_entities.get_child_count(), 1)
+	_focus_and_update(Vector2i(2, 2))
+	assert_eq(_entities.get_child_count(), 1, "the one who left gets no view again")
+	assert_eq(_npcs.all(), [stays] as Array[Npc])

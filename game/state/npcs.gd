@@ -11,6 +11,8 @@ extends RefCounted
 
 ## A villager came into the world.
 signal added(npc: Npc)
+## A villager left the world for good (see `remove`); whoever shows them stops.
+signal removed(npc: Npc)
 
 ## Spawned villagers stand this many tiles from the given point, at the least and at the most.
 const SPAWN_DISTANCE := Vector2(1.5, 3.0)
@@ -47,6 +49,14 @@ func all() -> Array[Npc]:
 func add(npc: Npc) -> void:
 	_npcs.append(npc)
 	added.emit(npc)
+
+
+## Takes a villager out of the world, and so out of the next save, with their chat and memories.
+## Nothing else holds on to a villager: homes, trades and who knows whom are texts of
+## data/villagers.cfg, which also names the villagers that are not in the world.
+func remove(npc: Npc) -> void:
+	_npcs.erase(npc)
+	removed.emit(npc)
 
 
 func to_array() -> Array[Dictionary]:

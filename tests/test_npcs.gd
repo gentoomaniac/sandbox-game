@@ -238,3 +238,17 @@ func test_spawn_npc_puts_villagers_near_the_player() -> void:
 	assert_eq(_npcs.all().size(), 2)
 	assert_eq(console.complete("spawn np"), "spawn npc ")
 	assert_eq(_state.livestock.all().size(), 0)
+
+
+func test_a_removed_villager_is_gone_from_the_world_and_the_save_data() -> void:
+	var npcs := Npcs.new(Sun.new())
+	var gone := Npc.create_villager("antje", Vector2.ZERO, npcs.villagers)
+	npcs.add(gone)
+	npcs.add(Npc.create_villager("momme", Vector2.ONE, npcs.villagers))
+	var removed: Array[Npc] = []
+	npcs.removed.connect(removed.append)
+	npcs.remove(gone)
+	assert_null(npcs.find("antje"))
+	assert_not_null(npcs.find("momme"))
+	assert_eq(npcs.to_array().size(), 1)
+	assert_eq(removed, [gone] as Array[Npc])
