@@ -4837,3 +4837,23 @@ Movable modals don't save their position."
 - Tests for dragging, the flag, the screen bounds and not saving; README line.
 
 Done: 2026-11-11. Modal windows are dragged by their frame or by any spot that takes no clicks; `is_movable` (on by default) is off for PauseMenu with its settings pages and for ChoiceDialog (every yes/no question). Kept on screen on drag and resize, reset to the middle on open, never saved. ChatScreen's `_input` LineEdit became `_line_edit`. Tests in tests/test_modal_dragging.gd.
+
+## 178. Harvests vary a little, and now and then give a seed
+
+- [x] Done
+
+The user, 2026-11-11: "harvesting gives different amounts of produce with a slight variance, for
+instance 2-3 carrots with an average of 2. seeds happen occasionally, both configurable in the
+config."
+- Today each crop's `yield` in data/crops.cfg is a fixed count, and a harvest gives one seed back
+  every time ("How many produce items one harvest gives (and one seed back)").
+- Per crop in data/crops.cfg: the yield becomes a small range around an average (e.g. carrots 2
+  to 3, averaging 2; an average and a spread, or min, max and average; pick the clearest config
+  shape and say why), drawn per harvest; and a seed chance per crop (the seed back is occasional,
+  not every time). Keep the farm's economy in mind: say what the seed chance means for keeping a
+  crop going, and pick sensible defaults per crop for the user to confirm.
+- A crop's damage or quality, if it changes the yield today, keeps working with the range.
+- Deterministic in tests (a seeded or injected random source). Tests for the range, the average
+  over many harvests, the seed chance, and the config check; README and design/farming notes.
+
+Done: 2026-11-11. data/crops.cfg gives each crop `yield_min`, `yield_max`, `yield_average` and `seed_chance` (replacing `yield`); a harvest draws a whole number in the range whose long-run mean is the average, and a seed only by chance. The dice are `GameState.harvest_rng` (not saved), injected in tests. Defaults: grains and pumpkin 0.7 seed chance, roots and flax 0.5 to 0.6, regrowing crops 0.2; carrots 2 to 3 averaging 2.3. Values open to the user's tuning.

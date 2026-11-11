@@ -185,24 +185,6 @@ Settings (and off), muted in test runs (comes with task 184). Rules in data/musi
   pieces like the test reel are kept for special events (festivals, a market day). Later: stems
 (AudioStreamSynchronized), more pieces, the season and weather choices.
 
-## 178. Harvests vary a little, and now and then give a seed
-
-- [ ] Done
-
-The user, 2026-11-11: "harvesting gives different amounts of produce with a slight variance, for
-instance 2-3 carrots with an average of 2. seeds happen occasionally, both configurable in the
-config."
-- Today each crop's `yield` in data/crops.cfg is a fixed count, and a harvest gives one seed back
-  every time ("How many produce items one harvest gives (and one seed back)").
-- Per crop in data/crops.cfg: the yield becomes a small range around an average (e.g. carrots 2
-  to 3, averaging 2; an average and a spread, or min, max and average; pick the clearest config
-  shape and say why), drawn per harvest; and a seed chance per crop (the seed back is occasional,
-  not every time). Keep the farm's economy in mind: say what the seed chance means for keeping a
-  crop going, and pick sensible defaults per crop for the user to confirm.
-- A crop's damage or quality, if it changes the yield today, keeps working with the range.
-- Deterministic in tests (a seeded or injected random source). Tests for the range, the average
-  over many harvests, the seed chance, and the config check; README and design/farming notes.
-
 ## 179. Picked-up items go into the hotbar first, then the backpack
 
 - [ ] Done
