@@ -1,6 +1,7 @@
 extends GutTest
 ## The migration of the sky flocks: south in autumn, north in spring, any way in summer, none in
-## winter, more often in the migration weeks and fading at the season edges.
+## winter, more often in the migration weeks and fading at the season edges. The skeins of geese
+## migrate the same way, but stay in winter and are not about in summer.
 
 const SPRING := 15
 const SUMMER := 45
@@ -35,15 +36,29 @@ func test_sky_flocks_fly_south_in_autumn_and_north_in_spring_within_the_spread()
 		assert_lt(north.y, 0.0, "spring goes north")
 
 
-func test_sky_flocks_fly_any_way_in_summer_and_geese_are_not_tied_to_the_season() -> void:
+func test_sky_flocks_fly_any_way_in_summer() -> void:
 	assert_eq(
 		_rules.migration_heading(WildlifeRules.FLOCK, SUMMER, RandomNumberGenerator.new()),
 		Vector2.ZERO
 	)
-	assert_eq(
-		_rules.migration_heading(WildlifeRules.FLYING_GEESE, AUTUMN, RandomNumberGenerator.new()),
-		Vector2.ZERO
-	)
+
+
+func test_a_skein_of_geese_migrates_too_and_flies_any_way_in_winter() -> void:
+	var geese := WildlifeRules.FLYING_GEESE
+	var rng := RandomNumberGenerator.new()
+	assert_gt(_rules.migration_heading(geese, AUTUMN, rng).y, 0.0, "autumn goes south")
+	assert_lt(_rules.migration_heading(geese, SPRING, rng).y, 0.0, "spring goes north")
+	assert_eq(_rules.migration_heading(geese, WINTER, rng), Vector2.ZERO, "winter: any way")
+	assert_gt(_rules.activity(geese, WINTER, NOON, _clear()), 0.0, "geese stay in winter")
+
+
+func test_skeins_of_geese_fade_in_from_the_empty_summer() -> void:
+	var geese := WildlifeRules.FLYING_GEESE
+	var last_of_summer := 60
+	assert_eq(_rules.season_factor(geese, 45), 0.0, "none in high summer")
+	assert_gt(_rules.season_factor(geese, last_of_summer), 0.0, "fading in before autumn")
+	assert_lt(_rules.season_factor(geese, last_of_summer), 1.0)
+	assert_eq(_rules.season_factor(geese, AUTUMN), 1.0, "full in autumn")
 
 
 func test_sky_flocks_come_more_often_in_the_migration_weeks() -> void:

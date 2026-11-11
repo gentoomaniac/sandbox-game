@@ -11,7 +11,8 @@ atmosphere only: no player impact, not hunted, not saved.
     spring and autumn, and the season factor fades over 6 days either side of a season boundary
     (the factor is the mean of the two seasons at the boundary), so they thin out and return
     rather than stop and start. The greylag geese and the dunlin keep their own seasons and
-    rules, and a skein of geese flies any way;
+    rules. A skein of flying geese migrates the same way, south in autumn and north in spring,
+    and flies any way in winter, when they stay on the coast;
   - rabbits: grassland and forest edges, hop about, flee in zigzags from the player;
   - squirrels: forests, dart between trees, sit up, scurry off;
   - deer: rare, in forests and at forest edges, mostly at dawn and dusk; graze, look up,
@@ -66,7 +67,8 @@ atmosphere only: no player impact, not hunted, not saved.
     all) graze the marsh and the floodplain (grass within 7 tiles of water) in autumn and winter,
     fewer in spring, by day. They raise their heads together when the player comes near and take
     off together when nearer, closing up into a V. Skeins of 7 to 13 fly over high up now and
-    then, mostly at dawn and dusk. A flock counts as one animal.
+    then, mostly at dawn and dusk: south in autumn and north in spring (they migrate as the sky
+    flock does), any way in winter. A flock counts as one animal.
   - mice (task 80): within 2 tiles of farmland (tilled soil, a crop, a Knick, a fieldstone
     wall or a building, with its hay), all year, mostly at dusk and at night and a few by day;
     they sniff and scurry, and dash off into cover (gone) when the player comes near;

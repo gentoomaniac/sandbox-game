@@ -384,7 +384,8 @@ whiter through the summer while the parents fly off to the meadows and back, in 
 grown young stand on the rim and flap and leave one by one, and in autumn the nest is empty
 again. Each nest has its own days, so they are not in step.
 In autumn and winter flocks of greylag geese graze the marsh and the floodplain, raise their
-heads when you come near and take off together, and skeins of them fly over in a V. Mice
+heads when you come near and take off together, and skeins of them fly over in a V, south in
+autumn and north in spring, as the flocks of small birds do. Mice
 live by the fields, the Knicks, the walls and the houses, out mostly at dusk and at night, and
 dash off into cover when you come close; frogs sit and hop at the water's edge and on the wet
 meadows from spring to early autumn, and a hunting stork that sees one walks up to it,
