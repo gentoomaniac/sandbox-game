@@ -26,6 +26,7 @@ without a literal prefix is missed; and what git ignores (addons/, assets/) is i
 """
 
 import argparse
+import os
 import posixpath
 import re
 import subprocess
@@ -305,8 +306,18 @@ def place_resource(plan, graph, path):
     plan.report.append(f"{path}: {reason} -> {len(tests)} tests ({names_of(tests)})")
 
 
+def clean_git_env():
+    """The environment for a git run in `root`, without the GIT_* variables of whoever called us:
+    a `git rebase --exec` exports GIT_DIR and GIT_WORK_TREE, and with them git would act on that
+    repository instead of the one in `root` (the selector's own tests once ran `git init` and
+    commits against the real repository that way)."""
+    return {name: value for name, value in os.environ.items() if not name.startswith("GIT_")}
+
+
 def git(root, *args):
-    result = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, check=True)
+    result = subprocess.run(
+        ["git", *args], cwd=root, capture_output=True, text=True, check=True, env=clean_git_env()
+    )
     return result.stdout.split("\0" if "-z" in args else "\n")
 
 
@@ -319,7 +330,9 @@ def class_names_at(root, revision, paths):
     names = {}
     for path in paths:
         if path.endswith(".gd"):
-            shown = subprocess.run(["git", "show", f"{revision}:{path}"], cwd=root, capture_output=True, text=True)
+            shown = subprocess.run(
+                ["git", "show", f"{revision}:{path}"], cwd=root, capture_output=True, text=True, env=clean_git_env()
+            )
             names[path] = class_names(shown.stdout) if shown.returncode == 0 else set()
     return names
 

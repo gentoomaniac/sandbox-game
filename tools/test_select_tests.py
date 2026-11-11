@@ -1,9 +1,11 @@
 """Tests of select_tests.py on a small fake game, and on a fake repo for the branch range."""
 
+import os
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import select_tests
 
@@ -230,7 +232,11 @@ class BranchRangeTest(unittest.TestCase):
 
     def git(self, *args):
         subprocess.run(
-            ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=self.root, check=True, capture_output=True
+            ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+            env=select_tests.clean_git_env(),
         )
 
     def commit(self, message):
@@ -274,6 +280,33 @@ class BranchRangeTest(unittest.TestCase):
         (self.root / "game/state/foo.gd").unlink()
         self.commit("remove")
         self.assertEqual(self.planned_words(), ["full"])
+
+
+class CallersGitEnvironmentTest(unittest.TestCase):
+    """A caller's GIT_DIR (as `git rebase --exec` exports it) never reaches the git runs."""
+
+    def test_git_runs_in_the_folder_given_not_in_the_callers_repository(self):
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        other = Path(folder.name) / "other"
+        mine = Path(folder.name) / "mine"
+        other.mkdir()
+        mine.mkdir()
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=other, check=True, env=select_tests.clean_git_env())
+        config_before = (other / ".git" / "config").read_text()
+        with mock.patch.dict(os.environ, {"GIT_DIR": str(other / ".git"), "GIT_WORK_TREE": str(other)}):
+            self.assertNotIn("GIT_DIR", select_tests.clean_git_env())
+            range_test = BranchRangeTest()
+            range_test.root = mine
+            write_files(mine, GAME)
+            range_test.git("init", "-q", "-b", "main")
+            range_test.commit("start")
+            self.assertEqual(select_tests.git(mine, "log", "--format=%s")[0], "start")
+            names = select_tests.class_names_at(mine, "HEAD", ["game/state/foo.gd"])
+            self.assertEqual(names["game/state/foo.gd"], {"Foo"})
+        self.assertEqual((other / ".git" / "config").read_text(), config_before)
+        self.assertFalse((other / ".git" / "refs" / "heads" / "main").exists())
+        self.assertTrue((mine / ".git").is_dir())
 
 
 if __name__ == "__main__":
