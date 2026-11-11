@@ -589,7 +589,7 @@ Beds don't block walking, so you can't get stuck behind one.
 
 ### Crafting and professions
 
-Press C for the crafting menu of what you make by hand: a chest, a campfire (6 stone, 3 logs),
+Press Shift+C for the crafting menu (C is the character window's) of what you make by hand: a chest, a campfire (6 stone, 3 logs),
 a bedroll (6 hay, 4 fibre), the stations below and flour (from wheat, rye or buckwheat).
 It lists what you can make with what you carry; a recipe you can't afford yet is greyed, with
 the missing materials marked, and hovering shows what is missing. With a full inventory a craft still goes ahead: what does not fit is dropped at your feet, and the menu says so. A long list scrolls (mouse
@@ -720,7 +720,7 @@ These are the default keys; all of them can be changed under Settings → Contro
 | T | Drop the held stack on the ground in front of you (picked up again by walking away and back) |
 | B, or click the bag icon beside the hotbar | The bag: character screen and inventory (opens a bit right of the middle; the same key closes it) |
 | K | Skills tab of the character screen |
-| C | Crafting menu (by hand) |
+| Shift + C | Crafting menu (by hand) |
 | E | Get off the horse you ride; else talk to the villager in front of you, else get on the saddled horse in front of you, else open the chest or the station (its crafting menu) in front of you, else sleep until morning (next to a bed); with the hammer in hand it picks the next building |
 | Enter, Escape | In a chat: send the line, leave the chat (Page Up and Down scroll back); `/clear` makes the villager forget the chat |
 | X | Switch the hammer between building and taking down (hold Space or click to take down) |

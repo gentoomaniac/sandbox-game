@@ -8,7 +8,8 @@ Decided 2026-11-05.
   - **Controls:** every game action with its keys. Click a binding, then press a key or
     mouse button to change it. Each action has up to two bindings. A key already used by
     another action moves to the new one, and the menu says so. "Reset to defaults" restores
-    all keys.
+    all keys. A binding may be a key with Shift (crafting's default is Shift+C, task 191); a key
+    pressed to rebind never takes the Shift held with it.
   - **Display:** fullscreen or windowed, and the art: new (drawn at 32 px per tile) or classic
     (the 16 px art doubled, for the groups redrawn since; the rest is the same in both). F7
     switches the art on the fly (task 117, the user's wish of 2026-11-08).

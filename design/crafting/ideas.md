@@ -499,7 +499,7 @@ flowchart LR
 
 ## 6. Fit with what exists
 
-**Today:** the crafting menu (C) lists recipes from `data/recipes.cfg` (sections with
+**Today:** the crafting menu (Shift+C) lists recipes from `data/recipes.cfg` (sections with
 `result`, `count`, `materials`), validated at start; crafting works anywhere; the chest is
 the only recipe; code is `game/state/crafting.gd` and `recipe_rules.gd`. Tools are
 level 1 to 3 and weigh nothing; the hotbar and backpack have a weight limit; energy costs

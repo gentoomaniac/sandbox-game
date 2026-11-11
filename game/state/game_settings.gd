@@ -271,7 +271,8 @@ static func binding_text(event: InputEvent) -> String:
 		return MOUSE_BUTTON_LABELS.get(event.button_index, "Mouse %d" % event.button_index)
 	if event is InputEventKey:
 		var text := OS.get_keycode_string(_key_code(event))
-		return ARROW_LABELS.get(text, text)
+		text = ARROW_LABELS.get(text, text)
+		return "Shift+" + text if event.shift_pressed else text
 	return "?"
 
 
@@ -518,6 +519,9 @@ func _load_action(file: ConfigFile, action: StringName) -> void:
 		if event == null:
 			push_warning("Ignoring bindings of '%s' in %s: can't read '%s'" % [action, _path, text])
 			return
+		# C was crafting's key until the character window took it.
+		if action == &"crafting" and _is_same(event, _plain_key(KEY_C)):
+			event = _shifted_key(KEY_C)
 		events.append(event)
 	_set_bindings(action, events.slice(0, MAX_BINDINGS))
 
@@ -663,7 +667,7 @@ static func _normalised(event: InputEvent) -> InputEvent:
 
 static func _is_same(first: InputEvent, second: InputEvent) -> bool:
 	if first is InputEventKey and second is InputEventKey:
-		return _key_code(first) == _key_code(second)
+		return _key_code(first) == _key_code(second) and first.shift_pressed == second.shift_pressed
 	if first is InputEventMouseButton and second is InputEventMouseButton:
 		return first.button_index == second.button_index
 	return false
@@ -671,8 +675,24 @@ static func _is_same(first: InputEvent, second: InputEvent) -> bool:
 
 static func _encode(event: InputEvent) -> String:
 	if event is InputEventKey:
-		return "key:%d" % _key_code(event)
+		return (
+			"key:%d:shift" % _key_code(event)
+			if event.shift_pressed
+			else "key:%d" % _key_code(event)
+		)
 	return "mouse:%d" % (event as InputEventMouseButton).button_index
+
+
+static func _plain_key(code: Key) -> InputEventKey:
+	var key := InputEventKey.new()
+	key.physical_keycode = code
+	return key
+
+
+static func _shifted_key(code: Key) -> InputEventKey:
+	var key := _plain_key(code)
+	key.shift_pressed = true
+	return key
 
 
 ## The event a file entry stands for, or null if it isn't one.
@@ -680,14 +700,15 @@ static func _decode(text: Variant) -> InputEvent:
 	if not text is String:
 		return null
 	var parts: PackedStringArray = text.split(":")
-	if parts.size() != 2 or not parts[1].is_valid_int():
+	if parts.size() < 2 or parts.size() > 3 or not parts[1].is_valid_int():
 		return null
 	var number := parts[1].to_int()
-	if parts[0] == "key" and number > 0:
+	if parts[0] == "key" and number > 0 and (parts.size() == 2 or parts[2] == "shift"):
 		var key := InputEventKey.new()
 		key.physical_keycode = number as Key
+		key.shift_pressed = parts.size() == 3
 		return key
-	if parts[0] == "mouse" and MOUSE_BUTTON_LABELS.has(number):
+	if parts[0] == "mouse" and parts.size() == 2 and MOUSE_BUTTON_LABELS.has(number):
 		var button := InputEventMouseButton.new()
 		button.button_index = number as MouseButton
 		return button

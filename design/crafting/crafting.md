@@ -2,11 +2,14 @@
 
 Decided 2026-11-05.
 
-- **C opens the crafting menu** (rebindable). It lists every recipe with its cost against
+- **Shift+C opens the crafting menu** (rebindable; C was its key until task 191 gave it to the
+  character window, and crafting waits for a better place; the Controls page binds keys without
+  Shift, so a rebound key stays on its own until it is reset; a settings file may name
+  `"key:67:shift"`, and an old one that gave crafting the plain C gets Shift+C). It lists every recipe with its cost against
   what the player carries, like the build panel; a recipe that can't be afforded is greyed
   with the missing materials marked. Clicking an affordable one takes the materials and puts
   the item in the inventory. Recipes are in `data/recipes.cfg` (result, count, materials),
-  validated like the other data files. C shows the recipes made by hand (the chest, the
+  validated like the other data files. The menu shows the recipes made by hand (the chest, the
   campfire and the bedroll, the stations, flour); the others are made at a station (see
   [Professions](professions.md)); the hammer is a later recipe. When the result would not fit
   in the inventory, the craft goes ahead: the materials are taken first (the room they leave is
@@ -18,7 +21,7 @@ Decided 2026-11-05.
   on the player's map or out of their reach ("Too far from the station"). The menu is modal, so
   the player cannot walk off with it open; the check guards code that crafts (tests, later
   helpers), not the clicks. The game does not pause while the menu is open (as with the
-  character screen), but the player neither walks nor acts. C or Escape closes it.
+  character screen), but the player neither walks nor acts. Its key or Escape closes it.
 - **First recipe: the chest**, 5 logs. A chest holds 15 slots (5×3).
 - **Placing a chest:** held like seeds; while it is held a ghost of the chest follows the
   targeted tile, and using it places the chest there. The same rules as for buildings, just

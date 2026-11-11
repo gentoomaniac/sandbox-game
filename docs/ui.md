@@ -113,7 +113,7 @@ E does nothing while it is open.
   while open, whatever else asked for the pause, so only Modals pause the tree (the pause menu is
   one; Main does not pause for it).
 - **Keys of other windows:** opening a window closes the open one, but the keys that open the
-  windows (C, B, K) do nothing while another window is open: Main asks `can_open_on_key()`,
+  windows (Shift+C, B, K) do nothing while another window is open: Main asks `can_open_on_key()`,
   which is true when the window is closed and none is open, or when it is itself the open one,
   so its key closes it or switches its tab.
 - **One at a time:** opening a window closes the open one, so windows need not know of each
