@@ -205,6 +205,29 @@ The user, 2026-11-11: "Dropping items inside should work"
 - Tests: drop and pick up inside, saved and loaded, leaving and coming back, a full-inventory craft
   indoors drops, the drop tiles stay on the floor. README, design pages, docs.
 
+## 201. Wild animals keep away from villagers and buildings (mice excepted)
+
+- [ ] Done
+
+The user, 2026-11-11, after task 181 left wild animals able to stand on a door tile: "Wild animals
+should stay away from NPC's and buildings, except mice maybe."
+- Today wild ground animals (WildlifeRules.GROUND_KINDS: rabbit, squirrel, deer, mouse, frog; and
+  the birds that land) walk on `world.is_walkable` (game/scenes/wildlife/wildlife_view.gd), which
+  includes door tiles, and only shy from the player (`flee_tiles`, `alert_tiles` in
+  WildlifeRules).
+- Never on a building tile, the door included, for every wild kind (mice too); and none spawns or
+  lands on one.
+- Keep a distance from buildings and from villagers, as from the player: they don't spawn or settle
+  near them, and flee or turn away when a villager comes as near as their flee distance (a
+  per-kind distance in data/, e.g. the same `flee_tiles`, or a smaller one for buildings). Mice are
+  the exception: they live by the fields and the houses and may come close to buildings and
+  villagers (but still never onto a building tile). Pick the other kinds' distances; the user tunes
+  them in data/.
+- Cheap: villagers are few, but don't scan every villager per wild animal per frame if a spatial
+  lookup exists; say what you used.
+- Tests: no wild animal on a building tile over play and spawning; a rabbit or deer moves away from
+  a villager; mice may stay near a house; the config check. Design note on wildlife.
+
 ## 182. Leaves fall and blow in autumn wind
 
 - [ ] Done
