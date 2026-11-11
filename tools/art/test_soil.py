@@ -20,8 +20,12 @@ class TilledSoilTest(unittest.TestCase):
         full_tiles = self.tiles[terrain.EDGE_VARIANTS * terrain.FULL :]
         self.assertEqual(len(full_tiles), 1)
 
-    def test_a_bed_has_no_decorations(self):
-        self.assertEqual(self.decorations, [])
+    def test_its_decorations_are_weeds_green_on_their_shadow_of_soil(self):
+        self.assertGreaterEqual(len(self.decorations), 3)
+        for decoration in self.decorations:
+            colours = {colour for row in decoration for colour in row if colour}
+            self.assertTrue(colours <= {*terrain.GRASS_RAMP, "soil"}, colours)
+            self.assertIn("soil", colours, "a shadow")
 
     def test_the_rows_run_on_across_the_joins_of_tiles(self):
         pixel = terrain.soil_pixel_of(soil_beds.RAMPS[0])

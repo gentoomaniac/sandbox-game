@@ -746,8 +746,24 @@ def soil():
                 elif is_rim(covered, x, y):
                     tile[y][x] = soil_beds.RAMPS[0][0]
 
-    # A tilled field is the player's work, so it stays free of decorations.
-    return edge_tiles(lambda seed: copy(plain), SOIL_SHAPES, 80, decorate) + [copy(plain)], []
+    return edge_tiles(lambda seed: copy(plain), SOIL_SHAPES, 80, decorate) + [copy(plain)], weeds()
+
+
+def weeds():
+    """What comes up on tilled soil left fallow (see game/state/fallow_soil.gd): a few weeds and
+    tufts of grass. The decorations of the soil row, which the game draws only on soil nobody has
+    tended for some days, never by the decoration noise."""
+    keys = {"b": "green_bright", "l": "green_light", "d": "green_dark", "k": "green_deep", "s": "soil"}
+    rosette = sprite(keys, ".l.b.", "lldl.", "dkkdl", ".dds.")
+    sprouts = sprite(keys, "bl..", ".k.l", "...k")
+    tuft = sprite(keys, "b.b", "d.d", ".k.")
+    blade = sprite(keys, "l.", "dk")
+    return [
+        decoration(84, rosette, blade, sprouts),
+        decoration(85, tuft, sprouts, blade),
+        decoration(86, sprouts, rosette, tuft),
+        decoration(87, tuft, blade, sprouts, rosette),
+    ]
 
 
 LAYERS = [

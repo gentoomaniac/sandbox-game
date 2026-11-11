@@ -159,6 +159,7 @@ decorations/flowers_16x16.png 16 16
 decorations/grass_16x16.png 16 16
 decorations/lush_grass_16x16.png 16 16
 decorations/salt_marsh_16x16.png 16 16
+decorations/soil_16x16.png 16 16
 decorations/warft_16x16.png 16 16
 decorations/water_16x16.png 16 16
 decorations/wetland_16x16.png 16 16

@@ -11,5 +11,5 @@ lush_grass 5
 dry_grass 5
 trodden 0
 path 0
-soil 0
+soil 4
 flowers 56

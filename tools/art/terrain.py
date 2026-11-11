@@ -936,6 +936,51 @@ def _tilled(seed):
     return [[_DRY_SOIL(x, y) for x in range(GAME_TILE)] for y in range(GAME_TILE)]
 
 
+def weed_rosette(ramp):
+    """A young weed (a dandelion, a plantain) as it comes up on bare earth: a low rosette of
+    leaves round a dark heart, lit on the top left, with its shadow on the soil."""
+    deep, dark, light, bright = ramp
+    return sprite(
+        {"k": deep, "d": dark, "l": light, "b": bright, "s": "soil"},
+        ".b....b..",
+        ".lb..bl..",
+        "..ll.ll.b",
+        "bldlkldl.",
+        ".lldkdll.",
+        "dlkkkkddl",
+        ".ddkdkdds",
+        "..sddsss.",
+    )
+
+
+def seedlings(ramp):
+    """A few seedlings of chickweed: pairs of round leaves on short stalks, each with a pixel of
+    shadow."""
+    deep, dark, light, bright = ramp
+    return sprite(
+        {"k": deep, "d": dark, "l": light, "b": bright, "s": "soil"},
+        "bl.....",
+        "dl..lb.",
+        ".ks.dl.",
+        ".....ks",
+    )
+
+
+def weeds():
+    """What comes up on tilled soil left fallow (see game/state/fallow_soil.gd): a few weeds and
+    tufts of grass. The decorations of the soil row, which the game draws only on soil nobody has
+    tended for some days, never by the decoration noise."""
+    rosette = weed_rosette(GRASS_RAMP)
+    sprouts = seedlings(GRASS_RAMP)
+    shapes = tufts(GRASS_RAMP)
+    return [
+        decoration(84, rosette, shapes[2], shapes[5], sprouts, shapes[0]),
+        decoration(85, shapes[0], sprouts, shapes[3], shapes[4], sprouts),
+        decoration(86, sprouts, rosette, shapes[4], shapes[1]),
+        decoration(87, shapes[1], shapes[5], sprouts, rosette, shapes[3]),
+    ]
+
+
 def soil():
     def decorate(tile, covered, rng):
         # The field lies a little below the turf: dark along its edge where the turf beside it is
@@ -946,9 +991,8 @@ def soil():
                     continue
                 tile[y][x] = "soil_dark" if not covered(x, y - 1) or not covered(x - 1, y) else "soil"
 
-    # A tilled field is the player's work, so it stays free of decorations, and all its tiles
-    # are one: there is no variant to show where the tiles end.
-    return edge_tiles(_tilled, _SOIL_SHAPES, 80, decorate) + [_tilled(0)], []
+    # All the tiles of a tilled field are one: there is no variant to show where the tiles end.
+    return edge_tiles(_tilled, _SOIL_SHAPES, 80, decorate) + [_tilled(0)], weeds()
 
 
 def soil_wet():

@@ -173,6 +173,7 @@ decorations/flowers_32x32.png 32 32
 decorations/grass_32x32.png 32 32
 decorations/lush_grass_32x32.png 32 32
 decorations/salt_marsh_32x32.png 32 32
+decorations/soil_32x32.png 32 32
 decorations/warft_32x32.png 32 32
 decorations/water_32x32.png 32 32
 decorations/wetland_32x32.png 32 32

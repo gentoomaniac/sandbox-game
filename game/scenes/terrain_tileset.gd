@@ -382,10 +382,11 @@ func atlas_cell(layer: int, mask: int, cell: Vector2i) -> Vector2i:
 
 
 ## The decoration on a world tile of `layer`, or NO_DECORATION. `cluster` is the
-## decoration cluster noise at the tile.
+## decoration cluster noise at the tile. Tilled soil has none: the decorations of its row are the
+## weeds of soil left fallow, which only the soil's state brings up.
 func decoration_cell(layer: int, tile_pos: Vector2i, cluster: float) -> Vector2i:
 	var count := _decoration_counts[layer]
-	if count == 0:
+	if count == 0 or layer == Layer.SOIL:
 		return NO_DECORATION
 	var in_cluster := clampf((cluster - CLUSTER_START) * 3.0, 0.0, 1.0)
 	var chance := lerpf(DECORATION_CHANCE, CLUSTER_DECORATION_CHANCE, in_cluster)
