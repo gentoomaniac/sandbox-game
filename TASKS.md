@@ -185,28 +185,6 @@ Settings (and off), muted in test runs (comes with task 184). Rules in data/musi
   pieces like the test reel are kept for special events (festivals, a market day). Later: stems
 (AudioStreamSynchronized), more pieces, the season and weather choices.
 
-## 176. Wind gusts are heard with the wind you see, and as loud as the wind
-
-- [ ] Done
-
-The user, 2026-11-11: "with 5m/s wind speed the sound sometimes has loud gusts of wind while
-nothing is moving. feels like the sound is off."
-- Today the sound and the picture don't share their gusts. AmbienceSounds (game/scenes/
-  ambience_sounds.gd) plays the `wind_gust` sound at random (`gust_chance` per second, scaled by
-  the wind loop's level, data/ambience.cfg [loops]) and always at the sound's full volume, while
-  the sway shader (game/scenes/sway.gdshaderinc, AmbientMotion.gust_for) shows gusts as fronts
-  sweeping downwind every GUST_SPACING px at GUST_SPEED, only above GUSTS_FROM (3 m/s) and faint at
-  5 m/s. So at 5 m/s a full-volume gust can sound while the grass barely stirs.
-- Tie the gust sound to the visible gusts: compute on the CPU when a gust front passes the player
-  (the shader's formula, from the same wind direction and time) and play/swell then, so a gust is
-  heard when the grass and trees near the player bend. No gust sound below the speed where gusts
-  show.
-- Scale the gust sound's volume (and the loop's swell) with the wind strength, so a light breeze
-  gives at most a soft rustle and a storm a loud gust.
-- Indoors the gusts stay faint, as the rest of the weather (task 172).
-- Tests: no gust below the threshold, gust volume grows with wind, the gust timing matches the
-  shader's front at the player's place; a listening file at 5, 10 and 15 m/s for the user.
-
 ## 178. Harvests vary a little, and now and then give a seed
 
 - [ ] Done
@@ -531,6 +509,28 @@ water, we'll add something later"
 - Update the comments in tile.gd and tide.gd ("walked on at any tide"), and the design and README.
 - Tests: tiles flood and dry with the tide, no stepping onto flooded mud, walking off a tile that
   floods, NPC and animal paths avoid the water. Screenshots at high and low water for the user.
+
+## 176. Wind gusts are heard with the wind you see, and as loud as the wind
+
+- [ ] Done
+
+The user, 2026-11-11: "with 5m/s wind speed the sound sometimes has loud gusts of wind while
+nothing is moving. feels like the sound is off."
+- Today the sound and the picture don't share their gusts. AmbienceSounds (game/scenes/
+  ambience_sounds.gd) plays the `wind_gust` sound at random (`gust_chance` per second, scaled by
+  the wind loop's level, data/ambience.cfg [loops]) and always at the sound's full volume, while
+  the sway shader (game/scenes/sway.gdshaderinc, AmbientMotion.gust_for) shows gusts as fronts
+  sweeping downwind every GUST_SPACING px at GUST_SPEED, only above GUSTS_FROM (3 m/s) and faint at
+  5 m/s. So at 5 m/s a full-volume gust can sound while the grass barely stirs.
+- Tie the gust sound to the visible gusts: compute on the CPU when a gust front passes the player
+  (the shader's formula, from the same wind direction and time) and play/swell then, so a gust is
+  heard when the grass and trees near the player bend. No gust sound below the speed where gusts
+  show.
+- Scale the gust sound's volume (and the loop's swell) with the wind strength, so a light breeze
+  gives at most a soft rustle and a storm a loud gust.
+- Indoors the gusts stay faint, as the rest of the weather (task 172).
+- Tests: no gust below the threshold, gust volume grows with wind, the gust timing matches the
+  shader's front at the player's place; a listening file at 5, 10 and 15 m/s for the user.
 
 ## Later (not part of the prototype)
 
