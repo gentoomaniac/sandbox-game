@@ -250,6 +250,12 @@ soil? and wet soil has a clear border, it should be more like a patch not like a
   noticeably within the first hour or so of steady rain, and heavy rain soak it; maybe a quick
   surface darkening while it rains. Keep the growth balance of the crops in mind (moisture_min
   and moisture_best) and say what changes there.
+- The user, the same day: "actually during rain, the soil even dried out". Likely cause, in
+  FarmingUpkeep.moisture_change (game/state/farming_upkeep.gd): every hour takes a 24th of the
+  whole day's drying (its sun hours and strongest wind included), and that can outweigh
+  `rain_wets * rain` in light or moderate rain, so a rainy hour dries the soil. Also check that
+  `rain_in_hour` agrees with the rain shown on screen at the player's place and hour. While it
+  rains, the soil must not dry (no sun or wind drying in a wet hour), and it must get wetter.
 - Wet patches: a watered tile (or a few) beside drier soil still reads as a square block with a
   clear edge, even with the fade of task 167. Wetness should look like an organic patch: an
   irregular, blotchy outline that wanders across the tile edge (varied per tile, seeded by
