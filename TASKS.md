@@ -419,7 +419,7 @@ nothing is moving. feels like the sound is off."
 - Tests: no gust below the threshold, gust volume grows with wind, the gust timing matches the
   shader's front at the player's place; a listening file at 5, 10 and 15 m/s for the user.
 
-## 199. The kiln gets a 3x3 load, fuel, a fire button and a progress bar; leftovers turn to ash
+## 199. Fired stations: the kiln and the oven get a 3x3 load, fuel, a fire button and a progress bar; leftovers turn to ash
 
 - [ ] Done
 
@@ -462,6 +462,25 @@ inventory. Additional things in the killin turn into ash."
   2026-11-11), so 5 extra logs give 5 ash. The player takes the results out like from a chest, only as much as
   fits (the rest stays in the kiln).
 - Skills: the masonry levels still unlock the bigger loads and each firing practises the skill.
+- The user, 2026-11-11, on top: "the oven should work the same. Make that a type of crafting
+  station code that's reusable. We'll have more use for it in the future". So:
+  - Build it as one reusable kind of station, a fired station (name it to fit the code), not
+    kiln code: the 3x3 load grid, the fuel, the fire button, the timed firing with its progress
+    bar and greyed grid, the result in the grid, leftovers to ash, the take-out of what fits,
+    the recipe list with amounts and greying, the save of the grid and the firing. A station
+    becomes one by its config (data/stations.cfg: e.g. a `fired=true` with its grid size, its
+    fuel items and how much fuel a firing needs), so a later station (a smithy's forge, a
+    smokehouse, a charcoal clamp) is a config section plus its recipes, with no new code.
+  - The kiln and the oven both use it. The oven's recipes (bread, berry_tart, feast_cake in
+    data/recipes.cfg, today made at once with no fuel) get a baking time and wood as fuel (pick
+    them: bread about an hour, numbers in data/); their cooking levels stay as recipe locks.
+    The oven works indoors and outdoors, as it is placed today.
+  - Skill bonuses (the kiln's extra bricks at high masonry) are a per-recipe or per-station
+    setting of the shared code, so the oven could get extra loaves the same way later; the
+    oven gets none for now unless it falls out for free.
+  - Other stations (workbench, hearth) keep today's instant crafting menu.
+  - Tests for the shared code with a station defined only in test config, plus the kiln and the
+    oven; screenshots of both windows.
 - Tests: the grid saved and loaded, a recipe click moving materials, the fire button refused without
   a full recipe or fuel, locked while firing, the result and the ash after the time, taking out only
   what fits. README, design pages on crafting and the kiln, docs/ui.md. Screenshots of the window,
