@@ -159,6 +159,15 @@ soaked and sown and growing crops on it, at noon, in the evening and in the clas
 
 ![Tilled soil from dry to soaked with sown and growing crops, at noon, in the evening and in the classic art](docs/screenshots/soil.png)
 
+Tilled soil that nobody tends goes back over the days: with nothing on it, after 5 days a few
+weeds and tufts of grass come up, and after 10 it is grass again, with the look its place had (the
+items lying on it stay). Hoeing the weeds away, sowing, harvesting and watering start the count
+anew, and a planted tile never grows over. The days of winter don't count. The numbers are in
+[data/crops.cfg](data/crops.cfg). The shot shows a bed left fallow beside one just tilled, in the
+32 px and the classic art.
+
+![A bed of tilled soil left fallow, weeds and tufts of grass on it, beside a bed just tilled, in the 32 px and the classic art](docs/screenshots/fallow-soil.png)
+
 ### Livestock
 
 Cows, sheep, chickens and rabbits of the region: red-brown Angler, black pied and red pied
