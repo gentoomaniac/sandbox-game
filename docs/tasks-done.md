@@ -5007,3 +5007,24 @@ some carried off by the wind."
   frames for the user.
 
 Done: 2026-11-11. In wind above 3 m/s, deciduous trees near the player shed leaves by their season look (autumn colours fully, green trees a little from summer day 20, conifers a rare needle, none under snow), more in stronger wind and the shader's gust fronts (`AmbientMotion.gust_front` copies sway.gdshaderinc). Some drop beside the tree, some drift downwind up to about 10 tiles. At most 24 alive; random tile picks near the player; nothing saved; off indoors. Numbers in data/leaf_fall.cfg. The user merged it to try in game (the leaves are small, 3 to 5 px).
+
+## 183. Flocks of birds migrate: south in autumn, north in spring, gone in winter
+
+- [x] Done
+
+The user, 2026-11-11: "flocks of birds in autumn should move from north to south only, migrating.
+in spring the other way round, in winter they should not be there at all. in summer they just roam
+around however they like."
+- The sky flock (data/wildlife.cfg [flock], game/scenes/wildlife/flock.gd) crosses the sky now and
+  then; its `season_factors` are [1.0, 1.0, 0.8, 0.3] (winter still 0.3) and its heading is not
+  tied to the season.
+- Autumn: flocks fly north to south only (a heading within a small spread around due south, maybe
+  in V or skein shape if the art has it), a bit more often in the migration weeks. Spring: south
+  to north. Winter: no sky flocks at all (season factor 0). Summer: as today, any heading,
+  wandering. Check the season boundaries the game uses (and whether early/late season shares
+  exist) so the change is smooth.
+- Only the sky flock; the greylag geese and dunlin on the ground keep their own rules (say if
+  they should follow too).
+- Numbers in data/wildlife.cfg. Tests for the heading by season and none in winter.
+
+Done: 2026-11-11. The sky flock (its V) flies south within 25 degrees in autumn and north in spring, any way in summer, and not at all in winter (`season_factors` [1, 1, 1, 0]); twice as often in the middle 14 days of autumn and spring; a 6-day fade at the season edges. Keys `migration_spread_degrees`, `migration_days`, `migration_boost`, `fade_days` in [flock] of data/wildlife.cfg. The flying geese, greylag geese and dunlin keep their own rules (the skein could migrate by adding the same keys).

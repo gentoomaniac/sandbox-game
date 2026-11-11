@@ -185,25 +185,6 @@ Settings (and off), muted in test runs (comes with task 184). Rules in data/musi
   pieces like the test reel are kept for special events (festivals, a market day). Later: stems
 (AudioStreamSynchronized), more pieces, the season and weather choices.
 
-## 183. Flocks of birds migrate: south in autumn, north in spring, gone in winter
-
-- [ ] Done
-
-The user, 2026-11-11: "flocks of birds in autumn should move from north to south only, migrating.
-in spring the other way round, in winter they should not be there at all. in summer they just roam
-around however they like."
-- The sky flock (data/wildlife.cfg [flock], game/scenes/wildlife/flock.gd) crosses the sky now and
-  then; its `season_factors` are [1.0, 1.0, 0.8, 0.3] (winter still 0.3) and its heading is not
-  tied to the season.
-- Autumn: flocks fly north to south only (a heading within a small spread around due south, maybe
-  in V or skein shape if the art has it), a bit more often in the migration weeks. Spring: south
-  to north. Winter: no sky flocks at all (season factor 0). Summer: as today, any heading,
-  wandering. Check the season boundaries the game uses (and whether early/late season shares
-  exist) so the change is smooth.
-- Only the sky flock; the greylag geese and dunlin on the ground keep their own rules (say if
-  they should follow too).
-- Numbers in data/wildlife.cfg. Tests for the heading by season and none in winter.
-
 ## 184. Console: /play and /stop the music, and a music volume in the audio settings
 
 - [ ] Done
