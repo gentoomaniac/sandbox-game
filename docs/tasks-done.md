@@ -4713,3 +4713,38 @@ additive PointLight2Ds, so they stand out more. The lantern: `give lantern`, spa
 it selected switches it, a warm flickering light of 5 tiles on the player while it is held (in the
 bag it stays lit but gives no light: the user's call), saved (save version 28, the upgrade from 17
 dropped). The user: "lanterns and nights look great". README night pictures re-taken.
+
+## 175. Rain visibly wets the soil, and wet soil is a patch, not a square
+
+- [x] Done
+
+The user, 2026-11-11, with two screenshots in the rain (32 px art): "rain doesn't seem to wet the
+soil? and wet soil has a clear border, it should be more like a patch not like a square."
+- Rain: find out why a bed stays dry-looking in the rain. Leads: data/crops.cfg `rain_wets` is
+  0.1 an hour only for the heaviest rain (lighter rain adds less), the moisture steps of
+  SoilWetness (game/scenes/soil_wetness.gd) need a whole step's worth before the brown changes,
+  and the view follows the moisture only at its hourly refresh. Rain should darken the soil
+  noticeably within the first hour or so of steady rain, and heavy rain soak it; maybe a quick
+  surface darkening while it rains. Keep the growth balance of the crops in mind (moisture_min
+  and moisture_best) and say what changes there.
+- The user, the same day: "actually during rain, the soil even dried out". Likely cause, in
+  FarmingUpkeep.moisture_change (game/state/farming_upkeep.gd): every hour takes a 24th of the
+  whole day's drying (its sun hours and strongest wind included), and that can outweigh
+  `rain_wets * rain` in light or moderate rain, so a rainy hour dries the soil. Also check that
+  `rain_in_hour` agrees with the rain shown on screen at the player's place and hour. While it
+  rains, the soil must not dry (no sun or wind drying in a wet hour), and it must get wetter.
+- Wet patches: a watered tile (or a few) beside drier soil still reads as a square block with a
+  clear edge, even with the fade of task 167. Wetness should look like an organic patch: an
+  irregular, blotchy outline that wanders across the tile edge (varied per tile, seeded by
+  position), not a straight dithered band along the grid. Both arts. Works together with task
+  174's new bed edge.
+- Tests for the rain wetting and the patch edges; before/after crops and in-game shots in the
+  rain for the user.
+
+Done 2026-11-11: an hour with rain never dries (FarmingUpkeep.moisture_change) and its rain is the
+mean of minutes 10, 30 and 50 (it was the hour's start only, so showers were missed); `rain_wets`
+0.2; after an hour with rain the surface looks a step darker until a dry hour (SoilWetness,
+GameState.last_hour_rain). Wet soil is a patch: the edge between wetter and drier soil wanders up
+to 9 px (4 classic) across the tile line, on a 4-tile wavy line per grid line, with rounded corners
+and filled hollows (assets/soil_edge.png, 24 TileMapLayers); the 167 fade is gone. The user: "wet
+patches look good for now", to be tried in the game.
