@@ -553,11 +553,17 @@ inventory. Additional things in the killin turn into ash."
   storage (saved with the kiln; save version bump with its upgrade, per the save rules). The player
   moves stacks in and out as with a chest (drag, shift-click). Fuel is wood (logs) for now, put in
   the same grid; a recipe says how much fuel it needs (keep today's log counts).
-- Clicking a recipe moves its materials and fuel from the player's inventory into the grid (what's
-  missing is shown as with today's shortfalls; nothing moves if it can't be made, or move what there
-  is: pick and say why). A small fire button starts the firing when the grid holds one recipe's
-  materials and fuel; only one recipe per firing: which recipe fires is the one the grid matches
-  (the largest one the load covers, or the one last clicked: pick and say why).
+- One recipe per kind of result in the list (one "Bricks", not today's bricks, bricks_large and
+  bricks_master), each with an amount under it: a small number field to type in and +/- buttons
+  (the user, 2026-11-11). The +/- buttons only go as high as the player's materials (and fuel)
+  allow, and as fits the 3x3 grid; a typed number is held to the same limit. A recipe the player
+  can't make even once is greyed out and can't be clicked (nothing moves).
+- Clicking a recipe moves the materials and fuel for the chosen amount from the player's inventory
+  into the grid. A small fire button starts the firing when the grid holds a recipe's materials and
+  fuel; one recipe per firing.
+- The masonry levels that made bricks_large and bricks_master pay off (more bricks for the same
+  clay and wood) need a new home with one recipe: e.g. a skill bonus on the yield, or less wood per
+  brick at higher levels. Propose it, keep the numbers close to today's, and say what changed.
 - While it fires: a progress bar above the grid, the grid greyed out and locked (nothing in or out),
   the time from the recipe's `hours`; the kiln shows its fire in the world (the existing lit look and
   light, if any). The firing goes on with the window closed and with the player away (game time).
