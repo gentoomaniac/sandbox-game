@@ -53,3 +53,16 @@ func is_walkable(pos: Vector2i) -> bool:
 	if not is_ground_walkable(pos):
 		return false
 	return object == null or not object.blocks_walking()
+
+
+## Whether a farm animal can walk on a tile: as anyone can (see `is_walkable`), but not onto what
+## stops animals (WorldObjectTypes `stops_animals`). The animals ask it at every step, so it looks
+## at the object once.
+func is_walkable_for_animals(pos: Vector2i) -> bool:
+	var object := object_at(pos)
+	if object == null:
+		return is_ground_walkable(pos)
+	var type := object.type_data()
+	if not type.get("deck", false) and not (is_ground_walkable(pos) and not type["blocks_walking"]):
+		return false
+	return not type.get("stops_animals", false)

@@ -1,13 +1,13 @@
 class_name Livestock
 extends RefCounted
 ## The farm animals of the world (FarmAnimal) and how they go about their day: they stand idle,
-## walk, graze and run about, turn away from water and anything solid, and rabbits run from the
-## player. At night they sleep where they are, from a while after sunset until about sunrise
-## (each species has its hours, and each animal is a little later than the rest). A dog given a
-## bone follows the player for a while instead, day and night. A horse the player rides does
-## nothing of its own: it goes where they ride it. A cat hunts the mice that report themselves (see
-## `add_prey`): it looks for one when it picks what to do next, and the whole hunt is decided
-## here, with no view needed.
+## walk, graze and run about, turn away from water, anything solid and what stops animals (see
+## GameMap `is_walkable_for_animals`), and rabbits run from the player. At night they sleep where
+## they are, from a while after sunset until about sunrise (each species has its hours, and each
+## animal is a little later than the rest). A dog given a bone follows the player for a while
+## instead, day and night. A horse the player rides does nothing of its own: it goes where they ride
+## it. A cat hunts the mice that report themselves (see `add_prey`): it looks for one when it picks
+## what to do next, and the whole hunt is decided here, with no view needed.
 ## GameState owns it and moves the animals with `update` while the player is out in the world.
 ##
 ## It does not know the world, so the two never hold each other: the map the animals walk on is
@@ -103,7 +103,7 @@ func spawn(species: StringName, count: int, near: Vector2, map: GameMap, look :=
 		if placed == count:
 			break
 		var feet := _point_around(near, SPAWN_DISTANCE)
-		if not map.is_walkable(Vector2i(feet.floor())):
+		if not map.is_walkable_for_animals(Vector2i(feet.floor())):
 			continue
 		var animal := FarmAnimal.create(species, rng.randi(), feet, rules)
 		if look != &"":
@@ -332,7 +332,7 @@ func _reachable_free_coop(hen: FarmAnimal, world: World) -> Building:
 	search_count += 1
 	var reach := {}
 	for tile in ReachableTiles.within(
-		hen.tile(), float(yard.coop("call_tiles")) + 1.0, world.is_walkable
+		hen.tile(), float(yard.coop("call_tiles")) + 1.0, world.is_walkable_for_animals
 	):
 		reach[tile] = true
 	var can_reach := func(front: Vector2i) -> bool: return reach.has(front)
@@ -586,7 +586,9 @@ func _start_trip_to_need(animal: FarmAnimal, map: GameMap) -> bool:
 ## or an empty dictionary.
 func _find_source(animal: FarmAnimal, need: StringName, map: GameMap) -> Dictionary:
 	search_count += 1
-	var tiles := ReachableTiles.within(animal.tile(), yard.needs("search_tiles"), map.is_walkable)
+	var tiles := ReachableTiles.within(
+		animal.tile(), yard.needs("search_tiles"), map.is_walkable_for_animals
+	)
 	for tile in tiles:
 		for step: Vector2i in [Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT, Vector2i.UP]:
 			if _gives(map, tile + step, need):
@@ -595,7 +597,7 @@ func _find_source(animal: FarmAnimal, need: StringName, map: GameMap) -> Diction
 
 
 ## Whether what is on a tile meets a need now: fresh water or a trough with water for thirst (a
-## stock of kind water), a hay rack with feed for hunger.
+## stock of kind water), a stock of feed (a hay rack, a feeding trough) for hunger.
 func _gives(map: GameMap, pos: Vector2i, need: StringName) -> bool:
 	var tile := map.tile_at(pos)
 	if need == &"thirst" and tile != null and tile.is_fresh_water():
@@ -786,7 +788,10 @@ func _put_beside(animal: FarmAnimal, player_feet: Vector2, map: GameMap) -> void
 		var feet := _point_around(player_feet, distances)
 		var facing := 1.0 if player_feet.x >= feet.x else -1.0
 		var nose := feet + Vector2(facing * rules.body_tiles(animal.species), 0.0)
-		if map.is_walkable(Vector2i(feet.floor())) and map.is_walkable(Vector2i(nose.floor())):
+		if (
+			map.is_walkable_for_animals(Vector2i(feet.floor()))
+			and map.is_walkable_for_animals(Vector2i(nose.floor()))
+		):
 			animal.position = feet
 			animal.facing = facing
 			animal.last_step = Vector2.ZERO
@@ -806,14 +811,14 @@ func _point_around(near: Vector2, distances: Vector2) -> Vector2:
 func _wander_off(animal: FarmAnimal, map: GameMap) -> void:
 	var reach := rules.body_tiles(animal.species)
 	var tiles := ReachableTiles.within(
-		animal.tile(), rules.general("catch_up_wander_tiles"), map.is_walkable
+		animal.tile(), rules.general("catch_up_wander_tiles"), map.is_walkable_for_animals
 	)
 	for _spot in 5:
 		var tile := tiles[rng.randi() % tiles.size()]
 		var feet := Vector2(tile) + Vector2(rng.randf(), rng.randf())
 		for _try in 5:
 			var way := Vector2.from_angle(rng.randf() * TAU)
-			if map.is_walkable(Vector2i((feet + way * reach).floor())):
+			if map.is_walkable_for_animals(Vector2i((feet + way * reach).floor())):
 				animal.position = feet
 				animal.heading = way
 				animal.facing = signf(way.x) if absf(way.x) > 0.1 else animal.facing
@@ -851,7 +856,8 @@ func _start_activity(animal: FarmAnimal, activity: FarmAnimal.Activity, may_hunt
 
 
 ## Takes a step in `direction`, or as near to it as it can turn; returns whether it moved. The
-## ground under its feet and under its nose (`body_tiles` ahead) must be walkable.
+## ground under its feet and under its nose (`body_tiles` ahead) must be walkable for animals, or be
+## the tile it stands on if anyone could walk there.
 ##
 ## Asking the map is what costs (several microseconds a tile), so a step the same way as the last
 ## that stays on the same tiles is taken without asking again.
@@ -859,6 +865,7 @@ func _walk(
 	animal: FarmAnimal, direction: Vector2, speed: float, delta: float, map: GameMap
 ) -> bool:
 	var reach := rules.body_tiles(animal.species)
+	var here := animal.tile()
 	for steps: int in TURN_STEPS:
 		var way := direction.rotated(steps * TURN)
 		var feet := animal.position + way * speed * delta
@@ -869,7 +876,15 @@ func _walk(
 			and feet_tile == animal.tile()
 			and nose_tile == Vector2i((animal.position + way * reach).floor())
 		)
-		if is_same_ground or (map.is_walkable(feet_tile) and map.is_walkable(nose_tile)):
+		# What stops animals and was put under its feet does not trap it: it may step off.
+		var can_step := (
+			(map.is_walkable_for_animals(feet_tile) or feet_tile == here and map.is_walkable(here))
+			and (
+				map.is_walkable_for_animals(nose_tile)
+				or nose_tile == here and map.is_walkable(here)
+			)
+		)
+		if is_same_ground or can_step:
 			if feet_tile != animal.tile() and map is World and _animal_step > 0.0:
 				(map as World).wear_tile(feet_tile, _animal_step)
 			animal.position = feet

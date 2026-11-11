@@ -72,7 +72,9 @@ extends RefCounted
 ##   ObjectStock). Its atlas row has the STOCK_LOOKS pictures of how full it is, in place of
 ##   variants;
 ## - cells_wide: its picture spans this many cells of its atlas row side by side (the Ewer, in
-##   scale with the people), one cell without it.
+##   scale with the people), one cell without it;
+## - stops_animals: the player walks through it but the farm animals do not (see GameMap
+##   `is_walkable_for_animals`).
 
 const OAK := &"oak"
 const STONE := &"stone"

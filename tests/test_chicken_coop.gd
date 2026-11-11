@@ -188,3 +188,17 @@ func test_a_hen_on_the_walkable_door_tile_is_not_in_the_coop() -> void:
 	assert_false(seventh.is_housed, "the door tile is where she stands, not inside")
 	assert_eq(Coop.hens_in(_world, _coop, _livestock.all()), 6, "six roosts, six hens")
 	assert_eq(_eggs(), 6)
+
+
+func test_a_hen_does_not_go_to_a_coop_behind_what_stops_animals() -> void:
+	var types := WorldObjectTypes.TYPES
+	WorldObjectTypes.TYPES = _types_with_stile(types)
+	# A row of stiles across the pen between the hens and the front of the coop's door.
+	for x in range(-PEN_RADIUS, PEN_RADIUS + 1):
+		_world.remove_object(_middle + Vector2i(x, 1))
+		_world.add_object(WorldObject.new(STILE, _middle + Vector2i(x, 1)))
+	var hen := _hens(1)[0]
+	_run(30.0, NIGHT)
+	WorldObjectTypes.TYPES = types
+	assert_false(hen.is_housed)
+	assert_eq(hen.activity, FarmAnimal.Activity.SLEEP, "she sleeps where she stands")

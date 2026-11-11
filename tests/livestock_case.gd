@@ -11,6 +11,8 @@ const STEP_SECONDS := 0.05
 const DAY := 45
 const NOON := 12 * 60
 const MIDNIGHT := 0
+## A test-only object type (see `_types_with_stile`).
+const STILE := &"test_stile"
 
 var _state: GameState
 var _world: World
@@ -53,3 +55,15 @@ func _step(minute := NOON) -> void:
 	_state.clock.day = DAY
 	_state.clock.minute_of_day = minute
 	_livestock.update(STEP_SECONDS, _world, _state.player.position, _state.clock)
+
+
+## The object types and a stile: a stone the player walks over and the farm animals do not (see
+## WorldObjectTypes `stops_animals`). A test puts them in WorldObjectTypes.TYPES, and the types it
+## had back when it is done.
+func _types_with_stile(types: Dictionary) -> Dictionary:
+	var stile: Dictionary = types[WorldObjectTypes.STONE].duplicate()
+	stile["blocks_walking"] = false
+	stile["stops_animals"] = true
+	var all_types := types.duplicate()
+	all_types[STILE] = stile
+	return all_types
