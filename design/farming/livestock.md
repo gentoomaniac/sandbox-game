@@ -299,7 +299,7 @@ through it.
   its item.
 - **The gate:** the player walks through it, shut or open (they open it and shut it behind them as
   they go); the farm animals only through an open one (`stops_animals` of the shut gate,
-  `GameMap.is_walkable_for_animals`). The use key with an empty hand opens a shut gate and shuts an
+  `GameMap.is_walkable_for_animals`). They never walk onto a building's tiles, its door included. The use key with an empty hand opens a shut gate and shuts an
   open one (it turns into the other type, `turns_into`, so an open gate is saved as such and the
   save format is unchanged); it knocks like wood put down, until a sound of its own is made for it
   (a job for the sound designer). A gate is shut when it is put down; one taken down open or shut

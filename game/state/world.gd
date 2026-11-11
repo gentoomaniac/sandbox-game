@@ -457,6 +457,12 @@ func is_ground_walkable(world_pos: Vector2i) -> bool:
 	return building == null or (building.door_tile() == world_pos and building.has_inside())
 
 
+## Farm animals keep off the tiles of buildings, the door included (it is for the player, who
+## walks in through it).
+func is_walkable_for_animals(pos: Vector2i) -> bool:
+	return super(pos) and building_at(pos) == null
+
+
 ## Must agree with placement_blockers: a tile is buildable if it would not block a building.
 func is_buildable(world_pos: Vector2i) -> bool:
 	var tile := tile_at(world_pos)

@@ -894,7 +894,8 @@ func _point_around(near: Vector2, distances: Vector2) -> Vector2:
 
 ## Moves the animal to a random spot on a tile within `catch_up_wander_tiles` that it could have
 ## walked to (see ReachableTiles), standing as a step would leave it: feet and nose (a way it
-## faces) on walkable ground. It stays where it is if five spots have no such way.
+## faces) on walkable ground, and never on a building. It stays where it is if five spots have no
+## such way.
 func _wander_off(animal: FarmAnimal, map: GameMap) -> void:
 	var reach := rules.body_tiles(animal.species)
 	var tiles := ReachableTiles.within(
@@ -902,6 +903,8 @@ func _wander_off(animal: FarmAnimal, map: GameMap) -> void:
 	)
 	for _spot in 5:
 		var tile := tiles[rng.randi() % tiles.size()]
+		if not map.is_walkable_for_animals(tile):
+			continue
 		var feet := Vector2(tile) + Vector2(rng.randf(), rng.randf())
 		for _try in 5:
 			var way := Vector2.from_angle(rng.randf() * TAU)
