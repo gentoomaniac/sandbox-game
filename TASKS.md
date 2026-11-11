@@ -454,7 +454,7 @@ cover there too.
 
 - [ ] Done
 
-Run after task 188 (the character window it shows in).
+Run after task 191 (the character window it shows in).
 
 The user, 2026-11-11: "we want some basic rpg elements, character attributes specifically
 Strength, agility, hp, stamina. strength increases carrying capacity, agility i don't know yet, hp
@@ -478,7 +478,7 @@ later."
 - Save version bump with the upgrade rule; tests for the derived stats, the save and the base
   values matching today; README and design notes (design/player/).
 
-## 188. The HUD: energy and health top right, a bag button by the hotbar, B for the bag, C for the character
+## 188. The energy and health bars move to the top right
 
 - [ ] Done
 
@@ -486,24 +486,39 @@ The user, 2026-11-11 (to run before task 187): "Move energy and health indicator
 of the screen. add a bag icon right next to the quick bar, a bit separated. this icon when clicked
 or b is pressed should open the bag which is the inventory (the build menu now only opens when the
 hammer is in hand). The bag opens a bit on the right of the screen, the character part (and later
-the character attributes) get their own window that opens on C."
-- The energy and health bars move to the top right corner (mind the notifications and the clock
-  that may sit there; say where they go).
-- A bag icon (both arts, pixel-artist job) beside the hotbar, set a little apart from it;
-  clicking it or pressing B opens the bag. The bag is today's inventory screen (Tab), placed a bit
-  to the right of the screen centre instead of where it is now; Tab keeps working too unless the
+the character attributes) get their own window that opens on C." Split into 188, 190 and 191 at
+the user's word the same day (they don't depend on each other).
+- The energy and health bars move to the top right corner of the screen (mind the notifications
+  and the clock that may sit there; say where those go). Both window sizes the game supports.
+- Tests for the placement if the HUD has them; a screenshot for the user; README picture if it
+  shows the HUD.
+
+## 190. A bag button by the hotbar, and B opens the bag
+
+- [ ] Done
+
+From the user's words under task 188.
+- A bag icon (both arts, pixel-artist job) beside the hotbar, set a little apart from it; clicking
+  it or pressing B opens the bag. The bag is today's inventory screen (Tab), placed a bit to the
+  right of the screen centre instead of where it is now. Tab: keep it as a second key unless the
   user says otherwise.
 - B is the hammer key today (`select_hammer`, which puts the hammer in hand and opens building).
   The build menu now only opens with the hammer in hand (the hammer selected in the hotbar, then
-  the build key/use); B no longer selects the hammer. Check the controls page and the README's
+  the build key/use); B no longer selects the hammer. Update the controls page and the README's
   key list.
-- The character part of today's inventory screen (the figure, equipment, and later task 187's
-  attributes) moves into its own window opened with C. C is the crafting key today (`crafting`):
-  crafting needs another key; ask the user (default proposal: keep crafting on its own key such as
-  V or R, or put crafting into the bag window as a tab).
-- Window placement works in both window sizes the game supports; Escape closes them as today.
-- Tests for the keys and the windows, screenshots for the user, README and design/presentation
-  notes.
+- Tests for the keys, the button and the window place; screenshots for the user; README.
+
+## 191. The character window on C
+
+- [ ] Done
+
+From the user's words under task 188. Before task 187, whose attributes it will show.
+- The character part of today's inventory screen (the figure, equipment) moves into its own
+  window opened with C; the bag (task 190) keeps the items.
+- C is the crafting key today (`crafting`): crafting needs another key or a place in the bag
+  window. Ask the user (proposal: a key of its own such as V or R, or a tab in the bag window).
+- Escape closes it as the others; it uses Modal (and is movable once task 189 is in).
+- Tests for the key and the window; screenshots for the user; README and controls page.
 
 ## Later (not part of the prototype)
 
