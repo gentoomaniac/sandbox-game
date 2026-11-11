@@ -53,6 +53,49 @@ building) and for sounds, which have no postfix: `art/hand/sounds/axe_chop_1.wav
 `art/generated/sounds/axe_chop_1.wav` (it is not checked for level or loops; the file is used as
 it is). The tests of this are `tools/art/test_pack.py` (`make test-tools`, part of `make test`).
 
+## Tests: tools/select_tests.py (`make test-changed`)
+
+`make test-changed [BASE=main]` runs only what the files changed since BASE need. It looks at the
+whole range BASE..HEAD (every file of every commit of the branch, so a docs-only last commit hides
+nothing) and the uncommitted and new files of the worktree, and prints for each file why and which
+tests (`tools/select_tests.py` writes that report; read it when a selection surprises you):
+
+- docs (`*.md`, `docs/`, `design/`, `review/`, `.claude/`): no tests;
+- `tools/`: the tests of the Python tools, plus `make art` and a clean `git status art/` when any
+  file of a generator folder (`tools/art`, `tools/audio`, `tools/music`, pieces and all, not its
+  tests) changes or `art/generated` does; and the GUT tests that reach a file naming the tool's
+  `res://tools/...` path (today `test_shader_palette.gd` reads `tools/art/palette.py`);
+- `game/` and `tests/` scripts, scenes and shaders: the GUT tests that reach the file, through
+  `class_name` uses (comments don't count), `res://` paths in `preload`/`load`/scenes/`.tres`/
+  shader `#include`s/`extends "path"` (a path that ends in `/` or is cut at a `%` may name any file
+  below it) and paths relative to the file, followed transitively. A changed test file runs
+  itself; a changed helper (`tests/livestock_case.gd`) runs its users. A `class_name` that is gone
+  or renamed runs everything: the scripts it broke are no longer found by name;
+- `data/*.cfg` and `maps/`: the tests that reach a file that names the path or the file name, also
+  through a data file that names it (`buildings.cfg` names the interior maps);
+- `art/generated`, `art/hand`: the asset tests, i.e. the tests of the files that name the picture's
+  `assets/` path or folder (`make assets` packs the sheets of a folder with an `atlas_*.txt` into
+  `assets/<folder>.png`, so those are named by that prefix), or a data file naming it, and of the
+  loaders of all art. Not everything that draws it: that is the full run's job. A generated
+  picture also needs `make art`, whatever else runs, `full` included.
+
+Anything it cannot place runs everything (`make test`): `project.godot`, `addons/`, the Makefile,
+`tools/run_tests.py`, a deleted script, a data or art file nothing names, any new kind of path.
+It leans towards more tests but promises nothing: it sees only what the code spells out (class
+names, `res://` paths, paths relative to the file, data files naming maps and pictures). Not seen:
+a path built at run time without a literal prefix, a file found by directory listing, a picture
+read only through code that never names its path, and anything git ignores (`addons/`, `assets/`,
+so a change there, e.g. a GUT update, is invisible: run `make test`). The art rule is deliberately
+one hop. So `make test` before reporting a task, and on main every now and then, stays.
+
+Measured on the merged tasks (files changed in the range, GUT files selected of about 260, and the
+estimated time from `build/test-times` against the full run, 2026-11-11): task 174 (soil beds and
+crops, mostly art and tools) 41 files, 620 of 1181 s; task 175 (soil wetness, touching `GameState`
+and `WorldView`) 236 files, 1157 s; task 177 (night and lantern, touching `GameState` and
+`PlayerView`) 235 files, 1120 s. A change to a core script reaches nearly every test: the saving is
+for art, data and leaf scripts. One real run (a leaf script, 83 files) took 110 s against 229 s for
+`make test`, on a busy machine.
+
 ## Tests: tools/run_tests.py
 
 `make test` runs it. `tools/run_tests.py JOBS tests/test_x.gd ...` runs only the files named (what

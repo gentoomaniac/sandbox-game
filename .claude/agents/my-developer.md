@@ -48,7 +48,8 @@ The reader is a person who has to understand and maintain the code later.
 
 1. Read `git diff main...HEAD`: only the intended lines changed, no debug leftovers.
 2. Read it again as a stranger would: are the names right, is anything simpler?
-3. Run the checks the project describes.
+3. Run the checks the project describes. While developing, `make test-changed` runs only the
+   tests your branch touches; before you report, run one full `make test` (and `make lint`).
 
 ## Report back
 

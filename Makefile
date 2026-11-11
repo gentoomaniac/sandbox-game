@@ -23,7 +23,7 @@ IMPORT := $(GODOT) --headless --quiet --import
 # reproducible, and it keeps third-party code out of our history and diffs.
 # The cost is that a fresh clone needs `make setup` (and network) before it runs.
 
-.PHONY: help setup venv art classic-art assets contrast-sheet run screenshot test test-tools bench bench-music music-check lint format export clean llm-up llm-down llm-check \
+.PHONY: help setup venv art classic-art assets contrast-sheet run screenshot test test-changed test-tools bench bench-music music-check lint format export clean llm-up llm-down llm-check \
 	llm-pull llm-models llm-rm llm-eval llm-gpu-setup
 
 help:
@@ -34,7 +34,8 @@ help:
 	@echo "  run         Start the game."
 	@echo "  screenshot  Save one frame as PNG (a new game, muted, no focus, its own save)."
 	@echo "  test        Run the GUT tests headless, in TEST_JOBS parallel processes, and the tests of the Python tools."
-	@echo "  test-tools  Run only the tests of the Python tools (tools/art/, tools/llm/, tools/music/ test_*.py)."
+	@echo "  test-changed  Run only the tests the files changed since BASE need: GUT files, tools tests, make art (see tools/select_tests.py)."
+	@echo "  test-tools  Run only the tests of the Python tools (tools/ and its art, llm and music folders, test_*.py)."
 	@echo "  bench       Time a heavy save headless (start-up, nodes, frame times standing and walking, pile pick-up, save); see tools/README.md."
 	@echo "  bench-music Time the prototype music renderer: renders on their own, then frame times in the game while it renders (headless, muted)."
 	@echo "  music-check Render every piece with the game's prototype music renderer and compare it with libmodplug's (headless, silent)."
@@ -59,6 +60,7 @@ help:
 	@echo "  GODOT       Path of the Godot binary (default: godot)."
 	@echo "  VENV        Directory of the Python venv (default: .venv)."
 	@echo "  TEST_JOBS   test: parallel test processes (default: 8; 1 runs the tests in one process)."
+	@echo "  BASE        test-changed: the branch point to compare with (default: main); BASE..HEAD and uncommitted changes count."
 	@echo "  TEST_TIMEOUT test: seconds before a hung run is stopped (default: 600)."
 	@echo "  AT          screenshot: world tile to put the player on, e.g. AT=40,-20 (default: the camp)."
 	@echo "  TIME        screenshot: time of day, e.g. TIME=21:00 (default: the game start)."
@@ -219,16 +221,45 @@ screenshot: assets
 # real save.
 TEST_JOBS ?= 8
 
-# The tests of the Python tools (tools/art/, tools/llm/ and tools/music/ test_*.py), part of `make test`.
+# The tests of the Python tools (tools/art/, tools/llm/, tools/music/ and tools/ test_*.py), part of `make test`.
 test-tools: $(VENV_READY)
 	$(PYTHON) -m unittest discover -s tools/art -p "test_*.py"
 	$(PYTHON) -m unittest discover -s tools/llm -p "test_*.py"
 	$(PYTHON) -m unittest discover -s tools/music -p "test_*.py"
+	$(PYTHON) -m unittest discover -s tools -p "test_*.py"
 
 test: assets test-tools
 	@mkdir -p build/user-data
 	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT)
 	@GODOT=$(GODOT) python3 tools/run_tests.py $(TEST_JOBS)
+
+# Only what the files changed since BASE need: the whole range BASE..HEAD and the uncommitted
+# changes, not just the last commit. tools/select_tests.py says what it picked and why (on stderr)
+# and answers on stdout with the words `full` (the same as make test), `tools`, `art` (`make art`
+# and art/ left as committed; kept with `full` too, which does not draw it) and test files to
+# run, or nothing when only docs changed. `make test` stays the check before reporting.
+BASE ?= main
+
+test-changed: $(VENV_READY)
+	@set -e; \
+	plan="$$($(PYTHON) tools/select_tests.py $(BASE))"; \
+	if [ -z "$$plan" ]; then echo "make test-changed: no tests needed."; exit 0; fi; \
+	case " $$plan " in *" art "*) \
+		$(MAKE) art; \
+		drawn="$$(git status --porcelain art/)"; \
+		if [ -n "$$drawn" ]; then \
+			echo "make test-changed: make art changed art/ (commit the drawn art first):" >&2; echo "$$drawn" >&2; exit 1; \
+		fi;; \
+	esac; \
+	case " $$plan " in *" full "*) exec $(MAKE) test;; esac; \
+	case " $$plan " in *" tools "*) $(MAKE) test-tools;; esac; \
+	gut_files=$$(printf '%s\n' $$plan | grep '^tests/' || true); \
+	if [ -n "$$gut_files" ]; then \
+		$(MAKE) assets; \
+		mkdir -p build/user-data; \
+		XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT); \
+		GODOT=$(GODOT) python3 tools/run_tests.py $(TEST_JOBS) $$gut_files; \
+	fi
 
 # The fixture save is written once (again when its script changes); each run plays a copy, since
 # the game saves over the file it loaded. user:// points into build/, so the real save and

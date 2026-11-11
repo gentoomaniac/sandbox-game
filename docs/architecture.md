@@ -382,6 +382,16 @@ lives in the `tests/*_case.gd` base classes; extend the one that fits instead of
 - `CropCase`: crops, their needs and days that meet them (`test_crops.gd`,
   `test_crop_withering.gd`).
 
+`make test-changed` (BASE=main by default) runs only the tests the files of the whole branch
+(BASE..HEAD, plus uncommitted files) need: tools/select_tests.py follows `class_name` uses, `res://`
+paths and scenes from a changed script to the tests that reach it, and prints what it picked and
+why; what it cannot place runs everything (it follows what the code spells out, so a path built
+at run time is missed; the full run on main is the net). A change to a core script (`GameState`, `World`)
+reaches almost every test, so the saving is for changes at the edges. Use it while developing; run
+one full `make test` before reporting a task. The coordinator runs a full `make test` on main after
+every 5 merges and at the end of a batch; if it fails, bisect over the merges since the last green
+full run (each step a `make test`). See [tools/README.md](../tools/README.md).
+
 Rendering and input are mostly not unit-tested: run
 `make screenshot` and look at the picture, e.g.
 `make screenshot AT=40,-20 TIME=21:00 OUT=/tmp/shot.png`. It starts a new game with its own

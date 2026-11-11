@@ -27,5 +27,13 @@
     when the host has its CDI spec (`make llm-gpu-setup`, 2026-11-09), else on the CPU,
     OpenAI-compatible API on 127.0.0.1:11434/v1 (`tools/llm/llm.sh`); no test needs it;
     `make llm-eval` tries the villagers' prompts on a model (`tools/llm/`);
-  - tests: **GUT**, run headless by `make test`;
+  - tests: **GUT**, run headless by `make test`; `make test-changed` runs only the tests a
+    branch's changes need (task 192, 2026-11-11: the whole range BASE..HEAD and uncommitted files,
+    never just the last commit; docs need none, tools the Python tool tests, game code the GUT
+    tests that reach it, and what it cannot place runs everything; it follows only what the code
+    spells out, so it is a net with holes and not a promise, and git-ignored addons/ and assets/
+    are invisible to it). Workers use it while
+    developing and run one full `make test` before reporting; the coordinator runs a full
+    `make test` on main after every 5 merges or at the end of a batch and, if it fails, bisects
+    over the merges since the last green full run;
   - lint and format: gdtoolkit (`gdlint` / `gdformat`).
