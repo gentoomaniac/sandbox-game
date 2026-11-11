@@ -16,7 +16,8 @@ extends RefCounted
 ## down what the player placed inside a house (outdoors it is a HIT),
 ## NO_ROOM that, with too little room in the inventory for it and what it holds, GIVE_BONE a bone
 ## given to a dog, which then follows the player, SADDLE the saddle put on a horse and UNSADDLE an
-## empty hand taking it off again, RIDING anything on horseback (the player gets off first),
+## empty hand taking it off again, PET an empty hand stroking a farm animal or a pet (see Livestock
+## `pet`), RIDING anything on horseback (the player gets off first),
 ## STANDING_ON a tool at a deck the player stands on (see `is_standing_on`), OUT_OF_REACH a tile
 ## beyond the player's reach (Targeting.REACH) or not on their map: nothing is done there. What a
 ## harvest, a pick or a final hit gives lies on the ground (see World `drop_items`).
@@ -44,6 +45,7 @@ enum Use {
 	GIVE_BONE,
 	SADDLE,
 	UNSADDLE,
+	PET,
 	RIDING,
 	STANDING_ON,
 	OUT_OF_REACH,
@@ -97,8 +99,9 @@ func _init(state: GameState) -> void:
 ## pickaxe hits what it cuts or mines, a scythe mows if there is tall grass or reeds in its reach, a
 ## shovel digs in any free grass (the player can't tell a clay spot from the cursor), an item that
 ## places an object puts it on a free tile, a bone goes to a dog on the tile and a saddle on a
-## horse, and an empty hand takes the saddle off a horse. Inside, only placing and taking a chest
-## down are possible; on horseback, nothing.
+## horse, an empty hand takes the saddle off a horse and, when it has nothing else to do on the
+## tile, pets an animal there. Inside, only placing and taking a chest down are possible; on
+## horseback, nothing.
 func use_at(pos: Vector2i) -> Use:
 	if _state.player.horse != null:
 		return Use.RIDING
@@ -274,6 +277,12 @@ func _do_use(target: Vector2i) -> Use:
 			_horse_at(target).is_saddled = false
 			_state.player.inventory.add(ItemTypes.SADDLE, 1)
 			_done(ActionOutcome.UNSADDLE, target, LivestockRules.HORSE, {ItemTypes.SADDLE: 1})
+		Use.PET:
+			var animal := _pettable_at(target)
+			var is_asleep := animal.activity == FarmAnimal.Activity.SLEEP
+			_state.livestock.pet(animal, _state.clock)
+			var kind := ActionOutcome.PET_ASLEEP if is_asleep else ActionOutcome.PET
+			_done(kind, target, animal.species)
 	return use
 
 
@@ -412,6 +421,11 @@ func _horse_at(pos: Vector2i) -> FarmAnimal:
 	)
 
 
+## The animal that can be petted nearest to the middle of a tile, within ANIMAL_REACH, or null.
+func _pettable_at(pos: Vector2i) -> FarmAnimal:
+	return _state.livestock.nearest_pettable(Vector2(pos) + Vector2(0.5, 0.5), ANIMAL_REACH)
+
+
 ## Whether a tile is tilled soil that is not soaked yet. A crop may stand on it.
 func _is_dry_soil(world_pos: Vector2i) -> bool:
 	var tile := _state.world.tile_at(world_pos)
@@ -501,11 +515,19 @@ func _use_by_hand_inside(pos: Vector2i) -> Use:
 
 
 ## What an empty hand does on a tile outdoors: it takes the saddle off a horse (the hand's empty
-## slot always has room for it), harvests a ripe crop, clears a dead one or picks a bush.
+## slot always has room for it), harvests a ripe crop, clears a dead one, picks a bush or opens a
+## gate, and with none of that to do pets an animal.
 func _use_by_hand(pos: Vector2i) -> Use:
 	var horse := _horse_at(pos)
 	if horse != null and horse.is_saddled:
 		return Use.UNSADDLE
+	var use := _use_by_hand_on_object(pos)
+	if use == Use.NOTHING and _pettable_at(pos) != null:
+		return Use.PET
+	return use
+
+
+func _use_by_hand_on_object(pos: Vector2i) -> Use:
 	var object := _state.world.object_at(pos)
 	if object == null:
 		return Use.NOTHING

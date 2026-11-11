@@ -45,6 +45,11 @@ const COMMANDS := {
 		"Show the growth, damage and needs of the crop in front of you or the nearest one.",
 	],
 	"skill": ["skill <skill> <points>", "Set a skill's points (0 to 100)."],
+	"friendship":
+	[
+		"friendship [0..100]",
+		"Show the friendship of the animal nearest to you, or set it.",
+	],
 }
 ## The kind of each argument a command takes, in order, for Tab completion (see candidates).
 ## Numbers have no candidates; commands not listed take no arguments. `help <command>` and a
@@ -71,6 +76,8 @@ const SKIP_UNITS := {"m": 1, "h": GameClock.MINUTES_PER_HOUR, "d": GameClock.MIN
 const MAX_SKIP_MINUTES := GameClock.DAYS_PER_YEAR * GameClock.MINUTES_PER_DAY
 ## The snow values Tab offers; any number from 0 to 1 works.
 const SNOW_CANDIDATES: Array[String] = ["auto", "0", "0.5", "1"]
+## How far (in tiles) the `friendship` command looks for an animal.
+const FRIENDSHIP_SEARCH_RADIUS := 3.0
 ## How far (in tiles) the `crop` command looks for a crop when none is in front of the player.
 const CROP_SEARCH_RADIUS := 4
 ## What `spawn` calls a villager (see Npcs).
@@ -153,6 +160,8 @@ func run(line: String) -> Array[String]:
 			output = _crop()
 		"skill":
 			output = _skill(arguments)
+		"friendship":
+			output = _friendship(arguments)
 		_:
 			output = ["Unknown command: %s (try help)" % words[0]]
 	return output
@@ -305,6 +314,32 @@ func _skill(arguments: PackedStringArray) -> Array[String]:
 		return ["Unknown skill: %s" % arguments[0]]
 	skills.set_points(skill, float(arguments[1]))
 	return ["%s is %s" % [skills.rules.skill_name(skill), skills.points(skill)]]
+
+
+func _friendship(arguments: PackedStringArray) -> Array[String]:
+	var livestock := _state.livestock
+	var maximum := livestock.rules.friendship("max")
+	var is_value_valid := (
+		arguments.size() == 1 and arguments[0].is_valid_int() and int(arguments[0]) >= 0
+	)
+	if arguments.size() > 1 or (arguments.size() == 1 and not is_value_valid):
+		return ["Usage: %s" % COMMANDS["friendship"][0]]
+	var animal := (
+		null
+		if _state.is_inside()
+		else livestock.nearest_pettable(_state.player.position, FRIENDSHIP_SEARCH_RADIUS)
+	)
+	if animal == null:
+		return ["No animal that can be petted near you"]
+	if is_value_valid:
+		animal.friendship = mini(int(arguments[0]), maximum)
+	var petted := "never" if animal.last_petted_day == 0 else "day %d" % animal.last_petted_day
+	return [
+		(
+			"%s: friendship %d of %d, last petted %s"
+			% [animal.species, animal.friendship, maximum, petted]
+		)
+	]
 
 
 func _spawn(arguments: PackedStringArray) -> Array[String]:

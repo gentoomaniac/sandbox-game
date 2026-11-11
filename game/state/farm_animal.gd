@@ -36,6 +36,13 @@ var stuck_seconds := 0.0
 ## game time and have no other effect yet (see Livestock).
 var hunger := 0.0
 var thirst := 0.0
+## How fond of the player it is, from 0 to 100 (see Livestock `pet`); nothing reads it yet.
+var friendship := 0
+## The game days (see GameClock `day`, which starts at 1) it was last petted awake, and last
+## petted asleep; 0 for never. An animal gains from a petting and loses from a sleeping one once a
+## day, and a day without an awake petting takes friendship (see Livestock `account_friendship`).
+var last_petted_day := 0
+var last_petted_asleep_day := 0
 ## Where it is walking to meet a need (its feet, in tiles of the world), Vector2.INF when it is
 ## going nowhere in particular; the tile of the water or the stock it will use there; and which
 ## need it is, `hunger` or `thirst`. Not saved: a loaded animal looks about again.
@@ -97,6 +104,9 @@ func to_dict() -> Dictionary:
 		"is_saddled": is_saddled,
 		"hunger": hunger,
 		"thirst": thirst,
+		"friendship": friendship,
+		"last_petted_day": last_petted_day,
+		"last_petted_asleep_day": last_petted_asleep_day,
 	}
 
 
@@ -114,4 +124,7 @@ static func from_dict(data: Dictionary, rules: LivestockRules) -> FarmAnimal:
 	animal.is_saddled = data["is_saddled"]
 	animal.hunger = data["hunger"]
 	animal.thirst = data["thirst"]
+	animal.friendship = int(data["friendship"])
+	animal.last_petted_day = int(data["last_petted_day"])
+	animal.last_petted_asleep_day = int(data["last_petted_asleep_day"])
 	return animal

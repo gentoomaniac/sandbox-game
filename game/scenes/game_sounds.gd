@@ -79,7 +79,7 @@ func _process(_delta: float) -> void:
 
 
 func _on_action_done(outcome: ActionOutcome) -> void:
-	var event := SoundEvents.action(outcome.kind)
+	var event := SoundEvents.action(outcome.kind, outcome.object)
 	if event != &"":
 		_audio.play(event, TerrainTileset.tile_centre(outcome.tile))
 

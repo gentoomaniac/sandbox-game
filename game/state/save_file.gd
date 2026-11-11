@@ -21,10 +21,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 26
-## The oldest version we still upgrade. Nine steps back, for the next version (task 173) makes
-## its step the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 27
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 ## How far around the buildings and the player's objects, and around their tilled fields, the
 ## coast gives way in a version 17 world (see `_home_tiles`): an old farm keeps its yard.
 const UPGRADE_CLEARANCE := 3
@@ -214,6 +213,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_24(game)
 	if version <= 25:
 		_upgrade_from_version_25(game)
+	if version <= 26:
+		_upgrade_from_version_26(game)
 
 
 ## Where the player has made a home in a world: around the buildings and around what the player
@@ -364,6 +365,14 @@ static func _upgrade_from_version_25(game: Dictionary) -> void:
 			fallow_soil.append([edit[0], edit[1], 0])
 	world["fallow_nights"] = 0
 	world["fallow_soil"] = fallow_soil
+
+
+## Version 26 had no friendship (task 173): every animal is a stranger, never petted.
+static func _upgrade_from_version_26(game: Dictionary) -> void:
+	for animal: Dictionary in game["livestock"]:
+		animal["friendship"] = 0
+		animal["last_petted_day"] = 0
+		animal["last_petted_asleep_day"] = 0
 
 
 static func _keep(kept: Dictionary[Vector2i, bool], area: Rect2i) -> void:

@@ -1,6 +1,6 @@
 extends SaveValidationCase
 ## The saved water of the can, the needs of the animals, the stock of a trough and the eggs of a
-## nest are checked against their ranges (task 122).
+## nest are checked against their ranges (task 122), and the friendship of the animals (task 173).
 
 
 func _reason_of_object_with(type: String, state: Dictionary) -> String:
@@ -31,6 +31,15 @@ func test_a_need_outside_zero_to_one_is_refused() -> void:
 			cow[need] = bad
 			game["livestock"] = [cow]
 			assert_string_contains(_refusal_of(game).reason, need)
+
+
+func test_a_friendship_outside_zero_to_a_hundred_or_not_whole_is_refused() -> void:
+	for bad in [-1, 101, 5.5]:
+		var game := _current_game()
+		var cow := FarmAnimal.new(LivestockRules.COW, &"angler", Vector2(2.5, 3.5)).to_dict()
+		cow["friendship"] = bad
+		game["livestock"] = [cow]
+		assert_string_contains(_refusal_of(game).reason, "friendship")
 
 
 func test_a_stock_beyond_the_capacity_or_not_whole_is_refused() -> void:

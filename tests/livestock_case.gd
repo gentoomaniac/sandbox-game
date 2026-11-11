@@ -36,10 +36,11 @@ func before_each() -> void:
 	_state.player.position = Vector2(_middle) + Vector2(0.5, 30.5)
 	_livestock = _state.livestock
 	_livestock.rng.seed = SEED
-	# The needs of the animals count from the clock as the tests set it, not from the game's start.
+	# The needs and the friendship of the animals count from the clock as the tests set it, not from
+	# the game's start.
 	_state.clock.day = DAY
 	_state.clock.minute_of_day = NOON
-	_livestock.account_needs(_state.clock)
+	_livestock.account_clock(_state.clock)
 
 
 func _pen_middle() -> Vector2:

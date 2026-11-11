@@ -15,6 +15,12 @@ extends RefCounted
 
 ## An animal came into the world.
 signal added(animal: FarmAnimal)
+## An animal was petted and shows what `pet` returned (a heart or the anger mark, never nothing).
+signal petted(animal: FarmAnimal, shows: PetShows)
+
+## What petting an animal shows over its head: nothing, a heart (the first petting of a day while it
+## is awake) or the anger mark (the first while it sleeps).
+enum PetShows { NOTHING, HEART, ANNOYED }
 
 ## Spawned animals stand this many tiles from the given point, at the least and at the most.
 const SPAWN_DISTANCE := Vector2(1.5, 4.0)
@@ -49,6 +55,9 @@ var _sun: Sun
 var _animals: Array[FarmAnimal] = []
 ## The game minute the needs of the animals were last brought up to (see `account_needs`), or -1.
 var _needs_minute := -1
+## The game day the friendship of the animals was last brought up to (see `account_friendship`), or
+## 0 before the first time.
+var _friendship_day := 0
 ## How many more searches for water, feed or a coop an `update` may make (see [needs]
 ## `searches_per_update`): each is a flood fill of the ground around an animal.
 var _searches_left := 0
@@ -127,6 +136,44 @@ func nearest(species: StringName, point: Vector2, reach: float) -> FarmAnimal:
 	return found
 
 
+## The animal that can be petted nearest to `point` within `reach` tiles (from its feet), or null.
+## A hen in a coop is not seen, nor is a ridden horse touched.
+func nearest_pettable(point: Vector2, reach: float) -> FarmAnimal:
+	var found: FarmAnimal = null
+	var found_distance := reach
+	for animal in _animals:
+		var distance := animal.position.distance_to(point)
+		var is_reachable := rules.is_pettable(animal.species) and not animal.is_housed
+		if is_reachable and not animal.is_ridden and distance <= found_distance:
+			found = animal
+			found_distance = distance
+	return found
+
+
+## The player pets the animal on the day of the game clock, and what that shows is returned (and
+## told by `petted`). Awake, the first petting of a day adds `pet_gain` to its friendship (up to
+## `max`) and shows a heart; asleep, the first of a day takes `sleep_pet_loss` (down to 0) and
+## shows the anger mark and does not count as the day's petting. Any other petting does nothing.
+func pet(animal: FarmAnimal, clock: GameClock) -> PetShows:
+	# The days that ended before today are counted first: they need the day it was last petted.
+	account_friendship(clock)
+	var shows := PetShows.NOTHING
+	if animal.activity == FarmAnimal.Activity.SLEEP:
+		if animal.last_petted_asleep_day != clock.day:
+			animal.last_petted_asleep_day = clock.day
+			animal.friendship = maxi(0, animal.friendship - rules.friendship("sleep_pet_loss"))
+			shows = PetShows.ANNOYED
+	elif animal.last_petted_day != clock.day:
+		animal.last_petted_day = clock.day
+		animal.friendship = mini(
+			rules.friendship("max"), animal.friendship + rules.friendship("pet_gain")
+		)
+		shows = PetShows.HEART
+	if shows != PetShows.NOTHING:
+		petted.emit(animal, shows)
+	return shows
+
+
 ## The animal follows the player from the game minute `now` (see GameClock `total_minutes`) for
 ## the `follow_minutes` of the rules.
 func start_following(animal: FarmAnimal, now: int) -> void:
@@ -185,7 +232,7 @@ func update(
 	var now := clock.total_minutes()
 	var sunrise := _sun.sunrise(clock.day)
 	var sunset := _sun.sunset(clock.day)
-	account_needs(clock)
+	account_clock(clock)
 	_searches_left = int(yard.needs("searches_per_update"))
 	for animal in _animals:
 		if animal.is_ridden or (only_loaded and not _is_in_loaded_chunk(animal, map)):
@@ -251,7 +298,7 @@ func catch_up_over_frames(
 
 func _begin_catch_up(clock: GameClock, seed_value: int) -> void:
 	rng.seed = seed_value
-	account_needs(clock)
+	account_clock(clock)
 
 
 func _catch_up_one(
@@ -518,6 +565,29 @@ func _update_awake_animal(
 func _start_next(animal: FarmAnimal, map: GameMap, may_walk: bool) -> void:
 	if not (may_walk and _start_trip_to_need(animal, map)):
 		_start_next_activity(animal, may_walk)
+
+
+## Brings everything that follows the game clock up to it: the needs and the friendship.
+func account_clock(clock: GameClock) -> void:
+	account_needs(clock)
+	account_friendship(clock)
+
+
+## Takes `daily_loss` of friendship for each day that ended since the last time and in which the
+## animal was not petted (awake; down to 0). The days are counted, not stepped, so a skip of any
+## length costs a few sums for each animal and needs no frame budget. A day that has ended is
+## looked at only here, so `pet` calls this first. The first time only notes the day.
+func account_friendship(clock: GameClock) -> void:
+	if _friendship_day > 0 and clock.day > _friendship_day:
+		var ended_days := clock.day - _friendship_day
+		var daily_loss := rules.friendship("daily_loss")
+		for animal in _animals:
+			var was_petted := (
+				animal.last_petted_day >= _friendship_day and animal.last_petted_day < clock.day
+			)
+			var unpetted_days := ended_days - (1 if was_petted else 0)
+			animal.friendship = maxi(0, animal.friendship - unpetted_days * daily_loss)
+	_friendship_day = clock.day
 
 
 ## Brings the needs of every animal (ridden ones too) up to the game clock (GameState does it before

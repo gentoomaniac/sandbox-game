@@ -78,6 +78,12 @@ func test_each_action_has_its_sound() -> void:
 		assert_true(cases[kind] == &"" or SoundRules.EVENTS.has(cases[kind]), str(kind))
 
 
+func test_an_animal_petted_awake_answers_in_its_own_voice_and_one_asleep_is_quiet() -> void:
+	assert_eq(SoundEvents.action(ActionOutcome.PET, LivestockRules.COW), &"cow_moo")
+	assert_eq(SoundEvents.action(ActionOutcome.PET, LivestockRules.DOG), &"dog_bark")
+	assert_eq(SoundEvents.action(ActionOutcome.PET_ASLEEP, LivestockRules.COW), &"")
+
+
 func test_a_use_that_did_not_work_is_denied() -> void:
 	for use in [
 		ToolUse.Use.NEEDS_BETTER_TOOL,

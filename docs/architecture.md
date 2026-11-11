@@ -180,6 +180,10 @@ Warft and an Ewer here and there.
   fresh water). `Coop` is the chicken coop: at bedtime a hen walks to one with a free roost and goes
   in (`FarmAnimal.is_housed`, derived from where she stands, so not saved), lays an egg in a nest (a
   hay pile of `Building.inside`, `eggs` in its state) and the empty hand takes them (`Use.COLLECT`).
+  Petting (task 173): the empty hand at an animal is `Use.PET` (last of what the hand does on a
+  tile), `Livestock.pet` changes the animal's `friendship` (saved with its petting days) and tells
+  `petted`; the daily loss is worked out by `account_friendship` from the days, with the needs
+  (`account_clock`). Nothing reads the friendship yet but the console's `friendship`.
 - **Npcs** (`game/state/npcs.gd`) holds the villagers (`Npc`: name, sex, look as an
   `Appearance`, who they are (their whole sheet: age, trade, personality, background, home,
   speech, sample lines, people, likes, wants, day, habits, avoids, secrets), position, anchor,

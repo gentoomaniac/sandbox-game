@@ -42,9 +42,10 @@ static func hit(object_type: Dictionary, is_finished: bool) -> StringName:
 	return &""
 
 
-## The sound of a finished action of the player (see ActionOutcome). A hit is heard as the object
-## being hit (see `hit`), and the actions that make no sound of their own are silent.
-static func action(kind: StringName) -> StringName:
+## The sound of a finished action of the player (see ActionOutcome; `object` is the one it was
+## about). A hit is heard as the object being hit (see `hit`), and the actions that make no sound of
+## their own are silent.
+static func action(kind: StringName, object := &"") -> StringName:
 	match kind:
 		ActionOutcome.TILL:
 			return &"hoe_till"
@@ -65,6 +66,9 @@ static func action(kind: StringName) -> StringName:
 			return &"axe_chop"
 		ActionOutcome.GIVE_BONE:
 			return &"dog_bark"
+		# An animal petted awake answers in its own voice; one asleep says nothing.
+		ActionOutcome.PET:
+			return animal_idle(object)
 		ActionOutcome.SADDLE, ActionOutcome.UNSADDLE:
 			return &"horse_whinny"
 		ActionOutcome.PICK_UP, ActionOutcome.FEED, ActionOutcome.COLLECT:

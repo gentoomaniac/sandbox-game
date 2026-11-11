@@ -41,6 +41,7 @@ const HUNTING_KEYS := [
 	"catch_tiles",
 	"rest_seconds",
 ]
+const FRIENDSHIP_KEYS := ["pettable", "max", "pet_gain", "sleep_pet_loss", "daily_loss"]
 const SPECIES_KEYS := [
 	"looks",
 	"look_weights",
@@ -105,6 +106,9 @@ func problems() -> Array[String]:
 	for key: String in HUNTING_KEYS:
 		if not _values.get("hunting", {}).has(key):
 			found.append("[hunting] no %s" % key)
+	for key: String in FRIENDSHIP_KEYS:
+		if not _values.get("friendship", {}).has(key):
+			found.append("[friendship] no %s" % key)
 	for species in SPECIES:
 		var values: Dictionary = _values.get(String(species), {})
 		var missing := SPECIES_KEYS.filter(func(key: String) -> bool: return not values.has(key))
@@ -139,6 +143,16 @@ func general(key: String) -> float:
 ## A number of how a cat hunts (see [hunting]).
 func hunting(key: String) -> float:
 	return float(_values["hunting"][key])
+
+
+## A number of how petting changes an animal's friendship (see [friendship]).
+func friendship(key: String) -> int:
+	return int(_values["friendship"][key])
+
+
+## Whether animals of the species can be petted.
+func is_pettable(species: StringName) -> bool:
+	return _values["friendship"]["pettable"].has(String(species))
 
 
 func looks(species: StringName) -> Array:

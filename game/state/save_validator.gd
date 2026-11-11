@@ -371,6 +371,7 @@ func _check_appearance(appearance: Dictionary, path: String) -> void:
 
 func _check_livestock(animals: Array) -> void:
 	var rules := LivestockRules.default_rules()
+	var max_friendship := float(rules.friendship("max"))
 	for index in animals.size():
 		var animal: Variant = animals[index]
 		var path := "livestock %d" % index
@@ -385,6 +386,11 @@ func _check_livestock(animals: Array) -> void:
 		_field(animal, "is_saddled", Kind.BOOL, path)
 		for need in ["hunger", "thirst"]:
 			_check_between(_field(animal, need, Kind.NUMBER, path), 0.0, 1.0, path, need)
+		_check_between(
+			_field(animal, "friendship", Kind.WHOLE, path), 0.0, max_friendship, path, "friendship"
+		)
+		_field(animal, "last_petted_day", Kind.WHOLE, path)
+		_field(animal, "last_petted_asleep_day", Kind.WHOLE, path)
 		if tint != null and not Color.html_is_valid(tint):
 			_report(path, "tint %s is not a colour" % tint)
 		if species == null or look == null:

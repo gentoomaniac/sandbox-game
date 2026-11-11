@@ -16,7 +16,9 @@ Decided 2026-11-05. A text console for testing and cheats.
   animals: `cow`, `sheep`, `chicken`, `rabbit`, `dog`, `cat`, `horse`; wild ones: `bird`,
   `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork`,
   `geese`, `flying_geese`, `mouse`, `frog`), `weather`, `snow`, `crop`
-  (see `help`), `reset` (puts the player in the bed they wake in, inside or out), and
+  (see `help`), `friendship [0..100]` (shows the friendship of the nearest animal that can be
+  petted within 3 tiles, or sets it; task 173), `reset` (puts the player in the bed they wake in,
+  inside or out), and
   `skip <n>m|h|d` (let minutes, hours or days pass, at most a year; only the world
   moves on, as when sleeping, so crops grow; the player's energy, tiredness, debuff and
   position are left alone).

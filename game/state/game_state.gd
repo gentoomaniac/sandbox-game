@@ -554,7 +554,7 @@ func to_dict() -> Dictionary:
 ## A copy of what `to_dict` writes that is quick to take and shares nothing with the game, and
 ## that `dict_of` makes save data of: the part of saving that has to stop the game, a moment.
 func snapshot() -> Dictionary:
-	livestock.account_needs(clock)
+	livestock.account_clock(clock)
 	var player_data := player.to_dict()
 	# A game saved on horseback loads with the player standing beside the horse (or, with no room
 	# there, on its spot).
@@ -648,8 +648,9 @@ func _end_debuff_on_new_day(day_before: int) -> void:
 ## Puts what changes with time under the simulation, once the world and the weather exist. The
 ## order is the order they run in.
 func _start_simulation() -> void:
-	# The needs of the animals count from the clock as it is now (as loaded, for a loaded game).
-	livestock.account_needs(clock)
+	# The needs and the friendship of the animals count from the clock as it is now (as loaded, for a
+	# loaded game).
+	livestock.account_clock(clock)
 	simulation.add_system(FarmingUpkeep.new(world, weather))
 	simulation.add_system(NightUpkeep.new(world, weather, _tiles_kept_clear))
 	simulation.add_system(ActorsUpkeep.new(world, livestock, npcs, _player_feet))

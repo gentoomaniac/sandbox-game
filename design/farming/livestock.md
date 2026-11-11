@@ -92,10 +92,60 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   (a cat's meow rarer still); none while asleep.
 - **Saved:** species, look, tint and position (save version 13), until when a dog follows the
   player (save version 16), whether a horse wears a saddle (save version 22) and how hungry and
-  thirsty it is (save version 25); what an animal is doing is not.
+  thirsty it is (save version 25), how fond of the player it is and the days it was petted (save
+  version 27); what an animal is doing is not.
 - Animals don't avoid each other or the player yet. No hoofbeats are heard while riding yet.
 - **Later:** milk and wool, meat from the pigs, owning and breeding, and animals that are neither
   hungry nor thirsty giving better produce (eggs, feeding and drinking are in the farm yard below).
+
+## Petting and friendship (task 173, decided 2026-11-11)
+
+The user, 2026-11-11: "you can pet animals. They'll show a small heart above their head. it
+increases an internal friendship value by 10 which can increase to 100. you can pet animals as
+often as you want but only once a day you'll see the heart and it will increase that value. The
+value decreases by 5 a day if not petted. When you pet animals while they are sleeping the counter
+decreases by 5 and you see a little swirl above their head. We'll use that value later for game
+mechanics." The user confirmed the rest the same day. The numbers are in `[friendship]` of
+data/livestock.cfg.
+
+- **Who:** the farm animals and the pets: cows, horses, sheep, pigs, hens, tame rabbits, dogs and
+  cats (`pettable`; the user added the rabbits the same day). Not the wildlife. A hen in a coop is
+  not there to pet, nor is a horse the player rides; a rabbit runs from the player, so it has to be
+  caught standing.
+- **Petting** is the use key with an **empty hand** at the animal (within a tile of the target's
+  middle, as the bone and the saddle are). It comes **last** of what an empty hand does on a tile:
+  a saddled horse is unsaddled first (once the saddle is off it can be petted), a pen gate opens, a
+  ripe crop is picked, a bush foraged; only a tile with nothing else for the hand pets. A held
+  item keeps its own use (a bone feeds the dog, a hoe tills), and on horseback the use key does
+  nothing but say so. Petting costs no energy and the target is highlighted like any use.
+- **The friendship** of each animal is a whole number from 0 to 100 (`max`), 0 for a new animal.
+  Nothing reads it yet: it is for later game mechanics, such as the gossip and what an animal
+  gives. It never goes below 0, whatever takes it.
+- **Awake:** the first petting of a day adds `pet_gain` (10), up to 100, and shows a small heart
+  over its head. More pettings that day are allowed and show and change nothing.
+- **Asleep:** the first petting of a day takes `sleep_pet_loss` (5) and shows the comic's anger mark (a small black
+  mark, see docs/art-style.md). More
+  that day show nothing. It does not count as the day's petting, so an animal that is only
+  petted asleep still loses the daily 5, and can still be petted awake for its heart.
+- **A day without a petting** (awake) takes `daily_loss` (5). It counts at the day change, and
+  `Livestock.account_friendship` counts the days that ended since it last looked, over any skip
+  (sleep, passing out, `skip`), a loaded game and a long stay indoors alike (it runs with the
+  needs: every `update`, before a save, at the start of a catch-up). A skip's days cost the same few
+  sums for each animal however long it is, so no frame budget is needed (task 158 limits the walks
+  and the searches, which are not part of this). `pet` counts the days that ended first, since it
+  needs the day the animal was last petted. The day is the game clock's: a petting at 01:00 is of
+  the new day.
+- **Sound:** an awake animal answers a petting with its own sound (a moo, a bark; the kinds that
+  make one while they go about their day), a sleeping one makes none. A petting sound of its own
+  is left for the sound designer.
+- **Saved** with the animal (save version 27): the friendship, the day it was last petted awake and
+  the day it was last petted asleep (for the once a day of both). Older saves load every animal with
+  friendship 0.
+- **Console:** `friendship` shows the friendship and the last petting of the nearest animal that can
+  be petted within 3 tiles of the player, and `friendship <0..100>` sets it.
+- **Left open:** what the friendship does; whether a petted dog or horse follows or lets the player
+  ride more easily; that a cow in the middle of a herd cannot be picked out (the nearest to the
+  target's middle is petted).
 
 ## The farm yard (task 122, decided 2026-11-10)
 
