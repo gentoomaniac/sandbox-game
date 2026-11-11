@@ -109,6 +109,7 @@ func test_every_tile_flag_reads_its_tile() -> void:
 					"--mow=15,16",
 					"--chest=17,18",
 					"--chest-inside=19,20",
+					"--floor-items=27,28",
 					"--harvest=21,22",
 					"--hit=23,24",
 					"--path=25,26",
@@ -128,6 +129,7 @@ func test_every_tile_flag_reads_its_tile() -> void:
 	assert_eq(options.mow, Vector2i(15, 16))
 	assert_eq(options.chest, Vector2i(17, 18))
 	assert_eq(options.chest_inside, Vector2i(19, 20))
+	assert_eq(options.floor_items, Vector2i(27, 28))
 	assert_eq(options.harvest, Vector2i(21, 22))
 	assert_eq(options.hit, Vector2i(23, 24))
 	assert_eq(options.path, Vector2i(25, 26))

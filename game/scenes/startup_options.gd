@@ -110,6 +110,8 @@ extends RefCounted
 ##                            few worn islands (see DebugWornGround)
 ##   --chest=<x>,<y>          a chest with some items on that tile
 ##   --chest-inside=<x>,<y>   a chest on that tile of the first house's room (with --inside)
+##   --floor-items=<x>,<y>    a row of items on that tile of the first house's room and the
+##                            tiles east of it (with --inside; see DebugItems)
 ##   --landing=<x>,<y>        the fisherman's landing: a jetty from that tile west over the water,
 ##                            a rowing boat, a net frame and eel traps (with --building=fisher_hut
 ##                            and --house for the hut)
@@ -239,6 +241,7 @@ var path_days := Vector2i(6, 0)
 var worn_ground := NO_TILE
 var chest := NO_TILE
 var chest_inside := NO_TILE
+var floor_items := NO_TILE
 var landing := NO_TILE
 var yard := NO_TILE
 
@@ -409,6 +412,8 @@ func _init(args := PackedStringArray()) -> void:
 				chest = _tile(arg)
 			"--chest-inside":
 				chest_inside = _tile(arg)
+			"--floor-items":
+				floor_items = _tile(arg)
 			"--landing":
 				landing = _tile(arg)
 			"--yard":

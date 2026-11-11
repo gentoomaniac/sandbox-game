@@ -49,6 +49,7 @@ var _is_entering_first_house: bool
 var _is_sleeping: bool
 var _chest_tile: Vector2i
 var _chest_inside_tile: Vector2i
+var _floor_items_tile: Vector2i
 var _churchyard_tile: Vector2i
 var _street_tile: Vector2i
 var _is_storage_to_open: bool
@@ -75,6 +76,7 @@ func _init(options: StartupOptions) -> void:
 	_is_sleeping = options.sleep
 	_chest_tile = options.chest
 	_chest_inside_tile = options.chest_inside
+	_floor_items_tile = options.floor_items
 	_churchyard_tile = options.churchyard
 	_street_tile = options.street
 	_is_storage_to_open = options.storage
@@ -106,7 +108,7 @@ func update(delta: float) -> void:
 		if state.is_inside():
 			_go_to_first_bed()
 		try_sleep.call()
-	_place_chests()
+	_place_chests_and_floor_items()
 	if _churchyard_tile != StartupOptions.NO_TILE and view.is_settled and not state.is_inside():
 		DebugChurchyard.create(state, _churchyard_tile)
 		_churchyard_tile = StartupOptions.NO_TILE
@@ -273,9 +275,9 @@ func _go_to_first_bed() -> void:
 			return
 
 
-## Puts the asked chests where they go once their map is drawn, and opens the storage screen of
-## the last.
-func _place_chests() -> void:
+## Puts the asked chests and floor items where they go once their map is drawn, and opens the
+## storage screen of the last chest.
+func _place_chests_and_floor_items() -> void:
 	if _chest_tile != StartupOptions.NO_TILE and view.is_settled and not state.is_inside():
 		_opened_chest = DebugChest.create(state.world, _chest_tile)
 		_chest_tile = StartupOptions.NO_TILE
@@ -287,6 +289,13 @@ func _place_chests() -> void:
 		_opened_chest = DebugChest.create(state.current_map, _chest_inside_tile)
 		interior_view.show_interior(state.current_map)
 		_chest_inside_tile = StartupOptions.NO_TILE
+	if (
+		_floor_items_tile != StartupOptions.NO_TILE
+		and state.is_inside()
+		and not _is_entering_first_house
+	):
+		DebugItems.lay_on_floor(state.current_map, _floor_items_tile)
+		_floor_items_tile = StartupOptions.NO_TILE
 	if _is_storage_to_open and _opened_chest != null:
 		_is_storage_to_open = false
 		storage_screen.open_chest(_opened_chest, state.player)
@@ -298,6 +307,7 @@ func _is_ready_to_shoot() -> bool:
 		and _harvest_tile == StartupOptions.NO_TILE
 		and _chest_tile == StartupOptions.NO_TILE
 		and _chest_inside_tile == StartupOptions.NO_TILE
+		and _floor_items_tile == StartupOptions.NO_TILE
 		and _churchyard_tile == StartupOptions.NO_TILE
 		and not _is_storage_to_open
 		and not _is_station_to_open
