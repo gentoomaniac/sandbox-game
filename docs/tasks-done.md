@@ -4686,3 +4686,30 @@ about 6 px (3 in classic); the wet overlay, the fade of 167 and the fallow weeds
 bed by `soil_beds.spot_on_bed`) follow it. Crop stages that fit their tile are centred on it
 (`canvas.centred_on_tile`); tall grown crops still stand from the tile's lower part. README
 pictures re-taken.
+
+## 177. Darker nights, and a lantern to carry
+
+- [x] Done
+
+The user, 2026-11-11: "darkness should be much stronger. You'll need to carry a lantern to get a
+brighter circle around you to see better (right now via spawn command). it doesn't need fuel right
+now, but holding it pressing space will turn it on and off."
+- Night: much darker than today's bluish, readable night (DayNightTint.NIGHT, game/scenes/
+  day_night_tint.gd, "night stays bluish and readable, not black"). Dusk and dawn ramp into it;
+  moonlight may lift it a little if the weather/moon model has it. Light sources (campfires,
+  windows, the hearth glow, fireflies) still read as light in the dark. The numbers in data/.
+- A lantern item: no recipe yet, got through the console's spawn/give command. Held in the hotbar
+  and selected, the use key (space) switches it on and off; lit, it casts a warm circle of light
+  around the player (a soft radial light, flickering a little), off, nothing. No fuel for now.
+  Its lit state is saved; it shows in the player's hand (lit and unlit) and as an icon, both arts
+  (pixel-artist job). Maybe a small sound on switching (reuse one).
+- Indoors stays as it is (the fixed warm tint), unless the lantern is easy to make count there too.
+- Tests for the night darkness, the switching and the light following the player; screenshots
+  for the user at night with and without the lantern, both arts; README note.
+
+Done 2026-11-11: the night tint (DayNightTint, a CanvasModulate; numbers in data/lighting.cfg) is
+Color(0.13, 0.16, 0.3), luminance 0.16 (was 0.47); the fires, windows, hearth and fireflies are
+additive PointLight2Ds, so they stand out more. The lantern: `give lantern`, space or a click with
+it selected switches it, a warm flickering light of 5 tiles on the player while it is held (in the
+bag it stays lit but gives no light: the user's call), saved (save version 28, the upgrade from 17
+dropped). The user: "lanterns and nights look great". README night pictures re-taken.
