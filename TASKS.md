@@ -694,6 +694,26 @@ place them somewhere else"
 - Tests: digging each bush gives its item, placing it back, refused tiles, a berry bush still
   bears after replanting, save and load. README, design pages.
 
+## 209. Animals stuck at a fence turn left and right for a long time (bug)
+
+- [ ] Done
+
+The user, 2026-11-11: "Sometimes horses, potentially other animals as well, get stuck on a fence
+and start spinning left right for a long time."
+- Reproduce first: a horse (and the other farm animals and pets: cow, sheep, pig, chicken, dog,
+  cat, rabbit) wandering, following the player or grazing next to a fence or wall (the pen fence of
+  task 165, wattle fences, stone walls, Knicks, buildings since task 181), and a wander target or
+  follow target on the other side. Find the cause: a target beyond the fence with no path, a
+  steering that flips its facing every frame when the direct way is blocked, a body wider than a
+  tile (the horse) touching the fence on both sides, or a stuck check that never fires.
+- Fix it at the cause: an animal never flips its facing back and forth (a short hold on a new
+  facing, or face by the path not by each blocked step); a blocked target is given up after a
+  short try and a new one picked on its own side; a following animal that can't reach the player
+  waits facing them. Same rules for every animal kind, and for villagers if they share the code.
+- Tests: a horse with a target behind a fence stops turning within a few seconds and picks another
+  target; facing changes at most a few times in that span; the same for a small animal and for a
+  following dog.
+
 ## Later (not part of the prototype)
 
 - **Villagers go inside** (the user, 2026-11-11): villagers enter their houses (and the church,
