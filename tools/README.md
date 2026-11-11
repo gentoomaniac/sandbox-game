@@ -123,7 +123,7 @@ by topic. Where is a thing drawn?
 | `coast.py` | The things of the Wadden coast: the Ewer lying on the mud, at 32 px, a picture three object cells wide. |
 | `landing.py` | The fisherman's landing at 32 px: the jetty (a picture per connection mask), the rowing boat, the net frame and the eel traps, and their icons. |
 | `yard.py` | The farm yard at 32 px (task 122): the draw well with its sweep, the trough, the hay rack and the chicken coop, and the icons of the items that place them. The classic art has its own `classic/yard.py` at 16 px (drawn new for the yard, not copied from history). |
-| `pen.py` | The pig pen at 32 px (task 165): the fence of split oak rails and its gate (lines with a picture per connection mask, drawn with `boundaries.draw_line` and gaps under the rails), the pigs' shelter, and the icons of their items. `classic/pen.py` draws them at 16 px. |
+| `pen.py` | The pig pen at 32 px (task 165): the fence of split oak rails and its gate, shut and open (lines with a picture per connection mask, drawn with `boundaries.draw_line` and gaps under the rails), the pigs' shelter, and the icons of their items. `classic/pen.py` draws them at 16 px. |
 | `crafts.py` | The professions' art: the stations (workbench, kiln, bake oven, cupboard) and the carved chest at 32 px, each drawn once for the atlas, the interior and its icon, and the icons of what is made at them. |
 | `trunks.py`, `meadow.py`, `reeds.py` | Felled trunks, tall grass, reeds and the clay hint (drawn at 32 px), the hay, clay and reeds items. |
 | `fire.py` | The animation frames of the campfire and the hearth, drawn at 32 px; `strip` scales up the 16 px fireplace around them (the hearth is drawn at 32 px). |

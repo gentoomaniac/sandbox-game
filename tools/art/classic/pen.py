@@ -1,6 +1,8 @@
-"""The pig pen (task 165) in the classic 16 px art: the fence of split oak rails, its gate and the
-pigs' shelter, as tools/art/pen.py draws them at 32 px, at half the size.
+"""The pig pen (task 165) in the classic 16 px art: the fence of split oak rails, its gate shut and
+open, and the pigs' shelter, as tools/art/pen.py draws them at 32 px, at half the size.
 """
+
+import math
 
 from boundaries import MASKS, TILE, along_line, cluster_value, draw_line, ramp_shade, skeleton_distance
 from canvas import blank, outline_edge, rect
@@ -15,6 +17,7 @@ POSTS = ("soil_light", "soil_mid", "soil", "soil_dark")
 GATE_POST_HEIGHT = 14
 GATE_LEAF = (2, 13)
 GATE_BOARDS = ("sand_light", "sand", "mud", "mud_dark")
+OPEN_ANGLE = math.radians(40)
 
 
 def _layers_of_heights(heights, material):
@@ -76,13 +79,25 @@ def _runs_north_south(mask):
     return not mask & 0b1010 and bool(mask & 0b0101)
 
 
-def _gate_layers(mask, x, y):
-    along, across = (y, x) if _runs_north_south(mask) else (x, y)
-    if not (0 <= along < TILE) or abs(across + 0.5 - TILE / 2) >= RAIL_REACH + 0.5:
-        return []
-    if along in (0, TILE - 1):
-        return [(GATE_POST_HEIGHT, "post")]
-    return _layers_of_heights(_leaf_heights(along), "board")
+def _gate_layers(is_open):
+    def layers(mask, x, y):
+        along, across = (y, x) if _runs_north_south(mask) else (x, y)
+        if not (0 <= along < TILE):
+            return []
+        on_line = abs(across + 0.5 - TILE / 2) < RAIL_REACH + 0.5
+        if on_line and along in (0, TILE - 1):
+            return [(GATE_POST_HEIGHT, "post")]
+        if not is_open:
+            return _layers_of_heights(_leaf_heights(along), "board") if on_line else []
+        # Swung open towards the front, as at 32 px.
+        dx, dy = along + 0.5 - (GATE_LEAF[0] - 0.5), across + 0.5 - TILE / 2
+        distance = dx * math.cos(OPEN_ANGLE) + dy * math.sin(OPEN_ANGLE)
+        off_line = -dx * math.sin(OPEN_ANGLE) + dy * math.cos(OPEN_ANGLE)
+        if abs(off_line) >= RAIL_REACH or distance < 0:
+            return []
+        return _layers_of_heights(_leaf_heights(GATE_LEAF[0] + round(distance)), "board")
+
+    return layers
 
 
 def _gate_colour(material, x, y, z, light, is_top):
@@ -95,12 +110,12 @@ def _gate_outline(material):
     return {"post": POSTS[-1], "board": None}[material]
 
 
-def pen_gate(mask):
-    return draw_line(mask, _gate_layers, _gate_colour, _gate_outline)
+def pen_gate(mask, is_open=False):
+    return draw_line(mask, _gate_layers(is_open), _gate_colour, _gate_outline)
 
 
-def pen_gate_row():
-    return [pen_gate(mask) for mask in MASKS]
+def pen_gate_row(is_open=False):
+    return [pen_gate(mask, is_open) for mask in MASKS]
 
 
 THATCH = ("sand", "bare_light", "bare", "mud_dark")

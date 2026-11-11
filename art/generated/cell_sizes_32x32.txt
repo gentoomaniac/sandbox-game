@@ -216,6 +216,7 @@ objects/oak_trunk_32x32.png 96 160
 objects/oven_32x32.png 96 160
 objects/pen_fence_32x32.png 96 160
 objects/pen_gate_32x32.png 96 160
+objects/pen_gate_open_32x32.png 96 160
 objects/pig_shelter_32x32.png 96 160
 objects/pine_32x32.png 96 160
 objects/pine_short_trunk_32x32.png 96 160

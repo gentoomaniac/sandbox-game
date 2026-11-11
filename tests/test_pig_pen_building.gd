@@ -1,6 +1,7 @@
 extends ResourceCase
 ## Building a pig pen (task 165): its fence, gate and shelter are made at the workbench and put down
-## outdoors piece by piece, the fence joins the gate, and the axe takes each piece down again.
+## outdoors piece by piece, the fence joins the gate, the use key with an empty hand opens and shuts
+## the gate, which is kept so through a save, and the axe takes each piece down again.
 
 
 func test_the_workbench_makes_the_pieces_of_a_pen() -> void:
@@ -56,3 +57,34 @@ func test_the_axe_takes_each_piece_down_and_it_drops_its_item() -> void:
 		_hit(ItemTypes.AXE, WorldObjectTypes.TYPES[type]["hp"])
 		assert_null(_world.object_at(_tile))
 		assert_eq(_dropped(ItemTypes.item_placing(type)), 1, str(type))
+
+
+func test_the_use_key_with_an_empty_hand_opens_and_shuts_the_gate() -> void:
+	_place(WorldObjectTypes.PEN_GATE)
+	_hold(ItemTypes.NONE)
+	var outcomes: Array[ActionOutcome] = []
+	_state.action_done.connect(func(outcome: ActionOutcome) -> void: outcomes.append(outcome))
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.GATE)
+	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.PEN_GATE_OPEN)
+	assert_true(_world.is_walkable(_tile))
+	assert_true(_world.is_walkable_for_animals(_tile))
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.GATE)
+	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.PEN_GATE)
+	assert_false(_world.is_walkable_for_animals(_tile))
+	assert_eq(outcomes.size(), 2)
+	assert_eq(outcomes[0].kind, ActionOutcome.GATE)
+	assert_eq(outcomes[0].object, WorldObjectTypes.PEN_GATE_OPEN)
+	assert_ne(SoundEvents.action(ActionOutcome.GATE), &"", "it is heard")
+
+
+func test_an_open_gate_stays_open_through_a_save() -> void:
+	_place(WorldObjectTypes.PEN_GATE_OPEN)
+	assert_eq(_through_save().world.object_at(_tile).type, WorldObjectTypes.PEN_GATE_OPEN)
+
+
+func test_the_axe_takes_an_open_gate_down_and_it_drops_the_gate() -> void:
+	_state.player.inventory.add(ItemTypes.AXE, 1)
+	_place(WorldObjectTypes.PEN_GATE_OPEN)
+	_hit(ItemTypes.AXE, WorldObjectTypes.TYPES[WorldObjectTypes.PEN_GATE_OPEN]["hp"])
+	assert_null(_world.object_at(_tile))
+	assert_eq(_dropped(ItemTypes.PEN_GATE), 1)

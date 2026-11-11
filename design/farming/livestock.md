@@ -237,8 +237,13 @@ through it.
   gates beside it (`connects` "pen"). A trough and a feeding trough (see the farm yard) stand
   in it for water and feed. The axe takes every piece down (2 hits, the shelter 4) and it drops
   its item.
-- **The gate:** the player walks through it (they open it and shut it behind them as they go);
-  the farm animals do not (`stops_animals`, `GameMap.is_walkable_for_animals`). The wild animals
+- **The gate:** the player walks through it, shut or open (they open it and shut it behind them as
+  they go); the farm animals only through an open one (`stops_animals` of the shut gate,
+  `GameMap.is_walkable_for_animals`). The use key with an empty hand opens a shut gate and shuts an
+  open one (it turns into the other type, `turns_into`, so an open gate is saved as such and the
+  save format is unchanged); it knocks like wood put down, until a sound of its own is made for it
+  (a job for the sound designer). A gate is shut when it is put down; one taken down open or shut
+  gives the gate. The wild animals
   (deer, rabbits, birds) take no notice of a pen at all: they are wildlife, which keeps to its own
   rules of where it goes.
 - **The pigs in it:** a pig (or any farm animal) inside a ring of fence with its gate stays in
@@ -247,8 +252,8 @@ through it.
   that (the reachability and the needs of task 122, unchanged). So a pig in a pen drinks and eats
   only at the troughs in it, and one in a pen without them stays thirsty or hungry (it can still
   root, which feeds it a little). Pigs have no pen of their own: a pig is in the pen it stands in,
-  and a pig put down outside one wanders like the other animals.
+  and a pig put down outside one wanders like the other animals. An open gate lets them out.
 - **Left open:** the pigs do not go into the shelter yet (they sleep where they are, the shelter is
   where the player would look for them); a pen is not a thing of its own (no owner, no count of its
-  pigs); the ridden horse goes through a gate with its rider. The user may change any of it.
+  pigs); the ridden horse goes through a shut gate with its rider. The user may change any of it.
 

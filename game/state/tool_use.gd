@@ -8,7 +8,8 @@ extends RefCounted
 ## (a bush, a fern), CLEAR a dead crop that a hand pulls up, WATER a watering can wetting tilled
 ## soil, FILL_CAN the can filled at a well or at fresh water, CAN_EMPTY a can with no water to
 ## water with (nothing is done), POUR the can emptied a little into a trough, FEED a feed item put
-## into a hay rack, COLLECT an empty hand taking the eggs out of a coop's nest, HIT a tool cut or
+## into a hay rack, COLLECT an empty hand taking the eggs out of a coop's nest, GATE an empty hand
+## opening or shutting a pen's gate (see WorldObjectTypes `turns_into`), HIT a tool cut or
 ## mined at an object, NEEDS_BETTER_TOOL a tool that is too weak for the object, MOW a scythe
 ## cutting the tall grass and reeds around the target, DIG a shovel in grass (which may find clay),
 ## PLACE an item that puts an object down (a chest, a station), TAKE_DOWN an axe or pickaxe taking
@@ -34,6 +35,7 @@ enum Use {
 	POUR,
 	FEED,
 	COLLECT,
+	GATE,
 	MOW,
 	DIG,
 	PLACE,
@@ -213,6 +215,11 @@ func _do_use(target: Vector2i) -> Use:
 			var eggs := Coop.take_eggs(nest)
 			_state.player.inventory.add(ItemTypes.EGG, eggs)
 			_done(ActionOutcome.COLLECT, target, nest.type, {ItemTypes.EGG: eggs})
+		Use.GATE:
+			var gate := _state.world.object_at(target)
+			var turned := WorldObject.new(gate.type_data()["turns_into"], gate.pos)
+			_state.world.replace_object(gate, turned)
+			_done(ActionOutcome.GATE, target, turned.type)
 		Use.FILL_CAN:
 			_state.player.can_water = EnergyRules.default_rules().can_capacity()
 			var well := _state.world.object_at(target)
@@ -502,6 +509,8 @@ func _use_by_hand(pos: Vector2i) -> Use:
 	var object := _state.world.object_at(pos)
 	if object == null:
 		return Use.NOTHING
+	if object.type_data().has("turns_into"):
+		return Use.GATE
 	if object.is_crop():
 		if CropLife.is_dead(object):
 			return Use.CLEAR

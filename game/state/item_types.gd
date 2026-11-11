@@ -550,7 +550,7 @@ const _OTHER_TYPES := {
 	PEN_GATE:
 	{
 		"name": "Pen gate",
-		"description": "A gate for a pig pen. It lets you through and keeps the animals in.",
+		"description": "A gate for a pig pen. Shut, it lets you through and keeps the animals in.",
 		"weight": 10.0,
 		"stack_limit": 4,
 		"places": WorldObjectTypes.PEN_GATE,

@@ -364,6 +364,7 @@ _WINTER_LOOKS = {
     "pen_fence": {"frost_only": _FROST_STONE, "snow": ({"bare_light", "bare", "soil_light"}, set(), 1)},
     "pen_gate": {"frost_only": _FROST_STONE, "snow": ({"sand_light", "sand", "soil_light"}, set(), 1)},
     "pig_shelter": {"frost_only": _FROST_STONE, "snow": ({"sand", "bare_light", "bare"}, set(), 2)},
+    "pen_gate_open": {"frost_only": _FROST_STONE, "snow": ({"sand_light", "sand", "soil_light"}, set(), 1)},
     "oak_trunk": _TRUNK_WINTER,
     "oak_short_trunk": _TRUNK_WINTER,
     "spruce_trunk": _TRUNK_WINTER,

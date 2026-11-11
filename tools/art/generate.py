@@ -198,6 +198,7 @@ def standing_outdoors(picture, shadow_half_width=None):
 # 55 pen_fence (16, one per connection mask, see pen.py)
 # 56 pen_gate (16, the same)
 # 57 pig_shelter (1)
+# 58 pen_gate_open (16, the gate swung open)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -253,6 +254,7 @@ def object_atlas():
         ("pen_fence", pen.pen_fence_row()),
         ("pen_gate", pen.pen_gate_row()),
         ("pig_shelter", [standing_outdoors(pen.pig_shelter())]),
+        ("pen_gate_open", pen.pen_gate_row(is_open=True)),
     ]
 
 

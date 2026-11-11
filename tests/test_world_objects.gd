@@ -57,7 +57,7 @@ func test_every_natural_object_type_is_generated() -> void:
 			types[generator.object_type_at(pos, generator.terrain_at(pos))] = true
 	for object_type: StringName in WorldObjectTypes.TYPES:
 		# The camp is placed by the game, crops and the landing by the player, stumps and trunks by
-		# felling and furniture comes with interiors.
+		# felling, an open gate by opening a placed one, and furniture comes with interiors.
 		var type_data: Dictionary = WorldObjectTypes.TYPES[object_type]
 		var is_made_by_play := (
 			(
@@ -71,6 +71,7 @@ func test_every_natural_object_type_is_generated() -> void:
 			)
 			or str(object_type).ends_with("trunk")
 			or ItemTypes.item_placing(object_type) != &""
+			or ItemTypes.item_placing(type_data.get("turns_into", &"")) != &""
 		)
 		if is_made_by_play or type_data.has("growth_stages") or type_data.has("interior_sprite"):
 			continue

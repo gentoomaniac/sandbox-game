@@ -74,7 +74,8 @@ extends RefCounted
 ## - cells_wide: its picture spans this many cells of its atlas row side by side (the Ewer, in
 ##   scale with the people), one cell without it;
 ## - stops_animals: the player walks through it but the farm animals do not (see GameMap
-##   `is_walkable_for_animals`).
+##   `is_walkable_for_animals`);
+## - turns_into: the use key with an empty hand turns it into this type (a gate opened or shut).
 
 const OAK := &"oak"
 const STONE := &"stone"
@@ -145,9 +146,10 @@ const HAY_RACK := &"hay_rack"
 ## The feeding trough (task 165): the trough with feed in it, for the pigs and any that eat feed.
 const FEED_TROUGH := &"feed_trough"
 ## The pig pen (task 165), put together by the player piece by piece: a fence of split oak rails,
-## a gate in it and a shelter for the pigs.
+## a gate in it, shut or open, and a shelter for the pigs.
 const PEN_FENCE := &"pen_fence"
 const PEN_GATE := &"pen_gate"
+const PEN_GATE_OPEN := &"pen_gate_open"
 const PIG_SHELTER := &"pig_shelter"
 
 ## Values of a type's `seasonal` entry.
@@ -213,6 +215,7 @@ const _FEED_TROUGH_ROW := 54
 const _PEN_FENCE_ROW := 55
 const _PEN_GATE_ROW := 56
 const _PIG_SHELTER_ROW := 57
+const _PEN_GATE_OPEN_ROW := 58
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -773,7 +776,8 @@ const _OTHER_TYPES := {
 		"variants": 1,
 		"placeable_in": OUTDOORS,
 	},
-	# The gate of a pen: the player goes through it (and shuts it behind them), the animals do not.
+	# The gate of a pen: the player goes through it, shut or open (and shuts it behind them); the
+	# animals only through an open one.
 	PEN_GATE:
 	{
 		"hp": 2,
@@ -783,8 +787,23 @@ const _OTHER_TYPES := {
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": false,
 		"stops_animals": true,
+		"turns_into": PEN_GATE_OPEN,
 		"harvest_level": 1,
 		"atlas_row": _PEN_GATE_ROW,
+		"variants": 1,
+		"placeable_in": OUTDOORS,
+	},
+	PEN_GATE_OPEN:
+	{
+		"hp": 2,
+		"tool": &"axe",
+		"drops": {&"pen_gate": 1},
+		"connects": &"pen",
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": false,
+		"turns_into": PEN_GATE,
+		"harvest_level": 1,
+		"atlas_row": _PEN_GATE_OPEN_ROW,
 		"variants": 1,
 		"placeable_in": OUTDOORS,
 	},

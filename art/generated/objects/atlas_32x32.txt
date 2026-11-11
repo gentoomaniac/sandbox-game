@@ -58,3 +58,4 @@ feed_trough 4
 pen_fence 16
 pen_gate 16
 pig_shelter 1
+pen_gate_open 16

@@ -1,13 +1,15 @@
-"""The pig pen (task 165), drawn at 32 px per tile: the fence of split oak rails, its gate and the
-pigs' shelter.
+"""The pig pen (task 165), drawn at 32 px per tile: the fence of split oak rails, its gate shut and
+open, and the pigs' shelter.
 
 The fence and the gate are lines across the land like the wattle fence (boundaries.py): one
 picture per connection mask, the gate joining the fence on either side. The rails are split oak,
 weathered grey, on posts of the dark wet oak; between and under them the ground shows, so they
 are drawn as layers with gaps. The gate is newer, paler boards with a brace between two taller
-posts. The shelter is drawn once, standing, as the stations are, a lean-to of boards under reed
+posts; open, its leaf stands swung out towards the front. The shelter is drawn once, standing, as the stations are, a lean-to of boards under reed
 thatch, open to the front, with straw in it.
 """
+
+import math
 
 import items
 from boundaries import MASKS, TILE, along_line, draw_line, pixel_hash, ramp_shade, skeleton_distance
@@ -27,6 +29,8 @@ POSTS = ("soil_light", "soil_mid", "soil", "soil_dark")
 GATE_POST_HEIGHT = 28
 GATE_LEAF = (4, 27)
 GATE_BOARDS = ("sand_light", "sand", "mud", "mud_dark")
+# Open, the leaf stands swung out towards the front by this angle from the line.
+OPEN_ANGLE = math.radians(40)
 
 
 def _layers_of_heights(heights, material):
@@ -100,13 +104,27 @@ def _runs_north_south(mask):
     return not mask & 0b1010 and bool(mask & 0b0101)
 
 
-def _gate_layers(mask, x, y):
-    along, across = (y, x) if _runs_north_south(mask) else (x, y)
-    if not (0 <= along < TILE) or abs(across + 0.5 - TILE / 2) >= RAIL_REACH + 0.5:
-        return []
-    if along < POST_WIDTH or along >= TILE - POST_WIDTH:
-        return [(GATE_POST_HEIGHT, "post")]
-    return _layers_of_heights(_leaf_heights(along), "board")
+def _gate_layers(is_open):
+    def layers(mask, x, y):
+        along, across = (y, x) if _runs_north_south(mask) else (x, y)
+        if not (0 <= along < TILE):
+            return []
+        on_line = abs(across + 0.5 - TILE / 2) < RAIL_REACH + 0.5
+        if on_line and (along < POST_WIDTH or along >= TILE - POST_WIDTH):
+            return [(GATE_POST_HEIGHT, "post")]
+        if not is_open:
+            return _layers_of_heights(_leaf_heights(along), "board") if on_line else []
+        # Swung open: the leaf turns about its hinge by OPEN_ANGLE, towards the front (down, or
+        # right for a gate running north-south). A ground pixel is on it if it lies on the turned
+        # line; its heights are those of the leaf at its distance from the hinge.
+        dx, dy = along + 0.5 - (GATE_LEAF[0] - 0.5), across + 0.5 - TILE / 2
+        distance = dx * math.cos(OPEN_ANGLE) + dy * math.sin(OPEN_ANGLE)
+        off_line = -dx * math.sin(OPEN_ANGLE) + dy * math.cos(OPEN_ANGLE)
+        if abs(off_line) >= RAIL_REACH + 0.5 or distance < 0:
+            return []
+        return _layers_of_heights(_leaf_heights(GATE_LEAF[0] + round(distance)), "board")
+
+    return layers
 
 
 def _gate_colour(material, x, y, z, light, is_top):
@@ -121,13 +139,13 @@ def _gate_outline(material):
     return {"post": POSTS[-1], "board": GATE_BOARDS[-1]}[material]
 
 
-def pen_gate(mask):
-    return draw_line(mask, _gate_layers, _gate_colour, _gate_outline)
+def pen_gate(mask, is_open=False):
+    return draw_line(mask, _gate_layers(is_open), _gate_colour, _gate_outline)
 
 
-def pen_gate_row():
-    """The atlas row of the gate: one picture per connection mask."""
-    return [pen_gate(mask) for mask in MASKS]
+def pen_gate_row(is_open=False):
+    """The atlas row of the gate, shut or open: one picture per connection mask."""
+    return [pen_gate(mask, is_open) for mask in MASKS]
 
 
 # The shelter's reed thatch, lit to dark, its boards and the straw on its floor.

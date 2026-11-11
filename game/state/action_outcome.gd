@@ -22,6 +22,8 @@ const FILL_CAN := &"fill_can"
 const FEED := &"feed"
 ## The eggs taken out of a coop's nest: `object` is the nest and `items` the eggs.
 const COLLECT := &"collect"
+## A pen's gate opened or shut: `object` is the gate as it is now (open or shut).
+const GATE := &"gate"
 const MOW := &"mow"
 const DIG := &"dig"
 ## A hit that did not finish the object.

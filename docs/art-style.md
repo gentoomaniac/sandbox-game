@@ -360,7 +360,8 @@ along its foot.
   (task 165, `pen.py`): a fence of three split oak rails (weathered grey, `bare_light` to
   `mud_dark`, a grain in streaks along them) on posts of the dark wet oak every half tile, 24 px
   high, the ground showing between the rails (a line drawn as layers with gaps); its gate of paler
-  boards (`sand_light` to `mud_dark`) with a brace, between two taller posts; the shelter a lean-to
+  boards (`sand_light` to `mud_dark`) with a brace, between two taller posts, and open, its leaf
+  swung out towards the front; the shelter a lean-to
   two tiles wide of boards under reed thatch in courses with ragged reed ends (`sand`,
   `bare_light`, `bare`, `mud_dark`), open to the front, straw (`gold`, `straw`, `ochre`) on its
   dark floor. All at 16 px as well (`classic/pen.py`). The chicken coop (a building, 64x80 px

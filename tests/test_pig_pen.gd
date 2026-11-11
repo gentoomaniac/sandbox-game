@@ -1,7 +1,7 @@
 extends LivestockCase
 ## The pig pen keeps its pigs in (task 165): a ring of fence with its gate round the middle of the
 ## test pen, the pigs inside. They root about, look for what they need and are put somewhere new by
-## a skip only inside it.
+## a skip only inside it; an open gate lets them out.
 
 ## The fence runs round the tiles this many tiles from the middle; the gate is in its bottom side.
 const RING := 2
@@ -90,3 +90,12 @@ func test_a_skip_counts_the_meals_of_a_pig_at_the_troughs_of_its_pen() -> void:
 	_livestock.catch_up(_world, _state.clock, _state.player.position, SEED, 480)
 	assert_lt(pig.thirst, 0.5)
 	assert_lt(ObjectStock.units(water), 100)
+
+
+func test_an_open_gate_is_a_way_out() -> void:
+	var inside := ReachableTiles.within(_middle, 6.0, _world.is_walkable_for_animals)
+	assert_false(inside.has(_middle + GATE + Vector2i.DOWN))
+	var gate := _world.object_at(_middle + GATE)
+	_world.replace_object(gate, WorldObject.new(WorldObjectTypes.PEN_GATE_OPEN, gate.pos))
+	var out := ReachableTiles.within(_middle, 6.0, _world.is_walkable_for_animals)
+	assert_true(out.has(_middle + GATE + Vector2i.DOWN))

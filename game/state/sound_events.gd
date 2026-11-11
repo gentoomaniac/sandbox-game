@@ -58,7 +58,8 @@ static func action(kind: StringName) -> StringName:
 			return &"scythe_swish"
 		ActionOutcome.DIG:
 			return &"shovel_dig"
-		ActionOutcome.PLACE, ActionOutcome.BUILD:
+		# A gate opened or shut knocks like wood put down, until it has a sound of its own.
+		ActionOutcome.PLACE, ActionOutcome.BUILD, ActionOutcome.GATE:
 			return &"build_place"
 		ActionOutcome.TAKE_DOWN, ActionOutcome.DEMOLISH:
 			return &"axe_chop"
