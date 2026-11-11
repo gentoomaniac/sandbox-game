@@ -666,3 +666,36 @@ def sleep_z():
         ],
         set(),
     )
+
+
+def outlined_effect(rows, keys):
+    """A picture from a map of letters, with a clear margin of a pixel for its ink outline."""
+    width = len(rows[0]) + 2
+    canvas = [[None] * width] + [[None] + [keys.get(key) for key in row] + [None] for row in rows]
+    canvas.append([None] * width)
+    return outlined(canvas, set())
+
+
+def pet_heart():
+    """The heart over a petted animal (assets/effects/pet_heart.png): ember red with a petal
+    gleam."""
+    keys = {"r": "ember", "p": "petal", "d": "soil"}
+    return outlined_effect((".rr.rr.", "rpprrrd", "rrrrrrd", ".rrrrd.", "..rrd..", "...r..."), keys)
+
+
+def pet_annoyed():
+    """The anger mark over an animal petted in its sleep (assets/effects/pet_annoyed.png): four
+    thin black strokes bent towards the middle round an empty cross, with a stone-grey gleam."""
+    rows = (
+        "...c.c...",
+        "...c.c...",
+        "..cc.cc..",
+        "hcc...cch",
+        ".........",
+        "hcc...cch",
+        "..cc.cc..",
+        "...c.c...",
+        "...c.c...",
+    )
+    keys = {"c": "ink", "h": "stone"}
+    return [[keys.get(key) for key in row] for row in rows]

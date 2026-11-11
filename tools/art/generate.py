@@ -38,6 +38,8 @@ portraits.py).
 assets/character/held_<tool>.png: each tool in the hand, a layer in the same cells (see
 `HELD_TOOLS`).
 assets/effects/sleep_z.png: the "z" that rises from a sleeping figure.
+assets/effects/pet_heart.png and pet_annoyed.png: what rises over an animal that is petted, awake
+or asleep.
 
 assets/buildings/<type>.png: one picture per building type (drawn in buildings.py, the church and
 its bell frame in church.py) at the game's tile (not doubled), as wide as its footprint and as
@@ -322,6 +324,8 @@ def write_character():
     for tool, draw in character.HELD_TOOLS.items():
         save(character.character_sheet(draw, {}), f"character/held_{tool}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
     save_picture(character.sleep_z(), "effects/sleep_z.png")
+    save_picture(character.pet_heart(), "effects/pet_heart.png")
+    save_picture(character.pet_annoyed(), "effects/pet_annoyed.png")
 
 
 def write_interior():

@@ -501,6 +501,16 @@ not "generic RPG forest".
 - **Livestock:** red-brown cattle (Angler), black-and-white or red-pied marsh cattle,
   sheep on the dykes, geese, pigs, workhorses, hens. **White storks** on the roofs, lapwings,
   oystercatchers, geese flying over the marsh, seals on sandbanks.
+- **Petting** (task 173): what rises over a farm animal's head when the player pets it, in
+  `effects/` beside the sleeper's "z" (tools/art/character.py, classic/character.py). A small
+  **heart** (12 x 10 px at 32 px, 9 x 8 classic) in ember red with a petal-pink gleam at the top
+  left and the soil colour shading its lower right, for a petting while it is awake; and, for one
+  while it sleeps, the comic's **anger mark** (the user's pick, 2026-11-11, over a first swirl that
+  did not fit): four thin black strokes (`ink`, 2 px with the gleam), each bent round a corner towards
+  the middle, round an empty cross, with a stone-grey gleam along their outer edge (12 x 12 px,
+  9 x 9 classic). Black is its own outline, so the mark has none; the heart has the ink outline. No
+  more than the palette's colours; both drift up and fade in the game (`PetReaction`), so they are
+  one picture each.
 
 ## The pixel font
 

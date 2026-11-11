@@ -906,3 +906,51 @@ def sleep_z():
         "..........",
     )
     return outlined([[keys.get(key) for key in line] for line in rows], set())
+
+
+def outlined_effect(rows, keys):
+    """A picture from a map of letters, with a clear margin of a pixel for its ink outline."""
+    width = len(rows[0]) + 2
+    canvas = [[None] * width] + [[None] + [keys.get(key) for key in row] + [None] for row in rows]
+    canvas.append([None] * width)
+    return outlined(canvas, set())
+
+
+def pet_heart():
+    """The heart over an animal that was petted (assets/effects/pet_heart.png): ember red lit
+    from the top left with a petal-pink gleam, shaded dark red at the lower right."""
+    keys = {"r": "ember", "p": "petal", "d": "soil"}
+    rows = (
+        ".rrr..rrr.",
+        "rpprrrrrrd",
+        "rprrrrrrrd",
+        "rrrrrrrrrd",
+        ".rrrrrrrd.",
+        "..rrrrrd..",
+        "...rrrd...",
+        "....rd....",
+    )
+    return outlined_effect(rows, keys)
+
+
+def pet_annoyed():
+    """The anger mark over an animal that was petted while it slept (assets/effects/pet_annoyed.png),
+    as in a comic: four thin black strokes, each bent round a corner towards the middle, round
+    an empty cross, with a stone-grey gleam on their outer edge. Black is its own outline, so it
+    has none."""
+    rows = (
+        "....c..c....",
+        "...hc..ch...",
+        "...hc..ch...",
+        "..hcc..cch..",
+        "hcccc..cccch",
+        "............",
+        "............",
+        "hcccc..cccch",
+        "..hcc..cch..",
+        "...hc..ch...",
+        "...hc..ch...",
+        "....c..c....",
+    )
+    keys = {"c": "ink", "h": "stone"}
+    return [[keys.get(key) for key in row] for row in rows]

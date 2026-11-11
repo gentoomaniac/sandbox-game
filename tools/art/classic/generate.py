@@ -76,6 +76,8 @@ def write_character():
     held_hoe = character.character_sheet(character.draw_held_hoe, {})
     save(held_hoe, "character/held_hoe.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
     save_picture(character.sleep_z(), "effects/sleep_z.png")
+    save_picture(character.pet_heart(), "effects/pet_heart.png")
+    save_picture(character.pet_annoyed(), "effects/pet_annoyed.png")
 
 
 def write_bubbles():
