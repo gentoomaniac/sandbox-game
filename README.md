@@ -17,7 +17,7 @@ light change the world as you play.
 
 Footsteps follow the walk and the ground (grass, soil, sand, wetland, ice, snow, a wooden
 floor), and every tool, pickup, building and menu has a sound, played from where it
-happens. Inside a house the world outside is muffled. Settings → Audio has Master, Effects
+happens. Inside a house the weather and the world outside are muffled and faint. Settings → Audio has Master, Effects
 and Ambience volumes and "Sound in background" (off: silent while the window is not
 focused). What you do is heard when it worked; an action the game refuses only says "denied".
 Which file each sound plays is in [data/sounds.cfg](data/sounds.cfg), so any

@@ -22,6 +22,7 @@ const REQUIRED_KEYS := {
 		"gust_seconds",
 		"gust_fade_seconds",
 	],
+	"indoors": ["outside_db"],
 	"thunder": ["min_delay_seconds", "max_delay_seconds"],
 	"birds":
 	["chirp_chance", "radius_tiles", "tries", "season_factors", "phase_weights", "rain_limit"],
@@ -93,6 +94,8 @@ func problems() -> Array[String]:
 		bad.append("[loops] wind_full_speed must be above wind_calm_speed")
 	if value("loops", "wind_max_level") <= 0.0:
 		bad.append("[loops] wind_max_level must be above 0")
+	if value("indoors", "outside_db") > 0.0:
+		bad.append("[indoors] outside_db must not be above 0")
 	if value("frog_chorus", "full_frogs") <= 0.0:
 		bad.append("[frog_chorus] full_frogs must be above 0")
 	if value("bees", "hear_tiles") <= 0.0:

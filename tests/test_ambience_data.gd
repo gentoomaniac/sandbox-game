@@ -34,6 +34,10 @@ func test_a_wind_loop_that_is_never_audible_is_bad() -> void:
 	_assert_bad(_rules_with("loops", "wind_max_level", -0.5), "wind_max_level")
 
 
+func test_an_indoor_drop_that_makes_the_weather_louder_is_bad() -> void:
+	_assert_bad(_rules_with("indoors", "outside_db", 6.0), "outside_db")
+
+
 func test_bees_heard_nowhere_are_bad() -> void:
 	_assert_bad(_rules_with("bees", "hear_tiles", 0.0), "hear_tiles")
 

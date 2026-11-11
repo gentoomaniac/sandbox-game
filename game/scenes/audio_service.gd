@@ -7,7 +7,8 @@ extends Node
 ##
 ## Buses: Master with Effects, Ambience and UI under it; OutsideEffects sends to Effects. While
 ## the player is inside a building (`set_inside`) a low-pass filter fades in on Ambience and
-## OutsideEffects, which is where the sounds of the world outside go.
+## OutsideEffects, which is where the sounds of the world outside go, and they get quieter (the
+## drop is `outside_db` of data/ambience.cfg's [indoors]).
 ## Players come from two small pools; when all are busy the next in turn is cut off.
 ##
 ## Debug: `--sound-log` (see StartupOptions) prints each event as it plays.
@@ -41,6 +42,8 @@ var _rules := SoundRules.default_rules()
 var _rng := RandomNumberGenerator.new()
 var _muffle := Muffle.new()
 var _low_passes: Array[AudioEffectLowPassFilter] = []
+var _amplifiers: Array[AudioEffectAmplify] = []
+var _outside_db: float = AmbienceRules.default_rules().value("indoors", "outside_db")
 var _plain_players: Array[AudioStreamPlayer] = []
 var _world_players: Array[AudioStreamPlayer2D] = []
 var _world_root: Node = self
@@ -88,6 +91,8 @@ func _process(delta: float) -> void:
 	_muffle.step(delta)
 	for low_pass in _low_passes:
 		low_pass.cutoff_hz = _muffle.cutoff_hz()
+	for amplifier in _amplifiers:
+		amplifier.volume_db = _muffle.volume_db(_outside_db)
 
 
 func _notification(what: int) -> void:
@@ -186,7 +191,7 @@ func _update_silence() -> void:
 
 
 ## Makes the buses (unless they exist: another service made them) and puts a low-pass filter on
-## the two that are muffled.
+## and an amplifier (to turn the volume down) on the two that are muffled.
 func _set_up_buses() -> void:
 	for bus in [EFFECTS, AMBIENCE, UI, OUTSIDE_EFFECTS]:
 		if AudioServer.get_bus_index(bus) != -1:
@@ -197,6 +202,12 @@ func _set_up_buses() -> void:
 		AudioServer.set_bus_send(index, EFFECTS if bus == OUTSIDE_EFFECTS else MASTER)
 		if bus == AMBIENCE or bus == OUTSIDE_EFFECTS:
 			AudioServer.add_bus_effect(index, AudioEffectLowPassFilter.new())
+			AudioServer.add_bus_effect(index, AudioEffectAmplify.new())
 	for bus in [AMBIENCE, OUTSIDE_EFFECTS]:
-		var effect := AudioServer.get_bus_effect(AudioServer.get_bus_index(bus), 0)
-		_low_passes.append(effect as AudioEffectLowPassFilter)
+		var index := AudioServer.get_bus_index(bus)
+		for effect_index in AudioServer.get_bus_effect_count(index):
+			var effect := AudioServer.get_bus_effect(index, effect_index)
+			if effect is AudioEffectLowPassFilter:
+				_low_passes.append(effect as AudioEffectLowPassFilter)
+			elif effect is AudioEffectAmplify:
+				_amplifiers.append(effect as AudioEffectAmplify)

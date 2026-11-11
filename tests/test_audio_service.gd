@@ -116,6 +116,24 @@ func test_the_outside_effects_bus_is_muffled_with_the_ambience() -> void:
 	assert_almost_eq(low_pass.cutoff_hz, Muffle.MUFFLED_CUTOFF_HZ, 1.0)
 
 
+func test_the_weather_and_the_outside_effects_are_faint_indoors_and_fade_in_and_out() -> void:
+	var faint_db: float = AmbienceRules.default_rules().value("indoors", "outside_db")
+	assert_lt(faint_db, -12.0, "much quieter, not only duller")
+	for bus in [AudioService.AMBIENCE, AudioService.OUTSIDE_EFFECTS]:
+		var amplifier: AudioEffectAmplify = AudioServer.get_bus_effect(_bus(bus), 1)
+		_service.set_inside(false)
+		simulate(_service, 2, Muffle.FADE_SECONDS)
+		assert_eq(amplifier.volume_db, 0.0, "%s in the open" % bus)
+		_service.set_inside(true)
+		simulate(_service, 1, Muffle.FADE_SECONDS / 2.0)
+		assert_almost_eq(amplifier.volume_db, faint_db / 2.0, 0.5, "%s half way" % bus)
+		simulate(_service, 2, Muffle.FADE_SECONDS)
+		assert_almost_eq(amplifier.volume_db, faint_db, 0.01, "%s inside" % bus)
+		_service.set_inside(false)
+		simulate(_service, 2, Muffle.FADE_SECONDS)
+		assert_eq(amplifier.volume_db, 0.0, "%s out again" % bus)
+
+
 func test_the_volume_settings_set_the_buses() -> void:
 	var settings := GameSettings.new(SETTINGS_PATH)
 	settings.set_volume(&"master", 50)

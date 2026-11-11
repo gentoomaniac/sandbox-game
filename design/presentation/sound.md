@@ -9,7 +9,11 @@ Decided 2026-11-05. Everything makes sound; no background music for now.
   without touching code. The loops carry their loop points in the WAV file (a "smpl"
   chunk), which Godot's importer reads, so they loop without any setting in the game.
 - **World sounds come from where they happen** (positional), on an Effects or Ambience
-  bus. Inside a house the weather and the world outside are muffled.
+  bus. Inside a house the weather and the world outside are muffled and faint (task 172,
+  2026-11-11): the low-pass fades in, and the Ambience and OutsideEffects buses are turned down by
+  `outside_db` (`[indoors]` of `data/ambience.cfg`, -24 dB: rain on the roof and wind only just
+  heard), both over the same 0.4 s (`Muffle`). The effects of the player and of the room stay as
+  loud.
 - **Footsteps** follow the walk animation and the ground: grass, soil, sand or floodplain,
   wetland (squelch), ice, snow (crunch), wooden floor.
 - **Work:** axe chop, a tree's crack and thud when it falls, pickaxe on stone, stone
