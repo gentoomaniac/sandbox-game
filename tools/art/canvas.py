@@ -37,6 +37,21 @@ def copy(picture):
     return [row[:] for row in picture]
 
 
+def centred_on_tile(picture, tile):
+    """A picture of something on a tile, which is the picture's bottom `tile` rows, moved up or
+    down so that what is drawn sits in the middle of the tile: as far below the tile's top as
+    above its bottom. What reaches above the tile stays where it is, standing on the tile."""
+    tile_top = len(picture) - tile
+    drawn = [y for y, row in enumerate(picture) if any(colour is not None for colour in row)]
+    if not drawn or drawn[0] < tile_top:
+        return picture
+    lift = (drawn[0] - tile_top - (len(picture) - 1 - drawn[-1])) // 2
+    width = len(picture[0])
+    if lift >= 0:
+        return picture[lift:] + blank(width, lift)
+    return blank(width, -lift) + picture[:lift]
+
+
 def rect(picture, x0, y0, x1, y1, colour):
     """Fills x0..x1 and y0..y1, both ends included, clipped to the picture."""
     for y in range(max(0, y0), min(len(picture) - 1, y1) + 1):

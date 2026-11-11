@@ -22,6 +22,9 @@
   - **Seed sacks tell their crop at a glance** (task 52): each sack is tied with a string
     of the crop's colour, has the crop painted large on its front and a few of its seeds
     spilled in front.
+  - **Seeds and crops sit in the middle of their tile** (the user, 2026-11-11, task 174): the
+    sown seeds, the sprouts and the low crops are centred on it; the grown tall crops stand on
+    its lower part, so they rise from their own tile.
   - **Crops need light, water and warmth to grow**, with the needs per crop in the
     config: a temperature range (minimum, best, maximum), the sunlight they need per
     day, the soil moisture they need, and how much wind they stand. Every game hour a

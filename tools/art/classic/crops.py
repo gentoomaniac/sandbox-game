@@ -11,7 +11,7 @@ have no outline: the dark shades inside them separate them from the soil.
 """
 
 import items
-from canvas import TILE
+from canvas import TILE, centred_on_tile
 
 STAGES = 4
 
@@ -475,10 +475,12 @@ ARTISTS = {
 
 
 def sheet_rows(crop):
-    """The picture of a crop's sheet as a row of cells: four stages and the dead one."""
+    """The picture of a crop's sheet as a row of cells: four stages and the dead one, each centred
+    on its tile (task 174)."""
     stages, dead_from = ARTISTS[crop]()
     assert len(stages) == STAGES, f"{crop}: {len(stages)} stages"
-    return [stage.rows for stage in stages] + [stages[dead_from].recoloured(DEAD_COLOURS).rows]
+    cells = [stage.rows for stage in stages] + [stages[dead_from].recoloured(DEAD_COLOURS).rows]
+    return [centred_on_tile(cell, TILE) for cell in cells]
 
 
 def sheets():

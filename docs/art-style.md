@@ -178,8 +178,10 @@ The crops (task 109) bend like the grass (`CROP_SWAY`), so more than the trees.
 
 The crops (task 109: tools/art/crops.py) are drawn at 32 px after the field of the mockup: a
 cell a tile wide, two tiles tall for the tall crops (wheat, rye, buckwheat, peas, beans, flax),
-the plants' feet 4 px above the cell's bottom, on the lowest ridge of the tilled soil, on a
-shadow of dark earth. Leaves, heads, roots and fruit are rounded forms shaded from the top left
+the plants on a shadow of dark earth. Every stage sits in the middle of its tile (task 174,
+`canvas.centred_on_tile`, in the classic art too): the sown seeds, the sprouts and the low crops
+are centred on it; a stage that reaches above its tile, as the grown tall crops do, stands on the
+tile's lower part, its feet 4 px above the tile's bottom, so it rises from its own tile. Leaves, heads, roots and fruit are rounded forms shaded from the top left
 (forms.py) and rimmed in the darkest shade of their own colours (`crops.RIMS`), never ink;
 stalks, awns, flowers, tendrils and pods, too thin for a rim, are drawn over them in their
 light shades. The sown stage is a mound of dark earth (`crops.MOUND_SOIL`) with cream seeds on it,

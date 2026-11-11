@@ -1,5 +1,5 @@
-"""Tests of the tilled soil's art (`make test` runs them): flat, straight furrows, no seams, and the
-moisture steps."""
+"""Tests of the tilled soil's art (`make test` runs them): flat, straight furrows, no seams, the
+moisture steps, and the crops in the middle of their tiles."""
 
 import unittest
 from collections import Counter
@@ -154,6 +154,26 @@ class SownSoilTest(unittest.TestCase):
         body, _ = colours.most_common(1)[0]
         self.assertIn(body, ("soil", "soil_dark"))
         self.assertGreaterEqual(colours["cream"], 3)
+
+
+class CropsOnTheirTileTest(unittest.TestCase):
+    @staticmethod
+    def drawn_rows_in_tile(cell):
+        """The first and the last drawn row of a crop's cell, counted from the top of its tile."""
+        tile_top = len(cell) - GAME_TILE
+        drawn = [y - tile_top for y, row in enumerate(cell) if any(row)]
+        return drawn[0], drawn[-1]
+
+    def test_every_stage_that_fits_its_tile_sits_in_its_middle(self):
+        for crop in crops.ARTISTS:
+            for stage, cell in enumerate(crops.sheet_rows(crop)):
+                top, bottom = self.drawn_rows_in_tile(cell)
+                if top >= 0:
+                    self.assertLessEqual(abs(top - (GAME_TILE - 1 - bottom)), 1, (crop, stage))
+
+    def test_a_stage_that_reaches_above_its_tile_stands_on_its_lower_part(self):
+        _, bottom = self.drawn_rows_in_tile(crops.sheet_rows("wheat")[3])
+        self.assertGreater(bottom, GAME_TILE * 3 // 4)
 
 
 if __name__ == "__main__":

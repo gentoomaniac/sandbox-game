@@ -5,24 +5,25 @@ stages and then the dead one side by side. Every cell is a tile wide and as tall
 a tall crop (wheat, rye, buckwheat, peas, beans, flax) has a sheet two tiles tall, with its bottom on the bottom
 of its tile. A crop looks the same in every season, so the seasons never touch these.
 
-The plants stand on the lowest ridge of the tilled soil (terrain.py draws a crest every 8 rows,
-the lowest at row 24 of a tile), their feet `FOOT` rows above the cell's bottom, on a shadow of
-dark earth. Leaves, heads, roots and fruit are rounded forms lit from the top left (forms.py),
-rimmed in the darkest shade of their own colours, never in ink: the dark soil around them sets
-them off. Stalks, awns, flowers and tendrils are drawn over them without a rim.
+The plants are drawn with their feet `FOOT` rows above the cell's bottom, on a shadow of dark
+earth; then each stage is moved to sit in the middle of its tile (`canvas.centred_on_tile`), so
+the sown seeds, the sprouts and the low crops are centred on it, and a stage that reaches above
+the tile, as the grown tall crops do, still stands on the tile's lower part. Leaves, heads, roots
+and fruit are rounded forms lit from the top left (forms.py), rimmed in the darkest shade of their
+own colours, never in ink: the dark soil around them sets them off. Stalks, awns, flowers and tendrils are drawn over them without a rim.
 """
 
 import math
 
 import forms
-from canvas import GAME_TILE, blank
+from canvas import GAME_TILE, blank, centred_on_tile
 
 STAGES = 4
 WIDTH = GAME_TILE
 SHORT = GAME_TILE
 TALL = 2 * GAME_TILE
 CENTRE = WIDTH / 2
-# How far above a cell's bottom the plants stand: on the slope of the tile's lowest ridge.
+# How far above a cell's bottom the plants are drawn standing, before their stage is centred.
 FOOT = 4
 
 # Ramps, dark to light, as forms.shade takes them.
@@ -774,12 +775,13 @@ def dead(picture):
 
 
 def sheet_rows(crop):
-    """The picture of a crop's sheet as a row of cells: four stages and the dead one."""
+    """The picture of a crop's sheet as a row of cells: four stages and the dead one, each centred
+    on its tile (task 174)."""
     stages, dead_from = ARTISTS[crop]()
     assert len(stages) == STAGES, f"{crop}: {len(stages)} stages"
     assert all(len(stage) == len(stages[0]) and len(stage[0]) == WIDTH for stage in stages), crop
     withered = stages[dead_from] if isinstance(dead_from, int) else dead_from
-    return stages + [dead(withered)]
+    return [centred_on_tile(cell, GAME_TILE) for cell in stages + [dead(withered)]]
 
 
 def sheets():
