@@ -135,25 +135,6 @@ come earlier.
 - Not saved, not remembered. Bubbles drawn in palette colours, readable at every zoom; a
   screenshot in the README.
 
-## 167. Watered soil fades out at its edge to dry soil
-
-- [ ] Done
-
-The user, 2026-11-10: "watered tiles have sharp edges towards other tilled tiles. the watering
-needs some fading out unless the neighbouring tile is also watered". Today SoilWetness
-(game/scenes/soil_wetness.gd, atlas from tools/art/soil_beds.py) lays a darker brown over each
-moister tile on the plain tile grid, cut only by the bed's outline, so a wet tile beside a
-drier tilled tile meets it in a hard straight line.
-- Where a tile is wetter than its tilled neighbour, its darker brown fades out over a few pixels
-  towards that side (a dithered or stepped edge in palette browns, in the style of
-  docs/art-style.md); where the neighbour is as wet, there is no edge, as today. Corners too.
-  The bed's outer rim stays as it is.
-- Both arts (32 px and classic). The atlas will need the neighbours' wetness, not only which
-  tiles are tilled: keep its size sensible (e.g. a fade overlay per side and corner drawn on top
-  of the step, instead of every combination).
-- Performance: redrawing after an hour stays within REFRESH_BUDGET_USEC.
-- Tests for which edges fade; before/after crops at 1x and 4x and a README picture.
-
 ## 170. Music: the game plays the modules (after 169's decision)
 
 - [ ] Done

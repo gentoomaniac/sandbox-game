@@ -4563,3 +4563,29 @@ may change them; see design/farming/livestock.md, "Pigs" and "The pig pen"):
 Left open: the pigs do not go into their shelter (they sleep where they are); a pen is not a thing
 of its own (no owner, no count of its pigs); a ridden horse goes through a shut gate; rooting does
 not wear the ground.
+
+## 167. Watered soil fades out at its edge to dry soil
+
+- [x] Done
+
+The user, 2026-11-10: "watered tiles have sharp edges towards other tilled tiles. the watering
+needs some fading out unless the neighbouring tile is also watered". Today SoilWetness
+(game/scenes/soil_wetness.gd, atlas from tools/art/soil_beds.py) lays a darker brown over each
+moister tile on the plain tile grid, cut only by the bed's outline, so a wet tile beside a
+drier tilled tile meets it in a hard straight line.
+- Where a tile is wetter than its tilled neighbour, its darker brown fades out over a few pixels
+  towards that side (a dithered or stepped edge in palette browns, in the style of
+  docs/art-style.md); where the neighbour is as wet, there is no edge, as today. Corners too.
+  The bed's outer rim stays as it is.
+- Both arts (32 px and classic). The atlas will need the neighbours' wetness, not only which
+  tiles are tilled: keep its size sensible (e.g. a fade overlay per side and corner drawn on top
+  of the step, instead of every combination).
+- Performance: redrawing after an hour stays within REFRESH_BUDGET_USEC.
+- Tests for which edges fade; before/after crops at 1x and 4x and a README picture.
+
+Done 2026-11-11: a wetter tile's brown runs on into its drier tilled neighbour and fades out there
+(6 px at 32 px, 4 px in the classic art, a 4x4 ordered dither through the steps in between), from
+a fade atlas assets/soil_fade.png (40 columns: 4 sides x 9 end cuts and 4 corners; 6 step-pair
+rows) on 8 TileMapLayers of SoilWetness; equal wetness and snow give no edge. The hourly refresh
+does about 5x the work of before, spread over frames within REFRESH_BUDGET_USEC.
+
