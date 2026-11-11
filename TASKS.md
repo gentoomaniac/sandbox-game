@@ -156,7 +156,7 @@ entry state, tempo, meter, loop points and allowed exits.
 After task 170. A music director (a scene service) loops a section, plays a fill now and then
 and returns on the bar, switches between two loops (later by time of day, season, weather,
 indoors) with a minimum time before switching again. A "music" bus with its own slider in
-Settings (and off), muted in test runs. Rules in data/music.cfg; tests; README.
+Settings (and off), muted in test runs (comes with task 184). Rules in data/music.cfg; tests; README.
 - Indoors (from task 172, which leaves the music to this task): inside a building the director
   switches to an indoor piece or a quieter mix of the current one (the weather is faint there
   and a hearth crackles, task 172), crossfading as the player passes the door.
@@ -418,6 +418,25 @@ around however they like."
 - Only the sky flock; the greylag geese and dunlin on the ground keep their own rules (say if
   they should follow too).
 - Numbers in data/wildlife.cfg. Tests for the heading by season and none in winter.
+
+## 184. Console: /play and /stop the music, and a music volume in the audio settings
+
+- [ ] Done
+
+The user, 2026-11-11: "add a command /play <trackname> to play the background music. add /stop to
+stop it. add settings in the audio settings about volume."
+- A first, small way to hear the music in the game before the music director (tasks 170 and 171):
+  the console's `play <track>` renders a piece (art/generated/music/*.mod: today sketch_tide,
+  sketch_harbour, test_reel; the names without the prefix may do) with the ModuleRenderer on the
+  worker thread pool (game/audio/, task 169) and loops it; `stop` fades it out. An unknown name
+  lists the tracks. Playing another track while one plays crossfades or stops the old one
+  (MusicCrossfade exists: use it if simple).
+- A "music" audio bus and a Music volume slider in the audio settings (game/scenes/audio_page.gd),
+  saved with the other settings, with mute at 0; test runs stay muted. This takes over task 171's
+  "a music bus with its own slider in Settings" (note it there).
+- No automatic music yet: nothing plays unless the console says so.
+- Tests for the commands (known, unknown, stop), the bus and the slider's setting; README and
+  design/presentation/console.md lines.
 
 ## Later (not part of the prototype)
 
