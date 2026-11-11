@@ -5103,3 +5103,31 @@ the user's word the same day (they don't depend on each other).
   shows the HUD.
 
 Done: 2026-11-11. VitalsHud is anchored to the top right (4 px in, growing leftwards); `BOTTOM` follows `BAR_COUNT`, and the F3 coordinates readout starts under the bars. The clock and notifications stay top left. Only docs/screenshots/build.png was re-taken; about 30 hand-made README composites still show the bars beside the hotbar (no recipe exists for them).
+
+## 206. Tool designs: rusty iron tools redrawn from scratch, and four better grades (design only)
+
+- [x] Done
+
+The user, 2026-11-11: "We need better tools. Redesign the tools to be rusty ones, let the agent
+design them from scratch. The current ones still look distorted. Then design 4 more quality
+levels. The current ones will be 'rusty iron <tool>', then we'll have 'iron', 'brittle steel',
+'steel' and 'sharp steel'. Only do the designs and give them to me for approval. Make sure the
+tools don't look distorted or in any other way deformed." Run by a worker on Fable with the
+pixel-artist instructions (.claude/agents/pixel-artist.md), at the user's request.
+- The tools: hoe, axe, pickaxe, watering can, scythe, shovel, hammer (game/state/item_types.gd;
+  check for others). Today's art comes from the generator (tools/art: items.py and the held-tool
+  code) and looks distorted.
+- Design every tool from scratch, not by patching the old drawing: clean, straight, true shapes,
+  no warping, skew, broken lines or squashed parts; each sprite in every view it has today (the
+  inventory icon and the held/in-hand frames, in both art sets, 32 px new and 16 px classic).
+- Five grades of each tool, told apart at a glance by the metal (and the handle where it helps),
+  same silhouette per tool: rusty iron (today's tools: rust-brown, pitted, dull), iron (plain grey
+  iron), brittle steel (lighter, cold bluish, a hint of a crack or a rough edge), steel (bright,
+  clean), sharp steel (bright with a keen highlight on the edge). Wooden handles may age too.
+- Design only: render contact sheets (all tools by grade, at 1x and an enlarged view, both arts,
+  icon and held) into the scratchpad for the user's approval. Changes to the generator code are
+  fine on the worker's branch so the sheets come from the generator, but nothing is merged, no
+  items or game code are added, and the current art stays until the user approves.
+- Task 207 then makes them items.
+
+Done: 2026-11-11, approved by the user on the third try (worker on Fable at the user's request). The old tools looked distorted because handles were rasterised at 51 degrees, heads were curves at odd angles with dome shading, and outline colours changed along the shape. All seven tools are now hand-drawn letter maps with each head square to its handle in the handle's 45-degree view (the can upright, mirrored), in five grades told apart by the metal: rusty iron (rust pits, dull handle), iron, brittle steel (cold blue, a hairline crack), steel, sharp steel (near white, a keen edge); the pick's arms bend gently. The can is of the grade's metal, the spade all iron. The generator code is on branch `tools-206-designs`, not merged: task 207 builds on it. The user chose the Roman numeral to be drawn by the inventory UI.
