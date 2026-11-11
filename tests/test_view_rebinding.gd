@@ -36,17 +36,17 @@ func test_the_world_view_refuses_another_world_and_stays_on_the_first() -> void:
 	assert_eq(_connections_to(first.tile_changed, view), 1)
 
 
-func test_the_ground_item_view_refuses_another_world_and_connects_once() -> void:
+func test_the_ground_item_view_lets_go_of_the_old_map_and_connects_once() -> void:
 	var view: GroundItemView = add_child_autofree(GroundItemView.new())
 	var entities: Node2D = add_child_autofree(Node2D.new())
 	var first := World.new(1)
-	var second := World.new(2)
+	var second := Interior.new()
 	view.show_items(first, entities)
 	view.show_items(first, entities)
 	assert_eq(_connections_to(first.ground_items.added, view), 1)
 	view.show_items(second, entities)
-	assert_push_error_count(1)
-	assert_eq(_connections_to(second.ground_items.added, view), 0)
+	assert_eq(_connections_to(first.ground_items.added, view), 0)
+	assert_eq(_connections_to(second.ground_items.added, view), 1)
 
 
 func test_the_hotbar_lets_go_of_the_old_inventory() -> void:

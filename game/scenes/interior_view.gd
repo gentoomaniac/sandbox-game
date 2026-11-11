@@ -4,7 +4,8 @@ extends Node2D
 ## the furniture as sprites in the y-sorted `entities` node, where the player stands among
 ## them. Beds lie on the floor, below the player; one the player lies in has its cover (the
 ## blanket) drawn over them (see `cover_bed`). Furniture that shines (the hearth) gets an
-## ObjectLight, and its fire burns (see AmbientMotion).
+## ObjectLight, and its fire burns (see AmbientMotion). The items lying on the floor stand among
+## the furniture, drawn by a GroundItemView.
 ##
 ## The room is walled in by its WALL tiles: along the top a back wall face of BACK_WALL_ROWS
 ## tiles, on the other sides thin tops of walls, 8 px wide, drawn on the half of the wall
@@ -44,6 +45,7 @@ const BACKDROP_RADIUS := 1000.0
 var entities := Node2D.new()
 ## The beds, which are under everything that stands in the room.
 var _beds := Node2D.new()
+var _floor_items := GroundItemView.new()
 var _ground := TileMapLayer.new()
 var _atlas := TileSetAtlasSource.new()
 ## The interior shown, to show it anew in the other art set.
@@ -72,6 +74,7 @@ func _ready() -> void:
 	entities.name = "Entities"
 	entities.y_sort_enabled = true
 	add_child(entities)
+	add_child(_floor_items)
 
 
 ## Shows the room in the chosen art set (see ArtSet): both sets have the same tiles.
@@ -91,6 +94,9 @@ func show_interior(interior: Interior) -> void:
 		_interior = interior
 		_interior.objects_changed.connect(_on_room_changed)
 		_interior.tile_changed.connect(_on_room_changed)
+	_floor_items.show_items(interior, entities)
+	# A room is smaller than a chunk: one focus anywhere in it shows every pile.
+	_floor_items.set_focus(Vector2i.ZERO)
 	_draw_room()
 
 

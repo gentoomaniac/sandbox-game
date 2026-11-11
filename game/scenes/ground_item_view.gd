@@ -1,7 +1,8 @@
 class_name GroundItemView
 extends Node
-## Draws the items lying on the ground of a World: a small picture each on a contact shadow,
-## standing among the world's objects (see WorldView `entities`) so it sorts with them.
+## Draws the items lying on the ground of a map, the world or a room: a small picture each on a
+## contact shadow, standing among the map's objects (see WorldView `entities`) so it sorts with
+## them.
 ## Positions are rounded to whole art pixels, so the sprites stay put on the world as the camera
 ## moves. Piles a harvest drops hop out of their source (see ItemHop); the state has them where
 ## they land at once, so a pile that is pulled towards the player or collected during its hop
@@ -23,7 +24,7 @@ const STAGGER_SECONDS := 0.05
 const NEAR_CHUNKS := ChunkResidency.LOAD_RADIUS
 const KEPT_CHUNKS := NEAR_CHUNKS + 1
 
-var _world: World
+var _map: GameMap
 var _entities: Node2D
 var _focus_chunk: Vector2i
 var _has_focus := false
@@ -31,24 +32,28 @@ var _sprites: Dictionary[GroundItem, Sprite2D] = {}
 var _hops: Dictionary[GroundItem, ItemHop] = {}
 
 
-## Shows the items of the world as the focus gets near them (see `set_focus`). Showing the world
-## it shows again does nothing; another world is refused, as the sprites and hops of the first
-## would stay: make a new view.
-func show_items(world: World, entities: Node2D) -> void:
-	if _world == world:
+## Shows the items of a map as the focus gets near them (see `set_focus`). Showing the map it
+## shows again does nothing; another map lets go of the old one, with its sprites and hops, and
+## waits for a focus again.
+func show_items(map: GameMap, entities: Node2D) -> void:
+	if _map == map:
 		return
-	if _world != null:
-		push_error("GroundItemView already shows the items of another world")
-		return
-	_world = world
+	if _map != null:
+		_map.ground_items.added.disconnect(_show_new_pile)
+		_map.ground_items.removed.disconnect(_remove_sprite)
+		_map.ground_items.dropped.disconnect(_start_hops)
+		for ground_item in _sprites.keys():
+			_remove_sprite(ground_item)
+		_has_focus = false
+	_map = map
 	_entities = entities
 	add_to_group(ArtSet.VIEWS)
-	world.ground_items.added.connect(_show_new_pile)
-	world.ground_items.removed.connect(_remove_sprite)
-	world.ground_items.dropped.connect(_start_hops)
+	map.ground_items.added.connect(_show_new_pile)
+	map.ground_items.removed.connect(_remove_sprite)
+	map.ground_items.dropped.connect(_start_hops)
 
 
-## Follows the world tile the player is at: piles that are near it appear where they lie (not
+## Follows the tile of the map the player is at: piles that are near it appear where they lie (not
 ## dropped, so without a hop), piles that are far lose their sprite.
 func set_focus(world_pos: Vector2i) -> void:
 	var chunk := Chunk.world_to_chunk(world_pos)
@@ -59,7 +64,7 @@ func set_focus(world_pos: Vector2i) -> void:
 	for ground_item in _sprites.keys():
 		if _chunks_from_focus(ground_item) > KEPT_CHUNKS:
 			_remove_sprite(ground_item)
-	for ground_item in _world.ground_items.in_chunks_around(chunk, NEAR_CHUNKS):
+	for ground_item in _map.ground_items.in_chunks_around(chunk, NEAR_CHUNKS):
 		if not _sprites.has(ground_item):
 			_add_sprite(ground_item)
 

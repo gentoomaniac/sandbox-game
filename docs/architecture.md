@@ -120,7 +120,8 @@ Warft and an Ewer here and there.
   Every change goes through World, and it emits signals that the views follow.
 - **WorldView** (`game/scenes/world_view.gd`) draws a `World` into a SubViewport at one art
   pixel per screen pixel; `CameraController` shows that viewport on the window, so the world
-  scrolls smoothly. `InteriorView` draws an `Interior` in its place while the player is inside.
+  scrolls smoothly. `InteriorView` draws an `Interior` in its place while the player is inside,
+  with a `GroundItemView` for the piles on its floor.
   Which chunks are loaded is not its business: a `ChunkResidency` (`game/world/chunk_residency.gd`,
   made by Main, no nodes) follows the player's tile, plans with `ChunkStreaming`, generates the
   nearest missing chunk and drops the far ones, and tells by `chunk_loaded` and `chunk_unloaded`.
