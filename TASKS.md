@@ -400,6 +400,25 @@ some carried off by the wind."
 - Tests for the rate by season and wind, the cap, and the drift direction; a short clip or a few
   frames for the user.
 
+## 183. Flocks of birds migrate: south in autumn, north in spring, gone in winter
+
+- [ ] Done
+
+The user, 2026-11-11: "flocks of birds in autumn should move from north to south only, migrating.
+in spring the other way round, in winter they should not be there at all. in summer they just roam
+around however they like."
+- The sky flock (data/wildlife.cfg [flock], game/scenes/wildlife/flock.gd) crosses the sky now and
+  then; its `season_factors` are [1.0, 1.0, 0.8, 0.3] (winter still 0.3) and its heading is not
+  tied to the season.
+- Autumn: flocks fly north to south only (a heading within a small spread around due south, maybe
+  in V or skein shape if the art has it), a bit more often in the migration weeks. Spring: south
+  to north. Winter: no sky flocks at all (season factor 0). Summer: as today, any heading,
+  wandering. Check the season boundaries the game uses (and whether early/late season shares
+  exist) so the change is smooth.
+- Only the sky flock; the greylag geese and dunlin on the ground keep their own rules (say if
+  they should follow too).
+- Numbers in data/wildlife.cfg. Tests for the heading by season and none in winter.
+
 ## Later (not part of the prototype)
 
 - **Villagers go inside** (the user, 2026-11-11): villagers enter their houses (and the church,
