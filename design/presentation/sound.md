@@ -49,6 +49,13 @@ Decided 2026-11-05. Everything makes sound; no background music for now.
   built or taken out is heard or gone within a second. The loop fades in and out over
   `fire_fade_seconds` as the player enters and leaves, and is stopped on leaving. No music
   indoors yet: see task 171.
+- **The bell:** `bell_ring` (task 180, `tools/audio/bell.py`), one strike of a bronze church bell,
+  11 seconds long. It is built the way a cast bell sounds: the hum an octave under the strike note,
+  the strike note (about G4), the minor third that gives a church bell its dark colour, the fifth,
+  the octave and a few higher partials, none of them whole multiples of the strike note, each
+  as two pitches a hair apart that beat slowly. The low partials die away over many seconds and the
+  high ones in a second or two, so a bright clang turns into a dark hum. A short knock of the
+  clapper starts it. On the Effects bus, as a sound of the world outside.
 - **Animals:** birds sometimes chirp where they are; frogs croak near rivers and ponds in
   spring and summer, mostly in the evening and at night and when it is warm, louder the
   closer the player is; deer snort now and then and their hooves sound when they bound

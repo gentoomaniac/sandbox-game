@@ -3,11 +3,11 @@
 Each sound event (see EVENTS; the names are also the keys of data/sounds.cfg) is written as
 a few variants, art/generated/sounds/<event>_<n>.wav with n from 1: mono, 16 bit, 44.1 kHz.
 
-- The sounds are made in footsteps.py, work.py, ui.py, weather.py, fire.py and animals.py, from the
-  building blocks in dsp.py. Each variant is a function that takes a random generator and
-  returns samples. An event lists its variant functions, so most repeat one function (the
-  generator makes each a little different in pitch, timing and noise) and some mix kinds,
-  e.g. thunder_1 and thunder_2 are near, thunder_3 and thunder_4 far.
+- The sounds are made in footsteps.py, work.py, ui.py, weather.py, fire.py, bell.py and
+  animals.py, from the building blocks in dsp.py. Each variant is a function that takes a random
+  generator and returns samples. An event lists its variant functions, so most repeat one
+  function (the generator makes each a little different in pitch, timing and noise) and some
+  mix kinds, e.g. thunder_1 and thunder_2 are near, thunder_3 and thunder_4 far.
 - Every variant draws from its own generator, seeded by its event name and number, so
   changing one sound leaves all the others byte for byte the same.
 - An event's level is the peak of its loudest variant, in dBFS; the variants keep their
@@ -36,6 +36,7 @@ from pathlib import Path
 import numpy as np
 
 import animals
+import bell
 import fire
 import footsteps
 import ui
@@ -79,6 +80,8 @@ EVENTS = {
     "thunder": (-3, [weather.thunder_near] * 2 + [weather.thunder_far] * 2),
     # The main sound of a room with a fire: crackle only, the pops no louder than a log's.
     "fire_crackle_loop": (-8, [fire.fire_crackle_loop] * 2),
+    # Heard across the marsh, so loud, and long: the low partials hum for ten seconds.
+    "bell_ring": (-9, [bell.bell_strike] * 2),
     "bird_chirp": (-12, [animals.bird_rising, animals.bird_trill, animals.bird_whistle]),
     "frog_croak": (-10, [animals.frog_common, animals.frog_bull, animals.frog_tree]),
     # Under the single croaks, and quiet: it plays on and on through spring and summer evenings.

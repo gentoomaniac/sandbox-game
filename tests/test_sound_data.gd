@@ -117,3 +117,10 @@ func test_the_chosen_pitch_is_within_the_range() -> void:
 func test_an_equal_pitch_range_plays_unchanged() -> void:
 	var rules := SoundRules.default_rules()
 	assert_eq(rules.pick_pitch(&"rain_loop", _rng), 1.0)
+
+
+func test_the_bell_rings_for_many_seconds_and_does_not_loop() -> void:
+	for path: String in SoundRules.default_rules().event(&"bell_ring")["files"]:
+		var stream: AudioStreamWAV = load(path)
+		assert_gt(stream.get_length(), 8.0, path)
+		assert_eq(stream.loop_mode, AudioStreamWAV.LOOP_DISABLED, path)
