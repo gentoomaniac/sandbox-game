@@ -233,7 +233,8 @@ value decreases by 5 a day if not petted. When you pet animals while they are sl
 counter decreases by 5 and you see a little swirl above their head. We'll use that value later
 for game mechanics." Run after task 172, before the gossip tasks.
 - Petting: the use key with an empty hand on an animal (it must not clash with feeding, the gate
-  or riding). Each animal keeps a friendship value, 0 to 100.
+  or riding). Each animal keeps a friendship value, 0 to 100. The user, 2026-11-11: the value
+  can never go lower than 0 (no loss, sleeping or daily, takes it below 0).
 - Awake: the first petting of the day adds 10 (capped at 100) and shows a small heart above the
   animal's head; more pettings that day do nothing and show nothing.
 - Asleep: petting takes 5 (floored at 0) and shows a small swirl above its head. Defaults to
