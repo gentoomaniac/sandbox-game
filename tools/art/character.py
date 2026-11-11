@@ -628,8 +628,8 @@ def draw_hat(facing, pose, shapes, colours, **_):
 
 # The tools in the hand (assets/character/held_<tool>.png): a 2 px wooden handle and a hand-drawn
 # head beside it, a map of letters in the colours of the tool's grade (tool_grades.py), as the
-# icons are (tool_icons.py). Each head is drawn with the handle's columns at `HANDLE_COLUMN` of
-# the map, pointing to the right, and is mirrored to point the other way.
+# icons are (tool_icons.py). Each head map is drawn pointing to the right, with the handle's two
+# columns at the column `head` is told, and is mirrored to point the other way.
 IRON = ("stone_dark", "stone", "stone_light")
 HAND = ("skin_shade", "skin", "skin")
 # The row of the hands of a standing figure.
