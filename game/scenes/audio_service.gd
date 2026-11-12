@@ -143,8 +143,10 @@ func apply_settings(settings: GameSettings) -> void:
 
 ## Plays a sound event once. `position` (in the world's art pixels) makes it come from there.
 ## `is_from_outside` marks an effect of the world outside, which is muffled while the player is
-## inside; the player's own sounds are not.
-func play(event: StringName, position: Variant = null, is_from_outside := false) -> void:
+## inside; the player's own sounds are not. `level` (0 to 1) is the share of the event's volume.
+func play(
+	event: StringName, position: Variant = null, is_from_outside := false, level := 1.0
+) -> void:
 	if not _rules.has_event(event):
 		push_error("No sound event '%s'" % event)
 		return
@@ -154,6 +156,7 @@ func play(event: StringName, position: Variant = null, is_from_outside := false)
 	if position != null:
 		player.max_distance = _reach_of(event)
 	_start(player, event, position, is_from_outside)
+	player.volume_db += linear_to_db(level)
 	if _rules.event(event).has("voices"):
 		_voices[event].append(player)
 

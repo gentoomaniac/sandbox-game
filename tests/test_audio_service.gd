@@ -63,6 +63,10 @@ func test_play_picks_a_file_and_a_pitch_of_the_event_and_uses_its_bus() -> void:
 	assert_has(values["files"], player.stream.resource_path)
 	assert_between(player.pitch_scale, values["pitch_min"], values["pitch_max"])
 	assert_eq(player.bus, AudioService.UI)
+	assert_eq(player.volume_db, values["volume_db"])
+	player.stop()
+	_service.play(&"ui_click", null, false, 0.5)
+	assert_almost_eq(player.volume_db, values["volume_db"] + linear_to_db(0.5), 0.001)
 
 
 func test_a_sound_with_a_position_is_positional() -> void:
