@@ -31,11 +31,15 @@ func _init(decoration_sway: ShaderMaterial) -> void:
 	show_art_set()
 
 
-## Shows the colour of the ground of a day (see SeasonBlend.ground_mix).
+## Shows the colour of the ground of a day (see SeasonBlend.ground_mix): the atlases are only
+## handed to the shaders when the season it mixes from or to changes, the share every time.
 func show_mix(mix: SeasonBlend.GroundMix) -> void:
+	var has_new_looks := mix.from != _mix.from or mix.to != _mix.to
 	_mix = mix
-	_show_looks(_terrain_materials, TerrainTileset.TERRAIN_ATLAS_PATH)
-	_show_looks(_decoration_materials, TerrainTileset.DECORATION_ATLAS_PATH)
+	if has_new_looks:
+		_show_mixed_looks()
+	for material in _terrain_materials + _decoration_materials:
+		material.set_shader_parameter("mix_share", _mix.share)
 
 
 ## Shows the atlases of the chosen art set (see ArtSet), and the pixels of its art.
@@ -48,16 +52,24 @@ func show_art_set() -> void:
 	soil.set_shader_parameter("to_look", summer)
 	soil.set_shader_parameter("mix_share", 0.0)
 	_show_frost_and_snow(soil, TerrainTileset.TERRAIN_ATLAS_PATH)
-	_show_looks(_terrain_materials, TerrainTileset.TERRAIN_ATLAS_PATH)
-	_show_looks(_decoration_materials, TerrainTileset.DECORATION_ATLAS_PATH)
+	for material in _terrain_materials:
+		_show_frost_and_snow(material, TerrainTileset.TERRAIN_ATLAS_PATH)
+	for material in _decoration_materials:
+		_show_frost_and_snow(material, TerrainTileset.DECORATION_ATLAS_PATH)
+	_show_mixed_looks()
 
 
-func _show_looks(materials: Array[ShaderMaterial], atlas_path: String) -> void:
-	for material in materials:
-		material.set_shader_parameter("from_look", _atlas(atlas_path, _mix.from))
-		material.set_shader_parameter("to_look", _atlas(atlas_path, _mix.to))
-		material.set_shader_parameter("mix_share", _mix.share)
-		_show_frost_and_snow(material, atlas_path)
+## The atlases of the two seasons the ground mixes between.
+func _show_mixed_looks() -> void:
+	for material in _terrain_materials:
+		_show_season_atlases(material, TerrainTileset.TERRAIN_ATLAS_PATH)
+	for material in _decoration_materials:
+		_show_season_atlases(material, TerrainTileset.DECORATION_ATLAS_PATH)
+
+
+func _show_season_atlases(material: ShaderMaterial, atlas_path: String) -> void:
+	material.set_shader_parameter("from_look", _atlas(atlas_path, _mix.from))
+	material.set_shader_parameter("to_look", _atlas(atlas_path, _mix.to))
 
 
 func _show_frost_and_snow(material: ShaderMaterial, atlas_path: String) -> void:

@@ -156,8 +156,40 @@ func test_a_chunk_that_comes_into_range_when_the_player_walks_is_drawn() -> void
 	assert_eq(_view._cover_map.channels_at(tile), Color(0, 0, 0, 0), "out of range")
 	_residency.focus_chunk = Vector2i(CoverMap.DRAW_RANGE_CHUNKS, 0)
 	for _i in 3:
-		_view._follow_cover_focus()
+		_view._sync_cover_focus()
+		_view._draw_missing_cover()
 	assert_gt(_view._cover_map.channels_at(tile).g, 0.0)
+
+
+func test_a_world_shown_far_from_the_origin_has_its_cover_from_the_first_draw() -> void:
+	var far := Vector2i(20, 20)
+	var residency := ChunkResidency.new(World.new(SEED))
+	residency.set_focus(Chunk.to_world(far, Vector2i.ZERO))
+	var view := WorldView.new()
+	add_child_autofree(view)
+	view.show_world(residency)
+	residency.load_chunk(far)
+	view.finish_drawing()
+	var tile := Chunk.to_world(far, Vector2i(10, 10))
+	assert_eq(
+		view._cover_map.channels_at(tile), view._cover_map.ground_cover.channels_at(tile).as_color()
+	)
+	assert_ne(view._cover_map.channels_at(tile), Color(0, 0, 0, 0), "not skipped as out of range")
+
+
+func test_a_tree_felled_while_its_chunk_is_half_drawn_still_changes_the_cover() -> void:
+	var coords := Vector2i(-2, -1)
+	_residency.load_chunk(coords)
+	_view._draw_next_step()
+	var tree: WorldObject = null
+	for object in _view.world.chunk_at(coords).objects():
+		if object.type in GroundCover.CROWNED:
+			tree = object
+			break
+	assert_not_null(tree, "a tree in the chunk")
+	var before := _view._cover_map.channels_at(tree.pos)
+	_view.world.remove_object(tree.pos)
+	assert_ne(_view._cover_map.channels_at(tree.pos), before)
 
 
 func test_soil_under_snow_is_not_drawn_wet() -> void:

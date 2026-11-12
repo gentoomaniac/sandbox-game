@@ -107,8 +107,10 @@ var _blend: SeasonBlend
 ## The colour of the ground and what lies on it (see GroundLook and CoverMap).
 var _ground_look: GroundLook
 var _cover_map := CoverMap.new()
-## The focus chunk that the cover map was drawn for, and whether a chunk may be waiting there.
+## The focus chunk that the cover map was drawn for (once it has one), and whether a chunk may
+## be waiting there.
 var _cover_focus := Vector2i.ZERO
+var _is_cover_focused := false
 var _is_cover_missing := false
 ## The day, the snow cover and the frost that the plants and houses are drawn for.
 var _look_state := Vector3(-1, 0, 0)
@@ -221,6 +223,7 @@ func show_world(residency: ChunkResidency) -> void:
 	_look_state = Vector3(decorations.day, 0.0, 0.0)
 	_buildings.set_looks(_blend, _conditions)
 	show_ground_cover(decorations.day, 0.0, 0.0, 0.0)
+	_sync_cover_focus()
 	for coords in world.loaded_chunk_coords():
 		_draw_chunk(world.chunk_at(coords))
 	for building in world.buildings():
@@ -310,8 +313,9 @@ func refresh_soil(last_hour_rain: float) -> void:
 func _process(delta: float) -> void:
 	if world == null:
 		return
+	_sync_cover_focus()
 	_draw_within_budget()
-	_follow_cover_focus()
+	_draw_missing_cover()
 	_cover_map.upload()
 	# Loading and drawing fill most of a frame, so the look refresh only runs in frames without.
 	var is_drawn := _residency.is_complete and not is_drawing()
@@ -472,14 +476,15 @@ func _draw_chunk_step(drawing: ChunkDrawing) -> void:
 		_chunk_layers[coords] = _make_chunk_layers(chunk)
 		_refresh_queue.erase(coords)
 		_cover_map.draw_chunk(coords)
+		for object in chunk.objects():
+			if object.type in GroundCover.CROWNED:
+				for tile in object.tiles():
+					_crown_tiles[tile] = true
 	elif drawing.step <= Chunk.CHUNK_SIZE:
 		_draw_row(drawing, drawing.step - 1)
 	elif drawing.step == Chunk.CHUNK_SIZE + 1:
 		for object in chunk.objects():
 			_draw_object(object.pos)
-			if object.type in GroundCover.CROWNED:
-				for tile in object.tiles():
-					_crown_tiles[tile] = true
 	else:
 		# The right and bottom neighbours' border cells drew this chunk's tiles with a fallback
 		# while it was missing. Now they can blend properly.
@@ -778,13 +783,18 @@ func snow_checker_for(snow_cover: float) -> Callable:
 		return _cover_map.ground_cover.is_snowed_with(world_pos, snow_cover, 0.0)
 
 
-## Draws the chunks of the cover map that come into range as the player walks: when the focus
-## chunk moves or a chunk loads, one chunk a frame.
-func _follow_cover_focus() -> void:
-	if _residency.focus_chunk != _cover_focus:
+## Moves the focus of the cover map with the residency's. A chunk that waits for it is drawn by
+## `_draw_missing_cover`.
+func _sync_cover_focus() -> void:
+	if _residency.focus_chunk != _cover_focus or not _is_cover_focused:
 		_cover_focus = _residency.focus_chunk
+		_is_cover_focused = true
 		_cover_map.set_focus(_cover_focus)
 		_is_cover_missing = true
+
+
+## Draws the chunks of the cover map that came into range as the player walked, one a frame.
+func _draw_missing_cover() -> void:
 	if _is_cover_missing:
 		_is_cover_missing = _cover_map.draw_missing()
 
