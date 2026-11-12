@@ -232,7 +232,6 @@ soil_wet_16x16.png 16 16
 terrain_16x16.png 16 16
 terrain_autumn_16x16.png 16 16
 terrain_bare_16x16.png 16 16
-terrain_dusting_16x16.png 16 16
 terrain_frost_16x16.png 16 16
 terrain_snow_16x16.png 16 16
 terrain_spring_16x16.png 16 16

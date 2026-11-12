@@ -9,15 +9,15 @@ extends RefCounted
 ## Pure functions of seed, position, day and weather: nothing is saved.
 
 ## What the art generator draws (see tools/art/seasons.py). SPRING, SUMMER and AUTUMN are the
-## foliage of those seasons, BARE is winter without snow, FROST a cold morning without snow,
-## SNOW the ground under snow and DUSTING its thin fringe: sparse flecks over what lies beneath.
-## BUDS and YOUNG_LEAVES are the steps of the leaf-out between BARE and SPRING; only plants have
-## them, grass and ground go from BARE to SPRING at once.
-enum Look { SPRING, SUMMER, AUTUMN, BARE, FROST, SNOW, DUSTING, BUDS, YOUNG_LEAVES }
+## foliage of those seasons, BARE is winter without snow. FROST and SNOW are the ground in a
+## frost and under snow: the ground shader takes the colours of the frost and of the snow from
+## them (see GroundLook), and the generator takes the cover of objects and roofs from them. BUDS
+## and YOUNG_LEAVES are the steps of the leaf-out between BARE and SPRING; only plants have them.
+enum Look { SPRING, SUMMER, AUTUMN, BARE, FROST, SNOW, BUDS, YOUNG_LEAVES }
 
 ## The looks of grass and ground (all but the leaf-out steps).
 const GROUND_LOOKS: Array[Look] = [
-	Look.SPRING, Look.SUMMER, Look.AUTUMN, Look.BARE, Look.FROST, Look.SNOW, Look.DUSTING
+	Look.SPRING, Look.SUMMER, Look.AUTUMN, Look.BARE, Look.FROST, Look.SNOW
 ]
 ## The seasons of the year in order, as the looks the grass shifts between (see `ground_mix`).
 const YEAR_LOOKS: Array[Look] = [Look.SPRING, Look.SUMMER, Look.AUTUMN, Look.BARE]

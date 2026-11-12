@@ -33,8 +33,8 @@ GROUNDS = {"grass": 4, "lush_grass": 7, "dry_grass": 8, "floodplain": 2}
 FULL_TILE_COLUMN = 45
 # The game's night tint (data/lighting.cfg [day_and_night] night), which multiplies every colour.
 NIGHT_TINT = (0.13, 0.16, 0.3)
-# Without the dusting: it is only the edge of the snow. Night is the summer look, tinted.
-LOOKS = tuple(look for look in GROUND_LOOKS if look != "dusting") + ("night",)
+# Night is the summer look, tinted.
+LOOKS = GROUND_LOOKS + ("night",)
 
 
 def look_file(name, look):

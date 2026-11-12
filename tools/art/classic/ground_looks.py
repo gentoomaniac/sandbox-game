@@ -1,13 +1,12 @@
 """The looks of the ground (terrain and decorations) of seasons.py as they were made for the classic
 16 px ground (commit acf236e): its colour remaps and `terrain_rows` and `ground_rows`, unchanged."""
 
-import math
 import random
 
 from seasons import AUTUMN_GROUND, BARE_GROUND
 
 # The looks of grass and ground, which every picture has.
-GROUND_LOOKS = ("spring", "summer", "autumn", "bare", "frost", "snow", "dusting")
+GROUND_LOOKS = ("spring", "summer", "autumn", "bare", "frost", "snow")
 
 _SPRING_GREENS = {
     "green_bright": "spring_pale",
@@ -67,11 +66,9 @@ GROUND_REMAPS = {
     "bare": BARE_GROUND,
     "frost": _FROST_GROUND,
     "snow": _WINTER_GROUND,
-    # Only its decorations use this; see terrain_rows.
-    "dusting": _FROST_GROUND,
 }
 # What decoration tufts and plants turn into: dry stalks from the bare look on.
-STANDING = {"bare": WINTER_STALKS, "frost": _FROST_STALKS, "snow": WINTER_STALKS, "dusting": _FROST_STALKS}
+STANDING = {"bare": WINTER_STALKS, "frost": _FROST_STALKS, "snow": WINTER_STALKS}
 
 # The salt marsh (terrain.salt_marsh) in its logical colours, per look: grey-green turf in patches
 # with silvery sea purslane and green glasswort in summer, fresher in spring; in autumn the
@@ -90,7 +87,6 @@ SALT_MARSH_LOOKS = {
     "snow": {"salt": "snow", "salt_patch": "snow", "salt_light": "snow_light",
              "salt_dark": "snow_shadow", "glasswort": "snow_shadow", "glasswort_dark": "snow_shadow"},
 }
-SALT_MARSH_LOOKS["dusting"] = SALT_MARSH_LOOKS["frost"]
 
 # Snow on a desire path is trodden: the game draws the trodden grass in its snow look over the
 # snow, and its bare earth shows as blue-grey footprints.
@@ -117,41 +113,9 @@ def sparkle(tile, rng, count):
         tile[y][x] = "snow_light"
 
 
-def dust(tile, rng):
-    """Thins a snow tile to a dusting: flecks of snow and, in patches, a thin dithered sheet,
-    with the rest left clear so the ground and its grass tips show through."""
-    phase = rng.uniform(0, 6.3)
-    keep = [[False] * len(row) for row in tile]
-    for y, row in enumerate(tile):
-        for x, name in enumerate(row):
-            if name is None:
-                continue
-            sheet = math.sin(x * 0.7 + phase) * math.sin(y * 0.6 - phase) > 0.45 and (x + y) % 2 == 0
-            fleck_chance = 0.4 if (x and keep[y][x - 1]) or (y and keep[y - 1][x]) else 0.07
-            keep[y][x] = sheet or rng.random() < fleck_chance
-    # A tile that was drawn keeps at least a flake, so every look has the same tiles (the game
-    # makes a tile for every atlas cell that is not clear).
-    if not any(map(any, keep)):
-        spots = [(x, y) for y, row in enumerate(tile) for x, name in enumerate(row) if name]
-        if spots:
-            x, y = rng.choice(spots)
-            keep[y][x] = True
-    return [
-        [("snow_light" if (x + y) % 3 else "snow") if keep[y][x] else None for x in range(len(row))]
-        for y, row in enumerate(tile)
-    ]
-
-
 def terrain_rows(look, rows):
-    """The terrain rows in a look. A frost gets a sprinkle of rime, a dusting is the snow thinned
-    out; the rest is `ground_rows`. Under snow, the bare patches of trodden grass are footprints
-    (see `_TRODDEN_SNOW`)."""
-    if look == "dusting":
-        snowy = ground_rows("snow", rows)
-        return [snowy[0]] + [
-            [dust(tile, random.Random(f"dust-{r}-{c}")) for c, tile in enumerate(row)]
-            for r, row in enumerate(snowy[1:])
-        ]
+    """The terrain rows in a look. A frost gets a sprinkle of rime; the rest is `ground_rows`.
+    Under snow, the bare patches of trodden grass are footprints (see `_TRODDEN_SNOW`)."""
     result = ground_rows(look, rows, _TRODDEN_SNOW if look == "snow" else None)
     if look == "frost":
         for r, row in enumerate(result[1:]):

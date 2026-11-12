@@ -1,5 +1,5 @@
 cell 16 16
-looks spring summer autumn bare frost snow dusting
+looks spring summer autumn bare frost snow
 water 3
 mud 0
 floodplain 4

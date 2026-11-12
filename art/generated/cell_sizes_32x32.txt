@@ -246,7 +246,6 @@ soil_wet_32x32.png 32 32
 terrain_32x32.png 32 32
 terrain_autumn_32x32.png 32 32
 terrain_bare_32x32.png 32 32
-terrain_dusting_32x32.png 32 32
 terrain_frost_32x32.png 32 32
 terrain_snow_32x32.png 32 32
 terrain_spring_32x32.png 32 32

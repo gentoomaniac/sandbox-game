@@ -18,7 +18,7 @@ the tiles around it. An object on several tiles (boulder 2x1, bedroll 1x2) is ce
 footprint, with the cell's bottom on the footprint's bottom.
 
 Terrain, decorations and objects also exist per look (see seasons.py: spring, summer, autumn,
-bare, frost, snow, dusting), the objects also in the steps of the spring leaf-out (buds, young
+bare, frost, snow), the objects also in the steps of the spring leaf-out (buds, young
 leaves), the building pictures in summer and snow: summer under the names above, the others
 with the look added, e.g. assets/terrain_snow.png, assets/objects_young_leaves.png and
 assets/buildings/kate_lit_snow.png.

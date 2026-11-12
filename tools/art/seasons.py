@@ -5,8 +5,8 @@ looks are made from it: colour remaps (grass turns fresher, yellower, brown-grey
 overlays (snow caps, blossom). So an art change in those modules carries over to every look.
 The game picks a look per tile and per object (see game/state/season_blend.gd): spring,
 summer and autumn are the seasons' foliage, "bare" is winter without snow, "frost" a cold
-morning without snow, "snow" the ground under snow and "dusting" the thin edge of the snow:
-sparse flecks over whatever lies beneath. Objects have two more looks, the steps of the
+morning without snow and "snow" the ground under snow (the game lays frost and snow over the
+season's look pixel by pixel, from these looks, see cover.py). Objects have two more looks, the steps of the
 spring leaf-out between bare and spring: "buds" and "young_leaves", drawn over the bare tree
 or bush where its summer leaves are.
 
@@ -14,13 +14,12 @@ The drawing modules draw the ground shadow of objects and houses in the logical 
 which every season maps to a palette colour here.
 """
 
-import math
 import random
 
 from canvas import copy
 
 # The looks of grass and ground, which every picture has.
-GROUND_LOOKS = ("spring", "summer", "autumn", "bare", "frost", "snow", "dusting")
+GROUND_LOOKS = ("spring", "summer", "autumn", "bare", "frost", "snow")
 # The steps of the leaf-out between bare and spring, in order: only objects have them.
 LEAF_OUT_LOOKS = ("buds", "young_leaves")
 LOOKS = GROUND_LOOKS + LEAF_OUT_LOOKS
@@ -169,11 +168,9 @@ GROUND_REMAPS = {
     "bare": BARE_GROUND,
     "frost": _FROST_GROUND,
     "snow": _WINTER_GROUND,
-    # Only its decorations use this; see terrain_rows.
-    "dusting": _FROST_GROUND,
 }
 # What decoration tufts and plants turn into: dry stalks from the bare look on.
-STANDING = {"bare": WINTER_STALKS, "frost": _FROST_STALKS, "snow": WINTER_STALKS, "dusting": _FROST_STALKS}
+STANDING = {"bare": WINTER_STALKS, "frost": _FROST_STALKS, "snow": WINTER_STALKS}
 
 # The salt marsh (terrain.salt_marsh) in its logical colours, per look: grey-green turf in patches
 # with silvery sea purslane and green glasswort in summer, fresher in spring; in autumn the
@@ -192,7 +189,6 @@ SALT_MARSH_LOOKS = {
     "snow": {"salt": "snow", "salt_patch": "snow", "salt_light": "snow_light",
              "salt_dark": "snow_shadow", "glasswort": "snow_shadow", "glasswort_dark": "snow_shadow"},
 }
-SALT_MARSH_LOOKS["dusting"] = SALT_MARSH_LOOKS["frost"]
 
 # Snow on a desire path is trodden: the game draws the trodden grass in its snow look over the
 # snow, and its bare earth shows as blue-grey footprints.
@@ -200,7 +196,7 @@ _TRODDEN_SNOW = {"mud": "snow_shadow", "mud_dark": "snow_shadow"}
 
 _SHADOW_REMAPS = {
     "spring": "green_deep", "summer": "green_deep", "autumn": "green_deep",
-    "bare": "mud_dark", "frost": "mud_dark", "snow": "snow_shadow", "dusting": "mud_dark",
+    "bare": "mud_dark", "frost": "mud_dark", "snow": "snow_shadow",
     "buds": "green_deep", "young_leaves": "green_deep",
 }
 
@@ -335,41 +331,9 @@ def sparkle(tile, rng, count):
         tile[y][x] = "snow_light"
 
 
-def dust(tile, rng):
-    """Thins a snow tile to a dusting: flecks of snow and, in patches, a thin dithered sheet,
-    with the rest left clear so the ground and its grass tips show through."""
-    phase = rng.uniform(0, 6.3)
-    keep = [[False] * len(row) for row in tile]
-    for y, row in enumerate(tile):
-        for x, name in enumerate(row):
-            if name is None:
-                continue
-            sheet = math.sin(x * 0.35 + phase) * math.sin(y * 0.3 - phase) > 0.45 and (x + y) % 2 == 0
-            fleck_chance = 0.4 if (x and keep[y][x - 1]) or (y and keep[y - 1][x]) else 0.07
-            keep[y][x] = sheet or rng.random() < fleck_chance
-    # A tile that was drawn keeps at least a flake, so every look has the same tiles (the game
-    # makes a tile for every atlas cell that is not clear).
-    if not any(map(any, keep)):
-        spots = [(x, y) for y, row in enumerate(tile) for x, name in enumerate(row) if name]
-        if spots:
-            x, y = rng.choice(spots)
-            keep[y][x] = True
-    return [
-        [("snow_light" if (x + y) % 3 else "snow") if keep[y][x] else None for x in range(len(row))]
-        for y, row in enumerate(tile)
-    ]
-
-
 def terrain_rows(look, rows):
-    """The terrain rows in a look. A frost gets a sprinkle of rime, a dusting is the snow thinned
-    out; the rest is `ground_rows`. Under snow, the bare patches of trodden grass are footprints
-    (see `_TRODDEN_SNOW`)."""
-    if look == "dusting":
-        snowy = ground_rows("snow", rows)
-        return [snowy[0]] + [
-            [dust(tile, random.Random(f"dust-{r}-{c}")) for c, tile in enumerate(row)]
-            for r, row in enumerate(snowy[1:])
-        ]
+    """The terrain rows in a look. A frost gets a sprinkle of rime; the rest is `ground_rows`.
+    Under snow, the bare patches of trodden grass are footprints (see `_TRODDEN_SNOW`)."""
     result = ground_rows(look, rows, _TRODDEN_SNOW if look == "snow" else None)
     if look == "frost":
         for r, row in enumerate(result[1:]):
@@ -468,11 +432,9 @@ def _dot(canvas, rng, surfaces, count, colour):
 # What winter does to each kind of object (the kinds of the object atlas), with these keys, all
 # optional. The leafless art is the summer art with colours remapped:
 # - "bare": the remap of every winter look;
-# - "frost": a further remap in the frost and dusting looks, "frost_only" one in the frost look
-#   alone (under a dusting, the snow caps stand in for it);
+# - "frost": a further remap in the frost look, "frost_only" one in the frost look alone;
 # - "specks": the colours that a frost rimes in specks;
-# - "snow": (surfaces, edges, depth) of the snow caps that lie on it in the snow look, and one
-#   pixel deep in the dusting look;
+# - "snow": (surfaces, edges, depth) of the snow caps that lie on it in the snow look;
 # - "snow_remap": a remap in place of the caps, in the snow look (a mound of snow, a bedroll).
 # Planks lying flat (a jetty's deck, a boat's floor) under snow.
 _SNOWED_PLANKS = {"bare_light": "snow_light", "bare": "snow", "mud": "snow_shadow", "mud_dark": "snow_shadow"}
@@ -500,8 +462,8 @@ _WINTER_LOOKS = {
     "ewer": {"specks": {"bare_light", "bare"}, "snow": ({"bare_light", "bare", "ochre_dark", "umber", "rust_dark"}, set(), 3)},
     # Snow on the arms of a cross and the tops of the stones.
     "grave": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "soil_mid", "bare_light", "sand_light", "sand", "stone_light", "stone"}, set(), 4)},
-    # The landing: snow covers the jetty's deck and the boat's floor boards (a dusting only caps
-    # them), and lies on the net frame's pole and on the traps.
+    # The landing: snow covers the jetty's deck and the boat's floor boards and lies on the net
+    # frame's pole and on the traps.
     "jetty": {
         "specks": {"bare_light", "bare"},
         "snow": ({"bare_light", "bare", "mud_dark"}, set(), 2),
@@ -613,14 +575,13 @@ def _season_object(look, kind, variant, canvas, redraw):
             canvas = remap(canvas, _AUTUMN_TALL_GRASS)
         elif kind == "reeds":
             canvas = remap(canvas, _GOLDEN_REEDS)
-    elif look in ("bare", "frost", "snow", "dusting"):
+    elif look in ("bare", "frost", "snow"):
         canvas = _winter_object(look, kind, variant, canvas, redraw, rng, centre)
     return remap(canvas, {"shadow": _SHADOW_REMAPS[look]})
 
 
 def _winter_object(look, kind, variant, canvas, redraw, rng, centre):
-    """An object without leaves: bare, rimed with frost, under snow or under a dusting (frost
-    with a thin snow cap)."""
+    """An object without leaves: bare, rimed with frost or under snow."""
     if kind in redraw:
         # A redrawn kind gets the frost and snow of _WINTER_LOOKS too, if it has an entry there.
         canvas = redraw[kind](variant)
@@ -629,8 +590,8 @@ def _winter_object(look, kind, variant, canvas, redraw, rng, centre):
     elif kind not in _WINTER_LOOKS:
         raise KeyError(f"no winter look for the object kind {kind!r}: add it to seasons._WINTER_LOOKS")
     winter = _WINTER_LOOKS[kind]
-    is_frosty = look in ("frost", "dusting")
-    has_snow = look in ("snow", "dusting")
+    is_frosty = look == "frost"
+    has_snow = look == "snow"
     if look == "snow" and "snow_remap" in winter:
         return remap(canvas, winter["snow_remap"])
 

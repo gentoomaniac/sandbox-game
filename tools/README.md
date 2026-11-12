@@ -38,7 +38,7 @@ generates into that folder). To redraw the oak, for example:
    and name: `_32x32` is the new art, `_16x16` the classic art, whose cells are 48x80 and whose
    files are drawn at 16 px per tile).
 2. Open it in any pixel editor. The sheet has a row per look (the order is in
-   `art/generated/objects/atlas_32x32.txt`: spring, summer, autumn, bare, frost, snow, dusting, buds,
+   `art/generated/objects/atlas_32x32.txt`: spring, summer, autumn, bare, frost, snow, buds,
    young_leaves, then snow_cover and frost_cover: only the pixels that snow and frost add, which the
    game lays over the season's picture; leave them alone unless you redraw the snow) and a column per variant, cells of 96x160 px; the object stands on the bottom
    centre of its cell. Keep the picture's size and the palette (`art/generated/palette.png`,
@@ -166,7 +166,7 @@ by topic. Where is a thing drawn?
 | `interior.py` | The room tiles and the furniture inside the buildings, the hearth too, drawn at 32 px; the bed covers. |
 | `buildings.py` | The shack, fisherman's hut, Kate (and its brick and Geest styles, `kate(walls=...)`, as kate_brick and kate_geest), longhouse, hall house and barn at 32 px per tile, plain and with lit windows. |
 | `church.py` | The church and its bell frame (as buildings.py), and the graves of the churchyard (a row of the object atlas, drawn at 32 px). |
-| `seasons.py` | The other looks (spring, autumn, bare, frost, snow, dusting, leaf-out steps) made from the summer art by colour remaps and overlays (the ground's autumn and bare looks are darker greens). Also adds its colours to the palette. |
+| `seasons.py` | The other looks (spring, autumn, bare, frost, snow, leaf-out steps) made from the summer art by colour remaps and overlays (the ground's autumn and bare looks are darker greens). Also adds its colours to the palette. |
 | `cover.py` | The textures of the seasonal overlays (task 185): the threshold map and the leaf litter (`art/generated/cover/`, data textures outside the palette check) and the snow and frost cover looks of the object atlas and the snow of each house's roof (`buildings/<house>_snow_cover`), whose ranks `pack.py` puts in the alpha channel. |
 | `crops.py`, `crop_icons.py` | Crop sheets (growth stages and the dead one), seed bag and produce icons. |
 | `items.py`, `tool_icons.py` | Item icons, the slot frames and the tools; `icon_of` makes the icon of an item that places a world object from its picture. |
