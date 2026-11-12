@@ -11,6 +11,7 @@ import math
 import random
 
 import forms
+import items
 import numpy as np
 from canvas import GAME_OBJECT_BOTTOM, GAME_OBJECT_CELL_HEIGHT, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CENTRE, blank, outline, rect
 
@@ -812,6 +813,22 @@ def vegetation():
         [sapling(seed) for seed in (171, 172, 173)],
         [fern_bush(seed) for seed in (181, 182, 183)],
     ]
+
+
+def icons():
+    """The bodies of the icons of the items that plant a berry bush, a shrub or a fern, by item id:
+    the dug-up plant, as it stands in the world."""
+    return {
+        "berry_bush": items.icon_of(_cut_to_columns(berry_bush(151))),
+        "shrub": items.icon_of(_cut_to_columns(shrub(161))),
+        "fern_bush": items.icon_of(_cut_to_columns(fern_bush(181))),
+    }
+
+
+def _cut_to_columns(picture):
+    """The picture without the clear columns round what is drawn, the ground shadow not counted."""
+    columns = [x for x in range(WIDTH) if any(row[x] not in (None, "shadow") for row in picture)]
+    return [row[columns[0] : columns[-1] + 1] for row in picture]
 
 
 OAK_SEEDS = (101, 102, 103)

@@ -9,6 +9,7 @@ import math
 import random
 
 from canvas import NEIGHBOURS, OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, blank, outline, rect
+from yard import icon_of
 
 def shaded_blob(canvas, rng, blobs, shades, edge_colour):
     """Fills the union of circles (cx, cy, radius) with `shades`, lightest first: light
@@ -616,6 +617,16 @@ def vegetation():
         [sapling(seed) for seed in (171, 172, 173)],
         [fern_bush(seed) for seed in (181, 182, 183)],
     ]
+
+
+def icons():
+    """The icons of the items that plant a berry bush, a shrub or a fern, by item id: the dug-up
+    plant, as it stands in the world."""
+    return {
+        "berry_bush": icon_of(berry_bush(151)),
+        "shrub": icon_of(shrub(161)),
+        "fern_bush": icon_of(fern_bush(181)),
+    }
 
 
 OAK_SEEDS = (101, 102, 103)
