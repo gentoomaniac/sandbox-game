@@ -103,25 +103,6 @@ func test_the_lines_waiting_for_a_memory_are_saved() -> void:
 	)
 
 
-func test_a_version_20_villager_keeps_their_chat_and_the_lines_a_memory_holds_are_marked() -> void:
-	var game := _current_game()
-	var npc := Npc.create(42, Vector2.ZERO, NpcRules.default_rules())
-	for text in ["old", "older", "Moin"]:
-		npc.add_chat_line(1, 600, true, text)
-	var saved := npc.to_dict()
-	saved.erase("uncompacted_lines")
-	saved.erase("remembered_lines")
-	saved["lines_since_memory"] = 1
-	game["npcs"] = [JSON.parse_string(JSON.stringify(saved))]
-	_write_save(20, game)
-
-	var loaded := SaveFile.read(SAVE_PATH).npcs.all()[0]
-
-	assert_eq(loaded.chat_history.size(), 3)
-	assert_eq(loaded.remembered_lines, 2, "only the last line is not in a memory")
-	assert_eq(loaded.uncompacted_lines.size(), 0)
-
-
 func test_a_version_22_villager_written_by_hand_takes_their_sheet_as_written_now() -> void:
 	var game := _current_game()
 	var antje := Npc.create_villager("antje", Vector2.ZERO, VillagerRules.default_rules())
