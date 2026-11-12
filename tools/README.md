@@ -132,6 +132,12 @@ what the main thread spends per finished render (taking it and handing it to a M
 crossfades to it on the beat) and how late after their beats the crossfades began;
 docs/music-viability.md has its results.
 
+`tools/bench/storks.gd` (task 202; no make target, it needs no save and writes nothing) counts how
+often wild storks come into the view and how many are there at once over a game day, in spring and
+in summer, at wet meadows and at a village it builds in a new world, with the player standing, walking
+a circle, or the time skipped every hour: `godot --headless --path . -s tools/bench/storks.gd`
+(`-- --seed=<n>`; set `XDG_DATA_HOME` away from the real one).
+
 ## Art: tools/art/
 
 `generate.py` is the entry point: it assembles the object atlas's rows and `main()` writes every
