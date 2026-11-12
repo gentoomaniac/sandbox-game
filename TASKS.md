@@ -413,6 +413,9 @@ held 60 fps steady.
   stop "No limit" (today's behaviour, vsync only, `max_fps = 0`). The user, 2026-11-12: "make the
   top no limit then instead of a fixed number".
 - Game speed does not depend on the frame rate.
+- A startup option `--max-fps=N` (0 = no limit) overrides the setting for one run, not saved.
+  Test runs and the bench pass `--max-fps=0` so they run uncapped (the user, 2026-11-12: "add a
+  parameter to set framerate and use that one for the test runs").
 - Tests for the setting (default, range, save and load); a screenshot of the slider; README and
   docs (design/tech/build-and-tools.md, design/presentation/menus-and-hud.md).
 
