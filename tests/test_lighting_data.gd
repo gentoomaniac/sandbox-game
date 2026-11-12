@@ -31,6 +31,13 @@ func test_the_data_file_holds_every_rule_with_the_first_values() -> void:
 	)
 
 
+func test_the_cloud_shadows_have_their_first_values() -> void:
+	var rules := LightingRules.from_file(LightingRules.DEFAULT_PATH)
+	assert_eq(rules.cloud_shadow("strength"), 0.28)
+	assert_eq(rules.cloud_shadow("speed_per_wind"), 7.0)
+	assert_eq(rules.cloud_shadow("closed_from"), 0.75)
+
+
 func test_every_missing_key_is_reported() -> void:
 	var rules := _write("[day_and_night]\nnight=Color(0, 0, 0, 1)\n")
 	var missing := rules.problems()
@@ -38,6 +45,7 @@ func test_every_missing_key_is_reported() -> void:
 	assert_true(missing.has("[day_and_night] no dawn"))
 	assert_true(missing.has("[day_and_night] no min_night_hours"))
 	assert_true(missing.has("[lantern] no radius_tiles"))
+	assert_true(missing.has("[cloud_shadows] no strength"))
 	assert_false(missing.has("[day_and_night] no night"))
 	assert_push_error_count(missing.size())
 
@@ -48,6 +56,8 @@ func test_wrong_values_are_reported() -> void:
 	text = text.replace("day_after_sunrise=2.0", "day_after_sunrise=-1.0")
 	text = text.replace("purple_after_sunset=2.5", "purple_after_sunset=5.0")
 	text = text.replace("radius_tiles=5.0", "radius_tiles=0")
+	text = text.replace("strength=0.28", "strength=1.5")
+	text = text.replace("size=170.0", "size=0")
 	var rules := _write(text)
 	assert_eq(
 		rules.problems(),
@@ -57,8 +67,10 @@ func test_wrong_values_are_reported() -> void:
 				"[day_and_night] dawn must be a Color(r, g, b, a)",
 				"[day_and_night] day_after_sunrise must not be below 0",
 				"[day_and_night] needs glow_after_sunset < purple_after_sunset < night_after_sunset",
+				"[cloud_shadows] strength must be from 0 to 1",
+				"[cloud_shadows] size must be above 0",
 			]
 			as Array[String]
 		)
 	)
-	assert_push_error_count(4)
+	assert_push_error_count(6)

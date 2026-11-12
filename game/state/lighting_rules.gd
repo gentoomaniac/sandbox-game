@@ -20,6 +20,11 @@ const TINT_HOURS := [
 ## The lantern's light, in the shape of a world object's `light` (see ObjectLight).
 const LANTERN_KEYS := ["color", "energy", "radius_tiles"]
 
+## The cloud shadows' numbers, each a plain number (see WeatherView).
+const CLOUD_SHADOW_KEYS := [
+	"strength", "size", "size_growth", "coverage", "softness", "speed_per_wind", "closed_from"
+]
+
 static var _default: LightingRules
 
 ## {section: {key: value}}, as in the file.
@@ -55,6 +60,10 @@ func problems() -> Array[String]:
 	for key: String in LANTERN_KEYS:
 		if not lantern.has(key):
 			found.append("[lantern] no %s" % key)
+	var cloud_shadows: Dictionary = _values.get("cloud_shadows", {})
+	for key: String in CLOUD_SHADOW_KEYS:
+		if not cloud_shadows.has(key):
+			found.append("[cloud_shadows] no %s" % key)
 	if not found.is_empty():
 		return found
 	if not lantern["color"] is Color:
@@ -75,6 +84,15 @@ func problems() -> Array[String]:
 		found.append(
 			"[day_and_night] needs glow_after_sunset < purple_after_sunset < night_after_sunset"
 		)
+	for key: String in ["strength", "coverage", "closed_from"]:
+		if float(cloud_shadows[key]) < 0.0 or float(cloud_shadows[key]) > 1.0:
+			found.append("[cloud_shadows] %s must be from 0 to 1" % key)
+	for key: String in ["size", "softness"]:
+		if float(cloud_shadows[key]) <= 0.0:
+			found.append("[cloud_shadows] %s must be above 0" % key)
+	for key: String in ["size_growth", "speed_per_wind"]:
+		if float(cloud_shadows[key]) < 0.0:
+			found.append("[cloud_shadows] %s must not be below 0" % key)
 	return found
 
 
@@ -100,3 +118,8 @@ func lantern_light() -> Dictionary:
 		"energy": float(lantern["energy"]),
 		"radius_tiles": float(lantern["radius_tiles"]),
 	}
+
+
+## One of the cloud shadows' numbers (one of CLOUD_SHADOW_KEYS).
+func cloud_shadow(key: String) -> float:
+	return float(_values["cloud_shadows"][key])

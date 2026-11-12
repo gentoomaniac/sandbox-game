@@ -18,6 +18,8 @@ const OVERCAST_GREYING := 0.3
 ## Where the sun is, for the hours of dawn and dusk.
 var sun := Sun.new()
 var rules := LightingRules.default_rules()
+## How much daylight there is now: 0 at night and indoors, 1 by full day (cloud shadows follow it).
+var daylight := 0.0
 
 ## The stops of the tint around one day as [hours from the start of the day, colour], from
 ## the evening of the day before to the morning of the day after.
@@ -33,9 +35,7 @@ func show_time(clock: GameClock, cloud_cover := 0.0) -> void:
 	var tint := _sample_stops(hour)
 	# Clouds dim the day, not the night: the more the tint is lighter than the night's.
 	var night_luminance := rules.tint_colour("night").get_luminance()
-	var daylight := clampf(
-		(tint.get_luminance() - night_luminance) / (1.0 - night_luminance), 0.0, 1.0
-	)
+	daylight = clampf((tint.get_luminance() - night_luminance) / (1.0 - night_luminance), 0.0, 1.0)
 	var overcast := cloud_cover * daylight
 	var grey := Color(tint.get_luminance(), tint.get_luminance(), tint.get_luminance())
 	tint = tint.lerp(grey, OVERCAST_GREYING * overcast)
@@ -44,6 +44,7 @@ func show_time(clock: GameClock, cloud_cover := 0.0) -> void:
 
 
 func show_interior() -> void:
+	daylight = 0.0
 	color = INTERIOR_TINT
 
 

@@ -139,9 +139,13 @@ needle. The numbers are in `data/leaf_fall.cfg`.
 The days follow a Nordic year: about 16 hours of daylight in midsummer and 8 in
 midwinter, with dawn and dusk following sunrise and sunset. The night is dark: away from a
 light you see little more than shapes. When it gets dark, the campfire, the hearth and the lit
-windows glow, and clouds dim the daylight. A setting lets you shrink or switch off the change in
+windows glow, and clouds dim the daylight. Under a partly clouded sky soft cloud shadows drift
+over the ground with the wind, more of them the more cloud there is (a look only: plants and
+drying don't care). A setting lets you shrink or switch off the change in
 day length. How dark the night gets and when dusk and dawn come is in
 [data/lighting.cfg](data/lighting.cfg).
+
+![Cloud shadows drifting over the camp under a partly clouded sky](docs/screenshots/cloud-shadows.png)
 
 ![Evening and dusk at the camp, houses after midnight and the interior by the hearth](docs/screenshots/day-and-night.png)
 

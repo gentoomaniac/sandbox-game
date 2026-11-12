@@ -113,7 +113,14 @@
     saved and nothing falls indoors. Task 176's audible gusts are not tied in yet.
   - **Effects for now are visual only:** rain and snow particles (slanted by the wind),
     fog drifting over the world, wind streaks and blowing leaves, lightning flashes, and
-    overcast skies dimming daylight. Nothing in the game reacts yet (crops, floods,
+    overcast skies dimming daylight, and **cloud shadows** (task 194): by day, with the sun out
+    and some cloud, soft dark patches drift over the ground with the wind's speed and direction
+    (no cloud is drawn). More cover gives more and larger shadows, a clear sky none; a closed
+    sky has none either, only the day tint's dimming (task 177), so the ground is not darkened
+    twice; they fade out with dusk and with rain or snow, and are never indoors. One shader
+    overlay in world pixels (cloud_shadows.gdshader), numbers in data/lighting.cfg
+    [cloud_shadows]. Nothing in the state follows them: sunlight, crops and drying do not.
+    Nothing in the game reacts yet (crops, floods,
     frozen rivers, energy and the like come later); the state is ready for it. No
     effects inside buildings. Rain, snow, streaks, leaves and fog are anchored to the
     world, not the screen: they stay in place when the player walks.

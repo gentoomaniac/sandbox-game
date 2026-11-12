@@ -2,7 +2,8 @@ class_name WeatherView
 extends CanvasLayer
 ## The look of the weather, inside the world viewport so that it is drawn on the art pixel
 ## grid: rain, snow, wind streaks and leaves (one shader, see weather_precipitation.gdshader),
-## fog (weather_fog.gdshader) and the flash of lightning. Rain, snow and fog are anchored to
+## fog (weather_fog.gdshader), cloud shadows drifting over the ground by day
+## (cloud_shadows.gdshader) and the flash of lightning. Rain, snow and fog are anchored to
 ## the world, so they stay in place when the player walks. They cover the whole viewport, which
 ## is also all the window ever shows, at any zoom. The scene feeds it the weather every frame
 ## (`show_weather`); what is on screen follows with a fade, so changes in the weather are
@@ -13,6 +14,7 @@ signal flashed
 
 const PRECIPITATION_SHADER := preload("res://game/scenes/weather_precipitation.gdshader")
 const FOG_SHADER := preload("res://game/scenes/weather_fog.gdshader")
+const CLOUD_SHADOWS_SHADER := preload("res://game/scenes/cloud_shadows.gdshader")
 
 ## How fast what is shown follows the weather: the share of the way it covers per second.
 const FOLLOW_RATE := 1.5
@@ -41,16 +43,25 @@ var is_flash_held := false
 ## motion follows too (see AmbientMotion).
 var rain := 0.0
 var wind := Vector2.ZERO
+## How dark the darkest part of a cloud shadow is now (0 to 1), and how far the shadows have
+## drifted, in pixels.
+var cloud_shadow_strength := 0.0
+var cloud_shadow_drift := Vector2.ZERO
 
 var _precipitation := ColorRect.new()
 var _fog := ColorRect.new()
+var _cloud_shadows := ColorRect.new()
 var _flash := ColorRect.new()
+var _rules := LightingRules.default_rules()
 var _target := WeatherSample.new()
 var _has_weather := false
 ## The other intensities shown now.
 var _snow := 0.0
 var _fog_density := 0.0
 var _wind_intensity := 0.0
+var _cloud_cover := 0.0
+## How much daylight there is (see DayNightTint).
+var _daylight := 0.0
 ## How far each effect has moved, in pixels.
 var _rain_fall := 0.0
 var _snow_scroll := Vector2.ZERO
@@ -64,19 +75,22 @@ var _flash_tween: Tween
 func _init() -> void:
 	layer = 1
 	var view_size := Vector2(ViewMath.VIEWPORT_SIZE)
-	for rect: ColorRect in [_fog, _precipitation, _flash]:
+	for rect: ColorRect in [_cloud_shadows, _fog, _precipitation, _flash]:
 		rect.size = view_size
 		rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		add_child(rect)
 	_fog.material = _shader_material(FOG_SHADER, view_size)
+	_cloud_shadows.material = _shader_material(CLOUD_SHADOWS_SHADER, view_size)
 	_precipitation.material = _shader_material(PRECIPITATION_SHADER, view_size)
 	_flash.color = Color(FLASH_COLOR, 0.0)
 
 
-## Sets the weather to show and the tint of the world (see DayNightTint), which the effects
-## wear too. The first weather shown appears at once; later changes fade in and out.
-func show_weather(sample: WeatherSample, tint: Color) -> void:
+## Sets the weather to show, the tint of the world (see DayNightTint), which the effects
+## wear too, and how much daylight there is (0 to 1), which the cloud shadows fade with. The
+## first weather shown appears at once; later changes fade in and out.
+func show_weather(sample: WeatherSample, tint: Color, daylight: float) -> void:
 	_target = sample
+	_daylight = daylight
 	if _is_snap_due:
 		_is_snap_due = false
 		_follow_target(1.0)
@@ -120,6 +134,7 @@ func _process(delta: float) -> void:
 	var gust_direction := -1.0 if wind_x < 0.0 else 1.0
 	_streak_scroll += Vector2(gust_direction * wind.length() * STREAK_SPEED_PER_WIND, 0.0) * delta
 	_fog_drift += (FOG_BASE_DRIFT + wind * FOG_DRIFT_PER_WIND) * delta
+	cloud_shadow_drift += wind * _rules.cloud_shadow("speed_per_wind") * delta
 	if is_flash_held:
 		_flash.color.a = FLASH_PEAK
 	_show_effects(wind_x)
@@ -131,6 +146,7 @@ func _follow_target(share: float) -> void:
 	_snow = lerpf(_snow, _target.snow, share)
 	_fog_density = lerpf(_fog_density, _target.fog, share)
 	_wind_intensity = lerpf(_wind_intensity, _target.wind, share)
+	_cloud_cover = lerpf(_cloud_cover, _target.cloud_cover, share)
 	wind = wind.lerp(_target.wind_direction * _target.wind_speed, share)
 
 
@@ -148,6 +164,7 @@ func _show_effects(wind_x: float) -> void:
 	precipitation.set_shader_parameter("snow_scroll", _snow_scroll)
 	precipitation.set_shader_parameter("wind", _wind_intensity)
 	precipitation.set_shader_parameter("wind_scroll", _streak_scroll)
+	_show_cloud_shadows()
 	var fog: ShaderMaterial = _fog.material
 	fog.set_shader_parameter("fog", _fog_density)
 	fog.set_shader_parameter("drift", _fog_drift)
@@ -155,6 +172,30 @@ func _show_effects(wind_x: float) -> void:
 	if camera != null:
 		precipitation.set_shader_parameter("camera", camera.position.round())
 		fog.set_shader_parameter("camera", camera.position.round())
+
+
+## The shadows need a sun that is out: by day, under a partly clouded sky, with no rain or snow.
+## Under a closed sky there are none, as the day tint dims the whole scene then (task 177), so
+## the ground isn't darkened twice.
+func _show_cloud_shadows() -> void:
+	var closed_from := _rules.cloud_shadow("closed_from")
+	var open_sky := 1.0 - smoothstep(closed_from, 1.0, _cloud_cover)
+	var sun_out := 1.0 - maxf(rain, _snow)
+	cloud_shadow_strength = (_rules.cloud_shadow("strength") * _daylight * sun_out * open_sky)
+	_cloud_shadows.visible = cloud_shadow_strength * _cloud_cover > MIN_INTENSITY
+	var shadows: ShaderMaterial = _cloud_shadows.material
+	shadows.set_shader_parameter("cover", _cloud_cover)
+	shadows.set_shader_parameter("strength", cloud_shadow_strength)
+	shadows.set_shader_parameter(
+		"size",
+		_rules.cloud_shadow("size") * (1.0 + _rules.cloud_shadow("size_growth") * _cloud_cover)
+	)
+	shadows.set_shader_parameter("coverage", _rules.cloud_shadow("coverage"))
+	shadows.set_shader_parameter("softness", _rules.cloud_shadow("softness"))
+	shadows.set_shader_parameter("drift", cloud_shadow_drift)
+	var camera := get_viewport().get_camera_2d()
+	if camera != null:
+		shadows.set_shader_parameter("camera", camera.position.round())
 
 
 static func _shader_material(shader: Shader, view_size: Vector2) -> ShaderMaterial:

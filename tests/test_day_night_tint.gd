@@ -21,6 +21,21 @@ func test_night_is_dark_blue_but_not_black_and_noon_is_neutral() -> void:
 	assert_eq(tint.color, Color.WHITE)
 
 
+func test_daylight_is_full_at_noon_and_none_at_night_and_indoors() -> void:
+	var tint: DayNightTint = autofree(DayNightTint.new())
+	var clock := GameClock.new()
+	clock.set_time(12, 0)
+	tint.show_time(clock, 1.0)
+	assert_eq(tint.daylight, 1.0, "clouds don't change how much daylight there is")
+	clock.set_time(0, 0)
+	tint.show_time(clock)
+	assert_eq(tint.daylight, 0.0)
+	clock.set_time(12, 0)
+	tint.show_time(clock)
+	tint.show_interior()
+	assert_eq(tint.daylight, 0.0)
+
+
 func test_tint_is_continuous_across_midnight() -> void:
 	var tint: DayNightTint = autofree(DayNightTint.new())
 	var clock := GameClock.new()

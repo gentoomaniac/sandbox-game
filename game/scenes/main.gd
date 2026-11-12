@@ -423,7 +423,7 @@ func _process(delta: float) -> void:
 		_view.refresh_soil(_state.last_hour_rain())
 	_autosave_on_time(delta)
 	_tiredness_view.is_awake = not _is_in_transition
-	_weather_view.show_weather(_weather, _tint.color)
+	_weather_view.show_weather(_weather, _tint.color, _tint.daylight)
 	_view.ambient_motion.update(delta, _weather_view.wind, _weather_view.rain)
 	_view.ambient_motion.show_tide(Tide.level(_state.clock.total_minutes()))
 	if _coordinates_hud.visible:
