@@ -10,7 +10,7 @@ const DEFAULT_PATH := "res://data/energy.cfg"
 const REQUIRED_KEYS := {
 	"cost": ["till", "hit", "water", "plant", "pick", "mow", "dig"],
 	"can": ["capacity"],
-	"weight": ["free_kg", "step_kg", "extra_per_step"],
+	"weight": ["step_kg", "extra_per_step"],
 	"walk": ["slow_energy", "slow_speed", "very_slow_energy", "very_slow_speed"],
 	"debuff": ["walk_speed", "energy_max", "health"],
 	"bars": ["warning"],
@@ -66,10 +66,10 @@ func can_capacity() -> int:
 	return int(_value("can", "capacity"))
 
 
-## How much more a use costs while carrying this many kilograms: 1 up to the free weight,
-## then linearly more.
-func weight_factor(kilograms: float) -> float:
-	var over := maxf(0.0, kilograms - _value("weight", "free_kg"))
+## How much more a use costs while carrying this many kilograms: 1 up to the `free_kg` the
+## character carries (see Attributes `carry_capacity`), then linearly more.
+func weight_factor(kilograms: float, free_kg: float) -> float:
+	var over := maxf(0.0, kilograms - free_kg)
 	return 1.0 + over / _value("weight", "step_kg") * _value("weight", "extra_per_step")
 
 

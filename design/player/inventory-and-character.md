@@ -25,7 +25,9 @@
     action (left click or Space) acts with the held item.
   - Items of the same kind stack, up to 99 per slot; tools don't stack.
   - Every item has a weight; the total carried weight raises how much energy actions use
-    (see [Energy and sleep](energy-and-sleep.md)).
+    (see [Energy and sleep](energy-and-sleep.md)). The bag shows "Carrying x / y kg": the load
+    over the carry capacity that Strength sets (task 187), which is a soft limit: more can
+    always be picked up, it only costs more energy.
   - An inventory screen shows all slots; items are moved between slots by dragging (task 134,
     before that by clicking: pick up, put down, task 88). Press on a stack and drag it: its icon
     follows the mouse only while the button is held, and a plain click picks nothing up. Let go

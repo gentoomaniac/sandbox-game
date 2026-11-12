@@ -20,6 +20,8 @@ const SLOT_GAP := 2
 const OPENING_SHIFT := Vector2(48, 0)
 ## The backpack is 5 slots wide and 4 rows high.
 const BACKPACK_COLUMNS := 5
+## The longest the weight label gets, to give it room for.
+const WIDEST_WEIGHT_TEXT := "Carrying 999.9 / 999.9 kg"
 
 ## The views of the backpack's slots below the hotbar, by slot; the hotbar draws its own.
 var _backpack_views := {}
@@ -63,11 +65,13 @@ func show_player(player: PlayerState) -> void:
 		close()
 		_player.inventory.changed.disconnect(_refresh)
 		_player.equipment.changed.disconnect(_refresh)
+		_player.attributes.changed.disconnect(_refresh)
 	_player = player
 	for slot: int in _backpack_views:
 		_backpack_views[slot].bind_to(player.inventory, slot)
 	player.inventory.changed.connect(_refresh)
 	player.equipment.changed.connect(_refresh)
+	player.attributes.changed.connect(_refresh)
 	_refresh()
 
 
@@ -105,4 +109,14 @@ func _refresh() -> void:
 	var inventory := _player.inventory
 	for slot: int in _backpack_views:
 		_backpack_views[slot].show_stack(inventory.slots[slot], slot == inventory.selected_slot)
-	_weight_label.text = "Carrying %.1f kg" % _player.carried_weight()
+	_weight_label.text = (
+		"Carrying %.1f / %s kg"
+		% [_player.carried_weight(), Attributes.number_text(_player.attributes.carry_capacity())]
+	)
+	# The label is wider than the slots, so it keeps the room of its longest text and the panel
+	# does not resize every time the load changes.
+	var font := _weight_label.get_theme_font("font")
+	var font_size := _weight_label.get_theme_font_size("font_size")
+	_weight_label.custom_minimum_size.x = (
+		font.get_string_size(WIDEST_WEIGHT_TEXT, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	)

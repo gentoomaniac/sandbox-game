@@ -145,7 +145,9 @@ func use_tile(target: Vector2i) -> Use:
 		return Use.OUT_OF_REACH
 	var weight_factor := 1.0
 	if not _state.cheats.is_weight_off:
-		weight_factor = _state.energy_rules.weight_factor(_state.player.carried_weight())
+		weight_factor = _state.energy_rules.weight_factor(
+			_state.player.carried_weight(), _state.player.attributes.carry_capacity()
+		)
 	var drain := 0.0 if _state.cheats.is_drain_off else _state.energy_drain
 	var use := _do_use(target)
 	if COST_KINDS.has(use):

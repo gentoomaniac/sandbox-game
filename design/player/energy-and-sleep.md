@@ -20,8 +20,10 @@
       takes a few frames and the save one, none long (task 158).
     - **Costs per action** live in a hand-editable data file (`data/energy.cfg`). First
       values: tool use (till, hit, water) 2, planting and picking 0.5; walking is free.
-    - **Weight:** up to 40 kg costs nothing extra (changed 2026-11-06, was 20 kg); above
-      that, +10 % cost per 10 kg more. Tools weigh nothing (task 72).
+    - **Weight:** up to the carry capacity costs nothing extra: 40 kg for a new character
+      (Strength sets it, +4 kg a level, task 187; was a fixed 20 kg, then 40 kg from
+      2026-11-06); above that, +10 % cost per 10 kg more. Nothing is refused for being too
+      heavy: the limit is soft. Tools weigh nothing (task 72).
     - **Low energy slows walking:** at 10 % or less to 75 % speed, below 5 % to 50 %.
     - **Passing out** at 0 (changed 2026-11-05): the player sleeps until the next 06:30,
       but at least 10 hours (collapsing at 22:00 wakes at 08:00, at 15:00 at 06:30), and
