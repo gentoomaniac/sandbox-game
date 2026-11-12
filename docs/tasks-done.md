@@ -5521,3 +5521,26 @@ The user, 2026-11-11: "Add a command to bypass the up too late penalty"
 - Tests: with it on, the clock passes 01:00 awake with no pass-out and no warning; off, as today.
 
 Done: 2026-11-12. Console `nolate` toggle (CheatFlags `is_late_off`, session only like the others, "No late" on the cheat HUD): `GameState.pass_awake_time` sets no `is_up_too_late` past 01:00 and `TirednessSigns.late_bubble_for` shows no 00:00/00:30 warning. Passing out from no energy is unchanged.
+
+## 216. Frame rate limit: a settings slider, 60 fps by default
+
+- [x] Done
+
+Done: 2026-11-12. A Game settings slider (10 to 240 fps in steps of 10, then "No limit"), 60 by
+default; `--max-fps=N` for one run; tests (via SANDBOX_GAME_MAX_FPS=0) and the bench run uncapped.
+
+The user, 2026-11-12: "Running the game makes my CPU hurt, I think we need a framerate limit"
+and "add a slider in the settings to select it. Set the default to 60, down to 10, max what it
+is now." Measured: with only vsync the game drew 240 fps on the user's 240 Hz laptop; a 60 cap
+held 60 fps steady.
+- A frame rate setting in GameSettings (saved in the settings file, default 60) applied to
+  `Engine.max_fps` at start and when it changes.
+- A slider on the game settings page of the pause menu: 10 to 240 in steps of 10, then a last
+  stop "No limit" (today's behaviour, vsync only, `max_fps = 0`). The user, 2026-11-12: "make the
+  top no limit then instead of a fixed number".
+- Game speed does not depend on the frame rate.
+- A startup option `--max-fps=N` (0 = no limit) overrides the setting for one run, not saved.
+  Test runs and the bench pass `--max-fps=0` so they run uncapped (the user, 2026-11-12: "add a
+  parameter to set framerate and use that one for the test runs").
+- Tests for the setting (default, range, save and load); a screenshot of the slider; README and
+  docs (design/tech/build-and-tools.md, design/presentation/menus-and-hud.md).
