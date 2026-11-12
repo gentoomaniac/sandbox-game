@@ -5194,3 +5194,29 @@ later."
   values matching today; README and design notes (design/player/).
 
 Done: 2026-11-12. data/attributes.cfg with AttributeRules and Attributes (player.attributes): Strength, Agility, Stamina and HP, base level 10 (1 to 100); `value()` adds transient bonuses (`add_bonus`/`remove_bonus`, nothing gives one yet). Stamina sets max energy (+10 a level), HP max health (+10), Strength the carry capacity in kg (+4), the free weight above which tool use costs more energy; pickup is never refused (the user's choice). At base: 100, 100, 40 kg, as before. MAX_ENERGY/MAX_HEALTH are gone; sleep fills are now a share of the bars. The character window lists the levels and the derived numbers; the bag reads "Carrying x / y kg". Agility has no effect yet. Save version 30 (the upgrade from 19 dropped); console `attribute <name> <level>`. Plan: docs/plans/187-attributes.md.
+
+## 194. Cloud shadows drift over the ground
+
+- [x] Done
+
+The user, 2026-11-11: "add clouds to the weather system. cloudy weather shows cloud shadows on the
+ground when the sun is out (no actual clouds are drawn). it can be slightly darker when there is a
+closed sky with only clouds. the shadows should move corresponding with wind speed. the clouds only
+affect the visuals, they have no effect on the plants etc."
+- The weather already has `cloud_cover` (0 to 1, game/state/weather.gd; the forced weathers set it).
+  Use it for the look only: no change to sunlight hours, crops, drying or anything in the state.
+- By day with the sun out and partial cover: soft cloud shadows on the ground (a cheap overlay or
+  shader, e.g. a scrolling noise mask darkening the world a little), more and larger shadows with
+  more cover, none under a clear sky. They drift downwind at a speed that follows the wind speed and
+  direction (the same wind the sway shader and gusts use). Under a closed sky (cover near 1) no
+  moving shadows but the whole scene slightly darker (with the day/night tint and the overcast
+  logic of task 177 in mind; don't double-darken). Fade with dusk; none at night or indoors.
+- Shadows fall on the ground and what stands on it alike (one screen-space or world-space overlay
+  under the UI); they move with the world when the camera moves (world-anchored, not stuck to the
+  screen). Both arts.
+- Cheap: one overlay, no per-tile work; numbers (shadow strength, size, speed per m/s, closed-sky
+  darkening) in data/ (lighting.cfg or ambience).
+- Tests for no shadows when clear or at night, darkness under a closed sky, drift following the
+  wind, no state effect; screenshots and a short clip or frames for the user; README note.
+
+Done: 2026-11-12. One full-viewport overlay (game/scenes/cloud_shadows.gdshader) in WeatherView draws soft noise patches in world pixels; they drift with the same wind as the fog and sway. Strength = strength x daylight x sun out (no rain or snow shown) x open sky; a closed sky (cover 0.75 to 1) fades them out and keeps only task 177's darkening. DayNightTint exposes `daylight` (0 at night and indoors). Numbers in data/lighting.cfg [cloud_shadows]. `cloudy` and `overcast` can be forced (--weather, console). The drift offset grows without bound like the fog's (float precision after many hours; not seen). The closed-sky darkening is still the constant OVERCAST_DARKENING in day_night_tint.gd.

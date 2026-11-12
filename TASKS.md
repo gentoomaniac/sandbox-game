@@ -224,30 +224,6 @@ and in autumn gets leaves on top gradually and in winter frost and/or snow."
   changes and the user's decisions: smooth colour mix, a little straw on the dry grass in autumn,
   ice later). The queue goes on with 186 first.
 
-## 194. Cloud shadows drift over the ground
-
-- [ ] Done
-
-The user, 2026-11-11: "add clouds to the weather system. cloudy weather shows cloud shadows on the
-ground when the sun is out (no actual clouds are drawn). it can be slightly darker when there is a
-closed sky with only clouds. the shadows should move corresponding with wind speed. the clouds only
-affect the visuals, they have no effect on the plants etc."
-- The weather already has `cloud_cover` (0 to 1, game/state/weather.gd; the forced weathers set it).
-  Use it for the look only: no change to sunlight hours, crops, drying or anything in the state.
-- By day with the sun out and partial cover: soft cloud shadows on the ground (a cheap overlay or
-  shader, e.g. a scrolling noise mask darkening the world a little), more and larger shadows with
-  more cover, none under a clear sky. They drift downwind at a speed that follows the wind speed and
-  direction (the same wind the sway shader and gusts use). Under a closed sky (cover near 1) no
-  moving shadows but the whole scene slightly darker (with the day/night tint and the overcast
-  logic of task 177 in mind; don't double-darken). Fade with dusk; none at night or indoors.
-- Shadows fall on the ground and what stands on it alike (one screen-space or world-space overlay
-  under the UI); they move with the world when the camera moves (world-anchored, not stuck to the
-  screen). Both arts.
-- Cheap: one overlay, no per-tile work; numbers (shadow strength, size, speed per m/s, closed-sky
-  darkening) in data/ (lighting.cfg or ambience).
-- Tests for no shadows when clear or at night, darkness under a closed sky, drift following the
-  wind, no state effect; screenshots and a short clip or frames for the user; README note.
-
 ## 196. Windows get a close button, and a click outside closes them
 
 - [ ] Done
