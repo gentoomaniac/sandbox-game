@@ -59,10 +59,18 @@ func test_wind_is_silent_when_calm_and_loudest_when_strong() -> void:
 	)
 
 
-func test_gusts_come_more_often_in_stronger_wind() -> void:
-	var max_level := _rules.value("loops", "wind_max_level")
-	assert_eq(_rules.gust_chance(0.0), 0.0)
-	assert_gt(_rules.gust_chance(max_level), _rules.gust_chance(max_level / 2.0))
+func test_gusts_are_louder_in_stronger_wind_and_never_silent() -> void:
+	var soft := _rules.gust_level(0.01)
+	assert_gt(soft, 0.0)
+	assert_lt(soft, _rules.gust_level(0.5))
+	assert_lt(_rules.gust_level(0.5), _rules.gust_level(1.0))
+	assert_almost_eq(_rules.gust_level(1.0), 1.0, 0.0001, "a storm's gust is at full volume")
+
+
+func test_a_gust_is_heard_from_the_brightness_of_the_front_given_in_the_data() -> void:
+	var from := _rules.value("loops", "gust_front_from")
+	assert_false(_rules.is_gust(from - 0.01))
+	assert_true(_rules.is_gust(from))
 
 
 func test_thunder_comes_after_a_delay_within_the_range() -> void:

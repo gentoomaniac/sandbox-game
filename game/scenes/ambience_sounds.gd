@@ -25,6 +25,7 @@ var rules := AmbienceRules.default_rules()
 var _audio: AudioService
 var _state: GameState
 var _wildlife: WildlifeView
+var _weather_view: WeatherView
 var _rng := RandomNumberGenerator.new()
 var _seconds_to_tick := 0.0
 var _rain_loop: SoundLoop
@@ -34,7 +35,13 @@ var _chorus_loop: SoundLoop
 var _rain_target := 0.0
 var _wind_target := 0.0
 var _chorus_target := 0.0
+## What the wind loop is at without a gust, as of the last look at the weather.
+var _wind_level := 0.0
 var _gust_seconds_left := 0.0
+## How strong the gust that swells the wind loop was, 0 to 1 (AmbientMotion.gust_for).
+var _gust_strength := 0.0
+## Whether a gust front was over the player at the last frame, to hear a gust only as one arrives.
+var _is_front_over := false
 ## The room the fire loops belong to (null in the world).
 var _fire_room: Interior
 ## The loop of each fire that crackles.
@@ -56,11 +63,13 @@ func listen(
 	_audio = audio
 	_state = state
 	_wildlife = wildlife
+	_weather_view = weather_view
 	weather_view.flashed.connect(_on_flash)
 	wildlife.animal_added.connect(_on_animal_added)
 
 
 func _process(delta: float) -> void:
+	_listen_for_gusts(AmbientMotion.shader_time())
 	if (_state.current_map as Interior) != _fire_room:
 		_follow_fires()
 	for animal in _bee_loops:
@@ -112,27 +121,47 @@ func _follow_fires() -> void:
 			_fire_loops[fire] = loop
 
 
-## Makes the loops follow the weather, and starts a gust now and then.
+## Makes the loops follow the weather.
 func _follow_weather(weather: WeatherSample) -> void:
 	var fade_seconds := rules.value("loops", "fade_seconds")
 	var rain_level := rules.rain_level(weather)
 	_rain_loop = _follow(_rain_loop, &"rain_loop", rain_level, _rain_target, fade_seconds)
 	_rain_target = rain_level
 
-	var wind_level := rules.wind_level(weather)
+	_wind_level = rules.wind_level(weather)
 	var was_gusting := _gust_seconds_left > 0.0
 	_gust_seconds_left -= TICK_SECONDS
-	if wind_level > 0.0 and _rng.randf() < rules.gust_chance(wind_level) * TICK_SECONDS:
-		_gust_seconds_left = rules.value("loops", "gust_seconds")
-		_audio.play(&"wind_gust")
-	var is_gusting := _gust_seconds_left > 0.0
-	if is_gusting != was_gusting:
+	if (_gust_seconds_left > 0.0) != was_gusting:
 		fade_seconds = rules.value("loops", "gust_fade_seconds")
-	var wind_target := wind_level
-	if is_gusting:
-		wind_target += rules.value("loops", "gust_swell")
+	_follow_wind(fade_seconds)
+
+
+## Makes the wind loop follow the wind, swelling while a gust lasts.
+func _follow_wind(fade_seconds: float) -> void:
+	var wind_target := _wind_level
+	if _gust_seconds_left > 0.0:
+		wind_target += rules.value("loops", "gust_swell") * _gust_strength
 	_wind_loop = _follow(_wind_loop, &"wind_loop", wind_target, _wind_target, fade_seconds)
 	_wind_target = wind_target
+
+
+## Plays a gust as a front of the gusts the plants sway in arrives at the player: the shaders'
+## formula, for the wind and the time (`shader_seconds`, see AmbientMotion.shader_time) they use.
+## There is none while the wind is too light for gusts to show.
+func _listen_for_gusts(shader_seconds: float) -> void:
+	var wind := _weather_view.wind
+	var strength := AmbientMotion.gust_for(wind.length())
+	var front := 0.0
+	if strength > 0.0:
+		var player := _state.player.position * TerrainTileset.TILE_SIZE
+		front = AmbientMotion.gust_front(player, wind.normalized(), shader_seconds)
+	var is_over := rules.is_gust(front)
+	if is_over and not _is_front_over:
+		_gust_strength = strength
+		_gust_seconds_left = rules.value("loops", "gust_seconds")
+		_audio.play(&"wind_gust", null, false, rules.gust_level(strength))
+		_follow_wind(rules.value("loops", "gust_fade_seconds"))
+	_is_front_over = is_over
 
 
 ## Starts, fades or stops a weather loop (or the frogs' chorus) so that it is at `level`.

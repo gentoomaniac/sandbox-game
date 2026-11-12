@@ -110,7 +110,8 @@
     and more while a gust front, the same fronts the plants sway in, is over the tree. Most
     leaves drop and sway down beside the tree; in wind some are carried off downwind, tumbling,
     for a few tiles before they fade out. At most 24 leaves are in the air at once. Nothing is
-    saved and nothing falls indoors. Task 176's audible gusts are not tied in yet.
+    saved and nothing falls indoors. The sound
+    of the gusts follows the same fronts (see the ambience in presentation/sound.md).
   - **Effects for now are visual only:** rain and snow particles (slanted by the wind),
     fog drifting over the world, wind streaks and blowing leaves, lightning flashes, and
     overcast skies dimming daylight, and **cloud shadows** (task 194): by day, with the sun out

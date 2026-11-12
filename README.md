@@ -26,7 +26,8 @@ Which file each sound plays is in [data/sounds.cfg](data/sounds.cfg), so any
 sound can be swapped for a recording.
 
 The world has an ambience too: rain and wind loops that follow the weather (and swell with
-gusts), thunder some seconds after each flash of lightning, birds chirping by day, deer,
+gusts, heard as the gust fronts that bend the grass reach you), thunder some seconds after
+each flash of lightning, birds chirping by day, deer,
 rabbits and squirrels, bees buzzing at their flowers, frogs croaking near water on
 warm spring and summer evenings and nights (and, where frogs are about, a quiet chorus of
 them at dusk), a stork clattering its bill and geese honking,

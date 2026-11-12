@@ -87,8 +87,12 @@ Settings → Audio, saved with the others; 0 mutes it).
   often. Both are rare and quieter than the farm animals.
 - **How the ambience is made** (decided 2026-11-05, numbers in `data/ambience.cfg`): once
   a second the weather sets the loops: rain at its strength, wind from calm (silent) to
-  full speed, and in wind a gust now and then plays `wind_gust` and swells the wind loop
-  for a couple of seconds. Each lightning flash is followed by one thunder 1 to 9 seconds
+  full speed. A gust is heard when a gust front, the ones the plants sway in (the shader's
+  formula on the CPU, with the weather view's wind and the shaders' clock), reaches the
+  player (decided 2026-11-12, task 176): it plays `wind_gust` and swells the wind loop for a
+  couple of seconds, softly where gusts only begin to show (3 m/s) and at full volume and
+  swell in a storm, and not at all below that speed. Indoors the Ambience bus turns it down
+  like the rest. Each lightning flash is followed by one thunder 1 to 9 seconds
   later, plain (not positional) on the Ambience bus. Birds chirp at a chance per second by
   season (winter few), part of the day (none at night) and rain (none in heavy rain), from
   a bird in view or else a tree near the player. Frogs look at some random tiles within 12

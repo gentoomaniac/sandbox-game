@@ -17,7 +17,8 @@ const REQUIRED_KEYS := {
 		"wind_max_level",
 		"min_level",
 		"fade_seconds",
-		"gust_chance",
+		"gust_front_from",
+		"gust_soft_level",
 		"gust_swell",
 		"gust_seconds",
 		"gust_fade_seconds",
@@ -150,9 +151,17 @@ func wind_level(weather: WeatherSample) -> float:
 	return clampf(share, 0.0, 1.0) * value("loops", "wind_max_level")
 
 
-## The chance per second of a gust of wind, given the wind loop's level.
-func gust_chance(level: float) -> float:
-	return value("loops", "gust_chance") * level / value("loops", "wind_max_level")
+## Whether a gust front, `front` (0 to 1, AmbientMotion.gust_front), is over the player closely
+## enough to be heard as a gust.
+func is_gust(front: float) -> bool:
+	return front >= value("loops", "gust_front_from")
+
+
+## How loud a gust is (a share of the sound's volume) in gusts of this `strength` (0 to 1,
+## AmbientMotion.gust_for): a soft rustle where gusts only begin to show, full in a storm.
+func gust_level(strength: float) -> float:
+	var soft := value("loops", "gust_soft_level")
+	return soft + (1.0 - soft) * strength
 
 
 ## How long after a flash its thunder is heard, in seconds: a random time of a far-off strike.
