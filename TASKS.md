@@ -224,33 +224,6 @@ and in autumn gets leaves on top gradually and in winter frost and/or snow."
   changes and the user's decisions: smooth colour mix, a little straw on the dry grass in autumn,
   ice later). The queue goes on with 186 first.
 
-## 203. Wattle fences and stone walls can be made and placed
-
-- [ ] Done
-
-The user, 2026-11-11: "Are the willow fences or the stone walls that the map generated creatable?
-If not they should"
-- Today the world generator lays them along field boundaries (WorldObjectTypes.WATTLE_FENCE, hazel
-  rods woven between stakes, cut with the axe for 2 fibre; STONE_WALL, dry fieldstones, taken
-  apart with the pickaxe for 3 stone; both `connects: field_boundary`, drawn tile by tile), but
-  there is no recipe or item for either: the player can only take them down.
-- Add both as things the player makes and places piece by piece, as the pig pen's fence (task
-  165: a `pen_fence` item from a workbench recipe, placed on a tile, joining its neighbours):
-  - a wattle fence piece: made by hand or at the workbench from rods or sticks and fibre (pick
-    what fits the items that exist; hazel rods if there is such an item, else branches or
-    sticks), cheap;
-  - a stone wall piece: stacked by hand from stone (about the 3 stone it gives back), no station.
-  Pick the recipes, skill and level (woodworking for the fence, masonry for the wall if fitting);
-  numbers in data/.
-- Placed pieces are the same world objects as the generated ones: they join each other and the
-  generated runs (the `field_boundary` connection), block walking, are taken down with the same
-  tool for the same drops (take care the drops don't make more than the recipe cost, or say why),
-  and are saved like other placed objects. Both arts (the art exists).
-- Placement: the same rules as the pen fence (free tile, not on water, buildings or paths that must
-  stay open); a placement ghost if the pen fence has one.
-- Tests: crafting, placing, joining a generated run, taking down, saving. README (building or
-  crafting section), design pages.
-
 ## 204. A rooster among the chickens, crowing now and then
 
 - [ ] Done

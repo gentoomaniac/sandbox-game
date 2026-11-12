@@ -5474,3 +5474,32 @@ The user, 2026-11-11: "Storks spawn too frequent"
 - Tests for the rate (arrivals per hour within a bound) and the cap; design note.
 
 Done: 2026-11-12. Measured with the new tools/bench/storks.gd (headless, writes nothing): before, a player walking by wet meadows saw 0.3 to 1 new storks a game hour, 2 at once, each one scared off replaced within the hour; after, 0.06 to 0.12 an hour, at most 1. data/wildlife.cfg: stork cap 1 and spawn_chance 0.008, roof_stork cap 1 and 0.003, and the new optional `return_gap_minutes` (stork 120, roof_stork 240): after one leaves, no other comes for that long, on spawn ticks or settling. Nest pairs unchanged. The gap isn't saved.
+
+## 203. Wattle fences and stone walls can be made and placed
+
+- [x] Done
+
+The user, 2026-11-11: "Are the willow fences or the stone walls that the map generated creatable?
+If not they should"
+- Today the world generator lays them along field boundaries (WorldObjectTypes.WATTLE_FENCE, hazel
+  rods woven between stakes, cut with the axe for 2 fibre; STONE_WALL, dry fieldstones, taken
+  apart with the pickaxe for 3 stone; both `connects: field_boundary`, drawn tile by tile), but
+  there is no recipe or item for either: the player can only take them down.
+- Add both as things the player makes and places piece by piece, as the pig pen's fence (task
+  165: a `pen_fence` item from a workbench recipe, placed on a tile, joining its neighbours):
+  - a wattle fence piece: made by hand or at the workbench from rods or sticks and fibre (pick
+    what fits the items that exist; hazel rods if there is such an item, else branches or
+    sticks), cheap;
+  - a stone wall piece: stacked by hand from stone (about the 3 stone it gives back), no station.
+  Pick the recipes, skill and level (woodworking for the fence, masonry for the wall if fitting);
+  numbers in data/.
+- Placed pieces are the same world objects as the generated ones: they join each other and the
+  generated runs (the `field_boundary` connection), block walking, are taken down with the same
+  tool for the same drops (take care the drops don't make more than the recipe cost, or say why),
+  and are saved like other placed objects. Both arts (the art exists).
+- Placement: the same rules as the pen fence (free tile, not on water, buildings or paths that must
+  stay open); a placement ghost if the pen fence has one.
+- Tests: crafting, placing, joining a generated run, taking down, saving. README (building or
+  crafting section), design pages.
+
+Done: 2026-11-12. Items `wattle_fence` (workbench, woodworking 5: 1 log + 4 fibre -> 2) and `stone_wall` (by hand, masonry 5: 3 stone -> 1), icons in both arts from tools/art boundaries.py. The generated objects got `placeable_in: OUTDOORS`, so placed pieces are the same objects: they join generated runs, block walking, save alike, and come down with the axe or pickaxe (or the hammer's take-down, like every placed thing) for 2 fibre or 3 stone, never more than the cost (the log is lost). No hazel-rod item exists, so the fence uses a log. Design: design/building/fences-and-walls.md.
