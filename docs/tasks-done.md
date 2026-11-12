@@ -5544,3 +5544,10 @@ held 60 fps steady.
   parameter to set framerate and use that one for the test runs").
 - Tests for the setting (default, range, save and load); a screenshot of the slider; README and
   docs (design/tech/build-and-tools.md, design/presentation/menus-and-hud.md).
+
+## 217. F3 overlay: the frames per second
+
+- [x] Done
+
+Done: 2026-11-12. The user, after task 216: "Add the current FPS to the F3 overlay". The last line
+of the F3 overlay (CoordinatesHud) is the frames per second the game draws now.
