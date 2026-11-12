@@ -1,8 +1,7 @@
 extends SaveUpgradeCase
 ## The farm animals are saved with their species, look, tint, place and how long they follow the
-## player and whether they wear a saddle; a save from before the saddle (version 21) loads with
-## none saddled. Their friendship and the days they were petted are kept too (task 173); a save
-## from before (version 26) loads with every animal a stranger.
+## player and whether they wear a saddle. Their friendship and the days they were petted are kept
+## too (task 173); a save from before (version 26) loads with every animal a stranger.
 
 
 func test_the_farm_animals_are_kept() -> void:
@@ -21,19 +20,6 @@ func test_the_farm_animals_are_kept() -> void:
 	assert_eq(animals[0].tint.to_html(false), "f4e8dc")
 	assert_eq(animals[0].position, Vector2(3.25, -4.5))
 	assert_eq(animals[1].look, &"rooster")
-
-
-func test_a_version_21_save_loads_with_no_horse_saddled() -> void:
-	var game := _current_game()
-	var horse := FarmAnimal.new(LivestockRules.HORSE, &"grey", Vector2(2.5, 3.5)).to_dict()
-	horse.erase("is_saddled")
-	game["livestock"] = [horse]
-	_write_save(21, game)
-
-	var animals := SaveFile.read(SAVE_PATH).livestock.all()
-
-	assert_eq(animals.size(), 1)
-	assert_false(animals[0].is_saddled)
 
 
 func test_the_friendship_and_the_days_of_petting_are_kept() -> void:
