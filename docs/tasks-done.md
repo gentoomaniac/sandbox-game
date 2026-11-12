@@ -5299,3 +5299,134 @@ nothing is moving. feels like the sound is off."
   shader's front at the player's place; a listening file at 5, 10 and 15 m/s for the user.
 
 Done: 2026-11-12. AmbienceSounds watches `AmbientMotion.gust_front` at the player (the sway shader's formula, clock and wind) and plays `wind_gust` once each time a front rises past `gust_front_from`; none at or below 3 m/s, where no gusts show. Its level is `gust_soft_level + (1 - soft) * strength` (`AudioService.play` takes a level), and the wind loop swells by `gust_swell * strength`. The random `gust_chance` is gone. Gusts come every 4 s at any speed (the shader's front spacing). Indoors the ambience bus muffles them. Listening files at 5, 10 and 15 m/s were an offline render with the game's timing.
+
+## 199. Process stations: the kiln and the oven get a 3x3 load, an activation button and a progress bar
+
+- [x] Done
+
+The user, 2026-11-11: "The killing [kiln] does the recipes on the side and offers an inventory 3x3
+slots. You put in raw material and fuel (wood for now) and after some time you'll get the resulting
+material. Only one recipe per craft. Add a little fire button to start the process with a progress
+bar above the greyed out inventory. Clicking a recipe adds the required materials from your
+inventory." Then: "the oven should work the same. Make that a type of crafting station code that's
+reusable. We'll have more use for it in the future." And: "leave out the ash. Only allow to put in
+what fits a recipe. If there's too much of a kind leave it in as is. That'll make the code easier
+and better reusable. We can later expand on it. Maybe the kiln implementation can turn it to ash,
+the cooking station to burnt food. The 'fire button' should just be an activation button where the
+implementation can add a symbol. So the cooking station and kiln might add a fire, a saw mill might
+add a saw blade, a fish breeding pond might add a fish."
+
+Today:
+- The kiln is a crafting station. Picking a recipe takes the materials and starts the firing.
+  - Its recipes are bricks, bricks_large and bricks_master in data/recipes.cfg, with `hours=12`
+    and logs among the materials.
+  - The firing runs in StationWork. Opening the menu when it's done takes the result out.
+  - Task 198 drops what doesn't fit by the kiln. This task replaces that path.
+- The oven's recipes are made at once, with no time and no fuel: bread, berry_tart and feast_cake.
+
+**One reusable kind of station, a process station** (name it to fit the code). The kiln and the
+oven both use it. A later station is a config section plus its recipes, with no new code. Examples
+are a forge, a smokehouse, a saw mill and a fish pond.
+- A station becomes one by its config in data/stations.cfg:
+  - that it is a process station;
+  - its grid size (3x3 for both);
+  - the icon of its activation button (a fire for the kiln and the oven).
+- There is no separate fuel concept. Wood is simply one of a recipe's materials, as the logs are
+  in the brick recipes today. A saw mill or a fish pond then needs nothing special.
+- **The window:**
+  - The station's recipes are listed on the side, with the grid and the activation button
+    beside them.
+  - The grid is the station's own storage. It is saved with the station, with a save version
+    bump and its upgrade per the save rules.
+  - The player moves stacks in and out as with a chest: drag and shift-click.
+- **Only what fits a recipe goes in, filtered as the grid fills.** The user, 2026-11-11: "once you
+  add ingredients, the materials you can add is filtered by the recipes. If you have one that
+  needs wood and stone and one that needs coal and stone, you can add stone and still be able to
+  put in wood and coal. But if you start with coal, you can only put in [stone]. Grey out items in
+  your inventory part that you can't put in. Materials not in a recipe are of course greyed out
+  from the beginning. Quantities work similarly: you can only put in as much stone as you have
+  either coal or wood. If you put in too much stone for the wood recipe but have enough coal, the
+  wood recipe gets greyed out." (Their example says "only wood" after coal; read it as the other
+  material of the coal recipe, stone. Say so in the report.)
+  - The rule: the grid's contents must always be part of one load of at least one of the
+    station's recipes, at some amount that fits the grid (the ratios of its materials kept). A
+    recipe still possible is "open"; one the contents rule out is greyed out in the list.
+  - An item, or a count of it, that would leave no open recipe is refused: a drag or shift-click
+    moves only as many as keep a recipe open (none if no count does).
+  - The player's inventory beside the grid greys out the stacks that can't go in now. Items in no
+    recipe of the station are greyed out from the start.
+  - Taking items back out of the grid opens recipes again.
+  - Keep this rule in the shared code as one plain function over the recipes and the contents
+    (pure state code, well tested), so the window only asks it.
+- **The recipe list:**
+  - There is one recipe per kind of result: one "Bricks", not today's three brick recipes.
+  - Under each recipe is an amount: a small number field to type in, and +/- buttons.
+  - The +/- buttons only go as high as the player's materials allow and as fits the grid. A
+    typed number is held to the same limit.
+  - A Max button by each recipe sets the amount to the most the player's materials, the grid and
+    what is already in the grid allow.
+  - A recipe the player can't make even once, or one the grid's contents rule out, is greyed out
+    and can't be clicked.
+  - Clicking a recipe moves the materials for the chosen amount from the inventory into the grid,
+    counting what is already in it.
+- **The activation button:**
+  - It starts the run when the grid holds at least one recipe's materials, one recipe per run.
+    Which recipe the grid matches when it could hold more than one is up to you; say which.
+  - The button shows the station's icon.
+- **While it runs:**
+  - A progress bar shows above the grid, and the grid is greyed out and locked.
+  - The time comes from the recipe's `hours`.
+  - The station shows its activity in the world, using the existing lit look and light, if any.
+  - It goes on with the window closed and with the player away, in game time.
+- **When done:**
+  - The materials of the amount made are used up, and the result is in the grid.
+  - With the filter there are no leftovers (the user, 2026-11-11: "This way we should also never
+    have too much of anything in the station"): the grid can only hold parts of one recipe's
+    loads, and the activation button runs only when it holds whole loads (n full loads of the open
+    recipe, no part load), so a run uses up everything that is in the grid. A part load keeps the
+    button greyed out with a short note of what is missing. Nothing turns into ash or anything
+    else; leftover handling (ash, burnt food) is not needed and not built.
+  - The player takes the results out like from a chest, only as much as fits. The rest stays in
+    the station.
+  - Nothing new goes in, and nothing new starts, until every produced item is taken out (the user,
+    2026-11-11: "You can't start anything new in the crafting station unless the produced items
+    are all taken out"): while results are in the grid, the recipe list and the inventory beside
+    it are greyed out with a short note, and the grid only lets things out.
+- **Skill:**
+  - Recipe `level` locks stay, for later recipes that unlock at a skill level, and each run
+    practises the recipe's skill.
+  - The masonry levels that made bricks_large and bricks_master pay off become a bonus on the one
+    Bricks recipe: at a high enough skill a run gives extra bricks besides the ones selected,
+    automatically.
+  - The old recipes gave one brick per raw brick and saved wood (6 bricks for 2 logs, 12 for 3,
+    18 for 3). The new bonus is extra bricks instead, for example a share of the load at level 50
+    and a larger one at 70.
+  - Pick the rule and the numbers and put them in data/, where the user tunes them; no need to ask.
+  - Make the bonus a setting of the shared code, per recipe or per station, so the oven could get
+    extra loaves the same way later. The oven gets none for now.
+- **The oven:**
+  - Its recipes get a baking time and wood among their materials. Pick them (bread about an hour)
+    and put the numbers in data/.
+  - Their cooking levels stay as recipe locks.
+  - It works indoors and outdoors, as it is placed today.
+- Other stations (the workbench and the hearth) keep today's instant crafting menu.
+- **Tests:**
+  - the shared code with a station defined only in test config;
+  - the grid saved and loaded;
+  - only recipe materials accepted, the filtering as the grid fills (the user's wood/coal/stone
+    example as a test, with quantities), recipes greyed out by the contents, inventory items
+    greyed out, taking out reopening recipes;
+  - the Max button;
+  - a recipe click moving materials;
+  - the amount limits;
+  - the button refused without a full recipe;
+  - locked while running;
+  - the button greyed out on a part load, a run using up the whole grid, the result after the
+    time;
+  - taking out only what fits, and nothing going in or starting while results are left;
+  - the kiln and the oven.
+- **Docs and screenshots:**
+  - README, the design pages on crafting, the kiln and the oven, and docs/ui.md.
+  - Screenshots of the kiln and the oven windows: empty, loaded, running and done.
+
+Done: 2026-11-12 (worker and reviewer on Opus). Shared code: `ProcessLoad` (the pure load rule over the recipes and the grid), `ProcessStation` (the grid as the object's storage, the run settled lazily on the game clock, results), `ProcessScreen` and `ProcessRecipeRow`; a station is a process station by data/stations.cfg (grid size, button icon). A mixed grid runs the first recipe in recipes.cfg order whose whole loads match. The filter looks at the grid's contents only, not the inventory. The grid is repacked after anything comes out, and a recipe click is refused if the grid has no room, so nothing can be lost. One Bricks recipe (6 raw bricks + 2 logs -> 6 bricks, 12 h) with `bonus=[[50, 0.25], [70, 0.5]]`; a craft practises at the level of the highest bonus step reached, so masonry reaches 100. The oven: a log per load; bread 2 from 4 flour in 1 h, berry tart 2 in 1.5 h, feast cake 1 in 3 h. A run takes the recipe's hours whatever the loads. StationWork and task 198's drop-by-the-kiln path are gone. Save version 31 (upgrade from 20 dropped); a firing kiln keeps its load. No lit look while running (the kiln and oven have none). `--process=<kiln|oven>,<phase>` for screenshots. Plan: docs/plans/199-process-stations.md.
