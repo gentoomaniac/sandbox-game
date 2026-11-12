@@ -5430,3 +5430,28 @@ are a forge, a smokehouse, a saw mill and a fish pond.
   - Screenshots of the kiln and the oven windows: empty, loaded, running and done.
 
 Done: 2026-11-12 (worker and reviewer on Opus). Shared code: `ProcessLoad` (the pure load rule over the recipes and the grid), `ProcessStation` (the grid as the object's storage, the run settled lazily on the game clock, results), `ProcessScreen` and `ProcessRecipeRow`; a station is a process station by data/stations.cfg (grid size, button icon). A mixed grid runs the first recipe in recipes.cfg order whose whole loads match. The filter looks at the grid's contents only, not the inventory. The grid is repacked after anything comes out, and a recipe click is refused if the grid has no room, so nothing can be lost. One Bricks recipe (6 raw bricks + 2 logs -> 6 bricks, 12 h) with `bonus=[[50, 0.25], [70, 0.5]]`; a craft practises at the level of the highest bonus step reached, so masonry reaches 100. The oven: a log per load; bread 2 from 4 flour in 1 h, berry tart 2 in 1.5 h, feast cake 1 in 3 h. A run takes the recipe's hours whatever the loads. StationWork and task 198's drop-by-the-kiln path are gone. Save version 31 (upgrade from 20 dropped); a firing kiln keeps its load. No lit look while running (the kiln and oven have none). `--process=<kiln|oven>,<phase>` for screenshots. Plan: docs/plans/199-process-stations.md.
+
+## 201. Wild animals keep away from villagers and buildings (mice excepted)
+
+- [x] Done
+
+The user, 2026-11-11, after task 181 left wild animals able to stand on a door tile: "Wild animals
+should stay away from NPC's and buildings, except mice maybe."
+- Today wild ground animals (WildlifeRules.GROUND_KINDS: rabbit, squirrel, deer, mouse, frog; and
+  the birds that land) walk on `world.is_walkable` (game/scenes/wildlife/wildlife_view.gd), which
+  includes door tiles, and only shy from the player (`flee_tiles`, `alert_tiles` in
+  WildlifeRules).
+- Never on a building tile, the door included, for every wild kind (mice too); and none spawns or
+  lands on one.
+- Keep a distance from buildings and from villagers, as from the player: they don't spawn or settle
+  near them, and flee or turn away when a villager comes as near as their flee distance (a
+  per-kind distance in data/, e.g. the same `flee_tiles`, or a smaller one for buildings). Mice are
+  the exception: they live by the fields and the houses and may come close to buildings and
+  villagers (but still never onto a building tile). Pick the other kinds' distances; the user tunes
+  them in data/.
+- Cheap: villagers are few, but don't scan every villager per wild animal per frame if a spatial
+  lookup exists; say what you used.
+- Tests: no wild animal on a building tile over play and spawning; a rabbit or deer moves away from
+  a villager; mice may stay near a house; the config check. Design note on wildlife.
+
+Done: 2026-11-12. `WildlifeView.can_stand` refuses every building tile, the door included, for all kinds (waders keep their flooded-mud rule; roof storks and flying kinds don't stand). Spawning and settling avoid a building within the kind's `building_tiles` (data/wildlife.cfg: deer 6, geese 5, stork and waders 4, rabbit 3, bird, squirrel, frog and gull 2) and a villager within its `flee_tiles`. `Animal._nearest_threat` makes them flee the nearer of the player and the villagers. Mice have no `building_tiles` and `ignores_villagers=true`. No spatial lookup exists: the villagers' feet are copied once a frame while animals exist; buildings are looked up by tile. An animal wandering up to a house on its own isn't driven off.
