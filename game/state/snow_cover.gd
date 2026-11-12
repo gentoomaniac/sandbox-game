@@ -56,6 +56,14 @@ func frost_at(temperature: float) -> float:
 	return clampf(temperature / _rules.value("frost", "full_at_temperature"), 0.0, 1.0)
 
 
+## The thaw at a temperature and in a sunlight (0 to 100): none at 0 degrees or below, full at
+## the warmth of the data file (sunshine counts as more warmth, as it melts more).
+func thaw_at(temperature: float, sunlight: float) -> float:
+	var sun_gain: float = _rules.value("snow", "sun_melt_gain")
+	var warmth := maxf(temperature, 0.0) * (1.0 + sun_gain * sunlight / 100.0)
+	return clampf(warmth / _rules.value("snow", "full_thaw_at_temperature"), 0.0, 1.0)
+
+
 ## The cover of the region's count that starts at `start_minute` (a new one if that is another
 ## count than the one kept).
 func _count_of(region: Vector2i, start_minute: int) -> Count:

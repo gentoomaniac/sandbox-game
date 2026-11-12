@@ -9,14 +9,7 @@ extends RefCounted
 enum Kind { NONE, LEAVES_GREEN, LEAVES_AUTUMN, NEEDLES, SNOW, SPLINTERS, DUST, SWEAT, SWEAT_HEAVY }
 
 ## What drops leaves while it has them: the broadleaved trees and the hedge.
-const LEAFY: Array[StringName] = [
-	WorldObjectTypes.OAK,
-	WorldObjectTypes.BEECH,
-	WorldObjectTypes.BIRCH,
-	WorldObjectTypes.ALDER,
-	WorldObjectTypes.WILLOW,
-	WorldObjectTypes.KNICK,
-]
+const LEAFY: Array[StringName] = GroundCover.LEAFY
 
 
 ## The effect of a hit on an object of `type` that is drawn in `look`. A frosty tree counts as

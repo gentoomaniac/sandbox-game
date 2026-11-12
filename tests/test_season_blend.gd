@@ -179,3 +179,42 @@ func test_the_data_file_is_complete() -> void:
 	var rules := SeasonRules.default_rules()
 	assert_true(rules.is_valid(), str(rules.problems()))
 	assert_false(SeasonRules.new({}).is_valid())
+
+
+func test_the_ground_colour_holds_between_windows_and_mixes_in_them() -> void:
+	var summer := _blend.ground_mix(45)
+	assert_eq([summer.to, summer.share], [L.SUMMER, 1.0])
+	var winter := _blend.ground_mix(110)
+	assert_eq([winter.to, winter.share], [L.BARE, 1.0])
+	var into_autumn := _blend.ground_mix(66)
+	assert_eq([into_autumn.from, into_autumn.to], [L.SUMMER, L.AUTUMN])
+	assert_between(into_autumn.share, 0.01, 0.99)
+	var into_spring := _blend.ground_mix(5)
+	assert_eq([into_spring.from, into_spring.to], [L.BARE, L.SPRING])
+
+
+func test_the_ground_colour_changes_a_little_every_day_without_a_jump() -> void:
+	# The place in the cycle of looks as one number: 0 is spring, 1 summer, 2 autumn, 3 winter.
+	var previous := -1.0
+	for day in range(1, GameClock.DAYS_PER_YEAR + 1):
+		var mix := _blend.ground_mix(day)
+		var at := fposmod(SeasonBlend.YEAR_LOOKS.find(mix.to) - 1 + mix.share, 4.0)
+		if previous >= 0.0:
+			assert_between(fposmod(at - previous, 4.0), 0.0, 0.25, "day %d" % day)
+		previous = at
+
+
+func test_the_ground_colour_is_one_for_the_whole_year_cycle() -> void:
+	var first := _blend.ground_mix(31)
+	var next_year := _blend.ground_mix(31 + GameClock.DAYS_PER_YEAR)
+	assert_eq([first.from, first.to, first.share], [next_year.from, next_year.to, next_year.share])
+
+
+func test_leaves_build_up_in_autumn_and_thin_out_in_winter() -> void:
+	assert_eq(_blend.litter(45), 0.0, "none in summer")
+	assert_between(_blend.litter(75), 0.1, 0.9)
+	assert_gt(_blend.litter(85), _blend.litter(75))
+	assert_eq(_blend.litter(96), 1.0)
+	assert_lt(_blend.litter(110), 1.0)
+	assert_eq(_blend.litter(119), 0.0, "swept away by spring")
+	assert_eq(_blend.litter(1), 0.0)

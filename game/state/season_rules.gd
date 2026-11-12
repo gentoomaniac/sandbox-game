@@ -13,6 +13,8 @@ const BOUNDARIES: Array[StringName] = [
 ]
 const REQUIRED_KEYS := {
 	"ground": BOUNDARIES,
+	"ground_mix": BOUNDARIES,
+	"litter": ["from_day", "full_day", "thins_day", "gone_day"],
 	"foliage": BOUNDARIES + [&"leaf_out_span"],
 	"snow":
 	[
@@ -20,7 +22,24 @@ const REQUIRED_KEYS := {
 		"melt_per_degree_hour",
 		"sun_melt_gain",
 		"counted_from_day",
-		"dusting_band"
+		"dusting_band",
+		"full_thaw_at_temperature"
+	],
+	"cover":
+	[
+		"crown_radius",
+		"leaf_open",
+		"leaf_field",
+		"leaf_path",
+		"snow_under_crown",
+		"snow_lee",
+		"lee_reach",
+		"snow_path",
+		"melt_open",
+		"melt_path",
+		"melt_under_crown",
+		"thaw_gain",
+		"frost_under_crown"
 	],
 	"frost": ["full_at_temperature"],
 }

@@ -163,3 +163,12 @@ func test_there_is_only_frost_in_winter() -> void:
 	for day in range(1, WINTER_START):
 		for hour in range(0, 24, 3):
 			assert_eq(cover.frost_at(weather.at(ORIGIN, day, hour * 60).temperature), 0.0)
+
+
+func test_the_thaw_grows_with_warmth_and_sunshine() -> void:
+	var cover := _snowing(0.0)
+	assert_eq(cover.thaw_at(-2.0, 100.0), 0.0)
+	assert_eq(cover.thaw_at(0.0, 100.0), 0.0)
+	assert_gt(cover.thaw_at(2.0, 0.0), 0.0)
+	assert_gt(cover.thaw_at(2.0, 100.0), cover.thaw_at(2.0, 0.0))
+	assert_eq(cover.thaw_at(30.0, 100.0), 1.0)

@@ -19,6 +19,8 @@ enum Look { SPRING, SUMMER, AUTUMN, BARE, FROST, SNOW, DUSTING, BUDS, YOUNG_LEAV
 const GROUND_LOOKS: Array[Look] = [
 	Look.SPRING, Look.SUMMER, Look.AUTUMN, Look.BARE, Look.FROST, Look.SNOW, Look.DUSTING
 ]
+## The seasons of the year in order, as the looks the grass shifts between (see `ground_mix`).
+const YEAR_LOOKS: Array[Look] = [Look.SPRING, Look.SUMMER, Look.AUTUMN, Look.BARE]
 ## The steps of a plant's leaf-out in spring, from bare to full leaves.
 const LEAF_OUT: Array[Look] = [Look.BARE, Look.BUDS, Look.YOUNG_LEAVES, Look.SPRING]
 
@@ -101,6 +103,15 @@ class Conditions:
 		return LEAF_OUT[mini(floori((foliage[0] - start) / step) + 1, LEAF_OUT.size() - 1)]
 
 
+## The colour of the ground on a day: the look `from` mixing into the look `to` by `share`
+## (0 is all `from`, 1 all `to`). Only the colour of the grass and ground follows it.
+class GroundMix:
+	extends RefCounted
+	var from := Look.BARE
+	var to := Look.BARE
+	var share := 1.0
+
+
 var _rules: SeasonRules
 var _world_seed: int
 var _noise := FastNoiseLite.new()
@@ -134,6 +145,34 @@ func share_passed(section: String, boundary: StringName, day: int) -> float:
 	var window := _rules.window(section, boundary)
 	var year_day := posmod(day - 1, GameClock.DAYS_PER_YEAR) + 1
 	return smoothstep(window.x, window.y, year_day)
+
+
+## The colour of the whole ground on a day, which shifts evenly through the year (see
+## [ground_mix] in data/seasons.cfg): from one season's look to the next, never a tile at a time.
+func ground_mix(day: int) -> GroundMix:
+	var mix := GroundMix.new()
+	var year_day := posmod(day - 1, GameClock.DAYS_PER_YEAR) + 1
+	for i in range(SeasonRules.BOUNDARIES.size() - 1, -1, -1):
+		var window := _rules.window("ground_mix", SeasonRules.BOUNDARIES[i])
+		if year_day > window.x:
+			mix.to = YEAR_LOOKS[i]
+			mix.from = YEAR_LOOKS[posmod(i - 1, YEAR_LOOKS.size())]
+			mix.share = smoothstep(window.x, window.y, year_day)
+			return mix
+	return mix
+
+
+## How many fallen leaves lie about on a day, 0 (none) to 1 (all the trees gave): they build up
+## through the autumn, lie through the first of winter and thin out to nothing (see [litter]).
+func litter(day: int) -> float:
+	var year_day := posmod(day - 1, GameClock.DAYS_PER_YEAR) + 1
+	var building := smoothstep(
+		_rules.value("litter", "from_day"), _rules.value("litter", "full_day"), year_day
+	)
+	var thinning := smoothstep(
+		_rules.value("litter", "thins_day"), _rules.value("litter", "gone_day"), year_day
+	)
+	return building * (1.0 - thinning)
 
 
 ## The two fixed thresholds of a tile or plant, each in [0, 1): x is held against the blend

@@ -168,6 +168,12 @@
   `data/seasons.cfg` ([snow]: snowfall adds, warmth and sun melt, counted hour by hour from
   the start of autumn; none from the first day of the year), the blend windows too; the view
   updates once a game hour, a few milliseconds per frame.
+- **Overlay cover (task 185, under construction):** the ground is moving from looks per tile to
+  one base colour plus overlays. The state side is in: `SeasonBlend.ground_mix` (the grass
+  colour shifting smoothly between the seasons' looks, windows in [ground_mix]) and `litter`
+  (fallen leaves, [litter]); `SnowCover.thaw_at`; and `GroundCover`, which gives every tile what
+  it catches (leaves, snow, thaw, frost shelter; [cover]) and the share of its pixels covered.
+  Plan: docs/plans/185-season-overlays.md.
 - **Weather and seasons change the map:**
   - frost freezes rivers so they can be crossed;
   - heavy, deep snow makes some areas unreachable;
