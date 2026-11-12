@@ -4,6 +4,8 @@
 import math
 import random
 
+from seasons import AUTUMN_GROUND, BARE_GROUND
+
 # The looks of grass and ground, which every picture has.
 GROUND_LOOKS = ("spring", "summer", "autumn", "bare", "frost", "snow", "dusting")
 
@@ -12,20 +14,6 @@ _SPRING_GREENS = {
     "green_light": "spring_light",
     "green": "spring",
     "green_dark": "spring_dark",
-}
-_AUTUMN_GRASS = {
-    "green_bright": "straw",
-    "green_light": "autumn_light",
-    "green": "reed",
-    "green_dark": "olive",
-    "dry": "autumn_light",
-    "dry_light": "straw",
-    "meadow": "olive",
-    "meadow_light": "reed",
-    # Flowers wither to dry heads and fallen leaves.
-    "cream": "ochre",
-    "gold": "flame",
-    "petal": "rust",
 }
 _WINTER_GROUND = {
     "green_bright": "snow_light",
@@ -51,24 +39,6 @@ _WINTER_GROUND = {
 WINTER_STALKS = {
     "green_bright": "straw", "green_light": "straw", "green_dark": "reed", "green_deep": "reed",
 }
-# Winter without snow: brown-grey ground, dry stalks, withered flowers.
-_BARE_GROUND = {
-    "green_bright": "bare_light",
-    "green_light": "bare_light",
-    "green": "bare",
-    "green_dark": "mud_dark",
-    "green_deep": "soil_dark",
-    "olive": "mud_dark",
-    "dry": "bare",
-    "dry_light": "bare_light",
-    "meadow": "bare",
-    "meadow_light": "bare_light",
-    "cream": "straw",
-    "gold": "straw",
-    "petal": "sand",
-    # Desire paths lie dark and damp in the brown-grey of winter.
-    "mud": "mud_dark",
-}
 # A frost: the grass keeps its shapes but turns a cold pale blue-green, with white rims on the
 # tips (see also `sparkle`).
 _FROST_GROUND = {
@@ -93,8 +63,8 @@ _FROST_STALKS = {"green_bright": "snow_light", "green_light": "snow_shadow", "gr
 GROUND_REMAPS = {
     "spring": _SPRING_GREENS,
     "summer": {},
-    "autumn": _AUTUMN_GRASS,
-    "bare": _BARE_GROUND,
+    "autumn": AUTUMN_GROUND,
+    "bare": BARE_GROUND,
     "frost": _FROST_GROUND,
     "snow": _WINTER_GROUND,
     # Only its decorations use this; see terrain_rows.

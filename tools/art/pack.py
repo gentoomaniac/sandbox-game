@@ -23,6 +23,7 @@ from pathlib import Path
 from PIL import Image
 
 import atlas
+import cover
 from classic.scaling import classic_size
 from palette import ASSETS, CELL_SIZES_FILES, CLASSIC_ART, GENERATED, HAND, NEW_ART, ROOT, stray_colours
 
@@ -151,6 +152,9 @@ def packed_atlases(manifest, sources, sheets):
         for index, look in enumerate(looks):
             cells = sheet.crop((0, index * cell_height, sheet.width, (index + 1) * cell_height))
             pictures[look].paste(cells, (0, row * cell_height))
+    for look in cover.COVER_LOOKS:
+        if look in pictures:
+            pictures[look] = cover.ranked(pictures[look], cell_width, cell_height, look in cover.TOP_DOWN_LOOKS)
     prefix = ART_SET_FOLDERS[postfix]
     return {f"{prefix}{folder}{look_suffix(look)}.png": picture for look, picture in pictures.items()}
 

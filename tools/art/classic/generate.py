@@ -31,6 +31,7 @@ import character  # noqa: E402
 import chest  # noqa: E402
 import church  # noqa: E402
 import coast  # noqa: E402
+import cover  # noqa: E402
 import crafts  # noqa: E402
 import craft_icons  # noqa: E402
 import crop_icons  # noqa: E402
@@ -223,7 +224,8 @@ def write_objects():
         "alder": lambda variant: alder.bare_alder(alder.ALDER_SEEDS[variant]),
     }
     objects_by_look = {look: object_looks.object_rows(look, objects, redraws) for look in object_looks.LOOKS}
-    atlas.save_sheets("objects", [kind for kind, _ in objects], object_looks.LOOKS, objects_by_look, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
+    objects_by_look |= cover.object_cover_looks(objects_by_look)
+    atlas.save_sheets("objects", [kind for kind, _ in objects], object_looks.LOOKS + cover.COVER_LOOKS, objects_by_look, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     save_picture(camp.bedroll_cover(), "bedroll_cover.png")
 
 
@@ -262,6 +264,7 @@ def main():
     write_wildlife()
     write_fire()
     write_ground()
+    cover.write_textures(TILE)
     write_buildings()
     write_objects()
     write_crops()

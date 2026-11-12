@@ -4,6 +4,7 @@
 import random
 
 from canvas import copy
+from seasons import AUTUMN_GROUND, BARE_GROUND
 
 # The looks of grass and ground, which every picture has.
 GROUND_LOOKS = ("spring", "summer", "autumn", "bare", "frost", "snow", "dusting")
@@ -17,8 +18,8 @@ _SPRING_GREENS = {
     "green": "spring",
     "green_dark": "spring_dark",
 }
-# Autumn straw and yellow: the dry grass of the Geest, the dyke and the tall grass.
-_AUTUMN_GRASS = {
+# Autumn straw and yellow: the tall grass.
+_STRAW_GRASS = {
     "green_bright": "straw",
     "green_light": "autumn_light",
     "green": "reed",
@@ -59,24 +60,6 @@ WINTER_STALKS = {
 # Tall grass in winter and autumn keeps a dark foot: its green_deep and green_dark are what stands
 # out from the ground there (the dry stalks above are light).
 _DARK_FOOT = {"green_dark": "olive", "green_deep": "umber"}
-# Winter without snow: brown-grey ground, dry stalks, withered flowers.
-_BARE_GROUND = {
-    "green_bright": "bare_light",
-    "green_light": "bare_light",
-    "green": "bare",
-    "green_dark": "mud_dark",
-    "green_deep": "soil_dark",
-    "olive": "mud_dark",
-    "dry": "bare",
-    "dry_light": "bare_light",
-    "meadow": "bare",
-    "meadow_light": "bare_light",
-    "cream": "straw",
-    "gold": "straw",
-    "petal": "sand",
-    # Desire paths lie dark and damp in the brown-grey of winter.
-    "mud": "mud_dark",
-}
 # A frost: the grass keeps its shapes but turns a cold pale blue-green, with white rims on the
 # tips (see also `sparkle`).
 _FROST_GROUND = {
@@ -398,7 +381,7 @@ _WINTER_LOOKS = {
     },
     # The dyke is turf and turns like the grass on the ground.
     "dyke": {
-        "bare": _BARE_GROUND,
+        "bare": BARE_GROUND,
         "frost": _FROST_GROUND,
         "snow_remap": _WINTER_GROUND,
         "snow": ({"frost", "snow_shadow", "snow_light", "snow_deep"}, set(), 1),
@@ -445,9 +428,9 @@ def _season_object(look, kind, variant, canvas, redraw):
         elif kind in ("berry_bush", "shrub", "sapling", "fern"):
             canvas = remap(canvas, _AUTUMN_BUSH[variant % 3])
         elif kind == "dyke":
-            canvas = remap(canvas, _AUTUMN_GRASS)
+            canvas = remap(canvas, AUTUMN_GROUND)
         elif kind == "tall_grass":
-            canvas = remap(canvas, _AUTUMN_GRASS | _DARK_FOOT)
+            canvas = remap(canvas, _STRAW_GRASS | _DARK_FOOT)
         elif kind == "reeds":
             canvas = remap(canvas, _GOLDEN_REEDS)
     elif look in ("bare", "frost", "snow", "dusting"):

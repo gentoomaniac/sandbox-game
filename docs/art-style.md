@@ -151,9 +151,15 @@ to a tile, low weed rosettes and chickweed seedlings with a pixel of `soil` shad
 tufts of the turf, all in the grass ramp, placed where they stay on the bed even of a tile tilled
 alone (`soil_beds.spot_on_bed`). The path is packed earth worn pale in patches, dark
 under the turf at its edge with blades leaning in; the tidal mud has wavy ripple marks with
-dark troughs, which the tide fills first. In autumn the grass of the marsh stays green with
-olive tips and only the dry grass of the Geest turns straw (`seasons.LAYER_REMAPS`); the salt
-marsh keeps its olive turf, with patches of red-purple glasswort. The ground's 16 px art
+dark troughs, which the tide fills first. The grass itself stays grass all year and only
+goes darker green: its lighter greens move a step down in autumn and every green one more in
+winter (`seasons.AUTUMN_GROUND`, `seasons.BARE_GROUND`); the dry
+grass of the Geest keeps a little straw in autumn (`dry_light` becomes `reed`), subtle and even.
+Fallen leaves, frost and snow are overlays on top of that (`tools/art/cover.py`: the threshold
+map and the leaf litter in `art/generated/cover/`, and the looks `snow_cover` and `frost_cover` of
+the object sheets, the pixels that the snow and frost looks add; their rank is in the alpha channel,
+set when `make assets` packs the atlas, so they are no palette art). The salt marsh keeps its olive
+turf, with patches of red-purple glasswort. The ground's 16 px art
 stays as the classic art too.
 
 The plants (task 108: trees.py, beech.py, birch.py, alder.py, willow.py, trunks.py, the tall

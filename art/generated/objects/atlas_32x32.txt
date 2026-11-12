@@ -1,5 +1,5 @@
 cell 96 160
-looks spring summer autumn bare frost snow dusting buds young_leaves
+looks spring summer autumn bare frost snow dusting buds young_leaves snow_cover frost_cover
 oak 3
 stone 2
 fireplace 1

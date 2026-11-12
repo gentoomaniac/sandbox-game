@@ -98,6 +98,7 @@ import camp
 import character
 import church
 import chest
+import cover
 import coast
 import crafts
 import crop_icons
@@ -302,15 +303,16 @@ def write_seasonal_art():
     for look in seasons.LOOKS:
         suffix = "" if look == "summer" else f"_{look}"
         if look in seasons.GROUND_LOOKS:
-            save(seasons.terrain_rows(look, terrain_rows, layers), f"terrain{suffix}.png", GAME_TILE)
-            decorations_by_look[look] = seasons.ground_rows(look, decoration_rows, layers, seasons.STANDING.get(look))
+            save(seasons.terrain_rows(look, terrain_rows), f"terrain{suffix}.png", GAME_TILE)
+            decorations_by_look[look] = seasons.ground_rows(look, decoration_rows, seasons.STANDING.get(look))
         objects_by_look[look] = [[cell for picture in row for cell in atlas_cells(picture)] for row in seasons.object_rows(look, objects, redraws)]
         if look in seasons.HOUSE_LOOKS:
             for name, (picture, snowy) in houses.items():
                 save_picture(seasons.house(look, picture, snowy), f"buildings/{name}{suffix}.png")
     save_picture(church.bell_swing(), "buildings/bell_frame_swing.png")
     atlas.save_sheets("decorations", [*layers, "flowers"], seasons.GROUND_LOOKS, decorations_by_look, GAME_TILE, GAME_TILE)
-    atlas.save_sheets("objects", [kind for kind, _ in objects], seasons.LOOKS, objects_by_look, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)
+    objects_by_look |= cover.object_cover_looks(objects_by_look)
+    atlas.save_sheets("objects", [kind for kind, _ in objects], seasons.LOOKS + cover.COVER_LOOKS, objects_by_look, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)
 
 
 def write_character():
@@ -385,6 +387,7 @@ def write_items():
 
 def main():
     write_seasonal_art()
+    cover.write_textures(GAME_TILE)
     write_character()
     write_interior()
     write_bedroll_cover()

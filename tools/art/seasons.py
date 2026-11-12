@@ -62,8 +62,8 @@ _SPRING_GREENS = {
     "green": "spring",
     "green_dark": "spring_dark",
 }
-# Autumn straw and yellow: the dry grass of the Geest, the dyke and the tall grass.
-_AUTUMN_GRASS = {
+# Autumn straw and yellow: the tall grass of the meadows (objects; the ground itself only darkens).
+_STRAW_GRASS = {
     "green_bright": "straw",
     "green_light": "autumn_light",
     "green": "reed",
@@ -77,12 +77,18 @@ _AUTUMN_GRASS = {
     "gold": "flame",
     "petal": "rust",
 }
-# Autumn everywhere else: the grass of the marsh stays green until November, only its tips and
-# the damp meadow's turn olive, and its flowers wither.
-_AUTUMN_MARSH = {
-    "green_bright": "dry_light",
-    "green_light": "dry",
-    "meadow_light": "dry",
+# The grass of the ground stays grass all year and only goes darker green: its lighter greens move
+# a step down in autumn (the dry grass of the Geest keeps a little straw, subtle and even), and
+# every green one more in winter, down to bog_dark. Fallen leaves, frost and snow come on top as
+# overlays (see cover.py).
+AUTUMN_GROUND = {
+    "green_bright": "green_light",
+    "green_light": "green",
+    "green": "meadow",
+    "dry_light": "reed",
+    "meadow_light": "meadow",
+    "meadow": "bog",
+    # Flowers wither to dry heads and fallen leaves.
     "cream": "ochre",
     "gold": "flame",
     "petal": "rust",
@@ -116,23 +122,23 @@ WINTER_STALKS = {
 _DARK_FOOT = {"green_dark": "olive", "green_deep": "umber"}
 # Tall grass in autumn: the dry grass of the Geest turns autumn_light, so the clump's mid shade
 # turns a darker reed to stay apart from it.
-_AUTUMN_TALL_GRASS = _AUTUMN_GRASS | _DARK_FOOT | {"dry": "reed"}
-# Winter without snow: brown-grey ground, dry stalks, withered flowers.
-_BARE_GROUND = {
-    "green_bright": "bare_light",
-    "green_light": "bare_light",
-    "green": "bare",
-    "green_dark": "mud_dark",
-    "green_deep": "soil_dark",
-    "olive": "mud_dark",
-    "dry": "bare",
-    "dry_light": "bare_light",
-    "meadow": "bare",
-    "meadow_light": "bare_light",
+_AUTUMN_TALL_GRASS = _STRAW_GRASS | _DARK_FOOT | {"dry": "reed"}
+# Winter without snow: the grass is the deepest green, its flowers withered.
+BARE_GROUND = {
+    "green_bright": "green",
+    "green_light": "meadow",
+    "green": "green_dark",
+    "green_dark": "green_deep",
+    "green_deep": "bog_dark",
+    "olive": "green_dark",
+    "dry": "green_dark",
+    "dry_light": "meadow",
+    "meadow": "green_dark",
+    "meadow_light": "meadow",
     "cream": "straw",
     "gold": "straw",
     "petal": "sand",
-    # Desire paths lie dark and damp in the brown-grey of winter.
+    # Desire paths lie dark and damp in winter.
     "mud": "mud_dark",
 }
 # A frost: the grass keeps its shapes but turns a cold pale blue-green, with white rims on the
@@ -159,15 +165,13 @@ _FROST_STALKS = {"green_bright": "snow_light", "green_light": "snow_shadow", "gr
 GROUND_REMAPS = {
     "spring": _SPRING_GREENS,
     "summer": {},
-    "autumn": _AUTUMN_MARSH,
-    "bare": _BARE_GROUND,
+    "autumn": AUTUMN_GROUND,
+    "bare": BARE_GROUND,
     "frost": _FROST_GROUND,
     "snow": _WINTER_GROUND,
     # Only its decorations use this; see terrain_rows.
     "dusting": _FROST_GROUND,
 }
-# The terrain layers (terrain.LAYERS, by name) whose look differs from the rest of the ground's.
-LAYER_REMAPS = {"autumn": {"dry_grass": _AUTUMN_GRASS}}
 # What decoration tufts and plants turn into: dry stalks from the bare look on.
 STANDING = {"bare": WINTER_STALKS, "frost": _FROST_STALKS, "snow": WINTER_STALKS, "dusting": _FROST_STALKS}
 
@@ -316,18 +320,12 @@ def remap(canvas, mapping):
     return [[mapping.get(name, name) for name in row] for row in canvas]
 
 
-def ground_rows(look, rows, layers, extra_remap=None):
+def ground_rows(look, rows, extra_remap=None):
     """Terrain or decoration rows in a look, with `extra_remap` applied over the look's own and
-    the salt marsh's logical colours made real. `layers` names the terrain layer of each row
-    (terrain.LAYERS), bottom to top; a row past them (the meadow flowers) has the look of the
-    ground. Water stays as it is: freezing it belongs to the weather."""
+    the salt marsh's logical colours made real. Water (the first row) stays as it is: freezing it
+    belongs to the weather."""
     base = {**GROUND_REMAPS[look], **SALT_MARSH_LOOKS[look], **(extra_remap or {})}
-    result = [rows[0]]
-    for index, row in enumerate(rows[1:], start=1):
-        layer = layers[index] if index < len(layers) else None
-        mapping = {**base, **LAYER_REMAPS.get(look, {}).get(layer, {})}
-        result.append([remap(tile, mapping) for tile in row])
-    return result
+    return [rows[0]] + [[remap(tile, base) for tile in row] for row in rows[1:]]
 
 
 def sparkle(tile, rng, count):
@@ -362,17 +360,17 @@ def dust(tile, rng):
     ]
 
 
-def terrain_rows(look, rows, layers):
+def terrain_rows(look, rows):
     """The terrain rows in a look. A frost gets a sprinkle of rime, a dusting is the snow thinned
     out; the rest is `ground_rows`. Under snow, the bare patches of trodden grass are footprints
     (see `_TRODDEN_SNOW`)."""
     if look == "dusting":
-        snowy = ground_rows("snow", rows, layers)
+        snowy = ground_rows("snow", rows)
         return [snowy[0]] + [
             [dust(tile, random.Random(f"dust-{r}-{c}")) for c, tile in enumerate(row)]
             for r, row in enumerate(snowy[1:])
         ]
-    result = ground_rows(look, rows, layers, _TRODDEN_SNOW if look == "snow" else None)
+    result = ground_rows(look, rows, _TRODDEN_SNOW if look == "snow" else None)
     if look == "frost":
         for r, row in enumerate(result[1:]):
             for c, tile in enumerate(row):
@@ -563,7 +561,7 @@ _WINTER_LOOKS = {
     },
     # The dyke is turf and turns like the grass on the ground.
     "dyke": {
-        "bare": _BARE_GROUND,
+        "bare": BARE_GROUND,
         "frost": _FROST_GROUND,
         "snow_remap": _WINTER_GROUND,
         "snow": ({"frost", "snow_shadow", "snow_light", "snow_deep"}, set(), 2),
@@ -610,7 +608,7 @@ def _season_object(look, kind, variant, canvas, redraw):
         elif kind in ("berry_bush", "shrub", "sapling", "fern"):
             canvas = remap(canvas, _AUTUMN_BUSH[variant % 3])
         elif kind == "dyke":
-            canvas = remap(canvas, _AUTUMN_MARSH)
+            canvas = remap(canvas, AUTUMN_GROUND)
         elif kind == "tall_grass":
             canvas = remap(canvas, _AUTUMN_TALL_GRASS)
         elif kind == "reeds":
@@ -668,19 +666,13 @@ def object_rows(look, atlas, redraw):
 # The looks of a house (SeasonalArt.HOUSE_LOOKS in the game): the grass on a roof follows the
 # season, and the roof is snowed over under snow.
 HOUSE_LOOKS = ("spring", "summer", "autumn", "bare", "snow")
-# The grass of a turf roof or ridge in the seasons: fresh in spring, yellowing to brown in
-# autumn, brown-grey in winter, its flowers gone to seed. The dark grass at the foot of the
-# clumps and the moss on a thatch stay green all year.
+# The grass of a turf roof or ridge in the seasons: fresh in spring, then darker green in autumn
+# and winter like the grass of the ground, its flowers gone to seed. The dark grass at the foot
+# of the clumps and the moss on a thatch stay green all year.
 _ROOF_GRASS = {
     "spring": {"green_bright": "spring_pale", "green_light": "spring_light", "green": "spring"},
-    "autumn": {
-        "green_bright": "autumn_light", "green_light": "reed", "green": "olive", "dry_light": "straw",
-        "cream": "straw", "gold": "ochre", "petal": "olive",
-    },
-    "bare": {
-        "green_bright": "bare_light", "green_light": "bare", "green": "mud_dark", "dry_light": "bare_light",
-        "cream": "bare_light", "gold": "bare", "petal": "mud_dark",
-    },
+    "autumn": AUTUMN_GROUND,
+    "bare": BARE_GROUND,
 }
 # What each colour of a roof turns into under snow: the snow keeps the roof's light and shade.
 _SNOW_ON_ROOF = {

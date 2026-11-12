@@ -20,6 +20,9 @@ GENERATED = ROOT / "art" / "generated"
 # What artists drop in: the same paths and names as under art/generated/ (see pack.py).
 HAND = ROOT / "art" / "hand"
 ASSETS = ROOT / "assets"
+# The folder of art/generated/ with the data textures of the seasonal overlays (see cover.py): not
+# art, so not held to the palette.
+DATA_TEXTURES = "cover"
 # The sheets saved by this process, by their path under GENERATED: their cell size, which
 # `write_cell_sizes` records so that pack.py can fill the empty cells of a hand-drawn sheet.
 CELL_SIZES = {}
@@ -207,6 +210,8 @@ def check_palette():
     assert len(PALETTE) <= MAX_PALETTE_COLOURS, f"{len(PALETTE)} palette colours, at most {MAX_PALETTE_COLOURS}"
     bad = []
     for path in sorted(GENERATED.rglob("*.png")):
+        if path.relative_to(GENERATED).parts[0] == DATA_TEXTURES:
+            continue
         stray = stray_colours(Image.open(path))
         if stray:
             bad.append(f"{path.relative_to(GENERATED)}: {len(stray)} colours not in the palette")

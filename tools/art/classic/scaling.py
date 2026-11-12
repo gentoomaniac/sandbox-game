@@ -60,6 +60,8 @@ DOUBLED = (
     "soil_wet.png",
     "soil_edge.png",
     "clay_hint.png",
+    # The textures of the seasonal overlays (task 185; cover.py), drawn per 16 px art pixel.
+    "cover/*.png",
     # The buildings (task 110; buildings.py and church.py of commit e303759, their looks drawn by
     # the shared seasons.house).
     "buildings/*.png",
