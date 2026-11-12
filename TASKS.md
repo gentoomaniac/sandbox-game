@@ -372,6 +372,14 @@ etc doesn't look like good at all."
   show on one machine only: first find what differs (GPU and driver, the renderer the project
   uses there and its shader float precision, window size and scale, how long the game had run,
   since the drift grows without bound) and reproduce it, before changing the look.
+  The user, 2026-11-13: the lines show on this laptop (hybrid graphics: Intel Arc, Meteor Lake-P,
+  and an NVIDIA RTX 4070 Max-Q; check which one Godot runs on), and look great on an AMD Ryzen 9
+  with a Radeon RX 7900 GRE. Prime suspect: game/scenes/hash.gdshaderinc hashes with
+  `fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453)`, whose sin of large world coordinates is
+  computed with different precision per GPU and driver (known to give lines and patterns on Intel
+  and some NVIDIA drivers). An integer hash (uint arithmetic, e.g. PCG or a 2D xxhash variant)
+  gives the same bits on every GPU. The hash is shared (fog, precipitation, other shaders that
+  include it): switching it changes their patterns too, so check them with screenshots.
 - The shadows of task 194 (game/scenes/cloud_shadows.gdshader, numbers in data/lighting.cfg
   [cloud_shadows], fed by WeatherView) work, but the patches show hard lines. Take screenshots
   first (cloudy weather by day, `--weather cloudy`, both arts, standing still and while they drift)
