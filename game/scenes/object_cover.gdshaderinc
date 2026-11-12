@@ -22,6 +22,11 @@ vec2 cell_anchor(vec2 origin, vec2 cell_size, float art_pixel) {
 	return (origin + vec2(cell_size.x * 0.5, cell_size.y)) * art_pixel - vec2(0.0, 0.5 * COVER_TILE);
 }
 
+// The share of snow that what stands on the ground catches, where the ground catches `catch`.
+float object_snow_share(vec4 catch) {
+	return clamp(snow_share(catch) * cover_object_snow_gain, 0.0, 1.0);
+}
+
 // The pixel `base` of a picture at `uv` with the frost and the snow over it, where the ground at
 // `anchor` (world pixels, under the object) catches what it does. A clear pixel stays clear.
 vec4 object_covered(vec4 base, vec2 uv, vec2 anchor) {
@@ -35,7 +40,7 @@ vec4 object_covered(vec4 base, vec2 uv, vec2 anchor) {
 	if (frost_share > 0.0 && frost.a > 0.0 && frost_share + 0.002 > cover_rank(frost.a)) {
 		base.rgb = frost.rgb;
 	}
-	float snow_cover_share = snow_share(catch);
+	float snow_cover_share = object_snow_share(catch);
 	vec4 snow = texture(cover_objects_snow, uv);
 	if (snow_cover_share > 0.0 && snow.a > 0.0 && snow_cover_share + 0.002 > cover_rank(snow.a)) {
 		base.rgb = snow.rgb;

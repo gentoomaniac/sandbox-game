@@ -44,6 +44,10 @@ cover_thaw_gain={
 "type": "float",
 "value": 0.0
 }
+cover_object_snow_gain={
+"type": "float",
+"value": 1.0
+}
 cover_map={
 "type": "sampler2D",
 "value": ""

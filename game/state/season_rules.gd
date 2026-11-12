@@ -38,6 +38,7 @@ const REQUIRED_KEYS := {
 		"melt_path",
 		"melt_under_crown",
 		"thaw_gain",
+		"object_snow_gain",
 		"frost_under_crown"
 	],
 	"frost": ["full_at_temperature"],

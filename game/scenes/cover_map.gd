@@ -52,6 +52,9 @@ func _init(rules := SeasonRules.default_rules()) -> void:
 	RenderingServer.global_shader_parameter_set(
 		"cover_thaw_gain", rules.value("cover", "thaw_gain")
 	)
+	RenderingServer.global_shader_parameter_set(
+		"cover_object_snow_gain", rules.value("cover", "object_snow_gain")
+	)
 	show_art_set()
 
 

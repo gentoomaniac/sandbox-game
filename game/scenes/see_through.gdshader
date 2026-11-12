@@ -33,7 +33,7 @@ void fragment() {
 	}
 	if (has_roof_snow) {
 		vec4 snow = texture(roof_snow, UV);
-		float share = snow_share(cover_catch(cover_anchor));
+		float share = object_snow_share(cover_catch(cover_anchor));
 		if (share > 0.0 && snow.a > 0.0 && share + 0.002 > cover_rank(snow.a)) {
 			COLOR.rgb = snow.rgb * modulate.rgb;
 		}

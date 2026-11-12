@@ -16,6 +16,8 @@ global uniform float cover_thaw;
 global uniform float cover_frost;
 // How much of the cover a full thaw takes off a tile that feels all of it ([cover] thaw_gain).
 global uniform float cover_thaw_gain;
+// How many times the snow share of the ground what stands on it catches ([cover] object_snow_gain).
+global uniform float cover_object_snow_gain;
 // What the tiles catch: red leaves, green snow, blue melt, alpha frost shelter; a texel per tile,
 // in a ring of COVER_MAP_TILES tiles that the world's tiles wrap around (read by `cover_catch`).
 global uniform sampler2D cover_map : filter_nearest;
