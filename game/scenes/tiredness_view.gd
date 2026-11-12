@@ -38,10 +38,10 @@ static func bubble_origin(appearance: Appearance) -> Vector2:
 	return Vector2(0, (HAT_TOP if is_hat_worn else BARE_HEAD_TOP) - BUBBLE_GAP)
 
 
-func watch(player: PlayerState, clock: GameClock, rules: EnergyRules) -> void:
+func watch(player: PlayerState, clock: GameClock, rules: EnergyRules, cheats: CheatFlags) -> void:
 	_player = player
 	_clock = clock
-	_signs = TirednessSigns.new(rules)
+	_signs = TirednessSigns.new(rules, cheats)
 
 
 ## The player has just done `use`, which may have cost energy.

@@ -72,7 +72,7 @@ func _stay_awake(signs: TirednessSigns, minutes: int) -> Array[String]:
 
 
 func test_both_late_bubbles_come_before_passing_out_at_one() -> void:
-	var signs := TirednessSigns.new(_state.energy_rules)
+	var signs := TirednessSigns.new(_state.energy_rules, _state.cheats)
 	_state.clock.set_time(23, 50)
 	# The test rules warn at 00:15 and 00:45 (see EnergyCase).
 	assert_eq(_stay_awake(signs, 3 * GameClock.MINUTES_PER_HOUR), ["00:15", "00:45"])
@@ -81,12 +81,30 @@ func test_both_late_bubbles_come_before_passing_out_at_one() -> void:
 
 
 func test_no_late_bubble_after_waking_from_passing_out_at_one() -> void:
-	var signs := TirednessSigns.new(_state.energy_rules)
+	var signs := TirednessSigns.new(_state.energy_rules, _state.cheats)
 	_state.clock.set_time(0, 50)
 	_stay_awake(signs, 3 * GameClock.MINUTES_PER_HOUR)
 	_state.pass_out()
 	assert_eq(_state.clock.time_text(), "11:00")
 	assert_eq(_stay_awake(signs, 12 * GameClock.MINUTES_PER_HOUR), [] as Array[String])
+
+
+func test_the_no_late_cheat_stays_up_past_one_with_no_pass_out_and_no_warning() -> void:
+	Console.new(_state).run("nolate")
+	var signs := TirednessSigns.new(_state.energy_rules, _state.cheats)
+	_state.clock.set_time(23, 50)
+	assert_eq(_stay_awake(signs, 4 * GameClock.MINUTES_PER_HOUR), [] as Array[String])
+	assert_false(_state.is_up_too_late)
+	assert_eq(_state.clock.time_text(), "03:50")
+
+
+func test_the_no_late_cheat_turned_off_again_is_staying_up_too_late_again() -> void:
+	var console := Console.new(_state)
+	console.run("nolate")
+	console.run("nolate")
+	_state.clock.set_time(0, 59)
+	_state.pass_awake_time(1)
+	assert_true(_state.is_up_too_late)
 
 
 func test_a_game_saved_after_one_at_night_still_passes_out_on_load() -> void:

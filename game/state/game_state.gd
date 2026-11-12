@@ -377,9 +377,9 @@ func is_out_of_energy() -> bool:
 
 
 ## Lets time pass while the player is awake. Reaching LATE_NIGHT_MINUTE means they have stayed
-## up too late (`is_up_too_late`).
+## up too late (`is_up_too_late`), unless the `nolate` cheat is on.
 func pass_awake_time(minutes: int) -> void:
-	if minutes >= clock.minutes_until(LATE_NIGHT_MINUTE):
+	if not cheats.is_late_off and minutes >= clock.minutes_until(LATE_NIGHT_MINUTE):
 		is_up_too_late = true
 	_pass_time(minutes, true)
 

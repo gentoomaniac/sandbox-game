@@ -12,6 +12,7 @@ const COMMANDS := {
 	"nodrain": ["nodrain", "Toggle: actions cost no energy."],
 	"noweight": ["noweight", "Toggle: carried weight doesn't raise costs."],
 	"nocost": ["nocost", "Toggle: buildings and crafting need no materials."],
+	"nolate": ["nolate", "Toggle: staying up past 01:00 passes no one out and shows no warning."],
 	"noneeds": ["noneeds", "Toggle: the farm animals' hunger and thirst do not rise."],
 	"noclip": ["noclip", "Toggle: walk through anything (indoors within the room)."],
 	"freeze": ["freeze", "Toggle: time stands still (you and the animals still move)."],
@@ -165,6 +166,9 @@ func run(line: String) -> Array[String]:
 		"nocost":
 			cheats.is_cost_off = not cheats.is_cost_off
 			output = [_toggle_message("No cost", cheats.is_cost_off)]
+		"nolate":
+			cheats.is_late_off = not cheats.is_late_off
+			output = [_toggle_message("No late", cheats.is_late_off)]
 		"noneeds":
 			cheats.are_needs_off = not cheats.are_needs_off
 			output = [_toggle_message("No needs", cheats.are_needs_off)]

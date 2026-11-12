@@ -3,7 +3,7 @@ extends RefCounted
 ## What shows that the player is tired, decided from the energy alone (see EnergyRules
 ## `tired_level` and `exhausted_level`): sweat on every action while it is at or below one.
 ## A "zzz..." thought bubble warns of staying up too late, at the clock times of
-## `late_warning_minutes`. The views draw it.
+## `late_warning_minutes`, unless the `nolate` cheat is on. The views draw it.
 
 enum Level { RESTED, TIRED, EXHAUSTED }
 
@@ -14,13 +14,15 @@ const MAX_CLOCK_STEP := 10
 const BUBBLE_ICON := &"zzz"
 
 var _rules: EnergyRules
+var _cheats: CheatFlags
 ## The clock when `late_bubble_for` was last asked, in minutes since day 1 began; -1 if the
 ## player was not awake then.
 var _last_minute := -1
 
 
-func _init(rules: EnergyRules) -> void:
+func _init(rules: EnergyRules, cheats: CheatFlags) -> void:
 	_rules = rules
+	_cheats = cheats
 
 
 ## The level this much energy is at.
@@ -39,7 +41,12 @@ func level_of(energy: float) -> Level:
 func late_bubble_for(clock_minute: int, is_awake: bool) -> StringName:
 	var last_minute := _last_minute
 	_last_minute = clock_minute if is_awake else -1
-	if not is_awake or last_minute < 0 or clock_minute - last_minute > MAX_CLOCK_STEP:
+	if (
+		_cheats.is_late_off
+		or not is_awake
+		or last_minute < 0
+		or clock_minute - last_minute > MAX_CLOCK_STEP
+	):
 		return &""
 	for warning in _rules.late_warning_minutes():
 		var days_before := floori(float(last_minute - warning) / GameClock.MINUTES_PER_DAY)

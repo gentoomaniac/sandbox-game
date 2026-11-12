@@ -14,6 +14,8 @@ func test_each_toggle_switches_on_and_off() -> void:
 	assert_eq(_console.run("god"), ["God mode off"] as Array[String])
 	assert_eq(_console.run("nodrain"), ["No drain on"] as Array[String])
 	assert_eq(_console.run("noweight"), ["No weight on"] as Array[String])
+	assert_eq(_console.run("nolate"), ["No late on"] as Array[String])
+	assert_eq(_console.run("nolate"), ["No late off"] as Array[String])
 	assert_eq(_state.cheats.active_names(), ["No drain", "No weight"] as Array[String])
 
 

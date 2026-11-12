@@ -263,7 +263,7 @@ func _connect_state_and_views() -> void:
 	_storage_screen.drop_requested.connect(_state.drop_from_inventory)
 	_camera.rig.follow(_camera_target)
 	_player_view.show_player(_state.player, _options)
-	_tiredness_view.watch(_state.player, _state.clock, _state.energy_rules)
+	_tiredness_view.watch(_state.player, _state.clock, _state.energy_rules, _state.cheats)
 	_use_highlight.show_for(_state, _camera)
 	_hotbar.show_inventory(_state.player.inventory)
 	_build_menu.bind(_builder, _state.player.inventory)

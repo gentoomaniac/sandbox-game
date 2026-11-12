@@ -12,7 +12,7 @@ var _signs: TirednessSigns
 
 func before_each() -> void:
 	super.before_each()
-	_signs = TirednessSigns.new(_state.energy_rules)
+	_signs = TirednessSigns.new(_state.energy_rules, _state.cheats)
 
 
 func test_the_level_is_found_from_the_energy() -> void:

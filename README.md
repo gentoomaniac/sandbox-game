@@ -717,7 +717,7 @@ it keeps the newest 500 lines and follows new output unless you scrolled up to r
 | `tp <x> <y>` | Teleport to a world tile; from inside a house you step out there (F3 shows your coordinates). |
 | `reset` | Put yourself in your bed, the one you wake in, inside or out. |
 | `give <item> [count]` | Put items in the inventory (e.g. `give bone` for a dog, `give saddle` for a horse). |
-| `god`, `nodrain`, `noweight`, `nocost` | Toggle invincibility, free actions, weight costing nothing, and buildings and crafting needing no materials. |
+| `god`, `nodrain`, `noweight`, `nocost`, `nolate` | Toggle invincibility, free actions, weight costing nothing, buildings and crafting needing no materials, and staying up past 01:00 passing no one out (no late warnings either). |
 | `noneeds` | Toggle the farm animals' hunger and thirst standing still (they rise with game time otherwise). |
 | `freeze` | Toggle time standing still: the clock, the day, the crops and the weather wait; you and the animals still move. `skip`, sleeping and passing out still move time on (the animals and villagers move on with it, as below). |
 | `noclip` | Toggle walking through anything: water, trees, rocks, buildings, furniture (indoors within the room, outdoors on loaded ground). Turned off where you don't fit, it puts you on the nearest free ground. |

@@ -7,6 +7,8 @@ var is_god := false
 var is_drain_off := false
 var is_weight_off := false
 var is_cost_off := false
+## Staying up past 01:00 passes no one out and shows no late warning.
+var is_late_off := false
 var is_noclip := false
 ## The needs of the farm animals (hunger and thirst) do not rise.
 var are_needs_off := false
@@ -25,6 +27,8 @@ func active_names() -> Array[String]:
 		names.append("No weight")
 	if is_cost_off:
 		names.append("No cost")
+	if is_late_off:
+		names.append("No late")
 	if is_noclip:
 		names.append("No clip")
 	if are_needs_off:
