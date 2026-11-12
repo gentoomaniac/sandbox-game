@@ -832,6 +832,16 @@ Templates, or unpack the `templates/` folder of `Godot_v<version>-stable_export_
 export (`data/*.cfg`, the Tiled maps, the music); a new kind of such file goes into its
 `include_filter`.
 
+To cut a release, tag the commit and push the tag:
+
+```sh
+git tag v1.2.3 && git push origin v1.2.3
+```
+
+The workflow `.github/workflows/release.yml` runs on tags of the form `vX.Y.Z` (any other tag
+fails its first step). It installs the pinned Godot and its export templates, runs `make assets`
+and `make export VERSION=1.2.3`, and publishes a GitHub release of the tag with the two zips.
+
 ### Talking NPCs with a language model
 
 Villagers talk through an OpenAI-compatible chat endpoint, or through Claude. Out of the box the game asks the
