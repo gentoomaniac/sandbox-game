@@ -224,34 +224,6 @@ and in autumn gets leaves on top gradually and in winter frost and/or snow."
   changes and the user's decisions: smooth colour mix, a little straw on the dry grass in autumn,
   ice later). The queue goes on with 186 first.
 
-## 187. Character attributes: strength, agility, HP and stamina
-
-- [ ] Done
-
-Run after task 191 (the character window it shows in).
-
-The user, 2026-11-11: "we want some basic rpg elements, character attributes specifically
-Strength, agility, hp, stamina. strength increases carrying capacity, agility i don't know yet, hp
-is obvious and stamina increases energy max. build the system so that we can easily expand on it
-later."
-- Today PlayerState has fixed MAX_ENERGY and MAX_HEALTH constants (game/state/player_state.gd),
-  and carrying is the slot count of the hotbar and the backpack (Inventory).
-- A small attribute system on the player: Strength, Agility, HP and Stamina, each a level with a
-  base value, kept in data/ (e.g. data/attributes.cfg: base levels, what one level gives), saved,
-  shown in the inventory/character screen. Built to grow: an attribute is data plus the
-  effects it has, read through one place (e.g. `Attributes.value(STRENGTH)` and derived stats
-  like `max_energy`, `max_health`, `carry_capacity`), so later attributes, bonuses (food, items,
-  levels, skills) and NPC/animal attributes can be added without touching every caller.
-- Effects now: Stamina raises the maximum energy; HP is the maximum health; Strength raises the
-  carrying capacity: decide what that means with the user before building (more backpack slots,
-  bigger stacks, or a weight limit, which doesn't exist yet). Agility: no effect yet (a later
-  idea: walking speed, fewer stumbles, faster work), only the value.
-- How attributes grow (levels from use, from skill levels, from items) is left open: a console
-  command to set them for testing. Keep the game exactly as today at the base values.
-- Plan first: a short plan for the user (the data shape, the strength question), then build.
-- Save version bump with the upgrade rule; tests for the derived stats, the save and the base
-  values matching today; README and design notes (design/player/).
-
 ## 194. Cloud shadows drift over the ground
 
 - [ ] Done

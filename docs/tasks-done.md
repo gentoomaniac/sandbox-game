@@ -5164,3 +5164,33 @@ From the user's words under task 188. Before task 187, whose attributes it will 
 - Tests for the key and the window; screenshots for the user; README and controls page.
 
 Done: 2026-11-12. The bag (B, the satchel button) keeps the backpack, the weight, the trash can and dropping on the ground; the new character window (C) has the figure, the equipment slots, a trash can and the skills tab (K). Both are Modals that lend the HUD hotbar as their quick bar (HotbarWindow). Crafting is on Shift+C: settings can now store Shift ("key:67:shift"), but a Controls-page rebind still binds without Shift. Old settings give C to the character window. With one window at a time, equipping is by right click in the bag or a drag from the hotbar in the character window. A TrashCan bug that swallowed the first click is fixed.
+
+## 187. Character attributes: strength, agility, HP and stamina
+
+- [x] Done
+
+Run after task 191 (the character window it shows in).
+
+The user, 2026-11-11: "we want some basic rpg elements, character attributes specifically
+Strength, agility, hp, stamina. strength increases carrying capacity, agility i don't know yet, hp
+is obvious and stamina increases energy max. build the system so that we can easily expand on it
+later."
+- Today PlayerState has fixed MAX_ENERGY and MAX_HEALTH constants (game/state/player_state.gd),
+  and carrying is the slot count of the hotbar and the backpack (Inventory).
+- A small attribute system on the player: Strength, Agility, HP and Stamina, each a level with a
+  base value, kept in data/ (e.g. data/attributes.cfg: base levels, what one level gives), saved,
+  shown in the inventory/character screen. Built to grow: an attribute is data plus the
+  effects it has, read through one place (e.g. `Attributes.value(STRENGTH)` and derived stats
+  like `max_energy`, `max_health`, `carry_capacity`), so later attributes, bonuses (food, items,
+  levels, skills) and NPC/animal attributes can be added without touching every caller.
+- Effects now: Stamina raises the maximum energy; HP is the maximum health; Strength raises the
+  carrying capacity: decide what that means with the user before building (more backpack slots,
+  bigger stacks, or a weight limit, which doesn't exist yet). Agility: no effect yet (a later
+  idea: walking speed, fewer stumbles, faster work), only the value.
+- How attributes grow (levels from use, from skill levels, from items) is left open: a console
+  command to set them for testing. Keep the game exactly as today at the base values.
+- Plan first: a short plan for the user (the data shape, the strength question), then build.
+- Save version bump with the upgrade rule; tests for the derived stats, the save and the base
+  values matching today; README and design notes (design/player/).
+
+Done: 2026-11-12. data/attributes.cfg with AttributeRules and Attributes (player.attributes): Strength, Agility, Stamina and HP, base level 10 (1 to 100); `value()` adds transient bonuses (`add_bonus`/`remove_bonus`, nothing gives one yet). Stamina sets max energy (+10 a level), HP max health (+10), Strength the carry capacity in kg (+4), the free weight above which tool use costs more energy; pickup is never refused (the user's choice). At base: 100, 100, 40 kg, as before. MAX_ENERGY/MAX_HEALTH are gone; sleep fills are now a share of the bars. The character window lists the levels and the derived numbers; the bag reads "Carrying x / y kg". Agility has no effect yet. Save version 30 (the upgrade from 19 dropped); console `attribute <name> <level>`. Plan: docs/plans/187-attributes.md.
