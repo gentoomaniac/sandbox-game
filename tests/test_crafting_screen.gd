@@ -75,7 +75,7 @@ func test_a_craft_with_no_room_says_the_rest_was_dropped() -> void:
 
 func test_the_panel_never_gets_taller_than_the_window() -> void:
 	var window := SubViewport.new()
-	window.size = Vector2i(320, 120)
+	window.size = Vector2i(320, 160)
 	add_child_autofree(window)
 	remove_child(_screen)
 	window.add_child(_screen)

@@ -498,7 +498,8 @@ const _OTHER_TYPES := {
 		"atlas_row": _KNICK_ROW,
 		"variants": 3,
 	},
-	# Hazel rods woven between stakes: a light fence, cut down with the axe for its fibre.
+	# Hazel rods woven between stakes: a light fence, cut down with the axe for its fibre. The
+	# player makes and places it too (task 203); what it gives back is what its recipe took.
 	WATTLE_FENCE:
 	{
 		"hp": 2,
@@ -510,8 +511,10 @@ const _OTHER_TYPES := {
 		"harvest_level": 1,
 		"atlas_row": _WATTLE_FENCE_ROW,
 		"variants": 1,
+		"placeable_in": OUTDOORS,
 	},
-	# Fieldstones stacked dry: the pickaxe takes it apart for its stone.
+	# Fieldstones stacked dry: the pickaxe takes it apart for the stone a piece is made of
+	# (task 203).
 	STONE_WALL:
 	{
 		"hp": 5,
@@ -523,6 +526,7 @@ const _OTHER_TYPES := {
 		"harvest_level": 1,
 		"atlas_row": _STONE_WALL_ROW,
 		"variants": 3,
+		"placeable_in": OUTDOORS,
 	},
 	# A turfed bank of clay along the water: walked on like the grass, but nothing is built on
 	# it, tilled or cut out of it.

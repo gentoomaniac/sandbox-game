@@ -76,6 +76,8 @@ const FEED_TROUGH := &"feed_trough"
 const PEN_FENCE := &"pen_fence"
 const PEN_GATE := &"pen_gate"
 const PIG_SHELTER := &"pig_shelter"
+const WATTLE_FENCE := &"wattle_fence"
+const STONE_WALL := &"stone_wall"
 const EGG := &"egg"
 # The mason's (task 74).
 const RAW_BRICK := &"raw_brick"
@@ -549,6 +551,22 @@ const _OTHER_TYPES := {
 		"weight": 4.0,
 		"stack_limit": 20,
 		"places": WorldObjectTypes.PEN_FENCE,
+	},
+	WATTLE_FENCE:
+	{
+		"name": "Wattle fence",
+		"description": "Hazel rods woven between stakes, a light fence for a field or a yard.",
+		"weight": 1.0,
+		"stack_limit": 20,
+		"places": WorldObjectTypes.WATTLE_FENCE,
+	},
+	STONE_WALL:
+	{
+		"name": "Stone wall",
+		"description": "A piece of dry stone wall, fieldstones stacked without mortar.",
+		"weight": 4.5,
+		"stack_limit": 10,
+		"places": WorldObjectTypes.STONE_WALL,
 	},
 	PEN_GATE:
 	{

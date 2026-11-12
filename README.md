@@ -605,7 +605,11 @@ Beds don't block walking, so you can't get stuck behind one.
 ### Crafting and professions
 
 Press Shift+C for the crafting menu (C is the character window's) of what you make by hand: a chest, a campfire (6 stone, 3 logs),
-a bedroll (6 hay, 4 fibre), the stations below and flour (from wheat, rye or buckwheat).
+a bedroll (6 hay, 4 fibre), the stations below, flour (from wheat, rye or buckwheat) and a **piece of
+dry stone wall** (3 stone, masonry 5). A **wattle fence** (half a log and 2 fibre a piece, two pieces
+to a craft, woodworking 5) is made at the workbench. Both are put down tile by tile like a pen fence,
+and join each other and the walls and fences the land is laid out with; the axe takes a wattle
+fence down for its 2 fibre and the pickaxe a wall for its 3 stone, never more than they cost.
 It lists what you can make with what you carry; a recipe you can't afford yet is greyed, with
 the missing materials marked, and hovering shows what is missing. With a full inventory a craft still goes ahead: what does not fit is dropped at your feet, and the menu says so. A long list scrolls (mouse
 wheel, the bar, or the arrow keys) instead of outgrowing the window. The recipes are in

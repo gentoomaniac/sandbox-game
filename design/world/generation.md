@@ -41,7 +41,9 @@
     sheep grazed on them). Willows block like the other trees.
   - **Tools:** the axe cuts a Knick down to the ground for 1 log and 2 fibre (its wood was the
     reason it was planted and cut back every few years), and a wattle fence for 2 fibre; the
-    pickaxe takes a wall apart for 3 stone. Nothing removes a dyke or fills a ditch (yet): they
+    pickaxe takes a wall apart for 3 stone. The player makes both too (task 203): the same objects,
+    so a placed piece joins the generated runs and gives back what it cost (see
+    `design/building/fences-and-walls.md`). Nothing removes a dyke or fills a ditch (yet): they
     are the land's, not the player's. A willow is felled like the other trees (2 logs, its stump
     may grow a willow sapling again; it drops a willow cutting like a seed).
   - **Building and tilling:** all of them block building and tilling on their tile (a dyke too:
