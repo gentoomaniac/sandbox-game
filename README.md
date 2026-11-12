@@ -403,9 +403,9 @@ walk and peck on the mud and swim on the sea, and in summer common terns fish ov
 tideways, hovering and plunging in with a splash. When the tide comes in the waders leave the
 mud and the gulls swim where they stood. On warm, calm, dry summer evenings fireflies
 drift over the meadows by the trees, the Knicks and the water from dusk until a few hours after
-sunset, each blinking its own light on and off. The animals
-come and go around you by the season, the time of day and the weather; the numbers are in
-[data/wildlife.cfg](data/wildlife.cfg).
+sunset, each blinking its own light on and off. Wild animals never stand on a building, the door
+included. The animals come and go around you by the season, the time of day and the weather; the
+numbers are in [data/wildlife.cfg](data/wildlife.cfg).
 
 ![White storks by the camp, a stork on the roof of the shack, geese grazing in autumn and a flock of them flying over](docs/screenshots/wildlife.png)
 

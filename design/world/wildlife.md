@@ -107,4 +107,8 @@ atmosphere only: no player impact, not hunted, not saved.
   and vanish when far away. Behaviour is a simple per-animal state machine (idle, move,
   flee). The rules for how many and where are plain, testable logic; the animals
   themselves are view nodes.
+- **Buildings (task 201):** no wild animal ever stands on a building tile, the door included, and
+  none appears or settles on one (`WildlifeView.can_stand`; the farm animals have the same rule in
+  `is_walkable_for_animals`). The mice are no exception. The roof storks and the stork nests stand
+  on roofs by design and do not use it.
 - No animals inside buildings.

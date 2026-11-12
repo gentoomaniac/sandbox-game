@@ -167,15 +167,16 @@ func view_rect() -> Rect2:
 
 
 ## Whether a point of the ground can be stood on by an animal of a kind: not water (see `is_water`),
-## a tree or a wall, and not mud the tide covers (see World `is_flooded`), except for the waders,
-## which keep to their own rule of `is_water` and may stay on it.
+## a tree, a wall or a building (the door too), and not mud the tide covers (see World
+## `is_flooded`), except for the waders, which keep to their own rule of `is_water` and may stay
+## on it.
 func can_stand(point: Vector2, kind := &"") -> bool:
 	var tile := _tile_at(point)
 	var world := world_view.world
 	var is_walkable_for_kind := (
 		world.is_walkable(tile) or kind in WildlifeRules.WADERS and world.is_wadeable(tile)
 	)
-	return is_walkable_for_kind and not is_water(point)
+	return is_walkable_for_kind and world.building_at(tile) == null and not is_water(point)
 
 
 ## Whether a point is on water: the sea and fresh water always, the tidal mud while the tide
