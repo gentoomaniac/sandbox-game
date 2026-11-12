@@ -212,6 +212,8 @@ func test_a_forced_condition_is_on_and_the_others_it_does_not_bring_are_off() ->
 	var base := _weather.at(ORIGIN, MIDSUMMER, 600)
 	var brings := {
 		&"clear": [],
+		&"cloudy": [],
+		&"overcast": [],
 		&"rain": [&"rain"],
 		&"snow": [&"snow"],
 		&"fog": [&"fog"],

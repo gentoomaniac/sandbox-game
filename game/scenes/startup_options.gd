@@ -43,7 +43,8 @@ extends RefCounted
 ##   --at=<x>,<y>             put the player on that tile instead of at the camp
 ##   --day=<n>                the day number (days 1, 31, 61 and 91 start a season)
 ##   --time=<hh:mm>           the time of day
-##   --weather=<condition>    force the weather (clear, rain, snow, fog, wind, storm, thunder)
+##   --weather=<condition>    force the weather (clear, cloudy, overcast, rain, snow, fog, wind,
+##                            storm, thunder)
 ##   --flash                  keep the flash of lightning on
 ##   --snow=<0..1>            force the snow cover
 ##   --zoom=<z>               the camera zoom

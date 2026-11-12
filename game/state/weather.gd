@@ -13,11 +13,13 @@ enum Channel { TEMPERATURE, HUMIDITY, WIND, DIRECTION }
 
 ## The conditions `forced` can make, besides the sample's own.
 const FORCEABLE: Array[StringName] = [
-	&"clear", &"rain", &"snow", &"fog", &"wind", &"storm", &"thunder"
+	&"clear", &"cloudy", &"overcast", &"rain", &"snow", &"fog", &"wind", &"storm", &"thunder"
 ]
 ## What `forced` sets for each of them: values, and the one condition (or none) that is on.
 const FORCED := {
 	&"clear": {"humidity": 35.0, "wind_speed": 2.0, "cloud_cover": 0.0},
+	&"cloudy": {"humidity": 55.0, "wind_speed": 5.0, "cloud_cover": 0.5},
+	&"overcast": {"humidity": 75.0, "wind_speed": 3.0, "cloud_cover": 1.0},
 	&"rain": {"humidity": 90.0, "temperature": 10.0, "cloud_cover": 0.7, "rain": 0.8},
 	&"snow": {"humidity": 90.0, "temperature": -3.0, "cloud_cover": 0.7, "snow": 0.8},
 	&"fog":

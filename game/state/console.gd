@@ -35,7 +35,7 @@ const COMMANDS := {
 	],
 	"weather":
 	[
-		"weather [clear|rain|snow|fog|wind|storm|thunder|auto]",
+		"weather [clear|cloudy|overcast|rain|snow|fog|wind|storm|thunder|auto]",
 		"Show the weather, force a condition, or return to the simulation (auto).",
 	],
 	"snow":
