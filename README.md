@@ -547,7 +547,8 @@ that slot swaps places, the same item stacks, and a stack let go anywhere else g
 Shift+click sends a whole stack from the backpack to the hotbar and back (onto the same item first, if there is
 room). Let go of a dragged stack outside the screen, or press T for the held stack, and it lies
 on the ground in front of you; walk away and back to pick it up again (a game saved right
-after a drop picks the pile up when it loads). This works inside a house too: the items lie on its
+after a drop picks the pile up when it loads). A click on the dimmed area outside a window
+closes it, as Escape does. This works inside a house too: the items lie on its
 floor (never on a wall, in the way of furniture or on the doormat), are picked up the same way and
 stay there when you leave and come back.
 

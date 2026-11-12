@@ -62,7 +62,8 @@ Decided 2026-11-05.
   Buttons, slots, text fields and the rows of a list take their own clicks and never drag; the
   empty area of a list and the gaps between rows do. The pause menu with its settings and the
   confirmation dialogs set `is_movable` off and stay put. Escape closes the window (the pause
-  menu goes back a page first), only one window is open at a time (opening one closes the other),
+  menu goes back a page first), and a left click on the dimmed area outside it does the same
+  (task 196; for a question, its safe answer), only one window is open at a time (opening one closes the other),
   and the game pauses while a window that asks for it is open. HUDs, tooltips and the build menu
   are not windows. How to build one: [docs/ui.md](../../docs/ui.md).
 - **UI look:** a pixel font and a framed panel (9-slice) in palette colours, in one shared

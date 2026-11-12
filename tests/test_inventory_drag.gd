@@ -136,6 +136,7 @@ func test_a_stack_let_go_outside_the_panel_is_dropped_on_the_ground() -> void:
 	watch_signals(_bag)
 	_drag(_centre_of(_backpack_view(BACKPACK_SLOT)), Vector2(4, 4))
 	assert_signal_emitted_with_parameters(_bag, "drop_requested", [BACKPACK_SLOT])
+	assert_true(_bag.is_open(), "a drop is not a click outside")
 
 
 func test_a_hotbar_stack_let_go_outside_the_panel_is_dropped_on_the_ground() -> void:
@@ -163,3 +164,17 @@ func test_a_stack_let_go_between_hotbar_slots_goes_back() -> void:
 	_drag(_centre_of(_backpack_view(BACKPACK_SLOT)), gap)
 	assert_signal_not_emitted(_bag, "drop_requested")
 	assert_eq(_player.inventory.slots[BACKPACK_SLOT], {"item": ItemTypes.LOGS, "count": 7})
+
+
+func test_a_click_on_the_hotbar_strip_does_not_close_the_bag() -> void:
+	var slot := _hotbar._slot_views[0].get_global_rect()
+	var bag_button := _hotbar._bag_button.get_global_rect()
+	var gap_before_bag_button := Vector2(bag_button.position.x - 2, bag_button.get_center().y)
+	var points := [slot.end + Vector2(1, -5), gap_before_bag_button, bag_button.get_center()]
+	for point: Vector2 in points:
+		var click := InputEventMouseButton.new()
+		click.button_index = MOUSE_BUTTON_LEFT
+		click.pressed = true
+		click.global_position = point
+		_bag._backdrop.gui_input.emit(click)
+		assert_true(_bag.is_open(), "a click at %s is on the hotbar strip" % point)

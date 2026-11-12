@@ -58,6 +58,19 @@ func test_closing_it_in_another_way_answers_with_the_safe_choice() -> void:
 	assert_eq(_answers, [1])
 
 
+func test_a_click_outside_the_panel_answers_with_the_safe_choice() -> void:
+	_ask()
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	click.global_position = Vector2.ONE
+
+	_dialog._backdrop.gui_input.emit(click)
+
+	assert_eq(_answers, [1])
+	assert_false(_dialog.is_open())
+
+
 func test_asking_again_replaces_the_buttons() -> void:
 	_ask()
 	_buttons()[0].pressed.emit()

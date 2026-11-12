@@ -57,5 +57,24 @@ func test_escape_goes_back_a_page_at_a_time_and_then_closes_the_menu() -> void:
 	assert_false(get_tree().paused)
 
 
+func _click_outside() -> void:
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	click.global_position = Vector2.ONE
+	_menu._backdrop.gui_input.emit(click)
+
+
+func test_a_click_outside_goes_back_a_page_at_a_time_and_then_closes_the_menu() -> void:
+	_menu.open()
+	_menu._go_to(PauseMenu.Page.SETTINGS)
+	_click_outside()
+	assert_true(_menu._pages[PauseMenu.Page.PAUSE].visible)
+	assert_true(_menu.is_open())
+	_click_outside()
+	assert_false(_menu.is_open())
+	assert_false(get_tree().paused)
+
+
 func test_the_menu_is_fixed_in_place_on_every_page() -> void:
 	assert_false(_menu.is_movable)

@@ -79,10 +79,10 @@ func _init() -> void:
 	_bag_button.offset_bottom = _row.offset_bottom
 
 
-## Whether a point of the window (in canvas coordinates) is on the hotbar, between slots too, or
-## on the bag button.
+## Whether a point of the window (in canvas coordinates) is on the hotbar strip: the slots and the
+## gaps between them, the bag button and the gap before it.
 func covers(point: Vector2) -> bool:
-	return _row.get_global_rect().has_point(point) or _bag_button.get_global_rect().has_point(point)
+	return _row.get_global_rect().merge(_bag_button.get_global_rect()).has_point(point)
 
 
 ## Makes the bar the quick bar of `borrower` (a screen that moves items): its slots take clicks

@@ -22,7 +22,6 @@ var _rows := VBoxContainer.new()  # the part that grows
 
 func _init() -> void:
 	super()
-	closes_on_backdrop_click = true
 	var column := VBoxContainer.new()
 	column.add_child(_title)
 	column.add_child(_scrolling(_rows))
@@ -44,8 +43,7 @@ func _on_open() -> void:
 - `open()`, `close()`, `toggle()` and `is_open()` take no arguments, because GDScript does not
   allow an override with another signature. `open()` does nothing for a window that is open.
   The signals `opened` and `closed` come after the hooks.
-- Hooks (all optional): `_on_open()`, `_on_close()`, `_takes_escape()`,
-  `_on_backdrop_input(event)`.
+- Hooks (all optional): `_on_open()`, `_on_close()`, `_takes_escape()`.
 - Contents that change size need nothing: the panel is anchored to the middle of the window and
   grows round its contents, so it stays there when they change, when the window is
   resized and when the UI scale changes (that too is a resize of the root). The scrolling lists
@@ -91,9 +89,13 @@ extend `HotbarWindow`, which lends them the HUD's hotbar as their quick bar.
   once, as Escape does: the crafting screen and the chest register `interact`, so E closes them.
   `_takes_escape()` is asked for Escape and the pause key only, not for these. A key not listed
   does nothing to the window.
-- **Backdrop click:** `closes_on_backdrop_click = true` closes on a left click outside the panel.
-  A window that uses those clicks itself overrides `_on_backdrop_input(event)`; it should then
-  set `_panel.mouse_filter` to ignore, so clicks on the panel reach it.
+- **Backdrop click:** a left click on the dimmed area outside the panel does what Escape does, in
+  every window (the pause menu and `ChoiceDialog` too: the click gives the dialog's safe answer).
+  Both go through `request_close()`, which asks `_takes_escape()` first and closes if it returns
+  false. A stack let go on the dimmed area is a drop (`_drop_outside_panel`), not a click, and a
+  press that starts on the panel or in a window drag does not count, and neither does one on the
+  HUD's hotbar strip (slots, gaps and bag button) in a `HotbarWindow`. A window whose panel lets
+  clicks through (`_panel.mouse_filter` ignore) is fine: the click's place decides.
 - **Asking the player:** `ChoiceDialog` is a ready window for a question with a few answers:
   `ask(title, text, choices, safe_choice)`, then `await dialog.answered` gives the index of the
   button pressed; Escape and anything else that closes it answer `safe_choice`, which is also the

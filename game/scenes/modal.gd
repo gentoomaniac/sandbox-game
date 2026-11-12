@@ -14,8 +14,8 @@ extends CanvasLayer
 ##   the method calls `close()` first, so the close hook still sees the old arguments and
 ##   `open()`, which does nothing for a window that is open, starts afresh.
 ## - Hooks, all optional: `_on_open()` (fill the contents; the lists are fitted after it),
-##   `_on_close()`, `_takes_escape()` (return true to use Escape yourself, e.g. to go back a page
-##   instead of closing) and `_on_backdrop_input(event)` (a click on the dimmed area).
+##   `_on_close()` and `_takes_escape()` (return true to use Escape yourself, e.g. to go back a
+##   page instead of closing).
 ## - Contents that change size need nothing: the panel is anchored to the middle of the window and
 ##   grows round its contents, so it stays there through resizes and UI scale changes.
 ##   The scrolling lists fit themselves; `refit()` makes them fit now.
@@ -25,9 +25,10 @@ extends CanvasLayer
 ##   screen, and opens in its place (the middle unless `opening_shift` says otherwise) each time.
 ##   A window that must stay put (the pause menu, a question) sets `is_movable` to false in `_init`.
 ## - Escape here is `ui_cancel` (not rebindable) or the rebindable pause key, as the pause menu
-##   takes both. Other keys that close the window (E on the chest) are named in `close_actions`;
-##   they close it at once, without `_takes_escape()`. Windows must stay children of Main, so that
-##   these keys reach them before Main.
+##   takes both. A left click on the dimmed area outside the panel does what Escape does, in every
+##   window (`request_close()` is the one path for both). Other keys that close the window (E on the
+##   chest) are named in `close_actions`; they close it at once, without `_takes_escape()`. Windows
+##   must stay children of Main, so that these keys reach them before Main.
 ## - Only Modals pause the game (the pause menu is one).
 
 ## The window was opened, after `_on_open()`.
@@ -42,9 +43,6 @@ static var _open_modal: Modal
 
 ## Whether the game stands still while the window is open. Set it in `_init`.
 var pauses_game := false
-## Whether a click outside the panel closes the window. A window that uses those clicks itself
-## overrides `_on_backdrop_input` instead.
-var closes_on_backdrop_click := false
 ## The input actions, besides Escape and the pause key, that close the window. Set it in `_init`.
 var close_actions: Array[StringName] = []
 ## Whether the player can drag the window about. Set it in `_init`.
@@ -56,6 +54,9 @@ var opening_shift := Vector2.ZERO
 var _backdrop := ColorRect.new()
 var _centre := Control.new()
 var _panel := PanelContainer.new()
+## Whether a point of the window (canvas coordinates) keeps its clicks while the window is open,
+## such as the HUD's hotbar: a click there is not outside the panel. Set it in `_init`.
+var _keeps_clicks_at := func(_point: Vector2) -> bool: return false
 var _lists: Array[ScrollingList] = []
 ## How far the panel is from the middle of the window: where it opened plus the player's drag.
 var _drag_shift := Vector2.ZERO
@@ -147,6 +148,12 @@ func close() -> void:
 	closed.emit()
 
 
+## What Escape does: the window's own step if it has one (`_takes_escape()`), else closing.
+func request_close() -> void:
+	if not _takes_escape():
+		close()
+
+
 func toggle() -> void:
 	if visible:
 		close()
@@ -177,10 +184,14 @@ func _takes_escape() -> bool:
 	return false
 
 
-## A mouse event on the dimmed area (the panel takes its own unless a window lets them through).
+## A click outside the panel is Escape. The panel of some windows lets clicks through to the
+## backdrop, so where the click is decides.
 func _on_backdrop_input(event: InputEvent) -> void:
-	if closes_on_backdrop_click and _is_left_press(event):
-		close()
+	if not _is_left_press(event):
+		return
+	var at: Vector2 = event.global_position
+	if not _panel.get_global_rect().has_point(at) and not _keeps_clicks_at.call(at):
+		request_close()
 
 
 ## For a window where stacks are dragged (see SlotView): `on_drop.call(source)` runs when the
@@ -262,8 +273,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
 		get_viewport().set_input_as_handled()
-		if not _takes_escape():
-			close()
+		request_close()
 	elif close_actions.any(
 		func(action: StringName) -> bool: return event.is_action_pressed(action)
 	):

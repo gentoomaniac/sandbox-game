@@ -98,6 +98,17 @@ func test_the_window_follows_the_mouse_only_while_the_button_is_held() -> void:
 	assert_eq(window.panel().position, moved_to)
 
 
+func test_a_drag_that_is_let_go_outside_the_panel_does_not_close_the_window() -> void:
+	var window := _window()
+	window.open()
+	await wait_process_frames(2)
+	var grip := window.panel().global_position + Vector2(2, 2)
+	_frame_press(window, grip)
+	_mouse_to(Vector2(WINDOW) - Vector2.ONE)
+	_release(Vector2(WINDOW) - Vector2.ONE)
+	assert_true(window.is_open())
+
+
 func test_dragging_can_be_pressed_on_the_backdrop_over_a_panel_that_lets_clicks_through() -> void:
 	var window := _window()
 	window.open()

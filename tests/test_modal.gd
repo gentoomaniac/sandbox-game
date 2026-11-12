@@ -1,6 +1,6 @@
 extends GutTest
 ## The base of the windows: opening and closing, one window at a time, Escape and the hook that
-## takes it first, the pause flag, a click on the backdrop, the panel's centring and the lists' fit.
+## takes it first, the pause flag, the panel's centring and the lists' fit.
 
 const WINDOW := Vector2i(400, 300)
 
@@ -65,13 +65,6 @@ func _press(action: StringName) -> void:
 	event.action = action
 	event.pressed = true
 	_viewport.push_input(event)
-
-
-func _click_backdrop(window: TestWindow) -> void:
-	var event := InputEventMouseButton.new()
-	event.button_index = MOUSE_BUTTON_LEFT
-	event.pressed = true
-	window.backdrop().gui_input.emit(event)
 
 
 func test_a_window_is_closed_at_first_and_opens_closes_and_toggles() -> void:
@@ -200,16 +193,6 @@ func test_the_pause_key_goes_through_the_escape_hook_too() -> void:
 	assert_eq(window.escapes_taken, 1)
 	window.is_taking_escape = false
 	_press(&"pause")
-	assert_false(window.is_open())
-
-
-func test_a_click_on_the_backdrop_closes_only_if_the_window_wants_it() -> void:
-	var window := _window()
-	window.open()
-	_click_backdrop(window)
-	assert_true(window.is_open())
-	window.closes_on_backdrop_click = true
-	_click_backdrop(window)
 	assert_false(window.is_open())
 
 

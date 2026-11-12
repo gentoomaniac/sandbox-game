@@ -12,6 +12,7 @@ var _is_using_hotbar := false
 func _init(hotbar: HotbarHud) -> void:
 	super()
 	_hotbar = hotbar
+	_keeps_clicks_at = hotbar.covers
 
 
 ## Makes the HUD's hotbar this window's quick bar, or gives it back: the window listens to its
