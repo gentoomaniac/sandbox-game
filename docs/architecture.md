@@ -227,8 +227,11 @@ Warft and an Ewer here and there.
   `RecipeRules` (materials, the skill level it needs), crafts it and practises its skill on the
   player's **Skills** (`skills.gd`: points per skill, the total cap and the skills that fade,
   rules from `SkillRules`). A recipe is made by hand or at a station (`StationRules`: which
-  object types are which station); a slow one (with `hours`, the kiln) is held by its station
-  as **StationWork** in the object's `state` until it is done on the game clock. `craft` checks
+  object types are which station). The recipes of a **process station** (the kiln, the oven:
+  `process` in stations.cfg) are run there instead: **ProcessStation** (`process_station.gd`)
+  over the object's `storage`, its grid, and a run in its `state`, done on the game clock and
+  settled by whoever looks; what may go in is **ProcessLoad**'s pure rule; **ProcessScreen**
+  shows it. `craft` checks
   its own conditions: a recipe made at a station needs one of that kind on the player's map in
   their reach (`NO_STATION`, or `WRONG_STATION` for another kind), whatever the menu showed.
   `Interaction` says which chest or station E opens; `CraftingScreen` shows the recipes of one place.

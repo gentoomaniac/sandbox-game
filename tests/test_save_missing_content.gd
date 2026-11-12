@@ -81,7 +81,9 @@ func test_a_pile_a_tree_a_recipe_and_an_animal_the_game_no_longer_has_are_asked_
 	var game := _current_game()
 	game["world"]["ground_items"].append({"item": "old_gem", "count": 1, "position": [1.5, 2.5]})
 	_with_object_edit(game, {"type": "stump", "pos": [7, 7], "state": {"tree": "old_tree"}})
-	_with_object_edit(game, _kiln_object({"recipe": "old_firing", "done_minute": 100}))
+	_with_object_edit(
+		game, _kiln_object({"recipe": "old_firing", "start_minute": 0, "done_minute": 100})
+	)
 	(
 		game["livestock"]
 		. append(

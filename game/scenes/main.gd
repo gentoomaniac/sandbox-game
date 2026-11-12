@@ -31,8 +31,7 @@ const SAVE_NOTE := &"save"
 const LOAD_NOTE := &"load"
 
 var _state: GameState
-## The game F8 has loaded, if this scene was started by it (see QuickLoad); the player is told
-## once the HUD is up.
+## The game F8 loaded, if it started this scene (see QuickLoad); told once the HUD is up.
 var _resumed_state: GameState
 var _builder: Builder
 var _settings: GameSettings
@@ -78,8 +77,7 @@ var _frost := 0.0
 var _fast_forward := false
 ## The mouse wheel's turns not yet a whole hotbar slot (see HotbarWheel).
 var _wheel_progress := 0.0
-## A fade (through a door, into sleep) or passing out is running: the player neither walks nor
-## acts.
+## A fade (a door, sleep) or passing out is running: the player neither walks nor acts.
 var _is_in_transition := false
 ## The time of a sleep is being made up for over some frames (see Simulation `skip_over_frames`),
 ## up to the player's waking: the world is held, and quitting waits (see `_hold_world`).
@@ -335,6 +333,7 @@ func _apply_start_options() -> void:
 	_debug.interior_view = _interior_view
 	_debug.storage_screen = _storage_screen
 	_debug.crafting_screen = _crafting_screen
+	_debug.process_screen = _process_screen
 	_debug.chat_screen = _chat_screen
 	_debug.open_chat = _open_chat
 	_debug.try_sleep = _try_sleep

@@ -615,18 +615,30 @@ wheel, the bar, or the arrow keys) instead of outgrowing the window. The recipes
 Three crafts can be learnt, each at its own **station**: press E at one for its menu.
 
 - **Cooking** at the hearth of a house or the camp's fire (anyone can roast a turnip; buckwheat
-  pancakes, pottage and pea soup take practice) and at the **bake oven** (bread from flour, a berry tart,
+  pancakes, pottage and pea soup take practice) and at the **bake oven** (bread from flour in an hour, a berry tart,
   a feast cake). Cooked food gives more energy than what it is made of, eaten raw.
 - **Woodworking** at the **workbench**: planks, a stool for the house, a grave marker for the
   churchyard, clogs, a painted Frisian chest with 20 slots, and as the master's piece a
   joined cupboard with 25.
-- **Masonry**: clay is moulded into raw bricks at the workbench and fired in the **kiln**.
-  A firing takes 12 game hours and goes on while you are away; open the kiln's menu
-  afterwards to take the bricks out (what does not fit your inventory is dropped by the kiln); a skilled mason fires more for the same fuel. The bake
-  oven is built of those bricks.
+- **Masonry**: clay is moulded into raw bricks at the workbench and fired in the **kiln**,
+  6 raw bricks and 2 logs a load. A skilled mason gets more bricks from the same fire: a
+  quarter more from masonry 50, half again from 70. The bake oven is built of those bricks.
 
-A recipe is only made at a station of its kind within your reach: the kiln's firing is not
-started at a workbench ("Made at the Kiln"), and the game refuses a craft at a station that is
+The kiln and the bake oven are **process stations**: E opens a window with their recipes on the
+left, a 3x3 grid in the middle and your bag on the right. Put in what a recipe takes, by
+dragging or Shift+click, or click a recipe to move its materials for the amount below it (type
+it, or use -, + and Max). Only what fits a recipe goes in: once the oven holds berries, the
+bread is ruled out, and the recipes and bag items that can't go in now are greyed. The
+fire button starts the run when the grid holds whole loads of a recipe (otherwise it says what
+is missing); the run takes the recipe's hours (12 for bricks, an hour for bread) while a bar
+fills over the locked grid, and goes on while you are away. Then the grid holds what was made:
+take it out like from a chest. Nothing new goes in until all of it is out. The logs are just
+one of the materials, the fuel.
+
+![The kiln firing three loads of bricks, and the bake oven with a load of berry tarts in it: the bread is ruled out by the berries, the feast cake locked](docs/screenshots/process-stations.png)
+
+A recipe is only made at a station of its kind within your reach: planks are not made at the
+campfire ("Made at the Workbench"), and the game refuses a craft at a station that is
 out of reach or not on your map, whoever asks.
 
 The workbench, kiln and bake oven are made by hand and placed like a chest (the kiln only
@@ -639,7 +651,7 @@ above it, nothing from a recipe 40 points below you. Better recipes need a skill
 master recipe of each craft 70, which teaches it to 100); the
 menu shows them greyed with the level they need, and the tooltip what a craft teaches.
 
-![The menus of the hearth, the workbench and the kiln](docs/screenshots/station-menus.png)
+![The menus of the hearth and the workbench](docs/screenshots/station-menus.png)
 
 Each skill goes up to 100, but all of them together only to 200: one craft at the top and
 two at half, or three around two thirds. Press K for the skills tab of the character window.

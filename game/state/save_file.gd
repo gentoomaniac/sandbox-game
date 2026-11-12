@@ -21,10 +21,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 30
-## The oldest version we still upgrade. Nine steps back, for the next version (task 199) makes
-## its step the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 31
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -206,6 +205,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_28(game)
 	if version <= 29:
 		_upgrade_from_version_29(game)
+	if version <= 30:
+		_upgrade_from_version_30(game)
 
 
 ## Version 21 had no saddles: no horse wears one.
@@ -292,3 +293,47 @@ static func _upgrade_from_version_29(game: Dictionary) -> void:
 		"levels":
 		{"strength": base_level, "agility": base_level, "stamina": base_level, "hp": base_level}
 	}
+
+
+## Version 30 had no process stations (task 199): every kiln and oven gets an empty grid of 3x3,
+## and a kiln's firing (`work`, a recipe and the minute it is done) becomes a run of the one
+## Bricks recipe: its load in the grid and its bricks to come at the same minute.
+static func _upgrade_from_version_30(game: Dictionary) -> void:
+	# Written out, not read from the data files, which no longer have the old recipes.
+	var grid_slots := 9
+	var firing_minutes := 12 * GameClock.MINUTES_PER_HOUR
+	var old_firings := {
+		"bricks": {"raw_brick": 6, "logs": 2, "brick": 6},
+		"bricks_large": {"raw_brick": 12, "logs": 3, "brick": 12},
+		"bricks_master": {"raw_brick": 18, "logs": 3, "brick": 18},
+	}
+	var objects: Array = []
+	for edit: Dictionary in game["world"]["object_edits"]:
+		if edit["object"] != null:
+			objects.append(edit["object"])
+	for building: Dictionary in game["world"]["buildings"]:
+		if building["interior"] != null:
+			objects.append_array(building["interior"]["objects"])
+	for object: Dictionary in objects:
+		if object["type"] not in ["kiln", "oven"]:
+			continue
+		var grid := []
+		grid.resize(grid_slots)
+		object["storage"] = grid
+		var state: Dictionary = object["state"]
+		if not state.has("work"):
+			continue
+		var work: Dictionary = state["work"]
+		state.erase("work")
+		var firing: Dictionary = old_firings.get(work["recipe"], {})
+		if firing.is_empty():
+			continue
+		grid[0] = {"item": "raw_brick", "count": firing["raw_brick"]}
+		grid[1] = {"item": "logs", "count": firing["logs"]}
+		var done := int(work["done_minute"])
+		state["run"] = {
+			"recipe": "bricks",
+			"start_minute": done - firing_minutes,
+			"done_minute": done,
+			"products": {"brick": firing["brick"]},
+		}

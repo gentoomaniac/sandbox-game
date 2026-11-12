@@ -84,18 +84,28 @@ func test_equipment_that_does_not_fit_its_slot_is_refused() -> void:
 	assert_string_contains(_refusal_of(game).reason, "player equipment head: axe can't be worn")
 
 
-func test_a_station_working_on_a_recipe_that_is_not_slow_is_refused() -> void:
+func test_a_run_without_its_recipe_is_refused() -> void:
 	var game := _current_game()
-	_with_object_edit(game, _kiln_object({"recipe": "planks", "done_minute": 100}))
+	_with_object_edit(game, _kiln_object({"start_minute": 0, "done_minute": 100}))
 
-	assert_string_contains(_refusal_of(game).reason, "recipe planks is not made at a station")
+	assert_string_contains(_refusal_of(game).reason, "state run: no recipe")
 
 
-func test_a_station_work_without_its_recipe_is_refused() -> void:
+func test_a_run_that_makes_nothing_is_refused() -> void:
 	var game := _current_game()
-	_with_object_edit(game, _kiln_object({"done_minute": 100}))
+	var run := {"recipe": "bricks", "start_minute": 0, "done_minute": 100, "products": {"brick": 0}}
+	_with_object_edit(game, _kiln_object(run))
 
-	assert_string_contains(_refusal_of(game).reason, "state work: no recipe")
+	assert_string_contains(_refusal_of(game).reason, "products brick should be a whole number")
+
+
+func test_a_kiln_without_its_grid_is_refused() -> void:
+	var game := _current_game()
+	var kiln := _kiln_object(null)
+	kiln.erase("storage")
+	_with_object_edit(game, kiln)
+
+	assert_string_contains(_refusal_of(game).reason, "no storage")
 
 
 func test_a_chest_with_a_bad_stack_is_refused_with_its_place() -> void:
@@ -174,7 +184,8 @@ func test_a_lived_in_game_passes_the_validator_and_round_trips() -> void:
 	state.world.drop_items(state.player.tile(), {ItemTypes.LOGS: 3})
 	state.player.inventory.add(ItemTypes.LOGS, 40)
 	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
-	_with_object_edit(game, _kiln_object({"recipe": "bricks", "done_minute": 100}))
+	var run := {"recipe": "bricks", "start_minute": 0, "done_minute": 100, "products": {"brick": 6}}
+	_with_object_edit(game, _kiln_object(run))
 
 	var validator := SaveValidator.check(game)
 

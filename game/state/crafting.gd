@@ -3,11 +3,10 @@ extends RefCounted
 ## What the crafting menu does: `craft` takes a recipe's materials from the inventory and puts
 ## its result in. Plain logic; CraftingScreen only shows the recipes and sends the click. The
 ## materials go first, so the room they leave is used; what of the result does not fit lies on the
-## ground of the map the player is on (see GameMap `drop_items`): at the player's feet for a craft,
-## by the station for work taken out of it, in a house too. A recipe with a skill needs its
-## level in that skill (it is locked below it), and each craft practises the skill (see Skills).
-## A slow recipe (with `hours`, the kiln's firing) is started at its station instead, which holds
-## it until it is done (see StationWork); `take_out` then puts the result in the inventory.
+## ground of the map the player is on (see GameMap `drop_items`): at the player's feet, in a
+## house too. A recipe with a skill needs its level in that skill (it is locked below it), and
+## each craft practises the skill (see Skills). The recipes of a process station (the kiln, the
+## oven) are run there instead (see ProcessStation), which shares the locks and the practice.
 
 ## A craft practised `skill`: it grew by `gained` points of the `wanted` the recipe teaches (less
 ## at the total cap, see Skills).
@@ -16,16 +15,11 @@ signal practised(skill: StringName, gained: float, wanted: float)
 ## WRONG_STATION: the recipe is made at a station of another kind than the one given. NO_STATION:
 ## it is made at a station and there is none, or the one given is not on the player's map or is out
 ## of their reach. DROPPED: crafted, but some of the result did not fit and lies on the ground.
-## TAKEN_OUT and DROPPED_OUT are the same for `take_out`.
 enum Result {
 	CRAFTED,
 	DROPPED,
-	TAKEN_OUT,
-	DROPPED_OUT,
-	STARTED,
 	MISSING_MATERIALS,
 	LOCKED,
-	BUSY,
 	WRONG_STATION,
 	NO_STATION,
 }
@@ -66,62 +60,24 @@ func is_locked(recipe_id: StringName) -> bool:
 	return skill != &"" and _state.player.skills.points(skill) < rules.level(recipe_id)
 
 
-## Crafts a recipe: at once, or for a slow recipe by starting it at `station` (the object it is
-## made at), which must not be busy with another. A recipe made at a station needs one of that
-## kind in the player's reach; one made by hand ignores `station`.
+## Crafts a recipe at once. A recipe made at a station needs one of that kind in the player's
+## reach (`station`, the object it is made at); one made by hand ignores `station`.
 func craft(recipe_id: StringName, station: WorldObject = null) -> Result:
-	var is_slow := rules.hours(recipe_id) > 0.0
+	assert(rules.hours(recipe_id) == 0.0, "Run at its process station: %s" % recipe_id)
 	var station_refusal := _station_refusal(recipe_id, station)
 	if station_refusal != Result.CRAFTED:
 		return station_refusal
 	if is_locked(recipe_id):
 		return Result.LOCKED
-	if is_slow and StationWork.is_busy(station):
-		return Result.BUSY
 	if not shortfalls(recipe_id).is_empty():
 		return Result.MISSING_MATERIALS
 	var materials := {} if _state.cheats.is_cost_off else rules.materials(recipe_id)
-	var made := {} if is_slow else {rules.result(recipe_id): rules.count(recipe_id)}
+	var made := {rules.result(recipe_id): rules.count(recipe_id)}
 	var dropped := _exchange_dropping_rest(materials, made, _state.player.tile())
-	var result := {rules.result(recipe_id): rules.count(recipe_id)}
-	var outcome := Result.STARTED
-	if is_slow:
-		var minutes := roundi(rules.hours(recipe_id) * GameClock.MINUTES_PER_HOUR)
-		StationWork.start(station, recipe_id, _state.clock.total_minutes() + minutes)
-		_state.report(ActionOutcome.START_CRAFT, station.pos, station.type, result)
-	else:
-		var at: Vector2i = _state.player.tile() if station == null else station.pos
-		_state.report(ActionOutcome.CRAFT, at, _station_type(station), result)
-		outcome = Result.CRAFTED if dropped.is_empty() else Result.DROPPED
+	var at: Vector2i = _state.player.tile() if station == null else station.pos
+	_state.report(ActionOutcome.CRAFT, at, _station_type(station), made)
 	practise(recipe_id)
-	return outcome
-
-
-## Whether the station holds work that is done.
-func is_work_done(station: WorldObject) -> bool:
-	return StationWork.is_done(station, _state.clock.total_minutes())
-
-
-## The game minutes until the station's work is done (0 once it is).
-func minutes_left(station: WorldObject) -> int:
-	return maxi(StationWork.done_minute(station) - _state.clock.total_minutes(), 0)
-
-
-## Takes the done work out of the station into the inventory: TAKEN_OUT, or DROPPED_OUT when some
-## of it did not fit and lies by the station, on the player's side. NO_STATION when the station is
-## out of the player's reach.
-func take_out(station: WorldObject) -> Result:
-	assert(is_work_done(station), "Nothing done to take out")
-	if not is_in_reach(station):
-		return Result.NO_STATION
-	var result := StationWork.contents(station, _state.clock.total_minutes(), rules)
-	# The station is empty before the inventory tells of the result, so a listener never sees it
-	# in both.
-	StationWork.clear(station)
-	var side := station.pos + (_state.player.tile() - station.pos).sign()
-	var dropped := _exchange_dropping_rest({}, result, side)
-	_state.report(ActionOutcome.TAKE_OUT, station.pos, station.type, result)
-	return Result.TAKEN_OUT if dropped.is_empty() else Result.DROPPED_OUT
+	return Result.CRAFTED if dropped.is_empty() else Result.DROPPED
 
 
 ## Whether `station` is an object on the player's map within their reach.

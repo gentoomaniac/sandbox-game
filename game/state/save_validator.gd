@@ -228,10 +228,7 @@ func _check_object_state(
 ) -> void:
 	# Every other entry (growth, days_growing, damage, days_until_bears...) is a number.
 	for key: Variant in state:
-		if (
-			key not in ["tree", "work", ProcessStation.RUN]
-			and not _is_kind(state[key], Kind.NUMBER)
-		):
+		if key not in ["tree", ProcessStation.RUN] and not _is_kind(state[key], Kind.NUMBER):
 			_report(path + " state", "%s should be a number" % key)
 	# What a trough or a hay rack holds and the eggs in a nest: whole numbers up to what they hold.
 	var capacity: int = type_data.get("stock_capacity", 0)
@@ -252,22 +249,6 @@ func _check_object_state(
 			_add_missing("tree %s" % state["tree"], path, drop_object)
 	if state.has(ProcessStation.RUN):
 		_check_run(state, path + " state " + ProcessStation.RUN)
-	# The slow craft of a station (see StationWork).
-	if state.has("work"):
-		var work: Variant = state["work"]
-		var work_path := path + " state work"
-		if not work is Dictionary:
-			_report(work_path, "should be a dictionary")
-			return
-		var recipe: Variant = _field(work, "recipe", Kind.TEXT, work_path)
-		_field(work, "done_minute", Kind.WHOLE, work_path)
-		var rules := RecipeRules.default_rules()
-		if recipe == null:
-			return
-		if not rules.recipe_ids().has(StringName(recipe)):
-			_add_missing("recipe %s" % recipe, work_path, func() -> void: state.erase("work"))
-		elif rules.hours(StringName(recipe)) <= 0.0:
-			_report(work_path, "recipe %s is not made at a station over time" % recipe)
 
 
 ## The run of a process station (see ProcessStation): its recipe, start and done minutes, and

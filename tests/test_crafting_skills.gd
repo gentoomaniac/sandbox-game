@@ -133,7 +133,8 @@ func test_every_skill_has_a_recipe_that_teaches_it_up_to_its_cap() -> void:
 		var top := -1.0
 		for recipe_id in rules.recipe_ids():
 			if rules.skill(recipe_id) == skill:
-				top = maxf(top, rules.level(recipe_id))
+				# A run of the recipe practises at its highest bonus step reached, too.
+				top = maxf(top, rules.practice_level(recipe_id, skill_rules.skill_cap()))
 		assert_gte(top + skill_rules.trivial_above() - 1.0, skill_rules.skill_cap(), str(skill))
 		var skills := Skills.new(skill_rules)
 		skills.set_points(skill, top)

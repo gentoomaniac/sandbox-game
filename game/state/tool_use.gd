@@ -389,15 +389,13 @@ func items_of_placed(placed: WorldObject) -> Dictionary:
 	return items
 
 
-## What a placed thing holds, not counting the thing itself: a chest's items, a kiln's load.
+## What a placed thing holds, not counting the thing itself: a chest's items, a kiln's load (or
+## what its run made, once it is done).
 func items_held_by(placed: WorldObject) -> Dictionary:
-	var items := {} if placed.storage == null else placed.storage.totals()
-	var held := StationWork.contents(
-		placed, _state.clock.total_minutes(), RecipeRules.default_rules()
-	)
-	for item: StringName in held:
-		items[item] = items.get(item, 0) + held[item]
-	return items
+	if placed.storage == null:
+		return {}
+	ProcessStation.settle(placed, _state.clock.total_minutes())
+	return placed.storage.totals()
 
 
 ## What an item of ANIMAL_ITEMS does on a tile: a bone goes to a dog there, a saddle on a horse

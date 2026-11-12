@@ -35,6 +35,7 @@ var tiredness_view: TirednessView
 var interior_view: InteriorView
 var storage_screen: StorageScreen
 var crafting_screen: CraftingScreen
+var process_screen: ProcessScreen
 var chat_screen: ChatScreen
 ## Main's doings, as `func()` unless noted.
 var try_sleep: Callable
@@ -54,6 +55,8 @@ var _churchyard_tile: Vector2i
 var _street_tile: Vector2i
 var _is_storage_to_open: bool
 var _is_station_to_open: bool
+## "kiln,loaded" (see DebugProcess), until it is open.
+var _process_to_open: String
 var _are_animals_to_spawn: bool
 var _is_livestock_to_spawn: bool
 var _is_hunt_to_stage: bool
@@ -81,6 +84,7 @@ func _init(options: StartupOptions) -> void:
 	_street_tile = options.street
 	_is_storage_to_open = options.storage
 	_is_station_to_open = options.station
+	_process_to_open = options.process
 	_are_animals_to_spawn = not options.wildlife.is_empty()
 	_is_livestock_to_spawn = not options.livestock.is_empty()
 	_is_hunt_to_stage = options.hunt
@@ -122,8 +126,12 @@ func update(delta: float) -> void:
 			func(object: WorldObject) -> bool:
 				return StationRules.default_rules().station_of(object.type) != &""
 		)
-		if station != null:
+		if station != null and StationRules.default_rules().grid_slots_of(station.type) > 0:
+			process_screen.open_station(ProcessStation.new(state, Crafting.new(state), station))
+		elif station != null:
 			crafting_screen.open_station(station)
+	if _process_to_open != "" and _is_outside_and_drawn():
+		_open_process_station()
 	if _are_animals_to_spawn and _is_outside_and_drawn():
 		for kind in _options.wildlife:
 			var count := 1 if StringName(kind) in WILDLIFE_GROUPS else WILDLIFE_COUNT
@@ -301,6 +309,16 @@ func _place_chests_and_floor_items() -> void:
 		storage_screen.open_chest(_opened_chest, state.player)
 
 
+func _open_process_station() -> void:
+	var kind := StringName(_process_to_open.get_slice(",", 0))
+	var phase := _process_to_open.get_slice(",", 1)
+	_process_to_open = ""
+	if kind not in DebugProcess.CARRIED or phase not in DebugProcess.PHASES:
+		push_error("--process expects kiln or oven, and one of %s" % [DebugProcess.PHASES])
+		return
+	process_screen.open_station(DebugProcess.create(state, kind, phase))
+
+
 func _is_ready_to_shoot() -> bool:
 	return (
 		_is_map_drawn()
@@ -311,4 +329,5 @@ func _is_ready_to_shoot() -> bool:
 		and _churchyard_tile == StartupOptions.NO_TILE
 		and not _is_storage_to_open
 		and not _is_station_to_open
+		and _process_to_open == ""
 	)

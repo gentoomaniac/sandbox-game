@@ -40,8 +40,8 @@ func test_every_recipe_row_of_a_station_menu_is_hit_all_over() -> void:
 	var screen := CraftingScreen.new()
 	_window.add_child(screen)
 	screen.show_crafting(Crafting.new(_state), _state.player.inventory)
-	screen.open_station(WorldObject.new(WorldObjectTypes.KILN, Vector2i.ZERO))
-	await _assert_all_buttons_hit(screen, "crafting at the kiln")
+	screen.open_station(WorldObject.new(WorldObjectTypes.WORKBENCH, Vector2i.ZERO))
+	await _assert_all_buttons_hit(screen, "crafting at the workbench")
 
 
 func test_every_slot_of_the_storage_screen_is_hit_all_over() -> void:

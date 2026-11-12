@@ -40,7 +40,8 @@ const PET_ASLEEP := &"pet_asleep"
 const GIVE_BONE := &"give_bone"
 const SADDLE := &"saddle"
 const UNSADDLE := &"unsaddle"
-## A recipe made at once, a slow one started at its station, and the done work taken out of it.
+## A recipe made at once, a run started at a process station (`items` its load), and what a run
+## made taken out of it.
 const CRAFT := &"craft"
 const START_CRAFT := &"start_craft"
 const TAKE_OUT := &"take_out"

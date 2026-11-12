@@ -3,11 +3,10 @@ extends Modal
 ## The crafting menu over the game: a panel with a row for every recipe of one place (see
 ## RecipeRow). C opens it for the recipes made by hand; E on a station opens it for that station's
 ## recipes, under the station's name and the player's points in the skills they practise. A click
-## on a row the player can make crafts it, and a note says what the craft taught. A station that
-## holds slow work (the kiln's firing, see StationWork) says what it holds and when it is ready;
-## opening its menu once the work is done takes the result out into the inventory. Like the
-## character screen, it takes the input while it is open (Main sees to that, and closes it on C
-## and E; Escape is the Modal's).
+## on a row the player can make crafts it, and a note says what the craft taught. A process station
+## (the kiln, the oven) has its own window instead (ProcessScreen). Like the character screen, it
+## takes the input while it is open (Main sees to that, and closes it on C and E; Escape is the
+## Modal's).
 
 const DROPPED_NOTE := "Inventory full: the rest was dropped on the ground"
 const NO_STATION_NOTE := "Too far from the station"
@@ -16,9 +15,6 @@ const HAND_TITLE := "Crafting"
 const NOTHING_NOTE := "Nothing to make here yet."
 const AT_CAP_NOTE := "%s is held at the skill cap: let a skill fade (K)."
 const LEARNT_ALL_NOTE := "This teaches you no more %s."
-const TAKEN_OUT_NOTE := "Took out %s."
-const DROPPED_OUT_NOTE := "Took out %s: the rest was dropped by the station."
-const WORK_TEXT := "%s: ready in %s"
 
 var _crafting: Crafting
 var _inventory: Inventory
@@ -26,7 +22,6 @@ var _inventory: Inventory
 var _station: WorldObject
 var _title_label := Label.new()
 var _skills_label := Label.new()
-var _work_label := Label.new()
 var _rows_column := VBoxContainer.new()
 var _rows: Array[RecipeRow] = []
 var _note_label := Label.new()
@@ -36,7 +31,7 @@ func _init() -> void:
 	super()
 	close_actions = [&"interact"]
 	var column := VBoxContainer.new()
-	for label in [_title_label, _skills_label, _work_label]:
+	for label in [_title_label, _skills_label]:
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		column.add_child(label)
 	column.add_child(_scrolling(_rows_column))
@@ -71,14 +66,6 @@ func _on_open() -> void:
 	_show_recipes()
 	_show_note(NOTHING_NOTE if _rows.is_empty() else "")
 	_refresh()
-	if _station != null and _crafting.is_work_done(_station):
-		var title := _work_title()
-		match _crafting.take_out(_station):
-			Crafting.Result.TAKEN_OUT:
-				_show_note(TAKEN_OUT_NOTE % title.to_lower())
-			Crafting.Result.DROPPED_OUT:
-				_show_note(DROPPED_OUT_NOTE % title.to_lower())
-		_refresh()
 
 
 func _on_close() -> void:
@@ -140,28 +127,10 @@ func _show_note(text: String) -> void:
 
 
 func _refresh() -> void:
-	var is_busy := _station != null and StationWork.is_busy(_station)
 	for row in _rows:
-		row.refresh(is_busy)
+		row.refresh()
 	_skills_label.text = _skills_text()
 	_skills_label.visible = _skills_label.text != ""
-	_work_label.text = _work_text() if is_busy else ""
-	_work_label.visible = is_busy
-
-
-## "Bricks x6: ready in 7 h 20 min". Work that is done is taken out when the menu opens, so this is
-## only asked for work still going.
-func _work_text() -> String:
-	var minutes := _crafting.minutes_left(_station)
-	var hours := minutes / GameClock.MINUTES_PER_HOUR
-	var rest := minutes % GameClock.MINUTES_PER_HOUR
-	var time := "%d h %d min" % [hours, rest] if hours > 0 else "%d min" % rest
-	return WORK_TEXT % [_work_title(), time]
-
-
-## "Bricks x6": what the station's work makes.
-func _work_title() -> String:
-	return RecipeRow.title_of(StationWork.recipe(_station), _crafting.rules)
 
 
 ## "Cooking 23.5": the player's points in the skills the shown recipes practise.

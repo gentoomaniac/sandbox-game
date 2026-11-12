@@ -12,7 +12,6 @@ const GAP := 6
 ## Palette colour flame (see tools/art/palette.py), as in the build panel.
 const SHORT_COLOR := Color("dc7a37")
 const UNAFFORDABLE_ALPHA := 0.5
-const BUSY_TIP := "Busy with other work until it is taken out."
 
 var recipe_id: StringName
 
@@ -71,12 +70,10 @@ func _ready() -> void:
 	add_theme_stylebox_override("disabled", get_theme_stylebox("normal"))
 
 
-## Shows what the player has against what the recipe takes and needs. `is_station_busy` says that
-## the station holds slow work, so a slow recipe can't be started.
-func refresh(is_station_busy := false) -> void:
+## Shows what the player has against what the recipe takes and needs.
+func refresh() -> void:
 	var short := _crafting.shortfalls(recipe_id)
 	var is_locked := _crafting.is_locked(recipe_id)
-	var is_waiting := is_station_busy and _rules.hours(recipe_id) > 0.0
 	var materials := _rules.materials(recipe_id)
 	var lines: Array[String] = []
 	for item: StringName in materials:
@@ -88,19 +85,13 @@ func refresh(is_station_busy := false) -> void:
 		"font_color", SHORT_COLOR if not short.is_empty() else Color.WHITE
 	)
 	_level_label.add_theme_color_override("font_color", SHORT_COLOR if is_locked else Color.WHITE)
-	disabled = is_locked or is_waiting or not short.is_empty()
+	disabled = is_locked or not short.is_empty()
 	modulate.a = UNAFFORDABLE_ALPHA if disabled else 1.0
-	var tip := _tooltip(short, is_locked)
-	if is_waiting:
-		tip += "\n" + BUSY_TIP
-	TooltipView.set_text(self, tip, "recipe_%s" % recipe_id)
+	TooltipView.set_text(self, _tooltip(short, is_locked), "recipe_%s" % recipe_id)
 
 
 func _tooltip(short: Dictionary, is_locked: bool) -> String:
 	var tip := ItemTooltip.text_for(_rules.result(recipe_id), _rules.count(recipe_id))
-	var hours := _rules.hours(recipe_id)
-	if hours > 0.0:
-		tip += "\nTakes %s hours" % ("%.1f" % hours).trim_suffix(".0")
 	if is_locked:
 		tip += "\nNeeds %s (you have %.1f)" % [_level_text(), _skill_points()]
 	if not short.is_empty():

@@ -77,9 +77,13 @@ extends RefCounted
 ##   --character              open the character window at start
 ##   --skills                 open the character window at start, on the skills tab
 ##   --crafting               open the crafting menu at start
-##   --station                open the crafting menu of the nearest station in reach, once the
-##                            map is drawn (with --inside, in the house)
+##   --station                open the crafting menu (or a process station's window) of the
+##                            nearest station in reach, once the map is drawn (with --inside, in
+##                            the house)
 ##   --storage                open the storage screen of the --chest or --chest-inside chest
+##   --process=<kiln|oven>,<phase>  put a kiln or an oven right of the player once the map is
+##                            drawn, with things to put in, and open its window; the phase is
+##                            empty, loaded, running or done (see DebugProcess)
 ##   --console=<line>;<line>  run those console commands at start and leave the console open
 ##   --chat=<line>;<line>     speak to the nearest villager once the world is drawn (see
 ##                            --npcs, --villager) and say those lines, each after the answer to
@@ -220,6 +224,8 @@ var skills := false
 var crafting := false
 var station := false
 var storage := false
+## "kiln,loaded" (see DebugProcess), or "".
+var process := ""
 var console := PackedStringArray()
 var chat := PackedStringArray()
 var chat_script := PackedStringArray()
@@ -375,6 +381,8 @@ func _init(args := PackedStringArray()) -> void:
 				station = true
 			"--storage":
 				storage = true
+			"--process":
+				process = _value(arg)
 			"--console":
 				console = _value(arg).split(";")
 			"--chat":

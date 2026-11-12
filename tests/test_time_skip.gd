@@ -41,9 +41,17 @@ func _make_farm(state: GameState) -> void:
 	world.add_object(kiln)
 	state.player.inventory.add(ItemTypes.RAW_BRICK, 6)
 	state.player.inventory.add(ItemTypes.LOGS, 2)
-	Crafting.new(state).craft(&"bricks", kiln)
+	var station := ProcessStation.new(state, Crafting.new(state), kiln)
+	station.fill(&"bricks", 1)
+	station.start()
 	state.livestock.rng.seed = SEED
 	state.livestock.spawn(LivestockRules.SHEEP, 3, Vector2(_tile) + Vector2(3, 5), world)
+
+
+## Whether the kiln's run is still going at the time of `state`.
+func _is_firing(kiln: WorldObject, state: GameState) -> bool:
+	ProcessStation.settle(kiln, state.clock.total_minutes())
+	return kiln.state[ProcessStation.RUN].has("products")
 
 
 func _play_in_steps(state: GameState, minutes: int) -> void:
@@ -65,8 +73,8 @@ func _assert_same_world(skipped: GameState, played: GameState, label: String) ->
 			assert_almost_eq(float(crop.state[key]), float(twin.state[key]), 0.000001, label + key)
 	var kiln_pos := _tile
 	assert_eq(
-		StationWork.is_done(skipped.world.object_at(kiln_pos), skipped.clock.total_minutes()),
-		StationWork.is_done(played.world.object_at(kiln_pos), played.clock.total_minutes()),
+		_is_firing(skipped.world.object_at(kiln_pos), skipped),
+		_is_firing(played.world.object_at(kiln_pos), played),
 		label + " kiln"
 	)
 	assert_eq(
@@ -99,9 +107,9 @@ func test_a_skip_of_an_hour_a_day_and_a_month_is_the_time_played_in_small_steps(
 func test_a_kiln_is_done_after_a_skip_as_after_the_hours_played() -> void:
 	var kiln := _state.world.object_at(_tile)
 	_state.simulation.skip(KILN_FIRING_MINUTES - 1)
-	assert_false(StationWork.is_done(kiln, _state.clock.total_minutes()))
+	assert_true(_is_firing(kiln, _state))
 	_state.simulation.skip(1)
-	assert_true(StationWork.is_done(kiln, _state.clock.total_minutes()))
+	assert_false(_is_firing(kiln, _state))
 
 
 func test_animals_are_asleep_after_a_skip_into_the_night_and_awake_after_one_into_the_day() -> void:

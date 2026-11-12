@@ -8,11 +8,15 @@ func _slots(game: Dictionary) -> Array:
 	return game["player"]["inventory"]["slots"]
 
 
-func _kiln_object(work: Variant) -> Dictionary:
+## A kiln with an empty grid, and a run (see ProcessStation) if one is given.
+func _kiln_object(run: Variant) -> Dictionary:
+	var grid := []
+	grid.resize(9)
 	return {
 		"type": "kiln",
 		"pos": [3, 4],
-		"state": {} if work == null else {"work": work},
+		"state": {} if run == null else {ProcessStation.RUN: run},
+		"storage": grid,
 	}
 
 
