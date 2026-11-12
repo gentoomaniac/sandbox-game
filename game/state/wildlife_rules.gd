@@ -98,6 +98,9 @@ const KIND_KEYS := [
 ##   min_temperature      it hides below this many degrees Celsius (default: never)
 ##   building_tiles       it doesn't appear or settle within this many tiles of a building (a whole
 ##                        number; default 0: it may, as the mice do, who live by the houses)
+##   return_gap_minutes   after one of it has left (flown off, sent away by the weather or the
+##                        hour), no other appears or settles for this many game minutes (a whole
+##                        number; default 0: another may come at once, as the common kinds do)
 ##   ignores_villagers    true: villagers don't scare it and it appears and settles near them, as
 ##                        the mice do (default: a villager within `alert_tiles` or `flee_tiles`
 ##                        scares it as the player does, and it doesn't appear within `flee_tiles`)
@@ -233,6 +236,9 @@ func problems() -> Array[String]:
 		var building_tiles: Variant = section.get("building_tiles", 0)
 		if not building_tiles is int or building_tiles < 0:
 			missing.append("[%s] building_tiles is not a whole number from 0" % kind)
+		var return_gap: Variant = section.get("return_gap_minutes", 0)
+		if not return_gap is int or return_gap < 0:
+			missing.append("[%s] return_gap_minutes is not a whole number from 0" % kind)
 		if not section.get("ignores_villagers", false) is bool:
 			missing.append("[%s] ignores_villagers is not true or false" % kind)
 	return missing
@@ -265,6 +271,11 @@ func flee_tiles(kind: StringName) -> float:
 ## How far from a building a kind appears and settles, in tiles.
 func building_tiles(kind: StringName) -> int:
 	return _optional(kind, "building_tiles", 0)
+
+
+## How long, in game minutes, after one of a kind has left no other comes.
+func return_gap_minutes(kind: StringName) -> int:
+	return _optional(kind, "return_gap_minutes", 0)
 
 
 ## Whether a kind takes no notice of villagers: the mice, who live by the houses.

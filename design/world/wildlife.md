@@ -111,6 +111,12 @@ atmosphere only: no player impact, not hunted, not saved.
   none appears or settles on one (`WildlifeView.can_stand`; the farm animals have the same rule in
   `is_walkable_for_animals`). The mice are no exception. The roof storks and the stork nests stand
   on roofs by design and do not use it.
+- **Return gap (task 202):** a kind with `return_gap_minutes` in data/wildlife.cfg (the storks)
+  stays away for that many game minutes after one of it has left, flown out of the view or sent
+  away by the weather or the hour. Neither the spawner nor `settle` (a skip of time) brings
+  another before then, so a stork that flies off is not replaced at once and sleeping does not top
+  them up again. Animals made by hand and the pairs of the nests start no gap, and settling
+  itself, which clears the view, is no leaving.
 - **Distance from buildings and villagers (task 201):** most kinds don't appear or settle within
   `building_tiles` of a building (rabbit 3, deer 6, squirrel 2, birds 2, geese 5, stork 4, frog 2,
   waders 4, gull 2) or within their `flee_tiles` of a villager. The mice are the exception: they

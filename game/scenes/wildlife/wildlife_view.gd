@@ -59,6 +59,9 @@ var is_spawning_naturally := true
 var _state: GameState
 var _camera: CameraController
 var _animals: Array[Animal] = []
+## For the kinds with a `return_gap_minutes`: the game minute (see GameClock `total_minutes`) until
+## which no other of the kind comes, since one left.
+var _quiet_until: Dictionary[StringName, int] = {}
 var _farm_animals: Dictionary[FarmAnimal, FarmAnimalView] = {}
 var _nest_views: Dictionary[Building, StorkNestView] = {}
 ## For each picture of a house (a building type in a look), how far its top is above the bottom
@@ -240,7 +243,7 @@ func settle() -> void:
 	for animal in _animals:
 		if not animal.is_pinned:
 			animal.is_done = true
-	_remove_gone_animals()
+	_remove_gone_animals(false)
 	var clock := _state.clock
 	var weather := _state.current_weather()
 	var flowers := _flowers_near_view(clock.day)
@@ -248,6 +251,8 @@ func settle() -> void:
 		var target := rules.target_count(
 			kind, clock.day, clock.minute_of_day, weather, flowers.size()
 		)
+		if _is_quiet(kind):
+			continue
 		for _i in target:
 			if _animals.size() >= rules.general("max_total"):
 				return
@@ -281,7 +286,8 @@ func _match_counts() -> void:
 			_send_away(kind, count - target)
 			continue
 		var chance := rules.spawn_chance(kind, clock.day, clock.minute_of_day, weather)
-		if count < target and _animals.size() < rules.general("max_total"):
+		var has_room := _animals.size() < rules.general("max_total")
+		if count < target and has_room and not _is_quiet(kind):
 			if rng.randf() < chance * chance_seconds:
 				_spawn_somewhere(kind, flowers)
 
@@ -649,14 +655,24 @@ func _follow_villagers() -> void:
 		villager_feet.append(villager.position * WildlifeRules.TILE_SIZE)
 
 
-## Frees the animals that are done or far from the view.
-func _remove_gone_animals() -> void:
+## Whether a kind is still in the gap after one of it left (see `return_gap_minutes`).
+func _is_quiet(kind: StringName) -> bool:
+	return _state.clock.total_minutes() < _quiet_until.get(kind, 0)
+
+
+## Frees the animals that are done or far from the view. A wild one that leaves starts the gap of
+## its kind, unless `settle` clears the view, which is no animal leaving.
+func _remove_gone_animals(starts_gap := true) -> void:
 	if _animals.is_empty():
 		return
 	var view := view_rect()
 	var staying: Array[Animal] = []
 	for animal in _animals:
 		if animal.is_done or rules.is_beyond_view(animal.position, view):
+			if starts_gap and not animal.is_pinned:
+				_quiet_until[animal.kind] = (
+					_state.clock.total_minutes() + rules.return_gap_minutes(animal.kind)
+				)
 			animal.queue_free()
 		else:
 			staying.append(animal)
