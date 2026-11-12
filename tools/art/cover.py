@@ -33,7 +33,7 @@ LEAF_TILES = 16
 # Value noise: the size of the lattice cells in tiles, with their weights, and the weight of the
 # grain of single pixels.
 NOISE_SCALES = ((4.0, 0.55), (1.5, 0.3))
-GRAIN_WEIGHT = 0.15
+GRAIN_WEIGHT = 0.08
 # Fallen leaves per tile on the leaf texture, and the colours they come in, each with the darker
 # colour of the shaded pixel of the leaf.
 LEAVES_PER_TILE = {32: 20, 16: 10}
