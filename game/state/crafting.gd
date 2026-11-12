@@ -93,7 +93,7 @@ func craft(recipe_id: StringName, station: WorldObject = null) -> Result:
 		var at: Vector2i = _state.player.tile() if station == null else station.pos
 		_state.report(ActionOutcome.CRAFT, at, _station_type(station), result)
 		outcome = Result.CRAFTED if dropped.is_empty() else Result.DROPPED
-	_practise(recipe_id)
+	practise(recipe_id)
 	return outcome
 
 
@@ -112,7 +112,7 @@ func minutes_left(station: WorldObject) -> int:
 ## out of the player's reach.
 func take_out(station: WorldObject) -> Result:
 	assert(is_work_done(station), "Nothing done to take out")
-	if not _is_station_in_reach(station):
+	if not is_in_reach(station):
 		return Result.NO_STATION
 	var result := StationWork.contents(station, _state.clock.total_minutes(), rules)
 	# The station is empty before the inventory tells of the result, so a listener never sees it
@@ -122,6 +122,28 @@ func take_out(station: WorldObject) -> Result:
 	var dropped := _exchange_dropping_rest({}, result, side)
 	_state.report(ActionOutcome.TAKE_OUT, station.pos, station.type, result)
 	return Result.TAKEN_OUT if dropped.is_empty() else Result.DROPPED_OUT
+
+
+## Whether `station` is an object on the player's map within their reach.
+func is_in_reach(station: WorldObject) -> bool:
+	if station == null:
+		return false
+	var found := Interaction.nearest_in_reach(
+		_state, func(object: WorldObject) -> bool: return object == station
+	)
+	return found != null
+
+
+## One craft of the recipe practises its skill, at the level of the recipe or of its highest bonus
+## step the player reached (see RecipeRules `practice_level`).
+func practise(recipe_id: StringName) -> void:
+	var skill := rules.skill(recipe_id)
+	if skill == &"":
+		return
+	var skills := _state.player.skills
+	var level := rules.practice_level(recipe_id, skills.points(skill))
+	var wanted := skills.gain_at(skill, level)
+	practised.emit(skill, skills.practise(skill, level), wanted)
 
 
 ## Takes `paid` out of the inventory and puts `received` in, as one change; what does not fit
@@ -153,28 +175,9 @@ func _station_refusal(recipe_id: StringName, station: WorldObject) -> Result:
 		return Result.CRAFTED
 	if station != null and StationRules.default_rules().station_of(station.type) != kind:
 		return Result.WRONG_STATION
-	return Result.CRAFTED if _is_station_in_reach(station) else Result.NO_STATION
-
-
-## Whether `station` is an object on the player's map within their reach.
-func _is_station_in_reach(station: WorldObject) -> bool:
-	if station == null:
-		return false
-	var found := Interaction.nearest_in_reach(
-		_state, func(object: WorldObject) -> bool: return object == station
-	)
-	return found != null
+	return Result.CRAFTED if is_in_reach(station) else Result.NO_STATION
 
 
 ## The type of the station a recipe is made at, or empty for one made by hand.
 func _station_type(station: WorldObject) -> StringName:
 	return &"" if station == null else station.type
-
-
-func _practise(recipe_id: StringName) -> void:
-	var skill := rules.skill(recipe_id)
-	if skill == &"":
-		return
-	var skills := _state.player.skills
-	var wanted := skills.gain_at(skill, rules.level(recipe_id))
-	practised.emit(skill, skills.practise(skill, rules.level(recipe_id)), wanted)

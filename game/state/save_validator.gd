@@ -218,7 +218,7 @@ func _check_object(object: Variant, path: String, drop: Callable) -> void:
 		return
 	if state != null:
 		_check_object_state(state, WorldObjectTypes.TYPES[StringName(type)], path, drop)
-	var slot_count: int = WorldObjectTypes.TYPES[StringName(type)].get("storage_slots", 0)
+	var slot_count := WorldObject.storage_slot_count(StringName(type))
 	if slot_count > 0:
 		_check_stacks(object, "storage", slot_count, path)
 
@@ -228,7 +228,10 @@ func _check_object_state(
 ) -> void:
 	# Every other entry (growth, days_growing, damage, days_until_bears...) is a number.
 	for key: Variant in state:
-		if key != "tree" and key != "work" and not _is_kind(state[key], Kind.NUMBER):
+		if (
+			key not in ["tree", "work", ProcessStation.RUN]
+			and not _is_kind(state[key], Kind.NUMBER)
+		):
 			_report(path + " state", "%s should be a number" % key)
 	# What a trough or a hay rack holds and the eggs in a nest: whole numbers up to what they hold.
 	var capacity: int = type_data.get("stock_capacity", 0)
@@ -247,6 +250,8 @@ func _check_object_state(
 			_report(path + " state", "tree should be text")
 		elif not WorldObjectTypes.TYPES.has(StringName(state["tree"])):
 			_add_missing("tree %s" % state["tree"], path, drop_object)
+	if state.has(ProcessStation.RUN):
+		_check_run(state, path + " state " + ProcessStation.RUN)
 	# The slow craft of a station (see StationWork).
 	if state.has("work"):
 		var work: Variant = state["work"]
@@ -263,6 +268,31 @@ func _check_object_state(
 			_add_missing("recipe %s" % recipe, work_path, func() -> void: state.erase("work"))
 		elif rules.hours(StringName(recipe)) <= 0.0:
 			_report(work_path, "recipe %s is not made at a station over time" % recipe)
+
+
+## The run of a process station (see ProcessStation): its recipe, start and done minutes, and
+## what it makes until that is in the grid.
+func _check_run(state: Dictionary, path: String) -> void:
+	var run: Variant = state[ProcessStation.RUN]
+	if not run is Dictionary:
+		_report(path, "should be a dictionary")
+		return
+	var recipe: Variant = _field(run, "recipe", Kind.TEXT, path)
+	_field(run, "start_minute", Kind.WHOLE, path)
+	_field(run, "done_minute", Kind.WHOLE, path)
+	if recipe != null and not RecipeRules.default_rules().recipe_ids().has(StringName(recipe)):
+		_add_missing("recipe %s" % recipe, path, func() -> void: state.erase(ProcessStation.RUN))
+	if not run.has("products"):
+		return
+	var products: Variant = run["products"]
+	if not products is Dictionary:
+		_report(path, "products should be a dictionary")
+		return
+	for item: Variant in products:
+		if not ItemTypes.TYPES.has(StringName(str(item))):
+			_add_missing("item %s" % item, path, func() -> void: products.erase(item))
+		elif not (_is_kind(products[item], Kind.WHOLE) and products[item] >= 1):
+			_report(path, "products %s should be a whole number, at least 1" % item)
 
 
 # --- Item slots ---

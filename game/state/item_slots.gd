@@ -180,13 +180,15 @@ func move_to(from: int, target: ItemSlots, to: int) -> bool:
 
 
 ## Moves the stack in slot `from` to `target`, as much of it as fits: onto stacks of the same
-## item first, then into free slots (see `add` for `free_slots`). The rest stays. Returns
-## whether the whole stack went. Sending to these slots themselves, or from a bad slot, moves
-## nothing.
-func send(from: int, target: ItemSlots, free_slots: Array = []) -> bool:
+## item first, then into free slots (see `add` for `free_slots`). The rest stays. Only `most` of
+## it are sent, if given (above 0). Returns whether the whole stack went. Sending to these slots
+## themselves, or from a bad slot, moves nothing.
+func send(from: int, target: ItemSlots, free_slots: Array = [], most := 0) -> bool:
 	if target == self or not has_slot(from) or slots[from].is_empty():
 		return false
-	var left: int = target._add(slots[from]["item"], slots[from]["count"], free_slots)
+	var count: int = slots[from]["count"]
+	var sent := mini(count, most) if most > 0 else count
+	var left: int = count - sent + target._add(slots[from]["item"], sent, free_slots)
 	slots[from]["count"] = left
 	if left == 0:
 		slots[from] = {}

@@ -8,8 +8,8 @@ var type: StringName
 ## World tile position.
 var pos: Vector2i
 var state := {}
-## What a chest holds, if the type has `storage_slots`; null for anything that stores nothing.
-## It is saved with the object.
+## What a chest holds, if the type has `storage_slots`, or the grid of a process station (see
+## ProcessStation); null for anything that stores nothing. It is saved with the object.
 var storage: ItemSlots
 
 
@@ -17,8 +17,19 @@ func _init(object_type: StringName, world_pos: Vector2i) -> void:
 	assert(WorldObjectTypes.TYPES.has(object_type), "Unknown object type: %s" % object_type)
 	type = object_type
 	pos = world_pos
-	if type_data().has("storage_slots"):
-		storage = ItemSlots.new(type_data()["storage_slots"])
+	var slot_count := storage_slot_count(type)
+	if slot_count > 0:
+		storage = ItemSlots.new(slot_count)
+
+
+## The slots of `storage` an object of this type has: a chest's, a process station's grid, or 0.
+static func storage_slot_count(object_type: StringName) -> int:
+	var grid_slots := StationRules.default_rules().grid_slots_of(object_type)
+	return (
+		grid_slots
+		if grid_slots > 0
+		else WorldObjectTypes.TYPES[object_type].get("storage_slots", 0)
+	)
 
 
 func to_dict() -> Dictionary:

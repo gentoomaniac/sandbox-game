@@ -2,8 +2,9 @@ class_name RecipeRules
 extends RefCounted
 ## The crafting recipes, read from data/recipes.cfg (see there for what each key means).
 ## `from_file` reports every key that is missing or wrong, and `is_valid` says whether any was.
-## The crafting menu and Crafting use `default_rules`. Stations and skills are checked against
-## the default StationRules and SkillRules.
+## The crafting menu and Crafting use `default_rules`. Stations are checked against the
+## StationRules given (the default ones unless a test gives its own), skills against the default
+## SkillRules.
 
 const DEFAULT_PATH := "res://data/recipes.cfg"
 
@@ -13,11 +14,13 @@ static var _default: RecipeRules
 
 ## {recipe id: {key: value}}, in the order of the file.
 var _recipes: Dictionary
+var _stations: StationRules
 var _problems: Array[String] = []
 
 
-func _init(recipes: Dictionary) -> void:
+func _init(recipes: Dictionary, stations := StationRules.default_rules()) -> void:
 	_recipes = recipes
+	_stations = stations
 	if _recipes.is_empty():
 		_problems.append("no recipes")
 	for recipe_id: String in _recipes:
@@ -115,6 +118,17 @@ func bonus_share(recipe_id: StringName, points: float) -> float:
 	return share
 
 
+## The level a craft of the recipe practises its skill at, for a player with `points` in it: the
+## points of the highest bonus step they reached, as a recipe of that level would (the bonus
+## stands for the better recipes of a skilled hand), at least the recipe's own level.
+func practice_level(recipe_id: StringName, points: float) -> float:
+	var practised_at := level(recipe_id)
+	for step: Array in _recipes[str(recipe_id)].get("bonus", []):
+		if points >= step[0]:
+			practised_at = maxf(practised_at, step[0])
+	return practised_at
+
+
 ## What one crafting takes, item id to count.
 func materials(recipe_id: StringName) -> Dictionary:
 	var materials_by_item := {}
@@ -176,7 +190,7 @@ func _check_bonus(recipe_id: String, values: Dictionary) -> void:
 
 func _check_station_and_skill(recipe_id: String, values: Dictionary) -> void:
 	var station := StringName(str(values.get("station", "")))
-	if values.has("station") and not StationRules.default_rules().has_station(station):
+	if values.has("station") and not _stations.has_station(station):
 		_problems.append("[%s] station is not a station: %s" % [recipe_id, values["station"]])
 	var skill_rules := SkillRules.default_rules()
 	if values.has("skill") and not skill_rules.has_skill(StringName(str(values["skill"]))):
