@@ -5247,3 +5247,31 @@ effect as the registered close key"
   and design/presentation/menus-and-hud.md. Screenshots of the button on a few windows, both arts.
 
 Done: 2026-11-12. `Modal.request_close()` is the one path for Escape, the pause key, the close button and a left press on the dimmed area outside the panel; it asks `_takes_escape()` first, so pages go back, ChoiceDialog gives its safe answer and the trash-can question keeps. `closes_on_backdrop_click` is gone. The × (13 px, generated in tools/art/ui.py, one picture for both arts) is a sibling of the panel drawn over its top right corner, so it never starts a drag, and follows the panel. Presses on the HUD hotbar strip (slots, gaps, bag button) don't count as outside (`_keeps_clicks_at`, set by HotbarWindow). Not retaken: npc-chat.png, font-umlauts.png, station-menus.png and skills.png still show windows without the ×.
+
+## 195. Tidal water can't be walked on (bug)
+
+- [x] Done
+
+The user, 2026-11-11 (a screenshot of the player standing far out in high water): "bug: you can
+walk on tidal areas while water is there. right now you should not be able to walk on or in the
+water, we'll add something later"
+- Today the tide is a look only (game/state/tide.gd, game/scenes/mud.gdshader): MUD is walkable at
+  any tide. Make it follow the water: a MUD tile under water at the current tide can't be walked
+  onto, the same as SEA. Wading or swimming comes later, so keep the rule in one place that a later
+  task can change.
+- Which tiles are under water must match what the player sees. The shader floods each pixel where a
+  relief (two layers of integer-hashed value noise, the dark troughs a bit lower) lies below
+  `mix(LOW_WATER, HIGH_WATER, tide)`. Move that relief into state code (a GDScript port that gives
+  the same numbers, with a test that pins it against the shader's constants), and call a tile
+  flooded when the water covers its centre, or most of it. Pick whichever looks right at the edges,
+  and show both in screenshots.
+- No one is cut off by the rising water. Someone standing on a tile that floods can still walk off
+  it, but can't step from dry ground onto flooded mud. Villagers, farm animals and wild ground
+  animals obey the same rule; wading birds may stay. Pathing avoids flooded tiles. A path that was
+  open when it started and floods on the way stops at the water's edge.
+- Placing, building, dropping items and tilling on flooded mud are refused, as on water.
+- Update the comments in tile.gd and tide.gd ("walked on at any tide"), and the design and README.
+- Tests: tiles flood and dry with the tide, no stepping onto flooded mud, walking off a tile that
+  floods, NPC and animal paths avoid the water. Screenshots at high and low water for the user.
+
+Done: 2026-11-12. The mud shader's relief is ported to `Tide.relief_at` (a test pins the constants against mud.gdshader). A mud tile is flooded when more than half of a 4x4 grid of relief samples lies under the water (the user saw both rules; they differ by a tile or two at the edges); each tile's flood height is cached, so a check is a lookup. `World.is_ground_walkable` is the one place the rule lives. Whoever stands in the water can step off it and wade on over connected flooded mud (`GameMap.is_wadeable`), for now. Villagers, farm animals and wild ground animals obey; the wading birds (oystercatcher, dunlin) skip it and keep their `flooded_tide` 0.6. Piles are refused on flooded mud. The jetty and rowing boat can still be placed on it.

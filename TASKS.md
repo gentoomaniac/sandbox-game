@@ -224,32 +224,6 @@ and in autumn gets leaves on top gradually and in winter frost and/or snow."
   changes and the user's decisions: smooth colour mix, a little straw on the dry grass in autumn,
   ice later). The queue goes on with 186 first.
 
-## 195. Tidal water can't be walked on (bug)
-
-- [ ] Done
-
-The user, 2026-11-11 (a screenshot of the player standing far out in high water): "bug: you can
-walk on tidal areas while water is there. right now you should not be able to walk on or in the
-water, we'll add something later"
-- Today the tide is a look only (game/state/tide.gd, game/scenes/mud.gdshader): MUD is walkable at
-  any tide. Make it follow the water: a MUD tile under water at the current tide can't be walked
-  onto, the same as SEA. Wading or swimming comes later, so keep the rule in one place that a later
-  task can change.
-- Which tiles are under water must match what the player sees. The shader floods each pixel where a
-  relief (two layers of integer-hashed value noise, the dark troughs a bit lower) lies below
-  `mix(LOW_WATER, HIGH_WATER, tide)`. Move that relief into state code (a GDScript port that gives
-  the same numbers, with a test that pins it against the shader's constants), and call a tile
-  flooded when the water covers its centre, or most of it. Pick whichever looks right at the edges,
-  and show both in screenshots.
-- No one is cut off by the rising water. Someone standing on a tile that floods can still walk off
-  it, but can't step from dry ground onto flooded mud. Villagers, farm animals and wild ground
-  animals obey the same rule; wading birds may stay. Pathing avoids flooded tiles. A path that was
-  open when it started and floods on the way stops at the water's edge.
-- Placing, building, dropping items and tilling on flooded mud are refused, as on water.
-- Update the comments in tile.gd and tide.gd ("walked on at any tide"), and the design and README.
-- Tests: tiles flood and dry with the tide, no stepping onto flooded mud, walking off a tile that
-  floods, NPC and animal paths avoid the water. Screenshots at high and low water for the user.
-
 ## 176. Wind gusts are heard with the wind you see, and as loud as the wind
 
 - [ ] Done
