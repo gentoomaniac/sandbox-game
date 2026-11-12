@@ -404,6 +404,32 @@ The user, 2026-11-13: "birds flying from north to south or south to north fly si
 - Tests: the view chosen for headings around the compass; screenshots of a north- and a
   south-bound V of each kind in both arts for the user.
 
+## 221. Rain comes in spells of hours, not days; autumn is the wettest season
+
+- [ ] Done
+
+The user, 2026-11-13: "is the weather affected by skip? I skipped like 20 times and still had
+rain" (after `weather auto`). Skip does change the weather (Weather.at is a function of the day
+and minute), but a probe over one year (rain > 0.05 per hour, tile 0,0) showed spells far too long
+and the seasons unlike the coast:
+
+| seed | wet hours | longest spell | wet hours spring / summer / autumn / winter |
+|---|---|---|---|
+| 1 | 10 % | 22 h | 27 / 20 / 176 / 58 |
+| 12345 | 20 % | 112 h | 358 / 47 / 162 / 12 |
+| 987654 | 20 % | 64 h | 254 / 23 / 265 / 22 |
+
+- Tune the weather (game/state/weather.gd, data/weather.cfg: the humidity noise octaves and the
+  seasonal curves) so rain comes as showers and passing fronts: a spell lasts hours, rarely more
+  than about a day, with dry hours between; the North Frisian coast's year: autumn and early
+  winter the wettest, spring the driest, summer showery. Pick the numbers into data/weather.cfg
+  (the user tunes them).
+- Keep what depends on it working: the forced weathers, snow (SnowCover), soil wetness and
+  farming upkeep (rain_in_hour), the thunder, the cloud cover (task 194/219), the ambience.
+- A test over a year for a few seeds: the longest spell under a bound, wet hours per season in
+  the intended order, a share of wet hours in a range. A short report for the user with the new
+  table (as above) and a day-by-day picture of one season.
+
 ## Later (not part of the prototype)
 
 - Ice on rivers and ponds in winter (an overlay on water when it is cold enough; frozen water
