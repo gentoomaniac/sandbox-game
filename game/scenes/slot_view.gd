@@ -11,7 +11,8 @@ extends Control
 ## `quick_move_requested` and right click `secondary_pressed` (unless it is not `is_clickable`,
 ## then the click goes on to the game). An empty slot can show a faint `hint` of what belongs in
 ## it. A slot with an item has its tooltip (see TooltipView); `tooltip_id` names it for the debug
-## flag.
+## flag. A screen may take over the moves onto and off a slot (`move_rule`) and dim its stack
+## (`is_dimmed`), as a process station's window does.
 
 ## A stack was dragged onto this slot and moved.
 signal stack_dropped_here
@@ -23,6 +24,8 @@ const SIZE := 20
 const ICON_RECT := Rect2(2, 2, ItemIcon.SIZE, ItemIcon.SIZE)
 ## Palette colour ink (see tools/art/palette.py); the pixel font is already cream.
 const COUNT_SHADOW_COLOR := Color("1d1b26")
+## A dimmed stack's icon.
+const DIMMED_COLOR := Color(0.5, 0.5, 0.5, 0.35)
 ## The small number on a watering can (foam of the palette) and its size.
 const BADGE_COLOR := Color("92b4bd")
 const BADGE_FONT_SIZE := 8
@@ -42,6 +45,17 @@ var tooltip_id := ""
 var badge := ""
 ## The hotbar of the HUD is not clickable until a screen that moves items is open.
 var is_clickable := true
+## Set by a screen that moves stacks to or from this slot its own way (a process station's grid,
+## which takes only some and never swaps): func(source: SlotView, target: SlotView,
+## is_dropping: bool) -> bool, asked whether `source`'s stack may be let go on `target`, and
+## told to move it when it is. A drag uses the rule of the slot it ends on, or else of the one it
+## came from.
+var move_rule: Callable
+## Drawn faded: the stack can't be used here now.
+var is_dimmed := false:
+	set(value):
+		is_dimmed = value
+		queue_redraw()
 ## What the slot shows and moves stacks of: an ItemSlots (`slot` is an index) or an Equipment
 ## (`slot` is a slot name). Without a container, nothing is dragged from or onto the slot.
 var container: Object
@@ -154,6 +168,9 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 	var source := source_of(data)
 	if container == null or source == null or source == self or source.item() == ItemTypes.NONE:
 		return false
+	var rule := _move_rule_with(source)
+	if rule.is_valid():
+		return rule.call(source, self, false)
 	if container is Equipment:
 		return source.container is Inventory and Equipment.fits(slot, source.item())
 	if source.container is Equipment:
@@ -163,13 +180,21 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 
 func _drop_data(_at_position: Vector2, data: Variant) -> void:
 	var source := source_of(data)
-	if container is Equipment:
+	var rule := _move_rule_with(source)
+	if rule.is_valid():
+		rule.call(source, self, true)
+	elif container is Equipment:
 		container.move_to_equipment(source.container, source.slot, slot)
 	elif source.container is Equipment:
 		source.container.move_to_inventory(container, source.slot, slot)
 	else:
 		source.container.move_to(source.slot, container, slot)
 	stack_dropped_here.emit()
+
+
+## The rule of a drag from `source` onto this slot: this slot's, or else the source's.
+func _move_rule_with(source: SlotView) -> Callable:
+	return move_rule if move_rule.is_valid() else source.move_rule
 
 
 func _process(_delta: float) -> void:
@@ -200,7 +225,7 @@ func _draw() -> void:
 		if hint != null:
 			draw_texture_rect(hint, ICON_RECT, false)
 		return
-	draw_texture_rect(_icon, ICON_RECT, false)
+	draw_texture_rect(_icon, ICON_RECT, false, DIMMED_COLOR if is_dimmed else Color.WHITE)
 	if badge != "":
 		var badge_font := get_theme_default_font()
 		var top_left := Vector2(2, badge_font.get_ascent(BADGE_FONT_SIZE) + 1)

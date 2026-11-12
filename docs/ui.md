@@ -114,6 +114,12 @@ extend `HotbarWindow`, which lends them the HUD's hotbar as their quick bar.
   hotbar owns its slot views: a screen takes the bar as its quick bar with `HotbarHud.acquire(self)`
   (slots clickable and bound to the inventory, the bar above the screen) and gives it back with
   `release(self)` in `_on_close`, which resets the slots too (a stack picked up is let go).
+  A window whose slots move stacks their own way sets `move_rule` on them (a callable asked whether
+  a stack may be let go there and told to move it; a drag uses the rule of the slot it ends on,
+  else of the one it came from) and `is_dimmed` for stacks that can't be used now: the process
+  station's window (`ProcessScreen`, the kiln and the oven) takes only what fits a recipe into its
+  grid and never swaps anything in, and dims the backpack's and the hotbar's stacks that can't go
+  in (`HotbarHud.dim`, undone before `release`).
 - **Pause:** `pauses_game = true` (set in `_init`) pauses the tree while the window is open; the
   window then keeps running (`PROCESS_MODE_ALWAYS`). It unpauses when it closes, or is freed
   while open, whatever else asked for the pause, so only Modals pause the tree (the pause menu is

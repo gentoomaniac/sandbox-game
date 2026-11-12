@@ -63,6 +63,7 @@ var _bag_screen := BagScreen.new(_hotbar)
 var _character_screen := CharacterScreen.new(_hotbar)
 var _crafting_screen := CraftingScreen.new()
 var _storage_screen := StorageScreen.new(_hotbar)
+var _process_screen := ProcessScreen.new(_hotbar)
 var _console_view := ConsoleView.new()
 var _chat_screen := ChatScreen.new()
 var _npc_name_tag := NpcNameTag.new()
@@ -225,6 +226,7 @@ func _make_views() -> void:
 	add_child(_character_screen)
 	add_child(_crafting_screen)
 	add_child(_storage_screen)
+	add_child(_process_screen)
 	add_child(_cheat_hud)
 	add_child(_console_view)
 	_chat_screen.dialogue = NpcDialogue.new(_settings)
@@ -683,6 +685,8 @@ func _interact() -> void:
 	if object == null:
 		if not _state.ring_bell_in_reach():
 			_try_sleep()
+	elif StationRules.default_rules().grid_slots_of(object.type) > 0:
+		_process_screen.open_station(ProcessStation.new(_state, Crafting.new(_state), object))
 	elif object.storage != null:
 		_storage_screen.open_chest(object, _state.player)
 	else:
@@ -765,6 +769,8 @@ func _start_sounds() -> void:
 		_sounds.click_on_press_in(panel)
 		_sounds.watch_panel(panel.is_open)
 	_sounds.click_on_press_in(_storage_screen)
+	_sounds.click_on_press_in(_process_screen)
+	_sounds.watch_panel(_process_screen.is_open)
 	_sounds.watch_panel(_storage_screen.is_open, &"chest_open", &"chest_close")
 	add_child(_ambience)
 	_ambience.listen(_audio, _state, _wildlife, _weather_view)

@@ -110,6 +110,12 @@ func release(borrower: Object) -> void:
 		view.stop_dragging()
 
 
+## Dims the stack in a slot, or shows it plainly again (see SlotView `is_dimmed`). For the
+## borrower, which undoes it before `release`.
+func dim(slot: int, is_dimmed: bool) -> void:
+	_slot_views[slot].is_dimmed = is_dimmed
+
+
 ## Showing another inventory lets go of the old one; a screen that has the bar gets the new one.
 func show_inventory(inventory: Inventory) -> void:
 	if _inventory != null:

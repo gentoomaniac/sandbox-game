@@ -119,13 +119,19 @@ func _craft(recipe_id: StringName) -> void:
 
 
 func _on_practised(skill: StringName, gained: float, wanted: float) -> void:
-	var skill_name := _crafting.player_skills().rules.skill_name(skill)
+	_show_note(practised_note(_crafting.player_skills(), skill, gained, wanted))
+
+
+## What a craft taught: "+2.0 Masonry", or why it taught less than it would.
+static func practised_note(
+	skills: Skills, skill: StringName, gained: float, wanted: float
+) -> String:
+	var skill_name := skills.rules.skill_name(skill)
 	if wanted == 0.0:
-		_show_note(LEARNT_ALL_NOTE % skill_name.to_lower())
-	elif gained < wanted:
-		_show_note(AT_CAP_NOTE % skill_name)
-	else:
-		_show_note("+%.1f %s" % [gained, skill_name])
+		return LEARNT_ALL_NOTE % skill_name.to_lower()
+	if gained < wanted:
+		return AT_CAP_NOTE % skill_name
+	return "+%.1f %s" % [gained, skill_name]
 
 
 func _show_note(text: String) -> void:

@@ -97,6 +97,15 @@ func holds_results() -> bool:
 	return station.state.has(RUN) and not station.state[RUN].has("products")
 
 
+## What the run makes, item id to count, while it runs.
+func products() -> Dictionary:
+	var made := {}
+	var run_products: Dictionary = station.state[RUN]["products"]
+	for item: String in run_products:
+		made[StringName(item)] = int(run_products[item])
+	return made
+
+
 ## How far the run is, 0 to 1.
 func progress() -> float:
 	var run: Dictionary = station.state[RUN]
