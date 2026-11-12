@@ -90,6 +90,8 @@ func test_the_character_screen_lets_go_of_the_old_player() -> void:
 	assert_eq(_connections_to(first.equipment.changed, screen), 0)
 	assert_eq(_connections_to(first.skills.changed, screen._skills_panel), 0)
 	assert_eq(_connections_to(second.skills.changed, screen._skills_panel), 1)
+	assert_eq(_connections_to(first.attributes.changed, screen._attributes_panel), 0)
+	assert_eq(_connections_to(second.attributes.changed, screen._attributes_panel), 1)
 	assert_eq(_connections_to(second.equipment.changed, screen), 1)
 	assert_eq(_connections_to(get_viewport().size_changed, screen), 1)
 

@@ -6,6 +6,7 @@ extends HotbarWindow
 ## slot is worn, a worn item dragged onto it is taken off, and right click wears or takes off.
 ## An equipment slot only takes an item that fits (those light up while one is dragged). A worn
 ## item let go on the trash can is asked about, as in the bag (see TrashCan).
+## Below them the attributes and what they give (see AttributesPanel).
 ## A second tab beside it shows the skills (see SkillsPanel); C opens the window on the character,
 ## K on the skills (`open_tab`, `toggle_tab`; `open()` opens the character).
 
@@ -34,6 +35,7 @@ var _tab := Tab.CHARACTER
 var _pages := {}
 var _tab_buttons := {}
 var _skills_panel := SkillsPanel.new()
+var _attributes_panel := AttributesPanel.new()
 
 
 func _init(hotbar: HotbarHud) -> void:
@@ -51,6 +53,7 @@ func _init(hotbar: HotbarHud) -> void:
 	var character_page := VBoxContainer.new()
 	character_page.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	character_page.add_child(character_row)
+	character_page.add_child(_attributes_panel)
 	character_page.add_child(_note_label)
 	character_page.add_child(_trash_can)
 
@@ -82,6 +85,7 @@ func show_player(player: PlayerState) -> void:
 	_player = player
 	_preview.show_appearance(player.appearance)
 	_skills_panel.show_skills(player.skills)
+	_attributes_panel.show_attributes(player.attributes)
 	for slot: StringName in _equipment_views:
 		_equipment_views[slot].bind_to(player.equipment, slot)
 	player.equipment.changed.connect(_refresh)
@@ -163,6 +167,7 @@ func _add_equipment_column(column: VBoxContainer, slots: Array, parent: Containe
 ## stays centred by itself (see Modal).
 func _fit_character() -> void:
 	var room := get_viewport().get_visible_rect().size.y - 2 * (WINDOW_MARGIN + PANEL_PADDING / 2)
+	room -= _attributes_panel.get_combined_minimum_size().y
 	_preview.pixel_scale = clampi(int(room / CharacterPreview.SHOWN_SIZE.y), 1, MAX_PREVIEW_SCALE)
 	for column: VBoxContainer in [_left_column, _right_column]:
 		var slot_count := column.get_child_count()

@@ -563,9 +563,9 @@ nothing. Below 20 % energy the character sweats with every action, and below 10 
 head at midnight and again at half past, while you are still awake: you pass out an hour
 after midnight.
 
-![The bag with the backpack, and the character window with the equipment slots](docs/screenshots/bag.png)
+![The bag with the backpack and its weight over the carry capacity, and the character window with the equipment slots](docs/screenshots/bag.png)
 
-![The character window with the equipment slots and the skills tab beside it](docs/screenshots/character.png)
+![The character window with the equipment slots, the attributes and what they give, and the skills tab beside it](docs/screenshots/character.png)
 
 The items are drawn at 32 px like the world, so in the slots an icon's pixel is as big as a
 world pixel at the widest view; an item on the ground is its icon at half size, on a small

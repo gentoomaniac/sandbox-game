@@ -122,3 +122,5 @@
   bonus belongs to a source and is not saved), so a new attribute or bonus source touches that
   class and the data file, and a villager or an animal can own one later. The levels are saved
   (save version 30); how a level grows is open, the console's `attribute` sets it for testing.
+  The character tab (C) shows them below the figure: each level (a bonus beside it, "12 (+2)") with
+  the attribute's tooltip, and the maximum energy, maximum health and carry capacity they give.
