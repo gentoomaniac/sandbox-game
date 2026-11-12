@@ -399,6 +399,29 @@ into an item slot should happen when the bag is open at the same time."
 - Tests for both windows open, the drags both ways and the keys; screenshots for the user; README
   and docs (docs/ui.md, design/presentation/menus-and-hud.md, design/player/inventory-and-character.md).
 
+## 219. Cloud shadows look broken: hard lines instead of soft clouds
+
+- [ ] Done
+
+The user, 2026-11-12: "cloud are working but the textures are kind of broken. Full of hard lines
+etc doesn't look like good at all."
+- The shadows of task 194 (game/scenes/cloud_shadows.gdshader, numbers in data/lighting.cfg
+  [cloud_shadows], fed by WeatherView) work, but the patches show hard lines. Take screenshots
+  first (cloudy weather by day, `--weather cloudy`, both arts, standing still and while they drift)
+  and find the cause. Suspects: the value noise interpolates on an axis-aligned grid, so its
+  octaves (not rotated against each other) leave straight creases; the CONTRAST stretch and clamp
+  flatten whole areas into plateaus with sharp rims; `size` follows the cover live, so the pattern
+  rescales around the world origin when the cover changes; the drift offset grows without bound
+  and the hash loses float precision after a while (which shows as banding).
+- Fix it at the cause so the shadows read as soft, rounded clouds: a smoother noise (gradient or
+  simplex noise, rotated octaves, perhaps a little domain warp for billowy shapes), soft edges with
+  no straight lines or grid, no pulsing when the cover changes, and a drift kept bounded (wrap it
+  without a jump). Still drawn in world pixels so it fits the pixel art; still cheap.
+- The weather already has a wind direction (WeatherSample.wind_direction, slowly turning over
+  days) and the shadows already drift with the full wind vector; keep that.
+- Before/after screenshots for the user (both arts, light and heavy cover); numbers stay in
+  data/lighting.cfg.
+
 ## Later (not part of the prototype)
 
 - Ice on rivers and ponds in winter (an overlay on water when it is cold enough; frozen water
