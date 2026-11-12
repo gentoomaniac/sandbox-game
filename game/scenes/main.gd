@@ -813,8 +813,10 @@ func _apply_game_options() -> void:
 		_hold(_options.hold)
 	if _options.riding != &"":
 		_ride(_options.riding)
-	if _options.weather != &"":
-		_force_weather(_options.weather)
+	if Weather.FORCEABLE.has(_options.weather):
+		_state.weather_override = _options.weather
+	elif _options.weather != &"":
+		push_error("--weather expects one of %s, got '%s'" % [Weather.FORCEABLE, _options.weather])
 	if _options.snow >= 0.0:
 		_state.snow_cover.forced = _options.snow
 
@@ -938,13 +940,6 @@ func _quick_load() -> void:
 			if get_tree().reload_current_scene() != OK:
 				QuickLoad.take()
 				_notifications.post(LOAD_NOTE, "Can't restart the game", NotificationHud.Tone.ERROR)
-
-
-func _force_weather(condition: StringName) -> void:
-	if not Weather.FORCEABLE.has(condition):
-		push_error("--weather expects one of %s, got '%s'" % [Weather.FORCEABLE, condition])
-		return
-	_state.weather_override = condition
 
 
 ## The F3 lines on the weather: the values, and sunrise and sunset.
