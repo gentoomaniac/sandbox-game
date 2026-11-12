@@ -143,13 +143,13 @@ func _drawn_pictures(cells: Array[Vector2i]) -> Array[Vector2i]:
 
 func test_the_object_atlases_follow_the_art_set() -> void:
 	var tileset := ObjectTileset.new()
-	var snow: TileSetAtlasSource = tileset.tile_set.get_source(SeasonBlend.Look.SNOW)
+	var autumn: TileSetAtlasSource = tileset.tile_set.get_source(SeasonBlend.Look.AUTUMN)
 	ArtSet.is_classic = true
 	tileset.show_art_set()
-	assert_eq(snow.texture.resource_path, "res://assets/classic/objects_snow.png")
+	assert_eq(autumn.texture.resource_path, "res://assets/classic/objects_autumn.png")
 	ArtSet.is_classic = false
 	tileset.show_art_set()
-	assert_eq(snow.texture.resource_path, "res://assets/objects_snow.png")
+	assert_eq(autumn.texture.resource_path, "res://assets/objects_autumn.png")
 
 
 func test_the_ground_moves_on_the_pixels_of_its_art_in_either_set() -> void:

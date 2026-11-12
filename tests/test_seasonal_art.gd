@@ -51,7 +51,7 @@ func test_a_house_has_a_picture_per_house_look() -> void:
 
 func test_the_object_tile_set_has_a_source_per_look() -> void:
 	var objects := ObjectTileset.new()
-	for look: SeasonBlend.Look in SeasonBlend.Look.values():
+	for look in ObjectTileset.LOOKS:
 		assert_eq(
 			objects.tile_set.get_source(look).texture.resource_path,
 			SeasonalArt.path(ObjectTileset.ATLAS_PATH, look)

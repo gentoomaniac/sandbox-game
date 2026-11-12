@@ -22,11 +22,25 @@ var _resting_x := 0.0
 
 
 func _init() -> void:
-	material = ShaderMaterial.new()
-	material.shader = SHADER
-	material.set_shader_parameter("radius", RADIUS)
-	material.set_shader_parameter("inner_opacity", INNER_OPACITY)
-	material.set_shader_parameter("edge_softness", EDGE_SOFTNESS)
+	material = new_material()
+
+
+## A material of the see-through shader: the sprite's own, with none of the effect yet.
+static func new_material() -> ShaderMaterial:
+	var made := ShaderMaterial.new()
+	made.shader = SHADER
+	made.set_shader_parameter("radius", RADIUS)
+	made.set_shader_parameter("inner_opacity", INNER_OPACITY)
+	made.set_shader_parameter("edge_softness", EDGE_SOFTNESS)
+	return made
+
+
+## Gives a sprite with the picture of an object of the atlas (a SeeThroughSprite or a FallingTree)
+## the frost and snow of the weather, as they are on the ground at `anchor`, in world pixels.
+static func show_cover(sprite: Sprite2D, anchor: Vector2) -> void:
+	var sprite_material: ShaderMaterial = sprite.material
+	sprite_material.set_shader_parameter("has_cover", true)
+	sprite_material.set_shader_parameter("cover_anchor", anchor)
 
 
 ## True when it is not occluding, has faded back to normal and stands still.

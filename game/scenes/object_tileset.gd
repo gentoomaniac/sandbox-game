@@ -14,6 +14,16 @@ extends RefCounted
 ## the chosen art set (see ArtSet), which WorldView shows anew by `show_art_set`.
 
 const ATLAS_PATH := "res://assets/objects.png"
+## The looks an object is drawn in: the foliage of the seasons and the steps of the leaf-out. The
+## frost and the snow are laid over them by the shader (see object_cover.gdshaderinc).
+const LOOKS: Array[SeasonBlend.Look] = [
+	SeasonBlend.Look.SPRING,
+	SeasonBlend.Look.SUMMER,
+	SeasonBlend.Look.AUTUMN,
+	SeasonBlend.Look.BARE,
+	SeasonBlend.Look.BUDS,
+	SeasonBlend.Look.YOUNG_LEAVES,
+]
 ## A cell is three tiles wide and five tall (as OBJECT_CELL_WIDTH and OBJECT_CELL_HEIGHT in
 ## tools/art/canvas.py).
 const CELL_WIDTH := 3 * TerrainTileset.TILE_SIZE
@@ -30,14 +40,14 @@ var _crop_sheets: Dictionary[StringName, String] = {}
 var _motion: AmbientMotion
 
 
-## One atlas source per look (see SeasonBlend.Look), with the same tiles: a source's id is its
-## look; the classic art's atlases have the same cells (see `show_art_set`). Then one source per
-## crop, with the ids that follow. The tiles of plants and fires get the materials of `motion`
-## (none without it).
+## One atlas source per look (see LOOKS), with the same tiles: a source's id is its look; the
+## classic art's atlases have the same cells (see `show_art_set`). Then one source per crop, with
+## the ids that follow. The tiles of plants and fires get the materials of `motion` (none
+## without it).
 func _init(crop_rules := CropRules.default_rules(), motion: AmbientMotion = null) -> void:
 	_motion = motion
 	tile_set.tile_size = Vector2i(TerrainTileset.TILE_SIZE, TerrainTileset.TILE_SIZE)
-	for look: SeasonBlend.Look in SeasonBlend.Look.values():
+	for look in LOOKS:
 		var source := TileSetAtlasSource.new()
 		source.texture = load(picture(look))
 		source.texture_region_size = Vector2i(CELL_WIDTH, CELL_HEIGHT)
@@ -72,7 +82,7 @@ func show_art_set() -> void:
 	if _is_classic == ArtSet.is_classic:
 		return
 	_is_classic = ArtSet.is_classic
-	for look: SeasonBlend.Look in SeasonBlend.Look.values():
+	for look in LOOKS:
 		var source: TileSetAtlasSource = tile_set.get_source(look)
 		source.texture = load(picture(look))
 	for crop_id in _crop_sources:

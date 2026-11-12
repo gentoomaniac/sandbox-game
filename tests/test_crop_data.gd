@@ -228,7 +228,7 @@ func test_a_crop_added_only_by_config_and_picture_gets_its_own_sheet_source() ->
 	var dandelion := WorldObject.new(WorldObjectTypes.TURNIP, Vector2i.ZERO)
 	dandelion.type = &"dandelion"
 	var source_id := tileset.crop_source_id(dandelion.type)
-	assert_false(source_id in SeasonBlend.Look.values(), "after the look sources")
+	assert_false(source_id in ObjectTileset.LOOKS, "not a look source")
 	var source := tileset.tile_set.get_source(source_id) as TileSetAtlasSource
 	assert_eq(source.get_tiles_count(), CropRules.STAGES + 1)
 	assert_eq(source.texture_region_size, Vector2i.ONE * TerrainTileset.TILE_SIZE)

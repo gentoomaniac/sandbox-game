@@ -56,6 +56,14 @@ cover_leaves={
 "type": "sampler2D",
 "value": ""
 }
+cover_objects_snow={
+"type": "sampler2D",
+"value": ""
+}
+cover_objects_frost={
+"type": "sampler2D",
+"value": ""
+}
 
 [input]
 

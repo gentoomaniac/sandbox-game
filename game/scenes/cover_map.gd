@@ -27,6 +27,9 @@ const RING_TILES := 512
 const DRAW_RANGE_CHUNKS := 7
 const NOISE_PATH := "res://assets/cover/ground_noise.png"
 const LEAVES_PATH := "res://assets/cover/leaf_litter.png"
+## The snow and the frost that the object atlas gets (see object_cover.gdshaderinc).
+const OBJECTS_SNOW_PATH := "res://assets/objects_snow_cover.png"
+const OBJECTS_FROST_PATH := "res://assets/objects_frost_cover.png"
 
 var texture: ImageTexture
 ## The rule the shaders follow, for the game's own questions (footsteps, flowers under snow);
@@ -57,11 +60,17 @@ static func reset() -> void:
 	_set_shader_weather(0.0, 0.0, 0.0, 0.0)
 
 
-## Shows the threshold map and the leaves of the chosen art set (see ArtSet): the same size in the
-## world's pixels in both.
+## Shows the threshold map, the leaves and the snow and frost of the objects of the chosen art set
+## (see ArtSet): the first two are the same size in the world's pixels in both.
 func show_art_set() -> void:
 	RenderingServer.global_shader_parameter_set("cover_noise", load(ArtSet.path(NOISE_PATH)))
 	RenderingServer.global_shader_parameter_set("cover_leaves", load(ArtSet.path(LEAVES_PATH)))
+	RenderingServer.global_shader_parameter_set(
+		"cover_objects_snow", load(ArtSet.path(OBJECTS_SNOW_PATH))
+	)
+	RenderingServer.global_shader_parameter_set(
+		"cover_objects_frost", load(ArtSet.path(OBJECTS_FROST_PATH))
+	)
 
 
 ## Draws the channels of a world's tiles from now on, and forgets what was drawn of the last.

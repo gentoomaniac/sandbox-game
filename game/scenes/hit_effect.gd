@@ -12,9 +12,9 @@ enum Kind { NONE, LEAVES_GREEN, LEAVES_AUTUMN, NEEDLES, SNOW, SPLINTERS, DUST, S
 const LEAFY: Array[StringName] = GroundCover.LEAFY
 
 
-## The effect of a hit on an object of `type` that is drawn in `look`. A frosty tree counts as
-## its season's look: the caller passes that, as the frost says nothing about its foliage.
-static func kind_for(type: StringName, look: SeasonBlend.Look) -> Kind:
+## The effect of a hit on an object of `type` that is drawn in `look`, with snow on it or not
+## (`is_snowy`: snow lies on the ground it stands on).
+static func kind_for(type: StringName, look: SeasonBlend.Look, is_snowy := false) -> Kind:
 	if (
 		type
 		in [
@@ -27,7 +27,6 @@ static func kind_for(type: StringName, look: SeasonBlend.Look) -> Kind:
 		]
 	):
 		return Kind.SPLINTERS
-	var is_snowy := look == SeasonBlend.Look.SNOW or look == SeasonBlend.Look.DUSTING
 	if type in [WorldObjectTypes.SPRUCE, WorldObjectTypes.PINE]:
 		return Kind.SNOW if is_snowy else Kind.NEEDLES
 	if type in LEAFY:

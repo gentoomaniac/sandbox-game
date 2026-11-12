@@ -166,6 +166,7 @@ func _ready() -> void:
 	_objects.name = "Objects"
 	_objects.tile_set = _object_tileset.tile_set
 	_objects.y_sort_enabled = true
+	_objects.material = _ground_look.objects
 	entities.name = "Entities"
 	entities.y_sort_enabled = true
 	entities.add_child(_objects)
@@ -394,16 +395,7 @@ func _on_object_hit(object: WorldObject) -> void:
 
 
 func _hit_effect(object: WorldObject) -> HitEffect.Kind:
-	return HitEffect.kind_for(object.type, _foliage_look(object))
-
-
-## The look of an object's foliage: as it shows, but a frosty tree counts as its season's look, as
-## the frost says nothing about its foliage.
-func _foliage_look(object: WorldObject) -> SeasonBlend.Look:
-	var look := _object_look(object)
-	if look == SeasonBlend.Look.FROST:
-		return _conditions.foliage_season_look(_blend.thresholds(object.pos).x)
-	return look
+	return HitEffect.kind_for(object.type, _object_look(object), is_snowed_over(object.pos))
 
 
 ## Lets the trees among a few tiles picked around the player shed leaves into the wind.
@@ -413,8 +405,8 @@ func _shed_leaves(delta: float) -> void:
 		var tree := world.object_at(tile)
 		if tree == null:
 			continue
-		var look := _foliage_look(tree)
-		var kind := HitEffect.kind_for(tree.type, look)
+		var look := _object_look(tree)
+		var kind := HitEffect.kind_for(tree.type, look, is_snowed_over(tree.pos))
 		_falling_leaves.shed(kind, look, world.clock.day, _hit_origin(tree), ambient_motion.wind)
 
 
@@ -654,11 +646,10 @@ func _object_source(object: WorldObject) -> int:
 	return _object_look(object)
 
 
-## The look of an object: of the foliage of its season, or snowy or frosty with its tile's
-## weather threshold.
+## The look of an object: of the foliage of its season, which each tree and bush changes to on a
+## day of its own (see SeasonBlend). The frost and snow lie over it by the shader.
 func _object_look(object: WorldObject) -> SeasonBlend.Look:
-	var thresholds := _blend.thresholds(object.pos)
-	return _conditions.foliage_look(thresholds.x, thresholds.y)
+	return _conditions.foliage_season_look(_blend.thresholds(object.pos).x)
 
 
 ## What an object is drawn as: its look, with a flag if it is out of its fruit season, or
@@ -717,6 +708,14 @@ func _place_object_sprite(sprite: Sprite2D, object: WorldObject) -> void:
 	sprite.texture = _object_texture(object)
 	sprite.centered = false
 	var footprint: Vector2i = WorldObjectTypes.TYPES[object.type]["footprint"]
+	# The ground it stands on: the middle of the tile at the foot of its cell.
+	SeeThroughSprite.show_cover(
+		sprite,
+		Vector2(
+			(object.pos.x + footprint.x / 2.0) * TerrainTileset.TILE_SIZE,
+			(object.pos.y + footprint.y - 0.5) * TerrainTileset.TILE_SIZE
+		)
+	)
 	var sort_shift := Vector2(0, (footprint.y - 1) * TerrainTileset.TILE_SIZE)
 	sprite.position = TerrainTileset.tile_centre(object.pos)
 	sprite.position += sort_shift

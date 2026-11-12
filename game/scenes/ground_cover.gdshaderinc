@@ -40,9 +40,9 @@ vec4 cover_catch(vec2 position) {
 	vec2 share = tiles - first;
 	ivec2 low = ivec2(mod(first, COVER_MAP_TILES));
 	ivec2 high = ivec2(mod(first + 1.0, COVER_MAP_TILES));
-	vec4 top = mix(texelFetch(cover_map, low, 0), texelFetch(cover_map, ivec2(high.x, low.y), 0), share.x);
-	vec4 bottom = mix(texelFetch(cover_map, ivec2(low.x, high.y), 0), texelFetch(cover_map, high, 0), share.x);
-	return mix(top, bottom, share.y);
+	vec4 upper = mix(texelFetch(cover_map, low, 0), texelFetch(cover_map, ivec2(high.x, low.y), 0), share.x);
+	vec4 lower = mix(texelFetch(cover_map, ivec2(low.x, high.y), 0), texelFetch(cover_map, high, 0), share.x);
+	return mix(upper, lower, share.y);
 }
 
 // The threshold texel and the fallen leaf at a position of the world (world pixels).

@@ -10,15 +10,19 @@ extends RefCounted
 ## The terrain's land layers have `terrain`, tilled soil `soil` (it stays soil-coloured all year,
 ## and the snow lies on it), the decorations that stand still `decoration`, and those that sway
 ## AmbientMotion's `decoration_sway`, which this makes the same as the others; the wet look of
-## tilled soil has `soil_wet`, which clears where snow lies on the soil.
+## tilled soil has `soil_wet`, which clears where snow lies on the soil. The objects that stand
+## still have `objects`, the frost and snow over their pictures (the ones that sway have it in their
+## own shader, see object_sway.gdshader).
 
 const GROUND_SHADER := preload("res://game/scenes/ground.gdshader")
 const SOIL_WET_SHADER := preload("res://game/scenes/soil_wet.gdshader")
+const OBJECT_COVER_SHADER := preload("res://game/scenes/object_cover.gdshader")
 
 var terrain := _material(GROUND_SHADER)
 var soil := _material(GROUND_SHADER)
 var decoration := _material(GROUND_SHADER)
 var soil_wet := _material(SOIL_WET_SHADER)
+var objects := _material(OBJECT_COVER_SHADER)
 var _terrain_materials: Array[ShaderMaterial]
 var _decoration_materials: Array[ShaderMaterial]
 var _mix := SeasonBlend.GroundMix.new()
@@ -45,8 +49,11 @@ func show_mix(mix: SeasonBlend.GroundMix) -> void:
 ## Shows the atlases of the chosen art set (see ArtSet), and the pixels of its art.
 func show_art_set() -> void:
 	var art_scale := AmbientMotion.art_pixel_size()
-	for material in [terrain, soil, decoration, soil_wet]:
+	for material in [terrain, soil, decoration, soil_wet, objects]:
 		material.set_shader_parameter("art_scale", art_scale)
+	objects.set_shader_parameter(
+		"cell_size", Vector2(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT) / art_scale
+	)
 	var summer := _atlas(TerrainTileset.TERRAIN_ATLAS_PATH, SeasonBlend.Look.SUMMER)
 	soil.set_shader_parameter("from_look", summer)
 	soil.set_shader_parameter("to_look", summer)

@@ -35,6 +35,11 @@ var _has_landed := false
 var _has_finished := false
 
 
+func _init() -> void:
+	# The frost and snow of the weather lie over the picture as they did over the standing tree.
+	material = SeeThroughSprite.new_material()
+
+
 ## A fall of `tree`, which was just replaced by its stump in `world`: towards the trunk beside
 ## the stump (see TrunkPlacement), or away from the player standing at `player_x` (world pixels)
 ## if there is none. A trunk above or below the stump gives no side; the tree then falls to the

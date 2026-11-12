@@ -70,6 +70,14 @@ class ObjectCoverTest(unittest.TestCase):
         self.assertFalse(set(cover.COVER_LOOKS) & set(seasons.LOOKS))
 
 
+class RankAlphaTest(unittest.TestCase):
+    def test_a_rank_is_never_a_clear_pixel(self):
+        # Alpha 0 is "no pixel", so the lowest rank must still be drawn; the shader reads it back.
+        self.assertEqual(cover.rank_alpha(0.0), 1)
+        self.assertEqual(cover.rank_alpha(1.0), 255)
+        self.assertEqual(cover.rank_alpha(-1.0), 1)
+
+
 class RankedTest(unittest.TestCase):
     def sheet(self):
         image = Image.new("RGBA", (4, 8), (0, 0, 0, 0))

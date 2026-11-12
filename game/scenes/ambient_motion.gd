@@ -219,6 +219,8 @@ func crop_material(cell_size: Vector2i, art_scale := 1) -> ShaderMaterial:
 		var material := _native_material(OBJECT_SWAY_SHADER)
 		_set_parameters(material, CROP_SWAY)
 		material.set_shader_parameter("art_scale", float(art_scale))
+		# A crop's sheet is no part of the atlas that the frost and snow of the objects fit.
+		material.set_shader_parameter("has_cover", false)
 		var art_cell_size := Vector2(cell_size) / art_scale
 		material.set_shader_parameter("cell_size", art_cell_size)
 		material.set_shader_parameter("top", art_cell_size.y)

@@ -45,7 +45,7 @@ func test_a_refresh_is_spread_over_frames() -> void:
 	assert_true(_view._refresh_queue.is_empty())
 
 
-func test_an_oak_is_in_leaf_bare_snowy_or_frosty_by_the_look() -> void:
+func test_an_oak_is_in_leaf_or_bare_by_the_season_whatever_the_weather() -> void:
 	_show(SUMMER, 0.0)
 	_residency.load_chunk(RIGHT)
 	_view.finish_drawing()
@@ -54,9 +54,23 @@ func test_an_oak_is_in_leaf_bare_snowy_or_frosty_by_the_look() -> void:
 	_show(WINTER, 0.0)
 	assert_eq(_view._objects.get_cell_source_id(oak.pos), SeasonBlend.Look.BARE)
 	_show(WINTER, 1.0)
-	assert_eq(_view._objects.get_cell_source_id(oak.pos), SeasonBlend.Look.SNOW)
+	assert_eq(_view._objects.get_cell_source_id(oak.pos), SeasonBlend.Look.BARE, "snow lies on it")
 	_show(WINTER, 0.0, 1.0)
-	assert_eq(_view._objects.get_cell_source_id(oak.pos), SeasonBlend.Look.FROST)
+	assert_eq(_view._objects.get_cell_source_id(oak.pos), SeasonBlend.Look.BARE, "so does frost")
+
+
+func test_the_objects_have_the_cover_shader_and_the_plants_their_own() -> void:
+	assert_eq(_view._objects.material, _view._ground_look.objects)
+	var oak_row: int = WorldObjectTypes.TYPES[WorldObjectTypes.OAK]["atlas_row"]
+	var stone_row: int = WorldObjectTypes.TYPES[WorldObjectTypes.STONE]["atlas_row"]
+	var source: TileSetAtlasSource = _view._object_tileset.tile_set.get_source(
+		SeasonBlend.Look.SUMMER
+	)
+	assert_eq(
+		source.get_tile_data(Vector2i(0, oak_row), 0).material,
+		_view.ambient_motion.object_material(WorldObjectTypes.OAK)
+	)
+	assert_null(source.get_tile_data(Vector2i(0, stone_row), 0).material, "the layer's")
 
 
 func test_trees_turn_one_by_one_across_autumn() -> void:
@@ -77,17 +91,35 @@ func _foliage_looks(coords: Vector2i) -> Dictionary:
 	return looks
 
 
-func test_a_see_through_stand_in_has_the_look_of_its_cell() -> void:
+func test_a_see_through_stand_in_has_the_look_and_the_cover_of_its_cell() -> void:
 	_residency.load_chunk(RIGHT)
 	_view.finish_drawing()
 	_show(WINTER, 1.0)
 	var oak := _find_object(RIGHT, WorldObjectTypes.OAK)
 	_view._swap_cell_for_sprite(oak)
-	var texture: AtlasTexture = _view._object_sprites[oak.pos].texture
+	var sprite: SeeThroughSprite = _view._object_sprites[oak.pos]
+	var texture: AtlasTexture = sprite.texture
 	assert_eq(
 		texture.atlas.resource_path,
-		SeasonalArt.path(ObjectTileset.ATLAS_PATH, SeasonBlend.Look.SNOW)
+		SeasonalArt.path(ObjectTileset.ATLAS_PATH, SeasonBlend.Look.BARE)
 	)
+	assert_true(sprite.material.get_shader_parameter("has_cover"))
+	var footprint: Vector2i = oak.type_data()["footprint"]
+	var foot := Vector2(
+		(oak.pos.x + footprint.x / 2.0) * TerrainTileset.TILE_SIZE,
+		(oak.pos.y + footprint.y - 0.5) * TerrainTileset.TILE_SIZE
+	)
+	assert_eq(sprite.material.get_shader_parameter("cover_anchor"), foot)
+
+
+func test_a_felled_trees_sprite_has_the_cover_too() -> void:
+	_residency.load_chunk(RIGHT)
+	_view.finish_drawing()
+	var oak := _find_object(RIGHT, WorldObjectTypes.OAK)
+	var fall := FallingTree.beside_trunk_of(oak, _view.world, 0.0)
+	_view._place_object_sprite(fall, oak)
+	assert_true(fall.material.get_shader_parameter("has_cover"))
+	fall.free()
 
 
 func test_a_house_has_snow_on_its_roof_while_its_tile_is_snowy() -> void:
@@ -134,7 +166,7 @@ func test_a_crop_is_drawn_from_its_own_sheet_in_every_look() -> void:
 	crop.state["growth"] = 2.0 * crop.type_data()["growth_per_stage"]
 	_view.world.add_object(crop)
 	var source_id := _view._objects.get_cell_source_id(pos)
-	assert_false(source_id in SeasonBlend.Look.values(), "not from an object atlas look")
+	assert_false(source_id in ObjectTileset.LOOKS, "not from an object atlas look")
 	assert_eq(source_id, _view._object_tileset.crop_source_id(&"carrot"))
 	assert_eq(_view._objects.get_cell_atlas_coords(pos), Vector2i(2, 0))
 	for look_day_snow in [[WINTER, 1.0, 0.0], [WINTER, 0.0, 1.0], [AUTUMN, 0.0, 0.0]]:

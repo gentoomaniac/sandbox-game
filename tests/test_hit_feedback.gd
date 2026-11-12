@@ -28,20 +28,19 @@ func test_a_tree_with_foliage_drops_leaves_of_its_look() -> void:
 		assert_eq(HitEffect.kind_for(type, LOOKS.SUMMER), KINDS.LEAVES_GREEN, type)
 		assert_eq(HitEffect.kind_for(type, LOOKS.AUTUMN), KINDS.LEAVES_AUTUMN, type)
 		assert_eq(HitEffect.kind_for(type, LOOKS.BARE), KINDS.NONE, type)
-		assert_eq(HitEffect.kind_for(type, LOOKS.SNOW), KINDS.SNOW, type)
+		assert_eq(HitEffect.kind_for(type, LOOKS.SUMMER, true), KINDS.SNOW, type)
 
 
 func test_spruce_and_pine_drop_needles_all_year_unless_snowy() -> void:
 	for type in [WorldObjectTypes.SPRUCE, WorldObjectTypes.PINE]:
-		for look in [LOOKS.SPRING, LOOKS.SUMMER, LOOKS.AUTUMN, LOOKS.BARE, LOOKS.FROST]:
+		for look in [LOOKS.SPRING, LOOKS.SUMMER, LOOKS.AUTUMN, LOOKS.BARE]:
 			assert_eq(HitEffect.kind_for(type, look), KINDS.NEEDLES, "%s %s" % [type, look])
-		assert_eq(HitEffect.kind_for(type, LOOKS.SNOW), KINDS.SNOW)
-		assert_eq(HitEffect.kind_for(type, LOOKS.DUSTING), KINDS.SNOW)
+			assert_eq(HitEffect.kind_for(type, look, true), KINDS.SNOW, "%s %s" % [type, look])
 
 
 func test_a_snowy_oak_drops_snow() -> void:
-	assert_eq(HitEffect.kind_for(WorldObjectTypes.OAK, LOOKS.SNOW), KINDS.SNOW)
-	assert_eq(HitEffect.kind_for(WorldObjectTypes.OAK, LOOKS.DUSTING), KINDS.SNOW)
+	assert_eq(HitEffect.kind_for(WorldObjectTypes.OAK, LOOKS.AUTUMN, true), KINDS.SNOW)
+	assert_eq(HitEffect.kind_for(WorldObjectTypes.OAK, LOOKS.BARE, true), KINDS.SNOW)
 
 
 func test_bare_trees_drop_nothing() -> void:

@@ -168,8 +168,8 @@
   `data/seasons.cfg` ([snow]: snowfall adds, warmth and sun melt, counted hour by hour from
   the start of autumn; none from the first day of the year), the blend windows too; the view
   updates once a game hour, a few milliseconds per frame.
-- **The ground follows the year as one base colour plus overlays** (task 185, built; the plants
-  and the houses still use looks until its later steps, see docs/plans/185-season-overlays.md):
+- **The ground follows the year as one base colour plus overlays** (task 185, built for the
+  ground and the objects; the houses follow, see docs/plans/185-season-overlays.md):
   - The grass keeps one look all year and only shifts its colour, evenly all over the world: the
     ground shader (`ground.gdshader`, `GroundLook`) mixes the summer atlas into the atlas of the
     next season by `SeasonBlend.ground_mix` (windows in [ground_mix] of `data/seasons.cfg`, wider
@@ -191,6 +191,17 @@
     a chunk loads or something near a tile changes (a tree, a house, a path).
   - The weather of the moment is set once per game minute as global shader parameters
     (`ground_cover.gdshaderinc`); nothing is redrawn per tile, per hour.
+  - Trees, bushes, stones, fences and the like keep their picture of the season (their own look
+    of each tree, see the foliage windows) and get the frost and the snow over it by shader
+    (`object_cover.gdshaderinc`): the art generator draws, per object, only the pixels that its
+    snow and frost looks add (the atlases `objects_snow_cover` and `objects_frost_cover`, with each
+    pixel's rank in the alpha channel, the snow's growing from the top of the picture down), and a
+    pixel shows once the cover of the ground the object stands on is above its rank. So snow
+    settles on a spruce from the top down, thickens, thaws from the bottom up, and lies thinner
+    on what stands in the shade or the lee. The stand-in sprites (a tree that fades while it hides
+    the player, a falling tree) have the same shader, with the same atlas picture; crops have no
+    cover (their sheet is no part of the atlas). Hit effects ask whether snow lies on the ground
+    under the object.
   - `--frost` and `--melt` start the game with a forced frost or thaw, like `--snow`.
   - Cost: a chunk fills about 5-7 ms of cover texels when it loads, and the ground costs a few
     texture samples per pixel in place of about 40 overlay layers.

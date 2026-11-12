@@ -152,3 +152,11 @@ func test_the_art_sets_have_their_cover_textures() -> void:
 			var picture: Texture2D = load(ArtSet.path_in(path, is_classic))
 			assert_not_null(picture, path)
 			assert_eq(picture.get_size(), Vector2(512, 512), path)
+
+
+func test_the_snow_and_frost_atlases_of_the_objects_have_the_layout_of_the_object_atlas() -> void:
+	for is_classic in [false, true]:
+		var objects: Texture2D = load(ArtSet.path_in(ObjectTileset.ATLAS_PATH, is_classic))
+		for path in [CoverMap.OBJECTS_SNOW_PATH, CoverMap.OBJECTS_FROST_PATH]:
+			var atlas: Texture2D = load(ArtSet.path_in(path, is_classic))
+			assert_eq(atlas.get_size(), objects.get_size(), path)
