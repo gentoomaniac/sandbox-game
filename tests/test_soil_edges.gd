@@ -1,6 +1,6 @@
 extends ResourceCase
 ## The edges of wet patches of tilled soil (see SoilWetness): where they are drawn, and that they
-## go with the wetter tile, its tilling and under snow.
+## go with the wetter tile and its tilling.
 
 
 func before_each() -> void:
@@ -33,13 +33,13 @@ func test_wet_soil_is_a_patch_drawn_over_it_and_its_drier_tilled_neighbours() ->
 
 
 ## A tilled tile east of the test tile, dry, beside the test tile soaked, and a layer showing them.
-func _wet_beside_dry(is_covered := func(_pos: Vector2i) -> bool: return false) -> SoilWetness:
+func _wet_beside_dry() -> SoilWetness:
 	_world.set_terrain(_tile + Vector2i.RIGHT, Tile.Terrain.SOIL)
 	_world.set_moisture(_tile + Vector2i.RIGHT, 0.0)
 	_world.set_moisture(_tile, 1.0)
 	var layer := SoilWetness.new()
 	add_child_autofree(layer)
-	layer.show_world(_world, is_covered)
+	layer.show_world(_world)
 	assert_ne(layer.edge_at(_tile + Vector2i.RIGHT, SoilWetness.WEST), SoilWetness.NO_TILE)
 	return layer
 
@@ -48,16 +48,3 @@ func test_an_edge_goes_when_the_wetter_tile_grows_back_to_grass() -> void:
 	var layer := _wet_beside_dry()
 	_world.set_terrain(_tile, Tile.Terrain.GRASS)
 	assert_eq(layer.edge_at(_tile + Vector2i.RIGHT, SoilWetness.WEST), SoilWetness.NO_TILE)
-
-
-func test_snow_on_either_tile_clears_the_edge() -> void:
-	var snowed := {}
-	var layer := _wet_beside_dry(func(pos: Vector2i) -> bool: return snowed.has(pos))
-	var east := _tile + Vector2i.RIGHT
-	for covered: Vector2i in [_tile, east]:
-		snowed[covered] = true
-		layer.redraw_tile(covered)
-		assert_eq(layer.edge_at(east, SoilWetness.WEST), SoilWetness.NO_TILE, str(covered))
-		snowed.erase(covered)
-		layer.redraw_tile(covered)
-		assert_ne(layer.edge_at(east, SoilWetness.WEST), SoilWetness.NO_TILE, "thawed")

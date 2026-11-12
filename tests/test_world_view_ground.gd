@@ -192,22 +192,11 @@ func test_a_tree_felled_while_its_chunk_is_half_drawn_still_changes_the_cover() 
 	assert_ne(_view._cover_map.channels_at(tree.pos), before)
 
 
-func test_soil_under_snow_is_not_drawn_wet() -> void:
-	var tiles: Array[Vector2i] = []
-	for x in range(-20, -10):
-		var pos := Vector2i(x, -20)
-		_view.world.set_terrain(pos, Tile.Terrain.SOIL)
-		_view.world.set_moisture(pos, 1.0)
-		tiles.append(pos)
-	_view.show_ground_cover(WINTER, 0.0, 0.0, 0.0)
-	for pos in tiles:
-		assert_ne(_view._soil_wetness.get_cell_source_id(pos), -1, "wet when bare")
+func test_snow_clears_the_wet_pixels_of_soil_by_shader_and_costs_no_redrawing() -> void:
+	var pos := Vector2i(-20, -20)
+	_view.world.set_terrain(pos, Tile.Terrain.SOIL)
+	_view.world.set_moisture(pos, 1.0)
+	assert_ne(_view._soil_wetness.get_cell_source_id(pos), -1, "wet")
 	_view.show_ground_cover(WINTER, 1.0, 0.0, 0.0)
-	for pos in tiles:
-		_view._soil_wetness.redraw_tile(pos)
-		assert_eq(_view._soil_wetness.get_cell_source_id(pos) == -1, _view.is_snowed_over(pos))
-	assert_true(_view.is_snowed_over(tiles[0]))
-	_view.show_ground_cover(WINTER, 0.0, 0.0, 0.0)
-	for pos in tiles:
-		_view._soil_wetness.redraw_tile(pos)
-		assert_ne(_view._soil_wetness.get_cell_source_id(pos), -1, "wet again")
+	assert_ne(_view._soil_wetness.get_cell_source_id(pos), -1, "still drawn: the shader clears it")
+	assert_eq(_view._soil_wetness.material, _view._ground_look.soil_wet)

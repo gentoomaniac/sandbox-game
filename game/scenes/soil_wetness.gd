@@ -11,10 +11,10 @@ extends TileMapLayer
 ## patch's edge and rounds off its corners (see `edges` and the edge atlas of
 ## tools/art/soil_beds.py), drawn in pieces over both tiles, each in a layer of its own. It follows
 ## the world's moisture and tilling signals, so it needs nothing from chunk streaming: tilled
-## tiles are drawn wherever they are. Soil that snow lies on (see `show_world`) is not drawn and
-## has no edges. After an hour of rain the soil's surface is wet: it looks a step wetter than its
-## moisture until a dry hour has passed (see `refresh_looks`), so the rain shows on the soil at
-## once.
+## tiles are drawn wherever they are. Where snow lies on the soil the wet pixels are clear (see
+## `show_ground_look`), so the snow of the terrain below shows. After an hour of rain the soil's
+## surface is wet: it looks a step wetter than its moisture until a dry hour has passed (see
+## `refresh_looks`), so the rain shows on the soil at once.
 
 const TEXTURE_PATH := "res://assets/soil_wet.png"
 const EDGE_TEXTURE_PATH := "res://assets/soil_edge.png"
@@ -65,7 +65,7 @@ const SIDE_ENDS := {
 	SOUTH: [[WEST, SOUTH_WEST], [EAST, SOUTH_EAST]],
 	WEST: [[NORTH, NORTH_WEST], [SOUTH, SOUTH_WEST]],
 }
-## How a side's edge ends: at the bed's rim (the tile across is not tilled, or under snow),
+## How a side's edge ends: at the bed's rim (the tile across is not tilled),
 ## running on into the next tiles (they are as wet as these two), or turning.
 const END_RIM := 0
 const END_RUNS_ON := 1
@@ -88,7 +88,6 @@ var _edge_layers: Array[TileMapLayer] = []
 ## The tiles that have edge pieces drawn on them.
 var _edged_tiles: Dictionary[Vector2i, bool] = {}
 var _world: World
-var _is_covered: Callable
 var _chunks_to_refresh: Array[Vector2i] = []
 var _next_chunk_to_refresh := 0
 var _tiles_to_refresh: Array[Vector2i] = []
@@ -114,11 +113,9 @@ func _init() -> void:
 		_edge_layers.append(layer)
 
 
-## Draws the world's tilled soil and follows it from now on. `is_covered` tells for a world tile
-## whether snow covers it, and then it is left out; call `redraw_tile` when that changes.
-func show_world(world: World, is_covered := func(_pos: Vector2i) -> bool: return false) -> void:
+## Draws the world's tilled soil and follows it from now on.
+func show_world(world: World) -> void:
 	_world = world
-	_is_covered = is_covered
 	_world.soil_moisture_changed.connect(_draw_surroundings)
 	_world.tile_changed.connect(_draw_surroundings)
 	for pos in _world.tilled_tiles():
@@ -159,7 +156,7 @@ static func bed_shape(is_tilled_at: Callable, pos: Vector2i) -> int:
 
 
 ## The edge pieces over the tile at `pos` of step `look`, whose neighbours are of the steps
-## `neighbour_looks` (by their bits; -1 for one that is not tilled, or under snow): their tiles in
+## `neighbour_looks` (by their bits; -1 for one that is not tilled): their tiles in
 ## the edge atlas, by their layer (see `_edge_layers`). Along a side with a wetter neighbour a
 ## bulge of each step up to it, along one with a drier neighbour a bite of each step down to it.
 ## At a corner whose two sides are both drier the patch is rounded off, at one whose two sides are
@@ -253,11 +250,6 @@ func _process(_delta: float) -> void:
 			return
 
 
-## Draws one tile again, and the edges around it.
-func redraw_tile(world_pos: Vector2i) -> void:
-	_draw_surroundings(world_pos)
-
-
 ## The column of each bed shape: the shapes in ascending order, as the atlas is drawn.
 static func _bed_columns() -> Dictionary[int, int]:
 	var shapes := {}
@@ -327,13 +319,9 @@ func _draw_surroundings(world_pos: Vector2i) -> void:
 		_draw_tile(world_pos + offset)
 
 
-func _is_wettable(world_pos: Vector2i) -> bool:
-	return _world.is_tilled(world_pos) and not _is_covered.call(world_pos)
-
-
-## The step a tile shows, or -1 for one that is not tilled or lies under snow.
+## The step a tile shows, or -1 for one that is not tilled.
 func _look_at(world_pos: Vector2i) -> int:
-	if not _is_wettable(world_pos):
+	if not _world.is_tilled(world_pos):
 		return -1
 	var look := look_for(_world.moisture_at(world_pos))
 	return mini(look + 1, LOOKS - 1) if _is_surface_wet else look

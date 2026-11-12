@@ -192,6 +192,9 @@
     paths, floodplain and wetland do. `CoverMap` keeps one texel per world tile in a 512 x 512 ring
     texture that the shader filters, so the cover is smooth across tile edges; it is redrawn when
     a chunk loads or something near a tile changes (a tree, a house, a path).
+  - What stands on the ground (trees, bushes, stones, roofs) catches `object_snow_gain` (1.7)
+    times the snow share of the ground it stands on, at most all, as it is not under its own
+    crown and snow lies thicker on a branch or a roof.
   - The weather of the moment is set once per game minute as global shader parameters
     (`ground_cover.gdshaderinc`); nothing is redrawn per tile, per hour.
   - Trees, bushes, stones, fences and the like keep their picture of the season (their own look

@@ -207,7 +207,7 @@ func show_world(residency: ChunkResidency) -> void:
 	decorations.ground_cover = _cover_map.ground_cover
 	world.object_hit.connect(_on_object_hit)
 	world.clay_spot_changed.connect(_on_clay_spot_changed)
-	_soil_wetness.show_world(world, is_snowed_over)
+	_soil_wetness.show_world(world)
 	world.building_placed.connect(_buildings.add)
 	world.building_placed.connect(_on_building_changed)
 	world.building_removed.connect(_buildings.remove)
@@ -483,9 +483,6 @@ func _draw_chunk_step(drawing: ChunkDrawing) -> void:
 			_redraw_cell(origin + Vector2i(Chunk.CHUNK_SIZE, i))
 		for i in Chunk.CHUNK_SIZE:
 			_redraw_cell(origin + Vector2i(i, Chunk.CHUNK_SIZE))
-		# The tilled soil of the chunk now knows whether snow lies on it.
-		for pos in world.tilled_tiles_in_chunk(coords):
-			_soil_wetness.redraw_tile(pos)
 	drawing.step += 1
 
 
@@ -764,7 +761,7 @@ static func _tile_index(local: Vector2i) -> int:
 	return local.y * Chunk.CHUNK_SIZE + local.x
 
 
-## Whether snow lies on most of a tile now, so soil under it doesn't look wet.
+## Whether snow lies on most of a tile now (what hit effects ask).
 func is_snowed_over(world_pos: Vector2i) -> bool:
 	return world != null and _cover_map.ground_cover.is_snowed(world_pos)
 
