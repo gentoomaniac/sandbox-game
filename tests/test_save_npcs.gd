@@ -1,7 +1,6 @@
 extends SaveUpgradeCase
 ## The villagers are saved with their name, sex, look, who they are, place, anchor and chat; a
-## save from before their memories (version 19) gives them none, and one from before their long
-## sheets (version 22) gives them those.
+## save from before their long sheets (version 22) gives them those.
 
 
 func test_the_villagers_and_their_chat_are_kept() -> void:
@@ -102,22 +101,6 @@ func test_the_lines_waiting_for_a_memory_are_saved() -> void:
 		loaded.uncompacted_lines.map(func(line: Dictionary) -> String: return line["text"]),
 		["line 0", "line 1"]
 	)
-
-
-func test_a_version_19_villager_remembers_nothing() -> void:
-	var game := _current_game()
-	var npc := Npc.create(42, Vector2.ZERO, NpcRules.default_rules()).to_dict()
-	npc.erase("memories")
-	npc.erase("uncompacted_lines")
-	npc.erase("remembered_lines")
-	npc["lines_since_memory"] = 0
-	game["npcs"] = [JSON.parse_string(JSON.stringify(npc))]
-	_write_save(19, game)
-
-	var loaded := SaveFile.read(SAVE_PATH).npcs.all()[0]
-
-	assert_eq(loaded.memories.size(), 0)
-	assert_eq(loaded.uncompacted_lines.size(), 0)
 
 
 func test_a_version_20_villager_keeps_their_chat_and_the_lines_a_memory_holds_are_marked() -> void:
