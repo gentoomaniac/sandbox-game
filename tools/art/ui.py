@@ -17,6 +17,8 @@ Written to assets/ui/:
 - trash_icon.png: 16x16, drawn into the trash can's slot like the equip_* hints (items.py);
 - bag_icon.png: 16x16, the picture on the bag button beside the hotbar; like the other icons it is
   drawn from ICON_ROWS, and one picture serves both arts;
+- process_<icon>.png: 12x12, the pictures on the activation buttons of the process stations (the
+  `button_icon` of data/stations.cfg): process_fire.png, a fire on a log, for the kiln and the oven;
 - bar_frame.png (48x8) and energy_fill.png, health_fill.png (46x6, the frame's inside): the
   bars. The game draws as much of a fill as the bar is full;
 - bubble_<id>.png: the thought bubbles over the player's head, one per id of BUBBLE_ICONS.
@@ -400,6 +402,21 @@ kssssssssssk
 .kaaaaaaaaaaaak.
 ..kkkkkkkkkkkk..
 ................
+""",
+    # The activation button of the kiln and the oven: a fire burning on a log.
+    "process_fire": """
+....kk......
+...kfek.....
+...kffek.k..
+..kffgfekek.
+..kfgggffek.
+.kffgcgggfek
+.kfgcccggfek
+.kefgccgffek
+..keffffeek.
+.kkkkkkkkkk.
+klllmmllmmsk
+.kkkkkkkkkk.
 """,
     # Shown in the trash can's slot (16x16 like the equipment hints, drawn into the slot).
     "trash_icon": """
