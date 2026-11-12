@@ -5220,3 +5220,30 @@ affect the visuals, they have no effect on the plants etc."
   wind, no state effect; screenshots and a short clip or frames for the user; README note.
 
 Done: 2026-11-12. One full-viewport overlay (game/scenes/cloud_shadows.gdshader) in WeatherView draws soft noise patches in world pixels; they drift with the same wind as the fog and sway. Strength = strength x daylight x sun out (no rain or snow shown) x open sky; a closed sky (cover 0.75 to 1) fades them out and keeps only task 177's darkening. DayNightTint exposes `daylight` (0 at night and indoors). Numbers in data/lighting.cfg [cloud_shadows]. `cloudy` and `overcast` can be forced (--weather, console). The drift offset grows without bound like the fog's (float precision after many hours; not seen). The closed-sky darkening is still the constant OVERCAST_DARKENING in day_night_tint.gd.
+
+## 196. Windows get a close button, and a click outside closes them
+
+- [x] Done
+
+The user, 2026-11-11: "add a close button to the modal. clicking outside it should have the same
+effect as the registered close key"
+- Modal (game/scenes/modal.gd) gets a close button (a small X in the panel's top right corner,
+  both arts, palette colours, a hover look) on every window. Pressing it does exactly what Escape
+  does in that window: it goes through `_takes_escape()`, so where Escape first goes back a page
+  (the pause menu's settings pages, the storage screen's and the character screen's own steps, the
+  trash-can question) the button does the same. One code path for Escape, the button and the
+  outside click.
+- A left click on the dimmed area outside the panel does the same as Escape, for every window,
+  including the fixed ones (the pause menu and ChoiceDialog, where Escape's answer, such as "no",
+  is what the click gives). `closes_on_backdrop_click` and the windows' own `_on_backdrop_input`
+  give way to it, or are dropped if nothing else needs them.
+- Must not break: letting a dragged stack go on the dimmed area still drops it (`_drop_outside_panel`)
+  and doesn't close the window. A window drag (189) whose release ends outside the panel doesn't
+  close it. A press that starts inside the panel and ends outside doesn't count as a click outside.
+  Clicks on the HUD's hotbar while a window is open keep working.
+- The close button takes no part in the window drag (pressing it doesn't start one).
+- Tests: the button and the outside click match Escape (closing, going back a page, the dialog's
+  answer); a stack dropped outside still drops; a drag ending outside doesn't close. README, docs/ui.md
+  and design/presentation/menus-and-hud.md. Screenshots of the button on a few windows, both arts.
+
+Done: 2026-11-12. `Modal.request_close()` is the one path for Escape, the pause key, the close button and a left press on the dimmed area outside the panel; it asks `_takes_escape()` first, so pages go back, ChoiceDialog gives its safe answer and the trash-can question keeps. `closes_on_backdrop_click` is gone. The × (13 px, generated in tools/art/ui.py, one picture for both arts) is a sibling of the panel drawn over its top right corner, so it never starts a drag, and follows the panel. Presses on the HUD hotbar strip (slots, gaps, bag button) don't count as outside (`_keeps_clicks_at`, set by HotbarWindow). Not retaken: npc-chat.png, font-umlauts.png, station-menus.png and skills.png still show windows without the ×.

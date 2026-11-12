@@ -224,31 +224,6 @@ and in autumn gets leaves on top gradually and in winter frost and/or snow."
   changes and the user's decisions: smooth colour mix, a little straw on the dry grass in autumn,
   ice later). The queue goes on with 186 first.
 
-## 196. Windows get a close button, and a click outside closes them
-
-- [ ] Done
-
-The user, 2026-11-11: "add a close button to the modal. clicking outside it should have the same
-effect as the registered close key"
-- Modal (game/scenes/modal.gd) gets a close button (a small X in the panel's top right corner,
-  both arts, palette colours, a hover look) on every window. Pressing it does exactly what Escape
-  does in that window: it goes through `_takes_escape()`, so where Escape first goes back a page
-  (the pause menu's settings pages, the storage screen's and the character screen's own steps, the
-  trash-can question) the button does the same. One code path for Escape, the button and the
-  outside click.
-- A left click on the dimmed area outside the panel does the same as Escape, for every window,
-  including the fixed ones (the pause menu and ChoiceDialog, where Escape's answer, such as "no",
-  is what the click gives). `closes_on_backdrop_click` and the windows' own `_on_backdrop_input`
-  give way to it, or are dropped if nothing else needs them.
-- Must not break: letting a dragged stack go on the dimmed area still drops it (`_drop_outside_panel`)
-  and doesn't close the window. A window drag (189) whose release ends outside the panel doesn't
-  close it. A press that starts inside the panel and ends outside doesn't count as a click outside.
-  Clicks on the HUD's hotbar while a window is open keep working.
-- The close button takes no part in the window drag (pressing it doesn't start one).
-- Tests: the button and the outside click match Escape (closing, going back a page, the dialog's
-  answer); a stack dropped outside still drops; a drag ending outside doesn't close. README, docs/ui.md
-  and design/presentation/menus-and-hud.md. Screenshots of the button on a few windows, both arts.
-
 ## 195. Tidal water can't be walked on (bug)
 
 - [ ] Done
