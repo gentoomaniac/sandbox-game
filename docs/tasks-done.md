@@ -5574,3 +5574,50 @@ tagged releases".
   (`application/config/version`).
 - Check the Linux export starts and plays (music, maps, data) locally.
 - README (how to cut a release), design/tech/build-and-tools.md.
+
+## 185. Seasons change the ground gradually, as overlays: dark green, fallen leaves, frost, snow
+
+- [x] Done
+
+Done: 2026-11-12. The grass keeps one look and mixes evenly from season to season (darker green
+in autumn and winter, a little straw on the dry Geest); fallen leaves, frost and snow lie over it
+per art pixel from a cover ring texture (CoverMap, GroundCover, ground_cover.gdshaderinc), thinner
+under crowns, in the lee and on paths, and thawing by the minute. Trees, bushes, stones, fences,
+dykes and hedges take snow from the top down (object_cover.gdshaderinc, `object_snow_gain` 1.7),
+roofs from the ridge to the eaves. The per-tile looks, the hourly refresh and DUSTING are gone.
+New start options --frost and --melt. Built in the plan's eight steps (docs/plans/185-season-overlays.md).
+Left: the README screenshots landscape, coast, desire-paths and outlines still show the old snow;
+GPU cost of the shaders not measured.
+
+The user, 2026-11-11, with a winter screenshot (blotchy patches of snow, grey and dark ground in
+hard-edged tile shapes all over the meadow): "the current seasonal shift in itself is good but it
+looks chaotic and distracting. we somehow need to do that more gradual, like adding the snow layer
+gradually across all the areas, not as a tileset but as an overlay. For autumn it looks weird that
+patches get yellowish, in winter grey. That's not how grass behaves, but instead it gets dark green
+and in autumn gets leaves on top gradually and in winter frost and/or snow."
+- Today SeasonBlend (game/state/season_blend.gd) gives each tile one of the looks (spring,
+  summer, autumn, bare, frost, snow; SeasonalArt picks the picture file per look, the art
+  generator draws them in tools/art/seasons.py) by a noise threshold that moves through the
+  season, and SnowCover (game/state/snow_cover.gd) does the same for snow: so the change shows as
+  patches of whole tiles in different looks, with hard edges.
+- New approach, to be planned first (a short plan for the user, with a second opinion, before
+  building; it touches the terrain art, the views and performance):
+  - The grass itself keeps one base look through the year and only shifts its colour gently and
+    evenly (fresher in spring, darker green in autumn and winter), with no yellow or grey patches.
+  - Autumn: fallen leaves come on top as an overlay that builds up gradually over the weeks (a few
+    leaves, then more, thicker under and near deciduous trees), the same everywhere it applies,
+    not tile-shaped.
+  - Winter: frost (a fine white rime, on cold mornings, fading in the day) and snow as overlays
+    that build up and melt gradually and evenly across the area (a light dusting first, then a
+    full cover, thinner in the lee and under trees, melting first in the sun and on paths), not
+    as tiles switching look.
+  - Soft, organic edges where an overlay is thin, never the tile grid; both arts; houses' roofs,
+    trees and objects follow the same cover (snow on roofs builds up the same way).
+  - Performance: the overlay must be cheap (a shader or a coarse cover texture blended per pixel
+    rather than per-tile atlas swaps every hour).
+- Keep what works: the season timing and the weather that drives snow, frost and thaw.
+- Tests and before/after screenshots for each season and in a snowfall and a thaw, both arts.
+- Plan done 2026-11-11 and approved by the user with Sol's changes, for later: see
+  [docs/plans/185-season-overlays.md](docs/plans/185-season-overlays.md) (the plan, Sol's
+  changes and the user's decisions: smooth colour mix, a little straw on the dry grass in autumn,
+  ice later). The queue goes on with 186 first.
