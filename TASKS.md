@@ -380,6 +380,8 @@ etc doesn't look like good at all."
   and some NVIDIA drivers). An integer hash (uint arithmetic, e.g. PCG or a 2D xxhash variant)
   gives the same bits on every GPU. The hash is shared (fog, precipitation, other shaders that
   include it): switching it changes their patterns too, so check them with screenshots.
+  The lines show right from the start of the game (the user, 2026-11-13), so the unbounded drift
+  is not the cause (still bound it).
 - The shadows of task 194 (game/scenes/cloud_shadows.gdshader, numbers in data/lighting.cfg
   [cloud_shadows], fed by WeatherView) work, but the patches show hard lines. Take screenshots
   first (cloudy weather by day, `--weather cloudy`, both arts, standing still and while they drift)
