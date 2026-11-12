@@ -23,7 +23,16 @@ const LEAFY: Array[StringName] = [
 	WorldObjectTypes.KNICK,
 ]
 ## What shelters the ground under it: every tree and the hedge.
-const CROWNED: Array[StringName] = LEAFY + [WorldObjectTypes.SPRUCE, WorldObjectTypes.PINE]
+const CROWNED: Array[StringName] = [
+	WorldObjectTypes.OAK,
+	WorldObjectTypes.BEECH,
+	WorldObjectTypes.BIRCH,
+	WorldObjectTypes.ALDER,
+	WorldObjectTypes.WILLOW,
+	WorldObjectTypes.KNICK,
+	WorldObjectTypes.SPRUCE,
+	WorldObjectTypes.PINE,
+]
 ## Where the wind comes from: a fixed westerly, so the lee of a building is to its east.
 const LEE_DIRECTION := Vector2i.RIGHT
 ## Texels of the view's cover texture hold 8 bits per channel.
@@ -86,11 +95,13 @@ func is_snowed(tile: Vector2i) -> bool:
 	return snow_at(tile) >= 0.5
 
 
-## The channels of a tile: all 0 where nothing lies (water, tidal mud, rooms).
+## The channels of a tile: nothing lies where it catches nothing (water, tidal mud, rooms), and
+## there the frost shelter is complete.
 func channels_at(tile: Vector2i) -> Channels:
 	var channels := Channels.new()
 	var terrain_tile := _world.tile_at(tile)
 	if terrain_tile == null or not _is_covered(terrain_tile.terrain):
+		channels.frost_shelter = 1.0
 		return channels
 	var leafy_crown := _crown_at(tile, LEAFY)
 	var crown := _crown_at(tile, CROWNED)
@@ -148,7 +159,8 @@ func _crown_at(tile: Vector2i, types: Array[StringName]) -> float:
 	return clampf(crown, 0.0, 1.0)
 
 
-## How much of a tile lies in the lee of a building: 1 right behind it, 0 `lee_reach` tiles on.
+## How much of a tile lies in the lee of a building: 1 right behind it, fading out to nothing
+## beyond `lee_reach` tiles.
 func _lee_at(tile: Vector2i) -> float:
 	var reach := int(_rules.value("cover", "lee_reach"))
 	for distance in range(1, reach + 1):

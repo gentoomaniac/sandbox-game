@@ -60,7 +60,7 @@ func test_snow_lies_thinner_under_a_tree_and_in_the_lee_of_a_house() -> void:
 	assert_lt(_cover.snow_at(ORIGIN), _cover.snow_at(OPEN))
 	var house := _world.place_building(BuildingTypes.KATE, Vector2i(14, 14))
 	var footprint := house.tiles()
-	var right_edge := footprint.map(func(tile: Vector2i) -> int: return tile.x).max()
+	var right_edge: int = footprint.map(func(tile: Vector2i) -> int: return tile.x).max()
 	var east_of_house := Vector2i(right_edge + 1, house.origin.y)
 	assert_lt(_cover.snow_at(east_of_house), _cover.snow_at(OPEN))
 	var west_of_house := house.origin - Vector2i(1, 0)
@@ -95,7 +95,7 @@ func test_a_tile_is_snowed_when_most_of_it_is() -> void:
 	assert_false(_cover.is_snowed(OPEN))
 
 
-func test_the_channels_are_whole_eighths_of_a_byte() -> void:
+func test_the_channels_are_whole_8_bit_levels() -> void:
 	_world.add_object(WorldObject.new(WorldObjectTypes.OAK, ORIGIN))
 	var channels := _cover.channels_at(ORIGIN + Vector2i(1, 1))
 	for value in [channels.leaves, channels.snow, channels.melt, channels.frost_shelter]:

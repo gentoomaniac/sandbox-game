@@ -8,7 +8,7 @@ extends RefCounted
 ## TirednessSigns).
 enum Kind { NONE, LEAVES_GREEN, LEAVES_AUTUMN, NEEDLES, SNOW, SPLINTERS, DUST, SWEAT, SWEAT_HEAVY }
 
-## What drops leaves while it has them: the broadleaved trees and the hedge.
+## What drops leaves in autumn: the broadleaved trees and the hedge (see GroundCover).
 const LEAFY: Array[StringName] = GroundCover.LEAFY
 
 
