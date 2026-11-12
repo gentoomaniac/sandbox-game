@@ -86,4 +86,5 @@ paused. No dialogs: a failed timed or quick save is a red line and nothing else.
 
 Decided 2026-11-05. The player's tile coordinates in the top right corner (inside a
 house: the room's, marked "House"), under the energy and health bars (task 188). Off by default; F3 (rebindable, "Show coordinates")
-toggles it. Not saved.
+toggles it. Not saved. Its last line is the frames per second the game draws now (the user,
+2026-11-12), to check the frame rate limit in the Game settings.
