@@ -22,7 +22,6 @@ const REQUIRED_KEYS := {
 		"melt_per_degree_hour",
 		"sun_melt_gain",
 		"counted_from_day",
-		"dusting_band",
 		"full_thaw_at_temperature"
 	],
 	"cover":

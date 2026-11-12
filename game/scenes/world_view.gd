@@ -648,7 +648,7 @@ func _object_source(object: WorldObject) -> int:
 ## The look of an object: of the foliage of its season, which each tree and bush changes to on a
 ## day of its own (see SeasonBlend). The frost and snow lie over it by the shader.
 func _object_look(object: WorldObject) -> SeasonBlend.Look:
-	return _conditions.foliage_season_look(_blend.thresholds(object.pos).x)
+	return _conditions.foliage_season_look(_blend.season_threshold(object.pos))
 
 
 ## What an object is drawn as: its look, with a flag if it is out of its fruit season, or

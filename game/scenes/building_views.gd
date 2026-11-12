@@ -170,7 +170,7 @@ func _show_windows(building: Building) -> void:
 
 ## The look of a house (see SeasonalArt.HOUSE_LOOKS): the season's look of the grass on its tile.
 func _house_look(building: Building) -> SeasonBlend.Look:
-	return _conditions.ground_season_look(_blend.thresholds(building.origin).x)
+	return _conditions.ground_season_look(_blend.season_threshold(building.origin))
 
 
 ## Gives the sprite of a house the snow on its roof, as the ground at the middle of the house has

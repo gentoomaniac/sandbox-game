@@ -11,8 +11,8 @@ const SEASON_STARTS := [[1, L.SPRING], [31, L.SUMMER], [61, L.AUTUMN], [91, L.BA
 var _blend := SeasonBlend.new(SEED)
 
 
-func _threshold_of(i: int) -> Vector2:
-	return _blend.thresholds(Vector2i(i % 64, i / 64))
+func _threshold_of(i: int) -> float:
+	return _blend.season_threshold(Vector2i(i % 64, i / 64))
 
 
 ## The share of the tiles (a grid of them) that have a look on a day, by the season alone.
@@ -20,9 +20,11 @@ func _share(look: SeasonBlend.Look, day: int, is_foliage := false) -> float:
 	var conditions := _blend.conditions(day)
 	var count := 0
 	for i in TILES:
-		var x := _threshold_of(i).x
+		var threshold := _threshold_of(i)
 		var found := (
-			conditions.foliage_season_look(x) if is_foliage else conditions.ground_season_look(x)
+			conditions.foliage_season_look(threshold)
+			if is_foliage
+			else conditions.ground_season_look(threshold)
 		)
 		if found == look:
 			count += 1
@@ -32,21 +34,11 @@ func _share(look: SeasonBlend.Look, day: int, is_foliage := false) -> float:
 func test_the_thresholds_are_stable_and_spread_evenly() -> void:
 	var total := 0.0
 	for i in TILES:
-		var thresholds := _threshold_of(i)
-		assert_eq(thresholds, _threshold_of(i))
-		assert_between(thresholds.x, 0.0, 0.9999)
-		assert_between(thresholds.y, 0.0, 0.9999)
-		total += thresholds.x
+		var threshold := _threshold_of(i)
+		assert_eq(threshold, _threshold_of(i))
+		assert_between(threshold, 0.0, 0.9999)
+		total += threshold
 	assert_almost_eq(total / TILES, 0.5, 0.03)
-
-
-func test_the_two_thresholds_of_a_tile_are_independent() -> void:
-	var equal := 0
-	for i in 500:
-		var thresholds := _threshold_of(i)
-		if absf(thresholds.x - thresholds.y) < 0.01:
-			equal += 1
-	assert_lt(equal, 30)
 
 
 func test_the_looks_follow_the_year() -> void:
@@ -85,7 +77,7 @@ func test_trees_leaf_out_step_by_step_over_the_first_days_of_spring() -> void:
 		var day: int = look_on_day[1]
 		assert_gt(_share(look, day, true), 0.05, "%s on day %d" % [L.keys()[look], day])
 	for i in 300:
-		var threshold := _threshold_of(i).x
+		var threshold := _threshold_of(i)
 		var step := 0
 		for day in [120, 1, 2, 3, 4]:
 			var look := _blend.conditions(day).foliage_season_look(threshold)
@@ -102,7 +94,7 @@ func test_grass_has_no_leaf_out_steps() -> void:
 
 func test_a_tree_in_leaf_does_not_go_back_to_summer_while_autumn_comes() -> void:
 	for i in 300:
-		var threshold := _threshold_of(i).x
+		var threshold := _threshold_of(i)
 		var was_autumn := false
 		for day in range(58, 68):
 			var look := _blend.conditions(day).foliage_season_look(threshold)
