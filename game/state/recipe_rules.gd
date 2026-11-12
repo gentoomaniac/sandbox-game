@@ -28,6 +28,7 @@ func _init(recipes: Dictionary) -> void:
 		_check_result(recipe_id, values)
 		_check_materials(recipe_id, values)
 		_check_station_and_skill(recipe_id, values)
+		_check_bonus(recipe_id, values)
 
 
 ## The rules of the data file, loaded the first time they are asked for.
@@ -104,6 +105,16 @@ func count(recipe_id: StringName) -> int:
 	return _recipes[str(recipe_id)]["count"]
 
 
+## The share of its count a run makes extra for a player with `points` in the recipe's skill:
+## that of the highest `bonus` step they reached, 0 below the first or for a recipe without one.
+func bonus_share(recipe_id: StringName, points: float) -> float:
+	var share := 0.0
+	for step: Array in _recipes[str(recipe_id)].get("bonus", []):
+		if points >= step[0]:
+			share = step[1]
+	return share
+
+
 ## What one crafting takes, item id to count.
 func materials(recipe_id: StringName) -> Dictionary:
 	var materials_by_item := {}
@@ -134,6 +145,33 @@ func _check_materials(recipe_id: String, values: Dictionary) -> void:
 			_problems.append(
 				"[%s] material %s needs a whole number, at least 1" % [recipe_id, item]
 			)
+
+
+## `bonus` is a list of [skill points, share] steps, both rising, the shares above 0.
+func _check_bonus(recipe_id: String, values: Dictionary) -> void:
+	if not values.has("bonus"):
+		return
+	if not values.has("skill"):
+		_problems.append("[%s] a bonus needs a skill" % recipe_id)
+	var steps: Variant = values["bonus"]
+	var problem := (
+		"[%s] bonus must be a list of [skill points, share] steps, both rising" % recipe_id
+	)
+	if not steps is Array or steps.is_empty():
+		_problems.append(problem)
+		return
+	var last := [-INF, 0.0]
+	for step: Variant in steps:
+		var is_step: bool = (
+			step is Array
+			and step.size() == 2
+			and (step[0] is int or step[0] is float)
+			and (step[1] is int or step[1] is float)
+		)
+		if not is_step or step[0] <= last[0] or step[1] <= last[1]:
+			_problems.append(problem)
+			return
+		last = step
 
 
 func _check_station_and_skill(recipe_id: String, values: Dictionary) -> void:
