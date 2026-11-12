@@ -20,6 +20,7 @@ import math
 import random
 
 from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, TILE, blank
+from yard import icon_of
 
 # The sides a line joins, as (bit, direction), in the order of the mask bits.
 SIDES = ((1, (0, -1)), (2, (1, 0)), (4, (0, 1)), (8, (-1, 0)))
@@ -451,3 +452,11 @@ def dyke(mask):
 def dyke_row():
     """The atlas row of the dyke: one picture per connection mask."""
     return [dyke(mask) for mask in MASKS]
+
+
+def icons():
+    """The icons of the items that put a wattle fence or a stone wall down, by item id."""
+    return {
+        "wattle_fence": icon_of(wattle_fence(0b1010)),
+        "stone_wall": icon_of(stone_wall(0b1010)),
+    }

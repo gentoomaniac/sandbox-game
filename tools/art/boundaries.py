@@ -20,6 +20,7 @@ ground; the dyke, which is turf like the ground, is not.
 import math
 import random
 
+import items
 from canvas import GAME_OBJECT_BOTTOM, GAME_OBJECT_CELL_HEIGHT, GAME_OBJECT_CELL_WIDTH, GAME_TILE, blank
 
 TILE = GAME_TILE
@@ -552,3 +553,16 @@ def dyke(mask):
 def dyke_row():
     """The atlas row of the dyke: one picture per connection mask."""
     return [dyke(mask) for mask in MASKS]
+
+
+def one_tile(picture):
+    """A line's cell cut to the tile it stands on (the middle third of the cell), for an icon."""
+    return [row[TILE : 2 * TILE] for row in picture]
+
+
+def icons():
+    """The bodies of the icons of the items that put a wattle fence or a stone wall down."""
+    return {
+        "wattle_fence": items.icon_of(one_tile(wattle_fence(0b1010))),
+        "stone_wall": items.icon_of(one_tile(stone_wall(0b1010))),
+    }

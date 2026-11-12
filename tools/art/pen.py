@@ -12,7 +12,7 @@ thatch, open to the front, with straw in it.
 import math
 
 import items
-from boundaries import MASKS, TILE, along_line, draw_line, pixel_hash, ramp_shade, skeleton_distance
+from boundaries import MASKS, TILE, along_line, draw_line, one_tile, pixel_hash, ramp_shade, skeleton_distance
 from canvas import blank, outline_edge, rect
 
 # Posts every POST_SPACING px along the line, POST_WIDTH thick; three rails, each a run of heights
@@ -203,15 +203,10 @@ def pig_shelter():
     return outline_edge(picture, "soil_dark", keep_bottom=True)
 
 
-def _one_tile(picture):
-    """A line's cell cut to the tile it stands on (the middle third of the cell), for an icon."""
-    return [row[TILE : 2 * TILE] for row in picture]
-
-
 def icons():
     """The bodies of the icons of the pen's items, by item id: their pictures."""
     return {
-        "pen_fence": items.icon_of(_one_tile(pen_fence(0b1010))),
-        "pen_gate": items.icon_of(_one_tile(pen_gate(0b1010))),
+        "pen_fence": items.icon_of(one_tile(pen_fence(0b1010))),
+        "pen_gate": items.icon_of(one_tile(pen_gate(0b1010))),
         "pig_shelter": items.icon_of(pig_shelter()),
     }
