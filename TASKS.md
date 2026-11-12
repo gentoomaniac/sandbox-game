@@ -305,22 +305,6 @@ and start spinning left right for a long time."
   target; facing changes at most a few times in that span; the same for a small animal and for a
   following dog.
 
-## 210. Console: a cheat to stay up late without passing out
-
-- [ ] Done
-
-The user, 2026-11-11: "Add a command to bypass the up too late penalty"
-- Today, awake at LATE_NIGHT_MINUTE (01:00) the player is `is_up_too_late` and passes out
-  (GameState `pass_awake_time`, `pass_out`, the "zzz..." warnings at 00:00 and 00:30 from
-  data/energy.cfg `late_first_minute`/`late_second_minute`), waking in the home bed with the
-  day's debuff.
-- A new toggle in CheatFlags and the console, next to `god`, `nodrain`, `noweight`, `nocost`
-  (name it `nolate` or similar, matching them): while on, staying up past 01:00 sets no
-  `is_up_too_late`, no late warnings show and nobody passes out from the hour. Passing out from
-  no energy stays as it is (that is `nodrain`'s or `god`'s business). Saved or not like the other
-  cheat toggles; shown in `help` and the README cheat row.
-- Tests: with it on, the clock passes 01:00 awake with no pass-out and no warning; off, as today.
-
 ## 211. Sleeping animals show a "zzz" now and then
 
 - [ ] Done
