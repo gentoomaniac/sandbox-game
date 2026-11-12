@@ -108,9 +108,9 @@ func _flee(delta: float) -> void:
 	_flee_hop()
 
 
-## Hops one zigzag step away from the player (or out of the view, if dismissed).
+## Hops one zigzag step away from the player or villager (or out of the view, if dismissed).
 func _flee_hop() -> void:
-	var away := _away_from_view_centre() if _is_dismissed else _away_from_player()
+	var away := _away_from_view_centre() if _is_dismissed else _away_from_threat()
 	_flee_side = -_flee_side
 	if _try_hop_around(
 		away.rotated(ZIGZAG * _flee_side),
@@ -130,4 +130,4 @@ func _is_safe() -> bool:
 	if _is_dismissed:
 		return _is_out_of_view()
 	var flee_tiles: float = wildlife.rules.flee_tiles(kind)
-	return _player_distance_tiles() > flee_tiles + SAFE_EXTRA_TILES
+	return _threat_distance_tiles() > flee_tiles + SAFE_EXTRA_TILES

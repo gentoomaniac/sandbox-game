@@ -56,7 +56,7 @@ func dismiss() -> void:
 
 func _update(delta: float) -> void:
 	if _state != FLY and _reaction() == WildlifeRules.Reaction.FLEE:
-		_take_off(_away_from_player())
+		_take_off(_away_from_threat())
 	elif _state in [STAND, WALK, PECK] and wildlife.is_water(position):
 		# The tide came in under it.
 		_swim()

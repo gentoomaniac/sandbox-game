@@ -86,7 +86,7 @@ func _start_fleeing() -> void:
 	if not _is_dismissed:
 		trees = wildlife.trees_near(position, FLEE_REACH_TILES)
 	if trees.is_empty():
-		var away := _away_from_view_centre() if _is_dismissed else _away_from_player()
+		var away := _away_from_view_centre() if _is_dismissed else _away_from_threat()
 		_target = position + away * RUN_OFF_DISTANCE
 	else:
 		_target = _tree_behind(trees[0])

@@ -21,7 +21,7 @@ extends Node
 ##
 ## Debug: `spawn_in_view` puts animals in view (the `--wildlife` flag and the `spawn` console
 ## command); those are never sent away for the weather or the hour, and `is_player_ignored`
-## makes every animal take no notice of the player (`--wildlife-calm`).
+## makes every animal take no notice of the player or the villagers (`--wildlife-calm`).
 
 ## An animal came into view: a wild one (see `_add`) or a farm animal (`_show_farm_animal_if_near`).
 signal animal_added(animal: Animal)

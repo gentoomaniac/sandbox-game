@@ -39,7 +39,7 @@ func dismiss() -> void:
 
 func _update(delta: float) -> void:
 	if _state != FLY and _reaction() == WildlifeRules.Reaction.FLEE:
-		_take_off(_away_from_player())
+		_take_off(_away_from_threat())
 	match _state:
 		IDLE, PECK:
 			if _state_time >= _state_seconds:

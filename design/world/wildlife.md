@@ -119,4 +119,10 @@ atmosphere only: no player impact, not hunted, not saved.
   by tile (`World.building_at`) in a square of `building_tiles`; there is no spatial lookup of
   villagers, so the view copies their feet into the short list `villager_feet` each tick and frame
   and the check scans it. The numbers are in data/wildlife.cfg.
+- **Villagers scare animals like the player (task 201):** a villager within an animal's
+  `alert_tiles` or `flee_tiles` makes it look up, flee or turn away as the player does; the nearest
+  of the player and the villagers counts (`Animal._nearest_threat`, which scans `villager_feet`).
+  The mice ignore villagers (`ignores_villagers`) and are not driven off by them, though they still
+  dash off from the player. `--wildlife-calm` makes the animals ignore the player and the
+  villagers.
 - No animals inside buildings.

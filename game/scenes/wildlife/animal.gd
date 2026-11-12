@@ -142,20 +142,35 @@ func _show_frame() -> void:
 	_sprite.position.y = -(_lift + _arc)
 
 
-## How far the player is, in tiles; far away if the animals are told to take no notice.
-func _player_distance_tiles() -> float:
+## The feet of the one it keeps away from that is nearest: the player, or a villager unless its kind
+## ignores them. `Vector2.INF` when the animals are told to take no notice.
+func _nearest_threat() -> Vector2:
 	if wildlife.is_player_ignored:
-		return INF
-	return position.distance_to(wildlife.world_view.player_feet) / WildlifeRules.TILE_SIZE
+		return Vector2.INF
+	var nearest := wildlife.world_view.player_feet
+	if wildlife.rules.ignores_villagers(kind):
+		return nearest
+	var nearest_distance := position.distance_squared_to(nearest)
+	for feet in wildlife.villager_feet:
+		var distance := position.distance_squared_to(feet)
+		if distance < nearest_distance:
+			nearest = feet
+			nearest_distance = distance
+	return nearest
+
+
+## How far the nearest threat is, in tiles.
+func _threat_distance_tiles() -> float:
+	return position.distance_to(_nearest_threat()) / WildlifeRules.TILE_SIZE
 
 
 func _reaction() -> WildlifeRules.Reaction:
-	return wildlife.rules.reaction(kind, _player_distance_tiles())
+	return wildlife.rules.reaction(kind, _threat_distance_tiles())
 
 
-## The direction away from the player: any direction if the animal is on top of them.
-func _away_from_player() -> Vector2:
-	var away := position - wildlife.world_view.player_feet
+## The direction away from the nearest threat: any direction if the animal is on top of it.
+func _away_from_threat() -> Vector2:
+	var away := position - _nearest_threat()
 	if away.length() < 1.0:
 		return Vector2.from_angle(wildlife.rng.randf() * TAU)
 	return away.normalized()

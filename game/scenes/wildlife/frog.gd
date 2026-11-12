@@ -89,10 +89,10 @@ func _flee_hop() -> void:
 		is_done = true
 		return
 	var safe_tiles: float = wildlife.rules.flee_tiles(kind) + SAFE_EXTRA_TILES
-	if not _is_dismissed and _player_distance_tiles() > safe_tiles:
+	if not _is_dismissed and _threat_distance_tiles() > safe_tiles:
 		_sit()
 		return
-	var away := _away_from_view_centre() if _is_dismissed else _away_from_player()
+	var away := _away_from_view_centre() if _is_dismissed else _away_from_threat()
 	if _try_hop_around(away, FLEE_HOP_LENGTH, FLEE_HOP_SECONDS, FLEE_HOP_HEIGHT):
 		_play(HOP, 2.0 / FLEE_HOP_SECONDS)
 	elif _is_dismissed:

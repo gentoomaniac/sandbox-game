@@ -165,7 +165,7 @@ func dismiss() -> void:
 func _update(delta: float) -> void:
 	var reaction := _reaction()
 	if _state != FLY and reaction == WildlifeRules.Reaction.FLEE:
-		_take_off(_away_from_player())
+		_take_off(_away_from_threat())
 	elif _state != FLY and wildlife.is_water(position):
 		# The tide came in over the mud they stood on.
 		_take_off(_away_from_view_centre())
@@ -173,9 +173,9 @@ func _update(delta: float) -> void:
 		_enter(ALERT)
 		for bird in _birds:
 			_start(bird, &"stand", INF)
-			bird.sprite.flip_h = wildlife.world_view.player_feet.x < position.x + bird.spot.x
+			bird.sprite.flip_h = _nearest_threat().x < position.x + bird.spot.x
 	elif _state == ALERT:
-		if _player_distance_tiles() > wildlife.rules.alert_tiles(kind) + CALM_EXTRA_TILES:
+		if _threat_distance_tiles() > wildlife.rules.alert_tiles(kind) + CALM_EXTRA_TILES:
 			_enter(FEED)
 			for bird in _birds:
 				bird.seconds_left = wildlife.rng.randf_range(0.0, 2.0)

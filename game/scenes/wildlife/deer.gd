@@ -45,7 +45,7 @@ func _update(delta: float) -> void:
 	elif _state in [GRAZE, LOOK, WALK] and reaction == WildlifeRules.Reaction.ALERT:
 		_enter(ALERT)
 		_play(LOOK, 1.5)
-		_face(wildlife.world_view.player_feet.x - position.x)
+		_face(_nearest_threat().x - position.x)
 	match _state:
 		GRAZE, LOOK:
 			if _state_time >= _state_seconds:
@@ -55,7 +55,7 @@ func _update(delta: float) -> void:
 				_look()
 		ALERT:
 			var alert_tiles: float = wildlife.rules.alert_tiles(kind)
-			if _player_distance_tiles() > alert_tiles + CALM_EXTRA_TILES:
+			if _threat_distance_tiles() > alert_tiles + CALM_EXTRA_TILES:
 				_graze()
 		BOUND:
 			_bound_on(delta)
@@ -103,7 +103,7 @@ func _bound_on(delta: float) -> void:
 
 
 func _bound() -> void:
-	var away := _away_from_view_centre() if _is_dismissed else _away_from_player()
+	var away := _away_from_view_centre() if _is_dismissed else _away_from_threat()
 	if _try_hop_around(away, BOUND_LENGTH, BOUND_SECONDS, BOUND_HEIGHT, 0.5):
 		_play(BOUND, 3.0 / BOUND_SECONDS)
 	else:

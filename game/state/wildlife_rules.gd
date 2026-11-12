@@ -98,8 +98,9 @@ const KIND_KEYS := [
 ##   min_temperature      it hides below this many degrees Celsius (default: never)
 ##   building_tiles       it doesn't appear or settle within this many tiles of a building (a whole
 ##                        number; default 0: it may, as the mice do, who live by the houses)
-##   ignores_villagers    true: it appears and settles near villagers, as the mice do (default: it
-##                        doesn't appear within `flee_tiles` of one)
+##   ignores_villagers    true: villagers don't scare it and it appears and settles near them, as
+##                        the mice do (default: a villager within `alert_tiles` or `flee_tiles`
+##                        scares it as the player does, and it doesn't appear within `flee_tiles`)
 ##   fade_days            its season factor fades over this many days either side of a season
 ##                        boundary instead of stepping (default: it steps)
 ##   migration_days       it flies south in autumn and north in spring, within
@@ -266,7 +267,7 @@ func building_tiles(kind: StringName) -> int:
 	return _optional(kind, "building_tiles", 0)
 
 
-## Whether a kind takes no notice of villagers: the mice.
+## Whether a kind takes no notice of villagers: the mice, who live by the houses.
 func ignores_villagers(kind: StringName) -> bool:
 	return _optional(kind, "ignores_villagers", false)
 

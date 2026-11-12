@@ -67,7 +67,7 @@ func _update(delta: float) -> void:
 			flee_from(prey.scare_point * WildlifeRules.TILE_SIZE)
 	prey.fate = Prey.Fate.NONE
 	if _state != FLEE and _reaction() == WildlifeRules.Reaction.FLEE:
-		_dash(_away_from_player())
+		_dash(_away_from_threat())
 	match _state:
 		SIT:
 			if _state_time >= _state_seconds:

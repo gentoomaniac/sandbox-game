@@ -143,7 +143,7 @@ extends RefCounted
 ##                            roof_stork: on the roof of the nearest house, see --house; geese,
 ##                            flying_geese: one flock of them; mouse, frog; on the coast
 ##                            oystercatcher, dunlin: one flock of them; gull, tern)
-##   --wildlife-calm          the animals take no notice of the player
+##   --wildlife-calm          the animals take no notice of the player or villagers
 ##   --livestock=<species>[,<species>]  put a few farm animals of those species near the player
 ##                            (cow, sheep, chicken, rabbit, dog, cat, horse; pony: horses of
 ##                            that look)
