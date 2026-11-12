@@ -4,7 +4,7 @@ extends WildlifeCase
 
 const MIDSUMMER := 45
 const KIND := WildlifeRules.ROOF_STORK
-const TRIES := 300
+const TRIES := 3000
 const ROOM := 1000
 
 var _gap: int

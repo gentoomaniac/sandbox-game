@@ -117,6 +117,14 @@ atmosphere only: no player impact, not hunted, not saved.
   another before then, so a stork that flies off is not replaced at once and sleeping does not top
   them up again. Animals made by hand and the pairs of the nests start no gap, and settling
   itself, which clears the view, is no leaving.
+- **Storks are rare (task 202):** at most one hunting stork and one roof stork near the player
+  (the pairs of the nests are not counted), a hunting stork appearing at about 0.008 a second at
+  full activity (about once in two game hours with none about, a day in a few spent walking past
+  it) and a roof stork at 0.003 (now and then, once or twice a day when none is about), and after one has left the
+  `return_gap_minutes` above (2 and 4 game hours). Before, with cap 2 and chances of 0.03 and
+  0.02, a player walking by the meadows scared a stork off and saw another within the hour,
+  0.3 to 1 new storks an hour (see tools/bench/storks.gd); now it is 0 to 0.12 an hour. The nest
+  pairs of task 152 are as before. Tests: `test_stork_rate.gd`.
 - **Distance from buildings and villagers (task 201):** most kinds don't appear or settle within
   `building_tiles` of a building (rabbit 3, deer 6, squirrel 2, birds 2, geese 5, stork 4, frog 2,
   waders 4, gull 2) or within their `flee_tiles` of a villager. The mice are the exception: they
