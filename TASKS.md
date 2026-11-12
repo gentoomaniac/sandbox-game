@@ -399,6 +399,23 @@ into an item slot should happen when the bag is open at the same time."
 - Tests for both windows open, the drags both ways and the keys; screenshots for the user; README
   and docs (docs/ui.md, design/presentation/menus-and-hud.md, design/player/inventory-and-character.md).
 
+## 216. Frame rate limit: a settings slider, 60 fps by default
+
+- [ ] Done
+
+The user, 2026-11-12: "Running the game makes my CPU hurt, I think we need a framerate limit"
+and "add a slider in the settings to select it. Set the default to 60, down to 10, max what it
+is now." Measured: with only vsync the game drew 240 fps on the user's 240 Hz laptop; a 60 cap
+held 60 fps steady.
+- A frame rate setting in GameSettings (saved in the settings file, default 60) applied to
+  `Engine.max_fps` at start and when it changes.
+- A slider on the game settings page of the pause menu, from 10 up in steps of 10; its top stop
+  is "no limit": the screen's refresh rate (today's behaviour, vsync only, `max_fps = 0`),
+  labelled with that rate.
+- Game speed does not depend on the frame rate.
+- Tests for the setting (default, range, save and load); a screenshot of the slider; README and
+  docs (design/tech/build-and-tools.md, design/presentation/menus-and-hud.md).
+
 ## Later (not part of the prototype)
 
 - Ice on rivers and ponds in winter (an overlay on water when it is cold enough; frozen water
