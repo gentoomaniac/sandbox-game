@@ -7,6 +7,12 @@
   `.tmx` file stays the source of truth; there is no manual export step. (Decided
   2026-11-05: the YATI importer addon does not run on the Gentoo Godot build and was
   removed.)
+- The frame rate is capped by a setting (Settings → Game, `Engine.max_fps`), 60 by default, 10 to
+  240 or no limit (task 216, the user 2026-11-12): with only vsync the game drew 240 fps on a 240 Hz
+  laptop and the CPU ran hot. Game logic runs on delta, so the speed does not depend on it. `--max-fps=<n>` overrides it for
+  one run, never saved; `make test` (through the environment variable `SANDBOX_GAME_MAX_FPS`, as GUT refuses unknown
+  flags) and `make bench` pass 0, as `Engine.max_fps` is global and
+  the cap would pace a whole test process and floor the bench's frame times.
 - Build, run, test and other multi-step tasks are wrapped in **make** targets, so each one
   is a single command.
 - **`make setup`** sets up the stack:

@@ -1,7 +1,8 @@
 class_name GameSettings
 extends RefCounted
 ## The player's settings: key bindings, display mode, art set, UI scale, energy drain, day length
-## variation, the autosave interval, audio and the language model villagers talk through.
+## variation, the autosave interval, the frame rate limit, audio and the language model
+## villagers talk through.
 ## Bindings live in Godot's InputMap (that is what the game reads); this class edits them,
 ## remembers the project's defaults and keeps them in a ConfigFile, written on every change. It
 ## has no UI code.
@@ -10,7 +11,8 @@ extends RefCounted
 ## file doesn't mention, keeps its default binding. The display mode is only stored once the
 ## player has chosen it; until then the window stays as the command line or project left it.
 ## The art set, the UI scale, the energy drain, the day length variation, the autosave interval,
-## the audio settings and the language model are stored when they differ from their defaults.
+## the frame rate limit, the audio settings and the language model are stored when they differ
+## from their defaults.
 ## The model's key is kept in the file as plain text (Settings says so); it is never saved with
 ## the game or logged.
 
@@ -23,6 +25,9 @@ signal ui_scale_changed(scale: float)
 ## Emitted when the player changes the day length variation; loading it does not, so whoever
 ## uses it reads `day_length_variation_factor()` once at start and then follows this.
 signal day_length_changed
+## Emitted when the player changes the frame rate limit; loading it does not, so whoever applies
+## it does it once after `load_file()` and then on this.
+signal max_fps_changed(fps: int)
 
 ## Emitted when the player changes a volume or "Sound in background"; loading does not, so
 ## whoever applies the audio settings does it once after `load_file()` and then on this.
@@ -60,6 +65,7 @@ const UI_SCALE_KEY := "ui_scale"
 const ENERGY_DRAIN_KEY := "energy_drain"
 const DAY_LENGTH_KEY := "day_length_variation"
 const AUTOSAVE_KEY := "autosave_minutes"
+const MAX_FPS_KEY := "max_fps"
 const AUDIO_SECTION := "audio"
 const SOUND_IN_BACKGROUND_KEY := "in_background"
 
@@ -84,6 +90,14 @@ const MIN_AUTOSAVE_MINUTES := 10
 const MAX_AUTOSAVE_MINUTES := 60
 const AUTOSAVE_STEP := 10
 const DEFAULT_AUTOSAVE_MINUTES := 10
+
+## The frame rate limit in frames per second, in steps. 0 means no limit: vsync alone, which drew
+## 240 fps on a 240 Hz screen and ran the CPU hot for nothing.
+const NO_FPS_LIMIT := 0
+const MIN_MAX_FPS := 10
+const MAX_MAX_FPS := 240
+const MAX_FPS_STEP := 10
+const DEFAULT_MAX_FPS := 60
 
 ## The volume sliders (also the keys in the file): percent, in steps.
 const VOLUME_CHANNELS: Array[StringName] = [&"master", &"effects", &"ambience", &"music"]
@@ -210,6 +224,7 @@ var ui_scale := DEFAULT_UI_SCALE
 var energy_drain := DEFAULT_ENERGY_DRAIN
 var day_length_variation := DEFAULT_DAY_LENGTH_VARIATION
 var autosave_minutes := DEFAULT_AUTOSAVE_MINUTES
+var max_fps := DEFAULT_MAX_FPS
 var sound_in_background := DEFAULT_SOUND_IN_BACKGROUND
 ## The profiles of the language model villagers talk through, and the one in use.
 var profiles := LanguageModelProfiles.new()
@@ -408,6 +423,14 @@ func set_autosave_minutes(minutes: int) -> void:
 	_save()
 
 
+## The frame rate limit, `NO_FPS_LIMIT` for none; a limit stays on the slider's steps and in
+## range.
+func set_max_fps(fps: int) -> void:
+	max_fps = _clamped_max_fps(fps)
+	_save()
+	max_fps_changed.emit(max_fps)
+
+
 ## A volume in percent, 0 to 100.
 func volume_percent(channel: StringName) -> int:
 	return _volumes[channel]
@@ -486,6 +509,12 @@ func _load_game_section(file: ConfigFile) -> void:
 			autosave_minutes = _clamped_autosave(value)
 		else:
 			push_warning("Ignoring autosave interval in %s: not a whole number 10 to 60" % _path)
+	if file.has_section_key(GAME_SECTION, MAX_FPS_KEY):
+		var value: Variant = file.get_value(GAME_SECTION, MAX_FPS_KEY)
+		if value is int and value >= 0:
+			max_fps = _clamped_max_fps(value)
+		else:
+			push_warning("Ignoring frame rate limit in %s: not a whole number, 0 or more" % _path)
 
 
 func _load_audio_section(file: ConfigFile) -> void:
@@ -593,6 +622,8 @@ func _save() -> void:
 		file.set_value(GAME_SECTION, DAY_LENGTH_KEY, day_length_variation)
 	if autosave_minutes != DEFAULT_AUTOSAVE_MINUTES:
 		file.set_value(GAME_SECTION, AUTOSAVE_KEY, autosave_minutes)
+	if max_fps != DEFAULT_MAX_FPS:
+		file.set_value(GAME_SECTION, MAX_FPS_KEY, max_fps)
 	for channel in VOLUME_CHANNELS:
 		if _volumes[channel] != DEFAULT_VOLUME:
 			file.set_value(AUDIO_SECTION, channel, _volumes[channel])
@@ -640,6 +671,12 @@ static func _clamped_autosave(minutes: int) -> int:
 		MIN_AUTOSAVE_MINUTES,
 		MAX_AUTOSAVE_MINUTES
 	)
+
+
+static func _clamped_max_fps(fps: int) -> int:
+	if fps <= NO_FPS_LIMIT:
+		return NO_FPS_LIMIT
+	return clampi(roundi(float(fps) / MAX_FPS_STEP) * MAX_FPS_STEP, MIN_MAX_FPS, MAX_MAX_FPS)
 
 
 static func _clamped_volume(percent: int) -> int:

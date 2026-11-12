@@ -171,6 +171,8 @@ func _load_game() -> void:
 	_settings = _load_settings()
 	add_child(_choice_dialog)
 	_apply_ui_scale(_settings.ui_scale)
+	Engine.max_fps = _options.max_fps_or(_settings.max_fps)
+	_settings.max_fps_changed.connect(Engine.set_max_fps)
 	# Before add_child: AudioService._ready reads is_logging.
 	_audio.is_muted = _options.mute
 	_audio.is_logging = _options.sound_log

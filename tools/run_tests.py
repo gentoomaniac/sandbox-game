@@ -71,7 +71,10 @@ def start_shard(i, shard):
         "-gtest=" + ",".join(f"res://{f}" for f in shard),
         "-gexit", f"-gjunit_xml_file={BUILD / f'test-{i}.xml'}",
     ]  # fmt: skip
-    env = {**os.environ, "XDG_DATA_HOME": str(user_data)}
+    # The tests that start Main would run at the 60 fps the settings cap to: Engine.max_fps is
+    # global, so one such test paces the whole process. GUT refuses a `--max-fps=0` on its command
+    # line, so StartupOptions also reads the environment.
+    env = {**os.environ, "XDG_DATA_HOME": str(user_data), "SANDBOX_GAME_MAX_FPS": "0"}
     with (BUILD / f"test-{i}.log").open("w") as log:
         return subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT, env=env, cwd=ROOT)
 

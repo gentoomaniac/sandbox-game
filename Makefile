@@ -265,6 +265,7 @@ test-changed: $(VENV_READY)
 # the game saves over the file it loaded. user:// points into build/, so the real save and
 # settings are never touched.
 BENCH_DIR := $(CURDIR)/build/bench
+# The bench runs uncapped: the default 60 fps cap would floor its frame times.
 BENCH_GODOT := XDG_DATA_HOME=$(CURDIR)/build/user-data $(GODOT) --headless --path .
 
 $(BENCH_DIR)/fixture.save: tools/bench/make_fixture.gd
@@ -276,7 +277,7 @@ bench: assets
 	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT)
 	$(MAKE) $(BENCH_DIR)/fixture.save
 	cp $(BENCH_DIR)/fixture.save $(BENCH_DIR)/run.save
-	$(BENCH_GODOT) -s tools/bench/frames.gd -- --save-path=$(BENCH_DIR)/run.save --settings-path=$(BENCH_DIR)/settings.cfg --mute
+	$(BENCH_GODOT) -s tools/bench/frames.gd -- --save-path=$(BENCH_DIR)/run.save --settings-path=$(BENCH_DIR)/settings.cfg --mute --max-fps=0
 	$(BENCH_GODOT) -s tools/bench/pickup.gd -- $(BENCH_DIR)/fixture.save
 	$(BENCH_GODOT) -s tools/bench/save.gd -- $(BENCH_DIR)/fixture.save
 
@@ -287,7 +288,7 @@ bench-music: assets
 	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT)
 	$(MAKE) $(BENCH_DIR)/fixture.save
 	cp $(BENCH_DIR)/fixture.save $(BENCH_DIR)/run.save
-	$(BENCH_GODOT) -s tools/bench/music.gd -- --save-path=$(BENCH_DIR)/run.save --settings-path=$(BENCH_DIR)/settings.cfg --mute
+	$(BENCH_GODOT) -s tools/bench/music.gd -- --save-path=$(BENCH_DIR)/run.save --settings-path=$(BENCH_DIR)/settings.cfg --mute --max-fps=0
 
 # The game's prototype music renderer (task 169) against libmodplug, an independent player: the
 # pieces rendered headless into build/music/, then compared by tools/music/check.py.

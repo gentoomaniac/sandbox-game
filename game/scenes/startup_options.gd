@@ -12,6 +12,12 @@ extends RefCounted
 ##   --save-path=<file>       use another save file (keeps tests and screenshots off yours)
 ##   --settings-path=<file>   use another settings file
 ##   --mute                   silence all sound (events still play and log)
+##   --max-fps=<n>            hold the game to n frames per second for this run, 0 for no limit,
+##                            instead of the Game setting (never saved). `make test` and
+##                            `make bench` pass 0, as Engine.max_fps is global: the setting's 60
+##                            would pace a whole test process and floor the bench's frame times.
+##                            GUT refuses unknown flags, so the test runner sets the environment
+##                            variable SANDBOX_GAME_MAX_FPS instead.
 ##   --background             make the window unfocusable, so it takes no focus but no keyboard
 ##                            input either: not for playing. `make screenshot` passes both.
 ##   --with-working-window-title  name the window "Sandbox Game (test)", as every window the
@@ -32,7 +38,8 @@ extends RefCounted
 ##                            hotbar_<0..7>; inventory_<8..27> (with --inventory),
 ##                            equipment_<slot> (with --character); recipe_<id> (with
 ##                            --crafting); inventory_<8..27> and chest_<n> (with --storage);
-##                            setting_ui_scale and setting_day_length (with --menu=game);
+##                            setting_ui_scale, setting_day_length, setting_autosave and
+##                            setting_max_fps (with --menu=game);
 ##                            setting_master_volume,
 ##                            setting_effects_volume, setting_ambience_volume,
 ##                            setting_music_volume and setting_sound_in_background
@@ -160,6 +167,8 @@ extends RefCounted
 ## The title of the windows the make targets open for a check. The user's window rules (KWin,
 ## a tiling script) match this exact text: do not change it.
 const WORKING_WINDOW_TITLE := "Sandbox Game (test)"
+## An option that was not given.
+const NO_OVERRIDE := -1
 ## The value of a tile flag that was not given.
 const NO_TILE := Vector2i(1 << 30, 1 << 30)
 
@@ -168,6 +177,8 @@ var new_game := false
 var save_path := SaveFile.DEFAULT_PATH
 var settings_path := GameSettings.DEFAULT_PATH
 var mute := false
+## Frames per second this run is held to instead of the setting; NO_OVERRIDE if not given.
+var max_fps := NO_OVERRIDE
 var background := false
 var with_working_window_title := false
 var sound_log := false
@@ -269,7 +280,11 @@ var switch_art := false
 
 
 static func from_command_line() -> StartupOptions:
-	return StartupOptions.new(OS.get_cmdline_user_args())
+	var args := OS.get_cmdline_user_args()
+	var max_fps_from_environment := OS.get_environment("SANDBOX_GAME_MAX_FPS")
+	if max_fps_from_environment != "":
+		args.append("--max-fps=" + max_fps_from_environment)
+	return StartupOptions.new(args)
 
 
 ## The options that only show the game differently, for the game that F8 loads: the paths, sound,
@@ -280,6 +295,7 @@ func kept_for_quick_load() -> StartupOptions:
 		"save_path",
 		"settings_path",
 		"mute",
+		"max_fps",
 		"background",
 		"sound_log",
 		"zoom",
@@ -289,6 +305,11 @@ func kept_for_quick_load() -> StartupOptions:
 	]:
 		kept.set(name, get(name))
 	return kept
+
+
+## The frame rate limit to apply: the option's if given, else the setting's.
+func max_fps_or(setting: int) -> int:
+	return setting if max_fps == NO_OVERRIDE else max_fps
 
 
 func _init(args := PackedStringArray()) -> void:
@@ -303,6 +324,8 @@ func _init(args := PackedStringArray()) -> void:
 				settings_path = _value(arg)
 			"--mute":
 				mute = true
+			"--max-fps":
+				max_fps = maxi(int(_value(arg)), 0)
 			"--background":
 				background = true
 			"--with-working-window-title":

@@ -30,6 +30,13 @@ const AUTOSAVE_TIP := (
 	"How many minutes of play pass between two automatic saves. The game also saves when you"
 	+ " sleep, pass out and quit; F9 saves at once."
 )
+const MAX_FPS_TIP := (
+	"The most frames the game draws per second. A lower limit keeps the processor cooler and"
+	+ " the fan quieter; the game runs at the same speed. The top stop has no limit: the game"
+	+ " draws as often as the screen shows."
+)
+## The slider's stop after the highest limit, where the limit is off.
+const NO_LIMIT_STOP := GameSettings.MAX_MAX_FPS + GameSettings.MAX_FPS_STEP
 
 var _settings: GameSettings
 var _pages := {}
@@ -49,6 +56,8 @@ var _day_length_label: Label
 var _day_length_slider: HSlider
 var _autosave_label: Label
 var _autosave_slider: HSlider
+var _max_fps_label: Label
+var _max_fps_slider: HSlider
 
 
 func _init(settings: GameSettings) -> void:
@@ -78,7 +87,7 @@ func _init(settings: GameSettings) -> void:
 		settings_page,
 		"Game",
 		_go_to.bind(Page.GAME),
-		"UI scale, energy drain, day length and autosave."
+		"UI scale, energy drain, day length, autosave and frame rate."
 	)
 	_add_button(
 		settings_page, "Audio", _go_to.bind(Page.AUDIO), "Volumes and sound in the background."
@@ -140,6 +149,18 @@ func _init(settings: GameSettings) -> void:
 	_autosave_slider.value_changed.connect(_on_autosave_changed)
 	TooltipView.set_text(_autosave_slider, AUTOSAVE_TIP, "setting_autosave")
 	game.add_child(_autosave_slider)
+	_max_fps_label = Label.new()
+	_max_fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	TooltipView.set_text(_max_fps_label, MAX_FPS_TIP)
+	_max_fps_label.mouse_filter = Control.MOUSE_FILTER_PASS
+	game.add_child(_max_fps_label)
+	_max_fps_slider = HSlider.new()
+	_max_fps_slider.min_value = GameSettings.MIN_MAX_FPS
+	_max_fps_slider.max_value = NO_LIMIT_STOP
+	_max_fps_slider.step = GameSettings.MAX_FPS_STEP
+	_max_fps_slider.value_changed.connect(_on_max_fps_changed)
+	TooltipView.set_text(_max_fps_slider, MAX_FPS_TIP, "setting_max_fps")
+	game.add_child(_max_fps_slider)
 	_add_button(game, "Back", _back)
 
 	var controls := ControlsPage.new(_settings)
@@ -260,6 +281,11 @@ func _show_game_settings() -> void:
 	_show_day_length(_settings.day_length_variation)
 	_autosave_slider.set_value_no_signal(_settings.autosave_minutes)
 	_show_autosave(_settings.autosave_minutes)
+	var limit := _settings.max_fps
+	_max_fps_slider.set_value_no_signal(
+		NO_LIMIT_STOP if limit == GameSettings.NO_FPS_LIMIT else limit
+	)
+	_show_max_fps(_max_fps_slider.value)
 
 
 func _show_ui_scale(value: float) -> void:
@@ -295,6 +321,19 @@ func _on_day_length_changed(percent: float) -> void:
 
 func _show_autosave(minutes: float) -> void:
 	_autosave_label.text = "Autosave every %d min" % roundi(minutes)
+
+
+func _show_max_fps(fps: float) -> void:
+	if roundi(fps) == NO_LIMIT_STOP:
+		_max_fps_label.text = "Frame rate: no limit"
+	else:
+		_max_fps_label.text = "Frame rate limit %d" % roundi(fps)
+
+
+func _on_max_fps_changed(fps: float) -> void:
+	_show_max_fps(fps)
+	var is_top := roundi(fps) == NO_LIMIT_STOP
+	_settings.set_max_fps(GameSettings.NO_FPS_LIMIT if is_top else roundi(fps))
 
 
 func _on_autosave_changed(minutes: float) -> void:

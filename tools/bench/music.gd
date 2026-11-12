@@ -10,7 +10,7 @@ extends SceneTree
 ## crossfades to it on the next beat (muted), and the crossfade's own work in a frame.
 ## `make bench-music` runs it on a copy of the bench save:
 ## godot --headless --path . -s tools/bench/music.gd --
-##     --save-path=<save> --settings-path=<settings> --mute
+##     --save-path=<save> --settings-path=<settings> --mute --max-fps=0
 
 enum Scenario { STANDING, RENDERING, SAVING, DONE }
 

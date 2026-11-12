@@ -7,7 +7,7 @@ extends SceneTree
 ## how many frames went over 33 and over 16.7 ms; the frames over 33 ms are listed with their
 ## scenario and number. The first frames after the settle are left out.
 ## `make bench` runs it on a copy of the fixture save.
-## godot --headless --path . -s tools/bench/frames.gd -- --save-path=<save> --settings-path=<s> --mute
+## godot --headless --path . -s tools/bench/frames.gd -- --save-path=<save> --settings-path=<s> --mute --max-fps=0
 
 enum Scenario { STANDING, PASSING_OUT, SLEEPING, WALKING }
 

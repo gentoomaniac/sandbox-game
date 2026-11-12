@@ -87,3 +87,17 @@ func test_the_close_button_goes_back_a_page_and_then_closes_the_menu() -> void:
 
 func test_the_menu_is_fixed_in_place_on_every_page() -> void:
 	assert_false(_menu.is_movable)
+
+
+func test_the_frame_rate_slider_stops_at_no_limit() -> void:
+	var settings := GameSettings.new(SETTINGS_PATH)
+	var menu := PauseMenu.new(settings)
+	add_child_autofree(menu)
+	menu._on_max_fps_changed(PauseMenu.NO_LIMIT_STOP)
+	assert_eq(settings.max_fps, GameSettings.NO_FPS_LIMIT)
+	menu._on_max_fps_changed(90)
+	assert_eq(settings.max_fps, 90)
+	settings.set_max_fps(GameSettings.NO_FPS_LIMIT)
+	menu._show_game_settings()
+	assert_eq(menu._max_fps_slider.value, PauseMenu.NO_LIMIT_STOP)
+	assert_eq(menu._max_fps_label.text, "Frame rate: no limit")

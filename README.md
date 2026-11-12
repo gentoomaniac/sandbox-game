@@ -686,7 +686,8 @@ chest and its contents go into your inventory (or you are told there is no room)
 You can rebind every key, including mouse buttons. You can also switch between fullscreen
 and windowed, scale the UI from 0.5× to 2× without touching the world view, and set the
 energy drain, the day length variation and how often the game saves by itself (every 10 to
-60 minutes of play), and set the language model villagers talk through. Hover over a setting, a
+60 minutes of play), cap the frame rate (10 to 240 in steps of 10, or no limit; it starts at 60, so
+the processor stays cool), and set the language model villagers talk through. Hover over a setting, a
 key or an item in the hotbar, inventory or equipment for a short explanation: an item's kind,
 weight, what food gives back, what seeds grow and where they are planted. The game starts at its widest view,
 1280×720 art pixels (40×22 tiles of 32×32, an art pixel is 1.5 screen pixels on a 1080p
