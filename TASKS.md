@@ -399,25 +399,6 @@ into an item slot should happen when the bag is open at the same time."
 - Tests for both windows open, the drags both ways and the keys; screenshots for the user; README
   and docs (docs/ui.md, design/presentation/menus-and-hud.md, design/player/inventory-and-character.md).
 
-## 218. Release builds: a GitHub workflow exports Windows and Linux binaries on vX.Y.Z tags
-
-- [ ] Done
-
-The user, 2026-11-12: "add a github workflow to create binaries for windows and linux on vX.Y.Z
-tagged releases".
-- `export_presets.cfg` with a Linux (x86_64) and a Windows (x86_64) preset. Its include filter
-  carries every non-resource file the game reads at runtime (`data/*.cfg`, the `.tmx`/`.tsx` maps,
-  `*.mod` music, anything else read with FileAccess); tests/, tools/, addons/ (GUT) and docs stay
-  out.
-- `make export` (today it only says there are no presets) builds both into `build/export/`, zipped
-  per platform; `make export` needs the export templates of the pinned Godot (`.godot-version`).
-- `.github/workflows/release.yml`: on a pushed tag `v*.*.*` (checked to be `vX.Y.Z`), it installs
-  the pinned Godot and its templates, builds the assets, runs `make export`, and publishes a GitHub
-  release for the tag with both zips. The tag's version is stamped into the build
-  (`application/config/version`).
-- Check the Linux export starts and plays (music, maps, data) locally.
-- README (how to cut a release), design/tech/build-and-tools.md.
-
 ## Later (not part of the prototype)
 
 - Ice on rivers and ponds in winter (an overlay on water when it is cold enough; frozen water

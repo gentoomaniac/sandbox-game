@@ -5551,3 +5551,26 @@ held 60 fps steady.
 
 Done: 2026-11-12. The user, after task 216: "Add the current FPS to the F3 overlay". The last line
 of the F3 overlay (CoordinatesHud) is the frames per second the game draws now.
+
+## 218. Release builds: a GitHub workflow exports Windows and Linux binaries on vX.Y.Z tags
+
+- [x] Done
+
+Done: 2026-11-12. export_presets.cfg (Linux, Windows; pck embedded), `make export` (zips in
+build/export/, version stamped, build/.gdignore), .github/workflows/release.yml (vX.Y.Z tags ->
+GitHub release with both zips). Linux export checked locally; Windows and the workflow untried.
+
+The user, 2026-11-12: "add a github workflow to create binaries for windows and linux on vX.Y.Z
+tagged releases".
+- `export_presets.cfg` with a Linux (x86_64) and a Windows (x86_64) preset. Its include filter
+  carries every non-resource file the game reads at runtime (`data/*.cfg`, the `.tmx`/`.tsx` maps,
+  `*.mod` music, anything else read with FileAccess); tests/, tools/, addons/ (GUT) and docs stay
+  out.
+- `make export` (today it only says there are no presets) builds both into `build/export/`, zipped
+  per platform; `make export` needs the export templates of the pinned Godot (`.godot-version`).
+- `.github/workflows/release.yml`: on a pushed tag `v*.*.*` (checked to be `vX.Y.Z`), it installs
+  the pinned Godot and its templates, builds the assets, runs `make export`, and publishes a GitHub
+  release for the tag with both zips. The tag's version is stamped into the build
+  (`application/config/version`).
+- Check the Linux export starts and plays (music, maps, data) locally.
+- README (how to cut a release), design/tech/build-and-tools.md.
