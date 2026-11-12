@@ -36,6 +36,9 @@ const OYSTERCATCHER := &"oystercatcher"
 const DUNLIN := &"dunlin"
 const GULL := &"gull"
 const TERN := &"tern"
+## The kinds that wade: the flooded mud is theirs to stand on until it is water to them (see
+## WildlifeView `can_stand`).
+const WADERS: Array[StringName] = [OYSTERCATCHER, DUNLIN]
 const KINDS: Array[StringName] = [
 	BIRD,
 	RABBIT,

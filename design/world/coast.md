@@ -16,12 +16,21 @@
     wide at the salt marsh (or a little way out) to 7 wide towards the sea; they keep 3 tiles
     clear of the river, so no mud is cut off from the land. The water beyond the coast line is
     the sea's (`SEA`): water to walk and draw, without lily pads, frogs or reeds.
-  - **Walking:** the salt marsh and the mud are walked on at any tide; the tideways and the sea
-    are not. Nothing is built on the foreshore but the Warft; nothing is tilled there.
-  - **The tide** is a look only: high water every 12 hours 25 minutes, a little later each day.
-    The water rises over the mud by a relief of its own, filling the ripple troughs and hollows
-    first, then pools that join, until the flats are under; a light line marks its edge. So the
-    player can never be cut off by the water. Ice on the mud in winter: not done.
+  - **Walking:** the salt marsh is walked on at any tide, the mud only where the tide does not
+    cover it; the tideways and the sea are not walked on. Nothing is built on the foreshore but
+    the Warft; nothing is tilled there, and nothing is dropped on flooded mud.
+  - **The tide:** high water every 12 hours 25 minutes, a little later each day. The water rises
+    over the mud by a relief of its own, filling the ripple troughs and hollows first, then pools
+    that join, until the flats are under; a light line marks its edge. `Tide` ports that relief
+    from the shader, and a tile of mud is flooded (`World.is_flooded`) when the water covers most
+    of it, which is how the picture reads at the edges: a tile that looks mostly dry can be
+    walked on. The dark troughs of the mud's pixels lie lower in the picture but not in the rule.
+    Flooded mud is not walkable (`World.is_ground_walkable`, the one place that says so, for
+    wading to change later): not for the player, the villagers or the farm animals, and the
+    paths of the villagers go round it. Whoever stands in it (the water rose, or a game was
+    saved there) can step off it, and on over any connected flooded mud (`GameMap.is_wadeable`),
+    until wading is designed, so no one is cut off; a jetty over the mud stays walkable. Wading birds stay. Ice on the mud in winter: not
+    done.
   - **Looks:** the mud keeps its look in every season and weather (the tide washes it). The salt
     marsh is grey-green turf with silvery sea purslane and green glasswort, fresher in spring,
     red-purple in autumn (the glasswort red), brown-grey in winter, rimed or white under frost

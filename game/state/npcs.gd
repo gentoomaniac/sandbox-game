@@ -305,6 +305,21 @@ func _walk(npc: Npc, delta: float, map: GameMap, player_feet: Vector2) -> bool:
 	return false
 
 
+## Whether a villager who stands in the flooded mud may step to `feet`: every tile of the body is
+## walkable or flooded, so the rising tide cuts no one off from the shore.
+func _can_wade_out(npc: Npc, feet: Vector2, map: GameMap) -> bool:
+	# The body-tile loop of PlayerState.can_stand_at, but with wadeable tiles allowed too.
+	if not map.is_wadeable(npc.tile()):
+		return false
+	var tiles := PlayerState.body_tiles(feet)
+	for y in range(tiles.position.y, tiles.end.y):
+		for x in range(tiles.position.x, tiles.end.x):
+			var tile := Vector2i(x, y)
+			if not (map.is_walkable(tile) or map.is_wadeable(tile)):
+				return false
+	return not PlayerState.touches_building(map, feet)
+
+
 ## Whether the villager's body fits on the map with its feet at `feet`. Asking the map is what
 ## costs (several microseconds a tile), so it is asked only when the body moves onto new tiles.
 ## The tiles found free stay trusted while the body stays on them, even if something is built
@@ -313,7 +328,7 @@ func _fits(npc: Npc, feet: Vector2, map: GameMap) -> bool:
 	var body := PlayerState.body_tiles(feet)
 	if body == npc.free_body_tiles:
 		return true
-	if not can_stand_at(map, feet):
+	if not can_stand_at(map, feet) and not _can_wade_out(npc, feet, map):
 		return false
 	npc.free_body_tiles = body
 	return true

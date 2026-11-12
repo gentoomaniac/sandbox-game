@@ -135,10 +135,14 @@ Warft and an Ewer here and there.
   `Vegetation`; nothing about them is saved. What a tile looks like is one int, its tile code: layer, season look and weather look
   packed together (`TerrainTileset.tile_code`, read with `layer_of`, `season_of`, `weather_of`;
   the bit fields are documented there).
-- **Tide** (`game/state/tide.gd`) says how high the water stands at a moment of the clock; it is a
-  look only. Main gives it to `AmbientMotion.show_tide` every frame, and `mud.gdshader` on the
-  mud layer floods the mud by it, with the water's ripples of `water_surface.gdshaderinc` (which
-  `water.gdshader` shares).
+- **Tide** (`game/state/tide.gd`) says how high the water stands at a moment of the clock, and
+  ports the relief of the mud from `mud.gdshader` to say which tiles the water covers (`floods`;
+  tests/test_tide.gd pins it to the shader). `World.is_flooded` asks it with the world's clock, and
+  flooded mud is not walkable (`World.is_ground_walkable`), for the player, villagers and farm
+  animals; `GameMap.is_wadeable` lets whoever stands in the water go on over it. Main gives the
+  level to `AmbientMotion.show_tide` every frame, and `mud.gdshader` on the mud layer floods the
+  mud by it, with the water's ripples of `water_surface.gdshaderinc` (which `water.gdshader`
+  shares).
 - **Livestock** (`game/state/livestock.gd`) holds the farm animals (`FarmAnimal`) and moves
   them: GameState owns it and Main calls its `update` every frame while the player is
   outside. The numbers are `data/livestock.cfg` (`LivestockRules`). The WildlifeView draws

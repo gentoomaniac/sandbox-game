@@ -3,7 +3,8 @@ extends RefCounted
 ## A snapshot of one tile's state. Changing the world goes through Chunk's setters, not here.
 
 ## Inside a building, FLOOR is the laid brick floor of the living rooms and CLAY_FLOOR the
-## beaten clay of the work rooms. MUD is the tidal flats of the coast, walked on at any tide,
+## beaten clay of the work rooms. MUD is the tidal flats of the coast, walked on at low water but
+## not while the tide covers it (see World `is_flooded`, which the tile alone does not know),
 ## SALT_MARSH the low turf between them and the sea dyke, and SEA the salt water beyond the coast
 ## line (the open sea, the tideways, the river's mouth): water, but no lily pads, frogs or reeds.
 ## WARFT is a dwelling mound out on the salt marsh, dry grass that can be built on.

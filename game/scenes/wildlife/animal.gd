@@ -177,7 +177,7 @@ func _is_out_of_view(margin := 0.0) -> bool:
 ## Takes a step in a direction if the ground there can be stood on; returns whether it did.
 func _walk(direction: Vector2, speed: float, delta: float) -> bool:
 	var next := position + direction * speed * delta
-	if not wildlife.can_stand(next):
+	if not wildlife.can_stand(next, kind):
 		return false
 	position = next
 	_face(direction.x)
@@ -187,7 +187,7 @@ func _walk(direction: Vector2, speed: float, delta: float) -> bool:
 ## Starts a hop of `length` pixels in a direction, if the ground there can be stood on.
 func _try_hop(direction: Vector2, length: float, seconds: float, height: float) -> bool:
 	var target := position + direction * length
-	if not wildlife.can_stand(target):
+	if not wildlife.can_stand(target, kind):
 		return false
 	_is_hopping = true
 	_hop_from = position

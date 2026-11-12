@@ -447,9 +447,26 @@ func _emit_objects_changed(object: WorldObject) -> void:
 			objects_changed.emit(tile)
 
 
-## Tile rules, and buildings: only their door can be walked on (none on one with no inside).
+## Whether a tile is tidal mud under the water of the tide right now.
+func is_flooded(world_pos: Vector2i) -> bool:
+	var tile := tile_at(world_pos)
+	return (
+		tile != null
+		and tile.terrain == Tile.Terrain.MUD
+		and Tide.floods(world_pos, Tide.level(clock.total_minutes()))
+	)
+
+
+## Flooded and free of anything that blocks walking (see `GameMap.is_wadeable`).
+func is_wadeable(world_pos: Vector2i) -> bool:
+	var object := object_at(world_pos)
+	return is_flooded(world_pos) and (object == null or not object.blocks_walking())
+
+
+## Tile rules, and buildings: only their door can be walked on (none on one with no inside). Flooded
+## mud can't be walked on, like the sea. This is the one place that says so: wading is to come.
 func is_ground_walkable(world_pos: Vector2i) -> bool:
-	if not super(world_pos):
+	if not super(world_pos) or is_flooded(world_pos):
 		return false
 	var building := building_at(world_pos)
 	return building == null or (building.door_tile() == world_pos and building.has_inside())

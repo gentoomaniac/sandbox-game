@@ -47,6 +47,19 @@ func is_ground_walkable(pos: Vector2i) -> bool:
 	return tile != null and tile.is_walkable()
 
 
+## Whether a tile is under the water of the tide: tidal mud at high enough water. None in a map
+## without a tide. Such a tile is not walkable (see `is_ground_walkable` of World), but someone who
+## already stands in the water may go on over it (see `is_wadeable`).
+func is_flooded(_pos: Vector2i) -> bool:
+	return false
+
+
+## Whether someone who stands on a flooded tile may step onto this one: flooded, and walkable but
+## for the water. The rising tide cuts no one off from the shore.
+func is_wadeable(_pos: Vector2i) -> bool:
+	return false
+
+
 ## The ground rules combined with the objects on the tile; a deck (the jetty) is walked on
 ## whatever the ground under it.
 func is_walkable(pos: Vector2i) -> bool:

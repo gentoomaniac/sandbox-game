@@ -966,12 +966,19 @@ func _walk(
 			and feet_tile == animal.tile()
 			and nose_tile == Vector2i((animal.position + way * reach).floor())
 		)
-		# What stops animals and was put under its feet does not trap it: it may step off.
+		# What stops animals and was put under its feet does not trap it: it may step off. Nor does
+		# the rising tide: standing in the flooded mud, it may wade on over it.
+		var is_wading := map.is_wadeable(here)
 		var can_step := (
-			(map.is_walkable_for_animals(feet_tile) or feet_tile == here and map.is_walkable(here))
+			(
+				map.is_walkable_for_animals(feet_tile)
+				or feet_tile == here and map.is_walkable(here)
+				or is_wading and map.is_wadeable(feet_tile)
+			)
 			and (
 				map.is_walkable_for_animals(nose_tile)
 				or nose_tile == here and map.is_walkable(here)
+				or is_wading and map.is_wadeable(nose_tile)
 			)
 		)
 		if is_same_ground or can_step:

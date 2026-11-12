@@ -89,7 +89,11 @@ atmosphere only: no player impact, not hunted, not saved.
     and coming up now and then with a fish; they take no notice of the player. The tide counts:
     while it stands high over the mud (above `flooded_tide`) nothing stands there, the waders
     on it fly off and the dunlin find no mud until it falls, the gulls swim on it and the terns
-    may dive into it. A flock of waders counts as one animal.
+    may dive into it. A flock of waders counts as one animal. Wild ground animals keep off the
+    mud the tide covers, as the player does (`can_stand` asks the world, which says flooded mud
+    is not walkable, see coast.md). The waders (oystercatchers and dunlin, `WildlifeRules.WADERS`)
+    skip that rule and keep to `flooded_tide`: they may spawn, step and stay on mud the tide
+    covers until it is water to them.
 - **The world decides how many:** time of day (birds and insects by day, deer at dawn and
   dusk, fewer animals at night), season (no insects in winter; fewer birds; rabbits and
   squirrels still about), weather (animals hide in heavy rain, storms and dense fog), and

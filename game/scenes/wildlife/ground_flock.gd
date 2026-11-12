@@ -203,7 +203,7 @@ func _place_birds(count: int) -> void:
 		var radius: float = _flock["radius"]
 		var spot := Vector2.from_angle(wildlife.rng.randf() * TAU) * radius
 		spot *= sqrt(wildlife.rng.randf())
-		if not wildlife.can_stand(position + spot) or _is_crowded(spot):
+		if not wildlife.can_stand(position + spot, kind) or _is_crowded(spot):
 			continue
 		var bird := FlockBird.new()
 		bird.spot = spot
@@ -249,7 +249,7 @@ func _choose_next(bird: FlockBird) -> void:
 
 func _step(bird: FlockBird, delta: float) -> void:
 	var next: Vector2 = bird.spot + bird.walk_direction * _flock["walk_speed"] * delta
-	if next.length() > _flock["radius"] or not wildlife.can_stand(position + next):
+	if next.length() > _flock["radius"] or not wildlife.can_stand(position + next, kind):
 		bird.seconds_left = 0.0
 	else:
 		bird.spot = next

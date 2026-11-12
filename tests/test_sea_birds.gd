@@ -5,6 +5,8 @@ extends WildlifeCase
 ## On day 1 the tide is high at midnight and low half a tide later (see Tide).
 const HIGH_WATER := 0
 const LOW_WATER := 373
+## About half way up: the water stands at 0.5.
+const HALF_TIDE := 559
 ## The coast laid around the middle of the view, in tiles from its middle tile: the sea west of
 ## SEA_EAST, the salt marsh east of MARSH_WEST, the mud between.
 const COAST_REACH := 12
@@ -262,3 +264,29 @@ func test_a_tern_sent_away_flies_off_at_once() -> void:
 	_run(tern, 20.0)
 	assert_true(tern.is_done)
 	assert_eq(Console.new(_state).complete("spawn ter"), "spawn tern ")
+
+
+## A tile of the mud the tide covers at half tide, when it is not yet water to the animals (see
+## `flooded_tide`).
+func _tile_flooded_at_half_tide() -> Vector2i:
+	_state.clock.minute_of_day = HALF_TIDE
+	assert_lt(_wildlife.tide(), _wildlife.rules.general("flooded_tide"))
+	for x in range(SEA_EAST, MARSH_WEST):
+		for y in range(-COAST_REACH, COAST_REACH + 1):
+			var tile := _middle + Vector2i(x, y)
+			if _state.world.is_flooded(tile) and not _wildlife.is_water(_point(x, y)):
+				return tile
+	fail_test("no mud under water at half tide")
+	return _middle
+
+
+func test_waders_stand_step_and_settle_on_mud_the_tide_covers_but_ground_animals_do_not() -> void:
+	var tile := _tile_flooded_at_half_tide()
+	var point := TerrainTileset.tile_centre(tile)
+	for kind in [WildlifeRules.OYSTERCATCHER, WildlifeRules.DUNLIN]:
+		assert_true(_wildlife.can_stand(point, kind), "%s stands" % kind)
+		assert_true(_wildlife._is_habitat(kind, point), "%s settles" % kind)
+	assert_false(_wildlife.can_stand(point, WildlifeRules.RABBIT), "a rabbit does not")
+	assert_false(_wildlife.can_stand(point), "nor does anything else")
+	var dry_point := _point(MARSH_WEST)
+	assert_true(_wildlife.can_stand(dry_point, WildlifeRules.RABBIT), "dry ground is theirs")

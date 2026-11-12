@@ -173,13 +173,14 @@ func _fits(map: GameMap, feet: Vector2) -> bool:
 
 ## Whether the player, who stands where they do not fit (a game saved in bed, or with an object
 ## built on them, or on a horse that stood in a doorway), may take `step`: through objects, so they
-## can always walk away, and onto a deck, but not into a wall, the water or a building.
+## can always walk away, and onto a deck, but not into a wall, the water or a building. Standing in
+## the flooded mud they may wade on over it.
 func _can_step_off_blocked_tile(map: GameMap, step: Vector2) -> bool:
 	if _fits(map, position):
 		return false
 	var tile := Vector2i((position + step).floor())
 	# Objects may be walked out of (the ground); a deck's ground is water, so it counts too.
-	return map.is_ground_walkable(tile) or map.is_walkable(tile)
+	return map.is_ground_walkable(tile) or map.is_walkable(tile) or map.is_wadeable(tile)
 
 
 ## Puts the player, lying in the middle of a bed, on the free tile beside it in the direction

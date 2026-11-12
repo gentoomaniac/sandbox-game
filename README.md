@@ -104,7 +104,9 @@ the salt marsh, grey-green with sea purslane and glasswort, pink with thrift in 
 lilac with sea lavender later and red-purple in autumn; then the tidal mud of the Wadden Sea,
 with ripple marks, lugworm casts and shells, cut by tideways that widen towards the open sea.
 The tide comes in and goes out twice a day: the water fills the hollows first, then the flats
-are under, and at low water the mud dries again. The mud can be walked at any tide. Out on the
+are under, and at low water the mud dries again. Mud under water can't be walked on, like the
+sea, so the flats open and close with the tide: whoever the rising water catches can still wade out
+to the shore, and the villagers and farm animals keep to the same rule. Out on the
 salt marsh a Warft rises here and there, a dwelling mound with a pond on top, and now and then
 an Ewer, a flat-bottomed sailing barge, lies on the mud. Storks and geese come to the salt marsh,
 and oystercatchers, dunlin, gulls and terns to the mud and the sea (see [Wildlife](#wildlife)).
