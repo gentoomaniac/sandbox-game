@@ -35,25 +35,25 @@ func test_freeze_stops_time_and_is_named_on_the_hud() -> void:
 func test_nodrain_makes_actions_free() -> void:
 	_console.run("nodrain")
 	_hit(ItemTypes.HOE, 1)
-	assert_eq(_state.player.energy, PlayerState.MAX_ENERGY)
+	assert_eq(_state.player.energy, _state.player.attributes.max_energy())
 
 
 func test_noweight_drops_the_weight_surcharge() -> void:
 	_state.player.inventory.add(ItemTypes.STONE, 50)
 	_hit(ItemTypes.HOE, 1)
-	var heavy_cost := PlayerState.MAX_ENERGY - _state.player.energy
+	var heavy_cost := _state.player.attributes.max_energy() - _state.player.energy
 	assert_gt(heavy_cost, RULES["cost"]["till"])
-	_state.player.energy = PlayerState.MAX_ENERGY
+	_state.player.energy = _state.player.attributes.max_energy()
 	_console.run("noweight")
 	_world.set_terrain(_tile, Tile.Terrain.GRASS)
 	_state.use_tile(_tile)
-	assert_almost_eq(PlayerState.MAX_ENERGY - _state.player.energy, 4.0, 0.001)
+	assert_almost_eq(_state.player.attributes.max_energy() - _state.player.energy, 4.0, 0.001)
 
 
 func test_god_keeps_the_health_through_a_pass_out() -> void:
 	_console.run("god")
 	_state.pass_out()
-	assert_eq(_state.player.health, PlayerState.MAX_HEALTH)
+	assert_eq(_state.player.health, _state.player.attributes.max_health())
 	assert_true(_state.player.is_debuffed)
 
 

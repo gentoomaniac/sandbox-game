@@ -142,3 +142,38 @@ func test_a_held_item_that_is_no_food_is_not_eaten() -> void:
 	_hold(ItemTypes.HOE)
 	assert_false(_state.eat_held())
 	assert_eq(_state.player.energy, 50.0)
+
+
+# --- Attributes ---
+
+
+func test_a_higher_stamina_gives_a_longer_energy_bar_to_eat_up_to() -> void:
+	_state.player.attributes.set_level(Attributes.STAMINA, 20)
+	_state.player.energy = 150.0
+	_state.player.inventory.add(ItemTypes.TURNIP, 1)
+	_hold(ItemTypes.TURNIP)
+	assert_true(_state.eat_held())
+	assert_eq(_state.player.energy, 158.0)
+
+
+func test_a_bed_fills_the_share_of_the_bars_it_gives() -> void:
+	_state.player.attributes.set_level(Attributes.STAMINA, 20)
+	_state.player.attributes.set_level(Attributes.HP, 5)
+	_state.player.energy = 0.0
+	_state.player.health = 0.0
+	_state.sleep_in(_bed())
+	assert_eq(_state.player.energy, 160.0, "80 % of 200")
+	assert_eq(_state.player.health, 40.0, "80 % of 50")
+
+
+func test_a_lower_maximum_takes_energy_and_health_above_it_away() -> void:
+	_state.player.attributes.set_level(Attributes.STAMINA, 4)
+	_state.player.attributes.set_level(Attributes.HP, 6)
+	assert_eq(_state.player.energy, 40.0)
+	assert_eq(_state.player.health, 60.0)
+
+
+func test_the_debuff_cap_stays_below_a_lower_maximum() -> void:
+	_state.player.attributes.set_level(Attributes.STAMINA, 3)
+	_state.pass_out()
+	assert_eq(_state.energy_cap(), 30.0)

@@ -8,7 +8,8 @@
     untended.
   - A game setting scales how fast energy drains.
   - Details (decided 2026-11-05):
-    - **Energy and health bars**, 100 points each, in the top right corner of the screen (moved there in task 188). A bar at 20 % or
+    - **Energy and health bars**, 100 points each for a new character (Stamina and HP set the maximum, task 187, see
+      `design/player/inventory-and-character.md`), in the top right corner of the screen (moved there in task 188). A bar at 20 % or
       less pulses to show it is low. Health matters once combat exists; for now only the
       pass-out debuff and sleep change it.
     - **Sleeping moves the world on** (decided 2026-11-10): a night's sleep and passing out
@@ -54,7 +55,7 @@
         shows by sweat alone.
         The bubble is a general system: an icon in a bubble over the player, to be used
         later for other states (cold, hungry, a question mark, ...).
-    - **Sleeping** fills energy and health per bed (sleeping bag 100 %, ground 50 %), and
+    - **Sleeping** fills energy and health per bed (sleeping bag 100 %, ground 50 %: a share of the bars, whatever their maximum), and
       **eating** food (berries, turnips) restores a little energy. Both are values in the
       data file (`data/energy.cfg`).
     - The energy drain setting: Low ×0.5, Normal ×1, High ×1.5.

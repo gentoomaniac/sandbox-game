@@ -85,7 +85,7 @@ func test_mowing_nothing_does_nothing_and_costs_nothing() -> void:
 	_hold(ItemTypes.SCYTHE)
 	assert_eq(_state.use_at(_centre + Vector2i.DOWN), ToolUse.Use.NOTHING)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
-	assert_eq(_state.player.energy, PlayerState.MAX_ENERGY)
+	assert_eq(_state.player.energy, _state.player.attributes.max_energy())
 	assert_eq(_dropped(ItemTypes.HAY), 0)
 
 
@@ -94,7 +94,7 @@ func test_mowing_costs_one_action_of_energy() -> void:
 	_state.player.facing = Vector2i.DOWN
 	_hold(ItemTypes.SCYTHE)
 	_state.use_facing_tile()
-	assert_lt(_state.player.energy, PlayerState.MAX_ENERGY)
+	assert_lt(_state.player.energy, _state.player.attributes.max_energy())
 	var after_one := _state.player.energy
 	_state.use_facing_tile()
 	assert_eq(_state.player.energy, after_one, "the tufts are mown: nothing more to do")

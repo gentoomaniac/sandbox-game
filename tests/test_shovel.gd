@@ -209,7 +209,9 @@ func test_digging_elsewhere_gives_nothing_and_spends_nothing() -> void:
 		_state.clock.day = day
 		assert_eq(_dig(elsewhere), ToolUse.Use.DIG)
 	assert_eq(_state.world.ground_items.count_of(ItemTypes.CLAY), 0)
-	assert_lt(_state.player.energy, PlayerState.MAX_ENERGY, "digging still costs energy")
+	assert_lt(
+		_state.player.energy, _state.player.attributes.max_energy(), "digging still costs energy"
+	)
 
 
 # --- Saving ---

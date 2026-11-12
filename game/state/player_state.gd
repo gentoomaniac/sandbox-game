@@ -4,8 +4,6 @@ extends RefCounted
 ## player's position; PlayerView only draws it, and `move` is the only thing that walks.
 
 const SPEED := 5.0  # tiles per second
-const MAX_ENERGY := 100.0
-const MAX_HEALTH := 100.0
 ## The player's body, as the area they occupy on the ground: this wide and this tall,
 ## measured up from the feet. Smaller than a tile, so they can pass between trees.
 const BODY_HALF_WIDTH := 0.3
@@ -30,10 +28,18 @@ var bed_lying_in: WorldObject
 ## saved: a game saved on horseback loads with the player standing beside the horse.
 var horse: FarmAnimal
 
-## Both run from 0 to MAX_*. A player who passed out is `is_debuffed` until the next new day
-## the player lives through (see GameState).
-var energy := MAX_ENERGY
-var health := MAX_HEALTH
+## What they are made of: it sets the most energy and health they can have, and the weight they
+## carry before it tires them. Replace it only through the setter, so the vitals follow it.
+var attributes: Attributes:
+	set(value):
+		if attributes != null:
+			attributes.changed.disconnect(_keep_vitals_within_maximum)
+		attributes = value
+		attributes.changed.connect(_keep_vitals_within_maximum)
+## Energy runs from 0 to `attributes.max_energy()`, health to `attributes.max_health()`. A player
+## who passed out is `is_debuffed` until the next new day the player lives through (see GameState).
+var energy: float
+var health: float
 var is_debuffed := false
 ## What they are good at (see Skills).
 var skills := Skills.new()
@@ -75,6 +81,9 @@ var appearance := Appearance.new()
 
 
 func _init() -> void:
+	attributes = Attributes.new()
+	energy = attributes.max_energy()
+	health = attributes.max_health()
 	inventory = Inventory.new()
 	equipment = Equipment.new()
 
@@ -83,6 +92,12 @@ func _init() -> void:
 ## cost of actions depends on.
 func carried_weight() -> float:
 	return inventory.total_weight() + equipment.total_weight()
+
+
+## A level or bonus that lowers the maximum takes the energy and health above it away.
+func _keep_vitals_within_maximum() -> void:
+	energy = minf(energy, attributes.max_energy())
+	health = minf(health, attributes.max_health())
 
 
 func _dress() -> void:

@@ -16,7 +16,7 @@ static func text(state: GameState, was_up_too_late: bool, minutes_slept: int) ->
 	)
 	var hours := roundi(minutes_slept / float(GameClock.MINUTES_PER_HOUR))
 	var where := "at the camp" if state.player.home_map == state.world else "at home"
-	var energy_share := state.energy_rules.debuff_energy_max() / PlayerState.MAX_ENERGY
+	var energy_share := state.energy_cap() / state.player.attributes.max_energy()
 	var energy := (
 		"half your energy"
 		if is_equal_approx(energy_share, 0.5)

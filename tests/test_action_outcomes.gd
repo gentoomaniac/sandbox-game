@@ -186,7 +186,7 @@ func test_refusals_tell_nothing() -> void:
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.NEEDS_BETTER_TOOL)
 	assert_eq(_state.use_tile(_tile + Vector2i(0, 5)), ToolUse.Use.OUT_OF_REACH)
 	_hold(ItemTypes.HOE)
-	_state.player.energy = PlayerState.MAX_ENERGY
+	_state.player.energy = _state.player.attributes.max_energy()
 	assert_false(_state.eat_held())
 	var workbench := _place_beside(WorldObjectTypes.WORKBENCH)
 	_state.player.inventory.add(ItemTypes.RAW_BRICK, 6)

@@ -59,7 +59,7 @@ func _process(_delta: float) -> void:
 			* (0.5 + 0.5 * cos(Time.get_ticks_msec() / 1000.0 * TAU * PULSE_HZ))
 		)
 	)
-	_energy_bar.show_value(player.energy / PlayerState.MAX_ENERGY)
+	_energy_bar.show_value(player.energy / player.attributes.max_energy())
 	_energy_bar.modulate.a = pulse if player.energy <= warning_level else 1.0
-	_health_bar.show_value(player.health / PlayerState.MAX_HEALTH)
+	_health_bar.show_value(player.health / player.attributes.max_health())
 	_health_bar.modulate.a = pulse if player.health <= warning_level else 1.0

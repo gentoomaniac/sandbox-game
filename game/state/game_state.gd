@@ -17,6 +17,8 @@ signal action_done(outcome: ActionOutcome)
 const WAKE_UP_MINUTE := 6 * GameClock.MINUTES_PER_HOUR + 30
 ## Passing out sleeps at least this long, even when the morning comes sooner.
 const PASS_OUT_MINUTES := 10 * GameClock.MINUTES_PER_HOUR
+## The sleep fills of data/energy.cfg are in percent of the energy and health bars.
+const PERCENT := 100.0
 ## A player who is still awake when the clock shows this has stayed up too late and passes out.
 const LATE_NIGHT_MINUTE := 1 * GameClock.MINUTES_PER_HOUR
 ## Items on the ground within this many tiles of the player (their feet) are pulled to them.
@@ -150,8 +152,9 @@ func _wake_up_in(bed: WorldObject) -> void:
 	player.home_map = current_map
 	player.home_bed = bed.pos
 	var fill := energy_rules.sleep_fill(bed.type)
-	player.energy = minf(maxf(player.energy, fill), energy_cap())
-	player.health = maxf(player.health, fill)
+	var energy_fill := fill * player.attributes.max_energy() / PERCENT
+	player.energy = minf(maxf(player.energy, energy_fill), energy_cap())
+	player.health = maxf(player.health, fill * player.attributes.max_health() / PERCENT)
 
 
 ## A bed set up while the home has no bed (the bedroll that was home was taken down) becomes the
@@ -205,7 +208,8 @@ func _hour_start() -> int:
 
 ## The most energy the player can have now.
 func energy_cap() -> float:
-	return energy_rules.debuff_energy_max() if player.is_debuffed else PlayerState.MAX_ENERGY
+	var max_energy := player.attributes.max_energy()
+	return minf(energy_rules.debuff_energy_max(), max_energy) if player.is_debuffed else max_energy
 
 
 ## Whether the tile the player faces is the door of a building (which they can't ride through);
@@ -406,7 +410,7 @@ func _wake_up_after_pass_out() -> void:
 	is_up_too_late = false
 	go_to_home_bed()
 	player.is_debuffed = true
-	player.energy = energy_rules.debuff_energy_max()
+	player.energy = energy_cap()
 	if not cheats.is_god:
 		player.health = energy_rules.debuff_health()
 

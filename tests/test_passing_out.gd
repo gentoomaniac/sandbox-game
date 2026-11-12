@@ -65,7 +65,7 @@ func test_the_debuff_ends_at_the_next_new_day() -> void:
 	assert_true(_state.player.is_debuffed, "still the same day")
 	_state.pass_awake_time(1)
 	assert_false(_state.player.is_debuffed)
-	assert_eq(_state.energy_cap(), PlayerState.MAX_ENERGY)
+	assert_eq(_state.energy_cap(), _state.player.attributes.max_energy())
 
 
 func test_passing_out_after_midnight_keeps_the_debuff_until_the_next_midnight() -> void:
