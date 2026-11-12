@@ -323,8 +323,8 @@ A trial (task 169), not played in the game yet. `generate.py` turns each piece o
 `pieces/<name>.txt`, plain text of sections, voices and tokens (its docstring has the format and
 the effect set), into a 4-channel ProTracker module, `art/generated/music/<name>.mod`, which
 `make assets` copies to assets/music/. Godot doesn't import `.mod` files, so the game reads them
-as bytes; an export preset, once there is one, needs `*.mod` in its "Filters to export non-resource
-files" (`include_filter`), or the exported game has no music.
+as bytes; the export presets of `export_presets.cfg` list `assets/music/*.mod` in their "Filters to
+export non-resource files" (`include_filter`), or the exported game would have no music.
 
 | Command | What it does |
 |---|---|

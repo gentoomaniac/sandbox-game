@@ -54,7 +54,7 @@ help:
 	@echo "  llm-rm      Delete the model LLM_MODEL (required) from the test LLM."
 	@echo "  llm-gpu-setup  Prepare the GPU for llm-up: NVIDIA writes its CDI spec (sudo, again after driver updates); AMD checks the devices and groups."
 	@echo "  clean       Delete build/ (test log, screenshots, the screenshot save); nothing is lost."
-	@echo "  export      Not set up yet: no export presets exist."
+	@echo "  export      Export the Linux and Windows builds into build/export/, zipped per platform (needs the export templates of the pinned Godot)."
 	@echo
 	@echo "Variables (make <target> NAME=value):"
 	@echo "  GODOT       Path of the Godot binary (default: godot)."
@@ -75,6 +75,7 @@ help:
 	@echo "  LLM_RUNS    llm-eval: replies per scenario (default: 3)."
 	@echo "  LLM_GPU     llm-up: auto (NVIDIA via CDI spec, else AMD via ROCm, else CPU), nvidia, amd, 1 (any GPU or fail), 0 (CPU)."
 	@echo "  LLM_HSA_OVERRIDE  llm-up on AMD: HSA_OVERRIDE_GFX_VERSION for cards ROCm does not list, e.g. 10.3.0."
+	@echo "  VERSION     export: version of the build, in the zip names and application/config/version (default: git describe)."
 	@echo "  ARGS        screenshot, run: more debug flags, e.g. ARGS=\"--weather=rain\" (see game/scenes/startup_options.gd)."
 
 setup:
@@ -306,9 +307,42 @@ lint:
 format:
 	$(GDFORMAT) $(GDSCRIPT_DIRS)
 
+# Release builds of export_presets.cfg into build/export/, one zip per platform. The version goes
+# into application/config/version of project.godot for the export only: the file is put back
+# afterwards (also when the export fails).
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
+EXPORT_DIR := build/export
+EXPORT_TEMPLATES := $(or $(XDG_DATA_HOME),$(HOME)/.local/share)/godot/export_templates/$(GODOT_VERSION).stable
+
 export: assets
-	@echo "No export presets exist yet."
-	@exit 1
+	@for template in linux_release.x86_64 windows_release_x86_64.exe; do \
+		if [ ! -f "$(EXPORT_TEMPLATES)/$$template" ]; then \
+			echo "make export: the export templates of Godot $(GODOT_VERSION) are missing ($(EXPORT_TEMPLATES)/$$template)." >&2; \
+			echo "  Download Godot_v$(GODOT_VERSION)-stable_export_templates.tpz from https://github.com/godotengine/godot/releases/tag/$(GODOT_VERSION)-stable" >&2; \
+			echo "  and unpack its templates/ folder to $(EXPORT_TEMPLATES)/ (or install them in the editor: Editor > Manage Export Templates)." >&2; \
+			exit 1; \
+		fi; \
+	done
+	rm -rf $(EXPORT_DIR)
+	mkdir -p $(EXPORT_DIR)
+	@# Keeps Godot's import out of build/: it would scan the exported games there (minutes).
+	touch build/.gdignore
+	@# A first import of a fresh tree (CI) sometimes segfaults; a second try works.
+	$(IMPORT) || $(IMPORT)
+	@set -e; \
+	cp project.godot build/project.godot.orig; \
+	trap 'mv build/project.godot.orig project.godot' EXIT; \
+	trap 'exit 1' INT TERM; \
+	sed -i 's/^config\/name=.*/&\nconfig\/version="$(VERSION)"/' project.godot; \
+	for target in "Linux linux-x86_64 sandbox-game.x86_64" "Windows_Desktop windows-x86_64 sandbox-game.exe"; do \
+		set -- $$target; \
+		preset=$$(echo $$1 | tr _ ' '); \
+		name=sandbox-game-$(VERSION)-$$2; \
+		mkdir -p $(EXPORT_DIR)/$$name; \
+		$(GODOT) --headless --quiet --path . --export-release "$$preset" $(EXPORT_DIR)/$$name/$$3; \
+		(cd $(EXPORT_DIR) && python3 -m zipfile -c $$name.zip $$name); \
+	done
+	@ls -l $(EXPORT_DIR)/*.zip
 
 # A local LLM for trying NPC talk, in a container; no test needs it. See tools/README.md.
 llm-up:

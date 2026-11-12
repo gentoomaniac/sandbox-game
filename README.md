@@ -819,6 +819,19 @@ backup of that kind first), or cancel, which closes the game without touching th
 Saves go to `user://saves/world.json` and settings to `user://settings.cfg`. To start a
 fresh world, run `godot --path . -- --new-game`.
 
+### Releases
+
+`make export` builds the game for Linux and Windows (x86_64) into `build/export/`, one zip per
+platform: `sandbox-game-<version>-linux-x86_64.zip` and `sandbox-game-<version>-windows-x86_64.zip`
+(the executable has its data inside). `make export VERSION=1.2.3` names the version, which is also
+written into the build's `application/config/version`; without it `git describe` does. It needs the
+export templates of the pinned Godot (`.godot-version`): in the editor Editor → Manage Export
+Templates, or unpack the `templates/` folder of `Godot_v<version>-stable_export_templates.tpz`
+(from the Godot release page) into `~/.local/share/godot/export_templates/<version>.stable/`.
+`export_presets.cfg` lists the files the game reads at run time that Godot would drop from an
+export (`data/*.cfg`, the Tiled maps, the music); a new kind of such file goes into its
+`include_filter`.
+
 ### Talking NPCs with a language model
 
 Villagers talk through an OpenAI-compatible chat endpoint, or through Claude. Out of the box the game asks the

@@ -24,8 +24,14 @@
     missing, with a hint on what to install;
   - running it again is safe and only does what is still missing.
 - Targets (`make help` lists them): `help` (the default), `setup`, `venv`, `run`,
-  `screenshot`, `test`, `lint`, `format`, `assets`, `clean` and `export` (a placeholder: no
-  export presets exist yet).
+  `screenshot`, `test`, `lint`, `format`, `assets`, `clean` and `export` (the Linux and
+  Windows builds of export_presets.cfg into build/export/, one zip per platform; needs the export
+  templates of the pinned Godot). The include filter of the presets lists the non-resource files
+  the game reads at run time (data/*.cfg, the Tiled maps and tileset, assets/music/*.mod): add a
+  new kind of such a file there, or the export drops it. The version of `make export VERSION=x`
+  is stamped into `application/config/version` for the export only; project.godot is put back.
+  `make export` puts a `.gdignore` in build/, or every later import would scan the exported
+  games there (an import took about 9 minutes).
 - Tools:
   - test LLM for NPC talk (decided 2026-11-06): `make llm-up`, `llm-check` and `llm-down`
     run Ollama (pinned tag) in a podman/docker container with Qwen2.5 7B Instruct (Apache-2.0;

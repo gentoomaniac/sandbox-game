@@ -12,7 +12,7 @@ extends Node
 signal started(track: String)
 
 ## The pieces are found by listing this folder, so a build that packs the game must export the
-## .mod files of assets/music/ for DirAccess to see them on res:// (there is no export preset yet).
+## .mod files of assets/music/ for DirAccess to see them on res:// (export_presets.cfg does).
 const MUSIC_DIR := "res://assets/music"
 const MIX_RATE := 44100
 ## The pieces are 16-bit stereo.
