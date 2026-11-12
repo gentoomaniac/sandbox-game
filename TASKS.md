@@ -446,6 +446,16 @@ and the seasons unlike the coast:
 
 ## Later (not part of the prototype)
 
+- **Crows** (the user, 2026-11-13): wild crows (carrion or hooded crows, rooks) as wildlife:
+  they walk and hop on fields and meadows, fly off when the player comes near, caw now and
+  then (art in both sets, generated sounds). They may eat crops: sown seed and ripening crops on
+  unguarded fields lose some yield or a plant now and then (numbers in data/).
+
+- **Scarecrow** (the user, 2026-11-13, with the crows): a craftable scarecrow (sticks, straw or
+  reed, old clothes) placed on a field keeps the crows away from the crops within a radius
+  (data/). Art in both sets, maybe swaying in the wind; the crows learn to ignore it a little over
+  time, or not: to be decided.
+
 - Ice on rivers and ponds in winter (an overlay on water when it is cold enough; frozen water
   can be walked on, see `Tile.frozen`). Split off task 185 by the user, 2026-11-11.
 
