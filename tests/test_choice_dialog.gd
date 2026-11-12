@@ -71,6 +71,15 @@ func test_a_click_outside_the_panel_answers_with_the_safe_choice() -> void:
 	assert_false(_dialog.is_open())
 
 
+func test_the_close_button_answers_with_the_safe_choice() -> void:
+	_ask()
+
+	_dialog._close_button.pressed.emit()
+
+	assert_eq(_answers, [1])
+	assert_false(_dialog.is_open())
+
+
 func test_asking_again_replaces_the_buttons() -> void:
 	_ask()
 	_buttons()[0].pressed.emit()

@@ -48,3 +48,13 @@ func test_closing_the_window_or_switching_tabs_while_asking_destroys_nothing() -
 	_character.close()
 	assert_false(_trash_can.is_asking())
 	assert_eq(_player.equipment.item_in(Equipment.BODY), ItemTypes.WAISTCOAT)
+
+
+func test_the_close_button_and_a_click_outside_answer_keep_before_they_close_the_window() -> void:
+	_drag_the_waistcoat_to_the_trash_can()
+	_character._close_button.pressed.emit()
+	assert_false(_trash_can.is_asking())
+	assert_true(_character.is_open())
+	assert_eq(_player.equipment.item_in(Equipment.BODY), ItemTypes.WAISTCOAT)
+	_character._close_button.pressed.emit()
+	assert_false(_character.is_open())

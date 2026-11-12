@@ -10,6 +10,8 @@ Written to assets/ui/:
   is used when hovered, focused or dragged);
 - button_normal.png, button_hover.png, button_pressed.png, button_focus.png: 12x12 frames,
   4 px corners (margin 4). The focus frame has no fill and is drawn over the others;
+- close_normal.png, close_hover.png, close_pressed.png: 13x13 buttons for the corner of a window,
+  the button frames with a cross on them (the hover one is lit and its cross gold);
 - energy_icon.png and health_icon.png: 12x12 icons for the bars next to the hotbar;
 - backpack_icon.png and chest_icon.png: 12x12 headers of the storage screen's sides;
 - trash_icon.png: 16x16, drawn into the trash can's slot like the equip_* hints (items.py);
@@ -38,6 +40,10 @@ BASELINE = 7 + ACCENT_ROWS
 SPACE_ADVANCE = 3
 PANEL_SIZE = 24
 BUTTON_SIZE = 12
+CLOSE_SIZE = 13
+# The cross on the close buttons, drawn 3 px in from the edge of the frame.
+CLOSE_CROSS = ("#.....#", ".#...#.", "..#.#..", "...#...", "..#.#..", ".#...#.", "#.....#")
+CLOSE_CROSS_OFFSET = 3
 GRABBER_SIZE = 10
 BAR_WIDTH = 48
 BAR_HEIGHT = 8
@@ -540,6 +546,18 @@ def frame(palette, size, fill, lit, shaded, border="ink", studs=None, inner=None
     return image
 
 
+def close_button(palette, fill, lit, shaded, cross):
+    """A button frame with a cross of the colour `cross` in the middle."""
+    image = frame(palette, CLOSE_SIZE, fill, lit, shaded)
+    for y, row in enumerate(CLOSE_CROSS):
+        for x, mark in enumerate(row):
+            if mark == "#":
+                image.putpixel(
+                    (CLOSE_CROSS_OFFSET + x, CLOSE_CROSS_OFFSET + y), rgba(palette, cross)
+                )
+    return image
+
+
 def ui_images(palette):
     """Returns {file name: image} of the frames, icons and bars."""
     icons = {f"{name}.png": icon(palette, rows) for name, rows in ICON_ROWS.items()}
@@ -554,6 +572,9 @@ def ui_images(palette):
         "button_normal.png": frame(palette, BUTTON_SIZE, "soil", "soil_light", "soil_dark"),
         "button_hover.png": frame(palette, BUTTON_SIZE, "soil_mid", "sand_light", "soil"),
         "button_pressed.png": frame(palette, BUTTON_SIZE, "soil_dark", "soil", "soil_mid"),
+        "close_normal.png": close_button(palette, "soil", "soil_light", "soil_dark", "cream"),
+        "close_hover.png": close_button(palette, "soil_mid", "sand_light", "soil", "gold"),
+        "close_pressed.png": close_button(palette, "soil_dark", "soil", "soil_mid", "sand"),
         "slider_grabber.png": frame(palette, GRABBER_SIZE, "sand", "sand_light", "soil_mid"),
         "slider_grabber_highlight.png": frame(palette, GRABBER_SIZE, "gold", "cream", "sand"),
         "button_focus.png": frame(palette, BUTTON_SIZE, None, "gold", "gold", border="gold"),

@@ -89,6 +89,9 @@ extend `HotbarWindow`, which lends them the HUD's hotbar as their quick bar.
   once, as Escape does: the crafting screen and the chest register `interact`, so E closes them.
   `_takes_escape()` is asked for Escape and the pause key only, not for these. A key not listed
   does nothing to the window.
+- **Close button:** every window has one in the panel's top right corner (`_close_button`, a
+  TextureButton drawn beside the panel, not in it, so it takes no part in the drag and does not
+  change the panel's layout). Pressing it is `request_close()`, as Escape and the click outside.
 - **Backdrop click:** a left click on the dimmed area outside the panel does what Escape does, in
   every window (the pause menu and `ChoiceDialog` too: the click gives the dialog's safe answer).
   Both go through `request_close()`, which asks `_takes_escape()` first and closes if it returns

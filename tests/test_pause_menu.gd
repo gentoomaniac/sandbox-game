@@ -76,5 +76,14 @@ func test_a_click_outside_goes_back_a_page_at_a_time_and_then_closes_the_menu() 
 	assert_false(get_tree().paused)
 
 
+func test_the_close_button_goes_back_a_page_and_then_closes_the_menu() -> void:
+	_menu.open()
+	_menu._go_to(PauseMenu.Page.SETTINGS)
+	_menu._close_button.pressed.emit()
+	assert_true(_menu._pages[PauseMenu.Page.PAUSE].visible)
+	_menu._close_button.pressed.emit()
+	assert_false(_menu.is_open())
+
+
 func test_the_menu_is_fixed_in_place_on_every_page() -> void:
 	assert_false(_menu.is_movable)

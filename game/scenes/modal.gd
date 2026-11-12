@@ -24,6 +24,8 @@ extends CanvasLayer
 ##   list (the empty area of a list and the gaps between its rows do drag). It stays on the
 ##   screen, and opens in its place (the middle unless `opening_shift` says otherwise) each time.
 ##   A window that must stay put (the pause menu, a question) sets `is_movable` to false in `_init`.
+## - Every window has a close button in the panel's top right corner: it does what Escape does
+##   (and so does a click outside the panel, below).
 ## - Escape here is `ui_cancel` (not rebindable) or the rebindable pause key, as the pause menu
 ##   takes both. A left click on the dimmed area outside the panel does what Escape does, in every
 ##   window (`request_close()` is the one path for both). Other keys that close the window (E on the
@@ -37,6 +39,8 @@ signal opened
 signal closed
 
 const THEME := preload("res://game/scenes/ui_theme.tres")
+## How far the close button sits from the panel's top and right edges, in canvas pixels.
+const CLOSE_BUTTON_INSET := 3
 
 ## The window that is open, if any. Windows are not told about each other: opening closes it.
 static var _open_modal: Modal
@@ -57,6 +61,7 @@ var _panel := PanelContainer.new()
 ## Whether a point of the window (canvas coordinates) keeps its clicks while the window is open,
 ## such as the HUD's hotbar: a click there is not outside the panel. Set it in `_init`.
 var _keeps_clicks_at := func(_point: Vector2) -> bool: return false
+var _close_button := TextureButton.new()
 var _lists: Array[ScrollingList] = []
 ## How far the panel is from the middle of the window: where it opened plus the player's drag.
 var _drag_shift := Vector2.ZERO
@@ -86,6 +91,16 @@ func _init() -> void:
 	_panel.minimum_size_changed.connect(_apply_drag_shift)
 	_backdrop.gui_input.connect(_on_frame_input)
 	_centre.add_child(_panel)
+	# A sibling of the panel, drawn over its top right corner: pressing it never starts a drag.
+	_close_button.texture_normal = preload("res://assets/ui/close_normal.png")
+	_close_button.texture_hover = preload("res://assets/ui/close_hover.png")
+	_close_button.texture_pressed = preload("res://assets/ui/close_pressed.png")
+	# Space is the game's use key: a focused button would take it.
+	_close_button.focus_mode = Control.FOCUS_NONE
+	_close_button.set_anchors_preset(Control.PRESET_CENTER)
+	_close_button.pressed.connect(request_close)
+	TooltipView.set_text(_close_button, "Close", "close")
+	_centre.add_child(_close_button)
 
 
 ## Removing an open window cleans up as closing it does (borrowed HUD, listeners, the pause).
@@ -244,6 +259,11 @@ func _apply_drag_shift() -> void:
 	_panel.offset_right = _drag_shift.x + panel_size.x / 2
 	_panel.offset_top = _drag_shift.y - panel_size.y / 2
 	_panel.offset_bottom = _drag_shift.y + panel_size.y / 2
+	var button_size := _close_button.get_combined_minimum_size()
+	_close_button.offset_right = _panel.offset_right - CLOSE_BUTTON_INSET
+	_close_button.offset_left = _close_button.offset_right - button_size.x
+	_close_button.offset_top = _panel.offset_top + CLOSE_BUTTON_INSET
+	_close_button.offset_bottom = _close_button.offset_top + button_size.y
 
 
 func _is_left_press(event: InputEvent) -> bool:
