@@ -75,6 +75,7 @@ func add(building: Building) -> void:
 	var sprite := SeeThroughSprite.new()
 	_sprites[building] = sprite
 	sprite.texture = load(picture_path(building))
+	_show_roof_snow(building, sprite)
 	sprite.centered = false
 	sprite.position = sort_position(building)
 	# Its bottom edge is the footprint's bottom edge. The classic pictures are as big as the new.
@@ -90,6 +91,7 @@ func add(building: Building) -> void:
 func show_art_set() -> void:
 	for building in _sprites:
 		_show_windows(building)
+		_show_roof_snow(building, _sprites[building])
 	for bell in _bells.values():
 		bell.texture = load(ArtSet.path(BELL_STRIP))
 
@@ -166,10 +168,15 @@ func _show_windows(building: Building) -> void:
 		light.strength = _light_strength if is_lit else 0.0
 
 
-## The look of a house (see SeasonalArt.HOUSE_LOOKS): snow on its roof when the snow cover is
-## above its tile's threshold, else the season's look of the grass on its tile.
+## The look of a house (see SeasonalArt.HOUSE_LOOKS): the season's look of the grass on its tile.
 func _house_look(building: Building) -> SeasonBlend.Look:
-	var thresholds := _blend.thresholds(building.origin)
-	if _conditions.snow_cover > thresholds.y:
-		return SeasonBlend.Look.SNOW
-	return _conditions.ground_season_look(thresholds.x)
+	return _conditions.ground_season_look(_blend.thresholds(building.origin).x)
+
+
+## Gives the sprite of a house the snow on its roof, as the ground at the middle of the house has
+## it.
+func _show_roof_snow(building: Building, sprite: SeeThroughSprite) -> void:
+	var snow: Texture2D = load(
+		ArtSet.path(SeasonalArt.roof_snow_path(building.type_data()["sprite"]))
+	)
+	sprite.show_roof_snow(snow, building.centre() * TerrainTileset.TILE_SIZE)

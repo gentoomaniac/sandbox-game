@@ -18,6 +18,7 @@ import numpy as np
 from PIL import Image
 
 import palette
+import seasons
 
 # The looks of the cover an object atlas has besides the seasons' (see `object_cover_looks`): the
 # snow, whose rank grows from the top of the picture down, and the frost, ranked by noise alone.
@@ -149,6 +150,18 @@ def object_cover_looks(cells_by_look):
                 [cover_cells(cell, base) for cell, base in zip(cells_by_look[covered][index], without_cover)]
             )
     return result
+
+
+def house_cover(picture, snowy):
+    """The pixels that snow adds to the roof of a house picture (rows of colour names; `snowy` are
+    the pixels of its roof, see seasons.house) over the roof without snow, as a picture of the
+    house's size; `ranked` gives them the rank from the ridge down."""
+    return cover_cells(seasons.house("snow", picture, snowy), seasons.house("bare", picture, snowy))
+
+
+def is_roof_snow(relative):
+    """Whether the file at `relative` (under art/generated/) is the snow of a house's roof."""
+    return relative.startswith("buildings/") and "_snow_cover_" in relative
 
 
 def ranked(picture, cell_width, cell_height, is_top_down):

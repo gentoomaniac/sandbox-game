@@ -112,8 +112,8 @@ var _cover_map := CoverMap.new()
 var _cover_focus := Vector2i.ZERO
 var _is_cover_focused := false
 var _is_cover_missing := false
-## The day, the snow cover and the frost that the plants and houses are drawn for.
-var _look_state := Vector3(-1, 0, 0)
+## The day that the decorations, plants and houses are drawn for.
+var _look_day := -1
 var _conditions: SeasonBlend.Conditions
 ## The terrain layer of each tile of a loaded chunk (see TerrainTileset.Layer), by tile index
 ## (local y * CHUNK_SIZE + x). It comes from the variety noise, the slowest part of drawing a cell.
@@ -220,8 +220,8 @@ func show_world(residency: ChunkResidency) -> void:
 	decorations.show_world(world)
 	_blend = SeasonBlend.new(world.world_seed)
 	decorations.day = world.clock.day
-	_conditions = _blend.conditions(decorations.day, 0.0, 0.0)
-	_look_state = Vector3(decorations.day, 0.0, 0.0)
+	_conditions = _blend.conditions(decorations.day)
+	_look_day = decorations.day
 	_buildings.set_looks(_blend, _conditions)
 	show_ground_cover(decorations.day, 0.0, 0.0, 0.0)
 	_sync_cover_focus()
@@ -240,17 +240,16 @@ func show_ground_cover(day: int, snow_cover: float, thaw: float, frost: float) -
 	_cover_map.set_weather(_blend.litter(day), snow_cover, thaw, frost)
 
 
-## Sets the day, the snow cover and the frost (both 0 to 1) that plants and houses are drawn
-## for. Does nothing while they are as they were; otherwise every loaded chunk is queued for a
-## refresh, which `_process` does a few chunks per frame (chunks that load later are drawn for
-## them right away).
-func refresh_looks(day: int, snow_cover: float, frost: float) -> void:
-	var state := Vector3(day, snow_cover, frost)
-	if world == null or state == _look_state:
+## Sets the day that the decorations, plants and houses are drawn for, which changes the season's
+## look of each on a day of its own. Does nothing while it is the same day; otherwise every loaded
+## chunk is queued for a refresh, which `_process` does a few chunks per frame (chunks that load
+## later are drawn for it right away).
+func refresh_looks(day: int) -> void:
+	if world == null or day == _look_day:
 		return
-	_look_state = state
+	_look_day = day
 	decorations.day = day
-	_conditions = _blend.conditions(day, snow_cover, frost)
+	_conditions = _blend.conditions(day)
 	_refresh_queue.assign(world.loaded_chunk_coords())
 	var focus := _residency.focus_chunk
 	_refresh_queue.sort_custom(

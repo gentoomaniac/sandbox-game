@@ -176,7 +176,11 @@ def build_outputs(sources):
         relative = path.relative_to(GENERATED).as_posix()
         is_manifest = path.match(atlas.MANIFESTS) or path.match(CELL_SIZES_FILES)
         if path.is_file() and not is_manifest and relative not in sheets:
-            outputs[asset_path(relative)] = sources.content(relative)
+            content = sources.content(relative)
+            if cover.is_roof_snow(relative):
+                picture = Image.open(BytesIO(content)) if isinstance(content, bytes) else content
+                content = cover.ranked(picture, picture.width, picture.height, True)
+            outputs[asset_path(relative)] = content
     return outputs
 
 

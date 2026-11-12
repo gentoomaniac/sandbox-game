@@ -22,7 +22,7 @@ func before_each() -> void:
 
 func _set_day(day: int) -> void:
 	_view.world.clock.day = day
-	_view.refresh_looks(day, 0.0, 0.0)
+	_view.refresh_looks(day)
 
 
 ## What every layer holds for the cells of the loaded chunks (and the row and

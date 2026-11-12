@@ -17,7 +17,7 @@ func _threshold_of(i: int) -> Vector2:
 
 ## The share of the tiles (a grid of them) that have a look on a day, by the season alone.
 func _share(look: SeasonBlend.Look, day: int, is_foliage := false) -> float:
-	var conditions := _blend.conditions(day, 0.0, 0.0)
+	var conditions := _blend.conditions(day)
 	var count := 0
 	for i in TILES:
 		var x := _threshold_of(i).x
@@ -88,7 +88,7 @@ func test_trees_leaf_out_step_by_step_over_the_first_days_of_spring() -> void:
 		var threshold := _threshold_of(i).x
 		var step := 0
 		for day in [120, 1, 2, 3, 4]:
-			var look := _blend.conditions(day, 0.0, 0.0).foliage_season_look(threshold)
+			var look := _blend.conditions(day).foliage_season_look(threshold)
 			var now := SeasonBlend.LEAF_OUT.find(look)
 			assert_between(now - step, 0, 1, "one step a day at most, tree %d day %d" % [i, day])
 			step = now
@@ -105,74 +105,9 @@ func test_a_tree_in_leaf_does_not_go_back_to_summer_while_autumn_comes() -> void
 		var threshold := _threshold_of(i).x
 		var was_autumn := false
 		for day in range(58, 68):
-			var look := _blend.conditions(day, 0.0, 0.0).foliage_season_look(threshold)
+			var look := _blend.conditions(day).foliage_season_look(threshold)
 			assert_false(was_autumn and look != L.AUTUMN, "no going back")
 			was_autumn = look == L.AUTUMN
-
-
-# --- Snow and frost ---
-
-
-func _share_with(snow: float, frost: float, look: SeasonBlend.Look) -> float:
-	var conditions := _blend.conditions(105, snow, frost)
-	var count := 0
-	for i in TILES:
-		if conditions.weather_look(_threshold_of(i).y) == look:
-			count += 1
-	return float(count) / TILES
-
-
-func test_the_share_of_snowy_tiles_tracks_the_cover() -> void:
-	assert_eq(_share_with(0.0, 0.0, L.SNOW), 0.0)
-	for cover in [0.1, 0.3, 0.5, 0.8]:
-		assert_almost_eq(_share_with(cover, 0.0, L.SNOW), cover, 0.03)
-	assert_eq(_share_with(1.0, 0.0, L.SNOW), 1.0)
-
-
-func test_a_tile_that_is_snowy_at_a_cover_stays_snowy_at_a_higher_one() -> void:
-	for i in 300:
-		var threshold := _threshold_of(i).y
-		var was_snowy := false
-		for cover in [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]:
-			var is_snowy := _blend.conditions(105, cover, 0.0).weather_look(threshold) == L.SNOW
-			assert_false(was_snowy and not is_snowy)
-			was_snowy = is_snowy
-
-
-func test_snow_has_a_dusting_as_its_fringe_and_frost_only_beyond_it() -> void:
-	var band: float = SeasonRules.default_rules().value("snow", "dusting_band")
-	var conditions := _blend.conditions(105, 0.3, 0.6)
-	var counts := {}
-	for i in TILES:
-		var threshold := _threshold_of(i).y
-		var look := conditions.weather_look(threshold)
-		counts[look] = counts.get(look, 0) + 1
-		if threshold < 0.3:
-			assert_eq(look, L.SNOW)
-		elif threshold < 0.3 + band:
-			assert_eq(look, L.DUSTING)
-		elif threshold < 0.6:
-			assert_eq(look, L.FROST)
-		else:
-			assert_eq(look, L.SUMMER, "nothing over the season's look")
-	for look in [L.SNOW, L.DUSTING, L.FROST]:
-		assert_gt(counts[look], 0)
-
-
-func test_there_is_no_dusting_without_snow_cover() -> void:
-	assert_eq(_share_with(0.0, 0.5, L.DUSTING), 0.0)
-	assert_gt(_share_with(0.05, 0.0, L.DUSTING), 0.0, "a first snowfall is a dusting")
-	assert_almost_eq(_share_with(0.2, 0.0, L.DUSTING), 0.15, 0.03)
-
-
-func test_a_frost_gets_stronger_as_it_gets_colder() -> void:
-	assert_lt(_share_with(0.0, 0.2, L.FROST), _share_with(0.0, 0.7, L.FROST))
-	assert_eq(_share_with(0.0, 0.0, L.FROST), 0.0)
-
-
-func test_snow_wins_over_the_look_of_a_plant() -> void:
-	assert_eq(_blend.conditions(45, 1.0, 0.0).foliage_look(0.5, 0.5), L.SNOW)
-	assert_eq(_blend.conditions(45, 0.0, 0.0).foliage_look(0.5, 0.5), L.SUMMER)
 
 
 func test_the_data_file_is_complete() -> void:

@@ -35,6 +35,15 @@ static func new_material() -> ShaderMaterial:
 	return made
 
 
+## Gives a house's sprite the snow on its roof (see SeasonalArt.roof_snow_path), as it is on the
+## ground at `anchor`, in world pixels.
+func show_roof_snow(snow: Texture2D, anchor: Vector2) -> void:
+	var sprite_material: ShaderMaterial = material
+	sprite_material.set_shader_parameter("has_roof_snow", true)
+	sprite_material.set_shader_parameter("roof_snow", snow)
+	sprite_material.set_shader_parameter("cover_anchor", anchor)
+
+
 ## Gives a sprite with the picture of an object of the atlas (a SeeThroughSprite or a FallingTree)
 ## the frost and snow of the weather, as they are on the ground at `anchor`, in world pixels.
 static func show_cover(sprite: Sprite2D, anchor: Vector2) -> void:

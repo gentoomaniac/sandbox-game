@@ -977,12 +977,12 @@ func _show_clock() -> void:
 		_tint.show_time(_state.clock, _weather.cloud_cover)
 	_view.set_light_strength(_tint.light_strength())
 	_player_view.light_strength = _tint.light_strength()
-	# The ground follows the weather by the minute; the plants and houses redraw once an hour, as
-	# the snow cover and the frost of the start of the hour change.
+	# The ground, the plants and the houses follow the weather by the minute, by shader; their
+	# pictures only change with the day.
 	_snow_cover = _state.current_snow_cover()
 	_frost = _state.current_frost()
 	_view.show_ground_cover(_state.clock.day, _snow_cover, _state.current_thaw(), _frost)
-	_view.refresh_looks(_state.clock.day, _state.hourly_snow_cover(), _state.hourly_frost())
+	_view.refresh_looks(_state.clock.day)
 	_build_mode.set_snowy(_snow_cover > SNOWY_GHOST_COVER)
 	_hud.show_time(_state.clock)
 

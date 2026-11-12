@@ -91,7 +91,7 @@ func test_the_stand_in_of_a_tree_shows_the_look_it_has_when_the_chunk_is_drawn()
 	var sprite: Sprite2D = _view._object_sprites[tree.pos]
 	var summer_picture := _atlas_path(sprite.texture)
 	_view.world.clock.day = WINTER
-	_view.refresh_looks(WINTER, 0.0, 0.0)
+	_view.refresh_looks(WINTER)
 	_view.finish_drawing()
 	_view.finish_refresh()
 	assert_ne(_atlas_path(sprite.texture), summer_picture)
@@ -178,7 +178,7 @@ func _assert_same_cells(view: WorldView, expected: WorldView, coords: Vector2i) 
 
 func _set_day(day: int) -> void:
 	_view.world.clock.day = day
-	_view.refresh_looks(day, 0.0, 0.0)
+	_view.refresh_looks(day)
 	_view.finish_refresh()
 
 

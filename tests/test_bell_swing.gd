@@ -14,7 +14,7 @@ func before_each() -> void:
 	_views = BuildingViews.new(_entities)
 	add_child_autofree(_views)
 	var blend := SeasonBlend.new(1)
-	_views.set_looks(blend, blend.conditions(0, 0.0, 0.0))
+	_views.set_looks(blend, blend.conditions(0))
 
 
 func after_each() -> void:

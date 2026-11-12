@@ -29,9 +29,9 @@ func _find_object(coords: Vector2i, type: StringName) -> WorldObject:
 	return null
 
 
-func _show(day: int, snow: float, frost := 0.0) -> void:
+func _show(day: int) -> void:
 	_view.world.clock.day = day
-	_view.refresh_looks(day, snow, frost)
+	_view.refresh_looks(day)
 	_view.finish_refresh()
 
 
@@ -39,24 +39,20 @@ func test_a_refresh_is_spread_over_frames() -> void:
 	for coords in [LEFT, RIGHT, BELOW]:
 		_residency.load_chunk(coords)
 		_view.finish_drawing()
-	_view.refresh_looks(WINTER, 0.5, 0.0)
+	_view.refresh_looks(WINTER)
 	assert_eq(_view._refresh_queue.size(), 3)
 	_view.finish_refresh()
 	assert_true(_view._refresh_queue.is_empty())
 
 
-func test_an_oak_is_in_leaf_or_bare_by_the_season_whatever_the_weather() -> void:
-	_show(SUMMER, 0.0)
+func test_an_oak_is_in_leaf_or_bare_by_the_season() -> void:
+	_show(SUMMER)
 	_residency.load_chunk(RIGHT)
 	_view.finish_drawing()
 	var oak := _find_object(RIGHT, WorldObjectTypes.OAK)
 	assert_eq(_view._objects.get_cell_source_id(oak.pos), SeasonBlend.Look.SUMMER)
-	_show(WINTER, 0.0)
+	_show(WINTER)
 	assert_eq(_view._objects.get_cell_source_id(oak.pos), SeasonBlend.Look.BARE)
-	_show(WINTER, 1.0)
-	assert_eq(_view._objects.get_cell_source_id(oak.pos), SeasonBlend.Look.BARE, "snow lies on it")
-	_show(WINTER, 0.0, 1.0)
-	assert_eq(_view._objects.get_cell_source_id(oak.pos), SeasonBlend.Look.BARE, "so does frost")
 
 
 func test_the_objects_have_the_cover_shader_and_the_plants_their_own() -> void:
@@ -76,10 +72,10 @@ func test_the_objects_have_the_cover_shader_and_the_plants_their_own() -> void:
 func test_trees_turn_one_by_one_across_autumn() -> void:
 	_residency.load_chunk(RIGHT)
 	_view.finish_drawing()
-	_show(SUMMER, 0.0)
+	_show(SUMMER)
 	var summer_looks := _foliage_looks(RIGHT)
 	assert_eq(summer_looks.size(), 1, "all alike in summer")
-	_show(AUTUMN, 0.0)
+	_show(AUTUMN)
 	assert_gt(_foliage_looks(RIGHT).size(), 1, "a mix in autumn")
 
 
@@ -94,7 +90,7 @@ func _foliage_looks(coords: Vector2i) -> Dictionary:
 func test_a_see_through_stand_in_has_the_look_and_the_cover_of_its_cell() -> void:
 	_residency.load_chunk(RIGHT)
 	_view.finish_drawing()
-	_show(WINTER, 1.0)
+	_show(WINTER)
 	var oak := _find_object(RIGHT, WorldObjectTypes.OAK)
 	_view._swap_cell_for_sprite(oak)
 	var sprite: SeeThroughSprite = _view._object_sprites[oak.pos]
@@ -122,16 +118,20 @@ func test_a_felled_trees_sprite_has_the_cover_too() -> void:
 	fall.free()
 
 
-func test_a_house_has_snow_on_its_roof_while_its_tile_is_snowy() -> void:
+func test_a_house_has_the_snow_of_its_roof_and_the_cover_of_its_ground() -> void:
 	_view.world.add_chunk(Chunk.new(Vector2i.ZERO))
 	var building := _view.world.place_building(BuildingTypes.KATE, Vector2i(2, 2))
-	_show(WINTER, 0.0)
 	var sprite := _view._buildings._sprites[building]
-	assert_false(sprite.texture.resource_path.contains("_snow"))
-	_show(WINTER, 1.0)
-	assert_true(sprite.texture.resource_path.contains("_snow"))
-	_show(WINTER, 0.0)
-	assert_false(sprite.texture.resource_path.contains("_snow"))
+	assert_true(sprite.material.get_shader_parameter("has_roof_snow"))
+	var snow: Texture2D = sprite.material.get_shader_parameter("roof_snow")
+	assert_eq(snow.resource_path, "res://assets/buildings/kate_snow_cover.png")
+	assert_eq(snow.get_size(), sprite.texture.get_size(), "the size of its pictures")
+	assert_eq(
+		sprite.material.get_shader_parameter("cover_anchor"),
+		building.centre() * TerrainTileset.TILE_SIZE
+	)
+	_show(WINTER)
+	assert_false(sprite.texture.resource_path.contains("_snow"), "the snow is not a look")
 
 
 func test_a_house_roof_takes_the_season_of_its_tile() -> void:
@@ -140,17 +140,17 @@ func test_a_house_roof_takes_the_season_of_its_tile() -> void:
 	var sprite := _view._buildings._sprites[building]
 	# In daylight, so the windows are not lit.
 	_view.set_light_strength(0.0)
-	_show(SUMMER, 0.0)
+	_show(SUMMER)
 	assert_eq(sprite.texture.resource_path, "res://assets/buildings/shack.png")
-	_show(WINTER, 0.0)
+	_show(WINTER)
 	assert_eq(sprite.texture.resource_path, "res://assets/buildings/shack_bare.png")
 
 
 func test_decorations_are_all_drawn_from_the_summer_atlas() -> void:
 	_residency.load_chunk(RIGHT)
 	_view.finish_drawing()
-	for day_and_snow in [[SUMMER, 0.0], [WINTER, 1.0]]:
-		_show(day_and_snow[0], day_and_snow[1])
+	for day in [SUMMER, WINTER]:
+		_show(day)
 		var source_ids := {}
 		for pos in _view.decorations._decorations.get_used_cells():
 			source_ids[_view.decorations._decorations.get_cell_source_id(pos)] = true
@@ -169,7 +169,7 @@ func test_a_crop_is_drawn_from_its_own_sheet_in_every_look() -> void:
 	assert_false(source_id in ObjectTileset.LOOKS, "not from an object atlas look")
 	assert_eq(source_id, _view._object_tileset.crop_source_id(&"carrot"))
 	assert_eq(_view._objects.get_cell_atlas_coords(pos), Vector2i(2, 0))
-	for look_day_snow in [[WINTER, 1.0, 0.0], [WINTER, 0.0, 1.0], [AUTUMN, 0.0, 0.0]]:
-		_show(look_day_snow[0], look_day_snow[1], look_day_snow[2])
+	for day in [WINTER, AUTUMN]:
+		_show(day)
 		assert_eq(_view._objects.get_cell_source_id(pos), source_id)
 		assert_eq(_view._object_state(crop), 0, "a look change does not redraw it")

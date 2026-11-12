@@ -168,8 +168,8 @@
   `data/seasons.cfg` ([snow]: snowfall adds, warmth and sun melt, counted hour by hour from
   the start of autumn; none from the first day of the year), the blend windows too; the view
   updates once a game hour, a few milliseconds per frame.
-- **The ground follows the year as one base colour plus overlays** (task 185, built for the
-  ground and the objects; the houses follow, see docs/plans/185-season-overlays.md):
+- **The ground follows the year as one base colour plus overlays** (task 185, built; see
+  docs/plans/185-season-overlays.md):
   - The grass keeps one look all year and only shifts its colour, evenly all over the world: the
     ground shader (`ground.gdshader`, `GroundLook`) mixes the summer atlas into the atlas of the
     next season by `SeasonBlend.ground_mix` (windows in [ground_mix] of `data/seasons.cfg`, wider
@@ -202,6 +202,11 @@
     the player, a falling tree) have the same shader, with the same atlas picture; crops have no
     cover (their sheet is no part of the atlas). Hit effects ask whether snow lies on the ground
     under the object.
+  - Houses keep the picture of the season (a turf roof's grass follows the grass of the ground)
+    and get the snow of the roof from a picture of its own, `<house>_snow_cover.png`: the pixels
+    that the snow look adds to the roof, ranked from the ridge down, so the snow builds up from
+    the ridge to the eaves, by the cover of the ground at the middle of the house, and keeps the
+    roof's shape and the lit windows (the same picture serves the lit and the unlit house).
   - `--frost` and `--melt` start the game with a forced frost or thaw, like `--snow`.
   - Cost: a chunk fills about 5-7 ms of cover texels when it loads, and the ground costs a few
     texture samples per pixel in place of about 40 overlay layers.

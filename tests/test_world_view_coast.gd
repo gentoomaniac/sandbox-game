@@ -19,7 +19,7 @@ func before_each() -> void:
 	_residency = ChunkResidency.new(World.new(SEED))
 	_view.show_world(_residency)
 	_view.world.clock.day = SUMMER
-	_view.refresh_looks(SUMMER, 0.0, 0.0)
+	_view.refresh_looks(SUMMER)
 	_view.finish_refresh()
 	_residency.load_chunk(CHUNK)
 	_view.finish_drawing()

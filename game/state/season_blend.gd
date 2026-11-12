@@ -45,10 +45,6 @@ class Conditions:
 	## SeasonRules.BOUNDARIES.
 	var ground: Array[float] = []
 	var foliage: Array[float] = []
-	var snow_cover := 0.0
-	var frost := 0.0
-	## How far above the cover a tile's threshold may be for it to have a dusting.
-	var dusting_band := 0.0
 	## The share of the spring window that one plant takes to leaf out.
 	var leaf_out_span := 1.0
 
@@ -62,22 +58,6 @@ class Conditions:
 	## The look of trees, bushes and ferns by the season alone.
 	func foliage_season_look(season_threshold: float) -> Look:
 		return _season_look(foliage, season_threshold, _leaf_out_look(season_threshold))
-
-	## What lies over the season's look: SNOW where the cover is above the threshold, DUSTING
-	## where it is just below, FROST, or SUMMER for nothing (the base look).
-	func weather_look(weather_threshold: float) -> Look:
-		if snow_cover > weather_threshold:
-			return Look.SNOW
-		if snow_cover > 0.0 and snow_cover + dusting_band > weather_threshold:
-			return Look.DUSTING
-		if frost > weather_threshold:
-			return Look.FROST
-		return Look.SUMMER
-
-	## The look of a plant as it shows: snow or frost win over the season's look.
-	func foliage_look(season_threshold: float, weather_threshold: float) -> Look:
-		var weather := weather_look(weather_threshold)
-		return weather if weather != Look.SUMMER else foliage_season_look(season_threshold)
 
 	## The look by the later boundaries of the year, which win over the earlier ones, or
 	## `spring_look`, the look by the first, if none has passed the threshold.
@@ -127,15 +107,12 @@ func _init(world_seed: int, rules := SeasonRules.default_rules()) -> void:
 	_cdf = _build_cdf()
 
 
-## The conditions of a day with this snow cover and frost (both 0 to 1).
-func conditions(day: int, snow_cover: float, frost: float) -> Conditions:
+## The conditions of a day.
+func conditions(day: int) -> Conditions:
 	var result := Conditions.new()
 	for boundary in SeasonRules.BOUNDARIES:
 		result.ground.append(share_passed("ground", boundary, day))
 		result.foliage.append(share_passed("foliage", boundary, day))
-	result.snow_cover = snow_cover
-	result.frost = frost
-	result.dusting_band = _rules.value("snow", "dusting_band")
 	result.leaf_out_span = _rules.value("foliage", "leaf_out_span")
 	return result
 

@@ -167,7 +167,7 @@ by topic. Where is a thing drawn?
 | `buildings.py` | The shack, fisherman's hut, Kate (and its brick and Geest styles, `kate(walls=...)`, as kate_brick and kate_geest), longhouse, hall house and barn at 32 px per tile, plain and with lit windows. |
 | `church.py` | The church and its bell frame (as buildings.py), and the graves of the churchyard (a row of the object atlas, drawn at 32 px). |
 | `seasons.py` | The other looks (spring, autumn, bare, frost, snow, dusting, leaf-out steps) made from the summer art by colour remaps and overlays (the ground's autumn and bare looks are darker greens). Also adds its colours to the palette. |
-| `cover.py` | The textures of the seasonal overlays (task 185): the threshold map and the leaf litter (`art/generated/cover/`, data textures outside the palette check) and the snow and frost cover looks of the object atlas, whose ranks `pack.py` puts in the alpha channel. |
+| `cover.py` | The textures of the seasonal overlays (task 185): the threshold map and the leaf litter (`art/generated/cover/`, data textures outside the palette check) and the snow and frost cover looks of the object atlas and the snow of each house's roof (`buildings/<house>_snow_cover`), whose ranks `pack.py` puts in the alpha channel. |
 | `crops.py`, `crop_icons.py` | Crop sheets (growth stages and the dead one), seed bag and produce icons. |
 | `items.py`, `tool_icons.py` | Item icons, the slot frames and the tools; `icon_of` makes the icon of an item that places a world object from its picture. |
 | `chest.py` | The chest at 32 px, one picture outdoors, indoors and for its icon. |

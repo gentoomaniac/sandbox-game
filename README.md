@@ -46,7 +46,7 @@ year, fresh green in spring and darker green in autumn and winter; fallen leaves
 come over it as overlays that build up and melt gradually, a few more leaves under the oaks, a
 rime on a cold morning, a thin snow that thickens and thaws first on the paths and in the open,
 with soft edges that never follow the tiles, and the snow settles on the trees, bushes and
-stones from the top down. The trees follow their season over its first three
+stones from the top down and on the roofs from the ridge to the eaves. The trees follow their season over its first three
 days, tree by tree: in spring the trees and bushes leaf out in steps, from bare twigs to a haze of
 buds, thin young leaves and then the full crown. Scots pines, tall with a loose flat crown, and spruces stay
 green all year; they are rare, in clumps on the dry Geest. Ground cover thins and fills over the year, ferns die back in

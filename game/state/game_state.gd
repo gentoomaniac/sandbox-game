@@ -187,16 +187,6 @@ func current_frost() -> float:
 	)
 
 
-## The snow cover and the frost as of the start of the hour: the plants and the houses are
-## drawn by their look, which follows them hour by hour.
-func hourly_snow_cover() -> float:
-	return snow_cover.at(_outdoor_tile(), clock.day, _hour_start())
-
-
-func hourly_frost() -> float:
-	return snow_cover.frost_at(weather.at(_outdoor_tile(), clock.day, _hour_start()).temperature)
-
-
 ## The thaw where the player is, 0 to 1, now: the warmth and the sun that melt the snow.
 func current_thaw() -> float:
 	var sample := weather.at(_outdoor_tile(), clock.day, clock.minute_of_day)
@@ -219,10 +209,6 @@ func last_hour_rain() -> float:
 ## The tile whose weather the player sees: theirs, or outside the door of the house they are in.
 func _outdoor_tile() -> Vector2i:
 	return _building_inside.door_tile() if is_inside() else player.tile()
-
-
-func _hour_start() -> int:
-	return clock.minute_of_day / GameClock.MINUTES_PER_HOUR * GameClock.MINUTES_PER_HOUR
 
 
 ## The most energy the player can have now.

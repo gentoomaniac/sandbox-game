@@ -5,6 +5,7 @@ import unittest
 import numpy as np
 from PIL import Image
 
+import buildings
 import cover
 import palette
 import seasons
@@ -68,6 +69,18 @@ class ObjectCoverTest(unittest.TestCase):
     def test_the_cover_looks_are_no_season_looks(self):
         self.assertEqual(cover.COVER_LOOKS, ("snow_cover", "frost_cover"))
         self.assertFalse(set(cover.COVER_LOOKS) & set(seasons.LOOKS))
+
+
+class HouseCoverTest(unittest.TestCase):
+    def test_the_snow_of_a_roof_is_snow_colours_on_roof_pixels_only(self):
+        picture, snowy = buildings.PICTURES["kate"](is_lit=False)
+        snow = cover.house_cover(picture, snowy)
+        self.assertEqual((len(snow), len(snow[0])), (len(picture), len(picture[0])))
+        drawn = {(x, y): name for y, row in enumerate(snow) for x, name in enumerate(row) if name}
+        self.assertGreater(len(drawn), 100)
+        self.assertTrue(all(name.startswith("snow") for name in drawn.values()))
+        on_roof = len(set(drawn) & set(snowy))
+        self.assertGreater(on_roof, len(drawn) / 2, "mostly on the roof (and on its shadow)")
 
 
 class RankAlphaTest(unittest.TestCase):
