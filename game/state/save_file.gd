@@ -21,10 +21,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 31
-## The oldest version we still upgrade. Nine steps back, for the next version (task 204) makes
-## its step the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 32
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -206,6 +205,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_29(game)
 	if version <= 30:
 		_upgrade_from_version_30(game)
+	if version <= 31:
+		_upgrade_from_version_31(game)
 
 
 ## Version 22 kept a shorter sheet of who a villager is (task 96 made it longer). One written by
@@ -330,3 +331,45 @@ static func _upgrade_from_version_30(game: Dictionary) -> void:
 			"done_minute": done,
 			"products": {"brick": firing["brick"]},
 		}
+
+
+## Version 31 had no roosters as a rule (task 204): each flock of chickens (see ChickenFlocks) gets
+## exactly one. A chicken of the rooster look, drawn as a random look, counts as its flock's
+## rooster (the first of a flock does; the others become hens, brown), and a flock with none gets a
+## new one standing where its first chicken does.
+static func _upgrade_from_version_31(game: Dictionary) -> void:
+	# Written out, not read from the data files, so a later change leaves old saves alone.
+	var flock_tiles := 12.0
+	var rooster_look := "rooster"
+	var hen_look := "brown"
+	var coop_type := "chicken_coop"
+	var chickens: Array[Dictionary] = []
+	for animal: Dictionary in game["livestock"]:
+		if animal["species"] == "chicken":
+			chickens.append(animal)
+	var positions: Array[Vector2] = []
+	for chicken in chickens:
+		positions.append(SaveCodec.float_vector_from_json(chicken["position"]))
+	# A coop is at the middle of its first tile, as Coop `roost_spot` has it.
+	var coops: Array[Vector2] = []
+	for building: Dictionary in game["world"]["buildings"]:
+		if building["type"] == coop_type:
+			coops.append(
+				Vector2(SaveCodec.vector_from_json(building["origin"])) + Vector2(0.5, 0.5)
+			)
+	for flock in ChickenFlocks.groups(positions, coops, flock_tiles):
+		var has_rooster := false
+		for index in flock:
+			if chickens[index]["look"] != rooster_look:
+				continue
+			if has_rooster:
+				chickens[index]["look"] = hen_look
+			has_rooster = true
+		if not has_rooster:
+			var rooster: Dictionary = chickens[flock[0]].duplicate()
+			rooster["look"] = rooster_look
+			rooster["tint"] = "ffffff"
+			rooster["friendship"] = 0
+			rooster["last_petted_day"] = 0
+			rooster["last_petted_asleep_day"] = 0
+			game["livestock"].append(rooster)

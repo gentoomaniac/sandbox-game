@@ -75,7 +75,9 @@ func test_every_look_of_a_species_comes_up() -> void:
 		for seed_value in 200:
 			seen[FarmAnimal.create(species, seed_value, Vector2.ZERO, _livestock.rules).look] = true
 		for look: String in _livestock.rules.looks(species):
-			assert_true(seen.has(StringName(look)), "%s %s" % [species, look])
+			# The rooster is no random look (task 204); test_rooster.gd has it.
+			if StringName(look) != LivestockRules.ROOSTER_LOOK:
+				assert_true(seen.has(StringName(look)), "%s %s" % [species, look])
 
 
 # --- Spawning ---
@@ -112,7 +114,7 @@ func test_no_animal_is_put_where_nothing_can_stand() -> void:
 func test_spawning_tells_whoever_listens() -> void:
 	watch_signals(_livestock)
 	_livestock.spawn(LivestockRules.CHICKEN, 2, _pen_middle(), _world)
-	assert_signal_emit_count(_livestock, "added", 2)
+	assert_signal_emit_count(_livestock, "added", 3, "two hens and the flock's rooster")
 
 
 # --- Going about the day ---

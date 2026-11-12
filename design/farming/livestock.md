@@ -5,7 +5,7 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
 
 - **Who:** cows (red-brown Angler, black pied and red pied marsh cattle), sheep (white marsh
   sheep, the grey Heidschnucke with a black face and legs, white with a black face), chickens
-  (brown and white hens, a rooster) and tame rabbits (agouti, white, Dutch). Each animal draws
+  (brown and white hens, and a rooster for each flock) and tame rabbits (agouti, white, Dutch). Each animal draws
   its look and a slight tint from a seed, so no two look quite alike; how often each look
   comes up and the tints are in `data/livestock.cfg`.
 - **Pigs** (decided 2026-11-10, task 165; the user: "add pigs to the list"): pigs of the old
@@ -15,6 +15,22 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   never runs about, eats at a stock of feed and drinks like the others (`[pig]` in
   data/livestock.cfg). It gives nothing yet (meat may come with the economy). Kept in a pig pen
   it stays inside its fence (see the pig pen below).
+- **The rooster** (decided 2026-11-12, task 204; the user: "The chicken need a rooster that's
+  occasionally shouting"): the chicken of the look `rooster` (bigger comb, golden hackles, a dark
+  sickle tail); the other looks are hens. Each **flock** of chickens has exactly one. A flock is
+  the chickens that stand within `[rooster] flock_tiles` (12) of one another, one after the other,
+  and of a coop (`ChickenFlocks`): the hens of a coop are one flock with it, loose chickens far
+  from any coop another. Random looks never draw the rooster (its `look_weights` entry is 0); a
+  flock gets its rooster when its first hens come (`spawn chicken 3` puts 3 hens, and a rooster
+  beside the first one of each flock that has none, which `spawn` does not count), and
+  `spawn rooster` puts one on purpose, flock or not (so a flock can have two: the user's
+  console is for trying things; `killall rooster` removes them). He walks, pecks, sleeps in the
+  coop (taking a roost like a hen) and is petted like a hen; he **lays no egg**. He counts as a
+  chicken wherever the game counts chickens (roosts, `killall chicken`, the needs, friendship);
+  only the eggs are the hens'. An old save (version 31) gets its rooster by the upgrade: a chicken
+  of the rooster look counts as the rooster of its flock (the first of a flock, in the save's
+  order; the others become brown hens), and a flock without one gets a new one where its first
+  chicken stands (a coop counts as at the middle of its first tile).
 - **Dogs, cats and horses** (decided 2026-11-06, task 79): dogs (a farm collie, a spitz, a
   pointer-like hunting dog), cats (tabby, black, ginger) and horses (a heavy marsh horse of the
   Oldenburg kind in bay, black and grey, and a dun pony). Dogs and cats sniff about (their

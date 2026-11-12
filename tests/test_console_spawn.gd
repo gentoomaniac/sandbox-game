@@ -88,3 +88,26 @@ func test_help_lists_the_names_of_every_command_that_takes_names() -> void:
 	assert_eq(
 		_console.run("help nonsense"), ["Unknown command: nonsense (try help)"] as Array[String]
 	)
+
+
+func test_spawn_rooster_puts_roosters_only() -> void:
+	assert_eq(_console.run("spawn rooster 2"), ["Spawned 2 of 2 rooster"] as Array[String])
+
+	var animals := _state.livestock.all()
+	assert_eq(animals.size(), 2)
+	for animal in animals:
+		assert_true(animal.is_rooster())
+
+
+func test_spawn_chicken_brings_a_rooster_along_and_killall_rooster_removes_only_it() -> void:
+	_console.run("spawn chicken 3")
+	assert_eq(_state.livestock.all().size(), 4)
+
+	assert_eq(_console.run("killall rooster"), ["Removed 1 rooster"] as Array[String])
+
+	assert_eq(_state.livestock.all().size(), 3)
+	assert_eq(_console.run("killall rooster"), ["No rooster to remove"] as Array[String])
+
+
+func test_spawn_offers_the_rooster() -> void:
+	assert_eq(_console.complete("spawn roos"), "spawn rooster ")

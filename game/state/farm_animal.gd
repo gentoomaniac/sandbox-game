@@ -89,6 +89,11 @@ static func create(
 	return animal
 
 
+## Whether it is the rooster of a flock: a chicken of the rooster look (other chickens are hens).
+func is_rooster() -> bool:
+	return species == LivestockRules.CHICKEN and look == LivestockRules.ROOSTER_LOOK
+
+
 func tile() -> Vector2i:
 	return Vector2i(position.floor())
 

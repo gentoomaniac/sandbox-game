@@ -34,6 +34,15 @@ static func is_coop(building: Building, yard: YardRules) -> bool:
 	return of(building, yard) != null
 
 
+## Where the coops of the world are (the middle of the first tile of each, see `roost_spot`).
+static func spots(world: World, yard: YardRules) -> Array[Vector2]:
+	var found: Array[Vector2] = []
+	for building in world.buildings():
+		if is_coop(building, yard):
+			found.append(roost_spot(building))
+	return found
+
+
 ## The coop with a free roost nearest to the hen within `[coop] call_tiles` of the front of its
 ## door, that `is_reachable` (a Callable of the tile in front of the door) says she can get to, or
 ## null. `animals` are all the farm animals, to count who is in each or on her way, and `reserved`

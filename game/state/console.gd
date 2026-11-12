@@ -112,6 +112,8 @@ const NPC := "npc"
 ## What `spawn` calls the wild rabbit (WildlifeRules.RABBIT): a plain rabbit is a tame one of the
 ## livestock.
 const WILD_RABBIT := "wild_rabbit"
+## What `spawn` and `killall` call the rooster: the chicken of LivestockRules.ROOSTER_LOOK.
+const ROOSTER := "rooster"
 ## What `play` and `stop` say when the game scene gave the console no music.
 const NO_MUSIC := "No music here"
 ## Item ids this similar to a misspelt one (see String.similarity) are offered as a guess.
@@ -257,6 +259,7 @@ func candidates(kind: StringName) -> Array[String]:
 			values.append(NPC)
 			for species in LivestockRules.SPECIES:
 				values.append(String(species))
+			values.append(ROOSTER)
 			for animal in WildlifeRules.KINDS:
 				values.append(WILD_RABBIT if animal == WildlifeRules.RABBIT else String(animal))
 		&"villager":
@@ -440,15 +443,19 @@ func _spawn(arguments: PackedStringArray) -> Array[String]:
 	var word := arguments[0]
 	var count := 1 if arguments.size() < 2 else int(arguments[1])
 	# Farm animals and villagers stay in the world: they are part of the state.
-	if word == NPC or LivestockRules.SPECIES.has(StringName(word)):
+	if word == NPC or word == ROOSTER or LivestockRules.SPECIES.has(StringName(word)):
 		if _state.is_inside():
 			return ["No %s here" % ("villagers" if word == NPC else "animals")]
 		var near := _state.player.position
-		var spawned := (
-			_state.npcs.spawn(count, near, _state.world)
-			if word == NPC
-			else _state.livestock.spawn(StringName(word), count, near, _state.world)
-		)
+		var spawned := 0
+		if word == NPC:
+			spawned = _state.npcs.spawn(count, near, _state.world)
+		elif word == ROOSTER:
+			spawned = _state.livestock.spawn(
+				LivestockRules.CHICKEN, count, near, _state.world, LivestockRules.ROOSTER_LOOK
+			)
+		else:
+			spawned = _state.livestock.spawn(StringName(word), count, near, _state.world)
 		return ["Spawned %d of %d %s" % [spawned, count, word]]
 	var kind := WildlifeRules.RABBIT if word == WILD_RABBIT else StringName(word)
 	if not WildlifeRules.KINDS.has(kind):
@@ -502,6 +509,11 @@ func _killall(arguments: PackedStringArray) -> Array[String]:
 
 
 func _kill_animals(word: String) -> Array[String]:
+	if word == ROOSTER:
+		var roosters := _state.livestock.remove_species(
+			LivestockRules.CHICKEN, LivestockRules.ROOSTER_LOOK
+		)
+		return [_removed_text(roosters, word)]
 	if LivestockRules.SPECIES.has(StringName(word)):
 		var horse := _state.player.horse
 		if horse != null and horse.species == StringName(word):

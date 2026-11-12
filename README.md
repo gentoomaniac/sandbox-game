@@ -217,9 +217,9 @@ anew, and a planted tile never grows over. The days of winter don't count. The n
 
 Cows, pigs, sheep, chickens and rabbits of the region: red-brown Angler, black pied and red pied
 cattle; bristly pigs of the old breeds, red-brown, sandy, saddleback and spotted; white, grey and
-black-faced sheep; brown and white hens and a rooster; agouti, white and Dutch rabbits, each with
-a slight tint of its own. They wander, graze (the hens peck for
-seeds and worms), keep out of water and away from anything solid, and the rabbits hop off
+black-faced sheep; brown and white hens, and a rooster for each flock (`spawn rooster` puts one;
+he lays no eggs); agouti, white and Dutch rabbits, each with a slight tint of its own. They
+wander, graze (the hens peck for seeds and worms), keep out of water and away from anything solid, and the rabbits hop off
 when you come close. At night they lie down and sleep until the morning. For now they come
 from the console (`spawn cow 3`); they are saved with the game. Milk and wool come later (see
 the farm yard below for eggs, food, water and the pig pen). The numbers are in [data/livestock.cfg](data/livestock.cfg). Like the

@@ -14,6 +14,8 @@ const RABBIT := &"rabbit"
 const DOG := &"dog"
 const CAT := &"cat"
 const HORSE := &"horse"
+## The look of the chicken that is the rooster of a flock (see ChickenFlocks); the others are hens.
+const ROOSTER_LOOK := &"rooster"
 const SPECIES: Array[StringName] = [COW, PIG, SHEEP, CHICKEN, RABBIT, DOG, CAT, HORSE]
 
 const GENERAL_KEYS := [
@@ -42,6 +44,7 @@ const HUNTING_KEYS := [
 	"rest_seconds",
 ]
 const FRIENDSHIP_KEYS := ["pettable", "max", "pet_gain", "sleep_pet_loss", "daily_loss"]
+const ROOSTER_KEYS := ["flock_tiles"]
 const SPECIES_KEYS := [
 	"looks",
 	"look_weights",
@@ -109,6 +112,9 @@ func problems() -> Array[String]:
 	for key: String in FRIENDSHIP_KEYS:
 		if not _values.get("friendship", {}).has(key):
 			found.append("[friendship] no %s" % key)
+	for key: String in ROOSTER_KEYS:
+		if not _values.get("rooster", {}).has(key):
+			found.append("[rooster] no %s" % key)
 	for species in SPECIES:
 		var values: Dictionary = _values.get(String(species), {})
 		var missing := SPECIES_KEYS.filter(func(key: String) -> bool: return not values.has(key))
@@ -148,6 +154,11 @@ func hunting(key: String) -> float:
 ## A number of how petting changes an animal's friendship (see [friendship]).
 func friendship(key: String) -> int:
 	return int(_values["friendship"][key])
+
+
+## A number of the rooster and its flock (see [rooster]).
+func rooster(key: String) -> float:
+	return float(_values["rooster"][key])
 
 
 ## Whether animals of the species can be petted.

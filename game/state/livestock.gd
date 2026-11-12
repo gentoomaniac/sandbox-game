@@ -95,13 +95,15 @@ func add(animal: FarmAnimal) -> void:
 	added.emit(animal)
 
 
-## Takes every animal of a species out of the world, and so out of the next save. Returns how many.
+## Takes every animal of a species (of one `look` of it, if given) out of the world, and so out of
+## the next save. Returns how many.
 ## The player riding a horse is not Livestock's to undo: GameState `dismount` comes first.
-func remove_species(species: StringName) -> int:
+func remove_species(species: StringName, look := &"") -> int:
 	var gone: Array[FarmAnimal] = []
 	var staying: Array[FarmAnimal] = []
 	for animal in _animals:
-		(gone if animal.species == species else staying).append(animal)
+		var is_gone := animal.species == species and (look == &"" or animal.look == look)
+		(gone if is_gone else staying).append(animal)
 	_animals = staying
 	for animal in gone:
 		removed.emit(animal)
@@ -122,7 +124,8 @@ func load_array(data: Array) -> void:
 
 ## Puts up to `count` new animals of a species on ground of `map` they can stand on, a few tiles
 ## around `near`, all of one `look` if given (else each of a look drawn by the species' weights).
-## Returns how many found a place.
+## New hens (chickens with no look given) bring a rooster to each flock that has none, which is
+## not counted. Returns how many found a place.
 func spawn(species: StringName, count: int, near: Vector2, map: GameMap, look := &"") -> int:
 	var placed := 0
 	for _try in SPAWN_TRIES:
@@ -138,6 +141,12 @@ func spawn(species: StringName, count: int, near: Vector2, map: GameMap, look :=
 		_start_next_activity(animal)
 		add(animal)
 		placed += 1
+	if species == LivestockRules.CHICKEN and look == &"" and map is World:
+		var coops := Coop.spots(map as World, yard)
+		for spot in ChickenFlocks.spots_without_rooster(
+			_animals, coops, rules.rooster("flock_tiles")
+		):
+			spawn(species, 1, spot, map, LivestockRules.ROOSTER_LOOK)
 	return placed
 
 
@@ -370,7 +379,8 @@ func _settle_hen_in_skip(hen: FarmAnimal, map: GameMap, clock: GameClock, minute
 	var now := clock.total_minutes()
 	var from := now - minutes - Simulation.WALKED_MINUTES
 	for _night in _bedtimes_between(hen, from, now):
-		Coop.lay_egg(coop, yard, rng)
+		if not hen.is_rooster():
+			Coop.lay_egg(coop, yard, rng)
 	hen.position = Coop.door_front(coop)
 	hen.is_housed = false
 	_meet_needs_in_skip(hen, map, minutes)
@@ -485,13 +495,15 @@ func _walk_to_coop(hen: FarmAnimal, delta: float, map: GameMap) -> bool:
 	return true
 
 
-## The hen goes in: she is on a tile of the coop, asleep, and lays an egg by the dice.
+## The hen goes in: she is on a tile of the coop, asleep, and lays an egg by the dice (a rooster
+## lays none).
 func _enter_coop(hen: FarmAnimal, coop: Building) -> void:
 	hen.position = Coop.roost_spot(coop)
 	hen.goal = Vector2.INF
 	hen.is_housed = true
 	hen.activity = FarmAnimal.Activity.SLEEP
-	Coop.lay_egg(coop, yard, rng)
+	if not hen.is_rooster():
+		Coop.lay_egg(coop, yard, rng)
 
 
 ## The hen comes out in the morning, to the front of the door.
