@@ -409,9 +409,9 @@ is now." Measured: with only vsync the game drew 240 fps on the user's 240 Hz la
 held 60 fps steady.
 - A frame rate setting in GameSettings (saved in the settings file, default 60) applied to
   `Engine.max_fps` at start and when it changes.
-- A slider on the game settings page of the pause menu, from 10 up in steps of 10; its top stop
-  is "no limit": the screen's refresh rate (today's behaviour, vsync only, `max_fps = 0`),
-  labelled with that rate.
+- A slider on the game settings page of the pause menu: 10 to 240 in steps of 10, then a last
+  stop "No limit" (today's behaviour, vsync only, `max_fps = 0`). The user, 2026-11-12: "make the
+  top no limit then instead of a fixed number".
 - Game speed does not depend on the frame rate.
 - Tests for the setting (default, range, save and load); a screenshot of the slider; README and
   docs (design/tech/build-and-tools.md, design/presentation/menus-and-hud.md).
