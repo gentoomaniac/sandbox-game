@@ -1,7 +1,6 @@
 extends GutTest
-## WorldView's looks: the season overlays, snow and frost drawn in patches against each tile's
-## threshold, the objects' and houses' looks, and how a refresh is spread and limited to what
-## changed.
+## WorldView's looks of the plants and houses (the ground's are in test_world_view_ground.gd): the
+## look of each tree and house by the season and the weather, and how a refresh is spread.
 
 const SEED := 1
 const LEFT := Vector2i(-2, -1)
@@ -36,97 +35,14 @@ func _show(day: int, snow: float, frost := 0.0) -> void:
 	_view.finish_refresh()
 
 
-func _share_of_tiles_with_weather(coords: Vector2i, look: SeasonBlend.Look) -> float:
-	var codes: PackedInt32Array = _view._chunk_looks[coords].codes
-	var count := 0
-	for code in codes:
-		count += 1 if TerrainTileset.weather_of(code) == look else 0
-	return float(count) / codes.size()
-
-
-func test_snow_comes_in_patches_that_grow_with_the_cover() -> void:
-	_residency.load_chunk(RIGHT)
-	_view.finish_drawing()
-	_show(WINTER, 0.0)
-	assert_eq(_view._overlays[SeasonBlend.Look.SNOW].get_used_cells().size(), 0)
-	var last_cells := 0
-	for cover in [0.2, 0.5, 0.9]:
-		_show(WINTER, cover)
-		assert_almost_eq(_share_of_tiles_with_weather(RIGHT, SeasonBlend.Look.SNOW), cover, 0.06)
-		var cells: int = _view._overlays[SeasonBlend.Look.SNOW].get_used_cells().size()
-		assert_gt(cells, last_cells)
-		last_cells = cells
-
-
-func test_frost_is_drawn_where_it_has_not_snowed() -> void:
-	_residency.load_chunk(RIGHT)
-	_view.finish_drawing()
-	_show(WINTER, 0.0, 0.6)
-	assert_gt(_view._overlays[SeasonBlend.Look.FROST].get_used_cells().size(), 0)
-	assert_eq(_view._overlays[SeasonBlend.Look.SNOW].get_used_cells().size(), 0)
-	_show(WINTER, 0.6, 0.6)
-	var frosty := _share_of_tiles_with_weather(RIGHT, SeasonBlend.Look.FROST)
-	assert_almost_eq(frosty, 0.0, 0.01, "snow wins over frost where both are above the threshold")
-
-
-func test_the_season_overlays_follow_the_blend() -> void:
-	_residency.load_chunk(RIGHT)
-	_view.finish_drawing()
-	_show(SUMMER, 0.0)
-	for look: SeasonBlend.Look in TerrainTileset.OVERLAY_LOOKS:
-		assert_eq(_view._overlays[look].get_used_cells().size(), 0, "no overlay in summer")
-	_show(WINTER, 0.0)
-	assert_gt(_view._overlays[SeasonBlend.Look.BARE].get_used_cells().size(), 0)
-	_show(SUMMER, 0.0)
-	assert_eq(_view._overlays[SeasonBlend.Look.BARE].get_used_cells().size(), 0)
-
-
-func test_a_refresh_only_touches_the_cells_of_tiles_that_flipped() -> void:
-	_residency.load_chunk(RIGHT)
-	_view.finish_drawing()
-	_show(WINTER, 0.5)
-	var before: PackedInt32Array = _view._chunk_looks[RIGHT].codes.duplicate()
-	_view.refresh_looks(WINTER, 0.52, 0.0)
-	_view._refresh_chunk(RIGHT)
-	var after: PackedInt32Array = _view._chunk_looks[RIGHT].codes
-	var flipped := 0
-	for index in before.size():
-		flipped += 1 if before[index] != after[index] else 0
-	assert_gt(flipped, 0)
-	assert_lt(flipped, 100)
-	assert_lte(_view._cells_to_redraw.size(), flipped * 4, "the 4 cells around each flipped tile")
-	_view.finish_refresh()
-	_view.refresh_looks(WINTER, 0.52, 0.0)
-	assert_false(_view._is_refreshing(), "nothing to do while the state is the same")
-
-
-func test_a_chunk_that_loads_later_is_drawn_for_the_current_looks() -> void:
-	_show(WINTER, 0.7)
-	_residency.load_chunk(RIGHT)
-	_view.finish_drawing()
-	assert_almost_eq(_share_of_tiles_with_weather(RIGHT, SeasonBlend.Look.SNOW), 0.7, 0.06)
-	assert_gt(_view._overlays[SeasonBlend.Look.SNOW].get_used_cells().size(), 0)
-	assert_false(_view._is_refreshing())
-
-
-func test_unloading_a_chunk_clears_its_overlays_and_looks() -> void:
-	_residency.load_chunk(RIGHT)
-	_view.finish_drawing()
-	_show(WINTER, 0.7)
-	_residency.unload_chunk(RIGHT)
-	assert_false(_view._chunk_looks.has(RIGHT))
-	assert_eq(_view._overlays[SeasonBlend.Look.SNOW].get_used_cells().size(), 0)
-
-
 func test_a_refresh_is_spread_over_frames() -> void:
 	for coords in [LEFT, RIGHT, BELOW]:
 		_residency.load_chunk(coords)
 		_view.finish_drawing()
 	_view.refresh_looks(WINTER, 0.5, 0.0)
-	assert_true(_view._is_refreshing())
 	assert_eq(_view._refresh_queue.size(), 3)
 	_view.finish_refresh()
-	assert_false(_view._is_refreshing())
+	assert_true(_view._refresh_queue.is_empty())
 
 
 func test_an_oak_is_in_leaf_bare_snowy_or_frosty_by_the_look() -> void:
@@ -198,23 +114,15 @@ func test_a_house_roof_takes_the_season_of_its_tile() -> void:
 	assert_eq(sprite.texture.resource_path, "res://assets/buildings/shack_bare.png")
 
 
-func test_decorations_take_the_look_of_their_tile() -> void:
+func test_decorations_are_all_drawn_from_the_summer_atlas() -> void:
 	_residency.load_chunk(RIGHT)
 	_view.finish_drawing()
-	_show(SUMMER, 0.0)
-	var source_ids := {}
-	for pos in _view.decorations._decorations.get_used_cells():
-		source_ids[_view.decorations._decorations.get_cell_source_id(pos)] = true
-	assert_eq(source_ids.keys(), [TerrainTileset.decoration_source_id(SeasonBlend.Look.SUMMER)])
-	_show(SUMMER, 1.0)
-	for pos in _view.decorations._decorations.get_used_cells():
-		var is_water := TerrainTileset.layer_of(_view._code_at(pos)) == TerrainTileset.Layer.WATER
-		var expected := SeasonBlend.Look.SUMMER if is_water else SeasonBlend.Look.SNOW
-		assert_eq(
-			_view.decorations._decorations.get_cell_source_id(pos),
-			TerrainTileset.decoration_source_id(expected),
-			"decoration at %s" % pos
-		)
+	for day_and_snow in [[SUMMER, 0.0], [WINTER, 1.0]]:
+		_show(day_and_snow[0], day_and_snow[1])
+		var source_ids := {}
+		for pos in _view.decorations._decorations.get_used_cells():
+			source_ids[_view.decorations._decorations.get_cell_source_id(pos)] = true
+		assert_eq(source_ids.keys(), [TerrainTileset.DECORATION_SOURCE_ID])
 
 
 func test_a_crop_is_drawn_from_its_own_sheet_in_every_look() -> void:
@@ -233,37 +141,3 @@ func test_a_crop_is_drawn_from_its_own_sheet_in_every_look() -> void:
 		_show(look_day_snow[0], look_day_snow[1], look_day_snow[2])
 		assert_eq(_view._objects.get_cell_source_id(pos), source_id)
 		assert_eq(_view._object_state(crop), 0, "a look change does not redraw it")
-
-
-func test_wet_soil_is_drawn_under_the_look_overlays() -> void:
-	var wetness_index := _view._soil_wetness.get_index()
-	for overlay: TileMapLayer in _view._overlays.values():
-		assert_lt(wetness_index, overlay.get_index(), overlay.name)
-
-
-func test_soil_that_snow_lies_on_is_not_drawn_wet() -> void:
-	_residency.load_chunk(RIGHT)
-	_view.finish_drawing()
-	var tiles: Array[Vector2i] = []
-	for x in range(-20, -10):
-		var pos := Vector2i(x, -20)
-		_view.world.set_terrain(pos, Tile.Terrain.SOIL)
-		_view.world.set_moisture(pos, 1.0)
-		tiles.append(pos)
-	_show(SUMMER, 0.0)
-	for pos in tiles:
-		assert_eq(
-			_view._soil_wetness.get_cell_atlas_coords(pos).y, SoilWetness.LOOKS - 2, "wet in summer"
-		)
-	_show(WINTER, 1.0)
-	var snowed := 0
-	for pos in tiles:
-		var is_snowy := _view.is_snowed_over(pos)
-		snowed += 1 if is_snowy else 0
-		assert_eq(_view._soil_wetness.get_cell_source_id(pos) == -1, is_snowy, str(pos))
-	assert_gt(snowed, 0, "some of the soil is under snow")
-	_show(SUMMER, 0.0)
-	for pos in tiles:
-		assert_eq(
-			_view._soil_wetness.get_cell_atlas_coords(pos).y, SoilWetness.LOOKS - 2, "wet again"
-		)

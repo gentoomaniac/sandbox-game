@@ -104,9 +104,7 @@ func test_the_classic_atlases_have_the_tiles_of_the_new() -> void:
 
 func test_the_atlases_follow_the_art_set() -> void:
 	var tileset := TerrainTileset.new()
-	var summer: TileSetAtlasSource = tileset.tile_set.get_source(
-		TerrainTileset.terrain_source_id(SeasonBlend.Look.SUMMER)
-	)
+	var summer: TileSetAtlasSource = tileset.tile_set.get_source(TerrainTileset.TERRAIN_SOURCE_ID)
 	ArtSet.is_classic = true
 	tileset.show_art_set()
 	assert_eq(summer.texture.resource_path, "res://assets/classic/terrain.png")

@@ -41,9 +41,13 @@ buildings each have a look for every season: fresh green in spring, full summer 
 autumn colours of the North Sea, and snow in winter. The woods are those of the region: grey
 beeches under broad domes that turn copper, white birches that turn yellow, dark alders on
 wet ground that stay green late and hang with cones in winter, and oaks in brown, ochre and
-copper. A new season comes in over its first three days, tile by tile and tree by tree: in
-spring the trees and bushes leaf out in steps, from bare twigs to a haze of buds, thin young
-leaves and then the full crown. Scots pines, tall with a loose flat crown, and spruces stay
+copper. The grass itself stays grass and only shifts its colour gently and evenly through the
+year, fresh green in spring and darker green in autumn and winter; fallen leaves, frost and snow
+come over it as overlays that build up and melt gradually, a few more leaves under the oaks, a
+rime on a cold morning, a thin snow that thickens and thaws first on the paths and in the open,
+with soft edges that never follow the tiles. The trees follow their season over its first three
+days, tree by tree: in spring the trees and bushes leaf out in steps, from bare twigs to a haze of
+buds, thin young leaves and then the full crown. Scots pines, tall with a loose flat crown, and spruces stay
 green all year; they are rare, in clumps on the dry Geest. Ground cover thins and fills over the year, ferns die back in
 winter, and berry bushes only bear fruit in their season.
 

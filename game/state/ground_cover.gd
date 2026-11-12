@@ -110,14 +110,18 @@ func frost_at(tile: Vector2i) -> float:
 
 ## The share of the tile's pixels with snow: the cover it catches, less what the thaw takes.
 func snow_at(tile: Vector2i) -> float:
-	var channels := channels_at(tile)
-	var thawed: float = _thaw * channels.melt * _thaw_gain
-	return clampf(_snow_cover * channels.snow - thawed, 0.0, 1.0)
+	return _snow_with(tile, _snow_cover, _thaw)
 
 
 ## Whether snow lies on most of the tile (what footsteps and flowers ask).
 func is_snowed(tile: Vector2i) -> bool:
 	return snow_at(tile) >= 0.5
+
+
+## Whether snow would lie on most of the tile with this snow cover and thaw instead of the weather
+## of the moment (what the animals ask about another time).
+func is_snowed_with(tile: Vector2i, snow_cover: float, thaw: float) -> bool:
+	return _snow_with(tile, snow_cover, thaw) >= 0.5
 
 
 ## The channels of a tile: nothing lies where it catches nothing (water, tidal mud, rooms), and
@@ -133,6 +137,11 @@ func channels_at(tile: Vector2i) -> Channels:
 		_crown_at(tile, CROWNED),
 		_lee_at(tile)
 	)
+
+
+func _snow_with(tile: Vector2i, snow_cover: float, thaw: float) -> float:
+	var channels := channels_at(tile)
+	return clampf(snow_cover * channels.snow - thaw * channels.melt * _thaw_gain, 0.0, 1.0)
 
 
 ## How far (in tiles) a tree or a building changes the channels of the tiles around it: the

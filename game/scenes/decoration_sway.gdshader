@@ -4,9 +4,12 @@ shader_type canvas_item;
 // height is the run of opaque pixels below it: the bottom pixel of a stem stays put, the one
 // above moves at most one pixel, and so do the ones above that, but sooner. Set on the
 // decoration tiles that sway (see AmbientMotion and TerrainTileset), in an atlas without padding.
+// They have the colour of the ground and its cover like the ones that stand still (see
+// ground_look.gdshaderinc and GroundLook).
 
 #include "res://game/scenes/art_scale.gdshaderinc"
 #include "res://game/scenes/sway.gdshaderinc"
+#include "res://game/scenes/ground_look.gdshaderinc"
 
 // How far these plants bend, as a share of the wind's sway.
 uniform float strength = 0.5;
@@ -56,12 +59,17 @@ void fragment() {
 		moved_height += moved_stem ? 1.0 : 0.0;
 	}
 	bool is_moved_in_tile = moved_local.x >= 0.0 && moved_local.x < tile;
-	vec4 shown = vec4(0.0);
+	float shown = 0.0;
+	vec2 shown_source = vec2(0.0);
 	if (direction != 0.0 && is_moved_in_tile && moved.a > 0.0
 			&& shift_of(moved_height, offset) == direction) {
-		shown = moved;
+		shown = moved.a;
+		shown_source = (texel + vec2(-direction, 0.0)) * art_scale + 0.5;
 	} else if (own.a > 0.0 && shift_of(own_height, offset) == 0.0) {
-		shown = own;
+		shown = own.a;
+		shown_source = texel * art_scale + 0.5;
 	}
-	COLOR = shown * modulate;
+	COLOR = shown == 0.0
+		? vec4(0.0)
+		: ground_pixel(shown_source * TEXTURE_PIXEL_SIZE, shown, world_position, art_scale) * modulate;
 }

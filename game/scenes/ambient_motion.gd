@@ -326,13 +326,13 @@ static func splash_chance_for(rain: float) -> float:
 ## classic art.
 func _show_ground_art_set() -> void:
 	for material in [water, mud, decoration_sway, lily_pads]:
-		material.set_shader_parameter("art_scale", _art_scale())
+		material.set_shader_parameter("art_scale", art_pixel_size())
 
 
 ## The plants sway on the pixels of their art, as the ground does: the profiles, in the world's
 ## pixels, become the art's.
 func _show_plants_art_set() -> void:
-	var art_scale := _art_scale()
+	var art_scale := art_pixel_size()
 	for type: StringName in SWAY_PROFILES:
 		var material := _object_materials[type]
 		material.set_shader_parameter("art_scale", art_scale)
@@ -343,7 +343,7 @@ func _show_plants_art_set() -> void:
 
 
 ## How many world pixels an art pixel of the plants and the ground is: 1, or 2 in the classic art.
-static func _art_scale() -> float:
+static func art_pixel_size() -> float:
 	return float(TerrainTileset.ART_16_SCALE) if ArtSet.is_classic else 1.0
 
 

@@ -172,3 +172,16 @@ func test_the_thaw_grows_with_warmth_and_sunshine() -> void:
 	assert_gt(cover.thaw_at(2.0, 0.0), 0.0)
 	assert_gt(cover.thaw_at(2.0, 100.0), cover.thaw_at(2.0, 0.0))
 	assert_eq(cover.thaw_at(30.0, 100.0), 1.0)
+
+
+func test_a_forced_frost_and_thaw_replace_those_of_the_temperature() -> void:
+	var cover := _snowing(0.0)
+	assert_eq(cover.frost_at(0.0), 0.0)
+	assert_eq(cover.thaw_at(-3.0, 0.0), 0.0)
+	cover.forced_frost = 0.7
+	cover.forced_thaw = 0.4
+	assert_eq(cover.frost_at(10.0), 0.7)
+	assert_eq(cover.thaw_at(-10.0, 0.0), 0.4)
+	cover.forced_frost = -1.0
+	cover.forced_thaw = -1.0
+	assert_eq(cover.frost_at(0.0), 0.0)

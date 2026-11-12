@@ -98,9 +98,7 @@ func test_all_layers_of_a_cell_use_the_same_edge_variant() -> void:
 
 
 func test_every_atlas_cell_in_use_has_a_tile() -> void:
-	var source: TileSetAtlasSource = _tileset.tile_set.get_source(
-		TerrainTileset.terrain_source_id(SeasonBlend.Look.SUMMER)
-	)
+	var source: TileSetAtlasSource = _tileset.tile_set.get_source(TerrainTileset.TERRAIN_SOURCE_ID)
 	for layer in TerrainTileset.LAYER_COUNT:
 		for y in 8:
 			for x in 8:
@@ -127,7 +125,7 @@ func test_full_variant_is_stable_and_varies_by_position() -> void:
 
 func test_decorations_gather_where_the_cluster_noise_peaks() -> void:
 	var source: TileSetAtlasSource = _tileset.tile_set.get_source(
-		TerrainTileset.decoration_source_id(SeasonBlend.Look.SUMMER)
+		TerrainTileset.DECORATION_SOURCE_ID
 	)
 	var sparse := 0
 	var clustered := 0
@@ -146,42 +144,39 @@ func test_decorations_gather_where_the_cluster_noise_peaks() -> void:
 	assert_gt(sparse, 0)
 
 
-func test_every_meadow_flower_has_its_tiles_in_every_look() -> void:
-	for look: SeasonBlend.Look in SeasonBlend.GROUND_LOOKS:
-		var source: TileSetAtlasSource = _tileset.tile_set.get_source(
-			TerrainTileset.decoration_source_id(look)
-		)
-		for species in TerrainTileset.FLOWER_SPECIES:
-			for variant in TerrainTileset.FLOWER_VARIANTS:
-				var cell := TerrainTileset.flower_cell(species, variant)
-				assert_true(source.has_tile(cell), "%s %d in look %d" % [species, variant, look])
+func test_every_meadow_flower_has_its_tiles() -> void:
+	var source: TileSetAtlasSource = _tileset.tile_set.get_source(
+		TerrainTileset.DECORATION_SOURCE_ID
+	)
+	for species in TerrainTileset.FLOWER_SPECIES:
+		for variant in TerrainTileset.FLOWER_VARIANTS:
+			var cell := TerrainTileset.flower_cell(species, variant)
+			assert_true(source.has_tile(cell), "%s %d" % [species, variant])
 	var after_the_last := Vector2i(
 		TerrainTileset.FLOWER_SPECIES.size() * TerrainTileset.FLOWER_VARIANTS,
 		TerrainTileset.FLOWER_ROW
 	)
-	var summer: TileSetAtlasSource = _tileset.tile_set.get_source(
-		TerrainTileset.decoration_source_id(SeasonBlend.Look.SUMMER)
-	)
-	assert_false(summer.has_tile(after_the_last), "the art has no more flowers than the list")
+	assert_false(source.has_tile(after_the_last), "the art has no more flowers than the list")
+
+
+func test_the_atlases_of_every_look_have_the_layout_of_the_summer_one() -> void:
+	# The ground shader finds the same pixel in the atlas of each look by its coordinates.
+	for path in [TerrainTileset.TERRAIN_ATLAS_PATH, TerrainTileset.DECORATION_ATLAS_PATH]:
+		var summer: Texture2D = load(ArtSet.path(path))
+		for look: SeasonBlend.Look in SeasonBlend.GROUND_LOOKS:
+			var atlas: Texture2D = load(ArtSet.path(SeasonalArt.path(path, look)))
+			assert_eq(atlas.get_size(), summer.get_size(), "%s in look %d" % [path, look])
+
+
+func test_the_atlas_sources_have_no_padding_so_the_looks_line_up() -> void:
+	for id in [TerrainTileset.TERRAIN_SOURCE_ID, TerrainTileset.DECORATION_SOURCE_ID]:
+		var source: TileSetAtlasSource = _tileset.tile_set.get_source(id)
+		assert_false(source.use_texture_padding)
 
 
 func test_tilled_soil_has_no_decorations() -> void:
 	for x in 50:
 		assert_eq(_tileset.decoration_cell(SOIL, Vector2i(x, 0), 1.0), TerrainTileset.NO_DECORATION)
-
-
-func test_a_tile_code_holds_its_layer_and_both_looks_apart() -> void:
-	for layer in TerrainTileset.LAYER_COUNT:
-		for season_look in SeasonBlend.Look.values():
-			for weather_look in SeasonBlend.Look.values():
-				var code := TerrainTileset.tile_code(layer, season_look, weather_look)
-				assert_eq(TerrainTileset.layer_of(code), layer)
-				assert_eq(TerrainTileset.season_of(code), season_look)
-				assert_eq(TerrainTileset.weather_of(code), weather_look)
-
-
-func test_the_layer_of_a_missing_corner_is_missing() -> void:
-	assert_eq(TerrainTileset.layer_of(MISSING), MISSING)
 
 
 func test_worn_ground_is_drawn_trodden_or_as_a_path_whatever_its_grass() -> void:
@@ -195,10 +190,3 @@ func test_worn_ground_is_drawn_trodden_or_as_a_path_whatever_its_grass() -> void
 				TerrainTileset.terrain_layer(terrain, variety, PathRules.Stage.PATH),
 				TerrainTileset.Layer.PATH
 			)
-
-
-func test_the_tidal_mud_looks_the_same_in_every_season_and_weather() -> void:
-	var mud := TerrainTileset.terrain_layer(Tile.Terrain.MUD, 0.0)
-	assert_eq(mud, TerrainTileset.Layer.MUD)
-	for look in SeasonBlend.Look.values():
-		assert_eq(TerrainTileset.shown_look(mud, look, look), SeasonBlend.Look.SUMMER)

@@ -36,31 +36,24 @@ func _patch_of(terrain: Tile.Terrain) -> Vector2i:
 
 func _show(day: int, snow: float) -> void:
 	_view.world.clock.day = day
-	_view.refresh_looks(day, snow, 0.0)
-	_view.finish_refresh()
+	_view.show_ground_cover(day, snow, 0.0, 0.0)
 
 
-func test_the_mud_has_no_season_or_snow_drawn_over_it() -> void:
+func test_the_mud_has_no_season_or_snow_over_it() -> void:
 	var tile := _patch_of(Tile.Terrain.MUD)
 	assert_ne(_view._layers[TerrainTileset.Layer.MUD].get_cell_source_id(tile), -1)
-	_show(AUTUMN, 0.0)
-	assert_eq(_view._overlays[SeasonBlend.Look.AUTUMN].get_cell_source_id(tile), -1)
+	assert_eq(_view._layers[TerrainTileset.Layer.MUD].material, _view.ambient_motion.mud)
 	_show(WINTER, 1.0)
-	assert_eq(_view._overlays[SeasonBlend.Look.SNOW].get_cell_source_id(tile), -1)
-	assert_false(_view.is_snowed_over(tile))
-
-
-func test_the_salt_marsh_has_its_own_autumn_look() -> void:
-	var tile := _patch_of(Tile.Terrain.SALT_MARSH)
-	assert_ne(_view._layers[TerrainTileset.Layer.SALT_MARSH].get_cell_source_id(tile), -1)
-	_show(AUTUMN, 0.0)
-	var overlay := _view._variety_overlays[Vector2i(
-		SeasonBlend.Look.AUTUMN, TerrainTileset.Layer.SALT_MARSH
-	)]
-	assert_eq(overlay.get_cell_atlas_coords(tile).y, TerrainTileset.Layer.SALT_MARSH)
+	assert_false(_view.is_snowed_over(tile), "the tide washes it clear")
+	assert_eq(_view._cover_map.channels_at(tile).g, 0.0, "it catches no snow")
 
 
 func test_snow_covers_the_salt_marsh() -> void:
 	var tile := _patch_of(Tile.Terrain.SALT_MARSH)
 	_show(WINTER, 1.0)
-	assert_ne(_view._overlays[SeasonBlend.Look.SNOW].get_cell_source_id(tile), -1)
+	assert_true(_view.is_snowed_over(tile))
+
+
+func test_the_salt_marsh_is_drawn_from_its_own_layer() -> void:
+	var tile := _patch_of(Tile.Terrain.SALT_MARSH)
+	assert_ne(_view._layers[TerrainTileset.Layer.SALT_MARSH].get_cell_source_id(tile), -1)

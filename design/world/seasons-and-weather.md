@@ -168,17 +168,32 @@
   `data/seasons.cfg` ([snow]: snowfall adds, warmth and sun melt, counted hour by hour from
   the start of autumn; none from the first day of the year), the blend windows too; the view
   updates once a game hour, a few milliseconds per frame.
-- **Overlay cover (task 185, under construction):** the ground is moving from looks per tile to
-  one base colour plus overlays. The state side is in: `SeasonBlend.ground_mix` (the grass
-  colour shifting smoothly between the seasons' looks, windows in [ground_mix]) and `litter`
-  (fallen leaves, [litter]); `SnowCover.thaw_at`; and `GroundCover`, which gives every tile what
-  it catches (leaves, snow, thaw, frost shelter; [cover]) and the share of its pixels covered.
-  The plumbing for the shaders is in: global shader parameters in project.godot (the weather of
-  the moment, set once per game minute), `game/scenes/ground_cover.gdshaderinc` (the per-pixel
-  rule: a pixel shows leaves, frost or snow where its threshold in the noise texture is below the
-  share) and `CoverMap`, a 512 x 512 ring texture with a texel per world tile (what the tile
-  catches), drawn from `GroundCover.chunk_channels` when a chunk loads and around a change.
-  Plan: docs/plans/185-season-overlays.md.
+- **The ground follows the year as one base colour plus overlays** (task 185, built; the plants
+  and the houses still use looks until its later steps, see docs/plans/185-season-overlays.md):
+  - The grass keeps one look all year and only shifts its colour, evenly all over the world: the
+    ground shader (`ground.gdshader`, `GroundLook`) mixes the summer atlas into the atlas of the
+    next season by `SeasonBlend.ground_mix` (windows in [ground_mix] of `data/seasons.cfg`, wider
+    than the plants' blend windows), fresh in spring, darker green in autumn and deepest in
+    winter. There is no yellow or grey, and no patch changes before another. The salt marsh keeps
+    its red-purple autumn.
+  - Fallen leaves (`SeasonBlend.litter`, [litter]), frost (from the temperature, per minute) and
+    snow (`SnowCover`, per minute) are overlays on top, decided per art pixel: a pixel shows the
+    cover where its threshold in `ground_noise` (a noise of patches a few tiles across with a
+    grain; the same histogram everywhere, so a cover of 0.3 covers 30 % of the pixels) is below the
+    share of cover the tile gets. They build up and melt evenly, with soft organic edges, never
+    along the tile grid, in both art sets (the pixel of the classic art is 16 px).
+  - What a tile catches, from `GroundCover` ([cover]): leaves thicker under and near broadleaved
+    trees and thinner on fields and paths; snow thinner under crowns, in the lee of houses (east
+    of them, a fixed westerly) and on paths; frost sheltered under crowns; and the thaw takes the
+    snow off paths and open ground first. Water and the tidal mud catch nothing; tilled soil,
+    paths, floodplain and wetland do. `CoverMap` keeps one texel per world tile in a 512 x 512 ring
+    texture that the shader filters, so the cover is smooth across tile edges; it is redrawn when
+    a chunk loads or something near a tile changes (a tree, a house, a path).
+  - The weather of the moment is set once per game minute as global shader parameters
+    (`ground_cover.gdshaderinc`); nothing is redrawn per tile, per hour.
+  - `--frost` and `--melt` start the game with a forced frost or thaw, like `--snow`.
+  - Cost: a chunk fills about 5-7 ms of cover texels when it loads, and the ground costs a few
+    texture samples per pixel in place of about 40 overlay layers.
 - **Weather and seasons change the map:**
   - frost freezes rivers so they can be crossed;
   - heavy, deep snow makes some areas unreachable;

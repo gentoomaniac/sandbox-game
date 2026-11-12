@@ -131,11 +131,21 @@ func _lines(text: String) -> Array[String]:
 # --- Snow cover ---
 
 
-func test_the_snow_cover_is_the_one_at_the_players_place_at_the_start_of_the_hour() -> void:
+func test_the_snow_cover_is_the_one_at_the_players_place_now() -> void:
 	_state.clock.day = 110
 	_state.clock.set_time(14, 40)
-	var expected := _state.snow_cover.at(_state.player.tile(), 110, 14 * 60)
+	var expected := _state.snow_cover.at(_state.player.tile(), 110, 14 * 60 + 40)
 	assert_eq(_state.current_snow_cover(), expected)
+
+
+func test_the_thaw_and_the_frost_are_those_of_the_players_place_now() -> void:
+	_state.clock.day = 110
+	_state.clock.set_time(14, 40)
+	var sample := _state.weather.at(_state.player.tile(), 110, 14 * 60 + 40)
+	assert_eq(_state.current_thaw(), _state.snow_cover.thaw_at(sample.temperature, sample.sunlight))
+	assert_eq(_state.current_frost(), _state.snow_cover.frost_at(sample.temperature))
+	_state.snow_cover.forced_thaw = 0.25
+	assert_eq(_state.current_thaw(), 0.25)
 
 
 func test_the_snow_command_forces_and_releases_the_cover() -> void:

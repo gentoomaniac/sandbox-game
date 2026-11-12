@@ -54,11 +54,9 @@ func test_a_flock_that_settles_is_in_the_view_not_beyond_it() -> void:
 func test_a_skip_into_bloom_settles_the_animals_that_live_at_flowers() -> void:
 	var decorations := _wildlife.world_view.decorations
 	decorations.day = 105
-	var look := SeasonBlend.Look.SUMMER
 	for y in range(-20, 20):
 		for x in range(-20, 20):
-			var code := TerrainTileset.tile_code(TerrainTileset.Layer.GRASS, look, look)
-			decorations.place(Vector2i(x, y), code, false)
+			decorations.place(Vector2i(x, y), TerrainTileset.Layer.GRASS, false)
 	var meadow := Rect2(Vector2(-300, -300), Vector2(600, 600))
 	assert_true(decorations.flower_tiles_within(meadow).is_empty(), "none in bloom as drawn")
 	_state.clock.day = MIDSUMMER
@@ -70,12 +68,9 @@ func test_a_skip_into_bloom_settles_the_animals_that_live_at_flowers() -> void:
 func test_a_skip_from_snow_into_bloom_settles_the_animals_that_live_at_flowers() -> void:
 	var decorations := _wildlife.world_view.decorations
 	decorations.day = 105
-	var snowed := TerrainTileset.tile_code(
-		TerrainTileset.Layer.GRASS, SeasonBlend.Look.BARE, SeasonBlend.Look.SNOW
-	)
 	for y in range(-20, 20):
 		for x in range(-20, 20):
-			decorations.place(Vector2i(x, y), snowed, false)
+			decorations.place(Vector2i(x, y), TerrainTileset.Layer.GRASS, false)
 	_state.clock.day = MIDSUMMER
 	_state.clock.set_time(12, 0)
 	_wildlife.settle()

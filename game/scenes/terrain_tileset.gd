@@ -45,15 +45,15 @@ const TILE_SIZE := 32
 ## drawn at 16 px per tile and scaled up (DOUBLED in tools/art/classic/generate.py); a few game
 ## numbers are still written as 16 px numbers times this (see docs/art-style.md).
 @warning_ignore("integer_division") const ART_16_SCALE := TILE_SIZE / 16
-## Every look of the ground (see SeasonBlend.GROUND_LOOKS) has an atlas source of its own with
-## the same tiles: the terrain source's id is the look, the decoration source's id is this far
-## on from it.
-const DECORATION_SOURCE_OFFSET := 10
+## The tile set has the summer atlases only: the other looks of the ground are read by the
+## ground shader for their colours (see GroundLook), as they have the same layout.
+const TERRAIN_SOURCE_ID := 0
+const DECORATION_SOURCE_ID := 1
 const TERRAIN_ATLAS_PATH := "res://assets/terrain.png"
 const DECORATION_ATLAS_PATH := "res://assets/decorations.png"
 ## The few reddish-grey pixels that hint at a clay spot: one tile, the same in every look.
 const CLAY_HINT_PATH := "res://assets/clay_hint.png"
-const CLAY_HINT_SOURCE_ID := 2 * DECORATION_SOURCE_OFFSET
+const CLAY_HINT_SOURCE_ID := 2
 
 ## Corner bits of a mask, as in the generator.
 const TOP_LEFT := 1
@@ -65,21 +65,7 @@ const FULL := 15
 const EDGE_VARIANTS := 3
 const FULL_COLUMN := EDGE_VARIANTS * FULL
 
-## The code of a tile packs what its drawing needs into one int, so a corner of a cell is one
-## value to read, fill in and pass on:
-##   bits 0-3   the layer (Layer, 0..11)
-##   bits 4-7   the look it has by the season (SeasonBlend.Look, 0..8)
-##   bits 8-11  the look over it by the weather (SeasonBlend.Look: FROST, DUSTING, SNOW, or
-##              SUMMER for none)
-const LAYER_BITS := 4
-const LOOK_BITS := 4
-const SEASON_SHIFT := LAYER_BITS
-const WEATHER_SHIFT := SEASON_SHIFT + LOOK_BITS
-const LAYER_MASK := (1 << LAYER_BITS) - 1
-const LOOK_MASK := (1 << LOOK_BITS) - 1
-
-## The code of a corner whose tile is not loaded. It is no packed code (it has all bits set),
-## so check for it before reading a field.
+## The layer of a corner whose tile is not loaded.
 const MISSING := -1
 const NO_DECORATION := Vector2i(-1, -1)
 
@@ -134,23 +120,6 @@ const BASE_LAYER: Array[Layer] = [
 	Layer.PATH,
 	Layer.SOIL,
 ]
-## The looks drawn over the base terrain (which is the summer look), bottom to top: a tile in
-## one of them has that look's tile drawn over it, shaped by the same dual-grid masks as a
-## terrain layer, so the looks fade into each other with soft edges.
-const OVERLAY_LOOKS: Array[SeasonBlend.Look] = [
-	SeasonBlend.Look.SPRING,
-	SeasonBlend.Look.AUTUMN,
-	SeasonBlend.Look.BARE,
-	SeasonBlend.Look.FROST,
-	SeasonBlend.Look.DUSTING,
-	SeasonBlend.Look.SNOW,
-]
-## The layers drawn over ordinary grass, bottom to top: the salt marsh, the Warft, lush and dry
-## grass, and the desire paths worn into any of them. A season's look has an overlay of its own for
-## each.
-const VARIETY_LAYERS: Array[Layer] = [
-	Layer.SALT_MARSH, Layer.WARFT, Layer.LUSH_GRASS, Layer.DRY_GRASS, Layer.TRODDEN, Layer.PATH
-]
 ## Grass is lush where the variety noise is below this, dry where it is above DRY_ABOVE.
 const LUSH_BELOW := -0.2
 const DRY_ABOVE := 0.25
@@ -185,23 +154,17 @@ var _is_classic := ArtSet.is_classic
 ## `motion` (none without it).
 func _init(motion: AmbientMotion = null) -> void:
 	tile_set.tile_size = Vector2i(TILE_SIZE, TILE_SIZE)
-	for look: SeasonBlend.Look in SeasonBlend.GROUND_LOOKS:
-		var counts: Array[int] = []
-		tile_set.add_source(
-			_atlas_source(_picture(TERRAIN_ATLAS_PATH, look), FULL_COLUMN, counts),
-			terrain_source_id(look)
-		)
-		if look == SeasonBlend.Look.SUMMER:
-			_full_variant_counts = counts
-		var no_counts: Array[int] = []
-		var decorations := _atlas_source(
-			_picture(DECORATION_ATLAS_PATH, look), 0, no_counts, LAYER_COUNT + 1
-		)
-		if motion != null:
-			_set_motion(decorations, motion)
-		tile_set.add_source(decorations, decoration_source_id(look))
-		if look == SeasonBlend.Look.SUMMER:
-			_decoration_counts = no_counts
+	var counts: Array[int] = []
+	tile_set.add_source(
+		_atlas_source(ArtSet.path(TERRAIN_ATLAS_PATH), FULL_COLUMN, counts), TERRAIN_SOURCE_ID
+	)
+	_full_variant_counts = counts
+	var decorations := _atlas_source(
+		ArtSet.path(DECORATION_ATLAS_PATH), 0, _decoration_counts, LAYER_COUNT + 1
+	)
+	if motion != null:
+		_set_motion(decorations, motion)
+	tile_set.add_source(decorations, DECORATION_SOURCE_ID)
 	var clay_hint := TileSetAtlasSource.new()
 	clay_hint.texture = load(ArtSet.path(CLAY_HINT_PATH))
 	clay_hint.texture_region_size = Vector2i(TILE_SIZE, TILE_SIZE)
@@ -218,21 +181,12 @@ func show_art_set() -> void:
 	if _is_classic == ArtSet.is_classic:
 		return
 	_is_classic = ArtSet.is_classic
-	for look: SeasonBlend.Look in SeasonBlend.GROUND_LOOKS:
-		var terrain: TileSetAtlasSource = tile_set.get_source(terrain_source_id(look))
-		terrain.texture = load(_picture(TERRAIN_ATLAS_PATH, look))
-		var decorations: TileSetAtlasSource = tile_set.get_source(decoration_source_id(look))
-		decorations.texture = load(_picture(DECORATION_ATLAS_PATH, look))
+	var terrain: TileSetAtlasSource = tile_set.get_source(TERRAIN_SOURCE_ID)
+	terrain.texture = load(ArtSet.path(TERRAIN_ATLAS_PATH))
+	var decorations: TileSetAtlasSource = tile_set.get_source(DECORATION_SOURCE_ID)
+	decorations.texture = load(ArtSet.path(DECORATION_ATLAS_PATH))
 	var clay_hint: TileSetAtlasSource = tile_set.get_source(CLAY_HINT_SOURCE_ID)
 	clay_hint.texture = load(ArtSet.path(CLAY_HINT_PATH))
-
-
-static func terrain_source_id(look: SeasonBlend.Look) -> int:
-	return look
-
-
-static func decoration_source_id(look: SeasonBlend.Look) -> int:
-	return DECORATION_SOURCE_OFFSET + look
 
 
 ## Which layer a world tile is drawn on. `variety` is the slow variety noise at the tile, and
@@ -255,77 +209,6 @@ static func terrain_layer(
 ## The middle of a tile, in world pixels.
 static func tile_centre(tile: Vector2i) -> Vector2:
 	return (Vector2(tile) + Vector2(0.5, 0.5)) * TILE_SIZE
-
-
-## The code of a tile (see MISSING for the bit fields).
-static func tile_code(
-	layer: int, season_look: SeasonBlend.Look, weather_look: SeasonBlend.Look
-) -> int:
-	return layer | season_look << SEASON_SHIFT | weather_look << WEATHER_SHIFT
-
-
-## The layer of a tile code, or MISSING for MISSING.
-static func layer_of(code: int) -> int:
-	return MISSING if code == MISSING else code & LAYER_MASK
-
-
-## The look by the season of a tile code (not for MISSING).
-static func season_of(code: int) -> SeasonBlend.Look:
-	return (code >> SEASON_SHIFT & LOOK_MASK) as SeasonBlend.Look
-
-
-## The look by the weather of a tile code (not for MISSING).
-static func weather_of(code: int) -> SeasonBlend.Look:
-	return (code >> WEATHER_SHIFT & LOOK_MASK) as SeasonBlend.Look
-
-
-## The layers of the 4 corner codes, MISSING where a corner is.
-static func layers_of(codes: PackedInt32Array) -> PackedInt32Array:
-	var layers := PackedInt32Array()
-	for code in codes:
-		layers.append(layer_of(code))
-	return layers
-
-
-## Whether an overlay look comes from the weather (snow, frost) and not the season.
-static func is_weather_look(look: SeasonBlend.Look) -> bool:
-	return (
-		look == SeasonBlend.Look.FROST
-		or look == SeasonBlend.Look.DUSTING
-		or look == SeasonBlend.Look.SNOW
-	)
-
-
-## Whether an overlay look is drawn layer by layer, like the terrain it lies on (see
-## VARIETY_LAYERS): the seasons' looks and the frost, which rimes the grass and paths as they
-## are. Snow and its dusting lie evenly over all of them.
-static func is_drawn_in_layers(look: SeasonBlend.Look) -> bool:
-	return look != SeasonBlend.Look.SNOW and look != SeasonBlend.Look.DUSTING
-
-
-## The season look a tile shows, given the look its place has by the season (see SeasonBlend)
-## and its layer: the foliage of the seasons on all land the plough has not turned; water, the
-## tidal mud and tilled soil keep the summer look.
-static func shown_season_look(layer: int, season_look: SeasonBlend.Look) -> SeasonBlend.Look:
-	if layer == Layer.WATER or layer == Layer.MUD or layer == Layer.SOIL or layer == MISSING:
-		return SeasonBlend.Look.SUMMER
-	return season_look
-
-
-## The weather look a tile shows (SeasonBlend.Look.SUMMER for none): snow and frost cover any
-## land but the tidal mud, which the tide washes clear twice a day.
-static func shown_weather_look(layer: int, weather_look: SeasonBlend.Look) -> SeasonBlend.Look:
-	if layer == Layer.WATER or layer == Layer.MUD or layer == MISSING:
-		return SeasonBlend.Look.SUMMER
-	return weather_look
-
-
-## The look a tile shows as a whole.
-static func shown_look(
-	layer: int, season_look: SeasonBlend.Look, weather_look: SeasonBlend.Look
-) -> SeasonBlend.Look:
-	var weather := shown_weather_look(layer, weather_look)
-	return weather if weather != SeasonBlend.Look.SUMMER else shown_season_look(layer, season_look)
 
 
 ## The layers a cell draws, as bits (1 << layer): only its corners' own layers and what
@@ -427,11 +310,6 @@ static func _set_motion(decorations: TileSetAtlasSource, motion: AmbientMotion) 
 		decorations.get_tile_data(atlas_cell, 0).material = motion.decoration_material(atlas_cell)
 
 
-## The atlas `path` in a look, in the chosen art set.
-static func _picture(path: String, look: SeasonBlend.Look) -> String:
-	return ArtSet.path(SeasonalArt.path(path, look))
-
-
 ## An atlas source with a tile for every non-empty cell of the first `rows` rows of the image.
 ## Appends, per row, how many tiles sit at or right of `counted_from` to `counts`.
 static func _atlas_source(
@@ -441,6 +319,8 @@ static func _atlas_source(
 	var image := texture.get_image()
 	var source := TileSetAtlasSource.new()
 	source.texture = texture
+	# The ground shaders find the same pixel in the atlases of the other looks by its coordinates.
+	source.use_texture_padding = false
 	source.texture_region_size = Vector2i(TILE_SIZE, TILE_SIZE)
 	for row in rows:
 		var count := 0

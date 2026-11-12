@@ -238,7 +238,7 @@ func test_a_clay_spot_shows_a_faint_hint_until_it_is_dug() -> void:
 	add_child_autofree(view)
 	view.show_world(ChunkResidency.new(_state.world))
 	var spot := _spots[0]
-	view.decorations.redraw(spot, view._code_at(spot))
+	view.decorations.redraw(spot, view._layer_at(spot))
 	assert_eq(
 		view.decorations._clay_hints.get_cell_source_id(spot), TerrainTileset.CLAY_HINT_SOURCE_ID
 	)
@@ -248,5 +248,5 @@ func test_a_clay_spot_shows_a_faint_hint_until_it_is_dug() -> void:
 		view.decorations._clay_hints.get_cell_source_id(spot), -1, "a spent spot shows nothing"
 	)
 	var elsewhere := _grass_tile_without_clay()
-	view.decorations.redraw(elsewhere, view._code_at(elsewhere))
+	view.decorations.redraw(elsewhere, view._layer_at(elsewhere))
 	assert_eq(view.decorations._clay_hints.get_cell_source_id(elsewhere), -1)

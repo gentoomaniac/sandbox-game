@@ -132,9 +132,12 @@ Warft and an Ewer here and there.
   `BuildingViews` (building sprites, window lights, snowy roofs) and `DecorationView` (flowers,
   pebbles, clay hints; the wildlife asks it where flowers bloom). The meadow flowers are sown per tile when a chunk is drawn, by `FlowerRules`
   (`data/flowers.cfg`) from two noises and the tile's habitat, and bloom by the curves of
-  `Vegetation`; nothing about them is saved. What a tile looks like is one int, its tile code: layer, season look and weather look
-  packed together (`TerrainTileset.tile_code`, read with `layer_of`, `season_of`, `weather_of`;
-  the bit fields are documented there).
+  `Vegetation`; nothing about them is saved. The ground is drawn in the summer look only, from
+  one terrain layer per tile (`TerrainTileset.Layer`, kept per chunk in WorldView); the colour of
+  the season and the leaves, frost and snow over it come from the ground shader (`GroundLook`,
+  `ground.gdshader`) with the weather as global shader parameters and a ring texture of what each
+  tile catches (`CoverMap`, from the pure `GroundCover`), so a change of weather costs no
+  redrawing. `GroundCover` also answers the game's own questions (footsteps, flowers under snow).
 - **Tide** (`game/state/tide.gd`) says how high the water stands at a moment of the clock, and
   ports the relief of the mud from `mud.gdshader` to say which tiles the water covers (`floods`;
   tests/test_tide.gd pins it to the shader). `World.is_flooded` asks it with the world's clock, and

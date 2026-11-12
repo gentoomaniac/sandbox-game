@@ -10,6 +10,10 @@ extends RefCounted
 
 ## Session-only (see Console): a cover that replaces the simulated one, or below 0 for none.
 var forced := -1.0
+## Session-only, like `forced`: a frost and a thaw (0 to 1) that replace the ones of the
+## temperature, or below 0 for none (the startup options --frost and --melt).
+var forced_frost := -1.0
+var forced_thaw := -1.0
 
 var _weather: Weather
 var _rules: SeasonRules
@@ -53,12 +57,16 @@ func at(position: Vector2i, day: int, minute: int) -> float:
 
 ## The frost at a temperature: none at 0 degrees or above, full at the cold of the data file.
 func frost_at(temperature: float) -> float:
+	if forced_frost >= 0.0:
+		return forced_frost
 	return clampf(temperature / _rules.value("frost", "full_at_temperature"), 0.0, 1.0)
 
 
 ## The thaw at a temperature and in a sunlight (0 to 100): none at 0 degrees or below, full at
 ## the warmth of the data file (sunshine counts as more warmth, as it melts more).
 func thaw_at(temperature: float, sunlight: float) -> float:
+	if forced_thaw >= 0.0:
+		return forced_thaw
 	var sun_gain: float = _rules.value("snow", "sun_melt_gain")
 	var warmth := maxf(temperature, 0.0) * (1.0 + sun_gain * sunlight / 100.0)
 	return clampf(warmth / _rules.value("snow", "full_thaw_at_temperature"), 0.0, 1.0)

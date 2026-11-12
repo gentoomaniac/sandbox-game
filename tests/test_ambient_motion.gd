@@ -230,7 +230,7 @@ func test_the_tile_sets_put_the_materials_on_the_tiles_that_move() -> void:
 	assert_false(source.use_texture_padding, "the shaders read the cell from the texture position")
 	var terrain := TerrainTileset.new(motion)
 	var decorations: TileSetAtlasSource = terrain.tile_set.get_source(
-		TerrainTileset.decoration_source_id(SeasonBlend.Look.SNOW)
+		TerrainTileset.DECORATION_SOURCE_ID
 	)
 	assert_eq(
 		decorations.get_tile_data(Vector2i(0, TerrainTileset.Layer.WATER), 0).material,

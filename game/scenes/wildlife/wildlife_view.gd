@@ -265,9 +265,7 @@ func _flowers_near_view(on_day := 0) -> Array[Vector2i]:
 	var area := view_rect().grow(rules.general("spawn_margin_tiles") * WildlifeRules.TILE_SIZE)
 	if on_day == 0:
 		return world_view.decorations.flower_tiles_within(area)
-	var is_snowed := world_view.snow_checker_for(
-		on_day, _state.current_snow_cover(), _state.current_frost()
-	)
+	var is_snowed := world_view.snow_checker_for(_state.current_snow_cover())
 	return world_view.decorations.flower_tiles_within(area, on_day, is_snowed)
 
 

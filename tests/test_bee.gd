@@ -23,11 +23,9 @@ func before_each() -> void:
 func _meadow(day: int) -> void:
 	var decorations := _wildlife.world_view.decorations
 	decorations.day = day
-	var look := SeasonBlend.Look.SUMMER
 	for y in range(-20, 20):
 		for x in range(-20, 20):
-			var code := TerrainTileset.tile_code(TerrainTileset.Layer.GRASS, look, look)
-			decorations.place(Vector2i(x, y), code, false)
+			decorations.place(Vector2i(x, y), TerrainTileset.Layer.GRASS, false)
 
 
 ## A bee hovering at a tile, done with its hovering.

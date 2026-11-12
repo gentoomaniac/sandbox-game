@@ -1,6 +1,6 @@
 extends GutTest
 ## WorldView draws worn grass on the trodden and path layers, redraws only around a tile whose
-## wear changed, and a worn tile loses its flowers and tufts.
+## wear changed, and a worn tile loses its flowers and tufts. Snow catches less on a path.
 
 const SEED := 1
 const CHUNK := Vector2i(-1, -1)
@@ -46,7 +46,7 @@ func _flower_tile() -> Vector2i:
 
 
 func _layer_at(tile: Vector2i) -> int:
-	return TerrainTileset.layer_of(_view._code_at(tile))
+	return _view._layer_at(tile)
 
 
 func test_worn_grass_is_drawn_trodden_and_then_as_a_path() -> void:
@@ -76,36 +76,6 @@ func test_a_path_grown_back_is_grass_with_its_flowers_again() -> void:
 		_view.world.regrow_paths()
 	assert_eq(_layer_at(tile), layer)
 	assert_true(_view.decorations.has_flower(tile))
-
-
-func test_a_path_has_its_own_look_in_autumn() -> void:
-	var tile := _flower_tile()
-	_wear(tile, _rules.path_from())
-	_view.world.clock.day = AUTUMN
-	_view.refresh_looks(AUTUMN, 0.0, 0.0)
-	_view.finish_refresh()
-	assert_eq(TerrainTileset.season_of(_view._code_at(tile)), SeasonBlend.Look.AUTUMN)
-	var overlay := _view._variety_overlays[Vector2i(
-		SeasonBlend.Look.AUTUMN, TerrainTileset.Layer.PATH
-	)]
-	assert_eq(
-		overlay.get_cell_atlas_coords(tile).y, TerrainTileset.Layer.PATH, "drawn from the path row"
-	)
-
-
-func test_snow_covers_a_path_and_shows_a_trodden_track() -> void:
-	var tile := _flower_tile()
-	_wear(tile, _rules.path_from())
-	_view.world.clock.day = WINTER
-	_view.refresh_looks(WINTER, 1.0, 0.0)
-	_view.finish_refresh()
-	assert_eq(TerrainTileset.weather_of(_view._code_at(tile)), SeasonBlend.Look.SNOW)
-	assert_ne(_view._overlays[SeasonBlend.Look.SNOW].get_cell_source_id(tile), -1, "snow on it")
-	assert_eq(
-		_view._snow_track.get_cell_atlas_coords(tile).y,
-		TerrainTileset.Layer.TRODDEN,
-		"the track: trodden snow"
-	)
 
 
 ## The top-left tile of a 2x2 block of tiles of the chunk that all wear, or fails the test.
@@ -145,3 +115,12 @@ func test_a_path_among_trodden_tiles_is_an_edge_over_a_full_trodden_cell() -> vo
 		trodden.get_cell_atlas_coords(middle).x, TerrainTileset.FULL_COLUMN, "trodden all over"
 	)
 	assert_lt(path.get_cell_atlas_coords(middle).x, TerrainTileset.FULL_COLUMN, "the path's rim")
+
+
+func test_snow_catches_less_on_a_path_and_clears_first_in_a_thaw() -> void:
+	var tile := _flower_tile()
+	var open := _view._cover_map.channels_at(tile)
+	_wear(tile, _rules.path_from())
+	var worn := _view._cover_map.channels_at(tile)
+	assert_lt(worn.g, open.g, "a path catches less snow")
+	assert_gt(worn.b, open.b, "and feels more of the thaw")

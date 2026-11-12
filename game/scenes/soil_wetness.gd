@@ -125,6 +125,13 @@ func show_world(world: World, is_covered := func(_pos: Vector2i) -> bool: return
 		_draw_tile(pos)
 
 
+## Clears the wet look where snow lies on the soil (see GroundLook).
+func show_ground_look(ground_look: GroundLook) -> void:
+	material = ground_look.soil_wet
+	for layer in _edge_layers:
+		layer.material = ground_look.soil_wet
+
+
 ## Shows the soil of the chosen art set (see ArtSet).
 func show_art_set() -> void:
 	var source: TileSetAtlasSource = tile_set.get_source(WET_SOURCE)

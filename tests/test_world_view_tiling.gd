@@ -1,6 +1,6 @@
 extends GutTest
 ## However chunks load and however a look refresh is interleaved with the loads, every cell of
-## the terrain layers and the look overlays ends up as a full redraw would draw it.
+## the terrain layers ends up as a full redraw would draw it.
 
 const SEED := 1
 const CHUNKS: Array[Vector2i] = [
@@ -25,15 +25,11 @@ func _set_day(day: int) -> void:
 	_view.refresh_looks(day, 0.0, 0.0)
 
 
-## What every layer and overlay holds for the cells of the loaded chunks (and the row and
+## What every layer holds for the cells of the loaded chunks (and the row and
 ## column of cells beyond them), as {layer node name: {cell: [source, atlas coords]}}.
 func _drawn() -> Dictionary:
 	var drawn := {}
-	var layers: Array[TileMapLayer] = []
-	layers.append_array(_view._layers)
-	layers.append_array(_view._overlays.values())
-	layers.append_array(_view._variety_overlays.values())
-	for layer in layers:
+	for layer in _view._layers:
 		var cells := {}
 		for cell in layer.get_used_cells():
 			cells[cell] = [layer.get_cell_source_id(cell), layer.get_cell_atlas_coords(cell)]
@@ -41,7 +37,7 @@ func _drawn() -> Dictionary:
 	return drawn
 
 
-## Redraws every loaded cell from scratch. The looks of the tiles must be up to date.
+## Redraws every loaded cell from scratch.
 func _redraw_everything() -> void:
 	for coords in _view.world.loaded_chunk_coords():
 		var origin := Chunk.to_world(coords, Vector2i.ZERO)
@@ -66,54 +62,9 @@ func _assert_matches_full_redraw(message: String) -> void:
 		assert_eq(wrong.size(), 0, "%s: %s differs at %s" % [message, name, wrong.slice(0, 5)])
 
 
-## The mask of an overlay tile: its corners that are drawn.
-func _mask_of(atlas_coords: Vector2i) -> int:
-	return (
-		TerrainTileset.FULL
-		if atlas_coords.x >= TerrainTileset.FULL_COLUMN
-		else atlas_coords.x % TerrainTileset.FULL
-	)
-
-
-## Lush and dry grass in a season's look must fade out like the terrain below them, not cover
-## the whole cell as soon as one corner is lush (straight-edged blocks), and must not repeat
-## the edge of the layer below them (a fringe round the patches of another look).
-func test_lush_and_dry_overlays_have_the_shape_of_their_grass() -> void:
-	for coords in CHUNKS:
-		_residency.load_chunk(coords)
-		_view.finish_drawing()
-	var checked := 0
-	for day: int in DAYS:
-		_set_day(day)
-		_view.finish_refresh()
-		for key: Vector2i in _view._variety_overlays:
-			var overlay: TileMapLayer = _view._variety_overlays[key]
-			var below: TileMapLayer = _view._overlays[key.x]
-			if key.y == TerrainTileset.Layer.DRY_GRASS:
-				below = _view._variety_overlays[Vector2i(key.x, TerrainTileset.Layer.LUSH_GRASS)]
-			for cell in overlay.get_used_cells():
-				var corner_layers := PackedInt32Array()
-				for offset in WorldView.CORNER_OFFSETS:
-					corner_layers.append(TerrainTileset.layer_of(_view._code_at(cell + offset)))
-				if corner_layers.has(TerrainTileset.MISSING):
-					continue  # The edge of the loaded area, drawn with a fallback.
-				var mask := _mask_of(overlay.get_cell_atlas_coords(cell))
-				var expected := 0
-				for corner in 4:
-					var pos: Vector2i = cell + WorldView.CORNER_OFFSETS[corner]
-					var shown := TerrainTileset.shown_season_look(
-						corner_layers[corner], TerrainTileset.season_of(_view._code_at(pos))
-					)
-					if corner_layers[corner] >= key.y and shown == key.x:
-						expected |= 1 << corner
-				assert_eq(mask, expected, "%s on %s" % [cell, overlay.name])
-				if below.get_cell_source_id(cell) != -1:
-					var below_mask := _mask_of(below.get_cell_atlas_coords(cell))
-					assert_ne(
-						below_mask, mask, "%s: %s repeats the edge below" % [cell, overlay.name]
-					)
-				checked += 1
-	assert_gt(checked, 0, "some lush or dry grass shows a season's look")
+func _refresh_one_chunk() -> void:
+	if not _view._refresh_queue.is_empty():
+		_view._refresh_chunk(_view._refresh_queue.pop_back())
 
 
 func test_loading_in_any_order_matches_a_full_redraw() -> void:
@@ -139,11 +90,11 @@ func test_chunks_loading_between_refresh_steps_match_a_full_redraw() -> void:
 		_view.finish_drawing()
 		_view.finish_refresh()
 		_set_day(day)
-		_view._refresh_step()
+		_refresh_one_chunk()
 		_residency.load_chunk(CHUNKS[2])
 		_view.finish_drawing()
-		_view._refresh_step()
-		_view._refresh_step()
+		_refresh_one_chunk()
+		_refresh_one_chunk()
 		_residency.load_chunk(CHUNKS[3])
 		_view.finish_drawing()
 		_assert_matches_full_redraw("day %d" % day)
@@ -151,11 +102,9 @@ func test_chunks_loading_between_refresh_steps_match_a_full_redraw() -> void:
 			_residency.unload_chunk(coords)
 
 
-func test_unloading_a_chunk_erases_every_layer_and_overlay_in_it() -> void:
+func test_unloading_a_chunk_erases_every_layer_in_it() -> void:
 	var layers: Array[TileMapLayer] = []
 	layers.append_array(_view._layers)
-	layers.append_array(_view._overlays.values())
-	layers.append_array(_view._variety_overlays.values())
 	var first := Chunk.to_world(CHUNKS[0], Vector2i.ZERO)
 	var area := Rect2i(first, Vector2i.ONE * Chunk.CHUNK_SIZE)
 	for day: int in DAYS:

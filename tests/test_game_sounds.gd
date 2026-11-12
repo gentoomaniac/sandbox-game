@@ -221,68 +221,44 @@ func _repeat(event: StringName, times: int) -> Array[StringName]:
 	return events
 
 
-## Shows the world around the player with no snow and returns the tile whose bottom-right corner
-## the player stands near, so the cell drawn under their feet has the tiles `tile` to `tile + 1`
-## as its corners.
+## Shows the world around the player with no snow and returns the tile the player stands on.
 func _show_bare_world_around_the_player() -> Vector2i:
 	var residency := ChunkResidency.new(_world)
 	_view.show_world(residency)
 	residency.load_chunk(Chunk.world_to_chunk(_state.player.tile()))
 	_view.finish_drawing()
-	_view.refresh_looks(MIDSUMMER, 0.0, 0.0)
-	_view.finish_refresh()
+	_view.show_ground_cover(MIDSUMMER, 0.0, 0.0, 0.0)
 	var tile := _state.player.tile()
 	_state.player.position = Vector2(tile) + Vector2(0.9, 0.9)
 	_events.clear()
 	return tile
 
 
-## Makes the weather look of a tile as it is drawn, without a snow cover behind it.
-func _set_weather_look(tile: Vector2i, look: SeasonBlend.Look) -> void:
-	var chunk_looks: WorldView.ChunkLooks = _view._chunk_looks[Chunk.world_to_chunk(tile)]
-	var index := WorldView.ChunkLooks.index_of(Chunk.local_pos(tile))
-	var code := chunk_looks.codes[index]
-	chunk_looks.codes[index] = TerrainTileset.tile_code(
-		TerrainTileset.layer_of(code), TerrainTileset.season_of(code), look
-	)
-
-
 func test_a_step_on_snow_sounds_like_snow_and_on_clear_ground_like_the_ground() -> void:
 	_show_bare_world_around_the_player()
 	_state.clock.day = WINTER
-	_view.refresh_looks(WINTER, 1.0, 0.0)
-	_view.finish_refresh()
+	_view.show_ground_cover(WINTER, 1.0, 0.0, 0.0)
 	_player_view.stepped.emit()
 	assert_eq(_events, [&"step_snow"], "full snow cover")
 	_events.clear()
-	_view.refresh_looks(MIDSUMMER, 0.0, 0.0)
-	_view.finish_refresh()
+	_view.show_ground_cover(MIDSUMMER, 0.0, 0.0, 0.0)
 	_player_view.stepped.emit()
 	assert_eq(_events, [&"step_grass"], "no snow")
 
 
-func test_a_step_follows_the_snow_drawn_under_the_feet_not_the_tile_alone() -> void:
-	var tile := _show_bare_world_around_the_player()
-	for offset in [Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]:
-		_set_weather_look(tile + offset, SeasonBlend.Look.SNOW)
+func test_a_step_follows_the_snow_on_the_tile_under_the_feet() -> void:
+	_show_bare_world_around_the_player()
+	_view.show_ground_cover(WINTER, 0.3, 0.0, 0.0)
 	_player_view.stepped.emit()
-	assert_eq(_events, [&"step_snow"], "3 of the 4 corners are snowy, the player's own tile is not")
+	assert_eq(_events, [&"step_grass"], "a thin cover on less than half of the tile")
 	_events.clear()
-	_set_weather_look(tile + Vector2i(1, 0), SeasonBlend.Look.SUMMER)
-	_set_weather_look(tile + Vector2i(0, 1), SeasonBlend.Look.SUMMER)
+	_view.show_ground_cover(WINTER, 0.9, 0.0, 0.0)
 	_player_view.stepped.emit()
-	assert_eq(_events, [&"step_grass"], "1 of 4 corners is snowy")
+	assert_eq(_events, [&"step_snow"], "a thick cover")
 
 
-func test_a_dusting_of_snow_crunches_but_frost_does_not() -> void:
-	var tile := _show_bare_world_around_the_player()
-	_set_weather_look(tile, SeasonBlend.Look.FROST)
-	_set_weather_look(tile + Vector2i(1, 0), SeasonBlend.Look.FROST)
-	_set_weather_look(tile + Vector2i(0, 1), SeasonBlend.Look.FROST)
+func test_frost_does_not_crunch() -> void:
+	_show_bare_world_around_the_player()
+	_view.show_ground_cover(WINTER, 0.0, 0.0, 1.0)
 	_player_view.stepped.emit()
-	assert_eq(_events, [&"step_grass"], "frost")
-	_events.clear()
-	_set_weather_look(tile + Vector2i(0, 1), SeasonBlend.Look.DUSTING)
-	_set_weather_look(tile + Vector2i(1, 1), SeasonBlend.Look.DUSTING)
-	_player_view.stepped.emit()
-	assert_eq(_events, [&"step_snow"], "a dusting on half of the corners")
+	assert_eq(_events, [&"step_grass"])

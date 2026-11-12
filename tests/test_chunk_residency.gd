@@ -97,7 +97,7 @@ func test_a_view_that_goes_leaves_the_chunks_loaded_and_the_next_one_draws_them(
 	var second: WorldView = add_child_autofree(WorldView.new())
 	second.show_world(_residency)
 	assert_false(second.is_drawing(), "a chunk that is loaded is drawn when the view starts")
-	assert_true(second._chunk_looks.has(HOME))
+	assert_true(second._chunk_layers.has(HOME))
 
 
 func test_a_chunk_required_while_another_is_drawn_is_drawn_after_it() -> void:
@@ -108,7 +108,7 @@ func test_a_chunk_required_while_another_is_drawn_is_drawn_after_it() -> void:
 	assert_true(view.is_drawing())
 	view.finish_drawing()
 	assert_false(view.is_drawing())
-	assert_eq(view._chunk_looks.size(), 2, "both chunks are drawn")
+	assert_eq(view._chunk_layers.size(), 2, "both chunks are drawn")
 
 
 ## A renderer that can't take a chunk.

@@ -54,6 +54,9 @@ extends RefCounted
 ##                            storm, thunder)
 ##   --flash                  keep the flash of lightning on
 ##   --snow=<0..1>            force the snow cover
+##   --frost=<0..1>           force the frost
+##   --melt=<0..1>            force the thaw (how much of the snow the warmth takes off, the
+##                            paths and open ground first)
 ##   --zoom=<z>               the camera zoom
 ##   --camera-shift=<x>,<y>   move the camera by that many art pixels, fractions included (to
 ##                            check smooth scrolling)
@@ -203,6 +206,9 @@ var weather := &""
 var flash := false
 ## -1 for the snow cover of the game.
 var snow := -1.0
+## -1 for the frost and the thaw of the game.
+var frost := -1.0
+var melt := -1.0
 ## The camera starts zoomed out as far as it goes, where the player keeps it.
 var zoom := ViewMath.MIN_ZOOM
 var camera_shift := Vector2.ZERO
@@ -354,6 +360,10 @@ func _init(args := PackedStringArray()) -> void:
 				flash = true
 			"--snow":
 				snow = float(_value(arg))
+			"--frost":
+				frost = float(_value(arg))
+			"--melt":
+				melt = float(_value(arg))
 			"--zoom":
 				zoom = float(_value(arg))
 			"--camera-shift":

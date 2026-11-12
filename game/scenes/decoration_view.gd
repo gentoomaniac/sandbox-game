@@ -8,8 +8,9 @@ extends Node2D
 ## a plant's decoration is there only in the days of its Vegetation kind. Tilled soil shows the
 ## weeds of its row only while it lies fallow (see FallowSoil). Meadow flowers grow in
 ## drifts (see FlowerRules) and, while one of them is in bloom, show instead of the tile's other
-## decoration. The picture is the look of its tile (the season, snow, frost). The wildlife asks
-## it where flowers bloom.
+## decoration. The pictures are those of summer, which the ground shader gives the colour of the
+## season and the leaves, frost and snow of the weather (see GroundLook). The wildlife asks it
+## where flowers bloom.
 
 ## Visual-only noise, seeded from the world seed with an offset far from the generator's:
 ## decoration clusters, a few tiles across.
@@ -52,13 +53,15 @@ class DecorationSpot:
 	var flower_variant := TerrainTileset.FlowerVariant.FEW
 	## The atlas cell drawn now, NO_DECORATION for none.
 	var shown_cell := TerrainTileset.NO_DECORATION
-	## The terrain layer of its tile, which decides how its look shows.
+	## The terrain layer of its tile.
 	var layer := 0
-	var look := SeasonBlend.Look.SUMMER
 
 
 ## The day the decorations are drawn for. WorldView sets it.
 var day := 0
+## What lies on the ground, which a flower under snow is not in bloom by. WorldView sets it; with
+## none, no snow lies.
+var ground_cover: GroundCover
 var _world: World
 var _tileset: TerrainTileset
 var _flower_rules := FlowerRules.default_rules()
@@ -86,6 +89,11 @@ func _init(tileset: TerrainTileset) -> void:
 	add_child(_clay_hints)
 
 
+## Gives the decorations the colour of the ground and its cover (see GroundLook).
+func show_ground_look(ground_look: GroundLook) -> void:
+	_decorations.material = ground_look.decoration
+
+
 func show_world(world: World) -> void:
 	_world = world
 	_decoration_noise.seed = world.world_seed + DECORATION_SEED_OFFSET
@@ -94,15 +102,15 @@ func show_world(world: World) -> void:
 
 
 ## Draws the decoration and the clay hint of a tile of a chunk that was just drawn, unless an
-## object covers it. `code` is the tile's (see TerrainTileset.tile_code).
-func place(world_pos: Vector2i, code: int, is_covered: bool) -> void:
+## object covers it. `layer` is the terrain layer of the tile.
+func place(world_pos: Vector2i, layer: int, is_covered: bool) -> void:
 	_set_clay_hint(world_pos, is_covered)
 	_decorations.erase_cell(world_pos)
 	_spots.erase(world_pos)
 	if is_covered or _is_sea(world_pos):
 		return
 	var spot := DecorationSpot.new()
-	spot.layer = TerrainTileset.layer_of(code)
+	spot.layer = layer
 	var cluster := _decoration_noise.get_noise_2dv(Vector2(world_pos))
 	if spot.layer != TerrainTileset.Layer.SOIL:
 		spot.atlas_cell = _tileset.decoration_cell(spot.layer, world_pos, cluster)
@@ -116,19 +124,19 @@ func place(world_pos: Vector2i, code: int, is_covered: bool) -> void:
 	if spot.atlas_cell == TerrainTileset.NO_DECORATION and spot.flowers.is_empty():
 		return
 	_spots[world_pos] = spot
-	_update(world_pos, spot, code)
+	_update(world_pos, spot)
 
 
 ## Draws a tile again after something on it changed: whether an object covers it now.
-func redraw(world_pos: Vector2i, code: int) -> void:
-	place(world_pos, code, _world.object_at(world_pos) != null)
+func redraw(world_pos: Vector2i, layer: int) -> void:
+	place(world_pos, layer, _world.object_at(world_pos) != null)
 
 
-## Brings the decoration of a tile up to date with the day and the look of the tile.
-func refresh(world_pos: Vector2i, code: int) -> void:
+## Brings the decoration of a tile up to date with the day.
+func refresh(world_pos: Vector2i) -> void:
 	var spot: DecorationSpot = _spots.get(world_pos)
 	if spot != null:
-		_update(world_pos, spot, code)
+		_update(world_pos, spot)
 
 
 ## Forgets a tile whose chunk unloads.
@@ -138,13 +146,13 @@ func forget(world_pos: Vector2i) -> void:
 	_spots.erase(world_pos)
 
 
-## Whether a flower is in bloom on a tile today and not under snow (wildlife visits those).
+## Whether a flower is in bloom on a tile today and not mostly under snow (wildlife visits those).
 func has_flower(world_pos: Vector2i) -> bool:
 	var spot: DecorationSpot = _spots.get(world_pos)
 	return (
 		spot != null
 		and spot.shown_cell.y == TerrainTileset.FLOWER_ROW
-		and spot.look != SeasonBlend.Look.SNOW
+		and (ground_cover == null or not ground_cover.is_snowed(world_pos))
 	)
 
 
@@ -215,8 +223,7 @@ func _has_flower_on(world_pos: Vector2i, on_day: int, is_snowed: Callable) -> bo
 	var spot: DecorationSpot = _spots.get(world_pos)
 	if spot == null or _cell_for(spot, on_day).y != TerrainTileset.FLOWER_ROW:
 		return false
-	var snow := SeasonBlend.Look.SNOW if is_snowed.call(world_pos) else SeasonBlend.Look.SUMMER
-	return TerrainTileset.shown_weather_look(spot.layer, snow) != SeasonBlend.Look.SNOW
+	return not is_snowed.call(world_pos)
 
 
 ## The atlas cell a spot shows today: of its flowers in bloom the one furthest into its bloom
@@ -245,18 +252,13 @@ func _cell_for(spot: DecorationSpot, on_day: int) -> Vector2i:
 	return TerrainTileset.NO_DECORATION
 
 
-## Draws, erases or redraws the decoration of a spot, as it is today and as the look of its tile
-## is now.
-func _update(world_pos: Vector2i, spot: DecorationSpot, code: int) -> void:
+## Draws, erases or redraws the decoration of a spot, as it is today.
+func _update(world_pos: Vector2i, spot: DecorationSpot) -> void:
 	var cell := _cell_for_today(spot)
-	var look := TerrainTileset.shown_look(
-		spot.layer, TerrainTileset.season_of(code), TerrainTileset.weather_of(code)
-	)
-	if cell == spot.shown_cell and look == spot.look:
+	if cell == spot.shown_cell:
 		return
 	spot.shown_cell = cell
-	spot.look = look
 	if cell == TerrainTileset.NO_DECORATION:
 		_decorations.erase_cell(world_pos)
 	else:
-		_decorations.set_cell(world_pos, TerrainTileset.decoration_source_id(look), cell)
+		_decorations.set_cell(world_pos, TerrainTileset.DECORATION_SOURCE_ID, cell)

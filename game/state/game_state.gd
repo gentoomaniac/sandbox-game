@@ -173,15 +173,34 @@ func current_weather() -> WeatherSample:
 	return sample if weather_override == &"" else weather.forced(sample, weather_override)
 
 
-## The snow on the ground where the player is (or outside the house they are in), 0 to 1, as
-## of the start of the hour: the look of the world only follows it hour by hour.
+## The snow on the ground where the player is (or outside the house they are in), 0 to 1, now:
+## it builds and melts a little every minute.
 func current_snow_cover() -> float:
+	return snow_cover.at(_outdoor_tile(), clock.day, clock.minute_of_day)
+
+
+## The frost on the ground where the player is, 0 to 1, now: it builds on a cold morning and
+## goes as the day warms.
+func current_frost() -> float:
+	return snow_cover.frost_at(
+		weather.at(_outdoor_tile(), clock.day, clock.minute_of_day).temperature
+	)
+
+
+## The snow cover and the frost as of the start of the hour: the plants and the houses are
+## drawn by their look, which follows them hour by hour.
+func hourly_snow_cover() -> float:
 	return snow_cover.at(_outdoor_tile(), clock.day, _hour_start())
 
 
-## The frost on the ground where the player is, 0 to 1, as of the start of the hour.
-func current_frost() -> float:
+func hourly_frost() -> float:
 	return snow_cover.frost_at(weather.at(_outdoor_tile(), clock.day, _hour_start()).temperature)
+
+
+## The thaw where the player is, 0 to 1, now: the warmth and the sun that melt the snow.
+func current_thaw() -> float:
+	var sample := weather.at(_outdoor_tile(), clock.day, clock.minute_of_day)
+	return snow_cover.thaw_at(sample.temperature, sample.sunlight)
 
 
 ## How much it rained in the hour that has just ended, where the player sees the weather (see
