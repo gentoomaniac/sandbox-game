@@ -96,6 +96,10 @@ const KIND_KEYS := [
 ##   after_sunset_minutes it is only about from the dusk until this long after sunset (0: all day)
 ##   wind_limit           it hides at this much wind (0 to 1; default: never)
 ##   min_temperature      it hides below this many degrees Celsius (default: never)
+##   building_tiles       it doesn't appear or settle within this many tiles of a building (a whole
+##                        number; default 0: it may, as the mice do, who live by the houses)
+##   ignores_villagers    true: it appears and settles near villagers, as the mice do (default: it
+##                        doesn't appear within `flee_tiles` of one)
 ##   fade_days            its season factor fades over this many days either side of a season
 ##                        boundary instead of stepping (default: it steps)
 ##   migration_days       it flies south in autumn and north in spring, within
@@ -214,7 +218,7 @@ static func has_farm_near(world: World, centre: Vector2i, radius: int) -> bool:
 	return false
 
 
-## What is missing, as "[section] what".
+## What is missing or wrong, as "[section] what".
 func problems() -> Array[String]:
 	var missing: Array[String] = []
 	for key: String in GENERAL_KEYS:
@@ -224,6 +228,12 @@ func problems() -> Array[String]:
 		for key: String in KIND_KEYS:
 			if not _values.get(String(kind), {}).has(key):
 				missing.append("[%s] no %s" % [kind, key])
+		var section: Dictionary = _values.get(String(kind), {})
+		var building_tiles: Variant = section.get("building_tiles", 0)
+		if not building_tiles is int or building_tiles < 0:
+			missing.append("[%s] building_tiles is not a whole number from 0" % kind)
+		if not section.get("ignores_villagers", false) is bool:
+			missing.append("[%s] ignores_villagers is not true or false" % kind)
 	return missing
 
 
@@ -249,6 +259,16 @@ func alert_tiles(kind: StringName) -> float:
 
 func flee_tiles(kind: StringName) -> float:
 	return _value(kind, "flee_tiles")
+
+
+## How far from a building a kind appears and settles, in tiles.
+func building_tiles(kind: StringName) -> int:
+	return _optional(kind, "building_tiles", 0)
+
+
+## Whether a kind takes no notice of villagers: the mice.
+func ignores_villagers(kind: StringName) -> bool:
+	return _optional(kind, "ignores_villagers", false)
 
 
 ## Whether a kind lives only at flowers in bloom.

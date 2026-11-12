@@ -51,6 +51,9 @@ var rng := RandomNumberGenerator.new()
 ## The ground below the animals: shadows that fall on it (see Flock) are drawn here.
 var ground := Node2D.new()
 var is_player_ignored := false
+## Where the villagers' feet are, in pixels, as of the last tick or frame: no spatial lookup of
+## them exists, and they are few, so the animals scan this short list.
+var villager_feet := PackedVector2Array()
 ## Off while the debug flag decides which animals there are.
 var is_spawning_naturally := true
 var _state: GameState
@@ -85,12 +88,15 @@ func show_wildlife(state: GameState, view: WorldView, camera: CameraController) 
 
 
 func _process(delta: float) -> void:
+	if not _animals.is_empty():
+		_follow_villagers()
 	_remove_gone_animals()
 	_seconds_to_tick -= delta
 	if _seconds_to_tick <= 0.0:
 		_seconds_to_tick += rules.general("tick_seconds")
 		_follow_farm_animals()
 		if is_spawning_naturally:
+			_follow_villagers()
 			_follow_nests()
 			_match_counts()
 
@@ -227,6 +233,7 @@ func flowers_near(point: Vector2, tiles: int) -> Array[Vector2i]:
 func settle() -> void:
 	if not is_spawning_naturally or _state.is_inside():
 		return
+	_follow_villagers()
 	_follow_nests()
 	for nest_view in _nest_views.values():
 		nest_view.settle()
@@ -370,13 +377,34 @@ func _spawn_somewhere(kind: StringName, flowers: Array[Vector2i], is_instant := 
 			return
 
 
-## Whether a kind can live at a point: its terrain, trees and water, and ground to stand on if
-## it walks (or water, for a gull, which swims).
+## Whether a kind can live at a point: its terrain, trees and water, ground to stand on if it
+## walks (or water, for a gull, which swims), and no building or villager too near (see
+## `_is_near_people`).
 func _is_habitat(kind: StringName, point: Vector2) -> bool:
 	var is_swimming := kind == WildlifeRules.GULL and is_water(point)
 	if not _is_flying(kind) and not is_swimming and not can_stand(point, kind):
 		return false
+	if _is_near_people(kind, point):
+		return false
 	return rules.is_habitat_at(kind, world_view.world, _tile_at(point))
+
+
+## Whether a building is within `building_tiles` of a point, or a villager within `flee_tiles`: an
+## animal that keeps away from them (not the mice) neither appears nor settles there.
+func _is_near_people(kind: StringName, point: Vector2) -> bool:
+	var tiles := rules.building_tiles(kind)
+	var centre := _tile_at(point)
+	for y in range(centre.y - tiles, centre.y + tiles + 1):
+		for x in range(centre.x - tiles, centre.x + tiles + 1):
+			if world_view.world.building_at(Vector2i(x, y)) != null:
+				return true
+	if rules.ignores_villagers(kind):
+		return false
+	var reach := rules.flee_tiles(kind) * WildlifeRules.TILE_SIZE
+	for feet in villager_feet:
+		if feet.distance_to(point) <= reach:
+			return true
+	return false
 
 
 ## Places an animal of a kind within a short way of the player, by hand: at a flower for a
@@ -612,6 +640,13 @@ func _follow_farm_animals() -> void:
 			_farm_animals.erase(animal)
 	for animal in _state.livestock.all():
 		_show_farm_animal_if_near(animal)
+
+
+## Notes where the villagers are now.
+func _follow_villagers() -> void:
+	villager_feet.clear()
+	for villager in _state.npcs.all():
+		villager_feet.append(villager.position * WildlifeRules.TILE_SIZE)
 
 
 ## Frees the animals that are done or far from the view.

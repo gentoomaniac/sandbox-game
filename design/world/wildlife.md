@@ -111,4 +111,12 @@ atmosphere only: no player impact, not hunted, not saved.
   none appears or settles on one (`WildlifeView.can_stand`; the farm animals have the same rule in
   `is_walkable_for_animals`). The mice are no exception. The roof storks and the stork nests stand
   on roofs by design and do not use it.
+- **Distance from buildings and villagers (task 201):** most kinds don't appear or settle within
+  `building_tiles` of a building (rabbit 3, deer 6, squirrel 2, birds 2, geese 5, stork 4, frog 2,
+  waders 4, gull 2) or within their `flee_tiles` of a villager. The mice are the exception: they
+  live by the houses and the fields (`ignores_villagers`, no `building_tiles`), but still never
+  stand on a building tile. Roof storks and nests are not placed this way. A building is looked up
+  by tile (`World.building_at`) in a square of `building_tiles`; there is no spatial lookup of
+  villagers, so the view copies their feet into the short list `villager_feet` each tick and frame
+  and the check scans it. The numbers are in data/wildlife.cfg.
 - No animals inside buildings.
