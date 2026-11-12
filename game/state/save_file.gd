@@ -21,10 +21,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 29
-## The oldest version we still upgrade. Nine steps back, for the next version (task 187) makes
-## its step the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 30
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -206,6 +205,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_27(game)
 	if version <= 28:
 		_upgrade_from_version_28(game)
+	if version <= 29:
+		_upgrade_from_version_29(game)
 
 
 ## Version 20 made a memory when a chat was closed and counted the lines not in one yet
@@ -293,3 +294,14 @@ static func _upgrade_from_version_28(game: Dictionary) -> void:
 	for building: Dictionary in game["world"]["buildings"]:
 		if building["interior"] != null:
 			building["interior"]["ground_items"] = []
+
+
+## Version 29 had no attributes (task 187): the player has the base level of each.
+static func _upgrade_from_version_29(game: Dictionary) -> void:
+	# Written out, not read from data/attributes.cfg, so a later change of a base level leaves
+	# old saves alone.
+	var base_level := 10
+	game["player"]["attributes"] = {
+		"levels":
+		{"strength": base_level, "agility": base_level, "stamina": base_level, "hp": base_level}
+	}

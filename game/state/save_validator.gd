@@ -322,6 +322,9 @@ func _check_player(player: Dictionary) -> void:
 	var skills: Variant = _field(player, "skills", Kind.DICT, "player")
 	if skills != null:
 		_check_skills(skills)
+	var attributes: Variant = _field(player, "attributes", Kind.DICT, "player")
+	if attributes != null:
+		_check_attributes(attributes)
 
 
 func _check_inventory(inventory: Dictionary) -> void:
@@ -361,6 +364,18 @@ func _check_skills(skills: Dictionary) -> void:
 	var fading: Variant = _field(skills, "fading", Kind.LIST, "player skills")
 	if fading != null and not fading.all(func(skill: Variant) -> bool: return skill is String):
 		_report("player skills fading", "should be a list of text")
+
+
+func _check_attributes(attributes: Dictionary) -> void:
+	var levels: Variant = _field(attributes, "levels", Kind.DICT, "player attributes")
+	if levels == null:
+		return
+	var rules := AttributeRules.default_rules()
+	for attribute in rules.attribute_ids():
+		var level: Variant = _field(levels, str(attribute), Kind.WHOLE, "player attributes levels")
+		_check_between(
+			level, rules.min_level(), rules.max_level(), "player attributes levels", str(attribute)
+		)
 
 
 func _check_appearance(appearance: Dictionary, path: String) -> void:

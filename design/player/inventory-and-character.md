@@ -112,3 +112,13 @@
   shines only in the hand (the user, 2026-11-11): put away in the bag, in a chest or on the
   ground it gives no light but stays lit, and shines again once it is selected. The hand shows
   it lit or unlit. Whether it is lit is saved (save version 28).
+- **Attributes** (task 187): four levels, Strength, Agility, Stamina and HP, in `data/attributes.cfg`
+  (name, tooltip text and base level each, and what one level gives). A new character has every
+  level at 10, which gives what the game had before them: 100 energy, 100 health and 40 kg
+  carried before the load costs more energy. One level of Stamina gives +10 maximum energy, one of
+  HP +10 maximum health, one of Strength +4 kg carry capacity; Agility has no effect yet. The
+  game reads them only through `Attributes` (`max_energy()`, `max_health()`, `carry_capacity()`),
+  which counts an attribute's level plus the bonuses on it (food, items and the like later; a
+  bonus belongs to a source and is not saved), so a new attribute or bonus source touches that
+  class and the data file, and a villager or an animal can own one later. The levels are saved
+  (save version 30); how a level grows is open.

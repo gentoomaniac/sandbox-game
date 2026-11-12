@@ -230,6 +230,7 @@ func to_dict() -> Dictionary:
 		"health": health,
 		"is_debuffed": is_debuffed,
 		"skills": skills.to_dict(),
+		"attributes": attributes.to_dict(),
 		"can_water": can_water,
 		"is_lantern_lit": is_lantern_lit,
 	}
@@ -250,6 +251,7 @@ static func from_dict(data: Dictionary, home_map: GameMap) -> PlayerState:
 	player.health = data["health"]
 	player.is_debuffed = data["is_debuffed"]
 	player.skills = Skills.from_dict(data["skills"])
+	player.attributes = Attributes.from_dict(data["attributes"])
 	player.can_water = data["can_water"]
 	player.is_lantern_lit = data["is_lantern_lit"]
 	return player
