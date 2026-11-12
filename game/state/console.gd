@@ -54,6 +54,11 @@ const COMMANDS := {
 		"Show the growth, damage and needs of the crop in front of you or the nearest one.",
 	],
 	"skill": ["skill <skill> <points>", "Set a skill's points (0 to 100)."],
+	"attribute":
+	[
+		"attribute <attribute> <level>",
+		"Set an attribute's level (strength, agility, stamina or hp) and show what it gives.",
+	],
 	"friendship":
 	[
 		"friendship [0..100]",
@@ -78,6 +83,7 @@ const ARGUMENTS := {
 	"weather": [&"weather"],
 	"snow": [&"snow"],
 	"skill": [&"skill", &"number"],
+	"attribute": [&"attribute", &"number"],
 	"play": [&"track"],
 }
 ## The commands that take an animal kind, or `npc` and the id of a villager written by hand (see
@@ -195,6 +201,8 @@ func run(line: String) -> Array[String]:
 			output = _crop()
 		"skill":
 			output = _skill(arguments)
+		"attribute":
+			output = _attribute(arguments)
 		"friendship":
 			output = _friendship(arguments)
 		"play":
@@ -258,6 +266,9 @@ func candidates(kind: StringName) -> Array[String]:
 		&"skill":
 			for skill in _state.player.skills.rules.skill_ids():
 				values.append(String(skill))
+		&"attribute":
+			for attribute in _state.player.attributes.rules.attribute_ids():
+				values.append(String(attribute))
 		&"track":
 			if music_tracks.is_valid():
 				values.assign(music_tracks.call())
@@ -366,6 +377,28 @@ func _skill(arguments: PackedStringArray) -> Array[String]:
 		return ["Unknown skill: %s" % arguments[0]]
 	skills.set_points(skill, float(arguments[1]))
 	return ["%s is %s" % [skills.rules.skill_name(skill), skills.points(skill)]]
+
+
+func _attribute(arguments: PackedStringArray) -> Array[String]:
+	if arguments.size() != 2 or not arguments[1].is_valid_int():
+		return ["Usage: %s" % COMMANDS["attribute"][0]]
+	var attributes := _state.player.attributes
+	var attribute := StringName(arguments[0])
+	if not attributes.rules.has_attribute(attribute):
+		return ["Unknown attribute: %s" % arguments[0]]
+	attributes.set_level(attribute, int(arguments[1]))
+	return [
+		(
+			"%s is %d: %d energy, %d health, %.1f kg carried before it tires you"
+			% [
+				attributes.rules.attribute_name(attribute),
+				attributes.level(attribute),
+				attributes.max_energy(),
+				attributes.max_health(),
+				attributes.carry_capacity(),
+			]
+		)
+	]
 
 
 func _friendship(arguments: PackedStringArray) -> Array[String]:
