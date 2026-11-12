@@ -678,21 +678,9 @@ func _find_source(animal: FarmAnimal, need: StringName, map: GameMap) -> Diction
 	)
 	for tile in tiles:
 		for step: Vector2i in [Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT, Vector2i.UP]:
-			if _gives(map, tile + step, need):
+			if NeedSources.gives(map, tile + step, need):
 				return {"spot": Vector2(tile) + Vector2(0.5, 0.5), "source": tile + step}
 	return {}
-
-
-## Whether what is on a tile meets a need now: fresh water or a trough with water for thirst (a
-## stock of kind water), a stock of feed (a hay rack, a feeding trough) for hunger.
-func _gives(map: GameMap, pos: Vector2i, need: StringName) -> bool:
-	var tile := map.tile_at(pos)
-	if need == &"thirst" and tile != null and tile.is_fresh_water():
-		return true
-	var object := map.object_at(pos)
-	if object == null or not ObjectStock.is_stocked(object) or ObjectStock.units(object) == 0:
-		return false
-	return object.type_data()["stock_kind"] == (&"water" if need == &"thirst" else &"feed")
 
 
 ## Walks the animal to its goal, and meets the need on arrival; a goal it cannot walk to is given
@@ -718,10 +706,10 @@ func _meet_need_at_source(animal: FarmAnimal, map: GameMap) -> void:
 	var need := animal.goal_need
 	var source := animal.goal_source
 	animal.goal = Vector2.INF
-	if not _gives(map, source, need):
+	if not NeedSources.gives(map, source, need):
 		_start_activity(animal, FarmAnimal.Activity.IDLE)
 		return
-	_take_from(map, source, yard.units_per_need(animal.species, need))
+	NeedSources.take(map, source, yard.units_per_need(animal.species, need))
 	if need == &"thirst":
 		animal.thirst = 0.0
 	else:
@@ -731,16 +719,6 @@ func _meet_need_at_source(animal: FarmAnimal, map: GameMap) -> void:
 		animal.facing = signf(dx)
 	animal.activity = FarmAnimal.Activity.GRAZE
 	animal.seconds_left = yard.needs("drink_seconds" if need == &"thirst" else "eat_seconds")
-
-
-## Takes `units` out of the stock of the object on a tile, if it has one, so that its picture
-## follows; a tile of water has none to take.
-func _take_from(map: GameMap, pos: Vector2i, units: int) -> void:
-	var object := map.object_at(pos)
-	if object != null and ObjectStock.is_stocked(object):
-		ObjectStock.take(object, units)
-		if map is World:
-			(map as World).change_object(object)
 
 
 ## An animal in a skip of `minutes` meets each need that rose to `seek_at` if it can reach what
@@ -762,7 +740,9 @@ func _meet_needs_in_skip(animal: FarmAnimal, map: GameMap, minutes: int) -> void
 			continue
 		if not found.is_empty():
 			var meals := maxi(1, int(minutes / yard.need_minutes(animal.species, need) / seek_at))
-			_take_from(map, found["source"], meals * yard.units_per_need(animal.species, need))
+			NeedSources.take(
+				map, found["source"], meals * yard.units_per_need(animal.species, need)
+			)
 		var met := rng.randf() * seek_at
 		if need == &"thirst":
 			animal.thirst = met
