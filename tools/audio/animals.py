@@ -327,3 +327,32 @@ def goose_honk(rng):
         place(out, voice, at, rng.uniform(0.7, 1.0))
         at += length + rng.uniform(0.07, 0.12)
     return out
+
+
+def rooster_crow(rng):
+    """A rooster's "cock-a-doodle-doo": a short rising "cock", a quick "a", a high "doo" that
+    breaks off into a strained "dle" and a long "doooo" that wavers, sags and gives out. Loud and
+    sharp, since it has to carry across the farm."""
+    pitch = rng.uniform(0.93, 1.07)
+    mouth = [(1100, 0.4, 1.0), (2100, 0.3, 0.7), (3200, 0.3, 0.3)]
+
+    def syllable(start, peak, end, length, shake=0.0):
+        voice = _voice((start * pitch, peak * pitch, end * pitch), length, mouth, vibrato=shake, vibrato_rate=rng.uniform(22, 28))
+        size = len(voice) / RATE
+        rasp = bandpass(noise(rng, size), 1000, 3500) * envelope(size, 0.01, 8)
+        return voice + 0.12 * rasp / rms(rasp) * np.sin(np.pi * times(size) / size)
+
+    out = silence(2.3)
+    at = 0.02
+    for length, curve, shake, gain in [
+        (0.22, (560, 720, 700), 0.0, 0.85),  # cock
+        (0.09, (680, 740, 700), 0.0, 0.6),  # a
+        (0.24, (700, 960, 930), 0.01, 0.95),  # doo
+        (0.16, (900, 880, 760), 0.03, 0.8),  # dle
+    ]:
+        place(out, syllable(*curve, length, shake), at, gain)
+        at += length + rng.uniform(0.02, 0.05)
+    # The long last note rises, hangs at the top with a strained wobble and sinks away.
+    length = rng.uniform(0.85, 1.1)
+    place(out, syllable(780, 1020, 640, length, 0.035), at + 0.02)
+    return out

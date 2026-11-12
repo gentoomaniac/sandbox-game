@@ -85,6 +85,10 @@ Settings → Audio, saved with the others; 0 mutes it).
   it. Storks clatter their bills (a dry, hollow rattle) about once a minute or so while one
   is in view; geese honk now and then and when they take off, a skein flying over more
   often. Both are rare and quieter than the farm animals.
+  The farm animals (cow, sheep, hen, dog, cat, horse) have their own sounds, quiet. A rooster's
+  crow (`rooster_crow`, task 204: "cock-a-doodle-doo", three variants, about two seconds) is
+  sharper and louder than a cluck (-17 dBFS against -22), since it carries across the farm; it
+  is positional like the other animal sounds, faint indoors through the outside muffling.
 - **How the ambience is made** (decided 2026-11-05, numbers in `data/ambience.cfg`): once
   a second the weather sets the loops: rain at its strength, wind from calm (silent) to
   full speed. A gust is heard when a gust front, the ones the plants sway in (the shader's

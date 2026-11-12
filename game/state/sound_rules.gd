@@ -52,6 +52,7 @@ const EVENTS: Array[StringName] = [
 	&"cow_moo",
 	&"sheep_baa",
 	&"chicken_cluck",
+	&"rooster_crow",
 	&"dog_bark",
 	&"cat_meow",
 	&"horse_whinny",
