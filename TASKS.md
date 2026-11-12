@@ -368,6 +368,10 @@ into an item slot should happen when the bag is open at the same time."
 
 The user, 2026-11-12: "cloud are working but the textures are kind of broken. Full of hard lines
 etc doesn't look like good at all."
+- The user, 2026-11-13: "on my other system the cloud shadows look great". So the hard lines
+  show on one machine only: first find what differs (GPU and driver, the renderer the project
+  uses there and its shader float precision, window size and scale, how long the game had run,
+  since the drift grows without bound) and reproduce it, before changing the look.
 - The shadows of task 194 (game/scenes/cloud_shadows.gdshader, numbers in data/lighting.cfg
   [cloud_shadows], fed by WeatherView) work, but the patches show hard lines. Take screenshots
   first (cloudy weather by day, `--weather cloudy`, both arts, standing still and while they drift)
