@@ -59,7 +59,6 @@ var start_options := StartupOptions.new()
 
 var _origin := Vector2i.ZERO
 var _blockers: Dictionary[Vector2i, World.Blocked] = {}
-var _is_snowy := false
 var _texture: Texture2D
 var _was_active := false
 var _is_debug_house_placed := false
@@ -69,11 +68,6 @@ var _held_seconds := 0.0
 var _cursor_tile := Vector2i.ZERO
 ## Why the target stays, or "" (see `_show_take_down_message`).
 var _take_down_reason := ""
-
-
-## Shows the ghost with snow on its roof, as a house looks while there is snow about.
-func set_snowy(is_snowy: bool) -> void:
-	_is_snowy = is_snowy
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -181,12 +175,7 @@ func _process(delta: float) -> void:
 	if _origin == StartupOptions.NO_TILE:
 		_origin = _origin_under(camera.mouse_world_position())
 	_texture = load(
-		ArtSet.path(
-			SeasonalArt.house_path(
-				builder.type_data()["sprite"],
-				SeasonBlend.Look.SNOW if _is_snowy else SeasonBlend.Look.SUMMER
-			)
-		)
+		ArtSet.path(SeasonalArt.house_path(builder.type_data()["sprite"], SeasonBlend.Look.SUMMER))
 	)
 	_blockers = world.placement_blockers(builder.choice, _origin)
 	_show_message()

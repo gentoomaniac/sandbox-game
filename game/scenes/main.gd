@@ -9,8 +9,6 @@ extends Node2D
 ## StartupOptions.
 
 const WORLD_SEED := 1
-## The build ghost has snow on its roof while the snow cover is above this.
-const SNOWY_GHOST_COVER := 0.5
 ## Debug speed-up, toggled with F2: a game day in 16 real seconds.
 const FAST_FORWARD_FACTOR := 60.0
 ## What the player is told when they try on horseback what needs them on foot.
@@ -983,7 +981,6 @@ func _show_clock() -> void:
 	_frost = _state.current_frost()
 	_view.show_ground_cover(_state.clock.day, _snow_cover, _state.current_thaw(), _frost)
 	_view.refresh_looks(_state.clock.day)
-	_build_mode.set_snowy(_snow_cover > SNOWY_GHOST_COVER)
 	_hud.show_time(_state.clock)
 
 
