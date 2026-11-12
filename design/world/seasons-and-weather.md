@@ -173,6 +173,11 @@
   colour shifting smoothly between the seasons' looks, windows in [ground_mix]) and `litter`
   (fallen leaves, [litter]); `SnowCover.thaw_at`; and `GroundCover`, which gives every tile what
   it catches (leaves, snow, thaw, frost shelter; [cover]) and the share of its pixels covered.
+  The plumbing for the shaders is in: global shader parameters in project.godot (the weather of
+  the moment, set once per game minute), `game/scenes/ground_cover.gdshaderinc` (the per-pixel
+  rule: a pixel shows leaves, frost or snow where its threshold in the noise texture is below the
+  share) and `CoverMap`, a 512 x 512 ring texture with a texel per world tile (what the tile
+  catches), drawn from `GroundCover.chunk_channels` when a chunk loads and around a change.
   Plan: docs/plans/185-season-overlays.md.
 - **Weather and seasons change the map:**
   - frost freezes rivers so they can be crossed;

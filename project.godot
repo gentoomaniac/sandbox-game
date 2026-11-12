@@ -22,6 +22,41 @@ textures/canvas_textures/default_texture_filter=0
 2d/snap/snap_2d_transforms_to_pixel=true
 2d/snap/snap_2d_vertices_to_pixel=true
 
+[shader_globals]
+
+cover_litter={
+"type": "float",
+"value": 0.0
+}
+cover_snow={
+"type": "float",
+"value": 0.0
+}
+cover_thaw={
+"type": "float",
+"value": 0.0
+}
+cover_frost={
+"type": "float",
+"value": 0.0
+}
+cover_thaw_gain={
+"type": "float",
+"value": 0.0
+}
+cover_map={
+"type": "sampler2D",
+"value": ""
+}
+cover_noise={
+"type": "sampler2D",
+"value": ""
+}
+cover_leaves={
+"type": "sampler2D",
+"value": ""
+}
+
 [input]
 
 move_left={

@@ -100,3 +100,24 @@ func test_the_channels_are_whole_8_bit_levels() -> void:
 	var channels := _cover.channels_at(ORIGIN + Vector2i(1, 1))
 	for value in [channels.leaves, channels.snow, channels.melt, channels.frost_shelter]:
 		assert_almost_eq(value * 255.0, roundf(value * 255.0), 0.0001)
+
+
+func test_a_chunk_pass_gives_the_channels_of_every_tile_and_of_its_margin() -> void:
+	_world.add_chunk(Chunk.new(Vector2i(1, 0)))
+	_world.add_object(WorldObject.new(WorldObjectTypes.OAK, Vector2i(30, 5)))
+	_world.add_object(WorldObject.new(WorldObjectTypes.SPRUCE, Vector2i(33, 6)))
+	_world.add_object(WorldObject.new(WorldObjectTypes.OAK, Vector2i(2, 2)))
+	_world.place_building(BuildingTypes.KATE, Vector2i(14, 14))
+	_world.set_terrain(Vector2i(5, 25), Tile.Terrain.WATER)
+	_world.set_terrain(Vector2i(6, 25), Tile.Terrain.SOIL)
+	_world.wear_tile(Vector2i(10, 20), PathRules.default_rules().most())
+	var margins: Array[int] = [0, _cover.reach()]
+	for coords in [Vector2i.ZERO, Vector2i(1, 0)]:
+		for margin in margins:
+			var colours := _cover.chunk_channels(coords, margin)
+			var side := Chunk.CHUNK_SIZE + 2 * margin
+			assert_eq(colours.size(), side * side)
+			var origin := Chunk.to_world(coords, Vector2i.ZERO) - Vector2i(margin, margin)
+			for index in colours.size():
+				var tile := origin + Vector2i(index % side, index / side)
+				assert_eq(colours[index], _cover.channels_at(tile).as_color(), "tile %s" % tile)
