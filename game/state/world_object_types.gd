@@ -182,7 +182,7 @@ const _PINE_TRUNK_ROW := 18
 const _DEAD_TREE_TRUNK_ROW := 20
 const _WILLOW_TRUNK_ROW := 22
 ## The atlas row of the reeds: after the last trunk.
-const _REEDS_ROW := 24
+const REEDS_ROW := 24
 ## The atlas row of the dead tree's stump, after the reeds.
 const _DEAD_STUMP_ROW := 25
 ## The atlas row of the chest, after the dead tree's stump.
@@ -385,46 +385,6 @@ const _OTHER_TYPES := {
 		"sprite_height": 134,
 		"variants": 3,
 	},
-	BERRY_BUSH:
-	{
-		"drops": {&"berries": 3},
-		"regrow_days": 3,
-		"seasonal": FRUIT,
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"atlas_row": 7,
-		"variants": 3,
-	},
-	SHRUB:
-	{
-		"drops": {&"fibre": 2},
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": false,
-		"harvest_level": 0,
-		"atlas_row": 8,
-		"variants": 3,
-	},
-	SAPLING:
-	{
-		"drops": {&"acorn": 1},
-		"matures_after_days": 4,
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": false,
-		"harvest_level": 0,
-		"atlas_row": 9,
-		"variants": 3,
-	},
-	FERN_BUSH:
-	{
-		"drops": {&"fibre": 2},
-		"seasonal": DORMANCY,
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": false,
-		"harvest_level": 0,
-		"atlas_row": 10,
-		"variants": 3,
-	},
 	BOULDER:
 	{
 		"hp": 6,
@@ -460,29 +420,6 @@ const _OTHER_TYPES := {
 		"tool": &"axe",
 		"drops": {&"logs": 1},
 		"rots_after_days": 14,
-	},
-	TALL_GRASS:
-	{
-		"drops": {&"hay": 2},
-		"tool": &"scythe",
-		"clearable": true,
-		"regrow_days": 4,
-		"seasonal": DORMANCY,
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": false,
-		"harvest_level": 0,
-		"atlas_row": 13,
-		"variants": 3,
-	},
-	REEDS:
-	{
-		"drops": {&"reeds": 2},
-		"tool": &"scythe",
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": false,
-		"harvest_level": 0,
-		"atlas_row": _REEDS_ROW,
-		"variants": 3,
 	},
 	# A hedge of hazel and hawthorn on an earth bank, between fields. The axe cuts it down to
 	# the ground for its wood.
@@ -961,7 +898,7 @@ static func _with_crops(other_types: Dictionary) -> Dictionary:
 
 
 static func _build_types() -> Dictionary:
-	var types := _with_crops(_OTHER_TYPES)
+	var types := _with_crops(_OTHER_TYPES.merged(WorldObjectPlants.TYPES))
 	types[REEDS] = types[REEDS].merged(CropRules.default_rules().reeds())
 	var all_types := _with_trunks(types)
 	ReadOnly.deep(all_types)
