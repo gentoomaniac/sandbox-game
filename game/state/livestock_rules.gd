@@ -44,7 +44,9 @@ const HUNTING_KEYS := [
 	"rest_seconds",
 ]
 const FRIENDSHIP_KEYS := ["pettable", "max", "pet_gain", "sleep_pet_loss", "daily_loss"]
-const ROOSTER_KEYS := ["flock_tiles"]
+const ROOSTER_KEYS := [
+	"flock_tiles", "dawn_minutes", "dawn_crows", "day_crows", "day_crow_chance", "crow_gap_seconds"
+]
 const SPECIES_KEYS := [
 	"looks",
 	"look_weights",
@@ -159,6 +161,18 @@ func friendship(key: String) -> int:
 ## A number of the rooster and its flock (see [rooster]).
 func rooster(key: String) -> float:
 	return float(_values["rooster"][key])
+
+
+## A random whole number between the two of a pair of the rooster's numbers, both included.
+func pick_rooster_count(key: String, rng: RandomNumberGenerator) -> int:
+	var range_counts: Array = _values["rooster"][key]
+	return rng.randi_range(int(range_counts[0]), int(range_counts[1]))
+
+
+## A random number of seconds between the two of a pair of the rooster's numbers.
+func pick_rooster_seconds(key: String, rng: RandomNumberGenerator) -> float:
+	var range_seconds: Array = _values["rooster"][key]
+	return rng.randf_range(range_seconds[0], range_seconds[1])
 
 
 ## Whether animals of the species can be petted.

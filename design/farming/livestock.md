@@ -31,6 +31,16 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   of the rooster look counts as the rooster of its flock (the first of a flock, in the save's
   order; the others become brown hens), and a flock without one gets a new one where its first
   chicken stands (a coop counts as at the middle of its first tile).
+- **Crowing** (task 204; the numbers are in `[rooster]` of data/livestock.cfg, picked by the
+  worker for the user to tune): a rooster crows (`Crowing`, the sound event `rooster_crow`, played
+  from where he stands and heard 60 tiles round) only while he is awake and out of the coop,
+  never asleep. At **dawn**, once a day, he crows a run of 2 to 4 crows with 4 to 9 seconds
+  between them, starting when he is up if that is within 60 game minutes of sunrise. **By day**
+  (any time he is up and not in a run) a run of 1 to 2 crows begins with the chance 0.004 a
+  second, about once in four minutes of play. Nothing indoors: the world stands still while the
+  player is in a house, so a run waits for them to come out, and a crow already sounding is
+  muffled like other outside sounds. Not saved (a loaded game may have a rooster that already
+  crowed today crow again). He does not stop or move his head to crow: no art for it yet.
 - **Dogs, cats and horses** (decided 2026-11-06, task 79): dogs (a farm collie, a spitz, a
   pointer-like hunting dog), cats (tabby, black, ginger) and horses (a heavy marsh horse of the
   Oldenburg kind in bay, black and grey, and a dun pony). Dogs and cats sniff about (their
@@ -105,7 +115,7 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   as in play. The dice come from the world seed and the time, so the same game skipped the
   same way ends the same.
 - **Sound:** now and then a moo, a baa, a cluck, a bark, a whinny or a snort, quiet and rare
-  (a cat's meow rarer still); none while asleep.
+  (a cat's meow rarer still); none while asleep. The rooster crows (see **The rooster**).
 - **Saved:** species, look, tint and position (save version 13), until when a dog follows the
   player (save version 16), whether a horse wears a saddle (save version 22) and how hungry and
   thirsty it is (save version 25), how fond of the player it is and the days it was petted (save

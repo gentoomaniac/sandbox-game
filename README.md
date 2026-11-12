@@ -31,8 +31,9 @@ each flash of lightning, birds chirping by day, deer,
 rabbits and squirrels, bees buzzing at their flowers, frogs croaking near water on
 warm spring and summer evenings and nights (and, where frogs are about, a quiet chorus of
 them at dusk), a stork clattering its bill and geese honking,
-and now and then a quiet moo, baa or cluck from the farm animals. How often and how loud is in
-[data/ambience.cfg](data/ambience.cfg).
+and now and then a quiet moo, baa or cluck from the farm animals, and a rooster who crows at dawn
+and now and then through the day (the numbers are in [data/livestock.cfg](data/livestock.cfg)).
+How often and how loud the others are is in [data/ambience.cfg](data/ambience.cfg).
 
 ### A world that changes with the seasons
 

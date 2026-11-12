@@ -49,6 +49,12 @@ var last_petted_asleep_day := 0
 var goal := Vector2.INF
 var goal_source := Vector2i.ZERO
 var goal_need := &""
+## How many more crows of the run it is in a rooster has (see Crowing); not saved.
+var crows_left := 0
+## Seconds until its next crow of the run.
+var crow_wait_seconds := 0.0
+## The game day it last began its dawn run.
+var last_dawn_crow_day := 0
 ## A hen is in a chicken coop (see Coop): she stands on a tile of its footprint and is not shown.
 ## Worked out from where she stands, so it is not saved.
 var is_housed := false

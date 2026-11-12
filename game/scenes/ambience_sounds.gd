@@ -66,6 +66,10 @@ func listen(
 	_weather_view = weather_view
 	weather_view.flashed.connect(_on_flash)
 	wildlife.animal_added.connect(_on_animal_added)
+	state.livestock.crowed.connect(
+		func(rooster: FarmAnimal) -> void:
+			_play_at(&"rooster_crow", rooster.position * TerrainTileset.TILE_SIZE)
+	)
 
 
 func _process(delta: float) -> void:

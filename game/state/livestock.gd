@@ -18,6 +18,8 @@ extends RefCounted
 signal added(animal: FarmAnimal)
 ## An animal left the world for good (see `remove_species`); whoever shows it stops.
 signal removed(animal: FarmAnimal)
+## A rooster crows: whoever listens plays the sound from where it stands.
+signal crowed(rooster: FarmAnimal)
 ## An animal was petted and shows what `pet` returned (a heart or the anger mark, never nothing).
 signal petted(animal: FarmAnimal, shows: PetShows)
 
@@ -281,6 +283,8 @@ func update(
 		else:
 			if animal.goal_need == Coop.ROOST:
 				animal.goal = Vector2.INF
+			if animal.is_rooster() and Crowing.update(animal, delta, clock, sunrise, rules, rng):
+				crowed.emit(animal)
 			_update_awake_animal(animal, delta, map, player_feet, may_hunt)
 
 
