@@ -5455,3 +5455,22 @@ should stay away from NPC's and buildings, except mice maybe."
   a villager; mice may stay near a house; the config check. Design note on wildlife.
 
 Done: 2026-11-12. `WildlifeView.can_stand` refuses every building tile, the door included, for all kinds (waders keep their flooded-mud rule; roof storks and flying kinds don't stand). Spawning and settling avoid a building within the kind's `building_tiles` (data/wildlife.cfg: deer 6, geese 5, stork and waders 4, rabbit 3, bird, squirrel, frog and gull 2) and a villager within its `flee_tiles`. `Animal._nearest_threat` makes them flee the nearer of the player and the villagers. Mice have no `building_tiles` and `ignores_villagers=true`. No spatial lookup exists: the villagers' feet are copied once a frame while animals exist; buildings are looked up by tile. An animal wandering up to a house on its own isn't driven off.
+
+## 202. Storks come too often
+
+- [x] Done
+
+The user, 2026-11-11: "Storks spawn too frequent"
+- Wild storks today (data/wildlife.cfg): `[stork]` (hunting on wet ground, cap 2, spawn_chance
+  0.03, spring and summer) and `[roof_stork]` (on a roof near the view, cap 2, spawn_chance 0.02);
+  plus the nest pairs of task 152, which belong to their nest and are not counted.
+- Find out what the player sees as "too often": how many storks are about at once and how often a
+  new one flies in, in spring and summer, near the village and the wet meadows; whether settle on
+  skip or chunk streaming tops them up again and again, or a stork that flies off is replaced at
+  once. Measure it (a short headless run counting stork arrivals per game hour) before and after.
+- Make them rarer: a lower cap and spawn chance, a longer gap before one comes back after leaving,
+  and roof storks only now and then; numbers in data/ (the user tunes them). Keep the nest pairs
+  as they are.
+- Tests for the rate (arrivals per hour within a bound) and the cap; design note.
+
+Done: 2026-11-12. Measured with the new tools/bench/storks.gd (headless, writes nothing): before, a player walking by wet meadows saw 0.3 to 1 new storks a game hour, 2 at once, each one scared off replaced within the hour; after, 0.06 to 0.12 an hour, at most 1. data/wildlife.cfg: stork cap 1 and spawn_chance 0.008, roof_stork cap 1 and 0.003, and the new optional `return_gap_minutes` (stork 120, roof_stork 240): after one leaves, no other comes for that long, on spawn ticks or settling. Nest pairs unchanged. The gap isn't saved.

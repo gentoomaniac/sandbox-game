@@ -224,23 +224,6 @@ and in autumn gets leaves on top gradually and in winter frost and/or snow."
   changes and the user's decisions: smooth colour mix, a little straw on the dry grass in autumn,
   ice later). The queue goes on with 186 first.
 
-## 202. Storks come too often
-
-- [ ] Done
-
-The user, 2026-11-11: "Storks spawn too frequent"
-- Wild storks today (data/wildlife.cfg): `[stork]` (hunting on wet ground, cap 2, spawn_chance
-  0.03, spring and summer) and `[roof_stork]` (on a roof near the view, cap 2, spawn_chance 0.02);
-  plus the nest pairs of task 152, which belong to their nest and are not counted.
-- Find out what the player sees as "too often": how many storks are about at once and how often a
-  new one flies in, in spring and summer, near the village and the wet meadows; whether settle on
-  skip or chunk streaming tops them up again and again, or a stork that flies off is replaced at
-  once. Measure it (a short headless run counting stork arrivals per game hour) before and after.
-- Make them rarer: a lower cap and spawn chance, a longer gap before one comes back after leaving,
-  and roof storks only now and then; numbers in data/ (the user tunes them). Keep the nest pairs
-  as they are.
-- Tests for the rate (arrivals per hour within a bound) and the cap; design note.
-
 ## 203. Wattle fences and stone walls can be made and placed
 
 - [ ] Done
