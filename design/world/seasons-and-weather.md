@@ -8,19 +8,23 @@
     melts above 0 °C (faster in sunshine). It is derived from the weather history (no
     save needed). The ground, objects and roofs show snow only where there is snow
     cover, so the first frosty days of winter are not white yet.
-  - **Patches:** each tile has a fixed threshold; snow shows on a tile while the cover is
-    above it. So snow arrives as a dusting in patches, and in a thaw it melts away in
-    patches over 2–3 days. By the start of spring it is gone.
-  - **Frost:** below 0 °C without snow, grass and plants get a frosty look (pale,
-    rimed), stronger the colder it is, fading as it warms by day.
-  - **Foliage and grass blend** (changed 2026-11-06): every change of look takes 2 to 3
-    days from the first day of its season to the full look, tile by tile and tree by tree
-    (each has its own threshold), not on one morning and not over weeks. In spring the
-    trees and bushes leaf out in visible steps within those days: bare, buds, small leaves,
-    full leaves. Autumn colours and leaf fall come in the same way. Winter without snow is
-    bare and brown-grey, not white. As built (task 51): each change starts the day before
-    its season, so on the first day about a sixth has changed, half on the second, five in
-    six on the third, and all is done on the fourth. Leaf fall is the change to the bare
+  - **Patches** (changed by task 185): snow does not switch tiles. Every art pixel of the ground,
+    the objects and the roofs has a place in a noise map; snow shows on the pixels whose place
+    is below the cover the tile gets, so it arrives as a soft dusting that thickens evenly, and
+    in a thaw it melts away evenly, the paths and the open ground first. By the start of spring
+    it is gone.
+  - **Frost:** below 0 °C without snow, a rime of single pixels lies on the grass, the plants
+    and the objects (pale blue-white, on the light tips first), stronger the colder it is and
+    gone as the day warms, minute by minute. Under a tree's crown it lies less.
+  - **Foliage and grass blend** (changed 2026-11-06): every change of look of the plants takes
+    2 to 3 days from the first day of its season to the full look, tree by tree (each has its
+    own threshold; the ground's colour has its own, much gentler mix), not on one morning and
+    not over weeks. In spring the trees and bushes leaf out in visible steps within those days:
+    bare, buds, small leaves, full leaves. Autumn colours and leaf fall come in the same way.
+    Winter without snow is dark green on the ground (the plants are bare), not white or grey.
+    As built (task 51): each change starts the day before its season, so on the first day about
+    a sixth has changed, half on the second, five in six on the third, and all is done on the
+    fourth. Leaf fall is the change to the bare
     look at the start of winter (day 91). Each tree or bush leafs out over most of those
     days and shows each step for about a day; conifers, ferns and grass have no steps.
   - **Pines look like pines** (decided 2026-11-06): a Scots pine with a tall bare reddish
@@ -145,29 +149,28 @@
 - **Calendar** (decided 2026-11-05): four seasons of 30 days (Spring, Summer, Autumn,
   Winter), so a year has 120 days. The game starts on the 1st day of Spring, Year 1. The
   HUD shows "10th day of Spring Year 2 · 06:00".
-- **The world looks like its season** (decided 2026-11-05): the current art is summer.
-  Spring is a lighter, fresher green; autumn is North Sea autumn (task 52): oaks brown,
-  ochre or copper, beeches copper, birches yellow, alders a dull green-brown (task 56), bushes
-  yellow and ochre, red rare (no tree has it yet); the grass of the marsh stays green until
-  November, only its tips olive and its flowers withered, and only the dry grass of the Geest
-  turns straw; the salt marsh keeps its olive turf, with patches of red-purple glasswort
-  (task 107, from the art review of 2026-11-08); winter is snow-covered (snow on the ground,
-  snow on evergreens, bare deciduous trees). The look changes when the season changes. This is
-  the visual season only: frozen rivers, deep snow and other weather effects on tiles stay with
-  the weather system. The season's look is only the base: the blend, snow and frost above
-  decide per tile and per plant which look shows.
-- **How the looks are drawn** (decided 2026-11-05): there are seven looks of the ground
-  (spring, summer, autumn, bare = winter without snow, frost, snow and its thin fringe,
-  dusting), each a recolour of the summer art made by the generator, and for objects two
-  more, the steps of the leaf-out (buds and young leaves, drawn over the bare tree). The
-  base terrain is summer; a look is drawn over it as a dual-grid overlay layer of its own
-  (the same edge shapes as the terrain layers), so patches of autumn, bare ground, frost and
-  snow have soft edges and no seams. The season looks and the frost have stacked layers for
-  lush and dry grass and the desire paths too, like the terrain. Snow and frost lie over the season's look. Decorations,
-  objects and houses pick their art by look instead. Snow cover comes from
-  `data/seasons.cfg` ([snow]: snowfall adds, warmth and sun melt, counted hour by hour from
-  the start of autumn; none from the first day of the year), the blend windows too; the view
-  updates once a game hour, a few milliseconds per frame.
+- **The world looks like its season** (decided 2026-11-05, changed 2026-11-12 by task 185): the
+  current art is summer. Spring is a lighter, fresher green; autumn is North Sea autumn (task 52):
+  oaks brown, ochre or copper, beeches copper, birches yellow, alders a dull green-brown (task 56),
+  bushes yellow and ochre, red rare (no tree has it yet). The grass itself does not change look:
+  it shifts evenly to a darker green in autumn and the darkest in winter, the dry grass of the
+  Geest keeping a little straw in autumn; the salt marsh keeps its olive turf, with patches of
+  red-purple glasswort and its red-purple autumn (task 107). Fallen leaves, frost and snow lie over
+  all of it, and snow lies on the evergreens, the bare deciduous trees and the roofs. This is the
+  visual season only: frozen rivers, deep snow and other weather effects on tiles stay with the
+  weather system.
+- **How the looks are drawn** (decided 2026-11-05, rebuilt by task 185): the art generator
+  recolours the summer art into looks: for the ground spring, summer, autumn, bare (winter
+  without snow: the darkest green), frost and snow, for objects also the steps of the leaf-out
+  (buds and young leaves, drawn over the bare tree). Terrain and decorations are drawn in the
+  summer look only (the atlases of the other looks have the same layout), and the ground shader
+  mixes the colours of two seasons by the day and lays the cover over them; the plants and the
+  houses pick the picture of their season by the day, and the cover shader lays the snow and
+  the frost over them. So the view refreshes only when the day changes (the pictures of the
+  plants, and the decorations), while the ground and the covers follow the weather by the minute.
+  Snow cover comes from `data/seasons.cfg` ([snow]: snowfall adds, warmth and sun melt, counted
+  hour by hour from the start of autumn; none from the first day of the year), the blend windows
+  too.
 - **The ground follows the year as one base colour plus overlays** (task 185, built; see
   docs/plans/185-season-overlays.md):
   - The grass keeps one look all year and only shifts its colour, evenly all over the world: the
@@ -208,6 +211,9 @@
     the ridge to the eaves, by the cover of the ground at the middle of the house, and keeps the
     roof's shape and the lit windows (the same picture serves the lit and the unlit house).
   - `--frost` and `--melt` start the game with a forced frost or thaw, like `--snow`.
+  - The game's own questions (footsteps, the animals, the flowers under snow) ask `GroundCover` for
+    the snow share of the tile and call it snowed at 0.5 or more, while the shader blends per
+    pixel, so at the edge of a patch they can differ a little from what is drawn.
   - Cost: a chunk fills about 5-7 ms of cover texels when it loads, and the ground costs a few
     texture samples per pixel in place of about 40 overlay layers.
 - **Weather and seasons change the map:**

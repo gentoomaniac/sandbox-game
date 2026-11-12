@@ -123,9 +123,10 @@
     of carved horse heads (*Pferdeköpfe*); under snow the boards and the heads stay clear.
     Every building has lit windows and a look per season of the grass on its tile (task 58,
     SeasonalArt.HOUSE_LOOKS): the grass on a roof (the shack's turf, a turf ridge) is fresh
-    in spring, yellow-brown in autumn and brown-grey in winter, its dark base and the moss
-    on a thatch green all year; under snow the roof is snowed over. Frost and the dusting
-    leave a roof in its season's look; the build ghost always shows the summer look.
+    in spring, then darker green in autumn and winter like the grass of the ground, its dark
+    base and the moss on a thatch green all year; the snow builds up on the roof from the ridge
+    to the eaves by shader (task 185, `<house>_snow_cover.png`). Frost leaves a roof in its
+    season's look; the build ghost always shows the summer look.
     Windows have small panes (task 52): 2×2 px panes in 1 px white glazing bars, 3×3 panes
     in a house window, 2×3 in the shack's, and the dormers' half-round windows divided
     the same way; a lit pane glows in one colour. The window inside is the same, with

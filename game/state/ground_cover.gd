@@ -22,7 +22,8 @@ const LEAFY: Array[StringName] = [
 	WorldObjectTypes.WILLOW,
 	WorldObjectTypes.KNICK,
 ]
-## What shelters the ground under it: every tree and the hedge.
+## What shelters the ground under it: every tree and the hedge. Listed in full: assigning the
+## untyped `LEAFY + [...]` to a typed constant fails to parse.
 const CROWNED: Array[StringName] = [
 	WorldObjectTypes.OAK,
 	WorldObjectTypes.BEECH,

@@ -154,3 +154,10 @@ Critical files: game/scenes/world_view.gd, game/scenes/terrain_tileset.gd, game/
 - **Grass colour:** a smooth mix while the grass changes colour (briefly off the palette, like the day/night tint), not a dither.
 - **Dry Geest grass in autumn:** it keeps a little straw colour, subtle and even, never in patches.
 - **Ice on water:** a separate task later, not part of 185.
+
+## Built (2026-11-12)
+
+Built in the order of section 8. Differences: `thaw_at` stands in for `melt_at` (Sol); step 7 also
+removed `SeasonBlend.thresholds` (its weather half and the evening-out table, now
+`season_threshold`) and the DUSTING look with the `dusting_band` rule; the build ghost lost its snow
+look; the roofs get their snow from a per-house picture, ranked from the ridge down in pack.py.
