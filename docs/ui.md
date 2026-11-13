@@ -142,8 +142,8 @@ extend `HotbarWindow`, which lends them the HUD's hotbar as their quick bar.
   calls `close()`), so `_on_close` is its one clean-up and runs where its dependencies are
   still there.
 - **Docked windows:** the one exception is the pair of docked windows (the bag and the character
-  window, set with `dock` in `_init`; `dock_inset` keeps the bag above the hotbar). They open at the
-  left and at the bottom right of the screen, are not dimmed, take no click outside to close, stay
+  window, set with `is_docked` and `dock` in `_init`; `dock_inset` keeps the bag above the hotbar).
+  They open in the middle of the screen (the character window) and at its bottom right (the bag), are not dimmed, take no click outside to close, stay
   open together (their keys only open and close their own window, see `can_open_on_key`) and Escape
   closes both (unless the bag's trash can has a question up, which Escape answers first). They don't
   pause the game, and the player keeps playing beside them: walking, the hotbar's number keys and

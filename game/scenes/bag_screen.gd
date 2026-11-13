@@ -30,6 +30,7 @@ var _trash_can := TrashCan.new()
 
 func _init(hotbar: HotbarHud) -> void:
 	super(hotbar)
+	is_docked = true
 	dock = Vector2(1, 1)
 	dock_inset = Vector2(DOCK_MARGIN, DOCK_MARGIN + HotbarHud.BOTTOM_MARGIN + SlotView.SIZE)
 	_drop_outside_panel(_hotbar, _on_dropped_outside)

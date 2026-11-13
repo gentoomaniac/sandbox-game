@@ -1,5 +1,5 @@
 extends CharacterDragCase
-## The bag and the character window open side by side: the character window docked at the left,
+## The bag and the character window open side by side: the character window docked in the middle,
 ## the bag at the bottom right above the hotbar, neither dimming nor covering the other.
 
 
@@ -8,11 +8,11 @@ func before_each() -> void:
 	await wait_process_frames(2)
 
 
-func test_the_character_window_is_at_the_left_and_the_bag_at_the_bottom_right() -> void:
+func test_the_character_window_is_in_the_middle_and_the_bag_at_the_bottom_right() -> void:
 	var screen := _window.get_visible_rect()
 	var character_rect := _character._panel.get_global_rect()
 	var bag_rect := _bag._panel.get_global_rect()
-	assert_almost_eq(character_rect.position.x, float(Modal.DOCK_MARGIN), 1.0)
+	assert_almost_eq(character_rect.get_center().x, screen.get_center().x, 1.0)
 	assert_almost_eq(character_rect.get_center().y, screen.get_center().y, 1.0)
 	assert_almost_eq(bag_rect.end.x, screen.end.x - Modal.DOCK_MARGIN, 1.0)
 	assert_false(character_rect.intersects(bag_rect), "side by side")
@@ -26,7 +26,8 @@ func test_the_bag_is_above_the_hotbar() -> void:
 func test_the_windows_stay_docked_when_the_character_window_changes_tab() -> void:
 	_character.open_tab(CharacterScreen.Tab.SKILLS)
 	await wait_process_frames(2)
-	assert_almost_eq(_character._panel.get_global_rect().position.x, float(Modal.DOCK_MARGIN), 1.0)
+	var centre_x := _character._panel.get_global_rect().get_center().x
+	assert_almost_eq(centre_x, _window.get_visible_rect().get_center().x, 1.0)
 
 
 func test_the_game_is_not_dimmed_and_does_not_pause() -> void:
@@ -36,9 +37,10 @@ func test_the_game_is_not_dimmed_and_does_not_pause() -> void:
 
 
 func test_a_window_the_player_moved_stays_where_it_was_put() -> void:
+	var left := _character._panel.get_global_rect().position.x
 	var grip := _character._panel.get_global_rect().position + Vector2(2, 2)
-	_drag(grip, grip + Vector2(100, 0))
-	assert_almost_eq(_character._panel.get_global_rect().position.x, 8.0 + 100.0, 2.0)
+	_drag(grip, grip + Vector2(40, 0))
+	assert_almost_eq(_character._panel.get_global_rect().position.x, left + 40.0, 2.0)
 
 
 func test_a_backpack_stack_dragged_onto_an_equipment_slot_is_worn() -> void:
@@ -101,7 +103,7 @@ class ClickCatcher:
 func test_a_click_outside_the_panels_reaches_the_game_and_one_on_a_panel_does_not() -> void:
 	var game := ClickCatcher.new()
 	_window.add_child(game)
-	var world_point := _window.get_visible_rect().get_center()
+	var world_point := Vector2(20, 20)
 	_click(world_point)
 	assert_eq(game.clicks, 1, "the world gets the click")
 	_click(_character._panel.get_global_rect().get_center())
@@ -114,7 +116,7 @@ func test_a_stack_let_go_on_the_world_is_dropped_and_the_backdrop_then_lets_clic
 	var dropped := []
 	_bag.drop_requested.connect(dropped.append)
 	_set_stack(BACKPACK_SLOT, ItemTypes.LOGS, 3)
-	var world_point := _window.get_visible_rect().get_center()
+	var world_point := Vector2(20, 20)
 	_drag(_centre_of(_backpack_view(BACKPACK_SLOT)), world_point)
 	assert_eq(dropped, [BACKPACK_SLOT])
 	assert_eq(_bag._backdrop.mouse_filter, Control.MOUSE_FILTER_IGNORE)

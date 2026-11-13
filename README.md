@@ -572,7 +572,7 @@ on the North Sea coast in the 18th century: a red waistcoat over a linen shirt, 
 with white stockings, wooden clogs, and a short blue jacket and hats to put on. Press B (or click the bag icon
 beside the hotbar) to open the bag with the backpack, and C to open the character window with
 the figure and the equipment slots. You move items between slots by dragging, and wear or take
-off by right click. The two are windows of their own, the character window at the left and the bag
+off by right click. The two are windows of their own, the character window in the middle of the screen and the bag
 at the bottom right above the hotbar, and they can be open at the same time, each closed by its own
 key (Escape closes both; you keep playing meanwhile, walking and using the hotbar and tools as
 usual, and a click outside the windows goes to the world; in a very small window or at a large UI
@@ -612,7 +612,7 @@ nothing. Below 20 % energy the character sweats with every action, and below 10 
 head at midnight and again at half past, while you are still awake: you pass out an hour
 after midnight.
 
-![The bag at the bottom right and the character window at the left, open together: the backpack with its weight and trash can, the equipment slots round the figure](docs/screenshots/bag.png)
+![The character window in the middle and the bag at the bottom right, open together: the backpack with its weight and trash can, the equipment slots round the figure](docs/screenshots/bag.png)
 
 ![The character window with the equipment slots, the attributes and what they give, and the skills tab beside it](docs/screenshots/character.png)
 

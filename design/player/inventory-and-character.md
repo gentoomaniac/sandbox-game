@@ -55,7 +55,7 @@
 - **Character window and bag** (decided 2026-11-05 as one screen; B instead of Tab since task 190;
   split in two windows in task 191, 2026-11-12): C opens the character window with the character
   and their equipment, B opens the bag with the backpack. Both are docked Modals (task 215):
-  the character window at the left, the bag at the bottom right, open together or alone. From the
+  the character window in the middle of the screen, the bag at the bottom right, open together or alone. From the
   backpack a worn item is chosen by dragging it onto the slot in the character window or by right
   click, and taken off by dragging it into the bag's backpack; from the hotbar (the quick bar of
   both) by dragging onto the slot.

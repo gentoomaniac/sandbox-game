@@ -61,15 +61,17 @@ var is_movable := true
 ## How far from the middle of the window the panel opens, in canvas pixels (kept on the screen).
 ## Set it in `_init`.
 var opening_shift := Vector2.ZERO
-## The side of the screen a docked window opens at, per axis: -1 left or top, 1 right or bottom,
-## 0 the middle. Zero on both is a window that is not docked. Set it in `_init`, before
-## `_drop_outside_panel`.
-var dock := Vector2.ZERO:
+## Whether the window is docked: it opens at `dock`, beside the other docked window, and the game
+## is played beside it (see the class comment). Set it in `_init`, before `_drop_outside_panel`.
+var is_docked := false:
 	set(value):
-		dock = value
+		is_docked = value
 		# The game is not dimmed beside a docked window, and clicks beside it go on to the game.
 		_backdrop.color = Color.TRANSPARENT
 		_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+## Where a docked window opens, per axis: -1 at the left or top, 1 at the right or bottom, 0 in
+## the middle.
+var dock := Vector2.ZERO
 ## How far a docked window stays from the edges it is docked to, in canvas pixels.
 var dock_inset := Vector2(DOCK_MARGIN, DOCK_MARGIN)
 
@@ -155,14 +157,9 @@ func is_open() -> bool:
 ## the input. The key of the open window itself still works (it closes it, or switches its tab).
 ## A docked window also opens beside the other docked one.
 func can_open_on_key() -> bool:
-	if is_docked():
+	if is_docked:
 		return visible or _open_modal == null
 	return visible or not Modal.is_any_open()
-
-
-## Whether the window docks at a side of the screen (see `dock`).
-func is_docked() -> bool:
-	return dock != Vector2.ZERO
 
 
 ## Opens the window, closing the one that is open (a docked window leaves the other docked one
@@ -170,7 +167,7 @@ func is_docked() -> bool:
 func open() -> void:
 	if visible:
 		return
-	if is_docked():
+	if is_docked:
 		if _open_modal != null:
 			_open_modal.close()
 		_open_docked.append(self)
@@ -179,7 +176,7 @@ func open() -> void:
 		_open_modal = self
 	visible = true
 	_drag_shift = opening_shift
-	_is_at_dock = is_docked()
+	_is_at_dock = is_docked
 	_apply_drag_shift()
 	get_viewport().size_changed.connect(_apply_drag_shift)
 	if pauses_game:
@@ -189,7 +186,7 @@ func open() -> void:
 	for list in _lists:
 		list.scroll_vertical = 0
 	refit()
-	if is_docked():
+	if is_docked:
 		_close_first_docked_if_cramped()
 	opened.emit()
 
@@ -249,7 +246,7 @@ func _takes_escape() -> bool:
 ## A click outside the panel is Escape. The panel of some windows lets clicks through to the
 ## backdrop, so where the click is decides.
 func _on_backdrop_input(event: InputEvent) -> void:
-	if is_docked() or not _is_left_press(event):
+	if is_docked or not _is_left_press(event):
 		return
 	var at: Vector2 = event.global_position
 	if not _panel.get_global_rect().has_point(at) and not _keeps_clicks_at.call(at):
@@ -260,7 +257,7 @@ func _on_backdrop_input(event: InputEvent) -> void:
 ## stack of the SlotView `source` is let go on the dimmed area outside the panel and outside the
 ## HUD's `hotbar`. Let go anywhere else, such as between the panel's slots, it stays where it was.
 func _drop_outside_panel(hotbar: HotbarHud, on_drop: Callable) -> void:
-	if is_docked():
+	if is_docked:
 		_backdrop.takes_mouse_while_dragging = true
 	_backdrop.set_drag_forwarding(
 		Callable(),
@@ -316,7 +313,7 @@ func _apply_drag_shift() -> void:
 	_close_button.offset_left = _close_button.offset_right - button_size.x
 	_close_button.offset_top = _panel.offset_top + CLOSE_BUTTON_INSET
 	_close_button.offset_bottom = _close_button.offset_top + button_size.y
-	if is_docked():
+	if is_docked:
 		_close_first_docked_if_cramped.call_deferred()
 
 
@@ -347,7 +344,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
 		get_viewport().set_input_as_handled()
-		if is_docked():
+		if is_docked:
 			_escape_docked()
 		else:
 			request_close()
