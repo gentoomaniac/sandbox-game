@@ -58,8 +58,8 @@ func test_a_grave_marker_stands_outdoors_and_the_pickaxe_takes_it_up_again() -> 
 	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.GRAVE)
 	var grave: Dictionary = WorldObjectTypes.TYPES[WorldObjectTypes.GRAVE]
 	assert_eq(grave["placeable_in"], WorldObjectTypes.OUTDOORS)
-	_state.player.inventory.add(ItemTypes.PICKAXE, 1)
-	_hit(ItemTypes.PICKAXE, 2)
+	_state.player.inventory.add(ItemTypes.RUSTY_IRON_PICKAXE, 1)
+	_hit(ItemTypes.RUSTY_IRON_PICKAXE, 2)
 	assert_eq(_dropped(ItemTypes.GRAVE_MARKER), 1)
 
 

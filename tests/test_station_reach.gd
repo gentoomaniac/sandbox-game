@@ -92,7 +92,7 @@ func test_a_firing_is_refused_out_of_reach_and_practises_nothing() -> void:
 
 func test_a_result_that_partly_fits_goes_in_and_the_rest_is_dropped() -> void:
 	for slot in Inventory.SLOT_COUNT:
-		_state.player.inventory.slots[slot] = {"item": ItemTypes.HOE, "count": 1}
+		_state.player.inventory.slots[slot] = {"item": ItemTypes.RUSTY_IRON_HOE, "count": 1}
 	_state.player.inventory.slots[3] = {"item": ItemTypes.LOGS, "count": 2}
 	_state.player.inventory.slots[4] = {"item": ItemTypes.PLANKS, "count": 98}
 	assert_eq(_crafting.craft(&"planks", _workbench), Crafting.Result.DROPPED)

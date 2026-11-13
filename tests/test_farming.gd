@@ -39,7 +39,7 @@ func _hold(item: StringName) -> void:
 
 
 func _till_and_plant() -> void:
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	_state.use_facing_tile()
 	_hold(ItemTypes.TURNIP_SEEDS)
 	_state.use_facing_tile()
@@ -63,7 +63,7 @@ func test_use_tile_refuses_a_tile_out_of_reach_and_changes_nothing() -> void:
 	var far := _tile + Vector2i(0, 1)
 	assert_true(Vector2i(far - _state.player.tile()).abs().y > Targeting.REACH)
 	var energy := _state.player.energy
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	watch_signals(_state.player.inventory)
 	assert_eq(_state.use_tile(far), ToolUse.Use.OUT_OF_REACH)
 	assert_eq(_world.tile_at(far).terrain, Tile.Terrain.GRASS)

@@ -200,7 +200,7 @@ func test_a_slot_does_its_own_drag_and_does_not_move_the_window() -> void:
 	var window := _window()
 	var slot := SlotView.new()
 	slot.bind_to(Inventory.new(), 0)
-	slot.show_stack({"item": ItemTypes.AXE, "count": 1}, false)
+	slot.show_stack({"item": ItemTypes.RUSTY_IRON_AXE, "count": 1}, false)
 	window.rows.add_child(slot)
 	window.open()
 	await wait_process_frames(2)

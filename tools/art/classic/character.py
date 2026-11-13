@@ -542,7 +542,7 @@ def held_hoe(grade):
     return draw
 
 
-draw_held_hoe = held_hoe(tool_grades.GRADES[0])
+HELD_HOES = {f"{grade}_hoe": held_hoe(grade) for grade in tool_grades.GRADES}
 
 
 def held_lantern(is_lit):

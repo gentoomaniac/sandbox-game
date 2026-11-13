@@ -7,7 +7,7 @@ var _appearance: Appearance
 
 func before_each() -> void:
 	_appearance = Appearance.new()
-	_appearance.wear(Appearance.HELD, "hoe")
+	_appearance.wear(Appearance.HELD, "rusty_iron_hoe")
 
 
 func _equipment_with(item: StringName) -> Equipment:

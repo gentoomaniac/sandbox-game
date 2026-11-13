@@ -117,10 +117,10 @@ func test_a_click_on_another_slot_answers_keep_and_moves_nothing() -> void:
 
 
 func test_one_item_is_asked_for_without_a_count() -> void:
-	_player.inventory.slots[BACKPACK_SLOT] = {"item": ItemTypes.AXE, "count": 1}
+	_player.inventory.slots[BACKPACK_SLOT] = {"item": ItemTypes.RUSTY_IRON_AXE, "count": 1}
 	_player.inventory.changed.emit()
 	_drag_to_the_trash_can(_screen._backpack_views[BACKPACK_SLOT])
-	assert_eq(_trash_can._question.text, "Destroy Axe?")
+	assert_eq(_trash_can._question.text, "Destroy Rusty iron axe?")
 
 
 func test_asking_does_not_change_the_size_of_the_panel() -> void:

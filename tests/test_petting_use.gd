@@ -101,8 +101,8 @@ func test_the_held_items_keep_their_uses() -> void:
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.GIVE_BONE)
 	assert_eq(dog.friendship, 0)
 
-	_state.player.inventory.add(ItemTypes.HOE, 1)
-	_hold(ItemTypes.HOE)
+	_state.player.inventory.add(ItemTypes.RUSTY_IRON_HOE, 1)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	assert_ne(_state.use_facing_tile(), ToolUse.Use.PET)
 
 

@@ -33,7 +33,7 @@ func test_x_is_a_rebindable_action_that_switches_between_building_and_taking_dow
 	assert_eq(
 		(InputMap.action_get_events(&"take_down_mode")[0] as InputEventKey).physical_keycode, KEY_X
 	)
-	_hold(ItemTypes.HAMMER)
+	_hold(ItemTypes.RUSTY_IRON_HAMMER)
 	assert_false(_builder.is_taking_down())
 	_builder.toggle_taking_down()
 	assert_true(_builder.is_taking_down())
@@ -42,10 +42,10 @@ func test_x_is_a_rebindable_action_that_switches_between_building_and_taking_dow
 
 
 func test_taking_down_ends_with_the_hammer_and_with_dismissing() -> void:
-	_hold(ItemTypes.HAMMER)
+	_hold(ItemTypes.RUSTY_IRON_HAMMER)
 	_builder.toggle_taking_down()
-	_hold(ItemTypes.HOE)
-	_hold(ItemTypes.HAMMER)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
+	_hold(ItemTypes.RUSTY_IRON_HAMMER)
 	assert_false(_builder.is_taking_down())
 	_builder.toggle_taking_down()
 	_builder.dismiss()

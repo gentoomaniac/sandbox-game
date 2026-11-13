@@ -19,7 +19,7 @@ func before_each() -> void:
 func _cut() -> ToolUse.Use:
 	_state.player.facing = Vector2i.DOWN
 	_state.player.position = Vector2(_tile) + Vector2(0.5, -0.5)
-	return _hit(ItemTypes.SCYTHE, 1)
+	return _hit(ItemTypes.RUSTY_IRON_SCYTHE, 1)
 
 
 func _day(mean_temperature: float, sunlight_hours: float) -> WeatherDay:
@@ -70,7 +70,7 @@ func test_no_reeds_stand_in_the_water_or_on_grass_away_from_ditches() -> void:
 
 func test_reeds_neither_block_walking_nor_give_way_to_the_hoe() -> void:
 	assert_false(_reeds.blocks_walking())
-	assert_eq(_hit(ItemTypes.HOE, 1), ToolUse.Use.NOTHING)
+	assert_eq(_hit(ItemTypes.RUSTY_IRON_HOE, 1), ToolUse.Use.NOTHING)
 	assert_same(_world.object_at(_tile), _reeds)
 
 

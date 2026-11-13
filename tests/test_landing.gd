@@ -92,8 +92,8 @@ func test_the_sea_past_the_end_of_the_jetty_is_not_walked_on() -> void:
 func test_the_axe_leaves_the_jetty_the_player_stands_on() -> void:
 	_jetty_out_at_sea(2)
 	_stand_astride()
-	_state.player.inventory.add(ItemTypes.AXE, 1)
-	_hold(ItemTypes.AXE)
+	_state.player.inventory.add(ItemTypes.RUSTY_IRON_AXE, 1)
+	_hold(ItemTypes.RUSTY_IRON_AXE)
 	assert_eq(_state.use_at(_tile), ToolUse.Use.STANDING_ON)
 	for _i in 10:
 		_state.use_facing_tile()

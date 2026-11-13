@@ -75,7 +75,7 @@ func test_a_field_made_where_a_fern_sleeps_has_no_fern_in_spring() -> void:
 	_state.clock.day = SUMMER
 	_place(WorldObjectTypes.FERN_BUSH)
 	_state.clock.day = WINTER
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.TILL)
 	_state.clock.day = NEXT_SUMMER
 	assert_null(_world.object_at(_tile))

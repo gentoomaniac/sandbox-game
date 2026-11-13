@@ -96,8 +96,8 @@ func test_riding_costs_no_energy_and_tiredness_does_not_slow_the_horse() -> void
 
 
 func test_no_tool_and_no_building_on_horseback() -> void:
-	_state.player.inventory.add(ItemTypes.HAMMER, 1)
-	_hold(ItemTypes.HOE)
+	_state.player.inventory.add(ItemTypes.RUSTY_IRON_HAMMER, 1)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	_state.mount(_horse)
 
 	assert_false(_state.can_use_held_item())
@@ -108,7 +108,7 @@ func test_no_tool_and_no_building_on_horseback() -> void:
 
 
 func test_a_tile_out_of_reach_is_out_of_reach_first_on_horseback_too() -> void:
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	_state.mount(_horse)
 	assert_eq(_state.use_tile(_state.player.tile() + Vector2i(5, 0)), ToolUse.Use.OUT_OF_REACH)
 	assert_eq(_state.use_tile(_state.player.tile()), ToolUse.Use.RIDING)

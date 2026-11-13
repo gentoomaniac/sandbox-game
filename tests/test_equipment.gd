@@ -27,7 +27,7 @@ func test_unequipping_returns_the_item_and_empties_the_slot() -> void:
 func test_an_item_fits_only_its_own_slot() -> void:
 	assert_true(Equipment.fits(Equipment.HEAD, ItemTypes.STRAW_HAT))
 	assert_false(Equipment.fits(Equipment.BODY, ItemTypes.STRAW_HAT))
-	assert_false(Equipment.fits(Equipment.MAIN_HAND, ItemTypes.HOE))
+	assert_false(Equipment.fits(Equipment.MAIN_HAND, ItemTypes.RUSTY_IRON_HOE))
 	assert_false(Equipment.fits(Equipment.HEAD, ItemTypes.NONE))
 
 
@@ -54,7 +54,7 @@ func test_moving_an_item_into_the_wrong_slot_changes_nothing() -> void:
 
 
 func test_moving_something_that_is_not_wearable_is_refused() -> void:
-	_inventory.slots[0] = {"item": ItemTypes.HOE, "count": 1}
+	_inventory.slots[0] = {"item": ItemTypes.RUSTY_IRON_HOE, "count": 1}
 	assert_false(_equipment.move_to_equipment(_inventory, 0, Equipment.MAIN_HAND))
 	assert_false(_equipment.move_to_equipment(_inventory, 1, Equipment.HEAD))
 
@@ -109,14 +109,14 @@ func test_quick_equip_swaps_the_worn_item_into_the_same_slot() -> void:
 
 
 func test_quick_equip_refuses_what_is_not_wearable_or_empty() -> void:
-	_inventory.slots[0] = {"item": ItemTypes.HOE, "count": 1}
+	_inventory.slots[0] = {"item": ItemTypes.RUSTY_IRON_HOE, "count": 1}
 	assert_false(_equipment.quick_equip(_inventory, 0))
 	assert_false(_equipment.quick_equip(_inventory, 1))
 
 
 func test_quick_unequip_goes_to_the_first_free_slot() -> void:
 	_equipment.equip(Equipment.HEAD, ItemTypes.STRAW_HAT)
-	_inventory.slots[0] = {"item": ItemTypes.HOE, "count": 1}
+	_inventory.slots[0] = {"item": ItemTypes.RUSTY_IRON_HOE, "count": 1}
 	assert_true(_equipment.quick_unequip(_inventory, Equipment.HEAD))
 	assert_eq(_inventory.item_in(1), ItemTypes.STRAW_HAT)
 

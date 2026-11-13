@@ -3,7 +3,7 @@ extends ResourceCase
 
 
 func _till_and_plant() -> void:
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	_state.use_facing_tile()
 	_hold(ItemTypes.TURNIP_SEEDS)
 	_state.use_facing_tile()
@@ -48,7 +48,7 @@ func test_a_dead_crop_is_cleared_by_hand_and_the_soil_can_be_planted() -> void:
 func test_a_dead_crop_is_hoed_away_and_the_soil_can_be_planted() -> void:
 	_till_and_plant()
 	_world.object_at(_tile).state["crop_damage"] = 1.0
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.TILL)
 	_assert_cleared_and_plantable()
 	assert_true(_world.ground_items.all().is_empty(), "hoeing gives nothing")
@@ -57,7 +57,7 @@ func test_a_dead_crop_is_hoed_away_and_the_soil_can_be_planted() -> void:
 func test_hoeing_away_a_dead_crop_costs_what_tilling_costs() -> void:
 	_till_and_plant()
 	_world.object_at(_tile).state["crop_damage"] = 1.0
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	_state.player.energy = 100.0
 	_state.use_facing_tile()
 	assert_almost_eq(
@@ -70,7 +70,7 @@ func test_hoeing_away_a_dead_crop_costs_what_tilling_costs() -> void:
 func test_a_cleared_tile_is_still_clear_after_save_and_load() -> void:
 	_till_and_plant()
 	_world.object_at(_tile).state["crop_damage"] = 1.0
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	_state.use_facing_tile()
 	var path := "user://test_saves/farming.json"
 	assert_true(SaveFile.write(_state, path))
@@ -89,7 +89,7 @@ func test_a_cleared_tile_is_still_clear_after_save_and_load() -> void:
 func test_the_scythe_leaves_a_dead_crop_alone() -> void:
 	_till_and_plant()
 	_world.object_at(_tile).state["crop_damage"] = 1.0
-	_hold(ItemTypes.SCYTHE)
+	_hold(ItemTypes.RUSTY_IRON_SCYTHE)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
 	assert_not_null(_world.object_at(_tile))
 

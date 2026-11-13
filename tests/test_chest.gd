@@ -94,7 +94,7 @@ func test_the_chest_item_is_held_like_seeds() -> void:
 	_hold_chests()
 	assert_true(_state.can_use_held_item())
 	assert_eq(ItemTypes.placed_object(ItemTypes.CHEST), WorldObjectTypes.CHEST)
-	assert_eq(ItemTypes.placed_object(ItemTypes.HOE), &"")
+	assert_eq(ItemTypes.placed_object(ItemTypes.RUSTY_IRON_HOE), &"")
 
 
 func test_the_tooltip_of_the_chest_item_says_what_it_is() -> void:

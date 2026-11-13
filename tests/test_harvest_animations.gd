@@ -12,7 +12,7 @@ func before_each() -> void:
 	super.before_each()
 	_make_room()
 	_set_midsummer()
-	_hold(ItemTypes.AXE)
+	_hold(ItemTypes.RUSTY_IRON_AXE)
 
 
 func _show_views() -> void:

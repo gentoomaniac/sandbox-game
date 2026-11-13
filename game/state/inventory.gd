@@ -11,14 +11,14 @@ const SLOT_COUNT := HOTBAR_SIZE + BACKPACK_SIZE
 
 ## What a new game starts with: item and count, in slot order.
 const STARTING_ITEMS := [
-	[ItemTypes.HOE, 1],
-	[ItemTypes.AXE, 1],
-	[ItemTypes.PICKAXE, 1],
-	[ItemTypes.WATERING_CAN, 1],
+	[ItemTypes.RUSTY_IRON_HOE, 1],
+	[ItemTypes.RUSTY_IRON_AXE, 1],
+	[ItemTypes.RUSTY_IRON_PICKAXE, 1],
+	[ItemTypes.RUSTY_IRON_WATERING_CAN, 1],
 	[ItemTypes.TURNIP_SEEDS, 15],
-	[ItemTypes.SCYTHE, 1],
-	[ItemTypes.SHOVEL, 1],
-	[ItemTypes.HAMMER, 1],
+	[ItemTypes.RUSTY_IRON_SCYTHE, 1],
+	[ItemTypes.RUSTY_IRON_SHOVEL, 1],
+	[ItemTypes.RUSTY_IRON_HAMMER, 1],
 ]
 ## What a new game starts with in the backpack (from the slot after the hotbar), so the hotbar
 ## keeps room for what the player picks up.

@@ -16,7 +16,7 @@ func test_an_item_the_game_no_longer_has_is_asked_about_and_dropped_on_agreement
 	var state := result.load_dropping_missing()
 	assert_eq(state.player.inventory.item_in(4), ItemTypes.NONE)
 	assert_eq(state.player.equipment.item_in(Equipment.HEAD), ItemTypes.NONE)
-	assert_eq(state.player.inventory.item_in(0), ItemTypes.HOE, "the rest stays")
+	assert_eq(state.player.inventory.item_in(0), ItemTypes.RUSTY_IRON_HOE, "the rest stays")
 	assert_eq(result.outcome, LoadResult.Outcome.READY)
 
 

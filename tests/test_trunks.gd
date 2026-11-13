@@ -15,7 +15,7 @@ func _fell_oak_from(side: Vector2i) -> void:
 	_state.player.position = Vector2(_tile + side) + Vector2(0.5, 0.5)
 	_state.player.facing = -side
 	_place(WorldObjectTypes.OAK)
-	_hit(ItemTypes.AXE, OAK_HITS)
+	_hit(ItemTypes.RUSTY_IRON_AXE, OAK_HITS)
 
 
 func _type_at(offset: Vector2i) -> StringName:
@@ -34,7 +34,7 @@ func test_felling_leaves_a_stump_and_a_trunk_of_the_species() -> void:
 		_world.remove_object(_tile + Vector2i.RIGHT)
 		_world.remove_object(_tile + Vector2i.RIGHT * 2)
 		_place(tree)
-		_hit(ItemTypes.AXE, int(WorldObjectTypes.TYPES[tree]["hp"]))
+		_hit(ItemTypes.RUSTY_IRON_AXE, int(WorldObjectTypes.TYPES[tree]["hp"]))
 		var stump: StringName = WorldObjectTypes.TYPES[tree]["leaves"]
 		assert_eq(_type_at(Vector2i.ZERO), stump, tree)
 		assert_eq(_type_at(Vector2i.RIGHT), WorldObjectTypes.trunk_type(tree, false), tree)
@@ -127,9 +127,9 @@ func test_cutting_up_a_trunk_drops_its_logs_and_removes_it() -> void:
 	_state.player.position = Vector2(_tile + Vector2i(1, -1)) + Vector2(0.5, 0.5)
 	_state.player.facing = Vector2i.DOWN
 	var trunk_hp: int = WorldObjectTypes.TYPES[&"oak_trunk"]["hp"]
-	_hit(ItemTypes.AXE, trunk_hp - 1)
+	_hit(ItemTypes.RUSTY_IRON_AXE, trunk_hp - 1)
 	assert_eq(_type_at(Vector2i.RIGHT), &"oak_trunk", "still lying")
-	_hit(ItemTypes.AXE, 1)
+	_hit(ItemTypes.RUSTY_IRON_AXE, 1)
 	assert_eq(_type_at(Vector2i.RIGHT), &"")
 	assert_eq(_type_at(Vector2i(2, 0)), &"", "both tiles are free again")
 	assert_eq(_dropped(ItemTypes.LOGS), 3)
@@ -138,7 +138,7 @@ func test_cutting_up_a_trunk_drops_its_logs_and_removes_it() -> void:
 func test_the_stump_gives_one_log() -> void:
 	_fell_oak_from(Vector2i.LEFT)
 	_clear_ground()
-	_hit(ItemTypes.AXE, 2)
+	_hit(ItemTypes.RUSTY_IRON_AXE, 2)
 	assert_eq(_type_at(Vector2i.ZERO), &"")
 	assert_eq(_dropped(ItemTypes.LOGS), 1)
 

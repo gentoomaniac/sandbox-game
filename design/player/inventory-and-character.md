@@ -96,9 +96,16 @@
   on the character screen, shows it with no PlayerView at work.
 - **Tools** are bought and upgraded (decided 2026-11-05):
   - The player starts with a hoe, axe, pickaxe, watering can, scythe, shovel and a bag of
-    turnip seeds, all tools at level 1.
-  - Upgrades later come from a smith in a settlement, in tiers (level 2 copper, level 3
-    iron, as palette swaps of the same icon).
+    turnip seeds, all tools of the first grade, rusty iron.
+  - **Grades** (task 207, 2026-11-13): every tool comes in five grades, from the worst: rusty iron,
+    iron, brittle steel, steel and sharp steel, each its own item ("Rusty iron hoe", "Iron hoe",
+    ...; the id is `<grade>_<tool>`, `rusty_iron_hoe`), drawn in its metal (see
+    `docs/art-style.md`; the tool in the hand has a sheet of each grade). For now they come only
+    from the console (`give iron_axe`); how they are made or bought is for later (a smith in a
+    settlement, the user's 2026-11-05 idea). The grades are data (`data/tools.cfg`, read by
+    `ToolGradeRules`, the items made in `ItemTypes`). The grades do not play differently yet: all
+    are level 1, as the tools were. An old save's tools become the rusty iron ones (save version
+    33). "Needs a better axe" names the kind of tool, not the grade.
   - The tool decides the action: hoe tills, seeds plant, axe fells, the pickaxe (the pick of
     the Geest, which grubbed the fieldstones of the till out of the fields) breaks stones, the
     watering can wets tilled soil, the scythe mows tall grass, the shovel digs for clay,

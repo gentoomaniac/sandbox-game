@@ -14,13 +14,13 @@ func _held_variant(player: PlayerState) -> Variant:
 
 func test_a_player_with_the_starting_items_holds_the_hoe() -> void:
 	_player.inventory = Inventory.with_starting_items()
-	assert_eq(_held_variant(_player), ItemTypes.TYPES[ItemTypes.HOE]["held_sheet"])
+	assert_eq(_held_variant(_player), ItemTypes.TYPES[ItemTypes.RUSTY_IRON_HOE]["held_sheet"])
 
 
 func test_selecting_another_slot_changes_the_held_layer() -> void:
 	_player.inventory = Inventory.with_starting_items()
 	_player.inventory.select(1)
-	assert_eq(_held_variant(_player), ItemTypes.TYPES[ItemTypes.AXE]["held_sheet"])
+	assert_eq(_held_variant(_player), ItemTypes.TYPES[ItemTypes.RUSTY_IRON_AXE]["held_sheet"])
 
 
 func test_an_item_with_no_art_for_the_hand_empties_the_held_layer() -> void:
@@ -39,7 +39,7 @@ func test_a_loaded_player_holds_the_selected_item() -> void:
 	_player.inventory = Inventory.with_starting_items()
 	_player.inventory.select(2)
 	var loaded := PlayerState.from_dict(_player.to_dict(), null)
-	assert_eq(_held_variant(loaded), ItemTypes.TYPES[ItemTypes.PICKAXE]["held_sheet"])
+	assert_eq(_held_variant(loaded), ItemTypes.TYPES[ItemTypes.RUSTY_IRON_PICKAXE]["held_sheet"])
 
 
 func test_the_old_inventory_no_longer_changes_the_look() -> void:

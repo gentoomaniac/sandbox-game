@@ -22,7 +22,7 @@ func test_complete_goes_as_far_as_the_candidates_agree() -> void:
 func test_complete_an_item_after_give() -> void:
 	assert_eq(_console.complete("give tur"), "give turnip")
 	assert_eq(_console.complete("give clog"), "give clogs ")
-	assert_eq(_console.complete("/give pick"), "/give pickaxe ")
+	assert_eq(_console.complete("/give rusty_iron_pick"), "/give rusty_iron_pickaxe ")
 
 
 func test_complete_leaves_other_words_alone() -> void:

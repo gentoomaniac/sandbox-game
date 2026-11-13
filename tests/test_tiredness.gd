@@ -88,7 +88,7 @@ func test_sweat_drops_are_tiny_and_short_lived() -> void:
 
 func test_the_energy_a_use_leaves_decides_the_sweat() -> void:
 	_state.player.energy = 31.0
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	var use := _state.use_facing_tile()
 	assert_eq(use, ToolUse.Use.TILL)
 	assert_eq(_state.player.energy, 27.0)

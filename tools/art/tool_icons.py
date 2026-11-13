@@ -17,7 +17,7 @@ by items.icon.
 
 from canvas import blank
 from items import ICON
-from tool_grades import GRADES, numeral, stamp
+from tool_grades import GRADES, stamp
 
 # fmt: off
 MAPS = {
@@ -319,10 +319,9 @@ MARKS = {
 
 
 def icon_body(item, grade):
-    """The tool with the grade's numeral in its bottom left corner (at 2 px a UI pixel)."""
-    return numeral(stamp(blank(ICON), 0, 0, MAPS[item], grade, MARKS[item]), grade, 2)
+    return stamp(blank(ICON), 0, 0, MAPS[item], grade, MARKS[item])
 
 
-def icons(grade=GRADES[0]):
-    """The bodies of the tools' icons in one grade, by item id."""
-    return {item: icon_body(item, grade) for item in MAPS}
+def icons():
+    """The bodies of the tools' icons in every grade, by item id (`<grade>_<tool>`)."""
+    return {f"{grade}_{item}": icon_body(item, grade) for grade in GRADES for item in MAPS}

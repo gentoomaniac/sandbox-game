@@ -116,7 +116,7 @@ func test_items_move_between_the_hotbar_and_the_backpack() -> void:
 
 func test_shift_click_into_a_full_chest_leaves_the_rest() -> void:
 	for slot in 15:
-		_chest.slots[slot] = {"item": ItemTypes.HOE, "count": 1}
+		_chest.slots[slot] = {"item": ItemTypes.RUSTY_IRON_HOE, "count": 1}
 	_inventory.add(ItemTypes.LOGS, 8)
 	var views := _open_screen()
 	_inventory_view(views, 0).quick_move_requested.emit()

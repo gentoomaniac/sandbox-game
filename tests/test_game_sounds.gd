@@ -62,8 +62,8 @@ func test_a_walk_makes_two_steps_per_cycle_at_the_pace_of_the_walk() -> void:
 func test_hits_chop_and_a_felled_tree_falls_when_it_lands() -> void:
 	_make_room()
 	_place(WorldObjectTypes.OAK)
-	var hits := ceili(5.0 / ItemTypes.tool_power(ItemTypes.AXE))
-	_hold_quietly(ItemTypes.AXE)
+	var hits := ceili(5.0 / ItemTypes.tool_power(ItemTypes.RUSTY_IRON_AXE))
+	_hold_quietly(ItemTypes.RUSTY_IRON_AXE)
 	for _i in hits:
 		_use_and_sound()
 	assert_eq(_events, _repeat(&"axe_chop", hits))
@@ -73,7 +73,7 @@ func test_hits_chop_and_a_felled_tree_falls_when_it_lands() -> void:
 
 func test_a_stone_is_hit_and_then_breaks() -> void:
 	_place(WorldObjectTypes.STONE)
-	_hold_quietly(ItemTypes.PICKAXE)
+	_hold_quietly(ItemTypes.RUSTY_IRON_PICKAXE)
 	var hits := 0
 	while _world.object_at(_tile) != null:
 		_use_and_sound()
@@ -83,17 +83,17 @@ func test_a_stone_is_hit_and_then_breaks() -> void:
 
 func test_a_tool_that_is_too_weak_is_denied() -> void:
 	_place(WorldObjectTypes.PINE)
-	_hold_quietly(ItemTypes.AXE)
+	_hold_quietly(ItemTypes.RUSTY_IRON_AXE)
 	_use_and_sound()
 	assert_eq(_events, [&"denied"])
 
 
 func test_uses_sound_by_what_they_do() -> void:
-	_hold_quietly(ItemTypes.HOE)
+	_hold_quietly(ItemTypes.RUSTY_IRON_HOE)
 	_use_and_sound()
 	assert_eq(_events, [&"hoe_till"])
 	_events.clear()
-	_hold_quietly(ItemTypes.SCYTHE)
+	_hold_quietly(ItemTypes.RUSTY_IRON_SCYTHE)
 	_world.set_terrain(_state.player.facing_tile(), Tile.Terrain.GRASS)
 	_use_and_sound()
 	assert_eq(_events, [&"scythe_swish"], "also when it mows nothing")

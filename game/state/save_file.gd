@@ -21,10 +21,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 32
-## The oldest version we still upgrade. Nine steps back, for the next version (task 207) makes
-## its step the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 33
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -206,6 +205,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_30(game)
 	if version <= 31:
 		_upgrade_from_version_31(game)
+	if version <= 32:
+		_upgrade_from_version_32(game)
 
 
 ## Version 23 had no styles of buildings (task 120): every building has its own look.
@@ -350,3 +351,26 @@ static func _upgrade_from_version_31(game: Dictionary) -> void:
 			rooster["last_petted_day"] = 0
 			rooster["last_petted_asleep_day"] = 0
 			game["livestock"].append(rooster)
+
+
+## Version 32 had one grade of each tool (task 207): they are the rusty iron ones now, wherever
+## a stack of items is saved (the inventory, a chest, a station's grid, the ground), and in the
+## held layer of the player's look.
+static func _upgrade_from_version_32(game: Dictionary) -> void:
+	# Written out, not read from the data files, so a later change leaves old saves alone.
+	var tools := ["hoe", "axe", "pickaxe", "watering_can", "scythe", "shovel", "hammer"]
+	_rename_tools(game, tools)
+
+
+## Gives the rusty iron grade to the `tools` named by an `item` or a `variant` anywhere in saved
+## data.
+static func _rename_tools(data: Variant, tools: Array) -> void:
+	if data is Array:
+		for entry: Variant in data:
+			_rename_tools(entry, tools)
+	elif data is Dictionary:
+		for key: String in data:
+			if key in ["item", "variant"] and data[key] in tools:
+				data[key] = "rusty_iron_" + data[key]
+			else:
+				_rename_tools(data[key], tools)

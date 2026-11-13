@@ -27,29 +27,29 @@ func _stock_up(extra := 0) -> void:
 
 
 func test_the_player_starts_with_a_hammer_and_is_not_building() -> void:
-	assert_eq(_count(ItemTypes.HAMMER), 1)
+	assert_eq(_count(ItemTypes.RUSTY_IRON_HAMMER), 1)
 	assert_false(_builder.is_building())
 
 
 func test_holding_the_hammer_is_build_mode() -> void:
-	_hold(ItemTypes.HAMMER)
+	_hold(ItemTypes.RUSTY_IRON_HAMMER)
 	assert_true(_builder.is_building())
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	assert_false(_builder.is_building())
 
 
 func test_select_hammer_holds_it() -> void:
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	assert_true(_builder.select_hammer())
-	assert_eq(_state.player.inventory.held_item(), ItemTypes.HAMMER)
+	assert_eq(_state.player.inventory.held_item(), ItemTypes.RUSTY_IRON_HAMMER)
 	assert_true(_builder.is_building())
 
 
 func test_select_hammer_does_nothing_without_a_hammer() -> void:
-	_state.player.inventory.remove(ItemTypes.HAMMER, 1)
-	_hold(ItemTypes.HOE)
+	_state.player.inventory.remove(ItemTypes.RUSTY_IRON_HAMMER, 1)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	assert_false(_builder.select_hammer())
-	assert_eq(_state.player.inventory.held_item(), ItemTypes.HOE)
+	assert_eq(_state.player.inventory.held_item(), ItemTypes.RUSTY_IRON_HOE)
 
 
 func test_resume_takes_build_mode_up_again_with_the_hammer_in_hand() -> void:
@@ -63,12 +63,12 @@ func test_dismissing_lasts_until_something_else_is_held_or_the_hammer_is_selecte
 	_builder.select_hammer()
 	_builder.dismiss()
 	assert_false(_builder.is_building())
-	assert_eq(_state.player.inventory.held_item(), ItemTypes.HAMMER)
+	assert_eq(_state.player.inventory.held_item(), ItemTypes.RUSTY_IRON_HAMMER)
 	_builder.select_hammer()
 	assert_true(_builder.is_building())
 	_builder.dismiss()
-	_hold(ItemTypes.HOE)
-	_hold(ItemTypes.HAMMER)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
+	_hold(ItemTypes.RUSTY_IRON_HAMMER)
 	assert_true(_builder.is_building())
 
 

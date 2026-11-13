@@ -130,7 +130,10 @@ func show_inventory(inventory: Inventory) -> void:
 func _refresh() -> void:
 	for slot in Inventory.HOTBAR_SIZE:
 		var stack := _inventory.slots[slot]
-		var is_can: bool = not stack.is_empty() and stack["item"] == ItemTypes.WATERING_CAN
+		var is_can: bool = (
+			not stack.is_empty()
+			and ItemTypes.TYPES[stack["item"]].get("tool") == ItemTypes.WATERING_CAN
+		)
 		_slot_views[slot].show_stack(
 			stack, slot == _inventory.selected_slot, str(_inventory.can_water) if is_can else ""
 		)

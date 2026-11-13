@@ -36,13 +36,13 @@ func test_freeze_stops_time_and_is_named_on_the_hud() -> void:
 
 func test_nodrain_makes_actions_free() -> void:
 	_console.run("nodrain")
-	_hit(ItemTypes.HOE, 1)
+	_hit(ItemTypes.RUSTY_IRON_HOE, 1)
 	assert_eq(_state.player.energy, _state.player.attributes.max_energy())
 
 
 func test_noweight_drops_the_weight_surcharge() -> void:
 	_state.player.inventory.add(ItemTypes.STONE, 50)
-	_hit(ItemTypes.HOE, 1)
+	_hit(ItemTypes.RUSTY_IRON_HOE, 1)
 	var heavy_cost := _state.player.attributes.max_energy() - _state.player.energy
 	assert_gt(heavy_cost, RULES["cost"]["till"])
 	_state.player.energy = _state.player.attributes.max_energy()

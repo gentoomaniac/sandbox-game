@@ -18,7 +18,7 @@ func _place_grass(mown := false) -> WorldObject:
 func test_the_hoe_tills_a_tile_with_tall_grass_and_removes_the_grass() -> void:
 	for mown in [false, true]:
 		_place_grass(mown)
-		assert_eq(_hit(ItemTypes.HOE, 1), ToolUse.Use.TILL, "mown: %s" % mown)
+		assert_eq(_hit(ItemTypes.RUSTY_IRON_HOE, 1), ToolUse.Use.TILL, "mown: %s" % mown)
 		assert_eq(_world.tile_at(_tile).terrain, Tile.Terrain.SOIL)
 		assert_null(_world.object_at(_tile))
 		_world.set_terrain(_tile, Tile.Terrain.GRASS)
@@ -35,7 +35,7 @@ func test_a_tree_seed_plants_on_a_tile_with_tall_grass_and_removes_the_grass() -
 
 func test_crop_seeds_plant_on_tilled_ground_where_grass_was() -> void:
 	_place_grass()
-	_hit(ItemTypes.HOE, 1)
+	_hit(ItemTypes.RUSTY_IRON_HOE, 1)
 	_hold(ItemTypes.TURNIP_SEEDS)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.PLANT)
 	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.TURNIP)
@@ -43,7 +43,7 @@ func test_crop_seeds_plant_on_tilled_ground_where_grass_was() -> void:
 
 func test_the_cleared_grass_stays_gone_through_the_chunk_and_save() -> void:
 	_place_grass()
-	_hit(ItemTypes.HOE, 1)
+	_hit(ItemTypes.RUSTY_IRON_HOE, 1)
 	_world.set_terrain(_tile, Tile.Terrain.GRASS)
 	_reload_chunk()
 	assert_null(_world.object_at(_tile))
@@ -52,7 +52,7 @@ func test_the_cleared_grass_stays_gone_through_the_chunk_and_save() -> void:
 
 func test_other_objects_still_block_the_hoe() -> void:
 	_place(WorldObjectTypes.SHRUB)
-	assert_eq(_hit(ItemTypes.HOE, 1), ToolUse.Use.NOTHING)
+	assert_eq(_hit(ItemTypes.RUSTY_IRON_HOE, 1), ToolUse.Use.NOTHING)
 
 
 func test_a_building_goes_up_over_tall_grass_and_clears_it() -> void:

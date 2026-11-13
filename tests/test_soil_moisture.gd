@@ -60,7 +60,7 @@ func test_setting_the_moisture_emits_a_signal() -> void:
 
 
 func test_the_watering_can_fills_dry_soil_and_costs_the_water_energy() -> void:
-	_hold(ItemTypes.WATERING_CAN)
+	_hold(ItemTypes.RUSTY_IRON_WATERING_CAN)
 	_state.player.energy = 50.0
 	_state.cheats.is_weight_off = true
 	assert_eq(_state.use_at(_tile), ToolUse.Use.WATER)
@@ -72,14 +72,14 @@ func test_the_watering_can_fills_dry_soil_and_costs_the_water_energy() -> void:
 
 func test_the_watering_can_waters_a_planted_tile() -> void:
 	_place(WorldObjectTypes.TURNIP)
-	_hold(ItemTypes.WATERING_CAN)
+	_hold(ItemTypes.RUSTY_IRON_WATERING_CAN)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.WATER)
 	assert_eq(_world.moisture_at(_tile), 1.0)
 
 
 func test_the_watering_can_does_nothing_on_grass() -> void:
 	_world.set_terrain(_tile, Tile.Terrain.GRASS)
-	_hold(ItemTypes.WATERING_CAN)
+	_hold(ItemTypes.RUSTY_IRON_WATERING_CAN)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
 
 

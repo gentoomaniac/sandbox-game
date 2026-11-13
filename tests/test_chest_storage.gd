@@ -69,7 +69,7 @@ func test_send_moves_a_whole_stack_onto_a_stack_and_into_a_free_slot() -> void:
 
 func test_send_to_a_full_chest_moves_what_fits_and_the_rest_stays() -> void:
 	for slot in 14:
-		_chest.slots[slot] = {"item": ItemTypes.HOE, "count": 1}
+		_chest.slots[slot] = {"item": ItemTypes.RUSTY_IRON_HOE, "count": 1}
 	_chest.slots[14] = {"item": ItemTypes.LOGS, "count": 95}
 	_inventory.add(ItemTypes.LOGS, 10)
 	assert_false(_inventory.send(0, _chest))
@@ -79,7 +79,7 @@ func test_send_to_a_full_chest_moves_what_fits_and_the_rest_stays() -> void:
 
 func test_send_to_a_chest_with_no_room_at_all_changes_nothing() -> void:
 	for slot in 15:
-		_chest.slots[slot] = {"item": ItemTypes.HOE, "count": 1}
+		_chest.slots[slot] = {"item": ItemTypes.RUSTY_IRON_HOE, "count": 1}
 	_inventory.add(ItemTypes.LOGS, 10)
 	assert_false(_inventory.send(0, _chest))
 	assert_eq(_inventory.slots[0], {"item": ItemTypes.LOGS, "count": 10})
@@ -87,7 +87,7 @@ func test_send_to_a_chest_with_no_room_at_all_changes_nothing() -> void:
 
 func test_send_from_a_chest_to_a_full_inventory_changes_nothing() -> void:
 	for slot in Inventory.SLOT_COUNT:
-		_inventory.slots[slot] = {"item": ItemTypes.HOE, "count": 1}
+		_inventory.slots[slot] = {"item": ItemTypes.RUSTY_IRON_HOE, "count": 1}
 	_chest.add(ItemTypes.LOGS, 4)
 	assert_false(_chest.send(0, _inventory))
 	assert_eq(_chest.slots[0], {"item": ItemTypes.LOGS, "count": 4})

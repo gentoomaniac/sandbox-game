@@ -58,7 +58,7 @@ func test_a_swing_mows_two_tiles_ahead_and_the_sides_of_the_nearer_one_for_each_
 	for facing: Vector2i in expectations:
 		_fill_field()
 		_state.player.facing = facing
-		_hold(ItemTypes.SCYTHE)
+		_hold(ItemTypes.RUSTY_IRON_SCYTHE)
 		assert_eq(_state.use_facing_tile(), ToolUse.Use.MOW)
 		var expected: Array[Vector2i] = []
 		for offset: Vector2i in expectations[facing]:
@@ -73,7 +73,7 @@ func test_a_swing_mows_only_the_tall_grass_in_its_pattern() -> void:
 	_world.remove_object(shrub_tile)
 	_world.add_object(WorldObject.new(WorldObjectTypes.SHRUB, shrub_tile))
 	_state.player.facing = Vector2i.DOWN
-	_hold(ItemTypes.SCYTHE)
+	_hold(ItemTypes.RUSTY_IRON_SCYTHE)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.MOW)
 	assert_eq(_world.object_at(shrub_tile).type, WorldObjectTypes.SHRUB)
 	assert_eq(_dropped(ItemTypes.HAY), 2, "only the one tuft gave hay")
@@ -82,7 +82,7 @@ func test_a_swing_mows_only_the_tall_grass_in_its_pattern() -> void:
 func test_mowing_nothing_does_nothing_and_costs_nothing() -> void:
 	_state.player.facing = Vector2i.DOWN
 	_world.remove_object(_centre + Vector2i.DOWN)
-	_hold(ItemTypes.SCYTHE)
+	_hold(ItemTypes.RUSTY_IRON_SCYTHE)
 	assert_eq(_state.use_at(_centre + Vector2i.DOWN), ToolUse.Use.NOTHING)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
 	assert_eq(_state.player.energy, _state.player.attributes.max_energy())
@@ -92,7 +92,7 @@ func test_mowing_nothing_does_nothing_and_costs_nothing() -> void:
 func test_mowing_costs_one_action_of_energy() -> void:
 	_fill_field()
 	_state.player.facing = Vector2i.DOWN
-	_hold(ItemTypes.SCYTHE)
+	_hold(ItemTypes.RUSTY_IRON_SCYTHE)
 	_state.use_facing_tile()
 	assert_lt(_state.player.energy, _state.player.attributes.max_energy())
 	var after_one := _state.player.energy
@@ -114,7 +114,7 @@ func test_mown_grass_drops_hay_on_the_ground_and_looks_mown() -> void:
 	var tuft := _world.object_at(_centre + Vector2i.DOWN)
 	var tall_look := ObjectTileset.atlas_cell(tuft)
 	_state.player.facing = Vector2i.DOWN
-	_hold(ItemTypes.SCYTHE)
+	_hold(ItemTypes.RUSTY_IRON_SCYTHE)
 	_state.use_facing_tile()
 	assert_eq(_dropped(ItemTypes.HAY), 4 * 2)
 	assert_eq(_count(ItemTypes.HAY), 0, "it lies on the ground until collected")
@@ -128,7 +128,7 @@ func test_mown_grass_grows_back_after_its_regrow_days() -> void:
 	var tall_look := ObjectTileset.atlas_cell(tuft)
 	var regrow_days: int = WorldObjectTypes.TYPES[WorldObjectTypes.TALL_GRASS]["regrow_days"]
 	_state.player.facing = Vector2i.DOWN
-	_hold(ItemTypes.SCYTHE)
+	_hold(ItemTypes.RUSTY_IRON_SCYTHE)
 	_state.use_facing_tile()
 	_sleep_days(regrow_days - 1)
 	assert_true(tuft.is_picked())
@@ -152,7 +152,7 @@ func test_tall_grass_is_there_in_summer_and_gone_in_winter() -> void:
 	_state.clock.day = WINTER
 	assert_true(_world.is_dormant(tuft))
 	assert_null(_world.object_at(tuft.pos))
-	_hold(ItemTypes.SCYTHE)
+	_hold(ItemTypes.RUSTY_IRON_SCYTHE)
 	_state.player.facing = Vector2i.DOWN
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING, "nothing to mow in winter")
 
@@ -198,7 +198,7 @@ func test_tall_grass_is_drawn_tall_and_mown_in_every_look() -> void:
 func test_mown_grass_stays_mown_through_the_save() -> void:
 	_fill_field()
 	_state.player.facing = Vector2i.DOWN
-	_hold(ItemTypes.SCYTHE)
+	_hold(ItemTypes.RUSTY_IRON_SCYTHE)
 	_state.use_facing_tile()
 	_sleep_days(1)
 	var mown_before := _mown_tiles()
@@ -210,7 +210,7 @@ func test_mown_grass_stays_mown_through_the_save() -> void:
 
 func test_the_scythe_and_shovel_are_in_the_starting_items_within_the_hotbar() -> void:
 	var inventory := Inventory.with_starting_items()
-	for item in [ItemTypes.SCYTHE, ItemTypes.SHOVEL, ItemTypes.TURNIP_SEEDS]:
+	for item in [ItemTypes.RUSTY_IRON_SCYTHE, ItemTypes.RUSTY_IRON_SHOVEL, ItemTypes.TURNIP_SEEDS]:
 		var slot := -1
 		for index in Inventory.HOTBAR_SIZE:
 			if inventory.item_in(index) == item:
@@ -227,6 +227,6 @@ func test_mowing_throws_no_hit_effect() -> void:
 	_world.object_hit.connect(func(object: WorldObject) -> void: hits.append(object))
 	_fill_field()
 	_state.player.facing = Vector2i.DOWN
-	_hold(ItemTypes.SCYTHE)
+	_hold(ItemTypes.RUSTY_IRON_SCYTHE)
 	_state.use_facing_tile()
 	assert_eq(hits.size(), 0)

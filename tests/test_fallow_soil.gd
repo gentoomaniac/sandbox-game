@@ -19,7 +19,7 @@ func before_each() -> void:
 	_tile = _grass_tile()
 	_state.player.position = Vector2(_tile) + Vector2(0.5, 0.5) - Vector2(0, 1)
 	_state.player.facing = Vector2i.DOWN
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.TILL)
 
 

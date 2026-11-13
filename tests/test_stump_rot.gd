@@ -85,7 +85,7 @@ func test_a_felled_dead_tree_leaves_a_dead_stump_that_never_becomes_a_sapling() 
 	_state.player.position = Vector2(_tile + Vector2i.LEFT) + Vector2(0.5, 0.5)
 	_state.player.facing = Vector2i.RIGHT
 	_place(WorldObjectTypes.DEAD_TREE)
-	_hit(ItemTypes.AXE, WorldObjectTypes.TYPES[WorldObjectTypes.DEAD_TREE]["hp"])
+	_hit(ItemTypes.RUSTY_IRON_AXE, WorldObjectTypes.TYPES[WorldObjectTypes.DEAD_TREE]["hp"])
 	var stump := _world.object_at(_tile)
 	assert_eq(stump.type, WorldObjectTypes.DEAD_STUMP)
 	assert_eq(stump.state, {}, "nothing in it that implies regrowth")
@@ -115,7 +115,7 @@ func test_a_dead_stump_is_like_a_stump_in_hits_drops_and_rot() -> void:
 
 func test_chopping_a_dead_stump_gives_a_log() -> void:
 	_place(WorldObjectTypes.DEAD_STUMP)
-	_hit(ItemTypes.AXE, 2)
+	_hit(ItemTypes.RUSTY_IRON_AXE, 2)
 	assert_null(_world.object_at(_tile))
 	assert_eq(_dropped(ItemTypes.LOGS), 1)
 

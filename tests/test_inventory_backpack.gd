@@ -20,15 +20,15 @@ func test_the_slots_are_the_hotbar_and_then_the_backpack() -> void:
 
 func test_adding_goes_on_into_the_backpack_when_the_hotbar_is_full() -> void:
 	for slot in Inventory.HOTBAR_SIZE - 1:
-		_inventory.slots[slot] = {"item": ItemTypes.HOE, "count": 1}
-	_inventory.add(ItemTypes.AXE, 1)
-	assert_eq(_inventory.item_in(Inventory.HOTBAR_SIZE), ItemTypes.AXE)
+		_inventory.slots[slot] = {"item": ItemTypes.RUSTY_IRON_HOE, "count": 1}
+	_inventory.add(ItemTypes.RUSTY_IRON_AXE, 1)
+	assert_eq(_inventory.item_in(Inventory.HOTBAR_SIZE), ItemTypes.RUSTY_IRON_AXE)
 
 
 func test_hotbar_and_backpack_together_hold_twenty_eight_stacks() -> void:
 	for slot in Inventory.SLOT_COUNT:
-		assert_eq(_inventory.add(ItemTypes.AXE, 1), 0)
-	assert_eq(_inventory.add(ItemTypes.AXE, 1), 1)
+		assert_eq(_inventory.add(ItemTypes.RUSTY_IRON_AXE, 1), 0)
+	assert_eq(_inventory.add(ItemTypes.RUSTY_IRON_AXE, 1), 1)
 
 
 func test_a_free_hotbar_slot_is_used_before_a_matching_stack_in_the_backpack() -> void:
@@ -105,7 +105,7 @@ func test_tools_add_no_weight() -> void:
 
 
 func test_shift_click_moves_a_stack_from_the_backpack_to_the_first_free_hotbar_slot() -> void:
-	_inventory.slots[0] = {"item": ItemTypes.HOE, "count": 1}
+	_inventory.slots[0] = {"item": ItemTypes.RUSTY_IRON_HOE, "count": 1}
 	_inventory.slots[Inventory.HOTBAR_SIZE + 4] = {"item": ItemTypes.LOGS, "count": 7}
 	assert_true(_inventory.move_to_other_part(Inventory.HOTBAR_SIZE + 4))
 	assert_true(_inventory.slots[Inventory.HOTBAR_SIZE + 4].is_empty())
@@ -132,7 +132,7 @@ func test_shift_click_fills_a_stack_of_the_same_item_before_a_free_slot() -> voi
 func test_shift_click_with_room_for_only_a_part_leaves_the_rest_where_it_was() -> void:
 	var limit: int = ItemTypes.TYPES[ItemTypes.LOGS]["stack_limit"]
 	for slot in range(Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT):
-		_inventory.slots[slot] = {"item": ItemTypes.AXE, "count": 1}
+		_inventory.slots[slot] = {"item": ItemTypes.RUSTY_IRON_AXE, "count": 1}
 	_inventory.slots[Inventory.HOTBAR_SIZE] = {"item": ItemTypes.LOGS, "count": limit - 2}
 	_inventory.slots[0] = {"item": ItemTypes.LOGS, "count": 10}
 	assert_false(_inventory.move_to_other_part(0))
@@ -142,7 +142,7 @@ func test_shift_click_with_room_for_only_a_part_leaves_the_rest_where_it_was() -
 
 func test_shift_click_with_no_room_on_the_other_side_changes_nothing() -> void:
 	for slot in range(Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT):
-		_inventory.slots[slot] = {"item": ItemTypes.AXE, "count": 1}
+		_inventory.slots[slot] = {"item": ItemTypes.RUSTY_IRON_AXE, "count": 1}
 	_inventory.slots[0] = {"item": ItemTypes.LOGS, "count": 7}
 	assert_false(_inventory.move_to_other_part(0))
 	assert_eq(_inventory.slots[0], {"item": ItemTypes.LOGS, "count": 7})

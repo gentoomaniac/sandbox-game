@@ -90,9 +90,9 @@ func test_an_acorn_is_not_planted_on_soil_and_seeds_not_on_grass() -> void:
 
 
 func test_the_highlight_shows_for_axe_pickaxe_and_can() -> void:
-	_hold(ItemTypes.AXE)
+	_hold(ItemTypes.RUSTY_IRON_AXE)
 	assert_true(_state.can_use_held_item())
-	_hold(ItemTypes.PICKAXE)
+	_hold(ItemTypes.RUSTY_IRON_PICKAXE)
 	assert_true(_state.can_use_held_item())
-	_hold(ItemTypes.WATERING_CAN)
+	_hold(ItemTypes.RUSTY_IRON_WATERING_CAN)
 	assert_true(_state.can_use_held_item())

@@ -4,7 +4,7 @@ extends EnergyCase
 
 func test_a_stronger_character_pays_less_for_the_same_load() -> void:
 	_state.player.inventory.add(ItemTypes.STONE, 40)
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	_state.use_facing_tile()
 	var weak_cost := 100.0 - _state.player.energy
 	_state.player.energy = 100.0

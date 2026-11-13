@@ -186,9 +186,9 @@ func test_the_hall_house_is_the_biggest_and_costs_the_most_of_every_material() -
 
 
 func test_the_hammer_is_a_tool_item_with_icons() -> void:
-	assert_eq(ItemTypes.TYPES[ItemTypes.HAMMER]["tool"], ItemTypes.HAMMER)
-	assert_eq(ItemTypes.TYPES[ItemTypes.HAMMER]["level"], 1)
-	assert_true(ResourceLoader.exists(ItemTypes.icon_path(ItemTypes.HAMMER)))
-	assert_true(ResourceLoader.exists(ItemTypes.ground_icon_path(ItemTypes.HAMMER)))
+	assert_eq(ItemTypes.TYPES[ItemTypes.RUSTY_IRON_HAMMER]["tool"], ItemTypes.HAMMER)
+	assert_eq(ItemTypes.TYPES[ItemTypes.RUSTY_IRON_HAMMER]["level"], 1)
+	assert_true(ResourceLoader.exists(ItemTypes.icon_path(ItemTypes.RUSTY_IRON_HAMMER)))
+	assert_true(ResourceLoader.exists(ItemTypes.ground_icon_path(ItemTypes.RUSTY_IRON_HAMMER)))
 	assert_true(ResourceLoader.exists(ItemTypes.ground_icon_path(ItemTypes.REEDS)))
-	assert_eq(Console.new(GameState.new_game(1)).run("give hammer").size(), 1)
+	assert_eq(Console.new(GameState.new_game(1)).run("give rusty_iron_hammer").size(), 1)

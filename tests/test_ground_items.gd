@@ -39,17 +39,17 @@ func _fill_inventory_completely() -> void:
 
 func test_cutting_a_trunk_drops_the_logs_on_the_ground_not_in_the_inventory() -> void:
 	_place(WorldObjectTypes.OAK)
-	_hit(ItemTypes.AXE, OAK_HITS)
+	_hit(ItemTypes.RUSTY_IRON_AXE, OAK_HITS)
 	_state.player.position += Vector2(1, 0)
 	_state.player.facing = Vector2i.DOWN
-	_hit(ItemTypes.AXE, 4)
+	_hit(ItemTypes.RUSTY_IRON_AXE, 4)
 	assert_eq(_dropped(ItemTypes.LOGS), 3)
 	assert_eq(_count(ItemTypes.LOGS), 0)
 
 
 func test_mining_picking_and_harvesting_drop_on_the_ground() -> void:
 	_place(WorldObjectTypes.STONE)
-	_hit(ItemTypes.PICKAXE, 3)
+	_hit(ItemTypes.RUSTY_IRON_PICKAXE, 3)
 	assert_eq(_dropped(ItemTypes.STONE), 2)
 	_set_midsummer()
 	_place(WorldObjectTypes.BERRY_BUSH)
@@ -124,7 +124,7 @@ func test_a_source_with_no_walkable_tile_around_drops_on_itself() -> void:
 
 func test_drops_beside_a_felled_tree_avoid_its_stump_and_trunk() -> void:
 	_place(WorldObjectTypes.OAK)
-	_hit(ItemTypes.AXE, OAK_HITS)
+	_hit(ItemTypes.RUSTY_IRON_AXE, OAK_HITS)
 	_world.drop_items(_tile, {ItemTypes.LOGS: 8})
 	assert_eq(_dropped(ItemTypes.LOGS), 8)
 	var blocked: Array[Vector2i] = [_tile, _tile + Vector2i.RIGHT, _tile + Vector2i(2, 0)]

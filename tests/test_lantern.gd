@@ -58,7 +58,7 @@ func test_a_lit_lantern_shines_only_in_the_hand() -> void:
 	_state.switch_held_lantern()
 	_inventory.select(0)
 	assert_false(_state.player.is_lantern_shining(), "the hoe in the hand, the lantern in the bag")
-	assert_eq(_held_variant(), "hoe")
+	assert_eq(_held_variant(), "rusty_iron_hoe")
 	assert_true(_state.player.is_lantern_lit, "it is still lit in the bag")
 	_inventory.select(7)
 	assert_true(_state.player.is_lantern_shining(), "held again, it shines again")

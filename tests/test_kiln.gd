@@ -154,8 +154,8 @@ func test_an_idle_grid_is_kept_through_a_save() -> void:
 func test_a_kiln_broken_down_gives_back_its_load_or_its_bricks() -> void:
 	_kiln.fill(&"bricks", 1)
 	_kiln.start()
-	_state.player.inventory.add(ItemTypes.PICKAXE, 1)
-	_hit(ItemTypes.PICKAXE, 4)
+	_state.player.inventory.add(ItemTypes.RUSTY_IRON_PICKAXE, 1)
+	_hit(ItemTypes.RUSTY_IRON_PICKAXE, 4)
 	assert_eq(_dropped(ItemTypes.RAW_BRICK), 6, "unfired, the load comes back")
 	assert_eq(_dropped(ItemTypes.LOGS), 2)
 	assert_eq(_dropped(ItemTypes.KILN), 1)
@@ -166,7 +166,7 @@ func test_a_kiln_broken_down_gives_back_its_load_or_its_bricks() -> void:
 	fired.fill(&"bricks", 1)
 	fired.start()
 	_state.simulation.advance(FIRING_MINUTES)
-	_hit(ItemTypes.PICKAXE, 4)
+	_hit(ItemTypes.RUSTY_IRON_PICKAXE, 4)
 	assert_eq(_dropped(ItemTypes.BRICK), 6, "fired, unseen")
 	assert_eq(_dropped(ItemTypes.RAW_BRICK), 0)
 

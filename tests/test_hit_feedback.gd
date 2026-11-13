@@ -118,7 +118,7 @@ func test_a_hit_that_leaves_the_tree_standing_shakes_it_and_drops_leaves() -> vo
 	var tree := _place(WorldObjectTypes.OAK)
 	_set_midsummer()
 	_show_world_in_view()
-	_hold(ItemTypes.AXE)
+	_hold(ItemTypes.RUSTY_IRON_AXE)
 	_state.use_tile(_tile)
 	assert_same(_world.object_at(_tile), tree)
 	assert_false(_view._object_sprites[_tile].is_plain(), "shaking")
@@ -130,8 +130,8 @@ func test_the_finishing_hit_fells_the_tree_and_the_stump_shakes_and_leaves_drop_
 	_place(WorldObjectTypes.OAK)
 	_set_midsummer()
 	_show_world_in_view()
-	_hold(ItemTypes.AXE)
-	_hit(ItemTypes.AXE, 5)
+	_hold(ItemTypes.RUSTY_IRON_AXE)
+	_hit(ItemTypes.RUSTY_IRON_AXE, 5)
 	var stump := _world.object_at(_tile)
 	assert_eq(stump.type, WorldObjectTypes.STUMP)
 	_view._update_falling_trees(FallingTree.FALL_SECONDS)
@@ -141,9 +141,9 @@ func test_the_finishing_hit_fells_the_tree_and_the_stump_shakes_and_leaves_drop_
 
 func test_the_finishing_hit_on_stone_removes_it_and_throws_splinters() -> void:
 	_place(WorldObjectTypes.STONE)
-	_hit(ItemTypes.PICKAXE, 2)
+	_hit(ItemTypes.RUSTY_IRON_PICKAXE, 2)
 	_show_world_in_view()
-	_hit(ItemTypes.PICKAXE, 1)
+	_hit(ItemTypes.RUSTY_IRON_PICKAXE, 1)
 	assert_null(_world.object_at(_tile))
 	var splinters: Vector2i = HitParticles.SPECS[KINDS.SPLINTERS]["count"]
 	var dust: Vector2i = HitParticles.SPECS[KINDS.DUST]["count"]

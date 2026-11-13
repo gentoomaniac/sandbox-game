@@ -41,7 +41,7 @@ func test_clearing_a_dead_crop_tells_which() -> void:
 func test_watering_tells_the_tile() -> void:
 	_world.set_terrain(_tile, Tile.Terrain.SOIL)
 	_world.set_moisture(_tile, 0.0)
-	_hold(ItemTypes.WATERING_CAN)
+	_hold(ItemTypes.RUSTY_IRON_WATERING_CAN)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.WATER)
 	_assert_one(ActionOutcome.WATER, _tile)
 
@@ -52,7 +52,7 @@ func test_a_swing_of_the_scythe_tells_the_hay_of_all_the_plants_it_cut() -> void
 		_world.remove_object(tile)
 		_world.set_terrain(tile, Tile.Terrain.GRASS)
 		_world.add_object(WorldObject.new(WorldObjectTypes.TALL_GRASS, tile))
-	_hold(ItemTypes.SCYTHE)
+	_hold(ItemTypes.RUSTY_IRON_SCYTHE)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.MOW)
 	assert_eq(_outcomes.size(), 1)
 	assert_eq(_outcomes[0].kind, ActionOutcome.MOW)
@@ -61,7 +61,7 @@ func test_a_swing_of_the_scythe_tells_the_hay_of_all_the_plants_it_cut() -> void
 
 
 func test_digging_tells_the_clay_found_and_nothing_on_a_miss() -> void:
-	_hold(ItemTypes.SHOVEL)
+	_hold(ItemTypes.RUSTY_IRON_SHOVEL)
 	_world.set_terrain(_tile, Tile.Terrain.GRASS)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.DIG)
 	_assert_one(ActionOutcome.DIG, _tile)

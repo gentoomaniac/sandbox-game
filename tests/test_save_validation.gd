@@ -79,9 +79,11 @@ func test_an_unknown_kind_of_map_is_refused() -> void:
 
 func test_equipment_that_does_not_fit_its_slot_is_refused() -> void:
 	var game := _current_game()
-	game["player"]["equipment"]["head"] = "axe"
+	game["player"]["equipment"]["head"] = "rusty_iron_axe"
 
-	assert_string_contains(_refusal_of(game).reason, "player equipment head: axe can't be worn")
+	assert_string_contains(
+		_refusal_of(game).reason, "player equipment head: rusty_iron_axe can't be worn"
+	)
 
 
 func test_a_run_without_its_recipe_is_refused() -> void:

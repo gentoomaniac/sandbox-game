@@ -829,9 +829,13 @@ def held_tools(grade):
     }
 
 
-# The held layer of each tool by its sheet's name (see `held_tool`): the tools in their first
-# grade, and the lantern.
-HELD_TOOLS = held_tools(tool_grades.GRADES[0]) | {
+# The held layer of each tool by its sheet's name (see `held_tool`): the sheet of an item is named
+# as the item (`<grade>_<tool>`), and the lantern.
+HELD_TOOLS = {
+    f"{grade}_{tool}": draw
+    for grade in tool_grades.GRADES
+    for tool, draw in held_tools(grade).items()
+} | {
     "lantern": held_tool(lantern(is_lit=False), is_long=False),
     "lantern_lit": held_tool(lantern(is_lit=True), is_long=False),
 }

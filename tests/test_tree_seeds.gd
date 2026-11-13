@@ -79,7 +79,7 @@ func test_a_dead_tree_gives_no_seed() -> void:
 		_world.remove_object(_tile + Vector2i.RIGHT)
 		_world.remove_object(_tile + Vector2i.RIGHT * 2)
 		_place(WorldObjectTypes.DEAD_TREE)
-		_hit(ItemTypes.AXE, 3)
+		_hit(ItemTypes.RUSTY_IRON_AXE, 3)
 	for seed_item: StringName in SEEDS.values():
 		assert_eq(_dropped(seed_item), 0)
 

@@ -94,7 +94,8 @@ func test_the_two_kinds_join_each_other() -> void:
 
 func test_the_tool_takes_each_piece_down_for_what_it_cost() -> void:
 	var tools := {
-		WorldObjectTypes.WATTLE_FENCE: ItemTypes.AXE, WorldObjectTypes.STONE_WALL: ItemTypes.PICKAXE
+		WorldObjectTypes.WATTLE_FENCE: ItemTypes.RUSTY_IRON_AXE,
+		WorldObjectTypes.STONE_WALL: ItemTypes.RUSTY_IRON_PICKAXE
 	}
 	var dropped := {
 		WorldObjectTypes.WATTLE_FENCE: [ItemTypes.FIBRE, 2],

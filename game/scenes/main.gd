@@ -542,8 +542,8 @@ func _use_on(target: Targeting) -> void:
 	if USE_NOTES.has(use):
 		_harvest_hud.show_note(USE_NOTES[use])
 	if use == ToolUse.Use.NEEDS_BETTER_TOOL:
-		var tool_name: String = ItemTypes.TYPES[_state.player.inventory.held_item()]["name"]
-		_harvest_hud.show_note("Needs a better %s." % tool_name.to_lower())
+		var tool_name := ItemTypes.tool_name(_state.player.inventory.held_item())
+		_harvest_hud.show_note("Needs a better %s." % tool_name)
 
 
 ## Out of energy or up too late: the player collapses where they stand (the world keeps

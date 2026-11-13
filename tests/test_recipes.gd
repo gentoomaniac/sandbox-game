@@ -37,7 +37,7 @@ func _inventory() -> Inventory:
 ## Fills every slot with a tool, so nothing else fits.
 func _fill_inventory() -> void:
 	for slot in Inventory.SLOT_COUNT:
-		_inventory().slots[slot] = {"item": ItemTypes.HOE, "count": 1}
+		_inventory().slots[slot] = {"item": ItemTypes.RUSTY_IRON_HOE, "count": 1}
 
 
 ## Where a house fits near the player.

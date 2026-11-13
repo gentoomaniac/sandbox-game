@@ -218,12 +218,8 @@ rasterised at odd angles, which is what made the earlier tools look bent, twiste
 The pick's arms bend gently down towards the handle, a parabola in the handle's view. The
 watering can stands upright with its body on the right: a round body, a straight spout rising
 to the left, the rose on the spout's line. The metal is flat, lit on its top and left, shaded
-on its bottom and right, with the edge its own line. The grade's Roman numeral, I to V, sits
-in the icon's bottom left corner, the corner the slot leaves free (the count is bottom right,
-the can's water badge top left): glyphs 4 px tall with 1 px strokes in `cream` on an `ink`
-backing, drawn at 2 px a UI pixel in the 32 px icons (the UI shows them at half size) and at
-1 px in the classic icons, over the handle's end where it reaches the corner; not on the
-tools in the hand. The same map comes in five grades, told apart at
+on its bottom and right, with the edge its own line. The icons carry no mark of the grade
+but the metal, so the items lying on the ground stay clean, and the tools in the hand none either. The same map comes in five grades, told apart at
 a glance by the metal: rusty iron (dull brown-grey with pits of rust on an old dark handle),
 iron (plain grey), brittle steel (lighter, cold blue, with a hairline crack), steel (bright and
 clean) and sharp steel (near white with a keen two-pixel edge). So the spade is all iron and

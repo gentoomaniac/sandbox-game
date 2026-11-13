@@ -66,7 +66,7 @@ func _dig_all(state: GameState, day: int) -> Array[bool]:
 
 func _shovel_slot(state: GameState) -> int:
 	for slot in Inventory.HOTBAR_SIZE:
-		if state.player.inventory.item_in(slot) == ItemTypes.SHOVEL:
+		if state.player.inventory.item_in(slot) == ItemTypes.RUSTY_IRON_SHOVEL:
 			return slot
 	fail_test("no shovel")
 	return 0

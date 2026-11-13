@@ -121,6 +121,6 @@ func test_nothing_is_built_planted_or_tilled_on_mud() -> void:
 	assert_false(_world.placement_blockers(BuildingTypes.KATE, _mud_tile).is_empty())
 	_stand_on(_mud_tile + Vector2i(-1, 0))
 	_state.player.facing = Vector2i.RIGHT
-	HotbarHold.hold(_state.player.inventory, ItemTypes.HOE)
+	HotbarHold.hold(_state.player.inventory, ItemTypes.RUSTY_IRON_HOE)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
 	assert_eq(_world.tile_at(_mud_tile).terrain, Tile.Terrain.MUD)

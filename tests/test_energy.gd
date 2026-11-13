@@ -5,7 +5,7 @@ extends EnergyCase
 
 
 func test_a_use_costs_energy_by_its_kind() -> void:
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.TILL)
 	assert_eq(_state.player.energy, 96.0)
 	_hold(ItemTypes.TURNIP_SEEDS)
@@ -15,7 +15,7 @@ func test_a_use_costs_energy_by_its_kind() -> void:
 
 func test_a_hit_and_a_pick_cost_what_the_rules_say() -> void:
 	_place(WorldObjectTypes.OAK)
-	_hit(ItemTypes.AXE, 1)
+	_hit(ItemTypes.RUSTY_IRON_AXE, 1)
 	assert_eq(_state.player.energy, 97.0)
 	_world.remove_object(_tile)
 	_set_midsummer()
@@ -26,14 +26,14 @@ func test_a_hit_and_a_pick_cost_what_the_rules_say() -> void:
 
 
 func test_a_use_that_does_nothing_costs_nothing() -> void:
-	_hold(ItemTypes.AXE)
+	_hold(ItemTypes.RUSTY_IRON_AXE)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
 	assert_eq(_state.player.energy, 100.0)
 
 
 func test_a_tool_too_weak_for_the_object_costs_nothing() -> void:
 	_place(WorldObjectTypes.BOULDER)
-	assert_eq(_hit(ItemTypes.PICKAXE, 1), ToolUse.Use.NEEDS_BETTER_TOOL)
+	assert_eq(_hit(ItemTypes.RUSTY_IRON_PICKAXE, 1), ToolUse.Use.NEEDS_BETTER_TOOL)
 	assert_eq(_state.player.energy, 100.0)
 
 
@@ -52,21 +52,21 @@ func test_a_heavy_load_costs_more() -> void:
 		_state.player.carried_weight(), _state.player.attributes.carry_capacity()
 	)
 	assert_gt(factor, 1.0)
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	_state.use_facing_tile()
 	assert_almost_eq(_state.player.energy, 100.0 - 4.0 * factor, 0.0001)
 
 
 func test_the_drain_factor_scales_the_cost() -> void:
 	_state.energy_drain = 1.5
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	_state.use_facing_tile()
 	assert_almost_eq(_state.player.energy, 94.0, 0.0001)
 
 
 func test_a_use_with_too_little_energy_left_still_happens_and_empties_the_bar() -> void:
 	_state.player.energy = 1.0
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.TILL)
 	assert_eq(_world.tile_at(_tile).terrain, Tile.Terrain.SOIL)
 	assert_eq(_state.player.energy, 0.0)
@@ -141,7 +141,7 @@ func test_eating_on_a_debuff_day_stops_at_the_debuff_cap() -> void:
 
 func test_a_held_item_that_is_no_food_is_not_eaten() -> void:
 	_state.player.energy = 50.0
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	assert_false(_state.eat_held())
 	assert_eq(_state.player.energy, 50.0)
 

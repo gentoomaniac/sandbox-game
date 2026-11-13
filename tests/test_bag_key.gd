@@ -101,7 +101,7 @@ func test_the_hammer_is_taken_from_the_hotbar_and_its_key_resumes_a_dismissed_bu
 	var inventory: Inventory = _main._state.player.inventory
 	var slot := -1
 	for hotbar_slot in Inventory.HOTBAR_SIZE:
-		if inventory.item_in(hotbar_slot) == ItemTypes.HAMMER:
+		if inventory.item_in(hotbar_slot) == ItemTypes.RUSTY_IRON_HAMMER:
 			slot = hotbar_slot
 	assert_ne(slot, -1, "the player starts with a hammer on the hotbar")
 	_press_key(KEY_B)

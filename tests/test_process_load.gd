@@ -80,7 +80,7 @@ func test_slots_are_counted_packed() -> void:
 	assert_eq(ProcessLoad.slots_for({}), 0)
 	assert_eq(ProcessLoad.slots_for({ItemTypes.STONE: 99, ItemTypes.LOGS: 1}), 2)
 	assert_eq(ProcessLoad.slots_for({ItemTypes.STONE: 100}), 2)
-	assert_eq(ProcessLoad.slots_for({ItemTypes.HOE: 3}), 3, "one to a slot")
+	assert_eq(ProcessLoad.slots_for({ItemTypes.RUSTY_IRON_HOE: 3}), 3, "one to a slot")
 
 
 func test_the_most_loads_are_those_whose_materials_fit_the_grid() -> void:

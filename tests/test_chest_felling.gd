@@ -5,7 +5,7 @@ extends ResourceCase
 func _chest_with_contents() -> WorldObject:
 	var chest := _place(WorldObjectTypes.CHEST)
 	chest.storage.add(ItemTypes.LOGS, 120)
-	chest.storage.add(ItemTypes.HOE, 1)
+	chest.storage.add(ItemTypes.RUSTY_IRON_HOE, 1)
 	return chest
 
 
@@ -14,7 +14,7 @@ func _chest_with_contents() -> WorldObject:
 
 func test_the_axe_takes_a_chest_down_in_three_hits() -> void:
 	var chest := _chest_with_contents()
-	assert_eq(_hit(ItemTypes.AXE, 2), ToolUse.Use.HIT)
+	assert_eq(_hit(ItemTypes.RUSTY_IRON_AXE, 2), ToolUse.Use.HIT)
 	assert_eq(_world.object_at(_tile), chest, "still there")
 	assert_eq(chest.storage.count_of(ItemTypes.LOGS), 120, "and full")
 	_state.use_facing_tile()
@@ -23,16 +23,16 @@ func test_the_axe_takes_a_chest_down_in_three_hits() -> void:
 
 func test_a_felled_chest_gives_the_chest_item_back_as_a_pile() -> void:
 	_chest_with_contents()
-	_hit(ItemTypes.AXE, 3)
+	_hit(ItemTypes.RUSTY_IRON_AXE, 3)
 	assert_eq(_world.ground_items.count_of(ItemTypes.CHEST), 1)
 	assert_eq(_count(ItemTypes.CHEST), 0, "it lies on the ground")
 
 
 func test_a_felled_chest_spills_what_it_held_as_piles_on_the_ground() -> void:
 	_chest_with_contents()
-	_hit(ItemTypes.AXE, 3)
+	_hit(ItemTypes.RUSTY_IRON_AXE, 3)
 	assert_eq(_world.ground_items.count_of(ItemTypes.LOGS), 120)
-	assert_eq(_world.ground_items.count_of(ItemTypes.HOE), 1)
+	assert_eq(_world.ground_items.count_of(ItemTypes.RUSTY_IRON_HOE), 1)
 	var piles := _world.ground_items.all().filter(
 		func(pile: GroundItem) -> bool: return pile.item == ItemTypes.LOGS
 	)
@@ -41,7 +41,7 @@ func test_a_felled_chest_spills_what_it_held_as_piles_on_the_ground() -> void:
 
 func test_an_empty_chest_taken_down_leaves_only_the_chest_item() -> void:
 	_place(WorldObjectTypes.CHEST)
-	_hit(ItemTypes.AXE, 3)
+	_hit(ItemTypes.RUSTY_IRON_AXE, 3)
 	assert_eq(_world.ground_items.all().size(), 1)
 	assert_eq(_world.ground_items.count_of(ItemTypes.CHEST), 1)
 
@@ -49,20 +49,20 @@ func test_an_empty_chest_taken_down_leaves_only_the_chest_item() -> void:
 func test_a_chest_inside_a_chest_comes_back_with_its_item_counted_once_each() -> void:
 	var chest := _place(WorldObjectTypes.CHEST)
 	chest.storage.add(ItemTypes.CHEST, 2)
-	_hit(ItemTypes.AXE, 3)
+	_hit(ItemTypes.RUSTY_IRON_AXE, 3)
 	assert_eq(_world.ground_items.count_of(ItemTypes.CHEST), 3)
 
 
 func test_the_pickaxe_does_nothing_to_a_chest() -> void:
 	_place(WorldObjectTypes.CHEST)
-	assert_eq(_hit(ItemTypes.PICKAXE, 1), ToolUse.Use.NOTHING)
+	assert_eq(_hit(ItemTypes.RUSTY_IRON_PICKAXE, 1), ToolUse.Use.NOTHING)
 
 
 func test_a_chest_hit_but_not_felled_heals_overnight_and_keeps_its_contents() -> void:
 	var chest := _chest_with_contents()
-	_hit(ItemTypes.AXE, 2)
+	_hit(ItemTypes.RUSTY_IRON_AXE, 2)
 	_sleep_days(1)
-	_hit(ItemTypes.AXE, 2)
+	_hit(ItemTypes.RUSTY_IRON_AXE, 2)
 	assert_eq(_world.object_at(_tile), chest)
 	assert_eq(chest.storage.count_of(ItemTypes.LOGS), 120)
 
@@ -75,7 +75,7 @@ func test_a_chest_and_its_contents_survive_a_save_and_load() -> void:
 	var restored := _through_save()
 	var chest := restored.world.object_at(_tile)
 	assert_eq(chest.type, WorldObjectTypes.CHEST)
-	assert_eq(chest.storage.totals(), {ItemTypes.LOGS: 120, ItemTypes.HOE: 1})
+	assert_eq(chest.storage.totals(), {ItemTypes.LOGS: 120, ItemTypes.RUSTY_IRON_HOE: 1})
 	assert_eq(chest.storage.slots_to_data(), _world.object_at(_tile).storage.slots_to_data())
 
 

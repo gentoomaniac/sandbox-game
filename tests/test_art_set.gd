@@ -238,18 +238,18 @@ func test_every_item_has_a_classic_icon_and_ground_item_as_big_as_the_new() -> v
 func test_a_slot_shown_switches_its_icon_with_the_art() -> void:
 	var slot := SlotView.new()
 	add_child_autofree(slot)
-	slot.show_stack({"item": ItemTypes.AXE, "count": 1}, false)
+	slot.show_stack({"item": ItemTypes.RUSTY_IRON_AXE, "count": 1}, false)
 	ArtSet.show(true, get_tree())
-	assert_eq(slot._icon.resource_path, "res://assets/classic/items/axe.png")
+	assert_eq(slot._icon.resource_path, "res://assets/classic/items/rusty_iron_axe.png")
 	ArtSet.show(false, get_tree())
-	assert_eq(slot._icon.resource_path, "res://assets/items/axe.png")
+	assert_eq(slot._icon.resource_path, "res://assets/items/rusty_iron_axe.png")
 
 
 func test_an_icon_held_by_the_mouse_switches_with_the_art() -> void:
 	var icon := ItemIcon.new()
 	add_child_autofree(icon)
-	icon.show_item(ItemTypes.AXE)
+	icon.show_item(ItemTypes.RUSTY_IRON_AXE)
 	ArtSet.show(true, get_tree())
-	assert_eq(icon.texture.resource_path, "res://assets/classic/items/axe.png")
+	assert_eq(icon.texture.resource_path, "res://assets/classic/items/rusty_iron_axe.png")
 	ArtSet.show(false, get_tree())
-	assert_eq(icon.texture.resource_path, "res://assets/items/axe.png")
+	assert_eq(icon.texture.resource_path, "res://assets/items/rusty_iron_axe.png")

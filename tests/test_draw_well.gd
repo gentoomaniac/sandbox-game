@@ -24,16 +24,16 @@ func test_a_well_is_put_down_outdoors_and_blocks_the_way() -> void:
 
 func test_the_pickaxe_takes_the_well_up_again() -> void:
 	_place(WorldObjectTypes.DRAW_WELL)
-	_state.player.inventory.add(ItemTypes.PICKAXE, 1)
+	_state.player.inventory.add(ItemTypes.RUSTY_IRON_PICKAXE, 1)
 	var hits := WorldObjectTypes.TYPES[WorldObjectTypes.DRAW_WELL]["hp"] as int
-	_hit(ItemTypes.PICKAXE, hits)
+	_hit(ItemTypes.RUSTY_IRON_PICKAXE, hits)
 	assert_null(_world.object_at(_tile))
 	assert_eq(_dropped(ItemTypes.DRAW_WELL), 1)
 
 
 func _empty_the_can() -> void:
 	_state.player.can_water = 0
-	_hold(ItemTypes.WATERING_CAN)
+	_hold(ItemTypes.RUSTY_IRON_WATERING_CAN)
 
 
 func test_the_can_is_filled_at_the_well() -> void:
@@ -45,7 +45,7 @@ func test_the_can_is_filled_at_the_well() -> void:
 
 func test_a_full_can_takes_no_more_water_at_the_well() -> void:
 	_place(WorldObjectTypes.DRAW_WELL)
-	_hold(ItemTypes.WATERING_CAN)
+	_hold(ItemTypes.RUSTY_IRON_WATERING_CAN)
 	assert_eq(_state.player.can_water, EnergyRules.default_rules().can_capacity())
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
 
@@ -79,7 +79,7 @@ func test_filling_the_can_tells_the_well_or_the_water() -> void:
 func test_watering_soil_takes_one_water_from_the_can() -> void:
 	_world.set_terrain(_tile, Tile.Terrain.SOIL)
 	_world.set_moisture(_tile, 0.0)
-	_hold(ItemTypes.WATERING_CAN)
+	_hold(ItemTypes.RUSTY_IRON_WATERING_CAN)
 	var capacity := EnergyRules.default_rules().can_capacity()
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.WATER)
 	assert_eq(_state.player.can_water, capacity - 1)
@@ -93,7 +93,9 @@ func test_an_empty_can_waters_nothing_and_says_so() -> void:
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.CAN_EMPTY)
 	assert_eq(_world.moisture_at(_tile), 0.0)
 	assert_eq(_state.player.energy, 50.0, "no work was done")
-	assert_eq(SoundEvents.failed_use(ToolUse.Use.CAN_EMPTY, ItemTypes.WATERING_CAN), &"denied")
+	assert_eq(
+		SoundEvents.failed_use(ToolUse.Use.CAN_EMPTY, ItemTypes.RUSTY_IRON_WATERING_CAN), &"denied"
+	)
 
 
 func test_the_water_in_the_can_is_saved() -> void:
@@ -105,7 +107,8 @@ func test_the_hotbar_shows_the_water_in_the_can_on_the_can_and_follows_it() -> v
 	var hotbar: HotbarHud = autofree(HotbarCase.new_hotbar(_state.player.inventory))
 	add_child_autofree(hotbar)
 	var can_slot := _state.player.inventory.slots.find_custom(
-		func(stack: Dictionary) -> bool: return stack.get("item") == ItemTypes.WATERING_CAN
+		func(stack: Dictionary) -> bool:
+			return stack.get("item") == ItemTypes.RUSTY_IRON_WATERING_CAN
 	)
 	var views: Array[SlotView] = hotbar._slot_views
 	assert_eq(views[can_slot].badge, str(EnergyRules.default_rules().can_capacity()))

@@ -17,7 +17,7 @@ func test_food_shows_its_energy() -> void:
 
 
 func test_a_tool_shows_its_level() -> void:
-	var lines := ItemTooltip.text_for(ItemTypes.HOE).split("\n")
+	var lines := ItemTooltip.text_for(ItemTypes.RUSTY_IRON_HOE).split("\n")
 	assert_eq(lines[1], "Tool, level 1")
 
 
@@ -93,6 +93,6 @@ func test_every_action_has_a_description() -> void:
 
 
 func test_a_weightless_item_shows_no_weight() -> void:
-	var lines := ItemTooltip.text_for(ItemTypes.AXE).split("\n")
+	var lines := ItemTooltip.text_for(ItemTypes.RUSTY_IRON_AXE).split("\n")
 	assert_eq(lines.size(), 3, str(lines))
 	assert_false(" ".join(lines).contains("kg"))

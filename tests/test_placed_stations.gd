@@ -18,7 +18,7 @@ func _inside_a_house(item: StringName) -> GameState:
 	state.player.position = Vector2(kate.door_tile()) + Vector2(0.5, 0.5)
 	state.pass_door()
 	state.player.position = Vector2(3.5, 4.5)
-	state.player.inventory.add(ItemTypes.AXE, 1)
+	state.player.inventory.add(ItemTypes.RUSTY_IRON_AXE, 1)
 	state.player.inventory.add(item, 1)
 	_select(state, item)
 	return state
@@ -52,8 +52,8 @@ func test_a_workbench_is_placed_outdoors_and_e_opens_its_menu() -> void:
 
 func test_a_workbench_outdoors_is_taken_down_with_the_axe() -> void:
 	_place(WorldObjectTypes.WORKBENCH)
-	_state.player.inventory.add(ItemTypes.AXE, 1)
-	_hit(ItemTypes.AXE, 3)
+	_state.player.inventory.add(ItemTypes.RUSTY_IRON_AXE, 1)
+	_hit(ItemTypes.RUSTY_IRON_AXE, 3)
 	assert_null(_world.object_at(_tile))
 	assert_eq(_dropped(ItemTypes.WORKBENCH), 1)
 
@@ -64,7 +64,7 @@ func test_a_workbench_goes_in_a_house_and_the_axe_takes_it_back_into_the_invento
 	assert_eq(state.use_tile(tile), ToolUse.Use.PLACE)
 	assert_eq(state.current_map.object_at(tile).type, WorldObjectTypes.WORKBENCH)
 	assert_eq(state.player.inventory.count_of(ItemTypes.WORKBENCH), 0)
-	_select(state, ItemTypes.AXE)
+	_select(state, ItemTypes.RUSTY_IRON_AXE)
 	assert_eq(state.use_tile(tile), ToolUse.Use.TAKE_DOWN)
 	assert_null(state.current_map.object_at(tile))
 	assert_eq(state.player.inventory.count_of(ItemTypes.WORKBENCH), 1)
@@ -72,7 +72,7 @@ func test_a_workbench_goes_in_a_house_and_the_axe_takes_it_back_into_the_invento
 
 func test_the_furniture_of_a_house_is_not_taken_down() -> void:
 	var state := _inside_a_house(ItemTypes.WORKBENCH)
-	_select(state, ItemTypes.AXE)
+	_select(state, ItemTypes.RUSTY_IRON_AXE)
 	assert_eq(state.use_at(Vector2i(5, 5)), ToolUse.Use.NOTHING, "the table")
 
 
@@ -86,8 +86,8 @@ func test_a_kiln_is_made_by_hand_and_stands_only_outdoors() -> void:
 
 func test_a_kiln_is_broken_down_with_the_pickaxe() -> void:
 	_place(WorldObjectTypes.KILN)
-	_state.player.inventory.add(ItemTypes.PICKAXE, 1)
-	_hit(ItemTypes.PICKAXE, 4)
+	_state.player.inventory.add(ItemTypes.RUSTY_IRON_PICKAXE, 1)
+	_hit(ItemTypes.RUSTY_IRON_PICKAXE, 4)
 	assert_eq(_dropped(ItemTypes.KILN), 1)
 
 

@@ -46,7 +46,7 @@ func toggle_taking_down() -> void:
 func select_hammer() -> bool:
 	var inventory := _state.player.inventory
 	for slot in Inventory.HOTBAR_SIZE:
-		if inventory.item_in(slot) == ItemTypes.HAMMER:
+		if ItemTypes.TYPES.get(inventory.item_in(slot), {}).get("tool") == ItemTypes.HAMMER:
 			_is_dismissed = false
 			inventory.select(slot)
 			return true

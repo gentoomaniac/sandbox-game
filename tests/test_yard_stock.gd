@@ -33,11 +33,11 @@ func test_each_is_put_down_outdoors_on_two_tiles_empty_and_blocks_the_way() -> v
 
 
 func test_the_axe_takes_each_down_and_it_drops_the_item() -> void:
-	_state.player.inventory.add(ItemTypes.AXE, 1)
+	_state.player.inventory.add(ItemTypes.RUSTY_IRON_AXE, 1)
 	for type in STOCK_TYPES:
 		_clear_ground()
 		_place(type)
-		_hit(ItemTypes.AXE, WorldObjectTypes.TYPES[type]["hp"])
+		_hit(ItemTypes.RUSTY_IRON_AXE, WorldObjectTypes.TYPES[type]["hp"])
 		assert_null(_world.object_at(_tile))
 		assert_eq(_dropped(ItemTypes.item_placing(type)), 1, str(type))
 
@@ -76,7 +76,7 @@ func test_the_stock_is_saved_with_the_object() -> void:
 
 func test_a_pour_of_the_can_puts_ten_units_of_water_into_the_trough_up_to_its_capacity() -> void:
 	var trough := _place(WorldObjectTypes.TROUGH)
-	_hold(ItemTypes.WATERING_CAN)
+	_hold(ItemTypes.RUSTY_IRON_WATERING_CAN)
 	var can_before := _state.player.can_water
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.POUR)
 	assert_eq(ObjectStock.units(trough), YardRules.default_rules().pour_units())
@@ -90,7 +90,7 @@ func test_a_pour_of_the_can_puts_ten_units_of_water_into_the_trough_up_to_its_ca
 
 func test_an_empty_can_pours_nothing_and_says_so() -> void:
 	var trough := _place(WorldObjectTypes.TROUGH)
-	_hold(ItemTypes.WATERING_CAN)
+	_hold(ItemTypes.RUSTY_IRON_WATERING_CAN)
 	_state.player.can_water = 0
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.CAN_EMPTY)
 	assert_eq(ObjectStock.units(trough), 0)
@@ -100,7 +100,7 @@ func test_pouring_costs_the_energy_of_watering_and_tells_the_trough() -> void:
 	var outcomes: Array[ActionOutcome] = []
 	_state.action_done.connect(func(outcome: ActionOutcome) -> void: outcomes.append(outcome))
 	_place(WorldObjectTypes.TROUGH)
-	_hold(ItemTypes.WATERING_CAN)
+	_hold(ItemTypes.RUSTY_IRON_WATERING_CAN)
 	_state.player.energy = 50.0
 	_state.cheats.is_weight_off = true
 	_state.use_facing_tile()
@@ -112,14 +112,14 @@ func test_pouring_costs_the_energy_of_watering_and_tells_the_trough() -> void:
 
 func test_the_can_pours_into_a_trough_and_not_into_a_hay_rack() -> void:
 	var rack := _place(WorldObjectTypes.HAY_RACK)
-	_hold(ItemTypes.WATERING_CAN)
+	_hold(ItemTypes.RUSTY_IRON_WATERING_CAN)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
 	assert_eq(ObjectStock.units(rack), 0)
 
 
 func test_the_trough_shows_what_was_poured_in() -> void:
 	var trough := _place(WorldObjectTypes.TROUGH)
-	_hold(ItemTypes.WATERING_CAN)
+	_hold(ItemTypes.RUSTY_IRON_WATERING_CAN)
 	_state.use_facing_tile()
 	assert_eq(ObjectStock.look(trough), 1)
 	for _pour in 3:
@@ -193,6 +193,6 @@ func test_acorns_beech_mast_and_turnips_go_into_a_feeding_trough_and_not_water()
 		assert_eq(_state.use_facing_tile(), ToolUse.Use.FEED, str(item))
 		units += yard.feed_units(item)
 		assert_eq(ObjectStock.units(trough), units)
-	_state.player.inventory.add(ItemTypes.WATERING_CAN, 1)
-	_hold(ItemTypes.WATERING_CAN)
+	_state.player.inventory.add(ItemTypes.RUSTY_IRON_WATERING_CAN, 1)
+	_hold(ItemTypes.RUSTY_IRON_WATERING_CAN)
 	assert_ne(_state.use_facing_tile(), ToolUse.Use.POUR, "no water into the feed")

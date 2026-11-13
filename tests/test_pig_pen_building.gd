@@ -48,13 +48,13 @@ func test_the_fence_and_the_shelter_stop_everyone_and_the_gate_only_the_animals(
 
 
 func test_the_axe_takes_each_piece_down_and_it_drops_its_item() -> void:
-	_state.player.inventory.add(ItemTypes.AXE, 1)
+	_state.player.inventory.add(ItemTypes.RUSTY_IRON_AXE, 1)
 	for type in [
 		WorldObjectTypes.PEN_FENCE, WorldObjectTypes.PEN_GATE, WorldObjectTypes.PIG_SHELTER
 	]:
 		_clear_ground()
 		_place(type)
-		_hit(ItemTypes.AXE, WorldObjectTypes.TYPES[type]["hp"])
+		_hit(ItemTypes.RUSTY_IRON_AXE, WorldObjectTypes.TYPES[type]["hp"])
 		assert_null(_world.object_at(_tile))
 		assert_eq(_dropped(ItemTypes.item_placing(type)), 1, str(type))
 
@@ -83,8 +83,8 @@ func test_an_open_gate_stays_open_through_a_save() -> void:
 
 
 func test_the_axe_takes_an_open_gate_down_and_it_drops_the_gate() -> void:
-	_state.player.inventory.add(ItemTypes.AXE, 1)
+	_state.player.inventory.add(ItemTypes.RUSTY_IRON_AXE, 1)
 	_place(WorldObjectTypes.PEN_GATE_OPEN)
-	_hit(ItemTypes.AXE, WorldObjectTypes.TYPES[WorldObjectTypes.PEN_GATE_OPEN]["hp"])
+	_hit(ItemTypes.RUSTY_IRON_AXE, WorldObjectTypes.TYPES[WorldObjectTypes.PEN_GATE_OPEN]["hp"])
 	assert_null(_world.object_at(_tile))
 	assert_eq(_dropped(ItemTypes.PEN_GATE), 1)

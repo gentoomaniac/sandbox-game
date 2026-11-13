@@ -7,7 +7,7 @@ extends OutcomeCase
 
 
 func test_tilling_tells_where() -> void:
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	_state.use_facing_tile()
 	_assert_one(ActionOutcome.TILL, _tile)
 
@@ -28,7 +28,7 @@ func test_planting_tells_the_seed_and_the_plant() -> void:
 func test_a_hit_that_does_not_finish_and_the_one_that_does_are_told_apart() -> void:
 	_make_room()
 	_place(WorldObjectTypes.STONE)
-	_hold(ItemTypes.PICKAXE)
+	_hold(ItemTypes.RUSTY_IRON_PICKAXE)
 	_state.use_facing_tile()
 	_assert_one(ActionOutcome.HIT, _tile, WorldObjectTypes.STONE)
 	_outcomes.clear()
@@ -59,7 +59,7 @@ func test_placing_and_taking_down_inside_a_house_tell_the_interior_as_the_map() 
 	_assert_one(ActionOutcome.PLACE, target, WorldObjectTypes.CHEST, {ItemTypes.CHEST: 1})
 	assert_true(_outcomes[0].map is Interior)
 	_outcomes.clear()
-	_hold(ItemTypes.AXE)
+	_hold(ItemTypes.RUSTY_IRON_AXE)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.TAKE_DOWN)
 	assert_eq(_outcomes[0].kind, ActionOutcome.TAKE_DOWN)
 
@@ -183,10 +183,10 @@ func test_building_and_demolishing_tell_the_building_and_the_materials() -> void
 
 func test_refusals_tell_nothing() -> void:
 	_place(WorldObjectTypes.PINE)
-	_hold(ItemTypes.AXE)
+	_hold(ItemTypes.RUSTY_IRON_AXE)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.NEEDS_BETTER_TOOL)
 	assert_eq(_state.use_tile(_tile + Vector2i(0, 5)), ToolUse.Use.OUT_OF_REACH)
-	_hold(ItemTypes.HOE)
+	_hold(ItemTypes.RUSTY_IRON_HOE)
 	_state.player.energy = _state.player.attributes.max_energy()
 	assert_false(_state.eat_held())
 	var campfire := _place_beside(WorldObjectTypes.FIREPLACE)

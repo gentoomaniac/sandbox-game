@@ -74,8 +74,8 @@ def write_character():
     # Only the player rides, so only the player's layers sit on a horse.
     for name, layer in character.layers().items():
         save(character.riding_sheet(*layer), f"character/riding/{name}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
-    held_hoe = character.character_sheet(character.draw_held_hoe, {})
-    save(held_hoe, "character/held_hoe.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
+    for name, draw in character.HELD_HOES.items():
+        save(character.character_sheet(draw, {}), f"character/held_{name}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
     for name, draw in (("lantern", character.draw_held_lantern), ("lantern_lit", character.draw_held_lantern_lit)):
         save(character.character_sheet(draw, {}), f"character/held_{name}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
     save_picture(character.sleep_z(), "effects/sleep_z.png")

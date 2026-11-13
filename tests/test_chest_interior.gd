@@ -15,7 +15,7 @@ func before_each() -> void:
 	_state.world.add_chunk(Chunk.new(Vector2i.ZERO))
 	_state.player.home_map = _state.world
 	_state.player.inventory.add(ItemTypes.CHEST, 3)
-	_state.player.inventory.add(ItemTypes.AXE, 1)
+	_state.player.inventory.add(ItemTypes.RUSTY_IRON_AXE, 1)
 	_kate = _state.world.place_building(BuildingTypes.KATE, Vector2i(2, 2))
 	_stand_on(_kate.door_tile())
 	_state.pass_door()
@@ -92,7 +92,7 @@ func _place_chest_in_front() -> WorldObject:
 
 func test_the_axe_takes_a_chest_inside_down_into_the_inventory_with_what_it_held() -> void:
 	_place_chest_in_front()
-	_hold(ItemTypes.AXE)
+	_hold(ItemTypes.RUSTY_IRON_AXE)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.TAKE_DOWN)
 	assert_null(_interior.object_at(Vector2i(3, 5)))
 	assert_eq(_state.player.inventory.count_of(ItemTypes.CHEST), 4)
@@ -102,8 +102,8 @@ func test_the_axe_takes_a_chest_inside_down_into_the_inventory_with_what_it_held
 func test_a_chest_inside_stays_when_the_inventory_has_no_room_for_it() -> void:
 	var chest := _place_chest_in_front()
 	for slot in Inventory.SLOT_COUNT:
-		_state.player.inventory.slots[slot] = {"item": ItemTypes.AXE, "count": 1}
-	_hold(ItemTypes.AXE)
+		_state.player.inventory.slots[slot] = {"item": ItemTypes.RUSTY_IRON_AXE, "count": 1}
+	_hold(ItemTypes.RUSTY_IRON_AXE)
 	assert_eq(_state.use_at(Vector2i(3, 5)), ToolUse.Use.NO_ROOM)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.NO_ROOM)
 	assert_eq(_interior.object_at(Vector2i(3, 5)), chest)
@@ -111,7 +111,7 @@ func test_a_chest_inside_stays_when_the_inventory_has_no_room_for_it() -> void:
 
 
 func test_the_axe_does_nothing_to_other_furniture() -> void:
-	_hold(ItemTypes.AXE)
+	_hold(ItemTypes.RUSTY_IRON_AXE)
 	assert_eq(_state.use_at(Vector2i(5, 5)), ToolUse.Use.NOTHING)
 
 

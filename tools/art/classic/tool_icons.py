@@ -11,7 +11,7 @@ metal.
 
 import item_icons as items
 from canvas import blank
-from tool_grades import GRADES, numeral, stamp
+from tool_grades import GRADES, stamp
 
 # fmt: off
 MAPS = {
@@ -156,11 +156,9 @@ MARKS = {
 
 
 def icon(item, grade):
-    """The tool with the grade's numeral in its bottom left corner."""
-    body = numeral(stamp(blank(), 0, 0, MAPS[item], grade, MARKS[item]), grade, 1)
-    return items.outlined(body, "ink")
+    return items.outlined(stamp(blank(), 0, 0, MAPS[item], grade, MARKS[item]), "ink")
 
 
-def icons(grade=GRADES[0]):
-    """The 16x16 icons in one grade, by item id."""
-    return {item: icon(item, grade) for item in MAPS}
+def icons():
+    """The 16x16 icons in every grade, by item id (`<grade>_<tool>`)."""
+    return {f"{grade}_{item}": icon(item, grade) for grade in GRADES for item in MAPS}

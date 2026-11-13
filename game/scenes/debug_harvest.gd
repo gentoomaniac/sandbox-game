@@ -34,10 +34,10 @@ static func run(state: GameState, origin: Vector2i) -> void:
 	for offset in MOWN_GRASS_OFFSETS:
 		world.add_object(WorldObject.new(WorldObjectTypes.TALL_GRASS, spots[4] + offset))
 
-	_swing(state, spots[0], Vector2i.LEFT, ItemTypes.AXE)
-	_swing(state, spots[1], Vector2i.RIGHT, ItemTypes.AXE)
-	_swing(state, spots[2] + Vector2i.RIGHT, Vector2i.LEFT, ItemTypes.AXE)
-	_swing(state, spots[3], Vector2i.LEFT, ItemTypes.PICKAXE)
+	_swing(state, spots[0], Vector2i.LEFT, ItemTypes.RUSTY_IRON_AXE)
+	_swing(state, spots[1], Vector2i.RIGHT, ItemTypes.RUSTY_IRON_AXE)
+	_swing(state, spots[2] + Vector2i.RIGHT, Vector2i.LEFT, ItemTypes.RUSTY_IRON_AXE)
+	_swing(state, spots[3], Vector2i.LEFT, ItemTypes.RUSTY_IRON_PICKAXE)
 	_mow(state, spots[4])
 	state.player.position = Vector2(spots[2] + Vector2i(0, 3)) + Vector2(0.5, 0.5)
 
@@ -57,7 +57,7 @@ static func _swing(state: GameState, tile: Vector2i, from_side: Vector2i, tool: 
 static func _mow(state: GameState, spot: Vector2i) -> void:
 	state.player.position = Vector2(spot) + Vector2(0.5, 0.5)
 	state.player.facing = Vector2i.DOWN
-	_hold(state, ItemTypes.SCYTHE)
+	_hold(state, ItemTypes.RUSTY_IRON_SCYTHE)
 	state.use_facing_tile()
 
 

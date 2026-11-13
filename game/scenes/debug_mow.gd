@@ -16,9 +16,9 @@ static func create(state: GameState, tile: Vector2i) -> void:
 			if not state.world.is_chunk_loaded(coords):
 				state.world.add_chunk(generator.generate_chunk(coords))
 	state.player.position = Vector2(tile) + Vector2(0.5, 0.5)
-	state.player.inventory.add(ItemTypes.SCYTHE, 1)
+	state.player.inventory.add(ItemTypes.RUSTY_IRON_SCYTHE, 1)
 	for slot in Inventory.HOTBAR_SIZE:
-		if state.player.inventory.item_in(slot) == ItemTypes.SCYTHE:
+		if state.player.inventory.item_in(slot) == ItemTypes.RUSTY_IRON_SCYTHE:
 			state.player.inventory.select(slot)
 	for facing in [Vector2i.RIGHT, Vector2i.DOWN]:
 		state.player.facing = facing

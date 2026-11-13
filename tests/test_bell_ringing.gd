@@ -69,12 +69,12 @@ func test_a_click_rings_with_a_tool_in_hand_since_no_tool_does_anything_there() 
 	_stand_on(_state, frame.origin + Vector2i(-1, 0))
 	for item in [
 		ItemTypes.NONE,
-		ItemTypes.AXE,
-		ItemTypes.PICKAXE,
-		ItemTypes.HOE,
-		ItemTypes.SHOVEL,
-		ItemTypes.SCYTHE,
-		ItemTypes.WATERING_CAN,
+		ItemTypes.RUSTY_IRON_AXE,
+		ItemTypes.RUSTY_IRON_PICKAXE,
+		ItemTypes.RUSTY_IRON_HOE,
+		ItemTypes.RUSTY_IRON_SHOVEL,
+		ItemTypes.RUSTY_IRON_SCYTHE,
+		ItemTypes.RUSTY_IRON_WATERING_CAN,
 	]:
 		_hold(item)
 		assert_eq(_state.use_at(frame.origin), ToolUse.Use.NOTHING, str(item))

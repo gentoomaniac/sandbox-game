@@ -15,13 +15,13 @@ func before_each() -> void:
 func test_a_tree_falls_after_hp_over_power_hits_and_leaves_a_stump_and_a_trunk() -> void:
 	var tree := _place(WorldObjectTypes.OAK)
 	var hp: int = tree.type_data()["hp"]
-	var power := ItemTypes.tool_power(ItemTypes.AXE)
+	var power := ItemTypes.tool_power(ItemTypes.RUSTY_IRON_AXE)
 	assert_eq(hp, OAK_HITS)
 	var hits_needed := ceili(float(hp) / power)
-	_hit(ItemTypes.AXE, hits_needed - 1)
+	_hit(ItemTypes.RUSTY_IRON_AXE, hits_needed - 1)
 	assert_same(_world.object_at(_tile), tree, "still standing")
 	assert_eq(_dropped(ItemTypes.LOGS), 0)
-	assert_eq(_hit(ItemTypes.AXE, 1), ToolUse.Use.HIT)
+	assert_eq(_hit(ItemTypes.RUSTY_IRON_AXE, 1), ToolUse.Use.HIT)
 	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.STUMP)
 	assert_eq(_world.object_at(_tile + Vector2i.RIGHT).type, &"oak_trunk")
 	assert_eq(_dropped(ItemTypes.LOGS), 0, "the logs come off the trunk")
@@ -29,8 +29,8 @@ func test_a_tree_falls_after_hp_over_power_hits_and_leaves_a_stump_and_a_trunk()
 
 func test_a_willow_is_felled_like_the_other_trees_and_its_stump_remembers_it() -> void:
 	_place(WorldObjectTypes.WILLOW)
-	var hits_needed := ceili(4.0 / ItemTypes.tool_power(ItemTypes.AXE))
-	_hit(ItemTypes.AXE, hits_needed)
+	var hits_needed := ceili(4.0 / ItemTypes.tool_power(ItemTypes.RUSTY_IRON_AXE))
+	_hit(ItemTypes.RUSTY_IRON_AXE, hits_needed)
 	var stump := _world.object_at(_tile)
 	assert_eq(stump.type, WorldObjectTypes.STUMP)
 	assert_eq(stump.state["tree"], str(WorldObjectTypes.WILLOW))
@@ -42,7 +42,7 @@ func test_a_willow_is_felled_like_the_other_trees_and_its_stump_remembers_it() -
 
 func test_the_axe_cuts_a_knick_down_for_its_wood() -> void:
 	_place(WorldObjectTypes.KNICK)
-	_hit(ItemTypes.AXE, ceili(4.0 / ItemTypes.tool_power(ItemTypes.AXE)))
+	_hit(ItemTypes.RUSTY_IRON_AXE, ceili(4.0 / ItemTypes.tool_power(ItemTypes.RUSTY_IRON_AXE)))
 	assert_null(_world.object_at(_tile), "nothing is left")
 	assert_eq(_dropped(ItemTypes.LOGS), 1)
 	assert_eq(_dropped(ItemTypes.FIBRE), 2)
@@ -50,9 +50,12 @@ func test_the_axe_cuts_a_knick_down_for_its_wood() -> void:
 
 func test_the_pickaxe_takes_a_stone_wall_apart_for_its_stone() -> void:
 	_place(WorldObjectTypes.STONE_WALL)
-	_hold(ItemTypes.AXE)
+	_hold(ItemTypes.RUSTY_IRON_AXE)
 	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING, "an axe can't")
-	_hit(ItemTypes.PICKAXE, ceili(5.0 / ItemTypes.tool_power(ItemTypes.PICKAXE)))
+	_hit(
+		ItemTypes.RUSTY_IRON_PICKAXE,
+		ceili(5.0 / ItemTypes.tool_power(ItemTypes.RUSTY_IRON_PICKAXE))
+	)
 	assert_null(_world.object_at(_tile))
 	assert_eq(_dropped(ItemTypes.STONE), 3)
 
@@ -72,7 +75,7 @@ func test_a_better_tool_needs_fewer_hits() -> void:
 
 func test_a_tool_below_the_harvest_level_does_nothing() -> void:
 	var boulder := _place(WorldObjectTypes.BOULDER)
-	_hold(ItemTypes.PICKAXE)
+	_hold(ItemTypes.RUSTY_IRON_PICKAXE)
 	assert_eq(_state.use_at(_tile), ToolUse.Use.NEEDS_BETTER_TOOL)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.NEEDS_BETTER_TOOL)
 	assert_eq(boulder.state, {})
@@ -81,20 +84,20 @@ func test_a_tool_below_the_harvest_level_does_nothing() -> void:
 
 func test_pine_needs_a_better_axe() -> void:
 	_place(WorldObjectTypes.PINE)
-	_hold(ItemTypes.AXE)
+	_hold(ItemTypes.RUSTY_IRON_AXE)
 	assert_eq(_state.use_at(_tile), ToolUse.Use.NEEDS_BETTER_TOOL)
 
 
 func test_the_wrong_kind_of_tool_does_nothing() -> void:
 	var tree := _place(WorldObjectTypes.OAK)
-	_hold(ItemTypes.PICKAXE)
+	_hold(ItemTypes.RUSTY_IRON_PICKAXE)
 	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
-	_hold(ItemTypes.WATERING_CAN)
+	_hold(ItemTypes.RUSTY_IRON_WATERING_CAN)
 	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
 	assert_eq(tree.state, {})
 	_world.remove_object(_tile)
 	_place(WorldObjectTypes.STONE)
-	_hold(ItemTypes.AXE)
+	_hold(ItemTypes.RUSTY_IRON_AXE)
 	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
 	_hold(ItemTypes.TURNIP_SEEDS)
 	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
@@ -103,24 +106,24 @@ func test_the_wrong_kind_of_tool_does_nothing() -> void:
 func test_every_hit_emits_object_hit_the_final_one_too() -> void:
 	_place(WorldObjectTypes.STONE)
 	watch_signals(_world)
-	_hit(ItemTypes.PICKAXE, 1)
+	_hit(ItemTypes.RUSTY_IRON_PICKAXE, 1)
 	assert_signal_emit_count(_world, "object_hit", 1)
-	_hit(ItemTypes.PICKAXE, 2)
+	_hit(ItemTypes.RUSTY_IRON_PICKAXE, 2)
 	assert_signal_emit_count(_world, "object_hit", 3)
 
 
 func test_damage_heals_overnight() -> void:
 	var tree := _place(WorldObjectTypes.OAK)
-	_hit(ItemTypes.AXE, OAK_HITS - 1)
+	_hit(ItemTypes.RUSTY_IRON_AXE, OAK_HITS - 1)
 	_sleep_days(1)
 	assert_false(tree.state.has("damage"))
-	_hit(ItemTypes.AXE, OAK_HITS - 1)
+	_hit(ItemTypes.RUSTY_IRON_AXE, OAK_HITS - 1)
 	assert_same(_world.object_at(_tile), tree, "needs all its hits again")
 
 
 func test_damage_outlives_the_chunk_and_the_save() -> void:
 	var tree := _place(WorldObjectTypes.OAK)
-	_hit(ItemTypes.AXE, 3)
+	_hit(ItemTypes.RUSTY_IRON_AXE, 3)
 	_reload_chunk()
 	assert_eq(_world.object_at(_tile).state["damage"], 3)
 	assert_eq(int(_through_save().world.object_at(_tile).state["damage"]), 3)
@@ -134,7 +137,7 @@ func test_a_generated_tree_keeps_its_damage_when_its_chunk_reloads() -> void:
 			if object.type == WorldObjectTypes.OAK:
 				generated = object
 	assert_not_null(generated, "no oak near the camp")
-	_hold(ItemTypes.AXE)
+	_hold(ItemTypes.RUSTY_IRON_AXE)
 	_state.player.position = Vector2(generated.pos) + Vector2(0.5, 1.5)
 	_state.use_tile(generated.pos)
 	_state.use_tile(generated.pos)
@@ -149,7 +152,7 @@ func test_a_generated_tree_keeps_its_damage_when_its_chunk_reloads() -> void:
 
 func test_stone_gives_two_stone_and_goes() -> void:
 	_place(WorldObjectTypes.STONE)
-	_hit(ItemTypes.PICKAXE, 3)
+	_hit(ItemTypes.RUSTY_IRON_PICKAXE, 3)
 	assert_null(_world.object_at(_tile))
 	assert_eq(_dropped(ItemTypes.STONE), 2)
 
@@ -165,9 +168,9 @@ func test_every_drop_is_an_item() -> void:
 
 func test_the_final_hit_happens_with_a_full_inventory() -> void:
 	_place(WorldObjectTypes.OAK)
-	_hit(ItemTypes.AXE, OAK_HITS - 1)
+	_hit(ItemTypes.RUSTY_IRON_AXE, OAK_HITS - 1)
 	_fill_inventory()
-	assert_eq(_hit(ItemTypes.AXE, 1), ToolUse.Use.HIT)
+	assert_eq(_hit(ItemTypes.RUSTY_IRON_AXE, 1), ToolUse.Use.HIT)
 	assert_eq(_world.object_at(_tile).type, WorldObjectTypes.STUMP)
 	assert_eq(_world.object_at(_tile + Vector2i.RIGHT).type, &"oak_trunk")
 
@@ -176,7 +179,7 @@ func test_a_stone_never_gives_a_seed() -> void:
 	for day in 30:
 		_state.clock.day = day + 1
 		_place(WorldObjectTypes.STONE)
-		_hit(ItemTypes.PICKAXE, 3)
+		_hit(ItemTypes.RUSTY_IRON_PICKAXE, 3)
 	for seed_item: StringName in [ItemTypes.ACORN, ItemTypes.SPRUCE_CONE, ItemTypes.PINE_CONE]:
 		assert_eq(_dropped(seed_item), 0)
 
@@ -186,8 +189,8 @@ func test_a_stone_never_gives_a_seed() -> void:
 
 func test_a_stump_can_be_removed_with_the_axe_for_a_log() -> void:
 	_place(WorldObjectTypes.OAK)
-	_hit(ItemTypes.AXE, OAK_HITS)
+	_hit(ItemTypes.RUSTY_IRON_AXE, OAK_HITS)
 	_clear_ground()
-	assert_eq(_hit(ItemTypes.AXE, 2), ToolUse.Use.HIT)
+	assert_eq(_hit(ItemTypes.RUSTY_IRON_AXE, 2), ToolUse.Use.HIT)
 	assert_null(_world.object_at(_tile))
 	assert_eq(_dropped(ItemTypes.LOGS), 1)

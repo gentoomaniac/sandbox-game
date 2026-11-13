@@ -110,7 +110,9 @@ func test_shift_click_sends_a_stack_between_the_backpack_and_the_hotbar() -> voi
 	var backpack_slot := BACKPACK_SLOT + 2
 	_set_stack(backpack_slot, ItemTypes.LOGS, 7)
 	for slot in Inventory.HOTBAR_SIZE:
-		_player.inventory.slots[slot] = {} if slot == 5 else {"item": ItemTypes.AXE, "count": 1}
+		_player.inventory.slots[slot] = (
+			{} if slot == 5 else {"item": ItemTypes.RUSTY_IRON_AXE, "count": 1}
+		)
 	_player.inventory.changed.emit()
 	_click(_centre_of(_backpack_view(backpack_slot)), MOUSE_BUTTON_LEFT, true)
 	assert_true(_player.inventory.slots[backpack_slot].is_empty())
