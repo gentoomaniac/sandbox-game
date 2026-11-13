@@ -361,6 +361,15 @@ the buffer is full the oldest story leaves, and becomes a long-term memory of it
 that weighs little is forgotten). The console's `deeds` lists the log. The kinds, their words, the radius and the
 places are in [data/gossip.cfg](data/gossip.cfg).
 
+Villagers talk. Two who stand within 3 tiles of each other meet (a pair at most once an hour of game
+time, villagers in view or not), and each may pass on one story the other lacks: the weightiest and
+newest of those they have known for 2 hours, more likely to family and friends, then to neighbours
+(the 3 villagers whose homes are nearest), least to anyone else. A rumour stops after 3 hops or when
+its deed is 7 days old. The one who hears it keeps it as a light story and is told it by the teller:
+"Today Moiken told you that the newcomer was seen to fell 7 trees by Antje's house." (`gossip
+<villager>` in the console shows who heard what from whom.) The chances and waits are in the
+`[meetings]` section of [data/gossip.cfg](data/gossip.cfg).
+
 They all live in Wehlsbüll, a made-up marsh parish two hours north of Husum in 1750, which
 [data/village.cfg](data/village.cfg) describes as everyone there knows it: the church, the Krug,
 the mill, the dyke and its sluice, the Koog, the creeks and the Geest; who is who (Pastor

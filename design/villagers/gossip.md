@@ -80,8 +80,21 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   leaves is forgotten if low, else its line `On day N: you saw the newcomer ...` (`memory` of
   `[story]`) is a long-term memory of its day and weight. A story heard is told with
   the teller, by the `heard_` lines of `[story]`: "Today Moiken told you that the newcomer was seen
-  to fell 7 trees by Antje's house." (the same in the memory line). Spreading (task 127) is
-  built in the following commits.
+  to fell 7 trees by Antje's house." (the same in the memory line).
+- **As built (task 127):** `GossipSpread` (a `SimulationSystem`, so it runs as the clock moves,
+  after a skip too) and `SpreadRules` (`[meetings]` of `data/gossip.cfg`). Each time the clock
+  moves it looks at every pair of villagers of the world, in view or not (they stand still where
+  they are when out of view): two closer than 3 tiles meet if they have not met in the last hour
+  (60 minutes; kept in memory only, so a loaded game lets pairs meet at once, and they only pass
+  what the other lacks). Each way, if the teller has a story that the hearer lacks (by `origin`)
+  that they have known for 2 hours, that has come fewer than 3 hops and whose deed is fewer than
+  7 days old, the weightiest and then the newest is passed with the chance of the tie: 0.8 family
+  and friends (the sheet of either, by id), 0.5 for one of the 3 villagers whose anchors are
+  nearest to the teller's, 0.2 for anyone. The hearer keeps it as `heard`, `told_by` the teller,
+  `hops` one more, `learned_at` now, weight low and not personal (the judge of task 128 may raise
+  that), the same `seen_by` and `origin`. Village topics, which never stop, are not stories yet.
+  The dice are `GossipSpread.rng`, seeded by tests.
+
 - **The deed log is also the base of an end-of-day screen** (later: "Today: 7 trees felled, a
   Kate built, 12 beds sown").
 

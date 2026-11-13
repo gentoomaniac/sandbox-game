@@ -28,6 +28,27 @@ func test_the_deed_log_and_the_stories_are_kept() -> void:
 	assert_eq(loaded.npcs.all()[0].stories, state.npcs.all()[0].stories)
 
 
+func test_a_story_heard_is_kept_with_who_told_it() -> void:
+	var state := _state_with_a_deed_seen_by_antje()
+	var antje := state.npcs.all()[0]
+	var momme := Npc.create_villager("momme", antje.position + Vector2.RIGHT, state.npcs.villagers)
+	state.npcs.add(momme)
+	state.clock.advance(3 * GameClock.MINUTES_PER_HOUR)
+	var spread := GossipSpread.new(state.npcs, state.deeds)
+	spread.rules = SpreadRules.default_rules()
+	spread.rng.seed = 3
+	for _hour in 24:
+		spread.advance(60, state.clock)
+		state.clock.advance(60)
+	assert_eq(momme.stories.size(), 1, "told within a day")
+	assert_true(SaveFile.write(state, SAVE_PATH))
+
+	var heard := SaveFile.read(SAVE_PATH).npcs.all()[1].stories[0]
+
+	assert_eq(heard, momme.stories[0])
+	assert_eq([heard["how"], heard["told_by"], heard["hops"]], [GossipRules.HEARD, antje.name, 1])
+
+
 func test_a_version_33_save_loads_without_deeds() -> void:
 	var game := _current_game()
 	game["npcs"] = [

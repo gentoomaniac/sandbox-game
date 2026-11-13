@@ -174,6 +174,13 @@ func add_story(story: Dictionary, keep: int, keep_in_memory: int) -> void:
 	keep_stories(keep, keep_in_memory)
 
 
+## Takes a story they heard into the gossip buffer (their own, whatever it resembles: the caller
+## has seen that they lack it), as `add_story` does.
+func learn_story(story: Dictionary, keep: int, keep_in_memory: int) -> void:
+	stories.append(story.duplicate(true))
+	keep_stories(keep, keep_in_memory)
+
+
 ## Keeps `keep` stories at most. The oldest leaves the buffer: a low one is forgotten, any other
 ## moves its line to long-term memory with its weight (`keep_in_memory` of them are kept).
 func keep_stories(keep: int, keep_in_memory: int) -> void:

@@ -699,6 +699,7 @@ func _start_simulation() -> void:
 	simulation.add_system(FarmingUpkeep.new(world, weather))
 	simulation.add_system(NightUpkeep.new(world, weather, _tiles_kept_clear))
 	simulation.add_system(ActorsUpkeep.new(world, livestock, npcs, _player_feet))
+	simulation.add_system(GossipSpread.new(npcs, deeds))
 
 
 ## The tiles where a sapling does not grow into a tree, for it would be under the player's feet.
