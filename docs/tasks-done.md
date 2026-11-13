@@ -170,3 +170,23 @@ From design/villagers/gossip.md (Locals and newcomers). Needs 127.
 - Tests: learning, the prompt, saving. Docs in villagers.md.
 
 Done: c99eddb7..37a6e274. `Npc.topics` (saved): villagers of data/villagers.cfg know every section of data/village.cfg, made-up ones none; the prompt tells only the known topics (the block is left out when none). At a meeting each villager may teach the other the first topic it lacks (chance 0.5, data/gossip.cfg); a topic is not a story: no buffer, no judge, no hops, no whispers, no wait, never forgotten. `gossip <villager>` lists the known topics. Save version 38 (the upgrade from 27 dropped).
+
+## 130. Bubbles: villagers say a line now and then
+
+- [x] Done
+
+From design/villagers/gossip.md (Bubbles). Needs 128 for lines about the player; the rest can
+come earlier.
+- Now and then a villager in view says a short line in a bubble over their head for a few
+  seconds: at most one on screen and about one a minute (data file).
+- Reuse what exists: ThoughtBubble (game/scenes/thought_bubble.gd, the player's icon bubbles)
+  for the look, NpcMoment (game/state/npc_moment.gd) for the weather and part of the day.
+- About the moment (weather, part of the day, the place, what they do), or about the player when
+  near, with their opinion and newest stories.
+- Asked of the model in the background with the chat's temperature (task 124), dropped if the
+  villager is out of view when it comes; without a model, scripted lines per weather and part of
+  the day in data/npc_talk.cfg.
+- Not saved, not remembered. Bubbles drawn in palette colours, readable at every zoom; a
+  screenshot in the README.
+
+Done: ac491a9b..91a5a8a4. NpcBubbles (state) picks a villager in view (the whole bubble must fit) every 30-90 s of game time while no bubble shows, half the time about the player when within 6 tiles (opinion and the 2 newest stories), else about the weather or part of the day; asked of the model quietly at the chat temperature, max 60 characters, dropped if the villager left the view; without a model, scripted lines from data/npc_talk.cfg [bubble_lines]. The bubble (SpeechBubble, HUD layer, pixel font, cream on ink) shows 5 s, ends when the villager leaves the view or starts a chat, and covers the name tag meanwhile. Not saved. Debug flag `--bubbles` (a bubble at once).

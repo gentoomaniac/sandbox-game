@@ -23,24 +23,6 @@ Rules for every task:
 - Visuals come from the art generator (task 5 on). Until a task adds art for something,
   use simple placeholder shapes in palette colours.
 
-## 130. Bubbles: villagers say a line now and then
-
-- [ ] Done
-
-From design/villagers/gossip.md (Bubbles). Needs 128 for lines about the player; the rest can
-come earlier.
-- Now and then a villager in view says a short line in a bubble over their head for a few
-  seconds: at most one on screen and about one a minute (data file).
-- Reuse what exists: ThoughtBubble (game/scenes/thought_bubble.gd, the player's icon bubbles)
-  for the look, NpcMoment (game/state/npc_moment.gd) for the weather and part of the day.
-- About the moment (weather, part of the day, the place, what they do), or about the player when
-  near, with their opinion and newest stories.
-- Asked of the model in the background with the chat's temperature (task 124), dropped if the
-  villager is out of view when it comes; without a model, scripted lines per weather and part of
-  the day in data/npc_talk.cfg.
-- Not saved, not remembered. Bubbles drawn in palette colours, readable at every zoom; a
-  screenshot in the README.
-
 ## 170. Music: the game plays the modules (after 169's decision)
 
 - [ ] Done
