@@ -44,6 +44,22 @@ func test_the_anger_mark_rises_over_an_animal_petted_asleep() -> void:
 	assert_eq(_reactions()[0].position, Vector2(26, -29), "lower, over a cow lying down")
 
 
+func test_a_heart_rises_over_the_rooster_at_his_own_height() -> void:
+	var rooster := FarmAnimal.new(LivestockRules.CHICKEN, LivestockRules.ROOSTER_LOOK, SPOT)
+	_state.livestock.add(rooster)
+	_wildlife._show_farm_animal_if_near(rooster)
+	var view: FarmAnimalView = _wildlife._farm_animals[rooster]
+
+	_state.livestock.pet(rooster, _state.clock)
+
+	var found: Array[PetReaction] = []
+	for child in view.get_children():
+		if child is PetReaction:
+			found.append(child)
+	assert_eq(found.size(), 1)
+	assert_eq(found[0].position, Vector2(8, -34), "over his comb, higher than over a hen")
+
+
 func test_a_petting_that_shows_nothing_adds_nothing() -> void:
 	_state.livestock.pet(_cow, _state.clock)
 	_state.livestock.pet(_cow, _state.clock)
@@ -62,3 +78,6 @@ func test_the_reaction_is_gone_after_its_seconds() -> void:
 func test_every_species_has_a_head_for_each_pose() -> void:
 	for species in LivestockRules.SPECIES:
 		assert_eq(FarmAnimalView.HEADS[species].size(), 3, str(species))
+	for kind: StringName in FarmAnimalView.LOOK_HEADS:
+		assert_true(WildlifeSprites.SHEETS.has(kind), str(kind))
+		assert_eq(FarmAnimalView.LOOK_HEADS[kind].size(), 3, str(kind))

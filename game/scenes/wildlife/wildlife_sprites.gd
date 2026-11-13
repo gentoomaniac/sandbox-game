@@ -13,6 +13,8 @@ const COW := {"size": Vector2i(72, 54), "actions": LIVESTOCK_ACTIONS}
 const PIG := {"size": Vector2i(52, 32), "actions": LIVESTOCK_ACTIONS}
 const SHEEP := {"size": Vector2i(44, 32), "actions": LIVESTOCK_ACTIONS}
 const CHICKEN := {"size": Vector2i(24, 24), "actions": LIVESTOCK_ACTIONS}
+## The rooster stands a head taller than his hens, in larger cells.
+const ROOSTER := {"size": Vector2i(34, 32), "actions": LIVESTOCK_ACTIONS}
 const RABBIT := {"size": Vector2i(24, 20), "actions": LIVESTOCK_ACTIONS}
 const DOG := {"size": Vector2i(48, 36), "actions": LIVESTOCK_ACTIONS}
 const CAT := {
@@ -88,7 +90,7 @@ const SHEETS := {
 	&"sheep_black_faced": SHEEP,
 	&"chicken_brown": CHICKEN,
 	&"chicken_white": CHICKEN,
-	&"chicken_rooster": CHICKEN,
+	&"chicken_rooster": ROOSTER,
 	&"rabbit_agouti": RABBIT,
 	&"rabbit_white": RABBIT,
 	&"rabbit_dutch": RABBIT,

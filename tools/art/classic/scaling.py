@@ -91,6 +91,8 @@ DOUBLED = (
 GROWN_CELLS = {
     "wildlife/cow_*.png": ((64, 48), (72, 54)),
     "wildlife/horse_*.png": ((88, 72), (88, 76)),
+    # The rooster, a head taller than his hens at 32 px (livestock.ROOSTER_SIZE).
+    "wildlife/chicken_rooster.png": ((24, 24), (34, 32)),
     # The small wild animals drawn larger than life at 32 px.
     "wildlife/bird.png": ((16, 16), (22, 18)),
     "wildlife/rabbit.png": ((24, 20), (26, 22)),

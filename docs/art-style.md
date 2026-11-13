@@ -852,8 +852,15 @@ copper watering can. Kept here as the record of why.
    the horse 88 px long and 57 px to the withers (88×76 cell), the pony four fifths of it, the
    cow 64 px long and 35 px to the withers (72×54), the pig 40 px long and 23 px tall (52×32),
    the sheep 22 px (44×32), the dog 48×36; the hen (24×24), the cat (32×24) and the rabbit
-   (24×20) a little larger than life. The outline is the darkest colour of the coat (ink for the
-   black and dark ones) and goes round the legs too; every animal stands on a contact shadow. The saddle
+   (24×20) a little larger than life. The rooster (34×32, task 204) is a head taller than his
+   hens: 27 px from the tail to the beak and 30 px to the tips of his tail, an arch of black-green
+   sickles (`ink`, `green_deep`, `green_dark`, their upper edges `green`, outlined in `ink`) over
+   golden saddle hackles, a cape of golden hackles (`ochre`, `gold`), a red-brown body (`rust`)
+   with a dark green wing bar, a big red comb, long wattles and a red face (`red_light`, `ember`),
+   and long legs with a spur; he is drawn by hand as maps of letters like the cow and the pig.
+   The classic rooster is drawn as before, the size of a classic hen; the game sets his sheet in
+   the 34×32 cells. The outline is the darkest colour of the coat (ink for the black and dark
+   ones) and goes round the legs too; every animal stands on a contact shadow. The saddle
    sits on a blue wool cloth (`water_deep`, `water`), so that the rider's brown breeches don't
    merge with a bay. From the front and behind the ridden horse is 28 px wide. Readable on
    summer grass, snow, at dusk and at night (checked in screenshots). No new colours.

@@ -81,7 +81,8 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   pig about 40 px long and 23 px tall, a dog about 40 px long, a horse about 88 px long (nearly three tiles) and 57 px to the
   withers, its back free of the neck and head for a saddle and a rider, the pony four fifths
   of it; the hen (about 22 px), the cat (about 28 px) and the rabbit (about 20 px) are drawn a
-  little larger than life. They are rounded forms shaded from the top left like the people,
+  little larger than life. The rooster (task 204) is a head taller than his hens: a 34x32 cell,
+  about 27 px from the beak to the tail and 30 px to the tips of his tail. They are rounded forms shaded from the top left like the people,
   with legs through their joints, an eye with a glint, and the outline in the darkest colour
   of the coat; each stands on a contact shadow. (Was 16 px art: a cow 22 px long, a horse 32.)
 - **Riding** (decided 2026-11-06, task 81): the saddle is an item (from the console for now).
@@ -175,13 +176,16 @@ data/livestock.cfg.
   rises from over the animal's head for 1.6 s, drifting up 14 px and fading (`PetReaction`, made
   by the `FarmAnimalView` when `Livestock` tells `petted`). It stands 2 px above the top of the
   head, which is measured on each species' sheets for standing, grazing (head down) and asleep
-  (`FarmAnimalView.HEADS`), so it sits low over a lying cow and high over a standing horse.
+  (`FarmAnimalView.HEADS`), so it sits low over a lying cow and high over a standing horse. A look
+  drawn in a sheet of its own size has its own heights (`FarmAnimalView.LOOK_HEADS`): the rooster,
+  whose mark rises over his comb, higher than over his hens.
 - **Zzz (task 211):** a sleeping animal that is on screen shows the player's "z"s (`SleepZs`,
   effects/sleep_z.png, in both arts) rising over its head now and then: after a random gap of 6 to
   20 s, for 3 to 5 s, over and over (`[zs]` in data/livestock.cfg; the first gap counts from
   falling asleep). They start where the heart does (`HEADS`, asleep) and rise as far as its
   species' `ZS_RISES`: 14 px for the chicken, rabbit and cat, 20 to 22 for the pig, sheep and dog,
-  28 for the cow and 32 for the horse. `ZS_RISES`, like `HEADS`, is art geometry and is kept in
+  28 for the cow and 32 for the horse; the rooster's start over his own head (`LOOK_HEADS`) and
+  rise 18 px (`LOOK_ZS_RISES`). `ZS_RISES`, like `HEADS`, is art geometry and is kept in
   code, not in data/. They end when the animal wakes or is petted (the anger mark wins).
   The cost is a timer in each sleeping `FarmAnimalView` whose animal is inside the camera's view
   (the `SleepZs` node and the dice are made when it first does); an animal outside it, though its

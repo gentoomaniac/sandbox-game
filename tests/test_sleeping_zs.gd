@@ -131,3 +131,20 @@ func test_the_small_animals_rise_less_far_than_the_cow() -> void:
 	for species in [LivestockRules.CHICKEN, LivestockRules.RABBIT, LivestockRules.CAT]:
 		var rise: float = FarmAnimalView.ZS_RISES[species]
 		assert_lt(rise, FarmAnimalView.ZS_RISES[LivestockRules.COW], str(species))
+
+
+func test_a_sleeping_rooster_shows_his_zs_over_his_own_taller_head() -> void:
+	var rooster := FarmAnimal.new(LivestockRules.CHICKEN, LivestockRules.ROOSTER_LOOK, SPOT)
+	rooster.activity = FarmAnimal.Activity.SLEEP
+	_state.livestock.add(rooster)
+	_wildlife._show_farm_animal_if_near(rooster)
+	var view: FarmAnimalView = _wildlife._farm_animals[rooster]
+
+	for _i in roundi(_longest_gap() / STEP) + 3:
+		view._process(STEP)
+		if view._zs != null and view._zs.is_sleeping:
+			break
+
+	assert_true(view._zs.is_sleeping, "shown")
+	assert_eq(view._zs.position, Vector2(8, -20), "over his comb asleep, not a hen's head")
+	assert_eq(view._zs.rise, FarmAnimalView.LOOK_ZS_RISES[&"chicken_rooster"], "his own rise")

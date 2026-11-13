@@ -284,7 +284,7 @@ wildlife/cat_black_32x32.png 32 24
 wildlife/cat_ginger_32x32.png 32 24
 wildlife/cat_tabby_32x32.png 32 24
 wildlife/chicken_brown_32x32.png 24 24
-wildlife/chicken_rooster_32x32.png 24 24
+wildlife/chicken_rooster_32x32.png 34 32
 wildlife/chicken_white_32x32.png 24 24
 wildlife/cow_angler_32x32.png 72 54
 wildlife/cow_black_pied_32x32.png 72 54

@@ -46,6 +46,10 @@ const HEADS := {
 	LivestockRules.CAT: [Vector2(12, 24), Vector2(12, 18), Vector2(12, 16)],
 	LivestockRules.HORSE: [Vector2(29, 75), Vector2(22, 51), Vector2(29, 50)],
 }
+## The same for a look drawn in a sheet of its own size: the rooster, taller than his hens.
+const LOOK_HEADS := {
+	&"chicken_rooster": [Vector2(8, 32), Vector2(11, 14), Vector2(8, 18)],
+}
 ## The pixels between a head and what rises over it.
 const HEAD_GAP := 2
 ## How far the "z"s of a sleeping animal rise over its head, in art pixels: less for the small ones.
@@ -59,6 +63,8 @@ const ZS_RISES := {
 	LivestockRules.CAT: 14.0,
 	LivestockRules.HORSE: 32.0,
 }
+## The same for a look drawn in a sheet of its own size (see LOOK_HEADS).
+const LOOK_ZS_RISES := {&"chicken_rooster": 18.0}
 
 var farm_animal: FarmAnimal
 ## The activity it shows, to start the frames of a new one only when it changes.
@@ -127,7 +133,7 @@ func show_pet_reaction(shows: Livestock.PetShows) -> void:
 ## Where what rises over its head starts: just above it, whichever way it faces and however it
 ## holds its head.
 func _above_head() -> Vector2:
-	var poses: Array = HEADS[farm_animal.species]
+	var poses: Array = LOOK_HEADS.get(_sheet_kind, HEADS[farm_animal.species])
 	var pose := 0
 	if farm_animal.activity == FarmAnimal.Activity.SLEEP:
 		pose = 2
@@ -170,7 +176,7 @@ func _is_on_screen() -> bool:
 
 func _make_zs() -> void:
 	_zs = SleepZs.new()
-	_zs.rise = ZS_RISES[farm_animal.species]
+	_zs.rise = LOOK_ZS_RISES.get(_sheet_kind, ZS_RISES[farm_animal.species])
 	add_child(_zs)
 	_zs_rng = RandomNumberGenerator.new()
 	_zs_rng.seed = wildlife.rng.randi()
