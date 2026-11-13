@@ -224,6 +224,26 @@ strike."
 - Tests: the new strike kind's share and sound, the bolt drawn for close strikes only (and its
   branching), determinism. Listening files and screenshots of a bolt and a crawler for the user.
 
+## 223. Birds taking off from the ground are seen from the front or behind too
+
+- [ ] Done
+
+The user, 2026-11-13, after task 220: birds taking off from the ground should get the new views
+too.
+- Task 220 gave the sky flocks (Flock) `fly_down` and `fly_up` rows for the sparrow and goose
+  sheets and `Flock.view_of(heading)` (within HEAD_ON_DEGREES of the vertical: front or back,
+  unflipped). Ground flocks (GroundFlock, game/scenes/wildlife/ground_flock.gd: sparrows,
+  greylag geese and any other ground flock) still fly off with the side view, flipped by
+  `_flight_direction.x`.
+- Use the same rule for a ground flock's flight (take-off, flying away, landing if it lands
+  flying): pick the view from the flight direction with `Flock.view_of` (move it to a shared
+  place if that reads better), unflipped head on; the side view as today otherwise. Other single
+  birds that fly (gulls, storks, the Bird class) if they share the sheets or have a fly row: say
+  which, and give them the same rule only where art exists (no new art in this task unless a kind
+  clearly needs it: say so).
+- Tests: the view per flight direction around the compass for a ground flock; screenshots of a
+  flock taking off upwards and downwards in both arts.
+
 ## Later (not part of the prototype)
 
 - **Crows** (the user, 2026-11-13): wild crows (carrion or hooded crows, rooks) as wildlife:
