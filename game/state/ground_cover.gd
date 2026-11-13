@@ -141,6 +141,11 @@ func channels_at(tile: Vector2i) -> Channels:
 
 
 func _snow_with(tile: Vector2i, snow_cover: float, thaw: float) -> float:
+	# Without snow cover nothing lies anywhere, and the channels (a search for crowns and lees
+	# around the tile, most of a millisecond) need not be worked out: the wildlife asks this of
+	# every flower around the view each second.
+	if snow_cover <= 0.0:
+		return 0.0
 	var channels := channels_at(tile)
 	return clampf(snow_cover * channels.snow - thaw * channels.melt * _thaw_gain, 0.0, 1.0)
 
