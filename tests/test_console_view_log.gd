@@ -94,9 +94,10 @@ func test_the_log_keeps_only_the_newest_lines() -> void:
 
 
 func test_a_line_wider_than_the_panel_wraps_onto_more_lines() -> void:
-	var one_line := _view._log.get_line_height()
 	_view._log_line("word ".repeat(80))
 	await wait_process_frames(2)
-	assert_gt(_view._log.get_line_count(), 1, "a long line is wrapped, not cut off")
-	assert_lte(_view._log.size.x, _list.size.x, "and stays within the panel")
-	assert_gt(_view._log.get_combined_minimum_size().y, one_line)
+	var lines := _view._log.get_line_count()
+	assert_gt(lines, 1, "a long line is wrapped, not cut off")
+	assert_lt(lines, 20, "at the panel's width, not a word to a line")
+	assert_gt(_view._log.size.x, _list.size.x / 2.0, "the log is as wide as its panel")
+	assert_lte(_view._log.size.x, _list.size.x, "and no wider")

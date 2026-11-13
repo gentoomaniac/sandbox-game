@@ -45,7 +45,8 @@ Decided 2026-11-05. A text console for testing and cheats.
   are on.
 - The log is a `ScrollingList` of a fixed height (8 lines) holding the newest 500 lines: the wheel,
   its bar and Page Up / Page Down scroll it; new output keeps the view at the bottom unless the
-  player scrolled up, and opening the console shows the bottom.
+  player scrolled up, and opening the console shows the bottom. Long lines wrap by words at the
+  panel's width.
 - A history with up/down; output and errors in the console log. The input line keeps the
   focus while the console is open: clicks elsewhere don't take it, and it stays ready
   after Enter.
