@@ -29,6 +29,7 @@ const MAX_CHANGE := 2
 const REQUIRED_KEYS := {
 	"witnesses": ["radius_tiles", "night_radius_tiles"],
 	"log": ["keep_days"],
+	"opinion": ["min_points", "max_points", "daily_cap_points", "cold_below", "warm_from"],
 	"places": ["house"],
 	"counts": ["words"],
 	"story":
@@ -89,6 +90,10 @@ func problems() -> Array[String]:
 		bad.append("[witnesses] night_radius_tiles must not be above radius_tiles")
 	if keep_days() < 1:
 		bad.append("[log] keep_days must be at least 1")
+	if opinion_min() > 0 or opinion_max() < 0:
+		bad.append("[opinion] min_points must not be above 0 nor max_points below it")
+	if opinion_cold_below() > opinion_warm_from():
+		bad.append("[opinion] cold_below must not be above warm_from")
 	for kind in KINDS:
 		if absi(opinion_change(kind)) > MAX_CHANGE:
 			bad.append("[%s] change must be from -%d to %d" % [kind, MAX_CHANGE, MAX_CHANGE])
@@ -107,6 +112,37 @@ func radius(is_night: bool) -> float:
 ## How many days a deed is kept, today's included.
 func keep_days() -> int:
 	return int(_values["log"]["keep_days"])
+
+
+## The lowest and the highest opinion of the player a villager can have, in points.
+func opinion_min() -> int:
+	return int(_values["opinion"]["min_points"])
+
+
+func opinion_max() -> int:
+	return int(_values["opinion"]["max_points"])
+
+
+## The most points the opinion of a villager moves in a day, up or down.
+func opinion_daily_cap() -> int:
+	return int(_values["opinion"]["daily_cap_points"])
+
+
+## Below this many points the villager is cold towards the player.
+func opinion_cold_below() -> int:
+	return int(_values["opinion"]["cold_below"])
+
+
+## From this many points the villager is warm towards the player.
+func opinion_warm_from() -> int:
+	return int(_values["opinion"]["warm_from"])
+
+
+## The opinion in a word (`cold`, `neutral` or `warm`), which the chat prompt tells.
+func opinion_word(points: int) -> StringName:
+	if points < opinion_cold_below():
+		return &"cold"
+	return &"warm" if points >= opinion_warm_from() else &"neutral"
 
 
 ## What the villagers who saw a deed of this kind think more (or less) of the player.

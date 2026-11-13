@@ -21,10 +21,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 36
-## The oldest version we still upgrade. Nine steps back, for the next version (task 128) makes
-## its step the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 37
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -206,6 +205,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_34(game)
 	if version <= 35:
 		_upgrade_from_version_35(game)
+	if version <= 36:
+		_upgrade_from_version_36(game)
 
 
 ## Version 27 had no lantern (task 177): it is out.
@@ -376,3 +377,11 @@ static func _upgrade_from_version_35(game: Dictionary) -> void:
 				(int(story["learned"]) - 1) * GameClock.MINUTES_PER_DAY + int(story["minute"])
 			)
 			story.erase("learned")
+
+
+## Version 36 had no opinion of the player (task 128): every villager starts at none.
+static func _upgrade_from_version_36(game: Dictionary) -> void:
+	for npc: Dictionary in game["npcs"]:
+		npc["opinion"] = 0
+		npc["opinion_day"] = 0
+		npc["opinion_moved_today"] = 0

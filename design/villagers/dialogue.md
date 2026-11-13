@@ -60,7 +60,8 @@
   season; the time and part of the day by the sun: dawn, morning, noon, afternoon, dusk, night; the
   weather as it is: thunder, storm, snow, rain or fog by strength, else the sky by its clouds, the
   temperature, frost below 0 °C, the wind by strength and where it blows from; the building or fire
-  within 8 tiles), that the player is a newcomer whose name they don't know, and, right before the
+  within 8 tiles), that the player is a newcomer whose name they don't know, what the villager
+  thinks of them in words (cold, neutral or warm, task 128; see [gossip.md](gossip.md)), and, right before the
   answer, the language the villager answers in (so a switch of language is followed, the user's
   word of 2026-11-07; task 95): the game detects it (`NpcLanguage`: English, German or Danish by
   the common words and telling letters of `[language]` in the data file; "Antje answers in

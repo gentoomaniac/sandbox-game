@@ -12,6 +12,7 @@ extends RefCounted
 ##   Antje is 38 years old, a pale woman with ... (and, if any, what she remembers)
 ##   It is the 12th day of Spring, year 1 (mid spring), 08:15 in the morning. The weather: ...
 ##   The neighbour is a newcomer to these parts; Antje does not know their name.
+##   Antje has no strong feelings about this neighbour yet.
 ##   Her neighbour says: "Good morning! Is the dyke holding after the storm?"
 ##   Antje's reply:
 
@@ -72,6 +73,8 @@ static func reply_messages(
 	last.append_array(GossipRules.default_rules().story_lines(npc.stories, moment.clock.day))
 	last.append(_said(rules, "moment", words))
 	last.append(_said(rules, "neighbour", words))
+	var opinion_word := GossipRules.default_rules().opinion_word(npc.opinion)
+	last.append(_said(rules, "opinion_" + opinion_word, words))
 	last.append(_said(rules, "says", _with_message(words, message)))
 	var language := NpcLanguage.name_of(message, history, rules)
 	last.append(_said_in(rules, "language", _with_message(words, message), language))

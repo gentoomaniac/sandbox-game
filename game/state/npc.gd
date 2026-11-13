@@ -74,6 +74,13 @@ var remembered_lines := 0
 ## `total_minutes`), `line` (the model's wording, "" until it is back: the template line is told
 ## then), `weight` (a MemoryWeight) and `personal` (whether it touches them).
 var stories: Array[Dictionary] = []
+## What they think of the player, in points (see GossipRules `opinion_word`). It stays when the
+## stories and memories behind it fade, so `forget_all_but_knowledge` leaves it.
+var opinion := 0
+## The day `opinion_moved_today` counts, and how far the opinion has moved since that day began:
+## its sum, up and down (see `change_opinion`).
+var opinion_day := 0
+var opinion_moved_today := 0
 ## Whether NpcDialogue is summing up `uncompacted_lines`. Not saved.
 var is_compacting := false
 
@@ -167,6 +174,18 @@ func forget_all_but_knowledge() -> void:
 	memories.clear()
 
 
+## Moves the opinion by `points` on game day `today`, as far as the day's cap allows (the sum of
+## what moved on the day stays within it either way), and within the bounds of the opinion.
+func change_opinion(points: int, today: int, rules: GossipRules) -> void:
+	if opinion_day != today:
+		opinion_day = today
+		opinion_moved_today = 0
+	var cap := rules.opinion_daily_cap()
+	var moved := clampi(opinion_moved_today + points, -cap, cap) - opinion_moved_today
+	opinion_moved_today += moved
+	opinion = clampi(opinion + moved, rules.opinion_min(), rules.opinion_max())
+
+
 ## Takes a story into the gossip buffer (the same deed of the same day and place is one story),
 ## and lets the oldest leave if there are more than `keep` (see `keep_stories`).
 func add_story(story: Dictionary, keep: int, keep_in_memory: int) -> void:
@@ -242,6 +261,9 @@ func to_dict() -> Dictionary:
 		"memories": memories.map(_memory_to_saved),
 		"uncompacted_lines": uncompacted_lines.duplicate(true),
 		"remembered_lines": remembered_lines,
+		"opinion": opinion,
+		"opinion_day": opinion_day,
+		"opinion_moved_today": opinion_moved_today,
 		"stories": stories.map(_story_to_saved),
 	}
 
@@ -278,6 +300,9 @@ static func from_dict(data: Dictionary) -> Npc:
 		npc.uncompacted_lines.append(line)
 	for story: Dictionary in data["stories"]:
 		npc.stories.append(_story_from_saved(story))
+	npc.opinion = int(data["opinion"])
+	npc.opinion_day = int(data["opinion_day"])
+	npc.opinion_moved_today = int(data["opinion_moved_today"])
 	npc.remembered_lines = mini(int(data["remembered_lines"]), npc.chat_history.size())
 	return npc
 

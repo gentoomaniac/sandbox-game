@@ -453,7 +453,8 @@ func _check_npc(npc: Variant, path: String) -> void:
 		_field(npc, "age", Kind.WHOLE, path)
 		_field(npc, "people", Kind.DICT, path)
 		_check_texts(npc, "samples", path)
-	_field(npc, "remembered_lines", Kind.WHOLE, path)
+	for key in ["remembered_lines", "opinion", "opinion_day", "opinion_moved_today"]:
+		_field(npc, key, Kind.WHOLE, path)
 	for key in ["position", "anchor"]:
 		_field(npc, key, Kind.POINT, path)
 	_check_memories(npc, path)

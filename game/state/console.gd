@@ -74,6 +74,14 @@ const COMMANDS := {
 			+ " id of a villager written by hand, such as antje, or a first name)."
 		),
 	],
+	"opinion":
+	[
+		"opinion <villager> [points]",
+		(
+			"Show what a villager thinks of you, or set it in points (-100 to 1000; below -20 is"
+			+ " cold, from 20 warm)."
+		),
+	],
 	"play":
 	[
 		"play <track>",
@@ -95,6 +103,7 @@ const ARGUMENTS := {
 	"skill": [&"skill", &"number"],
 	"attribute": [&"attribute", &"number"],
 	"gossip": [&"villager"],
+	"opinion": [&"villager", &"number"],
 	"play": [&"track"],
 }
 ## The commands that take an animal kind, or `npc` and the id of a villager written by hand (see
@@ -225,6 +234,8 @@ func run(line: String) -> Array[String]:
 			output = _deeds()
 		"gossip":
 			output = _gossip(arguments)
+		"opinion":
+			output = _opinion(arguments)
 		"play":
 			output = _play(arguments)
 		"stop":
@@ -689,6 +700,21 @@ func _gossip(arguments: PackedStringArray) -> Array[String]:
 
 ## The villager with this id, else the first one with this first name (the words of a command
 ## are lowercase), or null.
+## What a villager thinks of the player, in a word and in points; with `points` it sets them.
+func _opinion(arguments: PackedStringArray) -> Array[String]:
+	var is_setting := arguments.size() == 2
+	var is_usage_wrong := arguments.is_empty() or arguments.size() > 2
+	if is_usage_wrong or (is_setting and not arguments[1].is_valid_int()):
+		return ["Usage: %s" % COMMANDS["opinion"][0]]
+	var npc := _npc_named(arguments[0])
+	if npc == null:
+		return _unknown("villager", arguments[0], "opinion")
+	var rules := _state.deeds.rules
+	if is_setting:
+		npc.opinion = clampi(int(arguments[1]), rules.opinion_min(), rules.opinion_max())
+	return ["%s: %s (%d points)" % [npc.name, rules.opinion_word(npc.opinion), npc.opinion]]
+
+
 func _npc_named(word: String) -> Npc:
 	var npc := _state.npcs.find(word)
 	if npc != null:

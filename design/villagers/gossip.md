@@ -101,6 +101,16 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   from the changed fact, and its `origin` stays. `[counts]` words some counts ("a dozen"), true
   or whispered.
 
+- **As built (task 128, the opinion):** `Npc.opinion` is the points (saved with the day and how far
+  it has moved that day), `Npc.change_opinion` moves it by points up to the daily cap (the sum of
+  the day's moves stays within it either way; also clamped to the bounds), `[opinion]` of
+  `data/gossip.cfg` has the bounds (-100 to 1000), the cap (20) and the thresholds of the words
+  (cold below -20, warm from 20, else neutral; the levels of [relationships](relationships.md)
+  come when that page is decided). The chat prompt tells the word, `opinion_cold`, `opinion_neutral`
+  or `opinion_warm` of `[prompt]` of `data/npc_talk.cfg`, in the last turn after the line that
+  the player is a newcomer. `/clear` leaves it. The console's `opinion <villager> [points]` shows
+  or sets it.
+
 - **The deed log is also the base of an end-of-day screen** (later: "Today: 7 trees felled, a
   Kate built, 12 beds sown").
 
