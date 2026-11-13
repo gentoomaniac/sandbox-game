@@ -38,7 +38,7 @@ help:
 	@echo "  test-tools  Run only the tests of the Python tools (tools/ and its art, llm and music folders, test_*.py)."
 	@echo "  bench       Time a heavy save headless (start-up, nodes, frame times standing and walking, pile pick-up, save); see tools/README.md."
 	@echo "  weather-probe  Print a year of weather per seed: wet share, longest spell, wet hours per season, snow days and a day-by-day strip. WEATHER_PROBE_ARGS=\"2 1 5\" picks the strip's season (0-3) and the seeds."
-	@echo "  bench-music Time the prototype music renderer: renders on their own, then frame times in the game while it renders (headless, muted)."
+	@echo "  bench-music Time the music renderer: renders on their own, then frame times in the game while it renders, then the everyday pieces rendered and loaded from the cache (headless, muted)."
 	@echo "  music-latency  Time how late the music crossfade starts after the beat on the real audio driver (AUDIO_DRIVER, default PulseAudio), silent: the master bus is muted."
 	@echo "  music-check Render every piece with the game's prototype music renderer and compare it with libmodplug's (headless, silent)."
 	@echo "  lint        Run gdlint and gdformat --check, and check no API key is in the repo."
@@ -286,13 +286,15 @@ bench: assets
 	$(BENCH_GODOT) -s tools/bench/save.gd -- $(BENCH_DIR)/fixture.save
 
 # The prototype music renderer of task 169: render times, memory, and the game's frames while it
-# renders on a worker, also during a save, on a copy of the bench save.
+# renders on a worker, also during a save, on a copy of the bench save; then (task 170) the
+# everyday pieces rendered and loaded from the cache as the game does.
 bench-music: assets
 	@mkdir -p build/user-data
 	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT)
 	$(MAKE) $(BENCH_DIR)/fixture.save
 	cp $(BENCH_DIR)/fixture.save $(BENCH_DIR)/run.save
 	$(BENCH_GODOT) -s tools/bench/music.gd -- --save-path=$(BENCH_DIR)/run.save --settings-path=$(BENCH_DIR)/settings.cfg --mute --max-fps=0
+	$(BENCH_GODOT) -s tools/bench/music_cache.gd
 
 # How late MusicCrossfade starts after the beat on a real audio driver (task 170): the driver is
 # opened, but the master bus is muted and a capture effect on the probe's bus hears the music.

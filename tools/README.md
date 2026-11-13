@@ -130,7 +130,10 @@ piece on their own (8 bars and a minute, 22.05 and 44.1 kHz, mono and stereo, wi
 each), then Main on a copy of the same save standing, while renders run on a worker, and while
 they run and a timed save is made (and whether it was written), with the frame counts as above,
 what the main thread spends per finished render (taking it and handing it to a MusicCrossfade that
-crossfades to it on the beat) and how late after their beats the crossfades began;
+crossfades to it on the beat) and how late after their beats the crossfades began; then
+`music_cache.gd` (task 170) renders each everyday piece of data/music.cfg on a worker as the game
+does, into a fresh cache and then out of it, and prints how long each takes to be ready, the
+longest frame meanwhile and what the main thread spends taking the stream;
 docs/music-viability.md has its results.
 
 `make music-latency` (task 170, `music_latency.gd`) times how late the crossfade starts after the

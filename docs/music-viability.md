@@ -83,6 +83,24 @@ machine busy with other work, load 8.6): the loop at 44.1 kHz stereo 442 ms (41x
 A stream that loops renders its parts twice: the test reel's loop at 44.1 kHz stereo took 416 ms
 once and 796 ms looping (best of 3, load 6.5).
 
+## The everyday pieces in the game (task 170)
+
+`make bench-music`, the second script (`tools/bench/music_cache.gd`): each everyday piece's first
+section rendered the way the game does (44.1 kHz stereo, looping, so rendered twice) on a worker
+thread into an empty cache, then loaded from it; three runs, which agreed to within 1 %. The "longest
+frame" is the longest the main thread's frame took while it waited (headless, an idle frame is 7
+ms), and "take" what the main thread spends taking the finished stream.
+
+| Piece (loop) | From | Ready after | Longest frame | Take | File |
+|---|---|---|---|---|---|
+| Tide (32 s) | render | 1.29 s | 7.0 ms | 0.01 ms | 5.64 MB |
+| Tide | cache | 13.4 ms | 6.9 ms | 0.01 ms | |
+| Harbour evening (24 s) | render | 0.99 s | 7.0 ms | 0.01 ms | 4.23 MB |
+| Harbour evening | cache | 6.6 ms | 6.6 ms | 0.01 ms | |
+
+Reading a render back from the cache takes 5 to 15 ms on the worker, a hundredth of rendering it,
+and neither stalls a frame.
+
 ## Memory
 
 The stream is 16-bit PCM: **2.5 MB a minute** at 22.05 kHz mono, 5 MB at 44.1 kHz mono or 22.05
