@@ -62,6 +62,35 @@ def thunder_far(rng):
     return 0.45 * _thunder(rng, length=5.5, rumble_cutoff=120, attack=0.4, rate=0.8, crack=0)
 
 
+def thunder_far_roll(rng):
+    """Far off: only a low, soft rumble that rises slowly and rolls on for many seconds."""
+    return _thunder(rng, length=rng.uniform(7.5, 9.0), rumble_cutoff=rng.uniform(80, 100),
+                    attack=rng.uniform(0.8, 1.2), rate=rng.uniform(0.38, 0.5), crack=0)
+
+
+def thunder_mid_roll(rng):
+    """A middle distance: a rumble with body and a dull, low-passed thud at its start."""
+    length = rng.uniform(5.5, 6.5)
+    out = _thunder(rng, length, rumble_cutoff=rng.uniform(160, 190), attack=rng.uniform(0.2, 0.35),
+                   rate=rng.uniform(0.6, 0.8), crack=0)
+    thud = lowpass(noise(rng, length), 700) * envelope(length, 0.03, 7)
+    return normalized(out + 0.1 * rms(out) * thud / rms(thud))
+
+
+def thunder_close(rng):
+    """A close strike: a sharp crack at once (a snap, then the tearing of the bolt), and a
+    heavy rumble under and after it."""
+    length = rng.uniform(5.0, 5.8)
+    rumble = _thunder(rng, length, rumble_cutoff=rng.uniform(260, 320), attack=0.04,
+                      rate=rng.uniform(0.8, 0.95), crack=0)
+    snap = bandpass(noise(rng, length), 800, 7000) * envelope(length, 0.001, 70)
+    tear = bandpass(noise(rng, length), 250, 3500) * envelope(length, 0.004, 9)
+    tear *= 1 + 0.6 * np.sin(2 * np.pi * rng.uniform(25, 45) * times(length))
+    out = 0.9 * rumble / rms(rumble) * 0.25 + 1.2 * snap / rms(snap) * 0.05
+    out += 0.45 * tear / rms(tear) * 0.1
+    return normalized(fade_out(out, 0.5))
+
+
 def _thunder(rng, length, rumble_cutoff, attack, rate, crack):
     # The draft's brown noise was a leaky integrator, y = 0.995 * y + 0.05 * x: the same as
     # a one-pole low-pass at 35 Hz with a gain of 10.

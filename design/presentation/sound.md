@@ -40,7 +40,11 @@ Settings → Audio, saved with the others; 0 mutes it).
   a pile is only partly taken because the inventory is full.
 - **UI:** clicks for menus, the inventory and the hotbar.
 - **Weather (ambience):** rain and wind as loops that follow their strength and fade like
-  the weather visuals, wind gusts, and thunder after a flash, delayed as if far away.
+  the weather visuals, wind gusts, and thunder after a flash, delayed as if far away. Thunder comes in three
+  kinds by distance (task 214, `weather.py`): `thunder_far` (low, soft, long rumble, no crack,
+  -16 dBFS), `thunder_mid` (a roll with body, -9) and the rare `thunder_close` (a sharp crack
+  at once, then a heavy rumble, -2); the game lowers and dulls them further by distance. The
+  old `thunder` stays until the game code switches over.
 - **Fire:** `fire_crackle_loop` (task 172, `tools/audio/fire.py`), an 8-second circle of
   crackling only, no bed of noise under it (the user, 2026-11-11): fine flecks of the embers
   all through, ticks and snaps of all sizes over them (short, bright and dry, nothing low or

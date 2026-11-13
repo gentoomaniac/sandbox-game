@@ -78,6 +78,10 @@ EVENTS = {
     "wind_loop": (-12, [weather.wind_loop] * 2),
     "wind_gust": (-8, [weather.wind_gust] * 3),
     "thunder": (-3, [weather.thunder_near] * 2 + [weather.thunder_far] * 2),
+    # By distance (task 214): the game also lowers and dulls them the farther the strike was.
+    "thunder_far": (-16, [weather.thunder_far_roll] * 3),
+    "thunder_mid": (-9, [weather.thunder_mid_roll] * 3),
+    "thunder_close": (-2, [weather.thunder_close] * 3),
     # The main sound of a room with a fire: crackle only, the pops no louder than a log's.
     "fire_crackle_loop": (-8, [fire.fire_crackle_loop] * 2),
     # Heard across the marsh, so loud, and long: the low partials hum for ten seconds.
