@@ -160,6 +160,3 @@ Answered questions move into the [design](design/README.md) and are removed here
     - The stall is a placed hand cart with a till and prices per slot, sales rolled by the day
       whether or not the player is near. Default: yes.
     - Villagers have no purses; wages and rent are left out. Default: yes.
-
-28. **The classic 16 px rooster taller too?** (task 204) Today he is hen-sized in the classic art.
-    Default: leave him as he is.
