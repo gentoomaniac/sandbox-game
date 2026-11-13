@@ -134,6 +134,14 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   a voiced line keeps the count it was judged with (stories merging later change the count, not
   the line).
 
+- **As built (task 129, topics known):** `Npc.topics` (saved, version 38) lists the topics of
+  `data/village.cfg` a villager knows. A villager of `data/villagers.cfg` has them all (also when
+  an older save is loaded), a made-up one none. `VillageSheet.text(full, known_topics)` tells just
+  those, in the order of the file, and `NpcPrompt.system_text` leaves the village block out when
+  nothing is told (a villager who knows none, or whose known topics have no cut-down). A topic is
+  knowledge, not a story: it is not in the gossip buffer, is never judged and `/clear` leaves it.
+  The console's `gossip <villager>` lists them.
+
 - **The deed log is also the base of an end-of-day screen** (later: "Today: 7 trees felled, a
   Kate built, 12 beds sown").
 

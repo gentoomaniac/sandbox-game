@@ -658,7 +658,7 @@ func _deeds() -> Array[String]:
 
 
 ## The stories of a villager's gossip buffer and their long-term memories, oldest first, each with
-## its weight.
+## its weight, and the topics of the village they know.
 func _gossip(arguments: PackedStringArray) -> Array[String]:
 	if arguments.size() != 1:
 		return ["Usage: %s" % COMMANDS["gossip"][0]]
@@ -678,6 +678,23 @@ func _gossip(arguments: PackedStringArray) -> Array[String]:
 			]
 		)
 	]
+	(
+		lines
+		. append(
+			(
+				(
+					"Knows %d of %d topics of the village: %s"
+					% [
+						npc.topics.size(),
+						VillageSheet.default_sheet().topic_names().size(),
+						", ".join(npc.topics),
+					]
+				)
+				if not npc.topics.is_empty()
+				else "Knows no topic of the village"
+			)
+		)
+	)
 	for story in npc.stories:
 		var told := (
 			"seen" if story["how"] == GossipRules.SEEN else "heard from %s" % story["told_by"]

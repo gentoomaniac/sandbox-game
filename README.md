@@ -394,7 +394,9 @@ the mill, the dyke and its sluice, the Koog, the creeks and the Geest; who is wh
 Johann Martens, the Deichgraf Peter Momsen, the Deichvogt Brar Feddersen, the innkeeper, the
 Amtmann at Husum); prices in Schilling and Mark; this year's news (the cattle plague, the dyke
 broken last autumn); the church year; and what people of the time know of the world (the Danish
-king, the Duke of Gottorf, who speaks what).
+king, the Duke of Gottorf, who speaks what). The villagers written by hand know all of it; a made-up
+one (`spawn npc`) starts knowing none of it, only that they live in Wehlsbüll, and a model is told
+just the topics a villager knows. The console's `gossip <villager>` lists them.
 
 Each villager has a sheet: age, trade, personality, background, home, how they speak (a manner,
 so it holds in any language), lines in their voice, their family and friends with what they

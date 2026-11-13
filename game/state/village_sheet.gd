@@ -51,12 +51,21 @@ func is_valid() -> bool:
 	return problems().is_empty()
 
 
-## The sheet as it is told, a line for each topic with its title: "Places: The church stands on
-## the highest Warft ...". `full` for all of it, else the cut-down, without the topics that have
-## none.
-func text(full: bool) -> String:
+## The topics of the file, in the order they are told.
+func topic_names() -> Array[String]:
+	var names: Array[String] = []
+	names.assign(_topics.keys())
+	return names
+
+
+## The sheet as a villager who knows `known_topics` is told it, a line for each of those with its
+## title: "Places: The church stands on the highest Warft ...". `full` for all of it, else the
+## cut-down, without the topics that have none. "" if they know none.
+func text(full: bool, known_topics: Array[String]) -> String:
 	var lines: Array[String] = []
 	for topic: String in _topics:
+		if not known_topics.has(topic):
+			continue
 		var sentences: Array = _topics[topic]["full" if full else "short"]
 		if not sentences.is_empty():
 			lines.append("%s: %s" % [_topics[topic]["title"], " ".join(sentences)])

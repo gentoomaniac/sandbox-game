@@ -65,6 +65,10 @@ var uncompacted_lines: Array[Dictionary] = []
 ## How many of the oldest lines of `chat_history` are already in a memory (only a save of version
 ## 20 or older has such lines): they are forgotten, not summed up again, when they drop out.
 var remembered_lines := 0
+## The topics of the village (the sections of data/village.cfg) they know: knowledge, never
+## forgotten. A villager written by hand knows them all from the start; a made-up one starts with
+## none, only that they live in Wehlsbüll (see NpcPrompt `system_text`).
+var topics: Array[String] = []
 ## Their gossip buffer, oldest first: the stories they know, first in, first out (see
 ## `keep_stories`). A story is `{day, minute, kind, count, place}` (the fact: a deed of the
 ## player, merged like the entries of DeedLog) and what the villager knows of it: `how` (a
@@ -129,6 +133,7 @@ static func create_villager(villager_id: String, feet: Vector2, villagers: Villa
 		look.wear(StringName(slot), written["look"][slot])
 	var npc := Npc.new(written["name"], StringName(written["sex"]), look, feet)
 	npc.id = villager_id
+	npc.topics = VillageSheet.default_sheet().topic_names()
 	npc._set_sheet(written)
 	return npc
 
@@ -165,8 +170,8 @@ func drop_old_lines(keep: int) -> void:
 			uncompacted_lines.append(line)
 
 
-## Forgets everything but what they know (their sheet): the chat, the gossip buffer and the
-## memories.
+## Forgets everything but what they know (their sheet and the topics of the village): the chat, the
+## gossip buffer and the memories.
 func forget_all_but_knowledge() -> void:
 	stories.clear()
 	chat_history.clear()
@@ -266,6 +271,7 @@ func to_dict() -> Dictionary:
 		"opinion_day": opinion_day,
 		"opinion_moved_today": opinion_moved_today,
 		"stories": stories.map(_story_to_saved),
+		"topics": topics.duplicate(),
 	}
 
 
@@ -301,6 +307,7 @@ static func from_dict(data: Dictionary) -> Npc:
 		npc.uncompacted_lines.append(line)
 	for story: Dictionary in data["stories"]:
 		npc.stories.append(_story_from_saved(story))
+	npc.topics.assign(data["topics"])
 	npc.opinion = int(data["opinion"])
 	npc.opinion_day = int(data["opinion_day"])
 	npc.opinion_moved_today = int(data["opinion_moved_today"])

@@ -15,7 +15,26 @@ func before_each() -> void:
 
 func test_a_villager_with_nothing_kept_says_so() -> void:
 	assert_eq(
-		_console.run("gossip antje"), ["Antje Boysen keeps 0 of 10 stories and 0 of 20 memories"]
+		_console.run("gossip antje"),
+		[
+			"Antje Boysen keeps 0 of 10 stories and 0 of 20 memories",
+			"Knows 7 of 7 topics of the village: village, places, people, money, news, calendar, world",
+		]
+	)
+
+
+func test_it_lists_the_topics_of_the_village_a_villager_knows() -> void:
+	var other := Npc.create(42, Vector2.ZERO, _state.npcs.rules)
+	_state.npcs.add(other)
+	var first_name := other.name.get_slice(" ", 0).to_lower()
+
+	assert_eq(_console.run("gossip " + first_name)[1], "Knows no topic of the village")
+
+	other.topics.assign(["village", "places"])
+
+	assert_eq(
+		_console.run("gossip " + first_name)[1],
+		"Knows 2 of 7 topics of the village: village, places"
 	)
 
 
@@ -60,6 +79,7 @@ func test_it_lists_the_stories_and_memories_with_their_weights() -> void:
 		_console.run("gossip antje"),
 		[
 			"Antje Boysen keeps 2 of 10 stories and 1 of 20 memories",
+			"Knows 7 of 7 topics of the village: village, places, people, money, news, calendar, world",
 			"Story, high, seen: On day 4: you saw the newcomer fell 7 trees by Antje's house.",
 			(
 				"Story, low, heard from Moiken Jessen: On day 5: Moiken told you that the newcomer"

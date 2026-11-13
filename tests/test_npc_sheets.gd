@@ -9,7 +9,8 @@ var _antje := Npc.create_villager("antje", Vector2.ZERO, VillagerRules.default_r
 func test_the_system_line_has_the_village_sheet_and_the_villager_s() -> void:
 	var system := NpcPrompt.system_text(_antje, true, _rules)
 	assert_string_contains(system, "Never make up relatives, friends, names or places")
-	assert_string_contains(system, VillageSheet.default_sheet().text(true))
+	var sheet := VillageSheet.default_sheet()
+	assert_string_contains(system, sheet.text(true, sheet.topic_names()))
 	assert_string_contains(system, "The villager's sheet:\nAntje Boysen, a farmer's wife, 38 years")
 	assert_string_contains(system, "Home: The Boysen farm on its Warft")
 	assert_string_contains(system, "Family and friends: Hinrich Boysen, husband, 42: Steady")
@@ -29,7 +30,8 @@ func test_the_cut_down_sheets_keep_the_essentials_and_are_much_shorter() -> void
 	var full := NpcPrompt.system_text(_antje, true, _rules)
 	var cut_down := NpcPrompt.system_text(_antje, false, _rules)
 	assert_lt(cut_down.length() * 2, full.length())
-	assert_string_contains(cut_down, VillageSheet.default_sheet().text(false))
+	var sheet := VillageSheet.default_sheet()
+	assert_string_contains(cut_down, sheet.text(false, sheet.topic_names()))
 	assert_string_contains(
 		cut_down,
 		"Family and friends: Hinrich Boysen (husband), Boy Boysen (son), Gesche Hansen (friend)\n"
@@ -53,6 +55,34 @@ func test_a_made_up_villager_has_no_people_of_the_village() -> void:
 		)
 	)
 	assert_string_contains(system, npc.speech)
+
+
+func test_a_newcomer_is_told_no_village_until_they_have_learned_a_topic() -> void:
+	var npc := Npc.create(7, Vector2.ZERO, NpcRules.default_rules())
+
+	var knowing_nothing := NpcPrompt.system_text(npc, true, _rules)
+
+	assert_false(knowing_nothing.contains("What the villager knows of the village"))
+	assert_false(knowing_nothing.contains("Johann Martens"))
+	assert_string_contains(knowing_nothing, "villager of Wehlsbüll")
+	assert_eq(knowing_nothing.split("\n\n").size(), 2, "the rules and the sheet")
+
+	npc.topics.assign(["money"])
+	var knowing_money := NpcPrompt.system_text(npc, true, _rules)
+
+	assert_string_contains(
+		knowing_money, "What the villager knows of the village:\nMoney and prices"
+	)
+	assert_false(knowing_money.contains("Johann Martens"), "the people are not learned")
+
+
+func test_a_topic_without_a_cut_down_tells_a_small_model_nothing() -> void:
+	var npc := Npc.create(7, Vector2.ZERO, NpcRules.default_rules())
+	npc.topics.assign(["money"])
+
+	var system := NpcPrompt.system_text(npc, false, _rules)
+
+	assert_false(system.contains("What the villager knows of the village"))
 
 
 func test_people_no_longer_written_are_left_out() -> void:

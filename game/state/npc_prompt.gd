@@ -83,18 +83,17 @@ static func reply_messages(
 	return messages
 
 
-## The system line of a reply: the rules of the answer, the village's sheet and the villager's,
-## all of them if `full_sheets`, else cut down to what a small local model needs most.
+## The system line of a reply: the rules of the answer, the topics of the village's sheet that the
+## villager knows and the villager's own sheet, all of them if `full_sheets`, else cut down to what
+## a small local model needs most. A villager who knows no topic is told none of the village.
 static func system_text(npc: Npc, full_sheets: bool, rules: NpcTalkRules) -> String:
 	var words := _words_of(npc, rules)
-	words["village"] = VillageSheet.default_sheet().text(full_sheets)
-	return "\n\n".join(
-		[
-			rules.value("prompt", "system"),
-			_said(rules, "village", words),
-			sheet_text(npc, full_sheets, rules)
-		]
-	)
+	words["village"] = VillageSheet.default_sheet().text(full_sheets, npc.topics)
+	var parts: Array[String] = [rules.value("prompt", "system")]
+	if words["village"] != "":
+		parts.append(_said(rules, "village", words))
+	parts.append(sheet_text(npc, full_sheets, rules))
+	return "\n\n".join(parts)
 
 
 ## The villager's sheet: who they are, in full if `full_sheets`, else cut down.

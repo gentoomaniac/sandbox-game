@@ -23,7 +23,12 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   leaves the topic out of the cut-down). Made-up people there who are not villagers (Pastor
   Johann Martens, the Deichgraf Peter Momsen, the Deichvogt Brar Feddersen, the innkeeper Tete
   Jacobsen, the sexton Claus Thomsen) have names; the offices and the history are real (the
-  Danish king holds all Schleswig since 1721, the floods of 1634 and 1717).
+  Danish king holds all Schleswig since 1721, the floods of 1634 and 1717). **Who knows what
+  (task 129):** a villager knows the topics in `Npc.topics` (saved): those written by hand all of
+  them, a made-up one none at first, only the base line of the system line (Wehlsbüll, the North
+  Frisian coast, 1750). The prompt tells just the topics they know, full or cut down by provider as
+  before, and leaves the village out when there are none. A made-up villager learns topics from
+  others, see [gossip.md](gossip.md).
 - **Who they are:** every villager has a sheet, told to the language model: age, trade,
   personality, background (the essentials of family and story; the dead are told only here),
   home, speech (the manner of talking, written so that it holds in any language: no English words

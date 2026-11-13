@@ -21,10 +21,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 37
-## The oldest version we still upgrade. Nine steps back, for the next version (task 129) makes
-## its step the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 38
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -206,6 +205,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_35(game)
 	if version <= 36:
 		_upgrade_from_version_36(game)
+	if version <= 37:
+		_upgrade_from_version_37(game)
 
 
 ## Version 28 kept no items on the floors of interiors (task 200): nothing lies there.
@@ -382,3 +383,12 @@ static func _upgrade_from_version_36(game: Dictionary) -> void:
 		npc["opinion"] = 0
 		npc["opinion_day"] = 0
 		npc["opinion_moved_today"] = 0
+
+
+## Version 37 had no topics of the village (task 129): the villagers of data/villagers.cfg know
+## them all, as they did, and a made-up one starts with none.
+static func _upgrade_from_version_37(game: Dictionary) -> void:
+	# Written out, not read from data/village.cfg, so a later change leaves old saves alone.
+	var all_topics := ["village", "places", "people", "money", "news", "calendar", "world"]
+	for npc: Dictionary in game["npcs"]:
+		npc["topics"] = all_topics.duplicate() if npc["id"] != "" else []

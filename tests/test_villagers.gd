@@ -129,7 +129,9 @@ func test_a_made_up_spouse_has_the_villager_s_surname() -> void:
 
 
 func test_no_made_up_villager_has_a_surname_of_the_village_sheet() -> void:
-	var village := VillageSheet.default_sheet().text(true)
+	var village := VillageSheet.default_sheet().text(
+		true, VillageSheet.default_sheet().topic_names()
+	)
 	var file := ConfigFile.new()
 	file.load(NpcRules.DEFAULT_PATH)
 	for surname: String in file.get_value("everyone", "surnames"):

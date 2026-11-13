@@ -463,6 +463,7 @@ func _check_npc(npc: Variant, path: String) -> void:
 		_check_appearance(appearance, path + " appearance")
 	_check_deeds(npc, "stories", path, false)
 	_check_stories(npc, path)
+	_check_texts(npc, "topics", path)
 	for key in ["chat_history", "uncompacted_lines"]:
 		var lines: Variant = _field(npc, key, Kind.LIST, path)
 		if lines != null:
