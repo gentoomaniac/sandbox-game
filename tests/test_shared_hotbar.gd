@@ -100,3 +100,42 @@ func test_screens_open_when_their_hotbar_is_freed_first_close_without_it() -> vo
 	remove_child(_bag)
 	_bag.free()
 	assert_false(Modal.is_any_open())
+
+
+func test_the_first_screen_letting_go_leaves_the_hotbar_with_the_second() -> void:
+	var first := RefCounted.new()
+	var second := RefCounted.new()
+	_hotbar.acquire(first)
+	_hotbar.acquire(second)
+	_hotbar.release(first)
+	assert_true(_hotbar.is_borrowed_by(second))
+	assert_eq(_hotbar.layer, HotbarHud.CLICKABLE_LAYER)
+	assert_true(_hotbar._slot_views[2].is_clickable)
+	assert_eq(_hotbar._slot_views[2].container, _player.inventory, "the slots stay bound")
+	_hotbar.release(second)
+	assert_eq(_hotbar.layer, HotbarHud.IDLE_LAYER)
+
+
+func test_a_screen_letting_go_ends_a_drag_from_the_hotbar_even_if_another_keeps_it() -> void:
+	var first := RefCounted.new()
+	var second := RefCounted.new()
+	_hotbar.acquire(first)
+	_hotbar.acquire(second)
+	_hotbar._slot_views[2].modulate.a = SlotView.DRAGGED_ALPHA
+	_hotbar.release(second)
+	assert_eq(_hotbar._slot_views[2].modulate.a, 1.0)
+
+
+func test_screens_sharing_the_hotbar_answer_in_turn_and_the_last_to_let_go_gives_it_back() -> void:
+	var first := RefCounted.new()
+	var second := RefCounted.new()
+	_hotbar.acquire(first)
+	_hotbar.acquire(second)
+	assert_true(_hotbar.is_borrowed_by(second))
+	assert_false(_hotbar.is_borrowed_by(first))
+	_hotbar.release(second)
+	assert_true(_hotbar.is_borrowed_by(first), "the one before answers again")
+	assert_eq(_hotbar.layer, HotbarHud.CLICKABLE_LAYER)
+	_hotbar.release(first)
+	assert_false(_hotbar.is_borrowed_by(first))
+	assert_eq(_hotbar.layer, HotbarHud.IDLE_LAYER)

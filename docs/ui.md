@@ -114,6 +114,10 @@ extend `HotbarWindow`, which lends them the HUD's hotbar as their quick bar.
   hotbar owns its slot views: a screen takes the bar as its quick bar with `HotbarHud.acquire(self)`
   (slots clickable and bound to the inventory, the bar above the screen) and gives it back with
   `release(self)` in `_on_close`, which resets the slots too (a stack picked up is let go).
+  Windows open together (the bag and the character window) share the bar: it stays lit until the
+  last one releases it, and the one that acquired it last answers its clicks (`HotbarWindow`
+  checks `is_borrowed_by(self)`; the chest and station screens are never open beside another
+  and connect to the bar's signals directly).
   A window whose slots move stacks their own way sets `move_rule` on them (a callable asked whether
   a stack may be let go there and told to move it; a drag uses the rule of the slot it ends on,
   else of the one it came from) and `is_dimmed` for stacks that can't be used now: the process

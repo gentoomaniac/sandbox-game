@@ -8,8 +8,8 @@ extends CanvasLayer
 ## whole bar with `acquire` and gives it back with `release`. The bag button sits beside the bar,
 ## set a little apart from it: clicking it asks for the bag (`bag_requested`).
 
-## A slot was Shift+clicked, or right clicked, while the slots are clickable; one screen at a
-## time listens (while open).
+## A slot was Shift+clicked, or right clicked, while the slots are clickable; the screens that
+## have the bar all hear it, and the one that took it last answers (see `is_borrowed_by`).
 signal slot_quick_move_requested(slot: int)
 signal slot_secondary_pressed(slot: int)
 ## The bag button was clicked.
@@ -28,8 +28,8 @@ const THEME := preload("res://game/scenes/ui_theme.tres")
 const BAG_ICON := preload("res://assets/ui/bag_icon.png")
 
 var _inventory: Inventory
-## The screen that has the bar as its quick bar, if any.
-var _borrower: Object
+## The screens that have the bar as their quick bar, the one that took it last at the end.
+var _borrowers: Array[Object] = []
 var _slot_views: Array[SlotView] = []
 var _row := HBoxContainer.new()
 var _bag_button := Button.new()
@@ -87,27 +87,36 @@ func covers(point: Vector2) -> bool:
 
 ## Makes the bar the quick bar of `borrower` (a screen that moves items): its slots take clicks
 ## and are dragged from and onto, and it is lit above the screen. The borrower listens to the
-## signals of the bar while it has it. Asking again takes it over from the one that had it.
+## signals of the bar while it has it. Screens open together (the bag and the
+## character window) share the bar: the one that took it last answers the clicks, and the one
+## before it again when that closes. The chest and the stations are never open beside another
+## screen, so their screens answer the bar's signals without asking.
 func acquire(borrower: Object) -> void:
 	assert(_inventory != null, "the hotbar shows an inventory before a screen borrows it")
-	_borrower = borrower
-	layer = CLICKABLE_LAYER
-	for slot in Inventory.HOTBAR_SIZE:
-		_slot_views[slot].bind_to(_inventory, slot)
-		_slot_views[slot].is_clickable = true
+	_borrowers.erase(borrower)
+	_borrowers.append(borrower)
+	_bind_slots()
 
 
-## Gives the bar back to the game, whatever the borrower left on its slots (a stack picked up).
-## Does nothing for one that doesn't have it.
+## Whether `borrower` is the screen that answers the clicks on the bar.
+func is_borrowed_by(borrower: Object) -> bool:
+	return not _borrowers.is_empty() and _borrowers.back() == borrower
+
+
+## Gives the bar back to the game once the last borrower lets go, whatever it left on the slots
+## (a stack picked up). Does nothing for one that doesn't have it.
 func release(borrower: Object) -> void:
-	if borrower != _borrower:
+	if not _borrowers.has(borrower):
 		return
-	_borrower = null
+	_borrowers.erase(borrower)
+	for view in _slot_views:
+		view.stop_dragging()
+	if not _borrowers.is_empty():
+		return
 	layer = IDLE_LAYER
 	for view in _slot_views:
 		view.unbind()
 		view.is_clickable = false
-		view.stop_dragging()
 
 
 ## Dims the stack in a slot, or shows it plainly again (see SlotView `is_dimmed`). For the
@@ -121,10 +130,17 @@ func show_inventory(inventory: Inventory) -> void:
 	if _inventory != null:
 		_inventory.changed.disconnect(_refresh)
 	_inventory = inventory
-	if _borrower != null:
-		acquire(_borrower)
+	if not _borrowers.is_empty():
+		_bind_slots()
 	inventory.changed.connect(_refresh)
 	_refresh()
+
+
+func _bind_slots() -> void:
+	layer = CLICKABLE_LAYER
+	for slot in Inventory.HOTBAR_SIZE:
+		_slot_views[slot].bind_to(_inventory, slot)
+		_slot_views[slot].is_clickable = true
 
 
 func _refresh() -> void:

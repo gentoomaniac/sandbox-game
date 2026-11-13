@@ -24,12 +24,23 @@ func _use_hotbar(is_used: bool) -> void:
 	_is_using_hotbar = is_used
 	if is_used:
 		_hotbar.acquire(self)
-		_hotbar.slot_quick_move_requested.connect(_on_inventory_slot_quick_move_requested)
-		_hotbar.slot_secondary_pressed.connect(_on_inventory_slot_secondary_pressed)
+		_hotbar.slot_quick_move_requested.connect(_on_hotbar_slot_quick_move_requested)
+		_hotbar.slot_secondary_pressed.connect(_on_hotbar_slot_secondary_pressed)
 	else:
 		_hotbar.release(self)
-		_hotbar.slot_quick_move_requested.disconnect(_on_inventory_slot_quick_move_requested)
-		_hotbar.slot_secondary_pressed.disconnect(_on_inventory_slot_secondary_pressed)
+		_hotbar.slot_quick_move_requested.disconnect(_on_hotbar_slot_quick_move_requested)
+		_hotbar.slot_secondary_pressed.disconnect(_on_hotbar_slot_secondary_pressed)
+
+
+## Windows open together both hear the hotbar; only the one that took it last answers.
+func _on_hotbar_slot_quick_move_requested(slot: int) -> void:
+	if _hotbar.is_borrowed_by(self):
+		_on_inventory_slot_quick_move_requested(slot)
+
+
+func _on_hotbar_slot_secondary_pressed(slot: int) -> void:
+	if _hotbar.is_borrowed_by(self):
+		_on_inventory_slot_secondary_pressed(slot)
 
 
 func _on_inventory_slot_quick_move_requested(slot: int) -> void:
