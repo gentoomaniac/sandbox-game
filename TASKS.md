@@ -207,25 +207,6 @@ The user, 2026-11-11: "The chicken need a rooster that's occasionally shouting"
 - Tests: a flock has a rooster, it lays no eggs, it crows at dawn and not at night, save and load;
   a listening file and a picture of the rooster in both arts for the user; README, design pages.
 
-## 207. The tool grades as items, given with the console
-
-- [ ] Done
-
-After task 206's designs are approved: the five grades of each tool (rusty iron, iron, brittle
-steel, steel, sharp steel) as items in the game, named "Rusty iron hoe", "Iron hoe" and so on; the
-current tools become the rusty iron ones (renamed; old saves keep working). For now they come only
-through the console `give` (no recipes, no shops). How the grades differ in play (the tool `level`
-of item_types.gd, hit points per hit, durability if any) is to be proposed in the brief with the
-numbers in data/ (the user tunes them). Both arts from the approved generator code.
-- Build on the approved designs of task 206: branch `tools-206-designs` (generator code only:
-  tools/art/tool_grades.py, tool_icons.py, classic/tool_icons.py, character.py held tools,
-  docs/art-style.md); rebase or cherry-pick it, regenerate the art (`make art`) and commit the
-  generated files with it.
-- The Roman numeral (I rusty iron .. V sharp steel) is drawn by the inventory UI, not baked into
-  the art (the user, 2026-11-11): SlotView draws it bottom left of the slot (the count is bottom
-  right, the badge top left), crisp in both arts at every scale; remove the numeral from the
-  generated icons (the ground items stay clean).
-
 ## 208. Dig up bushes with the shovel and plant them elsewhere
 
 - [ ] Done
