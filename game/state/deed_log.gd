@@ -57,6 +57,12 @@ static func kind_of(outcome: ActionOutcome) -> StringName:
 	return &""
 
 
+## What names a story wherever it is told and however it has changed on the way: the day, kind and
+## place of the deed as it was first seen (`deed` is a fact before any whisper).
+static func origin_of(deed: Dictionary) -> String:
+	return "%d|%s|%s" % [deed["day"], deed["kind"], deed["place"]]
+
+
 ## Adds `deed` to `list` (of entries or stories), or to the one of the same day, kind and place:
 ## the counts add up, and the entry takes the minute of the later deed and, if the deed has
 ## `witnesses`, the names it did not have.
@@ -106,11 +112,12 @@ func record(outcome: ActionOutcome) -> void:
 			story
 			. merge(
 				{
+					"origin": origin_of(deed),
 					"how": GossipRules.SEEN,
 					"told_by": "",
 					"seen_by": npc.name,
 					"hops": 0,
-					"learned": _clock.day,
+					"learned_at": _clock.total_minutes(),
 					"line": "",
 					"weight": MemoryWeight.HIGH if is_personal else MemoryWeight.MEDIUM,
 					"personal": is_personal,

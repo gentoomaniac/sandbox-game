@@ -60,8 +60,54 @@ func test_a_version_34_save_loads_its_stories_as_seen_and_medium() -> void:
 
 	assert_eq(story["how"], GossipRules.SEEN)
 	assert_eq(story["seen_by"], saved["name"])
-	assert_eq([story["hops"], story["learned"], story["personal"]], [0, 4, false])
+	assert_eq([story["hops"], story["learned_at"], story["personal"]], [0, 3 * 1440 + 600, false])
+	assert_eq(story["origin"], "4|felled|out on the geest")
 	assert_eq(story["weight"], MemoryWeight.MEDIUM)
+
+
+func test_a_version_35_save_loads_its_stories_with_an_origin_and_the_minute_learned() -> void:
+	var game := _current_game()
+	var saved: Dictionary = JSON.parse_string(
+		JSON.stringify(Npc.create(42, Vector2.ZERO, NpcRules.default_rules()).to_dict())
+	)
+	saved["stories"] = [
+		{
+			"day": 4,
+			"minute": 600,
+			"kind": "felled",
+			"count": 3,
+			"place": "by Antje's house",
+			"how": "heard",
+			"told_by": "Moiken Ketels",
+			"seen_by": "Antje Boysen",
+			"hops": 1,
+			"learned": 6,
+			"line": "",
+			"weight": "low",
+			"personal": false,
+		}
+	]
+	game["npcs"] = [saved]
+	_write_save(35, game)
+
+	var story := SaveFile.read(SAVE_PATH).npcs.all()[0].stories[0]
+
+	assert_eq(story["origin"], "4|felled|by Antje's house")
+	assert_eq(story["learned_at"], 5 * GameClock.MINUTES_PER_DAY + 600)
+	assert_false(story.has("learned"))
+
+
+func test_a_story_without_an_origin_or_a_minute_learned_is_refused() -> void:
+	var game: Dictionary = JSON.parse_string(
+		JSON.stringify(_state_with_a_deed_seen_by_antje().to_dict())
+	)
+	game["npcs"][0]["stories"][0].erase("origin")
+	game["npcs"][0]["stories"][0]["learned_at"] = "yesterday"
+
+	var problems: Array = _refusal_of(game).problems
+
+	assert_true(problems.has("npcs 0 stories 0: no origin"), str(problems))
+	assert_eq(problems.size(), 2, str(problems))
 
 
 func test_a_deed_of_an_unknown_kind_or_without_a_place_is_refused() -> void:

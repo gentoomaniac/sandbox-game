@@ -501,9 +501,9 @@ func _check_stories(npc: Dictionary, path: String) -> void:
 		var story: Variant = stories[index]
 		if not story is Dictionary:
 			continue
-		for whole in ["hops", "learned"]:
+		for whole in ["hops", "learned_at"]:
 			_field(story, whole, Kind.WHOLE, story_path)
-		for text in ["told_by", "seen_by", "line"]:
+		for text in ["origin", "told_by", "seen_by", "line"]:
 			_field(story, text, Kind.TEXT, story_path)
 		_field(story, "personal", Kind.BOOL, story_path)
 		var how: Variant = _field(story, "how", Kind.TEXT, story_path)

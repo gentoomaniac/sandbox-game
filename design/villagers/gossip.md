@@ -68,7 +68,9 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   tells all of them as the template line, each by `[story]` of the data file (Today / Yesterday /
   N days ago), after the long-term memories. The console's `deeds` lists the log.
 - **As built (task 126):** a story is flat: the fact (`day`, `minute`, `kind`, `count`, `place`)
-  and `how` (seen or heard), `told_by`, `seen_by`, `hops`, `learned` (the day), `line` (the voiced
+  and `origin` (the deed's day, kind and place as first seen: it names the story however it
+  changes on the way, and a villager knows one version of it), `how` (seen or heard), `told_by`,
+  `seen_by`, `hops`, `learned_at` (the game minute, task 127), `line` (the voiced
   line, "" until the model has worded it), `weight` and `personal`. A deed seen is `seen`, hops 0,
   weight high if the deed was by the witness's own house or that of someone on their sheet
   (`people`), else medium, and `personal` follows the high. Weights are `MemoryWeight` (saved as

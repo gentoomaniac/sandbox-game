@@ -68,10 +68,11 @@ var remembered_lines := 0
 ## Their gossip buffer, oldest first: the stories they know, first in, first out (see
 ## `keep_stories`). A story is `{day, minute, kind, count, place}` (the fact: a deed of the
 ## player, merged like the entries of DeedLog) and what the villager knows of it: `how` (a
-## GossipRules SEEN or HEARD), `told_by` (a name, or "" if seen), `seen_by` (who saw it first),
-## `hops` from that one, `learned` (the day they came to know it), `line` (the model's wording,
-## "" until it is back: the template line is told then), `weight` (a MemoryWeight) and
-## `personal` (whether it touches them).
+## GossipRules SEEN or HEARD), `origin` (DeedLog `origin_of` the fact as first seen: a villager
+## knows one version of a story), `told_by` (a name, or "" if seen), `seen_by` (who saw it first),
+## `hops` from that one, `learned_at` (the game minute they came to know it, see GameClock
+## `total_minutes`), `line` (the model's wording, "" until it is back: the template line is told
+## then), `weight` (a MemoryWeight) and `personal` (whether it touches them).
 var stories: Array[Dictionary] = []
 ## Whether NpcDialogue is summing up `uncompacted_lines`. Not saved.
 var is_compacting := false
@@ -285,7 +286,7 @@ static func _story_from_saved(saved: Dictionary) -> Dictionary:
 	var story := DeedLog.from_saved(saved)
 	story["how"] = StringName(saved["how"])
 	story["hops"] = int(saved["hops"])
-	story["learned"] = int(saved["learned"])
+	story["learned_at"] = int(saved["learned_at"])
 	story["weight"] = MemoryWeight.from_word(saved["weight"])
 	return story
 
