@@ -52,6 +52,66 @@ Rewritten with the user, 2026-11-13, from task 169's report (docs/music-viabilit
 - Tests: the cache (hit, miss, stale, bound), never waiting for a render, the switch on the beat;
   README.
 
+## 225. Crows
+
+- [ ] Done
+
+The user, 2026-11-13: wild crows (carrion or hooded crows, rooks) as wildlife:
+they walk and hop on fields and meadows, fly off when the player comes near, caw now and
+then (art in both sets, generated sounds). They may eat crops: sown seed and ripening crops on
+unguarded fields lose some yield or a plant now and then (numbers in data/).
+- Tests: the crows' flight from the player, the crop losses (numbers in data/), saving if they
+  are saved; art crops in both sets and sound files for the user.
+
+## 226. Scarecrow
+
+- [ ] Done
+
+After 225. The user, 2026-11-13, with the crows: a craftable scarecrow (sticks, straw or
+reed, old clothes) placed on a field keeps the crows away from the crops within a radius
+(data/). Art in both sets, maybe swaying in the wind; the crows learn to ignore it a little over
+time, or not: to be decided.
+- Default for the open point: the crows learn to ignore it slowly (a scarecrow keeps them off
+  fully for a few days, then less, up to a floor; moving it resets that), numbers in data/.
+- Tests: the radius, the learning, crafting and placing; art crops in both sets.
+
+## 227. Swing poses for the tools
+
+- [ ] Done
+
+The held art is done (task 119); the use (swing) poses are not.
+- The player's arm and the held tool swing when the axe, pickaxe, scythe and shovel are used
+  (a few frames in the four directions), in both arts, timed with the use; the hammer and hoe
+  too if they lack one. Art crops (1x/4x) for the user's verdict before the code uses them.
+
+## 228. A home for each villager, and a way to give one a house
+
+- [ ] Done
+
+The user, 2026-11-13: "A way to assign a house to villagers". Today a villager only keeps near
+an anchor (the yard of the nearest building or fireplace, design/villagers/villagers.md); there
+is no home.
+- A villager gets a home: a building (saved), not just a spot. Villagers of data/villagers.cfg
+  get the house their sheet names where one stands, a married couple shares one; made-up ones
+  get none until given one. The anchor becomes the yard in front of the home's door.
+- The player gives a free house to a villager who has none (or moves one to another house),
+  in the game: by default with the hammer's menu on a house ("Give to ...", a list of the
+  villagers near) and in the console `home <villager> [here|none]`. A house holds a household
+  (the couple and their children), at most as many as its beds or a number in data/.
+- Gossip: the place words ("by Antje's house") use the home.
+- Save version bump; tests: assigning, moving, freeing when a building is taken down, saving.
+
+## 229. Villagers go inside
+
+- [ ] Done
+
+After 228. The user, 2026-11-11: villagers enter their houses (and the church,
+workplaces) through the door instead of waiting in front of it, and are seen in the interior.
+- They go in at night and now and then by day (numbers in data/), through the door of their
+  home (and later the church and workplaces), are seen in the interior when the player is there,
+  and come out in the morning; the skip rule puts them inside or out as the hour has it.
+- Tests: going in and out, the interior shows them, saving where they are.
+
 ## 171. Music: what plays when, with loops, transitions and crossfades
 
 - [ ] Done
@@ -102,21 +162,8 @@ After task 171 (the user, 2026-11-13: its own task after 171).
 
 ## Later (not part of the prototype)
 
-- **Crows** (the user, 2026-11-13): wild crows (carrion or hooded crows, rooks) as wildlife:
-  they walk and hop on fields and meadows, fly off when the player comes near, caw now and
-  then (art in both sets, generated sounds). They may eat crops: sown seed and ripening crops on
-  unguarded fields lose some yield or a plant now and then (numbers in data/).
-
-- **Scarecrow** (the user, 2026-11-13, with the crows): a craftable scarecrow (sticks, straw or
-  reed, old clothes) placed on a field keeps the crows away from the crops within a radius
-  (data/). Art in both sets, maybe swaying in the wind; the crows learn to ignore it a little over
-  time, or not: to be decided.
-
 - Ice on rivers and ponds in winter (an overlay on water when it is cold enough; frozen water
   can be walked on, see `Tile.frozen`). Split off task 185 by the user, 2026-11-11.
-
-- **Villagers go inside** (the user, 2026-11-11): villagers enter their houses (and the church,
-  workplaces) through the door instead of waiting in front of it, and are seen in the interior.
 
 - **Taming wild animals** (the user, 2026-11-11): wild animals already carry a friendship value
   (task 173); a later feature could let the player tame them. Design notes (second opinion,
@@ -190,7 +237,6 @@ After task 171 (the user, 2026-11-13: its own task after 171).
 - Ground items (task 33 review): a pile that falls back onto a non-walkable source may be out of
   reach (`_scatter_tiles` returns the source). A pulled pile moves straight through walls and
   water (the pull reaches 1.25 tiles since 2026-11-05).
-- Use (swing) poses for the axe, pickaxe, scythe and shovel; the held art is done (task 119).
 - The shovel could later dig up a young sapling to move it.
 
 - Floodplain farming: floodplain is the most fertile farmland, but only grass can be tilled
