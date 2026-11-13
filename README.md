@@ -398,6 +398,10 @@ king, the Duke of Gottorf, who speaks what). The villagers written by hand know 
 one (`spawn npc`) starts knowing none of it, only that they live in Wehlsbüll, and a model is told
 just the topics a villager knows. When two villagers meet, one who knows a topic teaches the other the next they lack, so newcomers learn the village from the locals and from each other, one topic at a meeting (`chance_topic` in [data/gossip.cfg](data/gossip.cfg)). The console's `gossip <villager>` lists them.
 
+**Bubbles.** About once a minute a villager in view says a short line in a bubble over their head for five seconds, never more than one on screen: about the weather or the time of day, or, when they are near you, about you, by what they think of you and the stories they know. With a language model the line is asked of it quietly in the background (with the chat's temperature) and dropped if the villager has left the view by then or the model gives nothing usable; without one it is a scripted line of `[bubble_lines]` in [data/npc_talk.cfg](data/npc_talk.cfg), by weather, part of the day or opinion. The numbers (`[bubble]` there) are the interval, how long a bubble stays, the longest line and how near is "near". The bubble is HUD text in the pixel font, cream with ink, at any zoom; nothing of it is saved or remembered. `--bubbles` (see `make screenshot ARGS=...`) lets a bubble follow the last at once.
+
+![A lone villager in the rain with a speech bubble and its tail over her head, in the 32 px and the classic art](docs/screenshots/villager-bubbles.png)
+
 Each villager has a sheet: age, trade, personality, background, home, how they speak (a manner,
 so it holds in any language), lines in their voice, their family and friends with what they
 think of each, likes, wants, their day, what they don't know or won't talk about, and a secret or

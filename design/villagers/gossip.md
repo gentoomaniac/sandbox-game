@@ -280,6 +280,16 @@ Short lines over a villager's head, now and then:
   "Antje's remark:". Its temperature is the chat's (the Settings number, else `temperature` of
   `[request]`: `NpcDialogue.request_at_chat_temperature`), at most 40 tokens. The answer is cut to
   its first sentence without quotes or label; one over `max_length` is dropped.
+- **As built (task 130, the bubble):** `NpcSpeech` (a node of Main) runs the wait while no bubble
+  shows or is asked for, picks the speaker and asks as `StoryJudging` does (quietly, so a failing
+  model does not show a notice); no model usable means no bubble this time and the wait starts
+  over, a scripted line only when no model is set. A line that comes after the villager left the
+  view (the camera's `view_rect`), began to talk with the player or went indoors with the player
+  is dropped; a bubble ends when the villager leaves the view too. Indoors (the world stands
+  still) none is shown. `SpeechBubble` draws it: UI in the pixel font, plate cream and text and
+  outline ink (the palette's, `UiColors`), a tail pointing at the head, text wrapped at 110 UI
+  pixels, with the pop and the fade of `ThoughtBubble`; it covers the name tag for its five seconds.
+  `--bubbles` makes a bubble follow the last at once, for screenshots.
 
 ## Settings
 

@@ -11,6 +11,7 @@ func test_no_flags_leave_the_defaults() -> void:
 	assert_eq(options.menu, -1)
 	assert_eq(options.screenshot, "")
 	assert_false(options.inventory)
+	assert_false(options.bubbles)
 
 
 func test_flags_with_a_value() -> void:
@@ -78,9 +79,12 @@ func test_the_working_window_title_is_a_flag_and_off_by_default() -> void:
 
 func test_flags_without_a_value() -> void:
 	var options := StartupOptions.new(
-		PackedStringArray(["--new-game", "--inventory", "--storage", "--inside", "--sleep"])
+		PackedStringArray(
+			["--new-game", "--inventory", "--storage", "--inside", "--sleep", "--bubbles"]
+		)
 	)
 	assert_true(options.new_game)
+	assert_true(options.bubbles)
 	assert_true(options.inventory)
 	assert_true(options.storage)
 	assert_true(options.inside)

@@ -264,6 +264,10 @@ func _connect_state_and_views() -> void:
 	_apply_villager_memory_settings()
 	_menu.closed.connect(_apply_villager_memory_settings)
 	add_child(StoryJudging.new(_chat_screen.dialogue, _state))
+	var speech := NpcSpeech.new()
+	add_child(speech)
+	speech.is_nonstop = _options.bubbles
+	speech.show_for(_state, _chat_screen.dialogue, _camera.view_rect, _camera.world_to_ui)
 	_builder = Builder.new(_state)
 	_build_mode.world = _state.world
 	_build_mode.builder = _builder

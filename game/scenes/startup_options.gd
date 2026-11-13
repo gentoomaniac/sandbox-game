@@ -162,6 +162,8 @@ extends RefCounted
 ##                            creeps up for a few seconds and pounces (use --screenshot-delay)
 ##   --npcs=<count>           put that many villagers near the player, the same ones every time
 ##   --villager=<id>          put the villager of data/villagers.cfg with that id near the player
+##   --bubbles                a villager in view says a line in a bubble all the time, one after
+##                            the other, instead of once a minute (see NpcSpeech)
 ##   --switch-art             with --screenshot: press the key that switches the art (F7) when
 ##                            the shot would be taken, and take it a few frames later, to see
 ##                            the switch in a running game. The switch is saved in the
@@ -282,6 +284,7 @@ var livestock := PackedStringArray()
 var hunt := false
 var npcs := 0
 var villager := ""
+var bubbles := false
 var switch_art := false
 
 
@@ -482,6 +485,8 @@ func _init(args := PackedStringArray()) -> void:
 				npcs = _value(arg).to_int()
 			"--villager":
 				villager = _value(arg)
+			"--bubbles":
+				bubbles = true
 			_:
 				if arg.begins_with("--"):
 					push_warning("Unknown flag '%s' (see StartupOptions)" % arg)

@@ -90,6 +90,9 @@
   is told by its template line, or, once the judge has had the model put it in the villager's own
   words (task 128, in the background, one request at a time, its own temperature 0.2; see
   [gossip.md](gossip.md), The judge), by that line.
+  The same sheets, opinion and stories feed the bubbles over villagers' heads (task 130, a request
+  of its own, asked quietly in the background at the chat's temperature; see
+  [gossip.md](gossip.md), Bubbles); what a bubble says is not added to the chat or remembered.
   Typing `/clear` in the chat forgets everything but the villager's knowledge: the chat, the
   stories, the memories and the lines waiting for a memory, with a line saying so (not sent, not kept); other text with a "/" is said as it is.
 - **Settings:** the endpoint (default the test LLM's), the model (default

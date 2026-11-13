@@ -61,6 +61,11 @@ func visible_region() -> Rect2:
 	)
 
 
+## The part of the world the camera shows, in art pixels of the world.
+func view_rect() -> Rect2:
+	return rig.view_rect(_window_size())
+
+
 ## The art-pixel position of the world under the mouse.
 func mouse_world_position() -> Vector2:
 	# The mouse is in UI units, which depend on the window's size and the UI scale.
