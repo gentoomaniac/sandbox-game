@@ -3,7 +3,8 @@ extends Animal
 ## Birds crossing the view high up in a V: a flock of three to six sparrows (kind FLOCK), or a
 ## skein of greylag geese with slow wingbeats (kind FLYING_GEESE). Their small shadows cross the
 ## ground below, which is how it reads at a glance: the shadows are drawn on a layer of the
-## ground (see GroundShadows), the birds above everything.
+## ground (see GroundShadows), the birds above everything. The birds are seen side on, or from
+## the front or behind while the flock flies mostly down or up the screen (`view_of`).
 
 ## Per kind: the sheet its birds show, how many there are, their speed and height in pixels,
 ## their wingbeat in frames per second (`ping_pong`: the wings go up, level, down and back), how
@@ -33,7 +34,15 @@ const BIRDS := {
 		"shadow": 8,
 	},
 }
-const ANIMATION := &"fly"
+## The animations of the three views of a bird in flight: side on (flipped when it flies left),
+## from the front while it flies down the screen and from behind while it flies up it.
+const SIDE_VIEW := &"fly"
+const FRONT_VIEW := &"fly_down"
+const BACK_VIEW := &"fly_up"
+## A flock whose heading is less than this many degrees from the screen's vertical is seen from
+## the front or from behind, one further from it side on. Migrating flocks stray at most
+## `migration_spread_degrees` (data/wildlife.cfg) from it, so they are always seen head on.
+const HEAD_ON_DEGREES := 45.0
 ## Gone once this far outside the view, having been inside it, and beyond its height and the
 ## length of its V, so that no bird of it is still seen.
 const LEAVE_MARGIN := 48.0
@@ -68,6 +77,16 @@ static func v_offsets(heading: Vector2, count: int, spacing: Vector2) -> PackedV
 	return offsets
 
 
+## The view of the birds of a flock flying along `heading`: SIDE_VIEW, FRONT_VIEW or BACK_VIEW.
+static func view_of(heading: Vector2) -> StringName:
+	var from_vertical := rad_to_deg(absf(heading.angle_to(Vector2.DOWN)))
+	if from_vertical < HEAD_ON_DEGREES:
+		return FRONT_VIEW
+	if from_vertical > 180.0 - HEAD_ON_DEGREES:
+		return BACK_VIEW
+	return SIDE_VIEW
+
+
 ## How many birds a flock of a kind has, drawn with `rng`.
 static func bird_count(flock_kind: StringName, rng: RandomNumberGenerator) -> int:
 	var count: Vector2i = BIRDS[flock_kind]["count"]
@@ -89,15 +108,16 @@ func _ready() -> void:
 	z_index = 1
 	_shadows = GroundShadows.new(_offsets.size(), _birds_of_kind["shadow"])
 	wildlife.ground.add_child(_shadows)
-	var columns := WildlifeSprites.frame_count(_sheet_kind, ANIMATION)
+	var view := view_of(_heading)
+	var columns := WildlifeSprites.frame_count(_sheet_kind, view)
 	for column in columns:
-		_wingbeat.append(WildlifeSprites.frame_index(_sheet_kind, ANIMATION, column))
+		_wingbeat.append(WildlifeSprites.frame_index(_sheet_kind, view, column))
 	if _birds_of_kind["ping_pong"]:
 		for column in range(columns - 2, 0, -1):
 			_wingbeat.append(_wingbeat[column])
 	for i in _offsets.size():
 		var bird := WildlifeSprites.make_sprite(_sheet_kind)
-		bird.flip_h = _heading.x < 0.0
+		bird.flip_h = view == SIDE_VIEW and _heading.x < 0.0
 		add_child(bird)
 		_birds.append(bird)
 

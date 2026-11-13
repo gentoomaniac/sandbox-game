@@ -12,7 +12,10 @@ atmosphere only: no player impact, not hunted, not saved.
     (the factor is the mean of the two seasons at the boundary), so they thin out and return
     rather than stop and start. The greylag geese and the dunlin keep their own seasons and
     rules. A skein of flying geese migrates the same way, south in autumn and north in spring,
-    and flies any way in winter, when they stay on the coast;
+    and flies any way in winter, when they stay on the coast. A flock flying within 45 degrees of
+    the screen's vertical shows its birds from the front (heading down) or from behind (heading
+    up), further from it side on (task 220, `Flock.HEAD_ON_DEGREES`), so migrating ones are
+    always seen head on;
   - rabbits: grassland and forest edges, hop about, flee in zigzags from the player;
   - squirrels: forests, dart between trees, sit up, scurry off;
   - deer: rare, in forests and at forest edges, mostly at dawn and dusk; graze, look up,
