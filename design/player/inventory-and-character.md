@@ -43,9 +43,9 @@
     [first buildings](../building/first-buildings.md)). Such piles
     are not pulled back until the player has walked out of reach of them; then they are
     collected as usual.
-  - **Trash can** (task 133): a slot with a bin icon in the inventory column of the character
-    screen and under the backpack on the chest's screen. Letting go of a dragged stack on it (from
-    the backpack, the hotbar, an equipment slot or the chest) asks "Destroy Logs (12)?" (just
+  - **Trash can** (task 133): a slot with a bin icon under the backpack in the bag and on the
+    chest's screen (the character window has none: a worn item is taken off into the backpack
+    first). Letting go of a dragged stack on it (from the backpack, the hotbar or the chest) asks "Destroy Logs (12)?" (just
     "Destroy Waistcoat?" for one) in a small panel over the screen, with Destroy and Keep (Keep
     has the focus). Destroy removes the stack for good, with no drop on the ground; Keep, Escape
     (which then does not close the screen) or any other click or wheel turn leaves the stack

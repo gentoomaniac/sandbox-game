@@ -4,8 +4,7 @@ extends HotbarWindow
 ## around it. The items are the bag's (see BagScreen). The hotbar is the HUD's, which stays lit and
 ## clickable while the window is open on the character: a stack dragged from it onto an equipment
 ## slot is worn, a worn item dragged onto it is taken off, and right click wears or takes off.
-## An equipment slot only takes an item that fits (those light up while one is dragged). A worn
-## item let go on the trash can is asked about, as in the bag (see TrashCan).
+## An equipment slot only takes an item that fits (those light up while one is dragged).
 ## Below them the attributes and what they give (see AttributesPanel).
 ## A second tab beside it shows the skills (see SkillsPanel); C opens the window on the character,
 ## K on the skills (`open_tab`, `toggle_tab`; `open()` opens the character).
@@ -29,7 +28,6 @@ var _preview := CharacterPreview.new()
 var _left_column := VBoxContainer.new()
 var _right_column := VBoxContainer.new()
 var _note_label := Label.new()
-var _trash_can := TrashCan.new()
 var _tab := Tab.CHARACTER
 ## The page of each tab, and the button that shows it.
 var _pages := {}
@@ -55,7 +53,6 @@ func _init(hotbar: HotbarHud) -> void:
 	character_page.add_child(character_row)
 	character_page.add_child(_attributes_panel)
 	character_page.add_child(_note_label)
-	character_page.add_child(_trash_can)
 
 	_pages = {Tab.CHARACTER: character_page, Tab.SKILLS: _skills_panel}
 	var tabs := HBoxContainer.new()
@@ -117,7 +114,6 @@ func current_tab() -> Tab:
 
 func _show_tab(tab: Tab) -> void:
 	_tab = tab
-	_trash_can.keep()
 	for each: Tab in _pages:
 		_pages[each].visible = each == tab
 		_tab_buttons[each].set_pressed_no_signal(each == tab)
@@ -135,13 +131,7 @@ func _on_open() -> void:
 func _on_close() -> void:
 	_tab = Tab.CHARACTER
 	_use_hotbar(false)
-	_trash_can.keep()
 	_refresh()
-
-
-## Escape answers the trash can's question with Keep, and only then closes the window.
-func _takes_escape() -> bool:
-	return _trash_can.keep()
 
 
 func _process(_delta: float) -> void:

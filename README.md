@@ -588,10 +588,10 @@ outside the window, do what Escape does.
 ![Piles of logs, stone, a turnip, hay and clay on the brick floor of the Kate](docs/screenshots/floor-items.png)
 
 To get rid of a stack for good, drag it onto the
-trash can (the bin slot under the backpack, in the character window under the figure and on the chest's screen): the game asks "Destroy
+trash can (the bin slot under the backpack and on the chest's screen): the game asks "Destroy
 Logs (12)?" and Destroy removes the stack; Keep, Escape or a click elsewhere leaves it where it was,
-and Escape does not close the screen while the question is up. A worn item or a hotbar stack
-can be thrown away the same way.
+and Escape does not close the screen while the question is up. A hotbar stack can be thrown away the
+same way; a worn item is taken off into the backpack first.
 Windows (crafting, chest, bag, character, chat) can be dragged aside by their frame, to see the
 game behind them (buttons, slots and the rows of a list are not handles; the empty area of a list
 and the gaps between rows are). They stay on the screen and open in the middle again each time.
@@ -776,7 +776,7 @@ These are the default keys; all of them can be changed under Settings → Contro
 | WASD or arrow keys | Walk (with the hammer building, only WASD: the arrows pick in the build menu until Escape) |
 | Space or left click | Use the held item on the targeted tile |
 | 1–8 | Pick a hotbar slot; the hammer's slot starts build mode, and a hotbar key or the mouse wheel takes build mode up again after Escape or a right click |
-| Left mouse button, dragged | In the bag, character and chest windows: move a stack onto a slot, the trash can, or (let go outside the screen) the ground |
+| Left mouse button, dragged | In the bag, character and chest windows: move a stack onto a slot, the trash can (not in the character window), or (let go outside the screen) the ground |
 | Shift + left click, right click | In the bag, character and chest windows: send a stack to the other side; in the bag and character window right click wears or takes off an item |
 | T | Drop the held stack on the ground in front of you (picked up again by walking away and back) |
 | B, or click the bag icon beside the hotbar | The bag: the backpack (opens a bit right of the middle; the same key closes it) |
