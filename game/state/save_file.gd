@@ -2,7 +2,7 @@ class_name SaveFile
 extends RefCounted
 ## The save on disk: one JSON file per world, `{"version": VERSION, "game": <GameState.to_dict>}`.
 ## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step
-## (see `_upgrade_from_version_22` and so on). Older ones are refused.
+## (see `_upgrade_from_version_23` and so on). Older ones are refused.
 ##
 ## How to add a save field (or change one):
 ## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
@@ -22,8 +22,9 @@ extends RefCounted
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
 const VERSION := 32
-## The oldest version we still upgrade.
-const OLDEST_VERSION := VERSION - 10
+## The oldest version we still upgrade. Nine steps back, for the next version (task 207) makes
+## its step the tenth.
+const OLDEST_VERSION := VERSION - 9
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -187,8 +188,6 @@ static func copy_aside(path: String, backup: String) -> String:
 
 ## Brings the data of a save of `version` up to the current one.
 static func _upgrade(game: Dictionary, version: int) -> void:
-	if version <= 22:
-		_upgrade_from_version_22(game)
 	if version <= 23:
 		_upgrade_from_version_23(game)
 	if version <= 24:
@@ -207,28 +206,6 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_30(game)
 	if version <= 31:
 		_upgrade_from_version_31(game)
-
-
-## Version 22 kept a shorter sheet of who a villager is (task 96 made it longer). One written by
-## hand needs nothing: a loaded villager of data/villagers.cfg takes their sheet from it (see Npc
-## `from_dict`). A made-up one is made up anew from the tables of data/npcs.cfg, the same for the
-## same name, as the old tables gave them English words to say ("Aye") and trades they no longer
-## have; one with the surname of a family of the village sheet (Boysen, Hansen, ...) gets another,
-## so that they are not taken for kin of that family.
-static func _upgrade_from_version_22(game: Dictionary) -> void:
-	var villagers := VillagerRules.default_rules()
-	var rules := NpcRules.default_rules()
-	var village := VillageSheet.default_sheet().text(true)
-	for npc: Dictionary in game["npcs"]:
-		if villagers.has(npc["id"]):
-			continue
-		var rng := RandomNumberGenerator.new()
-		rng.seed = hash(npc["name"])
-		var surname: String = npc["name"].get_slice(" ", 1)
-		if village.contains(surname):
-			surname = rules.pick_surname(rng)
-			npc["name"] = "%s %s" % [npc["name"].get_slice(" ", 0), surname]
-		npc.merge(rules.pick_sheet(StringName(npc["sex"]), surname, rng), true)
 
 
 ## Version 23 had no styles of buildings (task 120): every building has its own look.

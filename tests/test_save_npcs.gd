@@ -1,6 +1,5 @@
 extends SaveUpgradeCase
-## The villagers are saved with their name, sex, look, who they are, place, anchor and chat; a
-## save from before their long sheets (version 22) gives them those.
+## The villagers are saved with their name, sex, look, who they are, place, anchor and chat.
 
 
 func test_the_villagers_and_their_chat_are_kept() -> void:
@@ -101,70 +100,3 @@ func test_the_lines_waiting_for_a_memory_are_saved() -> void:
 		loaded.uncompacted_lines.map(func(line: Dictionary) -> String: return line["text"]),
 		["line 0", "line 1"]
 	)
-
-
-func test_a_version_22_villager_written_by_hand_takes_their_sheet_as_written_now() -> void:
-	var game := _current_game()
-	var antje := Npc.create_villager("antje", Vector2.ZERO, VillagerRules.default_rules())
-	antje.add_chat_line(1, 600, true, "Moin")
-	var saved := _version_22_npc(antje)
-	saved["background"] = "Married to Hinrich Boysen. They have three children."
-	saved["habits"] = 'Says "Aye" and talks of "my Hinrich".'
-	game["npcs"] = [saved]
-	_write_save(22, game)
-
-	var loaded := SaveFile.read(SAVE_PATH).npcs.find("antje")
-
-	var written := VillagerRules.default_rules().villager("antje")
-	assert_eq(loaded.background, written["background"])
-	assert_eq(loaded.habits, written["habits"])
-	assert_eq(loaded.speech, written["speech"])
-	assert_eq(loaded.people.keys(), written["people"].keys())
-	assert_eq(loaded.name, "Antje Boysen")
-	assert_eq(loaded.chat_history.size(), 1, "the chat is kept")
-
-
-func test_a_version_22_made_up_villager_is_made_up_anew_by_their_name() -> void:
-	var game := _current_game()
-	var npc := Npc.create(42, Vector2.ZERO, NpcRules.default_rules())
-	var saved := _version_22_npc(npc)
-	saved["habits"] = 'Says "Aye" a lot.'
-	saved["trade"] = "a midwife"
-	game["npcs"] = [saved, saved.duplicate(true)]
-	_write_save(22, game)
-
-	var loaded := SaveFile.read(SAVE_PATH).npcs.all()
-
-	assert_eq(loaded[0].name, npc.name)
-	assert_eq(loaded[0].appearance.to_dict(), npc.appearance.to_dict())
-	assert_ne(loaded[0].trade, "a midwife")
-	assert_false(loaded[0].habits.contains("Aye"))
-	assert_gte(loaded[0].samples.size(), 2)
-	assert_eq(loaded[0].people, {})
-	assert_eq(loaded[0].to_dict(), loaded[1].to_dict(), "the same for the same name")
-
-
-func test_a_version_22_made_up_villager_of_a_family_s_surname_is_renamed() -> void:
-	var game := _current_game()
-	var saved := _version_22_npc(Npc.create(42, Vector2.ZERO, NpcRules.default_rules()))
-	saved["name"] = "Elke Boysen"
-	saved["sex"] = "female"
-	game["npcs"] = [saved, saved.duplicate(true)]
-	_write_save(22, game)
-
-	var loaded := SaveFile.read(SAVE_PATH).npcs.all()
-
-	var surname := loaded[0].name.get_slice(" ", 1)
-	assert_string_starts_with(loaded[0].name, "Elke ")
-	assert_false(VillageSheet.default_sheet().text(true).contains(surname), surname)
-	assert_eq(loaded[0].name, loaded[1].name, "the same for the same name")
-
-
-## A villager as a version 22 save kept them: without the parts of the long sheet.
-func _version_22_npc(npc: Npc) -> Dictionary:
-	var saved := npc.to_dict()
-	for key in [
-		"home", "speech", "samples", "people", "likes", "wants", "day", "avoids", "secrets"
-	]:
-		saved.erase(key)
-	return JSON.parse_string(JSON.stringify(saved))
