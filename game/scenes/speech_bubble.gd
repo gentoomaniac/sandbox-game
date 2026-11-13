@@ -38,8 +38,6 @@ func _init() -> void:
 	# The theme gives labels a dark shadow to stand out on the world; ink on the cream plate needs
 	# none, and with it the pixel font smudges.
 	_label.add_theme_color_override("font_shadow_color", Color.TRANSPARENT)
-	_label.add_theme_constant_override("shadow_offset_x", 0)
-	_label.add_theme_constant_override("shadow_offset_y", 0)
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_plate.add_child(_label)
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -105,7 +103,7 @@ static func _plate_style() -> StyleBoxFlat:
 	style.border_color = UiColors.SPEECH_INK
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(CORNER_RADIUS)
-	# Few steps, so the round corners stay crisp pixels at the HUD's scale.
+	# Few steps and no anti-aliasing, so the round corners stay crisp pixels at the HUD's scale.
 	style.corner_detail = 3
 	style.anti_aliasing = false
 	style.content_margin_left = PADDING.x
