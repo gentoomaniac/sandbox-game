@@ -1,8 +1,9 @@
 class_name GossipRules
 extends RefCounted
 ## The words and numbers of the deed log, read from data/gossip.cfg (see there for what each key
-## means): how far a villager sees, how long a deed is kept, the words of a deed, of a place and of
-## the story a villager is told, which names the teller if it was heard.
+## means): how far a villager sees, how long a deed is kept, the words of a deed, of a count, of a
+## place and of the story a villager is told, which names the teller if it was heard. How stories
+## spread is SpreadRules, of the same file.
 
 const DEFAULT_PATH := "res://data/gossip.cfg"
 
@@ -29,6 +30,7 @@ const REQUIRED_KEYS := {
 	"witnesses": ["radius_tiles", "night_radius_tiles"],
 	"log": ["keep_days"],
 	"places": ["house"],
+	"counts": ["words"],
 	"story":
 	[
 		"today",
@@ -112,10 +114,10 @@ func opinion_change(kind: StringName) -> int:
 	return int(_values[str(kind)]["change"])
 
 
-## The deed in words, to follow "the newcomer": "fell 7 trees".
+## The deed in words, to follow "the newcomer": "fell 7 trees", "fell a dozen trees".
 func deed_words(kind: StringName, count: int) -> String:
 	var words: String = _values[str(kind)]["one" if count == 1 else "many"]
-	return words.format({"count": count})
+	return words.format({"count": _values["counts"]["words"].get(count, count)})
 
 
 ## "by Antje's house", for the villager with this first name.

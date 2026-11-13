@@ -18,12 +18,14 @@ func before_each() -> void:
 	_spread.rules = _rules({})
 
 
-## The rules of the data file with every chance of telling 1.0, except what `meetings` changes.
+## The rules of the data file with every chance of telling 1.0, except what `meetings` changes, and
+## no whispers (see test_gossip_whispers.gd).
 func _rules(meetings: Dictionary) -> SpreadRules:
 	var values := DataFile.read_sections(GossipRules.DEFAULT_PATH)
 	for tie in SpreadRules.TIES:
 		values["meetings"]["chance_" + str(tie)] = 1.0
 	values["meetings"].merge(meetings, true)
+	values["whispers"]["chance"] = 0.0
 	return SpreadRules.new(values)
 
 

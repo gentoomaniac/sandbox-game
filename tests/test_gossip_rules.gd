@@ -109,3 +109,8 @@ func test_a_story_heard_names_the_teller_by_first_name() -> void:
 		_rules.memory_line(story),
 		"On day 4: Moiken told you that the newcomer was seen to fell 7 trees by Antje's house.",
 	)
+
+
+func test_some_counts_are_told_in_words() -> void:
+	assert_eq(_rules.deed_words(GossipRules.FELLED, 12), "fell a dozen trees")
+	assert_eq(_rules.deed_words(GossipRules.FELLED, 13), "fell 13 trees")

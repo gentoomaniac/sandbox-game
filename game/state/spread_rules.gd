@@ -23,6 +23,7 @@ const REQUIRED_KEYS := {
 		"chance_neighbour",
 		"chance_anyone",
 	],
+	"whispers": ["chance", "count_steps"],
 }
 
 static var _default: SpreadRules
@@ -57,6 +58,9 @@ func problems() -> Array[String]:
 		for key: String in REQUIRED_KEYS[section]:
 			if not _values.get(section, {}).has(key):
 				bad.append("[%s] no %s" % [section, key])
+	for kind in GossipRules.KINDS:
+		if not _values.get("whisper_kinds", {}).has(str(kind)):
+			bad.append("[whisper_kinds] no %s" % kind)
 	if not bad.is_empty():
 		return bad
 	for key in ["radius_tiles", "pair_wait_minutes", "story_wait_minutes", "max_story_days"]:
@@ -68,6 +72,17 @@ func problems() -> Array[String]:
 		var chance := tell_chance(tie)
 		if chance < 0.0 or chance > 1.0:
 			bad.append("[meetings] chance_%s must be from 0 to 1" % tie)
+	if whisper_chance() < 0.0 or whisper_chance() > 1.0:
+		bad.append("[whispers] chance must be from 0 to 1")
+	var steps: Array = _values["whispers"]["count_steps"]
+	var sorted_steps := steps.duplicate()
+	sorted_steps.sort()
+	if steps != sorted_steps:
+		bad.append("[whispers] count_steps must rise")
+	for kind in GossipRules.KINDS:
+		var similar := similar_kind(kind)
+		if similar == kind or not GossipRules.KINDS.has(similar):
+			bad.append("[whisper_kinds] %s must turn into another kind of deed" % kind)
 	return bad
 
 
@@ -108,3 +123,21 @@ func neighbour_count() -> int:
 ## How likely a teller passes a story on to someone they are tied to like this (one of TIES).
 func tell_chance(tie: StringName) -> float:
 	return float(_values["meetings"]["chance_" + str(tie)])
+
+
+## How likely a story changes on its way, at each hop.
+func whisper_chance() -> float:
+	return float(_values["whispers"]["chance"])
+
+
+## The count a story grows to: the first step above `count`, or `count` if it is past them all.
+func next_count(count: int) -> int:
+	for step: int in _values["whispers"]["count_steps"]:
+		if step > count:
+			return step
+	return count
+
+
+## The kind of deed that a story of `kind` is told as when it turns into a similar one.
+func similar_kind(kind: StringName) -> StringName:
+	return StringName(_values["whisper_kinds"][str(kind)])

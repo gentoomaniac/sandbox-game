@@ -368,7 +368,10 @@ newest of those they have known for 2 hours, more likely to family and friends, 
 its deed is 7 days old. The one who hears it keeps it as a light story and is told it by the teller:
 "Today Moiken told you that the newcomer was seen to fell 7 trees by Antje's house." (`gossip
 <villager>` in the console shows who heard what from whom.) The chances and waits are in the
-`[meetings]` section of [data/gossip.cfg](data/gossip.cfg).
+`[meetings]` section of [data/gossip.cfg](data/gossip.cfg). Rumours change on the way: at each hop,
+one time in ten, the count grows ("7 trees" become "10", or "a dozen"), the place moves to a
+neighbour's house, or the deed turns into a similar one (felling into mowing, building into
+fencing); `[whispers]` and `[whisper_kinds]` of the same file hold the steps and the table.
 
 They all live in Wehlsbüll, a made-up marsh parish two hours north of Husum in 1750, which
 [data/village.cfg](data/village.cfg) describes as everyone there knows it: the church, the Krug,

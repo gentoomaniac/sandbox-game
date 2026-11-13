@@ -1,6 +1,6 @@
 # Gossip and memory
 
-**Decided; the deed log (task 125) is built, the rest is not.** Worked out with the user on
+**Decided; the deed log, memory and spreading (tasks 125 to 127) are built, the rest is not.** Worked out with the user on
 2026-11-09. The tasks are 124 to 130 in
 [TASKS.md](../../TASKS.md). This page changes [dialogue.md](dialogue.md) (memory) and
 [villagers.md](villagers.md) (who knows the village) once the tasks are done; until then those
@@ -93,7 +93,13 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   nearest to the teller's, 0.2 for anyone. The hearer keeps it as `heard`, `told_by` the teller,
   `hops` one more, `learned_at` now, weight low and not personal (the judge of task 128 may raise
   that), the same `seen_by` and `origin`. Village topics, which never stop, are not stories yet.
-  The dice are `GossipSpread.rng`, seeded by tests.
+  The dice are `GossipSpread.rng`, seeded by tests. Whispers: at each hop, with the chance of
+  `[whispers]` (0.1), one of three things of the deed shifts, picked at random among those that
+  can: the count grows to the next of `count_steps` (not past the last), the place moves to the
+  house of one of the teller's neighbours (the `house` words, a house other than the one it was
+  by), or the kind turns into the similar one of `[whisper_kinds]`. The hearer's version goes on
+  from the changed fact, and its `origin` stays. `[counts]` words some counts ("a dozen"), true
+  or whispered.
 
 - **The deed log is also the base of an end-of-day screen** (later: "Today: 7 trees felled, a
   Kate built, 12 beds sown").

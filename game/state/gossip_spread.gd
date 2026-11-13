@@ -7,7 +7,9 @@ extends SimulationSystem
 ##
 ## A story is passed on only once the teller has known it for a while, and only while it is fresh
 ## and has not come far. The hearer takes it as heard: told by the teller, one hop further, and
-## light, for it does not touch them.
+## light, for it does not touch them. With a small chance one thing of the deed shifts on the way
+## (a whisper): the count grows, the place moves to a neighbour's house, or the kind turns into a
+## similar one.
 
 ## Not seeded in play. Tests seed it to fix who tells what.
 var rng := RandomNumberGenerator.new()
@@ -56,7 +58,8 @@ func _tell(teller: Npc, hearer: Npc, villagers: Array[Npc], now: int) -> void:
 	var story := _story_to_tell(teller, hearer, now)
 	if story.is_empty():
 		return
-	if rng.randf() >= rules.tell_chance(_tie(teller, hearer, villagers)):
+	var neighbours := _neighbours(teller, villagers)
+	if rng.randf() >= rules.tell_chance(_tie(teller, hearer, neighbours)):
 		return
 	var heard := story.duplicate(true)
 	var as_heard := {
@@ -69,6 +72,7 @@ func _tell(teller: Npc, hearer: Npc, villagers: Array[Npc], now: int) -> void:
 		"personal": false,
 	}
 	heard.merge(as_heard, true)
+	_whisper(heard, neighbours)
 	hearer.learn_story(heard, _deeds.stories_kept, _deeds.memories_kept)
 
 
@@ -100,22 +104,54 @@ static func _is_better(story: Dictionary, other: Dictionary) -> bool:
 	)
 
 
-## How the teller is tied to the hearer: family or friends on the sheet of either, a neighbour
-## (one of the villagers whose anchors are nearest to the teller's), or anyone.
-func _tie(teller: Npc, hearer: Npc, villagers: Array[Npc]) -> StringName:
+## With the chance of a whisper, shifts one thing of the deed of `story` (as the hearer is about
+## to have it): the count, the place (to the house of one of the teller's `neighbours`) or the kind.
+func _whisper(story: Dictionary, neighbours: Array[Npc]) -> void:
+	if rng.randf() >= rules.whisper_chance():
+		return
+	var places: Array[String] = []
+	for neighbour in neighbours:
+		var place := _deeds.rules.house_place(neighbour.name.get_slice(" ", 0))
+		if place != story["place"]:
+			places.append(place)
+	var shifts: Array[StringName] = [&"kind"]
+	if rules.next_count(story["count"]) != story["count"]:
+		shifts.append(&"count")
+	if not places.is_empty():
+		shifts.append(&"place")
+	match shifts[rng.randi_range(0, shifts.size() - 1)]:
+		&"count":
+			story["count"] = rules.next_count(story["count"])
+		&"place":
+			story["place"] = places[rng.randi_range(0, places.size() - 1)]
+		&"kind":
+			story["kind"] = rules.similar_kind(story["kind"])
+
+
+## How the teller is tied to the hearer: family or friends on the sheet of either, one of the
+## teller's `neighbours`, or anyone.
+func _tie(teller: Npc, hearer: Npc, neighbours: Array[Npc]) -> StringName:
 	if (
 		(hearer.id != "" and teller.people.has(hearer.id))
 		or (teller.id != "" and hearer.people.has(teller.id))
 	):
 		return SpreadRules.FAMILY
-	var hearer_distance := teller.anchor.distance_to(hearer.anchor)
-	var nearer := villagers.filter(
-		func(npc: Npc) -> bool:
-			return npc != teller and teller.anchor.distance_to(npc.anchor) < hearer_distance
+	return SpreadRules.NEIGHBOUR if neighbours.has(hearer) else SpreadRules.ANYONE
+
+
+## The villagers whose anchors are nearest to the teller's, the nearest first.
+func _neighbours(teller: Npc, villagers: Array[Npc]) -> Array[Npc]:
+	var others := villagers.filter(func(npc: Npc) -> bool: return npc != teller)
+	others.sort_custom(
+		func(first: Npc, second: Npc) -> bool:
+			return (
+				teller.anchor.distance_squared_to(first.anchor)
+				< teller.anchor.distance_squared_to(second.anchor)
+			)
 	)
-	if nearer.size() < rules.neighbour_count():
-		return SpreadRules.NEIGHBOUR
-	return SpreadRules.ANYONE
+	var nearest: Array[Npc] = []
+	nearest.assign(others.slice(0, rules.neighbour_count()))
+	return nearest
 
 
 ## The same for the two in either order.
