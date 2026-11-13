@@ -32,6 +32,7 @@ const REQUIRED_KEYS := {
 		"fire_big_reach_tiles",
 		"fire_fade_seconds",
 	],
+	"paused": ["fade_seconds"],
 	"thunder": ["min_delay_seconds", "max_delay_seconds"],
 	"birds":
 	["chirp_chance", "radius_tiles", "tries", "season_factors", "phase_weights", "rain_limit"],
@@ -108,6 +109,8 @@ func problems() -> Array[String]:
 	for key in ["fire_small_reach_tiles", "fire_big_reach_tiles"]:
 		if value("indoors", key) <= 0.0:
 			bad.append("[indoors] %s must be above 0" % key)
+	if value("paused", "fade_seconds") <= 0.0:
+		bad.append("[paused] fade_seconds must be above 0")
 	if value("frog_chorus", "full_frogs") <= 0.0:
 		bad.append("[frog_chorus] full_frogs must be above 0")
 	if value("bees", "hear_tiles") <= 0.0:

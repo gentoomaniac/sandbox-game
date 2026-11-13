@@ -5,7 +5,10 @@ extends Node
 ## data/sounds.cfg (see SoundRules) with a random variant and pitch; with a position the
 ## sound comes from there in the world (AudioStreamPlayer2D), else it is plain.
 ##
-## Buses: Master with Effects, Ambience, Music and UI under it; OutsideEffects sends to Effects.
+## Buses: Master with Game, Music and UI under it; Effects and Ambience send to Game, and
+## OutsideEffects to Effects. While the game is paused (the pause menu, a chat) the Game bus fades
+## to silence and back: only the music and the UI sounds go on (`fade_seconds` of
+## data/ambience.cfg's [paused]).
 ## While the player is inside a building (`set_inside`) a low-pass filter fades in on Ambience and
 ## OutsideEffects, which is where the sounds of the world outside go, and they get quieter (the
 ## drop is `outside_db` of data/ambience.cfg's [indoors]).
@@ -17,6 +20,8 @@ extends Node
 signal played(event: StringName, position: Variant)
 
 const MASTER := &"Master"
+## Every sound of the game's world: silenced while the game is paused.
+const GAME := &"Game"
 const EFFECTS := &"Effects"
 const AMBIENCE := &"Ambience"
 const MUSIC := &"Music"
@@ -29,6 +34,8 @@ const BUS_OF_KEY := {"effects": EFFECTS, "ambience": AMBIENCE, "ui": UI}
 const CHANNEL_BUSES := {
 	&"master": MASTER, &"effects": EFFECTS, &"ambience": AMBIENCE, &"music": MUSIC
 }
+## Where a bus sends its sound, for those that don't send to Master.
+const SEND_OF_BUS := {EFFECTS: GAME, AMBIENCE: GAME, OUTSIDE_EFFECTS: EFFECTS}
 const POOL_SIZE := 12
 ## Beyond this far from the camera (31 tiles, in art pixels) a positional sound is silent, unless
 ## its event has a `reach_tiles` of its own.
@@ -48,6 +55,10 @@ var _rng := RandomNumberGenerator.new()
 var _muffle := Muffle.new()
 var _low_passes: Array[AudioEffectLowPassFilter] = []
 var _amplifiers: Array[AudioEffectAmplify] = []
+var _pause_amplifier: AudioEffectAmplify
+## 0 (the game's sounds play) to 1 (silenced by the pause).
+var _pause_amount := 0.0
+var _pause_fade_seconds: float = AmbienceRules.default_rules().value("paused", "fade_seconds")
 var _outside_db: float = AmbienceRules.default_rules().value("indoors", "outside_db")
 var _plain_players: Array[AudioStreamPlayer] = []
 var _world_players: Array[AudioStreamPlayer2D] = []
@@ -102,6 +113,11 @@ func _process(delta: float) -> void:
 		low_pass.cutoff_hz = _muffle.cutoff_hz()
 	for amplifier in _amplifiers:
 		amplifier.volume_db = _muffle.volume_db(_outside_db)
+	_pause_amount = move_toward(
+		_pause_amount, 1.0 if get_tree().paused else 0.0, delta / _pause_fade_seconds
+	)
+	# Decibels are heard as loudness, so it fades in them, like the muffle.
+	_pause_amplifier.volume_db = SILENT_DB * _pause_amount
 
 
 func _notification(what: int) -> void:
@@ -123,6 +139,11 @@ func use_world(root: Node) -> void:
 ## Muffles the world outside while the player is inside a building, fading over a moment.
 func set_inside(is_inside: bool) -> void:
 	_muffle.is_inside = is_inside
+
+
+## How silenced the game's sounds are by the pause now, 0 to 1.
+func pause_amount() -> float:
+	return _pause_amount
 
 
 ## How muffled the outside sounds are now, 0 to 1 (see Muffle).
@@ -230,18 +251,22 @@ func _update_silence() -> void:
 
 
 ## Makes the buses (unless they exist: another service made them) and puts a low-pass filter on
-## and an amplifier (to turn the volume down) on the two that are muffled.
+## and an amplifier (to turn the volume down) on the two that are muffled, and an amplifier on
+## Game to silence it while paused.
 func _set_up_buses() -> void:
-	for bus in [EFFECTS, AMBIENCE, MUSIC, UI, OUTSIDE_EFFECTS]:
+	for bus in [GAME, EFFECTS, AMBIENCE, MUSIC, UI, OUTSIDE_EFFECTS]:
 		if AudioServer.get_bus_index(bus) != -1:
 			continue
 		AudioServer.add_bus()
 		var index := AudioServer.bus_count - 1
 		AudioServer.set_bus_name(index, bus)
-		AudioServer.set_bus_send(index, EFFECTS if bus == OUTSIDE_EFFECTS else MASTER)
+		AudioServer.set_bus_send(index, SEND_OF_BUS.get(bus, MASTER))
+		if bus == GAME:
+			AudioServer.add_bus_effect(index, AudioEffectAmplify.new())
 		if bus == AMBIENCE or bus == OUTSIDE_EFFECTS:
 			AudioServer.add_bus_effect(index, AudioEffectLowPassFilter.new())
 			AudioServer.add_bus_effect(index, AudioEffectAmplify.new())
+	_pause_amplifier = AudioServer.get_bus_effect(AudioServer.get_bus_index(GAME), 0)
 	for bus in [AMBIENCE, OUTSIDE_EFFECTS]:
 		var index := AudioServer.get_bus_index(bus)
 		for effect_index in AudioServer.get_bus_effect_count(index):

@@ -16,6 +16,14 @@ Settings → Audio, saved with the others; 0 mutes it).
   `outside_db` (`[indoors]` of `data/ambience.cfg`, -24 dB: rain on the roof and wind only just
   heard), both over the same 0.4 s (`Muffle`). The effects of the player and of the room stay as
   loud.
+- **Paused: only the music plays** (task 213, 2026-11-13, "All sound should stop while being in the
+  menu, except the music"). Effects and Ambience send to a `Game` bus (OutsideEffects still to Effects),
+  Music and UI straight to Master. While the tree is paused, which only a window with `pauses_game`
+  does (the pause menu with all its pages, a chat, a choice dialog; the crafting, chest, character,
+  bag and console windows don't pause and keep the sound), an amplifier on Game fades to silence over
+  `fade_seconds` (0.3, `[paused]` of `data/ambience.cfg`) and back when the game goes on. Fading the
+  bus rather than pausing the players keeps loops, the bell's tail and positional sounds where they
+  were, and nothing clicks. The UI bus is not touched, so the menu's own sounds play.
 - **Footsteps** follow the walk animation and the ground: grass, soil, sand or floodplain,
   wetland (squelch), ice, snow (crunch), wooden floor.
 - **Work:** axe chop, a tree's crack and thud when it falls, pickaxe on stone, stone

@@ -37,9 +37,11 @@ func _playing(player_class: String) -> Node:
 
 
 func test_the_buses_exist_and_end_in_master() -> void:
-	for bus in [AudioService.EFFECTS, AudioService.AMBIENCE, AudioService.MUSIC, AudioService.UI]:
+	for bus in [AudioService.GAME, AudioService.MUSIC, AudioService.UI]:
 		assert_ne(_bus(bus), -1, str(bus))
 		assert_eq(AudioServer.get_bus_send(_bus(bus)), AudioService.MASTER)
+	for bus in [AudioService.EFFECTS, AudioService.AMBIENCE]:
+		assert_eq(AudioServer.get_bus_send(_bus(bus)), AudioService.GAME)
 	assert_eq(AudioServer.get_bus_send(_bus(AudioService.OUTSIDE_EFFECTS)), AudioService.EFFECTS)
 
 

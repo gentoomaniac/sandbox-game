@@ -21,7 +21,9 @@ happens. Inside a house the weather and the world outside are muffled and faint,
 a hearth crackles with the fire, louder the nearer you stand to it (all through a small house,
 only near the fire in a big one). Settings → Audio has Master, Effects, Ambience and Music volumes
 and "Sound in background" (off: silent while the window is not focused). What you do is heard
-when it worked; an action the game refuses only says "denied".
+when it worked; an action the game refuses only says "denied". While the game is paused (the pause
+menu and its settings, a chat, a choice) every sound of the world fades out and comes back when you
+go on; only the music and the menu's own clicks play.
 Which file each sound plays is in [data/sounds.cfg](data/sounds.cfg), so any
 sound can be swapped for a recording.
 
