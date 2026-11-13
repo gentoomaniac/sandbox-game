@@ -160,3 +160,13 @@ Answered questions move into the [design](design/README.md) and are removed here
     - The stall is a placed hand cart with a till and prices per slot, sales rolled by the day
       whether or not the player is near. Default: yes.
     - Villagers have no purses; wages and rent are left out. Default: yes.
+
+27. **The redrawn 32 px rooster** (task 204, branch worktree-agent-ae1fc3c53577a8a12, crops in the
+    session scratchpad `rooster/`): a head taller than the hens, upright, arched sickle tail. Weak
+    spots named by the artist: the peck frame (the neck cape hides the breast), the sleep frame (head
+    hard to read), the tail more a fan than feathers, flat toes. Approve as is, or redraw a frame?
+    Default: waits for your verdict, nothing merged.
+28. **The classic 16 px rooster taller too?** (task 204) Today he is hen-sized in the classic art.
+    Default: leave him as he is.
+29. **A deterministic README picture of the rooster** (a debug flag that freezes the yard's
+    animals), or is the random shot good enough? Default: the random shot.
