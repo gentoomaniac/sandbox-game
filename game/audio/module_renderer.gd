@@ -47,7 +47,7 @@ const CHANNEL_GAIN := 0.25
 ## In stereo, the share of a channel on its own side.
 const OWN_SIDE := 0.75
 const LEFT_CHANNELS: Array[int] = [0, 3]
-## The generator's beat: four rows, and four beats a bar.
+## The generator's default beat: four rows (a piece may say another, see MusicPiece).
 const ROWS_PER_BEAT := 4
 ## How long a volume change, a note's start and the fade of the note before take.
 const RAMP_SECONDS := 0.002
@@ -98,8 +98,10 @@ static var _periods := PackedInt32Array(
 var module: TrackerModule
 var mix_rate := 44100
 var is_stereo := false
-## The length of a beat in the last render, in seconds: four rows at the speed and tempo of its
-## first row, in whole samples (see the ticks above).
+## How many rows a beat has.
+var rows_per_beat := ROWS_PER_BEAT
+## The length of a beat in the last render, in seconds: `rows_per_beat` rows at the speed and tempo
+## of its first row, in whole samples (see the ticks above).
 var beat_seconds := 0.0
 
 var _task_id := -1
@@ -221,7 +223,7 @@ func render(parts: Array[Vector2i], loops := false) -> AudioStreamWAV:
 				row = maxi(break_row, 0)
 	if loops:
 		mix = mix.slice(second_start * (2 if is_stereo else 1))
-	beat_seconds = first_row_frames * ROWS_PER_BEAT / float(mix_rate)
+	beat_seconds = first_row_frames * rows_per_beat / float(mix_rate)
 	return _stream(mix, loops)
 
 

@@ -51,6 +51,13 @@ func test_renders_a_section_to_its_rows_and_tells_its_beat() -> void:
 	assert_gt(_peak(stream.data), 0.1, "it is not silent")
 
 
+func test_a_beat_has_the_rows_the_piece_says() -> void:
+	var renderer := ModuleRenderer.new(_module, RATE)
+	renderer.rows_per_beat = 6
+	renderer.render([LOOP])
+	assert_almost_eq(renderer.beat_seconds, 6 * ROW_FRAMES / float(RATE), 0.000001)
+
+
 ## Which side each channel is on: tests/test_module_effects.gd.
 func test_renders_stereo_as_two_samples_a_frame() -> void:
 	var stream := _render([LOOP], true)
