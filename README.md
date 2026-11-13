@@ -604,7 +604,7 @@ nothing. Below 20 % energy the character sweats with every action, and below 10 
 head at midnight and again at half past, while you are still awake: you pass out an hour
 after midnight.
 
-![The bag with the backpack and its weight over the carry capacity, and the character window with the equipment slots](docs/screenshots/bag.png)
+![The bag at the bottom right and the character window at the left, open together: the backpack with its weight and trash can, the equipment slots round the figure](docs/screenshots/bag.png)
 
 ![The character window with the equipment slots, the attributes and what they give, and the skills tab beside it](docs/screenshots/character.png)
 
