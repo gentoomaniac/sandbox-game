@@ -111,7 +111,10 @@
     hours of a skip of time pass like any, for the flocks standing then. The hook for the scarecrow (task 226) is
     `CropRaids.is_guarded`, a Callable from a tile to whether it is guarded; unset, nothing is.
     Fresh sowing draws crows: a flock appears `appearing_boost` times likelier near sown fields
-    (0.1 more per crop at stage 0 within 6 tiles, up to 3 times). No save version change: `eaten` is an optional
+    (0.1 more per crop at stage 0 within 6 tiles, up to 3 times). Console: `crows` shows the
+    flocks and the tally, `crows raid` makes every flock raid now with the player by and eat from every crop it tries, `spawn
+    crows [n]` puts flocks on the nearest crop (state only, until the view draws crows) and
+    `killall crows` takes them away. No save version change: `eaten` is an optional
     number in the crop's state. The crows themselves: [wildlife](../world/wildlife.md).
 - Wild crops can be foraged.
 - The biome decides which resources are available and what the land is good for

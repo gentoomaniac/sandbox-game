@@ -51,6 +51,9 @@ var cheats := CheatFlags.new()
 var harvest_rng := RandomNumberGenerator.new()
 ## The farm animals of the world. Main moves them while the player is out in the world.
 var livestock := Livestock.new(sun, cheats)
+## The crows' raids on the crops: the view tells it where its crow flocks stand. Built with the
+## simulation; nothing of it is saved.
+var crop_raids: CropRaids
 ## The villagers of the world, moved like the farm animals.
 var npcs := Npcs.new(sun)
 ## What the player did within sight of villagers.
@@ -700,6 +703,8 @@ func _start_simulation() -> void:
 	# loaded game).
 	livestock.account_clock(clock)
 	simulation.add_system(FarmingUpkeep.new(world, weather))
+	crop_raids = CropRaids.new(world, _player_feet)
+	simulation.add_system(crop_raids)
 	simulation.add_system(NightUpkeep.new(world, weather, _tiles_kept_clear))
 	simulation.add_system(ActorsUpkeep.new(world, livestock, npcs, _player_feet))
 	simulation.add_system(GossipSpread.new(npcs, deeds))

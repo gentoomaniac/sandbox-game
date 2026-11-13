@@ -481,7 +481,12 @@ walk and peck on the mud and swim on the sea, and in summer common terns fish ov
 tideways, hovering and plunging in with a splash. When the tide comes in the waders leave the
 mud and the gulls swim where they stood. On warm, calm, dry summer evenings fireflies
 drift over the meadows by the trees, the Knicks and the water from dusk until a few hours after
-sunset, each blinking its own light on and off. Wild animals never stand on a building, the door
+sunset, each blinking its own light on and off. Crow flocks come to the fields and meadows by
+day, most in autumn and winter and when fields have just been sown, and eat from the crops that
+nothing guards while you are far off: a sown seed is gone, a growing or ripe plant gives one item
+less at the harvest (never fewer than one), at most a few a day (numbers in
+[data/crows.cfg](data/crows.cfg); the crows themselves are not drawn yet, `spawn crows` and
+`crows` in the console put flocks on a field and show what they ate). Wild animals never stand on a building, the door
 included, and apart from the mice they don't appear near houses or villagers and run from
 villagers as they do from you. The animals come and go around you by the season, the time of day
 and the weather; the numbers are in [data/wildlife.cfg](data/wildlife.cfg).
@@ -825,12 +830,13 @@ it keeps the newest 500 lines and follows new output unless you scrolled up to r
 | `snow`, `snow <0..1>`, `snow auto` | Show the snow cover, force it, or go back to the weather. |
 | `spawn npc [count]` | Put villagers nearby, each with a look, a name and a sheet of their own; they stay. |
 | `spawn [npc] <villager>` | Put a villager written by hand nearby (`spawn kerrin` or `spawn npc kerrin`): `antje`, `momme`, `ocke`, `kerrin`, `hinrich`, `boy`, `inken` or `gesche`; each comes once. |
-| `spawn <animal> [count]` | Put animals nearby: farm animals that stay (`cow`, `sheep`, `chicken`, `rabbit`, `dog`, `cat`, `horse`) or wild ones that come and go (`bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork` on the nearest roof, `geese` grazing, `flying_geese`, `mouse`, `frog`, and on the coast `oystercatcher`, `dunlin`, `gull`, `tern`). `spawn` alone, or with an unknown name, lists them. |
+| `spawn <animal> [count]` | Put animals nearby: farm animals that stay (`cow`, `sheep`, `chicken`, `rabbit`, `dog`, `cat`, `horse`) or wild ones that come and go (`bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork` on the nearest roof, `geese` grazing, `flying_geese`, `mouse`, `frog`, and on the coast `oystercatcher`, `dunlin`, `gull`, `tern`; `crows` puts flocks of crows (not saved) on the nearest crop, where they raid it while you are far off). `spawn` alone, or with an unknown name, lists them. |
 | `killall <animal>` | Remove every animal of that kind (the kinds of `spawn`) from the game and from the save, and say how many. Wild animals are not saved, so only those alive now go and more may come by the usual rules. A horse you ride is not removed: get off first. |
 | `killall npc <id>` | Remove that named villager (`killall antje` works too), with their chat and memories, from the game and the save. |
 | `killall npc` | Remove every villager without an id (the made-up ones of `spawn npc`) and say how many; the named villagers stay and need `killall npc <id>`. |
 | `skip <n>m\|h\|d` | Let minutes, hours or days pass, e.g. `skip 2h` or `skip 3d`. Only the world moves on: crops, soil, weather, kilns, animals, villagers and the wildlife follow, your energy, tiredness, debuff and position stay as they are. |
 | `crop` | Show the growth, damage and needs of the nearest crop. |
+| `crows`, `crows raid` | Show the crow flocks (where, how many crops in reach, how far you are) and how many plants and items the crows ate today; `raid` lets every flock raid the crops near it now, with you standing by, and eat from each crop it tries. |
 | `skill <skill> <points>` | Set a skill's points (`woodworking`, `cooking`, `masonry`). |
 | `attribute <attribute> <level>` | Set an attribute's level (`strength`, `agility`, `stamina`, `hp`; 1 to 100) and show the maximum energy, maximum health and carry capacity it leaves. |
 | `gossip <villager>` | List the stories (the gossip buffer) and the long-term memories a villager keeps, with their weights (low, medium, high) and, for a story, whether it was seen or heard. The villager is the id of one written by hand (`gossip antje`) or a first name; Tab completes the ids. |
