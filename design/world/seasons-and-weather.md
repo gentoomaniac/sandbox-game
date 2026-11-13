@@ -122,7 +122,7 @@
     presentation/sound.md), and
     overcast skies dimming daylight, and **cloud shadows** (task 194): by day, with the sun out
     and some cloud, soft dark patches drift over the ground with the wind's speed and direction
-    (no cloud is drawn). More cover gives more and larger shadows, a clear sky none; a closed
+    (no cloud is drawn). More cover gives more shadow, a clear sky none; a closed
     sky has none either, only the day tint's dimming (task 177), so the ground is not darkened
     twice; they fade out with dusk and with rain or snow, and are never indoors. One shader
     overlay in world pixels (cloud_shadows.gdshader), numbers in data/lighting.cfg

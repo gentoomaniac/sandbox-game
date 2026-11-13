@@ -197,10 +197,7 @@ func _show_cloud_shadows() -> void:
 	var shadows: ShaderMaterial = _cloud_shadows.material
 	shadows.set_shader_parameter("cover", _cloud_cover)
 	shadows.set_shader_parameter("strength", cloud_shadow_strength)
-	shadows.set_shader_parameter(
-		"size",
-		_rules.cloud_shadow("size") * (1.0 + _rules.cloud_shadow("size_growth") * _cloud_cover)
-	)
+	shadows.set_shader_parameter("size", _rules.cloud_shadow("size"))
 	shadows.set_shader_parameter("coverage", _rules.cloud_shadow("coverage"))
 	shadows.set_shader_parameter("softness", _rules.cloud_shadow("softness"))
 	shadows.set_shader_parameter("drift", cloud_shadow_drift)

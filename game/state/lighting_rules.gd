@@ -22,7 +22,7 @@ const LANTERN_KEYS := ["color", "energy", "radius_tiles"]
 
 ## The cloud shadows' numbers, each a plain number (see WeatherView).
 const CLOUD_SHADOW_KEYS := [
-	"strength", "size", "size_growth", "coverage", "softness", "speed_per_wind", "closed_from"
+	"strength", "size", "coverage", "softness", "speed_per_wind", "closed_from"
 ]
 
 static var _default: LightingRules
@@ -90,9 +90,8 @@ func problems() -> Array[String]:
 	for key: String in ["size", "softness"]:
 		if float(cloud_shadows[key]) <= 0.0:
 			found.append("[cloud_shadows] %s must be above 0" % key)
-	for key: String in ["size_growth", "speed_per_wind"]:
-		if float(cloud_shadows[key]) < 0.0:
-			found.append("[cloud_shadows] %s must not be below 0" % key)
+	if float(cloud_shadows["speed_per_wind"]) < 0.0:
+		found.append("[cloud_shadows] speed_per_wind must not be below 0")
 	return found
 
 

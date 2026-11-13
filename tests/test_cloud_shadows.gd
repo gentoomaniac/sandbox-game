@@ -1,6 +1,6 @@
 extends GutTest
 ## The cloud shadows over the ground (a look of WeatherView): none under a clear sky, at night
-## or under a closed one, more and larger with more cover, drifting downwind at a speed that
+## or under a closed one, more with more cover, drifting downwind at a speed that
 ## follows the wind, and no effect on the weather itself.
 
 var _view: WeatherView
@@ -74,14 +74,14 @@ func test_rain_and_snow_leave_no_sun_for_shadows() -> void:
 	assert_lt(_view.cloud_shadow_strength, dry * 0.5)
 
 
-func test_more_cover_gives_larger_shadows_over_more_of_the_ground() -> void:
+func test_more_cover_shadows_more_of_the_ground_without_moving_the_pattern() -> void:
 	_show(_sample(0.3))
 	var little_size: float = _shader_value("size")
 	var little_cover: float = _shader_value("cover")
 	_view = WeatherView.new()
 	add_child_autofree(_view)
 	_show(_sample(0.7))
-	assert_gt(float(_shader_value("size")), little_size)
+	assert_eq(float(_shader_value("size")), little_size)
 	assert_gt(float(_shader_value("cover")), little_cover)
 
 
