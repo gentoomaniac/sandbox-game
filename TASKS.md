@@ -326,6 +326,28 @@ and the seasons unlike the coast:
   the intended order, a share of wet hours in a range. A short report for the user with the new
   table (as above) and a day-by-day picture of one season.
 
+## 222. Thunder with more variety, lightning that runs across the sky, a branching bolt
+
+- [ ] Done
+
+The user, 2026-11-13, after task 214: "The thunder sounds could have a bit more variance, add a
+sound that simulates a lightning running across the sky or add a tree rather than a straight
+strike."
+- More variance (a sound-designer job, tools/audio/weather.py): more variants of `thunder_far`,
+  `thunder_mid` and `thunder_close` (today 3 each), differing more in length, rumble shape,
+  number of rolls and pitch; seeded as today.
+- Lightning running across the sky: a new kind of strike, the sky-crawler (cloud-to-cloud
+  lightning): a long crackling, tearing rumble that travels, panned from one side to the other
+  over a few seconds (a new sound `thunder_crawl` and a stereo pan or a moving positional
+  source), with a flash that flickers along the sky rather than one burst. Its share among the
+  strikes in data/weather.cfg [strike].
+- A branching bolt: the close strike (and maybe the middle one) draws a bolt in the sky that
+  forks like a tree, not a straight line: generated per strike (seeded), a bright core with
+  thinner branches, shown for a few frames with the flash, in palette colours, crisp in both arts
+  and at every zoom; cheap.
+- Tests: the new strike kind's share and sound, the bolt drawn for close strikes only (and its
+  branching), determinism. Listening files and screenshots of a bolt and a crawler for the user.
+
 ## Later (not part of the prototype)
 
 - **Crows** (the user, 2026-11-13): wild crows (carrion or hooded crows, rooks) as wildlife:
