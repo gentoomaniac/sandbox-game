@@ -64,8 +64,18 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   player gives it the bone, which is used up; the dog follows the player for 3 game hours,
   day and night, then wanders again. It waits within 2 tiles of the player, walks after them
   beyond that and runs beyond 4, until it is 1 tile from them. It never blocks the player; one
-  more than 15 tiles behind, or stuck for 2 seconds, is put beside the player. The numbers are
-  in `data/livestock.cfg`.
+  more than 15 tiles behind is put beside the player; one that cannot get to them (a fence, a
+  wall or water in the way) for 2 seconds waits facing them for 3 seconds and tries again (task
+  209). Known limit: a follower shut in a closed pen with the player within 15 tiles waits facing
+  them until the player walks off. The numbers are in `data/livestock.cfg`.
+- **Stuck at an obstacle (task 209):** an animal with no free way ahead for 2 seconds (it is
+  going round a fence, a wall or a building, or is stopped by it) gives up what it was walking
+  to (a wander, or a trip to water or feed, which it does not look for again for a while) and
+  picks something else, unless it keeps moving on (`progress_tiles` from where it last counted),
+  as it does going round a fence. Turning round an obstacle it turns to face the other way no
+  more often than once a second, so it never spins left and right. The same for every kind of
+  animal; villagers have their own walking code (see `npcs.gd`) and are not covered. The numbers are in
+  `data/livestock.cfg`.
 - **Size** (drawn at 32 px per tile since task 114, in scale with the 61 px people): a cow
   about 66 px long and 40 px to its back, a sheep about 38 px long and 22 px to its back, a
   pig about 40 px long and 23 px tall, a dog about 40 px long, a horse about 88 px long (nearly three tiles) and 57 px to the

@@ -1,11 +1,11 @@
 extends LivestockCase
 ## A dog given a bone follows the player: it catches up and waits near them, day and night,
-## is put beside them when it is left far behind or stuck, and wanders again once its time
-## is up.
+## is put beside them when it is left far behind, waits facing them when it is stuck, and wanders
+## again once its time is up.
 
 
 func _following_dog() -> FarmAnimal:
-	var dog := FarmAnimal.new(LivestockRules.DOG, &"collie", _pen_middle() + Vector2(-2.0, 0.0))
+	var dog := FarmAnimal.new(LivestockRules.DOG, &"collie", _pen_middle() + Vector2(-2.0, 2.0))
 	_livestock.add(dog)
 	_state.clock.day = DAY
 	_state.clock.minute_of_day = NOON
@@ -17,7 +17,7 @@ func test_a_following_dog_catches_up_and_keeps_near_the_player() -> void:
 	var dog := _following_dog()
 	_state.player.position = _pen_middle() + Vector2(2.0, 0.0)
 
-	_run(3.0)
+	_run(5.0)
 
 	var rules := _livestock.rules
 	var distance := dog.position.distance_to(_state.player.position)
@@ -45,17 +45,18 @@ func test_a_dog_left_far_behind_is_put_beside_the_player() -> void:
 	)
 
 
-func test_a_dog_stuck_behind_water_is_put_beside_the_player() -> void:
+func test_a_dog_stuck_behind_water_waits_facing_the_player() -> void:
 	var dog := _following_dog()
 	# Just beyond the water round the pen, too near to count as left behind.
 	_state.player.position = _pen_middle() + Vector2(PEN_RADIUS + 2.5, 0.0)
 	_world.set_terrain(_state.player.tile(), Tile.Terrain.GRASS)
+	dog.facing = -1.0
 
 	_run(6.0)
 
-	assert_lte(
-		dog.position.distance_to(_state.player.position),
-		_livestock.rules.general("follow_far_tiles")
+	assert_eq(dog.facing, 1.0, "it faces the player")
+	assert_lt(
+		dog.position.x, _pen_middle().x + PEN_RADIUS + 1.0, "it stays on its side of the water"
 	)
 
 

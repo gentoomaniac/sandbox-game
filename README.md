@@ -235,7 +235,8 @@ head, in bay, black or grey, and a dun pony. Dogs and cats sniff about, horses g
 then; cats roam furthest. A dog barks now and then, a cat rarely meows, a horse whinnies or
 snorts. Hold a **bone** (`give bone`) and press the use key at a dog in front of you: it takes
 the bone and follows you for three game hours, day and night, keeping a tile or two from you
-and running to catch up (left far behind or stuck, it turns up at your side).
+and running to catch up (left more than 15 tiles behind, it turns up at your side; stuck behind a
+fence or water, it waits facing you).
 
 ![Horses, dogs and cats about the camp](docs/screenshots/dogs-cats-horses.png)
 

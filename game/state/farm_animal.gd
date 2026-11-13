@@ -30,8 +30,16 @@ var bedtime_delay := 0.0
 ## The game minute (see GameClock `total_minutes`) until which it follows the player, as a dog
 ## does once given a bone; 0 for an animal that never did.
 var follow_until_minute := 0
-## Seconds a follower has got no nearer the player for something in its way (see Livestock).
+## Seconds it has been going round something in its way or stopped by it, without getting anywhere
+## (see Livestock `_walk` and `_note_progress`).
 var stuck_seconds := 0.0
+## Where it last made progress getting round something in its way (see Livestock `_note_progress`);
+## infinite before it has walked.
+var progress_anchor := Vector2.INF
+## Seconds before a step round something may turn it to face the other way.
+var turn_hold_seconds := 0.0
+## Seconds a follower that could not get to the player still waits, facing them.
+var follow_wait_seconds := 0.0
 ## How much it wants to eat and to drink, from 0 (it just did) to 1 (the most). They rise with
 ## game time and have no other effect yet (see Livestock).
 var hunger := 0.0
