@@ -36,6 +36,10 @@ const OYSTERCATCHER := &"oystercatcher"
 const DUNLIN := &"dunlin"
 const GULL := &"gull"
 const TERN := &"tern"
+## A flock of crows (carrion and hooded crows, rooks) on the meadows and the fields. Not in KINDS
+## yet: the view has no crows to show, so its spawner leaves them out. The rules are here, what
+## they do to the crops is in CropRaids.
+const CROWS := &"crows"
 ## The kinds that wade: the flooded mud is theirs to stand on until it is water to them (see
 ## WildlifeView `can_stand`).
 const WADERS: Array[StringName] = [OYSTERCATCHER, DUNLIN]
@@ -228,7 +232,7 @@ func problems() -> Array[String]:
 	for key: String in GENERAL_KEYS:
 		if not _values.get("general", {}).has(key):
 			missing.append("[general] no %s" % key)
-	for kind in KINDS:
+	for kind in KINDS + [CROWS]:
 		for key: String in KIND_KEYS:
 			if not _values.get(String(kind), {}).has(key):
 				missing.append("[%s] no %s" % [kind, key])

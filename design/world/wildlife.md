@@ -19,6 +19,12 @@ atmosphere only: no player impact, not hunted, not saved.
     the same rule (task 223); the oystercatchers, dunlin, gulls and storks have no front or back
     view and fly off side on. Head on, the V is wider across (`head_on_spacing`: 24 px for the
     sparrows, 44 for the geese), so that the spread wings of neighbours clear each other;
+  - crows (task 225): flocks of carrion and hooded crows and rooks walk the meadows and the
+    fields (grass, floodplain and tilled soil) by day, in every season but most in autumn and
+    winter, when the fields lie bare (season factors: spring 0.8, summer 0.4, autumn and winter 1), not at night
+    or in heavy rain. They look up at 10 tiles and fly off at 6. The rules are in data/wildlife.cfg
+    (`[crows]`, `WildlifeRules.CROWS`, kept out of `KINDS` until the view shows them); what they
+    do to the crops is under the crops in [crops.md](../farming/crops.md);
   - rabbits: grassland and forest edges, hop about, flee in zigzags from the player;
   - squirrels: forests, dart between trees, sit up, scurry off;
   - deer: rare, in forests and at forest edges, mostly at dawn and dusk; graze, look up,
