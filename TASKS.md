@@ -23,19 +23,34 @@ Rules for every task:
 - Visuals come from the art generator (task 5 on). Until a task adds art for something,
   use simple placeholder shapes in palette colours.
 
-## 170. Music: the game plays the modules (after 169's decision)
+## 170. Music: the game plays the everyday pieces, rendered in the background
 
 - [ ] Done
 
-Known limitation from 169: MusicCrossfade counts a fade's progress across loop wraps from the time
-between audio mixes, which is when they happened, not how much they mixed; an audio thread held up
-and then mixing one block looks like a long stretch of play, so a fade into a short loop may end
-early by the hold-up (docs/music-viability.md, "Switching on the beat").
-
-To be rewritten from task 169's report with the user. The plan so far: render sections in the
-background with a bounded cache (user:// keyed by the module hash, renderer version and mix
-settings), never wait for a late render during play (keep looping), sections with explicit
-entry state, tempo, meter, loop points and allowed exits.
+Rewritten with the user, 2026-11-13, from task 169's report (docs/music-viability.md).
+- First measure how late MusicCrossfade starts on a real audio driver, silently (e.g. a muted bus
+  with a capture effect before the mute); if it is late by more than a few tens of ms, start the
+  crossfade a block earlier from a predicted position. Write the number into
+  docs/music-viability.md.
+- Render on a WorkerThreadPool thread (ModuleRenderer) into AudioStreamWAVs made whole there;
+  never copy a stream on the main thread, never wait for a late render during play (keep looping
+  what plays).
+- A disk cache in user:// keyed by the module's hash, the renderer version and the mix settings
+  (rate, channels), bounded in size (data/music.cfg), oldest dropped first; a broken or stale
+  file is rendered again. Loading a cached render must not stall a frame either.
+- Sections with their entry state, tempo, meter, loop points and allowed exits, read from the
+  pieces.
+- The everyday pieces "Tide" and "Harbour evening" (tools/music/pieces/sketch_tide.txt,
+  sketch_harbour.txt; plain notes, held notes fading out) play on the Music bus (task 184): a
+  piece loops a few times, then the other crossfades in on the beat (counts in data/music.cfg).
+  Both art settings play the chiptune versions for now (two versions: task 224).
+- Off in test runs (the Music bus is muted there); the console `play`/`stop` keep working.
+- Known limitation from 169: MusicCrossfade counts a fade's progress across loop wraps from the
+  time between audio mixes, so an audio thread held up and then mixing one block looks like a
+  long stretch of play, and a fade into a short loop may end early by the hold-up
+  (docs/music-viability.md, "Switching on the beat"). Fix it if the measurement shows it matters.
+- Tests: the cache (hit, miss, stale, bound), never waiting for a render, the switch on the beat;
+  README.
 
 ## 171. Music: what plays when, with loops, transitions and crossfades
 
@@ -55,12 +70,7 @@ Settings (and off), muted in test runs (comes with task 184). Rules in data/musi
   After the fix: plain notes, no vibrato; the instrument tone is fine; note switches must not
   click.
   Approved the same day: "Tide" and "Harbour evening" (plain notes, held notes fading out
-  rather than stopping) are the first everyday pieces (their data on the sketch branch of 2026-11-10).
-- The user, 2026-11-10: the chiptune sound fits the classic 16 px graphics. Each piece gets two
-  versions that switch with the graphics setting: the chiptune one with the classic art, a
-  fuller one (more channels, softer instruments, still in the folk style) with the 32 px art,
-  following the setting when it changes (a crossfade on the bar). The test piece's tempo was too
-  fast for the game: calm tempos, around 100-110 BPM.
+  rather than stopping) are the first everyday pieces; task 170 plays them (tools/music/pieces/sketch_tide.txt and sketch_harbour.txt).
 - The user, 2026-11-10, after hearing the 106 BPM test reel: "it still sounds like festive music
   for special events. The default music should probably be more of an ambient style music with a
   naval flair. Take inspiration from the German band Santiano." So the default (everyday) pieces
@@ -75,6 +85,21 @@ Settings (and off), muted in test runs (comes with task 184). Rules in data/musi
 
 - Task 184 (done 2026-11-11) already added the Music bus and its volume slider in the audio
   settings, and a MusicPlayer behind the console `play`/`stop`; build on those.
+
+## 224. Music: a fuller version of each piece for the 32 px art
+
+- [ ] Done
+
+After task 171 (the user, 2026-11-13: its own task after 171).
+- The user, 2026-11-10: the chiptune sound fits the classic 16 px graphics. Each piece gets two
+  versions that switch with the graphics setting: the chiptune one with the classic art, a
+  fuller one (more channels, softer instruments, still in the folk style) with the 32 px art,
+  following the setting when it changes (a crossfade on the bar). The test piece's tempo was too
+  fast for the game: calm tempos, around 100-110 BPM.
+- The music-composer writes the fuller versions of "Tide" and "Harbour evening"; the director
+  of 171 picks the version by the graphics setting and crossfades on the bar when it changes.
+- Tests: the version follows the setting, the switch on the bar; listening files for the user.
+
 ## Later (not part of the prototype)
 
 - **Crows** (the user, 2026-11-13): wild crows (carrion or hooded crows, rooks) as wildlife:
