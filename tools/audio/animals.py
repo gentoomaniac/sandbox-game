@@ -1,4 +1,4 @@
-"""Animal sounds: birds, frogs and their chorus, deer, rabbits, squirrels and bees, the storks
+"""Animal sounds: birds, crows, frogs and their chorus, deer, rabbits, squirrels and bees, the storks
 and the geese, and the cows, sheep, hens, dogs, cats and horses of the livestock (see
 design/presentation/sound.md)."""
 
@@ -355,4 +355,71 @@ def rooster_crow(rng):
     # The long last note rises, hangs at the top with a strained wobble and sinks away.
     length = rng.uniform(0.85, 1.1)
     place(out, syllable(780, 1020, 640, length, 0.035), at + 0.02)
+    return out
+
+
+def _caw(rng, length, pitch):
+    """One hoarse "kraa" of a hooded crow or rook: a falling, buzzing note whose voice is
+    chopped into a rough grate by a fast pulse and mixed with breathy noise, with a hard
+    start. Higher and rawer than a raven's deep croak."""
+    curve = (rng.uniform(560, 620) * pitch, rng.uniform(600, 680) * pitch, rng.uniform(380, 450) * pitch)
+    voice = _voice(curve, length, [(1000, 0.5, 1.0), (1900, 0.4, 0.8), (3100, 0.4, 0.4)], vibrato=0.02, vibrato_rate=rng.uniform(40, 60))
+    size = len(voice) / RATE
+    # The grate: the voice breaks up into pulses about 80 times a second.
+    grate = 0.55 + 0.45 * np.sign(np.sin(2 * np.pi * rng.uniform(70, 95) * times(size) + rng.uniform(0, 6)))
+    grate = lowpass(grate, 400)
+    rasp = bandpass(noise(rng, size), 900, 4200) * np.sin(np.pi * np.clip(times(size) / size, 0, 1)) ** 0.5
+    mixed = voice * grate + 0.5 * rasp / rms(rasp) * rms(voice)
+    # A sharp, short onset: the "k" of "kraa".
+    onset = 1 + 1.2 * np.exp(-times(size) / 0.025)
+    return mixed * onset
+
+
+def _caws(rng, count):
+    """Count caws in a row, each a little shorter and lower than the one before, apart by
+    short pauses."""
+    pitch = rng.uniform(0.88, 1.12)
+    out = silence(0.2 + count * 0.5)
+    at = 0.02
+    for number in range(count):
+        length = rng.uniform(0.2, 0.32) * (1.0 if count == 1 else 0.85) * (1 - 0.06 * number)
+        place(out, _caw(rng, length, pitch * (1 - 0.04 * number)), at, 1 - 0.1 * number)
+        at += length + rng.uniform(0.09, 0.2)
+    return out[: int((at + 0.1) * RATE)]
+
+
+def crow_caw_single(rng):
+    """A single harsh "kraa"."""
+    return _caws(rng, 1)
+
+
+def crow_caw_double(rng):
+    """A double "kraa kraa"."""
+    return _caws(rng, 2)
+
+
+def crow_caw_triple(rng):
+    """A triple "kraa kraa kraa"."""
+    return _caws(rng, 3)
+
+
+def crow_flock_rise(rng):
+    """A flock of crows taking off: the wing beats of many birds, a heavy, clapping flutter that
+    starts at once and thins out as they climb, and caws from several throats, overlapping and
+    at different pitches, loudest in the first second."""
+    length = 2.6
+    out = silence(length)
+    # Wings: soft thumps and claps of many beats, dense at first and fewer later.
+    at = 0.0
+    while at < 2.2:
+        progress = at / 2.2
+        beat = burst(rng, 0.09, 120, 1400, 0.004, 40)
+        flap = resonance(beat, rng.uniform(250, 500), 0.4)
+        place(out, flap / rms(flap) * 0.25 + 0.5 * beat / rms(beat) * 0.12, at, (1 - 0.6 * progress) * rng.uniform(0.5, 1.0))
+        at += (0.012 + 0.07 * progress) * rng.uniform(0.6, 1.4)
+    # Voices.
+    for _ in range(rng.integers(7, 10)):
+        start = rng.uniform(0.0, 1.5) ** 1.2
+        caw = _caw(rng, rng.uniform(0.17, 0.3), rng.uniform(0.85, 1.2))
+        place(out, caw / rms(caw) * 1.3, start, rng.uniform(0.5, 1.0) * (1 - 0.4 * start / 1.5))
     return out

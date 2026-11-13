@@ -64,6 +64,8 @@ const EVENTS: Array[StringName] = [
 	&"bee_buzz_loop",
 	&"stork_clatter",
 	&"goose_honk",
+	&"crow_caw",
+	&"crow_flock_rise",
 ]
 
 static var _default: SoundRules

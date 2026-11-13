@@ -99,6 +99,10 @@ EVENTS = {
     # The storks and geese are rare and far off, so quieter still than the farm animals.
     "stork_clatter": (-25, [animals.stork_clatter] * 3),
     "goose_honk": (-24, [animals.goose_honk] * 3),
+    # Crows (task 225): wildlife in the fields, heard now and then, so about the cluck's level;
+    # the flock taking off is a crowd of them and the wings, so a little louder.
+    "crow_caw": (-21, [animals.crow_caw_single] * 2 + [animals.crow_caw_double] * 2 + [animals.crow_caw_triple]),
+    "crow_flock_rise": (-18, [animals.crow_flock_rise] * 2),
     # The farm animals are kept quiet: they are heard often, wherever the player keeps them.
     "cow_moo": (-20, [animals.cow_moo] * 3),
     "sheep_baa": (-21, [animals.sheep_baa] * 3),
