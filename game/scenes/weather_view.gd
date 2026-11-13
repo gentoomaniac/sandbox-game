@@ -30,6 +30,10 @@ const FOG_DRIFT_PER_WIND := 2.0
 ## Sideways pixels a raindrop moves for every pixel it falls, per m/s of wind.
 const RAIN_SLANT_PER_WIND := 0.03
 const MAX_RAIN_SLANT := 0.6
+## The cloud shadow pattern repeats after this many patches, so that its drift can wrap around
+## without a visible jump and stays small enough for a float to hold whole pixels.
+const CLOUD_SHADOW_PERIOD_PATCHES := 32.0
+
 ## Fog drifts a little even without wind, in pixels per second.
 const FOG_BASE_DRIFT := Vector2(3.0, 0.8)
 ## Effects with less than this intensity are not drawn at all.
@@ -46,7 +50,7 @@ var is_flash_held := false
 var rain := 0.0
 var wind := Vector2.ZERO
 ## How dark the darkest part of a cloud shadow is now (0 to 1), and how far the shadows have
-## drifted, in pixels.
+## drifted, in pixels (wrapped at the pattern's period).
 var cloud_shadow_strength := 0.0
 var cloud_shadow_drift := Vector2.ZERO
 
@@ -145,7 +149,9 @@ func _process(delta: float) -> void:
 	var gust_direction := -1.0 if wind_x < 0.0 else 1.0
 	_streak_scroll += Vector2(gust_direction * wind.length() * STREAK_SPEED_PER_WIND, 0.0) * delta
 	_fog_drift += (FOG_BASE_DRIFT + wind * FOG_DRIFT_PER_WIND) * delta
+	var shadow_period: float = CLOUD_SHADOW_PERIOD_PATCHES * _rules.cloud_shadow("size")
 	cloud_shadow_drift += wind * _rules.cloud_shadow("speed_per_wind") * delta
+	cloud_shadow_drift = cloud_shadow_drift.posmod(shadow_period)
 	if is_flash_held:
 		_flash.color.a = HELD_FLASH_OPACITY
 	_show_effects(wind_x)
@@ -201,6 +207,7 @@ func _show_cloud_shadows() -> void:
 	shadows.set_shader_parameter("coverage", _rules.cloud_shadow("coverage"))
 	shadows.set_shader_parameter("softness", _rules.cloud_shadow("softness"))
 	shadows.set_shader_parameter("drift", cloud_shadow_drift)
+	shadows.set_shader_parameter("period_patches", CLOUD_SHADOW_PERIOD_PATCHES)
 	var camera := get_viewport().get_camera_2d()
 	if camera != null:
 		shadows.set_shader_parameter("camera", camera.position.round())

@@ -31,6 +31,11 @@ func _shadows_shown() -> bool:
 	return _view._cloud_shadows.visible
 
 
+func _shadow_period() -> float:
+	var size := LightingRules.default_rules().cloud_shadow("size")
+	return WeatherView.CLOUD_SHADOW_PERIOD_PATCHES * size
+
+
 func _shader_value(name: String) -> Variant:
 	return _view._cloud_shadows.material.get_shader_parameter(name)
 
@@ -95,8 +100,18 @@ func test_shadows_drift_downwind_at_a_speed_that_follows_the_wind() -> void:
 	_view = WeatherView.new()
 	add_child_autofree(_view)
 	_show(_sample(0.5, 8.0, Vector2.LEFT), 1.0, 2.0)
-	assert_almost_eq(_view.cloud_shadow_drift.x, -2.0 * slow, 0.01)
+	assert_almost_eq(_view.cloud_shadow_drift.x, fposmod(-2.0 * slow, _shadow_period()), 0.01)
 	assert_eq(_view.cloud_shadow_drift.y, 0.0)
+
+
+func test_the_drift_wraps_at_the_period_of_the_pattern() -> void:
+	_show(_sample(0.5, 10.0, Vector2.RIGHT), 1.0, 1.0)
+	var before := _view.cloud_shadow_drift.x
+	_view._process(
+		_shadow_period() / (10.0 * LightingRules.default_rules().cloud_shadow("speed_per_wind"))
+	)
+	assert_almost_eq(_view.cloud_shadow_drift.x, before, 0.01)
+	assert_lt(_view.cloud_shadow_drift.x, _shadow_period())
 
 
 func test_no_wind_means_no_drift() -> void:
