@@ -23,19 +23,6 @@ Rules for every task:
 - Visuals come from the art generator (task 5 on). Until a task adds art for something,
   use simple placeholder shapes in palette colours.
 
-## 129. Newcomers learn the village from the locals
-
-- [ ] Done
-
-From design/villagers/gossip.md (Locals and newcomers). Needs 127.
-- Made-up villagers start with no village sheet, only its base line (Wehlsbüll, the North
-  Frisian coast, 1750). The sections of data/village.cfg are topics; a villager who knows a topic
-  passes it at a meeting as a story, like a deed, with no hops limit and no whispers.
-- A learned topic goes into knowledge and is never forgotten; the prompt carries only the topics
-  a villager knows (full or cut down by provider, as today).
-- Saved (version bump): made-up villagers of older saves start with no topics.
-- Tests: learning, the prompt, saving. Docs in villagers.md.
-
 ## 130. Bubbles: villagers say a line now and then
 
 - [ ] Done

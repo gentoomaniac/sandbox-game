@@ -155,3 +155,18 @@ From design/villagers/gossip.md (The judge). Needs 127.
 - Tests with a fake model: parsing, fallbacks, caps, the queue across save and load.
 
 Done: a12925c5..12c89851. Opinion per villager (saved, -100..1000), 10 points a step, half for heard, at most 20 net a day; told to the chat model as cold (< -20), neutral or warm (>= 20), plain words until relationships.md is decided. The queue is the stories not yet judged (`is_judged`, saved); StoryJudging asks the model one story at a time (temperature 0.2), quietly (no failure notice); bad or missing answers give the template line and the deed's fixed change; personal raises the story to high. Each story is judged once, on arrival (later merges of the same deed aren't). Console `opinion <villager> [points]`. Save version 37 (the upgrade from 26 dropped). Numbers in data/gossip.cfg and data/npc_talk.cfg.
+
+## 129. Newcomers learn the village from the locals
+
+- [x] Done
+
+From design/villagers/gossip.md (Locals and newcomers). Needs 127.
+- Made-up villagers start with no village sheet, only its base line (Wehlsbüll, the North
+  Frisian coast, 1750). The sections of data/village.cfg are topics; a villager who knows a topic
+  passes it at a meeting as a story, like a deed, with no hops limit and no whispers.
+- A learned topic goes into knowledge and is never forgotten; the prompt carries only the topics
+  a villager knows (full or cut down by provider, as today).
+- Saved (version bump): made-up villagers of older saves start with no topics.
+- Tests: learning, the prompt, saving. Docs in villagers.md.
+
+Done: c99eddb7..37a6e274. `Npc.topics` (saved): villagers of data/villagers.cfg know every section of data/village.cfg, made-up ones none; the prompt tells only the known topics (the block is left out when none). At a meeting each villager may teach the other the first topic it lacks (chance 0.5, data/gossip.cfg); a topic is not a story: no buffer, no judge, no hops, no whispers, no wait, never forgotten. `gossip <villager>` lists the known topics. Save version 38 (the upgrade from 27 dropped).
