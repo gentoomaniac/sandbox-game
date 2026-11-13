@@ -23,7 +23,7 @@ only near the fire in a big one). Settings → Audio has Master, Effects, Ambien
 and "Sound in background" (off: silent while the window is not focused). What you do is heard
 when it worked; an action the game refuses only says "denied". While the game is paused (the pause
 menu and its settings, a chat, a choice) every sound of the world fades out and comes back when you
-go on; only the music and the menu's own clicks play.
+go on; only the music and the menu's own clicks play (moving a volume slider clicks at its level, so you hear it).
 Which file each sound plays is in [data/sounds.cfg](data/sounds.cfg), so any
 sound can be swapped for a recording.
 

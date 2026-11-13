@@ -4,6 +4,8 @@ extends Modal
 ## Escape (or the pause key) goes back one page, and closes the menu from the first one.
 
 signal save_and_quit_requested
+## A volume slider moved (see AudioPage).
+signal volume_tested(channel: StringName, percent: float)
 
 enum Page { PAUSE, SETTINGS, CONTROLS, DISPLAY, GAME, AUDIO, LANGUAGE_MODEL }
 
@@ -171,6 +173,7 @@ func _init(settings: GameSettings) -> void:
 
 	var audio := AudioPage.new(_settings)
 	audio.back_requested.connect(_back)
+	audio.volume_tested.connect(volume_tested.emit)
 	pages.add_child(audio)
 	_pages[Page.AUDIO] = audio
 	_first_focus[Page.AUDIO] = audio.first_focus

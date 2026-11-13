@@ -4,6 +4,8 @@ extends VBoxContainer
 ## the game keeps playing sound while its window is not focused. The rules are GameSettings'.
 
 signal back_requested
+## The player moved a volume slider: the menu plays a sound to hear the new volume by.
+signal volume_tested(channel: StringName, percent: float)
 
 const CHANNEL_LABELS := {
 	&"master": "Master", &"effects": "Effects", &"ambience": "Ambience", &"music": "Music"
@@ -71,6 +73,7 @@ func _show_volume(channel: StringName, percent: float) -> void:
 func _on_volume_changed(percent: float, channel: StringName) -> void:
 	_show_volume(channel, percent)
 	_settings.set_volume(channel, roundi(percent))
+	volume_tested.emit(channel, percent)
 
 
 func _toggle_sound_in_background() -> void:

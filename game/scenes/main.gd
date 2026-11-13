@@ -283,6 +283,7 @@ func _connect_state_and_views() -> void:
 			_show_clock()
 	)
 	_menu.save_and_quit_requested.connect(_save_and_quit)
+	_menu.volume_tested.connect(_audio.play_volume_test)
 	_saves.started.connect(
 		func() -> void:
 			_notifications.hold(SAVE_NOTE, "Saving...")

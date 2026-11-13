@@ -36,6 +36,8 @@ const CHANNEL_BUSES := {
 }
 ## Where a bus sends its sound, for those that don't send to Master.
 const SEND_OF_BUS := {EFFECTS: GAME, AMBIENCE: GAME, OUTSIDE_EFFECTS: EFFECTS}
+## A slider's test clicks come at most this far apart, the last one at its final level.
+const TEST_CLICK_SECONDS := 0.15
 const POOL_SIZE := 12
 ## Beyond this far from the camera (31 tiles, in art pixels) a positional sound is silent, unless
 ## its event has a `reach_tiles` of its own.
@@ -55,6 +57,10 @@ var _rng := RandomNumberGenerator.new()
 var _muffle := Muffle.new()
 var _low_passes: Array[AudioEffectLowPassFilter] = []
 var _amplifiers: Array[AudioEffectAmplify] = []
+## Seconds until a slider (by channel) may click again, and the level it last asked for while
+## it had to wait.
+var _test_cooldowns: Dictionary[StringName, float] = {}
+var _test_waiting: Dictionary[StringName, float] = {}
 var _pause_amplifier: AudioEffectAmplify
 ## 0 (the game's sounds play) to 1 (silenced by the pause).
 var _pause_amount := 0.0
@@ -113,6 +119,7 @@ func _process(delta: float) -> void:
 		low_pass.cutoff_hz = _muffle.cutoff_hz()
 	for amplifier in _amplifiers:
 		amplifier.volume_db = _muffle.volume_db(_outside_db)
+	_step_test_clicks(delta)
 	_pause_amount = move_toward(
 		_pause_amount, 1.0 if get_tree().paused else 0.0, delta / _pause_fade_seconds
 	)
@@ -160,6 +167,35 @@ func apply_settings(settings: GameSettings) -> void:
 		)
 	_is_sound_in_background = settings.sound_in_background
 	_update_silence()
+
+
+## Lets the player hear a volume slider of the settings: the world's sounds are silent while the
+## menu is open, so a click on the UI bus (which only Master governs) plays at the slider's level
+## for Effects and Ambience. Music goes on playing, so it is heard as it is.
+func play_volume_test(channel: StringName, percent: float) -> void:
+	if channel == &"music" or percent <= 0.0:
+		return
+	if _test_cooldowns.has(channel):
+		_test_waiting[channel] = percent
+		return
+	_click_for(channel, percent)
+
+
+func _click_for(channel: StringName, percent: float) -> void:
+	_test_cooldowns[channel] = TEST_CLICK_SECONDS
+	play(&"ui_click", null, false, 1.0 if channel == &"master" else percent / 100.0)
+
+
+## Lets the sliders click again; one that was moved meanwhile clicks at its last level.
+func _step_test_clicks(delta: float) -> void:
+	for channel in _test_cooldowns.keys():
+		_test_cooldowns[channel] -= delta
+		if _test_cooldowns[channel] > 0.0:
+			continue
+		_test_cooldowns.erase(channel)
+		if _test_waiting.has(channel):
+			_click_for(channel, _test_waiting[channel])
+			_test_waiting.erase(channel)
 
 
 ## Plays a sound event once. `position` (in the world's art pixels) makes it come from there.

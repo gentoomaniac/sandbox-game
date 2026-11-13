@@ -23,7 +23,10 @@ Settings → Audio, saved with the others; 0 mutes it).
   bag and console windows don't pause and keep the sound), an amplifier on Game fades to silence over
   `fade_seconds` (0.3, `[paused]` of `data/ambience.cfg`) and back when the game goes on. Fading the
   bus rather than pausing the players keeps loops, the bell's tail and positional sounds where they
-  were, and nothing clicks. The UI bus is not touched, so the menu's own sounds play.
+  were, and nothing clicks. The UI bus is not touched, so the menu's own sounds play. Moving a volume slider of
+  Settings → Audio plays a `ui_click` (`AudioService.play_volume_test`) at the slider's level for
+  Effects and Ambience (a click on the UI bus, which only Master governs, since those buses are silent
+  now; Master's is a click at full level; Music is heard as it plays; nothing at 0 %). A moving slider clicks at most every 0.15 s (`TEST_CLICK_SECONDS`), the last click at its final level.
 - **Footsteps** follow the walk animation and the ground: grass, soil, sand or floodplain,
   wetland (squelch), ice, snow (crunch), wooden floor.
 - **Work:** axe chop, a tree's crack and thud when it falls, pickaxe on stone, stone
