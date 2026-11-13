@@ -136,10 +136,10 @@ def _thunder(rng, length, rumble_cutoff, attack, rate, crack):
 
 
 CRAWL = [
-    dict(length=7.0, cutoff=170, build=0.55, crackles=14, tear=(120, 3200), ripple=(18, 40)),
-    dict(length=9.0, cutoff=140, build=0.45, crackles=10, tear=(90, 2600), ripple=(12, 30)),
-    dict(length=6.2, cutoff=210, build=0.65, crackles=20, tear=(160, 3800), ripple=(25, 55)),
-    dict(length=8.0, cutoff=185, build=0.4, crackles=16, tear=(100, 3000), ripple=(15, 45)),
+    dict(length=7.0, cutoff=170, build=0.55, rumbles=4.5, crackles=32, tear=(120, 3200)),
+    dict(length=8.4, cutoff=140, build=0.45, rumbles=3.5, crackles=26, tear=(90, 2600)),
+    dict(length=6.2, cutoff=200, build=0.6, rumbles=5.5, crackles=44, tear=(160, 3800)),
+    dict(length=8.0, cutoff=185, build=0.4, rumbles=4.0, crackles=36, tear=(100, 3000)),
 ]
 
 
@@ -147,29 +147,50 @@ def thunder_crawl(profile):
     return partial(_crawl, profile=profile)
 
 
+def _poisson_times(rng, start, end, rate, density=None):
+    """Event times of a Poisson process with gaps of tens of ms to about a second. With a
+    density (0..1 over the length) the events thin out where it is low."""
+    found = []
+    at = start
+    while True:
+        at += min(rng.exponential(1 / rate), 1.0)
+        if at >= end:
+            return found
+        if density is None or rng.uniform() < density(at):
+            found.append(at)
+
+
 def _crawl(rng, profile):
-    """Lightning running across the sky: a long tearing rumble that builds, swells and dies
-    away with a rippling flutter, and crackles scattered through it, thickest at its peak."""
+    """Lightning running across the sky: a long rolling rumble of many overlapping, decaying
+    bursts at random gaps (no steady rate anywhere, or it would sound like rotor blades),
+    sharp tearing crackles scattered through it, thickest in the middle, a slow swell and a
+    long fade."""
     length = profile["length"]
-    t = times(length)
     peak = profile["build"] * length
     shape = swell(length, peak)
-    # Surges: the bolt branches, so the loudness moves in uneven waves around the shape.
-    surge = 0.55 + 0.45 * drift(rng, length, 1.6)
-    body = shape * surge
-    rumble = lowpass(10 * lowpass(noise(rng, length), 40), profile["cutoff"])
+    out = np.zeros(samples(length + 1.6))
+    for at in _poisson_times(rng, 0, length, profile["rumbles"] * 4):
+        size = rng.uniform(0.3, 1.5)
+        cutoff = rng.uniform(40, profile["cutoff"])
+        burst = lowpass(10 * lowpass(noise(rng, size), 40), cutoff)
+        burst = burst / rms(burst) * envelope(size, rng.uniform(0.01, 0.12), rng.uniform(2.5, 9))
+        place(out, burst, at, rng.lognormal(0, 0.5) * (0.15 + shape[min(len(shape) - 1, samples(at))]))
+    out *= 0.9 / np.abs(out).max()
     low, high = profile["tear"]
-    centre = low * (high / low) ** (0.25 + 0.6 * drift(rng, length, 0.5))
-    tear = swept_band(noise(rng, length), centre, 0.7)
-    flutter = 1 + 0.7 * np.sin(2 * np.pi * rng.uniform(*profile["ripple"]) * t
-                               + 3 * drift(rng, length, 4))
-    out = 0.8 * rumble / rms(rumble) * body
-    out += 0.45 * tear / rms(tear) * body**1.5 * flutter
-    for _ in range(round(profile["crackles"] * length / 8)):
-        # More crackles near the peak.
-        at = np.clip(peak + rng.normal(0, 0.28 * length), 0.05, length - 0.5)
-        size = rng.uniform(0.01, 0.08)
-        crackle = bandpass(noise(rng, size), rng.uniform(600, 1800), rng.uniform(3000, 8000))
-        crackle = crackle / (rms(crackle) + 1e-9) * envelope(size, 0.0005, 6 / size)
-        place(out, crackle, at, rng.uniform(0.15, 0.7) * (0.3 + body[min(len(body) - 1, samples(at))]))
-    return normalized(fade_out(out, 0.6))
+
+    def middle(at):
+        return 0.1 + 0.9 * np.exp(-0.5 * ((at - peak) / (0.22 * length)) ** 2)
+
+    rate = profile["crackles"] / length * 2
+    for at in _poisson_times(rng, 0.05, length - 0.3, rate, middle):
+        size = rng.uniform(0.008, 0.07)
+        crackle = bandpass(noise(rng, size), rng.uniform(300, 1800), rng.uniform(3000, 8000))
+        crackle = crackle / (rms(crackle) + 1e-9) * envelope(size, 0.0004, 5 / size)
+        place(out, crackle, at, 0.09 * rng.lognormal(0, 0.6) * (0.3 + shape[samples(at)]))
+    # Longer tearing: a few brief rips of mid-high noise that die away.
+    for at in _poisson_times(rng, 0.2, length - 0.5, 0.6, middle):
+        size = rng.uniform(0.1, 0.4)
+        rip = bandpass(noise(rng, size), low * rng.uniform(1, 3), high * rng.uniform(0.4, 1))
+        rip = rip / rms(rip) * envelope(size, rng.uniform(0.003, 0.03), rng.uniform(6, 18))
+        place(out, rip, at, 0.06 * rng.lognormal(0, 0.4) * (0.3 + shape[samples(at)]))
+    return normalized(fade_out(out[: samples(length + 0.5)], 1.0))
