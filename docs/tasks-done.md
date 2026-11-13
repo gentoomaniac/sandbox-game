@@ -91,3 +91,27 @@ strike."
   branching), determinism. Listening files and screenshots of a bolt and a crawler for the user.
 
 Done: 804b5dc6 and the earlier sound commits. More thunder variants, the sky-crawler (`thunder_crawl`, panned, flickering flash; the helicopter-like flutter removed after the user's listen), and a forking bolt for close strikes (a faint one for middle strikes), seeded, in palette colours (BoltImage), numbers in data/weather.cfg. The user: "good for now".
+
+## 126. Villager memory in three layers: knowledge, short-term, long-term
+
+- [x] Done
+
+From design/villagers/gossip.md (Memory). Needs 125.
+- Knowledge: the sheet, and the village sheet for villagers of data/villagers.cfg (as today).
+- Short-term: the chat buffer (`chat_history`, as today) and a gossip buffer of stories (the
+  witnessed deeds of 125; a story as on the design page: fact, seen or heard, told_by, seen_by,
+  hops, day learned, line, weight, personal), both first in, first out.
+- Long-term: memories become `{day, text, weight}` (low, medium, high). Full: the lightest goes,
+  between equal weights the oldest. This replaces the merge of the oldest two.
+- Leaving the chat buffer: summed up as today, weight medium. Leaving the gossip buffer: low is
+  forgotten, else the line moves to long-term with its weight. High: a deed by their own home or
+  that of family or friends on their sheet.
+- Settings "Stories a villager keeps" (default 10) and "Memories a villager keeps" (default 20),
+  next to "Lines a villager keeps".
+- The prompt tells knowledge, long-term, gossip and chat in that order; `/clear` forgets all but
+  knowledge.
+- Save version bump; old memories load as medium.
+- Console: `gossip <villager>` lists their stories and memories with weights.
+- Tests for the buffers, eviction by weight, save and upgrade; docs in dialogue.md.
+
+Done: 2ac0ae12..88329db6. Memories are {day, text, weight}; full: lightest, then oldest, goes. Stories carry the design's fields in a first in, first out buffer; leaving, a low story is forgotten, others become memories. A deed by the witness's own home or that of someone on their sheet is high, others medium; chat summaries medium. Settings "Stories a villager keeps" (10) and "Memories a villager keeps" (20), per language model profile. Stories no longer age out after 7 days (only the buffer evicts; the deed log keeps 7 days), so the prompt tells the whole buffer and `prompt_stories` is gone. Old memories load as medium, day 0. Save version 35 (the upgrade from 24 dropped). `/clear` forgets all but knowledge; console `gossip <villager>`.

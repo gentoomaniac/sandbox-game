@@ -23,28 +23,6 @@ Rules for every task:
 - Visuals come from the art generator (task 5 on). Until a task adds art for something,
   use simple placeholder shapes in palette colours.
 
-## 126. Villager memory in three layers: knowledge, short-term, long-term
-
-- [ ] Done
-
-From design/villagers/gossip.md (Memory). Needs 125.
-- Knowledge: the sheet, and the village sheet for villagers of data/villagers.cfg (as today).
-- Short-term: the chat buffer (`chat_history`, as today) and a gossip buffer of stories (the
-  witnessed deeds of 125; a story as on the design page: fact, seen or heard, told_by, seen_by,
-  hops, day learned, line, weight, personal), both first in, first out.
-- Long-term: memories become `{day, text, weight}` (low, medium, high). Full: the lightest goes,
-  between equal weights the oldest. This replaces the merge of the oldest two.
-- Leaving the chat buffer: summed up as today, weight medium. Leaving the gossip buffer: low is
-  forgotten, else the line moves to long-term with its weight. High: a deed by their own home or
-  that of family or friends on their sheet.
-- Settings "Stories a villager keeps" (default 10) and "Memories a villager keeps" (default 20),
-  next to "Lines a villager keeps".
-- The prompt tells knowledge, long-term, gossip and chat in that order; `/clear` forgets all but
-  knowledge.
-- Save version bump; old memories load as medium.
-- Console: `gossip <villager>` lists their stories and memories with weights.
-- Tests for the buffers, eviction by weight, save and upgrade; docs in dialogue.md.
-
 ## 127. Rumours spread when villagers meet, and change on the way
 
 - [ ] Done
