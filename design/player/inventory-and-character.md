@@ -133,7 +133,7 @@
     the energy than iron; the chip comes with durability.
   - The tool decides the action: hoe tills, seeds plant, axe fells, the pickaxe (the pick of
     the Geest, which grubbed the fieldstones of the till out of the fields) breaks stones, the
-    watering can wets tilled soil, the scythe mows tall grass, the shovel digs for clay,
+    watering can wets tilled soil, the scythe mows tall grass, the shovel digs for clay and digs bushes up,
     an empty hand harvests crops, clears dead ones and picks bushes.
 - **The lantern** (task 177): a horn lantern with a tallow candle, for the dark nights. No
   recipe yet: the console's `give lantern` hands it out. Held and selected, the use key (space,

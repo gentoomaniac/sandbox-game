@@ -115,6 +115,11 @@ static func _check_object(
 			found.append(at + "hp must be a whole number, at least 1")
 		if not object.get("tool") in tool_kinds:
 			found.append(at + "tool is the tool of no item: %s" % object.get("tool"))
+	if object.has("dig_hits"):
+		if not _is_count(object["dig_hits"]):
+			found.append(at + "dig_hits must be a whole number, at least 1")
+		if not object.has("placed_on"):
+			found.append(at + "dig_hits needs placed_on, the ground it is planted on")
 	if object.has("seed_chance"):
 		var chance: Variant = object["seed_chance"]
 		if not (chance is float and chance >= 0.0 and chance <= 1.0):

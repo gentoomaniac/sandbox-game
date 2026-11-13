@@ -98,6 +98,18 @@
   (a roll of the spot and the day), a dug spot is spent for 5 nights, spots lie on grass with
   water (the river or a ditch) or wetland within 5 tiles, in clusters, never where an object stands. The shovel's
   targeting highlight shows on any free grass tile, so spots can't be told from the cursor.
+- **Digging up bushes (task 208):** the shovel on a berry bush, a shrub or a fern digs it out
+  whole: `dig_hits` (3) in the object table, as `hp` is, each shovel hit taking off its grade's
+  power (so a rusty iron shovel needs 3 hits, an iron one 2), each with the dig sound and
+  energy. The last hit gives the bush as an item (berry bush, shrub, fern; it lies on the
+  ground if the inventory is full) and leaves grass. The hits heal overnight. Picking and
+  cutting by hand are unchanged, and the hammer does not take bushes down. The item is placed
+  on free grass outdoors (not on water, tilled soil, other objects, buildings or in front of a
+  door) as the same object again, with its seasons. A replanted berry bush counts as picked and
+  bears after its regrowth days (the picked state is not kept: digging and replanting must not
+  make berries); a fern or berry bush follows its season as any other. Saplings are not
+  bushes: they stay as they are and come from seeds. No save change: a bush is an ordinary
+  object and the items are ordinary item ids.
 - **Regrowth:**
   - a felled tree leaves a stump that rots away and may leave a sapling (see above);
   - minerals respawn slowly, mainly in areas the player hasn't visited for a while;

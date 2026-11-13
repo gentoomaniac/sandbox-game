@@ -15,6 +15,9 @@ const TYPES := {
 		"harvest_level": 0,
 		"atlas_row": 7,
 		"variants": 3,
+		"dig_hits": 3,
+		"placed_on": [Tile.Terrain.GRASS],
+		"placeable_in": WorldObjectTypes.OUTDOORS,
 	},
 	WorldObjectTypes.SHRUB:
 	{
@@ -24,6 +27,9 @@ const TYPES := {
 		"harvest_level": 0,
 		"atlas_row": 8,
 		"variants": 3,
+		"dig_hits": 3,
+		"placed_on": [Tile.Terrain.GRASS],
+		"placeable_in": WorldObjectTypes.OUTDOORS,
 	},
 	WorldObjectTypes.SAPLING:
 	{
@@ -44,6 +50,9 @@ const TYPES := {
 		"harvest_level": 0,
 		"atlas_row": 10,
 		"variants": 3,
+		"dig_hits": 3,
+		"placed_on": [Tile.Terrain.GRASS],
+		"placeable_in": WorldObjectTypes.OUTDOORS,
 	},
 	WorldObjectTypes.TALL_GRASS:
 	{

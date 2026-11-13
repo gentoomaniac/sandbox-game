@@ -94,9 +94,10 @@ func type_data() -> Dictionary:
 
 
 ## Whether a hit of this power takes off its last hit points. They heal overnight, if it is
-## not finished by then.
+## not finished by then. A bush has no `hp`: the shovel digs it out in its `dig_hits`.
 func is_finished_by(power: int) -> bool:
-	return _damage() + power >= type_data()["hp"]
+	var object_type := type_data()
+	return _damage() + power >= object_type["hp" if object_type.has("hp") else "dig_hits"]
 
 
 func take_hit(power: int) -> void:

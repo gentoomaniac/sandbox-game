@@ -492,11 +492,13 @@ func is_buildable(world_pos: Vector2i) -> bool:
 ## Whether a one tile object can be put on a tile: the rules of `placement_blockers` for one
 ## tile, and not the one in front of a door, which has to stay free to walk through.
 func is_placeable(world_pos: Vector2i) -> bool:
+	return is_buildable(world_pos) and not is_in_front_of_door(world_pos)
+
+
+## Whether a tile is the one just below a building's door, which has to stay free to walk through.
+func is_in_front_of_door(world_pos: Vector2i) -> bool:
 	var building_above := building_at(world_pos + Vector2i.UP)
-	var is_in_front_of_door := (
-		building_above != null and building_above.door_tile() == world_pos + Vector2i.UP
-	)
-	return is_buildable(world_pos) and not is_in_front_of_door
+	return building_above != null and building_above.door_tile() == world_pos + Vector2i.UP
 
 
 ## Whether a tile has this terrain and neither an object (a clearable one doesn't count) nor a

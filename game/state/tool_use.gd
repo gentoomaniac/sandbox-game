@@ -12,6 +12,8 @@ extends RefCounted
 ## opening or shutting a pen's gate (see WorldObjectTypes `turns_into`), HIT a tool cut or
 ## mined at an object, NEEDS_BETTER_TOOL a tool that is too weak for the object, MOW a scythe
 ## cutting the tall grass and reeds around the target, DIG a shovel in grass (which may find clay),
+## DIG_UP a shovel hitting a bush, the last hit digging it out whole (see WorldObjectTypes
+## `dig_hits`),
 ## PLACE an item that puts an object down (a chest, a station), TAKE_DOWN an axe or pickaxe taking
 ## down what the player placed inside a house (outdoors it is a HIT),
 ## NO_ROOM that, with too little room in the inventory for it and what it holds, GIVE_BONE a bone
@@ -39,6 +41,7 @@ enum Use {
 	GATE,
 	MOW,
 	DIG,
+	DIG_UP,
 	PLACE,
 	TAKE_DOWN,
 	NO_ROOM,
@@ -73,6 +76,7 @@ const COST_KINDS := {
 	Use.HIT: &"hit",
 	Use.MOW: &"mow",
 	Use.DIG: &"dig",
+	Use.DIG_UP: &"dig",
 }
 ## The items the use action gives to an animal (a bone to a dog) or puts on one (a saddle on a
 ## horse).
@@ -254,9 +258,14 @@ func _do_use(target: Vector2i) -> Use:
 			_done(ActionOutcome.MOW, target, &"", mown)
 		Use.DIG:
 			_done(ActionOutcome.DIG, target, &"", _dig(target))
+		Use.DIG_UP:
+			_dig_up(_state.world.object_at(target))
 		Use.PLACE:
 			var held := _state.player.inventory.held_item()
 			var placed := WorldObject.new(ItemTypes.TYPES[held]["places"], target)
+			# A transplanted berry bush bears again only after its regrowth days.
+			if placed.type_data().has("regrow_days"):
+				placed.pick()
 			_state.current_map.add_object(placed)
 			_state.player.inventory.consume_held()
 			_state.make_home_if_bedless(placed)
@@ -329,6 +338,23 @@ func _dig(target: Vector2i) -> Dictionary:
 	return CLAY_DIG_YIELD
 
 
+## One hit of the shovel at a bush. The last one digs it out: it becomes its item, which goes to
+## the inventory, or to the ground if that is full. The bush's picked state is not kept: a planted
+## one starts as if picked (see Use.PLACE), so that digging and replanting makes no berries.
+func _dig_up(bush: WorldObject) -> void:
+	var power := ItemTypes.tool_power(_state.player.inventory.held_item())
+	if not bush.is_finished_by(power):
+		_state.world.hit_object(bush, power)
+		_done(ActionOutcome.DIG, bush.pos, bush.type)
+		return
+	var item := ItemTypes.item_placing(bush.type)
+	_state.world.remove_object(bush.pos)
+	var left := _state.player.inventory.add(item, 1)
+	if left > 0:
+		_state.world.drop_items(bush.pos, {item: left})
+	_done(ActionOutcome.DIG, bush.pos, bush.type, {item: 1})
+
+
 ## Whether the player can put an object of this type with its top left on a tile: every tile of
 ## its footprint is free (and of a terrain of its `placed_on`, if it has that), the player's body
 ## is not on them (they would be stuck in it), and the object goes on this map (its `placeable_in`).
@@ -353,11 +379,14 @@ func _can_place_on(pos: Vector2i, placed_type: StringName) -> bool:
 
 ## Whether one tile is free for an object of the type `placed`: where the map lets one tile
 ## objects be placed, or, for a type with `placed_on` (only outdoors), free and of one of those
-## terrains. `placed_on` replaces the rule of buildable ground altogether, so the jetty and the
-## boat skip its other rule too: they may lie in front of a door.
+## terrains. `placed_on` replaces the rule of buildable ground altogether, but what is placed on
+## land (not on water, like the jetty and the boat, which may lie in front of a door) still keeps
+## the tile in front of a door free.
 func _is_free_for(tile: Vector2i, placed: Dictionary) -> bool:
 	if not placed.has("placed_on"):
 		return _state.current_map.is_placeable(tile)
+	if Tile.Terrain.WATER not in placed["placed_on"] and _state.world.is_in_front_of_door(tile):
+		return false
 	for terrain: Tile.Terrain in placed["placed_on"]:
 		if _state.world.is_free_on(tile, terrain):
 			return true
@@ -466,6 +495,8 @@ func _use_tool(tool_item: Dictionary, object: WorldObject, world_pos: Vector2i) 
 		ItemTypes.SCYTHE:
 			return Use.MOW if not _plants_to_mow(world_pos).is_empty() else Use.NOTHING
 		ItemTypes.SHOVEL:
+			if object != null and object.type_data().has("dig_hits"):
+				return Use.DIG_UP
 			return Use.DIG if is_grass_free else Use.NOTHING
 	return _use_cutting_tool(tool_item, object)
 

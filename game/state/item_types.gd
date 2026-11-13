@@ -91,6 +91,10 @@ const PEN_GATE := &"pen_gate"
 const PIG_SHELTER := &"pig_shelter"
 const WATTLE_FENCE := &"wattle_fence"
 const STONE_WALL := &"stone_wall"
+# Dug-up bushes (task 208).
+const BERRY_BUSH := &"berry_bush"
+const SHRUB := &"shrub"
+const FERN_BUSH := &"fern_bush"
 const EGG := &"egg"
 # The mason's (task 74).
 const RAW_BRICK := &"raw_brick"
@@ -520,6 +524,30 @@ const _OTHER_TYPES := {
 		"weight": 4.5,
 		"stack_limit": 10,
 		"places": WorldObjectTypes.STONE_WALL,
+	},
+	BERRY_BUSH:
+	{
+		"name": "Berry bush",
+		"description": "A dug-up berry bush. Plant it on grass; it bears again after a few days.",
+		"weight": 5.0,
+		"stack_limit": 5,
+		"places": WorldObjectTypes.BERRY_BUSH,
+	},
+	SHRUB:
+	{
+		"name": "Shrub",
+		"description": "A dug-up shrub. Plant it on grass.",
+		"weight": 4.0,
+		"stack_limit": 5,
+		"places": WorldObjectTypes.SHRUB,
+	},
+	FERN_BUSH:
+	{
+		"name": "Fern",
+		"description": "A dug-up fern. Planted in winter, it stays hidden until spring.",
+		"weight": 2.0,
+		"stack_limit": 10,
+		"places": WorldObjectTypes.FERN_BUSH,
 	},
 	PEN_GATE:
 	{

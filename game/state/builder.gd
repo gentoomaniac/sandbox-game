@@ -117,13 +117,18 @@ func place(origin: Vector2i) -> Building:
 	return building
 
 
-## What the hammer would take down on a tile, or null if there is nothing to take down.
+## What the hammer would take down on a tile, or null if there is nothing to take down. A bush
+## stays: only the shovel digs it out.
 func take_down_target(tile: Vector2i) -> TakeDownTarget:
 	var building := _state.world.building_at(tile)
 	if building != null:
 		return TakeDownTarget.of_building(building)
 	var object := _state.world.object_at(tile)
-	if object != null and ItemTypes.item_placing(object.type) != &"":
+	if (
+		object != null
+		and ItemTypes.item_placing(object.type) != &""
+		and not object.type_data().has("dig_hits")
+	):
 		return TakeDownTarget.of_object(object)
 	return null
 

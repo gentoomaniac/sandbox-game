@@ -444,7 +444,16 @@ pickaxe.
 The scythe mows tall grass into hay and cuts reeds on river banks (reeds grow back in
 their season). The shovel digs clay, but only where a faint patch on the ground hints at
 it. Berry bushes bear fruit again a few days after picking, and shrubs and ferns give
-fibre.
+fibre. The shovel also digs a berry bush, a shrub or a fern out whole in a few hits (fewer
+with a better shovel); plant it on free grass elsewhere with the use key, and it is the same
+bush again (a replanted berry bush bears after its regrowth days).
+
+![A dug-up berry bush in hand: its ghost on the grass below the camp](docs/screenshots/bush-ghost.png)
+
+![The berry bush planted again, picked until its regrowth days are over](docs/screenshots/bush-replanted.png)
+
+In the classic art: [the ghost](docs/screenshots/bush-ghost-classic.png) and [the planted
+bush](docs/screenshots/bush-replanted-classic.png).
 
 What you gather hops out onto the ground: logs, stone, clay, hay, reeds, seeds and produce
 lie there until you walk over them and pick them up.
