@@ -40,3 +40,25 @@ func placed_day_of(scarecrow: WorldObject) -> int:
 ## its strength.
 func is_guarding(tile: Vector2i) -> bool:
 	return PositionHash.rolls(tile, _world.clock.day, strength_at(tile))
+
+
+## What the console shows: each scarecrow, its strength, and how many crops in its radius are
+## guarded today (by it or another).
+func describe() -> Array[String]:
+	var lines: Array[String] = []
+	var radius := _rules.value("scarecrow_radius_tiles")
+	for scarecrow in _world.scarecrows():
+		var covered := 0
+		var guarded := 0
+		for crop in _world.crops():
+			if Vector2(scarecrow.pos).distance_to(Vector2(crop.pos)) <= radius:
+				covered += 1
+				guarded += int(is_guarding(crop.pos))
+		var line := (
+			"Scarecrow at %d, %d, put down on day %d, strength %.2f: "
+			% [scarecrow.pos.x, scarecrow.pos.y, placed_day_of(scarecrow), strength_of(scarecrow)]
+		)
+		lines.append(line + "%d crops in its radius, %d guarded today" % [covered, guarded])
+	if lines.is_empty():
+		lines.append("No scarecrows")
+	return lines

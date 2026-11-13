@@ -53,3 +53,17 @@ func test_the_hours_of_the_game_let_a_flock_far_from_the_player_raid() -> void:
 	_state.crop_raids.add_flock(_tile)
 	_state.simulation.advance(GameClock.MINUTES_PER_HOUR * 24)
 	assert_lt(_crops_left(), FIELD_WIDTH)
+
+
+func test_crows_lists_the_scarecrows_and_the_crops_they_guard() -> void:
+	assert_eq(_console.run("crows")[-1], "No scarecrows")
+	_plant_row(&"turnip", 0)
+	var scarecrow := WorldObject.new(WorldObjectTypes.SCARECROW, _tile + Vector2i(0, 1))
+	scarecrow.state["placed_day"] = _state.clock.day
+	_world.add_object(scarecrow)
+	_world.change_object(scarecrow)
+	var line := _console.run("crows")[-1]
+	assert_string_contains(line, "Scarecrow at %d, %d" % [_tile.x, _tile.y + 1])
+	assert_string_contains(line, "strength 1.00")
+	# A radius of 5 tiles from the tile below the row's west end reaches its first 5 crops.
+	assert_string_contains(line, "5 crops in its radius, 5 guarded today")

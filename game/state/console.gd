@@ -69,8 +69,9 @@ const COMMANDS := {
 	[
 		"crows [raid]",
 		(
-			"Show the crow flocks and what the crows ate today; raid lets every flock raid the crops"
-			+ " near it now, whoever is by, and eat from each one it tries."
+			"Show the crow flocks, what the crows ate today and the scarecrows with the crops they guard;"
+			+ " raid lets every flock raid the crops near it now, whoever is by, and eat from each one it"
+			+ " tries."
 		),
 	],
 	"deeds": ["deeds", "List what you did within sight of villagers, and who saw it."],
@@ -806,7 +807,9 @@ func _crows(arguments: PackedStringArray) -> Array[String]:
 		return ["Usage: %s" % COMMANDS["crows"][0]]
 	if arguments.size() == 1:
 		_state.crop_raids.raid_hour(_state.clock.total_minutes() / GameClock.MINUTES_PER_HOUR, true)
-	return _state.crop_raids.describe()
+	var lines := _state.crop_raids.describe()
+	lines.append_array(_state.scarecrows.describe())
+	return lines
 
 
 ## The crop in front of the player, else the nearest one within CROP_SEARCH_RADIUS.

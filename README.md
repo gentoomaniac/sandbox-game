@@ -841,7 +841,7 @@ it keeps the newest 500 lines and follows new output unless you scrolled up to r
 | `killall npc` | Remove every villager without an id (the made-up ones of `spawn npc`) and say how many; the named villagers stay and need `killall npc <id>`. |
 | `skip <n>m\|h\|d` | Let minutes, hours or days pass, e.g. `skip 2h` or `skip 3d`. Only the world moves on: crops, soil, weather, kilns, animals, villagers and the wildlife follow, your energy, tiredness, debuff and position stay as they are. |
 | `crop` | Show the growth, damage and needs of the nearest crop. |
-| `crows`, `crows raid` | Show the crow flocks (where, how many crops in reach, how far you are) and how many plants and items the crows ate today; `raid` lets every flock raid the crops near it now, with you standing by, and eat from each crop it tries. |
+| `crows`, `crows raid` | Show the crow flocks (where, how many crops in reach, how far you are), how many plants and items the crows ate today, and each scarecrow (its strength, how many crops it covers and how many of them are guarded today); `raid` lets every flock raid the crops near it now, with you standing by, and eat from each crop it tries. |
 | `skill <skill> <points>` | Set a skill's points (`woodworking`, `cooking`, `masonry`). |
 | `attribute <attribute> <level>` | Set an attribute's level (`strength`, `agility`, `stamina`, `hp`; 1 to 100) and show the maximum energy, maximum health and carry capacity it leaves. |
 | `gossip <villager>` | List the stories (the gossip buffer) and the long-term memories a villager keeps, with their weights (low, medium, high) and, for a story, whether it was seen or heard. The villager is the id of one written by hand (`gossip antje`) or a first name; Tab completes the ids. |

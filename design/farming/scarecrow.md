@@ -31,4 +31,7 @@ radius"). This page is task 226.
   scarecrow with the chance of the strength there (`WildlifeView._is_drawn_to`), so a field with a
   fresh scarecrow draws no flock at all, and one the crows know draws them nearly as before. A
   flock already there is not driven off; it just finds the crops guarded.
+- **Console:** `crows` ends with a line per scarecrow (`Scarecrows.describe`): where it stands, the day
+  it was put down, its strength today, and how many crops within its radius are guarded today
+  (by it or another), or `No scarecrows`.
 - **Art:** the row `scarecrow` of the object atlas and the item icon, in both art sets.
