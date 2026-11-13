@@ -115,3 +115,23 @@ From design/villagers/gossip.md (Memory). Needs 125.
 - Tests for the buffers, eviction by weight, save and upgrade; docs in dialogue.md.
 
 Done: 2ac0ae12..88329db6. Memories are {day, text, weight}; full: lightest, then oldest, goes. Stories carry the design's fields in a first in, first out buffer; leaving, a low story is forgotten, others become memories. A deed by the witness's own home or that of someone on their sheet is high, others medium; chat summaries medium. Settings "Stories a villager keeps" (10) and "Memories a villager keeps" (20), per language model profile. Stories no longer age out after 7 days (only the buffer evicts; the deed log keeps 7 days), so the prompt tells the whole buffer and `prompt_stories` is gone. Old memories load as medium, day 0. Save version 35 (the upgrade from 24 dropped). `/clear` forgets all but knowledge; console `gossip <villager>`.
+
+## 127. Rumours spread when villagers meet, and change on the way
+
+- [x] Done
+
+From design/villagers/gossip.md (How stories spread, Whispers). Needs 126. No language model.
+- Two villagers within 3 tiles meet, a pair at most once an hour of game time. Each may pass one
+  story the other lacks: the weightiest and newest that it has known for at least 2 game hours,
+  with a chance by tie (family and friends from the sheet, the 3 nearest neighbours by anchor,
+  anyone), values in data/gossip.cfg. The hearer gets it as heard, `told_by` the teller, one hop
+  more. A deed's story stops after 3 hops or 7 days.
+- Whispers: at each hop a chance (10%) that one thing shifts: the count grows by a table of steps
+  ("a dozen", "half a wood"), the place moves to a neighbouring house, or the kind turns into a
+  similar one (a table). Seeded, so tests can fix it.
+- The template line for heard stories names the teller ("Moiken told me ...").
+- Works for all loaded villagers (the moment they come into view or not), not only the ones on
+  screen.
+- Tests: meetings, chances by tie, the 2-hour wait, the stop, whispers with fixed seeds, saving.
+
+Done: 0d2929b1..c978f1d2. GossipSpread (a SimulationSystem) lets every villager pair within 3 tiles meet at most once an hour; a story known 2 hours passes on with a chance by tie (0.8 family/friends, 0.5 one of the 3 nearest neighbours, 0.2 anyone), the weightiest then newest the hearer lacks (matched by its `origin`), as heard, low weight, one hop more; stops at 3 hops or a 7-day-old deed. Whispers (0.1): the count steps up a table, the place moves to a neighbour's house, or the kind turns similar; seeded. Heard lines name the teller. Numbers in data/gossip.cfg. The pair cooldown is not saved. Save version 36 (the upgrade from 25 dropped).

@@ -23,24 +23,6 @@ Rules for every task:
 - Visuals come from the art generator (task 5 on). Until a task adds art for something,
   use simple placeholder shapes in palette colours.
 
-## 127. Rumours spread when villagers meet, and change on the way
-
-- [ ] Done
-
-From design/villagers/gossip.md (How stories spread, Whispers). Needs 126. No language model.
-- Two villagers within 3 tiles meet, a pair at most once an hour of game time. Each may pass one
-  story the other lacks: the weightiest and newest that it has known for at least 2 game hours,
-  with a chance by tie (family and friends from the sheet, the 3 nearest neighbours by anchor,
-  anyone), values in data/gossip.cfg. The hearer gets it as heard, `told_by` the teller, one hop
-  more. A deed's story stops after 3 hops or 7 days.
-- Whispers: at each hop a chance (10%) that one thing shifts: the count grows by a table of steps
-  ("a dozen", "half a wood"), the place moves to a neighbouring house, or the kind turns into a
-  similar one (a table). Seeded, so tests can fix it.
-- The template line for heard stories names the teller ("Moiken told me ...").
-- Works for all loaded villagers (the moment they come into view or not), not only the ones on
-  screen.
-- Tests: meetings, chances by tie, the 2-hour wait, the stop, whispers with fixed seeds, saving.
-
 ## 128. The judge: villagers word what they saw and heard, and think of the player by it
 
 - [ ] Done
