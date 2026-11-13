@@ -88,6 +88,18 @@ static func reply_messages(
 static func system_text(npc: Npc, full_sheets: bool, rules: NpcTalkRules) -> String:
 	var words := _words_of(npc, rules)
 	words["village"] = VillageSheet.default_sheet().text(full_sheets)
+	return "\n\n".join(
+		[
+			rules.value("prompt", "system"),
+			_said(rules, "village", words),
+			sheet_text(npc, full_sheets, rules)
+		]
+	)
+
+
+## The villager's sheet: who they are, in full if `full_sheets`, else cut down.
+static func sheet_text(npc: Npc, full_sheets: bool, rules: NpcTalkRules) -> String:
+	var words := _words_of(npc, rules)
 	words["age"] = npc.age
 	words["personality"] = npc.personality
 	words["background"] = npc.background
@@ -104,8 +116,7 @@ static func system_text(npc: Npc, full_sheets: bool, rules: NpcTalkRules) -> Str
 	words["secrets"] = npc.secrets
 	var sheet_lines := _said(rules, "sheet" if full_sheets else "sheet_short", words).split("\n")
 	# A line with nothing to tell (see `people_text`) is left out.
-	var sheet := "\n".join(Array(sheet_lines).filter(func(line: String) -> bool: return line != ""))
-	return "\n\n".join([rules.value("prompt", "system"), _said(rules, "village", words), sheet])
+	return "\n".join(Array(sheet_lines).filter(func(line: String) -> bool: return line != ""))
 
 
 ## The line of the villager's family and friends (Npc `people`) by the names, kinds and ages of
