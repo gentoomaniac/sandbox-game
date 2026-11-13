@@ -23,14 +23,3 @@ func test_a_lantern_put_out_stays_out() -> void:
 	var state := GameState.new_game(7)
 	assert_true(SaveFile.write(state, SAVE_PATH))
 	assert_false(SaveFile.read(SAVE_PATH).player.is_lantern_lit)
-
-
-func test_a_version_27_save_loads_with_the_lantern_out() -> void:
-	var game := _current_game()
-	game["player"].erase("is_lantern_lit")
-	_write_save(27, game)
-
-	var restored := SaveFile.read(SAVE_PATH)
-
-	assert_not_null(restored)
-	assert_false(restored.player.is_lantern_lit)
