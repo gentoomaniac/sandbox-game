@@ -23,17 +23,6 @@ Rules for every task:
 - Visuals come from the art generator (task 5 on). Until a task adds art for something,
   use simple placeholder shapes in palette colours.
 
-## 225. Crows
-
-- [ ] Done
-
-The user, 2026-11-13: wild crows (carrion or hooded crows, rooks) as wildlife:
-they walk and hop on fields and meadows, fly off when the player comes near, caw now and
-then (art in both sets, generated sounds). They may eat crops: sown seed and ripening crops on
-unguarded fields lose some yield or a plant now and then (numbers in data/).
-- Tests: the crows' flight from the player, the crop losses (numbers in data/), saving if they
-  are saved; art crops in both sets and sound files for the user.
-
 ## 226. Scarecrow
 
 - [ ] Done

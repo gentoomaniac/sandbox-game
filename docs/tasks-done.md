@@ -221,3 +221,16 @@ Rewritten with the user, 2026-11-13, from task 169's report (docs/music-viabilit
   README.
 
 Done: up to 043c2845 (12 commits). Crossfade lateness on PulseAudio measured silently (`make music-latency`): scheduled 2-20 ms after the beat, new beats within a few ms of the old grid; no predicted start needed. Pieces carry beat, bar and section exits (the generator writes <name>.cfg). ModuleRenderer renders and loads on a worker through MusicCache (user://music_cache, key: module sha256, renderer version, mix settings; 64 MB, oldest written dropped; unique tmp files, stray ones swept). EverydayMusic plays Tide and Harbour evening in turn, 3 loops each, 4 s crossfade on the beat (data/music.cfg); off with --mute or the Dummy driver; keeps playing in the pause menu. Tide renders in 1.3 s, loads from the cache in 13 ms. The 169 limitation left as is (needs a 12 s audio hold-up). Harbour evening is about 5.5 dB louder than Tide.
+
+## 225. Crows
+
+- [x] Done
+
+The user, 2026-11-13: wild crows (carrion or hooded crows, rooks) as wildlife:
+they walk and hop on fields and meadows, fly off when the player comes near, caw now and
+then (art in both sets, generated sounds). They may eat crops: sown seed and ripening crops on
+unguarded fields lose some yield or a plant now and then (numbers in data/).
+- Tests: the crows' flight from the player, the crop losses (numbers in data/), saving if they
+  are saved; art crops in both sets and sound files for the user.
+
+Done: 047bf8e7..d7faf37f, with the art (bffa4b2f, hooded crow, approved) and sounds (738ea0e7, crow_caw x5, crow_flock_rise x2, approved). Flocks of 3-7 hooded crows (a GroundFlock) on grass, floodplain and soil by day, more in autumn and winter, drawn to fresh sowing (spawn accepted by appearing_boost), at most 2 near the player, off in rain, fog, storm. CropRaids: each hour a flock more than 12 tiles from the player raids with chance 0.4, up to 2 unguarded crops within 3 tiles; seed eaten whole (chance 0.5), later stages lose one produce item (harvest never below 1); at most 2 plants and 6 items a day; seeded; flocks and tallies not saved; unloaded chunks never raided. `is_guarded` hook for the scarecrow. Console `crows`, `crows raid`, `spawn crows`, `killall crows`. Numbers in data/crows.cfg, data/wildlife.cfg, data/ambience.cfg.
