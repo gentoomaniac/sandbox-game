@@ -1,29 +1,31 @@
 
 
-## 207. The tool grades as items, given with the console
+## 208. Dig up bushes with the shovel and plant them elsewhere
 
 - [x] Done
 
-Done: 2026-11-13. The approved task-206 generator commits are merged; every tool comes in five
-grades as items (`<grade>_<tool>`, "Rusty iron hoe" .. "Sharp steel hoe") from data/tools.cfg
-(ToolGradeRules), only through the console `give`. New games and old saves (save version 33)
-have the rusty iron tools, which play exactly as the old ones. The grades differ by level (what a
-tool may hit: iron and up fell pines and break boulders), power (hit points per hit: 1, 2, 3, 3,
-4) and energy share (100, 95, 95, 85, 75 %). No durability yet, so brittle steel does not chip.
-SlotView draws the grade's Roman numeral bottom left from the approved 206 bitmaps; the icons
-carry none. Known: `--switch-art` does nothing in headless screenshot runs (use `--classic-art`).
+Done: 2026-11-13. The shovel (any grade) digs a berry bush, shrub or fern up whole in `dig_hits`
+(3) worth of its power (rusty 3 hits, iron 2; hits heal overnight, saved like tree hits); the bush
+goes to the inventory as an item (stacks 5/5/10, weights 5/4/2), or to the ground if full; the
+tile is left as grass. Held, it shows a placement ghost cut from the summer object atlas (works
+for every outdoor placeable now); it plants on free outdoor grass only, and no land object may
+block the tile in front of a door. A replanted berry bush starts picked and bears after its
+regrowth days. Saplings are not bushes. No save version change.
 
-After task 206's designs are approved: the five grades of each tool (rusty iron, iron, brittle
-steel, steel, sharp steel) as items in the game, named "Rusty iron hoe", "Iron hoe" and so on; the
-current tools become the rusty iron ones (renamed; old saves keep working). For now they come only
-through the console `give` (no recipes, no shops). How the grades differ in play (the tool `level`
-of item_types.gd, hit points per hit, durability if any) is to be proposed in the brief with the
-numbers in data/ (the user tunes them). Both arts from the approved generator code.
-- Build on the approved designs of task 206: branch `tools-206-designs` (generator code only:
-  tools/art/tool_grades.py, tool_icons.py, classic/tool_icons.py, character.py held tools,
-  docs/art-style.md); rebase or cherry-pick it, regenerate the art (`make art`) and commit the
-  generated files with it.
-- The Roman numeral (I rusty iron .. V sharp steel) is drawn by the inventory UI, not baked into
-  the art (the user, 2026-11-11): SlotView draws it bottom left of the slot (the count is bottom
-  right, the badge top left), crisp in both arts at every scale; remove the numeral from the
-  generated icons (the ground items stay clean).
+The user, 2026-11-11: "Bushes need to be removable. Use a shovel to dig them out and be able to
+place them somewhere else"
+- The bushes (game/state/world_object_types.gd): BERRY_BUSH (blocks walking, picked for berries,
+  regrows), SHRUB and FERN_BUSH (fibre by hand); check for other bush-like plants (the young
+  saplings may fit too: say). Today they can be picked or cut by hand, but not moved.
+- The shovel used on a bush digs it out whole: the bush becomes an item ("Berry bush", "Shrub",
+  "Fern"; icon from its world sprite, both arts) in the inventory (or dropped if full), its tile is
+  left as dug earth or grass. The bush keeps what matters (a berry bush's picked/regrow state may
+  reset, say which). Digging takes a few shovel hits like other shovel work, with its sound and
+  energy cost.
+- The item is placed like other placeable things (a placement ghost if they have one) on a free
+  tile where a bush can grow (grass or similar, not on water, paths, buildings, farmland), and
+  becomes the same world object again, with its season looks and regrowth. Saved like other placed
+  objects (save version bump if the save needs it).
+- Picking berries and cutting by hand stay as today; only the shovel digs out.
+- Tests: digging each bush gives its item, placing it back, refused tiles, a berry bush still
+  bears after replanting, save and load. README, design pages.

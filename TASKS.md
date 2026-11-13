@@ -207,28 +207,6 @@ The user, 2026-11-11: "The chicken need a rooster that's occasionally shouting"
 - Tests: a flock has a rooster, it lays no eggs, it crows at dawn and not at night, save and load;
   a listening file and a picture of the rooster in both arts for the user; README, design pages.
 
-## 208. Dig up bushes with the shovel and plant them elsewhere
-
-- [ ] Done
-
-The user, 2026-11-11: "Bushes need to be removable. Use a shovel to dig them out and be able to
-place them somewhere else"
-- The bushes (game/state/world_object_types.gd): BERRY_BUSH (blocks walking, picked for berries,
-  regrows), SHRUB and FERN_BUSH (fibre by hand); check for other bush-like plants (the young
-  saplings may fit too: say). Today they can be picked or cut by hand, but not moved.
-- The shovel used on a bush digs it out whole: the bush becomes an item ("Berry bush", "Shrub",
-  "Fern"; icon from its world sprite, both arts) in the inventory (or dropped if full), its tile is
-  left as dug earth or grass. The bush keeps what matters (a berry bush's picked/regrow state may
-  reset, say which). Digging takes a few shovel hits like other shovel work, with its sound and
-  energy cost.
-- The item is placed like other placeable things (a placement ghost if they have one) on a free
-  tile where a bush can grow (grass or similar, not on water, paths, buildings, farmland), and
-  becomes the same world object again, with its season looks and regrowth. Saved like other placed
-  objects (save version bump if the save needs it).
-- Picking berries and cutting by hand stay as today; only the shovel digs out.
-- Tests: digging each bush gives its item, placing it back, refused tiles, a berry bush still
-  bears after replanting, save and load. README, design pages.
-
 ## 209. Animals stuck at a fence turn left and right for a long time (bug)
 
 - [ ] Done
