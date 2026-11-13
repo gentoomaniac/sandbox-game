@@ -360,8 +360,8 @@ host exposes it to containers (see "Setting up the GPU" below), else on the CPU.
 OpenAI-compatible API at `http://127.0.0.1:11434/v1` (this machine only). The game never
 needs it: `make test` does not touch it, unless `SANDBOX_LLM_URL=http://127.0.0.1:11434/v1`
 is set, which runs the two tests that ask a real model. It is the game's default endpoint
-(Settings → Language model), so villagers talk through it as soon as it is up (README,
-"Talking NPCs with a language model").
+(Settings → Language model), so villagers talk through it as soon as it is up (the handbook,
+"Talking with a language model").
 
 ```sh
 make llm-up       # start the container, pull the model if missing; safe to repeat

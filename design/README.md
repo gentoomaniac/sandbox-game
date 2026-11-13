@@ -1,6 +1,6 @@
 # Sandbox Game: Design
 
-Status: playable prototype (the milestone 1 slice and much more; the [README](../README.md)
+Status: playable prototype (the milestone 1 slice and much more; the [handbook](../handbook/README.md)
 lists what works today). Last updated: 2026-11-08.
 
 This folder is the single source of truth for what the game is. It was one file (`SPEC.md`)

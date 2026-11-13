@@ -1,4 +1,4 @@
-# Builds the Linux and Windows releases when a version tag is pushed (see README, "Releases"):
+# Builds the Linux and Windows releases when a version tag is pushed (see docs/development.md, "Releases"):
 #   git tag v1.2.3 && git push origin v1.2.3
 name: Release
 

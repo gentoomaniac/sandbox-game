@@ -1,7 +1,7 @@
 # Architecture
 
 How the code is organised, and where to look first. For what the game is meant to be, read
-the [design](../design/README.md); for how to build and run it, the README.
+the [design](../design/README.md); for how to build and run it, [development.md](development.md).
 
 ## Three layers
 

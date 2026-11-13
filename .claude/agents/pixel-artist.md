@@ -58,7 +58,7 @@ reference. If the brief says to stop at a checkpoint for the user's OK, stop the
   If a run fails strangely, `rm -rf .godot` first.
 - Game runs are muted, in the background, with `--with-working-window-title`; never the real
   save or settings (a copy is fine).
-- README pictures that show the changed art are re-taken in the same change.
+- README and handbook pictures that show the changed art are re-taken in the same change.
 - Atomic commits: one change each with its generator code, generated files, tests and doc
   lines (docs/art-style.md); each passes the checks on its own. Trailer exactly
   `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Never push or merge.

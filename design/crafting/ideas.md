@@ -537,7 +537,7 @@ rates); a new `stations.cfg` (object, menu name, fuel, slots); `foods.cfg` or ex
 - Unlocked recipes: a set of ids in the save.
 - Console commands (`give`, `nocost`) should respect new rules; `nocost` already covers
   materials.
-- Tests and README and design updates follow the existing practice.
+- Tests, README, handbook and design updates follow the existing practice.
 
 ---
 

@@ -14,7 +14,7 @@ Everything else below is a proposal, not a new decision. Use Godot 4.7.2, as pin
 
 ## Today's controls
 
-This is an audit of `project.godot` and the input handlers in `game/`, not just the README's
+This is an audit of `project.godot` and the input handlers in `game/`, not just the handbook's
 control list. Frequencies are estimates for ordinary play, not measurements. "Debug" means
 testing, not a control that a player needs to progress. Some debug features are available in
 ordinary builds today.
@@ -181,7 +181,7 @@ There is no live map action or map panel. `game/state/game_map.gd` is world stat
 There is no sprint, rotation, stack-split or double-click action to replace. Tab is not the bag
 key. The old hotbar 9/10 and select-hammer actions are retired, not missing touch controls
 (`game/state/game_settings.gd:203`). `debug_runner.gd:176` injects actions for scripted tests;
-it adds no player binding. F2 and the hard-coded F6 are absent from the README's main table.
+it adds no player binding. F2 and the hard-coded F6 are absent from the [handbook's controls table](../../handbook/controls.md).
 
 ## Touch controls
 
