@@ -396,7 +396,7 @@ Amtmann at Husum); prices in Schilling and Mark; this year's news (the cattle pl
 broken last autumn); the church year; and what people of the time know of the world (the Danish
 king, the Duke of Gottorf, who speaks what). The villagers written by hand know all of it; a made-up
 one (`spawn npc`) starts knowing none of it, only that they live in Wehlsbüll, and a model is told
-just the topics a villager knows. The console's `gossip <villager>` lists them.
+just the topics a villager knows. When two villagers meet, one who knows a topic teaches the other the next they lack, so newcomers learn the village from the locals and from each other, one topic at a meeting (`chance_topic` in [data/gossip.cfg](data/gossip.cfg)). The console's `gossip <villager>` lists them.
 
 Each villager has a sheet: age, trade, personality, background, home, how they speak (a manner,
 so it holds in any language), lines in their voice, their family and friends with what they

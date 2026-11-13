@@ -22,6 +22,7 @@ const REQUIRED_KEYS := {
 		"chance_family",
 		"chance_neighbour",
 		"chance_anyone",
+		"chance_topic",
 	],
 	"whispers": ["chance", "count_steps"],
 }
@@ -72,6 +73,8 @@ func problems() -> Array[String]:
 		var chance := tell_chance(tie)
 		if chance < 0.0 or chance > 1.0:
 			bad.append("[meetings] chance_%s must be from 0 to 1" % tie)
+	if topic_chance() < 0.0 or topic_chance() > 1.0:
+		bad.append("[meetings] chance_topic must be from 0 to 1")
 	if whisper_chance() < 0.0 or whisper_chance() > 1.0:
 		bad.append("[whispers] chance must be from 0 to 1")
 	var steps: Array = _values["whispers"]["count_steps"]
@@ -123,6 +126,11 @@ func neighbour_count() -> int:
 ## How likely a teller passes a story on to someone they are tied to like this (one of TIES).
 func tell_chance(tie: StringName) -> float:
 	return float(_values["meetings"]["chance_" + str(tie)])
+
+
+## How likely a teller teaches a topic of the village that the other does not know.
+func topic_chance() -> float:
+	return float(_values["meetings"]["chance_topic"])
 
 
 ## How likely a story changes on its way, at each hop.

@@ -10,6 +10,10 @@ extends SimulationSystem
 ## light, for it does not touch them. With a small chance one thing of the deed shifts on the way
 ## (a whisper): the count grows, the place moves to a neighbour's house, or the kind turns into a
 ## similar one.
+##
+## The topics of the village (Npc `topics`) pass the same way, one topic a meeting: a villager who
+## knows one teaches it to one who lacks it, whoever they are. It is knowledge, not a story: no
+## wait, no hops and no whispers.
 
 ## Not seeded in play. Tests seed it to fix who tells what.
 var rng := RandomNumberGenerator.new()
@@ -50,6 +54,8 @@ func _meet(one: Npc, other: Npc, villagers: Array[Npc], now: int) -> void:
 	_last_met[pair] = now
 	_tell(one, other, villagers, now)
 	_tell(other, one, villagers, now)
+	_teach(one, other)
+	_teach(other, one)
 
 
 ## The teller passes on the weightiest, newest story that the hearer lacks and that is ready to
@@ -75,6 +81,16 @@ func _tell(teller: Npc, hearer: Npc, villagers: Array[Npc], now: int) -> void:
 	heard.merge(as_heard, true)
 	_whisper(heard, neighbours)
 	hearer.learn_story(heard, _deeds.stories_kept, _deeds.memories_kept)
+
+
+## The teller teaches the hearer the first topic of the village, in the order of the data file, that
+## the hearer lacks, if the dice allow it.
+func _teach(teller: Npc, hearer: Npc) -> void:
+	for topic in VillageSheet.default_sheet().topic_names():
+		if teller.topics.has(topic) and not hearer.topics.has(topic):
+			if rng.randf() < rules.topic_chance():
+				hearer.topics.append(topic)
+			return
 
 
 ## The story of the teller that the hearer lacks, is old enough to tell and has not gone too far or

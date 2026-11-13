@@ -1,6 +1,6 @@
 # Gossip and memory
 
-**Decided; the deed log, memory, spreading and the judge (tasks 125 to 128) are built, the rest is not.** Worked out with the user on
+**Decided; the deed log, memory, spreading, the judge and the topics of the village (tasks 125 to 129) are built, the rest is not.** Worked out with the user on
 2026-11-09. The tasks are 124 to 130 in
 [TASKS.md](../../TASKS.md). This page changes [dialogue.md](dialogue.md) (memory) and
 [villagers.md](villagers.md) (who knows the village) once the tasks are done; until then those
@@ -92,7 +92,7 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   and friends (the sheet of either, by id), 0.5 for one of the 3 villagers whose anchors are
   nearest to the teller's, 0.2 for anyone. The hearer keeps it as `heard`, `told_by` the teller,
   `hops` one more, `learned_at` now, weight low and not personal (the judge of task 128 may raise
-  that), the same `seen_by` and `origin`. Village topics, which never stop, are not stories yet.
+  that), the same `seen_by` and `origin`. Village topics, which never stop, are not stories: see task 129 below.
   The dice are `GossipSpread.rng`, seeded by tests. Whispers: at each hop, with the chance of
   `[whispers]` (0.1), one of three things of the deed shifts, picked at random among those that
   can: the count grows to the next of `count_steps` (not past the last), the place moves to the
@@ -141,6 +141,13 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   nothing is told (a villager who knows none, or whose known topics have no cut-down). A topic is
   knowledge, not a story: it is not in the gossip buffer, is never judged and `/clear` leaves it.
   The console's `gossip <villager>` lists them.
+- **As built (task 129, topics spread):** at a meeting (see above) each of the two may also teach
+  the other one topic, after the stories: the first topic of `data/village.cfg`, in the order of
+  the file, that the teller knows and the hearer lacks, with `chance_topic` (0.5, `[meetings]`),
+  whoever they are (no tie: a topic is no secret). A topic has no wait before it is told, no hops
+  limit, no age and no whispers; it goes into the hearer's `topics` and nowhere else, so a newcomer
+  who has just learned one tells it at their next meeting, to a local (who knows it) or to another
+  newcomer. The same pair still meets only once an hour.
 
 - **The deed log is also the base of an end-of-day screen** (later: "Today: 7 trees felled, a
   Kate built, 12 beds sown").

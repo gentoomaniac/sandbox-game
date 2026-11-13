@@ -28,7 +28,8 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   them, a made-up one none at first, only the base line of the system line (Wehlsbüll, the North
   Frisian coast, 1750). The prompt tells just the topics they know, full or cut down by provider as
   before, and leaves the village out when there are none. A made-up villager learns topics from
-  others, see [gossip.md](gossip.md).
+  others at meetings (a local or a newcomer who knows one teaches the first they lack, with a
+  chance of 0.5 in `data/gossip.cfg`), see [gossip.md](gossip.md).
 - **Who they are:** every villager has a sheet, told to the language model: age, trade,
   personality, background (the essentials of family and story; the dead are told only here),
   home, speech (the manner of talking, written so that it holds in any language: no English words

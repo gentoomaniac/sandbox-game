@@ -31,6 +31,10 @@ func test_family_tell_more_often_than_neighbours_and_neighbours_more_than_anyone
 	assert_eq(_rules.neighbour_count(), 3)
 
 
+func test_a_topic_is_taught_with_its_own_chance() -> void:
+	assert_eq(_rules.topic_chance(), 0.5)
+
+
 func test_a_missing_key_is_a_problem() -> void:
 	var values := DataFile.read_sections(GossipRules.DEFAULT_PATH)
 	values["meetings"].erase("max_hops")
@@ -39,6 +43,7 @@ func test_a_missing_key_is_a_problem() -> void:
 
 func test_a_chance_beyond_one_and_a_wait_of_nothing_are_problems() -> void:
 	assert_eq(_rules_with("chance_family", 1.5).problems().size(), 1)
+	assert_eq(_rules_with("chance_topic", -0.1).problems().size(), 1)
 	assert_eq(_rules_with("story_wait_minutes", 0).problems().size(), 1)
 	assert_eq(_rules_with("max_hops", 0).problems().size(), 1)
 
