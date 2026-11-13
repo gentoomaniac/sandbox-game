@@ -1,8 +1,7 @@
 class_name TrackerModule
 extends RefCounted
 ## A 4-channel ProTracker module ("M.K."), as tools/music/generate.py writes them: its samples,
-## order list and patterns, read from the file's bytes. ModuleRenderer plays it. A trial of task
-## 169, not used by the game yet.
+## order list and patterns, read from the file's bytes. ModuleRenderer plays it.
 
 const CHANNELS := 4
 const PATTERN_ROWS := 64

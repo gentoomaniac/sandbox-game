@@ -27,6 +27,15 @@ go on; only the music and the menu's own clicks play (moving a volume slider cli
 Which file each sound plays is in [data/sounds.cfg](data/sounds.cfg), so any
 sound can be swapped for a recording.
 
+The game plays its own music: two calm pieces made of chiptune instruments, "Tide" (a slow 6/8 sway
+in D dorian) and "Harbour evening" (a capstan bass under a shanty-like tune, in A aeolian). Each
+loops three times, then the other crossfades in on the next beat, round and round (the Music
+volume is in Settings → Audio; 0 turns it off). The pieces are rendered in the background, so the
+game never stalls: the first start takes a second or two before the music begins, and later starts
+load the renders from a cache in the save folder (`music_cache/`, at most 64 MB, the oldest go
+first). The pieces, the loops, the fades and the cache bound are in
+[data/music.cfg](data/music.cfg). There is no music in test runs (`--mute`) or headless.
+
 The world has an ambience too: rain and wind loops that follow the weather (and swell with
 gusts, heard as the gust fronts that bend the grass reach you), thunder after each flash of
 lightning by how far the strike was (a far rumble many seconds later and faint, now and then a
@@ -827,7 +836,7 @@ it keeps the newest 500 lines and follows new output unless you scrolled up to r
 | `gossip <villager>` | List the stories (the gossip buffer) and the long-term memories a villager keeps, with their weights (low, medium, high) and, for a story, whether it was seen or heard. The villager is the id of one written by hand (`gossip antje`) or a first name; Tab completes the ids. |
 | `opinion <villager> [points]` | Show what a villager thinks of you (cold, neutral or warm, and the points), or set the points (-100 to 1000). The villager is the id of one written by hand or a first name. |
 | `deeds` | List what you did within sight of villagers in the last 7 days: the day and time, the deed, the place and who saw it. |
-| `play <track>` | Play a piece of music in a loop: `sketch_tide`, `sketch_harbour` or `test_reel`, also by the name without the prefix (`play tide`). The piece is rendered first (the log says `Rendering...`, then `Playing ...`), so the game doesn't stall; another piece crossfades from the first on the beat. An unknown name lists the tracks. Nothing plays unless you ask; the volume is Settings → Audio → Music. |
+| `play <track>` | Play a piece of music in a loop: `sketch_tide`, `sketch_harbour` or `test_reel`, also by the name without the prefix (`play tide`). The piece is rendered first (the log says `Rendering...`, then `Playing ...`), so the game doesn't stall; another piece crossfades from the first on the beat. An unknown name lists the tracks. The game plays the everyday pieces by itself; a piece you ask for takes their place until its loops are done, and then the everyday ones go on. The volume is Settings → Audio → Music. |
 | `stop` | Fade the music out. |
 
 ![The console after a few commands](docs/screenshots/console.png)

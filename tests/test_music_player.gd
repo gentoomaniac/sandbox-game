@@ -11,7 +11,7 @@ const HEADER_SIZE := 20 + TrackerModule.SAMPLE_SLOTS * 30
 ## Pattern break at row 0: the order list plays one row.
 ## The one-row module is a piece of a single looping section.
 const SECTIONS := (
-	"[piece]\nspeed=6\ntempo=125\nbeat_rows=4\nbar_beats=4\n"
+	"[piece]\nspeed=6\ntempo=125\nbeat_rows=6\nbar_beats=2\n"
 	+ '[loop]\norder=0\nrows=1\nexits=["loop"]\n'
 )
 const BREAK_CELL := [0, 0, ModuleRenderer.EFFECT_BREAK, 0]
@@ -108,6 +108,13 @@ func test_a_real_piece_renders_and_plays_its_first_section_in_a_loop() -> void:
 	assert_eq(_playing_players().size(), 1)
 	# 128 rows of 6 ticks of 1040 frames at 44.1 kHz: the loop, not the fill after it.
 	assert_almost_eq(_music.loop_seconds, 128 * 6 * 1040 / 44100.0, 0.001)
+
+
+func test_a_piece_switches_on_its_own_beat() -> void:
+	_music.play("tiny")
+	await wait_for_signal(_music.started, PATIENCE_SECONDS)
+	# Six rows of 6 ticks of 882 frames at 44.1 kHz, the beat the sections file gives.
+	assert_almost_eq(_music._crossfade._beat_seconds, 6 * 6 * 882 / 44100.0, 0.0001)
 
 
 func test_a_render_is_kept_in_the_cache() -> void:

@@ -1,8 +1,8 @@
 class_name ModuleRenderer
 extends RefCounted
 ## Renders parts of a TrackerModule into an AudioStreamWAV (16 bit, mono or stereo), at once or on
-## a WorkerThreadPool thread, where the stream is made whole, so the main thread only takes it. A
-## prototype of task 169, kept apart from AudioService; MusicCrossfade plays it in the benchmark.
+## a WorkerThreadPool thread, where the stream is made whole, so the main thread only takes it, or
+## loads it from a MusicCache there. MusicPlayer plays what it makes through MusicCrossfade.
 ## The streams are plain AudioStreamWAVs: a script subclass that tells AudioStreamInteractive its
 ## beat (MusicStreamWAV) crashes the game's quit once played, so the beat is in `beat_seconds`.
 ##

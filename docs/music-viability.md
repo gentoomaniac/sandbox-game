@@ -2,8 +2,8 @@
 
 Measured 2026-11-10 on an Intel Core Ultra 9 185H (22 threads), Linux 6.18, Godot 4.7.2 (the
 Gentoo build, `4.7.2.stable.gentoo`), headless and muted, with Godot's Dummy audio driver (it
-mixes in real time, in blocks of about 93 ms, and sends nothing to a device). Nothing here plays in
-the game yet.
+mixes in real time, in blocks of about 93 ms, and sends nothing to a device). Task 170 then played
+two pieces in the game on this recommendation ("The everyday pieces in the game" below).
 
 The question: background music in the style of 1980s home-computer games, generated as small
 tracker modules from text and rendered by the game on a background thread. Is that fast, cheap and
@@ -100,6 +100,25 @@ ms), and "take" what the main thread spends taking the finished stream.
 
 Reading a render back from the cache takes 5 to 15 ms on the worker, a hundredth of rendering it,
 and neither stalls a frame.
+
+How the game plays them (`EverydayMusic`, `MusicPlayer`, `MusicCache`, `MusicRules`; the rules are
+in data/music.cfg):
+- **Rendering never waits.** The player starts a render on a worker thread and takes the stream
+  when it is done; what plays goes on looping meanwhile (also when a render is slow or fails). A
+  stream is made whole on the worker, loop flags included, so the main thread reads nothing back.
+- **The cache** is user://music_cache/, a file per render named by a hash of the module's bytes, the
+  renderer's version, the mix rate and channels, the rows in a beat, the parts and the loop, so a
+  render made by another renderer or for other settings is never found. A file that is cut off or
+  not ours is a miss, removed and rendered again. After each write the oldest files go while the
+  folder is over 64 MB (3 pieces take 15 MB; the bound is the one number to change in
+  data/music.cfg).
+- **Sections** are read from the `<name>.cfg` the generator writes (speed, tempo, meter, each
+  section's place, rows and exits); the piece's first section loops. The exits are read and kept
+  for the director of task 171.
+- **The switch:** a piece loops `loops_before_switch` times (3: Tide 96 s, Harbour 72 s), then the
+  next is asked for, rendered in the background, and crossfaded in over 4 s starting on the
+  piece's next beat (a beat of 6 rows for Tide's 6/8 sway, 4 for Harbour). Off with `--mute` and
+  under the Dummy driver.
 
 ## Memory
 
@@ -200,7 +219,8 @@ off, the new beats fell 127 to 128 frames early. Measured:
 - **Known limit**: the time between mixes is when they happened, not how much they mixed. If the
   audio thread itself is held up (say 400 ms) and then mixes one block, that looks like 400 ms of
   play, and a fade into a short loop may end early by about that much. Godot exposes no count of
-  mixed frames, so this is left to task 170 (noted in TASKS.md).
+  mixed frames. **Task 170 left it:** a mix count off by a whole loop needs a hold-up of half a
+  loop, 12 s for the shortest everyday loop (Harbour evening, 24 s), against fades of 4 s.
 - **Lateness** (`lateness`): how long after the beat the new stream was scheduled, up to a frame and
   a mix block; the new stream's first moments are skipped. With the Dummy driver's 93 ms blocks it
   was 58 to 75 ms (three crossfades in `make bench-music`). **On a real driver** (task 170,

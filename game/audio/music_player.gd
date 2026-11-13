@@ -41,6 +41,11 @@ class Render:
 	var renderer: ModuleRenderer
 
 
+func _init() -> void:
+	# The music goes on while the game is paused (the crossfade must too, or it stops half-way).
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
+
 func _ready() -> void:
 	add_child(_crossfade)
 

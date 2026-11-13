@@ -178,6 +178,8 @@ func _load_game() -> void:
 	_audio.is_logging = _options.sound_log
 	add_child(_audio)
 	add_child(_music)
+	if EverydayMusic.is_wanted(_options.mute):
+		add_child(EverydayMusic.new(_music))
 	_world.audio_listener_enable_2d = true
 	_audio.use_world(_world)
 	_audio.apply_settings(_settings)

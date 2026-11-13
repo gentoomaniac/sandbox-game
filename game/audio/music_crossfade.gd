@@ -1,9 +1,8 @@
 class_name MusicCrossfade
 extends Node
-## Plays music on two AudioStreamPlayers and crossfades from one stream to the next on the beat.
-## A prototype of task 169 for rendered music (plain AudioStreamWAVs from ModuleRenderer), as
-## AudioStreamInteractive only switches on the beat with a stream subclass that crashes the quit.
-## MusicPlayer plays through it.
+## Plays music on two AudioStreamPlayers and crossfades from one stream to the next on the beat,
+## for rendered music (plain AudioStreamWAVs from ModuleRenderer), as AudioStreamInteractive only
+## switches on the beat with a stream subclass that crashes the quit. MusicPlayer plays through it.
 ##
 ## `crossfade` waits for the next beat of what plays: each frame it reads how far the playing
 ## player has been mixed. The first frame past the beat, it starts the new stream on the other
