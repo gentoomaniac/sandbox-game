@@ -368,10 +368,20 @@ static func _upgrade_from_version_33(game: Dictionary) -> void:
 		npc["stories"] = []
 
 
-## Version 34 had memories as plain lines (task 126): they are of medium weight now, and of no
-## known day.
+## Version 34 had memories as plain lines and stories of the deed alone (task 126): the memories
+## are of medium weight now, and of no known day; the stories were seen by the villager on the day
+## of the deed, and weigh medium.
 static func _upgrade_from_version_34(game: Dictionary) -> void:
 	for npc: Dictionary in game["npcs"]:
+		for story: Dictionary in npc["stories"]:
+			story["how"] = "seen"
+			story["told_by"] = ""
+			story["seen_by"] = npc["name"]
+			story["hops"] = 0
+			story["learned"] = story["day"]
+			story["line"] = ""
+			story["weight"] = "medium"
+			story["personal"] = false
 		npc["memories"] = npc["memories"].map(
 			func(text: String) -> Dictionary: return {"day": 0, "text": text, "weight": "medium"}
 		)

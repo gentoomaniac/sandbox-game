@@ -65,8 +65,13 @@ var uncompacted_lines: Array[Dictionary] = []
 ## How many of the oldest lines of `chat_history` are already in a memory (only a save of version
 ## 20 or older has such lines): they are forgotten, not summed up again, when they drop out.
 var remembered_lines := 0
-## The deeds of the player they saw, oldest first, each `{day, minute, kind, count, place}` (see
-## DeedLog). Kept as they come for now; task 126 makes them the gossip buffer.
+## Their gossip buffer, oldest first: the stories they know, first in, first out (see
+## `keep_stories`). A story is `{day, minute, kind, count, place}` (the fact: a deed of the
+## player, merged like the entries of DeedLog) and what the villager knows of it: `how` (a
+## GossipRules SEEN or HEARD), `told_by` (a name, or "" if seen), `seen_by` (who saw it first),
+## `hops` from that one, `learned` (the day they came to know it), `line` (the model's wording,
+## "" until it is back: the template line is told then), `weight` (a MemoryWeight) and
+## `personal` (whether it touches them).
 var stories: Array[Dictionary] = []
 ## Whether NpcDialogue is summing up `uncompacted_lines`. Not saved.
 var is_compacting := false
@@ -159,6 +164,27 @@ func forget_chat() -> void:
 	memories.clear()
 
 
+## Takes a story into the gossip buffer (the same deed of the same day and place is one story),
+## and lets the oldest leave if there are more than `keep` (see `keep_stories`).
+func add_story(story: Dictionary, keep: int, keep_in_memory: int) -> void:
+	DeedLog.add_to(stories, story)
+	keep_stories(keep, keep_in_memory)
+
+
+## Keeps `keep` stories at most. The oldest leaves the buffer: a low one is forgotten, any other
+## moves its line to long-term memory with its weight (`keep_in_memory` of them are kept).
+func keep_stories(keep: int, keep_in_memory: int) -> void:
+	while stories.size() > keep:
+		var left: Dictionary = stories.pop_front()
+		if left["weight"] != MemoryWeight.LOW:
+			add_memory(
+				GossipRules.default_rules().memory_line(left),
+				left["day"],
+				left["weight"],
+				keep_in_memory
+			)
+
+
 ## Remembers `text` of the game `day_of_memory`, and forgets the surplus (see `keep_memories`).
 func add_memory(text: String, day_of_memory: int, weight: int, keep: int) -> void:
 	memories.append({"day": day_of_memory, "text": text, "weight": weight})
@@ -206,7 +232,7 @@ func to_dict() -> Dictionary:
 		"memories": memories.map(_memory_to_saved),
 		"uncompacted_lines": uncompacted_lines.duplicate(true),
 		"remembered_lines": remembered_lines,
-		"stories": stories.map(DeedLog.to_saved),
+		"stories": stories.map(_story_to_saved),
 	}
 
 
@@ -241,9 +267,25 @@ static func from_dict(data: Dictionary) -> Npc:
 	for line: Dictionary in data["uncompacted_lines"]:
 		npc.uncompacted_lines.append(line)
 	for story: Dictionary in data["stories"]:
-		npc.stories.append(DeedLog.from_saved(story))
+		npc.stories.append(_story_from_saved(story))
 	npc.remembered_lines = mini(int(data["remembered_lines"]), npc.chat_history.size())
 	return npc
+
+
+static func _story_to_saved(story: Dictionary) -> Dictionary:
+	var saved := DeedLog.to_saved(story)
+	saved["how"] = str(story["how"])
+	saved["weight"] = MemoryWeight.to_word(story["weight"])
+	return saved
+
+
+static func _story_from_saved(saved: Dictionary) -> Dictionary:
+	var story := DeedLog.from_saved(saved)
+	story["how"] = StringName(saved["how"])
+	story["hops"] = int(saved["hops"])
+	story["learned"] = int(saved["learned"])
+	story["weight"] = MemoryWeight.from_word(saved["weight"])
+	return story
 
 
 static func _memory_to_saved(memory: Dictionary) -> Dictionary:

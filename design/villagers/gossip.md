@@ -61,12 +61,22 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   connects), `build`, and `demolish`. A hammer `take_down` of a placed object and the shovel
   digging up a bush are no deeds. Only the world is watched, not the inside of a house. "Nearest
   home" is the nearest villager's anchor; the first name is used in the place. The witnesses of
-  an entry are their names. An entry or story is kept while it is under `keep_days` old (7 days,
-  today's included); older ones are dropped when a deed is written, when a day begins and when a
-  game is loaded. The stories (`Npc.stories`, saved, merged like the entries) are kept as long and
-  told in the chat prompt as the template line, each by `[story]` of the data file (Today /
-  Yesterday / N days ago): the newest `prompt_stories` (5), after the memories. The console's
-  `deeds` lists the log.
+  an entry are their names. An entry is kept while it is under `keep_days` old (7 days, today's
+  included); older ones are dropped when a deed is written, when a day begins and when a game is
+  loaded. The stories (`Npc.stories`, saved, merged like the entries) are the villager's gossip
+  buffer (task 126, see Memory): they stay until newer ones push them out, and the chat prompt
+  tells all of them as the template line, each by `[story]` of the data file (Today / Yesterday /
+  N days ago), after the long-term memories. The console's `deeds` lists the log.
+- **As built (task 126):** a story is flat: the fact (`day`, `minute`, `kind`, `count`, `place`)
+  and `how` (seen or heard), `told_by`, `seen_by`, `hops`, `learned` (the day), `line` (the voiced
+  line, "" until the model has worded it), `weight` and `personal`. A deed seen is `seen`, hops 0,
+  weight high if the deed was by the witness's own house or that of someone on their sheet
+  (`people`), else medium, and `personal` follows the high. Weights are `MemoryWeight` (saved as
+  the words low, medium, high). The buffer is first in, first out, `stories_kept` long (default
+  10, the setting "Stories a villager keeps", 1 to 100, one for each language model profile; Main
+  gives it to the deed log, and lowering it applies once the menu is closed). The story that
+  leaves is forgotten if low, else its line `On day N: you saw the newcomer ...` (`memory` of
+  `[story]`) is a long-term memory of its day and weight. Spreading (task 127) is not built.
 - **The deed log is also the base of an end-of-day screen** (later: "Today: 7 trees felled, a
   Kate built, 12 beds sown").
 

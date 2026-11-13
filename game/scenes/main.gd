@@ -241,6 +241,15 @@ func _make_views() -> void:
 	_world.add_child(_weather_view)
 
 
+## Brings the stories and memories a villager keeps to the settings: the deed log needs them for
+## the stories it hands out, and what is over the limit is dropped now.
+func _apply_villager_memory_settings() -> void:
+	var profile := _settings.profiles.active
+	_state.deeds.stories_kept = profile["stories_kept"]
+	_state.deeds.memories_kept = profile["memories_kept"]
+	_chat_screen.dialogue.compact_all(_state)
+
+
 ## Shows the state in the views and wires what they report back.
 func _connect_state_and_views() -> void:
 	_residency = ChunkResidency.new(_state.world)
@@ -252,8 +261,8 @@ func _connect_state_and_views() -> void:
 	_npc_views.show_npcs(_state.npcs, _view.entities)
 	# Chats longer than the setting (a saved game's, or one lowered in the menu, which is
 	# applied once it is closed rather than at every step) are compacted.
-	_chat_screen.dialogue.compact_all(_state)
-	_menu.closed.connect(func() -> void: _chat_screen.dialogue.compact_all(_state))
+	_apply_villager_memory_settings()
+	_menu.closed.connect(_apply_villager_memory_settings)
 	_builder = Builder.new(_state)
 	_build_mode.world = _state.world
 	_build_mode.builder = _builder

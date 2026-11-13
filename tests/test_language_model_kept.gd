@@ -64,3 +64,26 @@ func test_the_page_shows_the_memories_kept_and_stores_a_change() -> void:
 	assert_eq(page._memories_label.text, "Memories a villager keeps: 12")
 	page._memories_kept.value = 15
 	assert_eq(_reloaded().profiles.active["memories_kept"], 15)
+
+
+func test_the_stories_kept_default_to_10_stay_in_range_and_are_stored_only_when_changed() -> void:
+	assert_eq(_settings.profiles.active["stories_kept"], 10)
+	_settings.profiles.set_stories_kept(10)
+	assert_false(FileAccess.get_file_as_string(PATH).contains("stories_kept"))
+	_settings.profiles.set_stories_kept(15)
+	assert_eq(_reloaded().profiles.active["stories_kept"], 15)
+	_settings.profiles.set_stories_kept(0)
+	assert_eq(_settings.profiles.active["stories_kept"], LanguageModelProfiles.MIN_STORIES_KEPT)
+	_settings.profiles.set_stories_kept(5000)
+	assert_eq(_settings.profiles.active["stories_kept"], LanguageModelProfiles.MAX_STORIES_KEPT)
+
+
+func test_the_page_shows_the_stories_kept_and_stores_a_change() -> void:
+	_settings.profiles.set_stories_kept(7)
+	var page := LanguageModelPage.new(_settings)
+	add_child_autofree(page)
+	page.show_settings()
+	assert_eq(page._stories_kept.value, 7.0)
+	assert_eq(page._stories_label.text, "Stories a villager keeps: 7")
+	page._stories_kept.value = 9
+	assert_eq(_reloaded().profiles.active["stories_kept"], 9)

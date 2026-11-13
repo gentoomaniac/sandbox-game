@@ -353,9 +353,12 @@ put up, patch you till, sow, harvest or mow and clay you dig is a deed, and ever
 20 tiles of it (6 at night, when they stand still) saw it. The game writes down who saw what, where
 (by the house of the villager whose home is nearest, else "out on the geest" and the like) and on
 which day, merging a day's deeds of one kind in one place ("felled 7 trees by Antje's house"), and
-keeps it for 7 days, in the save. Each witness remembers the deed as a story, which the chat
-prompt tells as a plain line ("Today you saw the newcomer fell 7 trees by Antje's house."; the
-newest five). The console's `deeds` lists the log. The kinds, their words, the radius and the
+keeps it for 7 days, in the save. Each witness remembers the deed as a story in their gossip
+buffer (10 stories by default, set under Settings → Language model), which the chat prompt tells
+as a plain line ("Today you saw the newcomer fell 7 trees by Antje's house."). A story weighs
+high if the deed was by the witness's own house or that of family or friends, else medium; when
+the buffer is full the oldest story leaves, and becomes a long-term memory of its weight (a story
+that weighs little is forgotten). The console's `deeds` lists the log. The kinds, their words, the radius and the
 places are in [data/gossip.cfg](data/gossip.cfg).
 
 They all live in Wehlsbüll, a made-up marsh parish two hours north of Husum in 1750, which
@@ -919,6 +922,7 @@ not to the profile: type it once, and it is only ever sent to that provider's en
 | Provider | OpenAI-compatible | OpenAI-compatible, Claude or Gemini. Choosing another gives the profile that provider's endpoint and model; the rest stays. |
 | Endpoint | `http://127.0.0.1:11434/v1` | The base address of the chat API; the game posts to `<endpoint>/chat/completions`. Empty it to turn the model off (villagers then always speak scripted lines). |
 | Model | `qwen2.5:7b-instruct` | The model name the endpoint should use: typed, or picked from the drop-down below it, which lists what `<endpoint>/models` answers (Claude's `/v1/models` with the key), asks again a moment after the endpoint or key is typed and by the Refresh button, and shows only the saved model with a note when the endpoint can't be asked. |
+| Stories a villager keeps | 10 | A number from 1 to 100, one for each profile: how many stories (the deeds a villager saw you do) a villager keeps in mind. The oldest leaves when there are more: a light story is forgotten, any other becomes a long-term memory. Every story is sent with each question. |
 | Memories a villager keeps | 20 | A number from 1 to 200, one for each profile: how many long-term memories a villager keeps. Each has a weight (low, medium or high; a summed-up chat is medium). When there are more, the lightest is forgotten, between equal weights the oldest. Every memory is sent with each question. |
 | Lines a villager keeps | 24 | A number from 2 to 200, one for each profile: how many of the latest chat lines a villager keeps in the save and tells the model. Older lines are summed up in a memory; lowering it sums up the lines it drops, once the menu is closed. Every kept line is sent with each question, so higher values make the answers slower (and cost more with a hosted model). |
 | Key | empty | Only for endpoints that need one: sent as the header `Authorization: Bearer <key>`, and never sent along a redirect. One for all the profiles of a provider. |

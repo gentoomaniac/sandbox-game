@@ -62,13 +62,20 @@ func test_a_change_beyond_two_is_a_problem() -> void:
 	assert_eq(GossipRules.new(values).problems().size(), 1)
 
 
-func test_a_villager_is_told_the_newest_five_stories_oldest_first() -> void:
+func test_a_villager_is_told_every_story_they_keep_oldest_first() -> void:
 	var stories: Array[Dictionary] = []
 	for day in range(1, 8):
 		stories.append({"day": day, "kind": GossipRules.TILLED, "count": 1, "place": "here"})
 
 	var lines := _rules.story_lines(stories, 7)
 
-	assert_eq(lines.size(), 5)
-	assert_string_starts_with(lines[0], "4 days ago you saw")
+	assert_eq(lines.size(), 7)
+	assert_string_starts_with(lines[0], "6 days ago you saw")
 	assert_string_starts_with(lines[-1], "Today you saw")
+
+
+func test_a_story_leaves_a_dated_line_for_long_term_memory() -> void:
+	var story := {"day": 4, "kind": GossipRules.FELLED, "count": 7, "place": "by Antje's house"}
+	assert_eq(
+		_rules.memory_line(story), "On day 4: you saw the newcomer fell 7 trees by Antje's house."
+	)

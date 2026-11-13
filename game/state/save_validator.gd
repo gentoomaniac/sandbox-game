@@ -461,6 +461,7 @@ func _check_npc(npc: Variant, path: String) -> void:
 	if appearance != null:
 		_check_appearance(appearance, path + " appearance")
 	_check_deeds(npc, "stories", path, false)
+	_check_stories(npc, path)
 	for key in ["chat_history", "uncompacted_lines"]:
 		var lines: Variant = _field(npc, key, Kind.LIST, path)
 		if lines != null:
@@ -488,6 +489,29 @@ func _check_deeds(owner: Dictionary, key: String, path: String, has_witnesses: b
 			_report(deed_path, "unknown deed %s" % kind)
 		if has_witnesses:
 			_check_texts(deed, "witnesses", deed_path)
+
+
+## What a villager knows of each story, beyond the deed that _check_deeds has checked.
+func _check_stories(npc: Dictionary, path: String) -> void:
+	var stories: Variant = npc.get("stories")
+	if not stories is Array:
+		return
+	for index in stories.size():
+		var story_path := "%s stories %d" % [path, index]
+		var story: Variant = stories[index]
+		if not story is Dictionary:
+			continue
+		for whole in ["hops", "learned"]:
+			_field(story, whole, Kind.WHOLE, story_path)
+		for text in ["told_by", "seen_by", "line"]:
+			_field(story, text, Kind.TEXT, story_path)
+		_field(story, "personal", Kind.BOOL, story_path)
+		var how: Variant = _field(story, "how", Kind.TEXT, story_path)
+		if how != null and not [GossipRules.SEEN, GossipRules.HEARD].has(StringName(how)):
+			_report(story_path, "unknown way %s" % how)
+		var weight: Variant = _field(story, "weight", Kind.TEXT, story_path)
+		if weight != null and not MemoryWeight.WORDS.has(weight):
+			_report(story_path, "unknown weight %s" % weight)
 
 
 func _check_memories(npc: Dictionary, path: String) -> void:

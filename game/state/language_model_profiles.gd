@@ -4,7 +4,7 @@ extends RefCounted
 ## use. A profile has a name of its own, a provider (see GameSettings `LANGUAGE_MODEL_PROVIDERS`)
 ## and that provider's settings: the endpoint (such as "http://127.0.0.1:11434/v1", see
 ## OpenAiChat and ClaudeChat), the model, the most tokens and the temperature of an answer, and
-## how many lines of a chat and how many long-term memories a villager keeps. Several profiles may
+## how many lines of a chat, stories and long-term memories a villager keeps. Several profiles may
 ## share a provider, say Gemini with a pro and a flash model. The key is the provider's, not the
 ## profile's: it is entered once and only ever sent to its own provider, and is kept out of the
 ## profiles.
@@ -27,13 +27,17 @@ const TEXT_KEYS: Array[String] = ["endpoint", "model", "max_tokens", "temperatur
 const MIN_CHAT_HISTORY_LINES := 2
 const MAX_CHAT_HISTORY_LINES := 200
 const DEFAULT_CHAT_HISTORY_LINES := 24
+## How many stories a villager keeps in the gossip buffer (see Npc `keep_stories`).
+const MIN_STORIES_KEPT := 1
+const MAX_STORIES_KEPT := 100
+const DEFAULT_STORIES_KEPT := 10
 ## How many long-term memories a villager keeps (see Npc `keep_memories`).
 const MIN_MEMORIES_KEPT := 1
 const MAX_MEMORIES_KEPT := 200
 const DEFAULT_MEMORIES_KEPT := 20
 
 ## The profile in use: {name, provider, endpoint, model, max_tokens, temperature,
-## chat_history_lines, memories_kept}.
+## chat_history_lines, stories_kept, memories_kept}.
 var active: Dictionary
 
 ## Every profile, with a name of its own each.
@@ -77,6 +81,12 @@ func set_value(key: String, text: String) -> void:
 ## not at every step of the Settings page's slider.
 func set_chat_history_lines(lines: int) -> void:
 	active["chat_history_lines"] = clampi(lines, MIN_CHAT_HISTORY_LINES, MAX_CHAT_HISTORY_LINES)
+	changed.emit()
+
+
+## Stories kept in range. Applied like the lines (see `set_chat_history_lines`).
+func set_stories_kept(stories: int) -> void:
+	active["stories_kept"] = clampi(stories, MIN_STORIES_KEPT, MAX_STORIES_KEPT)
 	changed.emit()
 
 
@@ -197,6 +207,7 @@ static func _new_profile(provider: String, profile_name: String) -> Dictionary:
 		"max_tokens": "",
 		"temperature": "",
 		"chat_history_lines": DEFAULT_CHAT_HISTORY_LINES,
+		"stories_kept": DEFAULT_STORIES_KEPT,
 		"memories_kept": DEFAULT_MEMORIES_KEPT,
 	}
 
@@ -272,6 +283,14 @@ func _checked_profile(entry: Variant) -> Dictionary:
 			MIN_CHAT_HISTORY_LINES,
 			MAX_CHAT_HISTORY_LINES,
 			DEFAULT_CHAT_HISTORY_LINES
+		)
+	if entry.has("stories_kept"):
+		checked["stories_kept"] = _checked_count(
+			"stories kept",
+			entry["stories_kept"],
+			MIN_STORIES_KEPT,
+			MAX_STORIES_KEPT,
+			DEFAULT_STORIES_KEPT
 		)
 	if entry.has("memories_kept"):
 		checked["memories_kept"] = _checked_count(

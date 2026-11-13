@@ -122,6 +122,9 @@ func reply(npc: Npc, history: Array[Dictionary], message: String, state: GameSta
 ## `uncompacted_lines` until their memory is made, so a save made meanwhile loses none.
 func compact(npc: Npc, state: GameState) -> void:
 	npc.drop_old_lines(_settings.profiles.active["chat_history_lines"])
+	npc.keep_stories(
+		_settings.profiles.active["stories_kept"], _settings.profiles.active["memories_kept"]
+	)
 	npc.keep_memories(_settings.profiles.active["memories_kept"])
 	if npc.is_compacting:
 		return

@@ -2,7 +2,7 @@ class_name GossipRules
 extends RefCounted
 ## The words and numbers of the deed log, read from data/gossip.cfg (see there for what each key
 ## means): how far a villager sees, how long a deed is kept, the words of a deed, of a place and of
-## the story a witness is told.
+## the story a witness is told. Whether a story was seen or heard has its words here too.
 
 const DEFAULT_PATH := "res://data/gossip.cfg"
 
@@ -19,6 +19,9 @@ const MOWED := &"mowed"
 const KINDS: Array[StringName] = [
 	FELLED, BUILT, TOOK_DOWN, FENCED, TILLED, SOWED, HARVESTED, DUG_CLAY, MOWED
 ]
+## How a villager came to know a story.
+const SEEN := &"seen"
+const HEARD := &"heard"
 const KIND_KEYS: Array[String] = ["one", "many", "change"]
 const MAX_CHANGE := 2
 
@@ -26,7 +29,7 @@ const REQUIRED_KEYS := {
 	"witnesses": ["radius_tiles", "night_radius_tiles"],
 	"log": ["keep_days"],
 	"places": ["house"],
-	"story": ["prompt_stories", "today", "yesterday", "earlier"],
+	"story": ["today", "yesterday", "earlier", "memory"],
 }
 
 static var _default: GossipRules
@@ -131,11 +134,24 @@ func story_line(deed: Dictionary, days_ago: int) -> String:
 	)
 
 
-## The lines of the newest stories (Npc `stories`, oldest first) that a villager is told on day
-## `today`, oldest first.
+## The lines of the stories (Npc `stories`, oldest first) that a villager is told on day `today`.
 func story_lines(stories: Array[Dictionary], today: int) -> Array[String]:
 	var lines: Array[String] = []
-	var count := int(_values["story"]["prompt_stories"])
-	for story in stories.slice(maxi(stories.size() - count, 0)):
+	for story in stories:
 		lines.append(story_line(story, today - story["day"]))
 	return lines
+
+
+## The line a story leaves in long-term memory: "On day 4: you saw the newcomer fell 7 trees by
+## Antje's house."
+func memory_line(story: Dictionary) -> String:
+	return (
+		str(_values["story"]["memory"])
+		. format(
+			{
+				"day": story["day"],
+				"deed": deed_words(story["kind"], story["count"]),
+				"place": story["place"],
+			}
+		)
+	)

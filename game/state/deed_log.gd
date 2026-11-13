@@ -9,12 +9,17 @@ extends RefCounted
 ## merge into one entry, adding up the count and the witnesses; an entry is kept for
 ## GossipRules `keep_days`. Only the world is watched: a deed inside a house is not seen.
 ##
-## Every witness also gets the deed as a story in `Npc.stories` (`{day, minute, kind, count,
-## place}`, merged the same way), which the chat prompt tells.
+## Every witness also gets the deed as a story they saw in their gossip buffer (Npc `stories`,
+## merged the same way), which the chat prompt tells. It weighs high for a witness if the deed
+## was by their own house or that of someone on their sheet (family and friends), else medium.
 
 ## The oldest entry first.
 var entries: Array[Dictionary] = []
 var rules := GossipRules.default_rules()
+## How many stories and long-term memories a villager keeps (the settings of the language model
+## profile, which Main brings here).
+var stories_kept := LanguageModelProfiles.DEFAULT_STORIES_KEPT
+var memories_kept := LanguageModelProfiles.DEFAULT_MEMORIES_KEPT
 var _npcs: Npcs
 var _clock: GameClock
 
@@ -71,13 +76,6 @@ static func add_to(list: Array[Dictionary], deed: Dictionary) -> void:
 	list.append(deed.duplicate(true))
 
 
-## Takes out of `list` what is `keep_days` days or more old on `today`.
-static func drop_old(list: Array[Dictionary], today: int, keep_days: int) -> void:
-	list.assign(
-		list.filter(func(entry: Dictionary) -> bool: return today - entry["day"] < keep_days)
-	)
-
-
 ## Writes down the action if it is a deed that some villager saw.
 func record(outcome: ActionOutcome) -> void:
 	var kind := kind_of(outcome)
@@ -90,27 +88,47 @@ func record(outcome: ActionOutcome) -> void:
 	)
 	if witnesses.is_empty():
 		return
+	var house_owner := _nearest_home(spot)
 	var deed := {
 		"day": _clock.day,
 		"minute": _clock.minute_of_day,
 		"kind": kind,
 		"count": 1,
-		"place": _place_of(outcome, spot),
+		"place": _place_of(outcome, house_owner),
 		"witnesses": witnesses.map(func(npc: Npc) -> String: return npc.name),
 	}
 	add_to(entries, deed)
 	deed.erase("witnesses")
 	for npc: Npc in witnesses:
-		add_to(npc.stories, deed)
+		var story := deed.duplicate()
+		var is_personal := house_owner != null and _is_close_to(npc, house_owner)
+		(
+			story
+			. merge(
+				{
+					"how": GossipRules.SEEN,
+					"told_by": "",
+					"seen_by": npc.name,
+					"hops": 0,
+					"learned": _clock.day,
+					"line": "",
+					"weight": MemoryWeight.HIGH if is_personal else MemoryWeight.MEDIUM,
+					"personal": is_personal,
+				}
+			)
+		)
+		npc.add_story(story, stories_kept, memories_kept)
 	forget_old()
 
 
-## Forgets what is too old on the day of the clock: the entries of the log and the stories of
-## the villagers.
+## Forgets the entries of the log that are too old on the day of the clock. The stories stay
+## with the villagers until their gossip buffer pushes them out.
 func forget_old() -> void:
-	drop_old(entries, _clock.day, rules.keep_days())
-	for npc in _npcs.all():
-		drop_old(npc.stories, _clock.day, rules.keep_days())
+	entries.assign(
+		entries.filter(
+			func(entry: Dictionary) -> bool: return _clock.day - entry["day"] < rules.keep_days()
+		)
+	)
 
 
 ## The save data of the log.
@@ -142,9 +160,8 @@ static func from_saved(saved: Dictionary) -> Dictionary:
 	return deed
 
 
-## "by Antje's house" for the villager whose anchor is nearest within the daytime radius of the
-## spot, else the word of the ground there.
-func _place_of(outcome: ActionOutcome, spot: Vector2) -> String:
+## The villager whose anchor is nearest to the spot within the daytime radius, or null.
+func _nearest_home(spot: Vector2) -> Npc:
 	var nearest: Npc
 	var nearest_distance := rules.radius(false)
 	for npc in _npcs.all():
@@ -152,8 +169,19 @@ func _place_of(outcome: ActionOutcome, spot: Vector2) -> String:
 		if distance <= nearest_distance:
 			nearest = npc
 			nearest_distance = distance
-	if nearest != null:
-		return rules.house_place(nearest.name.get_slice(" ", 0))
+	return nearest
+
+
+## Whether `owner` is `npc` or one of the family and friends on their sheet.
+func _is_close_to(npc: Npc, owner: Npc) -> bool:
+	return npc == owner or (owner.id != "" and npc.people.has(owner.id))
+
+
+## "by Antje's house" for the villager whose home is nearest (`house_owner`), else the word of
+## the ground there.
+func _place_of(outcome: ActionOutcome, house_owner: Npc) -> String:
+	if house_owner != null:
+		return rules.house_place(house_owner.name.get_slice(" ", 0))
 	return rules.ground_place(outcome.map.tile_at(outcome.tile).terrain)
 
 

@@ -116,7 +116,7 @@ func test_a_deed_is_kept_for_7_days() -> void:
 	_state.report(ActionOutcome.TILL, _spot)
 
 	assert_eq(_state.deeds.entries.map(func(entry: Dictionary) -> int: return entry["day"]), [7, 8])
-	assert_eq(antje.stories.size(), 2, "the stories are kept as long")
+	assert_eq(antje.stories.size(), 3, "the stories stay in the buffer")
 
 
 func test_a_deed_is_forgotten_when_the_days_pass_without_a_new_one() -> void:
@@ -128,24 +128,21 @@ func test_a_deed_is_forgotten_when_the_days_pass_without_a_new_one() -> void:
 
 	_state.clock.advance(GameClock.MINUTES_PER_DAY)
 	assert_eq(_state.deeds.entries, [] as Array[Dictionary])
-	assert_eq(antje.stories, [] as Array[Dictionary])
+	assert_eq(antje.stories.size(), 1, "the story stays in the gossip buffer")
 
 
 func test_what_has_grown_old_is_forgotten_when_a_game_is_loaded() -> void:
-	var antje := _villager("antje", 5.0)
 	var old := {
 		"day": 1, "minute": 600, "kind": "felled", "count": 2, "place": "x", "witnesses": []
 	}
 	var recent := old.duplicate(true)
 	recent["day"] = 20
-	antje.stories.append(DeedLog.from_saved(old))
 	_state.clock.day = 20
 
 	_state.deeds.load_array([old, recent])
 
 	assert_eq(_state.deeds.entries.size(), 1)
 	assert_eq(_state.deeds.entries[0]["day"], 20)
-	assert_eq(antje.stories, [] as Array[Dictionary])
 
 
 func test_the_place_is_the_house_of_the_villager_with_the_nearest_home() -> void:
@@ -183,6 +180,14 @@ func test_a_witness_is_told_the_deed_as_a_story() -> void:
 					"kind": GossipRules.FELLED,
 					"count": 1,
 					"place": "by Antje's house",
+					"how": GossipRules.SEEN,
+					"told_by": "",
+					"seen_by": "Antje Boysen",
+					"hops": 0,
+					"learned": 5,
+					"line": "",
+					"weight": MemoryWeight.HIGH,
+					"personal": true,
 				}
 			]
 			as Array[Dictionary]
@@ -220,3 +225,43 @@ func test_the_finished_actions_that_are_deeds() -> void:
 	for deed: Array in cases:
 		var outcome := ActionOutcome.new(deed[0], _state.world, _spot, deed[1], deed[2])
 		assert_eq(DeedLog.kind_of(outcome), deed[3], "%s of %s" % [deed[0], deed[1]])
+
+
+func test_a_deed_by_their_own_house_or_that_of_family_or_friends_weighs_high() -> void:
+	var antje := _villager("antje", 3.0, 20.0)
+	var hinrich := _villager("hinrich", 3.0, 2.0)
+	var stranger := Npc.create(7, Vector2.ZERO, _state.npcs.rules)
+	stranger.position = Vector2(_spot) + Vector2(0.5, 0.5) + Vector2(4.0, 0.0)
+	stranger.anchor = Vector2(_spot) + Vector2(0.5, 0.5) + Vector2(500.0, 0.0)
+	_state.npcs.add(stranger)
+
+	_fell_a_tree()
+
+	assert_eq(hinrich.stories[0]["weight"], MemoryWeight.HIGH, "their own house")
+	assert_true(hinrich.stories[0]["personal"])
+	assert_eq(antje.stories[0]["weight"], MemoryWeight.HIGH, "her husband's house")
+	assert_eq(stranger.stories[0]["weight"], MemoryWeight.MEDIUM, "someone else's house")
+	assert_false(stranger.stories[0]["personal"])
+
+
+func test_a_deed_on_the_open_ground_weighs_medium() -> void:
+	var antje := _villager("antje", 3.0, 25.0)
+
+	_fell_a_tree()
+
+	assert_eq(antje.stories[0]["weight"], MemoryWeight.MEDIUM)
+
+
+func test_the_gossip_buffer_is_as_long_as_the_setting_and_the_oldest_leaves() -> void:
+	var antje := _villager("antje", 5.0, 25.0)
+	_state.deeds.stories_kept = 2
+	for day in range(1, 5):
+		_state.clock.day = day
+		_fell_a_tree()
+
+	assert_eq(antje.stories.map(func(story: Dictionary) -> int: return story["day"]), [3, 4])
+	assert_eq(antje.memories.size(), 2, "the two that left are remembered, of medium weight")
+	assert_eq(antje.memories[0]["day"], 1)
+	assert_eq(antje.memories[0]["weight"], MemoryWeight.MEDIUM)
+	var ground := _state.deeds.rules.ground_place(_state.world.tile_at(_spot).terrain)
+	assert_eq(antje.memories[0]["text"], "On day 1: you saw the newcomer fell a tree %s." % ground)
