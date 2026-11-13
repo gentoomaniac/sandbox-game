@@ -52,6 +52,24 @@ const REQUIRED_KEYS := {
 		"wind_full",
 		"lightning_per_minute",
 	],
+	"strike":
+	[
+		"min_km",
+		"close_to_km",
+		"mid_to_km",
+		"far_to_km",
+		"close_weight",
+		"mid_weight",
+		"far_weight",
+		"seconds_per_km",
+		"fall_db_per_km",
+		"cutoff_near_hz",
+		"cutoff_far_hz",
+		"flash_peak_near",
+		"flash_peak_far",
+		"flash_fade_near_seconds",
+		"flash_fade_far_seconds",
+	],
 }
 
 static var _default: WeatherRules
