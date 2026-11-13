@@ -8,8 +8,9 @@ extends RefCounted
 ## Optional:
 ## - tool: the kind of tool it is (HOE ...); `level`, how good it is (see WorldObjectTypes
 ##   `harvest_level`), `power`, the hit points a hit takes off, and `energy_factor`, what its uses
-##   cost as a share of the usual; every tool comes in five grades, made from data/tools.cfg in
-##   `_with_tool_items`;
+##   cost as a share of the usual, and `numeral`, the Roman numeral of its grade, which the
+##   inventory slot draws (see SlotView); every tool comes in five grades, made from
+##   data/tools.cfg in `_with_tool_items`;
 ## - held_sheet: the variant of the character's `held` layer that shows it in the hand;
 ## - equip_slot: the Equipment slot it is worn in (wearables have a stack limit of 1), and
 ##   `layer_variant`, the variant of the character layer it shows (see Appearance.dress), and
@@ -694,6 +695,7 @@ static func _with_tool_items(other_types: Dictionary) -> Dictionary:
 				"level": values["level"],
 				"power": values["power"],
 				"energy_factor": values["energy_factor"],
+				"numeral": values["numeral"],
 				"held_sheet": id,
 			}
 	return types

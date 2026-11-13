@@ -431,9 +431,10 @@ Use the axe on trees and the pickaxe on stones and boulders. A better tool needs
 hits, and some resources need a better tool. Every tool comes in five grades, rusty iron
 (the ones you start with), iron, brittle steel, steel and sharp steel, drawn in their metal. A
 better grade needs fewer hits and tires you less with every use, and the pine and the boulders
-need at least an iron axe or pickaxe. For now you can only get the grades from the console
-(`give iron_axe`, `give sharp_steel_hoe`); the numbers are in `data/tools.cfg`. Everything you hit trembles and throws
-leaves, snow or splinters. A felled tree topples to the side and leaves a stump and a
+need at least an iron axe or pickaxe. A Roman numeral from I (rusty iron) to V (sharp steel) at
+the bottom left of the tool's slot tells the grade. For now you can only get the grades from the
+console (`give iron_axe`, `give sharp_steel_hoe`); the numbers are in `data/tools.cfg`. Everything
+you hit trembles and throws leaves, snow or splinters. A felled tree topples to the side and leaves a stump and a
 trunk (a dead tree a grey, splintered one); cut both into logs. A stump left alone rots
 away over about two weeks and may sprout a sapling of its kind (not a dead tree's), and
 now and then a tree drops a seed (an acorn, a beechnut, a catkin or a cone) you can plant
@@ -447,6 +448,8 @@ fibre.
 
 What you gather hops out onto the ground: logs, stone, clay, hay, reeds, seeds and produce
 lie there until you walk over them and pick them up.
+
+![The five grades of the hoe, axe and shovel in the bag, with their Roman numerals, in the new art (left) and the classic art (right)](docs/screenshots/tool-grades.png)
 
 ![Trees felled from either side: the stumps, the trunks they leave and their seeds](docs/screenshots/harvest.png)
 

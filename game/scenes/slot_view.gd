@@ -10,9 +10,10 @@ extends Control
 ## and the TrashCan; a stack let go over nothing stays where it was. Shift+left click emits
 ## `quick_move_requested` and right click `secondary_pressed` (unless it is not `is_clickable`,
 ## then the click goes on to the game). An empty slot can show a faint `hint` of what belongs in
-## it. A slot with an item has its tooltip (see TooltipView); `tooltip_id` names it for the debug
-## flag. A screen may take over the moves onto and off a slot (`move_rule`) and dim its stack
-## (`is_dimmed`), as a process station's window does.
+## it. A tool shows the Roman numeral of its grade bottom left (the count is bottom right, the
+## can's water top left). A slot with an item has its tooltip (see TooltipView); `tooltip_id`
+## names it for the debug flag. A screen may take over the moves onto and off a slot
+## (`move_rule`) and dim its stack (`is_dimmed`), as a process station's window does.
 
 ## A stack was dragged onto this slot and moved.
 signal stack_dropped_here
@@ -24,6 +25,20 @@ const SIZE := 20
 const ICON_RECT := Rect2(2, 2, ItemIcon.SIZE, ItemIcon.SIZE)
 ## Palette colour ink (see tools/art/palette.py); the pixel font is already cream.
 const COUNT_SHADOW_COLOR := Color("1d1b26")
+## The Roman numeral of a tool's grade, drawn pixel by pixel (so it is crisp at every UI scale):
+## the glyphs 4 px tall with 1 px strokes that task 206's icons had, in palette cream on a backing
+## of ink, one pixel wider on every side. The backing's lower left corner is 2 px (the slot's
+## border) from the slot's.
+const NUMERAL_GLYPHS := {
+	"I": ["#", "#", "#", "#"],
+	"II": ["#.#", "#.#", "#.#", "#.#"],
+	"III": ["#.#.#", "#.#.#", "#.#.#", "#.#.#"],
+	"IV": ["#.#.#", "#.#.#", "#.#.#", "#..#."],
+	"V": ["#.#", "#.#", "#.#", ".#."],
+}
+const NUMERAL_COLOR := Color("f1e6c2")
+const NUMERAL_MARGIN := 1
+const NUMERAL_CORNER := 2
 ## A dimmed stack's icon.
 const DIMMED_COLOR := Color(0.5, 0.5, 0.5, 0.35)
 ## The small number on a watering can (foam of the palette) and its size.
@@ -43,6 +58,9 @@ var hint: Texture2D
 var tooltip_id := ""
 ## A small number in the top left corner, if not empty (see `show_stack`).
 var badge := ""
+## The Roman numeral of a tool's grade (a key of NUMERAL_GLYPHS), empty for what is not a tool
+## (see ItemTypes `numeral`).
+var numeral := ""
 ## The hotbar of the HUD is not clickable until a screen that moves items is open.
 var is_clickable := true
 ## Set by a screen that moves stacks to or from this slot its own way (a process station's grid,
@@ -124,6 +142,7 @@ func destroy() -> void:
 func show_stack(stack: Dictionary, is_selected: bool, new_badge := "") -> void:
 	_stack = stack
 	badge = new_badge
+	numeral = "" if stack.is_empty() else ItemTypes.TYPES[stack["item"]].get("numeral", "")
 	_icon = null if stack.is_empty() else load(ArtSet.path(ItemTypes.icon_path(stack["item"])))
 	_is_selected = is_selected
 	var text := "" if stack.is_empty() else ItemTooltip.text_for(stack["item"], stack["count"])
@@ -241,6 +260,8 @@ func _draw() -> void:
 		draw_string(
 			badge_font, top_left, badge, HORIZONTAL_ALIGNMENT_LEFT, -1, BADGE_FONT_SIZE, BADGE_COLOR
 		)
+	if numeral != "":
+		_draw_numeral()
 	if _stack["count"] > 1:
 		# The font comes from the theme set on a parent (see ui_theme.tres).
 		var font := get_theme_default_font()
@@ -257,3 +278,17 @@ func _draw() -> void:
 			COUNT_SHADOW_COLOR
 		)
 		draw_string(font, baseline, text, HORIZONTAL_ALIGNMENT_RIGHT, SIZE - 2, font_size)
+
+
+func _draw_numeral() -> void:
+	var glyph: Array = NUMERAL_GLYPHS[numeral]
+	var backing := Vector2i(
+		glyph[0].length() + 2 * NUMERAL_MARGIN, glyph.size() + 2 * NUMERAL_MARGIN
+	)
+	var corner := Vector2i(NUMERAL_CORNER, SIZE - NUMERAL_CORNER - backing.y)
+	draw_rect(Rect2i(corner, backing), COUNT_SHADOW_COLOR)
+	for row in glyph.size():
+		for column in glyph[row].length():
+			if glyph[row][column] == "#":
+				var pixel := corner + Vector2i.ONE * NUMERAL_MARGIN + Vector2i(column, row)
+				draw_rect(Rect2i(pixel, Vector2i.ONE), NUMERAL_COLOR)

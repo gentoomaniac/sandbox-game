@@ -219,7 +219,10 @@ The pick's arms bend gently down towards the handle, a parabola in the handle's 
 watering can stands upright with its body on the right: a round body, a straight spout rising
 to the left, the rose on the spout's line. The metal is flat, lit on its top and left, shaded
 on its bottom and right, with the edge its own line. The icons carry no mark of the grade
-but the metal, so the items lying on the ground stay clean, and the tools in the hand none either. The same map comes in five grades, told apart at
+but the metal, so the items lying on the ground stay clean, and the tools in the hand none either:
+the grade's Roman numeral, I to V, is drawn by the inventory slot (SlotView), in glyphs 4 px tall
+with 1 px strokes in `cream` on an `ink` backing, bottom left (the count is bottom right, the
+can's water top left). The same map comes in five grades, told apart at
 a glance by the metal: rusty iron (dull brown-grey with pits of rust on an old dark handle),
 iron (plain grey), brittle steel (lighter, cold blue, with a hairline crack), steel (bright and
 clean) and sharp steel (near white with a keen two-pixel edge). So the spade is all iron and

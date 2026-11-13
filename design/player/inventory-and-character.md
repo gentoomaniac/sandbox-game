@@ -105,6 +105,13 @@
     settlement, the user's 2026-11-05 idea). The grades are data (`data/tools.cfg`, read by
     `ToolGradeRules`, the items made in `ItemTypes`). An old save's tools become the rusty iron
     ones (save version 33). "Needs a better axe" names the kind of tool, not the grade.
+  - **The numeral** (the user, 2026-11-11): a tool's grade shows as a Roman numeral, I (rusty
+    iron) to V (sharp steel), drawn by the inventory slot (`SlotView`) bottom left, where the
+    count is bottom right and the can's water top left; it is not baked into the icons, so the
+    items lying on the ground stay clean. It is drawn pixel by pixel from the glyphs the task 206
+    icons had (4 px tall, 1 px strokes, cream on an ink backing), so it is crisp in both arts at
+    every UI scale; the data (`numeral` in `data/tools.cfg`) names it. The hotbar, the bag and
+    the chests all show it, as they all use the slot; the icon dragged with the mouse has none.
   - **How a grade plays** (task 207; the numbers are the user's to tune in `data/tools.cfg`):
 
     | Grade | Level | Power (hit points a hit takes) | Energy of a use |
