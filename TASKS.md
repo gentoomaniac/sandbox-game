@@ -202,28 +202,6 @@ The user, 2026-11-11: "Wild rabbits should run away even when sleeping"
 - Tests: a sleeping wild rabbit flees when the player comes near; a sleeping tame rabbit does
   not.
 
-## 215. Character window: no trash can; the bag can be open beside it to drag gear onto the figure
-
-- [ ] Done
-
-The user, 2026-11-12, after task 191: "The character window doesn't need a trash can. Dragging
-into an item slot should happen when the bag is open at the same time."
-- Remove the trash can from the character window (CharacterScreen); the bag keeps its own.
-- The bag (B) and the character window (C) may be open together, side by side without overlapping
-  (both stay movable). Dragging a stack from the backpack onto an equipment slot wears it;
-  dragging worn gear back into the backpack takes it off. Hotbar drags and right click keep working.
-- Today only one Modal is open at a time ("other windows' keys do nothing"): allow this one pair
-  (B over the character window opens the bag and C over the bag opens the character window; each
-  key closes only its own window).
-  Other windows keep the one-at-a-time rule.
-- The user, 2026-11-12: "The idea UI wise is like in world of warcraft." So the usual MMO layout:
-  the character window docks on the left side of the screen, the bag at the bottom right above the
-  bag button; each opens and closes on its own key or button, independently of the other, and both
-  can be open at once while you keep playing. Escape closes all open windows at once. No art or
-  look is copied from that game, only this layout and behaviour.
-- Tests for both windows open, the drags both ways and the keys; screenshots for the user; README
-  and docs (docs/ui.md, design/presentation/menus-and-hud.md, design/player/inventory-and-character.md).
-
 ## 219. Cloud shadows look broken: hard lines instead of soft clouds
 
 - [ ] Done
