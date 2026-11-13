@@ -62,6 +62,13 @@ func has_full_sheets() -> bool:
 	return _provider()["needs_key"]
 
 
+## The model's answer to `request` (see NpcPrompt), "" if it gives none.
+func ask(request: Dictionary) -> String:
+	return await _chat_of_provider().answer(
+		_settings.profiles.language_model(), request, rules.value("request", "timeout_seconds")
+	)
+
+
 ## Adds the player's `line` to the chat of the villager and waits for the answer, which is added
 ## when it comes, also when the player has left meanwhile: it is there when they come back. If the
 ## villager has no answer (see `reply`) the player's line stays, and the player may write again.
@@ -94,9 +101,7 @@ func reply(npc: Npc, history: Array[Dictionary], message: String, state: GameSta
 		request["temperature"] = ModelChat.temperature_of(
 			_settings.profiles.active, request["temperature"]
 		)
-		var answer: String = await _chat_of_provider().answer(
-			_settings.profiles.language_model(), request, rules.value("request", "timeout_seconds")
-		)
+		var answer := await ask(request)
 		var language := NpcLanguage.name_of(message, history, rules)
 		var label := NpcPrompt.last_reply_label(npc, message, language, rules)
 		answer = NpcPrompt.trimmed_reply(
@@ -134,11 +139,7 @@ func compact(npc: Npc, state: GameState) -> void:
 		var summary := ""
 		if has_model():
 			var request := NpcPrompt.memory_request(npc, lines, rules)
-			var answer: String = await _chat_of_provider().answer(
-				_settings.profiles.language_model(),
-				request,
-				rules.value("request", "timeout_seconds")
-			)
+			var answer := await ask(request)
 			summary = NpcPrompt.trimmed_reply(answer, npc, 1)
 		# The chat was cleared meanwhile: there is nothing to remember.
 		if npc.uncompacted_lines.slice(0, lines.size()) != lines:
