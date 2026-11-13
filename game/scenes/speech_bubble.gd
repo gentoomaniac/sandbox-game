@@ -1,12 +1,14 @@
 class_name SpeechBubble
 extends CanvasLayer
-## The line a villager says over their head (see NpcSpeech): cream plate, ink text and outline,
-## with a tail that points down at them. It is UI, the size of the HUD's at any zoom, in the pixel
-## font, and is placed over the villager where the camera shows them. It pops up and fades like
-## the player's thought bubbles (ThoughtBubble). Its origin is the tip of the tail, a little above
-## the villager's name tag.
+## The line a villager says over their head (see NpcSpeech): a cream plate with round corners and
+## an ink outline, ink text with no shadow, and a tail that points down at them. It is UI, the size
+## of the HUD's at any zoom, in the pixel font, and is placed over the villager where the camera
+## shows them. It pops up and fades like the player's thought bubbles (ThoughtBubble). Its origin
+## is the tip of the tail, a little above the villager's name tag.
 
 const THEME := preload("res://game/scenes/ui_theme.tres")
+## How round the plate's corners are, in UI pixels.
+const CORNER_RADIUS := 4
 ## How wide the text gets before it wraps, in UI pixels.
 const MAX_TEXT_WIDTH := 110.0
 const PADDING := Vector2i(4, 2)
@@ -33,6 +35,11 @@ func _init() -> void:
 	_plate.add_theme_stylebox_override("panel", _plate_style())
 	_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_label.add_theme_color_override("font_color", UiColors.SPEECH_INK)
+	# The theme gives labels a dark shadow to stand out on the world; ink on the cream plate needs
+	# none, and with it the pixel font smudges.
+	_label.add_theme_color_override("font_shadow_color", Color.TRANSPARENT)
+	_label.add_theme_constant_override("shadow_offset_x", 0)
+	_label.add_theme_constant_override("shadow_offset_y", 0)
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_plate.add_child(_label)
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -97,6 +104,10 @@ static func _plate_style() -> StyleBoxFlat:
 	style.bg_color = UiColors.SPEECH_FILL
 	style.border_color = UiColors.SPEECH_INK
 	style.set_border_width_all(1)
+	style.set_corner_radius_all(CORNER_RADIUS)
+	# Few steps, so the round corners stay crisp pixels at the HUD's scale.
+	style.corner_detail = 3
+	style.anti_aliasing = false
 	style.content_margin_left = PADDING.x
 	style.content_margin_right = PADDING.x
 	style.content_margin_top = PADDING.y

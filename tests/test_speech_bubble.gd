@@ -85,3 +85,13 @@ func test_it_follows_the_villager() -> void:
 	_antje.position += Vector2(2, 0)
 	_bubble.update(0.1, _to_ui)
 	assert_eq(_bubble.get_child(0).position.x - before.x, 2.0 * TerrainTileset.TILE_SIZE)
+
+
+func test_the_text_has_no_shadow_and_the_plate_round_corners() -> void:
+	var bubble := SpeechBubble.new()
+	add_child_autofree(bubble)
+	var label: Label = bubble._label
+	assert_eq(label.get_theme_color("font_shadow_color").a, 0.0, "a shadow smudges the font")
+	var style: StyleBoxFlat = bubble._plate.get_theme_stylebox("panel")
+	assert_eq(style.corner_radius_top_left, SpeechBubble.CORNER_RADIUS)
+	assert_false(style.anti_aliasing, "crisp pixel corners")
