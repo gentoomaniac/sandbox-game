@@ -791,6 +791,7 @@ it keeps the newest 500 lines and follows new output unless you scrolled up to r
 | `crop` | Show the growth, damage and needs of the nearest crop. |
 | `skill <skill> <points>` | Set a skill's points (`woodworking`, `cooking`, `masonry`). |
 | `attribute <attribute> <level>` | Set an attribute's level (`strength`, `agility`, `stamina`, `hp`; 1 to 100) and show the maximum energy, maximum health and carry capacity it leaves. |
+| `gossip <villager>` | List the stories (the gossip buffer) and the long-term memories a villager keeps, with their weights (low, medium, high) and, for a story, whether it was seen or heard. The villager is the id of one written by hand (`gossip antje`) or a first name; Tab completes the ids. |
 | `deeds` | List what you did within sight of villagers in the last 7 days: the day and time, the deed, the place and who saw it. |
 | `play <track>` | Play a piece of music in a loop: `sketch_tide`, `sketch_harbour` or `test_reel`, also by the name without the prefix (`play tide`). The piece is rendered first (the log says `Rendering...`, then `Playing ...`), so the game doesn't stall; another piece crossfades from the first on the beat. An unknown name lists the tracks. Nothing plays unless you ask; the volume is Settings → Audio → Music. |
 | `stop` | Fade the music out. |

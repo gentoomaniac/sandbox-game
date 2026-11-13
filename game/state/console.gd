@@ -66,6 +66,14 @@ const COMMANDS := {
 		"Show the friendship of the animal nearest to you, or set it.",
 	],
 	"deeds": ["deeds", "List what you did within sight of villagers, and who saw it."],
+	"gossip":
+	[
+		"gossip <villager>",
+		(
+			"List the stories and the long-term memories a villager keeps, with their weights (the"
+			+ " id of a villager written by hand, such as antje, or a first name)."
+		),
+	],
 	"play":
 	[
 		"play <track>",
@@ -86,6 +94,7 @@ const ARGUMENTS := {
 	"snow": [&"snow"],
 	"skill": [&"skill", &"number"],
 	"attribute": [&"attribute", &"number"],
+	"gossip": [&"villager"],
 	"play": [&"track"],
 }
 ## The commands that take an animal kind, or `npc` and the id of a villager written by hand (see
@@ -214,6 +223,8 @@ func run(line: String) -> Array[String]:
 			output = _friendship(arguments)
 		"deeds":
 			output = _deeds()
+		"gossip":
+			output = _gossip(arguments)
 		"play":
 			output = _play(arguments)
 		"stop":
@@ -633,6 +644,59 @@ func _deeds() -> Array[String]:
 	if lines.is_empty():
 		lines.append("No deeds seen yet")
 	return lines
+
+
+## The stories of a villager's gossip buffer and their long-term memories, oldest first, each with
+## its weight.
+func _gossip(arguments: PackedStringArray) -> Array[String]:
+	if arguments.size() != 1:
+		return ["Usage: %s" % COMMANDS["gossip"][0]]
+	var npc := _npc_named(arguments[0])
+	if npc == null:
+		return _unknown("villager", arguments[0], "gossip")
+	var rules := _state.deeds.rules
+	var lines: Array[String] = [
+		(
+			"%s keeps %d of %d stories and %d of %d memories"
+			% [
+				npc.name,
+				npc.stories.size(),
+				_state.deeds.stories_kept,
+				npc.memories.size(),
+				_state.deeds.memories_kept,
+			]
+		)
+	]
+	for story in npc.stories:
+		var told := (
+			"seen" if story["how"] == GossipRules.SEEN else "heard from %s" % story["told_by"]
+		)
+		lines.append(
+			(
+				"Story, %s, %s: %s"
+				% [MemoryWeight.to_word(story["weight"]), told, rules.memory_line(story)]
+			)
+		)
+	for memory in npc.memories:
+		lines.append(
+			(
+				"Memory, %s, day %d: %s"
+				% [MemoryWeight.to_word(memory["weight"]), memory["day"], memory["text"]]
+			)
+		)
+	return lines
+
+
+## The villager with this id, else the first one with this first name (the words of a command
+## are lowercase), or null.
+func _npc_named(word: String) -> Npc:
+	var npc := _state.npcs.find(word)
+	if npc != null:
+		return npc
+	for each in _state.npcs.all():
+		if each.name.get_slice(" ", 0).to_lower() == word:
+			return each
+	return null
 
 
 func _play(arguments: PackedStringArray) -> Array[String]:
