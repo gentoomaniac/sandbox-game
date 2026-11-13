@@ -45,7 +45,12 @@ func test_the_variety_follows_the_band_of_the_distance() -> void:
 
 
 func test_drawn_strikes_stay_in_range_and_far_ones_are_the_most_common() -> void:
-	var counts := {LightningStrike.CLOSE: 0, LightningStrike.MID: 0, LightningStrike.FAR: 0}
+	var counts := {
+		LightningStrike.CLOSE: 0,
+		LightningStrike.MID: 0,
+		LightningStrike.FAR: 0,
+		LightningStrike.CRAWL: 0
+	}
 	for _i in 1000:
 		var strike := LightningStrike.draw(_rng, _rules)
 		assert_between(
@@ -65,3 +70,51 @@ func test_a_close_strike_is_rare() -> void:
 			close += 1
 	assert_gt(close, 0, "it does happen")
 	assert_lt(close, 100, "under one in ten")
+
+
+func _crawler(distance_km := 3.0, seed_of_shape := 222) -> LightningStrike:
+	return LightningStrike.new(distance_km, _rules, true, seed_of_shape)
+
+
+func test_a_crawler_has_its_own_thunder() -> void:
+	assert_eq(_crawler().event(), LightningStrike.CRAWL)
+	assert_eq(_strike(3.0).event(), LightningStrike.MID)
+
+
+func test_about_one_strike_in_six_is_a_crawler_as_far_as_a_mid_or_far_one() -> void:
+	var crawlers := 0
+	for _i in 3000:
+		var strike := LightningStrike.draw(_rng, _rules)
+		if not strike.is_crawl:
+			continue
+		crawlers += 1
+		assert_between(
+			strike.distance_km,
+			_rules.value("strike", "close_to_km"),
+			_rules.value("strike", "far_to_km")
+		)
+	assert_between(crawlers, 400, 600, "about 500 of 3000")
+
+
+func test_the_flash_of_a_crawler_is_pulses_that_travel_one_way_across_the_sky() -> void:
+	var pulses := _crawler().crawl_pulses()
+	assert_eq(pulses.size(), int(_rules.value("strike", "crawl_pulses")))
+	var direction := signf(pulses[-1].y - pulses[0].y)
+	assert_ne(direction, 0.0)
+	for index in pulses.size():
+		assert_between(pulses[index].y, 0.0, 1.0)
+		assert_between(pulses[index].z, 0.0, 1.0)
+		assert_gt(pulses[index].z, 0.0)
+		if index > 0:
+			assert_gt(pulses[index].x, pulses[index - 1].x, "later")
+			assert_eq(signf(pulses[index].y - pulses[index - 1].y), direction, "same way")
+	assert_lt(pulses[-1].x, _rules.value("strike", "crawl_seconds"))
+
+
+func test_the_flicker_is_the_same_for_a_seed_and_differs_between_seeds() -> void:
+	assert_eq(_crawler(3.0, 5).crawl_pulses(), _crawler(3.0, 5).crawl_pulses())
+	assert_ne(_crawler(3.0, 5).crawl_pulses(), _crawler(3.0, 6).crawl_pulses())
+
+
+func test_other_strikes_do_not_flicker() -> void:
+	assert_eq(_strike(3.0).crawl_pulses().size(), 0)

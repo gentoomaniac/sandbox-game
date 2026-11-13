@@ -123,7 +123,9 @@ Settings → Audio, saved with the others; 0 mutes it).
   positional) on the Ambience bus (muffled indoors). It gets 2 dB quieter per km (about -40 dBFS
   at 12 km for the far kind) and is low-passed from 12 kHz at the nearest strike to 600 Hz at the
   farthest: the cutoff is set on one of four DistantAmbience buses taken in turn, so a rumble
-  keeps its own cutoff while it plays. A thunder that is due while the game is paused waits with
+  keeps its own cutoff while it plays. One strike in six (weight 3 of 18, `crawl_weight`) is a
+  sky-crawler instead: 0.6 to 12 km away like a mid or far strike, with `thunder_crawl` after the
+  same delay; its flash flickers along the sky (see seasons-and-weather). A thunder that is due while the game is paused waits with
   the tree and comes after the pause for what was left of its delay (it is not dropped and does
   not pile up with others). Birds chirp at a chance per second by
   season (winter few), part of the day (none at night) and rain (none in heavy rain), from

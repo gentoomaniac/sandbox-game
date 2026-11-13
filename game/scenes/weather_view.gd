@@ -42,6 +42,11 @@ const MIN_INTENSITY := 0.003
 const FLASH_COLOR := Color(0.88, 0.92, 1.0)
 ## How bright the flash is while it is held on (see is_flash_held).
 const HELD_FLASH_OPACITY := 0.55
+## A pulse of a crawler's flicker is a glow this wide (a share of the view) that rises and fades
+## in this many seconds each.
+const CRAWL_GLOW_WIDTH_SHARE := 0.45
+const CRAWL_PULSE_RISE_SECONDS := 0.04
+const CRAWL_PULSE_FADE_SECONDS := 0.16
 
 ## Debug: keeps the flash of lightning on, for screenshots.
 var is_flash_held := false
@@ -58,6 +63,7 @@ var _precipitation := ColorRect.new()
 var _fog := ColorRect.new()
 var _cloud_shadows := ColorRect.new()
 var _flash := ColorRect.new()
+var _crawl_glow := TextureRect.new()
 var _rules := LightingRules.default_rules()
 var _weather_rules := WeatherRules.default_rules()
 var _rng := RandomNumberGenerator.new()
@@ -91,6 +97,7 @@ func _init() -> void:
 	_cloud_shadows.material = _shader_material(CLOUD_SHADOWS_SHADER, view_size)
 	_precipitation.material = _shader_material(PRECIPITATION_SHADER, view_size)
 	_flash.color = Color(FLASH_COLOR, 0.0)
+	_set_up_crawl_glow(view_size)
 
 
 ## Sets the weather to show, the tint of the world (see DayNightTint), which the effects
@@ -128,8 +135,14 @@ func flash(strike := LightningStrike.draw(_rng, _weather_rules)) -> void:
 	flashed.emit(strike)
 	if _flash_tween != null:
 		_flash_tween.kill()
+	# Whatever the last flash left on is over: a crawler's glow too, if it is cut short.
+	_flash.color.a = 0.0
+	_crawl_glow.modulate.a = 0.0
 	var peak := strike.flash_peak()
 	_flash_tween = create_tween()
+	if strike.is_crawl:
+		_flicker_along_the_sky(strike)
+		return
 	if strike.event() == LightningStrike.FAR:
 		_flash.color.a = 0.0
 		_flash_tween.tween_property(_flash, "color:a", peak, 0.2)
@@ -138,6 +151,43 @@ func flash(strike := LightningStrike.draw(_rng, _weather_rules)) -> void:
 		_flash_tween.tween_property(_flash, "color:a", peak * 0.2, 0.07)
 		_flash_tween.tween_property(_flash, "color:a", peak * 0.7, 0.03)
 	_flash_tween.tween_property(_flash, "color:a", 0.0, strike.flash_fade_seconds())
+
+
+## The flash of a crawler: faint pulses of glow one after the other along the sky, left to right
+## or the other way, instead of one burst.
+func _flicker_along_the_sky(strike: LightningStrike) -> void:
+	var glow_size := _crawl_glow.size
+	var elapsed := 0.0
+	for pulse in strike.crawl_pulses():
+		_flash_tween.tween_interval(pulse.x - elapsed)
+		elapsed = pulse.x + CRAWL_PULSE_RISE_SECONDS + CRAWL_PULSE_FADE_SECONDS
+		var centre_x := pulse.y * ViewMath.VIEWPORT_SIZE.x
+		_flash_tween.tween_callback(
+			func() -> void: _crawl_glow.position.x = centre_x - glow_size.x / 2.0
+		)
+		_flash_tween.tween_property(
+			_crawl_glow, "modulate:a", strike.flash_peak() * pulse.z, CRAWL_PULSE_RISE_SECONDS
+		)
+		_flash_tween.tween_property(_crawl_glow, "modulate:a", 0.0, CRAWL_PULSE_FADE_SECONDS)
+
+
+func _set_up_crawl_glow(view_size: Vector2) -> void:
+	var gradient := Gradient.new()
+	gradient.colors = PackedColorArray(
+		[Color(FLASH_COLOR, 0.0), FLASH_COLOR, Color(FLASH_COLOR, 0.0)]
+	)
+	gradient.offsets = PackedFloat32Array([0.0, 0.5, 1.0])
+	var texture := GradientTexture2D.new()
+	texture.gradient = gradient
+	texture.fill_from = Vector2(0.0, 0.5)
+	texture.fill_to = Vector2(1.0, 0.5)
+	_crawl_glow.texture = texture
+	_crawl_glow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_crawl_glow.stretch_mode = TextureRect.STRETCH_SCALE
+	_crawl_glow.size = Vector2(view_size.x * CRAWL_GLOW_WIDTH_SHARE, view_size.y)
+	_crawl_glow.modulate.a = 0.0
+	_crawl_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_crawl_glow)
 
 
 func _process(delta: float) -> void:

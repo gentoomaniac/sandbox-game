@@ -30,7 +30,7 @@ sound can be swapped for a recording.
 The world has an ambience too: rain and wind loops that follow the weather (and swell with
 gusts, heard as the gust fronts that bend the grass reach you), thunder after each flash of
 lightning by how far the strike was (a far rumble many seconds later and faint, now and then a
-close crack almost at once), birds chirping by day, deer,
+close crack almost at once, now and then a rumble that crawls across the sky), birds chirping by day, deer,
 rabbits and squirrels, bees buzzing at their flowers, frogs croaking near water on
 warm spring and summer evenings and nights (and, where frogs are about, a quiet chorus of
 them at dusk), a stork clattering its bill and geese honking,

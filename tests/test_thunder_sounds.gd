@@ -62,3 +62,12 @@ func test_a_thunder_due_in_a_pause_waits_for_the_game() -> void:
 	get_tree().paused = false
 	await wait_seconds(1.0)
 	assert_true(_events.has(LightningStrike.CLOSE), "after the pause")
+
+
+func test_a_crawler_rumbles_as_thunder_crawl_after_the_same_delay() -> void:
+	var crawler := LightningStrike.new(0.2, WeatherRules.default_rules(), true, 1)
+	_weather_view.flash(crawler)
+	assert_false(_events.has(LightningStrike.CRAWL), "not at once")
+	await wait_seconds(1.0)
+	assert_true(_events.has(LightningStrike.CRAWL))
+	assert_false(_events.has(LightningStrike.CLOSE), "instead of the kind of its distance")
