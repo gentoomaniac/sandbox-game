@@ -38,6 +38,9 @@ var _drawn_color := Color.TRANSPARENT
 var _is_drawn_filled := false
 ## Held here, not loaded in `_draw`: a picture nobody holds is freed under the draw commands.
 var _drawn_ghost: Texture2D
+## The ghosts cut from the object atlas, by atlas and row: the same one each frame, so that the
+## highlight is drawn again only when the ghost changes.
+var _atlas_ghosts: Dictionary[String, AtlasTexture] = {}
 ## The footprint of the object the ghost shows, taken with it so `_draw` needs nothing else.
 var _drawn_ghost_footprint := Vector2i.ONE
 
@@ -112,12 +115,24 @@ func _draw() -> void:
 	draw_rect(rect.grow(-border / 2.0), _drawn_color, false, border)
 
 
-## The picture of the object the held item places, or null if it places none.
+## The picture of the object the held item places, or null if it places none. What stands
+## outdoors is drawn from the object atlas: its first picture in the summer look.
 func _ghost_texture() -> Texture2D:
 	var placed := ItemTypes.placed_object(_state.player.inventory.held_item())
 	if placed == &"":
 		return null
-	return load(ArtSet.path(WorldObjectTypes.TYPES[placed]["interior_sprite"]))
+	var object_type: Dictionary = WorldObjectTypes.TYPES[placed]
+	if object_type.has("interior_sprite"):
+		return load(ArtSet.path(object_type["interior_sprite"]))
+	var atlas_path := ObjectTileset.picture(SeasonBlend.Look.SUMMER)
+	var key := "%s#%d" % [atlas_path, object_type["atlas_row"]]
+	if not _atlas_ghosts.has(key):
+		var picture := AtlasTexture.new()
+		picture.atlas = load(atlas_path)
+		var cell_size := Vector2(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT)
+		picture.region = Rect2(Vector2(0, object_type["atlas_row"]) * cell_size, cell_size)
+		_atlas_ghosts[key] = picture
+	return _atlas_ghosts[key]
 
 
 func _ghost_footprint() -> Vector2i:
