@@ -23,7 +23,7 @@ IMPORT := $(GODOT) --headless --quiet --import
 # reproducible, and it keeps third-party code out of our history and diffs.
 # The cost is that a fresh clone needs `make setup` (and network) before it runs.
 
-.PHONY: help setup venv art classic-art assets contrast-sheet run screenshot test test-changed test-tools bench bench-music weather-probe music-check lint format export clean llm-up llm-down llm-check \
+.PHONY: help setup venv art classic-art assets contrast-sheet run screenshot test test-changed test-tools bench bench-music music-latency weather-probe music-check lint format export clean llm-up llm-down llm-check \
 	llm-pull llm-models llm-rm llm-eval llm-gpu-setup
 
 help:
@@ -39,6 +39,7 @@ help:
 	@echo "  bench       Time a heavy save headless (start-up, nodes, frame times standing and walking, pile pick-up, save); see tools/README.md."
 	@echo "  weather-probe  Print a year of weather per seed: wet share, longest spell, wet hours per season, snow days and a day-by-day strip. WEATHER_PROBE_ARGS=\"2 1 5\" picks the strip's season (0-3) and the seeds."
 	@echo "  bench-music Time the prototype music renderer: renders on their own, then frame times in the game while it renders (headless, muted)."
+	@echo "  music-latency  Time how late the music crossfade starts after the beat on the real audio driver (AUDIO_DRIVER, default PulseAudio), silent: the master bus is muted."
 	@echo "  music-check Render every piece with the game's prototype music renderer and compare it with libmodplug's (headless, silent)."
 	@echo "  lint        Run gdlint and gdformat --check, and check no API key is in the repo."
 	@echo "  format      Format the GDScript."
@@ -77,6 +78,7 @@ help:
 	@echo "  LLM_GPU     llm-up: auto (NVIDIA via CDI spec, else AMD via ROCm, else CPU), nvidia, amd, 1 (any GPU or fail), 0 (CPU)."
 	@echo "  LLM_HSA_OVERRIDE  llm-up on AMD: HSA_OVERRIDE_GFX_VERSION for cards ROCm does not list, e.g. 10.3.0."
 	@echo "  VERSION     export: version of the build, in the zip names and application/config/version (default: git describe)."
+	@echo "  AUDIO_DRIVER  music-latency: the audio driver to measure on (default: PulseAudio)."
 	@echo "  ARGS        screenshot, run: more debug flags, e.g. ARGS=\"--weather=rain\" (see game/scenes/startup_options.gd)."
 
 setup:
@@ -291,6 +293,15 @@ bench-music: assets
 	$(MAKE) $(BENCH_DIR)/fixture.save
 	cp $(BENCH_DIR)/fixture.save $(BENCH_DIR)/run.save
 	$(BENCH_GODOT) -s tools/bench/music.gd -- --save-path=$(BENCH_DIR)/run.save --settings-path=$(BENCH_DIR)/settings.cfg --mute --max-fps=0
+
+# How late MusicCrossfade starts after the beat on a real audio driver (task 170): the driver is
+# opened, but the master bus is muted and a capture effect on the probe's bus hears the music.
+AUDIO_DRIVER ?= PulseAudio
+
+music-latency:
+	@mkdir -p build/user-data
+	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT)
+	$(BENCH_GODOT) --audio-driver $(AUDIO_DRIVER) -s tools/bench/music_latency.gd
 
 # A year of weather per seed (tools/bench/weather_probe.gd, using tests/weather_year.gd).
 WEATHER_PROBE_ARGS ?=

@@ -133,6 +133,13 @@ what the main thread spends per finished render (taking it and handing it to a M
 crossfades to it on the beat) and how late after their beats the crossfades began;
 docs/music-viability.md has its results.
 
+`make music-latency` (task 170, `music_latency.gd`) times how late the crossfade starts after the
+beat on a real audio driver (`AUDIO_DRIVER=`, default PulseAudio; `--headless` alone picks the
+Dummy driver). It is silent: Master is muted, and a capture effect on a bus of its own, before the
+mute, hears the music. It prints, for 20 crossfades asked for at different points of a beat, when
+the new stream was scheduled and when it is heard, after the old beat, and how far its beats lie
+from the old ones; docs/music-viability.md has its results.
+
 `tools/bench/storks.gd` (task 202; no make target, it needs no save and writes nothing) counts how
 often wild storks come into the view and how many are there at once over a game day, in spring and
 in summer, at wet meadows and at a village it builds in a new world, with the player standing, walking

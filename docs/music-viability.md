@@ -9,8 +9,8 @@ The question: background music in the style of 1980s home-computer games, genera
 tracker modules from text and rendered by the game on a background thread. Is that fast, cheap and
 exact enough, and can Godot switch and crossfade the renders on the beat?
 
-**Answer: yes, on the Dummy driver; the beat timing on a real audio driver is still to be
-measured.** A GDScript renderer renders a minute of 44.1 kHz stereo in about 1 s on a worker thread
+**Answer: yes (the beat timing on a real audio driver was measured in task 170, see "Switching on
+the beat").** A GDScript renderer renders a minute of 44.1 kHz stereo in about 1 s on a worker thread
 (the 8-bar loop of the test piece, 18 s, in 0.3 s) and matches an independent player. The stream is
 made whole on the worker; the main thread spends under 0.2 ms per render to take it and hand it to
 a two-player crossfade, which starts the new stream on the next beat with its beats on the old
@@ -185,13 +185,22 @@ off, the new beats fell 127 to 128 frames early. Measured:
   mixed frames, so this is left to task 170 (noted in TASKS.md).
 - **Lateness** (`lateness`): how long after the beat the new stream was scheduled, up to a frame and
   a mix block; the new stream's first moments are skipped. With the Dummy driver's 93 ms blocks it
-  was 58 to 75 ms (three crossfades in `make bench-music`). This is scheduling, not when the fade is
-  heard: the new stream starts at gain 0, and the crossfade raises the gain from its next frame on,
-  following how far the new stream has been mixed, so the fade is heard from about a further frame
-  and block on and reaches full level a fade's length after it was scheduled. The audible onset was
-  not measured. A real driver mixes in much smaller blocks (Godot's default output buffer is about
-  15 ms), so both should shrink to a frame and a block, but **that was not measured either**: the
-  tests and benchmarks may not play sound out loud, and no silent real-driver setup was tried.
+  was 58 to 75 ms (three crossfades in `make bench-music`). **On a real driver** (task 170,
+  `make music-latency`, PulseAudio here, 60 fps, output latency 46 ms, 20 crossfades asked for at
+  different points of a beat, silent: Master muted, a capture effect on the probe's bus before the
+  mute): scheduled **2 to 20 ms after the beat** (median 8.5), a frame and a block. The fade is
+  heard later, as its gain rises from the next frame on and the audio thread, which mixes ahead of
+  the speakers by the driver's buffer, applies it a block later: with a fade of a millisecond the new
+  level was in the mix **97 to 190 ms after the beat** (median 143), in the mix's own time. The old
+  beat is as late on its way to the speakers, so this is only how long after the beat the fade
+  starts rising: at 190 ms into a 4 s fade the new stream is at 5 % (-26 dB). Its beats lay a median
+  **3.3 ms** after the old ones (one run of 20 15.8 ms before them), against a frame on the Dummy
+  driver. Two things the probe found: Godot's bus skips the effects of a bus that mixes silence, so
+  a capture hears only the non-silent frames (the probe's streams are never silent).
+  **Decision: no earlier start from a predicted position.** The
+  scheduling is within a frame and a block, and what is late is the start of a fade that lasts
+  seconds; the beats of the two pieces don't coincide in any case (the pieces' tempos differ), and
+  what is heard is the new piece's fade in, not its first beat.
 - **Quit**: `make bench-music` quits cleanly with streams played by the crossfade (exit status 0,
   all four runs).
 
@@ -256,7 +265,7 @@ the bass is the 2 ms fade itself, about as steep as the low triangle's own slope
 
 **Render at runtime in GDScript, on a WorkerThreadPool thread, into plain AudioStreamWAVs made whole
 there; switch with two players crossfaded on the beat (`MusicCrossfade`); render transitions that
-must be sample-exact (fill into loop) into one stream.** Provisional on one measurement: how late
+must be sample-exact (fill into loop) into one stream.** Confirmed in task 170 by the measurement of how late
 the crossfade begins on a real audio driver.
 
 - **Speed is no problem.** An 8-bar loop at 44.1 kHz stereo renders in about 0.3 s, a fill in 0.04
@@ -270,9 +279,8 @@ the crossfade begins on a real audio driver.
 - **Exact:** it matches libmodplug, loops seamlessly, and lands the fill and the loop on the bar,
   sample for sample, because the renderer plays parts one after the other (`[fill, loop]`) into one
   stream. Between pieces, the two players line the beats up to a frame.
-- **To do first in task 170:** measure the crossfade's lateness on the real driver, silently (for
-  example a muted bus with the capture effect before the mute). If it is late by more than a few
-  tens of ms, start the crossfade a block earlier from a predicted position.
+- **Lateness on a real driver** (task 170, see "Switching on the beat"): scheduled within 2 to 20 ms
+  of the beat, the fade heard rising 97 to 190 ms after it; no predicted start is needed.
 - **Not AudioStreamInteractive** while a played script-subclassed stream crashes the quit; if that is
   found to be avoidable, switching to it with `MusicStreamWAV` is a small change.
 - **Not a native GDExtension around libopenmpt:** about 100 times faster, but it needs a C++ build
@@ -283,4 +291,4 @@ the crossfade begins on a real audio driver.
 
 Numbers to watch when task 170 builds it: render time on the slowest machine the game should run
 on (GDScript is about 63x real time at 44.1 kHz stereo here, so a machine 10 times slower still
-renders a loop in 3 s), and the crossfade's lateness on the real driver.
+renders a loop in 3 s), and the crossfade's lateness on the real driver (measured: 2 to 20 ms).
