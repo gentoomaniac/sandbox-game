@@ -503,6 +503,8 @@ and the weather; the numbers are in [data/wildlife.cfg](data/wildlife.cfg).
 
 ![A flock of hooded crows pecking on a tilled field in autumn, in the new art (left) and in the classic art (right)](docs/screenshots/crows.png)
 
+![A scarecrow standing among the crops of a tilled field, in the new art (left) and in the classic art (right)](docs/screenshots/scarecrow.png)
+
 ![Oystercatchers and a flock of dunlin probing the mud at low water in spring; herring gulls on the mud; terns fishing over the sea, one just gone in with a splash, and gulls swimming; and the dunlin taking off together](docs/screenshots/sea-birds.png)
 
 ### Felling, mining and gathering
