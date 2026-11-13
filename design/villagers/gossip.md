@@ -287,7 +287,7 @@ Short lines over a villager's head, now and then:
   view (the camera's `view_rect`), began to talk with the player or went indoors with the player
   is dropped; a bubble ends when the villager leaves the view too. Indoors (the world stands
   still) none is shown. `SpeechBubble` draws it: UI in the pixel font, plate cream with round
-  corners (crisp pixel steps) and text and outline ink (the palette's, `UiColors`), the text without
+  corners (crisp pixel steps), text and outline in ink (the palette's, `UiColors`), the text without
   the theme's shadow, a tail pointing at the head, text wrapped at 110 UI pixels, with the pop and
   the fade of `ThoughtBubble`; it covers the name tag for its five seconds.
   `--bubbles` makes a bubble follow the last at once, for screenshots.
