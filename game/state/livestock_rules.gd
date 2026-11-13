@@ -172,9 +172,9 @@ func pick_rooster_count(key: String, rng: RandomNumberGenerator) -> int:
 	return rng.randi_range(int(range_counts[0]), int(range_counts[1]))
 
 
-## A random number of seconds between the two of a pair of the rooster's numbers.
-func pick_rooster_seconds(key: String, rng: RandomNumberGenerator) -> float:
-	var range_seconds: Array = _values["rooster"][key]
+## A random number of seconds between the two of a pair of a section's numbers (see [rooster]).
+func pick_section_seconds(section: String, key: String, rng: RandomNumberGenerator) -> float:
+	var range_seconds: Array = _values[section][key]
 	return rng.randf_range(range_seconds[0], range_seconds[1])
 
 

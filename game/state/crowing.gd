@@ -28,5 +28,5 @@ static func update(
 	if rooster.crow_wait_seconds > 0.0:
 		return false
 	rooster.crows_left -= 1
-	rooster.crow_wait_seconds = rules.pick_rooster_seconds("crow_gap_seconds", rng)
+	rooster.crow_wait_seconds = rules.pick_section_seconds("rooster", "crow_gap_seconds", rng)
 	return true
