@@ -5,7 +5,7 @@ extends RefCounted
 ## `is_valid` says whether there was one.
 
 const DEFAULT_PATH := "res://data/tools.cfg"
-const KEYS := ["name"]
+const KEYS := ["name", "level", "power", "energy_factor"]
 
 static var _default: ToolGradeRules
 

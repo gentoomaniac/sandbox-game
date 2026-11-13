@@ -11,36 +11,13 @@ const SEEDS := {
 	WorldObjectTypes.ALDER: ItemTypes.ALDER_CONE,
 	WorldObjectTypes.WILLOW: ItemTypes.WILLOW_CUTTING,
 }
-const STRONG_AXE := &"strong_axe"
-
-var _shared_catalog: Dictionary
+# The pine needs a level 2 axe: an iron one, which hits for 2.
+var _strong_axe := ItemTypes.tool_item(ItemTypes.AXE, 1)
 
 
 func before_each() -> void:
 	super.before_each()
 	_make_room()
-	# The pine needs a level 2 axe, which the game doesn't have yet: the test's own catalog has one.
-	_shared_catalog = ItemTypes.TYPES
-	ItemTypes.TYPES = (
-		_shared_catalog
-		. merged(
-			{
-				STRONG_AXE:
-				{
-					"name": "Strong axe",
-					"description": "Test.",
-					"weight": 3.0,
-					"stack_limit": 1,
-					"tool": ItemTypes.AXE,
-					"level": 2
-				},
-			}
-		)
-	)
-
-
-func after_each() -> void:
-	ItemTypes.TYPES = _shared_catalog
 
 
 ## The seeds dropped by felling a tree of this type on each of the days 1 to `days`, in that
@@ -53,7 +30,7 @@ func _seeds_dropped_over(tree: StringName, seed_item: StringName, days: int) -> 
 			_world.remove_object(_tile + Vector2i(x, 0))
 		_clear_ground()
 		_place(tree)
-		_hit(STRONG_AXE, ceili(WorldObjectTypes.TYPES[tree]["hp"] / 2.0))
+		_hit(_strong_axe, ceili(WorldObjectTypes.TYPES[tree]["hp"] / 2.0))
 		seeds.append(_dropped(seed_item))
 	return seeds
 

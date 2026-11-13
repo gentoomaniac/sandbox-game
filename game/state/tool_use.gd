@@ -151,7 +151,10 @@ func use_tile(target: Vector2i) -> Use:
 	var drain := 0.0 if _state.cheats.is_drain_off else _state.energy_drain
 	var use := _do_use(target)
 	if COST_KINDS.has(use):
-		var cost := _state.energy_rules.cost_of(COST_KINDS[use]) * weight_factor * drain
+		var tool_factor := ItemTypes.energy_factor(_state.player.inventory.held_item())
+		var cost := (
+			_state.energy_rules.cost_of(COST_KINDS[use]) * weight_factor * tool_factor * drain
+		)
 		_state.player.energy = maxf(0.0, _state.player.energy - cost)
 	if _outcome != null:
 		_state.action_done.emit(_outcome)

@@ -6,9 +6,10 @@ extends RefCounted
 ## - weight: of one item, in kilograms;
 ## - stack_limit: how many fit in one inventory slot.
 ## Optional:
-## - tool: the kind of tool it is (HOE ...) and `level`, how good it is (see
-##   WorldObjectTypes `harvest_level`); every tool comes in five grades, made from
-##   data/tools.cfg in `_with_tool_items`;
+## - tool: the kind of tool it is (HOE ...); `level`, how good it is (see WorldObjectTypes
+##   `harvest_level`), `power`, the hit points a hit takes off, and `energy_factor`, what its uses
+##   cost as a share of the usual; every tool comes in five grades, made from data/tools.cfg in
+##   `_with_tool_items`;
 ## - held_sheet: the variant of the character's `held` layer that shows it in the hand;
 ## - equip_slot: the Equipment slot it is worn in (wearables have a stack limit of 1), and
 ##   `layer_variant`, the variant of the character layer it shows (see Appearance.dress), and
@@ -118,9 +119,8 @@ const DEFAULT_STACK_LIMIT := 99
 ## What every crop seed says about itself; the crop it grows is in the tooltip anyway.
 const SEED_DESCRIPTION := "Sow it and keep it watered until harvest."
 
-## The hit points a hit of a tool of each level (the index) takes off. Equal to the level for
-## now; a table so it can be tuned per level later.
-const POWER_OF_LEVEL := [0, 1, 2, 3]
+## The tool and harvest levels there are: 0 (by hand) to 3.
+const LEVEL_COUNT := 4
 
 ## What each kind of tool is called and does; the grades make an item of each.
 const _TOOL_KINDS := {
@@ -659,7 +659,13 @@ static func tool_item(tool_kind: StringName, grade: int) -> StringName:
 
 ## How many hit points one hit of this tool takes off.
 static func tool_power(tool_item_id: StringName) -> int:
-	return POWER_OF_LEVEL[TYPES[tool_item_id]["level"]]
+	return TYPES[tool_item_id]["power"]
+
+
+## What a use of this item costs in energy, as a share of the cost of the use: 1 for what is not
+## a tool.
+static func energy_factor(item: StringName) -> float:
+	return TYPES.get(item, {}).get("energy_factor", 1.0)
 
 
 ## The name of the kind of tool the item is ("axe"), for what it needs ("Needs a better axe").
@@ -676,16 +682,18 @@ static func _with_tool_items(other_types: Dictionary) -> Dictionary:
 		return types
 	for tool_kind: StringName in _TOOL_KINDS:
 		for grade in rules.grade_ids().size():
-			var grade_name: String = rules.grade(rules.grade_ids()[grade])["name"]
+			var values := rules.grade(rules.grade_ids()[grade])
 			var id := tool_item(tool_kind, grade)
 			build_problems.append_array(CatalogCheck.reused_ids("item", types, [id]))
 			types[id] = {
-				"name": "%s %s" % [grade_name, _TOOL_KINDS[tool_kind]["name"]],
+				"name": "%s %s" % [values["name"], _TOOL_KINDS[tool_kind]["name"]],
 				"description": _TOOL_KINDS[tool_kind]["description"],
 				"weight": 0.0,
 				"stack_limit": 1,
 				"tool": tool_kind,
-				"level": 1,
+				"level": values["level"],
+				"power": values["power"],
+				"energy_factor": values["energy_factor"],
 				"held_sheet": id,
 			}
 	return types

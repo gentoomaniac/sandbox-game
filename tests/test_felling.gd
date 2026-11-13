@@ -61,16 +61,18 @@ func test_the_pickaxe_takes_a_stone_wall_apart_for_its_stone() -> void:
 
 
 func test_a_better_tool_needs_fewer_hits() -> void:
-	var hits_for := {}
-	for level in range(1, ItemTypes.POWER_OF_LEVEL.size()):
-		hits_for[level] = ceili(7.0 / ItemTypes.POWER_OF_LEVEL[level])
-	assert_eq(hits_for, {1: 7, 2: 4, 3: 3})
+	var hits_for: Array[int] = []
+	for grade in ToolGradeRules.default_rules().grade_ids().size():
+		hits_for.append(
+			ceili(7.0 / ItemTypes.tool_power(ItemTypes.tool_item(ItemTypes.AXE, grade)))
+		)
+	assert_eq(hits_for, [7, 4, 3, 3, 2])
 	var boulder := WorldObject.new(WorldObjectTypes.BOULDER, _tile)
-	var power := ItemTypes.POWER_OF_LEVEL[2]
+	var iron_power := ItemTypes.tool_power(&"iron_pickaxe")
 	for _i in 2:
-		assert_false(boulder.is_finished_by(power))
-		boulder.take_hit(power)
-	assert_true(boulder.is_finished_by(power), "a level 2 tool needs 3 of 6 hp")
+		assert_false(boulder.is_finished_by(iron_power))
+		boulder.take_hit(iron_power)
+	assert_true(boulder.is_finished_by(iron_power), "an iron pickaxe needs 3 hits for 6 hp")
 
 
 func test_a_tool_below_the_harvest_level_does_nothing() -> void:

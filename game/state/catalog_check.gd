@@ -59,9 +59,12 @@ static func _check_item(
 	if not _is_count(item.get("stack_limit")):
 		found.append(at + "stack_limit must be a whole number, at least 1")
 	if item.has("tool"):
-		var levels := ItemTypes.POWER_OF_LEVEL.size()
-		if not (item.get("level") is int and item["level"] in range(levels)):
-			found.append(at + "a tool's level must be from 0 to %d" % (levels - 1))
+		if not (item.get("level") is int and item["level"] in range(ItemTypes.LEVEL_COUNT)):
+			found.append(at + "a tool's level must be from 0 to %d" % (ItemTypes.LEVEL_COUNT - 1))
+		if not _is_count(item.get("power")):
+			found.append(at + "a tool's power must be a whole number, at least 1")
+		if not (item.get("energy_factor") is float and item["energy_factor"] > 0.0):
+			found.append(at + "a tool's energy_factor must be a number above 0")
 	if item.has("equip_slot"):
 		if not item["equip_slot"] in Equipment.SLOTS:
 			found.append(at + "equip_slot is not an equipment slot: %s" % item["equip_slot"])
@@ -97,7 +100,7 @@ static func _check_object(
 		found.append(at + "footprint must be from 1x1 to %dx%d tiles" % [largest.x, largest.y])
 	if not object.get("blocks_walking") is bool:
 		found.append(at + "blocks_walking must be true or false")
-	var levels := ItemTypes.POWER_OF_LEVEL.size()
+	var levels := ItemTypes.LEVEL_COUNT
 	if not (object.get("harvest_level") is int and object["harvest_level"] in range(levels)):
 		found.append(at + "harvest_level must be from 0 to %d" % (levels - 1))
 	if not (object.has("atlas_row") or object.has("interior_sprite") or object.has("sheet")):

@@ -10,6 +10,10 @@ func _item(overrides := {}) -> Dictionary:
 	return PLANK.merged(overrides, true)
 
 
+func _tool(overrides := {}) -> Dictionary:
+	return {"tool": &"axe", "level": 1, "power": 1, "energy_factor": 1.0}.merged(overrides, true)
+
+
 func _object(overrides := {}) -> Dictionary:
 	return (
 		{
@@ -53,9 +57,12 @@ func test_a_problem_names_the_item_and_the_field() -> void:
 	assert_eq(_problems_of_item({"name": ""}), ["item plank: name must be a text"])
 
 
-func test_a_tool_needs_a_level_with_a_power() -> void:
-	assert_eq(_problems_of_item({"tool": &"axe", "level": 4}).size(), 1)
-	assert_eq(_problems_of_item({"tool": &"axe", "level": 3}), NO_PROBLEMS)
+func test_a_tool_needs_a_level_a_power_and_an_energy_factor() -> void:
+	assert_eq(_problems_of_item(_tool({"level": 4})).size(), 1)
+	assert_eq(_problems_of_item(_tool({"level": 3})), NO_PROBLEMS)
+	assert_eq(_problems_of_item(_tool({"power": 0})).size(), 1)
+	assert_eq(_problems_of_item(_tool({"energy_factor": 0.0})).size(), 1)
+	assert_eq(_problems_of_item({"tool": &"axe", "level": 1}).size(), 2)
 
 
 func test_a_wearable_stacks_one_and_has_a_slot() -> void:
@@ -148,7 +155,7 @@ func test_a_drop_count_is_a_whole_number_of_at_least_one() -> void:
 
 
 func test_what_is_cut_down_needs_hit_points_and_the_tool_of_an_item() -> void:
-	var axe := _item({"tool": &"axe", "level": 1})
+	var axe := _item(_tool())
 	assert_eq(_problems_of_object({"hp": 3, "tool": &"axe"}, {&"axe": axe}), NO_PROBLEMS)
 	assert_eq(_problems_of_object({"hp": 3, "tool": &"axe"}).size(), 1, "no item is an axe")
 	assert_eq(_problems_of_object({"hp": 0, "tool": &"axe"}, {&"axe": axe}).size(), 1)

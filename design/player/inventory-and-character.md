@@ -103,9 +103,27 @@
     `docs/art-style.md`; the tool in the hand has a sheet of each grade). For now they come only
     from the console (`give iron_axe`); how they are made or bought is for later (a smith in a
     settlement, the user's 2026-11-05 idea). The grades are data (`data/tools.cfg`, read by
-    `ToolGradeRules`, the items made in `ItemTypes`). The grades do not play differently yet: all
-    are level 1, as the tools were. An old save's tools become the rusty iron ones (save version
-    33). "Needs a better axe" names the kind of tool, not the grade.
+    `ToolGradeRules`, the items made in `ItemTypes`). An old save's tools become the rusty iron
+    ones (save version 33). "Needs a better axe" names the kind of tool, not the grade.
+  - **How a grade plays** (task 207; the numbers are the user's to tune in `data/tools.cfg`):
+
+    | Grade | Level | Power (hit points a hit takes) | Energy of a use |
+    |---|---|---|---|
+    | Rusty iron | 1 | 1 | 100 % |
+    | Iron | 2 | 2 | 95 % |
+    | Brittle steel | 2 | 3 | 95 % |
+    | Steel | 3 | 3 | 85 % |
+    | Sharp steel | 3 | 4 | 75 % |
+
+    The level is the tool's `level` (a tree or stone needs a tool of its `harvest_level`: the
+    pine and the boulders need level 2, so a rusty iron axe and pickaxe can't, an iron one can).
+    The power is what the axe and pickaxe take off an object's hit points per hit, so a better
+    grade needs fewer hits (an oak of 5 hit points: 5, 3, 2, 2 and 2 hits; a boulder of 6: 3
+    hits with iron). The energy share scales what every use of the tool costs
+    (`data/energy.cfg`, on top of the weight factor), so a better tool tires less. The rusty iron
+    tool is what the tools were before, to the number. There is no durability in the game, so
+    the brittle steel tool does not chip: it hits hard, but being brittle it is no gentler on
+    the energy than iron; the chip comes with durability.
   - The tool decides the action: hoe tills, seeds plant, axe fells, the pickaxe (the pick of
     the Geest, which grubbed the fieldstones of the till out of the fields) breaks stones, the
     watering can wets tilled soil, the scythe mows tall grass, the shovel digs for clay,
