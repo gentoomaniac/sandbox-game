@@ -23,7 +23,7 @@ IMPORT := $(GODOT) --headless --quiet --import
 # reproducible, and it keeps third-party code out of our history and diffs.
 # The cost is that a fresh clone needs `make setup` (and network) before it runs.
 
-.PHONY: help setup venv art classic-art assets contrast-sheet run screenshot test test-changed test-tools bench bench-music music-check lint format export clean llm-up llm-down llm-check \
+.PHONY: help setup venv art classic-art assets contrast-sheet run screenshot test test-changed test-tools bench bench-music weather-probe music-check lint format export clean llm-up llm-down llm-check \
 	llm-pull llm-models llm-rm llm-eval llm-gpu-setup
 
 help:
@@ -37,6 +37,7 @@ help:
 	@echo "  test-changed  Run only the tests the files changed since BASE need: GUT files, tools tests, make art (see tools/select_tests.py)."
 	@echo "  test-tools  Run only the tests of the Python tools (tools/ and its art, llm and music folders, test_*.py)."
 	@echo "  bench       Time a heavy save headless (start-up, nodes, frame times standing and walking, pile pick-up, save); see tools/README.md."
+	@echo "  weather-probe  Print a year of weather per seed: wet share, longest spell, wet hours per season, snow days and a day-by-day strip. WEATHER_PROBE_ARGS=\"2 1 5\" picks the strip's season (0-3) and the seeds."
 	@echo "  bench-music Time the prototype music renderer: renders on their own, then frame times in the game while it renders (headless, muted)."
 	@echo "  music-check Render every piece with the game's prototype music renderer and compare it with libmodplug's (headless, silent)."
 	@echo "  lint        Run gdlint and gdformat --check, and check no API key is in the repo."
@@ -290,6 +291,14 @@ bench-music: assets
 	$(MAKE) $(BENCH_DIR)/fixture.save
 	cp $(BENCH_DIR)/fixture.save $(BENCH_DIR)/run.save
 	$(BENCH_GODOT) -s tools/bench/music.gd -- --save-path=$(BENCH_DIR)/run.save --settings-path=$(BENCH_DIR)/settings.cfg --mute --max-fps=0
+
+# A year of weather per seed (tools/bench/weather_probe.gd, using tests/weather_year.gd).
+WEATHER_PROBE_ARGS ?=
+
+weather-probe: assets
+	@mkdir -p build/user-data
+	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT)
+	$(BENCH_GODOT) -s tools/bench/weather_probe.gd -- $(WEATHER_PROBE_ARGS)
 
 # The game's prototype music renderer (task 169) against libmodplug, an independent player: the
 # pieces rendered headless into build/music/, then compared by tools/music/check.py.
