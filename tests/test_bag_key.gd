@@ -147,3 +147,26 @@ func test_the_bag_button_opens_and_closes_the_bag_like_its_key() -> void:
 	assert_true(_main._bag_screen.is_open())
 	_main._hotbar.bag_requested.emit()
 	assert_false(_main._bag_screen.is_open())
+
+
+func test_the_player_walks_and_picks_hotbar_slots_with_both_windows_open() -> void:
+	_press_key(KEY_B)
+	_press_key(KEY_C)
+	assert_false(_main._is_any_screen_open(), "the docked windows do not block the game")
+	var start_x: float = _main._state.player.position.x
+	Input.action_press(&"move_right")
+	await wait_process_frames(10)
+	Input.action_release(&"move_right")
+	assert_gt(_main._state.player.position.x, start_x, "walks")
+	_press(&"hotbar_3")
+	assert_eq(_main._state.player.inventory.selected_slot, 2, "the number key picks a slot")
+
+
+func test_a_window_that_is_not_docked_still_blocks_the_game() -> void:
+	_press_key(KEY_C, true)
+	assert_true(_main._is_any_screen_open())
+	var start_x: float = _main._state.player.position.x
+	Input.action_press(&"move_right")
+	await wait_process_frames(10)
+	Input.action_release(&"move_right")
+	assert_eq(_main._state.player.position.x, start_x)

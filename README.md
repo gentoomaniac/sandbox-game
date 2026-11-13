@@ -572,12 +572,14 @@ on the North Sea coast in the 18th century: a red waistcoat over a linen shirt, 
 with white stockings, wooden clogs, and a short blue jacket and hats to put on. Press B (or click the bag icon
 beside the hotbar) to open the bag with the backpack, and C to open the character window with
 the figure and the equipment slots. You move items between slots by dragging, and wear or take
-off by right click. The two are windows of their own, the character window at the left and the
-bag at the bottom right above the hotbar, and they can be open at the same time, each closed by
-its own key (Escape closes both; in a very small window or at a large UI scale they do not fit
-side by side, and opening one closes the other): drag an item from the backpack or the hotbar
-(which both windows keep lit) onto its equipment slot in the character window to wear it, drag
-worn gear back into the bag to take it off, or use a right click. The hotbar (the eight slots at the bottom of the screen, keys 1 to 8) holds your tools
+off by right click. The two are windows of their own, the character window at the left and the bag
+at the bottom right above the hotbar, and they can be open at the same time, each closed by its own
+key (Escape closes both; you keep playing meanwhile, walking and using the hotbar and tools as
+usual, and a click outside the windows goes to the world; in a very small window or at a large UI
+scale they do not fit side by side, and opening one closes the other): drag an item from the
+backpack or the hotbar (which both windows keep lit) onto its equipment slot in the character window
+to wear it, drag worn gear back into the bag to take it off, or use a right click. The hotbar (the
+eight slots at the bottom of the screen, keys 1 to 8) holds your tools
 and seeds and is extra room: it takes nothing from the backpack's 20 slots (4 rows of 5), so
 you carry 28 stacks. New items fill the hotbar first (onto the same item, then free slots,
 except the one in your hand), then the backpack. The screen shows the backpack

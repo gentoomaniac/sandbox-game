@@ -27,6 +27,9 @@ const OUT_OF_REACH_FILL_SHARE := 0.2
 
 ## Off while something else owns the mouse (build mode, a screen).
 var is_enabled := true
+## Whether the mouse is on a window beside the game: its tile is not aimed at, so Use acts on the
+## tile in front of the player, as without a mouse.
+var is_pointer_on_gui := false
 ## Debug: pretends the mouse is always on this tile.
 var debug_mouse_tile: Variant = null
 
@@ -64,7 +67,7 @@ func targeting() -> Targeting:
 	var mouse_tile := Vector2i((_camera.mouse_world_position() / TerrainTileset.TILE_SIZE).floor())
 	if debug_mouse_tile != null:
 		mouse_tile = debug_mouse_tile
-	var is_mouse_active := _mouse_opacity() > 0.0
+	var is_mouse_active := _mouse_opacity() > 0.0 and not is_pointer_on_gui
 	return Targeting.resolve(
 		_state.player.tile(), _state.player.facing_tile(), mouse_tile, is_mouse_active
 	)

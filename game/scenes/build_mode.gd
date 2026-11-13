@@ -56,6 +56,9 @@ var builder: Builder
 var camera: CameraController
 ## The `--building`, `--ghost` and `--house` flags.
 var start_options := StartupOptions.new()
+## Whether the mouse is on a window beside the game (or a stack is being dragged): the ghost and
+## the red frame are hidden and Use does not place, as the mouse is not pointing at the world.
+var is_pointer_on_gui := false
 
 var _origin := Vector2i.ZERO
 var _blockers: Dictionary[Vector2i, World.Blocked] = {}
@@ -68,11 +71,16 @@ var _held_seconds := 0.0
 var _cursor_tile := Vector2i.ZERO
 ## Why the target stays, or "" (see `_show_take_down_message`).
 var _take_down_reason := ""
+## Whether the Use that is held was pressed on the world, not on a window beside the game: a press
+## that a window took (a slot held, a stack dragged) must not take anything down.
+var _is_use_held_from_world := false
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_active():
 		return
+	if event.is_action_pressed("use") or event.is_action_pressed("use_click"):
+		_is_use_held_from_world = true
 	if builder.is_taking_down():
 		if not _handle_take_down_input(event):
 			return
@@ -87,7 +95,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("build_style_down"):
 		builder.pick_style(-1)
 	elif event.is_action_pressed("use") or event.is_action_pressed("use_click"):
-		_place()
+		if not is_pointer_on_gui:
+			_place()
 	elif _is_right_click(event):
 		_dismiss()
 	else:
@@ -159,6 +168,9 @@ func _process(delta: float) -> void:
 		if world.place_building(builder.choice, house, builder.style) == null:
 			push_error("--house: can't place a house at %s" % house)
 		_is_debug_house_placed = true
+	self_modulate = Color.TRANSPARENT if is_pointer_on_gui else Color.WHITE
+	if not Input.is_action_pressed("use") and not Input.is_action_pressed("use_click"):
+		_is_use_held_from_world = false
 	var is_now_active := is_active()
 	if is_now_active != _was_active:
 		_was_active = is_now_active
@@ -256,7 +268,11 @@ func _hold_to_take_down(delta: float) -> void:
 	if not is_same:
 		_take_down_target = target
 		_show_take_down_message()
-	var is_using := Input.is_action_pressed("use") or Input.is_action_pressed("use_click")
+	var is_using := (
+		(Input.is_action_pressed("use") or Input.is_action_pressed("use_click"))
+		and _is_use_held_from_world
+		and not is_pointer_on_gui
+	)
 	_held_seconds = (
 		_held_seconds + delta if is_same and is_using and _take_down_reason == "" else 0.0
 	)

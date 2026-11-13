@@ -54,8 +54,6 @@ func _init(hotbar: HotbarHud) -> void:
 	column.add_child(backpack_grid)
 	column.add_child(_weight_label)
 	column.add_child(_trash_can)
-	# Stacks let go on the panel outside the slots reach the backdrop, which sends them back.
-	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel.add_child(column)
 
 

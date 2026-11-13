@@ -433,7 +433,18 @@ func _process(delta: float) -> void:
 			_state.player.tile(), _state.is_inside(), _weather_and_sun_text(_weather)
 		)
 	var is_in_play := not _is_any_screen_open()
-	_use_highlight.is_enabled = is_in_play and not _builder.is_building() and not _is_in_transition
+	var is_pointer_on_gui := (
+		Modal.is_any_open()
+		and (get_viewport().gui_get_hovered_control() != null or get_viewport().gui_is_dragging())
+	)
+	_use_highlight.is_pointer_on_gui = is_pointer_on_gui
+	_build_mode.is_pointer_on_gui = is_pointer_on_gui
+	_use_highlight.is_enabled = (
+		is_in_play
+		and not is_pointer_on_gui
+		and not _builder.is_building()
+		and not _is_in_transition
+	)
 	# On horseback E gets off instead.
 	var can_chat := (
 		is_in_play
@@ -514,9 +525,10 @@ func _is_use_event(event: InputEvent) -> bool:
 	return event.is_action_pressed("use") or event.is_action_pressed("use_click")
 
 
-## Whether a window or the console is open: the player neither walks nor acts.
+## Whether a window or the console is open: the player neither walks nor acts. The bag and the
+## character window are played beside (see Modal `dock`).
 func _is_any_screen_open() -> bool:
-	return Modal.is_any_open() or _console_view.is_open()
+	return Modal.is_blocking_open() or _console_view.is_open()
 
 
 func _can_open_console() -> bool:
@@ -722,8 +734,11 @@ func _try_sleep() -> void:
 ## `change` that returns text has it shown on the black for a moment first.
 func _fade_through(change: Callable) -> void:
 	_is_in_transition = true
-	# No command runs during a fade: a teleport would meet a door half way through.
+	# No command runs during a fade: a teleport would meet a door half way through. No window or
+	# drag goes through a door or a sleep.
 	_console_view.close()
+	Modal.close_open()
+	get_viewport().gui_cancel_drag()
 	await _fade_screen.fade_out()
 	var note: Variant = await change.call()
 	if note is String:

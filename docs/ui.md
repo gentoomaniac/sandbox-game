@@ -134,23 +134,32 @@ extend `HotbarWindow`, which lends them the HUD's hotbar as their quick bar.
   so its key closes it or switches its tab. For a docked window (below) it is also true while
   only the other docked window is open.
 - **One at a time:** opening a window closes the open one, so windows need not know of each
-  other. `Modal.is_any_open()` says whether one is open (Main uses it instead of its own
-  conditions: then the player neither walks nor acts) and `Modal.close_open()` closes it.
+  other. `Modal.is_blocking_open()` says whether one is open that takes the input (Main uses it
+  instead of its own conditions: then the player neither walks nor acts), `Modal.is_any_open()`
+  also counts the docked windows, and `Modal.close_open()` closes all.
   The open window is one static variable of the base (plus the list of docked ones), no
   registry. A window removed from the tree while open is closed on its way out (`_exit_tree`
   calls `close()`), so `_on_close` is its one clean-up and runs where its dependencies are
   still there.
-- **Docked windows:** the one exception is the pair of docked windows (the bag and the
-  character window, set with `dock` in `_init`; `dock_inset` keeps the bag above the hotbar).
-  They open at the left and at the bottom right of the screen, are not dimmed, take no click
-  outside to close, stay open together (their keys only open and close their own window, see
-  `can_open_on_key`) and Escape closes both (unless the bag's trash can has a question up, which
-  Escape answers first). They don't pause the game. Opening any other window closes both, and a
-  docked window opened by code closes a window of the other kind. When the two do not fit side
-  by side inside the screen at their docks (a small window or a large UI scale), the one opened
-  first closes when the second opens, or when the window changes size: the old one-at-a-time
-  rule. The bag's backdrop stays there to take a drop on the world, and lies under the
-  character window, which comes later in the tree.
+- **Docked windows:** the one exception is the pair of docked windows (the bag and the character
+  window, set with `dock` in `_init`; `dock_inset` keeps the bag above the hotbar). They open at the
+  left and at the bottom right of the screen, are not dimmed, take no click outside to close, stay
+  open together (their keys only open and close their own window, see `can_open_on_key`) and Escape
+  closes both (unless the bag's trash can has a question up, which Escape answers first). They don't
+  pause the game, and the player keeps playing beside them: walking, the hotbar's number keys and
+  wheel, and a click outside the panels (use, target, place) all reach the game. While the mouse is
+  on a panel or a stack is dragged (Main's `is_pointer_on_gui`), the use highlight and the build
+  ghost are hidden, Space (use) acts on the tile in front of the player as it does without a mouse,
+  Space does not place a building, and a hold to take down counts only a press that began on the
+  world. A door or a sleep (`_fade_through`) closes the windows and cancels a drag. Opening any
+  other window closes both, and a docked window opened by code closes a window of the other kind.
+  When the two do not fit side by side inside the screen at their docks (a small window or a large
+  UI scale), the one opened first closes when the second opens, or when the window changes size: the
+  old one-at-a-time rule. A docked window's backdrop (`ModalBackdrop`) lets clicks through; the
+  bag's takes the mouse only while a stack is dragged (`takes_mouse_while_dragging`, set by
+  `_drop_outside_panel`), so a stack let go on the world still lands on the ground. The bag's panel
+  takes the clicks on it itself (and so drags the window); the bag lies under the character window,
+  which comes later in the tree, and only the bag's backdrop takes drops.
 
 ## Theme and palette
 

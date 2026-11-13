@@ -87,3 +87,34 @@ func test_closing_the_window_that_has_the_hotbar_leaves_it_to_the_other() -> voi
 	_set_stack(2, ItemTypes.LOGS, 5)
 	_click(_centre_of(_hotbar._slot_views[2]), MOUSE_BUTTON_LEFT, true)
 	assert_true(_player.inventory.slots[2].is_empty(), "the bag still answers")
+
+
+class ClickCatcher:
+	extends Node
+	var clicks := 0
+
+	func _unhandled_input(event: InputEvent) -> void:
+		if event is InputEventMouseButton and event.pressed:
+			clicks += 1
+
+
+func test_a_click_outside_the_panels_reaches_the_game_and_one_on_a_panel_does_not() -> void:
+	var game := ClickCatcher.new()
+	_window.add_child(game)
+	var world_point := _window.get_visible_rect().get_center()
+	_click(world_point)
+	assert_eq(game.clicks, 1, "the world gets the click")
+	_click(_character._panel.get_global_rect().get_center())
+	_click(_bag._panel.get_global_rect().position + Vector2(1, 1))
+	assert_eq(game.clicks, 1, "the panels keep theirs")
+
+
+func test_a_stack_let_go_on_the_world_is_dropped_and_the_backdrop_then_lets_clicks_through(
+) -> void:
+	var dropped := []
+	_bag.drop_requested.connect(dropped.append)
+	_set_stack(BACKPACK_SLOT, ItemTypes.LOGS, 3)
+	var world_point := _window.get_visible_rect().get_center()
+	_drag(_centre_of(_backpack_view(BACKPACK_SLOT)), world_point)
+	assert_eq(dropped, [BACKPACK_SLOT])
+	assert_eq(_bag._backdrop.mouse_filter, Control.MOUSE_FILTER_IGNORE)

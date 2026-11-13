@@ -73,7 +73,7 @@ var dock := Vector2.ZERO:
 ## How far a docked window stays from the edges it is docked to, in canvas pixels.
 var dock_inset := Vector2(DOCK_MARGIN, DOCK_MARGIN)
 
-var _backdrop := ColorRect.new()
+var _backdrop := ModalBackdrop.new()
 var _centre := Control.new()
 var _panel := PanelContainer.new()
 ## Whether a point of the window (canvas coordinates) keeps its clicks while the window is open,
@@ -128,9 +128,15 @@ func _exit_tree() -> void:
 	close()
 
 
-## Whether any window is open: then the player neither walks nor acts.
+## Whether any window is open.
 static func is_any_open() -> bool:
 	return _open_modal != null or not _open_docked.is_empty()
+
+
+## Whether a window that takes the input is open: then the player neither walks nor acts. The
+## docked windows are played beside.
+static func is_blocking_open() -> bool:
+	return _open_modal != null
 
 
 ## Closes the open windows, if any.
@@ -254,7 +260,8 @@ func _on_backdrop_input(event: InputEvent) -> void:
 ## stack of the SlotView `source` is let go on the dimmed area outside the panel and outside the
 ## HUD's `hotbar`. Let go anywhere else, such as between the panel's slots, it stays where it was.
 func _drop_outside_panel(hotbar: HotbarHud, on_drop: Callable) -> void:
-	_backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
+	if is_docked():
+		_backdrop.takes_mouse_while_dragging = true
 	_backdrop.set_drag_forwarding(
 		Callable(),
 		func(at_position: Vector2, data: Variant) -> bool:
