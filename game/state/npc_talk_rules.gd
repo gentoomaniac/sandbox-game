@@ -97,6 +97,17 @@ const KEYS := {
 		"open": TYPE_STRING,
 	},
 	"scripted": {"thinking_seconds": TYPE_FLOAT, "replies": TYPE_ARRAY},
+	"bubble":
+	{
+		"interval_seconds": TYPE_FLOAT,
+		"interval_spread": TYPE_FLOAT,
+		"show_seconds": TYPE_FLOAT,
+		"max_length": TYPE_INT,
+		"near_tiles": TYPE_FLOAT,
+		"chance_about_player": TYPE_FLOAT,
+	},
+	"bubble_lines":
+	{"weather": TYPE_DICTIONARY, "part_of_day": TYPE_DICTIONARY, "near_player": TYPE_DICTIONARY},
 	"judge":
 	{
 		"system": TYPE_STRING,
@@ -126,6 +137,7 @@ const TYPE_NAMES := {
 	TYPE_ARRAY: "a list",
 }
 const PARTS_OF_DAY: Array[String] = ["dawn", "morning", "noon", "afternoon", "dusk", "night"]
+const OPINION_WORDS: Array[String] = ["cold", "neutral", "warm"]
 
 static var _default: NpcTalkRules
 
@@ -193,6 +205,7 @@ func problems() -> Array[String]:
 	for layer in NpcRules.default_rules().all_layers():
 		if look_words(layer.slot, layer.variant).is_empty():
 			found.append("[looks] no words for %s %s" % [layer.slot, layer.variant])
+	found.append_array(_bubble_line_problems())
 	return found
 
 
@@ -226,6 +239,41 @@ func words_for(key: String, amount: float) -> String:
 		if amount >= level[0]:
 			words = level[1]
 	return words
+
+
+## What is wrong with [bubble_lines]: every part of the day and every opinion word needs lines, a
+## weather with lines must be one of [weather] conditions, and a line must be a text within
+## [bubble] max_length.
+func _bubble_line_problems() -> Array[String]:
+	var found: Array[String] = []
+	var lines: Dictionary = _values["bubble_lines"]
+	var max_length: int = _values["bubble"]["max_length"]
+	for key in lines["weather"]:
+		if not _values["weather"]["conditions"].has(key):
+			found.append("[bubble_lines] weather: %s is not a condition" % key)
+	for key: String in PARTS_OF_DAY:
+		if not lines["part_of_day"].has(key):
+			found.append("[bubble_lines] part_of_day has no %s" % key)
+	for key: String in OPINION_WORDS:
+		if not lines["near_player"].has(key):
+			found.append("[bubble_lines] near_player has no %s" % key)
+	for key: String in ["weather", "part_of_day", "near_player"]:
+		for name: String in lines[key]:
+			var list: Variant = lines[key][name]
+			if not list is Array or list.is_empty():
+				found.append(
+					"[bubble_lines] %s %s is not a list of at least one line" % [key, name]
+				)
+				continue
+			for line: Variant in list:
+				if not line is String or line.length() > max_length:
+					found.append(
+						(
+							'[bubble_lines] %s %s: "%s" is not a text of %d at most'
+							% [key, name, line, max_length]
+						)
+					)
+	return found
 
 
 static func _is_of_type(value: Variant, type: Variant.Type) -> bool:

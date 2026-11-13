@@ -261,6 +261,17 @@ Short lines over a villager's head, now and then:
 - Asked of the model in the background, shown when it arrives (dropped if the villager is out of
   view by then). Without a model, scripted lines per weather and part of the day.
 - Not saved, not remembered.
+- **As built (task 130, choosing):** `NpcBubbles` (plain state) chooses; `[bubble]` of
+  `data/npc_talk.cfg` has the numbers. A wait of `interval_seconds` (60) give or take
+  `interval_spread` (half of it) runs while no bubble is on screen or asked for; when it is over
+  the bubble is due, as soon as a villager is in view if none is. In view is the villager's feet
+  and the head over which the bubble sits being in the part of the world the camera shows. One
+  in view is drawn at random, but not one who is answering the player. A villager within
+  `near_tiles` (6) of the player speaks of the player with the chance `chance_about_player`
+  (0.5), else of the moment. Without a model the line is one of `[bubble_lines]`: for the player
+  by the opinion word (cold, neutral, warm), for the moment by the weather if something falls or
+  hangs in the air (thunder, storm, snow, rain, fog), else by the part of the day. A line of more
+  than `max_length` (60) characters is dropped; the data file is checked for it.
 
 ## Settings
 
