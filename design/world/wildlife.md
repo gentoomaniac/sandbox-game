@@ -15,7 +15,8 @@ atmosphere only: no player impact, not hunted, not saved.
     and flies any way in winter, when they stay on the coast. A flock flying within 45 degrees of
     the screen's vertical shows its birds from the front (heading down) or from behind (heading
     up), further from it side on (task 220, `Flock.HEAD_ON_DEGREES`), so migrating ones are
-    always seen head on;
+    always seen head on. Head on, the V is wider across (`head_on_spacing`: 24 px for the
+    sparrows, 44 for the geese), so that the spread wings of neighbours clear each other;
   - rabbits: grassland and forest edges, hop about, flee in zigzags from the player;
   - squirrels: forests, dart between trees, sit up, scurry off;
   - deer: rare, in forests and at forest edges, mostly at dawn and dusk; graze, look up,

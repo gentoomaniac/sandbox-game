@@ -8,8 +8,9 @@ extends Animal
 
 ## Per kind: the sheet its birds show, how many there are, their speed and height in pixels,
 ## their wingbeat in frames per second (`ping_pong`: the wings go up, level, down and back), how
-## far apart they keep in the V along and across the way they fly, and half the width of their
-## shadows.
+## far apart they keep in the V along and across the way they fly (`head_on_spacing` while they
+## are seen from the front or behind: their spread wings, 22 and 42 pixels wide in the sheets,
+## clear each other by two pixels), and half the width of their shadows.
 const BIRDS := {
 	WildlifeRules.FLOCK:
 	{
@@ -20,6 +21,7 @@ const BIRDS := {
 		"wingbeat": 10.0,
 		"ping_pong": false,
 		"spacing": Vector2(10.0, 12.0),
+		"head_on_spacing": Vector2(10.0, 24.0),
 		"shadow": 4,
 	},
 	WildlifeRules.FLYING_GEESE:
@@ -31,6 +33,7 @@ const BIRDS := {
 		"wingbeat": 5.0,
 		"ping_pong": true,
 		"spacing": Vector2(28.0, 24.0),
+		"head_on_spacing": Vector2(28.0, 44.0),
 		"shadow": 8,
 	},
 }
@@ -97,8 +100,11 @@ static func bird_count(flock_kind: StringName, rng: RandomNumberGenerator) -> in
 func set_course(start: Vector2, goal: Vector2, count: int) -> void:
 	position = start
 	_heading = (goal - start).normalized()
-	_offsets = v_offsets(_heading, count, _birds_of_kind["spacing"])
-	var v_length: float = _birds_of_kind["spacing"].x * ceili(count / 2.0)
+	var spacing: Vector2 = _birds_of_kind[
+		"spacing" if view_of(_heading) == SIDE_VIEW else "head_on_spacing"
+	]
+	_offsets = v_offsets(_heading, count, spacing)
+	var v_length := spacing.x * ceili(count / 2.0)
 	_leave_margin = LEAVE_MARGIN + _birds_of_kind["height"] + v_length
 
 

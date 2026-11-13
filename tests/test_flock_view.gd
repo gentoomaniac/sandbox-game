@@ -71,3 +71,44 @@ func test_the_birds_show_the_frames_of_their_view() -> void:
 			for bird in flock._birds:
 				assert_between(bird.frame, row, row + WildlifeSprites.frame_count(sheet, view) - 1)
 				assert_eq(bird.flip_h, cases[heading][1], "%s heading %s" % [kind, heading])
+
+
+## The widest the bird is in any frame of a view, in the sheet's pixels.
+func _widest(sheet: StringName, view: StringName) -> int:
+	var image := WildlifeSprites.sheet_texture(sheet).get_image()
+	var size: Vector2i = WildlifeSprites.SHEETS[sheet]["size"]
+	var cell := Vector2i(image.get_width() / WildlifeSprites.max_frames(sheet), 0)
+	cell.y = image.get_height() / WildlifeSprites.SHEETS[sheet]["actions"].size()
+	var scale := size.x / float(cell.x)
+	var widest := 0
+	for column in WildlifeSprites.frame_count(sheet, view):
+		var frame := WildlifeSprites.frame_index(sheet, view, column)
+		var at := Vector2i(frame % WildlifeSprites.max_frames(sheet), 0) * cell.x
+		at.y = frame / WildlifeSprites.max_frames(sheet) * cell.y
+		var used := image.get_region(Rect2i(at, cell)).get_used_rect()
+		widest = maxi(widest, ceili(used.size.x * scale))
+	return widest
+
+
+func test_head_on_the_spread_wings_of_neighbours_clear_each_other() -> void:
+	for kind in [WildlifeRules.FLOCK, WildlifeRules.FLYING_GEESE]:
+		var sheet: StringName = Flock.BIRDS[kind]["sheet"]
+		for heading: Vector2 in [Vector2.DOWN, Vector2.UP]:
+			var wingspan := _widest(sheet, Flock.view_of(heading))
+			var flock := Flock.new(kind)
+			autofree(flock)
+			flock.set_course(VIEW_CENTRE, VIEW_CENTRE + heading * 1000.0, 7)
+			var side := heading.rotated(PI / 2.0)
+			# Each bird behind the leader and the one ahead of it on its side of the V.
+			for i in range(1, flock._offsets.size()):
+				var ahead := 0 if i <= 2 else i - 2
+				var apart := absf((flock._offsets[i] - flock._offsets[ahead]).dot(side))
+				assert_gt(apart, float(wingspan), "%s heading %s, bird %d" % [kind, heading, i])
+
+
+func test_side_on_the_v_keeps_its_spacing() -> void:
+	var flock := Flock.new(WildlifeRules.FLOCK)
+	autofree(flock)
+	flock.set_course(VIEW_CENTRE, VIEW_CENTRE + Vector2.RIGHT * 1000.0, 3)
+	var spacing: Vector2 = Flock.BIRDS[WildlifeRules.FLOCK]["spacing"]
+	assert_eq(flock._offsets, Flock.v_offsets(Vector2.RIGHT, 3, spacing))
