@@ -23,24 +23,6 @@ Rules for every task:
 - Visuals come from the art generator (task 5 on). Until a task adds art for something,
   use simple placeholder shapes in palette colours.
 
-## 128. The judge: villagers word what they saw and heard, and think of the player by it
-
-- [ ] Done
-
-From design/villagers/gossip.md (The judge). Needs 127.
-- A background queue, saved, of stories without a voiced line. One call at a time (like the
-  memory summary), its prompt in data/npc_talk.cfg with a low temperature of its own: the
-  villager's sheet (cut down for a local model), the fact, who told them. It returns JSON
-  `{line, change, personal}`; anything that doesn't parse, is out of range or doesn't come is
-  the template line, the deed's fixed change and not personal.
-- Opinion of the player per villager, saved: one change step is 10 friendship points of
-  design/villagers/relationships.md; full for who saw it, half for who heard it; a daily cap in
-  data/gossip.cfg. Personal raises the story to high weight.
-- The chat prompt tells the opinion in words (the levels of relationships.md, or a plain
-  warm/neutral/cold until those are decided).
-- Console: `opinion <villager> [points]`.
-- Tests with a fake model: parsing, fallbacks, caps, the queue across save and load.
-
 ## 129. Newcomers learn the village from the locals
 
 - [ ] Done

@@ -135,3 +135,23 @@ From design/villagers/gossip.md (How stories spread, Whispers). Needs 126. No la
 - Tests: meetings, chances by tie, the 2-hour wait, the stop, whispers with fixed seeds, saving.
 
 Done: 0d2929b1..c978f1d2. GossipSpread (a SimulationSystem) lets every villager pair within 3 tiles meet at most once an hour; a story known 2 hours passes on with a chance by tie (0.8 family/friends, 0.5 one of the 3 nearest neighbours, 0.2 anyone), the weightiest then newest the hearer lacks (matched by its `origin`), as heard, low weight, one hop more; stops at 3 hops or a 7-day-old deed. Whispers (0.1): the count steps up a table, the place moves to a neighbour's house, or the kind turns similar; seeded. Heard lines name the teller. Numbers in data/gossip.cfg. The pair cooldown is not saved. Save version 36 (the upgrade from 25 dropped).
+
+## 128. The judge: villagers word what they saw and heard, and think of the player by it
+
+- [x] Done
+
+From design/villagers/gossip.md (The judge). Needs 127.
+- A background queue, saved, of stories without a voiced line. One call at a time (like the
+  memory summary), its prompt in data/npc_talk.cfg with a low temperature of its own: the
+  villager's sheet (cut down for a local model), the fact, who told them. It returns JSON
+  `{line, change, personal}`; anything that doesn't parse, is out of range or doesn't come is
+  the template line, the deed's fixed change and not personal.
+- Opinion of the player per villager, saved: one change step is 10 friendship points of
+  design/villagers/relationships.md; full for who saw it, half for who heard it; a daily cap in
+  data/gossip.cfg. Personal raises the story to high weight.
+- The chat prompt tells the opinion in words (the levels of relationships.md, or a plain
+  warm/neutral/cold until those are decided).
+- Console: `opinion <villager> [points]`.
+- Tests with a fake model: parsing, fallbacks, caps, the queue across save and load.
+
+Done: a12925c5..12c89851. Opinion per villager (saved, -100..1000), 10 points a step, half for heard, at most 20 net a day; told to the chat model as cold (< -20), neutral or warm (>= 20), plain words until relationships.md is decided. The queue is the stories not yet judged (`is_judged`, saved); StoryJudging asks the model one story at a time (temperature 0.2), quietly (no failure notice); bad or missing answers give the template line and the deed's fixed change; personal raises the story to high. Each story is judged once, on arrival (later merges of the same deed aren't). Console `opinion <villager> [points]`. Save version 37 (the upgrade from 26 dropped). Numbers in data/gossip.cfg and data/npc_talk.cfg.
