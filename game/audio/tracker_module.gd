@@ -26,6 +26,8 @@ class Sample:
 	var volume := 0
 
 
+## A hash of the module's bytes: what a render of it is kept under.
+var id := ""
 var samples: Array[Sample] = []
 ## The patterns to play, in order.
 var order := PackedInt32Array()
@@ -36,7 +38,13 @@ var patterns: Array[PackedInt32Array] = []
 ## The module in `bytes`, or null when `refusal_of` finds something wrong with them.
 static func from_bytes(bytes: PackedByteArray) -> TrackerModule:
 	var module := TrackerModule.new()
-	return module if module._read(bytes) == "" else null
+	if module._read(bytes) != "":
+		return null
+	var hashing := HashingContext.new()
+	hashing.start(HashingContext.HASH_SHA256)
+	hashing.update(bytes)
+	module.id = hashing.finish().hex_encode()
+	return module
 
 
 ## Why `bytes` are refused, or "" when they are a module ModuleRenderer can play: a 4-channel "M.K."

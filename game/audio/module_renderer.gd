@@ -47,6 +47,9 @@ const CHANNEL_GAIN := 0.25
 ## In stereo, the share of a channel on its own side.
 const OWN_SIDE := 0.75
 const LEFT_CHANNELS: Array[int] = [0, 3]
+## Raise it when a change to the renderer makes its renders sound different: the renders kept by
+## MusicCache are then rendered again.
+const VERSION := 1
 ## The generator's default beat: four rows (a piece may say another, see MusicPiece).
 const ROWS_PER_BEAT := 4
 ## How long a volume change, a note's start and the fade of the note before take.
@@ -103,6 +106,10 @@ var rows_per_beat := ROWS_PER_BEAT
 ## The length of a beat in the last render, in seconds: `rows_per_beat` rows at the speed and tempo
 ## of its first row, in whole samples (see the ticks above).
 var beat_seconds := 0.0
+## Where `start` looks for its render first and keeps it after rendering; null for no cache.
+var cache: MusicCache
+## Whether the last render `start` made came out of the cache.
+var was_cached := false
 
 var _task_id := -1
 var _rendered: AudioStreamWAV
@@ -116,11 +123,21 @@ func _init(tracker_module: TrackerModule, rate := 44100, stereo := false) -> voi
 	_ramp_length = maxi(1, roundi(mix_rate * RAMP_SECONDS))
 
 
-## Starts rendering `parts` (see `render`) on a WorkerThreadPool thread; `is_done` tells when
-## `take` has it.
+## Starts rendering `parts` (see `render`) on a WorkerThreadPool thread, or loading the render from
+## `cache` there when it has it; `is_done` tells when `take` has it. The stream is made whole on
+## the worker either way, so the main thread never copies it.
 func start(parts: Array[Vector2i], loops := false) -> void:
 	assert(_task_id < 0, "one render at a time")
-	_task_id = WorkerThreadPool.add_task(func() -> void: _rendered = render(parts, loops))
+	_task_id = WorkerThreadPool.add_task(
+		func() -> void: _rendered = _cached_or_render(parts, loops)
+	)
+
+
+## What `cache` keeps the render of `parts` under: it names the module, the mix settings, the beat
+## and the version of this renderer, so a render made otherwise is never found.
+func cache_key(parts: Array[Vector2i], loops: bool) -> String:
+	var settings := [module.id, VERSION, mix_rate, is_stereo, rows_per_beat, parts, loops]
+	return str(settings).sha256_text()
 
 
 ## Whether a render was started and not taken yet.
@@ -225,6 +242,22 @@ func render(parts: Array[Vector2i], loops := false) -> AudioStreamWAV:
 		mix = mix.slice(second_start * (2 if is_stereo else 1))
 	beat_seconds = first_row_frames * rows_per_beat / float(mix_rate)
 	return _stream(mix, loops)
+
+
+func _cached_or_render(parts: Array[Vector2i], loops: bool) -> AudioStreamWAV:
+	was_cached = false
+	if cache == null:
+		return render(parts, loops)
+	var key := cache_key(parts, loops)
+	var entry := cache.read(key)
+	if entry != null:
+		beat_seconds = entry.beat_seconds
+		was_cached = true
+		return entry.stream
+	var stream := render(parts, loops)
+	if stream != null:
+		cache.write(key, stream, beat_seconds)
+	return stream
 
 
 ## What a row's cell does on its first tick.
