@@ -23,35 +23,6 @@ Rules for every task:
 - Visuals come from the art generator (task 5 on). Until a task adds art for something,
   use simple placeholder shapes in palette colours.
 
-## 170. Music: the game plays the everyday pieces, rendered in the background
-
-- [ ] Done
-
-Rewritten with the user, 2026-11-13, from task 169's report (docs/music-viability.md).
-- First measure how late MusicCrossfade starts on a real audio driver, silently (e.g. a muted bus
-  with a capture effect before the mute); if it is late by more than a few tens of ms, start the
-  crossfade a block earlier from a predicted position. Write the number into
-  docs/music-viability.md.
-- Render on a WorkerThreadPool thread (ModuleRenderer) into AudioStreamWAVs made whole there;
-  never copy a stream on the main thread, never wait for a late render during play (keep looping
-  what plays).
-- A disk cache in user:// keyed by the module's hash, the renderer version and the mix settings
-  (rate, channels), bounded in size (data/music.cfg), oldest dropped first; a broken or stale
-  file is rendered again. Loading a cached render must not stall a frame either.
-- Sections with their entry state, tempo, meter, loop points and allowed exits, read from the
-  pieces.
-- The everyday pieces "Tide" and "Harbour evening" (tools/music/pieces/sketch_tide.txt,
-  sketch_harbour.txt; plain notes, held notes fading out) play on the Music bus (task 184): a
-  piece loops a few times, then the other crossfades in on the beat (counts in data/music.cfg).
-  Both art settings play the chiptune versions for now (two versions: task 224).
-- Off in test runs (the Music bus is muted there); the console `play`/`stop` keep working.
-- Known limitation from 169: MusicCrossfade counts a fade's progress across loop wraps from the
-  time between audio mixes, so an audio thread held up and then mixing one block looks like a
-  long stretch of play, and a fade into a short loop may end early by the hold-up
-  (docs/music-viability.md, "Switching on the beat"). Fix it if the measurement shows it matters.
-- Tests: the cache (hit, miss, stale, bound), never waiting for a render, the switch on the beat;
-  README.
-
 ## 225. Crows
 
 - [ ] Done
