@@ -26,7 +26,7 @@ const REQUIRED_KEYS := {
 	"witnesses": ["radius_tiles", "night_radius_tiles"],
 	"log": ["keep_days"],
 	"places": ["house"],
-	"story": ["today", "yesterday", "earlier"],
+	"story": ["prompt_stories", "today", "yesterday", "earlier"],
 }
 
 static var _default: GossipRules
@@ -129,3 +129,13 @@ func story_line(deed: Dictionary, days_ago: int) -> String:
 			}
 		)
 	)
+
+
+## The lines of the newest stories (Npc `stories`, oldest first) that a villager is told on day
+## `today`, oldest first.
+func story_lines(stories: Array[Dictionary], today: int) -> Array[String]:
+	var lines: Array[String] = []
+	var count := int(_values["story"]["prompt_stories"])
+	for story in stories.slice(maxi(stories.size() - count, 0)):
+		lines.append(story_line(story, today - story["day"]))
+	return lines

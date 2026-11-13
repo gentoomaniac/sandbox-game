@@ -60,3 +60,15 @@ func test_a_change_beyond_two_is_a_problem() -> void:
 	var values := DataFile.read_sections(GossipRules.DEFAULT_PATH)
 	values["built"]["change"] = 3
 	assert_eq(GossipRules.new(values).problems().size(), 1)
+
+
+func test_a_villager_is_told_the_newest_five_stories_oldest_first() -> void:
+	var stories: Array[Dictionary] = []
+	for day in range(1, 8):
+		stories.append({"day": day, "kind": GossipRules.TILLED, "count": 1, "place": "here"})
+
+	var lines := _rules.story_lines(stories, 7)
+
+	assert_eq(lines.size(), 5)
+	assert_string_starts_with(lines[0], "4 days ago you saw")
+	assert_string_starts_with(lines[-1], "Today you saw")

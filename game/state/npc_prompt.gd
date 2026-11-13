@@ -67,6 +67,7 @@ static func reply_messages(
 	if not npc.memories.is_empty():
 		words["memories"] = " ".join(npc.memories)
 		last.append(_said(rules, "memory", words))
+	last.append_array(GossipRules.default_rules().story_lines(npc.stories, moment.clock.day))
 	last.append(_said(rules, "moment", words))
 	last.append(_said(rules, "neighbour", words))
 	last.append(_said(rules, "says", _with_message(words, message)))

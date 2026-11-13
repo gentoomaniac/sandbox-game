@@ -63,7 +63,10 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   home" is the nearest villager's anchor; the first name is used in the place. The witnesses of
   an entry are their names. An entry or story is kept while it is under `keep_days` old (7 days,
   today's included); older ones are dropped when a deed is written, when a day begins and when a
-  game is loaded. The stories (`Npc.stories`, saved, merged like the entries) are kept as long.
+  game is loaded. The stories (`Npc.stories`, saved, merged like the entries) are kept as long and
+  told in the chat prompt as the template line, each by `[story]` of the data file (Today /
+  Yesterday / N days ago): the newest `prompt_stories` (5), after the memories. The console's
+  `deeds` lists the log.
 - **The deed log is also the base of an end-of-day screen** (later: "Today: 7 trees felled, a
   Kate built, 12 beds sown").
 

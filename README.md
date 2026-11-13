@@ -352,8 +352,10 @@ put up, patch you till, sow, harvest or mow and clay you dig is a deed, and ever
 20 tiles of it (6 at night, when they stand still) saw it. The game writes down who saw what, where
 (by the house of the villager whose home is nearest, else "out on the geest" and the like) and on
 which day, merging a day's deeds of one kind in one place ("felled 7 trees by Antje's house"), and
-keeps it for 7 days, in the save. Each witness remembers the deed as a story, which is not told
-yet. The kinds, their words, the radius and the places are in [data/gossip.cfg](data/gossip.cfg).
+keeps it for 7 days, in the save. Each witness remembers the deed as a story, which the chat
+prompt tells as a plain line ("Today you saw the newcomer fell 7 trees by Antje's house."; the
+newest five). The console's `deeds` lists the log. The kinds, their words, the radius and the
+places are in [data/gossip.cfg](data/gossip.cfg).
 
 They all live in Wehlsbüll, a made-up marsh parish two hours north of Husum in 1750, which
 [data/village.cfg](data/village.cfg) describes as everyone there knows it: the church, the Krug,
@@ -784,6 +786,7 @@ it keeps the newest 500 lines and follows new output unless you scrolled up to r
 | `crop` | Show the growth, damage and needs of the nearest crop. |
 | `skill <skill> <points>` | Set a skill's points (`woodworking`, `cooking`, `masonry`). |
 | `attribute <attribute> <level>` | Set an attribute's level (`strength`, `agility`, `stamina`, `hp`; 1 to 100) and show the maximum energy, maximum health and carry capacity it leaves. |
+| `deeds` | List what you did within sight of villagers in the last 7 days: the day and time, the deed, the place and who saw it. |
 | `play <track>` | Play a piece of music in a loop: `sketch_tide`, `sketch_harbour` or `test_reel`, also by the name without the prefix (`play tide`). The piece is rendered first (the log says `Rendering...`, then `Playing ...`), so the game doesn't stall; another piece crossfades from the first on the beat. An unknown name lists the tracks. Nothing plays unless you ask; the volume is Settings → Audio → Music. |
 | `stop` | Fade the music out. |
 
@@ -1014,7 +1017,7 @@ the language) with the village's sheet and the villager's, one example exchange 
 blacksmith who is not one of the villagers, so that the model does not copy a villager's words
 into the others' mouths), the lines of your chat with them that they keep (24 by default; the
 older ones are in their memories), and then the villager's name, trade, age, look in words and
-what they remember of earlier talks, the moment
+what they remember of earlier talks and of what they saw you do lately, the moment
 (the date as the clock shows it and how far into the season, the time and part of the day by the
 sun, the weather as it is: rain, snow, fog or the sky, the temperature, frost, the wind and
 where it blows from; and the house or fire they stand by), that you are a newcomer whose name

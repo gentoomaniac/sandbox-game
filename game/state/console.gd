@@ -65,6 +65,7 @@ const COMMANDS := {
 		"friendship [0..100]",
 		"Show the friendship of the animal nearest to you, or set it.",
 	],
+	"deeds": ["deeds", "List what you did within sight of villagers, and who saw it."],
 	"play":
 	[
 		"play <track>",
@@ -211,6 +212,8 @@ func run(line: String) -> Array[String]:
 			output = _attribute(arguments)
 		"friendship":
 			output = _friendship(arguments)
+		"deeds":
+			output = _deeds()
 		"play":
 			output = _play(arguments)
 		"stop":
@@ -604,6 +607,31 @@ func _snow(arguments: PackedStringArray) -> Array[String]:
 	]
 	if snow.forced >= 0.0:
 		lines.append("Forced: %s" % snow.forced)
+	return lines
+
+
+func _deeds() -> Array[String]:
+	var lines: Array[String] = []
+	var rules := _state.deeds.rules
+	_state.deeds.forget_old()
+	for entry in _state.deeds.entries:
+		(
+			lines
+			. append(
+				(
+					"Day %d, %s: %s %s, seen by %s"
+					% [
+						entry["day"],
+						Sun.time_text(entry["minute"]),
+						rules.deed_words(entry["kind"], entry["count"]),
+						entry["place"],
+						", ".join(entry["witnesses"]),
+					]
+				)
+			)
+		)
+	if lines.is_empty():
+		lines.append("No deeds seen yet")
 	return lines
 
 
