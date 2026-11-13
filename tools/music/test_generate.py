@@ -10,7 +10,7 @@ import numpy as np
 
 import check
 import modplug
-from generate import PieceError, module_bytes, parse_piece
+from generate import PieceError, module_bytes, parse_piece, sections_text
 
 BAR = "C-2:16"
 PIECE = f"""
@@ -141,6 +141,43 @@ class PieceTest(unittest.TestCase):
 
 
 @unittest.skipIf(modplug.LIBRARY is None, "libmodplug is not installed")
+class SectionsTest(unittest.TestCase):
+    def test_tells_the_piece_and_where_each_section_is(self):
+        self.assertEqual(
+            sections_text("piece_a", parse_piece(PIECE)),
+            "; Written by tools/music/generate.py from pieces/piece_a.txt; read by game/audio/music_piece.gd.\n"
+            "[piece]\nspeed=5\ntempo=125\nbeat_rows=4\nbar_beats=4\n"
+            '\n[loop]\norder=0\nrows=64\nexits=["fill"]\n'
+            '\n[fill]\norder=1\nrows=16\nexits=["loop"]\n',
+        )
+
+    def test_the_meter_and_exits_are_the_pieces(self):
+        piece = parse_piece(
+            PIECE.replace("order loop fill", "beat 8\nbar 2\norder loop fill").replace(
+                "section loop 64", "section loop 64 exits loop fill"
+            )
+        )
+        self.assertEqual((piece["beat_rows"], piece["bar_beats"]), (8, 2))
+        text = sections_text("x", piece)
+        self.assertIn("beat_rows=8\nbar_beats=2", text)
+        self.assertIn('[loop]\norder=0\nrows=64\nexits=["loop", "fill"]', text)
+
+    def test_a_section_is_whole_bars_of_the_pieces_meter(self):
+        with self.assertRaisesRegex(PieceError, "no whole bars of 12"):
+            parse_piece(PIECE.replace("order loop fill", "beat 6\nbar 2\norder loop fill"))
+
+    def test_a_later_section_comes_after_the_patterns_of_the_earlier_ones(self):
+        piece = parse_piece(PIECE.replace("order loop fill", "order fill loop"))
+        self.assertIn("[fill]\norder=0", sections_text("x", piece))
+        self.assertIn("[loop]\norder=1", sections_text("x", piece))
+
+    def test_refuses_exits_that_are_no_sections_of_the_order(self):
+        with self.assertRaisesRegex(PieceError, "exits"):
+            parse_piece(PIECE.replace("section fill 16", "section fill 16 exits bridge"))
+        with self.assertRaisesRegex(PieceError, "called piece"):
+            parse_piece(PIECE.replace("section fill 16", "section piece 16").replace("order loop fill", "order loop piece"))
+
+
 class CheckTest(unittest.TestCase):
     def test_finds_nothing_wrong_with_a_module_as_its_piece_says(self):
         piece = parse_piece(PIECE)

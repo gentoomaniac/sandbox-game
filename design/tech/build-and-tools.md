@@ -27,7 +27,7 @@
   `screenshot`, `test`, `lint`, `format`, `assets`, `clean` and `export` (the Linux and
   Windows builds of export_presets.cfg into build/export/, one zip per platform; needs the export
   templates of the pinned Godot). The include filter of the presets lists the non-resource files
-  the game reads at run time (data/*.cfg, the Tiled maps and tileset, assets/music/*.mod): add a
+  the game reads at run time (data/*.cfg, the Tiled maps and tileset, assets/music/*.mod and *.cfg): add a
   new kind of such a file there, or the export drops it. The version of `make export VERSION=x`
   is stamped into `application/config/version` for the export only; project.godot is put back.
   `make export` puts a `.gdignore` in build/, or every later import would scan the exported

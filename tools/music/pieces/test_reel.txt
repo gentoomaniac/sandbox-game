@@ -8,7 +8,7 @@ speed 6
 tempo 106
 order loop fill
 
-section loop 128
+section loop 128 exits loop fill
 lead saw:
   E-2:2 A-2:2 A-2:2 B-2:2 C-3:2 B-2:2 A-2:2 G-2:2
   E-3:2 D-3:2 C-3:2 B-2:2 A-2:6:452 G-2:2

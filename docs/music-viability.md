@@ -47,7 +47,7 @@ kHz, not 6 x 1040.09). The renderer and `check.py` both count so. At tempo 106 t
 
 **Export:** Godot doesn't import `.mod` files, so they are read as bytes
 (`FileAccess.get_file_as_bytes`). The presets of `export_presets.cfg` list
-`assets/music/*.mod` in "Filters to export non-resource files" (`include_filter`), or the exported
+`assets/music/*.mod` (and, since task 170, the `*.cfg` that tells the sections) in "Filters to export non-resource files" (`include_filter`), or the exported
 game would have no music (also in tools/README.md).
 
 ## Render times

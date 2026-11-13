@@ -335,11 +335,12 @@ of a generated sound, point the event's `files` in `data/sounds.cfg` at the reco
 
 ## Music: tools/music/
 
-A trial (task 169), not played in the game yet. `generate.py` turns each piece of
-`pieces/<name>.txt`, plain text of sections, voices and tokens (its docstring has the format and
-the effect set), into a 4-channel ProTracker module, `art/generated/music/<name>.mod`, which
-`make assets` copies to assets/music/. Godot doesn't import `.mod` files, so the game reads them
-as bytes; the export presets of `export_presets.cfg` list `assets/music/*.mod` in their "Filters to
+`generate.py` turns each piece of `pieces/<name>.txt`, plain text of sections, voices and tokens
+(its docstring has the format and the effect set), into a 4-channel ProTracker module,
+`art/generated/music/<name>.mod`, and a `<name>.cfg` with what the module doesn't say (speed, tempo,
+beat and bar, and each section's place in the order list, rows and exits); `make assets` copies
+both to assets/music/. Godot doesn't import `.mod` files, so the game reads them as bytes; the
+export presets of `export_presets.cfg` list `assets/music/*.mod` and `*.cfg` in their "Filters to
 export non-resource files" (`include_filter`), or the exported game would have no music.
 
 | Command | What it does |

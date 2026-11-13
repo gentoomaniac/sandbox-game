@@ -1,15 +1,23 @@
 """Writes every piece of tools/music/pieces/ as a 4-channel ProTracker module (run it with `make art`).
 
-Each pieces/<name>.txt becomes art/generated/music/<name>.mod ("M.K.", 31 samples, 64-row patterns),
-which `make assets` copies to assets/music/. The same text gives the same bytes every time.
+Each pieces/<name>.txt becomes art/generated/music/<name>.mod ("M.K.", 31 samples, 64-row patterns)
+and <name>.cfg, which tell the game what the module doesn't: the piece's speed, tempo, beat and bar,
+and per section its place in the order list, its rows and its exits ([piece] and one section per
+section of the piece, game/audio/music_piece.gd reads them). `make assets` copies both to
+assets/music/. The same text gives the same bytes every time.
 
 A piece is plain text; a `#` at the start of a line or after a space starts a comment:
 
     speed 5                  ticks per row (1..31)
     tempo 125                ticks per 2.5 seconds (32..255): with 125 a tick is 20 ms
+    beat 4                   rows in a beat (default 4; 6 for a 6/8 sway of dotted quarters)
+    bar 4                    beats in a bar (default 4)
     order loop fill          the sections in the order they play; the module restarts at the first
 
-    section loop 128         a section: its name and length in rows, whole bars of 16 rows
+    section loop 128 exits loop fill
+                             a section: its name and length in rows, whole bars; `exits` names the
+                             sections that may follow it (default: the next in the order, the first
+                             after the last)
     lead saw:                a voice (one channel, in the order of the lines) and its instrument
       E-2:2 A-2:2 A-2:6:452  its tokens, on as many indented lines as wanted
 
@@ -63,7 +71,8 @@ MUSIC = ROOT / "art" / "generated" / "music"
 
 CHANNELS = 4
 PATTERN_ROWS = 64
-BAR_ROWS = 16
+DEFAULT_BEAT_ROWS = 4
+DEFAULT_BAR_BEATS = 4
 SAMPLE_SLOTS = 31
 # ProTracker's periods from C-1 to B-3 (finetune 0).
 PERIODS = [
@@ -131,9 +140,16 @@ def checked_effect(text, has_note):
 
 
 def parse_piece(text):
-    """The piece as {"speed", "tempo", "order", "sections"}; a section is {"rows", "voices"}, a voice
-    (name, instrument, tokens) and a token (note: index, HOLD or CUT; rows; effect or None)."""
-    piece = {"speed": 6, "tempo": 125, "order": [], "sections": {}}
+    """The piece as {"speed", "tempo", "beat_rows", "bar_beats", "order", "sections"}; a section is
+    {"rows", "exits", "voices"}, a voice (name, instrument, tokens) and a token (note: index, HOLD or CUT; rows; effect or None)."""
+    piece = {
+        "speed": 6,
+        "tempo": 125,
+        "beat_rows": DEFAULT_BEAT_ROWS,
+        "bar_beats": DEFAULT_BAR_BEATS,
+        "order": [],
+        "sections": {},
+    }
     voice = None
     for number, line in enumerate(text.splitlines(), start=1):
         content = re.sub(r"(^|\s)#.*", "", line).rstrip()
@@ -149,10 +165,12 @@ def parse_piece(text):
                 piece["speed"] = int(words[1])
             elif words[0] == "tempo" and len(words) == 2 and 32 <= int(words[1]) <= 255:
                 piece["tempo"] = int(words[1])
+            elif words[0] in ("beat", "bar") and len(words) == 2 and int(words[1]) >= 1:
+                piece["beat_rows" if words[0] == "beat" else "bar_beats"] = int(words[1])
             elif words[0] == "order":
                 piece["order"] = words[1:]
-            elif words[0] == "section" and len(words) == 3:
-                section = {"rows": int(words[2]), "voices": []}
+            elif words[0] == "section" and len(words) >= 3 and (len(words) == 3 or words[3] == "exits"):
+                section = {"rows": int(words[2]), "exits": words[4:], "voices": []}
                 piece["sections"][words[1]] = section
                 voice = None
             elif len(words) == 2 and words[1].endswith(":") and piece["sections"]:
@@ -183,10 +201,18 @@ def parse_token(word):
 def check_piece(piece):
     if not piece["order"] or any(name not in piece["sections"] for name in piece["order"]):
         raise PieceError(f"the order {piece['order']} must name sections ({', '.join(piece['sections'])})")
+    bar_rows = piece["beat_rows"] * piece["bar_beats"]
+    played = list(dict.fromkeys(piece["order"]))
     voices = None
     for name, section in piece["sections"].items():
-        if section["rows"] < BAR_ROWS or section["rows"] % BAR_ROWS:
-            raise PieceError(f"section {name}: {section['rows']} rows are no whole bars of {BAR_ROWS}")
+        if name == "piece":
+            raise PieceError("a section can't be called piece (the sections file has a [piece])")
+        if section["rows"] < bar_rows or section["rows"] % bar_rows:
+            raise PieceError(f"section {name}: {section['rows']} rows are no whole bars of {bar_rows}")
+        if not section["exits"]:
+            section["exits"] = [played[(played.index(name) + 1) % len(played)]] if name in played else []
+        if any(exit_name not in played for exit_name in section["exits"]):
+            raise PieceError(f"section {name}: exits {section['exits']} must name sections of the order ({' '.join(played)})")
         signature = [(voice, instrument) for voice, instrument, _ in section["voices"]]
         if len(signature) != CHANNELS or signature != (voices or signature):
             raise PieceError(f"section {name}: voices {signature}, but every section has the same {CHANNELS}")
@@ -272,6 +298,28 @@ def module_bytes(title, piece):
     return data
 
 
+def sections_text(name, piece):
+    """What the game reads besides the module (see the docstring): the piece and its sections."""
+    lines = [
+        f"; Written by tools/music/generate.py from pieces/{name}.txt; read by game/audio/music_piece.gd.",
+        "[piece]",
+        f"speed={piece['speed']}",
+        f"tempo={piece['tempo']}",
+        f"beat_rows={piece['beat_rows']}",
+        f"bar_beats={piece['bar_beats']}",
+    ]
+    order_position = 0
+    positions = {}
+    for section_name in piece["order"]:
+        positions.setdefault(section_name, order_position)
+        order_position += -(-piece["sections"][section_name]["rows"] // PATTERN_ROWS)
+    for section_name, position in positions.items():
+        section = piece["sections"][section_name]
+        exits = ", ".join(f'"{exit_name}"' for exit_name in section["exits"])
+        lines += ["", f"[{section_name}]", f"order={position}", f"rows={section['rows']}", f"exits=[{exits}]"]
+    return "\n".join(lines) + "\n"
+
+
 def main():
     MUSIC.mkdir(parents=True, exist_ok=True)
     for path in sorted(PIECES.glob("*.txt")):
@@ -280,6 +328,7 @@ def main():
         except PieceError as error:
             sys.exit(f"{path.relative_to(ROOT)}: {error}")
         (MUSIC / f"{path.stem}.mod").write_bytes(module_bytes(path.stem.replace("_", " "), piece))
+        (MUSIC / f"{path.stem}.cfg").write_text(sections_text(path.stem, piece))
 
 
 if __name__ == "__main__":
