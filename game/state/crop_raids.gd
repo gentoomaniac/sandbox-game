@@ -2,7 +2,7 @@ class_name CropRaids
 extends SimulationSystem
 ## The crows' raids on the crops: where the crow flocks are, and what each hour does to the crops
 ## near them (rules in data/crows.cfg, see CropRaidRules). The animals themselves are in the view,
-## which tells this where its flocks stand (`add_flock`, `move_flock`, `remove_flock`).
+## which tells this where its flocks stand (`add_flock`, `remove_flock`).
 ##
 ## Every hour each flock that is not near the player may raid: it tries a few of the living crops
 ## within its reach that nothing guards (see `is_guarded`), and a crop loses a whole plant (a
@@ -50,19 +50,8 @@ func add_flock(tile: Vector2i) -> int:
 	return _next_flock_id - 1
 
 
-func move_flock(flock_id: int, tile: Vector2i) -> void:
-	_flocks[flock_id] = tile
-
-
 func remove_flock(flock_id: int) -> void:
 	_flocks.erase(flock_id)
-
-
-## Takes every flock away. Returns how many there were.
-func clear_flocks() -> int:
-	var count := _flocks.size()
-	_flocks.clear()
-	return count
 
 
 ## The tiles the flocks stand on.

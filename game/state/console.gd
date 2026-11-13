@@ -136,8 +136,6 @@ const FRIENDSHIP_SEARCH_RADIUS := 3.0
 const CROP_SEARCH_RADIUS := 4
 ## What `spawn` calls a villager (see Npcs).
 const NPC := "npc"
-## What `spawn` and `killall` call the crow flocks (WildlifeRules.CROWS).
-const CROWS := "crows"
 ## What `spawn` calls the wild rabbit (WildlifeRules.RABBIT): a plain rabbit is a tame one of the
 ## livestock.
 const WILD_RABBIT := "wild_rabbit"
@@ -297,7 +295,6 @@ func candidates(kind: StringName) -> Array[String]:
 			for species in LivestockRules.SPECIES:
 				values.append(String(species))
 			values.append(ROOSTER)
-			values.append(CROWS)
 			for animal in WildlifeRules.KINDS:
 				values.append(WILD_RABBIT if animal == WildlifeRules.RABBIT else String(animal))
 		&"villager":
@@ -480,22 +477,14 @@ func _spawn(arguments: PackedStringArray) -> Array[String]:
 		return ["Usage: %s" % COMMANDS["spawn"][0]]
 	var word := arguments[0]
 	var count := 1 if arguments.size() < 2 else int(arguments[1])
-	# Farm animals and villagers stay in the world: they are part of the state. The crow flocks are
-	# state too but not saved, and the view has no crows for them yet.
-	if (
-		word == NPC
-		or word == ROOSTER
-		or word == CROWS
-		or LivestockRules.SPECIES.has(StringName(word))
-	):
+	# Farm animals and villagers stay in the world: they are part of the state.
+	if word == NPC or word == ROOSTER or LivestockRules.SPECIES.has(StringName(word)):
 		if _state.is_inside():
 			return ["No %s here" % ("villagers" if word == NPC else "animals")]
 		var near := _state.player.position
 		var spawned := 0
 		if word == NPC:
 			spawned = _state.npcs.spawn(count, near, _state.world)
-		elif word == CROWS:
-			spawned = _spawn_crows(count)
 		elif word == ROOSTER:
 			spawned = _state.livestock.spawn(
 				LivestockRules.CHICKEN, count, near, _state.world, LivestockRules.ROOSTER_LOOK
@@ -565,8 +554,6 @@ func _kill_animals(word: String) -> Array[String]:
 		if horse != null and horse.species == StringName(word):
 			return ["You are riding a %s: get off first" % word]
 		return [_removed_text(_state.livestock.remove_species(StringName(word)), word)]
-	if word == CROWS:
-		return [_removed_text(_state.crop_raids.clear_flocks(), word)]
 	var kind := WildlifeRules.RABBIT if word == WILD_RABBIT else StringName(word)
 	if not WildlifeRules.KINDS.has(kind):
 		return _unknown("animal", word, "killall")
@@ -811,16 +798,6 @@ func _crop() -> Array[String]:
 	lines.assign(CropLife.describe(crop))
 	lines.append("Soil moisture %.2f" % _state.world.moisture_at(crop.pos))
 	return lines
-
-
-## Puts crow flocks on the crop nearest to the player (or where they stand): the raids are state,
-## and the view has no crows to show yet.
-func _spawn_crows(count: int) -> int:
-	var crop := _nearest_crop()
-	var tile := _state.player.tile() if crop == null else crop.pos
-	for _i in count:
-		_state.crop_raids.add_flock(tile)
-	return count
 
 
 ## `crows` shows the flocks and the day's tally; `crows raid` lets every flock raid at once.

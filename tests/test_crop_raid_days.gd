@@ -61,14 +61,6 @@ func test_a_flock_that_left_raids_no_more() -> void:
 	assert_eq(_raids.flock_tiles().size(), 0)
 
 
-func test_a_moved_flock_raids_where_it_is() -> void:
-	_plant_row(&"turnip", 0, 1)
-	var flock := _raids.add_flock(_tile + Vector2i(30, 30))
-	_raids.move_flock(flock, _tile)
-	_raids.raid_hour(HOUR)
-	assert_eq(_crops_left(), 0)
-
-
 func test_the_end_of_an_hour_is_a_raid_and_the_middle_of_one_is_not() -> void:
 	_plant_row(&"turnip", 0, 1)
 	_raids.add_flock(_tile)
