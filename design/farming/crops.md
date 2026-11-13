@@ -98,7 +98,21 @@
   - **Crows eat yield** (task 225): produce items the crows ate off a crop are kept in its state
     (`eaten`, saved with the crop; a save without it means none), come off every harvest and
     never take it below 1, so a crop with a yield of 1 can't be eaten off. A crop that regrows
-    has new fruit. See the crows in [wildlife](../world/wildlife.md).
+    has new fruit.
+  - **Crows raid the fields** (task 225, `CropRaids`, numbers in `data/crows.cfg`): every game
+    hour each crow flock (the view tells `CropRaids` where its flocks stand) that has no player
+    within 12 tiles raids with the chance 0.4, trying up to 2 of the living, unguarded crops
+    within 3 tiles of it. A crop loses something by the chance of its growth stage (seed 0.5,
+    young 0.15, grown 0.15, ripe 0.3): a seed is eaten whole (the plant is gone, the soil stays
+    tilled), a later stage has one produce item eaten (`eaten` above). Caps per day for the whole
+    world keep a field from being stripped: 2 plants and 6 items; the tally is not saved and
+    starts again at a load. The dice are seeded by the world and the hour. Only crops of loaded
+    chunks are raided: flocks stand near the player, so the crops of unloaded chunks are not. The
+    hours of a skip of time pass like any, for the flocks standing then. The hook for the scarecrow (task 226) is
+    `CropRaids.is_guarded`, a Callable from a tile to whether it is guarded; unset, nothing is.
+    Fresh sowing draws crows: a flock appears `appearing_boost` times likelier near sown fields
+    (0.1 more per crop at stage 0 within 6 tiles, up to 3 times). No save version change: `eaten` is an optional
+    number in the crop's state. The crows themselves: [wildlife](../world/wildlife.md).
 - Wild crops can be foraged.
 - The biome decides which resources are available and what the land is good for
   agriculturally (see [Biomes](../world/generation.md)).
