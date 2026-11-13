@@ -233,6 +233,12 @@ with a glint and the marks of their coats.
 
 ![A mixed herd by the camp on a summer morning, and asleep after midnight](docs/screenshots/livestock.png)
 
+![The rooster pecking among his hens at noon, a head taller than them, in the 32 px art and in the classic art](docs/screenshots/rooster.png)
+
+`make screenshot SIZE=1000x560 AT=68,-17 TIME=12:00 ZOOM=1.25 ARGS="--yard=40,-20 --day=45"` (and
+with `--classic-art`) puts the hens of the farm yard in view, each cropped to x 35 to 460, y 190 to
+360, one above the other and doubled; the hens wander, so each shot looks a little different.
+
 Dogs, cats and horses keep them company: a farm collie, a spitz and a hunting dog; tabby,
 black and ginger cats; a heavy marsh horse, nearly three tiles long and taller than you at the
 head, in bay, black or grey, and a dun pony. Dogs and cats sniff about, horses graze, and all of them dash off at a run now and

@@ -1,12 +1,12 @@
 class_name DebugFarmYard
 extends RefCounted
 ## For screenshots (part of `--yard=<x>,<y>`, east of what DebugYard puts there): the farm yard of
-## task 122 on a patch of grass. From the tile: the chicken coop (2x2) with three hens in front of
-## its door and the draw well beside it; below them a row of four troughs and a row of four hay
-## racks, each stocked as empty, low, half and full; a cow at the full trough and a sheep at the
-## full rack. Below them the pig pen of task 165: a ring of fence with its gate shut in the bottom
-## side, the pigs' shelter, a trough and a feeding trough in it, and a pig of each look. Loads the
-## chunks it covers itself.
+## task 122 on a patch of grass. From the tile: the chicken coop (2x2) with four hens and the
+## rooster among them in front of its door and the draw well beside it; below them a row of four
+## troughs and a row of four hay racks, each stocked as empty, low, half and full; a cow at the
+## full trough and a sheep at the full rack. Below them the pig pen of task 165: a ring of fence
+## with its gate shut in the bottom side, the pigs' shelter, a trough and a feeding trough in it,
+## and a pig of each look. Loads the chunks it covers itself.
 
 const SIZE := Vector2i(14, 18)
 ## The pen's fence runs round this rectangle (its top left from the tile), and its gate is on this
@@ -34,11 +34,10 @@ static func create(state: GameState, origin: Vector2i) -> void:
 			var stocked := WorldObject.new(row[0], origin + Vector2i(3 * index, row[1]))
 			ObjectStock.add(stocked, STOCKS[index])
 			world.add_object(stocked)
-	for index in 3:
+	var chickens := [&"brown", &"white", &"rooster", &"brown", &"white"]
+	for index in chickens.size():
 		var feet := Vector2(origin) + Vector2(0.4 + 1.1 * index, 3.2)
-		var hen := FarmAnimal.new(
-			LivestockRules.CHICKEN, [&"brown", &"white", &"rooster"][index], feet
-		)
+		var hen := FarmAnimal.new(LivestockRules.CHICKEN, chickens[index], feet)
 		state.livestock.add(hen)
 	var cow := FarmAnimal.new(LivestockRules.COW, &"angler", Vector2(origin) + Vector2(10.5, 5.0))
 	state.livestock.add(cow)
