@@ -69,6 +69,9 @@ var uncompacted_lines: Array[Dictionary] = []
 ## How many of the oldest lines of `chat_history` are already in a memory (only a save of version
 ## 20 or older has such lines): they are forgotten, not summed up again, when they drop out.
 var remembered_lines := 0
+## The deeds of the player they saw, oldest first, each `{day, minute, kind, count, place}` (see
+## DeedLog). Kept as they come for now; task 126 makes them the gossip buffer.
+var stories: Array[Dictionary] = []
 ## Whether NpcDialogue is summing up `uncompacted_lines`. Not saved.
 var is_compacting := false
 
@@ -195,6 +198,7 @@ func to_dict() -> Dictionary:
 		"memories": memories.duplicate(),
 		"uncompacted_lines": uncompacted_lines.duplicate(true),
 		"remembered_lines": remembered_lines,
+		"stories": stories.map(DeedLog.to_saved),
 	}
 
 
@@ -217,6 +221,8 @@ static func from_dict(data: Dictionary) -> Npc:
 	npc.memories.assign(data["memories"])
 	for line: Dictionary in data["uncompacted_lines"]:
 		npc.uncompacted_lines.append(line)
+	for story: Dictionary in data["stories"]:
+		npc.stories.append(DeedLog.from_saved(story))
 	npc.remembered_lines = mini(int(data["remembered_lines"]), npc.chat_history.size())
 	return npc
 

@@ -50,7 +50,7 @@
   save". Only the last one quits.
 - **Upgrades kept for ten steps** (the user, 2026-11-08): the game is in
   development, so a save of version `VERSION - 10` to `VERSION` is upgraded step by step on
-  load (24 to 33 today); an older one is refused like any unreadable save (renamed `.bak`,
+  load (24 to 34 today); an older one is refused like any unreadable save (renamed `.bak`,
   a new game). When `VERSION` goes up, the oldest step, its constants, helpers and tests go,
   in a commit of its own titled `Save: drop the upgrade from version <N> (oldest read: <N+1>)`.
   To rescue an older save, find that commit with `git log --grep '^Save: drop'`, check out
@@ -61,7 +61,8 @@
   item slot (inventory, chests), the selected hotbar slot, equipment slots, object, building and
   animal data, object state (every entry but a stump's `tree` and a station's `work` is a number),
   the map references (the current and home map must name the world or a building
-  that has an inside), station work (a known, slow recipe) and the villagers' fields. Each
+  that has an inside), station work (a known, slow recipe), the villagers' fields, and the deed
+  log and the villagers' stories (a known deed kind, whole numbers, a place). Each
   problem has its place, "player inventory slot 4: count -7 is not between 1 and 99". Nothing is
   built from a save with a problem: `SaveFile.load_game` gives a `LoadResult` (no save, refused,
   ready) and the file is not touched; `SaveFile.read` and the game's start move a refused save

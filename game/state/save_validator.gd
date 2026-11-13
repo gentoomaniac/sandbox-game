@@ -71,6 +71,7 @@ func _check_game(game: Variant) -> void:
 	if npcs != null:
 		for index in npcs.size():
 			_check_npc(npcs[index], "npcs %d" % index)
+	_check_deeds(game, "deeds", "", true)
 	_check_map_reference(game, "current_map")
 	_check_map_reference(game, "home_map")
 
@@ -459,11 +460,34 @@ func _check_npc(npc: Variant, path: String) -> void:
 	var appearance: Variant = _field(npc, "appearance", Kind.DICT, path)
 	if appearance != null:
 		_check_appearance(appearance, path + " appearance")
+	_check_deeds(npc, "stories", path, false)
 	for key in ["chat_history", "uncompacted_lines"]:
 		var lines: Variant = _field(npc, key, Kind.LIST, path)
 		if lines != null:
 			for index in lines.size():
 				_check_chat_line(lines[index], "%s %s %d" % [path, key, index])
+
+
+## The deeds of `owner[key]`: the entries of the log, or the stories of a villager (without the
+## witnesses).
+func _check_deeds(owner: Dictionary, key: String, path: String, has_witnesses: bool) -> void:
+	var deeds: Variant = _field(owner, key, Kind.LIST, path)
+	if deeds == null:
+		return
+	for index in deeds.size():
+		var deed_path := "%s %d" % [_join(path, key), index]
+		var deed: Variant = deeds[index]
+		if not deed is Dictionary:
+			_report(deed_path, "should be a dictionary")
+			continue
+		for whole in ["day", "minute", "count"]:
+			_field(deed, whole, Kind.WHOLE, deed_path)
+		_field(deed, "place", Kind.TEXT, deed_path)
+		var kind: Variant = _field(deed, "kind", Kind.TEXT, deed_path)
+		if kind != null and not GossipRules.KINDS.has(StringName(kind)):
+			_report(deed_path, "unknown deed %s" % kind)
+		if has_witnesses:
+			_check_texts(deed, "witnesses", deed_path)
 
 
 func _check_texts(owner: Dictionary, key: String, path: String) -> void:

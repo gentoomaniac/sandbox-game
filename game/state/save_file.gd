@@ -21,10 +21,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 33
-## The oldest version we still upgrade. Nine steps back, for the next version (task 125) makes
-## its step the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 34
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -206,6 +205,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_31(game)
 	if version <= 32:
 		_upgrade_from_version_32(game)
+	if version <= 33:
+		_upgrade_from_version_33(game)
 
 
 ## Version 24 had no water in the watering can and no hunger or thirst of the farm animals (task
@@ -367,3 +368,10 @@ static func _rename_tools(data: Variant, tools: Array) -> void:
 				data[key] = "rusty_iron_" + data[key]
 			else:
 				_rename_tools(data[key], tools)
+
+
+## Version 33 had no deed log (task 125): nothing was seen yet, and no villager has a story.
+static func _upgrade_from_version_33(game: Dictionary) -> void:
+	game["deeds"] = []
+	for npc: Dictionary in game["npcs"]:
+		npc["stories"] = []

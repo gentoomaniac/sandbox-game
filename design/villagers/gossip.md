@@ -1,6 +1,7 @@
 # Gossip and memory
 
-**Decided, not built.** Worked out with the user on 2026-11-09. The tasks are 124 to 130 in
+**Decided; the deed log (task 125) is built, the rest is not.** Worked out with the user on
+2026-11-09. The tasks are 124 to 130 in
 [TASKS.md](../../TASKS.md). This page changes [dialogue.md](dialogue.md) (memory) and
 [villagers.md](villagers.md) (who knows the village) once the tasks are done; until then those
 pages describe the game as it is.
@@ -53,6 +54,16 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
 - **Witnesses:** every villager within 20 tiles (6 at night, when they stand still) sees it, not
   only the nearest. Each gets the deed as a story they **saw**, at once. No line of sight for
   now.
+- **As built (task 125):** `DeedLog` (GameState `deeds`, saved) and `GossipRules`
+  (`data/gossip.cfg`). A deed is written down only if some villager is within the radius, so
+  the log is of what was seen. The kind comes from the outcome: `till`, `plant` of a crop, `harvest`,
+  `mow`, `dig` that found clay, `break` of a tree, `place` of a fence or wall (an object that
+  connects), `build`, and `demolish`. A hammer `take_down` of a placed object and the shovel
+  digging up a bush are no deeds. Only the world is watched, not the inside of a house. "Nearest
+  home" is the nearest villager's anchor; the first name is used in the place. The witnesses of
+  an entry are their names. An entry or story is kept while it is under `keep_days` old (7 days,
+  today's included); older ones are dropped when a deed is written, when a day begins and when a
+  game is loaded. The stories (`Npc.stories`, saved, merged like the entries) are kept as long.
 - **The deed log is also the base of an end-of-day screen** (later: "Today: 7 trees felled, a
   Kate built, 12 beds sown").
 

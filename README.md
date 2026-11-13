@@ -347,6 +347,14 @@ six tiles of the house or campfire nearest to where they came, stand about and s
 and stand still at night; you walk through them, so they never shut you in. For now they come
 from the console; they are saved with the game.
 
+Villagers notice what you do. Each tree you fell, house you build or take down, fence or wall you
+put up, patch you till, sow, harvest or mow and clay you dig is a deed, and every villager within
+20 tiles of it (6 at night, when they stand still) saw it. The game writes down who saw what, where
+(by the house of the villager whose home is nearest, else "out on the geest" and the like) and on
+which day, merging a day's deeds of one kind in one place ("felled 7 trees by Antje's house"), and
+keeps it for 7 days, in the save. Each witness remembers the deed as a story, which is not told
+yet. The kinds, their words, the radius and the places are in [data/gossip.cfg](data/gossip.cfg).
+
 They all live in Wehlsbüll, a made-up marsh parish two hours north of Husum in 1750, which
 [data/village.cfg](data/village.cfg) describes as everyone there knows it: the church, the Krug,
 the mill, the dyke and its sluice, the Koog, the creeks and the Geest; who is who (Pastor

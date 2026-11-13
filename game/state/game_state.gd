@@ -53,6 +53,8 @@ var harvest_rng := RandomNumberGenerator.new()
 var livestock := Livestock.new(sun, cheats)
 ## The villagers of the world, moved like the farm animals.
 var npcs := Npcs.new(sun)
+## What the player did within sight of villagers.
+var deeds: DeedLog
 var energy_rules := EnergyRules.default_rules()
 ## What every use costs is multiplied by this (the Game setting: 0.5, 1 or 1.5).
 var energy_drain := 1.0
@@ -76,6 +78,8 @@ var _moving_seconds := 0.0
 func _init(game_clock := GameClock.new()) -> void:
 	clock = game_clock
 	simulation = Simulation.new(clock)
+	deeds = DeedLog.new(npcs, clock)
+	action_done.connect(deeds.record)
 
 
 ## A new game: the player starts at a camp site near the world centre, with home set to its
@@ -606,6 +610,7 @@ func snapshot() -> Dictionary:
 		"player": player_data,
 		"livestock": livestock.to_array(),
 		"npcs": npcs.to_array(),
+		"deeds": deeds.to_array(),
 		"current_map": _map_to_ref(current_map),
 		"home_map": _map_to_ref(player.home_map),
 	}
@@ -628,6 +633,7 @@ static func from_dict(data: Dictionary) -> GameState:
 	state.player = PlayerState.from_dict(data["player"], state._map_from_ref(data["home_map"]))
 	state.livestock.load_array(data["livestock"])
 	state.npcs.load_array(data["npcs"])
+	state.deeds.load_array(data["deeds"])
 	state._building_inside = state._building_of_ref(data["current_map"])
 	# No sleep wakes between 01:00 and 06:30, so a game saved then was quit by a player who
 	# stayed up: they still pass out (`is_up_too_late` itself is not saved).
