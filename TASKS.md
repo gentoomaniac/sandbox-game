@@ -222,23 +222,6 @@ The user, 2026-11-11: "Wild rabbits should run away even when sleeping"
 - Tests: a sleeping wild rabbit flees when the player comes near; a sleeping tame rabbit does
   not.
 
-## 213. Only the music plays while the pause menu is open
-
-- [ ] Done
-
-The user, 2026-11-11: "All sound should stop while being in the menu, except the music"
-- While the pause menu (PauseMenu, with all its settings pages) is open, every game sound goes
-  quiet: ambience, weather, outside effects, footsteps, animals, the fire loops, the bell, tool
-  sounds already playing. The Music bus (task 184) keeps playing. The menu's own UI sounds (if
-  any) still play, and the audio settings page still lets the player hear a volume change (a test
-  sound on the changed bus, or say why not).
-- Pause or mute the game buses (AudioService: Master's children except Music and a UI bus), or
-  pause the players, whichever resumes cleanly: closing the menu brings everything back where it
-  was (loops continue, positional sounds resume), with a short fade both ways so it doesn't click.
-  Other windows (crafting, chest, character, chat, console) keep the sound as today, unless the
-  game pauses for them too (then the same rule).
-- Tests: buses silent with the menu open and the music not, sounds back after closing; README line.
-
 ## 214. Thunder by distance: delay, loudness and sound fit how far the strike was; now and then a close one
 
 - [ ] Done
