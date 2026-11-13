@@ -1,6 +1,6 @@
 # Gossip and memory
 
-**Decided; the deed log, memory and spreading (tasks 125 to 127) are built, the rest is not.** Worked out with the user on
+**Decided; the deed log, memory, spreading and the judge (tasks 125 to 128) are built, the rest is not.** Worked out with the user on
 2026-11-09. The tasks are 124 to 130 in
 [TASKS.md](../../TASKS.md). This page changes [dialogue.md](dialogue.md) (memory) and
 [villagers.md](villagers.md) (who knows the village) once the tasks are done; until then those
@@ -110,6 +110,29 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   or `opinion_warm` of `[prompt]` of `data/npc_talk.cfg`, in the last turn after the line that
   the player is a newcomer. `/clear` leaves it. The console's `opinion <villager> [points]` shows
   or sets it.
+- **As built (task 128, the judge):** `StoryJudge` (`GameState.judge`) and `StoryJudging`, a node
+  of Main that works through the queue. The queue is the stories with `is_judged` false (saved
+  with them), the one learned first first: each story is judged once, when it comes (a deed seen,
+  a rumour heard); deeds of one kind, place and day that merge into a story after it was judged
+  are not judged again. `StoryJudging` looks at the queue twice a second and asks the model
+  (`NpcDialogue.ask`) one story at a time: `NpcPrompt.judge_request`, the `[judge]` section of
+  `data/npc_talk.cfg` (a system line that asks for JSON, then the villager's sheet, full or cut down
+  as for a chat, and the story as the chat tells it, who told it included; temperature 0.2, at
+  most 150 tokens). `StoryJudge.parse_verdict` takes the first `{` to the last `}` of the reply
+  (a code fence or words around it do not matter) and wants `line` (text, cut to the reply's
+  sentences), `change` (a whole number, -2 to 2) and `personal` (true or false); anything else is
+  `fixed_verdict`: no line (the template is told), the deed's `change` of `data/gossip.cfg` and not
+  personal. Without a model the fixed verdicts come at once, so a game without a model works the
+  same, only plainer. `settle` marks the story judged, sets its `line`, makes a personal story
+  high weight (a high one stays high) and moves the opinion by the change times `step_points` (10;
+  one step of relationships.md is 10 friendship points), in full for a story seen and by
+  `heard_share` (0.5) for one heard, within the day's cap. The chat prompt tells a story with a
+  line as `voiced_` of `[story]` ("Today, in your own words: ..."), and a story that leaves the
+  buffer leaves "On day N: <line>" as its memory. The model is asked quietly (`ask(request,
+  true)`): when it fails, ModelNotices shows nothing, only the failures of the player's chat do.
+  Known limits: a story that is pushed out of the buffer before it was judged is never judged;
+  a voiced line keeps the count it was judged with (stories merging later change the count, not
+  the line).
 
 - **The deed log is also the base of an end-of-day screen** (later: "Today: 7 trees felled, a
   Kate built, 12 beds sown").
@@ -209,7 +232,7 @@ capped. One call at a time, like the memory summaries; the queue is saved.
 
 **Opinion** is the friendship points of [relationships](relationships.md) (one change step = 10
 points). Until that page is decided and built, the judge task adds just the points, saved, and
-the words for them in the prompt.
+the words for them in the prompt (built, see As built under Deeds).
 
 ## Bubbles
 

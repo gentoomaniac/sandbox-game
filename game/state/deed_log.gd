@@ -10,8 +10,9 @@ extends RefCounted
 ## GossipRules `keep_days`. Only the world is watched: a deed inside a house is not seen.
 ##
 ## Every witness also gets the deed as a story they saw in their gossip buffer (Npc `stories`,
-## merged the same way), which the chat prompt tells. It weighs high for a witness if the deed
-## was by their own house or that of someone on their sheet (family and friends), else medium.
+## merged the same way), which the chat prompt tells and the judge (StoryJudge) has to judge. It
+## weighs high for a witness if the deed was by their own house or that of someone on their sheet
+## (family and friends), else medium.
 
 ## The oldest entry first.
 var entries: Array[Dictionary] = []
@@ -119,6 +120,7 @@ func record(outcome: ActionOutcome) -> void:
 					"hops": 0,
 					"learned_at": _clock.total_minutes(),
 					"line": "",
+					"is_judged": false,
 					"weight": MemoryWeight.HIGH if is_personal else MemoryWeight.MEDIUM,
 					"personal": is_personal,
 				}

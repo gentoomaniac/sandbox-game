@@ -55,6 +55,8 @@ var livestock := Livestock.new(sun, cheats)
 var npcs := Npcs.new(sun)
 ## What the player did within sight of villagers.
 var deeds: DeedLog
+## What the villagers make of the stories they know (StoryJudging asks the language model).
+var judge: StoryJudge
 var energy_rules := EnergyRules.default_rules()
 ## What every use costs is multiplied by this (the Game setting: 0.5, 1 or 1.5).
 var energy_drain := 1.0
@@ -79,6 +81,7 @@ func _init(game_clock := GameClock.new()) -> void:
 	clock = game_clock
 	simulation = Simulation.new(clock)
 	deeds = DeedLog.new(npcs, clock)
+	judge = StoryJudge.new(npcs, clock)
 	action_done.connect(deeds.record)
 
 

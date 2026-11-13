@@ -187,6 +187,7 @@ func test_a_witness_is_told_the_deed_as_a_story() -> void:
 					"hops": 0,
 					"learned_at": 4 * GameClock.MINUTES_PER_DAY + 650,
 					"line": "",
+					"is_judged": false,
 					"weight": MemoryWeight.HIGH,
 					"personal": true,
 				}

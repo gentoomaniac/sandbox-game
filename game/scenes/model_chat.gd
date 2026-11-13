@@ -31,8 +31,12 @@ func _init() -> void:
 ## The text of the model's answer to `request` ({messages, temperature, max_tokens}, see
 ## NpcPrompt), asked of the endpoint and model of `language_model` (GameSettings), or "" if
 ## there is none: the endpoint can't be reached, answers with an error, or not within
-## `timeout_seconds`.
-func answer(language_model: Dictionary, request: Dictionary, timeout_seconds: float) -> String:
+## `timeout_seconds`. A quiet answer (`is_quiet`), one the player did not ask for in a chat (the
+## judge of the stories), fails without the `failed` signal: the player is told only of the trouble
+## that their talk meets.
+func answer(
+	language_model: Dictionary, request: Dictionary, timeout_seconds: float, is_quiet := false
+) -> String:
 	var url := _chat_url(language_model["endpoint"])
 	var body := JSON.stringify(_body(language_model, request))
 	var response := await _send(
@@ -40,7 +44,7 @@ func answer(language_model: Dictionary, request: Dictionary, timeout_seconds: fl
 	)
 	var endpoint: String = language_model["endpoint"]
 	if response.trouble != "":
-		failed.emit(endpoint, response.trouble, response.detail)
+		_fail(endpoint, response.trouble, response.detail, is_quiet)
 		return ""
 	# Not JSON.parse_string: broken JSON is the endpoint's fault, a warning, not an engine error.
 	var json := JSON.new()
@@ -51,13 +55,18 @@ func answer(language_model: Dictionary, request: Dictionary, timeout_seconds: fl
 		push_warning(
 			"Language model at %s: an answer without text: %s" % [url, response.text.left(200)]
 		)
-		failed.emit(endpoint, "gave an answer the game can't read", "")
+		_fail(endpoint, "gave an answer the game can't read", "", is_quiet)
 		return ""
 	if content.strip_edges() == "":
-		failed.emit(endpoint, "gave an empty answer", "")
+		_fail(endpoint, "gave an empty answer", "", is_quiet)
 		return ""
 	worked.emit(endpoint)
 	return content
+
+
+func _fail(endpoint: String, trouble: String, detail: String, is_quiet: bool) -> void:
+	if not is_quiet:
+		failed.emit(endpoint, trouble, detail)
 
 
 ## The most tokens an answer may take: the number set in Settings for the provider (a model that

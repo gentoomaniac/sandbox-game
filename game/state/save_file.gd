@@ -379,9 +379,12 @@ static func _upgrade_from_version_35(game: Dictionary) -> void:
 			story.erase("learned")
 
 
-## Version 36 had no opinion of the player (task 128): every villager starts at none.
+## Version 36 had no opinion of the player (task 128): every villager starts at none, and the
+## stories they know are judged (their opinion would be of days long gone).
 static func _upgrade_from_version_36(game: Dictionary) -> void:
 	for npc: Dictionary in game["npcs"]:
+		for story: Dictionary in npc["stories"]:
+			story["is_judged"] = true
 		npc["opinion"] = 0
 		npc["opinion_day"] = 0
 		npc["opinion_moved_today"] = 0

@@ -33,6 +33,7 @@ func test_it_lists_the_stories_and_memories_with_their_weights() -> void:
 				"place": "by Antje's house",
 				"how": GossipRules.SEEN,
 				"told_by": "",
+				"line": "",
 				"weight": MemoryWeight.HIGH,
 			}
 		)
@@ -49,6 +50,7 @@ func test_it_lists_the_stories_and_memories_with_their_weights() -> void:
 				"place": "here",
 				"how": GossipRules.HEARD,
 				"told_by": "Moiken Jessen",
+				"line": "",
 				"weight": MemoryWeight.LOW,
 			}
 		)

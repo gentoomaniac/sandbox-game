@@ -506,7 +506,8 @@ func _check_stories(npc: Dictionary, path: String) -> void:
 			_field(story, whole, Kind.WHOLE, story_path)
 		for text in ["origin", "told_by", "seen_by", "line"]:
 			_field(story, text, Kind.TEXT, story_path)
-		_field(story, "personal", Kind.BOOL, story_path)
+		for flag in ["personal", "is_judged"]:
+			_field(story, flag, Kind.BOOL, story_path)
 		var how: Variant = _field(story, "how", Kind.TEXT, story_path)
 		if how != null and not [GossipRules.SEEN, GossipRules.HEARD].has(StringName(how)):
 			_report(story_path, "unknown way %s" % how)

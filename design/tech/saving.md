@@ -62,7 +62,8 @@
   animal data, object state (every entry but a stump's `tree` and a station's `work` is a number),
   the map references (the current and home map must name the world or a building
   that has an inside), station work (a known, slow recipe), the villagers' fields, and the deed
-  log and the villagers' stories (a known deed kind, whole numbers, a place). Each
+  log and the villagers' stories (a known deed kind, whole numbers, a place, whether it is
+  judged: the stories not judged yet are the queue of the judge, so it is saved with them). Each
   problem has its place, "player inventory slot 4: count -7 is not between 1 and 99". Nothing is
   built from a save with a problem: `SaveFile.load_game` gives a `LoadResult` (no save, refused,
   ready) and the file is not touched; `SaveFile.read` and the game's start move a refused save

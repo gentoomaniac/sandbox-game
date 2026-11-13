@@ -88,6 +88,19 @@ func test_an_endpoint_that_cannot_be_reached_gives_no_answer() -> void:
 	assert_eq(await _chat.answer(language_model, {"messages": []}, PATIENCE_SECONDS), "")
 
 
+func test_a_failed_answer_is_reported_unless_it_is_quiet() -> void:
+	var language_model := {"endpoint": CLOSED_ENDPOINT, "model": "any", "api_key": ""}
+	var reports := []
+	_chat.failed.connect(
+		func(_endpoint: String, trouble: String, _detail: String) -> void: reports.append(trouble)
+	)
+
+	await _chat.answer(language_model, {"messages": []}, PATIENCE_SECONDS, true)
+	assert_eq(reports, [], "a quiet one says nothing")
+	await _chat.answer(language_model, {"messages": []}, PATIENCE_SECONDS)
+	assert_eq(reports.size(), 1)
+
+
 func test_an_endpoint_that_does_not_answer_in_time_gives_no_answer() -> void:
 	assert_gt(_port, 0, "a free port to listen on")
 	get_tree().paused = true

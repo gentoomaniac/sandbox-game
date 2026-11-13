@@ -62,10 +62,14 @@ func has_full_sheets() -> bool:
 	return _provider()["needs_key"]
 
 
-## The model's answer to `request` (see NpcPrompt), "" if it gives none.
-func ask(request: Dictionary) -> String:
+## The model's answer to `request` (see NpcPrompt), "" if it gives none. A quiet one does not tell
+## the player when it fails (see ModelChat `answer`).
+func ask(request: Dictionary, is_quiet := false) -> String:
 	return await _chat_of_provider().answer(
-		_settings.profiles.language_model(), request, rules.value("request", "timeout_seconds")
+		_settings.profiles.language_model(),
+		request,
+		rules.value("request", "timeout_seconds"),
+		is_quiet
 	)
 
 

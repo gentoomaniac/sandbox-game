@@ -29,7 +29,16 @@ const MAX_CHANGE := 2
 const REQUIRED_KEYS := {
 	"witnesses": ["radius_tiles", "night_radius_tiles"],
 	"log": ["keep_days"],
-	"opinion": ["min_points", "max_points", "daily_cap_points", "cold_below", "warm_from"],
+	"opinion":
+	[
+		"step_points",
+		"heard_share",
+		"min_points",
+		"max_points",
+		"daily_cap_points",
+		"cold_below",
+		"warm_from",
+	],
 	"places": ["house"],
 	"counts": ["words"],
 	"story":
@@ -41,7 +50,11 @@ const REQUIRED_KEYS := {
 		"heard_today",
 		"heard_yesterday",
 		"heard_earlier",
-		"heard_memory"
+		"heard_memory",
+		"voiced_today",
+		"voiced_yesterday",
+		"voiced_earlier",
+		"voiced_memory",
 	],
 }
 
@@ -114,6 +127,13 @@ func keep_days() -> int:
 	return int(_values["log"]["keep_days"])
 
 
+## The points that a change of `steps` steps (-2 to 2) of the opinion comes to for a story that
+## the villager saw or heard (`how`): in full if seen, else by the share of the data file.
+func opinion_points(steps: int, how: StringName) -> int:
+	var share := 1.0 if how == SEEN else float(_values["opinion"]["heard_share"])
+	return roundi(steps * float(_values["opinion"]["step_points"]) * share)
+
+
 ## The lowest and the highest opinion of the player a villager can have, in points.
 func opinion_min() -> int:
 	return int(_values["opinion"]["min_points"])
@@ -168,7 +188,8 @@ func ground_place(terrain: Tile.Terrain) -> String:
 
 ## What a villager is told of a story (a deed, see DeedLog) `days_ago` days after it: "Today you
 ## saw the newcomer fell 7 trees by Antje's house.", or, if they heard it, "Today Moiken told you
-## that the newcomer was seen to fell 7 trees by Antje's house."
+## that the newcomer was seen to fell 7 trees by Antje's house."; or, if the model has put it in
+## their words, "Today, in your own words: ...".
 func story_line(story: Dictionary, days_ago: int) -> String:
 	var key := "today" if days_ago <= 0 else "yesterday" if days_ago == 1 else "earlier"
 	return _told(story, key, days_ago)
@@ -184,7 +205,7 @@ func story_lines(stories: Array[Dictionary], today: int) -> Array[String]:
 
 ## The line a story leaves in long-term memory: "On day 4: you saw the newcomer fell 7 trees by
 ## Antje's house.", or "On day 4: Moiken told you that the newcomer was seen to fell 7 trees by
-## Antje's house." for a story heard.
+## Antje's house." for a story heard, or "On day 4: " and the story's own words.
 func memory_line(story: Dictionary) -> String:
 	return _told(story, "memory", 0)
 
@@ -192,13 +213,15 @@ func memory_line(story: Dictionary) -> String:
 ## The words of `key` in [story] (the `heard_` ones if the story was heard) with the story's
 ## fields.
 func _told(story: Dictionary, key: String, days_ago: int) -> String:
-	var words: String = _values["story"][("heard_" + key) if story["how"] == HEARD else key]
+	var kind := "voiced_" if story["line"] != "" else "heard_" if story["how"] == HEARD else ""
+	var words: String = _values["story"][kind + key]
 	return (
 		words
 		. format(
 			{
 				"days": days_ago,
 				"day": story["day"],
+				"line": story["line"],
 				"teller": str(story["told_by"]).get_slice(" ", 0),
 				"deed": deed_words(story["kind"], story["count"]),
 				"place": story["place"],

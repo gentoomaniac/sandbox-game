@@ -7,10 +7,15 @@ extends ModelChat
 var answers: Array[String] = ["Aye."]
 var seconds := 0.0
 var requests: Array[Dictionary] = []
+## Whether each request was asked quietly (see ModelChat `answer`).
+var quiet_flags: Array[bool] = []
 var language_models: Array[Dictionary] = []
 
 
-func answer(language_model: Dictionary, request: Dictionary, _timeout_seconds: float) -> String:
+func answer(
+	language_model: Dictionary, request: Dictionary, _timeout_seconds: float, is_quiet := false
+) -> String:
+	quiet_flags.append(is_quiet)
 	language_models.append(language_model.duplicate())
 	requests.append(request)
 	await get_tree().create_timer(seconds, true).timeout

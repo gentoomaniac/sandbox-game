@@ -19,6 +19,7 @@ func _deed(how: StringName) -> Dictionary:
 		"place": "by Antje's house",
 		"how": how,
 		"told_by": "Moiken Ketels" if how == GossipRules.HEARD else "",
+		"line": "",
 	}
 
 

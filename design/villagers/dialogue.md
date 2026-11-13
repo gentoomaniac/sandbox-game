@@ -86,7 +86,10 @@
   lightest is forgotten, between equal weights the oldest. Later prompts tell the memories and
   the kept lines.
   The prompt tells their knowledge (the sheets, in the system line), the long-term memories, the
-  stories of the gossip buffer and the chat, in that order (the chat as the earlier turns).
+  stories of the gossip buffer and the chat, in that order (the chat as the earlier turns). A story
+  is told by its template line, or, once the judge has had the model put it in the villager's own
+  words (task 128, in the background, one request at a time, its own temperature 0.2; see
+  [gossip.md](gossip.md), The judge), by that line.
   Typing `/clear` in the chat forgets everything but the villager's knowledge: the chat, the
   stories, the memories and the lines waiting for a memory, with a line saying so (not sent, not kept); other text with a "/" is said as it is.
 - **Settings:** the endpoint (default the test LLM's), the model (default

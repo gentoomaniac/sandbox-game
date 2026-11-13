@@ -143,3 +143,64 @@ func test_a_deed_of_an_unknown_kind_or_without_a_place_is_refused() -> void:
 	assert_true(problems.has("deeds 0: unknown deed stole"), str(problems))
 	assert_true(problems.has("npcs 0 stories 0: no place"), str(problems))
 	assert_true(problems.has("npcs 0 stories 0: unknown weight huge"), str(problems))
+
+
+func test_a_story_not_judged_yet_is_still_in_the_queue_after_loading() -> void:
+	var state := _state_with_a_deed_seen_by_antje()
+	var antje := state.npcs.all()[0]
+	var felled := state.judge.next_in_queue()
+	assert_false(felled["story"]["is_judged"])
+	state.judge.settle(antje, felled["story"], state.judge.fixed_verdict(felled["story"]))
+	state.report(ActionOutcome.TILL, Vector2i(3, 4), &"", {})
+	assert_true(SaveFile.write(state, SAVE_PATH))
+
+	var loaded := SaveFile.read(SAVE_PATH)
+
+	var queued := loaded.judge.next_in_queue()
+	assert_eq(queued["story"]["kind"], GossipRules.TILLED, "the felled trees were judged")
+	assert_false(queued["story"]["is_judged"])
+	assert_true(loaded.npcs.all()[0].stories[0]["is_judged"])
+	assert_eq(loaded.npcs.all()[0].opinion, antje.opinion)
+
+
+func test_a_version_36_save_loads_its_stories_judged() -> void:
+	var game := _current_game()
+	var saved: Dictionary = JSON.parse_string(
+		JSON.stringify(Npc.create(42, Vector2.ZERO, NpcRules.default_rules()).to_dict())
+	)
+	saved["stories"] = [
+		{
+			"day": 4,
+			"minute": 600,
+			"kind": "felled",
+			"count": 3,
+			"place": "by Antje's house",
+			"origin": "4|felled|by Antje's house",
+			"how": "seen",
+			"told_by": "",
+			"seen_by": saved["name"],
+			"hops": 0,
+			"learned_at": 3 * GameClock.MINUTES_PER_DAY + 600,
+			"line": "",
+			"weight": "medium",
+			"personal": false,
+		}
+	]
+	game["npcs"] = [saved]
+	_write_save(36, game)
+
+	var loaded := SaveFile.read(SAVE_PATH)
+
+	assert_true(loaded.npcs.all()[0].stories[0]["is_judged"])
+	assert_eq(loaded.judge.next_in_queue(), {}, "nothing to judge")
+
+
+func test_a_story_without_the_mark_that_it_is_judged_is_refused() -> void:
+	var game: Dictionary = JSON.parse_string(
+		JSON.stringify(_state_with_a_deed_seen_by_antje().to_dict())
+	)
+	game["npcs"][0]["stories"][0].erase("is_judged")
+
+	var problems: Array = _refusal_of(game).problems
+
+	assert_eq(problems, ["npcs 0 stories 0: no is_judged"])

@@ -53,6 +53,7 @@ func _story(day: int, weight: int, age := TWO_HOURS, hops := 0, place := "here")
 		"hops": hops,
 		"learned_at": _state.clock.total_minutes() - age,
 		"line": "",
+		"is_judged": true,
 		"weight": weight,
 		"personal": false,
 	}
@@ -81,6 +82,7 @@ func test_a_story_known_for_two_hours_is_heard_by_a_villager_close_by() -> void:
 	assert_eq(heard["hops"], 1)
 	assert_eq(heard["learned_at"], _state.clock.total_minutes())
 	assert_eq(heard["weight"], MemoryWeight.LOW)
+	assert_false(heard["is_judged"], "the hearer has still to judge it")
 	assert_eq([heard["day"], heard["kind"], heard["count"]], [3, GossipRules.FELLED, 7])
 	assert_eq(teller.stories.size(), 1, "the teller keeps theirs")
 

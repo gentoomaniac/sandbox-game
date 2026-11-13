@@ -119,6 +119,25 @@ static func sheet_text(npc: Npc, full_sheets: bool, rules: NpcTalkRules) -> Stri
 	return "\n".join(Array(sheet_lines).filter(func(line: String) -> bool: return line != ""))
 
 
+## The request that has a villager judge a `story` (see StoryJudge) that is `days_ago` days old:
+## {messages, temperature, max_tokens}. The story is told as the chat tells it, by its template.
+static func judge_request(
+	npc: Npc, story: Dictionary, days_ago: int, rules: NpcTalkRules, full_sheets: bool
+) -> Dictionary:
+	var words := _words_of(npc, rules)
+	words["sheet"] = sheet_text(npc, full_sheets, rules)
+	words["story"] = GossipRules.default_rules().story_line(story, days_ago)
+	return {
+		"messages":
+		[
+			_message("system", rules.value("judge", "system")),
+			_message("user", rules.value("judge", "story").format(words)),
+		],
+		"temperature": float(rules.value("judge", "temperature")),
+		"max_tokens": int(rules.value("judge", "max_tokens")),
+	}
+
+
 ## The line of the villager's family and friends (Npc `people`) by the names, kinds and ages of
 ## their sheets, with what the villager thinks of each if `full_sheets`: "Family and friends:
 ## Hinrich Boysen, husband, 42: Steady ...". Those no longer in data/villagers.cfg are left out,

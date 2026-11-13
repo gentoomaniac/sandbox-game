@@ -97,6 +97,13 @@ const KEYS := {
 		"open": TYPE_STRING,
 	},
 	"scripted": {"thinking_seconds": TYPE_FLOAT, "replies": TYPE_ARRAY},
+	"judge":
+	{
+		"system": TYPE_STRING,
+		"story": TYPE_STRING,
+		"temperature": TYPE_FLOAT,
+		"max_tokens": TYPE_INT,
+	},
 	"memory":
 	{
 		"system": TYPE_STRING,

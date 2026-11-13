@@ -375,9 +375,18 @@ fencing); `[whispers]` and `[whisper_kinds]` of the same file hold the steps and
 
 Each villager has an opinion of you, in points from -100 to 1000 (it starts at 0 and moves at most
 20 points a day, up or down). The chat prompt tells it in words, never in numbers: cold (below -20),
-neutral, or warm (from 20), and the villager answers accordingly. The console's `opinion` shows and
-sets it; the limits are in `[opinion]` of [data/gossip.cfg](data/gossip.cfg), the words in
-`[prompt]` of [data/npc_talk.cfg](data/npc_talk.cfg).
+neutral, or warm (from 20), and the villager answers accordingly. What moves it is what they make
+of the stories they come to know, seen or heard (the judge): each deed has a fixed change in
+[data/gossip.cfg](data/gossip.cfg) (felling a tree -1, building a house +1, taking one down -2; a
+step is 10 points), in full for what the villager saw and by half for what they only heard. With a
+language model set, the model is asked in the background, one story at a time, with a low temperature
+of its own (`[judge]` of [data/npc_talk.cfg](data/npc_talk.cfg)), and answers in JSON: the story in
+the villager's own words ("Moiken told me you felled half the Boysen wood", which the chat prompt
+then tells in place of the plain line), what they make of it from -2 to 2, and whether it touches
+them personally (the story then weighs high and is kept longer). An answer that is missing, does not
+parse or is out of range counts as no model: the plain line, the deed's fixed change, not personal;
+without a model all stories are judged that way at once. The console's `opinion` shows and sets the
+opinion; the limits are in `[opinion]` of the same file.
 
 They all live in Wehlsbüll, a made-up marsh parish two hours north of Husum in 1750, which
 [data/village.cfg](data/village.cfg) describes as everyone there knows it: the church, the Krug,

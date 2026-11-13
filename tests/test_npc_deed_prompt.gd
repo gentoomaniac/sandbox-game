@@ -25,6 +25,7 @@ func _story(how: StringName, place: String) -> Dictionary:
 		"place": place,
 		"how": how,
 		"told_by": "Moiken Jessen" if how == GossipRules.HEARD else "",
+		"line": "",
 	}
 
 
@@ -53,6 +54,20 @@ func test_a_villager_is_told_who_told_them_of_a_deed_they_heard() -> void:
 		"Today Moiken told you that the newcomer was seen to fell 7 trees by Antje's house.",
 	)
 	assert_false(_last_turn().contains("you saw"))
+
+
+func test_a_story_the_model_has_worded_is_told_by_its_line_and_no_more_by_the_template() -> void:
+	_moment.clock.day = 3
+	var story := _story(GossipRules.HEARD, "by Antje's house")
+	story["line"] = "Moiken told me the newcomer felled half the Boysen wood."
+	_antje.stories.append(story)
+
+	var last := _last_turn()
+
+	assert_string_contains(
+		last, 'Today, in your own words: "Moiken told me the newcomer felled half the Boysen wood."'
+	)
+	assert_false(last.contains("fell 7 trees"))
 
 
 func test_the_prompt_tells_knowledge_then_memories_then_stories_then_the_chat() -> void:

@@ -72,7 +72,8 @@ var remembered_lines := 0
 ## knows one version of a story), `told_by` (a name, or "" if seen), `seen_by` (who saw it first),
 ## `hops` from that one, `learned_at` (the game minute they came to know it, see GameClock
 ## `total_minutes`), `line` (the model's wording, "" until it is back: the template line is told
-## then), `weight` (a MemoryWeight) and `personal` (whether it touches them).
+## then), `is_judged` (whether StoryJudge has settled its line, its change of their opinion and
+## whether it is personal), `weight` (a MemoryWeight) and `personal` (whether it touches them).
 var stories: Array[Dictionary] = []
 ## What they think of the player, in points (see GossipRules `opinion_word`). It stays when the
 ## stories and memories behind it fade, so `forget_all_but_knowledge` leaves it.

@@ -68,6 +68,7 @@ func _tell(teller: Npc, hearer: Npc, villagers: Array[Npc], now: int) -> void:
 		"hops": story["hops"] + 1,
 		"learned_at": now,
 		"line": "",
+		"is_judged": false,
 		"weight": MemoryWeight.LOW,
 		"personal": false,
 	}
