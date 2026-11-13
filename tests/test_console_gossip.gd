@@ -60,8 +60,8 @@ func test_it_lists_the_stories_and_memories_with_their_weights() -> void:
 			"Antje Boysen keeps 2 of 10 stories and 1 of 20 memories",
 			"Story, high, seen: On day 4: you saw the newcomer fell 7 trees by Antje's house.",
 			(
-				"Story, low, heard from Moiken Jessen: On day 5: you saw the newcomer"
-				+ " till a patch of ground here."
+				"Story, low, heard from Moiken Jessen: On day 5: Moiken told you that the newcomer"
+				+ " was seen to till a patch of ground here."
 			),
 			"Memory, medium, day 1: On the 1st day: a talk.",
 		]

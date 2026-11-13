@@ -10,6 +10,18 @@ func _rules_with(section: String, key: String, value: Variant) -> GossipRules:
 	return GossipRules.new(values)
 
 
+## A story of 7 trees felled by Antje's house, told to the villager by Moiken Ketels if heard.
+func _deed(how: StringName) -> Dictionary:
+	return {
+		"day": 1,
+		"kind": GossipRules.FELLED,
+		"count": 7,
+		"place": "by Antje's house",
+		"how": how,
+		"told_by": "Moiken Ketels" if how == GossipRules.HEARD else "",
+	}
+
+
 func test_the_data_file_has_no_problems() -> void:
 	assert_eq(_rules.problems(), [])
 
@@ -34,7 +46,7 @@ func test_the_house_and_the_ground_make_the_place() -> void:
 
 
 func test_a_story_names_the_day_it_was_seen() -> void:
-	var deed := {"kind": GossipRules.FELLED, "count": 7, "place": "by Antje's house"}
+	var deed := _deed(GossipRules.SEEN)
 	assert_eq(
 		_rules.story_line(deed, 0), "Today you saw the newcomer fell 7 trees by Antje's house."
 	)
@@ -65,7 +77,9 @@ func test_a_change_beyond_two_is_a_problem() -> void:
 func test_a_villager_is_told_every_story_they_keep_oldest_first() -> void:
 	var stories: Array[Dictionary] = []
 	for day in range(1, 8):
-		stories.append({"day": day, "kind": GossipRules.TILLED, "count": 1, "place": "here"})
+		var story := _deed(GossipRules.SEEN)
+		story.merge({"day": day, "kind": GossipRules.TILLED, "count": 1, "place": "here"}, true)
+		stories.append(story)
 
 	var lines := _rules.story_lines(stories, 7)
 
@@ -75,7 +89,23 @@ func test_a_villager_is_told_every_story_they_keep_oldest_first() -> void:
 
 
 func test_a_story_leaves_a_dated_line_for_long_term_memory() -> void:
-	var story := {"day": 4, "kind": GossipRules.FELLED, "count": 7, "place": "by Antje's house"}
+	var story := _deed(GossipRules.SEEN)
+	story["day"] = 4
 	assert_eq(
 		_rules.memory_line(story), "On day 4: you saw the newcomer fell 7 trees by Antje's house."
+	)
+
+
+func test_a_story_heard_names_the_teller_by_first_name() -> void:
+	var story := _deed(GossipRules.HEARD)
+	assert_eq(
+		_rules.story_line(story, 0),
+		"Today Moiken told you that the newcomer was seen to fell 7 trees by Antje's house.",
+	)
+	assert_string_starts_with(_rules.story_line(story, 1), "Yesterday Moiken told you")
+	assert_string_starts_with(_rules.story_line(story, 3), "3 days ago Moiken told you")
+	story["day"] = 4
+	assert_eq(
+		_rules.memory_line(story),
+		"On day 4: Moiken told you that the newcomer was seen to fell 7 trees by Antje's house.",
 	)

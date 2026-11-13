@@ -2,7 +2,7 @@ class_name GossipRules
 extends RefCounted
 ## The words and numbers of the deed log, read from data/gossip.cfg (see there for what each key
 ## means): how far a villager sees, how long a deed is kept, the words of a deed, of a place and of
-## the story a witness is told. Whether a story was seen or heard has its words here too.
+## the story a villager is told, which names the teller if it was heard.
 
 const DEFAULT_PATH := "res://data/gossip.cfg"
 
@@ -29,7 +29,17 @@ const REQUIRED_KEYS := {
 	"witnesses": ["radius_tiles", "night_radius_tiles"],
 	"log": ["keep_days"],
 	"places": ["house"],
-	"story": ["today", "yesterday", "earlier", "memory"],
+	"story":
+	[
+		"today",
+		"yesterday",
+		"earlier",
+		"memory",
+		"heard_today",
+		"heard_yesterday",
+		"heard_earlier",
+		"heard_memory"
+	],
 }
 
 static var _default: GossipRules
@@ -118,20 +128,12 @@ func ground_place(terrain: Tile.Terrain) -> String:
 	return _values["places"][Tile.Terrain.keys()[terrain].to_lower()]
 
 
-## What a witness is told of a deed (see DeedLog) `days_ago` days after it: "Today you saw the
-## newcomer fell 7 trees by Antje's house."
-func story_line(deed: Dictionary, days_ago: int) -> String:
+## What a villager is told of a story (a deed, see DeedLog) `days_ago` days after it: "Today you
+## saw the newcomer fell 7 trees by Antje's house.", or, if they heard it, "Today Moiken told you
+## that the newcomer was seen to fell 7 trees by Antje's house."
+func story_line(story: Dictionary, days_ago: int) -> String:
 	var key := "today" if days_ago <= 0 else "yesterday" if days_ago == 1 else "earlier"
-	return (
-		str(_values["story"][key])
-		. format(
-			{
-				"days": days_ago,
-				"deed": deed_words(deed["kind"], deed["count"]),
-				"place": deed["place"],
-			}
-		)
-	)
+	return _told(story, key, days_ago)
 
 
 ## The lines of the stories (Npc `stories`, oldest first) that a villager is told on day `today`.
@@ -143,13 +145,23 @@ func story_lines(stories: Array[Dictionary], today: int) -> Array[String]:
 
 
 ## The line a story leaves in long-term memory: "On day 4: you saw the newcomer fell 7 trees by
-## Antje's house."
+## Antje's house.", or "On day 4: Moiken told you that the newcomer was seen to fell 7 trees by
+## Antje's house." for a story heard.
 func memory_line(story: Dictionary) -> String:
+	return _told(story, "memory", 0)
+
+
+## The words of `key` in [story] (the `heard_` ones if the story was heard) with the story's
+## fields.
+func _told(story: Dictionary, key: String, days_ago: int) -> String:
+	var words: String = _values["story"][("heard_" + key) if story["how"] == HEARD else key]
 	return (
-		str(_values["story"]["memory"])
+		words
 		. format(
 			{
+				"days": days_ago,
 				"day": story["day"],
+				"teller": str(story["told_by"]).get_slice(" ", 0),
 				"deed": deed_words(story["kind"], story["count"]),
 				"place": story["place"],
 			}

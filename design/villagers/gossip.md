@@ -78,7 +78,10 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   10, the setting "Stories a villager keeps", 1 to 100, one for each language model profile; Main
   gives it to the deed log, and lowering it applies once the menu is closed). The story that
   leaves is forgotten if low, else its line `On day N: you saw the newcomer ...` (`memory` of
-  `[story]`) is a long-term memory of its day and weight. Spreading (task 127) is not built.
+  `[story]`) is a long-term memory of its day and weight. A story heard is told with
+  the teller, by the `heard_` lines of `[story]`: "Today Moiken told you that the newcomer was seen
+  to fell 7 trees by Antje's house." (the same in the memory line). Spreading (task 127) is
+  built in the following commits.
 - **The deed log is also the base of an end-of-day screen** (later: "Today: 7 trees felled, a
   Kate built, 12 beds sown").
 
