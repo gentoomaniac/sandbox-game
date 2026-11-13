@@ -73,6 +73,16 @@ func ask(request: Dictionary, is_quiet := false) -> String:
 	)
 
 
+## The `request` with the temperature set in Settings for the provider, as the chat has it, if
+## there is one.
+func request_at_chat_temperature(request: Dictionary) -> Dictionary:
+	var warmed := request.duplicate()
+	warmed["temperature"] = ModelChat.temperature_of(
+		_settings.profiles.active, request["temperature"]
+	)
+	return warmed
+
+
 ## Adds the player's `line` to the chat of the villager and waits for the answer, which is added
 ## when it comes, also when the player has left meanwhile: it is there when they come back. If the
 ## villager has no answer (see `reply`) the player's line stays, and the player may write again.
@@ -102,10 +112,7 @@ func reply(npc: Npc, history: Array[Dictionary], message: String, state: GameSta
 			npc, history, message, moment, rules, has_full_sheets()
 		)
 		# Only the reply takes the setting; the summary of compact() keeps its own temperature.
-		request["temperature"] = ModelChat.temperature_of(
-			_settings.profiles.active, request["temperature"]
-		)
-		var answer := await ask(request)
+		var answer := await ask(request_at_chat_temperature(request))
 		var language := NpcLanguage.name_of(message, history, rules)
 		var label := NpcPrompt.last_reply_label(npc, message, language, rules)
 		answer = NpcPrompt.trimmed_reply(

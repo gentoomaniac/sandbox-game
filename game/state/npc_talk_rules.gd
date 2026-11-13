@@ -105,6 +105,12 @@ const KEYS := {
 		"max_length": TYPE_INT,
 		"near_tiles": TYPE_FLOAT,
 		"chance_about_player": TYPE_FLOAT,
+		"stories_told": TYPE_INT,
+		"max_tokens": TYPE_INT,
+		"system": TYPE_STRING,
+		"about_moment": TYPE_STRING,
+		"about_player": TYPE_STRING,
+		"label": TYPE_STRING,
 	},
 	"bubble_lines":
 	{"weather": TYPE_DICTIONARY, "part_of_day": TYPE_DICTIONARY, "near_player": TYPE_DICTIONARY},

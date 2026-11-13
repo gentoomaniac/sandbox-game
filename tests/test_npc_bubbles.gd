@@ -144,3 +144,74 @@ func test_the_line_about_the_player_follows_what_the_villager_thinks_of_them() -
 		_antje.opinion = opinion_and_word[0]
 		var line := _bubbles.scripted_line(_antje, _moment(0.3), NpcBubbles.Subject.PLAYER)
 		assert_has(lines[opinion_and_word[1]], line)
+
+
+func _asked(subject: NpcBubbles.Subject, full_sheets := false) -> String:
+	var request := _bubbles.request(_antje, _moment(0.3), subject, full_sheets)
+	return request["messages"][1]["content"]
+
+
+func test_the_request_tells_the_sheet_the_moment_and_what_to_say_about_it() -> void:
+	var request := _bubbles.request(_antje, _moment(0.3), NpcBubbles.Subject.MOMENT, false)
+	assert_eq(request["messages"][0]["role"], "system")
+	assert_eq(request["messages"][0]["content"], _rules.value("bubble", "system"))
+	var asked := _asked(NpcBubbles.Subject.MOMENT)
+	assert_string_contains(asked, NpcPrompt.sheet_text(_antje, false, _rules))
+	assert_string_contains(asked, "light rain")
+	assert_string_contains(asked, "in the morning")
+	assert_string_contains(asked, "something about the weather")
+	assert_true(asked.ends_with("Antje's remark:"), asked)
+	assert_false(asked.contains("newcomer"))
+	assert_eq(request["max_tokens"], _rules.value("bubble", "max_tokens"))
+	assert_eq(request["temperature"], _rules.value("request", "temperature"))
+
+
+func test_a_hosted_model_is_told_the_full_sheet() -> void:
+	assert_string_contains(_asked(NpcBubbles.Subject.MOMENT, true), "Secrets, at most hinted at")
+	assert_false(_asked(NpcBubbles.Subject.MOMENT).contains("Secrets, at most hinted at"))
+
+
+func _story(day: int, place: String) -> Dictionary:
+	return {
+		"day": day,
+		"minute": 600,
+		"kind": GossipRules.FELLED,
+		"count": 7,
+		"place": place,
+		"origin": "%d|felled|%s" % [day, place],
+		"how": GossipRules.SEEN,
+		"told_by": "",
+		"seen_by": "Antje Boysen",
+		"hops": 0,
+		"learned_at": 0,
+		"line": "",
+		"is_judged": true,
+		"weight": MemoryWeight.MEDIUM,
+		"personal": false,
+	}
+
+
+func test_a_request_about_the_player_tells_the_opinion_and_the_newest_stories() -> void:
+	_antje.opinion = 50
+	for place in ["by the old ash", "by the mill", "by the dyke"]:
+		_antje.stories.append(_story(12, place))
+	var asked := _asked(NpcBubbles.Subject.PLAYER)
+	assert_string_contains(asked, "does not know their name")
+	assert_string_contains(asked, "thinks well of this neighbour")
+	assert_string_contains(asked, "something about them")
+	assert_false(asked.contains("by the old ash"))
+	assert_string_contains(asked, "by the mill")
+	assert_string_contains(asked, "by the dyke")
+	assert_lt(asked.find("by the dyke"), asked.find("Antje's remark:"))
+
+
+func test_the_line_of_an_answer_is_its_first_sentence_without_quotes_or_label() -> void:
+	assert_eq(_bubbles.line_from_answer('"Rain again, aye."', _antje), "Rain again, aye.")
+	assert_eq(_bubbles.line_from_answer("Antje's remark: Cold. Very cold.", _antje), "Cold.")
+	assert_eq(_bubbles.line_from_answer("", _antje), "")
+
+
+func test_an_answer_of_more_than_the_longest_line_is_dropped() -> void:
+	var longest: int = _rules.value("bubble", "max_length")
+	assert_ne(_bubbles.line_from_answer("x".repeat(longest), _antje), "")
+	assert_eq(_bubbles.line_from_answer("x".repeat(longest + 1), _antje), "")

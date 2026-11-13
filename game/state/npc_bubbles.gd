@@ -80,6 +80,48 @@ func scripted_line(npc: Npc, moment: NpcMoment, subject: Subject) -> String:
 	return list[rng.randi_range(0, list.size() - 1)]
 
 
+## The request for the villager's line from a language model: {messages, temperature,
+## max_tokens}. The villager's sheet (in full if `full_sheets`, else cut down), the moment, and
+## for a line about the player what the villager thinks of them and their newest stories.
+func request(npc: Npc, moment: NpcMoment, subject: Subject, full_sheets: bool) -> Dictionary:
+	var words := NpcPrompt.moment_words(moment, rules)
+	words["first_name"] = npc.name.get_slice(" ", 0)
+	var turn: Array[String] = [
+		NpcPrompt.sheet_text(npc, full_sheets, rules),
+		"",
+		rules.value("prompt", "moment").format(words),
+	]
+	if subject == Subject.PLAYER:
+		turn.append(rules.value("prompt", "neighbour").format(words))
+		var opinion := GossipRules.default_rules().opinion_word(npc.opinion)
+		turn.append(rules.value("prompt", "opinion_" + opinion).format(words))
+		var newest := npc.stories.slice(-int(rules.value("bubble", "stories_told")))
+		turn.append_array(GossipRules.default_rules().story_lines(newest, moment.clock.day))
+		turn.append(rules.value("bubble", "about_player").format(words))
+	else:
+		turn.append(rules.value("bubble", "about_moment").format(words))
+	turn.append(rules.value("bubble", "label").format(words))
+	return {
+		"messages":
+		[
+			{"role": "system", "content": rules.value("bubble", "system")},
+			{"role": "user", "content": "\n".join(turn)},
+		],
+		"temperature": float(rules.value("request", "temperature")),
+		"max_tokens": int(rules.value("bubble", "max_tokens")),
+	}
+
+
+## The line in the model's `answer` as the villager says it in a bubble: one sentence without
+## quotes, "" if the model gave none or one of more than [bubble] max_length characters.
+func line_from_answer(answer: String, npc: Npc) -> String:
+	var label: String = rules.value("bubble", "label").format(
+		{"first_name": npc.name.get_slice(" ", 0)}
+	)
+	var line := NpcPrompt.trimmed_reply(answer, npc, 1, label)
+	return line if line.length() <= int(rules.value("bubble", "max_length")) else ""
+
+
 ## The lines for what falls or hangs in the air (the first of [weather] conditions that is there),
 ## none if the sky is only sky.
 func _weather_lines(sample: WeatherSample) -> Array:

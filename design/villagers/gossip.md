@@ -272,6 +272,14 @@ Short lines over a villager's head, now and then:
   by the opinion word (cold, neutral, warm), for the moment by the weather if something falls or
   hangs in the air (thunder, storm, snow, rain, fog), else by the part of the day. A line of more
   than `max_length` (60) characters is dropped; the data file is checked for it.
+- **As built (task 130, the request):** with a model, `NpcBubbles.request` asks for the line: a
+  system line of its own (`[bubble]`: one short sentence in English, at most ten words) and one
+  user turn with the villager's sheet (full for a hosted model, cut down for a local one, as for
+  a chat), the moment as the chat tells it, for a line about the player also the neighbour line,
+  the opinion in words and the `stories_told` (2) newest stories, then what to say and the label
+  "Antje's remark:". Its temperature is the chat's (the Settings number, else `temperature` of
+  `[request]`: `NpcDialogue.request_at_chat_temperature`), at most 40 tokens. The answer is cut to
+  its first sentence without quotes or label; one over `max_length` is dropped.
 
 ## Settings
 
