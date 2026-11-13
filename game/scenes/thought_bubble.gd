@@ -25,9 +25,9 @@ static func drop_at(age: float) -> int:
 	return POP_DROP - int(POP_DROP * clampf(age / POP_SECONDS, 0.0, 1.0))
 
 
-## How opaque the bubble is this long after it appeared: 0 once it is gone.
-static func alpha_at(age: float) -> float:
-	return clampf((LIFE_SECONDS - age) / FADE_SECONDS, 0.0, 1.0)
+## How opaque a bubble that stays `life_seconds` is this long after it appeared: 0 once it is gone.
+static func alpha_at(age: float, life_seconds := LIFE_SECONDS) -> float:
+	return clampf((life_seconds - age) / FADE_SECONDS, 0.0, 1.0)
 
 
 ## Shows the bubble with this picture from its start, in place of one that is showing.

@@ -102,6 +102,7 @@ func test_the_bubble_pops_up_in_whole_pixels_and_fades_at_the_end() -> void:
 	assert_eq(ThoughtBubble.alpha_at(1.0), 1.0)
 	assert_between(ThoughtBubble.alpha_at(1.8), 0.1, 0.9)
 	assert_eq(ThoughtBubble.alpha_at(ThoughtBubble.LIFE_SECONDS), 0.0)
+	assert_eq(ThoughtBubble.alpha_at(ThoughtBubble.LIFE_SECONDS, 5.0), 1.0)
 
 
 func test_every_bubble_picture_is_there() -> void:
