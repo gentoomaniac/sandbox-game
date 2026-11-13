@@ -101,3 +101,32 @@ func test_crows_are_drawn_to_fresh_sowing_and_less_to_the_rest_of_the_land() -> 
 		sown += int(_wildlife._is_drawn_to(WildlifeRules.CROWS, point))
 	assert_eq(sown, 300)
 	assert_true(_wildlife._is_drawn_to(WildlifeRules.GEESE, point))
+
+
+func test_crows_do_not_settle_where_a_scarecrow_guards() -> void:
+	var point := Vector2(80.0, 160.0)
+	var tile := Vector2i((point / TerrainTileset.TILE_SIZE).floor())
+	_put_scarecrow(tile + Vector2i(2, 0), _state.clock.day)
+	for _i in 100:
+		assert_false(_wildlife._is_drawn_to(WildlifeRules.CROWS, point))
+	assert_true(_wildlife._is_drawn_to(WildlifeRules.GEESE, point))
+
+
+func test_crows_get_used_to_a_scarecrow_and_settle_near_it_again() -> void:
+	var point := Vector2(80.0, 160.0)
+	var tile := Vector2i((point / TerrainTileset.TILE_SIZE).floor())
+	_state.clock.day = 100
+	_put_scarecrow(tile, 1)
+	var settled := 0
+	for _i in 300:
+		settled += int(_wildlife._is_drawn_to(WildlifeRules.CROWS, point))
+	# A third of the spots, as without it, but only where the floor of 0.25 lets them (about 75).
+	assert_between(settled, 30, 120)
+
+
+func _put_scarecrow(tile: Vector2i, placed_day: int) -> void:
+	_state.world.remove_object(tile)
+	var scarecrow := WorldObject.new(WorldObjectTypes.SCARECROW, tile)
+	scarecrow.state["placed_day"] = placed_day
+	_state.world.add_object(scarecrow)
+	_state.world.change_object(scarecrow)

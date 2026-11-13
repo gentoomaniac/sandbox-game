@@ -53,6 +53,8 @@ var ground := Node2D.new()
 var is_player_ignored := false
 ## The crows' raids on the crops, to which the flocks of crows tell where they stand.
 var crop_raids: CropRaids
+## What the scarecrows guard: no crow flock settles there.
+var scarecrows: Scarecrows
 ## Where the villagers' feet are, in pixels, as of the last tick or frame: no spatial lookup of
 ## them exists, and they are few, so the animals scan this short list.
 var villager_feet := PackedVector2Array()
@@ -80,6 +82,7 @@ func _init() -> void:
 func show_wildlife(state: GameState, view: WorldView, camera: CameraController) -> void:
 	_state = state
 	crop_raids = state.crop_raids
+	scarecrows = state.scarecrows
 	world_view = view
 	_camera = camera
 	rules = WildlifeRules.for_session(state.sun)
@@ -388,13 +391,15 @@ func _spawn_somewhere(kind: StringName, flowers: Array[Vector2i], is_instant := 
 
 
 ## Whether a kind is drawn to a point: the crows to fresh sowing, as much as `appearing_boost` says
-## of its most (see CropRaids), the others anywhere.
+## of its most (see CropRaids), but not where a scarecrow guards, as much as it does (see
+## Scarecrows); the others anywhere.
 func _is_drawn_to(kind: StringName, point: Vector2) -> bool:
 	if kind != WildlifeRules.CROWS:
 		return true
-	return (
-		rng.randf() * crop_raids.max_appearing_boost() < crop_raids.appearing_boost(_tile_at(point))
-	)
+	var tile := _tile_at(point)
+	if rng.randf() < scarecrows.strength_at(tile):
+		return false
+	return rng.randf() * crop_raids.max_appearing_boost() < crop_raids.appearing_boost(tile)
 
 
 ## Whether a kind can live at a point: its terrain, trees and water, ground to stand on if it

@@ -27,4 +27,8 @@ radius"). This page is task 226.
   day, so a tile is either guarded for the whole day or for none of it. That is
   `Scarecrows.is_guarding`, which `GameState` sets as `CropRaids.is_guarded`: a guarded crop is
   not tried by a raid.
+- **Crow flocks stay away**: the spawner does not settle a flock of crows on a spot guarded by a
+  scarecrow with the chance of the strength there (`WildlifeView._is_drawn_to`), so a field with a
+  fresh scarecrow draws no flock at all, and one the crows know draws them nearly as before. A
+  flock already there is not driven off; it just finds the crops guarded.
 - **Art:** the row `scarecrow` of the object atlas and the item icon, in both art sets.

@@ -25,6 +25,7 @@ func before_each() -> void:
 	_wildlife.is_player_ignored = true
 	_wildlife._state = _state
 	_wildlife.crop_raids = _state.crop_raids
+	_wildlife.scarecrows = _state.scarecrows
 	_wildlife.world_view = WorldView.new()
 	add_child_autofree(_wildlife.world_view)
 	_wildlife.world_view.show_world(ChunkResidency.new(_state.world))

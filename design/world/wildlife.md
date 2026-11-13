@@ -28,7 +28,8 @@ atmosphere only: no player impact, not hunted, not saved.
     walking within 36 px of its middle; when the player comes near they all fly off in a loose
     bunch, no V. While it stands on the ground it tells `CropRaids` its tile (and the raids stop
     when it takes off); the spawner prefers spots near fresh sowing (`appearing_boost`: a spot is
-    taken with the chance of its boost over the most it can be). What they do to the crops is under the crops in [crops.md](../farming/crops.md);
+    taken with the chance of its boost over the most it can be, and not where a scarecrow guards,
+    with the chance of its strength: [scarecrow.md](../farming/scarecrow.md)). What they do to the crops is under the crops in [crops.md](../farming/crops.md);
   - rabbits: grassland and forest edges, hop about, flee in zigzags from the player;
   - squirrels: forests, dart between trees, sit up, scurry off;
   - deer: rare, in forests and at forest edges, mostly at dawn and dusk; graze, look up,
