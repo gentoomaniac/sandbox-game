@@ -10,6 +10,9 @@ extends RefCounted
 ## A ripe crop waits for the harvest only for the days it took to ripen (`days_growing`,
 ## counted since planting or since it regrew) times its `ripe_wait_factor`; one day more
 ## (`days_ripe`) and it withers: it dies, and gives nothing.
+##
+## Crows (see CropRaids) take `eaten`, a number of produce items, off what it will give; one item
+## always stays, so they never take a crop whole.
 
 ## Growth and damage are sums of fractions, so a crop that gathered exactly a stage's worth, or
 ## took exactly a death's worth of damage, may be a hair short of it.
@@ -42,6 +45,21 @@ static func days_ripe(crop: WorldObject) -> int:
 	return int(crop.state.get("days_ripe", 0))
 
 
+## How many produce items the crows have eaten off a crop.
+static func eaten(crop: WorldObject) -> int:
+	return int(crop.state.get("eaten", 0))
+
+
+## Whether the crop still gives more than the one item that always stays after the crows.
+static func has_yield_to_eat(crop: WorldObject) -> bool:
+	return int(crop.type_data()["yield"]) - eaten(crop) > 1
+
+
+## The crows eat `count` produce items off a crop (see `has_yield_to_eat`).
+static func eat(crop: WorldObject, count: int) -> void:
+	crop.state["eaten"] = eaten(crop) + count
+
+
 static func is_dead(crop: WorldObject) -> bool:
 	return damage(crop) >= 1.0 - GROWTH_EPSILON
 
@@ -57,7 +75,7 @@ static func look(crop: WorldObject) -> int:
 
 
 ## What harvesting a crop gives, item id to count: the crop's usual amount, one more or one less
-## now and then (never below 1), and now and then one seed back.
+## now and then, less what the crows ate (never below 1), and now and then one seed back.
 static func harvest_of(crop: WorldObject, rng: RandomNumberGenerator) -> Dictionary:
 	var crop_type := crop.type_data()
 	var count: int = crop_type["yield"]
@@ -66,6 +84,7 @@ static func harvest_of(crop: WorldObject, rng: RandomNumberGenerator) -> Diction
 		count += 1
 	elif roll < crop_type["good_harvest_chance"] + crop_type["poor_harvest_chance"]:
 		count = maxi(count - 1, 1)
+	count = maxi(count - eaten(crop), 1)
 	var harvest := {crop_type["produce"]: count}
 	if rng.randf() < crop_type["seed_chance"]:
 		harvest[crop_type["seed"]] = 1
@@ -84,6 +103,7 @@ static func regrow(crop: WorldObject) -> void:
 	crop.state["days_growing"] = 0
 	crop.state.erase("ripe_at_dawn")
 	crop.state["days_ripe"] = 0
+	crop.state.erase("eaten")
 
 
 ## What is wrong with a day for a crop, as a list of &"drought", &"darkness", &"frost" and
@@ -185,6 +205,8 @@ static func describe(crop: WorldObject) -> Array[String]:
 	var status := "dead" if is_dead(crop) else "stage %d" % (stage(crop) + 1)
 	if is_ripe(crop):
 		status = "ripe for %d of %d days" % [days_ripe(crop), days_growing(crop)]
+	if eaten(crop) > 0:
+		status += ", %d eaten by crows" % eaten(crop)
 	return [
 		(
 			"%s: %s, growth %.1f of %.1f, damage %.2f"

@@ -95,6 +95,10 @@
     The grains and the pumpkin have the highest chance (0.7), the roots and flax 0.5 to 0.6,
     and the peas, beans and strawberries, which regrow and are picked again, 0.2. The dice are
     `GameState.harvest_rng`, seeded in tests; saves are not affected.
+  - **Crows eat yield** (task 225): produce items the crows ate off a crop are kept in its state
+    (`eaten`, saved with the crop; a save without it means none), come off every harvest and
+    never take it below 1, so a crop with a yield of 1 can't be eaten off. A crop that regrows
+    has new fruit. See the crows in [wildlife](../world/wildlife.md).
 - Wild crops can be foraged.
 - The biome decides which resources are available and what the land is good for
   agriculturally (see [Biomes](../world/generation.md)).
