@@ -40,6 +40,7 @@ func test_every_missing_or_malformed_key_is_reported() -> void:
 	var problems := rules.problems()
 	assert_has(problems, "[general] no calm_extra_tiles")
 	assert_has(problems, "[sheep] no looks")
+	assert_has(problems, "[zs] gap_seconds needs [shortest, longest]")
 	assert_has(problems, "[cow] looks and look_weights differ in length or are empty")
 	assert_has(problems, "[cow] tints needs one colour or more, as hex")
 	assert_has(problems, "[cow] activity_weights needs idle, walk, graze and run")

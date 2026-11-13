@@ -50,6 +50,7 @@ const FRIENDSHIP_KEYS := ["pettable", "max", "pet_gain", "sleep_pet_loss", "dail
 const ROOSTER_KEYS := [
 	"flock_tiles", "dawn_minutes", "dawn_crows", "day_crows", "day_crow_chance", "crow_gap_seconds"
 ]
+const ZS_KEYS := ["gap_seconds", "shown_seconds"]
 const SPECIES_KEYS := [
 	"looks",
 	"look_weights",
@@ -120,6 +121,10 @@ func problems() -> Array[String]:
 	for key: String in ROOSTER_KEYS:
 		if not _values.get("rooster", {}).has(key):
 			found.append("[rooster] no %s" % key)
+	for key: String in ZS_KEYS:
+		var pair: Array = _values.get("zs", {}).get(key, [])
+		if pair.size() != 2 or pair[0] > pair[1]:
+			found.append("[zs] %s needs [shortest, longest]" % key)
 	for species in SPECIES:
 		var values: Dictionary = _values.get(String(species), {})
 		var missing := SPECIES_KEYS.filter(func(key: String) -> bool: return not values.has(key))

@@ -221,7 +221,8 @@ cattle; bristly pigs of the old breeds, red-brown, sandy, saddleback and spotted
 black-faced sheep; brown and white hens, and a rooster for each flock (`spawn rooster` puts one;
 he lays no eggs); agouti, white and Dutch rabbits, each with a slight tint of its own. They
 wander, graze (the hens peck for seeds and worms), keep out of water and away from anything solid, and the rabbits hop off
-when you come close. At night they lie down and sleep until the morning. For now they come
+when you come close. At night they lie down and sleep until the morning, with a few small "z"s
+rising over their heads now and then. For now they come
 from the console (`spawn cow 3`); they are saved with the game. Milk and wool come later (see
 the farm yard below for eggs, food, water and the pig pen). The numbers are in [data/livestock.cfg](data/livestock.cfg). Like the
 people, the animals are drawn at 32 pixels per tile, with legs that bend at the joints, an eye

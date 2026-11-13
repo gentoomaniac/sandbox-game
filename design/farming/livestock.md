@@ -176,6 +176,17 @@ data/livestock.cfg.
   by the `FarmAnimalView` when `Livestock` tells `petted`). It stands 2 px above the top of the
   head, which is measured on each species' sheets for standing, grazing (head down) and asleep
   (`FarmAnimalView.HEADS`), so it sits low over a lying cow and high over a standing horse.
+- **Zzz (task 211):** a sleeping animal that is on screen shows the player's "z"s (`SleepZs`,
+  effects/sleep_z.png, in both arts) rising over its head now and then: after a random gap of 6 to
+  20 s, for 3 to 5 s, over and over (`[zs]` in data/livestock.cfg; the first gap counts from
+  falling asleep). They start where the heart does (`HEADS`, asleep) and rise as far as its
+  species' `ZS_RISES`: 14 px for the chicken, rabbit and cat, 20 to 22 for the pig, sheep and dog,
+  28 for the cow and 32 for the horse. `ZS_RISES`, like `HEADS`, is art geometry and is kept in
+  code, not in data/. They end when the animal wakes or is petted (the anger mark wins).
+  The cost is a timer in each sleeping `FarmAnimalView` whose animal is inside the camera's view
+  (the `SleepZs` node and the dice are made when it first does); an animal outside it, though its
+  view may still exist, counts nothing. Wild animals do not sleep in the game, so they have none.
+  A hen in a coop is not shown and shows none.
 - **Sound:** an awake animal answers a petting with its own sound (a moo, a bark; the kinds that
   make one while they go about their day), a sleeping one makes none. A petting sound of its own
   is left for the sound designer.
