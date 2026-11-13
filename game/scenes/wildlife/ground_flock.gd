@@ -125,6 +125,8 @@ var _frames := {}
 ## The view of the flight (see FlightView): the sheets of birds without the rows for the front
 ## and the back have the side view only.
 var _flight_view := FlightView.SIDE
+## Crows tell the crop raids where they stand (see CropRaids) until they fly off; 0 when they don't.
+var _raid_flock_id := 0
 
 
 ## One bird of the flock: what it does and for how long, and where it is.
@@ -166,6 +168,9 @@ func _ready() -> void:
 	_shadows.shift = Vector2.ZERO
 	wildlife.ground.add_child(_shadows)
 	_enter(FEED)
+	if kind == WildlifeRules.CROWS and not is_done:
+		var tile := Vector2i((position / WildlifeRules.TILE_SIZE).floor())
+		_raid_flock_id = wildlife.crop_raids.add_flock(tile)
 
 
 func _action_frames(action: StringName) -> PackedInt32Array:
@@ -184,6 +189,7 @@ func _wingbeat_frames(view: StringName) -> PackedInt32Array:
 
 func _exit_tree() -> void:
 	_shadows.queue_free()
+	_leave_field()
 
 
 func show_art_set() -> void:
@@ -304,6 +310,7 @@ func _show(bird: FlockBird) -> void:
 ## ahead leading, or into a bunch.
 func _take_off(away: Vector2) -> void:
 	_enter(FLY)
+	_leave_field()
 	z_index = 1
 	_flight_direction = (away + Vector2(0.0, -0.3)).normalized()
 	_choose_flight_view()
@@ -321,6 +328,13 @@ func _take_off(away: Vector2) -> void:
 		# Each a little out of step with the others.
 		_start(bird, &"fly", INF)
 		bird.action_time = i * 0.13
+
+
+## The crows are no longer on the field they raided.
+func _leave_field() -> void:
+	if _raid_flock_id != 0:
+		wildlife.crop_raids.remove_flock(_raid_flock_id)
+		_raid_flock_id = 0
 
 
 ## Picks the view of the flight and turns every bird to it: from the front or behind within

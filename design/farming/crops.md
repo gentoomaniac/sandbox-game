@@ -100,7 +100,7 @@
     never take it below 1, so a crop with a yield of 1 can't be eaten off. A crop that regrows
     has new fruit.
   - **Crows raid the fields** (task 225, `CropRaids`, numbers in `data/crows.cfg`): every game
-    hour each crow flock (the view tells `CropRaids` where its flocks stand) that has no player
+    hour each crow flock (a crow `GroundFlock` tells `CropRaids` where it stands until it flies off) that has no player
     within 12 tiles raids with the chance 0.4, trying up to 2 of the living, unguarded crops
     within 3 tiles of it. A crop loses something by the chance of its growth stage (seed 0.5,
     young 0.15, grown 0.15, ripe 0.3): a seed is eaten whole (the plant is gone, the soil stays

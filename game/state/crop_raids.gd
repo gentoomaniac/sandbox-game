@@ -103,7 +103,12 @@ func appearing_boost(tile: Vector2i) -> float:
 			var object := _world.object_at(Vector2i(x, y))
 			if object != null and object.is_crop() and CropLife.stage(object) == 0:
 				sown += 1
-	return minf(1.0 + _rules.value("sown_boost_per_crop") * sown, _rules.value("sown_boost_max"))
+	return minf(1.0 + _rules.value("sown_boost_per_crop") * sown, max_appearing_boost())
+
+
+## The most `appearing_boost` gives.
+func max_appearing_boost() -> float:
+	return _rules.value("sown_boost_max")
 
 
 ## What the console `crows` shows: the flocks, and what the crows ate today.

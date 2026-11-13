@@ -51,6 +51,8 @@ var rng := RandomNumberGenerator.new()
 ## The ground below the animals: shadows that fall on it (see Flock) are drawn here.
 var ground := Node2D.new()
 var is_player_ignored := false
+## The crows' raids on the crops, to which the flocks of crows tell where they stand.
+var crop_raids: CropRaids
 ## Where the villagers' feet are, in pixels, as of the last tick or frame: no spatial lookup of
 ## them exists, and they are few, so the animals scan this short list.
 var villager_feet := PackedVector2Array()
@@ -77,6 +79,7 @@ func _init() -> void:
 ## Shows wildlife in a world view, by the time, weather and view of the game.
 func show_wildlife(state: GameState, view: WorldView, camera: CameraController) -> void:
 	_state = state
+	crop_raids = state.crop_raids
 	world_view = view
 	_camera = camera
 	rules = WildlifeRules.for_session(state.sun)
@@ -375,9 +378,23 @@ func _spawn_somewhere(kind: StringName, flowers: Array[Vector2i], is_instant := 
 		return
 	for _try in SPAWN_TRIES:
 		var point := rules.random_ring_point(view, rng)
-		if rules.is_spawn_point(point, view, player) and _is_habitat(kind, point):
+		if (
+			rules.is_spawn_point(point, view, player)
+			and _is_habitat(kind, point)
+			and _is_drawn_to(kind, point)
+		):
 			_spawn(kind, point, false)
 			return
+
+
+## Whether a kind is drawn to a point: the crows to fresh sowing, as much as `appearing_boost` says
+## of its most (see CropRaids), the others anywhere.
+func _is_drawn_to(kind: StringName, point: Vector2) -> bool:
+	if kind != WildlifeRules.CROWS:
+		return true
+	return (
+		rng.randf() * crop_raids.max_appearing_boost() < crop_raids.appearing_boost(_tile_at(point))
+	)
 
 
 ## Whether a kind can live at a point: its terrain, trees and water, ground to stand on if it
