@@ -114,7 +114,13 @@ def _close_crack(rng, rumble, snap_gain):
     length = len(rumble) / RATE
     snap = bandpass(noise(rng, length), 800, 7000) * envelope(length, 0.001, 70)
     tear = bandpass(noise(rng, length), 250, 3500) * envelope(length, 0.004, 9)
-    tear *= 1 + 0.6 * np.sin(2 * np.pi * rng.uniform(25, 45) * times(length))
+    # Tearing as short noise bursts at random gaps, not a steady flutter (it would sound like
+    # rotor blades).
+    rips = np.full(len(tear), 0.4)
+    for at in _poisson_times(rng, 0, length, 30):
+        size = rng.uniform(0.01, 0.06)
+        place(rips, rng.lognormal(0, 0.5) * envelope(size, 0.002, 5 / size), at)
+    tear *= rips / rips[: samples(1.0)].mean()
     out = 0.9 * rumble / rms(rumble) * 0.25 + snap_gain * 1.2 * snap / rms(snap) * 0.05
     out += 0.45 * tear / rms(tear) * 0.1
     return normalized(fade_out(out, 0.5))
