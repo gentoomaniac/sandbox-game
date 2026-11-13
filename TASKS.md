@@ -23,29 +23,6 @@ Rules for every task:
 - Visuals come from the art generator (task 5 on). Until a task adds art for something,
   use simple placeholder shapes in palette colours.
 
-## 125. The deed log: what the player does near villagers, and who saw it
-
-- [ ] Done
-
-The deeds come from the action outcomes of task 143: listen to `GameState.action_done` (see
-game/state/action_outcome.gd; a hammer take-down is `take_down` for a placed object and
-`demolish` for a building).
-
-From design/villagers/gossip.md (Deeds). No language model in this task.
-- A `data/gossip.cfg` with the deed kinds (felled a tree, built a building, took down a building,
-  placed a fence or wall, tilled, sowed, harvested, dug clay, mowed), each with its words and a
-  fixed opinion change for later, the radius (20 tiles, 6 at night) and the place words per biome.
-- A deed log in the game state, saved (save version bump): each deed within 20 tiles of any
-  villager as `{day, minute, kind, count, place, witnesses}`; the same kind and place on the
-  same day merge, adding up the count and the witnesses. Kept for 7 days.
-- The place in words: "by <name>'s house" for the villager whose home is nearest within 20 tiles,
-  else the biome's word.
-- Every villager within the radius is a witness and gets the deed as a story they saw at once,
-  for now kept in a plain list on the villager (task 126 makes it the gossip buffer). The chat
-  prompt tells it as a template line ("Today you saw the newcomer fell 7 trees by Antje's house.").
-- Console: `deeds` lists the log.
-- Tests: logging, merging, witnesses by radius and night, the place words, save and load.
-
 ## 126. Villager memory in three layers: knowledge, short-term, long-term
 
 - [ ] Done
