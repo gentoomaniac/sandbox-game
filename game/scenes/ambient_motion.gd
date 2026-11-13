@@ -30,6 +30,11 @@ const MAX_SWAY := 3.0
 const MAX_LEAN := 1.5
 ## The sway grows quickly in a breeze and slowly towards a storm.
 const SWAY_CURVE := 0.8
+## The scarecrow stands still below this wind (m/s); above it its coat is blown, going through its
+## frames still, blown, blown harder, blown, at a pace that quickens with the wind.
+const SCARECROW_CALM_WIND := 2.0
+const SCARECROW_SWAY_ORDER := [0, 1, 2, 1]
+const SCARECROW_STEPS_PER_SECOND := 0.4
 ## Gusts start above this wind (m/s) and are at their strongest at STORM_WIND.
 const GUSTS_FROM := 3.0
 ## Gusts are fronts that sweep downwind across the world this far apart, at this speed (pixels
@@ -147,6 +152,9 @@ var _crop_materials: Dictionary[Vector3i, ShaderMaterial] = {}
 var _sway_materials: Array[ShaderMaterial] = [decoration_sway]
 var _fire_materials: Array[ShaderMaterial] = []
 var _water_drift := Vector2.ZERO
+## How far the scarecrow's sway has gone, in steps of its pictures: it builds up with the wind, so a
+## change of wind never makes it jump.
+var _scarecrow_phase := 0.0
 
 
 func _init() -> void:
@@ -163,6 +171,14 @@ func _init() -> void:
 	var fireplace := fire_material(WorldObjectTypes.FIREPLACE)
 	_object_materials[WorldObjectTypes.FIREPLACE] = fireplace
 	_fire_materials.append(fireplace)
+
+
+## The frame of the scarecrow's atlas cells (see WorldObjectTypes `sway_frames`) as the wind has
+## blown it: the still one in calm weather, else cycling as `update` builds up the phase.
+func scarecrow_frame() -> int:
+	if wind.length() < SCARECROW_CALM_WIND:
+		return 0
+	return SCARECROW_SWAY_ORDER[int(_scarecrow_phase) % SCARECROW_SWAY_ORDER.size()]
 
 
 ## Whether an object of this type burns with a visible fire: the hearth and the fireplace.
@@ -256,6 +272,7 @@ func update(delta: float, new_wind: Vector2, rain: float) -> void:
 		material.set_shader_parameter("lean", fire_lean_for(wind))
 		material.set_shader_parameter("stretch", fire_stretch_for(wind))
 	var chop := chop_for(speed)
+	_scarecrow_phase += speed * SCARECROW_STEPS_PER_SECOND * delta
 	_water_drift += (WATER_BASE_DRIFT + wind * WATER_DRIFT_PER_WIND) * delta
 	for material in [water, mud]:
 		material.set_shader_parameter("chop", chop)

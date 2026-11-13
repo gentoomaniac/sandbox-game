@@ -130,6 +130,8 @@ var _refresh_queue: Array[Vector2i] = []
 ## What each object cell was last drawn as, by tile: its look, plus BARE_OF_FRUIT_FLAG if it
 ## showed as bare of fruit, or DORMANT if it was not drawn.
 var _object_states: Dictionary[Vector2i, int] = {}
+## Which picture of the wind-blown scarecrow is shown (see AmbientMotion `scarecrow_frame`).
+var _scarecrow_frame := 0
 ## The sprites that stand in for object cells while they are see-through, by tile.
 var _object_sprites: Dictionary[Vector2i, SeeThroughSprite] = {}
 var _falling_trees: Array[FallingTree] = []
@@ -325,6 +327,7 @@ func _process(delta: float) -> void:
 			_refresh_chunk(_refresh_queue.pop_back())
 	is_settled = is_drawn and _refresh_queue.is_empty()
 	_update_see_through(delta)
+	_sway_scarecrows()
 	_update_falling_trees(delta)
 	_shed_leaves(delta)
 
@@ -629,6 +632,17 @@ func _draw_object(world_pos: Vector2i) -> void:
 		add_child(light)
 
 
+## Shows the scarecrows in the picture the wind gives them now, redrawing them when it changes.
+func _sway_scarecrows() -> void:
+	var frame := ambient_motion.scarecrow_frame()
+	if frame == _scarecrow_frame:
+		return
+	_scarecrow_frame = frame
+	for scarecrow in world.scarecrows():
+		if world.is_chunk_loaded(Chunk.world_to_chunk(scarecrow.pos)):
+			_draw_object(scarecrow.pos)
+
+
 func _set_object_cell(object: WorldObject) -> void:
 	_objects.set_cell(object.pos, _object_source(object), _atlas_cell(object))
 	_object_states[object.pos] = _object_state(object)
@@ -738,7 +752,7 @@ func _picture_size(object: WorldObject) -> Vector2i:
 ## The object's cell in its source as it looks now (see ObjectTileset.atlas_cell).
 func _atlas_cell(object: WorldObject) -> Vector2i:
 	var connections := world.connections(object) if object.type_data().has("connects") else 0
-	return ObjectTileset.atlas_cell(object, world.is_bare(object), connections)
+	return ObjectTileset.atlas_cell(object, world.is_bare(object), connections, _scarecrow_frame)
 
 
 ## Frees the stand-in sprite of an object, if it has one. The caller sets the cell.

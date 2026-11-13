@@ -34,4 +34,9 @@ radius"). This page is task 226.
 - **Console:** `crows` ends with a line per scarecrow (`Scarecrows.describe`): where it stands, the day
   it was put down, its strength today, and how many crops within its radius are guarded today
   (by it or another), or `No scarecrows`.
+- **It sways in the wind** (view only): its atlas row has 3 cells (`sway_frames`), still, blown, blown
+  harder. `AmbientMotion.scarecrow_frame()` gives the still one below 2 m/s and
+  else cycles 0-1-2-1 by a phase that `update` builds up with the wind (so a change of wind never makes
+  it jump); `WorldView` redraws the scarecrows only when the
+  frame changes. The wind's direction is not used: the coat always blows to the right.
 - **Art:** the row `scarecrow` of the object atlas and the item icon, in both art sets.

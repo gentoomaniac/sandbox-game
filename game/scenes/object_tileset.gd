@@ -164,14 +164,19 @@ static func cell_origin(footprint: Vector2i) -> Vector2i:
 ## others the variant comes from the position, so it is stable but neighbours differ. A line
 ## object (one that `connects`) has the picture of its variant for its connection mask,
 ## `connections` (see World `connections`). A trough or a hay rack has the picture of how full it is
-## (see ObjectStock `look`). A picked bush has its variant's picked look, and so
+## (see ObjectStock `look`). A scarecrow has the picture of `sway_frame`, how the wind blows it
+## (see AmbientMotion `scarecrow_frame`). A picked bush has its variant's picked look, and so
 ## does a bush that is `is_bare` (out of its fruit season).
-static func atlas_cell(object: WorldObject, is_bare := false, connections := 0) -> Vector2i:
+static func atlas_cell(
+	object: WorldObject, is_bare := false, connections := 0, sway_frame := 0
+) -> Vector2i:
 	if object.is_crop():
 		return Vector2i(CropLife.look(object), 0)
 	var object_type: Dictionary = WorldObjectTypes.TYPES[object.type]
 	if object_type.has("stock_capacity"):
 		return Vector2i(ObjectStock.look(object), object_type["atlas_row"])
+	if object_type.has("sway_frames"):
+		return Vector2i(sway_frame, object_type["atlas_row"])
 	var variant: int = PositionHash.of(object.pos) % int(object_type["variants"])
 	if object_type.has("connects"):
 		var column := variant * WorldObjectTypes.CONNECTION_LOOKS + connections
