@@ -50,3 +50,20 @@ From design/villagers/gossip.md (Deeds). No language model in this task.
 - Tests: logging, merging, witnesses by radius and night, the place words, save and load.
 
 Done: f6be06e6. Nine deed kinds in data/gossip.cfg; witnesses within 20 tiles by day, 6 at night; kept 7 days, pruned on record, new day and load; saved (version 34) in GameState.deeds and each villager's stories; the newest 5 stories are told in the chat prompt; console `deeds`. Not deeds: digging up a bush, taking down placed objects (only demolishing a building), anything indoors.
+
+## 212. Wild rabbits flee even when asleep
+
+- [x] Done
+
+The user, 2026-11-11: "Wild rabbits should run away even when sleeping"
+- Find out what the user saw: a wild rabbit (WildlifeRules RABBIT, `flee_tiles`) that rests or
+  sleeps (by its phase weights at night, or a resting state) and then ignores the player, or the
+  tame rabbit (a farm animal, task 173) asleep. Fix it so a sleeping or resting wild rabbit wakes
+  and flees when the player comes within its flee distance (maybe a little closer than when
+  awake: a startled jump first). Check the other wild ground animals (squirrel, deer, mouse, frog)
+  for the same gap and give them the same rule if they have it. The tame rabbit and the farm
+  animals keep sleeping (they are used to the player).
+- Tests: a sleeping wild rabbit flees when the player comes near; a sleeping tame rabbit does
+  not.
+
+Done: closed without a change (the user, 2026-11-13): sleeping rabbits, wild or tame, keep sleeping.

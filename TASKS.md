@@ -164,21 +164,6 @@ Settings (and off), muted in test runs (comes with task 184). Rules in data/musi
 
 - Task 184 (done 2026-11-11) already added the Music bus and its volume slider in the audio
   settings, and a MusicPlayer behind the console `play`/`stop`; build on those.
-## 212. Wild rabbits flee even when asleep
-
-- [ ] Done
-
-The user, 2026-11-11: "Wild rabbits should run away even when sleeping"
-- Find out what the user saw: a wild rabbit (WildlifeRules RABBIT, `flee_tiles`) that rests or
-  sleeps (by its phase weights at night, or a resting state) and then ignores the player, or the
-  tame rabbit (a farm animal, task 173) asleep. Fix it so a sleeping or resting wild rabbit wakes
-  and flees when the player comes within its flee distance (maybe a little closer than when
-  awake: a startled jump first). Check the other wild ground animals (squirrel, deer, mouse, frog)
-  for the same gap and give them the same rule if they have it. The tame rabbit and the farm
-  animals keep sleeping (they are used to the player).
-- Tests: a sleeping wild rabbit flees when the player comes near; a sleeping tame rabbit does
-  not.
-
 ## 222. Thunder with more variety, lightning that runs across the sky, a branching bolt
 
 - [ ] Done
