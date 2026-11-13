@@ -485,7 +485,10 @@ sunset, each blinking its own light on and off. Crow flocks come to the fields a
 day, most in autumn and winter and when fields have just been sown, and eat from the crops that
 nothing guards while you are far off: a sown seed is gone, a growing or ripe plant gives one item
 less at the harvest (never fewer than one), at most a few a day (numbers in
-[data/crows.cfg](data/crows.cfg); `crows` in the console shows the flocks and what they ate).
+[data/crows.cfg](data/crows.cfg); `crows` in the console shows the flocks and what they ate). A **scarecrow**
+(made by hand, put down anywhere outdoors) keeps the crows from the crops within 5 tiles of it: fully for
+its first 3 days, then less over the next 12 as the crows get used to it, down to a quarter of the
+chance; take it down and put it up again, and it starts anew.
 Wild animals never stand on a building, the door included, and apart from the mice they don't appear near houses or villagers and run from
 villagers as they do from you. The animals come and go around you by the season, the time of day
 and the weather; the numbers are in [data/wildlife.cfg](data/wildlife.cfg).

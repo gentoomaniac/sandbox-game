@@ -17,6 +17,10 @@ const KEYS := [
 	"sown_boost_per_crop",
 	"sown_boost_max",
 	"sown_radius_tiles",
+	"scarecrow_radius_tiles",
+	"scarecrow_fresh_days",
+	"scarecrow_fade_days",
+	"scarecrow_floor",
 ]
 
 static var _default: CropRaidRules
@@ -67,6 +71,15 @@ func is_valid() -> bool:
 ## A number of the file.
 func value(key: String) -> float:
 	return float(_values[key])
+
+
+## How strongly a scarecrow that has stood `age_days` days guards, from 0 to 1: fully while it is
+## fresh, then less and less as the crows get used to it, down to the floor.
+func scarecrow_strength(age_days: int) -> float:
+	var fade := clampf(
+		float(age_days - value("scarecrow_fresh_days")) / value("scarecrow_fade_days"), 0.0, 1.0
+	)
+	return lerpf(1.0, value("scarecrow_floor"), fade)
 
 
 ## The chance that a crop at a growth stage loses something when a flock tries it.

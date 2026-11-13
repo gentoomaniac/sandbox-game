@@ -108,8 +108,9 @@
     world keep a field from being stripped: 2 plants and 6 items; the tally is not saved and
     starts again at a load. The dice are seeded by the world and the hour. Only crops of loaded
     chunks are raided: flocks stand near the player, so the crops of unloaded chunks are not. The
-    hours of a skip of time pass like any, for the flocks standing then. The hook for the scarecrow (task 226) is
-    `CropRaids.is_guarded`, a Callable from a tile to whether it is guarded; unset, nothing is.
+    hours of a skip of time pass like any, for the flocks standing then. The hook for the scarecrow is
+    `CropRaids.is_guarded`, a Callable from a tile to whether it is guarded; unset, nothing is;
+    `GameState` sets it to `Scarecrows.is_guarding` (task 226, [scarecrow.md](scarecrow.md)).
     Fresh sowing draws crows: a flock appears `appearing_boost` times likelier near sown fields
     (0.1 more per crop at stage 0 within 6 tiles, up to 3 times). Console: `crows` shows the
     flocks and the tally, `crows raid` makes every flock raid now with the player by and eat from

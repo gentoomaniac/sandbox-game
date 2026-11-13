@@ -17,6 +17,10 @@ const SURE := {
 	"sown_boost_per_crop": 0.1,
 	"sown_boost_max": 3.0,
 	"sown_radius_tiles": 6,
+	"scarecrow_radius_tiles": 5,
+	"scarecrow_fresh_days": 3,
+	"scarecrow_fade_days": 10,
+	"scarecrow_floor": 0.2,
 }
 
 var _raids: CropRaids

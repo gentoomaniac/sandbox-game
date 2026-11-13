@@ -66,6 +66,8 @@ var _chunks: Dictionary[Vector2i, Chunk] = {}
 var _object_edits: Dictionary[Vector2i, WorldObject] = {}
 ## The positions of the crops among them, which every hour of the simulation visits.
 var _crop_positions: Dictionary[Vector2i, bool] = {}
+## The tiles of the scarecrows the player put down, in loaded chunks or not.
+var _scarecrow_positions: Dictionary[Vector2i, bool] = {}
 ## Terrain the player changed (e.g. grass tilled to soil), by world position. Replayed on
 ## chunks before the objects, which may depend on the ground.
 var _terrain_edits: Dictionary[Vector2i, Tile.Terrain] = {}
@@ -400,6 +402,14 @@ func edited_objects() -> Array[WorldObject]:
 		if object != null:
 			objects.append(object)
 	return objects
+
+
+## The scarecrows the player put down and that are still there, in loaded chunks or not.
+func scarecrows() -> Array[WorldObject]:
+	var scarecrows_put_down: Array[WorldObject] = []
+	for pos in _scarecrow_positions:
+		scarecrows_put_down.append(_object_edits[pos])
+	return scarecrows_put_down
 
 
 ## The crops the player planted and that are still there, in loaded chunks or not.
@@ -782,6 +792,10 @@ func _edit_object(world_pos: Vector2i, object: WorldObject) -> void:
 		_crop_positions[world_pos] = true
 	else:
 		_crop_positions.erase(world_pos)
+	if object != null and object.type == WorldObjectTypes.SCARECROW:
+		_scarecrow_positions[world_pos] = true
+	else:
+		_scarecrow_positions.erase(world_pos)
 	_note_edited(_object_edit_positions_by_chunk, world_pos)
 
 
