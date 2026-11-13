@@ -5,59 +5,59 @@ extends WildlifeCase
 ## Headings around the compass in degrees from east (the screen's y points down, so 90 is down
 ## the screen, south) and the view each shows.
 const VIEWS := {
-	0.0: Flock.SIDE_VIEW,
-	30.0: Flock.SIDE_VIEW,
-	50.0: Flock.FRONT_VIEW,
-	90.0: Flock.FRONT_VIEW,
-	130.0: Flock.FRONT_VIEW,
-	150.0: Flock.SIDE_VIEW,
-	180.0: Flock.SIDE_VIEW,
-	210.0: Flock.SIDE_VIEW,
-	230.0: Flock.BACK_VIEW,
-	270.0: Flock.BACK_VIEW,
-	310.0: Flock.BACK_VIEW,
-	330.0: Flock.SIDE_VIEW,
+	0.0: FlightView.SIDE,
+	30.0: FlightView.SIDE,
+	50.0: FlightView.FRONT,
+	90.0: FlightView.FRONT,
+	130.0: FlightView.FRONT,
+	150.0: FlightView.SIDE,
+	180.0: FlightView.SIDE,
+	210.0: FlightView.SIDE,
+	230.0: FlightView.BACK,
+	270.0: FlightView.BACK,
+	310.0: FlightView.BACK,
+	330.0: FlightView.SIDE,
 }
 ## Half a degree either side of each boundary (45 degrees from the vertical, see
-## Flock.HEAD_ON_DEGREES) and the view on that side.
+## FlightView.HEAD_ON_DEGREES) and the view on that side.
 const BOUNDARIES := {
-	44.5: Flock.SIDE_VIEW,
-	45.5: Flock.FRONT_VIEW,
-	134.5: Flock.FRONT_VIEW,
-	135.5: Flock.SIDE_VIEW,
-	224.5: Flock.SIDE_VIEW,
-	225.5: Flock.BACK_VIEW,
-	314.5: Flock.BACK_VIEW,
-	315.5: Flock.SIDE_VIEW,
+	44.5: FlightView.SIDE,
+	45.5: FlightView.FRONT,
+	134.5: FlightView.FRONT,
+	135.5: FlightView.SIDE,
+	224.5: FlightView.SIDE,
+	225.5: FlightView.BACK,
+	314.5: FlightView.BACK,
+	315.5: FlightView.SIDE,
 }
 
 
 func test_the_view_follows_the_heading_around_the_compass() -> void:
 	for degrees: float in VIEWS:
 		var heading := Vector2.RIGHT.rotated(deg_to_rad(degrees))
-		assert_eq(Flock.view_of(heading), VIEWS[degrees], "heading %s degrees" % degrees)
+		assert_eq(FlightView.of(heading), VIEWS[degrees], "heading %s degrees" % degrees)
 
 
 func test_the_view_changes_45_degrees_from_the_vertical() -> void:
 	for degrees: float in BOUNDARIES:
 		var heading := Vector2.RIGHT.rotated(deg_to_rad(degrees))
-		assert_eq(Flock.view_of(heading), BOUNDARIES[degrees], "heading %s degrees" % degrees)
+		assert_eq(FlightView.of(heading), BOUNDARIES[degrees], "heading %s degrees" % degrees)
 
 
 func test_migrating_flocks_within_the_spread_are_seen_head_on() -> void:
 	for kind in [WildlifeRules.FLOCK, WildlifeRules.FLYING_GEESE]:
 		var spread := deg_to_rad(float(_wildlife.rules._value(kind, "migration_spread_degrees")))
 		for side in [-1.0, 1.0]:
-			assert_eq(Flock.view_of(Vector2.DOWN.rotated(spread * side)), Flock.FRONT_VIEW)
-			assert_eq(Flock.view_of(Vector2.UP.rotated(spread * side)), Flock.BACK_VIEW)
+			assert_eq(FlightView.of(Vector2.DOWN.rotated(spread * side)), FlightView.FRONT)
+			assert_eq(FlightView.of(Vector2.UP.rotated(spread * side)), FlightView.BACK)
 
 
 func test_the_birds_show_the_frames_of_their_view() -> void:
 	var cases := {
-		Vector2.DOWN: [Flock.FRONT_VIEW, false],
-		Vector2.UP: [Flock.BACK_VIEW, false],
-		Vector2.RIGHT: [Flock.SIDE_VIEW, false],
-		Vector2.LEFT: [Flock.SIDE_VIEW, true],
+		Vector2.DOWN: [FlightView.FRONT, false],
+		Vector2.UP: [FlightView.BACK, false],
+		Vector2.RIGHT: [FlightView.SIDE, false],
+		Vector2.LEFT: [FlightView.SIDE, true],
 	}
 	for kind in [WildlifeRules.FLOCK, WildlifeRules.FLYING_GEESE]:
 		for heading: Vector2 in cases:
@@ -94,7 +94,7 @@ func test_head_on_the_spread_wings_of_neighbours_clear_each_other() -> void:
 	for kind in [WildlifeRules.FLOCK, WildlifeRules.FLYING_GEESE]:
 		var sheet: StringName = Flock.BIRDS[kind]["sheet"]
 		for heading: Vector2 in [Vector2.DOWN, Vector2.UP]:
-			var wingspan := _widest(sheet, Flock.view_of(heading))
+			var wingspan := _widest(sheet, FlightView.of(heading))
 			var flock := Flock.new(kind)
 			autofree(flock)
 			flock.set_course(VIEW_CENTRE, VIEW_CENTRE + heading * 1000.0, 7)

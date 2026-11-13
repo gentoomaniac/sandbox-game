@@ -14,7 +14,7 @@ atmosphere only: no player impact, not hunted, not saved.
     rules. A skein of flying geese migrates the same way, south in autumn and north in spring,
     and flies any way in winter, when they stay on the coast. A flock flying within 45 degrees of
     the screen's vertical shows its birds from the front (heading down) or from behind (heading
-    up), further from it side on (task 220, `Flock.HEAD_ON_DEGREES`), so migrating ones are
+    up), further from it side on (task 220, `FlightView.HEAD_ON_DEGREES`), so migrating ones are
     always seen head on. Head on, the V is wider across (`head_on_spacing`: 24 px for the
     sparrows, 44 for the geese), so that the spread wings of neighbours clear each other;
   - rabbits: grassland and forest edges, hop about, flee in zigzags from the player;
