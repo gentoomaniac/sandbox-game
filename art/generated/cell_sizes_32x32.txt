@@ -289,6 +289,7 @@ wildlife/chicken_white_32x32.png 24 24
 wildlife/cow_angler_32x32.png 72 54
 wildlife/cow_black_pied_32x32.png 72 54
 wildlife/cow_red_pied_32x32.png 72 54
+wildlife/crow_32x32.png 32 24
 wildlife/deer_32x32.png 52 52
 wildlife/dog_collie_32x32.png 48 36
 wildlife/dog_pointer_32x32.png 48 36

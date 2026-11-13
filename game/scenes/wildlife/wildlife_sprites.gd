@@ -71,6 +71,11 @@ const SHEETS := {
 		"size": Vector2i(48, 36),
 		"actions": {&"stand": 2, &"graze": 2, &"walk": 2, &"fly": 3, &"fly_down": 3, &"fly_up": 3},
 	},
+	&"crow":
+	{
+		"size": Vector2i(32, 24),
+		"actions": {&"stand": 2, &"peck": 2, &"walk": 2, &"fly": 3, &"fly_down": 3, &"fly_up": 3},
+	},
 	&"oystercatcher":
 	{"size": Vector2i(32, 24), "actions": {&"stand": 2, &"probe": 2, &"walk": 2, &"fly": 3}},
 	&"dunlin":

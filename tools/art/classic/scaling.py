@@ -36,6 +36,8 @@ DOUBLED = (
     "wildlife/bee.png",
     "wildlife/bird.png",
     "wildlife/butterfly.png",
+    # The hooded crow (task 225; birds.py).
+    "wildlife/crow.png",
     "wildlife/deer.png",
     "wildlife/dunlin.png",
     "wildlife/firefly.png",

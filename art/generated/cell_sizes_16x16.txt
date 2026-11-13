@@ -251,6 +251,7 @@ wildlife/chicken_white_16x16.png 12 12
 wildlife/cow_angler_16x16.png 32 24
 wildlife/cow_black_pied_16x16.png 32 24
 wildlife/cow_red_pied_16x16.png 32 24
+wildlife/crow_16x16.png 16 12
 wildlife/deer_16x16.png 26 26
 wildlife/dog_collie_16x16.png 24 18
 wildlife/dog_pointer_16x16.png 24 18

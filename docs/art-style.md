@@ -111,8 +111,8 @@ contact shadow (`Animal.draw_contact_shadow`, a flat oval in the game's pixels; 
 flight cast one too, `GroundShadows`). The birds are put together by bird_forms.py: a body, a
 tail, a neck up to a round head with an eye and a bill, a folded wing, legs drawn over the
 outline in two pixels (one for the sparrow, the dunlin and the tern), and in flight open wings
-with coloured tips and trailing edges, seen a little from above. The sparrow and the goose also
-fly straight down the screen, seen from the front (head, bill and pale breast) and up it, seen
+with coloured tips and trailing edges, seen a little from above. The sparrow, the goose and the
+crow also fly straight down the screen, seen from the front (head, bill and pale breast) and up it, seen
 from behind (back and tail; the goose's white band over the tail), both wings spread up, level
 and down like the side view's beat (task 220): hand-drawn maps of characters, the left half
 drawn and the right one mirrored a shade darker (`canvas.mirrored`, `bird_forms.head_on`; the
@@ -788,7 +788,14 @@ copper watering can. Kept here as the record of why.
    the head thrown back and flying; and the greylag goose, grey-brown (`bare_light`, `bare`,
    `mud`) with a pale breast, a white tail and an orange bill (`flame`), standing, grazing,
    walking and flying. Flying birds are seen from a little above: the far wing above the body,
-   the near wing below it. No new colours. The roe deer and rabbits stay. Task 80 added the
+   the near wing below it. No new colours. Task 225 added the hooded crow (birds.py), the crow
+   of the North Frisian marsh: chosen over the rook, which is all black and would read as a
+   dark blot at this size, for its black hood, wings and tail (`ink` with a `stone_dark` sheen
+   where the light falls, an `ink` outline) and its ash-grey back and belly (`stone_light`,
+   `stone`), with a heavy black bill and black legs; about 20 px long and 15 px tall at 32 px
+   (10 and 8 in the classic art), standing, looking round, pecking, walking and flying side
+   on, from the front and from behind like the goose. Drawn at 32 px as hand-made maps of
+   letters per region (like the cow), shaded as one form from the top left. No new colours. The roe deer and rabbits stay. Task 80 added the
    small ones (tools/art/animals.py): a grey-brown mouse (`mud`, a pale belly, pink ears, a
    bare `skin_shade` tail drawn over the outline so that it stays thin), sitting and
    scurrying, and an olive common frog (`dry_light` with `olive` blotches, a pale throat that

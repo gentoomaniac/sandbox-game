@@ -2,7 +2,7 @@ class_name FlightView
 extends RefCounted
 ## The three views of a bird in flight: side on (flipped when it flies left), from the front while
 ## it flies down the screen and from behind while it flies up it. Each is an action of the
-## sheets of the sparrow and the goose (the others have the side view only).
+## sheets of the sparrow, the goose and the crow (the others have the side view only).
 
 const SIDE := &"fly"
 const FRONT := &"fly_down"

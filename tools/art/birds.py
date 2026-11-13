@@ -12,8 +12,10 @@ bird_forms.py: side on while they stand or walk, from a little above while they 
 import math
 
 import forms
+import numpy as np
 from bird_forms import WINGBEAT, Bird, flying, head_on, standing
-from canvas import mirrored
+from canvas import blank, mirrored, outline
+from livestock import TOP_LIGHT
 
 # --- White stork --------------------------------------------------------------------------
 #
@@ -273,6 +275,274 @@ def goose_sheet():
     ]
 
 
+# --- Hooded crow --------------------------------------------------------------------------
+#
+# The crow of the North Frisian marsh, on the fields and meadows in flocks: about 20 px long with
+# the bill and 15 px tall standing (a goose is 24 and 28, the sparrow 15 long), a wingspan of
+# about 26 px. Its black hood, wings and tail and its ash-grey back and belly read at this size
+# where a rook, all black, would be a dark blot. Hand-drawn maps of letters, one per region (like
+# livestock.cow_letters): K the black plumage, G the grey, e the eye's glint, B and b the heavy
+# black bill (its lit ridge and the rest), L and M the near and the far leg. The plumage is
+# shaded as one form lit from the top left: the black catches a sheen of `stone_dark` there,
+# the grey goes from `stone_light` to `stone` below; the outline is the black's `ink`, and the
+# bill and the legs are drawn over it, so that they stay thin. The maps are as wide as they need
+# to be; a frame's map is put on its cell at CROW_LEFT on the ground, or where its row says in
+# flight.
+
+CROW_SIZE = (32, 24)
+CROW_BLACK = ("ink", "ink", "stone_dark")
+CROW_GREY = ("stone", "stone_light", "stone_light")
+CROW_PLUMAGE = {"K": CROW_BLACK, "G": CROW_GREY}
+CROW_COLOURS = {"e": "stone", "B": "stone_dark", "b": "ink", "L": "stone_dark", "M": "ink"}
+CROW_BARE = "BbLM"
+CROW_OUTLINE = "ink"
+CROW_LEFT = 2
+
+# Standing: the head (or the head turned to the viewer, the bill foreshortened), the body with
+# the folded wing between the grey back and belly, the tail behind, and the legs.
+CROW_HEAD = (
+    "...............KKK",
+    "..............KKKKK",
+    "..............KKKeKBB",
+    "..............KKKKKbbb",
+    "..............KKKKKKb",
+)
+CROW_LOOKING_ROUND = (
+    "...............KKK",
+    "..............KKKKK",
+    "..............KKeKKB",
+    "..............KKKKKbb",
+    "..............KKKKKK",
+)
+CROW_BODY = (
+    "............GGGKKKK",
+    "..........GGGGGGKKKG",
+    "........KKKKKKKGGKGGG",
+    "......KKKKKKKKKKGGGGG",
+    "....KKKKKKKKKKKGGGGGG",
+    "...KKK...GGGGGGGGGG",
+)
+CROW_LEGS = (
+    "............L.M",
+    "............L.M",
+    "...........LL.MM",
+)
+# Walking: a stride with the near leg forward, then the far one.
+CROW_STEP = (
+    "............LM",
+    "...........M..L",
+    "..........MM..LL",
+)
+CROW_STEP_BACK = (
+    "............LM",
+    "...........L..M",
+    "..........LL..MM",
+)
+# Pecking: the body tipped forward, the tail up, the bill at the ground ahead of the feet; then
+# stabbing into it, the tip in the grass.
+CROW_PECKING = (
+    "..KK",
+    "...KKK",
+    "....KKKKGGG",
+    ".....KKKKKGGGGG",
+    "......KKKKKKKGGGG",
+    ".......KKKKKKKKGGGG",
+    "........GGGGGGGGGGKKK",
+    "..........GGGGG..KKKKK",
+    "............L.M..KKKeKB",
+    "............L.M...KKKbbB",
+    "...........LL.MM......bb",
+)
+CROW_STABBING = (
+    ".KK",
+    "..KKK",
+    "...KKKKGGG",
+    "....KKKKKGGGGG",
+    ".....KKKKKKKGGGG",
+    "......KKKKKKKKGGGKK",
+    ".......GGGGGGGGGKKKK",
+    ".........GGGGG...KKKK",
+    "............L.M..KKKKK",
+    "............L.M...KKeKK",
+    "...........LL.MM...KKKBb",
+)
+
+# Flying side on, from a little above like the goose: the grey back between the black head and
+# the fanned tail, the broad wings swept back with the fingers of their tips spread: up (the far
+# wing behind the near one), level (the far one above the body, the near one below) and down.
+# Each with the cell's row of its top.
+CROW_WINGS_UP = (
+    "....K.K.K",
+    ".....KKKKK",
+    "......KKKKK",
+    ".......KKKKK",
+    "........KKKKK",
+    "........KKKKKK",
+    "..KK.....KKKKKK",
+    ".KKKKGGGGGKKKKKKK",
+    ".KKKKGGGGGGGGGKKKeKB",
+    "..KKKKKGGGGGGGKKKKKbb",
+    "......GGGGGGG",
+)
+CROW_WINGS_LEVEL = (
+    "......KKK",
+    ".......KKKK",
+    "..KK....KKKK",
+    ".KKKKGGGGKKKKGKKK",
+    ".KKKKGGGGGGGGGKKKeKB",
+    "..KKKKKGGGGGGKKKKKKbb",
+    "........KKKKKK",
+    ".......KKKKK",
+    "......KKKKK",
+    ".....KKKK",
+    "....K.K.K",
+)
+CROW_WINGS_DOWN = (
+    "..KK",
+    ".KKKKGGGGGGGGKKKK",
+    ".KKKKGGGGGGGGGKKKeKB",
+    "..KKKKKGGGGGGKKKKKKbb",
+    ".........KKKKKK",
+    ".........KKKKK",
+    "........KKKKK",
+    "........KKKK",
+    ".......KKKK",
+    ".......K.K.K",
+)
+CROW_FLIGHT = ((CROW_WINGS_UP, 4), (CROW_WINGS_LEVEL, 7), (CROW_WINGS_DOWN, 10))
+CROW_FLIGHT_LEFT = 5
+
+# Flying down the screen (from the front: the black head with its glints and the bill, the black
+# bib over the grey breast, the tail below) or up it (from behind: the grey back between the
+# wings, the fanned black tail), the wings up, level and down. The left halves, mirrored
+# (canvas.mirrored), with the cell's row of their top.
+CROW_FRONT = (
+    (
+        "K",
+        "KK",
+        ".KK",
+        ".KKK",
+        "..KKK.....KK",
+        "..KKKK...KeK",
+        "...KKKK..KKB",
+        "....KKKKKKKB",
+        ".....KKKKKKK",
+        "........GGGG",
+        ".........GGG",
+        "..........GG",
+        "..........KK",
+    ),
+    (
+        "..........KK",
+        ".........KeK",
+        ".........KKB",
+        "..KKKKKKKKKB",
+        "KKKKKKKKKKKK",
+        ".K.K.KKKGGGG",
+        ".........GGG",
+        "..........GG",
+        "..........KK",
+    ),
+    (
+        "..........KK",
+        ".........KeK",
+        ".........KKB",
+        "........KKKB",
+        "......KKKKKK",
+        "....KKKKKGGG",
+        "..KKKKK..GGG",
+        ".KKKK.....GG",
+        "KKK.......KK",
+        "K.K",
+    ),
+)
+CROW_BACK = (
+    (
+        "K",
+        "KK",
+        ".KK",
+        ".KKK",
+        "..KKK.....KK",
+        "..KKKK...KKK",
+        "...KKKK..KKK",
+        "....KKKKKGGG",
+        ".....KKKGGGG",
+        "........GGGG",
+        ".........GGG",
+        "..........KK",
+        ".........KKK",
+        ".........K.K",
+    ),
+    (
+        "..........KK",
+        ".........KKK",
+        ".........KKK",
+        "..KKKKKKKGGG",
+        "KKKKKKKKGGGG",
+        ".K.K.KKKGGGG",
+        ".........GGG",
+        "..........KK",
+        ".........KKK",
+        ".........K.K",
+    ),
+    (
+        "..........KK",
+        ".........KKK",
+        ".........KKK",
+        "........KGGG",
+        "......KKKGGG",
+        "....KKKKKGGG",
+        "..KKKKK..GGG",
+        ".KKKK.....KK",
+        "KKK......KKK",
+        "K.K......K.K",
+    ),
+)
+CROW_HEAD_ON_TOPS = (5, 9, 9)
+
+
+def crow_picture(rows, left, top):
+    """A frame of the crow: its map of letters with its top left corner at (`left`, `top`)."""
+    width, height = CROW_SIZE
+    letters = np.full((height, width), ".")
+    for y, row in enumerate(rows):
+        for x, key in enumerate(row):
+            if key != ".":
+                letters[top + y, left + x] = key
+    picture = blank(width, height)
+    level = forms.light_level(np.isin(letters, [*CROW_PLUMAGE, "e"]), 3, TOP_LIGHT)
+    for key, ramp in CROW_PLUMAGE.items():
+        forms.shade_by_level(picture, letters == key, ramp, level)
+    forms.paint(picture, letters == "e", CROW_COLOURS["e"])
+    picture = outline(picture, CROW_OUTLINE)
+    for key in CROW_BARE:
+        forms.paint(picture, letters == key, CROW_COLOURS[key])
+    return picture
+
+
+def crow_on_ground(*pieces):
+    """A standing, walking or pecking crow: its pieces one under the other, its feet on the
+    bottom row of the cell."""
+    rows = [row for piece in pieces for row in piece]
+    return crow_picture(rows, CROW_LEFT, CROW_SIZE[1] - len(rows))
+
+
+def crow_head_on(half, top):
+    rows = mirrored(half, {})
+    return crow_picture(rows, (CROW_SIZE[0] - len(rows[0])) // 2, top)
+
+
+def crow_sheet():
+    return [
+        [crow_on_ground(CROW_HEAD, CROW_BODY, CROW_LEGS), crow_on_ground(CROW_LOOKING_ROUND, CROW_BODY, CROW_LEGS)],
+        [crow_on_ground(CROW_PECKING), crow_on_ground(CROW_STABBING)],
+        [crow_on_ground(CROW_HEAD, CROW_BODY, CROW_STEP), crow_on_ground(CROW_HEAD, CROW_BODY, CROW_STEP_BACK)],
+        [crow_picture(rows, CROW_FLIGHT_LEFT, top) for rows, top in CROW_FLIGHT],
+        [crow_head_on(half, top) for half, top in zip(CROW_FRONT, CROW_HEAD_ON_TOPS)],
+        [crow_head_on(half, top) for half, top in zip(CROW_BACK, CROW_HEAD_ON_TOPS)],
+    ]
+
+
 def sheets():
     """(name, cell size, rows of cells) of every sheet."""
-    return [("stork", STORK_SIZE, stork_sheet()), ("goose", GOOSE_SIZE, goose_sheet())]
+    return [("stork", STORK_SIZE, stork_sheet()), ("goose", GOOSE_SIZE, goose_sheet()), ("crow", CROW_SIZE, crow_sheet())]
