@@ -9,8 +9,9 @@ extends CanvasLayer
 ## (`show_weather`); what is on screen follows with a fade, so changes in the weather are
 ## never abrupt. Hide the node to show no weather, e.g. inside a building.
 
-## A flash of lightning has begun (its thunder is up to whoever listens).
-signal flashed
+## A flash of lightning has begun, from a strike this far away (its thunder is up to whoever
+## listens).
+signal flashed(strike: LightningStrike)
 
 const PRECIPITATION_SHADER := preload("res://game/scenes/weather_precipitation.gdshader")
 const FOG_SHADER := preload("res://game/scenes/weather_fog.gdshader")
@@ -35,7 +36,8 @@ const FOG_BASE_DRIFT := Vector2(3.0, 0.8)
 const MIN_INTENSITY := 0.003
 
 const FLASH_COLOR := Color(0.88, 0.92, 1.0)
-const FLASH_PEAK := 0.55
+## How bright the flash is while it is held on (see is_flash_held).
+const HELD_FLASH_OPACITY := 0.55
 
 ## Debug: keeps the flash of lightning on, for screenshots.
 var is_flash_held := false
@@ -53,6 +55,8 @@ var _fog := ColorRect.new()
 var _cloud_shadows := ColorRect.new()
 var _flash := ColorRect.new()
 var _rules := LightingRules.default_rules()
+var _weather_rules := WeatherRules.default_rules()
+var _rng := RandomNumberGenerator.new()
 var _target := WeatherSample.new()
 var _has_weather := false
 ## The other intensities shown now.
@@ -113,16 +117,23 @@ func minutes_passed(count: int) -> void:
 			flash()
 
 
-## A flash of lightning: bright for a moment, a flicker, then a fade.
-func flash() -> void:
-	flashed.emit()
+## A flash of lightning from a strike (a random one unless given): a near one is bright for a
+## moment, flickers, then fades; a far one (as far as its thunder is the far kind) is a faint glow
+## that swells and fades slowly.
+func flash(strike := LightningStrike.draw(_rng, _weather_rules)) -> void:
+	flashed.emit(strike)
 	if _flash_tween != null:
 		_flash_tween.kill()
-	_flash.color.a = FLASH_PEAK
+	var peak := strike.flash_peak()
 	_flash_tween = create_tween()
-	_flash_tween.tween_property(_flash, "color:a", 0.12, 0.07)
-	_flash_tween.tween_property(_flash, "color:a", FLASH_PEAK * 0.7, 0.03)
-	_flash_tween.tween_property(_flash, "color:a", 0.0, 0.35)
+	if strike.event() == LightningStrike.FAR:
+		_flash.color.a = 0.0
+		_flash_tween.tween_property(_flash, "color:a", peak, 0.2)
+	else:
+		_flash.color.a = peak
+		_flash_tween.tween_property(_flash, "color:a", peak * 0.2, 0.07)
+		_flash_tween.tween_property(_flash, "color:a", peak * 0.7, 0.03)
+	_flash_tween.tween_property(_flash, "color:a", 0.0, strike.flash_fade_seconds())
 
 
 func _process(delta: float) -> void:
@@ -136,7 +147,7 @@ func _process(delta: float) -> void:
 	_fog_drift += (FOG_BASE_DRIFT + wind * FOG_DRIFT_PER_WIND) * delta
 	cloud_shadow_drift += wind * _rules.cloud_shadow("speed_per_wind") * delta
 	if is_flash_held:
-		_flash.color.a = FLASH_PEAK
+		_flash.color.a = HELD_FLASH_OPACITY
 	_show_effects(wind_x)
 
 

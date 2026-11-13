@@ -2,7 +2,7 @@ class_name AmbienceRules
 extends RefCounted
 ## When the weather and the animals make their sounds, read from data/ambience.cfg (see there
 ## for what every key means): the levels of the rain and wind loops and of the frogs' chorus,
-## the delay of thunder, and the chances of birdsong, frogs and the sounds of animals. Pure
+## and the chances of birdsong, frogs and the sounds of animals. Pure
 ## functions of the weather, the season and the part of the day; the random rolls and the
 ## playing are AmbienceSounds'.
 
@@ -33,7 +33,6 @@ const REQUIRED_KEYS := {
 		"fire_fade_seconds",
 	],
 	"paused": ["fade_seconds"],
-	"thunder": ["min_delay_seconds", "max_delay_seconds"],
 	"birds":
 	["chirp_chance", "radius_tiles", "tries", "season_factors", "phase_weights", "rain_limit"],
 	"frogs":
@@ -117,8 +116,6 @@ func problems() -> Array[String]:
 		bad.append("[bees] hear_tiles must be above 0")
 	if value("frogs", "warm_temperature") <= value("frogs", "cold_temperature"):
 		bad.append("[frogs] warm_temperature must be above cold_temperature")
-	if value("thunder", "max_delay_seconds") < value("thunder", "min_delay_seconds"):
-		bad.append("[thunder] max_delay_seconds must be at least min_delay_seconds")
 	for section in ["birds", "frogs", "frog_chorus"]:
 		if _values[section]["season_factors"].size() != SEASON_COUNT:
 			bad.append("[%s] season_factors must have %d entries" % [section, SEASON_COUNT])
@@ -165,13 +162,6 @@ func is_gust(front: float) -> bool:
 func gust_level(strength: float) -> float:
 	var soft := value("loops", "gust_soft_level")
 	return soft + (1.0 - soft) * strength
-
-
-## How long after a flash its thunder is heard, in seconds: a random time of a far-off strike.
-func thunder_delay(rng: RandomNumberGenerator) -> float:
-	return rng.randf_range(
-		value("thunder", "min_delay_seconds"), value("thunder", "max_delay_seconds")
-	)
 
 
 ## The chance per second that a bird chirps: by season and part of the day, and less in rain.

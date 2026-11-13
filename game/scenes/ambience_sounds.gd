@@ -1,7 +1,8 @@
 class_name AmbienceSounds
 extends Node
 ## The sound of the world around the player: rain and wind as loops that follow the weather (and
-## swell with gusts), thunder after each flash of lightning, birds, frogs, the sounds of deer,
+## swell with gusts), thunder after each flash of lightning (the kind of thunder, its delay and
+## its loudness by how far the strike was), birds, frogs, the sounds of deer,
 ## rabbits and squirrels, bees buzzing where they hover, a stork's clatter, honking geese, the
 ## frogs' chorus on spring and summer evenings where frogs are about, and now and then an animal
 ## of the livestock: a cow, a sheep, a hen, a dog, a cat or a horse (not while it sleeps). The
@@ -201,10 +202,13 @@ func _follow_frogs(weather: WeatherSample) -> void:
 	_chorus_target = level
 
 
-## Thunder follows the flash after a while, as from a far-off strike.
-func _on_flash() -> void:
-	var delay := rules.thunder_delay(_rng)
-	get_tree().create_timer(delay, false).timeout.connect(func() -> void: _audio.play(&"thunder"))
+## Thunder follows the flash after the sound's travel time from the strike, quieter and duller
+## the farther it was. The timer stops with the tree: a thunder due while the game is paused
+## comes after it for what was left of its delay, so none is lost and none piles up on others.
+func _on_flash(strike: LightningStrike) -> void:
+	get_tree().create_timer(strike.delay_seconds(), false).timeout.connect(
+		func() -> void: _audio.play(strike.event(), null, true, strike.level(), strike.cutoff_hz())
+	)
 
 
 ## A chirp from a bird that is about, else from a tree near the player.

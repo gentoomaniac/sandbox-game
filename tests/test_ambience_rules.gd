@@ -1,5 +1,5 @@
 extends GutTest
-## The rules of the ambience: the loop levels the weather gives, the delay of thunder, and the
+## The rules of the ambience: the loop levels the weather gives, and the
 ## chances of birdsong and frogs by season, part of the day, temperature and distance.
 
 const SPRING := GameClock.Season.SPRING
@@ -71,17 +71,6 @@ func test_a_gust_is_heard_from_the_brightness_of_the_front_given_in_the_data() -
 	var from := _rules.value("loops", "gust_front_from")
 	assert_false(_rules.is_gust(from - 0.01))
 	assert_true(_rules.is_gust(from))
-
-
-func test_thunder_comes_after_a_delay_within_the_range() -> void:
-	var shortest := _rules.value("thunder", "min_delay_seconds")
-	var longest := _rules.value("thunder", "max_delay_seconds")
-	var delays: Array[float] = []
-	for _i in 50:
-		delays.append(_rules.thunder_delay(_rng))
-	for delay in delays:
-		assert_between(delay, shortest, longest)
-	assert_gt(delays.max() - delays.min(), 1.0, "the delays differ")
 
 
 func test_birds_sing_by_day_less_at_dusk_and_not_at_night() -> void:

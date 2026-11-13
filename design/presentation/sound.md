@@ -40,11 +40,11 @@ Settings → Audio, saved with the others; 0 mutes it).
   a pile is only partly taken because the inventory is full.
 - **UI:** clicks for menus, the inventory and the hotbar.
 - **Weather (ambience):** rain and wind as loops that follow their strength and fade like
-  the weather visuals, wind gusts, and thunder after a flash, delayed as if far away. Thunder comes in three
-  kinds by distance (task 214, `weather.py`): `thunder_far` (low, soft, long rumble, no crack,
-  -16 dBFS), `thunder_mid` (a roll with body, -9) and the rare `thunder_close` (a sharp crack
-  at once, then a heavy rumble, -2); the game lowers and dulls them further by distance. The
-  old `thunder` stays until the game code switches over.
+  the weather visuals, wind gusts, and thunder after a flash, by how far the strike was. Thunder
+  comes in three kinds by distance (task 214, `weather.py`): `thunder_far` (low, soft, long
+  rumble, no crack, -16 dBFS), `thunder_mid` (a roll with body, -9) and the rare `thunder_close`
+  (a sharp crack at once, then a heavy rumble, -2); the game lowers and dulls them further by
+  distance (see the ambience below).
 - **Fire:** `fire_crackle_loop` (task 172, `tools/audio/fire.py`), an 8-second circle of
   crackling only, no bed of noise under it (the user, 2026-11-11): fine flecks of the embers
   all through, ticks and snaps of all sizes over them (short, bright and dry, nothing low or
@@ -111,8 +111,18 @@ Settings → Audio, saved with the others; 0 mutes it).
   player (decided 2026-11-12, task 176): it plays `wind_gust` and swells the wind loop for a
   couple of seconds, softly where gusts only begin to show (3 m/s) and at full volume and
   swell in a storm, and not at all below that speed. Indoors the Ambience bus turns it down
-  like the rest. Each lightning flash is followed by one thunder 1 to 9 seconds
-  later, plain (not positional) on the Ambience bus. Birds chirp at a chance per second by
+  like the rest. Each lightning flash strikes at a distance (decided
+  2026-11-13, task 214; `LightningStrike`, numbers in `data/weather.cfg` `[strike]`): 0.1 to
+  12 km, drawn by band (close to 0.6 km, middle to 4 km, far beyond) with the weights 1 : 4 : 10,
+  so a close one is rare (about one flash in fifteen; a full thunderstorm flashes about six times
+  per game hour). The thunder comes after distance times 3 s/km in real seconds (not game time),
+  as one of `thunder_close` (the crack), `thunder_mid` or `thunder_far` by band, plain (not
+  positional) on the Ambience bus (muffled indoors). It gets 2 dB quieter per km (about -40 dBFS
+  at 12 km for the far kind) and is low-passed from 12 kHz at the nearest strike to 600 Hz at the
+  farthest: the cutoff is set on one of four DistantAmbience buses taken in turn, so a rumble
+  keeps its own cutoff while it plays. A thunder that is due while the game is paused waits with
+  the tree and comes after the pause for what was left of its delay (it is not dropped and does
+  not pile up with others). Birds chirp at a chance per second by
   season (winter few), part of the day (none at night) and rain (none in heavy rain), from
   a bird in view or else a tree near the player. Frogs look at some random tiles within 12
   of the player and croak at the nearest water or wetland among them, by season (none in

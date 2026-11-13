@@ -68,9 +68,3 @@ func test_phase_weights_of_the_wrong_length_are_bad() -> void:
 	_assert_bad(
 		_rules_with("frogs", "phase_weights", [1.0, 1.0, 1.0, 1.0]), "[frogs] phase_weights"
 	)
-
-
-func test_thunder_at_the_latest_before_the_earliest_is_bad() -> void:
-	var shortest := _rules.value("thunder", "min_delay_seconds")
-	_assert_bad(_rules_with("thunder", "max_delay_seconds", shortest - 0.5), "max_delay_seconds")
-	assert_true(_rules_with("thunder", "max_delay_seconds", shortest).is_valid(), "equal is fine")

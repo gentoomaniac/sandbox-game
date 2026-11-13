@@ -117,7 +117,9 @@
     saved and nothing falls indoors. The sound
     of the gusts follows the same fronts (see the ambience in presentation/sound.md).
   - **Effects for now are visual only:** rain and snow particles (slanted by the wind),
-    fog drifting over the world, wind streaks and blowing leaves, lightning flashes, and
+    fog drifting over the world, wind streaks and blowing leaves, lightning flashes (task 214: brighter and sharper the
+    nearer the strike, a faint slow glow when far; its thunder is the ambience's, see
+    presentation/sound.md), and
     overcast skies dimming daylight, and **cloud shadows** (task 194): by day, with the sun out
     and some cloud, soft dark patches drift over the ground with the wind's speed and direction
     (no cloud is drawn). More cover gives more and larger shadows, a clear sky none; a closed

@@ -52,16 +52,6 @@ def wind_gust(rng):
     return (body / rms(body) + 0.5 * low) * shape + 0.2 * whistle / rms(whistle) * shape**2
 
 
-def thunder_near(rng):
-    """A soft crack and a big rolling rumble."""
-    return _thunder(rng, length=4.5, rumble_cutoff=220, attack=0.08, rate=1.1, crack=0.15)
-
-
-def thunder_far(rng):
-    """Only the rumble, lower, slower to rise and longer, and much quieter."""
-    return 0.45 * _thunder(rng, length=5.5, rumble_cutoff=120, attack=0.4, rate=0.8, crack=0)
-
-
 def thunder_far_roll(rng):
     """Far off: only a low, soft rumble that rises slowly and rolls on for many seconds."""
     return _thunder(rng, length=rng.uniform(7.5, 9.0), rumble_cutoff=rng.uniform(80, 100),

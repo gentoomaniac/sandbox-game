@@ -7,11 +7,11 @@ a few variants, art/generated/sounds/<event>_<n>.wav with n from 1: mono, 16 bit
   animals.py, from the building blocks in dsp.py. Each variant is a function that takes a random
   generator and returns samples. An event lists its variant functions, so most repeat one
   function (the generator makes each a little different in pitch, timing and noise) and some
-  mix kinds, e.g. thunder_1 and thunder_2 are near, thunder_3 and thunder_4 far.
+  mix kinds.
 - Every variant draws from its own generator, seeded by its event name and number, so
   changing one sound leaves all the others byte for byte the same.
 - An event's level is the peak of its loudest variant, in dBFS; the variants keep their
-  differences (far thunder stays quieter than near). The levels balance the events
+  differences (a quiet variant stays quieter than a loud one). The levels balance the events
   against each other; data/sounds.cfg adjusts the volume in the game.
 - Every sound is high-passed at 20 Hz (no DC offset) and gets a short fade at both ends.
 - The loops (events ending in _loop) are built as circles: noise is filtered circularly,
@@ -77,7 +77,6 @@ EVENTS = {
     "rain_loop": (-10, [weather.rain_loop] * 2),
     "wind_loop": (-12, [weather.wind_loop] * 2),
     "wind_gust": (-8, [weather.wind_gust] * 3),
-    "thunder": (-3, [weather.thunder_near] * 2 + [weather.thunder_far] * 2),
     # By distance (task 214): the game also lowers and dulls them the farther the strike was.
     "thunder_far": (-16, [weather.thunder_far_roll] * 3),
     "thunder_mid": (-9, [weather.thunder_mid_roll] * 3),

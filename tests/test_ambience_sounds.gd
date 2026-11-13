@@ -1,8 +1,7 @@
 extends GutTest
-## The ambience node: the weather loops start and stop with the weather, thunder follows a flash
-## after a delay, a bee that appears buzzes, frogs about croak in chorus on a summer evening, and
-## a farm animal calls only while it is awake. The
-## audio service is real; what it plays is recorded.
+## The ambience node: the weather loops start and stop with the weather, a bee that appears
+## buzzes, frogs about croak in chorus on a summer evening, and a farm animal calls only while it
+## is awake. The audio service is real; what it plays is recorded.
 
 var _state: GameState
 var _audio: AudioService
@@ -59,21 +58,6 @@ func test_a_clear_calm_day_has_no_loops() -> void:
 	_state.weather_override = &"clear"
 	_ambience._process(1.0)
 	assert_false(_events.has(&"rain_loop"))
-
-
-## The ambience rules of the data file with the thunder coming within 0.1 to 0.2 s.
-func _quick_thunder_rules() -> AmbienceRules:
-	var values := DataFile.read_sections(AmbienceRules.DEFAULT_PATH)
-	values["thunder"] = {"min_delay_seconds": 0.1, "max_delay_seconds": 0.2}
-	return AmbienceRules.new(values)
-
-
-func test_thunder_follows_a_flash_after_a_delay() -> void:
-	_ambience.rules = _quick_thunder_rules()
-	_weather_view.flash()
-	assert_false(_events.has(&"thunder"), "not at once")
-	await wait_seconds(0.3)
-	assert_true(_events.has(&"thunder"))
 
 
 ## Puts a house of Kate's on free ground near the player and takes the player through its door;

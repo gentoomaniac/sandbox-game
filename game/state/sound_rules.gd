@@ -41,7 +41,6 @@ const EVENTS: Array[StringName] = [
 	&"rain_loop",
 	&"wind_loop",
 	&"wind_gust",
-	&"thunder",
 	&"thunder_far",
 	&"thunder_mid",
 	&"thunder_close",
