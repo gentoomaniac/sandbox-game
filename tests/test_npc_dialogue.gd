@@ -140,8 +140,10 @@ func test_a_real_model_sums_up_a_conversation() -> void:
 	_antje.add_chat_line(1, 401, true, "Thank you.")
 	_antje.add_chat_line(1, 401, false, "Gern.")
 	await dialogue.compact(_antje, _state)
-	gut.p("Antje remembers: %s" % _antje.memories[0])
-	assert_false(_antje.memories[0].contains("The neighbour said:"), "the model summed it up")
+	gut.p("Antje remembers: %s" % _antje.memories[0]["text"])
+	assert_false(
+		_antje.memories[0]["text"].contains("The neighbour said:"), "the model summed it up"
+	)
 
 
 func test_gemini_is_asked_through_the_openai_compatible_chat_with_its_own_key() -> void:

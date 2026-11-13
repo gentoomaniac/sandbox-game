@@ -65,7 +65,9 @@ static func reply_messages(
 	words.merge(moment_words(moment, rules))
 	var last: Array[String] = [_said(rules, "villager", words), _said(rules, "about", words)]
 	if not npc.memories.is_empty():
-		words["memories"] = " ".join(npc.memories)
+		words["memories"] = " ".join(
+			npc.memories.map(func(memory: Dictionary) -> String: return memory["text"])
+		)
 		last.append(_said(rules, "memory", words))
 	last.append_array(GossipRules.default_rules().story_lines(npc.stories, moment.clock.day))
 	last.append(_said(rules, "moment", words))

@@ -4,9 +4,10 @@ extends RefCounted
 ## use. A profile has a name of its own, a provider (see GameSettings `LANGUAGE_MODEL_PROVIDERS`)
 ## and that provider's settings: the endpoint (such as "http://127.0.0.1:11434/v1", see
 ## OpenAiChat and ClaudeChat), the model, the most tokens and the temperature of an answer, and
-## how many lines of a chat a villager keeps. Several profiles may share a provider, say Gemini
-## with a pro and a flash model. The key is the provider's, not the profile's: it is entered once
-## and only ever sent to its own provider, and is kept out of the profiles.
+## how many lines of a chat and how many long-term memories a villager keeps. Several profiles may
+## share a provider, say Gemini with a pro and a flash model. The key is the provider's, not the
+## profile's: it is entered once and only ever sent to its own provider, and is kept out of the
+## profiles.
 
 ## Emitted after every change, for GameSettings to save.
 signal changed
@@ -26,9 +27,13 @@ const TEXT_KEYS: Array[String] = ["endpoint", "model", "max_tokens", "temperatur
 const MIN_CHAT_HISTORY_LINES := 2
 const MAX_CHAT_HISTORY_LINES := 200
 const DEFAULT_CHAT_HISTORY_LINES := 24
+## How many long-term memories a villager keeps (see Npc `keep_memories`).
+const MIN_MEMORIES_KEPT := 1
+const MAX_MEMORIES_KEPT := 200
+const DEFAULT_MEMORIES_KEPT := 20
 
 ## The profile in use: {name, provider, endpoint, model, max_tokens, temperature,
-## chat_history_lines}.
+## chat_history_lines, memories_kept}.
 var active: Dictionary
 
 ## Every profile, with a name of its own each.
@@ -72,6 +77,12 @@ func set_value(key: String, text: String) -> void:
 ## not at every step of the Settings page's slider.
 func set_chat_history_lines(lines: int) -> void:
 	active["chat_history_lines"] = clampi(lines, MIN_CHAT_HISTORY_LINES, MAX_CHAT_HISTORY_LINES)
+	changed.emit()
+
+
+## Memories kept in range. Applied like the lines (see `set_chat_history_lines`).
+func set_memories_kept(memories: int) -> void:
+	active["memories_kept"] = clampi(memories, MIN_MEMORIES_KEPT, MAX_MEMORIES_KEPT)
 	changed.emit()
 
 
@@ -186,6 +197,7 @@ static func _new_profile(provider: String, profile_name: String) -> Dictionary:
 		"max_tokens": "",
 		"temperature": "",
 		"chat_history_lines": DEFAULT_CHAT_HISTORY_LINES,
+		"memories_kept": DEFAULT_MEMORIES_KEPT,
 	}
 
 
@@ -254,8 +266,20 @@ func _checked_profile(entry: Variant) -> Dictionary:
 		else:
 			push_warning("Ignoring language model %s in %s: not a text" % [key, _path])
 	if entry.has("chat_history_lines"):
-		checked["chat_history_lines"] = _checked_lines(
-			entry["chat_history_lines"], DEFAULT_CHAT_HISTORY_LINES
+		checked["chat_history_lines"] = _checked_count(
+			"chat history lines",
+			entry["chat_history_lines"],
+			MIN_CHAT_HISTORY_LINES,
+			MAX_CHAT_HISTORY_LINES,
+			DEFAULT_CHAT_HISTORY_LINES
+		)
+	if entry.has("memories_kept"):
+		checked["memories_kept"] = _checked_count(
+			"memories kept",
+			entry["memories_kept"],
+			MIN_MEMORIES_KEPT,
+			MAX_MEMORIES_KEPT,
+			DEFAULT_MEMORIES_KEPT
 		)
 	return checked
 
@@ -266,7 +290,13 @@ func _checked_profile(entry: Variant) -> Dictionary:
 func _upgrade_to_profiles(file: ConfigFile) -> void:
 	var lines := DEFAULT_CHAT_HISTORY_LINES
 	if file.has_section_key(SECTION, OLD_CHAT_HISTORY_LINES_KEY):
-		lines = _checked_lines(file.get_value(SECTION, OLD_CHAT_HISTORY_LINES_KEY), lines)
+		lines = _checked_count(
+			"chat history lines",
+			file.get_value(SECTION, OLD_CHAT_HISTORY_LINES_KEY),
+			MIN_CHAT_HISTORY_LINES,
+			MAX_CHAT_HISTORY_LINES,
+			lines
+		)
 	for profile in _profiles:
 		var section := _section_of(profile["provider"])
 		profile["chat_history_lines"] = lines
@@ -299,13 +329,9 @@ func _load_active(file: ConfigFile) -> void:
 		push_warning("Ignoring language model profile in use in %s: not known" % _path)
 
 
-func _checked_lines(value: Variant, fallback: int) -> int:
-	if value is int and value >= MIN_CHAT_HISTORY_LINES and value <= MAX_CHAT_HISTORY_LINES:
+## `value` of the setting `label` if it is a whole number from `low` to `high`, else `fallback`.
+func _checked_count(label: String, value: Variant, low: int, high: int, fallback: int) -> int:
+	if value is int and value >= low and value <= high:
 		return value
-	push_warning(
-		(
-			"Ignoring chat history lines in %s: not a whole number %d to %d"
-			% [_path, MIN_CHAT_HISTORY_LINES, MAX_CHAT_HISTORY_LINES]
-		)
-	)
+	push_warning("Ignoring %s in %s: not a whole number %d to %d" % [label, _path, low, high])
 	return fallback

@@ -225,7 +225,9 @@ func _init() -> void:
 	for scenario: Dictionary in SCENARIOS:
 		var npc := Npc.create_villager(scenario["villager"], Vector2.ZERO, villagers)
 		for memory: String in scenario.get("memories", []):
-			npc.add_memory(memory)
+			npc.add_memory(
+				memory, 10, MemoryWeight.MEDIUM, LanguageModelProfiles.DEFAULT_MEMORIES_KEPT
+			)
 		var entry := {
 			"id": scenario["id"],
 			"villager": npc.name,

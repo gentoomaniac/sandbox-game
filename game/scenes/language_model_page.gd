@@ -3,11 +3,12 @@ extends VBoxContainer
 ## The settings of the language model villagers talk through (see NpcDialogue): the profile in
 ## use, picked from the list and added, copied, renamed or deleted here, which has a provider (an
 ## OpenAI-compatible chat API, Claude or Gemini), its endpoint, the
-## model's name, the most tokens and the temperature of an answer, and how many lines of a chat a
-## villager keeps; and the key, if the provider needs one, which is the provider's, not the
-## profile's. Each is stored as it is chosen or typed. The test LLM is the default; with the
-## endpoint emptied, villagers speak scripted lines. The endpoint is asked which models it has,
-## to pick one from a list (the name can be typed too, as the endpoint may not be reachable).
+## model's name, the most tokens and the temperature of an answer, and how many lines of a chat and
+## long-term memories a villager keeps; and the key, if the provider needs one, which is the
+## provider's, not the profile's. Each is stored as it is chosen or typed. The test LLM is the
+## default; with the endpoint emptied, villagers speak scripted lines. The endpoint is asked which
+## models it has, to pick one from a list (the name can be typed too, as the endpoint may not be
+## reachable).
 
 signal back_requested
 
@@ -103,6 +104,11 @@ const HISTORY_TIP := (
 	+ " summed up in the villager's memory. Every kept line is sent with each question, so more"
 	+ " lines make the answers slower (and cost more with a hosted model)."
 )
+const MEMORIES_TIP := (
+	"How many long-term memories a villager keeps. When there are more, the lightest is forgotten,"
+	+ " between equal weights the oldest. Every memory is sent with each question, so more of them"
+	+ " make the answers slower (and cost more with a hosted model)."
+)
 const NOTE := "The key is stored as plain text in settings.cfg."
 const FIELD_WIDTH := 260
 
@@ -128,6 +134,8 @@ var _models_asked := 0
 var _models_timeout: float = NpcTalkRules.default_rules().value("request", "models_timeout_seconds")
 var _history_label := Label.new()
 var _history_lines := HSlider.new()
+var _memories_label := Label.new()
+var _memories_kept := HSlider.new()
 ## Says why a name typed was not taken; hidden while there is nothing to say.
 var _name_note := Label.new()
 ## What scrolls: everything between the title and the note.
@@ -176,19 +184,25 @@ func _init(settings: GameSettings) -> void:
 	_models_delay.wait_time = NpcTalkRules.default_rules().value("request", "models_delay_seconds")
 	_models_delay.timeout.connect(show_models)
 	add_child(_models_delay)
-	TooltipView.set_text(_history_label, HISTORY_TIP)
-	_history_label.mouse_filter = Control.MOUSE_FILTER_PASS
-	_rows.add_child(_history_label)
-	_history_lines.step = 1
-	_history_lines.min_value = LanguageModelProfiles.MIN_CHAT_HISTORY_LINES
-	_history_lines.max_value = LanguageModelProfiles.MAX_CHAT_HISTORY_LINES
-	_history_lines.value_changed.connect(
-		func(lines: float) -> void:
-			_settings.profiles.set_chat_history_lines(roundi(lines))
-			_show_history_lines()
+	_add_count_slider(
+		_history_label,
+		_history_lines,
+		Vector2i(
+			LanguageModelProfiles.MIN_CHAT_HISTORY_LINES,
+			LanguageModelProfiles.MAX_CHAT_HISTORY_LINES
+		),
+		HISTORY_TIP,
+		"setting_chat_history_lines",
+		_settings.profiles.set_chat_history_lines
 	)
-	TooltipView.set_text(_history_lines, HISTORY_TIP, "setting_chat_history_lines")
-	_rows.add_child(_history_lines)
+	_add_count_slider(
+		_memories_label,
+		_memories_kept,
+		Vector2i(LanguageModelProfiles.MIN_MEMORIES_KEPT, LanguageModelProfiles.MAX_MEMORIES_KEPT),
+		MEMORIES_TIP,
+		"setting_memories_kept",
+		_settings.profiles.set_memories_kept
+	)
 	var note := Label.new()
 	note.text = NOTE
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -218,7 +232,8 @@ func show_settings() -> void:
 		TooltipView.set_text(_labels[key], tip)
 		TooltipView.set_text(_fields[key], tip, "setting_language_model_%s" % key)
 	_history_lines.set_value_no_signal(language_model["chat_history_lines"])
-	_show_history_lines()
+	_memories_kept.set_value_no_signal(language_model["memories_kept"])
+	_show_counts()
 	_fields["endpoint"].placeholder_text = provider["endpoint"]
 	_fields["model"].placeholder_text = provider["model"]
 	_fields["max_tokens"].placeholder_text = str(_game_max_tokens(provider["protocol"]))
@@ -308,10 +323,34 @@ func _list_profiles() -> void:
 	_delete_button.disabled = _profiles.item_count == 1
 
 
-func _show_history_lines() -> void:
-	_history_label.text = (
-		"Lines a villager keeps: %d" % _settings.profiles.active["chat_history_lines"]
+## A row of a label and a slider for a whole number of the profile, from `limits.x` to `limits.y`.
+func _add_count_slider(
+	label: Label,
+	slider: HSlider,
+	limits: Vector2i,
+	tip: String,
+	tip_id: String,
+	set_count: Callable
+) -> void:
+	TooltipView.set_text(label, tip)
+	label.mouse_filter = Control.MOUSE_FILTER_PASS
+	_rows.add_child(label)
+	slider.step = 1
+	slider.min_value = limits.x
+	slider.max_value = limits.y
+	slider.value_changed.connect(
+		func(count: float) -> void:
+			set_count.call(roundi(count))
+			_show_counts()
 	)
+	TooltipView.set_text(slider, tip, tip_id)
+	_rows.add_child(slider)
+
+
+func _show_counts() -> void:
+	var active := _settings.profiles.active
+	_history_label.text = "Lines a villager keeps: %d" % active["chat_history_lines"]
+	_memories_label.text = "Memories a villager keeps: %d" % active["memories_kept"]
 
 
 func _add_model_list() -> void:

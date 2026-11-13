@@ -1,7 +1,7 @@
 extends ResourceCase
 ## What villagers remember: the lines that drop out of their chat summed up in one line (by the
-## model, else plainly), capped with the oldest merged, and told in later prompts (saved:
-## test_save_npcs.gd).
+## model, else plainly), a long-term memory of medium weight, capped with the lightest forgotten,
+## and told in later prompts (saved: test_save_npcs.gd).
 
 var _npc: Npc
 var _settings: GameSettings
@@ -48,19 +48,30 @@ func _talk(screen: ChatScreen, text: String) -> void:
 # --- The villager's memories ---
 
 
-func test_beyond_the_limit_the_oldest_two_memories_become_one() -> void:
-	for index in Npc.MEMORY_LIMIT + 1:
-		_npc.add_memory("memory %d." % index)
-	assert_eq(_npc.memories.size(), Npc.MEMORY_LIMIT)
-	assert_eq(_npc.memories[0], "memory 0. memory 1.")
-	assert_eq(_npc.memories[-1], "memory %d." % Npc.MEMORY_LIMIT)
+func test_a_summed_up_chat_is_a_memory_of_medium_weight_of_today() -> void:
+	_state.clock.day = 6
+	_settings.profiles.set_chat_history_lines(2)
+	for index in 3:
+		_npc.add_chat_line(1, 400, true, "line %d" % index)
+	var dialogue := NpcDialogue.new(_settings, _chat)
+	add_child_autoqfree(dialogue)
+	await dialogue.compact(_npc, _state)
+	assert_eq(_npc.memories.size(), 1)
+	assert_eq(_npc.memories[0]["day"], 6)
+	assert_eq(_npc.memories[0]["weight"], MemoryWeight.MEDIUM)
 
 
-func test_a_merged_memory_keeps_its_end() -> void:
-	for index in Npc.MEMORY_LIMIT * 20:
-		_npc.add_memory("%03d %s" % [index, "x".repeat(50)])
-	assert_eq(_npc.memories[0].length(), Npc.MEMORY_LENGTH)
-	assert_eq(_npc.memories.size(), Npc.MEMORY_LIMIT)
+func test_the_setting_caps_the_memories() -> void:
+	_settings.profiles.set_memories_kept(2)
+	for index in 4:
+		_npc.add_memory("day %d" % index, index, MemoryWeight.MEDIUM, 4)
+	var dialogue := NpcDialogue.new(_settings, _chat)
+	add_child_autoqfree(dialogue)
+	await dialogue.compact(_npc, _state)
+	assert_eq(
+		_npc.memories.map(func(memory: Dictionary) -> String: return memory["text"]),
+		["day 2", "day 3"]
+	)
 
 
 # --- The prompts ---
@@ -104,8 +115,8 @@ func test_later_prompts_tell_what_the_villager_remembers() -> void:
 		NpcPrompt.reply_messages(_npc, [], "Moin", moment, _rules, false)[-1]["content"]
 	)
 	assert_false(last.contains("remembers"), "nothing yet")
-	_npc.add_memory("On the 1st day: one.")
-	_npc.add_memory("On the 2nd day: two.")
+	_npc.add_memory("On the 1st day: one.", 1, MemoryWeight.MEDIUM, 20)
+	_npc.add_memory("On the 2nd day: two.", 2, MemoryWeight.MEDIUM, 20)
 	last = NpcPrompt.reply_messages(_npc, [], "Moin", moment, _rules, false)[-1]["content"]
 	assert_eq(
 		last.split("\n")[2],
@@ -136,7 +147,7 @@ func test_lines_beyond_the_setting_are_remembered_as_the_model_sums_them_up() ->
 	screen.close()
 	await wait_until(func() -> bool: return _npc.memories.size() == 1, 2.0)
 	assert_eq(_texts(_npc.chat_history), ["Rain today?", "Aye."])
-	assert_string_ends_with(_npc.memories[0], ": The neighbour greeted me; I greeted back.")
+	assert_string_ends_with(_npc.memories[0]["text"], ": The neighbour greeted me; I greeted back.")
 	assert_true(_npc.uncompacted_lines.is_empty())
 
 
@@ -148,7 +159,7 @@ func test_without_a_model_the_dropped_lines_are_remembered_plainly() -> void:
 	await _said(screen, "Moin, Antje")
 	await _said(screen, "Rain today?")
 	assert_eq(_npc.memories.size(), 1)
-	assert_string_ends_with(_npc.memories[0], ': The neighbour said: "Moin, Antje"')
+	assert_string_ends_with(_npc.memories[0]["text"], ': The neighbour said: "Moin, Antje"')
 
 
 func test_closing_a_chat_makes_no_memory_and_the_chat_goes_on_when_reopened() -> void:
@@ -276,7 +287,7 @@ func test_clear_forgets_the_chat_and_the_memories_and_says_so() -> void:
 	var screen := _chat_screen()
 	screen.open_chat(_npc, _state)
 	await _said(screen, "Moin")
-	_npc.add_memory("On the 1st day: one.")
+	_npc.add_memory("On the 1st day: one.", 1, MemoryWeight.MEDIUM, 20)
 	_npc.uncompacted_lines.append(_line(true, "old"))
 	var requests := _chat.requests.size()
 	screen.say("/clear")

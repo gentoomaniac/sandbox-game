@@ -456,7 +456,7 @@ func _check_npc(npc: Variant, path: String) -> void:
 	_field(npc, "remembered_lines", Kind.WHOLE, path)
 	for key in ["position", "anchor"]:
 		_field(npc, key, Kind.POINT, path)
-	_check_texts(npc, "memories", path)
+	_check_memories(npc, path)
 	var appearance: Variant = _field(npc, "appearance", Kind.DICT, path)
 	if appearance != null:
 		_check_appearance(appearance, path + " appearance")
@@ -488,6 +488,23 @@ func _check_deeds(owner: Dictionary, key: String, path: String, has_witnesses: b
 			_report(deed_path, "unknown deed %s" % kind)
 		if has_witnesses:
 			_check_texts(deed, "witnesses", deed_path)
+
+
+func _check_memories(npc: Dictionary, path: String) -> void:
+	var memories: Variant = _field(npc, "memories", Kind.LIST, path)
+	if memories == null:
+		return
+	for index in memories.size():
+		var memory_path := "%s memories %d" % [path, index]
+		var memory: Variant = memories[index]
+		if not memory is Dictionary:
+			_report(memory_path, "should be a dictionary")
+			continue
+		_field(memory, "day", Kind.WHOLE, memory_path)
+		_field(memory, "text", Kind.TEXT, memory_path)
+		var weight: Variant = _field(memory, "weight", Kind.TEXT, memory_path)
+		if weight != null and not MemoryWeight.WORDS.has(weight):
+			_report(memory_path, "unknown weight %s" % weight)
 
 
 func _check_texts(owner: Dictionary, key: String, path: String) -> void:

@@ -79,8 +79,11 @@
   Spring, year 1 (mid spring): ..."): summed up by the model with a small prompt of its own (one sentence of at most 25 words, in
   the villager's first person),
   else the start of what the player said. One summary is asked for at a time; what drops
-  meanwhile is summed up next. A villager keeps 10 memories; beyond that the oldest two merge
-  into one (its last 400 characters). Later prompts tell the memories and the kept lines.
+  meanwhile is summed up next. The memory is long-term, `{day, text, weight}` with the weight
+  medium (task 126; see [gossip.md](gossip.md), Memory). A villager keeps "Memories a villager
+  keeps" of them (1 to 200, default 20, one for each profile); beyond that the
+  lightest is forgotten, between equal weights the oldest. Later prompts tell the memories and
+  the kept lines.
   Typing `/clear` in the chat forgets the villager's chat, memories and lines waiting for a
   memory, with a line saying so (not sent, not kept); other text with a "/" is said as it is.
 - **Settings:** the endpoint (default the test LLM's), the model (default

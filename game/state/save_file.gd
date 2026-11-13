@@ -21,10 +21,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 34
-## The oldest version we still upgrade. Nine steps back, for the next version (task 126) makes
-## its step the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 35
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -206,6 +205,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_32(game)
 	if version <= 33:
 		_upgrade_from_version_33(game)
+	if version <= 34:
+		_upgrade_from_version_34(game)
 
 
 ## Version 25 had no fallow soil (task 166): every tilled tile was tended on the night of the
@@ -365,3 +366,12 @@ static func _upgrade_from_version_33(game: Dictionary) -> void:
 	game["deeds"] = []
 	for npc: Dictionary in game["npcs"]:
 		npc["stories"] = []
+
+
+## Version 34 had memories as plain lines (task 126): they are of medium weight now, and of no
+## known day.
+static func _upgrade_from_version_34(game: Dictionary) -> void:
+	for npc: Dictionary in game["npcs"]:
+		npc["memories"] = npc["memories"].map(
+			func(text: String) -> Dictionary: return {"day": 0, "text": text, "weight": "medium"}
+		)

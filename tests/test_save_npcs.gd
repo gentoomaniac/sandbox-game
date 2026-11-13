@@ -8,7 +8,12 @@ func test_the_villagers_and_their_chat_are_kept() -> void:
 	npc.anchor = Vector2(1.5, -2.5)
 	npc.add_chat_line(3, 495, true, "hello")
 	npc.add_chat_line(3, 495, false, "I understand.")
-	npc.add_memory("On the 3rd day of Spring, year 1 (early spring): The neighbour said hello.")
+	npc.add_memory(
+		"On the 3rd day of Spring, year 1 (early spring): The neighbour said hello.",
+		3,
+		MemoryWeight.HIGH,
+		20
+	)
 	state.npcs.add(npc)
 	assert_true(SaveFile.write(state, SAVE_PATH))
 
@@ -34,6 +39,7 @@ func test_the_villagers_and_their_chat_are_kept() -> void:
 	)
 	assert_eq([loaded.avoids, loaded.secrets], [npc.avoids, npc.secrets])
 	assert_eq(loaded.memories, npc.memories)
+	assert_eq(loaded.memories[0]["weight"], MemoryWeight.HIGH)
 	assert_eq(loaded.uncompacted_lines, npc.uncompacted_lines)
 
 

@@ -22,7 +22,7 @@ func test_a_villager_who_saw_nothing_is_told_nothing_of_the_kind() -> void:
 
 func test_a_villager_is_told_what_they_saw_after_their_memories() -> void:
 	_moment.clock.day = 3
-	_antje.add_memory("A memory.")
+	_antje.add_memory("A memory.", 2, MemoryWeight.MEDIUM, 20)
 	var story := {"day": 3, "minute": 600, "kind": GossipRules.FELLED, "count": 7}
 	story["place"] = "by Antje's house"
 	_antje.stories.append(story)

@@ -84,7 +84,7 @@ func _change_everything() -> void:
 	_world.spend_clay_spot(_free_tile(11))
 	_villager.add_chat_line(1, 401, false, "and more")
 	_villager.position += Vector2(1, 1)
-	_villager.memories.append("a memory")
+	_villager.add_memory("a memory", 1, MemoryWeight.HIGH, 20)
 	_animal.position += Vector2(2, 2)
 	_state.player.inventory.add(ItemTypes.LOGS, 4)
 	_state.player.position += Vector2(3, 3)

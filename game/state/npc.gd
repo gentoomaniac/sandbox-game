@@ -6,11 +6,6 @@ extends RefCounted
 
 enum Activity { IDLE, WALK }
 
-## They remember this many conversations; the oldest two are merged into one when there are more.
-const MEMORY_LIMIT := 10
-## A merged memory keeps its last this many characters.
-const MEMORY_LENGTH := 400
-
 ## Their full name, such as "Antje Boysen".
 var name: String
 var sex: StringName
@@ -60,9 +55,10 @@ var anchor: Vector2
 ## day and the minute of the day it was said, and whether the player said it. How many are kept is
 ## a setting (see `drop_old_lines`).
 var chat_history: Array[Dictionary] = []
-## One line for each stretch of talk they remember, oldest first, such as "On the 12th day of
-## Spring, year 1: The neighbour asked after the dyke." (see NpcDialogue `compact`).
-var memories: Array[String] = []
+## Their long-term memories, oldest first, each `{day, text, weight}`: the game day, one line such
+## as "On the 12th day of Spring, year 1: The neighbour asked after the dyke." (see NpcDialogue
+## `compact`) and a MemoryWeight. How many are kept is a setting (see `keep_memories`).
+var memories: Array[Dictionary] = []
 ## The lines that dropped out of `chat_history` and are not in a memory yet, oldest first. Saved,
 ## so lines whose summing up was still under way when the game was saved are not lost.
 var uncompacted_lines: Array[Dictionary] = []
@@ -163,13 +159,25 @@ func forget_chat() -> void:
 	memories.clear()
 
 
-## Remembers lines that dropped out of the chat. Beyond MEMORY_LIMIT the oldest two become one,
-## which keeps its end.
-func add_memory(memory: String) -> void:
-	memories.append(memory)
-	if memories.size() > MEMORY_LIMIT:
-		var merged := "%s %s" % [memories.pop_front(), memories[0]]
-		memories[0] = merged.right(MEMORY_LENGTH)
+## Remembers `text` of the game `day_of_memory`, and forgets the surplus (see `keep_memories`).
+func add_memory(text: String, day_of_memory: int, weight: int, keep: int) -> void:
+	memories.append({"day": day_of_memory, "text": text, "weight": weight})
+	keep_memories(keep)
+
+
+## Keeps `keep` memories at most: the lightest goes, between equal weights the oldest.
+func keep_memories(keep: int) -> void:
+	while memories.size() > keep:
+		var forgotten := 0
+		for index in range(1, memories.size()):
+			var memory := memories[index]
+			var lightest := memories[forgotten]
+			if (
+				memory["weight"] < lightest["weight"]
+				or (memory["weight"] == lightest["weight"] and memory["day"] < lightest["day"])
+			):
+				forgotten = index
+		memories.remove_at(forgotten)
 
 
 func to_dict() -> Dictionary:
@@ -195,7 +203,7 @@ func to_dict() -> Dictionary:
 		"position": SaveCodec.float_vector_to_json(position),
 		"anchor": SaveCodec.float_vector_to_json(anchor),
 		"chat_history": chat_history.duplicate(true),
-		"memories": memories.duplicate(),
+		"memories": memories.map(_memory_to_saved),
 		"uncompacted_lines": uncompacted_lines.duplicate(true),
 		"remembered_lines": remembered_lines,
 		"stories": stories.map(DeedLog.to_saved),
@@ -218,13 +226,32 @@ static func from_dict(data: Dictionary) -> Npc:
 	npc.anchor = SaveCodec.float_vector_from_json(data["anchor"])
 	for line: Dictionary in data["chat_history"]:
 		npc.add_chat_line(int(line["day"]), int(line["minute"]), line["from_player"], line["text"])
-	npc.memories.assign(data["memories"])
+	for memory: Dictionary in data["memories"]:
+		(
+			npc
+			. memories
+			. append(
+				{
+					"day": int(memory["day"]),
+					"text": memory["text"],
+					"weight": MemoryWeight.from_word(memory["weight"]),
+				}
+			)
+		)
 	for line: Dictionary in data["uncompacted_lines"]:
 		npc.uncompacted_lines.append(line)
 	for story: Dictionary in data["stories"]:
 		npc.stories.append(DeedLog.from_saved(story))
 	npc.remembered_lines = mini(int(data["remembered_lines"]), npc.chat_history.size())
 	return npc
+
+
+static func _memory_to_saved(memory: Dictionary) -> Dictionary:
+	return {
+		"day": memory["day"],
+		"text": memory["text"],
+		"weight": MemoryWeight.to_word(memory["weight"]),
+	}
 
 
 ## Takes who they are from a dictionary with the keys of the same names: a sheet of

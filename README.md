@@ -390,7 +390,8 @@ narrower and shorter and the lines wrap. Type a line and press Enter; Escape lea
 stands still while you talk. A villager keeps the latest lines of your chat (24 by default, set under
 Settings → Language model) for the next time, so a reopened chat goes on where it left off;
 the older lines are summed up in one remembered line (by the model, else it is what you
-said), and later talks build on it. Type `/clear` in a chat to make that villager forget
+said), kept as a long-term memory (20 by default; the lightest is forgotten first), and later
+talks build on it. Type `/clear` in a chat to make that villager forget
 the chat and their memories (for debugging). With a language model set under Settings →
 Language model (see [Talking NPCs](#talking-npcs-with-a-language-model)) villagers answer
 in their own words; without one they say short scripted lines ("Aye.", "Is that so?").
@@ -918,6 +919,7 @@ not to the profile: type it once, and it is only ever sent to that provider's en
 | Provider | OpenAI-compatible | OpenAI-compatible, Claude or Gemini. Choosing another gives the profile that provider's endpoint and model; the rest stays. |
 | Endpoint | `http://127.0.0.1:11434/v1` | The base address of the chat API; the game posts to `<endpoint>/chat/completions`. Empty it to turn the model off (villagers then always speak scripted lines). |
 | Model | `qwen2.5:7b-instruct` | The model name the endpoint should use: typed, or picked from the drop-down below it, which lists what `<endpoint>/models` answers (Claude's `/v1/models` with the key), asks again a moment after the endpoint or key is typed and by the Refresh button, and shows only the saved model with a note when the endpoint can't be asked. |
+| Memories a villager keeps | 20 | A number from 1 to 200, one for each profile: how many long-term memories a villager keeps. Each has a weight (low, medium or high; a summed-up chat is medium). When there are more, the lightest is forgotten, between equal weights the oldest. Every memory is sent with each question. |
 | Lines a villager keeps | 24 | A number from 2 to 200, one for each profile: how many of the latest chat lines a villager keeps in the save and tells the model. Older lines are summed up in a memory; lowering it sums up the lines it drops, once the menu is closed. Every kept line is sent with each question, so higher values make the answers slower (and cost more with a hosted model). |
 | Key | empty | Only for endpoints that need one: sent as the header `Authorization: Bearer <key>`, and never sent along a redirect. One for all the profiles of a provider. |
 | Max tokens per answer | empty | The most tokens a villager's line or memory may take, a number from 1 to 32000. Empty is the game's own: 60 for a line and 40 for a memory, 1000 with Claude. A model that thinks first counts its thinking too, so give one such as Gemini's Flash a few hundred or more. |
