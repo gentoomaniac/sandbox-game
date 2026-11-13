@@ -78,6 +78,12 @@ func set_zoom_clamped(value: float) -> void:
 	_zoom_goal = zoom
 
 
+## The part of the world a window of `window_size` pixels shows, in art pixels of the world.
+func view_rect(window_size: Vector2) -> Rect2:
+	var size := ViewMath.visible_size(window_size, zoom)
+	return Rect2(position - size / 2.0, size)
+
+
 ## The mouse wheel: the zoom glides to the new value over the next frames.
 func zoom_by_wheel(notches: float) -> void:
 	_zoom_goal = ViewMath.zoom_after_wheel(_zoom_goal, notches)

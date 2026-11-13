@@ -171,8 +171,7 @@ func nearest_animal(kind: StringName, point: Vector2, reach: float) -> Animal:
 
 ## The part of the world the camera shows, in world pixels.
 func view_rect() -> Rect2:
-	var size := ViewMath.visible_size(ViewMath.window_size(get_window()), _camera.rig.zoom)
-	return Rect2(_camera.rig.position - size / 2.0, size)
+	return _camera.rig.view_rect(ViewMath.window_size(get_window()))
 
 
 ## Whether a point of the ground can be stood on by an animal of a kind: not water (see `is_water`),

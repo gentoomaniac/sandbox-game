@@ -94,3 +94,13 @@ func test_set_zoom_clamped_applies_at_once() -> void:
 	assert_eq(_rig.zoom, 1.5)
 	_rig.set_zoom_clamped(0.1)
 	assert_eq(_rig.zoom, ViewMath.MIN_ZOOM)
+
+
+func test_the_view_rect_is_what_the_window_shows_around_the_camera() -> void:
+	var window := Vector2(1280, 720)
+	_rig.position = Vector2(100, 50)
+	var view := _rig.view_rect(window)
+	assert_eq(view.get_center(), Vector2(100, 50))
+	assert_eq(view.size, ViewMath.visible_size(window, _rig.zoom))
+	_rig.set_zoom_clamped(2.0)
+	assert_lt(_rig.view_rect(window).size.x, view.size.x, "zoomed in shows less")
