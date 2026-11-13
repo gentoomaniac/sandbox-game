@@ -28,7 +28,7 @@ Rules for every task:
 - [ ] Done
 
 After 225. The user, 2026-11-13, with the crows: a craftable scarecrow (sticks, straw or
-reed, old clothes) placed on a field keeps the crows away from the crops within a radius
+reed, old clothes) placed anywhere (the user, 2026-11-13: "wherever you want, it'll have effect in a certain radius") keeps the crows away from the crops within a radius
 (data/). Art in both sets, maybe swaying in the wind; the crows learn to ignore it a little over
 time, or not: to be decided.
 - Default for the open point: the crows learn to ignore it slowly (a scarecrow keeps them off
