@@ -22,8 +22,6 @@ var _history: Array[String] = []
 var _history_index := 0
 var _log := Label.new()
 var _log_list := ScrollingList.new(_log)
-## Plays what `play` asks for; the log says when a piece, rendered after the command ran, begins.
-var _music := MusicPlayer.new()
 var _input := LineEdit.new()
 
 
@@ -47,8 +45,6 @@ func _init() -> void:
 	_input.gui_input.connect(_on_input_gui_input)
 	_input.focus_exited.connect(_on_input_focus_exited)
 	box.add_child(_input)
-	add_child(_music)
-	_music.started.connect(func(track: String) -> void: _log_line("Playing %s" % track))
 
 
 func _ready() -> void:
@@ -56,14 +52,20 @@ func _ready() -> void:
 
 
 ## `wildlife_spawner` puts animals in view for the `spawn` command and `wildlife_clearer` takes
-## them away for `killall` (see Console).
+## them away for `killall` (see Console). `music` is what `play` and `stop` drive, and the log says
+## when a piece, rendered after the command ran, begins.
 func show_state(
-	state: GameState, wildlife_spawner := Callable(), wildlife_clearer := Callable()
+	state: GameState,
+	wildlife_spawner := Callable(),
+	wildlife_clearer := Callable(),
+	music: MusicPlayer = null
 ) -> void:
 	_console = Console.new(state)
-	_console.music_tracks = _music.tracks
-	_console.music_player = _music.play
-	_console.music_stopper = _music.stop
+	if music != null:
+		_console.music_tracks = music.tracks
+		_console.music_player = music.play
+		_console.music_stopper = music.stop
+		music.started.connect(func(track: String) -> void: _log_line("Playing %s" % track))
 	_console.wildlife_spawner = wildlife_spawner
 	_console.wildlife_clearer = wildlife_clearer
 

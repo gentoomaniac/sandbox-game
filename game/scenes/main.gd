@@ -34,6 +34,8 @@ var _resumed_state: GameState
 var _builder: Builder
 var _settings: GameSettings
 var _audio := AudioService.new()
+## The music: what the console's `play` and `stop` drive.
+var _music := MusicPlayer.new()
 var _sounds := GameSounds.new()
 var _ambience := AmbienceSounds.new()
 var _menu: PauseMenu
@@ -175,6 +177,7 @@ func _load_game() -> void:
 	_audio.is_muted = _options.mute
 	_audio.is_logging = _options.sound_log
 	add_child(_audio)
+	add_child(_music)
 	_world.audio_listener_enable_2d = true
 	_audio.use_world(_world)
 	_audio.apply_settings(_settings)
@@ -286,7 +289,7 @@ func _connect_state_and_views() -> void:
 	_character_screen.show_player(_state.player)
 	_crafting_screen.show_crafting(Crafting.new(_state), _state.player.inventory)
 	_cheat_hud.show_cheats(_state.cheats)
-	_console_view.show_state(_state, _wildlife.spawn_in_view, _wildlife.remove_kind)
+	_console_view.show_state(_state, _wildlife.spawn_in_view, _wildlife.remove_kind, _music)
 	# A teleport moves the player far: the camera jumps with them instead of gliding.
 	_console_view.command_ran.connect(
 		func() -> void:
