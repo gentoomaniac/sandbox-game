@@ -53,3 +53,39 @@ func test_a_crawler_flickers_pulses_along_the_sky_instead_of_one_burst() -> void
 	var last := strike.crawl_pulses()[-1]
 	await wait_seconds(last.x - first.x)
 	assert_ne(_view._crawl_glow.position.x, first_x, "moved on along the sky")
+
+
+func test_a_close_flash_draws_a_bolt_that_is_gone_after_a_few_frames() -> void:
+	_view.flash(LightningStrike.new(0.3, _rules, false, 4))
+	assert_almost_eq(_view._bolt.modulate.a, _rules.value("bolt", "close_opacity"), 0.001)
+	assert_not_null(_view._bolt.texture)
+	await wait_seconds(0.5)
+	assert_eq(_view._bolt.modulate.a, 0.0)
+	assert_null(_view._bolt.texture, "its picture is let go")
+
+
+func test_far_flashes_and_crawlers_draw_no_bolt() -> void:
+	_view.flash(LightningStrike.new(8.0, _rules, false, 4))
+	assert_eq(_view._bolt.modulate.a, 0.0)
+	_view.flash(LightningStrike.new(3.0, _rules, true, 4))
+	assert_eq(_view._bolt.modulate.a, 0.0)
+
+
+func test_a_flash_after_a_close_one_clears_the_old_bolt() -> void:
+	_view.flash(LightningStrike.new(0.3, _rules, false, 4))
+	_view.flash(LightningStrike.new(8.0, _rules, false, 4))
+	assert_eq(_view._bolt.modulate.a, 0.0)
+	assert_null(_view._bolt.texture)
+
+
+func test_a_mid_flash_draws_a_faint_bolt() -> void:
+	_view.flash(LightningStrike.new(2.0, _rules, false, 4))
+	assert_almost_eq(_view._bolt.modulate.a, _rules.value("bolt", "mid_opacity"), 0.001)
+	assert_not_null(_view._bolt.texture)
+
+
+func test_the_bolt_is_drawn_in_the_part_of_the_viewport_the_window_shows() -> void:
+	_view.visible_region = Rect2(Vector2(324, 182), Vector2(640, 360))
+	_view.flash(LightningStrike.new(0.3, _rules, false, 4))
+	assert_eq(_view._bolt.position, _view.visible_region.position)
+	assert_eq(_view._bolt.size, _view.visible_region.size)

@@ -52,6 +52,15 @@ func _process(delta: float) -> void:
 	material.set_shader_parameter("texels_to_pixels", ViewMath.screen_scale(window_size, rig.zoom))
 
 
+## The part of the viewport the window shows, in its pixels.
+func visible_region() -> Rect2:
+	var window_size := _window_size()
+	return Rect2(
+		ViewMath.region_origin(rig.position, window_size, rig.zoom),
+		ViewMath.visible_size(window_size, rig.zoom)
+	)
+
+
 ## The art-pixel position of the world under the mouse.
 func mouse_world_position() -> Vector2:
 	# The mouse is in UI units, which depend on the window's size and the UI scale.

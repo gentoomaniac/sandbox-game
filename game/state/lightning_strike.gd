@@ -143,6 +143,17 @@ func is_crawling_rightwards() -> bool:
 	return shape_seed % 2 == 0
 
 
+## How bright the bolt in the sky is at first (0 to 1): a close strike draws one, a mid strike a
+## faint one, the others none.
+func bolt_opacity() -> float:
+	match event():
+		CLOSE:
+			return _rules.value("bolt", "close_opacity")
+		MID:
+			return _rules.value("bolt", "mid_opacity")
+	return 0.0
+
+
 ## 0 for the nearest strike there is, 1 for the farthest.
 func _remoteness() -> float:
 	var nearest := _rules.value("strike", "min_km")

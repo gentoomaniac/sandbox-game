@@ -73,6 +73,20 @@ const REQUIRED_KEYS := {
 		"flash_fade_near_seconds",
 		"flash_fade_far_seconds",
 	],
+	"bolt":
+	[
+		"reach_min_share",
+		"reach_max_share",
+		"step_min_px",
+		"step_max_px",
+		"jag_px",
+		"branches_min",
+		"branches_max",
+		"branch_length_share",
+		"sub_branch_chance",
+		"close_opacity",
+		"mid_opacity",
+	],
 }
 
 static var _default: WeatherRules

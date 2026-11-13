@@ -47,7 +47,15 @@ const HELD_FLASH_OPACITY := 0.55
 const CRAWL_GLOW_WIDTH_SHARE := 0.45
 const CRAWL_PULSE_RISE_SECONDS := 0.04
 const CRAWL_PULSE_FADE_SECONDS := 0.16
+## The bolt shows for a few frames: at its brightness, dimmed for the second stroke, then gone.
+const BOLT_FIRST_SECONDS := 0.07
+const BOLT_SECOND_SECONDS := 0.05
+const BOLT_SECOND_SHARE := 0.6
+const BOLT_FADE_SECONDS := 0.08
 
+## The part of the viewport the window shows, where a bolt is drawn so that it is seen at any zoom;
+## Main keeps it up to date.
+var visible_region := Rect2(Vector2.ZERO, Vector2(ViewMath.VIEWPORT_SIZE))
 ## Debug: keeps the flash of lightning on, for screenshots.
 var is_flash_held := false
 ## The rain (0 to 1) and the wind (m/s, the way it blows) shown now, which the world's ambient
@@ -64,6 +72,7 @@ var _fog := ColorRect.new()
 var _cloud_shadows := ColorRect.new()
 var _flash := ColorRect.new()
 var _crawl_glow := TextureRect.new()
+var _bolt := TextureRect.new()
 var _rules := LightingRules.default_rules()
 var _weather_rules := WeatherRules.default_rules()
 var _rng := RandomNumberGenerator.new()
@@ -84,6 +93,7 @@ var _fog_drift := Vector2.ZERO
 var _seconds := 0.0
 var _is_snap_due := false
 var _flash_tween: Tween
+var _bolt_tween: Tween
 
 
 func _init() -> void:
@@ -98,6 +108,7 @@ func _init() -> void:
 	_precipitation.material = _shader_material(PRECIPITATION_SHADER, view_size)
 	_flash.color = Color(FLASH_COLOR, 0.0)
 	_set_up_crawl_glow(view_size)
+	_set_up_bolt()
 
 
 ## Sets the weather to show, the tint of the world (see DayNightTint), which the effects
@@ -139,6 +150,7 @@ func flash(strike := LightningStrike.draw(_rng, _weather_rules)) -> void:
 	_flash.color.a = 0.0
 	_crawl_glow.modulate.a = 0.0
 	var peak := strike.flash_peak()
+	_show_bolt(strike)
 	_flash_tween = create_tween()
 	if strike.is_crawl:
 		_flicker_along_the_sky(strike)
@@ -169,6 +181,40 @@ func _flicker_along_the_sky(strike: LightningStrike) -> void:
 			_crawl_glow, "modulate:a", strike.flash_peak() * pulse.z, CRAWL_PULSE_RISE_SECONDS
 		)
 		_flash_tween.tween_property(_crawl_glow, "modulate:a", 0.0, CRAWL_PULSE_FADE_SECONDS)
+
+
+## Draws the bolt of the strike, if it has one, for a few frames. Its picture is made here, once
+## per strike, in the art's pixels (twice as big in the classic art), shown with no smoothing.
+func _show_bolt(strike: LightningStrike) -> void:
+	if _bolt_tween != null:
+		_bolt_tween.kill()
+	_bolt.modulate.a = 0.0
+	_bolt.texture = null
+	var opacity := strike.bolt_opacity()
+	if opacity <= 0.0:
+		return
+	var pixel := TerrainTileset.ART_16_SCALE if ArtSet.is_classic else 1
+	var sky_pixels := Vector2i((visible_region.size / pixel).ceil())
+	var bolt := LightningBolt.new(strike.shape_seed, sky_pixels, _weather_rules)
+	_bolt.texture = ImageTexture.create_from_image(BoltImage.render(bolt, sky_pixels))
+	_bolt.position = (visible_region.position / pixel).round() * pixel
+	_bolt.size = Vector2(sky_pixels * pixel)
+	_bolt.modulate.a = opacity
+	_bolt_tween = create_tween()
+	_bolt_tween.tween_interval(BOLT_FIRST_SECONDS)
+	_bolt_tween.tween_property(_bolt, "modulate:a", opacity * BOLT_SECOND_SHARE, 0.0)
+	_bolt_tween.tween_interval(BOLT_SECOND_SECONDS)
+	_bolt_tween.tween_property(_bolt, "modulate:a", 0.0, BOLT_FADE_SECONDS)
+	_bolt_tween.tween_callback(func() -> void: _bolt.texture = null)
+
+
+func _set_up_bolt() -> void:
+	_bolt.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_bolt.stretch_mode = TextureRect.STRETCH_SCALE
+	_bolt.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_bolt.modulate.a = 0.0
+	_bolt.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_bolt)
 
 
 func _set_up_crawl_glow(view_size: Vector2) -> void:

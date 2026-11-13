@@ -118,3 +118,11 @@ func test_the_flicker_is_the_same_for_a_seed_and_differs_between_seeds() -> void
 
 func test_other_strikes_do_not_flicker() -> void:
 	assert_eq(_strike(3.0).crawl_pulses().size(), 0)
+
+
+func test_a_close_strike_draws_a_bolt_a_mid_one_a_fainter_one_and_the_others_none() -> void:
+	assert_eq(_strike(0.3).bolt_opacity(), _rules.value("bolt", "close_opacity"))
+	assert_gt(_strike(2.0).bolt_opacity(), 0.0)
+	assert_lt(_strike(2.0).bolt_opacity(), _strike(0.3).bolt_opacity())
+	assert_eq(_strike(8.0).bolt_opacity(), 0.0)
+	assert_eq(_crawler().bolt_opacity(), 0.0)

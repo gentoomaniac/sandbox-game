@@ -128,7 +128,11 @@
     fog drifting over the world, wind streaks and blowing leaves, lightning flashes (task 214: brighter and sharper the
     nearer the strike, a faint slow glow when far; task 222: one flash in six is a sky-crawler, lightning
     running from cloud to cloud, whose flash is seven faint pulses of glow travelling across the sky over
-    1.8 s instead of one burst; its thunder is the ambience's, see
+    1.8 s instead of one burst; a close strike (a mid one faintly) also draws a branching bolt in the sky for a few
+    frames (task 222, `LightningBolt`): a jagged main channel from the top of the view with 3 to 6
+    forks and now and then a fork of a fork, a near-white core (palette snow_light) in a pale-blue glow (foam), made per strike
+    from its seed and drawn in art pixels (doubled in the classic art), so crisp at every zoom;
+    its thunder is the ambience's, see
     presentation/sound.md), and
     overcast skies dimming daylight, and **cloud shadows** (task 194): by day, with the sun out
     and some cloud, soft dark patches drift over the ground with the wind's speed and direction
