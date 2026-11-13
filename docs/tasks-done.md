@@ -234,3 +234,17 @@ unguarded fields lose some yield or a plant now and then (numbers in data/).
   are saved; art crops in both sets and sound files for the user.
 
 Done: 047bf8e7..d7faf37f, with the art (bffa4b2f, hooded crow, approved) and sounds (738ea0e7, crow_caw x5, crow_flock_rise x2, approved). Flocks of 3-7 hooded crows (a GroundFlock) on grass, floodplain and soil by day, more in autumn and winter, drawn to fresh sowing (spawn accepted by appearing_boost), at most 2 near the player, off in rain, fog, storm. CropRaids: each hour a flock more than 12 tiles from the player raids with chance 0.4, up to 2 unguarded crops within 3 tiles; seed eaten whole (chance 0.5), later stages lose one produce item (harvest never below 1); at most 2 plants and 6 items a day; seeded; flocks and tallies not saved; unloaded chunks never raided. `is_guarded` hook for the scarecrow. Console `crows`, `crows raid`, `spawn crows`, `killall crows`. Numbers in data/crows.cfg, data/wildlife.cfg, data/ambience.cfg.
+
+## 226. Scarecrow
+
+- [x] Done
+
+After 225. The user, 2026-11-13, with the crows: a craftable scarecrow (sticks, straw or
+reed, old clothes) placed anywhere (the user, 2026-11-13: "wherever you want, it'll have effect in a certain radius") keeps the crows away from the crops within a radius
+(data/). Art in both sets, maybe swaying in the wind; the crows learn to ignore it a little over
+time, or not: to be decided.
+- Default for the open point: the crows learn to ignore it slowly (a scarecrow keeps them off
+  fully for a few days, then less, up to a floor; moving it resets that), numbers in data/.
+- Tests: the radius, the learning, crafting and placing; art crops in both sets.
+
+Done: 15384bfb (art, approved "it'll do for now") and up to 0d0a090e. Made by hand from 1 log, 6 hay, 4 fibre (no cloth in the game yet); put down on any free outdoor tile, taken down by axe or hammer; `placed_day` in its object state. Guards crops within 5 tiles: full for 3 days, then falling over 12 days to 0.25 (rolled per tile and day); placing it anew resets that; new crow flocks don't settle where it guards (standing ones stay but can't eat guarded crops). Its coat and straw sway above 2 m/s of wind, faster in stronger wind, always to the right. `crows` lists the scarecrows. Numbers in data/crows.cfg. The art's own ghost picture is unused (its two sizes don't match).

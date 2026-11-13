@@ -23,18 +23,6 @@ Rules for every task:
 - Visuals come from the art generator (task 5 on). Until a task adds art for something,
   use simple placeholder shapes in palette colours.
 
-## 226. Scarecrow
-
-- [ ] Done
-
-After 225. The user, 2026-11-13, with the crows: a craftable scarecrow (sticks, straw or
-reed, old clothes) placed anywhere (the user, 2026-11-13: "wherever you want, it'll have effect in a certain radius") keeps the crows away from the crops within a radius
-(data/). Art in both sets, maybe swaying in the wind; the crows learn to ignore it a little over
-time, or not: to be decided.
-- Default for the open point: the crows learn to ignore it slowly (a scarecrow keeps them off
-  fully for a few days, then less, up to a floor; moving it resets that), numbers in data/.
-- Tests: the radius, the learning, crafting and placing; art crops in both sets.
-
 ## 227. Swing poses for the tools
 
 - [ ] Done
