@@ -98,3 +98,44 @@ func test_a_hen_never_crows() -> void:
 	_run(30.0, _morning())
 
 	assert_eq(_crows, 0)
+
+
+func test_a_run_in_progress_ends_when_it_falls_asleep() -> void:
+	_with_day_chance(0.0)
+	_rooster.crows_left = 3
+
+	_run(1.0, 2 * 60)
+
+	assert_eq(_rooster.crows_left, 0)
+
+
+func test_a_skip_of_time_makes_no_burst_of_crows() -> void:
+	_with_day_chance(1000.0)
+	_state.clock.minute_of_day = _morning()
+
+	_livestock.catch_up(_world, _state.clock, _state.player.position, SEED, 8 * 60)
+
+	assert_eq(_crows, 0)
+	assert_eq(_rooster.crows_left, 0)
+
+
+func test_the_dawn_run_follows_the_sunrise_of_the_season() -> void:
+	_with_day_chance(0.0)
+	var summer := DAY
+	var winter := 105
+	assert_lt(_state.sun.sunrise(summer), _state.sun.sunrise(winter), "winter dawns later")
+	for day in [summer, winter]:
+		_rooster.last_dawn_crow_day = 0
+		var before := _crows
+		_run_on(day, int(_state.sun.sunrise(day)) + 120)
+		assert_eq(_crows, before, "no dawn run two hours after sunrise, day %d" % day)
+		_run_on(day, int(_state.sun.sunrise(day)) + 40)
+		assert_gt(_crows, before, "a dawn run soon after sunrise, day %d" % day)
+
+
+## Lets 60 seconds pass at a minute of a day.
+func _run_on(day: int, minute: int) -> void:
+	for _step_count in int(60.0 / STEP_SECONDS):
+		_state.clock.day = day
+		_state.clock.minute_of_day = minute
+		_livestock.update(STEP_SECONDS, _world, _state.player.position, _state.clock)

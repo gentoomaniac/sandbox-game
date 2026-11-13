@@ -275,6 +275,7 @@ func update(
 			animal.goal = Vector2.INF
 			_follow(animal, delta, map, player_feet)
 		elif _is_sleep_time(animal, minute, sunrise, sunset):
+			animal.crows_left = 0
 			_go_to_sleep(animal, delta, map, may_hunt)
 		elif animal.is_housed:
 			_leave_coop(animal, map)
