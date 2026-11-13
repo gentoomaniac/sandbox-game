@@ -2,8 +2,9 @@ class_name Weather
 extends RefCounted
 ## The weather of a world: a pure function of the world seed, the region and the game time,
 ## so nothing is saved and any past or future moment can be asked for. Every value is smooth
-## noise over game time (spells of weeks and fronts of days down to gusts within the hour)
-## around a baseline that runs smoothly through the seasons' values over the year. The daily
+## noise over game time (spells of weeks and fronts of days down to gusts within the hour; the
+## humidity, which brings the rain, has its own octaves, mostly of hours) around a baseline that
+## runs smoothly through the seasons' values over the year. The daily
 ## cycle follows the Sun: no sunlight at night, and the temperature warms while the sun is up
 ## and cools through the night. The numbers are in data/weather.cfg (see WeatherRules).
 
@@ -51,15 +52,21 @@ const FORCED := {
 ## Octaves of value noise as [period in game minutes, weight]: the first catches the spells
 ## of weeks that bring the odd out-of-season weather, the last the quickest changes.
 const FRONT_OCTAVES := [[43200, 0.5], [8640, 1.0], [2880, 0.6], [480, 0.3]]
-## For humidity and wind: gusts and showers within the hour on top.
+## For wind: gusts within the hour on top.
 const GUST_OCTAVES := [[43200, 0.3], [8640, 1.0], [2880, 0.6], [480, 0.4], [90, 0.25], [20, 0.1]]
+## For humidity: rain comes as showers and passing fronts of hours, in clusters of a day or two,
+## so the octaves of weeks and days weigh little (0.06 to 0.35) and those of hours much (0.3 to 1).
+const HUMIDITY_OCTAVES := [
+	[43200, 0.06], [8640, 0.15], [2880, 0.35], [720, 1.0], [240, 0.8], [60, 0.3]
+]
 const DIRECTION_OCTAVES := [[4320, 1.0], [360, 0.3]]
 const MAX_OCTAVES := 8
 ## Averaged octaves seldom come near -1 or 1, so the noise is stretched (and cut off at 1).
 const NOISE_GAIN := 1.8
 ## The rain of an hour is the mean of this many samples, one in the middle of each part of the
-## hour: showers come and go within the hour (the quickest of GUST_OCTAVES lasts 20 minutes), and
-## the hour's start alone may miss one that is seen.
+## hour: showers come and go within the hour (the quickest of HUMIDITY_OCTAVES lasts an hour, so
+## its showers are always seen by one of three samples 20 minutes apart), and the hour's start
+## alone may miss one that is seen.
 const RAIN_SAMPLES_PER_HOUR := 3
 
 var _world_seed: int
@@ -93,7 +100,7 @@ func at(position: Vector2i, day: int, minute: int) -> WeatherSample:
 			_baseline(season_curve, "humidity_mean")
 			+ (
 				_baseline(season_curve, "humidity_spread")
-				* _noise(salt, Channel.HUMIDITY, minutes, GUST_OCTAVES)
+				* _noise(salt, Channel.HUMIDITY, minutes, HUMIDITY_OCTAVES)
 			)
 			- _rules.value("daily", "humidity_swing") / 2.0 * daily_cycle
 		),

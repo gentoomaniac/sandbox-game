@@ -139,10 +139,11 @@ in summer, at wet meadows and at a village it builds in a new world, with the pl
 a circle, or the time skipped every hour: `godot --headless --path . -s tools/bench/storks.gd`
 (`-- --seed=<n>`; set `XDG_DATA_HOME` away from the real one).
 
-`make weather-probe` (`weather_probe.gd`, with the sampling of `tests/weather_year.gd`) samples a year of
-weather hourly at tile 0,0 for seeds 1, 12345 and 987654 and prints, per seed, the share of wet hours
-(rain or snow over 0.05 in an hour), the longest wet spell, the wet hours, snow days in winter and days with cloud shadows (partly clouded, dry noon) per
-season, and the day-by-day strip of one season (a line per day, `#` for a wet hour).
+`make weather-probe` (`weather_probe.gd`, with the sampling of `tests/weather_year.gd`) samples a
+year of weather hourly at tile 0,0 for seeds 1, 12345 and 987654 and prints, per seed, the share of
+wet hours (rain or snow over 0.05 in an hour), the longest wet spell, the wet hours, the snow days
+in winter and the partly clouded days (dry noon, the days with cloud shadows) per season, and the
+day-by-day strip of one season (a line per day, `#` for a wet hour).
 `WEATHER_PROBE_ARGS="2 1 5"` picks the season of the strip (0 spring to 3 winter) and the seeds.
 
 ## Art: tools/art/

@@ -3,10 +3,9 @@ extends RefCounted
 ## A year of one seed's weather at tile 0,0, sampled hour by hour: how wet it is and in what
 ## spells (for tests/test_weather_year.gd and `make weather-probe`).
 
-## An hour is wet when rain or snow falls harder than this, as the mean of the hour's three
-## samples (as Weather.rain_in_hour counts the rain).
+## An hour is wet when rain or snow falls harder than this, as the mean over the hour's samples
+## (the same sampling as Weather.rain_in_hour, which counts the rain only).
 const WET_FROM := 0.05
-const SAMPLES_PER_HOUR := 3
 const PARTLY_CLOUDED_FROM := 0.1
 const PARTLY_CLOUDED_UNTIL := 0.8
 const HOURS_PER_YEAR := GameClock.DAYS_PER_YEAR * 24
@@ -86,12 +85,12 @@ func _days_in(season: int, is_counted: Callable) -> int:
 func _precipitation_in_hour(hour_of_year: int) -> float:
 	var day := 1 + hour_of_year / 24
 	var minute_of_hour := hour_of_year % 24 * GameClock.MINUTES_PER_HOUR
-	var part := GameClock.MINUTES_PER_HOUR / SAMPLES_PER_HOUR
+	var part := GameClock.MINUTES_PER_HOUR / Weather.RAIN_SAMPLES_PER_HOUR
 	var total := 0.0
-	for index in SAMPLES_PER_HOUR:
+	for index in Weather.RAIN_SAMPLES_PER_HOUR:
 		var sample := _weather.at(ORIGIN, day, minute_of_hour + part * index + part / 2)
 		total += sample.rain + sample.snow
-	return total / SAMPLES_PER_HOUR
+	return total / Weather.RAIN_SAMPLES_PER_HOUR
 
 
 func _is_partly_clouded_at_noon(day: int) -> bool:

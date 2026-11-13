@@ -130,7 +130,9 @@ and oystercatchers, dunlin, gulls and terns to the mud and the sea (see [Wildlif
 
 The weather is simulated from humidity, wind, temperature and sunlight. It brings rain,
 snow, drifting fog, wind, storms and thunderstorms with lightning. The climate is mild:
-frost and snow only come in winter, and late winter thaws quickly into spring. The
+frost and snow only come in winter, and late winter thaws quickly into spring. Rain comes
+as showers and passing fronts of a few hours with dry hours between, seldom a whole day on
+end; autumn is the wettest season (as on the North Frisian coast), spring the driest. The
 weather is worked out from the world seed and the time, so the same world always has the
 same weather.
 

@@ -79,9 +79,17 @@
     snow (high humidity, at or below freezing), fog (very high humidity, little wind,
     mostly mornings), strong wind and storms, thunderstorms with lightning (warm, humid,
     windy). Each has an intensity 0–1.
-  - **Seasons set the baselines:** spring mild and showery; summer warm and mostly dry
+  - **Seasons set the baselines:** spring mild and the driest; summer warm and showery
     with occasional thunderstorms; autumn cooler, windy, foggy and rainy; winter cold
     with snow.
+  - **Rain comes as showers and passing fronts** (decided 2026-11-13, task 221): the
+    humidity noise has its weight in octaves of hours (12 h, 4 h, 1 h; weights 0.3 to 1) and
+    less in those of days and weeks (0.06 to 0.35), so a spell of rain or snow lasts hours,
+    rarely more than a day, with dry hours between (before, spells of 2 to 5 days came with
+    20 % of the hours wet). The year of the North Frisian coast: autumn the wettest, then winter (mostly snow), summer showery
+    with the odd thunderstorm, spring the driest. For three seeds a year has 13 to 17 % wet
+    hours (rain or snow at tile 0,0), the longest spell about a day at most, and
+    `make weather-probe` prints the numbers; tests/test_weather_year.gd keeps them.
   - **Ambient motion** (decided 2026-11-05, view only): plants sway with the wind (tree
     crowns, bushes, tall grass, reeds, crops, ground tufts; gentle on calm days, hard with
     gusts in a storm, each plant with its own phase, in whole art pixels with the stems

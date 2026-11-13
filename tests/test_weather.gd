@@ -98,7 +98,9 @@ func test_summer_is_warmer_than_winter() -> void:
 
 func test_snow_falls_in_winter_and_never_in_midsummer() -> void:
 	var is_snowing := func(sample: WeatherSample) -> bool: return sample.snow > 0.1
-	assert_gt(_share(_samples(MIDWINTER - 15, 30), is_snowing), 0.2)
+	# The share of midwinter hours with snow was 0.42 when humidity drifted for days (task 221) and
+	# is 0.16 now that it comes in fronts of hours; 0.1 still means a snowy winter.
+	assert_gt(_share(_samples(MIDWINTER - 15, 30), is_snowing), 0.1)
 	assert_eq(_share(_samples(MIDSUMMER - 15, 30, 30, 12), is_snowing), 0.0)
 
 

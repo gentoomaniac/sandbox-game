@@ -1,6 +1,6 @@
 extends SceneTree
 ## Prints a year of weather for a few seeds: the share of wet hours, the longest wet spell, the
-## wet hours, snow days and days with cloud shadows per season, and the day-by-day strip of one season.
+## wet hours, snow days and partly clouded days per season, and the day-by-day strip of one season.
 ## godot --headless --path . -s tools/bench/weather_probe.gd -- [season 0-3, default 0] [seeds...]
 
 
@@ -12,7 +12,7 @@ func _init() -> void:
 		seeds.assign(Array(args.slice(1)).map(func(text: String) -> int: return int(text)))
 	print(
 		"seed | wet share | longest spell | wet hours spring/summer/autumn/winter | ",
-		"snow days in winter | days with cloud shadows at noon spring/summer/autumn/winter"
+		"snow days in winter | partly clouded days (dry noon) spring/summer/autumn/winter"
 	)
 	var strips := ""
 	for world_seed in seeds:
