@@ -142,6 +142,8 @@ static func looks_count(object_type: Dictionary) -> int:
 		return object_type["variants"] * WorldObjectTypes.CONNECTION_LOOKS
 	if object_type.has("stock_capacity"):
 		return WorldObjectTypes.STOCK_LOOKS
+	if object_type.has("sway_frames"):
+		return object_type["sway_frames"]
 	var can_be_picked: bool = object_type.has("regrow_days") or object_type.has("regrow_growth")
 	var picked_looks: int = object_type["variants"] if can_be_picked else 0
 	return object_type["variants"] + picked_looks

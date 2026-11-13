@@ -207,6 +207,7 @@ def standing_outdoors(picture, shadow_half_width=None):
 # 56 pen_gate (16, the same)
 # 57 pig_shelter (1)
 # 58 pen_gate_open (16, the gate swung open)
+# 59 scarecrow (3 frames: still, then blown by the wind, see scarecrow.py)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -263,6 +264,7 @@ def object_atlas():
         ("pen_gate", pen.pen_gate_row()),
         ("pig_shelter", [standing_outdoors(pen.pig_shelter())]),
         ("pen_gate_open", pen.pen_gate_row(is_open=True)),
+        ("scarecrow", [standing_outdoors(picture, scarecrow.SHADOW) for picture in scarecrow.frames()]),
     ]
 
 
@@ -353,8 +355,6 @@ def write_interior():
     save_picture(camp.ghost(camp.bedroll(), 36, 60), "interior/sleeping_bag.png")
     # The ghost of the grave marker while it is placed (a grave stands only outdoors).
     save_picture(church.graves()[0], "interior/grave.png")
-    # The ghost of the scarecrow while it is placed: it standing still.
-    save_picture(scarecrow.scarecrow(), "interior/scarecrow.png")
 
 
 def write_bedroll_cover():

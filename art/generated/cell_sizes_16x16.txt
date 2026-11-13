@@ -216,6 +216,7 @@ objects/pine_trunk_16x16.png 48 80
 objects/reeds_16x16.png 48 80
 objects/rowing_boat_16x16.png 48 80
 objects/sapling_16x16.png 48 80
+objects/scarecrow_16x16.png 48 80
 objects/shrub_16x16.png 48 80
 objects/sleeping_bag_16x16.png 48 80
 objects/spruce_16x16.png 48 80

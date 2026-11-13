@@ -254,6 +254,7 @@ objects/pine_trunk_32x32.png 96 160
 objects/reeds_32x32.png 96 160
 objects/rowing_boat_32x32.png 96 160
 objects/sapling_32x32.png 96 160
+objects/scarecrow_32x32.png 96 160
 objects/shrub_32x32.png 96 160
 objects/sleeping_bag_32x32.png 96 160
 objects/spruce_32x32.png 96 160

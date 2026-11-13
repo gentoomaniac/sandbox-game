@@ -91,6 +91,7 @@ const PEN_GATE := &"pen_gate"
 const PIG_SHELTER := &"pig_shelter"
 const WATTLE_FENCE := &"wattle_fence"
 const STONE_WALL := &"stone_wall"
+const SCARECROW := &"scarecrow"
 # Dug-up bushes (task 208).
 const BERRY_BUSH := &"berry_bush"
 const SHRUB := &"shrub"
@@ -564,6 +565,15 @@ const _OTHER_TYPES := {
 		"weight": 40.0,
 		"stack_limit": 1,
 		"places": WorldObjectTypes.PIG_SHELTER,
+	},
+	SCARECROW:
+	{
+		"name": "Scarecrow",
+		"description":
+		"Stakes dressed in straw to keep the crows off the crops. They get used to it.",
+		"weight": 6.0,
+		"stack_limit": 5,
+		"places": WorldObjectTypes.SCARECROW,
 	},
 	ROAST_TURNIP:
 	{

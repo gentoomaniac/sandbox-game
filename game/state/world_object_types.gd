@@ -71,6 +71,8 @@ extends RefCounted
 ##   or of feed (a hay rack, a feeding trough), which the animals take from it and the player
 ##   refills (see ObjectStock). Its atlas row has the STOCK_LOOKS pictures of how full it is, in
 ##   place of variants;
+## - sway_frames: its atlas row has this many pictures of it in the wind, the still one first
+##   (the scarecrow);
 ## - cells_wide: its picture spans this many cells of its atlas row side by side (the Ewer, in
 ##   scale with the people), one cell without it;
 ## - stops_animals: the player walks through it but the farm animals do not (see GameMap
@@ -151,6 +153,8 @@ const PEN_FENCE := &"pen_fence"
 const PEN_GATE := &"pen_gate"
 const PEN_GATE_OPEN := &"pen_gate_open"
 const PIG_SHELTER := &"pig_shelter"
+## The player's scarecrow (task 226): keeps the crows off the crops round it.
+const SCARECROW := &"scarecrow"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -216,6 +220,7 @@ const _PEN_FENCE_ROW := 55
 const _PEN_GATE_ROW := 56
 const _PIG_SHELTER_ROW := 57
 const _PEN_GATE_OPEN_ROW := 58
+const _SCARECROW_ROW := 59
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 
@@ -759,6 +764,21 @@ const _OTHER_TYPES := {
 		"harvest_level": 1,
 		"atlas_row": _PIG_SHELTER_ROW,
 		"variants": 1,
+		"placeable_in": OUTDOORS,
+	},
+	# Two stakes in a cross, dressed in straw. It stands outdoors, wherever the player wants it, and
+	# has `placed_day` in its state from when it was put down.
+	SCARECROW:
+	{
+		"hp": 2,
+		"tool": &"axe",
+		"drops": {&"scarecrow": 1},
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 1,
+		"atlas_row": _SCARECROW_ROW,
+		"variants": 1,
+		"sway_frames": 3,
 		"placeable_in": OUTDOORS,
 	},
 	WORKBENCH:

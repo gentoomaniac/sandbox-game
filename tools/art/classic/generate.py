@@ -213,6 +213,7 @@ def object_atlas():
         ("pen_gate", pen.pen_gate_row()),
         ("pig_shelter", [standing_outdoors(pen.pig_shelter())]),
         ("pen_gate_open", pen.pen_gate_row(is_open=True)),
+        ("scarecrow", [standing_outdoors(picture) for picture in scarecrow.frames()]),
     ]
 
 
@@ -249,7 +250,6 @@ def write_interior():
     save_picture(camp.ghost(camp.fireplace(), 25, 26), "interior/fireplace.png")
     save_picture(camp.ghost(camp.bedroll(), 18, 30), "interior/sleeping_bag.png")
     save_picture(graves.graves()[0], "interior/grave.png")
-    save_picture(scarecrow.scarecrow(), "interior/scarecrow.png")
 
 
 def write_items():
