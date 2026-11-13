@@ -38,9 +38,44 @@ func advance(_minutes: int, clock: GameClock) -> void:
 		if now - _last_met[pair] >= rules.pair_wait_minutes():
 			_last_met.erase(pair)
 	var villagers := _npcs.all()
+	var radius := rules.meeting_radius()
+	var cells := _cells(villagers, radius)
 	for first in villagers.size():
-		for second in range(first + 1, villagers.size()):
+		for second in _close_after(first, villagers, cells, radius):
 			_meet(villagers[first], villagers[second], villagers, now)
+
+
+## The villagers by cell of a grid as wide as `radius`, as indexes into `villagers`: two who stand
+## within the radius are in the same cell or next to each other. A village of a hundred and more
+## villagers would cost milliseconds every game minute if every pair were compared.
+static func _cells(villagers: Array[Npc], radius: float) -> Dictionary:
+	var cells := {}
+	for index in villagers.size():
+		var cell := _cell_of(villagers[index].position, radius)
+		if not cells.has(cell):
+			cells[cell] = []
+		cells[cell].append(index)
+	return cells
+
+
+static func _cell_of(position: Vector2, radius: float) -> Vector2i:
+	return Vector2i((position / radius).floor())
+
+
+## The indexes after `first` of the villagers in its cell and the cells around it, in order, so
+## the pairs meet in the same order as when every pair is looked at.
+static func _close_after(
+	first: int, villagers: Array[Npc], cells: Dictionary, radius: float
+) -> Array[int]:
+	var cell := _cell_of(villagers[first].position, radius)
+	var close: Array[int] = []
+	for x in range(-1, 2):
+		for y in range(-1, 2):
+			for second: int in cells.get(cell + Vector2i(x, y), []):
+				if second > first:
+					close.append(second)
+	close.sort()
+	return close
 
 
 ## The two meet if they stand close and have not met lately: each may tell the other a story.

@@ -107,6 +107,32 @@ func test_villagers_beyond_three_tiles_do_not_meet() -> void:
 	assert_eq(hearer.stories, [] as Array[Dictionary])
 
 
+func test_villagers_close_across_the_edge_of_a_grid_cell_meet() -> void:
+	var teller := _villager("Moiken", 2.9)
+	var hearer := _villager("Antje", 3.1)
+	teller.stories.append(_story(3, MemoryWeight.HIGH))
+
+	_meet_now()
+
+	assert_eq(_origins(hearer), _origins(teller))
+
+
+func test_in_a_large_village_only_those_standing_close_meet() -> void:
+	var far: Array[Npc] = []
+	for index in 150:
+		far.append(_villager("Far%d" % index, 100.0 + index * 4.0))
+	var teller := _villager("Moiken", -1.0)
+	var hearer := _villager("Antje", 1.0)
+	teller.stories.append(_story(3, MemoryWeight.HIGH))
+	far[0].stories.append(_story(2, MemoryWeight.HIGH))
+
+	_meet_now()
+
+	assert_eq(_origins(hearer), _origins(teller))
+	for npc in far.slice(1):
+		assert_eq(npc.stories, [] as Array[Dictionary], "4 tiles apart is too far")
+
+
 func test_both_may_tell_at_one_meeting() -> void:
 	var first := _villager("Moiken", 0.0)
 	var second := _villager("Antje", 1.0)
