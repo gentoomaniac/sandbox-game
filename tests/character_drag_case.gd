@@ -39,6 +39,19 @@ func _open_character_screen() -> void:
 	_character.open()
 
 
+## The bag and the character screen both open in the window, as they are side by side in the game.
+func _open_both_screens() -> void:
+	_make_player_and_hotbar()
+	_bag = BagScreen.new(_hotbar)
+	_window.add_child(_bag)
+	_bag.show_player(_player)
+	_character = CharacterScreen.new(_hotbar)
+	_window.add_child(_character)
+	_character.show_player(_player)
+	_bag.open()
+	_character.open()
+
+
 func _backpack_view(slot: int) -> SlotView:
 	return _hotbar._slot_views[slot] if slot < Inventory.HOTBAR_SIZE else _bag._backpack_views[slot]
 

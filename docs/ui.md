@@ -131,13 +131,26 @@ extend `HotbarWindow`, which lends them the HUD's hotbar as their quick bar.
 - **Keys of other windows:** opening a window closes the open one, but the keys that open the
   windows (Shift+C, B, K) do nothing while another window is open: Main asks `can_open_on_key()`,
   which is true when the window is closed and none is open, or when it is itself the open one,
-  so its key closes it or switches its tab.
+  so its key closes it or switches its tab. For a docked window (below) it is also true while
+  only the other docked window is open.
 - **One at a time:** opening a window closes the open one, so windows need not know of each
   other. `Modal.is_any_open()` says whether one is open (Main uses it instead of its own
   conditions: then the player neither walks nor acts) and `Modal.close_open()` closes it.
-  The open window is one static variable of the base, no registry. A window removed from the tree
-  while open is closed on its way out (`_exit_tree` calls `close()`), so `_on_close` is its one
-  clean-up and runs where its dependencies are still there.
+  The open window is one static variable of the base (plus the list of docked ones), no
+  registry. A window removed from the tree while open is closed on its way out (`_exit_tree`
+  calls `close()`), so `_on_close` is its one clean-up and runs where its dependencies are
+  still there.
+- **Docked windows:** the one exception is the pair of docked windows (the bag and the
+  character window, set with `dock` in `_init`; `dock_inset` keeps the bag above the hotbar).
+  They open at the left and at the bottom right of the screen, are not dimmed, take no click
+  outside to close, stay open together (their keys only open and close their own window, see
+  `can_open_on_key`) and Escape closes both (unless the bag's trash can has a question up, which
+  Escape answers first). They don't pause the game. Opening any other window closes both, and a
+  docked window opened by code closes a window of the other kind. When the two do not fit side
+  by side inside the screen at their docks (a small window or a large UI scale), the one opened
+  first closes when the second opens, or when the window changes size: the old one-at-a-time
+  rule. The bag's backdrop stays there to take a drop on the world, and lies under the
+  character window, which comes later in the tree.
 
 ## Theme and palette
 

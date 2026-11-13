@@ -30,11 +30,17 @@ Decided 2026-11-05.
   A shader keeps the icon's pixels square at 1.5 window pixels each (1080p).
 - **The bag** (task 190, 2026-11-11): a bag icon beside the hotbar, set a little apart from it
   (the same icon in both arts); clicking it or pressing B opens the bag (the backpack
-  with its weight and a trash can), which opens a bit right of the middle of the window. Tab is
+  with its weight and a trash can), which is docked at the bottom right of the window above the
+  hotbar. Tab is
   unbound; the hammer has no key (it is selected on the hotbar).
 - **The character window** (task 191, 2026-11-12): C opens a window of its own with the figure,
   the equipment slots round it (no trash can: that is the bag's) and a Skills tab (K opens it
-  there). It is a Modal like the bag, so only one of the two is open at a time; the HUD's hotbar is the quick bar of
+  there). It is docked at the left of the window and open beside the bag (task 215, 2026-11-13,
+  the usual MMO layout: each opens and closes on its own key or button, both can be open at
+  once, Escape closes both, the world is not dimmed; the layout and behaviour only, no art or
+  look is copied; where the two do not fit side by side, at a large UI scale, opening one
+  closes the other). A stack is dragged from the backpack in the bag onto an equipment slot to wear
+  it, and worn gear back into the bag to take it off; the HUD's hotbar is the quick bar of
   both, so a stack is dragged from it onto an equipment slot, and right click wears or takes off
   in either. Crafting is on Shift+C until it gets a better place.
 - **Tooltips** (decided 2026-11-05): hovering a slot in the hotbar, the inventory or the

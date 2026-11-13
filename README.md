@@ -566,9 +566,12 @@ on the North Sea coast in the 18th century: a red waistcoat over a linen shirt, 
 with white stockings, wooden clogs, and a short blue jacket and hats to put on. Press B (or click the bag icon
 beside the hotbar) to open the bag with the backpack, and C to open the character window with
 the figure and the equipment slots. You move items between slots by dragging, and wear or take
-off by right click. The two are windows of their own, so only one is open at a time: wear an item
-from the backpack with a right click in the bag, or drag it from the hotbar (which both windows
-keep lit) onto its equipment slot in the character window. The hotbar (the eight slots at the bottom of the screen, keys 1 to 8) holds your tools
+off by right click. The two are windows of their own, the character window at the left and the
+bag at the bottom right above the hotbar, and they can be open at the same time, each closed by
+its own key (Escape closes both; in a very small window or at a large UI scale they do not fit
+side by side, and opening one closes the other): drag an item from the backpack or the hotbar
+(which both windows keep lit) onto its equipment slot in the character window to wear it, drag
+worn gear back into the bag to take it off, or use a right click. The hotbar (the eight slots at the bottom of the screen, keys 1 to 8) holds your tools
 and seeds and is extra room: it takes nothing from the backpack's 20 slots (4 rows of 5), so
 you carry 28 stacks. New items fill the hotbar first (onto the same item, then free slots,
 except the one in your hand), then the backpack. The screen shows the backpack
@@ -779,7 +782,7 @@ These are the default keys; all of them can be changed under Settings → Contro
 | Left mouse button, dragged | In the bag, character and chest windows: move a stack onto a slot, the trash can (not in the character window), or (let go outside the screen) the ground |
 | Shift + left click, right click | In the bag, character and chest windows: send a stack to the other side; in the bag and character window right click wears or takes off an item |
 | T | Drop the held stack on the ground in front of you (picked up again by walking away and back) |
-| B, or click the bag icon beside the hotbar | The bag: the backpack (opens a bit right of the middle; the same key closes it) |
+| B, or click the bag icon beside the hotbar | The bag: the backpack (bottom right, beside the character window; the same key closes it) |
 | C | The character window: the figure and the equipment (the same key closes it) |
 | K | Skills tab of the character window |
 | Shift + C | Crafting menu (by hand) |

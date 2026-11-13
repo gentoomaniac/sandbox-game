@@ -54,9 +54,11 @@
     and does nothing if the stack asked about is no longer in its slot.
 - **Character window and bag** (decided 2026-11-05 as one screen; B instead of Tab since task 190;
   split in two windows in task 191, 2026-11-12): C opens the character window with the character
-  and their equipment, B opens the bag with the backpack. Both are Modals, so one is open at a
-  time: from the backpack a worn item is chosen by right click in the bag, and from the hotbar
-  (the quick bar of both) by dragging onto the slot in the character window.
+  and their equipment, B opens the bag with the backpack. Both are docked Modals (task 215):
+  the character window at the left, the bag at the bottom right, open together or alone. From the
+  backpack a worn item is chosen by dragging it onto the slot in the character window or by right
+  click, and taken off by dragging it into the bag's backpack; from the hotbar (the quick bar of
+  both) by dragging onto the slot.
   - Equipment slots: head, body, legs, feet, coat, back, main hand, off hand (coat added in
     task 53, for a jacket over the body item). Clothes, armour
     and later weapons, shields and backpacks are items with a slot; worn items show on the

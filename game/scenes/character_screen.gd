@@ -8,6 +8,7 @@ extends HotbarWindow
 ## Below them the attributes and what they give (see AttributesPanel).
 ## A second tab beside it shows the skills (see SkillsPanel); C opens the window on the character,
 ## K on the skills (`open_tab`, `toggle_tab`; `open()` opens the character).
+## It is docked at the left, and can be open beside the bag (see Modal `dock`).
 
 enum Tab { CHARACTER, SKILLS }
 
@@ -38,6 +39,7 @@ var _attributes_panel := AttributesPanel.new()
 
 func _init(hotbar: HotbarHud) -> void:
 	super(hotbar)
+	dock = Vector2(-1, 0)
 
 	var character_row := HBoxContainer.new()
 	character_row.add_theme_constant_override("separation", COLUMN_GAP)
@@ -154,7 +156,7 @@ func _add_equipment_column(column: VBoxContainer, slots: Array, parent: Containe
 
 ## Makes the character as large as the window allows (the window gets smaller with the UI
 ## scale) and spreads the equipment slots over its height. The panel follows its contents and
-## stays centred by itself (see Modal).
+## stays at its dock by itself (see Modal).
 func _fit_character() -> void:
 	var room := get_viewport().get_visible_rect().size.y - 2 * (WINDOW_MARGIN + PANEL_PADDING / 2)
 	room -= _attributes_panel.get_combined_minimum_size().y

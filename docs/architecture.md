@@ -35,8 +35,9 @@ Warft and an Ewer here and there.
   the views, apply the start options. The windows (`BagScreen`,
   `CharacterScreen`, `CraftingScreen`, `StorageScreen`, `ChatScreen` and `PauseMenu`) extend `Modal`, which builds
   the backdrop and panel, opens, closes, takes Escape and keeps one window open at a time; Main
-  asks `Modal.is_any_open()`, and a window's key does nothing while another is open (see
-  [ui.md](ui.md)). The console is a strip, not a window, and keeps its own code. The debug flags
+  asks `Modal.is_any_open()`, and a window's key does nothing while another is open (except the
+  bag and the character window, which open together; see [ui.md](ui.md)). The console is a strip,
+  not a window, and keeps its own code. The debug flags
   are parsed by `StartupOptions`; `DebugRunner` does the ones that wait for the world to be drawn
   (see below).
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the

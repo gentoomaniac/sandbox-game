@@ -57,14 +57,16 @@ func test_c_opens_the_character_window_and_closes_it() -> void:
 	assert_true(_main._character_screen.is_open(), "C opens it")
 	assert_eq(_main._character_screen.current_tab(), CharacterScreen.Tab.CHARACTER)
 	_press_key(KEY_B)
-	assert_true(_main._character_screen.is_open(), "B does nothing over it")
-	assert_false(_main._bag_screen.is_open())
-	_press_key(KEY_C)
-	assert_false(_main._character_screen.is_open(), "C closes it")
-	_press_key(KEY_B)
-	_press_key(KEY_C)
-	assert_false(_main._character_screen.is_open(), "C does nothing over the bag")
+	assert_true(_main._character_screen.is_open(), "B opens the bag beside it")
 	assert_true(_main._bag_screen.is_open())
+	_press_key(KEY_C)
+	assert_false(_main._character_screen.is_open(), "C closes only its own window")
+	assert_true(_main._bag_screen.is_open())
+	_press_key(KEY_C)
+	assert_true(_main._character_screen.is_open(), "and opens it beside the bag")
+	_press_key(KEY_B)
+	assert_false(_main._bag_screen.is_open(), "B closes only the bag")
+	assert_true(_main._character_screen.is_open())
 
 
 func test_shift_c_opens_crafting_and_closes_it_and_leaves_the_character_window_alone() -> void:
@@ -95,6 +97,32 @@ func test_escape_closes_the_character_window() -> void:
 	event.pressed = true
 	_main._character_screen._unhandled_input(event)
 	assert_false(_main._character_screen.is_open())
+
+
+func test_escape_closes_both_windows_at_once_and_does_not_open_the_pause_menu() -> void:
+	_press_key(KEY_B)
+	_press_key(KEY_C)
+	var escape := InputEventKey.new()
+	escape.keycode = KEY_ESCAPE
+	escape.physical_keycode = KEY_ESCAPE
+	escape.pressed = true
+	_main.get_viewport().push_input(escape)
+	assert_false(_main._character_screen.is_open())
+	assert_false(_main._bag_screen.is_open())
+	assert_false(_main._menu.is_open(), "the same press does not go on to the pause menu")
+
+
+func test_the_bag_and_the_character_window_do_not_pause_the_game() -> void:
+	_press_key(KEY_B)
+	_press_key(KEY_C)
+	assert_false(get_tree().paused)
+
+
+func test_shift_c_does_nothing_over_the_docked_windows_and_the_other_way_round() -> void:
+	_press_key(KEY_B)
+	_press_key(KEY_C, true)
+	assert_false(_main._crafting_screen.is_open())
+	assert_true(_main._bag_screen.is_open())
 
 
 func test_the_hammer_is_taken_from_the_hotbar_and_its_key_resumes_a_dismissed_build_mode() -> void:

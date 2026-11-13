@@ -9,15 +9,14 @@ extends HotbarWindow
 ## lands on the ground; let go on the trash can, a stack is asked about, "Destroy Logs (12)?"
 ## (see TrashCan); let go anywhere else it stays where it was. Shift+click sends a whole stack
 ## from the backpack to the hotbar or back (onto the same item first), if there is room. Right
-## click wears an inventory item. It opens a bit right of the middle of the window.
+## click wears an inventory item. It is docked at the bottom right, above the hotbar, and can be
+## open beside the character window (see Modal `dock`).
 
 ## The player let go of the picked backpack or hotbar stack outside the screen (see
 ## GameState `drop_from_inventory`).
 signal drop_requested(slot: int)
 
 const SLOT_GAP := 2
-## The bag opens a bit right of the middle of the window, clear of the world's centre.
-const OPENING_SHIFT := Vector2(48, 0)
 ## The backpack is 5 slots wide and 4 rows high.
 const BACKPACK_COLUMNS := 5
 ## The longest the weight label gets, to give it room for.
@@ -31,7 +30,8 @@ var _trash_can := TrashCan.new()
 
 func _init(hotbar: HotbarHud) -> void:
 	super(hotbar)
-	opening_shift = OPENING_SHIFT
+	dock = Vector2(1, 1)
+	dock_inset = Vector2(DOCK_MARGIN, DOCK_MARGIN + HotbarHud.BOTTOM_MARGIN + SlotView.SIZE)
 	_drop_outside_panel(_hotbar, _on_dropped_outside)
 	_hotbar.bag_requested.connect(_on_bag_requested)
 
