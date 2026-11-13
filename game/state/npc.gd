@@ -156,8 +156,10 @@ func drop_old_lines(keep: int) -> void:
 			uncompacted_lines.append(line)
 
 
-## Forgets the chat and everything remembered of it.
-func forget_chat() -> void:
+## Forgets everything but what they know (their sheet): the chat, the gossip buffer and the
+## memories.
+func forget_all_but_knowledge() -> void:
+	stories.clear()
 	chat_history.clear()
 	uncompacted_lines.clear()
 	remembered_lines = 0

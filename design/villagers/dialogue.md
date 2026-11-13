@@ -84,8 +84,10 @@
   keeps" of them (1 to 200, default 20, one for each profile); beyond that the
   lightest is forgotten, between equal weights the oldest. Later prompts tell the memories and
   the kept lines.
-  Typing `/clear` in the chat forgets the villager's chat, memories and lines waiting for a
-  memory, with a line saying so (not sent, not kept); other text with a "/" is said as it is.
+  The prompt tells their knowledge (the sheets, in the system line), the long-term memories, the
+  stories of the gossip buffer and the chat, in that order (the chat as the earlier turns).
+  Typing `/clear` in the chat forgets everything but the villager's knowledge: the chat, the
+  stories, the memories and the lines waiting for a memory, with a line saying so (not sent, not kept); other text with a "/" is said as it is.
 - **Settings:** the endpoint (default the test LLM's), the model (default
   `qwen2.5:7b-instruct`, the test LLM's) and the key are in the settings file
   (`[language_model]`); the key is plain text there, as the Settings page says, never in the

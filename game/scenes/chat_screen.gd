@@ -18,8 +18,8 @@ extends Modal
 ## them; if no answer comes (the model failed), the dots go at once and the player's line stays,
 ## and they may write again. The wait is the villager's (Npc `is_answering`): the player may leave
 ## and talk to another, and the answer is kept in the chat of the one who was asked. Typing
-## `/clear` makes the villager forget the chat and their memories (for debugging); other text, also
-## with a "/", is said as it is.
+## `/clear` makes the villager forget everything but what they know: the chat, the stories and the
+## memories (for debugging); other text, also with a "/", is said as it is.
 ## The villager keeps the latest lines; the older ones become a memory (NpcDialogue `compact`).
 
 ## The exchange of a line is over, with the answer shown or without one (for tests and the debug
@@ -187,7 +187,7 @@ func say(text: String) -> void:
 	if npc.is_answering or line.is_empty():
 		return
 	if line == CLEAR_COMMAND:
-		npc.forget_chat()
+		npc.forget_all_but_knowledge()
 		_notice = CLEARED_NOTICE % npc.name
 		_show_lines()
 		return

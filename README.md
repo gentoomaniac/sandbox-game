@@ -395,7 +395,7 @@ Settings → Language model) for the next time, so a reopened chat goes on where
 the older lines are summed up in one remembered line (by the model, else it is what you
 said), kept as a long-term memory (20 by default; the lightest is forgotten first), and later
 talks build on it. Type `/clear` in a chat to make that villager forget
-the chat and their memories (for debugging). With a language model set under Settings →
+everything but what they know: the chat, the stories they keep and their memories (for debugging). With a language model set under Settings →
 Language model (see [Talking NPCs](#talking-npcs-with-a-language-model)) villagers answer
 in their own words; without one they say short scripted lines ("Aye.", "Is that so?").
 While one villager is still answering you may leave and talk to another; the answer waits
