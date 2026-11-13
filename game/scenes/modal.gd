@@ -154,6 +154,7 @@ func can_open_on_key() -> bool:
 	return visible or not Modal.is_any_open()
 
 
+## Whether the window docks at a side of the screen (see `dock`).
 func is_docked() -> bool:
 	return dock != Vector2.ZERO
 
