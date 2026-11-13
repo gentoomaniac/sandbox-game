@@ -165,3 +165,9 @@ func test_geese_honk_now_and_then_and_when_they_take_off() -> void:
 	assert_eq(SoundEvents.animal_idle(WildlifeRules.FLYING_GEESE), &"goose_honk")
 	assert_eq(SoundEvents.animal_alarm(WildlifeRules.GEESE, GroundFlock.FLY), &"goose_honk")
 	assert_eq(SoundEvents.animal_alarm(WildlifeRules.GEESE, GroundFlock.ALERT), &"")
+
+
+func test_crows_caw_now_and_then_and_call_out_as_the_flock_takes_off() -> void:
+	assert_eq(SoundEvents.animal_idle(WildlifeRules.CROWS), &"crow_caw")
+	assert_eq(SoundEvents.animal_alarm(WildlifeRules.CROWS, GroundFlock.FLY), &"crow_flock_rise")
+	assert_eq(SoundEvents.animal_alarm(WildlifeRules.CROWS, GroundFlock.ALERT), &"")

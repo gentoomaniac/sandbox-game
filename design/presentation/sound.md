@@ -108,7 +108,9 @@ headless. Task 171's director will choose the music by the time of day, season, 
   swells on spring and summer evenings, fuller with more frogs, as warm as the croaks need
   it. Storks clatter their bills (a dry, hollow rattle) about once a minute or so while one
   is in view; geese honk now and then and when they take off, a skein flying over more
-  often. Both are rare and quieter than the farm animals.
+  often. Both are rare and quieter than the farm animals. A flock of crows caws now and then
+  (`crow_caw`, 5 variants, `[crows]` in data/ambience.cfg) and calls out as it takes off
+  (`crow_flock_rise`, 2 variants).
   The farm animals (cow, sheep, hen, dog, cat, horse) have their own sounds, quiet. A rooster's
   crow (`rooster_crow`, task 204: "cock-a-doodle-doo", three variants, about two seconds) is
   sharper and louder than a cluck (-17 dBFS against -22), since it carries across the farm; it

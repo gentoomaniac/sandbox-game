@@ -57,6 +57,7 @@ const REQUIRED_KEYS := {
 	"horse": ["idle_chance"],
 	"geese": ["idle_chance"],
 	"flying_geese": ["idle_chance"],
+	"crows": ["idle_chance"],
 	"bees": ["max_loops", "level", "hear_tiles"],
 }
 const SEASON_COUNT := 4

@@ -130,8 +130,10 @@ func test_frogs_croak_more_near_the_player_and_not_beyond_the_radius() -> void:
 	assert_eq(_rules.frog_chance(SUMMER, NIGHT, 18.0, radius * 2.0), 0.0)
 
 
-func test_deer_rabbits_and_squirrels_have_a_chance_of_their_own() -> void:
-	for kind in [WildlifeRules.DEER, WildlifeRules.RABBIT, WildlifeRules.SQUIRREL]:
+func test_deer_rabbits_squirrels_and_crows_have_a_chance_of_their_own() -> void:
+	for kind in [
+		WildlifeRules.DEER, WildlifeRules.RABBIT, WildlifeRules.SQUIRREL, WildlifeRules.CROWS
+	]:
 		assert_gt(_rules.idle_chance(kind), 0.0, str(kind))
 
 
