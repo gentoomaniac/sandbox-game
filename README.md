@@ -498,6 +498,8 @@ and the weather; the numbers are in [data/wildlife.cfg](data/wildlife.cfg).
 
 ![Storks striking at frogs by the camp on a summer evening, and mice in the grass](docs/screenshots/mice-and-frogs.png)
 
+![A flock of hooded crows pecking on a tilled field in autumn, in the new art (left) and in the classic art (right)](docs/screenshots/crows.png)
+
 ![Oystercatchers and a flock of dunlin probing the mud at low water in spring; herring gulls on the mud; terns fishing over the sea, one just gone in with a splash, and gulls swimming; and the dunlin taking off together](docs/screenshots/sea-birds.png)
 
 ### Felling, mining and gathering
