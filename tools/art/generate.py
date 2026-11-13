@@ -113,6 +113,7 @@ import meadow
 import pen
 import portraits
 import reeds
+import scarecrow
 import sea_birds
 import seasons
 import terrain
@@ -352,6 +353,8 @@ def write_interior():
     save_picture(camp.ghost(camp.bedroll(), 36, 60), "interior/sleeping_bag.png")
     # The ghost of the grave marker while it is placed (a grave stands only outdoors).
     save_picture(church.graves()[0], "interior/grave.png")
+    # The ghost of the scarecrow while it is placed: it standing still.
+    save_picture(scarecrow.scarecrow(), "interior/scarecrow.png")
 
 
 def write_bedroll_cover():
@@ -381,7 +384,7 @@ def write_crops():
 
 
 def write_items():
-    bodies = items.icons() | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons() | landing.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons()
+    bodies = items.icons() | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons() | landing.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons() | scarecrow.icons()
     for name, body in bodies.items():
         save_picture(items.icon(body), f"items/{name}.png")
         save_picture(items.ground_item(body), f"ground_items/{name}.png")

@@ -49,6 +49,7 @@ import meadow  # noqa: E402
 import object_looks  # noqa: E402
 import pen  # noqa: E402
 import reeds  # noqa: E402
+import scarecrow  # noqa: E402
 import sea_birds  # noqa: E402
 import stork_nest  # noqa: E402
 import seasons  # noqa: E402
@@ -248,10 +249,11 @@ def write_interior():
     save_picture(camp.ghost(camp.fireplace(), 25, 26), "interior/fireplace.png")
     save_picture(camp.ghost(camp.bedroll(), 18, 30), "interior/sleeping_bag.png")
     save_picture(graves.graves()[0], "interior/grave.png")
+    save_picture(scarecrow.scarecrow(), "interior/scarecrow.png")
 
 
 def write_items():
-    icons = item_icons.ICONS | crop_icons.icons() | tool_icons.icons() | craft_icons.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons()
+    icons = item_icons.ICONS | crop_icons.icons() | tool_icons.icons() | craft_icons.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons() | {"scarecrow": scarecrow.icon()}
     for name, picture in icons.items():
         save_picture(picture, f"items/{name}.png")
         # The same icon at half size, for items lying on the ground.

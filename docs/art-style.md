@@ -425,6 +425,19 @@ along its foot.
   4 px diamond meshes so the ground shows through, cork floats along the hem; wicker eel
   traps (`straw`, `sand_light`, `sand`, `mud`, hoops and outline `mud_dark`). Snow covers
   the deck and the boat's floor (a remap, as the planks lie flat), and caps the rest.
+- **The scarecrow** (task 226, tools/art/scarecrow.py, 42x65 px, and at 16 px classic/scarecrow.py,
+  22x33 px): a little taller than the player. A driftwood pole (`bare_light`, `bare`, `mud_dark`)
+  with the crossbar in the sleeves of an old coat of faded indigo linen (the `water` ramp, folds
+  and turned-back cuffs `water_deep`, rimmed `ink`), buttoned in `ochre`, a straw rope round its
+  middle, a patch of sacking (`sand_light`, stitched `mud`) and one of red-brown cloth (`rust_dark`),
+  a tear; straw (`straw`, `ochre`, `ochre_dark`) out of the cuffs and under the ragged hem, loose
+  and without a rim; a head of straw bound with a cord (`umber`), its strands lit on the left, in
+  the shadow of an old brown felt hat with a dented crown and a slouched brim (the `soil` ramp).
+  Drawn by hand as a map of letters, one per region. Three pictures for the wind: still, then
+  the skirt and the straw under it leaning to the right, the hem 2 and then 3 px over (1 and 2 px
+  at 16 px), the cuffs' straw blown back into the left sleeve and out of the right one; the pole,
+  head and hat stay. Snow lies on the hat (at 32 px also on the lit shoulders). The ghost and the icon are the still picture; the classic icon is drawn small
+  (14x16 px) on its own.
 - Details worth having: a bench by the door, a **stork's nest** on the ridge, a date or initials in iron wall anchors, a sod-roofed
   outhouse, a draw well with a sweep.
 
