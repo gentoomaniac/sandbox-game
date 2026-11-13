@@ -15,9 +15,9 @@ atmosphere only: no player impact, not hunted, not saved.
     and flies any way in winter, when they stay on the coast. A flock flying within 45 degrees of
     the screen's vertical shows its birds from the front (heading down) or from behind (heading
     up), further from it side on (task 220, `FlightView.HEAD_ON_DEGREES`), so migrating ones are
-    always seen head on. Geese taking off from the ground (GroundFlock) follow the same rule
-    (task 223); the oystercatchers, dunlin, gulls and storks have no front or back view and fly
-    off side on. Head on, the V is wider across (`head_on_spacing`: 24 px for the
+    always seen head on. Sparrows and geese taking off from the ground (Bird, GroundFlock) follow
+    the same rule (task 223); the oystercatchers, dunlin, gulls and storks have no front or back
+    view and fly off side on. Head on, the V is wider across (`head_on_spacing`: 24 px for the
     sparrows, 44 for the geese), so that the spread wings of neighbours clear each other;
   - rabbits: grassland and forest edges, hop about, flee in zigzags from the player;
   - squirrels: forests, dart between trees, sit up, scurry off;

@@ -1,7 +1,8 @@
 class_name Bird
 extends Animal
 ## A sparrow on open ground: pecks, hops and looks around; takes off when the player comes
-## near and flies off the screen.
+## near and flies off the screen, seen from the front or behind while it flies down or up it
+## (see FlightView).
 
 const IDLE := &"idle"
 const PECK := &"peck"
@@ -83,7 +84,10 @@ func _take_off(away: Vector2) -> void:
 	_arc = 0.0
 	_flight_direction = (away + Vector2(0.0, -0.4)).normalized()
 	_face(away.x)
-	_play(FLY, 14.0)
+	var view := FlightView.of(_flight_direction)
+	if view != FlightView.SIDE:
+		_sprite.flip_h = false
+	_play(view, 14.0)
 	z_index = 1
 	shadow_half_width = 0
 	queue_redraw()
