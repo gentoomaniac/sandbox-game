@@ -203,11 +203,16 @@ func _follow_frogs(weather: WeatherSample) -> void:
 
 
 ## Thunder follows the flash after the sound's travel time from the strike, quieter and duller
-## the farther it was. The timer stops with the tree: a thunder due while the game is paused
-## comes after it for what was left of its delay, so none is lost and none piles up on others.
+## the farther it was; a crawler's rumble pans across the sky the way its flash flickers. The timer
+## stops with the tree: a thunder due while the game is paused comes after it for what was left of
+## its delay, so none is lost and none piles up on others.
 func _on_flash(strike: LightningStrike) -> void:
+	var pan_sweep := 0.0
+	if strike.is_crawl:
+		pan_sweep = 1.0 if strike.is_crawling_rightwards() else -1.0
 	get_tree().create_timer(strike.delay_seconds(), false).timeout.connect(
-		func() -> void: _audio.play(strike.event(), null, true, strike.level(), strike.cutoff_hz())
+		func() -> void:
+			_audio.play(strike.event(), null, true, strike.level(), strike.cutoff_hz(), pan_sweep)
 	)
 
 

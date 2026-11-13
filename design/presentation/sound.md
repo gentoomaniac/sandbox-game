@@ -125,8 +125,10 @@ Settings → Audio, saved with the others; 0 mutes it).
   farthest: the cutoff is set on one of four DistantAmbience buses taken in turn, so a rumble
   keeps its own cutoff while it plays. One strike in six (weight 3 of 18, `crawl_weight`) is a
   sky-crawler instead: 0.6 to 12 km away like a mid or far strike, with `thunder_crawl` after the
-  same delay; its flash flickers along the sky (see seasons-and-weather). A thunder that is due while the game is paused waits with
-  the tree and comes after the pause for what was left of its delay (it is not dropped and does
+  same delay; its flash flickers along the sky (see seasons-and-weather) and the mono rumble pans
+  across the sky the same way over its length (a panner after the low-pass of each
+  DistantAmbience bus, swept from 0.9 on one side to 0.9 on the other). A thunder that is due
+  while the game is paused waits with the tree and comes after the pause for what was left of its delay (it is not dropped and does
   not pile up with others). Birds chirp at a chance per second by
   season (winter few), part of the day (none at night) and rain (none in heavy rain), from
   a bird in view or else a tree near the player. Frogs look at some random tiles within 12

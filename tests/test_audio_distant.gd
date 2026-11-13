@@ -53,3 +53,30 @@ func test_a_sound_without_a_cutoff_stays_off_the_distant_buses() -> void:
 	var players := _plain_players()
 	assert_eq(players.size(), 1)
 	assert_eq(players[0].bus, AudioService.AMBIENCE)
+
+
+func _panner_of(player: Node) -> AudioEffectPanner:
+	return AudioServer.get_bus_effect(_bus(player.bus), 1)
+
+
+func test_a_sweeping_sound_pans_across_the_sky_over_its_length() -> void:
+	_service.play(&"thunder_crawl", null, true, 1.0, 900.0, 1.0)
+	var player := _plain_players()[0]
+	var seconds: float = player.stream.get_length() / player.pitch_scale
+	assert_almost_eq(_panner_of(player).pan, -AudioService.PAN_REACH, 0.001)
+	await wait_seconds(seconds / 2.0)
+	assert_almost_eq(_panner_of(player).pan, 0.0, 0.3)
+	await wait_seconds(seconds / 2.0 + 0.2)
+	assert_almost_eq(_panner_of(player).pan, AudioService.PAN_REACH, 0.001)
+
+
+func test_a_sweep_the_other_way_starts_on_the_right() -> void:
+	_service.play(&"thunder_crawl", null, true, 1.0, 900.0, -1.0)
+	assert_almost_eq(_panner_of(_plain_players()[0]).pan, AudioService.PAN_REACH, 0.001)
+
+
+func test_a_sound_without_a_sweep_is_centred_even_on_a_bus_a_sweep_left() -> void:
+	for _i in AudioService.DISTANT_AMBIENCE.size():
+		_service.play(&"thunder_crawl", null, true, 1.0, 900.0, 1.0)
+	_service.play(&"wind_gust", null, true, 1.0, 900.0)
+	assert_eq(_panner_of(_plain_players()[-1]).pan, 0.0)

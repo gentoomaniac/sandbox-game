@@ -115,7 +115,7 @@ func flash_fade_seconds() -> float:
 ## The flicker of a crawler's flash, one pulse after the other along the sky: x is the start in
 ## seconds after the flash, y where along the sky it is (0 the left edge, 1 the right) and z how
 ## strong it is (0 to 1 of the flash's peak). The pulses travel one way, left to right or the
-## other as the strike's seed has it; there are none for other strikes.
+## other as `is_crawling_rightwards` has it; there are none for other strikes.
 func crawl_pulses() -> Array[Vector3]:
 	var pulses: Array[Vector3] = []
 	if not is_crawl:
@@ -124,7 +124,7 @@ func crawl_pulses() -> Array[Vector3]:
 	dice.seed = shape_seed
 	var count := int(_rules.value("strike", "crawl_pulses"))
 	var step: float = _rules.value("strike", "crawl_seconds") / count
-	var is_rightwards := dice.randf() < 0.5
+	var is_rightwards := is_crawling_rightwards()
 	for index in count:
 		var along := clampf(
 			(index + dice.randf_range(-PULSE_PLACE_JITTER, PULSE_PLACE_JITTER)) / (count - 1),
@@ -135,6 +135,12 @@ func crawl_pulses() -> Array[Vector3]:
 		var strength := dice.randf_range(MIN_PULSE_STRENGTH, 1.0)
 		pulses.append(Vector3(start, along if is_rightwards else 1.0 - along, strength))
 	return pulses
+
+
+## Whether a crawler runs from the left of the sky to the right, which its flicker and its
+## thunder both follow, else from the right to the left.
+func is_crawling_rightwards() -> bool:
+	return shape_seed % 2 == 0
 
 
 ## 0 for the nearest strike there is, 1 for the farthest.

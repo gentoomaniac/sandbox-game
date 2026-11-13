@@ -45,6 +45,8 @@ const CHANNEL_BUSES := {
 const SEND_OF_BUS := {EFFECTS: GAME, AMBIENCE: GAME, OUTSIDE_EFFECTS: EFFECTS}
 ## A slider's test clicks come at most this far apart, the last one at its final level.
 const TEST_CLICK_SECONDS := 0.15
+## A sound that sweeps across the sky pans from this far left to this far right (1 is all the way).
+const PAN_REACH := 0.9
 const POOL_SIZE := 12
 ## Beyond this far from the camera (31 tiles, in art pixels) a positional sound is silent, unless
 ## its event has a `reach_tiles` of its own.
@@ -70,6 +72,8 @@ var _test_cooldowns: Dictionary[StringName, float] = {}
 var _test_waiting: Dictionary[StringName, float] = {}
 var _pause_amplifier: AudioEffectAmplify
 var _distant_low_passes: Array[AudioEffectLowPassFilter] = []
+var _distant_panners: Array[AudioEffectPanner] = []
+var _pan_tweens: Array[Tween] = []
 var _next_distant := 0
 ## 0 (the game's sounds play) to 1 (silenced by the pause).
 var _pause_amount := 0.0
@@ -211,13 +215,15 @@ func _step_test_clicks(delta: float) -> void:
 ## `is_from_outside` marks an effect of the world outside, which is muffled while the player is
 ## inside; the player's own sounds are not. `level` (0 to 1) is the share of the event's volume.
 ## `distant_cutoff_hz` above 0 dulls it as a far-off sound, through a low-pass of that cutoff that
-## no other sound changes while it plays (see DISTANT_AMBIENCE).
+## no other sound changes while it plays (see DISTANT_AMBIENCE); then `pan_sweep` 1 pans it from
+## the left to the right over its length, -1 from the right to the left, 0 not at all.
 func play(
 	event: StringName,
 	position: Variant = null,
 	is_from_outside := false,
 	level := 1.0,
-	distant_cutoff_hz := 0.0
+	distant_cutoff_hz := 0.0,
+	pan_sweep := 0.0
 ) -> void:
 	if not _rules.has_event(event):
 		push_error("No sound event '%s'" % event)
@@ -231,10 +237,24 @@ func play(
 	player.volume_db += linear_to_db(level)
 	if distant_cutoff_hz > 0.0:
 		_distant_low_passes[_next_distant].cutoff_hz = distant_cutoff_hz
+		_sweep_pan(_next_distant, player, pan_sweep)
 		player.bus = DISTANT_AMBIENCE[_next_distant]
 		_next_distant = (_next_distant + 1) % DISTANT_AMBIENCE.size()
 	if _rules.event(event).has("voices"):
 		_voices[event].append(player)
+
+
+## Pans what plays on a distant bus across the sky over the length of its sound, or centres it.
+func _sweep_pan(bus_index: int, player: Node, direction: float) -> void:
+	if _pan_tweens[bus_index] != null:
+		_pan_tweens[bus_index].kill()
+	var panner := _distant_panners[bus_index]
+	panner.pan = -direction * PAN_REACH
+	if direction == 0.0:
+		return
+	var seconds: float = player.stream.get_length() / player.pitch_scale
+	_pan_tweens[bus_index] = create_tween()
+	_pan_tweens[bus_index].tween_property(panner, "pan", direction * PAN_REACH, seconds)
 
 
 ## Starts a looping sound event at `level` (0 to 1) and returns its handle, to fade or stop it.
@@ -325,10 +345,13 @@ func _set_up_buses() -> void:
 			AudioServer.add_bus_effect(index, AudioEffectAmplify.new())
 		if DISTANT_AMBIENCE.has(bus):
 			AudioServer.add_bus_effect(index, AudioEffectLowPassFilter.new())
+			AudioServer.add_bus_effect(index, AudioEffectPanner.new())
 	_pause_amplifier = AudioServer.get_bus_effect(AudioServer.get_bus_index(GAME), 0)
 	for bus in DISTANT_AMBIENCE:
 		var low_pass := AudioServer.get_bus_effect(AudioServer.get_bus_index(bus), 0)
 		_distant_low_passes.append(low_pass as AudioEffectLowPassFilter)
+		_distant_panners.append(AudioServer.get_bus_effect(AudioServer.get_bus_index(bus), 1))
+	_pan_tweens.resize(DISTANT_AMBIENCE.size())
 	for bus in [AMBIENCE, OUTSIDE_EFFECTS]:
 		var index := AudioServer.get_bus_index(bus)
 		for effect_index in AudioServer.get_bus_effect_count(index):

@@ -71,3 +71,26 @@ func test_a_crawler_rumbles_as_thunder_crawl_after_the_same_delay() -> void:
 	await wait_seconds(1.0)
 	assert_true(_events.has(LightningStrike.CRAWL))
 	assert_false(_events.has(LightningStrike.CLOSE), "instead of the kind of its distance")
+
+
+func _assert_the_crawler_pans_the_way_its_flash_flickers(shape_seed: int) -> void:
+	var crawler := LightningStrike.new(0.1, WeatherRules.default_rules(), true, shape_seed)
+	_weather_view.flash(crawler)
+	await wait_seconds(0.8)
+	var playing: Array[Node] = _audio.get_children().filter(
+		func(node: Node) -> bool: return node is AudioStreamPlayer and node.playing
+	)
+	assert_eq(playing.size(), 1, "the one crawler")
+	var bus := AudioServer.get_bus_index(playing[0].bus)
+	var panner: AudioEffectPanner = AudioServer.get_bus_effect(bus, 1)
+	var pulses := crawler.crawl_pulses()
+	var is_flicker_rightwards: bool = pulses[-1].y > pulses[0].y
+	assert_eq(panner.pan < 0.0, is_flicker_rightwards, "starts on the side it comes from")
+
+
+func test_a_crawler_running_one_way_pans_that_way() -> void:
+	await _assert_the_crawler_pans_the_way_its_flash_flickers(2)
+
+
+func test_a_crawler_running_the_other_way_pans_that_way() -> void:
+	await _assert_the_crawler_pans_the_way_its_flash_flickers(3)
