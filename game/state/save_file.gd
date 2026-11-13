@@ -2,7 +2,7 @@ class_name SaveFile
 extends RefCounted
 ## The save on disk: one JSON file per world, `{"version": VERSION, "game": <GameState.to_dict>}`.
 ## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step
-## (see `_upgrade_from_version_25` and so on). Older ones are refused.
+## (see `_upgrade_from_version_26` and so on). Older ones are refused.
 ##
 ## How to add a save field (or change one):
 ## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
@@ -22,8 +22,9 @@ extends RefCounted
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
 const VERSION := 35
-## The oldest version we still upgrade.
-const OLDEST_VERSION := VERSION - 10
+## The oldest version we still upgrade. Nine steps back, for the next version (task 127) makes
+## its step the tenth.
+const OLDEST_VERSION := VERSION - 9
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -187,8 +188,6 @@ static func copy_aside(path: String, backup: String) -> String:
 
 ## Brings the data of a save of `version` up to the current one.
 static func _upgrade(game: Dictionary, version: int) -> void:
-	if version <= 25:
-		_upgrade_from_version_25(game)
 	if version <= 26:
 		_upgrade_from_version_26(game)
 	if version <= 27:
@@ -207,18 +206,6 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_33(game)
 	if version <= 34:
 		_upgrade_from_version_34(game)
-
-
-## Version 25 had no fallow soil (task 166): every tilled tile was tended on the night of the
-## upgrade, and its days count from there.
-static func _upgrade_from_version_25(game: Dictionary) -> void:
-	var world: Dictionary = game["world"]
-	var fallow_soil: Array[Array] = []
-	for edit: Array in world["terrain_edits"]:
-		if SaveCodec.terrain_from_json(edit[2]) == Tile.Terrain.SOIL:
-			fallow_soil.append([edit[0], edit[1], 0])
-	world["fallow_nights"] = 0
-	world["fallow_soil"] = fallow_soil
 
 
 ## Version 26 had no friendship (task 173): every animal is a stranger, never petted.
