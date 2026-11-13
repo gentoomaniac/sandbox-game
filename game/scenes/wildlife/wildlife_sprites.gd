@@ -140,6 +140,11 @@ static func frame_count(kind: StringName, action: StringName) -> int:
 	return SHEETS[kind]["actions"][action]
 
 
+## Whether the sheet of a kind has a row for an action.
+static func has_action(kind: StringName, action: StringName) -> bool:
+	return SHEETS[kind]["actions"].has(action)
+
+
 ## The sprite frame of a column of an action's row.
 static func frame_index(kind: StringName, action: StringName, column: int) -> int:
 	var actions: Array = SHEETS[kind]["actions"].keys()

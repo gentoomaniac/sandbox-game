@@ -103,6 +103,9 @@ var _flock: Dictionary
 var _feed: StringName
 ## The frames of each action, looked up once; the wingbeat goes up, level, down, level.
 var _frames := {}
+## The view of the flight (see FlightView): the sheets of birds without the rows for the front
+## and the back have the side view only.
+var _flight_view := FlightView.SIDE
 
 
 ## One bird of the flock: what it does and for how long, and where it is.
@@ -132,11 +135,10 @@ func _ready() -> void:
 	_sprite.hide()
 	y_sort_enabled = true
 	for action: StringName in _flock["frames_per_second"]:
-		var frames := PackedInt32Array()
-		for column in WildlifeSprites.frame_count(_sheet_kind, action):
-			frames.append(WildlifeSprites.frame_index(_sheet_kind, action, column))
-		_frames[action] = frames
-	_frames[&"fly"].append(_frames[&"fly"][1])
+		_frames[action] = _action_frames(action)
+	for view in [FlightView.SIDE, FlightView.FRONT, FlightView.BACK]:
+		if WildlifeSprites.has_action(_sheet_kind, view):
+			_frames[view] = _wingbeat_frames(view)
 	var size: Vector2i = _flock["size"]
 	_place_birds(wildlife.rng.randi_range(size.x, size.y))
 	# Where no bird could stand there is no flock.
@@ -145,6 +147,20 @@ func _ready() -> void:
 	_shadows.shift = Vector2.ZERO
 	wildlife.ground.add_child(_shadows)
 	_enter(FEED)
+
+
+func _action_frames(action: StringName) -> PackedInt32Array:
+	var frames := PackedInt32Array()
+	for column in WildlifeSprites.frame_count(_sheet_kind, action):
+		frames.append(WildlifeSprites.frame_index(_sheet_kind, action, column))
+	return frames
+
+
+## The frames of a flight view: the wingbeat goes up, level, down, level.
+func _wingbeat_frames(view: StringName) -> PackedInt32Array:
+	var frames := _action_frames(view)
+	frames.append(frames[1])
+	return frames
 
 
 func _exit_tree() -> void:
@@ -256,7 +272,7 @@ func _step(bird: FlockBird, delta: float) -> void:
 
 
 func _show(bird: FlockBird) -> void:
-	var frames: PackedInt32Array = _frames[bird.action]
+	var frames: PackedInt32Array = _frames[_flight_view if bird.action == FLY else bird.action]
 	var frames_per_second: float = _flock["frames_per_second"][bird.action]
 	var step := int(bird.action_time * frames_per_second)
 	var frame := frames[step % frames.size()]
@@ -271,6 +287,7 @@ func _take_off(away: Vector2) -> void:
 	_enter(FLY)
 	z_index = 1
 	_flight_direction = (away + Vector2(0.0, -0.3)).normalized()
+	_choose_flight_view()
 	_wheel = _flock["wheel"] * (1.0 if wildlife.rng.randf() < 0.5 else -1.0)
 	_birds.sort_custom(
 		func(a: FlockBird, b: FlockBird) -> bool:
@@ -282,16 +299,27 @@ func _take_off(away: Vector2) -> void:
 		var bird := _birds[i]
 		bird.take_off_spot = bird.spot
 		bird.v_spot = v_spots[i] if v_spacing != Vector2.ZERO else bird.spot * BUNCH_CLOSING
-		bird.sprite.flip_h = _flight_direction.x < 0.0
 		# Each a little out of step with the others.
 		_start(bird, &"fly", INF)
 		bird.action_time = i * 0.13
+
+
+## Picks the view of the flight and turns every bird to it: from the front or behind within
+## FlightView.HEAD_ON_DEGREES of the vertical (unflipped), side on (flipped when it flies left)
+## otherwise or where the sheet has no other view.
+func _choose_flight_view() -> void:
+	var view := FlightView.of(_flight_direction)
+	_flight_view = view if _frames.has(view) else FlightView.SIDE
+	for bird in _birds:
+		bird.sprite.flip_h = _flight_view == FlightView.SIDE and _flight_direction.x < 0.0
 
 
 func _fly(delta: float) -> void:
 	var flight_height: float = _flock["flight_height"]
 	if _state_time < WHEEL_SECONDS:
 		_flight_direction = _flight_direction.rotated(_wheel * delta)
+		# Only a wheeling flock changes direction; none of the kinds with front and back views does.
+		_choose_flight_view()
 	position += _flight_direction * _flock["fly_speed"] * delta
 	_lift = minf(_lift + _flock["climb_speed"] * delta, flight_height)
 	_shadows.shift = GroundShadows.SHIFT * _lift / flight_height
@@ -301,7 +329,6 @@ func _fly(delta: float) -> void:
 		bird.action_time += delta
 		bird.spot = bird.take_off_spot.lerp(bird.v_spot, forming)
 		bird.sprite.position = bird.spot + Vector2(0.0, -_lift)
-		bird.sprite.flip_h = _flight_direction.x < 0.0
 		_show(bird)
 		_shadows.set_point(i, position + bird.spot)
 	if _is_out_of_view(LEAVE_MARGIN):
