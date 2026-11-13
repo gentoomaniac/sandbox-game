@@ -73,6 +73,26 @@ func select(hotbar_slot: int) -> void:
 	changed.emit()
 
 
+## Puts `item` in the hand (ItemTypes.NONE for an empty hand): selects its hotbar slot, or, if it
+## is not on the hotbar (which has no free slot at the start), swaps the first stack of it into the
+## selected slot. An item the inventory doesn't have yet is added first.
+func hold(item: StringName) -> void:
+	for slot in HOTBAR_SIZE:
+		if item_in(slot) == item:
+			select(slot)
+			return
+	var has_item := func(stack: Dictionary) -> bool:
+		return stack.get("item", ItemTypes.NONE) == item
+	var source := slots.find_custom(has_item)
+	if source == -1:
+		add(item, 1)
+		source = slots.find_custom(has_item)
+	var displaced := slots[selected_slot]
+	slots[selected_slot] = slots[source]
+	slots[source] = displaced
+	changed.emit()
+
+
 ## Selects the hotbar slot `steps` along from the selected one (back if negative), round from
 ## the last slot to the first and back: the mouse wheel's step.
 func select_next(steps: int) -> void:

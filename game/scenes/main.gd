@@ -829,10 +829,7 @@ func _hold(item: StringName) -> void:
 		return
 	var inventory := _state.player.inventory
 	inventory.add(item, 5)
-	for slot in Inventory.HOTBAR_SIZE:
-		if inventory.item_in(slot) == item:
-			inventory.select(slot)
-			return
+	inventory.hold(item)
 
 
 ## Debug (`--riding`): puts a saddled horse of a look under the player and gets on it.
