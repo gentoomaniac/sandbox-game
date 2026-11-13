@@ -15,6 +15,7 @@ const WILDLIFE_GROUPS: Array[StringName] = [
 	WildlifeRules.FLOCK,
 	WildlifeRules.GEESE,
 	WildlifeRules.FLYING_GEESE,
+	WildlifeRules.CROWS,
 	WildlifeRules.OYSTERCATCHER,
 	WildlifeRules.DUNLIN,
 ]

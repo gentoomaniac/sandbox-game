@@ -12,12 +12,13 @@ func test_every_sheet_has_a_cell_per_frame_of_every_action() -> void:
 		assert_eq(texture.get_height(), size.y * sheet["actions"].size(), kind)
 
 
-## The flocks show birds and geese, and a stork on a roof is a stork.
+## The flocks show birds, geese and crows, and a stork on a roof is a stork.
 func test_every_kind_shows_a_sheet() -> void:
 	var sheets_of_others := {
 		WildlifeRules.FLOCK: WildlifeRules.BIRD,
 		WildlifeRules.ROOF_STORK: WildlifeRules.STORK,
 		WildlifeRules.GEESE: GroundFlock.FLOCKS[WildlifeRules.GEESE]["sheet"],
+		WildlifeRules.CROWS: GroundFlock.FLOCKS[WildlifeRules.CROWS]["sheet"],
 		WildlifeRules.FLYING_GEESE: GroundFlock.FLOCKS[WildlifeRules.GEESE]["sheet"],
 	}
 	for kind in WildlifeRules.KINDS:

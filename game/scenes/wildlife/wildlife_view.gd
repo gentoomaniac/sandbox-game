@@ -581,7 +581,7 @@ func _spawn(kind: StringName, point: Vector2, is_pinned: bool) -> void:
 			animal = Firefly.new()
 		WildlifeRules.STORK:
 			animal = Stork.new(WildlifeRules.STORK)
-		WildlifeRules.GEESE, WildlifeRules.OYSTERCATCHER, WildlifeRules.DUNLIN:
+		WildlifeRules.GEESE, WildlifeRules.CROWS, WildlifeRules.OYSTERCATCHER, WildlifeRules.DUNLIN:
 			animal = GroundFlock.new(kind)
 		WildlifeRules.MOUSE:
 			animal = Mouse.new()

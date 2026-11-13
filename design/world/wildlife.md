@@ -23,8 +23,10 @@ atmosphere only: no player impact, not hunted, not saved.
     fields (grass, floodplain and tilled soil) by day, in every season but most in autumn and
     winter, when the fields lie bare (season factors: spring 0.8, summer 0.4, autumn and winter 1), not at night
     or in heavy rain. They look up at 10 tiles and fly off at 6. The rules are in data/wildlife.cfg
-    (`[crows]`, `WildlifeRules.CROWS`, kept out of `KINDS` until the view shows them); what they
-    do to the crops is under the crops in [crops.md](../farming/crops.md);
+    (`[crows]`, `WildlifeRules.CROWS`). A flock is a `GroundFlock` of 3 to 7 hooded crows (sheet
+    `crow`: stand, peck, walk, fly, and the front and back views of the flight), pecking and
+    walking within 36 px of its middle; when the player comes near they all fly off in a loose
+    bunch, no V. What they do to the crops is under the crops in [crops.md](../farming/crops.md);
   - rabbits: grassland and forest edges, hop about, flee in zigzags from the player;
   - squirrels: forests, dart between trees, sit up, scurry off;
   - deer: rare, in forests and at forest edges, mostly at dawn and dusk; graze, look up,

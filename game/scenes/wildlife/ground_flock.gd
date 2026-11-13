@@ -1,11 +1,12 @@
 class_name GroundFlock
 extends Animal
-## A flock of birds feeding on the ground: greylag geese grazing on the marsh, oystercatchers and
-## dunlin probing the tidal mud. Each bird feeds, looks up or takes a few steps on its own, keeping
-## near the others; they all raise their heads when the player comes near, and all take off
-## together when the player comes nearer, when the tide comes in over the mud they stand on, or
-## when the flock is sent away: they climb and fly out of the view, geese closing up into a V,
-## waders into a tight bunch that dunlin swing round in a wheel.
+## A flock of birds feeding on the ground: greylag geese grazing on the marsh, crows pecking on the
+## fields and meadows, oystercatchers and dunlin probing the tidal mud. Each bird feeds, looks up or
+## takes a few steps on its own, keeping near the others; they all raise their heads when the
+## player comes near, and all take off together when the player comes nearer, when the tide comes
+## in over the mud they stand on, or when the flock is sent away: they climb and fly out of the
+## view, geese closing up into a V, crows and waders into a tight bunch that dunlin swing round in
+## a wheel.
 ##
 ## The node is the middle of the flock; each bird is a sprite of its own, sorted with the rest
 ## of the world by its feet (the node sorts its children with its parent's). Their shadows lie on
@@ -42,6 +43,24 @@ const FLOCKS := {
 		"v_spacing": Vector2(28.0, 24.0),
 		"wheel": 0.0,
 		"shadow": 6,
+	},
+	WildlifeRules.CROWS:
+	{
+		"sheet": &"crow",
+		"feed": &"peck",
+		"size": Vector2i(3, 7),
+		"radius": 36.0,
+		"spacing": 12.0,
+		"walk_speed": 10.0,
+		"feed_chance": 0.55,
+		"stand_chance": 0.25,
+		"frames_per_second": {&"stand": 0.5, &"peck": 3.0, &"walk": 4.0, &"fly": 8.0},
+		"fly_speed": 72.0,
+		"climb_speed": 36.0,
+		"flight_height": 64.0,
+		"v_spacing": Vector2.ZERO,
+		"wheel": 0.0,
+		"shadow": 4,
 	},
 	WildlifeRules.OYSTERCATCHER:
 	{
