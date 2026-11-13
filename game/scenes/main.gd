@@ -200,7 +200,7 @@ func _load_game() -> void:
 	)
 	# Quitting saves first (see _notification).
 	get_tree().auto_accept_quit = false
-	_apply_game_options()
+	DebugGameOptions.apply(_options, _state)
 
 
 ## Puts every view in the tree, in the order they are drawn and take input.
@@ -774,74 +774,6 @@ func _start_sounds() -> void:
 	_sounds.watch_panel(_storage_screen.is_open, &"chest_open", &"chest_close")
 	add_child(_ambience)
 	_ambience.listen(_audio, _state, _wildlife, _weather_view)
-
-
-## Applies the flags that change the game itself, before any view reads it.
-func _apply_game_options() -> void:
-	if _options.at != StartupOptions.NO_TILE:
-		_state.player.position = Vector2(_options.at) + Vector2(0.5, 0.5)
-	if _options.day > 0:
-		_state.clock.day = _options.day
-	if _options.time_hour >= 0:
-		_state.clock.set_time(_options.time_hour, _options.time_minute)
-	if _options.field != StartupOptions.NO_TILE:
-		DebugField.create(_state.world, _options.field)
-	if _options.forage != StartupOptions.NO_TILE:
-		DebugForage.create(_state, _options.forage)
-	if _options.felled != StartupOptions.NO_TILE:
-		DebugFelled.create(_state.world, _options.felled)
-	if _options.mow != StartupOptions.NO_TILE:
-		DebugMow.create(_state, _options.mow)
-	if _options.path != StartupOptions.NO_TILE:
-		DebugPath.create(_state.world, _options.path, _options.path_days.x, _options.path_days.y)
-	if _options.drops != StartupOptions.NO_TILE:
-		DebugDrops.create(_state.world, _options.drops)
-	if _options.items != StartupOptions.NO_TILE:
-		DebugItems.create(_state, _options.items)
-	if _options.landing != StartupOptions.NO_TILE:
-		DebugLanding.create(_state.world, _options.landing)
-	if _options.yard != StartupOptions.NO_TILE:
-		DebugYard.create(_state, _options.yard)
-	if _options.worn_ground != StartupOptions.NO_TILE:
-		DebugWornGround.create(_state.world, _options.worn_ground)
-	if _options.energy >= 0.0:
-		_state.player.energy = _options.energy
-	if _options.health >= 0.0:
-		_state.player.health = _options.health
-	if _options.wear != &"":
-		_state.player.equipment.equip(Equipment.slot_of(_options.wear), _options.wear)
-	if _options.hold != &"":
-		_hold(_options.hold)
-	if _options.riding != &"":
-		_ride(_options.riding)
-	if Weather.FORCEABLE.has(_options.weather):
-		_state.weather_override = _options.weather
-	elif _options.weather != &"":
-		push_error("--weather expects one of %s, got '%s'" % [Weather.FORCEABLE, _options.weather])
-	_state.snow_cover.forced = _options.snow
-	_state.snow_cover.forced_frost = _options.frost
-	_state.snow_cover.forced_thaw = _options.melt
-
-
-## Debug (`--hold`): puts 5 of an item in the inventory and holds it, if it is on the hotbar.
-func _hold(item: StringName) -> void:
-	if not ItemTypes.TYPES.has(item):
-		push_error("--hold expects an item, got '%s'" % item)
-		return
-	var inventory := _state.player.inventory
-	inventory.add(item, 5)
-	inventory.hold(item)
-
-
-## Debug (`--riding`): puts a saddled horse of a look under the player and gets on it.
-func _ride(look: StringName) -> void:
-	if not _state.livestock.rules.looks(LivestockRules.HORSE).has(look):
-		push_error("--riding expects a look of the horse, got '%s'" % look)
-		return
-	var horse := FarmAnimal.new(LivestockRules.HORSE, look, _state.player.position)
-	horse.is_saddled = true
-	_state.livestock.add(horse)
-	_state.mount(horse)
 
 
 ## The game F8 has just loaded, else the saved game, or a new one if there is no save or
