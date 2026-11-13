@@ -81,7 +81,7 @@ func test_play_renders_the_track_and_loops_it_on_the_music_bus() -> void:
 	assert_eq(players[0].bus, AudioService.MUSIC)
 	var stream := players[0].stream as AudioStreamWAV
 	assert_eq(stream.loop_mode, AudioStreamWAV.LOOP_FORWARD)
-	assert_eq(stream.loop_end, stream.data.size() / MusicPlayer.BYTES_PER_FRAME)
+	assert_eq(stream.loop_end, stream.data.size() / 4)
 
 
 func test_a_real_piece_renders_and_plays() -> void:

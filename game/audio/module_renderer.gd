@@ -155,7 +155,8 @@ func rows_once_through() -> int:
 ## `parts` rendered, one after the other; null, with an error, for a part outside the order list.
 ## A stream that `loops` is the parts' second time through, rendered after the first: it starts as
 ## they sound after their own end, the notes left sounding there fading out into it, so its wrap
-## is the music repeating, sample for sample. It takes twice as long to render.
+## is the music repeating, sample for sample, and it is flagged to loop over all of it. It takes
+## twice as long to render.
 func render(parts: Array[Vector2i], loops := false) -> AudioStreamWAV:
 	for part in parts:
 		if part.x < 0 or part.x >= module.order.size() or part.y < 0:
@@ -221,7 +222,7 @@ func render(parts: Array[Vector2i], loops := false) -> AudioStreamWAV:
 	if loops:
 		mix = mix.slice(second_start * (2 if is_stereo else 1))
 	beat_seconds = first_row_frames * ROWS_PER_BEAT / float(mix_rate)
-	return _stream(mix)
+	return _stream(mix, loops)
 
 
 ## What a row's cell does on its first tick.
@@ -379,8 +380,9 @@ func _mix(
 	channel.ramp_frames = ramp_frames
 
 
-## The mix as a 16-bit AudioStreamWAV.
-func _stream(mix: PackedFloat32Array) -> AudioStreamWAV:
+## The mix as a 16-bit AudioStreamWAV, looping over all of it when `loops`. Reading the stream's
+## data back copies it, so what a player needs to know of it is set here, on the worker.
+func _stream(mix: PackedFloat32Array, loops: bool) -> AudioStreamWAV:
 	var data := PackedByteArray()
 	data.resize(mix.size() * 2)
 	for index in mix.size():
@@ -390,6 +392,9 @@ func _stream(mix: PackedFloat32Array) -> AudioStreamWAV:
 	stream.mix_rate = mix_rate
 	stream.stereo = is_stereo
 	stream.data = data
+	if loops:
+		stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		stream.loop_end = mix.size() / (2 if is_stereo else 1)
 	return stream
 
 

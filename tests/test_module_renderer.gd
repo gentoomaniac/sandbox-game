@@ -71,6 +71,13 @@ func test_the_loop_wraps_into_its_own_start_without_a_seam() -> void:
 	assert_true(looping.slice(ramp_bytes) == once.slice(ramp_bytes), "then it is the first")
 
 
+func test_a_looping_stream_is_flagged_to_loop_over_all_of_it() -> void:
+	var looping := ModuleRenderer.new(_module, RATE, true).render([LOOP], true)
+	assert_eq(looping.loop_mode, AudioStreamWAV.LOOP_FORWARD)
+	assert_eq(looping.loop_end, looping.data.size() / 4, "16-bit stereo: 4 bytes a frame")
+	assert_eq(_render([LOOP]).loop_mode, AudioStreamWAV.LOOP_DISABLED)
+
+
 func test_the_fill_breaks_after_a_bar_and_the_loop_resumes_on_the_bar() -> void:
 	# The order list from the start: the loop, the fill (a bar, then its pattern break), and the
 	# order list's start again: as the three parts played one after the other.

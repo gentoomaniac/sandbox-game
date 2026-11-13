@@ -15,8 +15,6 @@ signal started(track: String)
 ## .mod files of assets/music/ for DirAccess to see them on res:// (export_presets.cfg does).
 const MUSIC_DIR := "res://assets/music"
 const MIX_RATE := 44100
-## The pieces are 16-bit stereo.
-const BYTES_PER_FRAME := 4
 
 var music_dir := MUSIC_DIR
 ## How long `stop` takes to fade the music out, and a crossfade between two pieces to fade.
@@ -100,8 +98,6 @@ func stop() -> void:
 
 
 func _start(render: Render, stream: AudioStreamWAV) -> void:
-	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	stream.loop_end = stream.data.size() / BYTES_PER_FRAME
 	if _is_playing:
 		_crossfade.crossfade(stream, render.renderer.beat_seconds, crossfade_seconds)
 	else:
