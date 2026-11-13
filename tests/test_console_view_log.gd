@@ -1,5 +1,6 @@
 extends EnergyCase
-## The console's log: it scrolls, keeps the bottom unless the player read up, and has a cap.
+## The console's log: it scrolls, keeps the bottom unless the player read up, wraps long lines
+## and has a cap.
 
 var _view: ConsoleView
 var _list: ScrollingList
@@ -90,3 +91,12 @@ func test_the_log_keeps_only_the_newest_lines() -> void:
 		_view.run_line("help skip")
 	assert_eq(_view._log_lines.size(), ConsoleView.MAX_LOG_LINES)
 	assert_eq(_view._log.text.count("\n") + 1, ConsoleView.MAX_LOG_LINES)
+
+
+func test_a_line_wider_than_the_panel_wraps_onto_more_lines() -> void:
+	var one_line := _view._log.get_line_height()
+	_view._log_line("word ".repeat(80))
+	await wait_process_frames(2)
+	assert_gt(_view._log.get_line_count(), 1, "a long line is wrapped, not cut off")
+	assert_lte(_view._log.size.x, _list.size.x, "and stays within the panel")
+	assert_gt(_view._log.get_combined_minimum_size().y, one_line)

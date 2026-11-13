@@ -37,7 +37,8 @@ func _init() -> void:
 	add_child(panel)
 	var box := VBoxContainer.new()
 	panel.add_child(box)
-	_log.clip_text = true
+	# Long lines (`gossip`, `crows`) wrap at the panel's width instead of being cut off.
+	_log.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_log_list.keeps_bottom = true
 	box.add_child(_log_list)
 	_input.keep_editing_on_text_submit = true
