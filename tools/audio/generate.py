@@ -81,6 +81,8 @@ EVENTS = {
     "thunder_far": (-16, weather.thunder_variants(weather.FAR)),
     "thunder_mid": (-9, weather.thunder_variants(weather.MID)),
     "thunder_close": (-2, weather.thunder_variants(weather.CLOSE)),
+    # Lightning running across the sky (task 222): a long tearing rumble, mono; the game pans it.
+    "thunder_crawl": (-9, [weather.thunder_crawl(profile) for profile in weather.CRAWL]),
     # The main sound of a room with a fire: crackle only, the pops no louder than a log's.
     "fire_crackle_loop": (-8, [fire.fire_crackle_loop] * 2),
     # Heard across the marsh, so loud, and long: the low partials hum for ten seconds.

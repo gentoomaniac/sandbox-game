@@ -45,7 +45,9 @@ Settings → Audio, saved with the others; 0 mutes it).
   the number of rolls: one roll, a double roll, a long rolling series): `thunder_far` (low, soft, long
   rumble, no crack, -16 dBFS), `thunder_mid` (a roll with body, -9) and the rare `thunder_close`
   (a sharp crack at once, then a heavy rumble, -2); the game lowers and dulls them further by
-  distance (see the ambience below).
+  distance (see the ambience below). `thunder_crawl` (task 222) is lightning running across the
+  sky: a 6-9 s tearing, rippling rumble that builds and dies away with crackles scattered through
+  it, about the mid level (-9); mono, so the game pans or moves its source.
 - **Fire:** `fire_crackle_loop` (task 172, `tools/audio/fire.py`), an 8-second circle of
   crackling only, no bed of noise under it (the user, 2026-11-11): fine flecks of the embers
   all through, ticks and snaps of all sizes over them (short, bright and dry, nothing low or

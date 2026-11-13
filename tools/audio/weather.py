@@ -133,3 +133,43 @@ def _thunder(rng, length, rumble_cutoff, attack, rate, crack):
     if crack:
         out += crack * bandpass(noise(rng, length), 300, 3000) * envelope(length, 0.005, 9)
     return normalized(fade_out(out, 0.5))
+
+
+CRAWL = [
+    dict(length=7.0, cutoff=170, build=0.55, crackles=14, tear=(120, 3200), ripple=(18, 40)),
+    dict(length=9.0, cutoff=140, build=0.45, crackles=10, tear=(90, 2600), ripple=(12, 30)),
+    dict(length=6.2, cutoff=210, build=0.65, crackles=20, tear=(160, 3800), ripple=(25, 55)),
+    dict(length=8.0, cutoff=185, build=0.4, crackles=16, tear=(100, 3000), ripple=(15, 45)),
+]
+
+
+def thunder_crawl(profile):
+    return partial(_crawl, profile=profile)
+
+
+def _crawl(rng, profile):
+    """Lightning running across the sky: a long tearing rumble that builds, swells and dies
+    away with a rippling flutter, and crackles scattered through it, thickest at its peak."""
+    length = profile["length"]
+    t = times(length)
+    peak = profile["build"] * length
+    shape = swell(length, peak)
+    # Surges: the bolt branches, so the loudness moves in uneven waves around the shape.
+    surge = 0.55 + 0.45 * drift(rng, length, 1.6)
+    body = shape * surge
+    rumble = lowpass(10 * lowpass(noise(rng, length), 40), profile["cutoff"])
+    low, high = profile["tear"]
+    centre = low * (high / low) ** (0.25 + 0.6 * drift(rng, length, 0.5))
+    tear = swept_band(noise(rng, length), centre, 0.7)
+    flutter = 1 + 0.7 * np.sin(2 * np.pi * rng.uniform(*profile["ripple"]) * t
+                               + 3 * drift(rng, length, 4))
+    out = 0.8 * rumble / rms(rumble) * body
+    out += 0.45 * tear / rms(tear) * body**1.5 * flutter
+    for _ in range(round(profile["crackles"] * length / 8)):
+        # More crackles near the peak.
+        at = np.clip(peak + rng.normal(0, 0.28 * length), 0.05, length - 0.5)
+        size = rng.uniform(0.01, 0.08)
+        crackle = bandpass(noise(rng, size), rng.uniform(600, 1800), rng.uniform(3000, 8000))
+        crackle = crackle / (rms(crackle) + 1e-9) * envelope(size, 0.0005, 6 / size)
+        place(out, crackle, at, rng.uniform(0.15, 0.7) * (0.3 + body[min(len(body) - 1, samples(at))]))
+    return normalized(fade_out(out, 0.6))
