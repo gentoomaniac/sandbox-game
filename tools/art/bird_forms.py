@@ -234,6 +234,8 @@ BEATS = {
     # A hover: the wings held high and spread forward, beating fast.
     "high": ((-0.05, 0.9), (-0.2, 0.95)),
 }
+# The frames of a flight's wingbeat, in the order of a sheet's flying rows.
+WINGBEAT = ("up", "level", "down")
 
 
 def _open_wing(picture, bird, root, tip_share, darker):
@@ -301,3 +303,17 @@ def flying(size, bird, centre, beat, bill_angle=0.0, legs_trailing=False):
         end = (centre[0] - rx - bird.tail - bird.legs * 0.4, centre[1] + ry * 0.6)
         line(picture, start, end, bird.leg_colours[0], bird.leg_width)
     return picture, parts._replace(bill_tip=bill_tip)
+
+
+def head_on(size, rows, keys, outline_colour, top):
+    """A bird flying straight down or up the screen, seen from the front or the back with both
+    wings spread: a hand-drawn map of characters (keys: character to colour, "." clear) put in
+    the middle of a cell of `size` with its top row at `top`, outlined in `outline_colour`."""
+    width, height = size
+    picture = blank(width, height)
+    left = (width - max(len(row) for row in rows)) // 2
+    for y, row in enumerate(rows):
+        for x, char in enumerate(row):
+            if char != ".":
+                picture[top + y][left + x] = keys[char]
+    return outline(picture, outline_colour)

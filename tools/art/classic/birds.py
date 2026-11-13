@@ -13,6 +13,7 @@ over it, so that they stay thin.
 """
 
 from animals import paste
+from canvas import mirrored
 from livestock import to_picture
 
 # Bills and legs (red or orange, shaded, and the near and far leg): drawn over the outline.
@@ -349,6 +350,86 @@ GOOSE_FLIGHT_BODY_Y = 9
 GOOSE_STANDING_LEFT = 5
 
 
+# Flying down the screen (from the front: the head with the orange bill and the pale breast) or
+# up it (from behind: the back, the white band over the tail), the wings up, level and down: the
+# left half of each map is drawn, the right one mirrored and a shade darker (canvas.mirrored).
+GOOSE_SHADED = {"p": "l", "l": "b", "b": "d", "w": "p"}
+GOOSE_FRONT = (
+    [
+        "d.........",
+        "dd........",
+        ".dl.....bb",
+        ".ddl....eb",
+        "..ddl....o",
+        "...ddlpplp",
+        ".....ddllp",
+        "........lp",
+        ".........l",
+    ],
+    [
+        "........bb",
+        "........eb",
+        ".........o",
+        "...pppppbp",
+        ".dllllllpp",
+        "dddddd..lp",
+        "........lp",
+        ".........l",
+    ],
+    [
+        "........bb",
+        "........eb",
+        ".........o",
+        ".....ppplp",
+        "...ppllllp",
+        ".pllddd.lp",
+        "pldd....lp",
+        "ld.......l",
+        "d.........",
+    ],
+)
+GOOSE_BACK = (
+    [
+        "d.........",
+        "dd........",
+        ".dl.....bb",
+        ".ddl....lb",
+        "..ddl....b",
+        "...ddlpplb",
+        ".....ddlbd",
+        "........ww",
+        ".........b",
+    ],
+    [
+        "........bb",
+        "........lb",
+        ".........b",
+        "...ppppplb",
+        ".dllllllbd",
+        "dddddd..bb",
+        "........ww",
+        ".........b",
+    ],
+    [
+        "........bb",
+        "........lb",
+        ".........b",
+        ".....ppplb",
+        "...ppllllb",
+        ".pllddd.bd",
+        "pldd....ww",
+        "ld.......b",
+        "d.........",
+    ],
+)
+# The cell's row of the top of each beat's map: the head stays on one row.
+GOOSE_HEAD_ON_TOP = (3, 5, 5)
+
+
+def goose_head_on(view):
+    return [on_cell(mirrored(half, GOOSE_SHADED), GOOSE_SIZE, 2, top) for half, top in zip(view, GOOSE_HEAD_ON_TOP)]
+
+
 def goose_frame(head, legs=GOOSE_LEGS):
     return on_legs(head + GOOSE_BODY, legs, GOOSE_LEG_AT)
 
@@ -365,6 +446,7 @@ def goose_sheet():
         [standing(frame, GOOSE_SIZE, GOOSE_STANDING_LEFT) for frame in frames] for frames in GOOSE_ACTIONS.values()
     ]
     rows.append([on_cell(shape, GOOSE_SIZE, GOOSE_FLIGHT_LEFT, GOOSE_FLIGHT_BODY_Y - body_y) for shape, body_y in GOOSE_FLIGHT])
+    rows += [goose_head_on(GOOSE_FRONT), goose_head_on(GOOSE_BACK)]
     return [[to_picture(frame, GOOSE_KEYS, GOOSE_OUTLINE, BARE) for frame in frames] for frames in rows]
 
 

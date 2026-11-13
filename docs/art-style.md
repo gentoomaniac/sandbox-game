@@ -111,7 +111,12 @@ contact shadow (`Animal.draw_contact_shadow`, a flat oval in the game's pixels; 
 flight cast one too, `GroundShadows`). The birds are put together by bird_forms.py: a body, a
 tail, a neck up to a round head with an eye and a bill, a folded wing, legs drawn over the
 outline in two pixels (one for the sparrow, the dunlin and the tern), and in flight open wings
-with coloured tips and trailing edges, seen a little from above. Their cells are twice the 16 px
+with coloured tips and trailing edges, seen a little from above. The sparrow and the goose also
+fly straight down the screen, seen from the front (head, bill and pale breast) and up it, seen
+from behind (back and tail; the goose's white band over the tail), both wings spread up, level
+and down like the side view's beat (task 220): hand-drawn maps of characters, the left half
+drawn and the right one mirrored a shade darker (`canvas.mirrored`, `bird_forms.head_on`; the
+same in the classic art). Their cells are twice the 16 px
 ones; the small animals (sparrow, rabbit, bee, butterflies, mouse, frog, dunlin) are drawn a
 little larger than life, so that they read beside a 61 px person: the sparrow about 15 px long,
 the mouse 24, the frog 22, the rabbit 22 sitting, the squirrel 22 tall, the roe deer 40 tall,

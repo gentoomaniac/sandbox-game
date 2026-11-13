@@ -14,8 +14,8 @@ colour (see the style rules in docs/art-style.md).
 import math
 
 import forms
-from bird_forms import Bird, flying, standing
-from canvas import blank, outline
+from bird_forms import WINGBEAT, Bird, flying, head_on, standing
+from canvas import blank, mirrored, outline
 
 # --- House sparrow ------------------------------------------------------------------------
 #
@@ -68,6 +68,110 @@ SPARROW_SIZE = (22, 18)
 SPARROW_AT = (9.0, 10.6)
 
 
+# Flying straight down the screen (seen from the front: the grey crown, the eyes and the bill, the
+# pale cheeks over the black bib, the pale breast) or up it (seen from behind: the crown, the
+# streaked back, the pale bar on the wings and the dark tail), both wings spread at the levels
+# of the side view's beat. Each is the left half of a hand-drawn map with its top row in the
+# cell; the right half is mirrored and a shade darker (canvas.mirrored). Keys: c crown, L m s
+# the light, base and shade of the brown, d its darkest, w cream, y a the breast and its shade,
+# k ink, b the bill.
+SPARROW_FLIGHT_KEYS = {
+    "c": "stone",
+    "L": "soil_light",
+    "m": "soil_mid",
+    "s": "soil",
+    "d": "soil_dark",
+    "w": "cream",
+    "y": "sand_light",
+    "a": "sand",
+    "k": "ink",
+    "b": "stone_dark",
+}
+SPARROW_SHADED = {"L": "m", "m": "s", "s": "d", "y": "a"}
+SPARROW_FRONT = {
+    "up": (1, [
+        "L.........",
+        "Lm........",
+        ".Lm.......",
+        ".Lmm......",
+        "..Lmm...cc",
+        "..Lmmm.mcc",
+        "...Lmmmmkb",
+        "....Lmmwwk",
+        ".....Lmmyk",
+        "......smyy",
+        ".......ayy",
+        "........aa",
+    ]),
+    "level": (5, [
+        "........cc",
+        ".......mcc",
+        ".......mkb",
+        ".......wwk",
+        "..LLLLLLyk",
+        "LLmmmmmmyy",
+        ".sdsmsmayy",
+        ".......ayy",
+        "........aa",
+    ]),
+    "down": (5, [
+        "........cc",
+        ".......mcc",
+        ".......mkb",
+        ".......wwk",
+        "....LLLLyk",
+        "..LLmmmmyy",
+        ".Lmmss.ayy",
+        "Lmss...ayy",
+        "ms......aa",
+        "s.........",
+    ]),
+}
+SPARROW_BACK = {
+    "up": (1, [
+        "L.........",
+        "Lm........",
+        ".Lm.......",
+        ".Lmw......",
+        "..Lmw...cc",
+        "..Lmmw.ccc",
+        "...Lmmwmmm",
+        "....Lmmmmd",
+        ".....smmLm",
+        "......smmd",
+        "........ss",
+        ".......sds",
+    ]),
+    "level": (5, [
+        "........cc",
+        ".......ccc",
+        ".......mmm",
+        "..LLLLLLmd",
+        "LLmmwwmmLm",
+        ".sdsmsmmmd",
+        ".......smm",
+        "........ss",
+        ".......sds",
+    ]),
+    "down": (5, [
+        "........cc",
+        ".......ccc",
+        ".......mmm",
+        "....LLLLmd",
+        "..LLmwwmLm",
+        ".Lmmmmssmd",
+        "Lmss...smm",
+        "ms......ss",
+        "s......sds",
+    ]),
+}
+
+
+def sparrow_head_on(view, beat):
+    top, half = view[beat]
+    return head_on(SPARROW_SIZE, mirrored(half, SPARROW_SHADED), SPARROW_FLIGHT_KEYS, SPARROW.outline, top)
+
+
 def sparrow(**pose):
     return standing(SPARROW_SIZE, SPARROW, SPARROW_AT, **({"angle": 18, "head_at": (1.5, -2.6), "bill_angle": 5} | pose))[0]
 
@@ -78,7 +182,9 @@ def sparrow_sheet():
         "idle": [sparrow(), sparrow(), sparrow(head_at=(1.0, -3.4), bill_angle=-15)],
         "peck": [sparrow(), sparrow(angle=-22, head_at=(2.6, 3.8), bill_angle=70)],
         "hop": [sparrow(lift=hop, steps=((1, hop), (1, hop))), sparrow()],
-        "fly": [flying(SPARROW_SIZE, SPARROW, (9.0, 10.0), beat)[0] for beat in ("up", "level", "down")],
+        "fly": [flying(SPARROW_SIZE, SPARROW, (9.0, 10.0), beat)[0] for beat in WINGBEAT],
+        "fly_down": [sparrow_head_on(SPARROW_FRONT, beat) for beat in WINGBEAT],
+        "fly_up": [sparrow_head_on(SPARROW_BACK, beat) for beat in WINGBEAT],
     }
 
 

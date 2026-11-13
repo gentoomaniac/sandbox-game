@@ -8,7 +8,7 @@ animals get a one pixel outline in the darkest colour of their coat; the butterf
 without, and the bee has its dark outline drawn in (see the style rules in design/presentation/art-pipeline.md).
 """
 
-from canvas import blank, outline
+from canvas import blank, mirrored, outline
 
 # Sparrow: crown and back, wing, pale cheek and belly, beak, eye.
 BIRD_KEYS = {"b": "soil_mid", "d": "soil", "s": "cream", "l": "sand_light", "k": "ochre", "e": "ink"}
@@ -45,6 +45,8 @@ BUTTERFLY_KEYS = {
 # their frames. A frame is a list of rows (plain shapes; the outline is added) and may be
 # lifted off the floor by writing ("lift", n, rows).
 BIRD_STANDING = ["...bb.", "...sek", "ddbbl.", "..ll.."]
+# The right side of a bird seen from the front or behind, turned from the light.
+BIRD_SHADED = {"b": "d"}
 BIRD = {
     "size": (8, 8),
     "outline": "soil_dark",
@@ -59,6 +61,19 @@ BIRD = {
             ("lift", 1, ["..d.d.", "..ddbb", "dddbek", "..ll.."]),
             ("lift", 1, ["dddbbb", "ddddek", "..ll.."]),
             ("lift", 1, ["....bb", "dddbek", "..dl..", "..d..."]),
+        ],
+        # Flying down the screen (from the front: the eyes and the beak, the pale belly) and up
+        # it (from behind: the brown back and the tail), the wings up, level and down; the left
+        # half of each is drawn, the right one mirrored (canvas.mirrored).
+        "fly_down": [
+            ("lift", 1, mirrored(["d..", "dbb", ".ek", "..l"], BIRD_SHADED)),
+            ("lift", 2, mirrored([".bb", ".ek", "ddl", "..l"], BIRD_SHADED)),
+            ("lift", 1, mirrored([".bb", ".ek", ".dl", "d.l"], BIRD_SHADED)),
+        ],
+        "fly_up": [
+            ("lift", 1, mirrored(["d..", "dbb", ".db", "..d"], BIRD_SHADED)),
+            ("lift", 2, mirrored([".bb", "ddb", "..b", "..d"], BIRD_SHADED)),
+            ("lift", 1, mirrored([".bb", ".db", "d.b", "..d"], BIRD_SHADED)),
         ],
     },
 }

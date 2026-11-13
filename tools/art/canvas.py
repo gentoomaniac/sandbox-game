@@ -119,3 +119,15 @@ def outline_edge(picture, colour, keep_bottom=False, ignoring=()):
     for x, y in border:
         picture[y][x] = colour
     return picture
+
+
+def mirrored(half, darker):
+    """Rows of characters for a shape that is the same on both sides, from its left half: the
+    right half is the left one mirrored, each character swapped by `darker` (a dict; a missing
+    one stays), as the right side is turned away from the light from the top left."""
+    width = max(len(row) for row in half)
+    rows = []
+    for row in half:
+        padded = row.ljust(width, ".")
+        rows.append(padded + "".join(darker.get(char, char) for char in reversed(padded)))
+    return rows

@@ -35,7 +35,11 @@ const HORSE := {"size": Vector2i(88, 76), "actions": LIVESTOCK_ACTIONS}
 
 ## Per kind: the size of a frame and the frames of each action, in the order of the rows.
 const SHEETS := {
-	&"bird": {"size": Vector2i(22, 18), "actions": {&"idle": 3, &"peck": 2, &"hop": 2, &"fly": 3}},
+	&"bird":
+	{
+		"size": Vector2i(22, 18),
+		"actions": {&"idle": 3, &"peck": 2, &"hop": 2, &"fly": 3, &"fly_down": 3, &"fly_up": 3},
+	},
 	&"rabbit": {"size": Vector2i(26, 22), "actions": {&"sit": 2, &"nibble": 2, &"hop": 3}},
 	&"squirrel": {"size": Vector2i(28, 24), "actions": {&"sit": 3, &"dart": 3}},
 	&"deer":
@@ -63,7 +67,10 @@ const SHEETS := {
 	&"mouse": {"size": Vector2i(24, 14), "actions": {&"sit": 2, &"scurry": 2}},
 	&"frog": {"size": Vector2i(24, 16), "actions": {&"sit": 2, &"hop": 2}},
 	&"goose":
-	{"size": Vector2i(48, 36), "actions": {&"stand": 2, &"graze": 2, &"walk": 2, &"fly": 3}},
+	{
+		"size": Vector2i(48, 36),
+		"actions": {&"stand": 2, &"graze": 2, &"walk": 2, &"fly": 3, &"fly_down": 3, &"fly_up": 3},
+	},
 	&"oystercatcher":
 	{"size": Vector2i(32, 24), "actions": {&"stand": 2, &"probe": 2, &"walk": 2, &"fly": 3}},
 	&"dunlin":

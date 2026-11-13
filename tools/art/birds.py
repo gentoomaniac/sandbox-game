@@ -12,7 +12,8 @@ bird_forms.py: side on while they stand or walk, from a little above while they 
 import math
 
 import forms
-from bird_forms import Bird, flying, standing
+from bird_forms import WINGBEAT, Bird, flying, head_on, standing
+from canvas import mirrored
 
 # --- White stork --------------------------------------------------------------------------
 #
@@ -149,6 +150,114 @@ GOOSE_STANDING = {"angle": 5, "head_at": (2.0, -10.0), "bill_angle": 8}
 GOOSE_GRAZING = {"angle": -8, "head_at": (8.0, 6.0), "bill_angle": 70}
 
 
+# Flying straight down the screen (seen from the front: the head with the orange bill, the neck
+# and the pale breast) or up it (seen from behind: the back, the white band over the grey tail),
+# both wings spread at the levels of the side view's beat: pale grey in front, the flight
+# feathers dark. Hand-drawn maps of the left half, the body laid over the wings of the beat,
+# each with its top row in the cell; the right half is mirrored and a shade darker
+# (canvas.mirrored). Keys: P l b d D the plumage from its palest to its darkest, w white, k eye,
+# o r the bill and its shade.
+GOOSE_FLIGHT_KEYS = {
+    "P": "stone_light",
+    "l": "bare_light",
+    "b": "bare",
+    "d": "mud",
+    "D": "mud_dark",
+    "w": "lime",
+    "k": "ink",
+    "o": "flame",
+    "r": "ember",
+}
+GOOSE_SHADED = {"P": "l", "l": "b", "b": "d", "d": "D", "w": "P", "o": "r"}
+# The body (head, neck, and the breast or the back and tail) is one map for every beat, laid over
+# the wings of the beat (GOOSE_WINGS); the classic art, smaller, draws a whole map per beat.
+# Every map is GOOSE_HALF_WIDTH wide: half the 40 px of the spread wings.
+GOOSE_HALF_WIDTH = 20
+GOOSE_FRONT_BODY = (9, [
+    "..................bb",
+    ".................lbb",
+    ".................kbb",
+    "..................bo",
+    "..................lo",
+    "..................bb",
+    "..................lb",
+    "...............lPPPP",
+    "...............lPPPP",
+    "...............lPPPP",
+    "................lPPP",
+    ".................lPP",
+    "..................ll",
+])
+GOOSE_BACK_BODY = (9, [
+    "..................bb",
+    ".................lbb",
+    ".................lbb",
+    "..................bb",
+    "..................bb",
+    "..................bb",
+    "..................lb",
+    "...............lbbbb",
+    "...............bbdbb",
+    "...............bdbbd",
+    "................bbdb",
+    ".................www",
+    ".................lbb",
+    "..................ww",
+])
+GOOSE_WINGS = {
+    "up": (2, [
+        "D...................",
+        "Dd..................",
+        "Ddd.................",
+        ".Ddl................",
+        ".Dddl...............",
+        "..DdlP..............",
+        "..DdblP.............",
+        "...DdblP............",
+        "...DdbblP...........",
+        "....DdbblP..........",
+        ".....DdbblP.........",
+        "......DdbblP........",
+        ".......DdbblP.......",
+        "........DdbblP......",
+        ".........DdbblPP....",
+        "...........DdblPP...",
+        ".............DdlPP..",
+    ]),
+    "level": (16, [
+        "....PPPPPPPPPPPP....",
+        "..dPllllllllllllll..",
+        ".DddbbbbbbbbbbbbbP..",
+        "DDdDddddbdbdbdbb....",
+        ".D.DdDdDdddd........",
+    ]),
+    "down": (16, [
+        "............PPPPP...",
+        ".........PPPllllll..",
+        "......PPPllllbbbb...",
+        "....PPllbbbbddd.....",
+        "..Pllbbbdddd........",
+        ".Plbbddd............",
+        "Plbdd...............",
+        "lbdD................",
+        "bdD.................",
+        "dD..................",
+    ]),
+}
+
+
+def goose_head_on(body, beat):
+    """A frame of the front or back view: the wings of the beat with the body over them."""
+    width, height = GOOSE_SIZE
+    half = [["."] * GOOSE_HALF_WIDTH for _ in range(height)]
+    for top, rows in (GOOSE_WINGS[beat], body):
+        for y, row in enumerate(rows):
+            for x, char in enumerate(row):
+                if char != ".":
+                    half[top + y][x] = char
+    return head_on(GOOSE_SIZE, mirrored(["".join(row) for row in half], GOOSE_SHADED), GOOSE_FLIGHT_KEYS, GOOSE.outline, 0)
+
+
 def goose(**pose):
     return standing(GOOSE_SIZE, GOOSE, GOOSE_AT, **pose)[0]
 
@@ -158,7 +267,9 @@ def goose_sheet():
         [goose(**GOOSE_STANDING), goose(**GOOSE_STANDING, look_round=True)],
         [goose(**GOOSE_GRAZING), goose(**GOOSE_GRAZING | {"head_at": (8.0, 7.0)})],
         [goose(**GOOSE_STANDING, steps=((3, 2), (0, 0))), goose(**GOOSE_STANDING, steps=((0, 0), (3, 2)))],
-        [flying(GOOSE_SIZE, GOOSE, (22.0, 18.0), beat)[0] for beat in ("up", "level", "down")],
+        [flying(GOOSE_SIZE, GOOSE, (22.0, 18.0), beat)[0] for beat in WINGBEAT],
+        [goose_head_on(GOOSE_FRONT_BODY, beat) for beat in WINGBEAT],
+        [goose_head_on(GOOSE_BACK_BODY, beat) for beat in WINGBEAT],
     ]
 
 
