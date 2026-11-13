@@ -41,7 +41,8 @@ Settings → Audio, saved with the others; 0 mutes it).
 - **UI:** clicks for menus, the inventory and the hotbar.
 - **Weather (ambience):** rain and wind as loops that follow their strength and fade like
   the weather visuals, wind gusts, and thunder after a flash, by how far the strike was. Thunder
-  comes in three kinds by distance (task 214, `weather.py`): `thunder_far` (low, soft, long
+  comes in three kinds by distance (task 214, `weather.py`; six variants each since task 222, differing in length, pitch, attack and
+  the number of rolls: one roll, a double roll, a long rolling series): `thunder_far` (low, soft, long
   rumble, no crack, -16 dBFS), `thunder_mid` (a roll with body, -9) and the rare `thunder_close`
   (a sharp crack at once, then a heavy rumble, -2); the game lowers and dulls them further by
   distance (see the ambience below).

@@ -3,10 +3,12 @@
 The loops are built as circles (see generate.py), so every part of them uses loop=True.
 """
 
+from functools import partial
+
 import numpy as np
 
 from dsp import bandpass, drift, envelope, fade_out, lowpass, noise, noise_band, normalized
-from dsp import place, ring, rms, swell, swept_band, times
+from dsp import RATE, place, ring, rms, samples, swell, swept_band, times
 
 RAIN_LENGTH = 4.0
 WIND_LENGTH = 6.0
@@ -52,31 +54,68 @@ def wind_gust(rng):
     return (body / rms(body) + 0.5 * low) * shape + 0.2 * whistle / rms(whistle) * shape**2
 
 
-def thunder_far_roll(rng):
-    """Far off: only a low, soft rumble that rises slowly and rolls on for many seconds."""
-    return _thunder(rng, length=rng.uniform(7.5, 9.0), rumble_cutoff=rng.uniform(80, 100),
-                    attack=rng.uniform(0.8, 1.2), rate=rng.uniform(0.38, 0.5), crack=0)
+# The variants of each kind differ in length, pitch (the rumble's cutoff), attack and rolls:
+# every roll is (start in s, gain, length in s) and each gets its own rumble, so a single roll,
+# a double roll and a long rolling series are all there.
+FAR = [
+    dict(length=9.5, cutoff=75, attack=1.4, rate=0.4, rolls=[(0, 1, 9.5)]),
+    dict(length=8.0, cutoff=95, attack=0.9, rate=0.5, rolls=[(0, 1, 4.5), (3.2, 0.7, 4.8)]),
+    dict(length=5.5, cutoff=110, attack=0.5, rate=0.7, rolls=[(0, 1, 5.5)]),
+    dict(length=12.0, cutoff=85, attack=1.0, rate=0.55,
+         rolls=[(0, 1, 4.5), (2.8, 0.8, 4.5), (6.0, 0.75, 3.5), (8.0, 0.55, 4.0)]),
+    dict(length=7.0, cutoff=65, attack=1.8, rate=0.45, rolls=[(0, 1, 7.0)]),
+    dict(length=10.0, cutoff=100, attack=0.7, rate=0.5, rolls=[(0, 0.8, 4.0), (4.5, 1, 5.5)]),
+]
+MID = [
+    dict(length=6.0, cutoff=175, attack=0.28, rate=0.7, rolls=[(0, 1, 6.0)]),
+    dict(length=4.0, cutoff=210, attack=0.12, rate=1.1, rolls=[(0, 1, 4.0)]),
+    dict(length=7.5, cutoff=150, attack=0.5, rate=0.65, rolls=[(0, 1, 4.0), (2.6, 0.75, 4.9)]),
+    dict(length=9.5, cutoff=165, attack=0.3, rate=0.6,
+         rolls=[(0, 1, 4.0), (2.2, 0.8, 3.5), (4.5, 0.7, 3.5), (6.2, 0.5, 3.3)]),
+    dict(length=5.0, cutoff=135, attack=0.6, rate=0.8, rolls=[(0, 1, 5.0)]),
+    dict(length=6.5, cutoff=195, attack=0.2, rate=0.75, rolls=[(0, 0.9, 3.0), (2.4, 1, 4.1)]),
+]
+CLOSE = [
+    dict(length=5.4, cutoff=290, attack=0.04, rate=0.9, snap=1.0, rolls=[(0, 1, 5.4)]),
+    dict(length=3.6, cutoff=330, attack=0.03, rate=1.3, snap=1.2, rolls=[(0, 1, 3.6)]),
+    dict(length=7.5, cutoff=260, attack=0.05, rate=0.75, snap=1.0, rolls=[(0, 1, 4.5), (3.2, 0.6, 4.3)]),
+    dict(length=9.0, cutoff=240, attack=0.06, rate=0.7, snap=0.9,
+         rolls=[(0, 1, 4.0), (2.5, 0.7, 3.5), (5.0, 0.6, 4.0)]),
+    dict(length=4.6, cutoff=210, attack=0.12, rate=1.0, snap=0.7, rolls=[(0, 1, 4.6)]),
+    dict(length=6.2, cutoff=310, attack=0.02, rate=0.95, snap=1.3, rolls=[(0, 1, 2.5), (1.8, 0.8, 4.4)]),
+]
 
 
-def thunder_mid_roll(rng):
-    """A middle distance: a rumble with body and a dull, low-passed thud at its start."""
-    length = rng.uniform(5.5, 6.5)
-    out = _thunder(rng, length, rumble_cutoff=rng.uniform(160, 190), attack=rng.uniform(0.2, 0.35),
-                   rate=rng.uniform(0.6, 0.8), crack=0)
-    thud = lowpass(noise(rng, length), 700) * envelope(length, 0.03, 7)
-    return normalized(out + 0.1 * rms(out) * thud / rms(thud))
+def thunder_variants(profiles):
+    """The variant functions of a thunder kind: far off, a rumble that rises slowly and rolls
+    on for many seconds; a middle distance, one with body and a dull thud at its start; close
+    (profiles with a snap), a sharp crack at once and a heavy rumble after it."""
+    return [partial(_series, profile=profile) for profile in profiles]
 
 
-def thunder_close(rng):
-    """A close strike: a sharp crack at once (a snap, then the tearing of the bolt), and a
-    heavy rumble under and after it."""
-    length = rng.uniform(5.0, 5.8)
-    rumble = _thunder(rng, length, rumble_cutoff=rng.uniform(260, 320), attack=0.04,
-                      rate=rng.uniform(0.8, 0.95), crack=0)
+def _series(rng, profile):
+    out = np.zeros(samples(profile["length"] + 0.1))
+    for start, gain, duration in profile["rolls"]:
+        cutoff = profile["cutoff"] * rng.uniform(0.9, 1.1)
+        part = _thunder(rng, duration, cutoff, profile["attack"] * rng.uniform(0.9, 1.15),
+                        profile["rate"] * rng.uniform(0.9, 1.1), crack=0)
+        place(out, part, start, gain)
+    out = normalized(out)
+    if "snap" in profile:
+        return _close_crack(rng, out, profile["snap"])
+    if profile["cutoff"] > 120:
+        thud = lowpass(noise(rng, len(out) / RATE), 700) * envelope(len(out) / RATE, 0.03, 7)
+        out = normalized(out + 0.1 * rms(out) * thud / rms(thud))
+    return normalized(fade_out(out, 0.5))
+
+
+def _close_crack(rng, rumble, snap_gain):
+    """A sharp crack at once (a snap, then the tearing of the bolt) over the rumble."""
+    length = len(rumble) / RATE
     snap = bandpass(noise(rng, length), 800, 7000) * envelope(length, 0.001, 70)
     tear = bandpass(noise(rng, length), 250, 3500) * envelope(length, 0.004, 9)
     tear *= 1 + 0.6 * np.sin(2 * np.pi * rng.uniform(25, 45) * times(length))
-    out = 0.9 * rumble / rms(rumble) * 0.25 + 1.2 * snap / rms(snap) * 0.05
+    out = 0.9 * rumble / rms(rumble) * 0.25 + snap_gain * 1.2 * snap / rms(snap) * 0.05
     out += 0.45 * tear / rms(tear) * 0.1
     return normalized(fade_out(out, 0.5))
 
