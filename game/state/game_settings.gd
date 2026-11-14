@@ -161,6 +161,7 @@ const ACTION_LABELS := {
 	&"zoom_out": "Zoom out",
 	&"toggle_fast_forward": "Fast forward",
 	&"toggle_coordinates": "Show coordinates",
+	&"toggle_paths": "Show villagers' paths",
 	&"toggle_art_set": "Classic or new art",
 	&"quick_save": "Quick save",
 	&"quick_load": "Quick load",
@@ -193,6 +194,7 @@ const ACTION_DESCRIPTIONS := {
 	&"zoom_out": "Zoom the camera out. Ctrl and the mouse wheel zoom too.",
 	&"toggle_fast_forward": "Run time faster. Only for testing.",
 	&"toggle_coordinates": "Show your tile coordinates in the top right corner.",
+	&"toggle_paths": "Show the way of the nearest villager on a trip, in the bottom right corner.",
 	&"toggle_art_set":
 	"Switch between the new art, drawn at 32 px per tile, and the classic 16 px art.",
 	&"quick_save": "Save the game now, in the background.",

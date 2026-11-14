@@ -45,7 +45,7 @@ var block_reason := Block.NO_WAY
 var is_blocked_told := false
 
 
-## What a block is called, for the console and the F3 line.
+## What a block is called, for the console and the path overlay (F4).
 static func block_text(reason: Block) -> String:
 	match reason:
 		Block.NOT_LOADED:

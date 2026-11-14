@@ -210,7 +210,7 @@ func place(npc: Npc, tile: Vector2i, map: GameMap) -> bool:
 	return true
 
 
-## The F3 line on the trip of the villager nearest `near` that is on one, or "".
+## The path overlay's line (F4) on the trip of the villager nearest `near` that is on one, or "".
 func path_text(near: Vector2) -> String:
 	var nearest: Npc
 	for npc in _npcs:

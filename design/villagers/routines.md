@@ -174,8 +174,8 @@ and waits for `trip_arrived`; on `trip_blocked` it may leave the trip (it looks 
 or send the villager elsewhere. It knows nothing of legs, searches or retries.
 
 Console: `goto <villager> <x>,<y>|here` (the `place` argument kind learns `x,y`), answering "on its
-way, 34 tiles" or "no way for now". F3 gets one line for the nearest villager on a trip (or the last
-one sent): `path antje: (12,4) -> (30,9) 34 tiles, 12 done, leg 1, searched 410 nodes 2.1 ms`.
+way, 34 tiles" or "no way for now". F4 shows one line (an overlay of its own, `PathsHud`) for the nearest
+villager on a trip: `path antje: (12,4) -> (30,9) 34 tiles, 12 done, leg 1, searched 410 nodes 2.1 ms`.
 
 ### What the numbers are for (`data/npcs.cfg`, a new `[travel]` section, read by `NpcRules`)
 
@@ -225,7 +225,7 @@ walkers behave, so they can be tuned without code:
    off them, is BLOCKED with NOT_LOADED and searches nothing; it walks when the chunks load; the
    Pathfinder queue is empty after a skip (the many `update` calls of `walked_minute` spend no
    tick); a visible villager is never placed.
-4. **Console `goto` and the F3 line.** Tests: the command's parsing and its answers.
+4. **Console `goto` and the path overlay (F4).** Tests: the command's parsing and its answers.
 5. **The bench** `tools/bench/paths.gd`, the numbers tuned from it and written here.
 
 ### Open questions

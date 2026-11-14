@@ -68,8 +68,8 @@ func update(npc: Npc, delta: float, player_feet: Vector2, fits: Callable) -> voi
 			_walk(npc, delta, player_feet, fits)
 
 
-## The F3 line on the trip of a villager: where from and to, how far it has got on its way (the
-## leg it is on), and what the searching has cost.
+## The path overlay's line (F4) on the trip of a villager: where from and to, how far it has got
+## on its way (the leg it is on), and what the searching has cost.
 static func text_of(npc: Npc) -> String:
 	var trip := npc.trip
 	var progress := ""

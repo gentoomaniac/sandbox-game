@@ -58,6 +58,7 @@ var _autosave_timer := AutosaveTimer.new()
 var _ground_item_view := GroundItemView.new()
 var _npc_views := NpcViews.new()
 var _coordinates_hud := CoordinatesHud.new()
+var _paths_hud := PathsHud.new()
 var _hotbar := HotbarHud.new()
 var _build_menu := BuildMenu.new()
 var _vitals := VitalsHud.new()
@@ -225,6 +226,8 @@ func _make_views() -> void:
 	add_child(_harvest_hud)
 	add_child(_notifications)
 	add_child(_coordinates_hud)
+	_paths_hud.setup(_state.npcs, _state.player)
+	add_child(_paths_hud)
 	add_child(_npc_name_tag)
 	add_child(_hotbar)
 	add_child(_build_menu)
@@ -435,6 +438,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	var hotbar_slot := _hotbar_slot_of(event)
 	if event.is_action_pressed("toggle_coordinates"):
 		_coordinates_hud.toggle()
+	elif event.is_action_pressed("toggle_paths"):
+		_paths_hud.toggle()
 	elif event.is_action_pressed("toggle_fast_forward"):
 		_fast_forward = not _fast_forward
 	elif hotbar_slot != -1:
@@ -480,10 +485,7 @@ func _process(delta: float) -> void:
 	_view.ambient_motion.show_tide(Tide.level(_state.clock.total_minutes()))
 	if _coordinates_hud.visible:
 		_coordinates_hud.show_position(
-			_state.player.tile(),
-			_state.is_inside(),
-			_weather_and_sun_text(_weather),
-			_state.npcs.path_text(_state.player.position)
+			_state.player.tile(), _state.is_inside(), _weather_and_sun_text(_weather)
 		)
 	var is_in_play := not _is_any_screen_open()
 	var is_pointer_on_gui := (

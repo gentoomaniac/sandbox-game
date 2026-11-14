@@ -65,6 +65,7 @@ there use physical keys. Settings can replace them. The dispatch sites follow th
 | drop_item | T | Drop held whole stack | project.godot:250 | Occasional | H |
 | console | / | Open console | project.godot:256 | Debug | D |
 | pause | Escape | Cancel, close, pause | project.godot:262 | Often | M |
+| toggle_paths | F4 | Path of the nearest villager on a trip | project.godot:268 | Rare | D |
 
 Where these actions are read:
 

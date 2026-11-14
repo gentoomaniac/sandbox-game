@@ -114,7 +114,7 @@ const COMMANDS := {
 		(
 			"Send a villager to a tile, or to where you stand (here): it finds its way, along lanes,"
 			+ " round fences and through gates. On its way means a search is under way: that there is no"
-			+ " way comes later, F3 shows its path and whether it is blocked."
+			+ " way comes later, F4 shows its path and whether it is blocked."
 		),
 	],
 	"play":
