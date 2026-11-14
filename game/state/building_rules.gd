@@ -24,6 +24,7 @@ const REQUIRED_KEYS: Array[String] = [
 	"cost_clay",
 	"cost_reeds",
 	"beds",
+	"residents",
 	"storage_slots",
 	"warmth",
 	"comfort",

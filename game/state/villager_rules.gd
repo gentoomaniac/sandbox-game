@@ -21,6 +21,12 @@ const TEXT_KEYS: Array[String] = [
 	"avoids",
 	"secrets",
 ]
+## The keys a sheet may add, none or one of the two workplaces: where they live and work as a
+## building type (the nearest one that stands gets them, see Npcs), or the name of a spot where
+## there is no building to work in.
+const HOME_BUILDING_KEY := "home_building"
+const WORKPLACE_BUILDING_KEY := "workplace_building"
+const WORKPLACE_SPOT_KEY := "workplace_spot"
 ## A villager's sample lines: the cut-down sheet tells this many.
 const MIN_SAMPLES := 2
 ## The kinds of people a villager may name in `people`: the sex of the one named ("" for
@@ -69,9 +75,10 @@ static func from_file(path: String) -> VillagerRules:
 
 
 ## What is missing or wrong, as "[id] what". A look may only wear the layers NpcRules offers,
-## which are those with pictures. Each of a villager's `people` is a villager of the file who
-## names them back (see KINDS), a parent is older than their child by MIN_PARENT_AGE or more,
-## and a married couple has the same home.
+## which are those with pictures. A `home_building` is a type that has room for residents, a
+## `workplace_building` a type, and a sheet names one workplace at most. Each of a villager's
+## `people` is a villager of the file who names them back (see KINDS), a parent is older than
+## their child by MIN_PARENT_AGE or more, and a married couple has the same home.
 func problems() -> Array[String]:
 	var found: Array[String] = []
 	if _values.is_empty():
@@ -92,6 +99,7 @@ func problems() -> Array[String]:
 		var people: Variant = villager.get("people")
 		if not people is Dictionary or not people.values().all(_is_kind_and_text):
 			found.append("[%s] people is not a dictionary of [kind, what they think]" % id)
+		found.append_array(_place_problems(id, villager))
 		var look: Variant = villager.get("look")
 		if not look is Dictionary or not look.has(str(Appearance.BODY)):
 			found.append("[%s] look has no body" % id)
@@ -143,8 +151,47 @@ func _relation_problems(id: String, other: String) -> Array[String]:
 		found.append("%s does not name %s back as one of %s" % [where, id, KINDS[kind]["back"]])
 	if kind in ["father", "mother"] and named["age"] < _values[id]["age"] + MIN_PARENT_AGE:
 		found.append("%s is not %d years older than their child" % [where, MIN_PARENT_AGE])
-	if kind in ["husband", "wife"] and named["home"] != _values[id]["home"]:
-		found.append("%s does not have the same home as their %s" % [where, KINDS[kind]["back"][0]])
+	if kind in ["husband", "wife"]:
+		if named["home"] != _values[id]["home"]:
+			found.append(
+				"%s does not have the same home as their %s" % [where, KINDS[kind]["back"][0]]
+			)
+		if named.get(HOME_BUILDING_KEY, "") != _values[id].get(HOME_BUILDING_KEY, ""):
+			found.append(
+				(
+					"%s does not have the same %s as their %s"
+					% [where, HOME_BUILDING_KEY, KINDS[kind]["back"][0]]
+				)
+			)
+	return found
+
+
+## What is wrong with the building types and the spot a sheet names for home and workplace.
+func _place_problems(id: String, villager: Dictionary) -> Array[String]:
+	var found: Array[String] = []
+	var home: Variant = villager.get(HOME_BUILDING_KEY)
+	if (
+		home != null
+		and not (
+			home is String
+			and BuildingTypes.TYPES.has(StringName(home))
+			and BuildingTypes.TYPES[StringName(home)]["residents"] > 0
+		)
+	):
+		found.append("[%s] %s is not a building with room for residents" % [id, HOME_BUILDING_KEY])
+	var workplace: Variant = villager.get(WORKPLACE_BUILDING_KEY)
+	if (
+		workplace != null
+		and not (workplace is String and BuildingTypes.TYPES.has(StringName(workplace)))
+	):
+		found.append("[%s] %s is not a building" % [id, WORKPLACE_BUILDING_KEY])
+	var spot: Variant = villager.get(WORKPLACE_SPOT_KEY)
+	if spot != null and not _is_text(spot):
+		found.append("[%s] %s is not a text" % [id, WORKPLACE_SPOT_KEY])
+	if workplace != null and spot != null:
+		found.append(
+			"[%s] has both a %s and a %s" % [id, WORKPLACE_BUILDING_KEY, WORKPLACE_SPOT_KEY]
+		)
 	return found
 
 

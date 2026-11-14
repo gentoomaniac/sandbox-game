@@ -77,6 +77,38 @@ func test_relations_that_disagree_are_reported() -> void:
 	)
 
 
+func test_the_sheets_name_the_house_and_the_workplace_they_have() -> void:
+	var villagers := VillagerRules.default_rules()
+	assert_eq(villagers.villager("antje")[VillagerRules.HOME_BUILDING_KEY], "hall_house")
+	assert_eq(villagers.villager("hinrich")[VillagerRules.WORKPLACE_BUILDING_KEY], "barn")
+	assert_eq(
+		villagers.villager("momme")[VillagerRules.WORKPLACE_SPOT_KEY], "the landing at the sluice"
+	)
+	assert_false(villagers.villager("ocke").has(VillagerRules.HOME_BUILDING_KEY))
+
+
+func test_a_house_or_workplace_that_is_not_a_building_is_reported() -> void:
+	var anna := _villager("female", 30, "the farm", {})
+	anna[VillagerRules.HOME_BUILDING_KEY] = "barn"
+	anna[VillagerRules.WORKPLACE_BUILDING_KEY] = "castle"
+	anna[VillagerRules.WORKPLACE_SPOT_KEY] = "the landing"
+	var problems := VillagerRules.new({"anna": anna}).problems()
+	assert_has(problems, "[anna] home_building is not a building with room for residents")
+	assert_has(problems, "[anna] workplace_building is not a building")
+	assert_has(problems, "[anna] has both a workplace_building and a workplace_spot")
+
+
+func test_a_couple_names_the_same_house() -> void:
+	var antje := _villager("female", 38, "the farm", {"hinrich": ["husband", "Steady."]})
+	var hinrich := _villager("male", 42, "the farm", {"antje": ["wife", "Warm."]})
+	antje[VillagerRules.HOME_BUILDING_KEY] = "hall_house"
+	hinrich[VillagerRules.HOME_BUILDING_KEY] = "kate"
+	var problems := VillagerRules.new({"antje": antje, "hinrich": hinrich}).problems()
+	assert_has(
+		problems, "[antje] people: hinrich does not have the same home_building as their wife"
+	)
+
+
 func test_a_missing_file_is_reported() -> void:
 	var villagers := VillagerRules.from_file("res://data/no_such_file.cfg")
 	assert_push_error_count(2)
