@@ -2,7 +2,8 @@
 
 Decided 2026-11-05. Everything makes sound. Music (task 184, 170): a Music bus under Master with its
 own volume slider in Settings → Audio, saved with the others; 0 mutes it. Two calm everyday pieces,
-"Tide" and "Harbour evening", play by themselves, each looping three times before the other
+"Tide" (a slow 6/8 sway in D dorian) and "Harbour evening" (a capstan bass under a
+shanty-like tune, in A aeolian), play by themselves, each looping three times before the other
 crossfades in on the next beat (EverydayMusic, data/music.cfg); the console's `play` and `stop`
 steer the same player. They are rendered in the background (never waited for: what plays goes on
 looping) and kept in a bounded cache in user://music_cache/. Off in test runs (`--mute`) and
