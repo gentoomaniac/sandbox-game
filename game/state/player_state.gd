@@ -60,8 +60,8 @@ var inventory: Inventory:
 		inventory = value
 		inventory.changed.connect(_show_held_item)
 		_show_held_item()
-## Whether their lantern is lit (see `is_lantern_shining`); saved. It stays lit in the bag and
-## in a chest, and shines again once it is held.
+## Whether their lantern is lit (see `is_lantern_shining`); saved. It stays lit in the bag, and
+## shines again once it is held. Fitting a candle or taking it out puts it out.
 var is_lantern_lit := false:
 	set(value):
 		is_lantern_lit = value
@@ -107,7 +107,16 @@ func _dress() -> void:
 ## Whether they hold a lit lantern, which lights the dark around them. Only the lantern in the
 ## hand shines: one put away in the bag gives no light.
 func is_lantern_shining() -> bool:
-	return is_lantern_lit and inventory.held_item() == ItemTypes.LANTERN
+	return is_lantern_lit and LanternCandle.holds_candle(inventory.slots[inventory.selected_slot])
+
+
+## Takes the candle out of the lantern in inventory `slot` (see Inventory `take_candle_out`); a
+## held lantern is then out. Returns whether it did.
+func take_candle_out(slot: int) -> bool:
+	var is_taken := inventory.take_candle_out(slot)
+	if is_taken and slot == inventory.selected_slot:
+		is_lantern_lit = false
+	return is_taken
 
 
 ## The hand shows the selected item, if it has art for the hand (the tools, the lantern lit or
@@ -115,7 +124,7 @@ func is_lantern_shining() -> bool:
 func _show_held_item() -> void:
 	var held := inventory.held_item()
 	var held_sheet: Variant = ItemTypes.TYPES.get(held, {}).get("held_sheet")
-	if held == ItemTypes.LANTERN and is_lantern_lit:
+	if is_lantern_shining():
 		held_sheet += "_lit"
 	if held_sheet == null:
 		appearance.take_off(Appearance.HELD)

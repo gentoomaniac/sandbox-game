@@ -14,6 +14,7 @@ func test_the_workbench_makes_the_woodworkers_recipes_in_rising_levels() -> void
 		recipes,
 		[
 			&"planks",
+			&"lantern",
 			&"wattle_fence",
 			&"stool",
 			&"trough",
@@ -33,7 +34,24 @@ func test_the_workbench_makes_the_woodworkers_recipes_in_rising_levels() -> void
 	var levels := recipes.map(func(recipe_id: StringName) -> float: return rules.level(recipe_id))
 	assert_eq(
 		levels,
-		[0.0, 5.0, 10.0, 10.0, 10.0, 10.0, 10.0, 15.0, 15.0, 15.0, 20.0, 25.0, 35.0, 45.0, 70.0]
+		[
+			0.0,
+			0.0,
+			5.0,
+			10.0,
+			10.0,
+			10.0,
+			10.0,
+			10.0,
+			15.0,
+			15.0,
+			15.0,
+			20.0,
+			25.0,
+			35.0,
+			45.0,
+			70.0
+		]
 	)
 
 

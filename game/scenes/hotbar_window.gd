@@ -48,4 +48,5 @@ func _on_inventory_slot_quick_move_requested(slot: int) -> void:
 
 
 func _on_inventory_slot_secondary_pressed(slot: int) -> void:
-	_player.equipment.quick_equip(_player.inventory, slot)
+	if not _player.take_candle_out(slot):
+		_player.equipment.quick_equip(_player.inventory, slot)

@@ -511,18 +511,19 @@ def candle():
     return picture
 
 
-def lantern():
+def lantern(candle_top=17):
     """A horn lantern, as carried at night about 1750: a tin cylinder with upright bars at its
-    sides, a pane of thin horn between them through which the tallow candle shows, a cone of a roof with
+    sides, a pane of thin horn between them through which the candle shows, a cone of a roof with
     a ring to carry it by, and a wider foot. Drawn unlit (lit, it shows in the hand: see
-    character.py `lantern`)."""
+    character.py `lantern`). `candle_top` is the row the candle reaches up to: the lower, the
+    more it has burnt down (24 or more is no candle: the empty lantern)."""
     picture = blank(ICON)
     shade(picture, ellipse(16, 4, 2.5, 2.5) & ~ellipse(16, 4, 1.2, 1.2), IRON[:3], radius=1)
     shade(picture, polygon([(16, 6), (22, 12), (10, 12)]), IRON[:3], radius=2)
     shade(picture, box(10, 12, 21, 25), ("mud", "sand", "sand_light"), radius=3)
-    candle = box(15, 17, 16, 24)
-    shade(picture, candle, ("lime", "cream"), radius=1)
-    dots(picture, [(15, 16), (16, 15)], "soil_dark")
+    if candle_top < 24:
+        shade(picture, box(15, candle_top, 16, 24), ("lime", "cream"), radius=1)
+        dots(picture, [(15, candle_top - 1), (16, candle_top - 2)], "soil_dark")
     # The roof is pierced to let the smoke out.
     dots(picture, [(14, 10), (16, 10), (18, 10), (15, 8), (17, 8)], "stone_dark")
     for x in (10, 21):
@@ -557,6 +558,9 @@ ICONS = {
     "candle": candle,
     "saddle": saddle,
     "lantern": lantern,
+    "lantern_used": lambda: lantern(19),
+    "lantern_stub": lambda: lantern(22),
+    "lantern_empty": lambda: lantern(24),
 }
 
 

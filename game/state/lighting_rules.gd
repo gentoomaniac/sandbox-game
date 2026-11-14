@@ -18,7 +18,7 @@ const TINT_HOURS := [
 	"min_night_hours",
 ]
 ## The lantern's light, in the shape of a world object's `light` (see ObjectLight).
-const LANTERN_KEYS := ["color", "energy", "radius_tiles"]
+const LANTERN_KEYS := ["color", "energy", "radius_tiles", "candle_hours"]
 
 ## The cloud shadows' numbers, each a plain number (see WeatherView).
 const CLOUD_SHADOW_KEYS := [
@@ -68,7 +68,7 @@ func problems() -> Array[String]:
 		return found
 	if not lantern["color"] is Color:
 		found.append("[lantern] color must be a Color(r, g, b, a)")
-	for key: String in ["energy", "radius_tiles"]:
+	for key: String in ["energy", "radius_tiles", "candle_hours"]:
 		if float(lantern[key]) <= 0.0:
 			found.append("[lantern] %s must be above 0" % key)
 	for key: String in TINT_COLOURS:
@@ -117,6 +117,11 @@ func lantern_light() -> Dictionary:
 		"energy": float(lantern["energy"]),
 		"radius_tiles": float(lantern["radius_tiles"]),
 	}
+
+
+## The game minutes a lit lantern burns a candle down from fresh to gone (task 231).
+func candle_minutes() -> int:
+	return roundi(float(_values["lantern"]["candle_hours"]) * GameClock.MINUTES_PER_HOUR)
 
 
 ## One of the cloud shadows' numbers (one of CLOUD_SHADOW_KEYS).

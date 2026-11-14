@@ -21,10 +21,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 39
-## The oldest version we still upgrade. Nine steps back, for the next version (task 231) makes
-## its step the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 40
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -206,6 +205,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_37(game)
 	if version <= 38:
 		_upgrade_from_version_38(game)
+	if version <= 39:
+		_upgrade_from_version_39(game)
 
 
 ## Version 30 had no process stations (task 199): every kiln and oven gets an empty grid of 3x3,
@@ -381,3 +382,20 @@ static func _upgrade_from_version_38(game: Dictionary) -> void:
 	for npc: Dictionary in game["npcs"]:
 		npc["house"] = null
 		npc["workplace"] = null
+
+
+## Version 39 had lanterns that burnt no candle (task 231): every lantern, in a stack of the player
+## or a chest or in a pile on the ground, holds a fresh candle.
+static func _upgrade_from_version_39(game: Dictionary) -> void:
+	_give_lanterns_a_candle(game)
+
+
+static func _give_lanterns_a_candle(data: Variant) -> void:
+	if data is Array:
+		for entry: Variant in data:
+			_give_lanterns_a_candle(entry)
+	elif data is Dictionary:
+		if data.get("item") == "lantern" and data.get("count") == 1:
+			data["state"] = {"candle": {}}
+		for entry: Variant in data.values():
+			_give_lanterns_a_candle(entry)

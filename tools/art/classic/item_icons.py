@@ -557,9 +557,10 @@ def candle():
     return outlined(from_rows(rows, keys), "stone_dark")
 
 
-def lantern():
+def lantern(candle_length=4):
     """A horn lantern, unlit: the ring and the tin roof, a pane of horn between two tin bars with
-    the candle showing through, and the tin foot."""
+    the candle showing through, and the tin foot. A candle of fewer than its 4 rows has burnt
+    down; none is the empty lantern."""
     rows = [
         "................",
         "................",
@@ -570,14 +571,16 @@ def lantern():
         ".....tttttt.....",
         "....bhhhhhhb....",
         "....bhhhhhhb....",
-        "....bhhkchhb....",
-        "....bhhcchhb....",
-        "....bhhcchhb....",
-        "....bhhcchhb....",
+        "....bhhhhhhb....",
+        "....bhhhhhhb....",
+        "....bhhhhhhb....",
+        "....bhhhhhhb....",
         "...tttttttttt...",
         "................",
         "................",
     ]
+    for row in range(13 - candle_length, 13):
+        rows[row] = "....bhhcchhb...." if row > 13 - candle_length else "....bhhkchhb...."
     keys = {"r": "stone", "t": "stone_light", "b": "stone", "h": "sand", "c": "cream", "k": "soil_dark"}
     return outlined(from_rows(rows, keys), "stone_dark")
 
@@ -623,6 +626,9 @@ ICONS = {
     "candle": candle(),
     "saddle": saddle(),
     "lantern": lantern(),
+    "lantern_used": lantern(3),
+    "lantern_stub": lantern(1),
+    "lantern_empty": lantern(0),
 }
 
 

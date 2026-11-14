@@ -30,7 +30,9 @@ func _press_use() -> void:
 
 func test_space_switches_the_selected_lantern_and_nothing_else() -> void:
 	var player: PlayerState = _main._state.player
-	player.inventory.slots[7] = {"item": ItemTypes.LANTERN, "count": 1}
+	player.inventory.slots[7] = {
+		"item": ItemTypes.LANTERN, "count": 1, "state": LanternCandle.lantern_state_with({})
+	}
 
 	player.inventory.select(1)
 	_press_use()

@@ -659,7 +659,7 @@ const _OTHER_TYPES := {
 	LANTERN:
 	{
 		"name": "Lantern",
-		"description": "A horn lantern with a tallow candle. Hold it and use it to light it.",
+		"description": "A horn lantern. Hold it and use it to fit a candle, then to light it.",
 		"weight": 1.0,
 		"stack_limit": 1,
 		"held_sheet": "lantern",

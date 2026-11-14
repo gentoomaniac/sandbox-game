@@ -1,10 +1,13 @@
 extends SaveUpgradeCase
 ## Version 28 saves keep whether the lantern is lit (task 177): an older save loads with it out.
+## A lantern keeps its candle (version 40, task 231): see test_save_candles.gd.
 
 
 func test_a_lit_lantern_is_lit_after_loading_and_shines_in_the_hand() -> void:
 	var state := GameState.new_game(7)
-	state.player.inventory.replace_with_one(state.player.inventory.selected_slot, ItemTypes.LANTERN)
+	var inventory := state.player.inventory
+	inventory.replace_with_one(inventory.selected_slot, ItemTypes.LANTERN)
+	inventory.set_state(inventory.selected_slot, LanternCandle.lantern_state_with({}))
 	state.player.is_lantern_lit = true
 	assert_true(SaveFile.write(state, SAVE_PATH))
 

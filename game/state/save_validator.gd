@@ -145,8 +145,8 @@ func _check_ground_item(pile: Variant, path: String, piles: Array) -> void:
 		_add_missing("item %s" % item, path, _removing(piles, pile))
 	elif count != null and count < 1:
 		_report(path, "count %d is less than 1" % count)
-	if pile.has("state") and not (pile["state"] is Dictionary and count == 1):
-		_report(path, "a state belongs to one item and is a dictionary")
+	if item != null and count != null and ItemTypes.TYPES.has(StringName(item)):
+		_check_state(pile, StringName(item), count, path)
 
 
 func _check_object_edit(edit: Variant, path: String) -> void:
@@ -310,8 +310,20 @@ func _check_stacks(owner: Dictionary, key: String, slot_count: int, path: String
 		var limit: int = ItemTypes.TYPES[StringName(item)]["stack_limit"]
 		if count < 1 or count > limit:
 			_report(slot_path, "count %d is not between 1 and %d" % [count, limit])
-		if stack.has("state") and not (stack["state"] is Dictionary and count == 1):
-			_report(slot_path, "a state belongs to one item and is a dictionary")
+		_check_state(stack, StringName(item), count, slot_path)
+
+
+## The state of a stack or a pile of `count` of `item`, if it has one: on a single item, and one
+## that the item can have.
+func _check_state(owner: Dictionary, item: StringName, count: Variant, path: String) -> void:
+	if not owner.has("state"):
+		return
+	if not (owner["state"] is Dictionary and count == 1):
+		_report(path, "a state belongs to one item and is a dictionary")
+		return
+	var problem := LanternCandle.problem_with_state(item, owner["state"])
+	if problem != "":
+		_report(path, problem)
 
 
 # --- The player, animals and villagers ---

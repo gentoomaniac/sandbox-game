@@ -148,6 +148,55 @@ func can_take(plain: Dictionary, stacks: Array[Dictionary]) -> bool:
 	return true
 
 
+## Fits a candle from the inventory into the lantern in `slot` that has none: the freshest one
+## the inventory has. Returns whether it did.
+func fit_candle(slot: int) -> bool:
+	if item_in(slot) != ItemTypes.LANTERN or LanternCandle.holds_candle(slots[slot]):
+		return false
+	var freshest := -1
+	for candidate in SLOT_COUNT:
+		if (
+			item_in(candidate) == ItemTypes.CANDLE
+			and (freshest == -1 or _burnt_in(candidate) < _burnt_in(freshest))
+		):
+			freshest = candidate
+	if freshest == -1:
+		return false
+	var candle_state: Dictionary = slots[freshest].get("state", {})
+	hold_notifications(
+		func() -> void:
+			take_from(freshest, 1)
+			set_state(slot, LanternCandle.lantern_state_with(candle_state))
+	)
+	return true
+
+
+## Takes the candle out of the lantern in `slot`, as it is, into the inventory. Returns false and
+## changes nothing if it holds none or the candle has no room.
+func take_candle_out(slot: int) -> bool:
+	if not LanternCandle.holds_candle(slots[slot]):
+		return false
+	var candle_state: Dictionary = slots[slot]["state"][LanternCandle.CANDLE]
+	if _add(ItemTypes.CANDLE, 1, [], candle_state) > 0:
+		return false
+	set_state(slot, {})
+	return true
+
+
+## Burns the candle of the lantern in `slot` down by `minutes`. A candle that burns out is gone.
+## Returns whether it did.
+func burn_candle(slot: int, minutes: int) -> bool:
+	var candle_state: Dictionary = slots[slot]["state"][LanternCandle.CANDLE]
+	candle_state = LanternCandle.burnt_for(candle_state, minutes)
+	var is_burnt_out := LanternCandle.is_burnt_out(candle_state)
+	set_state(slot, {} if is_burnt_out else LanternCandle.lantern_state_with(candle_state))
+	return is_burnt_out
+
+
+func _burnt_in(slot: int) -> int:
+	return LanternCandle.burnt_minutes(slots[slot].get("state", {}))
+
+
 func _new_trial() -> ItemSlots:
 	var trial := Inventory.new()
 	trial.selected_slot = selected_slot

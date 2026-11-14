@@ -161,6 +161,8 @@ Press Shift+C for the crafting menu (C is the character window).
   [the lantern](world-and-seasons.md#the-lantern).
 - Scarecrow: a log, 6 hay and 4 fibre. Put it down anywhere outdoors; the axe or hammer takes it
   down. See [animals](animals.md#crows-and-scarecrows).
+- Lantern: made at the workbench, 2 planks and 2 fibre, no skill needed. It takes a candle
+  when used, see [the lantern](world-and-seasons.md#the-lantern).
 - Wattle fence: made at the workbench, half a log and 2 fibre a piece, woodworking 5.
 - Fences and walls are placed tile by tile and join up. The axe takes a fence down (2 fibre back),
   the pickaxe a wall (3 stone).
@@ -178,7 +180,7 @@ only made at a station of its kind within reach.
 - **Cooking** at the hearth of a house, the camp fire or the bake oven. Anyone can roast a
   turnip; buckwheat pancakes, pottage and pea soup take practice. The oven bakes bread (from
   flour, in an hour), a berry tart and a feast cake. Cooked food gives more energy than raw.
-- **Woodworking** at the workbench: planks, a stool, a grave marker, clogs, a painted Frisian
+- **Woodworking** at the workbench: planks, the lantern, a stool, a grave marker, clogs, a painted Frisian
   chest with 20 slots, and as the master's piece a joined cupboard with 25.
 - **Masonry**: clay becomes raw bricks at the workbench, fired in the kiln (6 raw bricks and 2
   logs a load). Masonry 50 gives a quarter more bricks, masonry 70 half again. The bake oven is

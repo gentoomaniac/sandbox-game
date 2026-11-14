@@ -9,7 +9,9 @@ var _inventory: Inventory
 func before_each() -> void:
 	_state = GameState.new_game(7)
 	_inventory = _state.player.inventory
-	_inventory.slots[7] = {"item": ItemTypes.LANTERN, "count": 1}
+	_inventory.slots[7] = {
+		"item": ItemTypes.LANTERN, "count": 1, "state": LanternCandle.lantern_state_with({})
+	}
 	_inventory.select(7)
 
 
@@ -66,14 +68,15 @@ func test_a_lit_lantern_shines_only_in_the_hand() -> void:
 	assert_false(_state.player.is_lantern_shining(), "no lantern in the hand")
 
 
-func test_the_lantern_comes_from_give_and_has_no_recipe() -> void:
+func test_the_lantern_also_comes_from_give_without_a_candle() -> void:
 	var console := Console.new(_state)
 	_inventory.slots[7] = {}
 	console.run("give lantern")
 	assert_eq(_inventory.count_of(ItemTypes.LANTERN), 1)
-	var rules := RecipeRules.default_rules()
-	for recipe_id in rules.recipe_ids():
-		assert_ne(rules.result(recipe_id), ItemTypes.LANTERN, recipe_id)
+	var lanterns := _inventory.slots.filter(
+		func(stack: Dictionary) -> bool: return stack.get("item") == ItemTypes.LANTERN
+	)
+	assert_false(lanterns[0].has("state"), "no candle in it")
 
 
 func test_the_lit_lantern_lights_around_the_player_as_they_walk() -> void:

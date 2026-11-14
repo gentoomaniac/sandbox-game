@@ -10,13 +10,14 @@ const PRECISION := 0.01
 const TERRAIN_NAMES := {Tile.Terrain.GRASS: "grass", Tile.Terrain.SOIL: "tilled soil"}
 
 
-## The tooltip of `count` of `item`; empty for no item.
-static func text_for(item: StringName, count := 1) -> String:
+## The tooltip of `count` of `item`, with its `state` if it has one; empty for no item.
+static func text_for(item: StringName, count := 1, state := {}) -> String:
 	if item == ItemTypes.NONE:
 		return ""
 	var type: Dictionary = ItemTypes.TYPES[item]
 	var lines: Array[String] = [type["name"], _kind_line(item, type), type["description"]]
 	lines.append_array(_detail_lines(item, type))
+	lines.append_array(_state_lines(item, state))
 	if type["weight"] > 0.0:
 		lines.append(weight_text(type["weight"], count))
 	return "\n".join(lines)
@@ -47,6 +48,22 @@ static func _kind_line(item: StringName, type: Dictionary) -> String:
 	if EnergyRules.default_rules().is_food(item):
 		return "Food"
 	return "Resource"
+
+
+## What the state of a lantern or a candle adds.
+static func _state_lines(item: StringName, state: Dictionary) -> Array[String]:
+	if item == ItemTypes.LANTERN:
+		if not state.has(LanternCandle.CANDLE):
+			return ["No candle in it"]
+		return ["Candle: %s" % _share_text(state[LanternCandle.CANDLE])]
+	if item == ItemTypes.CANDLE and not state.is_empty():
+		return ["Burnt down: %s" % _share_text(state)]
+	return []
+
+
+## "60% left" of the candle of this state.
+static func _share_text(candle_state: Dictionary) -> String:
+	return "%d%% left" % roundi(LanternCandle.share_left(candle_state) * 100.0)
 
 
 ## What the kind adds to the description.

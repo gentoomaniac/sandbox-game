@@ -143,9 +143,17 @@ func show_stack(stack: Dictionary, is_selected: bool, new_badge := "") -> void:
 	_stack = stack
 	badge = new_badge
 	numeral = "" if stack.is_empty() else ItemTypes.TYPES[stack["item"]].get("numeral", "")
-	_icon = null if stack.is_empty() else load(ArtSet.path(ItemTypes.icon_path(stack["item"])))
+	_icon = (
+		null
+		if stack.is_empty()
+		else load(ArtSet.path(ItemTypes.icon_path(LanternCandle.icon_item(stack))))
+	)
 	_is_selected = is_selected
-	var text := "" if stack.is_empty() else ItemTooltip.text_for(stack["item"], stack["count"])
+	var text := (
+		""
+		if stack.is_empty()
+		else ItemTooltip.text_for(stack["item"], stack["count"], stack.get("state", {}))
+	)
 	TooltipView.set_text(self, text, tooltip_id)
 	queue_redraw()
 
@@ -172,7 +180,7 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	if not is_clickable or container == null or _stack.is_empty():
 		return null
 	var icon := ItemIcon.new()
-	icon.show_item(item())
+	icon.show_item(LanternCandle.icon_item(_stack))
 	_drag_icon_layer = CanvasLayer.new()
 	_drag_icon_layer.layer = DRAG_ICON_LAYER
 	_drag_icon_layer.add_child(icon)

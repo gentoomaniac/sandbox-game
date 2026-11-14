@@ -378,12 +378,20 @@ func _dismount_spot() -> Vector2:
 	return nearest
 
 
-## Lights the held lantern or puts it out, on any map, also on horseback. Does nothing, and
-## returns false, unless the held item is the lantern.
+## Uses the held lantern, on any map, also on horseback: lit, it is put out; with a candle in it,
+## it is lit; with none, the freshest candle of the inventory is fitted (and it stays dark). Does
+## nothing, and returns false, unless the held item is a lantern, and a lantern without a candle
+## only if the inventory has one.
 func switch_held_lantern() -> bool:
-	if player.inventory.held_item() != ItemTypes.LANTERN:
+	var inventory := player.inventory
+	if inventory.held_item() != ItemTypes.LANTERN:
 		return false
-	player.is_lantern_lit = not player.is_lantern_lit
+	if LanternCandle.holds_candle(inventory.slots[inventory.selected_slot]):
+		player.is_lantern_lit = not player.is_lantern_lit
+	elif inventory.fit_candle(inventory.selected_slot):
+		player.is_lantern_lit = false
+	else:
+		return false
 	report(ActionOutcome.SWITCH_LANTERN, player.tile(), &"", {ItemTypes.LANTERN: 1})
 	return true
 
@@ -711,14 +719,21 @@ func _pass_time(minutes: int, is_played: bool) -> void:
 	if is_played:
 		simulation.advance(minutes)
 	else:
+		_put_lantern_out_for_sleep()
 		simulation.skip(minutes)
 	_end_debuff_on_new_day(day_before)
 
 
 func _skip_time_over_frames(minutes: int, next_frame: Callable) -> void:
 	var day_before := clock.day
+	_put_lantern_out_for_sleep()
 	await simulation.skip_over_frames(minutes, next_frame)
 	_end_debuff_on_new_day(day_before)
+
+
+## Going to bed, or passing out, puts the lantern out: the candle never burns unattended.
+func _put_lantern_out_for_sleep() -> void:
+	player.is_lantern_lit = false
 
 
 func _end_debuff_on_new_day(day_before: int) -> void:
@@ -742,12 +757,18 @@ func _start_simulation() -> void:
 	simulation.add_system(NightUpkeep.new(world, weather, _tiles_kept_clear))
 	simulation.add_system(ActorsUpkeep.new(world, livestock, npcs, _player_feet))
 	simulation.add_system(GossipSpread.new(npcs, deeds))
+	simulation.add_system(LanternUpkeep.new(_the_player))
 
 
 ## The tiles where a sapling does not grow into a tree, for it would be under the player's feet.
 ## A named method: a lambda would keep the whole game alive from the simulation it belongs to.
 func _tiles_kept_clear() -> Array:
 	return [] if is_inside() else [player.tile()]
+
+
+## The player: a loaded game has a new one, which systems must not hold on to.
+func _the_player() -> PlayerState:
+	return player
 
 
 ## Where the player is for the animals and villagers of the world, which an indoor player is

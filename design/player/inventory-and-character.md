@@ -137,15 +137,33 @@
     the Geest, which grubbed the fieldstones of the till out of the fields) breaks stones, the
     watering can wets tilled soil, the scythe mows tall grass, the shovel digs for clay and digs bushes up,
     an empty hand harvests crops, clears dead ones and picks bushes.
-- **The lantern** (task 177): a horn lantern with a tallow candle, for the dark nights. No
-  recipe yet: the console's `give lantern` hands it out. Held and selected, the use key (space,
-  or a click) lights it or puts it out, anywhere, with a soft pop; it needs no fuel for now. Lit,
+- **The lantern** (task 177): a horn lantern, for the dark nights. Held and selected, the use
+  key (space, or a click) lights it or puts it out, anywhere, with a soft pop (it needs a
+  candle, see below). Lit,
   it casts a warm, softly flickering circle of light around the player (5 tiles, numbers in
   `data/lighting.cfg` [lantern]), one PointLight2D on the figure, as strong as the fires at that
   hour (so nothing by day, and only a faint glow in a house, whose tint stays as it was). It
   shines only in the hand (the user, 2026-11-11): put away in the bag, in a chest or on the
   ground it gives no light but stays lit, and shines again once it is selected. The hand shows
   it lit or unlit. Whether it is lit is saved (save version 28).
+  Task 231 (decided by the user, 2026-11-14) gave it recipes and a candle. The lantern is made
+  at the workbench of 2 planks and 2 fibre (no skill; horn and tin are no items yet), without a
+  candle. A candle is made by hand of 2 wax and a fibre (2 candles); wax is an item that only the
+  console gives (`give wax`) until bee hives come. **The lantern holds one candle or none, and the
+  candle keeps its own burn.** Using a lantern without one fits the freshest candle of the
+  inventory (it stays dark; the next use lights it); the secondary click (right click) on a
+  lantern in the bag or the hotbar takes the candle out, as it is, an almost burnt one included
+  (it needs a free slot). A lit lantern in the hand burns its candle down over `candle_hours` (24,
+  about three winter nights; `data/lighting.cfg` [lantern]); a candle that burns out is gone, with
+  nothing given back, and the lantern goes out. Going to bed or passing out puts the lantern out
+  (the candle never burns unattended), so sleep burns nothing. The burn is the state of the
+  item: an item stack may carry a `state` (a small dictionary, see ItemSlots); a burnt candle is
+  `{"burnt_minutes": n}`, a lantern with a candle `{"candle": <its state>}`, a fresh candle none
+  (so fresh candles stack). An item with a state is one item, merges with nothing, goes with its
+  state wherever it moves; on the ground it is a pile of its own that keeps the state (GroundItem
+  `state`), dropped and picked up with it (picking it up needs a free slot). The icon
+  of the lantern shows how much candle is left (four pictures), the tooltip the share left (save
+  version 40: an older save's lanterns get a fresh candle).
 - **Attributes** (task 187): four levels, Strength, Agility, Stamina and HP, in `data/attributes.cfg`
   (name, tooltip text and base level each, and what one level gives). A new character has every
   level at 10, which gives what the game had before them: 100 energy, 100 health and 40 kg

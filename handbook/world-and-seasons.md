@@ -81,8 +81,17 @@ Seasons, land, weather and light in the Schleswig-Holstein of about 1700-1800.
 
 ### The lantern
 
-- Get one with `give lantern` in the [console](console.md) for now.
-- Select it and press the use key (space) to light it or put it out.
-- Lit, it throws a warm, flickering circle of light around you. It needs no fuel.
+- Make it at the workbench: 2 planks and 2 fibre. It comes without a candle: make candles by
+  hand (2 wax and a fibre give 2; get wax with `give wax` in the [console](console.md) until bee
+  hives come). See [crafting](building-and-crafting.md#crafting).
+- Select it and press the use key (space). With no candle in it, that fits the freshest candle
+  from your bag; with one, it lights the lantern or puts it out.
+- Right click the lantern in the bag or the hotbar to take its candle out again, as it is (it
+  needs a free slot). A burnt candle is a candle of its own and does not stack; hover it or the
+  lantern to see how much is left. A dropped lantern or burnt candle keeps its candle.
+- Lit, it throws a warm, flickering circle of light around you, and the candle burns down while
+  you hold it lit: 24 hours, about three winter nights. A candle that is burnt out is gone, and
+  the lantern goes out.
+- Going to bed, or passing out, puts the lantern out, so the candle burns nothing in the night.
 
 ![At night without a light, with the lantern, by the campfire, and in the classic art](../docs/screenshots/lantern.png)

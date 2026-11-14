@@ -197,6 +197,9 @@ func show_player(player: PlayerState, options := StartupOptions.new()) -> void:
 		_frozen_column = options.pose_column
 	if options.is_lantern_lit:
 		player.inventory.replace_with_one(player.inventory.selected_slot, ItemTypes.LANTERN)
+		player.inventory.set_state(
+			player.inventory.selected_slot, LanternCandle.lantern_state_with({})
+		)
 		player.is_lantern_lit = true
 
 
