@@ -123,6 +123,12 @@
     from `water_high_from` high), wind hardy or tender (stands less than `tender_below_wind`),
     and about how many days it takes in perfect weather (and again, for a crop that fruits again).
     The thresholds are in `[farming]`.
+    **Looking at a crop** (mouse over it, outdoors: the hover box of the buildings, `GameState.crop_text_at`)
+    says its name and state in a few words: growing, ripe (and in how many days it withers), or
+    dead; what hurts it today (frost, dry soil, too little sun, wind) or slows it (cold, heat, too little
+    sun, dry soil: less than a good day's growth); how many more bad days kill it, if it is damaged;
+    and the soil's real moisture with a word (too dry, a little dry, good), not the wet look rain
+    leaves on the surface. The weather is that of the crop's day, which is what the hours count.
 - Wild crops can be foraged.
 - The biome decides which resources are available and what the land is good for
   agriculturally (see [Biomes](../world/generation.md)).

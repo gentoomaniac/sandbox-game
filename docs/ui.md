@@ -191,7 +191,7 @@ pausing window.
 
 The HUDs (hotbar, vitals, harvest notes, notifications, coordinates), tooltips and the build menu are not `Modal`s:
 they are overlays that stay up while the player plays, take no input away from the game and
-need neither a backdrop nor one-at-a-time. The tooltip (`TooltipView`) also shows `world_text` when the mouse is over no control: Main sets it to who lives and works in the building under the mouse (`Households.occupants_text`), so it needs no extra panel and has the same look at every UI scale and art. Where they sit: the hotbar at the bottom centre, with the bag button (`HotbarHud.bag_requested`,
+need neither a backdrop nor one-at-a-time. The tooltip (`TooltipView`) also shows `world_text` when the mouse is over no control: Main sets it to who lives and works in the building under the mouse (`Households.occupants_text`) or how the crop under it is doing (`GameState.crop_text_at`), so it needs no extra panel and has the same look at every UI scale and art. Where they sit: the hotbar at the bottom centre, with the bag button (`HotbarHud.bag_requested`,
 the same as the bag key) a gap to its right; the
 clock, the harvest note and the notifications at the top left; the energy and health bars
 (`VitalsHud`) at the top right, `VitalsHud.MARGIN` from the edges, and the coordinates (F3)

@@ -45,6 +45,15 @@ static func days_ripe(crop: WorldObject) -> int:
 	return int(crop.state.get("days_ripe", 0))
 
 
+## How many nights a ripe crop has left to be picked: it withers at the end of the last. One that
+## ripened today (not ripe at dawn) is first counted as growing one more day, as `end_day` does.
+static func days_until_withering(crop: WorldObject) -> int:
+	var wait_factor: float = crop.type_data()["ripe_wait_factor"]
+	if crop.state.get("ripe_at_dawn", 1) == 1:
+		return maxi(floori(days_growing(crop) * wait_factor) - days_ripe(crop) + 1, 1)
+	return 2 + floori((days_growing(crop) + 1) * wait_factor)
+
+
 ## How many produce items the crows have eaten off a crop.
 static func eaten(crop: WorldObject) -> int:
 	return int(crop.state.get("eaten", 0))
@@ -127,19 +136,26 @@ static func troubles(crop: WorldObject, day: WeatherDay, moisture: float) -> Arr
 ## minimum and the maximum, full at the best) and its hours of sun (full at their best, less in
 ## proportion).
 static func weather_score(needs: Dictionary, day: WeatherDay) -> float:
-	var warmth := 0.0
-	var temperature := day.mean_temperature
+	return minf(warmth_score(needs, day.mean_temperature), light_score(needs, day.sunlight_hours))
+
+
+## How well a mean temperature suits a crop (or the reeds), from 0 to 1: none at the minimum and
+## the maximum, full at the best.
+static func warmth_score(needs: Dictionary, temperature: float) -> float:
 	var coldest: float = needs["temperature_min"]
 	var best: float = needs["temperature_best"]
 	var hottest: float = needs["temperature_max"]
-	if temperature > coldest and temperature < hottest:
-		warmth = (
-			(temperature - coldest) / (best - coldest)
-			if temperature <= best
-			else (hottest - temperature) / (hottest - best)
-		)
-	var light := clampf(day.sunlight_hours / needs["sunlight_best"], 0.0, 1.0)
-	return minf(warmth, light)
+	if temperature <= coldest or temperature >= hottest:
+		return 0.0
+	if temperature <= best:
+		return (temperature - coldest) / (best - coldest)
+	return (hottest - temperature) / (hottest - best)
+
+
+## How well the hours of full sun in a day suit a crop (or the reeds), from 0 to 1: full at their
+## best, less in proportion.
+static func light_score(needs: Dictionary, sunlight_hours: float) -> float:
+	return clampf(sunlight_hours / needs["sunlight_best"], 0.0, 1.0)
 
 
 ## How well a day met a crop's needs, from 0 to 1: the lowest of its weather score and the

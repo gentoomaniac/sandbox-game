@@ -319,9 +319,10 @@ func _connect_state_and_views() -> void:
 	_saves.finished.connect(_show_save_result)
 
 
-## Who lives and works in the building the mouse is over (see Households `occupants_text`), or ""
-## when it is over none, in a window or indoors, or the player is placing a building.
-func _building_text_under_mouse(is_pointer_on_world: bool) -> String:
+## Who lives and works in the building the mouse is over (see Households `occupants_text`), or how
+## the crop it is over is doing (see GameState `crop_text_at`); "" when it is over none, in a window
+## or indoors, or the player is placing a building.
+func _world_text_under_mouse(is_pointer_on_world: bool) -> String:
 	var targeting := _use_highlight.targeting()
 	if (
 		not is_pointer_on_world
@@ -331,7 +332,9 @@ func _building_text_under_mouse(is_pointer_on_world: bool) -> String:
 	):
 		return ""
 	var building := _state.world.building_at(targeting.tile)
-	return "" if building == null else _state.homes.occupants_text(building)
+	if building == null:
+		return _state.crop_text_at(targeting.tile)
+	return _state.homes.occupants_text(building)
 
 
 ## Where the mouse is, in UI units; with `--mouse-tile`, the middle of that tile.
@@ -510,7 +513,7 @@ func _process(delta: float) -> void:
 		and not _is_in_transition
 		and _state.player.horse == null
 	)
-	_tooltip_view.world_text = _building_text_under_mouse(is_in_play and not is_pointer_on_gui)
+	_tooltip_view.world_text = _world_text_under_mouse(is_in_play and not is_pointer_on_gui)
 	_tooltip_view.world_cursor = _mouse_in_ui_units()
 	_npc_name_tag.show_over(
 		Interaction.npc_to_chat(_state, _use_highlight.targeting().tile) if can_chat else null,

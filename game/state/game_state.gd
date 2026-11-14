@@ -192,6 +192,15 @@ func current_weather() -> WeatherSample:
 	return sample if weather_override == &"" else weather.forced(sample, weather_override)
 
 
+## How the crop at a tile is doing (see CropWords `state_text`), or "" where there is none.
+func crop_text_at(tile: Vector2i) -> String:
+	var crop := world.object_at(tile)
+	if crop == null or not crop.is_crop():
+		return ""
+	var day_weather := weather.day_summary(crop.pos, clock.day)
+	return CropWords.state_text(crop, day_weather, world.moisture_at(crop.pos))
+
+
 ## The snow on the ground where the player is (or outside the house they are in), 0 to 1, now:
 ## it builds and melts a little every minute.
 func current_snow_cover() -> float:
