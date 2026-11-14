@@ -178,6 +178,7 @@ class SectionsTest(unittest.TestCase):
             parse_piece(PIECE.replace("section fill 16", "section piece 16").replace("order loop fill", "order loop piece"))
 
 
+@unittest.skipIf(modplug.LIBRARY is None, "libmodplug is not installed")
 class CheckTest(unittest.TestCase):
     def test_finds_nothing_wrong_with_a_module_as_its_piece_says(self):
         piece = parse_piece(PIECE)
