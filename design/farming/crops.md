@@ -11,8 +11,9 @@
     bread grain of the sandy Geest (cool weather, little water, stands the wind), and
     buckwheat, quick and warm, killed by frost. Neither is eaten raw; both are ground to flour
     like wheat, and buckwheat is fried into pancakes at the fire (task 115).
-  - **Flax replaced tomatoes** (task 52; tomatoes weren't a farm crop here before the 19th
-    century): a cool-weather fibre crop with sky-blue flowers, pulled up whole (no regrow).
+  - **Flax replaced tomatoes** (task 52, confirmed by the user 2026-11-14; tomatoes weren't a
+    farm crop here before the 19th century): a cool-weather fibre crop with sky-blue flowers,
+    pulled up whole (no regrow).
     It yields a new `flax` item (flax stalks), not `fibre`: flax is a material of its own
     (retted and scutched it becomes linen fibre, a later crafting step), and every crop's
     produce is its own item built from `data/crops.cfg`, while `fibre` comes from bushes.

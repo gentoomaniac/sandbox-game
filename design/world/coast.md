@@ -29,7 +29,9 @@
     wading to change later): not for the player, the villagers or the farm animals, and the
     paths of the villagers go round it. Whoever stands in it (the water rose, or a game was
     saved there) can step off it, and on over any connected flooded mud (`GameMap.is_wadeable`),
-    until wading is designed, so no one is cut off; a jetty over the mud stays walkable. Wading birds stay. Ice on the mud in winter: not
+    until wading is designed (the user, 2026-11-14: wading in should be possible but very slow,
+    [#63](https://github.com/gentoomaniac/sandbox-game/issues/63)), so no one is cut off;
+    a jetty over the mud stays walkable. Wading birds stay. Ice on the mud in winter: not
     done.
   - **Looks:** the mud keeps its look in every season and weather (the tide washes it). The salt
     marsh is grey-green turf with silvery sea purslane and green glasswort, fresher in spring,

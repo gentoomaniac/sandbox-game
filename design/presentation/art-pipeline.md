@@ -54,9 +54,14 @@
     species furthest into its bloom, so the species of a drift mix and the drift changes
     colour with the weeks; a species' first and last flowers are small ones. Early spring has
     few, late spring and summer are full, autumn fades and winter has none. When a tile
-    blooms nothing, its ordinary decoration shows.
+    blooms nothing, its ordinary decoration shows. No meadow has a blue flower; the user left it
+    so on 2026-11-14.
 - **Desire paths** (decided 2026-11-06, task 77): ways walked often wear into paths with less
-  grass. Every tile the player steps onto outdoors takes a step of wear (a farm animal or a
+  grass. The user, 2026-11-14: it feels a bit fast; wear should need days in a row, not just
+  steps, and worn ways should turn muddy in rain and slow walking, so that laid roads are worth
+  making ([#61](https://github.com/gentoomaniac/sandbox-game/issues/61) and
+  [#62](https://github.com/gentoomaniac/sandbox-game/issues/62)). Until then, every tile the player steps onto outdoors
+  takes a step of wear (a farm animal or a
   villager half a step, wherever they are in the loaded world, so the rounds of the villagers wear
   paths too); a tile turns trodden (thin, flattened grass with the earth showing) and then a path
   of bare earth, and each night takes some wear off, so an unused path grows back to grass in
