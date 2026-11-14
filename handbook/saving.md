@@ -1,23 +1,39 @@
 # Saving
 
-When and where the game saves.
+When and where the game saves, and what happens if a save goes wrong.
 
-The game saves when you sleep, pass out and quit, and by itself every 10 minutes of play (Settings →
-Game → Autosave every, 10 to 60 minutes in steps of 10; time in the pause menu or a chat does not
-count, and a save waits for a fade or an open window to end). The save is written in the background,
-so the game does not stop: "Saving..." and then "Saved" show at the top left, a failed save in red.
-Quitting waits for a save that is running. If the save before quitting fails (disk full, no
-permission), the game does not quit: it says so and asks whether to try again, keep playing, or quit
-anyway, which loses the progress since the last save and says so. The last good save is never
-replaced by a failed one.
+## When it saves
 
-A save is checked before the game is built from it. One that is damaged (a negative count, a missing
-field, a map that is not there...) is not loaded: the game says what is wrong and where, moves the
-file to a dated backup such as `world.2026-11-09_21-45-03.json.bak` and starts a new world. A save
-that is whole but holds things the game no longer has (an item or object that was removed) asks you:
-load it anyway, leaving those things out (playing on may run into problems; the file only changes
-when the game next saves, and a copy of the old save is kept as a dated backup of that kind first),
-or cancel, which closes the game without touching the file.
+- When you sleep, when you pass out and when you quit.
+- By itself every 10 minutes of play. Set 10 to 60 minutes in steps of 10 under Settings, Game,
+  Autosave every.
+- Time in the pause menu or a chat does not count. A save waits for a fade or an open window to
+  end.
+- F9 saves at once; F8 loads the last save (see [controls](controls.md)).
+- It is written in the background, so the game does not stop. "Saving..." and then "Saved" show
+  at the top left; a failed save shows in red.
+- A failed save never replaces the last good one.
 
-Saves go to `user://saves/world.json` and settings to `user://settings.cfg`. To start a fresh world,
-run `godot --path . -- --new-game`.
+## Quitting
+
+- Quitting waits for a save that is running.
+- If the save before quitting fails (disk full, no permission), the game does not quit. It asks
+  whether to try again, keep playing, or quit anyway, which loses the progress since the last
+  save.
+
+## A damaged save
+
+- The game checks a save before building the world from it.
+- A damaged one (a negative count, a missing field, a map that is not there) is not loaded. The
+  game says what is wrong and where, moves the file to a dated backup such as
+  `world.2026-11-09_21-45-03.json.bak`, and starts a new world.
+- A whole save that holds things the game no longer has (a removed item or object) asks you:
+  - Load it anyway, leaving those things out. Playing on may run into problems. The file changes
+    only when the game next saves, and a dated backup of the old save is kept first.
+  - Or cancel: the game closes without touching the file.
+
+## Where
+
+- Saves go to `user://saves/world.json` and settings to `user://settings.cfg`, in Godot's user
+  folder.
+- To start a fresh world, run `godot --path . -- --new-game`.
