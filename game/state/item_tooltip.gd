@@ -59,6 +59,8 @@ static func _detail_lines(item: StringName, type: Dictionary) -> Array[String]:
 		var terrain: Tile.Terrain = type.get("plants_on", Tile.Terrain.SOIL)
 		lines.append("Grows into: " + _grown_name(type))
 		lines.append("Plant on: " + TERRAIN_NAMES[terrain])
+		if type["plants"] in CropRules.default_rules().crop_ids():
+			lines.append_array(CropWords.likes_lines(type["plants"]))
 	if type.has("equip_slot"):
 		lines.append("Worn on: " + str(type["equip_slot"]).replace("_", " ").capitalize())
 		# The hook for equipment values: `stats` is {"Warmth": 2, ...}; no item has any yet.

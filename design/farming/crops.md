@@ -117,6 +117,12 @@
     flocks and the tally, `crows raid` makes every flock raid now with the player by and eat from
     every crop it tries, and `spawn crows` and `killall crows` work like those of the other wild
     animals. No save version change: `eaten` is an optional number in the crop's state. The crows themselves: [wildlife](../world/wildlife.md).
+  - **Crops tell what they need** (task 232, `CropWords`): a seed's tooltip says in plain words
+    what its crop likes: cool or warm weather (best temperature from `warm_from_best_temperature`,
+    18, up is warm), water need low, middle or high (best moisture up to `water_low_up_to` low,
+    from `water_high_from` high), wind hardy or tender (stands less than `tender_below_wind`),
+    and about how many days it takes in perfect weather (and again, for a crop that fruits again).
+    The thresholds are in `[farming]`.
 - Wild crops can be foraged.
 - The biome decides which resources are available and what the land is good for
   agriculturally (see [Biomes](../world/generation.md)).

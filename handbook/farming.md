@@ -36,6 +36,8 @@ perfect weather; expect longer.
 | Strawberries | 2-30 (16) | 10, then 3 | 2 |
 | Pumpkin | 6-30 (20) | 14 | 1 |
 
+- A seed's tooltip says what its crop likes: cool or warm weather, low, middle or high water need,
+  hardy or tender against wind, and about how many days it takes in good weather.
 - Peas, beans and strawberries fruit again after the second number of days.
 - Rye and buckwheat are ground to flour like wheat; flax is fibre, not food.
 - Pick a ripe crop within as many days as it took to ripen, or it withers and gives nothing.

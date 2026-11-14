@@ -44,6 +44,10 @@ good_day_score=0.6
 fallow_weedy_days=5
 fallow_grass_days=10
 fallow_rests_in_winter=1
+warm_from_best_temperature=18
+water_low_up_to=0.45
+water_high_from=0.65
+tender_below_wind=11
 """
 const REEDS := """
 [reeds]
