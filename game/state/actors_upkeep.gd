@@ -33,7 +33,7 @@ func walked_minute(clock: GameClock) -> void:
 	while seconds > 0.0:
 		var step := minf(seconds, Livestock.MAX_STEP_SECONDS)
 		_livestock.update(step, _world, _player_feet.call(), clock, true, false)
-		_npcs.update(step, _world, _player_feet.call(), clock, true)
+		_npcs.update(step, _world, _player_feet.call(), clock, true, false)
 		seconds -= step
 
 

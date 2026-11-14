@@ -117,7 +117,7 @@ the retry spaces the next one. Reasons: NO_WAY, NOT_LOADED, STUCK.
 
 ### Doors and interiors
 
-238 provides the search over any `GameMap`, and `walk_to_door(npc, building)`, which walks to the
+238 provides the search over any `GameMap`, and `walk_to_door(npc, building, map)`, which walks to the
 yard in front of the door (`Building.yard`, where `Workplace.spot` already points) and reports
 arrival there. It does not end on the door tile: `can_stand_at` and `_fits` refuse building tiles,
 the door included. Task 229 adds going in as a step from the yard onto the door tile and into the
@@ -153,17 +153,20 @@ hands a villager with a trip to it instead of the stroll. The trip has the map, 
 Off-screen travel is planned in #68. Until then a far villager (its own chunk is not loaded) or an
 unloaded goal is BLOCKED with NOT_LOADED, no search is made while it is, and it looks again when
 the world has changed (see above). Task 239 may put such a villager at its routine's spot with
-`Npcs.place` (only for one whose own chunk is unloaded; a visible villager is never placed).
+`Npcs.place` (only for one whose own chunk is unloaded, to a tile in an unloaded chunk too; a
+visible villager is never placed, and one that would pop into view is not either).
 
 ### The API for task 239
 
 ```
 Npcs.walk_to(npc, tile: Vector2i, map: GameMap) -> void   # starts a trip, replacing any
-Npcs.walk_to_door(npc, building: Building) -> void        # to the yard
+Npcs.walk_to_door(npc, building: Building, map: GameMap) -> void   # to the yard
 Npcs.cancel_trip(npc) -> void                             # sends no signal
-Npcs.place(npc, tile) -> void   # only for a villager whose own chunk is unloaded (238 only)
+Npcs.place(npc, tile, map) -> bool   # false (nothing done) unless villager and tile are both in
+                                     # unloaded chunks; the anchor is the routine's to move
 signal trip_arrived(npc)
-signal trip_blocked(npc, reason)  # once, when no way is found; NO_WAY, NOT_LOADED or STUCK
+signal trip_blocked(npc, reason)  # once, when no way is found; NO_WAY, NOT_LOADED or STUCK.
+                                  # NOT_LOADED may come from `walk_to` itself, at once
 ```
 
 `npc.is_travelling()` says whether a trip is on. A routine calls `walk_to` when its hour changes

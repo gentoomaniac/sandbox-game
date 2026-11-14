@@ -40,8 +40,8 @@ func start(npc: Npc, goal: Vector2i, map: GameMap) -> void:
 
 ## Ends the trip, with no signal: the one who did it knows.
 func cancel(npc: Npc) -> void:
-	if npc.trip != null and npc.trip.search != null:
-		_pathfinder.drop(npc.trip.search)
+	if npc.trip != null:
+		_drop_search(npc.trip)
 	npc.trip = null
 
 
@@ -50,6 +50,10 @@ func cancel(npc: Npc) -> void:
 func update(npc: Npc, delta: float, player_feet: Vector2, fits: Callable) -> void:
 	var trip := npc.trip
 	trip.seconds_since_search += delta
+	if trip.state != NpcTrip.State.BLOCKED and _is_not_loaded(npc, trip):
+		_drop_search(trip)
+		_block_not_loaded(npc)
+		return
 	match trip.state:
 		NpcTrip.State.SEARCHING:
 			_take_search_result(npc)
@@ -65,6 +69,9 @@ func update(npc: Npc, delta: float, player_feet: Vector2, fits: Callable) -> voi
 func _begin_search(npc: Npc) -> void:
 	var trip := npc.trip
 	var map := trip.map
+	if _is_not_loaded(npc, trip):
+		_block_not_loaded(npc)
+		return
 	var is_free := func(tile: Vector2i) -> bool:
 		return Npcs.can_stand_at(map, Vector2(tile) + Vector2(0.5, 0.5))
 	trip.search = PathSearch.new(
@@ -81,6 +88,33 @@ func _begin_search(npc: Npc) -> void:
 	trip.change_count_at_search = map.change_count
 	_pathfinder.queue(trip.search)
 	npc.activity = Npc.Activity.IDLE
+
+
+func _drop_search(trip: NpcTrip) -> void:
+	if trip.search != null:
+		_pathfinder.drop(trip.search)
+		trip.search = null
+
+
+## Whether the villager or its goal is in a chunk that is not loaded: the world there is not there
+## to walk on, so nothing is searched (far travel is planned in #68).
+func _is_not_loaded(npc: Npc, trip: NpcTrip) -> bool:
+	var world := trip.map as World
+	return (
+		world != null
+		and not (
+			world.is_chunk_loaded(Chunk.world_to_chunk(npc.tile()))
+			and world.is_chunk_loaded(Chunk.world_to_chunk(trip.goal))
+		)
+	)
+
+
+## It stands, and looks again when the world has changed (a chunk loading is a change).
+func _block_not_loaded(npc: Npc) -> void:
+	var trip := npc.trip
+	trip.seconds_since_search = 0.0
+	trip.change_count_at_search = trip.map.change_count
+	_block(npc, NpcTrip.Block.NOT_LOADED)
 
 
 ## What stepping onto a tile costs: more for a crop, less for worn grass (the lanes), so they keep

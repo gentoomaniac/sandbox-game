@@ -163,9 +163,30 @@ func is_rest_time(day: int, minute: int) -> bool:
 
 ## Sends a villager to a tile of `map`, instead of wherever it was going: it finds its way (round
 ## what is in it, along lanes, through gates), `trip_arrived` comes when it is there, and
-## `trip_blocked` when no way is found. At once if it is there already.
+## `trip_blocked` when no way is found (for a villager or a goal in an unloaded chunk it comes
+## at once, from this call). `trip_arrived` comes at once too if it is there already.
 func walk_to(npc: Npc, tile: Vector2i, map: GameMap) -> void:
 	_travel.start(npc, tile, map)
+
+
+## Sends a villager to the yard in front of the door of `building` of `map`, where `walk_to` ends:
+## going in is a step from there (task 229).
+func walk_to_door(npc: Npc, building: Building, map: GameMap) -> void:
+	walk_to(npc, Vector2i(building.yard().floor()), map)
+
+
+## Puts a villager whose own chunk is not loaded on `tile`, which ends its trip: it is there when
+## the chunk loads. Returns false, and does nothing, for one in a loaded chunk or for a `tile` in
+## one: the player may see it, and it walks (`walk_to`). It does not move the anchor (the routine
+## does) and does not ask whether the tile can be stood on: a villager on a building tile or in the
+## water is put on the nearest free one when its chunk loads (`_step_off_buildings`).
+func place(npc: Npc, tile: Vector2i, map: GameMap) -> bool:
+	if _is_in_loaded_chunk(npc, map) or _is_chunk_of_tile_loaded(tile, map):
+		return false
+	cancel_trip(npc)
+	npc.position = Vector2(tile) + Vector2(0.5, 0.5)
+	npc.free_body_tiles = Rect2i()
+	return true
 
 
 ## Ends a villager's trip where it stands; no signal comes.
@@ -175,13 +196,20 @@ func cancel_trip(npc: Npc) -> void:
 
 ## Lets `delta` seconds pass for every villager on `map` (only those in loaded chunks with
 ## `only_loaded`) at the time of the game clock.
-## Villagers stop short of the player's feet.
+## Villagers stop short of the player's feet. `may_search` is false in the minutes of a skip that
+## are walked through: they look for no way then, those on a trip go on as far as they know it.
 func update(
-	delta: float, map: GameMap, player_feet: Vector2, clock: GameClock, only_loaded := false
+	delta: float,
+	map: GameMap,
+	player_feet: Vector2,
+	clock: GameClock,
+	only_loaded := false,
+	may_search := true
 ) -> void:
 	var is_resting := is_rest_time(clock.day, clock.minute_of_day)
 	delta = minf(delta, MAX_STEP_SECONDS)
-	_travel.tick()
+	if may_search:
+		_travel.tick()
 	for npc in _npcs:
 		if only_loaded and not _is_in_loaded_chunk(npc, map):
 			continue
@@ -235,7 +263,8 @@ func talk_to(npc: Npc, player_feet: Vector2) -> void:
 
 
 func _catch_up_one(npc: Npc, map: GameMap) -> void:
-	if not _is_in_loaded_chunk(npc, map):
+	# One on a trip is where the trip has it, and goes on: whoever sent it decides otherwise.
+	if npc.trip != null or not _is_in_loaded_chunk(npc, map):
 		return
 	_step_off_buildings(npc, map)
 	var radius := rules.behaviour("anchor_radius") * STROLL_REACH
@@ -278,6 +307,10 @@ func _step_off_buildings(npc: Npc, map: GameMap) -> void:
 ## Whether the chunk a villager stands in is loaded: the world beyond it is not there to walk on.
 func _is_in_loaded_chunk(npc: Npc, map: GameMap) -> bool:
 	return not map is World or (map as World).is_chunk_loaded(Chunk.world_to_chunk(npc.tile()))
+
+
+func _is_chunk_of_tile_loaded(tile: Vector2i, map: GameMap) -> bool:
+	return not map is World or (map as World).is_chunk_loaded(Chunk.world_to_chunk(tile))
 
 
 func _spawn_spot(near: Vector2) -> Vector2:
