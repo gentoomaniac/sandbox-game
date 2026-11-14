@@ -59,6 +59,8 @@ var crop_raids: CropRaids
 var scarecrows: Scarecrows
 ## The villagers of the world, moved like the farm animals.
 var npcs := Npcs.new(sun)
+## Who lives in which house.
+var homes := Households.new(npcs)
 ## What the player did within sight of villagers.
 var deeds: DeedLog
 ## What the villagers make of the stories they know (StoryJudging asks the language model).
@@ -89,6 +91,7 @@ func _init(game_clock := GameClock.new()) -> void:
 	deeds = DeedLog.new(npcs, clock)
 	judge = StoryJudge.new(npcs, clock)
 	action_done.connect(deeds.record)
+	npcs.villager_spawned.connect(homes.settle)
 
 
 ## A new game: the player starts at a camp site near the world centre, with home set to its
@@ -500,6 +503,7 @@ func take_down_building(building: Building) -> bool:
 		player.home_bed = CampSite.sleeping_bag_of_seed(world.world_seed)
 	var refund := refund_of_building(building)
 	world.remove_building(building)
+	homes.building_gone(building)
 	world.drop_items(building.door_tile() + Vector2i.DOWN, refund)
 	report(ActionOutcome.DEMOLISH, building.origin, building.type, refund)
 	return true
@@ -641,7 +645,7 @@ static func from_dict(data: Dictionary) -> GameState:
 	state._start_simulation()
 	state.player = PlayerState.from_dict(data["player"], state._map_from_ref(data["home_map"]))
 	state.livestock.load_array(data["livestock"])
-	state.npcs.load_array(data["npcs"])
+	state.npcs.load_array(data["npcs"], state.world)
 	state.deeds.load_array(data["deeds"])
 	state._building_inside = state._building_of_ref(data["current_map"])
 	# No sleep wakes between 01:00 and 06:30, so a game saved then was quit by a player who

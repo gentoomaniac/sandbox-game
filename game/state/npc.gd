@@ -1,8 +1,9 @@
 class_name Npc
 extends RefCounted
 ## One villager: who they are (name, sex, looks, age, trade and the texts about them), where they
-## stand, the anchor they keep near, what they and the player have said to each other and what
-## they remember of it. Npcs moves them; NpcView draws them and ChatScreen shows the chat.
+## stand, the house they live in and where they work, the anchor they keep near, what they and
+## the player have said to each other and what they remember of it. Npcs moves them; NpcView
+## draws them and ChatScreen shows the chat.
 
 enum Activity { IDLE, WALK }
 
@@ -51,6 +52,11 @@ var secrets := ""
 var position: Vector2
 ## The point they keep near (see Npcs and data/npcs.cfg).
 var anchor: Vector2
+## The building they live in, or null (see Households; `home` is only the text about it). While
+## they have one, their anchor is the yard in front of its door.
+var house: Building
+## Where they work, or null (see Households).
+var workplace: Workplace
 ## The latest lines of the chat, oldest first, each `{day, minute, from_player, text}`: the game
 ## day and the minute of the day it was said, and whether the player said it. How many are kept is
 ## a setting (see `drop_old_lines`).
@@ -153,6 +159,15 @@ func tile() -> Vector2i:
 func turn_to(point: Vector2) -> void:
 	if not point.is_equal_approx(position):
 		facing = facing_of(point - position)
+
+
+## Whether they are of one household with `other`: husband and wife, or parent and child, as
+## the sheet of either names them.
+func is_household_with(other: Npc) -> bool:
+	return (
+		VillagerRules.HOUSEHOLD_KINDS.has(people.get(other.id, [""])[0])
+		or VillagerRules.HOUSEHOLD_KINDS.has(other.people.get(id, [""])[0])
+	)
 
 
 func add_chat_line(day: int, minute: int, from_player: bool, text: String) -> void:
@@ -263,6 +278,8 @@ func to_dict() -> Dictionary:
 		"secrets": secrets,
 		"position": SaveCodec.float_vector_to_json(position),
 		"anchor": SaveCodec.float_vector_to_json(anchor),
+		"house": null if house == null else SaveCodec.vector_to_json(house.origin),
+		"workplace": null if workplace == null else workplace.to_dict(),
 		"chat_history": chat_history.duplicate(true),
 		"memories": memories.map(_memory_to_saved),
 		"uncompacted_lines": uncompacted_lines.duplicate(true),
@@ -313,6 +330,15 @@ static func from_dict(data: Dictionary) -> Npc:
 	npc.opinion_moved_today = int(data["opinion_moved_today"])
 	npc.remembered_lines = mini(int(data["remembered_lines"]), npc.chat_history.size())
 	return npc
+
+
+## Gives them back the house and the workplace saved in `data` (what `to_dict` wrote), which are
+## buildings of `world`.
+func restore_places(data: Dictionary, world: World) -> void:
+	if data["house"] != null:
+		house = world.building_at(SaveCodec.vector_from_json(data["house"]))
+	if data["workplace"] != null:
+		workplace = Workplace.from_dict(data["workplace"], world)
 
 
 static func _story_to_saved(story: Dictionary) -> Dictionary:

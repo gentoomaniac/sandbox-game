@@ -47,6 +47,8 @@ const KINDS := {
 	"sweetheart": {"sex": "", "back": ["sweetheart"]},
 	"friend": {"sex": "", "back": ["friend"]},
 }
+## The kinds that live in one house: a couple and their children (see Households).
+const HOUSEHOLD_KINDS: Array[String] = ["husband", "wife", "father", "mother", "son", "daughter"]
 ## A father or mother is at least this many years older than their child.
 const MIN_PARENT_AGE := 15
 

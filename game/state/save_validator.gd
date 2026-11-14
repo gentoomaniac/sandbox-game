@@ -32,8 +32,9 @@ var missing: Array[String] = []
 
 ## What takes one missing thing out of the data, in the order found.
 var _removals: Array[Callable] = []
-## Whether the building at an origin has an inside, for the map references.
-var _has_interior_at: Dictionary[Vector2i, bool] = {}
+## Whether the building at an origin has an inside, for the map references; its keys are the
+## origins of all the buildings, for the houses and workplaces of villagers.
+var _has_interior_by_origin: Dictionary[Vector2i, bool] = {}
 
 
 static func check(game: Variant) -> SaveValidator:
@@ -172,7 +173,7 @@ func _check_building(building: Variant, path: String) -> void:
 		_report(path, "no interior")
 		return
 	if origin != null:
-		_has_interior_at[SaveCodec.vector_from_json(origin)] = building["interior"] != null
+		_has_interior_by_origin[SaveCodec.vector_from_json(origin)] = building["interior"] != null
 	if building["interior"] != null:
 		_check_interior(building["interior"], path + " interior")
 
@@ -435,6 +436,35 @@ func _check_livestock(animals: Array) -> void:
 			_add_missing("look %s of the %s" % [look, species], path, _removing(animals, animal))
 
 
+## The house and the workplace of a villager: null, or a building of the world (a workplace may
+## be a spot with a name instead).
+func _check_places(npc: Dictionary, path: String) -> void:
+	if not npc.has("house"):
+		_report(path, "no house")
+	elif npc["house"] != null:
+		_check_building_reference(npc, "house", path)
+	if not npc.has("workplace"):
+		_report(path, "no workplace")
+		return
+	var workplace: Variant = npc["workplace"]
+	if workplace == null:
+		return
+	if not workplace is Dictionary:
+		_report(path, "workplace should be a dictionary or null")
+	elif workplace.has("building"):
+		_check_building_reference(workplace, "building", path + " workplace")
+	else:
+		_field(workplace, "spot_name", Kind.TEXT, path + " workplace")
+		_field(workplace, "spot_tile", Kind.VECTOR, path + " workplace")
+
+
+## `owner[key]` is the origin of a building of the world.
+func _check_building_reference(owner: Dictionary, key: String, path: String) -> void:
+	var origin: Variant = _field(owner, key, Kind.VECTOR, path)
+	if origin != null and not _has_interior_by_origin.has(SaveCodec.vector_from_json(origin)):
+		_report(path, "%s: no building at %s" % [key, SaveCodec.vector_from_json(origin)])
+
+
 func _check_npc(npc: Variant, path: String) -> void:
 	if not npc is Dictionary:
 		_report(path, "should be a dictionary")
@@ -457,6 +487,7 @@ func _check_npc(npc: Variant, path: String) -> void:
 		_field(npc, key, Kind.WHOLE, path)
 	for key in ["position", "anchor"]:
 		_field(npc, key, Kind.POINT, path)
+	_check_places(npc, path)
 	_check_memories(npc, path)
 	var appearance: Variant = _field(npc, "appearance", Kind.DICT, path)
 	if appearance != null:
@@ -560,7 +591,7 @@ func _check_map_reference(game: Dictionary, key: String) -> void:
 		var building: Variant = _field(map_reference, "building", Kind.VECTOR, key)
 		if (
 			building != null
-			and not _has_interior_at.get(SaveCodec.vector_from_json(building), false)
+			and not _has_interior_by_origin.get(SaveCodec.vector_from_json(building), false)
 		):
 			_report(key, "no building with an inside at %s" % SaveCodec.vector_from_json(building))
 	elif kind != null and kind != "world":

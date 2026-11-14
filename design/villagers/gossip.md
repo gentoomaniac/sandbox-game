@@ -60,7 +60,8 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   `mow`, `dig` that found clay, `break` of a tree, `place` of a fence or wall (an object that
   connects), `build`, and `demolish`. A hammer `take_down` of a placed object and the shovel
   digging up a bush are no deeds. Only the world is watched, not the inside of a house. "Nearest
-  home" is the nearest villager's anchor; the first name is used in the place. The witnesses of
+  home" is the nearest villager's anchor, which is the yard of their home once they have one
+  (task 228); the first name is used in the place. The witnesses of
   an entry are their names. An entry is kept while it is under `keep_days` old (7 days, today's
   included); older ones are dropped when a deed is written, when a day begins and when a game is
   loaded. The stories (`Npc.stories`, saved, merged like the entries) are the villager's gossip

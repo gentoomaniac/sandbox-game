@@ -1,12 +1,13 @@
 # Homes, workplaces, routines and finding the way
 
-Decided 2026-11-14 (the user), not built yet: tasks 228, 237, 238, 239, 229 and 240 in
-[TASKS.md](../../TASKS.md). Today a villager keeps near an anchor (the yard of the nearest
+Decided 2026-11-14 (the user): tasks 228, 237, 238, 239, 229 and 240 in
+[TASKS.md](../../TASKS.md). Built so far: homes and workplaces (task 228). Today a villager keeps near an anchor (the yard of the nearest
 building or fireplace, [villagers.md](villagers.md)) and walks about it at random.
 
 - **Places of their own:** each villager has a home (a building) and a workplace (a building,
   or a named spot where there is none, such as a landing or a field). The hand-written sheets
-  name them; the player can give a made-up villager a home and a workplace (task 228).
+  name them; the player can give a made-up villager a home and a workplace (task 228, built:
+  see [villagers.md](villagers.md), `Npc.house`, `Npc.workplace`, `Households`).
 - **Interiors:** a building type has one default interior. A building can carry its own
   interior instead, so a villager's house is their very own inside while the outside stays the
   type's standard look (task 237).

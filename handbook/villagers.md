@@ -3,8 +3,8 @@
 The people of Wehlsbüll: who they are, what they notice, and how to talk to them.
 
 For now villagers come from the [console](console.md) and are saved with the game. They stay
-within about six tiles of the house or campfire nearest to where they came, stroll about by day
-and stand still at night. You walk through them, so they never shut you in.
+within about six tiles of their home's door (or, with no home, of the house or campfire nearest
+to where they came), stroll about by day and stand still at night. You walk through them, so they never shut you in.
 
 ![Villagers by the camp, the name of the one E would speak to over their head](../docs/screenshots/npcs.png)
 

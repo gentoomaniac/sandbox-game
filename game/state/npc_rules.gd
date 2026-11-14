@@ -13,6 +13,9 @@ const SEXES: Array[StringName] = [MALE, FEMALE]
 const BEHAVIOUR_KEYS: Array[String] = [
 	"anchor_radius",
 	"anchor_search",
+	"home_search",
+	"give_reach",
+	"give_list_size",
 	"walk_speed",
 	"idle_seconds",
 	"walk_seconds",

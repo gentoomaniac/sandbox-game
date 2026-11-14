@@ -198,7 +198,9 @@ Warft and an Ewer here and there.
 - **Npcs** (`game/state/npcs.gd`) holds the villagers (`Npc`: name, sex, look as an
   `Appearance`, who they are (their whole sheet: age, trade, personality, background, home,
   speech, sample lines, people, likes, wants, day, habits, avoids, secrets), position, anchor,
-  chat history and memories) and moves them like the livestock: GameState owns it, Main calls
+  house (a `Building`, whose door yard is the anchor) and workplace (a `Workplace`: a building or a
+  named spot), chat history and memories; `Households`, GameState `homes`, gives and frees the
+  houses and settles the villagers of the sheets in the buildings their sheet names) and moves them like the livestock: GameState owns it, Main calls
   its `update` every frame while the player is outside, and the numbers, names, clothes and
   background tables are `data/npcs.cfg` (`NpcRules`); the villagers written by hand, spawned by
   id, are `data/villagers.cfg` (`VillagerRules`, which also checks that their family and

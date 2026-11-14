@@ -14,6 +14,9 @@ extends RefCounted
 signal added(npc: Npc)
 ## A villager left the world for good (see `remove`); whoever shows them stops.
 signal removed(npc: Npc)
+## A villager of data/villagers.cfg came into the world by `spawn_villager`: GameState has
+## Households give them the house and workplace their sheet names.
+signal villager_spawned(npc: Npc, world: World)
 
 ## Spawned villagers stand this many tiles from the given point, at the least and at the most.
 const SPAWN_DISTANCE := Vector2(1.5, 3.0)
@@ -69,9 +72,12 @@ func to_array() -> Array[Dictionary]:
 	return data
 
 
-func load_array(data: Array) -> void:
+## Loads the villagers of a save, with the houses and workplaces among the buildings of `world`.
+func load_array(data: Array, world: World) -> void:
 	for npc_data: Dictionary in data:
-		add(Npc.from_dict(npc_data))
+		var npc := Npc.from_dict(npc_data)
+		npc.restore_places(npc_data, world)
+		add(npc)
 
 
 ## Puts up to `count` new villagers, each with a look, name and background of its own, where
@@ -95,7 +101,9 @@ func spawn_villager(villager_id: String, near: Vector2, world: World) -> Npc:
 	for _try in SPAWN_TRIES:
 		var feet := _spawn_spot(near)
 		if can_stand_at(world, feet):
-			return _settle(Npc.create_villager(villager_id, feet, villagers), world)
+			var npc := _settle(Npc.create_villager(villager_id, feet, villagers), world)
+			villager_spawned.emit(npc, world)
+			return npc
 	return null
 
 
@@ -112,7 +120,7 @@ func find(villager_id: String) -> Npc:
 static func anchor_near(feet: Vector2, world: World, search: float) -> Vector2:
 	var points: Array[Vector2] = []
 	for building in world.buildings():
-		points.append(Vector2(building.door_tile() + Vector2i.DOWN) + Vector2(0.5, 0.5))
+		points.append(building.yard())
 	var reach := ceili(search)
 	var centre := Vector2i(feet.floor())
 	for y in range(-reach, reach + 1):

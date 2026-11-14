@@ -57,6 +57,11 @@ func door_tile() -> Vector2i:
 	return origin + BuildingTypes.TYPES[type]["door_offset"]
 
 
+## The middle of the tile in front of the door: where someone stands who comes to the building.
+func yard() -> Vector2:
+	return Vector2(door_tile() + Vector2i.DOWN) + Vector2(0.5, 0.5)
+
+
 ## Whether it has an inside to go into (the bell frame has none).
 func has_inside() -> bool:
 	return BuildingTypes.TYPES[type]["interior_map"] != ""
