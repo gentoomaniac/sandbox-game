@@ -15,8 +15,8 @@ agent gives you a brief; a reviewer checks your branch; the coordinator merges i
 - `docs/music-viability.md`: the format, the effect set, the timing rule, the measurements.
 - `tools/music/` (generator, check, tests), `tools/README.md` (music section).
 - `game/audio/` (TrackerModule, ModuleRenderer, MusicCrossfade) and their tests.
-- `design/presentation/sound.md` and the music tasks in `TASKS.md` / `docs/tasks-done.md`
-  (169, 170, 171) for what has been decided.
+- `design/presentation/sound.md` and the music issues (`gh issue list --label music --state all`)
+  and `docs/tasks-done.md` (tasks 169 and 170) for what has been decided.
 
 ## The music
 

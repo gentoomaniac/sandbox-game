@@ -1,3 +1,5 @@
+Tasks done up to 2026-11-14. Later ones are closed issues on the [project board](https://github.com/users/gentoomaniac/projects/2).
+
 
 
 ## 223. Birds taking off from the ground are seen from the front or behind too

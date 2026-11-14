@@ -22,7 +22,7 @@ var is_asleep := false
 var kind: StringName
 ## How fond of the player a wild ground animal is (see WildlifeRules `GROUND_KINDS`), from 0 to 100.
 ## It is 0 and nothing raises it: it can't be petted, and it is not saved. Taming is for later (see
-## the Later section of TASKS.md), which will keep and save the animals whose value rises above 0.
+## issue #18 on GitHub), which will keep and save the animals whose value rises above 0.
 var friendship := 0
 ## Half the width of the contact shadow in pixels; 0 for none.
 var shadow_half_width := 6

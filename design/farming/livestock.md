@@ -203,7 +203,8 @@ data/livestock.cfg.
   rabbit, squirrel, deer, mouse, frog; no birds or insects) carry a friendship too, `Animal.friendship`,
   which is 0 and stays 0: they cannot be petted (only `pettable` livestock can, and the wild rabbit is
   not the tame one), nothing raises it, and it is not saved. Taming, which will keep and save the
-  animals whose value rises above 0, is in the Later section of TASKS.md.
+  animals whose value rises above 0, is an idea for later
+  ([#18](https://github.com/gentoomaniac/sandbox-game/issues/18)).
 - **Left open:** what the friendship does; whether a petted dog or horse follows or lets the player
   ride more easily; that a cow in the middle of a herd cannot be picked out (the nearest to the
   target's middle is petted).

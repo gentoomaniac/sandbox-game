@@ -426,7 +426,8 @@ They are parsed once into typed fields by `StartupOptions`, whose header lists e
 - [docs/art-style.md](art-style.md): the look the art aims for.
 - [tools/README.md](../tools/README.md): the generators that draw every picture and make
   every sound. The art is code; there are no hand-drawn PNGs to edit.
-- [TASKS.md](../TASKS.md): open work and the rules for every task;
+- [TASKS.md](../TASKS.md): the rules for every task and how the [project board](https://github.com/users/gentoomaniac/projects/2) and its
+  issues hold the open work;
   [docs/tasks-done.md](tasks-done.md): what is finished and why.
 - [docs/code-review-2026-11-06.md](code-review-2026-11-06.md): the review this documentation
   comes from, with what is planned to get simpler.

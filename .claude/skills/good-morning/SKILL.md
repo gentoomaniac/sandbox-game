@@ -19,12 +19,13 @@ them there.
   yet.
 - Running processes: `ps -eo etime,args | grep -E '[g]odot|[m]ake |[r]un_tests' | grep -v
   lsp-port` (the user's editor always runs one godot with `--lsp-port`; that one is fine).
-- Open questions: QUESTIONS.md (the newest numbered items), questions you asked in this
-  conversation that have no answer yet.
-- The queue: the open task headings in TASKS.md in order (`grep -n '^## ' TASKS.md`).
+- Open questions: the open issues labelled `question` (`gh issue list --label question`), new
+  comments on them, and questions you asked in this conversation that have no answer yet.
+- The queue: the board in order (`gh project item-list 2 --owner gentoomaniac --limit 200
+  --format json`), the cards in Queue, In progress, In review and To test.
 - The last full test run on main and its result (the scratchpad `merges-since-full` counter and
   your notes).
-- TO-TEST.md: how many unticked lines there are.
+- To test: the cards in To test and how many unticked hand-test lines their issues have.
 
 ## 2. Write the summary
 

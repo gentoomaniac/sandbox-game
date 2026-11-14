@@ -109,7 +109,8 @@ Not in the prototype (as planned): combat, reputation, biomes beyond one, weathe
 saving and loading, final hand-made art (generated art only, see [Art pipeline](presentation/art-pipeline.md)). The slice
 is done, and weather, energy, saving and loading and sound have been added since.
 
-Tasks: see [TASKS.md](../TASKS.md).
+Tasks: see the [project board](https://github.com/users/gentoomaniac/projects/2)
+and [TASKS.md](../TASKS.md).
 
 ### 2. A first season without the console
 
@@ -131,7 +132,8 @@ console commands.
   a hint names what the next click or E will do.
 - **Goals:** villagers ask for small things now and then; no quest chain.
 
-Tasks 228, 229 and 231 to 240 in [TASKS.md](../TASKS.md).
+Tasks 228, 229 and 231 to 240, in the milestone "M2: A first season without the console" on the
+[project board](https://github.com/users/gentoomaniac/projects/2).
 
 ## Open questions
 

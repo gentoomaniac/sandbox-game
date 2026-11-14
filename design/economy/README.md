@@ -2,7 +2,7 @@
 
 **Planned, not decided.** This is a first draft for the user to change. Nothing here is built.
 When the user has decided, the decided parts move into this folder as decisions, and the
-tasks go into [TASKS.md](../../TASKS.md).
+tasks go onto the [project board](https://github.com/users/gentoomaniac/projects/2).
 
 ## The user's words
 

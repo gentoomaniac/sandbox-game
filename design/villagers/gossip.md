@@ -1,8 +1,8 @@
 # Gossip and memory
 
 **Decided; the deed log, memory, spreading, the judge and the topics of the village (tasks 125 to 129) are built, the rest is not.** Worked out with the user on
-2026-11-09. The tasks are 124 to 130 in
-[TASKS.md](../../TASKS.md). This page changes [dialogue.md](dialogue.md) (memory) and
+2026-11-09. The tasks are 124 to 130, in
+[docs/tasks-done.md](../../docs/tasks-done.md). This page changes [dialogue.md](dialogue.md) (memory) and
 [villagers.md](villagers.md) (who knows the village) once the tasks are done; until then those
 pages describe the game as it is.
 
