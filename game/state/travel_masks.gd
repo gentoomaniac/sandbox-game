@@ -10,13 +10,18 @@ extends RefCounted
 ## stale: only the masks go. Stamping a mask takes about 2 ms and is done on the main thread, one
 ## in each `update`; as it reads the edits as it stamps, no mask is stamped stale.
 
+## The chunks a mask is stamped from, relative to its own: W, N and NW are those a big object
+## reaches it from.
+const SOURCE_STEPS: Array[Vector2i] = [Vector2i.ZERO, Vector2i.LEFT, Vector2i.UP, Vector2i(-1, -1)]
+
 var _world: World
 var _generator: WorldGenerator
 ## Both caches hold the one used last at the end: a dictionary keeps the order its keys came in.
 var _masks: Dictionary[Vector2i, TravelMask] = {}
 var _raw_chunks: Dictionary[Vector2i, Chunk] = {}
-## The chunks whose masks are asked for and not stamped yet, the oldest first.
-var _requested: Array[Vector2i] = []
+## The chunks whose masks are asked for and not stamped yet, the oldest first: the keys of a
+## dictionary, which keeps their order and answers `has` at once (searches ask all the time).
+var _requested: Dictionary[Vector2i, bool] = {}
 var _masks_kept: int
 var _raw_chunks_kept: int
 ## The worker's task (-1 while it has none) and the chunk it makes.
@@ -62,8 +67,8 @@ func mask_of(coords: Vector2i) -> TravelMask:
 	if mask != null:
 		_masks.erase(coords)
 		_masks[coords] = mask
-	elif not _requested.has(coords):
-		_requested.append(coords)
+	else:
+		_requested[coords] = true
 	return mask
 
 
@@ -73,16 +78,16 @@ func mask_of(coords: Vector2i) -> TravelMask:
 func update(is_waiting := false) -> void:
 	_take_generated_chunk(is_waiting)
 	for coords in _requested:
-		if _missing_raw_chunks(coords).is_empty():
+		if _first_missing_raw_chunk(coords) == null:
 			_requested.erase(coords)
 			_stamp(coords)
 			break
 	if _task_id >= 0:
 		return
 	for coords in _requested:
-		var missing := _missing_raw_chunks(coords)
-		if not missing.is_empty():
-			_task_id = WorkerThreadPool.add_task(_generate.bind(missing[0]))
+		var missing: Variant = _first_missing_raw_chunk(coords)
+		if missing != null:
+			_task_id = WorkerThreadPool.add_task(_generate.bind(missing))
 			return
 
 
@@ -112,7 +117,7 @@ func raw_chunk(coords: Vector2i) -> Chunk:
 ## The chunks a mask is stamped from: its own and W, N and NW of it, those inside the world.
 static func chunks_for(coords: Vector2i) -> Array[Vector2i]:
 	var needed: Array[Vector2i] = []
-	for step in [Vector2i.ZERO, Vector2i.LEFT, Vector2i.UP, Vector2i(-1, -1)]:
+	for step in SOURCE_STEPS:
 		if World.is_chunk_in_bounds(coords + step):
 			needed.append(coords + step)
 	return needed
@@ -125,10 +130,14 @@ func _drop_masks_reached_by_edit(edited_coords: Vector2i) -> void:
 		_masks.erase(edited_coords + step)
 
 
-func _missing_raw_chunks(coords: Vector2i) -> Array[Vector2i]:
-	return chunks_for(coords).filter(
-		func(needed: Vector2i) -> bool: return not _raw_chunks.has(needed)
-	)
+## The first of the chunks a mask is stamped from that is not generated yet, or null. Asked of every
+## request every frame, so it makes nothing.
+func _first_missing_raw_chunk(coords: Vector2i) -> Variant:
+	for step in SOURCE_STEPS:
+		var needed := coords + step
+		if World.is_chunk_in_bounds(needed) and not _raw_chunks.has(needed):
+			return needed
+	return null
 
 
 ## Runs on the worker.
@@ -146,8 +155,8 @@ func _take_generated_chunk(is_waiting: bool) -> void:
 	# What an asked-for mask still needs is kept, whatever the limit.
 	var needed := {}
 	for coords in _requested:
-		for chunk_coords in chunks_for(coords):
-			needed[chunk_coords] = true
+		for step in SOURCE_STEPS:
+			needed[coords + step] = true
 	for coords in _raw_chunks.keys():
 		if _raw_chunks.size() <= _raw_chunks_kept:
 			break

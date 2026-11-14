@@ -29,7 +29,7 @@ func before_each() -> void:
 			# With the chunks W, N and NW of them, so that all of the yard is seen live (see TravelView)
 			# and no search waits for a mask.
 			var chunk := Chunk.world_to_chunk(tile)
-			for step in TravelView.LIVE_CHUNKS:
+			for step in TravelMasks.SOURCE_STEPS:
 				if not _world.is_chunk_loaded(chunk + step):
 					_world.add_chunk(generator.generate_chunk(chunk + step))
 			_world.remove_object(tile)

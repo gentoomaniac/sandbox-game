@@ -104,8 +104,11 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   minutes long, so the time of the start is a fair guess, and the walk is the check.) **Done:**
   `TravelView` (`is_live`, `is_known`, `is_free`, `cost_of`) is the one view of `NpcTravel`'s searches
   and holds the one cost rule (1.0, worn grass 0.8 and 0.6, +2.0 for an object that feet spoil); the
-  trip holds the view, as a search keeps only its methods. The liveness of a tile is asked as
-  `TravelView.LIVE_CHUNKS` of its chunk.
+  trip holds the view, as a search keeps only its methods. The view settles once, for each chunk it
+  is asked about, whether the world or a mask answers (`_sources`, cleared when the world's
+  `change_count` moves), as a search asks a chunk thousands of times; a mask in it is the one of the
+  first question. A tile is live when the chunks of
+  `TravelMasks.SOURCE_STEPS` (its own, W, N, NW) are loaded, the very ones its mask is stamped from.
 - **`PathSearch`** learns one answer: WAITING, when a neighbour of the node it expands is not known.
   The node goes back into the heap unclosed and is expanded again from the start once the mask is
   there (expanding twice changes nothing: a neighbour already reached is only improved), so no
@@ -151,10 +154,30 @@ chunk is not loaded; never on a visible one.
 - **CPU per frame:** a far walker is one addition and one compare a frame, a mask read per tile:
   under 0.3 ms for 155. Searches stay in 238's 1.5 ms. On the main thread a mask costs one stamp
   (about 2 ms, one a frame at most); generating (9 to 13 ms a chunk) is on the worker.
-- **A search:** a far node costs a mask read instead of 15.5 us of `can_stand_at`, so it should cost
-  less than a near one (to measure, step 2). A 300-tile way searches some 1000 to 3000 nodes: 10 to
-  30 ms of search, 7 to 20 frames. Cold, it touches 20 to 40 chunks: 0.2 to 0.4 s of generating on
-  the worker first (the village's chunks are warm after the first trips).
+- **A search:** a far node costs a mask read instead of 15.5 us of `can_stand_at`, so it costs less
+  than a near one (measured, step 2, below). A 300-tile way searches some 1200 to 2600 nodes (4000 at
+  the most): 16 to 33 ms of search, 10 to 20 frames. Cold, it touches 20 to 40 chunks: 0.2 to 0.4 s
+  of generating on the worker first (the village's chunks are warm after the first trips).
+- **Measured, step 2** (`tools/bench/far_search.gd` and `frames.gd --far-trips=<n>`, 2026-11-14,
+  headless, `nice` on 11 cores). Searches of ways of 300 tiles (210 + 90) between random free tiles in
+  a square of 15 x 15 warm chunks (three seeds, 60 ways each; 28 to 37 of the 60 are not there, the
+  sea and the dyke are in the way, and those are searched all over): a far tile costs 10.5 to 10.9 us
+  (all searches together), a live one (the same chunks loaded) 40.6 to 41.1 us. Of the ways that are
+  found: 1204, 2589 and 2548 nodes at the median, which took 15.8, 31.4 and 30.3 ms (47.6, 39.7 and
+  35.7 at the most, for 4071, 3436 and 3068 nodes). The floor is `PathSearch` itself: with callbacks
+  that answer at once it takes 6.5 us a tile (9.5 before its heap stopped swapping through a function
+  call), so a far tile is that plus 4 us for the view (three calls a tile: `is_known`, `is_free`,
+  `cost_of`, each a chunk's source from a dictionary and a mask read).
+  The frames of the game (`make bench`'s fixture, 154 villagers; the baseline is three runs, then
+  with 30 and with 154 villagers sent over and over to tiles 150 to 300 away in chunks not loaded,
+  their masks cold and the worker busy): standing 300 frames, 99th percentile 18.4 to 21.0 ms
+  (baseline) against 24.7 (30 trips) and 25.8 (154); longest 33.6 to 40.0 against 39.0 and 36.7;
+  walking 70 tiles, 99th percentile 13.6 to 14.0 against 15.9 and 17.7, longest 27.3 to 28.2 against
+  29.2 and 29.4. Before the masks' requests were a set, `TravelMasks.update` took 3 to 4 ms on top of
+  the stamp in busy frames (a linear `has` and a lambda `filter` over all requests); now it is the
+  stamp alone, 2.9 to 3.5 ms. A pause of the far work after a slow frame was tried and did nothing
+  measurable (13 frames over 16.7 ms in the standing scenario with no far work at all, against 4
+  to 18 with it, a noisy scene), so it is not in.
 - **The day:** a game day gives 1.5 ms x 60 frames x 960 s = 86 s of search. A village of 30 with four
   trips a day needs about 120 x 25 ms = 3 s; the bench of 155 about 620 x 25 ms = 16 s. If all 30 leave
   in the same minute, the last starts about 8 s later; if all 155 do, about 45 s (task 239 spreads
@@ -163,10 +186,18 @@ chunk is not loaded; never on a visible one.
   found in at most 40 ms of search. And the whole frame: with cold far trips under way (masks
   generated and stamped, edits copied, stamps published, masks evicted, the worker busy, also in the
   frames in which a chunk loads), the bench's longest frame and its 99th percentile are no longer
-  than without them (about 26 ms the longest today). If not, the plan comes
-  back with reused commuting paths (the same home and workplace, the same path) before the next step.
-  A coarse chunk graph only if even that does not do (step 5).
-
+  than without them (about 26 ms the longest today). If not, the plan comes back with reused
+  commuting paths (the same home and workplace, the same path) before the next step. A coarse chunk
+  graph only if even that does not do (step 5).
+  **Result:** the node is 10.5 to 10.9 us, a hair over; the way is found in 16 to 33 ms at the
+  median and in 36 to 48 ms at the most, a hair over in one seed; the longest frame is within the
+  noise of the baseline (27 to 40 ms), but the 99th percentile is 2 to 4 ms more than the baseline's
+  in the standing and the walking scenario with far trips under way. The frame is the one that
+  does not pass as it stands: the stamp (3 ms) and the share of the searches (up to 0.75 ms and a
+  step of 16 nodes) add to frames that are slow already. The cheapest ways to go on are in this
+  order, to be decided with the user: a stamp in two halves over two frames; fewer far searches a
+  second (30 villagers leaving in the same minute is the case that makes this); reused commuting
+  paths, as above.
 ## Time skips and sleep
 
 A skip moves every trip along its path by its minutes (one tile a minute). The skip's three walked
