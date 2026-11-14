@@ -58,7 +58,9 @@ Questions still open with the user (no task yet):
 
 ## How the user wants the work done
 
-These were the previous session's memory notes. They live only on the laptop.
+These were the previous session's memory notes. The notes themselves are in
+[docs/handover/memory/](docs/handover/memory/MEMORY.md), one file per rule with its reason; copy
+them into your own memory folder if your tools keep one. The summary below is enough to start.
 
 ### Delegating and agents
 
@@ -143,8 +145,11 @@ These were the previous session's memory notes. They live only on the laptop.
 
 ## Untracked files from the laptop
 
-`TO-TEST.md` is not in git. These are its 93 unticked lines from 2026-11-14, so the user can test
-on this machine. Copy them into a fresh untracked `TO-TEST.md` here and keep adding to that.
+`TO-TEST.md` is not in git. A copy of the whole file from 2026-11-14 is
+[docs/handover/TO-TEST.md](docs/handover/TO-TEST.md), and its 93 unticked lines are below. Copy it
+to an untracked `TO-TEST.md` at the repo root here and keep adding to that. The log of second
+opinions from other models (normally the untracked `second-opinions.md`) is
+[docs/handover/second-opinions.md](docs/handover/second-opinions.md).
 
 <details>
 <summary>The open TO-TEST lines</summary>

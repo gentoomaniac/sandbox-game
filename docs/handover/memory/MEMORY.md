@@ -1,0 +1,24 @@
+- [Design document](spec-file.md) — design/ tree and TASKS.md are living docs, updated and committed on every decision; done tasks move to docs/tasks-done.md
+- [Push after merge](push-after-merge.md) — sandbox-game: push main to origin after every merge, no need to ask
+- [README and handbook kept current](readme-updated.md) — sandbox-game: README short with a few shots; feature text, controls, console and screenshots go to handbook/ with every feature
+- [Quiet test runs](quiet-test-runs.md) — sandbox-game: test runs muted, no focus stealing, never the real save; taskset -c 0-10 nice -n 19, half the cores; in every brief
+- [Questions file](questions-file.md) — sandbox-game: when the user is away, write questions + defaults to QUESTIONS.md, don't block
+- [Atomic commits](atomic-commits.md) — sandbox-game: one commit per suggestion/change, revertable, never squash
+- [Verify idle worktrees only](verify-idle-worktrees-only.md) — sandbox-game: per-commit verify loop only after the worker reported, never while it works
+- [Workers cd to worktree](workers-cd-worktree.md) — sandbox-game: worker and reviewer briefs forbid checkout in the main checkout; cd-prefixed commands; check main before committing
+- [Confirm before new tasks](confirm-before-new-tasks.md) — sandbox-game: no new task without the user's yes; since 2026-11-11 the TASKS.md queue runs in order without asking, unless there are questions
+- [Hosted model testing](hosted-model-testing.md) — sandbox-game: workers may use the user's Gemini config read-only; key never printed/committed
+- [Save upgrade window](save-upgrade-window.md) — sandbox-game: save upgrades for the last 10 versions; dropping one is its own "Save: drop the upgrade from version N" commit
+- [Merge fast](merge-fast.md) — from 2026-11-08: each atomic commit reported, reviewed and ff-merged to main by me right away; shared code gets its own worker
+- [No pgrep wait loops](no-pgrep-wait-loops.md) — sandbox-game: briefs forbid ANY pgrep/sleep wait loop (they match themselves; the editor godot never exits); run tests in the foreground
+- [No leftover processes](no-leftover-processes.md) — sandbox-game: after every task check ps for leftover godot/run_tests/make/wait loops; kill is blocked, so hand the user a kill command
+- [Opencode second opinion](opencode-second-opinion.md) — sandbox-game: reviews with a different opinion via `opencode run -m 'openai/gpt-6.1-sol#high'`
+- [Test window title](test-window-title.md) — sandbox-game: all agent/test game windows use --with-working-window-title ("Sandbox Game (test)"); make run never sets it by default
+- [Worktree lock pid](worktree-lock-pid.md) — sandbox-game: the pid in a worktree lock is Claude Code itself; never ask the user to kill it, unlock + remove instead
+- [Specialist agents](specialist-agents.md) — sandbox-game: music-composer, pixel-artist, sound-designer in .claude/agents/ for music, art and sound work
+- [Merge check](merge-check.md) — sandbox-game: test the branch tip only, bisect if red, make art only when generators changed, fold fixups in before checking
+- [Tuning numbers in config](tuning-numbers-in-config.md) — sandbox-game: workers pick balance numbers into data/; don't ask the user to confirm them
+- [New tasks at the end](new-tasks-at-end.md) — sandbox-game: new tasks go to the end of the TASKS.md queue unless the user names a place
+- [TO-TEST file](to-test-file.md) — sandbox-game: after each merge add what to try by hand to the untracked TO-TEST.md in the main checkout
+- [Godot import segfault](godot-import-segfault.md) — sandbox-game: first start/import sometimes segfaults, second try works; retry once, don't investigate unless asked
+- [Send files to phone](send-files-to-phone.md) — sandbox-game: user often on the phone; send referenced pictures/WAVs with SendUserFile, plus the path
