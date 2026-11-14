@@ -26,7 +26,6 @@ const USE_NOTES := {
 }
 ## The key of the notification about a save (see NotificationHud).
 const SAVE_NOTE := &"save"
-const LOAD_NOTE := &"load"
 
 var _state: GameState
 ## The game F8 loaded, if it started this scene (see QuickLoad); told once the HUD is up.
@@ -164,7 +163,7 @@ func _ready() -> void:
 	_start_sounds()
 	_show_clock()
 	if _resumed_state != null:
-		_notifications.post(LOAD_NOTE, "Loaded")
+		_notifications.post(QuickLoadFlow.LOAD_NOTE, "Loaded")
 	_shown_map = _state.current_map
 	if _state.is_inside():
 		_show_current_map()
@@ -485,7 +484,11 @@ func _process(delta: float) -> void:
 	_view.ambient_motion.show_tide(Tide.level(_state.clock.total_minutes()))
 	if _coordinates_hud.visible:
 		_coordinates_hud.show_position(
-			_state.player.tile(), _state.is_inside(), _weather_and_sun_text(_weather)
+			_state.player.tile(),
+			_state.is_inside(),
+			CoordinatesHud.weather_and_sun_text(
+				_weather, _state.sun, _state.clock.day, _snow_cover, _frost
+			)
 		)
 	var is_in_play := not _is_any_screen_open()
 	var is_pointer_on_gui := (
@@ -912,51 +915,10 @@ func _quick_save_or_load(event: InputEvent) -> bool:
 	return true
 
 
-## F8: puts the player into the last save, without asking (but for a save that holds content the
-## game no longer has: then the player decides, and Cancel keeps the game they are in). The whole
-## scene starts again from it, which leaves no view, window or paused state of the game before
-## behind. Waits for a save that runs, so the file read is the newest.
+## F8: puts the player into the last save (see QuickLoadFlow).
 func _quick_load() -> void:
-	_saves.wait()
-	var outcome := QuickLoad.prepare(_options.save_path)
-	if outcome == QuickLoad.Outcome.MISSING_CONTENT:
-		if not await _save_questions.is_missing_content_loaded(
-			QuickLoad.missing(), QuickLoad.backup_path(), "Cancel"
-		):
-			QuickLoad.cancel()
-			return
-		if not QuickLoad.load_dropping_missing():
-			_notifications.post(
-				LOAD_NOTE, "Can't keep a copy of the save", NotificationHud.Tone.ERROR
-			)
-			return
-		outcome = QuickLoad.Outcome.READY
-	match outcome:
-		QuickLoad.Outcome.NO_SAVE:
-			_notifications.post(LOAD_NOTE, "No save to load")
-		QuickLoad.Outcome.UNREADABLE:
-			var note := "The save can't be loaded"
-			if QuickLoad.moved_to != "":
-				note += ": moved to %s" % QuickLoad.moved_to.get_file()
-			_notifications.post(LOAD_NOTE, note, NotificationHud.Tone.ERROR)
-		QuickLoad.Outcome.READY:
-			if get_tree().reload_current_scene() != OK:
-				QuickLoad.take()
-				_notifications.post(LOAD_NOTE, "Can't restart the game", NotificationHud.Tone.ERROR)
-
-
-## The F3 lines on the weather: the values, and sunrise and sunset.
-func _weather_and_sun_text(weather: WeatherSample) -> String:
-	var day := _state.clock.day
-	return (
-		"%s\nsnow cover %d %% · frost %d %%\nsunrise %s · sunset %s"
-		% [
-			weather.short_text(),
-			roundi(_snow_cover * 100.0),
-			roundi(_frost * 100.0),
-			Sun.time_text(_state.sun.sunrise(day)),
-			Sun.time_text(_state.sun.sunset(day)),
-		]
+	await QuickLoadFlow.new(_saves, _save_questions, _notifications, get_tree()).run(
+		_options.save_path
 	)
 
 

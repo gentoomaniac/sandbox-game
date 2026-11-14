@@ -40,3 +40,20 @@ static func text_of(tile: Vector2i, is_inside: bool, weather_text: String, fps: 
 	return (
 		"%s%d, %d\n%s\n%d fps" % ["House " if is_inside else "", tile.x, tile.y, weather_text, fps]
 	)
+
+
+## The weather lines under the coordinates: the values, the snow cover and frost (0 to 1), and
+## sunrise and sunset on `day`.
+static func weather_and_sun_text(
+	weather: WeatherSample, sun: Sun, day: int, snow_cover: float, frost: float
+) -> String:
+	return (
+		"%s\nsnow cover %d %% · frost %d %%\nsunrise %s · sunset %s"
+		% [
+			weather.short_text(),
+			roundi(snow_cover * 100.0),
+			roundi(frost * 100.0),
+			Sun.time_text(sun.sunrise(day)),
+			Sun.time_text(sun.sunset(day)),
+		]
+	)
