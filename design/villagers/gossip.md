@@ -256,6 +256,9 @@ Short lines over a villager's head, now and then:
 
 - Only villagers in view, at most one bubble on screen at a time and one a minute or so. Values
   in the data file.
+- A bubble near the left or right edge of the screen can be cut off (the in-view check looks at
+  the villager's feet and head only). That stays so: the player can step aside to see it (the
+  user, 2026-11-14, issue #50).
 - About the moment (weather, time of day, the place, what they do) or about the player when they
   are near, with what the villager thinks of them and their newest stories: "There goes the one
   who felled Antje's ash."
