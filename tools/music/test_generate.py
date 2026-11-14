@@ -140,7 +140,6 @@ class PieceTest(unittest.TestCase):
             parse_piece(PIECE.replace("drums noise:", "drums kazoo:"))
 
 
-@unittest.skipIf(modplug.LIBRARY is None, "libmodplug is not installed")
 class SectionsTest(unittest.TestCase):
     def test_tells_the_piece_and_where_each_section_is(self):
         self.assertEqual(
