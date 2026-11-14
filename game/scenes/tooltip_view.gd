@@ -5,20 +5,24 @@ extends CanvasLayer
 ## which control is under the mouse. It hides when the mouse leaves, on any click (so while
 ## dragging), and when the control goes away (its screen closes). Above every other UI layer.
 ## Over no control, it shows `world_text` instead, at once and for as long as it is set: what the
-## mouse points at in the world (Main sets it each frame).
+## player aims at in the world, with the mouse or by facing it (Main sets it each frame, see
+## WorldHoverText).
 
 const THEME := preload("res://game/scenes/ui_theme.tres")
 const DELAY_SECONDS := 0.4
-## Where the panel's corner sits from the cursor, and how wide its text gets before wrapping.
+## Where the panel's corner sits from the cursor, and how wide its text gets before wrapping: a
+## control's tooltip, and the longer lines of `world_text` (a crop's state).
 const CURSOR_OFFSET := Vector2(10, 12)
 const MAX_TEXT_WIDTH := 150
+const MAX_WORLD_TEXT_WIDTH := 240
 const TEXT_META := &"tooltip_text"
 const ID_META := &"tooltip_id"
 ## Every control that has a tooltip, so a debug flag can find one by its id.
 const GROUP := &"tooltip_controls"
 
-## What the mouse points at in the world, or "" for nothing, and where the mouse is (in UI units;
-## it is the debug flag's tile when `--mouse-tile` pretends it).
+## What the player aims at in the world, or "" for nothing, and where the box goes (in UI units):
+## the mouse (the debug flag's tile when `--mouse-tile` pretends it), or the middle of the tile
+## the player faces.
 var world_text := ""
 var world_cursor := Vector2.ZERO
 
@@ -80,7 +84,7 @@ func _process(delta: float) -> void:
 		_hover_seconds = 0.0
 		_is_suppressed = false
 	if hovered == null and world_text != "":
-		_show(world_text, world_cursor)
+		_show(world_text, world_cursor, MAX_WORLD_TEXT_WIDTH)
 		return
 	var text := _text_of(hovered)
 	if text == "" or _is_suppressed:
@@ -105,12 +109,12 @@ func _text_of(control: Control) -> String:
 
 ## Puts the panel by `cursor`: right of and below it, or on the other side where that would leave
 ## the window, and in any case inside it.
-func _show(text: String, cursor: Vector2) -> void:
+func _show(text: String, cursor: Vector2, max_width := MAX_TEXT_WIDTH) -> void:
 	if _label.text != text:
 		_label.text = text
 		var font := _label.get_theme_font("font")
 		var font_size := _label.get_theme_font_size("font_size")
-		var width := minf(font.get_multiline_string_size(text, 0, -1, font_size).x, MAX_TEXT_WIDTH)
+		var width := minf(font.get_multiline_string_size(text, 0, -1, font_size).x, max_width)
 		_label.custom_minimum_size.x = ceilf(width)
 		_label.reset_size()
 	_panel.visible = true

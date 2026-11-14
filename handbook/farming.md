@@ -38,9 +38,9 @@ perfect weather; expect longer.
 
 - A seed's tooltip says what its crop likes: cool or warm weather, low, middle or high water need,
   hardy or tender against wind, and about how many days it takes in good weather.
-- Put the mouse over a crop to see how it is doing: growing, ripe (and in how many days it will
-  wither), or dead; what hurts or slows it today (frost, cold, heat, dry soil, too little sun,
-  wind); how damaged it is; and the soil's real moisture. The rain wets only the surface for an
+- Put the mouse over a crop, or face it, to see how it is doing: growing, ripe (and in how many days
+  it will wither), or dead; what hurts or slows it today (frost, cold, heat, dry soil, too little
+  sun, wind); how damaged it is; and the soil's real moisture. The rain wets only the surface for an
   hour, so trust this number, not the soil's colour.
 
   ![The box over a ripe turnip: its state, when it withers and the soil's moisture](../docs/screenshots/crop-state.png)
