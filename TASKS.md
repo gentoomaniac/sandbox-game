@@ -108,6 +108,27 @@ After task 171 (the user, 2026-11-13: its own task after 171).
   of 171 picks the version by the graphics setting and crossfades on the bar when it changes.
 - Tests: the version follows the setting, the switch on the bar; listening files for the user.
 
+## 230. Saves keep their older versions, and a dialog picks which one to load
+
+- [ ] Done
+
+The user, 2026-11-14: "saves need older versions. Not just one save file but maybe ten rising,
+first in first out. We then need a dialog to select which one to load."
+- Every save (autosave, quick save F9, sleep, save and quit) writes a new file next to the last
+  ones instead of replacing world.json; the newest 10 are kept, the oldest goes first (the count in
+  data/, e.g. a setting later). Written as today: a temporary file, flushed, renamed; a save that
+  fails leaves the others as they are. The unusable-save backups (`.bak`) stay apart from these.
+- Each save says when it was made (game day, season, year, time of day, and the real date and
+  time) and how (autosave, quick save, sleep, quit), read without loading the whole world (a small
+  header or a sidecar file).
+- A load dialog (from the title/pause menu "Load", and what F8 opens): the saves newest first,
+  each with those details, picked with the mouse or the keys; Load, Cancel; a question before
+  throwing away unsaved play. A save that can't be read is shown as such and can't be picked.
+- Starting the game continues from the newest usable save, as today.
+- The old single world.json of existing players becomes the first of the list (no progress lost).
+- Tests: the rotation (11th save drops the oldest), a failed write, the listing order, loading an
+  older one, the old file taken over; docs in design/tech/saving.md and the handbook.
+
 ## Later (not part of the prototype)
 
 - Ice on rivers and ponds in winter (an overlay on water when it is cold enough; frozen water
