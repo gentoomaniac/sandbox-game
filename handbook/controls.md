@@ -31,7 +31,8 @@ What E does, in this order:
 
 A small hint over the hotbar names what E and Space will do right now on the tile you face or point
 at, such as "E: Talk to Antje", "E: Open chest" or "Use: Harvest". It says nothing when there is
-nothing to do. Switch it off under Settings, Game, Action hint.
+nothing to do. A ripe crop is picked with an empty hand: with a tool or seeds in your hand the hint
+says so, and whether to pick a free hotbar slot or to move an item off a full hotbar. Switch it off under Settings, Game, Action hint.
 
 ### Windows
 

@@ -77,7 +77,25 @@ static func use_text(state: GameState, target: Vector2i) -> String:
 	if use == ToolUse.Use.GATE:
 		var is_open := state.world.object_at(target).type == WorldObjectTypes.PEN_GATE_OPEN
 		return "Shut the gate" if is_open else "Open the gate"
+	if use == ToolUse.Use.NOTHING and held != ItemTypes.NONE and _is_ripe_crop_at(state, target):
+		return _empty_hand_advice(state.player.inventory)
 	return USE_WORDS.get(use, "")
+
+
+## A crop is picked with an empty hand, which a player with the hotbar full of items can't see how
+## to make: a free slot is selected, or an item is moved off the hotbar first.
+static func _empty_hand_advice(inventory: Inventory) -> String:
+	var has_free_slot := range(Inventory.HOTBAR_SIZE).any(
+		func(slot: int) -> bool: return inventory.item_in(slot) == ItemTypes.NONE
+	)
+	if has_free_slot:
+		return "Harvest with an empty hand: pick a free hotbar slot"
+	return "Harvest with an empty hand: move an item off the hotbar"
+
+
+static func _is_ripe_crop_at(state: GameState, target: Vector2i) -> bool:
+	var crop := state.world.object_at(target)
+	return crop != null and crop.is_crop() and CropLife.is_ripe(crop)
 
 
 static func _name_of(object: WorldObject) -> String:

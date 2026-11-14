@@ -103,6 +103,24 @@ func test_use_names_tilling_planting_and_harvesting() -> void:
 	_assert_use_named(ToolUse.Use.HARVEST, "Harvest")
 
 
+func test_use_tells_how_to_get_an_empty_hand_for_a_ripe_crop() -> void:
+	_ripe_crop()
+	_hold(_hoe())
+	assert_eq(_state.use_at(_tile), ToolUse.Use.NOTHING)
+	var hotbar := _state.player.inventory
+	for slot in Inventory.HOTBAR_SIZE:
+		if hotbar.item_in(slot) == ItemTypes.NONE:
+			hotbar.slots[slot] = {"item": ItemTypes.LOGS, "count": 1}
+	assert_eq(
+		ActionHint.use_text(_state, _tile),
+		"Harvest with an empty hand: move an item off the hotbar"
+	)
+	hotbar.slots[(hotbar.selected_slot + 1) % Inventory.HOTBAR_SIZE] = {}
+	assert_eq(
+		ActionHint.use_text(_state, _tile), "Harvest with an empty hand: pick a free hotbar slot"
+	)
+
+
 func test_use_names_the_watering_can_filling_and_watering() -> void:
 	_place(WorldObjectTypes.DRAW_WELL)
 	_state.player.can_water = 0
