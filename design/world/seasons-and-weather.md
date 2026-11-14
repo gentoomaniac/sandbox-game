@@ -93,7 +93,7 @@
   - **Ambient motion** (decided 2026-11-05, view only): plants sway with the wind (tree
     crowns, bushes, tall grass, reeds, crops, ground tufts; gentle on calm days, hard with
     gusts in a storm, each plant with its own phase, in whole art pixels with the stems
-    fixed); water shimmers and ripples, choppier in wind; the campfire and hearth burn
+    fixed); water shimmers and ripples, choppier in wind; the campfire (while it has wood, see crafting/professions.md) and hearth burn
     (decided 2026-11-05, task 48): their flames are a short loop of drawn frames (tongues
     that rise, split, lick sideways and fall back, tips that break off and go out), played
     at about 9 frames a second, each fire starting its loop at a frame picked by its place

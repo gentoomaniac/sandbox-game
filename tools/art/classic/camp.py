@@ -44,6 +44,12 @@ def fireplace():
     return fire.burning(*fireplace_layers(), *FIREPLACE_FLAME)
 
 
+def fireplace_out():
+    """The fireplace with its fire out: the bed of ash, the charred logs and the ring, no flame
+    (a placeholder look, task 56)."""
+    return fire.unlit(*fireplace_layers())
+
+
 def ghost(picture, width, height):
     """The picture of an object as the ghost of placing it shows it: without its shadow, in a
     picture of `width` x `height` px, its drawing in the middle and its bottom rows on the

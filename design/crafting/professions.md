@@ -49,6 +49,11 @@ woodworker, the cook and the mason, and a UI for them.
   that passed, also far from the player. Put wood in and light it, and it burns again. The camp's
   fire lasts 12 hours at the start. Villagers' anchors near a fireplace do not change: it is where
   the camp is. Outdoor fires made no sound before, and still make none.
+  **Its look:** a fire that is out has its own picture, the ring with the ash and the charred logs
+  and no flame (the second picture of the fireplace's atlas row, `out_look`; a placeholder drawn
+  for the user to judge, in both art sets); the flames the shader plays and the sparks only go
+  over a burning one. A fire burning low is not drawn differently yet; the words (and the hover
+  text) say so.
 - **E on a station** opens the crafting menu of its recipes, titled with its name, with the
   player's points in the skills they practise; E or Escape closes it. A note after a craft
   says what it taught. The tooltip of a recipe says what a craft teaches, or what it needs.

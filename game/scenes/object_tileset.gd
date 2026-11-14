@@ -70,7 +70,9 @@ func _init(crop_rules := CropRules.default_rules(), motion: AmbientMotion = null
 				if object_type.get("deck", false):
 					rows_down -= 1
 				tile_data.y_sort_origin = rows_down * TerrainTileset.TILE_SIZE
-				if motion != null:
+				# Its flames are drawn over the pictures of a fire that burns, not over one that is out.
+				var is_out_look: bool = object_type.has("out_look") and variant > 0
+				if motion != null and not is_out_look:
 					tile_data.material = motion.object_material(type)
 	for crop_id in crop_rules.crop_ids():
 		_add_crop_sheet(crop_id, crop_rules.crop(crop_id)["sheet"])
@@ -135,8 +137,8 @@ func _show_crop_sheet(crop_id: StringName) -> void:
 
 
 ## How many pictures a type has in its atlas row: its variants, and for a bush that can be
-## picked the same again, picked; a line object has a picture per connection mask of each. A
-## picture spans `cells_wide` cells.
+## picked the same again, picked, and for a campfire the same again, out; a line object has a
+## picture per connection mask of each. A picture spans `cells_wide` cells.
 static func looks_count(object_type: Dictionary) -> int:
 	if object_type.has("connects"):
 		return object_type["variants"] * WorldObjectTypes.CONNECTION_LOOKS
@@ -144,9 +146,13 @@ static func looks_count(object_type: Dictionary) -> int:
 		return WorldObjectTypes.STOCK_LOOKS
 	if object_type.has("sway_frames"):
 		return object_type["sway_frames"]
-	var can_be_picked: bool = object_type.has("regrow_days") or object_type.has("regrow_growth")
-	var picked_looks: int = object_type["variants"] if can_be_picked else 0
-	return object_type["variants"] + picked_looks
+	var has_second_look: bool = (
+		object_type.has("regrow_days")
+		or object_type.has("regrow_growth")
+		or object_type.has("out_look")
+	)
+	var second_looks: int = object_type["variants"] if has_second_look else 0
+	return object_type["variants"] + second_looks
 
 
 ## Where a cell is drawn relative to its tile: texture_origin moves it up and left. Tiles are
@@ -181,6 +187,6 @@ static func atlas_cell(
 	if object_type.has("connects"):
 		var column := variant * WorldObjectTypes.CONNECTION_LOOKS + connections
 		return Vector2i(column, object_type["atlas_row"])
-	if object.is_picked() or is_bare:
+	if object.is_picked() or is_bare or Campfire.is_out(object):
 		variant += object_type["variants"]
 	return Vector2i(variant * object_type.get("cells_wide", 1), object_type["atlas_row"])

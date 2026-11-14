@@ -68,6 +68,16 @@ def strip(behind, front, box, half_width, tall):
     return [_cropped(behind, box), _cropped(front, box)] + flames
 
 
+def unlit(behind, front):
+    """The whole picture with the fire out: no flame, the ash and the logs as they lie."""
+    canvas = copy(behind)
+    for y, row in enumerate(front):
+        for x, colour in enumerate(row):
+            if colour is not None:
+                canvas[y][x] = colour
+    return canvas
+
+
 def burning(behind, front, box, half_width, tall):
     """The whole picture with the first frame of its flame, for where it does not move."""
     x0, y0, width, height = box

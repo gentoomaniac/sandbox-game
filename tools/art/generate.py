@@ -150,7 +150,7 @@ def standing_outdoors(picture, shadow_half_width=None):
 #
 #  0 oak (3)
 #  1 stone (2)
-#  2 fireplace (1)
+#  2 fireplace (1, then the same with the fire out)
 #  3 sleeping_bag (1)
 #  4 spruce (3)
 #  5 pine (3)
@@ -215,7 +215,7 @@ def object_atlas():
     return [
         ("oak", [trees.oak(seed) for seed in trees.OAK_SEEDS]),
         ("stone", [trees.stone(seed) for seed in (111, 112)]),
-        ("fireplace", [camp.fireplace()]),
+        ("fireplace", [camp.fireplace(), camp.fireplace_out()]),
         ("sleeping_bag", [camp.bedroll()]),
         ("spruce", spruces),
         ("pine", pines),

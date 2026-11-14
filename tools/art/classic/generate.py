@@ -163,7 +163,7 @@ def object_atlas():
     return [
         ("oak", [trees.oak(seed) for seed in trees.OAK_SEEDS]),
         ("stone", [trees.stone(seed) for seed in (111, 112)]),
-        ("fireplace", [camp.fireplace()]),
+        ("fireplace", [camp.fireplace(), camp.fireplace_out()]),
         ("sleeping_bag", [camp.bedroll()]),
         ("spruce", spruces),
         ("pine", pines),

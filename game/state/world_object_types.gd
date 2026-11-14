@@ -15,6 +15,7 @@ extends RefCounted
 ## player places has `placeable_in`: INSIDE (only in a house, furniture with only an
 ## `interior_sprite`), OUTDOORS (only outdoors, like the kiln: its fire would burn the house
 ## down) or ANYWHERE. Optional:
+## - out_look: it has a picture for when it is out (a campfire, see Campfire), after its variants;
 ## - storage_slots: it holds items, this many slots (a chest, see WorldObject `storage`);
 ## - bed: the object is a bed (what sleeping in it fills is in data/energy.cfg, [sleep]); the
 ##   value is the direction its head end lies in (the pillow). The player wakes lying
@@ -263,6 +264,7 @@ const _OTHER_TYPES := {
 		# bleaches the player.
 		"light": {"color": Color(1.0, 0.5, 0.22), "energy": 1.4, "radius_tiles": 7.0},
 		"storage_slots": 1,
+		"out_look": true,
 		"interior_sprite": "res://assets/interior/fireplace.png",
 		"placeable_in": OUTDOORS,
 	},
