@@ -116,7 +116,7 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   time, so no tile is asked "at the minute the search expects to enter it". That is step 3's: the
   walker checks each tile in the view as it enters it, with the time of entry, and searches again
   if the tide or the season has closed it. (A search is spread over a few frames and a path is some
-  minutes long, so the time of the start is a fair guess, and the walk is the check.) **Done:**
+  minutes long, so the time of the start is a fair guess, and the walk is the check.) **Done** *(superseded: see Searches on worker threads)*:
   `TravelView` (`is_live`, `is_known`, `is_free`, `cost_of`) is the one view of `NpcTravel`'s searches
   and holds the one cost rule (1.0, worn grass 0.8 and 0.6, +2.0 for an object that feet spoil); the
   trip holds the view, as a search keeps only its methods. The view settles once, for each chunk it
@@ -134,7 +134,7 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   requests (`queue(search, is_far)`): the oldest of them takes one of the frame's searches and at
   most half of its time, so far trips are not starved by near ones, and near ones are not held up
   by far ones (one near search always gets its turn). The far queue is worked in one tick of `far_every_frames`
-  (`[travel]`, 4), since far searches are many and in no hurry; see the cost under Cost.
+  (`[travel]`, 4), since far searches are many and in no hurry; see the cost under Cost. *(superseded: see Searches on worker threads)*
 - **`NpcTrip`** follows the path in one of two ways, decided each update: the tile it is on and the
   next are both answered live (above), so it steps with its body as in 238; or not, so it moves to
   the next centre at `walk_speed` and checks the tile in the view as it enters it (tide and season
@@ -169,7 +169,7 @@ chunk is not loaded; never on a visible one.
   median and 4.5 ms at most on the main thread; a question to a warm mask (`is_free`) 0.45 us, against
   15.5 us for `Npcs.can_stand_at`.
 - **CPU per frame:** a far walker is one addition and one compare a frame, a mask read per tile:
-  under 0.3 ms for 155. Searches stay in 238's 1.5 ms. On the main thread a mask costs the copy
+  under 0.3 ms for 155. Searches stay in 238's 1.5 ms *(superseded: see Searches on worker threads)*. On the main thread a mask costs the copy
   of its edits (0.3 ms at most) and the publishing (0.08 ms at the median in `update`); generating
   (9 to 13 ms a chunk) and stamping (3 ms) are on the worker.
 - **A search:** a far node costs a mask read instead of 15.5 us of `can_stand_at`, so it costs less
@@ -204,7 +204,7 @@ chunk is not loaded; never on a visible one.
   did nothing measurable, so it is not in. Before the masks' requests were a set,
   `TravelMasks.update` took 3 to 4 ms on top of the stamp in busy frames (a linear `has` and a
   lambda `filter` over all requests).
-  **What `far_every_frames=4` costs:** a far search takes four times as many frames: a way of 1200
+  **What `far_every_frames=4` costs *(superseded: see Searches on worker threads)*:** a far search takes four times as many frames: a way of 1200
   to 2600 nodes (16 to 33 ms of search at 0.75 ms of a frame) is done in 22 to 44 frames at one in
   every frame, in 88 to 176 (1.5 to 3 s) at one in four, one search at a time. So a far trip leaves
   1.5 to 3 s late, and 30 far trips that start in the same minute leave 45 to 90 s apart from first
@@ -212,7 +212,7 @@ chunk is not loaded; never on a visible one.
   that holds for near trips, not for this worst case). The far searches a day are far fewer than
   that case (a village's commuting is near, loaded ground, with the far trips the exception), and
   the value is data: 1 gives the speed back for the frames' price.
-- **The day:** a game day gives 1.5 ms x 60 frames x 960 s = 86 s of search. A village of 30 with four
+- **The day *(superseded: see Searches on worker threads)*:** a game day gives 1.5 ms x 60 frames x 960 s = 86 s of search. A village of 30 with four
   trips a day needs about 120 x 25 ms = 3 s; the bench of 155 about 620 x 25 ms = 16 s. If all 30 leave
   in the same minute, the last starts about 8 s later; if all 155 do, about 45 s (task 239 spreads
   the hours).

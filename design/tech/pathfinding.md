@@ -70,7 +70,7 @@ from its own tile. So a loaded tile whose west neighbour is not loaded is still 
 - **Two LRUs**: masks (`far_masks_kept`, 256, about 1.6 KB each) and raw chunks
   (`far_chunks_kept`, 32, about 300 KB each). A raw chunk is what `WorldGenerator` makes, with no
   edit ever applied, so it never goes stale.
-- **One worker job at a time**, from `update()` (once a frame, from `NpcTravel.tick`): a stamp job
+- **One worker job at a time**: generating and stamping share the one worker task of `TravelMasks`, from `update()` (once a frame, from `NpcTravel.tick`): a stamp job
   for the oldest request whose four raw chunks are all there, else a generation job for the first
   chunk the oldest request lacks. Generating (9 to 13 ms a chunk) and stamping (3 ms) are both off
   the main thread.
@@ -226,7 +226,7 @@ stamping of a mask and the generating of a raw chunk (one task at a time in `Tra
   worker makes new `WorldObject`s from the types.
 - Statics the worker reaches are either loaded before (`StationRules`, `LandscapeRules`,
   `WorldObjectTypes.TYPES`, `PathRules` are warmed by the main thread) or behind a mutex
-  (`Tide.flood_height`'s kept heights, `Vegetation.density`'s last answers).
+  (`Tide.flood_height`'s kept heights behind the static `Tide._flood_lock`, `Vegetation.density`'s last answers behind its own `_lock`).
 - Every task is reaped with `wait_for_task_completion`; the destructors of `TravelMasks` and
   `Pathfinder` wait for the task that runs.
 
