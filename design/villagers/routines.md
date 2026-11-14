@@ -21,5 +21,6 @@ building or fireplace, [villagers.md](villagers.md)) and walks about it at rando
   the shop hours and offers a trading dialog (barter, no money yet); the shop sells seeds, so the
   farm can always start again (tasks 240 and 235).
 
-The routine format and the routines themselves are written here by task 239's plan, for the
-user's approval before code.
+Task 238's plan (the path search, its limits, chunks and doors) and task 239's plan (the
+routine format and the routines themselves) are written here, for the user's approval before
+code.

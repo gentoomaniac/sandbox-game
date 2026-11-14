@@ -110,8 +110,7 @@ is no home.
 - [ ] Done
 
 The user, 2026-11-14. Needs 228 (the homes). Today every building of a type copies its type's
-one interior map
-(`interior_map` in data/buildings.cfg) when first entered, and keeps that copy.
+one interior map (`interior_map` in data/buildings.cfg) when first entered, and keeps that copy.
 - That map stays the default. A building can name its own interior map instead, kept with the
   building (saved), so a villager's house is their very own inside (Antje's dairy, Momme's nets)
   while the outside stays the type's standard look.
