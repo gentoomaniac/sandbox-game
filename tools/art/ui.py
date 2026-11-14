@@ -17,6 +17,7 @@ Written to assets/ui/:
 - trash_icon.png: 16x16, drawn into the trash can's slot like the equip_* hints (items.py);
 - bag_icon.png: 16x16, the picture on the bag button beside the hotbar; like the other icons it is
   drawn from ICON_ROWS, and one picture serves both arts;
+- craft_icon.png: 16x16, the picture on the crafting button beside the bag button, drawn the same way;
 - process_<icon>.png: 12x12, the pictures on the activation buttons of the process stations (the
   `button_icon` of data/stations.cfg): process_fire.png, a fire on a log, for the kiln and the oven;
 - bar_frame.png (48x8) and energy_fill.png, health_fill.png (46x6, the frame's inside): the
@@ -401,6 +402,25 @@ kssssssssssk
 .kbbbbbbbbbbbak.
 .kaaaaaaaaaaaak.
 ..kkkkkkkkkkkk..
+................
+""",
+    # The crafting button beside the bag button: a workbench with a little thing on it.
+    "craft_icon": """
+................
+................
+.....kkkk.......
+....kcggck......
+....kggggk......
+.....kkkk.......
+.kkkkkkkkkkkkk..
+.kbbbbbbbbbbbk..
+.kaaaaaaaaaaak..
+.kkkkkkkkkkkkk..
+..kmk......kmk..
+..kmk......kmk..
+..kmk......kmk..
+..kmk......kmk..
+..kkk......kkk..
 ................
 """,
     # The activation button of the kiln and the oven: a fire burning on a log.
