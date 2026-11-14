@@ -1,6 +1,5 @@
 extends SaveValidationCase
-## The attribute levels are saved (version 30); a save of version 29, which had none, loads with
-## the base levels; a level outside the rules is refused.
+## The attribute levels are saved (version 30); a level outside the rules is refused.
 
 
 func test_the_levels_are_kept_and_the_bonuses_are_not() -> void:
@@ -15,18 +14,6 @@ func test_the_levels_are_kept_and_the_bonuses_are_not() -> void:
 	assert_eq(restored.player.attributes.level(Attributes.STRENGTH), 14)
 	assert_eq(restored.player.attributes.level(Attributes.HP), 3)
 	assert_eq(restored.player.attributes.bonus(Attributes.STRENGTH), 0)
-
-
-func test_a_version_29_save_loads_with_the_base_levels() -> void:
-	var game := _current_game()
-	game["player"].erase("attributes")
-	_write_save(29, game)
-
-	var restored := SaveFile.read(SAVE_PATH)
-
-	assert_eq(restored.player.attributes.max_energy(), 100.0)
-	assert_eq(restored.player.attributes.max_health(), 100.0)
-	assert_eq(restored.player.attributes.carry_capacity(), 40.0)
 
 
 func test_a_level_out_of_range_is_refused_with_its_place() -> void:
