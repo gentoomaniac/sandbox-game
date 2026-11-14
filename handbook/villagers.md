@@ -23,6 +23,21 @@ to where they came), stroll about by day and stand still at night. You walk thro
 - The hand-written villagers know the village: the church, the Krug, the mill, the dyke, who is
   who, prices, this year's news and the church year.
 
+## Homes and workplaces
+
+- A villager can have a home, a house that stands in the world, and a workplace, a building (the
+  barn, the church) or a named spot where there is no building (the landing at the sluice). The
+  villagers written by hand find the house and workplace their sheet names when you bring them
+  with `spawn npc <id>`, if such a building stands near (a couple and their son share one house).
+  Where none stands they have none until you give one; the made-up ones never have.
+- A villager with a home keeps within about six tiles of its door. If you take the house down they
+  are homeless and keep near where it stood.
+- A house holds one household, as many as its kind has room for. Give one with the console:
+  stand at its door (or inside) and type `home antje here`; `work antje here` sends her to work
+  there instead. `home antje none` frees her. The hammer's menu on a house will do the same.
+- The place of a deed in the gossip ("by Antje's house") is the home of the villager who lives
+  nearest to it.
+
 ## Talking
 
 - Face a villager and press E. The name over their head shows whom E speaks to.

@@ -91,6 +91,23 @@ const COMMANDS := {
 			+ " cold, from 20 warm)."
 		),
 	],
+	"home":
+	[
+		"home <villager> [here|none]",
+		(
+			"Show where a villager lives, give them the house you are inside or at the door of"
+			+ " (here), or free them of theirs (none). A house holds one household: a couple and"
+			+ " their children, as many as the house has residents."
+		),
+	],
+	"work":
+	[
+		"work <villager> [here|none]",
+		(
+			"Show where a villager works, send them to the building you are in or at, or to the"
+			+ " spot you stand on where there is none (here), or free them of it (none)."
+		),
+	],
 	"play":
 	[
 		"play <track>",
@@ -113,6 +130,8 @@ const ARGUMENTS := {
 	"attribute": [&"attribute", &"number"],
 	"gossip": [&"villager"],
 	"opinion": [&"villager", &"number"],
+	"home": [&"villager", &"place"],
+	"work": [&"villager", &"place"],
 	"play": [&"track"],
 }
 ## The commands that take an animal kind, or `npc` and the id of a villager written by hand (see
@@ -124,6 +143,8 @@ const NPC_ARGUMENTS: Array[StringName] = [&"animal", &"villager"]
 ## The argument kinds whose candidates `_candidates_text` lists: the names a command takes. Items
 ## are too many to list (Tab completes them) and the other kinds are numbers.
 const LISTED_KINDS: Array[StringName] = [&"animal", &"villager", &"weather", &"snow", &"track"]
+## What `home` and `work` take after the villager.
+const PLACE_WORDS: Array[String] = ["here", "none"]
 ## The most characters of a listed line, so the log shows it whole.
 const LIST_LINE_LENGTH := 70
 ## Minutes per unit of the `skip` command, and the longest skip (a year).
@@ -163,10 +184,12 @@ var music_player := Callable()
 var music_stopper := Callable()
 
 var _state: GameState
+var _home_commands: HomeCommands
 
 
 func _init(state: GameState) -> void:
 	_state = state
+	_home_commands = HomeCommands.new(state)
 
 
 ## Runs a line such as "give logs 5" (a leading "/" is optional) and returns the output.
@@ -247,6 +270,8 @@ func run(line: String) -> Array[String]:
 			output = _gossip(arguments)
 		"opinion":
 			output = _opinion(arguments)
+		"home", "work":
+			output = _home_or_work(words[0], arguments)
 		"play":
 			output = _play(arguments)
 		"stop":
@@ -300,6 +325,8 @@ func candidates(kind: StringName) -> Array[String]:
 				values.append(WILD_RABBIT if animal == WildlifeRules.RABBIT else String(animal))
 		&"villager":
 			values = _state.npcs.villagers.ids()
+		&"place":
+			values.assign(PLACE_WORDS)
 		&"weather":
 			for condition in Weather.FORCEABLE:
 				values.append(String(condition))
@@ -741,6 +768,22 @@ func _opinion(arguments: PackedStringArray) -> Array[String]:
 	if is_setting:
 		npc.opinion = clampi(int(arguments[1]), rules.opinion_min(), rules.opinion_max())
 	return ["%s: %s (%d points)" % [npc.name, rules.opinion_word(npc.opinion), npc.opinion]]
+
+
+## `home` or `work` (`command`): shows the house or workplace of a villager, or sets or frees it.
+func _home_or_work(command: String, arguments: PackedStringArray) -> Array[String]:
+	var is_usage_wrong := arguments.is_empty() or arguments.size() > 2
+	if arguments.size() == 2 and arguments[1] not in PLACE_WORDS:
+		is_usage_wrong = true
+	if is_usage_wrong:
+		return ["Usage: %s" % COMMANDS[command][0]]
+	var npc := _npc_named(arguments[0])
+	if npc == null:
+		return _unknown("villager", arguments[0], command)
+	var where := arguments[1] if arguments.size() == 2 else ""
+	if command == "home":
+		return _home_commands.home(npc, where)
+	return _home_commands.work(npc, where)
 
 
 func _npc_named(word: String) -> Npc:
