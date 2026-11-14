@@ -121,7 +121,9 @@ first in first out. We then need a dialog to select which one to load."
 - Each save says when it was made (game day, season, year, time of day, and the real date and
   time) and how (autosave, quick save, sleep, quit), read without loading the whole world (a small
   header or a sidecar file).
-- A load dialog (from the title/pause menu "Load", and what F8 opens): the saves newest first,
+- Quick load (F8) stays as it is: it always loads the newest save, with no dialog (the user,
+  2026-11-14).
+- A load dialog (from the title/pause menu "Load"): the saves newest first,
   each with those details, picked with the mouse or the keys; Load, Cancel; a question before
   throwing away unsaved play. A save that can't be read is shown as such and can't be picked.
 - Starting the game continues from the newest usable save, as today.
