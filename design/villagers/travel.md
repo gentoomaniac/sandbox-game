@@ -2,8 +2,10 @@
 
 Planned 2026-11-14, for the user's approval before code. It builds on task 238's plan in
 [routines.md](routines.md) ("Finding the way"): `PathSearch`, `Pathfinder`, `NpcTrip`, `walk_to`,
-`trip_arrived` and `trip_blocked`. Its first step comes after 238 is merged. OpenAI GPT 6.1 Sol gave a
-second opinion on this issue; where the plan follows it and where it does not is at the end.
+`trip_arrived` and `trip_blocked`. That plan is approved and being built; until it is merged it is on
+the branch of #6 (`worktree-agent-a9d7c5cfda1f25061`). #68's first step comes after 238 is merged.
+OpenAI GPT 6.1 Sol gave a second opinion on this issue and reviewed the plan; where the plan follows
+it and where it does not is at the end.
 
 ## The idea
 
@@ -45,41 +47,58 @@ as it is entered, not over the whole path in advance. No collisions, near or far
 
 ## Data and API, on top of 238
 
-- **`TravelMask`** (one per chunk): a `PackedByteArray` of 1024 flags, BLOCKED (ground or object, as
-  `is_walkable`, decks included), MUD (blocked while `Tide.floods`), SEASONAL (blocked unless the
-  plant is dormant; its `WorldObject` is kept in a small dictionary for `World.is_dormant`), OBJECT
-  (the +2.0 cost of a non-blocking object) and WEARS (grass or floodplain). Buildings are not in it:
-  `World.building_at` is read live, so placing or taking down a building changes nothing here.
+- **`TravelMask`** (one per chunk): a `PackedByteArray` of 1024 flags, with `GameMap.is_walkable`'s
+  order: DECK (free, whatever the ground and the tide), BLOCKED (ground or a blocking object), MUD
+  (blocked while `Tide.floods`), OBJECT (the +2.0 cost of a non-blocking object), SEASONAL (the
+  object's block or cost counts only while the plant is present; its `WorldObject` is kept in a small
+  dictionary) and WEARS (grass or floodplain). Buildings are not in it: `World.building_at` is read
+  live, and any building tile, the door included, is closed to villagers (238's step rule).
 - **`TravelMasks`** (one per `World`, held by `Npcs`): an LRU of masks (`far_chunks_kept`, 256, about
-  0.4 MB) and of the raw chunks a mask is stamped from (9, about 2.7 MB: a mask needs the chunk and
-  its west, north and north-west neighbours, whose big objects reach in). It has its own
-  `WorldGenerator`, so the world's generator and its `FieldLayout.cover` stay untouched. The edits
-  are replayed by the same code as `add_chunk` (moved into `World.replay_edits(chunk)`), so the
-  mask agrees with the loaded chunk by construction, and a test holds it to that.
-  `mask_of(coords)` returns the mask or null and asks for it; `build_next()` builds one.
-- **Building happens on the main thread, one chunk a frame** (about 11 ms), and not in a frame in
-  which `ChunkResidency` loaded a chunk (also 9 ms). This is the cost of a chunk load, which the game
-  pays already as the player walks. A worker thread is the fallback if the bench shows a longer
-  frame (step 5), not the start: it needs its own copies of the edits and the static rules warm.
-- **Invalidation:** `World` gets `signal edited(chunk_coords)`, sent by `_edit_terrain` and
-  `_edit_object`, which every change of terrain and objects goes through, loaded or not. The masks
-  of that chunk and of its east, south and south-east neighbours (where its objects reach) are
-  dropped. 238's `World.change_count` no longer counts chunk loads and unloads: with the masks, a
-  load changes no answer.
-- **`TravelView`** (the combined view the search gets): `is_free(tile)` is 238's `can_stand_at` where
-  the chunk is loaded and the mask elsewhere; `cost_of(tile)` the same, with the wear from `World`;
-  `is_known(tile)` is false where a needed mask is not built yet. The tide is that of the time the
-  search starts.
-- **`PathSearch`** learns one answer: WAITING, when it reaches a tile that is not known. The node
-  goes back into the heap, the mask is asked for, and the `Pathfinder` passes the search over until
-  the mask is there. **`Pathfinder`** keeps one of its two searches a frame for the oldest far
-  request, so far trips are not starved by near ones, and near ones are not held up by far ones.
-- **`NpcTrip`** follows the path in one of two ways, decided per step: the tile it is on and the
-  next are both in loaded chunks, so it steps with its body as in 238 (its body spans both); or not,
-  so it moves to the next centre at `walk_speed` and checks the tile in the view as it enters it
-  (tide and season at that time). The switch is at a chunk edge, out of sight. A
-  far tile that has closed makes the trip search again from where it stands, as a near stuck one
-  does, then BLOCKED with the 238 retry. Far feet wear the tiles too
+  0.4 MB) and an LRU of raw chunks (16, about 5 MB). A raw chunk is what the generator makes and
+  nothing else: no edit is ever applied to it, so it never goes stale (the seed does not change).
+  A mask of chunk C is stamped from the raw chunks C, W, N and NW (big objects reach east and south,
+  `MAX_FOOTPRINT` 7 x 2 within 32 tiles), with the edits of those four chunks replayed on the object
+  list as `add_chunk` does: an edited position loses its generated object and gets the edit's, if
+  any; an edited terrain replaces the generated one. `mask_of(coords)` returns the mask or null and
+  asks for it.
+- **Raw chunks are generated on a worker thread**, one at a time, by a `WorldGenerator` of its own.
+  `generate_chunk` reads only the seed, its own noise objects and its own `FieldLayout.cover`, and
+  the rules' statics (`LandscapeRules`, `StationRules`, `WorldObjectTypes.TYPES`), which are filled
+  by the first chunk the game loads, before any far work. It writes nothing shared. A cold mask
+  waits for up to four raw chunks, generated one after the other (about 35 ms in all, off the main
+  thread). The main thread only copies the edits of the four chunks and stamps the mask when its raw
+  chunks are there: about 2 ms, at most one stamp a frame. (Pausing `generate_chunk` across frames
+  would mean rewriting the generator; on the main thread one call is 9 to 13 ms, too much at 60 fps.)
+- **Invalidation:** `World` gets `signal edited(chunk_coords)` and a version per chunk, raised by
+  `_edit_terrain` and `_edit_object`, which every change of terrain and objects goes through,
+  loaded or not. An edit of C drops the masks of C, E, S and SE. A stamp notes the versions of its
+  four chunks; one whose versions moved meanwhile is thrown away and asked for again, so no stale
+  mask is ever published. The raw chunks stay (they hold no edits).
+- **`TravelView`** (the one view every World search gets, near and far): a tile is answered live
+  (238's `can_stand_at`) only where its chunk and its W, N and NW neighbours are loaded; elsewhere by
+  the mask. Today `World._stored_object_at` does not see a big object whose own chunk is not loaded,
+  so on the west and north rim of the loaded square the live answer can be wrong; there the mask is
+  the truth. With this rule a chunk loading or unloading changes no answer, and 238's
+  `World.change_count` counts edits only. `cost_of(tile)` the same, with the wear from `World`.
+  `is_known(tile)` is false where a needed mask is not stamped yet. Tide and season are those of a
+  time given to the view (`at_minutes`), never the clock: `Tide.level(minutes)` already is a function
+  of the time, and `World.is_dormant_on(object, day)` is split from `is_dormant` (which calls it).
+  A search uses the time it starts at.
+- **`PathSearch`** learns one answer: WAITING, when a neighbour of the node it expands is not known.
+  The node goes back into the heap unclosed and is expanded again from the start once the mask is
+  there (expanding twice changes nothing: a neighbour already reached is only improved), so no
+  neighbour is lost. The `Pathfinder` passes the search over meanwhile. **`Pathfinder`** keeps one of
+  its two searches a frame for the oldest far request, so far trips are not starved by near ones,
+  and near ones are not held up by far ones.
+- **`NpcTrip`** follows the path in one of two ways, decided each update: the tile it is on and the
+  next are both answered live (above), so it steps with its body as in 238; or not, so it moves to
+  the next centre at `walk_speed` and checks the tile in the view as it enters it (tide and season
+  at that time). Loading can change between two centres; the switch keeps the position, the next
+  centre and the distance left to it, and a body step after a far one checks its body afresh
+  (`free_body_tiles` is cleared). It happens on the rim of the loaded square, out of sight. Main
+  runs `Npcs.update` before `ChunkResidency.update`, so a chunk loaded in a frame counts from the
+  next. A far tile that has closed makes the trip search again from where it stands, as a near stuck
+  one does, then BLOCKED with the 238 retry. Far feet wear the tiles too
   (`World.wear_unloaded(tile, steps)`, trusting the mask's WEARS bit), so lanes grow where people
   walk, seen or not. 238's NOT_LOADED goes: a far trip searches; an unknown tile waits.
 - **`Npcs.update`** moves every trip, near and far; `only_loaded` only keeps the strolls to the loaded
@@ -94,31 +113,48 @@ chunk is not loaded; never on a visible one.
 
 ## Cost
 
-- **Memory:** masks 0.4 MB, raw chunks 2.7 MB, paths about 5 KB for a 600-tile path (0.75 MB for
+- **Memory:** masks 0.4 MB, raw chunks 5 MB, paths about 5 KB for a 600-tile path (0.75 MB for
   155 such). Search state only while a search runs (two at a time).
 - **CPU per frame:** a far walker is one addition and one compare a frame, a mask read per tile:
-  under 0.3 ms for 155. Searches stay in 238's 1.5 ms. Mask building is at most one chunk a frame.
+  under 0.3 ms for 155. Searches stay in 238's 1.5 ms. On the main thread a mask costs one stamp
+  (about 2 ms, one a frame at most); generating (9 to 13 ms a chunk) is on the worker.
 - **A search:** a far node costs a mask read instead of 15.5 us of `can_stand_at`, so it should cost
   less than a near one (to measure, step 2). A 300-tile way searches some 1000 to 3000 nodes: 10 to
-  30 ms of search, 7 to 20 frames. Cold, it touches 20 to 40 chunks: 20 to 40 frames of building
-  first (the village's chunks are warm after the first trips).
+  30 ms of search, 7 to 20 frames. Cold, it touches 20 to 40 chunks: 0.2 to 0.4 s of generating on
+  the worker first (the village's chunks are warm after the first trips).
 - **The day:** a game day gives 1.5 ms x 60 frames x 960 s = 86 s of search. A village of 30 with four
   trips a day needs about 120 x 25 ms = 3 s; the bench of 155 about 620 x 25 ms = 16 s. If all 30 leave
   in the same minute, the last starts about 8 s later; if all 155 do, about 45 s (task 239 spreads
   the hours).
 - **Pass or fail, step 2:** on warm masks a far node costs at most 10 us, and a 300-tile far way is
-  found in at most 40 ms of search; a cold mask costs at most 15 ms to build. If not, the plan comes
+  found in at most 40 ms of search. And the whole frame: with cold far trips under way (masks
+  generated and stamped, the cache churning), the bench's longest frame and its 99th percentile are
+  no longer than without them (about 26 ms the longest today). If not, the plan comes
   back with reused commuting paths (the same home and workplace, the same path) before the next step.
   A coarse chunk graph only if even that does not do (step 5).
 
 ## Time skips and sleep
 
-A skip moves every trip along its path by its minutes (one tile a minute), checking each tile with
-the tide of the time it is entered; one whose path ends arrives and sends `trip_arrived` at the end of
-the skip. A trip that has no path yet, or needs a new one, searches after the skip, as in play, and
-so leaves late. Nothing is searched inside a skip: the skip's spans run in one go. The skip's three
-walked minutes go through `Npcs.update`, the rest through `catch_up` (no trips are left out, and none
-counts twice). The same game skipped the same way ends the same.
+A skip moves every trip along its path by its minutes (one tile a minute). The skip's three walked
+minutes go through `Npcs.update`, the rest through `catch_up`, which comes after `Simulation` has
+moved the clock to the skip's end (no trip is left out, and none counts twice).
+
+- **Tide and season at the time of entry:** each tile is checked in the view at the minute the trip
+  enters it (`at_minutes`, counted back from the skip's end), not by the clock, which stays where it
+  is.
+- **The world as it is at the skip's end:** edits made during the skip (the night's crops, fallow soil
+  grown over) are not replayed in time; the trip sees them all at once. None of them opens or closes
+  a tile for walking today; if one ever does, a far trip meets it as of the skip's end.
+- **Missing masks:** the chunks a path crosses are known, so they are all asked for at the start of
+  the catch-up. `catch_up` waits on the worker for each one; `catch_up_over_frames` lets the frames
+  go by until they are there. Both stamp the same masks from the same seed and edits, so both end
+  the same, and the same game skipped the same way ends the same.
+- **Searches:** none inside a skip. A trip with no path yet, or one that meets a closed tile, stops
+  there and searches after the skip, as in play, and so leaves late. It arrives, and sends
+  `trip_arrived`, at the end of the skip when its path ends in it.
+- **As far as play:** a skip takes a trip as far as the same minutes of play when its path stays open,
+  it needs no new search, the player does not hold it up, and the frames of play were shorter than
+  `MAX_STEP_SECONDS` (a longer frame of play loses time). Then the two agree to the tile.
 
 **What 239 does:** an 8-hour sleep crosses several routine hours. A skip is not watched (the player
 sleeps indoors, or the screen fades), so after it task 239 puts each villager where its routine is at
@@ -146,20 +182,26 @@ terrain, #61 and #62) then cost what they cost near. The parity test gets a vill
    centre of the same chunk loaded with `add_chunk`. Cases: an object taken off, one put down, a
    big object whose origin is in the west or north neighbour (generated and placed), a building and
    its door tile, a gate, the player's fence, tilled soil and a path, mud at high and low tide, a
-   seasonal plant dormant and present, a ditch, the dyke, an ewer, a hedge, the chunk and world
-   borders, the wear. The world's generator is untouched. An edit drops exactly the four masks.
+   seasonal plant dormant and present (a dormant one costs nothing), a deck over mud at high tide, a
+   ditch, the dyke, an ewer, a hedge, the chunk and world borders, the wear. The raw cache warmed,
+   then an object taken off and a fence put down, then the masks again: they follow the edits. An
+   edit drops exactly the four masks; a stamp whose chunks were edited meanwhile is not published.
+   The world's generator is untouched; the worker's chunk equals the main thread's.
 2. **`TravelView`, WAITING in `PathSearch`, the far slot of `Pathfinder`**, and the far search bench
    with the pass-or-fail numbers. Tests: a far way equals the way found with the same chunks loaded;
-   a search waits for a mask and goes on; a far request runs while near ones are queued; NOT_LOADED is
-   gone.
+   the rim: a loaded goal tile covered by a big object whose own chunk is not loaded is closed, and
+   stays closed when that chunk loads; a search waits for a mask, goes on, and loses no neighbour;
+   a far request runs while near ones are queued; NOT_LOADED is gone.
 3. **Far walking in `NpcTrip`, `Npcs.update`, far wear, `NpcViews`.** Tests: a villager from far
    comes into the loaded area on its path and arrives at the goal; one leaves it and walks on; its
    position never moves more than `walk_speed x delta` in an update, also when its chunks load one
-   an update or unload; the tide rising over a far path makes it search again, then wait; a crop
-   edit at night drops the mask; far feet wear; no view for a villager on an unloaded chunk.
+   an update or unload, and when that happens between two centres; the tide rising over a far path
+   makes it search again, then wait; a crop edit at night drops the mask; far feet wear; no view for
+   a villager on an unloaded chunk.
 4. **Skips:** `catch_up` with minutes. Tests: a skip moves a trip as far as the same minutes of play
    (to the tile); one that ends in the skip arrives once; a trip without a path searches after it;
-   synchronous and over frames end the same; `place` in a skip.
+   the tide at the time of entry stops one, not the tide at the skip's end; a path over masks not
+   yet stamped; synchronous and over frames end the same; `place` in a skip.
 5. **The bench** (`tools/bench/paths.gd` of 238): 10, 30 and 155 villagers sent 100 to 300 tiles
    at once and through the day, cold and warm: longest frame, search time, the last departure's
    delay, memory. The numbers tuned and written here.
@@ -173,6 +215,12 @@ the camera rectangle (the loaded area is far enough, and the switch is invisible
 trips and a save version bump (239 can send them again from the clock); splitting skips at
 departures and routine hours (a skip is not watched, and 239 puts the villagers where their
 routine is). The review's day budget of 130 s is 86 s: a game day is 960 seconds of play.
+
+Sol then reviewed this plan and found the architecture and those departures sound. Its must-fixes are
+in: raw chunks that hold no edits and stamps that are not published when stale, generating on a
+worker and a whole-frame gate, the rim of the loaded square answered by the mask, and the skip's
+times and missing masks. Its optional points are in too (WAITING loses no neighbour, the switch
+between centres, the mask's order of deck, tide and dormancy).
 
 ## Open questions, with the default
 
