@@ -63,8 +63,9 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   asks for it.
 - **Raw chunks are generated on a worker thread**, one at a time, by a `WorldGenerator` of its own.
   `generate_chunk` reads only the seed, its own noise objects and its own `FieldLayout.cover`, and
-  the rules' statics (`LandscapeRules`, `StationRules`, `WorldObjectTypes.TYPES`), which are filled
-  by the first chunk the game loads, before any far work. It writes nothing shared. A cold mask
+  the rules' statics (`LandscapeRules`, `StationRules`, `WorldObjectTypes.TYPES`). `TravelMasks`
+  asks for each of them on the main thread before it starts the worker, so the worker only reads
+  them. It writes nothing shared. A cold mask
   waits for up to four raw chunks, generated one after the other (about 35 ms in all, off the main
   thread). The main thread only copies the edits of the four chunks and stamps the mask when its raw
   chunks are there: about 2 ms, at most one stamp a frame. (Pausing `generate_chunk` across frames
@@ -81,9 +82,12 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   the truth. With this rule a chunk loading or unloading changes no answer, and 238's
   `World.change_count` counts edits only. `cost_of(tile)` the same, with the wear from `World`.
   `is_known(tile)` is false where a needed mask is not stamped yet. Tide and season are those of a
-  time given to the view (`at_minutes`), never the clock: `Tide.level(minutes)` already is a function
-  of the time, and `World.is_dormant_on(object, day)` is split from `is_dormant` (which calls it).
-  A search uses the time it starts at.
+  time given to the view (`at_minutes`), never the clock, on both sides: the masks', and the live
+  one's, as `World.is_flooded` reads `clock.total_minutes()` and `World.is_dormant` `clock.day`.
+  `World` gets `is_flooded_at(pos, minutes)` and `is_dormant_on(object, day)`, which the old two
+  call with the clock, and the live answer of the view is `can_stand_at`'s rule over those two
+  (`World.is_walkable_at(pos, minutes)`, with `is_walkable` calling it with the clock). A search
+  uses the time it starts at.
 - **`PathSearch`** learns one answer: WAITING, when a neighbour of the node it expands is not known.
   The node goes back into the heap unclosed and is expanded again from the start once the mask is
   there (expanding twice changes nothing: a neighbour already reached is only improved), so no
@@ -128,8 +132,9 @@ chunk is not loaded; never on a visible one.
   the hours).
 - **Pass or fail, step 2:** on warm masks a far node costs at most 10 us, and a 300-tile far way is
   found in at most 40 ms of search. And the whole frame: with cold far trips under way (masks
-  generated and stamped, the cache churning), the bench's longest frame and its 99th percentile are
-  no longer than without them (about 26 ms the longest today). If not, the plan comes
+  generated and stamped, edits copied, stamps published, masks evicted, the worker busy, also in the
+  frames in which a chunk loads), the bench's longest frame and its 99th percentile are no longer
+  than without them (about 26 ms the longest today). If not, the plan comes
   back with reused commuting paths (the same home and workplace, the same path) before the next step.
   A coarse chunk graph only if even that does not do (step 5).
 
@@ -142,19 +147,24 @@ moved the clock to the skip's end (no trip is left out, and none counts twice).
 - **Tide and season at the time of entry:** each tile is checked in the view at the minute the trip
   enters it (`at_minutes`, counted back from the skip's end), not by the clock, which stays where it
   is.
-- **The world as it is at the skip's end:** edits made during the skip (the night's crops, fallow soil
-  grown over) are not replayed in time; the trip sees them all at once. None of them opens or closes
-  a tile for walking today; if one ever does, a far trip meets it as of the skip's end.
-- **Missing masks:** the chunks a path crosses are known, so they are all asked for at the start of
-  the catch-up. `catch_up` waits on the worker for each one; `catch_up_over_frames` lets the frames
-  go by until they are there. Both stamp the same masks from the same seed and edits, so both end
-  the same, and the same game skipped the same way ends the same.
+- **The world as it is at the skip's end:** edits made during the skip are not replayed in time;
+  the trip sees them all at once. That is a simplification, and it does reach walking: night upkeep
+  grows a sapling into a tree (open, then closed), and takes a rotted stump off or turns it into a
+  sapling (closed, then open). A trip in the skip meets such a tile as it is at the skip's end:
+  a tree that grew at 3 o'clock stops one that passed at 1. Nobody sees it.
+- **Missing masks:** the chunks a path crosses are known. The catch-up asks for them in the order the
+  trips walk through them, a few ahead (`skip_masks_ahead`, 8), and pins those it is using, so a
+  long skip of many trips never needs more masks at once than the LRU holds. `catch_up` waits on the
+  worker for each one; `catch_up_over_frames` lets the frames go by until it is there. Both stamp
+  the same masks from the same seed and edits, so both end the same, and the same game skipped the
+  same way ends the same.
 - **Searches:** none inside a skip. A trip with no path yet, or one that meets a closed tile, stops
   there and searches after the skip, as in play, and so leaves late. It arrives, and sends
   `trip_arrived`, at the end of the skip when its path ends in it.
 - **As far as play:** a skip takes a trip as far as the same minutes of play when its path stays open,
-  it needs no new search, the player does not hold it up, and the frames of play were shorter than
-  `MAX_STEP_SECONDS` (a longer frame of play loses time). Then the two agree to the tile.
+  no edit in the skip opens or closes a tile of its path (the trees above), it needs no new search,
+  the player does not hold it up, and the frames of play were shorter than `MAX_STEP_SECONDS` (a
+  longer frame of play loses time). Then the two agree to the tile.
 
 **What 239 does:** an 8-hour sleep crosses several routine hours. A skip is not watched (the player
 sleeps indoors, or the screen fades), so after it task 239 puts each villager where its routine is at
@@ -200,8 +210,10 @@ terrain, #61 and #62) then cost what they cost near. The parity test gets a vill
    a villager on an unloaded chunk.
 4. **Skips:** `catch_up` with minutes. Tests: a skip moves a trip as far as the same minutes of play
    (to the tile); one that ends in the skip arrives once; a trip without a path searches after it;
-   the tide at the time of entry stops one, not the tide at the skip's end; a path over masks not
-   yet stamped; synchronous and over frames end the same; `place` in a skip.
+   the tide at the time of entry stops one, not the tide at the skip's end, on a far path and on one
+   inside the loaded area, and likewise a seasonal plant; a sapling that grows into a tree on the path
+   in the skip stops it there (the skip-end rule); a path over masks not yet stamped, longer than the
+   LRU; synchronous and over frames end the same; `place` in a skip.
 5. **The bench** (`tools/bench/paths.gd` of 238): 10, 30 and 155 villagers sent 100 to 300 tiles
    at once and through the day, cold and warm: longest frame, search time, the last departure's
    delay, memory. The numbers tuned and written here.
@@ -220,7 +232,9 @@ Sol then reviewed this plan and found the architecture and those departures soun
 in: raw chunks that hold no edits and stamps that are not published when stale, generating on a
 worker and a whole-frame gate, the rim of the loaded square answered by the mask, and the skip's
 times and missing masks. Its optional points are in too (WAITING loses no neighbour, the switch
-between centres, the mask's order of deck, tide and dormancy).
+between centres, the mask's order of deck, tide and dormancy). Its second check added: the time of
+entry for the live answers too, the night's trees and stumps in a skip, masks pinned a few ahead
+in a catch-up, the rules warmed before the worker, and a frame gate that counts all the work.
 
 ## Open questions, with the default
 
