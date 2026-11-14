@@ -21,8 +21,8 @@
   - **Hall house** (task 59, 2026-11-06, from docs/art-style.md): the Low German hall house
     (*Niederdeutsches Hallenhaus*, Niedersachsenhaus) of Holstein, the biggest and dearest
     building: 7×5, its gable end to the front with the door (the Grote Door) on the middle
-    tile. Costs 100 logs, 40 stone, 50 clay, 80 reeds. A Haubarg (the giant of the marsh
-    under a pyramid of thatch) comes later.
+    tile. Costs 100 logs, 40 stone, 50 clay, 80 reeds (kept for now, the user 2026-11-14; tuning
+    comes later). A Haubarg (the giant of the marsh under a pyramid of thatch) comes later.
   - **Barn:** a work and storage building, no hearth or bed; 6×3, door on the third tile
     from the left, no windows. Costs 30 logs, 15 stone, 5 clay, 25 reeds. The longhouse
     costs 60 logs, 30 stone, 30 clay, 50 reeds.

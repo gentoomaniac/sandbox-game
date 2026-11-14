@@ -90,8 +90,10 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   stays; the use key with an empty hand takes it off again into the inventory (the empty
   hand's slot always has room). E at a saddled horse in front gets on it (after a villager to
   talk to, before chests, stations and beds), E again gets off. The horse walks at the
-  player's walking speed and, once they have ridden on for 0.6 s, trots at twice it; riding
-  costs no energy, and tiredness doesn't slow the horse (`data/livestock.cfg`). What collides
+  player's walking speed and, once they have ridden on for 0.6 s, trots at twice it (the user,
+  2026-11-14: too fast; at most 1.5 times, with a sprint on Shift that uses the horse's stamina,
+  [#66](https://github.com/gentoomaniac/sandbox-game/issues/66));
+  riding costs no energy, and tiredness doesn't slow the horse (`data/livestock.cfg`). What collides
   is the rider's body, as on foot, and it also keeps off the tiles of buildings, so a horse is
   never ridden through a door (one that stood in a doorway is ridden out of it). On horseback
   the use key does nothing but say "Get off the horse first.", the hammer builds nothing, a
