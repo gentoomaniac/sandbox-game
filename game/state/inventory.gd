@@ -148,11 +148,8 @@ func can_take(plain: Dictionary, stacks: Array[Dictionary]) -> bool:
 	return true
 
 
-## Fits a candle from the inventory into the lantern in `slot` that has none: the freshest one
-## the inventory has. Returns whether it did.
-func fit_candle(slot: int) -> bool:
-	if item_in(slot) != ItemTypes.LANTERN or LanternCandle.holds_candle(slots[slot]):
-		return false
+## The slot of the freshest candle the inventory has, or -1.
+func freshest_candle_slot() -> int:
 	var freshest := -1
 	for candidate in SLOT_COUNT:
 		if (
@@ -160,6 +157,15 @@ func fit_candle(slot: int) -> bool:
 			and (freshest == -1 or _burnt_in(candidate) < _burnt_in(freshest))
 		):
 			freshest = candidate
+	return freshest
+
+
+## Fits a candle from the inventory into the lantern in `slot` that has none: the freshest one
+## the inventory has. Returns whether it did.
+func fit_candle(slot: int) -> bool:
+	if item_in(slot) != ItemTypes.LANTERN or LanternCandle.holds_candle(slots[slot]):
+		return false
+	var freshest := freshest_candle_slot()
 	if freshest == -1:
 		return false
 	var candle_state: Dictionary = slots[freshest].get("state", {})

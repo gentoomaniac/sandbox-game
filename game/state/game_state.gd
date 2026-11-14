@@ -13,6 +13,9 @@ extends RefCounted
 ## nothing is told for a refusal or for loading a game.
 signal action_done(outcome: ActionOutcome)
 
+## What using the held lantern does (see `held_lantern_use`).
+enum LanternUse { NONE, PUT_OUT, LIGHT, FIT_CANDLE }
+
 ## Sleeping and passing out wake the player the next time the clock shows this.
 const WAKE_UP_MINUTE := 6 * GameClock.MINUTES_PER_HOUR + 30
 ## Passing out sleeps at least this long, even when the morning comes sooner.
@@ -378,20 +381,30 @@ func _dismount_spot() -> Vector2:
 	return nearest
 
 
-## Uses the held lantern, on any map, also on horseback: lit, it is put out; with a candle in it,
-## it is lit; with none, the freshest candle of the inventory is fitted (and it stays dark). Does
-## nothing, and returns false, unless the held item is a lantern, and a lantern without a candle
-## only if the inventory has one.
-func switch_held_lantern() -> bool:
+## What the lantern in hand does when used (see `switch_held_lantern`): lit, it is put out; with a
+## candle in it, it is lit; with none, the freshest candle of the inventory is fitted (and it stays
+## dark); with none to fit, or with no lantern in hand, nothing.
+func held_lantern_use() -> LanternUse:
 	var inventory := player.inventory
 	if inventory.held_item() != ItemTypes.LANTERN:
-		return false
+		return LanternUse.NONE
 	if LanternCandle.holds_candle(inventory.slots[inventory.selected_slot]):
-		player.is_lantern_lit = not player.is_lantern_lit
-	elif inventory.fit_candle(inventory.selected_slot):
-		player.is_lantern_lit = false
-	else:
-		return false
+		return LanternUse.PUT_OUT if player.is_lantern_lit else LanternUse.LIGHT
+	return LanternUse.FIT_CANDLE if inventory.freshest_candle_slot() != -1 else LanternUse.NONE
+
+
+## Uses the held lantern, on any map, also on horseback (see `held_lantern_use`). Does nothing, and
+## returns false, when that is NONE.
+func switch_held_lantern() -> bool:
+	var use := held_lantern_use()
+	match use:
+		LanternUse.NONE:
+			return false
+		LanternUse.FIT_CANDLE:
+			player.inventory.fit_candle(player.inventory.selected_slot)
+			player.is_lantern_lit = false
+		_:
+			player.is_lantern_lit = use == LanternUse.LIGHT
 	report(ActionOutcome.SWITCH_LANTERN, player.tile(), &"", {ItemTypes.LANTERN: 1})
 	return true
 

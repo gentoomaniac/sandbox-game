@@ -222,3 +222,15 @@ func test_the_tooltip_and_the_icon_tell_how_much_candle_is_left() -> void:
 		ItemTooltip.text_for(ItemTypes.CANDLE, 1, {"burnt_minutes": LIFE / 2}),
 		"Burnt down: 50% left"
 	)
+
+
+func test_the_use_of_the_held_lantern_is_asked_before_it_is_done() -> void:
+	assert_eq(_state.held_lantern_use(), GameState.LanternUse.NONE, "no candle to fit")
+	_put_candle(8)
+	assert_eq(_state.held_lantern_use(), GameState.LanternUse.FIT_CANDLE)
+	_state.switch_held_lantern()
+	assert_eq(_state.held_lantern_use(), GameState.LanternUse.LIGHT, "fitted, and dark")
+	_state.switch_held_lantern()
+	assert_eq(_state.held_lantern_use(), GameState.LanternUse.PUT_OUT, "lit")
+	_inventory.select(0)
+	assert_eq(_state.held_lantern_use(), GameState.LanternUse.NONE, "not the lantern in hand")
