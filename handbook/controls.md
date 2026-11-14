@@ -29,6 +29,10 @@ What E does, in this order:
 5. Sleep until morning, next to a bed.
 6. With the hammer in hand: pick the next building.
 
+A small hint over the hotbar names what E and Space will do right now on the tile you face or point
+at, such as "E: Talk to Antje", "E: Open chest" or "Use: Harvest". It says nothing when there is
+nothing to do. Switch it off under Settings, Game, Action hint.
+
 ### Windows
 
 | Key | Action |
@@ -79,6 +83,7 @@ What E does, in this order:
 - Scale the UI from 0.5x to 2x without touching the world view.
 - Set the energy drain and the day length variation.
 - Set how often the game saves by itself: every 10 to 60 minutes of play.
+- Show or hide the action hint over the hotbar.
 - Cap the frame rate: 10 to 240 in steps of 10, or no limit. It starts at 60, so the processor
   stays cool.
 - Set the language model villagers talk through: see [villagers](villagers.md).

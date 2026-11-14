@@ -32,6 +32,10 @@ const AUTOSAVE_TIP := (
 	"How many minutes of play pass between two automatic saves. The game also saves when you"
 	+ " sleep, pass out and quit; F9 saves at once."
 )
+const ACTION_HINT_TIP := (
+	"A line over the hotbar that names what E and Use will do on the target, such as"
+	+ ' "E: Open chest". Click to change.'
+)
 const MAX_FPS_TIP := (
 	"The most frames the game draws per second. A lower limit keeps the processor cooler and"
 	+ " the fan quieter; the game runs at the same speed. The top stop has no limit: the game"
@@ -60,6 +64,7 @@ var _autosave_label: Label
 var _autosave_slider: HSlider
 var _max_fps_label: Label
 var _max_fps_slider: HSlider
+var _action_hint_button: Button
 
 
 func _init(settings: GameSettings) -> void:
@@ -89,7 +94,7 @@ func _init(settings: GameSettings) -> void:
 		settings_page,
 		"Game",
 		_go_to.bind(Page.GAME),
-		"UI scale, energy drain, day length, autosave and frame rate."
+		"UI scale, energy drain, day length, autosave, frame rate and the action hint."
 	)
 	_add_button(
 		settings_page, "Audio", _go_to.bind(Page.AUDIO), "Volumes and sound in the background."
@@ -163,6 +168,7 @@ func _init(settings: GameSettings) -> void:
 	_max_fps_slider.value_changed.connect(_on_max_fps_changed)
 	TooltipView.set_text(_max_fps_slider, MAX_FPS_TIP, "setting_max_fps")
 	game.add_child(_max_fps_slider)
+	_action_hint_button = _add_button(game, "", _toggle_action_hint, ACTION_HINT_TIP)
 	_add_button(game, "Back", _back)
 
 	var controls := ControlsPage.new(_settings)
@@ -289,6 +295,9 @@ func _show_game_settings() -> void:
 		NO_LIMIT_STOP if limit == GameSettings.NO_FPS_LIMIT else limit
 	)
 	_show_max_fps(_max_fps_slider.value)
+	_action_hint_button.text = (
+		"Action hint: " + ("On" if _settings.is_action_hint_shown else "Off")
+	)
 
 
 func _show_ui_scale(value: float) -> void:
@@ -310,6 +319,11 @@ func _on_slider_released(_value_changed: bool) -> void:
 
 func _cycle_energy_drain() -> void:
 	_settings.set_energy_drain(GameSettings.next_drain(_settings.energy_drain))
+	_show_game_settings()
+
+
+func _toggle_action_hint() -> void:
+	_settings.set_action_hint_shown(not _settings.is_action_hint_shown)
 	_show_game_settings()
 
 

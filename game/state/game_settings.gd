@@ -11,8 +11,8 @@ extends RefCounted
 ## file doesn't mention, keeps its default binding. The display mode is only stored once the
 ## player has chosen it; until then the window stays as the command line or project left it.
 ## The art set, the UI scale, the energy drain, the day length variation, the autosave interval,
-## the frame rate limit, the audio settings and the language model are stored when they differ
-## from their defaults.
+## the frame rate limit, whether the action hint shows, the audio settings and the language model
+## are stored when they differ from their defaults.
 ## The model's key is kept in the file as plain text (Settings says so); it is never saved with
 ## the game or logged.
 
@@ -66,8 +66,11 @@ const ENERGY_DRAIN_KEY := "energy_drain"
 const DAY_LENGTH_KEY := "day_length_variation"
 const AUTOSAVE_KEY := "autosave_minutes"
 const MAX_FPS_KEY := "max_fps"
+const ACTION_HINT_KEY := "action_hint"
 const AUDIO_SECTION := "audio"
 const SOUND_IN_BACKGROUND_KEY := "in_background"
+
+const DEFAULT_ACTION_HINT := true
 
 const MIN_UI_SCALE := 0.5
 const MAX_UI_SCALE := 2.0
@@ -227,6 +230,8 @@ var energy_drain := DEFAULT_ENERGY_DRAIN
 var day_length_variation := DEFAULT_DAY_LENGTH_VARIATION
 var autosave_minutes := DEFAULT_AUTOSAVE_MINUTES
 var max_fps := DEFAULT_MAX_FPS
+## Whether the hint over the hotbar names what E and Use will do (see ActionHint).
+var is_action_hint_shown := DEFAULT_ACTION_HINT
 var sound_in_background := DEFAULT_SOUND_IN_BACKGROUND
 ## The profiles of the language model villagers talk through, and the one in use.
 var profiles := LanguageModelProfiles.new()
@@ -433,6 +438,11 @@ func set_max_fps(fps: int) -> void:
 	max_fps_changed.emit(max_fps)
 
 
+func set_action_hint_shown(value: bool) -> void:
+	is_action_hint_shown = value
+	_save()
+
+
 ## A volume in percent, 0 to 100.
 func volume_percent(channel: StringName) -> int:
 	return _volumes[channel]
@@ -517,6 +527,12 @@ func _load_game_section(file: ConfigFile) -> void:
 			max_fps = _clamped_max_fps(value)
 		else:
 			push_warning("Ignoring frame rate limit in %s: not a whole number, 0 or more" % _path)
+	if file.has_section_key(GAME_SECTION, ACTION_HINT_KEY):
+		var value: Variant = file.get_value(GAME_SECTION, ACTION_HINT_KEY)
+		if value is bool:
+			is_action_hint_shown = value
+		else:
+			push_warning("Ignoring action hint in %s: not true or false" % _path)
 
 
 func _load_audio_section(file: ConfigFile) -> void:
@@ -626,6 +642,8 @@ func _save() -> void:
 		file.set_value(GAME_SECTION, AUTOSAVE_KEY, autosave_minutes)
 	if max_fps != DEFAULT_MAX_FPS:
 		file.set_value(GAME_SECTION, MAX_FPS_KEY, max_fps)
+	if is_action_hint_shown != DEFAULT_ACTION_HINT:
+		file.set_value(GAME_SECTION, ACTION_HINT_KEY, is_action_hint_shown)
 	for channel in VOLUME_CHANNELS:
 		if _volumes[channel] != DEFAULT_VOLUME:
 			file.set_value(AUDIO_SECTION, channel, _volumes[channel])

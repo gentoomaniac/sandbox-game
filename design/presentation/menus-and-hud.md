@@ -16,7 +16,10 @@ Decided 2026-11-05.
   - **Game:** UI scale (a slider from 0.5× to 2×, the UI only, not the world), the
     energy drain (Low, Normal, High), the day length variation (0–100 %) and "Autosave every"
     (10 to 60 minutes of play in steps of 10, default 10; task 145) and the frame rate limit
-    (10 to 240 in steps of 10, default 60, and a last stop "No limit" = vsync only; task 216).
+    (10 to 240 in steps of 10, default 60, and a last stop "No limit" = vsync only; task 216) and the
+    action hint, on by default (issue 3, task 233): a line over the hotbar naming what E and Use
+    will do on the target ("E: Open chest", "Use: Harvest"), asked from the rules that do it
+    (`Interaction.choice_at`, `ToolUse.use_at`), so it never differs; quiet with nothing to do.
   - **Audio:** Master, Effects and Ambience volume sliders, and "Sound in background"
     (off: the game is silent while its window is not focused).
   - Two keys of the Controls page work in play: **F9** quick save, **F8** quick load (task 145,

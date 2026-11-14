@@ -69,6 +69,7 @@ var _process_screen := ProcessScreen.new(_hotbar)
 var _console_view := ConsoleView.new()
 var _chat_screen := ChatScreen.new()
 var _npc_name_tag := NpcNameTag.new()
+var _action_hint := ActionHintView.new()
 var _cheat_hud := CheatHud.new()
 var _interior_view := InteriorView.new()
 var _object_cover := ObjectCover.new()
@@ -228,6 +229,7 @@ func _make_views() -> void:
 	_paths_hud.setup(_state.npcs, _state.player)
 	add_child(_paths_hud)
 	add_child(_npc_name_tag)
+	add_child(_action_hint)
 	add_child(_hotbar)
 	add_child(_build_menu)
 	add_child(_vitals)
@@ -508,12 +510,9 @@ func _process(delta: float) -> void:
 		and not _is_in_transition
 	)
 	# On horseback E gets off instead.
-	var can_chat := (
-		is_in_play
-		and not _build_mode.is_active()
-		and not _is_in_transition
-		and _state.player.horse == null
-	)
+	var can_act := is_in_play and not _build_mode.is_active() and not _is_in_transition
+	var can_chat := can_act and _state.player.horse == null
+	_action_hint.show_for(_state, _settings, _use_highlight.targeting().tile, can_act)
 	_tooltip_view.world_text = _world_text_under_mouse(is_in_play and not is_pointer_on_gui)
 	_tooltip_view.world_cursor = _mouse_in_ui_units()
 	_npc_name_tag.show_over(
