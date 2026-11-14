@@ -169,8 +169,13 @@ func tile_at(world_pos: Vector2i) -> Tile:
 ## is not loaded or the object is dormant (see `is_dormant`): a dormant plant is not there for
 ## anything that walks, builds, targets or draws.
 func object_at(world_pos: Vector2i) -> WorldObject:
+	return object_on(world_pos, clock.day)
+
+
+## Like `object_at`, as it is on the day `day`: which plants are dormant depends on it.
+func object_on(world_pos: Vector2i, day: int) -> WorldObject:
 	var object := _stored_object_at(world_pos)
-	return null if object != null and is_dormant(object) else object
+	return null if object != null and is_dormant_on(object, day) else object
 
 
 ## Whether a hit object was taken down: its tile no longer holds it (the finishing hit
@@ -184,9 +189,14 @@ func is_gone(object: WorldObject) -> bool:
 ## type and its own threshold. The one rule that the view, walking, building and targeting
 ## share. Nothing about it is saved.
 func is_dormant(object: WorldObject) -> bool:
+	return is_dormant_on(object, clock.day)
+
+
+## Like `is_dormant`, on the day `day` instead of the clock's.
+func is_dormant_on(object: WorldObject, day: int) -> bool:
 	return (
 		object.type_data().get("seasonal") == WorldObjectTypes.DORMANCY
-		and not vegetation.is_present(object.type, world_seed, object.pos, clock.day)
+		and not vegetation.is_present(object.type, world_seed, object.pos, day)
 	)
 
 
@@ -486,11 +496,16 @@ func _emit_objects_changed(object: WorldObject) -> void:
 
 ## Whether a tile is tidal mud under the water of the tide right now.
 func is_flooded(world_pos: Vector2i) -> bool:
+	return is_flooded_at(world_pos, clock.total_minutes())
+
+
+## Like `is_flooded`, at the game minute `minutes` (see `GameClock.total_minutes`).
+func is_flooded_at(world_pos: Vector2i, minutes: int) -> bool:
 	var tile := tile_at(world_pos)
 	return (
 		tile != null
 		and tile.terrain == Tile.Terrain.MUD
-		and Tide.floods(world_pos, Tide.level(clock.total_minutes()))
+		and Tide.floods(world_pos, Tide.level(minutes))
 	)
 
 
@@ -503,7 +518,27 @@ func is_wadeable(world_pos: Vector2i) -> bool:
 ## Tile rules, and buildings: only their door can be walked on (none on one with no inside). Flooded
 ## mud can't be walked on, like the sea. This is the one place that says so: wading is to come.
 func is_ground_walkable(world_pos: Vector2i) -> bool:
-	if not super(world_pos) or is_flooded(world_pos):
+	return _is_ground_walkable_at(world_pos, clock.total_minutes())
+
+
+## `GameMap.is_walkable` as it is at the game minute `minutes`: the tide and the plants of the
+## season are those of that time, not the clock's. A villager's search uses it for the time it
+## expects to be there (see TravelView).
+func is_walkable_at(world_pos: Vector2i, minutes: int) -> bool:
+	var object := object_on(world_pos, GameClock.day_of(minutes))
+	if object != null and object.type_data().get("deck", false):
+		return true
+	if not _is_ground_walkable_at(world_pos, minutes):
+		return false
+	return object == null or not object.blocks_walking()
+
+
+func is_walkable(world_pos: Vector2i) -> bool:
+	return is_walkable_at(world_pos, clock.total_minutes())
+
+
+func _is_ground_walkable_at(world_pos: Vector2i, minutes: int) -> bool:
+	if not super.is_ground_walkable(world_pos) or is_flooded_at(world_pos, minutes):
 		return false
 	var building := building_at(world_pos)
 	return building == null or (building.door_tile() == world_pos and building.has_inside())

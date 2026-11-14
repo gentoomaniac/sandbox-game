@@ -31,6 +31,11 @@ func total_minutes() -> int:
 	return (day - 1) * MINUTES_PER_DAY + minute_of_day
 
 
+## The day that the game minute `minutes` (see `total_minutes`) falls on.
+static func day_of(minutes: int) -> int:
+	return minutes / MINUTES_PER_DAY + 1
+
+
 func advance(minutes: int) -> void:
 	assert(minutes >= 0, "Time only moves forward")
 	var total := minute_of_day + minutes
