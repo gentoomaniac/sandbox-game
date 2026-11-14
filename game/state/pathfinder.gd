@@ -9,18 +9,18 @@ extends RefCounted
 ## A search looks at this many tiles between two looks at the clock.
 const NODES_PER_CHECK := 16
 
-var _searches_per_frame: int
-var _usec_per_frame: int
+## What one tick may do: how many searches it works on, and for how many microseconds. Npcs
+## changes them with its rules.
+var searches_per_frame: int
+var usec_per_frame: int
 ## Gives the time in microseconds; the tests of the limits give their own.
 var _clock: Callable
 var _queue: Array[PathSearch] = []
 
 
-func _init(
-	searches_per_frame: int, usec_per_frame: int, clock := Callable(Time, "get_ticks_usec")
-) -> void:
-	_searches_per_frame = searches_per_frame
-	_usec_per_frame = usec_per_frame
+func _init(searches: int, usec: int, clock := Callable(Time, "get_ticks_usec")) -> void:
+	searches_per_frame = searches
+	usec_per_frame = usec
 	_clock = clock
 
 
@@ -42,11 +42,11 @@ func waiting() -> int:
 func tick() -> void:
 	var started: int = _clock.call()
 	var searches_worked := 0
-	while searches_worked < _searches_per_frame and not _queue.is_empty():
+	while searches_worked < searches_per_frame and not _queue.is_empty():
 		var search := _queue[0]
 		searches_worked += 1
 		while search.state == PathSearch.State.RUNNING:
-			if _clock.call() - started >= _usec_per_frame:
+			if _clock.call() - started >= usec_per_frame:
 				return
 			search.step(NODES_PER_CHECK)
 		_queue.pop_front()

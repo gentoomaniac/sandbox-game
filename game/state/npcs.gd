@@ -39,21 +39,24 @@ const STROLL_REACH := 0.8
 ## A villager found on a building looks this many tiles around for a free tile.
 const STEP_OFF_REACH := 8.0
 
-var rules := NpcRules.default_rules()
+## The numbers; the travelling (NpcTravel) follows a change of them.
+var rules := NpcRules.default_rules():
+	set(value):
+		rules = value
+		_travel.rules = value
 ## The villagers written by hand (see `spawn_villager`).
 var villagers := VillagerRules.default_rules()
 var rng := RandomNumberGenerator.new()
 var _sun: Sun
-var _villager_step := PathRules.default_rules().villager_step()
 var _npcs: Array[Npc] = []
 var _travel: NpcTravel
 
 
 ## `sun` gives the times of sunrise and sunset that the villagers rest by.
-func _init(sun: Sun) -> void:
+func _init(sun: Sun, clock := Callable(Time, "get_ticks_usec")) -> void:
 	_sun = sun
 	rng.randomize()
-	_travel = NpcTravel.new(rules)
+	_travel = NpcTravel.new(rules, clock)
 	_travel.arrived.connect(_on_trip_arrived)
 	_travel.blocked.connect(trip_blocked.emit)
 
@@ -146,6 +149,24 @@ static func anchor_near(feet: Vector2, world: World, search: float) -> Vector2:
 			anchor = point
 			nearest = point.distance_to(feet)
 	return anchor
+
+
+## Whether a step from `from` to `feet` would bring a villager closer to the player than
+## `personal_space`: it stops short instead.
+static func is_crowding_player(
+	from: Vector2, feet: Vector2, player_feet: Vector2, personal_space: float
+) -> bool:
+	var new_distance := feet.distance_to(player_feet)
+	return new_distance < personal_space and new_distance < from.distance_to(player_feet)
+
+
+## A step onto `feet` from the tile `from_tile` wears the grass of the new tile towards a desire
+## path (see PathRules `villager_step`).
+static func wear_step(map: GameMap, feet: Vector2, from_tile: Vector2i) -> void:
+	var step := PathRules.default_rules().villager_step()
+	var feet_tile := Vector2i(feet.floor())
+	if feet_tile != from_tile and map is World and step > 0.0:
+		(map as World).wear_tile(feet_tile, step)
 
 
 ## Whether a villager fits with their feet at `feet`: as the player does (see
@@ -358,21 +379,17 @@ func _walk(npc: Npc, delta: float, map: GameMap, player_feet: Vector2) -> bool:
 	var radius := rules.behaviour("anchor_radius")
 	var personal_space := rules.behaviour("personal_space")
 	var anchor_distance := npc.position.distance_to(npc.anchor)
-	var player_distance := npc.position.distance_to(player_feet)
 	for steps: int in TURN_STEPS:
 		var way := npc.heading.rotated(steps * TURN)
 		var feet := npc.position + way * rules.behaviour("walk_speed") * delta
 		var new_anchor_distance := feet.distance_to(npc.anchor)
 		if new_anchor_distance > radius and new_anchor_distance >= anchor_distance:
 			continue
-		var new_player_distance := feet.distance_to(player_feet)
-		if new_player_distance < personal_space and new_player_distance < player_distance:
+		if is_crowding_player(npc.position, feet, player_feet, personal_space):
 			return false
 		if not _fits(npc, feet, map):
 			continue
-		var feet_tile := Vector2i(feet.floor())
-		if feet_tile != npc.tile() and map is World and _villager_step > 0.0:
-			(map as World).wear_tile(feet_tile, _villager_step)
+		wear_step(map, feet, npc.tile())
 		npc.position = feet
 		npc.heading = way
 		npc.facing = Npc.facing_of(way)

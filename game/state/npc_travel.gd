@@ -11,16 +11,18 @@ signal arrived(npc: Npc)
 ## No way was found (once for a trip, however often it looks again).
 signal blocked(npc: Npc, reason: NpcTrip.Block)
 
-var _rules: NpcRules
+## The numbers; Npcs hands on a change of them.
+var rules: NpcRules:
+	set(value):
+		rules = value
+		_pathfinder.searches_per_frame = int(value.travel("searches_per_frame"))
+		_pathfinder.usec_per_frame = int(value.travel("search_usec_per_frame"))
 var _pathfinder: Pathfinder
-var _villager_step := PathRules.default_rules().villager_step()
 
 
-func _init(rules: NpcRules, clock := Callable(Time, "get_ticks_usec")) -> void:
-	_rules = rules
-	_pathfinder = Pathfinder.new(
-		int(rules.travel("searches_per_frame")), int(rules.travel("search_usec_per_frame")), clock
-	)
+func _init(npc_rules: NpcRules, clock: Callable) -> void:
+	_pathfinder = Pathfinder.new(0, 0, clock)
+	rules = npc_rules
 
 
 ## Gives the searches their time for one frame.
@@ -79,8 +81,8 @@ func _begin_search(npc: Npc) -> void:
 		trip.goal,
 		is_free,
 		_cost_of(map),
-		int(_rules.travel("max_nodes")),
-		_rules.travel("heuristic_weight")
+		int(rules.travel("max_nodes")),
+		rules.travel("heuristic_weight")
 	)
 	trip.searches += 1
 	trip.state = NpcTrip.State.SEARCHING
@@ -121,9 +123,9 @@ func _block_not_loaded(npc: Npc) -> void:
 ## to what others have walked. Later ground (mud, roads) is weighed here.
 func _cost_of(map: GameMap) -> Callable:
 	var world := map as World
-	var cost_trodden := _rules.travel("cost_trodden")
-	var cost_path := _rules.travel("cost_path")
-	var cost_object := _rules.travel("cost_object")
+	var cost_trodden := rules.travel("cost_trodden")
+	var cost_path := rules.travel("cost_path")
+	var cost_object := rules.travel("cost_object")
 	return func(tile: Vector2i) -> float:
 		var cost := 1.0
 		if world != null:
@@ -132,9 +134,18 @@ func _cost_of(map: GameMap) -> Callable:
 					cost = cost_trodden
 				PathRules.Stage.PATH:
 					cost = cost_path
-		if map.object_at(tile) != null:
+		var object := map.object_at(tile)
+		if object != null and NpcTravel.is_trampled(object):
 			cost += cost_object
 		return cost
+
+
+## Whether walking over an object spoils it (a crop, a flower), as against a deck or a gate, which
+## are made to be walked on. Static: the cost function a search keeps must not hold the NpcTravel
+## that holds the search (a cycle that leaks).
+static func is_trampled(object: WorldObject) -> bool:
+	var type := object.type_data()
+	return not type.get("deck", false) and not type.has("connects")
 
 
 func _take_search_result(npc: Npc) -> void:
@@ -148,7 +159,7 @@ func _take_search_result(npc: Npc) -> void:
 			_walk_path(npc, search.path, false)
 		PathSearch.State.LEG:
 			trip.legs += 1
-			if trip.legs > int(_rules.travel("max_legs")):
+			if trip.legs > int(rules.travel("max_legs")):
 				_block(npc, NpcTrip.Block.NO_WAY)
 			else:
 				_walk_path(npc, search.path, true)
@@ -160,11 +171,11 @@ func _take_search_result(npc: Npc) -> void:
 ## search (not sooner than `blocked_min_seconds` after it), or a long time has passed, for what
 ## changes without an edit, such as the tide.
 func _has_cause_to_look_again(trip: NpcTrip) -> bool:
-	if trip.seconds_since_search >= _rules.travel("blocked_fallback_seconds"):
+	if trip.seconds_since_search >= rules.travel("blocked_fallback_seconds"):
 		return true
 	return (
 		trip.map.change_count != trip.change_count_at_search
-		and trip.seconds_since_search >= _rules.travel("blocked_min_seconds")
+		and trip.seconds_since_search >= rules.travel("blocked_min_seconds")
 	)
 
 
@@ -212,16 +223,11 @@ func _walk(npc: Npc, delta: float, player_feet: Vector2, fits: Callable) -> void
 		return
 	var target := Vector2(trip.path[trip.next_index]) + Vector2(0.5, 0.5)
 	var to_target := target - npc.position
-	var reach := _rules.behaviour("walk_speed") * delta
+	var reach := rules.behaviour("walk_speed") * delta
 	var feet := (
 		target if to_target.length() <= reach else npc.position + to_target.normalized() * reach
 	)
-	var player_distance := npc.position.distance_to(player_feet)
-	var new_player_distance := feet.distance_to(player_feet)
-	if (
-		new_player_distance < _rules.behaviour("personal_space")
-		and new_player_distance < player_distance
-	):
+	if Npcs.is_crowding_player(npc.position, feet, player_feet, rules.behaviour("personal_space")):
 		trip.state = NpcTrip.State.WAITING
 		npc.activity = Npc.Activity.IDLE
 		return
@@ -230,9 +236,7 @@ func _walk(npc: Npc, delta: float, player_feet: Vector2, fits: Callable) -> void
 		return
 	trip.state = NpcTrip.State.WALKING
 	trip.stuck_seconds = 0.0
-	var feet_tile := Vector2i(feet.floor())
-	if feet_tile != npc.tile() and trip.map is World and _villager_step > 0.0:
-		(trip.map as World).wear_tile(feet_tile, _villager_step)
+	Npcs.wear_step(trip.map, feet, npc.tile())
 	npc.position = feet
 	if not to_target.is_zero_approx():
 		npc.facing = Npc.facing_of(to_target)
@@ -251,11 +255,11 @@ func _be_stuck(npc: Npc, delta: float) -> void:
 	var trip := npc.trip
 	npc.activity = Npc.Activity.IDLE
 	trip.stuck_seconds += delta
-	if trip.stuck_seconds <= _rules.travel("blocked_give_up_seconds"):
+	if trip.stuck_seconds <= rules.travel("blocked_give_up_seconds"):
 		return
 	trip.stuck_seconds = 0.0
 	trip.retries += 1
-	if trip.retries > int(_rules.travel("retries")):
+	if trip.retries > int(rules.travel("retries")):
 		_block(npc, NpcTrip.Block.STUCK)
 		return
 	trip.legs = 0
