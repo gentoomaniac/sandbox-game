@@ -115,7 +115,7 @@ bush](../docs/screenshots/bush-replanted-classic.png).
 
 ### Giving a house to a villager
 
-1. With the hammer in hand, middle click a building. A window names it and says who lives there.
+1. With the hammer in hand, middle click a building. A window names it and says who lives there (the box that shows by the mouse over any building says that too, and who works there).
 2. Its buttons list the villagers within about 24 tiles, the nearest first: "Give to Antje Boysen"
    (or "Move Antje Boysen in" if she has a home), then "Antje Boysen works here" for each. Pick one.
    Close or Escape leaves things as they are.

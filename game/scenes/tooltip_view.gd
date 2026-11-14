@@ -4,6 +4,8 @@ extends CanvasLayer
 ## with a tooltip for a moment. Controls get theirs with `TooltipView.set_text`; this watches
 ## which control is under the mouse. It hides when the mouse leaves, on any click (so while
 ## dragging), and when the control goes away (its screen closes). Above every other UI layer.
+## Over no control, it shows `world_text` instead, at once and for as long as it is set: what the
+## mouse points at in the world (Main sets it each frame).
 
 const THEME := preload("res://game/scenes/ui_theme.tres")
 const DELAY_SECONDS := 0.4
@@ -14,6 +16,11 @@ const TEXT_META := &"tooltip_text"
 const ID_META := &"tooltip_id"
 ## Every control that has a tooltip, so a debug flag can find one by its id.
 const GROUP := &"tooltip_controls"
+
+## What the mouse points at in the world, or "" for nothing, and where the mouse is (in UI units;
+## it is the debug flag's tile when `--mouse-tile` pretends it).
+var world_text := ""
+var world_cursor := Vector2.ZERO
 
 var _panel := PanelContainer.new()
 var _label := Label.new()
@@ -72,6 +79,9 @@ func _process(delta: float) -> void:
 		_hovered = hovered
 		_hover_seconds = 0.0
 		_is_suppressed = false
+	if hovered == null and world_text != "":
+		_show(world_text, world_cursor)
+		return
 	var text := _text_of(hovered)
 	if text == "" or _is_suppressed:
 		_panel.visible = false

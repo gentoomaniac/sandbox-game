@@ -317,6 +317,30 @@ func _connect_state_and_views() -> void:
 	_saves.finished.connect(_show_save_result)
 
 
+## Who lives and works in the building the mouse is over (see Households `occupants_text`), or ""
+## when it is over none, in a window or indoors, or the player is placing a building.
+func _building_text_under_mouse(is_pointer_on_world: bool) -> String:
+	var targeting := _use_highlight.targeting()
+	if (
+		not is_pointer_on_world
+		or targeting.source != Targeting.Source.MOUSE
+		or _state.is_inside()
+		or _builder.is_building()
+	):
+		return ""
+	var building := _state.world.building_at(targeting.tile)
+	return "" if building == null else _state.homes.occupants_text(building)
+
+
+## Where the mouse is, in UI units; with `--mouse-tile`, the middle of that tile.
+func _mouse_in_ui_units() -> Vector2:
+	if _options.mouse_tile == StartupOptions.NO_TILE:
+		return get_viewport().get_mouse_position()
+	return _camera.world_to_ui(
+		(Vector2(_options.mouse_tile) + Vector2(0.5, 0.5)) * TerrainTileset.TILE_SIZE
+	)
+
+
 ## Time passed without being played (a sleep, passing out, the console's skip): the ambient
 ## animals and the weather show the new time at once.
 func _on_time_skipped(_minutes: int) -> void:
@@ -478,6 +502,8 @@ func _process(delta: float) -> void:
 		and not _is_in_transition
 		and _state.player.horse == null
 	)
+	_tooltip_view.world_text = _building_text_under_mouse(is_in_play and not is_pointer_on_gui)
+	_tooltip_view.world_cursor = _mouse_in_ui_units()
 	_npc_name_tag.show_over(
 		Interaction.npc_to_chat(_state, _use_highlight.targeting().tile) if can_chat else null,
 		_camera

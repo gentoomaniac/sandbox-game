@@ -36,6 +36,10 @@ to where they came), stroll about by day and stand still at night. You walk thro
   stand at its door (or inside) and type `home antje here`; `work antje here` sends her to work
   there instead. `home antje none` frees her. The hammer's menu on a house does the same: middle
   click it (see [building-and-crafting.md](building-and-crafting.md)).
+- Rest the mouse on a building, in or out of build mode, and a small box by it names it, who
+  lives there (and how many of its places are taken) and who works there. It goes away when the
+  mouse leaves the building or a window opens. The middle click is still how you give a house or
+  a workplace.
 - The place of a deed in the gossip ("by Antje's house") is the home of the villager who lives
   nearest to it.
 
