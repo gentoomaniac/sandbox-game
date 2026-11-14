@@ -29,6 +29,9 @@ const SAMPLES_PER_SIDE := 4
 const MAX_KEPT_TILES := 50000
 
 static var _flood_heights: Dictionary[Vector2i, float] = {}
+## Searches on worker threads ask `flood_height` too (through the travel masks), so the kept heights
+## are not touched by two threads at once.
+static var _flood_lock := Mutex.new()
 
 
 ## How high the water stands at a moment of the game clock (`GameClock.total_minutes`): 1 at
@@ -63,19 +66,25 @@ static func floods(tile: Vector2i, tide_level: float) -> bool:
 ## one of the heights of the relief at a grid of points over it. Kept, as the relief is fixed and
 ## the animals ask at every step.
 static func flood_height(tile: Vector2i) -> float:
-	if _flood_heights.has(tile):
-		return _flood_heights[tile]
+	_flood_lock.lock()
+	var kept: Variant = _flood_heights.get(tile)
+	_flood_lock.unlock()
+	if kept != null:
+		return kept
 	var heights: Array[float] = []
 	for y in SAMPLES_PER_SIDE:
 		for x in SAMPLES_PER_SIDE:
 			var offset := (Vector2(x, y) + Vector2(0.5, 0.5)) / SAMPLES_PER_SIDE
 			heights.append(relief_at((Vector2(tile) + offset) * WildlifeRules.TILE_SIZE))
 	heights.sort()
+	@warning_ignore("integer_division")
+	var height := heights[heights.size() / 2]
+	_flood_lock.lock()
 	if _flood_heights.size() >= MAX_KEPT_TILES:
 		_flood_heights.clear()
-	@warning_ignore("integer_division")
-	_flood_heights[tile] = heights[heights.size() / 2]
-	return _flood_heights[tile]
+	_flood_heights[tile] = height
+	_flood_lock.unlock()
+	return height
 
 
 # A value from 0 to 1 for a corner of the relief's grid, from whole numbers.

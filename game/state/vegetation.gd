@@ -43,6 +43,9 @@ var _problems: Array[String] = []
 ## {kind: [day, density]} of the last `density` call for each kind: the view asks for the same
 ## day thousands of times in a row.
 var _last_density := {}
+## `density` is asked from worker threads too (a search over the travel masks asks which plants
+## show), so the last answers are not touched by two threads at once.
+var _lock := Mutex.new()
 
 
 ## The curves of the data file, loaded the first time they are asked for.
@@ -84,11 +87,15 @@ func is_valid() -> bool:
 
 ## The density of a kind on a game day, in 0..1.
 func density(kind: StringName, day: int) -> float:
+	_lock.lock()
 	var last: Array = _last_density.get(kind, [])
+	_lock.unlock()
 	if not last.is_empty() and last[0] == day:
 		return last[1]
 	var density := _density_on(_curves[kind], day)
+	_lock.lock()
 	_last_density[kind] = [day, density]
+	_lock.unlock()
 	return density
 
 
