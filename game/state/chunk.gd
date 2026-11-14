@@ -25,6 +25,16 @@ func _init(chunk_coords: Vector2i, terrain := Tile.Terrain.GRASS) -> void:
 	_frozen.resize(tile_count)
 
 
+## A chunk of its own with the same tiles and objects, which can be changed without changing this
+## one. The objects themselves are shared.
+func copy() -> Chunk:
+	var other := Chunk.new(coords)
+	other._terrain = _terrain.duplicate()
+	other._frozen = _frozen.duplicate()
+	other._objects = _objects.duplicate()
+	return other
+
+
 ## Chunk coordinates of the chunk containing a world tile position. Floors, so negative
 ## positions work.
 static func world_to_chunk(world_pos: Vector2i) -> Vector2i:

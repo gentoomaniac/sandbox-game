@@ -28,7 +28,8 @@ as it is entered, not over the whole path in advance. No collisions, near or far
 
 - `World` keeps the edits of unloaded chunks (`_terrain_edits`, `_object_edits`), the buildings
   (`_building_by_tile`) and the wear (`_wear`), all by tile. `add_chunk` replays the edits on a
-  freshly generated chunk. Night upkeep edits unloaded chunks too (crops, fallow soil grown over).
+  freshly generated chunk (`World.replay_edits`, which works on any chunk, loaded or not; `Chunk.copy`
+  makes the copy to replay them on). Night upkeep edits unloaded chunks too (crops, fallow soil grown over).
 - Per tile, the generator is dear: `terrain_at` and `object_type_at` take 9.6 us a tile. A faithful
   far `object_at` has to look back over `MAX_FOOTPRINT` (7 x 2, 14 origins), as `_stored_object_at`
   does: 160 us a tile. `_type_standing_at` answers for the tile's own origin only. So there is no

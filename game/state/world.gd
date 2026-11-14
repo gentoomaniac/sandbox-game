@@ -22,6 +22,9 @@ signal building_placed(building: Building)
 signal building_removed(building: Building)
 ## The player rang a bell frame (see GameState `ring_bell_in_reach`).
 signal bell_rung(building: Building)
+## The terrain or an object of this chunk was edited, loaded or not (`_edit_terrain`,
+## `_edit_object`: every change of the map's terrain and objects goes through them).
+signal edited(chunk_coords: Vector2i)
 ## Why a footprint tile can't be built on.
 enum Blocked {
 	## Water, wetland or floodplain, or the tile is not loaded.
@@ -118,6 +121,14 @@ func add_chunk(chunk: Chunk) -> void:
 	assert(is_chunk_in_bounds(chunk.coords), "Chunk out of bounds: %s" % chunk.coords)
 	_chunks[chunk.coords] = chunk
 	change_count += 1
+	replay_edits(chunk)
+
+
+## Applies the edits within the area of a freshly generated chunk to it: the terrain first, as
+## objects may depend on the ground, then the objects (a removed one is gone, an edited one
+## stands in the place of the generated one). The chunk need not be loaded: whoever reads a chunk
+## that is not (see TravelMasks) replays them on a copy.
+func replay_edits(chunk: Chunk) -> void:
 	for pos: Vector2i in _terrain_edit_positions_by_chunk.get(chunk.coords, {}):
 		chunk.set_terrain(Chunk.local_pos(pos), _terrain_edits[pos])
 	for pos: Vector2i in _object_edit_positions_by_chunk.get(chunk.coords, {}):
@@ -799,6 +810,7 @@ func tilled_tiles_in_chunk(chunk_coords: Vector2i) -> Array[Vector2i]:
 func _edit_terrain(world_pos: Vector2i, terrain: Tile.Terrain) -> void:
 	_terrain_edits[world_pos] = terrain
 	_note_edited(_terrain_edit_positions_by_chunk, world_pos)
+	edited.emit(Chunk.world_to_chunk(world_pos))
 
 
 ## `object` is null where the generated object was removed.
@@ -817,6 +829,7 @@ func _edit_object(world_pos: Vector2i, object: WorldObject) -> void:
 	else:
 		_campfire_positions.erase(world_pos)
 	_note_edited(_object_edit_positions_by_chunk, world_pos)
+	edited.emit(Chunk.world_to_chunk(world_pos))
 
 
 func _note_edited(
