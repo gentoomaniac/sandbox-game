@@ -17,6 +17,7 @@ var rules: NpcRules:
 		rules = value
 		_pathfinder.searches_per_frame = int(value.travel("searches_per_frame"))
 		_pathfinder.usec_per_frame = int(value.travel("search_usec_per_frame"))
+		_pathfinder.far_every_ticks = int(value.travel("far_every_frames"))
 var _pathfinder: Pathfinder
 ## What a villager's feet need to know of the world where it is not loaded, made when the first
 ## search over a world asks for it.

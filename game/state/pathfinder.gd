@@ -17,10 +17,14 @@ const NODES_PER_CHECK := 16
 ## changes them with its rules.
 var searches_per_frame: int
 var usec_per_frame: int
+## The far queue is worked in one tick of this many (1: in every tick), so that far searches, which
+## are many and in no hurry, take a smaller share of the frames.
+var far_every_ticks := 1
 ## Gives the time in microseconds; the tests of the limits give their own.
 var _clock: Callable
 var _near_queue: Array[PathSearch] = []
 var _far_queue: Array[PathSearch] = []
+var _ticks := 0
 
 
 func _init(searches: int, usec: int, clock := Callable(Time, "get_ticks_usec")) -> void:
@@ -47,7 +51,10 @@ func waiting() -> int:
 ## Works the queues for one frame.
 func tick() -> void:
 	var started: int = _clock.call()
-	var far_worked := _work(_far_queue, 1, started + usec_per_frame / 2)
+	_ticks += 1
+	var far_worked := 0
+	if _ticks % far_every_ticks == 0:
+		far_worked = _work(_far_queue, 1, started + usec_per_frame / 2)
 	# One near search always gets its turn, however small the limit.
 	_work(_near_queue, maxi(searches_per_frame - far_worked, 1), started + usec_per_frame)
 

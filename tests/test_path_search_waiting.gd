@@ -150,3 +150,21 @@ func test_a_dropped_far_search_is_never_looked_at() -> void:
 	pathfinder.tick()
 	assert_eq(far.nodes_looked_at, 0)
 	assert_eq(pathfinder.waiting(), 0)
+
+
+func test_the_far_queue_is_worked_in_one_tick_of_the_number_given() -> void:
+	var pathfinder := _pathfinder()
+	pathfinder.far_every_ticks = 3
+	var far := _open_search(50000)
+	pathfinder.queue(far, true)
+	var looked_at: Array[int] = []
+	for _tick in 6:
+		_now = 0
+		pathfinder.tick()
+		looked_at.append(far.nodes_looked_at)
+	assert_eq(looked_at[0], 0)
+	assert_eq(looked_at[1], 0)
+	assert_gt(looked_at[2], 0, "the third tick")
+	assert_eq(looked_at[3], looked_at[2])
+	assert_eq(looked_at[4], looked_at[2])
+	assert_gt(looked_at[5], looked_at[2], "the sixth")
