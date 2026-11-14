@@ -1,10 +1,13 @@
 # The console
 
-A console for testing and cheats.
+Cheats and test commands, all of them.
 
-Press `/` to open a console for testing and cheats. Tab completes commands and their arguments. The
-log scrolls with the mouse wheel and its bar, and with Page Up and Page Down; it keeps the newest
-500 lines and follows new output unless you scrolled up to read.
+- Press `/` to open the console.
+- Tab completes commands and their arguments.
+- Scroll the log with the mouse wheel, its bar, or Page Up and Page Down.
+- The log keeps the newest 500 lines and follows new output unless you scrolled up.
+- Not everything is in the game yet: some things, like animals and better tools, can only be
+  reached from here for now.
 
 | Command | What it does |
 |---|---|
