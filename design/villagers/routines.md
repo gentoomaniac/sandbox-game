@@ -91,8 +91,10 @@ there to walk on. There is no lane terrain yet: the cheap tiles are the worn gra
   of leg ends is needed. A new chain (after STUCK or a blocked retry) starts again from none;
   `max_legs` (6) bounds each chain, for a way that gains a tile at a time. Test: a goal behind a
   wall longer than the cap is found to have no way within 2 legs.
-- **Throughput:** at 1.5 ms a frame and 15 to 25 us a node (a guess, measured in step 1) about 70 to
-  100 nodes are searched a frame, so a 1000-node search takes 10 to 15 frames and 155 villagers
+- **Throughput:** measured in step 1 (`tools/bench/path_search.gd`, 100 searches over the real chunks
+  of seed 7, on a busy machine): 26 us a node. At 1.5 ms a frame about 55 nodes are searched, so a
+  1000-node search takes some 18 frames (0.3 s), one that uses the whole cap of 4000 about 70 frames
+  (1.2 s), and 155 villagers
   who all leave at the same minute wait many seconds. A wait of some seconds is fine (they stand).
   Task 239 spreads the hours: each villager's routine is shifted by a fixed offset of a few minutes.
 - **Paths are kept.** The path is an `Array[Vector2i]` on the trip; each next tile is checked when

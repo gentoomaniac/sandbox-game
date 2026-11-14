@@ -149,6 +149,12 @@ in summer, at wet meadows and at a village it builds in a new world, with the pl
 a circle, or the time skipped every hour: `godot --headless --path . -s tools/bench/storks.gd`
 (`-- --seed=<n>`; set `XDG_DATA_HOME` away from the real one).
 
+`tools/bench/path_search.gd` (task 238; no make target, it needs no save and writes nothing) times
+`PathSearch` for each tile it looks at, over the real chunks around a new game's start, with the
+villagers' step rule: `godot --headless --path . -s tools/bench/path_search.gd` (`-- --seed=<n>`; set
+`XDG_DATA_HOME` away from the real one). It sets `max_nodes` and the budget of a frame in `[travel]`
+of `data/npcs.cfg`.
+
 `make weather-probe` (`weather_probe.gd`, with the sampling of `tests/weather_year.gd`) samples a
 year of weather hourly at tile 0,0 for seeds 1, 12345 and 987654 and prints, per seed, the share of
 wet hours (rain or snow over 0.05 in an hour), the longest wet spell, the wet hours, the snow days

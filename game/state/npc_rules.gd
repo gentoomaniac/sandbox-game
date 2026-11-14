@@ -25,6 +25,7 @@ const BEHAVIOUR_KEYS: Array[String] = [
 	"rest_minutes_after_sunset",
 	"up_minutes_after_sunrise",
 ]
+const TRAVEL_KEYS: Array[String] = ["max_nodes", "heuristic_weight"]
 ## The lists every villager draws from, and those drawn by sex.
 const EVERYONE_KEYS: Array[String] = ["skins", "hair_colours", "feet", "surnames"]
 const SEX_KEYS: Array[String] = [
@@ -83,6 +84,11 @@ func problems() -> Array[String]:
 	for key in BEHAVIOUR_KEYS:
 		if not _values.get("behaviour", {}).has(key):
 			found.append("[behaviour] no %s" % key)
+	for key in TRAVEL_KEYS:
+		if not _values.get("travel", {}).has(key):
+			found.append("[travel] no %s" % key)
+		elif float(_values["travel"][key]) <= 0.0:
+			found.append("[travel] %s must be above 0" % key)
 	var lists := {"everyone": EVERYONE_KEYS, "background": BACKGROUND_KEYS}
 	for sex in SEXES:
 		lists[str(sex)] = SEX_KEYS
@@ -117,6 +123,11 @@ func is_valid() -> bool:
 ## A number of [behaviour].
 func behaviour(key: String) -> float:
 	return float(_values["behaviour"][key])
+
+
+## A number of [travel].
+func travel(key: String) -> float:
+	return float(_values["travel"][key])
 
 
 ## A time drawn between the shortest and the longest of a [behaviour] range, such as
