@@ -18,6 +18,10 @@ var rules: NpcRules:
 		_pathfinder.searches_per_frame = int(value.travel("searches_per_frame"))
 		_pathfinder.usec_per_frame = int(value.travel("search_usec_per_frame"))
 var _pathfinder: Pathfinder
+## What a villager's feet need to know of the world where it is not loaded, made when the first
+## search over a world asks for it.
+var _masks: TravelMasks
+var _masks_world: World
 
 
 func _init(npc_rules: NpcRules, clock: Callable) -> void:
@@ -25,8 +29,10 @@ func _init(npc_rules: NpcRules, clock: Callable) -> void:
 	rules = npc_rules
 
 
-## Gives the searches their time for one frame.
+## Gives the searches their time for one frame, and the masks theirs.
 func tick() -> void:
+	if _masks != null:
+		_masks.update()
 	_pathfinder.tick()
 
 
@@ -102,18 +108,21 @@ static func text_of(npc: Npc) -> String:
 func _begin_search(npc: Npc) -> void:
 	var trip := npc.trip
 	var map := trip.map
+	var world := map as World
+	assert(world != null, "A trip is over the tiles of a World")
 	if _is_not_loaded(npc, trip):
 		_block_not_loaded(npc)
 		return
-	var is_free := func(tile: Vector2i) -> bool:
-		return Npcs.can_stand_at(map, Vector2(tile) + Vector2(0.5, 0.5))
+	var view := TravelView.new(world, _masks_of(world), rules, world.clock.total_minutes())
+	trip.view = view
 	trip.search = PathSearch.new(
 		npc.tile(),
 		trip.goal,
-		is_free,
-		_cost_of(map),
+		view.is_free,
+		view.cost_of,
 		int(rules.travel("max_nodes")),
-		rules.travel("heuristic_weight")
+		rules.travel("heuristic_weight"),
+		view.is_known
 	)
 	trip.searches += 1
 	trip.state = NpcTrip.State.SEARCHING
@@ -121,6 +130,14 @@ func _begin_search(npc: Npc) -> void:
 	trip.change_count_at_search = map.change_count
 	_pathfinder.queue(trip.search)
 	npc.activity = Npc.Activity.IDLE
+
+
+## The masks of `world`, made again for another world.
+func _masks_of(world: World) -> TravelMasks:
+	if _masks_world != world:
+		_masks = TravelMasks.for_world(world, rules)
+		_masks_world = world
+	return _masks
 
 
 func _drop_search(trip: NpcTrip) -> void:
@@ -150,30 +167,8 @@ func _block_not_loaded(npc: Npc) -> void:
 	_block(npc, NpcTrip.Block.NOT_LOADED)
 
 
-## What stepping onto a tile costs: more for a crop, less for worn grass (the lanes), so they keep
-## to what others have walked. Later ground (mud, roads) is weighed here.
-func _cost_of(map: GameMap) -> Callable:
-	var world := map as World
-	var cost_trodden := rules.travel("cost_trodden")
-	var cost_path := rules.travel("cost_path")
-	var cost_object := rules.travel("cost_object")
-	return func(tile: Vector2i) -> float:
-		var cost := 1.0
-		if world != null:
-			match world.wear_stage(tile):
-				PathRules.Stage.TRODDEN:
-					cost = cost_trodden
-				PathRules.Stage.PATH:
-					cost = cost_path
-		var object := map.object_at(tile)
-		if object != null and NpcTravel.is_trampled(object):
-			cost += cost_object
-		return cost
-
-
 ## Whether walking over an object spoils it (a crop, a flower), as against a deck or a gate, which
-## are made to be walked on. Static: the cost function a search keeps must not hold the NpcTravel
-## that holds the search (a cycle that leaks).
+## are made to be walked on. Static, so that the masks and the TravelView need no NpcTravel to ask.
 static func is_trampled(object: WorldObject) -> bool:
 	var type := object.type_data()
 	return not type.get("deck", false) and not type.has("connects")

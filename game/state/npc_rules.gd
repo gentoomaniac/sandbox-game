@@ -38,6 +38,8 @@ const TRAVEL_KEYS: Array[String] = [
 	"retries",
 	"blocked_min_seconds",
 	"blocked_fallback_seconds",
+	"far_masks_kept",
+	"far_chunks_kept",
 ]
 ## The lists every villager draws from, and those drawn by sex.
 const EVERYONE_KEYS: Array[String] = ["skins", "hair_colours", "feet", "surnames"]

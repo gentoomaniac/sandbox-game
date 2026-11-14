@@ -17,8 +17,10 @@ var map: GameMap
 var goal: Vector2i
 var state := State.SEARCHING
 
-## The search that is looking for a way (see Pathfinder), until it is done.
+## The search that is looking for a way (see Pathfinder), until it is done, and what it sees of the
+## world. The search holds only the methods of the view, which would be gone without this.
 var search: PathSearch
+var view: TravelView
 ## The tiles to walk, and how many of them are reached. A way that ends short of the goal is a leg
 ## (`is_leg`): at its end a new search starts.
 var path: Array[Vector2i] = []

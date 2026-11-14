@@ -26,9 +26,12 @@ func before_each() -> void:
 	for y in range(-YARD_RADIUS - 1, YARD_RADIUS + 2):
 		for x in range(-YARD_RADIUS - 1, YARD_RADIUS + 2):
 			var tile := _middle + Vector2i(x, y)
+			# With the chunks W, N and NW of them, so that all of the yard is seen live (see TravelView)
+			# and no search waits for a mask.
 			var chunk := Chunk.world_to_chunk(tile)
-			if not _world.is_chunk_loaded(chunk):
-				_world.add_chunk(generator.generate_chunk(chunk))
+			for step in TravelView.LIVE_CHUNKS:
+				if not _world.is_chunk_loaded(chunk + step):
+					_world.add_chunk(generator.generate_chunk(chunk + step))
 			_world.remove_object(tile)
 			var is_inside := maxi(absi(x), absi(y)) <= YARD_RADIUS
 			_world.set_terrain(tile, Tile.Terrain.GRASS if is_inside else Tile.Terrain.WATER)
@@ -38,6 +41,9 @@ func before_each() -> void:
 	_state.player.position = Vector2(_middle) + Vector2(0.5, 40.5)
 	_npcs = _state.npcs
 	_npcs.rng.seed = SEED
+	# The time of `_step`, from the start: a search is made for the time it begins at.
+	_state.clock.day = DAY
+	_state.clock.minute_of_day = NOON
 
 
 func _yard_middle() -> Vector2:

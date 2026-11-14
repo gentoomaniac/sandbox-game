@@ -25,7 +25,7 @@ func before_each() -> void:
 
 func make_world(seed_value: int) -> void:
 	world = World.new(seed_value)
-	masks = TravelMasks.new(world)
+	masks = TravelMasks.for_world(world)
 	generator = WorldGenerator.new(seed_value)
 
 

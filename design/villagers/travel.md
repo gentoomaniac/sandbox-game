@@ -57,10 +57,11 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   read live, and any building tile, the door included, is closed to villagers (238's step rule). It
   answers `is_free(local, tide_level, day)`, `is_trampled(local, day)` and `wears(local)`; tide and
   day are the caller's, never the clock.
-- **`TravelMasks`** (one per `World`, to be held by `Npcs`; `game/state/travel_masks.gd`): an LRU of
-  masks (256, about 0.4 MB) and an LRU of raw chunks (16, about 5 MB). The two numbers are constants
-  and constructor arguments of `TravelMasks` for now; they become `far_chunks_kept` and its sister in
-  `[travel]` of data/npcs.cfg when `Npcs` takes the masks (step 2). A raw chunk is what the generator makes and
+- **`TravelMasks`** (one per `World`, held by `NpcTravel`, which makes it with its first search over
+  that world and calls `update` once a frame; `game/state/travel_masks.gd`): an LRU of masks (256,
+  about 0.4 MB) and an LRU of raw chunks (16, about 5 MB). The two numbers are `far_masks_kept` and
+  `far_chunks_kept` of `[travel]` in data/npcs.cfg (`TravelMasks.for_world(world, rules)`; the
+  constructor takes the numbers). A raw chunk is what the generator makes and
   nothing else: no edit is ever applied to it, so it never goes stale (the seed does not change).
   A mask of chunk C is stamped from the raw chunks C, W, N and NW (big objects reach east and south,
   `MAX_FOOTPRINT` 7 x 2 within 32 tiles), with the edits of those four chunks replayed on copies of them
@@ -95,8 +96,16 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   one's, as `World.is_flooded` reads `clock.total_minutes()` and `World.is_dormant` `clock.day`.
   `World` gets `is_flooded_at(pos, minutes)` and `is_dormant_on(object, day)`, which the old two
   call with the clock, and the live answer of the view is `can_stand_at`'s rule over those two
-  (`World.is_walkable_at(pos, minutes)`, with `is_walkable` calling it with the clock). A search
-  uses the time it starts at.
+  (`World.is_walkable_at(pos, minutes)`, with `is_walkable` calling it with the clock; `object_on(pos,
+  day)` is `object_at` for a day). A search uses the time it starts at, whole: the view has one
+  time, so no tile is asked "at the minute the search expects to enter it". That is step 3's: the
+  walker checks each tile in the view as it enters it, with the time of entry, and searches again
+  if the tide or the season has closed it. (A search is spread over a few frames and a path is some
+  minutes long, so the time of the start is a fair guess, and the walk is the check.) **Done:**
+  `TravelView` (`is_live`, `is_known`, `is_free`, `cost_of`) is the one view of `NpcTravel`'s searches
+  and holds the one cost rule (1.0, worn grass 0.8 and 0.6, +2.0 for an object that feet spoil); the
+  trip holds the view, as a search keeps only its methods. The liveness of a tile is asked as
+  `TravelView.LIVE_CHUNKS` of its chunk.
 - **`PathSearch`** learns one answer: WAITING, when a neighbour of the node it expands is not known.
   The node goes back into the heap unclosed and is expanded again from the start once the mask is
   there (expanding twice changes nothing: a neighbour already reached is only improved), so no

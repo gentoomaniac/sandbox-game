@@ -10,10 +10,6 @@ extends RefCounted
 ## stale: only the masks go. Stamping a mask takes about 2 ms and is done on the main thread, one
 ## in each `update`; as it reads the edits as it stamps, no mask is stamped stale.
 
-## How many masks and how many raw chunks are kept (the least recently used go first).
-const MASKS_KEPT := 256
-const RAW_CHUNKS_KEPT := 16
-
 var _world: World
 var _generator: WorldGenerator
 ## Both caches hold the one used last at the end: a dictionary keeps the order its keys came in.
@@ -28,7 +24,9 @@ var _task_id := -1
 var _generated: Chunk
 
 
-func _init(world: World, masks_kept := MASKS_KEPT, raw_chunks_kept := RAW_CHUNKS_KEPT) -> void:
+## `masks_kept` and `raw_chunks_kept` are how many masks and generated chunks are kept (the least
+## recently used go first); see `for_world`.
+func _init(world: World, masks_kept: int, raw_chunks_kept: int) -> void:
 	# A mask needs four raw chunks, which must stay until it is stamped.
 	assert(raw_chunks_kept >= 4, "Too few raw chunks kept for a mask")
 	_world = world
@@ -40,6 +38,13 @@ func _init(world: World, masks_kept := MASKS_KEPT, raw_chunks_kept := RAW_CHUNKS
 	LandscapeRules.default_rules()
 	WorldObjectTypes.TYPES.size()
 	world.edited.connect(_drop_masks_reached_by_edit)
+
+
+## The masks of `world`, as many kept as the rules say ([travel] of data/npcs.cfg).
+static func for_world(world: World, rules := NpcRules.default_rules()) -> TravelMasks:
+	return TravelMasks.new(
+		world, int(rules.travel("far_masks_kept")), int(rules.travel("far_chunks_kept"))
+	)
 
 
 func _notification(what: int) -> void:

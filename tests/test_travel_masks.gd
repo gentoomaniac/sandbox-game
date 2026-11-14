@@ -100,3 +100,14 @@ func test_the_least_recently_used_masks_and_chunks_go() -> void:
 	assert_false(masks.mask_coords().has(COAST + Vector2i.RIGHT), "unused")
 	assert_true(masks.mask_coords().has(COAST + Vector2i(2, 0)))
 	assert_eq(masks.raw_chunk_coords().size(), 4)
+
+
+func test_the_limits_are_the_rules_numbers() -> void:
+	var values := DataFile.read_sections(NpcRules.DEFAULT_PATH)
+	values["travel"]["far_masks_kept"] = 2
+	values["travel"]["far_chunks_kept"] = 4
+	masks = TravelMasks.for_world(world, NpcRules.new(values))
+	for x in 4:
+		masks.wait_for_mask(COAST + Vector2i(x, 0))
+	assert_eq(masks.mask_coords().size(), 2)
+	assert_eq(masks.raw_chunk_coords().size(), 4)

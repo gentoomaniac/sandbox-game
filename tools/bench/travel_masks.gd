@@ -43,7 +43,7 @@ func _bench(world_seed: int) -> void:
 		world.replay_edits(own)
 		TravelMask.new(own, neighbours, world.vegetation, world_seed)
 		stamping.append((Time.get_ticks_usec() - started) / 1000.0)
-	var masks := TravelMasks.new(world)
+	var masks := TravelMasks.for_world(world)
 	for chunk_coords in coords:
 		masks.mask_of(chunk_coords)
 	var updates: Array[float] = []
