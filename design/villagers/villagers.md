@@ -72,8 +72,10 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   building of its type, within `home_search` tiles (`data/npcs.cfg`). Where none stands (there is
   no village yet, task 234; the mill house is no building yet) they have none until given, and a
   spot has no place in the world until given. Made-up villagers have neither at first. The
-  player gives and moves them with the console (`home` and `work`) and the hammer's menu on a
-  house. A routine (task 239) asks the villager for their home's door (`house.door_tile()`) and
+  player gives and moves them with the console (`home` and `work`, `HomeCommands`) and the
+  hammer's menu on a house (middle click on it with the hammer in hand: `BuildMode` asks, `HouseMenu`
+  shows a `ChoiceDialog` of `Households.offers`: the villagers within `give_reach` tiles that the
+  house may hold, "Give to ..." or "Move ... in", then "... works here"). A routine (task 239) asks the villager for their home's door (`house.door_tile()`) and
   their workplace's spot (`Workplace.spot()`).
 - **Behaviour:** by day it stands about and strolls (at a third of the player's speed) only
   where its body fits on walkable tiles, and stops short of the player rather than walk into

@@ -34,7 +34,8 @@ to where they came), stroll about by day and stand still at night. You walk thro
   are homeless and keep near where it stood.
 - A house holds one household, as many as its kind has room for. Give one with the console:
   stand at its door (or inside) and type `home antje here`; `work antje here` sends her to work
-  there instead. `home antje none` frees her. The hammer's menu on a house will do the same.
+  there instead. `home antje none` frees her. The hammer's menu on a house does the same: middle
+  click it (see [building-and-crafting.md](building-and-crafting.md)).
 - The place of a deed in the gossip ("by Antje's house") is the home of the villager who lives
   nearest to it.
 

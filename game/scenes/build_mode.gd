@@ -6,6 +6,9 @@ extends Node2D
 ## building, the up and down arrows its style, a right click dismisses build mode. The land's
 ## rules are World's, the materials' Builder's.
 ##
+## The middle button on a building opens its menu (who lives there, and giving it to a villager
+## as a home or a workplace, see HouseMenu).
+##
 ## X switches to taking down: the building or placed thing under the mouse is marked red, the
 ## message says what taking it down gives, and holding Use for a second does it.
 ##
@@ -16,6 +19,8 @@ extends Node2D
 signal message_changed(text: String)
 ## A click or Use tried to place the building and could not.
 signal placement_refused
+## The middle button was pressed on a building: the player wants its menu (see HouseMenu).
+signal building_menu_requested(building: Building)
 
 const UNSAFE_LAND_MESSAGE := "This land doesn't look safe to build on."
 const OCCUPIED_MESSAGE := "Something is in the way."
@@ -97,6 +102,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("use") or event.is_action_pressed("use_click"):
 		if not is_pointer_on_gui:
 			_place()
+	elif _is_middle_click(event):
+		_request_building_menu()
 	elif _is_right_click(event):
 		_dismiss()
 	else:
@@ -128,6 +135,22 @@ func _is_right_click(event: InputEvent) -> bool:
 		and event.pressed
 		and event.button_index == MOUSE_BUTTON_RIGHT
 	)
+
+
+func _is_middle_click(event: InputEvent) -> bool:
+	return (
+		event is InputEventMouseButton
+		and event.pressed
+		and event.button_index == MOUSE_BUTTON_MIDDLE
+	)
+
+
+## Asks for the menu of the building under the mouse, if there is one.
+func _request_building_menu() -> void:
+	var tile := Vector2i((camera.mouse_world_position() / TerrainTileset.TILE_SIZE).floor())
+	var building := world.building_at(tile)
+	if building != null and not is_pointer_on_gui:
+		building_menu_requested.emit(building)
 
 
 func _dismiss() -> void:

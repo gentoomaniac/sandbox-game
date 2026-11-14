@@ -43,6 +43,9 @@ var _menu: PauseMenu
 ## save that is refused, a save that failed before quitting.
 var _choice_dialog := ChoiceDialog.new()
 var _save_questions := SaveQuestions.new(_choice_dialog)
+## The hammer's menu on a building has a dialog of its own: nobody else is to hear its answer.
+var _house_dialog := ChoiceDialog.new()
+var _house_menu: HouseMenu
 var _tooltip_view := TooltipView.new()
 var _options := StartupOptions.from_command_line()
 var _player_view := PlayerView.new()
@@ -170,6 +173,7 @@ func _ready() -> void:
 func _load_game() -> void:
 	_settings = _load_settings()
 	add_child(_choice_dialog)
+	add_child(_house_dialog)
 	_apply_ui_scale(_settings.ui_scale)
 	Engine.max_fps = _options.max_fps_or(_settings.max_fps)
 	_settings.max_fps_changed.connect(Engine.set_max_fps)
@@ -278,6 +282,8 @@ func _connect_state_and_views() -> void:
 	_build_mode.builder = _builder
 	_build_mode.camera = _camera
 	_build_mode.message_changed.connect(_show_build_message)
+	_house_menu = HouseMenu.new(_house_dialog, _state.homes)
+	_build_mode.building_menu_requested.connect(_house_menu.open)
 	_bag_screen.drop_requested.connect(_state.drop_from_inventory)
 	_storage_screen.drop_requested.connect(_state.drop_from_inventory)
 	_camera.rig.follow(_camera_target)

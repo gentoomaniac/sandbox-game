@@ -113,6 +113,19 @@ bush](../docs/screenshots/bush-replanted-classic.png).
 
 ![The churchyard in summer, and on a winter night with the church windows lit](../docs/screenshots/church.png)
 
+### Giving a house to a villager
+
+1. With the hammer in hand, middle click a building. A window names it and says who lives there.
+2. Its buttons list the villagers within about 24 tiles, the nearest first: "Give to Antje Boysen"
+   (or "Move Antje Boysen in" if she has a home), then "Antje Boysen works here" for each. Pick one.
+   Close or Escape leaves things as they are.
+
+- A house only offers itself to villagers it can hold: as many as its kind has room for, and one
+  household (a couple and their children). A building that is no house (the barn, the church)
+  can only be given as a workplace.
+- A villager with a house keeps near its door. Taking the house down frees them.
+- The console's `home` and `work` do the same (see [console.md](console.md)).
+
 ### Taking down
 
 1. Press X with the hammer in hand. The menu gives way to a "Taking down" panel.

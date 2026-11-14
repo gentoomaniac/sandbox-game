@@ -83,6 +83,31 @@ func near(building: Building) -> Array[Npc]:
 	return listed
 
 
+## What the hammer's menu offers on `building`, each `{text, npc, is_home}`: giving it as a home
+## to the villagers near that may live in it, then as a workplace to the ones near who don't work
+## in it already.
+func offers(building: Building) -> Array[Dictionary]:
+	var listed: Array[Dictionary] = []
+	var nearby := near(building)
+	for npc in nearby:
+		if why_not_live_in(npc, building) == "":
+			var verb := "Give to %s" if npc.house == null else "Move %s in"
+			listed.append({"text": verb % npc.name, "npc": npc, "is_home": true})
+	for npc in nearby:
+		if npc.workplace == null or npc.workplace.building != building:
+			listed.append({"text": "%s works here" % npc.name, "npc": npc, "is_home": false})
+	return listed
+
+
+## Does what an entry of `offers` says.
+func accept(offer: Dictionary, building: Building) -> void:
+	var npc: Npc = offer["npc"]
+	if offer["is_home"]:
+		move_in(npc, building)
+	else:
+		npc.workplace = Workplace.of_building(building)
+
+
 ## Gives the villager of data/villagers.cfg who just came into the world the house and the
 ## workplace their sheet names: a house where family of theirs lives, else the nearest one of
 ## the type with room, and the nearest building of the workplace's type, within `home_search`

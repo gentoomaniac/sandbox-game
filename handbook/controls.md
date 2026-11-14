@@ -49,6 +49,7 @@ What E does, in this order:
 | Q, E or left and right arrows | Previous and next building. |
 | Up and down arrows | The building's next and previous style. |
 | X | Switch between building and taking down (hold Space or click to take down). |
+| Middle click on a building | Open its menu: who lives there, and giving it to a villager nearby as a home or a workplace. |
 
 ### Chat
 
