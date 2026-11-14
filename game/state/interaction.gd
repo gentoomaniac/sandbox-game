@@ -7,6 +7,56 @@ extends RefCounted
 ## (`horse_to_mount`), before any chest, station or bed; a bell frame to ring (`bell_frame_to_ring`)
 ## comes after the chests and stations.
 
+## What E does, and for whom (see `choice_at`).
+enum Kind {
+	NOTHING,
+	DISMOUNT,
+	CHAT,
+	MOUNT,
+	OPEN_STATION_GRID,
+	OPEN_CHEST,
+	OPEN_CRAFTING,
+	RING_BELL,
+	SLEEP,
+}
+
+
+## What E does: its `kind`, and the `subject` it does it to: the Npc spoken to, the FarmAnimal got
+## on, the WorldObject opened, the Building whose bell rings, the WorldObject bed slept in; null
+## for the rest.
+class Choice:
+	var kind: Kind
+	var subject: Variant
+
+	func _init(choice_kind: Kind, choice_subject: Variant = null) -> void:
+		kind = choice_kind
+		subject = choice_subject
+
+
+## What E does with the player facing or pointing at `target`: on horseback it gets off, else the
+## first of these that applies, in order: speak to a villager, get on a saddled horse, open a chest
+## or station, ring a bell frame, sleep in a bed. The one place that decides it: Main does what it
+## says and the action hint shows it.
+static func choice_at(state: GameState, target: Vector2i) -> Choice:
+	if state.player.horse != null:
+		return Choice.new(Kind.DISMOUNT)
+	var npc := npc_to_chat(state, target)
+	if npc != null:
+		return Choice.new(Kind.CHAT, npc)
+	var horse := horse_to_mount(state, target)
+	if horse != null:
+		return Choice.new(Kind.MOUNT, horse)
+	var object := object_to_open(state, target)
+	if object != null:
+		if StationRules.default_rules().grid_slots_of(object.type) > 0:
+			return Choice.new(Kind.OPEN_STATION_GRID, object)
+		return Choice.new(Kind.OPEN_CHEST if object.storage != null else Kind.OPEN_CRAFTING, object)
+	var frame := bell_frame_to_ring(state)
+	if frame != null:
+		return Choice.new(Kind.RING_BELL, frame)
+	var bed := state.bed_in_reach()
+	return Choice.new(Kind.SLEEP, bed) if bed != null else Choice.new(Kind.NOTHING)
+
 
 ## The nearest object on the player's map within reach that `is_wanted` says yes to, or null.
 static func nearest_in_reach(state: GameState, is_wanted: Callable) -> WorldObject:

@@ -744,29 +744,27 @@ func _screens_take(event: InputEvent) -> bool:
 ## E: on horseback, gets off. Else speaks to the villager in front, gets on the saddled horse in
 ## front, opens the chest or station in reach, rings the bell frame in reach or sleeps in the bed.
 func _interact() -> void:
-	if _state.player.horse != null:
-		if not _state.dismount():
-			_harvest_hud.show_note("No room to get off here.")
-		return
-	var target := _use_highlight.targeting().tile
-	var npc := Interaction.npc_to_chat(_state, target)
-	if npc != null:
-		_open_chat(npc)
-		return
-	var horse := Interaction.horse_to_mount(_state, target)
-	if horse != null:
-		_state.mount(horse)
-		return
-	var object := Interaction.object_to_open(_state, target)
-	if object == null:
-		if not _state.ring_bell_in_reach():
+	var choice := Interaction.choice_at(_state, _use_highlight.targeting().tile)
+	match choice.kind:
+		Interaction.Kind.DISMOUNT:
+			if not _state.dismount():
+				_harvest_hud.show_note("No room to get off here.")
+		Interaction.Kind.CHAT:
+			_open_chat(choice.subject)
+		Interaction.Kind.MOUNT:
+			_state.mount(choice.subject)
+		Interaction.Kind.OPEN_STATION_GRID:
+			_process_screen.open_station(
+				ProcessStation.new(_state, Crafting.new(_state), choice.subject)
+			)
+		Interaction.Kind.OPEN_CHEST:
+			_storage_screen.open_chest(choice.subject, _state.player)
+		Interaction.Kind.OPEN_CRAFTING:
+			_crafting_screen.open_station(choice.subject)
+		Interaction.Kind.RING_BELL:
+			_state.ring_bell_in_reach()
+		Interaction.Kind.SLEEP:
 			_try_sleep()
-	elif StationRules.default_rules().grid_slots_of(object.type) > 0:
-		_process_screen.open_station(ProcessStation.new(_state, Crafting.new(_state), object))
-	elif object.storage != null:
-		_storage_screen.open_chest(object, _state.player)
-	else:
-		_crafting_screen.open_station(object)
 
 
 ## Opens the chat with a villager, who turns to the player (the chat pauses the game).
