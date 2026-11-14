@@ -1,83 +1,139 @@
 class_name Pathfinder
 extends RefCounted
-## The searches that are waiting for their turn (PathSearch), and how much of a frame they may
-## take: each `tick` works on the oldest ones, at most `searches_per_frame` of them, and stops
-## when `search_usec_per_frame` microseconds are spent, so many villagers on their way never make
-## the game stutter. A search that is not done goes on in the next tick. Whoever queued a search
-## reads its state; the Pathfinder only works it.
+## Runs the searches (PathSearch) for the villagers, each as a task of its own on a worker thread,
+## and gives their results back on the main thread. A search reads only what does not change (see
+## TravelView), so it is the only one to touch itself while it runs; the Pathfinder reads its state
+## once the task is done, and so does whoever queued it, through `is_finished`.
 ##
-## Far searches (over ground that is not loaded, so they may wait for a mask) have a queue of their
-## own: the oldest of them takes one of the frame's searches and at most half of its time, so
-## neither holds up the other. A search that is waiting is passed over and costs nothing.
-
-## A search looks at this many tiles between two looks at the clock.
-const NODES_PER_CHECK := 16
-
-## What one tick may do: how many searches it works on, and for how many microseconds. Npcs
-## changes them with its rules.
-var searches_per_frame: int
-var usec_per_frame: int
-## The far queue is worked in one tick of this many (1: in every tick), so that far searches, which
-## are many and in no hurry, take a smaller share of the frames.
-var far_every_ticks := 1
-## Gives the time in microseconds; the tests of the limits give their own.
-var _clock: Callable
-var _near_queue: Array[PathSearch] = []
-var _far_queue: Array[PathSearch] = []
-var _ticks := 0
+## A search that has to wait for a tile that is not known (a mask not made yet) comes back from its
+## task as WAITING, never blocks the pool: it is parked until its `provide` Callable says that what
+## it waits for is there, and is then run again. At most `max_tasks` run at once, so a burst of
+## searches does not fill the pool; the others queue, the oldest first. `tick` is called once a
+## frame, on the main thread.
+##
+## How it all works: design/tech/pathfinding.md.
 
 
-func _init(searches: int, usec: int, clock := Callable(Time, "get_ticks_usec")) -> void:
-	searches_per_frame = searches
-	usec_per_frame = usec
-	_clock = clock
+## A search with what it needs to go on.
+class Job:
+	extends RefCounted
+	var search: PathSearch
+	## `() -> bool` on the main thread: gives the search what it waits for, and says whether that is
+	## all of it. Without one a waiting search is run again at once.
+	var provide: Callable
+	var task_id := -1
+	var is_dropped := false
 
 
-func queue(search: PathSearch, is_far := false) -> void:
-	(_far_queue if is_far else _near_queue).append(search)
+## How many searches run at once, at the most. Npcs changes it with its rules.
+var max_tasks: int
+
+var _queued: Array[Job] = []
+var _running: Array[Job] = []
+var _parked: Array[Job] = []
+## The searches that are over and not taken yet.
+var _finished: Dictionary[PathSearch, bool] = {}
 
 
-## Takes a search out of the queue, whether it is done or not: it is never looked at again.
+func _init(tasks: int) -> void:
+	max_tasks = tasks
+
+
+func _notification(what: int) -> void:
+	# A task holds its search, which must not be freed while it runs.
+	if what == NOTIFICATION_PREDELETE:
+		for job in _running:
+			WorkerThreadPool.wait_for_task_completion(job.task_id)
+
+
+## Queues a search. `provide` is described at `Job`.
+func queue(search: PathSearch, provide := Callable()) -> void:
+	if search.is_over():
+		_finished[search] = true
+		return
+	var job := Job.new()
+	job.search = search
+	job.provide = provide
+	if search.state == PathSearch.State.WAITING:
+		_parked.append(job)
+	else:
+		_queued.append(job)
+
+
+## Whether the search is over and its result can be read. The state of a search that is not is not
+## to be read: a worker may be writing it.
+func is_finished(search: PathSearch) -> bool:
+	return _finished.has(search)
+
+
+## Hands over the result of a finished search: it is not kept any more.
+func take(search: PathSearch) -> void:
+	_finished.erase(search)
+
+
+## Takes a search out, whether it is done or not: its result is never looked at. One that is
+## running goes on until its task ends, and is then forgotten.
 func drop(search: PathSearch) -> void:
-	_near_queue.erase(search)
-	_far_queue.erase(search)
+	_finished.erase(search)
+	for jobs in [_queued, _parked]:
+		for job: Job in jobs:
+			if job.search == search:
+				jobs.erase(job)
+				return
+	for job in _running:
+		if job.search == search:
+			job.is_dropped = true
 
 
-## How many searches are waiting (a finished search is gone at once).
+## How many searches run on a worker now.
+func running() -> int:
+	return _running.size()
+
+
+## How many searches are not over yet (the dropped ones that still run are not counted).
 func waiting() -> int:
-	return _near_queue.size() + _far_queue.size()
+	var count := _queued.size() + _parked.size()
+	for job in _running:
+		count += 0 if job.is_dropped else 1
+	return count
 
 
-## Works the queues for one frame.
+## Collects the tasks that are done, gives the parked searches what they wait for and starts as
+## many as `max_tasks` allows.
 func tick() -> void:
-	var started: int = _clock.call()
-	_ticks += 1
-	var far_worked := 0
-	if _ticks % far_every_ticks == 0:
-		far_worked = _work(_far_queue, 1, started + usec_per_frame / 2)
-	# One near search always gets its turn, however small the limit.
-	_work(_near_queue, maxi(searches_per_frame - far_worked, 1), started + usec_per_frame)
+	for job in _running.duplicate():
+		if WorkerThreadPool.is_task_completed(job.task_id):
+			_collect(job)
+	for job in _parked.duplicate():
+		if not job.provide.is_valid() or job.provide.call():
+			_parked.erase(job)
+			_queued.append(job)
+	while _running.size() < max_tasks and not _queued.is_empty():
+		var job: Job = _queued.pop_front()
+		job.task_id = WorkerThreadPool.add_task(_run.bind(job.search))
+		_running.append(job)
 
 
-## Works the searches of `queue`, the oldest first, until `searches` of them have been given time
-## or the clock shows `deadline`. Returns how many it gave time to. A search that waits for a tile
-## is passed over, and stays in the queue.
-func _work(queue: Array[PathSearch], searches: int, deadline: int) -> int:
-	var searches_worked := 0
-	var index := 0
-	while searches_worked < searches and index < queue.size():
-		var search := queue[index]
-		var looked_at_before := search.nodes_looked_at
-		while not search.is_over():
-			if _clock.call() >= deadline:
-				return searches_worked
-			search.step(NODES_PER_CHECK)
-			if search.state == PathSearch.State.WAITING:
-				break
-		if search.nodes_looked_at > looked_at_before:
-			searches_worked += 1
-		if search.is_over():
-			queue.remove_at(index)
-		else:
-			index += 1
-	return searches_worked
+## Waits for every search to be over, for the tests and for a skip of time.
+func wait_for_all() -> void:
+	while waiting() > 0:
+		for job in _running.duplicate():
+			WorkerThreadPool.wait_for_task_completion(job.task_id)
+			_collect(job)
+		tick()
+
+
+## Runs on the worker.
+func _run(search: PathSearch) -> void:
+	search.step(1 << 30)
+
+
+func _collect(job: Job) -> void:
+	WorkerThreadPool.wait_for_task_completion(job.task_id)
+	_running.erase(job)
+	if job.is_dropped:
+		return
+	if job.search.is_over():
+		_finished[job.search] = true
+	else:
+		_parked.append(job)

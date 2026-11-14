@@ -209,8 +209,8 @@ Warft and an Ewer here and there.
   friends name each other back; a loaded one takes their sheet from it, so edits to the file
   reach saved games); the village they all share is `data/village.cfg`
   (`VillageSheet`). `Npcs.walk_to` sends a villager to a tile (task 238): `NpcTravel` searches a
-  way (`PathSearch`, an A* over the villagers' step rule and the lanes' cost, worked within a
-  frame's budget by the `Pathfinder`), walks it as the villager's `NpcTrip`, goes round what is put
+  way (`PathSearch`, an A* over the travel masks and the lanes' cost, run on a worker thread
+  by the `Pathfinder`; see [design/tech/pathfinding.md](../design/tech/pathfinding.md)), walks it as the villager's `NpcTrip`, goes round what is put
   in its way and, when there is no way, stands and looks again when `GameMap.change_count` has
   moved; `trip_arrived` and `trip_blocked` tell the routine ([travel] of `data/npcs.cfg`, plan in
   design/villagers/routines.md). Each is drawn by an `NpcView` among the world

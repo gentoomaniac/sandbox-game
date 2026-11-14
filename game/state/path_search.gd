@@ -9,6 +9,8 @@ extends RefCounted
 ##
 ## A tile may be not known yet (`is_known`: a far tile whose mask is not made, see TravelView). The
 ## search then waits, and goes on when `step` is called again.
+##
+## How it all works: design/tech/pathfinding.md.
 
 ## RUNNING: not done. WAITING: not done, and a tile it needs is not known yet; `step` looks again.
 ## FOUND: `path` leads to the goal. LEG: the search looked at `max_nodes` tiles without finding the

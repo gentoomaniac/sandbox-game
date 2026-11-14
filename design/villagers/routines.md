@@ -21,9 +21,9 @@ random.
   at 15, sleep at 22", with a Sunday plan and changes for rain and the dark. The villager's own
   home and workplace fill in where that is, so many villagers share a few routines (task 239).
 - **Finding the way:** villagers walk to their places by a path search that keeps to lanes and
-  goes round fences and through gates and doors, within a set cost per frame so the game doesn't
-  stutter. Far from the player, where the world isn't loaded, they walk too: see
-  [travel.md](travel.md) (#68, planned).
+  goes round fences and through gates and doors; the search runs on a worker thread so the game
+  doesn't stutter (see [../tech/pathfinding.md](../tech/pathfinding.md)). Far from the player,
+  where the world isn't loaded, they walk too: see [travel.md](travel.md) (#68, being built).
 - **Inside:** the routine says when they go in, and they are seen in the interior (task 229).
 - **Next step, the shopkeeper:** a villager with the shopkeeper routine stands in their shop in
   the shop hours and offers a trading dialog (barter, no money yet); the shop sells seeds, so the
@@ -34,6 +34,12 @@ routine format and the routines themselves) are written here, for the user's app
 code.
 
 ## Finding the way: the plan (task 238)
+
+**2026-11-15, as built in #68:** a search now runs on a worker thread, one task each, over the
+travel masks and a snapshot of the buildings and wear, not over the live world; the frame budget
+(`searches_per_frame`, `search_usec_per_frame`) below is gone, replaced by `search_tasks`, and the
+walker's give-up time is 0.5 s. How it works now is in [../tech/pathfinding.md](../tech/pathfinding.md);
+this section is the plan as approved, with those parts marked.
 
 Written 2026-11-14, revised the same day after review and the user's answers; approved by the
 user. Task 238 finds and walks ways in the loaded world. Off-screen travel is planned in #68.
@@ -75,9 +81,13 @@ there to walk on. There is no lane terrain yet: the cheap tiles are the worn gra
   is only an option (`heuristic_weight`) for tests that compare optimal paths. Ties in the heap go
   to the larger g (the node nearer the goal). Step-1 test: an open 100-tile diagonal expands a few
   hundred nodes, not thousands.
-- **Reading the map:** once per tile per search, remembered in the search's own dictionary.
+- **Reading the map:** once per tile per search, remembered in the search's own dictionary. (#68:
+  through a `TravelView` over the masks, not the map; the Callables are the view's.)
 
 ### Long ways and the frame budget
+
+*(Superseded in #68: no budget; each search is a task on a worker, `Pathfinder` only dispatches and
+collects. The text below is the approved plan.)*
 
 - **A search can be paused:** `PathSearch.step(max_nodes)` goes on where it left off and says
   RUNNING, FOUND, LEG (see below) or FAILED. `Pathfinder` (one per `Npcs`) holds the queue and, in each frame, starts

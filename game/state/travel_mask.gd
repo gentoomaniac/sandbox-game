@@ -4,6 +4,8 @@ extends RefCounted
 ## design/villagers/travel.md): one byte of flags a tile, in the order of the chunk's tiles. It
 ## answers what `Npcs.can_stand_at` answers on the loaded chunk, but for the buildings, which the
 ## world is asked live, and the tide and the season, which are given to each question.
+##
+## How it all works: design/tech/pathfinding.md.
 
 const BLOCKED := 1 << 0
 ## Tidal mud: blocked while the water covers it (`Tide.floods`).

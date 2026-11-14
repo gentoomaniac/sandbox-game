@@ -3,6 +3,8 @@ extends RefCounted
 ## What one villager knows of its walk to a place: where, over what map, the way found and how far
 ## along it they are, and what is being waited for. NpcTravel does the walking; the trip is only its
 ## state, and it ends when the villager arrives or is sent elsewhere (`Npc.trip` is null again).
+##
+## How it all works: design/tech/pathfinding.md.
 
 ## SEARCHING: it stands while a way is looked for. WALKING: along `path`. WAITING: for the player to
 ## move off or to finish talking, which is not being stuck. BLOCKED: no way was found, it stands and
@@ -17,10 +19,9 @@ var map: GameMap
 var goal: Vector2i
 var state := State.SEARCHING
 
-## The search that is looking for a way (see Pathfinder), until it is done, and what it sees of the
-## world. The search holds only the methods of the view, which would be gone without this.
+## The search that is looking for a way (see Pathfinder), until it is done. It runs on a worker
+## thread: its state is not to be read before the Pathfinder says it is finished.
 var search: PathSearch
-var view: TravelView
 ## The tiles to walk, and how many of them are reached. A way that ends short of the goal is a leg
 ## (`is_leg`): at its end a new search starts.
 var path: Array[Vector2i] = []

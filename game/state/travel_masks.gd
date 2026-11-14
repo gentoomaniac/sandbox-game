@@ -11,6 +11,8 @@ extends RefCounted
 ## copies of the raw chunks and a copy of the world's edits made on the main thread when it starts
 ## (`World.edits_snapshot`). An edit that comes meanwhile bumps the version of its chunk, and a mask
 ## made from a chunk of another version is not published but made again: no mask is stale.
+##
+## How it all works: design/tech/pathfinding.md.
 
 ## The chunks a mask is stamped from, relative to its own: W, N and NW are those a big object
 ## reaches it from.
@@ -79,6 +81,11 @@ func mask_of(coords: Vector2i) -> TravelMask:
 	else:
 		_requested[coords] = true
 	return mask
+
+
+## The mask of a chunk if it is made, or null, without asking for it (see `mask_of`).
+func made_mask(coords: Vector2i) -> TravelMask:
+	return _masks.get(coords)
 
 
 ## Takes in what the worker has done: a generated chunk, or a mask, which is published if no edit

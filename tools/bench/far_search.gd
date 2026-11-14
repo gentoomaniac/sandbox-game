@@ -1,12 +1,14 @@
 extends SceneTree
-## What a search over masks costs (#68, design/villagers/travel.md): for three seeds, ways of about
-## 300 tiles between random tiles a villager can stand on, in a square of REGION x REGION chunks
-## whose masks are all made first (warm). Each way is searched as a trip does, in legs of
-## `max_nodes` tiles (data/npcs.cfg) until it is found or fails. Prints, over the ways: the tiles
-## looked at and the milliseconds of searching for a way that is found (median and most), the microseconds a tile
-## costs, and how many ways were found; first with no chunk loaded (the far view: masks and
-## waiting), then with all the chunks loaded (the live view), for comparison. Needs no save and
-## writes nothing.
+## What searches over the travel masks cost (#68, design/tech/pathfinding.md), for three seeds, over
+## ways of about 300 tiles between random tiles a villager can stand on, in a square of REGION x
+## REGION chunks:
+## 1. the cost of the search itself, on this thread, with all the masks made (warm): tiles looked at
+##    and milliseconds for the ways that are found, and the microseconds a tile;
+## 2. thirty villagers leaving at once, each search a task of the Pathfinder (`search_tasks` of
+##    data/npcs.cfg), at 60 frames a second: how long until the first and the last way is found
+##    with the masks warm and with them cold (made as the searches ask), and what the main thread
+##    spends in a frame (`TravelMasks.update` and `Pathfinder.tick`).
+## Needs no save and writes nothing. Run it with `taskset` to see what few cores do.
 ## godot --headless --path . -s tools/bench/far_search.gd
 
 const SEEDS := [7, 42, 1]
@@ -14,6 +16,8 @@ const REGION := 15
 const WAYS := 60
 const REACH := Vector2i(210, 90)
 const MOST_LEGS := 20
+const DEPARTURES := 30
+const FRAME_USEC := 16667
 
 
 func _init() -> void:
@@ -35,15 +39,24 @@ func _bench(world_seed: int) -> void:
 		"seed %d: %d masks made in %.1f s"
 		% [world_seed, masks.mask_coords().size(), (Time.get_ticks_usec() - warming_started) / 1e6]
 	)
-	var view := TravelView.new(world, masks, rules, world.clock.total_minutes())
+	var snapshot := TravelSnapshot.of(world, 0)
+	var view := TravelView.new(snapshot, rules, world.clock.total_minutes())
+	_provide_all(view, masks, first)
 	var ways := _pick_ways(world_seed, view, first)
-	print("  far:  ", _search_all(ways, view, masks, rules))
-	var generator := WorldGenerator.new(world_seed)
-	for y in range(first.y - 1, first.y + REGION):
-		for x in range(first.x - 1, first.x + REGION):
-			world.add_chunk(generator.generate_chunk(Vector2i(x, y)))
-	view = TravelView.new(world, masks, rules, world.clock.total_minutes())
-	print("  live: ", _search_all(ways, view, masks, rules))
+	print("  on this thread: ", _search_all(ways, view, masks, rules))
+	print("  30 leaving, masks warm: ", _depart(ways, world, masks, snapshot, rules))
+	var cold := TravelMasks.for_world(world, rules)
+	print("  30 leaving, masks cold: ", _depart(ways, world, cold, snapshot, rules))
+
+
+## Gives the view the mask of every chunk of the region.
+func _provide_all(view: TravelView, masks: TravelMasks, first: Vector2i) -> void:
+	for y in REGION:
+		for x in REGION:
+			var coords := first + Vector2i(x, y)
+			view.is_known(Chunk.to_world(coords, Vector2i.ZERO))
+	while not view.provide(masks):
+		masks.update(true)
 
 
 ## Pairs of tiles a villager can stand on, REACH apart in a random direction, inside the region.
@@ -57,10 +70,12 @@ func _pick_ways(world_seed: int, view: TravelView, first: Vector2i) -> Array[Arr
 	var ways: Array[Array] = []
 	while ways.size() < WAYS:
 		var start := Vector2i(rng.randi_range(low.x, high.x), rng.randi_range(low.y, high.y))
-		var goal := start + Vector2i(
-			REACH.x * (1 if rng.randf() < 0.5 else -1), REACH.y * (1 if rng.randf() < 0.5 else -1)
+		var sign_x := 1 if rng.randf() < 0.5 else -1
+		var sign_y := 1 if rng.randf() < 0.5 else -1
+		var goal := start + Vector2i(REACH.x * sign_x, REACH.y * sign_y)
+		var is_inside := (
+			goal.x >= low.x and goal.x <= high.x and goal.y >= low.y and goal.y <= high.y
 		)
-		var is_inside := goal.x >= low.x and goal.x <= high.x and goal.y >= low.y and goal.y <= high.y
 		if is_inside and view.is_free(start) and view.is_free(goal):
 			ways.append([start, goal])
 	return ways
@@ -83,21 +98,14 @@ func _search_all(
 		for _leg in MOST_LEGS:
 			var started := Time.get_ticks_usec()
 			var paused := 0
-			var search := PathSearch.new(
-				start,
-				way[1],
-				view.is_free,
-				view.cost_of,
-				int(rules.travel("max_nodes")),
-				rules.travel("heuristic_weight"),
-				view.is_known
-			)
+			var search := _new_search(start, way[1], view, rules)
 			while not search.is_over():
 				search.step(1000000)
 				if search.state == PathSearch.State.WAITING:
 					# A way that strays out of the region: the making of a mask is not searching.
 					var waiting_started := Time.get_ticks_usec()
-					masks.update(true)
+					while not view.provide(masks):
+						masks.update(true)
 					paused += Time.get_ticks_usec() - waiting_started
 					waits += 1
 			usec += Time.get_ticks_usec() - started - paused
@@ -126,6 +134,65 @@ func _search_all(
 			waits
 		]
 	)
+
+
+func _new_search(start: Vector2i, goal: Vector2i, view: TravelView, rules: NpcRules) -> PathSearch:
+	return PathSearch.new(
+		start,
+		goal,
+		view.is_free,
+		view.cost_of,
+		int(rules.travel("max_nodes")),
+		rules.travel("heuristic_weight"),
+		view.is_known
+	)
+
+
+## DEPARTURES villagers leave at once, each with a view of its own over `masks`. Frames of 16.7 ms
+## go by (`masks.update` and `pathfinder.tick` are the main thread's share, timed) until every
+## search is over.
+func _depart(
+	ways: Array[Array], world: World, masks: TravelMasks, snapshot: TravelSnapshot, rules: NpcRules
+) -> String:
+	var pathfinder := Pathfinder.new(int(rules.travel("search_tasks")))
+	var searches: Array[PathSearch] = []
+	for index in DEPARTURES:
+		var view := TravelView.new(snapshot, rules, world.clock.total_minutes())
+		var way: Array = ways[index % ways.size()]
+		view.prefetch(masks, way[0], way[1])
+		var search := _new_search(way[0], way[1], view, rules)
+		searches.append(search)
+		pathfinder.queue(search, func() -> bool: return view.provide(masks))
+	var started := Time.get_ticks_usec()
+	var done_at: Array[float] = []
+	var finished := {}
+	var frames: Array[float] = []
+	while finished.size() < searches.size():
+		var frame_started := Time.get_ticks_usec()
+		masks.update()
+		pathfinder.tick()
+		frames.append((Time.get_ticks_usec() - frame_started) / 1000.0)
+		for search in searches:
+			if pathfinder.is_finished(search) and not finished.has(search):
+				finished[search] = true
+				done_at.append((Time.get_ticks_usec() - started) / 1e6)
+		OS.delay_usec(FRAME_USEC)
+	return (
+		"first done after %.2f s, median %.2f s, last %.2f s; main thread a frame: median %.2f ms, most %.2f ms"
+		% [
+			done_at[0],
+			done_at[done_at.size() / 2],
+			done_at[-1],
+			_median(frames),
+			frames.max()
+		]
+	)
+
+
+func _median(values: Array[float]) -> float:
+	var sorted := values.duplicate()
+	sorted.sort()
+	return sorted[sorted.size() / 2]
 
 
 ## The median and the most of the values.

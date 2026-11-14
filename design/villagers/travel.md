@@ -1,5 +1,11 @@
 # Travel where the world isn't loaded (#68)
 
+**How it works as built: [../tech/pathfinding.md](../tech/pathfinding.md).** This page is the plan
+and the record of decisions and measurements. **2026-11-15, the user's decision: every search runs
+on a worker thread** (near ones too), over the masks and a snapshot, never the live world; the
+frame budget, the far queue and `far_every_frames` of the text below are gone (see "Searches on
+worker threads").
+
 Planned 2026-11-14, for the user's approval before code. It builds on task 238's plan in
 [routines.md](routines.md) ("Finding the way"): `PathSearch`, `Pathfinder`, `NpcTrip`, `walk_to`,
 `trip_arrived` and `trip_blocked`. That plan is approved and being built; until it is merged it is on
@@ -93,7 +99,8 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   copies the edits of; its mask is published only if they are all still the same, and else dropped
   and made again (the request stays). An edit made while a mask waits for its raw chunks is simply
   in the snapshot. So no stale mask is ever published.
-- **`TravelView`** (the one view every World search gets, near and far): a tile is answered live
+- **`TravelView`** (the one view every World search gets, near and far; *superseded 2026-11-15: the
+  view is over the masks of all chunks, with no live answer, see "Searches on worker threads"*): a tile is answered live
   (238's `can_stand_at`) only where its chunk and its W, N and NW neighbours are loaded; elsewhere by
   the mask. Today `World._stored_object_at` does not see a big object whose own chunk is not loaded,
   so on the west and north rim of the loaded square the live answer can be wrong; there the mask is
@@ -117,7 +124,8 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   `change_count` moves), as a search asks a chunk thousands of times; a mask in it is the one of the
   first question. A tile is live when the chunks of
   `TravelMasks.SOURCE_STEPS` (its own, W, N, NW) are loaded, the very ones its mask is stamped from.
-- **`PathSearch`** learns one answer: WAITING, when a neighbour of the node it expands is not known.
+- **`PathSearch`** (*the Pathfinder part of this item is superseded by "Searches on worker
+  threads"*) learns one answer: WAITING, when a neighbour of the node it expands is not known.
   The node goes back into the heap unclosed and is expanded again from the start once the mask is
   there (expanding twice changes nothing: a neighbour already reached is only improved), so no
   neighbour is lost. The `Pathfinder` passes the search over meanwhile (it takes no slot and no time).
@@ -168,7 +176,8 @@ chunk is not loaded; never on a visible one.
   than a near one (measured, step 2, below). A 300-tile way searches some 1200 to 2600 nodes (4000 at
   the most): 16 to 33 ms of search, 10 to 20 frames. Cold, it touches 20 to 40 chunks: 0.2 to 0.4 s
   of generating on the worker first (the village's chunks are warm after the first trips).
-- **Measured, step 2** (`tools/bench/far_search.gd` and `frames.gd --far-trips=<n>`, 2026-11-14,
+- **Measured, step 2** (*on the main-thread scheduler that the worker threads replaced; kept as the
+  record*; `tools/bench/far_search.gd` and `frames.gd --far-trips=<n>`, 2026-11-14,
   headless, `nice` on 11 cores). Searches of ways of 300 tiles (210 + 90) between random free tiles in
   a square of 15 x 15 warm chunks (three seeds, 60 ways each; 28 to 37 of the 60 are not there, the
   sea and the dyke are in the way, and those are searched all over): a far tile costs 10.5 to 10.9 us
@@ -215,6 +224,39 @@ chunk is not loaded; never on a visible one.
   walking scenario is the baseline's, the standing one is 3 to 9 ms above it at the 99th percentile,
   of which the far work is little. Reused commuting paths and a chunk graph are left for the bench
   of step 6 to ask for.
+
+## Searches on worker threads (2026-11-15)
+
+The user's rules: a search gets the latest world when it starts and works on that (away from the
+player a stale answer is invisible); where the player is, the walker checks each tile it enters, and
+if a step is blocked it finds a way round: at worst it stands and "thinks" (a search from where it
+stands) and walks on. As built:
+
+- `PathSearch` is unchanged; `TravelView` is now over the masks of **all** chunks, loaded or not
+  (parity with the live world is tested), plus a `TravelSnapshot` of the building tiles and the wear
+  (copied on the main thread, made again after a change or `snapshot_seconds`). No live `World` read
+  off the main thread; the live view (41 us a tile) is no longer used by searches.
+- `Pathfinder` is a dispatcher: one `WorkerThreadPool` task a search, at most `search_tasks` at once
+  (1; see the measurements), results collected on the main thread, cancelled results dropped, every
+  task reaped. A search that needs a mask it lacks returns WAITING with the chunk, is parked, and
+  runs again when `TravelView.provide` has the mask: no pool thread ever waits. The scheduler of
+  near and far queues, the frame budget (`searches_per_frame`, `search_usec_per_frame`),
+  `far_every_frames` and the half-budget rule are gone.
+- The stuck delay is `blocked_give_up_seconds` 0.5 (it was 2.0): a blocked step stands and searches
+  again soon. A new search sees every edit, as an edit drops the masks it touches and the search
+  waits for the new ones.
+- `Tide` and `Vegetation` keep answers in caches that the search would write from the worker: both
+  are behind a mutex.
+- **Measured** (`tools/bench/far_search.gd`, `frames.gd`, 2026-11-15; 11 cores): a tile on this
+  thread over warm masks 9.2 to 9.4 us; 30 villagers leaving at once, masks warm, `search_tasks=1`:
+  first way after 0.02 to 0.03 s, last after 0.42 to 0.66 s; masks cold (made as asked, one worker
+  job a frame): last after 4.4 to 4.7 s; the main thread's share is 0.03 to 0.17 ms a frame
+  (`update` and `tick`), 0.5 ms at most. More tasks made the main thread's frames worse in
+  the 154-trip case (`search_tasks=4`: walking mean 13.5 ms against 7.2, longest 95 ms; 2: p99
+  20.8 ms), so the default is 1 (the workers compete with the main thread for memory, it seems).
+  Frames, three baseline runs against 30 and 154 trips sent over and over: see the numbers in
+  design/tech/pathfinding.md's bench notes and the report of this change; the scenes are noisy
+  (walking p99 13.5 to 15.2 baseline; with 1 task 16.0 to 18.8, longest 34 to 48).
 
 ## Time skips and sleep
 

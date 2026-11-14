@@ -619,6 +619,17 @@ func buildings() -> Array[Building]:
 	return _buildings.duplicate()
 
 
+## The tiles buildings cover, doors included, as keys of a copy that shares nothing with the world
+## but the buildings themselves (see TravelSnapshot).
+func building_tiles() -> Dictionary:
+	return _building_by_tile.duplicate()
+
+
+## The steps of wear of the worn tiles (see `wear_tile`), as a copy.
+func wear_steps() -> Dictionary:
+	return _wear.duplicate()
+
+
 ## The building whose footprint covers a tile, or null.
 func building_at(world_pos: Vector2i) -> Building:
 	return _building_by_tile.get(world_pos)

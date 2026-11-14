@@ -71,6 +71,7 @@ func test_a_trip_is_blocked_as_stuck_when_the_retries_are_used_up() -> void:
 	for _i in roundi(SECONDS / STEP_SECONDS):
 		travel.tick()
 		travel.update(npc, STEP_SECONDS, far_off, never_fits)
+		OS.delay_usec(1000)
 	assert_signal_emit_count(travel, "blocked", 1)
 	assert_signal_emitted_with_parameters(travel, "blocked", [npc, NpcTrip.Block.STUCK])
 	assert_eq(npc.trip.searches, 1 + int(_npcs.rules.travel("retries")))
@@ -94,32 +95,19 @@ func test_a_way_of_several_legs_is_walked_and_one_of_too_many_legs_is_blocked() 
 	assert_signal_emitted_with_parameters(_npcs, "trip_blocked", [npc, NpcTrip.Block.NO_WAY])
 
 
-func test_the_searches_are_ticked_once_in_each_update_however_many_villagers() -> void:
-	var now := [0]
-	var clock := func() -> int:
-		var at: int = now[0]
-		now[0] += 100
-		return at
-	var npcs := Npcs.new(_state.sun, clock)
-	npcs.rules = _rules_with({"search_usec_per_frame": 200})
+func test_only_as_many_searches_run_at_once_as_the_rules_say_and_all_are_done_in_the_end() -> void:
+	_npcs.rules = _rules_with({"search_tasks": 1})
 	var searching: Array[Npc] = []
-	for index in 3:
-		var npc := Npc.create(SEED + index, _centre_of(_tile_at(-8, -8)), npcs.rules)
-		npcs.add(npc)
-		npcs.walk_to(npc, _tile_at(8, 8), _world)
+	for index in 4:
+		var npc := Npc.create(SEED + index, _centre_of(_tile_at(-8, -8)), _npcs.rules)
+		_npcs.add(npc)
+		_npcs.walk_to(npc, _tile_at(8, 8), _world)
 		searching.append(npc)
-	_state.clock.day = DAY
-	_state.clock.minute_of_day = NOON
-	var looked_at := func() -> int:
-		var total := 0
-		for npc in searching:
-			total += npc.trip.search.nodes_looked_at if npc.trip.search != null else 0
-		return total
-	npcs.update(STEP_SECONDS, _world, _state.player.position, _state.clock)
-	var per_tick: int = looked_at.call()
-	assert_eq(per_tick, Pathfinder.NODES_PER_CHECK, "200 us is one step, then the time is out")
-	npcs.update(STEP_SECONDS, _world, _state.player.position, _state.clock)
-	assert_eq(looked_at.call(), 2 * per_tick)
+	var all_have_their_way := func() -> bool:
+		return searching.all(
+			func(npc: Npc) -> bool: return npc.trip.state != NpcTrip.State.SEARCHING
+		)
+	assert_true(_run_until(all_have_their_way))
 
 
 func test_the_f3_line_names_the_trip_of_the_nearest_villager_on_one() -> void:
@@ -134,3 +122,15 @@ func test_the_f3_line_names_the_trip_of_the_nearest_villager_on_one() -> void:
 	_step()
 	_step()
 	assert_string_contains(_npcs.path_text(_centre_of(_tile_at(-3, 1))), "tiles,")
+
+
+func test_a_trip_cancelled_while_it_searches_never_arrives() -> void:
+	watch_signals(_npcs)
+	var npc := _add_villager(_centre_of(_tile_at(-3, 0)), _yard_middle())
+	_npcs.walk_to(npc, _tile_at(3, 0), _world)
+	_npcs.cancel_trip(npc)
+	for _i in 100:
+		_step()
+		OS.delay_usec(1000)
+	assert_false(npc.is_travelling())
+	assert_signal_emit_count(_npcs, "trip_arrived", 0)

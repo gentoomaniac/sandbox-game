@@ -1,10 +1,12 @@
 class_name NpcTravel
 extends RefCounted
-## How villagers get to a place (task 238): a trip is started, a way is searched (PathSearch, worked
-## by the Pathfinder within a frame's budget), the villager walks it tile by tile, goes round what
-## has been put in its way, and, when there is no way, stands and looks again when the world has
+## How villagers get to a place (task 238): a trip is started, a way is searched (PathSearch, run by
+## the Pathfinder on a worker thread), the villager walks it tile by tile, goes round what has
+## been put in its way, and, when there is no way, stands and looks again when the world has
 ## changed, until it is sent elsewhere. Npcs owns one and calls `update` for each villager that has
 ## a trip. The numbers are [travel] of data/npcs.cfg.
+##
+## How it all works: design/tech/pathfinding.md.
 
 ## The villager has reached the goal; its trip is over.
 signal arrived(npc: Npc)
@@ -15,22 +17,23 @@ signal blocked(npc: Npc, reason: NpcTrip.Block)
 var rules: NpcRules:
 	set(value):
 		rules = value
-		_pathfinder.searches_per_frame = int(value.travel("searches_per_frame"))
-		_pathfinder.usec_per_frame = int(value.travel("search_usec_per_frame"))
-		_pathfinder.far_every_ticks = int(value.travel("far_every_frames"))
+		_pathfinder.max_tasks = int(value.travel("search_tasks"))
 var _pathfinder: Pathfinder
-## What a villager's feet need to know of the world where it is not loaded, made when the first
-## search over a world asks for it.
+## What a search sees of the world (see TravelView): the masks, made when the first search over a
+## world asks for them, and the snapshot of the buildings and the wear, made again when old.
 var _masks: TravelMasks
 var _masks_world: World
+var _snapshot: TravelSnapshot
+var _clock: Callable
 
 
 func _init(npc_rules: NpcRules, clock: Callable) -> void:
-	_pathfinder = Pathfinder.new(0, 0, clock)
+	_clock = clock
+	_pathfinder = Pathfinder.new(1)
 	rules = npc_rules
 
 
-## Gives the searches their time for one frame, and the masks theirs.
+## Once a frame: lets the masks be made and takes in the searches that are done.
 func tick() -> void:
 	if _masks != null:
 		_masks.update()
@@ -86,8 +89,6 @@ static func text_of(npc: Npc) -> String:
 		NpcTrip.State.BLOCKED:
 			progress = "blocked (%s)" % NpcTrip.block_text(trip.block_reason)
 	var nodes := trip.nodes_looked_at
-	if trip.search != null:
-		nodes += trip.search.nodes_looked_at
 	return (
 		"path %s: %s -> %s, %s, leg %d, %d tiles looked at in %d searches"
 		% [
@@ -107,8 +108,9 @@ func _begin_search(npc: Npc) -> void:
 	var map := trip.map
 	var world := map as World
 	assert(world != null, "A trip is over the tiles of a World")
-	var view := TravelView.new(world, _masks_of(world), rules, world.clock.total_minutes())
-	trip.view = view
+	var view := TravelView.new(_snapshot_of(world), rules, world.clock.total_minutes())
+	var masks := _masks_of(world)
+	view.prefetch(masks, npc.tile(), trip.goal)
 	trip.search = PathSearch.new(
 		npc.tile(),
 		trip.goal,
@@ -122,8 +124,8 @@ func _begin_search(npc: Npc) -> void:
 	trip.state = NpcTrip.State.SEARCHING
 	trip.seconds_since_search = 0.0
 	trip.change_count_at_search = map.change_count
-	# A search from or to ground that is not loaded may wait for masks, and has a queue of its own.
-	_pathfinder.queue(trip.search, not (view.is_live(npc.tile()) and view.is_live(trip.goal)))
+	# The queued search holds the view, which its Callables do not.
+	_pathfinder.queue(trip.search, func() -> bool: return view.provide(masks))
 	npc.activity = Npc.Activity.IDLE
 
 
@@ -133,6 +135,15 @@ func _masks_of(world: World) -> TravelMasks:
 		_masks = TravelMasks.for_world(world, rules)
 		_masks_world = world
 	return _masks
+
+
+## The snapshot of the world's buildings and wear, made again when it is not current.
+func _snapshot_of(world: World) -> TravelSnapshot:
+	var now: int = _clock.call()
+	var most_usec := int(rules.travel("snapshot_seconds") * 1000000.0)
+	if _snapshot == null or not _snapshot.is_current(world, now, most_usec):
+		_snapshot = TravelSnapshot.of(world, now)
+	return _snapshot
 
 
 func _drop_search(trip: NpcTrip) -> void:
@@ -151,8 +162,9 @@ static func is_trampled(object: WorldObject) -> bool:
 func _take_search_result(npc: Npc) -> void:
 	var trip := npc.trip
 	var search := trip.search
-	if not search.is_over():
+	if not _pathfinder.is_finished(search):
 		return
+	_pathfinder.take(search)
 	trip.search = null
 	trip.nodes_looked_at += search.nodes_looked_at
 	match search.state:

@@ -19,6 +19,9 @@ const ROUNDS := 3
 const ROUND_SECONDS := 150.0
 const REACH := Vector2i(60, 120)
 const GOAL_TRIES := 30
+## A frame of `Npcs.update` that takes longer than this is counted: the searches are not in it now,
+## they run on worker threads.
+const UPDATE_BUDGET_MS := 1.5
 const HOUR := 10
 ## The chunks loaded around the player, as many as in the save the game plays (13 x 13).
 const CHUNK_RADIUS := 6
@@ -107,7 +110,7 @@ func _run_frames(seconds: float, with_trips: bool) -> String:
 		times.append((Time.get_ticks_usec() - started) / 1000.0)
 		if with_trips:
 			_note_searches_done()
-	var budget_ms := _state.npcs.rules.travel("search_usec_per_frame") / 1000.0
+	var budget_ms := UPDATE_BUDGET_MS
 	var over := times.filter(func(ms: float) -> bool: return ms > budget_ms).size()
 	return (
 		"update mean %.3f ms, longest %.3f ms, %d of %d frames over %.1f ms"

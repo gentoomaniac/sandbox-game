@@ -58,7 +58,18 @@ func _add_villager(feet: Vector2, anchor: Vector2) -> Npc:
 	return npc
 
 
+## One update of the villagers. The searches run on worker threads in real time, which a test that
+## steps through minutes of game time in a few milliseconds would not wait for: while someone is
+## still searching, no game time passes (as in the game, where a search is a few frames).
 func _step(minute := NOON) -> void:
 	_state.clock.day = DAY
 	_state.clock.minute_of_day = minute
+	for _i in 5000:
+		if not _npcs.all().any(
+			func(npc: Npc) -> bool:
+				return npc.trip != null and npc.trip.state == NpcTrip.State.SEARCHING
+		):
+			break
+		_npcs.update(0.0, _world, _state.player.position, _state.clock)
+		OS.delay_usec(1000)
 	_npcs.update(STEP_SECONDS, _world, _state.player.position, _state.clock)

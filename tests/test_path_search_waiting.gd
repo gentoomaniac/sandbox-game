@@ -1,22 +1,11 @@
 extends GutTest
 ## PathSearch where a tile may not be known yet: it waits, goes on when the tile is known and loses
-## no neighbour by it. And the Pathfinder's far queue, whose searches may wait.
+## no neighbour by it.
 
 const BIG_CAP := 100000
-const USEC_PER_FRAME := 1000
-const USEC_PER_LOOK := 100
-const FAR := 100000
-
-var _now := 0
 ## Tiles with x at or above this are not known.
 var _known_before_x := 0
 var _asked_unknown: Array[Vector2i] = []
-
-
-func _clock() -> int:
-	var now := _now
-	_now += USEC_PER_LOOK
-	return now
 
 
 func _is_free(tile: Vector2i) -> bool:
@@ -85,86 +74,3 @@ func test_a_search_with_all_tiles_known_never_waits() -> void:
 	var search := _search(Vector2i(20, 1))
 	search.step(BIG_CAP)
 	assert_eq(search.state, PathSearch.State.FOUND)
-
-
-func _pathfinder(searches_per_frame := 2) -> Pathfinder:
-	_now = 0
-	return Pathfinder.new(searches_per_frame, USEC_PER_FRAME, _clock)
-
-
-func _open_search(distance: int, is_known := Callable()) -> PathSearch:
-	var is_free := func(_tile: Vector2i) -> bool: return true
-	return PathSearch.new(
-		Vector2i.ZERO, Vector2i(distance, 0), is_free, _cost_of, FAR, 1.0, is_known
-	)
-
-
-func test_a_far_search_runs_while_near_ones_are_queued_and_does_not_hold_them_up() -> void:
-	var pathfinder := _pathfinder()
-	var near := _open_search(5000)
-	var far := _open_search(5000)
-	pathfinder.queue(near)
-	pathfinder.queue(far, true)
-	pathfinder.tick()
-	assert_gt(far.nodes_looked_at, 0)
-	assert_gt(near.nodes_looked_at, 0, "the far one takes at most half of the time")
-	assert_lt(far.nodes_looked_at, near.nodes_looked_at + Pathfinder.NODES_PER_CHECK * 2)
-
-
-func test_a_far_search_is_not_starved_by_many_near_ones() -> void:
-	var pathfinder := _pathfinder()
-	for _i in 4:
-		pathfinder.queue(_open_search(5000))
-	var far := _open_search(5000)
-	pathfinder.queue(far, true)
-	pathfinder.tick()
-	assert_gt(far.nodes_looked_at, 0)
-
-
-func test_a_waiting_search_is_passed_over_and_takes_no_slot() -> void:
-	var pathfinder := _pathfinder(1)
-	_known_before_x = 0
-	var waiting := _search(Vector2i(10, 0), _is_known)
-	var far := _open_search(5000)
-	var near := _open_search(5000)
-	pathfinder.queue(waiting, true)
-	pathfinder.queue(far, true)
-	pathfinder.queue(near)
-	pathfinder.tick()
-	assert_eq(waiting.state, PathSearch.State.WAITING)
-	assert_gt(far.nodes_looked_at, 0, "the one behind it is worked")
-	assert_gt(near.nodes_looked_at, 0)
-	assert_eq(pathfinder.waiting(), 3, "and the waiting one stays")
-	_known_before_x = 1000
-	_now = 0
-	pathfinder.tick()
-	assert_true(waiting.is_over(), "it goes on once its tiles are known")
-	assert_eq(pathfinder.waiting(), 2)
-
-
-func test_a_dropped_far_search_is_never_looked_at() -> void:
-	var pathfinder := _pathfinder()
-	var far := _open_search(50)
-	pathfinder.queue(far, true)
-	pathfinder.drop(far)
-	pathfinder.tick()
-	assert_eq(far.nodes_looked_at, 0)
-	assert_eq(pathfinder.waiting(), 0)
-
-
-func test_the_far_queue_is_worked_in_one_tick_of_the_number_given() -> void:
-	var pathfinder := _pathfinder()
-	pathfinder.far_every_ticks = 3
-	var far := _open_search(50000)
-	pathfinder.queue(far, true)
-	var looked_at: Array[int] = []
-	for _tick in 6:
-		_now = 0
-		pathfinder.tick()
-		looked_at.append(far.nodes_looked_at)
-	assert_eq(looked_at[0], 0)
-	assert_eq(looked_at[1], 0)
-	assert_gt(looked_at[2], 0, "the third tick")
-	assert_eq(looked_at[3], looked_at[2])
-	assert_eq(looked_at[4], looked_at[2])
-	assert_gt(looked_at[5], looked_at[2], "the sixth")
