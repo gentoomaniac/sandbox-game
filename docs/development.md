@@ -68,6 +68,10 @@ real Claude once.
 The pictures are in `screenshots/`. Take them with `make screenshot`; re-take the ones a change makes
 out of date. Recipes that were used (add `--classic-art` for the classic art):
 
+- The box over a crop (`docs/screenshots/crop-state.png`): `make screenshot SIZE=640x360 ZOOM=2 TIME=12:00
+  AT=8,5 ARGS="--field=1,1 --mouse-tile=4,3"` (the ripe turnip of the debug field). A seed tooltip:
+  `ARGS="--hold=beans_seeds --tooltip=hotbar_0 --mouse-tile=0,0"`. The warning toast shows for a few game
+  minutes after an hour ends: start a little before it (`TIME=12:56`, `--screenshot-delay=0.3`).
 - The hens of the farm yard: `make screenshot SIZE=1000x560 AT=68,-17 TIME=12:00 ZOOM=1.25
   ARGS="--yard=40,-20 --day=45"`, each art cropped to x 35 to 460, y 190 to 360, one above the other and
   doubled; the hens wander, so each shot looks a little different.

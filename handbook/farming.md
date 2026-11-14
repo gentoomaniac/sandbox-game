@@ -20,21 +20,21 @@ Till, sow, water and harvest thirteen crops; the weather decides how well they d
 No calendar stops you sowing, but a crop only grows in weather that suits it. Days are for
 perfect weather; expect longer.
 
-| Crop | Temperature °C (best) | Days | Yield |
-|---|---|---|---|
-| Turnip | 1-28 (13) | 9 | 2 |
-| Potato | 2-30 (16) | 11 | 3 |
-| Carrot | 1-28 (15) | 11 | 2 |
-| Cabbage | 1-28 (14) | 11 | 1 |
-| Onion | 1-28 (15) | 12 | 2 |
-| Wheat | 2-30 (17) | 12 | 3 |
-| Rye | 1-28 (15) | 13 | 3 |
-| Buckwheat | 7-30 (20) | 8 | 2 |
-| Peas | 2-28 (14) | 11, then 4 | 2 |
-| Beans | 5-30 (20) | 10, then 3 | 2 |
-| Flax | 3-27 (16) | 11 | 3 |
-| Strawberries | 2-30 (16) | 10, then 3 | 2 |
-| Pumpkin | 6-30 (20) | 14 | 1 |
+| Crop | Temperature °C (best) | Likes | Water | Wind | Days | Yield |
+|---|---|---|---|---|---|---|
+| Turnip | 1-28 (13) | cool | middle | hardy | 9 | 2 |
+| Potato | 2-30 (16) | cool | middle | hardy | 11 | 3 |
+| Carrot | 1-28 (15) | cool | middle | hardy | 11 | 2 |
+| Cabbage | 1-28 (14) | cool | high | hardy | 11 | 1 |
+| Onion | 1-28 (15) | cool | middle | hardy | 12 | 2 |
+| Wheat | 2-30 (17) | cool | middle | hardy | 12 | 3 |
+| Rye | 1-28 (15) | cool | low | hardy | 13 | 3 |
+| Buckwheat | 7-30 (20) | warm | low | tender | 8 | 2 |
+| Peas | 2-28 (14) | cool | high | tender | 11, then 4 | 2 |
+| Beans | 5-30 (20) | warm | middle | tender | 10, then 3 | 2 |
+| Flax | 3-27 (16) | cool | high | tender | 11 | 3 |
+| Strawberries | 2-30 (16) | cool | high | hardy | 10, then 3 | 2 |
+| Pumpkin | 6-30 (20) | warm | high | hardy | 14 | 1 |
 
 - A seed's tooltip says what its crop likes: cool or warm weather, low, middle or high water need,
   hardy or tender against wind, and about how many days it takes in good weather.
@@ -42,6 +42,9 @@ perfect weather; expect longer.
   wither), or dead; what hurts or slows it today (frost, cold, heat, dry soil, too little sun,
   wind); how damaged it is; and the soil's real moisture. The rain wets only the surface for an
   hour, so trust this number, not the soil's colour.
+
+  ![The box over a ripe turnip: its state, when it withers and the soil's moisture](../docs/screenshots/crop-state.png)
+
 - A short note warns you once per field, before it is too late: the soil of a field is about to
   get too dry for its crop (water it), or a ripe crop will wither within two nights (harvest it).
 - Peas, beans and strawberries fruit again after the second number of days.
