@@ -24,6 +24,8 @@ const SLOW_MS := 16.7
 const START_HOUR := 10
 ## How many goals for the far trips (`--far-trips`) to choose from.
 const FAR_GOALS := 40
+## How often a far walker is sent to a new goal (one search each time).
+const FAR_RESEND_SECONDS := 10
 
 var main: Node
 var frame := 0
@@ -39,6 +41,8 @@ var walk_start := Vector2.ZERO
 var has_faded := false
 var far_trips := 0
 var far_goals: Array[Vector2i] = []
+var far_walkers: Array[Npc] = []
+var far_sent_at := {}
 var far_rng := RandomNumberGenerator.new()
 
 
@@ -73,6 +77,7 @@ func _process(delta: float) -> bool:
 	if since_settled < SKIPPED_FRAMES:
 		return false
 	scenario_frame += 1
+	_resend_far_trips()
 	times.append(ms)
 	if ms > LONG_MS:
 		var name: String = Scenario.keys()[scenario].to_lower()
@@ -128,13 +133,25 @@ func _start_far_trips() -> void:
 		var local := Chunk.local_pos(tile)
 		if chunk.terrain_at(local) == Tile.Terrain.GRASS and chunk.object_at(local) == null:
 			far_goals.append(tile)
-	state.npcs.trip_blocked.connect(func(npc: Npc, _reason: NpcTrip.Block) -> void: _send_far(npc))
-	for npc in state.npcs.all().slice(0, far_trips):
+	far_walkers = state.npcs.all().slice(0, far_trips)
+	for npc in far_walkers:
 		_send_far(npc)
+
+
+## Sends each far walker again every FAR_RESEND_SECONDS: one search each, at a steady rate. (Walking
+## over chunks that are not loaded is not built, so a trip never ends by itself; left to itself it
+## would be stuck and search over and over, which is no load anyone will see.)
+func _resend_far_trips() -> void:
+	var now := Time.get_ticks_usec()
+	for npc in far_walkers:
+		if now - far_sent_at.get(npc, 0) > FAR_RESEND_SECONDS * 1000000:
+			_send_far(npc)
 
 
 func _send_far(npc: Npc) -> void:
 	var state: GameState = main._state
+	far_sent_at[npc] = Time.get_ticks_usec()
+	state.npcs.cancel_trip(npc)
 	state.npcs.walk_to(npc, far_goals[far_rng.randi() % far_goals.size()], state.world)
 
 

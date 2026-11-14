@@ -248,15 +248,24 @@ stands) and walks on. As built:
 - `Tide` and `Vegetation` keep answers in caches that the search would write from the worker: both
   are behind a mutex.
 - **Measured** (`tools/bench/far_search.gd`, `frames.gd`, 2026-11-15; 11 cores): a tile on this
-  thread over warm masks 9.2 to 9.4 us; 30 villagers leaving at once, masks warm, `search_tasks=1`:
-  first way after 0.02 to 0.03 s, last after 0.42 to 0.66 s; masks cold (made as asked, one worker
-  job a frame): last after 4.4 to 4.7 s; the main thread's share is 0.03 to 0.17 ms a frame
-  (`update` and `tick`), 0.5 ms at most. More tasks made the main thread's frames worse in
-  the 154-trip case (`search_tasks=4`: walking mean 13.5 ms against 7.2, longest 95 ms; 2: p99
-  20.8 ms), so the default is 1 (the workers compete with the main thread for memory, it seems).
-  Frames, three baseline runs against 30 and 154 trips sent over and over: see the numbers in
-  design/tech/pathfinding.md's bench notes and the report of this change; the scenes are noisy
-  (walking p99 13.5 to 15.2 baseline; with 1 task 16.0 to 18.8, longest 34 to 48).
+  thread over warm masks 9.2 to 9.4 us. 30 villagers leaving at once, masks warm: with
+  `search_tasks=1` the first way after 0.02 s and the last after 0.8 to 1.0 s; with 2 the last after
+  0.5 s. Masks cold (made as asked, one worker job a frame): the last after 4.4 to 4.7 s (2 tasks) and
+  6.9 to 7.1 s (1 task). The main thread's share is 0.04 ms a frame at the median, 0.1 ms at most
+  warm, 0.6 ms at most cold.
+  Frames (`frames.gd --far-trips=<n>`; each far walker is sent to a new goal every 10 s, one search
+  each, which is 3 searches a second for 30 and 15 for 154, where a village makes about 0.65; the
+  first version of the bench let trips get stuck and search every 0.5 s, which was no real load).
+  Baseline, three runs: standing p99 15.1 to 18.4 ms, walking p99 13.5 to 15.2, longest 27.4 to 29.1.
+  30 trips: walking p99 13.8 (1 task) and 13.8 (2), longest 27.9 and 28.3: the baseline's. Standing
+  p99 29.6 and 23.2 (the scenario is 300 frames, starts with all 30 sent at once and has a hitch of
+  its own at its end). 154 trips: walking p99 17.7 (1 task) and 21.6 (2), longest 52.0 and 57.6;
+  standing 27.2 and 26.2. So the default is 1 task, and a stress of 15 searches a second does cost
+  the main thread frames. **The mutexes are not the cause:** with the locks of `Tide` and
+  `Vegetation` taken out for a run, 154 trips and 2 tasks gave walking p99 19.3 and longest 52.0, the
+  same within the noise (21.6 and 57.6 with them), so the worker's lookups are not what slows the
+  main thread. Not found yet: the workers' share of memory and cache with the main thread is
+  suspected; to look at once villagers really walk (step 3).
 
 ## Time skips and sleep
 

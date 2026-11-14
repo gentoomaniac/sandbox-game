@@ -259,7 +259,7 @@ for something inside a pool task (a task that waits for a mask can block every w
 |---|---|
 | `max_nodes` (2500) | the length of a leg: more sees further in one search, costs more time on a worker |
 | `heuristic_weight` (1.0) | speed of the search against the way being the best one (0.6 is exact and searches fields all over) |
-| `search_tasks` (1) | searches at once: more finishes a crowd's searches sooner but, measured, costs the main thread's frames (workers compete for memory); each is a pool task |
+| `search_tasks` (1) | searches at once: 2 finishes a crowd of 30 in half the time (0.5 s against 0.8 to 1.0 s warm) but, measured under 15 searches a second, costs the main thread's frames (walking p99 21.6 ms against 17.7 with 1, baseline 13.5 to 15.2); each is a pool task |
 | `snapshot_seconds` (2) | how old the wear and the buildings a search sees may be, against the cost of copying them |
 | `cost_trodden`, `cost_path`, `cost_object` | how much villagers keep to lanes and walk round fields |
 | `max_legs` (6) | how long a chain of legs may be |
