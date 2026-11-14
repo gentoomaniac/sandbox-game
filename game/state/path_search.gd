@@ -215,41 +215,43 @@ func _push(node: int) -> void:
 		_cost_to_reach[node] * (1.0 - TIE_BREAK)
 		+ _distance_to_goal(_tiles[node]) * _heuristic_weight
 	)
+	# The node falls into place from the end: those above it that are worse move down.
 	_heap.append(node)
 	_heap_priority.append(priority)
-	var child := _heap.size() - 1
-	while child > 0:
-		var parent := (child - 1) >> 1
-		if _heap_priority[parent] <= _heap_priority[child]:
+	var hole := _heap.size() - 1
+	while hole > 0:
+		var parent := (hole - 1) >> 1
+		if _heap_priority[parent] <= priority:
 			break
-		_swap(parent, child)
-		child = parent
+		_heap[hole] = _heap[parent]
+		_heap_priority[hole] = _heap_priority[parent]
+		hole = parent
+	_heap[hole] = node
+	_heap_priority[hole] = priority
 
 
 func _pop() -> int:
 	var top := _heap[0]
 	var last := _heap.size() - 1
-	_swap(0, last)
+	var node := _heap[last]
+	var priority := _heap_priority[last]
 	_heap.resize(last)
 	_heap_priority.resize(last)
-	var parent := 0
+	if last == 0:
+		return top
+	# The last node is let fall from the top: the better of the two below it moves up.
+	var hole := 0
 	while true:
-		var child := parent * 2 + 1
+		var child := hole * 2 + 1
 		if child >= last:
 			break
 		if child + 1 < last and _heap_priority[child + 1] < _heap_priority[child]:
 			child += 1
-		if _heap_priority[parent] <= _heap_priority[child]:
+		if priority <= _heap_priority[child]:
 			break
-		_swap(parent, child)
-		parent = child
+		_heap[hole] = _heap[child]
+		_heap_priority[hole] = _heap_priority[child]
+		hole = child
+	_heap[hole] = node
+	_heap_priority[hole] = priority
 	return top
-
-
-func _swap(a: int, b: int) -> void:
-	var node := _heap[a]
-	_heap[a] = _heap[b]
-	_heap[b] = node
-	var priority := _heap_priority[a]
-	_heap_priority[a] = _heap_priority[b]
-	_heap_priority[b] = priority
