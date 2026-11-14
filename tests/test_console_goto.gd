@@ -55,13 +55,14 @@ func test_a_tile_with_a_minus_is_read() -> void:
 	assert_eq(_antje.trip.goal, Vector2i(-3, -4))
 
 
-func test_a_tile_that_is_not_loaded_is_no_way_for_now_and_not_on_its_way() -> void:
+func test_a_tile_outside_the_world_is_no_way_once_it_is_searched() -> void:
 	var lines := _console.run("goto antje 9000,9000")
 	assert_eq(
-		lines, ["Antje Boysen has no way to (9000, 9000) for now: not loaded"] as Array[String]
+		lines, ["Antje Boysen is on its way to (9000, 9000), 12729 tiles off"] as Array[String]
 	)
+	_state.npcs.update(0.05, _state.world, _state.player.position, _state.clock)
 	assert_eq(_antje.trip.state, NpcTrip.State.BLOCKED)
-	assert_string_contains(_state.npcs.path_text(Vector2.ZERO), "blocked (not loaded)")
+	assert_string_contains(_state.npcs.path_text(Vector2.ZERO), "blocked (no way)")
 
 
 func test_here_inside_a_house_is_refused() -> void:

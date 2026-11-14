@@ -10,7 +10,7 @@ extends RefCounted
 enum State { SEARCHING, WALKING, WAITING, BLOCKED }
 ## Why a trip is blocked (see `Npcs.trip_blocked`): there is no way to the goal, or the villager
 ## cannot get on along the one found.
-enum Block { NO_WAY, NOT_LOADED, STUCK }
+enum Block { NO_WAY, STUCK }
 
 ## The map the villager walks on, and the tile they walk to on it.
 var map: GameMap
@@ -50,8 +50,6 @@ var is_blocked_told := false
 ## What a block is called, for the console and the path overlay (F4).
 static func block_text(reason: Block) -> String:
 	match reason:
-		Block.NOT_LOADED:
-			return "not loaded"
 		Block.STUCK:
 			return "stuck"
 	return "no way"

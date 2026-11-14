@@ -1,10 +1,9 @@
 extends NpcCase
-## What a trip does where the world is not loaded (off-screen travel is #68): the villager
-## stands, blocked as NOT_LOADED, and looks again when chunks have loaded; and the ends of a trip
-## that is not walked: `place`, a door, a skip.
+## What a trip does where the world is not loaded (off-screen travel is #68): it is searched over
+## the masks, and walking it there is not done yet; and the ends of a trip that is not walked:
+## `place`, a door, a skip.
 
 const SECONDS := 20
-const NOT_LOADED := NpcTrip.Block.NOT_LOADED
 
 
 func _tile_at(x: int, y: int) -> Vector2i:
@@ -29,42 +28,56 @@ func _load_chunk_of(tile: Vector2i) -> void:
 	_world.add_chunk(WorldGenerator.new(SEED).generate_chunk(coords))
 
 
-func test_an_unloaded_villager_is_blocked_without_a_search_and_walks_when_loaded() -> void:
+## Lets frames go by, the masks made on their worker meanwhile, until the villager has its way (or
+## is blocked): the trip is not searching any more.
+func _run_until_searched(npc: Npc) -> void:
+	for _i in 2000:
+		if npc.trip.state != NpcTrip.State.SEARCHING:
+			return
+		_step()
+		OS.delay_msec(2)
+	fail_test("the search did not end")
+
+
+## A tile of grass with nothing on it in a chunk of the generator, loaded or not.
+func _free_tile_in(coords: Vector2i) -> Vector2i:
+	var chunk := WorldGenerator.new(SEED).generate_chunk(coords)
+	for y in Chunk.CHUNK_SIZE:
+		for x in Chunk.CHUNK_SIZE:
+			var local := Vector2i(x, y)
+			if chunk.terrain_at(local) == Tile.Terrain.GRASS and chunk.object_at(local) == null:
+				return Chunk.to_world(coords, local)
+	fail_test("no free tile in %s" % coords)
+	return Vector2i.ZERO
+
+
+func test_an_unloaded_villager_searches_over_the_masks_and_walks_when_its_chunk_loads() -> void:
 	watch_signals(_npcs)
 	var npc := _add_villager(_centre_of(_tile_at(0, 0)), _yard_middle())
 	_unload_chunk_of(_tile_at(0, 0))
 	_npcs.walk_to(npc, _tile_at(3, 3), _world)
-	_run(SECONDS)
-	assert_signal_emit_count(_npcs, "trip_blocked", 1)
-	assert_signal_emitted_with_parameters(_npcs, "trip_blocked", [npc, NOT_LOADED])
-	assert_eq(npc.trip.searches, 0, "nothing is searched where nothing is there")
+	_run_until_searched(npc)
+	assert_eq(npc.trip.searches, 1)
+	assert_eq(npc.trip.state, NpcTrip.State.WALKING, "it has its way")
+	assert_gt(npc.trip.path.size(), 0)
+	assert_signal_emit_count(_npcs, "trip_blocked", 0)
 	_load_chunk_of(_tile_at(0, 0))
-	_run(_npcs.rules.travel("blocked_min_seconds") + 10.0)
+	_run(SECONDS)
 	assert_signal_emit_count(_npcs, "trip_arrived", 1)
 	assert_eq(npc.tile(), _tile_at(3, 3))
-	assert_signal_emit_count(_npcs, "trip_blocked", 1, "told once")
 
 
-func test_a_goal_that_is_not_loaded_blocks_the_trip_without_a_search() -> void:
+func test_a_goal_that_is_not_loaded_is_searched_for_and_no_trip_is_told_it_is_not_loaded() -> void:
 	watch_signals(_npcs)
 	var npc := _add_villager(_centre_of(_tile_at(0, 0)), _yard_middle())
-	var far_away := _tile_at(0, 0) + Vector2i(Chunk.CHUNK_SIZE * 12, 0)
-	_npcs.walk_to(npc, far_away, _world)
-	_run(SECONDS)
-	assert_signal_emitted_with_parameters(_npcs, "trip_blocked", [npc, NOT_LOADED])
-	assert_eq(npc.trip.searches, 0)
-
-
-func test_a_villager_whose_chunk_unloads_on_its_way_is_blocked() -> void:
-	watch_signals(_npcs)
-	var npc := _add_villager(_centre_of(_tile_at(-6, -5)), _yard_middle())
-	_npcs.walk_to(npc, _tile_at(6, -5), _world)
-	_run(2.0)
-	_unload_chunk_of(npc.tile())
-	_run(1.0)
-	assert_signal_emitted_with_parameters(_npcs, "trip_blocked", [npc, NOT_LOADED])
-	assert_signal_emit_count(_npcs, "trip_blocked", 1)
+	var goal_chunk := Chunk.world_to_chunk(_middle) + Vector2i(8, 0)
+	assert_false(_world.is_chunk_loaded(goal_chunk))
+	_npcs.walk_to(npc, _free_tile_in(goal_chunk), _world)
+	_run_until_searched(npc)
 	assert_eq(npc.trip.searches, 1)
+	assert_gt(npc.trip.nodes_looked_at, 0, "it looked all over the yard, which the sea rings")
+	assert_signal_emitted_with_parameters(_npcs, "trip_blocked", [npc, NpcTrip.Block.NO_WAY])
+	assert_false(NpcTrip.Block.has("NOT_LOADED"))
 
 
 func test_a_villager_in_an_unloaded_chunk_is_placed_but_one_in_a_loaded_chunk_never() -> void:

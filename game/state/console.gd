@@ -823,16 +823,12 @@ func _goto(arguments: PackedStringArray) -> Array[String]:
 	return _goto_answer(npc, tile)
 
 
-## What a villager who has just been sent to `tile` says: it is there, it has no way for now (a
-## place that is not loaded is known at once), or a search is under way.
+## What a villager who has just been sent to `tile` says: it is there, or a search is under way (F4
+## says what comes of it).
 func _goto_answer(npc: Npc, tile: Vector2i) -> Array[String]:
-	var line := "%s is on its way to %s, %d tiles off" % [npc.name, tile, _tiles_between(npc, tile)]
 	if not npc.is_travelling():
-		line = "%s is at %s already" % [npc.name, tile]
-	elif npc.trip.state == NpcTrip.State.BLOCKED:
-		var why := NpcTrip.block_text(npc.trip.block_reason)
-		line = "%s has no way to %s for now: %s" % [npc.name, tile, why]
-	return [line]
+		return ["%s is at %s already" % [npc.name, tile]]
+	return ["%s is on its way to %s, %d tiles off" % [npc.name, tile, _tiles_between(npc, tile)]]
 
 
 ## The tiles in a straight line, to the nearest.

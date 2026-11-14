@@ -125,7 +125,9 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   next. A far tile that has closed makes the trip search again from where it stands, as a near stuck
   one does, then BLOCKED with the 238 retry. Far feet wear the tiles too
   (`World.wear_unloaded(tile, steps)`, trusting the mask's WEARS bit), so lanes grow where people
-  walk, seen or not. 238's NOT_LOADED goes: a far trip searches; an unknown tile waits.
+  walk, seen or not. 238's NOT_LOADED goes: a far trip searches; an unknown tile waits. (**Step 2 done**: `Block.NOT_LOADED`
+  and its checks are gone and a far trip searches; until step 3 walks it, a villager on ground that is
+  not loaded finds its way and then stands, stuck, for the retries, as the body does not fit there.)
 - **`Npcs.update`** moves every trip, near and far; `only_loaded` only keeps the strolls to the loaded
   chunks. `Npcs.catch_up(map, seed, minutes)` learns the minutes of the skip (below).
 - **`NpcViews`** makes a view only for a villager whose chunk is loaded, so after a jump (a loaded
@@ -230,7 +232,8 @@ terrain, #61 and #62) then cost what they cost near. The parity test gets a vill
    with the pass-or-fail numbers. Tests: a far way equals the way found with the same chunks loaded;
    the rim: a loaded goal tile covered by a big object whose own chunk is not loaded is closed, and
    stays closed when that chunk loads; a search waits for a mask, goes on, and loses no neighbour;
-   a far request runs while near ones are queued; NOT_LOADED is gone.
+   a far request runs while near ones are queued; NOT_LOADED is gone. **Done** (tests/test_travel_view.gd,
+   tests/test_path_search_waiting.gd, tests/test_npc_trips_far.gd); the far search bench is below.
 3. **Far walking in `NpcTrip`, `Npcs.update`, far wear, `NpcViews`.** Tests: a villager from far
    comes into the loaded area on its path and arrives at the goal; one leaves it and walks on; its
    position never moves more than `walk_speed x delta` in an update, also when its chunks load one

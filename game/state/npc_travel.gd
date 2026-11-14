@@ -58,10 +58,6 @@ func cancel(npc: Npc) -> void:
 func update(npc: Npc, delta: float, player_feet: Vector2, fits: Callable) -> void:
 	var trip := npc.trip
 	trip.seconds_since_search += delta
-	if trip.state != NpcTrip.State.BLOCKED and _is_not_loaded(npc, trip):
-		_drop_search(trip)
-		_block_not_loaded(npc)
-		return
 	match trip.state:
 		NpcTrip.State.SEARCHING:
 			_take_search_result(npc)
@@ -110,9 +106,6 @@ func _begin_search(npc: Npc) -> void:
 	var map := trip.map
 	var world := map as World
 	assert(world != null, "A trip is over the tiles of a World")
-	if _is_not_loaded(npc, trip):
-		_block_not_loaded(npc)
-		return
 	var view := TravelView.new(world, _masks_of(world), rules, world.clock.total_minutes())
 	trip.view = view
 	trip.search = PathSearch.new(
@@ -128,7 +121,8 @@ func _begin_search(npc: Npc) -> void:
 	trip.state = NpcTrip.State.SEARCHING
 	trip.seconds_since_search = 0.0
 	trip.change_count_at_search = map.change_count
-	_pathfinder.queue(trip.search)
+	# A search from or to ground that is not loaded may wait for masks, and has a queue of its own.
+	_pathfinder.queue(trip.search, not (view.is_live(npc.tile()) and view.is_live(trip.goal)))
 	npc.activity = Npc.Activity.IDLE
 
 
@@ -144,27 +138,6 @@ func _drop_search(trip: NpcTrip) -> void:
 	if trip.search != null:
 		_pathfinder.drop(trip.search)
 		trip.search = null
-
-
-## Whether the villager or its goal is in a chunk that is not loaded: the world there is not there
-## to walk on, so nothing is searched (far travel is planned in #68).
-func _is_not_loaded(npc: Npc, trip: NpcTrip) -> bool:
-	var world := trip.map as World
-	return (
-		world != null
-		and not (
-			world.is_chunk_loaded(Chunk.world_to_chunk(npc.tile()))
-			and world.is_chunk_loaded(Chunk.world_to_chunk(trip.goal))
-		)
-	)
-
-
-## It stands, and looks again when the world has changed (a chunk loading is a change).
-func _block_not_loaded(npc: Npc) -> void:
-	var trip := npc.trip
-	trip.seconds_since_search = 0.0
-	trip.change_count_at_search = trip.map.change_count
-	_block(npc, NpcTrip.Block.NOT_LOADED)
 
 
 ## Whether walking over an object spoils it (a crop, a flower), as against a deck or a gate, which

@@ -184,8 +184,8 @@ func is_rest_time(day: int, minute: int) -> bool:
 
 ## Sends a villager to a tile of `map`, instead of wherever it was going: it finds its way (round
 ## what is in it, along lanes, through gates), `trip_arrived` comes when it is there, and
-## `trip_blocked` when no way is found (for a villager or a goal in an unloaded chunk it comes
-## at once, from this call). `trip_arrived` comes at once too if it is there already.
+## `trip_blocked` when no way is found. `trip_arrived` comes at once too if it is there already. The
+## way is found over chunks that are not loaded too; walking it there is not done yet (#68).
 func walk_to(npc: Npc, tile: Vector2i, map: GameMap) -> void:
 	_travel.start(npc, tile, map)
 
