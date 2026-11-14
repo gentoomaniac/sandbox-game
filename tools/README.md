@@ -161,6 +161,12 @@ villagers' step rule: `godot --headless --path . -s tools/bench/path_search.gd` 
 `XDG_DATA_HOME` away from the real one). It sets `max_nodes` and the budget of a frame in `[travel]`
 of `data/npcs.cfg`.
 
+`tools/bench/travel_masks.gd` (#68; no make target, it needs no save and writes nothing) times the
+travel masks of villagers far from the player (design/villagers/travel.md): for three seeds the masks
+of 81 chunks asked for at once and made a frame at a time while the worker generates, a stamp on its
+own, generating a chunk on the main thread, and one question to a warm mask:
+`godot --headless --path . -s tools/bench/travel_masks.gd` (set `XDG_DATA_HOME` away from the real one).
+
 `make weather-probe` (`weather_probe.gd`, with the sampling of `tests/weather_year.gd`) samples a
 year of weather hourly at tile 0,0 for seeds 1, 12345 and 987654 and prints, per seed, the share of
 wet hours (rain or snow over 0.05 in an hour), the longest wet spell, the wet hours, the snow days

@@ -48,34 +48,42 @@ as it is entered, not over the whole path in advance. No collisions, near or far
 
 ## Data and API, on top of 238
 
-- **`TravelMask`** (one per chunk): a `PackedByteArray` of 1024 flags, with `GameMap.is_walkable`'s
-  order: DECK (free, whatever the ground and the tide), BLOCKED (ground or a blocking object), MUD
-  (blocked while `Tide.floods`), OBJECT (the +2.0 cost of a non-blocking object), SEASONAL (the
-  object's block or cost counts only while the plant is present; its `WorldObject` is kept in a small
-  dictionary) and WEARS (grass or floodplain). Buildings are not in it: `World.building_at` is read
-  live, and any building tile, the door included, is closed to villagers (238's step rule).
-- **`TravelMasks`** (one per `World`, held by `Npcs`): an LRU of masks (`far_chunks_kept`, 256, about
-  0.4 MB) and an LRU of raw chunks (16, about 5 MB). A raw chunk is what the generator makes and
+- **`TravelMask`** (one per chunk, `game/state/travel_mask.gd`): a `PackedByteArray` of 1024 flags,
+  with `GameMap.is_walkable`'s order: DECK (free, whatever the ground and the tide), BLOCKED (ground
+  or a blocking object), MUD (blocked while `Tide.floods`), OBJECT (the +2.0 cost of a non-blocking
+  object that feet spoil, `NpcTravel.is_trampled`), SEASONAL (what the object does counts only while
+  the plant is present: the flags are those of the ground alone and its `WorldObject` is kept in a
+  small dictionary) and WEARS (grass or floodplain). Buildings are not in it: `World.building_at` is
+  read live, and any building tile, the door included, is closed to villagers (238's step rule). It
+  answers `is_free(local, tide_level, day)`, `is_trampled(local, day)` and `wears(local)`; tide and
+  day are the caller's, never the clock.
+- **`TravelMasks`** (one per `World`, to be held by `Npcs`; `game/state/travel_masks.gd`): an LRU of
+  masks (256, about 0.4 MB) and an LRU of raw chunks (16, about 5 MB). The two numbers are constants
+  and constructor arguments of `TravelMasks` for now; they become `far_chunks_kept` and its sister in
+  `[travel]` of data/npcs.cfg when `Npcs` takes the masks (step 2). A raw chunk is what the generator makes and
   nothing else: no edit is ever applied to it, so it never goes stale (the seed does not change).
   A mask of chunk C is stamped from the raw chunks C, W, N and NW (big objects reach east and south,
-  `MAX_FOOTPRINT` 7 x 2 within 32 tiles), with the edits of those four chunks replayed on the object
-  list as `add_chunk` does: an edited position loses its generated object and gets the edit's, if
-  any; an edited terrain replaces the generated one. `mask_of(coords)` returns the mask or null and
-  asks for it.
+  `MAX_FOOTPRINT` 7 x 2 within 32 tiles), with the edits of those four chunks replayed on copies of them
+  (`World.replay_edits`, the code `add_chunk` uses: an edited position loses its generated object
+  and gets the edit's, if any; an edited terrain replaces the generated one). `mask_of(coords)`
+  returns the mask or null and asks for it; `update()` runs once a frame; `wait_for_mask(coords)`
+  waits for the worker, for a time skip (step 4) and for tests.
 - **Raw chunks are generated on a worker thread**, one at a time, by a `WorldGenerator` of its own.
   `generate_chunk` reads only the seed, its own noise objects and its own `FieldLayout.cover`, and
   the rules' statics (`LandscapeRules`, `StationRules`, `WorldObjectTypes.TYPES`). `TravelMasks`
   asks for each of them on the main thread before it starts the worker, so the worker only reads
   them. It writes nothing shared. A cold mask
   waits for up to four raw chunks, generated one after the other (about 35 ms in all, off the main
-  thread). The main thread only copies the edits of the four chunks and stamps the mask when its raw
-  chunks are there: about 2 ms, at most one stamp a frame. (Pausing `generate_chunk` across frames
+  thread). The main thread only stamps the mask when its raw chunks are there (replaying the edits
+  on copies of them as it goes): about 2.6 ms, at most one stamp a frame. The raw chunks a pending
+  request needs are never evicted, whatever the limit. (Pausing `generate_chunk` across frames
   would mean rewriting the generator; on the main thread one call is 9 to 13 ms, too much at 60 fps.)
-- **Invalidation:** `World` gets `signal edited(chunk_coords)` and a version per chunk, raised by
-  `_edit_terrain` and `_edit_object`, which every change of terrain and objects goes through,
-  loaded or not. An edit of C drops the masks of C, E, S and SE. A stamp notes the versions of its
-  four chunks; one whose versions moved meanwhile is thrown away and asked for again, so no stale
-  mask is ever published. The raw chunks stay (they hold no edits).
+- **Invalidation:** `World` gets `signal edited(chunk_coords)`, raised by `_edit_terrain` and
+  `_edit_object`, which every change of terrain and objects goes through, loaded or not. An edit of
+  C drops the masks of C, E, S and SE (and no others); the raw chunks stay (they hold no edits). No
+  stamp can be stale, and so there is no version per chunk: a stamp reads the edits on the main
+  thread, in one call, as it makes the mask, so no edit can come between the reading and the
+  publishing; one made while a mask waits for its raw chunks is simply in it.
 - **`TravelView`** (the one view every World search gets, near and far): a tile is answered live
   (238's `can_stand_at`) only where its chunk and its W, N and NW neighbours are loaded; elsewhere by
   the mask. Today `World._stored_object_at` does not see a big object whose own chunk is not loaded,
@@ -118,8 +126,14 @@ chunk is not loaded; never on a visible one.
 
 ## Cost
 
-- **Memory:** masks 0.4 MB, raw chunks 5 MB, paths about 5 KB for a 600-tile path (0.75 MB for
-  155 such). Search state only while a search runs (two at a time).
+- **Memory:** masks 0.4 MB (a kilobyte each, and the few seasonal plants of the chunk), raw chunks
+  5 MB, paths about 5 KB for a 600-tile path (0.75 MB for 155 such). Search state only while a search runs (two at a time).
+- **Measured, step 1** (`tools/bench/travel_masks.gd`, three seeds, 81 chunks each, headless, `nice`
+  on 11 cores, 2026-11-14): generating a chunk on the main thread 8.4 to 8.7 ms median, 10.6 at most; a
+  stamp (copies, replay, mask) 2.6 ms median, 4.0 at most; asking for 81 masks at once and calling
+  `update` once a frame (the worker generating meanwhile), 101 frames for 81 masks, an `update` 3.0 ms
+  median and 4.5 ms at most on the main thread; a question to a warm mask (`is_free`) 0.45 us, against
+  15.5 us for `Npcs.can_stand_at`.
 - **CPU per frame:** a far walker is one addition and one compare a frame, a mask read per tile:
   under 0.3 ms for 155. Searches stay in 238's 1.5 ms. On the main thread a mask costs one stamp
   (about 2 ms, one a frame at most); generating (9 to 13 ms a chunk) is on the worker.
@@ -196,8 +210,10 @@ terrain, #61 and #62) then cost what they cost near. The parity test gets a vill
    seasonal plant dormant and present (a dormant one costs nothing), a deck over mud at high tide, a
    ditch, the dyke, an ewer, a hedge, the chunk and world borders, the wear. The raw cache warmed,
    then an object taken off and a fence put down, then the masks again: they follow the edits. An
-   edit drops exactly the four masks; a stamp whose chunks were edited meanwhile is not published.
-   The world's generator is untouched; the worker's chunk equals the main thread's.
+   edit drops exactly the four masks; an edit made while a mask waits for its raw chunks is in the
+   mask (no stale stamp can be published, see Invalidation). The world's generator is untouched;
+   the worker's chunk equals the main thread's. **Done** (tests/test_travel_mask_*.gd,
+   tests/test_travel_masks.gd).
 2. **`TravelView`, WAITING in `PathSearch`, the far slot of `Pathfinder`**, and the far search bench
    with the pass-or-fail numbers. Tests: a far way equals the way found with the same chunks loaded;
    the rim: a loaded goal tile covered by a big object whose own chunk is not loaded is closed, and
