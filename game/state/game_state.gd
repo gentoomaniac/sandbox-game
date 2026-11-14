@@ -576,7 +576,7 @@ func collect_ground_items(delta: float) -> void:
 	for ground_item in ground_items.near(player.position, PULL_RADIUS):
 		if ground_item.settle_seconds > 0.0 or ground_item.is_dropped_by_player:
 			continue
-		if not player.inventory.can_add({ground_item.item: 1}):
+		if not player.inventory.can_add({ground_item.item: 1}, ground_item.state):
 			continue
 		var to_player := player.position - ground_item.position
 		if to_player.length() > maxf(PICKUP_RADIUS, PULL_SPEED * delta):
@@ -587,7 +587,9 @@ func collect_ground_items(delta: float) -> void:
 		var picked_up := ground_item.count
 		player.inventory.hold_notifications(
 			func() -> void:
-				ground_item.count = player.inventory.add(ground_item.item, ground_item.count)
+				ground_item.count = player.inventory.add(
+					ground_item.item, ground_item.count, [], ground_item.state
+				)
 				if ground_item.count == 0:
 					ground_items.remove(ground_item)
 		)
@@ -612,7 +614,9 @@ func drop_from_inventory(slot: int) -> bool:
 	player.inventory.hold_notifications(
 		func() -> void:
 			player.inventory.destroy(slot)
-			for pile in current_map.drop_items(target, {stack["item"]: stack["count"]}):
+			for pile in current_map.drop_items(
+				target, {stack["item"]: stack["count"]}, stack.get("state", {})
+			):
 				pile.is_dropped_by_player = true
 	)
 	report(ActionOutcome.DROP, target, &"", {stack["item"]: stack["count"]})

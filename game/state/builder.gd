@@ -161,11 +161,16 @@ func take_down(target: TakeDownTarget) -> bool:
 	if why_not_take_down(target) != "":
 		return false
 	var items := take_down_gives(target)
+	var tool_use := ToolUse.new(_state)
+	var plain := tool_use.plain_items_of_placed(target.object)
 	_state.world.remove_object(target.object.pos)
-	for item: StringName in items:
-		var left := _state.player.inventory.add(item, items[item])
+	for item: StringName in plain:
+		var left := _state.player.inventory.add(item, plain[item])
 		if left > 0:
 			_state.world.drop_items(target.object.pos, {item: left})
+	for stack in tool_use.stateful_stacks_held_by(target.object):
+		if _state.player.inventory.add(stack["item"], 1, [], stack["state"]) > 0:
+			_state.world.drop_items(target.object.pos, {stack["item"]: 1}, stack["state"])
 	_state.report(ActionOutcome.TAKE_DOWN, target.object.pos, target.object.type, items)
 	return true
 

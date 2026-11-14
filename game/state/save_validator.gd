@@ -145,6 +145,8 @@ func _check_ground_item(pile: Variant, path: String, piles: Array) -> void:
 		_add_missing("item %s" % item, path, _removing(piles, pile))
 	elif count != null and count < 1:
 		_report(path, "count %d is less than 1" % count)
+	if pile.has("state") and not (pile["state"] is Dictionary and count == 1):
+		_report(path, "a state belongs to one item and is a dictionary")
 
 
 func _check_object_edit(edit: Variant, path: String) -> void:

@@ -1,5 +1,5 @@
 extends SaveValidationCase
-## The state of an item stack (a candle's burn) is checked on a save.
+## The state of an item stack or a pile on the ground (a candle's burn) is checked on a save.
 
 
 func test_a_state_on_a_stack_of_two_or_that_is_no_dictionary_is_refused() -> void:
@@ -11,3 +11,16 @@ func test_a_state_on_a_stack_of_two_or_that_is_no_dictionary_is_refused() -> voi
 
 	assert_string_contains(result.reason, "slot 1: a state belongs to one item")
 	assert_string_contains(result.reason, "slot 2: a state belongs to one item")
+
+
+func test_a_state_on_a_pile_of_two_or_that_is_no_dictionary_is_refused() -> void:
+	var game := _current_game()
+	game["world"]["ground_items"] = [
+		{"item": "logs", "count": 2, "position": [1.5, 1.5], "state": {"mark": 1}},
+		{"item": "logs", "count": 1, "position": [2.5, 1.5], "state": 5},
+	]
+
+	var result := _refusal_of(game)
+
+	assert_string_contains(result.reason, "ground_items 0: a state belongs to one item")
+	assert_string_contains(result.reason, "ground_items 1: a state belongs to one item")

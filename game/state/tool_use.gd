@@ -277,8 +277,11 @@ func _do_use(target: Vector2i) -> Use:
 			var taken_down := _state.current_map.remove_object(target)
 			var items := items_of_placed(taken_down)
 			# `use_at` already checked that it all fits (or answered NO_ROOM).
-			for item: StringName in items:
-				_state.player.inventory.add(item, items[item])
+			var plain := plain_items_of_placed(taken_down)
+			for item: StringName in plain:
+				_state.player.inventory.add(item, plain[item])
+			for stack in stateful_stacks_held_by(taken_down):
+				_state.player.inventory.add(stack["item"], 1, [], stack["state"])
 			_done(ActionOutcome.TAKE_DOWN, target, taken_down.type, items)
 		Use.HIT:
 			_hit(_state.world.object_at(target))
@@ -407,7 +410,9 @@ func _use_inside(item: Dictionary, pos: Vector2i) -> Use:
 		or _use_cutting_tool(item, placed) != Use.HIT
 	):
 		return Use.NOTHING
-	var fits := _state.player.inventory.can_add(items_of_placed(placed))
+	var fits := _state.player.inventory.can_take(
+		plain_items_of_placed(placed), stateful_stacks_held_by(placed)
+	)
 	return Use.TAKE_DOWN if fits else Use.NO_ROOM
 
 
@@ -422,6 +427,27 @@ func items_of_placed(placed: WorldObject) -> Dictionary:
 	for item: StringName in drops:
 		items[item] = items.get(item, 0) + drops[item]
 	return items
+
+
+## `items_of_placed` without the single items that have a state (see `stateful_stacks_held_by`).
+func plain_items_of_placed(placed: WorldObject) -> Dictionary:
+	var items := items_of_placed(placed)
+	for stack in stateful_stacks_held_by(placed):
+		items[stack["item"]] -= 1
+		if items[stack["item"]] == 0:
+			items.erase(stack["item"])
+	return items
+
+
+## The stacks of what a placed thing holds that have a state (a lantern with its candle, a burnt
+## candle): each is one item, which comes out with its state, never as a plain count.
+func stateful_stacks_held_by(placed: WorldObject) -> Array[Dictionary]:
+	var stacks: Array[Dictionary] = []
+	if placed.storage != null:
+		for stack in placed.storage.slots:
+			if stack.has("state"):
+				stacks.append(stack)
+	return stacks
 
 
 ## What a placed thing holds, not counting the thing itself: a chest's items, a kiln's load (or
@@ -590,8 +616,10 @@ func _hit(object: WorldObject) -> void:
 	var object_type := object.type_data()
 	# What it holds (a chest's items, a kiln's load) comes out with it.
 	var drops := items_of_placed(object) if object_type.has("drops") else {}
+	var plain_drops := plain_items_of_placed(object) if object_type.has("drops") else {}
 	if _rolls_seed(object):
 		drops[object_type["seed"]] = 1
+		plain_drops[object_type["seed"]] = 1
 	if not object_type.has("leaves"):
 		_state.world.remove_object(object.pos)
 	else:
@@ -600,7 +628,11 @@ func _hit(object: WorldObject) -> void:
 			stump.state["tree"] = str(object.type)
 		_state.world.replace_object(object, stump)
 		TrunkPlacement.lay(_state.world, object, _state.player.tile())
-	_state.world.drop_items(object.pos, drops)
+	# What a chest holds with a state lies as piles that keep it.
+	if object_type.has("drops"):
+		for stack in stateful_stacks_held_by(object):
+			_state.world.drop_items(object.pos, {stack["item"]: 1}, stack["state"])
+	_state.world.drop_items(object.pos, plain_drops)
 	# The finishing hit replaces or removes the object instead of `hit_object`, which emits
 	# this for the other hits; the view still shakes and throws particles for it.
 	_state.world.object_hit.emit(object)

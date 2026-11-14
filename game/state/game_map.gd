@@ -107,5 +107,5 @@ func pile_seed() -> int:
 ## Puts items (item id to count) on the ground around a tile (see `GroundItems.drop`). The one
 ## entry point for whatever gives items to a map; it is here, and not on `ground_items`, because
 ## where a pile can lie is up to the map's terrain and objects. Returns the piles.
-func drop_items(source: Vector2i, drops: Dictionary) -> Array[GroundItem]:
-	return ground_items.drop(source, drops, self)
+func drop_items(source: Vector2i, drops: Dictionary, state := {}) -> Array[GroundItem]:
+	return ground_items.drop(source, drops, self, state)

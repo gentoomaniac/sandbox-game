@@ -1,6 +1,10 @@
 extends ResourceCase
 ## The chest outdoors, taken down with the axe, and saved with what it holds.
 
+## The states of the two single items a chest holds in the tests of what keeps its state.
+const FRESH_LANTERN := {"mark": 1}
+const BURNT_CANDLE := {"mark": 2}
+
 
 func _chest_with_contents() -> WorldObject:
 	var chest := _place(WorldObjectTypes.CHEST)
@@ -99,3 +103,66 @@ func test_objects_that_store_nothing_have_no_storage_in_the_save() -> void:
 	var stone := WorldObject.new(WorldObjectTypes.STONE, _tile)
 	assert_null(stone.storage)
 	assert_false(stone.to_dict().has("storage"))
+
+
+# --- What has a state keeps it (task 231) ---
+
+
+func _chest_with_lantern_and_burnt_candle() -> WorldObject:
+	var chest := _place(WorldObjectTypes.CHEST)
+	chest.storage.slots[0] = {"item": ItemTypes.LANTERN, "count": 1}
+	chest.storage.set_state(0, FRESH_LANTERN)
+	chest.storage.slots[1] = {"item": ItemTypes.STONE, "count": 1}
+	chest.storage.set_state(1, BURNT_CANDLE)
+	chest.storage.add(ItemTypes.STONE, 2)
+	return chest
+
+
+func _states_of(item: StringName, stacks: Array) -> Array:
+	return (
+		stacks
+		. filter(
+			func(stack: Dictionary) -> bool: return stack.get("item") == item and stack.has("state")
+		)
+		. map(func(stack: Dictionary) -> Dictionary: return stack["state"])
+	)
+
+
+func test_a_felled_chest_spills_a_lantern_and_a_burnt_candle_with_their_states() -> void:
+	_chest_with_lantern_and_burnt_candle()
+	_hit(ItemTypes.RUSTY_IRON_AXE, 3)
+
+	var piles := _world.ground_items.all()
+	var states := piles.filter(func(pile: GroundItem) -> bool: return not pile.state.is_empty())
+	assert_eq(states.size(), 2)
+	for pile: GroundItem in states:
+		assert_eq(pile.count, 1)
+		assert_eq(pile.state, FRESH_LANTERN if pile.item == ItemTypes.LANTERN else BURNT_CANDLE)
+	assert_eq(_world.ground_items.count_of(ItemTypes.STONE), 3)
+
+
+func test_a_chest_taken_down_with_the_hammer_keeps_the_states_in_the_bag() -> void:
+	var chest := _chest_with_lantern_and_burnt_candle()
+	_state.player.inventory = Inventory.new()
+
+	assert_true(Builder.new(_state).take_down(TakeDownTarget.of_object(chest)))
+
+	var slots := _state.player.inventory.slots
+	assert_eq(_states_of(ItemTypes.LANTERN, slots), [FRESH_LANTERN])
+	assert_eq(_states_of(ItemTypes.STONE, slots), [BURNT_CANDLE])
+	assert_eq(_state.player.inventory.count_of(ItemTypes.STONE), 3)
+	assert_eq(_world.ground_items.all().size(), 0)
+
+
+func test_what_a_hammered_chest_has_no_room_for_lies_on_the_ground_with_its_state() -> void:
+	var chest := _chest_with_lantern_and_burnt_candle()
+	for slot in Inventory.SLOT_COUNT:
+		_state.player.inventory.slots[slot] = {"item": ItemTypes.RUSTY_IRON_AXE, "count": 1}
+	_state.player.inventory.slots[0] = {}
+
+	assert_true(Builder.new(_state).take_down(TakeDownTarget.of_object(chest)))
+
+	var states := _world.ground_items.all().filter(
+		func(pile: GroundItem) -> bool: return not pile.state.is_empty()
+	)
+	assert_eq(states.size(), 2)

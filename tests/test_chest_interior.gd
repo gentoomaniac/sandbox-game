@@ -172,3 +172,32 @@ func test_the_chest_of_the_map_holds_what_is_put_in_it_too() -> void:
 		func(object: WorldObject) -> bool: return object.type == WorldObjectTypes.CHEST
 	)
 	assert_eq(restored_chests[0].storage.count_of(ItemTypes.LOGS), 5)
+
+
+func test_a_chest_taken_down_inside_keeps_the_states_of_what_it_held() -> void:
+	var chest := _place_chest_in_front()
+	chest.storage.slots[5] = {"item": ItemTypes.LANTERN, "count": 1}
+	chest.storage.set_state(5, {"mark": 3})
+	_hold(ItemTypes.RUSTY_IRON_AXE)
+
+	assert_eq(_state.use_facing_tile(), ToolUse.Use.TAKE_DOWN)
+
+	var lanterns := _state.player.inventory.slots.filter(
+		func(stack: Dictionary) -> bool: return stack.get("item") == ItemTypes.LANTERN
+	)
+	assert_eq(lanterns.size(), 1)
+	assert_eq(lanterns[0]["state"], {"mark": 3})
+
+
+func test_a_chest_inside_stays_when_the_inventory_has_no_room_for_what_has_a_state() -> void:
+	var chest := _place_chest_in_front()
+	chest.storage.slots[5] = {"item": ItemTypes.LANTERN, "count": 1}
+	chest.storage.set_state(5, {"mark": 1})
+	for slot in Inventory.SLOT_COUNT:
+		_state.player.inventory.slots[slot] = {"item": ItemTypes.RUSTY_IRON_AXE, "count": 1}
+	_state.player.inventory.slots[0] = {"item": ItemTypes.CHEST, "count": 1}
+	_hold(ItemTypes.RUSTY_IRON_AXE)
+
+	assert_eq(_state.use_at(Vector2i(3, 5)), ToolUse.Use.NO_ROOM, "the chest item would fit")
+	assert_eq(_interior.object_at(Vector2i(3, 5)), chest)
+	assert_eq(chest.storage.slots[5]["state"], {"mark": 1})

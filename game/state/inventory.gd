@@ -134,6 +134,20 @@ func _add(item: StringName, count: int, free_slots: Array, state := {}) -> int:
 	return _put(item, left, [], [selected_slot], state)
 
 
+## Whether `plain` (item id to count) and each of the single items `stacks` with their states
+## (what a chest taken down holds) would all fit, as `add` puts them in.
+func can_take(plain: Dictionary, stacks: Array[Dictionary]) -> bool:
+	var trial := _new_trial()
+	trial.load_slots(slots_to_data())
+	for item: StringName in plain:
+		if trial._add(item, plain[item], []) > 0:
+			return false
+	for stack in stacks:
+		if trial._add(stack["item"], 1, [], stack["state"]) > 0:
+			return false
+	return true
+
+
 func _new_trial() -> ItemSlots:
 	var trial := Inventory.new()
 	trial.selected_slot = selected_slot

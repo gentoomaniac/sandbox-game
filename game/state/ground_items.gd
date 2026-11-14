@@ -100,8 +100,10 @@ func move(ground_item: GroundItem, position: Vector2) -> void:
 ## Puts items (item id to count) on the ground around a tile: each kind is split into piles of
 ## about the same size over the tiles of `map` near `source` that can hold a pile, in an
 ## order that depends on the tile, the kind and the map's `pile_seed` only. Call it after the source
-## was removed or replaced, so its own tile counts if it is free now. Returns the piles.
-func drop(source: Vector2i, drops: Dictionary, map: GameMap) -> Array[GroundItem]:
+## was removed or replaced, so its own tile counts if it is free now. Returns the piles. Dropping
+## one item that has a `state` (then `drops` is that item with a count of 1) makes a pile of its own
+## that keeps the state.
+func drop(source: Vector2i, drops: Dictionary, map: GameMap, state := {}) -> Array[GroundItem]:
 	var kind_index := 0
 	var dropped_piles: Array[GroundItem] = []
 	for item: StringName in drops:
@@ -114,7 +116,7 @@ func drop(source: Vector2i, drops: Dictionary, map: GameMap) -> Array[GroundItem
 				_hash_fraction(tiles[pile], 2 * kind_index, map.pile_seed()),
 				_hash_fraction(tiles[pile], 2 * kind_index + 1, map.pile_seed())
 			)
-			var ground_item := GroundItem.new(item, count, Vector2(tiles[pile]) + offset)
+			var ground_item := GroundItem.new(item, count, Vector2(tiles[pile]) + offset, state)
 			ground_item.settle_seconds = DROP_SETTLE_SECONDS
 			add(ground_item)
 			dropped_piles.append(ground_item)
@@ -133,11 +135,14 @@ func snapshot() -> Dictionary:
 	var items := PackedStringArray()
 	var counts := PackedInt32Array()
 	var positions := PackedVector2Array()
+	var states := {}
 	for ground_item in _piles:
+		if not ground_item.state.is_empty():
+			states[items.size()] = ground_item.state.duplicate(true)
 		items.append(ground_item.item)
 		counts.append(ground_item.count)
 		positions.append(ground_item.position)
-	return {"items": items, "counts": counts, "positions": positions}
+	return {"items": items, "counts": counts, "positions": positions, "states": states}
 
 
 ## The save data of a `snapshot`. Safe to call from a thread.
@@ -145,18 +150,17 @@ static func array_of(snapshot_data: Dictionary) -> Array[Dictionary]:
 	var items: PackedStringArray = snapshot_data["items"]
 	var counts: PackedInt32Array = snapshot_data["counts"]
 	var positions: PackedVector2Array = snapshot_data["positions"]
+	var states: Dictionary = snapshot_data["states"]
 	var data: Array[Dictionary] = []
 	for index in items.size():
-		(
-			data
-			. append(
-				{
-					"item": items[index],
-					"count": counts[index],
-					"position": SaveCodec.float_vector_to_json(positions[index]),
-				}
-			)
-		)
+		var pile := {
+			"item": items[index],
+			"count": counts[index],
+			"position": SaveCodec.float_vector_to_json(positions[index]),
+		}
+		if states.has(index):
+			pile["state"] = states[index]
+		data.append(pile)
 	return data
 
 
