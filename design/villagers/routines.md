@@ -83,7 +83,7 @@ there to walk on. There is no lane terrain yet: the cheap tiles are the worn gra
   search runs. **The Pathfinder ticks inside `Npcs.update` only** (Main and
   `ActorsUpkeep.walked_minute` both call it), once per call, and not while the world is held (a
   skip over frames, a modal).
-- **A search has a cap:** `max_nodes` (4000 to start; set from the measured time per node, below).
+- **A search has a cap:** `max_nodes` (2500, from the measures below).
   One that reaches it takes the visited tile nearest the goal and the way to it as a **leg**; the
   villager walks it and searches again from its end. A leg end that is not strictly nearer the goal
   (in tiles, Manhattan) than the leg's start counts as no way, so within one chain of legs the
@@ -93,8 +93,8 @@ there to walk on. There is no lane terrain yet: the cheap tiles are the worn gra
   wall longer than the cap is found to have no way within 2 legs.
 - **Throughput:** measured in step 1 (`tools/bench/path_search.gd`, 100 searches over the real chunks
   of seed 7, on a busy machine): 26 us a node. At 1.5 ms a frame about 55 nodes are searched, so a
-  1000-node search takes some 18 frames (0.3 s), one that uses the whole cap of 4000 about 70 frames
-  (1.2 s), and 155 villagers
+  1000-node search takes some 18 frames (0.3 s), one that uses the whole cap of 2500 about 45 frames
+  (0.7 s; the cap was 4000 at first, see Performance), and 155 villagers
   who all leave at the same minute wait many seconds. A wait of some seconds is fine (they stand).
   Task 239 spreads the hours: each villager's routine is shifted by a fixed offset of a few minutes.
 - **Paths are kept.** The path is an `Array[Vector2i]` on the trip; each next tile is checked when
@@ -195,12 +195,39 @@ walkers behave, so they can be tuned without code:
 
 - **Budget:** path work at most 1.5 ms in any frame (`search_usec_per_frame`), and the bench's
   longest frame (about 26 ms today with 155 villagers) not longer than before.
-- **Measure:** the time per node is measured in step 1, by a small bench on a real world (a search
-  over generated chunks, printing nodes and microseconds), so that `max_nodes` and the budget are
-  set from a number. `tools/bench/paths.gd` (step 5),
-  on the bench fixture, sends all 155 villagers 60 to 120 tiles at once and again every 20 s, and
-  prints the nodes searched, the longest frame, the frames with path work and how long the last
-  villager waited. The F3 line shows the same live.
+- **Measure:** the time per node, in step 1 (`tools/bench/path_search.gd`): 26 us. The whole
+  cost, in step 5 (`tools/bench/paths.gd`): the bench fixture with its 155 villagers and the 13 x 13
+  chunks round the player loaded; three rounds of 150 s of frames at 60 per second, in each the first
+  n villagers are sent 60 to 120 tiles to a tile they can stand on, trips still on at the end of a
+  round are ended; one core, niced, a busy machine. Standing and strolling, the villagers' `update`
+  costs 0.32 ms a frame (longest 5.7 ms). Results (`update` is the mean of the last round, over
+  all frames; "blocked" is the trips told as blocked, all with no way; the wait is for the first
+  leg; the whole trip is of those that arrived, 60 to 120 tiles at 1.5 tiles a second take 40 to 80 s):
+
+  | sent | `max_nodes` | `update` | trips | arrived | blocked | whole trip, mean | first leg, mean, longest |
+  |---|---|---|---|---|---|---|---|
+  | 10 | 4000 | 0.49 ms | 30 | 70 % | 9 | 90 s | 4.0 s, 6.9 s |
+  | 10 | 2500 | 0.41 ms | 30 | 73 % | 6 | 85 s | 2.2 s, 4.7 s |
+  | 10 | 1500 | 0.41 ms | 30 | 67 % | 10 | 80 s | 1.8 s, 3.0 s |
+  | 40 | 4000 | 0.71 ms | 120 | 78 % | 23 | 90 s | 10.2 s, 21.7 s |
+  | 40 | 2500 | 0.64 ms | 120 | 86 % | 17 | 87 s | 7.2 s, 13.9 s |
+  | 40 | 1500 | 0.58 ms | 120 | 79 % | 23 | 85 s | 5.6 s, 11.6 s |
+  | 155 | 4000 | 1.93 ms | 465 | 79 % | 74 | 108 s | 34 s, 72 s |
+  | 155 | 1500 | 1.55 ms | 465 | 78 % | 94 | 101 s | 24 s, 48 s |
+
+  What this shows: the cap hardly changes whether a villager gets there (67 to 86 %, the rest are
+  goals with no way, in or across water, or trips cut at the end of a round) or how long the whole
+  trip takes (walking is most of it), but a smaller cap makes the first leg start sooner; 1500 is
+  blocked as often as 4000 with 10 or 40 sent and more often (94 against 74) with 155, so 2500 is
+  the cap: no more blocked than 4000 (fewer, 6 and 17 against 9 and 23, within the noise of one seed),
+  a first leg that starts 30 to 45 % sooner. The time of a frame with trips is the 0.3 ms of walking and
+  strolling, plus the 1.5 ms the searches may take when there are enough of them, plus a little for
+  the steps; the longest `update` stays at 3.4 to 7.4 ms, as without trips (5.7 ms).
+  `heuristic_weight` 1.0, 1.5 and 2.0 made no difference to the waits (the cost is in the long ways
+  through ditches, not on the open grass), so it stays 1.0, and more time for the searches (3 ms) does
+  not help a crowd either: 155 villagers who all start a long way in the same minute wait 24 to 34 s
+  for their first leg. That is for task 239: spread the hours (each villager's routine shifted by a
+  few minutes) so that a handful start in the same second.
 
 ### The steps of 238 (each a commit that passes on its own, with its tests and doc lines)
 

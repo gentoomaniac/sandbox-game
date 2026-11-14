@@ -149,6 +149,12 @@ in summer, at wet meadows and at a village it builds in a new world, with the pl
 a circle, or the time skipped every hour: `godot --headless --path . -s tools/bench/storks.gd`
 (`-- --seed=<n>`; set `XDG_DATA_HOME` away from the real one).
 
+`tools/bench/paths.gd` (task 238; no make target) sends the villagers of a save (`build/bench/fixture.save`,
+`make bench` writes it) 60 to 120 tiles, in three rounds of 150 s of frames, and prints the `update` time of
+`Npcs` with and without trips, how many arrived and how long they took, how many were blocked and how long
+the villagers waited for their first leg: `godot --headless --path . -s tools/bench/paths.gd -- <save>
+[send=<n>] [<key>=<number> ...]` (the keys are numbers of `[travel]` to try; set `XDG_DATA_HOME` away from the real one).
+
 `tools/bench/path_search.gd` (task 238; no make target, it needs no save and writes nothing) times
 `PathSearch` for each tile it looks at, over the real chunks around a new game's start, with the
 villagers' step rule: `godot --headless --path . -s tools/bench/path_search.gd` (`-- --seed=<n>`; set
