@@ -90,6 +90,9 @@ func _init(seed_value: int, game_clock := GameClock.new()) -> void:
 	clock = game_clock
 	soil = SoilMoisture.new(game_clock)
 	_generator = WorldGenerator.new(seed_value)
+	objects_changed.connect(_count_object_change)
+	building_placed.connect(_count_building)
+	building_removed.connect(_count_building)
 
 
 static func is_chunk_in_bounds(chunk_coords: Vector2i) -> bool:
@@ -112,6 +115,7 @@ static func is_in_bounds(world_pos: Vector2i) -> bool:
 func add_chunk(chunk: Chunk) -> void:
 	assert(is_chunk_in_bounds(chunk.coords), "Chunk out of bounds: %s" % chunk.coords)
 	_chunks[chunk.coords] = chunk
+	change_count += 1
 	for pos: Vector2i in _terrain_edit_positions_by_chunk.get(chunk.coords, {}):
 		chunk.set_terrain(Chunk.local_pos(pos), _terrain_edits[pos])
 	for pos: Vector2i in _object_edit_positions_by_chunk.get(chunk.coords, {}):
@@ -122,6 +126,7 @@ func add_chunk(chunk: Chunk) -> void:
 
 func remove_chunk(chunk_coords: Vector2i) -> void:
 	_chunks.erase(chunk_coords)
+	change_count += 1
 
 
 func is_chunk_loaded(chunk_coords: Vector2i) -> bool:
@@ -240,6 +245,7 @@ func set_terrain(world_pos: Vector2i, terrain: Tile.Terrain) -> void:
 	_clear_removable(world_pos)
 	chunk.set_terrain(Chunk.local_pos(world_pos), terrain)
 	_edit_terrain(world_pos, terrain)
+	change_count += 1
 	if terrain == Tile.Terrain.SOIL:
 		soil.start(world_pos)
 		fallow.tend(world_pos)
@@ -806,6 +812,14 @@ func _note_edited(
 	if not positions_by_chunk.has(chunk_coords):
 		positions_by_chunk[chunk_coords] = {}
 	positions_by_chunk[chunk_coords][world_pos] = true
+
+
+func _count_object_change(_world_pos: Vector2i) -> void:
+	change_count += 1
+
+
+func _count_building(_building: Building) -> void:
+	change_count += 1
 
 
 func _add_building(building: Building) -> void:

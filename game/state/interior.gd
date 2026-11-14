@@ -72,6 +72,7 @@ func add_object(object: WorldObject) -> void:
 	for tile in object.tiles():
 		assert(not _objects.has(tile), "Interior tile %s is taken" % tile)
 		_objects[tile] = object
+		change_count += 1
 		objects_changed.emit(tile)
 
 
@@ -82,6 +83,7 @@ func remove_object(pos: Vector2i) -> WorldObject:
 	if object != null:
 		for tile in object.tiles():
 			_objects.erase(tile)
+			change_count += 1
 			objects_changed.emit(tile)
 	return object
 

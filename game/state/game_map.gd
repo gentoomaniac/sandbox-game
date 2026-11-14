@@ -12,6 +12,10 @@ signal tile_changed(pos: Vector2i)
 
 ## What lies on the ground of this map (see `drop_items`).
 var ground_items := GroundItems.new()
+## Rises with every change that can open or close a way: an object added, removed or changed (the
+## world also counts a change of terrain, a building put up or taken down, and a chunk loading or
+## unloading). Whoever waits for a way to open (see NpcTravel) looks again when it has moved.
+var change_count := 0
 
 
 ## The tile at a position, or null where there is none.

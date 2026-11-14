@@ -4,7 +4,8 @@ extends RefCounted
 ## (the yard in front of the nearest building's door, or the nearest fireplace, when it came into
 ## the world), stands about and strolls by day, and stands still at night. The numbers are
 ## data/npcs.cfg (NpcRules). GameState owns it; Main moves them with `update` while the player is
-## out in the world.
+## out in the world. A villager can also be sent to a place (`walk_to`, see NpcTravel), which goes
+## before everything else it does.
 ##
 ## The player walks through villagers, so none can shut the player in; a villager stops short
 ## of the player instead of walking into them. A villager never stands on a tile of a building,
@@ -17,6 +18,11 @@ signal removed(npc: Npc)
 ## A villager of data/villagers.cfg came into the world by `spawn_villager`: GameState has
 ## Households give them the house and workplace their sheet names.
 signal villager_spawned(npc: Npc, world: World)
+## A villager sent by `walk_to` is at the place.
+signal trip_arrived(npc: Npc)
+## No way to the place was found, once for each trip: the villager stands and looks again when
+## the world has changed, until it is sent elsewhere (`walk_to` again) or `cancel_trip`.
+signal trip_blocked(npc: Npc, reason: NpcTrip.Block)
 
 ## Spawned villagers stand this many tiles from the given point, at the least and at the most.
 const SPAWN_DISTANCE := Vector2(1.5, 3.0)
@@ -40,12 +46,16 @@ var rng := RandomNumberGenerator.new()
 var _sun: Sun
 var _villager_step := PathRules.default_rules().villager_step()
 var _npcs: Array[Npc] = []
+var _travel: NpcTravel
 
 
 ## `sun` gives the times of sunrise and sunset that the villagers rest by.
 func _init(sun: Sun) -> void:
 	_sun = sun
 	rng.randomize()
+	_travel = NpcTravel.new(rules)
+	_travel.arrived.connect(_on_trip_arrived)
+	_travel.blocked.connect(trip_blocked.emit)
 
 
 func all() -> Array[Npc]:
@@ -61,6 +71,7 @@ func add(npc: Npc) -> void:
 ## Nothing else holds on to a villager: homes, trades and who knows whom are texts of
 ## data/villagers.cfg, which also names the villagers that are not in the world.
 func remove(npc: Npc) -> void:
+	cancel_trip(npc)
 	_npcs.erase(npc)
 	removed.emit(npc)
 
@@ -150,23 +161,39 @@ func is_rest_time(day: int, minute: int) -> bool:
 	return minute >= rest or minute < up
 
 
+## Sends a villager to a tile of `map`, instead of wherever it was going: it finds its way (round
+## what is in it, along lanes, through gates), `trip_arrived` comes when it is there, and
+## `trip_blocked` when no way is found. At once if it is there already.
+func walk_to(npc: Npc, tile: Vector2i, map: GameMap) -> void:
+	_travel.start(npc, tile, map)
+
+
+## Ends a villager's trip where it stands; no signal comes.
+func cancel_trip(npc: Npc) -> void:
+	_travel.cancel(npc)
+
+
 ## Lets `delta` seconds pass for every villager on `map` (only those in loaded chunks with
 ## `only_loaded`) at the time of the game clock.
 ## Villagers stop short of the player's feet.
 func update(
 	delta: float, map: GameMap, player_feet: Vector2, clock: GameClock, only_loaded := false
 ) -> void:
-	if is_rest_time(clock.day, clock.minute_of_day):
-		for npc in _npcs:
-			if not only_loaded or _is_in_loaded_chunk(npc, map):
-				npc.activity = Npc.Activity.IDLE
-		return
+	var is_resting := is_rest_time(clock.day, clock.minute_of_day)
 	delta = minf(delta, MAX_STEP_SECONDS)
+	_travel.tick()
 	for npc in _npcs:
 		if only_loaded and not _is_in_loaded_chunk(npc, map):
 			continue
 		if npc.free_body_tiles == Rect2i():
 			_step_off_buildings(npc, map)
+		# Where it was sent it goes, day and night: when to send it is for the routine to say.
+		if npc.trip != null:
+			_travel.update(npc, delta, player_feet, _fits)
+			continue
+		if is_resting:
+			npc.activity = Npc.Activity.IDLE
+			continue
 		npc.seconds_left -= delta
 		if npc.seconds_left <= 0.0:
 			_start_next_activity(npc)
@@ -203,6 +230,8 @@ func talk_to(npc: Npc, player_feet: Vector2) -> void:
 	npc.turn_to(player_feet)
 	npc.activity = Npc.Activity.IDLE
 	npc.seconds_left = rules.behaviour("linger_seconds")
+	if npc.trip != null:
+		npc.trip.pause_seconds = npc.seconds_left
 
 
 func _catch_up_one(npc: Npc, map: GameMap) -> void:
@@ -276,6 +305,11 @@ func _start_next_activity(npc: Npc) -> void:
 	npc.activity = Npc.Activity.WALK
 	npc.heading = (goal - npc.position).normalized()
 	npc.seconds_left = rules.pick_seconds("walk_seconds", rng)
+
+
+func _on_trip_arrived(npc: Npc) -> void:
+	_stand(npc)
+	trip_arrived.emit(npc)
 
 
 func _stand(npc: Npc) -> void:

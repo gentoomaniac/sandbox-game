@@ -105,6 +105,9 @@ var heading := Vector2.ZERO
 ## The tiles their body last stood on, all walkable: a step that stays on them needs no asking
 ## the map again (see Npcs).
 var free_body_tiles := Rect2i()
+## Where they are walking to and how far they have got, or null (see NpcTravel). Not saved:
+## whoever sent them sends them again.
+var trip: NpcTrip
 ## Whether an answer to the player is awaited (see ChatScreen): they say nothing more till then.
 ## A loaded villager owes none: an answer the game was saved before is lost.
 var is_answering := false
@@ -153,6 +156,10 @@ static func facing_of(direction: Vector2) -> Vector2i:
 
 func tile() -> Vector2i:
 	return Vector2i(position.floor())
+
+
+func is_travelling() -> bool:
+	return trip != null
 
 
 ## Looks towards a point of the world, such as the player's feet.

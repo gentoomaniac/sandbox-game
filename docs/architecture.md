@@ -206,7 +206,12 @@ Warft and an Ewer here and there.
   id, are `data/villagers.cfg` (`VillagerRules`, which also checks that their family and
   friends name each other back; a loaded one takes their sheet from it, so edits to the file
   reach saved games); the village they all share is `data/village.cfg`
-  (`VillageSheet`). Each is drawn by an `NpcView` among the world
+  (`VillageSheet`). `Npcs.walk_to` sends a villager to a tile (task 238): `NpcTravel` searches a
+  way (`PathSearch`, an A* over the villagers' step rule and the lanes' cost, worked within a
+  frame's budget by the `Pathfinder`), walks it as the villager's `NpcTrip`, goes round what is put
+  in its way and, when there is no way, stands and looks again when `GameMap.change_count` has
+  moved; `trip_arrived` and `trip_blocked` tell the routine ([travel] of `data/npcs.cfg`, plan in
+  design/villagers/routines.md). Each is drawn by an `NpcView` among the world
   view's entities, with the player's sheets and frames. E speaks to the villager
   `Interaction.npc_to_chat` names, before any chest, station or bed; `ChatScreen` shows the
   chat as bubbles between both portraits (`Appearance.portrait_layers`) and pauses the game

@@ -26,7 +26,18 @@ const BEHAVIOUR_KEYS: Array[String] = [
 	"up_minutes_after_sunrise",
 ]
 const TRAVEL_KEYS: Array[String] = [
-	"max_nodes", "heuristic_weight", "searches_per_frame", "search_usec_per_frame"
+	"max_nodes",
+	"heuristic_weight",
+	"searches_per_frame",
+	"search_usec_per_frame",
+	"cost_trodden",
+	"cost_path",
+	"cost_object",
+	"max_legs",
+	"blocked_give_up_seconds",
+	"retries",
+	"blocked_min_seconds",
+	"blocked_fallback_seconds",
 ]
 ## The lists every villager draws from, and those drawn by sex.
 const EVERYONE_KEYS: Array[String] = ["skins", "hair_colours", "feet", "surnames"]
