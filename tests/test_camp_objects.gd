@@ -130,7 +130,7 @@ func test_a_start_point_with_something_on_it_does_not_trap_the_player() -> void:
 	assert_true(PlayerState.can_stand_at(_state.current_map, _state.player.position))
 
 
-func test_a_moved_campfire_still_opens_the_hearths_cooking_menu() -> void:
+func test_a_moved_campfire_cooks_at_the_hearth_once_it_is_lit() -> void:
 	_take_down(_camp_fire)
 	var moved := _set_up(ItemTypes.FIREPLACE)
 	assert_eq(moved.type, CAMPFIRE)
@@ -139,6 +139,9 @@ func test_a_moved_campfire_still_opens_the_hearths_cooking_menu() -> void:
 	assert_eq(Interaction.object_to_open(_state, _tile), moved)
 	assert_has(RecipeRules.default_rules().recipes_at(&"hearth"), &"roast_turnip")
 	_state.player.inventory.add(ItemTypes.TURNIP, 1)
+	assert_eq(Crafting.new(_state).craft(&"roast_turnip", moved), Crafting.Result.NO_STATION)
+	moved.storage.add(ItemTypes.LOGS, 1)
+	_state.light_campfire(moved)
 	assert_eq(Crafting.new(_state).craft(&"roast_turnip", moved), Crafting.Result.CRAFTED)
 
 

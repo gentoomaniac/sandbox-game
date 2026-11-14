@@ -53,7 +53,10 @@ func _visible_texts() -> Array:
 
 
 func _open_at_the_hearth() -> void:
-	_screen.open_station(_place(WorldObjectTypes.FIREPLACE))
+	var fire := _place(WorldObjectTypes.FIREPLACE)
+	fire.storage.add(ItemTypes.LOGS, 1)
+	_state.light_campfire(fire)
+	_screen.open_station(fire)
 
 
 # --- What E opens ---

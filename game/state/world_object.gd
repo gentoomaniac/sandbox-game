@@ -83,8 +83,11 @@ func days_grown() -> int:
 	return int(state.get("days_grown", 0))
 
 
-## The light this object shines (see WorldObjectTypes), or an empty dictionary.
+## The light this object shines (see WorldObjectTypes), or an empty dictionary: a campfire that is
+## out shines none.
 func light() -> Dictionary:
+	if Campfire.is_out(self):
+		return {}
 	return type_data().get("light", {})
 
 

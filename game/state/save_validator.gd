@@ -232,7 +232,8 @@ func _check_object_state(
 ) -> void:
 	# Every other entry (growth, days_growing, damage, days_until_bears...) is a number.
 	for key: Variant in state:
-		if key not in ["tree", ProcessStation.RUN] and not _is_kind(state[key], Kind.NUMBER):
+		var is_other_kind: bool = key in ["tree", ProcessStation.RUN, Campfire.LIT]
+		if not is_other_kind and not _is_kind(state[key], Kind.NUMBER):
 			_report(path + " state", "%s should be a number" % key)
 	# What a trough or a hay rack holds and the eggs in a nest: whole numbers up to what they hold.
 	var capacity: int = type_data.get("stock_capacity", 0)
@@ -240,6 +241,15 @@ func _check_object_state(
 		_check_between(state["stock"], 0, capacity, path + " state", "stock")
 	elif state.has("stock"):
 		_report(path + " state", "stock should be a whole number")
+	if state.has(Campfire.LOG_LEFT) and _is_kind(state[Campfire.LOG_LEFT], Kind.WHOLE):
+		var log_minutes := LightingRules.default_rules().longest_burn_minutes()
+		_check_between(state[Campfire.LOG_LEFT], 0, log_minutes, path + " state", "log_left")
+	elif state.has(Campfire.LOG_LEFT):
+		_report(path + " state", "log_left should be a whole number")
+	if state.has(Campfire.LIT) and not state[Campfire.LIT] is bool:
+		_report(path + " state", "lit should be true or false")
+	elif state.get(Campfire.LIT, false) and not state.has(Campfire.LOG_LEFT):
+		_report(path + " state", "a lit fire needs log_left")
 	if state.has("eggs") and _is_kind(state["eggs"], Kind.WHOLE):
 		var nest_eggs: int = YardRules.default_rules().coop("nest_eggs")
 		_check_between(state["eggs"], 0, nest_eggs, path + " state", "eggs")

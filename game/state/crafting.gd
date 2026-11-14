@@ -80,9 +80,10 @@ func craft(recipe_id: StringName, station: WorldObject = null) -> Result:
 	return Result.CRAFTED if dropped.is_empty() else Result.DROPPED
 
 
-## Whether `station` is an object on the player's map within their reach.
+## Whether `station` is an object on the player's map within their reach, and works (a campfire
+## that is out does not).
 func is_in_reach(station: WorldObject) -> bool:
-	if station == null:
+	if station == null or Campfire.is_out(station):
 		return false
 	var found := Interaction.nearest_in_reach(
 		_state, func(object: WorldObject) -> bool: return object == station

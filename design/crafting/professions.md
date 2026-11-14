@@ -28,6 +28,20 @@ woodworker, the cook and the mason, and a UI for them.
   workbench, the stool and the chests, the pickaxe the kiln and the oven (inside a house one
   swing, into the inventory). The house's own furniture can't be taken down; the stools of the
   maps can (a free stool, accepted).
+- **The campfire is tended through a window** (task 56, `data/lighting.cfg` [campfire] and
+  [campfire_fuel]; the user's decision 2026-11-14). E at the outdoor fire, the camp's and the ones the
+  player lays (the `fireplace` object, never the house hearth, which burns for ever), opens its
+  window (CampfireScreen; the hint says "Tend the fire"): a slot for wood in the middle, the
+  backpack on the right as in a chest's window, the fire's state under the slot (burning or out, the
+  wood left), a **Light the fire** button while it is out and has wood, and **Cook at the fire**,
+  which closes the window and opens the crafting menu of the hearth station (the fire is a station
+  only while it burns). Wood goes in by dragging or Shift+click, only items that burn (logs, 3
+  hours each), and comes out the same way. The slot is the object's `storage` (one slot, saved with
+  it, and taken down with the fire like a chest's contents); `lit` and `log_left` (the minutes of
+  the log that burns) are its state (`Campfire`). Lighting takes a log out of the slot. The camp
+  fire of a new game, and a fireplace of an older save, burns on with 4 logs (one burning); one the
+  player sets up starts out and empty. Looking at the fire with the mouse says how much wood is
+  left. There is no use-a-log-on-it: wood goes in through the window only.
 - **E on a station** opens the crafting menu of its recipes, titled with its name, with the
   player's points in the skills they practise; E or Escape closes it. A note after a craft
   says what it taught. The tooltip of a recipe says what a craft teaches, or what it needs.

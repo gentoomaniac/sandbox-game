@@ -21,10 +21,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 40
-## The oldest version we still upgrade. Nine steps back, for the next version (task 56) makes its
-## step the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 41
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -206,6 +205,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_38(game)
 	if version <= 39:
 		_upgrade_from_version_39(game)
+	if version <= 40:
+		_upgrade_from_version_40(game)
 
 
 ## Version 31 had no roosters as a rule (task 204): each flock of chickens (see ChickenFlocks) gets
@@ -343,6 +344,20 @@ static func _upgrade_from_version_38(game: Dictionary) -> void:
 ## or a chest or in a pile on the ground, holds a fresh candle.
 static func _upgrade_from_version_39(game: Dictionary) -> void:
 	_give_lanterns_a_candle(game)
+
+
+## Version 40 had campfires that burnt for ever (task 56): every fireplace has a slot for wood, and
+## burns on with 4 logs, one of them burning.
+static func _upgrade_from_version_40(game: Dictionary) -> void:
+	# Written out, not read from data/lighting.cfg, so a later change leaves old saves alone.
+	var wood_slot := {"item": "logs", "count": 3}
+	var log_minutes := 3 * GameClock.MINUTES_PER_HOUR
+	for edit: Dictionary in game["world"]["object_edits"]:
+		var object: Variant = edit["object"]
+		if object != null and object["type"] == "fireplace":
+			object["storage"] = [wood_slot.duplicate()]
+			object["state"]["lit"] = true
+			object["state"]["log_left"] = log_minutes
 
 
 static func _give_lanterns_a_candle(data: Variant) -> void:

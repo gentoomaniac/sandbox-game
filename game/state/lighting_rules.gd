@@ -20,6 +20,9 @@ const TINT_HOURS := [
 ## The lantern's light, in the shape of a world object's `light` (see ObjectLight).
 const LANTERN_KEYS := ["color", "energy", "radius_tiles", "candle_hours"]
 
+## The campfire's numbers.
+const CAMPFIRE_KEYS := ["start_logs", "low_hours"]
+
 ## The cloud shadows' numbers, each a plain number (see WeatherView).
 const CLOUD_SHADOW_KEYS := [
 	"strength", "size", "coverage", "softness", "speed_per_wind", "closed_from"
@@ -60,10 +63,16 @@ func problems() -> Array[String]:
 	for key: String in LANTERN_KEYS:
 		if not lantern.has(key):
 			found.append("[lantern] no %s" % key)
+	var campfire: Dictionary = _values.get("campfire", {})
+	for key: String in CAMPFIRE_KEYS:
+		if not campfire.has(key):
+			found.append("[campfire] no %s" % key)
 	var cloud_shadows: Dictionary = _values.get("cloud_shadows", {})
 	for key: String in CLOUD_SHADOW_KEYS:
 		if not cloud_shadows.has(key):
 			found.append("[cloud_shadows] no %s" % key)
+	if not _values.has("campfire_fuel"):
+		found.append("[campfire_fuel] missing")
 	if not found.is_empty():
 		return found
 	if not lantern["color"] is Color:
@@ -71,6 +80,15 @@ func problems() -> Array[String]:
 	for key: String in ["energy", "radius_tiles", "candle_hours"]:
 		if float(lantern[key]) <= 0.0:
 			found.append("[lantern] %s must be above 0" % key)
+	for key: String in CAMPFIRE_KEYS:
+		if float(campfire[key]) <= 0.0:
+			found.append("[campfire] %s must be above 0" % key)
+	for item: String in _values["campfire_fuel"]:
+		if (
+			not ItemTypes.TYPES.has(StringName(item))
+			or float(_values["campfire_fuel"][item]) <= 0.0
+		):
+			found.append("[campfire_fuel] %s must be an item that burns for hours above 0" % item)
 	for key: String in TINT_COLOURS:
 		if not tint[key] is Color:
 			found.append("[day_and_night] %s must be a Color(r, g, b, a)" % key)
@@ -122,6 +140,28 @@ func lantern_light() -> Dictionary:
 ## The game minutes a lit lantern burns a candle down from fresh to gone (task 231).
 func candle_minutes() -> int:
 	return roundi(float(_values["lantern"]["candle_hours"]) * GameClock.MINUTES_PER_HOUR)
+
+
+## The logs the fire of a new game starts with.
+func start_logs() -> int:
+	return int(_values["campfire"]["start_logs"])
+
+
+## The game minutes of wood below which a campfire burns low.
+func low_minutes() -> int:
+	return roundi(float(_values["campfire"]["low_hours"]) * GameClock.MINUTES_PER_HOUR)
+
+
+## The game minutes the longest burning wood burns.
+func longest_burn_minutes() -> int:
+	var hours: Array = _values["campfire_fuel"].values()
+	return roundi(float(hours.max()) * GameClock.MINUTES_PER_HOUR)
+
+
+## The game minutes one of `item` burns in a campfire, or 0 for what does not burn.
+func fuel_minutes(item: StringName) -> int:
+	var hours: float = _values["campfire_fuel"].get(String(item), 0.0)
+	return roundi(hours * GameClock.MINUTES_PER_HOUR)
 
 
 ## One of the cloud shadows' numbers (one of CLOUD_SHADOW_KEYS).

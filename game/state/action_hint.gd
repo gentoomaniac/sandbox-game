@@ -50,6 +50,8 @@ static func e_text(state: GameState, target: Vector2i) -> String:
 			return "Use %s" % _name_of(choice.subject)
 		Interaction.Kind.OPEN_CHEST:
 			return "Open %s" % _name_of(choice.subject)
+		Interaction.Kind.OPEN_FIRE:
+			return "Tend the fire"
 		Interaction.Kind.OPEN_CRAFTING:
 			return "Craft at %s" % _name_of(choice.subject)
 		Interaction.Kind.RING_BELL:

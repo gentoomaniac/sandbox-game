@@ -33,7 +33,7 @@ func test_e_gets_on_a_saddled_horse_before_a_chest() -> void:
 func test_e_opens_a_chest_a_crafting_station_and_a_process_station() -> void:
 	var kinds := {
 		WorldObjectTypes.CHEST: Interaction.Kind.OPEN_CHEST,
-		WorldObjectTypes.FIREPLACE: Interaction.Kind.OPEN_CRAFTING,
+		WorldObjectTypes.FIREPLACE: Interaction.Kind.OPEN_FIRE,
 		WorldObjectTypes.KILN: Interaction.Kind.OPEN_STATION_GRID,
 	}
 	for type: StringName in kinds:

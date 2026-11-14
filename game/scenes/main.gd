@@ -66,6 +66,7 @@ var _character_screen := CharacterScreen.new(_hotbar)
 var _crafting_screen := CraftingScreen.new()
 var _storage_screen := StorageScreen.new(_hotbar)
 var _process_screen := ProcessScreen.new(_hotbar)
+var _fire_screen := CampfireScreen.new(_hotbar)
 var _console_view := ConsoleView.new()
 var _chat_screen := ChatScreen.new()
 var _npc_name_tag := NpcNameTag.new()
@@ -238,6 +239,7 @@ func _make_views() -> void:
 	add_child(_crafting_screen)
 	add_child(_storage_screen)
 	add_child(_process_screen)
+	add_child(_fire_screen)
 	add_child(_cheat_hud)
 	add_child(_console_view)
 	_chat_screen.dialogue = NpcDialogue.new(_settings)
@@ -292,6 +294,7 @@ func _connect_state_and_views() -> void:
 	_build_mode.building_menu_requested.connect(_house_menu.open)
 	_bag_screen.drop_requested.connect(_state.drop_from_inventory)
 	_storage_screen.drop_requested.connect(_state.drop_from_inventory)
+	_fire_screen.cook_requested.connect(_crafting_screen.open_station)
 	_camera.rig.follow(_camera_target)
 	_player_view.show_player(_state.player, _options)
 	_tiredness_view.watch(_state.player, _state.clock, _state.energy_rules, _state.cheats)
@@ -324,8 +327,8 @@ func _connect_state_and_views() -> void:
 
 
 ## Who lives and works in the building the mouse is over (see Households `occupants_text`), or how
-## the crop it is over is doing (see GameState `crop_text_at`); "" when it is over none, in a window
-## or indoors, or the player is placing a building.
+## the crop or campfire it is over is doing (see GameState `object_text_at`); "" when it is over
+## none, in a window or indoors, or the player is placing a building.
 func _world_text_under_mouse(is_pointer_on_world: bool) -> String:
 	var targeting := _use_highlight.targeting()
 	if (
@@ -337,7 +340,7 @@ func _world_text_under_mouse(is_pointer_on_world: bool) -> String:
 		return ""
 	var building := _state.world.building_at(targeting.tile)
 	if building == null:
-		return _state.crop_text_at(targeting.tile)
+		return _state.object_text_at(targeting.tile)
 	return _state.homes.occupants_text(building)
 
 
@@ -769,6 +772,8 @@ func _interact() -> void:
 			)
 		Interaction.Kind.OPEN_CHEST:
 			_storage_screen.open_chest(choice.subject, _state.player)
+		Interaction.Kind.OPEN_FIRE:
+			_fire_screen.open_fire(choice.subject, _state)
 		Interaction.Kind.OPEN_CRAFTING:
 			_crafting_screen.open_station(choice.subject)
 		Interaction.Kind.RING_BELL:
@@ -857,6 +862,7 @@ func _start_sounds() -> void:
 		_sounds.watch_panel(panel.is_open)
 	_sounds.click_on_press_in(_storage_screen)
 	_sounds.click_on_press_in(_process_screen)
+	_sounds.click_on_press_in(_fire_screen)
 	_sounds.watch_panel(_process_screen.is_open)
 	_sounds.watch_panel(_storage_screen.is_open, &"chest_open", &"chest_close")
 	add_child(_ambience)

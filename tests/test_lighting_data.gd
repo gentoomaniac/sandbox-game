@@ -31,6 +31,15 @@ func test_the_data_file_holds_every_rule_with_the_first_values() -> void:
 	)
 
 
+func test_the_campfire_burns_logs_of_three_hours_and_starts_on_four() -> void:
+	var rules := LightingRules.from_file(LightingRules.DEFAULT_PATH)
+	assert_eq(rules.fuel_minutes(ItemTypes.LOGS), 180)
+	assert_eq(rules.fuel_minutes(ItemTypes.STONE), 0)
+	assert_eq(rules.longest_burn_minutes(), 180)
+	assert_eq(rules.start_logs(), 4)
+	assert_eq(rules.low_minutes(), 180)
+
+
 func test_the_cloud_shadows_have_their_first_values() -> void:
 	var rules := LightingRules.from_file(LightingRules.DEFAULT_PATH)
 	assert_eq(rules.cloud_shadow("strength"), 0.28)

@@ -77,6 +77,8 @@ static func _place(world: World, center: Vector2i) -> CampSite:
 	camp.fireplace_pos = center
 	camp.sleeping_bag_pos = center + SLEEPING_BAG_OFFSET
 	camp.spawn_pos = center + SPAWN_OFFSET
-	world.add_object(WorldObject.new(WorldObjectTypes.FIREPLACE, camp.fireplace_pos))
+	var fireplace := WorldObject.new(WorldObjectTypes.FIREPLACE, camp.fireplace_pos)
+	Campfire.fill_to_start(fireplace)
+	world.add_object(fireplace)
 	world.add_object(WorldObject.new(WorldObjectTypes.SLEEPING_BAG, camp.sleeping_bag_pos))
 	return camp

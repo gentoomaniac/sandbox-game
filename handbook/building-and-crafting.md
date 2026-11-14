@@ -156,6 +156,10 @@ Press Shift+C for the crafting menu (C is the character window).
 - By hand: a chest, campfire (6 stone, 3 logs), bedroll (6 hay, 4 fibre), flour (from wheat, rye
   or buckwheat), dry stone wall piece (3 stone, masonry 5), the stations below, a net frame and eel
   traps.
+- A campfire is tended with E: its window has a slot for wood (logs burn 3 hours each; drag them
+  in or Shift+click, and the same to take them out), a button to light the fire, and one to cook
+  at it (the fire is a cooking station only while it burns). One you set up yourself starts empty
+  and out. Point the mouse at a fire to read how much wood it has.
 - Candles: 2 wax and a fibre make 2. There is no wax to find yet (bee hives come later): get it
   with `give wax` in the [console](console.md). They burn in the lantern, see
   [the lantern](world-and-seasons.md#the-lantern).

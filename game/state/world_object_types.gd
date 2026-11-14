@@ -262,6 +262,7 @@ const _OTHER_TYPES := {
 		# Deep orange at a moderate energy: brighter or paler turns the grass lime and
 		# bleaches the player.
 		"light": {"color": Color(1.0, 0.5, 0.22), "energy": 1.4, "radius_tiles": 7.0},
+		"storage_slots": 1,
 		"interior_sprite": "res://assets/interior/fireplace.png",
 		"placeable_in": OUTDOORS,
 	},
