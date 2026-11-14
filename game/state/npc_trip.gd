@@ -26,8 +26,10 @@ var next_index := 0
 var is_leg := false
 ## How many legs in a row this chain of searches has walked (see `max_legs`).
 var legs := 0
-## How many searches the trip has made in all.
+## How many searches the trip has made in all, and how many tiles they have looked at (the
+## finished ones; see `NpcTravel.text_of`).
 var searches := 0
+var nodes_looked_at := 0
 ## How many times in a row they looked for another way after being stuck, and for how long they
 ## have been stuck, which is the time without a free step, not the time waiting for the player.
 var retries := 0
@@ -37,8 +39,20 @@ var pause_seconds := 0.0
 ## How long since the last search began, and what the map's `change_count` was then.
 var seconds_since_search := 0.0
 var change_count_at_search := 0
+## Why the trip is blocked, while it is.
+var block_reason := Block.NO_WAY
 ## Whether the villager's routine has been told of the block (once, however often it looks again).
 var is_blocked_told := false
+
+
+## What a block is called, for the console and the F3 line.
+static func block_text(reason: Block) -> String:
+	match reason:
+		Block.NOT_LOADED:
+			return "not loaded"
+		Block.STUCK:
+			return "stuck"
+	return "no way"
 
 
 func _init(walk_map: GameMap, goal_tile: Vector2i) -> void:

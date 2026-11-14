@@ -108,6 +108,15 @@ const COMMANDS := {
 			+ " spot you stand on where there is none (here), or free them of it (none)."
 		),
 	],
+	"goto":
+	[
+		"goto <villager> <x>,<y>|here",
+		(
+			"Send a villager to a tile, or to where you stand (here): it finds its way, along lanes,"
+			+ " round fences and through gates. On its way means a search is under way: that there is no"
+			+ " way comes later, F3 shows its path and whether it is blocked."
+		),
+	],
 	"play":
 	[
 		"play <track>",
@@ -132,6 +141,7 @@ const ARGUMENTS := {
 	"opinion": [&"villager", &"number"],
 	"home": [&"villager", &"place"],
 	"work": [&"villager", &"place"],
+	"goto": [&"villager", &"destination"],
 	"play": [&"track"],
 }
 ## The commands that take an animal kind, or `npc` and the id of a villager written by hand (see
@@ -145,6 +155,8 @@ const NPC_ARGUMENTS: Array[StringName] = [&"animal", &"villager"]
 const LISTED_KINDS: Array[StringName] = [&"animal", &"villager", &"weather", &"snow", &"track"]
 ## What `home` and `work` take after the villager.
 const PLACE_WORDS: Array[String] = ["here", "none"]
+## The word of `goto` for the tile the player stands on.
+const HERE := "here"
 ## The most characters of a listed line, so the log shows it whole.
 const LIST_LINE_LENGTH := 70
 ## Minutes per unit of the `skip` command, and the longest skip (a year).
@@ -272,6 +284,8 @@ func run(line: String) -> Array[String]:
 			output = _opinion(arguments)
 		"home", "work":
 			output = _home_or_work(words[0], arguments)
+		"goto":
+			output = _goto(arguments)
 		"play":
 			output = _play(arguments)
 		"stop":
@@ -327,6 +341,8 @@ func candidates(kind: StringName) -> Array[String]:
 			values = _state.npcs.villagers.ids()
 		&"place":
 			values.assign(PLACE_WORDS)
+		&"destination":
+			values.append(HERE)
 		&"weather":
 			for condition in Weather.FORCEABLE:
 				values.append(String(condition))
@@ -784,6 +800,44 @@ func _home_or_work(command: String, arguments: PackedStringArray) -> Array[Strin
 	if command == "home":
 		return _home_commands.home(npc, where)
 	return _home_commands.work(npc, where)
+
+
+## `goto`: sends a villager to a tile of the world, to watch the way they find.
+func _goto(arguments: PackedStringArray) -> Array[String]:
+	var usage: Array[String] = ["Usage: %s" % COMMANDS["goto"][0]]
+	if arguments.size() != 2:
+		return usage
+	var npc := _npc_named(arguments[0])
+	if npc == null:
+		return _unknown("villager", arguments[0], "goto")
+	var tile := _state.player.tile()
+	if arguments[1] == HERE:
+		if _state.is_inside():
+			return ["Go outside first: villagers walk in the world"]
+	else:
+		var numbers := arguments[1].split(",")
+		if numbers.size() != 2 or not numbers[0].is_valid_int() or not numbers[1].is_valid_int():
+			return usage
+		tile = Vector2i(int(numbers[0]), int(numbers[1]))
+	_state.npcs.walk_to(npc, tile, _state.world)
+	return _goto_answer(npc, tile)
+
+
+## What a villager who has just been sent to `tile` says: it is there, it has no way for now (a
+## place that is not loaded is known at once), or a search is under way.
+func _goto_answer(npc: Npc, tile: Vector2i) -> Array[String]:
+	var line := "%s is on its way to %s, %d tiles off" % [npc.name, tile, _tiles_between(npc, tile)]
+	if not npc.is_travelling():
+		line = "%s is at %s already" % [npc.name, tile]
+	elif npc.trip.state == NpcTrip.State.BLOCKED:
+		var why := NpcTrip.block_text(npc.trip.block_reason)
+		line = "%s has no way to %s for now: %s" % [npc.name, tile, why]
+	return [line]
+
+
+## The tiles in a straight line, to the nearest.
+func _tiles_between(npc: Npc, tile: Vector2i) -> int:
+	return roundi(npc.position.distance_to(Vector2(tile) + Vector2(0.5, 0.5)))
 
 
 func _npc_named(word: String) -> Npc:

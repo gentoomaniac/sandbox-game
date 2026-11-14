@@ -120,3 +120,17 @@ func test_the_searches_are_ticked_once_in_each_update_however_many_villagers() -
 	assert_eq(per_tick, Pathfinder.NODES_PER_CHECK, "200 us is one step, then the time is out")
 	npcs.update(STEP_SECONDS, _world, _state.player.position, _state.clock)
 	assert_eq(looked_at.call(), 2 * per_tick)
+
+
+func test_the_f3_line_names_the_trip_of_the_nearest_villager_on_one() -> void:
+	assert_eq(_npcs.path_text(_yard_middle()), "", "nobody is on a trip")
+	var near := _add_villager(_centre_of(_tile_at(-3, 0)), _yard_middle())
+	var far := _add_villager(_centre_of(_tile_at(8, 8)), _yard_middle())
+	_npcs.walk_to(near, _tile_at(3, 0), _world)
+	_npcs.walk_to(far, _tile_at(-8, -8), _world)
+	var text := _npcs.path_text(_centre_of(_tile_at(-3, 1)))
+	assert_string_contains(text, "-> %s" % _tile_at(3, 0))
+	assert_string_contains(text, "searching")
+	_step()
+	_step()
+	assert_string_contains(_npcs.path_text(_centre_of(_tile_at(-3, 1))), "tiles,")

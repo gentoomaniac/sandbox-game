@@ -5,7 +5,8 @@ extends CanvasLayer
 ## action shows and hides it.
 ## Inside a house the coordinates are the room's, marked as such. Below them: the weather, and
 ## when the sun rises and sets. At the bottom: the frames per second the game draws now, to check
-## the frame rate limit (Game settings) and spot slow places.
+## the frame rate limit (Game settings) and spot slow places. Above them the path of the villager
+## nearest the player that is on a trip (see NpcTravel `text_of`).
 
 const THEME := preload("res://game/scenes/ui_theme.tres")
 
@@ -28,15 +29,19 @@ func toggle() -> void:
 
 
 ## Call every frame; only touches the label when the text changes.
-func show_position(tile: Vector2i, is_inside: bool, weather_text: String) -> void:
+func show_position(tile: Vector2i, is_inside: bool, weather_text: String, path_text := "") -> void:
 	if not visible:
 		return
-	var text := text_of(tile, is_inside, weather_text, roundi(Engine.get_frames_per_second()))
+	var fps := roundi(Engine.get_frames_per_second())
+	var text := text_of(tile, is_inside, weather_text, fps, path_text)
 	if _label.text != text:
 		_label.text = text
 
 
-static func text_of(tile: Vector2i, is_inside: bool, weather_text: String, fps: int) -> String:
-	return (
-		"%s%d, %d\n%s\n%d fps" % ["House " if is_inside else "", tile.x, tile.y, weather_text, fps]
-	)
+static func text_of(
+	tile: Vector2i, is_inside: bool, weather_text: String, fps: int, path_text := ""
+) -> String:
+	var text := "%s%d, %d\n%s" % ["House " if is_inside else "", tile.x, tile.y, weather_text]
+	if path_text != "":
+		text += "\n" + path_text
+	return text + "\n%d fps" % fps

@@ -210,6 +210,21 @@ func place(npc: Npc, tile: Vector2i, map: GameMap) -> bool:
 	return true
 
 
+## The F3 line on the trip of the villager nearest `near` that is on one, or "".
+func path_text(near: Vector2) -> String:
+	var nearest: Npc
+	for npc in _npcs:
+		if (
+			npc.trip != null
+			and (
+				nearest == null
+				or npc.position.distance_to(near) < nearest.position.distance_to(near)
+			)
+		):
+			nearest = npc
+	return "" if nearest == null else NpcTravel.text_of(nearest)
+
+
 ## Ends a villager's trip where it stands; no signal comes.
 func cancel_trip(npc: Npc) -> void:
 	_travel.cancel(npc)

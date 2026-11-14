@@ -480,7 +480,10 @@ func _process(delta: float) -> void:
 	_view.ambient_motion.show_tide(Tide.level(_state.clock.total_minutes()))
 	if _coordinates_hud.visible:
 		_coordinates_hud.show_position(
-			_state.player.tile(), _state.is_inside(), _weather_and_sun_text(_weather)
+			_state.player.tile(),
+			_state.is_inside(),
+			_weather_and_sun_text(_weather),
+			_state.npcs.path_text(_state.player.position)
 		)
 	var is_in_play := not _is_any_screen_open()
 	var is_pointer_on_gui := (

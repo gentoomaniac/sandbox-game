@@ -10,3 +10,8 @@ func test_the_text_ends_with_the_frames_per_second() -> void:
 func test_inside_a_house_the_room_is_marked() -> void:
 	var text := CoordinatesHud.text_of(Vector2i(2, 5), true, "Rain", 240)
 	assert_eq(text, "House 2, 5\nRain\n240 fps")
+
+
+func test_the_path_of_a_villager_comes_above_the_frames_per_second() -> void:
+	var text := CoordinatesHud.text_of(Vector2i(1, 2), false, "Sunny", 60, "path antje: ...")
+	assert_eq(text, "1, 2\nSunny\npath antje: ...\n60 fps")

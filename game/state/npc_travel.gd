@@ -68,6 +68,37 @@ func update(npc: Npc, delta: float, player_feet: Vector2, fits: Callable) -> voi
 			_walk(npc, delta, player_feet, fits)
 
 
+## The F3 line on the trip of a villager: where from and to, how far it has got on its way (the
+## leg it is on), and what the searching has cost.
+static func text_of(npc: Npc) -> String:
+	var trip := npc.trip
+	var progress := ""
+	match trip.state:
+		NpcTrip.State.SEARCHING:
+			progress = "searching"
+		NpcTrip.State.WALKING:
+			progress = "%d of %d tiles" % [trip.next_index, trip.path.size()]
+		NpcTrip.State.WAITING:
+			progress = "waiting"
+		NpcTrip.State.BLOCKED:
+			progress = "blocked (%s)" % NpcTrip.block_text(trip.block_reason)
+	var nodes := trip.nodes_looked_at
+	if trip.search != null:
+		nodes += trip.search.nodes_looked_at
+	return (
+		"path %s: %s -> %s, %s, leg %d, %d tiles looked at in %d searches"
+		% [
+			npc.name.get_slice(" ", 0),
+			npc.tile(),
+			trip.goal,
+			progress,
+			trip.legs,
+			nodes,
+			trip.searches
+		]
+	)
+
+
 func _begin_search(npc: Npc) -> void:
 	var trip := npc.trip
 	var map := trip.map
@@ -154,6 +185,7 @@ func _take_search_result(npc: Npc) -> void:
 	if search.state == PathSearch.State.RUNNING:
 		return
 	trip.search = null
+	trip.nodes_looked_at += search.nodes_looked_at
 	match search.state:
 		PathSearch.State.FOUND:
 			_walk_path(npc, search.path, false)
@@ -182,6 +214,7 @@ func _has_cause_to_look_again(trip: NpcTrip) -> bool:
 func _block(npc: Npc, reason: NpcTrip.Block) -> void:
 	var trip := npc.trip
 	trip.state = NpcTrip.State.BLOCKED
+	trip.block_reason = reason
 	npc.activity = Npc.Activity.IDLE
 	if not trip.is_blocked_told:
 		trip.is_blocked_told = true
