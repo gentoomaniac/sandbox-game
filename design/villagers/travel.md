@@ -214,7 +214,11 @@ terrain, #61 and #62) then cost what they cost near. The parity test gets a vill
    inside the loaded area, and likewise a seasonal plant; a sapling that grows into a tree on the path
    in the skip stops it there (the skip-end rule); a path over masks not yet stamped, longer than the
    LRU; synchronous and over frames end the same; `place` in a skip.
-5. **The bench** (`tools/bench/paths.gd` of 238): 10, 30 and 155 villagers sent 100 to 300 tiles
+5. **While the player is inside:** `Npcs.update` and the trips go on, everyone on the masks.
+   Tests: a villager sent off before the player goes in is at the tile the same minutes of play
+   would take it when the player comes out; two whose trips cross while the player is inside meet
+   (a rumour passes); none jumps more than `walk_speed x delta` on the way out.
+6. **The bench** (`tools/bench/paths.gd` of 238): 10, 30 and 155 villagers sent 100 to 300 tiles
    at once and through the day, cold and warm: longest frame, search time, the last departure's
    delay, memory. The numbers tuned and written here.
 
@@ -236,13 +240,35 @@ between centres, the mask's order of deck, tide and dormancy). Its second check 
 entry for the live answers too, the night's trees and stumps in a skip, masks pinned a few ahead
 in a catch-up, the rules warmed before the worker, and a frame gate that counts all the work.
 
-## Open questions, with the default
+## The user's answers (2026-11-14)
 
-1. Far feet wear lanes as near ones do? Default: yes.
-2. Trips are not saved, and 239 sends them again on load (no save version bump)? Default: yes.
+1. Far feet wear lanes as near ones do: yes.
+2. Trips are not saved, and 239 sends them again on load (no save version bump): yes.
 3. After a skip, 239 puts villagers where their routine is, and the hours inside a skip are not
-   replayed? Default: yes.
-4. The world stands still while the player is inside (today's rule), far travel too? Default: yes,
-   until the villagers go inside (task 229) asks again.
-5. How late may a departure be? Default: 30 villagers leaving in the same minute are all on their
-   way within 10 s; 155 within 60 s.
+   replayed: yes.
+4. **While the player is inside, villagers outside keep moving**, so that when the player comes
+   out they are where one would expect them, not where they were when the door closed. This also
+   matters for rumours ([gossip.md](gossip.md)): villagers who meet on their way while the player is inside
+   pass on what they know as they would outside. See "While the player is inside" below.
+5. How late may a departure be: 30 villagers leaving in the same minute are all on their way within
+   10 s; 155 within 60 s.
+
+## While the player is inside
+
+Today the outside stands still while the player is inside (`Npcs.update` does not run, and the
+world's chunks are held: `_residency.is_held`). With the answer to question 4 the outside goes on:
+
+- `Npcs.update` and the trips run while the player is inside, with the clock, as in play. The
+  chunks around the house stay as they are (held, not drawn); every villager walks as if far, on the
+  masks, so nothing outside needs a view, an animation or a loaded chunk to move. The masks of the
+  held chunks follow their edits as any other.
+- When the player steps out, each villager is where its trip has taken it. One on a loaded chunk
+  gets its view there; the rule that a position never jumps more than `walk_speed x delta` in an
+  update holds, because nobody watched the minutes in between.
+- Meetings count: two villagers whose trips bring them within the meeting distance while the player
+  is inside meet as they would outside (gossip, greetings that change something). Whatever is only
+  shown (a speech bubble, a wave) is not.
+- Sleep and other skips stay as in "Time skips and sleep": the player sleeps inside, and 239 places
+  villagers at the skip's end.
+- Cost: the same budget as outside (`Pathfinder`'s per-frame budget), and less drawing, since the
+  outside view is hidden.
