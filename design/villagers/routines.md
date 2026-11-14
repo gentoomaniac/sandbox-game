@@ -10,6 +10,9 @@ random.
   or a named spot where there is none, such as a landing or a field). The hand-written sheets
   name them; the player can give a made-up villager a home and a workplace (task 228, built:
   see [villagers.md](villagers.md), `Npc.house`, `Npc.workplace`, `Households`).
+  A building someone lives in is a workplace only for the people who live there; others work in
+  a building nobody lives in (later a workshop) or at a spot such as a field (the user's answer
+  of 2026-11-14, #69).
 - **Interiors:** a building type has one default interior. A building can carry its own
   interior instead, so a villager's house is their very own inside while the outside stays the
   type's standard look (task 237, built: `home_interior` of a sheet, `Building.furnish_from`, and
