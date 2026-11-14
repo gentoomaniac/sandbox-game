@@ -8,6 +8,9 @@ extends RefCounted
 ## console's `home` and `work` (see HomeCommands); the villagers of data/villagers.cfg find
 ## the house and the workplace their sheet names when they come into the world (`settle`).
 
+## The building the player is inside, or null: its room must not change under their feet.
+var building_with_player: Building
+
 var _npcs: Npcs
 
 
@@ -24,12 +27,16 @@ func residents_of(house: Building) -> Array[Npc]:
 	return residents
 
 
-## Why `npc` can't live in `house`, or "" if they can: it is no house, it is theirs already, it
-## is full, or another household lives there.
+## Why `npc` can't live in `house`, or "" if they can: it is no house, the player is inside it and
+## their move-in would change its room, it is theirs already, it is full, or another household
+## lives there.
 func why_not_live_in(npc: Npc, house: Building) -> String:
 	var capacity: int = BuildingTypes.TYPES[house.type]["residents"]
 	if capacity == 0:
 		return "%s is no house." % house.type_data()["name"]
+	var own_room := _own_interior_for(npc, house)
+	if house == building_with_player and own_room != "" and house.can_be_furnished():
+		return "Not while you are inside."
 	if npc.house == house:
 		return "%s lives there already." % npc.name
 	var others := residents_of(house)
@@ -40,14 +47,29 @@ func why_not_live_in(npc: Npc, house: Building) -> String:
 	return ""
 
 
-## Makes `house` the home of `npc` (they leave their old one) and its yard their anchor. Returns
-## why they can't, or "".
+## Makes `house` the home of `npc` (they leave their old one) and its yard their anchor, and the
+## inside of the map their sheet names, if any (see `Building.furnish_from`). Returns why they
+## can't, or "".
 func move_in(npc: Npc, house: Building) -> String:
 	var reason := why_not_live_in(npc, house)
 	if reason == "":
 		npc.house = house
 		npc.anchor = house.yard()
+		var own_room := _own_interior_for(npc, house)
+		if own_room != "":
+			house.furnish_from(own_room)
 	return reason
+
+
+## The map the sheet of `npc` names for the inside of their home, if `house` is of the type the
+## sheet names for it, else "".
+func _own_interior_for(npc: Npc, house: Building) -> String:
+	if not _npcs.villagers.has(npc.id):
+		return ""
+	var sheet := _npcs.villagers.villager(npc.id)
+	if sheet.get(VillagerRules.HOME_BUILDING_KEY, "") != str(house.type):
+		return ""
+	return sheet.get(VillagerRules.HOME_INTERIOR_KEY, "")
 
 
 ## They have no house. Their anchor stays where it was.

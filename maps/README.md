@@ -41,6 +41,15 @@ Run `make test` after editing. `tests/test_interior_maps.gd` checks that each ro
 walls, its door in the front wall, and that every free floor tile is reachable from the entry
 and a free tile stands beside each bed.
 
+## A villager's own room
+
+A villager's house can have its own inside (task 237). Copy the map of the building's type into
+`maps/interiors/villagers/<household>.tmx` and change the furniture, not the walls: it must have
+the size of the default and the exit in the same place, or the data is refused when the game
+starts (`VillagerRules`). Then name it in the sheet in [data/villagers.cfg](../data/villagers.cfg)
+as `home_interior` (with the `home_building`); a married couple name the same one.
+`tests/test_own_interiors.gd` checks the example.
+
 ## Adding a kind of furniture
 
 Furniture tiles are generated, so a new one starts in the art code

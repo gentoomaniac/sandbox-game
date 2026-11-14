@@ -66,6 +66,20 @@
     is taller than the screen at zoom 1, so the camera follows the player through it as
     outside. Sleep fills: mat 80, bed and box bed 100.
     The barn and the church have no bed, so they can't be slept in.
+  - **Own insides** (task 237, 2026-11-14): the type's map is the default. A villager's sheet
+    can name another map for their house, `home_interior` in `data/villagers.cfg`
+    (`maps/interiors/villagers/<household>.tmx`, a room as big as the default with its door in
+    the same place: `VillagerRules` refuses any other when the data loads), and the house gets
+    it when they move in (`Households.move_in`, `Building.furnish_from`), while the outside
+    stays the type's look. It is kept with the building as its saved inside, so nothing new is
+    saved (no save version). A house nobody has changed yet (never entered, or the default
+    untouched) takes the new inside; one with changes in it keeps what it has, and so does one
+    that already has an own inside (the first household's stays). A made-up villager, or a sheet
+    without `home_interior`, leaves the default. Taking a house down treats the furniture of the
+    default and of the sheets' maps for its type as the furniture it came with. The example is
+    `boysen.tmx` for Antje and Hinrich (and Boy, who lives there): the hall house room with a
+    second plate rack for the milk pans, a stool at the kitchen table, two barrels for churns
+    by the stalls and a straw mat for Boy.
   - **Items on the floor** (task 200, 2026-11-11): an interior has its own piles of items, like
     the world's (`GameMap.ground_items`), saved with the interior. Dropping works inside
     (the drop key, a stack dragged out of a window); the piles lie on free floor only (never on a

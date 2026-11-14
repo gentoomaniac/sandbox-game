@@ -2,7 +2,7 @@
 
 Decided 2026-11-14 (the user): tasks 228, 237, 238, 239, 229 and 240 on the
 [project board](https://github.com/users/gentoomaniac/projects/2). Built so far: homes and
-workplaces (task 228). Today a villager keeps near an anchor (the yard of their home's door,
+workplaces (task 228) and own interiors (task 237). Today a villager keeps near an anchor (the yard of their home's door,
 or of the nearest building or fireplace, [villagers.md](villagers.md)) and walks about it at
 random.
 
@@ -12,7 +12,8 @@ random.
   see [villagers.md](villagers.md), `Npc.house`, `Npc.workplace`, `Households`).
 - **Interiors:** a building type has one default interior. A building can carry its own
   interior instead, so a villager's house is their very own inside while the outside stays the
-  type's standard look (task 237).
+  type's standard look (task 237, built: `home_interior` of a sheet, `Building.furnish_from`, and
+  [first-buildings.md](../building/first-buildings.md)).
 - **Routines are generic:** a routine says what happens when, such as "work from 7 to 15, home
   at 15, sleep at 22", with a Sunday plan and changes for rain and the dark. The villager's own
   home and workplace fill in where that is, so many villagers share a few routines (task 239).

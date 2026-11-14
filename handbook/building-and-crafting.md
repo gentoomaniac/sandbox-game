@@ -124,6 +124,9 @@ bush](../docs/screenshots/bush-replanted-classic.png).
   household (a couple and their children). A building that is no house (the barn, the church)
   can only be given as a workplace.
 - A villager with a house keeps near its door. Taking the house down frees them.
+- Some villagers have a room of their own: when Antje Boysen (or Hinrich) moves into a hall
+  house, its inside becomes the Boysens' farm kitchen and dairy. The outside stays the same. A
+  house you have already furnished or changed inside keeps its room.
 - The console's `home` and `work` do the same (see [console.md](console.md)).
 
 ### Taking down

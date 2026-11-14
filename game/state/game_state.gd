@@ -77,7 +77,10 @@ var current_map: GameMap:
 		return world if _building_inside == null else _building_inside.interior
 
 ## The building the player is inside, or null when they are out in the world.
-var _building_inside: Building
+var _building_inside: Building:
+	set(building):
+		_building_inside = building
+		homes.building_with_player = building
 ## Seconds the player has kept moving: a horse trots after a while (see `is_trotting`). Not
 ## saved.
 var _moving_seconds := 0.0
@@ -471,21 +474,27 @@ func refund_of_building(building: Building) -> Dictionary:
 
 ## Why a building can't be taken down now, or "" if it can: the player is inside, or something
 ## the player put in it is still there (a thing they placed, or what a chest or station holds).
-## The furniture the house came with, empty, goes with it.
+## The furniture the house came with (the default's or a villager's own room's), empty, goes
+## with it.
 func why_not_take_down(building: Building) -> String:
 	if is_inside():
 		return "You can't take a house down from inside."
 	if building.interior == null:
 		return ""
-	var own_furniture := InteriorLoader.load_interior(
-		BuildingTypes.TYPES[building.type]["interior_map"]
-	)
+	var own_rooms: Array[Interior] = []
+	var own_maps: Array[String] = [BuildingTypes.TYPES[building.type]["interior_map"]]
+	own_maps.append_array(npcs.villagers.home_interiors(building.type))
+	for map_path: String in own_maps:
+		own_rooms.append(InteriorLoader.load_interior(map_path))
 	var tool_use := ToolUse.new(self)
 	for object in building.interior.objects():
 		if not object.type_data().has("drops"):
 			continue
-		var own := own_furniture.object_at(object.pos)
-		var is_own := own != null and own.type == object.type
+		var is_own := own_rooms.any(
+			func(room: Interior) -> bool:
+				var own := room.object_at(object.pos)
+				return own != null and own.type == object.type
+		)
 		if not is_own or not tool_use.items_held_by(object).is_empty():
 			return "Take out what you put in it first."
 	return ""

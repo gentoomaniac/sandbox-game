@@ -27,6 +27,8 @@ const TEXT_KEYS: Array[String] = [
 const HOME_BUILDING_KEY := "home_building"
 const WORKPLACE_BUILDING_KEY := "workplace_building"
 const WORKPLACE_SPOT_KEY := "workplace_spot"
+## The Tiled map of the inside of their home, instead of its building type's default (task 237).
+const HOME_INTERIOR_KEY := "home_interior"
 ## A villager's sample lines: the cut-down sheet tells this many.
 const MIN_SAMPLES := 2
 ## The kinds of people a villager may name in `people`: the sex of the one named ("" for
@@ -78,9 +80,11 @@ static func from_file(path: String) -> VillagerRules:
 
 ## What is missing or wrong, as "[id] what". A look may only wear the layers NpcRules offers,
 ## which are those with pictures. A `home_building` is a type that has room for residents, a
-## `workplace_building` a type, and a sheet names one workplace at most. Each of a villager's
-## `people` is a villager of the file who names them back (see KINDS), a parent is older than
-## their child by MIN_PARENT_AGE or more, and a married couple has the same home.
+## `workplace_building` a type, and a sheet names one workplace at most. A `home_interior` is a
+## map that exists and has the size and the door of its home's default (see `_interior_problems`).
+## Each of a villager's `people` is a villager of the file who names them back (see KINDS), a
+## parent is older than their child by MIN_PARENT_AGE or more, and a married couple has the same
+## home.
 func problems() -> Array[String]:
 	var found: Array[String] = []
 	if _values.is_empty():
@@ -102,6 +106,7 @@ func problems() -> Array[String]:
 		if not people is Dictionary or not people.values().all(_is_kind_and_text):
 			found.append("[%s] people is not a dictionary of [kind, what they think]" % id)
 		found.append_array(_place_problems(id, villager))
+		found.append_array(_interior_problems(id, villager))
 		var look: Variant = villager.get("look")
 		if not look is Dictionary or not look.has(str(Appearance.BODY)):
 			found.append("[%s] look has no body" % id)
@@ -158,13 +163,14 @@ func _relation_problems(id: String, other: String) -> Array[String]:
 			found.append(
 				"%s does not have the same home as their %s" % [where, KINDS[kind]["back"][0]]
 			)
-		if named.get(HOME_BUILDING_KEY, "") != _values[id].get(HOME_BUILDING_KEY, ""):
-			found.append(
-				(
-					"%s does not have the same %s as their %s"
-					% [where, HOME_BUILDING_KEY, KINDS[kind]["back"][0]]
+		for key in [HOME_BUILDING_KEY, HOME_INTERIOR_KEY]:
+			if named.get(key, "") != _values[id].get(key, ""):
+				found.append(
+					(
+						"%s does not have the same %s as their %s"
+						% [where, key, KINDS[kind]["back"][0]]
+					)
 				)
-			)
 	return found
 
 
@@ -195,6 +201,45 @@ func _place_problems(id: String, villager: Dictionary) -> Array[String]:
 			"[%s] has both a %s and a %s" % [id, WORKPLACE_BUILDING_KEY, WORKPLACE_SPOT_KEY]
 		)
 	return found
+
+
+## What is wrong with the map a sheet names for the inside of its home: it needs a home, it exists,
+## and its room is as big as the home's default and has its door in the same place, so that it fits
+## the building (whose footprint and door the type fixes).
+func _interior_problems(id: String, villager: Dictionary) -> Array[String]:
+	var path: Variant = villager.get(HOME_INTERIOR_KEY)
+	if path == null:
+		return []
+	var at := "[%s] %s: " % [id, HOME_INTERIOR_KEY]
+	var home := StringName(str(villager.get(HOME_BUILDING_KEY, "")))
+	if not (path is String and BuildingTypes.TYPES.has(home)):
+		return [at + "needs a text, and a home_building"]
+	if not FileAccess.file_exists(path):
+		return [at + "no such map: %s" % path]
+	var default_room := InteriorLoader.load_interior(BuildingTypes.TYPES[home]["interior_map"])
+	var room := InteriorLoader.load_interior(path)
+	if room.size != default_room.size or room.exit_tile != default_room.exit_tile:
+		return [
+			(
+				at
+				+ (
+					"is %s with its door at %s, a %s has %s and %s"
+					% [room.size, room.exit_tile, home, default_room.size, default_room.exit_tile]
+				)
+			)
+		]
+	return []
+
+
+## The maps that villagers of the file have for the inside of a home of the type.
+func home_interiors(building_type: StringName) -> Array[String]:
+	var maps: Array[String] = []
+	for id: String in _values:
+		var sheet: Dictionary = _values[id]
+		if sheet.get(HOME_BUILDING_KEY) == str(building_type) and sheet.has(HOME_INTERIOR_KEY):
+			if not maps.has(sheet[HOME_INTERIOR_KEY]):
+				maps.append(sheet[HOME_INTERIOR_KEY])
+	return maps
 
 
 static func _is_text(value: Variant) -> bool:
