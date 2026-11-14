@@ -396,12 +396,17 @@ func switch_held_lantern() -> bool:
 	return true
 
 
+## Whether the held item is food and the energy is below the cap, so that `eat_held` eats it.
+func can_eat_held() -> bool:
+	return energy_rules.is_food(player.inventory.held_item()) and player.energy < energy_cap()
+
+
 ## Eats one of the held food, on any map: it restores energy up to the cap. Does nothing, and
-## returns false, unless the held item is food and the energy is below the cap.
+## returns false, unless `can_eat_held`.
 func eat_held() -> bool:
-	var food := player.inventory.held_item()
-	if not energy_rules.is_food(food) or player.energy >= energy_cap():
+	if not can_eat_held():
 		return false
+	var food := player.inventory.held_item()
 	player.inventory.consume_held()
 	player.energy = minf(player.energy + energy_rules.food_restore(food), energy_cap())
 	report(ActionOutcome.EAT, player.tile(), &"", {food: 1})

@@ -145,7 +145,7 @@ func can_use_held_item() -> bool:
 ## happens; the energy ends at 0 (see `is_out_of_energy`). A tile out of reach, or not on the
 ## player's map, is refused with nothing changed (OUT_OF_REACH).
 func use_tile(target: Vector2i) -> Use:
-	if not _is_in_reach(target):
+	if not is_in_reach(target):
 		return Use.OUT_OF_REACH
 	var weight_factor := 1.0
 	if not _state.cheats.is_weight_off:
@@ -165,7 +165,8 @@ func use_tile(target: Vector2i) -> Use:
 	return use
 
 
-func _is_in_reach(target: Vector2i) -> bool:
+## Whether a tile is within reach of the player and on their map: `use_tile` refuses others.
+func is_in_reach(target: Vector2i) -> bool:
 	return (
 		Targeting.is_tile_in_reach(_state.player.tile(), target)
 		and _state.current_map.tile_at(target) != null

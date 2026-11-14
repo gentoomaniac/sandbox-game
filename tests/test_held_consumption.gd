@@ -34,3 +34,9 @@ func test_consuming_an_empty_hand_does_nothing() -> void:
 	watch_signals(_inventory)
 	assert_false(_inventory.consume_held())
 	assert_signal_not_emitted(_inventory, "changed")
+
+
+func test_held_food_can_be_eaten_only_below_the_energy_cap() -> void:
+	assert_false(_state.can_eat_held(), "energy is full at the start")
+	_state.player.energy = 50.0
+	assert_true(_state.can_eat_held())
