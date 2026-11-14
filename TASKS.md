@@ -120,10 +120,10 @@ The user, 2026-11-14: the whole village, not one farm. Today villagers come only
 
 - [ ] Done
 
-Review GD2: a harvest gives a seed back only now and then (`seed_chance` 0.2 to
-0.7, low for the regrowing crops), so a field shrinks each round and seeds come only from `give`. The user, 2026-11-14: a villager
-trades seeds by barter, and some seeds can be found. Needs 234. May be split into the seed
-chest and the wild seeds.
+Review GD2: a harvest gives a seed back only now and then (`seed_chance` 0.2 to 0.7, low for
+the regrowing crops), so a field shrinks each round and seeds come only from `give`. The user,
+2026-11-14: a villager trades seeds by barter, and some seeds can be found. Needs 234. May be
+split into the seed chest and the wild seeds.
 - A villager of the village (by default Antje Boysen at her farm) keeps a seed chest: the
   player trades produce or goods for seed bags of every crop, by barter, no money yet
   (prices in data/, by weight or worth; the economy draft's first step, design/economy/).
