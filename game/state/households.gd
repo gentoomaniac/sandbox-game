@@ -86,6 +86,40 @@ func building_gone(building: Building) -> void:
 			npc.workplace = null
 
 
+## Villagers who work in `building`.
+func workers_of(building: Building) -> Array[Npc]:
+	var workers: Array[Npc] = []
+	for npc in _npcs.all():
+		if npc.workplace != null and npc.workplace.building == building:
+			workers.append(npc)
+	return workers
+
+
+## What the hover box over `building` says, a line each: its name, who lives there and how many
+## of its places are taken (a house only), and who works there (if anybody does).
+func occupants_text(building: Building) -> String:
+	var lines: Array[String] = [building.type_data()["name"]]
+	var capacity: int = BuildingTypes.TYPES[building.type]["residents"]
+	if capacity > 0:
+		var residents := residents_of(building)
+		lines.append(
+			(
+				"Lives here: %s" % _names(residents)
+				if not residents.is_empty()
+				else "Nobody lives here"
+			)
+		)
+		lines.append("%d of %d places taken" % [residents.size(), capacity])
+	var workers := workers_of(building)
+	if not workers.is_empty():
+		lines.append("Works here: %s" % _names(workers))
+	return "\n".join(lines)
+
+
+func _names(npcs: Array[Npc]) -> String:
+	return ", ".join(npcs.map(func(npc: Npc) -> String: return npc.name))
+
+
 ## The villagers within the menu's reach of `building`, the nearest first and no more than the
 ## menu lists (see `give_reach` and `give_list_size` of data/npcs.cfg).
 func near(building: Building) -> Array[Npc]:
