@@ -120,14 +120,18 @@ console commands.
 
 - **The village:** Wehlsbüll stands in the world near the start with its eight hand-written
   villagers in their homes, not one farm alone.
-- **Seeds:** a villager's seed chest trades seeds by barter (no money yet), and some seeds are
-  found wild. Recovering from a lost harvest never needs friendship or a language model.
+- **Villagers' lives:** each has a home and a workplace, their house can have its own interior,
+  and generic routines send them where their own places are, by pathfinding
+  ([villagers/routines.md](villagers/routines.md)).
+- **Seeds:** a shopkeeper keeps shop hours and trades by barter (no money yet); the shop sells
+  seeds, and some are found wild. Recovering from a lost harvest never needs friendship or a
+  language model.
 - **Light:** the lantern and candles can be made.
 - **Information:** seeds and crops say in plain words what they need and how they are doing;
   a hint names what the next click or E will do.
 - **Goals:** villagers ask for small things now and then; no quest chain.
 
-Tasks 231 to 236 in [TASKS.md](../TASKS.md).
+Tasks 228, 229 and 231 to 240 in [TASKS.md](../TASKS.md).
 
 ## Open questions
 

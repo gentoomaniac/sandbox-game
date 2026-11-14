@@ -28,10 +28,17 @@ Rules for every task:
 The user, 2026-11-14, from the [game design review](review/game-design-review-2026-11-11/README.md)
 (GD1 to GD3, GD5, GD8): add the game parts a fuller loop needs, so a new player can farm, replant,
 meet the village and work towards something without console commands. These tasks come before
-227 and the rest of the queue. **They don't start until the user says go.** Order: 231 to 233 have
-no dependencies; 234 needs 228 (homes), so 228 stands between 233 and 234 here; 235 needs 234;
-236 needs 234 and 235. The design is in
-[design/README.md](design/README.md#2-a-first-season-without-the-console).
+227 and the rest of the queue. **They don't start until the user says go.**
+
+The user, 2026-11-14: villagers need homes and workplaces, houses a default interior that a
+villager's house can override, routines ("work from 7 to 15") whose places come from the
+villager, and pathfinding to get there; a shopkeeper with a trading dialog builds on that.
+
+Order: 231 to 233 have no dependencies and can run alongside the rest. The villager chain runs
+228 (home and workplace), 237 (own interiors), 238 (pathfinding), 239 (routines), 229 (going
+inside), 234 (the village), 240 (the shopkeeper), then 235 (seeds) and 236 (goals). The design
+is in [design/README.md](design/README.md#2-a-first-season-without-the-console) and
+[design/villagers/routines.md](design/villagers/routines.md).
 
 ## 231. A lantern and candles to make
 
@@ -76,7 +83,7 @@ petting), and harvesting needs an empty hand that a new player can't see how to 
   game/state/tool_use.gd (Use); the handbook's controls page. May be split into the hint and the
   crafting button if it is too much for one brief.
 
-## 228. A home for each villager, and a way to give one a house
+## 228. A home and a workplace for each villager, and a way to give them
 
 - [ ] Done
 
@@ -90,16 +97,93 @@ is no home.
   in the game: by default with the hammer's menu on a house ("Give to ...", a list of the
   villagers near) and in the console `home <villager> [here|none]`. A house holds a household
   (the couple and their children), at most as many as its beds or a number in data/.
+- The user, 2026-11-14: a villager also gets a workplace, the place their routine (task 239)
+  sends them to work: a building (the mill, a barn, the shop), or a spot with a name where there
+  is no building (Ocke's landing at the sluice, a field). The sheets in data/villagers.cfg name
+  it; the player gives one the same way as a home (`work <villager> [here|none]`).
 - Gossip: the place words ("by Antje's house") use the home.
 - Save version bump; tests: assigning, moving, freeing when a building is taken down, saving.
+
+## 237. Each house has its own interior: the type's default, or a villager's own
+
+- [ ] Done
+
+The user, 2026-11-14. Today every building of a type copies its type's one interior map
+(`interior_map` in data/buildings.cfg) when first entered, and keeps that copy.
+- That map stays the default. A building can name its own interior map instead, kept with the
+  building (saved), so a villager's house is their very own inside (Antje's dairy, Ocke's nets)
+  while the outside stays the type's standard look.
+- Villager sheets name the interior of their home (maps/interiors/villagers/<id>.tmx, made in
+  Tiled like the others); a house given to a villager without one keeps the default.
+- Make one own interior as the example (by default Antje and Hinrich's hall house); more come
+  with 234.
+- A map that doesn't fit the building's footprint or door is refused when loading the data
+  (a catalog check), not in the game.
+- Tests: the default, an own map, saving, a bad map refused; docs in design/building/.
+
+## 238. Pathfinding: villagers walk to a place, not just about
+
+- [ ] Done
+
+The user, 2026-11-14: villagers need to get somewhere, not wander at random. Today they keep
+near an anchor; nothing in the game finds a way (game/state/reachable_tiles.gd only floods a small
+radius for the skip rule).
+- A path search over tiles (A* or what fits best) with the same rules as a villager's steps:
+  fences, walls, water, buildings, closed gates; lanes and paths cost less, so they keep to them.
+  It goes across chunks and through doors (to the door tile, then the interior's own map).
+- It must not stutter (see the gossip and flower snow fixes): a limit of tiles searched per
+  call and of searches per frame, spread over frames, paths kept and only searched again when
+  blocked; long ways cut into legs. Measure it with many villagers, with numbers in data/.
+- A villager far from the player (in a chunk that isn't loaded) doesn't search: it is where its
+  routine says when the chunk loads, as the skip rule does today.
+- A stuck walker gives up after a while and waits or picks another way, never spins (task 209's
+  rule for animals).
+- Console `goto <villager> <x>,<y>` (or `here`) to watch it; a debug line of the path in F3.
+- Tests: a way round a fence, through a gate and a door, none to a closed-in place, the limits,
+  a blocked path found again.
+
+## 239. Villager routines: when they are where
+
+- [ ] Done
+
+The user, 2026-11-14: routines are generic, like "go to work from 7 to 15"; the villager's
+home and workplace (task 228) say where that is. Needs 228 and 238. **Plan first:** the worker
+writes the routine format and the routines into design/villagers/routines.md and the user
+approves it before code.
+- Routines in data/routines.cfg: a few named ones (farmer, fisher, miller, keeper of the house,
+  shopkeeper), each a list of hours and places: sleep at home, work, eat at home, the meeting
+  place in the evening, church on Sunday; a weekday and a Sunday plan, and what rain or the
+  dark changes (inside sooner).
+- Each villager's sheet names their routine; a made-up villager gets one by their work.
+- At the place, they do what fits there now and then (walk about the yard, stand at the work
+  spot); between places they walk there by task 238, leaving in time to arrive by the hour.
+- Replaces the anchor: the anchor rule stays only for a villager without home or routine.
+- The `day` text of a sheet is told to the language model as before; the plan says whether the
+  routine should be written from it or the other way round.
+- Skip and sleep: a villager is where the routine says at the new hour.
+- Console `routine <villager>` shows where they are going and why. Save version bump if needed.
+- Tests: the place for each hour, Sunday, rain, arriving on time, the skip rule, saving mid-way.
+
+## 229. Villagers go inside
+
+- [ ] Done
+
+After 239. The user, 2026-11-11: villagers enter their houses (and the church,
+workplaces) through the door instead of waiting in front of it, and are seen in the interior.
+- Their routine (task 239) says when they are inside: they walk (task 238) to the door of their
+  home, the church or a workplace building, go in, are seen in the interior when the player is
+  there and walk about it, and come out when the routine says; the skip rule puts them inside or
+  out as the hour has it.
+- Tests: going in and out, the interior shows them, saving where they are.
 
 ## 234. The village Wehlsbüll stands in the world, with its people
 
 - [ ] Done
 
 The user, 2026-11-14: the whole village, not one farm. Today villagers come only from
-`spawn npc`, and the Warften stand empty. Needs 228. **Plan first:** the worker writes the plan
-(where, which buildings, the steps) into design/world/ and the user approves it before code.
+`spawn npc`, and the Warften stand empty. Needs 228, 237 and 239. **Plan first:** the worker
+writes the plan (where, which buildings, the steps) into design/world/ and the user approves it
+before code.
 - World generation puts Wehlsbüll near the start, a short walk from the camp (about a minute):
   the farms on their Warften in the Koog, the church with its churchyard, the houses by the
   dyke and the sluice, the post mill at the Geest edge once it exists (until then its spot
@@ -107,8 +191,9 @@ The user, 2026-11-14: the whole village, not one farm. Today villagers come only
   sheets' homes in data/villagers.cfg say who lives where (a placeholder where no building
   fits yet: say which).
 - The eight hand-written villagers live there from a new game, each in their home (task 228),
-  spawned once. The village is not the player's: building there follows the reputation rule
-  (design/villagers/reputation.md), and the area it covers is shown before the player builds.
+  with their own interiors (237) and workplaces, spawned once. The village is not the
+  player's: building there follows the reputation rule (design/villagers/reputation.md), and
+  the area it covers is shown before the player builds.
 - A meeting place (the church on Sunday, the Krug or a village green) where villagers come
   together now and then, so gossip has meetings.
 - An old save gets the village where its land is still untouched, or keeps its world as it is
@@ -116,17 +201,33 @@ The user, 2026-11-14: the whole village, not one farm. Today villagers come only
 - Tests: the village is placed the same for a seed, never on water or the player's buildings,
   every villager has a home; screenshots in both arts; the handbook's villagers and world pages.
 
-## 235. Seeds from a neighbour's seed chest, and wild seeds
+## 240. A shopkeeper who keeps shop hours and trades
+
+- [ ] Done
+
+The user, 2026-11-14: a shopkeeper goes to their shop at the routine's hours, stands there and
+offers a trading dialog. Needs 234 (the village) and 239 (routines).
+- A villager with the shopkeeper routine works in their shop: a building of the village or a
+  stall by the lane (the plan of 234 says which, and who keeps it: by default a Höker, a small
+  village shopkeeper, as a new hand-written villager with a sheet, or one of the eight).
+- In the shop hours they stand at the counter; E on them there opens a trading dialog: what
+  they sell and what they take, by barter (no money yet), the stock from data/shops.cfg filling
+  up over the days. Out of hours: "The shop opens at 7", and E is the usual talk.
+- With a language model the shopkeeper chats as any villager; the trade itself never needs one.
+- Docs: design/economy/README.md (the first step of the economy draft) and the handbook.
+- Tests: open and closed hours, a trade, a refused trade (not enough to give, a full bag), the
+  stock refill, saving.
+
+## 235. Seeds from the shop, and wild seeds
 
 - [ ] Done
 
 Review GD2: a harvest gives a seed back only now and then (`seed_chance` 0.2 to 0.7, low for
 the regrowing crops), so a field shrinks each round and seeds come only from `give`. The user,
-2026-11-14: a villager trades seeds by barter, and some seeds can be found. Needs 234. May be
-split into the seed chest and the wild seeds.
-- A villager of the village (by default Antje Boysen at her farm) keeps a seed chest: the
-  player trades produce or goods for seed bags of every crop, by barter, no money yet
-  (prices in data/, by weight or worth; the economy draft's first step, design/economy/).
+2026-11-14: a villager trades seeds by barter, and some seeds can be found. Needs 240. May be
+split into the shop's seeds and the wild seeds.
+- The shopkeeper (task 240) sells seed bags of every crop for produce or goods (prices in
+  data/shops.cfg, by weight or worth).
 - It always works: no friendship or language model needed, and the price can be paid even after
   a lost harvest (for example with wood, fibre, eggs or a day's work), so the farm can always
   start again. The stock fills up over the days.
@@ -143,7 +244,7 @@ split into the seed chest and the wild seeds.
 - [ ] Done
 
 Review GD1 and GD5: production needs a reason, and the first days need something to work
-towards before the first turnips are ripe (nine good days). Needs 234 and 235. **Plan first:**
+towards before the first turnips are ripe (nine good days). Needs 234, 239 and 235. **Plan first:**
 the worker writes the plan (asks, the list, rewards, the opinion path, the steps) into
 design/villagers/ and the user approves it before code.
 - Now and then a villager asks for something small that they say in a line: five turnips, a
@@ -166,17 +267,6 @@ The held art is done (task 119); the use (swing) poses are not.
 - The player's arm and the held tool swing when the axe, pickaxe, scythe and shovel are used
   (a few frames in the four directions), in both arts, timed with the use; the hammer and hoe
   too if they lack one. Art crops (1x/4x) for the user's verdict before the code uses them.
-
-## 229. Villagers go inside
-
-- [ ] Done
-
-After 228. The user, 2026-11-11: villagers enter their houses (and the church,
-workplaces) through the door instead of waiting in front of it, and are seen in the interior.
-- They go in at night and now and then by day (numbers in data/), through the door of their
-  home (and later the church and workplaces), are seen in the interior when the player is there,
-  and come out in the morning; the skip rule puts them inside or out as the hour has it.
-- Tests: going in and out, the interior shows them, saving where they are.
 
 ## 171. Music: what plays when, with loops, transitions and crossfades
 
