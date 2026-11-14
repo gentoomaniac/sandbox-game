@@ -48,6 +48,10 @@ warm_from_best_temperature=18
 water_low_up_to=0.45
 water_high_from=0.65
 tender_below_wind=11
+warn_dry_margin=0.1
+warn_wither_nights=2
+warn_within_tiles=24
+field_gap_tiles=2
 """
 const REEDS := """
 [reeds]

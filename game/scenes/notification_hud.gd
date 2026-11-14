@@ -45,6 +45,11 @@ func post(key: StringName, text: String, tone := Tone.PLAIN) -> void:
 	line.tween.tween_callback(_remove.bind(line))
 
 
+## Shows `text`, with no key: it is never replaced.
+func post_line(text: String) -> void:
+	post(&"", text)
+
+
 ## Shows `text` until a line of the same `key` replaces it or `remove` takes it away.
 func hold(key: StringName, text: String) -> void:
 	_show(key, text, Tone.PLAIN)

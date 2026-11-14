@@ -129,6 +129,13 @@
     sun, dry soil: less than a good day's growth); how many more bad days kill it, if it is damaged;
     and the soil's real moisture with a word (too dry, a little dry, good), not the wet look rain
     leaves on the surface. The weather is that of the crop's day, which is what the hours count.
+    **Warnings** (`CropWarnings`, every hour, only crops within `warn_within_tiles` (24) of the
+    player): a toast before a loss that can still be stopped, once per field and not per tile
+    (crops in trouble within `field_gap_tiles` (2) of each other are one field; a field is
+    warned about again only after it was out of trouble): "The turnip field is drying out: water
+    it" when the soil is within `warn_dry_margin` (0.1) of the crop's `moisture_min`, and "The turnip
+    field is ripe and will wither tonight: harvest it" when a ripe crop has `warn_wither_nights` (2)
+    nights or fewer left. Not saved: after a load a field in trouble is warned about once more.
 - Wild crops can be foraged.
 - The biome decides which resources are available and what the land is good for
   agriculturally (see [Biomes](../world/generation.md)).

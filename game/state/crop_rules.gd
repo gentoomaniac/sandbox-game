@@ -58,6 +58,10 @@ const REQUIRED_FARMING_KEYS: Array[String] = [
 	"water_low_up_to",
 	"water_high_from",
 	"tender_below_wind",
+	"warn_dry_margin",
+	"warn_wither_nights",
+	"warn_within_tiles",
+	"field_gap_tiles",
 ]
 const REQUIRED_REEDS_KEYS: Array[String] = [
 	"regrow_growth",

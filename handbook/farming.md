@@ -42,6 +42,8 @@ perfect weather; expect longer.
   wither), or dead; what hurts or slows it today (frost, cold, heat, dry soil, too little sun,
   wind); how damaged it is; and the soil's real moisture. The rain wets only the surface for an
   hour, so trust this number, not the soil's colour.
+- A short note warns you once per field, before it is too late: the soil of a field is about to
+  get too dry for its crop (water it), or a ripe crop will wither within two nights (harvest it).
 - Peas, beans and strawberries fruit again after the second number of days.
 - Rye and buckwheat are ground to flour like wheat; flax is fibre, not food.
 - Pick a ripe crop within as many days as it took to ripen, or it withers and gives nothing.

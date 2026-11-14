@@ -54,6 +54,7 @@ var livestock := Livestock.new(sun, cheats)
 ## The crows' raids on the crops: the view tells it where its crow flocks stand. Built with the
 ## simulation; nothing of it is saved.
 var crop_raids: CropRaids
+var crop_warnings: CropWarnings
 ## What the scarecrows the player put down guard from the crows (see CropRaids `is_guarded`). Built
 ## with the simulation; the scarecrows themselves are objects of the world.
 var scarecrows: Scarecrows
@@ -732,6 +733,8 @@ func _start_simulation() -> void:
 	crop_raids = CropRaids.new(world, _player_feet)
 	crop_raids.is_guarded = scarecrows.is_guarding
 	simulation.add_system(crop_raids)
+	crop_warnings = CropWarnings.new(world, _player_feet)
+	simulation.add_system(crop_warnings)
 	simulation.add_system(NightUpkeep.new(world, weather, _tiles_kept_clear))
 	simulation.add_system(ActorsUpkeep.new(world, livestock, npcs, _player_feet))
 	simulation.add_system(GossipSpread.new(npcs, deeds))

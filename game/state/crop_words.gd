@@ -59,9 +59,7 @@ static func state_text(crop: WorldObject, day: WeatherDay, moisture: float) -> S
 	var lines: Array[String] = []
 	if CropLife.is_ripe(crop):
 		lines.append("%s, ripe" % crop_type["name"])
-		lines.append(
-			"Pick it: it will wither %s" % _withers_in(CropLife.days_until_withering(crop))
-		)
+		lines.append("Pick it: it will wither %s" % withers_in(CropLife.days_until_withering(crop)))
 	else:
 		lines.append("%s, growing" % crop_type["name"])
 	lines.append_array(_trouble_lines(crop, day, moisture))
@@ -72,8 +70,8 @@ static func state_text(crop: WorldObject, day: WeatherDay, moisture: float) -> S
 	return "\n".join(lines)
 
 
-## "tonight" or "in 3 days" (the days it has left, see CropLife `days_until_withering`).
-static func _withers_in(days_left: int) -> String:
+## "tonight" or "in 3 days" (the nights a ripe crop has left, see CropLife `days_until_withering`).
+static func withers_in(days_left: int) -> String:
 	return "tonight" if days_left == 1 else "in %d days" % days_left
 
 

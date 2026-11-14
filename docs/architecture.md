@@ -62,7 +62,9 @@ Warft and an Ewer here and there.
   action needs) and the views too (wildlife), until the player has woken, and a quit waits
   for that: so the world ends as after `skip` and a save is of a whole morning. The systems:
   `FarmingUpkeep` (every hour: the crops live through the hour, a 24th of a day's growth in the
-  weather of its day; the end of the day counts for them), `NightUpkeep` (at midnight: reeds,
+  weather of its day; the end of the day counts for them),
+  `CropWarnings` (every hour: a toast for a field whose soil is drying out or whose ripe crop is
+  about to wither), `NightUpkeep` (at midnight: reeds,
   saplings, stumps, bushes, clay spots, desire paths, fallow soil) and
   `ActorsUpkeep` (the farm animals and
   villagers, in loaded chunks only: short skips are walked, long ones put each on a tile it could
