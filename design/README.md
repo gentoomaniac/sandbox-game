@@ -111,6 +111,24 @@ is done, and weather, energy, saving and loading and sound have been added since
 
 Tasks: see [TASKS.md](../TASKS.md).
 
+### 2. A first season without the console
+
+Decided 2026-11-14 (the user, from the
+[game design review](../review/game-design-review-2026-11-11/README.md)): a new player can
+farm, replant, meet the village, make something useful and work towards something, with no
+console commands.
+
+- **The village:** Wehlsbüll stands in the world near the start with its eight hand-written
+  villagers in their homes, not one farm alone.
+- **Seeds:** a villager's seed chest trades seeds by barter (no money yet), and some seeds are
+  found wild. Recovering from a lost harvest never needs friendship or a language model.
+- **Light:** the lantern and candles can be made.
+- **Information:** seeds and crops say in plain words what they need and how they are doing;
+  a hint names what the next click or E will do.
+- **Goals:** villagers ask for small things now and then; no quest chain.
+
+Tasks 231 to 236 in [TASKS.md](../TASKS.md).
+
 ## Open questions
 
 - **Reputation details:**

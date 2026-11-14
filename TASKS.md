@@ -23,6 +23,118 @@ Rules for every task:
 - Visuals come from the art generator (task 5 on). Until a task adds art for something,
   use simple placeholder shapes in palette colours.
 
+## Milestone 2: a first season without the console
+
+The user, 2026-11-14, from the [game design review](review/game-design-review-2026-11-11/README.md)
+(GD1 to GD3, GD5, GD8): add the game parts a fuller loop needs, so a new player can farm, replant,
+meet the village and work towards something without console commands. These tasks come before
+227 and the rest of the queue. **They don't start until the user says go.** Order: 231 to 233 have
+no dependencies; 234 needs 228 (homes), so 228 moves up in front of it; 235 needs 234; 236 needs
+234 and 235. The design is in [design/README.md](design/README.md#2-a-first-season-without-the-console).
+
+## 231. A lantern and candles to make
+
+- [ ] Done
+
+Review GD1: the lantern (task 177) has no recipe; dark nights need `give lantern`.
+- Tallow candles and the horn lantern get recipes, from things a new game can get: for example
+  the candle from tallow or beeswax and fibre, the lantern from wood, horn or a thin board,
+  and a candle at the workbench (numbers and inputs in data/recipes.cfg, chosen by the worker;
+  if an input can't be got in play yet, say which and pick one that can).
+- The lantern burns its candle down over a few nights and takes a new one (or say why not).
+- Tests: the recipes, the burn-down, save/load; the handbook's crafting page.
+
+## 232. Crops tell the player what they need and how they are doing
+
+- [ ] Done
+
+Review GD3: growth hangs on warmth, light, moisture and wind, and a crop can die or wither,
+but the seed tooltip says little and the crop state is only in the console's `crop`.
+- Seed tooltips in plain words, read from data/crops.cfg: likes cool or warm weather, water
+  need (low, middle, high), wind (hardy or tender), about how many days in good weather.
+- Looking at a crop (hover or the empty-hand inspect, whichever fits the controls) shows its
+  state in a few words: growing, slowed by cold / dry soil / wind, damaged, ripe, will wither in
+  N days; the soil's real moisture, not the wet look of rain on the surface.
+- A warning before a loss that can still be stopped (dry soil the can fixes, ripe crop about
+  to wither), as a short toast once per field, not per tile.
+- Tests: the words for each state and crop; the handbook's farming page and its picture.
+
+## 233. A hint for what the next click or E will do
+
+- [ ] Done
+
+Review GD8: the same key does different things (talk before chest, hammer mode, saddle before
+petting), and harvesting needs an empty hand that a new player can't see how to make.
+- A small hint near the target or under the hotbar names the action that will actually run:
+  "E: Talk to Antje", "E: Open chest", "Use: Refill", "Use: Remove saddle", "Use: Harvest",
+  from the same code that runs it (no second copy of the rules). Off in the game settings.
+- With a full hotbar and a ripe crop in front, the hint says how to get an empty hand.
+- Hand crafting gets a visible way in (a button by the satchel) besides Shift+C.
+- Tests: the hint matches the action for each case in game/state/interaction.gd; the handbook's
+  controls page.
+
+## 234. The village Wehlsbüll stands in the world, with its people
+
+- [ ] Done
+
+The user, 2026-11-14: the whole village, not one farm. Today villagers come only from
+`spawn npc`, and the Warften stand empty. Needs 228. **Plan first:** the worker writes the plan
+(where, which buildings, the steps) into design/world/ and the user approves it before code.
+- World generation puts Wehlsbüll near the start, a short walk from the camp (about a minute):
+  the farms on their Warften in the Koog, the church with its churchyard, the houses by the
+  dyke and the sluice, the post mill at the Geest edge once it exists (until then its spot
+  stays free), lanes between them, fences and walls. Built from the buildings that exist; the
+  sheets' homes in data/villagers.cfg say who lives where (a placeholder where no building
+  fits yet: say which).
+- The eight hand-written villagers live there from a new game, each in their home (task 228),
+  spawned once. The village is not the player's: building there follows the reputation rule
+  (design/villagers/reputation.md), and the area it covers is shown before the player builds.
+- A meeting place (the church on Sunday, the Krug or a village green) where villagers come
+  together now and then, so gossip has meetings.
+- An old save gets the village where its land is still untouched, or keeps its world as it is
+  (the plan says which). Save version bump if needed.
+- Tests: the village is placed the same for a seed, never on water or the player's buildings,
+  every villager has a home; screenshots in both arts; the handbook's villagers and world pages.
+
+## 235. Seeds from a neighbour's seed chest, and wild seeds
+
+- [ ] Done
+
+Review GD2: a harvest gives a seed back only now and then (`seed_chance` 0.5 to 0.6), so a
+field shrinks each round and seeds come only from `give`. The user, 2026-11-14: a villager
+trades seeds by barter, and some seeds can be found. Needs 234.
+- A villager of the village (by default Antje Boysen at her farm) keeps a seed chest: the
+  player trades produce or goods for seed bags of every crop, by barter, no money yet
+  (prices in data/, by weight or worth; the economy draft's first step, design/economy/).
+- It always works: no friendship or language model needed, and the price can be paid even after
+  a lost harvest (for example with wood, fibre, eggs or a day's work), so the farm can always
+  start again. The stock fills up over the days.
+- Wild seeds: some plants of the season drop a crop's seeds now and then when foraged (which
+  and how often in data/).
+- One seed item still plants one tile (review: "what is a bag" is settled as one planting).
+- Docs: design/farming/crops.md and design/economy/README.md (the seed line "until a shop
+  exists" changes), the handbook's farming page.
+- Tests: a trade, a refused trade, the stock refill, save/load; a run over several harvests
+  and a lost crop shows the farm never runs out of seeds.
+
+## 236. Small goals from the villagers
+
+- [ ] Done
+
+Review GD1 and GD5: production needs a reason, and the first days need something to work
+towards before the first turnips are ripe (nine good days). Needs 234 and 235.
+- Now and then a villager asks for something small that they say in a line: five turnips, a
+  wattle fence by their garden, a basket of berries, a stool. The player sees open asks in a
+  short list (in the character window, or a page of its own). No quest chain, no fail; an ask
+  goes away after some days.
+- Bringing it gives something useful (seeds, a recipe, a tool grade, tallow for candles,
+  opinion up a little through the gossip judge's rules); the rewards and asks in data/.
+- The first ask comes on day 1 and fits the start (wood or fibre), so the player meets the
+  village early.
+- Works without a language model (fixed lines), with one the villager says it in their own
+  words.
+- Tests: an ask offered, done, timed out, save/load; the handbook's villagers page.
+
 ## 227. Swing poses for the tools
 
 - [ ] Done
