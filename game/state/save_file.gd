@@ -2,7 +2,7 @@ class_name SaveFile
 extends RefCounted
 ## The save on disk: one JSON file per world, `{"version": VERSION, "game": <GameState.to_dict>}`.
 ## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step
-## (see `_upgrade_from_version_30` and so on). Older ones are refused.
+## (see `_upgrade_from_version_31` and so on). Older ones are refused.
 ##
 ## How to add a save field (or change one):
 ## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
@@ -22,8 +22,9 @@ extends RefCounted
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
 const VERSION := 40
-## The oldest version we still upgrade.
-const OLDEST_VERSION := VERSION - 10
+## The oldest version we still upgrade. Nine steps back, for the next version (task 56) makes its
+## step the tenth.
+const OLDEST_VERSION := VERSION - 9
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -187,8 +188,6 @@ static func copy_aside(path: String, backup: String) -> String:
 
 ## Brings the data of a save of `version` up to the current one.
 static func _upgrade(game: Dictionary, version: int) -> void:
-	if version <= 30:
-		_upgrade_from_version_30(game)
 	if version <= 31:
 		_upgrade_from_version_31(game)
 	if version <= 32:
@@ -207,50 +206,6 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_38(game)
 	if version <= 39:
 		_upgrade_from_version_39(game)
-
-
-## Version 30 had no process stations (task 199): every kiln and oven gets an empty grid of 3x3,
-## and a kiln's firing (`work`, a recipe and the minute it is done) becomes a run of the one
-## Bricks recipe: its load in the grid and its bricks to come at the same minute.
-static func _upgrade_from_version_30(game: Dictionary) -> void:
-	# Written out, not read from the data files, which no longer have the old recipes.
-	var grid_slots := 9
-	var firing_minutes := 12 * GameClock.MINUTES_PER_HOUR
-	var old_firings := {
-		"bricks": {"raw_brick": 6, "logs": 2, "brick": 6},
-		"bricks_large": {"raw_brick": 12, "logs": 3, "brick": 12},
-		"bricks_master": {"raw_brick": 18, "logs": 3, "brick": 18},
-	}
-	var objects: Array = []
-	for edit: Dictionary in game["world"]["object_edits"]:
-		if edit["object"] != null:
-			objects.append(edit["object"])
-	for building: Dictionary in game["world"]["buildings"]:
-		if building["interior"] != null:
-			objects.append_array(building["interior"]["objects"])
-	for object: Dictionary in objects:
-		if object["type"] not in ["kiln", "oven"]:
-			continue
-		var grid := []
-		grid.resize(grid_slots)
-		object["storage"] = grid
-		var state: Dictionary = object["state"]
-		if not state.has("work"):
-			continue
-		var work: Dictionary = state["work"]
-		state.erase("work")
-		var firing: Dictionary = old_firings.get(work["recipe"], {})
-		if firing.is_empty():
-			continue
-		grid[0] = {"item": "raw_brick", "count": firing["raw_brick"]}
-		grid[1] = {"item": "logs", "count": firing["logs"]}
-		var done := int(work["done_minute"])
-		state["run"] = {
-			"recipe": "bricks",
-			"start_minute": done - firing_minutes,
-			"done_minute": done,
-			"products": {"brick": firing["brick"]},
-		}
 
 
 ## Version 31 had no roosters as a rule (task 204): each flock of chickens (see ChickenFlocks) gets
