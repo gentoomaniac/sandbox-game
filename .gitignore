@@ -16,3 +16,10 @@ settings.cfg
 
 # The coordinating agent's log of second-opinion reviews (opencode, another model): when and what for.
 /second-opinions.md
+
+# The deploy key the agents push and pull with; never commit it.
+/.deploy_key
+/.deploy_key.pub
+
+# The coordinating agent's list of what to try by hand after each merge.
+/TO-TEST.md
