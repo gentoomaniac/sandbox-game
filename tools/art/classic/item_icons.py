@@ -509,6 +509,54 @@ def saddle():
     return outlined(from_rows(rows, keys), "soil_dark")
 
 
+def wax():
+    """A cake of beeswax: a flat honey-yellow lump."""
+    rows = [
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "....cccccccc....",
+        "...cyyyyyyyyc...",
+        "..oyyyyoyyyyyo..",
+        "..oyyyyyyyyyyo..",
+        "...oooooooooo...",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+    ]
+    keys = {"c": "cream", "y": "straw", "o": "ochre"}
+    return outlined(from_rows(rows, keys), "umber")
+
+
+def candle():
+    """A wax candle with a fibre wick in a tin dish."""
+    rows = [
+        "................",
+        "................",
+        ".......k........",
+        ".......k........",
+        "......ccc.......",
+        "......ccc.......",
+        "......ccc.......",
+        "......coc.......",
+        "......ccc.......",
+        "......ccc.......",
+        ".....ttttt......",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+    ]
+    keys = {"k": "soil_dark", "c": "cream", "o": "ochre", "t": "stone_light"}
+    return outlined(from_rows(rows, keys), "stone_dark")
+
+
 def lantern():
     """A horn lantern, unlit: the ring and the tin roof, a pane of horn between two tin bars with
     the candle showing through, and the tin foot."""
@@ -571,6 +619,8 @@ ICONS = {
     "jacket": jacket(),
     "clogs": clogs(),
     "bone": bone(),
+    "wax": wax(),
+    "candle": candle(),
     "saddle": saddle(),
     "lantern": lantern(),
 }

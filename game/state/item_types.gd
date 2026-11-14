@@ -113,6 +113,10 @@ const FEAST_CAKE := &"feast_cake"
 const BONE := &"bone"
 ## Put on a horse, it lets the player ride the horse (task 81).
 const SADDLE := &"saddle"
+## Beeswax (task 231). Only the console gives it for now; the bee hives that make it come later.
+const WAX := &"wax"
+## Wax round a fibre wick. A lantern burns it down.
+const CANDLE := &"candle"
 ## Carried and lit, it lights the dark around the player (task 177; see PlayerState
 ## `is_lantern_lit`).
 const LANTERN := &"lantern"
@@ -637,6 +641,20 @@ const _OTHER_TYPES := {
 		"description": "A riding saddle of leather. Put it on a horse, and you can ride it.",
 		"weight": 8.0,
 		"stack_limit": 1,
+	},
+	WAX:
+	{
+		"name": "Wax",
+		"description": "A cake of beeswax. Make candles of it.",
+		"weight": 0.2,
+		"stack_limit": DEFAULT_STACK_LIMIT,
+	},
+	CANDLE:
+	{
+		"name": "Candle",
+		"description": "Wax round a fibre wick. It burns in a lantern.",
+		"weight": 0.1,
+		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 	LANTERN:
 	{

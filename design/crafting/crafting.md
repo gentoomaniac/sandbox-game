@@ -10,8 +10,8 @@ Decided 2026-11-05.
   with the missing materials marked. Clicking an affordable one takes the materials and puts
   the item in the inventory. Recipes are in `data/recipes.cfg` (result, count, materials),
   validated like the other data files. The menu shows the recipes made by hand (the chest, the
-  campfire and the bedroll, the scarecrow, the stations, flour); the others are made at a station (see
-  [Professions](professions.md)); the hammer is a later recipe. When the result would not fit
+  campfire and the bedroll, the scarecrow, the stations, flour, candles); the others are made at
+  a station (see [Professions](professions.md)); the hammer is a later recipe. When the result would not fit
   in the inventory, the craft goes ahead: the materials are taken first (the room they leave is
   used), the result goes in as other gains do, and what does not fit is dropped at the player's
   feet, with a note in the menu. Inside a building it lies on the floor (task 200), the same way.

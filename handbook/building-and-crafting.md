@@ -156,6 +156,9 @@ Press Shift+C for the crafting menu (C is the character window).
 - By hand: a chest, campfire (6 stone, 3 logs), bedroll (6 hay, 4 fibre), flour (from wheat, rye
   or buckwheat), dry stone wall piece (3 stone, masonry 5), the stations below, a net frame and eel
   traps.
+- Candles: 2 wax and a fibre make 2. There is no wax to find yet (bee hives come later): get it
+  with `give wax` in the [console](console.md). They burn in the lantern, see
+  [the lantern](world-and-seasons.md#the-lantern).
 - Scarecrow: a log, 6 hay and 4 fibre. Put it down anywhere outdoors; the axe or hammer takes it
   down. See [animals](animals.md#crows-and-scarecrows).
 - Wattle fence: made at the workbench, half a log and 2 fibre a piece, woodworking 5.

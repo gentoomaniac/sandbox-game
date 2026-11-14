@@ -492,6 +492,25 @@ def saddle():
     return picture
 
 
+def wax():
+    """A cake of beeswax: a flat honey-yellow lump with a paler top and a thumb dent."""
+    picture = blank(ICON)
+    shade(picture, ellipse(16, 20, 11, 6.5), ("ochre_dark", "ochre", "straw"), radius=3)
+    shade(picture, ellipse(16, 17, 9, 4.5), ("ochre", "straw", "cream"), radius=2)
+    dots(picture, [(12, 17), (13, 17), (20, 16)], "ochre_dark")
+    return picture
+
+
+def candle():
+    """A wax candle with a fibre wick, standing in a little tin dish."""
+    picture = blank(ICON)
+    shade(picture, box(13, 9, 18, 26), ("straw", "cream", "snow_light"), radius=2)
+    dots(picture, [(15, 12), (16, 17), (14, 22)], "ochre")
+    line(picture, 16, 6, 16, 8, "soil_dark")
+    shade(picture, box(9, 26, 22, 28), IRON[:3], radius=1)
+    return picture
+
+
 def lantern():
     """A horn lantern, as carried at night about 1750: a tin cylinder with upright bars at its
     sides, a pane of thin horn between them through which the tallow candle shows, a cone of a roof with
@@ -534,6 +553,8 @@ ICONS = {
     "jacket": jacket,
     "clogs": clogs,
     "bone": bone,
+    "wax": wax,
+    "candle": candle,
     "saddle": saddle,
     "lantern": lantern,
 }
