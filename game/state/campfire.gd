@@ -3,8 +3,10 @@ extends RefCounted
 ## An outdoor fire (the `fireplace` object: the camp's fire and the ones the player lays), as a
 ## state of the object (task 56). It has one slot of `storage` for wood, and in its `state` whether
 ## it is lit and how much of the log that burns is left (minutes, above 0 while it is lit). Lighting
-## it takes a log out of the slot. Only items with a burn time in data/lighting.cfg [campfire_fuel]
-## go in the slot. The hearth of a house is no campfire: it burns for ever.
+## it takes a log out of the slot; CampfireUpkeep burns the log, takes the next out of the slot when
+## it is gone and puts the fire out when there is none. Only items with a burn time in
+## data/lighting.cfg [campfire_fuel] go in the slot.
+## The hearth of a house is no campfire: it burns for ever.
 
 const LIT := "lit"
 const LOG_LEFT := "log_left"
@@ -45,6 +47,20 @@ static func ignite(campfire: WorldObject) -> void:
 		return
 	campfire.state[LIT] = true
 	_take_next_log(campfire)
+
+
+## Burns `minutes` of a lit fire, as the log burns: the next one is taken from the slot the minute
+## the log is gone. Returns whether the fire went out (no log left to take).
+static func burn(campfire: WorldObject, minutes: int) -> bool:
+	var left := minutes
+	while left > 0:
+		var burnt := mini(left, int(campfire.state[LOG_LEFT]))
+		campfire.state[LOG_LEFT] = int(campfire.state[LOG_LEFT]) - burnt
+		left -= burnt
+		if campfire.state[LOG_LEFT] == 0 and not _take_next_log(campfire):
+			campfire.state[LIT] = false
+			return true
+	return false
 
 
 ## Gives the fire of a new game its wood and lights it.

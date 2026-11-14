@@ -68,6 +68,8 @@ var _object_edits: Dictionary[Vector2i, WorldObject] = {}
 var _crop_positions: Dictionary[Vector2i, bool] = {}
 ## The tiles of the scarecrows the player put down, in loaded chunks or not.
 var _scarecrow_positions: Dictionary[Vector2i, bool] = {}
+## The tiles of the campfires, in loaded chunks or not.
+var _campfire_positions: Dictionary[Vector2i, bool] = {}
 ## Terrain the player changed (e.g. grass tilled to soil), by world position. Replayed on
 ## chunks before the objects, which may depend on the ground.
 var _terrain_edits: Dictionary[Vector2i, Tile.Terrain] = {}
@@ -416,6 +418,14 @@ func scarecrows() -> Array[WorldObject]:
 	for pos in _scarecrow_positions:
 		scarecrows_put_down.append(_object_edits[pos])
 	return scarecrows_put_down
+
+
+## The campfires, in loaded chunks or not (see CampfireUpkeep).
+func campfires() -> Array[WorldObject]:
+	var fires: Array[WorldObject] = []
+	for pos in _campfire_positions:
+		fires.append(_object_edits[pos])
+	return fires
 
 
 ## The crops the player planted and that are still there, in loaded chunks or not.
@@ -802,6 +812,10 @@ func _edit_object(world_pos: Vector2i, object: WorldObject) -> void:
 		_scarecrow_positions[world_pos] = true
 	else:
 		_scarecrow_positions.erase(world_pos)
+	if Campfire.is_campfire(object):
+		_campfire_positions[world_pos] = true
+	else:
+		_campfire_positions.erase(world_pos)
 	_note_edited(_object_edit_positions_by_chunk, world_pos)
 
 

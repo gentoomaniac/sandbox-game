@@ -72,6 +72,10 @@ Seasons, land, weather and light in the Schleswig-Holstein of about 1700-1800.
 - Midsummer has about 16 hours of daylight, midwinter about 8.
 - The night is dark: away from a light you see little more than shapes.
 - The campfire, the hearth and lit windows glow after dark; clouds dim the daylight.
+- A campfire burns the wood in it, a log (3 hours) after the other, also while you sleep or far
+  away, and goes out with none left: it gives no light and you can't cook at it until you put wood
+  in and light it again (E at the fire). The camp's fire starts with about 12 hours. The hearth in
+  a house burns for ever.
 - Cloud shadows drift over the ground in partly clouded weather (a look only).
 - A setting shrinks or switches off the change in day length.
 

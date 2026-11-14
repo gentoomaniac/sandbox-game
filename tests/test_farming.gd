@@ -186,4 +186,9 @@ func test_a_new_growth_stage_emits_objects_changed_for_loaded_crops() -> void:
 	crop.state["growth"] = crop.type_data()["growth_per_stage"] - 0.01
 	watch_signals(_world)
 	_sleep_days(1)
-	assert_signal_emitted_with_parameters(_world, "objects_changed", [_tile])
+	# Not the last: the camp fire burning out is told too.
+	var emitted_for_the_crop := range(get_signal_emit_count(_world, "objects_changed")).any(
+		func(index: int) -> bool:
+			return get_signal_parameters(_world, "objects_changed", index) == [_tile]
+	)
+	assert_true(emitted_for_the_crop, "objects_changed for the crop's tile")

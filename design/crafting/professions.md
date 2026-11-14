@@ -42,6 +42,13 @@ woodworker, the cook and the mason, and a UI for them.
   fire of a new game, and a fireplace of an older save, burns on with 4 logs (one burning); one the
   player sets up starts out and empty. Looking at the fire with the mouse says how much wood is
   left. There is no use-a-log-on-it: wood goes in through the window only.
+  **It burns down** (CampfireUpkeep, with the game's time like the lantern's candle): the log burns
+  3 hours, then the next one comes out of the slot, and with none left the fire goes out: no light,
+  no cooking at it (the hearth station only counts a lit fire), and a villager no longer counts it
+  as "by the campfire". It burns over play, sleep, passing out and the console's skips by the hours
+  that passed, also far from the player. Put wood in and light it, and it burns again. The camp's
+  fire lasts 12 hours at the start. Villagers' anchors near a fireplace do not change: it is where
+  the camp is. Outdoor fires made no sound before, and still make none.
 - **E on a station** opens the crafting menu of its recipes, titled with its name, with the
   player's points in the skills they practise; E or Escape closes it. A note after a craft
   says what it taught. The tooltip of a recipe says what a craft teaches, or what it needs.

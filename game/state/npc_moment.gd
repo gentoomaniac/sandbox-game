@@ -12,7 +12,8 @@ var sunset := 0.0
 var weather := WeatherSample.new()
 ## The name of the building the villager stands by, such as "Kate", or "" if none is near.
 var building := ""
-## Whether a fireplace is near (told only when no building is).
+## Whether a burning campfire is near (told only when no building is): one that is out is no
+## "campfire" to be by.
 var is_by_fire := false
 
 
@@ -38,7 +39,7 @@ static func of(state: GameState, npc: Npc, reach: float) -> NpcMoment:
 	for y in range(-tiles, tiles + 1):
 		for x in range(-tiles, tiles + 1):
 			var object := state.world.object_at(centre + Vector2i(x, y))
-			var is_fireplace := object != null and object.type == WorldObjectTypes.FIREPLACE
-			if is_fireplace and Vector2(x, y).length() <= reach:
+			var is_burning := Campfire.is_campfire(object) and not Campfire.is_out(object)
+			if is_burning and Vector2(x, y).length() <= reach:
 				moment.is_by_fire = true
 	return moment

@@ -159,7 +159,8 @@ Press Shift+C for the crafting menu (C is the character window).
 - A campfire is tended with E: its window has a slot for wood (logs burn 3 hours each; drag them
   in or Shift+click, and the same to take them out), a button to light the fire, and one to cook
   at it (the fire is a cooking station only while it burns). One you set up yourself starts empty
-  and out. Point the mouse at a fire to read how much wood it has.
+  and out. Point the mouse at a fire to read how much wood it has. It burns the wood down, 3 hours
+  a log, and goes out when it is gone (see [the world](world-and-seasons.md#day-night-and-light)).
 - Candles: 2 wax and a fibre make 2. There is no wax to find yet (bee hives come later): get it
   with `give wax` in the [console](console.md). They burn in the lantern, see
   [the lantern](world-and-seasons.md#the-lantern).
