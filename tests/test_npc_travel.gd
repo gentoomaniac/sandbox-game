@@ -68,7 +68,10 @@ func test_a_trip_is_blocked_as_stuck_when_the_retries_are_used_up() -> void:
 	travel.start(npc, _tile_at(3, 0), _world)
 	var never_fits := func(_npc: Npc, _feet: Vector2, _map: GameMap) -> bool: return false
 	var far_off := _centre_of(_tile_at(0, 40))
-	for _i in roundi(SECONDS / STEP_SECONDS):
+	# Frames until it is told, with a generous bound: searches take the time they take.
+	for _i in 20000:
+		if get_signal_emit_count(travel, "blocked") > 0:
+			break
 		travel.tick()
 		travel.update(npc, STEP_SECONDS, far_off, never_fits)
 		OS.delay_usec(1000)
@@ -134,3 +137,19 @@ func test_a_trip_cancelled_while_it_searches_never_arrives() -> void:
 		OS.delay_usec(1000)
 	assert_false(npc.is_travelling())
 	assert_signal_emit_count(_npcs, "trip_arrived", 0)
+
+
+func test_a_trip_over_another_world_does_not_use_the_snapshot_of_the_first() -> void:
+	var travel := NpcTravel.new(_npcs.rules, Callable(Time, "get_ticks_usec"))
+	var npc := _add_villager(_centre_of(_tile_at(-3, 0)), _yard_middle())
+	travel.start(npc, _tile_at(3, 0), _world)
+	var first := travel._snapshot
+	assert_not_null(first)
+	var other := World.new(SEED)
+	other.clock = GameClock.new()
+	other.change_count = _world.change_count
+	var other_npc := _add_villager(_centre_of(_tile_at(-3, 0)), _yard_middle())
+	travel.start(other_npc, _tile_at(3, 0), other)
+	assert_ne(travel._snapshot, first, "the same change count, but another world")
+	travel.cancel(npc)
+	travel.cancel(other_npc)

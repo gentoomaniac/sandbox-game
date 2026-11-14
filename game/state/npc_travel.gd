@@ -108,8 +108,8 @@ func _begin_search(npc: Npc) -> void:
 	var map := trip.map
 	var world := map as World
 	assert(world != null, "A trip is over the tiles of a World")
-	var view := TravelView.new(_snapshot_of(world), rules, world.clock.total_minutes())
 	var masks := _masks_of(world)
+	var view := TravelView.new(_snapshot_of(world), rules, world.clock.total_minutes())
 	view.prefetch(masks, npc.tile(), trip.goal)
 	trip.search = PathSearch.new(
 		npc.tile(),
@@ -134,6 +134,8 @@ func _masks_of(world: World) -> TravelMasks:
 	if _masks_world != world:
 		_masks = TravelMasks.for_world(world, rules)
 		_masks_world = world
+		# The snapshot is of the other world.
+		_snapshot = null
 	return _masks
 
 

@@ -114,15 +114,6 @@ func tick() -> void:
 		_running.append(job)
 
 
-## Waits for every search to be over, for the tests and for a skip of time.
-func wait_for_all() -> void:
-	while waiting() > 0:
-		for job in _running.duplicate():
-			WorkerThreadPool.wait_for_task_completion(job.task_id)
-			_collect(job)
-		tick()
-
-
 ## Runs on the worker.
 func _run(search: PathSearch) -> void:
 	search.step(1 << 30)

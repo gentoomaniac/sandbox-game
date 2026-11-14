@@ -19,6 +19,9 @@ extends RefCounted
 const SOURCE_STEPS: Array[Vector2i] = [Vector2i.ZERO, Vector2i.LEFT, Vector2i.UP, Vector2i(-1, -1)]
 
 var _world: World
+## What the worker takes of the world, kept here so that it reads nothing of the live World.
+var _vegetation: Vegetation
+var _world_seed: int
 var _generator: WorldGenerator
 ## Both caches hold the one used last at the end: a dictionary keeps the order its keys came in.
 var _masks: Dictionary[Vector2i, TravelMask] = {}
@@ -46,6 +49,8 @@ func _init(world: World, masks_kept: int, raw_chunks_kept: int) -> void:
 	# A mask needs four raw chunks, which must stay until it is stamped.
 	assert(raw_chunks_kept >= 4, "Too few raw chunks kept for a mask")
 	_world = world
+	_vegetation = world.vegetation
+	_world_seed = world.world_seed
 	_masks_kept = masks_kept
 	_raw_chunks_kept = raw_chunks_kept
 	_generator = WorldGenerator.new(world.world_seed)
@@ -176,7 +181,7 @@ func _stamp(coords: Vector2i, raw: Array[Chunk], snapshots: Array[Dictionary]) -
 			own = chunk
 		else:
 			neighbours.append(chunk)
-	_stamped = TravelMask.new(own, neighbours, _world.vegetation, _world.world_seed)
+	_stamped = TravelMask.new(own, neighbours, _vegetation, _world_seed)
 
 
 ## Starts the worker on the mask of `coords`, whose raw chunks are all there. The edits are copied
