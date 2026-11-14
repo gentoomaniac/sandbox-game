@@ -7,8 +7,10 @@ extends RefCounted
 ## NW), with the world's edits replayed on copies of them. Generating is the dear part (about 9 ms
 ## a chunk): it goes on a worker thread, one chunk at a time, with a generator of its own. Those raw
 ## chunks are kept in a cache of their own and never get the edits, so an edit can not make one
-## stale: only the masks go. Stamping a mask takes about 2 ms and is done on the main thread, one
-## in each `update`; as it reads the edits as it stamps, no mask is stamped stale.
+## stale: only the masks go. Stamping a mask takes about 3 ms and is done on the worker too, on
+## copies of the raw chunks and a copy of the world's edits made on the main thread when it starts
+## (`World.edits_snapshot`). An edit that comes meanwhile bumps the version of its chunk, and a mask
+## made from a chunk of another version is not published but made again: no mask is stale.
 
 ## The chunks a mask is stamped from, relative to its own: W, N and NW are those a big object
 ## reaches it from.
@@ -24,9 +26,16 @@ var _raw_chunks: Dictionary[Vector2i, Chunk] = {}
 var _requested: Dictionary[Vector2i, bool] = {}
 var _masks_kept: int
 var _raw_chunks_kept: int
-## The worker's task (-1 while it has none) and the chunk it makes.
+## The worker's task (-1 while it has none) and what it makes: a chunk, or the mask of `_stamping`
+## (null when it generates) made from chunks of the edit versions in `_stamping_versions`.
 var _task_id := -1
 var _generated: Chunk
+var _stamping: Variant
+var _stamped: TravelMask
+var _stamping_versions: Dictionary = {}
+## How many edits each chunk has had since the masks were made, to tell a mask made from chunks that
+## were edited meanwhile.
+var _edit_versions: Dictionary[Vector2i, int] = {}
 
 
 ## `masks_kept` and `raw_chunks_kept` are how many masks and generated chunks are kept (the least
@@ -72,18 +81,19 @@ func mask_of(coords: Vector2i) -> TravelMask:
 	return mask
 
 
-## Takes in what the worker has generated, stamps the oldest asked-for mask whose chunks are all
-## there (one at most), and sets the worker to the chunk the oldest still lacks. Once a frame.
-## With `is_waiting` it first waits for the worker to finish, for whoever has nothing else to do.
+## Takes in what the worker has done: a generated chunk, or a mask, which is published if no edit
+## has come to the chunks it was made from meanwhile, and else made again. Then sets the worker to
+## its next job: stamping the oldest asked-for mask whose chunks are all there, or else generating
+## the chunk the oldest still lacks. Once a frame. With `is_waiting` it first waits for the worker
+## to finish, for whoever has nothing else to do.
 func update(is_waiting := false) -> void:
-	_take_generated_chunk(is_waiting)
-	for coords in _requested:
-		if _first_missing_raw_chunk(coords) == null:
-			_requested.erase(coords)
-			_stamp(coords)
-			break
+	_take_result(is_waiting)
 	if _task_id >= 0:
 		return
+	for coords in _requested:
+		if _first_missing_raw_chunk(coords) == null:
+			_start_stamping(coords)
+			return
 	for coords in _requested:
 		var missing: Variant = _first_missing_raw_chunk(coords)
 		if missing != null:
@@ -126,6 +136,7 @@ static func chunks_for(coords: Vector2i) -> Array[Vector2i]:
 ## An edit in a chunk changes its own mask and those of the chunks big objects of it reach into:
 ## E, S and SE.
 func _drop_masks_reached_by_edit(edited_coords: Vector2i) -> void:
+	_edit_versions[edited_coords] = _edit_versions.get(edited_coords, 0) + 1
 	for step in [Vector2i.ZERO, Vector2i.RIGHT, Vector2i.DOWN, Vector2i.ONE]:
 		_masks.erase(edited_coords + step)
 
@@ -145,11 +156,56 @@ func _generate(coords: Vector2i) -> void:
 	_generated = _generator.generate_chunk(coords)
 
 
-func _take_generated_chunk(is_waiting: bool) -> void:
+## Runs on the worker: the mask of `coords` from copies of its raw chunks (own first) with the
+## edits of the snapshot replayed on them. It touches nothing the main thread writes: the raw chunks
+## are never changed, and the snapshot is its own.
+func _stamp(coords: Vector2i, raw: Array[Chunk], snapshots: Array[Dictionary]) -> void:
+	var own: Chunk
+	var neighbours: Array[Chunk] = []
+	for index in raw.size():
+		var chunk := raw[index].copy()
+		World.replay_snapshot(chunk, snapshots[index])
+		if chunk.coords == coords:
+			own = chunk
+		else:
+			neighbours.append(chunk)
+	_stamped = TravelMask.new(own, neighbours, _world.vegetation, _world.world_seed)
+
+
+## Starts the worker on the mask of `coords`, whose raw chunks are all there. The edits are copied
+## here, on the main thread, with the versions they are of.
+func _start_stamping(coords: Vector2i) -> void:
+	var raw: Array[Chunk] = []
+	var snapshots: Array[Dictionary] = []
+	_stamping_versions = {}
+	for needed in chunks_for(coords):
+		var chunk := _raw_chunks[needed]
+		_raw_chunks.erase(needed)
+		_raw_chunks[needed] = chunk
+		raw.append(chunk)
+		snapshots.append(_world.edits_snapshot(needed))
+		_stamping_versions[needed] = _edit_versions.get(needed, 0)
+	_stamping = coords
+	_task_id = WorkerThreadPool.add_task(_stamp.bind(coords, raw, snapshots))
+
+
+## Whether the worker is making a mask (for the tests of an edit meanwhile).
+func is_stamping() -> bool:
+	return _task_id >= 0 and _stamping != null
+
+
+func _take_result(is_waiting: bool) -> void:
 	if _task_id < 0 or not (is_waiting or WorkerThreadPool.is_task_completed(_task_id)):
 		return
 	WorkerThreadPool.wait_for_task_completion(_task_id)
 	_task_id = -1
+	if _stamping != null:
+		_publish_stamped()
+	else:
+		_keep_generated()
+
+
+func _keep_generated() -> void:
 	_raw_chunks[_generated.coords] = _generated
 	_generated = null
 	# What an asked-for mask still needs is kept, whatever the limit.
@@ -164,19 +220,18 @@ func _take_generated_chunk(is_waiting: bool) -> void:
 			_raw_chunks.erase(coords)
 
 
-func _stamp(coords: Vector2i) -> void:
-	var own: Chunk
-	var neighbours: Array[Chunk] = []
-	for needed in chunks_for(coords):
-		var raw := _raw_chunks[needed]
-		_raw_chunks.erase(needed)
-		_raw_chunks[needed] = raw
-		var chunk := raw.copy()
-		_world.replay_edits(chunk)
-		if needed == coords:
-			own = chunk
-		else:
-			neighbours.append(chunk)
-	_masks[coords] = TravelMask.new(own, neighbours, _world.vegetation, _world.world_seed)
+## A mask made from chunks that were edited meanwhile is dropped, and its chunk is still asked for.
+func _publish_stamped() -> void:
+	var coords: Vector2i = _stamping
+	var mask := _stamped
+	var is_stale := false
+	for needed: Vector2i in _stamping_versions:
+		is_stale = is_stale or _edit_versions.get(needed, 0) != _stamping_versions[needed]
+	_stamping = null
+	_stamped = null
+	if is_stale:
+		return
+	_requested.erase(coords)
+	_masks[coords] = mask
 	while _masks.size() > _masks_kept:
 		_masks.erase(_masks.keys()[0])

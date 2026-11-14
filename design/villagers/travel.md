@@ -75,16 +75,24 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   asks for each of them on the main thread before it starts the worker, so the worker only reads
   them. It writes nothing shared. A cold mask
   waits for up to four raw chunks, generated one after the other (about 35 ms in all, off the main
-  thread). The main thread only stamps the mask when its raw chunks are there (replaying the edits
-  on copies of them as it goes): about 2.6 ms, at most one stamp a frame. The raw chunks a pending
-  request needs are never evicted, whatever the limit. (Pausing `generate_chunk` across frames
-  would mean rewriting the generator; on the main thread one call is 9 to 13 ms, too much at 60 fps.)
+  thread). **The stamp is on the worker too** (the first plan, taken up again after the bench showed
+  the stamp's 3 ms on the main thread added to slow frames): the worker builds the mask from copies
+  of the raw chunks and a snapshot of the edits of those chunks (`World.edits_snapshot`: terrain by
+  position, and the type of the object standing at each edited position, copied on the main thread
+  when the job starts, 0.3 ms for four chunks of which one is tilled all over; the worker makes the
+  objects new from the types, `World.replay_snapshot`). It touches nothing the main thread writes:
+  the raw chunks are never changed and the snapshot is its own. The main thread takes the result in
+  `update`, which is 0.08 ms at the median and 0.5 ms at most. One job at a time, a stamp before a
+  generation. The raw chunks a pending request needs are never evicted, whatever the limit.
+  (Pausing `generate_chunk` across frames would mean rewriting the generator; on the main thread
+  one call is 9 to 13 ms, too much at 60 fps.) The destructor waits for the worker.
 - **Invalidation:** `World` gets `signal edited(chunk_coords)`, raised by `_edit_terrain` and
   `_edit_object`, which every change of terrain and objects goes through, loaded or not. An edit of
-  C drops the masks of C, E, S and SE (and no others); the raw chunks stay (they hold no edits). No
-  stamp can be stale, and so there is no version per chunk: a stamp reads the edits on the main
-  thread, in one call, as it makes the mask, so no edit can come between the reading and the
-  publishing; one made while a mask waits for its raw chunks is simply in it.
+  C drops the masks of C, E, S and SE (and no others); the raw chunks stay (they hold no edits).
+  Each chunk has a version, bumped by its edits. A job notes the versions of the four chunks it
+  copies the edits of; its mask is published only if they are all still the same, and else dropped
+  and made again (the request stays). An edit made while a mask waits for its raw chunks is simply
+  in the snapshot. So no stale mask is ever published.
 - **`TravelView`** (the one view every World search gets, near and far): a tile is answered live
   (238's `can_stand_at`) only where its chunk and its W, N and NW neighbours are loaded; elsewhere by
   the mask. Today `World._stored_object_at` does not see a big object whose own chunk is not loaded,

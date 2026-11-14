@@ -76,18 +76,37 @@ func test_an_edit_made_while_a_mask_waits_for_its_chunks_is_in_the_mask() -> voi
 	assert_parity(COAST)
 
 
-func test_one_mask_is_stamped_in_an_update() -> void:
+func test_one_mask_is_published_in_an_update() -> void:
 	load_chunk_and_neighbours(COAST + Vector2i.RIGHT)
 	for x in 3:
-		masks.wait_for_mask(COAST + Vector2i(x, 0))
-	world.take_off(find_object(COAST, WorldObjectTypes.WILLOW))
-	world.take_off(find_object(COAST + Vector2i.RIGHT, WorldObjectTypes.KNICK))
-	for x in 3:
 		masks.mask_of(COAST + Vector2i(x, 0))
-	masks.update()
-	assert_eq(masks.mask_coords().size(), 1)
-	masks.update()
-	assert_eq(masks.mask_coords().size(), 2)
+	var published := 0
+	while masks.mask_coords().size() < 3:
+		masks.update(true)
+		assert_lte(masks.mask_coords().size(), published + 1)
+		published = masks.mask_coords().size()
+
+
+func test_a_mask_whose_chunks_were_edited_meanwhile_is_not_published_but_made_again() -> void:
+	masks.mask_of(COAST)
+	while not masks.is_stamping():
+		masks.update(true)
+	var willow := find_object(COAST, WorldObjectTypes.WILLOW)
+	world.take_off(willow)
+	masks.update(true)
+	assert_false(masks.mask_coords().has(COAST), "made from the chunk as it was")
+	assert_true(mask_is_free(willow.pos), "and made again, with the edit")
+	assert_parity(COAST)
+
+
+func test_an_edit_to_a_chunk_it_does_not_reach_does_not_stop_a_mask() -> void:
+	load_chunk_and_neighbours(COAST + Vector2i.RIGHT)
+	masks.mask_of(COAST)
+	while not masks.is_stamping():
+		masks.update(true)
+	world.take_off(find_object(COAST + Vector2i.RIGHT, WorldObjectTypes.KNICK))
+	masks.update(true)
+	assert_true(masks.mask_coords().has(COAST), "the chunk to the east is not one it is made from")
 
 
 func test_the_least_recently_used_masks_and_chunks_go() -> void:

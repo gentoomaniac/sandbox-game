@@ -43,6 +43,7 @@ func _bench(world_seed: int) -> void:
 		world.replay_edits(own)
 		TravelMask.new(own, neighbours, world.vegetation, world_seed)
 		stamping.append((Time.get_ticks_usec() - started) / 1000.0)
+	print("  ", _snapshot_time(world, generator, first))
 	var masks := TravelMasks.for_world(world)
 	for chunk_coords in coords:
 		masks.mask_of(chunk_coords)
@@ -61,6 +62,23 @@ func _bench(world_seed: int) -> void:
 		"%d frames of 16.7 ms (%.1f s) to make them, update %s ms; %s"
 		% [updates.size(), seconds, _stats(updates), _question_time(masks, coords[0], world)]
 	)
+
+
+## What the copy of the edits of four chunks costs the main thread when the worker is started on a
+## mask: a chunk with every tile tilled and 100 objects taken off, the worst a farm makes, and the
+## three round it with none.
+func _snapshot_time(world: World, generator: WorldGenerator, first: Vector2i) -> String:
+	var farm := generator.generate_chunk(first)
+	world.add_chunk(farm)
+	for y in Chunk.CHUNK_SIZE:
+		for x in Chunk.CHUNK_SIZE:
+			world.set_terrain(Chunk.to_world(first, Vector2i(x, y)), Tile.Terrain.SOIL)
+	for object in farm.objects().slice(0, 100):
+		world.remove_object(object.pos)
+	var started := Time.get_ticks_usec()
+	for coords in [first, first + Vector2i.RIGHT, first + Vector2i.DOWN, first + Vector2i.ONE]:
+		world.edits_snapshot(coords)
+	return "copy of the edits of four chunks, one tilled all over: %d us" % (Time.get_ticks_usec() - started)
 
 
 func _question_time(masks: TravelMasks, coords: Vector2i, world: World) -> String:

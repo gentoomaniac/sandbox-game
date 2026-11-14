@@ -137,6 +137,33 @@ func replay_edits(chunk: Chunk) -> void:
 			chunk.add_object(_object_edits[pos])
 
 
+## The edits within the area of a chunk, copied: `terrain` by world position to terrain, and
+## `objects` by world position to the type of the object that stands there now (&"" where the
+## generated one was taken off), each in the order made. Whoever replays them (`replay_snapshot`)
+## may do so on another thread: nothing in it is shared with the world.
+func edits_snapshot(chunk_coords: Vector2i) -> Dictionary:
+	var terrain := {}
+	for pos: Vector2i in _terrain_edit_positions_by_chunk.get(chunk_coords, {}):
+		terrain[pos] = _terrain_edits[pos]
+	var objects := {}
+	for pos: Vector2i in _object_edit_positions_by_chunk.get(chunk_coords, {}):
+		var object := _object_edits[pos]
+		objects[pos] = &"" if object == null else object.type
+	return {"terrain": terrain, "objects": objects}
+
+
+## `replay_edits` from a snapshot (see `edits_snapshot`): the objects are made new, of the types.
+static func replay_snapshot(chunk: Chunk, snapshot: Dictionary) -> void:
+	var terrain: Dictionary = snapshot["terrain"]
+	for pos: Vector2i in terrain:
+		chunk.set_terrain(Chunk.local_pos(pos), terrain[pos])
+	var objects: Dictionary = snapshot["objects"]
+	for pos: Vector2i in objects:
+		chunk.remove_object(Chunk.local_pos(pos))
+		if objects[pos] != &"":
+			chunk.add_object(WorldObject.new(objects[pos], pos))
+
+
 func remove_chunk(chunk_coords: Vector2i) -> void:
 	_chunks.erase(chunk_coords)
 	change_count += 1
