@@ -1,6 +1,6 @@
 # Villagers
 
-Decided 2026-11-06 (task 84, QUESTIONS.md 22): the first step towards the people of
+Decided 2026-11-06 (task 84, the old QUESTIONS.md item 22, in the git history): the first step towards the people of
 [ideas.md](ideas.md). For now villagers are put in the world with the
 console (`spawn npc [count]`, or `spawn npc <id>` or just `spawn <id>`, near the player); they
 are state and saved.

@@ -37,9 +37,10 @@ Decided 2026-11-05.
   still picks the next building).
   The player's inventory is on the left, the chest's 5×3 slots on the right, with a small
   backpack icon above the one and a chest icon above the other (equipment is not shown).
-  Items move by clicking as on the character screen (pick up, then click a slot; decided by
-  the implementation 2026-11-05 instead of dragging); Shift+click sends a whole stack to the
-  other side. The hotbar is the HUD's, lit and clickable while the screen is open (task 88). Opening makes a creaky squeak, closing a soft wooden thump.
+  Items move by dragging, as everywhere else (task 134; see
+  [inventory-and-character.md](../player/inventory-and-character.md)); Shift+click sends a
+  whole stack to the other side. The hotbar is the HUD's, lit and clickable while the screen is
+  open (task 88). Opening makes a creaky squeak, closing a soft wooden thump.
 - **Picking a chest up:** hitting it with the axe (three hits outdoors) takes it down and
   gives the chest item back; its contents spill onto the ground as piles around it. Inside
   a house there is no ground to spill on: one swing of the axe puts the chest item and its
