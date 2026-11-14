@@ -1,6 +1,6 @@
 # Tasks: Prototype
 
-Implements milestone 1 from the [design](design/README.md). Each task is small enough for one
+Implements milestones 1 and 2 from the [design](design/README.md). Each task is small enough for one
 developer brief. Tasks whose dependencies are done can run in parallel. This file holds only the
 open tasks and the later ideas: when a task is merged, it is ticked, given its "Done:" note and
 moved with its full text to [docs/tasks-done.md](docs/tasks-done.md) (the user, 2026-11-09).
@@ -29,18 +29,20 @@ The user, 2026-11-14, from the [game design review](review/game-design-review-20
 (GD1 to GD3, GD5, GD8): add the game parts a fuller loop needs, so a new player can farm, replant,
 meet the village and work towards something without console commands. These tasks come before
 227 and the rest of the queue. **They don't start until the user says go.** Order: 231 to 233 have
-no dependencies; 234 needs 228 (homes), so 228 moves up in front of it; 235 needs 234; 236 needs
-234 and 235. The design is in [design/README.md](design/README.md#2-a-first-season-without-the-console).
+no dependencies; 234 needs 228 (homes), so 228 stands between 233 and 234 here; 235 needs 234;
+236 needs 234 and 235. The design is in
+[design/README.md](design/README.md#2-a-first-season-without-the-console).
 
 ## 231. A lantern and candles to make
 
 - [ ] Done
 
-Review GD1: the lantern (task 177) has no recipe; dark nights need `give lantern`.
-- Tallow candles and the horn lantern get recipes, from things a new game can get: for example
-  the candle from tallow or beeswax and fibre, the lantern from wood, horn or a thin board,
-  and a candle at the workbench (numbers and inputs in data/recipes.cfg, chosen by the worker;
-  if an input can't be got in play yet, say which and pick one that can).
+Review GD1: the lantern (design/player/inventory-and-character.md) has no recipe; dark nights
+need `give lantern`.
+- Candles and the lantern get recipes, from things a new game can get. Tallow, beeswax and horn
+  don't exist yet; the items there are fibre, logs, planks, hay, reeds and stone. Either add one
+  new input with a way to get it in play (say how), or make do with those (numbers and inputs in
+  data/recipes.cfg, chosen by the worker).
 - The lantern burns its candle down over a few nights and takes a new one (or say why not).
 - Tests: the recipes, the burn-down, save/load; the handbook's crafting page.
 
@@ -70,8 +72,26 @@ petting), and harvesting needs an empty hand that a new player can't see how to 
   from the same code that runs it (no second copy of the rules). Off in the game settings.
 - With a full hotbar and a ripe crop in front, the hint says how to get an empty hand.
 - Hand crafting gets a visible way in (a button by the satchel) besides Shift+C.
-- Tests: the hint matches the action for each case in game/state/interaction.gd; the handbook's
-  controls page.
+- Tests: the hint matches the action for each case in game/state/interaction.gd (E) and
+  game/state/tool_use.gd (Use); the handbook's controls page. May be split into the hint and the
+  crafting button if it is too much for one brief.
+
+## 228. A home for each villager, and a way to give one a house
+
+- [ ] Done
+
+The user, 2026-11-13: "A way to assign a house to villagers". Today a villager only keeps near
+an anchor (the yard of the nearest building or fireplace, design/villagers/villagers.md); there
+is no home.
+- A villager gets a home: a building (saved), not just a spot. Villagers of data/villagers.cfg
+  get the house their sheet names where one stands, a married couple shares one; made-up ones
+  get none until given one. The anchor becomes the yard in front of the home's door.
+- The player gives a free house to a villager who has none (or moves one to another house),
+  in the game: by default with the hammer's menu on a house ("Give to ...", a list of the
+  villagers near) and in the console `home <villager> [here|none]`. A house holds a household
+  (the couple and their children), at most as many as its beds or a number in data/.
+- Gossip: the place words ("by Antje's house") use the home.
+- Save version bump; tests: assigning, moving, freeing when a building is taken down, saving.
 
 ## 234. The village Wehlsbüll stands in the world, with its people
 
@@ -100,9 +120,10 @@ The user, 2026-11-14: the whole village, not one farm. Today villagers come only
 
 - [ ] Done
 
-Review GD2: a harvest gives a seed back only now and then (`seed_chance` 0.5 to 0.6), so a
-field shrinks each round and seeds come only from `give`. The user, 2026-11-14: a villager
-trades seeds by barter, and some seeds can be found. Needs 234.
+Review GD2: a harvest gives a seed back only now and then (`seed_chance` 0.2 to
+0.7, low for the regrowing crops), so a field shrinks each round and seeds come only from `give`. The user, 2026-11-14: a villager
+trades seeds by barter, and some seeds can be found. Needs 234. May be split into the seed
+chest and the wild seeds.
 - A villager of the village (by default Antje Boysen at her farm) keeps a seed chest: the
   player trades produce or goods for seed bags of every crop, by barter, no money yet
   (prices in data/, by weight or worth; the economy draft's first step, design/economy/).
@@ -122,12 +143,14 @@ trades seeds by barter, and some seeds can be found. Needs 234.
 - [ ] Done
 
 Review GD1 and GD5: production needs a reason, and the first days need something to work
-towards before the first turnips are ripe (nine good days). Needs 234 and 235.
+towards before the first turnips are ripe (nine good days). Needs 234 and 235. **Plan first:**
+the worker writes the plan (asks, the list, rewards, the opinion path, the steps) into
+design/villagers/ and the user approves it before code.
 - Now and then a villager asks for something small that they say in a line: five turnips, a
   wattle fence by their garden, a basket of berries, a stool. The player sees open asks in a
   short list (in the character window, or a page of its own). No quest chain, no fail; an ask
   goes away after some days.
-- Bringing it gives something useful (seeds, a recipe, a tool grade, tallow for candles,
+- Bringing it gives something useful (seeds, a recipe, a tool grade, candle makings (task 231),
   opinion up a little through the gossip judge's rules); the rewards and asks in data/.
 - The first ask comes on day 1 and fits the start (wood or fibre), so the player meets the
   village early.
@@ -143,23 +166,6 @@ The held art is done (task 119); the use (swing) poses are not.
 - The player's arm and the held tool swing when the axe, pickaxe, scythe and shovel are used
   (a few frames in the four directions), in both arts, timed with the use; the hammer and hoe
   too if they lack one. Art crops (1x/4x) for the user's verdict before the code uses them.
-
-## 228. A home for each villager, and a way to give one a house
-
-- [ ] Done
-
-The user, 2026-11-13: "A way to assign a house to villagers". Today a villager only keeps near
-an anchor (the yard of the nearest building or fireplace, design/villagers/villagers.md); there
-is no home.
-- A villager gets a home: a building (saved), not just a spot. Villagers of data/villagers.cfg
-  get the house their sheet names where one stands, a married couple shares one; made-up ones
-  get none until given one. The anchor becomes the yard in front of the home's door.
-- The player gives a free house to a villager who has none (or moves one to another house),
-  in the game: by default with the hammer's menu on a house ("Give to ...", a list of the
-  villagers near) and in the console `home <villager> [here|none]`. A house holds a household
-  (the couple and their children), at most as many as its beds or a number in data/.
-- Gossip: the place words ("by Antje's house") use the home.
-- Save version bump; tests: assigning, moving, freeing when a building is taken down, saving.
 
 ## 229. Villagers go inside
 
