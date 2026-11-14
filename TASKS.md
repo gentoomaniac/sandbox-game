@@ -98,9 +98,10 @@ is no home.
   villagers near) and in the console `home <villager> [here|none]`. A house holds a household
   (the couple and their children), at most as many as its beds or a number in data/.
 - The user, 2026-11-14: a villager also gets a workplace, the place their routine (task 239)
-  sends them to work: a building (the mill, a barn, the shop), or a spot with a name where there
-  is no building (Ocke's landing at the sluice, a field). The sheets in data/villagers.cfg name
-  it; the player gives one the same way as a home (`work <villager> [here|none]`).
+  sends them to work: a building (a barn, the church; later the mill and the shop of task 240),
+  or a spot with a name where there is no building (Momme's landing at the sluice, a field).
+  The sheets in data/villagers.cfg name it; the player gives one the same way as a home
+  (`work <villager> [here|none]`).
 - Gossip: the place words ("by Antje's house") use the home.
 - Save version bump; tests: assigning, moving, freeing when a building is taken down, saving.
 
@@ -108,10 +109,11 @@ is no home.
 
 - [ ] Done
 
-The user, 2026-11-14. Today every building of a type copies its type's one interior map
+The user, 2026-11-14. Needs 228 (the homes). Today every building of a type copies its type's
+one interior map
 (`interior_map` in data/buildings.cfg) when first entered, and keeps that copy.
 - That map stays the default. A building can name its own interior map instead, kept with the
-  building (saved), so a villager's house is their very own inside (Antje's dairy, Ocke's nets)
+  building (saved), so a villager's house is their very own inside (Antje's dairy, Momme's nets)
   while the outside stays the type's standard look.
 - Villager sheets name the interior of their home (maps/interiors/villagers/<id>.tmx, made in
   Tiled like the others); a house given to a villager without one keeps the default.
@@ -125,8 +127,10 @@ The user, 2026-11-14. Today every building of a type copies its type's one inter
 
 - [ ] Done
 
-The user, 2026-11-14: villagers need to get somewhere, not wander at random. Today they keep
-near an anchor; nothing in the game finds a way (game/state/reachable_tiles.gd only floods a small
+The user, 2026-11-14: villagers need to get somewhere, not wander at random. No dependencies.
+**Plan first:** the worker writes the plan (the search, its limits, chunks and doors, the steps)
+into design/villagers/routines.md and the user approves it before code. Today they keep near
+an anchor; nothing in the game finds a way (game/state/reachable_tiles.gd only floods a small
 radius for the skip rule).
 - A path search over tiles (A* or what fits best) with the same rules as a villager's steps:
   fences, walls, water, buildings, closed gates; lanes and paths cost less, so they keep to them.
@@ -136,8 +140,8 @@ radius for the skip rule).
   blocked; long ways cut into legs. Measure it with many villagers, with numbers in data/.
 - A villager far from the player (in a chunk that isn't loaded) doesn't search: it is where its
   routine says when the chunk loads, as the skip rule does today.
-- A stuck walker gives up after a while and waits or picks another way, never spins (task 209's
-  rule for animals).
+- A stuck walker gives up after a while and waits or picks another way, never spins (the rule for
+  animals in design/farming/livestock.md).
 - Console `goto <villager> <x>,<y>` (or `here`) to watch it; a debug line of the path in F3.
 - Tests: a way round a fence, through a gate and a door, none to a closed-in place, the limits,
   a blocked path found again.
@@ -206,7 +210,9 @@ before code.
 - [ ] Done
 
 The user, 2026-11-14: a shopkeeper goes to their shop at the routine's hours, stands there and
-offers a trading dialog. Needs 234 (the village) and 239 (routines).
+offers a trading dialog. Needs 234 (the village) and 239 (routines). **Plan first:** the
+worker writes the plan (who, where, the dialog, the stock, the steps) into design/economy/ and the
+user approves it before code.
 - A villager with the shopkeeper routine works in their shop: a building of the village or a
   stall by the lane (the plan of 234 says which, and who keeps it: by default a Höker, a small
   village shopkeeper, as a new hand-written villager with a sheet, or one of the eight).

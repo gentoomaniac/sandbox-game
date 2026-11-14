@@ -3,7 +3,8 @@
 The people of Wehlsbüll, what they say, and what they think of the player.
 
 - [villagers.md](villagers.md): Who the villagers are, the village, sheets, behaviour, what is saved.
-- [routines.md](routines.md): Homes, workplaces, own interiors, routines and pathfinding. Decided, not built.
+- [routines.md](routines.md): Homes, workplaces, own interiors, routines, pathfinding.
+  Decided, not built.
 - [dialogue.md](dialogue.md): Talking: the chat, the language model, the prompt, memory.
 - [gossip.md](gossip.md): What villagers see, remember and pass on, and how they think of the player by it. Decided, not built.
 - [reputation.md](reputation.md): Reputation, and how it spreads.
