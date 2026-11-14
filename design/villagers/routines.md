@@ -22,7 +22,8 @@ random.
   home and workplace fill in where that is, so many villagers share a few routines (task 239).
 - **Finding the way:** villagers walk to their places by a path search that keeps to lanes and
   goes round fences and through gates and doors, within a set cost per frame so the game doesn't
-  stutter. Far from the player: see #68 (task 238 plan).
+  stutter. Far from the player, where the world isn't loaded, they walk too: see
+  [travel.md](travel.md) (#68, planned).
 - **Inside:** the routine says when they go in, and they are seen in the interior (task 229).
 - **Next step, the shopkeeper:** a villager with the shopkeeper routine stands in their shop in
   the shop hours and offers a trading dialog (barter, no money yet); the shop sells seeds, so the
