@@ -5,6 +5,10 @@ extends RefCounted
 ## when `search_usec_per_frame` microseconds are spent, so many villagers on their way never make
 ## the game stutter. A search that is not done goes on in the next tick. Whoever queued a search
 ## reads its state; the Pathfinder only works it.
+##
+## Far searches (over ground that is not loaded, so they may wait for a mask) have a queue of their
+## own: the oldest of them takes one of the frame's searches and at most half of its time, so
+## neither holds up the other. A search that is waiting is passed over and costs nothing.
 
 ## A search looks at this many tiles between two looks at the clock.
 const NODES_PER_CHECK := 16
@@ -15,7 +19,8 @@ var searches_per_frame: int
 var usec_per_frame: int
 ## Gives the time in microseconds; the tests of the limits give their own.
 var _clock: Callable
-var _queue: Array[PathSearch] = []
+var _near_queue: Array[PathSearch] = []
+var _far_queue: Array[PathSearch] = []
 
 
 func _init(searches: int, usec: int, clock := Callable(Time, "get_ticks_usec")) -> void:
@@ -24,29 +29,48 @@ func _init(searches: int, usec: int, clock := Callable(Time, "get_ticks_usec")) 
 	_clock = clock
 
 
-func queue(search: PathSearch) -> void:
-	_queue.append(search)
+func queue(search: PathSearch, is_far := false) -> void:
+	(_far_queue if is_far else _near_queue).append(search)
 
 
 ## Takes a search out of the queue, whether it is done or not: it is never looked at again.
 func drop(search: PathSearch) -> void:
-	_queue.erase(search)
+	_near_queue.erase(search)
+	_far_queue.erase(search)
 
 
 ## How many searches are waiting (a finished search is gone at once).
 func waiting() -> int:
-	return _queue.size()
+	return _near_queue.size() + _far_queue.size()
 
 
-## Works the queue for one frame.
+## Works the queues for one frame.
 func tick() -> void:
 	var started: int = _clock.call()
+	var far_worked := _work(_far_queue, 1, started + usec_per_frame / 2)
+	# One near search always gets its turn, however small the limit.
+	_work(_near_queue, maxi(searches_per_frame - far_worked, 1), started + usec_per_frame)
+
+
+## Works the searches of `queue`, the oldest first, until `searches` of them have been given time
+## or the clock shows `deadline`. Returns how many it gave time to. A search that waits for a tile
+## is passed over, and stays in the queue.
+func _work(queue: Array[PathSearch], searches: int, deadline: int) -> int:
 	var searches_worked := 0
-	while searches_worked < searches_per_frame and not _queue.is_empty():
-		var search := _queue[0]
-		searches_worked += 1
-		while search.state == PathSearch.State.RUNNING:
-			if _clock.call() - started >= usec_per_frame:
-				return
+	var index := 0
+	while searches_worked < searches and index < queue.size():
+		var search := queue[index]
+		var looked_at_before := search.nodes_looked_at
+		while not search.is_over():
+			if _clock.call() >= deadline:
+				return searches_worked
 			search.step(NODES_PER_CHECK)
-		_queue.pop_front()
+			if search.state == PathSearch.State.WAITING:
+				break
+		if search.nodes_looked_at > looked_at_before:
+			searches_worked += 1
+		if search.is_over():
+			queue.remove_at(index)
+		else:
+			index += 1
+	return searches_worked

@@ -182,7 +182,7 @@ static func is_trampled(object: WorldObject) -> bool:
 func _take_search_result(npc: Npc) -> void:
 	var trip := npc.trip
 	var search := trip.search
-	if search.state == PathSearch.State.RUNNING:
+	if not search.is_over():
 		return
 	trip.search = null
 	trip.nodes_looked_at += search.nodes_looked_at

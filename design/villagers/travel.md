@@ -100,9 +100,12 @@ as it is entered, not over the whole path in advance. No collisions, near or far
 - **`PathSearch`** learns one answer: WAITING, when a neighbour of the node it expands is not known.
   The node goes back into the heap unclosed and is expanded again from the start once the mask is
   there (expanding twice changes nothing: a neighbour already reached is only improved), so no
-  neighbour is lost. The `Pathfinder` passes the search over meanwhile. **`Pathfinder`** keeps one of
-  its two searches a frame for the oldest far request, so far trips are not starved by near ones,
-  and near ones are not held up by far ones.
+  neighbour is lost. The `Pathfinder` passes the search over meanwhile (it takes no slot and no time).
+  The search asks `is_known` for the neighbours it has not seen, all four at once, before it
+  expands a node, so a far search needs nothing rolled back. **`Pathfinder`** has a queue for far
+  requests (`queue(search, is_far)`): the oldest of them takes one of the frame's searches and at
+  most half of its time, so far trips are not starved by near ones, and near ones are not held up
+  by far ones (one near search always gets its turn).
 - **`NpcTrip`** follows the path in one of two ways, decided each update: the tile it is on and the
   next are both answered live (above), so it steps with its body as in 238; or not, so it moves to
   the next centre at `walk_speed` and checks the tile in the view as it enters it (tide and season

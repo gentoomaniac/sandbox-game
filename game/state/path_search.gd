@@ -6,11 +6,15 @@ extends RefCounted
 ## where it left off: `step` looks at some more tiles and says how far it is, so that a long
 ## search can be spread over frames (see Pathfinder). The start is not asked: someone who stands
 ## where they should not (in a doorway, on mud) must be able to leave it.
+##
+## A tile may be not known yet (`is_known`: a far tile whose mask is not made, see TravelView). The
+## search then waits, and goes on when `step` is called again.
 
-## RUNNING: not done. FOUND: `path` leads to the goal. LEG: the search looked at `max_nodes` tiles
-## without finding the goal, and `path` leads to the tile it saw nearest to it; the walker goes
-## there and searches again from it. FAILED: there is no way, or no leg that gets nearer.
-enum State { RUNNING, FOUND, LEG, FAILED }
+## RUNNING: not done. WAITING: not done, and a tile it needs is not known yet; `step` looks again.
+## FOUND: `path` leads to the goal. LEG: the search looked at `max_nodes` tiles without finding the
+## goal, and `path` leads to the tile it saw nearest to it; the walker goes there and searches
+## again from it. FAILED: there is no way, or no leg that gets nearer.
+enum State { RUNNING, WAITING, FOUND, LEG, FAILED }
 
 const STEPS: Array[Vector2i] = [Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT, Vector2i.UP]
 ## What a tile's cost so far is cut by in the queue: among ways that look equally good, the one that
@@ -29,6 +33,8 @@ var nodes_looked_at := 0
 
 var _goal: Vector2i
 var _is_free: Callable
+var _is_known: Callable
+var _is_goal_checked := false
 var _cost_of: Callable
 var _max_nodes: int
 var _heuristic_weight: float
@@ -54,28 +60,33 @@ var _nearest_distance: int
 ## distance in tiles times `heuristic_weight`: 1.0 is a little more than lanes of 0.6 allow, so a
 ## way up to 1.67 times longer than the best may be taken, and a plain field is not searched all
 ## over (0.6 would be exact). After `max_nodes` tiles it settles for a leg. A goal that is not free
-## is no way at once.
+## is no way at once. `is_known(tile) -> bool` says whether `is_free` and `cost_of` can answer for a
+## tile yet; by default they always can.
 func _init(
 	start: Vector2i,
 	goal: Vector2i,
 	is_free: Callable,
 	cost_of: Callable,
 	max_nodes: int,
-	heuristic_weight := 1.0
+	heuristic_weight := 1.0,
+	is_known := Callable()
 ) -> void:
 	_goal = goal
 	_is_free = is_free
+	_is_known = is_known
 	_cost_of = cost_of
 	_max_nodes = max_nodes
 	_heuristic_weight = heuristic_weight
 	_nearest_distance = _distance_to_goal(start)
 	_add_node(start, 0.0, 0.0, -1)
-	if start != goal and not is_free.call(goal):
-		state = State.FAILED
+	_check_goal()
 
 
 ## Looks at up to `node_count` more tiles; returns the state.
 func step(node_count: int) -> State:
+	if state == State.WAITING:
+		state = State.RUNNING
+	_check_goal()
 	var looked_at_now := 0
 	while state == State.RUNNING and looked_at_now < node_count:
 		if _heap.is_empty():
@@ -84,10 +95,15 @@ func step(node_count: int) -> State:
 		var node := _pop()
 		if _is_closed[node] == 1:
 			continue
+		var tile := _tiles[node]
+		if tile != _goal and not _are_neighbours_known(tile):
+			# Nothing of it is done yet, so it is looked at from the start when it is known.
+			_push(node)
+			state = State.WAITING
+			break
 		_is_closed[node] = 1
 		looked_at_now += 1
 		nodes_looked_at += 1
-		var tile := _tiles[node]
 		if tile == _goal:
 			path = _path_to(node)
 			state = State.FOUND
@@ -101,6 +117,36 @@ func step(node_count: int) -> State:
 		if nodes_looked_at >= _max_nodes and state == State.RUNNING:
 			_settle_for_leg()
 	return state
+
+
+## Whether the search is over: it has a way, a leg or none.
+func is_over() -> bool:
+	return state != State.RUNNING and state != State.WAITING
+
+
+## A goal that is not free is no way: said once it is known.
+func _check_goal() -> void:
+	if _is_goal_checked or state != State.RUNNING:
+		return
+	if _is_known.is_valid() and not _is_known.call(_goal):
+		state = State.WAITING
+		return
+	_is_goal_checked = true
+	if _tiles[0] != _goal and not _is_free.call(_goal):
+		state = State.FAILED
+
+
+func _are_neighbours_known(tile: Vector2i) -> bool:
+	if not _is_known.is_valid():
+		return true
+	# All four are asked, not only the first that is not known: whoever makes them known may do so
+	# in parallel.
+	var are_known := true
+	for direction in STEPS:
+		var neighbour := tile + direction
+		if not _node_of_tile.has(neighbour) and not _is_known.call(neighbour):
+			are_known = false
+	return are_known
 
 
 ## Finds the tile `neighbour` from `node`, if it is free and the way is better than any before.
