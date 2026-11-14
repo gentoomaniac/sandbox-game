@@ -161,8 +161,9 @@ chunk is not loaded; never on a visible one.
   median and 4.5 ms at most on the main thread; a question to a warm mask (`is_free`) 0.45 us, against
   15.5 us for `Npcs.can_stand_at`.
 - **CPU per frame:** a far walker is one addition and one compare a frame, a mask read per tile:
-  under 0.3 ms for 155. Searches stay in 238's 1.5 ms. On the main thread a mask costs one stamp
-  (about 2 ms, one a frame at most); generating (9 to 13 ms a chunk) is on the worker.
+  under 0.3 ms for 155. Searches stay in 238's 1.5 ms. On the main thread a mask costs the copy
+  of its edits (0.3 ms at most) and the publishing (0.08 ms at the median in `update`); generating
+  (9 to 13 ms a chunk) and stamping (3 ms) are on the worker.
 - **A search:** a far node costs a mask read instead of 15.5 us of `can_stand_at`, so it costs less
   than a near one (measured, step 2, below). A 300-tile way searches some 1200 to 2600 nodes (4000 at
   the most): 16 to 33 ms of search, 10 to 20 frames. Cold, it touches 20 to 40 chunks: 0.2 to 0.4 s
@@ -177,36 +178,44 @@ chunk is not loaded; never on a visible one.
   that answer at once it takes 6.5 us a tile (9.5 before its heap stopped swapping through a function
   call), so a far tile is that plus 4 us for the view (three calls a tile: `is_known`, `is_free`,
   `cost_of`, each a chunk's source from a dictionary and a mask read).
-  The frames of the game (`make bench`'s fixture, 154 villagers; the baseline is three runs, then
-  with 30 and with 154 villagers sent over and over to tiles 150 to 300 away in chunks not loaded,
-  their masks cold and the worker busy): standing 300 frames, 99th percentile 18.4 to 21.0 ms
-  (baseline) against 24.7 (30 trips) and 25.8 (154); longest 33.6 to 40.0 against 39.0 and 36.7;
-  walking 70 tiles, 99th percentile 13.6 to 14.0 against 15.9 and 17.7, longest 27.3 to 28.2 against
-  29.2 and 29.4. Before the masks' requests were a set, `TravelMasks.update` took 3 to 4 ms on top of
-  the stamp in busy frames (a linear `has` and a lambda `filter` over all requests); now it is the
-  stamp alone, 2.9 to 3.5 ms. A pause of the far work after a slow frame was tried and did nothing
-  measurable (13 frames over 16.7 ms in the standing scenario with no far work at all, against 4
-  to 18 with it, a noisy scene), so it is not in.
+  The frames of the game (`make bench`'s fixture, 154 villagers; `frames.gd`, the baseline is three
+  runs, then 30 and 154 villagers sent over and over to tiles 150 to 300 away in chunks that are
+  not loaded, their masks cold and the worker busy). With the stamp on the main thread: standing 300
+  frames, 99th percentile 18.4 to 21.0 ms (baseline) against 24.7 (30 trips) and 25.8 (154); walking
+  70 tiles, 99th percentile 13.6 to 14.0 against 15.9 and 17.7. With the stamp on the worker and
+  the far queue worked every frame: standing 14.5 to 20.0 (baseline; three runs) against 25.1 and
+  29.4; walking 13.8 to 15.2 against 16.8 and 15.2; longest frames 26.5 to 31.2 (standing) and 28.0
+  to 29.0 (walking) against 36.1 and 38.5, and 29.9 and 31.5. With the far queue worked in one
+  frame of four (`far_every_frames=4`, the value in data/npcs.cfg): standing 23.2 and 27.2, longest
+  31.7 and 35.2; walking 14.7 and 14.4, longest 31.6 and 28.7, which is the baseline's. The standing
+  scenario stays above the baseline: with the far searches taken out altogether, the 30 villagers
+  that have a trip and stand waiting for it still give 21.8 to 23.4 there (the scenario is 300
+  frames and its end has a hitch of its own, 2 to 4 frames over 16.7 ms in the baseline), so
+  what is left of it is not the far work. A pause of the far work after a slow frame was tried and
+  did nothing measurable, so it is not in. Before the masks' requests were a set,
+  `TravelMasks.update` took 3 to 4 ms on top of the stamp in busy frames (a linear `has` and a
+  lambda `filter` over all requests).
+  **What `far_every_frames=4` costs:** a far search takes four times as many frames: a way of 1200
+  to 2600 nodes (16 to 33 ms of search at 0.75 ms of a frame) is done in 22 to 44 frames at one in
+  every frame, in 88 to 176 (1.5 to 3 s) at one in four, one search at a time. So a far trip leaves
+  1.5 to 3 s late, and 30 far trips that start in the same minute leave 45 to 90 s apart from first
+  to last, against 11 to 22 s at one in every frame (the user's answer 5 is 10 s for 30 villagers:
+  that holds for near trips, not for this worst case). The far searches a day are far fewer than
+  that case (a village's commuting is near, loaded ground, with the far trips the exception), and
+  the value is data: 1 gives the speed back for the frames' price.
 - **The day:** a game day gives 1.5 ms x 60 frames x 960 s = 86 s of search. A village of 30 with four
   trips a day needs about 120 x 25 ms = 3 s; the bench of 155 about 620 x 25 ms = 16 s. If all 30 leave
   in the same minute, the last starts about 8 s later; if all 155 do, about 45 s (task 239 spreads
   the hours).
-- **Pass or fail, step 2:** on warm masks a far node costs at most 10 us, and a 300-tile far way is
-  found in at most 40 ms of search. And the whole frame: with cold far trips under way (masks
-  generated and stamped, edits copied, stamps published, masks evicted, the worker busy, also in the
-  frames in which a chunk loads), the bench's longest frame and its 99th percentile are no longer
-  than without them (about 26 ms the longest today). If not, the plan comes back with reused
-  commuting paths (the same home and workplace, the same path) before the next step. A coarse chunk
-  graph only if even that does not do (step 5).
-  **Result:** the node is 10.5 to 10.9 us, a hair over; the way is found in 16 to 33 ms at the
-  median and in 36 to 48 ms at the most, a hair over in one seed; the longest frame is within the
-  noise of the baseline (27 to 40 ms), but the 99th percentile is 2 to 4 ms more than the baseline's
-  in the standing and the walking scenario with far trips under way. The frame is the one that
-  does not pass as it stands: the stamp (3 ms) and the share of the searches (up to 0.75 ms and a
-  step of 16 nodes) add to frames that are slow already. The cheapest ways to go on are in this
-  order, to be decided with the user: a stamp in two halves over two frames; fewer far searches a
-  second (30 villagers leaving in the same minute is the case that makes this); reused commuting
-  paths, as above.
+- **The limits, step 2** (as first planned, and what was measured, not a verdict): on warm masks a
+  far node at most 10 us, a 300-tile far way found in at most 40 ms of search, and with cold far
+  trips under way the longest frame and the 99th percentile no longer than without. Measured: the
+  node 10.5 to 10.9 us and the way 16 to 33 ms at the median, 36 to 48 at the most (the per-frame
+  budget bounds the effect of both); the frames as above: with the stamp on the worker and `far_every_frames=4` the
+  walking scenario is the baseline's, the standing one is 3 to 9 ms above it at the 99th percentile,
+  of which the far work is little. Reused commuting paths and a chunk graph are left for the bench
+  of step 6 to ask for.
+
 ## Time skips and sleep
 
 A skip moves every trip along its path by its minutes (one tile a minute). The skip's three walked
