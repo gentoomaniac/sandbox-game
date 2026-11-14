@@ -1,5 +1,6 @@
 extends GutTest
-## The bag button beside the hotbar, and the place the bag opens at (a bit right of the middle).
+## The bag button and the crafting button beside the hotbar, and the place the bag opens at (a bit
+## right of the middle).
 
 const WINDOW := Vector2i(640, 360)
 
@@ -14,6 +15,10 @@ func before_each() -> void:
 
 func _button(hotbar: HotbarHud) -> Button:
 	return hotbar.find_children("*", "Button", true, false)[0]
+
+
+func _crafting_button(hotbar: HotbarHud) -> Button:
+	return hotbar.find_children("*", "Button", true, false)[1]
 
 
 func test_clicking_the_button_asks_for_the_bag() -> void:
@@ -35,6 +40,29 @@ func test_the_button_sits_beside_the_hotbar_a_little_apart_and_as_high_as_a_slot
 	assert_eq(button_rect.end.y, row_rect.end.y)
 	assert_true(hotbar.covers(button_rect.get_center()), "a click on it is not the game's")
 	assert_true(Rect2(Vector2.ZERO, Vector2(WINDOW)).encloses(button_rect))
+
+
+func test_clicking_the_crafting_button_asks_for_hand_crafting() -> void:
+	var hotbar := HotbarCase.new_hotbar()
+	_viewport.add_child(hotbar)
+	watch_signals(hotbar)
+	_crafting_button(hotbar).pressed.emit()
+	assert_signal_emitted(hotbar, "crafting_requested")
+	assert_signal_not_emitted(hotbar, "bag_requested")
+
+
+func test_the_crafting_button_sits_beside_the_bag_button_and_takes_no_focus() -> void:
+	var hotbar := HotbarCase.new_hotbar()
+	_viewport.add_child(hotbar)
+	await wait_process_frames(2)
+	var bag_rect := _button(hotbar).get_global_rect()
+	var crafting_rect := _crafting_button(hotbar).get_global_rect()
+	assert_eq(crafting_rect.position.x - bag_rect.end.x, float(HotbarHud.SLOT_GAP))
+	assert_eq(crafting_rect.size, bag_rect.size)
+	assert_eq(crafting_rect.position.y, bag_rect.position.y)
+	assert_true(hotbar.covers(crafting_rect.get_center()), "a click on it is not the game's")
+	assert_true(Rect2(Vector2.ZERO, Vector2(WINDOW)).encloses(crafting_rect))
+	assert_eq(_crafting_button(hotbar).focus_mode, Control.FOCUS_NONE)
 
 
 func test_the_button_takes_no_focus_so_space_still_uses_the_held_item() -> void:

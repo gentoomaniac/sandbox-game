@@ -6,7 +6,8 @@ extends CanvasLayer
 ## dimmed backdrop: it stays lit and is their quick bar, its slots clickable (see `acquire`);
 ## otherwise clicks on it go to the game. The hotbar owns its slot views: a screen borrows the
 ## whole bar with `acquire` and gives it back with `release`. The bag button sits beside the bar,
-## set a little apart from it: clicking it asks for the bag (`bag_requested`).
+## set a little apart from it: clicking it asks for the bag (`bag_requested`). The crafting button
+## sits beside the bag button: it asks for hand crafting (`crafting_requested`).
 
 ## A slot was Shift+clicked, or right clicked, while the slots are clickable; the screens that
 ## have the bar all hear it, and the one that took it last answers (see `is_borrowed_by`).
@@ -14,6 +15,8 @@ signal slot_quick_move_requested(slot: int)
 signal slot_secondary_pressed(slot: int)
 ## The bag button was clicked.
 signal bag_requested
+## The crafting button was clicked.
+signal crafting_requested
 
 ## While the slots are clickable: above the screens (1), under the fade (2, added later) and
 ## the menus. Otherwise the hotbar is on layer 1 with the other HUDs.
@@ -26,6 +29,7 @@ const BAG_GAP := 8
 const WIDTH := Inventory.HOTBAR_SIZE * SlotView.SIZE + (Inventory.HOTBAR_SIZE - 1) * SLOT_GAP
 const THEME := preload("res://game/scenes/ui_theme.tres")
 const BAG_ICON := preload("res://assets/ui/bag_icon.png")
+const CRAFT_ICON := preload("res://assets/ui/craft_icon.png")
 
 var _inventory: Inventory
 ## The screens that have the bar as their quick bar, the one that took it last at the end.
@@ -33,6 +37,7 @@ var _borrowers: Array[Object] = []
 var _slot_views: Array[SlotView] = []
 var _row := HBoxContainer.new()
 var _bag_button := Button.new()
+var _crafting_button := Button.new()
 
 
 func _init() -> void:
@@ -58,31 +63,45 @@ func _init() -> void:
 	_row.offset_top = -BOTTOM_MARGIN - SlotView.SIZE
 	_row.offset_bottom = -BOTTOM_MARGIN
 
+	_add_icon_button(_bag_button, BAG_ICON, "Open the bag", "bag", bag_requested.emit)
+	_bag_button.offset_left = WIDTH / 2.0 + BAG_GAP
+	_add_icon_button(
+		_crafting_button, CRAFT_ICON, "Craft by hand", "crafting", crafting_requested.emit
+	)
+	_crafting_button.offset_left = _bag_button.offset_left + SlotView.SIZE + SLOT_GAP
+	for button in [_bag_button, _crafting_button]:
+		button.offset_right = button.offset_left + SlotView.SIZE
+
+
+## Sets up a button of the strip beside the slots, as high as a slot; the caller sets its left and
+## right edges.
+func _add_icon_button(
+	button: Button, icon: Texture2D, tip: String, tooltip_id: String, on_pressed: Callable
+) -> void:
 	# Space is the game's use key: a focused button would take it.
-	_bag_button.theme = THEME
-	_bag_button.focus_mode = Control.FOCUS_NONE
+	button.theme = THEME
+	button.focus_mode = Control.FOCUS_NONE
 	# The picture is a child, not the button's icon, which the button's frame would shrink.
 	var picture := TextureRect.new()
-	picture.texture = BAG_ICON
+	picture.texture = icon
 	picture.position = SlotView.ICON_RECT.position
 	picture.size = SlotView.ICON_RECT.size
 	picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ItemIcon.sharpen(picture)
-	_bag_button.add_child(picture)
-	_bag_button.pressed.connect(bag_requested.emit)
-	TooltipView.set_text(_bag_button, "Open the bag", "bag")
-	add_child(_bag_button)
-	_bag_button.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	_bag_button.offset_left = WIDTH / 2.0 + BAG_GAP
-	_bag_button.offset_right = _bag_button.offset_left + SlotView.SIZE
-	_bag_button.offset_top = _row.offset_top
-	_bag_button.offset_bottom = _row.offset_bottom
+	button.add_child(picture)
+	button.pressed.connect(on_pressed)
+	TooltipView.set_text(button, tip, tooltip_id)
+	add_child(button)
+	button.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	button.offset_top = _row.offset_top
+	button.offset_bottom = _row.offset_bottom
 
 
 ## Whether a point of the window (in canvas coordinates) is on the hotbar strip: the slots and the
-## gaps between them, the bag button and the gap before it.
+## gaps between them, the bag and crafting buttons and the gap before them.
 func covers(point: Vector2) -> bool:
-	return _row.get_global_rect().merge(_bag_button.get_global_rect()).has_point(point)
+	var strip := _row.get_global_rect().merge(_crafting_button.get_global_rect())
+	return strip.has_point(point)
 
 
 ## Makes the bar the quick bar of `borrower` (a screen that moves items): its slots take clicks

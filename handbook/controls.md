@@ -41,7 +41,7 @@ says so, and whether to pick a free hotbar slot or to move an item off a full ho
 | B, or click the bag icon | The bag. The same key closes it. |
 | C | The character window. The same key closes it. |
 | K | The skills tab of the character window. |
-| Shift + C | The crafting menu (by hand). |
+| Shift + C, or click the workbench icon | The crafting menu (by hand). The icon sits beside the bag icon. |
 | Left mouse button, dragged | Move a stack onto a slot, the trash can, or (outside the window) the ground. |
 | Shift + left click | Send a stack to the other side (bag, character and chest windows). |
 | Right click | Wear or take off an item (bag and character window). |

@@ -34,7 +34,7 @@ Decided 2026-11-05.
 - **The bag** (task 190, 2026-11-11): a bag icon beside the hotbar, set a little apart from it
   (the same icon in both arts); clicking it or pressing B opens the bag (the backpack
   with its weight and a trash can), which is docked at the bottom right of the window above the
-  hotbar. Tab is
+  hotbar. A workbench icon beside it opens hand crafting, as Shift+C does (issue 3, task 233). Tab is
   unbound; the hammer has no key (it is selected on the hotbar).
 - **The character window** (task 191, 2026-11-12): C opens a window of its own with the figure, the
   equipment slots round it (no trash can: that is the bag's) and a Skills tab (K opens it there). It
@@ -45,8 +45,8 @@ Decided 2026-11-05.
   the two do not fit side by side, at a large UI scale, opening one closes the other). A stack is
   dragged from the backpack in the bag onto an equipment slot to wear it, and worn gear back into
   the bag to take it off; the HUD's hotbar is the quick bar of both, so a stack is dragged from it
-  onto an equipment slot, and right click wears or takes off in either. Crafting is on Shift+C until
-  it gets a better place.
+  onto an equipment slot, and right click wears or takes off in either. Crafting is on Shift+C, and
+  on the button beside the bag button.
 - **Tooltips** (decided 2026-11-05): hovering a slot in the hotbar, the inventory or the
   equipment shows a small framed panel by the cursor: the item's name, kind and weight
   (each and stack), a one-line description, and what matters for its kind, from the data

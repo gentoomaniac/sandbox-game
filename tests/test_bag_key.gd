@@ -77,6 +77,13 @@ func test_shift_c_opens_crafting_and_closes_it_and_leaves_the_character_window_a
 	assert_false(_main._crafting_screen.is_open(), "and closes it")
 
 
+func test_the_crafting_button_opens_crafting_and_closes_it() -> void:
+	_main._hotbar.crafting_requested.emit()
+	assert_true(_main._crafting_screen.is_open(), "the button opens crafting")
+	_main._hotbar.crafting_requested.emit()
+	assert_false(_main._crafting_screen.is_open(), "and closes it")
+
+
 func test_shift_c_over_the_open_character_window_does_nothing() -> void:
 	_press_key(KEY_C)
 	_press_key(KEY_C, true)

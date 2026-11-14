@@ -245,6 +245,7 @@ func _make_views() -> void:
 	add_child(ModelNotices.new(_chat_screen.dialogue, _notifications))
 	add_child(_chat_screen)
 	_chat_screen.art_set_switch_pressed.connect(_toggle_classic_art)
+	_hotbar.crafting_requested.connect(_on_crafting_requested)
 	_menu = PauseMenu.new(_settings)
 	add_child(_menu)
 	add_child(_tooltip_view)
@@ -717,16 +718,26 @@ func _toggle_classic_art() -> void:
 	_settings.set_classic_art(not ArtSet.is_classic)
 
 
+## The crafting button beside the bag button does what the crafting key does.
+func _on_crafting_requested() -> void:
+	if _crafting_screen.can_open_on_key():
+		_toggle_crafting()
+
+
+func _toggle_crafting() -> void:
+	# On horseback only the inventory and eating are possible; an open screen still closes.
+	if _crafting_screen.is_open() or _state.player.horse == null:
+		_crafting_screen.toggle()
+	else:
+		_harvest_hud.show_note(GET_OFF_FIRST)
+
+
 ## Opens and closes the windows on their keys; a window's key does nothing while another window is
 ## open (see Modal.can_open_on_key). Returns whether a window took the event: one that is open
 ## takes all the input, so the player neither walks nor acts.
 func _screens_take(event: InputEvent) -> bool:
 	if event.is_action_pressed("crafting") and _crafting_screen.can_open_on_key():
-		# On horseback only the inventory and eating are possible; an open screen still closes.
-		if _crafting_screen.is_open() or _state.player.horse == null:
-			_crafting_screen.toggle()
-		else:
-			_harvest_hud.show_note(GET_OFF_FIRST)
+		_toggle_crafting()
 		return true
 	if event.is_action_pressed("inventory") and _bag_screen.can_open_on_key():
 		_bag_screen.toggle()
