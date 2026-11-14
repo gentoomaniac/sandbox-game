@@ -108,6 +108,8 @@ extends RefCounted
 ##                            (kate.brick)
 ##   --ghost=<x>,<y>          hold the hammer, its ghost pinned on that tile (see BuildMode)
 ##   --taking-down            with --ghost: the hammer takes down instead of building
+##   --free-build             no materials are needed (the console's `nocost`): the ghost is green
+##                            wherever it fits
 ##   --house=<x>,<y>          place the chosen building there once its chunks are loaded
 ##
 ## Things put in the world (see the Debug* classes)
@@ -253,6 +255,7 @@ var chat_script := PackedStringArray()
 var building := &""
 ## The style of `building`, &"" for its own look.
 var building_style := &""
+var is_build_free := false
 var ghost := NO_TILE
 var taking_down := false
 var house := NO_TILE
@@ -485,6 +488,8 @@ func _init(args := PackedStringArray()) -> void:
 				npcs = _value(arg).to_int()
 			"--villager":
 				villager = _value(arg)
+			"--free-build":
+				is_build_free = true
 			"--bubbles":
 				bubbles = true
 			_:

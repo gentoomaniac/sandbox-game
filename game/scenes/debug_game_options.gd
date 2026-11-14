@@ -40,6 +40,8 @@ static func apply(options: StartupOptions, state: GameState) -> void:
 		state.player.equipment.equip(Equipment.slot_of(options.wear), options.wear)
 	if options.hold != &"":
 		_hold(state, options.hold)
+	if options.is_build_free:
+		state.cheats.is_cost_off = true
 	if options.riding != &"":
 		_ride(state, options.riding)
 	if Weather.FORCEABLE.has(options.weather):
