@@ -127,3 +127,53 @@ func test_window_lights_are_on_the_lit_windows_of_the_picture() -> void:
 			for centre: Vector2i in building_type["window_lights"]:
 				var where := "%s %s lit window at %s" % [building_id, style, centre]
 				assert_ne(lit.get_pixelv(centre), unlit.get_pixelv(centre), where)
+
+
+func test_a_building_has_the_default_inside_of_its_type_until_it_is_furnished() -> void:
+	var building := _world.place_building(HOUSE, ORIGIN)
+	var default_map: String = BuildingTypes.TYPES[HOUSE]["interior_map"]
+
+	assert_eq(building.inside().to_dict(), InteriorLoader.load_interior(default_map).to_dict())
+
+
+func test_furnishing_a_building_that_was_never_entered_gives_it_the_own_inside() -> void:
+	var building := _world.place_building(HOUSE, ORIGIN)
+	var own_map: String = BuildingTypes.TYPES[BuildingTypes.SHACK]["interior_map"]
+
+	building.furnish_from(own_map)
+
+	assert_eq(building.inside().to_dict(), InteriorLoader.load_interior(own_map).to_dict())
+
+
+func test_furnishing_replaces_a_default_inside_nobody_changed_but_keeps_a_changed_one() -> void:
+	var own_map: String = BuildingTypes.TYPES[BuildingTypes.SHACK]["interior_map"]
+	var untouched := _world.place_building(HOUSE, ORIGIN)
+	untouched.inside()
+	var changed := _world.place_building(HOUSE, ORIGIN + Vector2i(8, 0))
+	changed.inside().set_terrain(Vector2i(2, 2), Tile.Terrain.CLAY_FLOOR)
+	var changed_before := changed.inside().to_dict()
+
+	untouched.furnish_from(own_map)
+	changed.furnish_from(own_map)
+
+	assert_eq(untouched.inside().to_dict(), InteriorLoader.load_interior(own_map).to_dict())
+	assert_eq(changed.inside().to_dict(), changed_before)
+
+
+func test_the_own_inside_is_saved_with_the_building() -> void:
+	var building := _world.place_building(HOUSE, ORIGIN)
+	var own_map: String = BuildingTypes.TYPES[BuildingTypes.SHACK]["interior_map"]
+	building.furnish_from(own_map)
+
+	var loaded := Building.from_dict(building.to_dict())
+
+	assert_eq(loaded.inside().to_dict(), building.inside().to_dict())
+
+
+func test_furnishing_keeps_the_object_of_the_inside() -> void:
+	var building := _world.place_building(HOUSE, ORIGIN)
+	var inside := building.inside()
+
+	building.furnish_from(BuildingTypes.TYPES[BuildingTypes.SHACK]["interior_map"])
+
+	assert_same(building.inside(), inside)

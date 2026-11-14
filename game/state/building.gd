@@ -28,6 +28,27 @@ func inside() -> Interior:
 	return interior
 
 
+## Gives it the inside of the map at `map_path` (a room of the size and door of its type's
+## default, see VillagerRules) instead of the type's default: the inside a villager's house has.
+## The inside is replaced only if it is still the untouched default, or not made yet. It stays
+## the same object (the player's home map may be it), so its content is copied.
+func furnish_from(map_path: String) -> void:
+	if interior == null:
+		interior = InteriorLoader.load_interior(map_path)
+	elif can_be_furnished():
+		interior.copy_from(InteriorLoader.load_interior(map_path))
+
+
+## Whether `furnish_from` would give it another inside: it has none yet, or still the type's
+## default, untouched.
+func can_be_furnished() -> bool:
+	var default_map: String = BuildingTypes.TYPES[type]["interior_map"]
+	return (
+		interior == null
+		or interior.to_dict() == InteriorLoader.load_interior(default_map).to_dict()
+	)
+
+
 ## The entry of its style in BuildingTypes: its name, pictures and costs.
 func type_data() -> Dictionary:
 	return BuildingTypes.of(type, style)

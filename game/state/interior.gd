@@ -95,6 +95,15 @@ func objects() -> Array[WorldObject]:
 	return found
 
 
+## Becomes `other`'s room (its tiles, objects and floor items), staying the same object.
+func copy_from(other: Interior) -> void:
+	size = other.size
+	exit_tile = other.exit_tile
+	_tiles = other._tiles
+	_objects = other._objects
+	ground_items = other.ground_items
+
+
 func to_dict() -> Dictionary:
 	var tiles: Array[Array] = []
 	for pos in _tiles:
