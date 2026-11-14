@@ -56,28 +56,29 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   has one, else of the nearest building or the nearest fireplace within 16 tiles of where it
   came, else that spot. It never walks further than 6 tiles from it (one outside the circle
   only walks back in).
-- **Home and workplace (task 228):** a villager's home is a building (`Npc.house`, saved), not
-  a spot; the free text `home` of the sheet stays for the language model. A building type says how
+- **Home and workplace (task 228):** a villager's home is a building (`Npc.house`, saved), not a
+  spot; the free text `home` of the sheet stays for the language model. A building type says how
   many may live in it (`residents` in `data/buildings.cfg`: a hall house 5, a fisher's hut 2, a
   shack 1, a barn none), and a house holds one household: the couple and their children, as the
-  sheets' `people` name them (husband, wife, father, mother, son, daughter; `Households`). A
-  made-up villager has no kin on a sheet, so they have a house to themselves. The anchor of a
-  villager with a house is its yard; one whose house is taken down is free of it and keeps near
-  where it stood. A villager's workplace is a building (`Npc.workplace`, any building: the barn,
-  the church, one's own house for the dairy) or a spot with a name where there is no building
+  sheets' `people` name them (husband, wife, father, mother, son, daughter; `Households`). A made-up
+  villager has no kin on a sheet, so they have a house to themselves. The anchor of a villager with
+  a house is its yard; one whose house is taken down is free of it and keeps near where it stood. A
+  villager's workplace is a building (`Npc.workplace`: the barn, the church, one's own house for the
+  dairy, but never a house others live in, #69) or a spot with a name where there is no building
   (the landing at the sluice, a field), saved as a tile. The sheets of `data/villagers.cfg` name
   them by `home_building`, `workplace_building` (a building type) and `workplace_spot` (a name):
   when such a villager comes into the world (`spawn npc`), they get the house of the type where
-  family of theirs lives, else the nearest one of the type with room, and the nearest workplace
-  building of its type, within `home_search` tiles (`data/npcs.cfg`). Where none stands (there is
-  no village yet, task 234; the mill house is no building yet) they have none until given, and a
-  spot has no place in the world until given. Made-up villagers have neither at first. A sheet may also name `home_interior`, the map of
-  the inside of its house (task 237, [routines.md](routines.md)). The
-  player gives and moves them with the console (`home` and `work`, `HomeCommands`) and the
-  hammer's menu on a house (middle click on it with the hammer in hand: `BuildMode` asks, `HouseMenu`
-  shows a `ChoiceDialog` of `Households.offers`: the villagers within `give_reach` tiles that the
-  house may hold, "Give to ..." or "Move ... in", then "... works here"). A routine (task 239) asks the villager for their home's door (`house.door_tile()`) and
-  their workplace's spot (`Workplace.spot()`).
+  family of theirs lives, else the nearest one of the type with room, and as workplace their own
+  house if it is of the type, else the nearest building of it they may work in, within `home_search`
+  tiles (`data/npcs.cfg`). Where none stands (there is no village yet, task 234; the mill house is
+  no building yet) they have none until given, and a spot has no place in the world until given.
+  Made-up villagers have neither at first. A sheet may also name `home_interior`, the map of the
+  inside of its house (task 237, [routines.md](routines.md)). The player gives and moves them with
+  the console (`home` and `work`, `HomeCommands`) and the hammer's menu on a house (middle click on
+  it with the hammer in hand: `BuildMode` asks, `HouseMenu` shows a `ChoiceDialog` of
+  `Households.offers`: the villagers within `give_reach` tiles that the house may hold, "Give to
+  ..." or "Move ... in", then "... works here"). A routine (task 239) asks the villager for their
+  home's door (`house.door_tile()`) and their workplace's spot (`Workplace.spot()`).
 - **Behaviour:** by day it stands about and strolls (at a third of the player's speed) only
   where its body fits on walkable tiles, and stops short of the player rather than walk into
   them; the player walks through villagers, so they never shut the player in. It never stands

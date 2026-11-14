@@ -36,7 +36,13 @@ func work(npc: Npc, where: String) -> Array[String]:
 			npc.workplace = null
 			return ["%s has no workplace now" % npc.name]
 		"here":
-			npc.workplace = _workplace_here(npc)
+			var building := _building_here()
+			if building == null:
+				npc.workplace = _spot_here(npc)
+			else:
+				var problem := _state.homes.give_work(npc, building)
+				if problem != "":
+					return [problem]
 	if npc.workplace == null:
 		return ["%s has no workplace" % npc.name]
 	var place := npc.workplace
@@ -60,12 +66,9 @@ func _building_here() -> Building:
 	return nearest
 
 
-## The building here, else a spot where the player stands, named as the villager's sheet names
-## the spot they work at, if it does.
-func _workplace_here(npc: Npc) -> Workplace:
-	var building := _building_here()
-	if building != null:
-		return Workplace.of_building(building)
+## The spot where the player stands, named as the villager's sheet names the spot they work at,
+## if it does.
+func _spot_here(npc: Npc) -> Workplace:
 	var tile := _state.player.tile()
 	var villagers := _state.npcs.villagers
 	var sheet := villagers.villager(npc.id) if villagers.has(npc.id) else {}

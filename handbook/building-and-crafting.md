@@ -123,6 +123,8 @@ bush](../docs/screenshots/bush-replanted-classic.png).
 - A house only offers itself to villagers it can hold: as many as its kind has room for, and one
   household (a couple and their children). A building that is no house (the barn, the church)
   can only be given as a workplace.
+- A house someone lives in is a workplace only for those who live there, and nobody moves into a
+  house where others work. Others work in a building nobody lives in, or at a spot such as a field.
 - A villager with a house keeps near its door. Taking the house down frees them.
 - Some villagers have a room of their own: when Antje Boysen (or Hinrich) moves into a hall
   house, its inside becomes the Boysens' farm kitchen and dairy. The outside stays the same. A

@@ -7,6 +7,7 @@ extends RefCounted
 ## `Npc.workplace`. GameState owns it. The player gives a house with the hammer's menu and the
 ## console's `home` and `work` (see HomeCommands); the villagers of data/villagers.cfg find
 ## the house and the workplace their sheet names when they come into the world (`settle`).
+## A building someone lives in is a workplace only for those who live there (#69).
 
 ## The building the player is inside, or null: its room must not change under their feet.
 var building_with_player: Building
@@ -28,8 +29,8 @@ func residents_of(house: Building) -> Array[Npc]:
 
 
 ## Why `npc` can't live in `house`, or "" if they can: it is no house, the player is inside it and
-## their move-in would change its room, it is theirs already, it is full, or another household
-## lives there.
+## their move-in would change its room, it is theirs already, it is full, another household
+## lives there, or others who don't live there work there.
 func why_not_live_in(npc: Npc, house: Building) -> String:
 	var capacity: int = BuildingTypes.TYPES[house.type]["residents"]
 	if capacity == 0:
@@ -44,7 +45,30 @@ func why_not_live_in(npc: Npc, house: Building) -> String:
 		return "There is no room: %d live there." % others.size()
 	if not others.is_empty() and not others.any(npc.is_household_with):
 		return "Only one household lives in a house."
+	return _why_others_work_there(npc, house)
+
+
+## "Others work there" if villagers who don't live in `house` work there, besides `npc`, else "".
+func _why_others_work_there(npc: Npc, house: Building) -> String:
+	var outsiders := workers_of(house).filter(
+		func(worker: Npc) -> bool: return worker != npc and worker.house != house
+	)
+	return "Others work there: %s." % _names(outsiders) if not outsiders.is_empty() else ""
+
+
+## Why `npc` can't work in `building`, or "" if they can: others live there and they don't.
+func why_not_work_in(npc: Npc, building: Building) -> String:
+	if npc.house != building and not residents_of(building).is_empty():
+		return "Only those who live in the %s work there." % building.type_data()["name"]
 	return ""
+
+
+## Makes `building` the workplace of `npc`. Returns why they can't, or "".
+func give_work(npc: Npc, building: Building) -> String:
+	var reason := why_not_work_in(npc, building)
+	if reason == "":
+		npc.workplace = Workplace.of_building(building)
+	return reason
 
 
 ## Makes `house` the home of `npc` (they leave their old one) and its yard their anchor, and the
@@ -53,6 +77,7 @@ func why_not_live_in(npc: Npc, house: Building) -> String:
 func move_in(npc: Npc, house: Building) -> String:
 	var reason := why_not_live_in(npc, house)
 	if reason == "":
+		move_out(npc)
 		npc.house = house
 		npc.anchor = house.yard()
 		var own_room := _own_interior_for(npc, house)
@@ -72,9 +97,18 @@ func _own_interior_for(npc: Npc, house: Building) -> String:
 	return sheet.get(VillagerRules.HOME_INTERIOR_KEY, "")
 
 
-## They have no house. Their anchor stays where it was.
+## They have no house. Their anchor stays where it was. If they worked in it and others still live
+## there, they work there no more.
 func move_out(npc: Npc) -> void:
+	var old_house := npc.house
 	npc.house = null
+	if (
+		old_house != null
+		and npc.workplace != null
+		and npc.workplace.building == old_house
+		and not residents_of(old_house).is_empty()
+	):
+		npc.workplace = null
 
 
 ## A building is gone: nobody lives or works in it any more.
@@ -140,8 +174,8 @@ func near(building: Building) -> Array[Npc]:
 
 
 ## What the hammer's menu offers on `building`, each `{text, npc, is_home}`: giving it as a home
-## to the villagers near that may live in it, then as a workplace to the ones near who don't work
-## in it already.
+## to the villagers near that may live in it, then as a workplace to the ones near who may work
+## there and don't already.
 func offers(building: Building) -> Array[Dictionary]:
 	var listed: Array[Dictionary] = []
 	var nearby := near(building)
@@ -150,7 +184,8 @@ func offers(building: Building) -> Array[Dictionary]:
 			var verb := "Give to %s" if npc.house == null else "Move %s in"
 			listed.append({"text": verb % npc.name, "npc": npc, "is_home": true})
 	for npc in nearby:
-		if npc.workplace == null or npc.workplace.building != building:
+		var is_there := npc.workplace != null and npc.workplace.building == building
+		if not is_there and why_not_work_in(npc, building) == "":
 			listed.append({"text": "%s works here" % npc.name, "npc": npc, "is_home": false})
 	return listed
 
@@ -161,13 +196,14 @@ func accept(offer: Dictionary, building: Building) -> void:
 	if offer["is_home"]:
 		move_in(npc, building)
 	else:
-		npc.workplace = Workplace.of_building(building)
+		give_work(npc, building)
 
 
 ## Gives the villager of data/villagers.cfg who just came into the world the house and the
 ## workplace their sheet names: a house where family of theirs lives, else the nearest one of
-## the type with room, and the nearest building of the workplace's type, within `home_search`
-## tiles. Where none stands they have none (and a spot has no place until it is given).
+## the type with room, and as the workplace their own house if it is of the workplace's type,
+## else the nearest building of that type they may work in, within `home_search` tiles. Where
+## none stands they have none (and a spot has no place until it is given).
 func settle(npc: Npc, world: World) -> void:
 	var sheet := _npcs.villagers.villager(npc.id)
 	var search := _npcs.rules.behaviour("home_search")
@@ -180,11 +216,19 @@ func settle(npc: Npc, world: World) -> void:
 			move_in(npc, house)
 	var workplace_type := StringName(sheet.get(VillagerRules.WORKPLACE_BUILDING_KEY, ""))
 	if workplace_type != &"":
-		var workplace := _nearest(
-			npc, workplace_type, world, search, func(_b: Building) -> bool: return true
+		var workplace: Building = (
+			npc.house if npc.house != null and npc.house.type == workplace_type else null
 		)
+		if workplace == null:
+			workplace = _nearest(
+				npc,
+				workplace_type,
+				world,
+				search,
+				func(building: Building) -> bool: return why_not_work_in(npc, building) == ""
+			)
 		if workplace != null:
-			npc.workplace = Workplace.of_building(workplace)
+			give_work(npc, workplace)
 
 
 ## The house of the type where a household member of `npc` lives, if they can join.

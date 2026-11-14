@@ -95,6 +95,16 @@ func test_work_here_at_a_building_gives_it_as_the_workplace() -> void:
 	assert_eq(lines, ["Antje Boysen works at the Kate (%s)" % _house.origin] as Array[String])
 
 
+func test_work_here_in_a_house_others_live_in_says_why_not() -> void:
+	_console.run("home antje here")
+
+	assert_eq(
+		_console.run("work momme here"),
+		["Only those who live in the Kate work there."] as Array[String]
+	)
+	assert_null(_momme.workplace)
+
+
 func test_work_here_on_open_ground_gives_the_spot_the_sheet_names() -> void:
 	var spot := _house.yard() + Vector2(30.0, 0.0)
 	_state.player.position = spot

@@ -76,7 +76,8 @@ func test_a_villager_the_house_would_refuse_is_not_offered_it() -> void:
 
 	assert_eq(
 		_texts(_state.homes.offers(_house)),
-		["Antje Boysen works here", "Momme Ketels works here"] as Array[String]
+		["Antje Boysen works here"] as Array[String],
+		"Momme lives elsewhere, so he may not work where Antje lives (#69)"
 	)
 
 
