@@ -308,6 +308,8 @@ func _check_stacks(owner: Dictionary, key: String, slot_count: int, path: String
 		var limit: int = ItemTypes.TYPES[StringName(item)]["stack_limit"]
 		if count < 1 or count > limit:
 			_report(slot_path, "count %d is not between 1 and %d" % [count, limit])
+		if stack.has("state") and not (stack["state"] is Dictionary and count == 1):
+			_report(slot_path, "a state belongs to one item and is a dictionary")
 
 
 # --- The player, animals and villagers ---

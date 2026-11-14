@@ -4,7 +4,9 @@ extends RefCounted
 ## WorldObject `storage`). Plain state; screens only show it and send it actions.
 ##
 ## A slot is empty (`{}`) or a stack `{item: StringName, count: int}`: an item id from
-## ItemTypes and at most its stack limit.
+## ItemTypes and at most its stack limit. A stack may also carry a `state`: a dictionary of what
+## is special about this one item (a candle's burnt minutes). A stack with a state
+## is one item, never merged with another, and its state goes along when it moves.
 ##
 ## Every operation that changes the slots finishes the whole change first and only then sends
 ## `changed`, once per container involved, so a listener never sees an item twice or missing. An
@@ -69,17 +71,18 @@ func hold_notifications(work: Callable) -> void:
 ## Puts `count` of `item` in: first onto stacks of it that have room, then into free slots in
 ## the order of `free_slots` (empty: `_free_slot_order`). Returns how many did not fit (all of
 ## them for a count below 1).
-func add(item: StringName, count: int, free_slots: Array = []) -> int:
+func add(item: StringName, count: int, free_slots: Array = [], state := {}) -> int:
 	if count < 1:
 		return count
-	var left := _add(item, count, free_slots)
+	var left := _add(item, count, free_slots, state)
 	_notify()
 	return left
 
 
-## Whether `add` would take all of `items` (item id to count) at once.
-func can_add(items: Dictionary) -> bool:
-	return can_exchange({}, items)
+## Whether `add` would take all of `items` (item id to count) at once, with the `state` if they
+## are one item that has one.
+func can_add(items: Dictionary, state := {}) -> bool:
+	return can_exchange({}, items, state)
 
 
 ## Takes up to `count` of `item` out, from the last slots first. Returns how many were taken.
@@ -110,14 +113,14 @@ func _new_trial() -> ItemSlots:
 
 
 ## Whether `exchange` would work.
-func can_exchange(paid: Dictionary, received: Dictionary) -> bool:
+func can_exchange(paid: Dictionary, received: Dictionary, received_state := {}) -> bool:
 	var trial := _new_trial()
 	trial.load_slots(slots_to_data())
 	for item: StringName in paid:
 		if paid[item] < 1 or trial._remove(item, paid[item]) < paid[item]:
 			return false
 	for item: StringName in received:
-		if received[item] < 1 or trial._add(item, received[item], []) > 0:
+		if received[item] < 1 or trial._add(item, received[item], [], received_state) > 0:
 			return false
 	return true
 
@@ -134,6 +137,18 @@ func exchange(paid: Dictionary, received: Dictionary) -> bool:
 		_add(item, received[item], [])
 	_notify()
 	return true
+
+
+## Gives the item in `slot` this state, or none (an item as it came, which stacks again). Does
+## nothing for an empty slot.
+func set_state(slot: int, state: Dictionary) -> void:
+	if not has_slot(slot) or slots[slot].is_empty():
+		return
+	if state.is_empty():
+		slots[slot].erase("state")
+	else:
+		slots[slot]["state"] = state
+	_notify()
 
 
 ## Puts a single `item` in `slot`, replacing what is there; NONE empties the slot. For the
@@ -163,8 +178,9 @@ func move_to(from: int, target: ItemSlots, to: int) -> bool:
 		or slots[from].is_empty()
 	):
 		return false
-	var is_swap := not target.slots[to].is_empty() and item_in(from) != target.item_in(to)
-	if item_in(from) == target.item_in(to):
+	var is_merge := item_in(from) == target.item_in(to) and _is_plain(from) and target._is_plain(to)
+	var is_swap := not target.slots[to].is_empty() and not is_merge
+	if is_merge:
 		var limit: int = ItemTypes.TYPES[item_in(from)]["stack_limit"]
 		var moved := mini(slots[from]["count"], limit - target.slots[to]["count"])
 		target.slots[to]["count"] += moved
@@ -188,7 +204,9 @@ func send(from: int, target: ItemSlots, free_slots: Array = [], most := 0) -> bo
 		return false
 	var count: int = slots[from]["count"]
 	var sent := mini(count, most) if most > 0 else count
-	var left: int = count - sent + target._add(slots[from]["item"], sent, free_slots)
+	var left: int = (
+		count - sent + target._add(slots[from]["item"], sent, free_slots, _state_in(from))
+	)
 	slots[from]["count"] = left
 	if left == 0:
 		slots[from] = {}
@@ -202,7 +220,7 @@ func send(from: int, target: ItemSlots, free_slots: Array = [], most := 0) -> bo
 func move_into(from: int, targets: Array) -> bool:
 	if not has_slot(from) or slots[from].is_empty():
 		return false
-	var left := _put(slots[from]["item"], slots[from]["count"], targets, targets)
+	var left := _put(slots[from]["item"], slots[from]["count"], targets, targets, _state_in(from))
 	slots[from]["count"] = left
 	if left == 0:
 		slots[from] = {}
@@ -214,9 +232,7 @@ func move_into(from: int, targets: Array) -> bool:
 func slots_to_data() -> Array:
 	var slots_data: Array = []
 	for stack in slots:
-		slots_data.append(
-			null if stack.is_empty() else {"item": str(stack["item"]), "count": stack["count"]}
-		)
+		slots_data.append(null if stack.is_empty() else _stack_to_data(stack))
 	return slots_data
 
 
@@ -235,6 +251,27 @@ func load_slots(slots_data: Array) -> void:
 				"Bad count in save: %d %s" % [count, item]
 			)
 			slots[slot] = {"item": item, "count": count}
+			if stack.has("state"):
+				assert(count == 1, "A stack with a state is one item in save: %s" % item)
+				slots[slot]["state"] = stack["state"].duplicate(true)
+
+
+## What the slot's stack is saved as; its state is a copy.
+func _stack_to_data(stack: Dictionary) -> Dictionary:
+	var data := {"item": str(stack["item"]), "count": stack["count"]}
+	if stack.has("state"):
+		data["state"] = stack["state"].duplicate(true)
+	return data
+
+
+## Whether the stack in `slot` has no state, so it merges with others of its item.
+func _is_plain(slot: int) -> bool:
+	return not slots[slot].has("state")
+
+
+## The state of the stack in `slot`, empty if it has none.
+func _state_in(slot: int) -> Dictionary:
+	return slots[slot].get("state", {})
 
 
 ## The slots to fill when an item has no stack to join, in order of preference.
@@ -244,24 +281,26 @@ func _free_slot_order() -> Array:
 
 ## `add` without the notification, for the operations that send `changed` once when they are
 ## done.
-func _add(item: StringName, count: int, free_slots: Array) -> int:
+func _add(item: StringName, count: int, free_slots: Array, state := {}) -> int:
 	return _put(
 		item,
 		count,
 		range(slots.size()),
-		free_slots if not free_slots.is_empty() else _free_slot_order()
+		free_slots if not free_slots.is_empty() else _free_slot_order(),
+		state
 	)
 
 
 ## Puts `count` of `item` onto stacks of it in `stack_slots` that have room, then into the empty
-## ones of `free_slots` in order. Returns how many did not fit. No notification.
-func _put(item: StringName, count: int, stack_slots: Array, free_slots: Array) -> int:
-	var limit: int = ItemTypes.TYPES[item]["stack_limit"]
+## ones of `free_slots` in order. Returns how many did not fit. No notification. An item with a
+## `state` (then `count` is 1) joins no stack: it takes an empty slot of its own.
+func _put(item: StringName, count: int, stack_slots: Array, free_slots: Array, state := {}) -> int:
+	var limit: int = 1 if not state.is_empty() else ItemTypes.TYPES[item]["stack_limit"]
 	var left := count
 	for slot: int in stack_slots:
-		if left == 0:
+		if left == 0 or not state.is_empty():
 			break
-		if item_in(slot) == item:
+		if item_in(slot) == item and _is_plain(slot):
 			var moved := mini(left, limit - slots[slot]["count"])
 			slots[slot]["count"] += moved
 			left -= moved
@@ -271,22 +310,26 @@ func _put(item: StringName, count: int, stack_slots: Array, free_slots: Array) -
 		if slots[slot].is_empty():
 			var moved := mini(left, limit)
 			slots[slot] = {"item": item, "count": moved}
+			if not state.is_empty():
+				slots[slot]["state"] = state
 			left -= moved
 	return left
 
 
-## `remove` without the notification.
+## `remove` without the notification. The stacks with a state go last, so that what is taken
+## for a recipe is never the burnt candle before a fresh one.
 func _remove(item: StringName, count: int) -> int:
 	var left := count
-	for slot in range(slots.size() - 1, -1, -1):
-		if left == 0:
-			break
-		if item_in(slot) == item:
-			var taken := mini(left, slots[slot]["count"])
-			slots[slot]["count"] -= taken
-			left -= taken
-			if slots[slot]["count"] == 0:
-				slots[slot] = {}
+	for is_plain in [true, false]:
+		for slot in range(slots.size() - 1, -1, -1):
+			if left == 0:
+				break
+			if item_in(slot) == item and _is_plain(slot) == is_plain:
+				var taken := mini(left, slots[slot]["count"])
+				slots[slot]["count"] -= taken
+				left -= taken
+				if slots[slot]["count"] == 0:
+					slots[slot] = {}
 	return count - left
 
 

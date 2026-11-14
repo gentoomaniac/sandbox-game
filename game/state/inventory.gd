@@ -123,15 +123,15 @@ static func from_dict(data: Dictionary) -> Inventory:
 ## free backpack slots, and the selected slot only if it is empty and nothing else is left (so an
 ## empty hand stays empty after a harvest; a held stack of the item still fills in turn). With
 ## `free_slots` given (a chest take) the plain order applies.
-func _add(item: StringName, count: int, free_slots: Array) -> int:
+func _add(item: StringName, count: int, free_slots: Array, state := {}) -> int:
 	if not free_slots.is_empty():
-		return super(item, count, free_slots)
+		return super(item, count, free_slots, state)
 	var hotbar := range(HOTBAR_SIZE)
 	var backpack := range(HOTBAR_SIZE, SLOT_COUNT)
 	var free_hotbar := hotbar.filter(func(slot: int) -> bool: return slot != selected_slot)
-	var left := _put(item, count, hotbar, free_hotbar)
-	left = _put(item, left, backpack, backpack)
-	return _put(item, left, [], [selected_slot])
+	var left := _put(item, count, hotbar, free_hotbar, state)
+	left = _put(item, left, backpack, backpack, state)
+	return _put(item, left, [], [selected_slot], state)
 
 
 func _new_trial() -> ItemSlots:
