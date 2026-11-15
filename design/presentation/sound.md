@@ -66,7 +66,30 @@ MusicMoment and a key of the piece's section each), and stems (AudioStreamSynchr
   a flat Wadden Sea shore: no surf and no boom, a wave every five to eight seconds that swells
   over a second or two as hushing wash, fizzes with foam at its crest and runs back with a thin
   patter over the mud, over a faint steady hush of the sea beyond (about 10 dB between the quiet
-  and the wave). Plays on the Ambience bus; see the nearness below.
+  and the wave). Plays on the Ambience bus.
+  **Heard from the shore** (task 97, the user, 2026-11-15, "the water sounds go out of the music;
+  instead we should hear waves near the shore getting quieter with distance"; `SeaSounds`,
+  `SeaSearch`, `[sea]` of `data/ambience.cfg`): one plain loop for the world, started while the
+  waves are audible. Its level is `level` (0.8) within `near_tiles` (4) of the water and falls to
+  nothing at `reach_tiles` (72, a little over two chunks; the chunks around the player stay loaded
+  to three) as (1 - share of the way)^`curve` (2), so it is a quarter at 38 tiles. The nearest
+  water is looked for every `look_seconds` (0.4) on a grid of `search_step_tiles` (6) round the
+  player, nearest first, the first sample in water refined back along its ray to the tile, never
+  over every tile; chunks not loaded are no water. A worst-case search (all mud, no water in
+  reach) is about 2 ms, an inland one with nothing in reach under 1 ms, one at the shore 0.1 to
+  0.2 ms: four tenths of a percent of a core, and no frame is lengthened by more than a ms or
+  two. The loop is placed `pan_width_tiles` (20) to the side of the player by the way to the water
+  (pan at most `pan_max` 0.8, none right at the edge and none for water due north or south), with
+  no distance attenuation of the engine (`attenuation` 0 of `start_loop`: the level is the
+  rule's), and fades to each level over `fade_seconds` (1.2). Defaults the user has not settled,
+  all in `[sea]`: **the tide** (`Tide.level`): flooded mud counts as sea (`flooded_mud_is_sea`
+  1), so the water is nearer at high water, and at low water the level is `low_water_share` (0.4)
+  of itself, the sea far out over the mud and the tideways: a far quiet hush; **storms** (the
+  weather's `storm`, 0 to 1): up to `storm_gain` (0.4) louder and `storm_reach` (0.3) further, so
+  a storm's reach is 94 tiles, within what is loaded (no rougher sound yet); **indoors** it is
+  `indoors_share` (0.6) of its level at the house's door (the weather's tile), on top of the
+  Ambience bus's low-pass and -24 dB, so it is a faint, dull wash; **panning** as above. The sea
+  goes out of the music (task 15, separately).
 - **Fire:** `fire_crackle_loop` (task 172, `tools/audio/fire.py`), an 8-second circle of
   crackling only, no bed of noise under it (the user, 2026-11-11): fine flecks of the embers
   all through, ticks and snaps of all sizes over them (short, bright and dry, nothing low or

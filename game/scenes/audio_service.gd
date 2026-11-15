@@ -257,14 +257,21 @@ func _sweep_pan(bus_index: int, player: Node, direction: float) -> void:
 	_pan_tweens[bus_index].tween_property(panner, "pan", direction * PAN_REACH, seconds)
 
 
-## Starts a looping sound event at `level` (0 to 1) and returns its handle, to fade or stop it.
+## Starts a looping sound event at `level` (0 to 1) and returns its handle, to fade or stop it. A
+## positional loop gets quieter with the distance to the listener by `attenuation` (1 evenly to
+## `max_distance`, higher is steeper; 0 not at all, so only its side is heard: the waves).
 func start_loop(
-	event: StringName, position: Variant = null, level := 1.0, max_distance := MAX_DISTANCE
+	event: StringName,
+	position: Variant = null,
+	level := 1.0,
+	max_distance := MAX_DISTANCE,
+	attenuation := 1.0
 ) -> SoundLoop:
 	var player: Node = AudioStreamPlayer.new() if position == null else AudioStreamPlayer2D.new()
 	player.process_mode = Node.PROCESS_MODE_ALWAYS
 	if position != null:
 		player.max_distance = max_distance
+		player.attenuation = attenuation
 	(self if position == null else _world_root).add_child(player)
 	_start(player, event, position, false)
 	return SoundLoop.new(player, _rules.event(event)["volume_db"], level)

@@ -37,6 +37,7 @@ var _audio := AudioService.new()
 var _music := MusicPlayer.new()
 var _sounds := GameSounds.new()
 var _ambience := AmbienceSounds.new()
+var _sea_sounds := SeaSounds.new()
 var _menu: PauseMenu
 ## Asks the player what the game must not decide: a save with content the game no longer has, a
 ## save that is refused, a save that failed before quitting.
@@ -784,6 +785,8 @@ func _start_sounds() -> void:
 	_sounds.watch_panel(_storage_screen.is_open, &"chest_open", &"chest_close")
 	add_child(_ambience)
 	_ambience.listen(_audio, _state, _wildlife, _weather_view)
+	add_child(_sea_sounds)
+	_sea_sounds.listen(_audio, _state)
 
 
 ## The game F8 has just loaded, else the newest save that can be loaded, or a new one if there is
