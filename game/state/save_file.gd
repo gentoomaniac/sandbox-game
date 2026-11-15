@@ -22,9 +22,10 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 52
-## The oldest version we still upgrade.
-const OLDEST_VERSION := VERSION - 10
+const VERSION := 53
+## The oldest version we still upgrade. Eleven steps back for the moment: the commit that drops the
+## upgrade from version 42 follows the one that raised VERSION, and makes it ten again.
+const OLDEST_VERSION := VERSION - 11
 ## The world's save path: its saves are named after it (see SaveList).
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
@@ -239,6 +240,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_50(game)
 	if version <= 51:
 		_upgrade_from_version_51(game)
+	if version <= 52:
+		_upgrade_from_version_52(game)
 
 
 ## Version 42 counted the wear of desire paths in steps (#61): a tile with 8 steps was trodden and
@@ -353,3 +356,17 @@ static func _upgrade_from_version_50(game: Dictionary) -> void:
 ## Version 51 had no quests (#12): none is posted or taken, and none was done.
 static func _upgrade_from_version_51(game: Dictionary) -> void:
 	game["quests"] = {"open": [], "done": {}, "ended": {}}
+
+
+## Version 52 had no friendship besides the opinion (#48): no villager has taken a gift, counted a
+## chat, moved the opinion by an action or asked for a word rating, and none is bound to the player.
+static func _upgrade_from_version_52(game: Dictionary) -> void:
+	for npc: Dictionary in game["npcs"]:
+		npc["action_day"] = 0
+		npc["action_moved_today"] = 0
+		npc["last_gift_day"] = 0
+		npc["chat_counted_day"] = 0
+		npc["rating_day"] = 0
+		npc["ratings_today"] = 0
+		npc["rating_moved_today"] = 0
+		npc["bond"] = "none"

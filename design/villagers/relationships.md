@@ -18,7 +18,11 @@ pages of [villagers](README.md) as "as built", as the pages of [gossip](gossip.m
   `action_moved_today`, `rating_day` and `ratings_today`, and `bond` (`none`, the only word of
   `FriendshipRules.BONDS`). `Npc.change_friendship(points, today, friendship, bounds)` moves the
   opinion within the cap of the actions, `action_daily_cap_points` (60) of `[caps]` of
-  `data/friendship.cfg`, which is counted apart from the stories' cap. Not saved yet (step 4).
+  `data/friendship.cfg`, which is counted apart from the stories' cap.
+- Step 4: those fields are saved, version 53; `_upgrade_from_version_52` gives an old save the
+  defaults (days 0, counts 0, `bond` none) and leaves the points as they are. `SaveValidator`
+  checks days and counts are not negative, what the actions moved today is within the cap and the
+  bond is known.
 
 ## The user's words
 

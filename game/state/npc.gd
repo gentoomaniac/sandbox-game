@@ -104,6 +104,8 @@ var chat_counted_day := 0
 ## The day word ratings are counted for and how many were asked on it (see NpcDialogue).
 var rating_day := 0
 var ratings_today := 0
+## How far the ratings have moved the opinion on that day, up and down (see TalkFriendship).
+var rating_moved_today := 0
 ## What binds them to the player, one of FriendshipRules BONDS.
 var bond := FriendshipRules.BOND_NONE
 ## Whether NpcDialogue is summing up `uncompacted_lines`. Not saved.
@@ -358,6 +360,14 @@ func to_dict() -> Dictionary:
 		"opinion": opinion,
 		"opinion_day": opinion_day,
 		"opinion_moved_today": opinion_moved_today,
+		"action_day": action_day,
+		"action_moved_today": action_moved_today,
+		"last_gift_day": last_gift_day,
+		"chat_counted_day": chat_counted_day,
+		"rating_day": rating_day,
+		"ratings_today": ratings_today,
+		"rating_moved_today": rating_moved_today,
+		"bond": str(bond),
 		"stories": stories.map(_story_to_saved),
 		"topics": topics.duplicate(),
 		"day_plans":
@@ -404,6 +414,14 @@ static func from_dict(data: Dictionary) -> Npc:
 	npc.opinion = int(data["opinion"])
 	npc.opinion_day = int(data["opinion_day"])
 	npc.opinion_moved_today = int(data["opinion_moved_today"])
+	npc.action_day = int(data["action_day"])
+	npc.action_moved_today = int(data["action_moved_today"])
+	npc.last_gift_day = int(data["last_gift_day"])
+	npc.chat_counted_day = int(data["chat_counted_day"])
+	npc.rating_day = int(data["rating_day"])
+	npc.ratings_today = int(data["ratings_today"])
+	npc.rating_moved_today = int(data["rating_moved_today"])
+	npc.bond = StringName(data["bond"])
 	npc.remembered_lines = mini(int(data["remembered_lines"]), npc.chat_history.size())
 	return npc
 

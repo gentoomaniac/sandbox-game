@@ -640,6 +640,7 @@ func _check_npc(npc: Variant, path: String) -> void:
 		_check_texts(npc, "samples", path)
 	for key in ["remembered_lines", "opinion", "opinion_day", "opinion_moved_today"]:
 		_field(npc, key, Kind.WHOLE, path)
+	_check_friendship(npc, path)
 	for key in ["position", "anchor"]:
 		_field(npc, key, Kind.POINT, path)
 	_check_places(npc, path)
@@ -703,6 +704,23 @@ func _check_stories(npc: Dictionary, path: String) -> void:
 		var weight: Variant = _field(story, "weight", Kind.TEXT, story_path)
 		if weight != null and not MemoryWeight.WORDS.has(weight):
 			_report(story_path, "unknown weight %s" % weight)
+
+
+## What a villager has of the player's friendship besides the opinion: days and counts that are not
+## negative, what the actions moved today within its cap, and a known bond.
+func _check_friendship(npc: Dictionary, path: String) -> void:
+	for key in ["last_gift_day", "chat_counted_day", "action_day", "rating_day", "ratings_today"]:
+		var value: Variant = _field(npc, key, Kind.WHOLE, path)
+		if value != null and value < 0:
+			_report(_join(path, key), "should not be negative")
+	_field(npc, "rating_moved_today", Kind.WHOLE, path)
+	var moved: Variant = _field(npc, "action_moved_today", Kind.WHOLE, path)
+	var cap := FriendshipRules.default_rules().action_daily_cap()
+	if moved != null and absi(moved) > cap:
+		_report(_join(path, "action_moved_today"), "should be within %d" % cap)
+	var bond: Variant = _field(npc, "bond", Kind.TEXT, path)
+	if bond != null and not FriendshipRules.BONDS.has(StringName(bond)):
+		_report(_join(path, "bond"), "unknown bond %s" % bond)
 
 
 ## The model's plans for the days of a villager: each with at least one entry `[activity, minute,
