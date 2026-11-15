@@ -29,9 +29,9 @@ random.
   the shop hours and offers a trading dialog (barter, no money yet); the shop sells seeds, so the
   farm can always start again (tasks 240 and 235).
 
-Task 238's plan (the path search, its limits, chunks and doors) and task 239's plan (the
-routine format and the routines themselves) are written here, for the user's approval before
-code.
+Task 238's plan (the path search, its limits, chunks and doors) is written here, and task 239's
+plan (the routine format and the routines themselves, "Routines: the plan" at the end), for the
+user's approval before code.
 
 ## Finding the way: the plan (task 238)
 
@@ -275,3 +275,339 @@ The user answered them on 2026-11-14: gates are passed as the player does, no di
 with no way waits and looks again, nobody collides with anyone, the costs as proposed (to be
 changed with mud and roads later, issues #61 and #62), the numbers in `[travel]`, night is the
 routines' and off-screen travel is #68.
+
+## Routines: the plan (task 239, issue #7)
+
+Written 2026-11-15, for the user's approval before code. It builds on the homes and workplaces
+(task 228, #69), the path search and trips (#6, #68) and their API (`walk_to`, `place`,
+`trip_arrived`, `trip_blocked`, [travel.md](travel.md)). It needs no change to a trip itself.
+
+### The idea
+
+A routine is a list of steps for a kind of day: **from this time, be at this place, doing this**.
+The place is a kind (`home`, `work`, `church`, `meeting`), never a tile: the villager's own home
+and workplace say where it is. So a handful of routines serve every villager. The routine moves
+the villager's anchor: at each step the anchor is the place, and the villager strolls about it as
+today (`Npcs._walk`), so the stroll code stays. A routine is only a plan: where the villager *is*
+is where its walks have taken it.
+
+### The format (`data/routines.cfg`, read by `RoutineRules`)
+
+Same syntax as the other data files, with a comment for every key.
+
+```
+[rules]
+; Each villager leaves up to this many minutes early, a fixed number from its name, so that
+; they do not all start in the same minute (the searches of a crowd take seconds).
+spread_minutes=10
+; A way is this much longer than the straight line (tiles along x plus tiles along y).
+detour_factor=1.3
+; Minutes to spare on top of the estimated walk.
+arrive_margin_minutes=3
+; It rains for the routine when the mean rain of the hour is at least this (0 to 1).
+rain_hour_limit=0.25
+; Steps in the open end this many minutes after sunset and may start this many after sunrise.
+dark_from_sunset_minutes=0
+light_from_sunrise_minutes=0
+; How far from their home the church (and the meeting place) is looked for, in tiles.
+place_search=200.0
+
+[places]
+; The tiles about the place a villager keeps to, and how often it strolls instead of standing.
+home={"radius": 3.0, "walk_chance": 0.5}
+work={"radius": 1.5, "walk_chance": 0.3}
+church={"radius": 2.0, "walk_chance": 0.2}
+meeting={"radius": 4.0, "walk_chance": 0.7}
+
+[doings]
+; A doing is a word for the console and the prompt. These stand still (no stroll):
+still=["sleep", "eat", "pray"]
+
+[farmer]
+works_in_rain=false
+; [time, place, doing]. The time is "HH:MM" on the game clock. The steps of a plan go up in time;
+; a day begins with the last step of the day before, so sleep runs over midnight.
+weekday=[
+	["05:30", "home", "eat"],
+	["06:15", "work", "work"],
+	["12:00", "home", "eat"],
+	["13:00", "work", "work"],
+	["18:00", "home", "eat"],
+	["19:00", "meeting", "talk"],
+	["20:00", "home", "rest"],
+	["21:30", "home", "sleep"],
+]
+saturday=[...]   ; optional: the weekday's plan if left out
+sunday=[...]
+```
+
+- **A step's place** is one of `home`, `work`, `church`, `meeting`. `doing` is free text (shown by
+  the console, told to the language model); only the `still` ones change what the villager does.
+- **Plans:** `weekday`, `saturday` (optional, so the Krug evenings of the sheets need no copy) and
+  `sunday`, by `GameClock.weekday` (question 1).
+- **Rain and the dark** are rules in the routine's code, not steps in the plan (below); the only
+  key is `works_in_rain` (default false).
+- Times are fixed clock times. Only the dark follows the sun (question 6).
+- `RoutineRules.problems` checks the file: places and doings known, times going up, each plan
+  ending in `sleep`, and the routines that a sheet or a trade names exist. A test runs it on the
+  real file.
+
+### The routines
+
+Each is written once, by hand, from the `day` texts of the villagers who use it, and fits them as
+far as places and hours can. The numbers are the first ones, to tune by watching (question 6).
+
+| Routine | Weekday | Saturday | Sunday |
+|---|---|---|---|
+| **farmer** (farmhand, shepherd, dyke worker, peat cutter, day labourer, thatcher, carter) | eat 5:30; work 6:15 (field, barn); home 12:00 eat; work 13:00; home 18:00 eat; meeting 19:00; rest 20:00; sleep 21:30 | work to 16:00; home; meeting 18:30 (the Krug) to 22:00 | church 9:30; home 12:00 eat; meeting 14:00; home 17:00; sleep 21:30 |
+| **fisher** (fisherman, fisherman's wife) | eat 5:00; work 5:45 (the landing); home 13:00 eat; mend nets at home 14:00; meeting 18:30; sleep 21:30 | meeting 18:00 to 22:30 | church 9:30; home 12:00 eat; meeting 14:00; sleep 21:30 |
+| **miller** | eat 5:30; work 6:30 (the mill); home 12:00 eat; work 13:00; home 18:00; sleep 21:30 | meeting 18:30 to 22:00 | church 9:30; home; sleep |
+| **keeper of the house** (farmer's wife, dairymaid, spinner, weaver, seamstress, washerwoman, cooper, tailor) | work 5:00 (milking); eat 6:30; work 7:30; eat 12:00; work 13:00; work 17:30 (milking); eat 18:30; rest 20:00; sleep 21:30 | the same | church 9:30; home 12:00 eat; sleep |
+| **shopkeeper** (for #240) | eat 6:30; work 7:30 (the shop); home 12:00 eat; work 13:00; home 18:00 eat; meeting 19:00; sleep 22:00 | work to 16:00; meeting 18:30 | church 9:30; home; meeting 14:00; sleep 22:00 |
+
+The keeper's `work` is mostly her own house (the dairy): the yard of her home, so no walk, only a
+different doing.
+
+### Which places are where
+
+Each villager's places are resolved when a step starts (`RoutinePlaces`):
+
+- **home:** the yard of their house (`house.yard()`). A villager without a house has no routine
+  (below).
+- **work:** their workplace (`Workplace.spot()`: the yard of a building, or the tile of a spot).
+  With no workplace: `home`.
+- **church:** the yard of the church nearest their home within `place_search`. Where none
+  stands, the step is dropped (the step before goes on).
+- **meeting:** the place the village names for it (task 234: the green, the Krug); until there
+  is one, the yard of the church; with no church the step is dropped (question 3).
+- **In the open** is a step at the meeting place, or at a work spot that is no building (a field,
+  the landing). Work in a building (the barn, the mill, the shop, their own house) is under a roof.
+
+### Rain and the dark
+
+Worked out for the step that is on, never written into the plan:
+
+- **Dark:** from `dark_from_sunset_minutes` after sunset to `light_from_sunrise_minutes` after
+  sunrise (`Sun`: the winter day is short), a step in the open becomes `home`, doing `rest`. A
+  farmer in January is home by sunset, not at 18:00, and the Saturday at the Krug is not in
+  winter.
+- **Rain:** while `Weather.rain_in_hour` (the mean of the hour, so it does not flicker from minute
+  to minute; one region, so one value for everybody) is at least `rain_hour_limit`, a step in the
+  open becomes `home` too, unless the routine has `works_in_rain=true` (the fisher: it is the sea).
+- Nobody knows it will rain, so they leave when it does and come late if far. Inside sooner is
+  automatic: the step stays, only its place is home.
+
+### Leaving in time
+
+The step's time is the time to be there. A villager leaves at
+
+    time of the step - walk - spread offset - arrive_margin_minutes
+
+- **walk** is an estimate: the tiles in x plus the tiles in y between the place of the step
+  before and the new place, times `detour_factor`, over the pace. A villager walks one tile a
+  game minute (`walk_speed` 1.5 tiles a second, 1.5 game minutes a second: computed from the two
+  numbers, not written down). The real path is longer or shorter; the aim is "there within a few
+  minutes of the hour", not to the minute. A late villager is late; nothing is made up.
+- **The offset** is a number from 0 to `spread_minutes` made from the name (stable, not saved):
+  each villager is early by its own few minutes, so 155 do not search in the same second.
+- **The walk is cut to the length of the step before:** a way of two hours takes the whole step
+  before (they are on their way all the time) and no more.
+- A step with no walk (home to home) sends nobody.
+
+### At a place
+
+On arrival (`trip_arrived`) the anchor becomes the place and the radius that of the place kind
+(`[places]`; a new `Npc.keep_radius`, not saved, instead of the global `anchor_radius`, for a
+villager with a routine). The villager then stands and strolls about it as today (`walk_chance`), or
+stands still if its doing is in `still`. A `work` step stands near its spot and now and then takes
+a step: a farmer about the field spot, a shopkeeper within a tile or two of the counter. Anything
+better than that (an animation at the work spot, going in to sleep) is not new here: going in is task
+229 (`sleep` and `eat` at `home` then mean inside). Until then they stand in the yard.
+
+### Who has which routine
+
+- **A sheet** may name `routine="farmer"` (a new key of `VillagerRules`; the test of the sheets
+  checks the name is in `data/routines.cfg`) and `skips=["church"]` (steps at those places are
+  dropped: Momme goes to church only at Easter and Christmas, question 4).
+- **A made-up villager** gets the routine of their trade: a third entry for each trade in the tables
+  of `data/npcs.cfg`, next to the trade's `day` text, so both are written side by side:
+  `["a farmhand", "Works on a farm ...", "farmer"]`. The trade text is saved (`Npc.trade`), so no
+  routine is saved: `RoutineRules.routine_of(npc)` finds it again by the sheet's id or the trade.
+  A trade the tables no longer have (an old save) gets `keeper_of_the_house`. A test: every
+  trade of the tables has a known routine.
+- **The eight sheets:** `antje` keeper of the house, `hinrich` and `boy` farmer, `momme` and `inken`
+  fisher, `ocke` and `gesche` miller (Gesche works the mill with him), `kerrin` keeper of the
+  house (her dawn walk on the dyke and her visits are only in her `day` text).
+- **No routine:** a villager with no house keeps the anchor rule as today (the yard of the nearest
+  building or fireplace, a stroll within `anchor_radius`, still at night). So does one whose house
+  is taken down (`building_gone`), until given another. A villager with a house but no workplace
+  has the routine, and their `work` is `home`.
+
+`Npcs.update`'s night rest (`is_rest_time`) applies only to villagers without a routine: the
+routine's sleep is theirs.
+
+### The `day` text and the routine
+
+**Proposed: the routine is written from the text, by hand, once; the text stays.** The `day` text
+is the user's own, written for the language model, with the flavour (the Husum market on Thursdays,
+the dyke walk). A routine can only say where and when; it could not make that text, and making the
+text from the routine would lose it. So the table above is written from the eight `day` texts, the
+trade tables carry text and routine side by side, and what the routine can't say stays in the text
+only. So that the model never says other than what the villager is doing, the prompt gets one line
+from the routine: "Right now you are at the landing, mending nets" (place and doing, in the console's
+words), and the text becomes "your usual day". That is the last step (question 5).
+
+### How it runs (`RoutineUpkeep`)
+
+`RoutineUpkeep` is a `SimulationSystem` of GameState, in front of `ActorsUpkeep`. It runs from the
+clock, not from a frame, so it goes on while the player is inside ([travel.md](travel.md), "While the
+player is inside") and the same code serves a skip.
+
+- **Each game minute** (`advance`): for each villager with a routine, the step that is on (the last
+  whose departure has come: `RoutinePlan.step_now` takes the plan of the day by `GameClock.weekday`,
+  the previous day's last step before the first, then the rain and dark rule). If its place or
+  doing differs from `npc.routine_step` (not saved), `Npcs.walk_to` sends them (no trip if they are
+  within the radius of the place already) and the step is kept. Nothing is sent again while the step
+  is the same, so a blocked trip looks again by itself (#68) and nothing searches twice a minute.
+  `trip_blocked` is left alone; the console tells it.
+- **Rain** is looked up once an hour, for all.
+- **A change of place** (`Households.changed`, new: a house given or taken or taken down, a workplace
+  given or lost) makes the villager look again at once.
+- **Cost:** a lookup of a few comparisons for each of 155 villagers a game minute (every 0.67 s of
+  play), expected well under 0.1 ms, measured in step 10. A search only when a step changes, at
+  the hours the villagers go, spread by the offset.
+
+### Skip and sleep
+
+A skip is not watched, so each villager is where the routine says at the skip's end, as
+[travel.md](travel.md) has it ("What 239 does"); the hours inside the skip are not replayed one by
+one. `RoutineUpkeep` ignores the `advance` of a skip's rest (it is set by `skip_begins`) and
+`ActorsUpkeep.skipped` gives `Npcs.catch_up` the routine as a Callable (`routine_place`), which
+`_catch_up_one` asks before it puts a villager on a circle, so `place` is allowed (`is_skipping`).
+First a villager on a trip is walked by the skip's minutes, as #68 has it. Then, for the step that
+is on at the end (the same rule as in play), which has its time `T`:
+
+- one who should have left by `T - walk - offset - margin` and has had the walk's time since is
+  **at the place** (`place`, the anchor set);
+- one who left less long ago is **on its way**: `place` at the place of the step before, then
+  `walk_to` the new one; it comes late by the time that has gone, and its search is after the skip
+  (none in a skip, #68);
+- one who has not left yet stays where it is, within the circle of its place;
+- dice only for the stroll's spot: the same game skipped the same way ends the same.
+
+The first three walked minutes of a skip are play, as before (`walked_minute` is the same
+`advance`). After a night's sleep the village is as it should be at 6 o'clock: the farmers have
+eaten and are on the way out. `place` and `is_skipping` are used as they are; the changes of the
+other worker in `npc_travel.gd` are not touched.
+
+### Loading a save
+
+The positions are saved (far villagers too); a trip and the step are not. After a load
+`RoutineUpkeep.resume` runs once: each villager with a routine gets the step that is on and is sent
+to its place from where it stands (`walk_to`): one search each, no trip for one that is there. A
+visible one stands a moment while its search runs; nobody jumps. A villager who comes into the
+world (`spawn npc`, after `Households.settle`) is sent the same way.
+
+### Console
+
+`routine <villager>` says where they are going and why:
+
+    Antje Boysen: keeper of the house, Sunday
+    now: church (the church yard) since 09:30, praying; there
+    next: 12:00 home, eating; leaves 11:41 (about 17 tiles, 19 min)
+    rain: no, dark: no; leaves 4 min early
+    trip: none
+
+For a villager with no routine: "no house: keeps near its anchor (12.5, 8.5)". A blocked trip: "blocked:
+no way for now". `COMMANDS` gets the entry (the `villager` argument, as `goto`) and the help
+text.
+
+### Save version
+
+No bump: no field is new in the save. A save from before this loads, and every villager is sent where
+its routine says (above).
+
+### Tests
+
+One file for each part, each short (`tests/test_routine_rules.gd`, `test_routine_places.gd`,
+`test_routine_plan.gd`, `test_routine_upkeep.gd`, `test_routine_skip.gd`, `test_routine_console.gd`):
+
+- **The file:** it parses; places and doings known; times going up; each plan ends in `sleep`;
+  every sheet and every trade has a routine; a bad file is reported, not a crash.
+- **The place for each hour:** a table for each routine, (day kind, time) to (place, doing), through
+  a whole day, over midnight and on a Sunday. Day 1 is a Monday, day 7 a Sunday, and the week runs
+  on across the year's end.
+- **Sunday and Saturday:** the church step for those who have one; `saturday` falls back to the weekday.
+- **Rain and dark:** in the open the step is home; under a roof it stays; the fisher stays in the
+  rain; January's sunset sends the farmer home at 16:00; rain by the hour, not by the minute.
+- **Places:** home, work (building, spot, none), church (none: dropped), meeting (church, none),
+  a sheet with `skips`.
+- **Arriving on time:** on a flat world (`NpcRoadCase`), each villager arrives within the margin and
+  its detour of the hour, and leaves not before `step - walk - spread`; the walk is cut to the step
+  before; a step with no walk sends nobody; a changed step replaces the trip; the same step is sent
+  once.
+- **No routine:** a villager with no house strolls about its anchor and rests at night as today.
+- **Households:** `changed` after `move_in`, `move_out`, `give_work` and `building_gone`.
+- **The skip rule:** at the place, on the way, not yet left; over frames and in one go end the same;
+  the same seed ends the same; a villager on a trip is walked first.
+- **Saving mid-way:** save during a walk and load: each villager is sent where the clock says,
+  one search each, nobody at two places; a save of the version before still loads.
+- **Console:** the answer with a routine (now, next, leaves), without, blocked, an unknown villager,
+  the help text.
+
+### The steps (each a commit that passes on its own, with its tests and doc lines)
+
+1. **The file and `RoutineRules`:** `data/routines.cfg` with the five routines, `GameClock.weekday` and
+   `is_sunday`, `problems`, the steps of a day in order. No game behaviour yet. Doc line: the format
+   in the file's header.
+2. **Who has which:** the sheet keys `routine` and `skips` (`VillagerRules`, the header of
+   `data/villagers.cfg`), the third entry of the trades in `data/npcs.cfg` (`NpcRules`),
+   `RoutineRules.routine_of`, the eight sheets. Tests: every sheet and trade has one.
+3. **`RoutinePlaces`:** a place kind to a tile for one villager, with the fallbacks. Tests.
+4. **`RoutinePlan`:** the step that is on, with rain and dark, the departure and the offset, all
+   pure (clock, sun and rain are given). Tests: the tables above and the leaving in time.
+5. **`RoutineUpkeep` and `Households.changed`:** sending, `Npc.keep_radius`, arrival, the night rest
+   only for villagers without a routine, GameState wiring. The anchor text of
+   [villagers.md](villagers.md) ("Where") changes in this commit. Tests: arriving on time, a change
+   of step, no routine, the households.
+6. **The skip:** `Npcs.catch_up`'s `routine_place`, the `skip_begins` flag. Tests. Doc line in
+   travel.md: "What 239 does" is done.
+7. **Loading and spawning:** `resume`. Test of saving mid-way. Doc line in travel.md ("Saving").
+8. **Console `routine`.** Tests.
+9. **The prompt line** ("Right now you are ...") and the doc: villagers.md ("Later: schedules"),
+   and this page (the plan marked as built). Test of the prompt text. Last, because the user may
+   drop it (question 5).
+10. **The bench** for the minute's tick over 155 villagers (`tools/bench/`), the numbers written here.
+
+### Open questions
+
+1. **The week.** Day 1 is a Monday, so every 7th day is a Sunday and the week runs on across the
+   year's 360 days (the calendar has no week now): `GameClock.weekday(day) = (day - 1) % 7`.
+   Proposed: yes.
+2. **A Saturday plan** besides weekday and Sunday (optional, the weekday's if left out), because the
+   sheets have the Krug on Saturday evenings. Proposed: yes.
+3. **The meeting place** until the village (task 234) names one: the yard of the church; with no
+   church the step is dropped. Proposed: yes.
+4. **Momme at church only at Easter and Christmas:** a sheet key `skips=["church"]` drops a
+   place's steps for that villager. Proposed: yes, for Momme; Kerrin, Gesche, Ocke and the Boysens go
+   every Sunday.
+5. **The `day` text:** the routine is written from it by hand and the text stays; the prompt says
+   what they are doing now (step 9). Proposed: yes. Making the text from the routine is not
+   proposed: it would lose the flavour.
+6. **Fixed clock hours,** only the dark following the sun (a sun-relative plan is more work, and the
+   order of its steps changes over the year). Proposed: fixed; look at winter and summer in play and
+   change the hours, or allow `sunrise+0:30` as a time, if it looks wrong.
+7. **The fisher and the tide:** Momme goes out "with the tide, early or late as it falls". Proposed:
+   fixed hours first; tide-keyed hours are an issue of their own.
+8. **Rain:** the hour's mean rain of at least 0.25 sends a worker in the open home; the fisher and
+   anyone under a roof stay. Do storms and snow count too? Proposed: yes for storm, no for snow.
+9. **A villager with a house but no workplace** has the routine and works at `home`; one with no
+   house keeps the anchor rule (the issue says the anchor stays for "no home or routine").
+   Proposed: yes.
+10. **The departure estimate:** straight line (x plus y) times 1.3, plus 3 minutes, plus up to 10
+    minutes of spread by name; a learned time per trip (the last real walk) is later. Proposed: the
+    estimate, and look at how late they come in play.
+11. **Console `routine <villager> <name>`** to give a villager another routine: not now (it would
+    need a saved field and a save version bump). Proposed: show only.
+12. **Gesche is a `miller` and Kerrin a `keeper_of_the_house`;** their `day` texts mention the dyke
+    walk and visits that a routine can't show. Proposed: as written here.
