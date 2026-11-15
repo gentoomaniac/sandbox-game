@@ -7,7 +7,7 @@ extends RefCounted
 
 ## The old dead tree and the dead and half-dead trees of every kind.
 const SNAG := Color("5d4037")
-const OBJECT_COLORS := {
+const _FIXED_OBJECT_COLORS := {
 	&"oak": Color("12401a"),
 	&"beech": Color("12401a"),
 	&"birch": Color("1b5e20"),
@@ -57,6 +57,16 @@ const TERRAIN_COLORS := {
 	Tile.Terrain.WARFT: Color("a1887f"),
 }
 
+static var OBJECT_COLORS := _with_snags(_FIXED_OBJECT_COLORS)  # gdlint: ignore=class-variable-name
+
+
+static func _with_snags(colors: Dictionary) -> Dictionary:
+	var with_snags := colors.duplicate()
+	for kind in WorldObjectSnags.KINDS:
+		with_snags[WorldObjectSnags.dead_type(kind)] = SNAG
+		with_snags[WorldObjectSnags.half_dead_type(kind)] = SNAG
+	return with_snags
+
 
 ## The colour of a tile, as the topmost thing on it: a building, an object, a worn way, a ford, or
 ## the ground. `chunk` is the chunk of the tile, which need not be loaded in `world` (the edits are
@@ -68,8 +78,6 @@ static func of_tile(world: World, chunk: Chunk, local: Vector2i) -> Color:
 	var object := chunk.object_at(local)
 	if object != null and OBJECT_COLORS.has(object.type):
 		return OBJECT_COLORS[object.type]
-	if object != null and WorldObjectSnags.is_snag(object.type):
-		return SNAG
 	if world.wear_stage(world_pos) != PathRules.Stage.UNWORN:
 		return WORN
 	return ground_of(world.world_seed, chunk, local)
