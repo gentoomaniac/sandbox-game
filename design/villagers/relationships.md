@@ -1,9 +1,14 @@
 # Relationships
 
 **Decided (the user, 2026-11-15, [#48](https://github.com/gentoomaniac/sandbox-game/issues/48));
-the build is planned below, nothing of it is built.** When a step is done, its part moves to the
+the build is planned below and under way.** When a step is done, its part moves to the
 pages of [villagers](README.md) as "as built", as the pages of [gossip](gossip.md) and
 [quests](quests.md) do.
+
+**As built so far**
+
+- Step 1: the ten levels are data (`data/friendship.cfg`, `[levels]`) and `FriendshipRules` says
+  `level_of(points)`, `level_name`, `mood_of` and `first_point_of`. Nothing uses them yet.
 
 ## The user's words
 
