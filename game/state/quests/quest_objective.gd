@@ -19,6 +19,16 @@ func thing(_fields: Dictionary) -> String:
 	return ""
 
 
+## What the quest asks for, for the player's list: "5 fibre".
+func what(_fields: Dictionary) -> String:
+	return ""
+
+
+## How far the player is, for the player's list: `have` is `progress`.
+func status(_fields: Dictionary, _have: int) -> String:
+	return ""
+
+
 ## How many of `goal` the player has of it now (a number the quest's list shows), for the quest of
 ## `entry`.
 func progress(_fields: Dictionary, _entry: Dictionary, _quests: Quests) -> int:

@@ -37,7 +37,9 @@ Decided 2026-11-05.
   hotbar. A workbench icon beside it opens hand crafting, as Shift+C does (issue 3, task 233). Tab is
   unbound; the hammer has no key (it is selected on the hotbar).
 - **The character window** (task 191, 2026-11-12): C opens a window of its own with the figure, the
-  equipment slots round it (no trash can: that is the bag's) and a Skills tab (K opens it there). It
+  equipment slots round it (no trash can: that is the bag's) a Skills tab (K opens it there) and a Quests tab (J, #12: the quests taken, oldest first, each with who
+  gave it, what it asks, how far the player is and the days left, the reward in a tooltip; "No open
+  quests." when there are none; read-only, handing in is done at the villager). It
   is docked in the middle of the window (the user, 2026-11-13: it fits beside the bag) and open beside the bag (task 215, 2026-11-13, the usual MMO
   layout: each opens and closes on its own key or button, both can be open at once, Escape closes
   both, the world is not dimmed and you keep playing: walking, the hotbar keys and wheel and clicks

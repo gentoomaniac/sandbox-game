@@ -67,7 +67,8 @@
     included; from the hotbar, as the backpack is in the other window); an item only goes into a slot it fits, and fitting slots light up
     while an item is dragged. Right-click equips or unequips at once.
   - Keys: C opens the character window and closes it, K opens its skills tab and closes it from
-    there; B opens the bag and closes it (Tab is unbound); Escape and the pause key close either.
+    there, J its quests tab (the quests the player has taken, see
+    [../villagers/quests.md](../villagers/quests.md)); B opens the bag and closes it (Tab is unbound); Escape and the pause key close either.
     E does nothing while one is open. Crafting is Shift+C.
   - Worn items count toward the carried weight.
   - Hair and body are the character's look, not equipment.

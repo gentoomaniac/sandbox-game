@@ -1,7 +1,7 @@
 class_name ScreenKeys
 extends RefCounted
-## The keys that open and close the bag, character, skills and crafting windows in the game scene
-## (and the crafting button beside the bag button). A window's key does nothing while another
+## The keys that open and close the bag, character, skills, quests and crafting windows in the game
+## scene (and the crafting button beside the bag button). A window's key does nothing while another
 ## window is open (see Modal.can_open_on_key).
 
 var _state: GameState
@@ -38,6 +38,9 @@ func take(event: InputEvent) -> bool:
 		return true
 	if event.is_action_pressed("skills") and _character_screen.can_open_on_key():
 		_character_screen.toggle_tab(CharacterScreen.Tab.SKILLS)
+		return true
+	if event.is_action_pressed("quests") and _character_screen.can_open_on_key():
+		_character_screen.toggle_tab(CharacterScreen.Tab.QUESTS)
 		return true
 	return false
 

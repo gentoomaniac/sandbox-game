@@ -17,6 +17,16 @@ func thing(fields: Dictionary) -> String:
 	return ItemTypes.TYPES[StringName(fields["item"])]["name"].to_lower()
 
 
+func what(fields: Dictionary) -> String:
+	return (
+		"%d %s" % [fields["count"], ItemTypes.TYPES[StringName(fields["item"])]["name"].to_lower()]
+	)
+
+
+func status(_fields: Dictionary, have: int) -> String:
+	return "you carry %d" % have
+
+
 func progress(fields: Dictionary, _entry: Dictionary, quests: Quests) -> int:
 	return quests.player().inventory.count_of(StringName(fields["item"]))
 

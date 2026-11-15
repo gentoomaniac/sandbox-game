@@ -28,6 +28,14 @@ func thing(fields: Dictionary) -> String:
 	return ItemTypes.TYPES[ItemTypes.item_placing(StringName(fields["object"]))]["name"].to_lower()
 
 
+func what(fields: Dictionary) -> String:
+	return "put up %d %s by the home" % [fields["count"], thing(fields)]
+
+
+func status(fields: Dictionary, have: int) -> String:
+	return "%d of %d" % [have, fields["count"]]
+
+
 func placed_object(fields: Dictionary) -> StringName:
 	return StringName(fields["object"])
 

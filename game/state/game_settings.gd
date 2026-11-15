@@ -192,6 +192,7 @@ const ACTION_DESCRIPTIONS := {
 	&"inventory": "Open or close the bag with the inventory.",
 	&"character": "Open or close the character window: the equipment you wear.",
 	&"skills": "Open or close the skills tab of the character window.",
+	&"quests": "Open or close the quests tab of the character window.",
 	&"crafting": "Open or close the crafting menu.",
 	&"drop_item": "Drop the held stack on the ground in front of you.",
 	&"sprint": "Hold to sprint on a horse that is trotting. It uses up the horse's stamina.",

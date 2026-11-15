@@ -152,3 +152,13 @@ goes away is worked out (`posted_day` plus the file's `days`), and the rules are
 A quest whose id is no longer in the data is dropped on load. The validator checks the part, and a
 save of version 51 loads with none. The pieces of a build quest are `placed_day` in the state of the
 placed objects, saved with the world. See [../tech/saving.md](../tech/saving.md).
+
+## The player's list
+
+A third tab, **Quests**, in the character window (`CharacterScreen`, after Character and Skills; key
+**J**), is `QuestsPanel`, drawn from `QuestRows`. It shows the **taken** quests, the oldest first:
+who gave it (name and trade), what it asks ("5 fibre", "put up 6 wattle fence by the home"), how
+far the player is ("you carry 3", "2 of 6"; the kinds say it), the days left ("6 days left", "last
+day") and, as a tooltip, the reward. A posted quest that is not taken is not in it. It is read-only:
+handing in is done at the villager. An empty list says "No open quests." The counts follow the bag
+and the world while the tab is open (looked at again four times a second).

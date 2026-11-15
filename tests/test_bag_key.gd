@@ -97,6 +97,14 @@ func test_k_opens_the_skills_in_the_character_window() -> void:
 	assert_eq(_main._character_screen.current_tab(), CharacterScreen.Tab.SKILLS)
 
 
+func test_j_opens_the_quests_in_the_character_window() -> void:
+	_press_key(KEY_J)
+	assert_true(_main._character_screen.is_open())
+	assert_eq(_main._character_screen.current_tab(), CharacterScreen.Tab.QUESTS)
+	_press_key(KEY_J)
+	assert_false(_main._character_screen.is_open(), "J closes it")
+
+
 func test_escape_closes_the_character_window() -> void:
 	_press_key(KEY_C)
 	var event := InputEventAction.new()
