@@ -24,23 +24,6 @@ const COMMANDS := {
 		"snow [0..1|auto]",
 		"Show the snow cover, force it (0 to 1) or return to the weather (auto).",
 	],
-	"deeds": ["deeds", "List what you did within sight of villagers, and who saw it."],
-	"gossip":
-	[
-		"gossip <villager>",
-		(
-			"List the stories and the long-term memories a villager keeps, with their weights (the"
-			+ " id of a villager written by hand, such as antje, or a first name)."
-		),
-	],
-	"opinion":
-	[
-		"opinion <villager> [points]",
-		(
-			"Show what a villager thinks of you, or set it in points (-100 to 1000; below -20 is"
-			+ " cold, from 20 warm)."
-		),
-	],
 	"home":
 	[
 		"home <villager> [here|none]",
@@ -94,8 +77,6 @@ const ARGUMENTS := {
 	"help": [&"command"],
 	"weather": [&"weather"],
 	"snow": [&"snow"],
-	"gossip": [&"villager"],
-	"opinion": [&"villager", &"number"],
 	"home": [&"villager", &"place"],
 	"work": [&"villager", &"place"],
 	"goto": [&"villager", &"destination"],
@@ -172,12 +153,6 @@ func run(line: String) -> Array[String]:
 			output = _weather(arguments)
 		"snow":
 			output = _snow(arguments)
-		"deeds":
-			output = _deeds()
-		"gossip":
-			output = _gossip(arguments)
-		"opinion":
-			output = _opinion(arguments)
 		"home", "work":
 			output = _home_or_work(words[0], arguments)
 		"goto":
@@ -339,106 +314,6 @@ func _snow(arguments: PackedStringArray) -> Array[String]:
 	if snow.forced >= 0.0:
 		lines.append("Forced: %s" % snow.forced)
 	return lines
-
-
-func _deeds() -> Array[String]:
-	var lines: Array[String] = []
-	var rules := _state.deeds.rules
-	_state.deeds.forget_old()
-	for entry in _state.deeds.entries:
-		(
-			lines
-			. append(
-				(
-					"Day %d, %s: %s %s, seen by %s"
-					% [
-						entry["day"],
-						Sun.time_text(entry["minute"]),
-						rules.deed_words(entry["kind"], entry["count"]),
-						entry["place"],
-						", ".join(entry["witnesses"]),
-					]
-				)
-			)
-		)
-	if lines.is_empty():
-		lines.append("No deeds seen yet")
-	return lines
-
-
-## The stories of a villager's gossip buffer and their long-term memories, oldest first, each with
-## its weight, and the topics of the village they know.
-func _gossip(arguments: PackedStringArray) -> Array[String]:
-	if arguments.size() != 1:
-		return ["Usage: %s" % COMMANDS["gossip"][0]]
-	var npc := ConsoleHelper.npc_named(arguments[0], context)
-	if npc == null:
-		return _unknown("villager", arguments[0], "gossip")
-	var rules := _state.deeds.rules
-	var lines: Array[String] = [
-		(
-			"%s keeps %d of %d stories and %d of %d memories"
-			% [
-				npc.name,
-				npc.stories.size(),
-				_state.deeds.stories_kept,
-				npc.memories.size(),
-				_state.deeds.memories_kept,
-			]
-		)
-	]
-	(
-		lines
-		. append(
-			(
-				(
-					"Knows %d of %d topics of the village: %s"
-					% [
-						npc.topics.size(),
-						VillageSheet.default_sheet().topic_names().size(),
-						", ".join(npc.topics),
-					]
-				)
-				if not npc.topics.is_empty()
-				else "Knows no topic of the village"
-			)
-		)
-	)
-	for story in npc.stories:
-		var told := (
-			"seen" if story["how"] == GossipRules.SEEN else "heard from %s" % story["told_by"]
-		)
-		lines.append(
-			(
-				"Story, %s, %s: %s"
-				% [MemoryWeight.to_word(story["weight"]), told, rules.memory_line(story)]
-			)
-		)
-	for memory in npc.memories:
-		lines.append(
-			(
-				"Memory, %s, day %d: %s"
-				% [MemoryWeight.to_word(memory["weight"]), memory["day"], memory["text"]]
-			)
-		)
-	return lines
-
-
-## The villager with this id, else the first one with this first name (the words of a command
-## are lowercase), or null.
-## What a villager thinks of the player, in a word and in points; with `points` it sets them.
-func _opinion(arguments: PackedStringArray) -> Array[String]:
-	var is_setting := arguments.size() == 2
-	var is_usage_wrong := arguments.is_empty() or arguments.size() > 2
-	if is_usage_wrong or (is_setting and not arguments[1].is_valid_int()):
-		return ["Usage: %s" % COMMANDS["opinion"][0]]
-	var npc := ConsoleHelper.npc_named(arguments[0], context)
-	if npc == null:
-		return _unknown("villager", arguments[0], "opinion")
-	var rules := _state.deeds.rules
-	if is_setting:
-		npc.opinion = clampi(int(arguments[1]), rules.opinion_min(), rules.opinion_max())
-	return ["%s: %s (%d points)" % [npc.name, rules.opinion_word(npc.opinion), npc.opinion]]
 
 
 ## `home` or `work` (`command`): shows the house or workplace of a villager, or sets or frees it.
