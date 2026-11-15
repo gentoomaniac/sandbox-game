@@ -13,6 +13,9 @@ signal arrived(npc: Npc)
 ## No way was found (once for a trip, however often it looks again).
 signal blocked(npc: Npc, reason: NpcTrip.Block)
 
+## A frame crosses at most this many tile centres; the rest of a longer one is dropped.
+const MAX_TILES_PER_UPDATE := 8
+
 ## The numbers; Npcs hands on a change of them.
 var rules: NpcRules:
 	set(value):
@@ -315,7 +318,8 @@ func _finish_path(npc: Npc) -> void:
 ## enters is checked, against the mask of its chunk at the time of entry (the tide, the season), and
 ## a tile whose mask is not there yet (an edit dropped it) is waited for. Both ways move towards the
 ## same tile centre at the same speed, so the position does not jump when a chunk loads or unloads
-## between two centres.
+## between two centres. What is left of a frame's reach at a tile centre goes on along the next tile
+## (through the same checks), so that a walker covers `walk_speed * delta` however long the frame.
 func _walk(npc: Npc, delta: float, player_feet: Vector2, fits: Callable) -> void:
 	var trip := npc.trip
 	if trip.pause_seconds > 0.0:
@@ -323,37 +327,45 @@ func _walk(npc: Npc, delta: float, player_feet: Vector2, fits: Callable) -> void
 		trip.state = NpcTrip.State.WAITING
 		npc.activity = Npc.Activity.IDLE
 		return
-	var next_tile := trip.path[trip.next_index]
-	var target := Vector2(next_tile) + Vector2(0.5, 0.5)
-	var to_target := target - npc.position
-	var reach := rules.behaviour("walk_speed") * delta
-	var feet := (
-		target if to_target.length() <= reach else npc.position + to_target.normalized() * reach
-	)
-	if Npcs.is_crowding_player(npc.position, feet, player_feet, rules.behaviour("personal_space")):
-		trip.state = NpcTrip.State.WAITING
-		npc.activity = Npc.Activity.IDLE
-		return
 	var world := trip.map as World
-	if _is_step_whole(world, feet, next_tile):
-		if not fits.call(npc, feet, trip.map):
-			_be_stuck(npc, delta)
+	var reach := rules.behaviour("walk_speed") * delta
+	for _tile in MAX_TILES_PER_UPDATE:
+		var next_tile := trip.path[trip.next_index]
+		var target := Vector2(next_tile) + Vector2(0.5, 0.5)
+		var to_target := target - npc.position
+		var distance := to_target.length()
+		var is_arriving := distance <= reach
+		var feet := target if is_arriving else npc.position + to_target * (reach / distance)
+		if Npcs.is_crowding_player(
+			npc.position, feet, player_feet, rules.behaviour("personal_space")
+		):
+			trip.state = NpcTrip.State.WAITING
+			npc.activity = Npc.Activity.IDLE
 			return
-		Npcs.wear_step(trip.map, feet, npc.tile())
-	elif not _may_enter_far_tile(npc, world, feet, delta):
-		return
-	trip.state = NpcTrip.State.WALKING
-	trip.stuck_seconds = 0.0
-	npc.position = feet
-	if not to_target.is_zero_approx():
-		npc.facing = Npc.facing_of(to_target)
-		npc.heading = to_target.normalized()
-	npc.activity = Npc.Activity.WALK
-	if feet == target:
+		if _is_step_whole(world, feet, next_tile):
+			if not fits.call(npc, feet, trip.map):
+				_be_stuck(npc, delta)
+				return
+			Npcs.wear_step(trip.map, feet, npc.tile())
+		elif not _may_enter_far_tile(npc, world, feet, delta):
+			return
+		trip.state = NpcTrip.State.WALKING
+		trip.stuck_seconds = 0.0
+		npc.position = feet
+		if not to_target.is_zero_approx():
+			npc.facing = Npc.facing_of(to_target)
+			npc.heading = to_target.normalized()
+		npc.activity = Npc.Activity.WALK
+		if not is_arriving:
+			break
 		trip.next_index += 1
 		trip.retries = 0
 		if trip.next_index == trip.path.size():
 			_finish_path(npc)
+			return
+		reach -= distance
+		if reach <= 0.0:
+			break
 
 
 ## Whether the world answers for a step to `feet`, towards `next_tile`, by itself: for the tile and

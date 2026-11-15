@@ -15,12 +15,12 @@ func after_each() -> void:
 	Simulation.frame_budget_usec = Simulation.DEFAULT_FRAME_BUDGET_USEC
 
 
-## Plays `minutes` of game time in frames of 1/24 s, which take a villager 1/16 of a tile each:
-## a walker ends a tile in a whole number of them (a step that ends one wastes what is left of it).
+## Plays `minutes` of game time in frames of 0.05 s, the longest a villager's update takes
+## (`Npcs.MAX_STEP_SECONDS`), as the game does at 20 frames a second.
 func _play_minutes(minutes: int) -> void:
 	var seconds := minutes / GameClock.GAME_MINUTES_PER_REAL_SECOND
-	for _i in roundi(seconds * 24.0):
-		_npcs.update(1.0 / 24.0, _world, _state.player.position, _state.clock)
+	for _i in roundi(seconds / Npcs.MAX_STEP_SECONDS):
+		_npcs.update(Npcs.MAX_STEP_SECONDS, _world, _state.player.position, _state.clock)
 
 
 func _next_frame() -> Signal:

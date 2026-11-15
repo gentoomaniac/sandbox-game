@@ -234,7 +234,9 @@ skip began, what it has pinned):
 A skip agrees with the same minutes of play to the tile when the path stays open, no edit in the
 skip changes a tile of it, nobody searches, the player holds nobody up, the masks of the path are
 made (play too waits for a mask that is not: the three walked minutes do not make masks, and
-stand while one is missing) and the frames of play were not longer than `MAX_STEP_SECONDS`.
+stand while one is missing) and the frames of play were not longer than `MAX_STEP_SECONDS` (a longer
+one is cut there). A frame's length does not matter otherwise: what is left of a frame's reach at a
+tile centre goes on along the next tile, so play covers `walk_speed` times the time, as a skip does.
 
 ## The life of one trip
 

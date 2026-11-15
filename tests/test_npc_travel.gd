@@ -153,3 +153,71 @@ func test_a_trip_over_another_world_does_not_use_the_snapshot_of_the_first() -> 
 	assert_ne(travel._snapshot, first, "the same change count, but another world")
 	travel.cancel(npc)
 	travel.cancel(other_npc)
+
+
+## A villager at the tile (-8, -5) of the yard on a trip along `tiles` (given as offsets from the
+## middle of the yard), its way found already.
+func _walker_along(tiles: Array[Vector2i]) -> Npc:
+	var npc := _add_villager(_centre_of(_tile_at(-8, -5)), _yard_middle())
+	var trip := NpcTrip.new(_world, _middle + tiles.back())
+	for tile in tiles:
+		trip.path.append(_middle + tile)
+	trip.state = NpcTrip.State.WALKING
+	npc.trip = trip
+	return npc
+
+
+func _row_of_tiles(from_x: int, to_x: int) -> Array[Vector2i]:
+	var tiles: Array[Vector2i] = []
+	for x in range(from_x, to_x + 1):
+		tiles.append(Vector2i(x, -5))
+	return tiles
+
+
+func _walk_frames(frames: int, delta: float) -> void:
+	for _i in frames:
+		_npcs.update(delta, _world, _state.player.position, _state.clock)
+
+
+func test_a_walker_covers_walk_speed_times_the_time_over_frames_of_any_length() -> void:
+	var speed: float = _npcs.rules.behaviour("walk_speed")
+	for delta in [0.05, 0.037, 0.011]:
+		var npc := _walker_along(_row_of_tiles(-7, 8))
+		var frames := roundi(5.0 / delta)
+		var from_x := npc.position.x
+		_walk_frames(frames, delta)
+		assert_almost_eq(npc.position.x - from_x, speed * delta * frames, 0.001, "delta %s" % delta)
+		_npcs.cancel_trip(npc)
+		_npcs.remove(npc)
+
+
+func test_a_walker_never_covers_more_than_walk_speed_times_the_frame() -> void:
+	var reach: float = _npcs.rules.behaviour("walk_speed") * STEP_SECONDS
+	var npc := _walker_along(_row_of_tiles(-7, 8))
+	for _i in 100:
+		var before := npc.position
+		_walk_frames(1, STEP_SECONDS)
+		assert_lte(before.distance_to(npc.position), reach + 0.0001)
+
+
+func test_a_walker_takes_a_corner_in_the_path_without_losing_distance() -> void:
+	var speed: float = _npcs.rules.behaviour("walk_speed")
+	var tiles: Array[Vector2i] = [
+		Vector2i(-7, -5), Vector2i(-6, -5), Vector2i(-6, -4), Vector2i(-6, -3)
+	]
+	var npc := _walker_along(tiles)
+	var seconds := 2.4 / speed
+	_walk_frames(roundi(seconds / STEP_SECONDS), STEP_SECONDS)
+	assert_almost_eq(npc.position.x, _tile_at(-6, 0).x + 0.5, 0.0001, "round the corner")
+	assert_almost_eq(npc.position.y, _tile_at(0, -5).y + 0.5 + 0.4, 0.0001, "0.4 tiles past it")
+	assert_eq(npc.trip.next_index, 2)
+
+
+func test_a_walker_stops_at_a_tile_centre_when_the_next_tile_is_blocked() -> void:
+	var blocked_tile := _tile_at(-5, -5)
+	_world.add_object(WorldObject.new(WorldObjectTypes.STONE, blocked_tile))
+	var npc := _walker_along(_row_of_tiles(-7, -5))
+	_walk_frames(200, STEP_SECONDS)
+	assert_lt(npc.position.x, float(blocked_tile.x), "it did not enter the tile")
+	assert_eq(npc.trip.next_index, 2, "it reached the centre before it")
+	assert_true(npc.is_travelling())
