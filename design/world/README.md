@@ -9,4 +9,4 @@ The generated land, its coast, the year and the weather, and the wild animals.
 - [wildlife.md](wildlife.md): Ambient wildlife: birds, deer, frogs and the rest, and how they come and go.
 - [desire-paths.md](desire-paths.md): Grass wears to paths over days of walking and grows back.
 - [footprints.md](footprints.md): Prints in snow and mud, who leaves them, how they fade, what they cost.
-- [wehlsbuell.md](wehlsbuell.md): The village Wehlsbüll in the world: where, which buildings, its people, the steps (#9, steps 1 to 6, 8 and 9 built).
+- [wehlsbuell.md](wehlsbuell.md): The village Wehlsbüll in the world: where, which buildings, its people, the steps (#9, all steps built).

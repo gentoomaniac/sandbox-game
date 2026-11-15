@@ -92,6 +92,16 @@ The lanes and the town square of Wehlsbüll (#9, [wehlsbuell.md](wehlsbuell.md),
 desire paths: they are laid with cobbles at the start, the ways of #62, which never wear. Nothing
 in the world keeps any wear but walking.
 
+## A track laid at the start
+
+A new game with the village (#9, [wehlsbuell.md](wehlsbuell.md), section 7) starts with a track from
+the camp to the village: each tile of the way between them that can wear is given `most_days` of wear
+at once (`VillageBuilder.lay_track`, `World.set_wear_days`), as if it had been walked every day. It is
+a hint where to go and takes part in the rules like any other wear: a tile needs `busy_steps` in a day
+to stay worn, so a track nobody walks is unworn after ten nights (path for four, trodden for five more)
+and one walked once a day goes the same way. Nothing else keeps it, and nothing is saved for it but
+the wear itself.
+
 ## Saved
 
 `world.wear`: `[x, y, days]` for each worn tile, and `world.wear_today`: `[x, y, steps]` for the

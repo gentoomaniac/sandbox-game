@@ -16,6 +16,8 @@ const MAX_SEARCH_NODES := 400000
 
 ## The world tile of the plan's `u` 0, `v` 0: the first land tile of the middle row.
 var origin: Vector2i
+## The way the search of rule 4 found from the camp to the east end of the main lane, tile by tile.
+var camp_way: Array[Vector2i] = []
 
 
 ## The site of the village in the world of this seed, or null where there is none within
@@ -35,9 +37,10 @@ static func find(world_seed: int, plan := VillagePlan.default_plan()) -> Village
 			site._has_straight_coast(generator, plan)
 			and site._is_on_camps_side_of_the_river(river, camp)
 			and site._has_dry_land_and_salt_marsh(generator, plan)
-			and site._can_be_walked_to(world, generator, plan, camp)
 		):
-			return site
+			site.camp_way = site._way_from(camp, world, generator, plan)
+			if not site.camp_way.is_empty():
+				return site
 	return null
 
 
@@ -92,11 +95,11 @@ func _has_dry_land_and_salt_marsh(generator: WorldGenerator, plan: VillagePlan) 
 
 
 ## Rule 4: the way of the land from the camp to the east end of the main lane, over the generated
-## land (the village's own land counts as cleared, as the builder will clear it). The one rule that
-## needs a search, and so the last.
-func _can_be_walked_to(
-	world: World, generator: WorldGenerator, plan: VillagePlan, camp: Vector2i
-) -> bool:
+## land (the village's own land counts as cleared, as the builder will clear it), or no tiles where
+## there is none. The one rule that needs a search, and so the last.
+func _way_from(
+	camp: Vector2i, world: World, generator: WorldGenerator, plan: VillagePlan
+) -> Array[Vector2i]:
 	var village_land := land(plan)
 	var is_free := func(tile: Vector2i) -> bool:
 		var chunk_coords := Chunk.world_to_chunk(tile)
@@ -113,4 +116,6 @@ func _can_be_walked_to(
 	)
 	while not search.is_over():
 		search.step(MAX_SEARCH_NODES)
-	return search.state == PathSearch.State.FOUND
+	if search.state != PathSearch.State.FOUND:
+		return []
+	return search.path

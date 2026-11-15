@@ -1,8 +1,8 @@
 # Wehlsbüll in the world
 
-[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: steps 1 to 6
-and 8 to 10 of section 14 are built** (step 7, the worn track, waits for the user's answer in
-[#95](https://github.com/gentoomaniac/sandbox-game/issues/95)); each step's note says what changed
+[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: steps 1 to 10
+of section 14 are built** (the user's answer in
+[#95](https://github.com/gentoomaniac/sandbox-game/issues/95) settled step 6 and 7); each step's note says what changed
 from this plan. This page says what is built and what will be: where the village stands, its buildings, fields and
 people, how it gets into the world, and in which steps. The user's answers
 ([#73](https://github.com/gentoomaniac/sandbox-game/issues/73),
@@ -246,18 +246,22 @@ The issue wants a place where villagers come together now and then, so gossip ha
 The player finds the village by a trodden way from the camp to it, as well as by the handbook and the
 `village` command. It is a **desire path** ([desire-paths.md](desire-paths.md), #61), laid at the start.
 
-- **Laid:** after the village stands, the builder asks the path search for a way from the camp to the
-  east end of the Sielweg (the search of site rule 4) and gives each tile of it that can wear (grass and
-  floodplain; fords are floodplain, so they keep it, though a ford is never drawn worn) the wear of a path: `WorldWear.set_days` with
-  `most_days` (12). Tiles that cannot wear (a Warft, wetland) stay as they are. It is plain wear, saved
-  in `world.wear` already: no new save field, no record. About 300 to 500 tiles.
-- **It keeps itself worn by use, like any desire path:** the rules are not changed. A tile needs 10
-  steps in a day to count as busy, so one walk a day over it is not enough: **a track no one walks
-  fades to grass in about ten days** (12 days of wear, one lost each quiet day), and a track walked once
-  a day fades too. It stays only where the player (or later a villager on an errand) crosses it
-  often. The mud rule applies: the track is muddy in the rain, so a player who walks it often has a
-  reason to lay a way (#62). See "Check with the user" at the end.
-- **Not a lane:** it is not in the record and is not kept. The village's own lanes are (section 8).
+- **Laid:** `VillageBuilder.lay_track`, in `GameState.new_game` after the village stands, gives each tile of
+  the way from the camp to the east end of the Sielweg that can wear (grass and floodplain; fords are
+  floodplain, so they keep it, though a ford is never drawn worn) the wear of a path: `World.set_wear_days`
+  with `most_days` (12). The way is the one the site's search of rule 4 found (`VillageSite.camp_way`, kept
+  by the site so that the new game searches once): the path search of the generated land, the village's land
+  counted as cleared. Tiles that cannot wear (a Warft, wetland, a cobble) stay as they are. It is plain wear,
+  saved in `world.wear` already: no new save field, no record. 229 to 584 worn tiles for the seeds measured
+  (ways of 230 to 643 tiles).
+- **It keeps itself worn by use, like any desire path:** the rules are not changed (the user in #95: "it is
+  only an initial hint when the game starts"). A tile needs 10 steps in a day to count as busy, so one
+  walk a day over it is not enough: **a track no one walks fades to grass in about ten days** (12 days of
+  wear, one lost each quiet day: unworn after the tenth night), and a track walked once a day fades too. It
+  stays only where the player (or later a villager on an errand) crosses it often. The mud rule applies:
+  the track is muddy in the rain, so a player who walks it often has a reason to lay a way (#62).
+- **Not a lane:** it is not in the record and nothing keeps it. The village's own lanes are cobbled
+  (section 8).
 
 ## 8. Lanes and the square, cobbled
 
@@ -415,8 +419,9 @@ The village is built after #60 has merged.
    the village. Tests: the rest of `test_village_builder.gd`. Save size and time written here.
 6. **Lanes and the square.** First the lane tiles and the square worn to a path and kept, then (the user's
    answer in #95) laid with cobbles instead: `VillageBuilder._lay_cobbles`. Tests: `test_village_lanes.gd`.
-7. **The worn track.** `VillageBuilder.lay_track`: the path search from the camp, the wear laid, in `new_game`
-   after the village. Tests: `test_village_track.gd`. Doc: desire-paths.md (a track laid at the start).
+7. **The worn track.** `VillageBuilder.lay_track`: the way of the site's path search from the camp, the wear
+   laid, in `new_game` after the village. Tests: `test_village_track.gd`. Doc: desire-paths.md (a track
+   laid at the start).
 8. **The people.** The eight spawned in `new_game`, the sheets' spots (`workplace_spot` for Ocke and Gesche),
    `populated`. Tests: `test_village_people.gd`. Doc: villagers.md, `data/villagers.cfg`'s comment.
 9. **The land and the reputation rule.** `is_village_land`, the edge in build mode, the hint, the refused
@@ -479,6 +484,12 @@ The user can stop after step 5 and have the village standing, empty.
   version. `world.gd` reached the 1 000 lines the lint allows, so the making of its save data moved to
   `WorldSave` (step 9). The map tool draws the buildings and the worn ground. Tests:
   `tests/test_village_lanes.gd`.
+- **Step 7.** `VillageBuilder.lay_track(world, site)` (`new_game` calls it after the build, before the
+  villagers move in) wears the tiles of `VillageSite.camp_way`, loading the chunks it needs and unloading
+  them again. **Changed from the plan:** the plan had the builder ask the path search again; the site
+  already did, so the site keeps the way it found (`camp_way`) and the new game does one search, not two.
+  Per #95 the track is only a hint: the desire-path rules are unchanged and it fades in about ten days
+  (section 7). The map tool draws the cobbles and the track. Tests: `tests/test_village_track.gd`.
 - **Step 8.** `VillagePeople.move_in` (`game/state/village_people.gd`), called by `GameState.new_game` after
   the build: each resident of the plan is spawned at the door of their building, `Households.settle`
   does the rest by their sheets, and what the sheets cannot say the plan does (the mill house, the
@@ -542,7 +553,5 @@ reputation.md and gossip.md are written. coast.md and desire-paths.md are left a
 
 ## Check with the user
 
-- **The track fades without use** (section 7). With the rules of #61 a track that is walked once a day
-  becomes grass in under two weeks, because a tile needs 10 steps a day to stay worn. "Keeps itself worn by
-  use" is kept as written, with no change of the rules. If the track should last (a track the villagers
-  keep up, or a slower fade for it), that is a rule change for the desire paths, not for this plan.
+Nothing is open. The question of the track's fading was answered in #95: it is only a hint at the start
+and grows back (section 7), and the village's paths are cobbled (section 8).

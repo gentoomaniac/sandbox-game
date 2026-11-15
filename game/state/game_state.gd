@@ -131,6 +131,7 @@ static func new_game(world_seed: int, with_village := false) -> GameState:
 		if problem != "":
 			push_error("The village was not built: %s" % problem)
 		else:
+			VillageBuilder.lay_track(state.world, site)
 			problem = VillagePeople.move_in(state, site, plan)
 			if problem != "":
 				push_error("The villagers did not all move in: %s" % problem)

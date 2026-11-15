@@ -59,6 +59,23 @@ static func _build(
 	return refusal
 
 
+## Gives the tiles of the way from the camp to the village (`VillageSite.camp_way`) the wear of a
+## path, where the ground wears: a track that finds the village for the player. It is plain desire
+## path wear, so it fades to grass in about ten days unless it is walked (see desire-paths.md).
+static func lay_track(world: World, site: VillageSite) -> void:
+	var generator := WorldGenerator.new(world.world_seed)
+	var loaded: Array[Vector2i] = []
+	var most_days := PathRules.default_rules().most_days()
+	for tile in site.camp_way:
+		var coords := Chunk.world_to_chunk(tile)
+		if not world.is_chunk_loaded(coords):
+			world.add_chunk(generator.generate_chunk(coords))
+			loaded.append(coords)
+		world.set_wear_days(tile, most_days)
+	for coords in loaded:
+		world.remove_chunk(coords)
+
+
 ## Puts up the buildings of the plan and makes the record of the village. Returns why a building
 ## could not stand, or "".
 static func _put_up_buildings(world: World, site: VillageSite, plan: VillagePlan) -> String:
