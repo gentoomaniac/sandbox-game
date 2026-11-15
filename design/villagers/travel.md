@@ -156,7 +156,8 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   is not loaded is answered by the mask, which has the big object that the world does not see. On
   the masks only the tile it enters is asked, with the building (live) and the mask at the
   clock's minute (a dropped mask is waited for, which is not being stuck). Far feet wear by the mask's
-  WEARS bit. The code is in `NpcTravel._walk`, not
+  WEARS bit. `NpcViews.show_npcs` takes the world: a view is made only for a villager on a loaded
+  chunk, and lost when its chunk unloads. The code is in `NpcTravel._walk`, not
   `NpcTrip`, which only holds the state.
 - **`Npcs.update`** moves every trip, near and far; `only_loaded` only keeps the strolls to the loaded
   chunks. `Npcs.catch_up(map, seed, minutes)` learns the minutes of the skip (below).

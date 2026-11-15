@@ -275,7 +275,7 @@ func _connect_state_and_views() -> void:
 	_wildlife.show_wildlife(_state, _view, _camera)
 	_state.simulation.skipped.connect(_on_time_skipped)
 	_state.crop_warnings.warned.connect(_notifications.post_line)
-	_npc_views.show_npcs(_state.npcs, _view.entities)
+	_npc_views.show_npcs(_state.npcs, _view.entities, _state.world)
 	# Chats longer than the setting (a saved game's, or one lowered in the menu, which is
 	# applied once it is closed rather than at every step) are compacted.
 	_apply_villager_memory_settings()

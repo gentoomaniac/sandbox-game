@@ -4,27 +4,38 @@ extends GutTest
 const SIZE := Chunk.CHUNK_SIZE
 
 var _npcs: Npcs
+var _world: World
 var _entities: Node2D
 var _views: NpcViews
 
 
 func before_each() -> void:
 	_npcs = Npcs.new(Sun.new())
+	_world = World.new(1)
 	_entities = Node2D.new()
 	add_child_autofree(_entities)
 	_views = NpcViews.new()
 	add_child_autofree(_views)
-	_views.show_npcs(_npcs, _entities)
+	_views.show_npcs(_npcs, _entities, _world)
 
 
 func after_each() -> void:
 	ArtSet.is_classic = false
 
 
+## A villager at `position`, on a chunk that is loaded (the chunk of every villager is, but for the
+## ones the tests unload).
 func _villager_at(position: Vector2) -> Npc:
+	_load_chunk_of(position)
 	var npc := Npc.create(1, position, NpcRules.default_rules())
 	_npcs.add(npc)
 	return npc
+
+
+func _load_chunk_of(position: Vector2) -> void:
+	var coords := Chunk.world_to_chunk(Vector2i(position.floor()))
+	if World.is_chunk_in_bounds(coords) and not _world.is_chunk_loaded(coords):
+		_world.add_chunk(WorldGenerator.new(1).generate_chunk(coords))
 
 
 func _focus_and_update(world_pos: Vector2i) -> void:
@@ -102,3 +113,23 @@ func test_a_villager_who_leaves_the_world_loses_the_view_at_once() -> void:
 	_focus_and_update(Vector2i(2, 2))
 	assert_eq(_entities.get_child_count(), 1, "the one who left gets no view again")
 	assert_eq(_npcs.all(), [stays] as Array[Npc])
+
+
+func test_a_villager_on_a_chunk_that_is_not_loaded_has_no_view_until_it_is() -> void:
+	var npc := _villager_at(Vector2(3, 3))
+	_world.remove_chunk(Vector2i.ZERO)
+	_focus_and_update(Vector2i(2, 2))
+	assert_eq(_entities.get_child_count(), 0, "near, but there is no ground under it")
+	_load_chunk_of(npc.position)
+	_focus_and_update(Vector2i(2, 2))
+	assert_eq(_entities.get_child_count(), 1)
+
+
+func test_a_villager_walks_on_to_a_chunk_that_is_not_loaded_and_loses_the_view() -> void:
+	_villager_at(Vector2(3, 3))
+	_focus_and_update(Vector2i(2, 2))
+	assert_eq(_entities.get_child_count(), 1)
+	_world.remove_chunk(Vector2i.ZERO)
+	_focus_and_update(Vector2i(2, 2))
+	await get_tree().process_frame
+	assert_eq(_entities.get_child_count(), 0)
