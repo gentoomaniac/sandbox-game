@@ -1,7 +1,7 @@
 extends SaveValidationCase
 ## How far a candle has burnt is saved with its item (version 40, task 231): in a lantern or on
-## its own (a chest saves its slots the same way, see test_item_slots_state.gd). An older save's
-## lanterns get a fresh candle. A bad state is refused.
+## its own (a chest saves its slots the same way, see test_item_slots_state.gd). A bad state is
+## refused.
 
 
 func _state_with_lantern_and_candle() -> GameState:
@@ -28,16 +28,6 @@ func test_a_candle_in_a_lantern_and_one_on_its_own_keep_their_burn() -> void:
 	assert_true(restored.player.is_lantern_shining())
 	restored.pass_awake_time(60)
 	assert_eq(LanternCandle.burnt_minutes(inventory.slots[6]["state"]["candle"]), 760)
-
-
-func test_a_version_39_save_loads_its_lanterns_with_a_fresh_candle() -> void:
-	var game := _current_game()
-	_slots(game)[3] = {"item": "lantern", "count": 1}
-	_write_save(39, game)
-
-	var restored := SaveFile.read(SAVE_PATH)
-
-	assert_eq(restored.player.inventory.slots[3]["state"], {"candle": {}})
 
 
 func test_a_state_that_is_not_a_candles_is_refused() -> void:
@@ -70,19 +60,6 @@ func test_a_lantern_in_a_pile_on_the_ground_keeps_its_candle() -> void:
 	)
 	assert_eq(piles.size(), 1)
 	assert_eq(LanternCandle.burnt_minutes(piles[0].state["candle"]), 250)
-
-
-func test_a_version_39_lantern_on_the_ground_gets_a_fresh_candle() -> void:
-	var game := _current_game()
-	game["world"]["ground_items"].append({"item": "lantern", "count": 1, "position": [4.5, 4.5]})
-	_write_save(39, game)
-
-	var restored := SaveFile.read(SAVE_PATH)
-
-	var piles := restored.world.ground_items.all().filter(
-		func(pile: GroundItem) -> bool: return pile.item == ItemTypes.LANTERN
-	)
-	assert_eq(piles[0].state, {"candle": {}})
 
 
 func test_a_pile_with_a_bad_candle_state_is_refused() -> void:

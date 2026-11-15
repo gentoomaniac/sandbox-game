@@ -3,7 +3,7 @@ extends RefCounted
 ## The saves on disk: a JSON file per save, `{"version": VERSION, "game": <GameState.to_dict>}`.
 ## Every save is a new file, and the newest few are kept (see SaveList).
 ## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step
-## (see `_upgrade_from_version_39` and so on). Older ones are refused.
+## (see `_upgrade_from_version_40` and so on). Older ones are refused.
 ##
 ## How to add a save field (or change one):
 ## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
@@ -23,8 +23,9 @@ extends RefCounted
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
 const VERSION := 49
-## The oldest version we still upgrade.
-const OLDEST_VERSION := VERSION - 10
+## The oldest version we still upgrade. Nine steps back, for the next version (#104) makes its step
+## the tenth.
+const OLDEST_VERSION := VERSION - 9
 ## The world's save path: its saves are named after it (see SaveList).
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
@@ -219,8 +220,6 @@ static func copy_aside(path: String, backup: String) -> String:
 
 ## Brings the data of a save of `version` up to the current one.
 static func _upgrade(game: Dictionary, version: int) -> void:
-	if version <= 39:
-		_upgrade_from_version_39(game)
 	if version <= 40:
 		_upgrade_from_version_40(game)
 	if version <= 41:
@@ -239,12 +238,6 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_47(game)
 	if version <= 48:
 		_upgrade_from_version_48(game)
-
-
-## Version 39 had lanterns that burnt no candle (task 231): every lantern, in a stack of the player
-## or a chest or in a pile on the ground, holds a fresh candle.
-static func _upgrade_from_version_39(game: Dictionary) -> void:
-	_give_lanterns_a_candle(game)
 
 
 ## Version 40 had campfires that burnt for ever (task 56): every fireplace has a slot for wood, and
@@ -363,14 +356,3 @@ static func _upgrade_from_version_48(game: Dictionary) -> void:
 	var village: Variant = game["world"]["village"]
 	if village != null:
 		village.erase("kept_worn_tiles")
-
-
-static func _give_lanterns_a_candle(data: Variant) -> void:
-	if data is Array:
-		for entry: Variant in data:
-			_give_lanterns_a_candle(entry)
-	elif data is Dictionary:
-		if data.get("item") == "lantern" and data.get("count") == 1:
-			data["state"] = {"candle": {}}
-		for entry: Variant in data.values():
-			_give_lanterns_a_candle(entry)
