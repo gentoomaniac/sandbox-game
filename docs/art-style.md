@@ -518,7 +518,7 @@ so there was no single male costume; that gives freedom, as long as it is 18th-c
   behind it, from the side in front of it; the head points away from the body (forward from
   the side), so it shows beside the figure. The classic art has only the hoe and the lantern;
   the others show the new picture in both sets.
-- **Swinging a tool** (task 227, tool_swing.py, swing.py; awaiting the user's verdict): four or
+- **Swinging a tool** (task 227, tool_swing.py, swing.py; approved by the user, played by the game: `PlayerView.swing`, timings in `data/tool_swing.cfg`): four or
   five frames of a motion in each facing, in sheets of their own (`character/use/`), every layer
   of the player and each tool in its grade, 96x96 cells with the figure's frame at (32, 16), a
   column per frame, one motion after the other; `DURATIONS` says how long each frame shows (the
@@ -541,13 +541,18 @@ so there was no single male costume; that gives freedom, as long as it is 18th-c
   top left, never drawn at an odd angle; the hands may hold it further up its handle. The
   classic art (classic/swing.py) halves the frames: arms as lines from the shoulder, the tool the
   32 px picture at half the size. No new colours.
-- **Pouring from the watering can** (task 227, tool_swing.py; awaiting the user's verdict): a
+- **Pouring from the watering can** (task 227, tool_swing.py; approved by the user): a
   motion of its own in the swing sheets, four frames: lifted forward by its hoop, leant over by
   an eighth of a turn (a map drawn by hand), and tipped on its side (the held can turned a
   quarter and lit anew by hand) with the water running from the rose down to the ground in two
   frames, which the game may repeat while it pours: drops of `water_light` and `foam` without an
   outline. The can hangs from the hand over the sleeve; from the front and from behind its spout
-  points out to the side.
+  points out to the side. From behind it is drawn in front of the body (its frames are in
+  `held_<grade>_watering_can.png`, not in `_behind`): the game draws, for every frame, the held
+  layer's `_behind` sheet under the body and its front sheet over it, and each sheet is empty in
+  the frames that belong to the other. `DURATIONS` in tool_swing.py is the artist's start;
+  the game reads the timings from `data/tool_swing.cfg`, in the order of the sheet's columns, and
+  the two must change together.
 - **The lantern** (task 177): a horn lantern as carried about 1750, a tin cylinder with a
   pierced cone of a roof and a ring, a pane of horn (`mud`, `sand`, `sand_light`) with the
   tallow candle (`lime`, `cream`) showing through, a wider tin foot. In the hand it hangs from

@@ -36,6 +36,7 @@ func test_flags_with_a_value() -> void:
 					"--wildlife=bird,flock",
 					"--pose=left,2",
 					"--hair=1",
+					"--swing-frame=3",
 					"--riding=pony",
 					"--inside=barn",
 				]
@@ -59,6 +60,7 @@ func test_flags_with_a_value() -> void:
 	assert_eq(options.pose, "left")
 	assert_eq(options.pose_column, 2)
 	assert_eq(options.hair, 1)
+	assert_eq(options.swing_frame, 3)
 	assert_eq(options.riding, &"pony")
 	assert_true(options.inside)
 	assert_eq(options.inside_building, &"barn")

@@ -74,6 +74,7 @@ extends RefCounted
 ##   --pose=<direction>[,<column>]  face that way, optionally frozen on that walking frame (on
 ##                            horseback a column of the ridden horse: 0 standing, 1 to 4
 ##                            walking, 5 to 8 trotting)
+##   --swing-frame=<n>        freeze the swing of the held tool on its frame n (counted from 0)
 ##   --riding=<look>          sit on a saddled horse of that look (bay, black, grey, pony)
 ##   --inside[=<building>]    walk into the first house as soon as one exists (see --house), or
 ##                            into the first building of that type (see --street)
@@ -240,6 +241,8 @@ var hair := -1
 var pose := ""
 ## -1 for a walking player.
 var pose_column := -1
+## -1 for a player who stands or walks.
+var swing_frame := -1
 var riding := &""
 var inside := false
 ## The building type `--inside` walks into, or empty for the first house.
@@ -412,6 +415,8 @@ func _init(args := PackedStringArray()) -> void:
 				pose = parts[0]
 				if parts.size() > 1:
 					pose_column = int(parts[1])
+			"--swing-frame":
+				swing_frame = int(_value(arg))
 			"--riding":
 				riding = StringName(_value(arg))
 			"--inside":

@@ -1,7 +1,10 @@
 """Tests of the tools' swing (tool_swing.py, swing.py): every tool in every frame is a whole,
 rigid picture held by its handle (the watering can by its hoop), and it stays inside its cell."""
 
+import json
+import re
 import unittest
+from pathlib import Path
 
 import character
 import swing
@@ -76,6 +79,17 @@ class ToolPictureTest(unittest.TestCase):
             self.assertEqual(len(tool_swing.DURATIONS[motion]), count)
             for facing in FACINGS:
                 self.assertEqual(len(FRAMES[(motion, facing)]), count)
+
+    def test_the_games_timings_are_the_durations_in_the_order_of_the_columns(self):
+        """data/tool_swing.cfg (read by the game) has the motions in the sheet's order, with
+        the frame times of DURATIONS and the tools of MOTION_OF_TOOL."""
+        text = (Path(__file__).parents[2] / "data" / "tool_swing.cfg").read_text()
+        sections = re.findall(r"^\[(\w+)\]\ntools=(.*)\nframe_ms=(.*)$", text, re.MULTILINE)
+        self.assertEqual([name for name, _, _ in sections], list(tool_swing.MOTIONS))
+        for name, tools, frame_ms in sections:
+            self.assertEqual(tuple(json.loads(frame_ms)), tool_swing.DURATIONS[name])
+            expected = sorted(tool for tool, motion in MOTION_OF_TOOL.items() if motion == name)
+            self.assertEqual(sorted(json.loads(tools)), expected)
 
 
 class DigTest(unittest.TestCase):

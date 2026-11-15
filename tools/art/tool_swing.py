@@ -431,8 +431,9 @@ POINTS = {
     ("hoe", "right", 3): DOWN_RIGHT,
     ("hoe", "right", 4): DOWN_RIGHT,
 }
-# How long each frame of a motion shows, in milliseconds, for the game to play them at: the blow
-# and the push hold longest, the fast middle of a swing shortest.
+# How long each frame of a motion shows, in milliseconds, the artist's start: the blow and the push
+# hold longest, the fast middle of a swing shortest. The game reads them from data/tool_swing.cfg
+# (a test checks that they agree), where they are tuned.
 DURATIONS = {
     "chop": (100, 160, 70, 180, 120),
     "knock": (90, 140, 60, 160, 110),

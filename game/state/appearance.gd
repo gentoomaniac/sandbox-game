@@ -42,6 +42,12 @@ const COLLAPSE_SHEET_PATH := "res://assets/character/collapse/%s_%s.png"
 ## layers have one, and not the held layer: the hands hold the reins.
 const RIDING_SHEET_PATH := "res://assets/character/riding/%s_%s.png"
 
+## The same layer swinging a tool (see PlayerView `swing`): the frames of every motion of
+## data/tool_swing.cfg one after the other, in cells larger than the standing ones. The held layer
+## has a sheet of the tool in front of the body (`<variant>`) and one of the tool behind it
+## (`<variant>_behind`), each empty in the frames where the tool is on the other side.
+const USE_SHEET_PATH := "res://assets/character/use/%s_%s.png"
+
 ## What a new character looks like by themselves, bottom layer first.
 const DEFAULT_LOOK := [[BODY, "0"], [HAIR, "0"]]
 
@@ -125,6 +131,11 @@ static func collapse_sheet_path(layer: Dictionary) -> String:
 ## The sheet that holds a layer's riding frames.
 static func riding_sheet_path(layer: Dictionary) -> String:
 	return RIDING_SHEET_PATH % [layer.slot, layer.variant]
+
+
+## The sheet that holds a layer's swing frames.
+static func use_sheet_path(layer: Dictionary) -> String:
+	return USE_SHEET_PATH % [layer.slot, layer.variant]
 
 
 func to_dict() -> Dictionary:

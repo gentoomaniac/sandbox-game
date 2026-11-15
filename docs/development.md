@@ -102,6 +102,8 @@ out of date. Recipes that were used (add `--classic-art` for the classic art):
   --weather=rain --camera-shift=0,-10 --screenshot-delay=0.2 --mouse-tile=0,0"`; `--mouse-tile=0,0` keeps the highlight off the villager. The scripted line shows when
   `build/settings.cfg` has an empty `endpoint` under `[language_model]`. The line and the place vary, so
   take it a few times; the two arts side by side are two shots joined.
+- A frame of a tool's swing (`--swing-frame` freezes the held tool's swing on a frame, counted from 0): `make
+  screenshot SIZE=320x200 ZOOM=2 TIME=12:00 ARGS="--hold=steel_axe --pose=right --swing-frame=3 --mouse-tile=0,0"`.
 - The console with a long, wrapping line: `"ARGS=--console='weather;god;spawn'"` (several commands, `;`
   between them, need that quoting).
 - The build menu: `make screenshot SIZE=1000x700 ZOOM=0.75 TIME=12:00 AT=69,-17 ARGS="--day=45 --yard=40,-20

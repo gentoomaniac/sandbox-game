@@ -20,14 +20,24 @@ extends Node2D
 ## them (its head, coming towards the viewer). The horse stands, walks or trots, and the rider sits
 ## in its saddle and rises with the trot.
 ##
+## Using a tool (`swing`) shows its swing sheets (see Appearance): the character plays the motion
+## of the tool for the way it faces, at the timings of data/tool_swing.cfg (ToolSwingRules), and
+## goes back to standing. `swing_struck` comes when the blow lands, `swing_ended` at the end. The
+## art says in each frame whether the tool is behind the body or in front of it: from behind, the
+## axe is hidden by the body, the watering can is drawn over it.
+##
 ## A lit lantern with the player (PlayerState `is_lantern_shining`) casts its light around them
 ## from the hand: one ObjectLight on the figure, flickering like the fires.
 
 ## A foot came down: time for a footstep sound.
 signal stepped
+## The blow of a swing lands (the strike frame of data/tool_swing.cfg).
+signal swing_struck
+## The swing is over, the character stands again.
+signal swing_ended
 
 ## The sheets the layers show: standing and walking, passing out, or on horseback.
-enum Pose { STANDING, COLLAPSE, RIDING }
+enum Pose { STANDING, COLLAPSE, RIDING, SWINGING }
 
 ## Frames per facing in every layer sheet: idle, walk 1 to 4.
 const FRAMES_PER_FACING := 5
@@ -39,6 +49,9 @@ const IDLE_COLUMN := 0
 ## A walk cycle visits these columns, step after step.
 const WALK_COLUMNS := [1, 2, 3, 4]
 const WALK_FRAMES_PER_SECOND := 10.0
+## The swing sheets have square cells with the 32x64 figure frame in the middle: room around it
+## for the tool.
+const SWING_CELL := 96
 ## The walk frames where a foot comes down, two per cycle.
 const STEP_COLUMNS := [1, 3]
 ## The hair variants that `--hair` and F6 cycle through.
@@ -128,6 +141,16 @@ var _last_position := Vector2.ZERO
 var _walk_time := 0.0
 var _hair := 0
 var _frozen_column := -1
+## The motion being swung, or "" while no swing plays, with what it needs to play: the seconds it
+## has lasted, the way the character faced and what they wore when it began, and whether its
+## blow has landed.
+var _swing_motion := &""
+var _swing_time := 0.0
+var _swing_facing := Vector2i.DOWN
+var _swing_layers: Array[Dictionary] = []
+var _is_swing_struck := false
+## The frame of the swing to stay on (`--swing-frame`), or -1.
+var _frozen_swing_frame := -1
 ## Seconds since `collapse`, or -1 while the player is on their feet.
 var _collapse_time := -1.0
 var _sleep_zs := SleepZs.new()
@@ -192,6 +215,7 @@ func show_player(player: PlayerState, options := StartupOptions.new()) -> void:
 	position = (player.position * TerrainTileset.TILE_SIZE).round()
 	if options.hair >= 0:
 		_wear_hair(options.hair)
+	_frozen_swing_frame = options.swing_frame
 	if options.pose != "":
 		player.facing = FACINGS_BY_NAME[options.pose]
 		_frozen_column = options.pose_column
@@ -203,9 +227,25 @@ func show_player(player: PlayerState, options := StartupOptions.new()) -> void:
 		player.is_lantern_lit = true
 
 
+## The player swings the tool in their hand: its motion plays for the way they face, and the
+## signals tell when the blow lands and when it ends. The swing is taken from the layers as they
+## are now, so that changing the held item meanwhile does not change the picture.
+func swing(motion: StringName) -> void:
+	_swing_motion = motion
+	_swing_time = 0.0
+	_swing_facing = _player.facing
+	_swing_layers = _layers_for_swing()
+	_is_swing_struck = false
+
+
+func is_swinging() -> bool:
+	return _swing_motion != &""
+
+
 ## The player passes out where they stand (see the collapse sheets).
 func collapse() -> void:
 	_collapse_time = 0.0
+	_swing_motion = &""
 
 
 ## Back on their feet, as after waking up.
@@ -229,6 +269,10 @@ func _process(delta: float) -> void:
 		_walk_time += delta * walk_speed
 	else:
 		_walk_time = 0.0
+	# Getting on a horse or into a bed ends a swing with no blow: the sheets of those poses take over
+	# the drawing, and the swing would stay on, refusing every use, until the player stood again.
+	if _player.horse != null or _player.bed_lying_in != null:
+		_swing_motion = &""
 	_show_horse(_player.horse)
 	var lantern_strength := light_strength if _player.is_lantern_shining() else 0.0
 	if _lantern.strength != lantern_strength:
@@ -248,6 +292,13 @@ func _process(delta: float) -> void:
 		return
 	if _collapse_time >= 0.0:
 		_show_collapse(delta)
+		return
+	if _frozen_swing_frame >= 0 and not is_swinging():
+		swing(ToolSwingRules.default_rules().motion_of(_held_tool_kind()))
+	if is_swinging():
+		_advance_swing(delta)
+	if is_swinging():
+		_show_swing()
 		return
 	var column := frame_column(moved != Vector2.ZERO, _walk_time)
 	if _frozen_column >= 0:
@@ -315,6 +366,47 @@ func _show_riding(is_moving: bool) -> void:
 	figure.position = seat - Vector2(0, RIDE_LIFTS[column])
 
 
+## Lets the swing go on by `delta` seconds: the blow lands, or the swing ends.
+func _advance_swing(delta: float) -> void:
+	var rules := ToolSwingRules.default_rules()
+	if _frozen_swing_frame >= 0:
+		_swing_time = rules.frame_start(_swing_motion, _frozen_swing_frame)
+		return
+	_swing_time += delta
+	if (
+		not _is_swing_struck
+		and _swing_time >= rules.frame_start(_swing_motion, rules.strike_frame(_swing_motion))
+	):
+		_is_swing_struck = true
+		swing_struck.emit()
+	if _swing_time >= rules.duration(_swing_motion):
+		_swing_motion = &""
+		swing_ended.emit()
+
+
+func _show_swing() -> void:
+	var rules := ToolSwingRules.default_rules()
+	_show_layers(_swing_layers, Pose.SWINGING)
+	var column := rules.first_column(_swing_motion) + rules.frame_at(_swing_motion, _swing_time)
+	for sprite in _sprites:
+		sprite.frame = FACING_ROWS[_swing_facing] * rules.column_count() + column
+
+
+## The layers the swing sheets draw, bottom first: the tool behind the body, then the worn layers
+## with the tool in front of it.
+func _layers_for_swing() -> Array[Dictionary]:
+	var layers: Array[Dictionary] = []
+	for layer in _player.appearance.layers:
+		if layer.slot == Appearance.HELD:
+			layers.push_front({slot = layer.slot, variant = layer.variant + "_behind"})
+		layers.append(layer)
+	return layers
+
+
+func _held_tool_kind() -> StringName:
+	return ItemTypes.TYPES.get(_player.inventory.held_item(), {}).get("tool", &"")
+
+
 func _show_collapse(delta: float) -> void:
 	_collapse_time += delta
 	var frame := collapse_frame(_collapse_time)
@@ -356,8 +448,8 @@ func _wear_hair(hair: int) -> void:
 	_player.appearance.wear(Appearance.HAIR, str(hair))
 
 
-## Shows the layers' sheets of a pose: standing, passing out or riding, in the chosen art set
-## (a switch of the set changes the sheets, which rebuilds the sprites).
+## Shows the layers' sheets of a pose: standing, passing out, riding or swinging, in the chosen
+## art set (a switch of the set changes the sheets, which rebuilds the sprites).
 func _show_layers(layers: Array[Dictionary], pose: Pose) -> void:
 	var sheets: Array[String] = []
 	for layer in layers:
@@ -368,6 +460,8 @@ func _show_layers(layers: Array[Dictionary], pose: Pose) -> void:
 				sheets.append(ArtSet.path(Appearance.collapse_sheet_path(layer)))
 			Pose.RIDING:
 				sheets.append(ArtSet.path(Appearance.riding_sheet_path(layer)))
+			Pose.SWINGING:
+				sheets.append(ArtSet.path(Appearance.use_sheet_path(layer)))
 	if sheets == _shown_sheets:
 		return
 	_shown_sheets = sheets
@@ -385,6 +479,7 @@ func _show_layers(layers: Array[Dictionary], pose: Pose) -> void:
 			Pose.STANDING: FRAMES_PER_FACING,
 			Pose.COLLAPSE: COLLAPSE_FRAME_STARTS.size(),
 			Pose.RIDING: 1,
+			Pose.SWINGING: ToolSwingRules.default_rules().column_count(),
 		}[pose]
 		sprite.vframes = 1 if pose == Pose.COLLAPSE else FACING_ROWS.size()
 		# The frame's bottom centre is at the feet.
