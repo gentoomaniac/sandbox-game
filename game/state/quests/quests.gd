@@ -9,10 +9,13 @@ extends RefCounted
 ## first day is a starter. A giver has one quest at a time, and a quest is not posted again at once
 ## after it was done or went away.
 
-## A quest was posted: `entry` is `{id, giver, posted_day, is_taken}` (see `open_entries`).
-signal posted(entry: Dictionary)
-## A quest went away unfinished because its days are up.
-signal went_away(entry: Dictionary)
+## A quest was posted or went away: what the player is told of it, as a line of text.
+signal noticed(text: String)
+
+## What the player is told when a quest is posted, and when one goes away: the villager's name
+## and, for the second, what they asked for.
+const POSTED_TEXT := "%s has something for you."
+const WENT_AWAY_TEXT := "%s no longer needs the %s."
 
 var rules: QuestRules
 var _clock: GameClock
@@ -50,6 +53,28 @@ func is_open(id: String) -> bool:
 
 func is_done(id: String) -> bool:
 	return _done.has(id)
+
+
+## The quest the villager gives, as its entry, or an empty dictionary when they give none.
+func entry_of_giver(giver: String) -> Dictionary:
+	for entry in _open:
+		if entry["giver"] == giver:
+			return entry
+	return {}
+
+
+## How many quests the player has taken, whoever gave them.
+func taken_count() -> int:
+	return _open.filter(func(entry: Dictionary) -> bool: return entry["is_taken"]).size()
+
+
+func is_log_full() -> bool:
+	return taken_count() >= rules.quest_log_size()
+
+
+## The player takes the posted quest of `entry`: it is in their list now.
+func take(entry: Dictionary) -> void:
+	entry["is_taken"] = true
 
 
 ## The last day the quest stays: the days of its file count from the day it was posted.
@@ -115,7 +140,7 @@ func post(id: String, giver := "") -> String:
 		return "No villager %s in the world" % giver
 	var entry := {"id": id, "giver": giver, "posted_day": _clock.day, "is_taken": false}
 	_open.append(entry)
-	posted.emit(entry)
+	noticed.emit(POSTED_TEXT % _name_of(giver))
 	return ""
 
 
@@ -144,7 +169,12 @@ func expire(today: int) -> void:
 		if last_day_of(entry) < today:
 			_open.erase(entry)
 			_ended[entry["id"]] = today
-			went_away.emit(entry)
+			noticed.emit(WENT_AWAY_TEXT % [_name_of(entry["giver"]), rules.thing_of(entry["id"])])
+
+
+func _name_of(villager: String) -> String:
+	var npc := _npcs.find(villager)
+	return villager if npc == null else npc.name
 
 
 func _on_new_day(today: int) -> void:

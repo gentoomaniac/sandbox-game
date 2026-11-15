@@ -91,5 +91,19 @@ above.
 - **The first day:** a new game with a village posts at once a random quest marked `starter`, with
   a random giver. A world with no village has none.
 
-The state is `Quests` (`game/state/quests/quests.gd`, `GameState.quests`), with the signals `posted`
-and `went_away`; the console's `quest` is its test tool (handbook console page).
+The state is `Quests` (`game/state/quests/quests.gd`, `GameState.quests`), with the signal `noticed`
+(a line for the player); the console's `quest` is its test tool (handbook console page).
+
+## Taking a quest
+
+E on the giver **while the quest is posted** opens the chat, and the giver says the `dialogue` lines
+of the quest as lines of the chat (`QuestTalk`); the quest is then **taken**, which is when it is in
+the player's list. A quest taken is recalled with its first line when the player speaks to them
+again. Taking one with the quest log full (`quest_log_size`) is refused with the notice "Your quest
+log is full." in the chat, and the quest stays posted. A giver not at hand just waits: E works
+wherever the player meets them. A quest need not be taken before its days are up: it goes away as
+it is.
+
+**Notices:** when a quest is posted the player is told "Antje Boysen has something for you." (the
+notice board of a later step changes that line), and when one goes away, taken or not, "Antje Boysen
+no longer needs the fibre."

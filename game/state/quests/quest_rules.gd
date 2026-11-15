@@ -117,11 +117,13 @@ func quest(id: String) -> Dictionary:
 	return _quests[id]
 
 
-## The kind of objective or prerequisite the file names by `type`.
-func objective_kind(type: String) -> QuestObjective:
-	return _objective_kinds[type]
+## What the quest asks for, in words (see QuestObjective `thing`).
+func thing_of(id: String) -> String:
+	var objective: Dictionary = _quests[id]["objective"]
+	return _objective_kinds[objective["type"]].thing(objective)
 
 
+## The kind of prerequisite the file names by `type`.
 func condition_kind(type: String) -> QuestCondition:
 	return _condition_kinds[type]
 

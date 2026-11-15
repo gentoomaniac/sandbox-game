@@ -101,8 +101,8 @@ func test_the_same_day_and_world_give_the_same_pick() -> void:
 
 func test_a_quest_goes_away_the_morning_after_its_last_day_without_a_word_of_blame() -> void:
 	_use_rules({"a": {"giver": ANTJE, "days": 3}})
-	var gone: Array[Dictionary] = []
-	_quests.went_away.connect(func(entry: Dictionary) -> void: gone.append(entry))
+	var notices: Array[String] = []
+	_quests.noticed.connect(func(text: String) -> void: notices.append(text))
 	_pass_days(1)
 	assert_eq(_quests.open_entries()[0]["posted_day"], 2)
 	assert_eq(_quests.last_day_of(_quests.open_entries()[0]), 4)
@@ -112,8 +112,7 @@ func test_a_quest_goes_away_the_morning_after_its_last_day_without_a_word_of_bla
 	_pass_days(1)
 
 	assert_true(_quests.open_entries().is_empty())
-	assert_eq(gone.size(), 1)
-	assert_eq(gone[0]["id"], "a")
+	assert_eq(notices.back(), "Antje Boysen no longer needs the fibre.")
 	assert_eq(_state.npcs.find(ANTJE).opinion, 0)
 	assert_false(_quests.is_done("a"))
 

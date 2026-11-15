@@ -55,8 +55,11 @@ func open_shop(keeper: Npc) -> void:
 
 
 ## Opens the chat with a villager, who turns to the player (the chat pauses the game). A shopkeeper
-## at a shut stall says so first.
+## at a shut stall says so first, and one with a quest gives it.
 func open_chat(npc: Npc) -> void:
 	state.npcs.talk_to(npc, state.player.position)
 	ShopHours.greet(state, npc)
+	var refusal := QuestTalk.greet(state, npc)
 	chat_screen.open_chat(npc, state)
+	if refusal != "":
+		chat_screen.show_notice(refusal)

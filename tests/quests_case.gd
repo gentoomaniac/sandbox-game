@@ -23,8 +23,8 @@ func _add_villagers(ids: Array[String]) -> void:
 
 
 ## The quests as rules: each given quest is the fibre quest of the data folder with `changes`. The
-## limits are those of the data folder, with `limits` over them.
-func _use_rules(changes_by_id: Dictionary, limits := {}) -> void:
+## limits are those of the data folder, with `limits` over them and `quest_log_size`.
+func _use_rules(changes_by_id: Dictionary, limits := {}, quest_log_size := 10) -> void:
 	var real := QuestRules.default_rules()
 	var quests := {}
 	for id: String in changes_by_id:
@@ -38,7 +38,7 @@ func _use_rules(changes_by_id: Dictionary, limits := {}) -> void:
 	}
 	villagers.merge(limits, true)
 	_quests.rules = QuestRules.new(
-		quests, {"villagers": villagers, "log": {"quest_log_size": real.quest_log_size()}}
+		quests, {"villagers": villagers, "log": {"quest_log_size": quest_log_size}}
 	)
 
 

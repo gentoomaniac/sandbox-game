@@ -119,3 +119,12 @@
   (`[language_model]`); the key is plain text there, as the Settings page says, never in the
   save; it is sent as `Authorization: Bearer <key>`, and the client follows no redirect, so
   the key goes only to that endpoint. Claude's own API needs an adapter of its own (later).
+
+## Quest lines
+
+A villager with a quest to give, or who has given one the player took, says the lines of the quest's
+file when the player speaks to them (E, design/villagers/quests.md): the `dialogue` lines, one chat
+line each, the first time (and the quest is then taken), and the first of them again as a reminder
+when the player speaks to them again later. They are plain chat lines, in the villager's history
+like any other, with no model needed (`QuestTalk`). A full quest log refuses the quest with a
+notice in the chat and says nothing.

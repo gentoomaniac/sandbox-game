@@ -180,6 +180,12 @@ func refit() -> void:
 		_fit_text_width(body)
 
 
+## Shows `text` as a notice below the lines, until the player says something.
+func show_notice(text: String) -> void:
+	_notice = text
+	_show_lines()
+
+
 ## Says a line to the villager, who answers it in time. Ignored while they still owe one.
 func say(text: String) -> void:
 	var npc := _npc
