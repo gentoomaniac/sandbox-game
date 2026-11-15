@@ -1,7 +1,8 @@
 # Saving (first version)
 
-- Save format: seed + world edits (terrain, objects, the days of wear of desire paths, the steps taken today, and how long tilled
-  soil has lain fallow) + buildings with their interiors (and the items lying on their floors) +
+- Save format: seed + world edits (terrain, objects, the days of wear of desire paths, the steps
+  taken today, and how long tilled soil has lain fallow) + buildings with their interiors (and the
+  items lying on their floors) +
   player state (position, current map, home, appearance, inventory) + clock. One JSON
   file per world under `user://saves/`.
 - **Autosave when the player sleeps, passes out and when the game quits, and on a timer** (task

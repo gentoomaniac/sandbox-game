@@ -33,7 +33,8 @@ it was too fast, wear needs days, not only steps). All numbers are in `data/path
   "Days in a row" is therefore a little loose: a tile that is walked on every other day never
   gets anywhere, since each quiet day takes off what the busy one added.
 - The look only changes at midnight: nothing changes under the player's feet while they walk.
-  Every midnight of a time skip (sleep, passing out) is counted like those of play.
+  Every midnight of a time skip (sleep, passing out) is counted like those of play. The steps
+  villagers take in a skip are added at its end, so they count for the day it ends in only.
 - Only the tables of worn tiles and of today's steps are kept: a tile that was stepped on once and
   not again is gone at the next midnight.
 

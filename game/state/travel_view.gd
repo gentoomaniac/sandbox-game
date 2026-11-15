@@ -66,7 +66,7 @@ func is_free(tile: Vector2i) -> bool:
 ## crop, a flower), so they walk round the fields. Only for a known tile.
 func cost_of(tile: Vector2i) -> float:
 	var cost := 1.0
-	match _path_rules.stage_of(_snapshot.wear.get(tile, 0.0)):
+	match _path_rules.stage_of(_snapshot.wear.get(tile, 0)):
 		PathRules.Stage.TRODDEN:
 			cost = _cost_trodden
 		PathRules.Stage.PATH:
