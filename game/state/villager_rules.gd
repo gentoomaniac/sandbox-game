@@ -36,6 +36,9 @@ const WORK_SET_KEY := "work_set"
 const ACTIVITIES_KEY := "activities"
 const SKIPS_KEY := "skips"
 const CHURCH_FEASTS_ONLY_KEY := "church_feasts_only"
+## The key a sheet may add to open a benefit of FriendshipRules at another level than the data
+## file says: {benefit: level}, e.g. {"lends_tool": 5}.
+const BENEFIT_LEVEL_KEY := "benefit_level"
 ## A villager's sample lines: the cut-down sheet tells this many.
 const MIN_SAMPLES := 2
 ## The kinds of people a villager may name in `people`: the sex of the one named ("" for
@@ -117,6 +120,7 @@ func problems() -> Array[String]:
 				"[%s]" % id, villager.get("gifts_liked"), villager.get("gifts_disliked")
 			)
 		)
+		found.append_array(_benefit_problems(id, villager))
 		found.append_array(_place_problems(id, villager))
 		found.append_array(_activity_problems(id, villager))
 		found.append_array(_interior_problems(id, villager))
@@ -185,6 +189,35 @@ func _relation_problems(id: String, other: String) -> Array[String]:
 						% [where, key, KINDS[kind]["back"][0]]
 					)
 				)
+	return found
+
+
+## The levels that a sheet opens benefits at, {benefit: level}: none for most villagers.
+func benefit_levels(id: String) -> Dictionary:
+	return _values[id].get(BENEFIT_LEVEL_KEY, {})
+
+
+## What is wrong with the benefits a sheet opens at other levels: each is a benefit of the game and
+## a level from FriendshipRules EARLIEST_BENEFIT_LEVEL up.
+func _benefit_problems(id: String, villager: Dictionary) -> Array[String]:
+	var levels: Variant = villager.get(BENEFIT_LEVEL_KEY)
+	if levels == null:
+		return []
+	if not levels is Dictionary:
+		return ["[%s] %s is not {benefit: level}" % [id, BENEFIT_LEVEL_KEY]]
+	var found: Array[String] = []
+	var earliest := FriendshipRules.EARLIEST_BENEFIT_LEVEL
+	for benefit: String in levels:
+		var level: Variant = levels[benefit]
+		if not FriendshipRules.BENEFITS.has(StringName(benefit)):
+			found.append("[%s] %s: %s is no benefit" % [id, BENEFIT_LEVEL_KEY, benefit])
+		elif not (level is int and level >= earliest and level <= FriendshipRules.LEVEL_COUNT):
+			found.append(
+				(
+					"[%s] %s: %s must be a level from %d to %d"
+					% [id, BENEFIT_LEVEL_KEY, benefit, earliest, FriendshipRules.LEVEL_COUNT]
+				)
+			)
 	return found
 
 

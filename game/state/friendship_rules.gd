@@ -12,6 +12,26 @@ const LEVEL_COUNT := 10
 const BOND_NONE := &"none"
 const BONDS: Array[StringName] = [BOND_NONE]
 const MOODS: Array[String] = ["cold", "neutral", "warm"]
+## What a level opens: each a key of [benefits].
+const BENEFITS: Array[StringName] = [
+	&"talk",
+	&"trade",
+	&"quests",
+	&"greets_by_name",
+	&"small_news",
+	&"barter",
+	&"tells_wants",
+	&"better_prices",
+	&"lends_tool",
+	&"teaches",
+	&"tells_secrets",
+	&"invites_inside",
+	&"best_wares",
+	&"may_court",
+]
+## The lowest level a sheet may open a benefit at (see `benefit_problems`): at level 1 a villager
+## turns away from the player, whatever they have.
+const EARLIEST_BENEFIT_LEVEL := 2
 ## Where an entry of a level is in its value: [name, first point, mood].
 const NAME := 0
 const FIRST_POINT := 1
@@ -78,6 +98,17 @@ func problems() -> Array[String]:
 			bad.append("[%s] %s must be a whole number" % section_and_key)
 	if not bad.is_empty():
 		return bad
+	for benefit in BENEFITS:
+		var level: Variant = _values.get("benefits", {}).get(str(benefit))
+		if not (level is int and level >= EARLIEST_BENEFIT_LEVEL and level <= LEVEL_COUNT):
+			bad.append(
+				(
+					"[benefits] %s must be a level from %d to %d"
+					% [benefit, EARLIEST_BENEFIT_LEVEL, LEVEL_COUNT]
+				)
+			)
+	if not bad.is_empty():
+		return bad
 	if levels.size() != LEVEL_COUNT:
 		bad.append("[levels] must have the levels 1 to %d and no others" % LEVEL_COUNT)
 	for level in range(1, LEVEL_COUNT + 1):
@@ -139,6 +170,18 @@ func first_point_of(level: int) -> int:
 ## The most points the player's actions move a villager's opinion in a day, up or down.
 func action_daily_cap() -> int:
 	return _values["caps"]["action_daily_cap_points"]
+
+
+## The lowest level that has `benefit` (one of BENEFITS).
+func benefit_level(benefit: StringName) -> int:
+	return _values["benefits"][str(benefit)]
+
+
+## Whether a villager at `level` of friendship with the player gives `benefit`. A villager whose
+## sheet has a `benefit_level` for it gives it from that level instead: `earlier` is that part of
+## the sheet (see VillagerRules `benefit_levels`).
+func allows(benefit: StringName, level: int, earlier := {}) -> bool:
+	return level >= int(earlier.get(str(benefit), benefit_level(benefit)))
 
 
 ## What a gift of this taste (`liked`, `neutral` or `disliked`) moves the opinion by, in points.

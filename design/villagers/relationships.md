@@ -59,6 +59,11 @@ pages of [villagers](README.md) as "as built", as the pages of [gossip](gossip.m
   house is nearest within `owner_reach_tiles` (12; the first of a household), one inside a house
   the first of its residents'; a thing anywhere else, the player's own, is nobody's. Left out: the
   animals themselves (there is nothing in the game to take from one but eggs).
+- Step 9: benefits as data. `[benefits]` of `data/friendship.cfg` gives each benefit of the table
+  its lowest level; `FriendshipRules.allows(benefit, level, earlier)` answers, never a number in
+  code. A sheet may give `benefit_level` ({"lends_tool": 5}, levels 2 to 10, checked by
+  `VillagerRules`; `benefit_levels(id)` reads it) to open a benefit sooner or hold it back. Nothing
+  asks it yet (step 10).
 
 ## The user's words
 

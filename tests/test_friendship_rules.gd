@@ -85,3 +85,56 @@ func test_a_cap_that_is_no_number_is_a_problem() -> void:
 	var values := DataFile.read_sections(FriendshipRules.DEFAULT_PATH)
 	values["caps"]["action_daily_cap_points"] = "sixty"
 	assert_eq(FriendshipRules.new(values).problems().size(), 1)
+
+
+func test_every_benefit_opens_at_the_level_of_the_plan() -> void:
+	var plan := {
+		&"talk": 2,
+		&"trade": 3,
+		&"quests": 3,
+		&"greets_by_name": 4,
+		&"small_news": 4,
+		&"barter": 5,
+		&"tells_wants": 5,
+		&"better_prices": 6,
+		&"lends_tool": 6,
+		&"teaches": 7,
+		&"tells_secrets": 8,
+		&"invites_inside": 8,
+		&"best_wares": 9,
+		&"may_court": 10,
+	}
+	assert_eq(plan.keys(), FriendshipRules.BENEFITS)
+	for benefit: StringName in plan:
+		assert_eq(_rules.benefit_level(benefit), plan[benefit], benefit)
+		assert_true(_rules.allows(benefit, plan[benefit]), "at its level: %s" % benefit)
+		assert_false(_rules.allows(benefit, plan[benefit] - 1), "one below: %s" % benefit)
+
+
+func test_a_sheet_moves_a_benefit_to_its_own_level() -> void:
+	var earlier := {"lends_tool": 4}
+
+	assert_true(_rules.allows(&"lends_tool", 4, earlier))
+	assert_false(_rules.allows(&"lends_tool", 3, earlier))
+	assert_false(_rules.allows(&"teaches", 4, earlier), "the others stay")
+	assert_false(_rules.allows(&"teaches", 7, {"teaches": 9}), "held back")
+
+
+func test_a_benefit_missing_or_below_level_2_or_above_10_is_a_problem() -> void:
+	var values := DataFile.read_sections(FriendshipRules.DEFAULT_PATH)
+	values["benefits"].erase("barter")
+	values["benefits"]["talk"] = 1
+	values["benefits"]["may_court"] = 11
+
+	assert_eq(FriendshipRules.new(values).problems().size(), 3)
+
+
+func test_a_sheets_benefit_levels_are_checked() -> void:
+	var sheets := DataFile.read_sections(VillagerRules.DEFAULT_PATH)
+	assert_eq(VillagerRules.new(sheets).benefit_levels("antje"), {})
+	sheets["antje"]["benefit_level"] = {"lends_tool": 5}
+	assert_eq(VillagerRules.new(sheets).problems(), [])
+	assert_eq(VillagerRules.new(sheets).benefit_levels("antje"), {"lends_tool": 5})
+	for bad in [{"lends_tool": 1}, {"lends_tool": 11}, {"flying": 5}, {"lends_tool": "5"}, 5]:
+		sheets["antje"]["benefit_level"] = bad
+		assert_eq(VillagerRules.new(sheets).problems().size(), 1, str(bad))
