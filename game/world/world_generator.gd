@@ -46,9 +46,12 @@ const OPEN_BUSH_CHANCE := 0.01
 const STONE_CHANCE := 0.012
 ## A boulder is 2 tiles wide: it needs the tile right of the rolled one to be free grass.
 const BOULDER_CHANCE := 0.004
-## Dead trees are rare everywhere, and more common with wetland WETLAND_REACH tiles away.
+## Dead trees are rare everywhere, and more common with wetland WETLAND_REACH tiles away. They
+## are of the kind of the trees around, and HALF_DEAD_SHARE of them are only half dead. The old
+## single `dead_tree` is no longer placed (only old saves have it).
 const DEAD_TREE_CHANCE := 0.0015
 const DEAD_TREE_NEAR_WETLAND_CHANCE := 0.02
+const HALF_DEAD_SHARE := 0.4
 const WETLAND_REACH := 5
 
 ## Tall grass grows in meadows: where the forest noise is below MEADOW_BELOW, in patches
@@ -179,6 +182,7 @@ const REED_ROLL_SEED_OFFSET := 10
 const TIDEWAY_START_ROLL_SEED_OFFSET := 16
 const WARFT_ROLL_SEED_OFFSET := 17
 const EWER_ROLL_SEED_OFFSET := 18
+const SNAG_ROLL_SEED_OFFSET := 19
 
 var _river: RiverLine
 var _creeks: CreekLayout
@@ -193,6 +197,7 @@ var _tideway_noise := FastNoiseLite.new()
 var _woods: WoodLayout
 var _object_roll_seed: int
 var _variety_roll_seed: int
+var _snag_roll_seed: int
 var _grass_roll_seed: int
 var _clay_roll_seed: int
 var _reed_roll_seed: int
@@ -243,6 +248,7 @@ func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void
 	_woods = WoodLayout.new(world_seed, landscape)
 	_object_roll_seed = world_seed + OBJECT_ROLL_SEED_OFFSET
 	_variety_roll_seed = world_seed + VARIETY_ROLL_SEED_OFFSET
+	_snag_roll_seed = world_seed + SNAG_ROLL_SEED_OFFSET
 	_grass_roll_seed = world_seed + GRASS_ROLL_SEED_OFFSET
 	_clay_roll_seed = world_seed + CLAY_ROLL_SEED_OFFSET
 	_reed_roll_seed = world_seed + REED_ROLL_SEED_OFFSET
@@ -588,9 +594,17 @@ func _rolled_type_at(
 		roll < DEAD_TREE_NEAR_WETLAND_CHANCE
 		and (roll < DEAD_TREE_CHANCE or _is_near_wetland(world_pos))
 	):
-		return WorldObjectTypes.DEAD_TREE
+		return _snag_type_at(world_pos, river_distance)
 	var is_tall_grass := _woods.noise_at(world_pos) < MEADOW_BELOW and _is_tall_grass_at(world_pos)
 	return WorldObjectTypes.TALL_GRASS if is_tall_grass else &""
+
+
+## A dead or a half-dead tree of the kind of the trees around (see `_tree_type_at`).
+func _snag_type_at(world_pos: Vector2i, river_distance: float) -> StringName:
+	var kind := _tree_type_at(world_pos, river_distance, _roll(world_pos, _variety_roll_seed))
+	if _roll(world_pos, _snag_roll_seed) < HALF_DEAD_SHARE:
+		return WorldObjectSnags.half_dead_type(kind)
+	return WorldObjectSnags.dead_type(kind)
 
 
 ## Whether a floodplain tile is a ford, where a creek runs shallow over its stones (see

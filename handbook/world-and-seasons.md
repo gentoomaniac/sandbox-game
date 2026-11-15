@@ -10,6 +10,10 @@ Seasons, land, weather and light in the Schleswig-Holstein of about 1700-1800.
 - Trees, bushes, ground and buildings change with the season: spring green, full summer, autumn
   colours, snow in winter.
 - Trees leaf out over the first three days of spring. Scots pines and spruces stay green all year.
+- Here and there a tree has died, or half died. Dead trees (grey, bare, their bark peeling) look the
+  same all year but for frost on frosty mornings and snow in winter. Half-dead trees keep their
+  kind's seasons: the living part leafs out and turns, the dead part stays bare. They are of the
+  kind of the wood around them, most often by wet ground.
 - Berry bushes only bear fruit in their season.
 - Meadows flower from spring to late summer, and bees come only where something blooms.
 - Frost and snow come only in winter; late winter thaws quickly.

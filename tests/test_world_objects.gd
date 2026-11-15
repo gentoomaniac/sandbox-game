@@ -88,7 +88,7 @@ func test_every_natural_object_type_is_generated() -> void:
 		assert_true(types.has(object_type), "Missing object type %s" % object_type)
 
 
-func test_dead_trees_are_more_common_near_wetland() -> void:
+func test_snags_are_more_common_near_wetland() -> void:
 	var generator := WorldGenerator.new(SEED)
 	var area := Rect2i(-128, -128, 256, 256)
 	var terrains := {}
@@ -105,7 +105,7 @@ func test_dead_trees_are_more_common_near_wetland() -> void:
 			if terrains.get(pos + offset * WorldGenerator.WETLAND_REACH) == Tile.Terrain.WETLAND:
 				group = near
 		group["tiles"] += 1
-		if generator.object_type_at(pos, Tile.Terrain.GRASS) == WorldObjectTypes.DEAD_TREE:
+		if WorldObjectSnags.is_snag(generator.object_type_at(pos, Tile.Terrain.GRASS)):
 			group["dead"] += 1
 	assert_gt(near["dead"], 0, "dead trees near wetland")
 	assert_gt(near["tiles"], 0)

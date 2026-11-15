@@ -85,3 +85,10 @@
   of the late 18th century, so they stand only as patches inside the woods of the Geest, where the
   composition noise is high (with a mixed rim), two in three of them Scots pine. Numbers in
   `WorldGenerator`, first values, tune in play.
+- **Dead and half-dead trees** (issue #102, 2026-11-15): rare single trees on open grass, as the
+  one dead tree was (0.15 % of the tiles that have no bush, stone or tree, 2 % within 5 tiles of
+  wetland), and of the kind of the trees around: the kind `_tree_type_at` picks for the tile, so
+  by the wet ground mostly alder and willow. 60 % of them are dead (`dead_<kind>`, 3 looks), 40 %
+  half-dead (`half_dead_<kind>`, 2 looks: a dead side or a dead top); a second roll of the tile
+  decides, and the look comes from the position hash like every object's. The single `dead_tree`
+  is not placed any more, and old saves keep theirs.
