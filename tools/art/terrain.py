@@ -885,9 +885,9 @@ def trodden():
 
 
 def muddy_trodden():
-    """Trodden grass in the rain: dark wet earth with glints of standing water. It is drawn over
+    """Trodden grass in the rain: wet earth with darker flecks and glints of standing water. It is drawn over
     the trodden grass of a tile (see World.is_muddy), so it is the same shapes."""
-    return trodden_tiles(worn_earth("soil_dark", ("soil", "water", "water_light"), MUDDY_SPECK_CHANCE))
+    return trodden_tiles(worn_earth("soil", ("soil_dark", "soil_dark", "water", "water_light"), MUDDY_SPECK_CHANCE))
 
 
 def path_tiles(texture):
