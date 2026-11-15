@@ -68,6 +68,9 @@ func _init(crop_rules := CropRules.default_rules(), motion: AmbientMotion = null
 			var cells_wide: int = object_type.get("cells_wide", 1)
 			for variant in looks_count(object_type):
 				var atlas_cell := Vector2i(variant * cells_wide, object_type["atlas_row"])
+				# A dead tree's trunk is drawn from the cell of its kind's trunk, which has the tile.
+				if source.has_tile(atlas_cell):
+					continue
 				source.create_tile(atlas_cell, Vector2i(cells_wide, 1))
 				var tile_data := source.get_tile_data(atlas_cell, 0)
 				tile_data.texture_origin = cell_origin(object_type["footprint"])

@@ -31,10 +31,11 @@ extends RefCounted
 ##   gives its `drops` (item id to count, plain names for the same reason). Without `hp`,
 ##   `drops` are picked by hand, which removes the object;
 ## - seed and seed_chance: a felled tree also drops this item with this chance (it plants a
-##   sapling of the tree; the dead tree has no seed);
+##   sapling of the tree; the dead tree has no seed, the half-dead one a seed it gives less often);
 ## - leaves: what stands in its place once it is cut down;
 ## - regrows: its stump and the saplings of its seed remember the tree in the state `tree`, and
-##   so can leave a sapling of it (see rots_after_days);
+##   so can leave a sapling of it (see rots_after_days). They remember `regrows_as` instead if
+##   it has one: the living tree of a dead tree's kind;
 ## - trunk: what felling leaves beside the stump, as `logs` (dropped when it is cut up) and `hp`.
 ##   The trunk's own types come from it (see `_with_trunks`, `trunk_type`): a trunk on 2x1 tiles
 ##   and a short one on 1x1, for when there is no room; they need the tree's harvest level.
@@ -962,6 +963,7 @@ static func _build_types() -> Dictionary:
 			WorldObjectVillage.TYPES
 		)
 	)
+	types.merge(WorldObjectSnags.types_from(types))
 	types[REEDS] = types[REEDS].merged(CropRules.default_rules().reeds())
 	var all_types := _with_trunks(types)
 	ReadOnly.deep(all_types)

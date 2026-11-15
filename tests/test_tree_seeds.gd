@@ -65,12 +65,13 @@ func test_every_tree_whose_stump_can_grow_a_sapling_has_a_seed_that_plants_it() 
 	for tree: StringName in WorldObjectTypes.TYPES:
 		if not WorldObjectTypes.TYPES[tree].get("regrows", false):
 			continue
-		assert_true(WorldObjectTypes.TYPES[tree].has("seed"), "%s has a seed" % tree)
-		var seed_item: StringName = WorldObjectTypes.TYPES[tree].get("seed", &"")
+		# A dead tree has no seed, but its stump grows the sapling of the living tree of its kind.
+		var living_tree: StringName = WorldObjectTypes.TYPES[tree].get("regrows_as", tree)
+		var seed_item: StringName = WorldObjectTypes.TYPES[living_tree].get("seed", &"")
 		assert_true(ItemTypes.TYPES.has(seed_item), "%s: %s is an item" % [tree, seed_item])
 		if ItemTypes.TYPES.has(seed_item):
 			var plants_state: Dictionary = ItemTypes.TYPES[seed_item]["plants_state"]
-			assert_eq(plants_state["tree"], tree, "%s plants its own tree" % seed_item)
+			assert_eq(plants_state["tree"], living_tree, "%s plants its own tree" % seed_item)
 
 
 func test_the_generic_sapling_item_is_gone() -> void:

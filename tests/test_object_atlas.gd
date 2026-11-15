@@ -67,7 +67,7 @@ func test_the_atlas_rows_are_those_of_the_art_generator() -> void:
 		assert_true(rows.has(row), "%s: row %d is in the atlas" % [type_name, row])
 		if rows.has(row):
 			var generated: Dictionary = rows[row]
-			var kind: String = ART_KINDS.get(type_name, String(type_name))
+			var kind: String = ART_KINDS.get(type_name, _art_kind_of_trunk(type_name))
 			assert_eq(generated["kind"], kind, "row %d is drawn as %s" % [row, type_name])
 			assert_eq(
 				generated["looks"],
@@ -80,6 +80,16 @@ func test_the_atlas_rows_are_those_of_the_art_generator() -> void:
 			assert_eq(rows[row]["looks"], WorldObjectTypes.CONNECTION_LOOKS)
 		else:
 			assert_true(types_by_row.has(row), "row %d (%s) has a type" % [row, rows[row]["kind"]])
+
+
+## The name of a type for the art: a dead or half-dead tree's trunk is drawn as its kind's, so
+## `dead_oak_trunk` is `oak_trunk`.
+func _art_kind_of_trunk(type_name: StringName) -> String:
+	for kind in WorldObjectSnags.KINDS:
+		for prefix in [WorldObjectSnags.DEAD_PREFIX, WorldObjectSnags.HALF_DEAD_PREFIX]:
+			if String(type_name).begins_with(prefix + kind + "_"):
+				return String(type_name).trim_prefix(prefix)
+	return String(type_name)
 
 
 ## Row -> {kind, looks}, from lines like `13 tall_grass 6` that the art generator writes.

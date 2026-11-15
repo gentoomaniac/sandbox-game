@@ -652,7 +652,7 @@ func _hit(object: WorldObject) -> void:
 	else:
 		var stump := WorldObject.new(object_type["leaves"], object.pos)
 		if object_type.get("regrows", false):
-			stump.state["tree"] = str(object.type)
+			stump.state["tree"] = str(object_type.get("regrows_as", object.type))
 		_state.world.replace_object(object, stump)
 		TrunkPlacement.lay(_state.world, object, _state.player.tile())
 	# What a chest holds with a state lies as piles that keep it.

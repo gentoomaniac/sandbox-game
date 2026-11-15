@@ -74,6 +74,10 @@ func test_every_natural_object_type_is_generated() -> void:
 			continue
 		if WorldObjectVillage.TYPES.has(object_type):
 			continue  # The village puts them down, nothing generates them.
+		if WorldObjectSnags.is_snag(object_type):
+			continue  # Rare: test_snag_generation.gd looks for them in a wider land.
+		if object_type == WorldObjectTypes.DEAD_TREE:
+			continue  # Only old saves have it.
 		if object_type == WorldObjectTypes.EWER:
 			continue  # It lies on the mud of the coast, far from here (see test_coast.gd).
 		if (

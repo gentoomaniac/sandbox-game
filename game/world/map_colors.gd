@@ -5,6 +5,8 @@ extends RefCounted
 ## (trees, dykes, buildings, a worn path) is drawn over it. See
 ## design/world/map-generation-review.md for the picture they make.
 
+## The old dead tree and the dead and half-dead trees of every kind.
+const SNAG := Color("5d4037")
 const OBJECT_COLORS := {
 	&"oak": Color("12401a"),
 	&"beech": Color("12401a"),
@@ -13,7 +15,7 @@ const OBJECT_COLORS := {
 	&"willow": Color("6b8e23"),
 	&"pine": Color("06290a"),
 	&"spruce": Color("06290a"),
-	&"dead_tree": Color("5d4037"),
+	&"dead_tree": SNAG,
 	&"berry_bush": Color("7cb342"),
 	&"shrub": Color("7cb342"),
 	&"fern_bush": Color("7cb342"),
@@ -66,6 +68,8 @@ static func of_tile(world: World, chunk: Chunk, local: Vector2i) -> Color:
 	var object := chunk.object_at(local)
 	if object != null and OBJECT_COLORS.has(object.type):
 		return OBJECT_COLORS[object.type]
+	if object != null and WorldObjectSnags.is_snag(object.type):
+		return SNAG
 	if world.wear_stage(world_pos) != PathRules.Stage.UNWORN:
 		return WORN
 	return ground_of(world.world_seed, chunk, local)
