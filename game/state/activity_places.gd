@@ -47,6 +47,16 @@ func spot_of(npc: Npc, target: String, day: int) -> Vector2:
 	return spot
 
 
+## The building with an inside that `spot` is the yard of (the spot of a target with a door), or
+## null: where a villager who is at the spot goes in.
+func building_at_yard(spot: Vector2) -> Building:
+	if spot == NOWHERE:
+		return null
+	var building := _world.building_at(Vector2i(spot.floor()) + Vector2i.UP)
+	var is_door_there := building != null and building.yard() == spot and building.has_inside()
+	return building if is_door_there else null
+
+
 ## The nearest tilled tile or field of the village within `search_tiles` of their home; with none,
 ## a workplace that is a spot (the fields have no building); with none, nowhere.
 func _field_of(npc: Npc) -> Vector2:

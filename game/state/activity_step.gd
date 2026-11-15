@@ -15,6 +15,9 @@ var shelter := ""
 var is_given_up := false
 ## The spot (the middle of a tile), ActivityPlaces.NOWHERE if there is none for this villager.
 var spot := ActivityPlaces.NOWHERE
+## The building they go into when they are at the spot, or null: the spot is the yard in front of
+## its door (`inside` of data/activities.cfg).
+var building: Building
 ## How they stand there: "stand", "walk_about" or "work", within `radius` tiles of the spot (0 for
 ## the radius of their anchor, see NpcRules `anchor_radius`).
 var doing := "walk_about"
@@ -51,6 +54,7 @@ func matches(entry_activity: String, entry_minute: int, entry_shelter: String) -
 func copy() -> ActivityStep:
 	var step := ActivityStep.new(activity, minute)
 	step.spot = spot
+	step.building = building
 	step.doing = doing
 	step.radius = radius
 	step.starts_at = starts_at

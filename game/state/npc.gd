@@ -95,7 +95,7 @@ var opinion_moved_today := 0
 ## Whether NpcDialogue is summing up `uncompacted_lines`. Not saved.
 var is_compacting := false
 
-## The building they are in, or null (see Npcs `go_in`, design/villagers/inside.md). While they are,
+## The building they are in, or null (see NpcIndoors, design/villagers/inside.md). While they are,
 ## their feet are `inside_position`, in the tiles of its interior, and `position` stays at the yard
 ## in front of its door: whatever reads where villagers are in the world sees them at the door.
 var inside: Building

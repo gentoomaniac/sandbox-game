@@ -137,11 +137,9 @@ the retry spaces the next one. Reasons: NO_WAY, NOT_LOADED, STUCK.
 238 provides the search over any `GameMap`, and `walk_to_door(npc, building, map)`, which walks to the
 yard in front of the door (`Building.yard`, where `Workplace.spot` already points) and reports
 arrival there. It does not end on the door tile: `can_stand_at` and `_fits` refuse building tiles,
-the door included. Task 229 adds going in as a step from the yard onto the door tile and into the
-interior (as `GameState.pass_door` does for the player), the villager's own map (`Npc.inside`),
-and the walk inside by the same search from `entry_tile` to a bed or a chair and back to
-`exit_tile`. A `Trip` holds the map it is on, so 229 needs no new search, only the trip on the
-other map.
+the door included. Going in (#8, built) is a step from the yard onto the door tile and into the
+interior (`Npc.inside`, `Npcs.indoors`); the walk about the room is a straight stroll, with no search
+and no trip on the interior's map ([inside.md](inside.md), which is the plan).
 
 ### Following a path (`NpcTrip`, its own class and file)
 
@@ -588,8 +586,10 @@ the player is inside") and the same code serves a skip.
 - **Arriving** (`trip_arrived`): the anchor becomes the place and the stroll radius the
   activity's (`Npc.keep_radius`, not saved, instead of the global `anchor_radius`). `stand` is
   still, `walk_about` strolls as `Npcs._walk` does, `work` stands near its spot and now and then
-  takes a step. Going in (sleep and meals in the house) is task 229; until then they stand in the
-  yard.
+  takes a step. An activity with `inside=true` (sleep, meals, work in a building, church) does not
+  stand in the yard: at the arrival they go in (`Npcs.indoors.go_in`), and `_send` to a step in
+  another building or in the open takes them out ([inside.md](inside.md)).
+  A villager with no workplace does their `work` entries at home, so inside the house.
 - **Rain and the dark** change what is on while it is on, not the plan. An activity with
   `needs_daylight` is not on from sunset to sunrise (`Sun`: the winter day is short), and one with
   `needs_dry` not while `Weather.rain_in_hour` (the hour's mean, one region, so no flicker) is at

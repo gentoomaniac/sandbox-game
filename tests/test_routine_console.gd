@@ -44,7 +44,9 @@ func test_a_villager_on_the_way_says_so_and_names_the_trip() -> void:
 	var npc := _resident("hinrich")
 	npc.workplace = Workplace.of_spot("the landing", _road_tile(40))
 	_set_time(DAY, 5)
-	assert_true(_pass_minutes(120, func() -> bool: return npc.trip != null))
+	var is_on_the_way_to_work := func() -> bool:
+		return npc.current_step.activity == "work" and npc.trip != null
+	assert_true(_pass_minutes(120, is_on_the_way_to_work))
 	var lines := _console.run("routine hinrich")
 	assert_string_contains(lines[1], "work (workplace)")
 	assert_string_contains(lines[1], "; on its way")

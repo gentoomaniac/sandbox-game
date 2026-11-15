@@ -60,6 +60,9 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   arrive, and the activity's radius the circle (`Npc.keep_radius`; an activity of standing keeps them
   still); between entries and for rain or the dark it is the yard of their house. One with no house
   keeps to the anchor as above.
+  The activities that say `inside` (sleep, meals, work in a building, church; `data/activities.cfg`) take
+  them in through the door of the building at the spot, where they stand in the room until the entry
+  is over ([inside.md](inside.md)).
 - **Home and workplace (task 228):** a villager's home is a building (`Npc.house`, saved), not a
   spot; the free text `home` of the sheet stays for the language model. A building type says how
   many may live in it (`residents` in `data/buildings.cfg`: a hall house 5, a fisher's hut 2, a

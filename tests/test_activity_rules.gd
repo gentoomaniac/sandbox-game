@@ -72,6 +72,15 @@ func test_an_unknown_target_doing_day_or_season_is_reported() -> void:
 	assert_true(problems[0].begins_with("[work] target is not one of"))
 
 
+func test_inside_needs_a_target_with_a_door() -> void:
+	var problems := _rules_with("tend_field", {"inside": true}).problems()
+	assert_eq(problems.size(), 1)
+	assert_true(problems[0].begins_with("[tend_field] inside needs a target with a door"))
+	assert_eq(_rules_with("tend_field", {"inside": "yes"}).problems().size(), 1)
+	assert_true(_rules.activity("sleep")["inside"])
+	assert_false(_rules.activity("rest").get("inside", false))
+
+
 func test_bad_times_and_lengths_are_reported() -> void:
 	var bad_lists: Array = [
 		[["25:00", 60]], [["06:30", 0]], [["06:30", 1441]], [["06:30"]], "06:30", []

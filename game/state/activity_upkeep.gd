@@ -252,6 +252,7 @@ func _follow_day(npc: Npc) -> void:
 		npc.current_step = null
 		npc.keep_radius = 0.0
 		npc.is_staying_put = false
+		_npcs.indoors.come_out(npc)
 		return
 	var step := _due_step_of(npc)
 	var current := npc.current_step
@@ -352,12 +353,14 @@ func _resolve(npc: Npc, step: ActivityStep, day: int) -> void:
 		return
 	var data := _rules.activity(step.activity)
 	step.spot = places.spot_of(npc, data["target"], day)
+	step.building = places.building_at_yard(step.spot) if data.get("inside", false) else null
 	step.doing = data["doing"]
 	step.radius = data.get("radius", STAND_TILES if step.doing == "stand" else 0.0)
 
 
 func _stay_home(npc: Npc, step: ActivityStep) -> void:
 	step.spot = npc.house.yard()
+	step.building = null
 	var is_waiting := step.shelter != "" or step.is_given_up
 	step.doing = "stand" if is_waiting else "walk_about"
 	step.radius = STAND_TILES if is_waiting else 0.0
@@ -368,7 +371,11 @@ func _send(npc: Npc, step: ActivityStep) -> void:
 	npc.current_step = step
 	if not step.has_place():
 		return
-	if npc.position.distance_to(step.spot) <= maxf(step.radius, ARRIVED_TILES):
+	# One who goes in has to stand in the yard, in front of the door.
+	var is_there := npc.position.distance_to(step.spot) <= maxf(step.radius, ARRIVED_TILES)
+	if step.building != null:
+		is_there = npc.tile() == step.tile()
+	if is_there:
 		_npcs.cancel_trip(npc)
 		_arrive(npc, step)
 	else:
@@ -381,6 +388,10 @@ func _arrive(npc: Npc, step: ActivityStep) -> void:
 	npc.anchor = step.spot
 	npc.keep_radius = step.radius
 	npc.is_staying_put = step.doing == "stand"
+	if step.building != null:
+		_npcs.indoors.go_in(npc, step.building, _npcs.is_skipping)
+	else:
+		_npcs.indoors.come_out(npc)
 
 
 ## A villager whose way has been blocked for `blocked_give_up_minutes` stays at home for the rest

@@ -20,9 +20,10 @@ func test_a_villager_leaves_in_time_and_is_there_when_the_entry_starts() -> void
 	var leaves_at := _leaving_minute_for_work(npc, DAY)
 	_set_time(DAY, 5)
 
-	var has_left := func() -> bool: return npc.trip != null
+	var has_left := func() -> bool: return npc.current_step.activity == "work"
 	assert_true(_pass_minutes(120, has_left))
 	assert_eq(_minute_of_day(), leaves_at, "the minute the walk and the margin say")
+	assert_not_null(npc.trip)
 	var is_there := func() -> bool: return npc.current_step.is_arrived
 	assert_true(_pass_minutes(120, is_there))
 	assert_lte(_minute_of_day(), work.minute, "there by the hour")

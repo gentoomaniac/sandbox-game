@@ -17,6 +17,12 @@ stands in the yard. This is how they go in. Decided here, to be built in the ste
   with none the villager stands in the yard as before. Rain and the dark send a villager to the
   yard, not in (`_stay_home`): a villager inside does not know it rains. Nothing else changes in
   the plan, the planner or the model's prompt: where they are is the routine's business only.
+- **A villager with no workplace of their own** works at home (the target `workplace` falls back to
+  the house), so they are in the house for their work. One whose house is taken from them is put
+  out (`_follow_day`).
+- **To go in they stand in the yard tile**, not near it: a villager with a spot within the stroll
+  radius of the door still walks the last bit (`ActivityUpkeep._send`), so the step onto the door
+  is a step from the tile in front of it.
 - **Nothing is new for the language model:** a villager inside is "at home", "at work" or "at
   church" by their activity, as now.
 

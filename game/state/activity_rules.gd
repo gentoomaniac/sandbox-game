@@ -36,7 +36,9 @@ const DAY_KINDS: Array[String] = ["weekday", "saturday", "sunday", "feast"]
 const SEASONS: Array[String] = ["spring", "summer", "autumn", "winter"]
 const REQUIRED_KEYS: Array[String] = ["verb", "target", "doing"]
 const TEXT_KEYS: Array[String] = ["verb"]
-const FLAG_KEYS: Array[String] = ["needs_daylight", "needs_dry"]
+const FLAG_KEYS: Array[String] = ["needs_daylight", "needs_dry", "inside"]
+## The targets with a building whose door they can go in by (`inside`).
+const TARGETS_WITH_DOOR: Array[String] = ["home", "workplace", "church", "friend"]
 
 static var _default: ActivityRules
 
@@ -256,6 +258,15 @@ func _activity_problems(id: String) -> Array[String]:
 	for key in FLAG_KEYS:
 		if values.has(key) and not values[key] is bool:
 			found.append("[%s] %s is not true or false" % [id, key])
+	var target: Variant = values.get("target")
+	if (
+		values.get("inside") is bool
+		and values["inside"]
+		and target is String
+		and target in TARGETS
+		and target not in TARGETS_WITH_DOOR
+	):
+		found.append("[%s] inside needs a target with a door: %s" % [id, TARGETS_WITH_DOOR])
 	if values.has("priority") and not values["priority"] is int:
 		found.append("[%s] priority is not a whole number" % id)
 	found.append_array(_list_problems(id, values, "days", DAY_KINDS))
