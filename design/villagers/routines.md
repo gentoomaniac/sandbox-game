@@ -280,16 +280,36 @@ routines' and off-screen travel is #68.
 
 ## Activities and the planned day: the plan (task 239, issue #7)
 
-Written 2026-11-15 after the user's clarification on #7, for approval before code. It replaces the
-first plan (fixed timetables for five kinds of work), whose parts that still fit are kept: leaving
-in time, skip and sleep, loading, the console, the place lookup. It builds on homes and workplaces
-(#69), the path search and trips (#6, #68: `walk_to`, `place`, `trip_arrived`, `trip_blocked`,
-[travel.md](travel.md)), the language model's chat ([dialogue.md](dialogue.md)) and the calendar of
-#85 (seasons of 35 days, a week of 7, day 1 a Monday).
+Written 2026-11-15 after the user's clarification on #7, rewritten the same day with the answers of
+[#87](https://github.com/gentoomaniac/sandbox-game/issues/87),
+[#88](https://github.com/gentoomaniac/sandbox-game/issues/88) and
+[#89](https://github.com/gentoomaniac/sandbox-game/issues/89). **Plan: nothing here is built.** It
+says what will be built and in which steps. It replaces the first plan (fixed timetables for five
+kinds of work), whose parts that still fit are kept: leaving in time, skip and sleep, loading, the
+console, the place lookup. It builds on homes and workplaces (#69), the path search and trips (#6,
+#68: `walk_to`, `place`, `trip_arrived`, `trip_blocked`, `Npcs.update_unseen`, `NpcTravel`, the
+catch-up of a skip: [travel.md](travel.md)), the language model's chat
+([dialogue.md](dialogue.md)), the calendar of #85 (seasons of 35 days, a week of 7, day 1 a
+Monday; `GameClock.weekday()`, `day_of_year()` and their `_of(day)` forms exist) and the village
+(#9, `design/world/wehlsbuell.md` on the branch `plan/9-village-v2`).
 
-The user's answers kept from the first plan: day 1 is a Monday; a Saturday plan; the church yard is
-the meeting place until the village (#9) names one; Momme goes to church only at Easter and
-Christmas.
+### The decisions
+
+| Question | Decision | From |
+|---|---|---|
+| Day 1 a Monday, a Saturday plan, the church yard as meeting place until the village names one, Momme at church only at Easter and Christmas | as proposed | #77 |
+| The week and the feasts: Easter is day 14 of the year, Christmas day 140 | as proposed | #87 |
+| The planning hour: 18:00 for tomorrow | as proposed | #87 |
+| Who the model plans for | **the villagers nearest the player**, always, up to a cap, and while the player moves the ones who come near are planned for the current day in the background; the hand-written eight have no priority | #87 (changed) |
+| What an activity may change in the world | nothing in the first version | #87 |
+| The sleep screen | **ends with a "press to continue"**; it will show more later, and the wait gives the model time for the next day's plans | #87 (changed) |
+| Fields have no owner; a villager works the nearest | as proposed | #87 |
+| The model: the profile in use in Settings | as proposed | #87 |
+| A late plan takes over from the minute it comes | as proposed | #87 |
+| Default times are fixed clock hours; the tide is the default work hours; rain counts at an hour's mean of 0.25 (storm yes, snow no); the departure estimate (x plus y, 1.3, 3 minutes, up to 10 of spread); console only shows and `replan`s; the prompt is English | as proposed | #88, #89 |
+
+The user's answers on #87 changed two things, so they have their own sections: "Who is planned and
+when" and "The sleep screen".
 
 ### The idea
 
@@ -299,11 +319,12 @@ Christmas.
   villager*, never a tile in the data. An activity may have a default time.
 - A villager has a **set** of activities, from their sheet and their work.
 - A **day** is a list of (activity, start time) for one villager and one calendar day. It is
-  planned by the language model in the evening before, from the villager's set. If the model is
-  late, fails or is not set, a **default day** is made from the activities' default times. The
-  default day is a pure function of the villager, the day and the world's seed.
-- The villager then *executes* the day: leaves in time, walks there (task 238), does the activity.
-  The plan decides where they are; the model never moves anyone, and what it says is checked first.
+  planned by the language model, in the evening before for the villagers near the player and
+  during the day for those who come near. When there is no plan (late, failed, not set, not asked
+  yet) a **default day** is made from the activities' default times. The default day is a pure
+  function of the villager, the day and the world's seed.
+- The villager *executes* the day: leaves in time, walks there (task 238), does the activity. The
+  plan decides where they are; the model never moves anyone, and what it says is checked first.
 - The stroll code stays. At a place a villager strolls or stands as the activity says. The anchor
   rule of villagers.md stays for a villager with no house and for the gaps in a day.
 
@@ -363,7 +384,9 @@ priority=5
 - **`field`** is the nearest cluster of tilled tiles within `search_tiles.field` of their home; with
   none, the workplace if it is a field spot (the sheet's `workplace_spot`), else the activity is
   not offered to the villager. Fields have no owner; a villager works the one nearest to them,
-  which is the player's field too when it is nearest (question 5).
+  which is the player's field too when it is nearest (the user's answer, #87). In Wehlsbüll the
+  fields are enclosures that are not tilled (`design/world/wehlsbuell.md` on `plan/9-village-v2`,
+  #9), so a field is also the nearest one of the village's fields, as the village keeps them.
 - **The first activities,** written once, tuned in play: `sleep` (home, still, 21:30),
   `breakfast`, `dinner`, `supper` (home, still, 05:30, 12:00, 18:00), `rest` (home, walk_about,
   20:00), `work` (workplace, 06:30 and 13:00), `tend_field`, `water_field` (field, spring and
@@ -383,7 +406,7 @@ priority=5
   fields stay as the player left them, because what happens to a farm unseen would be an unfair
   surprise. Later an activity may get an `effect` out of a short list, each its own issue, capped
   and visible: `water` (the moisture of tilled tiles near the spot rises a little, never above
-  what rain gives), `feed` (chickens). See question 4.
+  what rain gives), `feed` (chickens). The user's answer (#87): nothing in the first version.
 - `ActivityRules.problems` checks the file: keys known, targets and doings known, times as
   "HH:MM" and in the day, lengths positive, sets naming known activities, every sheet and trade
   naming a known set, every activity in some set. A test runs it on the real file.
@@ -408,42 +431,62 @@ priority=5
   (the Husum market, the dyke walk) stays in the text only, where the model may use it for a
   `why`. The text is never generated from the activities (it would lose the flavour).
 - **No home:** a villager with no house (or whose house is taken down) has only `walk_the_village`
-  and `sleep` in the default day, and no model query is made for them (question 3).
+  and `sleep` in the default day, and no model query is made for them.
 
-### The nightly planning (`DayPlanner`)
+### Who is planned and when (`DayPlanner`)
 
-- **When.** At `plan_hour` (18:00, a new `[plan]` section in `data/npc_talk.cfg`) the planner
-  queues one query for each eligible villager, for *tomorrow*. It has six game hours (four real
-  minutes) before midnight. A day with no plan at its start (a new game, a spawned villager, an
-  old save, a long skip) is queued for *today* at once, and a plan that comes late takes over
-  from the minute it comes (below).
-- **Who.** At most `max_per_night` (12) villagers: those written by hand first, then the others
-  nearest the player. Every other villager has the default day (question 3). A villager is
-  eligible only when a model is set (`NpcDialogue.has_model`); with none, no query is made and
-  nothing is said: the default day is the game without a model.
+- **Nearest first, always.** The model plans the villagers **nearest the player**, within
+  `plan_radius_tiles` (a new `[plan]` section in `data/npc_talk.cfg`; 120, tuned in play), nearest
+  first. The hand-written eight have no priority: far from the player they have the default day
+  like anyone else. Villagers with no house, and everyone when no model is set
+  (`NpcDialogue.has_model`), have the default day and no query is made, with no notice: the
+  default day is the game without a model.
+- **In the evening.** At `plan_hour` (18:00) the planner queues one query for each villager in
+  the radius with no plan for tomorrow yet, nearest first, at most `max_per_night` (12). It has six
+  game hours (four real minutes) before midnight.
+- **While the player moves.** Once a game minute the planner looks at where the player is. A
+  villager who has come into the radius and has no plan for the day (and has not been asked for it)
+  is queued for **the current day**, behind what is queued, at most `max_per_day` (12) such queries
+  a game day. The query says what time it is, and the plan is for the rest of the day (see "The
+  answer"). The point is that the villager has a plan when they come into view, as far as the model
+  is quick enough. The check is a distance for each villager without a plan: a few hundred
+  comparisons a minute.
+- **A villager seen before the plan is ready starts on the default day** and switches to the
+  model's plan when it arrives. The plan takes over from the minute it arrives, and the villager is
+  sent to whatever is on then (`walk_to`): nobody jumps, and a visible one simply walks from where
+  they stand. A plan for the rest of today replaces the default entries from its first entry on; the
+  default entries before it stay.
+- **A day with no plan at its start** (a new game, a spawned villager, an old save, a long skip,
+  the villagers the evening did not reach) is the same case: the default day, and a query for the
+  current day when the villager is in the radius.
 - **One at a time, in the background.** The queue is a list in a node (`DayPlanner`, next to
   `NpcDialogue`) that awaits `NpcDialogue.ask(request, true)` for the first in the queue, then the
   next, like the judge of the stories ([gossip.md](gossip.md)). `ask` is an HTTP request the
   engine runs off the main thread, so the game goes on while it is awaited. The queue pauses
-  while a chat reply is awaited, so the player's talk is never behind a villager's plan.
+  while a chat reply is awaited, so the player's talk is never behind a villager's plan. Entries of
+  the evening come before those of the day; within each, the nearest to the player *now* first (the
+  order is looked at again when the next one is taken from the queue). One that has left the radius
+  and is not in view before its turn is dropped from the queue: it is queued again when it
+  comes back.
 - **Quiet.** Each query is quiet (`is_quiet`): no notice per villager when it fails. A failed
   night is one line in the log, and the console tells it for the villager.
 - **Timeout.** `timeout_seconds` in `[plan]` (20; the chat's is 30) for each query, through
   `ModelChat.answer`. An answer that does not come in time, comes as an error, or cannot be read is
-  "no plan": the default day stays, and the villager is not asked again that night. No query
-  starts after 23:50; one that is out may still come in. A plan that comes after `late_until`
-  (10:00) of its day is dropped.
-- **The profile and the cost.** The profile in use (Settings), not a new one (question 6).
-  `max_tokens` (400) and the temperature (0.6) of `[plan]` are the game's own; the profile's
-  Settings win, as for the chat (`ModelChat.max_tokens_of`). A query is about 700 tokens in and
-  200 out: 12 a game day at the most, one game day being 16 real minutes. A local model gets the
-  cut-down sheets (`has_full_sheets`).
+  "no plan": the default day stays, and the villager is not asked again for that day. No query for
+  tomorrow starts after 23:50; one that is out may still come in. A plan whose day is over is
+  dropped.
+- **The profile and the cost.** The profile in use (Settings). `max_tokens` (400) and the
+  temperature (0.6) of `[plan]` are the game's own; the profile's Settings win, as for the chat
+  (`ModelChat.max_tokens_of`). A query is about 700 tokens in and 200 out: 24 a game day at the
+  most, one game day being 16 real minutes. A local model gets the cut-down sheets
+  (`has_full_sheets`).
 - **What the prompt tells** (`NpcPrompt.plan_request`, system text in `[plan]`):
   1. who they are: the sheet's age, trade, personality, likes, wants, habits, people (kin and
      friends by name and kind) and the `day` text, full or cut down as for the chat;
   2. the day to plan: "Saturday, day 23, early summer", sunrise and sunset, and the weather of
      that day, which the game knows exactly (weather is a function of the seed): "8 to 17 °C,
-     rain from 14 to 17, wind 6 m/s", worded as a villager would see the sky (`WeatherDay`);
+     rain from 14 to 17, wind 6 m/s", worded as a villager would see the sky (`WeatherDay`); for a
+     plan of the current day also the time now, "plan from 14:20";
   3. their activities, each with its words, its place resolved for them ("the field by the Ketels
      barn, 11 minutes' walk"), its default time and conditions; those whose place can't be
      resolved or whose days and seasons fail that day are left out, and `sleep`, the meals and
@@ -463,17 +506,32 @@ priority=5
   the text from the first `{` to the last `}` (a model wraps JSON in words or fences), then:
   - the `activity` must be in *this villager's* set with its place resolved, and its `days` and
     `seasons` must hold for the day; a `needs_daylight` one must start between sunrise and sunset;
-  - `at` must be "HH:MM" from 04:00 to 23:30;
+  - `at` must be "HH:MM" from 04:00 to 23:30, and for a plan of the current day not before the time
+    it was asked;
   - entries are put in time order; one that starts less than `min_gap_minutes` after the one
     before is dropped; at most `max_entries` stay;
-  - **anything invalid is dropped** and the rest stands; a `sleep` entry is added at its default
-    time when none is left; an answer with fewer than 3 valid entries, or that does not parse,
-    is no answer: the default day.
+  - **anything invalid is dropped** and the rest stands; for a whole day a `sleep` entry is added at
+    its default time when none is left; an answer with fewer than 3 valid entries (1 for the rest
+    of a day), or that does not parse, is no answer: the default day.
 
   The checks are pure and tested without a model.
-- **What the player sees when it runs late:** nothing. They are not told and no screen waits. The
-  villagers follow the default day until the plan comes, and then the plan from that minute on.
-  The only sign is the console's `routine` ("default day: the model was late").
+- **What the player sees when it runs late:** nothing. They are not told. The villagers follow the
+  default day until the plan comes, and then the plan from that minute on. The only sign is the
+  console's `routine` ("default day: the model was late").
+
+### The sleep screen
+
+A night's sleep ends with a message on the black that waits for a key or a click, "press to
+continue", as passing out does already (`FadeScreen.show_message`, the hint says "Press any key to
+go on"); the sleep now shows a note for a moment (`show_note`) and goes on by itself. The user will
+put more on that screen later.
+
+- The world is made up for first (the skip, as now), then the screen waits. The planner goes on
+  meanwhile, as it runs from frames, not from the player's input: the wait is time for the queue.
+  The wait is as long as the player takes, with no timer and no sign that a model works.
+- When the key comes, the day starts. Villagers with a plan have it; those without have the
+  default day and switch when theirs arrives (above).
+- The pass-out message stays as it is (it waits already).
 
 ### The default day (`DefaultDay`)
 
@@ -559,10 +617,10 @@ Dice only for the stroll's spot: the same game skipped the same way ends the sam
 minutes of a skip are play. After a night's sleep the village is as it should be at 6 o'clock.
 
 **The plan and a skip.** The skip does not wait for the planner: a night's sleep begins after
-18:00, so tomorrow's plans are made or on their way. At the end the villagers without a model plan
-have the default day, and the planner queues *today's* plan for them (the late rule). A skip over
-several days gives default days to those, then one query each for the day it ends on. Question 7
-asks whether the fade should wait a few seconds for the plans.
+18:00, so tomorrow's plans are made or on their way, and the queue goes on over the skip and the
+"press to continue" of [the sleep screen](#the-sleep-screen). At the end the villagers without a
+model plan have the default day and are queued for the current day if they are in the radius. A skip
+over several days gives default days to those, then one query each for the day it ends on.
 
 ### Loading a save, saving
 
@@ -572,14 +630,16 @@ hundred bytes each). Why: a load must not ask the model again (it costs, and the
 change), and the console and the late rule need to know the day came from the model. A default
 day is never saved: it is made again, the same. A trip and the current entry are not saved.
 
-- **Save version:** 44, with `_upgrade_from_version_43` (a save of 43 has no plans, so every
+- **Save version:** the next free one at build time (44 on main, 45 once the map rework #60 and the
+  village #9 have taken theirs), with an upgrade from the version before (it has no plans, so every
   villager has the default day until the planner asks), and the oldest upgrade dropped as the save
-  file's header says. A commit of its own.
+  file's header says. A commit of its own. Saves rotate (#16): each file carries its plans, nothing
+  to do.
 - **After a load** `ActivityUpkeep.resume` runs once: each villager gets the entry that is on and
   is sent from where they stand (`walk_to`): one search each, no trip for one that is there. A
   visible one stands a moment while its search runs; nobody jumps. A villager who comes into the
   world (`spawn npc`, after `Households.settle`) is sent the same way, and the planner queues
-  today's day for them.
+  the current day for them when they are in the radius.
 - Plans of days gone by are dropped at each new day (`GameClock.new_day`).
 
 ### Console
@@ -604,8 +664,9 @@ query for the rest of today at once and says "asking the model" or "no model set
 No per-frame work beyond walking (`Npcs.update`, as now). A minute's tick reads the entry of each
 villager (a few comparisons; expected well under 0.1 ms for 155 villagers, measured in the last
 step). A search only when an entry changes, at the hours villagers go, spread by the offset. The
-model is asked 12 times a game day at the most, one at a time, off the main thread; with none set
-nothing is asked. The prompt is built once a night per villager (the weather of a day is cached,
+model is asked 24 times a game day at the most (12 in the evening, 12 in the background), one at a
+time, off the main thread; with none set nothing is asked. The radius check is a distance for each
+villager without a plan, once a game minute. The prompt is built once a query (the weather of a day is cached,
 `Weather.day_summary`).
 
 ### Tests
@@ -624,10 +685,13 @@ One file for each part, each short:
   times out of range, out of order, too close, not "HH:MM"; too many entries; fewer than 3 valid
   (default); `sleep` added; a daylight activity at night dropped; `why` cut.
 - **The planner** (`test_day_planner.gd`), with a fake `ModelChat`, as the dialogue tests have:
-  one query at a time in the right order (hand-written, then nearest); the cap; no query with no
-  model; a good answer sets the plan; a bad one leaves the default; the timeout path (a fake that
+  one query at a time in the right order (the nearest first, the evening before the day, the order
+  looked at again as the player moves); the radius and the caps; a villager who comes into the
+  radius gets a query for the current day, once, and a plan for the rest of the day replaces the
+  default entries from its first entry on; one who leaves the radius before its turn is dropped;
+  no query with no model; a good answer sets the plan; a bad one leaves the default; the timeout path (a fake that
   never answers): no plan, the next villager is asked, the villager is not asked again that
-  night; a late plan takes over from its minute; one after `late_until` is dropped; the queue
+  day; a late plan takes over from its minute; one whose day is over is dropped; the queue
   pauses during a chat; the prompt holds the sheet, the resolved places, the weather words, the
   weekday and season, yesterday's line.
 - **Places** (`test_activity_places.gd`): home, workplace (building, spot, none), field (none, the
@@ -644,71 +708,61 @@ One file for each part, each short:
 - **Saving** (`test_day_plan_save.gd`): model plans round-trip; a default day is not saved; a save
   during a walk and a load send each villager where the clock says, one search each, nobody at
   two places; the plan is not asked for again after a load; a save of version 43 loads.
+- **The sleep screen** (an addition to the blackout tests): a sleep ends on the waiting message,
+  goes on by a key or a click and not before; the planner's queue goes on during the wait.
 - **Console** (`test_routine_console.gd`): the answer with a plan, with the default, blocked, no
   house, an unknown villager, `day`, `replan` with and without a model, the help text.
 
 ### The steps (each a commit that passes on its own, with its tests and doc lines)
 
-1. **The week:** `GameClock.weekday(day)` and `day_of_year`, if #85 has not added them (#85 does
-   the 35-day seasons; this step follows it). Tests.
-2. **The file and `ActivityRules`:** `data/activities.cfg` with the activities and sets,
+The week (`GameClock.weekday()`, `day_of_year()`) is on main already (#85). Steps 1 to 9 need no
+village: they run on the camp's villagers and on the test worlds of the road tests.
+
+1. **The file and `ActivityRules`:** `data/activities.cfg` with the activities and sets,
    `problems`. No game behaviour. Doc: the format in the file's header.
-3. **Who has which:** the sheet keys (`work_set`, `activities`, `skips`, `church_feasts_only`) in
+2. **Who has which:** the sheet keys (`work_set`, `activities`, `skips`, `church_feasts_only`) in
    `VillagerRules` and the header of `data/villagers.cfg`, the third entry of the trades in
    `data/npcs.cfg`, the eight sheets. Tests: every sheet and trade has a set.
-4. **`ActivityPlaces`:** a target kind to a tile for one villager, with the fallbacks. Tests.
-5. **`DefaultDay` and the entry that is on:** pure (clock, sun and weather given), with the leaving
+3. **`ActivityPlaces`:** a target kind to a tile for one villager, with the fallbacks (`meeting`:
+   the church yard, `field`: tilled tiles or the workplace's field spot). Tests.
+4. **`DefaultDay` and the entry that is on:** pure (clock, sun and weather given), with the leaving
    time and the offset. Tests: the tables above.
-6. **`ActivityUpkeep` and `Households.changed`:** sending, `Npc.keep_radius`, arrival, rain and
+5. **`ActivityUpkeep` and `Households.changed`:** sending, `Npc.keep_radius`, arrival, rain and
    dark, blocked trips, GameState wiring. The anchor text of [villagers.md](villagers.md)
    ("Where") changes here. Villagers follow the default day from this step on. Tests: executing.
-7. **The skip:** `Npcs.catch_up`'s entry Callable, the `skip_begins` flag. Tests. Doc line in
+6. **The skip:** `Npcs.catch_up`'s entry Callable, the `skip_begins` flag. Tests. Doc line in
    travel.md: "What 239 does" is done.
-8. **Console `routine`.** Tests. (Before the planner, so the default day can be watched.)
-9. **`DayPlanAnswer`:** the answer's parse and checks, pure. Tests.
-10. **`DayPlanner` and `NpcPrompt.plan_request`:** the queue, the evening hour, the timeout, the
-    prompt, the late rule, `[plan]` in `data/npc_talk.cfg`, console `replan`. Tests: planner. Doc:
-    [dialogue.md](dialogue.md) gets a line, villagers.md ("Later: schedules") is changed.
-11. **Saving the plans, version 44,** and `resume` for loading and spawning. Tests: saving. Doc
-    line in travel.md ("Saving"). The version bump is a commit of its own with the upgrade step.
-12. **The bench** for the minute's tick over 155 villagers (`tools/bench/`), the numbers written
-    here; this plan marked as built.
+7. **Console `routine`.** Tests. (Before the planner, so the default day can be watched.)
+8. **The sleep screen:** a sleep ends on `FadeScreen.show_message` instead of the note. Tests. It
+   is independent of the rest and may go in at any point; it is here so that it is in before the
+   planner needs its wait.
+9. **`DayPlanAnswer` and the plan on the villager:** the parse and checks, whole day and rest of
+   day, pure; `Npc.day_plans` (not saved yet) and the entry that is on reading a plan, with the
+   default entries before a mid-day plan. Tests.
+10. **`NpcPrompt.plan_request` and `WeatherDay`:** the prompt and the weather in words, pure. `[plan]`
+    in `data/npc_talk.cfg`. Tests: the prompt.
+11. **`DayPlanner`, the evening:** the queue, 18:00, the nearest within the radius, the cap, the
+    timeout, the late takeover, the pause during a chat, console `replan`. Tests: planner with a
+    fake model. Doc: [dialogue.md](dialogue.md) gets a line, villagers.md ("Later: schedules") is
+    changed.
+12. **`DayPlanner`, while the player moves:** the radius check each game minute, the queries for
+    the current day, `max_per_day`, the order looked at again. Tests.
+13. **Saving the plans** and `resume` for loading and spawning. The save version is the next free
+    one, a commit of its own with its upgrade step. Tests: saving. Doc line in travel.md
+    ("Saving").
+14. **The bench** for the minute's tick and the radius check over 155 villagers (`tools/bench/`),
+    the numbers written here; this plan marked as built.
 
-### Open questions
+**What depends on the village (#9, built after the map rework #60):** only the targets that point
+at it, and the play test.
 
-1. **The week and the feasts.** Day 1 is a Monday, so every 7th day is a Sunday and, with #85's
-   140-day year, every year starts on a Monday. Easter is day 14 of the year (the second Sunday of
-   spring) and Christmas day 140 (the last day) until the calendar has feasts of its own.
-   Proposed: yes.
-2. **The planning hour.** The queries start at 18:00 the evening before. Proposed: 18:00, so that
-   six game hours (four real minutes) are there for the queue; a later hour sees more of the
-   evening's gossip, an earlier one is safer for a slow model.
-3. **Who the model plans for.** At most 12 a night: the hand-written eight first, then the nearest
-   to the player; everyone else, and any villager with no house, has the default day. Proposed:
-   yes, `max_per_night` in `[plan]`. All 155 would be over a hundred queries a game day.
-4. **What an activity may change.** Proposed: nothing in the world in the first version (above);
-   watering (a small rise of the moisture of tilled tiles) and feeding chickens are issues of
-   their own once the villagers walk right. Flowers are never picked.
-5. **Fields.** A villager tends "the field nearest their home", which may be the player's field,
-   with no owner. Proposed: yes for now (they stand and work, change nothing); owners or shares of
-   a field belong to the village (#9).
-6. **The model.** The planner uses the profile in use in Settings. Proposed: yes; a profile of its
-   own for planning (a cheaper model) is a later setting, if the cost shows.
-7. **A skip and the plan.** A sleep does not wait for the queue: those without a plan have the
-   default day, and their plan is asked for after the fade. Proposed: no waiting; a wait of a few
-   seconds on the fade for the plans of the hand-written eight is the alternative.
-8. **A late plan** takes over from the minute it comes, and is dropped after 10:00. Proposed: yes.
-9. **Default times are fixed clock hours;** only rain and the dark follow the weather and the sun.
-   Proposed: fixed; look at winter and summer in play and change the hours, or allow
-   "sunrise+0:30" as a time, if it looks wrong. The model may plan around the sun.
-10. **The tide.** Momme goes out "with the tide, early or late as it falls". Proposed: the default
-    work hours for now, the model may vary them; tide-keyed hours are an issue of their own.
-11. **Rain** is the hour's mean of 0.25 or more, for `needs_dry` activities; the fisher is not
-    affected. Do storms and snow count too? Proposed: yes for storm, no for snow.
-12. **The departure estimate:** the straight line (x plus y) times 1.3, plus 3 minutes, plus up to
-    10 of spread by name. A time learned from the last real walk is later. Proposed: the estimate;
-    look at how late they come in play.
-13. **Console `routine <villager> <set>`** to give a villager another set: not now (it would need
-    a saved field and a version bump). Proposed: show only, plus `replan`.
-14. **The prompt's language** is English whatever language the player talks, and the `why` is
-    shown as it comes. Proposed: yes; the plan is not talk.
+- `meeting` reads the village's `meeting_spot` and `field` its fields, in `ActivityPlaces`; one
+  line each and their tests, a commit after both are in. Until then `meeting` is the church yard
+  and `field` the tilled tiles, so everything above works and a villager with no such place just
+  has fewer activities.
+- The church is the village's church; Momme's feasts, the Krug and the landing's walks (about 65
+  tiles, an hour) are then looked at in play, with `search_tiles`, `spread_minutes` and the radius
+  tuned.
+- `VillageBuilder` spawns the eight villagers with their homes and workplaces
+  (`Households.settle`); nothing of the planner changes, they get their sets from their sheets.
+- The save version: whichever of #7, #60 and #9 is built next takes the next free one.
