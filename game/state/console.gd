@@ -14,31 +14,12 @@ const COMMANDS := {
 	"noneeds": ["noneeds", "Toggle: the farm animals' hunger and thirst do not rise."],
 	"noclip": ["noclip", "Toggle: walk through anything (indoors within the room)."],
 	"freeze": ["freeze", "Toggle: time stands still (you and the animals still move)."],
-	"weather":
-	[
-		"weather [clear|cloudy|overcast|rain|snow|fog|wind|storm|thunder|auto]",
-		"Show the weather, force a condition, or return to the simulation (auto).",
-	],
-	"snow":
-	[
-		"snow [0..1|auto]",
-		"Show the snow cover, force it (0 to 1) or return to the weather (auto).",
-	],
-	"play":
-	[
-		"play <track>",
-		"Play a piece of music in a loop (another one crossfades), rendered first; stop ends it.",
-	],
-	"stop": ["stop", "Fade the music out."],
 }
 ## The kind of each argument a command takes, in order, for Tab completion (see candidates).
 ## Numbers have no candidates; commands not listed take no arguments. `help <command>` and a
 ## missing or unknown name list the candidates of the kinds in ConsoleHelper.LISTED_KINDS.
 const ARGUMENTS := {
 	"help": [&"command"],
-	"weather": [&"weather"],
-	"snow": [&"snow"],
-	"play": [&"track"],
 }
 ## The commands that take an animal kind, or `npc` and the id of a villager written by hand (see
 ## VillagerRules): `spawn` puts them in the world and `killall` takes them out.
@@ -103,18 +84,6 @@ func run(line: String) -> Array[String]:
 		"freeze":
 			cheats.is_time_stopped = not cheats.is_time_stopped
 			output = [ConsoleHelper.toggle_message("Time stopped", cheats.is_time_stopped)]
-		"weather":
-			output = _weather(arguments)
-		"snow":
-			output = _snow(arguments)
-		"play":
-			output = _play(arguments)
-		"stop":
-			if context.music_stopper.is_valid():
-				context.music_stopper.call()
-				output = ["Music fading out"]
-			else:
-				output = [ConsoleHelper.NO_MUSIC]
 		_:
 			output = ["Unknown command: %s (try help)" % words[0]]
 	return output
@@ -206,82 +175,3 @@ func _candidates_text(command: String) -> Array[String]:
 		if ConsoleHelper.LISTED_KINDS.has(kind):
 			lines.append_array(ConsoleHelper.candidates_lines(kind, context))
 	return lines
-
-
-func _weather(arguments: PackedStringArray) -> Array[String]:
-	if arguments.size() > 1:
-		return ["Usage: %s" % COMMANDS["weather"][0]]
-	if arguments.size() == 1:
-		var word := arguments[0]
-		if word == "auto":
-			_state.weather_override = &""
-			_state.refresh_mud()
-			return ["Weather follows the simulation"]
-		if not Weather.FORCEABLE.has(StringName(word)):
-			return ["Usage: %s" % COMMANDS["weather"][0]]
-		_state.weather_override = StringName(word)
-		_state.refresh_mud()
-		return ["Weather forced to %s (weather auto ends it)" % word]
-	var sample := _state.current_weather()
-	var lines: Array[String] = [sample.values_text(), "Conditions: " + sample.conditions_text()]
-	var day := _state.clock.day
-	lines.append(
-		(
-			"Sun: %s to %s"
-			% [Sun.time_text(_state.sun.sunrise(day)), Sun.time_text(_state.sun.sunset(day))]
-		)
-	)
-	lines.append("Today: " + _state.weather.day_summary(_state.player.tile(), day).text())
-	if _state.weather_override != &"":
-		lines.append("Forced: %s" % _state.weather_override)
-	return lines
-
-
-func _snow(arguments: PackedStringArray) -> Array[String]:
-	var snow := _state.snow_cover
-	if arguments.size() > 1:
-		return ["Usage: %s" % COMMANDS["snow"][0]]
-	if arguments.size() == 1:
-		if arguments[0] == "auto":
-			snow.forced = -1.0
-			return ["Snow cover follows the weather"]
-		if (
-			not arguments[0].is_valid_float()
-			or float(arguments[0]) < 0.0
-			or float(arguments[0]) > 1.0
-		):
-			return ["Usage: %s" % COMMANDS["snow"][0]]
-		snow.forced = float(arguments[0])
-		return ["Snow cover forced to %s (snow auto ends it)" % arguments[0]]
-	var lines: Array[String] = [
-		(
-			"Snow cover %d %%, frost %d %%"
-			% [roundi(_state.current_snow_cover() * 100.0), roundi(_state.current_frost() * 100.0)]
-		)
-	]
-	if snow.forced >= 0.0:
-		lines.append("Forced: %s" % snow.forced)
-	return lines
-
-
-func _play(arguments: PackedStringArray) -> Array[String]:
-	if not context.music_player.is_valid():
-		return [ConsoleHelper.NO_MUSIC]
-	if arguments.size() != 1:
-		var lines: Array[String] = ["Usage: %s" % COMMANDS["play"][0]]
-		lines.append_array(_candidates_text("play"))
-		return lines
-	var track := track_named(arguments[0], candidates(&"track"))
-	if track.is_empty():
-		return _unknown("track", arguments[0], "play")
-	var line: String = context.music_player.call(track)
-	return [line]
-
-
-## The track `name` stands for among `tracks`: the whole name, or the name without its first word
-## ("tide" for "sketch_tide"); "" when there is none, or more than one.
-static func track_named(name: String, tracks: Array[String]) -> String:
-	var matches := tracks.filter(
-		func(track: String) -> bool: return name == track or track.ends_with("_" + name)
-	)
-	return matches[0] if matches.size() == 1 else ""
