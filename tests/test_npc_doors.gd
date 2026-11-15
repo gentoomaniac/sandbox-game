@@ -33,7 +33,7 @@ func test_a_catch_up_never_puts_a_villager_on_a_building_tile() -> void:
 	for index in 10:
 		_add_villager(_in_front_of(house), _in_front_of(house))
 	for seed_value in 20:
-		_npcs.catch_up(_world, seed_value)
+		_npcs.catch_up(_world, seed_value, 600)
 		for npc in _npcs.all():
 			assert_false(PlayerState.touches_building(_world, npc.position), str(npc.position))
 
@@ -41,7 +41,7 @@ func test_a_catch_up_never_puts_a_villager_on_a_building_tile() -> void:
 func test_a_villager_found_in_a_doorway_is_moved_to_the_tile_in_front() -> void:
 	var house := _place_house()
 	var npc := _add_villager(Vector2(house.door_tile()) + Vector2(0.5, 0.5), _in_front_of(house))
-	_npcs.catch_up(_world, SEED)
+	_npcs.catch_up(_world, SEED, 600)
 	assert_false(PlayerState.touches_building(_world, npc.position))
 	assert_lte(
 		npc.position.distance_to(_in_front_of(house)), _npcs.rules.behaviour("anchor_radius")

@@ -1,7 +1,7 @@
 # Pathfinding: how villagers find their way
 
 How a villager's way from one tile to another is found and walked, as it is built (tasks 238 and
-#68, steps 1 to 3). The plan and the reasons for it are in
+#68, steps 1 to 4). The plan and the reasons for it are in
 [../villagers/travel.md](../villagers/travel.md) (the decision record, with the measurements) and
 [../villagers/routines.md](../villagers/routines.md) (task 238's plan); this page says what the
 code does and how to change it without breaking it. What is **not built yet** is marked so.
@@ -45,6 +45,7 @@ flowchart LR
 | `Pathfinder` | `pathfinder.gd` | the queue, the tasks, the finished set | main |
 | `NpcTravel` | `npc_travel.gd` | the trips: starting, walking, blocking | main |
 | `NpcTrip` | `npc_trip.gd` | one villager's trip state | main |
+| `NpcSkip` | `npc_skip.gd` | one villager's walk through a time skip | main |
 
 ### `TravelMask`: the flags
 
@@ -82,9 +83,9 @@ from its own tile. So a loaded tile whose west neighbour is not loaded is still 
   the versions of the four chunks it copied; its mask is published only if they are all still the
   same, else dropped and made again (the request stays). An edit also **drops** the masks of its
   chunk and of E, S and SE of it. So a published mask is never stale.
-- **Pinning:** `pin(coords)` keeps a mask from being dropped by the limit until `unpin`; the cache
-  may hold more than its limit meanwhile, and shrinks when the next mask is published after the
-  unpin.
+- **Pinning:** `pin(coords)` keeps a mask from being dropped by the limit until `unpin` (a time
+  skip pins the masks it is about to use, see "Time skips"); the cache may hold more than its limit
+  meanwhile, and shrinks when the next mask is published after the unpin.
 - `mask_of(coords)` returns the mask or null, and asks for it. `made_mask(coords)` returns it
   without asking. `wait_for_mask` waits for the worker (tests, skips).
 
@@ -189,10 +190,51 @@ route it was stopped on, at most `retries` (2) times in a row, and is then `BLOC
 walkers are ignored (no collisions); the player is stood off by `personal_space`.
 `NpcTravel.tick()` runs the masks' `update()` and the Pathfinder's `tick()` once per
 `Npcs.update`. `Npcs.update` moves every trip wherever it is; `only_loaded` keeps only the strolls
-of villagers with no trip to loaded chunks. A far walker costs a few float operations a frame, and a
+of villagers with no trip to loaded chunks (time skips: below). A far walker costs a few float operations a frame, and a
 dictionary lookup per chunk asked and a mask lookup when it enters a tile; it allocates nothing.
 
-**Not built yet (steps 4 and 5):** time skips, and trips while the player is inside.
+**Not built yet (step 5):** trips while the player is inside.
+
+## Time skips
+
+A skip (sleep, passing out, the console's `skip`) moves every trip along its path by its minutes,
+a tile a minute, as the same minutes of play would (`Simulation.skip`). The first
+`Simulation.WALKED_MINUTES` go through `Npcs.update` (`ActorsUpkeep.walked_minute`, with
+`may_search` false, the clock moving a minute at a time), the rest through `Npcs.catch_up(map,
+seed, minutes)` after the clock has moved to the skip's end, so no trip is left out or moved twice.
+
+`NpcTravel.advance_skip(skip)` walks one trip (an `NpcSkip`: the tiles it may still walk, when the
+skip began, what it has pinned):
+
+- It walks **over the masks everywhere**, loaded ground too, no body is fitted. A tile is asked
+  when the feet cross into it, at the minute of that moment (`start_minute + tiles walked`), with
+  `NpcTravel._is_tile_open`, the same rule as the far step of `_walk`: so the tide and the season
+  are those of the time of entry, not those of the clock, which is at the end.
+- The world is that of the skip's end: edits are not replayed in time. A sapling that grew into a
+  tree in the night stops a trip that passed its tile at 1 o'clock.
+- A closed tile stops the trip there, short of the border; it stays `WALKING` and, in play after
+  the skip, meets the tile again and searches (`_be_stuck`). A trip that is `SEARCHING` or
+  `BLOCKED` stands where it is; `seconds_since_search` counts the skip's time, so a blocked one
+  looks again at once. **No search runs inside a skip**: whoever has none yet leaves late. A talk
+  with the player does not hold a walker up.
+- A trip that ends in the skip arrives (`arrived`, once); what is left of the skip's minutes is
+  not used. Wear is applied to the tiles entered, as in `_walk`.
+- **Missing masks:** `advance_skip` asks for the masks of the next `skip_masks_ahead` chunks of
+  the path (the ones its minutes can reach) when it comes into a new chunk, and pins them, and
+  unpins the ones left behind. So a trip over more chunks than the LRU holds needs no more masks at
+  once than the ones it uses and the ones asked ahead, kept past the limit while pinned. When the
+  mask of the tile is not made yet it returns false with the chunk in `missing_mask`, having
+  changed nothing: `Npcs.catch_up` then lets the worker finish (`make_masks(true)`, waiting: only a
+  skip may wait, the screen is faded) and calls again; `catch_up_over_frames` awaits the next
+  frame, `make_masks(false)`, and calls again. Masks are stamped from the same seed and edits, so
+  both end the same.
+- `Npcs.is_skipping` is true during `catch_up`: `place` works on any villager then, a visible one
+  too (task 239 puts villagers where their routine is at the skip's end).
+
+A skip agrees with the same minutes of play to the tile when the path stays open, no edit in the
+skip changes a tile of it, nobody searches, the player holds nobody up, the masks of the path are
+made (play too waits for a mask that is not: the three walked minutes do not make masks, and
+stand while one is missing) and the frames of play were not longer than `MAX_STEP_SECONDS`.
 
 ## The life of one trip
 
@@ -291,6 +333,7 @@ for something inside a pool task (a task that waits for a mask can block every w
 | `max_legs` (6) | how long a chain of legs may be |
 | `blocked_give_up_seconds` (0.5), `retries` (2) | how fast a villager with a blocked step thinks again, and how often before it gives up |
 | `blocked_min_seconds`, `blocked_fallback_seconds` | when a blocked villager looks again |
+| `skip_masks_ahead` (8) | how many chunks ahead of a trip a skip asks the masks of and pins: more waits less for the worker, and keeps more masks past `far_masks_kept` at once |
 | `far_masks_kept` (256), `far_chunks_kept` (32) | memory (1.6 KB a mask, 300 KB a raw chunk) against making masks again; the raw chunks should hold the chunks round the player, as an edit drops four masks that are made again from them |
 
 ## Debugging and measuring

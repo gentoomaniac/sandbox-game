@@ -50,7 +50,8 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   game minute. A game day is 960 seconds of play.
 - `Npcs.update` runs from Main for all villagers, and from `ActorsUpkeep.walked_minute` for those in
   loaded chunks only. It does not run while the player is inside. A skip makes up the rest of its
-  time in `catch_up`, which today only puts loaded villagers somewhere around their anchors.
+  time in `catch_up`, which walks the trips by the skip's minutes and puts the other loaded villagers
+  somewhere around their anchors.
 
 ## Data and API, on top of 238
 
@@ -160,7 +161,7 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   chunk, and lost when its chunk unloads. The code is in `NpcTravel._walk`, not
   `NpcTrip`, which only holds the state.
 - **`Npcs.update`** moves every trip, near and far; `only_loaded` only keeps the strolls to the loaded
-  chunks. `Npcs.catch_up(map, seed, minutes)` learns the minutes of the skip (below).
+  chunks. `Npcs.catch_up(map, seed, minutes)` takes the minutes of the skip (below); built in step 4.
 - **`NpcViews`** makes a view only for a villager whose chunk is loaded, so after a jump (a loaded
   save, the console's `tp`) nobody stands on ground that isn't drawn yet. The ground near the player
   loads first; one coming from further out is on loaded ground long before the view.
@@ -364,7 +365,8 @@ terrain, #61 and #62) then cost what they cost near. The parity test gets a vill
    an update or unload, and when that happens between two centres; the tide rising over a far path
    makes it search again, then wait; a crop edit at night drops the mask; far feet wear; no view for
    a villager on an unloaded chunk.
-4. **Skips:** `catch_up` with minutes. Tests: a skip moves a trip as far as the same minutes of play
+4. **Skips:** `catch_up` with minutes. **Done** (tests/test_npc_skip.gd, tests/test_npc_skip_world.gd,
+   `NpcTravel.advance_skip`, `NpcSkip`, `TravelMasks.pin`; as built: tests/test_travel_masks.gd). Tests: a skip moves a trip as far as the same minutes of play
    (to the tile); one that ends in the skip arrives once; a trip without a path searches after it;
    the tide at the time of entry stops one, not the tide at the skip's end, on a far path and on one
    inside the loaded area, and likewise a seasonal plant; a sapling that grows into a tree on the path

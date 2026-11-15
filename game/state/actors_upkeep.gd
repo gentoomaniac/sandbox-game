@@ -6,7 +6,8 @@ extends SimulationSystem
 ## minute by minute with the clock; what is left is made up for at once: each of them is put
 ## somewhere its time of day could have led it (their `catch_up`), by dice thrown from the world
 ## seed and the time, so that the same game skipped the same way ends the same. Only those in
-## loaded chunks move, as in play: the others stay as they are.
+## loaded chunks stroll, as in play: the others stay as they are. A villager on a trip walks it
+## over all of the skip's minutes, wherever it is.
 
 var _world: World
 var _livestock: Livestock
@@ -39,14 +40,14 @@ func walked_minute(clock: GameClock) -> void:
 
 func skipped(minutes: int, clock: GameClock) -> void:
 	_livestock.catch_up(_world, clock, _player_feet.call(), _seed_of(clock, 2), minutes)
-	_npcs.catch_up(_world, _seed_of(clock, 3))
+	_npcs.catch_up(_world, _seed_of(clock, 3), minutes)
 
 
 func skipped_over_frames(minutes: int, clock: GameClock, next_frame: Callable) -> void:
 	await _livestock.catch_up_over_frames(
 		_world, clock, _player_feet.call(), _seed_of(clock, 2), minutes, next_frame
 	)
-	await _npcs.catch_up_over_frames(_world, _seed_of(clock, 3), next_frame)
+	await _npcs.catch_up_over_frames(_world, _seed_of(clock, 3), minutes, next_frame)
 
 
 ## The dice of `purpose` at the time of `clock` in this world.

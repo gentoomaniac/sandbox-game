@@ -18,6 +18,8 @@ var rules: NpcRules:
 	set(value):
 		rules = value
 		_pathfinder.max_tasks = int(value.travel("search_tasks"))
+		# The masks are kept as many as the rules say.
+		_masks_world = null
 var _pathfinder: Pathfinder
 ## What a search sees of the world (see TravelView): the masks, made when the first search over a
 ## world asks for them, and the snapshot of the buildings and the wear, made again when old.
@@ -55,6 +57,77 @@ func cancel(npc: Npc) -> void:
 	if npc.trip != null:
 		_drop_search(npc.trip)
 	npc.trip = null
+
+
+## Begins `npc`'s trip through a skip of `minutes` that the clock shows the end of (see
+## `advance_skip`); null when the villager has no way to walk: one that has none yet, or is blocked,
+## stands where it is and searches after the skip, as in play. The player does not hold a walker up
+## in a skip.
+func begin_skip(npc: Npc, minutes: int) -> NpcSkip:
+	var trip := npc.trip
+	trip.seconds_since_search += minutes / GameClock.GAME_MINUTES_PER_REAL_SECOND
+	if trip.state != NpcTrip.State.WALKING and trip.state != NpcTrip.State.WAITING:
+		return null
+	trip.pause_seconds = 0.0
+	trip.state = NpcTrip.State.WALKING
+	var tiles := minutes * rules.behaviour("walk_speed") / GameClock.GAME_MINUTES_PER_REAL_SECOND
+	return NpcSkip.new(npc, tiles, (trip.map as World).clock.total_minutes() - minutes)
+
+
+## Walks the trip of `skip` as far as the minutes of the skip take it: a tile a minute along its
+## path, as in play (`_walk`), at the speed of play, over the masks everywhere, loaded ground
+## too. Each tile is asked at the minute the walker enters it: the tide and the season of that time,
+## not the clock's, which is at the end of the skip. The world is that of the end of the skip,
+## so a tile that is closed then stops it there, to search after the skip; none is searched
+## inside it. The villager arrives (`arrived`, once) when its path ends in the skip.
+##
+## Returns false, with the chunk in `skip.missing_mask`, when the mask of a tile is not made
+## yet: let the worker go on (`make_masks`) and call again; nothing has been done twice.
+## True when it is over.
+func advance_skip(skip: NpcSkip) -> bool:
+	var npc := skip.npc
+	var trip := npc.trip
+	var world := trip.map as World
+	var masks := _masks_of(world)
+	var tiles_per_minute := rules.behaviour("walk_speed") / GameClock.GAME_MINUTES_PER_REAL_SECOND
+	while npc.trip == trip and trip.state == NpcTrip.State.WALKING and skip.tiles_left > 0.0:
+		var next_tile := trip.path[trip.next_index]
+		var target := Vector2(next_tile) + Vector2(0.5, 0.5)
+		var distance := npc.position.distance_to(target)
+		var steps := minf(distance, skip.tiles_left)
+		_ask_masks_ahead(skip, masks)
+		# The feet cross into the tile half a tile before its middle.
+		var until_border := maxf(distance - 0.5, 0.0)
+		if next_tile != npc.tile() and until_border <= skip.tiles_left:
+			var coords := Chunk.world_to_chunk(next_tile)
+			var mask := masks.mask_of(coords)
+			if mask == null:
+				skip.missing_mask = coords
+				return false
+			var minute := (
+				skip.start_minute + int((skip.tiles_walked + until_border) / tiles_per_minute)
+			)
+			if not _is_tile_open(world, mask, next_tile, minute):
+				# Short of the border, so that it stands in the tile it was in.
+				_walk_skip(skip, target, maxf(until_border - 0.01, 0.0))
+				skip.tiles_left = 0.0
+				break
+			_wear_entered_tile(world, mask, next_tile, target, npc.tile())
+		_walk_skip(skip, target, steps)
+		if npc.position == target:
+			trip.next_index += 1
+			trip.retries = 0
+			if trip.next_index == trip.path.size():
+				_finish_path(npc)
+	for coords in skip.pinned:
+		masks.unpin(coords)
+	return true
+
+
+## Lets the worker make the masks a skip waits for: `is_waiting` waits for it to finish what it is
+## doing (a skip in one go, which has nothing else to do), else it only takes in what is done.
+func make_masks(is_waiting: bool) -> void:
+	_masks.update(is_waiting)
 
 
 ## Lets `delta` seconds pass for a villager with a trip. `fits` is a Callable `(npc, feet, map) ->
@@ -302,8 +375,7 @@ static func _is_whole(world: World, tile: Vector2i) -> bool:
 
 
 ## The far step of `_walk`: whether the walker may move to `feet`. Only entering a new tile asks
-## anything, and wears it (a loaded tile as the near step does, one that is not loaded where the
-## mask says grass wears). A tile that is closed makes it stuck; one whose mask is being made
+## anything, and wears it. A tile that is closed makes it stuck; one whose mask is being made
 ## makes it stand and wait, which is not being stuck.
 func _may_enter_far_tile(npc: Npc, world: World, feet: Vector2, delta: float) -> bool:
 	# The body is checked afresh when it is on loaded ground again.
@@ -311,24 +383,73 @@ func _may_enter_far_tile(npc: Npc, world: World, feet: Vector2, delta: float) ->
 	var tile := Vector2i(feet.floor())
 	if tile == npc.tile():
 		return true
-	var coords := Chunk.world_to_chunk(tile)
-	var mask := _masks_of(world).mask_of(coords)
+	var mask := _masks_of(world).mask_of(Chunk.world_to_chunk(tile))
 	if mask == null:
 		npc.activity = Npc.Activity.IDLE
 		return false
-	var minutes := world.clock.total_minutes()
-	var local := Chunk.local_pos(tile)
-	if (
-		world.building_at(tile) != null
-		or not mask.is_free(local, Tide.level(minutes), GameClock.day_of(minutes))
-	):
+	if not _is_tile_open(world, mask, tile, world.clock.total_minutes()):
 		_be_stuck(npc, delta)
 		return false
-	if world.is_chunk_loaded(coords):
-		Npcs.wear_step(world, feet, npc.tile())
-	elif mask.wears(local):
-		world.wear_unloaded(tile, PathRules.default_rules().villager_step())
+	_wear_entered_tile(world, mask, tile, feet, npc.tile())
 	return true
+
+
+## Whether a tile may be entered at the game minute `minutes`: no building on it, and the mask
+## says it is free at the tide and in the season of that time.
+static func _is_tile_open(world: World, mask: TravelMask, tile: Vector2i, minutes: int) -> bool:
+	return (
+		world.building_at(tile) == null
+		and mask.is_free(Chunk.local_pos(tile), Tide.level(minutes), GameClock.day_of(minutes))
+	)
+
+
+## The tile a walker enters wears: a loaded one as the near step does, one that is not loaded where
+## the mask says grass wears.
+static func _wear_entered_tile(
+	world: World, mask: TravelMask, tile: Vector2i, feet: Vector2, from_tile: Vector2i
+) -> void:
+	if world.is_chunk_loaded(Chunk.world_to_chunk(tile)):
+		Npcs.wear_step(world, feet, from_tile)
+	elif mask.wears(Chunk.local_pos(tile)):
+		world.wear_unloaded(tile, PathRules.default_rules().villager_step())
+
+
+## Moves a villager of a skip `tiles` towards `target`, which is on its path.
+func _walk_skip(skip: NpcSkip, target: Vector2, tiles: float) -> void:
+	var npc := skip.npc
+	var to_target := target - npc.position
+	if not to_target.is_zero_approx():
+		npc.facing = Npc.facing_of(to_target)
+		npc.heading = to_target.normalized()
+	npc.position = npc.position.move_toward(target, tiles)
+	npc.free_body_tiles = Rect2i()
+	skip.tiles_left -= tiles
+	skip.tiles_walked += tiles
+
+
+## Asks for the masks of the next `skip_masks_ahead` chunks of the path (those the skip can reach)
+## when the walker is in a new one, and pins them, and unpins what it has left behind: the masks it
+## uses are never dropped for the limit, and the worker makes the next ones while it uses these.
+func _ask_masks_ahead(skip: NpcSkip, masks: TravelMasks) -> void:
+	var trip := skip.npc.trip
+	var here := Chunk.world_to_chunk(trip.path[trip.next_index])
+	if skip.asked_ahead_from == here:
+		return
+	skip.asked_ahead_from = here
+	var ahead: Dictionary[Vector2i, bool] = {}
+	var last := mini(trip.next_index + ceili(skip.tiles_left), trip.path.size() - 1)
+	for index in range(trip.next_index, last + 1):
+		ahead[Chunk.world_to_chunk(trip.path[index])] = true
+		if ahead.size() == int(rules.travel("skip_masks_ahead")):
+			break
+	for coords in skip.pinned.keys():
+		if not ahead.has(coords):
+			masks.unpin(coords)
+			skip.pinned.erase(coords)
+	for coords in ahead:
+		masks.pin(coords)
+		masks.mask_of(coords)
+		skip.pinned[coords] = true
 
 
 ## No free step: after `blocked_give_up_seconds` it looks for another way, `retries` times, and

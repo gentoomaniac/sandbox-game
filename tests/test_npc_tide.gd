@@ -41,6 +41,6 @@ func test_a_catch_up_puts_no_villager_in_the_water() -> void:
 		_add_villager(_yard_middle(), _yard_middle())
 	_step()
 	for seed_value in 10:
-		_npcs.catch_up(_world, seed_value)
+		_npcs.catch_up(_world, seed_value, 600)
 		for npc in _npcs.all():
 			assert_lt(_column_of(npc), FIRST_MUD_COLUMN, str(npc.position))

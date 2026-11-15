@@ -119,16 +119,6 @@ func test_the_minutes_of_a_skip_that_are_walked_look_for_no_way() -> void:
 	assert_eq(npc.trip.state, NpcTrip.State.SEARCHING)
 
 
-func test_a_skip_leaves_a_villager_on_a_trip_where_it_is() -> void:
-	var npc := _add_villager(_centre_of(_tile_at(-6, -5)), _yard_middle())
-	_npcs.walk_to(npc, _tile_at(6, -5), _world)
-	_run(2.0)
-	var at := npc.position
-	_npcs.catch_up(_world, 1)
-	assert_eq(npc.position, at)
-	assert_true(npc.is_travelling())
-
-
 func test_a_villager_is_not_placed_in_a_loaded_chunk_even_from_an_unloaded_one() -> void:
 	var far := _add_villager(_centre_of(_tile_at(1, 1)), _yard_middle())
 	_unload_chunk_of(far.tile())

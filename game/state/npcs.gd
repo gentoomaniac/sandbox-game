@@ -47,6 +47,9 @@ var rules := NpcRules.default_rules():
 ## The villagers written by hand (see `spawn_villager`).
 var villagers := VillagerRules.default_rules()
 var rng := RandomNumberGenerator.new()
+## Whether a skip's `catch_up` is running: the screen is faded, so `place` may be used on any
+## villager, a visible one too.
+var is_skipping := false
 var _sun: Sun
 var _npcs: Array[Npc] = []
 var _travel: NpcTravel
@@ -198,11 +201,12 @@ func walk_to_door(npc: Npc, building: Building, map: GameMap) -> void:
 
 ## Puts a villager whose own chunk is not loaded on `tile`, which ends its trip: it is there when
 ## the chunk loads. Returns false, and does nothing, for one in a loaded chunk or for a `tile` in
-## one: the player may see it, and it walks (`walk_to`). It does not move the anchor (the routine
+## one: the player may see it, and it walks (`walk_to`). Except in a skip (`is_skipping`), which
+## nobody watches. It does not move the anchor (the routine
 ## does) and does not ask whether the tile can be stood on: a villager on a building tile or in the
 ## water is put on the nearest free one when its chunk loads (`_step_off_buildings`).
 func place(npc: Npc, tile: Vector2i, map: GameMap) -> bool:
-	if _is_in_loaded_chunk(npc, map) or _is_chunk_of_tile_loaded(tile, map):
+	if not is_skipping and (_is_in_loaded_chunk(npc, map) or _is_chunk_of_tile_loaded(tile, map)):
 		return false
 	cancel_trip(npc)
 	npc.position = Vector2(tile) + Vector2(0.5, 0.5)
@@ -268,28 +272,50 @@ func update(
 			_stand(npc)
 
 
-## Puts the villagers where time that was skipped (see Simulation `skip`) has left them: each
-## one in a loaded chunk on a tile of the circle it keeps to around its anchor that it could have
-## walked to (see ReachableTiles), standing, as `update` has them at that hour. Where the day
-## will put a villager (a schedule) is decided here, not in `update`. The dice are thrown from
-## `seed_value`.
-func catch_up(map: GameMap, seed_value: int) -> void:
+## Puts the villagers where time that was skipped (see Simulation `skip`) has left them, `minutes`
+## of it (the clock shows its end): each one on a trip walks it as far as the minutes take it,
+## as in play and at its pace (see NpcTravel `advance_skip`), waiting for the masks it needs; each
+## one else in a loaded chunk is on a tile of the circle it keeps to around its anchor that it
+## could have walked to (see ReachableTiles), standing, as `update` has them at that hour. Where
+## the day will put a villager (a schedule) is decided here, not in `update`. The dice are thrown
+## from `seed_value`. No path is searched: whoever has none yet, or is stopped, searches after
+## the skip.
+func catch_up(map: GameMap, seed_value: int, minutes: int) -> void:
 	rng.seed = seed_value
+	is_skipping = true
 	for npc in _npcs:
-		_catch_up_one(npc, map)
+		if npc.trip == null:
+			_catch_up_one(npc, map)
+			continue
+		var skip := _travel.begin_skip(npc, minutes)
+		while skip != null and not _travel.advance_skip(skip):
+			_travel.make_masks(true)
+	is_skipping = false
 
 
 ## `catch_up` spread over frames: it lets go of the frame every `Simulation.frame_budget_usec`, and
-## goes on in the next. `await` it, and keep `update` from moving the villagers meanwhile, so that
-## they end up as in one go. `next_frame` is a Callable that gives the signal of the next frame.
-func catch_up_over_frames(map: GameMap, seed_value: int, next_frame: Callable) -> void:
+## goes on in the next, and for a mask that is not made yet. `await` it, and keep `update` from
+## moving the villagers meanwhile, so that they end up as in one go. `next_frame` is a Callable
+## that gives the signal of the next frame.
+func catch_up_over_frames(
+	map: GameMap, seed_value: int, minutes: int, next_frame: Callable
+) -> void:
 	rng.seed = seed_value
+	is_skipping = true
 	var frame_started := Time.get_ticks_usec()
 	for npc in _npcs:
 		if Time.get_ticks_usec() - frame_started > Simulation.frame_budget_usec:
 			await next_frame.call()
 			frame_started = Time.get_ticks_usec()
-		_catch_up_one(npc, map)
+		if npc.trip == null:
+			_catch_up_one(npc, map)
+			continue
+		var skip := _travel.begin_skip(npc, minutes)
+		while skip != null and not _travel.advance_skip(skip):
+			await next_frame.call()
+			_travel.make_masks(false)
+			frame_started = Time.get_ticks_usec()
+	is_skipping = false
 
 
 ## The player speaks to a villager: they turn to the player and stand a while.
@@ -302,8 +328,7 @@ func talk_to(npc: Npc, player_feet: Vector2) -> void:
 
 
 func _catch_up_one(npc: Npc, map: GameMap) -> void:
-	# One on a trip is where the trip has it, and goes on: whoever sent it decides otherwise.
-	if npc.trip != null or not _is_in_loaded_chunk(npc, map):
+	if not _is_in_loaded_chunk(npc, map):
 		return
 	_step_off_buildings(npc, map)
 	var radius := rules.behaviour("anchor_radius") * STROLL_REACH
