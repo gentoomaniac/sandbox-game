@@ -1,6 +1,5 @@
 extends SaveValidationCase
-## What a villager thinks of the player is saved, with the day's count that caps it; a save from
-## before it (version 36) starts every villager at none.
+## What a villager thinks of the player is saved, with the day's count that caps it.
 
 
 func _saved_villager() -> Dictionary:
@@ -19,19 +18,6 @@ func test_the_opinion_and_what_moved_it_today_are_kept() -> void:
 	var loaded := SaveFile.read(SAVE_PATH).npcs.all()[0]
 
 	assert_eq([loaded.opinion, loaded.opinion_day, loaded.opinion_moved_today], [15, 4, 15])
-
-
-func test_a_version_36_save_loads_every_villager_with_no_opinion() -> void:
-	var game := _current_game()
-	var saved := _saved_villager()
-	for key in ["opinion", "opinion_day", "opinion_moved_today"]:
-		saved.erase(key)
-	game["npcs"] = [saved]
-	_write_save(36, game)
-
-	var loaded := SaveFile.read(SAVE_PATH).npcs.all()[0]
-
-	assert_eq([loaded.opinion, loaded.opinion_day, loaded.opinion_moved_today], [0, 0, 0])
 
 
 func test_an_opinion_that_is_not_a_whole_number_is_refused() -> void:

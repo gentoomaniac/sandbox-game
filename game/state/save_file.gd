@@ -3,7 +3,7 @@ extends RefCounted
 ## The saves on disk: a JSON file per save, `{"version": VERSION, "game": <GameState.to_dict>}`.
 ## Every save is a new file, and the newest few are kept (see SaveList).
 ## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step
-## (see `_upgrade_from_version_36` and so on). Older ones are refused.
+## (see `_upgrade_from_version_37` and so on). Older ones are refused.
 ##
 ## How to add a save field (or change one):
 ## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
@@ -23,8 +23,9 @@ extends RefCounted
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
 const VERSION := 46
-## The oldest version we still upgrade.
-const OLDEST_VERSION := VERSION - 10
+## The oldest version we still upgrade. Nine steps back, for the next version (#7) makes its step
+## the tenth.
+const OLDEST_VERSION := VERSION - 9
 ## The world's save path: its saves are named after it (see SaveList).
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
@@ -219,8 +220,6 @@ static func copy_aside(path: String, backup: String) -> String:
 
 ## Brings the data of a save of `version` up to the current one.
 static func _upgrade(game: Dictionary, version: int) -> void:
-	if version <= 36:
-		_upgrade_from_version_36(game)
 	if version <= 37:
 		_upgrade_from_version_37(game)
 	if version <= 38:
@@ -239,17 +238,6 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_44(game)
 	if version <= 45:
 		_upgrade_from_version_45(game)
-
-
-## Version 36 had no opinion of the player (task 128): every villager starts at none, and the
-## stories they know are judged (their opinion would be of days long gone).
-static func _upgrade_from_version_36(game: Dictionary) -> void:
-	for npc: Dictionary in game["npcs"]:
-		for story: Dictionary in npc["stories"]:
-			story["is_judged"] = true
-		npc["opinion"] = 0
-		npc["opinion_day"] = 0
-		npc["opinion_moved_today"] = 0
 
 
 ## Version 37 had no topics of the village (task 129): the villagers of data/villagers.cfg know
