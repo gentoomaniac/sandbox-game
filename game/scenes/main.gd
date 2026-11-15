@@ -10,18 +10,6 @@ extends Node2D
 
 ## Debug speed-up, toggled with F2: a game day in 16 real seconds.
 const FAST_FORWARD_FACTOR := 60.0
-## What the note says about a use of the held item, for the uses that have one.
-const USE_NOTES := {
-	ToolUse.Use.GIVE_BONE: "The dog follows you.",
-	ToolUse.Use.SADDLE: "The horse is saddled: E to get on.",
-	ToolUse.Use.UNSADDLE: "You take the saddle off.",
-	ToolUse.Use.FILL_CAN: "You fill the watering can.",
-	ToolUse.Use.CAN_EMPTY: "The watering can is empty: fill it at a well or at fresh water.",
-	ToolUse.Use.RIDING: ScreenKeys.GET_OFF_FIRST,
-	ToolUse.Use.NO_ROOM: "Not enough room in the inventory.",
-	ToolUse.Use.STANDING_ON: "Step off it first.",
-	ToolUse.Use.THE_VILLAGES: GameState.THE_VILLAGES,
-}
 
 var _state: GameState
 ## The game F8 loaded, if it started this scene (see QuickLoad); told once the HUD is up.
@@ -589,7 +577,7 @@ func _process(delta: float) -> void:
 		_player_view.is_trotting = _state.is_trotting()
 		_state.walk(direction, delta, _player_view.walk_speed)
 		if _state.player.horse != null and direction != Vector2.ZERO and _state.is_door_ahead():
-			_harvest_hud.show_note(ScreenKeys.GET_OFF_FIRST)
+			_harvest_hud.show_note(UseNotes.GET_OFF_FIRST)
 		_state.collect_ground_items(delta)
 		_interior_view.cover_bed(_state.player.bed_lying_in)
 		_object_cover.cover(_state.player.bed_lying_in)
@@ -663,11 +651,9 @@ func _repeat_held_use() -> void:
 func _after_use(use: ToolUse.Use, target_tile: Vector2i) -> void:
 	_sounds.failed_use(use, target_tile)
 	_tiredness_view.acted(use)
-	if USE_NOTES.has(use):
-		_harvest_hud.show_note(USE_NOTES[use])
-	if use == ToolUse.Use.NEEDS_BETTER_TOOL:
-		var tool_name := ItemTypes.tool_name(_state.player.inventory.held_item())
-		_harvest_hud.show_note("Needs a better %s." % tool_name)
+	var note := UseNotes.of(use, _state.player.inventory)
+	if note != "":
+		_harvest_hud.show_note(note)
 
 
 ## Where the camera looks. The player is drawn on the art pixel grid (rounded), the camera

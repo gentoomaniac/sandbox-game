@@ -4,9 +4,6 @@ extends RefCounted
 ## (and the crafting button beside the bag button). A window's key does nothing while another
 ## window is open (see Modal.can_open_on_key).
 
-## What the player is told when they try on horseback what needs them on foot.
-const GET_OFF_FIRST := "Get off the horse first."
-
 var _state: GameState
 var _bag_screen: BagScreen
 var _character_screen: CharacterScreen
@@ -56,4 +53,4 @@ func toggle_crafting() -> void:
 	if _crafting_screen.is_open() or _state.player.horse == null:
 		_crafting_screen.toggle()
 	else:
-		_harvest_hud.show_note(GET_OFF_FIRST)
+		_harvest_hud.show_note(UseNotes.GET_OFF_FIRST)
