@@ -360,7 +360,7 @@ func _catch_up_one(npc: Npc, map: GameMap) -> void:
 	if not _is_in_loaded_chunk(npc, map):
 		return
 	_step_off_buildings(npc, map)
-	var radius := rules.behaviour("anchor_radius") * STROLL_REACH
+	var radius := _keep_radius_of(npc) * STROLL_REACH
 	var is_free := func(tile: Vector2i) -> bool:
 		var centre := Vector2(tile) + Vector2(0.5, 0.5)
 		return centre.distance_to(npc.anchor) <= radius and can_stand_at(map, centre)
@@ -420,10 +420,10 @@ func _settle(npc: Npc, world: World) -> Npc:
 
 
 func _start_next_activity(npc: Npc) -> void:
-	if rng.randf() >= rules.behaviour("walk_chance"):
+	if npc.is_staying_put or rng.randf() >= rules.behaviour("walk_chance"):
 		_stand(npc)
 		return
-	var radius := rules.behaviour("anchor_radius") * STROLL_REACH
+	var radius := _keep_radius_of(npc) * STROLL_REACH
 	var goal := npc.anchor + Vector2.from_angle(rng.randf() * TAU) * radius * sqrt(rng.randf())
 	if goal.is_equal_approx(npc.position):
 		_stand(npc)
@@ -431,6 +431,12 @@ func _start_next_activity(npc: Npc) -> void:
 	npc.activity = Npc.Activity.WALK
 	npc.heading = (goal - npc.position).normalized()
 	npc.seconds_left = rules.pick_seconds("walk_seconds", rng)
+
+
+## How far from its anchor a villager strolls: as far as what the day has them do says, else the
+## rule of data/npcs.cfg.
+func _keep_radius_of(npc: Npc) -> float:
+	return npc.keep_radius if npc.keep_radius > 0.0 else rules.behaviour("anchor_radius")
 
 
 func _on_trip_arrived(npc: Npc) -> void:
@@ -448,7 +454,7 @@ func _stand(npc: Npc) -> void:
 ## outside it only steps back towards it), and it must not come closer to the player than
 ## `personal_space`. The tile it steps onto wears towards a desire path.
 func _walk(npc: Npc, delta: float, map: GameMap, player_feet: Vector2) -> bool:
-	var radius := rules.behaviour("anchor_radius")
+	var radius := _keep_radius_of(npc)
 	var personal_space := rules.behaviour("personal_space")
 	var anchor_distance := npc.position.distance_to(npc.anchor)
 	for steps: int in TURN_STEPS:

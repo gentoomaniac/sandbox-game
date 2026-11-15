@@ -13,6 +13,7 @@ const RULES_KEYS: Array[String] = [
 	"detour_factor",
 	"arrive_margin_minutes",
 	"spread_minutes",
+	"blocked_give_up_minutes",
 	"rain_hour_limit",
 	"search_tiles",
 	"max_entries",

@@ -33,12 +33,12 @@ func home(npc: Npc, where: String) -> Array[String]:
 func work(npc: Npc, where: String) -> Array[String]:
 	match where:
 		"none":
-			npc.workplace = null
+			_state.homes.set_workplace(npc, null)
 			return ["%s has no workplace now" % npc.name]
 		"here":
 			var building := _building_here()
 			if building == null:
-				npc.workplace = _spot_here(npc)
+				_state.homes.set_workplace(npc, _spot_here(npc))
 			else:
 				var problem := _state.homes.give_work(npc, building)
 				if problem != "":

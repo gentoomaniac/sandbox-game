@@ -9,6 +9,10 @@ extends RefCounted
 ## the house and the workplace their sheet names when they come into the world (`settle`).
 ## A building someone lives in is a workplace only for those who live there (#69).
 
+## A villager's house or workplace was given, taken or taken down: what the day has them do
+## follows (see ActivityUpkeep).
+signal changed(npc: Npc)
+
 ## The building the player is inside, or null: its room must not change under their feet.
 var building_with_player: Building
 
@@ -67,8 +71,14 @@ func why_not_work_in(npc: Npc, building: Building) -> String:
 func give_work(npc: Npc, building: Building) -> String:
 	var reason := why_not_work_in(npc, building)
 	if reason == "":
-		npc.workplace = Workplace.of_building(building)
+		set_workplace(npc, Workplace.of_building(building))
 	return reason
+
+
+## Makes `workplace` (a building or a spot, or null for none) the workplace of `npc`.
+func set_workplace(npc: Npc, workplace: Workplace) -> void:
+	npc.workplace = workplace
+	changed.emit(npc)
 
 
 ## Makes `house` the home of `npc` (they leave their old one) and its yard their anchor, and the
@@ -77,12 +87,13 @@ func give_work(npc: Npc, building: Building) -> String:
 func move_in(npc: Npc, house: Building) -> String:
 	var reason := why_not_live_in(npc, house)
 	if reason == "":
-		move_out(npc)
+		_leave_house(npc)
 		npc.house = house
 		npc.anchor = house.yard()
 		var own_room := _own_interior_for(npc, house)
 		if own_room != "":
 			house.furnish_from(own_room)
+		changed.emit(npc)
 	return reason
 
 
@@ -100,6 +111,11 @@ func _own_interior_for(npc: Npc, house: Building) -> String:
 ## They have no house. Their anchor stays where it was. If they worked in it and others still live
 ## there, they work there no more.
 func move_out(npc: Npc) -> void:
+	_leave_house(npc)
+	changed.emit(npc)
+
+
+func _leave_house(npc: Npc) -> void:
 	var old_house := npc.house
 	npc.house = null
 	if (
@@ -117,7 +133,7 @@ func building_gone(building: Building) -> void:
 		if npc.house == building:
 			move_out(npc)
 		if npc.workplace != null and npc.workplace.building == building:
-			npc.workplace = null
+			set_workplace(npc, null)
 
 
 ## Villagers who work in `building`.

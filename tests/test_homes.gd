@@ -204,3 +204,36 @@ func test_a_villager_who_comes_into_the_world_settles_by_themselves() -> void:
 
 	assert_eq(hinrich.house, hall)
 	assert_eq(hinrich.anchor, hall.yard())
+
+
+func test_a_change_of_house_or_workplace_is_announced() -> void:
+	var hall := _hall()
+	var barn := _world.place_building(BuildingTypes.BARN, BARN_ORIGIN)
+	var antje := _villager("antje")
+	watch_signals(_state.homes)
+
+	_state.homes.move_in(antje, hall)
+	assert_signal_emit_count(_state.homes, "changed", 1)
+	_state.homes.give_work(antje, barn)
+	assert_signal_emit_count(_state.homes, "changed", 2)
+	_state.homes.set_workplace(antje, null)
+	assert_signal_emit_count(_state.homes, "changed", 3)
+	_state.homes.move_out(antje)
+	assert_signal_emit_count(_state.homes, "changed", 4)
+	assert_signal_emitted_with_parameters(_state.homes, "changed", [antje])
+
+
+func test_a_house_that_is_refused_is_not_announced() -> void:
+	var barn := _world.place_building(BuildingTypes.BARN, BARN_ORIGIN)
+	watch_signals(_state.homes)
+	_state.homes.move_in(_villager("antje"), barn)
+	assert_signal_not_emitted(_state.homes, "changed")
+
+
+func test_a_house_taken_down_announces_its_residents_and_workers() -> void:
+	var hall := _hall()
+	var antje := _villager("antje")
+	_state.homes.move_in(antje, hall)
+	watch_signals(_state.homes)
+	_state.homes.building_gone(hall)
+	assert_signal_emitted_with_parameters(_state.homes, "changed", [antje])

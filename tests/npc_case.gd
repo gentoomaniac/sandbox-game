@@ -64,6 +64,12 @@ func _add_villager(feet: Vector2, anchor: Vector2) -> Npc:
 func _step(minute := NOON) -> void:
 	_state.clock.day = DAY
 	_state.clock.minute_of_day = minute
+	_wait_for_searches()
+	_npcs.update(STEP_SECONDS, _world, _state.player.position, _state.clock)
+
+
+## Lets the searches that are under way finish, as a few frames of the game do.
+func _wait_for_searches() -> void:
 	for _i in 5000:
 		if not _npcs.all().any(
 			func(npc: Npc) -> bool:
@@ -72,4 +78,3 @@ func _step(minute := NOON) -> void:
 			break
 		_npcs.update(0.0, _world, _state.player.position, _state.clock)
 		OS.delay_usec(1000)
-	_npcs.update(STEP_SECONDS, _world, _state.player.position, _state.clock)

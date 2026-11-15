@@ -55,7 +55,11 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
 - **Where:** each keeps near its anchor: the yard in front of the door of its home (below) if it
   has one, else of the nearest building or the nearest fireplace within 16 tiles of where it
   came, else that spot. It never walks further than 6 tiles from it (one outside the circle
-  only walks back in).
+  only walks back in). A villager with a house follows their day (issue #7, `ActivityUpkeep`,
+  [routines.md](routines.md)): the place of the entry that is on becomes the anchor when they
+  arrive, and the activity's radius the circle (`Npc.keep_radius`; an activity of standing keeps them
+  still); between entries and for rain or the dark it is the yard of their house. One with no house
+  keeps to the anchor as above.
 - **Home and workplace (task 228):** a villager's home is a building (`Npc.house`, saved), not a
   spot; the free text `home` of the sheet stays for the language model. A building type says how
   many may live in it (`residents` in `data/buildings.cfg`: a hall house 5, a fisher's hut 2, a

@@ -110,6 +110,13 @@ var free_body_tiles := Rect2i()
 ## Where they are walking to and how far they have got, or null (see NpcTravel). Not saved:
 ## whoever sent them sends them again.
 var trip: NpcTrip
+## Where the day sent them last (see ActivityUpkeep), or null while it has not.
+var current_step: ActivityStep
+## How far they stroll from their anchor while they do what the day says; 0 for `anchor_radius` of
+## data/npcs.cfg.
+var keep_radius := 0.0
+## They stand where they are, as an activity of the day says (data/activities.cfg `doing`).
+var is_staying_put := false
 ## Whether an answer to the player is awaited (see ChatScreen): they say nothing more till then.
 ## A loaded villager owes none: an answer the game was saved before is lost.
 var is_answering := false

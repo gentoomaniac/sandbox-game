@@ -65,6 +65,9 @@ var scarecrows: Scarecrows
 var npcs := Npcs.new(sun)
 ## Who lives in which house.
 var homes := Households.new(npcs)
+## Sends the villagers where their day has them be. Built with the simulation; nothing of it is
+## saved.
+var activities: ActivityUpkeep
 ## What the player did within sight of villagers.
 var deeds: DeedLog
 ## What the villagers make of the stories they know (StoryJudging asks the language model).
@@ -856,6 +859,8 @@ func _start_simulation() -> void:
 	crop_warnings = CropWarnings.new(world, _player_feet)
 	simulation.add_system(crop_warnings)
 	simulation.add_system(NightUpkeep.new(world, weather, _tiles_kept_clear))
+	activities = ActivityUpkeep.new(world, npcs, homes, sun, weather, clock)
+	simulation.add_system(activities)
 	simulation.add_system(ActorsUpkeep.new(world, livestock, npcs, _player_feet))
 	simulation.add_system(GossipSpread.new(npcs, deeds))
 	simulation.add_system(LanternUpkeep.new(_the_player))
