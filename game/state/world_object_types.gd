@@ -167,6 +167,8 @@ const PEN_GATE_OPEN := &"pen_gate_open"
 const PIG_SHELTER := &"pig_shelter"
 ## The player's scarecrow (task 226): keeps the crows off the crops round it.
 const SCARECROW := &"scarecrow"
+## The village's own objects (see WorldObjectVillage): the stall of the shop on the town square.
+const MARKET_STALL := &"market_stall"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"
@@ -956,7 +958,9 @@ static func _with_crops(other_types: Dictionary) -> Dictionary:
 
 static func _build_types() -> Dictionary:
 	var types := _with_crops(
-		_OTHER_TYPES.merged(WorldObjectPlants.TYPES).merged(WorldObjectWays.TYPES)
+		_OTHER_TYPES.merged(WorldObjectPlants.TYPES).merged(WorldObjectWays.TYPES).merged(
+			WorldObjectVillage.TYPES
+		)
 	)
 	types[REEDS] = types[REEDS].merged(CropRules.default_rules().reeds())
 	var all_types := _with_trunks(types)

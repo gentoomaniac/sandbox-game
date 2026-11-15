@@ -466,6 +466,12 @@ along its foot.
   next to the way, 70 to 85 percent of the pixels in the first 3 (2 at 16 px), thinning to 10
   percent over 7 (4 at 16 px), so it frays into the grass with no line of its own; snow remaps it
   to `snow`, `snow_light` and `snow_shadow`.
+- **The market stall** (issue #10, tools/art/stall.py, 64x56 px, and at 16 px classic/stall.py, 32x28 px;
+  a placeholder, to be refined by a pixel artist): a plank counter (`bare_light`, `bare`, `mud_dark`)
+  between two oak posts, under an awning of red (`ember`) and cream stripes 8 px wide (4 at 16 px)
+  with a scalloped hem, lit along the top and shaded along the hem; a sack of seed (`straw`) and two
+  candles (`cream`, one lit with `flame`) stand on the counter. Rimmed in `soil_dark`; snow lies on
+  the awning.
 - **The scarecrow** (task 226, tools/art/scarecrow.py, 42x65 px, and at 16 px classic/scarecrow.py,
   22x33 px): a little taller than the player. A driftwood pole (`bare_light`, `bare`, `mud_dark`)
   with the crossbar in the sleeves of an old coat of faded indigo linen (the `water` ramp, folds

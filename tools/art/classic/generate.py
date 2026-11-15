@@ -52,6 +52,7 @@ import pen  # noqa: E402
 import reeds  # noqa: E402
 import scarecrow  # noqa: E402
 import sea_birds  # noqa: E402
+import stall  # noqa: E402
 import stork_nest  # noqa: E402
 import swing  # noqa: E402
 import seasons  # noqa: E402
@@ -237,6 +238,7 @@ def object_atlas():
         ("plank_walk", ways.plank_walk_row(TILE, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)),
         ("stone_path", ways.stone_path_row(TILE, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)),
         ("way_edge", ways.way_edge_row(TILE, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)),
+        ("market_stall", [standing_outdoors(stall.market_stall())]),
     ]
 
 

@@ -283,6 +283,7 @@ objects/hay_rack_16x16.png 48 80
 objects/jetty_16x16.png 48 80
 objects/kiln_16x16.png 48 80
 objects/knick_16x16.png 48 80
+objects/market_stall_16x16.png 48 80
 objects/net_frame_16x16.png 48 80
 objects/oak_16x16.png 48 80
 objects/oak_short_trunk_16x16.png 48 80

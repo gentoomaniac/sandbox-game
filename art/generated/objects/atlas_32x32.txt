@@ -63,3 +63,4 @@ scarecrow 3
 plank_walk 64
 stone_path 48
 way_edge 16
+market_stall 1

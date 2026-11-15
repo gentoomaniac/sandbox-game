@@ -124,6 +124,7 @@ import reeds
 import scarecrow
 import sea_birds
 import seasons
+import stall
 import terrain
 import tool_icons
 import trees
@@ -220,6 +221,7 @@ def standing_outdoors(picture, shadow_half_width=None):
 # 60 plank_walk (4 variants of 16, one per connection mask: full-tile ground pieces that run on into the ways beside them, see ways.py)
 # 61 stone_path (3 variants of 16, the same)
 # 62 way_edge (16, one per mask of the sides with a way beside them: not an object, drawn on the free tiles beside ways, see ways.py)
+# 63 market_stall (1, see stall.py)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -280,6 +282,7 @@ def object_atlas():
         ("plank_walk", ways.plank_walk_row(GAME_TILE, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)),
         ("stone_path", ways.stone_path_row(GAME_TILE, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)),
         ("way_edge", ways.way_edge_row(GAME_TILE, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)),
+        ("market_stall", [standing_outdoors(stall.market_stall())]),
     ]
 
 

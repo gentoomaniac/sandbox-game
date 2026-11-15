@@ -346,6 +346,7 @@ _WINTER_LOOKS = {
         "snow_remap": _SNOWED_PLANKS,
     },
     "net_frame": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "umber"}, set(), 1)},
+    "market_stall": {"frost_only": _FROST_STONE, "snow": ({"ember", "red_light", "cream", "lime"}, set(), 2)},
     "eel_traps": {"specks": {"sand_light", "sand"}, "snow": ({"sand_light", "sand"}, set(), 2)},
     # The yard: snow lies on the well's coping, its sweep and the weight stone.
     "draw_well": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "stone_light"}, set(), 1)},

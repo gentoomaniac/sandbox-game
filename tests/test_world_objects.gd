@@ -72,6 +72,8 @@ func test_every_natural_object_type_is_generated() -> void:
 		)
 		if is_made_by_play or type_data.has("growth_stages") or type_data.has("interior_sprite"):
 			continue
+		if WorldObjectVillage.TYPES.has(object_type):
+			continue  # The village puts them down, nothing generates them.
 		if object_type == WorldObjectTypes.EWER:
 			continue  # It lies on the mud of the coast, far from here (see test_coast.gd).
 		if (

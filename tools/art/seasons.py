@@ -498,6 +498,8 @@ _WINTER_LOOKS = {
     "pen_gate_open": {"frost_only": _FROST_STONE, "snow": ({"sand_light", "sand", "soil_light"}, set(), 2)},
     # The scarecrow: snow on the hat and the lit shoulders of the coat.
     "scarecrow": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "soil_mid", "soil", "water_light"}, set(), 2)},
+    # The market stall: snow lies on the awning and the top of the counter.
+    "market_stall": {"frost_only": _FROST_STONE, "snow": ({"ember", "red_light", "cream", "lime", "soil_light"}, set(), 4)},
     "eel_traps": {"specks": {"sand_light", "sand"}, "snow": ({"sand_light", "sand", "straw"}, set(), 4)},
     "oak_trunk": _TRUNK_WINTER,
     "oak_short_trunk": _TRUNK_WINTER,
