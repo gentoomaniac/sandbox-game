@@ -26,7 +26,8 @@ random.
   goes round fences and through gates and doors; the search runs on a worker thread so the game
   doesn't stutter (see [../tech/pathfinding.md](../tech/pathfinding.md)). Far from the player,
   where the world isn't loaded, they walk too: see [travel.md](travel.md) (#68, being built).
-- **Inside:** the day's plan says when they go in, and they are seen in the interior (task 229).
+- **Inside:** the day's plan says when they go in, and they are seen in the interior (task 229,
+  [inside.md](inside.md)).
 - **Next step, the shopkeeper:** a villager with the shop's work activity stands in their shop in
   the shop hours and offers a trading dialog (barter, no money yet); the shop sells seeds, so the
   farm can always start again (tasks 240 and 235).
