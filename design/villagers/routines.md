@@ -380,7 +380,9 @@ priority=5
   `home`), `field` (below), `church`, `meeting` (the village's, else the church yard), `friend`
   (the yard of the house of a villager of their `people`, picked from the day and the name) and
   `wild` (a walkable meadow tile 8 to `wild` tiles from home, picked from the day and the name,
-  so it is the same spot all day and tomorrow's is another).
+  so it is the same spot all day and tomorrow's is another; only the tiles of loaded chunks are
+  known, so a villager far from the player has none and the entry is skipped, as for a target that
+  is gone: built in `ActivityPlaces`).
 - **`field`** is the nearest cluster of tilled tiles within `search_tiles.field` of their home; with
   none, the workplace if it is a field spot (the sheet's `workplace_spot`), else the activity is
   not offered to the villager. Fields have no owner; a villager works the one nearest to them,
