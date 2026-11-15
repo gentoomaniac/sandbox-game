@@ -29,8 +29,8 @@ So there are three ways to turn what the player makes into something else:
   of shrimp 2, a pot of beer 1, a glass of brandy 2. A farmhand earns about 6 Schilling a day at
   the harvest, a maid 12 Mark a year, a milk cow costs about 30 Mark and a sheep about 6.
   **The game's prices must agree with these**, or the villagers will contradict the shops.
-- The same sheet says: "There is no smith, doctor or shop in Wehlsbüll: those are in Husum."
-  Who trades in Wehlsbüll is below.
+- The same sheet says: "There is no smith or doctor in Wehlsbüll: those are in Husum." (It said "or shop" until
+  Trienke Lorenzen got her stall, #10.) Who trades in Wehlsbüll is below.
 - The ideas pages mention an NPC smith, bulk orders for a reward, a baker who buys surplus and
   butter as a trade good ([crafting/ideas.md](../crafting/ideas.md)).
 
@@ -84,7 +84,8 @@ ratios agree with the village sheet.
 ## Shops
 
 **The first step, a keeper at a stall who barters by value, has a plan of its own:
-[shop.md](shop.md) (#10, not built).** The rest of this section is the draft behind it.
+[shop.md](shop.md) (#10, being built: the keeper, her stall and hours, `ShopRules` and the pure
+state and trade `Shops` are in; the trade screen is next).** The rest of this section is the draft behind it.
 
 **Who sells and buys in Wehlsbüll** (a first reading of `data/village.cfg`):
 
