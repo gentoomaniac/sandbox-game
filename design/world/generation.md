@@ -22,6 +22,15 @@
   [map-generation-review.md](map-generation-review.md) for why and for the before and after maps.
   - **Dykes** are the one work of men left: on the land side of the floodplain's edge, in
     stretches picked by a slow noise, and the sea dyke along the coast (see [coast.md](coast.md)).
+    Each is a thin line of tiles joined on their sides along the edge of the land, which runs on
+    the diagonal where the edge slants (issue
+    [#94](https://github.com/gentoomaniac/sandbox-game/issues/94)): the generator takes the first
+    tile of the land in each row of the coast (each column of the river) and the tiles along each
+    step to the next, after cutting off a bulge of the land narrower than 3 rows (a morphological
+    opening), which the line could only follow in a block or a spur; a stair of single steps is
+    then drawn as one bank on the diagonal (see LineSlants). A river dyke's stretch takes
+    whole columns, so it begins and ends on a clean end, and a tile left on its own where a creek
+    cuts the line has none.
     They don't block walking (they are walked on, sheep grazed on them), but they block building
     and tilling on their tile: nothing is built into a dyke. Nothing removes one yet (basic
     terraforming is on the backlog, [#59](https://github.com/gentoomaniac/sandbox-game/issues/59)).

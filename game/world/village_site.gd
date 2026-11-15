@@ -68,8 +68,9 @@ func _is_on_camps_side_of_the_river(river: RiverLine, camp: Vector2i) -> bool:
 	return camp_is_north == (origin.y < river.line_y(origin.x))
 
 
-## Rules 2 and 3: the ground inland of the dyke is dry and clear of water (the trees and stones are
-## the builder's to fell), and the Warften seaward of it stand on salt marsh.
+## Rules 2 and 3: the ground inland of the dyke is dry and clear of water and of dykes (the trees
+## and stones are the builder's to fell; the sea dyke can stand a few tiles east of the first land,
+## and a river dyke runs along the floodplain), and the Warften seaward of it stand on salt marsh.
 func _has_dry_land_and_salt_marsh(generator: WorldGenerator, plan: VillagePlan) -> bool:
 	for warft in plan.warften:
 		if warft["is_on_salt_marsh"]:
@@ -84,6 +85,8 @@ func _has_dry_land_and_salt_marsh(generator: WorldGenerator, plan: VillagePlan) 
 		for x in range(inland.position.x, inland.end.x):
 			var terrain := generator.terrain_at(Vector2i(x, y))
 			if terrain != Tile.Terrain.GRASS and terrain != Tile.Terrain.WETLAND:
+				return false
+			if generator.object_type_at(Vector2i(x, y), terrain) == WorldObjectTypes.DYKE:
 				return false
 	return true
 

@@ -65,3 +65,21 @@ func test_no_site_where_the_coast_is_never_straight_enough() -> void:
 	var plan := VillagePlan.from_file(VillagePlan.DEFAULT_PATH)
 	plan.area = Rect2i(plan.area.position, Vector2i(plan.area.size.x, 1500))
 	assert_null(VillageSite.find(1, plan))
+
+
+func test_no_dyke_stands_in_the_land_inland_of_the_dyke() -> void:
+	# The sea dyke can stand a few tiles east of the first land (issue #94): on 40 seeds it never
+	# reaches into the village's inland land.
+	var plan := VillagePlan.default_plan()
+	for world_seed in 40:
+		var generator := WorldGenerator.new(world_seed)
+		var site := VillageSite.find(world_seed)
+		if site == null:
+			continue
+		for v in range(plan.area.position.y, plan.area.end.y):
+			for u in range(plan.inland_from_u, plan.area.end.x):
+				var tile := site.to_world(Vector2i(u, v))
+				var type := generator.object_type_at(tile, generator.terrain_at(tile))
+				assert_ne(
+					type, WorldObjectTypes.DYKE, "seed %d, tile %s" % [world_seed, Vector2i(u, v)]
+				)

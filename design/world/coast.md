@@ -7,7 +7,9 @@
     either way, so the farm and the camp lie far inland. The river runs out through it into the
     sea, widening.
   - **The sea dyke** stands on the first tiles of the land all along the coast (the floodplain
-    too), without gaps but for the river: the dykes of the river (task 54) sit between the land
+    too), without gaps but for the river, as one thin line that runs on the diagonal where the
+    coast slants (see [generation.md](generation.md), Dykes; a bulge of the land narrower than 3
+    rows stays outside it, grass before the dyke): the dykes of the river (task 54) sit between the land
     and the marsh, this one between the land and the salt marsh, as real sea dykes do. The marsh
     reaches 36 tiles inland from it as from the river.
   - **The foreshore**, west of the line, which nothing grows on: a band of **salt marsh** (about
