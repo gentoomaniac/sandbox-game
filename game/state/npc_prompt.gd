@@ -137,6 +137,95 @@ static func judge_request(
 	}
 
 
+## The request that has a villager's day planned (see DayPlanAnswer for what comes back):
+## with their words, default times and conditions, yesterday, what the villager has come to know
+## and the rules of the answer.
+static func plan_request(
+	npc: Npc,
+	to_plan: DayToPlan,
+	activity_rules: ActivityRules,
+	rules: NpcTalkRules,
+	full_sheets: bool
+) -> Dictionary:
+	var words := _words_of(npc, rules)
+	var planned := GameClock.new()
+	planned.day = to_plan.day
+	words["weekday"] = planned.weekday_name()
+	words["date"] = date_text(planned, rules)
+	words["sunrise"] = Sun.time_text(to_plan.sunrise)
+	words["sunset"] = Sun.time_text(to_plan.sunset)
+	words["weather"] = to_plan.weather_words
+	words["time"] = Sun.time_text(to_plan.from_minute)
+	words["gap"] = int(activity_rules.number("min_gap_minutes"))
+	words["most"] = int(activity_rules.number("max_entries"))
+	var parts: Array[String] = [sheet_text(npc, full_sheets, rules)]
+	if not full_sheets:
+		words["day"] = npc.day
+		parts.append(_plan_line(rules, "usual_day", words))
+	parts.append(_plan_line(rules, "day", words))
+	parts.append(_plan_line(rules, "whole_day" if to_plan.is_whole_day() else "rest_of_day", words))
+	parts.append(_plan_line(rules, "activities", words))
+	for offer in to_plan.activities:
+		parts.append(_plan_activity_line(offer, to_plan.day, activity_rules, rules, words))
+	if to_plan.yesterday != "":
+		words["entries"] = to_plan.yesterday
+		parts.append(_plan_line(rules, "yesterday", words))
+	var known: Array[String] = GossipRules.default_rules().story_lines(
+		npc.stories.slice(-int(rules.value("plan", "stories_told"))), to_plan.today
+	)
+	for memory in npc.memories.slice(-int(rules.value("plan", "stories_told"))):
+		known.append(memory["text"])
+	if not known.is_empty():
+		words["lines"] = "\n".join(known)
+		parts.append(_plan_line(rules, "knows", words))
+	parts.append(_plan_line(rules, "format", words))
+	parts.append(_plan_line(rules, "label", words))
+	return {
+		"messages":
+		[_message("system", rules.value("plan", "system")), _message("user", "\n".join(parts))],
+		"temperature": float(rules.value("plan", "temperature")),
+		"max_tokens": int(rules.value("plan", "max_tokens")),
+	}
+
+
+## The line of one activity on offer: its id and words, the walk, when it is usually done on the
+## day and what it needs.
+static func _plan_activity_line(
+	offer: Dictionary,
+	day: int,
+	activity_rules: ActivityRules,
+	rules: NpcTalkRules,
+	words: Dictionary
+) -> String:
+	var id: String = offer["id"]
+	var data := activity_rules.activity(id)
+	var times: Array[String] = []
+	if activity_rules.has_default_on(id, day):
+		for start in activity_rules.default_starts(id):
+			times.append(Sun.time_text(start["minute"]))
+	var needs := ""
+	if data.get("needs_daylight", false):
+		needs += rules.value("plan", "needs_light")
+	if data.get("needs_dry", false):
+		needs += rules.value("plan", "needs_dry")
+	var line_words := words.duplicate()
+	line_words["id"] = id
+	line_words["verb"] = data["verb"]
+	line_words["walk"] = ceili(offer["walk_minutes"])
+	line_words["times"] = (
+		_plan_line(rules, "times", {"times": ", ".join(times)})
+		if not times.is_empty()
+		else rules.value("plan", "no_times")
+	)
+	line_words["needs"] = needs
+	return _plan_line(rules, "activity", line_words)
+
+
+## A line of [plan] with its placeholders filled in.
+static func _plan_line(rules: NpcTalkRules, key: String, words: Dictionary) -> String:
+	return rules.value("plan", key).format(words)
+
+
 ## The line of the villager's family and friends (Npc `people`) by the names, kinds and ages of
 ## their sheets, with what the villager thinks of each if `full_sheets`: "Family and friends:
 ## Hinrich Boysen, husband, 42: Steady ...". Those no longer in data/villagers.cfg are left out,

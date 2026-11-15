@@ -283,7 +283,7 @@ routines' and off-screen travel is #68.
 Written 2026-11-15 after the user's clarification on #7, rewritten the same day with the answers of
 [#87](https://github.com/gentoomaniac/sandbox-game/issues/87),
 [#88](https://github.com/gentoomaniac/sandbox-game/issues/88) and
-[#89](https://github.com/gentoomaniac/sandbox-game/issues/89). **Plan: steps 1 to 9 of "The steps" are built** (issue #7; each says **Done** there), the planner (10 to 12), saving (13) and the bench (14) are not. It
+[#89](https://github.com/gentoomaniac/sandbox-game/issues/89). **Plan: steps 1 to 10 of "The steps" are built** (issue #7; each says **Done** there), the planner (11 and 12), saving (13) and the bench (14) are not. It
 says what will be built and in which steps. It replaces the first plan (fixed timetables for five
 kinds of work), whose parts that still fit are kept: leaving in time, skip and sleep, loading, the
 console, the place lookup. It builds on homes and workplaces (#69), the path search and trips (#6,
@@ -491,8 +491,8 @@ priority=5
      that day, which the game knows exactly (weather is a function of the seed): "8 to 17 °C,
      rain from 14 to 17, wind 6 m/s", worded as a villager would see the sky (`WeatherDay`); for a
      plan of the current day also the time now, "plan from 14:20";
-  3. their activities, each with its words, its place resolved for them ("the field by the Ketels
-     barn, 11 minutes' walk"), its default time and conditions; those whose place can't be
+  3. their activities, each with its words, the walk from home to its place resolved for them ("11
+     minutes' walk"), its default time and conditions; those whose place can't be
      resolved or whose days and seasons fail that day are left out, and `sleep`, the meals and
      `work` are always there;
   4. what they know that matters: yesterday's plan in one line (so a day follows another), up to
@@ -750,8 +750,11 @@ village: they run on the camp's villagers and on the test worlds of the road tes
 9. **`DayPlanAnswer` and the plan on the villager:** **Done.** the parse and checks, whole day and rest of
    day, pure; `Npc.day_plans` (not saved yet) and the entry that is on reading a plan, with the
    default entries before a mid-day plan. Tests.
-10. **`NpcPrompt.plan_request` and `WeatherDay`:** the prompt and the weather in words, pure. `[plan]`
-    in `data/npc_talk.cfg`. Tests: the prompt.
+10. **`NpcPrompt.plan_request` and `WeatherDay`:** **Done.** the prompt and the weather in words, pure.
+    `[plan]` in `data/npc_talk.cfg`. `WeatherDay` was there already (the farming's summary of a
+    day), so the words are its method `words`; what the prompt is made of is a `DayToPlan`
+    (day, time, sun, weather words, the activities on offer with their walks, yesterday). The cut-down
+    sheet has no `day` text, so the prompt adds it (`usual_day`). Tests: the prompt.
 11. **`DayPlanner`, the evening:** the queue, 18:00, the nearest within the radius, the cap, the
     timeout, the late takeover, the pause during a chat, console `replan`. Tests: planner with a
     fake model. Doc: [dialogue.md](dialogue.md) gets a line, villagers.md ("Later: schedules") is

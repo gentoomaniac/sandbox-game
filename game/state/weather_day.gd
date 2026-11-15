@@ -32,3 +32,24 @@ func text() -> String:
 			max_wind_speed
 		]
 	)
+
+
+## The day as a villager would tell it, for a prompt: "3 to 9 °C, rain from 06:00 to 08:00 and
+## from 14:00 to 17:00, wind up to 6 m/s". An hour counts as rainy when its mean rain is at least
+## `rain_hour_limit` (0 to 1, see ActivityRules `rain_hour_limit`), as it does for an activity that
+## needs dry weather.
+func words(rain_hour_limit: float) -> String:
+	var spans: Array[String] = []
+	var span_start := -1
+	for hour in rain_by_hour.size() + 1:
+		var is_rainy := hour < rain_by_hour.size() and rain_by_hour[hour] >= rain_hour_limit
+		if is_rainy and span_start < 0:
+			span_start = hour
+		elif not is_rainy and span_start >= 0:
+			spans.append("from %02d:00 to %02d:00" % [span_start, hour])
+			span_start = -1
+	var rain := "rain " + " and ".join(spans) if not spans.is_empty() else "no rain"
+	return (
+		"%d to %d °C, %s, wind up to %d m/s"
+		% [roundi(min_temperature), roundi(max_temperature), rain, roundi(max_wind_speed)]
+	)
