@@ -7,7 +7,14 @@ extends CanvasLayer
 signal command_ran
 
 const THEME := preload("res://game/scenes/ui_theme.tres")
-const VISIBLE_LOG_LINES := 8
+## The console takes this share of the window's height, and follows the window when it is resized.
+const HEIGHT_SHARE := 0.5
+## The log never shows fewer lines than this, however small the window.
+const MIN_LOG_LINES := 8
+## The lines the player typed, so each command stands out from what it answered.
+const TYPED_COLOUR := "#f0c674"
+## A command's usage, before its help text (in `help` and wherever a line starts with one).
+const USAGE_COLOUR := "#8fc7e8"
 ## The oldest lines go when the log is longer.
 const MAX_LOG_LINES := 500
 const MARGIN := 4
@@ -20,7 +27,7 @@ var _log_lines: Array[String] = []
 ## input while browsing it, `_history.size()` when none.
 var _history: Array[String] = []
 var _history_index := 0
-var _log := Label.new()
+var _log := RichTextLabel.new()
 var _log_list := ScrollingList.new(_log)
 var _input := LineEdit.new()
 
@@ -37,8 +44,12 @@ func _init() -> void:
 	add_child(panel)
 	var box := VBoxContainer.new()
 	panel.add_child(box)
-	# Long lines wrap at the panel's width instead of being cut off.
+	# Long lines wrap at the panel's width instead of being cut off; the log grows with its lines
+	# and the list around it scrolls.
 	_log.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_log.bbcode_enabled = true
+	_log.fit_content = true
+	_log.scroll_active = false
 	_log_list.keeps_bottom = true
 	box.add_child(_log_list)
 	_input.keep_editing_on_text_submit = true
@@ -49,7 +60,22 @@ func _init() -> void:
 
 
 func _ready() -> void:
-	_log_list.fixed_height = VISIBLE_LOG_LINES * _log.get_line_height()
+	get_viewport().size_changed.connect(_fit_height)
+	_fit_height()
+
+
+## The height of one line of the log.
+func line_height() -> float:
+	return _log.get_theme_font("normal_font").get_height(
+		_log.get_theme_font_size("normal_font_size")
+	)
+
+
+## The log takes HEIGHT_SHARE of the window, less the room above the panel and the input line.
+func _fit_height() -> void:
+	var window_height := get_viewport().get_visible_rect().size.y
+	var room := window_height * HEIGHT_SHARE - TOP_OFFSET - _input.get_combined_minimum_size().y
+	_log_list.fixed_height = maxf(room, MIN_LOG_LINES * line_height())
 
 
 ## `wildlife_spawner` puts animals in view for the `spawn` command and `wildlife_clearer` takes
@@ -110,7 +136,23 @@ func _log_line(text: String) -> void:
 
 func _show_log() -> void:
 	_log_lines = _log_lines.slice(-MAX_LOG_LINES)
-	_log.text = "\n".join(_log_lines)
+	var shown: Array[String] = []
+	for line in _log_lines:
+		shown.append(_formatted(line))
+	_log.text = "\n".join(shown)
+
+
+## A line of the log in colour: what the player typed in TYPED_COLOUR, and a command's usage at
+## the start of a line in USAGE_COLOUR before its help. The text itself is shown as it is.
+func _formatted(line: String) -> String:
+	var escaped := line.replace("[", "[lb]")
+	if line.begins_with("> "):
+		return "[color=%s]%s[/color]" % [TYPED_COLOUR, escaped]
+	var colon := escaped.find(": ")
+	var first_word := line.get_slice(" ", 0).trim_suffix(":")
+	if colon > 0 and _console != null and _console.context.command_named(first_word) != null:
+		return "[color=%s]%s[/color]%s" % [USAGE_COLOUR, escaped.left(colon), escaped.substr(colon)]
+	return escaped
 
 
 func _on_submitted(line: String) -> void:

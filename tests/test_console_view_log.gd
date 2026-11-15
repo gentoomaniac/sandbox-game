@@ -34,13 +34,28 @@ func test_long_output_can_be_scrolled_to_its_first_line() -> void:
 	assert_eq(_list.scroll_vertical, _bottom())
 	_list.scroll_vertical = 0
 	assert_eq(_list.scroll_vertical, 0)
-	assert_true(_view._log.text.begins_with("> help"))
+	assert_true(_view._log.get_parsed_text().begins_with("> help"))
 
 
-func test_the_visible_height_is_the_same_as_before() -> void:
+func test_the_log_takes_half_the_window_and_never_fewer_than_its_least_lines() -> void:
 	_view.run_line("help")
 	await wait_process_frames(3)
-	assert_eq(_list.size.y, ConsoleView.VISIBLE_LOG_LINES * _view._log.get_line_height())
+	var window_height := get_viewport().get_visible_rect().size.y
+	assert_gte(_list.size.y, ConsoleView.MIN_LOG_LINES * _view.line_height() - 0.5)
+	assert_lte(_list.size.y, maxf(window_height * ConsoleView.HEIGHT_SHARE, _list.size.y))
+	assert_eq(_list.fixed_height, _list.size.y)
+
+
+func test_typed_lines_and_usages_stand_out_and_the_text_stays_as_it_is() -> void:
+	_view.run_line("help tp")
+	assert_string_contains(_view._log.text, "[color=%s]> help tp" % ConsoleView.TYPED_COLOUR)
+	assert_string_contains(_view._log.text, "[color=%s]tp <x> <y>" % ConsoleView.USAGE_COLOUR)
+	assert_true(_view._log.get_parsed_text().begins_with("> help tp\ntp <x> <y>"))
+
+
+func test_a_bracket_in_a_line_is_shown_and_not_read_as_markup() -> void:
+	_view._log_line("[b]not bold[/b]")
+	assert_string_ends_with(_view._log.get_parsed_text(), "[b]not bold[/b]")
 
 
 func test_a_new_line_keeps_the_view_at_the_bottom() -> void:
@@ -90,7 +105,7 @@ func test_the_log_keeps_only_the_newest_lines() -> void:
 	for i in ConsoleView.MAX_LOG_LINES:
 		_view.run_line("help skip")
 	assert_eq(_view._log_lines.size(), ConsoleView.MAX_LOG_LINES)
-	assert_eq(_view._log.text.count("\n") + 1, ConsoleView.MAX_LOG_LINES)
+	assert_eq(_view._log.get_parsed_text().count("\n") + 1, ConsoleView.MAX_LOG_LINES)
 
 
 func test_a_line_wider_than_the_panel_wraps_onto_more_lines() -> void:
