@@ -2,7 +2,7 @@ class_name SaveFile
 extends RefCounted
 ## The save on disk: one JSON file per world, `{"version": VERSION, "game": <GameState.to_dict>}`.
 ## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step
-## (see `_upgrade_from_version_31` and so on). Older ones are refused.
+## (see `_upgrade_from_version_32` and so on). Older ones are refused.
 ##
 ## How to add a save field (or change one):
 ## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
@@ -22,8 +22,9 @@ extends RefCounted
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
 const VERSION := 41
-## The oldest version we still upgrade.
-const OLDEST_VERSION := VERSION - 10
+## The oldest version we still upgrade. Nine steps back, for the next version (#66) makes its
+## step the tenth.
+const OLDEST_VERSION := VERSION - 9
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -187,8 +188,6 @@ static func copy_aside(path: String, backup: String) -> String:
 
 ## Brings the data of a save of `version` up to the current one.
 static func _upgrade(game: Dictionary, version: int) -> void:
-	if version <= 31:
-		_upgrade_from_version_31(game)
 	if version <= 32:
 		_upgrade_from_version_32(game)
 	if version <= 33:
@@ -207,48 +206,6 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_39(game)
 	if version <= 40:
 		_upgrade_from_version_40(game)
-
-
-## Version 31 had no roosters as a rule (task 204): each flock of chickens (see ChickenFlocks) gets
-## exactly one. A chicken of the rooster look, drawn as a random look, counts as its flock's
-## rooster (the first of a flock does; the others become hens, brown), and a flock with none gets a
-## new one standing where its first chicken does.
-static func _upgrade_from_version_31(game: Dictionary) -> void:
-	# Written out, not read from the data files, so a later change leaves old saves alone.
-	var flock_tiles := 12.0
-	var rooster_look := "rooster"
-	var hen_look := "brown"
-	var coop_type := "chicken_coop"
-	var chickens: Array[Dictionary] = []
-	for animal: Dictionary in game["livestock"]:
-		if animal["species"] == "chicken":
-			chickens.append(animal)
-	var positions: Array[Vector2] = []
-	for chicken in chickens:
-		positions.append(SaveCodec.float_vector_from_json(chicken["position"]))
-	# A coop is at the middle of its first tile, as Coop `roost_spot` has it.
-	var coops: Array[Vector2] = []
-	for building: Dictionary in game["world"]["buildings"]:
-		if building["type"] == coop_type:
-			coops.append(
-				Vector2(SaveCodec.vector_from_json(building["origin"])) + Vector2(0.5, 0.5)
-			)
-	for flock in ChickenFlocks.groups(positions, coops, flock_tiles):
-		var has_rooster := false
-		for index in flock:
-			if chickens[index]["look"] != rooster_look:
-				continue
-			if has_rooster:
-				chickens[index]["look"] = hen_look
-			has_rooster = true
-		if not has_rooster:
-			var rooster: Dictionary = chickens[flock[0]].duplicate()
-			rooster["look"] = rooster_look
-			rooster["tint"] = "ffffff"
-			rooster["friendship"] = 0
-			rooster["last_petted_day"] = 0
-			rooster["last_petted_asleep_day"] = 0
-			game["livestock"].append(rooster)
 
 
 ## Version 32 had one grade of each tool (task 207): they are the rusty iron ones now, wherever
