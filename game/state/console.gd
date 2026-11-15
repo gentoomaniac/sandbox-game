@@ -24,45 +24,6 @@ const COMMANDS := {
 		"snow [0..1|auto]",
 		"Show the snow cover, force it (0 to 1) or return to the weather (auto).",
 	],
-	"home":
-	[
-		"home <villager> [here|none]",
-		(
-			"Show where a villager lives, give them the house you are inside or at the door of"
-			+ " (here), or free them of theirs (none). A house holds one household: a couple and"
-			+ " their children, as many as the house has residents."
-		),
-	],
-	"work":
-	[
-		"work <villager> [here|none]",
-		(
-			"Show where a villager works, send them to the building you are in or at, or to the"
-			+ " spot you stand on where there is none (here), or free them of it (none)."
-		),
-	],
-	"goto":
-	[
-		"goto <villager> <x>,<y>|here",
-		(
-			"Send a villager to a tile, or to where you stand (here): it finds its way, along lanes,"
-			+ " round fences and through gates. On its way means a search is under way: that there is no"
-			+ " way comes later, F4 shows its path and whether it is blocked."
-		),
-	],
-	"routine":
-	[
-		"routine <villager> [day]",
-		(
-			"Say where a villager is going and why, what comes next and when they leave for it;"
-			+ " with day, every entry of their day."
-		),
-	],
-	"replan":
-	[
-		"replan <villager>",
-		"Have the model plan the rest of a villager's day now, ahead of the rest."
-	],
 	"play":
 	[
 		"play <track>",
@@ -77,11 +38,6 @@ const ARGUMENTS := {
 	"help": [&"command"],
 	"weather": [&"weather"],
 	"snow": [&"snow"],
-	"home": [&"villager", &"place"],
-	"work": [&"villager", &"place"],
-	"goto": [&"villager", &"destination"],
-	"routine": [&"villager", &"routine_view"],
-	"replan": [&"villager"],
 	"play": [&"track"],
 }
 ## The commands that take an animal kind, or `npc` and the id of a villager written by hand (see
@@ -92,14 +48,12 @@ const KIND_COMMANDS: Array[String] = ["spawn", "killall"]
 var context: ConsoleContext
 
 var _state: GameState
-var _home_commands: HomeCommands
 ## The loaded commands by name.
 var _commands := {}
 
 
 func _init(state: GameState) -> void:
 	_state = state
-	_home_commands = HomeCommands.new(state)
 	context = ConsoleContext.new(state)
 	var problems: Array[String] = []
 	context.commands = ConsoleLoader.load_commands(ConsoleLoader.script_paths(), context, problems)
@@ -153,12 +107,6 @@ func run(line: String) -> Array[String]:
 			output = _weather(arguments)
 		"snow":
 			output = _snow(arguments)
-		"home", "work":
-			output = _home_or_work(words[0], arguments)
-		"goto":
-			output = _goto(arguments)
-		"routine", "replan":
-			output = _routine_or_replan(words[0], arguments)
 		"play":
 			output = _play(arguments)
 		"stop":
@@ -314,73 +262,6 @@ func _snow(arguments: PackedStringArray) -> Array[String]:
 	if snow.forced >= 0.0:
 		lines.append("Forced: %s" % snow.forced)
 	return lines
-
-
-## `home` or `work` (`command`): shows the house or workplace of a villager, or sets or frees it.
-func _home_or_work(command: String, arguments: PackedStringArray) -> Array[String]:
-	var is_usage_wrong := arguments.is_empty() or arguments.size() > 2
-	if arguments.size() == 2 and arguments[1] not in ConsoleHelper.PLACE_WORDS:
-		is_usage_wrong = true
-	if is_usage_wrong:
-		return ["Usage: %s" % COMMANDS[command][0]]
-	var npc := ConsoleHelper.npc_named(arguments[0], context)
-	if npc == null:
-		return _unknown("villager", arguments[0], command)
-	var where := arguments[1] if arguments.size() == 2 else ""
-	if command == "home":
-		return _home_commands.home(npc, where)
-	return _home_commands.work(npc, where)
-
-
-## `routine`: where a villager is going and why, or with `day` their whole day. `replan`: has the
-## model plan the rest of their day.
-func _routine_or_replan(command: String, arguments: PackedStringArray) -> Array[String]:
-	var most_arguments := 2 if command == "routine" else 1
-	var is_usage_wrong := arguments.is_empty() or arguments.size() > most_arguments
-	if arguments.size() == 2 and arguments[1] != ConsoleHelper.WHOLE_DAY:
-		is_usage_wrong = true
-	if is_usage_wrong:
-		return ["Usage: %s" % COMMANDS[command][0]]
-	var npc := ConsoleHelper.npc_named(arguments[0], context)
-	if npc == null:
-		return _unknown("villager", arguments[0], command)
-	if command == "replan":
-		return [context.replanner.call(npc) if context.replanner.is_valid() else "No planner here"]
-	return RoutineReport.lines(_state, npc, arguments.size() == 2)
-
-
-## `goto`: sends a villager to a tile of the world, to watch the way they find.
-func _goto(arguments: PackedStringArray) -> Array[String]:
-	var usage: Array[String] = ["Usage: %s" % COMMANDS["goto"][0]]
-	if arguments.size() != 2:
-		return usage
-	var npc := ConsoleHelper.npc_named(arguments[0], context)
-	if npc == null:
-		return _unknown("villager", arguments[0], "goto")
-	var tile := _state.player.tile()
-	if arguments[1] == ConsoleHelper.HERE:
-		if _state.is_inside():
-			return ["Go outside first: villagers walk in the world"]
-	else:
-		var numbers := arguments[1].split(",")
-		if numbers.size() != 2 or not numbers[0].is_valid_int() or not numbers[1].is_valid_int():
-			return usage
-		tile = Vector2i(int(numbers[0]), int(numbers[1]))
-	_state.npcs.walk_to(npc, tile, _state.world)
-	return _goto_answer(npc, tile)
-
-
-## What a villager who has just been sent to `tile` says: it is there, or a search is under way (F4
-## says what comes of it).
-func _goto_answer(npc: Npc, tile: Vector2i) -> Array[String]:
-	if not npc.is_travelling():
-		return ["%s is at %s already" % [npc.name, tile]]
-	return ["%s is on its way to %s, %d tiles off" % [npc.name, tile, _tiles_between(npc, tile)]]
-
-
-## The tiles in a straight line, to the nearest.
-func _tiles_between(npc: Npc, tile: Vector2i) -> int:
-	return roundi(npc.position.distance_to(Vector2(tile) + Vector2(0.5, 0.5)))
 
 
 func _play(arguments: PackedStringArray) -> Array[String]:

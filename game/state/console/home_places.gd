@@ -1,4 +1,4 @@
-class_name HomeCommands
+class_name HomePlaces
 extends RefCounted
 ## What the console's `home` and `work` do to a villager's house and workplace: show it, give the
 ## building (or a spot) the player is at, or free it. The words are "" (show), `here` and `none`.

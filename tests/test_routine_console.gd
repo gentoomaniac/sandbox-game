@@ -107,7 +107,7 @@ func test_a_wrong_usage_or_name_is_told() -> void:
 
 
 func test_the_help_and_the_completion_know_it() -> void:
-	assert_true(Console.COMMANDS.has("routine"))
+	assert_true(_console.candidates(&"command").has("routine"))
 	assert_eq(_console.complete("routine hinrich d"), "routine hinrich day ")
 	assert_eq(_console.complete("routine hin"), "routine hinrich ")
 

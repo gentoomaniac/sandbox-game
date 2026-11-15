@@ -5,7 +5,7 @@ extends RefCounted
 ## `Npc.is_household_with`), so a house of one household is never shared with strangers. While
 ## a villager has a house their anchor is the yard in front of its door. Where they work is
 ## `Npc.workplace`. GameState owns it. The player gives a house with the hammer's menu and the
-## console's `home` and `work` (see HomeCommands); the villagers of data/villagers.cfg find
+## console's `home` and `work` (see HomePlaces); the villagers of data/villagers.cfg find
 ## the house and the workplace their sheet names when they come into the world (`settle`).
 ## A building someone lives in is a workplace only for those who live there (#69).
 
