@@ -47,7 +47,7 @@ Seasons, land, weather and light in the Schleswig-Holstein of about 1700-1800.
 - The axe cuts a Knick down for logs and fibre; the pickaxe takes a wall apart for stone.
 - Willows grow on wet ground and are felled like other trees.
 
-![The marsh with dykes, ditches, reeds and pollard willows (a picture from before the open land became bare, #60)](../docs/screenshots/landscape.png)
+![The river with its reeds and dyke, and a creek with its stony ford, in summer, in autumn rain and under winter snow](../docs/screenshots/landscape.png)
 
 ## Wehlsbüll
 
