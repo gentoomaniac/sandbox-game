@@ -15,10 +15,12 @@ var process_screen: ProcessScreen
 var storage_screen: StorageScreen
 var fire_screen: CampfireScreen
 var crafting_screen: CraftingScreen
+var board_screen: NoticeBoardScreen
 
 
 ## E: on horseback, gets off. Else speaks to the villager in front, gets on the saddled horse in
-## front, opens the chest or station in reach, rings the bell frame in reach or sleeps in the bed.
+## front, opens the chest or station in reach, reads the notice board in reach, rings the bell frame
+## in reach or sleeps in the bed.
 func interact() -> void:
 	var choice := Interaction.choice_at(state, use_highlight.targeting().tile)
 	match choice.kind:
@@ -37,6 +39,8 @@ func interact() -> void:
 			)
 		Interaction.Kind.OPEN_CHEST:
 			storage_screen.open_chest(choice.subject, state.player)
+		Interaction.Kind.READ_BOARD:
+			board_screen.open_board(state)
 		Interaction.Kind.OPEN_FIRE:
 			fire_screen.open_fire(choice.subject, state)
 		Interaction.Kind.OPEN_CRAFTING:

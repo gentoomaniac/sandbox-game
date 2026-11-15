@@ -15,6 +15,10 @@ signal noticed(text: String)
 ## What the player is told when a quest is posted, and when one goes away: the villager's name
 ## and, for the second, what they asked for.
 const POSTED_TEXT := "%s has something for you."
+## ... and, where a notice board stands, of a new notice on it (the village's name, if the world has
+## a village).
+const POSTED_ON_BOARD_TEXT := "A new notice on the board in %s."
+const POSTED_ON_ANY_BOARD_TEXT := "A new notice on the board."
 const WENT_AWAY_TEXT := "%s no longer needs the %s."
 
 var rules: QuestRules
@@ -185,7 +189,7 @@ func post(id: String, giver := "") -> String:
 		return "No villager %s in the world" % giver
 	var entry := {"id": id, "giver": giver, "posted_day": _clock.day, "is_taken": false}
 	_open.append(entry)
-	noticed.emit(POSTED_TEXT % _name_of(giver))
+	noticed.emit(_posted_text(giver))
 	return ""
 
 
@@ -229,6 +233,20 @@ func _days_of(saved: Dictionary) -> Dictionary:
 		if rules.has(id):
 			days[id] = int(saved[id])
 	return days
+
+
+## What the player is told of a quest that was posted: a new notice if there is a board for it,
+## else who has something for them.
+func _posted_text(giver: String) -> String:
+	var world: World = _world.call()
+	var has_board := world.edited_objects().any(
+		func(object: WorldObject) -> bool: return object.type == WorldObjectTypes.NOTICE_BOARD
+	)
+	if not has_board:
+		return POSTED_TEXT % _name_of(giver)
+	if world.village == null:
+		return POSTED_ON_ANY_BOARD_TEXT
+	return POSTED_ON_BOARD_TEXT % world.village.village_name
 
 
 func _name_of(villager: String) -> String:

@@ -36,6 +36,11 @@ Decided 2026-11-05.
   with its weight and a trash can), which is docked at the bottom right of the window above the
   hotbar. A workbench icon beside it opens hand crafting, as Shift+C does (issue 3, task 233). Tab is
   unbound; the hammer has no key (it is selected on the hotbar).
+- **The notice board** (#12): E on a board opens a small window, "Notice board", with the rough line
+  of each quest posted and not yet taken and whom to see, or "Nothing new on the board."; E, Escape or
+  the close button closes it, and the game stands still meanwhile. A bobbing "!" hangs over each board
+  while a quest is posted that the player has not taken. The action hint says "Read the notice board".
+  See [../villagers/quests.md](../villagers/quests.md).
 - **The character window** (task 191, 2026-11-12): C opens a window of its own with the figure, the
   equipment slots round it (no trash can: that is the bag's) a Skills tab (K opens it there) and a Quests tab (J, #12: the quests taken, oldest first, each with who
   gave it, what it asks, how far the player is and the days left, the reward in a tooltip; "No open

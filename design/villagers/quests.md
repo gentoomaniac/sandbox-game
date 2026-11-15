@@ -162,3 +162,24 @@ far the player is ("you carry 3", "2 of 6"; the kinds say it), the days left ("6
 day") and, as a tooltip, the reward. A posted quest that is not taken is not in it. It is read-only:
 handing in is done at the villager. An empty list says "No open quests." The counts follow the bag
 and the world while the tab is open (looked at again four times a second).
+
+## The notice board
+
+The village has a **notice board** on the town square ([../world/wehlsbuell.md](../world/wehlsbuell.md)),
+and the player may put one up anywhere outdoors: it is an item with no recipe (`give notice_board`),
+and the axe takes it down for the item again (it loses no quest; the board just has no "!" until it
+stands again).
+
+- **A new quest** puts a "!" (`QuestMarkView`: a small mark that bobs, over each board) while any
+  posted quest is not yet taken, and tells the player "A new notice on the board in Wehlsbüll." (the
+  village's name; "A new notice on the board." in a world with no village). With no board in the
+  world the notice is "Gesche Hansen has something for you." instead: a world built before the board
+  gets its quests as messages only, and no board is added to it later. A quest going away is told
+  with or without a board.
+- **E on the board** (`Interaction.Kind.READ_BOARD`; a villager in front of it comes first) opens its
+  window (`NoticeBoardScreen`) with the rough line (`notice`) of each quest posted and not taken,
+  the oldest first, and whom to see ("Fibre is wanted for the bean rows. Go and see Antje Boysen,
+  a farmer's wife."), or "Nothing new on the board.". It gives no quest. A quest already taken is not
+  on it.
+- **E on that villager** gives the actual quest (see Taking a quest). The board is a way in, not a
+  gate: a posted quest is given the same way whether the player read the board or not.

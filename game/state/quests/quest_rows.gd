@@ -21,15 +21,20 @@ static func of(state: GameState) -> Array[Dictionary]:
 	return rows
 
 
+## Who a villager is, for the player's list and the notice board: "Antje Boysen, a farmer's wife".
+static func giver_text(state: GameState, villager: String) -> String:
+	var npc := state.npcs.find(villager)
+	return villager if npc == null else "%s, %s" % [npc.name, npc.trade]
+
+
 static func _row_of(entry: Dictionary, state: GameState) -> Dictionary:
 	var quests := state.quests
 	var quest := quests.rules.quest(entry["id"])
 	var objective: Dictionary = quest["objective"]
 	var kind := quests.rules.objective_of(entry["id"])
-	var giver := state.npcs.find(entry["giver"])
 	var days_left := quests.rules.last_day_of(entry) - state.clock.day + 1
 	return {
-		"giver": entry["giver"] if giver == null else "%s, %s" % [giver.name, giver.trade],
+		"giver": giver_text(state, entry["giver"]),
 		"what": kind.what(objective),
 		"progress": kind.status(objective, kind.progress(objective, entry, quests)),
 		"days_left": LAST_DAY_TEXT if days_left <= 1 else DAYS_LEFT_TEXT % days_left,

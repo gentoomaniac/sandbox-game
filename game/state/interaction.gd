@@ -21,6 +21,7 @@ enum Kind {
 	OPEN_CRAFTING,
 	RING_BELL,
 	SLEEP,
+	READ_BOARD,
 }
 
 
@@ -56,6 +57,8 @@ static func choice_at(state: GameState, target: Vector2i) -> Choice:
 	if object != null:
 		if StationRules.default_rules().grid_slots_of(object.type) > 0:
 			return Choice.new(Kind.OPEN_STATION_GRID, object)
+		if object.type == WorldObjectTypes.NOTICE_BOARD:
+			return Choice.new(Kind.READ_BOARD, object)
 		if Campfire.is_campfire(object):
 			return Choice.new(Kind.OPEN_FIRE, object)
 		return Choice.new(Kind.OPEN_CHEST if object.storage != null else Kind.OPEN_CRAFTING, object)
@@ -120,9 +123,14 @@ static func object_to_open(state: GameState, target: Vector2i) -> WorldObject:
 	return nearest_in_reach(state, _opens)
 
 
-## Whether E opens the object: a chest, a campfire or a station (see StationRules).
+## Whether E opens the object: a chest, a campfire, a station (see StationRules) or the notice
+## board.
 static func _opens(object: WorldObject) -> bool:
-	return object.storage != null or StationRules.default_rules().station_of(object.type) != &""
+	return (
+		object.storage != null
+		or object.type == WorldObjectTypes.NOTICE_BOARD
+		or StationRules.default_rules().station_of(object.type) != &""
+	)
 
 
 static func _distance(state: GameState, object: WorldObject) -> float:
