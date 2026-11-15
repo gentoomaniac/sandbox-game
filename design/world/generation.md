@@ -41,12 +41,24 @@
     nothing was edited, and its seams with old edits may look odd. That is accepted (the saves of
     that time were test saves) and goes into the release notes.
 
+- **The river and the creeks** ([#60](https://github.com/gentoomaniac/sandbox-game/issues/60)):
+  the river is a centre line y = f(x) (`RiverLine`) from a slow noise that swings it up to 90
+  tiles north and south, a finer one that adds bends of up to 5 tiles (both with two octaves only, so the meanders are smooth and the slope stays under 1.5 tiles per column), and a third that makes it
+  up to 2 tiles wider per bank here and there, so it winds and is not the same width all along.
+  **Creeks** (`CreekLayout`, `[creeks]` in `data/landscape.cfg`) are few: the land is cut into
+  bands of 160 tiles along x, 60 % of the bands have one, from the river north or south for 50 to
+  130 tiles. A creek starts in a small wetland, is about 2 tiles wide, swings in S-bends of about 35 tiles, up to
+  22 tiles either side of its band's middle (where it moves more than a tile per row, a row's water spans to the rows beside it, so it stays joined) and runs
+  into the river through the floodplain and the dyke. A band whose creek could come within 4 tiles of the coast line (its wandering included) has none, so a creek never breaks the sea dyke. A **ford** (2 rows of shallow ground, which
+  is floodplain terrain for now, with art to come) lies once in every 36 tiles of it, so a walker
+  crosses. Creeks block walking like the river; reeds grow where one crosses the
+  floodplain and clay is found along it.
 - **Woods** (task 56, 2026-11-06, redone in [#60](https://github.com/gentoomaniac/sandbox-game/issues/60)):
   trees stand in woods, compact patches that cover about 15 % of the Geest, and nowhere else: a
   lone tree outside a wood is not generated (a village's grove will be one, later). `WoodLayout`
   (numbers in `data/landscape.cfg`, `[woods]`) makes them: a wood is where the forest noise, read
-  at a position pushed about by a slow warp noise, is above 0.27 (the noise has a wavelength of about 80 tiles), so the outline is no contour
-  line of one noise. There are none in the marsh (the warp makes the marsh edge wavy). The depth
+  at a position pushed about by a slow warp noise, is above 0.27 (the noise has a wavelength of
+  about 80 tiles), so the outline is no contour line of one noise. There are none in the marsh (the warp makes the marsh edge wavy). The depth
   inside a wood gives an **edge** (shrubs, bushes, few young trees: where the noise barely
   clears the threshold a wood is only a tuft of shrubs) and a **core** (a tile
   holds a trunk with a chance of 0.15 at the edge to 0.55 in the core; crowns overlap). **Clearings** are cut into

@@ -3,8 +3,6 @@ extends WildlifeCase
 ## of it to be drawn over it; a roof takes one stork; a hunting stork flies off when the
 ## player comes near, while one on a roof stays; and a hunting stork catches the frogs it sees.
 
-const HOUSE_AT := Vector2i(3, 8)
-
 var _house: Building
 
 

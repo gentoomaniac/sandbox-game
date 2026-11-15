@@ -44,14 +44,18 @@ func _first_far_chunk() -> Vector2i:
 ## Makes the road (the edits stay when the chunks are unloaded) and unloads every chunk east of the
 ## yard's.
 func _build_road() -> void:
-	for x in range(YARD_RADIUS + 1, ROAD_LENGTH + 1):
+	# The road is a corridor with water to both sides and a water cap at its far end, so the only
+	# way along it is the road: the open land has no ditches to hold a walker to it.
+	for x in range(YARD_RADIUS + 1, ROAD_LENGTH + 2):
 		for dy in [-1, 0, 1]:
 			var tile := _road_tile(x) + Vector2i(0, dy)
 			var chunk := Chunk.world_to_chunk(tile)
 			for step in TravelMasks.SOURCE_STEPS:
 				_load(chunk + step)
 			_world.remove_object(tile)
-			_world.set_terrain(tile, Tile.Terrain.GRASS if dy == 0 else Tile.Terrain.WATER)
+			_world.set_terrain(
+				tile, Tile.Terrain.GRASS if dy == 0 and x <= ROAD_LENGTH else Tile.Terrain.WATER
+			)
 	for coords in _world.loaded_chunk_coords():
 		if coords.x >= _first_far_chunk().x:
 			_world.remove_chunk(coords)

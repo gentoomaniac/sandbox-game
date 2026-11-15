@@ -55,6 +55,7 @@ func test_the_console_says_what_was_eaten() -> void:
 func test_what_was_eaten_survives_a_whole_game_saved_checked_and_loaded() -> void:
 	var state := GameState.new_game(SEED)
 	var pos := state.player.tile() + Vector2i(3, 0)
+	state.world.remove_object(pos)
 	state.world.set_terrain(pos, Tile.Terrain.SOIL)
 	var crop := WorldObject.new(&"wheat", pos)
 	CropLife.eat(crop, 1)

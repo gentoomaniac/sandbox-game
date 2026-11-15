@@ -137,6 +137,8 @@ func test_going_to_bed_puts_the_lantern_out_and_the_candle_burns_nothing_overnig
 	_state.switch_held_lantern()
 	assert_true(_state.player.is_lantern_lit)
 	var bed := WorldObject.new(WorldObjectTypes.SLEEPING_BAG, _state.player.tile())
+	for tile in bed.tiles():
+		_state.world.remove_object(tile)
 	_state.world.add_object(bed)
 	_state.clock.set_time(21, 0)
 

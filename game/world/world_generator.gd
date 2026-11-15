@@ -1,9 +1,9 @@
 class_name WorldGenerator
 extends RefCounted
-## Generates the grassland biome: grass with one meandering river running west to east, a
-## floodplain band along both banks and wetland patches, with forests (broadleaved woods, with
-## clumps of pine and spruce on the Geest), bushes, rare dead trees and scattered stones and
-## boulders on the grass.
+## Generates the grassland biome: grass with one winding river running west to east, a few creeks
+## to it (with fords), a floodplain band along both banks and wetland patches, with woods
+## (broadleaved, with clumps of pine and spruce on the Geest), bushes, rare dead trees and
+## scattered stones and boulders on the grass.
 ##
 ## The open land is bare: no fields, fences, hedges, walls or ditches are generated in it (those
 ## come with the villages, and the player digs ditches). The only work of men in it is the dykes
@@ -24,16 +24,17 @@ extends RefCounted
 
 ## Tiles from the river centre line to the bank (so the river is twice as wide).
 const RIVER_HALF_WIDTH := 3.0
+## What a tile of a creek is: its water, a ford (shallow ground, walked over like the floodplain)
+## and the small wetland the creek starts in.
+const CREEK_TERRAINS := {
+	CreekLayout.Bed.WATER: Tile.Terrain.WATER,
+	CreekLayout.Bed.FORD: Tile.Terrain.FLOODPLAIN,
+	CreekLayout.Bed.SOURCE: Tile.Terrain.WETLAND,
+}
 ## Tiles from the bank to the edge of the floodplain.
 const FLOODPLAIN_WIDTH := 3.0
-## How far (in tiles) the river's centre line wanders north and south of y = 0.
-const RIVER_MEANDER_AMPLITUDE := 150.0
 ## Wetland appears where the second noise is above this (dry land only).
 const WETLAND_THRESHOLD := 0.45
-## The five octaves of the wetland noise are weighted 1, 1/2, 1/4, 1/8 and 1/16, so the last three
-## add at most 0.4375 of 1.9375 to the sum: for the whole to pass WETLAND_THRESHOLD, the first two
-## (as a noise of two octaves, weighted 1 and 1/2 of 1.5) have to be above this (0.289, with room).
-const WETLAND_FIRST_OCTAVES_MIN := 0.28
 
 ## The woods (see WoodLayout) hold the trees; outside them none stands alone. Bushes are the
 ## other way round: common at the edge of a wood, rare in its core, and in its clearings and the
@@ -133,7 +134,6 @@ const BUSH_KIND_SHARES := [
 ]
 
 ## Features per tile; lower is larger and smoother.
-const RIVER_FREQUENCY := 0.004
 const WETLAND_FREQUENCY := 0.03
 const COMPOSITION_FREQUENCY := 0.012
 const GRASS_FREQUENCY := 0.05
@@ -171,9 +171,9 @@ const TIDEWAY_START_ROLL_SEED_OFFSET := 16
 const WARFT_ROLL_SEED_OFFSET := 17
 const EWER_ROLL_SEED_OFFSET := 18
 
-var _river_noise := FastNoiseLite.new()
+var _river: RiverLine
+var _creeks: CreekLayout
 var _wetland_noise := FastNoiseLite.new()
-var _wetland_first_octaves_noise := FastNoiseLite.new()
 var _composition_noise := FastNoiseLite.new()
 var _grass_noise := FastNoiseLite.new()
 var _clay_noise := FastNoiseLite.new()
@@ -212,13 +212,10 @@ var _ewer_out_to: float
 
 
 func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void:
-	_river_noise.seed = world_seed
-	_river_noise.frequency = RIVER_FREQUENCY
+	_river = RiverLine.new(world_seed)
+	_creeks = CreekLayout.new(world_seed, _river, landscape)
 	_wetland_noise.seed = world_seed + WETLAND_SEED_OFFSET
 	_wetland_noise.frequency = WETLAND_FREQUENCY
-	_wetland_first_octaves_noise.seed = world_seed + WETLAND_SEED_OFFSET
-	_wetland_first_octaves_noise.frequency = WETLAND_FREQUENCY
-	_wetland_first_octaves_noise.fractal_octaves = 2
 	_composition_noise.seed = world_seed + COMPOSITION_SEED_OFFSET
 	_composition_noise.frequency = COMPOSITION_FREQUENCY
 	_grass_noise.seed = world_seed + GRASS_SEED_OFFSET
@@ -281,8 +278,8 @@ func generate_chunk(chunk_coords: Vector2i) -> Chunk:
 	return chunk
 
 
-## The one place that decides what a world tile is: the river, its floodplain, wetland and grass,
-## and the foreshore.
+## The one place that decides what a world tile is: the river, the creeks, its floodplain, wetland
+## and grass, and the foreshore.
 func terrain_at(world_pos: Vector2i) -> Tile.Terrain:
 	return _terrain_from(world_pos, _river_distance(world_pos))
 
@@ -293,6 +290,9 @@ func _terrain_from(world_pos: Vector2i, river_distance: float) -> Tile.Terrain:
 		return _foreshore_terrain(world_pos, -_coast_distance(world_pos), river_distance)
 	if river_distance < RIVER_HALF_WIDTH:
 		return Tile.Terrain.WATER
+	var creek_bed := _creeks.bed_at(world_pos)
+	if creek_bed != CreekLayout.Bed.NONE:
+		return CREEK_TERRAINS[creek_bed]
 	if river_distance < RIVER_HALF_WIDTH + FLOODPLAIN_WIDTH:
 		return Tile.Terrain.FLOODPLAIN
 	if _wetland_noise.get_noise_2d(world_pos.x, world_pos.y) > WETLAND_THRESHOLD:
@@ -300,11 +300,9 @@ func _terrain_from(world_pos: Vector2i, river_distance: float) -> Tile.Terrain:
 	return Tile.Terrain.GRASS
 
 
-## How far a tile is from the river's centre line, along y. The river is a centre line
-## y = f(x) rather than a noise isoline: an isoline can fade out or leave isolated pools, but
-## this one is always continuous and the floodplain distance is exact.
+## How far a tile is from the river's centre line, along y (see RiverLine `distance`).
 func _river_distance(world_pos: Vector2i) -> float:
-	return absf(world_pos.y - _river_noise.get_noise_1d(world_pos.x) * RIVER_MEANDER_AMPLITUDE)
+	return _river.distance(world_pos)
 
 
 ## How far a tile lies east of the coast line, in tiles along x: negative out on the foreshore.
@@ -639,12 +637,12 @@ func _bush_type(variety_roll: float) -> StringName:
 func _is_near_wetland(world_pos: Vector2i) -> bool:
 	for direction in WETLAND_PROBE_DIRECTIONS:
 		var probe := world_pos + direction * WETLAND_REACH
-		# The probes of the many trees of a wood mostly find no wetland, so the cheap question
-		# comes first: whether the first two octaves of the wetland noise leave room for it to pass
-		# WETLAND_THRESHOLD.
-		var may_be_wet := (
-			_wetland_first_octaves_noise.get_noise_2d(probe.x, probe.y) > WETLAND_FIRST_OCTAVES_MIN
-		)
-		if may_be_wet and terrain_at(probe) == Tile.Terrain.WETLAND:
+		# Wetland is where its noise is high, or a creek's source: the noise is the cheap part to
+		# ask first, as the probes of the many trees of a wood mostly find neither.
+		var is_wet_noise := _wetland_noise.get_noise_2d(probe.x, probe.y) > WETLAND_THRESHOLD
+		if (
+			(is_wet_noise or _creeks.bed_at(probe) == CreekLayout.Bed.SOURCE)
+			and (terrain_at(probe) == Tile.Terrain.WETLAND)
+		):
 			return true
 	return false

@@ -36,7 +36,7 @@ func test_animals_made_by_hand_stay() -> void:
 
 
 func test_a_stork_that_settles_stands_on_its_roof_at_once_and_is_not_made_by_hand() -> void:
-	var house := _state.world.place_building(BuildingTypes.KATE, Vector2i(3, 8))
+	var house := _state.world.place_building(BuildingTypes.KATE, HOUSE_AT)
 	_camera.rig.position = _wildlife._front_middle(house)
 	assert_true(_wildlife._send_stork_to_roof(false, true))
 	var stork: Stork = _animals_of(Stork)[0]

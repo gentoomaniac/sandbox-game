@@ -58,7 +58,10 @@ func test_no_other_building_is_rung() -> void:
 func test_e_leaves_the_bell_to_a_bed_in_reach_but_a_click_still_rings() -> void:
 	var frame := _place_building_nearby(BuildingTypes.BELL_FRAME)
 	_stand_on(_state, frame.origin + Vector2i(-1, 0))
-	_world.add_object(WorldObject.new(WorldObjectTypes.SLEEPING_BAG, _state.player.tile()))
+	var bag := WorldObject.new(WorldObjectTypes.SLEEPING_BAG, _state.player.tile())
+	for tile in bag.tiles():
+		_world.remove_object(tile)
+	_world.add_object(bag)
 	assert_not_null(_state.bed_in_reach())
 	assert_null(Interaction.bell_frame_to_ring(_state), "E sleeps")
 	assert_eq(Interaction.bell_frame_to_ring(_state, frame.origin), frame, "a click rings")

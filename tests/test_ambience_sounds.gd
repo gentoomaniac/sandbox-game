@@ -64,8 +64,8 @@ func test_a_clear_calm_day_has_no_loops() -> void:
 ## returns the house.
 func _enter_kate() -> Building:
 	var kate: Building = null
-	for offset in 40:
-		var origin := _state.player.tile() + Vector2i(offset, 0)
+	for offset in 40 * 21:
+		var origin := _state.player.tile() + Vector2i(offset % 40, offset / 40 - 10)
 		if _state.world.placement_blockers(BuildingTypes.KATE, origin).is_empty():
 			kate = _state.world.place_building(BuildingTypes.KATE, origin)
 			break

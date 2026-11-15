@@ -46,10 +46,20 @@ func test_a_stump_is_still_there_the_day_before_it_has_rotted_and_gone_the_day_i
 
 func test_a_stump_never_becomes_a_tree_directly() -> void:
 	_stump_of(WorldObjectTypes.OAK)
+	var has_been_a_sapling := false
 	for _day in ROT_DAYS * 2:
 		_sleep_days(1)
 		var left := _world.object_at(_tile)
-		assert_true(left == null or left.type in [WorldObjectTypes.STUMP, WorldObjectTypes.SAPLING])
+		has_been_a_sapling = (
+			has_been_a_sapling or left != null and left.type == WorldObjectTypes.SAPLING
+		)
+		assert_true(
+			(
+				left == null
+				or left.type in [WorldObjectTypes.STUMP, WorldObjectTypes.SAPLING]
+				or left.type == WorldObjectTypes.OAK and has_been_a_sapling
+			)
+		)
 
 
 func test_the_sapling_roll_is_deterministic_and_about_thirty_percent() -> void:

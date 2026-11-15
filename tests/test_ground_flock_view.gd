@@ -22,6 +22,8 @@ const MUD_REACH := 12
 
 
 func _flock_flying_towards(kind: StringName, degrees: float) -> GroundFlock:
+	# Dice that find a place for the flock in the view of the camp (few places have water near).
+	_wildlife.rng.seed = 2
 	assert_eq(_wildlife.spawn_in_view(kind, 1), 1, kind)
 	var flock: GroundFlock = _animals_of(GroundFlock).back()
 	flock._take_off(Vector2.RIGHT.rotated(deg_to_rad(degrees)))

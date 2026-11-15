@@ -92,7 +92,10 @@ func test_the_tide_rising_over_a_far_path_makes_it_search_again_and_then_wait() 
 		tiles_stood_on[npc.tile()] = true
 		return npc.trip.state == NpcTrip.State.BLOCKED
 	assert_true(_run_until(is_blocked, high), "the water is up: the way is closed")
-	assert_eq(npc.trip.searches, 2, "it searched again from where it stood")
+	# Two searches are made before the water rises (one for the leg over the unloaded road, one
+	# when the loaded area is in reach: the road's length against the chunk edges decides how many),
+	# and the flood makes the third.
+	assert_eq(npc.trip.searches, 3, "it searched again from where it stood")
 	assert_signal_emitted_with_parameters(_npcs, "trip_blocked", [npc, NpcTrip.Block.NO_WAY])
 	assert_false(tiles_stood_on.has(mud))
 	var is_there := func() -> bool:

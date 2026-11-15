@@ -29,12 +29,13 @@ func before_each() -> void:
 func _free_tile(index: int) -> Vector2i:
 	var around := _state.player.tile()
 	var found := 0
-	for x in range(2, 30):
-		var pos := around + Vector2i(x, 0)
-		if _world.is_free_on(pos, Tile.Terrain.GRASS):
-			if found == index:
-				return pos
-			found += 1
+	for y in range(-10, 10):
+		for x in range(2, 30):
+			var pos := around + Vector2i(x, y)
+			if _world.is_free_on(pos, Tile.Terrain.GRASS):
+				if found == index:
+					return pos
+				found += 1
 	fail_test("no free tile")
 	return around
 

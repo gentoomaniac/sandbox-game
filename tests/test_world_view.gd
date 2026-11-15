@@ -6,9 +6,9 @@ extends GutTest
 const SEED := 1
 ## Chunks by the river whose shared borders cross terrain edges, so a fallback that
 ## copies the loaded side differs from the real terrain.
-const LEFT := Vector2i(-2, -1)
-const RIGHT := Vector2i(-1, -1)
-const BELOW := Vector2i(-1, 0)
+const LEFT := Vector2i(-4, -1)
+const RIGHT := Vector2i(-3, -1)
+const BELOW := Vector2i(-3, 0)
 const SUMMER := 53
 const WINTER := 123
 

@@ -97,7 +97,7 @@ func test_animals_stay_off_buildings_while_they_move() -> void:
 
 
 func test_animals_do_not_settle_near_a_building_but_mice_do() -> void:
-	var house := _state.world.place_building(BuildingTypes.KATE, Vector2i(3, 8))
+	var house := _state.world.place_building(BuildingTypes.KATE, HOUSE_AT)
 	var beside_the_door := TerrainTileset.tile_centre(house.door_tile() + Vector2i(0, 1))
 	assert_true(_wildlife._is_near_people(WildlifeRules.DEER, beside_the_door))
 	assert_true(_wildlife._is_near_people(WildlifeRules.RABBIT, beside_the_door))
@@ -165,7 +165,7 @@ func test_a_deer_bounds_away_from_a_villager() -> void:
 
 
 func test_mice_stay_near_a_house_and_a_villager() -> void:
-	var house := _state.world.place_building(BuildingTypes.KATE, Vector2i(3, 8))
+	var house := _state.world.place_building(BuildingTypes.KATE, HOUSE_AT)
 	var mouse := Mouse.new()
 	mouse.position = TerrainTileset.tile_centre(house.door_tile() + Vector2i(0, 1))
 	_wildlife._add(mouse, true)

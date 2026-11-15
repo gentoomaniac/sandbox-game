@@ -1,13 +1,14 @@
 class_name LandscapeRules
 extends RefCounted
-## The numbers of the marsh, the dykes and the coast,
-## read from data/landscape.cfg (see there for what each one means). `from_file` reports every key
-## that is missing or out of range, and `is_valid` says whether any was.
+## The numbers of the marsh, the woods, the creeks, the dykes and the coast, read from
+## data/landscape.cfg (see there for what each one means). `from_file` reports every key that is
+## missing or out of range, and `is_valid` says whether any was.
 
 const DEFAULT_PATH := "res://data/landscape.cfg"
 
 const REQUIRED_KEYS := {
 	"marsh": ["reach"],
+	"creeks": ["spacing", "chance", "meander", "min_length", "max_length", "ford_spacing"],
 	"woods": ["above", "core_above", "warp", "clearing_above", "edge_trees", "core_trees"],
 	"dykes": ["stretch_above"],
 	"coast": ["line_x", "wander", "salt_marsh_width", "salt_marsh_wander", "flats_width"],
@@ -50,6 +51,13 @@ func problems() -> Array[String]:
 		return found
 	if value("woods", "core_above") <= value("woods", "above"):
 		found.append("[woods] core_above must be more than above")
+	var creek_band := 2.0 * (value("creeks", "meander") + CreekLayout.SOURCE_RADIUS)
+	if creek_band >= value("creeks", "spacing"):
+		found.append(
+			"[creeks] twice the meander and the source's reach must be less than the spacing"
+		)
+	if value("creeks", "min_length") > value("creeks", "max_length"):
+		found.append("[creeks] min_length must not be more than max_length")
 	var tideway_band := 2.0 * value("tideways", "meander") + value("tideways", "widest")
 	if tideway_band >= value("tideways", "spacing"):
 		found.append("[tideways] twice the meander and the widest must be less than the spacing")

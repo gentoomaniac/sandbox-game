@@ -199,6 +199,8 @@ func test_refusals_tell_nothing() -> void:
 func test_loading_a_game_tells_nothing() -> void:
 	_world.drop_items(_tile, {ItemTypes.LOGS: 3})
 	_place_beside(WorldObjectTypes.WORKBENCH)
+	# The logs scatter around their tile, one may land at the player's feet: stand off.
+	_state.player.position.y -= 3.0
 	var restored := _through_save()
 	var told: Array[ActionOutcome] = []
 	restored.action_done.connect(func(outcome: ActionOutcome) -> void: told.append(outcome))

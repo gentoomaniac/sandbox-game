@@ -14,6 +14,14 @@ func _bed() -> WorldObject:
 	return _state.world.object_at(_state.player.home_bed)
 
 
+## A sleeping bag two rows below the player, on ground cleared of what the land put there.
+func _sleeping_bag_below_the_player() -> WorldObject:
+	var bag := WorldObject.new(WorldObjectTypes.SLEEPING_BAG, _state.player.tile() + Vector2i(0, 2))
+	for tile in bag.tiles():
+		_state.world.remove_object(tile)
+	return bag
+
+
 func test_new_game_starts_at_the_camp_with_home_at_the_sleeping_bag() -> void:
 	assert_eq(_bed().type, WorldObjectTypes.SLEEPING_BAG)
 	assert_true(_state.world.is_walkable(_state.player.tile()))
@@ -66,9 +74,7 @@ func test_every_bed_wakes_at_the_same_time() -> void:
 
 
 func test_sleeping_sets_home() -> void:
-	var other_bed := WorldObject.new(
-		WorldObjectTypes.SLEEPING_BAG, _state.player.tile() + Vector2i(0, 2)
-	)
+	var other_bed := _sleeping_bag_below_the_player()
 	_state.world.add_object(other_bed)
 	_state.sleep_in(other_bed)
 	assert_eq(_state.player.home_bed, other_bed.pos)

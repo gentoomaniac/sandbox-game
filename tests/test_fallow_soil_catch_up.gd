@@ -27,7 +27,7 @@ func before_each() -> void:
 	Simulation.frame_budget_usec = 0
 	_state = GameState.new_game(SEED)
 	_field.clear()
-	var corner := _state.player.tile() + Vector2i(2, 2)
+	var corner := _state.player.tile() + Vector2i(4, -3)
 	for y in FIELD.y:
 		for x in FIELD.x:
 			var pos := corner + Vector2i(x, y)

@@ -8,6 +8,8 @@ extends GutTest
 const VIEW_CENTRE := Vector2(80.0, 160.0)
 const STEP := 0.1
 const SEED := 1
+## Where the tests put a house: grass with no dyke or reeds, in the view the camera starts on.
+const HOUSE_AT := Vector2i(2, 8)
 
 var _state: GameState
 var _wildlife: WildlifeView
