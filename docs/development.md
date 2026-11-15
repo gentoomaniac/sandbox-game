@@ -56,6 +56,21 @@ The workflow `.github/workflows/release.yml` runs on tags of the form `vX.Y.Z` (
 fails its first step). It installs the pinned Godot and its export templates, runs `make assets`
 and `make export VERSION=1.2.3`, and publishes a GitHub release of the tag with the two zips.
 
+### Breaking changes for the release notes
+
+The release workflow generates the notes from the commits (`--generate-notes`); a change that
+breaks a player's save or world is added here by hand when it is made, and goes into the notes of
+the next tag.
+
+- **The map generation changed** ([#60](https://github.com/gentoomaniac/sandbox-game/issues/60),
+  save version 45). The land is generated from the seed and a save holds only what the player
+  changed, so a world made before keeps its buildings, tilled soil and other edits but every
+  place the player did not touch is new land: no field grid, fences or ditches, woods in patches
+  instead of lone trees, a winding river with creeks. A new game with the same seed starts at
+  another camp and looks different from before. Seams between old edits and new land may
+  look odd. A save of version 44 needs no upgrade: nothing in the file changes. Saves of version 34
+  and older are no longer read (their upgrade was dropped to keep ten steps).
+
 ## Language model
 
 The rule for full or cut-down villager sheets is `needs_key` of the provider's row in

@@ -22,10 +22,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 44
-## The oldest version we still upgrade. Nine steps back, for the next version (#60) makes its
-## step the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 45
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 ## The world's save path: its saves are named after it (see SaveList).
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
@@ -238,6 +237,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_42(game)
 	if version <= 43:
 		_upgrade_from_version_43(game)
+	if version <= 44:
+		_upgrade_from_version_44(game)
 
 
 ## Version 35 had stories without an origin and learned on a day (task 127): a story is named by
@@ -368,6 +369,13 @@ static func _day_in_longer_seasons(day: int) -> int:
 static func _minute_in_longer_seasons(minute: int) -> int:
 	var day := _day_in_longer_seasons(minute / GameClock.MINUTES_PER_DAY + 1)
 	return (day - 1) * GameClock.MINUTES_PER_DAY + minute % GameClock.MINUTES_PER_DAY
+
+
+## Version 44 had the old generator's land (a grid of fields and ditches, woods of single trees, a
+## straight river; #60). A save holds only the seed and the edits, so nothing in the data changes:
+## the land it has not edited is the new generator's, and its seams with the edits may look odd.
+static func _upgrade_from_version_44(_game: Dictionary) -> void:
+	pass
 
 
 static func _give_lanterns_a_candle(data: Variant) -> void:
